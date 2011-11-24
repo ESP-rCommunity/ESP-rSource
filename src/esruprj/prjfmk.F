@@ -2813,14 +2813,14 @@ C  ICOMP zone number
       integer ipltwd,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
-      integer iid1,iid2
+      integer iid1,iid2,iglsat,iglsun
       integer iigl,iigr,iigt,iigb,iigw,iigwh
       integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 ipltwd,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
-      integer*8 iid1,iid2
+      integer*8 iid1,iid2,iglsat,iglsun
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
       integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
@@ -2875,7 +2875,7 @@ C Re-set scale for gain (W) axis.
 C Scale and draw for first day type requested
       CALL horaxis(plxmin,plxmax,igl,igr,igb,xadd,xsc,0,'Time (hrs)')
       call vrtaxis(YMIN,YMAX,igl,igb,igt,yadd,ysc,0,0,'Flow (ac/hr)')
-      call linescale(igl,xadd,xsc,igb,yadd,ysc)
+      call linescale(iigl,xadd,xsc,iigb,yadd,ysc)
       iupdown=0
       isym=0
       CALL etplot(plxmax,YMIN,iupdown,isym)
@@ -2885,7 +2885,7 @@ C Scale and draw for first day type requested
 
 C Scale and draw second day type requested
       CALL horaxis(plxmin,plxmax,iglsat,igr,igb,xadd,XSC,0,' ')
-      call linescale(iglsat,xadd,xsc,igb,yadd,ysc)
+      call linescale(iglsat,xadd,xsc,iigb,yadd,ysc)
       iupdown=0
       isym=0
       CALL etplot(plxmax,YMIN,iupdown,isym)
@@ -2896,7 +2896,7 @@ C Scale and draw second day type requested
 
 C Scale and draw third day type requested
       CALL horaxis(plxmin,plxmax,iglsun,igr,igb,xadd,XSC,0,' ')
-      call linescale(iglsun,xadd,xsc,igb,yadd,ysc)
+      call linescale(iglsun,xadd,xsc,iigb,yadd,ysc)
       iupdown=0
       isym=0
       CALL etplot(plxmin,YMIN,iupdown,isym)
@@ -2906,7 +2906,7 @@ C Scale and draw third day type requested
 
 C Display air flow curves.
 C first day type requested
-      call linescale(igl,xadd,xsc,igb,yadd,ysc)
+      call linescale(iigl,xadd,xsc,iigb,yadd,ysc)
       do 50 IHR=1,24
         TACI(IHR)=0.
         TACV(IHR)=0.
@@ -2939,7 +2939,7 @@ C first day type requested
  70   continue
 
 C second day type requested
-      call linescale(iglsat,xadd,xsc,igb,yadd,ysc)
+      call linescale(iglsat,xadd,xsc,iigb,yadd,ysc)
       do 150 IHR=1,24
         TACI(IHR)=0.
         TACV(IHR)=0.
@@ -2973,7 +2973,7 @@ C second day type requested
       call forceflush()
 
 C third day type requested
-      call linescale(iglsun,xadd,xsc,igb,yadd,ysc)
+      call linescale(iglsun,xadd,xsc,iigb,yadd,ysc)
       do 250 IHR=1,24
         TACI(IHR)=0.
         TACV(IHR)=0.
@@ -4737,14 +4737,14 @@ C Descriptive label for a zone load or casual gain.
       integer ipltwd,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
-      integer iid1,iid2,iicol
+      integer iid1,iid2,iicol,iglsat,iglsun
       integer iigl,iigr,iigt,iigb,iigw,iigwh
       integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 ipltwd,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to etplot
       integer*8 iupdown,isym    ! passed to etplot
-      integer*8 iid1,iid2,iicol
+      integer*8 iid1,iid2,iicol,iglsat,iglsun
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
       integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
@@ -4882,7 +4882,7 @@ C Re-set scale for gain (W) axis.
 C Scale and draw first day type requested
       CALL horaxis(plxmin,plxmax,igl,igr,igb,xadd,xsc,0,'Time (hrs)')
       call vrtaxis(YMIN,YMAX,igl,igb,igt,yadd,ysc,0,0,'Gain (W)')
-      call linescale(igl,xadd,xsc,igb,yadd,ysc)
+      call linescale(iigl,xadd,xsc,iigb,yadd,ysc)
       iupdown=0
       isym=0
       CALL etplot(plxmax,YMIN,iupdown,isym)
@@ -4892,7 +4892,7 @@ C Scale and draw first day type requested
 
 C Scale and draw second day type requested
       CALL horaxis(plxmin,plxmax,iglsat,igr,igb,xadd,XSC,0,' ')
-      call linescale(iglsat,xadd,xsc,igb,yadd,ysc)
+      call linescale(iglsat,xadd,xsc,iigb,yadd,ysc)
       iupdown=0
       isym=0
       CALL etplot(plxmax,YMIN,iupdown,isym)
@@ -4903,7 +4903,7 @@ C Scale and draw second day type requested
 
 C Scale and draw third day type requested
       CALL horaxis(plxmin,plxmax,iglsun,igr,igb,xadd,XSC,0,' ')
-      call linescale(iglsun,xadd,xsc,igb,yadd,ysc)
+      call linescale(iglsun,xadd,xsc,iigb,yadd,ysc)
       iupdown=0
       isym=0
       CALL etplot(plxmin,YMIN,iupdown,isym)
@@ -4913,7 +4913,7 @@ C Scale and draw third day type requested
 
 C Scan gains and generate total curves.
 C first day type requested
-      call linescale(igl,xadd,xsc,igb,yadd,ysc)
+      call linescale(iigl,xadd,xsc,iigb,yadd,ysc)
       do 50 IP=1,7
         do 55 IHR=1,25
           CGAINS(IHR,IP)=0.
@@ -4992,7 +4992,7 @@ C Plot curves.
  70   continue
 
 C second day type requested
-      call linescale(iglsat,xadd,xsc,igb,yadd,ysc)
+      call linescale(iglsat,xadd,xsc,iigb,yadd,ysc)
       do 150 IP=1,7
         do 155 IHR=1,25
           CGAINS(IHR,IP)=0.
@@ -5069,7 +5069,7 @@ C Plot curves.
  170  continue
 
 C third day type requested
-      call linescale(iglsun,xadd,xsc,igb,yadd,ysc)
+      call linescale(iglsun,xadd,xsc,iigb,yadd,ysc)
       do 250 IP=1,7
         do 255 IHR=1,25
           CGAINS(IHR,IP)=0.

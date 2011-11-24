@@ -904,9 +904,14 @@ C VAXIS draws the graphical axes relating only to the requested profiles.
       character VITEM*24,HITEM*24,VIT*24,HIT*24
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C Interval on vertical axis.
       A=YMAXV-YMINV
@@ -928,7 +933,7 @@ C memory for access by plotting code.
       igheight=igwh
       call axiscale(igwid,igheight,YMINH,YMAXH,YMINV,YMAXV,xsc,ysc,sca,
      &              Xadd,Yadd)
-      call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
+      call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
 
 C Copy axis labels into local variable and then display the 
 C horizontal and vertical axis.

@@ -416,7 +416,7 @@ C Scale and draw axes.
      &  Xadd,Yadd)
       CALL horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,1,LABEL2)
       CALL vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,LABEL1)
-      call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
+      call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
 
 C Establish step size (in hour) in X-direction.
       STPX=1./FLOAT(NTSPH)

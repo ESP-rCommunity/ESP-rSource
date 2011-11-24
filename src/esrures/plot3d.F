@@ -712,7 +712,7 @@ C Scaling happens here...
       igheight=igwh
       call axiscale(igwid,igheight,0.0,700.0,0.0,750.,xsc,ysc,sca,
      &  Xadd,Yadd)
-      call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
+      call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
 
       READ(LU1,REC=1) TITLE
       READ(LU1,REC=2) (AXIS(I),I=1,3)

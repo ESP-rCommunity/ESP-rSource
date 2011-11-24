@@ -1160,7 +1160,7 @@ C      call win3d(menuchw,10,10,4,4,igl,igr,igt,igb,igw,igwh)
       igheight=igwh
       call axiscale(igwid,igheight,0.0,24.0,YMIN,YMAX,xsc,ysc,sca,
      &  Xadd,Yadd)
-      call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
+      call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
       call horaxis(0.,24.,igl,igr,igb,Xadd,xsc,1,'Time (hours)')
       call vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,'Percent')
 

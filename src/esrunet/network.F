@@ -951,15 +951,20 @@ C Grid commons
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
       integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
       integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
 C Clear the screen
       CALL startbuffer
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C Set the new x y and z view limits. Currently do not scroll
 C left further than X = -5m and down to Y = -5m.
@@ -1033,7 +1038,7 @@ C Draw the Lower and Left extents of the grid and labels.
       ENDIF
 
 C Store the scaling parameters used in drawing the axes.
-      CALL linescale(igl,xadd,XSC,igb,yadd,YSC)
+      CALL linescale(iigl,xadd,XSC,iigb,yadd,YSC)
 
 C Draw the upper and right extents.
       call u2pixel(XMAX,YMIN,ix1,iy1)

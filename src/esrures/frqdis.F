@@ -948,8 +948,10 @@ C MODDRW draws a histogram of the frequency distribution.
       character alabel*60
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
       YMAX = IFREQ
@@ -958,7 +960,8 @@ C MODDRW draws a histogram of the frequency distribution.
       XMAX = XBINN
       XMIN = XBIN1
 
-C Reset graphing area.
+C Reset graphing area and cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C Compute scales and offsets.
       igwid=igw
@@ -967,7 +970,7 @@ C Compute scales and offsets.
      &              Xadd,Yadd)
 
 C Stuff into static variables for later access.
-      call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
+      call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
 
 C Left axis.
       call vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,'Distribution')

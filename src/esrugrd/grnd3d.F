@@ -1467,7 +1467,7 @@ C      CALL WIN3D(28,10,10,5,3,IGL,IGR,IGT,IGB,IGW,IGWH)
       igheight=igwh
       call axiscale(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &   XADD,YADD)
-      CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
+      CALL LINESCALE(iigl,XADD,SCA,iigb,YADD,SCA)
       CALL U2PIXEL(XMX2,YMX2,iix,iiy)
       CALL ELINE(iix,iiy,1)
       CALL ECIRC(iix,iiy,3,1)
@@ -1586,7 +1586,7 @@ C      CALL WIN3D(33,10,10,5,3,IGL,IGR,IGT,IGB,IGW,IGWH)
       igheight=igwh
       CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &   XADD,YADD)
-      CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
+      CALL LINESCALE(iigl,XADD,SCA,iigb,YADD,SCA)
       CALL U2PIXEL(XMN2,YMN2,iix,iiy)
       CALL ELINE(iix,iiy,1)
       CALL ECIRC(iix,iiy,3,1)
@@ -1786,7 +1786,7 @@ C      CALL WIN3D(28,20,4,3,3,IGL,IGR,IGT,IGB,IGW,IGWH)
       igheight=igwh
       CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &   XADD,YADD)
-      CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
+      CALL LINESCALE(iigl,XADD,SCA,iigb,YADD,SCA)
 
 C Locate and label the vertices.
       CALL U2PIXEL(XS(1),YS(1),iix,iiy)

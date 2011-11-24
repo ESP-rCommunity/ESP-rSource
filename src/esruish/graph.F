@@ -142,7 +142,7 @@ C Determine scaling ratios.
      &  Xadd,Zadd)
 
 C Place scaling in static C variables for use by line drawing routines.
-      call linescale(igl,Xadd,sca,igb,Zadd,sca)
+      call linescale(iigl,Xadd,sca,iigb,Zadd,sca)
 
 C Output start hour.
       ih=1
@@ -408,7 +408,7 @@ C Determine scaling ratios.
       call axiscale(igwid,igheight,0.,360.,0.,90.,xsc,ysc,sca,Xadd,Yadd)
 
 C Place scaling in static C variables for use by line drawing routines.
-      call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
+      call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
 
 C Draw horizontal axis.
       call horaxis(0.,360.,igl,igr,igb,Xadd,xsc,0,

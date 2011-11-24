@@ -1121,7 +1121,7 @@ C Calculate plotting box locations.
         igheight=igwh
         call axiscale(igwid,igheight,plxmin,plxmax,Ymin,Ymax,                 
      &                            xsc,ysc,sca,xadd,yadd)
-        CALL linescale(igl,xadd,xsc,igb,yadd,ysc)
+        CALL linescale(iigl,xadd,xsc,iigb,yadd,ysc)
 
 C Scale and draw monitoring plot.
         Call horaxis(plxmin,plxmax,igl,igr,igb,xadd,XSC,0,'Frequ.[Hz]')

@@ -946,7 +946,7 @@ C Draw the axes of the chart.
       CALL vrtaxis(Ymin,Ymax,igr,igb,igt,yadd,YSC,0,1,'Moisture g/kg')
 
 C Store the scaling parameters used in drawing the axes
-      CALL linescale(igl,xadd,XSC,igb,yadd,YSC)
+      CALL linescale(iigl,xadd,XSC,iigb,yadd,YSC)
 C Draw the dry-bulb temperature lines
       iupdown=0
       isym=0

@@ -3228,8 +3228,10 @@ C output: triangle list
 
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
 C For help messages
@@ -3238,6 +3240,9 @@ C For help messages
       integer nbhelp     ! number of help lines found
 
       helpinsub='TRIANG'  ! set for subroutine
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C If there is a ground geometry then check its bounds.
       do 741 iv = 1,NGTV
@@ -3317,7 +3322,7 @@ C Clear current viewing box.
         igheight=igwh
         call axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
      &                Xadd,Yadd)
-        call linescale(igl,Xadd,sca,igb,Yadd,sca)
+        call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
 
         OK=.FALSE.
         dok=.false.

@@ -120,7 +120,7 @@ C assume 1000 -1000 etc, if optimum then use SXMX,SYMX + 10% etc.
       IF(ITBND.EQ.0)THEN
         call axiscale(igwid,igheight,-1000.,1000.,-1000.,1000.,xsc,ysc,
      &                sca,Xadd,Yadd)
-        call linescale(igl,Xadd,sca,igb,Yadd,sca)
+        call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
       ELSEIF(ITBND.EQ.1)THEN
 
 C Determine the 2D coords of the site extremes.
@@ -131,7 +131,7 @@ C Determine the 2D coords of the site extremes.
         endif
         call axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
      &                Xadd,Yadd)
-        call linescale(igl,Xadd,sca,igb,Yadd,sca)
+        call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
       ENDIF
 
 C Refresh the dialogue box if terminal type 8.

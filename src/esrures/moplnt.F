@@ -2318,7 +2318,7 @@ C Do the other menu types. If graph reset scaling factor for appropriate axis.
             do 400 IX=1,NPGET
               if (MENUTYPE.eq.3) then
                 Iax=IPGETNO(IX,8)
-                call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
+                call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))
                 if (TIMEold(IX).lt.0.0.or.ADDLIN.eq.1) then
                   TIMEold(IX)=0
                   Yold(IX)=VAL(IX)
@@ -2569,7 +2569,7 @@ C Do the other menu types. If graph reset scaling factor for appropriate axis.
               do 401 IX=1,NPGET
                 if (MENUTYPE.eq.3) then
                   Iax=IPGETNO(IX,8)
-                  call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
+                  call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))
                   if (TIMEold(IX).lt.0.0.or.ADDLIN.eq.1) then
                     TIMEold(IX)=0
                     Yold(IX)=VAL(IX)

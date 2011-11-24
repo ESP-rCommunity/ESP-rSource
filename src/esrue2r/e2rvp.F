@@ -33,10 +33,15 @@ C ******* View cone for plan/elevation.
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym    ! passed to etplot
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
+
+C Cast values for linscale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C Set the length of the viewcone according to the image.
       PI = 4.0 * ATAN(1.0)
@@ -52,7 +57,7 @@ C two light lines at edge of view cone.
         igheight=igwh
         call axiscale(igwid,igheight,XMN,XMX,YMN,YMX,xsc,ysc,sca,
      &     Xadd,Yadd)
-        call linescale(igl,Xadd,sca,igb,Yadd,sca)
+        call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
         iupdown=0
         isym=14
         call etplot(rvpx,rvpy,iupdown,isym)
@@ -88,7 +93,7 @@ C If south elevation, omitt the view-cone.
         igheight=igwh
         call axiscale(igwid,igheight,XMN,XMX,ZMN,ZMX,xsc,ysc,sca,
      &     Xadd,Yadd)
-        call linescale(igl,Xadd,sca,igb,Yadd,sca)
+        call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
         iupdown=0
         isym=14
         call etplot(rvpx,rvpz,iupdown,isym)
@@ -104,7 +109,7 @@ C If south elevation, omitt the view-cone.
         igheight=igwh
         call axiscale(igwid,igheight,YMN,YMX,ZMN,ZMX,xsc,ysc,sca,
      &     Xadd,Yadd)
-        call linescale(igl,Xadd,sca,igb,Yadd,sca)
+        call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
         iupdown=0
         isym=14
         call etplot(rvpy,rvpz,iupdown,isym)
@@ -159,9 +164,11 @@ C ******* Default views formation.
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym    ! passed to etplot
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
 C For help messages
@@ -170,6 +177,9 @@ C For help messages
       integer nbhelp     ! number of help lines found
 
       helpinsub='VEWFORM'  ! set for subroutine
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C Addview = true then save editing as a new view, if false
 C then it is an update to an existing view.
@@ -500,7 +510,7 @@ C Select point from plan or current perspective.
             igheight=igwh
             call axiscale(igwid,igheight,XMN,XMX,YMN,YMX,xsc,ysc,sca,
      &        Xadd,Yadd)
-            call linescale(igl,Xadd,sca,igb,Yadd,sca)
+            call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
 
 C << implemented in GTK? >>
             CALL trackview(ii,ix,iy)
@@ -689,7 +699,7 @@ C horiz axis...
           igheight=igwh
           call axiscale(igwid,igheight,XMN,XMX,YMN,YMX,xsc,ysc,sca,
      &       Xadd,Yadd)
-          call linescale(igl,Xadd,sca,igb,Yadd,sca)
+          call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
         elseif(ITPPSW.eq.1)then
  141      WRITE(HOLD,'(1x,2f8.3)')XMN,XMX
           CALL EASKS(HOLD,' South axis minimum and maximum: ',
@@ -702,7 +712,7 @@ C horiz axis...
           igheight=igwh
           call axiscale(igwid,igheight,XMN,XMX,ZMN,ZMX,xsc,ysc,sca,
      &      Xadd,Yadd)
-          call linescale(igl,Xadd,sca,igb,Yadd,sca)
+          call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
         elseif(ITPPSW.eq.2)then
  241      WRITE(HOLD,'(1x,2f8.3)')YMN,YMX
           CALL EASKS(HOLD,' East axis minimum and maximum: ',
@@ -715,7 +725,7 @@ C horiz axis...
           igheight=igwh
           call axiscale(igwid,igheight,YMN,YMX,ZMN,ZMX,xsc,ysc,sca,
      &      Xadd,Yadd)
-          call linescale(igl,Xadd,sca,igb,Yadd,sca)
+          call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
         elseif(ITPPSW.eq.3)then
         endif
         vewdone=.false.
@@ -737,7 +747,7 @@ C vertical axis...
           igheight=igwh
           call axiscale(igwid,igheight,XMN,XMX,YMN,YMX,xsc,ysc,sca,
      &      Xadd,Yadd)
-          call linescale(igl,Xadd,sca,igb,Yadd,sca)
+          call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
         elseif(ITPPSW.eq.1)then
  145      WRITE(HOLD,'(1x,2f8.3)')ZMN,ZMX
           CALL EASKS(HOLD,' Up axis minimum and maximum: ',
@@ -750,7 +760,7 @@ C vertical axis...
           igheight=igwh
           call axiscale(igwid,igheight,XMN,XMX,ZMN,ZMX,xsc,ysc,sca,
      &      Xadd,Yadd)
-          call linescale(igl,Xadd,sca,igb,Yadd,sca)
+          call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
         elseif(ITPPSW.eq.2)then
  245      WRITE(HOLD,'(1x,2f8.3)')ZMN,ZMX
           CALL EASKS(HOLD,' Up axis minimum and maximum: ',
@@ -763,7 +773,7 @@ C vertical axis...
           igheight=igwh
           call axiscale(igwid,igheight,YMN,YMX,ZMN,ZMX,xsc,ysc,sca,
      &      Xadd,Yadd)
-          call linescale(igl,Xadd,sca,igb,Yadd,sca)
+          call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
         elseif(ITPPSW.eq.3)then
         endif
         vewdone=.false.

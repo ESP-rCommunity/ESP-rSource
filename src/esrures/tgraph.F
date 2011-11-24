@@ -213,10 +213,12 @@ C act='p' iget parameters already set.
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym,iid1,iid2   ! passed to etplot
       integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iupdown,isym,iid1,iid2   ! passed to etplot
       integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
       logical kwatts,colok
@@ -227,6 +229,9 @@ C Define prompt
 C Check if can draw in colour.
       colok=.false.
       if(nzonec.ge.NCOMP)colok=.true.
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
       
 C If output to file alter the edisp unit number.
       itru = icout
@@ -508,7 +513,7 @@ C Add values in VAL2 to there correct bins. Loop through selected zones.
 
 C Reset scaling factor for appropriate axis.
           Iax=IGETNO(IX,8)
-          call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
+          call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))
 
 C Loop through a day's worth of data for the current metric (IX) stepping 
 C at defined output interval.
@@ -628,7 +633,7 @@ C If IMFS is > zero then use IMFS-1 for line label.
       endif
       do 200 I=1,NGET
         Iax=IGETNO(I,8)
-        call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
+        call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))
         t20=GLABEL(I)
         if(colok)then
           if(IGETNO(I,2).gt.0)then

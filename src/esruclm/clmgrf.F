@@ -524,8 +524,10 @@ C IS USED TO SET THE SCALE FOR DRAWING THE CHOSEN DISTRIBUTIONS.
       integer months
 #ifdef OSI
       integer iupdown,isym,iicol    ! passed to etplot
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 iupdown,isym,iicol   ! passed to etplot
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
 C The 6 dimensions are as follows:
@@ -539,6 +541,9 @@ C  4= wind speed, 5= wind direction, 6= rh
 C Check if can draw in colour.
       colok=.false.
       if(nzonec.ge.6)colok=.true.
+
+C Cast variables for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C HEADER INFORMATION
       imh=menuchw
@@ -578,7 +583,7 @@ C Process each of the axis where ipck is non-zero.
           MMK=MARK(I)
 
 C Reset the scale for each type of line.
-          call linescale(igl,Xadd,XSC,igb,Yadd(I),YSC(I))
+          call linescale(iigl,Xadd,XSC,iigb,Yadd(I),YSC(I))
           
 C DRAW ONE DAY FOR EACH DISTRIBUTION
           DO 40 K=KS,KF
@@ -814,8 +819,10 @@ C IS USED TO SET THE SCALE FOR DRAWING THE CHOSEN DISTRIBUTIONS.
       integer onright ! number of right axis
 #ifdef OSI
       integer iupdown,isym,iicol   ! passed to etplot
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 iupdown,isym,iicol    ! passed to etplot
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
       DATA IPEN/-5,1,-5,-105,-105,-205/
@@ -824,6 +831,9 @@ C IS USED TO SET THE SCALE FOR DRAWING THE CHOSEN DISTRIBUTIONS.
 C Check if can draw in colour.
       colok=.false.
       if(nzonec.ge.6)colok=.true.
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C HEADER INFORMATION
       INEW=1
@@ -867,7 +877,7 @@ C FOR EACH DISTRIBUTION
         MMK=MARK(I)
 
 C Reset the scale for each type of line.
-        call linescale(igl,Xadd,XSC,igb,Yadd(I),YSC(I))
+        call linescale(iigl,Xadd,XSC,iigb,Yadd(I),YSC(I))
           
 C DRAW ONE DAY FOR EACH DISTRIBUTION
         DO 40 K=KS,KF
@@ -1266,10 +1276,12 @@ C   is negative draw only the past value.
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym    ! passed to etplot
       integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iupdown,isym    ! passed to etplot
       integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
       CHARACTER*10 CLMVAR(4),CVLAB
       logical close,colok
@@ -1279,6 +1291,9 @@ C   is negative draw only the past value.
 C Check if can draw in colour.
       colok=.false.
       if(nzonec.ge.6)colok=.true.
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
       ICVS = ICV
       CVLAB=CLMVAR(ICVS)
@@ -1302,7 +1317,7 @@ C Stuff this into static memory.
       igheight=igwh
       call axiscale(igwid,igheight,TMIN,TMAX,CMIN,CMAX,XSC,YSC,sca,
      &              Xaddd,Yaddd)
-      call linescale(igl,Xaddd,XSC,igb,Yaddd,YSC)
+      call linescale(iigl,Xaddd,XSC,iigb,Yaddd,YSC)
 
       call dinterval(TMIN,TMAX,DX,NDEC,1)
       call horaxis(TMIN,TMAX,igl,igr,igb,Xaddd,XSC,0,'Time (hrs)')
