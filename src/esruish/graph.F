@@ -264,7 +264,7 @@ C Draw horizontal axis and move to start point.
       call horaxis(xmin,xmax,iigl,iigr,iigb,Xadd,sca,0,'Horizontal')
 
 C Draw vertical axis.
-      call vrtaxis(zmin,zmax,igl,igb,igt,Zadd,sca,0,0,'Vertical')
+      call vrtaxis(zmin,zmax,iigl,iigb,iigt,Zadd,sca,0,0,'Vertical')
 
 C Draw target surface.
       iupdown=0
@@ -415,8 +415,8 @@ C Draw horizontal axis.
      &  'Azimuth deg.')
 
 C Draw vertical axes on left and right.
-      call vrtaxis(0.,90.,igl,igb,igt,Yadd,ysc,0,0,'Altitude deg.')
-      call vrtaxis(0.,90.,igr,igb,igt,Yadd,ysc,0,1,' ')
+      call vrtaxis(0.,90.,iigl,iigb,iigt,Yadd,ysc,0,0,'Altitude deg.')
+      call vrtaxis(0.,90.,iigr,iigb,iigt,Yadd,ysc,0,1,' ')
 
 C Output a heading for the view.
       call edayr(ijday,ido,imo)

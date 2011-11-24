@@ -1162,7 +1162,7 @@ C      call win3d(menuchw,10,10,4,4,igl,igr,igt,igb,igw,igwh)
      &  Xadd,Yadd)
       call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
       call horaxis(0.,24.,iigl,iigr,iigb,Xadd,xsc,1,'Time (hours)')
-      call vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,'Percent')
+      call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,'Percent')
 
 C Pick up the data increment for the horizontal axis.
       call dinterval(0.,24.,DT,NDEC,1)

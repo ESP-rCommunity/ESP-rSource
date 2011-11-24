@@ -73,12 +73,14 @@ C The period details
       REAL  VNEG,VPOS,YOLD,TIMEOLD
       INTEGER YAXSET,ADDLIN,horaxisdiv,EVAXIS,EVMARK,EVLINE,EFILT
 #ifdef OSI
+      integer igx             ! see above array
       integer igwid,igheight  ! for use with axiscale
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
       integer iid1,iid2
       integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
+      integer*8 igx             ! see above array
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 ipos,isize      ! for use with etlabel
       integer*8 iupdown,isym    ! passed to etplot
@@ -370,10 +372,10 @@ C draw vertical axis.
             call axiscale(igwid,igheight,XSTRT,XFIN,GMIN,GMAX,
      &                           TSC,YSC(I),SCA,XADD,YADD(I))
             IF (ILR(I).EQ.0) then
-              CALL VRTAXIS(GMIN,GMAX,IGX(I),IGB,IGT,YADD(I),
+              CALL VRTAXIS(GMIN,GMAX,IGX(I),iigb,iigt,YADD(I),
      &                             YSC(I),0,ILR(I),NETXLAB(I))
             ELSE
-              CALL VRTAXIS(GMIN,GMAX,IGX(I),IGB,IGT,YADD(I),
+              CALL VRTAXIS(GMIN,GMAX,IGX(I),iigb,iigt,YADD(I),
      &                         YSC(I),0,ILR(I),'  ')
               iid1=IGX(I); iid2=igt-5;
               CALL WSTXPT(iid1,iid2,NETXLAB(I))

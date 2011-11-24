@@ -117,10 +117,12 @@ C Simulator parameters.
       logical colok,ok,dok
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
 #ifdef OSI
+      integer IGX  ! see common graf2
       integer iupdown,isym    ! passed to etplot
       integer iid1,iid2,iicol
       integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
+      integer*8 IGX  ! see common graf2
       integer*8 iupdown,isym    ! passed to etplot
       integer*8 iid1,iid2,iicol
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh

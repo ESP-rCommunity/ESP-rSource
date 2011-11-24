@@ -442,7 +442,7 @@ C Cast values for linescale.
       igheight=igwh
       call axiscale(igwid,igheight,XMIN,XMAX,PMIN,PMAX,TSC,YSCP,
      &              sca,Xadd,YaddP)
-      call vrtaxis(PMIN,PMAX,igr,igb,igt,YaddP,YSCP,0,1,'Percent')
+      call vrtaxis(PMIN,PMAX,iigr,iigb,iigt,YaddP,YSCP,0,1,'Percent')
 
 C Draw axis, begin with scaling factors for the X & Y axis.
 C Stuff this into static memory.
@@ -456,7 +456,8 @@ C the horizontal axis.
       call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,XSC,1,LABELX)
 
 C Draw the vertical axis.
-      call vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,YSC,1,0,'Distribution')
+      call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,YSC,1,0,
+     &  'Distribution')
       call forceflush()
 
 C Plot histogram.

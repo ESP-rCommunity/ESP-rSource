@@ -183,6 +183,12 @@ C AXISPOS - set positions of axes for all graph drawing routines.
 
       integer YAXSET,ADDLIN,horaxisdiv
 
+#ifdef OSI
+      integer igx
+#else
+      integer*8 igx
+#endif
+
 C Set default positions.
       igx(1)=igl
       igx(2)=igr+140
@@ -255,9 +261,11 @@ C AXISDRW - draw and label axes.
 
       integer YAXSET,ADDLIN,horaxisdiv
 #ifdef OSI
+      integer igx  ! see common graf2
       integer igwid,igheight,iid1,iid2  ! for use with axiscale
       integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
+      integer*8 igx  ! see common graf2
       integer*8 igwid,igheight,iid1,iid2  ! for use with axiscale
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
@@ -318,11 +326,11 @@ C draw vertical axis.
           call axiscale(igwid,igheight,TSTART,TFINISH,YMIN(I),YMAX(I),
      &                             TSC,YSC(I),sca,Xadd,Yadd(I))
           if (ILR(I).eq.0) then
-            call vrtaxis(YMIN(I),YMAX(I),igx(I),igb,igt,Yadd(I),
-     &                             YSC(I),0,ilr(I),ALABEL(I))
+            call vrtaxis(YMIN(I),YMAX(I),igx(I),iigb,iigt,Yadd(I),
+     &        YSC(I),0,ilr(I),ALABEL(I))
           else
-            call vrtaxis(YMIN(I),YMAX(I),igx(I),igb,igt,Yadd(I),
-     &                             YSC(I),0,ilr(I),'  ')
+            call vrtaxis(YMIN(I),YMAX(I),igx(I),iigb,iigt,Yadd(I),
+     &        YSC(I),0,ilr(I),'  ')
             iid1=igx(I); iid2=igt-5;
             call wstxpt(iid1,iid2,ALABEL(I))
           endif

@@ -372,7 +372,8 @@ C memory for access by plotting code.
       call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
       call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,
      &  'Thickness (mm)')
-      call vrtaxis(TMIN,TMAX,igl,igb,igt,Yadd,ysc,0,0,'Temp. Deg.C')
+      call vrtaxis(TMIN,TMAX,iigl,iigb,iigt,Yadd,ysc,0,0,
+     &  'Temp. Deg.C')
       RETURN
       END
 

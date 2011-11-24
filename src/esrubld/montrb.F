@@ -287,7 +287,7 @@ c Draw a scale horizontal axis, move to beginning point.
       call horaxis(xmin,xmax,iigl,iigr,iigb,xadd,xsc,1,'Time (h)')
 
 c Draw a scale vertical axis.
-      call vrtaxis(yminb(1),ymaxb(1),igl,igb,igt,yadd,ysc,1,0,':')
+      call vrtaxis(yminb(1),ymaxb(1),iigl,iigb,iigt,yadd,ysc,1,0,':')
       if(mbstv.eq.1.or.mbstv.eq.3) then
          call wstxpt(igl-5,igt-17,'Temp')
          call wstxpt(igl-5,igt-5,'deg.C')
@@ -300,7 +300,7 @@ c Draw a scale vertical axis.
 
       if(mbstv.eq.3) then
          call vrtaxis(yminb(2),
-     &      ymaxb(2),igr,igb,igt,yadd1,ysc1,1,1,':')
+     &      ymaxb(2),iigr,iigb,iigt,yadd1,ysc1,1,1,':')
           call wstxpt(igr,igt-17,'Plant')
           call wstxpt(igr,igt-5,'  KW')
           yminb(2)=yminb(2)*1000.

@@ -379,7 +379,7 @@ C Set up data ready for graph drawing.
      &  Xadd,Yadd)
       call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
       call horaxis(0.,24.,iigl,iigr,iigb,Xadd,xsc,1,'Time (minutes)')
-      call vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,'Percent')
+      call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,'Percent')
 
 C Pick up the data increment for the horizontal axis.
       call dinterval(0.,24.,DT,NDEC,1)

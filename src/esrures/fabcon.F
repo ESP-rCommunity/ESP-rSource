@@ -764,7 +764,8 @@ C Compute scaling factors and draw the axis.
       call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
       call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,
      &  'Thickness (mm)')
-      call vrtaxis(PMIN,PMAX,igl,igb,igt,Yadd,ysc,0,0,'Pressure mbar')
+      call vrtaxis(PMIN,PMAX,iigl,iigb,iigt,Yadd,ysc,0,0,
+     &  'Pressure mbar')
 
       RETURN
       END

@@ -210,11 +210,13 @@ C act='p' iget parameters already set.
       integer threerighta ! nearest if miscel plus two axis on right
       integer threerightb ! farthest if miscel plus two axis on right
 #ifdef OSI
+      integer igx  ! see array above
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym,iid1,iid2   ! passed to etplot
       integer iicol
       integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
+      integer*8 igx  ! see array above
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iupdown,isym,iid1,iid2   ! passed to etplot
       integer*8 iicol
@@ -466,10 +468,10 @@ C draw vertical axis.
           call axiscale(igwid,igheight,TSTART-1.0,TFINSH,YMIN(I),
      &                  YMAX(I),TSC,YSC(I),sca,Xadd,Yadd(I))
           if (ILR(I).eq.0) then
-            call vrtaxis(YMIN(I),YMAX(I),igx(I),igb,igt,Yadd(I),
+            call vrtaxis(YMIN(I),YMAX(I),igx(I),iigb,iigt,Yadd(I),
      &                             YSC(I),0,ilr(I),ALABEL(I))
           else
-            call vrtaxis(YMIN(I),YMAX(I),igx(I),igb,igt,Yadd(I),
+            call vrtaxis(YMIN(I),YMAX(I),igx(I),iigb,iigt,Yadd(I),
      &                             YSC(I),0,ilr(I),'  ')
             iid1=igx(I); iid2=igt-5;
             call wstxpt(iid1,iid2,ALABEL(I))

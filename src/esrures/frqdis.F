@@ -973,7 +973,8 @@ C Stuff into static variables for later access.
       call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
 
 C Left axis.
-      call vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,'Distribution')
+      call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,
+     &  'Distribution')
 
 C Horizontal axis, label depending on data type.
 C If moderate data range use mode 1, otherwise try 0.
@@ -992,7 +993,7 @@ C Right axis.
       igheight=igwh
       call axiscale(igwid,igheight,XMIN,XMAX,PMIN,PMAX,xsc,psc,sca,
      &              Xadd,Padd)
-      call vrtaxis(PMIN,PMAX,igr,igb,igt,Padd,psc,0,1,'Percent')
+      call vrtaxis(PMIN,PMAX,iigr,iigb,iigt,Padd,psc,0,1,'Percent')
 
 C Plot histogram, draw grey box if YBIN > 0.
       XBIN = XMIN

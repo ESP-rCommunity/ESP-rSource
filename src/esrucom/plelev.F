@@ -112,19 +112,19 @@ C Draw a scale vertical axis.
      &    Xadd,Yadd)
         call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
         CALL horaxis(XMN,XMX,iigl,iigr,iigb,Xadd,sca,1,'East (m) ->')
-        CALL vrtaxis(YMN,YMX,igl,igb,igt,Yadd,sca,1,0,'^ North')
+        CALL vrtaxis(YMN,YMX,iigl,iigb,iigt,Yadd,sca,1,0,'^ North')
       elseif(direc.eq.'S')then
         CALL axiscale(igwid,igheight,XMN,XMX,ZMN,ZMX,xsc,ysc,sca,
      &    Xadd,Yadd)
         call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
         call horaxis(XMN,XMX,iigl,iigr,iigb,Xadd,sca,1,'East (m) ->')
-        call vrtaxis(ZMN,ZMX,igl,igb,igt,Yadd,sca,1,0,'^ Up')
+        call vrtaxis(ZMN,ZMX,iigl,iigb,iigt,Yadd,sca,1,0,'^ Up')
       elseif(direc.eq.'E')then
         CALL axiscale(igwid,igheight,YMN,YMX,ZMN,ZMX,xsc,ysc,sca,
      &    Xadd,Yadd)
         call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
         call horaxis(YMN,YMX,iigl,iigr,iigb,Xadd,sca,1,'North (m) ->')
-        call vrtaxis(ZMN,ZMX,igl,igb,igt,Yadd,sca,1,0,'^ Up')
+        call vrtaxis(ZMN,ZMX,iigl,iigb,iigt,Yadd,sca,1,0,'^ Up')
       endif
 
 C Loop through each of the selected zones, read geometry

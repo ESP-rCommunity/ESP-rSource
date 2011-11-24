@@ -942,7 +942,7 @@ C horizontal and vertical axis.
       call horaxis(YMINH,YMAXH,iigl,iigr,iigb,Xadd,xsc,0,HIT)
       VIT=' '
       VIT=VITEM
-      call vrtaxis(YMINV,YMAXV,igl,igb,igt,Yadd,ysc,0,0,VIT)
+      call vrtaxis(YMINV,YMAXV,iigl,iigb,iigt,Yadd,ysc,0,0,VIT)
 
       RETURN
 

@@ -450,10 +450,12 @@ C SAINTER calculates summary statistics within result sets.
       logical graphit
       integer YAXSET,ADDLIN,horaxisdiv
 #ifdef OSI
+      integer IGX  ! see common graf2
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym    ! passed to etplot
       integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
+      integer*8 IGX  ! see common graf2
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iupdown,isym    ! passed to etplot
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
@@ -861,9 +863,9 @@ C Calculate overall standard deviation and display depending on IFMT.
         igwid=igw
         igheight=igwh
         call axiscale(igwid,igheight,TMIN,TMAX+1.,YMIN(1),YMAX(1),TSC,
-     &              YSC(1),sca,Xadd,Yadd(1))
-        call vrtaxis(YMIN(1),YMAX(1),igl,igb,igt,Yadd(1),YSC(1),0,0,
-     &               'Output')
+     &    YSC(1),sca,Xadd,Yadd(1))
+        call vrtaxis(YMIN(1),YMAX(1),iigl,iigb,iigt,Yadd(1),YSC(1),0,0,
+     &    'Output')
         call horaxis(TMIN,TMAX+1.,iigl,iigr,iigb,Xadd,TSC,1,
      &    'Time Hours')
         call linescale(iigl,Xadd,TSC,iigb,Yadd(1),YSC(1))
