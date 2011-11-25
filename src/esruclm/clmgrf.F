@@ -956,12 +956,12 @@ C Local variables to pass to edline and axiscale.
       integer iigr35,iigr50,iigr85,iigr100,iigr135,iigt40
       integer iicol
       integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1
+      integer iiw1,iiw2,iiw3,iiw4
 #else
       integer*8 iigr35,iigr50,iigr85,iigr100,iigr135,iigt40
       integer*8 iicol
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1
+      integer*8 iiw1,iiw2,iiw3,iiw4
 #endif
 
 C Check if can draw in colour.
@@ -1063,7 +1063,8 @@ C Solar radiation axis, include dashed line and symbol.
           endif
           call wstxpt(igr,igt-22,'S.Rad')
           call wstxpt(igr,igt-10,'W/m^2')
-          call edash(igr,igt-40,igr+35,igt-40,5)
+          iiw1=igt-40; iis2=igr+35; iiw3=igt-40;iiw4=5
+          call edash(iigr,iiw1,iiw2,iiw3,iiw4)
           call esymbol(igr+22,igt-40,9,0)
           if(IFS.ne.IMFS)call winfnt(IMFS)
           if(colok)then
