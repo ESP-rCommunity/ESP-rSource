@@ -298,6 +298,9 @@ C      logical gopher  ! not references
       character journcmd*20,jfile*72,uname*24,cjfile*72,OUTSTR*124
       character dllsubr*12,dllmesg*124
       character t16*16,outs248*248
+
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
       
 C Flags for multi-year simulation menus
       logical bOptOut, bDone, bMY_clm_err, bExists, bCreate
@@ -550,8 +553,15 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=20
         LIMIT =20
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r Integrated Simulator ',
+     &  cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r Integrated Simulator: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
+
       IF(MMOD.EQ.-6)then
         ICOUT=0
       else

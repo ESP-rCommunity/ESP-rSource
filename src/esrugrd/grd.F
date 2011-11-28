@@ -91,6 +91,9 @@ C Name of current application
       character cfgroot*24,outs248*248,L144*144
       character inz*16,inzone*16,outs*124,MODE*4
 
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*44 ! for banner title via epages call
+
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
       integer numberofzones ! to pass to updwire rather than ncomp
@@ -213,8 +216,14 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=16
         LIMIT =16
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r Construction Gridding ',
+     &  cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r Construction Gridding: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
 
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN

@@ -60,6 +60,9 @@ C Significant figure reporting limit (NSIGFIG).
 C      character upath*72
       character fs*1
       character act*16 ! c is csv file s is summary file
+
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
       LOGICAL unixok
 
 C Initial assumptions.
@@ -99,8 +102,14 @@ C Set pixels high to iappw and pixels wide to factor in monitor size.
       menuchw = 24
       LIMTTY=24
       LIMIT =24
+
+C Find the current ESP-r version number and add it to application title.
+C      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(a)') 'ESP-r csv parser '
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'csv parser: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
+
       IF(MMOD.EQ.-6)then
         ICOUT=0
       else
