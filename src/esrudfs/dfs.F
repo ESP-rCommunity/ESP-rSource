@@ -127,10 +127,12 @@ C For help messages
       integer ICPMOD     ! passed from tchild
       integer iigl,iigr,iigt,iigb,iigw,iigwh
       integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iicapture,iiazi    ! to pass to updcapt updazi
 #else
       integer*8 ICPMOD     ! passed from tchild
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
       integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iicapture,iiazi    ! to pass to updcapt updazi
 #endif
 
 C Clear 'conflated only' commons.
@@ -328,8 +330,9 @@ C        CALL win3d(menuchw,10,12,4,4,igl,igr,igt,igb,igw,igwh)
         if(iglib.eq.1)then
           call opencpw
           call opensetup
-          call updcapt(1)
-          call updazi(1)
+          iicapture=1; iiazi=1
+          call updcapt(iicapture)
+          call updazi(iiazi)
         endif
         call setgscale()
         call setcscale()

@@ -4242,7 +4242,7 @@ C EVSET provides a dummy setup environment for wire frame view.
 
 
 C ********* dummy subroutines and functions to match what is found
-C in esru_fc.f
+C in esru_fc.F.  May need to include explicit typing in some subroutines.
 
 C opencpw place copyright button on screen
       subroutine opencpw
