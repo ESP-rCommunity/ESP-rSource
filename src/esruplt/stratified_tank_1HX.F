@@ -124,8 +124,8 @@ C      INTEGER nCells
 
       INTEGER NPCMsec           ! Number of layers which the PCM cyl is divided into
 
-      REAL*4 DPCMcyl            ! PCM cylinders diameter [m]
-      REAL*4 HPCMcyl            ! Cylinder height [m]
+      REAL*4 DPCMcyl            ! PCM cylinder diameter [m]
+      REAL*4 HPCMcyl            ! PCM cylinder height [m]
       REAL*4 HPCMbot            ! Position of the cylinder bottom [m]
       REAL*4 HPCMtop            ! Position of the cylinder top [m]
       INTEGER NPCMbot           ! Tank node corresponding to the lower cylinder node
@@ -170,8 +170,8 @@ C===============================================================================
 C---- PCM data 
       NPCM    = INT(ADATA(IPCOMP,19)) 
                                   ! Number of PCM modules       
-      HPCMcyl = ADATA(IPCOMP,20)  ! Cylinder height (m)
-      DPCMcyl = ADATA(IPCOMP,21)  ! Cylinder diameter (m)    
+      HPCMcyl = ADATA(IPCOMP,20)  ! PCM cylinder height (m)
+      DPCMcyl = ADATA(IPCOMP,21)  ! PCM cylinder diameter (m)    
       HPCMbot = ADATA(IPCOMP,22)  ! Position of the ciylinder bottom (m)
       nX      = INT(ADATA(IPCOMP,23)) 
                                   ! Number of cells in radial direction (-)
@@ -879,8 +879,8 @@ c---- PCM data
       INTEGER method            ! time integration method [-]
       REAL*4 e                  ! Phase change range [°C]
 c---- PCM geometrical data 
-      REAL*4 HPCMcyl            ! Cylinder height [m]
-      REAL*4 DPCMcyl            ! PCM cylinders diameter [m]
+      REAL*4 HPCMcyl            ! PCM cylinder height [m]
+      REAL*4 DPCMcyl            ! PCM cylinder diameter [m]
       REAL*4 HPCMbot            ! Position of the cylinder bottom [m]
       REAL*4 HPCMtop            ! Position of the cylinder top [m]
 
@@ -925,8 +925,8 @@ C===============================================================================
 C---- PCM data 
       NPCM    = INT(ADATA(IPCOMP,19)) 
                                   ! Number of PCM modules       
-      HPCMcyl = ADATA(IPCOMP,20)  ! Cylinder height (m)
-      DPCMcyl = ADATA(IPCOMP,21)  ! Cylinder diameter (m)    
+      HPCMcyl = ADATA(IPCOMP,20)  ! PCM cylinder height (m)
+      DPCMcyl = ADATA(IPCOMP,21)  ! PCM cylinder diameter (m)    
       HPCMbot = ADATA(IPCOMP,22)  ! Position of the ciylinder bottom (m)
       nX      = INT(ADATA(IPCOMP,23)) 
                                   ! Number of cells in radial direction (-)
