@@ -1003,9 +1003,9 @@ C=======================================================================
      &  StepCount, MixCount, NSecAvg, T, IER, 
      &  HPCM_MOD,TPCM_MOD,
      &  Axb,Ax,Ay,V,
-     &  nX,nY,NPCMbot,NPCMtop,dr,
+     &  nX,nY,nPCMbot,nPCMtop,dr,
      &  PCMrhos,PCMrhol,cs,cl,heatLat,cndcts,cndctl,Tmi,method,e,
-     &  HPCMcyl,DPCMcyl,HPCMbot,HPCMtop, NPCM, HASPCM,DPCMnode)
+     &  hPCMcyl,dPCMcyl,hPCMbot,hPCMtop, NPCM, HASPCM,dPCMnode)
 C-----------------------------------------------------------------------
 C     Declarations
 C-----------------------------------------------------------------------
@@ -1192,9 +1192,9 @@ C=====AGGIUNTO ROBY=============================================================
 
       INTEGER nX           ! number of cells in radial direction [-]
       INTEGER nY           ! number of cells in axial direction [-]
-      INTEGER NPCMbot            ! tank node corresponding to the lower cylinder node
+      INTEGER nPCMbot            ! tank node corresponding to the lower cylinder node
                                  ! tank node which the cylinder bottom is located in
-      INTEGER NPCMtop            ! tank node corresponding to the higher cylinder node
+      INTEGER nPCMtop            ! tank node corresponding to the higher cylinder node
                                  ! tank node which the cylinder top is located in
       INTEGER NPCM               ! number of PCM modules
 
@@ -1208,12 +1208,12 @@ C=====AGGIUNTO ROBY=============================================================
       REAL*4 Tmi             ! melting temperature  [°C]
       INTEGER method         ! time integration method [-]
       REAL*4 e               ! phase change range [°C]
-      REAL*4 HPCMcyl         ! cylinder height [m]
-      REAL*4 DPCMcyl         ! PCM cylinders diameter [m]
-      REAL*4 HPCMbot         ! Position of the cylinder bottom [m]
-      REAL*4 HPCMtop         ! Position of the cylinder top [m]
+      REAL*4 hPCMcyl         ! PCM cylinder height [m]
+      REAL*4 dPCMcyl         ! PCM cylinder diameter [m]
+      REAL*4 hPCMbot         ! Position of the cylinder bottom [m]
+      REAL*4 hPCMtop         ! Position of the cylinder top [m]
       REAL*4 dr              ! grid dimension in radial direction
-      REAL*4 DPCMnode(nY-1)    ! distance among PCM nodes
+      REAL*4 dPCMnode(nY-1)    ! distance among PCM nodes
 
 ! C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !       REAL TMP_PREV(mY,mX)
@@ -1461,15 +1461,14 @@ C----     Zero heat transfer array
 ! C===============================================================================CANCELLARE!!!!!!!!!!!!!!!!!
 
           if (HasPCM) 
-     &      call immersed_PCM(nX,nY,NPCMbot,NPCMtop,dr, !Se cicla da "goto 110" ==> p = LastpHX e questo non viene chiamato
-     &        NodeHeight, Tstep_prev(1),  
-     &        Mdot(1), NNodes, QPCM(1), ts, 
-     &        HPCM_MOD(1,1),TPCM_MOD(1,1),
-     &        Axb(1),Ax(1,1),Ay(1),V(1,1),
-     &        PCMrhos,PCMrhol,cs,cl,heatLat,cndcts,cndctl,Tmi,
-     &        method,e,
-     &        HPCMcyl,DPCMcyl,HPCMbot,HPCMtop,
-     &        DPCMnode(1),CrossArea)
+     &      call immersed_PCM(ts,nX,nY,NNodes,nPCMbot,nPCMtop, !Se cicla da "goto 110" ==> p = LastpHX e questo non viene chiamato
+     &        dr,dPCMnode(1),dPCMcyl,hPCMcyl,
+     &        V(1,1),Ax(1,1),Axb(1),Ay(1),
+     &        NodeHeight,hPCMbot,hPCMtop,  
+     &        heatLat,PCMrhos,PCMrhol,cs,cl,cndcts,cndctl,
+     &        TPCM_MOD(1,1),Tmi,Tstep_prev(1),
+     &        method,e,Mdot(1),    
+     &        HPCM_MOD(1,1),CrossArea,QPCM(1))
 
           LastpHX = p
 
@@ -1597,7 +1596,7 @@ C---- Heat loss term, beginning of time step
      &      Tsec(i) = Tsec(i) 
      &      + (1.-ALPHA)*U*CrossArea*(Text-Tstep_prev(NNodes))
 
-C---- Transfer from immersed HX
+C---- Transfer from immersed HX and PCM modules
           do 125 m = ibot,itop,1
             Tsec(i) = Tsec(i) + QHX(m)+NPCM*QPCM(m)
   125     continue
