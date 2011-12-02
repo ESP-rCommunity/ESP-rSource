@@ -3142,8 +3142,8 @@ C context is 124 characters.
       SUBROUTINE EDISP(ITRU,MSG)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      common/textbuf/dispbuf(360)
-      common/textbufl/indexbuf,lnbuf(360)
+      common/textbuf/dispbuf(500)
+      common/textbufl/indexbuf,lnbuf(500)
       CHARACTER*(*) MSG
       CHARACTER WWMSG*124,dispbuf*124
       logical unixok
@@ -3158,13 +3158,13 @@ C Use logic similar to that in egdisp.
       if(lcc.eq.0) lcc=1
       write(WWMSG,'(a)',iostat=ios,err=1)MSG(1:lcc)
 
-      if(indexbuf.lt.360)then
+      if(indexbuf.lt.500)then
         indexbuf=indexbuf+1
         lnbuf(indexbuf)=lcc
         dispbuf(indexbuf)='  '
         write(dispbuf(indexbuf),'(a)') MSG(1:lcc)
       else
-        do 42 i=1,359
+        do 42 i=1,499
           dispbuf(i)=dispbuf(i+1)
           lnbuf(i)=lnbuf(i+1)
   42    continue
@@ -3240,8 +3240,8 @@ C Indicator of possible focus zone.
       logical browse
       common/user/browse
       common/C21/IFCFG,cfgroot,LCFGF
-      common/textbuf/dispbuf(360)
-      common/textbufl/indexbuf,lnbuf(360)
+      common/textbuf/dispbuf(500)
+      common/textbufl/indexbuf,lnbuf(500)
 
       character path*72,h*72,uname*24,fs*1
       character sstr*144,title*18,ltypes*4,cfgroot*24

@@ -3664,8 +3664,8 @@ C treatment as a scrolling window.
       SUBROUTINE EDISP(ITRU,MSG)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      common/textbuf/dispbuf(360)
-      common/textbufl/indexbuf,lnbuf(360)
+      common/textbuf/dispbuf(500)
+      common/textbufl/indexbuf,lnbuf(500)
       CHARACTER*(*) MSG
       CHARACTER WWMSG*124,dispbuf*124
       logical unixok
@@ -3680,13 +3680,13 @@ C Use logic similar to that in egdisp.
       if(lcc.eq.0) lcc=1
       write(WWMSG,'(a)',iostat=ios,err=1)MSG(1:lcc)
 
-      if(indexbuf.lt.360)then
+      if(indexbuf.lt.500)then
         indexbuf=indexbuf+1
         lnbuf(indexbuf)=lcc
         dispbuf(indexbuf)='  '
         write(dispbuf(indexbuf),'(a)') MSG(1:lcc)
       else
-        do 42 i=1,359
+        do 42 i=1,499
           dispbuf(i)=dispbuf(i+1)
           lnbuf(i)=lnbuf(i+1)
   42    continue
@@ -3699,11 +3699,11 @@ C Use logic similar to that in egdisp.
 C If trace channel etc then just write to file.
         WRITE(ITRU,'(A)',iostat=ios,err=1)MSG(1:lnm)
       ELSEIF(MMOD.EQ.8.AND.ITRU.EQ.IUOUT)THEN
-          LINE=LIMTTY-LIMIT
-          LIMIT=LIMIT-1
-          if (LIMIT.lt.1) LIMIT=1
-          call espad(limit,limtty,line)
-          CALL inserttext(WWMSG)
+        LINE=LIMTTY-LIMIT
+        LIMIT=LIMIT-1
+        if (LIMIT.lt.1) LIMIT=1
+        call espad(limit,limtty,line)
+        CALL inserttext(WWMSG)
       ELSEIF(MMOD.EQ.-6)THEN
 
 C Write this to error channel if user specified channel = ICOUT
@@ -3758,8 +3758,8 @@ C Path to model and command line file (if any).
       common/rpath/path
       common/pophelp/h(60)
       common/C21/IFCFG,cfgroot,LCFGF
-      common/textbuf/dispbuf(360)
-      common/textbufl/indexbuf,lnbuf(360)
+      common/textbuf/dispbuf(500)
+      common/textbufl/indexbuf,lnbuf(500)
 
       DIMENSION sstr(1),list(4),iswidth(1),listact(4),dh(60)
       character path*72,h*72,tfile*60,uname*24,fs*1

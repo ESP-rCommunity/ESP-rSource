@@ -7217,12 +7217,12 @@ C Trap phrases longer than the outs buffer.
 C ********************* clrtextbuf
 C clrtextbuf clears the text buffer common blocks.
       subroutine clrtextbuf()
-      common/textbuf/dispbuf(360)
-      common/textbufl/indexbuf,lnbuf(360)
+      common/textbuf/dispbuf(500)
+      common/textbufl/indexbuf,lnbuf(500)
       character dispbuf*124
 
       indexbuf=0
-      do 42 i=1,360
+      do 42 i=1,500
         dispbuf(i)='  '
         lnbuf(i)=1
   42  continue

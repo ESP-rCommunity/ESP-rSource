@@ -1744,6 +1744,7 @@ this enables the size of the scroll bar to be set*/
   if(iq>0){
 /* get vertical scroll bar parameters*/
   height=scrollv.b_bottom-scrollv.b_top-2;
+  if(height<5) height=5;
   if(tv>pv&&pv>0.0){
     height=(int)((float)height*pv);
   }
@@ -1756,6 +1757,7 @@ this enables the size of the scroll bar to be set*/
 
 /*get horizontal scroll bar parameters*/
   height=scrollh.b_right-scrollh.b_left-2;
+  if(height<5) height=5;
   if(th>ph&&ph>0.0){
     height=(int)((float)height*ph);
   }
