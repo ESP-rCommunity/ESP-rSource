@@ -7688,25 +7688,25 @@ point*/
 /* selected azimuth +  control */
         saved_font = current_font; bottom = disp.b_top; left = aziplus_left;
         dosymbox(aziplus,2,&saved_font,&small_fnt,&bottom,&left,"aziplus",'!');
-        refreshenv_();  ! to esure that current domains are re-drawn
+        refreshenv_();  // to esure that current domains are re-drawn
       } else if (azi_avail >=1 && xboxinside(aziminus,x,y)) {
 
 /* selected azimuth -  control */
         saved_font = current_font; bottom = disp.b_top; left = aziminus_left;
         dosymbox(aziminus,2,&saved_font,&small_fnt,&bottom,&left,"aziminus",'!');
-        refreshenv_();  ! to esure that current domains are re-drawn
+        refreshenv_();  // to esure that current domains are re-drawn
       } else if (azi_avail >=1 && xboxinside(elevplus,x,y)) {
 
 /* selected elev +  control */
         saved_font = current_font; bottom = disp.b_top; left = elevplus_left;
         dosymbox(elevplus,2,&saved_font,&small_fnt,&bottom,&left,"elevplus",'!');
-        refreshenv_();  ! to esure that current domains are re-drawn
+        refreshenv_();  // to esure that current domains are re-drawn
       } else if (azi_avail >=1 && xboxinside(elevminus,x,y)) {
 
 /* selected elev -  control */
         saved_font = current_font; bottom = disp.b_top; left = elevminus_left;
         dosymbox(elevminus,2,&saved_font,&small_fnt,&bottom,&left,"elevminus",'!');
-        refreshenv_();  ! to esure that current domains are re-drawn
+        refreshenv_();  // to esure that current domains are re-drawn
       } else if (setup_avail == 1 && xboxinside(setup,x,y)) {
 
 /* selected setup display */

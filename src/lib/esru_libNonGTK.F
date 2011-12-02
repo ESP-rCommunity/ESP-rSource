@@ -3235,16 +3235,21 @@ C Path to model and command line file (if any).
       COMMON/FILEP/IFIL
       common/rpath/path
       common/pophelp/h(60)
+
+C Indicator of possible focus zone.
+      logical browse
+      common/user/browse
       common/C21/IFCFG,cfgroot,LCFGF
       common/textbuf/dispbuf(360)
       common/textbufl/indexbuf,lnbuf(360)
 
-      DIMENSION sstr(1),list(4),iswidth(1),listact(4),dh(60)
-      character path*72,h*72,tfile*60,uname*24,fs*1
-      character sstr*60,title*18,ltypes*4,list*17,cfgroot*24
-      character LCFGF*72,dispbuf*124,dh*72
+      character path*72,h*72,uname*24,fs*1
+      character sstr*144,title*18,ltypes*4,cfgroot*24
+      character lltmp*144
+      character LCFGF*72,dispbuf*124,outs*124
       logical unixok,there
       integer ltf  ! position of last character in string.
+      integer iw   ! for user selection
 
       if(MMOD.ne.8)return
 
@@ -3256,106 +3261,110 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
       uname=' '
+      sstr=' '
       call usrname(uname)
 
-      h(1)='The text displayed in the feedback area is '
-      h(2)='held in a buffer which can be written to a '
-      h(3)='file either overwriting or appending the   '
-      h(4)='text in the file (tick only one box).      '
-      h(5)='The file name can be edited. Complete edit '
-      h(6)='with Carriage Return.                       '
-      nhelp=6
-      CALL PHELPW(NHELP,IHW,IER)
-      call dupphelp(dh)
-      call updhelp(dh,NHELP,IHW)
-      tfile='  '
-      LNU=max(1,lnblnk(upath))
-      if(cfgroot(1:2).eq.'  ')then
-        LN=max(1,lnblnk(uname))
-        write(sstr(1),'(4a)') upath(1:LNU),fs,uname(1:LN),'_text'
-      else
-        LN=max(1,lnblnk(cfgroot))
-        write(sstr(1),'(4a)') upath(1:LNU),fs,cfgroot(1:LN),'_text'
-      endif
-      iswidth(1)=60
-      title='Export text buffer'
-      ltypes='ltte'
-      list(1)='options:         '
-      list(2)='write/create file'
-      list(3)='append to file   '
-      list(4)='file:            '
-      listact(1) = 0
-      listact(2) = 1
-      listact(3) = 0
-      listact(4) = 0
-      impx = 0
-      impy = 0
-      impcwth = 67
-      nstr = 1
-      nlist = 4
-  43  call fprofma(sstr,nstr,title,list,nlist,ltypes,impx,impy,impcwth,
-     &    iswidth,listact,ino,nhelp)
+C There are several location options to present to the user
+C depending on whether we are working in the model folder or
+C remotely, including the users home folder. Also take into
+C account whether we are browsing the model or own it.
+  11  if(browse)then
 
-C Debug
-C      write(6,*)listact,'  ',ino
-      if(ino.eq.-1)then
-
-C If no action return.
-        return
-      elseif(ino.eq.(nlist+1))then
-
-C If signaled ok then attempt to write out file.
-C        write(6,*)sstr(1)
-        tfile=sstr(1)
-        ltf=max(1,LNBLNK(tfile))
-        iuf=ifil+1
-        there=.false.
-        INQUIRE(FILE=tfile(1:ltf),EXIST=there)
-        if(there)then
-          close(iuf)
-          open(iuf,file=tfile(1:ltf),position='APPEND',
-     &      status='UNKNOWN',err=1)
+C If browsing the model the output file should be dumped to
+C the users home folder (a place we know we can write to).
+        h(1)='The text displayed in the feedback area is'
+        h(2)='held in a buffer which can be written to a'
+        h(3)='file. As you are browsing the model the'
+        h(4)='file is placed in you HOME folder.'
+        h(5)='The file name can be edited. Complete edit'
+        h(6)='with Carriage Return or OK.'
+        nhelp=6
+        LNU=max(1,lnblnk(upath))
+        if(cfgroot(1:2).eq.'  ')then
+          LN=max(1,lnblnk(uname))
+          write(sstr,'(4a)') upath(1:LNU),fs,uname(1:LN),'.txt'
         else
-          close(iuf)
-          open(iuf,file=tfile,status='UNKNOWN',err=1)
+          LN=max(1,lnblnk(cfgroot))
+          write(sstr,'(4a)') upath(1:LNU),fs,cfgroot(1:LN),'.txt'
         endif
-        if(indexbuf.gt.1)then
-          do 42 i=1,indexbuf
-            write(iuf,'(a)',iostat=ios,err=2) dispbuf(i)(1:lnbuf(i))
-  42      continue
-        endif
-        close(iuf)
-        return
-      elseif(ino.eq.1)then
-
-C If user has switched from create to append update display (reset
-C impx impy before recalling fprofma.
-        if(listact(2).eq.1)listact(3)=0
-        impx = 0
-        impy = 0
-        goto 43
-      elseif(ino.eq.2)then
-        if(listact(3).eq.1)listact(2)=0
-        impx = 0
-        impy = 0
-        goto 43
       else
-        impx = 0
-        impy = 0
-        goto 43
+        h(1)='The text displayed in the feedback area is '
+        h(2)='held in a buffer which can be written to a '
+        h(3)='file in one of several locations (your HOME folder'
+        h(4)='in the model folder). You have the option to'
+        h(5)='adapt the name of the file. Complete edit '
+        h(6)='with Carriage Return.                      '
+        nhelp=6
+        iw=0
+        if(path.ne.'./'.and.path.ne.' ')then
+          write(outs,'(A,A)') 'The current path is: ',path
+          call edisp(iuout,outs)
+          CALL EASKABC('You are working in a remote model folder.',
+     &      'Options:','use remote model folder','use local folder',
+     &      'cancel',IW,nhelp)
+          if(iw.eq.1)then
+            LN=max(1,lnblnk(cfgroot))
+            write(sstr,'(4a)') path(1:lnblnk(path)),fs,
+     &        cfgroot(1:LN),'.txt'
+          elseif(iw.eq.2)then
+            LN=max(1,lnblnk(cfgroot))
+            write(sstr,'(3a)') './',cfgroot(1:LN),'.txt'
+          elseif(iw.eq.3)then
+            return
+          endif
+        else
+          LN=max(1,lnblnk(cfgroot))
+          write(sstr,'(3a)') './',cfgroot(1:LN),'.txt'
+        endif
       endif
+
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
+C name with the full path. sstr is the suggested name and
+C lltmp is the file name returned by the user selection.
+      lltmp='  '
+      CALL EASKXORGTKF(sstr,'Export file name?',' ',
+     &    'textbuffer.txt',lltmp,'buffer file',IER,nhelp)
+
+C If user request jump back and re-display the menu.
+      if(ier.eq.-3)then
+        return  ! cancel detected, return.
+      endif
+      if(ier.ne.0.or.lltmp(1:2).eq.'  ')then
+        goto 11
+      endif
+
+C Attempt to write out file.
+      ltf=max(1,LNBLNK(lltmp))
+      iuf=ifil+1
+      there=.false.
+      INQUIRE(FILE=lltmp(1:ltf),EXIST=there)
+      if(there)then
+        close(iuf)
+        open(iuf,file=lltmp(1:ltf),position='APPEND',
+     &    status='UNKNOWN',err=1)
+      else
+        close(iuf)
+        open(iuf,file=lltmp,status='UNKNOWN',err=1)
+      endif
+      if(indexbuf.gt.1)then
+        do 42 i=1,indexbuf
+          write(iuf,'(a)',iostat=ios,err=2) dispbuf(i)(1:lnbuf(i))
+  42    continue
+      endif
+      close(iuf)
       return
 
    1  if(IOS.eq.2)then
-        call usrmsg('Permissions open/write dump file...',tfile,'W')
+        call usrmsg('Permissions open/write dump file...',lltmp,'W')
       else
-        call usrmsg('Could not open/write dump file...',tfile,'W')
+        call usrmsg('Could not open/write dump file...',lltmp,'W')
       endif
       return
    2  if(IOS.eq.2)then
-        call usrmsg('Permissions for append to dump file...',tfile,'W')
+        call usrmsg('Permissions for append to dump file...',lltmp,'W')
       else
-        call usrmsg('Could not append to dump file...',tfile,'W')
+        call usrmsg('Could not append to dump file...',lltmp,'W')
       endif
       return
 
@@ -4049,7 +4058,7 @@ C trap this condition.
           call edisp(iuout,outs)
           CALL EASKAB('You are working in a remote folder.',
      &    'Options:','use remote folder','use local folder',IW,0)
-         endif
+        endif
 
 C Get file name.
         H(1)='A viewer format file may be used with the 3rd party'
