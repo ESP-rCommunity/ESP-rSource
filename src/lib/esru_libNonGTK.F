@@ -3370,6 +3370,128 @@ C Attempt to write out file.
 
       end
 
+C ****** invoke graphics capture proforma
+      subroutine profgrdump()
+
+C << this logic to be updated to follow pattern of proftxdump()
+
+#include "building.h"
+#include "model.h"
+
+C Path to model and command line file (if any).
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      COMMON/FILEP/IFIL
+      common/rpath/path
+      common/pophelp/h(60)
+      common/C21/IFCFG,cfgroot,LCFGF
+
+C Graphic capture, window dump: label, command.
+      common/gprint/gprlbl,gprcmd
+      common/gxwd/gxwdlbl,gxwdcmd
+
+      DIMENSION sstr(1),list(4),iswidth(1),listact(4),dh(60)
+      character path*72,h*72,tfile*60,uname*24,fs*1
+      character sstr*60,title*16,ltypes*4,list*17,cfgroot*24
+      character LCFGF*72,dh*72,gcmd*90
+      character gprlbl*20,gprcmd*48
+      character gxwdlbl*20,gxwdcmd*60
+
+      logical unixok
+
+      if(MMOD.ne.8)return
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+      uname=' '
+      call usrname(uname)
+
+      h(1)='A screen image of a user selected portion '
+      h(2)='of the screen or the whole screen can be   '
+      h(3)='captured. It uses the application defined  '
+      h(4)='in the esprc file (typically import from   '
+      h(5)='the ImageMagick suite). A GIF image is     '
+      h(6)='assumed. Edit the file name as required.   '
+      nhelp=6
+      CALL PHELPW(NHELP,IHW,IER)
+      call dupphelp(dh)
+      call updhelp(dh,NHELP,IHW)
+      tfile='  '
+      LNU=max(1,lnblnk(upath))
+      if(cfgroot(1:2).eq.'  ')then
+        LN=max(1,lnblnk(uname))
+        write(sstr(1),'(4a)') upath(1:LNU),fs,uname(1:LN),'_.gif'
+      else
+        LN=max(1,lnblnk(cfgroot))
+        write(sstr(1),'(4a)') upath(1:LNU),fs,cfgroot(1:LN),'_.gif'
+      endif
+      iswidth(1)=60
+      title='capture graphics'
+      ltypes='ltte'
+      list(1)='options:         '
+      list(2)='user defined area'
+      list(3)='whole of screen  '
+      list(4)='file:            '
+      listact(1) = 0
+      listact(2) = 1
+      listact(3) = 0
+      listact(4) = 0
+      impx = 0
+      impy = 0
+      impcwth = 67
+      nstr = 1
+      nlist = 4
+  43  call fprofma(sstr,nstr,title,list,nlist,ltypes,impx,impy,impcwth,
+     &    iswidth,listact,ino,nhelp)
+
+C Debug.
+C      write(6,*)listact,'  ',ino
+      if(ino.eq.-1)then
+
+C If no action return.
+        return
+      elseif(ino.eq.(nlist+1))then
+
+C If signaled ok then attempt to write out file.
+C        write(6,*)sstr(1)
+        tfile=sstr(1)
+        ltf=max(1,lnblnk(tfile))
+        if(listact(2).eq.1)then
+          LN=max(1,lnblnk(gprcmd))
+          write(gcmd,'(3a)') gprcmd(1:LN),' ',tfile(1:ltf)
+        elseif(listact(3).eq.1)then
+          LN=max(1,lnblnk(gxwdcmd))
+          write(gcmd,'(3a)') gxwdcmd(1:LN),' ',tfile(1:ltf)
+        endif
+C Debug
+C        write(6,*)gcmd
+        call runit(gcmd,'-')
+        return
+      elseif(ino.eq.1)then
+
+C If user has switched from create to append update display (reset
+C impx impy before recalling fprofma.
+        if(listact(2).eq.1)listact(3)=0
+        impx = 0
+        impy = 0
+        goto 43
+      elseif(ino.eq.2)then
+        if(listact(3).eq.1)listact(2)=0
+        impx = 0
+        impy = 0
+        goto 43
+      else
+        impx = 0
+        impy = 0
+        goto 43
+      endif
+      return
+
+      end
 
 C ************************ PHELPD
 C PHELPD displays the current contents of common pophelp in a form

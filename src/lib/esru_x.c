@@ -212,6 +212,7 @@ static unsigned char logo_bits[] = {
 /* external definitions in the Fortran code */
 extern gnwkquery_();
 extern wirepk_();
+extern profgrdump_();
 extern cpwpk_();
 extern chgazi_();     /* in esrucom/common3dv.F */
 extern chgelev_();    /* in esrucom/common3dv.F */
@@ -286,7 +287,7 @@ static int f_baseline,f_lbearing;	/* num pixels under baseline and from origin t
 static box	dbx1, viewbx, msgbx, askbx, disp, scroll, scrollbar;
 static box      scrollv, scrollbarv,scrollh, scrollbarh;
 static box	fbb, setup, cpw; /* feedback box background, setup, copyright */
-static box	wire, capture, captext ;	/* wireframe ctl & capture text button */
+static box	wire, capture, captext ;	/* wireframe ctl, capture graphics & capture text button */
 static box	azi,aziplus,aziminus;	/* buttons for view azimuth changes */
 static box	elev,elevplus,elevminus;	/* buttons for view elevation changes */
 static box     altb,altc,querb,defb,okb;	/* boxes for alts,query help, default, confirm */
@@ -297,7 +298,7 @@ static box	mouse,mouse1,mouse2,mouse3;	/* box for mouse button help */
 static char mseb1h[10],mseb2h[10],mseb3h[10]; /* mouse help strings */
 static int aziplus_left,aziminus_left,azi_left,elevplus_left,elevminus_left,elev_left; /* left of azi&elev boxes */
 static int b_setup, l_setup, b_cpw, l_cpw;	/* ll of setup, copyright boxs */
-static int wire_left,captext_left;	/* left of wire frame and capture control box */
+static int wire_left,capture_left,captext_left;	/* left of wire frame and capture control box */
 static long int ocfgz,ocfgn,ocfgc,ocfgdfn; /* persistant toggles for problem type boxes */
 static long int iiocfgz,iiocfgn,iiocfgc,iiocfgdfn; /* persistant toggles for problem type images */
 static int dbx1_avail = 0;      /* flag for existance of graphic display box */
@@ -2608,6 +2609,8 @@ void doitbox(box dobox,char* msg,int msglen,int asklen,long int* sav_font,long i
     azi = dobox;
   } else if (strncmp(topic, "elev", 4) == 0) {
     elev = dobox;
+  } else if (strncmp(topic, "capture", 7) == 0) {
+    capture = dobox;
   } else if (strncmp(topic, "captext", 7) == 0) {
     captext = dobox;
   } else if (strncmp(topic, "setup", 5) == 0) {
@@ -2634,6 +2637,12 @@ void doitbox(box dobox,char* msg,int msglen,int asklen,long int* sav_font,long i
       Timer(200);
     } else if (strncmp(topic, "elev", 4) == 0) {
       Timer(200);
+    } else if (strncmp(topic, "capture", 7) == 0) {
+/*
+ * Deal with user selection of capture pop-up memu. The tasks will be done
+ * based on information external to the application (in the user's .esprc file).
+ */
+        profgrdump_(); /* use subroutine in esrsu_cut_lib.f to invoke graphics capture */
     } else if (strncmp(topic, "captext", 7) == 0) {
         proftxdump_();	/* use subroutine in esru_cut_lib.f to process text buffer. */
     } else if (strncmp(topic, "setup", 5) == 0) {
@@ -5022,7 +5031,8 @@ void opengdisp_(menu_char,displ_l,dialogue_l,gdw,gdh)
 
 /* sort out boxs along the horizontal line between graphics and text feedback boxes */
   winfnt_(&small_fnt);
-  wire_left = disp.b_right - (f_width * 14);
+  wire_left = disp.b_right - (f_width * 26);
+  capture_left = disp.b_right - (f_width * 8);
   captext_left = disp.b_right - (f_width * 20);
   elevplus_left = disp.b_right - (f_width * 30);
   elevminus_left = disp.b_right - (f_width * 33);
@@ -5071,8 +5081,10 @@ void opengdisp_(menu_char,displ_l,dialogue_l,gdw,gdh)
    doitbox(wire,"image control",13,14,&saved_font,&small_fnt,&bottom,&left,"wire",'-');
  }
 
-/* include capture text button */
+/* include capture button to left of image control button */
  if(capture_avail >= 1) {
+   bottom = disp.b_top; left = capture_left;
+   doitbox(capture,"capture",7,8,&saved_font,&small_fnt,&bottom,&left,"capture",'-');
    bottom = fbb.b_bottom; left = captext_left;
    doitbox(capture,"capture text buffer",19,20,&saved_font,&small_fnt,&bottom,&left,"captext",'-');
  }
@@ -7241,7 +7253,8 @@ int aux_menu(event)  XEvent *event; {
 /* update left position of boxes along horizontal bar */
    saved_font = menu_fnt;
    if (saved_font != small_fnt) winfnt_(&small_fnt);
-   wire_left = disp.b_right - (f_width * 14);
+   wire_left = disp.b_right - (f_width * 26);
+   capture_left = disp.b_right - (f_width * 8);
    elevplus_left = disp.b_right - (f_width * 30);
    elevminus_left = disp.b_right - (f_width * 33);
    elev_left = disp.b_right - (f_width * 44);
@@ -7677,7 +7690,12 @@ point*/
 /* selected wire frame control */
         saved_font = menu_fnt; bottom = disp.b_top; left = wire_left;
         doitbox(wire,"image control",13,14,&saved_font,&small_fnt,&bottom,&left,"wire",'!');
+      } else if(capture_avail >= 1 && xboxinside(capture,x,y)) {
 
+/* capture image button */
+        saved_font = current_font; bottom = disp.b_top; left = capture_left;
+        doitbox(capture,"capture",7,8,&saved_font,&small_fnt,&bottom,&left,"capture",'!');
+        but_rlse = 1;
       } else if(capture_avail >= 1 && xboxinside(captext,x,y)) {
 
 /* capture text button */
@@ -8085,6 +8103,8 @@ void updcapt_(avail)
 
   if(capture_avail == 0 && *avail >= 0) {	/* probably first time in */
     saved_font = current_font;
+    bottom = disp.b_top; left = capture_left;
+    doitbox(capture,"capture",7,8,&saved_font,&small_fnt,&bottom,&left,"capture",'-');
     bottom = fbb.b_bottom; left = captext_left;
     doitbox(capture,"capture text buffer",19,20,&saved_font,&small_fnt,&bottom,&left,"captext",'-');
     capture_avail = *avail;         /* tell the world it is available */
@@ -8104,7 +8124,8 @@ void updazi_(avail)
   if(azi_avail == 0 && *avail >= 0) {	/* probably first time in */
     saved_font = current_font;
     if (saved_font != small_fnt) winfnt_(&small_fnt);
-    wire_left = disp.b_right - (f_width * 14);
+    wire_left = disp.b_right - (f_width * 26);
+    capture_left = disp.b_right - (f_width * 8);
     captext_left = disp.b_right - (f_width * 20);
     elevplus_left = disp.b_right - (f_width * 30);
     elevminus_left = disp.b_right - (f_width * 33);
