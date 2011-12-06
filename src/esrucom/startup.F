@@ -252,15 +252,18 @@ C      write(6,*) 'lfdef is ',lfdef
         CALL ERPFREE(IFDEF,ISTAT)
         call FPOPEN(IFDEF,ISTAT,1,0,altdot)
         IF(ISTAT.LT.0)THEN
-          call edisp(iuout,' No esprc file found so setting default')
-          call edisp(iuout,' exemplars, CAD, report & print links...')
+          call edisp(iuout,
+     &    '  No preferences (esprc or .esprc) file found so setting')
+          call edisp(iuout,
+     &    '  default exemplars, CAD, report & print links.')
           IER=1
           CALL ERPFREE(IFDEF,ISTAT)
           RETURN
         else
           localdot=.false.
           esprc=altdot  ! assign the install folder file as the esprc file.
-          call edisp(iuout,'Using installed version of esprc file.')
+          call edisp(iuout,
+     &    '  Using preferences (esprc) file from ESP-r distribution.')
         endif
       else
         localdot=.true.
