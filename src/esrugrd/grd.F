@@ -272,7 +272,8 @@ C after scan of .esprc file.
 C Take command line file name as initial configuration file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
         LCMDFL=inf
-        write(outs248,'(a,a)')' the input file is: ',LCMDFL
+        call edisp(iuout,'  ')  ! echo blank line
+        write(outs248,'(a,a)')'The input file is: ',LCMDFL
         call edisp248(iuout,outs248,80)
       else
         LCMDFL='  '
@@ -282,7 +283,8 @@ C Take command line zone name and
 C determine if focus should be to a single zone.
       if(inz(1:1).ne.' ')then
         inzone=inz
-        write(outstr,'(a,a)')' the input zone is: ',inzone
+        call edisp(iuout,'  ')  ! echo blank line
+        write(outstr,'(a,a)')'The input zone is: ',inzone
         call edisp(iuout,outstr)
       else
         inzone='ALL'
