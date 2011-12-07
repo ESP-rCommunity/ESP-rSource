@@ -1000,7 +1000,7 @@ C Simulator parameters.
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
       LOGICAL ILTHPS,ILTHPZ,CLOSE
       logical dll,prob
-      dimension igarray(12),iguarray(12)
+      dimension igarray(mgrdp),iguarray(12)
 
       if (.not.startupok) ITCNST=0
       IWARN=0
@@ -1011,11 +1011,12 @@ C Zone-by-zone. Use IUNIT for geometry file.
       NNDS=0
       MNDS=0
 
-C Clear igarray() & iguarray()
+C Clear igarray() for inbuilt ground temps and iguarray()
+C for user defined ground temps. 
        igttype=0
-       do 9 ij=1,12
+       do 9 ij=1,mgrdp
          igarray(ij)=0
-         iguarray(ij)=0
+         if(ij.le.12) iguarray(ij)=0
   9    continue
       call usrmsg(' Checking zone descriptions... ',' ','-')
       ILTHPS=.FALSE.
