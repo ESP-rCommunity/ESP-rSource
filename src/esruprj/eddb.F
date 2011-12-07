@@ -128,81 +128,114 @@ C yet defined.
       endif
       
       lndbp=lnblnk(standarddbpath)
-      if(lndbp.lt.52)then
-        WRITE(ITEMS(1),'(2A)')'  standard db path: ',
+      if(lndbp.lt.45)then
+        WRITE(ITEMS(1),'(2A)')'  standard db path (std): ',
      &    standarddbpath(1:lndbp)
       else
-        WRITE(ITEMS(1),'(2A)')'  standard db path: ',
-     &    standarddbpath(1:52)
+        WRITE(ITEMS(1),'(2A)')'  standard db path (std): ',
+     &    standarddbpath(1:45)
       endif
       if(cfgroot(1:2).ne.'  '.and.cfgroot(1:4).ne.'UNKN')then
         lnpth=lnblnk(path)
         lndbpth=lnblnk(dbspth)
-        if(lnpth+lndbpth.lt.52)then
+        if(lnpth+lndbpth.lt.45)then
           WRITE(ITEMS(2),'(3A)')
-     &      '  model db path: ',path(1:lnpth),dbspth(1:lndbpth)
+     &      '  model db path (mod): ',path(1:lnpth),dbspth(1:lndbpth)
         else
-          if(lnpth.lt.46)then
+          if(lnpth.lt.40)then
             WRITE(ITEMS(2),'(3A)')
-     &        '  model db path: ',path(1:lnpth),dbspth(1:5)
-          elseif(lnpth.lt.40)then
-            WRITE(ITEMS(2),'(3A)')
-     &        '  model db path: ',path(1:lnpth),dbspth(1:9)
+     &        '  model db path (mod): ',path(1:lnpth),dbspth(1:5)
           else
             WRITE(ITEMS(2),'(2A)')
-     &        '  model db path: ',path(1:lnpth)
+     &        '  model db path (mod): ',path(1:lnpth)
           endif
         endif
       else
         WRITE(ITEMS(2),'(A)')
-     &    '  model db path: Not applicable'
+     &    '  model db path (mod): no model defined yet'
       endif
       ITEMS(3) ='  _______________________________ '
-      WRITE(ITEMS(4),'(2A)')  'a annual climate         : ',LCLIM(1:43)
-      WRITE(ITEMS(5),'(2A)')  'b multi-year climate     : ',cTemp(1:43)
-      if(ipathapres.eq.0.or.ipathapres.eq.1)then
-        WRITE(ITEMS(6),'(2A)')'c pressure distributions : ',LAPRES(1:43)
+      WRITE(ITEMS(4),'(2A)')  'a annual weather        : ',LCLIM(1:43)
+      WRITE(ITEMS(5),'(2A)')  'b multi-year weather    : ',cTemp(1:43)
+      if(ipathapres.eq.0)then
+        WRITE(ITEMS(6),'(2A)')'c pressure distribution : ',
+     &    LAPRES(1:43)
+      elseif(ipathapres.eq.1)then
+        lndbpth=lnblnk(dbspth)+2
+        WRITE(ITEMS(6),'(2A)')'c pressure distribution : <mod> ',
+     &    LAPRES(lndbpth:38)
       elseif(ipathapres.eq.2)then
-        WRITE(ITEMS(6),'(2A)')'c std pressure distrib   : ',LAPRES(1:43)
+        WRITE(ITEMS(6),'(2A)')'c pressure distribution : <std> ',
+     &    LAPRES(1:38)
       endif
-      if(ipathmat.eq.0.or.ipathmat.eq.1)then
-        WRITE(ITEMS(7),'(2A)')'d materials              : ',LFMAT(1:43)
+      if(ipathmat.eq.0)then
+        WRITE(ITEMS(7),'(2A)')'d materials             : ',
+     &    LFMAT(1:43)
+      elseif(ipathmat.eq.1)then
+        lndbpth=lnblnk(dbspth)+2
+        WRITE(ITEMS(7),'(2A)')'d materials             : <mod> ',
+     &    LFMAT(lndbpth:38)  ! try to print file name only
       elseif(ipathmat.eq.2)then
-        WRITE(ITEMS(7),'(2A)')'d std materials          : ',LFMAT(1:43)
+        WRITE(ITEMS(7),'(2A)')'d materials             : <std> ',
+     &    LFMAT(1:38)
       endif
 
-      if(ipathmul.eq.0.or.ipathmul.eq.1)then
-        WRITE(ITEMS(8),'(2A)')'e constructions          : ',LFMUL(1:43)
+      if(ipathmul.eq.0)then
+        WRITE(ITEMS(8),'(2A)')'e constructions         : ',
+     &    LFMUL(1:43)
+      elseif(ipathmul.eq.1)then
+        lndbpth=lnblnk(dbspth)+2
+        WRITE(ITEMS(8),'(2A)')'e constructions         : <mod> ',
+     &    LFMUL(lndbpth:38)
       elseif(ipathmul.eq.2)then
-        WRITE(ITEMS(8),'(2A)')'e std constructions      : ',LFMUL(1:43)
+        WRITE(ITEMS(8),'(2A)')'e constructions         : <std> ',
+     &    LFMUL(1:38)
       endif
-      if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
-        WRITE(ITEMS(9),'(2A)')'f plant components       : ',LPCDB(1:43)
+      if(ipathpcdb.eq.0)then
+        WRITE(ITEMS(9),'(2A)')'f plant components      : ',
+     &    LPCDB(1:43)
+      elseif(ipathpcdb.eq.1)then
+        lndbpth=lnblnk(dbspth)+2
+        WRITE(ITEMS(9),'(2A)')'f plant components      : <mod> ',
+     &    LPCDB(lndbpth:38)
       elseif(ipathpcdb.eq.2)then
-        WRITE(ITEMS(9),'(2A)')'f std plant components   : ',LPCDB(1:43)
+        WRITE(ITEMS(9),'(2A)')'f plant components      : <std> ',
+     &    LPCDB(1:38)
       endif
-      if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
-        WRITE(ITEMS(10),'(2A)')'g event profiles         : ',
+      if(ipathprodb.eq.0)then
+        WRITE(ITEMS(10),'(2A)')'g event profiles        : ',
      &    LPRFDB(1:43)
+      elseif(ipathprodb.eq.1)then
+        lndbpth=lnblnk(dbspth)+2
+        WRITE(ITEMS(10),'(2A)')'g event profiles        : <mod> ',
+     &    LPRFDB(lndbpth:38)
       elseif(ipathprodb.eq.2)then
-        WRITE(ITEMS(10),'(2A)')'g std event profiles     : ',
-     &    LPRFDB(1:43)
+        WRITE(ITEMS(10),'(2A)')'g event profiles        : <std> ',
+     &    LPRFDB(1:38)
       endif
-      if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
-        WRITE(ITEMS(11),'(2A)')'h optical properties     : ',
+      if(ipathoptdb.eq.0)then
+        WRITE(ITEMS(11),'(2A)')'h optical properties    : ',
      &    LOPTDB(1:43)
+      elseif(ipathoptdb.eq.1)then
+        lndbpth=lnblnk(dbspth)+2
+        WRITE(ITEMS(11),'(2A)')'h optical properties    : <mod> ',
+     &    LOPTDB(lndbpth:38)
       elseif(ipathoptdb.eq.2)then
-        WRITE(ITEMS(11),'(2A)')'h std optical properties : ',
-     &    LOPTDB(1:43)
+        WRITE(ITEMS(11),'(2A)')'h optical properties    : <std> ',
+     &    LOPTDB(1:38)
       endif
-      WRITE(ITEMS(12),'(A)')   'i mould & mycotoxins     : None'
+      WRITE(ITEMS(12),'(A)')   'i mould                 : None'
 
-      if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
-        WRITE(ITEMS(13),'(2A)')'j miscel components      : ',
+      if(ipathmsc.eq.0)then
+        WRITE(ITEMS(13),'(2A)')'j special components    : ',
      &    MCMPDBFL(1:43)
+      elseif(ipathmsc.eq.1)then
+        lndbpth=lnblnk(dbspth)+2
+        WRITE(ITEMS(13),'(2A)')'j special components    : <mod> ',
+     &    MCMPDBFL(lndbpth:38)
       elseif(ipathmsc.eq.2)then
-        WRITE(ITEMS(13),'(2A)')'j std miscel components  : ',
-     &    MCMPDBFL(1:43)
+        WRITE(ITEMS(13),'(2A)')'j special components    : <std> ',
+     &    MCMPDBFL(1:38)
       endif
       ITEMS(14)='  _______________________________ '
       ITEMS(15)='? help                            '
