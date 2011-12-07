@@ -1102,64 +1102,9 @@ C based on the current compiled in limits.
         CALL PHELPD('Introduction',nbhelp+13,'-',0,0,IER)
         call tstamp('>','PRJ: intro help')
 
-C Offer topical help in addition to the standard message.
-C - command line options for the project manager
-C - applications within the ESP-r suite
-C - ESP-r interface variants
-C - ESP-r operating system variants
-C - layout of a typical ESP-r distribution
-C - layout of a typical ESP-r model
-C - planning simulation tasks
-C - implementing simulation models
-C - ensuring the quality of models
-C - options for finding out more about ESP-r
-C - continue
-  142   iqno=1
-        isw=0
-        helptopic='options_for_topics'
+        helptopic='find_out_more'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        call MENUATOL('Further information','Further information',
-     &    'a command line options','b applications in ESP-r suite',
-     &    'c ESP-r interface variants','d ESP-r OS implementations',
-     &    'e layout of ESP-r distribution','f layout of ESP-r models',
-     &    'g planning simulation tasks','h implementing models',
-     &    'i ensuring model quality','j find out more',
-     &    'k back to interface...',' ',isw,iqno,nbhelp)
-        if(isw.eq.1)then
-          helptopic='topic_cmd_line'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.2)then
-          helptopic='topic_other_apps'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.3)then
-          helptopic='topic_other_interface'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.4)then
-          helptopic='topic_other_OS'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.5)then
-          helptopic='layout_distribution'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.6)then
-          helptopic='layout_models'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.7)then
-          helptopic='planning_models'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.8)then
-          helptopic='implementing_models'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.9)then
-          helptopic='ensuring_model_quality'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.10)then
-          helptopic='find_out_more'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.11.or.isw.eq.0)then
-          goto 3
-        endif
         CALL PHELPD('Introduction-more',nbhelp,'-',0,0,IER)
-        goto 142   ! jump back to see if another topic
 
       ELSEIF(INO.EQ.2)THEN
 
