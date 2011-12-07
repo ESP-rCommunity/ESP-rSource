@@ -263,10 +263,12 @@ C      write(6,*) 'lfdef is ',lfdef
           localdot=.false.
           esprc=altdot  ! assign the install folder file as the esprc file.
           call edisp(iuout,
-     &    '  Using preferences (esprc) file from ESP-r distribution.')
+     &      '  Preferences (esprc) file - standard version.')
         endif
       else
         localdot=.true.
+        call edisp(iuout,
+     &    '  Preferences (.esprc) file - users version.')
       ENDIF
 
 C Read '*ESPRC' tag.
