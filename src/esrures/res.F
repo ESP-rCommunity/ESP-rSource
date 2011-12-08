@@ -108,6 +108,9 @@ C Comfort parameters and hash table.
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
+      integer ireportunit ! zero is default one is W two is kW three Joules
+      common/repunit/ireportunit
+
 C CFD commons.
       common/flvimg/imgtyp,IMOPTS
       common/flvpar/Lflpar(MCOM)
@@ -200,6 +203,7 @@ C     NSIGFIG=3
       IUTDF=IFIL+7
       IUTDFA=IFIL+8
       matver=0.0   ! initial assumption of binary materials database
+      ireportunit=0 ! assume normal units for tabular listings
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)

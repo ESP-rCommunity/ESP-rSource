@@ -243,6 +243,9 @@ C act='m' called from ipv metric with parameters already set.
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
+      integer ireportunit ! zero is default one is W two is kW three Joules
+      common/repunit/ireportunit
+
       character outs*124,outs248*248 ! string buffers
       character outs800*800,outs800d*800  ! really long string buffers
       character act*1,sq*1,unit*7,t28*28,dg*1
@@ -435,7 +438,8 @@ C   don't do this if printing to file.
             do 20 IL=1,NGET
             
 C Define units. Note: climate data will base its units on 
-C the IGETNO(IL,8) value along with all other items.
+C the IGETNO(IL,8) value along with all other items. Take
+C into account the value of ireportunit.
               if (IGETNO(IL,8).eq.1) then
                 unit='(degC)'
               elseif (IGETNO(IL,8).eq.2) then
@@ -443,7 +447,11 @@ C the IGETNO(IL,8) value along with all other items.
      &             IGETNO(IL,1).eq.10.or.IGETNO(IL,1).eq.30.or.
      &             IGETNO(IL,1).eq.31.or.IGETNO(IL,1).eq.32.or.
      &             IGETNO(IL,1).eq.33) then
-                  unit='(kW)'
+                  if(ireportunit.eq.0.or.ireportunit.eq.3)then
+                    unit='(kW)'
+                  else
+                    unit='(W)'
+                  endif
                 else
                   unit='(W)'
                 endif
