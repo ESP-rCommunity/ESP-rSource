@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,buf_roof # tag version, format, zone name
-*date Thu Aug 23 18:09:28 2007  # latest file modification 
+*date Tue Dec 13 16:44:23 2011  # latest file modification 
 buf_roof describes a...
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,10.79800,4.13600,2.40000  #   1
@@ -32,7 +32,7 @@ buf_roof describes a...
 *edges,6,7,6,5,16,4,18  #  8
 # 
 # surf attributes:
-#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
+#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
@@ -40,8 +40,8 @@ buf_roof describes a...
 *surf,roof_e,SLOP,-,-,-,roof,OPAQUE,EXTERIOR,0,0  #   2 ||< external
 *surf,roof_w,SLOP,-,-,-,roof,OPAQUE,EXTERIOR,0,0  #   3 ||< external
 *surf,roof_s,VERT,-,-,-,ext_buf,OPAQUE,EXTERIOR,0,0  #   4 ||< external
-*surf,win2,SLOP,-,-,-,doub_glaz,DC_8074_04nb,EXTERIOR,0,0  #   5 ||< external
-*surf,glz_w,SLOP,-,-,-,doub_glaz,DC_8074_04nb,EXTERIOR,0,0  #   6 ||< external
+*surf,win2,SLOP,roof_e,-,-,doub_glaz,DC_8074_04nb,EXTERIOR,0,0  #   5 ||< external
+*surf,glz_w,SLOP,roof_w,-,-,doub_glaz,DC_8074_04nb,EXTERIOR,0,0  #   6 ||< external
 *surf,buf_2,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,08,04  #   7 ||< fict:buf_2
 *surf,roof_buf,VERT,-,-,-,int_buf,OPAQUE,ANOTHER,10,08  #   8 ||< roof_buf:roof
 # 
