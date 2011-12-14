@@ -3762,6 +3762,7 @@ C Otherwise allow a choice to switch to a different level.
      &      IW,0)
           itrc=IW-1
         endif
+        call edisp(iuout,'  ')  ! echo blank line in case of warning
         MODE='ALL '
         IUF=IPRODB   ! assign second file unit to the events db unit
         CALL ERSYS(LCFGF,IFCFG,IUF,MODE,itrc,IER)
