@@ -144,7 +144,11 @@ C Name of current application
       CHARACTER PubType*12,FurType*12,FurCat*4,CovSurf*12
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSI
       integer numberofzones ! to pass to updwire rather than ncomp
+#else
+      integer*8 numberofzones
+#endif
       integer NITEMS,INO  ! max items and current menu item
 
 C For help messages

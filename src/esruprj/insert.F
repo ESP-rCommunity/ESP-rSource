@@ -61,17 +61,19 @@ C << what about including common zndata in this manipulation? >>
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
+      common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      LOGICAL MODIFY,MODLEN,MODBND,closex,closey,closez
+      LOGICAL MODIFY,MODLEN,MODBND,closex,closey
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL     OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical same,clkok,found,DOK,DDOK,nameok,matchver
       logical newgeo  ! to use for testing if new/old geometry file.
       logical hasanotherchild ! true is surface is parent
+      logical greyok  ! for drawing red dot
       integer isurloop,iverloop,ichildloop ! for use in loops
       integer icdn, icc ! for connection numbers
       integer lnmyp,lnssn  ! lengths of strings
@@ -98,9 +100,9 @@ C      character guesstype*24  ! for context of surface addition
       integer icmpall  ! to signal request to compare all names
 
 #ifdef OSI
-      integer iix,iiy,ixd,iyd
+      integer iix,iiy,ixd,iyd,iicol
 #else
-      integer*8 iix,iiy,ixd,iyd
+      integer*8 iix,iiy,ixd,iyd,iicol
 #endif
 
 C For help messages
@@ -109,6 +111,10 @@ C For help messages
       integer nbhelp     ! number of help lines found
 
       helpinsub='ADDSUR'  ! set for subroutine
+      greyok=.false.
+      if(nifgrey.gt.4)then
+        greyok=.true.
+      endif
 
       IER=0
       DDOK=.false.
@@ -617,11 +623,17 @@ C the selections via array ispk.
           endif
         endif
 
+C Consider what needs to be remembered to allow a connection association
+C between the source surface and what that surface beomes after it is
+C copied. Both zones will need to be updated at a point when the connection
+C list is stable.
+
 C Read the other zone and put selected surface data into temp storage.
         if(.NOT.same)then
           call georead(IFIL+1,LGEOM(IZC),IZC,0,iuout,IER)
         endif
         npick=1
+
   191   continue   ! jump back point for processing subsequent surfaces.
         is=ispk(npick)
         if(same)then
@@ -638,10 +650,11 @@ C Read the other zone and put selected surface data into temp storage.
   142   continue
 
 C Generate a new surface name and default, then check to see if
-C if is a duplicate. 
+C if is a duplicate. By definition, if we are copying a surface
+C from the same zone we must adapt the name.
   141   if(same)then
           write(SNAMED,'(a,a)') 'x',SNAME(ICOMP,IS)(1:11)
-          write(SNAME1,'(a)') SNAME(ICOMP,IS)(1:12)
+          write(SNAME1,'(a,a)') 'x',SNAME(ICOMP,IS)(1:11)
         else
           write(SNAMED,'(a,a)') 'x',SNAME(IZC,IS)(1:11)
           write(SNAME1,'(a)') SNAME(IZC,IS)(1:12)
@@ -829,18 +842,26 @@ C Rotate around a point in the surface.
         endif
 
 C After transforms, append new surface vertices to zone list if
-C they are unique, otherwise link the new surface to an existing vetex.
+C they are unique, check with user if close, otherwise link the
+C new surface to an existing vetex.
   166   continue
         do 143 ix = 1,NVER1
           if(NTV+1.le.MTV)then
             found=.false.
             do 144 ixx = 1,NTV
-              CALL ECLOSE(X1(ix),X(ixx),0.004,closex)
-              CALL ECLOSE(Y1(ix),Y(ixx),0.004,closey)
-              CALL ECLOSE(Z1(ix),Z(ixx),0.004,closez)
-              if(closex.and.closey.and.closez)then
+              call eclose3(X1(ix),Y1(ix),Z1(ix),X(ixx),Y(ixx),Z(ixx),
+     &          0.004,closex)
+              call eclose3(X1(ix),Y1(ix),Z1(ix),X(ixx),Y(ixx),Z(ixx),
+     &          0.010,closey)
+              if(closex)then
                 found=.true.
                 match=ixx
+                goto 145
+              endif
+              if(closey)then
+                dok=.true.
+                call askok('New point 5-10mm from an existing vertex.',
+     &            'Skip it?',found,dok,nbhelp)
                 goto 145
               endif
   144       continue
@@ -866,7 +887,7 @@ C add a new vertex to the end of the zone list.
               YMX=AMAX1(YMX,Y(NTV))
               ZMX=AMAX1(ZMX,Z(NTV))
 
-C For a unique vertex also test to see if it is close (+-0.002m) to
+C For a unique vertex also test to see if it is close (+-0.004m) to
 C one of the existing lines. nsur-1 because the new surface does
 C not need to be checked. Also check the last edge in the surface.
               iwhich3=NTV
@@ -1097,6 +1118,14 @@ C User has specified clicking from mouse so just do that.
                   found=.true.
                   ijvn=ijvn+1
                   jjvn(ijvn)=i
+
+C Highight the matching vertex.
+                  iicol=0
+                  if(greyok)call winscl('z',iicol)
+                  call esymbol(iix,iiy,24,1)
+                  iicol=0
+                  if(greyok)call winscl('-',iicol)
+                  call forceflush()
                   goto 46
                 endif
   45          continue
@@ -1544,7 +1573,7 @@ C Parameters passed.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
-      LOGICAL MODIFY,MODLEN,MODBND,check,found,closex,closey,closez
+      LOGICAL MODIFY,MODLEN,MODBND,check,found,closex,closey
       logical ok,dok,matchver
 
       DIMENSION ISASSO(MS),X1(MV),Y1(MV),Z1(MV)
@@ -1634,7 +1663,7 @@ C Finally decrement NTV.
 
 C Increment NTV and present vertex coords (use previous
 C in case of repitition), then parse. Check to see if the
-C new vertex is unique (i.e. not within 1mm of an existing
+C new vertex is unique (i.e. not within 4mm of an existing
 C vertex.
         helptopic='vert_add_overview'
         call gethelptext(helpinsub,helptopic,nbhelp)
@@ -1653,17 +1682,27 @@ C vertex.
           CALL EGETWR(HOLD,K,Z1(I),-9.9,999.9,'W','Zcoord',IER)
   18    CONTINUE
 
-C Append new vertices to zone list if they are unique,
-C otherwise continue.
+C Append new vertices to zone list if they are unique (within 4mm
+C or if 10mm check with user, otherwise continue.
         do 143 ix = 1,IADD
           if(NTV+1.le.MTV)then
             found=.false.
             do 144 ixx = 1,NTV
-              CALL ECLOSE(X1(ix),X(ixx),0.004,closex)
-              CALL ECLOSE(Y1(ix),Y(ixx),0.004,closey)
-              CALL ECLOSE(Z1(ix),Z(ixx),0.004,closez)
-              if(closex.and.closey.and.closez)then
+              call eclose3(X1(ix),Y1(ix),Z1(ix),X(ixx),Y(ixx),Z(ixx),
+     &          0.004,closex)
+              call eclose3(X1(ix),Y1(ix),Z1(ix),X(ixx),Y(ixx),Z(ixx),
+     &          0.010,closey)
+              if(closex)then
+                call usrmsg(
+     &            'Co-ordinates were identical to an existing vertex',
+     &            'so ignored.','P')
                 found=.true.
+                goto 145
+              endif
+              if(closey)then
+                dok=.true.
+                call askok('New point 5-10mm from an existing vertex.',
+     &            'Skip it?',found,dok,nbhelp)
                 goto 145
               endif
   144       continue
@@ -1770,15 +1809,23 @@ C then parse into new vertex.
 
 C Append new vertice to zone list if it is unique (current assumption
 C is that for most models, less than 4mm difference would be considered
-C a repeat of an existing vertex, otherwise continue.
+C a repeat of an existing vertex, if 5-10mm then check with the
+C user otherwise continue.
         if(NTV+1.le.MTV)then
           found=.false.
           do 244 ixx = 1,NTV
-            CALL ECLOSE(X1(1),X(ixx),0.004,closex)
-            CALL ECLOSE(Y1(1),Y(ixx),0.004,closey)
-            CALL ECLOSE(Z1(1),Z(ixx),0.004,closez)
-            if(closex.and.closey.and.closez)then
+            call eclose3(X1(1),Y1(1),Z1(1),X(ixx),Y(ixx),Z(ixx),
+     &        0.004,closex)
+            call eclose3(X1(1),Y1(1),Z1(1),X(ixx),Y(ixx),Z(ixx),
+     &        0.010,closey)
+            if(closex)then
               found=.true.
+              goto 245
+            endif
+            if(closey)then
+              dok=.true.
+              call askok('Copied point 5-10mm from existing vertex.',
+     &          'Skip it?',found,dok,nbhelp)
               goto 245
             endif
   244     continue
@@ -1895,17 +1942,26 @@ C << could this be done with G6 and with ??
 #include "building.h"
 #include "geometry.h"
 #include "prj3dv.h"
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
+      common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
       DIMENSION COG1(3),COG2(3),COG3(3)
       DIMENSION itv1(MS*MV),ITV2(MS*MV),irelsur(MS*MV)
       CHARACTER outs*124
       logical bounded,hilight
+      logical greyok
+
 #ifdef OSI
-      integer iupdown,isym    ! passed to etplot
+      integer iupdown,isym,iix,iiy,iicol    ! passed to etplot
 #else
-      integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iupdown,isym,iix,iiy,iicol    ! passed to etplot
 #endif
+
+      greyok=.false.      ! see if colour available
+      if(nifgrey.gt.4)then
+        greyok=.true.
+      endif
 
 C Take a line pair and then look and see if it is referenced in
 C reverse order just once. itv1 & itv2 are the vertices, its1 is the
@@ -1971,6 +2027,7 @@ C ivimb=1 then we have an unmatched edge.
             endif
             iub=iub+1
           endif
+
           if(hilight)then
 C Transform ends of edge.
             ILT= -305
@@ -1979,6 +2036,18 @@ C Transform ends of edge.
             COG1(3)=Z(itv1(ip))
             CALL VECTRN(COG1,TEMAT,COG2,IER)
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
+            if(MMOD.lt.8)then
+              continue
+            else
+              call u2pixel(COG3(1),COG3(2),iix,iiy)
+              iicol=0
+              if(greyok)call winscl('z',iicol)
+              call esymbol(iix,iiy,24,1)
+              call VERTLBL(iix,iiy,itv1(ip),ier)
+              iicol=0
+              if(greyok)call winscl('-',iicol)
+              call forceflush()
+            endif
             iupdown=0
             isym=0
             call etplot(COG3(1),COG3(2),iupdown,isym)
@@ -1989,6 +2058,18 @@ C Transform ends of edge.
             CALL VECTRN(COG2,ETSMAT,COG3,IER)
             iupdown=ILT
             call etplot(COG3(1),COG3(2),iupdown,isym)
+            if(MMOD.lt.8)then
+              continue
+            else
+              call u2pixel(COG3(1),COG3(2),iix,iiy)
+              iicol=0
+              if(greyok)call winscl('z',iicol)
+              call esymbol(iix,iiy,24,1)
+              call VERTLBL(iix,iiy,itv2(ip),ier)
+              iicol=0
+              if(greyok)call winscl('-',iicol)
+              call forceflush()
+            endif
             hilight=.false.
           endif
         endif
@@ -2027,7 +2108,7 @@ C << written at the end of the process. This has yet to be done.
       SUBROUTINE INSREC(ITRC,ITRU,ICOMP,IS,act,XO1,ZO1,XW,ZH,
      &  rsname,rsotf,rsmlcn,rsuse1,rsuse2,rsparent,IER)
 #include "building.h"
-#include "model.h"
+C  #include "model.h"
 #include "geometry.h"
 #include "prj3dv.h"
 #include "esprdbfile.h"
@@ -2071,16 +2152,14 @@ C door width and height.
       DIMENSION  BX(MPL),BY(MPL),BZ(MPL),IBNXT(MPL)
       DIMENSION  SBBOX(3,2)
 
-      CHARACTER outs*124,ETEXT*82,hold*36,DESCRC*25,SN*12
+      CHARACTER outs*124,hold*36,DESCRC*25,SN*12
       character t248*248
       CHARACTER T14*14
       character guesstype*24  ! for context of surface addition
 
 #ifdef OSI
-      integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
 #else
-      integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
 #endif
 
@@ -2579,6 +2658,7 @@ C No other hole so link to first vertex of surface.
           NVER(IS)=NVER(IS)+6
           NTV=NTV+4
           NZTV(icomp)=NTV
+
           JVN(IS,NNV+1)=JVN(IS,1)
           JVN(IS,NNV+2)=NTV-3
           JVN(IS,NNV+3)=NTV
@@ -2627,31 +2707,12 @@ C Discover matching MLC index.
 C Now update the G7 common block to reflect additional surface.
         call zgupdate(1,icomp,ier)
 
-C Update the image if not in one of the silent modes.
+C Signal to update the image if not in one of the silent modes.
         if(act(1:2).eq.'sw'.or.act(1:2).eq.'sd'.or.
      &     act(1:2).eq.'sp')then
           continue
         else
           MODIFY=.TRUE.
-          CALL INLNST(1)
-          CALL SURADJ(ICOMP,IS,IE,TMP,IZC,ISC,IC,DESCRC)
-          LINSTY(IC)=2
-          nzg=1
-          nznog(1)=ICOMP
-          izgfoc=ICOMP
-          CALL ADJVIEW(IER)
-          call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
-     &      iicfgz,iicfgn,iicfgc,iicfgdfn)
-          if(MMOD.EQ.8)then
-            call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
-     &        iicfgz,iicfgn,iicfgc,iicfgdfn)
-            WRITE(ETEXT,'(2A)')'Model: ',
-     &        modeltitle(1:lnblnk(modeltitle))
-            iside=1
-            isize=1
-            ifont=1
-            call viewtext(etext,iside,isize,ifont)
-          endif
         endif
         call edisp(iuout,' ')
       elseif(IRT.eq.2)then
@@ -2772,25 +2833,6 @@ C Update the image if in non-silent mode
           continue
         else
           MODIFY=.TRUE.
-          CALL INLNST(1)
-          CALL SURADJ(ICOMP,IS,IE,TMP,IZC,ISC,IC,DESCRC)
-          LINSTY(IC)=2
-          nzg=1
-          nznog(1)=ICOMP
-          izgfoc=ICOMP
-          CALL ADJVIEW(IER)
-          call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
-     &      iicfgz,iicfgn,iicfgc,iicfgdfn)
-          if(MMOD.EQ.8)then
-            call opencfg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
-     &        iicfgz,iicfgn,iicfgc,iicfgdfn)
-            WRITE(ETEXT,'(2A)')'Model: ',
-     &        modeltitle(1:lnblnk(modeltitle))
-            iside=1
-            isize=1
-            ifont=1
-            call viewtext(etext,iside,isize,ifont)
-          endif
         endif
         call edisp(iuout,' ')
 
@@ -3056,7 +3098,7 @@ C Update common blocks G6 & G7
 
         IC1(ICON)=ICOMP
         IE1(ICON)=NSUR
-        ICT(ICON)=0  ! initial assumption of exterior
+        ICT(ICON)= -1  ! initial assumption of unknown
         IC2(ICON)=0
         IE2(ICON)=0
         IZSTOCN(icomp,nsur)=icon

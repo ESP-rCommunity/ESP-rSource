@@ -37,6 +37,7 @@ C ************* EDCONN
 C Edit/clear/check connection attributes in common blocks via a paging menu.
 C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       SUBROUTINE EDCONN(IER)
+#include "epara.h"
 #include "building.h"
 #include "model.h"
 
@@ -87,11 +88,15 @@ C Pause length during sequentail scan longpause (true=1 sec)
 
       DIMENSION ITEMS1(23)
       CHARACTER CXSTR*78,outs*124,ITEMS1*34,CFGFN*72
+      character CXITM*48
       CHARACTER LCFGF*72
       character cfgroot*24
       character DCNN*72
       character bl*2
+      DIMENSION VERT(35)
+      character VERT*50,KEY*1
       integer MITEM,INO ! max items and current menu item
+      integer MVERT,IVERT ! max items and current menu item
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -162,7 +167,7 @@ C failed searches brought to users attention.
 C CACC is the tolerance between two vertices, IACC is the number
 C of corners beyond tolerance which are allowed,
 C DACC is the line degree tolerance for setting of corners.
-      CACC=0.010
+      CACC=0.025
       IACC=0
       DACC=5.0
       DCNN=' '
@@ -383,8 +388,9 @@ C Flip logic for partitions.
           M3SKP=.false.
         else
           dok=.false.
-          call askok('Are you sure you want to skip marked partitions?',
-     &               '(see help)',OK,dok,nbhelp)
+          call askok(
+     &      'Are you sure you want to skip confirmation of existing',
+     &      'marked partitions (see help)?',OK,dok,nbhelp)
           if(OK)M3SKP=.true.
         endif
       ELSEIF(INO.EQ.8)THEN
@@ -450,9 +456,109 @@ C Flip logic for back-to-back within zone.
 
       ELSEIF(INO.EQ.15)THEN
 
-C Edit single connection.
-        call edaconn(ier)
-        MODIFY=.TRUE.
+C Edit single connection. Setup a long list made up of short
+C connection descriptions and allow the user to select. This
+C then calls ?? to do the work.
+
+C Initialise connection menu size variables based on window size. 
+C IVERT is the menu position, MVERT the current number of menu lines.
+        MHEAD=2
+        MCTL=3
+        ILEN=NCON
+        IPACT=CREATE
+        CALL EKPAGE(IPACT)
+
+C Initial menu entry setup.
+   92   IER=0
+        IVERT=-3
+
+C Loop through the items until the page to be displayed. M is the 
+C current menu line index. Build up text strings for the menu. 
+   33   M=MHEAD
+        DO 10 L=1,ILEN
+          IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
+            M=M+1
+            CALL EMKEY(L,KEY,IER)
+            call CONXMENU(L,CXITM)
+            VERT(M)=' '
+            WRITE(VERT(M),'(A1,1x,A)')KEY,CXITM(1:47)
+          ENDIF
+   10   CONTINUE
+
+C Set menu header text.
+        VERT(1)=    ' conn|reference   |conn|      connection       |'
+        VERT(2)=    ' no. |zone|surface|type| zone/data|surf/data   |'
+
+C Number of actual items displayed.
+        MVERT=M+MCTL
+
+C If a long list include page facility text.      
+        IF(IPFLG.EQ.0)THEN
+          VERT(M+1)='  ___________________________________ '
+        ELSE
+          WRITE(VERT(M+1),15)IPM,MPM 
+   15     FORMAT   ('0 page ------- Part: ',I2,' of ',I2,' -----')
+        ENDIF
+        VERT(M+2)  ='? help                                '
+        VERT(M+3)  ='- exit this menu                      '
+
+C Help text for this menu.
+        helptopic='boundary_choice_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+
+C Now display the menu.
+        CALL EMENU('Zone Boundary Conditions',VERT,MVERT,IVERT)
+        IF(IVERT.LE.MHEAD)THEN
+
+C Within the header so skip request.
+          IVERT=-1
+          goto 33
+        ELSEIF(IVERT.EQ.MVERT)THEN
+
+          goto 3  ! go to main menu
+
+        ELSEIF(IVERT.EQ.(MVERT-1))THEN
+
+C List help text for the menu.
+          helptopic='boundary_choice_menu'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('connection section',nbhelp,'-',0,0,IER)
+        ELSEIF(IVERT.EQ.(MVERT-2))THEN
+
+C If there are enough items allow paging control via EKPAGE.
+          IF(IPFLG.EQ.1)THEN
+            IPACT=EDIT
+            CALL EKPAGE(IPACT)
+          ENDIF
+        ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
+
+C Edit item identified by KEYIND after reporting on current values.
+          call tstamp('>','PRJ: enter topology edit')
+          CALL KEYIND(MVERT,IVERT,IFOC,IO)
+
+          CALL EDISP(iuout,' ')
+          CALL EDISP(iuout,' Current connection description...')
+          CALL CONXINF(1,0,CXSTR)
+          write(outs,'(1X,A)') CXSTR
+          CALL EDISP(iuout,outs)
+          CALL CONXINF(1,IFOC,CXSTR)
+          write(outs,'(1X,A)') CXSTR
+
+C Call edaconn to get the editing done.
+          call edaconn(IFOC,ier)
+          MODIFY=.TRUE.
+
+        ELSE
+
+C Not one of the legal menu choices.
+          goto 92
+        ENDIF
+        IVERT=-2
+        goto 33
+
+C << Has anyone used this recently? How about adapting this as a common bit of
+C << code called from the many places where connections are established
+C << in the model?
       ELSEIF(INO.EQ.16)THEN
 
 C Clear contiguity.
@@ -2018,8 +2124,8 @@ C lstanchr = links for each anchor
       common/anchorb/IALOC(20),lstanchr(20,60)
 
       DIMENSION VERT(35),flag(mcon),iconnpk(60)
-      CHARACTER VERT*54,KEY*1,outs*124
-      character CXITM*43,flag*9
+      CHARACTER VERT*59,KEY*1,outs*124
+      character CXITM*48,flag*9
       character ALOC*12,ALOCLBL*12,ALOCTYP*4,AL*12
       logical found,ok,dok,foundone,okd,MODIFY,MODLEN,MODBND
       integer MVERT,IVERT ! max items and current menu item
@@ -2073,9 +2179,10 @@ C anchor set(s) is/are associated with a connection.
       write(VERT(3),'(a)') '  index  label    type       nb. links'
       write(VERT(4),'(a,i2,5a,i2,a)') '1 ',ifoc,' ',ALOCLBL(ifoc),' ',
      &  ALOCTYP(ifoc),' (',IALOC(ifoc),' links)'
-      VERT(5)='  ___________________________________________   '
-      VERT(6)=' conn|  connection      |    connection     |123456789'
-      VERT(7)=' no. | inside face      | other side data   |anchor'
+      VERT(5)='  ______________________________________________   '
+      VERT(6)=
+     &     ' conn|  connection        |    connection       |123456789'
+      VERT(7)=' no. | inside face        | other side data     |anchor'
       do 5 i=1,NALOC
         if(IALOC(i).gt.0)then
           do 4 j = 1,IALOC(i)
@@ -2102,7 +2209,7 @@ C current menu line index. Build up text strings for the menu.
           CALL EMKEY(L,KEY,IER)
           call CONXMENU(L,CXITM)
           VERT(M)=' '
-          WRITE(VERT(M),'(A1,1x,A42,1a,a)')KEY,CXITM(1:42),'|',flag(L)
+          WRITE(VERT(M),'(A1,1x,A,1a,a)')KEY,CXITM(1:46),'|',flag(L)
         ENDIF
    10 CONTINUE
 
@@ -2114,7 +2221,7 @@ C If a long list include page facility text.
         VERT(M+1)='  ________________________________________ '
       ELSE
         WRITE(VERT(M+1),15)IPM,MPM 
-   15   FORMAT   ('0 page ------- Part: ',I2,' of ',I2,' -----')
+   15   FORMAT   ('0 page ------- Part: ',I3,' of ',I3,' -----')
       ENDIF
       VERT(M+2)  ='* modify list                         '
       VERT(M+3)  ='? help                                '
@@ -2531,7 +2638,7 @@ C Select one or more connections from a list.
 
       DIMENSION iconnpk(lconnpk),VERT(35),flag(mcon)
       CHARACTER*(*) PROMP1,PROMP2,ERMSG
-      CHARACTER VERT*54,KEY*1,CXITM*43,flag*1,SEL*50
+      CHARACTER VERT*54,KEY*1,CXITM*48,flag*1,SEL*50
       logical found
       integer MVERT,IVERT ! max items and current menu item
     
@@ -2589,8 +2696,8 @@ C items have been selected. Generate text for title.
     3 lne=LNBLNK(ERMSG)
       IF(lne.GT.50)WRITE(SEL,'(1X,A)')ERMSG(1:50)
       IF(lne.LE.50)WRITE(SEL,'(1X,A)')ERMSG(1:lne)
-      VERT(1)=  ' no. | inside face     | other side data   |anchor'
-      VERT(2)=  ' conn|  connection     |    connection     |select'
+      VERT(1)=  ' no. | inside face     | other side data      |anchor'
+      VERT(2)=  ' conn|  connection     |    connection        |select'
 
 C Loop through the items until the page to be displayed. M is the 
 C current menu line index. Build up text strings for the menu. 
@@ -2601,7 +2708,7 @@ C current menu line index. Build up text strings for the menu.
           CALL EMKEY(L,KEY,IER)
           call CONXMENU(L,CXITM)
           VERT(M)=' '
-          WRITE(VERT(M),'(A1,1x,A43,1x,a1)')KEY,CXITM,flag(L)
+          WRITE(VERT(M),'(A1,1x,A,1x,a1)')KEY,CXITM(1:48),flag(L)
         ENDIF
    10 CONTINUE
 
@@ -2723,7 +2830,7 @@ C IDST tool commands.
       character CMDCFG*72,CMDCLM*72,CMDCLMN*72,CMDNOTE*64,CMDRES*72
       character CMDLNAM*80,CMDLBL*12
       character LCFGF*72,cfgroot*24
-      character CXITM*43,outs*124,LTMP*72
+      character CXITM*48,outs*124,LTMP*72
       character clmdb*144
       character doit*248,tmode*8,aut*8,runmode*12,keepres*4
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
@@ -3113,7 +3220,7 @@ C     dimension SNA(MS),PAZI(MS),PELV(MS)
       character DESCRC*25,act*1
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character AL1*12,AL2*12,AL3*12,AL4*12,AL5*12,AL6*12,AL7*12
-      character AL8*12,AL9*12,CXITM*43
+      character AL8*12,AL9*12,CXITM*48
       integer ltype,ins2,ins3   ! for radio buttons
 
 C For help messages

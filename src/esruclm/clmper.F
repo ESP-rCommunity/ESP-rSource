@@ -126,7 +126,7 @@ C For help messages
 
 C Assume whole day requested.
       ier=0
-   3  IT1=1
+      IT1=1
       IT2=24
       pmenu(1) ='a User defined          '
       pmenu(2) ='b January               '
@@ -181,65 +181,41 @@ C Adjust display if in southern hemisphere.
         call clmper(IFDAY,ier)
         return
       elseif(INO.EQ.2)then
-        ID1=1
-        IM1=1
-        ID2=31
-        IM2=1
+        ID1=1; IM1=1
+        ID2=31; IM2=1
       elseif(INO.EQ.3)then
-        ID1=1
-        IM1=2
-        ID2=28
-        IM2=2
+        ID1=1; IM1=2
+        ID2=28; IM2=2
       elseif(INO.EQ.4)then
-        ID1=1
-        IM1=3
-        ID2=31
-        IM2=3
+        ID1=1; IM1=3
+        ID2=31; IM2=3
       elseif(INO.EQ.5)then
-        ID1=1
-        IM1=4
-        ID2=30
-        IM2=4
+        ID1=1; IM1=4
+        ID2=30; IM2=4
       elseif(INO.EQ.6)then
-        ID1=1
-        IM1=5
-        ID2=31
-        IM2=5
+        ID1=1; IM1=5
+        ID2=31; IM2=5
       elseif(INO.EQ.7)then
-        ID1=1
-        IM1=6
-        ID2=30
-        IM2=6
+        ID1=1; IM1=6
+        ID2=30; IM2=6
       elseif(INO.EQ.8)then
-        ID1=1
-        IM1=7
-        ID2=31
-        IM2=7
+        ID1=1; IM1=7
+        ID2=31; IM2=7
       elseif(INO.EQ.9)then
-        ID1=1
-        IM1=8
-        ID2=31
-        IM2=8
+        ID1=1; IM1=8
+        ID2=31; IM2=8
       elseif(INO.EQ.10)then
-        ID1=1
-        IM1=9
-        ID2=30
-        IM2=9
+        ID1=1; IM1=9
+        ID2=30; IM2=9
       elseif(INO.EQ.11)then
-        ID1=1
-        IM1=10
-        ID2=31
-        IM2=10
+        ID1=1; IM1=10
+        ID2=31; IM2=10
       elseif(INO.EQ.12)then
-        ID1=1
-        IM1=11
-        ID2=30
-        IM2=11
+        ID1=1; IM1=11
+        ID2=30; IM2=11
       elseif(INO.EQ.13)then
-        ID1=1
-        IM1=12
-        ID2=31
-        IM2=12
+        ID1=1; IM1=12
+        ID2=31; IM2=12
       elseif(INO.EQ.15)then
         CALL EDAYR(ia1wins,ID1,IM1)
         CALL EDAYR(ia1winf,ID2,IM2)
@@ -271,10 +247,8 @@ C Adjust display if in southern hemisphere.
         CALL EDAYR(is2wins,ID1,IM1)
         CALL EDAYR(is2winf,ID2,IM2)
       elseif(INO.EQ.26)then
-        ID1=1
-        IM1=1
-        ID2=31
-        IM2=12
+        ID1=1; IM1=1
+        ID2=31; IM2=12
       elseif(INO.EQ.28)then
 
 C Help.
@@ -286,10 +260,8 @@ C Help.
       elseif(INO.EQ.29)then
 
 C If no option is selected, select whole year
-        ID1=1
-        IM1=1
-        ID2=31
-        IM2=12
+        ID1=1; IM1=1
+        ID2=31; IM2=12
       else
         ino=-1
         goto 4
@@ -462,10 +434,8 @@ C Check if Unix-based or DOS based.
 C Graphic analysis. Enlarge graphics area slightly and reset graphic
 C display period to the whole year.
       if(MMOD.EQ.8)then
-        ID1=1
-        IM1=1
-        ID2=31
-        IM2=12
+        ID1=1; IM1=1
+        ID2=31; IM2=12
         CALL EDAY(ID1,IM1,IIDS)
         CALL EDAY(ID2,IM2,IIDF)
         IDS=IIDS
@@ -564,12 +534,8 @@ C If clmlnam and clmlaid are not set fill them with default information.
 C If use already aksed for graph and date has change draw again.
       if(MMOD.EQ.8)then
         if(altered.and.havedrawn)then
-          IPICK(1)=0
-          IPICK(2)=1
-          IPICK(3)=0
-          IPICK(4)=0
-          IPICK(5)=0
-          IPICK(6)=0
+          IPICK(1)=0; IPICK(2)=1; IPICK(3)=0
+          IPICK(4)=0; IPICK(5)=0; IPICK(6)=0
           onleft=1
           onright=0
           if(IFS.ne.IMFS)call winfnt(IMFS)
@@ -1108,27 +1074,15 @@ C Use variant of code in clmmmm.F to generate text.
      &    ' Month    Minimum  Time          Maximum  Time         Mean'
 
 C Initialise parameters for whole year.
-          ID1=1
-          IM1=1
-          IT1=1
-          ID2=31
-          IM2=12
-          IT2=24
-          IDS=1
-          IDF=365
-          KDS=1
-          KDF=24
-          XMAXI=-1E+10
-          XMINI=1E+10
-          XMEANI=0
-          HRTOT=0.
+          ID1=1;  IM1=1;  IT1=1
+          ID2=31; IM2=12; IT2=24
+          IDS=1;  IDF=365
+          KDS=1;  KDF=24
+          XMAXI=-1E+10; XMINI=1E+10
+          XMEANI=0.; HRTOT=0.
 
 C INITIALISE PARAMETERS FOR MONTHLY TOTALS.
-          MTH1=IM1
-          XMAXM=-1E10
-          XMINM=1E10
-          XMEANM=0.
-          HRM=0.
+          MTH1=IM1; XMAXM=-1E10; XMINM=1E10; XMEANM=0.; HRM=0.
 
 C Find day of week for start of the period.
           CALL EDAYR(IDS,IDAYN,IMTHN)
@@ -1386,12 +1340,8 @@ C Control graphics.
 C Pre-define the period and the line type to draw and which
 C axis are required and then directly call CLMDRW
         if(MMOD.EQ.8)then
-          IPICK(1)=0
-          IPICK(2)=1
-          IPICK(3)=0
-          IPICK(4)=0
-          IPICK(5)=0
-          IPICK(6)=0
+          IPICK(1)=0; IPICK(2)=1; IPICK(3)=0
+          IPICK(4)=0; IPICK(5)=0; IPICK(6)=0
           onleft=1
           onright=0
           if(IFS.ne.IMFS)call winfnt(IMFS)

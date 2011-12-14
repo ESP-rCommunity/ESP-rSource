@@ -184,7 +184,6 @@ C Returned parameters from silentread.
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       real d1,d2,d3   ! data used with transfor or rotate command line
       integer ivals   ! holds list of zones to be rotated or transformed.
-      integer numberofzones ! to pass to updwire rather than ncomp
       integer MITEM,INO ! max items and current menu item
       dimension ivals(MCOM)
       logical silent  ! for dependency checking on transform or rotate
@@ -195,11 +194,14 @@ C For help messages
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
+      integer ianother   ! jump to previous or next zone flag
 
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
+      integer numberofzones ! to pass to updwire rather than ncomp
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 numberofzones
 #endif
 
 C Initialize variables and recover command line arguments.
@@ -869,7 +871,8 @@ C Pass information to C library code if running in graphic mode.
             call georead(IFIL+1,LGEOM(index),index,1,iuout,IER)
             IF(IER.NE.0)goto 3
 
-            CALL EDZONE(ITRC,index,IER)
+C Change focus to zone but do not act on any ianother jump command.
+            CALL EDZONE(ITRC,index,ianother,IER)
             MODIFY=.TRUE.
           endif
         endif

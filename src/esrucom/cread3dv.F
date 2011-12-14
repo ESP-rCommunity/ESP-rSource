@@ -112,6 +112,9 @@ C Clear current viewing box and re-establish image bounds.
 
 C Determine scaling ratios for the drawing and axis.  If static
 C assume 1000 -1000 etc, if optimum then use SXMX,SYMX + 10% etc.
+
+C << why the difference? in static and optimum scaling ?? >>
+
       IF(ITBND.EQ.0)THEN
         CALL axiscale(igwid,igheight,-1000.,1000.,-1000.,1000.,xsc,ysc,
      &                sca,Xadd,Yadd)

@@ -3132,7 +3132,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '(you will still need to see 4-5 lines of text feedback). A high'
 'resolution monitor is helpful!'
 '  '
-'The bitmap size might be ~1000-1500 pixels wide to allow for accurate'
+'The bitmap size might be ~1000-3000 pixels wide to allow for accurate'
 'positioning of the mouse. ESP-r might fault if you try to use an'
 'overly large image file.  Sorry but this facility is only available'
 'in the X11 version of the inteface. GTK is pending.'
@@ -3171,7 +3171,7 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '  '
 '  Adding walls via a floor plan extrusion. Remember to select the'
 '  [corners] anti-clockwise. You will be asked for the Z value of'
-'  the base and the top surfaces.'
+'  the base and the top surfaces (not floor/ceiling distance).'
 '  '
 '  South elevation fills X & Z coords @ one Y coord value.'
 '  East elevation  fills Y & Z coords @ one X coord value.'
@@ -3187,8 +3187,8 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'may be relocated to the nearest point. '
 '  '
 'If you switch input modes and were working on floor plans then the'
-'history of prior points is lost. ESP-r sometimes gets confused if'
-'you switch input modes during a session.'
+'history of prior points may be lost. ESP-r sometimes gets confused'
+'if you switch input modes during a session.'
 *enditem
         call MENUATOL(msg,' Coordinate input options',
         CALL ASKOK(
@@ -3238,7 +3238,9 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '    1.0 opaque (for future shading facility). '
 '
 'And you will be asked to pick a zone to associate the obstructions'
-'with.'
+'with. If you want to make obstructions for a different zone then'
+'end the points clicking to save work and then ask for another'
+'set of obstructions to be created.'
 *enditem
           CALL ASKOK(' ','Block position ok? ',OK,dok,1)
           CALL EPICKS(INPIC,IVALS,' ',
@@ -7692,36 +7694,61 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 *subroutine LINTHBRDG
 *item LINTHBRDG linear_thermal_bridge
 'Linear thermal bridges are composed of a length (m) and a'
-'psi value W/mK and are used to represent the difference in'
-'heat flow due to a corner junction or edge.'
+'psi value (W/mK) and are used to represent the difference in'
+'heat flow due to a corner, junction or edge. Psi values are'
+'typically derived via 3rd party software such as LBNL THERM.'
 '  '
-'The user needs to define the length of the thermal bridge at'
-'each junction/openings/etc. Psi values can also be defined or'
-'the default values from BRE IP 1/06 can be used.'
+'When entering the facility you are asked if the zone has'
+'construtions with metal cladding or no metal cladding or if'
+'you wish to define thermal bridges as a percentage of the'
+'heat flows through the facade.  If you select metal or non-metal'
+'cladding then the geometry of the room, the boundary condition'
+'attribute and USE attribute of each surface is checked to determine'
+'the cagetory of thermal bridge to apply to each edge.'
 '  '
-'The underlying assumptions about heat flows via thermal'
-'bridges depend on whether the facade uses metal cladding.'
+'The total length of the category bridge as'
+'well as initial default values (based on the BRE Information'
+'publication 1/06) are set.'
 '  '
-'If you have not yet done so you can setup thermal bridge'
-'definitions to fit the specifics of your design. If there'
-'are existing definitions you can update them.'
+'Only use this facility IF ALL the surfaces in the zone have been'
+'fully attributed and the geometry is stable.  If you alter the'
+'geometry or the boundary attributes then the Project Manager may'
+'re-evaluate the lengths and psi values and overwrite manually'
+'computed values.'
 '  '
-'Initial values will be based on the geometry of the room as'
-'well as the boundary conditions and the surface USES attributes.'
-'IF YOU HAVE NOT YET set the boundary conditions or surface USE'
-'attributes for this zone you should do that first (choose exit).'
+'If you agree with the initial geometric and brounday scan then'
+'you have very little work to do.  If you want to alter the'
+'lengths or the psi values then the interface allows you to edit'
+'these as required. If you have an additional type of thermal'
+'bridge then you can either use the [user defined] bridge type'
+'or a zero length bridge of another type.'
+'  '
+'At simulation time the lengths and psi values are added up'
+'and then multiplied by the temperature difference between the'
+'zone and the outside.  The labels and types of thermal bridges'
+'are for documentation purposes and to help in checking the'
+'model.'
+'  '
+'The underlying assumptions for the default values of heat flows'
+'via thermal bridges depend on whether the facade uses metal'
+'cladding. If the zone is mixed then you will have to manually'
+'edit the lengths and psi values.'
 ' '
 'The fixed % option sets thermal bridges equivalent to a percentage'
-'of the overall UA value. '
+'of the overall UA value of the zone. NOTE: if you enter the'
+'facility selecting metal or non-metal facade and then switch to'
+'the % facility then the software does not clear the lengths or'
+'psi values.  If you wish to switch from % to one of the other'
+'methods the interface gets confused.'
 *enditem
-            CALL EASKABCD('This zone:','(see help)',
-            CALL EASKABCD('This zone:','(see help)',
+        CALL EASKABCD('This zone:','(see help)',
+        CALL EASKABCD('This zone:','(see help)',
         CALL PHELPD('thermal bridge menu',4,'-',0,0,IER)
-          CALL EASKR(thbrpercent,' ',
-            CALL EASKR(psiv,phrasepsi(lookfor),msg,
-              CALL EASKR(lenv,phraselen(lookfor),msg,
-          CALL EASKR(psiv,phrasepsi(lookfor),msg,
-          CALL EASKR(lenv,phraselen(lookfor),msg,
+        CALL EASKR(thbrpercent,' ',
+        CALL EASKR(psiv,phrasepsi(lookfor),msg,
+        CALL EASKR(lenv,phraselen(lookfor),msg,
+        CALL EASKR(psiv,phrasepsi(lookfor),msg,
+        CALL EASKR(lenv,phraselen(lookfor),msg,
         CALL EASKR(psiv,phrasepsi(lookfor),msg,
         CALL EASKR(lenv,phraselen(lookfor),
 *subroutine updatesvfc
@@ -16652,7 +16679,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 *enditem
       CALL EASKS(HOLD,
 *subroutine PRJFMK
-*item PRJFMK
+*item PRJFMK operations_need_to_ask
 'The zone operations file was not found or has not'
 'yet been created. The file contains schedules of air'
 'flow and casual gains. Air flows may have thermostatic'
@@ -16664,11 +16691,9 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'project [zones] folder in case you want to share.'
 'the same definition as used by another zone.'
 *enditem
-          CALL EASKSCMD(LTMP,' ','Zone operations file options:',
-*item PRJFMK
-*enditem
-          CALL EASKS2CMD(LTMP,' ','Zone operations file options:',
-*item PRJFMK
+        CALL EASKSCMD(LTMP,' ','Zone operations file options:',
+        CALL EASKS2CMD(LTMP,' ','Zone operations file options:',
+*item PRJFMK 'operations_need_confirm
 'Operations details have already been defined for this'
 'zone so if you want to use and/or modify the current'
 'definition accept the presented file.'
@@ -16686,73 +16711,53 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'any change to its contents will affect more than one'
 *enditem
           CALL EASKSCMD(LTMP,' ','Confirm zone operations file:',
-*item PRJFMK
-*enditem
           CALL EASKS2CMD(LTMP,' ','Confirm zone operations file:',
-*item PRJFMK
-*enditem
-            CALL EASKS(LTMP,' ','Zone operations file name?',
-*item PRJFMK
-*enditem
           CALL EASKS(LTMP,' ','Zone operations file name?',
-*item PRJFMK
+          CALL EASKS(LTMP,' ','Zone operations file name?',
+*item PRJFMK operations_creation
 'Options: '
-' define from scratch - you are asked to define all'
-'   casual gain periods for each day type as well as'
-'   schedules of infiltration and ventilation.'
+' define from scratch - you are asked to define all casual'
+'   gain periods for each day type as well as schedules of'
+'   infiltration and ventilation.'
 ' '
-' import air flow schedules - you select a zone with an'
-'   air flow schedule pattern and it is copied into this'
-'   zone, optionally with adjustments if the zone'
-'   volumes are different. You can then define the'
-'   casual gains.'
+' import air flow schedules - you select a zone with an air'
+'   flow schedule pattern and it is copied into this zone,'
+'   optionally with adjustments if the zone volumes are'
+'   different. You can then define the casual gains.'
 ' '
-' import casual gains - you select a zone with casual'
-'   gain patterns and they are copied into this zone,'
-'   optionally with adjustments if the zone base areas'
-'   differ.'
+' import casual gains - you select a zone with casual gain'
+'   patterns and they are copied into this zone, optionally'
+'   with adjustments if the zone base areas differ.'
 ' '
-' import air flows and casual gains - both of the above'
-'   and you will be given the option to import air'
-'   flow schedules casual gains from different zones'
-'   (You may wish to note which zones you used and'
-'   include this in the documentation of the zone'
-'   operations file.)'
+' import air flows and casual gains - both of the above and'
+'   you will be given the option to import air flow schecules'
+'   and casual gains from different zones (You may wish to'
+'   take a note of which zones you used and include this in'
+'   the documentation of the zone operations file.)'
 ' '
-' import < pattern - has the same functionality as above'
-'   except that the list of operations files are taken'
-'   from a folder within the standard ESP-r distribution'
-'   located on your computer. Files placed in this'
-'   folder serve as a resource for often-used patterns'
-'   of casual gains and scheduled air flows.'
+' import < pattern - has the same functionality as above except'
+'   that the list of operations files are taken from a folder'
+'   within the standard ESP-r distribution located on your'
+'   computer. Files placed in this folder serve as a resource for'
+'   often-used patterns of casual gains and scheduled air flows.'
 ' '
-' nothing happens in the zone - does just this. It fills'
-'   the file with zero occupants, lights, small power'
-'   and no infiltration or ventilation for all day types.'
+' nothing happens in the zone - does just this. It fills the'
+'   file with zero occupants, lights and small power for the'
+'   whole of each day as well as no infiltration or ventilation'
+'   for all day types.'
 ' '
-'After initiating one of the above actions you can edit'
-'the data as required. '
-'A zone operation file contains schedules of air flow'
-'and casual gains.  Air flows may have thermostatic'
-'or wind speed control. '
+'After initiating one of the above actions you can edit the data'
+'as required. '
+'  '
+'A zone operation file contains schedules of air flow and casual'
+'gains.  Air flows may have thermostatic or wind speed control.'
 *enditem
           CALL EASKS(LTMP,' ','Zone operations file name?',
-*item PRJFMK
-*enditem
-          CALL PHELPD('operation choices',36,'-',0,0,IER)
-*item PRJFMK
-*enditem
-            call askzone(isource,izdef,
-*item PRJFMK
-*enditem
+          call askzone(isource,izdef,
           CALL EASKABC(' ','Options:','all flow schedules & ctl',
-*item PRJFMK
-*enditem
           CALL EASKABC(' ','Infiltration import:','preserve ac/h',
-*item PRJFMK
-*enditem
-            CALL EASKABC(' ','Ventilation import:','preserve ac/h',
-*item PRJFMK
+          CALL EASKABC(' ','Ventilation import:','preserve ac/h',
+*item PRJFMK operations_synopsys
 'New operations for this zone. Please check your notes'
 'and provide initial casual gain period start times'
 'for each day type (Weekday, Saturday, Sunday etc.) and'
@@ -16778,13 +16783,9 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'at least one period and define a casual gain).'
 *enditem
           CALL PHELPD('operation setup',23,'-',0,0,IER)
-*item PRJFMK
-*enditem
-            call askzone(isource,izdef,'Casual gains from which zone?',
-*item PRJFMK
-*enditem
+          call askzone(isource,izdef,'Casual gains from which zone?',
           CALL EASKABC(' ','Casual gain import:','preserve Watts',
-*item PRJFMK
+*item PRJFMK check_automatic
 'An automated process has been used to manage the imported'
 'schedules. It is recommended that you confirm that the'
 'resulting file is correct. '
@@ -16794,16 +16795,17 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'to confirm that performance is as expected.'
 *enditem
           CALL PHELPD('operation import confirm',7,'-',0,0,IER)
-*item PRJFMK
+*item PRJFMK operations_summary
 'A summary of the data held within a zone operations file'
 'follows.'
 ' '
-' 1) Operations description - up to 248 characters'
-'    summarising what is happening in the zone.'
+' 1) Operations description - up to 248 characters summarising'
+'    what is happening in the zone for casual gains and another'
+'    describing scheduled air flows (infiltration and ventilation).'
 '  '
-' 2) Weekday, Saturday, Sunday (& other day types if '
-'    defined) air flow data:  start and finish hours '
-'    for each period infiltration and ventilation rates '
+' 2) Weekday, Saturday, Sunday (& other day types if defined)'
+'    air flow data:  start and finish hours and for each period '
+'    infiltration and ventilation rates where the'
 '    (ACH) coupling index: '
 '         > 0 is coupled zone number'
 '         = 0 source at specified temperature'
@@ -16813,8 +16815,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '       upper and lower limits'
 '       upper and lower air flow rates'
 ' '
-'The relationship between control and schedules is'
-'as follows.                          '
+'The relationship between control and schedules is as follows:'
 ' '
 '      |       ________               '
 ' ac/h |       |      |___            '
@@ -16828,216 +16829,139 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '       low   default   high  extreme '
 '         <-  temperature ranges  ->  '
 ' '
-' 4) Weekday, Saturday and Sunday (& other day types if '
-'    defined) casual gains data: start and finish hours '
-'    for each period casual gain type:'
+' 4) Weekday, Saturday and Sunday (& other day types if defined)'
+'    casual gains data: start and finish hours and for each '
+'    period casual gain type:'
 '         1: usually occupants'
 '         2: usually lighting'
 '         3: usually equipment'
 '       sensible and latent load magnitudes'
 '       radiant and convective portions'
 ' '
-'Where electrical data are associated with a particular'
-'zone load (to enable electrical simulation), the'
-'required data items are: power factor,load type'
-'(inductive or capacative), real power consumption,'
-'operational voltage and the generator phase to which'
-'the load is connected.'
-'You are asked this question because periods'
-'might have been altered and require re-sorting. '
+'Where electrical data are associated with a particular zone'
+'load (to enable electrical simulation), the required data'
+'items are: power factor,load type (inductive or capacative),'
+'real power consumption, operational voltage and the generator'
+'phase to which the load is connected.'
+' '
+'When exiting you are asked about sorting casual gains because'
+'periods might have been altered and require re-sorting. '
 *enditem
-            CALL ASKOK(
-*item PRJFMK
-'You are asked this question because changes were'
-'detected in the zone operations schedules and '
-'you might loose this information if you exit without'
-'saving the changes.'
-*enditem
+          CALL ASKOK(
           CALL ASKOK('Before exiting do you wish to',
-*item PRJFMK
-'Notes (<248 char) for schedules of zone air flow and'
-'casual gains can be included in the model. Use this'
-'facility to clarify what is happening in the zone.'
-*enditem
           CALL EASKS248(tcname,' ','Zone operations notes:',
-*item PRJFMK
-'Notes (<248 char) for schedules of zone air flow can'
-'be included in the model. Use this facility to'
-'clarify what is happening in the zone.'
-*enditem
           CALL EASKS248(tcname,' ','Zone scheduled air notes:',
-*item PRJFMK
-'Notes (<248 char) for schedules of zone air flow and'
-'casual gains can be included in the model. Use this'
-'facility to clarify what is happening in the zone.'
-*enditem
           CALL EASKS248(tcname,' ','Zone operations notes:',
-*item PRJFMK
-'A zone operations file contains schedules of air flow'
-'and casual gains.  Air flows may have thermostatic'
-'or wind speed control. If electrical details are  '
-'included then casual gains and electrical loads are'
-'combined into a single zone load.'
-*enditem
-        CALL EASKS(LTMP,' ','Zone operations file name?',
-*item PRJFMK
-'You were presented with this message because a'
-'problem was detected while trying to update the'
-'zone operations file. Check that you have sufficient'
-'disk space and/or permission to update the model'
+          CALL EASKS(LTMP,' ','Zone operations file name?',
+*item PRJFMK operations_save_error
+'You were presented with this message because a problem'
+'was detected while trying to update the zone operations'
+'file. Check that you have sufficient disk space and/'
+'or permission to update the model'
 *enditem
             CALL ASKOK('Problem encountered saving data!',
-*item PRJFMK
-*enditem
-        CALL PHELPD('operation help',48,'-',0,0,IER)
 *subroutine EDAFCTL
-*item EDAFCTL
-'This facility supports basic scheduled control of air'
-'infiltration and ventilation based on temperatures or'
+*item EDAFCTL zone_flow_menu_summary
+'This interface supports range based control of scheduled'
+'air infiltration and ventilation based on temperature and'
 'wind velocity.'
-*enditem
-      CALL ASKOK(' ','Is air flow thermostatically controlled?',
-*item EDAFCTL
-'Control of air flow can be based on one of the'
+' '
+'If you do not select control then the nominal infiltration'
+'and ventilation rates in the schedules will be used.'
+'  '
+'Thermostatic control of air flow can be based on one of the'
 'following parameters: '
 ' '
-'* air temperature within the current zone;'
-'* air temperature within another modelled zone;'
-'* external air temperature;'
-'* external wind velocity.'
-' '
-'Note that thermostatic or wind velocity control'
-'applies to all days within a simulation.'
-*enditem
-      CALL EPICKS(IX,IVAL,' ','Air Flow Control Options',
-*item EDAFCTL
-'Air flow control can be restricted to infiltration'
-'(outside), to ventilation (from another zone or at'
-'specified temperature) or to both.'
-*enditem
-   12 CALL EPICKS(IX,IVALS,' ','Air flow control scope:',
-*item EDAFCTL
+'  air temperature within the current zone;'
+'  air temperature within another modelled zone;'
+'  external air temperature;'
+'  '
 'For temperature control the limit is in degC.'
 'For wind speed control the limit is in m/s.'
 ' '
-'Lower limit: point below which an alternative flow'
-'  rate takes effect (e.g. closing windows when the'
-'  lower limit is rached).'
+'Infiltration is defined in terms of air changes per hour and'
+'ventilation is in air changes (based on the volume of the'
+'receiving zone) or a constant temperature source.'
 ' '
-'Middle limit: point above which the 1st stage of an'
-'  alternative flow regime takes effect).'
+'The scope of flow control can be restricted to infiltration'
+'(outside), to ventilation (from another zon at a specific'
+'temperature) or to both.'
 ' '
-'High limit: point above which a 2nd stage flow'
-'  regime takes effect. (Set high, e.g. 100degC,'
-'  to prevent use.)'
+'Infiltration control is range based similar to that used in' 
+'mass flow network control. '
+' '
+'Lower limit: point below which an alternative flow rate takes'
+'  effect (e.g. closing windows when the lower limit is reached).'
+' '
+'Middle limit: point above which the 1st stage of an alternative'
+'  flow regime takes effect).'
+' '
+'High limit: point above which a 2nd stage flow regime takes'
+'  effect. (Set high, e.g. 100degC, to prevent use.)'
+' '
+'The relationship between control and schedules is as follows:'
+' '
+'      |       ________               '
+' ac/h |       |      |___            '
+'      |    ___|         |____        '
+'      |   |   scheduled rate |       '
+'      |___|____:_____________|_______'
+'               : <- time ->          '
+'      |        :                     '
+' ac/h |flow |  V     | flow | flow | '
+'      |__x__|________|___y__|__z___| '
+'       low   default   high  extreme '
+'         <-  temperature ranges  ->  '
+'         <-  wind-speed ranges   ->  '
+'  '
+'Note that thermostatic control applies to day types within'
+'a simulation.'
 *enditem
+      CALL ASKOK(' ','Is air flow thermostatically controlled?',
+      CALL EPICKS(IX,IVAL,' ','Air Flow Control Options',
+   12 CALL EPICKS(IX,IVALS,' ','Air flow control scope:',
       CALL EASKS(HOLD,' ',
-*item EDAFCTL
-'Infiltration is defined in terms of air changes per'
-'hour. This value is used below the lower set point.'
-*enditem
       CALL EASKR(VAL,' ','Lower range infiltration rate?',
-*item EDAFCTL
-'Ventilation is defined in air changes per hour. The'
-'source can be another modelled zone or a constant'
-'temperature source. In both cases the volumer flow'
-'rate is relative to the current zone volume.'
-*enditem
-        CALL EASKABC(' ','Ventilation options:',
-*item EDAFCTL
-*enditem
-          call askzone(iv,IVL(icomp),'Ventilation from which zone?',
-*item EDAFCTL
-*enditem
-          CALL EASKR(VAL,outs,outs2,0.0,'F',200.0,'W',1.0,'lwr vnt',
-*item EDAFCTL
-*enditem
-          CALL EASKR(VAL,' ','Lower range ventilation rate?',
-*item EDAFCTL
-*enditem
-          CALL EASKR(V,' ',
-*item EDAFCTL
-'Infiltration is defined in air changes per hour. This'
-'value is used if the temperature is above the mid-leve'
-'set point but below the high level set point.'
-*enditem
-        CALL EASKR(V,' ','1st stage infiltration rate?',
-*item EDAFCTL
-'Mid level ventilation is imposed when the sensed'
-'condition is between the middle and high set points.'
-'Ventilation (zone coupled air flow) is defined as'
-'air changes per hour. The source can be another'
-'zone or at a specified constant temperature. In both'
-'cases the volume flow rate is relative to the volume'
-'of the current zone.'
-*enditem
-        CALL EASKABC(' ','First stage ventilation options:',
-*item EDAFCTL
-*enditem
-          call askzone(iv,IVU(icomp),'Ventilation from which zone?',
-*item EDAFCTL
-*enditem
-          CALL EASKR(VAL,outs,outs2,0.0,'F',200.0,'W',1.0,'mid vnt',
-*item EDAFCTL
-*enditem
-          CALL EASKR(VAL,' ','Mid-range ventilation rate?',
-*item EDAFCTL
-*enditem
-          CALL EASKR(V,' ','Mid range ventilation source temperature?',
-*item EDAFCTL
-'Infiltration is defined in air changes per hour and is'
-'used when conditions exceed the high set point. If not'
-'needed make the set point high, e.g. 100degC.'
-*enditem
-        CALL EASKR(V,' ','High stage infiltration rate?',
-*item EDAFCTL
-'High level ventilation is imposed when the sensed'
-'condition exceeds the high set point. Ventilation'
-'(zone coupled air flow) is defined as air changes per'
-'hour. The source can be another zone or at a specified'
-'constant temperature. In both cases the volume flow '
-'rate is relative to the volume of the current zone.'
-*enditem
-        CALL EASKABC(' ','High stage ventilation options:',
-*item EDAFCTL
-*enditem
-          call askzone(iv,IVH(icomp),'Ventilation from which zone?',
-*item EDAFCTL
-*enditem
-          CALL EASKR(VAL,outs,outs2,0.0,'F',200.0,'W',1.0,'high vent',
-*item EDAFCTL
-*enditem
-          CALL EASKR(VAL,' ','High-range ventilation rate?',
-*item EDAFCTL
-*enditem
-          CALL EASKR(V,' ',
+      CALL EASKABC(' ','Ventilation options:',
+      CALL EASKR(VAL,outs,outs2,0.0,'F',200.0,'W',1.0,'lwr vnt',
+      CALL EASKR(VAL,' ','Lower range ventilation rate?',
+      CALL EASKR(V,' ',
+      CALL EASKR(V,' ','1st stage infiltration rate?',
+      CALL EASKABC(' ','First stage ventilation options:',
+      CALL EASKR(VAL,outs,outs2,0.0,'F',200.0,'W',1.0,'mid vnt'
+      CALL EASKR(VAL,' ','Mid-range ventilation rate?',
+      CALL EASKR(V,' ','Mid range ventilation source temperature?',
+      CALL EASKR(V,' ','High stage infiltration rate?',
+      CALL EASKABC(' ','High stage ventilation options:',
+      CALL EASKR(VAL,outs,outs2,0.0,'F',200.0,'W',1.0,'high vent',
+      CALL EASKR(VAL,' ','High-range ventilation rate?',
+      CALL EASKR(V,' ',
 *subroutine EDAIR2
-*item EDAIR2
-'Air flows are defined via one or more sequential'
-'periods, the magnitude at a given time being the'
-'flow specified a period that includes that time.'
+*item EDAIR2 air_flow_period_setup
+'Air flows are defined via one or more sequential periods, the'
+'magnitude at a given time being the flow specified a period that'
+'includes that time.'
 ' '
-'In cases where ventilation will occur with more'
-'than one modelled zone then a fluid flow network'
-'or temporal definition file should be employed.'
+'In cases where ventilation will occur with more than one modelled'
+'zone then a fluid flow network or temporal definition file should'
+'be employed.'
 ' '
-'Note that large changes in flow rates between'
-'periods can result in unacceptable interpolation'
+'Note that large changes in flow rates between periods can result'
+'in unacceptable interpolation.'
 ' '
 'The add/delete/copy/import option are as follows.'
-' add - adds a period to one or all day types. BE SURE'
-'   to read the extended help messages in this dialog'
-'   to understand how to use the add function to insert'
-'   a period into a profile.'
+' add - adds a period to one or all day types. BE SURE to read the'
+'   extended help messages in this dialog to understand how to use'
+'   the add function to insert a period into a profile.'
 ' '
-' delete - deletes one or more periods (within a list'
-'   of all periods in all days).'
+' delete - deletes one or more periods (within a list of all periods'
+'   in all days).'
 ' '
-' copy - copies Weekdays to Saturdays or Weekdays -> '
-'   Sundays or Saturdays -> Sundays'
+' copy - copies Weekdays to Saturdays or Weekdays -> Sundays or'
+'   Saturdays -> Sundays'
 ' '
-' import - copies infiltration, ventilation and control'
-'   (or a subset of these data) from another zone.'
+' import - copies infiltration, ventilation and control (or a'
+'   subset of these data) from another zone.'
 ' '
 'When importing you can specify whether to:'
 ' a) preserve the ac/h being imported, e.g. 1.5 ac/h in'
@@ -17047,21 +16971,20 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '    zone becomes 1.07 ac/h in a 70m^3 destination zone.'
 *enditem
         CALL PHELPD('flows menu',33,'-',0,0,IER)
-*item EDAIR2
+*item EDAIR2 air_flow_period_copy
 'The options: '
 'The add/delete/copy/import option are as follows.'
-' add - adds a period to one or all day types. IF'
-'   there is already a defined period which overlaps'
-'   this period then the volumes of air flow will be '
-'   summed.  For example: if there is a period from'
-'   8h00-24h00 with 1ach infiltration and you want to '
-'   add a period 20h00-24h00 with 0.5 the time from '
-'   20h00-24h00 will become 1.5 ach.'
+' add - adds a period to one or all day types. IF there is'
+'   already a defined period which overlaps this period'
+'   then the volumes of air flow will be summed. '
+'   For example: if there is a period from 8h00-24h00 with'
+'   1 ach infiltration and you want to add a period 20h00-'
+'   24h00 with 0.5 the time from  20h00-24h00 will become 1.5 ach.'
 ' '
-'   If you want to adjust the profile so the inserted'
-'   period has a different value then initailly'
-'   give 0.0 for the flows. After the periods have'
-'   been revised then edit the newly created period.'
+'   If you want to adjust the profile so the inserted period'
+'   has a different value then initailly give 0.0 for the'
+'   flows. After the periods have been revised then edit the'
+'   newly created period.'
 '  '
 '   The alternative approach is to edit the start and'
 '   end time of the existing period so that a gap is'
@@ -17085,26 +17008,13 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '    zone becomes 1.07 ac/h in a 70m^3 destination zone.'
 *enditem
         CALL EASKATOG(' ','Options (see help):',
-*item EDAIR2
-*enditem
-          CALL EASKAB(' ','Add period to ','one day type',
-*item EDAIR2
-*enditem
-            CALL EPICKS(IX,KSTR,' ','choose daytype to add period in'
-*item EDAIR2
-*enditem
-            call askzone(isource,izdef,
-*item EDAIR2
-*enditem
-          CALL EASKABC(' ','Import:','all flow schedules & ctl',
-*item EDAIR2
-*enditem
-          CALL EASKABC(' ','Infiltration import:','preserve ac/h',
-*item EDAIR2
-*enditem
-            CALL EASKABC(' ','Ventilation import:','preserve ac/h',
+        CALL EASKAB(' ','Add period to ','one day type',
+        CALL EPICKS(IX,KSTR,' ','choose daytype to add period in'
+        CALL EASKABC(' ','Import:','all flow schedules & ctl',
+        CALL EASKABC(' ','Infiltration import:','preserve ac/h',
+        CALL EASKABC(' ','Ventilation import:','preserve ac/h',
 *subroutine EDAIR3
-*item EDAIR3
+*item EDAIR3 air_flow_period_setup
 'Air flows are defined via one or more sequential'
 'periods, the magnitude at a given time being the'
 'flow specified a period that includes that time.'
@@ -17139,7 +17049,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '    zone becomes 1.07 ac/h in a 70m^3 destination zone.'
 *enditem
         CALL PHELPD('flows menu',33,'-',0,0,IER)
-*item EDAIR3
+*item EDAIR3 air_flow_period_copy
 'The options: '
 'The add/delete/copy/import option are as follows.'
 ' add - adds a period to one or all day types. IF'
@@ -17177,172 +17087,100 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '    zone becomes 1.07 ac/h in a 70m^3 destination zone.'
 *enditem
         CALL EASKATOG(' ','Options (see help):',
-*item EDAIR3
-*enditem
-          CALL EASKAB(' ','Add period to ','one day type',
-*item EDAIR3
-*enditem
-            CALL EPICKS(IX,KSTR,' ','choose daytype to add period in'
-*item EDAIR3
-*enditem
-            call askzone(isource,izdef,
-*item EDAIR3
-*enditem
-          CALL EASKABC(' ','Import:','all flow schedules & ctl',
-*item EDAIR3
-*enditem
-          CALL EASKABC(' ','Infiltration import:','preserve ac/h',
-*item EDAIR3
-*enditem
-            CALL EASKABC(' ','Ventilation import:','preserve ac/h',
+        CALL EASKAB(' ','Add period to ','one day type',
+        CALL EPICKS(IX,KSTR,' ','choose daytype to add period in'
+        CALL EASKABC(' ','Import:','all flow schedules & ctl',
+        CALL EASKABC(' ','Infiltration import:','preserve ac/h',
+        CALL EASKABC(' ','Ventilation import:','preserve ac/h',
 *subroutine EDAIRFL
-*item EDAIRFL
-'Period during which air flow applies.'
+*item EDAIRFL operations_air_details
+'There are several inputs describing air flows at a specific'
+'period on the current day type:'
+' '
+' Period during which air flow applies defined by a start hour'
+' and finish hour.
+'  '
+' Infiltration air flow rates are specified in air change per hour'
+' or m^3/s.'
+' '
+' Ventilation air flow rates are specified in air changes (relative'
+' to the volume of the recieving zone) or in ^3/s. You are asked'
+' which zone is the source.'
+'  '
+' For ventilation you may also specify a fixed temperature source'
+' of air (degC) at a specific flow rate or the outside ambient'
+' temperature.'
 *enditem
         CALL EASKS(HOLD,OUTS,' ',16,' 0 24 ','air st-fn hr',IER,1)
-*item EDAIRFL
-'An air flow rate can be specified in air change per '
-'hour or m^3/s.'
-*enditem
         CALL EASKAB(' ','Air flow specified in:','AC/h',
-*item EDAIRFL
-'Supply the infiltration rate in ac/h.'
-*enditem
-            call EASKR(XACH,' ','Infiltration rate?',
-*item EDAIRFL
-'Supply the ventilation rate in ac/h relative'
-'to the volume of the receiving zone.'
-*enditem
-            call EASKR(XACH,' ','Ventilation rate?',
-*item EDAIRFL
-'Supply the infiltration rate in m^3/s.'
-*enditem
-            call EASKR(XACH,' ','Infiltration rate?',
-*item EDAIRFL
-'Supply the ventilation rate in m^3/s relative.'
-'to the volume of the receiving zone.'
-*enditem
-            call EASKR(XACH,' ','Ventilation rate?',
-*item EDAIRFL
-*enditem
-          CALL EASKABC(' ','Ventilation air temperature:',
-*item EDAIRFL
-*enditem
-            call askzone(IV,IPTX,'Ventilation from which zone?',
-*item EDAIRFL
-'Supply the ventilation air temperature in degC.'
-*enditem
-            call EASKR(XTA,' ','Supply temperature?',
+        call EASKR(XACH,' ','Infiltration rate?',
+        call EASKR(XACH,' ','Ventilation rate?',
+        call EASKR(XACH,' ','Infiltration rate?',
+        call EASKR(XACH,' ','Ventilation rate?',
+        CALL EASKABC(' ','Ventilation air temperature:',
+        call askzone(IV,IPTX,'Ventilation from which zone?',
+        call EASKR(XTA,' ','Supply temperature?',
 *subroutine ADDAFP
 *subroutine CDAIRFL
-*item CDAIRFL
-'One or more of the periods may be deleted.'
+*item CDAIRFL operations_copy_flow
+'There are a number of options for managing the air flow schedule:'
+'  '
+' One or more of the periods may be deleted.'
+'  '
+' All the flows associated with a specified day type'
+' can be copied to another day type.'
+'  '
 *enditem
         call EPICKS(ilistlen,IVERT,' ','Air flow period(s) to delete:',
-*item CDAIRFL
-'All the casual gains associated with a specified day type'
-'can be copied to another day type.'
-*enditem
         CALL EPICKS(IX,KSTR,' ','choose daytype to copy periods from',
-*item CDAIRFL
-*enditem
         CALL EPICKS(IX,KSTR,' ','choose daytype to copy periods to',
 *subroutine COPYAIRFL
-*item COPYAIRFL
-'This is the suggested name for the file that will'
-'hold the imported air flow schedules data. '
+*item COPYAIRFL copy_air_via_import
+' Air flows from a [pattern file] can be copied into the current'
+' zones air flow schedule. You must specify the assumed volume of'
+' the pattern file source zone so that it can be scaled to the'
+' destination zone volume.'
 *enditem
           CALL EASKS(ltmp,' New zone operations file: (confirm) ',
-*item COPYAIRFL
-'Because this is a pattern file there is no associated'
-'zone and to do a ratio we need an assumed volume. '
-*enditem
           CALL EASKR(VAL,' ','Assumed volume of source?',
 *subroutine CHKAIRFL
 *subroutine PLTAIR
 *subroutine EDCAS
-*item EDCAS
-'You were presented with this message because the'
-'file is in an older format which might have overlaps'
-'in the casual gain periods. The current definition'
-'of casual gain periods does not support overlapping'
-'periods and stores the periods by time and day type.'
+*item EDCAS operations_warn_overlap
+'You were presented with this message because the file is an older'
+'format which might have overlaps in the casual gain periods. The'
+'current definition of casual gain periods does not support
+'overlapping periods and stores the periods by time and day type.'
 ' '
-'It is recommended that you say YES and then check that'
-'the updated periods are correct.'
+'It is recommended that you say YES and then check that the'
+'updated periods are correct.'
 *enditem
           call askok(' ','Sort and remove overlaps from casual gains?',
-*item EDCAS
-'Casual gains are defined via one or more periods, the'
-'magnitude at a given time being the summation of the '
-'gains in all periods which include that time.  In '
-'this way complex patterns may be described. '
+*item EDCAS operations_casual_menu
+'Casual gains are defined via a profile (one or more periods) for each'
+'day type in the model calendar. The magnitude at a given time being'
+'found via checking the period data. To define a complex profile'
+'many periods may be required. Please plan carefully so that you can'
+'input the data correctly (correcting errors takes longer than'
+'planning).
 ' '
-'You may use an [additive] or [sequential] approach or'
-'a combination as you choose.  The total gain is '
-'displayed in the graphic feedback window.'
+'The total gain is displayed in the graphic feedback window.'
 '  '
-'If electrical definitions are included the menu will'
-'show the power consumption of the load and the power'
-'factor. The graphs will continue to show the casual'
-'gains to the zone.'
+'If electrical definitions are included the menu will show the'
+'power consumption of the load and the power factor. The graphs'
+'will continue to show the casual gains to the zone.'
 '  '
-'Import casul gains - you select a zone with casual'
-'gains patterns and they are copied into this zone,'
-'optionally with adjustments if the zone base areas'
-*enditem
-        CALL EPICKS(IX,KSTR,' ','Import a profile for which day type?',
-*item EDCAS
-'If you choose to incorporate electrical data into '
-'the operations file you will be asked to specify '
-'additional data items for each casual gain. With '
-'the extra data items casual gains are now zone '
-'loads - zone loads contain both thermal and '
-'electrical information. Type definitions remain '
-'the same as for casual gains. '
-*enditem
-         call easkabc('Do you wish to include definition of electrical',
-*item EDCAS
-*enditem
-          call easkab(' Do you wish to remove definition of  ',
-*item EDCAS
-*enditem
-        CALL PHELPD('gains menu',18,'-',0,0,IER)
-*item EDCAS
-'You can apply a scaling factor to all entries of a '
-'particular casual gain type (useful for parametric '
-'studies on profiles which have been imported).'
-'If you are not scaling gains choose all gains and then'
-'choose a factor of 1.0'
-*enditem
-        CALL EASKATOG('Apply scaling factor to which casual gain type?',
-*item EDCAS
-*enditem
-          call EASKABC('Import profile for one or all day types',
-*item EDCAS
-*enditem
-            CALL EPICKS(IX,KSTR,' ',
-*item EDCAS
-*enditem
-          CALL EASKR(VAL,outs,'(typically between 0.1 and 5.0)',
-*item EDCAS
-'The options: '
-' add - adds a period to one or all day types'
-' '
-' delete - deletes one or more periods (within a list'
-'   of all periods in all days).'
-' '
-' copy - copies periods from one day type to another  '
-'   Currently it adds the copied periods to the '
-'   destination in addition to existing periods already'
-'   present in the destination day type '
-' '
-' import - imports casual gain patterns for all gains'
-'   and day types from another zone (overwrites).'
-' '
-' import pattern - imports casual gain patterns for all'
-'   gains and day types from file outwith the model '
-'   (overwrites)'
+'If you choose to incorporate electrical data into the operations'
+'file you will be asked to specify additional data items for the'
+'casual gain so that both thermal and electical information is
+'included.
+'  '
+'Import casul gains - you select a zone with casual gains patterns'
+'and they are copied into this zone, optionally with adjustments'
+'if the zone base areas differ.'
+'  '
+'Import pattern - imports casual gain patterns for all gains and'
+'day types from file outwith the model (overwrites current data)'
 ' '
 'When importing you can specify whether to:'
 ' a) preserve the absolute W being imported e.g. 123W'
@@ -17351,24 +17189,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '    destination zone base areas e.g. 123W in source'
 '    zone of 2.3m^2 becomes 267W in a 5.0m^2 base area'
 '    zone.'
-*enditem
-        CALL EASKATOG('Casual gain period options:','(see help)',
-*item EDCAS
-*enditem
-          CALL EASKABCD('New casual gain of which type?',' ',
-*item EDCAS
-*enditem
-            call EASKABC('Add period for one or all day types',
-*item EDCAS
-*enditem
-              CALL EPICKS(IX,KSTR,' ',outs,12,NBDAYTYPE,
-*item EDCAS
-*enditem
-            call askzone(isource,izdef,'Casual gains from which zone?',
-*item EDCAS
-*enditem
-          CALL EASKABC('Casual import:',' ','preserve absolute W',
-*item EDCAS
+'  '
 'An automated process has been used to manage the imported'
 'schedules. It usually does it as intended and, as with all'
 'automated processes it is recommended that you confirm '
@@ -17377,40 +17198,63 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'One approach is to generate a new QA report and check this'
 'against the previous model and then run a short assessment'
 'to confirm that the predictions are as expected. '
+' '
+'You may also manage the casual gain periods by removing a period'
+'or by adding a period to one or all day types.'
+' '
+'You may also copy periods from one day type to another. Currently'
+'it adds the copied periods to the destination in addition to'
+'existing periods already present in the destination day type '
+'  '
+'You can apply a scaling factor to all entries of a particular'
+'casual gain type (useful for parametric studies on profiles'
+'which have been imported). If you are not scaling gains choose'
+'all gains and then choose a factor of 1.0'
 *enditem
-          CALL PHELPD('operation import confirm',8,'-',0,0,IER)
-*item EDCAS
+        CALL EPICKS(IX,KSTR,' ','Import a profile for which day type?',
+        call easkabc('Do you wish to include definition of electrical',
+        call easkab(' Do you wish to remove definition of  ',
+        CALL EASKATOG('Apply scaling factor to which casual gain type?',
+        call EASKABC('Import profile for one or all day types',
+        CALL EPICKS(IX,KSTR,' ',
+        CALL EASKR(VAL,outs,'(typically between 0.1 and 5.0)',
+        CALL EASKATOG('Casual gain period options:','(see help)',
+        CALL EASKABCD('New casual gain of which type?',' ',
+        call EASKABC('Add period for one or all day types',
+        CALL EPICKS(IX,KSTR,' ',outs,12,NBDAYTYPE,
+        call askzone(isource,izdef,'Casual gains from which zone?',
+        CALL EASKABC('Casual import:',' ','preserve absolute W',
+        CALL PHELPD('operation import confirm',8,'-',0,0,IER)
+*item EDCAS operations_casual_labels
 'Casual gains have initial type labels which may not'
 'be appropriate for your project. You can adapt the '
 'labels if it clarifies your model. '
+'  '
+'If you want to use the standard labels select them from the list.'
 *enditem
         call askok(' ','Change type labels?',OK,dok,3)
-*item EDCAS
-'Select a label which describes the gain/load type'
-'i.e. equip - equipment, light - lighting etc..   '
-*enditem
-            call easks(TYPSTR,' ',outs,8,
+        call easks(TYPSTR,' ',outs,8,
 *subroutine SCASL
-*item SCASL
-'Any one of the profiles may be selected.'
-*enditem
-      CALL EPICKS(IX,IPRVAL,' ','Profiles in events db: ',
-*item SCASL
-'Casual gains within a zone can be be designated to be '
-'of one of three user-defined types so that for example '
-'occupant gains can be separately tracked from that of '
-'lighting or equipment.  The types listed can have any'
-'meaning that the user chooses (type labels can be edited'
-'in the main operations menu.'
-*enditem
-      CALL EASKABC(' ','Type of casual gain: ',ll1,ll2,ll3,ICGTX,6)
-*item SCASL
-'In order to expand the profile into energy values the'
-'sensible and latent load in Watts equivalent to 100% is'
-' required. '
-' '
-'Also supply the radiant and convective fraction for the'
-'sensible load (these normally should sum to 1.00) '
+*item SCASL operations_event_import
+'The periods defined in an event profile database can be used'
+'to form operational schedules. A list of the event profiles'
+'database entries is presented and any one of the profiles'
+'may be selected.'
+'  '
+'After selecting the profile you are asked which of the three'
+'user-defined casual gain types (occupant light small-power) to'
+'associate with the profile.  You can assign what-ever meaning'
+'you need to the three types - you could use two of them to'
+'represent two different kinds of lighting. If you want you can'
+'edit the label of a casual gain type to reflect your specific'
+'use.'
+'  '
+'Event profiles include values between zero and one for two'
+'separate data types. For use with casual gains you are requested'
+'to supply the Watts equivalent to 100%.  You are also asked to'
+'specify the radiant and convective fracion for the sensible'
+'(they should sum to 1.00). You are warned if they sum to less'
+'than 0.98 or more than 1.00.'
 ' '
 'The radiant and convective split of lighting fixtures is'
 'listed below(CIBSE Consice Handbook Table A6.5) : '
@@ -17436,68 +17280,57 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 ' monitor (type not defined) radiant = 35 conv = 65'
 ' laser printer  radiant 33 convective 67'
 *enditem
+      CALL EPICKS(IX,IPRVAL,' ','Profiles in events db: ',
+      CALL EASKABC(' ','Type of casual gain: ',ll1,ll2,ll3,ICGTX,6)
       CALL EASKS(HOLD,
-*item SCASL
-'If the sum is less than 0.98 or greater than 1.00 then'
-'the sensible load may not be well represented in your '
-'model. Tweaking this is for experts only! '
-*enditem
-        call askok(' The Sum of radiant and convective fractions is',
-*item SCASL
+      call askok(' The Sum of radiant and convective fractions is',
+*item SCASL operations_electrical
 'Electrical data (e.g. power factor, leading/lagging'
 'loads, real power, phase) might be used by electrical'
 'engineers and in models where other power components'
 'are being defined. If not just say no. '
+'  '
+' Power factor values between 0.-1. Power factor is the ratio of'
+' real to apparentvpower drawn by the load.'
+'  '
+'A lagging load is one with an inductive component i.e. flourescent'
+'lighting, a leading load is one with a capacative element. Unity'
+'loads are purely resistive i.e. incandescent lighting.'
+' '
+'A cancel leaves the model without electrical data for this item.'
+'  '
+'To expand the profile into energy values it is necessary to supply'
+'the power consumption equivalent to 100%.'
+'  '
+'You will also be asked about:'
+'  Voltage for the electrical device represented'
+'  '
+'  Phase of the three phase supply is the load connected to ? (1-3)'
+'  or 4 - all three i.e. for a large induction motor.'
+' '
+'A cancel leaves the model without electrical data for this item.'
+
 *enditem
         CALL ASKOK('Include electrical data with this profile?',
-*item SCASL
-'Enter a power factor between 0.-1.'
-'Power factor is the ratio of real to apparent'
-'power drawn by the load.'
-*enditem
-          CALL EASKR(PPF,' ','Power factor? [0-1] ? ',
-*item SCASL
-'A lagging load is one with an inductive'
-'component i.e. flourescent lighting, a '
-'leading load is one with a capacative  '
-'element. Unity loads are purely resistive'
-'i.e. incandescent lighting.'
-' '
-'A cancel leaves the model without electrical data'
-'for this item. '
-*enditem
-          CALL EASKI(ippft,'Lagging -1, Leading 1 or Unity 0?',
-*item SCASL
-'To expand the profile into energy values it'
-'is necessary to supply the power consumption'
-'equivalent to 100%.'
-*enditem
-          CALL EASKR(PE,' ','Power consumption? (W) ? ',
-*item SCASL
-'At what voltage does the load operate ?'
-*enditem
-          CALL EASKR(PBVOLT,' ','Operational voltage ? (W) ? ',
-*item SCASL
-'Which phse of the three phse supply is the load'
-'connected to ? (1-3) or 4 - all three i.e. for'
-'a large induction motor.'
-' '
-'A cancel leaves the model without electrical data'
-'for this item. '
-*enditem
-          CALL EASKI(IPPHAST,'Supply phase 1-3 or 4 ?','(see help)',
+        CALL EASKR(PPF,' ','Power factor? [0-1] ? ',
+        CALL EASKI(ippft,'Lagging -1, Leading 1 or Unity 0?',
+        CALL EASKR(PE,' ','Power consumption? (W) ? ',
+        CALL EASKR(PBVOLT,' ','Operational voltage ? (W) ? ',
+        CALL EASKI(IPPHAST,'Supply phase 1-3 or 4 ?','(see help)',
 *subroutine EDCASGN
 *item EDCASGN
-'Period during which casual gains applies.'
-*enditem
-      CALL EASKS(hold,outs,' ',24,' 0 24 ','cas st-fn hr',IER,1)
-*item EDCASGN
+'The scheduling of casual gains involves defining a number of'
+'periods in each calendar day type.'
+'  '
 'A gain can be specified as:'
 ' Watts - explicitly set the gain.'
+'  '
 ' Watts per square meter - will use the floor area of the '
 '  zone to calculate the total gain.'
+'  '
 ' Watts per object - gain/object and number of objects are'
 '  required (an object could be a person or computer).'
+'  '
 ' Square meters per object - will use the floor area of the'
 '  zone to calculate the total gain. For the particular'
 '  case of an occupant there is an assumption that each'
@@ -17525,77 +17358,30 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '       avg mix     440     220 220    190 250     135 305'
 ' '
 *enditem
+      CALL EASKS(hold,outs,' ',24,' 0 24 ','cas st-fn hr',IER,1)
       CALL EASKABCD('Gain to be specified as: (see help)',' ','Watts',
-*item EDCASGN
-' '
-'ESP-r asks for fixed sensible and latent values. The'
-'values for occupants are really a function of the current'
-'zone temperature (CIBSE Concise Handbook Table 6.1)'
-'If possible pick a value for the likely temperature rnage.'
-'For an adult and average mix '
-'              Total W 15C sen lat 20C sen lat 24C sen lat'
-'Seated inactive   115     100  15     90  25      75  40'
-'       avg mix    100      87  13     78  22      65  35'
-'Seated light work 140     110  30    100  40      80  60'
-'       avg mix    126      99  27     90  36      72  54'
-'Seated office work 140    110  30    100  40      80  60'
-'       avg mix     130    102  28     93  37      74  56'
-'Standing light work 160   120  40    110  50      85  75'
-'       avg mix      141   106  35     97  44      75  66'
-'Light factory work 235    150  85    130 105     100 135'
-'       avg mix     209    133  76    116  93      89 121'
-'Medium factory work 265   160 105    140 125     105 160'
-'       avg mix      249   150  99    132 117      99 150'
-'Heavy factory work 440    220 220    190 250     135 305'
-'       avg mix     440    220 220    190 250     135 305'
-'Supply the sensible and latent gain in Watts.'
-' '
-' '
-*enditem
-        call EASKS(HOLD,'Sensible and latent gain (W):',
-*item EDCASGN
-'Supply the sensible and latent gain in Watts/m^2.'
-' '
-' '
-*enditem
+      call EASKS(HOLD,'Sensible and latent gain (W):',
         call EASKS(HOLD,'Sensible and latent gain (W/m^2):',
-*item EDCASGN
-'The number of objects for the current gain type is '
-'required. For example the number of computers.'
-' '
-*enditem
         CALL EASKI(NOBJ,' ','Number of objects (e.g. people)?',
-*item EDCASGN
-'Supply the sensible and latent gain in Watts.'
-' '
-' '
-*enditem
         call EASKS(HOLD,'Object sensible and latent gain (W):',
-*item EDCASGN
-'The floor area per object for the current gain type is '
-'required. For example the area per person assuming that'
-'for people the sensible is 95W and latent is 45W. '
-*enditem
         call EASKR(XFLA,'Floor area per object (e.g. people)?','  ',
-*item EDCASGN
-'Supply the sensible and latent gain in Watts/object.'
-' '
-' '
-*enditem
             call EASKS(HOLD,'Sensible and latent gain (W/object):',
-*item EDCASGN
-'Supply the radiant and convective fraction for'
-'the sensible load (should be <=1.00) '
+*item EDCASGN operations_lighting_data
+'Supply the radiant and convective fraction for the sensible load'
+'(should be ~1.00). Setting the total radiant and convective split'
+'of a casual gain to less than 0.9 can lead to confusion. For example:'
+'(600W with 0.4 rad and 0.4 conv is 480W total) and should only be'
+'done by experts.'
 ' '
-'The radiant and convective split of lighting fixtures is'
-'listed below(CIBSE Consice Handbook Table A6.5) : '
+'The radiant and convective split of lighting fixtures is listed'
+'below(CIBSE Consice Handbook Table A6.5) : '
 '  fluorescent radiant = 30  convective = 70'
 '  tungsten    radiant = 85  convective = 15'
 '  HP mercury sodium radiant = 50 convective = 50'
 '  low pressure sodium radiant = 43 convective = 57'
 ' '
-'The position of lamps determines the distribution of '
-'heat into room or ceiling void (CIBSE Table A6.4) '
+'The position of lamps determines the distribution of heat into'
+'a room or ceiling void (CIBSE Table A6.4) '
 '  recessed open fixture  upwards = 38 downwards = 62'
 '  recessed with louvre   upwards = 45 downwards = 55'
 '  recessed with diffuser upwards = 53 downwards = 47'
@@ -17605,246 +17391,197 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '     downwards = 94'
 '  suspended or wall mounted or desk lamp upwards = 0'
 ' '
-'The radiant and convective split for office equipement'
-'is typically: (CIBSE Table A6.9) '
+'The radiant and convective split for office equipement is typically'
+'(CIBSE Table A6.9): '
 ' desktop computer radiant = 14 convective = 86'
 ' monitor (type not defined) radiant = 35 conv = 65'
 ' laser printer  radiant 33 convective 67'
-*enditem
-      call EASKS(HOLD,'Radiant & convective fraction: (see help)',
-*item EDCASGN
-'Setting the total radiant and convective split of a'
-'casual gain to less than 0.9 can lead to confusion'
-'(600W with 0.4 rad and 0.4 conv is 480W total) and '
-'should only be done by experts.'
-*enditem
-        CALL ASKOK(outs,
-*item EDCASGN
-'Electrical data (e.g. power factor, leading/lagging'
-'loads, real power, phase) might be used by electrical'
-'engineers and in models where other power components'
-'are being defined. If not just say no. '
-*enditem
-        call ASKOK(' ','Does this load need electrical data?',OK,DOK,4)
-*item EDCASGN
+'   '
+'Electrical data (e.g. power factor, leading/lagging loads, real power,'
+'phase) might be used by electrical engineers and in models where other'
+'power components are being defined. If not just say no. '
+'  '
 ' Power factor will vary between 0 - 1.0'
-*enditem
-          call EASKR(pft,' ','Load power factor?',
-*item EDCASGN
-'The load will either be capacitive, leading current,'
-'or reactive with a lagging current, most loads take '
-'a lagging current.'
+'  '
+'The load will either be capacitive, leading current, or reactive with'
+'a lagging current, most loads take a lagging current.'
 ' '
-'A (*) flags an existing value. '
-*enditem
-              call EASKAB('Is the load current leading or lagging?',
-*item EDCASGN
-*enditem
-              call EASKAB('Is the load current leading or lagging?',
-*item EDCASGN
-*enditem
-              call EASKAB('Is the load current leading or lagging?',
-*item EDCASGN
-'What is the real power consumption in watts?'
-'This might be the same as the sensible load for'
-'some devices (please check). '
-*enditem
-          call EASKR(pwrt,'Real power consumption ?','  ',
-*item EDCASGN
-' What voltage does the load operate at i.e. 220V'
-*enditem
-          call EASKR(bvoltt,' ','Operational voltage?',
-*item EDCASGN
-'To which phase of the 3-phase supply is the load '
-'connected, 1-3 or 4-all three.'
+'You are also asked about the following: '
+'  '
+'  What is the real power consumption in watts? This might be the same'
+'  as the sensible load for some devices (please check). '
+'  '
+'  Voltage the load operate at i.e. 220V'
+'  '
+'  Phase of the 3-phase supply is the load connected, 1-3 or'
+'  4-all three.'
 ' '
 'A cancel leaves the electrical data unchanged.'
 *enditem
-          call EASKI(IPHAST,'Which phase is load connected to?',
+      call EASKS(HOLD,'Radiant & convective fraction: (see help)',
+      CALL ASKOK(outs,
+      call ASKOK(' ','Does this load need electrical data?',OK,DOK,4)
+      call EASKR(pft,' ','Load power factor?',
+      call EASKAB('Is the load current leading or lagging?',
+      call EASKAB('Is the load current leading or lagging?',
+      call EASKAB('Is the load current leading or lagging?',
+      call EASKR(pwrt,'Real power consumption ?','  ',
+      call EASKR(bvoltt,' ','Operational voltage?',
+      call EASKI(IPHAST,'Which phase is load connected to?',
 *subroutine CDCASGN
-*item CDCASGN
+*item CDCASGN casual_copy_delete
+'You can manage casual gains by removing one or more casual gain'
+'periods. A list of the current casual gains is presented and'
+'you must choose the period to delete.'
+'  '
+'You can copy the casual gains for a specified day type to another'
+'day type.'
+'  '
 *enditem
         CALL EPICKS(IX,KSTR,' ',
-*item CDCASGN
-*enditem
         CALL EPICKS(IX,KSTR,' ',
-*item CDCASGN
-'One or more of the periods may be deleted (removed).'
-*enditem
         call EPICKS(ilistlen,IVERT,' ',
-*item CDCASGN
-'All the casual gains associated with a specified day type'
-'can be copied to another day type.'
-*enditem
         CALL EPICKS(IX,KSTR,' ',
-*item CDCASGN
-*enditem
         call EPICKS(IXX,IVERT,' ','Casual gain period(s) to copy:',
 *subroutine IMPORTZCASG
-*item IMPORTZCASG
-'This is the suggested name for the file that will'
-'hold the imported casual gain data. '
+*item IMPORTZCASG oper_import_dialogs
+'There are several user interactions associated with importing'
+'data from an external-to-the-model operations file (including'
+'so-called pattern files which are zone operation files located'
+'in the pattern folder of the ESP-r distribution).'
+'  '
+'In the case of a [pattern] file there is no associated zone'
+'and thus no inference can be made as to the volume and floor'
+'area associated with the data to be imported. You will be asked'
+'to supply a value.'
+'  '
+'If there is no current zone operations file to copy into then'
+'you will be asked to confirm the name of the zone operation'
+'file. '
+'  '
+'During the import process you will be asked to confirm or adapt'
+'the documentation for the zone operations. You may accept the'
+'text in the import source. '
 *enditem
           CALL EASKS(ltmp,' New zone operations file: (confirm) ',
-*item IMPORTZCASG
-'Because this is a pattern file there is no associated'
-'zone and to do a ratio we need an assumed area. '
-*enditem
           CALL EASKR(VAL,' ',' Assumed floor area of source ? ',
-*item IMPORTZCASG
-*enditem
           call askok('Use the source documentation?',' ',OK,DOK,0)
-*item IMPORTZCASG
-'Notes (<248 char) for schedules of zone air flow and'
-'casual gains can be included in the model. Use this'
-'facility to clarify what is happening in the zone.'
-*enditem
           CALL EASKS248(oprdescc,'Operations notes (please edit):',
 *subroutine PLTCASGN
 *subroutine insdelcasper
 *subroutine initcasday
-*item initcasday
-'For the current day type specify how many periods'
-'for each casual gain type (occupants, lights and'
-'small power). Do not include periods for gain types'
-'which you will be importing from an Events Profiles'
+*item initcasday operations_initial
+'For the current day type specify how many periods for each'
+'casual gain type (typically occupants, lights and small '
+'power). Do not include periods for gain types which you will'
+'be importing from an Events Profiles Database.'
 ' '
-'If you set the number of periods for a type to zero'
-'you can update it later. The number of periods should'
-'cover the whole day (i.e. from 0h00 to 24h00). For '
-'example, if there are gains between 8h00 and 18h00'
-'and nothing at other times, define this as three'
-'periods - 0h00 to 8h00 with no gains, 8h00 to 18h00'
-'with gains and 18h00 to 24h00 with no gains.'
-'Period start times should be in ascending order.'
+'If you set the number of periods for a type to zero or one you can'
+'update it later. The number of periods should cover the whole day'
+'(i.e. from 0h00 to 24h00). For example:'
+'  if there are gains between 8h00 and 18h00 and nothing at other'
+'  times, define this as three periods - 0h00 to 8h00 with no gains,'
+'  8h00 to 18h00 with gains and 18h00 to 24h00 with no gains.'
+'  '
+'Period start times should be in ascending order. The process works'
+'better (faster and fewer errors) if you plan the schedules for each'
+'day type in advance. If you input the correct start times subsequent'
+'editing tasks will take less time.'
 *enditem
         CALL EASKS(HOLD,VOUTS,
 *subroutine initcasper
-*item initcasper
-'If you define actual start times the subsequent'
+*item initcasper operations_allocate_per
+'If your initial definition of start times is correct then subsequent'
 'editing tasks will be easier.'
 *enditem
       CALL EASKS(CSTR,' ',msg,72,' 0  5  6  8 ','time starts',IER,2)
 *subroutine prjqa
-*item prjqa
+*item prjqa setup_qa_report
 'Normally reports are generated from a standard pattern'
 'and edited to fit the current project. The [notes] file'
-'is created during project registration and should be '
-'updated as the project evloves.'
+'is created during project registration and many groups'
+'like to update this file as the project evloves. If you ask'
+'to look at or edit the file make sure you spell the file'
+'name correctly (name is not held in the model cfg file).'
 ' '
 'The graphing tool can be invoked after exporting'
 'performance data from the assessment tool.'
 ' '
-'If you wish to view bitmapped images oor capture '
-'images from the screen use option [h]. '
+'If you wish to view bitmapped images oor capture images'
+'from the screen use option [h]. '
 ' '
-'The preview tool has a default assumption that the '
-'report uses the troff typesetting convention. '
+'The preview tool has a default assumption that the report'
+'uses the troff typesetting convention. '
 ' '
-'This menu also defines the contents of a QA report for'
-'the current model. '
+'This menu also defines the contents of a QA report for the'
+'current model. A number of topics can be selected for '
+'inclusion in the report and each topic can be reported in'
+'a compact or verbose format.'
 ' '
-'A number of topics can be selected for inclusion in the'
-'report and each topic can be reported in a compact or'
-'verbose format.'
+'Topics which are not included in the current model will show'
+'up as not applicable. You can include none or some or all'
+'zones in the report as well as alter the level of detail'
+'included in the report.'
 ' '
-'Topics which are not included in the current model will'
-'show up as not applicable.'
-' '
-'One use of this report is to track the progress of a'
-'model (comparing reports generated as the model evolves).'
+'One use of this report is to track the progress of a model'
+'(comparing reports generated as the model evolves).'
 ' '
 'Another use of this report is to confirm that different'
-'different versions of a model have been correctly'
-'defined. '
+'versions of a model have been correctly defined. '
 ' '
-'The primary use of this report is as an aide to check'
-'models and provide a text based synopsis of the model'
-'composition. '
+'The primary use of this report is as an aide to check models'
+'and provide a text based synopsis of the model composition. '
 ' '
 'Once you generate a QA report file you can select the'
 '[edit QA report] option and an editor will be launched.'
 *enditem
         CALL PHELPD('QA overview',37,'-',0,0,IER)
-*item prjqa
-'The project log file contains descriptive text about'
-'the project.  Keep it up to date via a text editor.'
-*enditem
-          CALL EASKS(ltmp,
-*item prjqa
-'When attempting to preview the log file a problem'
-'was reported so check the spelling and location or'
-'type of file before trying again. '
-*enditem
-              CALL ASKOK(' Problem detected while trying to preview',
-*item prjqa
-'No file by that name or in that location was found.'
-'Check the spelling and location of the file name'
-'before trying again. '
-*enditem
-            CALL ASKOK(' Problem detected while trying to open',
-*item prjqa
-'If you have a editor associated with ESP-r you can'
-'use it to edit this file.  '
-*enditem
-          CALL ASKOK(' ',' Edit this file?',OK,dok,2)
-*item prjqa
-' Pick one, several or all zones to include.'
-*enditem
-          CALL EPICKS(INPIC,IVALS,' ',' Which zones to summarise:',
-*item prjqa
+        CALL EASKS(ltmp,
+        CALL ASKOK(' Problem detected while trying to preview',
+        CALL ASKOK(' Problem detected while trying to open',
+        CALL ASKOK(' ',' Edit this file?',OK,dok,2)
+        CALL EPICKS(INPIC,IVALS,' ',' Which zones to summarise:',
+*item prjqa qa_filters
 'Often it is convenient to review which surfaces in a '
 'project have particular attributes.'
 ' '
-'The following dialogue will allow you to define a '
-'subset of surfaces via filters for position,  '
-'orientation, opacity, etc. '
+'The following questions will allow you to define a subset'
+'of surfaces via filters for position,  orientation, opacity, etc.'
+'  '
+'Filter options:'
+'  surfaces which are fully attributed or partly attributed'
+' '
+'  surfaces which are opature or transparent'
+' '
+'  surfaces which face the outside or are internal partitions'
+' '
+'  surfaces which have a particular orientation'
+' '
+'After the report is generated it can be edited using the current'
+'standard text editor (as defined in the default file).'
 *enditem
         CALL PHELPD('global search by attribute',6,'-',0,0,IER)
-*item prjqa
-'You may filter for already attributed surfaces or'
-'surfaces marked UNKNOWN. '
-*enditem
         CALL EASKABCD(' Filter for surface composition:',' ',
-*item prjqa
-'You may filter for opaque surfaces, transparent surfaces'
-'or both. '
-*enditem
         CALL EASKABCD(' First filter--surface opacity:',' ',
-*item prjqa
-'You may filter for surfaces which face the outside,'
-'partitions (internal) etc. '
-*enditem
         call EASKATOG(' Second filter--surface contiguity:',' ',
-*item prjqa
-'You may filter for surfaces which have a particular'
-'orientation. '
-*enditem
         call EASKATOG(' Third filter--surface orientation:',' ',
-*item prjqa
-'The QA report file can be edited using the current'
-'defined text editor (as defined in the default file).'
-*enditem
-          CALL EASKF(LFIL,'ASCII file name?',
-*item prjqa
-*enditem
-          CALL EASKF(llitem,'ASCII file name?',
-*item prjqa
-*enditem
-          CALL EASKF(LFIL,'ASCII file name?',
+        CALL EASKF(LFIL,'ASCII file name?',
+        CALL EASKF(llitem,'ASCII file name?',
+        CALL EASKF(LFIL,'ASCII file name?',
 *subroutine mupdate
-*item mupdate
+*item mupdate model_upgrade_older
 'Older models should be updated to take advantage of'
-'extended geometric data structures and file formats'
+'extended geometric data structures and file formats.'
 ' '
 'An update will also reduce the number of model '
 'files which have to be managed. '
 *enditem
         call askok('The current model uses an out-of-date format for',
-*item mupdate
+*item mupdate 'model_upgrade_v3
 'Older models should be updated to take advantage of'
 'extended documentation and quality assurance facilities'
 'as well as enhanced databases.'
+'  '
 'An update will also reduce the number of descriptive '
 'files which have to be managed. '
 ' '
@@ -17853,7 +17590,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 ' '
 *enditem
         call askok('The current model uses an out-of-date format for',
-*item mupdate
+*item mupdate shading_upgrade
 'Older shading files should be recalculated to reflect'
 'changes in the allowable number of surfaces in each'
 'zone. Each affected zone will be done in turn.'
@@ -17863,109 +17600,95 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 *enditem
         CALL EASKABC(' Update of shading options:',' ',
 *subroutine SDDEF001
-*item SDDEF001
-'Pick the required material. '
+*item SDDEF001 uncert_material
+'To further specify the extent of the uncertainty, please'
+'pick the required material from the list provided. '
+'  '
+'You will then be asked to pick the required thermophysical'
+'property for this sensitivity study. You will also be asked'
+'to specify the bounds of the property to search within.'
 '   '
-'Exit will return to the main menu '
-'without saving any data. '
+'Exit will return to the main menu without saving any data.'
 *enditem
       CALL EPICKS(IEPIC,IVALE,' ',' Which material : ',
-*item SDDEF001
-'Pick the required property. '
-'   '
-'Exit will return to the main menu '
-'without saving any data. '
-*enditem
       CALL EPICKS(IPPIC,IVALP,' ',' Which property : ',
-*item SDDEF001
-*enditem
       call EASKAB('Define parameter bounds:','  ',
 *subroutine SDDEF002
-*item SDDEF002
+*item SDDEF002 uncert_MLC
+'Currently you can adjust one material peroperty - the thickness of'
+'a specific layer of a MLC. First select which material you want to'
+'alter.'
 *enditem
       call EASKAB('Which composite construction parameter? ','  ',
-*item SDDEF002
-'Pick the required material. '
-'   '
-'Exit will return to the main menu '
-'without saving any data. '
-*enditem
-        CALL EPICKS(INPIC,IVALE,' ',' Which material : ',
+      CALL EPICKS(INPIC,IVALE,' ',' Which material : ',
 *subroutine SDDEF003
-*item SDDEF003
-'Pick the required parameter. '
+*item SDDEF003 uncert_climate
+'Pick the required climate parameter from the list. '
 '   '
-'Exit will return to the main menu '
-'without saving any data. '
+'Exit will return to the main menu without saving any data.'
 *enditem
       CALL EPICKS(INPIC,IVALP,' ',' Which parameter : ',
 *subroutine SDDEF004
-*item SDDEF004
+*item SDDEF004 uncert_operations
+'You can nominate casual gains or scheduled air flows as uncertain.'
+' '
+'If casual gains then you will be asked which casual gain. and'
+'then whether it is the radiant or convective portion of the gain.'
+'or the total magnitude of the gain.'
+'  '
+'If schedules air flows selected then you are asked if it is'
+'infiltration or which zone is a ventilation source or if it'
+'is the source temperature of the ventilation which is uncertain.'
 *enditem
       call EASKAB('  ','Which scheduled parameter? ',
-*item SDDEF004
-*enditem
-        call EASKABC('  ','Which casual gain? ',
-*item SDDEF004
-*enditem
-        call EASKATOG('Which property? ',' ','Sensible','Latent',
-*item SDDEF004
-*enditem
-        call EASKATOG('Which property? ',' ','Infiltration',
+      call EASKABC('  ','Which casual gain? ',
+      call EASKATOG('Which property? ',' ','Sensible','Latent',
+      call EASKATOG('Which property? ',' ','Infiltration',
 *subroutine SDDEF005
 *item SDDEF005
 *enditem
       call EASKAB('Only Halcrow time invarient enabled ! ','  ',
 *subroutine SDDEF101
-*item SDDEF101
+*item SDDEF101 uncert_air_volume
+'You can identify that the volume of air in the zone is uncertain.'
+'This is the only geometric variant currently implemented.'
 *enditem
       call EASKAB('Only zone air volume enabled ! ','  ',
 *subroutine SDDBOUND
-*item SDDBOUND
+*item SDDBOUND uncert_bounds_3
 'The upper and lower values that the parameter can '
 'take are defined via one of three processes:'
 '1) Percentage change: the upper and lower values will'
 '   be the base case value +/- the percentage change.'
+'   A value greater than zero is expected.'
+'  '
 '2) Absolute change: the upper and lower values will be'
 '   the base case value +/- the absolute change.'
+'   A value greater than zerio is expected.'
+'  '
 '3) Explicitly: the upper and lower values will be '
-'   defined explicitly.'
+'   defined explicitly. Two values are expected and the'
+'   upper must be greater than the lower.'
 *enditem
         call EASKABC(' Define parameter bounds',' via:',
-*item SDDBOUND
-' A value greater than 0.00 is required. '
-*enditem
-          call EASKR(PERC,' ',' Percentage change value? ',
-*item SDDBOUND
-' A value greater than 0.00 is required. '
-*enditem
-          call EASKR(ABS,' ',' Absolute change value? ',
-*item SDDBOUND
-' The upper and lower values are required. '
-' There is no checking of these values, except that '
-' the upper value is greater than the lower. '
-*enditem
-22        call EASKR(EXPU,' ',' Explicit definition of upper value? ',
-*item SDDBOUND
-*enditem
-          call EASKR(EXPL,' ',' Explicit definition of lower value? ',
-*item SDDBOUND
+        call EASKR(PERC,' ',' Percentage change value? ',
+        call EASKR(ABS,' ',' Absolute change value? ',
+22      call EASKR(EXPU,' ',' Explicit definition of upper value? ',
+        call EASKR(EXPL,' ',' Explicit definition of lower value? ',
+*item SDDBOUND uncert_bounds_2
 'The upper and lower values that the parameter can '
-'take are defined via one of three processes:'
+'take are defined via one of two processes:'
 '1) Percentage change: the upper and lower values will'
 '   be the base case value +/- the percentage change.'
+'   A value greater than zero is expected.'
+'  '
 '2) Absolute change: the upper and lower values will be'
 '   the base case value +/- the absolute change.'
+'   A value greater than zero is expected.'
 *enditem
         call EASKAB(' Define parameter bounds',' via:',
-*item SDDBOUND
-' A value greater than 0.00 is required. '
-*enditem
-          call EASKR(PERC,' ',' Percentage change value? ',
-*item SDDBOUND
-' A value greater than 0.00 is required. '
-*enditem
-          call EASKR(ABS,' ',' Absolute change value? ',
+        call EASKR(PERC,' ',' Percentage change value? ',
+        call EASKR(ABS,' ',' Absolute change value? ',
 *subroutine SDDFLT001
 *item SDDFLT001
 'The classifications shown in the display include up to'
@@ -17983,7 +17706,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 *item UNCERTA
 *enditem
       call EASKS(LTEMP,' Uncertainty definitions file name ?',
-*item UNCERTA
+*item UNCERTA uncert_overview_a
 'Uncertainties are defined in a three stage process '
 'analogous to mass flow.'
 '  '
@@ -17996,184 +17719,160 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '3. Distributions and locations are linked to define an '
 '   uncertainty.  The validity of the uncertainty is '
 '   checked at simulation time. Minimum one uncertainty.'
+'  '
+'A so-called uncertainty library is used and if prj detects'
+'that you are working in a remote folder you are asked to'
+'confirm where to place the library.'
 *enditem
         CALL PHELPD('Uncertainty definitions file',12,'-',0,0,IER)
 *subroutine DISPOPT
-*item DISPOPT
+*item DISPOPT uncert_display
 'To create a new definition select + add entry. '
+' '
 'To edit an existing entry then select it.'
-'To remove an existing entry select = delete entry and'
-'  then the entry you wish to delete.'
+' '
+'To remove an existing entry select -> delete entry and then'
+'  identify the entry you wish to delete.'
 *enditem
         CALL PHELPD('UA file entries',4,'-',0,0,IER)
-*item DISPOPT
-*enditem
-          call EPICKS(INDEL,IDEL,' ',' ',15,NICNG,LCNG,
-*item DISPOPT
-*enditem
-          call EPICKS(INDEL,IDEL,' ',' ',15,NILOC,LLOC,
-*item DISPOPT
-*enditem
-          call EPICKS(INDEL,IDEL,' ',' ',15,NIACT,ta15,
+        call EPICKS(INDEL,IDEL,' ',' ',15,NICNG,LCNG,
+        call EPICKS(INDEL,IDEL,' ',' ',15,NILOC,LLOC,
+        call EPICKS(INDEL,IDEL,' ',' ',15,NIACT,ta15,
 *subroutine DEFUAL
 *subroutine CNGDEF
-*item CNGDEF
+*item CNGDEF uncert_distribution
 'Pick the required uncertainty category. You will then '
 'be asked further questions to define the uncertainty '
-'distribution.  '
+'distribution:  '
+'  '
+'  name (up to 15 characters) which is unique is required'
 '   '
 'Exit returns to the main menu without saving any data. '
 *enditem
         CALL PHELPD('Uncertainty categories',5,'-',0,0,IER)
-*item CNGDEF
-'A descriptive name (up to 15 characters) is required.'
-*enditem
         CALL EASKS(t15,' ',' Name for uncertainty ? ',
-*item CNGDEF
-*enditem
         CALL EASKS(t15,' ',' Name for uncertainty ? ',
 *subroutine LOCDEF
-*item LOCDEF
+*item LOCDEF uncert_location
 'The location of the uncertainty can be:'
 ' - spatial and in all temporal locations.'
 ' - temporal and in all spatial locations.'
-' - both.  Only use this option if both domains have'
-'   a restriction'
+' - both.  Only use this option if both domains have a restriction'
 ' '
-'If you select cancel (where a number is requested) '
-'the current model data will not be changed. '
+'Each [location] you define should be given a unique name (up to'
+'15 characters with no spaces.'
+' '
+'If you select cancel (where a number is requested) the current'
+'model the uncertainty data will not be changed. '
+'  '
+'When selecting zones you can pick one, several or All zones for'
+'inclusion and you may select them in any order.'
+'  '
+'If you are also selecting surfaces then you can select from the'
+'list of surfaces (suggest making a note of what you have selected.'
+'  '
+'For temporal selections you must define a period when uncertainty'
+'is applicable (start day of the year and hour of the day and finish'
+'day of the year and hour of the day). If you cancel then'
+'the data is not changed.'
 *enditem
       CALL EASKABC(' ',
-*item LOCDEF
-'Pick one, several or All zones for inclusion in a'
-'graph or tabular listing from the list provided. '
-'You may choose them in any order. '
-*enditem
-          CALL EPICKS(INPIC,IVALZ,' ',' Which zones to include: ',
-*item LOCDEF
-' Pick one, several or all surfaces for inclusion.'
-*enditem
-          call EPICKS(INPIC,IVALS,' Which surfaces to include: ',
-*item LOCDEF
-'The period when uncertainty is applicable requires '
-'starting and finishing dates. '
-'If you select cancel (where a number is requested) '
-'the current model data will not be changed. '
-*enditem
-        call EASKI(IDST,' ','Start day? ',1,'F',365,'F',9,
-*item LOCDEF
-*enditem
-        call EASKI(IHST,' ','Start hour? ',1,'F',24,'F',1,
-*item LOCDEF
-*enditem
-        call EASKI(IDFT,' ','Finish day? ',1,'F',365,'F',15,
-*item LOCDEF
-*enditem
-        call EASKI(IHFT,' ','Finish hour? ',1,'F',24,'F',24,
-*item LOCDEF
-'A descriptive name (up to 15 characters) is required.'
-*enditem
+      CALL EPICKS(INPIC,IVALZ,' ',' Which zones to include: ',
+      call EPICKS(INPIC,IVALS,' Which surfaces to include: ',
+      call EASKI(IDST,' ','Start day? ',1,'F',365,'F',9,
+      call EASKI(IHST,' ','Start hour? ',1,'F',24,'F',1,
+      call EASKI(IDFT,' ','Finish day? ',1,'F',365,'F',15,
+      call EASKI(IHFT,' ','Finish hour? ',1,'F',24,'F',24,
       CALL EASKS(t15,' ',' Name for location ? ',
 *subroutine LINKDEF
-*item LINKDEF
+*item LINKDEF uncert_types
 'Pick the required uncertainty definition(s).'
+'  '
+'Next pick the required location definition.'
 '  '
 'Exit returns to the main menu without saving any data. '
 *enditem
       CALL EPICKS(INPIC,IVALC,' ',' Which uncertainty definition : ',
-*item LINKDEF
-'Pick the required location definition.'
-'  '
-'Exit returns to the main menu without saving any data. '
-*enditem
       CALL EPICKS(INPIL,IVALL,' ',' Which location definition : ',
 *subroutine UPELM
 *subroutine SETUP
-*item SETUP
-'This menu allows the display format for dates and'
-'times to be changed.  The active year can also be'
-'defined as required by controllers that require day'
-'of the week information.'
+*item SETUP setup_date_format
+'This menu allows the display format for dates and times to be'
+'changed.  The active year can also be defined as required by'
+'controllers that require day of the week information.'
 ' '
-'One option lists a specified ASCII file - sometimes'
-'useful if you have need to directly view the contents'
-'of a problem describing entity such as the system'
-'configuration file or a zone geometry file.'
+'One option lists a specified ASCII file - sometimes useful if'
+'you have need to directly view the contents of a model entity'
+'such as the system configuration file or a zone geometry file.'
+'Remember, some files are easier to read than others.'
+'The file is shown section by section in the text feedback.'
 ' '
-'The wireframe view option allows you to set a different'
-'initial wireframe view.'
+'The wireframe view option allows you to set a different initial'
+'wireframe view. This is also useful if you are going to work with'
+'Radiance to set the initial viewing position.'
 ' '
-'The external editor is currently defined to be:'
-'This can be re-defined in your .esprc file.'
+'The external editor is currently defined in the .esprc file.'
+'If you want to use a different text editor then you will need to'
+'modify your .esprc file.  Remember, ESP-r model files tend to get'
+'corrupted if you use an appication like Word for editing.'
 ' '
-'The feedback level allows you to see more or less'
-'information as model files are being scanned. '
+'The feedback level allows you to see more or less information as'
+'model files are being scanned. Verbose can help tracking errors.'
 ' '
-'As ESP-r evolves file formats change. Use the toggle'
-'to maintain the current state, save to an eariler'
-'format or save files to a newer format (if available).'
+'As ESP-r evolves file formats change. Use the toggle in the menu'
+'to upgrade model files to a newer format (if available). You cannot'
+'revert to an earlier version of ESP-r with this facility.'
 ' '
-'The edit [defaults] file allows you to change where'
-'ESP-r looks for certain files. TAKE CARE when editing'
-'this file. '
+'The edit [defaults] file option allows you to change where ESP-r'
+'looks for certain files. TAKE CARE when editing this file. '
 ' '
-'The edit [exemplars] file allows you to change where'
-'ESP-r looks for example models. TAKE CARE when editing'
-'this file. '
+'The edit [exemplars] file option allows you to change where'
+'ESP-r looks for example models. TAKE CARE when editing this file.'
 ' '
-'The edit [3rd party application] allows you to specify'
-'a text editor, image display tool, CAD tool and the '
-'location of example models and where the [defaults] '
-'file (above) is located. '
+'The edit [3rd party application] allows you to specify a text'
+'editor, image display tool, CAD tool and the location of example'
+'models and where the [defaults] file (see above) is located. '
 ' '
-'The test button is for scanning the ESP-r meta file.'
-'Only use this if no other model is loaded. '
-'Unless other wise specified the initial view of the'
-'model is a standard default. If a user defined view '
-'is more appropriate then specify this now. '
+'The option for scanning an ESP-r META file should only be used if no'
+'model is loaded in the project manager. A META file is a compact'
+'single-file representation of much of an ESP-r model. Typically'
+'it is generated by 3rd party tools and treated as a command line'
+'specified input file by prj. You can also export an existing model'
+'as a META file.'
+' '
+'Unless other wise specified the initial view of the model is'
+'a standard default. If a user defined view is more appropriate'
+'then specify this here.  The EYEPOINT is in metres in the model'
+'coordinate system. The VIEWPOINT is also in metres in the model'
+'coordinate system (it defaults to the centre of the model).'
+'The ANGLE of view is in degrees (between 1 and 120 degrees).
 *enditem
         CALL EASKABCD(' Initial view position options',' :',
-*item SETUP
-'The eyepoint is in metres in the coordinate system '
-'of the site. '
-*enditem
-          CALL EASKS(HOLD32,' Eye point  X  Y  Z (in metres): ',
-*item SETUP
-'The viewpoint is in metres in the coordinate system'
-'of the site and defaults to the centre of gravity '
-'of the body. '
-*enditem
-          CALL EASKS(HOLD32,' Viewpoint  X  Y  Z (in metres): ',
-*item SETUP
-'The angle of view is in degrees, allowable values'
-'are from 1 to 89 degrees. '
-*enditem
-          CALL EASKR(ANGI,' ',' New angle of view ? ',
-*item SETUP
-'The specified ASCII file will be read and displayed'
-'in the text window page by page.'
-*enditem
+        CALL EASKS(HOLD32,' Eye point  X  Y  Z (in metres): ',
+        CALL EASKS(HOLD32,' Viewpoint  X  Y  Z (in metres): ',
+        CALL EASKR(ANGI,' ',' New angle of view ? ',
   6     CALL EASKXORGTKF(LFIL,'ASCII file name?',' ',
-*item SETUP
-'Either the file did not exist or included characters'
+*item SETUP setup_list_ascii_error
+'Either the file you selected did not exist or included characters'
 'which would not print. '
 *enditem
           CALL ASKOK(' Problem detected while trying to open',
-*item SETUP
-'An ASCII format file can be edited using the current'
-'defined text editor (as defined in the default file).'
+*item SETUP setup_edit_ascii
+'An ASCII format file that you select can be edited using the current'
+'defined text editor (as defined in the default file). The usual'
+'caviats apply - be certain you know the format of the file prior'
+'to making any changes in an ESP-r model file.'
 *enditem
         CALL EASKXORGTKF(LFIL,'ASCII file name?',' ',
-*item SETUP
-'The edit [defaults] file allows you to change where'
-'ESP-r looks for certain files. TAKE CARE when editing'
-'this file. The key words are:'
+*item SETUP 'setup_edit_defaults
+'The edit [defaults] file allows you to change where ESP-r looks'
+'for certain files. TAKE CARE when editing this file.'
+'The key words are:'
 ' '
-' *ipth - where ESP-r is installed. This was set during'
-'         in intial Installation and compile sequence.'
-'         Leave this alone!'
+' *ipth - where ESP-r is installed. This was set during the initial'
+'         Installation and compile sequence. Leave this alone!'
 ' '
-'Names of default files (typically used ford demos)'
+'Names of default files (typically used for demonstrations)'
 ' *cfg - a default model to open'
 ' *ctl - a default zone control definition'
 ' *mfn - a default mass flow network'
@@ -18182,8 +17881,8 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 ' *res - a default simulation results file'
 ' *mfr - a default mass flow simulation results file'
 ' '
-'Names of databases initially associated with models'
-'edit these so as to be appropriate for your region'
+'Names of databases initially associated with models. Edit'
+'these so as to be appropriate for your region'
 ' *clm - initial climate file'
 ' *prs - initial wind-pressure coefficients database'
 ' *prm - initial materials database'
@@ -18198,76 +17897,71 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 ' *sbem - initial UK National Calculation Method'
 '         database (or code complience rules)'
 ' '
-'After edting and saving the information is available'
-'the next time applications are invoked. '
+'After edting and saving the information is available the next'
+'time applications are invoked. '
 ' '
-'NOTE: do not change the name of the default file! '
+'NOTE: do not change the name of the default file itself! '
 *enditem
         CALL EASKXORGTKF(defdbfl,'ESP-r default files?',' ',
-*item SETUP
-'The edit [esprc] file allows you to change 3rd party'
-'tools used by ESP-r. A standard esprc file is included'
-'in the installation folder. ESP-r also checks for a '
-'.esprc (note the dot) file in the users home folder'
-'for user specific settings.  '
+*item SETUP setup_edit_esprc
+'The edit [esprc] file allows you to change 3rd party tools used'
+'by ESP-r. A standard esprc file is included in the installation'
+'folder. ESP-r also checks for an .esprc (note the dot) file in'
+'the users home folder for user specific settings. '
 ' '
 '        TAKE CARE when editing this file. '
 ' '
-'Data in the file are comma separated. The first token'
-'in each line is a key, the second is (typically) a '
-'label followed by a command or exedutable to invoke.'
+'Data in the file are comma separated. The first token in each line'
+'is a key, the second is (typically) a label followed by a command'
+'or exedutable to invoke.'
 ' '
 'Key words in thefile are: '
 ' *ESPRC  - first line tag (leave alone)'
 ' '
-' *gprn line specifies an application to invoke for'
-'    capturing a portion of the graphic display. For'
-'    Linux and OSX and Solaris the [import] tool in'
-'    Imagemagik is suggested.'
+' *gprn line specifies an application to invoke for capturing a'
+'    portion of the graphic display. For Linux and OSX and Solaris'
+'    the [import] tool in Imagemagik is suggested.'
 ' '
-' *cad  line specifies a CAD application to start. There'
-'   are 3 tokens after the tag, a user description, a'
-'   file format and the name of the executable.'
+' *cad  line specifies a CAD application to start. There are 3'
+'   tokens after the tag, a user description, a file format and'
+'   the name of the executable.'
 ' '
-' *image_display line(s) define how specific image types'
-'    can be displayed. The 2nd token is TIF XMBP GIF XWD'
-'    and the 3rd token is the name of the executable'
+' *image_display line(s) define how specific image types can be'
+'    displayed. The 2nd token is TIF XMBP GIF XWD and the 3rd token'
+'    is the name of the executable.'
 ' '
-' *journal is a line specifying whether a detailed log'
-'    should be kept of the users actions. The 2nd'
-'    token is OFF or ON'
+' *journal is a line specifying whether a detailed log should be'
+'    kept of the users actions. The 2nd token is OFF or ON.'
 ' '
-' *editor line specifies what text editor to invoke'
-'    the 2nd token is a label and the 3rd token is'
-'    the application to start. Typically on Windows'
-'    the WordPad works well and notepad does not work'
-'    well. On Linux/Solaris nedit is a good choice.'
+' *editor line specifies what text editor to invoke the 2nd token'
+'    is a label and the 3rd token is the application to start.'
+'    Typically on Windows we suggest NotePad++ or WordPad. '
+'    Notepad does not work well. On Linux/OSX nedit is a good choice.'
 ' '
-' *exemplars line provides the path to the list of '
-'    exemplar models.'
+' *exemplars line provides the path to the list of exemplar'
+'    models.'
 ' '
-' *validation_stds line provides the path to the list'
-'    of standard validation models.'
+' *validation_stds line provides the path to the list of standard'
+'    validation models.'
 ' '
-' *db_defaults line provides the path to the file that'
-'    holds default database and model files as well as'
-'    default constructions to use.'
+' *db_defaults line provides the path to the file that holds default'
+'    database and model file names as well as default constructions 
+'    to use.'
 ' '
-' *db_climates line provides the path to the file that'
-'    holds list of climate files.'
+' *db_climates line provides the path to the file that holds a list'
+'    of climate files (that populate the climate selection list).'
 ' '
-' *end  the last line of the file (leave alone)'
+' *end  the last line of the file (please leave alone)'
 *enditem
         CALL EASKXORGTKF(esprc,'ESP-r esprc file?','(see help)',
-*item SETUP
-'The edit [climatelist] file allows you to change the'
-'list of climate files available for browsing. TAKE CARE'
-'when editing this file. '
+*item SETUP setup_edit_climatelist
+'The edit [climatelist] file allows you to change the list of'
+'climate files available for browsing. TAKE CARE when editing'
+'this file. '
 ' '
-'The blocks of text that form an entry within this file'
-'are typically created within the clm module and both'
-'the text block and the climatelist file can be edited'
-'clm. '
+'The blocks of text that form an entry within this file are'
+'typically created within the clm module and both the text'
+'block and the climatelist file can be edited clm. '
 ' '
 'Key words in the file are: '
 ' '
@@ -18285,16 +17979,15 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 ' *dbfl <tab> full path to the climate file'
 ' '
 ' *winter_s  winer season tab has 4 numbers for:'
-'    winter begining January 1 and 4 numbers for'
-'    winter ending 31 Dec. Each set of 4 is:'
+'    winter begining January 1 and 4 numbers for winter'
+'    ending 31 Dec. Each set of 4 is:'
 '   start day, start month, finish day, finish month'
 ' '
-' *spring_s has 4 numbers representing start and end'
-'     of spring and 4 numbers representing start and'
-'     end of autumn season'
+' *spring_s has 4 numbers representing start and end of spring'
+'     and 4 numbers representing start and end of autumn season'
 ' '
-' *summer_s has 4 numbers representing start and end'
-'     of summer season'
+' *summer_s has 4 numbers representing start and end of summer'
+'     season'
 ' '
 ' *winter_t is like *winter_s but for a typical period'
 ' *spring_t is like *spring_s but for typical periods'
@@ -18308,16 +18001,16 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 ' *help_end'
 '    signals end of a block of contextual help'
 ' '
-'After edting and saving the information is available'
-'the next time applications are invoked. '
+'After edting and saving the information is available the next'
+'time applications are invoked. '
 *enditem
         CALL EASKXORGTKF(cdblfil,'ESP-r climatelist file?',
-*item SETUP
-'The edit [exemplars] file allows you to change the list'
-'of example models. TAKE CARE when editing'
-'this file. The key words are:'
+*item SETUP setup_edit_exemplars
+'The edit [exemplars] file allows you to change the list of exemplar'
+'models. TAKE CARE when editing this file. The key words are:'
 ' '
 ' *EXEMPLARS - fist line identifier (leave alone)'
+' '
 ' *help <tab> some text'
 ' '
 ' *label <tab> label text'
@@ -18328,56 +18021,36 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 '    marks the start of the model information'
 ' '
 ' *name <tab> some text for the menu'
+' '
 ' *cfg <tab> full path to model configuration file'
+' '
 ' *root <tab> full path to model folder'
 ' '
-'To add an additional item find the relevant group and'
-'add in the *item line, *cfg line and *root line '
+'To add an additional item find the relevant group and add in'
+'the *item line, *cfg line and *root line '
 ' '
-'After edting and saving the information is available'
-'the next time applications are invoked. '
+'After edting and saving the information is available the next time'
+'applications are invoked. '
 *enditem
         CALL EASKXORGTKF(exemfl,'ESP-r exemplars?','(see help)',
-*item SETUP
-'If you want to scan in all of the model geometry files'
-'and save them out to the new format without having to'
-'edit each one this is the place.'
-*enditem
-          CALL EASKABC('Geometric upgrade options',' :',
-*item SETUP
-'ESp-r can process a file with so-called meta file'
-'instructions to create one or more zones with'
-'minimal user intervention. '
-' '
-'You can ask for a synopsis of the file or process'
-'the information in the file. '
-*enditem
-        CALL EASKABCD(' Silent file options',' :',
-*item SETUP
-'ESp-r can process a file with so-called meta file'
-'instructions to create one or more zones with'
-'minimal user intervention. '
-*enditem
-        CALL EASKXORGTKF(LFIL,'ESP-r meta file name?',' ',
-*item SETUP
-*enditem
-        CALL PHELPD('general preferences',39,'-',0,0,IER)
 *subroutine tdfedit
-*item tdfedit
+*item tdfedit tdf_time_format
 'The selected format for the input of time is currently'
 'set as a fraction of a day 0.4271 (eq 10h15).'
+'  '
+'You are also asked for the number of timesteps of data to'
+'recover from the input file.'
 *enditem
         CALL EASKR(TIMEJD,' Time (as julian day) to start recovery? ',
 *item tdfedit
 *enditem
         CALL EASKI(incr,' Number of steps to recover ',' ? ',
-*item tdfedit
-'The ESRU Temporal Definition supports the creation'
-'and management of temporal data from 3rd party'
-'experiments or 3rd party software. It can also hold'
-'scheduling for short timestep casual gains, air'
-'movement and boundary conditions. It is also useful'
-'for data that changes at each timestep.'
+*item tdfedit tdf_overview_menu
+'The ESRU Temporal Definition supports the creation and management'
+'of temporal data from experiments or 3rd party software.'
+'It can also hold scheduling for short timestep casual gains, air'
+'movement and boundary conditions. It is also useful for data'
+'that changes at each timestep.'
 ' '
 'Preferences : file names & types, periods, import/export'
 '             files & date display.'
@@ -18402,123 +18075,102 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 ' DBTZNM   - measured zone db temperature'
 ' SURTM    - measured surface temperature'
 ' '
-'To create a new file, select option 1 and follow the'
-'instructions given. You will be asked for the year '
-'and the period and the timesteps per hour and then '
-'for an initial temporal type. '
+'To create a new file, select option 1 and follow the instructions'
+'given. You will be asked for the year and the period and the'
+'timesteps per hour and then for an initial temporal type its '
+'attributes.'
 ' '
-'Insert by selecting an insertion point, the list will'
-'expand and you can select a generic type. '
+'Insert by selecting an insertion point, the list will expand'
+'and you can select a generic type. '
 ' '
-'Delete by selecting a slot and the list will contract.'
+'Delete by selecting an item and the list will contract.'
 ' '
-'Copy by selecting source and then destination.'
-'The destination data will be overwritten - so you need'
-'to have created a destination item to overwrite before'
-'you ask for a copy. '
+'Copy by selecting source and then destination. The destination'
+'data will be overwritten - so you need to have created a'
+'destination item to overwrite before you ask for a copy.'
 ' '
-'The TDF file is the main temporal file.'
-'The period shown is related to all tabular data'
-'and includes any [startup] time required by the'
-'simulation.  Example: for a simulation at half hour '
-'intervals over 10 days and with 2 startup days the '
-'temporal file should include 288 timesteps. '
+'In the menu, the TDF file is the main temporal file.'
+'  '
+'The period shown is related to all tabular data and includes'
+'any [startup] time required by the simulation. Example:'
+'for a simulation at half hour intervals over 10 days and with'
+'2 startup days the temporal file should include 288 timesteps. '
 ' '
 'Note on file headers:'
-'Older asci temporal files may start with [TDFdatabase2]'
-'before using them please change 1st line to use the'
-'identifier ASCIITDF2'
-'Newer ascii files will start with [ASCIITDF3].'
-'Also note that binary/scratch temporal files are'
-'machine dependant and are not always safe for use on'
-'another computer.'
-'The TDF file is the name of an ascii file which holds'
-'the attributes and temporal (short timestep) data of '
-'casual gains, boundary conditions, flow measurements etc.'
+'Older asci temporal files may start with [TDFdatabase2]. Before'
+'using them please change 1st line to use the identifier ASCIITDF2'
+'in a text editor.'
 ' '
-'While editing temporal data in this module or using the'
-'data during a simulation or as results are being'
-'recovered, a scratch (binary) file is created. '
+'Newer ascii files will start with [ASCIITDF3].  Also note that'
+'binary/scratch temporal files are machine dependant and are not'
+'always safe for use on another computer.'
+*enditem
+*item tdfedit tdf_file_name
+'The TDF file is the name of an ascii file which holds the'
+'attributes and temporal (short timestep) data of casual gains,'
+'boundary conditions, flow measurements etc.'
 ' '
-'I you supply the name of a binary version of the '
-'temporal file it will be translated into an ascii '
-'version and a new scratch file created. '
+'While editing temporal data, during a simulation or as'
+'results are being recovered, a scratch (binary) file is created.'
 ' '
-'Note: if you need to create a new binary temporal file'
-'from an ESP-r ascii temporal file use the command line'
-'option to do the conversion: '
-'tdf -file xx.tdf -act import -actf yy.tdf.a '
-'  where xx.tdf is the name of the new binary file to'
-'  create and yy.tdf.a is the asci temporal file to'
-'  be read in.'
+'If you supply the name of a binary version of the temporal'
+'file it will be translated into an ascii version and a new'
+'scratch file created. '
+'  '
+'If no temporal file is found a minimal file will be created'
+'if you agree. This initial setup prompts you for the necessary'
+'data to setup a new temporal definition. You can also do it'
+'manually.'
 *enditem
         CALL EASKS(tfile,' Temporal file name? ',
-*item tdfedit
-'No temporal file was found so a minimal file '
-'will be created if you say yes. '
-' '
-'If you say no, you can create one later. '
-*enditem
-            CALL ASKOK(outs,' Create a new scratch & asci file?',
-*item tdfedit
-'Initial setup prompts you for the necessary data to'
-'setup a new temporal definition. You can also do it'
-'manually. '
-*enditem
-          CALL EASKAB(' Empty file. Options:',' ',
-*item tdfedit
-*enditem
-        CALL PHELPD('tdf opening',60,'-',0,0,IER)
-*item tdfedit
-'You may save the current binary file or'
-'import or export a ASCII version. '
-*enditem
-        CALL EASKATOG(' File options:',' ','save ascii file',
-*item tdfedit
-'File name for ascii version of the temporal file.'
-*enditem
-          CALL EASKS(afil,' Ascii export file name? ',' ',
-*item tdfedit
+        CALL ASKOK(outs,' Create a new scratch & asci file?',
+        CALL EASKAB(' Empty file. Options:',' ',
+*item tdfedit tdf_save_data
+'You may save the current binary file or import or export'
+'an ASCII version. '
+'  '
+'If you choose an ascii file you will be asked for a file'
+'name.'
+'  '
 'The selected format for the input of time is currently'
 'set as a fraction of a day 0.4271 (eq 10h15).'
+'  '
+'You will also be asked how many timesteps of data to recover.'
 *enditem
-          CALL EASKR(TIMEJD,' Time (as julian day) to start recovery?',
-*item tdfedit
-*enditem
-          CALL EASKI(incr,' Number of steps to recover ',' ? ',
-*item tdfedit
-*enditem
-          CALL EASKS(afil,' Ascii export file name? ',' ',
-*item tdfedit
-'Adding an item - placed at the end of the list. '
-'Deleting an item (irreversable) shifts subsequent '
-' items up in the list. '
-'Copy of item will overwrite the contents of the  '
-' destination item. '
+        CALL EASKATOG(' File options:',' ','save ascii file',
+        CALL EASKS(afil,' Ascii export file name? ',' ',
+        CALL EASKR(TIMEJD,' Time (as julian day) to start recovery?',
+        CALL EASKI(incr,' Number of steps to recover ',' ? ',
+        CALL EASKS(afil,' Ascii export file name? ',' ',
+*item tdfedit tdf_add_an_item
+'Options are:'
+'  Adding an item - placed at the end of the list. '
+' '
+'  Deleting an item (irreversable) shifts subsequent '
+'  items up in the list. '
+' '
+'  Copy of item will overwrite the contents of the  '
+'  destination item. '
+'  '
+'In order to find items in the TDF db a unique name must'
+'be assigned to each entry. This name is a string up to 12'
+'characters long with no blanks.'
+'  '
+'You can manage temporal entries by deleting one or copying'
+'one (you are asked to select it in the list).'
+' '
+'If you copy the static items from an entity then'
+'you will be asked for the item to copy the information'
+'into.'
 *enditem
         CALL EASKABC('Entry options:',' ',
-*item tdfedit
-'In order to find items in the TDF db a unique name'
-'must be assigned to each entry. This name is a '
-'string up to 12 characters long with no blanks.'
-*enditem
-            CALL EASKS(TTAG,' ','Name for entry? ',
-*item tdfedit
-'Choose an item to delete.'
-*enditem
-          CALL EPICKS(INPIC,itemval,' ',' Which item to delete?',
-*item tdfedit
-'Choose an item to copy. You will then be asked'
-'for a destination (which must already exist).'
-*enditem
-          CALL EPICKS(INPIC,itemval,' ',' Which item to copy?',
-*item tdfedit
-'Choose a destination item.'
-*enditem
-          CALL EPICKS(INPIC,itemval,
+        CALL EASKS(TTAG,' ','Name for entry? ',
+        CALL EPICKS(INPIC,itemval,' ',' Which item to delete?',
+        CALL EPICKS(INPIC,itemval,' ',' Which item to copy?',
+        CALL EPICKS(INPIC,itemval,
 *subroutine CLRTABC
 *subroutine glbset
-*item glbset
+*item glbset tdf_global_questions
 'Period of the temporal file:'
 'The year is required. It should match that of '
 'the climate file used in a simulation and can hold'
@@ -18536,12 +18188,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'includes the startup period. SORT THIS OUT BEFORE'
 'importing data (or it might be truncated).  '
 'Check initial help on dates. '
-*enditem
-        CALL EASKI(itdyear,' ',' What is the year?',
-*item glbset
-*enditem
-        CALL EASKPER('Period:',itdbdoy,itdedoy,IFDAY,IER)
-*item glbset
+'  '
 'Frequency of data:'
 'Timestep data in your file will be at a fixed'
 'timestep which should match that of the'
@@ -18550,25 +18197,33 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'If you are planning on importing TABULAR (timestep) '
 'data then the TDF timestep and that of the other '
 'file should match. '
-*enditem
-        CALL EASKI(NTSPH,' ','No of timesteps/hour ? ',
-*item glbset
-'The file holds two documentation lines.  Such '
+'  '
+'The temporal file holds two documentation lines.  Such '
 'documentation can save a lot of grief later.....'
 *enditem
-        CALL EASKS(tmp72,' 1st line of documentation ?',
-*item glbset
-*enditem
-        CALL EASKS(tmp72,' 2nd line of documentation ?',
-*item glbset
+        CALL EASKI(itdyear,' ',' What is the year?',
+        CALL EASKPER('Period:',itdbdoy,itdedoy,IFDAY,IER)
+*item glbset tdf_global_frequency
+'Frequency of data:'
+'Timestep data in your file will be at a fixed'
+'timestep which should match that of the'
+'simulation timestep.'
+'  '
+'If you are planning on importing TABULAR (timestep) '
+'data then the TDF timestep and that of the other '
+'file should match. '
+'  '
 'In order to find items in the TDF db a unique name must'
 'be assigned to each entry. This name is a character'
 'string up to 12 characters long with no blanks.'
 *enditem
+        CALL EASKI(NTSPH,' ','No of timesteps/hour ? ',
+        CALL EASKS(tmp72,' 1st line of documentation ?',
+        CALL EASKS(tmp72,' 2nd line of documentation ?',
         CALL EASKS(TTAG,' ','Name for entry? ',
 *subroutine extracts
 *subroutine SETUPTDF
-*item SETUPTDF
+*item SETUPTDF 'tdf_inport_options
 'The import facility is available to allow users with '
 'tabular data in a text file to select one or more '
 'columns of such information and associate it with a '
@@ -18577,7 +18232,14 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'the item which is to be filled and issue an import  '
 'command. '
 ' '
-'The export command... '
+'One import source file will be assumed throughout this'
+'session. If this needs to be altered then the user'
+'should return to this menu to give the new name.'
+' '
+'The export command supports export to an ASCII format'
+'file, binary and export which can be read via grtool.'
+'One export file will be used as the default name which'
+'you may alter if you want.'
 ' '
 'The date and time formats may be used to alter the '
 'display as well as that of any exported data. '
@@ -18585,24 +18247,7 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'ASCII file with columns of data.'
 *enditem
         CALL EASKABC('Import options:',' ',
-*item SETUPTDF
-'One import source file will be assumed throughout this'
-'session. If this needs to be altered then the user'
-'should return to this menu to give the new name.'
-*enditem
         CALL EASKS(tfile,' Import file name? ',
-*item SETUPTDF
-'It is possible to export information from the db via'
-'a number of file formats (ASCII currently available).'
-*enditem
         CALL EASKI(ITEXP,' Several export formats are available: ',
-*item SETUPTDF
-'One export file will be used as the default name which'
-'the user may override.  Return to this menu to change'
-'the default name.'
-*enditem
         CALL EASKS(tfile,' Export file name? ',
-*item SETUPTDF
-*enditem
-        CALL PHELPD('tdf preferences',12,'-',0,0,IER)
-*subroutine TMPLOT
+

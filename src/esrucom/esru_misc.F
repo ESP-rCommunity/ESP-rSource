@@ -88,8 +88,8 @@ C derived.h are derived areas and U values for zones and the model
 
 C << G7 and G8 need to be cleared >>
 
-      COMMON/C1/NCOMP,NCON
       integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
 
 C iaplic(1) toggle for shading; iaplic(2) toggle for insolation.
 C   toggle for assessment where:
@@ -2152,7 +2152,7 @@ C STEP 3 - Find matrix and reverse matrix via EYEMAT to transform > 2D
 C isurf is the current surface index (for reporting)
 C N is the number of surface vertices, X,Y,Z are the surface vertex arrays,
 C iwhich is worst vertex off plane and ofby is amount it deviates.
-C ivoff is the number of vertices which are more than 1mm off.
+C ivoff is the number of vertices which are more than 3mm off.
       SUBROUTINE CHECKWARP(ITRC,itru,isurf,N,X,Y,Z,iwhich,ofby,ivoff)
       implicit none
 #include "building.h"
@@ -2196,14 +2196,14 @@ C Call eyemat with 1m offset.
       CALL  EYEMAT(EP,VP,1.0,TMAT,RMAT)
 
 C Transform all points in surface and check for ZZZ which differs
-C from the 1m offset.
+C from the 1m offset.The tollerance is currently set to 3mm.
       ivoff=0
       ofby=0.0
       DO 300 I=1,N
         CALL ORTTRN(X(I),Y(I),Z(I),TMAT,X1,Y1,ZZZ,IERR)
-        call eclose(ZZZ,1.0,0.001,close)
+        call eclose(ZZZ,1.0,0.003,close)
         if(.NOT.close)then
-	  ivoff=ivoff+1   ! increment number of vertices off by more than 1mm
+	  ivoff=ivoff+1   ! increment number of vertices off by more than 3mm
 	  diff=1.0-ZZZ
           if(abs(diff).gt.abs(ofby))then  ! keep track of largest diff
             iwhich=i
@@ -3247,8 +3247,8 @@ C show attributes in list.
 #include "epara.h"
 
       common/pophelp/h(60)
-      COMMON/C1/NCOMP,NCON
       integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
       COMMON/C24/IZSTOCN(MCOM,MS)
       DIMENSION VERT(35),VERTS(35)
 
@@ -3307,9 +3307,13 @@ C current menu line index. Build up text strings for the menu.
           else
 
 C << consider writing out different info depending on what SSOTHER is >>
-            WRITE(VERTS(M),13)KEY,SSNAME(icc),SSMLCN(icc)(1:12),
-     &        SSOTHER(icc,1)(1:12)
-   13       FORMAT(A1,1X,A,1X,A,1X,A12)
+            if(icc.gt.0)then
+              WRITE(VERTS(M),13)KEY,SSNAME(icc),SSMLCN(icc)(1:12),
+     &          SSOTHER(icc,1)(1:12)
+   13         FORMAT(A1,1X,A,1X,A,1X,A12)
+            else
+              WRITE(VERTS(M),'(2a)')KEY,' unresolved surface...'
+            endif
           endif
         ENDIF
    10 CONTINUE
