@@ -1542,10 +1542,14 @@ C List control data.
 C If there is a flow network, rescan and list its contents.
       if(netinfo.gt.0)then
         if(IAIRN.ge.1)then
-          WRITE(outs,240)
+          WRITE(outs,240) ! line of "__"
           call edisp(itu,outs)
           call edisp(itu,' ')
-          call edisp(itu,'The model includes an air flow network.')
+          write(outs248,'(a,a,a,a)')
+     &             'The model includes an air flow network ',
+     &             'described in file ',LAPROB(1:lnblnk(LAPROB)),'.'
+          call edisp(itu,outs248)
+c          call edisp(itu,'The model includes an air flow network.')
           if(netinfo.eq.2)then
             call mflist(itu)
           endif

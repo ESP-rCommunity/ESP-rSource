@@ -1112,7 +1112,8 @@ C Add the X and Y-intervals associated with edge 2.
         YVALU=0.
 
 C Discretized edge.
-        IF(IEG2.GT.0.AND.INDXE(IEG2).EQ.3)THEN
+        IF(IEG2.GT.0) then
+         if(INDXE(IEG2).EQ.3)THEN
           DO 360 IX2=1,NDXE(IEG2)
             XVALU=XVALU+DXE(IEG2,IX2)
             CALL ADDEEX(IEE,XVALU)
@@ -1121,7 +1122,9 @@ C Discretized edge.
             YVALU=YVALU+DYE(IEG2,IY2)
             CALL ADDEEY(IEE,YVALU)
   370     CONTINUE
-        ELSEIF(IEG2.LT.0.AND.INDXE(-IEG2).EQ.3)THEN
+         endif
+        ELSEIF(IEG2.LT.0) then
+         if (INDXE(-IEG2).EQ.3)THEN
           IEG2=-IEG2
           DO 380 IY2=1,NDYE(IEG2)
             XVALU=XVALU+DYE(IEG2,IY2)
@@ -1131,7 +1134,7 @@ C Discretized edge.
             YVALU=YVALU+DXE(IEG2,IX2)
             CALL ADDEEY(IEE,YVALU)
   390     CONTINUE
-
+         endif
 C Not defined edge.
         ELSEIF(INDXE(ABS(IEG2)).NE.1)THEN
           CALL USRMSG(' un-defined edge connected by',

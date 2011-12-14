@@ -603,7 +603,7 @@ C For all surface-surface connections.
       NUMSS=0
       DO 100 ISS=1,MSSZ
         INDXSS(ISS)=0
-        DO 110 I=1,4
+        DO 110 I=1,2
           IBDYSS(ISS,I)=0
   110   CONTINUE
         ILNBSS(ISS,1)=0
@@ -622,7 +622,7 @@ C For all surface-edge connections.
       NUMSE=0
       DO 150 ISE=1,MSEZ
         INDXSE(ISE)=0
-        DO 160 I=1,3
+        DO 160 I=1,2
           IBDYSE(ISE,I)=0
   160   CONTINUE
         ILNBSE(ISE)=0
@@ -812,7 +812,13 @@ C Define the edge-edge connections.
         ENDIF
         DO 95 IXYZ=1,3
         DO 95 I123=1,3
-          DCOSEE(NUM,IXYZ,I123)=DCOSE(IEG1,IXYZ,I123)
+C         "NUM" can be returned "0" ... wild guess on action (AG, 08. Nov 2011)
+          if (NUM .eq. 0) then 
+            DCOSEE(IEG1,IXYZ,I123)=DCOSE(IEG1,IXYZ,I123)
+          else
+C           Original default behaviour 
+            DCOSEE(NUM,IXYZ,I123)=DCOSE(IEG1,IXYZ,I123)
+          endif
    95   CONTINUE
    90 CONTINUE
 

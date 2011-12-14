@@ -165,10 +165,10 @@ C Establish available flow component models.
 C Set iteration control variables (N.B. plant-related variables MAXITP,
 C PERREL and PERMFL should be set equal to MAXITF, FERREL and FERMFL
 C respectively.
-      MAXITF=100
-      FERREL=.001
-      FERMFL=5.0E-10
-      PMAX=5.
+      MAXITF=1500
+      FERREL=1.0E-4
+      FERMFL=1.0E-10
+      PMAX=50.
       STEFFR=-0.25
       IPSMOD=1
       MSLVTP=2

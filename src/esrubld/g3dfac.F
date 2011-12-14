@@ -109,7 +109,7 @@ C Create the nodes distribution file.
         ier=0
         CALL EFOPRAN(INDD,L3DNDD(ICOMP),4,4,IER)
         IF(IER.LT.0)then
-          call edisp(iuout,'Error openning nodes distribution file.')
+          call edisp(iuout,'Error opening nodes distribution file.')
           call epwait
           call epagend
           STOP
@@ -466,6 +466,7 @@ C Interier node with convective only boundary.
         LNODE=MAX0(LNODE,ND1)
       ENDIF
       GOTO 20
+
    30 L1000=MAX0(LNODE,1000)
       DO 40 I=1,L1000
         IFST(I)=0

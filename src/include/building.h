@@ -127,11 +127,11 @@ C Multi-gridding.
       PARAMETER (MEZ=50)	!- Edges per zone.
       PARAMETER (MZE=ME+2)	!- Levels in edge.
       PARAMETER (MCZ=10)	!- Corners per zone.
-      PARAMETER (MECZ=3*MCZ)	!- Edge-corner connections.
-      PARAMETER (MSSZ=20)	!- Surface-surface connections.
+      PARAMETER (MECZ=3*MCZ)  !- Edge-corner connections.
+      PARAMETER (MSSZ=70)	!- Surface-surface connections (was 20, seemingly must be equal MSEZ?? see g3dmsc, line 1312 ff)..
       PARAMETER (MZSS=20)	!- z-intervals in surface-surface connections.
       PARAMETER (MYSS=6*ME)	!- y-intervals in surface-surface connections.
-      PARAMETER (MSEZ=70)	!- Surface-edge connections.
+      PARAMETER (MSEZ=70)	!- Surface-edge connections 
       PARAMETER (MZSE=20)	!- z-intervals in surface-edge connections.
       PARAMETER (MYSE=6*ME)	!- y-intervals in surface-edge connections.
       PARAMETER (MEEZ=30)	!- Co-linear edge-edge connection.
@@ -140,7 +140,7 @@ C Multi-gridding.
       PARAMETER (MXEC=6*ME)	!- x-intervals in edge-corner connection.
       PARAMETER (MYEC=6*ME)	!- y-intervals in edge-corner connection.
       PARAMETER (MCVV=10)	!- Intersection vertices per control volume.
-      PARAMETER (MNOD3=1000)	!- Nodes in a 3D zone model.
+      PARAMETER (MNOD3=20000)	!- Nodes in a 3D zone model.
       PARAMETER (MCFF3=20*MNOD3)!- Zone matrix coefficients.
       PARAMETER (MNOD3T=MNOD3+2)!- Cofficients in the temporary storage array.
       PARAMETER (MGXYZ=15)	!- x, y and z intervals for ground.
