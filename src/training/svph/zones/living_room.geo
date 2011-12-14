@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,living_room # tag version, format, zone name
-*date Thu Aug 23 18:13:58 2007  # latest file modification 
+*date Tue Dec 13 17:31:19 2011  # latest file modification 
 living_room describes a...
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,10.58800,8.29400,0.00000  #   1
@@ -8,7 +8,7 @@ living_room describes a...
 *vertex,6.09100,3.82800,0.00000  #   4
 *vertex,11.40300,5.25100,0.00000  #   5
 *vertex,10.58800,8.29400,2.40000  #   6
-*vertex,7.25400,7.40100,2.40000  #   7
+*vertex,7.25404,7.40085,2.40000  #   7
 *vertex,6.41100,7.17500,2.40000  #   8
 *vertex,5.27500,6.87100,2.40000  #   9
 *vertex,6.09100,3.82800,2.40000  #  10
@@ -31,7 +31,7 @@ living_room describes a...
 *edges,4,13,14,15,16  #  9
 # 
 # surf attributes:
-#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
+#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
@@ -43,7 +43,7 @@ living_room describes a...
 *surf,ceil_b2,CEIL,-,-,-,grnd_ceiling,OPAQUE,ANOTHER,07,08  #   6 ||< flr_liv:bedroom_2
 *surf,ceil_b4,CEIL,-,-,-,grnd_ceiling,OPAQUE,ANOTHER,09,08  #   7 ||< flr_liv:bedroom_4
 *surf,floor,FLOR,-,-,-,grnd_floor,OPAQUE,GROUND,00,01  #   8 ||< user def grnd profile  1
-*surf,glazing,VERT,-,-,-,double_glaz,DCF7672_06nb,ANOTHER,15,02  #   9 ||< glazing:conservatory
+*surf,glazing,VERT,liv_con,-,-,double_glaz,DCF7672_06nb,ANOTHER,15,02  #   9 ||< glazing:conservatory
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

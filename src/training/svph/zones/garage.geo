@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,garage # tag version, format, zone name
-*date Thu Aug 23 18:13:58 2007  # latest file modification 
+*date Tue Dec 13 17:47:07 2011  # latest file modification 
 garage describes a...
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,-0.95000,10.01700,0.00000  #   1
@@ -12,8 +12,8 @@ garage describes a...
 *vertex,0.69300,3.88300,2.40000  #   8
 *vertex,2.62500,4.40100,2.40000  #   9
 *vertex,2.18500,6.04300,2.40000  #  10
-*vertex,1.92900,7.00000,2.40000  #  11
-*vertex,1.37000,9.08600,2.40000  #  12
+*vertex,1.92880,6.99994,2.40000  #  11
+*vertex,1.37020,9.08605,2.40000  #  12
 *vertex,0.98200,10.53500,2.40000  #  13
 *vertex,-0.56200,8.56800,3.46600  #  14
 *vertex,-0.00300,6.48300,4.26200  #  15
@@ -43,7 +43,7 @@ garage describes a...
 *edges,4,20,21,22,23  # 14
 # 
 # surf attributes:
-#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
+#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
@@ -60,7 +60,7 @@ garage describes a...
 *surf,south,SLOP,-,-,-,int_part_1,OPAQUE,EXTERIOR,0,0  #  11 ||< external
 *surf,south_up,SLOP,-,-,-,int_part_1,OPAQUE,EXTERIOR,0,0  #  12 ||< external
 *surf,floor,FLOR,-,-,-,grnd_floor,OPAQUE,GROUND,00,01  #  13 ||< user def grnd profile  1
-*surf,door,VERT,-,-,-,door,OPAQUE,ANOTHER,11,08  #  14 ||< door:ext_lobby
+*surf,door,VERT,gar_exl,-,-,door,OPAQUE,ANOTHER,11,08  #  14 ||< door:ext_lobby
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

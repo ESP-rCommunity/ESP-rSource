@@ -1,11 +1,11 @@
 *Geometry 1.1,GEN,bedroom_3 # tag version, format, zone name
-*date Thu Aug 23 18:13:58 2007  # latest file modification 
+*date Tue Dec 13 17:38:45 2011  # latest file modification 
 bedroom_3 describes a...
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,9.77300,11.33700,2.40000  #   1
 *vertex,8.85500,11.09100,2.40000  #   2
 *vertex,7.45500,10.71600,2.40000  #   3
-*vertex,7.77800,9.50800,2.40000  #   4
+*vertex,7.77850,9.50813,2.40000  #   4
 *vertex,8.27000,7.67300,2.40000  #   5
 *vertex,10.58800,8.29400,2.40000  #   6
 *vertex,9.17900,9.88400,2.40000  #   7
@@ -29,7 +29,7 @@ bedroom_3 describes a...
 *edges,4,12,13,14,15  #  8
 # 
 # surf attributes:
-#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
+#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
@@ -40,7 +40,7 @@ bedroom_3 describes a...
 *surf,ceil,CEIL,-,-,-,1st_ceiling,OPAQUE,ANOTHER,13,05  #   5 ||< ceil_b3:loft
 *surf,flr_hall,FLOR,-,-,-,grd_ceil_rev,OPAQUE,ANOTHER,03,09  #   6 ||< ceil_b3:hall
 *surf,flr_lobby,FLOR,-,-,-,grd_ceil_rev,OPAQUE,ANOTHER,12,05  #   7 ||< ceil:int_lobby
-*surf,window,VERT,-,-,-,double_glaz,DCF7672_06nb,EXTERIOR,0,0  #   8 ||< external
+*surf,window,VERT,n_ext,-,-,double_glaz,DCF7672_06nb,EXTERIOR,0,0  #   8 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,upper_hall # tag version, format, zone name
-*date Thu Aug 23 18:13:58 2007  # latest file modification 
+*date Tue Dec 13 17:39:46 2011  # latest file modification 
 upper_hall describes a...
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,7.45500,10.71600,2.40000  #   1
@@ -36,7 +36,7 @@ upper_hall describes a...
 *edges,4,16,17,18,19  # 11
 # 
 # surf attributes:
-#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
+#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
@@ -50,7 +50,7 @@ upper_hall describes a...
 *surf,ceil,CEIL,-,-,-,1st_ceiling,OPAQUE,ANOTHER,13,06  #   8 ||< ceil_hall:loft
 *surf,flr_hall,FLOR,-,-,-,grd_ceil_rev,OPAQUE,ANOTHER,03,10  #   9 ||< ceil_z10:hall
 *surf,flr_kit,FLOR,-,-,-,grd_ceil_rev,OPAQUE,ANOTHER,04,07  #  10 ||< kit_uh:kitchen
-*surf,window,VERT,-,-,-,double_glaz,DCF7672_06nb,EXTERIOR,0,0  #  11 ||< external
+*surf,window,VERT,n_ext,-,-,double_glaz,DCF7672_06nb,EXTERIOR,0,0  #  11 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

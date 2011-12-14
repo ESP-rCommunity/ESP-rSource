@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,dining_room # tag version, format, zone name
-*date Thu Aug 23 18:13:58 2007  # latest file modification 
+*date Tue Dec 13 17:36:51 2011  # latest file modification 
 dining_room describes a...
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,5.27600,6.87100,0.00000  #   1
@@ -32,7 +32,7 @@ dining_room describes a...
 *edges,4,14,15,16,17  #  9
 # 
 # surf attributes:
-#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
+#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
@@ -44,7 +44,7 @@ dining_room describes a...
 *surf,ceil_b4,CEIL,-,-,-,grnd_ceiling,OPAQUE,ANOTHER,09,09  #   6 ||< flr_din:bedroom_4
 *surf,ceil_b1,CEIL,-,-,-,grnd_ceiling,OPAQUE,ANOTHER,06,11  #   7 ||< flr_din:bedroom_1
 *surf,floor,FLOR,-,-,-,grnd_floor,OPAQUE,GROUND,00,01  #   8 ||< user def grnd profile  1
-*surf,glazing,VERT,-,-,-,double_glaz,DCF7672_06nb,EXTERIOR,0,0  #   9 ||< external
+*surf,glazing,VERT,s_ext,-,-,double_glaz,DCF7672_06nb,EXTERIOR,0,0  #   9 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 
