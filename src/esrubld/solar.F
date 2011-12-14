@@ -47,6 +47,7 @@ C on internal and external surfaces.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
@@ -77,17 +78,15 @@ C If ISOLAR=1 then no solar analysis
 
 C For current component (ICOMP) establish the first
 C and last connections associated with surfaces.
-      JCONF=0
-      DO 10 J=1,NCON
-        IF(JCONF.GT.0)goto 11
-        IF(IC1(J).NE.ICOMP)goto 10
-        IF(IE1(J).NE.1)goto 10
-        JCONF=J
-        JCONL=JCONF+NC-1
-   10 CONTINUE
+      JCONF=IZSTOCN(ICOMP,1)
+      JCONL=IZSTOCN(ICOMP,NC)
 
    11 ISURF=0
-C Connection-by-connection.
+
+C Connection-by-connection. Note: if JCONF was not reset
+C in the loop above the zero start of loop then ict(J) will
+C be out of range.
+
       DO 20 J=JCONF,JCONL
 
 C Surface number, ISURF.
