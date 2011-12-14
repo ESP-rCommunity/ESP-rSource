@@ -1530,9 +1530,13 @@ C Read and store the comments into the HELP array for later display.
       elseif(WORD(1:5).eq.'*year')then
         CALL EGETWI(LOUTSTR,K,IYEAR,1900,2020,'W','year',IER)
 
-C Perform check that calendar day types correspond with simulation year
-C If more than three day types are declared then retain those day types
-C otherwise overwrite 
+C Perform check that calendar day types correspond with simulation year.
+C The logic below assumes that the first three day types are still weekday
+C saturday sunday. It loops through each Julian day and if the model
+C calendar day type is one of the standard 3 it checks that the model weekday
+C is the same as a Julian weekday. Any calendar day types beyond 3 are 
+C retained. If no calendar was defined in the model then it should do the
+C work silently. 
         ICREPORT=0
         DO 123 IDOL=1,365
           IF(ICALENDER(IDOL).LE.3)THEN
@@ -1545,14 +1549,20 @@ C otherwise overwrite
             ELSEIF(IDWKNUM.EQ.7)THEN
               IDTYY=3 ! SUNDAY
             ENDIF
-            IF(ICALENDER(IDOL).NE.IDTYY)THEN
-              ICALENDER(IDOL)=IDTYY
+            IF(ICALENDER(IDOL).EQ.0)THEN
+              ICALENDER(IDOL)=IDTYY  ! update the model calendar
+              ICREPORT=2             ! do it silently
+            ELSEIF(ICALENDER(IDOL).NE.IDTYY)THEN
+              ICALENDER(IDOL)=IDTYY  ! update the model calendar
               ICREPORT=1
             ENDIF
           ENDIF
  123    CONTINUE
-        IF(ICREPORT.EQ.1)CALL EDISP(IUOUT,
-     &    'Simulation year and calendar mismatch rectified')
+        if(ICREPORT.EQ.1)then
+          CALL EDISP(IUOUT,'  ')
+          CALL EDISP(IUOUT,
+     &      'Simulation year and calendar mismatch rectified')
+        endif
       elseif(WORD(1:5).eq.'*img ')then
 
 C An image file. If this is a version 4 file then there will be
