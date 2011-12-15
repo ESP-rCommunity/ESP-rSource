@@ -95,20 +95,29 @@ Development:  build-essential, console-tools-dev, expect-dev, g++, gcc, gfortran
 \
 Gnome desktop: dia-gnome (a useful helper application)\
 \
-Graphics, netpbm (convert between graphics formats) imagemagick (screen grab & display)\
+Graphics, netpbm (convert between graphics formats) imagemagick (screen grab & display) \
+   gimp gimp-data gim-debug (optional)\
 \
 Libraries: libx11-6-dbg, libx11-dev, \
 \
-Miscellaneous - Graphical: gsfonts-x11 xfonts-mplus  xfonts-terminus\
+Miscellaneous - Graphical: gsfonts-x11 xfonts-mplus  xfonts-terminus  xfonts-terminus-dos \
+  xfonts-75dpi ttf-xfree86-nonfree t1-xfrree86-nonfree ttf-dejavu xfs font-manager\
 \
 Networking: gfrtp-gtk, openssh-server, ssh\
 \
 Shells: csh\
 \
-Word processing: enscript, psutils\
+Word processing: enscript, psutils nedit nedit-dbg\
 \
-For GTK development selecting the libgtk+2 or libgtk+3 package will identify most of the dependencies you are likely to need.\
+For GTK development selecting the libgtk+2 or libgtk+3 package will identify most of the dependencies you are likely to need. To assist with debugging also ask for the -dbg versions of the libraries such as:\
+libfontconfig1-dbg, libcairo2-dbg, libpixman-1-0-dbg, libxslt1-dbg, libgtk2.0-0-dbg\
 \
+Note that Ubuntu if you upgrade from 10.04 to 10.10 or 11.04 the fonts required by ESP-r will tend to be\
+located.  To force a refresh of the font cache do the following:\
+  sudo dpkg-reconfigure fontconfig-config\
+  sudo fc-cache -f -v\
+\
+A fresh install of Ubuntu 11.04 is missing a number of the fonts which were available in earlier versions of Ubuntu. If fonts are missing ESP-r modules tend to crash with a floating point exception.\
 \
 
 \b Setting up your account and folders
