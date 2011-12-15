@@ -1,6 +1,6 @@
 PLEASE READ THIS. It provides information that will help you get ESP-r running on your machine.
 
-This is a Installer for ESP-r running in the Cygwin emulation environment on a Windows XP or Vista machine. It assumes that you have already installed Cygwin on your computer. If you have NOT follow the instructions below and then restart this installer!
+This is a Installer for ESP-r running in the Cygwin emulation environment on a Windows XP, Vista, W7 machine. It assumes that you have already installed Cygwin on your computer. If you have NOT follow the instructions below and then restart this installer!
 
 If you have already installed Cygwin the you can skip past the next section (look for Other checks to make...).
 
@@ -119,8 +119,8 @@ The following folders will be created:
 C:\cygwin\usr\esru
         - esp-r
           - bin (holds two useful scripts link_to link_to_bash)
-          - bin_X11 (ESP-r executables for X11 interface)
-          - bin_GTK (ESP-r executables for GTK interface)
+          - binX11 (ESP-r executables for X11 interface)
+          - binGTK (ESP-r executables for GTK interface)
           - databases (corporate databases)
           - electric_loads (measured electrical data)
           - lib  (holds help text for applications)
@@ -129,7 +129,7 @@ C:\cygwin\usr\esru
           - validation (models used in validation work)
           - xsl (support for XML reporting)
                     
-The bin_X11 or bin_GTK folders are populated with the two graphic versions of ESP-r.  If you want to run in text mode you need to start the modules with a -mode text in the command line.
+The binX11 or binGTK folders are populated with the two graphic versions of ESP-r.  If you want to run in text mode you need to start the modules with a -mode text in the command line.
 
 A note about the ESP-r model files - use WordPad or NotePad++ to edit (NOT Word or NotePad). 
  
@@ -169,13 +169,13 @@ Next run the link_to script to enable either the X11 or GTK version of ESP-r (yo
 
   cd
   cd bin
-  ./link_to /usr/esru/esp-r/bin_GTK
+  ./link_to /usr/esru/esp-r/binGTK
 
 or
 
   cd 
   cd bin
-  ./link_to /usr/esru/esp-r/bin_X11
+  ./link_to /usr/esru/esp-r/binX11
 
 To see if the environment variables are correct give the following command:
 

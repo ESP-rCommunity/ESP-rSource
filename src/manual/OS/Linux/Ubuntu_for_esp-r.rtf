@@ -1,8 +1,8 @@
-{\rtf1\ansi\ansicpg1252\cocoartf949\cocoasubrtf540
+{\rtf1\ansi\ansicpg1252\cocoartf1038\cocoasubrtf360
 {\fonttbl\f0\fswiss\fcharset0 Helvetica;}
 {\colortbl;\red255\green255\blue255;}
-{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid0\'02\'05.;}{\levelnumbers\'01;}}{\listname ;}\listid1}
-{\list\listtemplateid2\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc2\leveljcn2\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid0\'02\'05.;}{\levelnumbers\'01;}}{\listname ;}\listid2}}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid1}
+{\list\listtemplateid2\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat1\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid101\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid2}}
 {\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}{\listoverride\listid2\listoverridecount0\ls2}}
 \paperw11900\paperh16840\margl1440\margr1440\vieww13780\viewh11700\viewkind0
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
@@ -10,8 +10,8 @@
 \f0\fs24 \cf0 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\qc\pardirnatural
 
-\b \cf0 Installing Ubuntu 9.04, 9.10 or 10.04 for use with ESP-r\
-3 Jan 2011\
+\b \cf0 Installing Ubuntu 10.04 & 11.04 for use with ESP-r\
+14 Dec 2011\
 Jon W. Hand, ESRU, Glasgow, Scotland
 \b0 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
@@ -21,7 +21,7 @@ Jon W. Hand, ESRU, Glasgow, Scotland
 \b \cf0 Introduction
 \b0 \
 \
-These notes apply to Ubuntu versions 9.04, 9.10 or 10.04.  There are different disk layouts discussed as well as two sets of packages needed depending on whether software development is going to be done on the machine. If you are installing Ubuntu 9.04 in a virtual machine or re-using an existing virtual machine for environments such as VirtualBox or Parallels the look at the last sections of the document.  Scanning this whole document before you begin is a 
+These notes apply to Ubuntu versions 10.04 & 11.04. See note at end regarding Ubuntu 11.10. There are different disk layouts discussed as well as two sets of packages needed depending on whether software development is going to be done on the machine. If you are installing Ubuntu in a virtual machine or re-using an existing virtual machine for environments such as VirtualBox or Parallels the look at the last sections of the document.  Scanning this whole document before you begin is a 
 \b really good idea
 \b0 !\
 \
@@ -31,9 +31,9 @@ These notes apply to Ubuntu versions 9.04, 9.10 or 10.04.  There are different d
 \
 Have the following information available before you start:\
 \
-a) the disk space available and RAM  - Ubuntu can take as little as 5GB of disk space and will run (a bit slowly) with about 500MB of RAM. If you can give it more memory then this will increase the speed of your assessments and results recovery tasks.  10GB of disk space is a ok for general use in a virtual machine or computer with limited disk space.  Some installs will need more space e.g. for larger models, testing purposes, or to support multiple users.  If you are likely to be working with larger models or models which will generate larger results files then 1-1.5GB RAM is recommended. \
+a) the disk space available and RAM  - Ubuntu can take as little as 5GB of disk space and will run with about 1GB of RAM. If you can give it more memory then this will increase the speed of your assessments and results recovery tasks.  10GB of disk space is a ok for general use in a virtual machine or computer with limited disk space.  Some installs will need more space e.g. for larger models, testing purposes, or to support multiple users.  If you are likely to be working with larger models or models which will generate larger results files then more RAM is recommended. \
 \
-b) the layout of the disk(s) and partition(s) on the machine - you may be wanting to dual-boot or to use a virtual drive so locate where space is available.  If you are dual booting with Windows, it tends to work better if you install Linux after windows.\
+b) the layout of the disk(s) and partition(s) on the machine - you may be wanting to dual-boot or to use a virtual drive so locate where space is available.  If you are dual booting with Windows install Linux after windows.\
 \
 c) the IP address, machine name/domain, router etc.\
 \
@@ -47,15 +47,15 @@ Ubuntu is available either as a live CD/DVD with the option to install or as an 
 \
 The live variant will load into memory and after booting offers an 'Install' button.  After clicking on the Install button the process is identical for both.  If you have trouble with the Live or graphic mode install you should also try the alternative install CD which can be run in text mode.  If you are installing within a virtual machine and have digested the last sections this is where you will re-join the install process.\
 \
-When the Install window appears, confirm your language, location, time and keyboard. Typically Ubuntu detects most computer hardware. If there are issues with hardware you may have to go to an earlier release of Ubuntu or, if possible find a slightly older PC.  Ubuntu tends to use of the newest applications.  This has a potential drawback for developers of ESP-r.  The development community is currently testing the newest GCC compilers and some users may prefer to use slightly older versions of the compiler suite for stability.\
+During the install process you will need to confirm your language, location, time and keyboard. Typically Ubuntu detects most computer hardware. If there are issues with hardware you may have to go to an earlier release of Ubuntu or, if possible find a slightly older PC.  Ubuntu tends to use of the newest applications.  This has a potential drawback for developers of ESP-r.  The development community may not yet have tested the newest GCC compilers and libraries and some users may prefer to use slightly older versions for stability.\
 \
 If the machine is to be dual book and the disk has unpartitioned space then select the option 'largest contiguous free space' in the Ubuntu installer. You also have the option in recent versions of Ubuntu to use the whole disk or to manually edit the partition table. The latter is an option for experts.\
 \
 If there is no free space Ubuntu will offer to resize the current Windows partition to free up space.  Some users might prefer to use something like PartitionMagic on the Windows side first rather than the Ubuntu tool.  It is useful to defragment the disk prior to a resize.  \
 \
-In guided partitioning a "/' partition will be created as well as a Linux swap partition.  You will not be asked for any further information.  Tip: if you have more memory to put in your machine,  do this before the install so that the swap space is appropriate.\
+In guided partitioning a "/' partition will be created as well as a Linux swap partition.  Tip: if you have more memory to put in your machine,  do this before the install so that the swap space is appropriate.\
 \
-If you do not want to use all of the free space then select the manual method.  The partition table will be shown. Select the one marked as free space and create at least two partitions: a root partition and a linux swap partition.  Some users prefer to have a separate /home partition a giving at least 4GB for the / partition. \
+If you do not want to use all of the free space then select the manual method.  The partition table will be shown. Select the one marked as free space and create at least two partitions: a root partition and a linux swap partition.  Some users prefer to have a separate /home partition leaving at least 4GB for the / partition. \
 \
 If you are installing on a Windows PC, Ubuntu will offer to import account information and settings from your accounts. This is optional.  \
 \
@@ -77,7 +77,7 @@ Your next task is to setup the software sources via the system -> administration
 \
 The base install of Ubuntu has much of what you need. One of the features of Ubuntu is the general ease of installing new software packages.  Lets begin with the minimal requirements to run either the X11 or GTK version of ESP-r.\
 \
-The only required packages for running ESP-r are libgfortran and ImageMagick.  You can search for them in the package manager and once it is in place you should be able to use the standard self-extracting installer for ESP-r on Linux.\
+The only required packages for running ESP-r are libgfortran and ImageMagick.  You can search for them in a package manager (Synaptic or Ubuntu Software Center or apt-get) and once it is in place you should be able to use the standard self-extracting installer for ESP-r on Linux.\
 \
 There are a few additional packages which provide helper applications that ESP-r may wish to access.  Unless you tell it differently (in the file esprc), ESP-r will invoke the 'nedit' text editor and so it is worth installing this package.\
 \
@@ -87,25 +87,27 @@ ESP-r can also export its wire-frame images into the Xfig format as well as VRML
 \b Software needed to develop ESP-r
 \b0 \
 \
-If you are going to compile ESP-r you are going to need a number of tools and if you want to develop ESP-r there are even more tools that are required via the package manager.  The package manager will list current and available packages in various formats.  You can also search for specific packages by name  e.g. ddd (a debugger) and groff (to convert some ESP-r documents into PS files).  As the ESP-r community considers the GCC 4.3 compiler as the reference compiler you should consider which version of the GCC compilers to work with.  It is possible to have multiple compilers as long as you specify which compiler version to use in the Install command line (e.g. --compiler_version -4.3) but some users prefer stick with a single compiler.\
+If you are going to compile ESP-r you are going to need a number of tools and if you want to develop ESP-r there are more tools and libraries that are required via one of the package managers.  The package manager will list current and available packages in various formats.  You can also search for specific packages by name  e.g. ddd (a debugger) and groff (to convert some ESP-r documents into PS files).  In the list below are packages which you will need, they may already be included in your Linux distribution or be listed under a slightly different name.\
 \
-Development 9.04:  build-essential, console-tools-dev, expect-dev, g++-4.3, gcc-4.3, gfortran-4.3, gdb,gettext, libtool, linux-headers, linux-source, subversion, subversion-tools, valgrind, libxml2, libxml2-dev, libxml2-utils\
+As the ESP-r community considers the GCC 4.3 compiler as the reference compiler you should consider which version of the GCC compilers to work with.  It is possible to have multiple compilers as long as you specify which compiler version to use in the Install command line (e.g. --compiler_version -4.3) but some users prefer stick with a single compiler suite.\
+\
+Development:  build-essential, console-tools-dev, expect-dev, g++, gcc, gfortran, gdb,gettext, libtool, linux-headers, linux-source, subversion, subversion-tools, valgrind, libxml2, libxml2-dev, libxml2-utils libxslt\
 \
 Gnome desktop: dia-gnome (a useful helper application)\
 \
-Graphics, netpbm (convert between graphics formats)\
+Graphics, netpbm (convert between graphics formats) imagemagick (screen grab & display)\
 \
 Libraries: libx11-6-dbg, libx11-dev, \
 \
-Miscellaneous - Graphical: gsfonts-x11\
+Miscellaneous - Graphical: gsfonts-x11 xfonts-mplus  xfonts-terminus\
 \
 Networking: gfrtp-gtk, openssh-server, ssh\
 \
-Shells: csh,  zsh\
+Shells: csh\
 \
 Word processing: enscript, psutils\
 \
-For GTK development selecting the gtk+2.0 package will identify most of the dependencies you are likely to need.\
+For GTK development selecting the libgtk+2 or libgtk+3 package will identify most of the dependencies you are likely to need.\
 \
 \
 
@@ -114,15 +116,15 @@ For GTK development selecting the gtk+2.0 package will identify most of the depe
 \
 There are several strategies for setting up user accounts on a Ubuntu computer, whether or not it is within a virtual environment.  The first strategy is to remember that there is a 
 \i standard version
-\i0  of ESP-r and 
+\i0  of ESP-r and (optionally) 
 \i your version
-\i0  of ESP-r.  The community puts in a lot of effort to make the standard version as robust as possible for production work.  \
+\i0  of ESP-r.  The community puts in a lot of effort to make the standard version as robust as possible for production work. The standard version will often be located in /opt/esru while your own version should be installed within your own folder structure.\
+\
+To simplify other tasks, create a 'bin' folder within you HOME folder and place in it scripts that you use often as well as the 'link_to' script from the source distribution bin folder. You can use the 'link_to' script to point to your preferred version of ESP-r executables.\
 \
 There are a number of arbitrary conventions in the ESP-r community, one of which is the use of a custom Install script instead of  the usual automake based system used in many Linux packages.  Another convention is that traditional users of ESP-r tend to expect to find the ESP-r distribution in /usr/esru or in /home/esru.  Other users prefer to place the ESP-r distribution in /opt/esru.  If you are going to be running the so-called tester.pl scripts you will need to Install the current development_branch of ESP-r to the folder /usr/esru.\
 \
 People who need to keep multiple versions of ESP-r on their computers for testing and development tend to install ESP-r into their home folder e.g. esru_test and install the standard version of ESP-r to /usr/esru.  If you have a subversion branch and/or just want to make your own version of ESP-r, for example to support more complex models, you should place that distribution of ESP-r in a separate location. This will allow you to test a custom version against the standard distribution.  The Install script supports this via command line directives.  \
-\
-One manual step is needed after a custom install - you need to copy the 'esprc' preferences file that was generated during the compile process into you home folder as .esprc  ESP-r will scan this file in order to determine where standard databases and example models are held on the computer.\
 \
 The following steps will create a standard distribution in the traditional location.  Note the commands assume that you have permission to create the folder 
 \i /usr/esru
@@ -244,5 +246,18 @@ To create a new machine click on the 'new' button and give the new virtual compu
 One of the frustrations of VirtualBox is limited connections to the host machine.  If manual file transfers are an issue then Parallels on OSX  is an option.  To start from scratch have the Ubuntu CD ready, ask for a new virtual machine and it will identify typical defaults from scanning the CD and create a virtual disk for Ubuntu with minimal interactions. Parallels defaults to a disk image that will grow.  Once the new virtual machine is up and running then the standard install process with an alternative Ubuntu installer can follow the standard instructions (above).  The 'Live' CD assumes that there is already a working operating system (e.g. Windows) running so that is less appropriate.  Parallels on other host operating systems has not been tested.\
 \
 Parallels does not unfortunately seem to be able to reliably read in current VDI files in use under VirtualBox but may read somewhat older versions.\
+\
+
+\b Additional notes for Ubuntu 11.10
+\b0 \
+\
+With the introduction of the 11 series the Ubuntu screen layout and user interactions have changed. In 11.04 it is possible to use a classic view or a newer interface. Some users have noted font issues with 11.10 so we suggest sticking with 11.04\
+until the newer interface is further patched.\
+\
+\
+\
+\
+\
+\
 \
 }
