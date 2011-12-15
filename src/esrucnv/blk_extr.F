@@ -25,18 +25,21 @@ C being searched for, ioblk is the scratch block information
 C file. xp,yp,zp are where to apply the block,
 C xsca,ysc,zsc are the scaling factors, rot is the rotation angle.
       subroutine extrblk(itrc,bn,xp,yp,zp,xsc,ysc,zsc,rot,ier)
+#include "dxfdata.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      integer gcode,innum,flagins,ioin,ioout,ioblk
-      common/io/ioin,ioout,ioblk,iosblk,iotobs
-      common/rd/gcode,instring,innum,realin,coorx,coory,coorz,
-     &           blkxorg,blkyorg,blkzorg
-      common/fg/flag3d,flagins,radians,dxfconv
-      common/dxfe/oformat,indxzon,head
-      character instring*72,bn*72,instr*72,ckstr*85,endstr*85
+      integer ioin,ioout,ioblk
+      common/io/ioin,ioout,ioblk
+
+      integer indxzon
       character oformat*24,head*4
+      common/dxfe/oformat,indxzon,head
+
+C Use ichartblk and chartblk as a scratch area for blocks
+      character bn*72,instr*72,ckstr*85,endstr*85
+      character outs*124
       
       PI = 4.0 * ATAN(1.0)
       RAD = PI/180.
@@ -47,28 +50,43 @@ C local strings for comparison.
       write(endstr,'(a,a)') '*end ',bn(1:lnblnk(bn))
       lc=lnblnk(instr)+5
 
- 10   read(ioblk,'(a)',end=500,err=600) instr
+C Read from the string array chartblk.
+      if(ichartblk.eq.0) ichartblk=1  ! if zero reset to one
+ 10   read(chartblk(ichartblk),'(a)',end=500,err=600) instr
       l=lnblnk(instr)
       if(instr(1:l).eq.ckstr(1:lc))then
 
 C Found start of block.
-        if(itrc.gt.0)write(iosblk,'(a,a)') 'found ',bn(1:lnblnk(bn))
- 12     read(ioblk,'(a)',end=500,err=600) instr
+        if(itrc.gt.0)then
+          write(outs,'(a,a)') 'found ',bn(1:lnblnk(bn))
+          call edisp(iuout,outs)
+        endif
+
+C Increment ichartblk and read chartblk array.
+ 12     ichartblk=ichartblk+1
+        read(chartblk(ichartblk),'(a)',end=500,err=600) instr
         l=lnblnk(instr)
         if(instr(1:10).eq.'BLOCK BASE')then
 
 C Read the block base origin.
-          read(ioblk,*) blkxorg,blkyorg,blkzorg
+C Increment ichartblk and read chartblk array
+          ichartblk=ichartblk+1
+          read(chartblk(ichartblk),*,end=500,err=600) blkxorg,blkyorg,
+     &      blkzorg
           if(itrc.gt.0)then
-            write(iosblk,*) 'b base = ',blkxorg,blkyorg,blkzorg,
+            write(outs,*) 'b base = ',blkxorg,blkyorg,blkzorg,
      &               ' place at ',xp,yp,zp
-            write(iosblk,*) 'scale by ',xsc,ysc,zsc,' rotate ',rot
+            call edisp(iuout,outs)
+            write(outs,*) 'scale by ',xsc,ysc,zsc,' rotate ',rot
+            call edisp(iuout,outs)
           endif
           goto 12
         elseif(instr(1:3).eq.'LAY')then
 
 C Skip past the layer index and read again.
-          read(ioblk,*,end=500,err=600)ilayer
+C Increment ichartblk and read chartblk array
+          ichartblk=ichartblk+1
+          read(chartblk(ichartblk),*,end=500,err=600) ilayer
           if(oformat(1:6).eq.'viewer')then
             write(ioout,'(a)') 'LAY'
             write(ioout,'(i3)') ilayer
@@ -77,7 +95,8 @@ C Skip past the layer index and read again.
         elseif(instr(1:3).eq.'COL')then
 
 C Skip past the colour and read again.
-          read(ioblk,*,end=500,err=600)icolour
+          ichartblk=ichartblk+1
+          read(chartblk(ichartblk),*,end=500,err=600) icolour
           if(oformat(1:6).eq.'viewer')then
             write(ioout,'(a)') 'COL'
             write(ioout,'(i3)') icolour
@@ -86,7 +105,8 @@ C Skip past the colour and read again.
         elseif(instr(1:3).eq.'PLA')then
 
 C Found a plane, see how many vertices.
-          read(ioblk,*,end=500,err=600) ivert
+          ichartblk=ichartblk+1
+          read(chartblk(ichartblk),*,end=500,err=600) ivert
           if(oformat(1:6).eq.'viewer')then
             write(ioout,'(a,2x,a)') instr(1:l),bn(1:lnblnk(bn))
             write(ioout,'(i3)') ivert
@@ -95,14 +115,21 @@ C Found a plane, see how many vertices.
             do 42 iv=1,ivert
 
 C Get coords.
-              read(ioblk,*,end=500,err=600) X0,Y0,Z0
-              if(itrc.gt.0)write(iosblk,'(a,3f12.5)') 'vert ',X0,Y0,Z0
+              ichartblk=ichartblk+1
+              read(chartblk(ichartblk),*,end=500,err=600) X0,Y0,Z0
+              if(itrc.gt.0)then
+                write(outs,'(a,3f12.5)') 'vert ',X0,Y0,Z0
+                call edisp(iuout,outs)
+              endif
 
 C Scale & (block) Origin displacement.
               X0=(X0-blkxorg)*xsc
               Y0=(Y0-blkyorg)*ysc
               Z0=(Z0-blkzorg)*zsc
-              if(itrc.gt.0)write(iosblk,'(a,3f12.5)') 'scald',X0,Y0,Z0
+              if(itrc.gt.0)then
+                write(outs,'(a,3f12.5)') 'scald',X0,Y0,Z0
+                call edisp(iuout,outs)
+              endif
 
 C Rotate about Z axis.
               if(rot.gt.0.0.or.rot.lt.0.0)then
@@ -117,15 +144,19 @@ C Translate by
               X0=X0+xp
               Y0=Y0+yp
               Z0=Z0+zp
-              if(itrc.gt.0)write(iosblk,'(a,3f12.5)')'trand ',X0,Y0,Z0
+              if(itrc.gt.0)then
+                write(outs,'(a,3f12.5)')'trand ',X0,Y0,Z0
+                call edisp(iuout,outs)
+              endif
 
 C Convert from mm to metres if requrired, write to file and tell user.
               X0=X0*dxfconv
               Y0=Y0*dxfconv
               Z0=Z0*dxfconv
               if(itrc.gt.0)then
-                write(iosblk,'(a,3f12.4)') ' new  ',X0,Y0,Z0
-                write(iosblk,'(a)')        '  '
+                write(outs,'(a,3f12.4)') ' new  ',X0,Y0,Z0
+                call edisp(iuout,outs)
+                call edisp(iuout,'  ')
               endif
               if(oformat(1:6).eq.'viewer')then
                 write(ioout,'(3f12.4)') X0,Y0,Z0
@@ -134,14 +165,14 @@ C Convert from mm to metres if requrired, write to file and tell user.
           endif
           goto 12
         elseif(instr(1:l).eq.endstr(1:lc))then
-          rewind(ioblk,ERR=999)
+          rewind(ioblk,ERR=999)   ! will not need
           return
         endif
       elseif(instr(1:l).eq.endstr(1:lc))then
 
 C End of block information, see about processing vertices.
 C Make sure to rewind the file.
-        rewind(ioblk,ERR=999)
+        ichartblk=0  ! reset array
         return
       else
         goto 10
@@ -150,10 +181,11 @@ C Make sure to rewind the file.
   22  return
 
  500  if(itrc.gt.0)then
-        write(iosblk,'(a)') 'end of block file found... '
-        write(iosblk,*) ' instr=',instr
+        write(outs,'(a)') 'end of block file found... '
+        call edisp(iuout,outs)
+        call edisp(iuout,instr)
       endif
-      rewind(ioblk,ERR=999)
+      ichartblk=0  ! reset array
       goto 22
 
  600  call edisp(iuout,'error reading block file... ')

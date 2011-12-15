@@ -20,7 +20,7 @@ C Boston, MA 02111-1307 USA.
 
 C e2dxf takes an esp-r problem definition and creates a zip
 C file.
-      subroutine e2zip(incobs,ichop)
+      subroutine e2zip(incobs)
 #include "building.h"
 #include "model.h"
 
@@ -33,7 +33,8 @@ C geometry.h provides commons G0/G1/G2/precz.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      common/io/ioin,ioout,ioblk,iosblk,iotobs
+      integer ioin,ioout,ioblk
+      common/io/ioin,ioout,ioblk
       dimension ndum(MS)
 
       character outs*124
