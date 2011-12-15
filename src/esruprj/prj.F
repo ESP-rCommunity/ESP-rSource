@@ -1206,8 +1206,8 @@ C action if there is no match in the paths.
                 endif
 
 C Debug.
-                write(outs,*) '* Browse status ',browse,itisanexemplar
-                call edisp(iuout,outs)
+C                write(outs,*) '* Browse status ',browse,itisanexemplar
+C                call edisp(iuout,outs)
 
 C If running on a Windows machine the the file browser would have been
 C used and there is no need to check the path.

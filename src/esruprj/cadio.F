@@ -753,6 +753,7 @@ C Strings for dos version of rootp and upath and a double quote.
       character lltmp*144,lguess*144,dguess*144
       logical XST,unixok
       integer NCOG,ICOG,NCO,ICO,icod ! max items and current menu item
+      integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 
 #ifdef OSI
       integer impx,impy,iwe
@@ -779,6 +780,7 @@ C Make up a double quote and file separator for xcopy.
         fs = char(92)
         dq = char(34)
       endif
+      iglib = igraphiclib()  ! find out if GTK.
 
 C Open the exemplar file.
   41  IER=0
@@ -1060,8 +1062,10 @@ C Present information on an exemplar.
               goto 92
             elseif(WORD(1:4).eq.'*cfg')then
               call egetrm(outstr,K,exemplar,'W','name',IER)
-              call edisp(iuout,' Model is:')
-              call edisp(iuout,exemplar)
+              if(iglib.eq.2.or.iglib.eq.3)then
+                call edisp(iuout,' Model is:')  ! echo if gtk
+                call edisp(iuout,exemplar)
+              endif
 
 C If running on a Windows machine get the last token within the string exemplar,
 C which is the name of the configuration file. Work backwards from the end
@@ -1156,8 +1160,7 @@ C there is a file browser returning folder name via lltmp.
                     write(lguess,'(a)') upath(1:lnblnk(upath))
                     write(dguess,'(a)') upath(1:lnblnk(upath))
                     call edisp(iuout,'  ')  ! echo a blank line
-                    CALL EASKXORGTKF(lguess,
-     &                'Place model as subfolder of?',' ',
+                    CALL EASKXORGTKF(lguess,' ','Place model in:',               
      &                dguess,lltmp,'models folder',IER,nbhelp)
 
                     write(doit,'(4a)') 'cp -r ',
@@ -1256,7 +1259,7 @@ C up the exemplar name.
      &                fs,modelroot(1:lnmr),fs,'cfg',fs,
      &                thecfgis(1:lnblnk(thecfgis))
                   endif
-                  call edisp(iuout,'The model (that you own) is now:')
+                  call edisp(iuout,'The model configuration file is:')
                   call edisp(iuout,exemplar)
                   call tstamp('>','PRJ: owning exemplar')
                   call tstamp('>',exemplar)
