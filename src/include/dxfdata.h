@@ -4,7 +4,7 @@ C loosely dependant on building.h.
 C Maximum number of layers from DXF. Each zone in esp-r might require
 C up to three layers (opaque transparent obstructions) so should be updated
 C to reflect MCOM in building.h.
-      parameter (MAXLAY = 80)
+      parameter (MAXLAY = 240)
 
 C Transforms to be applied.
       real xscale,yscale,zscale  ! scaling to apply to each entity axis
@@ -56,3 +56,17 @@ C String arrays and counters for block objects.
       integer ichartobs       ! how many obstructions found
       integer ichartblk       ! how many block lines found
       common/dxfci/ichartobs,ichartblk 
+
+C Arrays for clickon points and lines.
+      integer nbdxfcoords,nbdxflines  ! total number of coordinates and lines
+      real dxfx,dxfy,dxfz   ! x y z of a dxf coordinate
+      integer idxfedge      ! array of start and end index of 2 coords of a line
+      integer idxfedgelay,idxfedgecol  ! index of layer and colour
+      character*12 dxfedgetype
+      common/dxfclick/nbdxfcoords,nbdxflines,dxfx(15000),dxfy(15000),
+     &       dxfz(15000),idxfedge(15000,2),idxfedgelay(15000),
+     &       idxfedgecol(15000)
+
+C Bounds of the dxf data.
+      real dxfminx,dxfminy,dxfminz,dxfmaxx,dxfmaxy,dxfmaxz
+      common/dxfbounds/dxfminx,dxfminy,dxfminz,dxfmaxx,dxfmaxy,dxfmaxz

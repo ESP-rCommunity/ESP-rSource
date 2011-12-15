@@ -1,6 +1,6 @@
 C This file is part of the ESP-r system.
 C Copyright Energy Systems Research Unit, University of
-C Strathclyde, Glasgow Scotland, 2001.
+C Strathclyde, Glasgow Scotland, 2001-2011.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
@@ -22,9 +22,7 @@ C Filter between various design tools.
 C AutoCAD Notes:
 C   it traps some AEC and AutoCAD constructs  which are
 C   not in keeping with energy analysis. It assumes CAD units
-C   a mm (unless otherwise instructed).  AutoCAD block definitions
-C   are held in a file `blockdxf2e` which is deleted unless otherwise
-C   instructed.
+C   a mm (unless otherwise instructed).
 
 C Portions of the DXF translation can be traced back (eventually) 
 C to code from ABACUS, Department of Architecture & Building Science.
@@ -128,8 +126,23 @@ C iotmp2 for miscel output files.
       NSIGFIG=3
       matver=0.0   ! initial assumption of binary materials database
 
-
 C Get command line parameters. 
+C input formats are: [esp|dxf|zip|ww] where:
+C   dxf = AutoCAD V11-14 ASCII files.
+C   zip is a format from the Abacus Unit of the University of Strathclye.
+C   ww = ww graphic vector command set (output by ESP-r graphic modules).
+
+C output formats are: [esp|dxf|viewer|zip|xfig|vrml] where
+C   esp is primarily the geometry of an ESP-r model with cfg and cnn files.
+C   dxf is V12-V14 DXF file which includes surfaces and some types of
+C      solar obstructions.
+C   viewer is a hidden line wire-frame viewing tool included with ESP-r.
+C   zip is a format from the Abacus Unit of the University of Strathclye
+C   xfig is a vector drawing package.
+C   vrml includes virtual world file and matching html file holding the
+C      attributes of the geometric entities.
+C   click are dxf points and lines to be used with clickonbitmap facility.
+
       call parcnv(iverb,conv,incobs,ichop,itmprm,iformat,oformat,inf,
      &  ouf,upgcfg)
       itrc=iverb    ! set trace after call to parcnv
@@ -147,7 +160,10 @@ C Get command line parameters.
       currlay = 0
       currcol = 1
       minseg = 6
-      dxfconv = 1.0
+
+C Confirm conversion of scale.
+      dxfconv=conv
+C      dxfconv = 1.0
       layuse(1)=0
 
 C Set folder separator (fs) to \ or / as required.
@@ -217,14 +233,28 @@ C ESP-r then a series of files will be opened.
         call edisp(iuout,'ecnv_error unknown_output_file')
         stop 'ecnv aborted.'
       endif
+
+C Depending on the output format advise user or do some pre-processing.
       if(oformat(1:6).eq.'viewer')then
+
         write(outs,'(2a)')'The viewer output file will be: ',
      &                  filname2(1:lnblnk(filname2))
         call edisp248(iuout,outs,100)
+
       elseif(oformat(1:4).eq.'vrml')then
+
         write(outs,'(2a)')'The vrml world will be: ',
      &                  filname2(1:lnblnk(filname2))
         call edisp248(iuout,outs,100)
+
+      elseif(oformat(1:5).eq.'click')then
+
+C User filename2 for debug data for click output.
+        write(outs,'(2a)')'The click data will be: ',
+     &                  filname2(1:lnblnk(filname2))
+        call edisp248(iuout,outs,100)
+        open(ioout,file=filname2,status='UNKNOWN', err=901)
+
       elseif(oformat(1:3).eq.'esp')then
 
 C If esp then also find its path so zone files can be
@@ -470,6 +500,43 @@ C to be scanned.
 	else
           call mksyshd(filname2,ier)
         endif
+      elseif(oformat(1:5).eq.'click')then
+
+C Initial code for working with click coordinates and lines.
+C First clear the arrays.
+        nbdxfcoords=0; nbdxflines=0
+        do 29 loop=1,15000
+          dxfx(loop)=0.0; dxfy(loop)=0.0; dxfz(loop)=0.0
+          idxfedge(loop,1)=0; idxfedge(loop,2)=0
+          idxfedgelay(loop)=0; idxfedgecol(loop)=0
+  29    continue
+        dxfminx=1000.0; dxfminy=1000.0; dxfminz=1000.0
+        dxfmaxx= -1000.0; dxfmaxy= -1000.0; dxfmaxz= -1000.0 
+
+C Use scandxf.
+        call scandxf(filname,filname1,filname2,itmprm,itrc)
+
+C Write the bounds that were found.
+        write(ioout,'(a,6f12.4)') '*bounds',dxfminx,dxfminy,dxfminz,
+     &    dxfmaxx,dxfmaxy,dxfmaxz
+
+C Write the number of coordinates and lines.
+        write(ioout,'(a,i5)') '*nbcoords',nbdxfcoords
+        write(ioout,'(a,i5)') '*nblines',nbdxflines
+        do 10 i = 1,numlay
+          if (laycolour(i) .gt. 0) then
+            write(ioout,'(a,i3,3a,i3)') '*layer',i,' ',
+     &        dxflayname(i)(1:lnblnk(dxflayname(i))),' ',laycolour(i)
+          else
+            write(ioout,'(a,i3,3a)') '*layer',i,' ',
+     &        dxflayname(i)(1:lnblnk(dxflayname(i))),' - '
+          endif
+   10   continue
+        close(ioout)
+
+        CALL EPAGEND
+        STOP
+
       endif
   28  continue   ! we found the * Building line.
 
@@ -499,7 +566,7 @@ C Error messages.
       end
 
 C **** wegeom
-C write esp-r (older style) geometry file.
+C wegeom writes esp-r (older style) geometry file.
       subroutine wegeom(iotmp2,iv,lf,ier)
 #include "building.h"
 #include "geometry.h"
@@ -730,15 +797,69 @@ C named layers. If there are no named layers then accept '0'.
           call matchv(indxzon,nbofsurf,match,x1,y1,z1)
 
 C Debug.
-          if(itrc.gt.1)then
-            if(match)then
-              write(outs,*) 'match for ',indxzon,nbofsurf,x1,y1,z1
-            else
-              write(outs,*) 'added to  ',indxzon,nbofsurf,x1,y1,z1
-            endif
-            call edisp(iuout,outs)
+C          if(itrc.gt.1)then
+C            if(match)then
+C              write(outs,*) 'match for ',indxzon,nbofsurf,x1,y1,z1
+C            else
+C              write(outs,*) 'added to  ',indxzon,nbofsurf,x1,y1,z1
+C            endif
+C            call edisp(iuout,outs)
+C          endif
+        endif
+      elseif(oformat(1:5).eq.'click')then
+        if (flagins.eq.0) then      
+          if(head.eq.'BLK_')then
+
+C Increment chartblk array.
+            ichartblk=ichartblk+1
+            write(chartblk(ichartblk),'(3f12.4)') xx*dxfconv, 
+     &        yy*dxfconv, zz*dxfconv
+            nbdxfcoords=nbdxfcoords +1      
+            dxfx(nbdxfcoords) = xx*dxfconv
+            dxfy(nbdxfcoords) = yy*dxfconv       
+            dxfz(nbdxfcoords) = zz*dxfconv       
+            write(ioout,'(a,3f12.4,a,i4)') '*coord',xx*dxfconv,
+     &        yy*dxfconv,zz*dxfconv,' # ',nbdxfcoords 
+          else
+            nbdxfcoords=nbdxfcoords +1      
+            dxfx(nbdxfcoords) = xx*dxfconv
+            dxfy(nbdxfcoords) = yy*dxfconv       
+            dxfz(nbdxfcoords) = zz*dxfconv       
+            write(ioout,'(a,3f12.4,a,i4)') '*coord',xx*dxfconv,
+     &        yy*dxfconv,zz*dxfconv,' # ',nbdxfcoords 
+          endif
+        else
+          nbdxfcoords=nbdxfcoords +1      
+          xx = xx-blkxorg
+          yy = yy-blkyorg        
+          zz = zz-blkzorg      
+          if(head.eq.'BLK_')then
+
+C Write chartblk array.
+            ichartblk=ichartblk+1
+            write(chartblk(ichartblk),'(3f12.4)')  xx*dxfconv,
+     &        yy*dxfconv, zz*dxfconv        
+            dxfx(nbdxfcoords) = xx*dxfconv
+            dxfy(nbdxfcoords) = yy*dxfconv       
+            dxfz(nbdxfcoords) = zz*dxfconv       
+            write(ioout,'(a,3f12.4,a,i4)') '*coord',xx*dxfconv, 
+     &        yy*dxfconv,zz*dxfconv,' # ',nbdxfcoords        
+          else
+            dxfx(nbdxfcoords) = xx*dxfconv
+            dxfy(nbdxfcoords) = yy*dxfconv
+            dxfz(nbdxfcoords) = zz*dxfconv
+            write(ioout,'(a,3f12.4,a,i4)') '*coord',xx*dxfconv, 
+     &        yy*dxfconv,zz*dxfconv,' # ',nbdxfcoords        
           endif
         endif
+
+C Update bounds.
+        if(dxfx(nbdxfcoords).lt.dxfminx) dxfminx=dxfx(nbdxfcoords)
+        if(dxfy(nbdxfcoords).lt.dxfminy) dxfminy=dxfy(nbdxfcoords)
+        if(dxfz(nbdxfcoords).lt.dxfminz) dxfminz=dxfz(nbdxfcoords)
+        if(dxfx(nbdxfcoords).gt.dxfmaxx) dxfmaxx=dxfx(nbdxfcoords)
+        if(dxfy(nbdxfcoords).gt.dxfmaxy) dxfmaxy=dxfy(nbdxfcoords)
+        if(dxfz(nbdxfcoords).gt.dxfmaxz) dxfmaxz=dxfz(nbdxfcoords)
       endif     
       return
       end
@@ -766,6 +887,8 @@ C Debug...
          endif
       elseif (gcode.ge.60.and.gcode.le.80) then
          read(ioin,*,end=500,err=600) innum
+      elseif (gcode.eq.90) then
+         read(ioin,*,end=500,err=600) innum
       elseif (gcode.ge.30.and.gcode.lt.60) then
          read(ioin,*,end=500,err=600) realin
       elseif (gcode.ge.210.and.gcode.lt.240) then
@@ -779,7 +902,7 @@ C Debug...
            write(iuout,*) 'gcode is ',gcode,coorx,lineno
          endif
          if (icode.ne.(gcode+10)) then
-            call edisp(iuout,'Y co-ordinate missing')
+            call edisp(iuout,'Warning: Y co-ordinate missing')
             goto 600
          endif
          read(ioin,*,end=500,err=600) coory
