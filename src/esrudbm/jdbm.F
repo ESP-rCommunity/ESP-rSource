@@ -845,6 +845,24 @@ C Depending on computer type set integer size of passed parameters.
       return
       end
 
+      subroutine chgzonpik(jizgfoc,jnzg)
+#ifdef OSI
+      integer jizgfoc,jnzg  ! for use with viewtext
+#else
+      integer*8 jizgfoc,jnzg  ! for use with viewtext
+#endif
+      return
+      end
+
+      subroutine chgzonpikarray(jnznog,jnznogv)
+#ifdef OSI
+      integer jnznog,jnznogv
+#else
+      integer*8 jnznog,jnznogv
+#endif
+      return
+      end
+
 C **** kact returns a single character for use as a key in a menu based
 C on browse or modify act character.
       character*1 function kact(act,key)
@@ -2447,6 +2465,7 @@ C calls in esru_lib.F
       ier=0
       return
       end
+
 
       SUBROUTINE EMKVIEW(IUO,CFGOK,IER)
       logical cfgok

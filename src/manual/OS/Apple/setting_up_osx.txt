@@ -1,6 +1,6 @@
              Setting OSX 10.5 or 10.6 for ESP-r
                       Jon W. Hand, ESRU
-                       7 June 2011
+                       31 August 2011
 
 INTRODUCTION
 
@@ -140,6 +140,14 @@ options will be shown.  The standard Install script includes an
  -m32 directive that results in a 32bit set of executables on
  both OSX 10.5 and 10.6.
 
+RADIANCE
+
+The Radiance visual simulation suite R3.9 compiles ok on OSX 10.5 or
+10.6 if during the make install you edit the ARCH=powerpc to ARCH=
+with a blank.  You also need to create a link named genrbox pointing
+at genbox in /usr/local/bin (the typical location where Radiance is
+compiled to). Normally it is not necessary to set the RAYPATH environment
+variable if the Radiance library files are in /usr/local/lib/ray.
 
 USEFUL LINKS
 

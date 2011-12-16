@@ -1,11 +1,12 @@
 
 /* Common block definitions as structs for direct access from C code.
    *** Note: definitions must be in _exactly_ the same order as in the
-   ***  fortran code.
+   ***  fortran code. In the code below the struct have been renamed
+   ***  slightly so they are disconnected from the fortran commons.
 
    MCOM must equal the value set in building.h <<can this be done automatically??>>
 */
-#define MCOM 72
+#define MCOM 82
 
 /*
   ITDSP labels toggle: all surf + obs = 0, all surf = 1, partn = 2,
@@ -25,30 +26,30 @@
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
 */
 
-extern struct {
+struct {
   long int ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,ITOBS,ITHLS,ITHLZ,ITGRD;
   float GRDIS;
   long int ITPPSW;
-} ray2_;
+} cray2_;
 
 /*
   COMMON/IMAGE/IMT,EYEM(3),VIEWM(3),HITH,YON,ANG,HANG,WIDE
 */
-extern struct {
+struct {
   long int IMT;
   float EYEM[3],VIEWM[3],HITH,YON,ANG,HANG,WIDE;
-} image_;
+} cimage_;
 
 /*
   COMMON/C1/NCOMP,NCON
 */
-extern struct {
+struct {
   long int NCOMP,NCON;
-} c1_;
+} cc1_;
 
 /*
   COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 */
-extern struct {
+struct {
   long int izgfoc,nzg,nznog[MCOM];
-} gzonpik_;
+} cgzonpik_;

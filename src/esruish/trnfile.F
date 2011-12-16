@@ -120,7 +120,7 @@ C and computes the overall direct and diffuse shading factors.
       common/grid3/ogrida(ms)
       common/shad1/isunup
       common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa,ipexcl
-      common/shad4/oshd(mox,moz)
+      common/shad4/oshd(mox,moz),ihit(mox,moz)
       common/find/irecl
       common/ihtime/ihour
       common/data2/pso(ms,mt),psof(ms,mt)

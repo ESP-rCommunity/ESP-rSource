@@ -3252,8 +3252,8 @@ C Get lat:long description.
 C **************** CONXINFO 
 C CONXINFO returns an English description in CXSTR of the inter-connection 
 C information in common blocks  which are filled by reading the
-C system configuration file. If ICF=1 then display with zone and surface names 
-C if possible. If ICON=0 then generate a text heading.
+C system configuration file. If ICON=0 then generate a text heading.
+C Note: ICF is not currently used.
 
       SUBROUTINE CONXINFO(ICF,ICON,CXSTR)
 #include "building.h"
@@ -3261,12 +3261,22 @@ C if possible. If ICON=0 then generate a text heading.
       
       integer lnblnk  ! function definition
 
+C Passed parameters
+      integer icf     ! unused at this time
+      integer icon    ! connection index
+      character CXSTR*78 ! returned string
+
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       COMMON/C24/IZSTOCN(MCOM,MS)
-      CHARACTER CXSTR*78,SST1*12,ZST1*12,SST2*12,ZST2*12
-      integer ICM  ! connection for current surface.
+      CHARACTER SST1*12,ZST1*12,SST2*12,ZST2*12
+      integer ICM  ! connection for current surface
+      integer ictype  ! connection type for current surface
+      integer lsn1   ! surface name length
+      integer lzn1   ! zone anme length
+      integer lsn2   ! other surface name length
+      integer lzn2   ! other zone name length
 
-      if(ICON.EQ.0.AND.ICF.GT.0)then
+      if(ICON.EQ.0)then
         WRITE(CXSTR,8986)  
  8986   FORMAT('Con  Origin surface              Other side')    
         RETURN
@@ -3282,17 +3292,18 @@ C Trap out of range IC1 and IE1 variables.
         RETURN
       endif
 
+      ictype = ICT(ICON)  ! assign local variable
       SST1=SSNAME(ICON)
       lsn1=lnblnk(SST1)
       ZST1=zname(IC1(ICON))
       lzn1=lnblnk(ZST1)
-      IF(ICT(ICON).EQ.-1.AND.ICF.GT.0)THEN
+      IF(ictype.EQ.-1)THEN
         WRITE(CXSTR,7985)ICON,SST1(1:lsn1),ZST1(1:lzn1)
  7985   FORMAT(I4,1X,a,' in ',a,' not yet defined')
-      ELSEIF(ICT(ICON).EQ.0.AND.ICF.GT.0)THEN
+      ELSEIF(ictype.EQ.0)THEN
         WRITE(CXSTR,8985)ICON,SST1(1:lsn1),ZST1(1:lzn1)
  8985   FORMAT(I4,1X,a,' in ',a,' is External')
-      ELSEIF(ICT(ICON).EQ.1.AND.ICF.GT.0)THEN
+      ELSEIF(ictype.EQ.1)THEN
         if(IC2(ICON).eq.0.and.IE2(ICON).eq.0)then
           WRITE(CXSTR,8984)ICON,SST1(1:lsn1),ZST1(1:lzn1)
  8984     FORMAT(I4,1X,a,' in ',a,' >|< Identical environment ')
@@ -3302,12 +3313,12 @@ C Trap out of range IC1 and IE1 variables.
  8987     FORMAT(I4,1X,a,' in ',a,' >|< Similar +-',i3,'dC & ',
      &      I4,' W rad')
         endif
-      ELSEIF(ICT(ICON).EQ.2.AND.ICF.GT.0)THEN
+      ELSEIF(ictype.EQ.2)THEN
         WRITE(CXSTR,8983)ICON,SST1(1:lsn1),ZST1(1:lzn1),
      &                   IC2(ICON),IE2(ICON)
  8983   FORMAT(I4,1X,a,' in ',a,' >|< Constant @',I3,' dC &',
      &    I4,' W rad')
-	ELSEIF(ICT(ICON).EQ.3.AND.ICF.GT.0)THEN
+      ELSEIF(ictype.EQ.3)THEN
         ICM=IZSTOCN(IC2(ICON),IE2(ICON))
         SST2=SSNAME(ICM)
         lsn2=lnblnk(SST2)
@@ -3316,7 +3327,7 @@ C Trap out of range IC1 and IE1 variables.
         WRITE(CXSTR,8982)ICON,SST1(1:lsn1),ZST1(1:lzn1),
      &                        SST2(1:lsn2),ZST2(1:lzn2)
  8982   FORMAT(I4,1X,a,' in ',a,' >|< ',a,' in ',a)
-      ELSEIF(ICT(ICON).EQ.4.AND.ICF.GT.0)THEN
+      ELSEIF(ictype.EQ.4)THEN
         IF(IC2(ICON).GT.0)THEN
           WRITE(CXSTR,8981)ICON,SST1(1:lsn1),
      &                     ZST1(1:lzn1),IC2(ICON)
@@ -3330,15 +3341,15 @@ C Trap out of range IC1 and IE1 variables.
  8980     FORMAT(I4,1X,a,' in ',a,
      &         ' >|< user def ground profile',I2)
         ENDIF
-      ELSEIF(ICT(ICON).EQ.5.AND.ICF.GT.0)THEN
+      ELSEIF(ictype.EQ.5)THEN
         WRITE(CXSTR,7984)ICON,SST1(1:lsn1),ZST1(1:lzn1)
  7984   FORMAT(I4,1X,a,' in ',a,' is adiabatic')
-      ELSEIF(ICT(ICON).EQ.6.AND.ICF.GT.0)THEN
+      ELSEIF(ictype.EQ.6)THEN
 
 C BASESIMP connection.
         WRITE(CXSTR,7986)ICON,SST1(1:lsn1),ZST1(1:lzn1)
  7986   FORMAT(I4,1X,a,' in ',a,' is BASESIMP fndtn')
-      ELSEIF(ICT(ICON).EQ.7.AND.ICF.GT.0)THEN
+      ELSEIF(ictype.EQ.7)THEN
 
 C CEN 13791 boundary condition.
         if(IC2(ICON).eq.0.and.IE2(ICON).eq.0)then

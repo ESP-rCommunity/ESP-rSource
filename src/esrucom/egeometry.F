@@ -1757,17 +1757,19 @@ C the constructions database.
 C When scanning geometry warn users if the optical description in the
 C geometry file is different from that of the optical property associated
 C with the construction (TRAN is an ok mis-match).
-                lnow=lnblnk(word)   ! length for token in file
-                lno=lnblnk(OPT)     ! length for mlc optics
-                if(WORD(1:lnow).ne.OPT(1:lno))then
-                  if(WORD(1:4).eq.'TRAN')then
-                    continue
-                  else
-		    write(outs,*) 'Optics ',WORD(1:lnow),
+                if(ICF.gt.0)then
+                  lnow=lnblnk(word)   ! length for token in file
+                  lno=lnblnk(OPT)     ! length for mlc optics
+                  if(WORD(1:lnow).ne.OPT(1:lno))then
+                    if(WORD(1:4).eq.'TRAN')then
+                      continue
+                    else
+		      write(outs,*) 'Optics ',WORD(1:lnow),
      &                ' in geo file does not match optics of the MLC ',
-     &                DESC(ICF)(1:12),' ',OPT(1:lno)
-                    call edisp(iuout,outs)
-                    optcorrected=.true.
+     &                  DESC(ICF)(1:12),' ',OPT(1:lno)
+                      call edisp(iuout,outs)
+                      optcorrected=.true.
+                    endif
                   endif
                 endif
 
@@ -2013,6 +2015,9 @@ C Simplified thermal bridge data starts here. Scan three reals after tag.
           uavtotal(icomp)=VAL
           goto 62
         elseif(WORD(1:11).eq.'*ukt_bridge')then
+
+C Phrases for thermal bridges are checked and ibrdg index assigned
+C based on exact match of characters in phrase.
           nbrdg(icomp)=nbrdg(icomp)+1
           CALL EGETP(LOUTSTR,K,phrase,'W','bridge tag',IER)
           if(phrase(1:10).eq.'roof-wall ')then
@@ -2556,6 +2561,11 @@ C to write out.
         lsna=lnblnk(SSNAME(icc))
         lsot=lnblnk(SSOTF(icc))
         loth=lnblnk(OTHSTR)
+
+C Traps for possible blank strings if data structure corrupted.
+        if(SSVFC(icc)(1:4).eq.'    ') SSVFC(icc)='UNKN'
+        if(SSOTF(icc)(1:4).eq.'    ') SSOTF(icc)='UNKN'
+        if(SSPARENT(icc)(1:2).eq.'  ') SSPARENT(icc)='-'
         WRITE(outs,'(20a)',IOSTAT=ios,ERR=13) '*surf ',
      &    SSNAME(icc)(1:lsna),' ',SSVFC(icc),' ',
      &    SSPARENT(icc)(1:lspa),' ',SSUSE(icc,1),' ',SSUSE(icc,2),
@@ -3907,12 +3917,14 @@ C Derive the equation of the polygon.
         N = NVER(i)
         call PLEQN(XX,YY,ZZ,N,CG,EQN,IERR)
 
-C See if any points are out of the plane.
+C See if any points are out of the plane. Note a point that is
+C only a few mm off of the line can result in a warp which is
+C reported as a larger number.
         iwhich=0
         ofby=0.0
 	lln=lnblnk(ssname(icc)) 
 	call CHECKWARP(1,iuout,i,N,XX,YY,ZZ,iwhich,ofby,ivoff)
-	if(ivoff.gt.0)then
+	if(ivoff.gt.0.and.ofby.gt.0.01)then
 	  write(outs,'(5a)') ' Surface ',ssname(icc)(1:lln),' in ',
      &      zname(icomp)(1:lnzname(icomp)),
      &      ' is probably warped. Please check via surface transforms.'
@@ -4309,8 +4321,8 @@ C other must face the ground
                     endif
                   endif
 
-                  if(itrc.gt.1)then
-                  endif
+C                  if(itrc.gt.1)then
+C                  endif
 
 C Test if azimuth are within two degrees. For the special case of the
 C difference between the two being ~360deg call it closeazi
@@ -5070,7 +5082,7 @@ C Surfaces with associated vertices.
       call edisp(ITRU,'        |Vertices|')
       DO 9991 I=1,NZSUR(ICOMP)
         NV=NVER(I)
-        if(NV.le.27)then
+        if(NV.le.26)then
           WRITE(OUTSTR,9990) SNAME(icomp,I),NV,(JVN(I,J),J=1,NV)
           call edisp(ITRU,OUTSTR)
         else

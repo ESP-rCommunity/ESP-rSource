@@ -1880,20 +1880,59 @@ C otherwise ask what to do.
           else
             IX=2
           endif
-        else
-          H(1)='In order to manage long lists of selections or data'
-          H(2)='a number of viewports may be necessary.'
-          CALL EASKABC(' ',' Menu-page options:','previous','next',
-     &                 'goto page',IW,2)
-          IF(IW.EQ.3)then
-            H(1)='If page greater than length then last page assumed.'
-            CALL EASKI(IGTP,' ',' Which page ? ',1,'F',1,'-',1,
-     &        'menu page',IER,1)
-            IX=3
-          elseif(IW.EQ.2)then
+        elseif (MPM.eq.3) then
+
+C If three pages and on 1st jump to middle, if at end jump to middle
+C and if in middle ask user what to do.
+          if (IPM.eq.1) then
             IX=5
-          elseif(IW.EQ.1)then
+          elseif (IPM.eq.3) then
             IX=2
+          else
+            H(1)='In order to manage long lists of selections or data'
+            H(2)='a number of viewports may be necessary.'
+            CALL EASKABC(' ',' Menu-page options:','previous','next',
+     &                 'goto page',IW,2)
+            IF(IW.EQ.3)then
+              H(1)='If page greater than length then last page assumed.'
+              CALL EASKI(IGTP,' ',' Which page ? ',1,'F',1,'-',1,
+     &          'menu page',IER,1)
+              IX=3
+            elseif(IW.EQ.2)then
+              IX=5
+            elseif(IW.EQ.1)then
+              IX=2
+            endif
+            CALL USRMSG(' ',' ','-')
+          endif
+        else
+
+C If lots of pages track the 1st and last page otherwise ask user.
+          if (IPM.eq.1) then
+            IX=5
+          elseif (IPM.eq.MPM) then
+            IX=2
+          else
+            H(1)='In order to manage long lists of selections or data'
+            H(2)='a number of viewports may be necessary.'
+            CALL EASKATOG(' ',' Menu-page options:','first page',
+     &        'previous','next','goto page','last page','  ','  ',IW,2)
+            if(IW.eq.5)then
+              IGTP=MPM   ! set it to last page
+              IX=3
+            elseif(IW.EQ.4)then
+              H(1)='If page greater than length then last page assumed.'
+              CALL EASKI(IGTP,' ',' Which page ? ',1,'F',1,'-',1,
+     &          'menu page',IER,1)
+              IX=3
+            elseif(IW.EQ.3)then
+              IX=5
+            elseif(IW.EQ.2)then
+              IX=2
+            elseif(IW.EQ.1)then
+              IGTP=1   ! set it to first page
+              IX=3
+            endif
           endif
           CALL USRMSG(' ',' ','-')
         endif
@@ -7225,7 +7264,7 @@ C Set MODIFY=true to force any wire-frame images to be redrawn.
 C ********* WIREPK
 C WIREPK is called from C code in esru_x.c with current
 C number of zones which have been selected for display.
-C Compilation of X11 or GTK version assumes this will be available in
+C Compilation of X11 assumes this will be available in
 C each modules code somewhere.  If not needed then provide a dummy.
       subroutine wirepk(inpk)
 #include "building.h"

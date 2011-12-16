@@ -106,8 +106,8 @@ reuse_ish_calcs="no"       # if yes limit re-calculation of exemplar shading fil
 #-----------------------------------------------------------
 
 # Buildable targets:
-programs="aco b2e bps dbm dfs c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res vew"
-# (net, run are not currently built)
+programs="aco b2e bps dbm dfs c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res stats vew"
+# (net, run, stats are not currently built)
 
 # Add leading and trailing spaces for regexp matching
 programs=" ${programs} "
@@ -444,9 +444,9 @@ if [ "$mode" = "interactive" ]; then
          echo " Computer type: "
          echo "  (1) Sun / solaris"
          echo "  (2) Linux"
-         echo "  (3) Cygwin (Late-Beta testing)"
+         echo "  (3) Cygwin"
          echo "  (4) MinGW (native Windows)"
-         echo "  (5) MacOS X (10.2 or later)"
+         echo "  (5) MacOS X (10.4 or later)"
          read A
 
          # Use the 'known_host' keyword to permit compilation
@@ -483,7 +483,7 @@ if [ "$platform" = "auto-detect" ]; then
    # Note: $architecture has been error-trapped above.
    case $architecture in
       Linux)                           platform="linux";;
-      CYGWIN_NT-5.2  | CYGWIN_NT-5.1  | CYGWIN_NT-5.0  | CYGWIN_NT-6.1 | CYGWIN_NT-6.1-WOW64 ) platform="cygwin";;
+      CYGWIN_NT-5.2  | CYGWIN_NT-5.1  | CYGWIN_NT-5.0  | CYGWIN_NT-6.0 | CYGWIN_NT-6.1 | CYGWIN_NT-6.1-WOW64 ) platform="cygwin";;
       MINGW32_NT-5.2 | MINGW32_NT-5.1 | MINGW32_NT-5.0 ) platform="mingw";;
       Darwin)                          platform="mac";;
       SunOS)                           platform="sun";;
@@ -943,7 +943,8 @@ esac
 case $compiler in
    sunF90)   CC=cc;  CPL=CC;  FC=f90  ;;
    GNU) case $gnu_version in
-           gcc4)     CC=gcc-mp-4.6;   CPL=g++-mp-4.6;    FC=gfortran-mp-4.6  ;;
+#           gcc4)     CC=gcc-mp-4.6;   CPL=g++-mp-4.6;    FC=gfortran-mp-4.6  ;;
+           gcc4)     CC=gcc;   CPL=g++;    FC=gfortran  ;;
         esac;;
    intel)    CC=icc;  CPL=icpc;  FC=ifort ;;
 esac
@@ -2123,7 +2124,7 @@ zzz
 
    cd ${SRCdir}/databases
    echo -n "   - Copying ASCII databases..."
-   cp multicon.db1 multicon.db2 multicon.db3 north_american.constrdb optics.db1 optics.db2 mould.db1 pressc.db1 mscomp.db1 *.desc ${DESTdir}/esp-r/databases
+   cp multicon.db1 multicon.db2 multicon.db3 multicon.db4 north_american.constrdb optics.db1 optics.db2 optics.db3 mould.db1 pressc.db1 mscomp.db1 *.desc ${DESTdir}/esp-r/databases
    echo " Done."
 
 fi

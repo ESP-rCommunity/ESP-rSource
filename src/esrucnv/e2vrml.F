@@ -19,9 +19,12 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C ESRU vrml translator - .
-C Current version February 2005.
+C Current version October 2011.
 
-C e2vrml:  Generate VRLM 2.0 world of esp-r model.
+C e2vrml: Generate VRLM 2.0 world of esp-r model.
+
+C << consider a variant that writes to SVG or other more
+C << modern file format.
 
 C ******* Translate esp data to vrlm world.
 C e2vrml takes zones/obstructions and any ground topology and
@@ -45,7 +48,9 @@ C creates a grey-scale VRML 2.0 world.
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
-      common/io/ioin,ioout,ioblk,iosblk,iotobs
+
+      integer ioin,ioout,ioblk
+      common/io/ioin,ioout,ioblk
       COMMON/GTFIL/GTGEOM
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
@@ -102,19 +107,18 @@ C Define a VRML material for each construction in the database.
       do 166 im= 1,NMLC
 
 C Pick up general description of the composite.
-        ifound=im
         call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM,isymindex)
 
 C For the inside and outside layer get surface properties (AE & AI).
-          matarrayindex=IPRMAT(IM,1)   ! which array index
-          if(matarrayindex.ge.0)then
-            AE=matdbina(matarrayindex)
-          endif
+        matarrayindex=IPRMAT(IM,1)   ! which array index
+        if(matarrayindex.ge.0)then
+          AE=matdbina(matarrayindex)
+        endif
 
-          matarrayindex=IPRMAT(IM,LAYERS(IM))   ! which array index
-          if(matarrayindex.ge.0)then
-            AI=matdbina(matarrayindex)
-          endif
+        matarrayindex=IPRMAT(IM,LAYERS(IM))   ! which array index
+        if(matarrayindex.ge.0)then
+          AI=matdbina(matarrayindex)
+        endif
 
 C If a tmc then find tranmission functions.  If more transparent than
 C the ficticious limit then mark to be skipped. Convert visible
@@ -179,7 +183,7 @@ C For each zone in the model create an anchor.
 C Read in the zone geometry.
         WRITE(outs,'(a,a)')' Scanning : ',LGEOM(newfoc)
         CALL edisp(iuout,outs)
-          call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
+        call georead(ITA1,LGEOM(newfoc),newfoc,1,IUOUT,IER)
         CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
         vol(newfoc)=zvol
         zonetotsurfacearea(newfoc)=zoa
@@ -189,24 +193,22 @@ C Read in the zone geometry.
 
 C Work out the colours for each of the surfaces in this zone by looping
 C through each of the MLC and finding a match.
-          ifound = 0
           do 6 im= 1,NMLC
             if(SMLCN(j)(1:12).eq.DESC(IM)(1:12))then
 
 C Pick up general description of the composite.
-              ifound=im
               call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM,isymindex)
 
 C For the inside and outside layer get surface properties.
-                matarrayindex=IPRMAT(IM,1)   ! which array index
-                if(matarrayindex.ge.0)then
-                  AE=matdbina(matarrayindex)
-                endif
+              matarrayindex=IPRMAT(IM,1)   ! which array index
+              if(matarrayindex.ge.0)then
+                AE=matdbina(matarrayindex)
+              endif
 
-                matarrayindex=IPRMAT(IM,LAYERS(IM))   ! which array index
-                if(matarrayindex.ge.0)then
-                  AI=matdbina(matarrayindex)
-                endif
+              matarrayindex=IPRMAT(IM,LAYERS(IM))   ! which array index
+              if(matarrayindex.ge.0)then
+                AI=matdbina(matarrayindex)
+              endif
               goto 7
             endif
   6       continue
@@ -374,19 +376,17 @@ C into GB1 commons and write them out using similar logic.
 
 C Work out the colour for each block by looping
 C through each of the MLC and finding a match (for first 12 char).
-          ifound = 0
           do 66 im= 1,NMLC
             if(BLOCKMAT(newfoc,IB)(1:12).eq.DESC(IM)(1:12))then
 
 C Pick up general description of the composite.
-              ifound=im
               WRITE(MLCN,'(A)')DESC(IM)(1:12)
 
 C For the inside and outside layer get surface properties.
-                matarrayindex=IPRMAT(IM,1)   ! which array index
-                if(matarrayindex.ge.0)then
-                  AE=matdbina(matarrayindex)
-                endif
+              matarrayindex=IPRMAT(IM,1)   ! which array index
+              if(matarrayindex.ge.0)then
+                AE=matdbina(matarrayindex)
+              endif
               gvt=0.00
               goto 77
             endif
@@ -494,20 +494,14 @@ C If there is a ground topology create surfaces for it.
           do 303 igg = 1,ngt
 
 C Find the matching mlc index.
-            ifound = 0
             AE=0.5
             DO 701 imm=1,NMLC
               IF(DESC(imm)(1:12).EQ.GMLCN(igg)(1:12))then
-                ifound=im
-                  matarrayindex=IPRMAT(IM,1)   ! which array index
-                  if(matarrayindex.ge.0)then
-                    AE=matdbina(matarrayindex)
-                  endif
+                matarrayindex=IPRMAT(IM,1)   ! which array index
+                if(matarrayindex.ge.0)then
+                  AE=matdbina(matarrayindex)
+                endif
                 gvt=0.00
-
-C Debug.
-C                write(6,*) 'matching ',imm,' ',DESC(imm),AE,IPR(IMM,1)
-
                 goto 702
               endif
  701        CONTINUE

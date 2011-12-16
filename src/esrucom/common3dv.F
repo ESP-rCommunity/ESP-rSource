@@ -59,9 +59,18 @@ C Passed parameters.
       character ETEXT*82
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
+      integer numberofzones
+      integer JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
+      integer JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+      integer jizgfoc,jnzg,jnznog,jnznogv
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 numberofzones
+      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
+      integer*8 JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+      integer*8 jizgfoc,jnzg,jnznog,jnznogv
 #endif
+      real EVX,EVY,EVZ,VX,VY,VZ,EAN,GDIS
 
       SMALL=0.01
 
@@ -76,6 +85,29 @@ C If only drawing a ground topology set updwire manually.
       else
         numberofzones=nzg
         call updwire(numberofzones)  ! pass local integer
+      endif
+
+C Also tell wireframe control about the current views. 
+C << need to test about whether cast is needed >>
+      EVX=EYEM(1); EVY=EYEM(2); EVZ=EYEM(3)
+      VX=VIEWM(1); VY=VIEWM(2); VZ=VIEWM(3)
+      EAN=ANG; GDIS=GRDIS
+      JITZNM=ITZNM; JITSNM=ITSNM; JITVNO=ITVNO
+      JITOBS=ITOBS; JITSNR=ITSNR; JITGRD=ITGRD
+      JITORG=ITORG; JITBND=ITBND; JITDSP=ITDSP
+      JITHLS=ITHLS; JITHLZ=ITHLZ; JITPPSW=ITPPSW
+      call curviews(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,
+     &  JITOBS,JITSNR,JITGRD,JITORG,GDIS,JITBND,JITDSP,JITHLS,JITHLZ,
+     &  JITPPSW)
+
+C Tell woreframe how many zones to include in the image.
+      jizgfoc=izgfoc; jnzg=nzg
+      call pushgzonpik(jizgfoc,jnzg)
+      if(nzg.gt.0)then
+        do 42 ij=1,nzg
+          jnznog=ij; jnznogv=nznog(ij)
+          call pushnznog(jnznog,jnznogv)
+  42    continue
       endif
 
 C If altered then do a bound check on the current zone and update display.
@@ -204,13 +236,13 @@ C ********* chgeye
 C CHGEYE is called from C code in esru_x.c with current contents of the ray2_ and
 C image_ c structures.  Integers are specially treated based on ifdef.
       subroutine chgeye(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,
-     &   JITOBS,JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,JITHLZ,
+     &   JITOBS,JITSNR,JITGRD,JITORG,GDIS,JITBND,JITDSP,JITHLS,JITHLZ,
      &   JITPPSW)
 #include "building.h"
 #include "prj3dv.h"
 
 C Passed paramters.
-      real EVX,EVY,EVZ,VX,VY,VZ,EAN,DIS
+      real EVX,EVY,EVZ,VX,VY,VZ,EAN,GDIS
 
 C Depending on computer type set integer size of passed parameters.
 #ifdef OSI
@@ -228,7 +260,7 @@ C Depending on computer type set integer size of passed parameters.
 
 C Debug
 C      write(6,*) 'chgeye passed vals ',EVX,EVY,EVZ,VX,VY,VZ,EAN,
-C     &  JITZNM,JITSNM,JITVNO,JITOBS,'snr',JITSNR,JITGRD,JITORG,DIS,
+C     &  JITZNM,JITSNM,JITVNO,JITOBS,'snr',JITSNR,JITGRD,JITORG,GDIS,
 C     &  JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
 C      write(6,*) 'chgeye com before  ',eyem(1),eyem(2),eyem(3),
 C     &  VIEWM(1),VIEWM(2),VIEWM(3),ANG,HANG
@@ -256,7 +288,7 @@ C To avoid implicit casts also check machine type.
       ITHLS=int(JITHLS); ITHLZ=int(JITHLZ); ITGRD=int(JITGRD)
 #endif     
 
-      GRDIS=DIS
+      GRDIS=GDIS
 
 C Debug
 C      write(6,*) 'chgeye com after  ',eyem(1),eyem(2),eyem(3),
@@ -269,6 +301,20 @@ C     &  ITVNO,ITORG,'snr',ITSNR,ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
 
 C Use same logic as in EVSET.
       if(ITPPSW.eq.0)then
+
+C If perspective view do the normal wireframe calls.
+        if(ITHLS.eq.1)then
+
+C If ITHLS set to 1 then ask about which construction.
+C But this is disabled because epkmlc tries to use the current
+C main menu structure which causes a GTK fault. Need an alternative
+C list management for this.
+          call usrmsg('Hilight by construction is not yet working',
+     &                'this will be added in a later version.','P')
+C          CALL EPKMLC(ISEL,'Select a construction to hilight.',' ',IER)
+C          ITHLZ=ISEL
+C          MODIFY=.TRUE.
+        endif
         CALL INLNST(1)
         CALL ADJVIEW(IER)
         MODLEN=.FALSE.
@@ -464,6 +510,63 @@ C Generate a heading for the view.
         endif
       endif
 
+      return
+      end
+
+C ********* chgzonpik
+C chgzonpik is called from C code in esp-r.c with parameters representing the
+C current state of izgfoc and nzg in the gzonpik_ c structure. Sparate
+C calls are made to chgzonpikarray is used to fill the nznog array
+      subroutine chgzonpik(jizgfoc,jnzg)
+#include "building.h"
+
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+
+#ifdef OSI
+      integer jizgfoc,jnzg  ! for use with viewtext
+#else
+      integer*8 jizgfoc,jnzg  ! for use with viewtext
+#endif
+
+C To avoid implicit casts also check machine type.
+#ifdef OSI
+        izgfoc=jizgfoc
+        nzg=jnzg
+#else
+        izgfoc=int(jizgfoc)
+        nzg=int(jnzg)
+#endif     
+
+C Debug.
+C      write(6,*) 'common gzonpik ',izgfoc,nzg,nznog(1),nznog(2),
+C     &    nznog(3),nznog(4),nznog(5)
+      return
+      end
+
+C ********* chgzonpikarray
+C chgzonpikarray is called from C code in esp-r.c with parameters representing
+C one element of nznog array (index and value) in the gzonpik_ c structure.
+C This is tedious, but does ensure that array elements are properly passed
+C from C to Fortran.
+      subroutine chgzonpikarray(jnznog,jnznogv)
+#include "building.h"
+
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+
+#ifdef OSI
+      integer jnznog,jnznogv
+#else
+      integer*8 jnznog,jnznogv
+#endif
+
+C To avoid implicit casts also check machine type. Increment the
+C index jnznog to account for fortran array indexing starts from
+C one and C starts from zero.
+#ifdef OSI
+      nznog(jnznog+1)=jnznogv
+#else
+      nznog(int(jnznog)+1)=int(jnznogv)
+#endif     
       return
       end
 

@@ -53,7 +53,7 @@ C Parameters
 
 C CLSDES (30 char) is an array for menu items listing each class.
 C CLSSEL (36 char) is an array for menu items for the selected class.
-      DIMENSION CLSDES(30),PDBM(35),CLSSEL(30),ICLSSEL(30)
+      DIMENSION CLSDES(30),PDBM(37),CLSSEL(30),ICLSSEL(30)
       integer iwhicharray   ! for each item in menu point back to array
       dimension iwhicharray(60)
       character ACTION*1,CLSSEL*36,lltmp*144,CLSDES*32
@@ -184,6 +184,7 @@ C If user canceled the listing the reset unit to iuout and loop back.
             WRITE(outs,'(3a,i2,a)')' Classification: ',
      &        matcatname(IC)(1:lnblnk(matcatname(IC))),' (',IC,')'
             call edisp(itu,outs)
+            call edisp248(itu,matcatdoc(IC),100)
             call edisp(itu,' ')
             call edisp(itu,
      &      'Index|Con-   |Den- |Specif|IR  |Solr|Vapour|Description')
@@ -295,15 +296,15 @@ C Loop through data for this classification for manipulation.
 C Display the materials of the classification in a menu.
     3   PDBM(1)= '  Units:  Conductivity W/(m deg.C), Density kg/m**3'
         PDBM(2)= '          Specific Heat J/(kg deg.C) '
-        WRITE(PDBM(3),33)matcatname(IC)(1:lnblnk(matcatname(IC))),IC
-   33   FORMAT    ('a Classification: ',A,' (',I2,')')
-        WRITE(PDBM(4),'(A,I3)')'  Number of materials:',matcatitems(IC)
-        PDBM(5)=   '  ___________________________________'
-        PDBM(6)=
+        WRITE(PDBM(3),'(3a,i2,a,i2,a)') '1 Classification: ',
+     &    matcatname(IC)(1:lnblnk(matcatname(IC))),' (',IC,') with ',
+     &    matcatitems(IC),' entries.'
+        PDBM(4)=   '  ___________________________________'
+        PDBM(5)=
      &  ' |Conduc-|Den- |Specif|IR  |Solr|Diffu|Description  '
-        PDBM(7)=
+        PDBM(6)=
      &  ' |tivity |sity |heat  |emis|abs |resis|of material  '
-        M=7
+        M=6
         DO 30 J=1,matdbitems
 
 C Loop through all of the items in the array and list out those that are
@@ -346,17 +347,15 @@ C Remember the array index that goes with the menu position (m).
         NC=M
         PDBM(NC+1)=  '  __________________________     '
         if(ACTION.eq.'M'.or.ACTION.eq.'m')then
-          PDBM(NC+2)='1 add/ delete material            '
-          PDBM(NC+3)='2 copy material                   '
-          PDBM(NC+4)='! save materials database        '
+          PDBM(NC+2)='* add/ delete/ copy material     '
+          PDBM(NC+3)='! save materials database        '
         elseif(ACTION.eq.'-')then
           PDBM(NC+2)='                                 '
           PDBM(NC+3)='                                 '
-          PDBM(NC+4)='                                 '
         endif
-        PDBM(NC+5)=  '? help                           '
-        PDBM(NC+6)=  '- exit this menu                 '
-        NITMS=NC+6
+        PDBM(NC+4)=  '? help                           '
+        PDBM(NC+5)=  '- exit this menu                 '
+        NITMS=NC+5
         INO=-4
 
 C Help text for this menu.
@@ -436,15 +435,15 @@ C Edit classification name.
           endif
 
 C Also edit classification documentation.
-          t248=matdoc(IC)(1:lnblnk(matdoc(IC)))
+          t248=matcatdoc(IC)(1:lnblnk(matcatdoc(IC)))
           CALL EASKS248(t248,'Category notes:',' ',
      &      72,'this category...','category notes',IER,nbhelp)
           if(t248(1:2).ne.'  ')then
-            write(matdoc(IC),'(a)') t248(1:lnblnk(t248))
+            write(matcatdoc(IC),'(a)') t248(1:lnblnk(t248))
             chgdb=.true.
             MODDB=.TRUE.
           endif
-        ELSEIF(INO.GE.4.AND.INO.LE.7)THEN
+        ELSEIF(INO.GE.4.AND.INO.LE.6)THEN
           GOTO 2
         ELSEIF(INO.EQ.NITMS-1)THEN
           helptopic='materials_db_overview'
@@ -495,86 +494,10 @@ C Reset flag to show db is current with local arrays.
           ENDIF
         ELSEIF(INO.EQ.NITMS-3)THEN
 
-C Copy an existing material to a new one at end of the array.
-C Use iwhicharray to go from the menu position to the array
-C end of the array.  
-          CALL USRMSG(' ',' Which item of list?','-')
-          CALL EMENU('Copy material',PDBM,NITMS,IW)
-          IWHICH=iwhicharray(IW)
-          ILNE=matdbitems+1
-
-C See if there is an available slot in the 0-600 list of legacy
-C indices. If so make up the initial name but allow the user to
-C edit it. If not then assign -99 and make up initial name based
-C on the original.
-          ip=matlegindex(IWHICH)
-          call getnextascislot(ip,inext)
-          if(inext.le.600)then 
-            write(matname(ILNE),'(a,i3.3)') 'mat_',inext
-            matlegindex(ILNE)=inext
-            mathash(inext)=ILNE
-          else
-            write(matname(ILNE),'(2a)') 
-     &        matname(IWHICH)(1:lnblnk(matname(IWHICH))),'c'
-            matlegindex(ILNE)=-99
-          endif
-
-C If there is room add a note about its origin.
-          ils=lnblnk(matdoc(IWHICH))
-          iln=lnblnk(matname(IWHICH))
-          if(ils.le.200)then
-            write(matdoc(ILNE),'(4a)') 
-     &        matdoc(IWHICH)(1:ils),' (copy of ',
-     &        matname(IWHICH)(1:iln),')'
-          else
-            matdoc(ILNE)=matdoc(IWHICH)
-          endif
-          matdbcon(ILNE)=matdbcon(IWHICH)
-          matdbden(ILNE)=matdbden(IWHICH)
-          matdbsht(ILNE)=matdbsht(IWHICH)
-          matdboute(ILNE)=matdboute(IWHICH)
-          matdbine(ILNE)=matdbine(IWHICH)
-          matdbouta(ILNE)=matdbouta(IWHICH)
-          matdbina(ILNE)=matdbina(IWHICH)
-          matdbdrv(ILNE)=matdbdrv(IWHICH)
-          matdbthick(ILNE)=matdbthick(IWHICH)
-          matcatindex(ILNE)=matcatindex(IWHICH)  ! keep in same category
-          matopaq(ILNE)=matopaq(IWHICH)
-          matirtran(ILNE)=matirtran(IWHICH)
-          matsoldrtrn(ILNE)=matsoldrtrn(IWHICH)
-          matsoldrotrfl(ILNE)=matsoldrotrfl(IWHICH)
-          matsoldrinrfl(ILNE)=matsoldrinrfl(IWHICH)
-          matvistran(ILNE)=matvistran(IWHICH)
-          matvisotrfl(ILNE)=matvisotrfl(IWHICH)
-          matvisinrfl(ILNE)=matvisinrfl(IWHICH)
-          matrender(ILNE)=matrender(IWHICH)
-
-          matgapcnd(ILNE,1)=matgapcnd(IWHICH,1)
-          matgapcnd(ILNE,2)=matgapcnd(IWHICH,2)
-          matgapcnd(ILNE,3)=matgapcnd(IWHICH,3)
-          matgapcnd(ILNE,4)=matgapcnd(IWHICH,4)
-          matvisco(ILNE,1)=matvisco(IWHICH,1)
-          matvisco(ILNE,2)=matvisco(IWHICH,2)
-          matvisco(ILNE,3)=matvisco(IWHICH,3)
-          matvisco(ILNE,4)=matvisco(IWHICH,4)
-          matgapden(ILNE,1)=matgapden(IWHICH,1)
-          matgapden(ILNE,2)=matgapden(IWHICH,2)
-          matgapden(ILNE,3)=matgapden(IWHICH,3)
-          matgapden(ILNE,4)=matgapden(IWHICH,4)
-          matprandtl(ILNE,1)=matprandtl(IWHICH,1)
-          matprandtl(ILNE,2)=matprandtl(IWHICH,2)
-          matgapsht(ILNE,1)=matgapsht(IWHICH,1)
-          matgapsht(ILNE,2)=matgapsht(IWHICH,2)
-          matdbitems=matdbitems+1
-          matcatitems(IC)=matcatitems(IC)+1
-          MODDB=.TRUE.
-          chgdb=.true.
-        ELSEIF(INO.EQ.NITMS-4)THEN
-
-C Add or delete and material from db.
-          CALL EASKABCD(' ','Options: ','Delete existing material',
+C Add delete or copy material from db.
+          CALL EASKATOG('Options: ',' ','Delete existing material',
      &      'Add material','Derive non-homogeneous material',
-     &      'continue',IW,nbhelp)
+     &      'copy existing material','cancel','  ','  ',IW,nbhelp)
           IF(IW.EQ.1)THEN
 
 C Ask the user which one to remove then loop through materials and
@@ -862,11 +785,88 @@ C The additional properties just use the 1st material (change this later).
               matcatindex(ILNE)=IC      ! keep in current category
             endif
           ELSEIF(IW.EQ.4)THEN
-            GOTO 3
+
+C Copy an existing material to a new one at end of the array.
+C Use iwhicharray to go from the menu position to the array
+C end of the array.  
+            CALL USRMSG(' ',' Which item of list?','-')
+            CALL EMENU('Copy material',PDBM,NITMS,IW)
+            IWHICH=iwhicharray(IW)
+            ILNE=matdbitems+1
+
+C See if there is an available slot in the 0-600 list of legacy
+C indices. If so make up the initial name but allow the user to
+C edit it. If not then assign -99 and make up initial name based
+C on the original.
+            ip=matlegindex(IWHICH)
+            call getnextascislot(ip,inext)
+            if(inext.le.600)then 
+              write(matname(ILNE),'(a,i3.3)') 'mat_',inext
+              matlegindex(ILNE)=inext
+              mathash(inext)=ILNE
+            else
+              write(matname(ILNE),'(2a)') 
+     &          matname(IWHICH)(1:lnblnk(matname(IWHICH))),'c'
+              matlegindex(ILNE)=-99
+            endif
+
+C If there is room add a note about its origin.
+            ils=lnblnk(matdoc(IWHICH))
+            iln=lnblnk(matname(IWHICH))
+            if(ils.le.200)then
+              write(matdoc(ILNE),'(4a)') 
+     &          matdoc(IWHICH)(1:ils),' (copy of ',
+     &          matname(IWHICH)(1:iln),')'
+            else
+              matdoc(ILNE)=matdoc(IWHICH)
+            endif
+            matdbcon(ILNE)=matdbcon(IWHICH)
+            matdbden(ILNE)=matdbden(IWHICH)
+            matdbsht(ILNE)=matdbsht(IWHICH)
+            matdboute(ILNE)=matdboute(IWHICH)
+            matdbine(ILNE)=matdbine(IWHICH)
+            matdbouta(ILNE)=matdbouta(IWHICH)
+            matdbina(ILNE)=matdbina(IWHICH)
+            matdbdrv(ILNE)=matdbdrv(IWHICH)
+            matdbthick(ILNE)=matdbthick(IWHICH)
+            matcatindex(ILNE)=matcatindex(IWHICH)  ! keep in same category
+            matopaq(ILNE)=matopaq(IWHICH)
+            matirtran(ILNE)=matirtran(IWHICH)
+            matsoldrtrn(ILNE)=matsoldrtrn(IWHICH)
+            matsoldrotrfl(ILNE)=matsoldrotrfl(IWHICH)
+            matsoldrinrfl(ILNE)=matsoldrinrfl(IWHICH)
+            matvistran(ILNE)=matvistran(IWHICH)
+            matvisotrfl(ILNE)=matvisotrfl(IWHICH)
+            matvisinrfl(ILNE)=matvisinrfl(IWHICH)
+            matrender(ILNE)=matrender(IWHICH)
+
+            matgapcnd(ILNE,1)=matgapcnd(IWHICH,1)
+            matgapcnd(ILNE,2)=matgapcnd(IWHICH,2)
+            matgapcnd(ILNE,3)=matgapcnd(IWHICH,3)
+            matgapcnd(ILNE,4)=matgapcnd(IWHICH,4)
+            matvisco(ILNE,1)=matvisco(IWHICH,1)
+            matvisco(ILNE,2)=matvisco(IWHICH,2)
+            matvisco(ILNE,3)=matvisco(IWHICH,3)
+            matvisco(ILNE,4)=matvisco(IWHICH,4)
+            matgapden(ILNE,1)=matgapden(IWHICH,1)
+            matgapden(ILNE,2)=matgapden(IWHICH,2)
+            matgapden(ILNE,3)=matgapden(IWHICH,3)
+            matgapden(ILNE,4)=matgapden(IWHICH,4)
+            matprandtl(ILNE,1)=matprandtl(IWHICH,1)
+            matprandtl(ILNE,2)=matprandtl(IWHICH,2)
+            matgapsht(ILNE,1)=matgapsht(IWHICH,1)
+            matgapsht(ILNE,2)=matgapsht(IWHICH,2)
+            matdbitems=matdbitems+1
+            matcatitems(IC)=matcatitems(IC)+1
+            MODDB=.TRUE.
+            chgdb=.true.
+
+          ELSEIF(IW.EQ.5)THEN
+            GOTO 3    ! user declined
           ENDIF
-        ELSEIF(INO.EQ.NITMS-5)THEN
+        ELSEIF(INO.EQ.NITMS-4)THEN
           GOTO 2
-        ELSEIF(INO.GT.7.AND.INO.LT.NITMS-5)THEN
+        ELSEIF(INO.GT.6.AND.INO.LT.NITMS-4)THEN
 
 C Identified one of the materials to edit or select.
           IFOC=iwhicharray(INO)

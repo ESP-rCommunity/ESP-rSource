@@ -43,7 +43,11 @@ C Passed parameter.
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       LOGICAL MODIFY,MODLEN,MODBND
+#ifdef OSI
       integer numberofzones ! to pass to updwire rather than ncomp
+#else
+      integer*8 numberofzones
+#endif
 
       SMALL=0.01
 
@@ -172,6 +176,9 @@ C Clear current viewing box and re-establish image bounds.
 
 C Determine scaling ratios for the drawing and axis.  If static
 C assume 1000 -1000 etc, if optimum then use SXMX,SYMX + 10% etc.
+
+C << why different assumption for static?? >>
+
       IF(ITBND.EQ.0)THEN
         CALL axiscale(igwid,igheight,-1000.,1000.,-1000.,1000.,xsc,ysc,
      &                sca,Xadd,Yadd)
@@ -410,10 +417,12 @@ C ETSMAT = Eye to Screen Matrix. First move to the beginning.
           CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,iix,iiy)
 
-C If vertex are to be labeled do it in the smallest font, then
-C move cursor to vertex and remember position.
+C If vertex are to be labeled do it in the smallest font, also place
+C a 2pixel square dot at the vertex so if it is embedded in a line
+C it can be seen. Then move cursor to vertex and remember position.
           IF(ITVNO.EQ.0.AND.NAP.EQ.NBP)THEN
             IV=NZJVN(icc,IP)
+            call esymbol(iix,iiy,8,1)
             CALL VERTLBL(iix,iiy,IV,ier)
           ENDIF
           iixlast=iix   ! cast for edline call
@@ -482,6 +491,7 @@ C If vertex are to be labeled do it in the smallest font and
 C move cursor back to vertex and remember position.
           IF(ITVNO.EQ.0.AND.NAP.EQ.NBP)THEN
             IV=NZJVN(icc,IP1)
+            call esymbol(iix,iiy,8,1)
             CALL VERTLBL(iix,iiy,IV,ier)
             iixlast=iix   ! cast for edline call
             iiylast=iiy

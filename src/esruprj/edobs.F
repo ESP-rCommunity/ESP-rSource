@@ -1,6 +1,6 @@
 C This file is part of the ESP-r system.
 C Copyright Energy Systems Research Unit, University of
-C Strathclyde, Glasgow Scotland, 2001.
+C Strathclyde, Glasgow Scotland, 2001-2011.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
@@ -19,6 +19,11 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C edobs.f contains code to allow the editing of site obstructions files.
+
+C EDOBS:  High level controller for editing obstruction blocks
+C ECROBS: Read in existing obstruction file or create a fresh one.
+C EDOBSB: Edit details of an obstruction block.
+C EREVEAL: Composes a window reveal out of obstruction blocks.
 
 C << NOTE: transition state in terms of obstruction blocks within v1.1
 C << zone geometry files - several routines are using readgeo calls
@@ -61,6 +66,7 @@ C LPRFDB,IPRODB (for event profile database)
       LOGICAL MODIFY,MODLEN,MODBND,modcfg,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
       logical silent  ! to signal quiet dependency resolution
+      logical anothercopy  ! logical true if user has copied a block
       integer llbm,llbn  ! for length of block material and name
       logical havesaved  ! to signal zone file written
       integer IW  ! for radio button
@@ -80,6 +86,7 @@ C Check if Unix-based or DOS based.
       modcfg=.false.
       havesaved=.false.
       ITOBS = 0
+      anothercopy=.false.  ! nothing copied yet
 
 C Obstructions for whole model are in common blocks there should
 C be no need to re-scan this information because it is only called
@@ -404,7 +411,14 @@ C Rotation choices.
           CALL EPICKS(INPIC,IVALB,' ','Transform which obstructions:',
      &        30,nbobs(icomp),PICK,' block list',IER,nbhelp)
           CALL EPMENRC
-          HOLDS= ' 0.  0.  0. '
+
+C Ask for transform distance for obstruction and then apply. If first
+C time for copy use zeros, otherwise re-present the previous values.
+          if(anothercopy)then
+            write(holds,'(3f10.4)') VALX,VALY,VALZ
+          else
+            holds = ' 0.00  0.00  0.00 '
+          endif
  152      CALL EASKS(HOLDS,' X Y & Z offsets: ',' ',
      &      36,' 0. 0. 0. ','offsets',IER,nbhelp)
           K=0
@@ -425,6 +439,7 @@ C Rotation choices.
   87      continue
           MODIFY=.TRUE.
           call warnmod(ICOMP,'ob+')
+          if(.NOT.anothercopy) anothercopy=.true.  ! something transformed
         else
           GOTO 92
         endif
@@ -528,13 +543,24 @@ C To delete the last obstruction, dereference the file and exit.
 C Edit the new block, first hilight the obstruction.
 	  nbo=nbobs(icomp)
           ITOBS = nbo
-          CALL ADJVIEW(IER)
-          CALL EPMENSV
-          CALL EDOBSB(ITRU,IUF,ICOMP,nbo,IER)
-          CALL EPMENRC
+          CALL EPMENSV      ! save state of the calling menue
+   77     CALL ADJVIEW(IER) ! redraw the model
+          CALL EDOBSB(ITRU,IUF,ICOMP,nbo,ianother,IER)
           MODIFY=.TRUE.
           call warnmod(ICOMP,'ob+')
-          GOTO 91
+
+C If user asked for next or prior obstruction reset nbo and call again.
+          if(ianother.eq.0)then
+            continue
+          elseif(ianother.lt.0.and.nbo.gt.1)then
+            nbo=nbo-1; ITOBS = nbo; MODIFY=.TRUE.
+            goto 77
+          elseif(ianother.gt.0.and.nbo.lt.nbobs(icomp))then
+            nbo=nbo+1; ITOBS = nbo; MODIFY=.TRUE.
+            goto 77
+          endif
+          CALL EPMENRC  ! recover state of calling menue
+          GOTO 92       ! re-display the menu
         elseif(IW.EQ.3)THEN
 
 C Copy obstruction.
@@ -561,8 +587,13 @@ C Copy obstruction.
               goto 244
             endif
 
-C Ask for transform distance for obstruction and then apply.
-            holds = ' 0.00  0.00  0.00 '
+C Ask for transform distance for obstruction and then apply. If first
+C time for copy use zeros, otherwise re-present the previous values.
+            if(anothercopy)then
+              write(holds,'(3f10.4)') VALX,VALY,VALZ
+            else
+              holds = ' 0.00  0.00  0.00 '
+            endif
  243        CALL EASKS(HOLDS,'Transform obstruction (X Y Z metres):',
      &        ' ',36,' 0.0 0.0 0.0','transforms XYZ',IER,nbhelp)
             K=0
@@ -591,21 +622,35 @@ C Ask for transform distance for obstruction and then apply.
   245       continue
             MODIFY=.TRUE.
             call warnmod(ICOMP,'ob+')
+            if(.NOT.anothercopy) anothercopy=.true.  ! something copied
+
             if(newgeo)then
               call geowrite(IUF,LGEOM(ICOMP),ICOMP,iuout,3,IER)
             else
               CALL MKGOMST(IUF,ZOBS(ICOMP),ICOMP,IER)
             endif
-            CALL ADJVIEW(IER)
+	    nbo=nbobs(icomp)
+            ITOBS = nbo
+            CALL EPMENSV       ! save the calling menu layout
+  78        CALL ADJVIEW(IER)  ! redraw wireframe
             call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
 
 C Edit the copied block.
-	    nbo=nbobs(icomp)
-            CALL EPMENSV
-            CALL EDOBSB(ITRU,IUF,ICOMP,nbo,IER)
-            CALL EPMENRC
+            CALL EDOBSB(ITRU,IUF,ICOMP,nbo,ianother,IER)
             MODIFY=.TRUE.
+
+C If user asked for next or prior obstruction reset nbo and call again.
+            if(ianother.eq.0)then
+              continue
+            elseif(ianother.lt.0.and.nbo.gt.1)then
+              nbo=nbo-1; ITOBS = nbo; MODIFY=.TRUE.
+              goto 78
+            elseif(ianother.gt.0.and.nbo.lt.nbobs(icomp))then
+              nbo=nbo+1; ITOBS = nbo; MODIFY=.TRUE.
+              goto 78
+            endif
+            CALL EPMENRC   ! recover the calling menu layout
             GOTO 91
           endif
         elseif(IW.EQ.4)THEN
@@ -640,8 +685,22 @@ C Edit block identified by KEYIND.
         CALL KEYIND(MVERT,IVERT,IFOC,IO)
         IB=IFOC
         if(IB.ne.0)then
-          CALL EPMENSV
-          CALL EDOBSB(ITRU,IUF,ICOMP,IB,IER)
+          CALL EPMENSV     ! record calling menu status
+          ITOBS = ib       ! mark which obs to highlight
+          MODIFY=.TRUE.    ! tell it to pay attention to the highlight
+  79      CALL ADJVIEW(IER)  ! redraw wireframe
+          CALL EDOBSB(ITRU,IUF,ICOMP,IB,ianother,IER)
+
+C If user asked for next or prior obstruction reset nbo and call again.
+          if(ianother.eq.0)then
+            continue
+          elseif(ianother.lt.0.and.ib.gt.1)then
+            ib=ib-1; ITOBS = ib; MODIFY=.TRUE.
+            goto 79
+          elseif(ianother.gt.0.and.ib.lt.nbobs(icomp))then
+            ib=ib+1; ITOBS = ib; MODIFY=.TRUE.
+            goto 79
+          endif
           CALL EPMENRC
         endif
       ENDIF
@@ -987,7 +1046,7 @@ C EDOBSB: Edit details of an obstruction block. Adapt interface
 C if user requests conversion to a general 6 sided polygon. This
 C subroutine assues that the current zone geometry common blocks
 C have already been filled.
-      SUBROUTINE EDOBSB(ITRU,IUF,ICOMP,IB,IER)
+      SUBROUTINE EDOBSB(ITRU,IUF,ICOMP,IB,ianother,IER)
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
@@ -1000,6 +1059,7 @@ C Parameters
       integer IUF    ! file unit
       integer ICOMP  ! zone number
       integer IB     ! block number
+      integer ianother ! +1 jump next -1 jump previous otherwise zero
       integer IER    ! zero is ok
       
       COMMON/OUTIN/IUOUT,IUIN
@@ -1010,7 +1070,7 @@ C Parameters
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       LOGICAL MODIFY,MODLEN,MODBND
-      DIMENSION VERT(23),IVLST(MTV)
+      DIMENSION VERT(25),IVLST(MTV)
       CHARACTER VERT*33,MSG*72,S12*12
       character HOLD*32,outs*124
       logical newgeo  ! to use for testing if new/old geometry file.
@@ -1122,11 +1182,21 @@ C geometry files.
         WRITE(VERT(19),'(A,3F8.3)') '  min: ',ZXMN(iz),ZYMN(iz),
      &    ZZMN(iz)
         VERT(20)                  = '  ____________________________  '
-        VERT(21)                  = '* convert to general polygons   '
-        VERT(22)                  = '? help                          '
-        VERT(23)                  = '- exit                          '
+        if(ib.gt.1.and.ib.lt.nbobs(iz))then
+          VERT(21)=                 '< jump to previous obstruction  '
+          VERT(22)=                 '> jump to next obstruction      '
+        elseif(ib.eq.1)then
+          VERT(21)=                 '                                '
+          VERT(22)=                 '> jump to next obstruction      '        
+        elseif(ib.eq.nbobs(iz))then
+          VERT(21)=                 '< jump to previous obstruction  '
+          VERT(22)=                 '                                '
+        endif
+        VERT(23)                  = '* convert to general polygons   '
+        VERT(24)                  = '? help                          '
+        VERT(25)                  = '- exit                          '
       else
-        VERT(1)                   =  ' coords   X     Y      Z      '
+        VERT(1)                   = ' coords   X     Y      Z      '
         WRITE(VERT(2),'(A,3F8.3)')  'a 1:',XBP(iz,ib,1),YBP(iz,ib,1),
      &    ZBP(iz,ib,1)
         WRITE(VERT(3),'(A,3F8.3)')  'b 2:',XBP(iz,ib,2),YBP(iz,ib,2),
@@ -1157,8 +1227,18 @@ C geometry files.
         WRITE(VERT(17),'(A,3F8.3)') '  min: ',ZXMN(iz),ZYMN(iz),
      &    ZZMN(iz)
         VERT(18)                  = '  ____________________________  '
-        VERT(19)                  = '? help                          '
-        VERT(20)                  = '- exit                          '
+        if(ib.gt.1.and.ib.lt.nbobs(iz))then
+          VERT(19)=                 '< jump to previous obstruction  '
+          VERT(20)=                 '> jump to next obstruction      '
+        elseif(ib.eq.1)then
+          VERT(19)=                 '                                '
+          VERT(20)=                 '> jump to next obstruction      '        
+        elseif(ib.eq.nbobs(iz))then
+          VERT(19)=                 '< jump to previous obstruction  '
+          VERT(20)=                 '                                '
+        endif
+        VERT(21)                  = '? help                          '
+        VERT(22)                  = '- exit                          '
 
       endif
       
@@ -1179,19 +1259,20 @@ C Help text for this menu.
 C Now display the menu.
       if(BLOCKTYP(ICOMP,IB)(1:4).eq.'obs '.or.
      &   BLOCKTYP(ICOMP,IB)(1:4).eq.'obs3')then
-        NITMS=23
+        NITMS=25
         CALL EMENU('Block Details',VERT,NITMS,IVERT)
       else
-        NITMS=20
+        NITMS=22
         CALL EMENU('Obstruction Details',VERT,NITMS,IVERT)
       endif
 
 C One set of interface actions if type 'obs' or 'obs3'.
       if(BLOCKTYP(ICOMP,IB)(1:4).eq.'obs '.or.
      &   BLOCKTYP(ICOMP,IB)(1:4).eq.'obs3')then
-        if(IVERT.EQ.23)then
+        if(IVERT.EQ.25)then
           ITOBS = 0
           CALL ADJVIEW(IER)
+          ianother=0  ! signal no jump to previous or next
           RETURN
         elseif(IVERT.EQ.1)then
   42      CALL EASKABCD('Choices:',' ','edit origin','use zone vertex',
@@ -1372,6 +1453,16 @@ C Note: this logic only picks up the first 12 char of construction.
           MODIFY=.TRUE.
         ELSEIF(IVERT.EQ.21)THEN
 
+C Jump to previous obstruction.
+          ianother= -1
+          return
+        ELSEIF(IVERT.EQ.22)THEN
+
+C Jump to next obstruction.
+          ianother=1
+          return
+        ELSEIF(IVERT.EQ.23)THEN
+
 C Convert current obstruction block into general polygon obstruction.
           if(BLOCKTYP(ICOMP,IB)(1:4).eq.'obs ')then
             CALL CNVBLK(XOB(ICOMP,IB),YOB(ICOMP,IB),ZOB(ICOMP,IB),
@@ -1403,7 +1494,7 @@ C Convert current obstruction block into general polygon obstruction.
           call warnmod(ICOMP,'ob+')
           GOTO 92
 	  
-        ELSEIF(IVERT.EQ.22)THEN
+        ELSEIF(IVERT.EQ.24)THEN
           helptopic='obstruction_prism'
           call gethelptext(helpinsub,helptopic,nbhelp)
           CALL PHELPD('obstr menu',nbhelp,'-',0,0,IER)
@@ -1417,6 +1508,7 @@ C Interface options if a general polygon obstruction.
         if(IVERT.EQ.20)then
           ITOBS = 0
           CALL ADJVIEW(IER)
+          ianother=0  ! signal no jump to previous or next
           RETURN
         elseif(IVERT.EQ.2)then
   431     HOLD=' '
@@ -1604,6 +1696,16 @@ C Note: this logic only picks up the first 12 char of construction.
           OPOB(icomp,IB)=VX
           MODIFY=.TRUE.
         ELSEIF(IVERT.EQ.19)THEN
+
+C Jump to previous obstruction.
+          ianother= -1
+          return
+        ELSEIF(IVERT.EQ.20)THEN
+
+C Jump to next obstruction.
+          ianother=1
+          return
+        ELSEIF(IVERT.EQ.21)THEN
           CALL PHELPD('obstr menu',48,'-',0,0,IER)
         ELSE
           GOTO 92

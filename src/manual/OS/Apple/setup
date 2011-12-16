@@ -1,7 +1,7 @@
 #!/bin/bash -f
 
 echo " "
-echo "This script installs an ESP-r 11.9 X11 or GTK distribution on"
+echo "This script installs an ESP-r 11.11 X11 or GTK distribution on"
 echo "a Mac OSX 10.5+ computer which already has the X11, developers"
 echo "environment and the fink environment setup and running. On an"
 echo "Intel Mac this should run natively."
@@ -16,6 +16,10 @@ echo "The installation will be to a standard location, which"
 echo "is /opt/esru and a link will be created to this from "
 echo "/usr/esru if it does not already exist."
 echo " "
+echo "Note: if you want to install Radiance R3.9 on OSX you will"
+echo "need to do this separately. Typically it is installed into"
+echo "/usr/local/bin and /usr/local/lib/ray."
+echo " "
 
 DSP1=" \n
  You should have administrative access or the installer might not work.\n"
@@ -29,6 +33,9 @@ DSP4=" \n
  The PATH environment variable is being updated. The .cshrc\n
  file the path= line should include the following...\n
  /opt/esru/esp-r/bin /usr/local/bin /sw/bin\n
+ \n
+ and the Radiance RAYPATH environment variable has also\n
+ been set to /usr/local/lib/ray.\n
  \n
  Once you have completed the install logout and then\n
  login as a normal user and start up an X terminal.\n
@@ -145,10 +152,10 @@ fi
 cd /opt
 if [[ $which = 'a' ]] ; then
   echo " Extracting X11 ESP-r distribution ..."
-  sudo /sw/bin/zcat $ISD/esp-r_X11_11.9_intel_osx.tar.gz | tar xf -
+  sudo /sw/bin/zcat $ISD/esp-r_X11_11.11_intel_osx.tar.gz | tar xf -
 elif [[ $which = 'b' ]] ; then
   echo " Extracting GTK ESP-r distribution ..."
-  sudo /sw/bin/zcat $ISD/esp-r_GTK_11.9_intel_osx.tar.gz | tar xf -
+  sudo /sw/bin/zcat $ISD/esp-r_GTK_11.11_intel_osx.tar.gz | tar xf -
 fi
 echo " Extracting ESP-r distribution ...done."
 echo " "

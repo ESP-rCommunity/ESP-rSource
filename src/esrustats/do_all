@@ -1,0 +1,14 @@
+#!/bin/csh
+# to extract patterns from csv files
+
+echo "usage example: first cd to folder with csv files"
+echo "it assumes DHWandAuxE.cvs is in the same folder"
+echo currently working on $PWD
+
+foreach i ( `ls *.csv` )
+ if ( -f $i ) then
+   echo looking at $i
+   ./csv_stats -file $i
+   echo " "
+ endif
+end

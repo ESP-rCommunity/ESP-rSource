@@ -46,14 +46,18 @@ C geometry.h provides commons G0/G1/G2/G4/c20/precz/GS5/GS6.
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
 
-      common/io/ioin,ioout,ioblk,iosblk,iotobs
+      integer ioin,ioout,ioblk
+      common/io/ioin,ioout,ioblk
+
+      integer indxzon
+      character oformat*24,head*4
       common/dxfe/oformat,indxzon,head
 
       DIMENSION XX(MS),YY(MS),ndum(MS),ddum(MS),ngld(MS)
       CHARACTER OUTSTR*124,WORD*20,phrase*64
       CHARACTER*72 upgcfg,LCFGF
       character GFILE*72,ZN*12,outs*124,tmp*124,cfgroot*24
-      character oformat*24,head*4,LOUT*72,OTF*4,SN*12
+      character LOUT*72,OTF*4,SN*12
       character dstmp*24
 
       logical okform,okant,zipok

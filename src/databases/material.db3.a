@@ -117,7 +117,7 @@ Category ( 3) Metal has a range of metals, some are the same but are painted dif
 *item,black coated aluminium, 51, 3,note note
 210.000,2700.000,880.000,0.950,0.950,0.980,0.980,19200.000,2.0,-
 # class index |nb items|description (32 char)
-*class, 4,22,Wood
+*class, 4,23,Wood
 Category ( 4) Wood holds a range of wood types. Based on data traditionally distributed with ESP-r.
 *item,wood block, 61, 4,Block (wood)
 0.160,800.000,2093.000,0.900,0.900,0.650,0.650,11.000,25.0,-
@@ -163,6 +163,8 @@ Category ( 4) Wood holds a range of wood types. Based on data traditionally dist
 0.170,740.000,2000.000,0.900,0.900,0.650,0.650,250.000,12.0,-
 *item,HighDensityParticleBd, 91, 4,HDF based on info in Handbook of Heat Transfer by Thomas Irvine
 0.170,1000.000,1300.000,0.900,0.900,0.700,0.700,55.000,9.0,-
+*item,western larch, 92, 4,Wester Larch from simetric.co.uk and matbase specific ht via physical r prop and moisture relations of wood W Simpson and A TenWolde www.fs.d us/ccrc wood hanbook
+0.140,590.000,1800.000,0.900,0.900,0.650,0.650,12.000,25.0,-
 # class index |nb items|description (32 char)
 *class, 5, 9,Stone
 Category ( 5) Stone includes building stone and gravels. Based on data traditionally distributed with ESP-r.

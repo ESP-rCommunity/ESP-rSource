@@ -175,8 +175,8 @@ C Uncertainty.
       INTEGER :: iicfgc,iicfgdfn,iacc,icfoc,iclkok,idindcfg
       INTEGER :: ientxist,iier,im,ino,inwktyp,ios,ipedit,ipass,is
       INTEGER :: isindcfg,iuf,ium,iuo,iv,iver,iw,iz
-      INTEGER :: iser,lenlfil,ln,ltrf,nets,nitems,szlow
-      REAL :: szcog,szhigh
+      INTEGER :: iser,lenlfil,ln,ltrf,nets,nitems
+      REAL :: szlow,szcog,szhigh
 C Function definition      
       INTEGER :: igraphiclib
 
@@ -1306,6 +1306,7 @@ C Flag noting whether casual gain periods are currently sorted.
       integer iuf       ! file unit type
       integer IRT,irop  ! for radio buttons
       integer nitems,INO ! max items and current menu item
+      integer ianother  ! flag for jumping to prior or next zone
 
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
@@ -2394,8 +2395,69 @@ C Obstructions are alread in common - no need to scan.
         ENDIF
 
 C Present zone detail editing menu.
-        CALL EDZONE(ITRC,IC,IER)
+        ianother=0
+ 4 43   CALL EDZONE(ITRC,IC,ianother,IER)
         MODIFY=.TRUE.
+
+C If user asked for next or prior zone reset IC and call again.
+        if(ianother.eq.0)then
+          continue
+        elseif(ianother.lt.0.and.IC.gt.1)then
+
+C Decrement ic and re-scan the geometry file and freshen derived
+C geometric common blocks.
+          ic=ic-1
+          call georead(IFIL+1,LGEOM(IC),IC,1,iuout,IER)
+          if(IER.NE.0)then
+            dok=.true.
+            helptopic='problem_scanning_file'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL ASKOK('Problem reading geometry file!',
+     &            'Try again?',OK,dok,nbhelp)
+            IF(OK)GOTO 248
+          else
+            call zgupdate(0,ic,ier)
+          endif
+
+C Trace geometry related information. Because all zones will have
+c beeen read in so can include the extended surface `context`.
+          if(ITRC.ne.0)then
+            call ZINFOREP(itru,ic)
+            context=.true.
+            CALL SURINFO(IC,ITRU,context)
+            IF(ITRC.GT.1)CALL VERINFO(IC,ITRU)
+            CALL INSINFO(IC,ITRU)
+          endif
+          goto 443
+
+        elseif(ianother.gt.0.and.IC.lt.NCOMP)then
+
+C Increment ic and re-scan the geometry file and freshen derived
+C geometric common blocks.
+          ic=ic+1
+          call georead(IFIL+1,LGEOM(IC),IC,1,iuout,IER)
+          if(IER.NE.0)then
+            dok=.true.
+            helptopic='problem_scanning_file'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL ASKOK('Problem reading geometry file!',
+     &            'Try again?',OK,dok,nbhelp)
+            IF(OK)GOTO 248
+          else
+            call zgupdate(0,ic,ier)
+          endif
+
+C Trace geometry related information. Because all zones will have
+c beeen read in so can include the extended surface `context`.
+          if(ITRC.ne.0)then
+            call ZINFOREP(itru,ic)
+            context=.true.
+            CALL SURINFO(IC,ITRU,context)
+            IF(ITRC.GT.1)CALL VERINFO(IC,ITRU)
+            CALL INSINFO(IC,ITRU)
+          endif
+           goto 443
+        endif
 
 C Loop back and see if another zone is requested.
         IC=-1
@@ -3197,11 +3259,12 @@ C Passed parameters for pregist.
       character root*24,mpath*72,folder*12,menu*72
 
       integer igraphiclib  ! external definition
-      integer numberofzones ! to pass to updwire rather than ncomp
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
+      integer numberofzones ! to pass to updwire rather than ncomp
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 numberofzones ! to pass to updwire rather than ncomp
 #endif
 
 C For help messages

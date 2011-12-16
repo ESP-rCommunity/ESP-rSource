@@ -71,7 +71,6 @@ C Parameters passed into subroutine:
       INTEGER :: ifil
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: iuout,iuin
-      common/pophelp/h(60)
       
       common/C1/NCOMP,NCON
       integer ncomp,ncon
@@ -199,13 +198,13 @@ C Remember if each zone is fully attributed.
       character*72 LTMP
       character*72 GTGEOM
       character GTNAME*15,CLMLOC*30,lipvdatf*72
-      character LCFGF*72,H*72,lco*72,lcot*72
+      character LCFGF*72,lco*72,lcot*72
       character longtfile*144,longtfiledos*144
       character LFIL*96,llitem*144    ! for editing the QA report file.
       character DESCRC*25
       character cfgroot*24,ZN*12,SN*12
       character aok*17,CTLDOC*248,LCTLF*72,items*33
-      character xfile*144,tg*1,delim*1,head*21,mlcmatch*12
+      character xfile*144,tg*1,delim*1,head*21
       character outs*124,outs248*248
       character dstmp*24,mlcname*12
       CHARACTER LAPROB*72,LPNF*72
@@ -224,10 +223,11 @@ C Remember if each zone is fully attributed.
 
 C For thermal bridge reporting
       character TBRIDGE*58
-      dimension phrasemenu(16)
-      character phrasemenu*34
+      dimension phrasemenu(16),phraselen(16)
+      character phrasemenu*34,phraselen*42
       character fs*1
-      logical havebrdge
+      logical havebrdge,haveedgebrdge
+      integer howmanytbedges(16)
       
 C Topic variables: value of zero = none, one = compact, two = verbose
 C Initial assumption is verbose for each topic that is included
@@ -266,16 +266,24 @@ C in the current model. A -1 means not applicable
       integer im,k,mnulen   ! multi column lines
       logical odd   ! for display of vertex info
       
-      INTEGER :: i,icc,icoth,ictif,ie,ieripv,iglib,irec,iprb,inv
-      INTEGER :: ins4,inss1,ino,imlc,imerr,ilcot,ijk,ij,ii,igrdp
+      INTEGER :: i,icc,icoth,ie,ieripv,iglib,irec,iprb,inv
+      INTEGER :: ins4,ino,imlc,imerr,ilcot,ijk,ij,ii,igrdp
       INTEGER :: ictlf,iuo,iunit1,iunit,iuf,iub,itu,itru,itrc,itbmenu
       INTEGER :: itb,istat,isc,is,ic,ins1,isel,iz,izo,izc,izz
       INTEGER :: kk,j,l,lnb,lnc,lna,lsn10,lto,lzn10,m,igraphiclib
-      INTEGER :: iw,lsna
+      INTEGER :: iw
+      INTEGER :: lsna,lk,lnk,lnkn  ! counters for string lengths
       REAL :: opq,totalarea,topq,tmp,tfla
       REAL :: tareamlc,trn,ttrn,tvol,tvtr,tvtr2
       REAL :: UVD,UVI,UVU,vtranper
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='prjqa'  ! set for subroutine
+      
 C Check if Unix-based or DOS based.
       call isunix(unixok)
       if(unixok)then
@@ -285,7 +293,8 @@ C Check if Unix-based or DOS based.
       endif
 
       changedit=.false.
-      newgeo=.false.  ! assume older format geometry.
+      newgeo=.false.     ! assume older format geometry.
+      havebrdge=.false.  ! assume no thermal bridges
       IUF=IFIL+2
       siteinfo=2
       databaseinfo=2  ! assume verbose mode for database reporting
@@ -334,6 +343,7 @@ C If silent mode then set file name and jump to report generation.
           ier=-3
           return
         endif
+        
 C Prior to silent reporting rescan the construction database (sometimes
 C database gets its name corrupted requiring a re-scan).
         CALL ERPFREE(IFMUL,ISTAT)
@@ -479,43 +489,8 @@ C Setup the selection menu.
       items(25)  ='- exit menu                '
 
 C Help for menu.
-      H(1)='Normally reports are generated from a standard pattern'
-      H(2)='and edited to fit the current project. The `notes` file'
-      H(3)='is created during project registration and should be '
-      H(4)='updated as the project evloves.'
-      H(5)=' '
-      H(6)='The graphing tool can be invoked after exporting'
-      H(7)='performance data from the assessment tool.'
-      H(8)=' '
-      H(9)='If you wish to view bitmapped images oor capture '
-      H(10)='images from the screen use option `h`. '
-      H(11)=' '
-      H(12)='The preview tool has a default assumption that the '
-      H(13)='report uses the troff typesetting convention. '
-      h(14)=' '
-      h(15)='This menu also defines the contents of a QA report for'
-      h(16)='the current model. '
-      h(17)=' '
-      h(18)='A number of topics can be selected for inclusion in the'
-      h(19)='report and each topic can be reported in a compact or'
-      h(20)='verbose format.'
-      h(21)=' '
-      h(22)='Topics which are not included in the current model will' 
-      h(23)='show up as not applicable.'
-      h(24)=' '
-      h(25)='One use of this report is to track the progress of a'
-      h(26)='model (comparing reports generated as the model evolves).'
-      h(27)=' '
-      h(28)='Another use of this report is to confirm that different'
-      h(29)='different versions of a model have been correctly'
-      h(30)='defined. '
-      h(31)=' '
-      h(32)='The primary use of this report is as an aide to check'
-      h(33)='models and provide a text based synopsis of the model'
-      h(34)='composition. '
-      h(35)=' '
-      h(36)='Once you generate a QA report file you can select the'
-      h(37)='`edit QA report` option and an editor will be launched.'
+      helptopic='setup_qa_report'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       NITMS=25
       call emenu('Model reports',items,NITMS,ino)
 
@@ -525,7 +500,9 @@ C Help for menu.
         endif
         return
       elseif(ino.eq.24)then
-        CALL PHELPD('QA overview',37,'-',0,0,IER)
+        helptopic='setup_qa_report'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('QA overview',nbhelp,'-',0,0,IER)
       elseif(ino.eq.1)then
 
 C << need to sort out changing to main project folder >>
@@ -543,15 +520,13 @@ C << need to sort out changing to main project folder >>
 
 C Edit project documentation.
         if(CFGOK)then
-  54      H(1)='The project log file contains descriptive text about'
-          H(2)='the project.  Keep it up to date via a text editor.'
-          if(LPRJLG(1:2).eq.'  '.or.LPRJLG(1:4).eq.'UNKN')then
+  54      if(LPRJLG(1:2).eq.'  '.or.LPRJLG(1:4).eq.'UNKN')then
             write(LPRJLG,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.log'
           endif
           ltmp=LPRJLG
           CALL EASKS(ltmp,
      &      'A log file (notes/documentation) for this project,',
-     &      'Its name? ',72,'project.notes','log file',IER,2)
+     &      'Its name? ',72,'project.notes','log file',IER,nbhelp)
           if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
             LPRJLG=ltmp
             changedit=.true.
@@ -570,29 +545,22 @@ C when the model was initially created.
             CALL LISTAS(IUNIT,LPRJLG,IER)
             IF(IER.ne.0)THEN
               dok=.true.
-              h(1)='When attempting to preview the log file a problem'
-              h(2)='was reported so check the spelling and location or'
-              h(3)='type of file before trying again. '
-              CALL ASKOK(' Problem detected while trying to preview',
-     &                   ' the log file. Try again?',OK,dok,3)
+              CALL ASKOK('Problem detected while trying to preview',
+     &                   'the log file. Try again?',OK,dok,nbhelp)
               IF(OK)GOTO 54
             ENDIF
           else
             dok=.true.
-            h(1)='No file by that name or in that location was found.'
-            h(2)='Check the spelling and location of the file name'
-            h(3)='before trying again. '
-            CALL ASKOK(' Problem detected while trying to open',
-     &                 ' log file. Try again?',OK,dok,3)
+            CALL ASKOK('Problem detected while trying to open',
+     &                 'log file. Try again?',OK,dok,nbhelp)
             IF(OK)GOTO 54
           endif
 
 C Allow user to edit the job notes file. Append to path if
 C necessary.  If vi then spawn a new window to do the editing.
           dok=.true.
-          h(1)='If you have a editor associated with ESP-r you can'
-          h(2)='use it to edit this file.  '
-          CALL ASKOK(' ',' Edit this file?',OK,dok,2)
+          CALL ASKOK(' ','Edit this file (with standard text editor?',
+     &      OK,dok,nbhelp)
           IF(OK)then
             if(unixok)then
               call addpath(LPRJLG,longtfile,concat)
@@ -686,10 +654,9 @@ C Execute image viewer (get tool via prior scan of default file).
 
 C If there are zones select from list.
         if(ncomp.gt.0)then
-          H(1)=' Pick one, several or all zones to include.'
           INPIC=NCOMP
           CALL EPICKS(INPIC,IVALS,' ',' Which zones to summarise:',
-     &        12,NCOMP,zname,' zone list',IER,1)
+     &        12,NCOMP,zname,' zone list',IER,nbhelp)
         endif
       elseif(ino.eq.15)then
         if(geominfo.ne.-1)then
@@ -712,54 +679,31 @@ C Jump if no zones.
         if(inpic.eq.0) goto 3
 
 C Generate report sorted by surface attributes.
-        H(1)='Often it is convenient to review which surfaces in a '
-        H(2)='project have particular attributes.'
-        H(3)=' '
-        H(4)='The following dialogue will allow you to define a '
-        H(5)='subset of surfaces via filters for position,  '
-        H(6)='orientation, opacity, etc. '
-        CALL PHELPD('global search by attribute',6,'-',0,0,IER)
+        helptopic='qa_filters'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('global search by attribute',nbhelp,'-',0,0,IER)
 
-        H(1)='You may filter for already attributed surfaces or'
-        H(2)='surfaces marked UNKNOWN. '
-
-C << mlcmatch not yet used >>
         CALL EASKABCD(' Filter for surface composition:',' ',
      &    'any construction','those marked UNKNOWN',
-     &    'specific construction','cancel',ins4,2)
-        if(ins4.eq.1)then
-          write(mlcmatch,'(a)') 'ANY         '
-        elseif(ins4.eq.2)then
-          write(mlcmatch,'(a)') 'UNKNOWN     '
-        elseif(ins4.eq.3)then
-          CALL EPKMLC(ISEL,'Select construction for matching surfaces',
-     &      'or -Exit',IER)
-          if(ISEL.eq.0)return
-          write(mlcmatch,'(a)')DESC(ISEL)(1:12)
-        elseif(ins4.eq.4)then
+     &    'specific construction','cancel',ins4,nbhelp)
+        if(ins4.eq.4)then
           return
         endif
 
         totalarea=0.0
-        H(1)='You may filter for opaque surfaces, transparent surfaces'
-        H(2)='or both. '
         CALL EASKABCD(' First filter--surface opacity:',' ',
-     &    'opaque','transparent','both','cancel',ins1,2)
+     &    'opaque','transparent','both','cancel',ins1,nbhelp)
         if(ins1.eq.4)return
 
-        H(1)='You may filter for surfaces which face the outside,'
-        H(2)='partitions (internal) etc. '
         ins2=1
         call EASKATOG(' Second filter--surface contiguity:',' ',
      &      'external','similar','constant','partitions','ground',
-     &      'adiabatic','any contiguity',ins2,2)
+     &      'adiabatic','any contiguity',ins2,nbhelp)
 
-        H(1)='You may filter for surfaces which have a particular'
-        H(2)='orientation. '
         ins3=1
         call EASKATOG(' Third filter--surface orientation:',' ',
      &      'vertical','sloped','horizontal up','horizontal down',
-     &      'any horizontal','any orientation',' ',ins3,2)
+     &      'any horizontal','any orientation',' ',ins3,nbhelp)
 
 
         call tstamp('>','PRJ: global reporting by attribution')
@@ -942,21 +886,19 @@ C Generate the report based on current options.
 C If user just wrote to a file then allow browse and then
 C edit of that QA file.  Use file browser if in GTK mode.
 C If vi then spawn a new window to do the editing in.
-        H(1)='The QA report file can be edited using the current'
-        H(2)='defined text editor (as defined in the default file).'
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         write(LFIL,'(a)') xfile(1:96)
         llitem=xfile
         if(iglib.eq.1.or.iglib.eq.3)then
           CALL EASKF(LFIL,'ASCII file name?',
-     &      ' ',96,'xxx.rep','ASCII file',IER,2)
+     &      ' ',96,'xxx.rep','ASCII file',IER,nbhelp)
           write(llitem,'(a)') LFIL(1:lnblnk(LFIL))
         elseif(iglib.eq.2)then
           CALL EASKF(llitem,'ASCII file name?',
-     &      ' ',144,'xxx.rep','ASCII file',IER,2)
+     &      ' ',144,'xxx.rep','ASCII file',IER,nbhelp)
         else
           CALL EASKF(LFIL,'ASCII file name?',
-     &      ' ',96,'xxx.rep','ASCII file',IER,2)
+     &      ' ',96,'xxx.rep','ASCII file',IER,nbhelp)
           write(llitem,'(a)') LFIL(1:lnblnk(LFIL))
         endif
 
@@ -1832,21 +1774,37 @@ C Note: surinfo not dependant on recent geometry scan.
 
 C Setup phrases for the menu and for editing length and psi values.
               phrasemenu(1) ='a roof-wall                    :'
+              phraselen(1)  ='roof-wall ' 
               phrasemenu(2) ='b wall-ground floor            :'
+              phraselen(2)  ='wall-ground floor '
               phrasemenu(3) ='c wall-wall (convex corner)    :'
+              phraselen(3)  ='wall-wall (convex corner) '
               phrasemenu(4) ='d wall-wall (concave corner)   :'
+              phraselen(4)  ='wall-wall (concave corner) '
               phrasemenu(5) ='e wall-floor (not ground floor):'
+              phraselen(5)  ='wall-floor (not ground floor) '
               phrasemenu(6) ='f lintel above window or door  :'
+              phraselen(6)  ='lintel above window or door '
               phrasemenu(7) ='g Sill below window            :'
+              phraselen(7)  ='Sill below window '
               phrasemenu(8) ='h jamb at window or door       :'
+              phraselen(8)  ='jamb at window or door '
               phrasemenu(9) ='i roof-wall                    :'
+              phraselen(9)  ='roof-wall-mc'
               phrasemenu(10)='j wall-ground floor            :'
+              phraselen(10) ='wall-ground floor-mc'
               phrasemenu(11)='k wall-wall (corner)-          :'
+              phraselen(11) ='wall-wall (corner)-mc'
               phrasemenu(12)='l wall-floor (not ground floor):'
+              phraselen(12) ='wall-floor (not ground floor)-mc'
               phrasemenu(13)='m lintel above window or door  :'
+              phraselen(13) ='lintel above window or door-mc'
               phrasemenu(14)='n Sill below window            :'
+              phraselen(14) ='Sill below window-mc'
               phrasemenu(15)='o jamb at window or door       :'
+              phraselen(15) ='jamb at window or door-mc'
               phrasemenu(16)='p user-defined                 :'
+              phraselen(16) ='user-defined '
               call edisp(itu,'Thermal bridges have been defined.')
               if(nbrdg(izz).gt.0)then   
                 call edisp(itu,
@@ -1929,7 +1887,45 @@ C Put odd vertex in right column.
             write(outs248,'(3a)') 
      &        loutsd(1:lnblnk(loutsd)),'   ',SSNAME(icc)(1:lsna)
             call edisp248(itu,outs248,100)
-970       CONTINUE
+ 970      CONTINUE
+
+C If thermal bridges are associated with a surface then report this.
+C Loop each surface in zone, and for each surface each edged and if
+C ibridgeshr(connection,edge) is non-zero add to howmanytbedges array.
+          if(nbrdg(izz).gt.0)then
+            do 971 I = 1,NZSUR(izz)
+              icc=izstocn(izz,i)        ! find connection
+              lsna=lnblnk(SSNAME(icc))  ! get length of surf name
+              do 973,j=1,16
+                howmanytbedges(j)=0
+  973         continue
+              haveedgebrdge=.false.
+              do 972 j=1,NVER(I)
+                if(ibridgeshr(icc,j).ne.0)then
+                  howmanytbedges(ibridgeshr(icc,j))=
+     &              howmanytbedges(ibridgeshr(icc,j))+1
+                  haveedgebrdge=.true.
+                endif
+ 972          continue
+
+C If at least one thermal bridge for surface report it. Keep writing
+C into outs248 for each non-zero bridges.
+              if(haveedgebrdge)then
+                write(outs248,'(2a)') SSNAME(icc)(1:lsna),' bridges: '
+                lk=lnblnk(outs248)+2
+                do 974 k=1,16
+                  if(howmanytbedges(k).gt.0)then
+                    lnk=lnblnk(phraselen(k))
+                    lnkn=lk+lnk+1
+                    write(outs248(lk:lnkn),'(2a)') 
+     &                phraselen(k)(1:lnk),','
+                    lk=lnkn+1
+                  endif
+ 974            continue
+                call edisp248(itu,outs248,100)
+              endif
+ 971        continue
+          endif
         endif
 
 C Check if the edges are proprly bounded. Uses G1 common.
@@ -2373,7 +2369,6 @@ C not browsing.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -2399,7 +2394,7 @@ C Images.
       integer iton   ! zero if images not yet shown, one if yes
       common/imagfi/noimg,iton
 
-      character cfgroot*24,LCFGF*72,h*72,outs*124
+      character cfgroot*24,LCFGF*72,outs*124
       CHARACTER CTLDOC*248,LCTLF*72
       character ZN*12
       character ipvaction*3  ! to instruct it to read from external IPV file
@@ -2414,6 +2409,13 @@ C Flags noting whether casual gain periods are currently sorted.
       integer iuo  ! file unit for operations file.
       integer imgloop ! loop counter for images
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub=' mupdate'  ! set for subroutine
+      
 C Check if Unix-based or DOS based.
       call isunix(unixok)
       newgeo=.false.  ! assume older format geometry.
@@ -2473,15 +2475,15 @@ C igupgrade was set to 2 in preferences also force an upgrade.
         if(igupgrade.eq.2) forceupgrade=.true.
       endif
 
+
       if(forceupgrade)then
         dok=.true.
-        h(1)='Older models should be updated to take advantage of'
-        h(2)='extended geometric data structures and file formats'
-        h(3)=' '
-        h(4)='An update will also reduce the number of model '
-        h(5)='files which have to be managed. '
+        helptopic='model_upgrade_older'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+
         call askok('The current model uses an out-of-date format for',
-     &    'some geometry or obstruction files. Update this?',ok,dok,5)
+     &    'some geometry or obstruction files. Update this?',ok,dok,
+     &     nbhelp)
         if(ok)then
 
           do 776 iz=1,ncomp
@@ -2708,17 +2710,10 @@ C and if there is a control file scan it and write it back out again.
 C Check to see if version of configuration file requires updating.
       if(icfgv.lt.4)then
         dok=.true.
-        h(1)='Older models should be updated to take advantage of'
-        h(2)='extended documentation and quality assurance facilities'
-        h(3)='as well as enhanced databases.'
-        h(4)='An update will also reduce the number of descriptive '
-        h(5)='files which have to be managed. '
-        h(6)=' '
-        h(7)='Older models with seaparate IPV (integrated performance'
-        h(8)='view files will have this data moved into the cfg file.'
-        h(9)=' '
+        helptopic='model_upgrade_v3'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call askok('The current model uses an out-of-date format for',
-     &    'the configuration file. Update this?',ok,dok,9)
+     &    'the configuration file. Update this?',ok,dok,nbhelp)
         if(ok)then
 
 C Check if IPV file known and fill common blocks before writing out to
@@ -2791,15 +2786,11 @@ C Offer option to update shading files.
 
 C If there are no shading files, don't bother trying to update.
       if(anyish)then
-        h(1)='Older shading files should be recalculated to reflect'
-        h(2)='changes in the allowable number of surfaces in each'
-        h(3)='zone. Each affected zone will be done in turn.'
-        h(4)=' '
-        h(5)='Recent versions of the ish module are able to make a'
-        h(6)='backup copy of shading databases in ASCII format. '
+        helptopic='shading_upgrade'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABC(' Update of shading options:',' ',
      &    'recalculate (silent)','recalculate (interactive)','continue',
-     &     IRT,6)
+     &     IRT,nbhelp)
       else
         IRT=3
       endif
