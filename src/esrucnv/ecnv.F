@@ -27,6 +27,7 @@ C   a mm (unless otherwise instructed).
 C Portions of the DXF translation can be traced back (eventually) 
 C to code from ABACUS, Department of Architecture & Building Science.
       program ecnv
+      USE START_UP
 #include "building.h"
 #include "model.h"
 #include "esprdbfile.h"

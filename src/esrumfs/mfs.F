@@ -52,6 +52,7 @@ C     ICOUT  - write unit for (non-fatal) warning messages.
 C     MMOD   - determines the device type attached to the current job.
 
       program mfs
+      USE START_UP
 #include "building.h"
 #include "model.h"
 #include "net_flow.h"

@@ -6,7 +6,7 @@ PROG = mld$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = mld.o c2fdum.o mycores.o psychro.o startup.o \
+OBJECTS = startup.o mld.o c2fdum.o mycores.o psychro.o  \
 	  stats.o vfr.o
 
 MODULES = start_up.mod parse_command_line.mod
@@ -31,4 +31,4 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG)  $(PROG).exe $(OBJECTS) c2fdum.F psychro.F startup.F 
+	rm -f core $(PROG)  $(PROG).exe $(OBJECTS) $(MODULES) c2fdum.F psychro.F startup.F

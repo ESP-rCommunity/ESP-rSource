@@ -45,6 +45,7 @@ C deal with reading a silentread input file.
 C ************************************************************
 
       program runesp
+      USE START_UP
 #include "building.h"
 #include "model.h"
 #include "geometry.h"

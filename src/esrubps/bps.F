@@ -140,6 +140,7 @@ C======SubBps=========================
 C SubBps can be used where bps needs to be called as
 C a subroutine rather than as an application.
       subroutine SubBps
+      USE START_UP
 
 #include "building.h"
 #include "model.h"

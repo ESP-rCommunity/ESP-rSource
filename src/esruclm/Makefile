@@ -45,5 +45,5 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
+	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
 	c2fdum.F commonclm.F ctlexp.F dossupport.F psychro.F rcdblist.F startup.F

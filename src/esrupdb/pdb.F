@@ -19,7 +19,7 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
       program pdb
-
+      USE START_UP
 #include "building.h"
 #include "model.h"
 #include "plantdb.h"

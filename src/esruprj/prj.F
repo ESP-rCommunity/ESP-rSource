@@ -31,6 +31,7 @@ C   FNCNGR: changes the name of file ORIGNAM by appending APP
 
 C ********** MAIN
       program prj
+      USE START_UP
 #include "building.h"
 #include "model.h"
 
@@ -253,8 +254,9 @@ C  ifil+11 (external help text), ifil+19 ifil+20 ifil+21 anlyt.
 
 C Recover command line parameters (terminal, size, config file, zone
 C focus and actions arguments).
-      call parsprj(MODL,iappw,iappx,iappy,inf,inz,act,d1,d2,d3,iverb)
-      itrc=iverb    ! set trace level after call to parsprj
+C      call parsprj(MODL,iappw,iappx,iappy,inf,inz,act,d1,d2,d3,iverb)
+C      itrc=iverb    ! set trace level after call to parsprj
+      call parsprj(MODL,iappw,iappx,iappy,inf,inz,act,d1,d2,d3)
       IFDAY=2
       IFTIME=0
       nsset=0

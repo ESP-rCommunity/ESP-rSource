@@ -19,6 +19,7 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
       program mld
+      USE START_UP
 #include "building.h"
 #include "model.h"
 #include "mould.h"

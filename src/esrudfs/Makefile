@@ -10,15 +10,15 @@ PROG = dfs$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = dfs.o aim2_module.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o \
+OBJECTS = startup.o dfs.o aim2_module.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o \
    bndarybl.o bndaryl.o bndaryt.o bscoeff.o bscoeff_extended.o c2fdum.o cfcalc.o cfdat.o \
 	  cfconv.o cfdrw.o cfdumb.o cfdumm.o cfgrid.o cfmatl.o cfmgerc.o cftext.o \
 	  cfutil.o cgd.o chkconvg.o common3dv.o conc.o e3dviews.o edatabase.o egeometry.o \
 	  eroper.o esru_misc.o filelist.o \
 	  lisolv.o locmage.o mitzero.o plot.o psychro.o \
-	  read3dv.o sort.o startup.o visgrd.o visual.o visvec.o wvapour.o
+	  read3dv.o sort.o  visgrd.o visual.o visvec.o wvapour.o
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod	
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) 
