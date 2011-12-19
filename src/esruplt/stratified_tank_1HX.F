@@ -105,7 +105,6 @@ C---- Local variables
       REAL DOUTHX1              ! External diameter of HX1 (m)
 
 
-C========================================================================================================INIZIO ROBERTA
       INTEGER nX                ! Number of cells in radial direction [-]
       INTEGER nY                ! Number of cells in axial direction [-]
       INTEGER nXnY              ! Number of total cells [-]
@@ -135,7 +134,7 @@ C      INTEGER nCells
       REAL*4 HeightNode         ! Tank CV height
 
       REAL*4 rp(mX)             ! Radius (axis-node distance) [m]
-C========================================================================================================FINE ROBERTA
+      REAL*4 tol                ! Tolerance value
 
 
 C---- Set error flag to false
@@ -166,7 +165,6 @@ C---- Check value of parameters
       DINHX1 = ADATA(IPCOMP,14)   ! Internal diameter of HX1 (m)
       DOUTHX1 = ADATA(IPCOMP,15)  ! External diameter of HX1 (m)
 
-C========================================================================================================INIZIO ROBERTA
 C---- PCM data 
       NPCM    = INT(ADATA(IPCOMP,19)) 
                                   ! Number of PCM modules       
@@ -186,7 +184,6 @@ C---- PCM data
       method  = INT(ADATA(IPCOMP,32))
                                   !time integration method (-)
       e       = ADATA(IPCOMP,33)  ! Phase change range (C)
-C========================================================================================================FINE ROBERTA
 
 C---- Check that number of nodes is within acceptable range
       IF (NNodes .GT. MAX_NNODES .OR. NNodes .LT. 1) THEN
@@ -269,6 +266,15 @@ C---- Check component has 2 connections only, to water
         STOP ' stratified_tank_1hx_static: unresolvable error'
       ENDIF
 
+C---- Check that number of PCM nodes is within acceptable range for 
+C     implicit method calculation (max number of PCM cells should be at
+C     most equal to the LUDCMS routine maximum matrix value)
+      IF (nX*nY .GE. 500 .AND. method .EQ. 2 ) THEN
+        WRITE(IUOUT,*) ' stratified_tank_1hx_static:Number of PCM nodes'
+        WRITE(IUOUT,*) ' heigher than LUDCMS max range'
+        STOP ' stratified_tank_1hx_static: reduce PCM nodes'
+      endif
+
 C---- Component is well defined. Store IPCOMP in stratified tank common
 C---- block, then set the node temperatures to their initial value
  
@@ -295,8 +301,6 @@ C---- block, then set the node temperatures to their initial value
 
 
 
-C======================================================================================INIZIO AGGIUNTO ROBERTA
-
 C---- Initialize pcm_module
       HPCMtop = HPCMbot+HPCMcyl
 
@@ -312,8 +316,13 @@ C---- Calculate PCM position
 
       NPCMbot=NINT(HPCMbot/HeightNode+0.5)
       NPCMtop=NINT((HPCMbot+HPCMcyl)/HeightNode+0.5)
-      IF (HPCMtop.EQ.((NPCMtop-1)*HeightNode)) THEN
-        NPCMtop = NPCMtop-1
+C     Modify nPCMtop value in case of coincidence of PCM top position 
+C     with water layer in order to avoid round up errors
+      tol = 1E-5
+      IF((HPCMtop.GE.(NPCMtop-1)*HeightNode-tol))THEN
+        IF((HPCMtop.LE.(NPCMtop-1)*HeightNode+tol))THEN
+          NPCMtop = NPCMtop-1
+        ENDIF
       ENDIF
 
       IF (NPCM.GT.0) THEN
@@ -382,10 +391,8 @@ C-----skip in case of 1! cell in axial direction
       ENDIF
 
 
-! RIPRISTINARE!!!!!!!!!!!!!!!!!
 C-----GRID
       dr(N_STANK) = DPCMcyl/(2*(nX-1))
-! RIPRISTINARE!!!!!!!!!!!!!!!!!
 
       nY = NPCMsec
       nXnY = nX*nY ! TPCM_MOD and HPCM_MOD dimension 
@@ -415,9 +422,9 @@ C-----INITIAL CONDITIONS
 
 
 
-! RIPRISTINARE!!!!!!!!!!!!!!!!!
 C-----GEOMETRY
 
+! if node on the border 
 C-----PCM cells radius 
 
         J = nX ! central cell
@@ -467,11 +474,11 @@ C-----cells PCM volume
           ENDIF
         ENDDO              
       ENDDO
-! RIPRISTINARE!!!!!!!!!!!!!!!!!
 
 
 
-! CANCELLARE!!!!!!!!!!!!!
+
+! if ghost cell method
 ! C-----PCM cells radius 
 ! 
 !       dr(N_STANK) = DPCMcyl/((2*nX)-1)
@@ -517,7 +524,6 @@ C-----cells PCM volume
 !         K=(J-1)*nY+I
 !         V(K,N_STANK)= (dr(N_STANK)/2)**2*pi*HPCMsec(I,N_STANK) ! internal cell
 !       ENDDO
-! !CANCELLARE!!!!!!!!!!!!!
 
 
 
@@ -526,7 +532,7 @@ C---- Assign PCM grid and position data
       NPCMDATA(2,N_STANK)=nY
       NPCMDATA(3,N_STANK)=NPCMbot
       NPCMDATA(4,N_STANK)=NPCMtop 
-C======================================================================================FINE AGGIUNTO ROBERTA
+
 
 C---- Normal return
  
@@ -865,7 +871,6 @@ C---- Functions
       REAL RHOFLD
       REAL KWATER
 
-C======================================================================================INIZIO AGGIUNTO ROBERTA
 c---- PCM data
       INTEGER NPCM              ! Number of PCM modules
       REAL*4 PCMrhos            ! Density of solid [kg/m^3]
@@ -890,7 +895,6 @@ c---- PCM geometrical data
                                 ! Tank node which the cylinder bottom is located in
       INTEGER NPCMtop           ! Tank node corresponding to the higher cylinder node
                                 ! Tank node which the cylinder top is located in
-C======================================================================================FINE AGGIUNTO ROBERTA
 
 C---- Trace output
 
@@ -921,7 +925,6 @@ C---- Initialise component parameters from the database information
       PITCHHX1 = ADATA(IPCOMP,17) ! Pitch of the coil of HX1 (m)
       KHX1 = ADATA(IPCOMP,18)     ! Thermal conductivity of HX1 (W/m/C)
 
-C======================================================================================INIZIO AGGIUNTO ROBERTA
 C---- PCM data 
       NPCM    = INT(ADATA(IPCOMP,19)) 
                                   ! Number of PCM modules       
@@ -944,7 +947,6 @@ C---- PCM data
 
 C---- Initialize pcm_module
       HPCMtop = HPCMbot+HPCMcyl
-C======================================================================================FINE AGGIUNTO ROBERTA
 
 
 C---- Initialize pointers to inter-connection(s) ICON, and node(s) INOD.
@@ -1023,14 +1025,12 @@ C---- Identify number of stratified tank in common stratified_tank.h
 
 
 
-C=================================================================INIZIO AGGIUNTO ROBERTA
 C---- Assign PCM grid and position data
 
       nX=NPCMDATA(1,I_STANK)
       nY=NPCMDATA(2,I_STANK)
       NPCMbot=NPCMDATA(3,I_STANK)
       NPCMtop=NPCMDATA(4,I_STANK)
-C=================================================================FINE AGGIUNTO ROBERTA
 
 
 C---- Calculate heat capacitance and density of fluid
@@ -1042,7 +1042,6 @@ C     Use average temperature of tank at previous time step
 
 C---- Call stratified tank function
 
-C=================================================================INIZIO AGGIUNTO ROBERTA
       HASPCM=.FALSE.
       IF (NPCM .GT. 0) HASPCM=.TRUE.
 
@@ -1050,7 +1049,6 @@ C---- If tank contains PCM cylinders subtract their volume
       IF (HASPCM) THEN
         VOL = VOL - NPCM*HPCMcyl*DPCMcyl**2/4*PI
       ENDIF
-C=================================================================FINE AGGIUNTO ROBERTA
 
       HASHX1=.TRUE.
       HASHX2=.FALSE.
@@ -1069,13 +1067,13 @@ C=================================================================FINE AGGIUNTO 
      &  QLOSS, QIMMERSED_HX,
      &  STEPCOUNT, MIXCOUNT, NSECAVG, 
      &  TF_STANK(1,I_STANK),IER,
-     &  HPCM_MOD(1,I_STANK),TPCM_MOD(1,I_STANK),!====================================INIZIO AGGIUNTO ROBERTA
+     &  HPCM_MOD(1,I_STANK),TPCM_MOD(1,I_STANK),
      &  Axb(1,I_STANK),Ax(1,I_STANK),Ay(1,I_STANK),
      &  V(1,I_STANK),
      &  nX,nY,NPCMbot,NPCMtop,dr(I_STANK),
      &  PCMrhos,PCMrhol,cs,cl,heatLat,cndcts,cndctl,Tmi,method,e,
      &  HPCMcyl,DPCMcyl,HPCMbot,HPCMtop, NPCM, HASPCM,
-     &  DPCMNODE(1,I_STANK))!============================================FINE AGGIUNTO ROBERTA
+     &  DPCMNODE(1,I_STANK))
 
 C---- Check error code
 

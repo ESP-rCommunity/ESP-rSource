@@ -87,8 +87,6 @@ C-----TANK CHARACTERISTICS
 C-----OTHER
       REAL QPCM(nNodes)    ! haet transfer from immersed PCM [J]
       INTEGER IC           ! tank time step counter
-!       INTEGER ICSTARTI     ! tank time step counter for implicit method
-!       INTEGER ICSTARTE     ! tank time step counter for explicit method
 
       SAVE IC
 
@@ -99,12 +97,6 @@ C-----Deducts the scaled temperature of the tank nodes
       do i= 1,nNodes
         Tstep_prev(i) = Tstep_prev1(i)-Tmi
       enddo
-C ATTENZIONE!!! CANCELLARE QUESTO E RIPRISTINARE L!ALTRO!!! ^
-!       do i= 1,nNodes
-!         Tstep_prev(i) = 50.-Tmi
-!       enddo
-C ATTENZIONE!!! CANCELLARE QUESTO E RIPRISTINARE L!ALTRO!!!
-
 
 
 
@@ -207,7 +199,6 @@ C     water for each layer where the PCM is located in. It solves the
 C     problem using the implicit Euler method.
 C     Simplification hypothesis:
 C       - PCM modules are considered cylindrical
-C       - top and bottom are adiabatic surfaces
 C       - no convection inside the modules
 C       - no subcooling phenomena considered
 C     
@@ -221,11 +212,10 @@ C======================================================================
       SUBROUTINE ImplicitPCM(ts,nX,nY,nNodes,nPCMbot,nPCMtop,
      &                       dr,dPCMnode,dPCMcyl,hPCMcyl,
      &                       V,Ax,Axb,Ay,
-     &                       heatLat,rhos,rhol,cs,cl,
+     &                       heatLat,rhos,rhol,cs,cl,cndcts,cndctl,
      &                       TMP,Tbound,Tbot,Ttop,Tmi,Tm, 
      &                       alphaLat,alphaTop,alphaBot,
      &                       method,e,Mdot,
-     &                       cndcts,cndctl,
      &                       H,CrossArea,QPCM)
 
 
@@ -341,21 +331,15 @@ C-----VALUES FOR IMPLICIT METHOD
       INTEGER MAXIT        ! variable for LU decomposition
 
 
-! C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!       REAL TMP_PREV(mY,mX)
-! C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
 
 
       nXnY = nX*nY
 
-!       big = 5.
+
       eps = 1E-5
 
-      nstpcm = 1 !if nstpcm=1 adopts the tank time-step 
-      dt = ts/nstpcm
+
+      dt = ts
 
       
             
@@ -363,14 +347,9 @@ C-----VALUES FOR IMPLICIT METHOD
 C-----Sets to 0 the heat flux from the module, it is computed (averaged)
 C     at the end of the loop
 
-C-----PCM module lateral surface
-      DO i=1,nY
-        QPCM(i+nPCMbot-1) = 0.0
+      DO i=1,nNodes
+        QPCM(i)=0.0
       ENDDO
-C-----PCM module bottom and top surface
-      QPCM(nPCMtop) = 0.0
-      QPCM(nPCMbot) = 0.0
-
 
 
 
@@ -386,23 +365,6 @@ C     temperature at the corresponding nodes.
      &                      CrossArea,Mdot(1),TMP(1,1))
 
 
-
-! PER RILASSAMENTO
-! C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!         DO j=1,nX
-!           DO i=1,nY
-!             TMP_PREV(i,j) = TMP(i,j) 
-!           ENDDO
-!         ENDDO
-! C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-
-
-C=====TIME LOOP   
-      DO istpcm=1,nstpcm   
 
 
 
@@ -502,7 +464,6 @@ C=======CONVERGENCE LOOP (time sub-iterations if residual is > 1E+0)
 
 
 
-
           IF (N.EQ.MAXIT) THEN
             write(*,*) "failed convergence on PCM loop, " ,
      &                 "residual =",RES
@@ -530,117 +491,38 @@ C         known temperature and enthalpy fields at iteration n-1
 
 
 
-! C ATTENZIONE!!! CANCELLARE QUESTO E RIPRISTINARE L!ALTRO!!! ^
-!           DO j =1, nX
-!             DO i = 1, nY
-!               CA(i,j)=2100
-!             ENDDO
-!           ENDDO 
-! C ATTENZIONE!!! CANCELLARE QUESTO E RIPRISTINARE L!ALTRO!!! ^
-
-
 C---------Calculate accumulation term for all cells
           DO j=1,nX
             DO i=1,nY
               acc(i,j) = rho(i,j)*V(i,j)*CA(i,j)/dt
-!               rho_V_dt(i,j) = rho(i,j)*V(i,j)/dt
             ENDDO
           ENDDO
 
 
 
 
-!           IF(TMPn(k).LE.TM+e.AND.TMPn(k).LE.TM-e)THEN
-!             DO j=1,nXnY
-!               DO i=1,nXnY
-!                 Tmatrix(k,k) = 0.
-!               ENDDO
-!             ENDDO
-!             DO k=1,nXnY
-!               Tmatrix(k,k) = big
-!             ENDDO
-!           ELSE
 C---------Matrix coefficients (using Taylor series expansion) for the 
 C         computation of the nodal temperature field at iteration n
-            IF(nY.GT.1)THEN
-              CALL PentaDiagCoeff(acc(1,1),coeffx(1,1),coeffy(1,1),
+          IF(nY.GT.1)THEN
+            CALL PentaDiagCoeff(acc(1,1),coeffx(1,1),coeffy(1,1),
      &                         Tmatrix(1,1),
      &                         convLat(1),convTop(1),convBot(1),
      &                         nX,nY,nXnY,n)
-            ELSE
-              CALL TriDiagCoeff(acc(1,1),coeffx(1,1),Tmatrix(1,1),
+          ELSE
+            CALL TriDiagCoeff(acc(1,1),coeffx(1,1),Tmatrix(1,1),
      &                       convLat(1),convTop(1),convBot(1),
      &                       nX,nY,nXnY,n,
      &                       T_SCn(1),T_EASTn(1),T_WESTn(1))
-            ENDIF
-!           ENDIF
-
-           
+          ENDIF
 
 
 
-C---------Right Hand Side (for sub-iteration temperature equation system)
-!           DO j=1,NX
-!             DO i=1,NY   
-!               k=(j-1)*nY+i
-!               IF (j.EQ.1) THEN !general border cells 
-!                 RHS(k) = acc(i,j)*TMPn(k)+
-!      &                  rho_V_dt(i,j)*(H(i,j)-Hn(k))+
-!      &                  alphaLat*Axb(i)*Tbound(i)
-!               ELSE !general cells 
-!                 RHS(k) = acc(i,j)*TMPn(k)+
-!      &                  rho_V_dt(i,j)*(H(i,j)-Hn(k))
-!               ENDIF
-!             ENDDO
-!           ENDDO
 
 
-C-----BOTTOM:
-      i=1
-C     BOTTOM OUTERMOST
-      j=1
-      k=(j-1)*nY+i
-      RHS(k) = acc(i,j)*TMPn(k) + rho_V_dt(i,j)*(H(i,j)-Hn(k))+
-     &        convLat(i)*Tbound(i)+                                   !west
-     &        convBot(j)*Tbot                                         !south
-C     GENERAL BOTTOM and BOTTOM INNERMOST
-      DO j=2,nX
-        k=(j-1)*nY+i
-        RHS(k) = acc(i,j)*TMPn(k) + rho_V_dt(i,j)*(H(i,j)-Hn(k))+
-     &          convBot(j)*(Tbot-TMPn(k))                             !south
-      ENDDO
-C-----TOP:
-      i=nY
-C     TOP OUTERMOST
-      j=1
-      k=(j-1)*nY+i
-      RHS(k) = acc(i,j)*TMPn(k) + rho_V_dt(i,j)*(H(i,j)-Hn(k))+
-     &        convLat(i)*Tbound(i)+                                   !west
-     &        convTop(j)*Ttop                                         !north
-C     GENERAL TOP and TOP INNERMOST
-      DO j=2,nX
-        k=(j-1)*nY+i
-        RHS(k) = acc(i,j)*TMPn(k) + rho_V_dt(i,j)*(H(i,j)-Hn(k))+
-     &           convTop(j)*Ttop                                      !north
-      ENDDO
-      IF (nY.GT.2)THEN
-C-------OUTERMOST
-        j=1
-        DO i=2,nY-1
-          k=(j-1)*nY+i
-          RHS(k) = acc(i,j)*TMPn(k) + rho_V_dt(i,j)*(H(i,j)-Hn(k))+
-     &             convLat(i)*Tbound(i)                               !west
-        ENDDO
-C-------INNERMOST and GENERAL CELL
-        DO j=2,nX
-          DO i=2,nY-1   
-            k=(j-1)*nY+I 
-            RHS(k) = acc(i,j)*TMPn(k) + rho_V_dt(i,j)*(H(i,j)-Hn(k))
-          ENDDO
-        ENDDO
-      ENDIF
-
-
+C---------Calculate right hand side (known values)      
+          CALL PCM_RHS(Tbound(1),Ttop,Tbot,TMPn(1),Hn(1),H(1,1),
+     &                 convLat(1),convTop(1),convBot(1),
+     &                 nX,nY,nXnY,acc(1,1),rho_V_dt(1,1),RHS(1))
 
 
 
@@ -682,7 +564,7 @@ C---------Update nodal enthalpy (using Taylor series expansion)
      &                              Tbound(1),Ttop,Tbot,TMPn(1),
      &                              Hn(1),H(1,1),
      &                              convLat(1),convTop(1),convBot(1),
-     &                              nX,nY,nXnY,n,rho_V_dt(1,1))
+     &                              nX,nY,nXnY,rho_V_dt(1,1))
           ENDIF
 
 
@@ -712,13 +594,13 @@ C---------Calculate residues
             CALL Residual2D(coeffx(1,1),coeffy(1,1),
      &                       Tbound(1),Ttop,Tbot,TMPn(1),Hn(1),H(1,1),
      &                       convLat,convTop,convBot,
-     &                       nX,nY,nXnY,n,
+     &                       nX,nY,nXnY,
      &                       rho_V_dt(1,1),R(1))
           ELSE
             CALL Residual1D(coeffx(1,1),
      &                       Tbound(1),Ttop,Tbot,TMPn(1),Hn(1),H(1,1),
      &                       convLat,convTop,convBot,
-     &                       nX,nY,nXnY,n,
+     &                       nX,nY,nXnY,
      &                       rho_V_dt(1,1),R(1))
           ENDIF
 
@@ -731,19 +613,6 @@ C---------Mean upon residues
             RES = RES+ABS(R(k))
           ENDDO
           RES = RES/FLOAT(nXnY)
-
-
-
-
-! C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!         j=1
-!         DO i=1,nY
-!           k=(j-1)*nY+i
-!           TMPn(k)=50.-Tmi
-!         ENDDO
-! C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 
@@ -762,31 +631,6 @@ C-------Update nodal temperature and enthalpy for the new time step
         ENDDO
 
 
-! C RILASSAMENTO:
-! C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!         DO j=1,nX
-!           DO i=1,nY
-!             TMP(i,j) = (TMP(i,j)+TMP_PREV(i,j))/2.
-!           ENDDO
-!         ENDDO
-! C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-
-
-! C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!       j=1
-!       DO i=1,nY
-!         TMP(i,j)=50.-Tmi
-!       ENDDO
-! C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-
-
 
 C-------Calculate thermal flux exchanged between DHW and PCM
 
@@ -803,8 +647,6 @@ C-------PCM module bottom and top surface
         ENDDO
 
 
-      ENDDO
-C=====END TIME LOOP
 
 
 
@@ -1459,10 +1301,6 @@ C-----Convection coefficients
       alphaBot = NuBot*k_waterBot/geomRatio
 
 
-! C ATTENZONE!!!!!! VALORE DA CANCELLARE!!!!!
-!    alphaLat =100.
-! C ATTENZONE!!!!!! VALORE DA CANCELLARE!!!!!
-
 
       RETURN      
       END
@@ -1512,11 +1350,11 @@ C======================================================================
       REAL coeffy(mY,mX)   ! = cndcty(?,?)*Ay(?)/dPCMnode(?) 
                            ! coefficient calculated for all north and south faces between cells; 
                            ! diffusive term
-      REAL convLat(mY)     ! alphaLat*Axb(?) 
+      REAL convLat(nY)     ! alphaLat*Axb(?) 
                            ! coefficient for convective thermal exchange at lateral border cells
-      REAL convTop(mX)     ! = alphaTop*Ay(?) 
+      REAL convTop(nX)     ! = alphaTop*Ay(?) 
                            ! coefficient for convective thermal exchange at top border cells
-      REAL convBot(mX)     ! = alphaBot*Ay(?) 
+      REAL convBot(nX)     ! = alphaBot*Ay(?) 
                            ! coefficient for convective thermal exchange at bottom border cells
       REAL acc(mY,mX)      ! =rho(?,?)*V(?,?)*CA(?,?)/dt 
                            ! coefficient calculated for all cells; accumulation term 
@@ -1667,12 +1505,6 @@ C-----Put these vectors into the matrix diagonals
       ENDDO
 
 
-!          IF (n.EQ.1)THEN
-!            write(*,*) "matrice Tmatrix"
-!             DO j=1,nXnY
-!               write(*,*) (Tmatrix(j,i),i=1,nXnY)
-!             ENDDO
-!          ENDIF
 
       RETURN
       END
@@ -1717,11 +1549,11 @@ C======================================================================
       REAL coeffx(mY,mX)   ! = cndctx(?,?)*Ax(?,?)/dr  
                            ! coefficient calculated for all east and west faces between cells;
                            ! diffusive term
-      REAL convLat(mY)     ! = alphaLat*Axb(?) 
+      REAL convLat(nY)     ! = alphaLat*Axb(?) 
                            ! coefficient for convective thermal exchange at lateral border cells
-      REAL convTop(mX)     ! = alphaTop*Ay(?) 
+      REAL convTop(nX)     ! = alphaTop*Ay(?) 
                            ! coefficient for convective thermal exchange at top border cells
-      REAL convBot(mX)     ! = alphaBot*Ay(?) 
+      REAL convBot(nX)     ! = alphaBot*Ay(?) 
                            ! coefficient for convective thermal exchange at bottom border cells
       REAL acc(mY,mX)      ! rho(?,?)*V(?,?)*CA(?,?)/dt 
                            ! coefficient calculated for all cells; accumulation term 
@@ -1798,6 +1630,110 @@ C-----------Put these vectors into the matrix diagonals
 
 
 
+C============================== PCM_RHS ===============================
+C     Created by: Roberta Padovan, Marco Manzan
+C     Created on: Dicember 2011  
+C     Copyright:  Università di Trieste
+C----------------------------------------------------------------------
+C     ABSTRACT:
+C     Calculates the right hand side for the nth iteration for the  
+C     implicit method - cases 1D/2D.
+C
+C======================================================================
+
+
+
+      SUBROUTINE PCM_RHS(Tbound,Ttop,Tbot,TMPn,Hn,H,
+     &                   convLat,convTop,convBot,
+     &                   nX,nY,nXnY,acc,rho_V_dt,RHS)
+
+      INTEGER mX,mY,mXmY
+      PARAMETER (mX=100,mY=100,mXmY=1000)
+
+      INTEGER nX           ! number of cells in radial direction [-]
+      INTEGER nY           ! number of cells in axial direction [-]
+      INTEGER nXnY         ! number of total cells
+      REAL coeffx(mY,mX)   ! = cndctx(?,?)*Ax(?,?)/dr  
+                           ! coefficient calculated for all east and west faces between cells;
+                           ! diffusive term
+      REAL coeffy(mY,mX)   ! = cndcty(?,?)*Ay(?)/dPCMnode(?) 
+                           ! coefficient calculated for all north and south faces between cells; 
+                           ! diffusive term
+      REAL convLat(nY)     ! alphaLat*Axb(?) 
+                           ! coefficient for convective thermal exchange at lateral border cells
+      REAL convTop(nX)     ! = alphaTop*Ay(?) 
+                           ! coefficient for convective thermal exchange at top border cells
+      REAL convBot(nX)     ! = alphaBot*Ay(?) 
+                           ! coefficient for convective thermal exchange at bottom border cells
+      REAL rho_V_dt(mY,mX) ! = rho(?,?)*V(?,?)/dt 
+                           ! coefficient calculated for all cells
+      REAL Tbound(nY)      ! tank layer temperature in contact with each PCM section
+                           ! boundary condition
+      REAL Tbot            ! DHW temp at the layer what the PCM cylinder 
+                           ! bottom surface is in contact with
+      REAL Ttop            ! DHW temp at the layer what the PCM cylinder 
+                           ! top surface is in contact with
+      REAL TMPn(nXnY)      ! sub-iteration temperature 
+                           ! unknown quantity arrey that shall become Ax=B system solution
+      REAL Hn(nXnY)        ! sub-iteration entalpy 
+      REAL H(nY,nX)        ! cylinder cells enthalpy
+      REAL acc(mY,mX)      ! = rho(?,?)*V(?,?)*CA(?,?)/dt 
+                           ! coefficient calculated for all cells; accumulation term 
+      REAL RHS(nXnY)       ! Right Hand Side to solve the equations system (Ax=B)
+
+
+
+C-----BOTTOM:
+      i=1
+C     BOTTOM OUTERMOST
+      j=1
+      k=(j-1)*nY+i
+      RHS(k) = acc(i,j)*TMPn(k) + rho_V_dt(i,j)*(H(i,j)-Hn(k))+
+     &        convLat(i)*Tbound(i)+                                   !west
+     &        convBot(j)*Tbot                                         !south
+C     GENERAL BOTTOM and BOTTOM INNERMOST
+      DO j=2,nX
+        k=(j-1)*nY+i
+        RHS(k) = acc(i,j)*TMPn(k) + rho_V_dt(i,j)*(H(i,j)-Hn(k))+
+     &          convBot(j)*(Tbot-TMPn(k))                             !south
+      ENDDO
+C-----TOP:
+      i=nY
+C     TOP OUTERMOST
+      j=1
+      k=(j-1)*nY+i
+      RHS(k) = acc(i,j)*TMPn(k) + rho_V_dt(i,j)*(H(i,j)-Hn(k))+
+     &        convLat(i)*Tbound(i)+                                   !west
+     &        convTop(j)*Ttop                                         !north
+C     GENERAL TOP and TOP INNERMOST
+      DO j=2,nX
+        k=(j-1)*nY+i
+        RHS(k) = acc(i,j)*TMPn(k) + rho_V_dt(i,j)*(H(i,j)-Hn(k))+
+     &           convTop(j)*Ttop                                      !north
+      ENDDO
+      IF (nY.GT.2)THEN
+C-------OUTERMOST
+        j=1
+        DO i=2,nY-1
+          k=(j-1)*nY+i
+          RHS(k) = acc(i,j)*TMPn(k) + rho_V_dt(i,j)*(H(i,j)-Hn(k))+
+     &             convLat(i)*Tbound(i)                               !west
+        ENDDO
+C-------INNERMOST and GENERAL CELL
+        DO j=2,nX
+          DO i=2,nY-1   
+            k=(j-1)*nY+I 
+            RHS(k) = acc(i,j)*TMPn(k) + rho_V_dt(i,j)*(H(i,j)-Hn(k))
+          ENDDO
+        ENDDO
+      ENDIF
+
+
+      RETURN
+      END
+
+
+
 
 
 
@@ -1831,11 +1767,11 @@ C======================================================================
       REAL coeffy(mY,mX)   ! = cndcty(?,?)*Ay(?)/dPCMnode(?) 
                            ! coefficient calculated for all north and south faces between cells; 
                            ! diffusive term
-      REAL convLat(mY)     ! alphaLat*Axb(?) 
+      REAL convLat(nY)     ! alphaLat*Axb(?) 
                            ! coefficient for convective thermal exchange at lateral border cells
-      REAL convTop(mX)     ! = alphaTop*Ay(?) 
+      REAL convTop(nX)     ! = alphaTop*Ay(?) 
                            ! coefficient for convective thermal exchange at top border cells
-      REAL convBot(mX)     ! = alphaBot*Ay(?) 
+      REAL convBot(nX)     ! = alphaBot*Ay(?) 
                            ! coefficient for convective thermal exchange at bottom border cells
       REAL rho_V_dt(mY,mX) ! = rho(?,?)*V(?,?)/dt 
                            ! coefficient calculated for all cells
@@ -1845,9 +1781,9 @@ C======================================================================
                            ! bottom surface is in contact with
       REAL Ttop            ! DHW temp at the layer what the PCM cylinder 
                            ! top surface is in contact with
-      REAL TMPn(mXmY)      ! sub-iteration temperature 
+      REAL TMPn(nXnY)      ! sub-iteration temperature 
                            ! unknown quantity arrey that shall become Ax=B system solution
-      REAL Hn(mXmY)        ! sub-iteration entalpy 
+      REAL Hn(nXnY)        ! sub-iteration entalpy 
       REAL H(nY,nX)        ! cylinder cells enthalpy
 
 
@@ -1860,7 +1796,7 @@ C     BOTTOM OUTERMOST
       k=(j-1)*nY+i
       Hn(k) = (convLat(i)*(Tbound(i)-TMPn(k))+                  !west 
      &        coeffx(i,j)*(TMPn(k+nY)-TMPn(k))+                 !east
-     &        convBot(j)*(Tbot-TMPn(k))+                           !south
+     &        convBot(j)*(Tbot-TMPn(k))+                        !south
      &        coeffy(i,j)*(TMPn(k+1)-TMPn(k))+                  !north
      &        rho_V_dt(i,j)*H(i,j))/(rho_V_dt(i,j))
 C     GENERAL BOTTOM
@@ -1868,7 +1804,7 @@ C     GENERAL BOTTOM
         k=(j-1)*nY+i
         Hn(k) = (coeffx(i,j-1)*(TMPn(k-nY)-TMPn(k))+            !west 
      &          coeffx(i,j)*(TMPn(k+nY)-TMPn(k))+               !east
-     &          convBot(j)*(Tbot-TMPn(k))+                         !south
+     &          convBot(j)*(Tbot-TMPn(k))+                      !south
      &          coeffy(i,j)*(TMPn(k+1)-TMPn(k))+                !north
      &          rho_V_dt(i,j)*H(i,j))/(rho_V_dt(i,j))
       ENDDO
@@ -1876,7 +1812,7 @@ C     BOTTOM INNERMOST
       j=nX
       k=(j-1)*nY+i
       Hn(k) = (coeffx(i,j-1)*(TMPn(k-nY)-TMPn(k))+              !west 
-     &        convBot(j)*(Tbot-TMPn(k))+                           !south
+     &        convBot(j)*(Tbot-TMPn(k))+                        !south
      &        coeffy(i,j)*(TMPn(k+1)-TMPn(k))+                  !north
      &        rho_V_dt(i,j)*H(i,j))/(rho_V_dt(i,j))
 C-----TOP:
@@ -1887,7 +1823,7 @@ C     TOP OUTERMOST
       Hn(k) = (convLat(i)*(Tbound(i)-TMPn(k))+                  !west 
      &        coeffx(i,j)*(TMPn(k+nY)-TMPn(k))+                 !east
      &        coeffy(i-1,j)*(TMPn(k-1)-TMPn(k))+                !south
-     &        convTop(j)*(Ttop-TMPn(k))+                           !north
+     &        convTop(j)*(Ttop-TMPn(k))+                        !north
      &        rho_V_dt(i,j)*H(i,j))/(rho_V_dt(i,j))
 C     GENERAL TOP
       DO j=2,nX-1
@@ -1895,7 +1831,7 @@ C     GENERAL TOP
         Hn(k) = (coeffx(i,j-1)*(TMPn(k-nY)-TMPn(k))+            !west 
      &          coeffx(i,j)*(TMPn(k+nY)-TMPn(k))+               !east
      &          coeffy(i-1,j)*(TMPn(k-1)-TMPn(k))+              !south
-     &          convTop(j)*(Ttop-TMPn(k))+                         !north
+     &          convTop(j)*(Ttop-TMPn(k))+                      !north
      &          rho_V_dt(i,j)*H(i,j))/(rho_V_dt(i,j))
       ENDDO
 C     TOP INNERMOST
@@ -1903,7 +1839,7 @@ C     TOP INNERMOST
       k=(j-1)*nY+i
       Hn(k) = (coeffx(i,j-1)*(TMPn(k-nY)-TMPn(k))+              !west 
      &        coeffy(i-1,j)*(TMPn(k-1)-TMPn(k))+                !south
-     &        convTop(j)*(Ttop-TMPn(k))+                           !north
+     &        convTop(j)*(Ttop-TMPn(k))+                        !north
      &        rho_V_dt(i,j)*H(i,j))/(rho_V_dt(i,j))
       IF (nY.GT.2)THEN
 C-------OUTERMOST
@@ -1911,28 +1847,28 @@ C-------OUTERMOST
         DO i=2,nY-1
           k=(j-1)*nY+i
           Hn(k) = (convLat(i)*(Tbound(i)-TMPn(k))+              !west 
-     &            coeffx(i,j)*(TMPn(k+nY)-TMPn(k))+               !east
-     &            coeffy(i-1,j)*(TMPn(k-1)-TMPn(k))+              !south
-     &            coeffy(i,j)*(TMPn(k+1)-TMPn(k))+                !north
+     &            coeffx(i,j)*(TMPn(k+nY)-TMPn(k))+             !east
+     &            coeffy(i-1,j)*(TMPn(k-1)-TMPn(k))+            !south
+     &            coeffy(i,j)*(TMPn(k+1)-TMPn(k))+              !north
      &            rho_V_dt(i,j)*H(i,j))/(rho_V_dt(i,j))
         ENDDO
 C-------INNERMOST
         j=nX
         DO i=2,nY-1
           k=(j-1)*nY+i
-          Hn(k) = (coeffx(i,j-1)*(TMPn(k-nY)-TMPn(k))+            !west 
-     &            coeffy(i-1,j)*(TMPn(k-1)-TMPn(k))+              !south
-     &            coeffy(i,j)*(TMPn(k+1)-TMPn(k))+                !north
+          Hn(k) = (coeffx(i,j-1)*(TMPn(k-nY)-TMPn(k))+          !west 
+     &            coeffy(i-1,j)*(TMPn(k-1)-TMPn(k))+            !south
+     &            coeffy(i,j)*(TMPn(k+1)-TMPn(k))+              !north
      &            rho_V_dt(i,j)*H(i,j))/(rho_V_dt(i,j))
         ENDDO
 C-------GENERAL CELL
         DO j=2,nX-1
           DO i=2,nY-1   
             k=(j-1)*nY+I 
-            Hn(k) = (coeffx(i,j-1)*(TMPn(k-nY)-TMPn(k))+            !west 
-     &              coeffx(i,j)*(TMPn(k+nY)-TMPn(k))+               !east
-     &              coeffy(i-1,j)*(TMPn(k-1)-TMPn(k))+              !south
-     &              coeffy(i,j)*(TMPn(k+1)-TMPn(k))+                !north
+            Hn(k) = (coeffx(i,j-1)*(TMPn(k-nY)-TMPn(k))+        !west 
+     &              coeffx(i,j)*(TMPn(k+nY)-TMPn(k))+           !east
+     &              coeffy(i-1,j)*(TMPn(k-1)-TMPn(k))+          !south
+     &              coeffy(i,j)*(TMPn(k+1)-TMPn(k))+            !north
      &              rho_V_dt(i,j)*H(i,j))/(rho_V_dt(i,j))
           ENDDO
         ENDDO
@@ -1961,7 +1897,7 @@ C======================================================================
      &                              Tbound,Ttop,Tbot,TMPn,
      &                              Hn,H,
      &                              convLat,convTop,convBot,
-     &                              nX,nY,nXnY,n,rho_V_dt)
+     &                              nX,nY,nXnY,rho_V_dt)
 
 
       INTEGER mX,mY,mXmY
@@ -1973,11 +1909,11 @@ C======================================================================
       REAL coeffx(mY,mX)   ! = cndctx(?,?)*Ax(?,?)/dr  
                            ! coefficient calculated for all east and west faces between cells;
                            ! diffusive term
-      REAL convLat(mY)     ! = alphaLat*Axb(?) 
+      REAL convLat(nY)     ! = alphaLat*Axb(?) 
                            ! coefficient for convective thermal exchange at lateral border cells
-      REAL convTop(mX)     ! = alphaTop*Ay(?) 
+      REAL convTop(nX)     ! = alphaTop*Ay(?) 
                            ! coefficient for convective thermal exchange at top border cells
-      REAL convBot(mX)     ! = alphaBot*Ay(?) 
+      REAL convBot(nX)     ! = alphaBot*Ay(?) 
                            ! coefficient for convective thermal exchange at bottom border cells
       REAL rho_V_dt(mY,mX) ! = rho(?,?)*V(?,?)/dt 
                            ! coefficient calculated for all cells
@@ -1987,9 +1923,9 @@ C======================================================================
                            ! bottom surface is in contact with
       REAL Ttop            ! DHW temp at the layer what the PCM cylinder 
                            ! top surface is in contact with
-      REAL TMPn(mXmY)      ! sub-iteration temperature 
+      REAL TMPn(nXnY)      ! sub-iteration temperature 
                            ! unknown quantity arrey that shall become Ax=B system solution
-      REAL Hn(mXmY)        ! sub-iteration entalpy 
+      REAL Hn(nXnY)        ! sub-iteration entalpy 
       REAL H(nY,nX)        ! cylinder cells enthalpy
 
 
@@ -2001,21 +1937,21 @@ C-----OUTERMOST:
       j=1
       Hn(j) = (convLat(i)*(Tbound(i)-TMPn(j))+        !west 
      &        coeffx(i,j)*(TMPn(j+nY)-TMPn(j))+       !east
-     &        convBot(j)*(Tbot-TMPn(j))+                 !south
-     &        convTop(j)*(Ttop-TMPn(j))+                 !north
+     &        convBot(j)*(Tbot-TMPn(j))+              !south
+     &        convTop(j)*(Ttop-TMPn(j))+              !north
      &        rho_V_dt(i,j)*H(i,j))/(rho_V_dt(i,j))
 C-----INNERMOST:
       j=nX
       Hn(j) = (coeffx(i,j-1)*(TMPn(j-nY)-TMPn(j))+    !west 
-     &        convBot(j)*(Tbot-TMPn(j))+                 !south
-     &        convTop(j)*(Ttop-TMPn(j))+                 !north
+     &        convBot(j)*(Tbot-TMPn(j))+              !south
+     &        convTop(j)*(Ttop-TMPn(j))+              !north
      &        rho_V_dt(i,j)*H(i,j))/(rho_V_dt(i,j))
 C-----GENERAL CELL
       DO j=2,nX-1
       Hn(j) = (coeffx(i,j-1)*(TMPn(j-nY)-TMPn(j))+    !west 
      &        coeffx(i,j)*(TMPn(j+nY)-TMPn(j))+       !east
-     &        convBot(j)*(Tbot-TMPn(j))+                 !south
-     &        convTop(j)*(Ttop-TMPn(j))+                 !north
+     &        convBot(j)*(Tbot-TMPn(j))+              !south
+     &        convTop(j)*(Ttop-TMPn(j))+              !north
      &        rho_V_dt(i,j)*H(i,j))/(rho_V_dt(i,j))
       ENDDO
 
@@ -2045,7 +1981,7 @@ C======================================================================
       SUBROUTINE Residual2D(coeffx,coeffy,
      &                          Tbound,Ttop,Tbot,TMPn,Hn,H,
      &                          convLat,convTop,convBot,
-     &                          nX,nY,nXnY,n,
+     &                          nX,nY,nXnY,
      &                          rho_V_dt,R)
 
 
@@ -2061,11 +1997,11 @@ C======================================================================
       REAL coeffy(mY,mX)   ! = cndcty(?,?)*Ay(?)/dPCMnode(?) 
                            ! coefficient calculated for all north and south faces between cells; 
                            ! diffusive term
-      REAL convLat(mY)     ! = alphaLat*Axb(?) 
+      REAL convLat(nY)     ! = alphaLat*Axb(?) 
                            ! coefficient for convective thermal exchange at lateral border cells
-      REAL convTop(mX)     ! = alphaTop*Ay(?) 
+      REAL convTop(nX)     ! = alphaTop*Ay(?) 
                            ! coefficient for convective thermal exchange at top border cells
-      REAL convBot(mX)     ! = alphaBot*Ay(?) 
+      REAL convBot(nX)     ! = alphaBot*Ay(?) 
                            ! coefficient for convective thermal exchange at bottom border cells
       REAL rho_V_dt(mY,mX) ! rho*V/dt coefficient, calculated for all cells
       REAL Tbound(nY)      ! tank layer temperature in contact with each PCM section
@@ -2074,9 +2010,9 @@ C======================================================================
                            ! bottom surface is in contact with
       REAL Ttop            ! DHW temp at the layer what the PCM cylinder 
                            ! top surface is in contact with
-      REAL TMPn(mXmY)      ! sub-iteration temperature 
+      REAL TMPn(nXnY)      ! sub-iteration temperature 
                            ! unknown quantity arrey that shall become Ax=B system solution
-      REAL Hn(mXmY)        ! sub-iteration entalpy 
+      REAL Hn(nXnY)        ! sub-iteration entalpy 
       REAL H(nY,nX)        ! cylinder cells enthalpy
       REAL R(mXmY)         ! residual vector
 
@@ -2090,7 +2026,7 @@ C     BOTTOM OUTERMOST
       R(k) = rho_V_dt(i,j)*(Hn(k)-H(i,j))+
      &       convLat(i)*(TMPn(k)-Tbound(i))+                    !west 
      &       coeffx(i,j)*(TMPn(k)-TMPn(k+nY))+                  !east
-     &       convBot(j)*(TMPn(k)-Tbot)+                            !south
+     &       convBot(j)*(TMPn(k)-Tbot)+                         !south
      &       coeffy(i,j)*(TMPn(k)-TMPn(k+1))                    !north
 C     GENERAL BOTTOM
       DO j=2,nX-1
@@ -2098,7 +2034,7 @@ C     GENERAL BOTTOM
         R(k) = rho_V_dt(i,j)*(Hn(k)-H(i,j))+
      &         coeffx(i,j-1)*(TMPn(k)-TMPn(k-nY))+              !west 
      &         coeffx(i,j)*(TMPn(k)-TMPn(k+nY))+                !east
-     &         convBot(j)*(TMPn(k)-Tbot)+                          !south
+     &         convBot(j)*(TMPn(k)-Tbot)+                       !south
      &         coeffy(i,j)*(TMPn(k)-TMPn(k+1))                  !north
       ENDDO
 C     BOTTOM INNERMOST
@@ -2106,7 +2042,7 @@ C     BOTTOM INNERMOST
       k=(j-1)*nY+i
       R(k) = rho_V_dt(i,j)*(Hn(k)-H(i,j))+
      &       coeffx(i,j-1)*(TMPn(k)-TMPn(k-nY))+                !west 
-     &       convBot(j)*(TMPn(k)-Tbot)+                            !south
+     &       convBot(j)*(TMPn(k)-Tbot)+                         !south
      &       coeffy(i,j)*(TMPn(k)-TMPn(k+1))                    !north
 C-----TOP:
       i=nY
@@ -2117,7 +2053,7 @@ C     TOP OUTERMOST
      &       convLat(i)*(TMPn(k)-Tbound(i))+                    !west 
      &       coeffx(i,j)*(TMPn(k)-TMPn(k+nY))+                  !east
      &       coeffy(i-1,j)*(TMPn(k)-TMPn(k-1))+                 !south
-     &       convTop(j)*(TMPn(k)-Ttop)                             !north                                           
+     &       convTop(j)*(TMPn(k)-Ttop)                          !north                                           
 C     GENERAL TOP
       DO j=2,nX-1
         k=(j-1)*nY+i
@@ -2125,7 +2061,7 @@ C     GENERAL TOP
      &         coeffx(i,j-1)*(TMPn(k)-TMPn(k-nY))+              !west 
      &         coeffx(i,j)*(TMPn(k)-TMPn(k+nY))+                !east
      &         coeffy(i-1,j)*(TMPn(k)-TMPn(k-1))+               !south
-     &         convTop(j)*(TMPn(k)-Ttop)                           !north                                                
+     &         convTop(j)*(TMPn(k)-Ttop)                        !north                                                
       ENDDO
 C     TOP INNERMOST
       j=nX
@@ -2133,7 +2069,7 @@ C     TOP INNERMOST
       R(k) = rho_V_dt(i,j)*(Hn(k)-H(i,j))+
      &       coeffx(i,j-1)*(TMPn(k)-TMPn(k-nY))+                !west 
      &       coeffy(i-1,j)*(TMPn(k)-TMPn(k-1))+                 !south
-     &       convTop(j)*(TMPn(k)-Ttop)                             !north
+     &       convTop(j)*(TMPn(k)-Ttop)                          !north
       IF (nY.GT.2)THEN
 C-------OUTERMOST:
         j=1
@@ -2192,7 +2128,7 @@ C======================================================================
       SUBROUTINE Residual1D(coeffx,
      &                     Tbound,Ttop,Tbot,TMPn,Hn,H,
      &                     convLat,convTop,convBot,
-     &                     nX,nY,nXnY,n,
+     &                     nX,nY,nXnY,
      &                     rho_V_dt,R)
 
 
@@ -2205,11 +2141,11 @@ C======================================================================
       REAL coeffx(mY,mX)   ! = cndctx(?,?)*Ax(?,?)/dr  
                            ! coefficient calculated for all east and west faces between cells;
                            ! diffusive term
-      REAL convLat(mY)     ! = alphaLat*Axb(?) 
+      REAL convLat(nY)     ! = alphaLat*Axb(?) 
                            ! coefficient for convective thermal exchange at lateral border cells
-      REAL convTop(mX)     ! = alphaTop*Ay(?) 
+      REAL convTop(nX)     ! = alphaTop*Ay(?) 
                            ! coefficient for convective thermal exchange at top border cells
-      REAL convBot(mX)     ! = alphaBot*Ay(?) 
+      REAL convBot(nX)     ! = alphaBot*Ay(?) 
                            ! coefficient for convective thermal exchange at bottom border cells
       REAL rho_V_dt(mY,mX) ! = rho(?,?)*V(?,?)/dt 
                            ! coefficient calculated for all cells
@@ -2219,9 +2155,9 @@ C======================================================================
                            ! bottom surface is in contact with
       REAL Ttop            ! DHW temp at the layer what the PCM cylinder 
                            ! top surface is in contact with
-      REAL TMPn(mXmY)      ! sub-iteration temperature 
+      REAL TMPn(nXnY)      ! sub-iteration temperature 
                            ! unknown quantity arrey that shall become Ax=B system solution
-      REAL Hn(mXmY)        ! sub-iteration entalpy 
+      REAL Hn(nXnY)        ! sub-iteration entalpy 
       REAL H(nY,nX)        ! cylinder cells enthalpy
       REAL R(mXmY)         ! residual vector
 
@@ -2232,21 +2168,21 @@ C-----OUTERMOST:
       R(j) = rho_V_dt(i,j)*(Hn(j)-H(i,j))+
      &       convLat(i)*(TMPn(j)-Tbound(i))+                    !west
      &       coeffx(i,j)*(TMPn(j)-TMPn(j+nY))+                  !east
-     &       convBot(j)*(TMPn(j)-Tbot)+                            !south
-     &       convTop(j)*(TMPn(j)-Ttop)                             !north
+     &       convBot(j)*(TMPn(j)-Tbot)+                         !south
+     &       convTop(j)*(TMPn(j)-Ttop)                          !north
 C-----INNERMOST:
       j=nX
       R(j) = rho_V_dt(i,j)*(Hn(j)-H(i,j))+
      &       coeffx(i,j-1)*(TMPn(j)-Tbound(i))+                 !west 
-     &       convBot(j)*(TMPn(j)-Tbot)+                            !south
-     &       convTop(j)*(TMPn(j)-Ttop)                             !north
+     &       convBot(j)*(TMPn(j)-Tbot)+                         !south
+     &       convTop(j)*(TMPn(j)-Ttop)                          !north
 C-----GENERAL CELL
       DO j=2,nX-1
         R(j) = rho_V_dt(i,j)*(Hn(j)-H(i,j))+
      &         coeffx(i,j-1)*(TMPn(j)-TMPn(j-nY))+              !west 
      &         coeffx(i,j)*(TMPn(j)-TMPn(j+nY))+                !east
-     &         convBot(j)*(TMPn(j)-Tbot)+                          !south
-     &         convTop(j)*(TMPn(j)-Ttop)                           !north
+     &         convBot(j)*(TMPn(j)-Tbot)+                       !south
+     &         convTop(j)*(TMPn(j)-Ttop)                        !north
       ENDDO
 
 
@@ -2291,11 +2227,11 @@ C======================================================================
       REAL coeffy(mY,mX)   ! = cndcty(?,?)*Ay(?)/dPCMnode(?) 
                            ! coefficient calculated for all north and south faces between cells; 
                            ! diffusive term
-      REAL convLat(mY)     ! alphaLat*Axb(?) 
+      REAL convLat(nY)     ! alphaLat*Axb(?) 
                            ! coefficient for convective thermal exchange at lateral border cells
-      REAL convTop(mX)     ! = alphaTop*Ay(?) 
+      REAL convTop(nX)     ! = alphaTop*Ay(?) 
                            ! coefficient for convective thermal exchange at top border cells
-      REAL convBot(mX)     ! = alphaBot*Ay(?) 
+      REAL convBot(nX)     ! = alphaBot*Ay(?) 
                            ! coefficient for convective thermal exchange at bottom border cells
       REAL acc(mY,mX)      ! = rho(?,?)*V(?,?)/dt 
                            ! coefficient calculated for all cells, accumulation term 
@@ -2480,11 +2416,11 @@ C======================================================================
       REAL coeffx(mY,mX)   ! = cndctx(?,?)*Ax(?,?)/dr  
                            ! coefficient calculated for all east and west faces between cells;
                            ! diffusive term
-      REAL convLat(mY)     ! = alphaLat*Axb(?) 
+      REAL convLat(nY)     ! = alphaLat*Axb(?) 
                            ! coefficient for convective thermal exchange at lateral border cells
-      REAL convTop(mX)     ! = alphaTop*Ay(?) 
+      REAL convTop(nX)     ! = alphaTop*Ay(?) 
                            ! coefficient for convective thermal exchange at top border cells
-      REAL convBot(mX)     ! = alphaBot*Ay(?) 
+      REAL convBot(nX)     ! = alphaBot*Ay(?) 
                            ! coefficient for convective thermal exchange at bottom border cells
       REAL acc(mY,mX)      ! = rho(?,?)*V(?,?)/dt 
                            ! coefficient calculated for all cells; accumulation term 

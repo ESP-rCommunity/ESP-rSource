@@ -1024,18 +1024,9 @@ C     PI is the number pi
       PARAMETER (PI=3.1415926535897932385)
 
 
-C=====AGGIUNTO DA ROBY=========================================================================================
       INTEGER mX,mY
-
-C      INTEGER MCELLS
-C      PARAMETER(MCELLS=2000)
-C      INTEGER MAX_STANK
-C      PARAMETER (MAX_STANK=5)
-C      INTEGER mX
       PARAMETER (mX=100)
-C      INTEGER mY
       PARAMETER (mY=100)
-C=====FINE AGGIUNTO DA ROBY====================================================================================
 
 
 C---- Arguments
@@ -1175,7 +1166,6 @@ C     1.0 = Euler implicit, order 1, unconditionally stable
       REAL ALPHA
      
 
-C=====AGGIUNTO ROBY================================================================================
       REAL QPCM(MAX_NNODES)       ! exchanged heat between PCM cylinders and water [W]
       LOGICAL HasPCM
 
@@ -1215,11 +1205,6 @@ C=====AGGIUNTO ROBY=============================================================
       REAL*4 dr              ! grid dimension in radial direction
       REAL*4 dPCMnode(nY-1)    ! distance among PCM nodes
 
-! C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-!       REAL TMP_PREV(mY,mX)
-! C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-C=====AGGIUNTO ROBY================================================================================
 
 
 
@@ -1417,12 +1402,12 @@ C---- The loop starts here and ends at label 900
   110   continue
 
 C-----------------------------------------------------------------------
-C---- CALCULATE CONTRIBUTION FROM IMMERSED HEAT EXCHANGERS AND PCM MODULES  <--- AGGIUNTO DA ROBY
+C---- CALCULATE CONTRIBUTION FROM IMMERSED HEAT EXCHANGERS AND PCM MODULES  
 C     The calculation is done only once per internal time step, since it 
 C     depends only on the temperatures in the tank at the end of the 
 C     previous internal time step
 C     When the calculation is done, the tank is considered unmixed. The
-C     heat transfer from the immersed HX, QHX, and from the immersed PCM   <--- AGGIUNTO DA ROBY
+C     heat transfer from the immersed HX, QHX, and from the immersed PCM   
 C     modules, QPCM,is calculated at the node level (not the section level)
 C-----------------------------------------------------------------------
 
@@ -1432,14 +1417,6 @@ C----     Zero heat transfer array
             QPCM(i) = 0.
             QHX(i) = 0.
   115     continue
-! C===============================================================================CANCELLARE!!!!!!!!!!!!!!!!!
-! C---- Convert section temperatures into node temperatures
-!         do 117 i=NSec,1,-1
-!           do 116 j = Sectop(i),Secbot(i),-1
-!             Tstep_prev(j) = Tsec(i)
-!   116     continue
-!   117   continue
-! C===============================================================================CANCELLARE!!!!!!!!!!!!!!!!!
 
 
           if (HasHX0) 
@@ -1456,12 +1433,9 @@ C----     Zero heat transfer array
      &        Tstep_prev, Mdot, NNodes,
      &        TInHX1, MdotHX1, GlycolFracHX1, TOutHX1step, QHX)
 
-! C===============================================================================CANCELLARE!!!!!!!!!!!!!!!!!
-!          endif
-! C===============================================================================CANCELLARE!!!!!!!!!!!!!!!!!
 
           if (HasPCM) 
-     &      call immersed_PCM(ts,nX,nY,NNodes,nPCMbot,nPCMtop, !Se cicla da "goto 110" ==> p = LastpHX e questo non viene chiamato
+     &      call immersed_PCM(ts,nX,nY,NNodes,nPCMbot,nPCMtop, 
      &        dr,dPCMnode(1),dPCMcyl,hPCMcyl,
      &        V(1,1),Ax(1,1),Axb(1),Ay(1),
      &        NodeHeight,hPCMbot,hPCMtop,  
@@ -1472,21 +1446,8 @@ C----     Zero heat transfer array
 
           LastpHX = p
 
-C===============================================================================SCOMMENTARE!!!!!!!!!!!!!!!!!
       endif
-C===============================================================================SCOMMENTARE!!!!!!!!!!!!!!!!!
 
-
-
-
-
-
-C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-! C-----Computes the average heat flux from PCM
-!       DO i=1,nY
-!           QPCM(i) = 0.
-!       ENDDO
-C-CANCELLARE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 
 
