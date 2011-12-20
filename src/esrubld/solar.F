@@ -2131,7 +2131,7 @@ C                               -----
       IF(ITRACE(19).EQ.0.OR.NSINC.GT.ITCF.OR.
      &   IZNTRC(ICOMP).NE.1)goto 9999
       call edisp(itu,' ')
-      write(outs,'(A,I4,3A,I3,A)')' Subroutine MZSLGN   Trace output',
+      write(outs,'(A,I5,3A,I3,A)')' Subroutine MZSLGN   Trace output',
      &ICNT,' Zone ',zname(ICOMP),' (',ICOMP,').'
       call edisp(itu,outs)
       ICNT=ICNT+1
@@ -2388,10 +2388,10 @@ C and hemisphere.
     2 CONTINUE
 
 C Trace output ?
-      IF(ITC.LE.0.OR.NSINC.LT.ITC)goto 9999
-      IF(ITRACE(19).EQ.0.OR.NSINC.GT.ITCF)goto 9999
+      IF(ITC.LE.0.OR.NSINC.LT.ITC) return
+      IF(ITRACE(19).EQ.0.OR.NSINC.GT.ITCF) return
       call edisp(itu,' ')
-      write(outs,'(A,I4)')' Subroutine MZSANG   Trace output',ICNT
+      write(outs,'(A,I5)')' Subroutine MZSANG   Trace output',ICNT
       call edisp(itu,outs)
       ICNT=ICNT+1
       call DAYCLK(int(DAY),HOUR,itu)
@@ -3280,6 +3280,8 @@ c Read opaque surface shading information.
         IISS=ISS(IM)
         NC=NCONST(I)
         goto (101,102,101),IISS
+
+C Shading only or shading/insolation case.
   101   DO 20 J=1,NC
           READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1001)(PO(I,J,K),K=1,24)
           IREC=IREC+1
@@ -3290,6 +3292,8 @@ c Read opaque surface shading information.
         IF(ISHD(I).EQ.1)goto 1
 
         goto 103
+
+C Insolation only case.
   102   IREC=IREC+2*NC
   103   READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1001)(IGCI(I,J),J=1,NC)
         irec=irec+1

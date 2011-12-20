@@ -693,8 +693,44 @@ C Fatal error trap.
 
 c ******************** MZSHIN ********************
 
-c MZSHIN assigns the zone associated shading file for use
-c later within the simulation time-stepping.
+C MZSHIN assigns the zone associated shading file for use
+C later within the simulation time-stepping.
+
+C Format of a zone shading & insolation db:
+C Minimum width is 24 words, normal width is nzsur(icomp) words.
+C Record 1: first 12 words holds ishd(), the analysis type for
+C           each day-month (0 no data, 1 shading only, 2 insolation
+C           only, 3 shading and insolation), followed by isadd(),
+C           the record where the shading and/or insolation data for
+C           each day-month commences.
+C Record 2: first word is irecx (the last record written to + 1, i.e.
+C           the next record available for new data), second is nsurs
+C           (the number of surfaces in the zone at the time the db
+C           was created), third is msurs (the maximum number of
+C           insolated surfaces defined when the db was created). The
+C           second and third items are used as consistency checks.
+C Record 3: reserved for future use.
+C Record 4: itmc(), if 1, indicating that a surface is a TMC, i.e.
+C           and insolation source.
+C Record 5: beginning of shading and/or insolation data for first
+C           month considered.
+C Shading records:
+C   24 hour values of direct, pso(), and diffuse, psof(), shading
+C   factors are written in record pairs occupying 2*nsur records.
+C Insolation records:
+C   These start at record isadd(mon)+2*nsur. The first record of
+C   the block holds the ioffs array, which gives the record offset
+C   to the start of the data for each considered insolation source.
+C   These data correspond to each of the possible misur insolation
+C   sources and comprise 24 hour values of the insolated surface
+C   index, insst(), and the insolation factor, pinwst(), written
+C   in record pairs. Thus, igc() for a 6 surface zone might, for
+C   example, be 0,1,x,0,y,0 (where x and y have specific integer
+C   values) indicating that surfaces 2, 3 and 5 are insolation
+C   sources, that the data for surface 3 commences at the next
+C   record (i.e. with an offset of 1), the data for surface 3
+C   commences with an offset of x=2*misur and the data for surface 5
+C   commences with an offset of y=2*(2*misur).
 
       SUBROUTINE MZSHIN(ICOMP)
 #include "building.h"
@@ -757,35 +793,49 @@ C at maxrec=24 for older files. Remember maxrec for use in solar.F.
         endif
       endif
           
-c Trace output ?
-    3 IF(JOUT.EQ.1)goto 1
-      IF(ITRACE(5).EQ.1.AND.IZNTRC(ICOMP).EQ.1)goto  1
-      goto 2
+C Trace output. MZSHIN is only called during input to no need
+C to put a simulation time limit on this trace option.
+    3 IF(ITRACE(5).EQ.1.AND.IZNTRC(ICOMP).EQ.1) goto 1
 
+C If this point reached there was no request for trace so
+C close the file.
+      CALL ERPFREE(IUNIT,ISTAT)
+      IF(IER.EQ.1)then
+        call epwait
+        call epagend
+        STOP
+      endif
+      RETURN
+ 
+
+C Errors that also attempt to write trace output prior to
+C quitting.
  1000 IER=1
       write(outs,'(2A)') zname(ICOMP),' shading file error in '
       call edisp(iuout,outs)
       call edisp(iuout,LS)
       CALL edisp(iuout,' Run being terminated.')
-      goto 3
+      goto 3  ! jump back to trace
+
  1001 CALL edisp(iuout,' Read error in shading file.')
-      goto 1000
+      goto 1000  ! write further error information
+
  1003 write(outs,'(a,i2,a,i2,a,i2)') 'Model nsur =',NSUR,' db ns =',
      &  ns,' inext=',INEXT
       call edisp(iuout,' Mismatch between model and shading file.')
       call edisp(iuout,outs)
-      goto 1000
+      goto 1000  ! write further error information
 
-c Trace output follows.
-C << code is similar to that used in ish - consider a common
-C << subroutine. Also look at a common common blocks between
-C << ish and the simulator.
+C Trace output follows. The binary file is scanned and the whole
+C years data for each of the selected zones is printed out. This
+C only works if the user first selects the shading & insolation
+C trace and then re-scanns in the model cfg file.
+
+C Code to read the file is out of date and differes from the
+C logic within solar.F so diffuse shading and insolation data
+C is not presented. Direct shading is presented only.
     1 CONTINUE 
       dok=.true.
-      helptopic='shading_trace_dialog'
-      call gethelptext(helpinsub,helptopic,nbhelp)
-      CALL ASKOK(' ',' SHADING/INSOLATION file output?',OK,dok,1)
-      IF(.NOT.OK)goto  2
       write(outs,'(A,I4)')' Subroutine MZSHIN     Trace output',ICNT
       call edisp(itu,outs)
       write(outs,'(23X,A,I7)')'Zone',ICOMP
@@ -817,7 +867,7 @@ c Shading only or shading/insolation case.
       IREC=ISADD(I)
       DO 9986 J=1,NSUR
         READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1008)(PS(K),K=1,24)
-        IREC=IREC+1
+        IREC=IREC+2   ! there is a 2nd record in solar.F
         IF(J.GT.1)goto 9985
         write(outs,9984)I,J,(PS(K),K=1,24)
  9984   format(I4,I7,F7.1,',',22(F3.1,','),F3.1)
@@ -885,13 +935,14 @@ c Output PI.
       goto 1008
  1008 JOUT=0
       goto 1000
-    2 CALL ERPFREE(IUNIT,ISTAT)
-      IF(IER.EQ.1)goto 4
-      RETURN
 
-    4 call epwait
-      call epagend
-      STOP
+    2 CALL ERPFREE(IUNIT,ISTAT)
+      IF(IER.EQ.1)then
+        call epwait
+        call epagend
+        STOP
+      endif
+      RETURN
 
       END
 
