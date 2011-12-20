@@ -35,30 +35,19 @@ C            for this component.
 
       subroutine pcedit(ival)
 #include "plantdb.h"
+#include "pdb_data.h"
+
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCCTL/MPC, NXTREC
-      common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
-
-      common/pcdatd/ictype,mncomp,mncon,micode(maxcmp),icndat(maxcon,5),
-     &              rcndat(maxcon,3)
-
-      CHARACTER ZGTYPE*40,ZCDATE*16,ZCDESC*80,dtdesc*68,adodsc*30
-
       dimension ivals(MAXPC)
       character buffer*120,ltmp*80
-      character zitem(9)*20
+      character zitem(11)*20
       LOGICAL OK,dok
       integer nitems,ino ! max items and current menu item
+      integer iuchan     ! for listing details
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -72,6 +61,8 @@ C of the binary file so that end-of-file marker is anchored there.
 C This was found to be essential on SPARC systems.
 C Note that if a new component was inserted then position of
 C end-of-file marker will be adjusted accordingly.
+
+      IUCHAN = IUOUT  ! list details to text feedback
       dummy=999.
       write(ifil,rec=nxtrec,iostat=istat,err=1) dummy
       
@@ -83,17 +74,19 @@ C end-of-file marker will be adjusted accordingly.
       zitem(6)=' ------------------ '
       zitem(7)='f Save changes      '
       zitem(8)=' ------------------ '
-      zitem(9)='- Exit              '
+      zitem(9)='! list current data '
+      zitem(10)='? help              '
+      zitem(11)='- Exit              '
 
       if(ival.eq.0) then
 
-C Check if library empty.
+C User did not select anything. Check if library empty.
  1010   IF (NPC .eq. 0) then
           call usrmsg(' ',' The library is empty','W')
           return
         endif
 
-C Dsiplay components lilst and get selection.
+C Dsiplay components list and get selection.
         inpc=npc
         nitems=1
         call list(inpc,ivals,nitems,ix)
@@ -108,7 +101,7 @@ C Initialise changes flag.
       ichang=0
 
 C Display menu.
-  20  nitems = 9
+  20  nitems = 11
       ino = -5
   22  call emenu('Edit component',zitem,nitems,ino)
       if(ino.eq.0) then
@@ -458,8 +451,9 @@ C Edit CDATA variables (description only).
   590      continue
          endif
 
-C Save changes if OK.
       elseif(ino.eq.7) then
+
+C Save changes if OK.
         if(ichang.eq.1.or.ival.ne.0) then
           call pcwrt(iuout)
           dok=.true.
@@ -468,11 +462,24 @@ C Save changes if OK.
           CALL ASKOK(' ',' Is this OK? ',OK,dok,nbhelp)
           IF(.NOT.OK)GOTO 20
           call pcput(indxpc)
-          goto 888
+          return
         endif
+
+      elseif(ino.eq.9) then
+
+C List data for current component.
+         CALL PCWRT (IUCHAN)
+
+      elseif(ino.eq.10) then
+         
+C Help for menu.
+        helptopic='pdb_generic_type_descr'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('pdb editing',nbhelp,'-',0,0,IER)
+
+      elseif(ino.eq.11) then
          
 C Exit. Warn user if changes were made.
-      elseif(ino.eq.9) then
         if(ichang.eq.1) then
           dok=.false.
           helptopic='pdb_DATA_changes_pause'
@@ -480,9 +487,9 @@ C Exit. Warn user if changes were made.
           call askok(' ','Really discard changes?',ok,dok,nbhelp)
           if(.not.ok) goto 20
         endif
-        goto 888
+        return
       endif
-      goto 20
+      goto 20    ! redisplay the menu
 
   888 RETURN
 

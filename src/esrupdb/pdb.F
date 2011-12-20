@@ -23,6 +23,7 @@ C Boston, MA 02111-1307 USA.
 #include "building.h"
 #include "model.h"
 #include "plantdb.h"
+#include "pdb_data.h"
 #include "esprdbfile.h"
 #include "espriou.h"
 
@@ -54,14 +55,6 @@ C Path to problem and command line file (if any).
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCCTL/MPC, NXTREC
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
-
-C Mass flow components data
-      common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
-     &              supcmp(maxcon,maxflw), mfsdsc(maxcon,maxflw),
-     &              ltpcmp(maxcon), isdifc(maxcon)
-
 C Name of current application
       common/APPNAME/cAppName
       
@@ -73,7 +66,6 @@ C Name of current application
       character lcmdfl*144,outs*124,outs248*248
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,fs*1
-      character mfsdsc*68,ltpcmp*60 
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer ier
@@ -122,14 +114,14 @@ C Clear temporary descriptions.
 
       MMOD=MODL
       if(iappw.eq.0.and.iappx.eq.0.and.iappy.eq.0)then
-        iappw=480
+        iappw=510
         iappx=85
         iappy=110
       else
         if(iappx.le.0)iappx=85
         if(iappy.le.0)iappy=110
         if(iappw.le.200)then
-          iappwi=int(480*iappw*0.01)
+          iappwi=int(510*iappw*0.01)
           iappw=iappwi
         elseif(iappw.gt.200)then
           continue
@@ -141,11 +133,11 @@ C Set pixels high to iappw and pixels wide to factor in monitor size.
       iappwi=int(real(iappw)*(1024.0/780.0))
 
       if(iappw.gt.0.and.iappw.lt.100)then
-        menuchw = MAX0(int(20*iappw*0.01),20)
+        menuchw = MAX0(int(24*iappw*0.01),20)
         LIMIT =26
         LIMTTY=26
       else
-        menuchw = 20
+        menuchw = 22
         LIMIT =26
         LIMTTY=26
       endif
@@ -377,11 +369,11 @@ C                 from list.
 C 'ix'          : returns number of selections made.
       subroutine list(inpc,ival,nitems,ix)
 #include "plantdb.h"
+#include "pdb_data.h"
+
       common/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
-
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
 
       DIMENSION comp(MAXPC), ival(inpc)
       CHARACTER comp*80,cdesc*80,outs*124
@@ -403,12 +395,16 @@ C Write description of each component in string array.
    14    FORMAT(A80)
    10 CONTINUE
 
+C Help text for epicks << need to create this >>
+      helptopic='pdb_could_not_scan'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
 C Now display the menu.
         IX=nitems
         CALL EPICKS(IX,IVAL,
      &   ' Please select component(s) from the list provided: ',
      &   ' (Exit) terminates selection.',60,npc,comp,
-     &   'Components list',IER,0)
+     &   'Components list',IER,nbhelp)
 
       return
 

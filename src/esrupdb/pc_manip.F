@@ -86,6 +86,7 @@ C the data and the routine 'PCWRT' to
 C write it to the terminal.
       SUBROUTINE PCLIST
 #include "plantdb.h"
+#include "pdb_data.h"
       
       integer lnblnk  ! function definition
 
@@ -95,15 +96,6 @@ C write it to the terminal.
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
-      COMMON /PL/ INDXPR(MAXPC)
-
       dimension ival(MAXPC)
       logical ok,dok
 
@@ -111,7 +103,6 @@ C write it to the terminal.
       LOGICAL COMPDS, COMPNO
       CHARACTER ZITEM(11)*24
       character LTMP*72,buffer*120
-      CHARACTER ZGTYPE*40,ZCDATE*16,ZCDESC*80,dtdesc*68,adodsc*30
       integer NITEMS,MNUPIK ! max items and current menu item
       integer lastmmod      ! so can restore display
 
@@ -130,7 +121,7 @@ C Check library is not empty.
 
       lastmmod=mmod   ! remember the display mode
 
-C Initialize print list.
+C Initialize print list array INDXPR.
       DO 100 I = 1, NPC
         INDXPR(I) = I
   100 CONTINUE
@@ -327,18 +318,12 @@ C Given a component code, the library is searched for this
 C component and its data is returned.
       SUBROUTINE PCFIND (ICDE)
 #include "plantdb.h"
+#include "pdb_data.h"
+
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
-
-      character dtdesc*68,adodsc*30
       logical ok,dok
 
 C For help messages
@@ -383,21 +368,13 @@ C The user is asked to confirm the entry
 C selected before deletion.
       SUBROUTINE PCDELT
 #include "plantdb.h"  
+#include "pdb_data.h"
+  
       common/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCCTL/MPC, NXTREC
-      common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
-
-      CHARACTER ZGTYPE*40,ZCDATE*16,ZCDESC*80,dtdesc*68,adodsc*30
       character buffer*120
 
       dimension ival(MAXPC)
@@ -507,40 +484,12 @@ C ******** PCGET ************
 C PCGET of ESRUpdb
       SUBROUTINE PCGET (INDEX)
 #include "plantdb.h" 
+#include "pdb_data.h"
+
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
-
-      common/pcdatd/ictype,mncomp,mncon,micode(maxcmp),icndat(maxcon,5),
-     &              rcndat(maxcon,3)
-
-C Mass flow components data
-      common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
-     &              supcmp(maxcon,maxflw), mfsdsc(maxcon,maxflw),
-     &              ltpcmp(maxcon), isdifc(maxcon)
-
-C TRNSYS types data
-      common/trnsys/ntypes,ittype(MXTSYS),ntadat(MXTSYS),ntbdat(MXTSYS),
-     &              ntcdat(MXTSYS),ntapot(MXTSYS),ntmisc(MXTSYS),
-     &              tdtdsc(MXTSYS,maxmsc),tdatms(MXTSYS,maxmsc),
-     &              trange(MXTSYS,maxmsc,2),tadods(MXTSYS,mxaout),
-     &              ntaotp(MXTSYS,mxaout),ittpcm(MXTSYS,maxcon),
-     &              itsdcm(MXTSYS,maxcon),itsdcn(MXTSYS,maxcon),
-     &              tsupcm(MXTSYS,maxcon,maxflw),
-     &              tmfsds(MXTSYS,maxcon,maxflw),
-     &              tltpcm(MXTSYS,maxcon),itsdif(MXTSYS,maxcon)
-
-      CHARACTER ZGTYPE*40,ZCDATE*16,ZCDESC*80
-      character dtdesc*68,mfsdsc*68,tdtdsc*68,tmfsds*68
-      character adodsc*30,tadods*30,ltpcmp*60,tltpcm*60
       logical ok,dok
 
 C For help messages
@@ -761,41 +710,12 @@ C ******** PCPUT ***********
 C PCPUT of ESRUpdb
       SUBROUTINE PCPUT (NDX)
 #include "plantdb.h" 
+#include "pdb_data.h"
+ 
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCCTL/MPC, NXTREC
-      common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
-
-      common/pcdatd/ictype,mncomp,mncon,micode(maxcmp),icndat(maxcon,5),
-     &              rcndat(maxcon,3)
-
-C Mass flow components data
-      common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
-     &              supcmp(maxcon,maxflw), mfsdsc(maxcon,maxflw),
-     &              ltpcmp(maxcon), isdifc(maxcon)
-
-C TRNSYS types data
-      common/trnsys/ntypes,ittype(MXTSYS),ntadat(MXTSYS),ntbdat(MXTSYS),
-     &              ntcdat(MXTSYS),ntapot(MXTSYS),ntmisc(MXTSYS),
-     &              tdtdsc(MXTSYS,maxmsc),tdatms(MXTSYS,maxmsc),
-     &              trange(MXTSYS,maxmsc,2),tadods(MXTSYS,mxaout),
-     &              ntaotp(MXTSYS,mxaout),ittpcm(MXTSYS,maxcon),
-     &              itsdcm(MXTSYS,maxcon),itsdcn(MXTSYS,maxcon),
-     &              tsupcm(MXTSYS,maxcon,maxflw),
-     &              tmfsds(MXTSYS,maxcon,maxflw),
-     &              tltpcm(MXTSYS,maxcon),itsdif(MXTSYS,maxcon)
-
-      CHARACTER ZGTYPE*40,ZCDATE*16,ZCDESC*80
-      character dtdesc*68,mfsdsc*68,tdtdsc*68,tmfsds*68
-      character adodsc*30,tadods*30,ltpcmp*60,tltpcm*60
       character outs*124
       logical ok,dok
 
@@ -864,8 +784,8 @@ C Remove old entry if too small.
 
 C Make space at end of library.
         NPC = NPC + 1
-        ITMLOC(NPC,1) = NXTREC
-        ITMLOC(NPC,2) = ICODE
+        ITMLOC(NPC,1) = NXTREC  ! assign the start record
+        ITMLOC(NPC,2) = ICODE   ! remember the component code
         NXTREC = NXTREC + ISZ
         CALL PCUPDT (1)
         IREC = ITMLOC(NPC,1)
@@ -1060,12 +980,11 @@ C Error handling.
 C ********* PCRMV ********
       SUBROUTINE PCRMV (NDX)
 #include "plantdb.h"
+#include "pdb_data.h"
+
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
-
-      common/PCCTL/MPC, NXTREC
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
 
 C Delete entry by compacting library
       INTEGER RECORD(IRECLN)
@@ -1132,12 +1051,12 @@ C Update header block after ITMLOC has changed. If IFLG = 0, then
 C zeroize header information
       SUBROUTINE PCUPDT (IFLG)
 #include "plantdb.h"
+#include "pdb_data.h"
+
       common/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCCTL/MPC, NXTREC
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
       CHARACTER PZDESC*25
       logical ok,dok
 
