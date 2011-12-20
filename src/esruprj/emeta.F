@@ -1224,7 +1224,7 @@ C and act on the information within the file.
        SUBROUTINE SILENTREAD(IUNIT,LFILE,act,silentreturndirec,IER)
        integer MSZ   ! number of META zones array sizes, edit to
                      ! match MCOM in building.h
-       PARAMETER (MSZ=72)
+       PARAMETER (MSZ=82)
 #include "building.h"
 #include "model.h"
 #include "site.h"
@@ -2655,7 +2655,7 @@ C the file with minimum interaction.
       SUBROUTINE METAWRITE(ifilg,LFILE,act,IER)
       integer MSZ   ! number of META zones array sizes, edit to
                     ! match MCOM in building.h
-      PARAMETER (MSZ=72)
+      PARAMETER (MSZ=82)
 #include "building.h"
 #include "model.h"
 #include "site.h"

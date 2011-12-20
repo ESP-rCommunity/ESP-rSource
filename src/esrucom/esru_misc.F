@@ -1328,6 +1328,7 @@ C Skip past the row sums.
   331 CONTINUE
 
 C Write out trace if requested.
+C MS senstive, change is MS>90.
       if(itrc.gt.0)then
         call edisp(itru,' Black body view factors')
         if(NZS.le.22)then
@@ -1345,10 +1346,19 @@ C Write out trace if requested.
           call edisp(itru,outs)
           write(outs,'(4X,22I5)')(I,I=45,NZS)
           call edisp(itru,outs)
+        elseif(NZS.ge.69.and.NZS.le.90)then
+          write(outs,'(4X,22I5)')(I,I=1,22)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=23,44)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=45,68)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=69,NZS)
+          call edisp(itru,outs)
         endif
         call edisp(itru,' ')
 
-C MS senstive, change is MS>68.
+C MS senstive, change is MS>90.
         DO 9994 I=1,NZS
           if(NZS.le.22)then
             write(outs,9993)I,(VEWF(I,J),J=1,NZS)
@@ -1365,6 +1375,15 @@ C MS senstive, change is MS>68.
             write(outs,'(1x,22F5.2)')(VEWF(I,J),J=23,44)
             call edisp(itru,outs)
             write(outs,'(1x,22F5.2)')(VEWF(I,J),J=45,NZS)
+            call edisp(itru,outs)
+          elseif(NZS.ge.45.and.NZS.le.90)then
+            write(outs,9993)I,(VEWF(I,J),J=1,22)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=23,44)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=45,68)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=69,NZS)
             call edisp(itru,outs)
           endif
  9994   CONTINUE
