@@ -739,6 +739,7 @@ C Strings for dos version of rootp and upath and a double quote.
       character rootpdos*72,upathdos*72,rootpath*72,modelroot*72
       character dq*1,fs*1,thecfgis*72
       character useraction*8
+      character lltmp*144,lguess*144,dguess*144
       logical XST,unixok
       integer NCOG,ICOG,NCO,ICO,icod ! max items and current menu item
 
@@ -1138,8 +1139,17 @@ C                  call edisp(iuout,outs)
   343             continue
                   call isunix(unixok)
                   if(unixok)then
+
+C Offer user choice of home folder or another location. In GTK
+C there is a file browser returning folder name via lltmp.
+                    write(lguess,'(a)') upath(1:lnblnk(upath))
+                    write(dguess,'(a)') upath(1:lnblnk(upath))
+                    CALL EASKXORGTKF(lguess,
+     &                'Place model as subfolder of?',' ',
+     &                dguess,lltmp,'models folder',IER,nbhelp)
+
                     write(doit,'(4a)') 'cp -r ',
-     &                rootp(1:lnblnk(rootp)),' ',upath(1:lnblnk(upath))
+     &               rootp(1:lnblnk(rootp)),' ',lltmp(1:lnblnk(lltmp))
                   else
 
 C Debug statements for native windows version.  If lnblankrp or
@@ -1171,15 +1181,23 @@ C                    write(outs,'(2a)') 'the model root folder is = ',
 C     &                modelroot(1:lnmr)
 C                    call edisp(iuout,outs)
                     call edisp(iuout,' ')
-                    lnup=lnblnk(upath)
-                    lnblankup=iprevblnk(upath,lnup)
-                    call backslashit(upath,upathdos)
+
+C Offer user choice of home folder or another location. In GTK
+C there is a file browser returning folder name via lltmp.
+                    write(lguess,'(a)') upath(1:lnblnk(upath))
+                    write(dguess,'(a)') upath(1:lnblnk(upath))
+                    CALL EASKXORGTKF(lguess,
+     &                'Place model as subfolder of?',' ',
+     &                dguess,lltmp,'models folder',IER,nbhelp)
+                    lnup=lnblnk(lltmp)
+                    lnblankup=iprevblnk(lltmp,lnup)
+                    call backslashit(lltmp,upathdos)
 C Debug.
-C                    write(outs,'(a,2i3,2a)') 'upath = ',lnup,lnblankup,
-C     &                ' ',upath(1:lnup)
-C                    call edisp(iuout,outs)
-C                    write(outs,'(2a)') 'destination = ',upathdos(1:lnup)
-C                    call edisp(iuout,outs)
+                    write(outs,'(a,2i3,2a)') 'upath = ',lnup,lnblankup,
+     &                ' ',upath(1:lnup)
+                    call edisp(iuout,outs)
+                    write(outs,'(2a)') 'destination = ',upathdos(1:lnup)
+                    call edisp(iuout,outs)
                     if(lnblankrp.gt.1.and.lnblankup.gt.1)then
 
 C There are blanks in both source or destination strings.
@@ -1206,14 +1224,15 @@ C There are no blanks in either source or destination strings.
      &                  upathdos(1:lnup),fs,modelroot(1:lnmr)
                     endif
                   endif
-                  call lusrmsg('Copying exemplar to your home folder.',
+                  call lusrmsg(
+     &               'Copying exemplar to your destination folder.',
      &               doit,'-')
                   call runit(doit,'-')
                   if(unixok)then
 
-C If Unix-like then append tail of exemplar string to the users default
+C If Unix-like then append tail of exemplar string to the users selected
 C path to get the new exemplar name.
-                    write(exemplar,'(3a)')upath(1:lnblnk(upath)),fs,
+                    write(exemplar,'(3a)') lltmp(1:lnblnk(lltmp)),fs,
      &                exemplar(ilex:lnblnk(exemplar))
                   else
 
