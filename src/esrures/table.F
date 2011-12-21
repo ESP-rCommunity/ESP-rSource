@@ -434,7 +434,8 @@ C   don't do this if printing to file.
             endif
             do 20 IL=1,NGET
             
-C Define units.
+C Define units. Note: climate data will base its units on 
+C the IGETNO(IL,8) value along with all other items.
               if (IGETNO(IL,8).eq.1) then
                 unit='(degC)'
               elseif (IGETNO(IL,8).eq.2) then
