@@ -139,6 +139,7 @@ C code tends to overwrite this and thus the user choice
 C is lost. 
         iw=0
         if(path(1:2).ne.'./'.and.path(1:2).ne.'  ')then
+          call edisp(iuout,'  ')
           write(outs,'(A,A)') 'The current path is: ',path
           call edisp(iuout,outs)
           CALL EASKAB('The model is in a remote folder.',
@@ -1066,7 +1067,8 @@ C Present information on an exemplar.
             elseif(WORD(1:4).eq.'*cfg')then
               call egetrm(outstr,K,exemplar,'W','name',IER)
               if(iglib.eq.2.or.iglib.eq.3)then
-                call edisp(iuout,' Model is:')  ! echo if gtk
+                call edisp(iuout,'  ')
+                call edisp(iuout,'Examplar model is:')  ! echo if gtk
                 call edisp(iuout,exemplar)
               endif
 
@@ -1076,20 +1078,22 @@ C of the string till a file separator of either DOS or Unix type is reached.
               call isunix(unixok)
               if(.NOT.unixok)then
                 thecfgis=' '
-                ilexem = lnblnk(exemplar)
+                ilexem = lnblnk(exemplar)  ! last character
                 ipos = ilexem
  344            continue
                 ipos=ipos-1
                 if(exemplar(ipos:ipos).eq.fs)then
                   write(thecfgis,'(a)') exemplar(ipos+1:ilexem)
                   if(itrc.gt.0)then
-                    call edisp(iuout,'The model is...')
+                    call edisp(iuout,'  ')
+                    call edisp(iuout,'The model configuration file is:')
                     call edisp(iuout,thecfgis)
                   endif
                 elseif(exemplar(ipos:ipos).eq.'/')then
                   write(thecfgis,'(a)') exemplar(ipos+1:ilexem)
                   if(itrc.gt.0)then
-                    call edisp(iuout,'The model is...')
+                    call edisp(iuout,'  ')
+                    call edisp(iuout,'The model configuration file is:')
                     call edisp(iuout,thecfgis)
                   endif
                 else
@@ -1173,13 +1177,15 @@ C folder does not exist then need to create it.
                     write(doit,'(2a)') 'mkdir ',lltmp(1:lnblnk(lltmp))
                     call runit(doit,'-')
                     call pausems(400)
+
+C Make up the command to copy from the exemplar source folder to the
+C users defined destination.
                     write(doit,'(5a)') 'cp -r ',rootp(1:lnblnk(rootp)),
      &                fs,'*  ',lltmp(1:lnblnk(lltmp))
                   else
 
-C Debug statements for native windows version.  If lnblankrp or
-C lnblankup is one then there are no spaces in the string so double quotes
-C are not required.  But in either case it is useful to change any '/'
+C If lnblankrp or lnblankup is one then there are no spaces in the 
+C string so double quotes are not required.  Change any '/'
 C in rootp and upath to '\'. 
                     rootpdos=' '
                     upathdos=' '
@@ -1187,24 +1193,21 @@ C in rootp and upath to '\'.
                     lnblankrp=iprevblnk(rootp,lnrp)
 
 C Debug the model source.
-                    write(outs,'(a,2i3,2a)') 'rootp = ',lnrp,lnblankrp,
-     &                ' ',rootp(1:lnrp)
-                    call edisp(iuout,outs)
+C                    write(outs,'(a,2i3,2a)') 'rootp = ',lnrp,lnblankrp,
+C     &                ' ',rootp(1:lnrp)
+C                    call edisp(iuout,outs)
 
                     call backslashit(rootp,rootpdos)
-                    write(outs,'(2a)') 'Getting model from...',
-     &                rootpdos(1:lnrp)
-                    call edisp(iuout,outs)
+                    if(itrc.gt.0)then
+                      write(outs,'(2a)') 'Getting model from...',
+     &                  rootpdos(1:lnrp)
+                      call edisp(iuout,outs)
+                    endif
 
 C For an xcopy command we need the destination to also include the
 C model folder so use fdroot to extract this from rootp.
                     call fdroot(rootpdos,rootpath,modelroot)
                     lnmr=lnblnk(modelroot)
-
-C Debug the model destination.
-                    write(outs,'(2a)') 'the model root folder is = ',
-     &                modelroot(1:lnmr)
-                    call edisp(iuout,outs)
 
                     call edisp(iuout,' ')
 
@@ -1217,15 +1220,17 @@ C there is a file browser returning folder name via lltmp.
                     call edisp(iuout,'  ')  ! echo a blank line
                     CALL EASKXORGTKF(lguess,' ','Place model in:',
      &                dguess,lltmp,'models folder',IER,nbhelp)
+
                     lnup=lnblnk(lltmp)
                     lnblankup=iprevblnk(lltmp,lnup)
                     call backslashit(lltmp,upathdos)
+
 C Debug.
-                    write(outs,'(a,2i3,2a)') 'upath = ',lnup,lnblankup,
-     &                ' ',upath(1:lnup)
-                    call edisp(iuout,outs)
-                    write(outs,'(2a)') 'destination = ',upathdos(1:lnup)
-                    call edisp(iuout,outs)
+C                    write(outs,'(a,2i3,2a)') 'upath = ',lnup,lnblankup,
+C     &                ' ',upath(1:lnup)
+C                    call edisp(iuout,outs)
+C                    write(outs,'(2a)') 'destination = ',upathdos(1:lnup)
+C                    call edisp(iuout,outs)
 
 C If upathdos folder does not exist then need to create it.
                     if(lnblankup.gt.1)then
@@ -1237,44 +1242,40 @@ C There are blanks in destination strings.
 C There are no blanks in destination string.
                       write(doit,'(2a)') 'mkdir ',upathdos(1:lnup)
                     endif
-                    if(itrc.gt.0)then
-                      call lusrmsg('Making destination folder.',
-     &                  doit,'P')
-                    endif
                     call runit(doit,'-')
 
                     if(lnblankrp.gt.1.and.lnblankup.gt.1)then
 
 C There are blanks in both source or destination strings.
-                      write(doit,'(12a)') 'xcopy /e /i /y /c ',dq,
-     &                  rootpdos(1:lnrp),fs,'*',dq,' ',dq,
-     &                  upathdos(1:lnup),fs,modelroot(1:lnmr),dq
+                      write(doit,'(11a)') 'xcopy /e /i /y /c ',dq,
+     &                  rootpdos(1:lnrp),fs,'*',dq,'  ',dq,
+     &                  upathdos(1:lnup),fs,dq
                     elseif(lnblankrp.eq.1.and.lnblankup.gt.1)then
 
 C There are blanks in destination string.
                       write(doit,'(9a)') 'xcopy /e /i /y /c ',
-     &                  rootpdos(1:lnrp),fs,'*',dq,
-     &                  upathdos(1:lnup),fs,modelroot(1:lnmr),dq
+     &                  rootpdos(1:lnrp),fs,'*  ',dq,
+     &                  upathdos(1:lnup),fs,dq
                     elseif(lnblankrp.gt.1.and.lnblankup.eq.1)then
 
 C There are blanks in source string.
-                      write(doit,'(10a)') 'xcopy /e /i /y /c ',dq,
-     &                  rootpdos(1:lnrp),fs,'*',dq,' ',
-     &                  upathdos(1:lnup),fs,modelroot(1:lnmr)
+                      write(doit,'(9a)') 'xcopy /e /i /y /c ',dq,
+     &                  rootpdos(1:lnrp),fs,'*',dq,'  ',
+     &                  upathdos(1:lnup),fs
                     elseif(lnblankrp.eq.1.and.lnblankup.eq.1)then
 
 C There are no blanks in either source or destination strings.
-                      write(doit,'(7a)') 'xcopy /e /i /y /c ',
-     &                  rootpdos(1:lnrp),fs,'* ',
-     &                  upathdos(1:lnup),fs,modelroot(1:lnmr)
+                      write(doit,'(6a)') 'xcopy /e /i /y /c ',
+     &                  rootpdos(1:lnrp),fs,'*  ',
+     &                  upathdos(1:lnup),fs
                     endif
                   endif
 
 C If trace is verbose echo the command.
                   if(itrc.gt.0)then
-                    call lusrmsg(
-     &               'Copying exemplar to your destination folder.',
-     &               doit,'P')
+                    call edisp(iuout,
+     &                'Copying exemplar to destination folder via:')
+                    call edisp248(iuout,doit,100)
                   endif
                   call runit(doit,'-')
                   if(unixok)then
@@ -1289,17 +1290,12 @@ C the remaining path characters into the file name.
      &                exemplar(ilex:lnblnk(exemplar))
                   else
 
-C If Windows based then append the modelroot string to the path to make
-C up the exemplar name.
-C                    lnmr=lnblnk(modelroot)
-C                    write(exemplar,'(7a)')upathdos(1:lnblnk(upathdos)),
-C     &                fs,modelroot(1:lnmr),fs,'cfg',fs,
-C     &                thecfgis(1:lnblnk(thecfgis))
-C                    lnmr=lnblnk(modelroot)
+C If Windows based then append cfg & cfg file string to the path to make
+C up the exemplar name (this assumes a standard layout of model).
                     write(exemplar,'(5a)')upathdos(1:lnblnk(upathdos)),
-     &                fs,'cfg',fs,
-     &                thecfgis(1:lnblnk(thecfgis))
+     &                fs,'cfg',fs,thecfgis(1:lnblnk(thecfgis))
                   endif
+                  call edisp(iuout,'  ')
                   call edisp(iuout,'The model configuration file is:')
                   call edisp(iuout,exemplar)
                   call tstamp('>','PRJ: owning exemplar')
