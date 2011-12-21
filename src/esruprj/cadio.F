@@ -1131,12 +1131,9 @@ C to the list of exemplars.
 
 C Reached the end of the item, check if it is to be chosen and
 C if there are zones existing, remove them from memory.
-              CALL EASKABC(exdescr,'Actions:','browse',
-     &          'own it','cancel',IW,nbhelp)
+              CALL EASKAB(exdescr,'Actions:',
+     &          'proceed','cancel',IW,nbhelp)
               if(IW.eq.1)then
-                call tstamp('>','PRJ: browse exemplar')
-                useraction='browse  '
-              elseif(IW.eq.2)then
                 if(upath.ne.' ')then
 
 C See if can derive the local configuration name. cfg_root is the last
@@ -1302,7 +1299,7 @@ C up the exemplar name (this assumes a standard layout of model).
                   call tstamp('>',exemplar)
                   useraction='ownit   '
                 endif
-              elseif(IW.eq.3)then
+              elseif(IW.eq.2)then
 
 C User asked to cancel current selection, rewind the file and jump back to
 C the top menu to re-resent groups.
@@ -1311,23 +1308,23 @@ C the top menu to re-resent groups.
                 useraction='continue'
                 goto 41
               endif
-              if(IW.eq.1.or.IW.eq.2)then
-                CALL ERPFREE(iexfil,ISTAT)
-                if(ncomp.gt.0.or.INDCFG.eq.2)then
-                  call usrmsg('Please wait... ',
-     &                        'Clearing previous model.','-')
-                  call startbuffer()
-                  call clrprb
-                endif
+
+C If there was a prior model in memory clear it.
+              CALL ERPFREE(iexfil,ISTAT)
+              if(ncomp.gt.0.or.INDCFG.eq.2)then
+                call usrmsg('Please wait... ',
+     &                      'Clearing previous model.','-')
+                call startbuffer()
+                call clrprb
+              endif
 
 C If the image browser was started in a previous session warn
 C the user to kill it.
-                if(iton.eq.1)then
-                  noimg=0
-                  iton=0
-                endif
-                return
+              if(iton.eq.1)then
+                noimg=0
+                iton=0
               endif
+              return
               goto 92
             else
               goto 4
