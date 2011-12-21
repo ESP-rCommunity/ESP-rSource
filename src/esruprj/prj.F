@@ -3830,8 +3830,7 @@ C attempt to match the focus with the image.
 
 C If running on a non-unix machine see if there are spaces in the name
 C and change any / to \.  If X11 then an external application is used
-C an double quoting is useful. If GTK then internal function used and
-C quotes are not required.
+C an double quoting is useful. If GTK then internal function used.
                     call addpath(limgfil(img),longtfile,concat)
                     if(iglib.eq.1)then
                       call cmdfiledos(longtfile,longtfiledos,ier)
@@ -3907,6 +3906,7 @@ C << tag for editing ?? >>
                 longtfile=' '
                 if(unixok)then
                   call addpath(limgfil(img),longtfile,concat)
+                  ixl=lnblnk(longtfile)
                 else
 
 C If running on a non-unix machine see if there are spaces in the name
@@ -3915,6 +3915,7 @@ C and change any / to \.
                   call cmdfiledos(longtfile,longtfiledos,ier)
                   longtfile=' '
                   longtfile=longtfiledos
+                  ixl=lnblnk(longtfile)
                 endif
 
 C If version 4 or newer then display the text otherwise make
