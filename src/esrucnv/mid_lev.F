@@ -55,6 +55,7 @@ C file formats.
 
       character cfgroot*24,LCFGF*72
       common/C21/IFCFG,cfgroot,LCFGF
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       integer indxzon
@@ -1289,6 +1290,7 @@ C done from command line.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       integer polylinflag

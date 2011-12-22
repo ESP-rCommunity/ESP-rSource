@@ -565,6 +565,7 @@ C #include "espriou.h"
 
       integer lnblnk  ! function definition
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/OUTIN/IUOUT,IUIN
       integer ncomp,ncon
@@ -3390,6 +3391,7 @@ C required models ') which returned iuact=1.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
       INTEGER :: IFCFG
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
@@ -4125,8 +4127,8 @@ C This routine assumes newer geometry files are being used.
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/C24/IZSTOCN(MCOM,MS)
       INTEGER :: IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       common/FILEP/IFIL
 
@@ -5151,8 +5153,8 @@ C Changes to the model are then made.
       integer ncomp,ncon
       common/C1/NCOMP,NCON
 
-      COMMON/C24/IZSTOCN(MCOM,MS)
       INTEGER IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       INTEGER IER,LNBLNK,ICOMP,IUNIT,ITRU,ITRC,ILEN,IFU,IUF,I,ICC,lns
       LOGICAL QUIET,XST
@@ -7361,6 +7363,7 @@ C It finally generate BRUKL input document and other SBEM reports.
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -13494,6 +13497,7 @@ C   act = '-' work silently, 'w' print warnings.
       common/FILEP/IFIL
       integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       character acts*1   ! for call to surrel

@@ -51,6 +51,7 @@ C Parameters passed
       COMMON/OUTIN/IUOUT,IUIN
       
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       common/user/browse
@@ -493,6 +494,7 @@ C information. This is shorter than the string returned by CONXINFO.
       integer lnblnk  ! function definition
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       CHARACTER CXITM*48,SST1*12,ZST1*12,SST2*12,ZST2*12
 
@@ -632,6 +634,7 @@ C         THETA is measured from the XY plane.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       DIMENSION COORD(MV,3)
       character outs*124

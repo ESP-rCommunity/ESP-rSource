@@ -208,6 +208,7 @@ C *********************************************************************
 #include "building.h"
 #include "geometry.h"
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GRSD31/INDLCL(MS)
@@ -933,6 +934,7 @@ C *********************************************************************
 
       COMMON/OUTIN/IUOUT,IUIN
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GRSD51/NMtr,IMtrS(MMTR),IMtrE(MMTR)

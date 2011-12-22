@@ -481,6 +481,7 @@ C ACT - 's' do not ask the user for confirmation of file write.
 
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY

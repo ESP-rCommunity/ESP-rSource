@@ -422,6 +422,7 @@ C above.
 
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C IGETFLG - flags for menu set up:

@@ -46,6 +46,7 @@ C Parameter
       common/headl/irecs(ms)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh
+      integer izstocn
       common/c24/izstocn(mcom,ms)
 
       character outs*124
@@ -209,6 +210,7 @@ C Draws the elevation of the target surface.
       integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/g1T/xft(mv),zft(mv)
+      integer izstocn
       common/c24/izstocn(mcom,ms)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/viewpx/menuchw,igl,igr,igt,igb,igw,igwh

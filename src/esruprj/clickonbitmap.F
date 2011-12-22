@@ -51,6 +51,7 @@ C geometry.h provides commons G0/G1/G2/G4/G5/G7/prec17/precz/c20/GS5/GS6.
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
+      integer IZSTOC
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C Where ESP-r was installed (as recorded when it was compiled).

@@ -250,8 +250,8 @@ C LPNF (72 char) plant network file name.
       INTEGER :: IFPNF
 
 C IZSTOCN - for each zone:surface a pointer to connection index.
-      COMMON/C24/IZSTOCN(MCOM,MS)
       INTEGER :: IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PREC8/SLAT,SLON
       REAL :: SLAT,SLON
 
@@ -3255,6 +3255,7 @@ C Passed parameters
       character CXSTR*78 ! returned string
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       CHARACTER SST1*12,ZST1*12,SST2*12,ZST2*12
       integer ICM  ! connection for current surface
@@ -3364,6 +3365,7 @@ C array IZSTOCN(MCOM,MS) which holds the connection index.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       do 42 icc = 1, NCON

@@ -1785,6 +1785,7 @@ C      PARAMETER (MSGAL=40,MANH=37,MANV=37)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+C      integer IZSTOCN
 C      COMMON/C24/IZSTOCN(MCOM,MS)
 
 C NSTMCFL flag for each model surface (connection). A non-zero

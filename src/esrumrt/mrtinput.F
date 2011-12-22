@@ -230,6 +230,7 @@ C IER=0 OK, IER=1 problem.
       COMMON /SURPNT/ ISPNT(6,MSM), GAREA(MSM), EMISI(MS)
       COMMON /TOTAL/ nsurmf, NGRID, NTRPOL
       common/tmrt2/temp(ms),tempmrt
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       CHARACTER STMENU*30,KEY*1
 
