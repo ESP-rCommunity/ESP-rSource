@@ -1392,8 +1392,8 @@ C ICLIM,LCLIM (for climate file)
       INTEGER :: ifil
       common/rpath/path
       
-      COMMON/C1/NCOMP,NCON
       integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
       COMMON/C6/INDCFG
       INTEGER :: INDCFG
       common/C21/IFCFG,cfgroot,LCFGF

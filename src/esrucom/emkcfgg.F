@@ -60,8 +60,8 @@ C ICLIM,LCLIM (for climate file)
       INTEGER :: iuout,iuin
       common/pophelp/h(60)
       
-      COMMON/C1/NCOMP,NCON
       integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
 
