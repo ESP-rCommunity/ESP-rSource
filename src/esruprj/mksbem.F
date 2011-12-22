@@ -80,20 +80,18 @@ C MMGFUN controls all UK NCM related tasks
 
       integer lnblnk  ! function definition
 
-      common/pophelp/h(60)
-      character*72 h
-      common/FILEP/IFIL
       integer ifil
-      common/OUTIN/IUOUT,IUIN
+      common/FILEP/IFIL
       integer iuout,iuin
+      common/OUTIN/IUOUT,IUIN
 
-      COMMON/HVACINFO/IHVACFLAG,HVACFILE
       INTEGER :: ihvacflag
       CHARACTER*72 HVACFILE
+      COMMON/HVACINFO/IHVACFLAG,HVACFILE
 
-      COMMON/C21/IFCFG,CFGROOT,LCFGF
       INTEGER IFCFG
       CHARACTER CFGROOT*24,LCFGF*72
+      COMMON/C21/IFCFG,CFGROOT,LCFGF
 
       COMMON/SPFLDAT/NSSET,ISSET,ISSTUP,ISBNSTEP,ISPNSTEP,ISSAVE,ISAVGH
       COMMON/SPFLPER/ISSTDAY(MSPS),ISSTMON(MSPS),ISFNDAY(MSPS),
@@ -148,8 +146,8 @@ C MMGFUN controls all UK NCM related tasks
       INTEGER ICOMP,IAIRN,ICAAS
       CHARACTER*72 LAPROB
 
-      COMMON/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
+      COMMON/C1/NCOMP,NCON
 
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       CHARACTER LUALF*72,LCNG*15,LLOC*15
@@ -214,6 +212,12 @@ C MMGFUN controls all UK NCM related tasks
       character LASBEM_O*72  ! to re-establish the ncm file name
       CHARACTER*72 LCNN_O
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MMGFUN'  ! set for subroutine
 
 C Initialise
       OK=.TRUE.
@@ -283,14 +287,12 @@ C Strip model of optional higher resolution
 C Dereference all files that are to be dereferenced and generate
 C stripped model. Define the simulation parameters for the run.
       ISBEM=2    ! have description as well as SBEM db
-      INOTI=4  ! mark explicitly as stripped model
+      INOTI=4    ! mark explicitly as stripped model
       IYEAR=2008 ! match SBEM activities database version year
-      H(1)='Assessment period choices allow you to do quick'
-      H(2)='checks of your model for the month of January or'
-      H(3)='April or July. And eventually you MUST do the'
-      H(4)='annual assessment REQUIRED by the code.'
+      helptopic='ncm_assessment_period'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKABCD(' ','Initial assessment period (see help)',
-     &      'January','April','July','Annual (official)',IW,4)
+     &  'January','April','July','Annual (official)',IW,nbhelp)
       if(isstup.le.0)isstup=20
       if(isbnstep.le.2)isbnstep=6   ! 1 tsph for testing 4 std 12 for 5m
       if(ispnstep.le.2)ispnstep=10
@@ -329,7 +331,7 @@ C Adapt title of model from original.
       endif
 
 C Dereference optional higher resolution information
-      groundreflmodel=1                          ! ground reflectivity
+      groundreflmodel=1                 ! ground reflectivity
       bMY_climates_defined=.FALSE.      ! multi year climates
       ihvacflag=0                       ! HVAC flag
       IDHW_FLAG=0                       ! DHW flag
@@ -394,41 +396,11 @@ C Check if the model is sufficiently attributed for NCM purposes.
       endif
 
 C Offer choice to generate stripped model and running assessments.
-  42  H(1) ='This facility takes information provided in the model'
-      H(2) ='context menu NCM descriptions and will use it to'
-      H(3) ='create several alternative models and optionally run'
-      H(4) ='a series of assessments to confirm the performance of the'
-      H(5) ='design.'
-      H(6) =' '
-      H(7) ='If the model is incomplete you may need to supply'
-      H(8) ='additional information or return to the model context'
-      H(9) ='or zone geometry menus. '
-      H(10)=' '
-      H(11)='1. Generate models (with standard constructions'
-      H(12)='   and glazing areas) and usage patterns, run '
-      H(13)='   assessments and generate EPC.'
-      H(14)=' '
-      H(15)='2. If you did not have time to run the assessments in'
-      H(16)='   step one you can use the model variants and run the'
-      H(17)='   assessments for the energy performance certificate'
-      H(18)='   EPC and/or generate BRUKL specific information.'
-      H(19)=' '
-      H(20)='3. Scan existing results from assessments and re-generate'
-      H(21)='   the NCM file (for testing purposes).'
-      H(22)=' '
-      H(23)='If you plan on using existing models and or existing'
-      H(24)='assessments check that you have loaded your ORIGINAL'
-      H(25)='model prior to asking for assessments or reports.'
-      H(26)=' '
-      H(27)='If you are running your assessments on a Linux or OSX or'
-      H(28)='under the Cygwin emulation environment you will have to'
-      H(29)='transfer the BRUKL.inp and EPCGen.inp files to a Windows'
-      H(30)='computer to complete the final step. '
-      H(31)=' '
-      H(32)='Remember to make backup copies of your models!'
+  42  helptopic='ncm_context'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKABCD('Options (see help): ',' ',
      &  'generate models & make EPC','run assessments & make EPC',
-     &  'use existing runs & make EPC','exit NCM',iecmoption,32)
+     &  'use existing runs & make EPC','exit NCM',iecmoption,nbhelp)
       if(iecmoption.eq.1)then
 
 C Generate all the model variants and run assessments and generate EPC.
@@ -447,25 +419,20 @@ C Generate all the model variants and run assessments and generate EPC.
         call edisp(iuout,'Typical model completed...')
 
 C Ask user if they want to run the assessments.
-        H(1)='You are using new UK NCM stripped, notional,'
-          H(2)='reference and typical models. In order to generate'
-          H(3)='EPC and BRUKL (UK building regulations) specific'
-          H(4)='information annual simulations for all these models'
-          H(5)='need to run and may take some time. You may choose not'
-          H(6)='to run simulations at this time and run these at a'
-        H(7)='later time (via the 2nd option).'
+        helptopic='ncm_run_now_later'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK(
      &    'Run NCM simulations based on these models (see help)',
-     &    ' ',OK,dok,7)
+     &    ' ',OK,dok,nbhelp)
 
 C Run simulation and recover information from save level 6 results file
         if(ok)then
-        CALL SIMRUN(2) ! Notional model
-        CALL SIMRUN(1) ! Stripped model
+          CALL SIMRUN(2) ! Notional model
+          CALL SIMRUN(1) ! Stripped model
 
 C To save time in formal NCM testing comment out the next two lines.
-        CALL SIMRUN(3) ! Reference model
-        CALL SIMRUN(4) ! Typical model
+          CALL SIMRUN(3) ! Reference model
+          CALL SIMRUN(4) ! Typical model
 
 C Generate BER and TER - if doing DSM testing the call is made from
 C RSL6TF
@@ -491,15 +458,11 @@ C        if(iier.eq.2.or.iier.eq.3.or.iier.eq.4) goto 42  ! Ask user what to do
 C        CALL EMKREF  ! Reference model
 C        CALL EMKTYP  ! Typical model
 
-        H(1)='You are using existing UK NCM stripped, notional,'
-        H(2)='reference and typical models. In order to generate'
-        H(3)='EPC and BRUKL (UK building regulations) specific'
-        H(4)='information annual simulations for all these models'
-        H(5)='need to run and may take some time. If you picked this'
-        H(6)='choice in error just say no.'
+        helptopic='ncm_run_now_later'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK(
      &    'Run NCM simulations based on existing models (see help)',
-     &    ' ',OK,dok,6)
+     &    ' ',OK,dok,nbhelp)
 
 C Run simulation and recover information from save level 6 results file
         if(ok)then
@@ -530,24 +493,21 @@ C Recover information from save level 6 results file
 C Reset cfg files and call rsl6tf.  Do the notional
 C set first to make sure AER is filled.
         dok=.false.
-        H(1)='You are using existing save level 6 files from'
-        H(2)='stripped, notional, reference and typical model runs.'
-        H(3)='In order to generate EPC and BRUKL (UK building'
-        H(4)='regulations) data will be re-scanned. FOR TESTING'
-        H(5)='PURPOSES.'
+        helptopic='ncm_run_with_6'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK(
      &    'Re-scan prior assessments to generate EPC (see help)',' ',
-     &    ok,dok,5)
+     &    ok,dok,nbhelp)
         if(ok)then
-        LCFGF=LCFGF_N
-        CALL RSL6TF(2)
-        LCFGF=LCFGF_S
-        CALL RSL6TF(1)
-        LCFGF=LCFGF_R
-        CALL RSL6TF(3)
-        LCFGF=LCFGF_T
-        CALL RSL6TF(4)
-        LCFGF=LCFGF_O
+          LCFGF=LCFGF_N
+          CALL RSL6TF(2)
+          LCFGF=LCFGF_S
+          CALL RSL6TF(1)
+          LCFGF=LCFGF_R
+          CALL RSL6TF(3)
+          LCFGF=LCFGF_T
+          CALL RSL6TF(4)
+          LCFGF=LCFGF_O
 
 C Generate BER and TER - if doing DSM testing the call is made from
 C RSL6TF
@@ -556,10 +516,10 @@ C RSL6TF
           ENDIF
 
 C Generate BRUKL information
-      CALL NCMCAL(IER)
+          CALL NCMCAL(IER)
 
 C Generate EPC information
-      CALL EPCCAL(IER)
+          CALL EPCCAL(IER)
         endif
         goto 42
 
@@ -605,9 +565,9 @@ C #include "espriou.h"
 
       integer lnblnk  ! function definition
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
@@ -618,7 +578,7 @@ C #include "espriou.h"
       DIMENSION KSTR(10),HSYSNM(MCOM+1),JSTR(8),LSYS(10)
       DIMENSION ITEMZ(MREN+5),LSTR(10)
       character cfgroot*24,LCFGF*72,NNAME*72
-      character outs*124,h*72
+      character outs*124
       character ITEMS*50,D64*64,ITEMX*50,ITEMH*70
       CHARACTER HSYSNM*70,TMPSTR*64
       character EXT*4,APE*6
@@ -647,6 +607,13 @@ C For tdf to call arlist:
       integer ivalue ! for editing integers
       CHARACTER*32 SURFOTF
       LOGICAL CLOSER
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='sbmedit'  ! set for subroutine
       CLOSER=.TRUE.
 
 C Change cfgroot to have only 20 characters instead of the usual 24 (to
@@ -680,70 +647,12 @@ C Remember zone specific files
 
       call isunix(unixok)
 
-      H(1) = 'You have chose to configure you model for UK NCM based'
-      H(2) = 'calculations to generate Energy Performance Certificate'
-      H(3) = '(EPC_ Make sure that the original model follows the'
-      H(4) = 'following assumptions: '
-      H(5) = '1. Exterior surfaces that have other surfaces within them'
-      H(6) = '   are called parents. Parents may have more surfaces '
-      H(7) = '   within them. Only a three tier hierarchy is allowed '
-      H(8) = '   i.e. only parent, child and grandchild are allowed '
-      H(9) = '   e.g. a wall with a frame and a window). '
-      H(10)= '  '
-      H(11)= '2. Each exterior surface needs to have a usage. You will'
-      H(12)= '   be asked to provide it if not already defined in the'
-      H(13)= '   geometry and attributions menu.'
-      H(14)= '  '
-      H(15)= '   Only the following usages can be associated with '
-      H(16)= '   exterior surfaces that are parents: '
-      H(17)= '   - if exterior & vertical & opaque = WALL '
-      H(18)= '   - if exterior & horiz UP & opaque = ROOF FLAT'
-      H(19)= '   - if exterior & horiz DOWN & opaque = not allowed'
-      H(20)= '   - if exterior & pitched & opaque = ROOF PITCHED'
-      H(21)= '   - if facing ground & horizontal = GROUND'
-      H(22)= '   - if facing another room & any orientation = PARTN'
-      H(23)= '  '
-      H(24)= '   Usages associated with child and grandchild surfaces'
-      H(25)= '   (e.g. not walls and roofs) :'
-      H(26)= '   - if exterior & horiz UP & transp = WINDOW SKYLIGHT'
-      H(27)= '   - if exterior & pitched & transp = WINDOW SKYLIGHT'
-      H(28)= '   - if exterior & vertical & transp = WINDOW'
-      H(29)= '   - if exterior & vertical & opaque = FRAME or DOOR'
-      H(30)= '   - if facing another room = FRAME or DOOR'
-      H(31) = '  '
-      H(32)= '3. Exterior surfaces should   | |                      '
-      H(33)= '   avoid extreme L shapes.    | |  obtuse interior     '
-      H(34)= '   Surfaces with lots of      | | /   angle here       '
-      H(35)= '   edges can cause problems.  | |/_____                '
-      H(36)= '   (e.g. ceiling of passage)  |________                '
-      H(37) = '  '
-      H(38)= '4. Only one child surface is allowed per parent, if more '
-      H(39)= '   child surfaces are required divide a parent into two '
-      H(40)= '   surfaces and make one child in each.'
-      H(41)= ' '
-      H(42)= 'When generating the notional model all areas for parents'
-      H(43)= '& children that are not glazed are conserved. Additional'
-      H(44)= 'glazing is added to all exterior surfaces as per UK NCM. '
-      H(45)= '* if parent surface is not wall/roof no glazing is added'
-      H(46)= '(This is exceptional and is discouraged)'
-      H(47)= 'In order to calculate the required glazed area, gross  '
-      H(48)= 'parent area is used (e.g. if a wall has a door in it then'
-      H(49)= 'the glazed area is some % of (wall area + door area))'
-      H(50)= ' '
-      H(51)= 'If glazing area in original is more than required for  '
-      H(52)= 'notional then the same area is retained in notional model'
-      H(53)= ' '
-      H(54)= '5. If you have not attributed some use (eg door) to zone'
-      H(55)= '   surfaces then do so before defining a notional model.'
-      H(56)= ' '
-      H(57)= 'For interior surfaces it is assumed that all vertical '
-      H(58)= 'surfaces are walls. Horizontal interior surfaces are '
-      H(59)= 'internal roofs/ceilings. '
-
-      CALL PHELPD('SBEM Assumptions',59,'-',0,0,IER)
+      helptopic='ncm_zone_rules'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL PHELPD('SBEM Assumptions',nbhelp,'-',0,0,IER)
       dok=.false.
       CALL ASKOK('Continue with UK NCM setup/calculations?',
-     &  ' ',OK,dok,58)
+     &  ' ',OK,dok,nbhelp)
       if(.not.OK)return
 
 C Read sbem db.
@@ -760,7 +669,7 @@ C add on the _str, otherwise write initial 19 char of cfgroof
 C and then add in the _str.
       IROOTLEN=LNBLNK(CFGROOT)
       if(irootlen.le.19)then
-      write(cfgroot,'(2a)')cfgroot(1:irootlen),ape(1:4)
+        write(cfgroot,'(2a)')cfgroot(1:irootlen),ape(1:4)
       else
         write(cfgroot,'(2a)')cfgroot(1:19),ape(1:4)
       endif
@@ -789,14 +698,14 @@ C Check if the model is sufficiently attributed for NCM purposes.
         elseif(ier.eq.2)then
           call edisp(iuout,'Model is old format. Correct this and')
           call edisp(iuout,'try again.')
-	  return
+          return
         elseif(ier.eq.3)then
           call edisp(iuout,'Zone surface attribution incomplete. ')
           call edisp(iuout,'Use geometry facilities to complete.')
         elseif(ier.eq.4)then
           call edisp(iuout,'Model geometry is overly complex. Correct')
           call edisp(iuout,'this and try again.')
-	  return
+          return
         elseif(ier.eq.5)then
           call edisp(iuout,'Some UK NCM items need to be updated in')
           call edisp(iuout,'this menu.')
@@ -814,7 +723,7 @@ C Check if the model is sufficiently attributed for NCM purposes.
           call edisp(iuout,'Model is old format. Correct this and')
           call edisp(iuout,'try again.')
           WRITE(LASBEM,'(a)') '  '   ! clear ncm file name
-	  return
+          return
         elseif(ier.eq.3)then
           call edisp(iuout,'Zone surface attribution incomplete. ')
           call edisp(iuout,'It will probably not run NCM cleanly.')
@@ -822,7 +731,7 @@ C Check if the model is sufficiently attributed for NCM purposes.
           call edisp(iuout,'Model geometry is overly complex. Correct')
           call edisp(iuout,'this and try again.')
           WRITE(LASBEM,'(a)') '  '   ! clear ncm file name
-	  return
+          return
         elseif(ier.eq.5)then
           call edisp(iuout,'Some UK NCM items need to be updated in')
           call edisp(iuout,'this menu.')
@@ -840,50 +749,8 @@ C and certPC.
       ENDIF
 
 C Generate help text
- 222  H(1) ='UK NCM calculations require a number of inputs from'
-      H(2) ='the user. You are presented with several sections'
-      H(3) ='to document the project and specify the type of building'
-      H(4) ='as well as standard occupancy profiles within the'
-      H(5) ='building. If you have all of the relevant information'
-      H(6) ='you can complete these discriptions in the current'
-      H(7) ='session. If not you can continue in later sessions.'
-      H(8) =' '
-      H(9) ='The building, owner and certifier information forms '
-      H(10)='part of the energy certificate and is required. '
-      H(11)=' '
-      H(12)='You must select a buidling type from the list provided'
-      H(13)='as well as select the region of the UK (there are'
-      H(14)='some differences in the calculations between regions).'
-      H(15)=' '
-      H(16)='One or more HVAC system types need to be defined and'
-      H(17)='these need to be linked to the zones in the model.'
-      H(18)=' '
-      H(19)='DHW use is associated with the activity assoicated with'
-      H(20)='each zone. If DHW is produced separately from the HVAC'
-      H(21)='system then define them. The link DHW systems option'
-      H(22)='allows you to define additional DHW use beyond what is'
-      H(23)='assumed in the zone activity schedules.'
-      H(24)=' '
-      H(25)='Each zone in the model must be assigned with one of the'
-      H(26)='standard room activity profiles. Regardless of what'
-      H(27)='was defined in the original model, standard profiles of'
-      H(28)='occupancy, lighting and small power will be imposed along'
-      H(29)='with assumptions about infiltration.'
-      H(30)=' '
-      H(31)='It is a GOOD IDEA to use the display current information'
-      H(32)='choice to review the current contents before proceeding'
-      H(33)='to the `setting up required models` stage. '
-      H(34)=' '
-      H(35)='Facade surfaces in the model must be attributed for their'
-      H(36)='USE e.g. WINDOW DISPLAY prior to setting up the models.'
-      H(37)='It is recommended that you FIRST define the information'
-      H(38)='in the first three menu items (to register the model as'
-      H(39)='being used for code assessments and THEN return to the'
-      H(40)='zone attribution menu and define the surface USE'
-      H(41)='attributes (only certain USE types are allowed). '
-      H(42)=' '
-      H(43)='It is a good idea to back up your model after you have'
-      H(44)='setup the required models. '
+ 222  helptopic='ncm_user_inputs'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Make high level menu asking for different parts of UK NCM
       ITEMX(1) = 'Building, owner and certifier information'
@@ -903,7 +770,7 @@ C      ITEMX(14)= 'Proceed with setting up required models '
 C      ITEMX(15)= 'Run required assessments '
       IX=1
       CALL EPICKS(IX,KSTR,' ','Define UK NCM data',
-     &  50,13,ITEMX,'Define UK NCM data',IER,44)
+     &  50,13,ITEMX,'Define UK NCM data',IER,nbhelp)
       IF(KSTR(1).EQ.0)THEN
 
 C User did not pick anything. Save any changes in the NCM
@@ -921,10 +788,11 @@ C        call mksbem2
 
 C Enter building, owner and verifier information
         call edsbmbld()  ! edit the contact information
-        h(1)='You have been editing NCM data. If you want to save'
-        h(2)='recent changes in the model configuration say yes.'
+        helptopic='ncm_save_changes'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         dok=.true.
-        CALL ASKOK('Update NCM descriptions (see help)',' ',OK,dok,2)
+        CALL ASKOK('Update NCM descriptions (see help)',' ',
+     &    OK,dok,nbhelp)
         if(ok)then
           call mksbem
           call emkcfg('-',IER) ! the cfg file holds this info
@@ -935,10 +803,11 @@ C Enter building, owner and verifier information
 
 C Enter energy assessor and additional building information
         call edsbmassor()
-        h(1)='You have been editing NCM data. If you want to save'
-        h(2)='recent changes say yes. '
+        helptopic='ncm_save_changes'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         dok=.true.
-        CALL ASKOK('Update NCM descriptions (see help)',' ',OK,dok,2)
+        CALL ASKOK('Update NCM descriptions (see help)',' ',
+     &    OK,dok,nbhelp)
         if(ok) call mksbem
         goto 222  ! see what the user wants to do next
 
@@ -946,10 +815,11 @@ C Enter energy assessor and additional building information
 
 C Enter building regulations to be used
         call edsbmregs()
-        h(1)='You have been editing NCM data. If you want to save'
-        h(2)='recent changes say yes. '
+        helptopic='ncm_save_changes'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         dok=.true.
-        CALL ASKOK('Update NCM descriptions (see help)',' ',OK,dok,2)
+        CALL ASKOK('Update NCM descriptions (see help)',' ',
+     &    OK,dok,nbhelp)
         if(ok) call mksbem
         goto 222  ! see what the user wants to do next
 
@@ -957,10 +827,11 @@ C Enter building regulations to be used
 
 C Edit HVAC and system information
         call edsbmsys()
-        h(1)='You have been editing NCM data. If you want to save'
-        h(2)='recent changes say yes. '
+        helptopic='ncm_save_changes'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         dok=.true.
-        CALL ASKOK('Update NCM descriptions (see help)',' ',OK,dok,2)
+        CALL ASKOK('Update NCM descriptions (see help)',' ',
+     &    OK,dok,nbhelp)
         if(ok) call mksbem
         goto 222  ! see what the user wants to do next
 
@@ -978,27 +849,29 @@ C Define DHW systems
         ITEMH(NDHWSYS+4)='- exit'
         NITEMH=NDHWSYS+4
         CALL EMENU('DHW systems defined',ITEMH,NITEMH,IDO)
+        helptopic='ncm_no_help_yet'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IF(IDO.EQ.NITEMH-1)THEN
-          CALL PHELPD('DHW help not defined (yet)',2,'-',0,0,IER)
+          CALL PHELPD('DHW help not defined (yet)',nbhelp,'-',0,0,IER)
         ELSEIF(IDO.EQ.NITEMH-2)THEN
           JC=0
           CALL EASKABC('Choose option',' ',
-     &         'add','delete','cancel',JC,2)
+     &         'add','delete','cancel',JC,nbhelp)
 
 C Add new DHW system
           IF(JC.EQ.1)THEN
             NDHWSYS=NDHWSYS+1
             DHWNAME(NDHWSYS)=' new DHW generator '
             CALL EASKS(DHWNAME(NDHWSYS),'DHW system name',
-     &        '(<30 characters)',30,D64,'DHW sys name',IER,1)
+     &        '(<30 characters)',30,D64,'DHW sys name',IER,nbhelp)
             IY=1
             KSYS(1)=0
  909        CALL EPICKS(IY,KSYS,' ','Select DHW system type',
-     &        25,MDW,DHWGEN,'system types',IER,2)
+     &        25,MDW,DHWGEN,'system types',IER,nbhelp)
             IF(KSYS(1).EQ.0)GOTO 909
             IDHWS(NDHWSYS)=KSYS(1)
             CALL EASKABC('Was the DHW generator built before 1998',
-     &        ' ','yes','no','Do not know',IW,2)
+     &        ' ','yes','no','Do not know',IW,nbhelp)
             IF(IW.EQ.1.or.iw.eq.3)THEN
               HWEF(NDHWSYS)=DHWEFF(MDW,1)
             ELSE
@@ -1006,7 +879,7 @@ C Add new DHW system
             ENDIF
             CALL EASKR(HWEF(NDHWSYS),
      &        'Enter system efficiency or accept default',' ',
-     &        0.,'F',0.,'-',10.,'DHW gen eff ',IER,2)
+     &        0.,'F',0.,'-',10.,'DHW gen eff ',IER,nbhelp)
             ITEMS(1)='natural gas                      '
             ITEMS(2)='LPG                              '
             ITEMS(3)='Biogas                           '
@@ -1020,7 +893,7 @@ C Add new DHW system
             JSTR(1)=0
  910        CALL EPICKS(IDA,JSTR,
      &      ' ','Choose fuel type for DHW generator',
-     &      30,8,ITEMS,'Choose fuel type for DHW generator',IER,2)
+     &      30,8,ITEMS,'Choose fuel type for DHW generator',IER,nbhelp)
             IF(JSTR(1).EQ.0)GOTO 910
 
 C Hold same fuel type indices as found for heating/cooling HVAC systems
@@ -1045,55 +918,55 @@ C Add storage and loop information (only if not instantaneous heater)
               DHWSPD(NDHWSYS,5)=0.0
             ELSE
               IDHWSS(NDHWSYS)=0
-            CALL EASKABC('Is there a water storage system',
-     &      ' ','yes','no','Do not know',IDL,2)
-            IF(IDL.EQ.1)THEN
+              CALL EASKABC('Is there a water storage system',
+     &        ' ','yes','no','Do not know',IDL,nbhelp)
+              IF(IDL.EQ.1)THEN
                 IDHWSS(NDHWSYS)=1
-              CALL EASKABC('Which of the following do you know',
-     &        '(Choose volume if you know both) ',
-     &        'Storage volume (lit)','Storage losses (MJ/month)',
-     &        'Do not know either',IDM,2)
+                CALL EASKABC('Which of the following do you know',
+     &            '(Choose volume if you know both) ',
+     &            'Storage volume (lit)','Storage losses (MJ/month)',
+     &            'Do not know either',IDM,nbhelp)
                 DHWSPD(NDHWSYS,1)=0.0
                 DHWSPD(NDHWSYS,2)=0.0
                 DHWSPD(NDHWSYS,3)=0.0
                 DHWSPD(NDHWSYS,4)=0.0
                 DHWSPD(NDHWSYS,5)=0.0
-              IF(IDM.EQ.1)THEN
+                IF(IDM.EQ.1)THEN
                   CALL EASKR(DHWSPD(NDHWSYS,1),
-     &          'Enter system volume (litres)',' ',
-     &          0.,'F',1000.,'-',100.,'DHW capacity ',IER,2)
-              ELSEIF(IDM.EQ.2)THEN
+     &              'Enter system volume (litres)',' ',
+     &              0.,'F',1000.,'-',100.,'DHW capacity ',IER,nbhelp)
+                ELSEIF(IDM.EQ.2)THEN
                   CALL EASKR(DHWSPD(NDHWSYS,2),
-     &          'Enter system losses (MJ/month)',' ',
-     &          0.,'F',1000000.,'-',10000.,'DHW capacity ',IER,2)
-              ENDIF
-              CALL EASKABC('Is there a water circulation loop',
-     &        ' ','yes','no','Do not know',IDN,2)
-              IF(IDN.EQ.1)THEN
+     &              'Enter system losses (MJ/month)',' ',0.,
+     &              'F',1000000.,'-',10000.,'DHW capacity ',IER,nbhelp)
+                ENDIF
+                CALL EASKABC('Is there a water circulation loop',
+     &            ' ','yes','no','Do not know',IDN,nbhelp)
+                IF(IDN.EQ.1)THEN
                   IDHWSS(NDHWSYS)=2
-                CALL EASKAB('Do you know circulation losses (W/m)',
-     &          ' ','yes','no',IDO,2)
-                IF(IDO.EQ.1)THEN
+                  CALL EASKAB('Do you know circulation losses (W/m)',
+     &              ' ','yes','no',IDO,nbhelp)
+                  IF(IDO.EQ.1)THEN
                     CALL EASKR(DHWSPD(NDHWSYS,3),
-     &            'Enter circulation losses (W/m)',' ',
-     &            0.,'F',10.,'-',50.,'DHW circ loss',IER,2)
-                ENDIF
-                CALL EASKAB('Do you know pump power (kW)',
-     &          ' ','yes','no',IDP,2)
-                IF(IDP.EQ.1)THEN
+     &                'Enter circulation losses (W/m)',' ',
+     &                0.,'F',10.,'-',50.,'DHW circ loss',IER,nbhelp)
+                  ENDIF
+                  CALL EASKAB('Do you know pump power (kW)',
+     &              ' ','yes','no',IDP,nbhelp)
+                  IF(IDP.EQ.1)THEN
                     CALL EASKR(DHWSPD(NDHWSYS,4),
-     &            'Enter pump power (kW)',' ',
-     &            0.,'F',10.,'-',10.,'DHW pump power ',IER,2)
-                ENDIF
-                CALL EASKAB('Do you know loop length (m)',
-     &          ' ','yes','no',IDQ,2)
-                IF(IDQ.EQ.1)THEN
+     &                'Enter pump power (kW)',' ',
+     &                0.,'F',10.,'-',10.,'DHW pump power ',IER,nbhelp)
+                  ENDIF
+                  CALL EASKAB('Do you know loop length (m)',
+     &            ' ','yes','no',IDQ,nbhelp)
+                  IF(IDQ.EQ.1)THEN
                     CALL EASKR(DHWSPD(NDHWSYS,5),
-     &            'Enter loop length (m)',' ',
-     &            0.,'F',10000.,'-',1000.,'DHW loop length ',IER,2)
+     &              'Enter loop length (m)',' ',0.,
+     &              'F',10000.,'-',1000.,'DHW loop length ',IER,nbhelp)
+                  ENDIF
                 ENDIF
               ENDIF
-            ENDIF
             ENDIF
 
 C Delete existing system
@@ -1102,7 +975,7 @@ C Delete existing system
             JSTR(1)=0
  911        CALL EPICKS(IDA,JSTR,
      &        ' ','Choose DHW generator to delete',
-     &        30,8,DHWNAME,'Choose DHW generator to delete',IER,2)
+     &        30,8,DHWNAME,'Choose DHW generator to delete',IER,nbhelp)
             IF(JSTR(1).EQ.0)GOTO 911
             IF(JSTR(1).NE.0)THEN
               NDHWSYS=NDHWSYS-1
@@ -1119,23 +992,23 @@ C Edit existing DHW system
         ELSEIF(IDO.GE.1.AND.IDO.LE.NDHWSYS)THEN
           IDHWSYS=IDO
           CALL EASKS(DHWNAME(IDHWSYS),'DHW system name',
-     &      '(<30 characters)',30,D64,'DHW sys name',IER,1)
+     &      '(<30 characters)',30,D64,'DHW sys name',IER,nbhelp)
           IY=1
           KSYS(1)=IDHWS(IDHWSYS)
  912      CALL EPICKS(IY,KSYS,' ','Select DHW system type',
-     &    25,MDW,DHWGEN,'system types',IER,2)
+     &      25,MDW,DHWGEN,'system types',IER,nbhelp)
           IF(KSYS(1).EQ.0)GOTO 912
           IDHWS(IDHWSYS)=KSYS(1)
           CALL EASKABC('Was the DHW generator built before 1998',
-     &      ' ','yes','no','Do not know',IW,2)
+     &      ' ','yes','no','Do not know',IW,nbhelp)
           IF(IW.EQ.1)THEN
             HWEF(IDHWSYS)=DHWEFF(MDW,1)
           ELSE
             HWEF(IDHWSYS)=DHWEFF(MDW,2)
           ENDIF
           CALL EASKR(HWEF(IDHWSYS),
-     &    'Enter DHW system efficiency or accept previous'
-     &    ,' ',0.,'F',0.,'-',10.,'DHW gen eff ',IER,2)
+     &      'Enter DHW system efficiency or accept previous',
+     &      ' ',0.,'F',0.,'-',10.,'DHW gen eff ',IER,nbhelp)
           ITEMS(1)='natural gas                   '
           ITEMS(2)='LPG                           '
           ITEMS(3)='Biogas                        '
@@ -1148,8 +1021,8 @@ C Edit existing DHW system
           IDA=1
           JSTR(1)=IDHFL(IDHWSYS)
  913      CALL EPICKS(IDA,JSTR,
-     &    ' ','Choose fuel type for DHW generator',
-     &    30,8,ITEMS,'Choose fuel type for DHW generator',IER,2)
+     &      ' ','Choose fuel type for DHW generator',
+     &      30,8,ITEMS,'Choose fuel type for DHW generator',IER,nbhelp)
           IF(JSTR(1).EQ.0)GOTO 913
 
 C Hold same fuel type indices as found for heating/cooling HVAC systems
@@ -1167,13 +1040,13 @@ C Hold same fuel type indices as found for heating/cooling HVAC systems
 C Add storage and loop information
           IDHWSS(IDHWSYS)=0
           CALL EASKABC('Is there a water storage system',
-     &    ' ','yes','no','Do not know',IDL,2)
+     &      ' ','yes','no','Do not know',IDL,nbhelp)
           IF(IDL.EQ.1)THEN
             IDHWSS(IDHWSYS)=1
             CALL EASKABC('Which of the following do you know',
-     &      '(Choose volume if you know both) ',
-     &      'Storage volume (lit)','Storage losses (MJ/month)',
-     &      'Do not know either',IDM,2)
+     &        '(Choose volume if you know both) ',
+     &        'Storage volume (lit)','Storage losses (MJ/month)',
+     &        'Do not know either',IDM,nbhelp)
             DHWSPD(IDHWSYS,1)=0.0
             DHWSPD(IDHWSYS,2)=0.0
             DHWSPD(IDHWSYS,3)=0.0
@@ -1181,47 +1054,48 @@ C Add storage and loop information
             DHWSPD(IDHWSYS,5)=0.0
             IF(IDM.EQ.1)THEN
               CALL EASKR(DHWSPD(IDHWSYS,1),
-     &        'Enter system volume (litres)'
-     &        ,' ',0.,'F',1000.,'-',100.,'DHW capacity ',IER,2)
+     &          'Enter system volume (litres)',
+     &          ' ',0.,'F',1000.,'-',100.,'DHW capacity ',IER,nbhelp)
             ELSEIF(IDM.EQ.2)THEN
               CALL EASKR(DHWSPD(IDHWSYS,2),
-     &        'Enter system losses (MJ/month)'
-     &        ,' ',0.,'F',1000000.,'-',10000.,'DHW capacity ',IER,2)
+     &          'Enter system losses (MJ/month)',' ',0.,
+     &          'F',1000000.,'-',10000.,'DHW capacity ',IER,nbhelp)
             ENDIF
             CALL EASKABC('Is there a water circulation loop',
-     &      ' ','yes','no','Do not know',IDN,2)
+     &        ' ','yes','no','Do not know',IDN,nbhelp)
             IF(IDN.EQ.1)THEN
               IDHWSS(IDHWSYS)=2
               CALL EASKAB('Do you know circulation losses (W/m)',
-     &        ' ','yes','no',IDO,2)
+     &          ' ','yes','no',IDO,nbhelp)
               IF(IDO.EQ.1)THEN
                 CALL EASKR(DHWSPD(IDHWSYS,3),
-     &          'Enter circulation losses (W/m)'
-     &          ,' ',0.,'F',10.,'-',50.,'DHW circ loss',IER,2)
+     &            'Enter circulation losses (W/m)',' ',0.,
+     &            'F',10.,'-',50.,'DHW circ loss',IER,nbhelp)
               ENDIF
               CALL EASKAB('Do you know pump power (kW)',
-     &        ' ','yes','no',IDP,2)
+     &          ' ','yes','no',IDP,nbhelp)
               IF(IDP.EQ.1)THEN
                 CALL EASKR(DHWSPD(IDHWSYS,4),
-     &          'Enter pump power (kW)'
-     &          ,' ',0.,'F',10.,'-',10.,'DHW pump power ',IER,2)
+     &            'Enter pump power (kW)',' ',0.,
+     &            'F',10.,'-',10.,'DHW pump power ',IER,nbhelp)
               ENDIF
               CALL EASKAB('Do you know loop length (m)',
-     &        ' ','yes','no',IDQ,2)
+     &          ' ','yes','no',IDQ,nbhelp)
               IF(IDQ.EQ.1)THEN
                 CALL EASKR(DHWSPD(IDHWSYS,5),
-     &          'Enter loop length (m)'
-     &          ,' ',0.,'F',10000.,'-',1000.,'DHW loop length ',IER,2)
+     &            'Enter loop length (m)',' ',0.,
+     &            'F',10000.,'-',1000.,'DHW loop length ',IER,nbhelp)
               ENDIF
             ENDIF
           ENDIF
         ENDIF
         IF(IDO.NE.NITEMH)GOTO 207
 
-        h(1)='You have been editing NCM data. If you want to save'
-        h(2)='recent changes say yes. '
+        helptopic='ncm_save_changes'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         dok=.true.
-        CALL ASKOK('Update NCM descriptions (see help)',' ',OK,dok,2)
+        CALL ASKOK('Update NCM descriptions (see help)',' ',
+     &    OK,dok,nbhelp)
         if(ok) call mksbem
         goto 222  ! see what the user wants to do next
 
@@ -1249,13 +1123,15 @@ C If no zones specified in model advise user and go back to menu
      &       ' is linked to system number ',IHLZ(IZ),TMPSTR
             CALL EDISP(IUOUT,OUTS)
  102      CONTINUE
+          helptopic='ncm_link_hvac_zone'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           DO 402 IZ=1,NCOMP
             IA=1
             WRITE(OUTS,'(2A)')'Choose HVAC system for zone ',
      &      zname(IZ)(1:lnzname(IZ))
             JSTR(1)=0
  914        CALL EPICKS(IA,JSTR,' ','Link zones to HVAC systems',
-     &      70,NCMSYS+1,HSYSNM,OUTS(1:40),IER,2)
+     &      70,NCMSYS+1,HSYSNM,OUTS(1:40),IER,nbhelp)
             IF(JSTR(1).EQ.0)GOTO 914
             IHLZ(IZ)=JSTR(1)-1
  402      CONTINUE
@@ -1294,13 +1170,15 @@ C Link DHW systems and zones
      &       ABS(IDHWLZ(IZ)),TMPSTR
             CALL EDISP(IUOUT,OUTS)
  109      CONTINUE
+          helptopic='ncm_link_dhw_zone'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           DO 404 IZ=1,NCOMP
             IA=1
             WRITE(OUTS,'(2A)')'Choose DHW system for zone ',
      &      zname(IZ)(1:lnzname(IZ))
             JSTR(1)=0
             CALL EPICKS(IA,JSTR,' ','Link zones to DHW systems',
-     &      70,NDHWSYS+2,HSYSNM,OUTS(1:44),IER,2)
+     &        70,NDHWSYS+2,HSYSNM,OUTS(1:44),IER,nbhelp)
             IF(JSTR(1).EQ.0)GOTO 404
             IF(JSTR(1).EQ.1)THEN
               IDHWLZ(IZ)=0
@@ -1309,8 +1187,8 @@ C Link DHW systems and zones
                 IA=1
                 KSYS(1)=0
  916            CALL EPICKS(IA,KSYS,' ',
-     &          'Link zones-HVAC systems for DHW',30,NCMSYS,HVACNAME,
-     &          'Link zones-HVAC systems for DHW',IER,2)
+     &            'Link zones-HVAC systems for DHW',30,NCMSYS,HVACNAME,
+     &            'Link zones-HVAC systems for DHW',IER,nbhelp)
                 IF(KSYS(1).EQ.0)GOTO 916
                 IDHWLZ(IZ)=-KSYS(1)
               ELSE
@@ -1322,7 +1200,7 @@ C Link DHW systems and zones
           CALL EASKR(DEADLEG(IZ),
      &    'Enter dead leg length of water draw off point'
      &    ,'(average if more than one draw off points) ',0.,'F',10.,
-     &    '-',10.,'DHW gen eff ',IER,2)
+     &    '-',10.,'DHW gen eff ',IER,nbhelp)
  404      CONTINUE
         ENDIF
         goto 222  ! see what the user wants to do next
@@ -1333,6 +1211,8 @@ C Link activity types and zones. Loop through all of the activities
 C which are associated with this building type and make up a list
 C to present to the user. Remember the IAT index for each of the
 C selections via the array
+        helptopic='ncm_link_use_zone'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IF(IBUSERTYP.NE.0)THEN
           call lstncm('o',iuout)  ! first list current activities
           DO 140 IZ=1,NCOMP
@@ -1348,7 +1228,7 @@ C selections via the array
      &      zname(IZ)(1:lnzname(IZ))
             IX=1
             CALL EPICKS(IX,KSYS,' ',OUTS(1:LNBLNK(OUTS)),
-     &      40,ICAC,ITEMS,OUTS(1:LNBLNK(OUTS)),IER,2)
+     &        40,ICAC,ITEMS,OUTS(1:LNBLNK(OUTS)),IER,nbhelp)
 
 C Save the string describing the activity into trymatch.
             mainactivity=KSYS(1)
@@ -1375,16 +1255,17 @@ C with tdf). Also set iactytyp to itemfromactivity (i.e.1-65)
      &              roomactname(iat)(1:lnblnk(roomactname(iat)))
                   CALL EDISP(IUOUT,OUTS)
                   goto 151
-              endif
+                endif
               endif
  150        CONTINUE
  151        continue
  140      CONTINUE
 
-          h(1)='You have been editing NCM data. If you want to save'
-          h(2)='recent changes say yes. '
+          helptopic='ncm_save_changes'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           dok=.true.
-          CALL ASKOK('Update NCM descriptions (see help)',' ',OK,dok,2)
+          CALL ASKOK('Update NCM descriptions (see help)',' ',
+     &      OK,dok,nbhelp)
           if(ok) call mksbem
         ELSE
           CALL EDISP(IUOUT,'Define building type first')
@@ -1395,6 +1276,8 @@ C with tdf). Also set iactytyp to itemfromactivity (i.e.1-65)
         ISaveChanges=0
 
 C Link lighting systems with zones
+        helptopic='ncm_link_lighting_zone'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         DO 160 IZ=1,NCOMP
           CALL EDISP(IUOUT,' ')
           IF(ILIGHTUSER(IZ).EQ.1)THEN
@@ -1406,12 +1289,14 @@ C Link lighting systems with zones
             CALL EDISP(IUOUT,TLIGHT(ILITYP(iz)))
           ENDIF
           ILIGHTUSER(IZ)=0
+
+C << Something is wrong about passed parameter in this call. >>
           CALL EASKABC(
      &      'Options for defining lighting heat gains for zone:',
      &      zname(IZ)(1:lnzname(IZ)),
      &      'user defined W/m2 per 100 lux','pick from list',
      &      'do not modify at this time',
-     &      Iwaylight,2)
+     &      Iwaylight,nbhelp)
           IF(Iwaylight.EQ.1)THEN
 
 C flag needed for the casual.F to account for lighting gains
@@ -1421,18 +1306,18 @@ C depending on the way they are specified by the user.
             ISaveChanges=1
             
 C If users pick this then they have to demonstrate that this
-C value is a realistic one
+C value is a realistic one.  
             light_input_watt=LIGHTWATTAGE(IZ)
             CALL EASKR(light_input_watt,
      &   'Lighting gains W/m^2 per 100 lux (assume 100% on) for zone:',
      &      zname(IZ)(1:lnzname(IZ)),0.,'F',3.75,'-',
-     &      LIGHTWATTAGE(IZ),'light heat gains ',IER,2)
+     &      LIGHTWATTAGE(IZ),'light heat gains ',IER,nbhelp)
             LIGHTWATTAGE(IZ)=light_input_watt
           ELSEIF(Iwaylight.EQ.2)THEN
             WRITE(OUTS,'(2A)')'Choose lighting for zone ',
      &      zname(IZ)(1:lnzname(IZ))
             CALL EPICKS(IY,LSYS,' ',OUTS(1:LNBLNK(OUTS)),
-     &        70,MILS,TLIGHT,OUTS(1:LNBLNK(OUTS)),IER,2)
+     &        70,MILS,TLIGHT,OUTS(1:LNBLNK(OUTS)),IER,nbhelp)
             ILITYP(IZ)=LSYS(1)
             ISaveChanges=1
           ELSEIF(Iwaylight.EQ.3)THEN
@@ -1457,7 +1342,7 @@ C control types
             CALL EASKABCD('Choose lighting control type for',
      &      zname(IZ)(1:lnzname(IZ)),
      &      'Local manual switching ','Photoelectric control',
-     &      'Both','No control',Ilightcontrol(iz),2)
+     &      'Both','No control',Ilightcontrol(iz),nbehlp)
 
 C If photoelectric control then ask whether switching or dimming
             if(Ilightcontrol(iz).eq.2.or.Ilightcontrol(iz).eq.3)then
@@ -1472,17 +1357,14 @@ C If photoelectric control then ask whether switching or dimming
 
               Ipe_control(iz)=0
               CALL EASKAB('Type of photoelectric control in zone',
-     &        zname(IZ)(1:lnzname(IZ)),
-     &        'Switching','Dimming',Ipe_control(iz),2)
+     &          zname(IZ)(1:lnzname(IZ)),
+     &          'Switching','Dimming',Ipe_control(iz),nbhelp)
               Ipe_sensor=0
               CALL EASKAB('Type of photoelectric control sensor',
-     &        zname(IZ)(1:lnzname(IZ)),
-     &        'Standalone','Addresable',Ipe_sensor,2)
+     &          zname(IZ)(1:lnzname(IZ)),
+     &          'Standalone','Addresable',Ipe_sensor,nbhelp)
 
 C Confirm front sensor or front and back sensor.
-              h(1)='Photoelectric controls are based on one sensor at'
-              h(2)='the front of the room or front and back sensors '
-              h(3)='in the room. '
               IF(Idaylightzoning(iz).EQ.1)THEN
                 outs='Currently there is a front of room sensor'
               ELSEIF(Idaylightzoning(iz).EQ.2)THEN
@@ -1496,7 +1378,7 @@ C Confirm front sensor or front and back sensor.
               CALL EASKABC('Choose lighting sensor location for',
      &          zname(IZ)(1:lnzname(IZ)),
      &          'Front of room','Front and back of room',
-     &          'continue',ivalue,3)
+     &          'continue',ivalue,nbhelp)
               if(ivalue.eq.1.or.ivalue.eq.2)then
                 Idaylightzoning(iz)=ivalue
               endif
@@ -1513,13 +1395,10 @@ C Confirm photoelectric sensor parasitic power W/m2
               ELSEIF(Ipe_sensor.EQ.2)THEN
                 PE_sensor_PP(iz)=0.57
               ENDIF
-              h(1)='If you selected a standalone sensor then parasitic'
-              h(2)='power is assumed to be 0.3W/m2. If the sensor is '
-              h(3)='addressable (advanced) the PP is assumed to be 0.57'
-              h(4)='W/m2. If you have other data please supply it now. '
               CALL EASKR(PE_sensor_PP(iz),
-     &        'Confirm photo-electric sensor parasitic power',
-     &        ' ',0.,'-',0.,'-',10.,'sensor parasitic power',IER,4)
+     &          'Confirm photo-electric sensor parasitic power',
+     &          ' ',0.,'-',0.,'-',10.,'sensor parasitic power',
+     &          IER,nbhelp)
             else
 
 C Set sensor parasitic power to zero
@@ -1548,30 +1427,11 @@ C Ask for occupancy sensing
               OUTS='Currently NONE'
             ENDIF
             CALL EDISP(IUOUT,OUTS)
-            h(1)='This is equivalent to the choices offered by the UK'
-            h(2)='iSBEM application which is minimally documented in'
-            h(3)='the UK SBEM technical manual table 20. Your choice'
-            h(4)='will set an occupancy modifier which is used in '
-            h(5)='the control.  '
-            h(6)=' '
-            h(7)='For systems without automatic presence or absence '
-            h(8)='detection the following options are allowed: '
-            h(9) =' Manual on/off switching  Foc=1.0 '
-            h(10)=' Manual on/off switching with additional automatic'
-            h(11)='   sweeping extinction signal  Foc=0.95'
-            h(12)=' '
-            h(13)='For systems with automatic presence and/or abscence'
-            h(14)='detection the following options are allowed: '
-            h(15)=' '
-            h(16)=' Auto On with dimming on absence   Foc=0.95'
-            h(17)=' Auto On with off on absence       Foc=0.90'
-            h(18)=' Manual On with dimming on absence Foc=0.90'
-            h(19)=' Manual On with off on absence     Foc=0.82'
             CALL EASKATOG(
      &      'Is there occupancy sensing in zone',
      &      zname(iz)(1:lnzname(IZ)),'MAN-ON-OFF+EXT','AUTO-ON-DIMMED',
      &      'AUTO-ON-OFF','MAN-ON-DIMMED','MAN-ON-AUTO-OFF','NONE',
-     &      ' ',IOcc_sensing(iz),19)
+     &      ' ',IOcc_sensing(iz),nbhelp)
 
 C Confirm occupancy sensor parasitic power W/m2
             if(IOcc_sensing(iz).ne.6)then
@@ -1580,8 +1440,9 @@ C Confirm occupancy sensor parasitic power W/m2
               call edisp(iuout,outs)
               Occ_sensor_PP(iz)=0.3
               CALL EASKR(Occ_sensor_PP(iz),
-     &        'Confirm occupancy sensor parasitic power',
-     &        ' ',0.,'-',0.,'-',10.,'sensor parasitic power',IER,2)
+     &          'Confirm occupancy sensor parasitic power',
+     &          ' ',0.,'-',0.,'-',10.,'sensor parasitic power',
+     &          IER,nbhelp)
             else
               Occ_sensor_PP(iz)=0.0
             endif
@@ -1612,10 +1473,11 @@ C          write(6,*)vert_glz,horz_glz,zonetotsurfacearea(IZ)
           DFRear(IZ) =0.25*DF
  160    CONTINUE
         if(ISaveChanges.ne.0)then
-          h(1)='You have been editing NCM data. If you want to save'
-          h(2)='recent changes say yes. '
+          helptopic='ncm_save_changes'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           dok=.true.
-          CALL ASKOK('Update NCM descriptions (see help)',' ',OK,dok,2)
+          CALL ASKOK('Update NCM descriptions (see help)',' ',
+     &      OK,dok,nbhelp)
           if(ok) call mksbem
         endif
         goto 222  ! see what the user wants to do next
@@ -1651,12 +1513,10 @@ C                2 = % of building space heating demand supplied
 C                3 = % of DHW supplied
 C                4 = CHP heat to power ratio
 C                5 = fuel type index
-        H(1) ='You can add renewable energy in this menu'
-        H(2) =' '
-        H(3) =' '
-        H(4) =' '
-        H(5) =' '
-        H(6) =' '
+
+C Help has not yet been done for this topic.
+        helptopic='ncm_no_ren_help_yet'
+        call gethelptext(helpinsub,helptopic,nbhelp)
  1584   INN=-1
         IADD=0
         IDEL=0
@@ -1673,7 +1533,7 @@ C                5 = fuel type index
         CALL EMENU('Renewables',ITEMZ,nitms,INN)
         IF(INN.LE.NREN.AND.INN.GE.1)THEN
           dok=.false.
-          CALL ASKOK('Edit this component?',' ',OK,dok,6)
+          CALL ASKOK('Edit this component?',' ',OK,dok,nbhelp)
           IF(OK)THEN
             IED=INN
           ENDIF
@@ -1682,14 +1542,15 @@ C                5 = fuel type index
         ELSEIF(INN.EQ.NREN+2)THEN
           CALL EDISP(IUOUT,'Information display not available yet')
         ELSEIF(INN.EQ.NREN+3)THEN
-          CALL EASKABC('Choose action',' ','add','delete','cancel',IA,6)
+          CALL EASKABC('Choose action',' ','add','delete','cancel',
+     &      IA,nbhelp)
           IF(IA.EQ.1)THEN
             IADD=1
           ELSEIF(IA.EQ.2)THEN
             IDEL=1
           ENDIF
         ELSEIF(INN.EQ.NREN+4)THEN
-          CALL PHELPD('Renewables help',6,'-',0,0,IER)
+          CALL PHELPD('Renewables help',nbhelp,'-',0,0,IER)
         ENDIF
 
 C Delete renewable systems
@@ -1718,19 +1579,19 @@ C Add/edit renewable systems
             RENNAME(INDEX)=' '
             D24=' '
             CALL EASKS(RENNAME(INDEX),'Name of renewable energy system',
-     &        '(<24 characters)',24,D24,'RENNAME',IER,6)
+     &        '(<24 characters)',24,D24,'RENNAME',IER,nbhelp)
           ELSEIF(IED.GT.0)THEN
             INDEX=IED
             D24=RENNAME(INDEX)
             CALL EASKS(RENNAME(INDEX),'Name of renewable energy system',
-     &        '(<24 characters)',24,D24,'RENNAME',IER,6)
+     &        '(<24 characters)',24,D24,'RENNAME',IER,nbhelp)
           ENDIF
           IDNO=0 ; IB=0
           call MENUATOL('Choose renewable energy system',
-     &    'Choose renewable energy system',
-     &    'a solar thermal (for DHW)','b solar PV',
-     &    'c wind turbine','d combined heat and power',' ',' ',
-     &    ' ',' ',' ',' ',' ',' ',IB,idno,6)
+     &      'Choose renewable energy system',
+     &      'a solar thermal (for DHW)','b solar PV',
+     &      'c wind turbine','d combined heat and power',' ',' ',
+     &      ' ',' ',' ',' ',' ',' ',IB,idno,nbhelp)
           IF(IB.EQ.1)THEN
 
 C Solar thermal collectors
@@ -1751,27 +1612,29 @@ C Solar thermal collectors
               IX=1
               CALL EPICKS(IX,LSTR,'Choose which DHW system ',
      &          'to link with this thermal collector',
-     &          30,NDHWSYS,DHWNAME,'Choose DHW system',IER,6)
+     &          30,NDHWSYS,DHWNAME,'Choose DHW system',IER,nbhelp)
               RENDATA(INDEX,1)=REAL(LSTR(1))
             ENDIF
             CALL EASKR(RENDATA(INDEX,2),
      &        'Enter area in m2 of collector',
-     &        ' ',0.,'-',0.,'-',10.,'collector area ',IER,6)
+     &        ' ',0.,'-',0.,'-',10.,'collector area ',IER,nbhelp)
             CALL EASKR(RENDATA(INDEX,3),
      &        'Enter orientation of collector (degrees from North)',
-     &        ' ',0.,'-',0.,'-',360.,'collector orientation ',IER,6)
+     &        ' ',0.,'-',0.,'-',360.,'collector orientation ',
+     &        IER,nbhelp)
             CALL EASKR(RENDATA(INDEX,4),
      &        'Enter inclination of collector (90deg = vertical)',
-     &        ' ',0.,'-',0.,'-',90.,'collector inclination ',IER,6)
+     &        ' ',0.,'-',0.,'-',90.,'collector inclination ',
+     &        IER,nbhelp)
           ELSEIF(IB.EQ.2)THEN
 
 C Solar PV collectors
             NRENTYPE(INDEX)=2
             IE=0 ; IENO=0
             call MENUATOL('Choose PV type','Choose PV type',
-     &      'a mono-crystalline silicon','b poly-crystalline silicon',
-     &      'c amorphous silicon','d other thin films',' ',' ',
-     &      ' ',' ',' ',' ',' ',' ',IE,ieno,6)
+     &        'a mono-crystalline silicon','b poly-crystalline silicon',
+     &        'c amorphous silicon','d other thin films',' ',' ',
+     &        ' ',' ',' ',' ',' ',' ',IE,ieno,nbhelp)
 
 C Hold PV efficiency from table 26, page 80, SBEM technical manual
 C version 1 of 10-dec-07
@@ -1786,13 +1649,15 @@ C version 1 of 10-dec-07
             ENDIF
             CALL EASKR(RENDATA(INDEX,2),
      &        'Enter area in m2 of collector',
-     &        ' ',0.,'-',0.,'-',10.,'collector area ',IER,6)
+     &        ' ',0.,'-',0.,'-',10.,'collector area ',IER,nbhelp)
             CALL EASKR(RENDATA(INDEX,3),
      &        'Enter orientation of collector (degrees from North)',
-     &        ' ',0.,'-',0.,'-',360.,'collector orientation ',IER,6)
+     &        ' ',0.,'-',0.,'-',360.,'collector orientation ',
+     &        IER,nbhelp)
             CALL EASKR(RENDATA(INDEX,4),
      &        'Enter inclination of collector (90deg = vertical)',
-     &        ' ',0.,'-',0.,'-',90.,'collector inclination ',IER,6)
+     &        ' ',0.,'-',0.,'-',90.,'collector inclination ',
+     &        IER,nbhelp)
           ELSEIF(IB.EQ.3)THEN
 
 C Wind turbines
@@ -1811,36 +1676,36 @@ C Wind turbines
             CALL EDISP(IUOUT,' ')
             IE=0 ; IENO=0
             call MENUATOL('Choose terrain type',
-     &      'Choose terrain (see text feed back area) ',
-     &      'a type 1 (open)','b type 2 (farm land)',
-     &      'c type 3 (suburban etc)','d type 4 (urban)',' ',' ',
-     &      ' ',' ',' ',' ',' ',' ',IE,ieno,6)
+     &        'Choose terrain (see text feed back area) ',
+     &        'a type 1 (open)','b type 2 (farm land)',
+     &        'c type 3 (suburban etc)','d type 4 (urban)',' ',' ',
+     &        ' ',' ',' ',' ',' ',' ',IE,ieno,nbhelp)
             RENDATA(INDEX,1)=REAL(IE)
             CALL EASKR(RENDATA(INDEX,2),
      &        'Enter diameter of turbine (m)',' ',
-     &        0.,'-',0.,'-',10.,'turbine diameter',IER,6)
+     &        0.,'-',0.,'-',10.,'turbine diameter',IER,nbhelp)
             CALL EASKR(RENDATA(INDEX,3),
      &        'Enter hub height (m)',' ',
-     &        0.,'-',0.,'-',20.,'hub height',IER,6)
+     &        0.,'-',0.,'-',20.,'hub height',IER,nbhelp)
             CALL EASKR(RENDATA(INDEX,4),
      &        'Enter rated power (kW)',' ',
-     &        0.,'-',0.,'-',500.,'rated power',IER,6)
+     &        0.,'-',0.,'-',500.,'rated power',IER,nbhelp)
           ELSEIF(IB.EQ.4)THEN
             NRENTYPE(INDEX)=4
             CALL EASKR(RENDATA(INDEX,1),
      &        'Enter thermal seasonal efficiency of CHP unit (-)',
-     &        ' ',0.,'-',0.,'-',1.,'efficiency',IER,6)
+     &        ' ',0.,'-',0.,'-',1.,'efficiency',IER,nbhelp)
             CALL EASKR(RENDATA(INDEX,2),
      &        'Enter % of building space heating demand ',
      &        'supplied by CHP generator ',0.,'-',0.,'-',100.,
-     &        '% bldg demand ',IER,6)
+     &        '% bldg demand ',IER,nbhelp)
             CALL EASKR(RENDATA(INDEX,3),
      &        'Enter % of building DHW demand ',
      &        'supplied by CHP generator ',0.,'-',0.,'-',100.,
-     &        '% DHW demand ',IER,6)
+     &        '% DHW demand ',IER,nbhelp)
             CALL EASKR(RENDATA(INDEX,4),
      &        'Enter CHP heat to power ratio (-) ',
-     &        ' ',0.,'-',0.,'-',1.,'heat to power ratio ',IER,6)
+     &        ' ',0.,'-',0.,'-',1.,'heat to power ratio ',IER,nbhelp)
             ITEMS(1)='natural gas                   '
             ITEMS(2)='LPG                           '
             ITEMS(3)='Biogas                        '
@@ -1855,8 +1720,9 @@ C Wind turbines
             IDA=1
             JSTR(1)=0
  993        CALL EPICKS(IDA,JSTR,
-     &      ' ','Choose fuel type for CHP generator',
-     &      30,11,ITEMS,'Choose fuel type for CHP generator',IER,2)
+     &        ' ','Choose fuel type for CHP generator',
+     &        30,11,ITEMS,'Choose fuel type for CHP generator',
+     &        IER,nbhelp)
             IF(JSTR(1).EQ.0)GOTO 993
 
 C Synchronise with fuel types as defined in SBEM.db1
@@ -1871,11 +1737,10 @@ C Synchronise with fuel types as defined in SBEM.db1
 
 C Loop for the different available HVAC systems
         do 352 iavailsyst=1,NCMSYS
-          H(1)='Are there any controls for the specific HVAC system?'
-          H(2)='This is only used in the recommendations report for'
-          H(3)='EPC.'
+          helptopic='ncm_hvac_ctl_options'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKAB('Define controls for system: ',
-     &      HVACNAME(iavailsyst),'yes','no',IANSWER,3)
+     &      HVACNAME(iavailsyst),'yes','no',IANSWER,nbhelp)
           if(IANSWER.eq.1)then
 
 C Ask for systems controls
@@ -1884,16 +1749,10 @@ C Ask for systems controls
             Opt_NCM_CTL(3)='Local Time Control (i.e. room by room)  '
             Opt_NCM_CTL(4)='Local Temperature Control (room by room)'
             Opt_NCM_CTL(5)='Weather Compensation Control            '
-            H(1)='Select systems controls that apply to the specific'
-            H(2)='HVAC system. These are based on the HVAC Non-Domestic'
-            H(3)='guide. They are only used for the Energy Performance'
-            H(4)='Recommendations report and they are not currently '
-            H(5)='affecting the calculated values for the energy loads.'
-            H(6)='This is in accordance with iSBEM vers. 3.2b '
             IPICKS=5
             CALL EPICKS(IPICKS,iselected,' ',
      &       ' Controls (used only for EPC recommendations)?',40,5,
-     &       Opt_NCM_CTL,'controls list (see help)',IER,6)
+     &       Opt_NCM_CTL,'controls list (see help)',IER,nbhelp)
             do 351 i=1,IPICKS
               iSelFlag = iselected(i)
 
@@ -1909,7 +1768,7 @@ C << Need to initialise iRecControls
                   iRecControls(4,iavailsyst)=1
                 elseif(iSelFlag.eq.5)then
                   iRecControls(5,iavailsyst)=1
-              endif
+                endif
               endif
  351        continue
           endif
@@ -1920,25 +1779,15 @@ C << Need to initialise iRecControls
 
 C Configure stripped model to use the same assumptions for overheating
 C and for calculating Auxiliary energy as the assumptions for the notional building.
-        H(1)='This option is password protected because it is'
-        H(2)='only meant to be used for testing DSM against'
-        H(3)='requirements set accrediting the software. They'
-        H(4)='do not have any practical use. The differences'
-        H(5)='when this flag is set are related with overheating'
-        H(6)='and the calculation of the auxiliary energy.'
+        helptopic='ncm_testing_assumptions'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call easki(IPASS,' ','Password?',
-     &                            0,'-',0,'-',0,'password',ieri,6)
+     &    0,'-',0,'-',0,'password',ieri,nbhelp)
         if(IPASS.eq.101) then
           call tstamp('>','PRJ: set advanced flag for DSM testing')
 
-          H(1)='default 0: stripped does NOT follow the rules of '
-          H(2)='the notional/reference building.'
-          H(3)='if equal to 1: stripped follows the rules of the '
-          H(4)='notional building. '
-          H(5)='if equal to 2: stripped follows the rules of the '
-          H(6)='reference building. '
           call easki(iDsmTestingFlag,' ','DSM tests flag (see help)?',
-     &      0,'-',0,'-',iDsmTestingFlag,'flag',ieri,6)
+     &      0,'-',0,'-',iDsmTestingFlag,'flag',ieri,nbhelp)
         endif
         goto 222  ! see what the user wants to do next
 
@@ -1962,7 +1811,7 @@ C Display information
         goto 222  ! see what the user wants to do next
 
       ENDIF
-          return
+      return
 
       end
 
@@ -2354,8 +2203,6 @@ C EDSBMSYS edits the system definition within the UK NCM file.
 
       common/OUTIN/IUOUT,IUIN
       integer iuout,iuin
-      common/pophelp/h(60)
-      character h*72
 
       integer JC,IY,IIN  ! positions in menu
       integer ICMSYS,KSYS,ITHND,IHSYS,IHCG,ICS,ICNDX
@@ -2366,11 +2213,19 @@ C EDSBMSYS edits the system definition within the UK NCM file.
                        !mechanical extract/supply ventilation system
       integer nitEmH,IHO ! max items and current menu item
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='edsbmsys'  ! set for subroutine
+
 C Edit HVAC and system information after a display of current contents.
       call lstncm('s',iuout)
+
  205  IHO=-2
-      H(1)='Help text for adding UK NCM HVAC systems'
-      H(2)='This message still needs to be generated'
+      helptopic='ncm_sys_help_a'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       DO 201 ICMSYS=1,NCMSYS
         WRITE(ITEMH(ICMSYS),'(A,1X,A)')CHAR(96+ICMSYS),
      &    HVACNAME(ICMSYS)
@@ -2384,128 +2239,29 @@ C Edit HVAC and system information after a display of current contents.
       IF(IHO.EQ.NCMSYS+4)THEN
         return
       ELSEIF(IHO.EQ.NCMSYS+3)THEN
-        CALL PHELPD('NCM HVAC help',2,'-',0,0,IER)
+        CALL PHELPD('NCM HVAC help',nbhelp,'-',0,0,IER)
       ELSEIF(IHO.EQ.NCMSYS+2)THEN
         JC=0
-        CALL EASKABC('Choose option',' ','add','delete','cancel',JC,2)
+        CALL EASKABC('Choose option',' ','add','delete','cancel',
+     &    JC,nbhelp)
         IF(JC.EQ.1)THEN
 
 C Add HVAC and system information
           NCMSYS=NCMSYS+1
-          H(1) ='Choose the type of HVAC environment control system'
-          H(2) ='that satisfies / comes closest to your requirements'
-          H(3) ='(see section 7.6.2 of the iSBEM users guide). The'
-          H(4) ='available selections are summarized below: '
-          H(5) =' '
-          H(6) ='Central heating using water: radiators '
-          H(7) ='  Centrally generated heat with water distribution'
-          H(8) ='  using radiators in rooms. Natural vent assumed.'
-          H(9) =' '
-          H(10)='Central heating using water: convectors '
-          H(11) =' '
-          H(12)='  As above but using convectors in rooms.'
-          H(13)=' '
-          H(14)='Central heating using water: floor heating '
-          H(15)='  As above but with under floor heating.'
-          H(16)=' '
-          H(17)='Central heating with air distribution '
-          H(18)='  As above but with air distribution.'
-          H(19)=' '
-          H(20)='Other local room heater - fanned. Includes gas'
-          H(21)='  fires, gas convectors, direct electric heaters,'
-          H(22)='  electric storage (with fans). Large units should'
-          H(23)='  be treated as forced convection air heaters.'
-          H(24)=' '
-          H(25)='Other local room heater - unfanned. Includes gas'
-          H(26)='  fires, gas convectors, direct electric heaters,'
-          H(27)='  electric storage (w/o fans).'
-          H(28)=' '
-          H(29)='Unflued radiant heater - high temperature overhead'
-          H(30)='  radiant (electric or gas) without flue.'
-          H(31)=' '
-          H(32)='Flued radiant heater - high temperature overhead'
-          H(33)='  radiant (electric or gas) with flue.'
-          H(34)=' '
-          H(35)='Multi-burner radiant heaters - high temperature'
-          H(36)='  overhead gas units'
-          H(37)=' '
-          H(38)='Flued forced-convective air heaters - optional fan'
-          H(39)='  to assist combustion.'
-          H(40)=' '
-          H(41)='Unflued forced-convective air heaters - typically'
-          H(42)='  called direct gas heaters. Adequate ventilation'
-          H(43)='  must be provided.'
-          H(44)=' '
-          H(45)='continued... '
-          CALL PHELPD('SBEM HVAC choices',45,'-',0,0,IER)
-          H(1) ='Air based HVAC systems follow... '
-          H(2) =' '
-          H(3) ='Single-duct VAV - all air system where volume is'
-          H(4) ='  adjusted to match cooling load. Reheat optional.'
-          H(5) ='  Assumed to provide heating. Optional perimeter'
-          H(6) ='  heating.'
-          H(7) =' '
-          H(8) ='Dual-duct VAV - as above except separate hot and'
-          H(9) ='  cold air ducts.'
-          H(10)=' '
-          H(11)='Indoor packaged cabinet (VAV) - local cooling &'
-          H(12)='  heating units supplying to room or floor or'
-          H(13)='  ceiling voids. Optional locally varied recirc'
-          H(14)='  rate and electric top-up heating.'
-          H(15)=' '
-          H(16)='Fan coil system - local fanned terminal unit (in'
-          H(17)='  ceiling/on wall/on floor) with central chilled'
-          H(18)='  water. 2/3/4-pipe. Assumed to provide heating.'
-          H(19)=' '
-          H(20)='Induction system - high pressure central supply'
-          H(21)='  air with heating and cooling within terminal'
-          H(22)='  unit. 2/3/4-pipe. Assumed to provide heating.'
-          H(23)=' '
-          H(24)='Constant volume system with fixed fresh air - '
-          H(25)='  Fixed air volume units w/o terminal reheat.'
-          H(26)='  Assumed to provide heating.'
-          H(27)=' '
-          H(28)='Constant volume system with vairable fresh air -'
-          H(29)='  As above but with free cooling economiser.'
-          H(30)=' '
-          H(31)='Multizone hot deck/cold deck - central AHU with a'
-          H(32)='  single duct to each room. Provides heating.'
-          H(33)=' '
-          H(34)='Terminal reheat - Central chilled air supply with'
-          H(35)='  reheat at terminal. Assumed to provide heating'
-          H(36)='  and optional perimeter heating.'
-          H(37)=' '
-          H(38)='Dual duct (constant volume) - separate hot and '
-          H(39)='  cold air supplies locally mixed at each zone.'
-          H(40)='  Assumed to provide heat, optional perimeter.'
-          H(41)=' '
-          H(42)='Chilled ceilings or passive chilled beams - A '
-          H(43)='  combination of chilled ceiling or passive'
-          H(44)='  chilled beam with separate tempered ventilation'
-          H(45)='  air. Heating via LTHW. Assumes displacement vent.'
-          H(46)=' '
-          H(47)='Active chilled beams - typically induction units'
-          H(48)='  via central high pressure air supply. Heating'
-          H(49)='  via LTHW. May include local fans.'
-          H(50)=' '
-          H(51)='Water loop heat pump - local heat pumps served by'
-          H(52)='  common water loop. Central heating or cooling '
-          H(53)='  plant used. Assumed to provide heating.'
-          H(54)=' '
-          H(55)='Split or multi-split system - outdoor and indoor'
-          H(56)='  units connected via refrigerant. No mechanical'
-          H(57)='  vent. Also for ducted split systems.'
-          H(58)=' '
-          H(59)='Single room cooling - integral units w/o ducts. '
-          CALL PHELPD('SBEM HVAC choices',59,'-',0,0,IER)
+          helptopic='ncm_sys_help_a'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('SBEM HVAC choices',nbhelp,'-',0,0,IER)
+          helptopic='ncm_sys_help_b'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('SBEM HVAC choices',nbhelp,'-',0,0,IER)
 
           HVACNAME(NCMSYS)=' default HVAC system '
           CALL EASKS(HVACNAME(NCMSYS),'HVAC system name',
-     &      '(<30 characters)',30,D64,'HVAC sys name',IER,59)
+     &      '(<30 characters)',30,D64,'HVAC sys name',IER,nbhelp)
           IY=1
           KSYS(1)=0
  906      CALL EPICKS(IY,KSYS,' ','Select system type',
-     &      70,MHT,HSYSNAME,'system types',IER,59)
+     &      70,MHT,HSYSNAME,'system types',IER,nbhelp)
           IF(KSYS(1).EQ.0)GOTO 906
           IHSYS=KSYS(1)
           IF(IHSYS.GE.1)INCMSYS(NCMSYS)=IHSYS
@@ -2524,39 +2280,31 @@ C Add corresponding heat generator, efficiency and fuel type
           IY=1
           KSYS(1)=0
           CALL EPICKS(IY,KSYS,' ','Select heat generator',
-     &      60,IHCG-1,PRSSN,'system types',IER,2)
+     &      60,IHCG-1,PRSSN,'system types',IER,nbhelp)
           IF(KSYS(1).EQ.0)GOTO 330
           IHGEF(NCMSYS)=ITHND(KSYS(1))
 
 C Display HVAC heat generator exceptions if applicable
           IF(IHGEF(NCMSYS).EQ.21)THEN
-            H(1)='You will be asked for system efficiency/COP next'
-            H(2)='For the district heating option note that default'
-            H(3)='emission factor specified in iSBEM v3.4.a is 0.293'
-            H(4)='kgCO2/kWh. Default efficiency of the system is '
-            H(5)='set to 0.65, this corresponds to natural gas as fuel'
-            H(6)='for aforementioned emission factor.'
-            CALL PHELPD('SBEM HVAC exceptions',6,'-',0,0,IER)
+            helptopic='ncm_sys_help_c'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL PHELPD('SBEM HVAC exceptions',nbhelp,'-',0,0,IER)
             HGEF(NCMSYS)=0.65
           ELSEIF(IHGEF(NCMSYS).LE.20.AND.IHGEF(NCMSYS).GE.9)THEN
-            H(1)='You will be asked for system efficiency/COP next'
-            H(2)='For heat pumps values for natural gas are quoted as'
-            H(3)='default values. The same values are applicable to '
-            H(4)='oil as well. If electricity is being used as fuel '
-            H(5)='then it is appropriate to multiply the COP with 2.5'
-            H(6)='(following iSBEM ver 3.4.a)'
-            CALL PHELPD('SBEM HVAC exceptions',6,'-',0,0,IER)
+            helptopic='ncm_sys_help_d'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL PHELPD('SBEM HVAC exceptions',nbhelp,'-',0,0,IER)
           ENDIF
 
 C Ask for system efficiency
           CALL EASKR(HGEF(NCMSYS),
      &      'Enter heat generator efficiency/COP or accept default',
-     &      ' ',0.,'F',0.,'-',10.,'heat gen eff ',IER,2)
+     &      ' ',0.,'F',0.,'-',10.,'heat gen eff ',IER,nbhelp)
  331      IY=1
           KSYS(1)=0
           CALL EDISP(IUOUT,'Select fuel type')
           CALL EPICKS(IY,KSYS,' ','Select fuel type',
-     &      42,MFT,FUELNAME,'Fuel Types',IER,2)
+     &      42,MFT,FUELNAME,'Fuel Types',IER,nbhelp)
           IF(KSYS(1).EQ.0)GOTO 331
           IFTYP(NCMSYS)=KSYS(1)
 
@@ -2569,9 +2317,9 @@ C Add corresponding cool generator if applicable
             IF(ICS.GE.6)GOTO 456
             IF(ICS.LE.3)THEN
               CALL EASKABCD('Enter power rating of system (kW)',' ',
-     &        '0-100','101-500','501-750','751-3500',IADC,1)
+     &          '0-100','101-500','501-750','751-3500',IADC,nbhelp)
               CALL EASKAB('Is this system in the ECA list',
-     &        ' ','yes','no',IECA,2)
+     &          ' ','yes','no',IECA,nbhelp)
               ICNDX=8*(ICS-1)+2*(IADC-1)+IECA
             ELSE
 
@@ -2585,7 +2333,7 @@ C which are 125% of Seasonal EER value so multiply by 0.8
             CGEF(NCMSYS)=SYSEFFC(ICNDX,IHSYS)*0.8
             CALL EASKR(CGEF(NCMSYS),
      &        'Enter cool generator efficiency/COP or accept default',
-     &        ' ',0.,'F',0.,'-',10.,'cool gen eff ',IER,2)
+     &        ' ',0.,'F',0.,'-',10.,'cool gen eff ',IER,nbhelp)
           ELSE
             CGEF(NCMSYS)=0.0
             ICGEF(NCMSYS)=0
@@ -2597,7 +2345,7 @@ C Ask for ventilation specific fan power SFP if applicable
             CALL EASKR(SFPHS(NCMSYS),
      &        'Enter ventilation system specifc fan power SFP or',
      &        'accept default (Watts/liter/sec)',
-     &        0.,'F',0.,'-',50.,'heat gen eff ',IER,2)
+     &        0.,'F',0.,'-',50.,'heat gen eff ',IER,nbhelp)
 
 C Define system adjustment inputs for ductwork and AHU
             call defLeakage(NCMSYS,IER)
@@ -2607,44 +2355,33 @@ C Define system adjustment inputs for ductwork and AHU
           ENDIF
 
 C Ask if there is a supply/extract fun (for nat. ventil. cases only)
-            H(1) ='If supply/extract then additional ventilation '
-          H(2) ='losses will be taken for the heating loads plus'
-          H(3) ='additional auxiliary loads.'
-          H(4) =' '
-          H(5) ='Choose centralised system for centralised balanced'
-          H(6) ='mechanical ventilation system including air supplies'
-          H(7) ='to centralised air conditioning system'
-          H(8) =''
-          H(9) ='Choose zonal supply for where the fan in remote from'
-          H(10)='the zone such as ceiling void or roof mounted units'
-          H(11) =''
-          H(12)='Choose zonal extract where the fan is remote from the'
-          H(13)='zone'
+          helptopic='ncm_sys_extract'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABCD('Zone ventilation type (see help)',
      &    ' ','Natural','Centralised balanced',
-     &    'Zonal supply','Zonal extract',Ivent(ncmsys),13)
+     &    'Zonal supply','Zonal extract',Ivent(ncmsys),nbhelp)
           CALL EASKAB('Does system have local ventilation only units',
-     &    'e.g. toilet exhausts ','Yes','No',IIN,1)
+     &      'e.g. toilet exhausts ','Yes','No',IIN,nbhelp)
           INatMech=IVENT(NCMSYS)+1
           IF(IIN.EQ.1)IVENT(NCMSYS)=10+IVENT(NCMSYS)
-            if(INatMech.eq.1)then
+          if(INatMech.eq.1)then
             SFPHS(NCMSYS)=0.0
           else
-              SFPHS(NCMSYS)=1.5 !1.5 W/l/s is the default in SBEM
-              CALL EASKR(SFPHS(NCMSYS),
+            SFPHS(NCMSYS)=1.5 !1.5 W/l/s is the default in SBEM
+            CALL EASKR(SFPHS(NCMSYS),
      &        'Enter supply/extract specifc fan power SFP or',
      &        'accept default (Watts/liter/sec)',
-     &      0.,'F',0.,'-',50.,'sfp mech ',IER,2)
+     &        0.,'F',0.,'-',50.,'sfp mech ',IER,nbhelp)
           endif
         ELSEIF(JC.EQ.2)THEN
 
 C Delete HVAC and system information
-          H(1) = 'Choose HVAC system to delete or simply exit without'
-          H(2) = 'making any choice to retain all defined systems'
+          helptopic='ncm_sys_delete'
+          call gethelptext(helpinsub,helptopic,nbhelp)
  907      IZ=1
           KSYS(1)=0
           CALL EPICKS(IZ,KSYS,' ','HVAC system to delete',
-     &      70,NCMSYS,ITEMH,'HVAC system to delete',IER,2)
+     &      70,NCMSYS,ITEMH,'HVAC system to delete',IER,nbhelp)
           IF(KSYS(1).EQ.0)GOTO 907
           IF(KSYS(1).GE.1)THEN
             DO 203 ICMSYS=KSYS(1),NCMSYS
@@ -2665,10 +2402,10 @@ C Delete HVAC and system information
       ELSEIF(IHO.LE.NCMSYS+3.AND.IHO.GE.1)THEN
 
 C Edit HVAC and system information
-        H(1) = 'Choose HVAC system to replace current system'
-        H(2) = '(see text feed back area) or exit to retain current'
+        helptopic='ncm_sys_replace'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKS(HVACNAME(IHO),'HVAC system name',
-     &    '(<30 characters)',30,D64,'HVAC sys name',IER,1)
+     &    '(<30 characters)',30,D64,'HVAC sys name',IER,nbhelp)
         IY=1
         KSYS(1)=0
  908    WRITE(OUTS,'(2A)')'Current HVAC system is ',
@@ -2677,7 +2414,7 @@ C Edit HVAC and system information
         call edisp(iuout,
      &    'Choose HVAC system to replace it or exit to retain current')
         CALL EPICKS(IY,KSYS,' ','Select system type',
-     &    70,MHT,HSYSNAME,'system types',IER,2)
+     &    70,MHT,HSYSNAME,'system types',IER,nbhelp)
         IF(KSYS(1).EQ.0)GOTO 908
         IHSYS=KSYS(1)
         IF(IHSYS.GE.1)THEN
@@ -2700,68 +2437,62 @@ C Edit corresponding heat generator, efficiency and fuel type
         IY=1
         KSYS(1)=0
         CALL EPICKS(IY,KSYS,' ','Select heat generator',
-*     &    60,IHCG,PRSSN,'system types',IER,2)
-     &    60,IHCG-1,PRSSN,'system types',IER,2)
+*     &    60,IHCG,PRSSN,'system types',IER,nbhelp)
+     &    60,IHCG-1,PRSSN,'system types',IER,nbhelp)
         IF(KSYS(1).EQ.0)GOTO 339
         IHGEF(IHO)=ITHND(KSYS(1))
 
 C Display HVAC heat generator exceptions if applicable
- 	IF(IHGEF(IHO).EQ.21)THEN
- 	  H(1)='You will be asked for system efficiency/COP next'
- 	  H(2)='For the district heating option note that default'
- 	  H(3)='emission factor specified in iSBEM v3.4.a is 0.293'
- 	  H(4)='kgCO2/kWh. Default efficiency of the system is '
- 	  H(5)='set to 0.65, this corresponds to natural gas as fuel'
- 	  H(6)='for aforementioned emission factor.'
- 	  CALL PHELPD('SBEM HVAC exceptions',6,'-',0,0,IER)
- 	  HGEF(IHO)=0.65
- 	ELSEIF(IHGEF(IHO).LE.20.AND.IHGEF(IHO).GE.9)THEN
- 	  H(1)='You will be asked for system efficiency/COP next'
- 	  H(2)='For heat pumps values for natural gas are quoted as'
- 	  H(3)='default values. The same values are applicable to '
- 	  H(4)='oil as well. If electricity is being used as fuel '
- 	  H(5)='then it is appropriate to multiply the COP with 2.5'
- 	  H(6)='(following iSBEM ver 3.4.a)'
- 	  CALL PHELPD('SBEM HVAC exceptions',6,'-',0,0,IER)
- 	ENDIF
+        IF(IHGEF(IHO).EQ.21)THEN
+          helptopic='ncm_sys_cop_a'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('SBEM HVAC exceptions',nbhelp,'-',0,0,IER)
+          HGEF(IHO)=0.65
+        ELSEIF(IHGEF(IHO).LE.20.AND.IHGEF(IHO).GE.9)THEN
+          helptopic='ncm_sys_cop_b'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('SBEM HVAC exceptions',nbhelp,'-',0,0,IER)
+        ENDIF
 
         CALL EASKR(HGEF(IHO),
      &    'Edit heat/cool generator efficiency/COP',' ',
-     &    0.,'F',0.,'-',10.,'heat gen eff ',IER,2)
+     &    0.,'F',0.,'-',10.,'heat gen eff ',IER,nbhelp)
  341    IY=1
         KSYS(1)=0
         CALL EDISP(IUOUT,'Select fuel type')
         CALL EPICKS(IY,KSYS,' ','Select fuel type',
-     &    42,MFT,FUELNAME,'Fuel Types',IER,2)
+     &    42,MFT,FUELNAME,'Fuel Types',IER,nbhelp)
         IF(KSYS(1).EQ.0)GOTO 341
         IFTYP(IHO)=KSYS(1)
 
-C Edit corresponding cool generator if applicable
+C Edit corresponding cool generator if applicable.
         IF(IBRUKLC(1,IHSYS).NE.-1111)THEN
- 457        CALL EASKATOG(' Choose cooling system',' ',SYSNAME(MPT-4),
+          helptopic='ncm_cooling_gen'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+ 457      CALL EASKATOG(' Choose cooling system',' ',SYSNAME(MPT-4),
      &      SYSNAME(MPT-3),SYSNAME(MPT-2),SYSNAME(MPT-1),SYSNAME(MPT),
-     &      ' ',' ',ICGEF(IHO),2)
-            ICS=ICGEF(IHO)
-            IF(ICS.GE.6)GOTO 457
-            IF(ICS.LE.3)THEN
-              CALL EASKABCD('Enter power rating of system (kW)',' ',
+     &      ' ',' ',ICGEF(IHO),nbhelp)
+          ICS=ICGEF(IHO)
+          IF(ICS.GE.6)GOTO 457
+          IF(ICS.LE.3)THEN
+            CALL EASKABCD('Enter power rating of system (kW)',' ',
      &        '0-100','101-500','501-750','751-3500',IADC,1)
-              CALL EASKAB('Is this system in the ECA list',
-     &        ' ','yes','no',IECA,2)
-              ICNDX=8*(ICS-1)+2*(IADC-1)+IECA
-            ELSE
+            CALL EASKAB('Is this system in the ECA list',
+     &        ' ','yes','no',IECA,nbhelp)
+            ICNDX=8*(ICS-1)+2*(IADC-1)+IECA
+          ELSE
 
 C Heat pumps do not have range of power ratings (use maximum value of
 C counters above)
-              ICNDX=8*(3-1)+2*(4-1)+2+ICS
-            ENDIF
+            ICNDX=8*(3-1)+2*(4-1)+2+ICS
+          ENDIF
 
 C Values in database are nominal energy efficiency ratio (EER) values
 C which are 125% of Seasonal EER value so multiply by 0.8
-            CGEF(IHO)=SYSEFFC(ICNDX,IHSYS)*0.8
-            CALL EASKR(CGEF(IHO),
-     &        'Enter cool generator efficiency/COP or accept default',
-     &        ' ',0.,'F',0.,'-',10.,'cool gen eff ',IER,2)
+          CGEF(IHO)=SYSEFFC(ICNDX,IHSYS)*0.8
+          CALL EASKR(CGEF(IHO),
+     &      'Enter cool generator efficiency/COP or accept default',
+     &      ' ',0.,'F',0.,'-',10.,'cool gen eff ',IER,2)
         ELSE
           CGEF(IHO)=0.0
           ICGEF(IHO)=0
@@ -2769,21 +2500,22 @@ C which are 125% of Seasonal EER value so multiply by 0.8
 
 C Edit ventilation specific fan power SFP if applicable
         IF(IBRUKLF(IHSYS).NE.-1111)THEN
+          helptopic='ncm_vent_fan_sfp'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKR(SFPHS(IHO),
      &      'Enter ventilation system specifc fan power SFP or',
      &      'accept default (Watts/liter/sec)',
-     &      0.,'F',0.,'-',50.,'heat gen eff ',IER,2)
+     &      0.,'F',0.,'-',50.,'heat gen eff ',IER,nbhelp)
 
 C Define system adjustment inputs for ductwork and AHU
           call defLeakage(IHO,IER)
         ELSE
 
 C Ask if there is a supply/extract fun (for nat. ventil. cases only)
-          H(1) ='If supply/extract then additional ventilation '
-          H(2) =' losses will be taken for the heating loads plus'
-          H(3) =' additional auxiliary loads.'
+          helptopic='ncm_vent_take_from'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKAB('Zone ventilation type',
-     &    ' ','Natural','Machanical supply or extract',INatMech,3)
+     &    ' ','Natural','Machanical supply or extract',INatMech,nbhelp)
           if(INatMech.eq.1)then
             SFPHS(IHO)=0.0
           elseif(INatMech.eq.2)then
@@ -2791,7 +2523,7 @@ C Ask if there is a supply/extract fun (for nat. ventil. cases only)
             CALL EASKR(SFPHS(IHO),
      &      'Enter supply/extract specifc fan power SFP or',
      &      'accept default (Watts/liter/sec)',
-     &      0.,'F',0.,'-',50.,'sfp mech ',IER,2)
+     &      0.,'F',0.,'-',50.,'sfp mech ',IER,nbhelp)
           endif
           duct_tDLd(IHO)=0.0
           AHU_tDLd(IHO)=0.0
@@ -2811,11 +2543,16 @@ C EDSBMBLD edits the building contact definition within the UK NCM file.
 
       common/OUTIN/IUOUT,IUIN
       integer iuout,iuin
-      common/pophelp/h(60)
-      character h*72
       DIMENSION ITEMS(33)
       character HEAD*30,ITEMS*50,D64*64,D20*20,outs*124
       integer nitms,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='edsbmbld'  ! set for subroutine
 
 C Enter building, owner and verifier information
       call edisp(iuout,' ')          
@@ -2905,12 +2642,8 @@ C Enter building, owner and verifier information
       WRITE(HEAD,'(2A)')'Project details for BRUKL/EPC'
 
 C Help text for this menu.
-      H(1)='This menu allows the definition of project'
-      H(2)='details. These will be used by BRUKL/EPC for'
-      H(3)='reporting purposes and are required data.'
-      H(4)=' '
-      H(5)='The enter all details will ask for for all the details'
-      H(6)='shown in the menu (in sequence).'
+      helptopic='ncm_contact_data'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Menu for building details.
       CALL EMENU(HEAD,ITEMS,nitms,INO)
@@ -2918,14 +2651,13 @@ C Menu for building details.
       IF(INO.EQ.nitms-1)THEN
 
 C Produce help text for the menu.
-        CALL PHELPD(HEAD,6,'-',0,0,IER)
+        CALL PHELPD(HEAD,nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.1)THEN
 
 C Building project description. Echo after edit.
         D20='Project un-named'
-        H(1)='Input a succinct description of the project name here.'
         CALL EASKS(pjname,'project name?','(20 characters maximum)',
-     &    20,D20,'project name',IER,1)
+     &    20,D20,'project name',IER,nbhelp)
         call tstamp('>','PRJ: edited project name')
         write(outs,'(2a)')'Project name: ',pjname(1:lnblnk(pjname))
         call edisp(iuout,outs)
@@ -2933,9 +2665,8 @@ C Building project description. Echo after edit.
 
 C Building address. Echo after edit.
         D64='No site selected.'
-        H(1)='Input the building street address.'
         CALL EASKS(baddress,'building address?','(<64 characters)',
-     &    64,D64,'build address',IER,1)
+     &    64,D64,'build address',IER,nbhelp)
         call tstamp('>','PRJ: edited project address')
         write(outs,'(2a)')'Building address: ',
      &    baddress(1:lnblnk(baddress))
@@ -2944,9 +2675,8 @@ C Building address. Echo after edit.
 
 C Building city name. Echo after edit.
         D64='No site selected.'
-        H(1)='Input the names of the town/city of the building.'
         CALL EASKS(bcity,'building city?','(<64 characters)',
-     &    64,D64,'city building',IER,1)
+     &    64,D64,'city building',IER,nbhelp)
         call tstamp('>','PRJ: edited project city')
         write(outs,'(2a)')'Building city: ',bcity(1:lnblnk(bcity))
         call edisp(iuout,outs)
@@ -2954,9 +2684,8 @@ C Building city name. Echo after edit.
 
 C Building post code. Echo after edit.
         D64='No site selected.'
-        H(1)='Input for: building post code'
         CALL EASKS(buildingPC,'building post code?',
-     &    '(<64 characters)',64,D64,'building PC',IER,1)
+     &    '(<64 characters)',64,D64,'building PC',IER,nbhelp)
         call tstamp('>','PRJ: edited project post code')
         write(outs,'(2a)')'Building Postcode: ',
      &    buildingPC(1:lnblnk(buildingPC))
@@ -2965,9 +2694,8 @@ C Building post code. Echo after edit.
 
 C Building owner name. Echo after edit.
         D64='Owner name withheld'
-        H(1)='Input a succinct description of the owner name here'
         CALL EASKS(ownername,'Name of owner?','(<64 characters)',
-     &    64,D64,'owner name',IER,1)
+     &    64,D64,'owner name',IER,nbhelp)
         call tstamp('>','PRJ: edited project owner name')
         write(outs,'(2a)')'Building owner name: ',
      &    ownername(1:lnblnk(ownername))
@@ -2976,9 +2704,8 @@ C Building owner name. Echo after edit.
 
 C Building owner phone number.
         D64='Owner phone withheld'
-        H(1)='telephone number of the owner'
         CALL EASKS(ownertel,'Phone of owner?','(<64 characters)',
-     &    64,D64,'owner tel',IER,1)
+     &    64,D64,'owner tel',IER,nbhelp)
         call tstamp('>','PRJ: edited project owner phone')
         write(outs,'(2a)')'Building owner telephone: ',
      &    ownertel(1:lnblnk(ownertel))
@@ -2987,9 +2714,8 @@ C Building owner phone number.
 
 C Building owner address.
         D64='Owner address withheld.'
-        H(1)='Street address of the owner'
         CALL EASKS(owneraddr,'Address of owner?','(<64 characters)',
-     &    64,D64,'owner address',IER,1)
+     &    64,D64,'owner address',IER,nbhelp)
         call tstamp('>','PRJ: edited project owner address')
         write(outs,'(2a)')'Building owner address: ',
      &    owneraddr(1:lnblnk(owneraddr))
@@ -2998,9 +2724,8 @@ C Building owner address.
 
 C Building owner city.
         D64='Owner city withheld.'
-        H(1)='City (where the owner is located)'
         CALL EASKS(ownercity,'City of owner?','(<64 characters)',
-     &    64,D64,'owner city',IER,1)
+     &    64,D64,'owner city',IER,nbhelp)
         call tstamp('>','PRJ: edited project owner city')
         write(outs,'(2a)')'Building owner city: ',
      &    ownercity(1:lnblnk(ownercity))
@@ -3009,9 +2734,8 @@ C Building owner city.
 
 C Building owner postcode.
         D64='Owner postcode withheld.'
-        H(1)='Post code (where the owner is located)'
         CALL EASKS(ownerPC,'Post code for owner?','(<64 characters)',
-     &    64,D64,'owner post code',IER,1)
+     &    64,D64,'owner post code',IER,nbhelp)
         call tstamp('>','PRJ: edited project owner postcode')
         write(outs,'(2a)')'Building owner Postcode: ',
      &    ownerPC(1:lnblnk(ownerPC))
@@ -3020,9 +2744,8 @@ C Building owner postcode.
 
 C Building certifier name.
         D64='Certifier name withheld.'
-        H(1)='certifier name'
         CALL EASKS(certifname,'Name of certifier?','(<64 characters)',
-     &    64,D64,'certifier name',IER,1)
+     &    64,D64,'certifier name',IER,nbhelp)
         call tstamp('>','PRJ: edited project certifier')
         write(outs,'(2a)')'Certifier name: ',
      &    certifname(1:lnblnk(certifname))
@@ -3031,9 +2754,8 @@ C Building certifier name.
 
 C Building certifier phone number.
         D64='Certifier phone number withheld.'
-        H(1)='certifier telephone number'
         CALL EASKS(certTel,'Phone of certifier?','(<64 characters)',
-     &    64,D64,'certifier tel',IER,1)
+     &    64,D64,'certifier tel',IER,nbhelp)
         call tstamp('>','PRJ: edited project certifier phone')
         write(outs,'(2a)')'Certifier telephone: ',
      &    certTel(1:lnblnk(certTel))
@@ -3042,9 +2764,8 @@ C Building certifier phone number.
 
 C Building certifier address.
         D64='Certifier address withheld.'
-        H(1)='certifier street address'
         CALL EASKS(certaddress,'Address of certifier?',
-     &    '(<64 characters)',64,D64,'certifier address',IER,1)
+     &    '(<64 characters)',64,D64,'certifier address',IER,nbhelp)
         call tstamp('>','PRJ: edited project cert address')
         write(outs,'(2a)')'Certifier address: ',
      &    certaddress(1:lnblnk(certaddress))
@@ -3053,9 +2774,8 @@ C Building certifier address.
 
 C Building certifier city.
         D64='Certifier city withheld.'
-        H(1)='Name of city of the certifier.'
         CALL EASKS(certcity,'City of certifier?','(<64 characters)',
-     &    64,D64,'certifier city',IER,1)
+     &    64,D64,'certifier city',IER,nbhelp)
         call tstamp('>','PRJ: edited project certifier city')
         write(outs,'(2a)')'Certifier city: ',
      &    certcity(1:lnblnk(certcity))
@@ -3064,9 +2784,8 @@ C Building certifier city.
 
 C Building certifier postcode.
         D64='Certifier postcode withheld.'
-        H(1)='certifier post code'
         CALL EASKS(certPC,'Post code of certifier?',
-     &    '(<64 characters)',64,D64,'certifier Post code',IER,1)
+     &    '(<64 characters)',64,D64,'certifier Post code',IER,nbhelp)
         call tstamp('>','PRJ: edited project cert post code')
         write(outs,'(2a)')'Certifier postcode: ',
      &    certPC(1:lnblnk(certPC))
@@ -3075,61 +2794,47 @@ C Building certifier postcode.
 
 C Enter all information
         D20='Project un-named'
-        H(1)='Input a succinct description of the project name here.'
         CALL EASKS(pjname,'project name?','(20 characters maximum)',
-     &    20,D20,'project name',IER,1)
+     &    20,D20,'project name',IER,nbhelp)
         D64='No site selected.'
-        H(1)='Input the building street address.'
         CALL EASKS(baddress,'building address?','(<64 characters)',
-     &    64,D64,'build address',IER,1)
+     &    64,D64,'build address',IER,nbhelp)
         D64='No site selected.'
-        H(1)='Input the names of the town/city of the building.'
         CALL EASKS(bcity,'building city?','(<64 characters)',
-     &    64,D64,'city building',IER,1)
+     &    64,D64,'city building',IER,nbhelp)
         D64='No site selected.'
-        H(1)='Input for: building post code'
         CALL EASKS(buildingPC,'building post code?',
-     &    '(<64 characters)',64,D64,'building PC',IER,1)
+     &    '(<64 characters)',64,D64,'building PC',IER,nbhelp)
         D64='Owner name withheld'
-        H(1)='Input a succinct description of the owner name here'
         CALL EASKS(ownername,'Name of owner?','(<64 characters)',
-     &    64,D64,'owner name',IER,1)
+     &    64,D64,'owner name',IER,nbhelp)
         D64='Owner phone withheld'
-        H(1)='telephone number of the owner'
         CALL EASKS(ownertel,'Telephone of owner?','(<64 characters)',
-     &    64,D64,'owner tel',IER,1)
+     &    64,D64,'owner tel',IER,nbhelp)
         D64='Owner address withheld.'
-        H(1)='Street address of the owner'
         CALL EASKS(owneraddr,'Address of owner?','(<64 characters)',
-     &    64,D64,'owner address',IER,1)
+     &    64,D64,'owner address',IER,nbhelp)
         D64='Owner city withheld.'
-        H(1)='City (where the owner is located)'
         CALL EASKS(ownercity,'City of owner?','(<64 characters)',
-     &    64,D64,'owner city',IER,1)
+     &    64,D64,'owner city',IER,nbhelp)
         D64='Owner postcode withheld.'
-        H(1)='Post code (where the owner is located)'
         CALL EASKS(ownerPC,'Post code for owner?','(<64 characters)',
-     &    64,D64,'owner post code',IER,1)
+     &    64,D64,'owner post code',IER,nbhelp)
         D64='Certifier name withheld.'
-        H(1)='certifier name'
         CALL EASKS(certifname,'Name of certifier?',
-     &    '(<64 characters)',64,D64,'certifier name',IER,1)
+     &    '(<64 characters)',64,D64,'certifier name',IER,nbhelp)
         D64='Certifier phone number withheld.'
-        H(1)='certifier telephone number'
         CALL EASKS(certTel,'Phone of certifier?','(<64 characters)',
-     &    64,D64,'certifier tel',IER,1)
+     &    64,D64,'certifier tel',IER,nbhelp)
         D64='Certifier address withheld.'
-        H(1)='Certifier street address'
         CALL EASKS(certaddress,'Address of certifier?',
-     &    '(<64 characters)',64,D64,'certifier address',IER,1)
+     &    '(<64 characters)',64,D64,'certifier address',IER,nbhelp)
         D64='Certifier city withheld.'
-        H(1)='Name of city of the certifier.'
         CALL EASKS(certcity,'City of certifier ?','(<64 characters)',
-     &    64,D64,'certifier city',IER,1)
+     &    64,D64,'certifier city',IER,nbhelp)
         D64='Certifier postcode withheld.'
-        H(1)='certifier post code'
         CALL EASKS(certPC,'Post code of certifier?',
-     &    '(<64 characters)',64,D64,'certifier Post code',IER,1)
+     &    '(<64 characters)',64,D64,'certifier Post code',IER,nbhelp)
         call lstncm('p',iuout)
       ELSEIF(INO.EQ.31)THEN
 
@@ -3151,11 +2856,16 @@ C EDSBMASSOR edits the assessor contact definition within the UK NCM file.
 
       common/OUTIN/IUOUT,IUIN
       integer iuout,iuin
-      common/pophelp/h(60)
-      character h*72
       DIMENSION ITEMS(33)
       character HEAD*30,ITEMS*50,D64*64,outs*124
       integer nitms,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='edsbmassor'  ! set for subroutine
 
 C List current state of the energy assessor data.
       call lstncm('e',iuout)
@@ -3203,13 +2913,8 @@ C Enter energy assessor and additional building information
       WRITE(HEAD,'(A)')'Project details for BRUKL/EPC'
 
 C Help text for this menu.
-      H(1) ='This menu allows the definition of'
-      H(2) ='project details. These will be used by'
-      H(3) ='BRUKL/EPC for reporting purposes'
-      H(4) =' '
-      H(5) ='The Unisque Property Reference Number is applicable'
-      H(6) ='in England, Wales & Northern Ireland.'
-      H(7) ='<< help message is work-in-progress >> '
+      helptopic='ncm_assessor_data'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Menu for energy assessor details.
       CALL EMENU(HEAD,ITEMS,nitms,INO)
@@ -3217,17 +2922,15 @@ C Menu for energy assessor details.
       IF(INO.EQ.nitms-1)THEN
 
 C Produce help text for the menu.
-        CALL PHELPD(HEAD,6,'-',0,0,IER)
+        CALL PHELPD(HEAD,nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.1)THEN
 
 C Unique Property Reference Number (UPRN)
 C Leave it as a string because it is not certain if this is always an integer
 C (it may be a mix of letters and numbers).
         D64='000000000000'
-        H(1)='Input the Unique Property Reference Number (UPRN) here.'
-        H(2)='Applicable only for England, Wales & Northern Ireland.'
         CALL EASKS(UPRN,'Unique Property Reference Number (UPRN)?',
-     &    '(<64 characters)',64,D64,'UPR Number',IER,2)
+     &    '(<64 characters)',64,D64,'UPR Number',IER,nbhelp)
         call tstamp('>','PRJ: edited UPRN')
         write(outs,'(2a)') 'Unique Property Reference Number (UPRN): ',
      &    UPRN(1:lnblnk(UPRN))
@@ -3235,19 +2938,14 @@ C (it may be a mix of letters and numbers).
       ELSEIF(INO.EQ.3)THEN
 
 C Month and day of month of inspection.
-        H(1)='Input the month and the day of the month of the '
-        H(2)='inspection. Applicable only for England, '
-        H(3)='Wales & Northern Ireland.'
         CALL EASKI(D_inspect,' ','Day of inspection?',
-     &    1,'W',31,'W',1,'day',IERI,3)
+     &    1,'W',31,'W',1,'day',IERI,nbhelp)
         CALL EASKI(M_inspect,' ','Month of inspection?',
-     &    1,'W',12,'W',1,'month',IERI,3)
+     &    1,'W',12,'W',1,'month',IERI,nbhelp)
 
 C Year for which the energy assessor inspected the building.
-        H(1)='Input the year of the inspection. Applicable '
-        H(2)='only for England, Wales & Northern Ireland.'
         CALL EASKI(Y_inspect,' ','Year of inspection?',
-     &    1900,'W',2080,'W',2009,'year',IERI,2)
+     &    1900,'W',2080,'W',2009,'year',IERI,nbhelp)
         call tstamp('>','PRJ: edited date of inspection')
         write(outs,'(A,I2,A,I2,A,I4)') 'Inspection date: ',
      &    D_inspect,'  ',M_inspect,'  ',Y_inspect
@@ -3255,11 +2953,8 @@ C Year for which the energy assessor inspected the building.
       ELSEIF(INO.EQ.5)THEN
 
 C Accreditation scheme
-        H(1)='Input certifier/energy assessor accreditation scheme.'
-        H(2)='Applicable only for England, Wales & Northern Ireland.'
-        H(3)='This is the scheme name from CIBSE or BRE. '
         CALL EASKS(Accr_Scheme,'Accreditation scheme ?',
-     &    '(<64 characters)',64,D64,'accreditation scheme',IER,3)
+     &    '(<64 characters)',64,D64,'accreditation scheme',IER,nbhelp)
         call tstamp('>','PRJ: edited accreditation scheme')
         write(outs,'(2a)') 'Accreditation Scheme (E,W and NI only): ',
      &    Accr_Scheme(1:lnblnk(Accr_Scheme))
@@ -3267,13 +2962,10 @@ C Accreditation scheme
       ELSEIF(INO.EQ.7)THEN
 
 C Assessor registration number
-        H(1)='The assessor registration number should be in the'
-        H(2)='form of CCCCNNNNNN where C is character and N is a'
-        H(3)='number such as ABCD123456.'
         D64='ABCD123456'
         CALL EASKS(assessRegNumber,
      &    'Assessor regisration number (see help)?',
-     &    '(e.g. ABCD123456)',64,D64,'assessor number',IER,3)
+     &    '(e.g. ABCD123456)',64,D64,'assessor number',IER,nbhelp)
         call tstamp('>','PRJ: edited assessor registration number')
         D64='<this item has not been described>'
         write(outs,'(2a)')
@@ -3284,11 +2976,8 @@ C Assessor registration number
 
 C Employer or trading name of energy assessor
         D64='Not a registered company.'
-        H(1)='The employer or the trading name of the energy'
-        H(2)='assessor. Applicable only for England, '
-        H(3)='Wales & Northern Ireland.'
         CALL EASKS(empl_Trading_name,'Employer/trading name ?',
-     &    '(<64 characters)',64,D64,'trading name',IER,3)
+     &    '(<64 characters)',64,D64,'trading name',IER,nbhelp)
         call tstamp('>','PRJ: edited employer/traing name')
         write(outs,'(2a)')
      &    'Employer/trading name of energy assessor: ',
@@ -3298,11 +2987,8 @@ C Employer or trading name of energy assessor
 
 C Employer/trading address of energy assessor
         D64='PO box in Basingstoke.'
-        H(1)='The employer or the trading address of the energy'
-        H(2)='assessor. Applicable only for England, '
-        H(3)='Wales & Northern Ireland.'
         CALL EASKS(addr_empl_Trading,'Employer/trading address ?',
-     &    '(<64 characters)',64,D64,'owner address',IER,3)
+     &    '(<64 characters)',64,D64,'owner address',IER,nbhelp)
         call tstamp('>','PRJ: edited employer/trading address')
         write(outs,'(2a)')
      &    'Employer/trading name of energy assessor: ',
@@ -3312,11 +2998,8 @@ C Employer/trading address of energy assessor
 
 C Related party disclosure
         D64='No related party.'
-        H(1)='Any related party disclosure by the energy'
-        H(2)='assessor. Applicable only for England, '
-        H(3)='Wales & Northern Ireland.'
         CALL EASKS(party_disclosure,'Party disclosure ?',
-     &    '(<64 characters)',64,D64,'owner city',IER,3)
+     &    '(<64 characters)',64,D64,'owner city',IER,nbhelp)
         call tstamp('>','PRJ: edited party disclosure')
         write(outs,'(2a)') 'Related party disclosure: ',
      &    party_disclosure(1:lnblnk(party_disclosure))
@@ -3324,12 +3007,8 @@ C Related party disclosure
       ELSEIF(INO.EQ.15)THEN
 
 C Qualifications of the energy assessor (3 choices)
-        H(1)='Qualifications of the energy assessor.'
-        H(2)='Applicable only for England, Wales & '
-        H(3)='Northern Ireland. There are 3 choices: '
-        H(4)='NOS3, NOS4 and NOS5'
         CALL EASKABC(' ','Energy assessor qualifications:',
-     &    'NOS3','NOS4','NOS5',IRT,4)
+     &    'NOS3','NOS4','NOS5',IRT,nbhelp)
         if(IRT.eq.1)then
           write(qualifications_assessor,'(A)') 'NOS3'
         elseif(IRT.eq.2)then
@@ -3345,10 +3024,8 @@ C Qualifications of the energy assessor (3 choices)
 
 C Name of the energy assessor's insurance company
         D64='Not insured.'
-        H(1)='Name of the insurance company. Applicable '          
-        H(2)='only for England, Wales & Northern Ireland.'
         CALL EASKS(insurer_Company,'Name of insurance company ?',
-     &    '(<64 characters)',64,D64,'insurance company',IER,2)
+     &    '(<64 characters)',64,D64,'insurance company',IER,nbhelp)
         call tstamp('>','PRJ: edited insurer company name')
         write(outs,'(2a)') 'Insurance company: ',
      &    insurer_Company(1:lnblnk(insurer_Company))
@@ -3357,10 +3034,8 @@ C Name of the energy assessor's insurance company
 
 C The energy assessor's insurance policy number
         D64='Not insured.'
-        H(1)='Enter insurance policy number. Applicable '          
-        H(2)='only for England, Wales & Northern Ireland.'
         CALL EASKS(policyNumberInsurance,'Policy number ?',
-     &    '(<64 characters)',64,D64,'policy number',IER,2)
+     &    '(<64 characters)',64,D64,'policy number',IER,nbhelp)
         call tstamp('>','PRJ: edited insurance policy number')
         write(outs,'(2a)') 'Insurance policy number: ',
      &    policyNumberInsurance(1:lnblnk(policyNumberInsurance))
@@ -3368,15 +3043,12 @@ C The energy assessor's insurance policy number
       ELSEIF(INO.EQ.21)THEN
 
 C Insurance policy start date
-        H(1)='Input the date for start of the insurance. '
-        H(2)='Applicable only for England, Wales & Northern'
-        H(3)='Ireland.'
         CALL EASKI(S_Dinsur,' ','Insurance start (day)?',
-     &    1,'W',31,'W',1,'day',IERI,3)
+     &    1,'W',31,'W',1,'day',IERI,nbhelp)
         CALL EASKI(S_Minsur,' ','Insurance start (month)?',
-     &    1,'W',12,'W',1,'month',IERI,3)
+     &    1,'W',12,'W',1,'month',IERI,nbhelp)
         CALL EASKI(S_Yinsur,' ','Insurance start (year)?',
-     &    1900,'W',2080,'W',2009,'year',IERI,3)
+     &    1900,'W',2080,'W',2009,'year',IERI,nbhelp)
         call tstamp('>','PRJ: edited start date of insurance')
         write(outs,'(A,I2,A,I2,A,I4)') 'Insurance policy start date: ',
      &    S_Dinsur,'  ',S_Minsur,'  ',S_Yinsur
@@ -3384,15 +3056,12 @@ C Insurance policy start date
       ELSEIF(INO.EQ.23)THEN
 
 C Insurance policy expiry date - year
-        H(1)='Input the date for the expiry of the insurance. '
-        H(2)='Applicable only for England, Wales & Northern'
-        H(3)='Ireland.'
         CALL EASKI(E_Dinsur,' ','Insurance expiry (day)?',
-     &    1,'W',31,'W',1,'day',IERI,3)
+     &    1,'W',31,'W',1,'day',IERI,nbhelp)
         CALL EASKI(E_Minsur,' ','Insurance expiry (month)?',
-     &    1,'W',12,'W',1,'month',IERI,3)
+     &    1,'W',12,'W',1,'month',IERI,nbhelp)
         CALL EASKI(E_Yinsur,' ','Insurance expiry (year)?',
-     &    1900,'W',2080,'W',2010,'year',IERI,3)
+     &    1900,'W',2080,'W',2010,'year',IERI,nbhelp)
         call tstamp('>','PRJ: edited expiry date of insurance')
         write(outs,'(A,I2,A,I2,A,I4)')'Insurance policy expiry date: ',
      &    E_Dinsur,'  ',E_Minsur,'  ',E_Yinsur
@@ -3400,11 +3069,8 @@ C Insurance policy expiry date - year
       ELSEIF(INO.EQ.25)THEN
 
 C Insurance policy cover limit
-        H(1)='Input the insurance policy cover limit. '
-        H(2)='Applicable only for England, Wales & Northern'
-        H(3)='Ireland.'
         CALL EASKI(pi_limit,' ','Insurance cover limit?',
-     &    1,'W',999999999,'W',500000,'cover limit',IERI,3)
+     &    1,'W',999999999,'W',500000,'cover limit',IERI,nbhelp)
         call tstamp('>','PRJ: edited insurance cover limit')
         write(outs,'(A,I9)') 'Insurance policy cover limit: ',
      &    pi_limit
@@ -3412,15 +3078,8 @@ C Insurance policy cover limit
       ELSEIF(INO.EQ.27)THEN
 
 C Define the complexity level
-        H(1)='Complexity level of the project. Applicable only for'
-        H(2)='England, Wales & Northern Ireland.'
-        H(3)='There are 4 choices: '
-        H(4)=' Undefined - no opinion (yet)'
-        H(5)=' Level 3 less than 100kW heating & less than 12kW cooling'
-        H(6)=' Level 4 more than 100kW heating & 12kW cooling'
-        H(7)=' Level 5 building cannot be done via sBEM.'
         CALL EASKABCD(' ','Complexity level ?',
-     &    'Undefined','Level 3','Level 4','Level 5',IW,7)
+     &    'Undefined','Level 3','Level 4','Level 5',IW,nbhelp)
         if(IW.eq.1)then
           write(pjLevComplexity,'(A)') 'Undefined'
         elseif(IW.eq.2)then
@@ -3450,8 +3109,6 @@ C EDSBMREGS edits the building regs definition within the UK NCM file.
 
       common/OUTIN/IUOUT,IUIN
       integer iuout,iuin
-      common/pophelp/h(60)
-      character h*72
       integer ncomp,ncon
       common/C1/NCOMP,NCON
 
@@ -3466,6 +3123,13 @@ C EDSBMREGS edits the building regs definition within the UK NCM file.
       logical NEAR
       real Air_infilt
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='edsbmregs'  ! set for subroutine
+
 C Echo the current state of regulations.
       call lstncm('b',iuout)
 
@@ -3475,10 +3139,12 @@ c individual editing of infiltration.
         iedit(iz)=0
  230  continue
 
+      helptopic='ncm_bldg_regs'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       IX=1
       JSTR(1)=IRGG
  902  CALL EPICKS(IX,JSTR,' ','Define building regulations to use',
-     &  50,MREG,BLDREG,'Define building services strategy',IER,2)
+     &  50,MREG,BLDREG,'Define building services strategy',IER,nbhelp)
       IF(JSTR(1).EQ.0)GOTO 902
       if(JSTR(1).LE.4.AND.JSTR(1).GE.1)then
         IRGG=JSTR(1)
@@ -3490,8 +3156,8 @@ c individual editing of infiltration.
 C Enter bulding design stage
       IX=1
       JSTR(1)=ISTG
- 903  CALL EPICKS(IX,JSTR,' ','Define building regulations to use',
-     &  12,MSTG,BLDSTG,'Define building services strategy',IER,2)
+ 903  CALL EPICKS(IX,JSTR,' ','Define building stage to use',
+     &  12,MSTG,BLDSTG,'Define building stage',IER,nbhelp)
       IF(JSTR(1).EQ.0)GOTO 903
       if(JSTR(1).LE.2.AND.JSTR(1).GE.1)then
         ISTG=JSTR(1)
@@ -3505,12 +3171,12 @@ C Enter Scottish building types if Scottish regs to be used
         IX=1
         JSTR(1)=ISBT
  904    CALL EPICKS(IX,JSTR,' ','Define building type',
-     &    40,MSBT,SBTYP,'Define building type',IER,2)
+     &    40,MSBT,SBTYP,'Define building type',IER,nbhelp)
         IF(JSTR(1).EQ.0)GOTO 904
         IF(JSTR(1).LE.2.AND.JSTR(1).GE.1)ISBT=JSTR(1)
         CALL EASKABC('Is the building built/designed following',
      &    'guidance in Accredited Construction Details (Scotland)',
-     &    'yes','no','Do not know',IW,2)
+     &    'yes','no','Do not know',IW,nbhelp)
         IF(IW.EQ.1)THEN
           SBREF='YES'
         ELSE
@@ -3523,11 +3189,11 @@ C Enter Scottish building types if Scottish regs to be used
 C Enter building permeability
       CALL EASKR(BINF50,
      &  'Enter building permeability at 50Pa in m3/m2.hour',
-     &  ' ',0.,'F',0.,'-',10.,'heat gen eff ',IER,2)
+     &  ' ',0.,'F',0.,'-',10.,'heat gen eff ',IER,nbhelp)
       CALL EASKABC(
      &  'Is a compliance check to be performed on the building',
      &  'regarding air permeability value?',
-     &  'yes','no','Do not know',IW,2)
+     &  'yes','no','Do not know',IW,nbhelp)
       IF(IW.EQ.2)THEN
         APCHK='NO '
       ELSE
@@ -3539,12 +3205,13 @@ C communicated by AECOM
 c      CALL EASKABC(
 c     &  'Infer air changes per hour from permeability',
 c     &  'value using CIBSE data',
-c     &  'yes','no','Do not know',IW,2)
+c     &  'yes','no','Do not know',IW,nbhelp)
       IW=1
- 4252 IF(IW.EQ.1)THEN
+      IF(IW.EQ.1)THEN
         ICIBSE1=1 ; ICIBSE2=1 ; ICIBSE3=1 ! initialise
         CALL EPICKS(IX,JSTR,' ','CIBSE building selection',
-     &  54,8,CIBSESTR1,'Pick building that best matches model',IER,2)
+     &    54,8,CIBSESTR1,'Pick building that best matches model',
+     &    IER,nbhelp)
         ICIBSE1=JSTR(1)
         DO 134 IBT=1,4
           IF(ICIBSESTOR(ICIBSE1,IBT).EQ.0)THEN
@@ -3560,8 +3227,9 @@ c     &  'yes','no','Do not know',IW,2)
           ENDIF
  134    CONTINUE
         CALL EPICKS(IX,JSTR,'Pick storeys and floor area ',
-     &  'per floor that best matches model',
-     &  46,4,CIBSESTR2,'Pick closest storeys and/or floor area',IER,2)
+     &    'per floor that best matches model',
+     &    46,4,CIBSESTR2,'Pick closest storeys and/or floor area',
+     &    IER,nbhelp)
         ICIBSE2=JSTR(1)
 
 C Select CIBSE table value that best fits user supplied permeability value
@@ -3589,19 +3257,19 @@ C values are approximations
 
 C Approximate zone infiltration based on volume unless
 C the user already edited the value.
-      do 231 IZ=1,NCOMP
-        CALL ECLOSE(ACH(IZ),0.,0.001,NEAR)
-        if(iedit(iz).ne.1.OR.NEAR)then
-          if(VOL(IZ).gt.0.)then
-            ACH(IZ)=(10.0*ZBASEA(IZ)/VOL(IZ))/20.0
-          else
-            ACH(IZ)=0.0
-            write(outs,'(2A)')
-     &     'Volume of 0 or negative found in zone: ',zname(IZ)
+        do 231 IZ=1,NCOMP
+          CALL ECLOSE(ACH(IZ),0.,0.001,NEAR)
+          if(iedit(iz).ne.1.OR.NEAR)then
+            if(VOL(IZ).gt.0.)then
+              ACH(IZ)=(10.0*ZBASEA(IZ)/VOL(IZ))/20.0
+            else
+              ACH(IZ)=0.0
+              write(outs,'(2A)')
+     &       'Volume of 0 or negative found in zone: ',zname(IZ)
               call edisp(itu,outs)
+            endif
           endif
-        endif
- 231  continue
+ 231    continue
       ENDIF
 
 C Echo back the current state of building regs.
@@ -3639,17 +3307,13 @@ C If a long list include page facility text and info on portion seen.
       ZITEMS(M+3)= '- exit this menu                 '
       nitms=M+3
 
-C Help text for this menu.
-      H(1)='Air leakage rates can be specified for'
-      H(2)='for every zone in terms of air changes per hour. '
-
       CALL EMENU('zone air changes per hour',ZITEMS,nitms,INO)
       IF(INO.EQ.nitms)THEN
         continue
       ELSEIF(INO.EQ.nitms-1)THEN
 
 C Produce help text for the menu.
-        CALL PHELPD('AIR LEAKAGE',2,'-',0,0,IER)
+        CALL PHELPD('AIR LEAKAGE',nbhelp,'-',0,0,IER)
         goto 3
       ELSEIF(INO.EQ.nitms-2)THEN
 
@@ -3664,7 +3328,7 @@ C If there are enough items allow paging control via EKPAGE.
         Air_infilt=ACH(INO)
         CALL EASKR(Air_infilt,' ',
      &   'Air changes per hour for this zone?',0.0,'W',30.0,'W',0.0,
-     &   'air leakage for the zone',IER,0)
+     &   'air leakage for the zone',IER,nbhelp)
         ACH(INO)=Air_infilt
         iedit(ino)=1
         goto 3
@@ -3674,16 +3338,9 @@ C If there are enough items allow paging control via EKPAGE.
 
 C Use existing building type if non-zero.
       call lstncm('b',iuout)
-      h(1)='For the UK National Calculation Method you are required'
-      h(2)='to select one of these building types. '
-      h(3)=' '
-      h(4)='Depending on the type of building the notional model will'
-      h(5)='have different assumptions about glazing areas. The '
-      h(6)='building type will also help in the selection of room '
-      h(7)='use patterns. '
       IX=1
  905  CALL EPICKS(IX,IVALSS,' ','Building type:',
-     &  42,29,BTYPNAME,'building types',IER,7)
+     &  42,29,BTYPNAME,'building types',IER,nbhelp)
       IF(IVALSS(1).EQ.0)GOTO 905
       if(IVALSS(1).gt.0)then
         ibusertyp=IVALSS(1)
@@ -3729,12 +3386,12 @@ C required models ') which returned iuact=1.
       INTEGER :: ifil
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: iuout,iuin
-      common/pophelp/h(60)
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
       INTEGER :: IFCFG
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
@@ -3773,7 +3430,7 @@ C Where ESP-r was installed (as recorded when it was compiled).
       CHARACTER ACT*1,ADF*124
       character cfgroot*24,LCFGF*72,NNAME*72
       character fs*1,msgl2*48,tab*1
-      character outs*124,h*72,GUESS*24
+      character outs*124,GUESS*24
 
       LOGICAL NEWGEO,MODIFY,MODLEN,MODBND
       logical unixok,XST
@@ -3810,6 +3467,13 @@ C For tdf to call arlist:
       integer iloc1,iloc2,iloc3,iloc4,iloc5  !for writing tdf location data in the file
       REAL val_converted
       real ZD  ! depth for ground temp calc
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EMKSTRIPPED'  ! set for subroutine
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -4092,9 +3756,9 @@ C Write control file (filename.ctl is saved to filename_str.ctl)
         XST=.FALSE.
         call FINDFIL(LCTLF,XST)  ! using model path
         IF(XST)THEN
-          H(1) = ' Control file exists. Choose to overwrite in '
-          H(2) = ' question that will follow '
-          CALL PHELPD('File exists',2,'-',0,0,IER)
+          helptopic='ncm_str_ctl_warn'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('File exists',nbhelp,'-',0,0,IER)
         ENDIF
         CALL CTLWRT(ICTLF,IER)
 
@@ -4116,9 +3780,9 @@ C first temporal item.
         XST=.FALSE.
         call findfil(LTDFA,XST)
         IF(XST)THEN
-          H(1)='Temporal data file exists. Choose to overwrite in '
-          H(2)='question that will follow '
-          CALL PHELPD('File exists',2,'-',0,0,IER)
+          helptopic='ncm_str_ctl_warn'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('File exists',nbhelp,'-',0,0,IER)
         ENDIF
         iafil=IUTDFA
         ITDFLG=3
@@ -4321,7 +3985,7 @@ C the minimum/maximum of that column.
             VAL=0.
             CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
             CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
-            TABU(ITCOL(iimport,12))=VAL
+            TABU(ITCOL(iimport,12)) = VAL
             if(TABU(ITCOL(iimport,12)).lt.TABUMN(ITCOL(iimport,12)))
      &        TABUMN(ITCOL(iimport,12))=TABU(ITCOL(iimport,12))
             if(TABU(ITCOL(iimport,12)).gt.TABUMX(ITCOL(iimport,12)))
@@ -4330,7 +3994,7 @@ C the minimum/maximum of that column.
             COLUMNTDF(iarraycount,istrip)=TABU(ITCOL(iimport,12))
 
             CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
-            TABU(ITCOL(iimport,13))=VAL
+            TABU(ITCOL(iimport,13)) = VAL
             if(TABU(ITCOL(iimport,13)).lt.TABUMN(ITCOL(iimport,13)))
      &        TABUMN(ITCOL(iimport,13))=TABU(ITCOL(iimport,13))
             if(TABU(ITCOL(iimport,13)).gt.TABUMX(ITCOL(iimport,13)))
@@ -4339,7 +4003,7 @@ C the minimum/maximum of that column.
             COLUMNTDF(iarraycount,istrip)=TABU(ITCOL(iimport,13))
 
             CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
-            TABU(ITCOL(iimport,14))=VAL
+            TABU(ITCOL(iimport,14)) = VAL
             if(TABU(ITCOL(iimport,14)).lt.TABUMN(ITCOL(iimport,14)))
      &        TABUMN(ITCOL(iimport,14))=TABU(ITCOL(iimport,14))
             if(TABU(ITCOL(iimport,14)).gt.TABUMX(ITCOL(iimport,14)))
@@ -4348,7 +4012,7 @@ C the minimum/maximum of that column.
             COLUMNTDF(iarraycount,istrip)=TABU(ITCOL(iimport,14))
 
             CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
-            TABU(ITCOL(iimport,15))=INT(VAL)
+            TABU(ITCOL(iimport,15))= VAL
             if(TABU(ITCOL(iimport,15)).lt.TABUMN(ITCOL(iimport,15)))
      &        TABUMN(ITCOL(iimport,15))=TABU(ITCOL(iimport,15))
             if(TABU(ITCOL(iimport,15)).gt.TABUMX(ITCOL(iimport,15)))
@@ -4357,7 +4021,7 @@ C the minimum/maximum of that column.
             COLUMNTDF(iarraycount,istrip)=TABU(ITCOL(iimport,15))
 
             CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
-            TABU(ITCOL(iimport,16))=INT(VAL)
+            TABU(ITCOL(iimport,16))= VAL
             if(TABU(ITCOL(iimport,16)).lt.TABUMN(ITCOL(iimport,16)))
      &        TABUMN(ITCOL(iimport,16))=TABU(ITCOL(iimport,16))
             if(TABU(ITCOL(iimport,16)).gt.TABUMX(ITCOL(iimport,16)))
@@ -4455,17 +4119,16 @@ C This routine assumes newer geometry files are being used.
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/C1/NCOMP,NCON
       integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/C24/IZSTOCN(MCOM,MS)
       INTEGER :: IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       common/FILEP/IFIL
 
@@ -4473,7 +4136,7 @@ C This routine assumes newer geometry files are being used.
       character EXT*4    ! up to 4 characters in file extension
       character APE*6    ! up to 6 characters in variant name
       CHARACTER CFGROOT*24
-      CHARACTER LCFGF*72,NNAME*72,H*72
+      CHARACTER LCFGF*72,NNAME*72
       CHARACTER OUTS*124,ADF*124,SNM*12,USE*8,USE2*8
       character SN*12
       CHARACTER*12 XJCCU,XKCCU
@@ -4496,18 +4159,22 @@ C      logical closeelv ! true if surface is close to vertical
       integer LOOPMAX  ! loop iterator for shifting surface list
       integer ISCURRENT ! the current connection to be deleted
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EMKSBM'  ! set for subroutine
+
 C Initialise variables
       SN=' '
 
 C Check if Notional Model Flag has been set (NCM data has been defined)
 C If not then advise user and send him/her back
       IF(ISBEM.NE.2)THEN
-        H(1) = 'You have not defined NCM details about the building. '
-        H(2) = 'These can be defined by choosing model context in the '
-        H(3) = 'browse / edit / simulate menu and then choosing  '
-        H(4) = 'option UK NCM specifications. '
-        H(5) = 'You are being returned to the NCM editing facility. '
-        CALL PHELPD('NCM details undefined!',5,'-',0,0,IER)
+        helptopic='ncm_details_missing'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('NCM details undefined!',nbhelp,'-',0,0,IER)
         ier=2  ! signal insufficient details
         RETURN
       ENDIF
@@ -4551,6 +4218,9 @@ C As they will be in the standard database folder use the *std...
 C Loop through each zone in the model and first scan in the zone
 C geometry, next use surrel to update parent/child information and
 C write out the zone.
+
+C << Zones which should not participate in the NCM geometric revisions
+C << (e.g. a zero activity) need to be marked at this point.
       DO 550 ICOMP=1,NCOMP
         IUF=IFIL+2
         EXT='.geo'
@@ -4563,11 +4233,9 @@ C write out the zone.
           ier = 2
         endif
         if(ier.ne.0)then
-          H(1)='A problem was found when scanning the origial'
-          H(2)='model geometry. You may need to alter the original'
-          H(3)='model in order to proceed.'
-          H(4)='You are being returned to the NCM editing facility. '
-          CALL PHELPD('NCM details undefined!',4,'-',0,0,IER)
+          helptopic='ncm_geom_scan_issue'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('NCM details undefined!',nbhelp,'-',0,0,IER)
           ier=3  ! signal geometry issue
           return
         endif
@@ -4614,10 +4282,9 @@ C Make a copy of constructions file and tmc file if applicable.
         LTWIN(ICOMP)=NNAME
         CALL MKTWIN(IFU,ICOMP,QUIET,IER)
         if(ier.ne.0)then
-          H(1)='A problem was found when copying origial'
-          H(2)='model files. Check if you have write permission.'
-          H(3)='You are being returned to the NCM editing facility. '
-          CALL PHELPD('NCM details undefined!',3,'-',0,0,IER)
+          helptopic='ncm_file_copy_issue'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('NCM details undefined!',nbhelp,'-',0,0,IER)
           ier=4  ! signal geometry issue
           return
         endif
@@ -4665,9 +4332,9 @@ C Re-establish glazing fractions based on UK NCM guidelines
         WALLFRFR=0.10
         GLZFR=0.
       else
-        H(1)='A problem was found - the NCM building type'
-        H(2)='was not defined. Please do this and try again.'
-        CALL PHELPD('NCM building type undefined!',2,'-',0,0,IER)
+        helptopic='ncm_bld_type_not'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('NCM building type undefined!',nbhelp,'-',0,0,IER)
         ier=5  ! signal ncm issue
         return
       endif
@@ -4675,7 +4342,7 @@ C Re-establish glazing fractions based on UK NCM guidelines
 
 C Loop through each zone in the model and if ivalsg was set earlier
 C then read in the zone geometry file to re-gather information on
-C parent child relationships
+C parent child relationships.
       DO 559 ICOMP=1,NCOMP
         IELF=0
         if(ivalsg(icomp).eq.icomp)then
@@ -4688,18 +4355,25 @@ C Get surface areas via call to zinfo.
 
 C Get gross area of this surface (add child areas to it)
 C Areas of parents are hence held as parent + child in TARSURF and
-C areas of children are held as 0.0
-C For each surface in this zone
+C areas of children are held as 0.0.
+
+C << Surfaces marked frame would be removed if they are child surfaces
+C << of a wall or roof. If they are geometrically parent surfaces ?? >>
+
+C << for fully glazed facades transparent surfaces may not be
+C << child surfaces and the logic needs to be revised.
+
+C For each surface in this zone.
           do 555 isur=1,nzsur(icomp)
             ICC=IZSTOCN(icomp,isur)
             write(SNM,'(a)') SSUSE(ICC,1)
 
-C For all exterior surfaces that are wall or roof
+C For all exterior surfaces that are marked wall or roof.
             if(ssother(icc,1)(1:8).eq.'EXTERIOR'.AND.(
      &      SNM(1:4).EQ.'WALL'.or.SNM(1:4).EQ.'ROOF'))then
 
 C Only the following types of areas will be retained in this exterior
-C type surface with use roof or wall
+C type surface with use roof or wall.
               XPDAREA(ICC)=0. ! pedestrian door area in this parent
               XVDAREA(ICC)=0. ! vehicular door area in this parent
               XDWAREA(ICC)=0. ! display window area in this parent
@@ -4729,6 +4403,9 @@ C type surface with use roof or wall
                 ENDIF
  5500         CONTINUE
               DO 553 ICHL=1,NBCHILD(ICC)
+
+C Mark child surfaces for removal (via IRMV) and add their surface
+C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
                 JCC=ICHILD(ICC,ICHL)
                 NRMV(icomp)=NRMV(icomp)+1
                 IRMV(ICOMP,NRMV(icomp))=JCC
@@ -4814,13 +4491,15 @@ C connection based).
 C Debug.
 C          write(6,*) 'ir is ',ir,' removing surf ',is,' in zone ',icomp
 
+C Re-scan the geometry, use ADDSUR to delete surface index 'is' and then
+C update the model cfg file and then re-write the geometry file.
           iopt=0
           call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
           CALL ADDSUR(ITRC,ICOMP,IS,'D','A',iopt,IER)
           CALL EMKCFG('-',IER)
           call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
 
-C Update the image.
+C Update the image if working in graphics mode.
           if(MMOD.eq.8)then
             MODBND=.TRUE.
             MODIFY=.TRUE.
@@ -4843,7 +4522,8 @@ C in the current zone check its attributes.
           ICC=IZSTOCN(icomp,isur)
           SNM=SSUSE(ICC,1)
 
-C For all exterior surfaces that are wall or roof
+C For all exterior surfaces that are wall or roof define the
+C glazing and frame percentage.
           if(ssother(icC,1)(1:8).eq.'EXTERIOR'.AND.(
      &    SNM(1:4).EQ.'WALL'.or.SNM(1:4).EQ.'ROOF'))then
             IF(SNM(1:4).EQ.'WALL')THEN
@@ -4870,7 +4550,11 @@ C additional windows
  557  continue
 
 C Now loop through the model in reverse zone order and
-C add required surfaces.
+C add required surfaces. If there was a pedestrian door or a
+C vehicle door or display glazing then re-instate them. You will
+C notice several repeating blocks of code below which carries this
+C out. If the logic in one is updated then check the others to
+C ensure they are updated (if required).
 C << need to trap error state in georead >>
       DO 551 ICOMP=NCOMP,1,-1
         NUMBS=NZSUR(ICOMP)
@@ -4880,12 +4564,13 @@ C << need to trap error state in georead >>
           ICON=IZSTOCN(icomp,nsur)  ! the last surface in the zone
           IELF=0
           ICC=IZSTOCN(icomp,isur)   ! connection for current surface
-          COE(1)=SSURCOG(ICC,1)
+          COE(1)=SSURCOG(ICC,1)     ! centre of gravity for current surface
           COE(2)=SSURCOG(ICC,2)
           COE(3)=SSURCOG(ICC,3)
           SNM=SSUSE(ICC,1)
 
-C For all exterior surfaces that are wall or roof
+C For all exterior surfaces that are wall or roof set the glazing
+C and frame areas.
           if(ssother(icC,1)(1:8).eq.'EXTERIOR'.AND.
      &      (SNM(1:4).EQ.'WALL'.or.SNM(1:4).EQ.'ROOF'))then
             IF(SNM(1:4).EQ.'WALL')THEN
@@ -4903,7 +4588,7 @@ C Get scale factors
             SCALEFACTORPD=SQRT(REQDAREA/TOTAREA)
             SCALEFACTORFR=SQRT(FRMFR)
 
-C First put pedestrian door in
+C First put pedestrian door in if there was one in the original model.
             CALL ECLOSE(XPDAREA(ICC),0.0,0.01,NEAR)
             IF(.NOT.NEAR)THEN
               IELF=IELF+1
@@ -4971,7 +4656,7 @@ C added as child of door and not child of original surface.
               is=nsur
               TOTAREA=REQDAREA
 
-C Update the image.
+C Update the wireframe image if running in graphics mode.
               if(MMOD.eq.8)then
                 MODBND=.TRUE.
                 MODIFY=.TRUE.
@@ -4984,9 +4669,9 @@ C Update the image.
               endif
             ENDIF
 
-C Now put vehicle door in
+C Now put vehicle door in if there was one in the original model.
             REQDAREA=XVDAREA(ICC)+
-     &      XDWAREA(ICC)+XNWAREA(ICC)
+     &               XDWAREA(ICC)+XNWAREA(ICC)
             SCALEFACTORVD=SQRT(REQDAREA/TOTAREA)
             CALL ECLOSE(XVDAREA(ICC),0.0,0.01,NEAR)
             IF(.NOT.NEAR)THEN
@@ -5055,7 +4740,7 @@ C added as child of door and not child of original surface.
               is=nsur
               TOTAREA=REQDAREA
 
-C Update the image.
+C Update the image if running in graphics mode.
               if(MMOD.eq.8)then
                 MODBND=.TRUE.
                 MODIFY=.TRUE.
@@ -5068,7 +4753,7 @@ C Update the image.
               endif
             ENDIF
 
-C Now put display glazing in
+C Now put display glazing in if there was one in the original model.
             REQDAREA=XDWAREA(ICC)+XNWAREA(ICC)
             SCALEFACTORDG=SQRT(REQDAREA/TOTAREA)
             CALL ECLOSE(XDWAREA(ICC),0.0,0.01,NEAR)
@@ -5138,7 +4823,7 @@ C added as child of door and not child of original surface.
               is=nsur
               TOTAREA=REQDAREA
 
-C Update the image.
+C Update the image if running in graphic mode.
               if(MMOD.eq.8)then
                 MODBND=.TRUE.
                 MODIFY=.TRUE.
@@ -5151,7 +4836,8 @@ C Update the image.
               endif
             ENDIF
 
-C Now put glazing and frame
+C Now put glazing and frame based on the NCM requirements (there might
+C not have been a window or frame in the original model).
             REQDAREA=XNWAREA(ICC)
             SCALEFACTORNG=SQRT(REQDAREA/TOTAREA)
             CALL ECLOSE(XNWAREA(ICC),0.0,0.01,NEAR)
@@ -5216,7 +4902,7 @@ C Update connections list before displaying notional model zone
               call emkcfg('-',IER)
               is=nsur
 
-C Update the image.
+C Update the image if running in graphic mode.
               if(MMOD.eq.8)then
                 MODBND=.TRUE.
                 MODIFY=.TRUE.
@@ -5228,7 +4914,8 @@ C Update the image.
                 call pausems(500)
               endif
 
-C Now put frame
+C Now put frame based on the NCM requirements (e.g. there might not have
+C been a frame in the original model).
               IELF=IELF+1
               ICON=ICON+1
               NSUR=NSUR+1
@@ -5287,7 +4974,7 @@ C Update connections list before displaying notional model zone
               call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
               call emkcfg('-',IER)
 
-C Update the image.
+C Update the image if running in graphic mode.
               if(MMOD.eq.8)then
                 MODBND=.TRUE.
                 MODIFY=.TRUE.
@@ -5366,7 +5053,7 @@ C << need to find mlc index of each Wall_Scot_no etc for ssmlcindex >>
               ENDIF
             ENDIF
           ELSEIF(ssother(icc,1)(1:6).eq.'GROUND')THEN
-              SSMLCN(ICC)='Sol_grnd_not'
+            SSMLCN(ICC)='Sol_grnd_not'
           ELSE
             IF(USE(1:5).EQ.'FLOOR')THEN
               SSMLCN(ICC)='pa_fl_notion'
@@ -5392,14 +5079,15 @@ C << need to find mlc index of each Wall_Scot_no etc for ssmlcindex >>
           ENDIF
  601    CONTINUE
 
-C Add 10% thermal bridge by silently calling appropriate subroutine
+C Add 10% thermal bridge by silently calling appropriate subroutine.
+C This will overwrite thermal bridge information in the original model.
         CALL LINTHBRDG(ICOMP,'s',0.1)
 
 C Write geometry file version 1.1 (1.0 does not support UK NCM)
         call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
         QUIET=.TRUE.
 
-C Update constructions and tmc files if applicable
+C Update constructions and tmc files if applicable.
         CALL EDCON(ITRC,ITRU,ICOMP,QUIET,IER)
  600  CONTINUE
       RETURN
@@ -5462,11 +5150,11 @@ C Changes to the model are then made.
       CHARACTER CFGROOT*24,LCFGF*72
       INTEGER IFCFG
 
-      common/C1/NCOMP,NCON
       integer ncomp,ncon
+      common/C1/NCOMP,NCON
 
-      COMMON/C24/IZSTOCN(MCOM,MS)
       INTEGER IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       INTEGER IER,LNBLNK,ICOMP,IUNIT,ITRU,ITRC,ILEN,IFU,IUF,I,ICC,lns
       LOGICAL QUIET,XST
@@ -5647,8 +5335,8 @@ C on to child with an offset from prj start position.
         call edisp248(iuout,doit,100)
       else
         write(doit,'(5a)') 'bps -file ',
-     &      longtfile(1:lnblnk(longtfile)),' -p ',
-     &      'stripped ',aut
+     &    longtfile(1:lnblnk(longtfile)),' -p ',
+     &    'stripped ',aut
         tmode='graph'
         call edisp248(iuout,doit,100)
         call tchild(ICPMOD)   ! find out if in text or graphic mode
@@ -5708,15 +5396,12 @@ C IMODE = 4 -> Typical model
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
 
-      common/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
+      common/C1/NCOMP,NCON
 
       COMMON/C21/IFCFG,CFGROOT,LCFGF
       INTEGER IFCFG
       CHARACTER CFGROOT*24,LCFGF*72
-
-      common/pophelp/h(60)
-      character h*72
 
       INTEGER IUR,ND,ISTAT,K,LTW2,ICDHW,IER,IMODE,
      & ICHT,ICCL,ICLT,ICAUX,LZNL,IM,Istart,Ifinish,INDX,icomp
@@ -5736,6 +5421,14 @@ C Monthly averaging parameters
       REAL Cool_Supply(12), Cool_Demand(12)
       REAL Aux_Supply(12)
       REAL Light_Supply(12)
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='RSL6TF'  ! set for subroutine
+
       DO 34 IM=1,12
         DHW_Supply(IM)  =0. ; DHW_Demand(IM)  =0.
         Heat_Supply(IM) =0. ; Heat_Demand(IM) =0.
@@ -5756,12 +5449,14 @@ C Get text file name and initialise variables
       ELSE ! warn if file could not be opened
         write(outs,'(2a)') 'could not open ',ltxtf(1:72)
         call edisp(iuout,outs)
-        H(1)='name of the text result file'
+        helptopic='ncm_save_six_file'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKS(LTXTF,'Name of text results file?',
-     &    '(<72 characters)',72,'result.txt','text res file',IER,1)
+     &    '(<72 characters)',72,'result.txt','text res file',
+     &    IER,nbhelp)
         CALL EFOPSEQ(IUR,LTXTF,1,IER)
         if(ier.eq.0)THEN
-        write(currentfile,'(a)') LTXTF(1:lnblnk(LTXTF))
+          write(currentfile,'(a)') LTXTF(1:lnblnk(LTXTF))
         else
           call usrmsg('Unable to file text result file named',
      &      ltxtf,'W')
@@ -5792,70 +5487,70 @@ C models
         else
 
 C Heated and Mechanically ventilated
-        IF(INCMSYS(IHLZ(ICHT)).EQ.4)THEN
-          IF(IMODE.EQ.2)THEN
-            Heating_efficiency=0.78
-          ELSEIF(IMODE.EQ.3)THEN
-            Heating_efficiency=0.73
-          ELSEIF(IMODE.EQ.4)THEN
-            Heating_efficiency=0.55
-          ENDIF
+          IF(INCMSYS(IHLZ(ICHT)).EQ.4)THEN
+            IF(IMODE.EQ.2)THEN
+              Heating_efficiency=0.78
+            ELSEIF(IMODE.EQ.3)THEN
+              Heating_efficiency=0.73
+            ELSEIF(IMODE.EQ.4)THEN
+              Heating_efficiency=0.55
+            ENDIF
 
 C Heated and naturally ventilated (or heated only)
-        ELSEIF(INCMSYS(IHLZ(ICHT)).LE.11)THEN
-          IF(IMODE.EQ.2)THEN
-            Heating_efficiency=0.73
-          ELSEIF(IMODE.EQ.3)THEN
-            Heating_efficiency=0.73
-          ELSEIF(IMODE.EQ.4)THEN
-            Heating_efficiency=0.55
-          ENDIF
+          ELSEIF(INCMSYS(IHLZ(ICHT)).LE.11)THEN
+            IF(IMODE.EQ.2)THEN
+              Heating_efficiency=0.73
+            ELSEIF(IMODE.EQ.3)THEN
+              Heating_efficiency=0.73
+            ELSEIF(IMODE.EQ.4)THEN
+              Heating_efficiency=0.55
+            ENDIF
 
 C Air conditioned
-        ELSE
-          IF(IMODE.EQ.2)THEN
-            Heating_efficiency=0.83
-          ELSEIF(IMODE.EQ.3)THEN
-            Heating_efficiency=0.73
-          ELSEIF(IMODE.EQ.4)THEN
-            Heating_efficiency=0.55
+          ELSE
+            IF(IMODE.EQ.2)THEN
+              Heating_efficiency=0.83
+            ELSEIF(IMODE.EQ.3)THEN
+              Heating_efficiency=0.73
+            ELSEIF(IMODE.EQ.4)THEN
+              Heating_efficiency=0.55
+            ENDIF
           ENDIF
-        ENDIF
         endif
 
 C Heated and Mechanically ventilated.
         if(IHLZ(ICCL).eq.0)then
           Cooling_efficiency=0.  ! if no system set eff to zero
         else
-        IF(INCMSYS(IHLZ(ICCL)).EQ.4)THEN
-          IF(IMODE.EQ.2)THEN
-            Cooling_efficiency=0.
-          ELSEIF(IMODE.EQ.3)THEN
-            Cooling_efficiency=2.25
-          ELSEIF(IMODE.EQ.4)THEN
-            Cooling_efficiency=0.
-          ENDIF
+          IF(INCMSYS(IHLZ(ICCL)).EQ.4)THEN
+            IF(IMODE.EQ.2)THEN
+              Cooling_efficiency=0.
+            ELSEIF(IMODE.EQ.3)THEN
+              Cooling_efficiency=2.25
+            ELSEIF(IMODE.EQ.4)THEN
+              Cooling_efficiency=0.
+            ENDIF
 
 C Heated and naturally ventilated (or heated only)
-        ELSEIF(INCMSYS(IHLZ(ICCL)).LE.11)THEN
-          IF(IMODE.EQ.2)THEN
-            Cooling_efficiency=0.
-          ELSEIF(IMODE.EQ.3)THEN
-            Cooling_efficiency=2.25
-          ELSEIF(IMODE.EQ.4)THEN
-            Cooling_efficiency=0.
-          ENDIF
+          ELSEIF(INCMSYS(IHLZ(ICCL)).LE.11)THEN
+            IF(IMODE.EQ.2)THEN
+              Cooling_efficiency=0.
+            ELSEIF(IMODE.EQ.3)THEN
+              Cooling_efficiency=2.25
+            ELSEIF(IMODE.EQ.4)THEN
+              Cooling_efficiency=0.
+            ENDIF
 
 C Air conditioned
-        ELSE
-          IF(IMODE.EQ.2)THEN
-            Cooling_efficiency=1.67
-          ELSEIF(IMODE.EQ.3)THEN
-            Cooling_efficiency=2.25
-          ELSEIF(IMODE.EQ.4)THEN
-            Cooling_efficiency=1.17
+          ELSE
+            IF(IMODE.EQ.2)THEN
+              Cooling_efficiency=1.67
+            ELSEIF(IMODE.EQ.3)THEN
+              Cooling_efficiency=2.25
+            ELSEIF(IMODE.EQ.4)THEN
+              Cooling_efficiency=1.17
+            ENDIF
           ENDIF
-        ENDIF
         endif
 
         IF(IMODE.EQ.1)THEN
@@ -5874,13 +5569,13 @@ C Air conditioned
             if(IHLZ(ICHT).eq.0)then
               Heating_efficiency=0.0
             else
-            Heating_efficiency=HGEF(IHLZ(ICHT))
+              Heating_efficiency=HGEF(IHLZ(ICHT))
             endif
             if(IHLZ(ICCL).eq.0)then
               Cooling_efficiency=0.0
             else
-            Cooling_efficiency=CGEF(IHLZ(ICCL))
-          endif
+              Cooling_efficiency=CGEF(IHLZ(ICCL))
+            endif
           endif
         ELSE
           IF(IDHWLZ(ICDHW).EQ.0)IDHWLZ(ICDHW)=-1*IHLZ(ICDHW)
@@ -5917,8 +5612,8 @@ C Get month no. for DHW, aux and lights
 C z_DHW_Month_ can be followed by kWh or MJ.
           if(WORD3(15:17).EQ.'kWh'.OR.WORD3(16:18).EQ.'kWh'.or.
      &       WORD3(15:16).EQ.'MJ'.OR.WORD3(16:17).EQ.'MJ')THEN
-          Istart=13 ; Ifinish=14
-          Getmonth=.true.
+            Istart=13 ; Ifinish=14
+            Getmonth=.true.
           endif
         ELSEIF(WORD3(1:9).EQ.'z_Lights')THEN
           Istart=16 ; Ifinish=17
@@ -6622,212 +6317,212 @@ C Write summary Latex input text
           write(91,*)"\\multicolumn{8}{|c|}{Actual model (annual results
      &)} \\\\"
           write(91,*)"\\hline"
-	  write(91,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
+          write(91,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
      &ts & Gas & Electricity \\\\"
-	  write(91,*)"\\hline"
-	  write(91,'(f6.2,7(a,f6.2),a)')BER,
+          write(91,*)"\\hline"
+          write(91,'(f6.2,7(a,f6.2),a)')BER,
      &" & ",A," & ",B," & ",C," & ",D," & ",E," & ",F," & ",G," \\\\"
-	  write(91,*)"\\hline"
-	  write(91,*)"\\multicolumn{8}{|c|}{ }\\\\"
-	  write(91,*)"\\hline"
-	ELSEIF(IMODE.EQ.2)THEN
-	  write(91,*)""
+          write(91,*)"\\hline"
+          write(91,*)"\\multicolumn{8}{|c|}{ }\\\\"
+          write(91,*)"\\hline"
+        ELSEIF(IMODE.EQ.2)THEN
+          write(91,*)""
           write(91,*)"\\hline"
           write(91,*)"CO2 $kg/m^{2}$ & \\multicolumn{7}{|c|}{Energy $kWh
      &/m^{2}$} \\\\"
           write(91,*)"\\hline"
-	  write(91,*)"\\multicolumn{8}{|c|}{Notional model (annual resul
+          write(91,*)"\\multicolumn{8}{|c|}{Notional model (annual resul
      &ts)} \\\\"
-	  write(91,*)"\\hline"
-	  write(91,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
+          write(91,*)"\\hline"
+          write(91,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
      &ts & Gas & Electricity \\\\"
-	  write(91,*)"\\hline"
-	  write(91,'(f6.2,7(a,f6.2),a)')AER,
+          write(91,*)"\\hline"
+          write(91,'(f6.2,7(a,f6.2),a)')AER,
      &" & ",A," & ",B," & ",C," & ",D," & ",E," & ",F," & ",G," \\\\"
-	  write(91,*)"\\hline"
-	  write(91,*)"\\multicolumn{8}{|c|}{ }\\\\"
-	  write(91,*)"\\hline"
-	  write(91,*)""
-	ELSEIF(IMODE.EQ.3)THEN
-	  write(91,*)"\\multicolumn{8}{|c|}{Reference model (annual resu
+          write(91,*)"\\hline"
+          write(91,*)"\\multicolumn{8}{|c|}{ }\\\\"
+          write(91,*)"\\hline"
+          write(91,*)""
+        ELSEIF(IMODE.EQ.3)THEN
+          write(91,*)"\\multicolumn{8}{|c|}{Reference model (annual resu
      &lts)} \\\\"
-	  write(91,*)"\\hline"
-	  write(91,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
+          write(91,*)"\\hline"
+          write(91,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
      &ts & Gas & Electricity \\\\"
-	  write(91,*)"\\hline"
-	  write(91,'(f6.2,7(a,f6.2),a)')RER,
+          write(91,*)"\\hline"
+          write(91,'(f6.2,7(a,f6.2),a)')RER,
      &" & ",A," & ",B," & ",C," & ",D," & ",E," & ",F," & ",G," \\\\"
-	  write(91,*)"\\hline"
+          write(91,*)"\\hline"
         ENDIF
 
 C Write detailed Latex input file
         IF(IMODE.EQ.1)THEN
-	  write(92,*)"\\hline"
-	  write(92,*)"\\multicolumn{8}{|c|}{Actual model Energy $kWh/m^{
+          write(92,*)"\\hline"
+          write(92,*)"\\multicolumn{8}{|c|}{Actual model Energy $kWh/m^{
      &2}$} \\\\"
-	  write(92,*)"\\hline"
-	  write(92,*)"Month & Heating & Cooling & DHW & Auxiliary & Ligh
+          write(92,*)"\\hline"
+          write(92,*)"Month & Heating & Cooling & DHW & Auxiliary & Ligh
      &ts & Gas & Electricity \\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Jan & ",T(1)," & ",U(1)," & ",V(1)," & ",W(1),
      &" & ",XX(1)," & ",YY(1)," & ",ZZ(1),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Feb & ",T(2)," & ",U(2)," & ",V(2)," & ",W(2),
      &" & ",XX(2)," & ",YY(2)," & ",ZZ(2),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Mar & ",T(3)," & ",U(3)," & ",V(3)," & ",W(3),
      &" & ",XX(3)," & ",YY(3)," & ",ZZ(3),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Apr & ",T(4)," & ",U(4)," & ",V(4)," & ",W(4),
      &" & ",XX(4)," & ",YY(4)," & ",ZZ(4),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"May & ",T(5)," & ",U(5)," & ",V(5)," & ",W(5),
      &" & ",XX(5)," & ",YY(5)," & ",ZZ(5),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Jun & ",T(6)," & ",U(6)," & ",V(6)," & ",W(6),
      &" & ",XX(6)," & ",YY(6)," & ",ZZ(6),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Jul & ",T(7)," & ",U(7)," & ",V(7)," & ",W(7),
      &" & ",XX(7)," & ",YY(7)," & ",ZZ(7),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Aug & ",T(8)," & ",U(8)," & ",V(8)," & ",W(8),
      &" & ",XX(8)," & ",YY(8)," & ",ZZ(8),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Sep & ",T(9)," & ",U(9)," & ",V(9)," & ",W(9),
      &" & ",XX(9)," & ",YY(9)," & ",ZZ(9),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Oct & ",T(10)," & ",U(10)," & ",V(10)," & ",W(10),
      &" & ",XX(10)," & ",YY(10)," & ",ZZ(10),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Nov & ",T(11)," & ",U(11)," & ",V(11)," & ",W(11),
      &" & ",XX(11)," & ",YY(11)," & ",ZZ(11),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Dec & ",T(12)," & ",U(12)," & ",V(12)," & ",W(12),
      &" & ",XX(12)," & ",YY(12)," & ",ZZ(12),"\\\\"
-	  write(92,*)"\\hline"
-	ELSEIF(IMODE.EQ.2)THEN
-	  write(92,*)"\\multicolumn{8}{|c|}{Notional model Energy $kWh/m
+          write(92,*)"\\hline"
+        ELSEIF(IMODE.EQ.2)THEN
+          write(92,*)"\\multicolumn{8}{|c|}{Notional model Energy $kWh/m
      &^{2}$} \\\\"
-	  write(92,*)"\\hline"
-	  write(92,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
+          write(92,*)"\\hline"
+          write(92,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
      &ts & Gas & Electricity \\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Jan & ",T(1)," & ",U(1)," & ",V(1)," & ",W(1),
      &" & ",XX(1)," & ",YY(1)," & ",ZZ(1),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Feb & ",T(2)," & ",U(2)," & ",V(2)," & ",W(2),
      &" & ",XX(2)," & ",YY(2)," & ",ZZ(2),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Mar & ",T(3)," & ",U(3)," & ",V(3)," & ",W(3),
      &" & ",XX(3)," & ",YY(3)," & ",ZZ(3),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Apr & ",T(4)," & ",U(4)," & ",V(4)," & ",W(4),
      &" & ",XX(4)," & ",YY(4)," & ",ZZ(4),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"May & ",T(5)," & ",U(5)," & ",V(5)," & ",W(5),
      &" & ",XX(5)," & ",YY(5)," & ",ZZ(5),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Jun & ",T(6)," & ",U(6)," & ",V(6)," & ",W(6),
      &" & ",XX(6)," & ",YY(6)," & ",ZZ(6),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Jul & ",T(7)," & ",U(7)," & ",V(7)," & ",W(7),
      &" & ",XX(7)," & ",YY(7)," & ",ZZ(7),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Aug & ",T(8)," & ",U(8)," & ",V(8)," & ",W(8),
      &" & ",XX(8)," & ",YY(8)," & ",ZZ(8),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Sep & ",T(9)," & ",U(9)," & ",V(9)," & ",W(9),
      &" & ",XX(9)," & ",YY(9)," & ",ZZ(9),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Oct & ",T(10)," & ",U(10)," & ",V(10)," & ",W(10),
      &" & ",XX(10)," & ",YY(10)," & ",ZZ(10),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Nov & ",T(11)," & ",U(11)," & ",V(11)," & ",W(11),
      &" & ",XX(11)," & ",YY(11)," & ",ZZ(11),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Dec & ",T(12)," & ",U(12)," & ",V(12)," & ",W(12),
      &" & ",XX(12)," & ",YY(12)," & ",ZZ(12),"\\\\"
-	  write(92,*)"\\hline"
-	ELSEIF(IMODE.EQ.3)THEN
-	  write(92,*)"\\multicolumn{8}{|c|}{Reference model Energy $kWh/
+          write(92,*)"\\hline"
+        ELSEIF(IMODE.EQ.3)THEN
+          write(92,*)"\\multicolumn{8}{|c|}{Reference model Energy $kWh/
      &m^{2}$} \\\\"
-	  write(92,*)"\\hline"
-	  write(92,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
+          write(92,*)"\\hline"
+          write(92,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
      &ts & Gas & Electricity \\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Jan & ",T(1)," & ",U(1)," & ",V(1)," & ",W(1),
      &" & ",XX(1)," & ",YY(1)," & ",ZZ(1),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Feb & ",T(2)," & ",U(2)," & ",V(2)," & ",W(2),
      &" & ",XX(2)," & ",YY(2)," & ",ZZ(2),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Mar & ",T(3)," & ",U(3)," & ",V(3)," & ",W(3),
      &" & ",XX(3)," & ",YY(3)," & ",ZZ(3),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Apr & ",T(4)," & ",U(4)," & ",V(4)," & ",W(4),
      &" & ",XX(4)," & ",YY(4)," & ",ZZ(4),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"May & ",T(5)," & ",U(5)," & ",V(5)," & ",W(5),
      &" & ",XX(5)," & ",YY(5)," & ",ZZ(5),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Jun & ",T(6)," & ",U(6)," & ",V(6)," & ",W(6),
      &" & ",XX(6)," & ",YY(6)," & ",ZZ(6),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Jul & ",T(7)," & ",U(7)," & ",V(7)," & ",W(7),
      &" & ",XX(7)," & ",YY(7)," & ",ZZ(7),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Aug & ",T(8)," & ",U(8)," & ",V(8)," & ",W(8),
      &" & ",XX(8)," & ",YY(8)," & ",ZZ(8),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Sep & ",T(9)," & ",U(9)," & ",V(9)," & ",W(9),
      &" & ",XX(9)," & ",YY(9)," & ",ZZ(9),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Oct & ",T(10)," & ",U(10)," & ",V(10)," & ",W(10),
      &" & ",XX(10)," & ",YY(10)," & ",ZZ(10),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Nov & ",T(11)," & ",U(11)," & ",V(11)," & ",W(11),
      &" & ",XX(11)," & ",YY(11)," & ",ZZ(11),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,'(7(a,f6.2),a)')
+          write(92,*)"\\hline"
+          write(92,'(7(a,f6.2),a)')
      &"Dec & ",T(12)," & ",U(12)," & ",V(12)," & ",W(12),
      &" & ",XX(12)," & ",YY(12)," & ",ZZ(12),"\\\\"
-	  write(92,*)"\\hline"
-	  write(92,*)""
+          write(92,*)"\\hline"
+          write(92,*)""
         ENDIF
       ENDIF
       RETURN
@@ -6854,8 +6549,8 @@ C Part F for Northern Ireland.
 #include "building.h"
 #include "geometry.h"
 
-      common/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
+      common/C1/NCOMP,NCON
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
@@ -7097,61 +6792,61 @@ C Integrate zonal base area
 
 C Heating energy for stripped model. Calculate energy generated
         IF(IHLZP.NE.0)THEN ! Only if there is plant linked to this zone
-        call eclose(HGEF(IHLZP),0.0,0.001,near)
-        if(near)then
-          BERHEAT_afterefficiency(ICOMP)=0.
-        else  
-          if(iDsmTestingFlag.eq.2)then
-            BERHEAT_afterefficiency(ICOMP)=BERHEAT(ICOMP)/0.73
-          else
-            BERHEAT_afterefficiency(ICOMP)=BERHEAT(ICOMP)/HGEF(IHLZP)
+          call eclose(HGEF(IHLZP),0.0,0.001,near)
+          if(near)then
+            BERHEAT_afterefficiency(ICOMP)=0.
+          else  
+            if(iDsmTestingFlag.eq.2)then
+              BERHEAT_afterefficiency(ICOMP)=BERHEAT(ICOMP)/0.73
+            else
+              BERHEAT_afterefficiency(ICOMP)=BERHEAT(ICOMP)/HGEF(IHLZP)
+            endif
           endif
-        endif
 
 C Integrating for total energy
-        BER_HEAT=BER_HEAT+BERHEAT_afterefficiency(ICOMP)
+          BER_HEAT=BER_HEAT+BERHEAT_afterefficiency(ICOMP)
 
 C Integrating for total CO2 emissions
-        BER_HEATCO2=BER_HEATCO2+
-     &  BERHEAT_afterefficiency(ICOMP)*FUELCO2(IFTYP(IHLZP))
+          BER_HEATCO2=BER_HEATCO2+
+     &    BERHEAT_afterefficiency(ICOMP)*FUELCO2(IFTYP(IHLZP))
 
 C Integrating for fuel type
-        BERF(IFTYP(IHLZP))=
+          BERF(IFTYP(IHLZP))=
      &    BERF(IFTYP(IHLZP))+BERHEAT_afterefficiency(ICOMP)
 
 C Integrating energy generated for each HVAC type
-        BERSH(IHLZP)=BERSH(IHLZP)+BERHEAT_afterefficiency(ICOMP)
+          BERSH(IHLZP)=BERSH(IHLZP)+BERHEAT_afterefficiency(ICOMP)
 
 C Hold heating energy based on fuel type (to work out main heating fuel)
-        FHM(IFTYP(IHLZP))=
+          FHM(IFTYP(IHLZP))=
      &    FHM(IFTYP(IHLZP))+BERHEAT_afterefficiency(ICOMP)
 
 C Cooling energy is always supplied by electricity type (10).
 C Only if a coolth generator is associated with this zone
-        BERCOOL(ICOMP)=ABS(BERCOOL(ICOMP))
-        NEAR=.FALSE.
-        CALL ECLOSE(CGEF(IHLZP),0.0,0.001,NEAR)
-        IF(.NOT.NEAR)THEN
-          BERCOOL_afterefficiency(ICOMP)=BERCOOL(ICOMP)/CGEF(IHLZP)
-        ELSE ! no cooling generator hence no cooling load 
-          BERCOOL_afterefficiency(ICOMP)=0.0
-        ENDIF
-        if(iDsmTestingFlag.eq.2)THEN
-        BERCOOL_afterefficiency(ICOMP)=BERCOOL(ICOMP)/2.25
-        endif
+          BERCOOL(ICOMP)=ABS(BERCOOL(ICOMP))
+          NEAR=.FALSE.
+          CALL ECLOSE(CGEF(IHLZP),0.0,0.001,NEAR)
+          IF(.NOT.NEAR)THEN
+            BERCOOL_afterefficiency(ICOMP)=BERCOOL(ICOMP)/CGEF(IHLZP)
+          ELSE ! no cooling generator hence no cooling load 
+            BERCOOL_afterefficiency(ICOMP)=0.0
+          ENDIF
+          if(iDsmTestingFlag.eq.2)THEN
+            BERCOOL_afterefficiency(ICOMP)=BERCOOL(ICOMP)/2.25
+          endif
 
 C Integrating for total energy
-        BER_COOL=BER_COOL+BERCOOL_afterefficiency(ICOMP)
+          BER_COOL=BER_COOL+BERCOOL_afterefficiency(ICOMP)
 
 C Integrating for total CO2 emissions
-        BER_COOLCO2=BER_COOLCO2+
+          BER_COOLCO2=BER_COOLCO2+
      &    BERCOOL_afterefficiency(ICOMP)*FUELCO2(10)
 
 C Integrating for electricity fuel type.
-        BERF(10)=BERF(10)+BERCOOL_afterefficiency(ICOMP)
+          BERF(10)=BERF(10)+BERCOOL_afterefficiency(ICOMP)
 
 C Hold cooling energy based on fuel type (to work out main heating fuel)
-        BERSC(IHLZP)=BERSC(IHLZP)+BERCOOL_afterefficiency(ICOMP)
+          BERSC(IHLZP)=BERSC(IHLZP)+BERCOOL_afterefficiency(ICOMP)
 
 C DHW energy ...
 C (depending upon whether there is a stand alone DHW
@@ -7159,52 +6854,52 @@ C generator for this zone or DHW is additionally generated from the
 C space heating HVAC system. Each zone has to have a DHW source, if the
 C user had not defined it warn the user and assume DHW is supplied from
 C HVAC system.
-        IF(IDHWLZ(ICOMP).EQ.0)THEN
-          WRITE(OUTS,'(2A)')' No DHW system defined for zone ',
-     &    ZNAME(ICOMP)
-          CALL EDISP(IUOUT,OUTS)
-          OUTS=' '
-          write(outs,'(2A)')' Assuming DHW supplied from ',
-     &    HVACNAME(IHLZP)
-          CALL EDISP(IUOUT,OUTS)
-          IDHWLZ(ICOMP)=-1*IHLZP
-        ENDIF
-        IF(IDHWLZ(ICOMP).GT.0)THEN
+          IF(IDHWLZ(ICOMP).EQ.0)THEN
+            WRITE(OUTS,'(2A)')' No DHW system defined for zone ',
+     &      ZNAME(ICOMP)
+            CALL EDISP(IUOUT,OUTS)
+            OUTS=' '
+            write(outs,'(2A)')' Assuming DHW supplied from ',
+     &      HVACNAME(IHLZP)
+            CALL EDISP(IUOUT,OUTS)
+            IDHWLZ(ICOMP)=-1*IHLZP
+          ENDIF
+          IF(IDHWLZ(ICOMP).GT.0)THEN
 
 C We have a dedicated DHW system.
-          BERDHW_afterefficiency(ICOMP)=
+            BERDHW_afterefficiency(ICOMP)=
      &      BERDHW(ICOMP)/HWEF(IDHWLZ(ICOMP))
-          DHWCO2RATE=FUELCO2(IDHFL(IDHWLZ(ICOMP)))
-          BERF(IDHFL(IDHWLZ(ICOMP)))=BERF(IDHFL(IDHWLZ(ICOMP)))+
+            DHWCO2RATE=FUELCO2(IDHFL(IDHWLZ(ICOMP)))
+            BERF(IDHFL(IDHWLZ(ICOMP)))=BERF(IDHFL(IDHWLZ(ICOMP)))+
      &      BERDHW_afterefficiency(ICOMP)
-        ELSEIF(IDHWLZ(ICOMP).LT.0)THEN
+          ELSEIF(IDHWLZ(ICOMP).LT.0)THEN
 
 C We are taking DHW from the heating system.
-          INDX=-1*IDHWLZ(ICOMP) ! INDX is actually set equal to IHLZP
-          CALL ECLOSE(HGEF(INDX),0.0,0.001,CLOSER)
-          IF(.NOT.CLOSER)THEN
-            if(iDsmTestingFlag.eq.2)then
-              BERDHW_afterefficiency(ICOMP)=BERDHW(ICOMP)/0.45
-            else
-              BERDHW_afterefficiency(ICOMP)=BERDHW(ICOMP)/HGEF(INDX)
-            endif
-            DHWCO2RATE=FUELCO2(IFTYP(INDX))
-            BERF(IFTYP(IHLZP))=
+            INDX=-1*IDHWLZ(ICOMP) ! INDX is actually set equal to IHLZP
+            CALL ECLOSE(HGEF(INDX),0.0,0.001,CLOSER)
+            IF(.NOT.CLOSER)THEN
+              if(iDsmTestingFlag.eq.2)then
+                BERDHW_afterefficiency(ICOMP)=BERDHW(ICOMP)/0.45
+              else
+                BERDHW_afterefficiency(ICOMP)=BERDHW(ICOMP)/HGEF(INDX)
+              endif
+              DHWCO2RATE=FUELCO2(IFTYP(INDX))
+              BERF(IFTYP(IHLZP))=
      &        BERF(IFTYP(IHLZP))+BERDHW_afterefficiency(ICOMP)
-          ELSE
-            BERDHW_afterefficiency(ICOMP)=0.0
+            ELSE
+              BERDHW_afterefficiency(ICOMP)=0.0
+            ENDIF
           ENDIF
-        ENDIF
-        BER_DHW=BER_DHW+BERDHW_afterefficiency(ICOMP)
-        BER_DHWCO2=BER_DHWCO2+BERDHW_afterefficiency(ICOMP)*DHWCO2RATE
+          BER_DHW=BER_DHW+BERDHW_afterefficiency(ICOMP)
+          BER_DHWCO2=BER_DHWCO2+BERDHW_afterefficiency(ICOMP)*DHWCO2RATE
 
 C For both lighting and auxiliary energy assume these are supplied by
 C the electrical grid (Fuel type 10 from SBEM.db1)
 C Auxiliary energy.
-        BER_AUX=BER_AUX+BERAUX(ICOMP)
-        BER_AUXCO2=BER_AUXCO2+BERAUX(ICOMP)*FUELCO2(10)
-        BERF(10)=BERF(10)+BERAUX(ICOMP)
-        BERSA(IHLZP)=BERSA(IHLZP)+BERAUX(ICOMP)
+          BER_AUX=BER_AUX+BERAUX(ICOMP)
+          BER_AUXCO2=BER_AUXCO2+BERAUX(ICOMP)*FUELCO2(10)
+          BERF(10)=BERF(10)+BERAUX(ICOMP)
+          BERSA(IHLZP)=BERSA(IHLZP)+BERAUX(ICOMP)
         ENDIF
 
 C Lighting energy
@@ -7236,7 +6931,7 @@ C Normalise by floor area
 C Assuming that there are MFT fuel types.
       DO 1001 IHF=1,MFT
         call eclose(BERF(IHF),0.00,0.01,close)
-	if(close)then
+        if(close)then
           continue
         else
           BERF(IHF)=BERF(IHF)/TBASEA
@@ -7273,72 +6968,72 @@ C with each zone paragraphs 44 and table 6 NCM Modelling Guide
         IF(IHLZP.NE.0)THEN ! Only if there is plant linked to this zone
 
 C Heated and Mechanically ventilated
-        IF(INCMSYS(IHLZP).EQ.4)THEN
-          CoolSSEER_N(IHLZP)=0.
-          HeatSCoP_N(IHLZP)=0.78
+          IF(INCMSYS(IHLZP).EQ.4)THEN
+            CoolSSEER_N(IHLZP)=0.
+            HeatSCoP_N(IHLZP)=0.78
 
 C Heated and naturally ventilated (or heated only)
-        ELSEIF(INCMSYS(IHLZP).LE.11)THEN
-          CoolSSEER_N(IHLZP)=0.
-          HeatSCoP_N(IHLZP)=0.73
+          ELSEIF(INCMSYS(IHLZP).LE.11)THEN
+            CoolSSEER_N(IHLZP)=0.
+            HeatSCoP_N(IHLZP)=0.73
 
 C Air conditioned
-        ELSE
-          CoolSSEER_N(IHLZP)=1.67
-          HeatSCoP_N(IHLZP)=0.83
-        ENDIF
+          ELSE
+            CoolSSEER_N(IHLZP)=1.67
+            HeatSCoP_N(IHLZP)=0.83
+          ENDIF
 
 C Heating energy
           AERHEAT_afterefficiency(ICOMP)=
      &    AERHEAT(ICOMP)/HeatSCoP_N(IHLZP)
-        AER_HEAT=AER_HEAT+AERHEAT_afterefficiency(ICOMP)
-        AER_HEATCO2=AER_HEATCO2+
-     &  AERHEAT_afterefficiency(ICOMP)*FUELCO2(NHF)
-        AERF(NHF)=AERF(NHF)+AERHEAT_afterefficiency(ICOMP)
-        AERSH(IHLZP)=AERSH(IHLZP)+AERHEAT_afterefficiency(ICOMP)
+          AER_HEAT=AER_HEAT+AERHEAT_afterefficiency(ICOMP)
+          AER_HEATCO2=AER_HEATCO2+
+     &    AERHEAT_afterefficiency(ICOMP)*FUELCO2(NHF)
+          AERF(NHF)=AERF(NHF)+AERHEAT_afterefficiency(ICOMP)
+          AERSH(IHLZP)=AERSH(IHLZP)+AERHEAT_afterefficiency(ICOMP)
 
 C Cooling energy only if a coolth generator is associated with this zone
 C Cooling energy is always supplied by electricity type (10).
-        AERCOOL(ICOMP)=ABS(AERCOOL(ICOMP))
-        NEAR=.FALSE.
-        CALL ECLOSE(CoolSSEER_N(IHLZP),0.0,0.001,NEAR)
-        IF(.NOT.NEAR)THEN
-          AERCOOL_afterefficiency(ICOMP)=
+          AERCOOL(ICOMP)=ABS(AERCOOL(ICOMP))
+          NEAR=.FALSE.
+          CALL ECLOSE(CoolSSEER_N(IHLZP),0.0,0.001,NEAR)
+          IF(.NOT.NEAR)THEN
+            AERCOOL_afterefficiency(ICOMP)=
      &      AERCOOL(ICOMP)/CoolSSEER_N(IHLZP)
-        ELSE
-          AERCOOL_afterefficiency(ICOMP)=0.0
-        ENDIF
-        AER_COOL=AER_COOL+AERCOOL_afterefficiency(ICOMP)
-        AER_COOLCO2=AER_COOLCO2+
+          ELSE
+            AERCOOL_afterefficiency(ICOMP)=0.0
+          ENDIF
+          AER_COOL=AER_COOL+AERCOOL_afterefficiency(ICOMP)
+          AER_COOLCO2=AER_COOLCO2+
      &    AERCOOL_afterefficiency(ICOMP)*FUELCO2(10)  ! electricity
-        AERF(10)=AERF(10)+AERCOOL_afterefficiency(ICOMP)
-        AERSC(IHLZP)=AERSC(IHLZP)+AERCOOL_afterefficiency(ICOMP)
+          AERF(10)=AERF(10)+AERCOOL_afterefficiency(ICOMP)
+          AERSC(IHLZP)=AERSC(IHLZP)+AERCOOL_afterefficiency(ICOMP)
 
 C DHW energy (depending upon whether there is a stand alone DHW
 C generator for this zone or DHW is additionally generated from the
 C space heating HVAC system. Each zone has to have a DHW source, if the
 C user had not defined it warn the user and assume DHW is supplied from
 C HVAC system
-        IF(IDHWLZ(ICOMP).EQ.0)THEN
-          WRITE(OUTS,'(2A)')' No DHW system defined for zone ',
+          IF(IDHWLZ(ICOMP).EQ.0)THEN
+            WRITE(OUTS,'(2A)')' No DHW system defined for zone ',
      &      ZNAME(ICOMP)
-          CALL EDISP(IUOUT,OUTS)
-          write(outs,'(2A)')' Assuming DHW supplied from ',
+            CALL EDISP(IUOUT,OUTS)
+            write(outs,'(2A)')' Assuming DHW supplied from ',
      &      HVACNAME(IHLZP)
-          CALL EDISP(IUOUT,OUTS)
-        ENDIF
-        IF(IDHWLZ(ICOMP).GT.0)THEN
-          AERDHW_afterefficiency(ICOMP)=AERDHW(ICOMP)/DHWNGE
-          DHWCO2RATE=FUELCO2(NHF)
-          AERF(NHF)=AERF(NHF)+AERDHW_afterefficiency(ICOMP)
-        ELSEIF(IDHWLZ(ICOMP).LE.0)THEN
+            CALL EDISP(IUOUT,OUTS)
+          ENDIF
+          IF(IDHWLZ(ICOMP).GT.0)THEN
+            AERDHW_afterefficiency(ICOMP)=AERDHW(ICOMP)/DHWNGE
+            DHWCO2RATE=FUELCO2(NHF)
+            AERF(NHF)=AERF(NHF)+AERDHW_afterefficiency(ICOMP)
+          ELSEIF(IDHWLZ(ICOMP).LE.0)THEN
             AERDHW_afterefficiency(ICOMP)=
      &      AERDHW(ICOMP)/HeatSCoP_N(IHLZP)
-          DHWCO2RATE=FUELCO2(NHF)
-          AERF(NHF)=AERF(NHF)+AERDHW_afterefficiency(ICOMP)
-        ENDIF
-        AER_DHW=AER_DHW+AERDHW_afterefficiency(ICOMP)
-        AER_DHWCO2=AER_DHWCO2+AERDHW_afterefficiency(ICOMP)*DHWCO2RATE
+            DHWCO2RATE=FUELCO2(NHF)
+            AERF(NHF)=AERF(NHF)+AERDHW_afterefficiency(ICOMP)
+          ENDIF
+          AER_DHW=AER_DHW+AERDHW_afterefficiency(ICOMP)
+          AER_DHWCO2=AER_DHWCO2+AERDHW_afterefficiency(ICOMP)*DHWCO2RATE
 
 C For both lighting and auxiliary energy assume these are supplied by
 C the electrical grid (Fuel type 10 from SBEM.db1)
@@ -7356,9 +7051,9 @@ C Lighting energy
 
 C Get zonal CO2 emissions for calculation of Improvement Factor
         ZCO2N(ICOMP)=AERHEAT_afterefficiency(ICOMP)*FUELCO2(NHF)+
-     &  AERCOOL_afterefficiency(ICOMP)*FUELCO2(10)+
-     &  AERDHW_afterefficiency(ICOMP)*DHWCO2RATE+
-     &  AERLIGHT(ICOMP)*FUELCO2(10)+AERAUX(ICOMP)*FUELCO2(10)
+     &    AERCOOL_afterefficiency(ICOMP)*FUELCO2(10)+
+     &    AERDHW_afterefficiency(ICOMP)*DHWCO2RATE+
+     &    AERLIGHT(ICOMP)*FUELCO2(10)+AERAUX(ICOMP)*FUELCO2(10)
  200  CONTINUE
 
 C Calculation of emissions and AER (total energy for notional model)
@@ -7419,61 +7114,61 @@ C Work out efficiency of heating, cooling and DHW systems associated
 C with each zone paragraphs 44 and table 6 NCM Modelling Guide
 C Heating energy
         IF(IHLZP.NE.0)THEN ! Only if there is plant linked to this zone
-        HeatSCoP_R(IHLZP)=0.73     ! Fix heating efficiency to 0.73 
-        CoolSSEER_R(IHLZP)=2.25    ! Fix cooling efficiency to 2.25
+          HeatSCoP_R(IHLZP)=0.73     ! Fix heating efficiency to 0.73 
+          CoolSSEER_R(IHLZP)=2.25    ! Fix cooling efficiency to 2.25
 
           RERHEAT_afterefficiency(ICOMP)=
      &    RERHEAT(ICOMP)/HeatSCoP_R(IHLZP)
-        RER_HEAT=RER_HEAT+RERHEAT_afterefficiency(ICOMP)
-        RER_HEATCO2=RER_HEATCO2+
-     &  RERHEAT_afterefficiency(ICOMP)*FUELCO2(1)
+          RER_HEAT=RER_HEAT+RERHEAT_afterefficiency(ICOMP)
+          RER_HEATCO2=RER_HEATCO2+
+     &    RERHEAT_afterefficiency(ICOMP)*FUELCO2(1)
 
 C Heating and hot water are always Natural Gas for reference building (NHF=1)
-        RERF(1)=RERF(1)+RERHEAT_afterefficiency(ICOMP)
-        RERSH(IHLZP)=RERSH(IHLZP)+RERHEAT_afterefficiency(ICOMP)
+          RERF(1)=RERF(1)+RERHEAT_afterefficiency(ICOMP)
+          RERSH(IHLZP)=RERSH(IHLZP)+RERHEAT_afterefficiency(ICOMP)
 
 C DHW for reference building - need to use 0.73 efficiency if there is no
 C stand-alone generator
-        IF(IDHWLZ(ICOMP).EQ.0)THEN
-          WRITE(OUTS,'(2A)')' No DHW system defined for zone ',
+          IF(IDHWLZ(ICOMP).EQ.0)THEN
+            WRITE(OUTS,'(2A)')' No DHW system defined for zone ',
      &      ZNAME(ICOMP)
-          CALL EDISP(IUOUT,OUTS)
-          write(outs,'(2A)')' Assuming DHW supplied from ',
+            CALL EDISP(IUOUT,OUTS)
+            write(outs,'(2A)')' Assuming DHW supplied from ',
      &      HVACNAME(IHLZP)
-          CALL EDISP(IUOUT,OUTS)
-        ENDIF
-        IF(IDHWLZ(ICOMP).GT.0)THEN
-          RERDHW_afterefficiency(ICOMP)=RERDHW(ICOMP)/DHWNGE
-          DHWCO2RATE=FUELCO2(1)
+            CALL EDISP(IUOUT,OUTS)
+          ENDIF
+          IF(IDHWLZ(ICOMP).GT.0)THEN
+            RERDHW_afterefficiency(ICOMP)=RERDHW(ICOMP)/DHWNGE
+            DHWCO2RATE=FUELCO2(1)
 
 C Heating and hot water are always supplied by Natural Gas for reference building (NHF=1)
-          RERF(1)=RERF(1)+RERDHW_afterefficiency(ICOMP)
-        ELSEIF(IDHWLZ(ICOMP).LE.0)THEN
+            RERF(1)=RERF(1)+RERDHW_afterefficiency(ICOMP)
+          ELSEIF(IDHWLZ(ICOMP).LE.0)THEN
             RERDHW_afterefficiency(ICOMP)=
      &      RERDHW(ICOMP)/HeatSCoP_R(IHLZP)
-          DHWCO2RATE=FUELCO2(1)
+            DHWCO2RATE=FUELCO2(1)
 
 C Heating and hot water are always supplied by Natural Gas for reference building (NHF=1)
-          RERF(1)=RERF(1)+RERDHW_afterefficiency(ICOMP)
-        ENDIF
-        RER_DHW=RER_DHW+RERDHW_afterefficiency(ICOMP)
-        RER_DHWCO2=RER_DHWCO2+RERDHW_afterefficiency(ICOMP)*DHWCO2RATE
+            RERF(1)=RERF(1)+RERDHW_afterefficiency(ICOMP)
+          ENDIF
+          RER_DHW=RER_DHW+RERDHW_afterefficiency(ICOMP)
+          RER_DHWCO2=RER_DHWCO2+RERDHW_afterefficiency(ICOMP)*DHWCO2RATE
 
 C Cooling energy is always supplied by electricity type (10).
-        RERCOOL(ICOMP)=ABS(RERCOOL(ICOMP))
+          RERCOOL(ICOMP)=ABS(RERCOOL(ICOMP))
           RERCOOL_afterefficiency(ICOMP)=
      &    RERCOOL(ICOMP)/CoolSSEER_R(IHLZP)
-        RER_COOL=RER_COOL+RERCOOL_afterefficiency(ICOMP)
-        RER_COOLCO2=RER_COOLCO2+
+          RER_COOL=RER_COOL+RERCOOL_afterefficiency(ICOMP)
+          RER_COOLCO2=RER_COOLCO2+
      &    RERCOOL_afterefficiency(ICOMP)*FUELCO2(10)
-        RERF(10)=RERF(10)+RERCOOL_afterefficiency(ICOMP)
-        RERSC(IHLZP)=RERSC(IHLZP)+RERCOOL_afterefficiency(ICOMP)
+          RERF(10)=RERF(10)+RERCOOL_afterefficiency(ICOMP)
+          RERSC(IHLZP)=RERSC(IHLZP)+RERCOOL_afterefficiency(ICOMP)
 
 C Auxiliary energy is always supplied by electricity type (10).
-        RER_AUX=RER_AUX+RERAUX(ICOMP)
-        RER_AUXCO2=RER_AUXCO2+RERAUX(ICOMP)*FUELCO2(10)
-        RERF(10)=RERF(10)+RERAUX(ICOMP)
-        RERSA(IHLZP)=RERSA(IHLZP)+RERAUX(ICOMP)
+          RER_AUX=RER_AUX+RERAUX(ICOMP)
+          RER_AUXCO2=RER_AUXCO2+RERAUX(ICOMP)*FUELCO2(10)
+          RERF(10)=RERF(10)+RERAUX(ICOMP)
+          RERSA(IHLZP)=RERSA(IHLZP)+RERAUX(ICOMP)
         ENDIF
 
 C Add the fuel needed for lights - same as notional building (electricity)
@@ -7523,77 +7218,77 @@ C with each zone paragraphs 44 and table 6 NCM Modelling Guide
         IF(IHLZP.NE.0)THEN ! Only if there is plant linked to this zone
 
 C Heated and Mechanically ventilated
-        IF(INCMSYS(IHLZP).EQ.4)THEN
-          CoolSSEER_T(IHLZP)=0.
-          HeatSCoP_T(IHLZP)=0.55
+          IF(INCMSYS(IHLZP).EQ.4)THEN
+            CoolSSEER_T(IHLZP)=0.
+            HeatSCoP_T(IHLZP)=0.55
 
 C Heated and naturally ventilated (or heated only)
-        ELSEIF(INCMSYS(IHLZP).LE.11)THEN
-          CoolSSEER_T(IHLZP)=0.
-          HeatSCoP_T(IHLZP)=0.55
+          ELSEIF(INCMSYS(IHLZP).LE.11)THEN
+            CoolSSEER_T(IHLZP)=0.
+            HeatSCoP_T(IHLZP)=0.55
 
 C Air conditioned
-        ELSE
-          CoolSSEER_T(IHLZP)=1.17
-          HeatSCoP_T(IHLZP)=0.55
-        ENDIF
+          ELSE
+            CoolSSEER_T(IHLZP)=1.17
+            HeatSCoP_T(IHLZP)=0.55
+          ENDIF
 
 C Heating energy
-        TyERHEAT_afterefficiency(ICOMP)=
+          TyERHEAT_afterefficiency(ICOMP)=
      &    TyERHEAT(ICOMP)/HeatSCoP_T(IHLZP)
-        TyER_HEAT=TyER_HEAT+TyERHEAT_afterefficiency(ICOMP)
-        TyER_HEATCO2=TyER_HEATCO2+
-     &  TyERHEAT_afterefficiency(ICOMP)*FUELCO2(1)
+          TyER_HEAT=TyER_HEAT+TyERHEAT_afterefficiency(ICOMP)
+          TyER_HEATCO2=TyER_HEATCO2+
+     &    TyERHEAT_afterefficiency(ICOMP)*FUELCO2(1)
 
 C Heating and hot water are always supplied by Natural Gas for typical building (NHF=1)
-        TyERF(1)=TyERF(1)+TyERHEAT_afterefficiency(ICOMP)  
-        TyERSH(IHLZP)=TyERSH(IHLZP)+TyERHEAT_afterefficiency(ICOMP)
+          TyERF(1)=TyERF(1)+TyERHEAT_afterefficiency(ICOMP)  
+          TyERSH(IHLZP)=TyERSH(IHLZP)+TyERHEAT_afterefficiency(ICOMP)
 
 C Cooling energy only if a coolth generator is associated with this zone
-        TyERCOOL(ICOMP)=ABS(TyERCOOL(ICOMP))
-        NEAR=.FALSE.
-        CALL ECLOSE(CoolSSEER_T(IHLZP),0.0,0.001,NEAR)
-        IF(.NOT.NEAR)THEN
-          TyERCOOL_afterefficiency(ICOMP)=
+          TyERCOOL(ICOMP)=ABS(TyERCOOL(ICOMP))
+          NEAR=.FALSE.
+          CALL ECLOSE(CoolSSEER_T(IHLZP),0.0,0.001,NEAR)
+          IF(.NOT.NEAR)THEN
+            TyERCOOL_afterefficiency(ICOMP)=
      &      TyERCOOL(ICOMP)/CoolSSEER_T(IHLZP)
-        ELSE
-          TyERCOOL_afterefficiency(ICOMP)=0.0
-        ENDIF
-        TyER_COOL=TyER_COOL+TyERCOOL_afterefficiency(ICOMP)
-        TyER_COOLCO2=TyER_COOLCO2+
+          ELSE
+            TyERCOOL_afterefficiency(ICOMP)=0.0
+          ENDIF
+          TyER_COOL=TyER_COOL+TyERCOOL_afterefficiency(ICOMP)
+          TyER_COOLCO2=TyER_COOLCO2+
      &    TyERCOOL_afterefficiency(ICOMP)*FUELCO2(10)
-        TyERF(10)=TyERF(10)+TyERCOOL_afterefficiency(ICOMP)
-        TyERSC(IHLZP)=TyERSC(IHLZP)+TyERCOOL_afterefficiency(ICOMP)
+          TyERF(10)=TyERF(10)+TyERCOOL_afterefficiency(ICOMP)
+          TyERSC(IHLZP)=TyERSC(IHLZP)+TyERCOOL_afterefficiency(ICOMP)
 
 C DHW energy (depending upon whether there is a stand alone DHW
 C generator for this zone or DHW is additionally generated from the
 C space heating HVAC system. Each zone has to have a DHW source, if the
 C user had not defined it assume DHW is supplied from HVAC system
-        IF(IDHWLZ(ICOMP).GT.0)THEN
-          TyERDHW_afterefficiency(ICOMP)=TyERDHW(ICOMP)/DHWNGE
-          DHWCO2RATE=FUELCO2(1)
+          IF(IDHWLZ(ICOMP).GT.0)THEN
+            TyERDHW_afterefficiency(ICOMP)=TyERDHW(ICOMP)/DHWNGE
+            DHWCO2RATE=FUELCO2(1)
 
 C Heating and hot water are always supplied by Natural Gas for typical building (NHF=1)
-          TyERF(1)=TyERF(1)+TyERDHW_afterefficiency(ICOMP)
-        ELSEIF(IDHWLZ(ICOMP).LE.0)THEN
-          TyERDHW_afterefficiency(ICOMP)=
+            TyERF(1)=TyERF(1)+TyERDHW_afterefficiency(ICOMP)
+          ELSEIF(IDHWLZ(ICOMP).LE.0)THEN
+            TyERDHW_afterefficiency(ICOMP)=
      &      TyERDHW(ICOMP)/HeatSCoP_T(IHLZP)
-          DHWCO2RATE=FUELCO2(NHF)
+            DHWCO2RATE=FUELCO2(NHF)
 
 C Heating and hot water are always supplied by Natural Gas for typical building (NHF=1)
-          TyERF(1)=TyERF(1)+TyERDHW_afterefficiency(ICOMP)
-        ENDIF
-        TyER_DHW=TyER_DHW+TyERDHW_afterefficiency(ICOMP)
-        TyER_DHWCO2=
+            TyERF(1)=TyERF(1)+TyERDHW_afterefficiency(ICOMP)
+          ENDIF
+          TyER_DHW=TyER_DHW+TyERDHW_afterefficiency(ICOMP)
+          TyER_DHWCO2=
      &    TyER_DHWCO2+TyERDHW_afterefficiency(ICOMP)*DHWCO2RATE
 
 C For both lighting and auxiliary energy assume these are supplied by
 C the electrical grid (Fuel type 10 from SBEM.db1)
 C Auxiliary energy
-        TyER_AUX=TyER_AUX+TyERAUX(ICOMP)
-        TyER_AUXCO2=TyER_AUXCO2+TyERAUX(ICOMP)*FUELCO2(10)
-        TyERF(10)=TyERF(10)+TyERAUX(ICOMP)
-        TyERSA(IHLZP)=TyERSA(IHLZP)+TyERAUX(ICOMP)
+          TyER_AUX=TyER_AUX+TyERAUX(ICOMP)
+          TyER_AUXCO2=TyER_AUXCO2+TyERAUX(ICOMP)*FUELCO2(10)
+          TyERF(10)=TyERF(10)+TyERAUX(ICOMP)
+          TyERSA(IHLZP)=TyERSA(IHLZP)+TyERAUX(ICOMP)
         ENDIF
 
 C Lighting energy
@@ -7668,6 +7363,7 @@ C It finally generate BRUKL input document and other SBEM reports.
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -7836,7 +7532,7 @@ C Calculation engine and interface detail...
 C Enter Scottish building information if applicable
       IF(ISBT.NE.0)THEN
         WRITE(IUF,'(2a)',iostat=ios)    '  BR-S6-BTYPE        = ',
-     &  SBTYP(ISBT)(1:LNBLNK(SBTYP(ISBT)))
+     &    SBTYP(ISBT)(1:LNBLNK(SBTYP(ISBT)))
         WRITE(IUF,'(2a)',iostat=ios)    '  BR-S6-ACCRED-CONST = ',SBREF
       ENDIF
 
@@ -8040,7 +7736,7 @@ C Write information for walls
      &    WALL_MAX_N
       else
         WRITE(IUF,'(2a)',iostat=ios)    '  WALL-MAX           = ',
-     &  '"No external walls in project"'
+     &    '"No external walls in project"'
       endif
 
 C write out information for floors
@@ -8136,11 +7832,11 @@ C DHW checks
       DO 40 IDHWSYS=1,NDHWSYS
         TMPSTR2=DHWNAME(IDHWSYS)
         write(iuf,'(3a)',iostat=ios)'"',TMPSTR2(1:LNBLNK(TMPSTR2)),
-     &  '" = CHECK2-DHW'
+     &    '" = CHECK2-DHW'
         write(iuf,'(a,I5)',iostat=ios)  '  HVACGUIDE-DHW      = ',
-     &   IBRUKW(IDHWSYS)
+     &    IBRUKW(IDHWSYS)
         write(iuf,'(a,F6.3)',iostat=ios)'  DHW-ACT-EFF        = ',
-     &   HWEF(IDHWSYS)
+     &    HWEF(IDHWSYS)
         WRITE(IUF,'(a)',iostat=ios)     '  ..'
  40   CONTINUE
 
@@ -8192,7 +7888,7 @@ C Check if we have data for this combination of IBRUKLC.
           WRITE(IUF,'(a)',iostat=ios)   '  SFP-ACT            = -6666'
         ELSE
           WRITE(IUF,'(a,F6.3)',iostat=ios)'  SFP-ACT            = ',
-     &    TMPREAL
+     &      TMPREAL
         ENDIF
         WRITE(IUF,'(a)',iostat=ios)     '  ..'
  20   CONTINUE
@@ -8203,7 +7899,7 @@ C If Scottish building regulations, skip checks 3 to 6 inclusive
 C Write remainder of the check information
         do 30 iz=1, ncomp
           WRITE(IUF,'(3a)',iostat=ios) '"',
-     &    zname(iz)(1:lnzname(IZ)),'" = CHECK3'
+     &      zname(iz)(1:lnzname(IZ)),'" = CHECK3'
 
 C Rules for overheating are based on NCM modelling Guide v4d.
           call eclose(prcnt_Overheat(iz),0.5,0.0001,ISNEAR)
@@ -8387,7 +8083,7 @@ C Section for each HVAC system
           TMPSTR2=HVACNAME(ICMSYS)
           LNB=lnblnk(TMPSTR2)
           WRITE(IUF,'(4a)',iostat=ios) '"',TMPSTR2(1:LNB),
-     &     '"',' = HVAC-SYSTEM-DATA'
+     &      '"',' = HVAC-SYSTEM-DATA'
           WRITE(IUF,'(a,f8.2)',iostat=ios)
      &      '  AREA                      = ',hvacarea(ICMSYS)
           LNB=lnblnk(HSYSNAME(INCMSYS(ICMSYS)))
@@ -8459,7 +8155,7 @@ C If there is a cooling system then:
      &        '  COOL-SSEER                = ',CGEF(ICMSYS) !?? Needs to be updated
           endif
           WRITE(IUF,'(a,F7.4)',iostat=ios)
-     &        '  HEAT-GEN-SEFF             = ',HGEF(ICMSYS)
+     &      '  HEAT-GEN-SEFF             = ',HGEF(ICMSYS)
 
 C If there is a cooling system then:
           if(IBRUKLC(1,INCMSYS(ICMSYS)).ne.-1111)then
@@ -8490,8 +8186,8 @@ C the array for the call to arlist
             call arlist(ipos,imerg,TotHVACactArea,ITWOMNS,delim,louts,
      &        loutln,itrunc)
             WRITE(IUF,'(4a)',iostat=ios)
-     &       '  ACT-AREA                  = ',
-     &       '{ ',louts(1:loutln),' }'
+     &        '  ACT-AREA                  = ',
+     &        '{ ',louts(1:loutln),' }'
             ipos=itrunc+1
           end do
           WRITE(IUF,'(a)',iostat=ios) '  ..'
@@ -8528,10 +8224,10 @@ C BRUKL manual
       call eclose(EXP_AREA,0.0,0.0001,ISNEAR)
       if(.not.ISNEAR)then
         WRITE(IUF,'(a,f10.2)',iostat=ios)
-     &  '  BUILDING-W/M2K             = ',build_UAN/EXP_AREA
+     &    '  BUILDING-W/M2K             = ',build_UAN/EXP_AREA
       else
         WRITE(IUF,'(a)',iostat=ios)
-     &  '  BUILDING-W/M2K             =  0.0'
+     &    '  BUILDING-W/M2K             =  0.0'
       endif
 
 C Using info from common of thermal bridges to find the percentage of heat loss
@@ -8613,13 +8309,13 @@ C number of activities
       delim='C'
       do while (itrunc.ne.0)
         call arlist(ipos,iactFlarea,act_area,ITWOMNS,delim,louts,
-     &      loutln,itrunc)
+     &    loutln,itrunc)
 
 C here we write each activity and the related floor area. SBEM seems to sum up the
 C floor areas and writes the activity once if it covers many zones.
 C BRUKL v3.2 seems to accept either ways.
         WRITE(IUF,'(4a)',iostat=ios) '  ACT-AREA                = ',
-     &   '{ ',louts(1:loutln),' }'
+     &    '{ ',louts(1:loutln),' }'
         ipos=itrunc+1
       end do
       WRITE(IUF,'(a)',iostat=ios) '  ..'
@@ -8643,7 +8339,7 @@ C Section for each HVAC system for the notional building
 
 C Same as actual building
           WRITE(IUF,'(4a)',iostat=ios) '"',TMPSTR2(1:LNBLNK(TMPSTR2)),
-     &     '"',' = HVAC-SYSTEM-DATA'
+     &      '"',' = HVAC-SYSTEM-DATA'
 
 C Same as actual building
           WRITE(IUF,'(a,f8.2)',iostat=ios)
@@ -8693,14 +8389,14 @@ C If there is no ooling system:
 
 C then only heated space.
             WRITE(IUF,'(a,f6.2)',iostat=ios)
-     &      '  HEAT-SSEFF                = ',HeatSCoP_N(ICMSYS)
+     &        '  HEAT-SSEFF                = ',HeatSCoP_N(ICMSYS)
 
 C Treat all the other cases as heated and mechanically ventilated
           else
             WRITE(IUF,'(a,f6.2)',iostat=ios)
-     &      '  HEAT-SSEFF                = ',HeatSCoP_N(ICMSYS)
+     &        '  HEAT-SSEFF                = ',HeatSCoP_N(ICMSYS)
             WRITE(IUF,'(a,f6.2)',iostat=ios)
-     &      '  COOL-SSEER                = ',CoolSSEER_N(ICMSYS)
+     &        '  COOL-SSEER                = ',CoolSSEER_N(ICMSYS)
           endif
 
 C Now start the logic needed for ACT-AREA entry
@@ -8726,7 +8422,7 @@ C the array for the call to arlist
             call arlist(ipos,imerg,TotHVACactArea,ITWOMNS,delim,louts,
      &          loutln,itrunc)
             WRITE(IUF,'(4a)',iostat=ios) ' ACT-AREA            = ',
-     &       '{ ',louts(1:loutln),' }'
+     &        '{ ',louts(1:loutln),' }'
             ipos=itrunc+1
           end do
           WRITE(IUF,'(a)',iostat=ios) ' ..'
@@ -8770,7 +8466,7 @@ C C:\Esru\esp-r\bin to model cfg folder)
         if(ier.eq.0)THEN
           write(currentfile,'(a)') BATCHFL(1:lnblnk(BATCHFL))
         ELSE ! WARNING MESSAGE HERE
-	ENDIF
+        ENDIF
         WRITE(IUF,'(8A)',IOSTAT=IOS,ERR=3) 'cd C',col,fs,'Esru',fs,
      &    'esp-r',fs,'bin'
         WRITE(IUF,'(3A)',IOSTAT=IOS,ERR=3) 'BRUKL.exe /F ',
@@ -9113,7 +8809,7 @@ C There is an option for "NO" here but there is no point incuding it
       WRITE(IUF,'(2a)',iostat=ios) '"ESP-r" = ',' EPC'
       if(BLDREG(IRGG)(1:7).eq.'England')then
         WRITE(IUF,'(2a)',iostat=ios) ' TYPE = ',
-     &  'England and Wales'
+     &    'England and Wales'
       elseif(BLDREG(IRGG)(1:8).eq.'Scottish')then
         WRITE(IUF,'(2a)',iostat=ios) ' TYPE = ',
      &    'Scottish'
@@ -9162,7 +8858,7 @@ C fuel for the system that covers the largest area.
         endif
  161  continue
       WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)
-     &   ' MAIN-FUEL-TYPE    = ',cNameMainFuel(1:lnblnk(cNameMainFuel))
+     &  ' MAIN-FUEL-TYPE    = ',cNameMainFuel(1:lnblnk(cNameMainFuel))
 
 C Building services for the actual building.
 C This seems to be a global value but there is no explanation
@@ -9185,9 +8881,9 @@ C way to generate the recommendations report
           dhwxst=.true.
         endif
         if(IHLZ(ICOMP).gt.0)then
-        if(INCMSYS(IHLZ(ICOMP)).gt.0)then !check also if there is a heating system
-          heatingxst=.true.
-        endif
+          if(INCMSYS(IHLZ(ICOMP)).gt.0)then !check also if there is a heating system
+            heatingxst=.true.
+          endif
         endif
  99   continue
 
@@ -9268,7 +8964,7 @@ C iSBEM does not yet consider renewables in the percentage calculations
 C Section for heating
       if(.not.heatingxst)then
         WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)' PERF-HEAT-ENERGY       = ',
-     &  'NOT APPLICABLE'
+     &    'NOT APPLICABLE'
         WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)' PERF-HEAT-CO2       = ',
      &    'NOT APPLICABLE'
         WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
@@ -9332,9 +9028,9 @@ C Section for heating
      &  ' HEAT-PERCENT-CO2      = ',fPercentHeating
       coolxst =.false.
       do 565 ICMSYS=1,NCMSYS
-          if(IBRUKLC(1,INCMSYS(ICMSYS)).ne.-1111)then
-            coolxst =.true.
-          endif
+        if(IBRUKLC(1,INCMSYS(ICMSYS)).ne.-1111)then
+          coolxst =.true.
+        endif
  565  continue
       if(.not.coolxst)then
         WRITE(IUF,'(2A)',IOSTAT=IOS,ERR=3)' PERF-COOL-ENERGY       = ',
@@ -9706,7 +9402,7 @@ C         WRITE(IUF,'(a)',iostat=ios)
 C      &    'REC-COMMENT  = "Assesor may provide additional comments"'
 
           WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',
-     &    'UNKNOWN'
+     &      'UNKNOWN'
 
 C If change in total carbon emission is >4% then potential impact is "high"
 C If change in total carbon emission is greater than 0.5 and
@@ -9958,7 +9654,7 @@ C << There are also options for the next line to be a user input recommendation
 C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
           WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',
-     &     'UNKNOWN'
+     &      'UNKNOWN'
 
 C Need a new BER calculation here for an improvement of 1% on the heating
 C efficiency and calculate total BER CO2 emissions after this change.
@@ -10016,7 +9712,7 @@ C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
 
           WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',
-     &     'UNKNOWN'
+     &      'UNKNOWN'
 
 C If change in total carbon emission is >4% then potential impact is "high"
 C If change in total carbon emission is greater than 0.5 and
@@ -10172,7 +9868,7 @@ C << There are also options for the next line to be a user input recommendation
 C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
           WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',
-     &     'UNKNOWN'
+     &      'UNKNOWN'
 
 C Need a new BER calculation here for an improvement of 2% on the heating
 C efficiency and calculate total BER CO2 emissions after this change.
@@ -10230,7 +9926,7 @@ C << There are also options for the next line to be a user input recommendation
 C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
           WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',
-     &     'UNKNOWN'
+     &      'UNKNOWN'
 
 C If change in total carbon emission is >4% then potential impact is "high"
 C If change in total carbon emission is greater than 0.5 and
@@ -10276,7 +9972,7 @@ C << There are also options for the next line to be a user input recommendation
 C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
           WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',
-     &     'UNKNOWN'
+     &      'UNKNOWN'
 
 C Need a new BER calculation here for an improvement of 1.5% on the heating
 C efficiency and calculate total BER CO2 emissions after this change.
@@ -10333,7 +10029,7 @@ C << There are also options for the next line to be a user input recommendation
 C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
           WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',
-     &     'UNKNOWN'
+     &      'UNKNOWN'
 
 C If change in total carbon emission is >4% then potential impact is "high"
 C If change in total carbon emission is greater than 0.5 and
@@ -10377,8 +10073,8 @@ C << Using 2.2 as default cooling efficiency for now
 C << The default values in ESP-r seem too high - need to check this
 C REC-EPC-C1: Check if using default cooling efficiency
         call eclose(CGEF(ICMSYS),2.2,0.001,ISNEAR)
-	if(INCMSYS(ICMSYS).eq.0)then
-	  continue
+        if(INCMSYS(ICMSYS).eq.0)then
+          continue
         elseif(IBRUKLC(1,INCMSYS(ICMSYS)).ne.-1111.and.ISNEAR)then
           WRITE(IUF,'(a)',iostat=ios) '"REC-EPC-C1" = RECOMMENDATION'
           WRITE(IUF,'(a)',iostat=ios) 'CATEGORY     = COOLING'
@@ -10441,7 +10137,7 @@ C << There are also options for the next line to be a user input recommendation
 C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
           WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
           WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',
-     &     'UNKNOWN'
+     &      'UNKNOWN'
 
 C If change in total carbon emission is >4% then potential impact is "high"
 C If change in total carbon emission is greater than 0.5 and
@@ -10481,8 +10177,8 @@ C Need the name of the HVAC system here, which uses the specific fuel
 
 C REC-EPC-C2: Check if cooling efficiency is less or equal to 2.4 and
 C greater than 2.0
-	if(INCMSYS(ICMSYS).eq.0)then
-	  continue
+        if(INCMSYS(ICMSYS).eq.0)then
+          continue
         elseif(IBRUKLC(1,INCMSYS(ICMSYS)).ne.-1111)then
           call eclose(CGEF(ICMSYS),2.4,0.001,ISNEAR)
           if(ISNEAR.or.(CGEF(ICMSYS).lt.2.4.and.CGEF(ICMSYS).gt.2.0))
@@ -10495,7 +10191,7 @@ C << There are also options for the next line to be a user input recommendation
 C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
             WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
             WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',
-     &       'UNKNOWN'
+     &        'UNKNOWN'
 
 C this is the same as C1 - so use C1_impact
             CALL ECLOSE(C1_impact,4.0,0.001,ISNEAR)
@@ -10537,7 +10233,7 @@ C << There are also options for the next line to be a user input recommendation
 C << or that the user has exluded it. keywords for this: USER-IN and USER-OUT
             WRITE(IUF,'(a)',iostat=ios) 'REC-SOURCE   = CALC-IN'
             WRITE(IUF,'(2a)',iostat=ios) 'ENERGY-IMPACT = ',
-     &       'UNKNOWN'
+     &        'UNKNOWN'
 
 C this is the same as C1 - so use C1_impact
             CALL ECLOSE(C1_impact,4.0,0.001,ISNEAR)
@@ -10582,8 +10278,8 @@ C REC-EPC-C3: Duct and AHU leakage
 C << ADD logic to write it only once for the building and not when triggered
 C << for every system >>
 C << Check for -1111 is not probably necessary since the systems used are known>>
-	if(incmsys(icmsys).eq.0)then
-	  continue
+        if(incmsys(icmsys).eq.0)then
+          continue
         elseif(ibruklc(1,incmsys(icmsys)).ne.-1111)then
 
 C Check if HVAC system is VAV, fan coil, induction, constant volume,
@@ -10821,9 +10517,9 @@ C Need the name of the HVAC system here, which uses the specific fuel
                 write(iuf,'(2a)',iostat=ios) 'REF-OBJECT     = ',
      &            hvacname(icmsys)
                 write(iuf,'(a)',iostat=ios) ' ..'
+              endif
             endif
           endif
-        endif
         endif
 
 C Check if heating fuel is Oil or LPG and if it is trigger EPC-F1
@@ -12613,10 +12309,10 @@ C coefficient through all external/exposed envelopes"
       call eclose(EXP_AREA,0.0,0.0001,ISNEAR)
       if(.not.ISNEAR)then
         WRITE(IUF,'(a,f9.2)',iostat=ios)
-     &  '  BUILDING-W/M2K            = ',build_UA/EXP_AREA
+     &    '  BUILDING-W/M2K            = ',build_UA/EXP_AREA
       else
         WRITE(IUF,'(a)',iostat=ios)
-     &  '  BUILDING-W/M2K            =  0.0'
+     &    '  BUILDING-W/M2K            =  0.0'
       endif
 
 C Using info from common of thermal bridges to find the percentage of heat loss
@@ -12849,10 +12545,10 @@ C BRUKL manual
       call eclose(EXP_AREA,0.0,0.0001,ISNEAR)
       if(.not.ISNEAR)then
         WRITE(IUF,'(a,f10.2)',iostat=ios)
-     &  '  BUILDING-W/M2K             = ',build_UAN/EXP_AREA
+     &    '  BUILDING-W/M2K             = ',build_UAN/EXP_AREA
       else
         WRITE(IUF,'(a)',iostat=ios)
-     &  '  BUILDING-W/M2K             =  0.0'
+     &    '  BUILDING-W/M2K             =  0.0'
       endif
 
 
@@ -12964,7 +12660,7 @@ C Section for each HVAC system for the notional building
 
 C Same as actual building
           WRITE(IUF,'(4a)',iostat=ios) '"',TMPSTR2(1:LNBLNK(TMPSTR2)),
-     &     '"',' = HVAC-SYSTEM-DATA'
+     &      '"',' = HVAC-SYSTEM-DATA'
 
 C Same as actual building
           WRITE(IUF,'(a,f8.2)',iostat=ios)
@@ -13014,14 +12710,14 @@ C If there is no ooling system:
 
 C then only heated space.
             WRITE(IUF,'(a,f6.2)',iostat=ios)
-     &      '  HEAT-SSEFF               = ',HeatSCoP_N(ICMSYS)
+     &        '  HEAT-SSEFF               = ',HeatSCoP_N(ICMSYS)
 
 C Treat all the other cases as heated and mechanically ventilated
           else
             WRITE(IUF,'(a,f6.2)',iostat=ios)
-     &      '  HEAT-SSEFF               = ',HeatSCoP_N(ICMSYS)
+     &        '  HEAT-SSEFF               = ',HeatSCoP_N(ICMSYS)
             WRITE(IUF,'(a,f6.2)',iostat=ios)
-     &      '  COOL-SSEER               = ',CoolSSEER_N(ICMSYS)
+     &        '  COOL-SSEER               = ',CoolSSEER_N(ICMSYS)
           endif
 
 C Now start the logic needed for ACT-AREA entry
@@ -13047,7 +12743,7 @@ C the array for the call to arlist
             call arlist(ipos,imerg,TotHVACactArea,ITWOMNS,delim,louts,
      &          loutln,itrunc)
             WRITE(IUF,'(4a)',iostat=ios) ' ACT-AREA                = ',
-     &       '{ ',louts(1:loutln),' }'
+     &        '{ ',louts(1:loutln),' }'
             ipos=itrunc+1
           end do
           WRITE(IUF,'(a)',iostat=ios) ' ..'
@@ -13076,10 +12772,10 @@ C Confirm that BINF50 instead of some sort of "translated" air changes
       call eclose(EXP_AREA,0.0,0.0001,ISNEAR)
       if(.not.ISNEAR)then
         WRITE(IUF,'(a,f9.2)',iostat=ios)
-     &  '  BUILDING-W/M2K            = ',build_UAN/EXP_AREA
+     &    '  BUILDING-W/M2K            = ',build_UAN/EXP_AREA
       else
         WRITE(IUF,'(a)',iostat=ios)
-     &  '  BUILDING-W/M2K            =  0.0'
+     &    '  BUILDING-W/M2K            =  0.0'
       endif
 
 C Using info from common of thermal bridges to find the percentage of heat loss
@@ -13195,7 +12891,7 @@ C Section for each HVAC system for the reference building
 
 C Same as actual building
           WRITE(IUF,'(4a)',iostat=ios) '"',TMPSTR2(1:LNBLNK(TMPSTR2)),
-     &     '"',' = HVAC-SYSTEM-DATA'
+     &      '"',' = HVAC-SYSTEM-DATA'
 
 C Same as actual building
           WRITE(IUF,'(a,f8.2)',iostat=ios)
@@ -13242,14 +12938,14 @@ C If there is no ooling system:
 
 C then only heated space.
             WRITE(IUF,'(a,f6.2)',iostat=ios)
-     &      '  HEAT-SSEFF                = ',HeatSCoP_R(ICMSYS)
+     &        '  HEAT-SSEFF                = ',HeatSCoP_R(ICMSYS)
 
 C Treat all the other cases as heated and mechanically ventilated
           else
             WRITE(IUF,'(a,f6.2)',iostat=ios)
-     &      '  HEAT-SSEFF                = ',HeatSCoP_R(ICMSYS)
+     &        '  HEAT-SSEFF                = ',HeatSCoP_R(ICMSYS)
             WRITE(IUF,'(a,f6.2)',iostat=ios)
-     &      '  COOL-SSEER                = ',CoolSSEER_R(ICMSYS)
+     &        '  COOL-SSEER                = ',CoolSSEER_R(ICMSYS)
           endif
 
 C Now start the logic needed for ACT-AREA entry
@@ -13275,7 +12971,7 @@ C the array for the call to arlist
             call arlist(ipos,imerg,TotHVACactArea,ITWOMNS,delim,louts,
      &          loutln,itrunc)
             WRITE(IUF,'(4a)',iostat=ios) ' ACT-AREA                = ',
-     &       '{ ',louts(1:loutln),' }'
+     &        '{ ',louts(1:loutln),' }'
             ipos=itrunc+1
           end do
           WRITE(IUF,'(a)',iostat=ios) ' ..'
@@ -13309,10 +13005,10 @@ C << Keeping temporarily the same value as for the notional
       call eclose(EXP_AREA,0.0,0.0001,ISNEAR)
       if(.not.ISNEAR)then
         WRITE(IUF,'(a,f9.2)',iostat=ios)
-     &  '  BUILDING-W/M2K             = ',build_UAN/EXP_AREA
+     &    '  BUILDING-W/M2K             = ',build_UAN/EXP_AREA
       else
         WRITE(IUF,'(a)',iostat=ios)
-     &  '  BUILDING-W/M2K             =  0.0'
+     &    '  BUILDING-W/M2K             =  0.0'
       endif
 
 C Using info from common of thermal bridges to find the percentage of heat loss
@@ -13431,7 +13127,7 @@ C Section for each HVAC system for the notional building
 
 C Same as actual building
           WRITE(IUF,'(4a)',iostat=ios) '"',TMPSTR2(1:LNB),
-     &     '"',' = HVAC-SYSTEM-DATA'
+     &      '"',' = HVAC-SYSTEM-DATA'
 
 C Same as actual building
           WRITE(IUF,'(a,f8.2)',iostat=ios)
@@ -13479,14 +13175,14 @@ C If there is no ooling system:
 
 C then only heated space.
             WRITE(IUF,'(a,f6.2)',iostat=ios)
-     &      '  HEAT-SSEFF                = ',HeatSCoP_T(ICMSYS)
+     &        '  HEAT-SSEFF                = ',HeatSCoP_T(ICMSYS)
 
 C Treat all the other cases as heated and mechanically ventilated
           else
             WRITE(IUF,'(a,f6.2)',iostat=ios)
-     &      '  HEAT-SSEFF                = ',HeatSCoP_T(ICMSYS)
+     &        '  HEAT-SSEFF                = ',HeatSCoP_T(ICMSYS)
             WRITE(IUF,'(a,f6.2)',iostat=ios)
-     &      '  COOL-SSEER                = ',CoolSSEER_T(ICMSYS)
+     &        '  COOL-SSEER                = ',CoolSSEER_T(ICMSYS)
           endif
 
 C Now start the logic needed for ACT-AREA entry
@@ -13512,7 +13208,7 @@ C the array for the call to arlist
             call arlist(ipos,imerg,TotHVACactArea,ITWOMNS,delim,louts,
      &          loutln,itrunc)
             WRITE(IUF,'(4a)',iostat=ios) ' ACT-AREA                = ',
-     &       '{ ',louts(1:loutln),' }'
+     &        '{ ',louts(1:loutln),' }'
             ipos=itrunc+1
           end do
           WRITE(IUF,'(a)',iostat=ios) ' ..'
@@ -13581,7 +13277,7 @@ C option. Also copy EPCgen.log from  C:\Esru\esp-r\bin to model cfg folder)
         if(ier.eq.0)THEN
           write(currentfile,'(a)') EPCBATFL(1:lnblnk(EPCBATFL))
         ELSE ! WARNING MESSAGE HERE
-	ENDIF
+        ENDIF
         WRITE(IUF,'(6A)',IOSTAT=IOS,ERR=3) 'cd C',col,fs,'Esru',fs,
      &    'UKNCMbin'
         WRITE(IUF,'(5A)',IOSTAT=IOS,ERR=3) 'EPCgen.exe /I ',
@@ -13613,8 +13309,6 @@ C information)
 
       common/outin/iuout,iuin
       integer iuout,iuin
-      common/pophelp/h(60)
-      character h*72
       integer isystCurrent
       logical menulogical !Logical to use for a menu in order to avoid the GOTO statements
       logical pickedsomething ! set to true if one of the options selected
@@ -13624,6 +13318,13 @@ C information)
       character head*30,items*50
       integer IansLeakage
       integer nitms,ino ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='defLeakage'  ! set for subroutine
 
       pickedsomething=.false.
       menulogical=.false.
@@ -13641,13 +13342,8 @@ C information)
         write(head,'(a)')'Ductwork/AHU leakage details'
 
 C Help text for this menu.
-        H(1) ='This menu allows the definition of ductwork'
-        H(2) ='and Air Handling Unit details. These will '
-        H(3) ='be used for the Auxiliary Energy calculation'
-        H(4) ='for the stripped building. The defaults will'
-        H(5) ='use the worse case options: this for the '
-        H(6) ='ductwork question is "Class Worse than A"'
-        H(7) ='and for AHU is "Class worse than L3".'
+        helptopic='ncm_ductwork_details'
+        call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Menu for ductwork and AHU details.
         call emenu(head,items,nitms,ino)
@@ -13673,16 +13369,13 @@ C value it should be preserved.
         elseif(ino.eq.nitms-1)then
 
 C Produce help text for the menu.
-          call phelpd(head,7,'-',0,0,IER)
+          call phelpd(head,nbhelp,'-',0,0,IER)
           menulogical=.false.
         elseif(INO.EQ.1)THEN
-          H(1)='The default is the same as Class Worse than A.'
-          H(2)='Class B is the best option here. See '
-          H(3)='EN 13779 Standard for more details.'
           call easkabcd(' ',
-     &   'Has the ductwork been leakage tested ?',
-     &   'No use default leakage','Class B','Class A',
-     &   'Class Worse than A',IansLeakage,3)
+     &      'Has the ductwork been leakage tested ?',
+     &      'No use default leakage','Class B','Class A',
+     &      'Class Worse than A',IansLeakage,nbhelp)
           if(IansLeakage.eq.1)then
             write(ductwork(isystCurrent)(1:24),'(a)')
      &           'No, use default leakage'
@@ -13714,16 +13407,13 @@ C the auxiliary energy calculation in iSBEM.
           endif
           pickedsomething=.true.
         elseif(ino.eq.2)then
-          H(1)='The default is the same as Class Worse than L3.'
-          H(2)='Class L1 is the best option here. See EN 13779'
-          H(3)='Standard for more details.'
           i_default=1
           i_define=0
           call menuatol('Define AHU leakage',
-     &    'Does the AHU meet CEN leakage Standards?',
-     &    'a No, use default leakage','b Class L1','c Class L2',
-     &    'd Class L3','e Class Worse than L3',' ',' ',' ',' ',
-     &    ' ',' ',' ',i_define,i_default,3)
+     &      'Does the AHU meet CEN leakage Standards?',
+     &      'a No, use default leakage','b Class L1','c Class L2',
+     &      'd Class L3','e Class Worse than L3',' ',' ',' ',' ',
+     &      ' ',' ',' ',i_define,i_default,nbhelp)
           if(i_define.eq.1)then
             write(AHUleakage(isystCurrent)(1:24),'(a)')
      &          'No, use default leakage'
@@ -13807,6 +13497,7 @@ C   act = '-' work silently, 'w' print warnings.
       common/FILEP/IFIL
       integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       character acts*1   ! for call to surrel
@@ -13824,7 +13515,7 @@ C Set folder separator (fs) to \ or / as required.
 C The version of the cfg file must be 4 or greater.
       if(icfgv.lt.4)then
         ier=2
-	call usrmsg(
+        call usrmsg(
      &    'Model configuration file is an older format. Go to pre-',
      &    'ferences menu & update it and attribute surfaces.','W')
         return
@@ -13864,7 +13555,7 @@ C If surface is exterior then check if use is specified.
      &          ' in zone ',zname(icomp)(1:lnzname(icomp)),
      &          ' is unknown and must be defined.'
                 call edisp(iuout,outs)
-	        ier=3
+                ier=3
               endif
             endif
 
@@ -13875,12 +13566,12 @@ C of creating the notional model will fail.
      &          ' in zone ',zname(icomp)(1:lnzname(icomp)),
      &          ' has multiple child surfaces.'
               call edisp(iuout,outs)
-	      ier=4
+              ier=4
             endif
  552      continue
 
 C If a fatal errors exit now.
-	  if(ier.eq.3.or.ier.eq.4)then
+          if(ier.eq.3.or.ier.eq.4)then
             call edisp(iuout,
      &        'Correct issues via the geometry menu.')
             return
@@ -13891,10 +13582,10 @@ C << to be done >>
 
         else
           ier=2
-	  write(outs,'(3a)') 'Zone file ',
+          write(outs,'(3a)') 'Zone file ',
      &      LGEOM(ICOMP)(1:lnblnk(LGEOM(ICOMP))),
      &      ' is an older format.'
-	  call usrmsg(outs,
+          call usrmsg(outs,
      &    'Go to the preferences menu, update it & add surface use.',
      &    'W')
           return

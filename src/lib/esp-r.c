@@ -193,7 +193,7 @@ static gboolean configure_event( GtkWidget *widget,
                      widget->window,
                      0, 0, 0, 0, -1, -1);*/
     g_object_unref(gr_image);
-// fprintf(stderr,"configure_event unref gr_image\n");
+    // fprintf(stderr,"configure_event unref gr_image\n");
   }
 
   gr_image = gdk_pixmap_new(widget->window,
@@ -1143,13 +1143,15 @@ void esru_wire_ctl ( void)
    remembernzg = cgzonpik_.nzg;
    nrows = 1 + (guint)(rememberncomp/4);
    irow = 0;
-    fprintf(stderr,"number of zones %d %d\n",cc1_.NCOMP,rememberncomp);
-    fprintf(stderr,"number of cnn %d\n",cc1_.NCON);
+/* debug */
+   // fprintf(stderr,"number of zones %d %d\n",cc1_.NCOMP,rememberncomp);
+   // fprintf(stderr,"number of cnn %d\n",cc1_.NCON);
    // fprintf(stderr,"number of rows %d\n",nrows);
-   fprintf(stderr,"nzg is %d %d\n",cgzonpik_.nzg,remembernzg);
-   fprintf(stderr,"nznog zero is %d\n",cgzonpik_.nznog[0]);
-   fprintf(stderr,"nznog one is %d\n",cgzonpik_.nznog[1]);
-   fprintf(stderr,"nznog two is %d\n",cgzonpik_.nznog[2]);
+   // fprintf(stderr,"nzg is %d %d\n",cgzonpik_.nzg,remembernzg);
+   // fprintf(stderr,"nznog zero is %d\n",cgzonpik_.nznog[0]);
+   // fprintf(stderr,"nznog one is %d\n",cgzonpik_.nznog[1]);
+   // fprintf(stderr,"nznog two is %d\n",cgzonpik_.nznog[2]);
+
    frame = gtk_frame_new ("Zones to display");
    gtk_container_set_border_width (GTK_CONTAINER (frame), 4);
    table = gtk_table_new (nrows, 4, TRUE);
@@ -1171,7 +1173,8 @@ void esru_wire_ctl ( void)
    */
    for (izone = 0; izone < (gint)remembernzg; izone++) {
      curindex = (int)cgzonpik_.nznog[izone]-1;
-      fprintf(stderr,"Zone %d, index %d index %d\n",izone,izone+1, curindex);
+     // debug
+     // fprintf(stderr,"Zone %d, index %d index %d\n",izone,izone+1, curindex);
      gtk_toggle_button_set_active (GTK_TOGGLE_BUTTON (zone_button[curindex]), TRUE);
    }
    gtk_container_add (GTK_CONTAINER (GTK_DIALOG(control)->vbox),frame);
@@ -1335,9 +1338,10 @@ void esru_wire_ctl ( void)
              cgzonpik_.nznog[cgzonpik_.nzg++] = izone+1;}
          }
 	 remembernzg = cgzonpik_.nzg;  // remember this
-          fprintf(stderr,"-nzg is now %d\n",remembernzg);
-          fprintf(stderr,"-nznog zero is now %d\n",cgzonpik_.nznog[0]);
-          fprintf(stderr,"-nznog one is now %d\n",cgzonpik_.nznog[1]);
+         // debug
+         // fprintf(stderr,"-nzg is now %d\n",remembernzg);
+         // fprintf(stderr,"-nznog zero is now %d\n",cgzonpik_.nznog[0]);
+         // fprintf(stderr,"-nznog one is now %d\n",cgzonpik_.nznog[1]);
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeAll)) == TRUE) {
            cray2_.ITDSP = 0;}
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeSurfaces)) == TRUE) {
@@ -1427,9 +1431,10 @@ void esru_wire_ctl ( void)
              cgzonpik_.nznog[cgzonpik_.nzg++] = izone+1;}
          }
 	 remembernzg = cgzonpik_.nzg;  // remember this
-          fprintf(stderr,"-nzg is now %d\n",remembernzg);
-          fprintf(stderr,"-nznog zero is now %d\n",cgzonpik_.nznog[0]);
-          fprintf(stderr,"-nznog one is now %d\n",cgzonpik_.nznog[1]);
+         // debug
+         // fprintf(stderr,"-nzg is now %d\n",remembernzg);
+         // fprintf(stderr,"-nznog zero is now %d\n",cgzonpik_.nznog[0]);
+         // fprintf(stderr,"-nznog one is now %d\n",cgzonpik_.nznog[1]);
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeAll)) == TRUE) {
            cray2_.ITDSP = 0;}
          if (gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (IncludeSurfaces)) == TRUE) {
@@ -1893,6 +1898,7 @@ char *gintstr[] = {
    if the application is re-sized */
     emenu = gtk_frame_new (NULL);
     menu_pix_wd = (gint) *imenuchw * f_width;
+    // debug
     // fprintf(stderr,"menu chars and pix wd %ld %d\n", *imenuchw,menu_pix_wd);
 
 /* The reserved area for the graphic feedback is different for each application.
@@ -1973,6 +1979,7 @@ char *gintstr[] = {
 
     gtk_paned_pack2 (GTK_PANED (hpaned), emenu, FALSE, TRUE);
     gtk_widget_show (emenu);
+    // debug
     // fprintf(stderr,"menu request pix wd %f %d %d\n", hratio,hother,menu_pix_wd);
 
 /* so the emenu is a frame which we could try
@@ -2009,6 +2016,7 @@ char *gintstr[] = {
     textf = gtk_frame_new (NULL);
     gtk_frame_set_shadow_type (GTK_FRAME (textf), GTK_SHADOW_OUT);
     textf_pix_ht = (gint) *ilimtty * f_height +2;
+    // debug
     // fprintf(stderr,"text feedback lines and pix ht %ld %d\n", *ilimtty,textf_pix_ht);
     gtk_widget_set_size_request (textf, -1, textf_pix_ht);
     gtk_paned_pack2 (GTK_PANED (vpaned), textf, FALSE, TRUE);
@@ -2511,6 +2519,7 @@ void win3d_(menu_char,cl,cr,ct,cb,vl,vr,vt,vb,gw,gh)
  * are to the pixmap which is the same size as graphic, the coordinates
  * derived are based on upper left of the pixmap = 0, 0. */
  gdk_drawable_get_size(graphic->window,&g_width,&g_height);
+ // debug
  // fprintf(stderr,"win3d font height width is %d %d gr_w %d gr_h %d\n", f_height,f_width,g_width,g_height);
  b_top = 0 + (f_height * (*ct));
  b_bottom = g_height - 9 - (f_height * ((gint) *cb));

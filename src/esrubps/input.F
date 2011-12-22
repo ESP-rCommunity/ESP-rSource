@@ -1452,10 +1452,7 @@ C Identify special materials file & call routine to read it.
 
 C ******************** MZUTIL ********************
 
-C MZUTIL reads the zone utilities file if one is active. This
-C file contains information on the source of any data which should
-C be used in preference to the zone file defaults.
-C Timestep zone airflow is handled by tdf.
+C MZUTIL reads additional zone descriptions if active.
 
       SUBROUTINE MZUTIL(ICOMP,IER)
 #include "building.h"
@@ -1508,6 +1505,8 @@ C Reset warning flag and check and see if running in dll mode.
       call isadll(dll)
       
 C Open zone viewfactors, pre-calculated shading, convection regimes.
+C Report the contents of the shading file if the user has requested 
+C a trace and then re-scanned the model.
       IF(IVF(ICOMP).EQ.1)CALL MZVFIN(ICOMP)
       IF(ISI(ICOMP).EQ.1)CALL MZSHIN(ICOMP)
       IF(IHC(ICOMP).EQ.1)CALL MZHCFV2(ICOMP)

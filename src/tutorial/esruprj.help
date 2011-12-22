@@ -3058,13 +3058,19 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 'likely that the original exemplar files may be corrupted.'
 '  '
 'If you want to modify the model then the OWN IT option will copy'
-'it to your own folder. On Linux and OSX models are copied to your'
-'home folder, on Cygwin it might be to the Cgywin users home folder'
-'or to C:/Documents and Settings/user_name.'
+'it to a folder you control. On Linux and OSX the $HOME environment'
+'variable sets the default location, in Windows $HOMEPATH environment'
+'variable sets the default location. Models are copied to this '
+'default or a folder you select. NOTE: no checks are made to'
+'confirm you have control of the nominated folder).
+'  '
+'GTK interface note: the file browser initially points to the home'
+'folder, if you click on a folder then what is [selected:] will be'
+'used so clear the text in the bottom dialog before you say ok.'
 '  '
 'Owning a model in Native Windows will most likely copy the model'
 'folder to C:/Documents and Setting/user_name. Many models work'
-'better if you move this folder to a place like C:/Esru/Models.'
+'better if you nominate a place like C:/Esru/Models or C:/Models.'
 '  '
 'The current set of exemplars: '
 *enditem
@@ -13871,14 +13877,15 @@ Another mode is to scan the zone operations file and to compose'
         call ASKRCMP('select component','-',ICOMPN,IER)
         CALL EASKR(VAL,'Enter control action for this component',
 *subroutine MMGFUN
-*item MMGFUN
-'Assessment period choices allow you to do quick'
-'checks of your model for the month of January or'
-'April or July. And eventually you MUST do the'
-'annual assessment REQUIRED by the code.'
+*item MMGFUN ncm_assessment_period
+'Assessment period choices allow you to do quick checks of'
+'your model for the month of January or April or July.'
+'  '
+'And eventually you MUST do the annual assessment REQUIRED'
+'by the code.'
 *enditem
       CALL EASKABCD(' ','Initial assessment period (see help)',
-*item MMGFUN
+*item MMGFUN ncm_context
 'This facility takes information provided in the model'
 'context menu NCM descriptions and will use it to'
 'create several alternative models and optionally run'
@@ -13913,7 +13920,7 @@ Another mode is to scan the zone operations file and to compose'
 'Remember to make backup copies of your models!'
 *enditem
       CALL EASKABCD('Options (see help): ',' ',
-*item MMGFUN
+*item MMGFUN ncm_run_now_later
 'You are using new UK NCM stripped, notional,'
 'reference and typical models. In order to generate'
 'EPC and BRUKL (UK building regulations) specific'
@@ -13921,18 +13928,12 @@ Another mode is to scan the zone operations file and to compose'
 'need to run and may take some time. You may choose not'
 'to run simulations at this time and run these at a'
 'later time (via the 2nd option).'
+'  '
+'If you picked this choice in error just say no.'
 *enditem
         CALL ASKOK(
-*item MMGFUN
-'You are using existing UK NCM stripped, notional,'
-'reference and typical models. In order to generate'
-'EPC and BRUKL (UK building regulations) specific'
-'information annual simulations for all these models'
-'need to run and may take some time. If you picked this'
-'choice in error just say no.'
-*enditem
         CALL ASKOK(
-*item MMGFUN
+*item MMGFUN ncm_run_with_6
 'You are using existing save level 6 files from'
 'stripped, notional, reference and typical model runs.'
 'In order to generate EPC and BRUKL (UK building'
@@ -13940,72 +13941,70 @@ Another mode is to scan the zone operations file and to compose'
 *enditem
         CALL ASKOK(
 *subroutine sbmedit
-*item sbmedit
- 'You have chose to configure you model for UK NCM based'
- 'calculations to generate Energy Performance Certificate'
- '(EPC_ Make sure that the original model follows the'
- 'following assumptions: '
- '1. Exterior surfaces that have other surfaces within them'
- '   are called parents. Parents may have more surfaces '
- '   within them. Only a three tier hierarchy is allowed '
- '   i.e. only parent, child and grandchild are allowed '
- '   e.g. a wall with a frame and a window). '
- '  '
- '2. Each exterior surface needs to have a usage. You will'
- '   be asked to provide it if not already defined in the'
- '   geometry and attributions menu.'
- '  '
- '   Only the following usages can be associated with '
- '   exterior surfaces that are parents: '
- '   - if exterior & vertical & opaque = WALL '
- '   - if exterior & horiz UP & opaque = ROOF FLAT'
- '   - if exterior & horiz DOWN & opaque = not allowed'
- '   - if exterior & pitched & opaque = ROOF PITCHED'
- '   - if facing ground & horizontal = GROUND'
- '   - if facing another room & any orientation = PARTN'
- '  '
- '   Usages associated with child and grandchild surfaces'
- '   (e.g. not walls and roofs) :'
- '   - if exterior & horiz UP & transp = WINDOW SKYLIGHT'
- '   - if exterior & pitched & transp = WINDOW SKYLIGHT'
- '   - if exterior & vertical & transp = WINDOW'
- '   - if exterior & vertical & opaque = FRAME or DOOR'
- '   - if facing another room = FRAME or DOOR'
- '  '
- '3. Exterior surfaces should   | |                      '
- '   avoid extreme L shapes.    | |  obtuse interior     '
- '   Surfaces with lots of      | | /   angle here       '
- '   edges can cause problems.  | |/_____                '
- '   (e.g. ceiling of passage)  |________                '
- '  '
- '4. Only one child surface is allowed per parent, if more '
- '   child surfaces are required divide a parent into two '
- '   surfaces and make one child in each.'
- ' '
- 'When generating the notional model all areas for parents'
- '& children that are not glazed are conserved. Additional'
- 'glazing is added to all exterior surfaces as per UK NCM. '
- '* if parent surface is not wall/roof no glazing is added'
- '(This is exceptional and is discouraged)'
- 'In order to calculate the required glazed area, gross  '
- 'parent area is used (e.g. if a wall has a door in it then'
- 'the glazed area is some % of (wall area + door area))'
- ' '
- 'If glazing area in original is more than required for  '
- 'notional then the same area is retained in notional model'
- ' '
- '5. If you have not attributed some use (eg door) to zone'
- '   surfaces then do so before defining a notional model.'
- ' '
- 'For interior surfaces it is assumed that all vertical '
- 'surfaces are walls. Horizontal interior surfaces are '
- 'internal roofs/ceilings. '
+*item sbmedit ncm_zone_rules
+'You have chose to configure you model for UK NCM based'
+'calculations to generate Energy Performance Certificate'
+'(EPC_ Make sure that the original model follows the'
+'following assumptions: '
+'1. Exterior surfaces that have other surfaces within them'
+'   are called parents. Parents may have more surfaces '
+'   within them. Only a three tier hierarchy is allowed '
+'   i.e. only parent, child and grandchild are allowed '
+'   e.g. a wall with a frame and a window). '
+'  '
+'2. Each exterior surface needs to have a usage. You will'
+'   be asked to provide it if not already defined in the'
+'   geometry and attributions menu.'
+'  '
+'   Only the following usages can be associated with '
+'   exterior surfaces that are parents: '
+'   - if exterior & vertical & opaque = WALL '
+'   - if exterior & horiz UP & opaque = ROOF FLAT'
+'   - if exterior & horiz DOWN & opaque = not allowed'
+'   - if exterior & pitched & opaque = ROOF PITCHED'
+'   - if facing ground & horizontal = GROUND'
+'   - if facing another room & any orientation = PARTN'
+'  '
+'   Usages associated with child and grandchild surfaces'
+'   (e.g. not walls and roofs) :'
+'   - if exterior & horiz UP & transp = WINDOW SKYLIGHT'
+'   - if exterior & pitched & transp = WINDOW SKYLIGHT'
+'   - if exterior & vertical & transp = WINDOW'
+'   - if exterior & vertical & opaque = FRAME or DOOR'
+'   - if facing another room = FRAME or DOOR'
+'  '
+'3. Exterior surfaces should   | |                      '
+'   avoid extreme L shapes.    | |  obtuse interior     '
+'   Surfaces with lots of      | | /   angle here       '
+'   edges can cause problems.  | |/_____                '
+'   (e.g. ceiling of passage)  |________                '
+'  '
+'4. Only one child surface is allowed per parent, if more '
+'   child surfaces are required divide a parent into two '
+'   surfaces and make one child in each.'
+' '
+'When generating the notional model all areas for parents'
+'& children that are not glazed are conserved. Additional'
+'glazing is added to all exterior surfaces as per UK NCM. '
+'* if parent surface is not wall/roof no glazing is added'
+'(This is exceptional and is discouraged)'
+'In order to calculate the required glazed area, gross  '
+'parent area is used (e.g. if a wall has a door in it then'
+'the glazed area is some % of (wall area + door area))'
+' '
+'If glazing area in original is more than required for  '
+'notional then the same area is retained in notional model'
+' '
+'5. If you have not attributed some use (eg door) to zone'
+'   surfaces then do so before defining a notional model.'
+' '
+'For interior surfaces it is assumed that all vertical '
+'surfaces are walls. Horizontal interior surfaces are '
+'internal roofs/ceilings. '
 *enditem
       CALL PHELPD('SBEM Assumptions',59,'-',0,0,IER)
-*item sbmedit
-*enditem
       CALL ASKOK('Continue with UK NCM setup/calculations?',
-*item sbmedit
+*item sbmedit ncm_user_inputs
 'UK NCM calculations require a number of inputs from'
 'the user. You are presented with several sections'
 'to document the project and specify the type of building'
@@ -14052,193 +14051,105 @@ Another mode is to scan the zone operations file and to compose'
 'setup the required models. '
 *enditem
       CALL EPICKS(IX,KSTR,' ','Define UK NCM data',
-*item sbmedit
+*item sbmedit ncm_save_changes
 'You have been editing NCM data. If you want to save'
 'recent changes in the model configuration say yes.'
 *enditem
         CALL ASKOK('Update NCM descriptions (see help)',' ',OK,dok,2)
-*item sbmedit
-'You have been editing NCM data. If you want to save'
-'recent changes say yes. '
-*enditem
         CALL ASKOK('Update NCM descriptions (see help)',' ',OK,dok,2)
-*item sbmedit
-'You have been editing NCM data. If you want to save'
-'recent changes say yes. '
-*enditem
         CALL ASKOK('Update NCM descriptions (see help)',' ',OK,dok,2)
-*item sbmedit
-'You have been editing NCM data. If you want to save'
-'recent changes say yes. '
-*enditem
         CALL ASKOK('Update NCM descriptions (see help)',' ',OK,dok,2)
-*item sbmedit
+*item sbmedit ncm_no_help_yet
+'Sorry but there is no help yet written for this topic in the'
+'definition of the UK NCM.'
 *enditem
           CALL PHELPD('DHW help not defined (yet)',2,'-',0,0,IER)
-*item sbmedit
-*enditem
           CALL EASKABC('Choose option',' ',
-*item sbmedit
-*enditem
             CALL EASKS(DHWNAME(NDHWSYS),'DHW system name',
-*item sbmedit
-*enditem
  909        CALL EPICKS(IY,KSYS,' ','Select DHW system type',
-*item sbmedit
-*enditem
             CALL EASKABC('Was the DHW generator built before 1998',
-*item sbmedit
-*enditem
             CALL EASKR(HWEF(NDHWSYS),
-*item sbmedit
-*enditem
  910        CALL EPICKS(IDA,JSTR,
-*item sbmedit
-*enditem
               CALL EASKABC('Is there a water storage system',
-*item sbmedit
-*enditem
                 CALL EASKABC('Which of the following do you know',
-*item sbmedit
-*enditem
                   CALL EASKR(DHWSPD(NDHWSYS,1),
-*item sbmedit
-*enditem
                   CALL EASKR(DHWSPD(NDHWSYS,2),
-*item sbmedit
-*enditem
                 CALL EASKABC('Is there a water circulation loop',
-*item sbmedit
-*enditem
                   CALL EASKAB('Do you know circulation losses (W/m)',
-*item sbmedit
-*enditem
                     CALL EASKR(DHWSPD(NDHWSYS,3),
-*item sbmedit
-*enditem
                   CALL EASKAB('Do you know pump power (kW)',
-*item sbmedit
-*enditem
                     CALL EASKR(DHWSPD(NDHWSYS,4),
-*item sbmedit
-*enditem
                   CALL EASKAB('Do you know loop length (m)',
-*item sbmedit
-*enditem
                     CALL EASKR(DHWSPD(NDHWSYS,5),
-*item sbmedit
-*enditem
  911        CALL EPICKS(IDA,JSTR,
-*item sbmedit
-*enditem
           CALL EASKS(DHWNAME(IDHWSYS),'DHW system name',
-*item sbmedit
-*enditem
  912      CALL EPICKS(IY,KSYS,' ','Select DHW system type',
-*item sbmedit
-*enditem
           CALL EASKABC('Was the DHW generator built before 1998',
-*item sbmedit
-*enditem
           CALL EASKR(HWEF(IDHWSYS),
-*item sbmedit
-*enditem
  913      CALL EPICKS(IDA,JSTR,
-*item sbmedit
-*enditem
           CALL EASKABC('Is there a water storage system',
-*item sbmedit
-*enditem
             CALL EASKABC('Which of the following do you know',
-*item sbmedit
-*enditem
               CALL EASKR(DHWSPD(IDHWSYS,1),
-*item sbmedit
-*enditem
               CALL EASKR(DHWSPD(IDHWSYS,2),
-*item sbmedit
-*enditem
             CALL EASKABC('Is there a water circulation loop',
-*item sbmedit
-*enditem
               CALL EASKAB('Do you know circulation losses (W/m)',
-*item sbmedit
-*enditem
                 CALL EASKR(DHWSPD(IDHWSYS,3),
-*item sbmedit
-*enditem
               CALL EASKAB('Do you know pump power (kW)',
-*item sbmedit
-*enditem
                 CALL EASKR(DHWSPD(IDHWSYS,4),
-*item sbmedit
-*enditem
               CALL EASKAB('Do you know loop length (m)',
-*item sbmedit
-*enditem
                 CALL EASKR(DHWSPD(IDHWSYS,5),
-*item sbmedit
-'You have been editing NCM data. If you want to save'
-'recent changes say yes. '
-*enditem
-        CALL ASKOK('Update NCM descriptions (see help)',' ',OK,dok,2)
-*item sbmedit
+*item sbmedit ncm_link_hvac_zone
+'For each zone in the model you are asked to select the HVAC'
+'system that is associated with it. If there are zones without'
+'heating or cooling then your planning phrase should have'
+'created a system that did nothing.'
 *enditem
  914        CALL EPICKS(IA,JSTR,' ','Link zones to HVAC systems',
-*item sbmedit
+*item sbmedit ncm_link_dhw_zone
+'For each zone in the model you are asked to select the DHW'
+'system that is associated with it. If there are zones without'
+'hot water requirements then your planning phrase should have'
+'taken this into account.'
+'  '
+'You will also be asked the length of dead legs to water draw-off'
+'points in the rooms.'
 *enditem
             CALL EPICKS(IA,JSTR,' ','Link zones to DHW systems',
-*item sbmedit
-*enditem
  916            CALL EPICKS(IA,KSYS,' ',
-*item sbmedit
-*enditem
           CALL EASKR(DEADLEG(IZ),
-*item sbmedit
+*item sbmedit ncm_link_use_zone
+'For each zone in the model you are asked to specify the activity'
+'of the room from a standard list of room uses. This choice will'
+'set a number of attributes of the room in terms of occupancy as'
+'well as heating and cooling setpoints.'
 *enditem
             CALL EPICKS(IX,KSYS,' ',OUTS(1:LNBLNK(OUTS)),
-*item sbmedit
-'You have been editing NCM data. If you want to save'
-'recent changes say yes. '
-*enditem
-          CALL ASKOK('Update NCM descriptions (see help)',' ',OK,dok,2)
-*item sbmedit
-*enditem
-          CALL EASKABC(
-*item sbmedit
-*enditem
-            CALL EASKR(light_input_watt,
-*item sbmedit
-*enditem
-            CALL EPICKS(IY,LSYS,' ',OUTS(1:LNBLNK(OUTS)),
-*item sbmedit
-*enditem
-            CALL EASKABCD('Choose lighting control type for',
-*item sbmedit
-*enditem
-              CALL EASKAB('Type of photoelectric control in zone',
-*item sbmedit
-*enditem
-              CALL EASKAB('Type of photoelectric control sensor',
-*item sbmedit
+*item sbmedit ncm_link_lighting_zone
+'For each zone in the model you are asked to select the lighting'
+'system that is associated with it. If there are zones without'
+'lighting requirements then your planning phrase should have'
+'taken this into account.'
+'  '
+'You will be asked about the lighting gains in W/m2 per 100 lux'
+'or a pre-defined pattern.'
+'  '
+'You are also asked about lighting controls. The logic is different'
+'from the normal ESP-r lighting (casual gain controls). Instead it'
+'matches the requirements of the NCM.'
+'  '
 'Photoelectric controls are based on one sensor at'
 'the front of the room or front and back sensors '
 'in the room. '
-*enditem
-              CALL EASKABC('Choose lighting sensor location for',
-*item sbmedit
+'  '
 'If you selected a standalone sensor then parasitic'
 'power is assumed to be 0.3W/m2. If the sensor is '
 'addressable (advanced) the PP is assumed to be 0.57'
 'W/m2. If you have other data please supply it now. '
-*enditem
-              CALL EASKR(PE_sensor_PP(iz),
-*item sbmedit
-'This is equivalent to the choices offered by the UK'
-'iSBEM application which is minimally documented in'
-'the UK SBEM technical manual table 20. Your choice'
-'will set an occupancy modifier which is used in '
-'the control.  '
+'  '
+'Olccupancy sensing equivalent to the choices offered by the UK'
+'iSBEM application which is minimally documented in the UK'
+'SBEM technical manual table 20. Your choice will set an'
+'occupancy modifier which is used in the control.'
 ' '
 'For systems without automatic presence or absence '
 'detection the following options are allowed: '
@@ -14254,114 +14165,65 @@ Another mode is to scan the zone operations file and to compose'
 ' Manual On with dimming on absence Foc=0.90'
 ' Manual On with off on absence     Foc=0.82'
 *enditem
+          CALL EASKABC(
+            CALL EASKR(light_input_watt,
+            CALL EPICKS(IY,LSYS,' ',OUTS(1:LNBLNK(OUTS)),
+            CALL EASKABCD('Choose lighting control type for',
+              CALL EASKAB('Type of photoelectric control in zone',
+              CALL EASKAB('Type of photoelectric control sensor',
+              CALL EASKABC('Choose lighting sensor location for',
+              CALL EASKR(PE_sensor_PP(iz),
             CALL EASKATOG(
-*item sbmedit
-*enditem
               CALL EASKR(Occ_sensor_PP(iz),
-*item sbmedit
-'You have been editing NCM data. If you want to save'
-'recent changes say yes. '
-*enditem
-          CALL ASKOK('Update NCM descriptions (see help)',' ',OK,dok,2)
-*item sbmedit
-'You can add renewable energy in this menu'
-' '
-' '
-' '
-' '
-' '
+*item sbmedit ncm_no_ren_help_yet
+'Sorry but there is no help yet written for this topic in the'
+'definition of the UK NCM.'
 *enditem
           CALL ASKOK('Edit this component?',' ',OK,dok,6)
-*item sbmedit
-*enditem
           CALL EASKABC('Choose action',' ','add','delete','cancel',IA,6)
-*item sbmedit
-*enditem
           CALL PHELPD('Renewables help',6,'-',0,0,IER)
-*item sbmedit
-*enditem
             CALL EASKS(RENNAME(INDEX),'Name of renewable energy system',
-*item sbmedit
-*enditem
             CALL EASKS(RENNAME(INDEX),'Name of renewable energy system',
-*item sbmedit
-*enditem
           call MENUATOL('Choose renewable energy system',
-*item sbmedit
-*enditem
               CALL EPICKS(IX,LSTR,'Choose which DHW system ',
-*item sbmedit
-*enditem
             CALL EASKR(RENDATA(INDEX,2),
-*item sbmedit
-*enditem
             CALL EASKR(RENDATA(INDEX,3),
-*item sbmedit
-*enditem
             CALL EASKR(RENDATA(INDEX,4),
-*item sbmedit
-*enditem
             call MENUATOL('Choose PV type','Choose PV type',
-*item sbmedit
-*enditem
             CALL EASKR(RENDATA(INDEX,2),
-*item sbmedit
-*enditem
             CALL EASKR(RENDATA(INDEX,3),
-*item sbmedit
-*enditem
             CALL EASKR(RENDATA(INDEX,4),
-*item sbmedit
-*enditem
             call MENUATOL('Choose terrain type',
-*item sbmedit
-*enditem
             CALL EASKR(RENDATA(INDEX,2),
-*item sbmedit
-*enditem
             CALL EASKR(RENDATA(INDEX,3),
-*item sbmedit
-*enditem
             CALL EASKR(RENDATA(INDEX,4),
-*item sbmedit
-*enditem
             CALL EASKR(RENDATA(INDEX,1),
-*item sbmedit
-*enditem
             CALL EASKR(RENDATA(INDEX,2),
-*item sbmedit
-*enditem
             CALL EASKR(RENDATA(INDEX,3),
-*item sbmedit
-*enditem
             CALL EASKR(RENDATA(INDEX,4),
-*item sbmedit
-*enditem
  993        CALL EPICKS(IDA,JSTR,
-*item sbmedit
+*item sbmedit ncm_hvac_ctl_options
 'Are there any controls for the specific HVAC system?'
-'This is only used in the recommendations report for'
-*enditem
-          CALL EASKAB('Define controls for system: ',
-*item sbmedit
-'Select systems controls that apply to the specific'
-'HVAC system. These are based on the HVAC Non-Domestic'
+'This is only used in the recommendations report for EPC.'
+'  '
+'If you elect to define HVAC controls you have several'
+'options that are based on the HVAC Non-Domestic'
 'guide. They are only used for the Energy Performance'
 'Recommendations report and they are not currently '
 'affecting the calculated values for the energy loads.'
 'This is in accordance with iSBEM vers. 3.2b '
 *enditem
+          CALL EASKAB('Define controls for system: ',
             CALL EPICKS(IPICKS,iselected,' ',
-*item sbmedit
+*item sbmedit ncm_testing_assumptions
 'This option is password protected because it is'
 'only meant to be used for testing DSM against'
 'requirements set accrediting the software. They'
 'do not have any practical use. The differences'
 'when this flag is set are related with overheating'
 'and the calculation of the auxiliary energy.'
-*enditem
-        call easki(IPASS,' ','Password?',
-*item sbmedit
+'  '
+'DSM test flags are as follows:'
 'default 0: stripped does NOT follow the rules of '
 'the notional/reference building.'
 'if equal to 1: stripped follows the rules of the '
@@ -14369,29 +14231,23 @@ Another mode is to scan the zone operations file and to compose'
 'if equal to 2: stripped follows the rules of the '
 'reference building. '
 *enditem
-          call easki(iDsmTestingFlag,' ','DSM tests flag (see help)?',
-*subroutine LSTNCM
+        call easki(IPASS,' ','Password?',
+        call easki(iDsmTestingFlag,' ','DSM tests flag (see help)?',
 *subroutine edsbmsys
-*item edsbmsys
-'Help text for adding UK NCM HVAC systems'
-'This message still needs to be generated'
-*enditem
-        CALL PHELPD('NCM HVAC help',2,'-',0,0,IER)
-*item edsbmsys
-*enditem
-        CALL EASKABC('Choose option',' ','add','delete','cancel',JC,2)
-*item edsbmsys
-'Choose the type of HVAC environment control system'
-'that satisfies / comes closest to your requirements'
-'(see section 7.6.2 of the iSBEM users guide). The'
-'available selections are summarized below: '
+*item edsbmsys ncm_sys_help_a
+'Sorry but there is little help yet written for this topic in the'
+'definition of the UK NCM.'
+'  '
+'If you wish to add a HVAC system please consider tjhe following:'
+'Choose the type of HVAC environment control system that satisfies'
+'or comes closest to your requirements (see section 7.6.2 of the'
+'iSBEM users guide). The available selections are summarized below:'
 ' '
 'Central heating using water: radiators '
 '  Centrally generated heat with water distribution'
 '  using radiators in rooms. Natural vent assumed.'
 ' '
 'Central heating using water: convectors '
-' '
 '  As above but using convectors in rooms.'
 ' '
 'Central heating using water: floor heating '
@@ -14400,14 +14256,13 @@ Another mode is to scan the zone operations file and to compose'
 'Central heating with air distribution '
 '  As above but with air distribution.'
 ' '
-'Other local room heater - fanned. Includes gas'
-'  fires, gas convectors, direct electric heaters,'
-'  electric storage (with fans). Large units should'
-'  be treated as forced convection air heaters.'
+'Other local room heater - fanned. Includes gas fires, gas'
+'  convectors, direct electric heaters, electric storage (with'
+'  fans). Large units should be treated as forced convection air'
+'  heaters.'
 ' '
-'Other local room heater - unfanned. Includes gas'
-'  fires, gas convectors, direct electric heaters,'
-'  electric storage (w/o fans).'
+'Other local room heater - unfanned. Includes gas fires, gas'
+'  convectors, direct electric heaters, electric storage (w/o fans).'
 ' '
 'Unflued radiant heater - high temperature overhead'
 '  radiant (electric or gas) without flue.'
@@ -14421,32 +14276,31 @@ Another mode is to scan the zone operations file and to compose'
 'Flued forced-convective air heaters - optional fan'
 '  to assist combustion.'
 ' '
-'Unflued forced-convective air heaters - typically'
-'  called direct gas heaters. Adequate ventilation'
-'  must be provided.'
+'Unflued forced-convective air heaters - typically called direct'
+'  gas heaters. Adequate ventilation must be provided.'
 ' '
 'continued... '
 *enditem
+        CALL PHELPD('NCM HVAC help',2,'-',0,0,IER)
+        CALL EASKABC('Choose option',' ','add','delete','cancel',JC,2)
           CALL PHELPD('SBEM HVAC choices',45,'-',0,0,IER)
-*item edsbmsys
+*item edsbmsys ncm_sys_help_b
 'Air based HVAC systems follow... '
 ' '
-'Single-duct VAV - all air system where volume is'
-'  adjusted to match cooling load. Reheat optional.'
-'  Assumed to provide heating. Optional perimeter'
-'  heating.'
+'Single-duct VAV - all air system where volume is adjusted'
+'  to match cooling load. Reheat optional. Assumed to'
+'  provide heating. Optional perimeter heating.'
 ' '
-'Dual-duct VAV - as above except separate hot and'
-'  cold air ducts.'
+'Dual-duct VAV - as above except separate hot and cold air'
+'  ducts.'
 ' '
-'Indoor packaged cabinet (VAV) - local cooling &'
-'  heating units supplying to room or floor or'
-'  ceiling voids. Optional locally varied recirc'
-'  rate and electric top-up heating.'
+'Indoor packaged cabinet (VAV) - local cooling & heating'
+'  units supplying to room or floor or ceiling voids. Optional'
+'  locally varied recirc rate and electric top-up heating.'
 ' '
-'Fan coil system - local fanned terminal unit (in'
-'  ceiling/on wall/on floor) with central chilled'
-'  water. 2/3/4-pipe. Assumed to provide heating.'
+'Fan coil system - local fanned terminal unit (in ceiling/'
+'  on wall/on floor) with central chilled wateer.'
+'  2/3/4-pipe. Assumed to provide heating.'
 ' '
 'Induction system - high pressure central supply'
 '  air with heating and cooling within terminal'
@@ -14490,16 +14344,10 @@ Another mode is to scan the zone operations file and to compose'
 'Single room cooling - integral units w/o ducts. '
 *enditem
           CALL PHELPD('SBEM HVAC choices',59,'-',0,0,IER)
-*item edsbmsys
-*enditem
           CALL EASKS(HVACNAME(NCMSYS),'HVAC system name',
-*item edsbmsys
-*enditem
  906      CALL EPICKS(IY,KSYS,' ','Select system type',
-*item edsbmsys
-*enditem
           CALL EPICKS(IY,KSYS,' ','Select heat generator',
-*item edsbmsys
+*item edsbmsys ncm_sys_help_c
 'You will be asked for system efficiency/COP next'
 'For the district heating option note that default'
 'emission factor specified in iSBEM v3.4.a is 0.293'
@@ -14508,7 +14356,7 @@ Another mode is to scan the zone operations file and to compose'
 'for aforementioned emission factor.'
 *enditem
             CALL PHELPD('SBEM HVAC exceptions',6,'-',0,0,IER)
-*item edsbmsys
+*item edsbmsys ncm_sys_help_d
 'You will be asked for system efficiency/COP next'
 'For heat pumps values for natural gas are quoted as'
 'default values. The same values are applicable to '
@@ -14517,28 +14365,14 @@ Another mode is to scan the zone operations file and to compose'
 '(following iSBEM ver 3.4.a)'
 *enditem
             CALL PHELPD('SBEM HVAC exceptions',6,'-',0,0,IER)
-*item edsbmsys
-*enditem
           CALL EASKR(HGEF(NCMSYS),
-*item edsbmsys
-*enditem
           CALL EPICKS(IY,KSYS,' ','Select fuel type',
-*item edsbmsys
-*enditem
  456        CALL EASKATOG(' Choose cooling system',' ',SYSNAME(MPT-4),
-*item edsbmsys
-*enditem
               CALL EASKABCD('Enter power rating of system (kW)',' ',
-*item edsbmsys
-*enditem
               CALL EASKAB('Is this system in the ECA list',
-*item edsbmsys
-*enditem
             CALL EASKR(CGEF(NCMSYS),
-*item edsbmsys
-*enditem
             CALL EASKR(SFPHS(NCMSYS),
-*item edsbmsys
+*item edsbmsys ncm_sys_extract
 'If supply/extract then additional ventilation '
 'losses will be taken for the heating loads plus'
 'additional auxiliary loads.'
@@ -14553,29 +14387,21 @@ Another mode is to scan the zone operations file and to compose'
 'Choose zonal extract where the fan is remote from the'
 *enditem
           CALL EASKABCD('Zone ventilation type (see help)',
-*item edsbmsys
-*enditem
           CALL EASKAB('Does system have local ventilation only units',
-*item edsbmsys
-*enditem
             CALL EASKR(SFPHS(NCMSYS),
-*item edsbmsys
- 'Choose HVAC system to delete or simply exit without'
- 'making any choice to retain all defined systems'
+*item edsbmsys ncm_sys_delete
+'Choose HVAC system to delete or simply exit without'
+'making any choice to retain all defined systems'
 *enditem
           CALL EPICKS(IZ,KSYS,' ','HVAC system to delete',
-*item edsbmsys
- 'Choose HVAC system to replace current system'
- '(see text feed back area) or exit to retain current'
+*item edsbmsys ncm_sys_replace
+'Choose HVAC system to replace current system'
+'(see text feed back area) or exit to retain current'
 *enditem
         CALL EASKS(HVACNAME(IHO),'HVAC system name',
-*item edsbmsys
-*enditem
         CALL EPICKS(IY,KSYS,' ','Select system type',
-*item edsbmsys
-*enditem
         CALL EPICKS(IY,KSYS,' ','Select heat generator',
-*item edsbmsys
+*item edsbmsys ncm_sys_cop_a
 'You will be asked for system efficiency/COP next'
 'For the district heating option note that default'
 'emission factor specified in iSBEM v3.4.a is 0.293'
@@ -14584,7 +14410,7 @@ Another mode is to scan the zone operations file and to compose'
 'for aforementioned emission factor.'
 *enditem
           CALL PHELPD('SBEM HVAC exceptions',6,'-',0,0,IER)
-*item edsbmsys
+*item edsbmsys ncm_sys_cop_b
 'You will be asked for system efficiency/COP next'
 'For heat pumps values for natural gas are quoted as'
 'default values. The same values are applicable to '
@@ -14592,384 +14418,283 @@ Another mode is to scan the zone operations file and to compose'
 'then it is appropriate to multiply the COP with 2.5'
 '(following iSBEM ver 3.4.a)'
 *enditem
-          CALL PHELPD('SBEM HVAC exceptions',6,'-',0,0,IER)
-*item edsbmsys
-*enditem
+        CALL PHELPD('SBEM HVAC exceptions',6,'-',0,0,IER)
         CALL EASKR(HGEF(IHO),
-*item edsbmsys
-*enditem
         CALL EPICKS(IY,KSYS,' ','Select fuel type',
-*item edsbmsys
+*item edsbmsys ncm_cooling_gen
+'Please select the cooling generator from the list in the dialog.'
+'  '
+'Some cooling generators are specified via a power rating in'
+'kW aat different ranges. Heat pumps will use the maximum kW.'
+'  '
+'For the cool generator efficiency or COP the default is 0.8'
+'times the seasonal EER.'
 *enditem
  457        CALL EASKATOG(' Choose cooling system',' ',SYSNAME(MPT-4),
-*item edsbmsys
-*enditem
               CALL EASKABCD('Enter power rating of system (kW)',' ',
-*item edsbmsys
-*enditem
               CALL EASKAB('Is this system in the ECA list',
-*item edsbmsys
-*enditem
             CALL EASKR(CGEF(IHO),
-*item edsbmsys
+*item edsbmsys ncm_vent_fan_sfp
+'Note the initial value presented is the default SFP.'
 *enditem
           CALL EASKR(SFPHS(IHO),
-*item edsbmsys
+*item edsbmsys ncm_vent_take_from
 'If supply/extract then additional ventilation '
-' losses will be taken for the heating loads plus'
-' additional auxiliary loads.'
+'losses will be taken for the heating loads plus'
+'additional auxiliary loads.'
 *enditem
           CALL EASKAB('Zone ventilation type',
-*item edsbmsys
-*enditem
             CALL EASKR(SFPHS(IHO),
 *subroutine edsbmbld
-*item edsbmbld
-'This menu allows the definition of project'
-'details. These will be used by BRUKL/EPC for'
-'reporting purposes and are required data.'
+*item edsbmbld ncm_contact_data
+'This menu allows the definition of project details. These will be'
+'used by BRUKL/EPC for reporting purposes and are required data.'
 ' '
-'The enter all details will ask for for all the details'
-'shown in the menu (in sequence).'
+'The enter all details will ask for for all the details shown in'
+'the menu (in sequence):'
+'  '
+' - a succinct description of the project'
+'  '
+' - the building street accress '
+'  '
+' - names of the town/city of the building'
+'  '
+' - post code for the building'
+'  '
+' - the building owner name'
+'  '
+' - the telephone number of the owner'
+'  '
+' - the stree address of the owner'
+'  '
+' - city of the owner location'
+'  '
+' - post code of the owner location'
+'  '
+' - name of certifier'
+'  '
+' - telephone number of certifier'
+'  '
+' - street address of certifier'
+'  '
+' - city of certifier'
+'  '
+' - post code of certifier'
+'  '
+' - succinct description of the project name'
+'  '
+'This information is similar to that found in iSBEM.'
 *enditem
         CALL PHELPD(HEAD,6,'-',0,0,IER)
-*item edsbmbld
-'Input a succinct description of the project name here.'
-*enditem
         CALL EASKS(pjname,'project name?','(20 characters maximum)',
-*item edsbmbld
-'Input the building street address.'
-*enditem
         CALL EASKS(baddress,'building address?','(<64 characters)',
-*item edsbmbld
-'Input the names of the town/city of the building.'
-*enditem
         CALL EASKS(bcity,'building city?','(<64 characters)',
-*item edsbmbld
-'Input for: building post code'
-*enditem
         CALL EASKS(buildingPC,'building post code?',
-*item edsbmbld
-'Input a succinct description of the owner name here'
-*enditem
         CALL EASKS(ownername,'Name of owner?','(<64 characters)',
-*item edsbmbld
-'telephone number of the owner'
-*enditem
         CALL EASKS(ownertel,'Phone of owner?','(<64 characters)',
-*item edsbmbld
-'Street address of the owner'
-*enditem
         CALL EASKS(owneraddr,'Address of owner?','(<64 characters)',
-*item edsbmbld
-'City (where the owner is located)'
-*enditem
         CALL EASKS(ownercity,'City of owner?','(<64 characters)',
-*item edsbmbld
-'Post code (where the owner is located)'
-*enditem
         CALL EASKS(ownerPC,'Post code for owner?','(<64 characters)',
-*item edsbmbld
-'certifier name'
-*enditem
         CALL EASKS(certifname,'Name of certifier?','(<64 characters)',
-*item edsbmbld
-'certifier telephone number'
-*enditem
         CALL EASKS(certTel,'Phone of certifier?','(<64 characters)',
-*item edsbmbld
-'certifier street address'
-*enditem
         CALL EASKS(certaddress,'Address of certifier?',
-*item edsbmbld
-'Name of city of the certifier.'
-*enditem
         CALL EASKS(certcity,'City of certifier?','(<64 characters)',
-*item edsbmbld
-'certifier post code'
-*enditem
         CALL EASKS(certPC,'Post code of certifier?',
-*item edsbmbld
-'Input a succinct description of the project name here.'
-*enditem
         CALL EASKS(pjname,'project name?','(20 characters maximum)',
-*item edsbmbld
-'Input the building street address.'
-*enditem
         CALL EASKS(baddress,'building address?','(<64 characters)',
-*item edsbmbld
-'Input the names of the town/city of the building.'
-*enditem
         CALL EASKS(bcity,'building city?','(<64 characters)',
-*item edsbmbld
-'Input for: building post code'
-*enditem
         CALL EASKS(buildingPC,'building post code?',
-*item edsbmbld
-'Input a succinct description of the owner name here'
-*enditem
         CALL EASKS(ownername,'Name of owner?','(<64 characters)',
-*item edsbmbld
-'telephone number of the owner'
-*enditem
         CALL EASKS(ownertel,'Telephone of owner?','(<64 characters)',
-*item edsbmbld
-'Street address of the owner'
-*enditem
         CALL EASKS(owneraddr,'Address of owner?','(<64 characters)',
-*item edsbmbld
-'City (where the owner is located)'
-*enditem
         CALL EASKS(ownercity,'City of owner?','(<64 characters)',
-*item edsbmbld
-'Post code (where the owner is located)'
-*enditem
         CALL EASKS(ownerPC,'Post code for owner?','(<64 characters)',
-*item edsbmbld
-'certifier name'
-*enditem
         CALL EASKS(certifname,'Name of certifier?',
-*item edsbmbld
-'certifier telephone number'
-*enditem
         CALL EASKS(certTel,'Phone of certifier?','(<64 characters)',
-*item edsbmbld
-'Certifier street address'
-*enditem
         CALL EASKS(certaddress,'Address of certifier?',
-*item edsbmbld
-'Name of city of the certifier.'
-*enditem
         CALL EASKS(certcity,'City of certifier ?','(<64 characters)',
-*item edsbmbld
-'certifier post code'
-*enditem
         CALL EASKS(certPC,'Post code of certifier?',
 *subroutine edsbmassor
-*item edsbmassor
-'This menu allows the definition of'
-'project details. These will be used by'
-'BRUKL/EPC for reporting purposes'
+*item edsbmassor ncm_assessor_data
+'This menu allows the definition of project details. These will be'
+'used by BRUKL/EPC for reporting purposes. You are asked about:'
 ' '
-'The Unisque Property Reference Number is applicable'
-'in England, Wales & Northern Ireland.'
+' - The Unisque Property Reference Number is applicable in England,'
+'   Wales & Northern Ireland.'
+'  '
+' - The month and the day of the month of the inspection. Applicable'
+'   only for England, Wales & Northern Ireland.'
+'  '
+' - The year of the inspection. Applicable only for England,'
+'   Wales & Northern Ireland.'
+'  '
+' - name of certifier/energy assessor accreditation scheme.'
+'   Applicable only for England, Wales & Northern Ireland.'
+'   E.g. the scheme name from CIBSE or BRE. '
+'  '
+' - The assessor registration number should be in the'
+'   form of CCCCNNNNNN where C is character and N is a'
+'   number such as ABCD123456.'
+'  '
+' - Employer or the trading name of the energy assessor.'
+'   Applicable only for England, Wales & Northern Ireland.'
+'  '
+' - Employer or the trading address of the energy assessor.'
+'   Applicable only for England, Wales & Northern Ireland.'
+'  '
+' - Any other related party disclosure by the energy asessor.
+'   Applicable only for England, Wales & Northern Ireland.'
+'  '
+' - Qualifications of the energy asessor. There are 3 choices: '
+'   NOS3, NOS4 and NOS5.'
+'   Applicable only for England, Wales & Northern Ireland.'
+'  '
+' - Name of insurance company. Applicable only for England,
+'   Wales & Northern Ireland.'
+'  '
+' - Insurance company policy number. Applicable only for England,
+'   Wales & Northern Ireland.'
+'  '
+' - Insurance start day month & year. Applicable only for England,
+'   Wales & Northern Ireland.'
+'  '
+' - Insurance expiry day month & year. Applicable only for England,
+'   Wales & Northern Ireland.'
+'  '
+' - Insurance policy cover limit. Applicable only for England,
+'   Wales & Northern Ireland.'
+'  '
+' - Complexity level of the project. Applicable only for'
+'   England, Wales & Northern Ireland.'
+'   There are 4 choices: '
+'     Undefined - no opinion (yet)'
+'     Level 3 less than 100kW heating & less than 12kW cooling'
+'     Level 4 more than 100kW heating & 12kW cooling'
+'     Level 5 building cannot be done via sBEM.'
+'  '
 '<< help message is work-in-progress >> '
+'  '
 *enditem
         CALL PHELPD(HEAD,6,'-',0,0,IER)
-*item edsbmassor
-'Input the Unique Property Reference Number (UPRN) here.'
-'Applicable only for England, Wales & Northern Ireland.'
-*enditem
         CALL EASKS(UPRN,'Unique Property Reference Number (UPRN)?',
-*item edsbmassor
-'Input the month and the day of the month of the '
-'inspection. Applicable only for England, '
-'Wales & Northern Ireland.'
-*enditem
         CALL EASKI(D_inspect,' ','Day of inspection?',
-*item edsbmassor
-*enditem
         CALL EASKI(M_inspect,' ','Month of inspection?',
-*item edsbmassor
-'Input the year of the inspection. Applicable '
-'only for England, Wales & Northern Ireland.'
-*enditem
         CALL EASKI(Y_inspect,' ','Year of inspection?',
-*item edsbmassor
-'Input certifier/energy assessor accreditation scheme.'
-'Applicable only for England, Wales & Northern Ireland.'
-'This is the scheme name from CIBSE or BRE. '
-*enditem
         CALL EASKS(Accr_Scheme,'Accreditation scheme ?',
-*item edsbmassor
-'The assessor registration number should be in the'
-'form of CCCCNNNNNN where C is character and N is a'
-'number such as ABCD123456.'
-*enditem
         CALL EASKS(assessRegNumber,
-*item edsbmassor
-'The employer or the trading name of the energy'
-'assessor. Applicable only for England, '
-'Wales & Northern Ireland.'
-*enditem
         CALL EASKS(empl_Trading_name,'Employer/trading name ?',
-*item edsbmassor
-'The employer or the trading address of the energy'
-'assessor. Applicable only for England, '
-'Wales & Northern Ireland.'
-*enditem
         CALL EASKS(addr_empl_Trading,'Employer/trading address ?',
-*item edsbmassor
-'Any related party disclosure by the energy'
-'assessor. Applicable only for England, '
-'Wales & Northern Ireland.'
-*enditem
         CALL EASKS(party_disclosure,'Party disclosure ?',
-*item edsbmassor
-'Qualifications of the energy assessor.'
-'Applicable only for England, Wales & '
-'Northern Ireland. There are 3 choices: '
-'NOS3, NOS4 and NOS5'
-*enditem
         CALL EASKABC(' ','Energy assessor qualifications:',
-*item edsbmassor
-'Name of the insurance company. Applicable '
-'only for England, Wales & Northern Ireland.'
-*enditem
         CALL EASKS(insurer_Company,'Name of insurance company ?',
-*item edsbmassor
-'Enter insurance policy number. Applicable '
-'only for England, Wales & Northern Ireland.'
-*enditem
         CALL EASKS(policyNumberInsurance,'Policy number ?',
-*item edsbmassor
-'Input the date for start of the insurance. '
-'Applicable only for England, Wales & Northern'
-*enditem
         CALL EASKI(S_Dinsur,' ','Insurance start (day)?',
-*item edsbmassor
-*enditem
         CALL EASKI(S_Minsur,' ','Insurance start (month)?',
-*item edsbmassor
-*enditem
         CALL EASKI(S_Yinsur,' ','Insurance start (year)?',
-*item edsbmassor
-'Input the date for the expiry of the insurance. '
-'Applicable only for England, Wales & Northern'
-*enditem
         CALL EASKI(E_Dinsur,' ','Insurance expiry (day)?',
-*item edsbmassor
-*enditem
         CALL EASKI(E_Minsur,' ','Insurance expiry (month)?',
-*item edsbmassor
-*enditem
         CALL EASKI(E_Yinsur,' ','Insurance expiry (year)?',
-*item edsbmassor
-'Input the insurance policy cover limit. '
-'Applicable only for England, Wales & Northern'
-*enditem
         CALL EASKI(pi_limit,' ','Insurance cover limit?',
-*item edsbmassor
-'Complexity level of the project. Applicable only for'
-'England, Wales & Northern Ireland.'
-'There are 4 choices: '
-' Undefined - no opinion (yet)'
-' Level 3 less than 100kW heating & less than 12kW cooling'
-' Level 4 more than 100kW heating & 12kW cooling'
-' Level 5 building cannot be done via sBEM.'
-*enditem
         CALL EASKABCD(' ','Complexity level ?',
 *subroutine edsbmregs
-*item edsbmregs
+*item edsbmregs ncm_bldg_regs
+'Select from the list of choices the appropriate building regulations'
+'for this project.'
+'  '
+'Next select from list the stage of the project.'
+'  '
+'If you are using the Scottish regulations are are asked to nominate'
+'a Scottish building type. Depending on the type of building the'
+'notional model will have different assumptions about glazing areas.'
+'The building type will also help in the selection of room '
+'use patterns. '
+'  '
+'For all locations you are asked to define the building permeability'
+'based on a 50Pa test in units of m^3/m^2/hour (where m^2 is the'
+'building envelope area) You are also asked whether a compliance'
+'check will be carried out.'
+'  '
+'A approximation of infiltration based on CIBSE data is used. The'
+'selections allow you to define a number of levels and level floor'
+'area so that a correlation can be recovered.'
+'  '
+'Based on the above information you are then asked to confirm the'
+'air leakage rates (to be added to the fresh air requirement) in'
+'terms of air changes per hour.'
 *enditem
  902  CALL EPICKS(IX,JSTR,' ','Define building regulations to use',
-*item edsbmregs
-*enditem
  903  CALL EPICKS(IX,JSTR,' ','Define building regulations to use',
-*item edsbmregs
-*enditem
  904    CALL EPICKS(IX,JSTR,' ','Define building type',
-*item edsbmregs
-*enditem
         CALL EASKABC('Is the building built/designed following',
-*item edsbmregs
-*enditem
       CALL EASKR(BINF50,
-*item edsbmregs
-*enditem
       CALL EASKABC(
-*item edsbmregs
-*enditem
-c      CALL EASKABC(
-*item edsbmregs
-*enditem
         CALL EPICKS(IX,JSTR,' ','CIBSE building selection',
-*item edsbmregs
-*enditem
         CALL EPICKS(IX,JSTR,'Pick storeys and floor area ',
-*item edsbmregs
-'Air leakage rates can be specified for'
-'for every zone in terms of air changes per hour. '
-*enditem
         CALL PHELPD('AIR LEAKAGE',2,'-',0,0,IER)
-*item edsbmregs
-*enditem
         CALL EASKR(Air_infilt,' ',
-*item edsbmregs
-'For the UK National Calculation Method you are required'
-'to select one of these building types. '
-' '
-'Depending on the type of building the notional model will'
-'have different assumptions about glazing areas. The '
-'building type will also help in the selection of room '
-'use patterns. '
-*enditem
  905  CALL EPICKS(IX,IVALSS,' ','Building type:',
 *subroutine EMKSTRIPPED
-*item EMKSTRIPPED
-' Control file exists. Choose to overwrite in '
-' question that will follow '
+*item EMKSTRIPPED ncm_str_ctl_warn
+'A control file exists. Choose to overwrite in the'
+'questions that will follow. '
+'  '
+'There is also a check to see if a temporal data file'
+'also exists and let you confirm if it should be overwritten.'
 *enditem
           CALL PHELPD('File exists',2,'-',0,0,IER)
-*item EMKSTRIPPED
-'Temporal data file exists. Choose to overwrite in '
-'question that will follow '
-*enditem
           CALL PHELPD('File exists',2,'-',0,0,IER)
 *subroutine EMKSBM
-*item EMKSBM
- 'You have not defined NCM details about the building. '
- 'These can be defined by choosing model context in the '
- 'browse / edit / simulate menu and then choosing  '
- 'option UK NCM specifications. '
- 'You are being returned to the NCM editing facility. '
+*item EMKSBM ncm_details_missing
+'You have not defined NCM details about the building.'
+'These can be defined by choosing model context in the'
+'browse / edit / simulate menu and then choosing'
+'option UK NCM specifications. '
+'You are being returned to the NCM editing facility.'
 *enditem
         CALL PHELPD('NCM details undefined!',5,'-',0,0,IER)
-*item EMKSBM
+*item EMKSBM ncm_geom_scan_issue
 'A problem was found when scanning the origial'
 'model geometry. You may need to alter the original'
 'model in order to proceed.'
 'You are being returned to the NCM editing facility. '
 *enditem
           CALL PHELPD('NCM details undefined!',4,'-',0,0,IER)
-*item EMKSBM
+*item EMKSBM ncm_file_copy_issue
 'A problem was found when copying origial'
 'model files. Check if you have write permission.'
 'You are being returned to the NCM editing facility. '
 *enditem
           CALL PHELPD('NCM details undefined!',3,'-',0,0,IER)
-*item EMKSBM
+*item EMKSBM ncm_bld_type_not
 'A problem was found - the NCM building type'
 'was not defined. Please do this and try again.'
 *enditem
         CALL PHELPD('NCM building type undefined!',2,'-',0,0,IER)
 *subroutine RSL6TF
-*item RSL6TF
-'name of the text result file'
+*item RSL6TF ncm_save_six_file
+'Please supply the name of the [level 6] text result file.'
 *enditem
         CALL EASKS(LTXTF,'Name of text results file?',
 *subroutine defLeakage
-*item defLeakage
-'This menu allows the definition of ductwork'
-'and Air Handling Unit details. These will '
-'be used for the Auxiliary Energy calculation'
-'for the stripped building. The defaults will'
-'use the worse case options: this for the '
-'ductwork question is "Class Worse than A"'
-'and for AHU is "Class worse than L3".'
+*item defLeakage ncm_ductwork_details
+'This menu allows the definition of ductwork and air handling'
+'Unit details. These will be used for the Auxiliary Energy'
+'calculation for the stripped building. The defaults will'
+'use the worse case options: this for the ductwork question'
+'is [Class Worse than A] and for AHU is [Class worse than L3].'
+'  '
+'For the ductwork calss:'
+'  The default is the same as Class Worse than A.'
+'  Class B is the best option here. See '
+'  EN 13779 Standard for more details.'
+'  '
+'For the AHU class:'
+'  The default is the same as Class Worse than L3.'
+'  Class L1 is the best option here. See EN 13779'
+'  Standard for more details.'
 *enditem
           call phelpd(head,7,'-',0,0,IER)
-*item defLeakage
-'The default is the same as Class Worse than A.'
-'Class B is the best option here. See '
-'EN 13779 Standard for more details.'
-*enditem
           call easkabcd(' ',
-*item defLeakage
-'The default is the same as Class Worse than L3.'
-'Class L1 is the best option here. See EN 13779'
-'Standard for more details.'
-*enditem
           call menuatol('Define AHU leakage',
 *subroutine epltnet
 *item epltnet

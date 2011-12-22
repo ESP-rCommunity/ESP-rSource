@@ -21,46 +21,14 @@ C Boston, MA 02111-1307 USA.
 C PCWRT of ESRUpdb
         SUBROUTINE PCWRT (ICHAN)
 #include "plantdb.h"
+#include "pdb_data.h"
 
 C Formatted output of a complete plant component entry.  The channel
 C used for output is passed as an argument.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
 
-      common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-
-      common/pcdatd/ictype,mncomp,mncon,micode(maxcmp),icndat(maxcon,5),
-     &              rcndat(maxcon,3)
-
-C Mass flow components data
-      common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
-     &              supcmp(maxcon,maxflw), mfsdsc(maxcon,maxflw),
-     &              ltpcmp(maxcon), isdifc(maxcon)
-
-C TRNSYS types data
-      common/trnsys/ntypes,ittype(MXTSYS),ntadat(MXTSYS),ntbdat(MXTSYS),
-     &              ntcdat(MXTSYS),ntapot(MXTSYS),ntmisc(MXTSYS),
-     &              tdtdsc(MXTSYS,maxmsc),tdatms(MXTSYS,maxmsc),
-     &              trange(MXTSYS,maxmsc,2),tadods(MXTSYS,mxaout),
-     &              ntaotp(MXTSYS,mxaout),ittpcm(MXTSYS,maxcon),
-     &              itsdcm(MXTSYS,maxcon),itsdcn(MXTSYS,maxcon),
-     &              tsupcm(MXTSYS,maxcon,maxflw),
-     &              tmfsds(MXTSYS,maxcon,maxflw),
-     &              tltpcm(MXTSYS,maxcon),itsdif(MXTSYS,maxcon)
-
-      CHARACTER*40 ZGTYPE
-      CHARACTER*16 ZCDATE
-      CHARACTER*80 ZCDESC
-      character*68 dtdesc, mfsdsc, tdtdsc, tmfsds
-      character*30 adodsc, tadods
-      character*60 ltpcmp, tltpcm
       character text*20, buffer*120
 
 C Reset the display mode to act as a script.

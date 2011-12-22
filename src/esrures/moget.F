@@ -843,6 +843,8 @@ C IGET = 2 outside temperature.
             SLABEL(NGET)='Ambient db temp hours (degC.hr)'
             LNSLABEL(NGET)=31
           endif
+          write(TABLABEL(NGET),'(2a)')GLABEL(NGET)(1:LNGLABEL(NGET))
+          LNTABLABEL(NGET)=LNSLABEL(NGET)
         elseif(inoc.eq.2)then
 
 C IGET = 19 Direct solar. Set text based on current value of irtype.
@@ -874,6 +876,8 @@ C IGET = 19 Direct solar. Set text based on current value of irtype.
               LNSLABEL(NGET)=30
             endif
           endif
+          write(TABLABEL(NGET),'(2a)')GLABEL(NGET)(1:LNGLABEL(NGET))
+          LNTABLABEL(NGET)=LNSLABEL(NGET)
         elseif(inoc.eq.3)then
           IGETNO(NGET,1)=20
           IGETNO(NGET,6)=-104; IGETNO(NGET,7)=5
@@ -889,6 +893,8 @@ C IGET = 19 Direct solar. Set text based on current value of irtype.
             SLABEL(NGET)='Diffuse solar intens (Whr/m^2)'
             LNSLABEL(NGET)=30
           endif
+          write(TABLABEL(NGET),'(2a)')GLABEL(NGET)(1:LNGLABEL(NGET))
+          LNTABLABEL(NGET)=LNSLABEL(NGET)
         elseif(inoc.eq.4)then
           IGETNO(NGET,1)=21
           IGETNO(NGET,6)=-203; IGETNO(NGET,7)=6
@@ -904,6 +910,8 @@ C IGET = 19 Direct solar. Set text based on current value of irtype.
             SLABEL(NGET)='Wind speed hours (m.hr/sec)'
             LNSLABEL(NGET)=27
           endif
+          write(TABLABEL(NGET),'(2a)')GLABEL(NGET)(1:LNGLABEL(NGET))
+          LNTABLABEL(NGET)=LNSLABEL(NGET)
         elseif(inoc.eq.5)then
           IGETNO(NGET,1)=34
           IGETNO(NGET,6)=-203; IGETNO(NGET,7)=4
@@ -919,6 +927,8 @@ C IGET = 19 Direct solar. Set text based on current value of irtype.
             SLABEL(NGET)='Wind direction hours (deg.hr)'
             LNSLABEL(NGET)=29
           endif
+          write(TABLABEL(NGET),'(2a)')GLABEL(NGET)(1:LNGLABEL(NGET))
+          LNTABLABEL(NGET)=LNSLABEL(NGET)
         elseif(inoc.eq.6)then
           IGETNO(NGET,1)=22
           IGETNO(NGET,6)=-202; IGETNO(NGET,7)=7
@@ -931,6 +941,8 @@ C IGET = 19 Direct solar. Set text based on current value of irtype.
           elseif(IROC.eq.-1)then
             SLABEL(NGET)='Ambient RH hours (%.hr)'; LNSLABEL(NGET)=23
           endif
+          write(TABLABEL(NGET),'(2a)')GLABEL(NGET)(1:LNGLABEL(NGET))
+          LNTABLABEL(NGET)=LNSLABEL(NGET)
         elseif(inoc.eq.7)then
           IGETNO(NGET,1)=26
           IGETNO(NGET,6)=-202; IGETNO(NGET,7)=8
@@ -945,6 +957,8 @@ C IGET = 19 Direct solar. Set text based on current value of irtype.
             SLABEL(NGET)='Sky illuminance hours (lux.hr)'
             LNSLABEL(NGET)=30
           endif
+          write(TABLABEL(NGET),'(2a)')GLABEL(NGET)(1:LNGLABEL(NGET))
+          LNTABLABEL(NGET)=LNSLABEL(NGET)
         endif
       elseif(INO.EQ.6)then
 
