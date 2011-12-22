@@ -18,8 +18,8 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C 'CLMSYN' Permis a synoptic analysis of the climate data held
-C within the climate file.
+C 'CLMSYN' Permis a synoptic analysis of the weather data held
+C within the weather file.
 C At present the maximum, minimum and mean external air temperature 
 C directonormal solar radiaitona dn diffuse horizontal solar radiation
 C (occurring within the user-specified period) can be identified. In
@@ -90,7 +90,7 @@ C For help messages
       elseif(ino.eq.nitms-1)then
         helptopic='typical_week_overview'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        CALL PHELPD('climate synopsis',nbhelp,'-',0,0,IER)
+        CALL PHELPD('weather synopsis',nbhelp,'-',0,0,IER)
       elseif(ino.eq.1)then
         CALL selper(ier)
       elseif(ino.eq.3)then
@@ -183,7 +183,7 @@ C Integration of radiation data.
 C Frequency distribution histogram.
       IF(IP.GT.0)CALL HISCLM(IP)
       IF(IP.LE.0)call edisp(iuout,
-     &  ' Climate variable has not been selected')
+     &  'Weather variable has not been selected.')
       elseif(ino.eq.19)then
 
 C CSI equation calculation.
@@ -214,7 +214,7 @@ C << But where are the best-fit weeks reported? >>
       END
 
 
-C ******** `CSIEQN' calculates the Severity of the climate in
+C ******** `CSIEQN' calculates the Severity of the weather in
 C  terms of a dimensionless number - the CSI.
       SUBROUTINE CSIEQN
       PARAMETER (MT=24)
@@ -1246,7 +1246,7 @@ C For help messages
 C Jump out if no seasonal data is available.
       if(is1wins.eq.0.or.is2wins.eq.0.or.is1sprs.eq.0)then
         call usrmsg('No winter|transition|summer season definitions',
-     &    'found in the climate database. Skipping.','W')
+     &    'found in the weather database. Skipping.','W')
         return
       endif
 
@@ -1335,7 +1335,7 @@ C Loop through each seasonal period.
         CALL EPERSTR(IYEAR,IDSS,0,IDSF,24,1,
      &             IFDAY,IFTIME,PERST1,PERST2,PERST3,IER)
 
-C For each day read climate data, set parameters and analyse.
+C For each day read weather data, set parameters and analyse.
         DO 10 I=IDSS,IDSF
           IDD=I
           CALL CLMGET(IDD)
@@ -1492,7 +1492,7 @@ C READ VALUES OF THE CLIMATIC PARAMETERS FOR THIS DAY.
         IDD=I
         CALL CLMGET(IDD)
 
-C For each day read climate data, set parameters and analyse.
+C For each day read weather data, set parameters and analyse.
         DNJ=0
         UPJC=0
         JS=KDS

@@ -485,7 +485,7 @@ C Help.
 
 
 C ************ CLMDRW
-C 'CLMDRW' displays the axis and draws the selected climate data
+C 'CLMDRW' displays the axis and draws the selected weather data
 C over the specified period. onleft and onright are passed in to
 C indicate how much space is available for the graph (i.e. what
 C axis that do not need to be drawn)
@@ -792,7 +792,7 @@ C Typical week in each season.
       END
 
 C ************ CLMDRWD
-C 'CLMDRWD' Draws one days climate data (complements data editing).
+C 'CLMDRWD' Draws one days weather data (complements data editing).
 C onleft and onright passed in to indicate which axes to draw.
       SUBROUTINE CLMDRWD(IDAY,onleft,onright)
       PARAMETER (MT=24)

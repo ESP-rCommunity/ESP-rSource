@@ -523,7 +523,7 @@ C If clmlnam and clmlaid are not set fill them with default information.
       call stdate(iyear,ia2winf,descr,descrfn)
       jjd5=(ia2winf-ia2wins)+1
       WRITE(ITM(16),'(4a,i4)') 'n  2nd win ',descrst,' ',descrfn,jjd5
-      WRITE(ITM(17),'(A)')     '< scan climate for best-fit weeks'
+      WRITE(ITM(17),'(A)')     '< scan weather for best-fit weeks'
       WRITE(ITM(18),'(A,i2,a)')' ----documentation (',nbclmlhelp,
      &  ')----------'
       WRITE(ITM(19),'(A)')     'o list/generate/edit documentation'
@@ -573,7 +573,7 @@ C Context help
       helptopic='climate_list_facility'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
-      CALL EMENU('Climate list item',ITM,nitms,INO)
+      CALL EMENU('Weather list item',ITM,nitms,INO)
       if(INO.EQ.nitms)then
 
 C Reset the graphic context prior to leaving. Currently commented out
@@ -618,7 +618,7 @@ C Aide memorie for the menu.
         if(t72(1:2).ne.'  ')clmlaid=t72
       elseif(INO.eq.3)then
 
-C Installed location of climate file. If GTK then use file browser.
+C Installed location of weather file. If GTK then use file browser.
         helptopic='climate_list_loc'
         call gethelptext(helpinsub,helptopic,nbhelp)
         write(llasci,'(a)') lclim(1:lnblnk(lclim))
@@ -630,21 +630,21 @@ C        write(6,*) llasci
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
-            CALL EASKF(LLASCI,' Climate file installed location?',
-     &        ' ',96,DCLIM,'climate file location',IER,nbhelp)
+            CALL EASKF(LLASCI,'Weather file installed location:',
+     &        ' ',96,DCLIM,'weather file location',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
-            CALL EASKF(LLASCI,' Climate file installed location?',
-     &        ' ',124,DCLIM,'climate file location',IER,nbhelp)
+            CALL EASKF(LLASCI,'Weather file installed location:',
+     &        ' ',124,DCLIM,'weather file location',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
-            CALL EASKF(LLASCI,' Climate file installed location?',
-     &        ' ',144,DCLIM,'climate file location',IER,nbhelp)
+            CALL EASKF(LLASCI,'Weather file installed location:',
+     &        ' ',144,DCLIM,'weather file location',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
-          CALL EASKF(LLASCI,' Climate file installed location?',
-     &      ' ',144,DCLIM,'climate file location',IER,nbhelp)
+          CALL EASKF(LLASCI,'Weather file installed location:',
+     &      ' ',144,DCLIM,'weather file location',IER,nbhelp)
         else
-          CALL EASKF(LLASCI,' Climate file installed location?',
-     &      ' ',96,DCLIM,'climate file location',IER,nbhelp)
+          CALL EASKF(LLASCI,'Weather file installed location:',
+     &      ' ',96,DCLIM,'weather file location',IER,nbhelp)
         endif
         IF(LLASCI(1:2).EQ.'  '.or.LLASCI(1:4).eq.'UNKN')GOTO 290
 
@@ -1047,7 +1047,7 @@ C Edit the current period in terms of day and month.
         if(iier.ne.0)goto 100
       elseif(INO.eq.17)then
 
-C Scan climate for best-fit weeks.
+C Scan weather data for best-fit weeks.
           call DDRADSUM('?')
       elseif(INO.eq.19)then
 
@@ -1066,7 +1066,7 @@ C Documentations text option.
             call edisp(iuout,'There is no documentation.')
           endif
         elseif(idw.eq.2)then
-          write(clmlhelp(1),'(2a)') 'Climate is ',clmloc 
+          write(clmlhelp(1),'(2a)') 'Weather is ',clmloc 
           ACLAT=ABS(CLAT)
           ACLONG=ABS(CLONG)
           IF(CLONG.LT.0.0.AND.CLAT.GE.0.0)then
@@ -1101,7 +1101,7 @@ C INITIALISE PARAMETERS FOR MONTHLY TOTALS.
 C Find day of week for start of the period.
           CALL EDAYR(IDS,IDAYN,IMTHN)
       
-C Loop for each day, reading data from climate file.
+C Loop for each day, reading data from weather file.
           DO 10 I=IDS,IDF
             IDD=I
             CALL CLMGET(IDD)
@@ -1536,7 +1536,7 @@ C For help messages
 
       if(is1wins.eq.0.or.is2wins.eq.0.or.is1sprs.eq.0)then
         call usrmsg('No winter|transition|summer season definitions',
-     &    'found in the climate database. Skipping.','W')
+     &    'found in the weather database. Skipping.','W')
         return
       endif
 
@@ -1578,7 +1578,7 @@ C Reset text feedback and write out beginning of report.
       call edisp(itru,outs)
       call edisp(itru,'  ')
       
-C Loop through the climate file and calculate data.
+C Loop through the weather file and calculate data.
       itrc=2
       call clmddscan(itrc,itru,'?','c',5,iyear)
 

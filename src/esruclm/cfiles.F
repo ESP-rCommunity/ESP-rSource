@@ -19,19 +19,19 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C MKBCLM: Allows a period of climatic data in a suitable ASCII file
-C         to be transferred to a binary climate file.
-C MKACLM: Allows any period of climatic data in binary climate file to
+C         to be transferred to a binary weather file.
+C MKACLM: Allows any period of climatic data in binary weather file to
 C         be transferred to an ASCII file.
 C MKOREANCLM: Allows a period of climatic data in a suitable ASCII file
-C         (KOREAN) to be transferred to a binary climate file.
-C CFILIN: Takes a climate file name from a browse list, command
+C         (KOREAN) to be transferred to a binary weather file.
+C CFILIN: Takes a weather file name from a browse list, command
 C         line or default and intialise it or open.
-C CLMPUT: Writes one day's climate data to the current climate file.
+C CLMPUT: Writes one day's weather data to the current weather file.
 C EPWTOBCLM: Allows a period of climatic data from EPW format ASCII file
-C         to be transferred to a binary climate file.
+C         to be transferred to a binary weather file.
 
 C 'MKBCLM' Allows a period of climatic data in a suitable ASCII file
-C to be transferred to a binary climate file.  The ASCII file should 
+C to be transferred to a binary weather file.  The ASCII file should 
 C contain the following values for each hour:
 C col     description                 unit            variable
 C 1. Diffuse solar on the horizontal (W/M**2)         IDIF
@@ -47,7 +47,7 @@ C Each data line is comma separated and all values should be integers.
 C Parameters 2 & 4 have been multiplied by 10 ie.  12.3 degrees
 C is represented in the file as 123.  There should be 24 lines for
 C each day of the period being transferred.
-C Assume that the climate file has already been opened elsewhere.
+C Assume that the weather file has already been opened elsewhere.
 
 C Item 3 can be replaced by global horizontal radiation (W/M**2),
 C with the radiation flag set appropriately after the file has been
@@ -143,16 +143,16 @@ C Define the year if not already done.
           CLMLOC=' '
           helptopic='confirm_site_name'
           call gethelptext(helpinsub,helptopic,nbhelp)
-          CALL EASKS(CLMLOC,' ',' Climate site name ? ',
-     &      30,'North_Pole','climate site. ',IER,nbhelp)
+          CALL EASKS(CLMLOC,' ','Weather site name:',
+     &      30,'North_Pole','weather site. ',IER,nbhelp)
 
           helptopic='confirm_lat_log_diff'
           call gethelptext(helpinsub,helptopic,nbhelp)
-          CALL EASKR(CLAT,' ',' Climate latitude ? ',
-     &      -89.9,'W',89.9,'W',30.0,'climate latitude',IER,nbhelp)
+          CALL EASKR(CLAT,' ',' Weather latitude:',
+     &      -89.9,'W',89.9,'W',30.0,'weather latitude',IER,nbhelp)
 
           CALL EASKR(CLONG,' ',' Longitude diference ?',
-     &      -14.9,'W',14.9,'W',0.0,'climate long',IER,nbhelp)
+     &      -14.9,'W',14.9,'W',0.0,'weather long',IER,nbhelp)
         endif
       endif
 
@@ -165,7 +165,7 @@ C Loop through days.
         DO 20 J=1,24
 
 C Read one hour's data from ASCII file.
-          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'climate data',IER)
+          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'weather data',IER)
           K=0
           CALL EGETWI(OUTSTR,K,IDIF,0,0,'-','diffuse',IER)
           CALL EGETWI(OUTSTR,K,ITMP,0,0,'-','temperature',IER)
@@ -204,13 +204,13 @@ C Close ASCIIfile.
       RETURN
 
  1001 WRITE(outs,775)ISTAT
-  775 FORMAT(' Error ',I7,' writing climate database year')
+  775 FORMAT(' Error ',I7,' writing weather database year')
       call edisp(iuout,outs)
       CALL ERPFREE(IUNIT,ISTAT)
       RETURN
 
  1002 WRITE(outs,777)ISTAT
-  777 FORMAT(' Error ',I7,' writing climate database')
+  777 FORMAT(' Error ',I7,' writing weather database')
       call edisp(iuout,outs)
       CALL ERPFREE(IUNIT,ISTAT)
       RETURN
@@ -219,7 +219,7 @@ C Close ASCIIfile.
 
 C MKACLM is the same code as in edatabase.f
 C ************* MKACLM *************************************************
-C 'MKACLM' Allows any period of climatic data in binary climate file to
+C 'MKACLM' Allows any period of climatic data in binary weather file to
 C be transferred to an ASCII file - if act = E then and ESP-r file and
 C if act = S an SQL tab separated file.  
 C If file will begin with the key phrase *CLIMATE then it begins
@@ -242,7 +242,7 @@ C represented in the file as 123.  There should be 24 lines for each day
 C of the period being transferred.
 
 C Item 3 will be replaced by global horizontal radiation (W/M**2),
-C if the radiation flag set was set to GH in the binary climate file.
+C if the radiation flag set was set to GH in the binary weather file.
       SUBROUTINE MKACLM(ACT,LASCI,IAF,IBD,IED,IER)
 #include "esprdbfile.h"
       
@@ -271,7 +271,7 @@ C Create file explicitly (not relative to problem configuration path).
       CALL ERPFREE(IAF,ISTAT)
       call FPOPEN(IAF,ISTAT,1,3,LASCI)
 
-C Open ASCII file to receive climate data. If file exists, user must
+C Open ASCII file to receive weather data. If file exists, user must
 C confirm whether it should be overwritten. Open can be local or remote.
       IF(IER.LT.0)THEN
         IER=1
@@ -404,7 +404,7 @@ C Convert integer values in iclm to normal units.
             wind_dir = real(iclm(j,5))
             rh = real(iclm(j,6))
 
-C Write tab separated data out. Prepend whatever the current climate
+C Write tab separated data out. Prepend whatever the current weather
 C location description is for the site.
             WRITE(IAF,'(4A,f5.1,a,f6.1,a,f6.1,a,f6.1,a,f6.1,a,f5.1)',
      &        IOSTAT=ISTAT,ERR=1003) CLMLOC(1:lcl),tab,msg,tab,db,tab,
@@ -445,7 +445,7 @@ C Close ASCII file.
       END
 
 C 'MKOREANCLM' Allows a period of climatic data in a suitable ASCII file
-C to be transferred to a binary climate file.  The ASCII file should 
+C to be transferred to a binary weather file.  The ASCII file should 
 C contain the following values for each hour (if it was created prior
 C to ~2006:
 C col     description                    unit            variable
@@ -480,7 +480,7 @@ C 123-125 ground temps at 1m 3m 5m (real)  (DEG.C)
 
 
 C Each data line is | or , separated and values are a mix of reals and integers.
-C Assume that the climate file has already been opened elsewhere. Note some
+C Assume that the weather file has already been opened elsewhere. Note some
 C files may have first line STN_ID if this is found skip and try next.
 
 C silent is a logical toggle, if .true. then do not interact with user.
@@ -549,8 +549,8 @@ C Set the radiation flag to Global horizontal
       helptopic='confirm_lat_log_diff'
       call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKR(longit_for_diffuse_calcs,' ',
-     &   ' Climate longitude (actual)? (west: positive) ',
-     &   -180.0,'W',180.0,'W',30.0,'climate longitude',IER,nbhelp)
+     &   'Weather site longitude (actual)? (west: positive):',
+     &   -180.0,'W',180.0,'W',30.0,'weather longitude',IER,nbhelp)
 
       helptopic='local_time_difference'
       call gethelptext(helpinsub,helptopic,nbhelp)
@@ -558,7 +558,7 @@ C Set the radiation flag to Global horizontal
      &  ' Time difference from Greenwich? (west: positive) ',
      &  -24.0,'W',24.0,'W',0.0,'time_difference',IER,nbhelp)
 
-C Export climate data to ASCII file (with similar name).
+C Export weather data to ASCII file (with similar name).
       helptopic='korea_met_conversion'
       call gethelptext(helpinsub,helptopic,nbhelp)
       call easkabc
@@ -845,19 +845,19 @@ C Close ASCIIfile.
       return  ! normal exit from subroutine
 
  1001 WRITE(outs,775)ISTAT
-  775 FORMAT(' Error ',I7,' writing climate database year')
+  775 FORMAT(' Error ',I7,' writing weather database year')
       call edisp(iuout,outs)
       return
 
  1002 WRITE(outs,777)ISTAT
-  777 FORMAT(' Error ',I7,' writing climate database')
+  777 FORMAT(' Error ',I7,' writing weather database')
       call edisp(iuout,outs)
       return
 
       end
 
 C ----------- CFILIN 
-C CFILIN takes a climate file name from a browse list, command
+C CFILIN takes a weather file name from a browse list, command
 C line or default and intialise it or open a zero length file if
 C a new one is requested.
 C silent is a logical toggle: true keeps user interactions to a minimum.
@@ -902,7 +902,7 @@ C Get help message set.
       rescan=.false.
       IUF=ifil+1
 
-C If LCMDFL is 'UNKNOWN' then scan list of climate db files 
+C If LCMDFL is 'UNKNOWN' then scan list of weather files 
 C (the name of which is in the users .esprc file) (or from the
 C standard '/usr/esru/esp-r/climate/climatelist'. If clm is
 C running in silent mode the user is not expected to select
@@ -923,11 +923,11 @@ C from a list so might as well exit the program.
         if(XST)then
 
 C rdblist returns typper common block for the selected
-C climate file.
+C weather file.
           if(IUF.eq.0)then
             IUF=ifil+1
           endif
-          call usrmsg('Please select a climate set from the ',
+          call usrmsg('Please select a weather set from the ',
      &                'list provided... ','-')
           call rdblist(IUF,clmdb,ier)
           if(ier.ne.0)then
@@ -943,14 +943,14 @@ C name with the full path.
  291        continue
             iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
             if(iglib.eq.1.or.iglib.eq.3)then
-              CALL EASKF(LCMDFL,' New climate file (esp-r binary)?',
-     &         ' ',96,DCLIM,'new climate file',IER,nbhelp)
+              CALL EASKF(LCMDFL,' New weather file (esp-r binary)?',
+     &         ' ',96,DCLIM,'new weather file',IER,nbhelp)
             elseif(iglib.eq.2)then
-              CALL EASKF(LCMDFL,' New climate file (esp-r binary)?',
-     &         ' ',144,DCLIM,'new climate file',IER,nbhelp)
+              CALL EASKF(LCMDFL,' New weather file (esp-r binary)?',
+     &         ' ',144,DCLIM,'new weather file',IER,nbhelp)
             else
-              CALL EASKF(LCMDFL,' New climate file (esp-r binary)?',
-     &         ' ',96,DCLIM,'new climate file',IER,nbhelp)
+              CALL EASKF(LCMDFL,' New weather file (esp-r binary)?',
+     &         ' ',96,DCLIM,'new weather file',IER,nbhelp)
             endif
 
             IF(LCMDFL.EQ.' ')GOTO 291
@@ -967,21 +967,21 @@ C name with the full path.
           endif
         else
           call edisp(iuout,
-     &    ' No `climate db` list available so using default... ')
+     &    ' No `weather db` list available so using default... ')
           call edisp(iuout,
      &    ' (Check with your administrator about `climatelist` file)')
           write(LCMDFL,'(a)') DCLIM(1:lnblnk(DCLIM))
  289      continue
           iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
           if(iglib.eq.1.or.iglib.eq.3)then
-            CALL EASKF(LCMDFL,' Climate file (esp-r binary format)?',
-     &        ' ',96,DCLIM,'climate file',IER,nbhelp)
+            CALL EASKF(LCMDFL,'Weather file (esp-r binary format):',
+     &        ' ',96,DCLIM,'weather file',IER,nbhelp)
           elseif(iglib.eq.2)then
-            CALL EASKF(LCMDFL,' Climate file (esp-r binary format)?',
-     &        ' ',144,DCLIM,'climate file',IER,nbhelp)
+            CALL EASKF(LCMDFL,'Weather file (esp-r binary format):',
+     &        ' ',144,DCLIM,'weather file',IER,nbhelp)
           else
-            CALL EASKF(LCMDFL,' Climate file (esp-r binary format)?',
-     &        ' ',96,DCLIM,'climate file',IER,nbhelp)
+            CALL EASKF(LCMDFL,'Weather file (esp-r binary format):',
+     &        ' ',96,DCLIM,'weather file',IER,nbhelp)
           endif
           IF(LCMDFL.EQ.' ')GOTO 289
           IER=0
@@ -1002,21 +1002,21 @@ C name with the full path.
           iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
           if(iglib.eq.1.or.iglib.eq.3)then
             if(llt.lt.96)then
-              CALL EASKF(L144,' Climate file (esp-r binary format)?',
-     &          ' ',96,DCLIM,'climate file name',IER,nbhelp)
+              CALL EASKF(L144,'Weather file (esp-r binary format):',
+     &          ' ',96,DCLIM,'weather file name',IER,nbhelp)
             elseif(llt.ge.96.and.llt.lt.124)then
-              CALL EASKF(L144,' Climate file (esp-r binary format)?',
-     &          ' ',124,DCLIM,'climate file name',IER,nbhelp)
+              CALL EASKF(L144,'Weather file (esp-r binary format):',
+     &          ' ',124,DCLIM,'weather file name',IER,nbhelp)
             elseif(llt.ge.124.and.llt.le.144)then
-              CALL EASKF(L144,' Climate file (esp-r binary format)?',
-     &          ' ',144,DCLIM,'climate file name',IER,nbhelp)
+              CALL EASKF(L144,'Weather file (esp-r binary format):',
+     &          ' ',144,DCLIM,'weather file name',IER,nbhelp)
             endif
           elseif(iglib.eq.2)then
-            CALL EASKF(L144,' Climate file (esp-r binary format)?',
-     &        ' ',144,DCLIM,'climate file name',IER,nbhelp)
+            CALL EASKF(L144,'Weather file (esp-r binary format):',
+     &        ' ',144,DCLIM,'weather file name',IER,nbhelp)
           else
-            CALL EASKF(L144,' Climate file (esp-r binary format)?',
-     &        ' ',96,DCLIM,'climate file name',IER,nbhelp)
+            CALL EASKF(L144,'Weather file (esp-r binary format):',
+     &        ' ',96,DCLIM,'weather file name',IER,nbhelp)
           endif
           IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 290
           call st2file(L144,LCMDFL)
@@ -1035,17 +1035,17 @@ C First check if it exists: if so open, otherwise create with 0 length.
       if(ISTAT.eq.-301)then
         CALL ERPFREE(ICLIM,ISTAT)
         CALL FPRAND(ICLIM,ISTAT,144,3,LCMDFL)
-        if(.NOT.silent)call edisp(iuout,' opened new climate file')
+        if(.NOT.silent)call edisp(iuout,' opened new weather file')
         llf=lnblnk(LCMDFL)
         write(LCLIM,'(a)') LCMDFL(1:llf)
         RETURN
       elseif(ISTAT.ge.0)then
         CALL ERPFREE(ICLIM,ISTAT)
         CALL FPRAND(ICLIM,ISTAT,144,1,LCMDFL)
-        if(.NOT.silent)call edisp(iuout,' opened climate file')
+        if(.NOT.silent)call edisp(iuout,' opened weather file')
         llf=lnblnk(LCMDFL)
         write(LCLIM,'(a)') LCMDFL(1:llf)
-        if(LCLIM.eq.DCLIM)call edisp(iuout,' Default climate assigned.')
+        if(LCLIM.eq.DCLIM)call edisp(iuout,' Default weather assigned.')
       endif
 
       IREC=366
@@ -1077,7 +1077,7 @@ C set in clm.F will be used.
         endif
       endif
       call edisp(iuout,' ')
-      WRITE(outs,'(a,a30)')' Climate data: ',CLMLOC
+      WRITE(outs,'(a,a30)')' Weather data: ',CLMLOC
       call edisp(iuout,outs)
 
       if(IDNGH.GT.0)then       ! Global horizontal.
@@ -1128,13 +1128,13 @@ C set in clm.F will be used.
         RETURN
       endif
 
-C New climate file
+C New weather file
  1000 call edisp(IUOUT,' No data in file')
       RETURN
       END
 
 C ---------- CLMPUT 
-C CLMPUT Writes one day's climate data to the current climate file.
+C CLMPUT Writes one day's weather data to the current weather file.
       SUBROUTINE CLMPUT(IDAY)
       PARAMETER (MT=24)
       COMMON/OUTIN/IUOUT,IUIN
@@ -1161,7 +1161,7 @@ C CLMPUT Writes one day's climate data to the current climate file.
 
   50  RETURN
 1000  WRITE(IUOUT,'(A,I4,A)') ' Error ',ISTAT,
-     &                        ' on writing climate database'
+     &                        ' on writing weather database'
       call edisp(iuout,outs)
       GO TO 50
 
@@ -1169,7 +1169,7 @@ C CLMPUT Writes one day's climate data to the current climate file.
 
 
 C 'EPWTOBCLM' Allows a period of climatic data from EPW format ASCII file
-C to be transferred to a binary climate file.  The ASCII file should 
+C to be transferred to a binary weather file.  The ASCII file should 
 C follow the formatting conventions of the EnergyPlus/Esp-r file format.
 C All items are comma separated in the EPW file format. Some fields
 C may be black (i.e. no space between commas)
@@ -1600,13 +1600,13 @@ C Close ASCIIfile.
       RETURN
 
  1001 WRITE(outs,775)ISTAT
-  775 FORMAT(' Error ',I7,' writing climate database year')
+  775 FORMAT(' Error ',I7,' writing weather database year')
       call edisp(iuout,outs)
       CALL ERPFREE(IUNIT,ISTAT)
       RETURN
 
  1002 WRITE(outs,777)ISTAT
-  777 FORMAT(' Error ',I7,' writing climate database')
+  777 FORMAT(' Error ',I7,' writing weather database')
       call edisp(iuout,outs)
       CALL ERPFREE(IUNIT,ISTAT)
       RETURN
