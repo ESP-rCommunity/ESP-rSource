@@ -12,4 +12,12 @@ out ideal ON OFF controller vs a 3 position floating controller.
 Lots of guesses in this model. Exists to confirm the syntax
 of the control and comments from those with experience is
 most welcome.
+ ____________________________________________________________
+ 
+The model includes ideal controls as follows:
+Control description:
+Represents separate on off setpoint for heating and cooling. Heating
+on below 18C and off above 20C. Cooling on above 24C and off below
+22C. Loop 1 is for manager_a loop 2 equiv on/off manager_b and the
+corridor (note how the two offices perform).
  

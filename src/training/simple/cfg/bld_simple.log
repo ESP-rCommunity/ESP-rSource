@@ -1,7 +1,7 @@
 Notes on simple 1 zone building model with convective heating
 and ideal control:
 
-This model (bld_simple.cfg) relates to an L-shaped
+This model (bld_simple.cfg) relates to an L-shaped office
 reception with convective heating.  This simple representation
 contains a single thermal zone, composed of 14 surfaces: 7 walls,
 1 ceiling, 1 floor, 3 doors and two windows.
@@ -16,9 +16,9 @@ The following files are used in this example problem.
 
    file                description
 ________________________________________________________________
-bld_simple .cfg     problem configuration
-bld_simple.ctl      configuration control (convective heating
-                    and ideal control)
+bld_simple.cfg      model configuration
+bld_simple.ctl      ideal zone control (convective heating
+                    and ideal control logic)
 bld_simple.log      project notes (this file)
 
 (zone files are in the directory ../zones)
