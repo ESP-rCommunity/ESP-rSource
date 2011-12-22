@@ -943,13 +943,13 @@ C name with the full path.
  291        continue
             iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
             if(iglib.eq.1.or.iglib.eq.3)then
-              CALL EASKF(LCMDFL,' New weather file (esp-r binary)?',
+              CALL EASKF(LCMDFL,'New weather file (esp-r binary):',
      &         ' ',96,DCLIM,'new weather file',IER,nbhelp)
             elseif(iglib.eq.2)then
-              CALL EASKF(LCMDFL,' New weather file (esp-r binary)?',
+              CALL EASKF(LCMDFL,'New weather file (esp-r binary):',
      &         ' ',144,DCLIM,'new weather file',IER,nbhelp)
             else
-              CALL EASKF(LCMDFL,' New weather file (esp-r binary)?',
+              CALL EASKF(LCMDFL,'New weather file (esp-r binary):',
      &         ' ',96,DCLIM,'new weather file',IER,nbhelp)
             endif
 
