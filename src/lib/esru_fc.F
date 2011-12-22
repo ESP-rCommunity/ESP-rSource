@@ -454,7 +454,7 @@ C      end
       return
       end
 
-      subroutine updmenu(items,types,nitmsptr,iw,len_items)
+      subroutine updmenu(items,types,nitmsptr,iw)
       character*(*) items(*)
       character*(*) types
       return
