@@ -54,6 +54,9 @@ C Parse command lines.
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
      &			   iverb,sps,data1,data2,data3)
       IMPLICIT NONE
+
+      integer lnblnk  ! function definition
+
 C Common blocks
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/APPNAME/cAppName
@@ -83,7 +86,6 @@ C Variable declaration
       logical :: unixok
 
 C Variable initialisation
-      argument = ' '
       m = iargc()
       data1=0.0
       data2=0.0
@@ -448,6 +450,7 @@ C Declare  calling parameter types
       integer, intent(inout)  ::  termtype,iappw,iappx,iappy
       character(144), intent(inout)  :: inf
 
+C Local variables for GetCommandLineArguments.
       integer :: module, iverb
       real ::  data1,data2,data3
       character(144) :: inf2
@@ -474,6 +477,7 @@ C Declare  calling parameter types
       integer, intent(inout)  ::  termtype,iappw,iappx,iappy
       character(144), intent(inout)  :: infa, infb
 
+C Local variables for GetCommandLineArguments.
       integer :: module, iverb
       real ::  data1,data2,data3
       character(16) :: zone,act
@@ -505,6 +509,7 @@ C Declare  calling parameter types
       character(12), intent(inout) :: aut
       character(16), intent(inout) :: act
 
+C Local variables for GetCommandLineArguments.
       integer :: module, iverb
       real ::  data1,data2,data3
       character(144) :: inf2
@@ -533,6 +538,7 @@ C Declare  calling parameter types
       character(12), intent(inout) :: aut
       character(72), intent(inout) :: ascif
 
+C Local variables for GetCommandLineArguments.
       integer :: module, iverb
       real ::  data1,data2,data3
       character(144) :: inf2
@@ -564,6 +570,7 @@ C Declare  calling parameter types
       character(16), intent(inout) :: act, zone
       character(72), intent(inout) :: ascif
 
+C Local variables for GetCommandLineArguments.
       integer :: module, iverb
       real ::  data1,data2,data3
       character(144) :: inf2
@@ -592,6 +599,7 @@ C Declare  calling parameter types
       character(144), intent(inout)  :: inf
       character(16), intent(inout) :: act, zone
 
+C Local variables for GetCommandLineArguments.
       integer :: module, iverb
       character(144) :: inf2
       character(72) :: actf,ascif
@@ -617,6 +625,7 @@ C Declare  calling parameter types
       character(144), intent(inout)  :: inf
       character(16), intent(inout)  :: zone
 
+C Local variables for GetCommandLineArguments.
       integer :: module, iverb
       real ::  data1,data2,data3
       character(144) :: inf2
@@ -644,6 +653,7 @@ C Declare  calling parameter types
       integer, intent(inout)  ::  termtype
       character(144), intent(inout)  :: inf
 
+C Local variables for GetCommandLineArguments.
       integer :: module, iverb,iappw,iappx,iappy
       real ::  data1,data2,data3
       character(144) :: inf2
@@ -671,6 +681,7 @@ C Declare  calling parameter types
       character(144), intent(inout)  :: inf
       character(16), intent(inout)  :: act
 
+C Local variables for GetCommandLineArguments.
       integer :: module, iverb,iappw,iappx,iappy
       real ::  data1,data2,data3
       character(144) :: inf2
@@ -701,6 +712,7 @@ C Declare  calling parameter types
       character(12), intent(inout) :: aim
       character(4), intent(inout) :: browse
 
+C Local variables for GetCommandLineArguments.
       integer :: module, iverb
       real ::  data1,data2,data3
       character(144) :: inf2
@@ -713,6 +725,7 @@ C Declare  calling parameter types
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
      &			   iverb,sps,data1,data2,data3)
       end subroutine parse2r
+
 C ********* parsim
 C parsim: allows terminal, size, config file, simulation parameter file arguments
 C  to be passed to the program from the invocation line.
@@ -728,6 +741,7 @@ C Declare  calling parameter types
       character(4), intent(inout) :: browse
       character(8), intent(inout) :: sps
 
+C Local variables for GetCommandLineArguments.
       integer :: module
       real ::  data1,data2,data3
       character(144) :: inf2
@@ -755,6 +769,7 @@ C Declare  calling parameter types
       character(16), intent(inout) :: act
       character(72), intent(inout) :: actf
 
+C Local variables for GetCommandLineArguments.
       integer :: module, iverb
       real ::  data1,data2,data3
       character(144) :: inf2
@@ -821,12 +836,12 @@ C If one parameter.
         if(argument(1:5).eq.'-help')then
       call edisp(iuout,'The product model filter. ')
       call edisp(iuout,' Use: [-v] [{-mm|-metre}] ')
-      call edisp(iuout,'  -if {esp|dxf|zip|ww} -in <file> ')
+      call edisp(iuout,'  -if {esp|dxf|ww} -in <file> ')
       call edisp(iuout,
-     &  '  -of {esp|dxf|viewer|zip|xfig|vrml} -out <file>')
+     &  '  -of {esp|dxf|viewer|xfig|vrml} -out <file>')
       call edisp(iuout,' ')
       call edisp(iuout,'Where options are:')
-      call edisp(iuout,' -if [esp|dxf|zip|ww] = input format')
+      call edisp(iuout,' -if [esp|dxf|ww] = input format')
       call edisp(iuout,'      (dxf = AutoCAD V11-12)')
       call edisp(iuout,'      (ww = ww graphic commands)')
       call edisp(iuout,' -in [file]  = input file')
@@ -840,9 +855,8 @@ C If one parameter.
       call edisp(iuout,' ')
       call edisp(iuout,'The following combinations are supported:')
       call edisp(iuout,'  input format  output format')
-      call edisp(iuout,'  esp-r         dxf, viewer, zip, vrml')
+      call edisp(iuout,'  esp-r         dxf, viewer, vrml')
       call edisp(iuout,'  dxf           esp-r, viewer')
-      call edisp(iuout,'  zip           esp-r, viewer')
       call edisp(iuout,' ')
       call edisp(iuout,'If converting to esp-r then an additional')
       call edisp(iuout,'parameter is allowed:')
@@ -938,6 +952,7 @@ C If islash > 0 then root and file name
 
       RETURN
       END
+
 C ******************** scesprc
 C scesprc scans the ESP-r dot file which should be located in the
 C users home folder or in the esp-r distribution.  If not found
@@ -1062,7 +1077,7 @@ C temporary files in the users home folder.
         foldlbl='folder browser'
         foldexe='xfs '
         cadlbl='CAD package'
-        cadexe='xzip'
+        cadexe=' '
         cadfmt='DXF'
         replbl='No report generator'
         repexe='UNKNOWN'
@@ -1723,10 +1738,6 @@ C parpsfh: Help message for several of the command line parsers.
         call edisp(iuout,'This is the power flow simulator. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
         call edisp(iuout,'       [-file <configuration file>]')
-      elseif(appn(1:3).eq.'plt')then
-        call edisp(iuout,'The stand-alone plant module. ')
-        call edisp(iuout,'  Use: [-mode {text|graphic}]')
-        call edisp(iuout,'       [-file <plant network file>]')
       elseif(appn(1:3).eq.'prj')then
         call edisp(iuout,'The project manager.')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
@@ -1760,18 +1771,6 @@ C parpsfh: Help message for several of the command line parsers.
         call edisp(iuout,'   recovery commands]')
         call edisp(iuout,'   [-s < width, offset left & top>]')
         call edisp(iuout,' ')
-      elseif(appn(1:3).eq.'tdf')then
-        call edisp(iuout,'The temporal database manager. ')
-        call edisp(iuout,'  Use: [-mode {text|graphic}]')
-        call edisp(iuout,'       [-file <database file>]')
-        call edisp(iuout,'       [-act {update|extract|export|}')
-        call edisp(iuout,'              import}}')
-        call edisp(iuout,'       [-actf file as follows:')
-        call edisp(iuout,' if act = update, actf gives commands')
-        call edisp(iuout,' if act = extract, actf gives commands')
-        call edisp(iuout,' if act = export, actf holds exported data')
-        call edisp(iuout,' if act = import, actf is data to import')
-        call edisp(iuout,'       [-s < width, offset left & top>]')
       elseif(appn(1:3).eq.'vew')then
         call edisp(iuout,'The hidden line viewer. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
