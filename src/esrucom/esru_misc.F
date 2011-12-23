@@ -730,6 +730,22 @@ C see if there are images associated with descriptive buttons.
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
 #include "building.h"
 
+C Passed parameters because these are also used by c function opencfg
+#ifdef OSI
+      integer icfg_type  ! model cfg type
+      integer icfgz      ! if non-zero then there are zones
+      integer icfgn      ! if non-zero then there are networks
+      integer icfgc      ! if non-zero then cfg file known
+      integer icfgdfn    ! if non-zero then cdf domain exists
+      integer iicfgz     ! there are zone related images
+      integer iicfgn     ! there are network related images
+      integer iicfgc     ! there are control related images
+      integer iicfgdfn   ! there are cfd related images
+#else
+      integer*8 icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz
+      integer*8 iicfgn,iicfgc,iicfgdfn
+#endif
+
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C6/INDCFG

@@ -74,6 +74,21 @@ C LPRFDB,IPRODB (for event profile database)
       integer MVERT,IVERT ! max items and current menu item
       real angr   ! rotation angle
 
+#ifdef OSI
+      integer icfg_type  ! model cfg type
+      integer icfgz      ! if non-zero then there are zones
+      integer icfgn      ! if non-zero then there are networks
+      integer icfgc      ! if non-zero then cfg file known
+      integer icfgdfn    ! if non-zero then cdf domain exists
+      integer iicfgz     ! there are zone related images
+      integer iicfgn     ! there are network related images
+      integer iicfgc     ! there are control related images
+      integer iicfgdfn   ! there are cfd related images
+#else
+      integer*8 icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz
+      integer*8 iicfgn,iicfgc,iicfgdfn
+#endif
+
 C For help messages
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
@@ -635,7 +650,7 @@ C time for copy use zeros, otherwise re-present the previous values.
             CALL EPMENSV       ! save the calling menu layout
   78        CALL ADJVIEW(IER)  ! redraw wireframe
             call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
-     &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
+     &                   iicfgz,iicfgn,iicfgc,iicfgdfn)
 
 C Edit the copied block.
             CALL EDOBSB(ITRU,IUF,ICOMP,nbo,ianother,IER)

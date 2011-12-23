@@ -189,6 +189,22 @@ C Returned parameters from silentread.
       dimension ivals(MCOM)
       logical silent  ! for dependency checking on transform or rotate
 
+C Passed parameters to cfgtogg
+#ifdef OSI
+      integer icfg_type  ! model cfg type
+      integer icfgz      ! if non-zero then there are zones
+      integer icfgn      ! if non-zero then there are networks
+      integer icfgc      ! if non-zero then cfg file known
+      integer icfgdfn    ! if non-zero then cdf domain exists
+      integer iicfgz     ! there are zone related images
+      integer iicfgn     ! there are network related images
+      integer iicfgc     ! there are control related images
+      integer iicfgdfn   ! there are cfd related images
+#else
+      integer*8 icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz
+      integer*8 iicfgn,iicfgc,iicfgdfn
+#endif
+
 C For help messages
       common/pophelp/h(60)   ! needed for dynamic popup
       character H*72
