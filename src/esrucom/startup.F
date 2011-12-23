@@ -141,8 +141,10 @@ C Display version information and then quit
 C Display detailed build information and then quit
             CALL ESPrVersion("details",cAppName,IUOUT)
             stop
+          elseif(argument(1:3).eq.'-vv')then
+            iverb = 2   ! tell application to run with debug verbose
           elseif(argument(1:2).eq.'-v')then
-            if (module.eq.CONST_PARSIM) iverb = 2   ! tell application to run with debug on
+            iverb = 1   ! tell application to run with debug moderate
                         ! Note: this option MUST follow -version for both to be supported
           elseif(argument(1:5).eq.'-mode')then
             i=i+1
@@ -590,17 +592,17 @@ C ********* parsprj
 C parsprj allows terminal, size, config file, zone focus and actions arguments
 C (including 3 real data) to be passed to the prj from the invocation line.
       subroutine parsprj(termtype,iappw,iappx,iappy,inf,zone,act,
-     &        data1,data2,data3)
+     &        data1,data2,data3,iverb)
 
       IMPLICIT NONE
 C Declare  calling parameter types
       real, intent(inout)     ::  data1,data2,data3
-      integer, intent(inout)  ::  termtype,iappw,iappx,iappy
+      integer, intent(inout)  ::  termtype,iappw,iappx,iappy,iverb
       character(144), intent(inout)  :: inf
       character(16), intent(inout) :: act, zone
 
 C Local variables for GetCommandLineArguments.
-      integer :: module, iverb
+      integer :: module
       character(144) :: inf2
       character(72) :: actf,ascif
       character(12) :: aim, aut

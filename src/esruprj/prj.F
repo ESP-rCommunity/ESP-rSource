@@ -254,9 +254,8 @@ C  ifil+11 (external help text), ifil+19 ifil+20 ifil+21 anlyt.
 
 C Recover command line parameters (terminal, size, config file, zone
 C focus and actions arguments).
-C      call parsprj(MODL,iappw,iappx,iappy,inf,inz,act,d1,d2,d3,iverb)
-C      itrc=iverb    ! set trace level after call to parsprj
-      call parsprj(MODL,iappw,iappx,iappy,inf,inz,act,d1,d2,d3)
+      call parsprj(MODL,iappw,iappx,iappy,inf,inz,act,d1,d2,d3,iverb)
+      itrc=iverb    ! set trace level after call to parsprj
       IFDAY=2
       IFTIME=0
       nsset=0

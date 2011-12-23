@@ -3755,7 +3755,7 @@ C Check to see adding a cfg folder and cfgroot to LCFGF works.
 C If user already said silent or very verbose follow this.
 C Otherwise allow a choice to switch to a different level.
         if(itrc.eq.2)then
-	  continue  ! user already set full report
+          continue  ! user already set full report
         elseif(itrc.eq.1)then
           CALL EASKABC('When reading the model description,',
      &      'do it:','silently','with synopsis','full report',
