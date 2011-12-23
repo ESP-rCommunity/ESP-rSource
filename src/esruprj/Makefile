@@ -14,7 +14,9 @@ PROG = prj$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS)  $(BUILD_OPTIONS) -c $<
 
-OBJECTS = startup.o prj.o anlytc.o aim2_module.o aim2_inputs.o arrow.o ascii_mat.o basesimp.o \
+MODULE_OBJECTS = startup.o aim2_module.o aim2_inputs.o
+
+OBJECTS = prj.o anlytc.o arrow.o ascii_mat.o basesimp.o \
 	  basesimp_inputs.o blcond.o bnlthp.o bpfcom.o bpfcontrl.o bscoeff.o bscoeff_extended.o \
 	  bsimsel.o c2fdum.o cadio.o cfdat.o cfdrw.o cfg3dv.o cfgmsc.o cfgrid.o cgd.o \
 	  clickonbitmap.o common3dv.o commonclm.o context.o ctlexp.o ctlwrt.o ctprob.o \
@@ -37,8 +39,8 @@ OBJECTS = startup.o prj.o anlytc.o aim2_module.o aim2_inputs.o arrow.o ascii_mat
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod aim2_inputs.mod \
 	  aim2_inputs_inputdata.mod start_up.mod parse_command_line.mod
 
-$(PROG): $(OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) $(BUILD_OPTIONS)
+$(PROG): $(MODULE_OBJECTS) $(OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS) $(BUILD_OPTIONS)
 
 anlytc.F:
 	rm -f anlytc.F
@@ -256,7 +258,7 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
+	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
 	anlytc.F aim2_module.F arrow.F ascii_mat.F basesimp.F bscoeff.F bscoeff_extended.F \
 	bsimsel.F c2fdum.F cfdat.F cfdrw.F cfgmsc.F \
 	cfgrid.F cgd.F common3dv.F commonclm.F ctlexp.F ctprob.F ctread.F DG_controller_menu.F \

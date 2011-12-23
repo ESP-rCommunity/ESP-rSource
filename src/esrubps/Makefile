@@ -21,7 +21,9 @@ PROG = bps$(EXE)
 %.o : %.c
 	$(MCC) $(CFLAGS) -c $<
 
-BPS_OBJECTS = startup.o bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o aim2_module.o aim2_timestep.o ascii_mat.o \
+MODULE_OBJECTS = startup.o aim2_module.o aim2_timestep.o
+
+BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o \
 	  bcfunc.o bctlf.o blibsv.o bmatsu.o bmatsv.o basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
 	  bndarybl.o bndaryl.o bndaryt.o bsim2cfd.o btherm.o c2fdum.o casual.o cfcalc.o \
 	  cfconv.o cfdat.o cfdrw.o cfgrid.o cfmgerb.o cfutil.o chkconvg.o chtmst.o \
@@ -58,8 +60,8 @@ BPS_OBJECTS = startup.o bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o aim2_modul
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod aim2_timestep.mod start_up.mod parse_command_line.mod
 
-$(PROG): $(BPS_OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(BPS_OBJECTS) $(ULIBS) $(F_to_C_flags) 
+$(PROG): $(MODULE_OBJECTS) $(BPS_OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(BPS_OBJECTS) $(ULIBS) $(F_to_C_flags)
 
 adaptconf1.F:
 	rm -f adaptconf1.F
@@ -669,8 +671,8 @@ stratified_tank_2HX.F:
 AirFlowModelRoutines.F:
 	rm -f AirFlowModelRoutines.F
 	ln -s $(BLDdir)/AirFlowModelRoutines.F .
-  
-  
+
+
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
 
@@ -679,7 +681,7 @@ install:
 
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(BPS_OBJECTS) $(MODULES) \
+	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(BPS_OBJECTS) $(MODULES) \
 	adaptconf1.F adaptconf2.F adjb.F adjp.F aim2_module.F aim2_timestep.F \
 	ascii_mat.F ashp.F ashp_cooling.F baseboard.F basesimp.F basesimp_inputs.F bcfunc.F bctlf.F \
 	blibsv.F bmatsu.F bndaryl.F bndarybl.F bndaryt.F bscoeff.F bscoeff_extended.F \

@@ -11,7 +11,9 @@ PROG = ecnv$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = startup.o aim2_module.o ecnv.o ascii_mat.o basesimp.o basesimp_inputs.o \
+MODULE_OBJECTS = startup.o aim2_module.o
+
+OBJECTS = ecnv.o ascii_mat.o basesimp.o basesimp_inputs.o \
 	  bscoeff.o bscoeff_extended.o c2fdum.o ctread.o e2vrml.o \
 	  e2vdxf.o edatabase.o egeometry.o egtgeom.o \
 	  emfnetw.o emkcfg.o enetmisc.o enetrewr.o eroper.o esru_misc.o \
@@ -22,8 +24,8 @@ OBJECTS = startup.o aim2_module.o ecnv.o ascii_mat.o basesimp.o basesimp_inputs.
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod \
 	parse_command_line.mod
 
-$(PROG): $(OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
+$(PROG): $(MODULE_OBJECTS) $(OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS)
 
 aim2_module.F:
 	rm -f aim2_module.F
@@ -120,7 +122,7 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
+	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
 	aim2_module.F ascii_mat.F basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
 	c2fdum.F ctread.F edatabase.F egeometry.F egtgeom.F \
 	emfnetw.F emkcfg.F enetmisc.F enetrewr.F eroper.F esru_misc.F esystem.F \
