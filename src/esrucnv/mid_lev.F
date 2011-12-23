@@ -109,7 +109,7 @@ C Clear text buffers for obstructions.
 C The high level scan of a DXF file starts here. It works by
 C calling readgc to recover information from the DXF file until
 C and EOF is located. It looks for 'HEAD' and 'TABL' and 'ENDSEC'.
-      if(itrc.gt.1)then
+      if(itrc.gt.0)then
         call edisp(iuout,' ')
         call edisp(iuout,'Start of debug of DXF file contents...')
       endif
@@ -183,7 +183,7 @@ C Assuming a single esp-r zone so create file names etc.
                 NCOMP=NCOMP+1
                 write(ZN,'(a)') 'First'
                 ln =lnblnk(ZN)
-                if(itrc.gt.1)then
+                if(itrc.gt.0)then
                   write(outs,'(a,i2,2a)') 'Creating new zone ',
      &              NCOMP,' named ',zn
                   call edisp(iuout,outs)
@@ -212,7 +212,7 @@ C Found a new zone so create file names etc.
                   NCOMP=NCOMP+1
                   ln = min0(12,lnblnk(RZNAME))
                   write(ZN,'(a)') RZNAME(1:ln)
-                  if(itrc.gt.1)then
+                  if(itrc.gt.0)then
                     write(outs,'(a,i2,2a)') 'Creating new zone ',
      &                NCOMP,' named ',zn
                     call edisp(iuout,outs)
@@ -248,7 +248,7 @@ C << obstructions
      &                    zname(im)(1:lnzname(im)),'.obs'
                       endif
                       ZOBS(im)=lf
-                      if(itrc.gt.1)then
+                      if(itrc.gt.0)then
                         write(outs,'(2a)')'Creating obstructions for ',
      &                    zname(im)(1:lnzname(im))
                         call edisp(iuout,outs)
@@ -327,15 +327,15 @@ C Take in 2D lines, if extruded then make into surfaces.
             elseif (gcode.eq.0.and.instring(1:3).eq.'ARC') then
               call genarc(itrc)
             elseif (gcode.eq.0.and.instring(1:5).eq.'POINT') then
-              if(itrc.gt.0)call edisp(iuout, ' skipping POINT ')
+              if(itrc.gt.1)call edisp(iuout, ' skipping POINT ')
             elseif (instring(1:5).eq.'TRACE') then        
-              if(itrc.gt.0)call edisp(iuout, ' skipping TRACE ')
+              if(itrc.gt.1)call edisp(iuout, ' skipping TRACE ')
             elseif (instring(1:5).eq.'SOLID') then        
-              if(itrc.gt.0)call edisp(iuout, ' skipping SOLID ')
+              if(itrc.gt.1)call edisp(iuout, ' skipping SOLID ')
             elseif(instring(1:6).eq.'INSERT') then        
               call insert(itrc)        
             elseif (instring(1:5).eq.'CIRCL') then        
-              if(itrc.gt.0)call edisp(iuout, ' skipping CIRCLE ')
+              if(itrc.gt.1)call edisp(iuout, ' skipping CIRCLE ')
               call gencrl(itrc)
             elseif (instring(1:5).eq.'POLYL') then
               call genplin(itrc)
@@ -348,7 +348,7 @@ C Take in 2D lines, if extruded then make into surfaces.
 C << is there some use for the points associated with a 3dline? >>
               if(itrc.gt.0)call edisp(iuout,' skipping single line ')
             elseif (instring(1:4).eq.'TEXT') then 
-              if(itrc.gt.0)call edisp(iuout, ' skipping text ')
+              if(itrc.gt.1)call edisp(iuout, ' skipping text ')
               call gentext(itrc)
             elseif (gcode.eq.8) then
               call getlay(currlay,itrc)
@@ -902,7 +902,7 @@ C << ?? >>
 C Get coords.
               ichartblk=ichartblk+1
               read(chartblk(ichartblk),*,end=500,err=600) X0,Y0,Z0
-              if(itrc.gt.0)then
+              if(itrc.gt.1)then
                 write(outs,'(a,3f12.5)') 'vert orig ',X0,Y0,Z0
                 call edisp(iuout,outs)
               endif
@@ -936,7 +936,7 @@ C Convert from mm to metres if requrired, write to file and tell user.
               X0=X0*dxfconv
               Y0=Y0*dxfconv
               Z0=Z0*dxfconv
-              if(itrc.gt.0)then
+              if(itrc.gt.1)then
                 write(outs,'(a,3f12.4)') ' new vert ',X0,Y0,Z0
                 call edisp(iuout,outs)
                 call edisp(iuout,'  ')
