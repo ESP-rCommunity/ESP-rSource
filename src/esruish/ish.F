@@ -976,7 +976,7 @@ C GTK version will be returning the name with the full path.
             if(ier.eq.0)then
                cfgok=.true.
                numberofzones=ncomp
-               call zdata (itrc,ier,numberofzones,isfsum)
+               call zdata (itrc,ier,int(numberofzones),isfsum)
             endif
          endif
 

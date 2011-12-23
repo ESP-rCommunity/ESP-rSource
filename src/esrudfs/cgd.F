@@ -346,14 +346,21 @@ C xax       - text for horiz axis.
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1
 #endif
 
 C x-z plane grid.
       call startbuffer()
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
       Xmin=xoff
       Xmax=amax1(TOTDIS,CTDIS)
       Xmax=Xmax+xoff
@@ -365,8 +372,9 @@ C x-z plane grid.
      &  Xadd,Yadd)
 
 C Store the scaling parameters used in drawing the axes.
-      CALL linescale(igl,Xadd,sca,igb,Yadd,sca)
-      call horaxis(Xmin,Xmax,igl,igr,igb+10,Xadd,sca,0,xax)
+      CALL linescale(iigl,Xadd,sca,iigb,Yadd,sca)
+      iiw1=iigb+10
+      call horaxis(Xmin,Xmax,iigl,iigr,iiw1,Xadd,sca,0,xax)
       iside=1
       isize=0
       ifont=1
@@ -446,14 +454,22 @@ C xax,yax   - text for horiz and vert axis.
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1
 #endif
 
 C x-z plane grid.
       call startbuffer()
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+
       Xmin=xoff
       Xmax=xgrd(nx)+xoff
       Ymin=yoff
@@ -464,8 +480,9 @@ C x-z plane grid.
      &  Xadd,Yadd)
 
 C Store the scaling parameters used in drawing the axes.
-      CALL linescale(igl,Xadd,sca,igb,Yadd,sca)
-      call horaxis(Xmin,Xmax,igl,igr,igb+10,Xadd,sca,0,xax)
+      CALL linescale(iigl,Xadd,sca,iigb,Yadd,sca)
+      iiw1=iigb+10
+      call horaxis(Xmin,Xmax,iigl,iigr,iiw1,Xadd,sca,0,xax)
       if((Ymax-Ymin).lt.2.0)then
         iiw1=iigl-10
         call vrtaxis(Ymin,Ymax,iiw1,iigb,iigt,Yadd,sca,0,0,yax)
@@ -593,7 +610,7 @@ C Determine the 2D coords of the site extremes.
       CALL SITE2D(SXMX,SXMN,SYMX,SYMN,ier)
       CALL axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
      &  Xadd,Yadd)
-      call linescale(igl,Xadd,sca,igb,Yadd,sca)
+      call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
 
 C Loop through all X-Y plane grid lines.
       if(gact.eq.'xyz'.or.gact.eq.'xyg')then

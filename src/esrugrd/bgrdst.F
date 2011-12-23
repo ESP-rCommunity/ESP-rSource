@@ -1796,7 +1796,7 @@ C Estimate the X, Y, XY scales.
      &               Xadd,Yadd)
 
 C Define the active scale.
-      CALL LINESCALE(IGL,Xadd,SCA,IGB,Yadd,SCA)
+      CALL LINESCALE(iigl,Xadd,SCA,iigb,Yadd,SCA)
 
 C Display header information.
       WRITE(Title,'(A14,I2)')'Row Number: ',IRow
@@ -1983,7 +1983,7 @@ C Estimate the X, Y, XY scales.
      &              Xadd,Yadd)
 
 C Define the active scale.
-      CALL LINESCALE(IGL,Xadd,SCA,IGB,Yadd,SCA)
+      CALL LINESCALE(iigl,Xadd,SCA,iigb,Yadd,SCA)
 
 C Display header information.
       WRITE(Title,'(A14,I2)')'Column Number: ',ICol
@@ -2172,7 +2172,7 @@ C Estimate the X, Y, XY scales.
      &               Xadd,Yadd)
 
 C Define the active scale.
-      CALL LINESCALE(IGL,Xadd,SCA,IGB,Yadd,SCA)
+      CALL LINESCALE(iigl,Xadd,SCA,iigb,Yadd,SCA)
 
 C Display header information.
       WRITE(Title,'(A14,I2)')'Layer Number: ',ILay

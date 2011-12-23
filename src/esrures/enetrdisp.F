@@ -78,17 +78,22 @@ C The period details
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
       integer iid1,iid2
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igx             ! see above array
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 ipos,isize      ! for use with etlabel
       integer*8 iupdown,isym    ! passed to etplot
       integer*8 iid1,iid2
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
 C Set up scaling and graph parameters
       VPOS=1E+15
       VNEG=-1E+15
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C Convert the start and finish times into timesteps and therefore record numbers. 
 C Firstly calculate the period start and finish days.
@@ -382,8 +387,8 @@ C Reset the scaling flag if required
   70    CONTINUE 
 
 C Draw horizontal (time) axis.
-        CALL HORAXIS(XSTRT,XFIN,IGL,IGR,IGB,XADD,TSC,1,
-     &                             'Time Hrs')
+        CALL HORAXIS(XSTRT,XFIN,iigl,iigr,iigb,XADD,TSC,1,
+     &    'Time Hrs')
      
       ELSEIF(MODE.EQ.'U')THEN
 
@@ -451,7 +456,7 @@ C Reset the averaging flag.
               IF(EFILT(I).EQ.1)THEN
 C Scale the recovered data to the appropriate axis.
                 IAX=EVAXIS(I)
-                CALL LINESCALE(IGL,XADD,TSC,IGB,YADD(IAX),YSC(IAX))
+                CALL LINESCALE(iigl,XADD,TSC,iigb,YADD(IAX),YSC(IAX))
 
 C Calculate the current time (day fraction). 
                 HOURF=1.0/FLOAT(NETS)
@@ -497,7 +502,7 @@ C Plot the label at the end of the data line.
         DO 110 I=1,NVAL1
           IF(EFILT(I).EQ.1)THEN
             IAX=EVAXIS(I)
-            CALL LINESCALE(IGL,XADD,TSC,IGB,YADD(IAX),YSC(IAX))
+            CALL LINESCALE(iigl,XADD,TSC,iigb,YADD(IAX),YSC(IAX))
             STR=' '
 
 C Make sure the label is within the string bounds (20 chars).

@@ -384,14 +384,14 @@ C        CALL win3d(menuchw,10,8,4,3,igl,igr,igt,igb,igw,igwh)
      &  xadd,yadd)
 
 C Draw the axes of the chart.
-      CALL horaxis(Xmin,Xmax,igl,igr,igb,xadd,XSC,0,'db Temp C')
+      CALL horaxis(Xmin,Xmax,iigl,iigr,iigb,xadd,XSC,0,'db Temp C')
       CALL vrtaxis(0.0,0.01,iigl,iigb,iigt,yadd,YSC,0,0,
      &  'Enthalpy kJ/kg')
       CALL vrtaxis(Ymin,Ymax,iigr,iigb,iigt,yadd,YSC,0,1,
      &  'Moisture g/kg')
 
 C Store the scaling parameters used in drawing the axes
-      CALL linescale(igl,xadd,XSC,igb,yadd,YSC)
+      CALL linescale(iigl,xadd,XSC,iigb,yadd,YSC)
 C Draw the dry-bulb temperature lines
       iupdown=0
       isym=0

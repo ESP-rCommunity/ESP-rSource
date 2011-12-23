@@ -671,9 +671,9 @@ C        call win3d(menuchw,12,30,5,3,igl,igr,igt,igb,igw,igwh)
      &              Xadd,Yadd)
 
 C Stuff into static variables for later access and draw axis.
-        call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
+        call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
         call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,'Value')
-        call horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,0,
+        call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,
      &    'Degrees from normal')
 
         WRITE(ETEXT,'(4a)') 'Type: ',GTYPE(1:lnblnk(GTYPE)),

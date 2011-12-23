@@ -632,12 +632,12 @@ C Psychrometric analysis. Enlarge graphics area if small.
 
 C Setup and pass in parameters to win3d.
               iiw1=10; iiw2=22; iiw3=7; iiw4=3; iimenu=menuchw
-              iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+              iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
               CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &          iigl,iigr,iigt,iigb,iigw,iigwh)
 C              CALL win3d(menuchw,10,22,7,3,igl,igr,igt,igb,igw,igwh)
-              igl=int(iigl); igr=int(iigr);igt=int(iigt);igb=int(iigb)
-              igw=int(iigw); igwh=int(iigwh)
+              igl=int(iigl);igr=int(iigr);igt=int(iigt);igb=int(iigb)
+              igw=int(iigw);igwh=int(iigwh)
             elseif(iglib.eq.2)then
               continue
             endif

@@ -110,20 +110,20 @@ C Draw a scale vertical axis.
       if(direc.eq.'P')then
         CALL axiscale(igwid,igheight,XMN,XMX,YMN,YMX,xsc,ysc,sca,
      &    Xadd,Yadd)
-        call linescale(igl,Xadd,sca,igb,Yadd,sca)
-        CALL horaxis(XMN,XMX,igl,igr,igb,Xadd,sca,1,'East (m) ->')
+        call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
+        CALL horaxis(XMN,XMX,iigl,iigr,iigb,Xadd,sca,1,'East (m) ->')
         CALL vrtaxis(YMN,YMX,iigl,iigb,iigt,Yadd,sca,1,0,'^ North')
       elseif(direc.eq.'S')then
         CALL axiscale(igwid,igheight,XMN,XMX,ZMN,ZMX,xsc,ysc,sca,
      &    Xadd,Yadd)
-        call linescale(igl,Xadd,sca,igb,Yadd,sca)
-        call horaxis(XMN,XMX,igl,igr,igb,Xadd,sca,1,'East (m) ->')
+        call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
+        call horaxis(XMN,XMX,iigl,iigr,iigb,Xadd,sca,1,'East (m) ->')
         call vrtaxis(ZMN,ZMX,iigl,iigb,iigt,Yadd,sca,1,0,'^ Up')
       elseif(direc.eq.'E')then
         CALL axiscale(igwid,igheight,YMN,YMX,ZMN,ZMX,xsc,ysc,sca,
      &    Xadd,Yadd)
-        call linescale(igl,Xadd,sca,igb,Yadd,sca)
-        call horaxis(YMN,YMX,igl,igr,igb,Xadd,sca,1,'North (m) ->')
+        call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
+        call horaxis(YMN,YMX,iigl,iigr,iigb,Xadd,sca,1,'North (m) ->')
         call vrtaxis(ZMN,ZMX,iigl,iigb,iigt,Yadd,sca,1,0,'^ Up')
       endif
 

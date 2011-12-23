@@ -120,10 +120,12 @@ C Simulator parameters.
       integer IGX  ! see common graf2
       integer iupdown,isym    ! passed to etplot
       integer iid1,iid2,iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 IGX  ! see common graf2
       integer*8 iupdown,isym    ! passed to etplot
       integer*8 iid1,iid2,iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
 C For help messages
@@ -132,6 +134,9 @@ C For help messages
       integer nbhelp     ! number of help lines found
 
       helpinsub='MFOUTP'  ! set for cfiles
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C If the network flow file has not yet been opened request information.
       if(iflib.eq.1)then
@@ -809,7 +814,7 @@ C Do the other menu types. If graph reset scaling factor for appropriate axis.
             do 400 IX=1,NMFGET
               if (MENUTYPE.eq.3) then
                 Iax=IMFGETNO(IX,7)
-                call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
+                call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))
                 if (TIMEold(IX).lt.0.0.or.ADDLIN.eq.1) then
                   TIMEold(IX)=0.0
                   Yold(IX)=FLOWVALS(IX)
@@ -1069,7 +1074,7 @@ C histogram metric is selected it will be the first one.
 C Finally label lines, matching zone line colour if used.
         do 200 I=1,NMFGET
           Iax=IMFGETNO(I,7)
-          call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
+          call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))
           t20=GMFLABEL(I)
           if(colok)then
             if(IMFGETNO(I,2).gt.0)then

@@ -263,11 +263,15 @@ C AXISDRW - draw and label axes.
 #ifdef OSI
       integer igx  ! see common graf2
       integer igwid,igheight,iid1,iid2  ! for use with axiscale
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igx  ! see common graf2
       integer*8 igwid,igheight,iid1,iid2  ! for use with axiscale
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
+C Cast values for horaxis.
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
 
 C Debug.
 C      write(6,*) 'AXISDRW',(YAXSET(I),I=1,5)
@@ -335,7 +339,8 @@ C draw vertical axis.
 
 C Draw horizontal (time) axis.
       if(act.eq.'P')then
-        call horaxis(TSTART,TFINISH,igl,igr,igb,Xadd,TSC,1,'Timesteps')
+        call horaxis(TSTART,TFINISH,iigl,iigr,iigb,Xadd,TSC,1,
+     &    'Timesteps')
       else
 
 C- Hardwired to display hours instead of timesteps on x-axis
@@ -344,18 +349,18 @@ C- To revert back to original remove npts from following statement
         TST=TSTART/real(npts)
         TFI=TFINISH/real(npts)
 	TSCR=TSC*real(npts)
-C        call horaxis(TST,TFI,igl,igr,igb,Xadd,TSCR,1,'Time Hrs')
+C        call horaxis(TST,TFI,iigl,iigr,iigb,Xadd,TSCR,1,'Time Hrs')
         if(horaxisdiv.eq.0.or.horaxisdiv.eq.1)then
 
 C Default is the same as AXISDRW always provided.
-          call horaxis(TST,TFI,igl,igr,igb,Xadd,TSCR,1,'Time Hrs')
+          call horaxis(TST,TFI,iigl,iigr,iigb,Xadd,TSCR,1,'Time Hrs')
         elseif(horaxisdiv.eq.2)then
-          call horaxis(TST,TFI,igl,igr,igb,Xadd,TSCR,1,'Time Hrs')
+          call horaxis(TST,TFI,iigl,iigr,iigb,Xadd,TSCR,1,'Time Hrs')
         elseif(horaxisdiv.eq.3)then
-          call horaxishdw(TST,TFI,igl,igr,igb,Xadd,TSCR,1,
+          call horaxishdw(TST,TFI,iigl,iigr,iigb,Xadd,TSCR,1,
      &      2,24,iods,'Time (days)')
         elseif(horaxisdiv.eq.4)then
-          call horaxishdw(TST,TFI,igl,igr,igb,Xadd,TSCR,1,
+          call horaxishdw(TST,TFI,iigl,iigr,iigb,Xadd,TSCR,1,
      &      3,168,iods,'Time (weeks)')
         endif
       endif

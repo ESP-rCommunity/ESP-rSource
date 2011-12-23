@@ -453,10 +453,12 @@ C SAINTER calculates summary statistics within result sets.
       integer IGX  ! see common graf2
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym    ! passed to etplot
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 IGX  ! see common graf2
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
       character outs*124
@@ -467,6 +469,9 @@ C For help messages
       integer nbhelp     ! number of help lines found
 
       helpinsub='SAINTER'  ! set for subroutine
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C Call the menu of choices (this also sets some default options).
 C The logical variable totals controls the displaying of cumulative 
@@ -861,8 +866,9 @@ C Calculate overall standard deviation and display depending on IFMT.
      &    YSC(1),sca,Xadd,Yadd(1))
         call vrtaxis(YMIN(1),YMAX(1),iigl,iigb,iigt,Yadd(1),YSC(1),0,0,
      &    'Output')
-        call horaxis(TMIN,TMAX+1.,igl,igr,igb,Xadd,TSC,1,'Time Hours')
-        call linescale(igl,Xadd,TSC,igb,Yadd(1),YSC(1))
+        call horaxis(TMIN,TMAX+1.,iigl,iigr,iigb,Xadd,TSC,1,
+     &    'Time Hours')
+        call linescale(iigl,Xadd,TSC,iigb,Yadd(1),YSC(1))
         graphit=.true.
         goto 4
       endif

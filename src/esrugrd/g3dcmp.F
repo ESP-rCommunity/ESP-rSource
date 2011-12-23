@@ -322,7 +322,7 @@ C Determine scaling ratios for the drawing and axis.
      &              Xadd,Zadd)
 
 C Place scaling in static C variables for use by line drawing routines.
-      call linescale(igl,Xadd,sca,igb,Zadd,sca)
+      call linescale(iigl,Xadd,sca,iigb,Zadd,sca)
 
 C Display header information.
       iside=1
@@ -331,7 +331,7 @@ C Display header information.
       call viewtext('Elevation View',iside,isize,ifont)
 
 C Draw a scale horizontal axis, move to beginning point.
-      CALL horaxis(XMIN,XMAX,igl,igr,igb,Xadd,sca,0,'X axis ->')
+      CALL horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,sca,0,'X axis ->')
 
 C Draw a scale vertical axis.
       CALL vrtaxis(ZMIN,ZMAX,iigl,iigb,iigt,Zadd,sca,0,0,'^ Z axis')
@@ -1262,7 +1262,7 @@ C      CALL win3d(29,20,4,3,3,igl,igr,igt,igb,igw,igwh)
       igheight=igwh
       CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,
      &              SCA,XADD,YADD)
-      CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
+      CALL LINESCALE(iigl,XADD,SCA,iigb,YADD,SCA)
 
 C Locate and label the two extreme vertices.
       CALL U2PIXEL(XS(1),YS(1),iix,iiy)
@@ -1660,7 +1660,7 @@ C      CALL WIN3D(29,30,10,5,5,igl,igr,igt,igb,igw,igwh)
       igheight=igwh
       CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &               XADD,YADD)
-      CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
+      CALL LINESCALE(iigl,XADD,SCA,iigb,YADD,SCA)
       CALL U2PIXEL(XMN2,YMN2,iix,iiy)
       CALL ELINE(iix,iiy,1)
       CALL ECIRC(iix,iiy,3,1)
@@ -2285,7 +2285,7 @@ C      CALL WIN3D(29,20,4,3,3,igl,igr,igt,igb,igw,igwh)
       igheight=igwh
       CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &              XADD,YADD)
-      CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
+      CALL LINESCALE(iigl,XADD,SCA,iigb,YADD,SCA)
 
 C Locate and label the vertex.
       CALL U2PIXEL(XS(1),YS(1),iix,iiy)
@@ -2685,7 +2685,7 @@ C      CALL WIN3D(29,30,10,5,5,igl,igr,igt,igb,igw,igwh)
       igheight=igwh
       CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &               XADD,YADD)
-      CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
+      CALL LINESCALE(iigl,XADD,SCA,iigb,YADD,SCA)
       CALL U2PIXEL(XMN2,YMN2,iix,iiy)
       CALL ELINE(iix,iiy,1)
       CALL ECIRC(iix,iiy,3,1)

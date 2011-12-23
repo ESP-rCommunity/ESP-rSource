@@ -739,9 +739,14 @@ C condensation graphical output.
       character outs*124
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
       XMAX=THKMAX
       XMIN=THKMIN
@@ -756,8 +761,9 @@ C Compute scaling factors and draw the axis.
       igheight=igwh
       call axiscale(igwid,igheight,XMIN,XMAX,PMIN,PMAX,xsc,ysc,sca,
      &              Xadd,Yadd)
-      call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
-      call horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,0,'Thickness (mm)')
+      call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
+      call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,
+     &  'Thickness (mm)')
       call vrtaxis(PMIN,PMAX,iigl,iigb,iigt,Yadd,ysc,0,0,
      &  'Pressure mbar')
 

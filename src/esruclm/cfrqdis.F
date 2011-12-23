@@ -413,8 +413,10 @@ C 'HISDRW' draws a histogram of the frequency distribution
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
       CHARACTER*10 LABELX,LABLSX(5)
@@ -433,6 +435,9 @@ C 'HISDRW' draws a histogram of the frequency distribution
 C Percentage (right) axis.
       PMAX=(YMAX/FLOAT(ITOTAL))*100.0
       PMIN=0.0
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
       igwid=igw
       igheight=igwh
       call axiscale(igwid,igheight,XMIN,XMAX,PMIN,PMAX,TSC,YSCP,
@@ -443,12 +448,12 @@ C Draw axis, begin with scaling factors for the X & Y axis.
 C Stuff this into static memory.
       call axiscale(igwid,igheight,XMIN,XMAX,YMIN,YMAX,XSC,YSC,
      &              sca,Xadd,Yadd)
-      call linescale(igl,Xadd,XSC,igb,Yadd,YSC)
+      call linescale(iigl,Xadd,XSC,iigb,Yadd,YSC)
 
 C Pick up the data increment for the horizontal axis and then draw
 C the horizontal axis.
       LABELX=LABLSX(IL)
-      call horaxis(XMIN,XMAX,igl,igr,igb,Xadd,XSC,1,LABELX)
+      call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,XSC,1,LABELX)
 
 C Draw the vertical axis.
       call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,YSC,1,0,
