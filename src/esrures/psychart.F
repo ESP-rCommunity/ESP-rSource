@@ -890,11 +890,15 @@ C enthmaxy enthalpy y axis maximum
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot 
       integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 ipos,isize      ! for use with etlabel
       integer*8 iupdown,isym    ! passed to etplot
       integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       PATMOS=1013.25
@@ -918,9 +922,15 @@ C Store original text screen size
           call feedbox(menuchw,2,igfw,igfh)      
           call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         endif
-        call win3d(menuchw,15,15,5,5,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=15; iiw2=15; iiw3=5; iiw4=5; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        call win3d(menuchw,15,15,5,5,igl,igr,igt,igb,igw,igwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         igwid=igw
         igheight=igwh
       ENDIF

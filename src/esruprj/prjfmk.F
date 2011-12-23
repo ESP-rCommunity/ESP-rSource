@@ -2814,11 +2814,15 @@ C  ICOMP zone number
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
       integer iid1,iid2
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 ipltwd,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
       integer*8 iid1,iid2
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       IDTY=IDTYP
@@ -2838,9 +2842,15 @@ C Scan each days gains and find maximum flow.
 
 C Clear and setup plot area.
       CALL startbuffer()
-      CALL win3d(menuchw,10,10,8,3,igl,igr,igt,igb,igw,igwh)
-      igw=igr-igl
-      igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+      iiw1=10; iiw2=10; iiw3=8; iiw4=3; iimenu=menuchw
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &  iigl,iigr,iigt,iigb,iigw,iigwh)
+C      CALL win3d(menuchw,10,10,8,3,igl,igr,igt,igb,igw,igwh)
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
       igheight=igwh
 
 C Calculate plotting box locations.
@@ -4728,11 +4738,15 @@ C Descriptive label for a zone load or casual gain.
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
       integer iid1,iid2,iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 ipltwd,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to etplot
       integer*8 iupdown,isym    ! passed to etplot
       integer*8 iid1,iid2,iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       logical COLOK
@@ -4831,9 +4845,15 @@ C persons per m^2. For case of CMGS zero assume no people.
 
 C Clear and setup plot area.
       CALL startbuffer()
-      CALL win3d(menuchw,10,10,8,3,igl,igr,igt,igb,igw,igwh)
-      igw=igr-igl
-      igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+      iiw1=10; iiw2=10; iiw3=3; iiw4=3; iimenu=menuchw
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &  iigl,iigr,iigt,iigb,iigw,iigwh)
+C      CALL win3d(menuchw,10,10,8,3,igl,igr,igt,igb,igw,igwh)
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
       igheight=igwh
 
 C Calculate plotting box locations.

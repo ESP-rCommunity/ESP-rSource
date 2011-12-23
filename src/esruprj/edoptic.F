@@ -574,11 +574,15 @@ C ilabs is string arry for layer insert/delet selection.
       integer iside,isize,ifont     ! passed to viewtext
       integer iigr,iigr2,iigt4,iix1,iiy1,iix2,iiy2,iix3,iiy3
       integer iix4,iiy4,iix5,iiy5,iid1,iid2,iid3,iid4,iix,iiy
+      integer iigl,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iigr,iigr2,iigt4,iix1,iiy1,iix2,iiy2,iix3,iiy3
       integer*8 iix4,iiy4,iix5,iiy5,iid1,iid2,iid3,iid4,iix,iiy
+      integer*8 iigl,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C For help messages
@@ -652,9 +656,15 @@ C (re)draw optical properties.
         YMIN=0.
         YMAX=1.0
         CALL startbuffer()
-        call win3d(menuchw,12,30,5,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=12; iiw2=30; iiw3=5; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        call win3d(menuchw,12,30,5,3,igl,igr,igt,igb,igw,igwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         igwid=igw
         igheight=igwh
         call axiscale(igwid,igheight,XMIN,XMAX,YMIN,YMAX,xsc,ysc,sca,

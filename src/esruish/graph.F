@@ -57,8 +57,12 @@ C Parameter
       
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C For help messages
@@ -103,9 +107,15 @@ C Clear the viewing box, draw its border and return the offsets
 C that define it. The win3d parameters match those in facdrw
 C and sitpln.
       call startbuffer()
-      call win3d(menuchw,7,4,4,3,igl,igr,igt,igb,igw,igwh)
-      igw=igr-igl
-      igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+      iiw1=7; iiw2=4; iiw3=4; iiw4=3; iimenu=menuchw
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &  iigl,iigr,iigt,iigb,iigw,iigwh)
+C      call win3d(menuchw,7,4,4,3,igl,igr,igt,igb,igw,igwh)
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
       igwid=igw
       igheight=igwh
 
@@ -220,18 +230,26 @@ C Draws the elevation of the target surface.
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer ipos,iupdown,isym     ! passed to etplot
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 ipos,iupdown,isym     ! passed to etplot
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
 
 C Display header information. Calculate graphic boundaries.
-      call win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
-      igw=igr-igl
-      igwh=igb-igt
+      iiw1=7; iiw2=4; iiw3=3; iiw4=3; iimenu=menuchw
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &  iigl,iigr,iigt,iigb,iigw,iigwh)
+C      call win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
       icn=izstocn(icomp,isur)
 
       write(etext,1)month(mon),ihour,isur,ssname(icn)
@@ -355,10 +373,14 @@ C Draws a Mercator sun path diagram.
       integer igwid,igheight  ! passed to axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer ipos,iupdown,isym    ! passed to etplot
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! passed to axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 ipos,iupdown,isym    ! passed to etplot
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
       real xsc,ysc,sca,Xadd,Yadd  ! returned from axiscale
 
@@ -366,12 +388,16 @@ C Draws a Mercator sun path diagram.
      &           'Sep','Oct','Nov','Dec'/
 
 C Clear the viewing box, draw its border and return the offsets
-C that define it. On 64 bit machines igw and igwh can be incorrectly
-C returned so re-calculate. Call to axiscale works better if
+C that define it. Call to axiscale works better if
 C local integer variables are used.
-      call win3d(menuchw,8,8,4,3,igl,igr,igt,igb,igw,igwh)
-      igw=igr-igl
-      igwh=igb-igt
+C Setup and pass in parameters to win3d.
+      iiw1=8; iiw2=8; iiw3=4; iiw4=3; iimenu=menuchw
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &  iigl,iigr,iigt,iigb,iigw,iigwh)
+C      call win3d(menuchw,8,8,4,3,igl,igr,igt,igb,igw,igwh)
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
       igwid=igw
       igheight=igwh
 

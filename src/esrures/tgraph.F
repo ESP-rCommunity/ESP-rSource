@@ -700,8 +700,12 @@ C To extend logic to maximize plotting area.
       character graftitle*64,grlbl*24,t64*64
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C If GTK library then there are additional options << work in progress >>.
@@ -766,25 +770,51 @@ C Set standard fornt width so that space around graph is correct.
         call winfnt(imfs)
         if(onright.eq.0)then
           if(onleft.eq.0)then
-            call win3d(menuchw,3,16,5,3,igl,igr,igt,igb,igw,igwh)
+
+C Setup and pass in parameters to win3d.
+            iiw1=3; iiw2=16; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            call win3d(menuchw,3,16,5,3,igl,igr,igt,igb,igw,igwh)
           else
-            call win3d(menuchw,9,16,5,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=9; iiw2=16; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            call win3d(menuchw,9,16,5,3,igl,igr,igt,igb,igw,igwh)
           endif
         elseif(onright.eq.1)then
           if(onleft.eq.0)then
-            call win3d(menuchw,3,26,5,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=3; iiw2=26; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            call win3d(menuchw,3,26,5,3,igl,igr,igt,igb,igw,igwh)
           else
-            call win3d(menuchw,9,26,5,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=9; iiw2=26; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            call win3d(menuchw,9,26,5,3,igl,igr,igt,igb,igw,igwh)
           endif
         elseif(onright.eq.2)then
           if(onleft.eq.0)then
-            call win3d(menuchw,3,31,5,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=3; iiw2=31; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            call win3d(menuchw,3,31,5,3,igl,igr,igt,igb,igw,igwh)
           else
-            call win3d(menuchw,9,31,5,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=9; iiw2=31; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            call win3d(menuchw,9,31,5,3,igl,igr,igt,igb,igw,igwh)
           endif
         endif
-        igw=igr-igl
-        igwh=igb-igt
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         call startbuffer()
       ENDIF
 

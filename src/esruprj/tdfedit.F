@@ -72,8 +72,12 @@ C Logical flags for file openings.
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
       integer numberofzones ! to pass to updwire rather than ncomp
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 numberofzones
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
       integer IRE  ! for radio button
       integer MITEM,INO ! max items and current menu item
@@ -130,9 +134,15 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
           call winclr
           CALL feedbox(menuchw,2,igfw,igfh)
           CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-          CALL win3d(menuchw,9,12,7,3,igl,igr,igt,igb,igw,igwh)
-          igw=igr-igl
-          igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+          iiw1=9; iiw2=12; iiw3=7; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+C          CALL win3d(menuchw,9,12,7,3,igl,igr,igt,igb,igw,igwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
           call opencpw
           call opensetup
         elseif(iglib.eq.2)then
@@ -458,9 +468,15 @@ C << for some reason efdelet does not actually remove the file?? >>
           call winclr
           CALL feedbox(menuchw,2,igfw,igfh)
           CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-          CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
-          igw=igr-igl
-          igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+          iiw1=4; iiw2=1; iiw3=1; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+C          CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
           if(iglib.eq.1)then
             call opencpw
             call opensetup

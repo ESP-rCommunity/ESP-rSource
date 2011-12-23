@@ -43,8 +43,12 @@ C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C For help messages
@@ -166,44 +170,94 @@ C Take into account which axis needs to be drawn as in esrures/tgraph.F.
           if(IFS.ne.IMFS)call winfnt(IMFS)
           if(onright.eq.3)then
             if(onleft.eq.2)then
-              CALL win3d(menuchw,10,20,6,3,igl,igr,igt,igb,igw,igwh)
+
+C Setup and pass in parameters to win3d.
+              iiw1=10; iiw2=20; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,10,20,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.1)then
-              CALL win3d(menuchw,6,20,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=6; iiw2=20; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,6,20,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.0)then
-              CALL win3d(menuchw,3,20,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=3; iiw2=20; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,3,20,6,3,igl,igr,igt,igb,igw,igwh)
             endif
-            igw=igr-igl
-            igwh=igb-igt
+            igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+            igw=int(iigw); igwh=int(iigwh)
           elseif(onright.eq.2)then
             if(onleft.eq.2)then
-              CALL win3d(menuchw,10,16,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=10; iiw2=16; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,10,16,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.1)then
-              CALL win3d(menuchw,6,16,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=6; iiw2=16; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,6,16,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.0)then
-              CALL win3d(menuchw,3,16,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=3; iiw2=16; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,3,16,6,3,igl,igr,igt,igb,igw,igwh)
             endif
-            igw=igr-igl
-            igwh=igb-igt
+            igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+            igw=int(iigw); igwh=int(iigwh)
           elseif(onright.eq.1)then
             if(onleft.eq.2)then
-              CALL win3d(menuchw,10,12,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=10; iiw2=12; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,10,12,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.1)then
-              CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=6; iiw2=12; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.0)then
-              CALL win3d(menuchw,3,12,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=3; iiw2=12; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,3,12,6,3,igl,igr,igt,igb,igw,igwh)
             endif
-            igw=igr-igl
-            igwh=igb-igt
+            igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+            igw=int(iigw); igwh=int(iigwh)
           elseif(onright.eq.0)then
             if(onleft.eq.2)then
-              CALL win3d(menuchw,10,6,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=10; iiw2=6; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,10,6,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.1)then
-              CALL win3d(menuchw,6,6,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=6; iiw2=6; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,6,6,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.0)then
-              CALL win3d(menuchw,3,6,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=3; iiw2=6; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,3,6,6,3,igl,igr,igt,igb,igw,igwh)
             endif
-            igw=igr-igl
-            igwh=igb-igt
+            igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+            igw=int(iigw); igwh=int(iigwh)
           endif
           if(IFS.ne.IMFS)call winfnt(IFS)
           call startbuffer()
@@ -310,44 +364,92 @@ C Take into account which axis needed to be drawn as in esrures/tgraph.F
         if(IFS.ne.IMFS)call winfnt(IMFS)
         if(onright.eq.3)then
           if(onleft.eq.2)then
-            CALL win3d(menuchw,10,20,6,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=10; iiw2=20; iiw3=6; iiw4=3; iimenu=menuchw
+            iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,10,20,6,3,igl,igr,igt,igb,igw,igwh)
           elseif(onleft.eq.1)then
-            CALL win3d(menuchw,6,20,6,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=6; iiw2=20; iiw3=6; iiw4=3; iimenu=menuchw
+            iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,6,20,6,3,igl,igr,igt,igb,igw,igwh)
           elseif(onleft.eq.0)then
-            CALL win3d(menuchw,3,20,6,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=3; iiw2=20; iiw3=6; iiw4=3; iimenu=menuchw
+            iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,3,20,6,3,igl,igr,igt,igb,igw,igwh)
           endif
-          igw=igr-igl
-          igwh=igb-igt
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
         elseif(onright.eq.2)then
           if(onleft.eq.2)then
-            CALL win3d(menuchw,10,16,6,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=10; iiw2=16; iiw3=6; iiw4=3; iimenu=menuchw
+            iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,10,16,6,3,igl,igr,igt,igb,igw,igwh)
           elseif(onleft.eq.1)then
-            CALL win3d(menuchw,6,16,6,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=6; iiw2=16; iiw3=6; iiw4=3; iimenu=menuchw
+            iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,6,16,6,3,igl,igr,igt,igb,igw,igwh)
           elseif(onleft.eq.0)then
-            CALL win3d(menuchw,3,16,6,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=3; iiw2=16; iiw3=6; iiw4=3; iimenu=menuchw
+            iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,3,16,6,3,igl,igr,igt,igb,igw,igwh)
           endif
-          igw=igr-igl
-          igwh=igb-igt
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
         elseif(onright.eq.1)then
           if(onleft.eq.2)then
-            CALL win3d(menuchw,10,12,6,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=10; iiw2=12; iiw3=6; iiw4=3; iimenu=menuchw
+            iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,10,12,6,3,igl,igr,igt,igb,igw,igwh)
           elseif(onleft.eq.1)then
-            CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=6; iiw2=12; iiw3=6; iiw4=3; iimenu=menuchw
+            iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
           elseif(onleft.eq.0)then
-            CALL win3d(menuchw,3,12,6,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=3; iiw2=12; iiw3=6; iiw4=3; iimenu=menuchw
+            iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,3,12,6,3,igl,igr,igt,igb,igw,igwh)
           endif
-          igw=igr-igl
-          igwh=igb-igt
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
         elseif(onright.eq.0)then
           if(onleft.eq.2)then
-            CALL win3d(menuchw,10,6,6,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=10; iiw2=6; iiw3=6; iiw4=3; iimenu=menuchw
+            iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,10,6,6,3,igl,igr,igt,igb,igw,igwh)
           elseif(onleft.eq.1)then
-            CALL win3d(menuchw,6,6,6,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=6; iiw2=6; iiw3=6; iiw4=3; iimenu=menuchw
+            iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,6,6,6,3,igl,igr,igt,igb,igw,igwh)
           elseif(onleft.eq.0)then
-            CALL win3d(menuchw,3,6,6,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=3; iiw2=6; iiw3=6; iiw4=3; iimenu=menuchw
+            iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,3,6,6,3,igl,igr,igt,igb,igw,igwh)
           endif
-          igw=igr-igl
-          igwh=igb-igt
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
         endif
         if(IFS.ne.IMFS)call winfnt(IFS)
         call startbuffer()

@@ -51,7 +51,7 @@ C geometry.h provides commons G0/G1/G2/G4/G5/G7/prec17/precz/c20/GS5/GS6.
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
-      integer IZSTOC
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C Where ESP-r was installed (as recorded when it was compiled).
@@ -114,11 +114,15 @@ C an object has been saved the set justentered to false.
       integer iixx1,iiyy1,iid1,iid2,iid3,iid4
       integer iixx2,iiyy2,iixx3,iiyy3,iix,iiy
       integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 iixs1,iiys1,iixs2,iiys2,iixtn1,iiytn1,iixtn2,iiytn2
       integer*8 iixx1,iiyy1,iid1,iid2,iid3,iid4
       integer*8 iixx2,iiyy2,iixx3,iiyy3,iix,iiy
       integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C For help messages
@@ -248,9 +252,15 @@ C with entering points.  Otherwise clear ZN and ZD.
 
 C Give a bit more space in graphic feedback area for the bitmap.
       CALL startbuffer()
-      CALL win3d(menuchw,1,3,1,1,igl,igr,igt,igb,igw,igwh)
-      igw=igr-igl
-      igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+      iiw1=1; iiw2=3; iiw3=1; iiw4=1; iimenu=menuchw
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &  iigl,iigr,iigt,iigb,iigw,iigwh)
+C      CALL win3d(menuchw,1,3,1,1,igl,igr,igt,igb,igw,igwh)
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
 
   142 continue
     3 INO=-4

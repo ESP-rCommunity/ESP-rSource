@@ -416,6 +416,14 @@ C ITM is main item editing menu.
       integer onright ! number of right axis
       integer nitms,INO  ! max items and current menu item
 
+#ifdef OSI
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+#else
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+#endif
+
 C For help messages
       character helpinsub*24,helptopic*24 ! strings for help
       integer nbhelp     ! number of help lines found
@@ -539,9 +547,15 @@ C If use already aksed for graph and date has change draw again.
           onleft=1
           onright=0
           if(IFS.ne.IMFS)call winfnt(IMFS)
-          CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
-          igw=igr-igl
-          igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+          iiw1=6; iiw2=12; iiw3=6; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+C          CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
           if(IFS.ne.IMFS)call winfnt(IFS)
           call startbuffer()
 
@@ -1345,9 +1359,15 @@ C axis are required and then directly call CLMDRW
           onleft=1
           onright=0
           if(IFS.ne.IMFS)call winfnt(IMFS)
-          CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
-          igw=igr-igl
-          igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+          iiw1=6; iiw2=12; iiw3=6; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+C          CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
           if(IFS.ne.IMFS)call winfnt(IFS)
           call startbuffer()
 

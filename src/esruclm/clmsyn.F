@@ -241,6 +241,14 @@ C  terms of a dimensionless number - the CSI.
       DIMENSION CSIM(30),IVC(30)
       character CSIM*45
 
+#ifdef OSI
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+#else
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+#endif
+
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 
 C For help messages
@@ -305,9 +313,15 @@ C displaying the following data.
           CALL feedbox(menuchw,2,igfw,igfh)
           CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         endif
-        CALL win3d(menuchw,10,20,5,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=10; iiw2=20; iiw3=5; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        CALL win3d(menuchw,10,20,5,3,igl,igr,igt,igb,igw,igwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         call startbuffer()
         call usrmsg(' ',' ','-')
       ENDIF
