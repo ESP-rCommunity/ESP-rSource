@@ -1027,9 +1027,9 @@ C Draw the Lower and Left extents of the grid and labels.
       ENDIF
 
       IF(IVIEW.EQ.1)THEN      
-        CALL vrtaxis(Ymin,Ymax,igl,igb,igt,yadd,YSC,1,0,'Y')
+        CALL vrtaxis(Ymin,Ymax,iigl,iigb,iigt,yadd,YSC,1,0,'Y')
       ELSE
-        CALL vrtaxis(Ymin,Ymax,igl,igb,igt,yadd,YSC,1,0,'Z')
+        CALL vrtaxis(Ymin,Ymax,iigl,iigb,iigt,yadd,YSC,1,0,'Z')
       ENDIF
 
 C Store the scaling parameters used in drawing the axes.

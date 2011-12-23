@@ -1464,12 +1464,14 @@ C Flags identifying if results libries are available. =0 no lib, =1 lib exists.
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
+      integer IGX  ! see common graf2
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym,iid1,iid2    ! passed to etplot
       integer iicol
       integer iigl,iigr,iigt,iigb,iigw,iigwh
       integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
+      integer*8 IGX  ! see common graf2
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym,iid1,iid2    ! passed to etplot
       integer*8 iicol

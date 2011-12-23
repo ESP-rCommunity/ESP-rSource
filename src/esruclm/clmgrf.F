@@ -945,9 +945,11 @@ C Local variables to pass to edline and axiscale.
 #ifdef OSI
       integer iigr,iigr35,iigr50,iigr85,iigr100,iigr135,iigt40
       integer iicol
+      integer iiw1,iiw2,iiw3,iiw4
 #else
       integer*8 iigr,iigr35,iigr50,iigr85,iigr100,iigr135,iigt40
       integer*8 iicol
+      integer*8 iiw1,iiw2,iiw3,iiw4
 #endif
 
 C Check if can draw in colour.
@@ -997,8 +999,9 @@ C are two axis on the left put the label at the top. Otherwise put
 C Label at the side vertically. Use pixel position 50 if there are
 C two axis on left, otherwise use igl.
           if(onleft.eq.2)then
-            call vrtaxis(YMIN(I),YMAX(I),50,igb,igt,Yadd(I),YSC(I),
-     &                 1,0,':')
+            iiw1=50
+            call vrtaxis(YMIN(I),YMAX(I),iiw1,iigb,iigt,Yadd(I),
+     &        YSC(I),1,0,':')
             if(IFS.ne.IMFS)call winfnt(IFS)
             if(colok)then
               iicol=I-1 
@@ -1015,8 +1018,8 @@ C two axis on left, otherwise use igl.
             endif
             call forceflush()
           elseif(onleft.eq.1)then
-            call vrtaxis(YMIN(I),YMAX(I),igl,igb,igt,Yadd(I),YSC(I),
-     &                 1,0,'Temp degC')
+            call vrtaxis(YMIN(I),YMAX(I),iigl,iigb,iigt,Yadd(I),
+     &        YSC(I),1,0,'Temp degC')
             if(IFS.ne.IMFS)call winfnt(IFS)
             if(colok)then
               iicol=I-1 
@@ -1035,8 +1038,8 @@ C two axis on left, otherwise use igl.
         elseif(I.eq.3)then
 
 C Solar radiation axis, include dashed line and symbol.
-          call vrtaxis(YMIN(I),YMAX(I),igr,igb,igt,Yadd(I),YSC(I),
-     &                 1,1,':')
+          call vrtaxis(YMIN(I),YMAX(I),iigr,iigb,iigt,Yadd(I),
+     &      YSC(I),1,1,':')
           if(IFS.ne.IMFS)call winfnt(IFS)
           if(colok)then
             iicol=I-1 
@@ -1044,7 +1047,8 @@ C Solar radiation axis, include dashed line and symbol.
           endif
           call wstxpt(igr,igt-22,'S.Rad')
           call wstxpt(igr,igt-10,'W/m^2')
-          call edash(igr,igt-40,igr+35,igt-40,5)
+          iiw1=igt-40; iis2=igr+35; iiw3=igt-40;iiw4=5
+          call edash(iigr,iiw1,iiw2,iiw3,iiw4)
           call esymbol(igr+22,igt-40,9,0)
           if(IFS.ne.IMFS)call winfnt(IMFS)
           if(colok)then
@@ -1057,8 +1061,8 @@ C Solar radiation axis, include dashed line and symbol.
 C Wind speed axis, include chained line and symbol. If two axes on
 C left put label at top, otherwise put along the left.
           if(onleft.eq.2)then
-            call vrtaxis(YMIN(I),YMAX(I),igl,igb,igt,Yadd(I),YSC(I),
-     &                 1,0,':')
+            call vrtaxis(YMIN(I),YMAX(I),iigl,iigb,iigt,Yadd(I),
+     &        YSC(I),1,0,':')
             if(IFS.ne.IMFS)call winfnt(IFS)
             if(colok)then
               iicol=I-1 
@@ -1075,8 +1079,8 @@ C left put label at top, otherwise put along the left.
             endif
             call forceflush()
           elseif(onleft.eq.1)then
-            call vrtaxis(YMIN(I),YMAX(I),igl,igb,igt,Yadd(I),YSC(I),
-     &                 1,0,'Wind speed m/s')
+            call vrtaxis(YMIN(I),YMAX(I),iigl,iigb,iigt,Yadd(I),
+     &        YSC(I),1,0,'Wind speed m/s')
             if(IFS.ne.IMFS)call winfnt(IFS)
             if(colok)then
               iicol=I-1 
@@ -1096,8 +1100,8 @@ C left put label at top, otherwise put along the left.
 
 C Wind direction axis, include chained line and symbol.
           if(onright.eq.1)then
-            call vrtaxis(YMIN(I),YMAX(I),igr,igb,igt,Yadd(I),YSC(I),
-     &                 1,1,':')
+            call vrtaxis(YMIN(I),YMAX(I),iigr,iigb,iigt,Yadd(I),
+     &        YSC(I),1,1,':')
             if(IFS.ne.IMFS)call winfnt(IFS)
             if(colok)then
               iicol=I-1 
@@ -1117,8 +1121,8 @@ C Wind direction axis, include chained line and symbol.
             if(ipick(6).eq.1)then
 
 C If the other is RH then use igr for this one.
-              call vrtaxis(YMIN(I),YMAX(I),igr,igb,igt,Yadd(I),YSC(I),
-     &                 1,1,':')
+              call vrtaxis(YMIN(I),YMAX(I),iigr,iigb,iigt,Yadd(I),
+     &          YSC(I),1,1,':')
               if(IFS.ne.IMFS)call winfnt(IFS)
               if(colok)then
                 iicol=I-1 
@@ -1137,8 +1141,9 @@ C If the other is RH then use igr for this one.
             elseif(ipick(1).eq.1.or.ipick(3).eq.1)then
 
 C If the other is solar then use igr_50 for this one.
-              call vrtaxis(YMIN(I),YMAX(I),igr+50,igb,igt,Yadd(I),
-     &                 YSC(I),1,1,':')
+              iiw1=iigr+50
+              call vrtaxis(YMIN(I),YMAX(I),iiw1,iigb,iigt,Yadd(I),
+     &          YSC(I),1,1,':')
               if(IFS.ne.IMFS)call winfnt(IFS)
               if(colok)then
                 iicol=I-1 
@@ -1156,8 +1161,9 @@ C If the other is solar then use igr_50 for this one.
               call forceflush()
             endif
           elseif(onright.eq.3)then
-            call vrtaxis(YMIN(I),YMAX(I),igr+50,igb,igt,Yadd(I),YSC(I),
-     &                 1,1,':')
+            iiw1=iigr+50
+            call vrtaxis(YMIN(I),YMAX(I),iiw1,iigb,iigt,Yadd(I),
+     &        YSC(I),1,1,':')
             if(IFS.ne.IMFS)call winfnt(IFS)
             if(colok)then
               iicol=I-1
@@ -1180,8 +1186,9 @@ C RH axis, include dotted line and symbol. If there are 3 axis on the
 C right then place far to right (+100), if there is one on the right
 C use igr. If there are two axis then set right-most position.
           if(onright.eq.3)then 
-            call vrtaxis(YMIN(I),YMAX(I),igr+100,igb,igt,Yadd(I),YSC(I),
-     &                 1,1,':')
+            iiw1=iigr+100
+            call vrtaxis(YMIN(I),YMAX(I),iiw1,iigb,iigt,Yadd(I),
+     &        YSC(I),1,1,':')
             if(IFS.ne.IMFS)call winfnt(IFS)
             if(colok)then
               iicol=I-1 
@@ -1202,8 +1209,9 @@ C use igr. If there are two axis then set right-most position.
           elseif(onright.eq.2)then
 
 C If solar or wind direction is the other then use the +50 slot.
-            call vrtaxis(YMIN(I),YMAX(I),igr+50,igb,igt,Yadd(I),
-     &               YSC(I),1,1,':')
+            iiw1=iigr+50
+            call vrtaxis(YMIN(I),YMAX(I),iiw1,iigb,iigt,Yadd(I),
+     &        YSC(I),1,1,':')
             if(IFS.ne.IMFS)call winfnt(IFS)
             if(colok)then
               iicol=I-1 
@@ -1222,8 +1230,8 @@ C If solar or wind direction is the other then use the +50 slot.
             endif
             call forceflush()
           elseif(onright.eq.1)then
-            call vrtaxis(YMIN(I),YMAX(I),igr,igb,igt,Yadd(I),YSC(I),
-     &                 1,1,'RH %')
+            call vrtaxis(YMIN(I),YMAX(I),iigr,iigb,iigt,Yadd(I),
+     &        YSC(I),1,1,'RH %')
             if(colok)then
               iicol=I-1 
               call winscl('z',iicol) ! symbol using line colour
@@ -1309,7 +1317,7 @@ C Stuff this into static memory.
 
 
 C Draw the vertical axis.
-      call vrtaxis(CMIN,CMAX,igl,igb,igt,Yaddd,YSC,0,0,CVLAB)
+      call vrtaxis(CMIN,CMAX,iigl,iigb,iigt,Yaddd,YSC,0,0,CVLAB)
 
 C If the previous data is to be drawn. Loop.
       if(icl.ne.0)then

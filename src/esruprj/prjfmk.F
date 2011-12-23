@@ -2866,7 +2866,8 @@ C Calculate plotting box locations.
 C Scale and draw right hand (m^3/s) axis first.
       CALL axiscale(ipltwd,igheight,plxmin,plxmax,YMIN,YMAXF,
      &                                         xsc,ysc,sca,xadd,yadd)
-      call vrtaxis(YMIN,YMAXF,igr,igb,igt,yadd,ysc,0,1,'Flow (m^3/s)')
+      call vrtaxis(YMIN,YMAXF,iigr,iigb,iigt,yadd,ysc,0,1,
+     &  'Flow (m^3/s)')
 
 C Re-set scale for gain (W) axis.
       CALL axiscale(ipltwd,igheight,plxmin,plxmax,YMIN,YMAX,
@@ -2874,7 +2875,8 @@ C Re-set scale for gain (W) axis.
 
 C Scale and draw for first day type requested
       CALL horaxis(plxmin,plxmax,igl,igr,igb,xadd,xsc,0,'Time (hrs)')
-      call vrtaxis(YMIN,YMAX,igl,igb,igt,yadd,ysc,0,0,'Flow (ac/hr)')
+      call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,yadd,ysc,0,0,
+     &  'Flow (ac/hr)')
       call linescale(igl,xadd,xsc,igb,yadd,ysc)
       iupdown=0
       isym=0
@@ -4872,8 +4874,9 @@ C Calculate plotting box locations.
 
 C Scale and draw right hand (W/m^2) axis first.
       CALL axiscale(ipltwd,igheight,plxmin,plxmax,YMIN,YMAXF,
-     &                                         xsc,ysc,sca,xadd,yadd)
-      call vrtaxis(YMIN,YMAXF,igr,igb,igt,yadd,ysc,0,1,'Gain (W/m^2)')
+     &  xsc,ysc,sca,xadd,yadd)
+      call vrtaxis(YMIN,YMAXF,iigr,iigb,iigt,yadd,ysc,0,1,
+     &  'Gain (W/m^2)')
 
 C Re-set scale for gain (W) axis.
       CALL axiscale(ipltwd,igheight,plxmin,plxmax,YMIN,YMAX,
@@ -4881,7 +4884,7 @@ C Re-set scale for gain (W) axis.
 
 C Scale and draw first day type requested
       CALL horaxis(plxmin,plxmax,igl,igr,igb,xadd,xsc,0,'Time (hrs)')
-      call vrtaxis(YMIN,YMAX,igl,igb,igt,yadd,ysc,0,0,'Gain (W)')
+      call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,yadd,ysc,0,0,'Gain (W)')
       call linescale(igl,xadd,xsc,igb,yadd,ysc)
       iupdown=0
       isym=0

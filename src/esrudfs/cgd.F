@@ -467,11 +467,15 @@ C Store the scaling parameters used in drawing the axes.
       CALL linescale(igl,Xadd,sca,igb,Yadd,sca)
       call horaxis(Xmin,Xmax,igl,igr,igb+10,Xadd,sca,0,xax)
       if((Ymax-Ymin).lt.2.0)then
-        call vrtaxis(Ymin,Ymax,igl-10,igb,igt,Yadd,sca,0,0,yax)
-        call vrtaxis(Ymin,Ymax,igr+10,igb,igt,Yadd,sca,0,1,yax)
+        iiw1=iigl-10
+        call vrtaxis(Ymin,Ymax,iiw1,iigb,iigt,Yadd,sca,0,0,yax)
+        iiw1=iigl+10
+        call vrtaxis(Ymin,Ymax,iiw1,iigb,iigt,Yadd,sca,0,1,yax)
       else
-        call vrtaxis(Ymin,Ymax,igl-10,igb,igt,Yadd,sca,1,0,yax)
-        call vrtaxis(Ymin,Ymax,igr+10,igb,igt,Yadd,sca,1,1,yax)
+        iiw1=iigl-10
+        call vrtaxis(Ymin,Ymax,iiw1,iigb,iigt,Yadd,sca,1,0,yax)
+        iiw1=iigl+10
+        call vrtaxis(Ymin,Ymax,iiw1,iigb,iigt,Yadd,sca,1,1,yax)
       endif
       iside=1
       isize=0

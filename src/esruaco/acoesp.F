@@ -1125,7 +1125,7 @@ C Calculate plotting box locations.
 
 C Scale and draw monitoring plot.
         Call horaxis(plxmin,plxmax,igl,igr,igb,xadd,XSC,0,'Frequ.[Hz]')
-        call vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,'RT  s')
+        call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,'RT  s')
 
 C Print title. IPS is used to keep track of number of title lines.
         IPS=1

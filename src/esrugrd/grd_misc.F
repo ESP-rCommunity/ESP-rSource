@@ -289,7 +289,7 @@ C Draw a scale horizontal axis, move to beginning point.
       CALL horaxis(XMIN,XMAX,igl,igr,igb,Xadd,sca,0,'X axis ->')
 
 C Draw a scale vertical axis.
-      CALL vrtaxis(ZMIN,ZMAX,igl,igb,igt,Zadd,sca,0,0,'^ Z axis')
+      CALL vrtaxis(ZMIN,ZMAX,iigl,iigb,iigt,Zadd,sca,0,0,'^ Z axis')
 
 
 C DRAW ZONE FACE.
