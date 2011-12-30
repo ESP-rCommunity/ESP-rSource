@@ -251,7 +251,7 @@ C Declarations for variables passed in calling statement.
 C---------------------------------------------------------------------------------
       INTEGER IPWC
 
-      integer fScale_Factor
+      real fScale_Factor
       character*72 cFile_Name
       real fGet_nonHVACld           ! Function reference
       real fLoad 
@@ -262,6 +262,7 @@ C.....Get .fcl filename and scaling factor
 C.....Recover loads
 
       fLoad = fGet_nonHVACld ( cFile_Name ) * fScale_Factor
+
       PPOWOC(IPWC) = -1.* fLoad
       QPOWOC(IPWC) = 0.
 
