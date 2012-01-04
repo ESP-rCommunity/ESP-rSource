@@ -3611,6 +3611,8 @@ C then it represents the zone which is currently being edited.
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/rpath/path
       common/appw/iappw,iappx,iappy

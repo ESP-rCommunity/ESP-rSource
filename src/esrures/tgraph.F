@@ -210,13 +210,17 @@ C act='p' iget parameters already set.
       integer threerighta ! nearest if miscel plus two axis on right
       integer threerightb ! farthest if miscel plus two axis on right
 #ifdef OSI
+      integer igx  ! see array above
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym,iid1,iid2   ! passed to etplot
       integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
+      integer*8 igx  ! see array above
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iupdown,isym,iid1,iid2   ! passed to etplot
       integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
       logical kwatts,colok
@@ -227,6 +231,9 @@ C Define prompt
 C Check if can draw in colour.
       colok=.false.
       if(nzonec.ge.NCOMP)colok=.true.
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
       
 C If output to file alter the edisp unit number.
       itru = icout
@@ -461,10 +468,10 @@ C draw vertical axis.
           call axiscale(igwid,igheight,TSTART-1.0,TFINSH,YMIN(I),
      &                  YMAX(I),TSC,YSC(I),sca,Xadd,Yadd(I))
           if (ILR(I).eq.0) then
-            call vrtaxis(YMIN(I),YMAX(I),igx(I),igb,igt,Yadd(I),
+            call vrtaxis(YMIN(I),YMAX(I),igx(I),iigb,iigt,Yadd(I),
      &                             YSC(I),0,ilr(I),ALABEL(I))
           else
-            call vrtaxis(YMIN(I),YMAX(I),igx(I),igb,igt,Yadd(I),
+            call vrtaxis(YMIN(I),YMAX(I),igx(I),iigb,iigt,Yadd(I),
      &                             YSC(I),0,ilr(I),'  ')
             iid1=igx(I); iid2=igt-5;
             call wstxpt(iid1,iid2,ALABEL(I))
@@ -480,23 +487,23 @@ C default.
       if(horaxisdiv.eq.0.or.horaxisdiv.eq.1)then
         overalldays=IODF-IODS
         if(overalldays.le.60)then
-          call horaxis(TSTART-1.0,TFINSH,igl,igr,igb,Xadd,TSC,1,
+          call horaxis(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
      &      'Time Hrs')
         elseif(overalldays.gt.60.and.overalldays.le.120)then
-          call horaxishdw(TSTART-1.0,TFINSH,igl,igr,igb,Xadd,TSC,1,
+          call horaxishdw(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
      &      2,24,iods,'Time (days)')
         else
-          call horaxishdw(TSTART-1.0,TFINSH,igl,igr,igb,Xadd,TSC,1,
+          call horaxishdw(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
      &      3,168,iods,'Time (weeks)')
         endif
       elseif(horaxisdiv.eq.2)then
-        call horaxis(TSTART-1.0,TFINSH,igl,igr,igb,Xadd,TSC,1,
+        call horaxis(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
      &    'Time Hrs')
       elseif(horaxisdiv.eq.3)then
-        call horaxishdw(TSTART-1.0,TFINSH,igl,igr,igb,Xadd,TSC,1,
+        call horaxishdw(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
      &    2,24,iods,'Time (days)')
       elseif(horaxisdiv.eq.4)then
-        call horaxishdw(TSTART-1.0,TFINSH,igl,igr,igb,Xadd,TSC,1,
+        call horaxishdw(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
      &    3,168,iods,'Time (weeks)')
       endif
 C Recover and plot data.
@@ -508,7 +515,7 @@ C Add values in VAL2 to there correct bins. Loop through selected zones.
 
 C Reset scaling factor for appropriate axis.
           Iax=IGETNO(IX,8)
-          call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
+          call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))
 
 C Loop through a day's worth of data for the current metric (IX) stepping 
 C at defined output interval.
@@ -628,7 +635,7 @@ C If IMFS is > zero then use IMFS-1 for line label.
       endif
       do 200 I=1,NGET
         Iax=IGETNO(I,8)
-        call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
+        call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))
         t20=GLABEL(I)
         if(colok)then
           if(IGETNO(I,2).gt.0)then
@@ -700,8 +707,12 @@ C To extend logic to maximize plotting area.
       character graftitle*64,grlbl*24,t64*64
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C If GTK library then there are additional options << work in progress >>.
@@ -766,25 +777,51 @@ C Set standard fornt width so that space around graph is correct.
         call winfnt(imfs)
         if(onright.eq.0)then
           if(onleft.eq.0)then
-            call win3d(menuchw,3,16,5,3,igl,igr,igt,igb,igw,igwh)
+
+C Setup and pass in parameters to win3d.
+            iiw1=3; iiw2=16; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            call win3d(menuchw,3,16,5,3,igl,igr,igt,igb,igw,igwh)
           else
-            call win3d(menuchw,9,16,5,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=9; iiw2=16; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            call win3d(menuchw,9,16,5,3,igl,igr,igt,igb,igw,igwh)
           endif
         elseif(onright.eq.1)then
           if(onleft.eq.0)then
-            call win3d(menuchw,3,26,5,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=3; iiw2=26; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            call win3d(menuchw,3,26,5,3,igl,igr,igt,igb,igw,igwh)
           else
-            call win3d(menuchw,9,26,5,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=9; iiw2=26; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            call win3d(menuchw,9,26,5,3,igl,igr,igt,igb,igw,igwh)
           endif
         elseif(onright.eq.2)then
           if(onleft.eq.0)then
-            call win3d(menuchw,3,31,5,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=3; iiw2=31; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            call win3d(menuchw,3,31,5,3,igl,igr,igt,igb,igw,igwh)
           else
-            call win3d(menuchw,9,31,5,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=9; iiw2=31; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            call win3d(menuchw,9,31,5,3,igl,igr,igt,igb,igw,igwh)
           endif
         endif
-        igw=igr-igl
-        igwh=igb-igt
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         call startbuffer()
       ENDIF
 

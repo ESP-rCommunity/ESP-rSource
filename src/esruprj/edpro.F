@@ -314,6 +314,8 @@ C << as multiple casual gain types
       common/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
       DIMENSION ITEM(30)
       character NFLAG*1
@@ -326,6 +328,14 @@ C << as multiple casual gain types
       logical asciupdate   ! signal if user edits data
       logical unixok  ! to check for database path file separators
       integer MVERT,INO ! max items and current menu item
+
+#ifdef OSI
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+#else
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+#endif
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -479,9 +489,15 @@ C Help text for this menu.
 
 C If in graphic mode restore the standard win3d values for prj.
         if(MMOD.ge.8)then
-          CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
-          igw=igr-igl
-          igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+          iiw1=4; iiw2=1; iiw3=1; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+C          CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
         endif
         RETURN
       ELSEIF(INO.EQ.(MVERT-1))THEN
@@ -1109,10 +1125,14 @@ C based on the current common block data.
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       DIMENSION VAL1(MPRFDBPER),VAL2(MPRFDBPER)
@@ -1127,16 +1147,22 @@ C based on the current common block data.
 
 C Set up data ready for graph drawing.
       call startbuffer
-      call win3d(menuchw,10,10,4,4,igl,igr,igt,igb,igw,igwh)
-      igw=igr-igl
-      igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+      iiw1=10; iiw2=10; iiw3=4; iiw4=4; iimenu=menuchw
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &  iigl,iigr,iigt,iigb,iigw,iigwh)
+C      call win3d(menuchw,10,10,4,4,igl,igr,igt,igb,igw,igwh)
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
       igwid=igw
       igheight=igwh
       call axiscale(igwid,igheight,0.0,24.0,YMIN,YMAX,xsc,ysc,sca,
      &  Xadd,Yadd)
-      call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
-      call horaxis(0.,24.,igl,igr,igb,Xadd,xsc,1,'Time (hours)')
-      call vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,'Percent')
+      call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
+      call horaxis(0.,24.,iigl,iigr,iigb,Xadd,xsc,1,'Time (hours)')
+      call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,'Percent')
 
 C Pick up the data increment for the horizontal axis.
       call dinterval(0.,24.,DT,NDEC,1)

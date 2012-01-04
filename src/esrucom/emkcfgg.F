@@ -63,8 +63,8 @@ c      PARAMETER (MSTMC=20,MSGAL=40)
       INTEGER :: iuout,iuin
       common/pophelp/h(60)
       
-      COMMON/C1/NCOMP,NCON
       integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
 
@@ -74,8 +74,8 @@ c      PARAMETER (MSTMC=20,MSGAL=40)
       INTEGER :: INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
       INTEGER :: ifcfg
-      COMMON/C24/IZSTOCN(MCOM,MS)
       INTEGER :: IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
 C Plant network.
       COMMON/C23/IFPNF,LPNF
@@ -1024,8 +1024,8 @@ C if possible. If ICON=0 then generate a text heading.
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
-      COMMON/C24/IZSTOCN(MCOM,MS)
       INTEGER :: IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       CHARACTER CXSTR*78,SST1*12,ZST1*12,SST2*12,ZST2*12
 
@@ -1134,6 +1134,7 @@ C Parameters
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       logical dup,first

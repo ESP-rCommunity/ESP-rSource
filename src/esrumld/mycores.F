@@ -282,11 +282,13 @@ C ****************** mycograph *****************************
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
       integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 ipos,isize      ! for use with etlabel
       integer*8 iupdown,isym    ! passed to etplot
       integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
 C For help messages
@@ -299,6 +301,9 @@ C For help messages
 
 C Check in graphics mode.
       IF(MMOD.ne.8) return
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C If libraries and monitor support greyscale then reset forground
 C to 50% grey when drawing dots.
@@ -321,11 +326,11 @@ C Scale the axes of the chart (initial values)
       CALL startbuffer()
 
 C Draw the axes of the chart.
-      CALL horaxis(Xmin,Xmax,igl,igr,igb,xadd,XSC,0,'Db Temp C')
-      CALL vrtaxis(Ymin,Ymax,igl,igb,igt,yadd,YSC,0,0,'RH %')
+      CALL horaxis(Xmin,Xmax,iigl,iigr,iigb,xadd,XSC,0,'Db Temp C')
+      CALL vrtaxis(Ymin,Ymax,iigl,iigb,iigt,yadd,YSC,0,0,'RH %')
 
 C Store the scaling parameters used in drawing the axes
-      CALL linescale(igl,xadd,XSC,igb,yadd,YSC)
+      CALL linescale(iigl,xadd,XSC,iigb,yadd,YSC)
 
 C Label graph
       ipos=0

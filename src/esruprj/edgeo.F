@@ -68,6 +68,7 @@ C Passed parameters
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C Obstruction blocks via geometry.h.
@@ -2350,6 +2351,7 @@ C Get common blocks g0/g2/g4/g6/precz from geometry.h
       COMMON/FILEP/IFIL
 
       common/C21/IFCFG,cfgroot,LCFGF
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C iaplic(1) toggle for shading; iaplic(2) toggle for insolation.
@@ -2676,6 +2678,7 @@ C IVA array of selections is returned.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       DIMENSION STMP(MS),IVA(MS),IVALS(MS)
@@ -2877,6 +2880,7 @@ C Pased parameters
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -5227,6 +5231,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 #include "prj3dv.h"
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -6806,6 +6811,7 @@ C Make use of VERINFO to display the current vertex surface connections.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
@@ -8318,6 +8324,7 @@ C ZDESC (64 char) - zone notes from geometry.h.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       common/dllerr/dllsubr,dllmesg
@@ -9048,6 +9055,7 @@ C derived.h are derived areas and U values for zones and the model
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -9796,7 +9804,7 @@ C been made.
 #include "building.h"
 #include "geometry.h"
 
-C IZSTOCN - for each zone:surface a pointer to connection index.
+      integer IZSTOCN  ! for each zone:surface a pointer to connection index.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       logical MODGEO

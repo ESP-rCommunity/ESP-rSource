@@ -4121,6 +4121,7 @@ C GETZONENAMES calls the c function putzonename to fill the C zonenames variable
 C Get precz common block from geometry.h
 #include "geometry.h"
 
+      integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
       character t12*12

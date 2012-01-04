@@ -70,12 +70,12 @@ C ********************************************************************
       COMMON/FILEP/IFIL
       integer ifil
 
-      COMMON/C24/IZSTOCN(MCOM,MS) !array which holds the connection index
-      integer izstocn
+      integer IZSTOCN !array which holds the connection index
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       integer ne,nairg,ipairg
       real rairg
+      COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
 
       integer IER,IS,icomp,icn1,ncfccount,igap,ie
       integer nmaxtypes,ntypes,icfctp,isame,iss,ncfctypes,i,icount
@@ -932,14 +932,14 @@ C ********************************************************************
 #include "geometry.h"
 #include "espriou.h"
 #include "CFC_common.h"
-      COMMON/OUTIN/IUOUT,IUIN
       integer iuout,iuin
-      COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/OUTIN/IUOUT,IUIN
       integer izstocn
-      COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
+      COMMON/C24/IZSTOCN(MCOM,MS)
       integer ne,nairg,ipairg
       real rairg
-	  
+      COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
+
       integer iva,itrc,itru,iua,icomp,ier,NS,IRVA,i,j,k,ierr
       integer nshade_layers,ie,ND,ISR,icn,ntmpcfc_el,iflag,istat
       integer lnblnk    !function definition
@@ -1588,8 +1588,8 @@ C `h` heat transfer (comvective) methods, `-` zone names only.
 #include "epara.h"
 #include "CFC_common.h"
 
-      COMMON/C24/IZSTOCN(MCOM,MS) !array which holds the connection index
       integer izstocn
+      COMMON/C24/IZSTOCN(MCOM,MS) !array which holds the connection index
 
       COMMON/FILEP/IFIL
 c      COMMON/precz/zname(MCOM),zdesc(MCOM)

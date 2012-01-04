@@ -32,6 +32,10 @@ C IAIM2 set to 1 if AIM-2 infiltration model active.
 C LAIM2 (72 char) file holding AIM-2 infiltration model data.
 C      common/aim2def/iAIM2,LAIM2
 
+C << Task for future - respond to invocation via command line
+C << -act QA in combination with -v or -vv to set the level
+C << of reporing if from command line.
+
       USE AIM2_InputData, ONLY:iAIM2,LAIM2
       USE AIM2, ONLY:AIM2_READIN, AIM2_report
       
@@ -72,8 +76,8 @@ C Parameters passed into subroutine:
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: iuout,iuin
       
-      common/C1/NCOMP,NCON
       integer ncomp,ncon
+      common/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
       common/C6/INDCFG
@@ -85,8 +89,8 @@ C IFPNF is the unit for the plant network file.
 C LPNF (72 char) plant network file name.
       COMMON/C23/IFPNF,LPNF
       INTEGER :: IFPNF
-      COMMON/C24/IZSTOCN(MCOM,MS)
       INTEGER :: IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       common/RAY3/MODIFY,MODLEN,MODBND
       COMMON/exporttg/xfile,tg,delim
@@ -2373,6 +2377,7 @@ C not browsing.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/cctlnm/ctldoc,lctlf
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
@@ -2842,6 +2847,7 @@ C Parameters passed in
       character act*1      ! 'c' clear and 'p' process
  
       common/FILEP/IFIL
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C bridgelen was calculated in subroutine suredgeadj

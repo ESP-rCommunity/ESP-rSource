@@ -338,6 +338,14 @@ C Arrays for sorting domains from (see code for comments).
       integer iorgt,ixendt,iyendt,izendt,izendet  ! for local editing
       integer NITMS,INO ! max items and current menu item
 
+#ifdef OSI
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+#else
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+#endif
+
 C For help messages
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
@@ -843,9 +851,15 @@ C Restore standard graphics window variables.
               CALL feedbox(menuchw,2,igfw,igfh)
               CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
             endif
-            CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
-            igw=igr-igl
-            igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+            iiw1=4; iiw2=1; iiw3=1; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+            igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+            igw=int(iigw); igwh=int(iigwh)
             call startbuffer()
 
 C Redraw zone and vertex points. Note, if user has returned
@@ -1528,6 +1542,14 @@ C #include "geometry.h"
       integer INB     ! for radio button
       integer NITMS,INO ! max items and current menu item
 
+#ifdef OSI
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+#else
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+#endif
+
 C For help messages
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
@@ -1616,9 +1638,15 @@ C Restore standard graphics window variables.
               CALL feedbox(menuchw,2,igfw,igfh)
               CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
             endif
-            CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
-            igw=igr-igl
-            igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+            iiw1=4; iiw2=1; iiw3=1; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+            igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+            igw=int(iigw); igwh=int(iigwh)
             call startbuffer()
 
 C Redraw zone and vertex points. Note, if user has returned
@@ -3701,6 +3729,14 @@ C and cell distribution for each region.
       integer icellt   ! for local editing.
       integer MVERT,INO ! max items and current menu item
 
+#ifdef OSI
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+#else
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+#endif
+
 C For help messages
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
@@ -3721,9 +3757,15 @@ C Reset the display bounds for grid display.
       GRMODE=.false.
       IF(MMOD.EQ.8)THEN
         call startbuffer()
-        CALL win3d(menuchw,6,6,2,4,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=6; iiw2=6; iiw3=2; iiw4=4; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        CALL win3d(menuchw,6,6,2,4,igl,igr,igt,igb,igw,igwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         GRMODE=.true.
       ENDIF
 

@@ -117,11 +117,15 @@ C Simulator parameters.
       logical colok,ok,dok
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
 #ifdef OSI
+      integer IGX  ! see common graf2
       integer iupdown,isym    ! passed to etplot
       integer iid1,iid2,iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
+      integer*8 IGX  ! see common graf2
       integer*8 iupdown,isym    ! passed to etplot
       integer*8 iid1,iid2,iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
 C For help messages
@@ -130,6 +134,9 @@ C For help messages
       integer nbhelp     ! number of help lines found
 
       helpinsub='MFOUTP'  ! set for cfiles
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C If the network flow file has not yet been opened request information.
       if(iflib.eq.1)then
@@ -868,7 +875,7 @@ C Do the other menu types. If graph reset scaling factor for appropriate axis.
             do 400 IX=1,NMFGET
               if (MENUTYPE.eq.3) then
                 Iax=IMFGETNO(IX,7)
-                call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
+                call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))
                 if (TIMEold(IX).lt.0.0.or.ADDLIN.eq.1) then
                   TIMEold(IX)=0.0
                   Yold(IX)=FLOWVALS(IX)
@@ -1128,7 +1135,7 @@ C histogram metric is selected it will be the first one.
 C Finally label lines, matching zone line colour if used.
         do 200 I=1,NMFGET
           Iax=IMFGETNO(I,7)
-          call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
+          call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))
           t20=GMFLABEL(I)
           if(colok)then
             if(IMFGETNO(I,2).gt.0)then
@@ -1459,8 +1466,12 @@ C to graphical result display of network flows.
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C Generate a descriptive string for the time period to be displayed
@@ -1475,9 +1486,15 @@ C pixel references for calls to viewtext.
           call feedbox(menuchw,2,igfw,igfh)
           call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         endif
-        call win3d(menuchw,9,30,4,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=9; iiw2=30; iiw3=4; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        call win3d(menuchw,9,30,4,3,igl,igr,igt,igb,igw,igwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         call startbuffer()
       ENDIF
 

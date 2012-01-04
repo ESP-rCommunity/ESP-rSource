@@ -468,6 +468,7 @@ C If ACT='i' then interactive, ACT='s' for silent.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C TMC data

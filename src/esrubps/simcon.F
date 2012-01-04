@@ -1779,8 +1779,8 @@ C prior to each simulation commencing.
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       
-      COMMON/C1/NCOMP,NCON
       integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
       COMMON/PREC7/ITCNST
 
       COMMON/C6/INDCFG

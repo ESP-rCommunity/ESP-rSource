@@ -707,8 +707,8 @@ C contributions from renewable energy resources
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
 
-      COMMON/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
+      COMMON/C1/NCOMP,NCON
 
       INTEGER IDHWSYS,I,iactvalue,IREN,ICOMP,IM,IHROP
       CHARACTER min*420

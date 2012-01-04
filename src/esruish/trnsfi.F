@@ -43,6 +43,7 @@ C essentially a copy of trnsf1.
       common/pangl/pazi(ms),pelv(ms),ptilt(ms)
       common/trnsf/a(5),b(3),c(5),xor,yor,zor
       common/g1t/xft(mv),zft(mv)
+      integer izstoc
       common/c24/izstocn(mcom,ms)
 
       dimension yft(mv)

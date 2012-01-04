@@ -75,14 +75,14 @@ C Function definition
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
       REAL :: ZCOG,XMN,YMN,ZMN,XMX,YMX,ZMX
       
-      common/C1/NCOMP,NCON
       INTEGER :: ncomp,ncon
-      common/C6/INDCFG
+      common/C1/NCOMP,NCON
       INTEGER :: indcfg
-      common/C21/IFCFG,cfgroot,LCFGF
+      common/C6/INDCFG
       INTEGER :: ifcfg
-      COMMON/C24/IZSTOCN(MCOM,MS)
+      common/C21/IFCFG,cfgroot,LCFGF
       INTEGER :: IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       common/user/browse
 
@@ -171,8 +171,7 @@ C Uncertainty.
       integer ier           ! non-zero if a problem
       
       INTEGER :: itrc,itru,i,ic,icc,istat
-      INTEGER :: icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,iicfgn
-      INTEGER :: iicfgc,iicfgdfn,iacc,icfoc,iclkok,idindcfg
+      INTEGER :: iacc,icfoc,iclkok,idindcfg
       INTEGER :: ientxist,iier,im,ino,inwktyp,ios,ipedit,ipass,is
       INTEGER :: isindcfg,iuf,ium,iuo,iv,iver,iw,iz
       INTEGER :: iser,lenlfil,ln,ltrf,nets,nitems
@@ -198,6 +197,22 @@ C ihvacflag=1 indicates HVAC models are active; 0 indicates no HVAC models.
       integer hvind, indhvac, hvidind
       PARAMETER (nhvac_items = 5)
       dimension HVAC_ITEMS(nhvac_items)
+
+C Passed parameters for cfgtogg
+#ifdef OSI
+      integer icfg_type  ! model cfg type
+      integer icfgz      ! if non-zero then there are zones
+      integer icfgn      ! if non-zero then there are networks
+      integer icfgc      ! if non-zero then cfg file known
+      integer icfgdfn    ! if non-zero then cdf domain exists
+      integer iicfgz     ! there are zone related images
+      integer iicfgn     ! there are network related images
+      integer iicfgc     ! there are control related images
+      integer iicfgdfn   ! there are cfd related images
+#else
+      integer*8 icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz
+      integer*8 iicfgn,iicfgc,iicfgdfn
+#endif
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -260,13 +275,14 @@ C Check flags for air flow type
           ITEMS(9)='e air flow                  '
         ENDIF
       ELSE
-      if(iairn.eq.1)then
-        ITEMS(9)='e network flow (menu)       '
-      elseif(iairn.eq.2)then
-        ITEMS(9)='e network flow (graphic)    '
-      else
-        ITEMS(9)='e network flow              '
-      endif
+        if(iairn.eq.1)then
+          ITEMS(9)='e network flow (menu)       '
+        elseif(iairn.eq.2)then
+          ITEMS(9)='e network flow (graphic)    '
+
+        else
+          ITEMS(9)='e network flow              '
+        endif
       ENDIF
       if(ientxist.gt.0)then
         ITEMS(10)='f electrical (defined)      '
@@ -768,7 +784,7 @@ C lowest and highest point and cog of surface.
      &      ' # connection, description, area, azimuth, elevation, ',
      &      ' Z Min/COG/Max'
           DO 930 IZ = 1,NCOMP
-              call georead(IUF,LGEOM(IZ),IZ,1,iuout,IER)
+            call georead(IUF,LGEOM(IZ),IZ,1,iuout,IER)
             DO 931 IS = 1,NSUR
               szlow= 1000.0
               szcog= 0.0
@@ -896,23 +912,23 @@ C Link nodes and zones.
                 ICAAS(IZ)=IC
               endif
             endif
-  33      CONTINUE
+  33        CONTINUE
 
 C Save the configuration file so that connections and graphic mass flow
 C network are know.
-          dok=.true.
-          CALL ASKOK('Save graphic flow network links to zones',
-     &        'in the configuration file?',OK,dok,nbhelp)
-          IF(OK)then
-            IAIRN=2
-            LAPROB=NWKFLNAM
-            call edisp(iuout,'Updating configuration flow links...')
-            CALL EMKCFG('-',IER)
-            call edisp(iuout,
-     &                  'Updating configuration flow links...done.')
-            call edisp(iuout,' ')
-          endif
+            dok=.true.
+            CALL ASKOK('Save graphic flow network links to zones',
+     &          'in the configuration file?',OK,dok,nbhelp)
+            IF(OK)then
+              IAIRN=2
+              LAPROB=NWKFLNAM
+              call edisp(iuout,'Updating configuration flow links...')
+              CALL EMKCFG('-',IER)
+              call edisp(iuout,
+     &                    'Updating configuration flow links...done.')
+              call edisp(iuout,' ')
 
+            endif
 C << version with external agent >>
 C        elseif(IW.eq.4)then
 C          call tstamp('>','PRJ: export to java agent')
@@ -1231,6 +1247,7 @@ C output, IER=0 indicates no error.
       common/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       common/user/browse
@@ -1307,6 +1324,22 @@ C Flag noting whether casual gain periods are currently sorted.
       integer IRT,irop  ! for radio buttons
       integer nitems,INO ! max items and current menu item
       integer ianother  ! flag for jumping to prior or next zone
+
+C Passed parameters for cfgtogg
+#ifdef OSI
+      integer icfg_type  ! model cfg type
+      integer icfgz      ! if non-zero then there are zones
+      integer icfgn      ! if non-zero then there are networks
+      integer icfgc      ! if non-zero then cfg file known
+      integer icfgdfn    ! if non-zero then cdf domain exists
+      integer iicfgz     ! there are zone related images
+      integer iicfgn     ! there are network related images
+      integer iicfgc     ! there are control related images
+      integer iicfgdfn   ! there are cfd related images
+#else
+      integer*8 icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz
+      integer*8 iicfgn,iicfgc,iicfgdfn
+#endif
 
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
@@ -1951,7 +1984,7 @@ C If geometry file can hold obstructions save them there
 C otherwise write out write out zone obstruction file.
             call eclose(gversion(ncomp),1.1,0.01,newgeo)
             if(newgeo)then
-	      iuf=ifil+2
+              iuf=ifil+2
               call geowrite(iuf,LGEOM(NCOMP),NCOMP,ITRU,3,IER)
               IOBS(NCOMP)=2    ! reset to signal obs in geom file
               ZOBS(NCOMP)='  '
@@ -2369,7 +2402,7 @@ C Update the configuration file.
         ELSEIF(IC.LE.NCOMP)THEN
 
 C Scan the geometry file and freshen derived geometric common blocks.
-            call georead(IFIL+1,LGEOM(IC),IC,1,iuout,IER)
+          call georead(IFIL+1,LGEOM(IC),IC,1,iuout,IER)
           if(IER.NE.0)then
             dok=.true.
             helptopic='problem_scanning_file'
@@ -2975,7 +3008,7 @@ C CFD.
         call askzone(ic,izdef,' ','Zone CFD Selection',
      &         'd','Zone index for cfd.',ier)
         IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 3
-		
+
         call georead(IFIL+1,LGEOM(IC),IC,1,iuout,IER)
 
         IUF=IFIL+1
@@ -3198,6 +3231,8 @@ C ************* NEWPRB
 C NEWPRB specifies a new model via existing or new configuration file
 C and the various CAD and native definition facilities. 
 C Parameters passed into newprb:
+C  itrc = zero silent, one summary, two verbose and this may be
+C         reset via user actions
 C  confirm=true request confirmation of configuration file name
 C  ckpath=true finds the path to it (should be false for CAD use as
 C         the file and its location is already known). 
@@ -3228,6 +3263,7 @@ C espriou.h for parameter MFFOLD
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/rpath/path
       common/rcmd/LCMDFL
@@ -3254,6 +3290,22 @@ C Defaults.
       character OUTSTR*124,ctldoc*248,LCTLF*72,t96*96,t144*144,ETEXT*82
       character sfile*144,odir*72,subpath*72,action*3,GTNAME*15
       CHARACTER dinstpath*48,dirpath*72
+
+C Passed parameters for cfgtogg
+#ifdef OSI
+      integer icfg_type  ! model cfg type
+      integer icfgz      ! if non-zero then there are zones
+      integer icfgn      ! if non-zero then there are networks
+      integer icfgc      ! if non-zero then cfg file known
+      integer icfgdfn    ! if non-zero then cdf domain exists
+      integer iicfgz     ! there are zone related images
+      integer iicfgn     ! there are network related images
+      integer iicfgc     ! there are control related images
+      integer iicfgdfn   ! there are cfd related images
+#else
+      integer*8 icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz
+      integer*8 iicfgn,iicfgc,iicfgdfn
+#endif
 
 C Passed parameters for pregist.
       character root*24,mpath*72,folder*12,menu*72
@@ -3700,7 +3752,12 @@ C Check to see adding a cfg folder and cfgroot to LCFGF works.
         endif
       endif
  444  IF(XST)THEN
-        if(itrc.gt.0)then
+ 
+C If user already said silent or very verbose follow this.
+C Otherwise allow a choice to switch to a different level.
+        if(itrc.eq.2)then
+          continue  ! user already set full report
+        elseif(itrc.eq.1)then
           CALL EASKABC('When reading the model description,',
      &      'do it:','silently','with synopsis','full report',
      &      IW,0)
@@ -3960,17 +4017,19 @@ C << it would be clearer if all model I/O happened there >>
       
       integer lnblnk  ! function definition
 
-C      common/OUTIN/IUOUT,IUIN
+      common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/C21/IFCFG,cfgroot,LCFGF
       common/appw/iappw,iappx,iappy
       common/user/browse
+      character path*72
+      common/rpath/path
       logical concat,OK,DOK,browse,XST,deref,unixok
-      character dradcf*72,LCFGF*72,OUTSTR*124
-      character LFIL*72,dvfil*72,cfgroot*24,ltmp*72
-      character doit*124,tmode*8,act_1*1
+      character dradcf*72,LCFGF*72,OUTSTR*124,outs*124,outs248*248
+      character dvfil*72,cfgroot*24,ltmp*72
+      character doit*144,tmode*8,act_1*1
       character fs*1
-      character longtfile*124
+      character longtfile*144,longtfiledos*144,L144*144,lltmp*144
       character brw*8   ! to signal model is being browsed
 #ifdef OSI
       integer ICPMOD     ! passed from tchild
@@ -3995,20 +4054,67 @@ C Set folder separator (fs) to \ or / as required.
 
       helptopic='visualization_options'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      if(act_1.eq.'V')then
 
-C Construct a 'VIEWER' format file.  First get file name.
+
+  11  if(act_1.eq.'V')then
+
+C Construct a 'VIEWER' format file.  First get file name. Take
+C into account the current model path and whether it is in
+C a remote folder.
+        iw=0
+        if(path(1:2).ne.'./'.and.path(1:2).ne.'  ')then
+          write(outs,'(A,A)') 'The current path is: ',path
+          call edisp(iuout,outs)
+          CALL EASKAB('The model is in a remote folder.',
+     &    'Place exported file in:','current path','local folder',
+     &    IW,nbhelp)
+        endif
+        if(iw.eq.1)then
+          write(L144,'(4a)') path(1:lnblnk(path)),fs,
+     &      LCFGF(1:lnblnk(LCFGF)),'.vew'
+        else
+          write(L144,'(3a)') './',LCFGF(1:lnblnk(LCFGF)),'.vew'
+        endif
         dvfil='std.vew'
-        write(LFIL,'(a,a4)')LCFGF(1:lnblnk(LCFGF)),'.vew'
         doit = ' '
-        CALL EASKS(LFIL,' ','File name for image data?',
-     &    72,dvfil,'perspective input file',IER,nbhelp)
-        call addpath(LCFGF,longtfile,concat)
+
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
+C name with the full path. L144 is the suggested name and
+C lltmp is the file name returned by the user selection.
+        lltmp='  '
+        CALL EASKXORGTKF(L144,
+     &    'Viewer export file name?',' ',
+     &    dvfil,lltmp,'viewer file',IER,nbhelp)
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          return  ! cancel detected, return.
+        endif
+        if(ier.ne.0.or.lltmp(1:2).eq.'  ')then
+          goto 11
+        endif
+        if(unixok)then
+          call addpath(LCFGF,longtfile,concat)
+        else
+
+C If running on a non-unix machine see if there are spaces in the name
+C and change any / to \.
+          call addpath(LCFGF,longtfile,concat)
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
+        endif
         write(doit,'(4a)') 'ecnv -obs -if esp -in ',
      &    longtfile(1:lnblnk(longtfile)),' -of viewer -out ',
-     &    LFIL(1:lnblnk(LFIL))
+     &    lltmp(1:lnblnk(lltmp))
         call usrmsg('starting conversion via',doit,'-')
         call runit(doit,'-')
+
+C Tell user about the new file.
+        write(outs248,'(3a)') 'The file ',lltmp(1:lnblnk(lltmp)),
+     &    ' has been created.'
+        call edisp248(iuout,outs248,90)
 
         dok=.true.
         CALL ASKOK(' ',' Display hidden line views?',OK,dok,nbhelp)
@@ -4022,15 +4128,16 @@ C string to drive VIEWER.
           if(iappw.gt.0.and.iappw.le.200)then
             write(doit,'(3a,3i4,3a)') 'viewer -mode ',tmode,
      &        ' -s ',iappw,iappx+25,iappy+20,' -file ',
-     &        LFIL(1:lnblnk(LFIL)),' &'
+     &        lltmp(1:lnblnk(lltmp)),' &'
           else
             write(doit,'(5a)') 'viewer -mode ',tmode,
-     &        ' -s 0 0 0 -file ',LFIL(1:lnblnk(LFIL)),' &'
+     &        ' -s 0 0 0 -file ',lltmp(1:lnblnk(lltmp)),' &'
           endif
           call usrmsg('starting hidden line viewer via',doit,'-')
           call runit(doit,tmode)
         endif
         return
+
       elseif(act_1.eq.'R')then
 
 C If in browse mode then run e2r and return, otherwise check rcf name

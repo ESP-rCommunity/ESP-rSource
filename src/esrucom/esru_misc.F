@@ -733,6 +733,22 @@ C see if there are images associated with descriptive buttons.
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
 #include "building.h"
 
+C Passed parameters because these are also used by c function opencfg
+#ifdef OSI
+      integer icfg_type  ! model cfg type
+      integer icfgz      ! if non-zero then there are zones
+      integer icfgn      ! if non-zero then there are networks
+      integer icfgc      ! if non-zero then cfg file known
+      integer icfgdfn    ! if non-zero then cdf domain exists
+      integer iicfgz     ! there are zone related images
+      integer iicfgn     ! there are network related images
+      integer iicfgc     ! there are control related images
+      integer iicfgdfn   ! there are cfd related images
+#else
+      integer*8 icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz
+      integer*8 iicfgn,iicfgc,iicfgdfn
+#endif
+
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C6/INDCFG
@@ -3271,6 +3287,7 @@ C show attributes in list.
       common/pophelp/h(60)
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       DIMENSION VERT(35),VERTS(35)
 
@@ -3456,6 +3473,7 @@ C databases have been opened.
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C Special materials file flag
@@ -3600,6 +3618,7 @@ C TMP  : is IE2 (constant temperature if IE=2)
 #include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       CHARACTER*25 DESCR
 
@@ -3720,6 +3739,7 @@ C << not required for this. >>
 
       integer lnblnk  ! function definition
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       CHARACTER ZSDES*28,ZSDESC*20,SST1*12,ZST1*12,ZSDESS*16
 

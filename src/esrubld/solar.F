@@ -47,6 +47,7 @@ C on internal and external surfaces.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -293,7 +294,7 @@ C TMABSDIF(MSTMC,MSGAL,ME) - outdoor side diffuse solar absorptance for each lay
 
 C Add connection index common block because this is used to identify if
 C a particular surface has bi-directional information.
-C IZSTOCN - for each zone:surface a pointer to connection index.
+      integer IZSTOCN  ! for each zone:surface a pointer to connection index.
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C First, add a flag whether original (=0) or bi-directional (=1)
@@ -2779,6 +2780,7 @@ C     &  TMGVALUE(MSTMC,MSGAL,MANH,MANV),
 C     &  TMREFLECT(MSTMC,MSGAL,MANH,MANV),TUVALUE(MSTMC,MSGAL),
 C     &  TREXTERNAL(MSTMC,MSGAL),TRINTERNAL(MSTMC,MSGAL)
 C     &  TMVISUAL(MSTMC,MSGAL)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       PI = 4.0 * ATAN(1.0)
@@ -4067,6 +4069,7 @@ C existing and new controls should be added here.
 #include "material.h"
       PARAMETER (MSTMC=20,MSGAL=40,MANH=37,MANV=37)
       COMMON/OUTIN/IUOUT,IUIN
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/BTIME/BTIMEP,BTIMEF
 

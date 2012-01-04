@@ -2253,6 +2253,7 @@ C control file sensors, actuator, control types, control laws.
       integer lnblnk  ! function definition
 
 C      COMMON/OUTIN/IUOUT,IUIN
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/pcnam/pcname(mpcom)
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -3923,6 +3924,7 @@ C SSTRB is brief string (48 char) returned
       
       integer lnblnk  ! function definition
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/pcnam/pcname(mpcom)
       COMMON/MFLOW2/NDNAM(0:MNOD)

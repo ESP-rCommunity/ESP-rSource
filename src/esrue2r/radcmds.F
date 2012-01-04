@@ -1017,9 +1017,13 @@ C Assumes that the path to the image is given.
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iix1,iiy1,iix2,iiy2
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iix1,iiy1,iix2,iiy2
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
       
       logical XST,unixok
@@ -1104,18 +1108,24 @@ C Check for daylight factor results.
           call edisp (iuout,'Note: -ive angle to left of view center.')
           if (MMOD.eq.8) then
             CALL startbuffer()
-            call win3d(menuchw,8,8,5,3,igl,igr,igt,igb,igw,igwh)
-            igw=igr-igl
-            igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+            iiw1=8; iiw2=8; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            call win3d(menuchw,8,8,5,3,igl,igr,igt,igb,igw,igwh)
+            igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+            igw=int(iigw); igwh=int(iigwh)
             igwid=igw
             igheight=igwh
             call axiscale(igwid,igheight,XMIN,XMAX,YMIN,YMAX,xsc,ysc,
      &                  sca,Xadd,Yadd)
 
 C Stuff into static variables for later access and draw axis.
-            call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
-            call vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,'UGR')
-            call horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,0,
+            call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
+            call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,'UGR')
+            call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,
      &        'Degrees from view center')
 
 C Draw values as a circle.
