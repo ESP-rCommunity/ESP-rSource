@@ -750,7 +750,7 @@ c	=3 unrestricted control
           itemp_control(i) = ival
 c Read the cut-off temperature. This is only needed when the temperature
 c control option is restricted
-          CALL EGETWR(OUTSTR,K,val,-15.,50.,'F',
+          CALL EGETWR(OUTSTR,K,val,-30.,50.,'F',
      &    'hvac input: cutoff_temp',IER)
           cutoff_temp(i) = val
 c Read the backup heat source
