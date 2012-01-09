@@ -253,6 +253,9 @@ C---------determine average infiltration rate over time step.
             if(inf_regime.eq.2) AIM2_total = AIM2_total_sum        ! Average air flow over time-step.  
           ENDIF
 
+C---------Save total household infiltration for later use 
+          fAIM2_TotalHouseInfil = AIM2_total 
+          
         END DO
 
 C The building's total air flow from outdoors has now been determined. Note that this does
