@@ -37,6 +37,7 @@ C          information in common blocks MRTC, MRTF.
 C  PLEQN:  Finds the equation EQN to a plane containing a polygon
 C          defined as a set of X() Y() Z() verticies tracing the edges.
 C  ETRANSW: used when creating an insert rectangular shape into a surface.
+C ETRANFRAME: used when creating an fixed width frame into a surface.
 C  TRANSUR: Transforms a surface along its normal.
 
 C  UV2AZ:  Recover azimuth & elevation from unit vector.
@@ -1986,6 +1987,368 @@ C the Z point by OFFSET.
   100 CONTINUE
 
       RETURN
+      END
+
+C ********************* ETRANFRAME
+C ETRANFRAME used when creating an fixed width frame into a surface. It
+C is assumed that an initial polygon of N edges will result in a frame
+C polygon of N edges.
+
+C STEP 1 - Find equation of surface (EQN(4)) via PLEQN and get centre
+C          Centre of Gravity (VP(3))
+C STEP 2 - Set up Eye Point normal to plane at C. of G. (EP(3))
+C STEP 3 - Find matrix and reverse matrix via EYEMAT to transform frame
+C          points to normal view.
+C STEP 4 - Find offset points away from the polygon edge.
+C STEP 5 - Derive displacement of frame co-ordinates relative to
+C          'origin'?
+C STEP 6 - Apply reverse transformation to Window/Door co-ordinates via
+C          ORTTRN to give vertices in global co-ords.
+
+      SUBROUTINE ETRANFRAME(ITRC,IZONE,ISURF,N,X,Y,Z,FRW,XXF,YYF,ZZF,
+     &  IER)
+#include "building.h"
+
+C Passed parameters:
+      integer IZONE  ! current zone
+      integer ISURF  ! parent surface
+      integer N     ! number of edges in the parent polygon
+      real X,Y,Z    ! array of coordinates of parent polygon
+      DIMENSION  X(MV),Y(MV),Z(MV)
+      real FRW      ! frame width (m)
+      real XXF,YYF,ZZF ! array of returned frame coordinates
+      DIMENSION  XXF(MV),YYF(MV),ZZF(MV)
+      integer ier   ! if 1 can not deal with complexity
+
+      common/OUTIN/IUOUT,IUIN
+
+C Local variables:
+      DIMENSION  TMAT(4,4),RMAT(4,4)
+      DIMENSION  VP(3),EP(3),EQN(4)
+      real XN,YN    ! 2D coordinate array (raw)
+      real XPN,YPN    ! 2D coordinate array (plus offset)
+      DIMENSION  XN(MV),YN(MV),XPN(MV),YPN(MV)
+      real XL,YL    ! ?? 
+      DIMENSION  XL(MV),YL(MV) 
+      real AIL,BIL,CIL  ! defines inner lines
+      DIMENSION AIL(MVS),BIL(MVS),CIL(MVS)
+      CHARACTER OUTSTR*124
+      integer ITVX   ! number of vertices in polygon
+      logical BCLOSE,ICLOSE,MCLOSE ! close to X or Y axis
+      logical close  ! to avoid divide by zero
+      real pi
+
+C Check if we can deal with additional complexity in parent surface.
+      ITVX = N  ! remember N
+      if((N+2+ITVX).gt.MTV)then
+        call edisp(iuout,
+     &    'Frame more complex than ESP-r can work with. Returning.')
+        ier=1
+        return
+      endif
+
+      pi=4.0*atan(1.0)
+
+C Find transformation matrices that normalise face.
+      call PLEQN(X,Y,Z,N,VP,EQN,IERR)
+
+      IF (IERR .LT. 0)  GOTO  100
+      DO 250 J = 1,3
+        EP(J) = VP(J) + EQN(J)
+  250 CONTINUE
+      IF(ITRC.GT.1)THEN
+        CALL EDISP(IUOUT,' Plane equation data: ')
+        WRITE(OUTSTR,'(a,3F8.3)')' Center of grav:',(VP(I),I=1,3)
+        CALL EDISP(IUOUT,OUTSTR)
+        WRITE(OUTSTR,'(a,4F8.3)')' Equation:',(EQN(I),I=1,4)
+        CALL EDISP(IUOUT,OUTSTR)
+        WRITE(OUTSTR,'(a,3F8.3)')' Eye Point:',(EP(I),I=1,3)
+        CALL EDISP(IUOUT,OUTSTR)
+      ENDIF
+      CALL  EYEMAT(EP,VP,1.0,TMAT,RMAT)
+
+C Transform all points in surface into 2D working points XN & YN.
+C Also find lower left corner in 2D (the 2D coordinates will be
+C relative to the COG of the surface).
+      XMIN=0.0
+      YMIN=0.0
+      DO 300 I=1,N
+        CALL ORTTRN(X(I),Y(I),Z(I),TMAT,X1,Y1,ZZZ,IERR)
+        IF(X1.LT.XMIN)XMIN=X1
+        IF(Y1.LT.YMIN)YMIN=Y1
+        XN(I)=X1
+        YN(I)=Y1
+  300 CONTINUE
+
+C Offset the 2D coordinates so that lower left is at zero zero.
+      if(XMIN.lt.0.0)then
+        XOFFSET= ABS(XMIN)
+      else
+        XOFFSET=XMIN
+      endif
+      if(YMIN.lt.0.0)then
+        YOFFSET= ABS(YMIN)
+      else
+        YOFFSET= YMIN
+      endif
+
+C Add offset to XN YN array.
+      do 301 I=1,N
+        XPN(I)=XN(I)+XOFFSET
+        YPN(I)=YN(I)+YOFFSET
+  301 continue
+
+C Logic for determining frame coordinates.
+C Solve equation of perpendicular bisector and inner lines. 
+      I1=0      ! I1, I2 used to create maximum possible traiangles
+      I2=0      ! using all vertices of the parent surface
+      DTIN=FRW  ! distance moved in inner edge to create child surface
+      XMX=0.0; YMY=0.0; 
+      XAA=0.
+
+C A1,B1,C1,A2,B2,C2,C22 are used in equation of line.
+      A1=0.0; B1=0.0; C1=0.0
+      A2=0.0; B2=0.0; C2=0.0; C22=0.0
+      DM=0.    ! DM=(A1*B2)-(A2*B1)
+      AMX=0.   ! AMX = (C1A2-C2A1)/(B1A2-A1B2)
+      AMY=0.   ! AMY = (C1B2-C2B1)/(A1B2-A2B1)
+      AMXX=0.  ! AMXX = (C1A2-C22A1)/(B1A2-A1B2)
+      AMYY=0.  ! AMYY = (C1B2-C22B1)/(A1B2-A2B1)
+C      AREA=0.  ! calculated area of inner polygon
+C      ITER=0   ! number of iterations to calculate required area
+
+C Loop through the 2D vertices.
+C 997  NWVERT=0   ! new vertices
+      NWVERT=0   ! new vertices
+      DO 765 IV=1,ITVX
+        I1=IV
+        I2=IV+1
+        IF(I1.EQ.ITVX)I2=1   ! end point at the start of polygon
+        DX = XPN(I2) - XPN(I1) ! difference in X
+        DY = YPN(I2) - YPN(I1) ! difference in Y
+        CALL ECLOSE(DY,0.,0.0001,CLOSE)
+        if(close)then
+          XAA= PI/2.0          ! to avoid division by zero
+        else
+          XAA= ATAN(DX/DY)     ! angle between
+        endif
+        XMX= (XPN(I1)+XPN(I2))/2.0  ! half way along X
+        YMY= (YPN(I1)+YPN(I2))/2.0  ! half way along Y
+             
+C Calculate equation of perpendicular bisector a1y+b1x=c1
+        BCLOSE=.FALSE.
+        CALL ECLOSE(DY,0.,0.01,BCLOSE)
+        IF(BCLOSE) THEN
+          A1=0.0   ! Y dist was zero
+          B1=1.
+          C1=XMX
+        ELSE  
+          CALL ECLOSE(DX,0.,0.01,BCLOSE) 
+          IF(BCLOSE) THEN
+            A1=1.   ! X dist was zero
+            B1=0.
+            C1=YMY      
+          ELSE
+            A1=1.   ! X dist was non-zero
+            B1=(DX/DY)
+            C1=YMY+(B1*(XMX))
+          ENDIF
+        ENDIF
+C Debug.
+C        WRITE(6,*)'A1,B1,C1,BCLOSE',A1,B1,C1,BCLOSE
+             
+C Calculate equation of inner lines.
+        ICLOSE=.FALSE.
+        CALL ECLOSE(DY,0.,0.0001,ICLOSE)
+        IF(ICLOSE) THEN
+          A2=1.   ! Y dist was zero
+          B2=0.
+          C2 =YMY+DTIN
+          C22=YMY-DTIN
+        ELSE  
+          CALL ECLOSE(DX,0.,0.0001,ICLOSE) 
+          IF(ICLOSE) THEN
+            A2=0.   ! X dist was zero
+            B2=1.
+            C2 =XMX+DTIN
+            C22=XMX-DTIN      
+          ELSE
+            A2=1.   ! X dist was non-zero
+            B2= -(DY/DX)
+
+C << need to check to see that sin does not return zero >>
+            C2 =YMY+(B2*(XMX))+(DTIN / SIN(XAA)) 
+            C22=YMY+(B2*(XMX))-(DTIN / SIN(XAA))
+          ENDIF
+        ENDIF
+
+C Solve equation of perpendicular bisector and inner lines
+C to calculate M'or M''
+C M' = (M'x,M'y)   M''=(M''x,M''y)
+        DM=(A1*B2)-(A2*B1)
+        CALL ECLOSE(DM,0.,0.01,MCLOSE)
+        IF(MCLOSE) THEN
+          call edisp(iuout,'A zero length detected. Returning.')
+          ier=1
+          RETURN
+        ENDIF
+        AMX= ((C1*A2)-(C2*A1))/((B1*A2)-(A1*B2))  ! at one side of bisector
+        AMY= ((C1*B2)-(C2*B1))/((A1*B2)-(A2*B1))        
+        AMXX=((C1*A2)-(C22*A1))/((B1*A2)-(A1*B2)) ! at other side of bisector
+        AMYY=((C1*B2)-(C22*B1))/((A1*B2)-(A2*B1))  
+
+C Figure out if M'or M'' is  contained within polygon
+        CALL PNPOLY(AMX,AMY,XPN,YPN,ITVX,IN_OUT)
+        IF(IN_OUT.EQ.1) THEN
+          NWVERT=NWVERT+1  
+          AIL(NWVERT)=A2
+          BIL(NWVERT)=B2
+          CIL(NWVERT)=C2
+        ELSE 
+          CALL PNPOLY(AMXX,AMYY,XPN,YPN,ITVX,IN_OUT)
+          IF(IN_OUT.EQ.1) THEN
+            C2=C22
+            NWVERT=NWVERT+1  
+            AIL(NWVERT)=A2
+            BIL(NWVERT)=B2
+            CIL(NWVERT)=C2
+          ELSE
+            GOTO 765
+          ENDIF
+        ENDIF
+ 765  CONTINUE
+
+C Debug.
+      IF(ITRC.GT.1)THEN
+        WRITE(OUTSTR,'(a,42F8.3)') ' AIL:',(AIL(I),I=1,N)
+        CALL EDISP(IUOUT,OUTSTR)
+        WRITE(OUTSTR,'(a,42F8.3)') ' BIL:',(BIL(I),I=1,N)
+        CALL EDISP(IUOUT,OUTSTR)
+        WRITE(OUTSTR,'(a,42F8.3)') ' CIL:',(CIL(I),I=1,N)
+        CALL EDISP(IUOUT,OUTSTR)
+      endif
+
+C Solve equation to get intersections of the inner polygon 
+C XL,YL (2D points).
+      DO 766 IV=1,ITVX
+        I1=IV
+        I2=IV+1
+        IF(I1.EQ.ITVX)I2=1 
+        XL(I1)= (((CIL(I1))*(AIL(I2)))-((CIL(I2))*(AIL(I1))))/
+     &          (((BIL(I1))*(AIL(I2)))-((AIL(I1))*(BIL(I2))))
+        YL(I1)= (((CIL(I1))*(BIL(I2)))-((CIL(I2))*(BIL(I1))))/
+     &          (((AIL(I1))*(BIL(I2)))-((AIL(I2))*(BIL(I1))))
+
+C Because we used XPN and YPN need to cast XL and YL back from
+C the offsets.
+        XL(I1)=XL(I1)-XOFFSET
+        YL(I1)=YL(I1)-YOFFSET
+        IF(ITRC.GT.1)THEN
+          WRITE(outstr,'(a,2f8.3,i2)')'XL,YL,I1',
+     &      XL(I1),YL(I1),I1
+          CALL EDISP(IUOUT,OUTSTR)
+        ENDIF
+ 766  CONTINUE  
+
+C Take frame coords and apply reverse transformation from 2D to 3D.
+C Adjust looping to prevent the first edge of the new polygon being vertical. 
+      DO 350 K = 1,ITVX
+        if(K.eq.1)then
+          I1=ITVX
+        else
+          I1=K-1
+        endif
+        CALL  ORTTRN(XL(I1),YL(I1),ZZZ,RMAT,XX,YY,ZZ,IERR)
+        XXF(K) = XX
+        YYF(K) = YY
+        ZZF(K) = ZZ
+  350 CONTINUE
+      IF(ITRC.GT.1)THEN
+        CALL EDISP(IUOUT,' Transformed frame coords: ')
+        WRITE(OUTSTR,'(a,42F8.3)') ' X coords:',(XXF(I),I=1,N)
+        CALL EDISP(IUOUT,OUTSTR)
+        WRITE(OUTSTR,'(a,42F8.3)') ' Y coords:',(YYF(I),I=1,N)
+        CALL EDISP(IUOUT,OUTSTR)
+        WRITE(OUTSTR,'(a,42F8.3)') ' Z coords:',(ZZF(I),I=1,N)
+        CALL EDISP(IUOUT,OUTSTR)
+      ENDIF
+
+  100 CONTINUE
+
+      RETURN
+      END
+
+
+C .................................................................. 
+C SUBROUTINE PNPOLY 
+C PURPOSE 
+C   TO DETERMINE WHETHER A POINT IS INSIDE A POLYGON 
+C USAGE 
+C   CALL PNPOLY (PX, PY, XX, YY, N, INOUT ) 
+
+C DESCRIPTION OF THE PARAMETERS 
+C   PX   - X-COORDINATE OF POINT IN QUESTION. 
+C   PY   - Y-COORDINATE OF POINT IN QUESTION. 
+C   XX   - N LONG VECTOR CONTAINING X-COORDINATES OF 
+C          VERTICES OF POLYGON.
+C   YY   - N LONG VECTOR CONTAING Y-COORDINATES OF 
+C          VERTICES OF POLYGON.
+C   N    - NUMBER OF VERTICES IN THE POLYGON. 
+C  INOUT - THE SIGNAL RETURNED: 
+C           -1 IF THE POINT IS OUTSIDE OF THE POLYGON, 
+C           0 IF THE POINT IS ON AN EDGE OR AT A VERTEX, 
+C           1 IF THE POINT IS INSIDE OF THE POLYGON. 
+
+C REMARKS 
+C   THE VERTICES MAY BE LISTED CLOCKWISE OR ANTICLOCKWISE. 
+C   THE FIRST MAY OPTIONALLY BE REPEATED, IF SO N MAY C OPTIONALLY 
+C   BE INCREASED BY 1. 
+C   THE INPUT POLYGON MAY BE A COMPOUND POLYGON CONSISTING 
+C   OF SEVERAL SEPARATE SUBPOLYGONS. IF SO, THE FIRST VERTEX 
+C   OF EACH SUBPOLYGON MUST BE REPEATED, AND WHEN CALCULATING 
+C   N, THESE FIRST VERTICES MUST BE COUNTED TWICE. 
+C   INOUT IS THE ONLY PARAMETER WHOSE VALUE IS CHANGED. 
+C   THE SIZE OF THE ARRAYS MUST BE INCREASED IF N > MAXDIM 
+C 
+C METHOD
+C   A VERTICAL LINE IS DRAWN THRU THE POINT IN QUESTION. IF IT 
+C   CROSSES THE POLYGON AN ODD NUMBER OF TIMES, THEN THE 
+C   POINT IS INSIDE OF THE POLYGON.  
+C .................................................................. 
+      SUBROUTINE PNPOLY(PX,PY,XX,YY,N,INOUT)
+      common/OUTIN/IUOUT,IUIN
+      REAL X(200),Y(200),XX(N),YY(N) 
+      LOGICAL MX,MY,NX,NY 
+      character outs*124
+      
+      MAXDIM=200 
+      IF(N.GT.MAXDIM)then
+        WRITE(outs,'(a,i3,a)') 'Warning: ',N,' is beyond edge limits'
+        call edisp(iuout,outs) 
+        RETURN
+      endif
+      DO 1 I=1,N 
+        X(I)=XX(I)-PX 
+        Y(I)=YY(I)-PY
+ 1    continue
+      INOUT=-1 
+      DO 2 I=1,N 
+        J=1+MOD(I,N) 
+        MX= (X(I).GE.0.0) 
+        NX= (X(J).GE.0.0)
+        MY= (Y(I).GE.0.0)
+        NY= (Y(J).GE.0.0)
+        IF(.NOT.((MY.OR.NY).AND.(MX.OR.NX)).OR.(MX.AND.NX)) GOTO 2
+        IF(.NOT.(MY.AND.NY.AND.(MX.OR.NX).AND..NOT.(MX.AND.NX))) GOTO 3
+        INOUT=-INOUT 
+        GO TO 2
+ 
+ 3      IF((Y(I)*X(J)-X(I)*Y(J))/(X(J)-X(I))) 2,4,5
+ 4      INOUT=0 
+        RETURN 
+ 5      INOUT=-INOUT 
+ 2    CONTINUE 
+      RETURN 
       END
 
 
