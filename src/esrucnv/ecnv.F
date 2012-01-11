@@ -1133,8 +1133,6 @@ C Comment for configuration index (upgrade registration level).
      &  '  # path to radiance files'
       WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*imgpth ',imgpth,
      &  '  # path to project images'
-      WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*tmppth ',tmppth,
-     &  '  # path to project scratch folder'
       WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*docpth ',docpth,
      &  '  # path to project documents'
       WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*dbspth ',dbspth,

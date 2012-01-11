@@ -540,8 +540,8 @@ C      end
       end
 
 C      subroutine curproject(fcfgroot,fpath,fupath,fimgpth,fdocpth,
-C     &  ftmppth,ibrowse,iincomp,iincon)
-C      character*(*) fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth
+C     &  ibrowse,iincomp,iincon)
+C      character*(*) fcfgroot,fpath,fupath,fimgpth,fdocpth
 C      return
 C      end
 

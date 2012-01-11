@@ -60,7 +60,7 @@ C where can be: `cfg` (looks in cfg folder), `dbs` (looks in ../dbs),
 C   `zon` (looks in ../zones), `net` (looks in ../nets),
 C   `ctl` (looks in ../ctl), `img` (looks in ../images),
 C   `rad` (looks in ../rad), `doc` (looks in ../doc),
-C   `tmp` (looks in ../temp), `usr` (looks in users home folder).
+C   `usr` (looks in users home folder).
 C   `pat` (looks in {where esp-r installed}/training/pattern).
 C   `clm` (looks in {where esp-r installed}/climate).
 C   `dba` (looks in {where esp-r installed}/databases).
@@ -164,11 +164,6 @@ C project manager was started from).
      &    path(1:lnblnk(path)),docpth(1:lnblnk(docpth))
         write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
      &    docpth(1:lnblnk(docpth))
-      elseif(where(1:3).eq.'tmp')then
-        write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
-     &    path(1:lnblnk(path)),tmppth(1:lnblnk(tmppth))
-        write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
-     &    tmppth(1:lnblnk(tmppth))
       elseif(where(1:3).eq.'bsm')then
         write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
      &    path(1:lnblnk(path)),bsmpth(1:lnblnk(bsmpth))

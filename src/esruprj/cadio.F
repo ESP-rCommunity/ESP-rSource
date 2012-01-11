@@ -1218,7 +1218,7 @@ C folder does not exist then need to create it.
 
                     write(doit,'(2a)') 'mkdir ',lltmp(1:lnblnk(lltmp))
                     call runit(doit,'-')
-                    call pausems(400)
+                    call pausems(100)
 
 C Make up the command to copy from the exemplar source folder to the
 C users defined destination.

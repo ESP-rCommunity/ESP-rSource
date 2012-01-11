@@ -520,8 +520,6 @@ C Begin writing the file with version number in the header.
      &  '  # path to radiance files'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*imgpth  ',imgpth,
      &  '  # path to project images'
-      WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*tmppth  ',tmppth,
-     &  '  # path to project scratch folder'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*docpth  ',docpth,
      &  '  # path to project documents'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*dbspth  ',dbspth,

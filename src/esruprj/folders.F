@@ -370,7 +370,6 @@ C Check that the dbs folder path is standard.
         call pausems(100)
 
         write(radpth,'(3a)')'..',fs,'rad'
-        write(tmppth,'(3a)')'..',fs,'tmp'
 
 C Check that the bsm (BASESIMP) folder path is standard.
         call GETTOKENS(bsmpth,IW,WORDS)
@@ -445,7 +444,6 @@ C Instanciate standard folder names for use within model configuration file.
       write(imgpth,'(3a)')'..',fs,'images'
       write(radpth,'(3a)')'..',fs,'rad'
       write(docpth,'(3a)')'..',fs,'doc'
-      write(tmppth,'(3a)')'..',fs,'tmp'
       write(dbspth,'(3a)')'..',fs,'dbs'
       write(bsmpth,'(3a)')'..',fs,'bsm'
       write(hvacpth,'(3a)')'..',fs,'hvac'
@@ -475,9 +473,6 @@ C Instanciate standard folder names for use within model configuration file.
       call runit(doit,'-')
       call pausems(100)
       write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'doc'
-      call runit(doit,'-')
-      call pausems(100)
-      write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'tmp'
       call runit(doit,'-')
       call pausems(100)
       write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'rad'
@@ -842,7 +837,7 @@ C        write(6,*) 'OSX path is ',path
       WRITE(ITEMS(7),'(2A)') 'e network : ',netpth(1:20)
       WRITE(ITEMS(8),'(2A)') 'f images  : ',imgpth(1:20)
       WRITE(ITEMS(9),'(2A)') 'g document: ',docpth(1:20)
-      WRITE(ITEMS(10),'(2A)')'h temp.   : ',tmppth(1:20)
+      WRITE(ITEMS(10),'(A)') '          : '
       WRITE(ITEMS(11),'(2A)')'i radiance: ',radpth(1:20)
       WRITE(ITEMS(12),'(2A)')'j local db: ',dbspth(1:20)
       WRITE(ITEMS(13),'(2A)')'k hvac    : ',hvacpth(1:20)
@@ -1018,23 +1013,7 @@ C            write(6,*) 'iier is ',iier,nli
 
       elseif(ino.eq.10)then
 
-        if(.NOT.browse)then
-          t24=tmppth
-          CALL EASKS(t24,'Relative path from cfg',
-     &      'folder to temporary folder?',24,'../doc',
-     &      'relative temp path',IER,nbhelp)
-          if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')then
-            tmppth=t24
-            changedit=.true.
-            sfile=' '
-            snpfile=' '
-            call browsefilelist('p','tmp','fil',sfile,snpfile,nli,iier)
-          endif
-        else
-          sfile=' '
-          snpfile=' '
-          call browsefilelist('p','tmp','fil',sfile,snpfile,nli,iier)
-        endif
+C Nothing uses this tmp option currently.
 
       elseif(ino.eq.11)then
 
@@ -1171,7 +1150,7 @@ C and change any / to \.
 C List files in corporate databases folder.
         sfile=' '
         snpfile=' '
-        call browsefilelist('p','dbm','fil',sfile,snpfile,nli,iier)
+        call browsefilelist('l','dbm','fil',sfile,snpfile,nli,iier)
         if(nli.gt.MFFOLD) then
           call usrmsg('The folder includes more files than the list',
      &      'can handle - please be careful!','W')
@@ -1181,7 +1160,7 @@ C List files in corporate databases folder.
 C List files in corporate climate folder..
         sfile=' '
         snpfile=' '
-        call browsefilelist('p','clm','fil',sfile,snpfile,nli,iier)
+        call browsefilelist('l','clm','fil',sfile,snpfile,nli,iier)
         if(nli.gt.MFFOLD) then
           call usrmsg('The folder includes more files than the list',
      &      'can handle - please be careful!','W')
