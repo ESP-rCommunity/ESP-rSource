@@ -32,7 +32,7 @@ C Ground topology.
       PARAMETER (MGTV=500)	!- Vertices.
 
 C Construction.
-      PARAMETER (ME=30)		!- Elements/construction. - Increased from 8 to 20 to support CFCs - (Bart Lomanowski)
+      PARAMETER (ME=20)		!- Elements/construction. - Increased from 8 to 20 to support CFCs - (Bart Lomanowski)
       PARAMETER (MN=50)		!- Nodes/construction.    - Increased from 35 to 50 to support CFCs - (Bart Lomanowski)
       PARAMETER (MGP=10)	!- Air gaps/construction. - Increased from 3 to 10 to support CFCs - (Bart Lomanowski)
       PARAMETER (MMLC=200)	!- Multilayered constructions in model.
@@ -47,7 +47,7 @@ C Glazing.
 
 C Shading/insolation.
       PARAMETER (MB=180)	!- Site obstruction blocks.
-      PARAMETER (MOX=210)	!- Grid lines in x-direction.
+      PARAMETER (MOX=120)	!- Grid lines in x-direction. was 210
       PARAMETER (MOZ=120)	!- Grid lines in z-direction.
       PARAMETER (MISUR=10)	!- Surfaces insolated from one source.
       PARAMETER (MBP=8)		!- TMC blind control periods.
@@ -85,7 +85,7 @@ C Casual gain control.
       PARAMETER (MDCFP=5)	!- Daylight coefficient sets.
       PARAMETER (MDCFS=2)
       PARAMETER (MDCFV=145)	!- Sky patches.
-      PARAMETER (MILDB=40000)	!- Radiance illuminance data sets (?)
+      PARAMETER (MILDB=10000)	!- Radiance illuminance data sets (?) was 40000
 
 C Systems control.
       PARAMETER (MSEN=4)
@@ -142,7 +142,7 @@ C Multi-gridding.
       PARAMETER (MXEC=6*ME)	!- x-intervals in edge-corner connection.
       PARAMETER (MYEC=6*ME)	!- y-intervals in edge-corner connection.
       PARAMETER (MCVV=10)	!- Intersection vertices per control volume.
-      PARAMETER (MNOD3=20000)	!- Nodes in a 3D zone model.
+      PARAMETER (MNOD3=1000)	!- Nodes in a 3D zone model (up to 40000?).
       PARAMETER (MCFF3=20*MNOD3)!- Zone matrix coefficients.
       PARAMETER (MNOD3T=MNOD3+2)!- Cofficients in the temporary storage array.
       PARAMETER (MGXYZ=15)	!- x, y and z intervals for ground.
@@ -166,5 +166,5 @@ C Miscellaneous.
       PARAMETER (MPICK=30)
       PARAMETER (MVAR=5)
       PARAMETER (MIMG=10)	!- Images associated with model.
-      PARAMETER (MCFC=12)	! Maximum number of different CFC types within a zone.
+      PARAMETER (MCFC=9)	! Maximum number of different CFC types within a zone.
       PARAMETER (MNSCN=10) ! Maximum number of Radiance scenes (now per .rcf, should be per zone)
