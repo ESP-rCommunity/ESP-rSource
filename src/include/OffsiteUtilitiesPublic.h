@@ -22,6 +22,7 @@ C.....Named constants for fuel types
      &            iSoftWood    = 7,
      &            iWoodPellets = 8 )
 
+     
 C.....Supported end-uses
       integer iNumUses
       parameter ( iNumUses = 7 )
