@@ -87,7 +87,7 @@ CFLAGS="-I../include "     # initial C compiler flags
 LD_FLAGS=" "               # initial link-loader flags
 platform="auto-detect"     # default platform
 install_dbs="yes"          # Install dbs files
-install_training="yes"     #         training files
+install_training="no"      #         training files
 install_exes="prompt"      #         executables
 delete_temp_files="yes"    # Delete temporary files.
 preserve_espr_dir="yes"    # save existing ESP-r directory by default
@@ -99,7 +99,7 @@ enableFPE="no"             # FPE-exception handling?
 extendedDebug="yes"        # Enable agressive debugging / warnings /FPE?
 use_intel="no"             # Use intel compilers?
 skip_ish_calcs="no"        # Skip update of exemplar shading files?
-reuse_ish_calcs="no"       # if yes limit re-calculation of exemplar shading files?
+reuse_ish_calcs="yes"      # if yes limit re-calculation of exemplar shading files?
 
 #-----------------------------------------------------------
 # List of targets understood by bps
@@ -803,7 +803,8 @@ fi
 #---------------------------------------------------------
 
 #ESP-r related header files
-LOCAL_INCLUDES="-I../include -I../shocc -I/usr/local/include -I/opt/local/include -I../cetc/h3kreports"
+#LOCAL_INCLUDES="-I../include -I../shocc -I/usr/local/include -I/opt/local/include -I../cetc/h3kreports"
+LOCAL_INCLUDES="-I../include -I../shocc -I/usr/local/include -I../cetc/h3kreports"
 
 
 #---------- MCTYPE ---------------------------------
@@ -854,9 +855,9 @@ case $xLibs in
                   XINSTALLDIR="/usr/X11R6"
                 fi;;
               *)
-            if [ -d /usr/X11R6/lib/X11 ] ; then
-              X11_found="yes"
-              XINSTALLDIR="/usr/X11R6"
+                if [ -d /usr/X11R6/lib/X11 ] ; then
+                  X11_found="yes"
+                  XINSTALLDIR="/usr/X11R6"
                 fi;;
             esac
 
