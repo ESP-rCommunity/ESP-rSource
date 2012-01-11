@@ -275,7 +275,7 @@ C Temporal information on channel IFIL+7.
       LPCDB=DPCDB
 
 C Project log.
-      LPRJLG='job.notes'
+      LPRJLG='project.notes'
 
       INIT =0
 

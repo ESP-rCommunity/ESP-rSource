@@ -17,7 +17,7 @@ C The title and summary of the model
       common/modeltd/modeltitle,modeldocblock
 
 C Model log file
-      character lprjlg*72   ! ASCII file for project documentation
+      character lprjlg*144   ! ASCII file for project documentation
       common/LLOG/lprjlg
 
 C Paths from model cfg file folder to other model file types. As the

@@ -261,14 +261,18 @@ C in the current model. A -1 means not applicable
 
       character*10 wkd1, wkd2
       character louts*248,loutsd*248
+      character lltmp*144,lguess*144,lldef*144  ! for working with EASKXORGTKF
+      character lpath*72,fname*72 ! for use with fdroot
+
       logical newgeo  ! to use for testing if new/old geometry file.
       logical nameok  ! to use for testing if duplicate names in zone
       integer NITMS   ! max items
       integer im,k,mnulen   ! multi column lines
       integer lr      ! length of model root string
+      integer iglib  ! for detecting GTK or X11
       logical odd   ! for display of vertex info
       
-      INTEGER :: i,icc,icoth,ie,ieripv,iglib,irec,iprb,inv
+      INTEGER :: i,icc,icoth,ie,ieripv,irec,iprb,inv
       INTEGER :: ins4,ino,imlc,imerr,ilcot,ijk,ij,ii,igrdp
       INTEGER :: ictlf,iuo,iunit1,iunit,iuf,iub,itu,itru,itrc,itbmenu
       INTEGER :: itb,istat,isc,is,ic,ins1,isel,iz,izo,izc,izz
@@ -535,15 +539,39 @@ C Edit project documentation.
             endif
 C            write(LPRJLG,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.log'
           endif
-          ltmp=LPRJLG
-          CALL EASKS(ltmp,
-     &      'A log file (notes/documentation) for this project,',
-     &      'Its name? ',72,'project.notes','log file',IER,nbhelp)
-          if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-            LPRJLG=ltmp
-            changedit=.true.
+
+C Detect if working on X11 or GTK.
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          lltmp='  '
+          lguess='  '
+          lldef='project.log'
+          if(iglib.eq.2)then
+            call addpath(LPRJLG,longtfile,concat)  ! expand path for GTK browser
+            write(lguess,'(a)') longtfile(1:lnblnk(longtfile))
           else
-            goto 54
+            write(lguess,'(a)') LPRJLG(1:lnblnk(LPRJLG))
+          endif
+          call edisp(iuout,'  ')  ! echo blank line
+          CALL EASKXORGTKF(lguess,
+     &      'Project log file:',' ',lldef,lltmp,'log file',IER,nbhelp)
+          write(lprjlg,'(a)') lguess(1:lnblnk(lguess))
+
+C If user request jump back and re-display the menu.
+          if(ier.eq.-3)then
+            goto 54  ! cancel detected, restore name and redisplay menu.
+          endif
+          changedit=.true.
+
+C Ask user whether file is in ../doc and if so use fdroot if GTK.
+          if(iglib.eq.2)then
+            dok=.true.
+            CALL ASKOK('Is this file in the model ../doc folder?',
+     &        ' ',OK,dok,3)
+            if(OK)then
+              call fdroot(lltmp,lpath,fname)
+              write(lprjlg,'(3a)') docpth(1:lnblnk(docpth)),fs,
+     &          fname(1:lnblnk(fname))
+            endif
           endif
 
 C See if file exists, (it should have been created within pregist

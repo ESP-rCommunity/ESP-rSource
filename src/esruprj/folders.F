@@ -77,7 +77,13 @@ C External text editor.
 
 C Calendar.
       common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+#ifdef OSI
+      integer nwlistf
       dimension nwlistf(MFFOLD)
+#else
+      integer*8 nwlistf
+      dimension nwlistf(MFFOLD)
+#endif
 
 C Passed in parameters.
       character root*24,mpath*72,menu*72
@@ -97,8 +103,11 @@ C Passed in parameters.
       character fs*1
       character*72 listf(MFFOLD),listfc(MFFOLD)
       character subpath*72,action*3,outs*124
+      character lltmp*144,lguess*144,lldef*144  ! for working with EASKXORGTKF
+      character lpath*72,fname*72 ! for use with fdroot
 
       integer iyeart    ! for local editing
+      integer iglib  ! for detecting GTK or X11
       integer lnmp,lncr,lnod ! for with of mpath, cfgroot, odir strings
       character tcname*248   ! for editing image notes
       character WORDS(12)*32,testw*32
@@ -552,15 +561,40 @@ C Documentation.
           write(LPRJLG,'(4a)') docpth(1:lnblnk(docpth)),fs,
      &      cfgroot(1:lr),'.log'
         endif
-C        write(LPRJLG,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.log'
       endif
-      ltmp=LPRJLG
-      CALL EASKS(ltmp,' ','Project log file?',
-     &  72,'project.log','log file',IER,nbhelp)
-      if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-        LPRJLG=ltmp
+
+C Detect if working on X11 or GTK.
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      lltmp='  '
+      lguess='  '
+      lldef='project.log'
+      if(iglib.eq.2)then
+        call addpath(LPRJLG,longtfile,concat)  ! expand path for GTK browser
+        write(lguess,'(a)') longtfile(1:lnblnk(longtfile))
       else
-        goto 53
+        write(lguess,'(a)') LPRJLG(1:lnblnk(LPRJLG))
+      endif
+      call edisp(iuout,'  ')  ! echo blank line
+      CALL EASKXORGTKF(lguess,
+     &  'Project log file:',' ',lldef,lltmp,'log file',IER,nbhelp)
+
+C If user request jump back and re-display the menu.
+      if(ier.eq.-3)then
+        goto 53  ! cancel detected, restore name and redisplay menu.
+      endif
+
+C Ask user whether file is in ../doc and if so use fdroot if GTK.
+      if(iglib.eq.2)then
+        dok=.true.
+        CALL ASKOK('Is this file in the model ../doc folder?',
+     &    ' ',OK,dok,3)
+        if(OK)then
+          call fdroot(lltmp,lpath,fname)
+          write(lprjlg,'(3a)') docpth(1:lnblnk(docpth)),fs,
+     &      fname(1:lnblnk(fname))
+        endif
+      else
+        write(LPRJLG,'(a)') lguess(1:lnblnk(lguess))
       endif
 
 C See if file exists, otherwise create it and write basic
@@ -764,7 +798,13 @@ C External text editor.
       common/user/browse
 
 C Remember width of file/folder names passed back from getfilelist.
+#ifdef OSI
+      integer nwlistf
       dimension nwlistf(MFFOLD)
+#else
+      integer*8 nwlistf
+      dimension nwlistf(MFFOLD)
+#endif
       logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical concat,unixok,changedit,browse
 

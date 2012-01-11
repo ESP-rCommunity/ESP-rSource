@@ -2030,8 +2030,8 @@ C Next tokens relate to simulationist address.
       elseif(loutstr(1:10).eq.'* PROJ LOG')then
 
 C Project log file, read and then go on to fabric/plant description.
-        CALL STRIPC(IUC,OUTSTR,0,ND,1,'project log file',IER)
-        LPRJLG=OUTSTR(1:LNBLNK(OUTSTR))
+        CALL STRIPC(IUC,LOUTSTR,0,ND,1,'project log file',IER)
+        write(LPRJLG,'(a)') LOUTSTR(1:LNBLNK(LOUTSTR))
         goto 45
         
       
