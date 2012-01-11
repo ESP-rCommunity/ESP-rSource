@@ -3239,12 +3239,12 @@ C         any case because the user has previously selected an exemplar model.
 C Parameter returned:
 C  ier = 0 if no problems found.
       SUBROUTINE NEWPRB(ITRC,confirm,ckpath,itisanexemplar,IER)
+#include "espriou.h"
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "prj3dv.h"
-#include "espriou.h"  
 #include "material.h"
 C espriou.h for parameter MFFOLD
       
@@ -3276,10 +3276,17 @@ C Defaults.
       logical MODIFY,MODLEN,MODBND,browse
       logical confirm,ckpath,itisanexemplar
       logical unixok,prob
+#ifdef OSI
+      integer nwlistf
+      dimension nwlistf(MFFOLD)
+#else
+      integer*8 nwlistf
+      dimension nwlistf(MFFOLD)
+#endif
 
-      dimension nwlistf(50),ivlist(50)
-      character*72 listf(50),listfc(50)
-      character*70 listfc70(50)
+      dimension ivlist(MFFOLD)
+      character*72 listf(MFFOLD),listfc(MFFOLD)
+      character*70 listfc70(MFFOLD)
       character*32 WORDS(12)
 
       character path*72,LCMDFL*144,LTMP*144,GTGEOM*72

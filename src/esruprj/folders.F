@@ -1150,7 +1150,7 @@ C and change any / to \.
 C List files in corporate databases folder.
         sfile=' '
         snpfile=' '
-        call browsefilelist('l','dbm','fil',sfile,snpfile,nli,iier)
+        call browsefilelist('p','dbm','fil',sfile,snpfile,nli,iier)
         if(nli.gt.MFFOLD) then
           call usrmsg('The folder includes more files than the list',
      &      'can handle - please be careful!','W')
@@ -1160,7 +1160,7 @@ C List files in corporate databases folder.
 C List files in corporate climate folder..
         sfile=' '
         snpfile=' '
-        call browsefilelist('l','clm','fil',sfile,snpfile,nli,iier)
+        call browsefilelist('p','clm','fil',sfile,snpfile,nli,iier)
         if(nli.gt.MFFOLD) then
           call usrmsg('The folder includes more files than the list',
      &      'can handle - please be careful!','W')
