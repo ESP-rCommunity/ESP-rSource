@@ -59,9 +59,6 @@ C espriou.h provides currentfile and MFFOLD.
 C Plant network.
       COMMON/C23/IFPNF,LPNF
 
-C Project log file.
-      common/LLOG/LPRJLG
-
 C Images.
       character imgfmt*4  ! GIF XBMP TIF JPG
       character imgfoc*4  ! FZON FNET FCTL FDFS
@@ -90,7 +87,7 @@ C Passed in parameters.
 
       character dstmp*24,LCFTMP*24
       character*72 LTMP
-      character path*72,LCMDFL*144,LPRJLG*72,LPNF*72,odir*72
+      character path*72,LCMDFL*144,LPNF*72,odir*72
       character LCFGF*72,cfgroot*24
       character doit*248,longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20

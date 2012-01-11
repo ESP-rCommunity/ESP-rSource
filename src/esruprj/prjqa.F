@@ -147,9 +147,6 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
 
-C Project log file.
-      common/LLOG/LPRJLG
-
 C External text editor.
       common/texted/tedlbl,teditor
 
@@ -217,7 +214,7 @@ C Remember if each zone is fully attributed.
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       character figlbl*20,figexe*48
       character grflbl*20,grfexe*48,foldlbl*20,foldexe*48
-      character LPRJLG*72,tmode*8,fmttag*4,fmtexe*20
+      character tmode*8,fmttag*4,fmtexe*20
       character tedlbl*20,teditor*20
       character uname*24,pwd*40
       character ipvaction*3  ! signal that external ipv file

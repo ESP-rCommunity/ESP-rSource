@@ -1064,7 +1064,6 @@ C << MUST be updated to reflect ipath and longer database names >>
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/LLOG/LPRJLG
 
       common/cctlnm/ctldoc,lctlf
 
@@ -1097,7 +1096,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       character SHOCCshlFile*72,SHOCCshzFile*72
 
       CHARACTER LCFGF*72
-      CHARACTER LPRJLG*72,LOUT*72
+      CHARACTER LOUT*72
       CHARACTER CTLDOC*248,LCTLF*72,cfgroot*24
       character indxcmt*24
 

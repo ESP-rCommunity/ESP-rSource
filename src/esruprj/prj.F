@@ -90,8 +90,7 @@ C IEEE callback (Solaris)
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
-C Project log file, journal on/off, unit number, cmd, file name.
-      common/LLOG/LPRJLG
+C Journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
 C Ground topology.
@@ -155,7 +154,7 @@ C Name of current application
 
       character dstmp*24,uname*24
       character LUALF*72,LCNG*15,LLOC*15
-      character*72 LCFGF,LPRJLG
+      character*72 LCFGF
       character LTMP*72
       character inf*144,inz*16,inzone*16,act*16,inact*16,LCMDFL*144
       character outs*124,outstr*124

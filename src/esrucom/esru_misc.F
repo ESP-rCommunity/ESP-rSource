@@ -194,9 +194,6 @@ C CPCALC description
       REAL :: ble,bwi,bhi,blox,bloy,bloz,orient,ra,sbh,pad,wvpe
       INTEGER :: icpcon,irt
 
-C Project log file, paths to standard file locations.
-      COMMON/LLOG/LPRJLG
-
 C Images.
       common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
       character imgfmt*4  ! GIF XBMP TIF JPG
@@ -262,7 +259,7 @@ C door width and height.
       common/ginsert/defwininsert,defdoorwidth,defdoorheight
 
       CHARACTER LCFD*72
-      CHARACTER*72 LAPROB,LPRJLG,LPNF
+      CHARACTER*72 LAPROB,LPNF
 
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
@@ -838,7 +835,6 @@ C ***** Notice that an active description button has been pressed.
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       COMMON/C23/IFPNF,LPNF
-      COMMON/LLOG/LPRJLG
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       common/entfile/entflnam, ientxist
@@ -856,7 +852,7 @@ C Images.
       character h*72,act*1
       character entflnam*72
       CHARACTER LCFD*72
-      CHARACTER LAPROB*72,LPNF*72,CNTMFIL*72,LPRJLG*72
+      CHARACTER LAPROB*72,LPNF*72,CNTMFIL*72
       CHARACTER ctldoc*248,lctlf*72
       character CNTMDESC*124,CONTMNAM*12
 

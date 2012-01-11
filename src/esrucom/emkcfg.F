@@ -85,9 +85,6 @@ C Plant network.
       COMMON/C23/IFPNF,LPNF
       INTEGER :: ifpnf
 
-C Project log file, paths to standard file locations.
-      COMMON/LLOG/LPRJLG
-
 C Configuration control.
       common/cctlnm/ctldoc,lctlf
 
@@ -292,7 +289,7 @@ C If 0 then the calculation includes diffuse shading.
       CHARACTER*72 LBSIMP,hvacfile,LFClds
 
       CHARACTER LCFGF*72
-      CHARACTER LAPROB*72,LPRJLG*72
+      CHARACTER LAPROB*72
       CHARACTER CXSTR*78,cfgroot*24
       CHARACTER LPNF*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP

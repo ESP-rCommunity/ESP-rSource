@@ -1487,7 +1487,6 @@ C ICLIM,LCLIM (for climate file)
       INTEGER :: IFPNF
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       INTEGER :: iairn,icaas
-      common/LLOG/LPRJLG
       common/cctlnm/ctldoc,lctlf
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       common/GTFIL/GTGEOM
@@ -1530,7 +1529,7 @@ C ICLIM,LCLIM (for climate file)
       INTEGER :: ibsimp
 
       character LUALF*72,LCNG*15,LLOC*15,LCFGF*72
-      character LPRJLG*72,LPNF*72,LMOIST*72
+      character LPNF*72,LMOIST*72
       character*72 LCFD
       character LCMDFL*144,LFIL*72
       
