@@ -864,7 +864,7 @@ C Registration, show all available images.
         h(1)='The current model is named:'
         write(h(2),'(a)')modeltitle
         h(3)='The model is documented in: '
-        write(h(4),'(a)')LPRJLG
+        write(h(4),'(a)')LPRJLG(1:70)
         h(5)=' '
         write(h(6),'(a,i2,a)')'There are ',noimg,' linked images.'
         h(7)=' '
@@ -881,7 +881,7 @@ C Zone button, show zone/site/gridding related images.
      &    ' zones and',NCON,' surfaces.'
         h(5)=' '
         h(6)='The model is documented in: '
-        write(h(7),'(a)')LPRJLG
+        write(h(7),'(a)')LPRJLG(1:70)
         nh=7
         do 42 i=1,NCOMP
           if(LCFD(i).eq.'UNKNOWN')then

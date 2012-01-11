@@ -387,12 +387,22 @@ C Re-establish pwd and then project folders.
      &      'System configuration file is located in folder:')
         call edisp(iuout,path)
 
-C Write out the model log file.
+C Write out the model log file within the model doc folder.
         uname=' '
         call usrname(uname)
         call usrdir(pwd)
         write(modeltitle,'(a)') menu(1:lnblnk(menu))
-        write(LPRJLG,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.log'
+        lr=lnblnk(cfgroot)
+        if(docpth(1:2).eq.'  '.or.docpth(1:2).eq.'./')then
+          write(LPRJLG,'(2a)') cfgroot(1:lr),'.log'
+        elseif(docpth(1:3).eq.'../')then
+          write(LPRJLG,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &      cfgroot(1:lr),'.log'
+        else
+          write(LPRJLG,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &      cfgroot(1:lr),'.log'
+        endif
+C        write(LPRJLG,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.log'
         write(currentfile,'(a)') LPRJLG(1:lnblnk(LPRJLG))
         IUNIT=IFIL+1
         CALL EFOPSEQ(IUNIT,LPRJLG,3,IER)
@@ -406,7 +416,9 @@ C Write out the model log file.
         write(iunit,'(a)')'Project reference: '
         write(iunit,'(a)')'_____________________________'
         write(iunit,'(a)')'Notes: '
+        write(iunit,'(a)')'  '
         write(iunit,'(a)')'_____________________________'
+        write(iunit,'(a)')'  '
         CALL ERPFREE(IUNIT,ISTAT)
         goto 77
 
@@ -530,7 +542,17 @@ C Documentation.
   53  helptopic='cfg_model_log_file'
       call gethelptext(helpinsub,helptopic,nbhelp)
       if(LPRJLG(1:2).eq.'  '.or.LPRJLG(1:4).eq.'UNKN')then
-        write(LPRJLG,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.log'
+        lr=lnblnk(cfgroot)
+        if(docpth(1:2).eq.'  '.or.docpth(1:2).eq.'./')then
+          write(LPRJLG,'(2a)') cfgroot(1:lr),'.log'
+        elseif(docpth(1:3).eq.'../')then
+          write(LPRJLG,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &      cfgroot(1:lr),'.log'
+        else
+          write(LPRJLG,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &      cfgroot(1:lr),'.log'
+        endif
+C        write(LPRJLG,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.log'
       endif
       ltmp=LPRJLG
       CALL EASKS(ltmp,' ','Project log file?',
@@ -569,7 +591,9 @@ C information.
         write(iunit,'(a)')'Project reference: '
         write(iunit,'(a)')'_____________________________'
         write(iunit,'(a)')'Notes: '
+        write(iunit,'(a)')'  '
         write(iunit,'(a)')'_____________________________'
+        write(iunit,'(a)')'  '
         CALL ERPFREE(IUNIT,ISTAT)
       endif
 

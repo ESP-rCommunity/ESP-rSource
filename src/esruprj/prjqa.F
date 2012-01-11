@@ -265,6 +265,7 @@ C in the current model. A -1 means not applicable
       logical nameok  ! to use for testing if duplicate names in zone
       integer NITMS   ! max items
       integer im,k,mnulen   ! multi column lines
+      integer lr      ! length of model root string
       logical odd   ! for display of vertex info
       
       INTEGER :: i,icc,icoth,ie,ieripv,iglib,irec,iprb,inv
@@ -522,7 +523,17 @@ C << need to sort out changing to main project folder >>
 C Edit project documentation.
         if(CFGOK)then
   54      if(LPRJLG(1:2).eq.'  '.or.LPRJLG(1:4).eq.'UNKN')then
-            write(LPRJLG,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.log'
+            lr=lnblnk(cfgroot)
+            if(docpth(1:2).eq.'  '.or.docpth(1:2).eq.'./')then
+              write(LPRJLG,'(2a)') cfgroot(1:lr),'.log'
+            elseif(docpth(1:3).eq.'../')then
+              write(LPRJLG,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &          cfgroot(1:lr),'.log'
+            else
+              write(LPRJLG,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &          cfgroot(1:lr),'.log'
+            endif
+C            write(LPRJLG,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.log'
           endif
           ltmp=LPRJLG
           CALL EASKS(ltmp,
