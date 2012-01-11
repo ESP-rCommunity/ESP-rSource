@@ -3950,7 +3950,9 @@ C Compute perimeter of the surface.
           jj=JVN(i,ii)
           kk=JVN(i,ii+1)
           vdis=0.0
-          vdis= crowxyz(x(jj),y(jj),z(jj),x(kk),y(kk),z(kk))
+          if(jj.gt.0.and.kk.gt.0)then
+            vdis= crowxyz(x(jj),y(jj),z(jj),x(kk),y(kk),z(kk))
+          endif
           SSPERIM(icc)=SSPERIM(icc)+vdis
   42    continue
 
@@ -3958,7 +3960,9 @@ C Link back to start vertex.
         jj=JVN(i,NVER(i))
         kk=JVN(i,1)
         vdis=0.0
-        vdis= crowxyz(x(jj),y(jj),z(jj),x(kk),y(kk),z(kk))
+        if(jj.gt.0.and.kk.gt.0)then
+          vdis= crowxyz(x(jj),y(jj),z(jj),x(kk),y(kk),z(kk))
+        endif
         SSPERIM(icc)=SSPERIM(icc)+vdis
 
 C Debug.
