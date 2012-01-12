@@ -387,7 +387,7 @@ C Setup the selection menu.
     3 INO=-4
       IER=0
       write(items(1),'(a)')  '1 browse folders '
-      write(items(2),'(2a)') '2 model log file ',LPRJLG(1:15)
+      write(items(2),'(2a)') '2 model log file ',lmodellog(1:15)
       items(3) ='3 graphing tool               '
       items(4) ='4 diagram editing tool        '
       items(5) ='5 image viewer                '
@@ -526,18 +526,18 @@ C << need to sort out changing to main project folder >>
 
 C Edit project documentation.
         if(CFGOK)then
-  54      if(LPRJLG(1:2).eq.'  '.or.LPRJLG(1:4).eq.'UNKN')then
+  54      if(lmodellog(1:2).eq.'  '.or.lmodellog(1:4).eq.'UNKN')then
             lr=lnblnk(cfgroot)
             if(docpth(1:2).eq.'  '.or.docpth(1:2).eq.'./')then
-              write(LPRJLG,'(2a)') cfgroot(1:lr),'.log'
+              write(lmodellog,'(2a)') cfgroot(1:lr),'.log'
             elseif(docpth(1:3).eq.'../')then
-              write(LPRJLG,'(4a)') docpth(1:lnblnk(docpth)),fs,
+              write(lmodellog,'(4a)') docpth(1:lnblnk(docpth)),fs,
      &          cfgroot(1:lr),'.log'
             else
-              write(LPRJLG,'(4a)') docpth(1:lnblnk(docpth)),fs,
+              write(lmodellog,'(4a)') docpth(1:lnblnk(docpth)),fs,
      &          cfgroot(1:lr),'.log'
             endif
-C            write(LPRJLG,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.log'
+C            write(lmodellog,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.log'
           endif
 
 C Detect if working on X11 or GTK.
@@ -546,15 +546,15 @@ C Detect if working on X11 or GTK.
           lguess='  '
           lldef='project.log'
           if(iglib.eq.2)then
-            call addpath(LPRJLG,longtfile,concat)  ! expand path for GTK browser
+            call addpath(lmodellog,longtfile,concat)  ! expand path for GTK browser
             write(lguess,'(a)') longtfile(1:lnblnk(longtfile))
           else
-            write(lguess,'(a)') LPRJLG(1:lnblnk(LPRJLG))
+            write(lguess,'(a)') lmodellog(1:lnblnk(lmodellog))
           endif
           call edisp(iuout,'  ')  ! echo blank line
           CALL EASKXORGTKF(lguess,
      &      'Project log file:',' ',lldef,lltmp,'log file',IER,nbhelp)
-          write(lprjlg,'(a)') lguess(1:lnblnk(lguess))
+          write(lmodellog,'(a)') lguess(1:lnblnk(lguess))
 
 C If user request jump back and re-display the menu.
           if(ier.eq.-3)then
@@ -569,7 +569,7 @@ C Ask user whether file is in ../doc and if so use fdroot if GTK.
      &        ' ',OK,dok,3)
             if(OK)then
               call fdroot(lltmp,lpath,fname)
-              write(lprjlg,'(3a)') docpth(1:lnblnk(docpth)),fs,
+              write(lmodellog,'(3a)') docpth(1:lnblnk(docpth)),fs,
      &          fname(1:lnblnk(fname))
             endif
           endif
@@ -579,10 +579,10 @@ C when the model was initially created.
           uname=' '
           call usrname(uname)
           call usrdir(pwd)
-          call FINDFIL(LPRJLG,XST)
+          call FINDFIL(lmodellog,XST)
           IUNIT=IFIL+1
           if(XST)then
-            CALL LISTAS(IUNIT,LPRJLG,IER)
+            CALL LISTAS(IUNIT,lmodellog,IER)
             IF(IER.ne.0)THEN
               dok=.true.
               CALL ASKOK('Problem detected while trying to preview',
@@ -603,12 +603,12 @@ C necessary.  If vi then spawn a new window to do the editing.
      &      OK,dok,nbhelp)
           IF(OK)then
             if(unixok)then
-              call addpath(LPRJLG,longtfile,concat)
+              call addpath(lmodellog,longtfile,concat)
             else
 
 C If running on a non-unix machine see if there are spaces in the name
 C and change any / to \.
-              call addpath(LPRJLG,longtfile,concat)
+              call addpath(lmodellog,longtfile,concat)
               call cmdfiledos(longtfile,longtfiledos,ier)
               longtfile=' '
               longtfile=longtfiledos
@@ -977,7 +977,7 @@ C Generate the QA report.
      &  modeltitle(1:lnblnk(modeltitle)),' defined in ',
      &  LCFGF(1:lnblnk(LCFGF)),' generated on ',
      &  dstmp,'. Notes associated with the model',
-     &  ' are in ',LPRJLG(1:lnblnk(LPRJLG))
+     &  ' are in ',lmodellog(1:lnblnk(lmodellog))
       call edisp248(itu,outs248,80)
       call edisp(itu,' ')
 

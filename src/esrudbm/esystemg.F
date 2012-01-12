@@ -1433,7 +1433,7 @@ C Annual IPV report depreciated in favour of sipvres.
 
 C Project log file, read and then go on to fabric/plant description.
         CALL STRIPC(IUC,OUTSTR,0,ND,1,'project log file',IER)
-        LPRJLG=OUTSTR(1:LNBLNK(OUTSTR))
+        lmodellog=OUTSTR(1:LNBLNK(OUTSTR))
         goto 45
 
       else

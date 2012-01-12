@@ -1259,7 +1259,7 @@ C Write primary energy conversions if these have been set.
      &    phwco2,phwnox,phwsox,' # dhw emissions CO2,NOX,SOX'
       endif
       write(ioout,'(a)')'* PROJ LOG'
-      WRITE(ioout,'(A)')LPRJLG(1:lnblnk(LPRJLG))
+      WRITE(ioout,'(A)')lmodellog(1:lnblnk(lmodellog))
       write(ioout,'(a)')'* Building'
       WRITE(ioout,'(A)')modeltitle(1:lnblnk(modeltitle))
       return

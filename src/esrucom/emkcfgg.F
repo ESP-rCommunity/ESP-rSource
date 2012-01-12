@@ -751,7 +751,7 @@ C Annual ipv report (if included).
 
 C Write project log file related to this model.
       WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) '* PROJ LOG'
-      WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) LPRJLG(1:lnblnk(LPRJLG))
+      WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2)lmodellog(1:lnblnk(lmodellog))
 
 C Ground information.
       dogrnd = .false.

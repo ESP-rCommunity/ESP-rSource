@@ -1975,7 +1975,7 @@ C Temporal database.
       endif
 
 C Project log file.
-      call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LPRJLG)
+      call wtarentry(iunit,pathome,tr,ltr,tp,ltp,lmodellog)
 
 C Ground information.
       IF(GRND3D)THEN

@@ -193,7 +193,7 @@ C Current default version is v4.
       NCOMP=0
       noimg=0
       LPNF='UNKNOWN'
-      LPRJLG='UNKNOWN'
+      lmodellog='UNKNOWN'
       nbdaytype=0
       call st2file(LCFTMP,LCMDFL)
 
@@ -403,18 +403,18 @@ C Write out the model log file within the model doc folder.
         write(modeltitle,'(a)') menu(1:lnblnk(menu))
         lr=lnblnk(cfgroot)
         if(docpth(1:2).eq.'  '.or.docpth(1:2).eq.'./')then
-          write(LPRJLG,'(2a)') cfgroot(1:lr),'.log'
+          write(lmodellog,'(2a)') cfgroot(1:lr),'.log'
         elseif(docpth(1:3).eq.'../')then
-          write(LPRJLG,'(4a)') docpth(1:lnblnk(docpth)),fs,
+          write(lmodellog,'(4a)') docpth(1:lnblnk(docpth)),fs,
      &      cfgroot(1:lr),'.log'
         else
-          write(LPRJLG,'(4a)') docpth(1:lnblnk(docpth)),fs,
+          write(lmodellog,'(4a)') docpth(1:lnblnk(docpth)),fs,
      &      cfgroot(1:lr),'.log'
         endif
-C        write(LPRJLG,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.log'
-        write(currentfile,'(a)') LPRJLG(1:lnblnk(LPRJLG))
+C        write(lmodellog,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.log'
+        write(currentfile,'(a)') lmodellog(1:lnblnk(lmodellog))
         IUNIT=IFIL+1
-        CALL EFOPSEQ(IUNIT,LPRJLG,3,IER)
+        CALL EFOPSEQ(IUNIT,lmodellog,3,IER)
         write(iunit,'(2a)')'Project notes for ',LCFGF(1:lnblnk(LCFGF))
         write(iunit,'(2a)')'Title: ',modeltitle(1:lnblnk(modeltitle))
         write(iunit,'(2a)')'In folder: ',pwd(1:lnblnk(pwd))
@@ -550,15 +550,15 @@ C General description of the model.
 C Documentation.
   53  helptopic='cfg_model_log_file'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      if(LPRJLG(1:2).eq.'  '.or.LPRJLG(1:4).eq.'UNKN')then
+      if(lmodellog(1:2).eq.'  '.or.lmodellog(1:4).eq.'UNKN')then
         lr=lnblnk(cfgroot)
         if(docpth(1:2).eq.'  '.or.docpth(1:2).eq.'./')then
-          write(LPRJLG,'(2a)') cfgroot(1:lr),'.log'
+          write(lmodellog,'(2a)') cfgroot(1:lr),'.log'
         elseif(docpth(1:3).eq.'../')then
-          write(LPRJLG,'(4a)') docpth(1:lnblnk(docpth)),fs,
+          write(lmodellog,'(4a)') docpth(1:lnblnk(docpth)),fs,
      &      cfgroot(1:lr),'.log'
         else
-          write(LPRJLG,'(4a)') docpth(1:lnblnk(docpth)),fs,
+          write(lmodellog,'(4a)') docpth(1:lnblnk(docpth)),fs,
      &      cfgroot(1:lr),'.log'
         endif
       endif
@@ -569,10 +569,10 @@ C Detect if working on X11 or GTK.
       lguess='  '
       lldef='project.log'
       if(iglib.eq.2)then
-        call addpath(LPRJLG,longtfile,concat)  ! expand path for GTK browser
+        call addpath(lmodellog,longtfile,concat)  ! expand path for GTK browser
         write(lguess,'(a)') longtfile(1:lnblnk(longtfile))
       else
-        write(lguess,'(a)') LPRJLG(1:lnblnk(LPRJLG))
+        write(lguess,'(a)') lmodellog(1:lnblnk(lmodellog))
       endif
       call edisp(iuout,'  ')  ! echo blank line
       CALL EASKXORGTKF(lguess,
@@ -590,11 +590,11 @@ C Ask user whether file is in ../doc and if so use fdroot if GTK.
      &    ' ',OK,dok,3)
         if(OK)then
           call fdroot(lltmp,lpath,fname)
-          write(lprjlg,'(3a)') docpth(1:lnblnk(docpth)),fs,
+          write(lmodellog,'(3a)') docpth(1:lnblnk(docpth)),fs,
      &      fname(1:lnblnk(fname))
         endif
       else
-        write(LPRJLG,'(a)') lguess(1:lnblnk(lguess))
+        write(lmodellog,'(a)') lguess(1:lnblnk(lguess))
       endif
 
 C See if file exists, otherwise create it and write basic
@@ -602,10 +602,10 @@ C information.
       uname=' '
       call usrname(uname)
       call usrdir(pwd)
-      call FINDFIL(LPRJLG,XST)
+      call FINDFIL(lmodellog,XST)
       IUNIT=IFIL+1
       if(XST)then
-        CALL LISTAS(IUNIT,LPRJLG,IER)
+        CALL LISTAS(IUNIT,lmodellog,IER)
         IF(IER.ne.0)THEN
           dok=.true.
           CALL ASKOK('Problem detected with log file!',
@@ -613,8 +613,8 @@ C information.
           IF(OK)GOTO 53
         ENDIF
       else
-        write(currentfile,'(a)') LPRJLG(1:lnblnk(LPRJLG))
-        CALL EFOPSEQ(IUNIT,LPRJLG,3,IER)
+        write(currentfile,'(a)') lmodellog(1:lnblnk(lmodellog))
+        CALL EFOPSEQ(IUNIT,lmodellog,3,IER)
         write(iunit,'(a,a)')'Project notes for ',LCFGF(1:lnblnk(LCFGF))
         write(iunit,'(a,a)')'Title: ',modeltitle(1:lnblnk(modeltitle))
         write(iunit,'(a,a)')'In folder: ',pwd(1:lnblnk(pwd))
@@ -645,12 +645,12 @@ C << which uses GTK facilities.
 C Check if Unix-based or DOS based.
         call isunix(unixok)
         if(unixok)then
-          call addpath(LPRJLG,longtfile,concat)
+          call addpath(lmodellog,longtfile,concat)
         else
 
 C If running on a non-unix machine see if there are spaces in the name
 C and change any / to \.
-          call addpath(LPRJLG,longtfile,concat)
+          call addpath(lmodellog,longtfile,concat)
           call cmdfiledos(longtfile,longtfiledos,ier)
           longtfile=' '
           longtfile=longtfiledos
