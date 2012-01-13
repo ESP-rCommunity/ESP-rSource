@@ -587,8 +587,9 @@ C Special materials/miscel component database.
 C Text/graphic feedback redirection on channel ifil +9 
       ixunit = ifil + 9
 
-C Project log.
+C Project log and contents.
       lmodellog='project.notes'
+      lmodelqa='UNKNOWN'
 
 C If -actf was included in the command line then see if it
 C is a known command that can be acted on.

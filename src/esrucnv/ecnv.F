@@ -1218,10 +1218,28 @@ C (if ground reflectivity model 3)
       IF(groundreflmodel.EQ.3) WRITE(ioout,'(A,A)',IOSTAT=IOS,ERR=2) 
      &  '*sndf ',SNFNAM(1:lnblnk(SNFNAM))
 
-      if(lnblnk(lctlf).eq.0.or.lctlf(1:7).eq.'UNKNOWN')then
+C Write control file if known.
+      if(lnblnk(lctlf).eq.0)then
+        continue
+      elseif(lctlf(1:7).eq.'UNKNOWN')then
+        continue
+      elseif(lctlf(1:2).eq.'  ')then
         continue
       else
-        WRITE(ioout,'(a,a)') '*ctl  ',LCTLF(1:lnblnk(LCTLF))
+        WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*ctl  ',
+     &    LCTLF(1:lnblnk(LCTLF))
+      endif
+
+C Write model contents file if known.
+      if(lnblnk(lmodelqa).eq.0)then
+        continue
+      elseif(lmodelqa(1:7).eq.'UNKNOWN')then
+        continue
+      elseif(lmodelqa(1:2).eq.'  ')then
+        continue
+      else
+        WRITE(IFCFG,'(a,a)',IOSTAT=IOS,ERR=2) '*contents ',
+     &    lmodelqa(1:lnblnk(lmodelqa))
       endif
 
       WRITE(ioout,'(a,I4,a)',IOSTAT=IOS,ERR=2) '*year  ',

@@ -887,6 +887,8 @@ C << add in ipathmsc >>
         CALL EGETRM(OUTSTR,K,LCLIM,'W','climate db',IER)
       elseif(WORD(1:4).eq.'*ctl')then
         CALL EGETRM(OUTSTR,K,LCTLF,'W','config control',IER)
+      elseif(WORD(1:9).eq.'*contents')then
+        CALL EGETRM(LOUTSTR,K,lmodelqa,'W','model contents',IER)
       elseif(WORD(1:5).eq.'*hvac')then
 
 C hvac file, test and see if it exists.
