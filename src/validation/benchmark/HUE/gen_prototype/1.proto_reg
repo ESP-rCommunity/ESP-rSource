@@ -1,0 +1,268 @@
+#!/bin/bash
+## SAPP 2009 Project File
+
+# Script to make the SAPP variants
+# To create the SAPP variants run the following script uncommenting each section at a time
+# Start with the X1~5 models
+
+# Setup number of permutations of each design parameter
+# If following parameters are changed in this file also make
+# the same change on prerun_tasks
+XX=5 # Exposure
+II=5 # Insulation level
+AA=5 # Air tightness
+CC=2 # Position of thermal capacity
+SS=3 # Solar ingress
+OO=5 # Occupant density
+LL=5 # Living area fraction
+
+################ SECTION 0
+# Initialise and ask whether interactive
+echo "Run automatically [y/n]"
+read automatic
+if [ $automatic == 'y' ] ; then
+  A='y'
+fi
+
+# Now check if requisite folder structure exists
+if [ ! -d ../tmp ]; then
+  mkdir ../tmp ../tmp/clm_bin  ../tmp/models ../tmp/models/cfg ../tmp/models/ctl ../tmp/models/dbs ../tmp/models/zones
+else 
+  if [ ! -d ../tmp/models ]; then
+    mkdir ../tmp/models ../tmp/models/cfg ../tmp/models/ctl ../tmp/models/dbs ../tmp/models/zones
+  else
+    if [ ! -d ../tmp/models/cfg ]; then
+      mkdir ../tmp/models/cfg
+    fi
+    if [ ! -d ../tmp/models/ctl ]; then
+      mkdir ../tmp/models/ctl
+    fi
+    if [ ! -d ../tmp/models/dbs ]; then
+      mkdir ../tmp/models/dbs
+    fi
+    if [ ! -d ../tmp/models/zones ]; then
+      mkdir ../tmp/models/zones
+    fi
+  fi
+  if [ ! -d ../tmp/clm_bin ]; then
+    mkdir ../tmp/clm_bin
+  fi
+fi
+
+################ SECTION 1
+# Copy configuration file to exposure variants X1 ~ 5 
+echo "Making X (exposure) permutations"
+for x in `seq 1 $XX`;
+do
+  # change results file name
+  sed s/results.file/'X'$x'I1A1C1S1O1L1.res'/ ../base_prototype/cfg/model.cfg > temp.0
+
+  # change constructions database
+  sed s/constructions.db/I1C1.constrdb/ temp.0 > temp.1
+
+  # change connections file name
+  sed s/connections.file/'X'$x'.cnn'/ temp.1 > temp.0  
+
+  # change geometry file names
+  sed s/liv.geo/'livX'$x'S1L1.geo'/ temp.0 > temp.1
+
+  # change shading file names
+  sed s/liv.shd/'livS1.shd'/ temp.1 > temp.0
+
+  # change construction file names
+  sed s/liv.con/'livI1C1.con'/ temp.0 > temp.1
+
+  # change tmc file names
+  sed s/liv.tmc/'livI1C1.tmc'/ temp.1 > temp.0
+
+  # change operations file names
+  sed s/liv.opr/'livA1O1.opr'/ temp.0 > '../tmp/models/cfg/X'$x'I1A1C1S1O1L1.cfg'
+done
+echo "Completed X permutations" ; echo " "
+
+################ SECTION 2
+# Now make cfg files for I2 ~ 5 (I1 has already been built above)
+echo "Making I (insulation) permutations"
+for x in `seq 1 $XX`;
+do
+  for i in `seq 2 $II`;
+  do
+    # Change constructions database
+    sed s/I1C1.constrdb/'I'$i'C1.constrdb'/ '../tmp/models/cfg/X'$x'I1A1C1S1O1L1.cfg' > temp.1
+
+    # Change results file
+    sed s/'X'$x'I1A1C1S1O1L1.res'/'X'$x'I'$i'A1C1S1O1L1.res/' temp.1 > temp.0
+
+    # Change constructions and tmc files
+    sed s/livI1C1.con/'livI'$i'C1.con'/ temp.0 > temp.1
+    sed s/livI1C1.tmc/'livI'$i'C1.tmc'/ temp.1 >  '../tmp/models/cfg/X'$x'I'$i'A1C1S1O1L1.cfg'
+  done
+done
+echo "Completed I permutations" ; echo " "
+
+################ SECTION 3
+# Now make air tightness permutations"
+if [ $automatic != 'y' ] ; then
+  echo "Do you want to make A (airtightness) permutations [y/n]"
+  read A
+fi
+
+if [ $A == 'y' ] ; then
+echo "Making A (airtightness) permutations"
+for x in `seq 1 $XX`;
+do
+  for i in `seq 1 $II`;
+  do
+    for a in `seq 2 $AA`;
+    do
+      # Change results file name
+      sed s/'X'$x'I'$i'A1C1S1O1L1.res'/'X'$x'I'$i'A'$a'C1S1O1L1.res'/ '../tmp/models/cfg/X'$x'I'$i'A1C1S1O1L1.cfg' > temp.1
+
+      # Change operations file names
+      sed s/livA1O1.opr/'livA'$a'O1.opr'/ temp.1 > '../tmp/models/cfg/X'$x'I'$i'A'$a'C1S1O1L1.cfg'
+    done
+  done
+done
+echo "Completed A permutations" ; echo " "
+fi
+
+################ SECTION 4
+# Now make capacity permutations"
+if [ $automatic != 'y' ] ; then
+  echo "Do you want to make C (position of capacity) permutations [y/n]"
+  read A
+fi
+if [ $A == 'y' ] ; then
+echo "Making C (position of capacity) permutations"
+for x in `seq 1 $XX`;
+do
+  for i in `seq 1 $II`;
+  do
+    for a in `seq 1 $AA`;
+    do
+      for c in `seq 2 $CC`;
+      do
+        # Change results file name
+        sed s/'X'$x'I'$i'A'$a'C1S1O1L1.res'/'X'$x'I'$i'A'$a'C'$c'S1O1L1.res'/ '../tmp/models/cfg/X'$x'I'$i'A'$a'C1S1O1L1.cfg' > temp.1
+
+        # Change constructions and tmc file names
+        sed s/'livI'$i'C1.con'/'livI'$i'C'$c'.con'/ temp.1 > temp.0
+        sed s/'livI'$i'C1.tmc'/'livI'$i'C'$c'.tmc'/ temp.0 > temp.1
+
+        # Change constructions database name
+        sed s/'I'$i'C1.constrdb'/'I'$i'C'$c'.constrdb'/ temp.1 > '../tmp/models/cfg/X'$x'I'$i'A'$a'C'$c'S1O1L1.cfg'
+      done
+    done
+  done
+done
+echo "Completed C permutations" ; echo " "
+fi
+
+################ SECTION 5
+# Now make solar ingress permutations"
+if [ $automatic != 'y' ] ; then
+  echo "Do you want to make S (solar ingress) permutations [y/n]"
+  read A
+fi
+if [ $A == 'y' ] ; then
+echo "Making S (solar ingress) permutations"
+for x in `seq 1 $XX`;
+do
+  for i in `seq 1 $II`;
+  do
+    for a in `seq 1 $AA`;
+    do
+      for c in `seq 1 $CC`;
+      do
+        for s in `seq 2 $SS`;
+        do
+          # Change results file name
+          sed s/'X'$x'I'$i'A'$a'C'$c'S1O1L1.res'/'X'$x'I'$i'A'$a'C'$c'S'$s'O1L1.res'/ '../tmp/models/cfg/X'$x'I'$i'A'$a'C'$c'S1O1L1.cfg' > temp.1
+
+          # Change geometry and shading file names
+          sed s/'livX'$x'S1L1.geo'/'livX'$x'S'$s'L1.geo'/ temp.1 > temp.0
+          sed s/livS1.shd/'livS'$s'.shd'/ temp.0 > '../tmp/models/cfg/X'$x'I'$i'A'$a'C'$c'S'$s'O1L1.cfg'
+        done
+      done
+    done
+  done
+done
+echo "Completed S permutations" ; echo " "
+fi
+
+################ SECTION 6
+# Now make occupancy permutations"
+if [ $automatic != 'y' ] ; then
+  echo "Do you want to make O (occupancy) permutations [y/n]"
+  read A
+fi
+if [ $A == 'y' ] ; then
+echo "Making O (occupancy) permutations"
+for x in `seq 1 $XX`;
+do
+  for i in `seq 1 $II`;
+  do
+    for a in `seq 1 $AA`;
+    do
+      for c in `seq 1 $CC`;
+      do
+        for s in `seq 1 $SS`;
+        do
+          for o in `seq 2 $OO`
+          do
+            # Change results file name
+            sed s/'X'$x'I'$i'A'$a'C'$c'S'$s'O1L1.res'/'X'$x'I'$i'A'$a'C'$c'S'$s'O'$o'L1.res'/ '../tmp/models/cfg/X'$x'I'$i'A'$a'C'$c'S'$s'O1L1.cfg' > temp.1
+
+            # Change operation file name
+            sed s/'livA'$a'O1.opr'/'livA'$a'O'$o'.opr'/ temp.1 > '../tmp/models/cfg/X'$x'I'$i'A'$a'C'$c'S'$s'O'$o'L1.cfg'
+          done
+        done
+      done
+    done
+  done
+done
+echo "Completed O permutations" ; echo " "
+fi
+
+################ SECTION 7
+# Now make living area fraction permutations"
+if [ $automatic != 'y' ] ; then
+  echo "Do you want to make L (living area fraction) permutations [y/n]"
+  read A
+fi
+if [ $A == 'y' ] ; then
+echo "Making L (living area fraction) permutations"
+for x in `seq 1 $XX`;
+do
+  for i in `seq 1 $II`;
+  do
+    for a in `seq 1 $AA`;
+    do
+      for c in `seq 1 $CC`;
+      do
+        for s in `seq 1 $SS`;
+        do
+          for o in `seq 1 $OO`
+          do
+            for l in `seq 2 $LL`
+            do
+              # Change results file name
+              sed s/'X'$x'I'$i'A'$a'C'$c'S'$s'O'$o'L1.res'/'X'$x'I'$i'A'$a'C'$c'S'$s'O'$o'L'$l'.res'/ '../tmp/models/cfg/X'$x'I'$i'A'$a'C'$c'S'$s'O'$o'L1.cfg' > temp.1
+
+              # Change geometry file names
+              sed s/'livX'$x'S'$s'L1.geo'/'livX'$x'S'$s'L'$l'.geo'/ temp.1 > '../tmp/models/cfg/X'$x'I'$i'A'$a'C'$c'S'$s'O'$o'L'$l'.cfg'
+            done
+          done
+        done
+      done
+    done
+  done
+done
+echo "Completed L permutations" ; echo " "
+fi
+
+rm -rf temp.*
+if [ $automatic == 'y' ] ; then
+  ./2.proto_gen automatic  # Generate support and climate files
+#  ./3.proto_sim           # Run simulations
+fi
