@@ -143,6 +143,9 @@ C Name of current application
       CHARACTER tg*1,delim*1,xfile*144,dstmp*24,LabFreq*4
       CHARACTER PubType*12,FurType*12,FurCat*4,CovSurf*12
 
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
+
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
       integer numberofzones ! to pass to updwire rather than ncomp
@@ -320,8 +323,13 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=16
         LIMIT =16
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r Acoustic ',cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'Acoustic: enquiries to esru.strath.ac')
+     &  pagestitle)
 
 C Open the text display box equal to LIMTTY if MODEL = 8.  Problem
 C not yet know so pass 0 to the wireframe control routine (updwire).

@@ -259,3 +259,30 @@ C.........Compiliers ( eg: gcc/g++/g77)
 
       return
       end
+
+C ******* ESPrVersionNum
+C Return out ESP-r versioning information.
+
+      subroutine ESPrVersionNum(cVnum)
+      implicit none
+      
+C PASSED VARIABLES 
+      character cVnum*16             ! Phrase with release number
+
+C LOCAL VARIABLES
+C declare variables describing version and build information
+      integer iLen   ! for actual string lengths
+            
+C References:
+      integer lnblnk
+      
+C Include dynamically-created installation information. 
+#include "build_info.h"
+
+C Write out version number. 
+      write(cVnum,'(3A)') "release ", 
+     &      cRelease_Num(1:lnblnk(cRelease_Num)),
+     &      "."
+
+      return
+      end

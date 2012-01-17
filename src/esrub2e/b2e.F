@@ -62,6 +62,9 @@ C Name of current application
       CHARACTER INTER*144,INF*144
       character path*72,outs248*248
       character fs*1
+
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
       LOGICAL unixok
 
 #ifdef OSI
@@ -149,8 +152,15 @@ C Set pixels high to iappw and pixels wide to factor in monitor size.
         LIMTTY=16
         LIMIT =16
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r BEMS link ',
+     &  cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r BEMS link: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
+
       IF(MMOD.EQ.-6)then
         ICOUT=0
       else

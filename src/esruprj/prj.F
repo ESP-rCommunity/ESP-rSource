@@ -191,6 +191,9 @@ C Returned parameters from silentread.
       dimension ivals(MCOM)
       logical silent  ! for dependency checking on transform or rotate
 
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
+
 C Passed parameters to cfgtogg
 #ifdef OSI
       integer icfg_type  ! model cfg type
@@ -419,8 +422,13 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=16
         LIMIT =16
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r Project Manager ',cVnum
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r Project Manager: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
 
 C Open the text display box equal to LIMTTY if MMOD = 8.  Model
 C not yet know so pass 0 to the wireframe control routine (updwire).

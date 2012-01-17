@@ -169,6 +169,10 @@ C Name of current application.
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
       character xfile*144,tg*1,delim*1,mode*4
       character exportfile*72 ! for ascii shading file
+
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
+
       logical silent,unixok,there,context,existing
       logical modify,modlen,modbnd,xst
       logical ok,dok,cfgok,mldbok,matdbok,ctlok,optkok
@@ -345,8 +349,14 @@ C feedback).
          limtty=16
          limit =16
       endif
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r Shading & Insolation ',
+     &  cVnum(1:lnblnk(cVnum))
+
       call epages(mmod,iuin,iuout,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r Shading & Insolation: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
 
 C Open the text display box equal to limtty if mmod = 8.
       if(mmod.eq.8)then
