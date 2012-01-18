@@ -100,10 +100,12 @@ C Name of current application
       integer numberofzones ! to pass to updwire rather than ncomp
       integer iigl,iigr,iigt,iigb,iigw,iigwh
       integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iicapture,iiazi    ! to pass to updcapt updazi
 #else
       integer*8 numberofzones
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
       integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iicapture,iiazi    ! to pass to updcapt updazi
 #endif
       integer MITEM,INO ! max items and current menu item
 
@@ -234,7 +236,6 @@ C Setup and pass in parameters to win3d.
         iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
         CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
-C        CALL win3d(menuchw,3,2,2,3,igl,igr,igt,igb,igw,igwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
@@ -243,8 +244,9 @@ C        CALL win3d(menuchw,3,2,2,3,igl,igr,igt,igb,igw,igwh)
           call opensetup
           numberofzones=0
           call updwire(numberofzones)  ! pass local integer
-          call updcapt(1)
-          call updazi(1)
+          iicapture=1; iiazi=1
+          call updcapt(iicapture)
+          call updazi(iiazi)
         endif
         call setzscale()
         mdispl=0

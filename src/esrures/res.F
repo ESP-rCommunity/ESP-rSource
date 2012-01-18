@@ -139,9 +139,11 @@ C IEEE callback (Solaris)
 #ifdef OSI
       integer iigl,iigr,iigt,iigb,iigw,iigwh
       integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iicapture   ! to pass to updcapt
 #else
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
       integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iicapture   ! to pass to updcapt
 #endif
       
       character cAppName*12      
@@ -350,18 +352,17 @@ C Setup and pass in parameters to win3d.
           iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
           CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &      iigl,iigr,iigt,iigb,iigw,iigwh)
-C          call win3d(menuchw,15,15,5,3,igl,igr,igt,igb,igw,igwh)
           igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
           igw=int(iigw); igwh=int(iigwh)
           call opencpw
           call opensetup
-          call updcapt(1)
+          iicapture=1
+          call updcapt(iicapture)
         elseif(iglib.eq.2)then
           iiw1=9; iiw2=20; iiw3=5; iiw4=3; iimenu=menuchw
           iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
           CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &      iigl,iigr,iigt,iigb,iigw,iigwh)
-C          CALL win3d(menuchw,9,20,5,3,igl,igr,igt,igb,igw,igwh)
           igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
           igw=int(iigw); igwh=int(iigwh)
         endif

@@ -124,9 +124,11 @@ C Name of current application
 #ifdef OSI
       integer iigl,iigr,iigt,iigb,iigw,iigwh
       integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iicapture   ! to pass to updcapt
 #else
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
       integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iicapture   ! to pass to updcapt
 #endif
 
 C For help messages
@@ -269,14 +271,14 @@ C Setup and pass in parameters to win3d.
         iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
         CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
-C        CALL win3d(menuchw,8,8,7,3,igl,igr,igt,igb,igw,igwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
           call opensetup
-          call updcapt(1)
+          iicapture=1
+          call updcapt(iicapture)
         endif
         mdispl=0
         nifgrey=0

@@ -81,7 +81,7 @@ intialisation and graphics, using ww. The routines are :-
 	labelstr(n,val,WticC,sstr)
                         :- generates an appropriate label for the value
                            passed.  INTERNAL.
-	opensetup_()    :- place environment button on screen.
+	opensetup_()    :- place font button on screen.
 	opencpw_()      :- place copyright button on screen.
 	aux_menu()
                         :-  test for mouse click in other portions of the screen.
@@ -212,6 +212,7 @@ static unsigned char logo_bits[] = {
 /* external definitions in the Fortran code */
 extern gnwkquery_();
 extern wirepk_();
+extern profgrdump_();
 extern cpwpk_();
 extern chgazi_();     /* in esrucom/common3dv.F */
 extern chgelev_();    /* in esrucom/common3dv.F */
@@ -286,7 +287,7 @@ static int f_baseline,f_lbearing;	/* num pixels under baseline and from origin t
 static box	dbx1, viewbx, msgbx, askbx, disp, scroll, scrollbar;
 static box      scrollv, scrollbarv,scrollh, scrollbarh;
 static box	fbb, setup, cpw; /* feedback box background, setup, copyright */
-static box	wire, capture, captext ;	/* wireframe ctl & capture text button */
+static box	wire, capture, captext ;	/* wireframe ctl, capture graphics & capture text button */
 static box	azi,aziplus,aziminus;	/* buttons for view azimuth changes */
 static box	elev,elevplus,elevminus;	/* buttons for view elevation changes */
 static box     altb,altc,querb,defb,okb;	/* boxes for alts,query help, default, confirm */
@@ -297,7 +298,7 @@ static box	mouse,mouse1,mouse2,mouse3;	/* box for mouse button help */
 static char mseb1h[10],mseb2h[10],mseb3h[10]; /* mouse help strings */
 static int aziplus_left,aziminus_left,azi_left,elevplus_left,elevminus_left,elev_left; /* left of azi&elev boxes */
 static int b_setup, l_setup, b_cpw, l_cpw;	/* ll of setup, copyright boxs */
-static int wire_left,captext_left;	/* left of wire frame and capture control box */
+static int wire_left,capture_left,captext_left;	/* left of wire frame and capture control box */
 static long int ocfgz,ocfgn,ocfgc,ocfgdfn; /* persistant toggles for problem type boxes */
 static long int iiocfgz,iiocfgn,iiocfgc,iiocfgdfn; /* persistant toggles for problem type images */
 static int dbx1_avail = 0;      /* flag for existance of graphic display box */
@@ -372,19 +373,20 @@ static int ter = -1;            /* terminal type passed on initial call (set ini
                             system execution calls.  */
 static int child_ter = -1;      /* child process terminal type  */
 
-static char *envmenu[] = { "menus    : tiny       ",
+static char *envmenu[] = { 
+                    "menu     : tiny       ",
                     "         : small      ",
                     "         : medium     ",
                     "         : large      ",
-                    "text feedback: tiny   ",
+                    "feedback : tiny       ",
                     "         : small      ",
                     "         : medium     ",
                     "         : large      ",
-                    "dialog/editing: tiny  ",
+                    "dialog   : tiny       ",
                     "         : small      ",
                     "         : medium     ",
                     "         : large      ",
-                    "adjust after resize   ", 0 };
+                    "dismiss               ", 0 };
 
 /* general menu to appear in network graphics mode second mouse button */
 static char *netgm2menucd[] = { "functions: zoom IN  ",
@@ -1743,6 +1745,7 @@ this enables the size of the scroll bar to be set*/
   if(iq>0){
 /* get vertical scroll bar parameters*/
   height=scrollv.b_bottom-scrollv.b_top-2;
+  if(height<5) height=5;
   if(tv>pv&&pv>0.0){
     height=(int)((float)height*pv);
   }
@@ -1755,6 +1758,7 @@ this enables the size of the scroll bar to be set*/
 
 /*get horizontal scroll bar parameters*/
   height=scrollh.b_right-scrollh.b_left-2;
+  if(height<5) height=5;
   if(th>ph&&ph>0.0){
     height=(int)((float)height*ph);
   }
@@ -2605,6 +2609,8 @@ void doitbox(box dobox,char* msg,int msglen,int asklen,long int* sav_font,long i
     azi = dobox;
   } else if (strncmp(topic, "elev", 4) == 0) {
     elev = dobox;
+  } else if (strncmp(topic, "capture", 7) == 0) {
+    capture = dobox;
   } else if (strncmp(topic, "captext", 7) == 0) {
     captext = dobox;
   } else if (strncmp(topic, "setup", 5) == 0) {
@@ -2631,6 +2637,12 @@ void doitbox(box dobox,char* msg,int msglen,int asklen,long int* sav_font,long i
       Timer(200);
     } else if (strncmp(topic, "elev", 4) == 0) {
       Timer(200);
+    } else if (strncmp(topic, "capture", 7) == 0) {
+/*
+ * Deal with user selection of capture pop-up memu. The tasks will be done
+ * based on information external to the application (in the user's .esprc file).
+ */
+        profgrdump_(); /* use subroutine in esrsu_cut_lib.f to invoke graphics capture */
     } else if (strncmp(topic, "captext", 7) == 0) {
         proftxdump_();	/* use subroutine in esru_cut_lib.f to process text buffer. */
     } else if (strncmp(topic, "setup", 5) == 0) {
@@ -2696,8 +2708,8 @@ void doitbox(box dobox,char* msg,int msglen,int asklen,long int* sav_font,long i
            new = 3;
            if(butn_fnt != new) { butn_fnt = new; refreshenv_(); }
            break;
-         case 13:
-           refreshenv_();   break;
+         case 12:
+           break;
          default: break;
        }
     } else if (strncmp(topic, "copyright", 9) == 0) {
@@ -5019,14 +5031,15 @@ void opengdisp_(menu_char,displ_l,dialogue_l,gdw,gdh)
 
 /* sort out boxs along the horizontal line between graphics and text feedback boxes */
   winfnt_(&small_fnt);
-  wire_left = disp.b_right - (f_width * 14);
-  captext_left = disp.b_right - (f_width * 24);
-  aziplus_left = disp.b_right - (f_width * 28);
-  aziminus_left = disp.b_right - (f_width * 31);
-  azi_left = disp.b_right - (f_width * 36);
-  elevplus_left = disp.b_right - (f_width * 40);
-  elevminus_left = disp.b_right - (f_width * 43);
-  elev_left = disp.b_right - (f_width * 49);
+  wire_left = disp.b_right - (f_width * 26);
+  capture_left = disp.b_right - (f_width * 8);
+  captext_left = disp.b_right - (f_width * 20);
+  elevplus_left = disp.b_right - (f_width * 30);
+  elevminus_left = disp.b_right - (f_width * 33);
+  elev_left = disp.b_right - (f_width * 44);
+  aziplus_left = disp.b_right - (f_width * 48);
+  aziminus_left = disp.b_right - (f_width * 51);
+  azi_left = disp.b_right - (f_width * 60);
   udh = f_height + 2;
 
   winfnt_(&disp_fnt);	/* Reload the text display font. */
@@ -5050,7 +5063,7 @@ void opengdisp_(menu_char,displ_l,dialogue_l,gdw,gdh)
 /* create the updown box */
  updown_text.b_bottom = disp.b_top -2;
  updown_text.b_top = updown_text.b_bottom - udh;
- updown_text.b_left = disp.b_left + (disp.b_right - disp.b_left)/4;
+ updown_text.b_left =  disp.b_right - (f_width * 67);
  updown_text.b_right = updown_text.b_left + 30;
  xt = updown_text.b_left+10;         /* points for arrows */
  xb = updown_text.b_left+20;        /* points for arrows */
@@ -5068,10 +5081,12 @@ void opengdisp_(menu_char,displ_l,dialogue_l,gdw,gdh)
    doitbox(wire,"image control",13,14,&saved_font,&small_fnt,&bottom,&left,"wire",'-');
  }
 
-/* include capture text button */
+/* include capture button to left of image control button */
  if(capture_avail >= 1) {
+   bottom = disp.b_top; left = capture_left;
+   doitbox(capture,"capture",7,8,&saved_font,&small_fnt,&bottom,&left,"capture",'-');
    bottom = fbb.b_bottom; left = captext_left;
-   doitbox(capture,"capture",7,8,&saved_font,&small_fnt,&bottom,&left,"captext",'-');
+   doitbox(capture,"capture text buffer",19,20,&saved_font,&small_fnt,&bottom,&left,"captext",'-');
  }
 
 /* include azimuth button */
@@ -5083,7 +5098,7 @@ void opengdisp_(menu_char,displ_l,dialogue_l,gdw,gdh)
    dosymbox(aziminus,2,&saved_font,&small_fnt,&bottom,&left,"aziminus",'-');
 
    bottom = disp.b_top; left = azi_left;
-   doitbox(azi,"azi",3,4,&saved_font,&small_fnt,&bottom,&left,"azi",'-');
+   doitbox(azi,"azimuth",7,8,&saved_font,&small_fnt,&bottom,&left,"azi",'-');
 
    bottom = disp.b_top; left = elevplus_left;
    dosymbox(elevplus,2,&saved_font,&small_fnt,&bottom,&left,"elevplus",'-');
@@ -5092,7 +5107,7 @@ void opengdisp_(menu_char,displ_l,dialogue_l,gdw,gdh)
    dosymbox(elevminus,2,&saved_font,&small_fnt,&bottom,&left,"elevminus",'-');
 
    bottom = disp.b_top; left = elev_left;
-   doitbox(elev,"elev",4,5,&saved_font,&small_fnt,&bottom,&left,"elev",'-');
+   doitbox(elev,"elevation",9,10,&saved_font,&small_fnt,&bottom,&left,"elev",'-');
  }
 
   xbox(disp,fg,white,BMCLEAR |BMEDGES);      /* draw outer box with edges  */
@@ -7238,13 +7253,14 @@ int aux_menu(event)  XEvent *event; {
 /* update left position of boxes along horizontal bar */
    saved_font = menu_fnt;
    if (saved_font != small_fnt) winfnt_(&small_fnt);
-   wire_left = disp.b_right - (f_width * 14);
-   aziplus_left = disp.b_right - (f_width * 28);
-   aziminus_left = disp.b_right - (f_width * 31);
-   azi_left = disp.b_right - (f_width * 36);
-   elevplus_left = disp.b_right - (f_width * 40);
-   elevminus_left = disp.b_right - (f_width * 43);
-   elev_left = disp.b_right - (f_width * 49);
+   wire_left = disp.b_right - (f_width * 26);
+   capture_left = disp.b_right - (f_width * 8);
+   elevplus_left = disp.b_right - (f_width * 30);
+   elevminus_left = disp.b_right - (f_width * 33);
+   elev_left = disp.b_right - (f_width * 44);
+   aziplus_left = disp.b_right - (f_width * 48);
+   aziminus_left = disp.b_right - (f_width * 51);
+   azi_left = disp.b_right - (f_width * 60);
    if (saved_font != small_fnt) winfnt_(&saved_font);  /* restore std font */
 
 /* debug  fprintf(stderr,"aux_menu event type %d\n",event->type);  */
@@ -7674,39 +7690,48 @@ point*/
 /* selected wire frame control */
         saved_font = menu_fnt; bottom = disp.b_top; left = wire_left;
         doitbox(wire,"image control",13,14,&saved_font,&small_fnt,&bottom,&left,"wire",'!');
+      } else if(capture_avail >= 1 && xboxinside(capture,x,y)) {
 
+/* capture image button */
+        saved_font = current_font; bottom = disp.b_top; left = capture_left;
+        doitbox(capture,"capture",7,8,&saved_font,&small_fnt,&bottom,&left,"capture",'!');
+        but_rlse = 1;
       } else if(capture_avail >= 1 && xboxinside(captext,x,y)) {
 
 /* capture text button */
         saved_font = current_font;
         bottom = fbb.b_bottom; left = captext_left;
-        doitbox(capture,"capture",7,8,&saved_font,&small_fnt,&bottom,&left,"captext",'!');
+        doitbox(capture,"capture text buffer",19,20,&saved_font,&small_fnt,&bottom,&left,"captext",'!');
         but_rlse = 1;
       } else if (azi_avail >=1 && xboxinside(aziplus,x,y)) {
 
 /* selected azimuth +  control */
         saved_font = current_font; bottom = disp.b_top; left = aziplus_left;
         dosymbox(aziplus,2,&saved_font,&small_fnt,&bottom,&left,"aziplus",'!');
+        refreshenv_();  // to esure that current domains are re-drawn
       } else if (azi_avail >=1 && xboxinside(aziminus,x,y)) {
 
 /* selected azimuth -  control */
         saved_font = current_font; bottom = disp.b_top; left = aziminus_left;
         dosymbox(aziminus,2,&saved_font,&small_fnt,&bottom,&left,"aziminus",'!');
+        refreshenv_();  // to esure that current domains are re-drawn
       } else if (azi_avail >=1 && xboxinside(elevplus,x,y)) {
 
 /* selected elev +  control */
         saved_font = current_font; bottom = disp.b_top; left = elevplus_left;
         dosymbox(elevplus,2,&saved_font,&small_fnt,&bottom,&left,"elevplus",'!');
+        refreshenv_();  // to esure that current domains are re-drawn
       } else if (azi_avail >=1 && xboxinside(elevminus,x,y)) {
 
 /* selected elev -  control */
         saved_font = current_font; bottom = disp.b_top; left = elevminus_left;
         dosymbox(elevminus,2,&saved_font,&small_fnt,&bottom,&left,"elevminus",'!');
+        refreshenv_();  // to esure that current domains are re-drawn
       } else if (setup_avail == 1 && xboxinside(setup,x,y)) {
 
 /* selected setup display */
         saved_font = current_font; bottom = b_setup; left = l_setup;
-        doitbox(setup,"window   ",9,10,&saved_font,&butn_fnt,&bottom,&left,"setup",'!');
+        doitbox(setup,"fonts    ",9,10,&saved_font,&butn_fnt,&bottom,&left,"setup",'!');
       } else if (cpw_avail >=1 && xboxinside(cpw,x,y)) {
 
 /* selected copyright */
@@ -7973,18 +7998,18 @@ void opencfg_(cfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,iicfgn,iicfgc,iicfgdfn)
 
   bh = f_height+2;	/* box height is font height +2 */
   hdl = viewbx.b_right - (f_width * 19);
-  XDrawString(theDisp,win,theGC,hdl,viewbx.b_top+bh-4,"Active definitions",18);
+  XDrawString(theDisp,win,theGC,hdl,viewbx.b_top+bh-1,"Active definitions",18);
   if (cfg_boxs == 0){	/* registration level  */
     cfgz.b_top = viewbx.b_top + bh;    cfgz.b_bottom = cfgz.b_top + bh;
-    cfgz.b_right = viewbx.b_right - 2; cfgz.b_left = cfgz.b_right - (f_width * 15);
+    cfgz.b_right = viewbx.b_right - 2; cfgz.b_left = cfgz.b_right - (f_width * 14);
     xbox(cfgz,fg,white, BMCLEAR | BMEDGES);
-    XDrawString(theDisp,win,theGC,cfgz.b_left+4,cfgz.b_bottom-2,"registration ",13);
+    XDrawString(theDisp,win,theGC,cfgz.b_left+4,cfgz.b_bottom-2,"registration",12);
   } else {
     if (oocfgz == 1) {	/* zones */
-      cfgz.b_top = viewbx.b_top + bh;    cfgz.b_bottom = cfgz.b_top + bh;
-      cfgz.b_right = viewbx.b_right - 2; cfgz.b_left = cfgz.b_right - (f_width * 15);
+      cfgz.b_top = viewbx.b_top + bh +2;    cfgz.b_bottom = cfgz.b_top + bh;
+      cfgz.b_right = viewbx.b_right - 2; cfgz.b_left = cfgz.b_right - (f_width * 13);
       xbox(cfgz,fg,white, BMCLEAR | BMEDGES);
-      XDrawString(theDisp,win,theGC,cfgz.b_left+4,cfgz.b_bottom-2,"zones        ",13);
+      XDrawString(theDisp,win,theGC,cfgz.b_left+4,cfgz.b_bottom-2,"zones      ",11);
       if (iiocfgz >= 1) {	/* zones images */
         eyex = cfgz.b_right - 14;
         eyey = cfgz.b_bottom - (f_height/2);
@@ -7992,10 +8017,10 @@ void opencfg_(cfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,iicfgn,iicfgc,iicfgdfn)
       }
     }
     if (oocfgn == 1) {	/* network */
-      cfgn.b_top   = viewbx.b_top +bh +bh +4;   cfgn.b_bottom = cfgn.b_top + bh;
-      cfgn.b_right = viewbx.b_right - 2; cfgn.b_left = cfgn.b_right - (f_width * 15);
+      cfgn.b_top   = viewbx.b_top +bh +bh +6;   cfgn.b_bottom = cfgn.b_top + bh;
+      cfgn.b_right = viewbx.b_right - 2; cfgn.b_left = cfgn.b_right - (f_width * 13);
       xbox(cfgn,fg,white, BMCLEAR | BMEDGES);
-      XDrawString(theDisp,win,theGC,cfgn.b_left+4,cfgn.b_bottom-2,"networks     ",13);
+      XDrawString(theDisp,win,theGC,cfgn.b_left+4,cfgn.b_bottom-2,"networks   ",11);
       if (iiocfgn >= 1) {	/* network images */
         eyex = cfgn.b_right - 14;
         eyey = cfgn.b_bottom - (f_height/2);
@@ -8003,10 +8028,10 @@ void opencfg_(cfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,iicfgn,iicfgc,iicfgdfn)
       }
     }
     if (oocfgc == 1) {	/* control */
-      cfgc.b_top   = viewbx.b_top + (3 * bh) +8;   cfgc.b_bottom = cfgc.b_top + bh;
-      cfgc.b_right = viewbx.b_right - 2; cfgc.b_left = cfgc.b_right - (f_width * 15);
+      cfgc.b_top   = viewbx.b_top + (3 * bh) +10;   cfgc.b_bottom = cfgc.b_top + bh;
+      cfgc.b_right = viewbx.b_right - 2; cfgc.b_left = cfgc.b_right - (f_width * 13);
       xbox(cfgc,fg,white, BMCLEAR | BMEDGES);   /* draw the controls box */
-      XDrawString(theDisp,win,theGC,cfgc.b_left+4,cfgc.b_bottom-2,"controls     ",13);
+      XDrawString(theDisp,win,theGC,cfgc.b_left+4,cfgc.b_bottom-2,"controls   ",11);
       if (iiocfgc >= 1) {	/* network images */
         eyex = cfgc.b_right - 14;
         eyey = cfgc.b_bottom - (f_height/2);
@@ -8014,10 +8039,10 @@ void opencfg_(cfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz,iicfgn,iicfgc,iicfgdfn)
       }
     }
     if (oocfgdfn == 1) {	/* domain flow */
-      cfgdfn.b_top   = viewbx.b_top + (4 * bh) +12;   cfgdfn.b_bottom = cfgdfn.b_top + bh;
-      cfgdfn.b_right = viewbx.b_right - 2; cfgdfn.b_left = cfgdfn.b_right - (f_width * 15);
+      cfgdfn.b_top   = viewbx.b_top + (4 * bh) +14;   cfgdfn.b_bottom = cfgdfn.b_top + bh;
+      cfgdfn.b_right = viewbx.b_right - 2; cfgdfn.b_left = cfgdfn.b_right - (f_width * 13);
       xbox(cfgdfn,fg,white, BMCLEAR | BMEDGES);
-      XDrawString(theDisp,win,theGC,cfgdfn.b_left+4,cfgdfn.b_bottom-2,"domain flow  ",13);
+      XDrawString(theDisp,win,theGC,cfgdfn.b_left+4,cfgdfn.b_bottom-2,"domain flow",11);
       if (iiocfgdfn >= 1) {	/* network images */
         eyex = cfgdfn.b_right - 14;
         eyey = cfgdfn.b_bottom - (f_height/2);
@@ -8044,7 +8069,7 @@ void opensetup_()
  if (dialogue_lines != 0) { b_setup = msgbx.b_top -24; } else { b_setup = xrt_height -34; }
 
  bottom = b_setup; left = l_setup;
- doitbox(setup,"window   ",9,10,&saved_font,&butn_fnt,&bottom,&left,"setup",'-');
+ doitbox(setup,"fonts    ",9,10,&saved_font,&butn_fnt,&bottom,&left,"setup",'-');
  return;
 } /* opensetup */
 
@@ -8066,7 +8091,7 @@ void updwire_(avail)
     wire_avail = *avail;         /* tell the world it is available */
   }
   return;
-} /* openwire_ */
+} /* updwire_ */
 
 
 /* ******  Notify level for capture button ********** */
@@ -8078,8 +8103,10 @@ void updcapt_(avail)
 
   if(capture_avail == 0 && *avail >= 0) {	/* probably first time in */
     saved_font = current_font;
+    bottom = disp.b_top; left = capture_left;
+    doitbox(capture,"capture",7,8,&saved_font,&small_fnt,&bottom,&left,"capture",'-');
     bottom = fbb.b_bottom; left = captext_left;
-    doitbox(capture,"capture",7,8,&saved_font,&small_fnt,&bottom,&left,"captext",'-');
+    doitbox(capture,"capture text buffer",19,20,&saved_font,&small_fnt,&bottom,&left,"captext",'-');
     capture_avail = *avail;         /* tell the world it is available */
   } else {
     capture_avail = *avail;         /* tell the world it is available */
@@ -8097,14 +8124,15 @@ void updazi_(avail)
   if(azi_avail == 0 && *avail >= 0) {	/* probably first time in */
     saved_font = current_font;
     if (saved_font != small_fnt) winfnt_(&small_fnt);
-    wire_left = disp.b_right - (f_width * 14);
-    captext_left = disp.b_right - (f_width * 24);
-    aziplus_left = disp.b_right - (f_width * 28);
-    aziminus_left = disp.b_right - (f_width * 31);
-    azi_left = disp.b_right - (f_width * 36);
-    elevplus_left = disp.b_right - (f_width * 40);
-    elevminus_left = disp.b_right - (f_width * 43);
-    elev_left = disp.b_right - (f_width * 49);
+    wire_left = disp.b_right - (f_width * 26);
+    capture_left = disp.b_right - (f_width * 8);
+    captext_left = disp.b_right - (f_width * 20);
+    elevplus_left = disp.b_right - (f_width * 30);
+    elevminus_left = disp.b_right - (f_width * 33);
+    elev_left = disp.b_right - (f_width * 44);
+    aziplus_left = disp.b_right - (f_width * 48);
+    aziminus_left = disp.b_right - (f_width * 51);
+    azi_left = disp.b_right - (f_width * 60);
     if (saved_font != small_fnt) winfnt_(&saved_font);  /* restore std font */
 
     bottom = disp.b_top; left = aziplus_left;
@@ -8114,7 +8142,7 @@ void updazi_(avail)
     dosymbox(aziminus,2,&saved_font,&small_fnt,&bottom,&left,"aziminus",'-');
 
     bottom = disp.b_top; left = azi_left;
-    doitbox(azi,"azi",3,4,&saved_font,&small_fnt,&bottom,&left,"azi",'-');
+    doitbox(azi,"azimuth",7,8,&saved_font,&small_fnt,&bottom,&left,"azi",'-');
 
     bottom = disp.b_top; left = elevplus_left;
     dosymbox(elevplus,2,&saved_font,&small_fnt,&bottom,&left,"elevplus",'-');
@@ -8123,13 +8151,14 @@ void updazi_(avail)
     dosymbox(elevminus,2,&saved_font,&small_fnt,&bottom,&left,"elevminus",'-');
 
     bottom = disp.b_top; left = elev_left;
-    doitbox(elev,"elev",4,5,&saved_font,&small_fnt,&bottom,&left,"elev",'-');
+    doitbox(elev,"elevation",9,10,&saved_font,&small_fnt,&bottom,&left,"elev",'-');
 
     if (saved_font != small_fnt) winfnt_(&saved_font);  /* restore std font */
     azi_avail = *avail;         /* tell the world it is available */
   } else {
     azi_avail = *avail;         /* tell the world it is available */
   }
+
   return;
 } /* updazi_ */
 
