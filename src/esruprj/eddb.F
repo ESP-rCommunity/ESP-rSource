@@ -5183,6 +5183,7 @@ C is via a text editor.
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
+      common/appw/iappw,iappx,iappy
 
       common/texted/tedlbl,teditor
       character tedlbl*20,teditor*20
@@ -5208,6 +5209,11 @@ C Local strings for user selections dependent on graphic library.
       integer lndbp   ! for length of standard database path
       logical unixok  ! to check for database path file separators
       integer iglib  ! for detecting GTK or X11
+#ifdef OSI
+      integer ICPMOD     ! passed from tchild
+#else
+      integer*8 ICPMOD     ! passed from tchild
+#endif
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -5275,13 +5281,13 @@ C text or X11 option e edits the string while for GTK there are two
 C options to browse for files in ../dbs or the esp-r distribution.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       if(iglib.eq.1.or.iglib.eq.3)then
-        opte='e edit file name'
+        opte='f edit file name'
         optf='   '
         optg='   '
       elseif(iglib.eq.2)then
-        opte='e browse model ../dbs'
-        optf='f browse esp-r distribution'
-        optg='g make copy of another file'
+        opte='f browse model ../dbs'
+        optf='g browse esp-r distribution'
+        optg='h make copy of another file'
       endif
 
       IF(.NOT.XST)THEN
@@ -5292,9 +5298,10 @@ C If db does not exist locally offer limited choices.
         call MENUATOL('  ','Mould isopleths',
      &    ' ','b select from list',
      &    'c create a new db','d copy standard db',
-     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
-        if(isw.eq.4)copydef=.true.
-        if(isw.eq.7)copydef=.false.
+     &    'e invoke mould utility',opte,optf,optg,
+     &    ' ',' ',' ',' ',isw,idno,nbhelp)
+        if(isw.eq.5)copydef=.true.
+        if(isw.eq.8)copydef=.false.
       elseif(longtfile(1:ldirpath).eq.dirpath(1:ldirpath))then
 
 C If corportate database then offer the following choices (incl /):
@@ -5303,7 +5310,8 @@ C If corportate database then offer the following choices (incl /):
         call MENUATOL('  ','Mould isopleths',
      &    'a browse/edit db','b select from list',
      &    'c create a new db','d copy standard db',
-     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
+     &    'e invoke mould utility',opte,optf,optg,
+     &    ' ',' ',' ',' ',isw,idno,nbhelp)
         copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
@@ -5313,7 +5321,8 @@ C If corportate database then offer the following choices (without /):
         call MENUATOL('  ','Mould isopleths',
      &    'a browse/edit db','b select from list',
      &    'c create a new db','d copy standard db',
-     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
+     &    'e invoke mould utility',opte,optf,optg,
+     &    ' ',' ',' ',' ',isw,idno,nbhelp)
         copydef=.false.
       else
 
@@ -5324,9 +5333,10 @@ C default database or the current database.
         call MENUATOL('  ','Mould isopleths',
      &    'a browse/edit db','b select from list',
      &    'c create a new db','d copy standard db',
-     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
-        if(isw.eq.4)copydef=.true.
-        if(isw.eq.7)copydef=.false.
+     &    'e invoke mould utility',opte,optf,optg,
+     &    ' ',' ',' ',' ',isw,idno,nbhelp)
+        if(isw.eq.5)copydef=.true.
+        if(isw.eq.8)copydef=.false.
       endif
 
 C Act on the users choice. If no choice, return to calling menu.
@@ -5356,7 +5366,7 @@ C There is no select by list for mould isopleths.
         call edisp(iuout,'No create new for mould isopleths.')
         goto 60
 
-      elseif(isw.eq.4.or.isw.eq.7)then
+      elseif(isw.eq.4.or.isw.eq.8)then
 
 C Copy a common data file to project dbs folder. If iws is 4 then the
 C user has asked for the default database. If isw is 7 then the
@@ -5469,6 +5479,24 @@ C be pre-pended when using most inbuilt file opening calls.
 
       elseif(isw.eq.5)then
 
+C Start the mould utility.
+        doit = ' '
+        call tchild(ICPMOD)
+        call termode(ICPMOD,tmode)
+        if(iappw.gt.0.and.iappw.le.200)then
+          write(doit,'(3a,3i4,3a)') 'mld -mode ',tmode,
+     &      ' -s ',iappw,iappx+10,iappy+40,' -file ',
+     &      longtfile(1:lnblnk(longtfile)),' &'
+        else
+          write(doit,'(5a)') 'mld -mode ',tmode,
+     &      ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
+     &      ' &'
+        endif
+        call runit(doit,tmode)
+        goto 60  ! redisplay menu.
+
+      elseif(isw.eq.6)then
+
 C Make up browse to the model ../dbs folder suggest the name LCOPY
 C and return file name in lltmp.
         lltmp=' '
@@ -5508,7 +5536,7 @@ C correct location value via call to findwhichdbpath.
           goto 60
         endif
 
-      elseif(isw.eq.6)then
+      elseif(isw.eq.7)then
 
 C Browse distribution database folder. Setup LCOPY to point to
 C the database folder (but no particular file). Use easkf to
@@ -5535,6 +5563,7 @@ C common block will be updated with call to findwhichdbpath.
           call usrmsg('Browse feature not available.',' ','W')
           goto 60
         endif
+
       endif
 
 C Test the selected or copied database. If a problem loop back
