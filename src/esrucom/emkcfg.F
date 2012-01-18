@@ -597,6 +597,13 @@ C reflect whether the standard database folder is being used.
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdmscldb  ',
      &      MCMPDBFL(1:lnblnk(MCMPDBFL))
       endif
+      if(ipathmould.eq.0.or.ipathmould.eq.1)then
+        WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2) '*mould  ',
+     &    lfmould(1:lnblnk(lfmould)),' # mould isopleths'
+      elseif(ipathmould.eq.2)then
+        WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2) '*stdmould  ',
+     &    lfmould(1:lnblnk(lfmould)),' # mould isopleths'
+      endif
 
 C Ground reflectivity model, no-snow monthly albedos, snow albedo
 C (if ground reflectivity model 2 or 3)

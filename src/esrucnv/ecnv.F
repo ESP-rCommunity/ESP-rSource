@@ -1187,6 +1187,13 @@ C Write based on current ipath* state.
         WRITE(ioout,'(2A)',IOSTAT=IOS,ERR=3) '*stdevn  ',
      &      LPRFDB(1:lnblnk(LPRFDB))
       endif
+      if(ipathmould.eq.0.or.ipathmould.eq.1)then
+        WRITE(ioout,'(3A)',IOSTAT=IOS,ERR=3) '*mould  ',
+     &    lfmould(1:lnblnk(lfmould)),' # mould isopleths'
+      elseif(ipathmould.eq.2)then
+        WRITE(ioout,'(3A)',IOSTAT=IOS,ERR=3) '*stdmould  ',
+     &    lfmould(1:lnblnk(lfmould)),' # mould isopleths'
+      endif
       WRITE(ioout,'(A,A)') '*clm  ',LCLIM(1:lnblnk(LCLIM))
       if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
         WRITE(ioout,'(2A)',IOSTAT=IOS,ERR=3) '*pdb  ',

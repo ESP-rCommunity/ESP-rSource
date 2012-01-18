@@ -1793,7 +1793,7 @@ C Build up a list of the current files used in the model.
 
 C For each of the databases figure out if the database is
 C local (if ipath* value is 1).
-      do 41 i=1,7
+      do 41 i=1,8
         localdb=.false.
         if(i.eq.1)then
           LFL=LFMAT
@@ -1815,6 +1815,9 @@ C local (if ipath* value is 1).
         elseif(i.eq.7)then
           LFL=LPCDB
           if(ipathpcdb.eq.1) localdb=.true.
+        elseif(i.eq.8)then
+          LFL=lfmould
+          if(ipathmould.eq.1) localdb=.true.
         endif
         if(localdb.and.LFL(1:4).ne.'UNKN')then
           call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LFL)

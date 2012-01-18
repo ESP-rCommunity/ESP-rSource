@@ -1515,6 +1515,16 @@ C Databases associated with the model. First print the file names.
      &      LSBEM(1:lnblnk(LSBEM))
           call edisp248(itu,outs248,100)   
         endif
+
+        if(ipathmould.eq.0.or.ipathmould.eq.1)then
+          WRITE(outs248,'(2A)')' mould isopleths        : ',
+     &      lfmould(1:lnblnk(lfmould))
+          call edisp248(itu,outs248,100)
+        elseif(ipathmould.eq.2)then
+          WRITE(outs248,'(2A)')' standard mould isopleth: ',
+     &      lfmould(1:lnblnk(lfmould))
+          call edisp248(itu,outs248,100)
+        endif
       endif
 
 C Control in the model

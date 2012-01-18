@@ -266,11 +266,12 @@ C focus and actions arguments).
       isavgh=0
       NSIGFIG=3
 
-C Initial assumptions about databases (prior to configuration file scan
-C that the default database files will be defined explicitly).
+C Initial assumptions about common data files (prior to configuration file scan
+C that the default common data files will be defined explicitly).
       matver=0.0   ! initial assumption of binary materials database
       ipathapres=0; ipathoptdb=0; ipathpcdb=0; ipathprodb=0
       ipathmat=0; ipathmul=0; ipathclim=0; ipathsbem=0; ipathmsc=0
+      ipathmould=0
       
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -518,6 +519,7 @@ C Scan the defaults file for default system configuration file.
 C Make temporary use of file unit IFIL+5.  Note: escdef must come
 C after scan of .esprc file.
       call escdef(IFIL+5,IER)
+      write(6,*) 'def mould is ',dmdbnam(1:lnblnk(dmdbnam))
 
 C Take command line file name as initial configuration file.
       if(inf(1:2).eq.'  '.or.inf(1:4).eq.'UNKN')then
@@ -549,11 +551,11 @@ C databases may make use of this unit temporarily).
 
       write(LAPRES,'(a)') DAPRES(1:lnblnk(DAPRES))
 
-C Multi-layer constructions db on channel IFIL+3.
+C Common constructions on channel IFIL+3.
       IFMUL=IFIL+3
       write(LFMUL,'(a)') DFMUL(1:lnblnk(DFMUL))
 
-C Materials db on channel IFIL+4.
+C Common Materials on channel IFIL+4.
       IFMAT=IFIL+4
       write(LFMAT,'(a)') DFCON(1:lnblnk(DFCON))
 
