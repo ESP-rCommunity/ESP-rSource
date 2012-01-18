@@ -27,7 +27,8 @@ C      parameter (iMAXTokenCount = iHPTokenCount)
      &iDataCount(max_sys),
      &cTokens(max_sys,iMAXTokenCount),
      &fTokenVals(max_sys,iMAXTokenCount),
-     &iUnit_Function(max_sys)
+     &iUnit_Function(max_sys), 
+     &bHVACVersion2
      
 
       character*72 cFurnaceTokenNames(iFurnaceTokenCount),
@@ -36,7 +37,7 @@ C      parameter (iMAXTokenCount = iHPTokenCount)
       real fFurnaceTokenVals, fBaseboardTokenVals, fP10_IMSTokenVals,
      &     fHPTokenVals, fTokenVals
       integer iUnit_Function
-
+      logical bHVACVersion2
 
       common/HVAC_INPUT_DATA/site_altitude, num_hvac_sys,
      &ihvac_type(max_hvac_types), ipriority(max_sys),

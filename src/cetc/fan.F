@@ -141,7 +141,7 @@ c Common for the number of time steps per hour
 
 c Declare local variables
       REAL time_step
-
+      REAL FanTSFracAuto
       REAL FanPlr
       real fHVAC_PL_primary
       real fHVAC_PL_backup 
@@ -152,25 +152,28 @@ c Declare local variables
       iBackupSysIndex = iBackup_Sys_num(isys)
       
 c Simulation time step
-      time_step = 3600. / float(NTSTEP)
-      write (*,*) " ---------- Fan --------------------------"
-      write(*,*) "isys", isys
-      write(*,*) "plfp, plfb", plfp, plfb
-      write(*,*) "plrp, plrb", plrp, plrb
-      write(*,*) "ihvac_type(isys)", ihvac_type(isys) 
-      write(*,*) "iunit_function(isys)",iunit_function(isys)
-      write(*,*) "ifan_operation(isys)", ifan_operation(isys)
-      
+       time_step = 3600. / float(NTSTEP)
+      !write (*,*) " ---------- Fan --------------------------"
+      !write(*,*) "isys", isys
+      !write(*,*) "plfp, plfb", plfp, plfb
+      !write(*,*) "plrp, plrb", plrp, plrb
+      !write(*,*) "ihvac_type(isys)", ihvac_type(isys) 
+      !write(*,*) "iunit_function(isys)",iunit_function(isys)
+      !write(*,*) "ifan_operation(isys)", ifan_operation(isys)
+      !if ( ibackup_sys_num(isys) > 0 ) then 
+      !write(*,*) "ibac_operation(isys)", 
+      !&               ifan_operation(ibackup_sys_num(isys)) 
+      !endif 
       FanMode: if ( ifan_operation(isys) == 0 ) then 
 c if there is no circulation fan, set power to zero. 
         fHVAC_PL_primary = 0.      
         fHVAC_PL_backup  = 0.
-      elseif(ifan_operation(isys) .eq. 2) then
+      elseif(ifan_operation(isys) == 2) then
 c If the circulation fan is in continuous mode, compute power.
 c Equation 12 in Furnace Ref by Haddad
         fHVAC_PL_primary = 1.
         fHVAC_PL_backup  = 0.
-      elseif(ifan_operation(iSys) .eq. 1) then 
+      elseif(ifan_operation(iSys) == 1) then 
 C Circulation fan is in auto mode: calculation depends on 
 C part-load characteristics of heating type, and HRV operation. 
                
@@ -185,17 +188,15 @@ C Compute part-load ratio of primary HVAC system
           
 C Compute part-load ratio of secondary hvac system           
         call eClose ( plrb, 0.0, 0.001, bZero )
-        
         Backup_Zero: if ( bZero ) then
           fHVAC_PL_backup = 0. 
-        else         
-          if ( ifan_operation(ibackup_sys_num(isys)) .ne. 0 ) then 
+        elseif ( ibackup_sys_num(isys) > 0 ) then          
+          if ( ifan_operation(ibackup_sys_num(isys)) == 0 ) then 
 C Back-up system doesn't use a fan (distributed baseboard?)           
             fHVAC_PL_backup = 0.
           else         
           
             fHVAC_PL_backup = plrb / (plfb + 0.00001)
-            
           endif 
         endif Backup_Zero
       
@@ -241,24 +242,40 @@ C.........with the AC models) approximates 2-stage continuious operation.
               
       
       else
-      
         FanPlr = fHVAC_PL_primary + fHVAC_PL_backup 
         
-        if ( FanPlr > 1. ) FanPlr = 1.
+C.......Legacy HVAC file allows fan PLR to exceed 1.
+        if ( bHVACVersion2 .and. FanPlr > 1. ) FanPlr = 1.
+
+C.......The following section is a hack for consistency with 
+C.......legacy HVAC model behavior. The original model only 
+C.......supports 2 stage fan operation in cooling mode. 
+C.......This section should be deleted (or 
+
+        if ( iUnit_Function(iSys) == iFuncHeating .and. 
+     &       .not. bHVACVersion2  ) then 
+
+          FanTSFracAuto = 0.
+
+        else 
+
+          FanTSFracAuto = 1. - FanPlr 
+
+        endif 
 
         FAN_ENERGY_CON = 
-     &         FanPlr       * ( time_step * fan_power(isys) )
-     &       + (1.-FanPlr ) * ( time_step * fan_power_auto(isys) )
+     &         FanPlr        * ( time_step * fan_power(isys)      )
+     &       + FanTSFracAuto * ( time_step * fan_power_auto(isys) )
         
       endif FanCtlLoopActive
-        
-      write(*,*) "time_step", time_step
-      write(*,*) "fan_power", fan_power(isys)
-      write(*,*) "fan_power_auto", fan_power_auto(isys) 
-      write(*,*) "fHVAC_PL", fHVAC_PL_primary, fHVAC_PL_backup
-      write(*,*) "FanPlr", FanPlr
-      write(*,*) "FAN_ENERGY_CON", FAN_ENERGY_CON
-      write(*,*) " done "
+
+      !write(*,*) "time_step", time_step
+      !write(*,*) "fan_power", fan_power(isys)
+      !write(*,*) "fan_power_auto", fan_power_auto(isys) 
+      !!write(*,*) "fHVAC_PL", fHVAC_PL_primary, fHVAC_PL_backup
+      !!write(*,*) "FanPlr", FanPlr
+      !write(*,*) "FAN_ENERGY_CON", FAN_ENERGY_CON
+      !write(*,*) " done "
  
      
       return 

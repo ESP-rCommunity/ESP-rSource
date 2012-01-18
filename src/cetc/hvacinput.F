@@ -129,7 +129,9 @@ C     case, we need to use improved HVAC parsing routine
 C----------------------------------------------------------------------
       if ( OUTSTR(1:16) == '*idealized-hvac ' ) then
          call HVACINPUT_improved ( iUnit, hvacfile )
+         bHVACVersion2 = .true.
       else
+         bHVACVersion2 = .false.
 
 c Read the total number of HVAC systems serving the various zones in
 c the building
