@@ -178,14 +178,20 @@ C Name of current application.
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer lnshd   ! length of current shading file string.
-      integer numberofzones ! to pass to updwire rather than ncomp
       integer ier
       integer nitems,inos ! max items and current menu item
+      integer ISFSUM  ! number of surfaces found
 
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
+      integer numberofzones ! to pass to updwire rather than ncomp
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 numberofzones
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C For help messages
@@ -209,6 +215,7 @@ C Initialize global common data.
       limit =24
       nsigfig=3
       matver=0.0   ! Initial assumption of binary materials database.
+      ISFSUM=0
 
 C iunit  - zone transitional shading file
 C ifilsi - zone shading & insolation db
@@ -343,9 +350,13 @@ C feedback).
 
 C Open the text display box equal to limtty if mmod = 8.
       if(mmod.eq.8)then
-        call win3d(menuchw,2,1,1,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+        iiw1=2; iiw2=1; iiw3=1; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        call win3d(menuchw,2,1,1,3,igl,igr,igt,igb,igw,igwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
@@ -545,10 +556,9 @@ C Open core of databases if not already done so.
             if(ier.eq.0)then
                cfgok=.true.
                numberofzones=ncomp
-               call zdata (itrc,ier,numberofzones,isfsum)
+               call zdata (itrc,ier,int(numberofzones),isfsum)
                if(mmod.EQ.8)then
-                 numberofzones=ncomp   ! use local integer for updwire.
-                 call updwire(numberofzones)
+                 call updwire(numberofzones)   ! use local integer for updwire.
                endif
 
 C If inzone = 'All' display an image of the model. If inzone is
@@ -966,7 +976,7 @@ C GTK version will be returning the name with the full path.
             if(ier.eq.0)then
                cfgok=.true.
                numberofzones=ncomp
-               call zdata (itrc,ier,numberofzones,isfsum)
+               call zdata (itrc,ier,int(numberofzones),isfsum)
             endif
          endif
 

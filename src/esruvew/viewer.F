@@ -29,6 +29,14 @@ C Name of current application
       character outs*124,inf*144,path*72,LCMDFL*144,fs*1
       character outs248*248
 
+#ifdef OSI
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+#else
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+#endif
+
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 
 C For help messages
@@ -46,7 +54,7 @@ C call plot which does most everything else.
 C Initialise terminal and begin program.
       call ezero
       call curmodule('vew ')
-      cAppName = 'vww'
+      cAppName = 'vew'
       helpinapp='vew'  ! set once for the application
       helpinsub='vew'  ! set for MAIN
       IUIN = 5
@@ -119,9 +127,15 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
 
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
-        CALL win3d(menuchw,1,1,1,1,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=1; iiw2=1; iiw3=1; iiw4=1; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        CALL win3d(menuchw,1,1,1,1,igl,igr,igt,igb,igw,igwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opensetup
@@ -232,6 +246,24 @@ C Depending on computer type set integer size of passed parameters.
       integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
       integer*8 JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
 #endif     
+      return
+      end
+
+      subroutine chgzonpik(jizgfoc,jnzg)
+#ifdef OSI
+      integer jizgfoc,jnzg  ! for use with viewtext
+#else
+      integer*8 jizgfoc,jnzg  ! for use with viewtext
+#endif
+      return
+      end
+
+      subroutine chgzonpikarray(jnznog,jnznogv)
+#ifdef OSI
+      integer jnznog,jnznogv
+#else
+      integer*8 jnznog,jnznogv
+#endif
       return
       end
 

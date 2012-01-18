@@ -126,6 +126,7 @@ C zbasea(),ibases(),iuzbasea(),izbaselist() are defined in geometry.h
 C Save total transparent surface area for surfaces connected to external BC.
       common/PREC18/ZTRANA(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GR3D07/Y0S(MS),Y0SS(MSSZ),Y0SE(MSEZ)
@@ -977,6 +978,7 @@ C Parameters
       integer IER          ! IER 0 OK IER 1 problem
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C NOTE: G1 is only valid for the zone that has currently been
@@ -1321,6 +1323,7 @@ C Save total transparent surface area for surfaces connected to external BC.
 
 C << do we need transparent surface area facing different orientations? >>
       common/PREC18/ZTRANA(MCOM)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C Error subroutine and error details for dll mode.
@@ -1757,17 +1760,19 @@ C the constructions database.
 C When scanning geometry warn users if the optical description in the
 C geometry file is different from that of the optical property associated
 C with the construction (TRAN is an ok mis-match).
-                lnow=lnblnk(word)   ! length for token in file
-                lno=lnblnk(OPT)     ! length for mlc optics
-                if(WORD(1:lnow).ne.OPT(1:lno))then
-                  if(WORD(1:4).eq.'TRAN')then
-                    continue
-                  else
-		    write(outs,*) 'Optics ',WORD(1:lnow),
+                if(ICF.gt.0)then
+                  lnow=lnblnk(word)   ! length for token in file
+                  lno=lnblnk(OPT)     ! length for mlc optics
+                  if(WORD(1:lnow).ne.OPT(1:lno))then
+                    if(WORD(1:4).eq.'TRAN')then
+                      continue
+                    else
+		      write(outs,*) 'Optics ',WORD(1:lnow),
      &                ' in geo file does not match optics of the MLC ',
-     &                DESC(ICF)(1:12),' ',OPT(1:lno)
-                    call edisp(iuout,outs)
-                    optcorrected=.true.
+     &                  DESC(ICF)(1:12),' ',OPT(1:lno)
+                      call edisp(iuout,outs)
+                      optcorrected=.true.
+                    endif
                   endif
                 endif
 
@@ -2013,6 +2018,9 @@ C Simplified thermal bridge data starts here. Scan three reals after tag.
           uavtotal(icomp)=VAL
           goto 62
         elseif(WORD(1:11).eq.'*ukt_bridge')then
+
+C Phrases for thermal bridges are checked and ibrdg index assigned
+C based on exact match of characters in phrase.
           nbrdg(icomp)=nbrdg(icomp)+1
           CALL EGETP(LOUTSTR,K,phrase,'W','bridge tag',IER)
           if(phrase(1:10).eq.'roof-wall ')then
@@ -2416,6 +2424,7 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
 
 C ZNAME (12 char) - the zone name (from geometry.h).
 C ZDESC (64 char) - zone notes (from geometry.h).
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
                
 C Thermal bridge common block is described in esruprj/edgeo.F
@@ -2556,6 +2565,11 @@ C to write out.
         lsna=lnblnk(SSNAME(icc))
         lsot=lnblnk(SSOTF(icc))
         loth=lnblnk(OTHSTR)
+
+C Traps for possible blank strings if data structure corrupted.
+        if(SSVFC(icc)(1:4).eq.'    ') SSVFC(icc)='UNKN'
+        if(SSOTF(icc)(1:4).eq.'    ') SSOTF(icc)='UNKN'
+        if(SSPARENT(icc)(1:2).eq.'  ') SSPARENT(icc)='-'
         WRITE(outs,'(20a)',IOSTAT=ios,ERR=13) '*surf ',
      &    SSNAME(icc)(1:lsna),' ',SSVFC(icc),' ',
      &    SSPARENT(icc)(1:lspa),' ',SSUSE(icc,1),' ',SSUSE(icc,2),
@@ -3446,6 +3460,7 @@ C If context is .true. then give verbose description of the boundary.
 
       common/SFIG/NSIGFIG
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       logical context
@@ -3547,6 +3562,7 @@ C the connections file).
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       CHARACTER OTHSTR*30,SST2*12,ZST2*12
 
@@ -3814,6 +3830,7 @@ C VOL(MCOM)     - zone bounded volume
 C << could it use ?? instead of G1? >>
 
       common/OUTIN/IUOUT,IUIN
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       DIMENSION XSUM(MS),YSUM(MS),ZSUM(MS)
       DIMENSION XX(MV),YY(MV),ZZ(MV),CG(3),EQN(4)
@@ -3907,12 +3924,14 @@ C Derive the equation of the polygon.
         N = NVER(i)
         call PLEQN(XX,YY,ZZ,N,CG,EQN,IERR)
 
-C See if any points are out of the plane.
+C See if any points are out of the plane. Note a point that is
+C only a few mm off of the line can result in a warp which is
+C reported as a larger number.
         iwhich=0
         ofby=0.0
 	lln=lnblnk(ssname(icc)) 
 	call CHECKWARP(1,iuout,i,N,XX,YY,ZZ,iwhich,ofby,ivoff)
-	if(ivoff.gt.0)then
+	if(ivoff.gt.0.and.ofby.gt.0.01)then
 	  write(outs,'(5a)') ' Surface ',ssname(icc)(1:lln),' in ',
      &      zname(icomp)(1:lnzname(icomp)),
      &      ' is probably warped. Please check via surface transforms.'
@@ -4038,6 +4057,7 @@ C act is '-' derive geometric data or 'c' also determine parent
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       CHARACTER outs*124,act*1,h*72
@@ -4309,8 +4329,8 @@ C other must face the ground
                     endif
                   endif
 
-                  if(itrc.gt.1)then
-                  endif
+C                  if(itrc.gt.1)then
+C                  endif
 
 C Test if azimuth are within two degrees. For the special case of the
 C difference between the two being ~360deg call it closeazi
@@ -4480,6 +4500,7 @@ C be duplicates.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       DIMENSION IDVN(MV),nTbchild(MCON)
@@ -4736,6 +4757,7 @@ C << zone geometry file if havec24 is true?
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C Variables from geometry.h:
@@ -4942,6 +4964,7 @@ C << update documentation as well as reporting based on files >>
 #include "model.h"
 #include "geometry.h"
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &     nsurfinso(MCOM),isurfinso(MCOM,MS)
@@ -5070,7 +5093,7 @@ C Surfaces with associated vertices.
       call edisp(ITRU,'        |Vertices|')
       DO 9991 I=1,NZSUR(ICOMP)
         NV=NVER(I)
-        if(NV.le.27)then
+        if(NV.le.26)then
           WRITE(OUTSTR,9990) SNAME(icomp,I),NV,(JVN(I,J),J=1,NV)
           call edisp(ITRU,OUTSTR)
         else
@@ -5170,6 +5193,7 @@ C If 'is' is passed as 0 then check all, otherwise exclude surface is.
       
       integer lnblnk  ! function definition
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       character string*12,SN*12
       logical ok
@@ -5206,6 +5230,7 @@ C If 'is' is returned as 0 if no match.
       
       integer lnblnk  ! function definition
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       character string*12,SN*12
       
@@ -5235,6 +5260,7 @@ C and length is its maximum length.
       
       integer lnblnk  ! function definition
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       
       dimension lstsf(mcom,ms),iva(ms)

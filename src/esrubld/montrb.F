@@ -205,11 +205,13 @@ C since not all compilers use the same default.
       integer iside,isize,ifont     ! passed to viewtext
       integer iix,iiy,iix2,iix5,iix35,iiy2  ! passed to edline
       integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iix,iiy,iix2,iix5,iix35,iiy2  ! passed to edline
       integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
 C Test save option selected.
@@ -223,6 +225,9 @@ C do an internal write placing an end marker which C can understand.
 C Check if can draw in colour.
       colok=.false.
       if(nzonec.ge.NCOMP)colok=.true.
+
+C Cast values for horaxis.
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
 
       goto (1000,2000) mode
 
@@ -279,10 +284,10 @@ c Determine scaling ratios for other y axis.
      &      xsc,ysc1,sca1,xadd,yadd1)
 
 c Draw a scale horizontal axis, move to beginning point.
-      call horaxis(xmin,xmax,igl,igr,igb,xadd,xsc,1,'Time (h)')
+      call horaxis(xmin,xmax,iigl,iigr,iigb,xadd,xsc,1,'Time (h)')
 
 c Draw a scale vertical axis.
-      call vrtaxis(yminb(1),ymaxb(1),igl,igb,igt,yadd,ysc,1,0,':')
+      call vrtaxis(yminb(1),ymaxb(1),iigl,iigb,iigt,yadd,ysc,1,0,':')
       if(mbstv.eq.1.or.mbstv.eq.3) then
          call wstxpt(igl-5,igt-17,'Temp')
          call wstxpt(igl-5,igt-5,'deg.C')
@@ -295,7 +300,7 @@ c Draw a scale vertical axis.
 
       if(mbstv.eq.3) then
          call vrtaxis(yminb(2),
-     &      ymaxb(2),igr,igb,igt,yadd1,ysc1,1,1,':')
+     &      ymaxb(2),iigr,iigb,iigt,yadd1,ysc1,1,1,':')
           call wstxpt(igr,igt-17,'Plant')
           call wstxpt(igr,igt-5,'  KW')
           yminb(2)=yminb(2)*1000.

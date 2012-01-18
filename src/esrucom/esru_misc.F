@@ -88,8 +88,8 @@ C derived.h are derived areas and U values for zones and the model
 
 C << G7 and G8 need to be cleared >>
 
-      COMMON/C1/NCOMP,NCON
       integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
 
 C iaplic(1) toggle for shading; iaplic(2) toggle for insolation.
 C   toggle for assessment where:
@@ -730,6 +730,22 @@ C see if there are images associated with descriptive buttons.
      &                             iicfgz,iicfgn,iicfgc,iicfgdfn)
 #include "building.h"
 
+C Passed parameters because these are also used by c function opencfg
+#ifdef OSI
+      integer icfg_type  ! model cfg type
+      integer icfgz      ! if non-zero then there are zones
+      integer icfgn      ! if non-zero then there are networks
+      integer icfgc      ! if non-zero then cfg file known
+      integer icfgdfn    ! if non-zero then cdf domain exists
+      integer iicfgz     ! there are zone related images
+      integer iicfgn     ! there are network related images
+      integer iicfgc     ! there are control related images
+      integer iicfgdfn   ! there are cfd related images
+#else
+      integer*8 icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz
+      integer*8 iicfgn,iicfgc,iicfgdfn
+#endif
+
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C6/INDCFG
@@ -1328,6 +1344,7 @@ C Skip past the row sums.
   331 CONTINUE
 
 C Write out trace if requested.
+C MS senstive, change is MS>90.
       if(itrc.gt.0)then
         call edisp(itru,' Black body view factors')
         if(NZS.le.22)then
@@ -1345,10 +1362,19 @@ C Write out trace if requested.
           call edisp(itru,outs)
           write(outs,'(4X,22I5)')(I,I=45,NZS)
           call edisp(itru,outs)
+        elseif(NZS.ge.69.and.NZS.le.90)then
+          write(outs,'(4X,22I5)')(I,I=1,22)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=23,44)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=45,68)
+          call edisp(itru,outs)
+          write(outs,'(4X,22I5)')(I,I=69,NZS)
+          call edisp(itru,outs)
         endif
         call edisp(itru,' ')
 
-C MS senstive, change is MS>68.
+C MS senstive, change is MS>90.
         DO 9994 I=1,NZS
           if(NZS.le.22)then
             write(outs,9993)I,(VEWF(I,J),J=1,NZS)
@@ -1365,6 +1391,15 @@ C MS senstive, change is MS>68.
             write(outs,'(1x,22F5.2)')(VEWF(I,J),J=23,44)
             call edisp(itru,outs)
             write(outs,'(1x,22F5.2)')(VEWF(I,J),J=45,NZS)
+            call edisp(itru,outs)
+          elseif(NZS.ge.45.and.NZS.le.90)then
+            write(outs,9993)I,(VEWF(I,J),J=1,22)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=23,44)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=45,68)
+            call edisp(itru,outs)
+            write(outs,'(1x,22F5.2)')(VEWF(I,J),J=69,NZS)
             call edisp(itru,outs)
           endif
  9994   CONTINUE
@@ -2152,7 +2187,7 @@ C STEP 3 - Find matrix and reverse matrix via EYEMAT to transform > 2D
 C isurf is the current surface index (for reporting)
 C N is the number of surface vertices, X,Y,Z are the surface vertex arrays,
 C iwhich is worst vertex off plane and ofby is amount it deviates.
-C ivoff is the number of vertices which are more than 1mm off.
+C ivoff is the number of vertices which are more than 3mm off.
       SUBROUTINE CHECKWARP(ITRC,itru,isurf,N,X,Y,Z,iwhich,ofby,ivoff)
       implicit none
 #include "building.h"
@@ -2196,14 +2231,14 @@ C Call eyemat with 1m offset.
       CALL  EYEMAT(EP,VP,1.0,TMAT,RMAT)
 
 C Transform all points in surface and check for ZZZ which differs
-C from the 1m offset.
+C from the 1m offset.The tollerance is currently set to 3mm.
       ivoff=0
       ofby=0.0
       DO 300 I=1,N
         CALL ORTTRN(X(I),Y(I),Z(I),TMAT,X1,Y1,ZZZ,IERR)
-        call eclose(ZZZ,1.0,0.001,close)
+        call eclose(ZZZ,1.0,0.003,close)
         if(.NOT.close)then
-	  ivoff=ivoff+1   ! increment number of vertices off by more than 1mm
+	  ivoff=ivoff+1   ! increment number of vertices off by more than 3mm
 	  diff=1.0-ZZZ
           if(abs(diff).gt.abs(ofby))then  ! keep track of largest diff
             iwhich=i
@@ -3247,8 +3282,9 @@ C show attributes in list.
 #include "epara.h"
 
       common/pophelp/h(60)
-      COMMON/C1/NCOMP,NCON
       integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       DIMENSION VERT(35),VERTS(35)
 
@@ -3307,9 +3343,13 @@ C current menu line index. Build up text strings for the menu.
           else
 
 C << consider writing out different info depending on what SSOTHER is >>
-            WRITE(VERTS(M),13)KEY,SSNAME(icc),SSMLCN(icc)(1:12),
-     &        SSOTHER(icc,1)(1:12)
-   13       FORMAT(A1,1X,A,1X,A,1X,A12)
+            if(icc.gt.0)then
+              WRITE(VERTS(M),13)KEY,SSNAME(icc),SSMLCN(icc)(1:12),
+     &          SSOTHER(icc,1)(1:12)
+   13         FORMAT(A1,1X,A,1X,A,1X,A12)
+            else
+              WRITE(VERTS(M),'(2a)')KEY,' unresolved surface...'
+            endif
           endif
         ENDIF
    10 CONTINUE
@@ -3430,6 +3470,7 @@ C databases have been opened.
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C Special materials file flag
@@ -3574,6 +3615,7 @@ C TMP  : is IE2 (constant temperature if IE=2)
 #include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       CHARACTER*25 DESCR
 
@@ -3694,6 +3736,7 @@ C << not required for this. >>
 
       integer lnblnk  ! function definition
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       CHARACTER ZSDES*28,ZSDESC*20,SST1*12,ZST1*12,ZSDESS*16
 

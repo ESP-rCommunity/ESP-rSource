@@ -172,8 +172,8 @@ C IFIL base file unit number (set in MAIN of each application).
       COMMON/ER1/IER1
       INTEGER :: ier1
       
-      COMMON/C1/NCOMP,NCON
       integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
@@ -184,8 +184,8 @@ C IFIL base file unit number (set in MAIN of each application).
 C skyview viewfactor from external surfaces to the sky (site.h)
 C groundview viewfactor from external surfaces to the ground
 C buildingview viewfactor from external surfaces to other buildings & obstructions
-      COMMON/C6/INDCFG
       INTEGER :: INDCFG
+      COMMON/C6/INDCFG
 
 C NZSUR is the number of surfaces in each zone (from geometry.h).
 C NZTV is the number of vertices in each zone (from geometry.h).
@@ -194,22 +194,22 @@ C IFCFG is the file unit for the model configuration file.
 C cfgroot (24 char) root name for the model (used when generating
 C   system files.
 C LCFGF (72 char) model configuration file name.
-      common/C21/IFCFG,cfgroot,LCFGF
       INTEGER :: IFCFG
+      common/C21/IFCFG,cfgroot,LCFGF
 
 C IFPNF is the unit for the plant network file.
 C LPNF (72 char) plant network file name.
-      COMMON/C23/IFPNF,LPNF
       INTEGER :: IFPNF
+      COMMON/C23/IFPNF,LPNF
 
 C IZSTOCN - for each zone:surface a pointer to connection index.
-      COMMON/C24/IZSTOCN(MCOM,MS)
       INTEGER :: IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PREC8/SLAT,SLON
       REAL :: SLAT,SLON
 
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       INTEGER :: iairn,icaas
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       INTEGER :: NNOD,NCMP,NCNN
@@ -2694,6 +2694,7 @@ C array IZSTOCN(MCOM,MS) which holds the connection index.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       do 42 icc = 1, NCON

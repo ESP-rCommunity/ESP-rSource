@@ -182,8 +182,8 @@ a) the folder structure of the ESP-r distribution includes a binX11
    and binGTK folder
 
 b) after compiling the X11 version of ESP-r the executables in the bin
-folder are copied to binX11. After compiling the GTK version of ESP-r
-the executables in the bin folder are copied to binGTK
+folder are copied to bin_X11. After compiling the GTK version of ESP-r
+the executables in the bin folder are copied to bin_GTK
 
 Folder struction for Inno Setup. Following the pattern of the Native 
 Windows installer you should create a folder structure:

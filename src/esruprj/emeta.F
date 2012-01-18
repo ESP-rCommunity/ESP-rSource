@@ -494,6 +494,7 @@ C Parameters
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/user/browse
       common/cctlnm/ctldoc,lctlf
@@ -1224,7 +1225,7 @@ C and act on the information within the file.
        SUBROUTINE SILENTREAD(IUNIT,LFILE,act,silentreturndirec,IER)
        integer MSZ   ! number of META zones array sizes, edit to
                      ! match MCOM in building.h
-       PARAMETER (MSZ=72)
+       PARAMETER (MSZ=82)
 #include "building.h"
 #include "model.h"
 #include "site.h"
@@ -2655,7 +2656,7 @@ C the file with minimum interaction.
       SUBROUTINE METAWRITE(ifilg,LFILE,act,IER)
       integer MSZ   ! number of META zones array sizes, edit to
                     ! match MCOM in building.h
-      PARAMETER (MSZ=72)
+      PARAMETER (MSZ=82)
 #include "building.h"
 #include "model.h"
 #include "site.h"
@@ -2693,10 +2694,11 @@ C IPV description via ipvdata.h.
       common/cctlnm/ctldoc,lctlf
       character LCTLF*72,CTLDOC*248
 
-      common/cctl/icascf(mcom)
       integer icascf
+      common/cctl/icascf(mcom)
 
       common/C21/IFCFG,cfgroot,LCFGF
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C XMLMETRICS are the metrics that could be included in the input.xml

@@ -52,6 +52,7 @@ C geometry.h provides commons G0/G2/c20/precz.
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
@@ -81,6 +82,22 @@ C geometry.h provides commons G0/G2/c20/precz.
       logical CFCFOUND !used to determine whether CFCs exist
       character*72 CFCFILE
       integer MVERT,IVERT ! max items and current menu item
+
+C Passed parameters to cfgtogg
+#ifdef OSI
+      integer icfg_type  ! model cfg type
+      integer icfgz      ! if non-zero then there are zones
+      integer icfgn      ! if non-zero then there are networks
+      integer icfgc      ! if non-zero then cfg file known
+      integer icfgdfn    ! if non-zero then cdf domain exists
+      integer iicfgz     ! there are zone related images
+      integer iicfgn     ! there are network related images
+      integer iicfgc     ! there are control related images
+      integer iicfgdfn   ! there are cfd related images
+#else
+      integer*8 icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz
+      integer*8 iicfgn,iicfgc,iicfgdfn
+#endif
 
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
@@ -143,7 +160,7 @@ C Read in the related geometry file into common.
         RETURN
       ENDIF
 
-C Scan through the geometry file and if most of the construction
+C Scan through the geometry file and if more than 3 construction
 C attributes have not been set then advise the user to use the
 C geometry facility first.
       ig=0
@@ -151,17 +168,21 @@ C geometry facility first.
         icn1=izstocn(icomp,i)
         if(SSMLCN(icn1)(1:4).EQ.'UNKN')ig=ig+1
   11  CONTINUE
-      if(ig.gt.(NZSUR(icomp)/2))then
+      if(ig.gt.3)then
         helptopic='many_not_attributed'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('unknowns atrib in constr',nbhelp,'-',0,0,IER)
+        CALL EASKAB(outs,'Options:',
+     &    'supply construction attributes now',
+     &    'cancel',IWA,nbhelp)
+        if(IWA.EQ.1)then
+          continue
+        else
+          return
+        endif
       endif
 
 C On entry display the current zone. Reset all surface lines to std.
-      if(QUIET)then
-        ITORG=1
-        ITGRD=1
-      endif
       nzg=1
       nznog(1)=ICOMP
       izgfoc=ICOMP
@@ -703,6 +724,7 @@ C Parameters
       COMMON/OUTIN/IUOUT,IUIN
 
 C Optical and geometric properties.
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/PRECT4/TOPTIC(MCOM,MTMC)
 
@@ -1099,6 +1121,7 @@ C Parameters
       integer ier    ! zero is ok
 
       COMMON/OUTIN/IUOUT,IUIN
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
@@ -1505,6 +1528,7 @@ C through each of the existing surfaces and finds unique optical types.
 
       COMMON/OUTIN/IUOUT,IUIN
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 

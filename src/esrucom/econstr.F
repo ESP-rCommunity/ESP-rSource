@@ -338,6 +338,7 @@ C Parameters
       logical QUIET        ! true acts silently
       integer IER          ! IER=0 OK, IER=1 problem
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
       COMMON/VTHP02/IVKON(MCOM,MS,ME)
@@ -490,6 +491,7 @@ C on common blocks. If isur=0 then all, otherwise for one surface.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
@@ -751,6 +753,7 @@ c         (not used in the current implementation),
 
       COMMON/OUTIN/IUOUT,IUIN
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)

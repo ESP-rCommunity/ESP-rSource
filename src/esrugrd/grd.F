@@ -86,14 +86,22 @@ C Name of current application
 
       LOGICAL MODIFY,MODBND,MODLEN,XST,GRDOK
 
-      DIMENSION ITEM(12)
+      DIMENSION ITEM(11)
       CHARACTER LFILE*72,LCFGF*72
       CHARACTER OUTSTR*124,ITEM*24,path*72,inf*144,LCMDFL*144
       character cfgroot*24,outs248*248,L144*144
       character inz*16,inzone*16,outs*124,MODE*4
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSI
       integer numberofzones ! to pass to updwire rather than ncomp
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+#else
+      integer*8 numberofzones
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+#endif
       integer MITEM,INO ! max items and current menu item
 
 C For help messages
@@ -211,9 +219,15 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
 
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
-        CALL win3d(menuchw,3,2,2,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=3; iiw2=2; iiw3=2; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        CALL win3d(menuchw,3,2,2,3,igl,igr,igt,igb,igw,igwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
@@ -328,10 +342,9 @@ C Set flag so that bounds are checked.
       ELSEIF(ITRC.EQ.2)THEN
         ITEM(9)='r reporting >> verbose '
       ENDIF
-      ITEM(10)='* image control         '
-      ITEM(11)='? help                  '
-      ITEM(12)='- Exit gridding module  '
-      MITEM=12
+      ITEM(10)='? help                  '
+      ITEM(11)='- Exit gridding module  '
+      MITEM=11
 
 C If user has defined problem and perhaps resized the display then
 C redraw the problem image.
@@ -439,7 +452,7 @@ C Display the ground modelling menu.
 
 C Display the moisture 1D gridding menu.
         CALL MENU1M(IDRW1,IDRW2,ITRC)
-      ELSEIF(INO.EQ.MITEM-4)THEN
+      ELSEIF(INO.EQ.MITEM-3)THEN
 
 C List out an ASCII file.
         CALL EASKS(LFILE,' File to look at ? ',
@@ -459,24 +472,11 @@ C End of file encountered, close the file and return to menu.
         ELSE
           CALL USRMSG(' ','Problem opening file... ','W')
         ENDIF
-      ELSEIF(INO.EQ.MITEM-3)THEN
+      ELSEIF(INO.EQ.MITEM-2)THEN
 
 C Toggle trace level.
         ITRC=ITRC+1
         IF(ITRC.GT.2)ITRC=0
-      ELSEIF(INO.EQ.MITEM-2)THEN
-
-C Image control.
-C Setting izgfoc=0 denotes that not in single zone edit mode.
-        nzg=NCOMP
-        DO 60 I=1,nzg
-          nznog(I)=I
-  60    CONTINUE
-
-C (Re)Set all surfaces to std line width.
-        CALL INLNST(1)
-        izgfoc=0
-        CALL EVSET('-',IER)
       ELSEIF(INO.EQ.MITEM-1)THEN
 
 C Help via the askabout facility in esru_ask.F The zero requests display

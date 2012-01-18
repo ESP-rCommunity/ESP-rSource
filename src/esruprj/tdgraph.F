@@ -47,11 +47,13 @@ C Parameters for eline calls.
       integer iside,isize,ifont     ! passed to viewtext
       integer iid1,iid2,iilastx,iilasty,iix,iiy
       integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iid1,iid2,iilastx,iilasty,iix,iiy
       integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
 C Start drawing; first header
@@ -65,6 +67,9 @@ C Start drawing; first header
 C Check if can draw in colour.
       colok=.false.
       if(nzonec.ge.6)colok=.true.
+
+C Cast values for horaxis.
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
 
 C Title strings.
       WRITE(etext,'(A,A)')  ' TDF file: ',LTDF(1:50)
@@ -392,10 +397,10 @@ C Try axis of hours.
       iind=1
       intsph=ntsph
       iigbdoy=igbdoy
-      CALL horaxishdw(XMIN,XMAX,igl,igr,igb,Xadd,xsc,1,iind,intsph,
+      CALL horaxishdw(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,1,iind,intsph,
      &  iigbdoy,LABEL2)
-C      CALL horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,1,LABEL2)
-      CALL vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,LABEL1)
+C      CALL horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,1,LABEL2)
+      CALL vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,LABEL1)
 
       IEFLDS=NTBITS(IFOC)+NTSTAT(IFOC)
       ISFLDS=IEFLDS-NTBITS(IFOC)+1

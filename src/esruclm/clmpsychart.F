@@ -51,9 +51,13 @@ C esrures/psychart.F - revised to for plotting climate data.
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C For help messages
@@ -273,12 +277,22 @@ C Change the scales on the axis and re-calculated enthalph for the chart.
 C Reset original screen size values on exit.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
-          CALL win3d(menuchw,10,22,4,3,igl,igr,igt,igb,igw,igwh)
+
+C Setup and pass in parameters to win3d.
+          iiw1=10; iiw2=20; iiw3=5; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+C          CALL win3d(menuchw,10,22,4,3,igl,igr,igt,igb,igw,igwh)
         elseif(iglib.eq.2)then
-          CALL win3d(menuchw,9,20,5,3,igl,igr,igt,igb,igw,igwh)
+          iiw1=9; iiw2=20; iiw3=5; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+C          CALL win3d(menuchw,9,20,5,3,igl,igr,igt,igb,igw,igwh)
         endif
-        igw=igr-igl
-        igwh=igb-igt
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         call startbuffer()
         RETURN        
       ELSE
@@ -315,11 +329,15 @@ C enthmaxy enthalpy y axis maximum
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
       integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 ipos,isize      ! for use with etlabel
       integer*8 iupdown,isym    ! passed to etplot
       integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       PATMOS=1013.25
@@ -338,15 +356,25 @@ C Colours used are nb 15 = grey40, nb 17 =grey60.
         LIMIT =8
         call feedbox(menuchw,2,igfw,igfh)      
         call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-        call win3d(menuchw,10,15,5,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=10; iiw2=15; iiw3=5; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        call win3d(menuchw,10,15,5,3,igl,igr,igt,igb,igw,igwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         igwid=igw
         igheight=igwh
       elseif(iglib.eq.2)then
-        CALL win3d(menuchw,10,8,4,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+        iiw1=10; iiw2=8; iiw3=4; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        CALL win3d(menuchw,10,8,4,3,igl,igr,igt,igb,igw,igwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         igwid=igw
         igheight=igwh
       endif
@@ -356,12 +384,14 @@ C Colours used are nb 15 = grey40, nb 17 =grey60.
      &  xadd,yadd)
 
 C Draw the axes of the chart.
-      CALL horaxis(Xmin,Xmax,igl,igr,igb,xadd,XSC,0,'db Temp C')
-      CALL vrtaxis(0.0,0.01,igl,igb,igt,yadd,YSC,0,0,'Enthalpy kJ/kg')
-      CALL vrtaxis(Ymin,Ymax,igr,igb,igt,yadd,YSC,0,1,'Moisture g/kg')
+      CALL horaxis(Xmin,Xmax,iigl,iigr,iigb,xadd,XSC,0,'db Temp C')
+      CALL vrtaxis(0.0,0.01,iigl,iigb,iigt,yadd,YSC,0,0,
+     &  'Enthalpy kJ/kg')
+      CALL vrtaxis(Ymin,Ymax,iigr,iigb,iigt,yadd,YSC,0,1,
+     &  'Moisture g/kg')
 
 C Store the scaling parameters used in drawing the axes
-      CALL linescale(igl,xadd,XSC,igb,yadd,YSC)
+      CALL linescale(iigl,xadd,XSC,iigb,yadd,YSC)
 C Draw the dry-bulb temperature lines
       iupdown=0
       isym=0

@@ -936,16 +936,16 @@ C geometry.h provides commons G0/G2/G5/c20/precz/prec16.
       common/trc/itrc
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       
-      COMMON/C1/NCOMP,NCON
       integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
-      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
-      COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
 C During setup scan for inbuilt and user defined ground temperatures.
 C igttype: if > 1 then index points to most often used standard profile
@@ -1000,7 +1000,7 @@ C Simulator parameters.
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
       LOGICAL ILTHPS,ILTHPZ,CLOSE
       logical dll,prob
-      dimension igarray(12),iguarray(12)
+      dimension igarray(mgrdp),iguarray(12)
 
       if (.not.startupok) ITCNST=0
       IWARN=0
@@ -1011,11 +1011,12 @@ C Zone-by-zone. Use IUNIT for geometry file.
       NNDS=0
       MNDS=0
 
-C Clear igarray() & iguarray()
+C Clear igarray() for inbuilt ground temps and iguarray()
+C for user defined ground temps. 
        igttype=0
-       do 9 ij=1,12
+       do 9 ij=1,mgrdp
          igarray(ij)=0
-         iguarray(ij)=0
+         if(ij.le.12) iguarray(ij)=0
   9    continue
       call usrmsg(' Checking zone descriptions... ',' ','-')
       ILTHPS=.FALSE.
@@ -1451,10 +1452,7 @@ C Identify special materials file & call routine to read it.
 
 C ******************** MZUTIL ********************
 
-C MZUTIL reads the zone utilities file if one is active. This
-C file contains information on the source of any data which should
-C be used in preference to the zone file defaults.
-C Timestep zone airflow is handled by tdf.
+C MZUTIL reads additional zone descriptions if active.
 
       SUBROUTINE MZUTIL(ICOMP,IER)
 #include "building.h"
@@ -1507,6 +1505,8 @@ C Reset warning flag and check and see if running in dll mode.
       call isadll(dll)
       
 C Open zone viewfactors, pre-calculated shading, convection regimes.
+C Report the contents of the shading file if the user has requested 
+C a trace and then re-scanned the model.
       IF(IVF(ICOMP).EQ.1)CALL MZVFIN(ICOMP)
       IF(ISI(ICOMP).EQ.1)CALL MZSHIN(ICOMP)
       IF(IHC(ICOMP).EQ.1)CALL MZHCFV2(ICOMP)
@@ -1902,6 +1902,7 @@ C Parameters
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       logical dup,first

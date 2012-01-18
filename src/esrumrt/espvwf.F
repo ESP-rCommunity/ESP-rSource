@@ -119,7 +119,15 @@ C Name of current application
       character inz*16,inzone*16,fs*1,cjfile*72
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSI
       integer numberofzones ! to pass to updwire rather than ncomp
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+#else
+      integer*8 numberofzones
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+#endif
       integer NITEMS,INO ! max items and current menu item
 
 C For help messages
@@ -293,9 +301,15 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
 C If starting as a reduced percentage of default then widen the
 C graphic display to compensate.
       IF(MMOD.EQ.8)THEN
-        CALL win3d(menuchw,4,2,2,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=4; iiw2=2; iiw3=2; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        CALL win3d(menuchw,4,2,2,3,igl,igr,igt,igb,igw,igwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
@@ -421,7 +435,7 @@ C successful then scan all the zones via ZDATA.
             CFGOK=.TRUE.
             numberofzones=ncomp
             IF(MMOD.EQ.8)call updwire(numberofzones)
-            CALL ZDATA (ITRC,IER,numberofzones,ISFSUM)
+            CALL ZDATA (ITRC,IER,int(numberofzones),ISFSUM)
 
 C Open scratch file now that path is known. Extend the name of the
 C vwf file. If this file exists
@@ -556,7 +570,7 @@ C Find the path and local file name.
           CFGOK=.TRUE.
           numberofzones=ncomp
           IF(MMOD.EQ.8) call updwire(numberofzones)
-          CALL ZDATA (ITRC,IER,numberofzones,ISFSUM)
+          CALL ZDATA (ITRC,IER,int(numberofzones),ISFSUM)
           call tstamp('>','VWF: scanning new model')
           call tstamp('>',LCFGF)
 

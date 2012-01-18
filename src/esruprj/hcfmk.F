@@ -63,6 +63,21 @@ C geometry.h provides commons G0/G2/precz.
       logical OK,dok,MODIFY,MODLEN,MODBND,modcfg,XST,clkok,browse
       integer NITEMS,INO ! max items and current menu item
 
+#ifdef OSI
+      integer icfg_type  ! model cfg type
+      integer icfgz      ! if non-zero then there are zones
+      integer icfgn      ! if non-zero then there are networks
+      integer icfgc      ! if non-zero then cfg file known
+      integer icfgdfn    ! if non-zero then cdf domain exists
+      integer iicfgz     ! there are zone related images
+      integer iicfgn     ! there are network related images
+      integer iicfgc     ! there are control related images
+      integer iicfgdfn   ! there are cfd related images
+#else
+      integer*8 icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz
+      integer*8 iicfgn,iicfgc,iicfgdfn
+#endif
+
 C For help messages
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
@@ -439,6 +454,7 @@ C IOPT: 1 = in-floor heating, 2 = heated wall panel, 3 = other.
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
       common/HCFPHI/hcfpdescr(MP)
       COMMON/OUTIN/IUOUT,IUIN
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       CHARACTER SN*12,outs*124,hcfpdescr*72
@@ -650,6 +666,7 @@ C IOPT: 1 = heater under a window, 2 = heater not under a window.
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
       common/HCFPHI/hcfpdescr(MP)
       COMMON/OUTIN/IUOUT,IUIN
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       CHARACTER SN*12,outs*124,h*72,hcfpdescr*72
@@ -1137,6 +1154,7 @@ C        intentional supply or extract of air from the room.
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
       common/HCFPHI/hcfpdescr(MP)
       COMMON/OUTIN/IUOUT,IUIN
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       CHARACTER SN*12,outs*124,hcfpdescr*72
@@ -1652,6 +1670,7 @@ C IOPT: 1 = Molina & Maestre, 2 = Bar-Cohen correlation.
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
       COMMON/OUTIN/IUOUT,IUIN
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C IAORZ is the air origin zone. '0' if outdoor air, zone number otherwise.
@@ -1854,6 +1873,7 @@ C NS is the number of surface in the zone << why pass this value? >>
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)
       common/HCFPHI/hcfpdescr(MP)
       COMMON/HCCEN/CENLOC(MP,14)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       character outs*124,SN*12,ITEM(MS+5)*30,KEY*1
       CHARACTER stuff*10
@@ -2337,6 +2357,7 @@ C As well as documentation based on the last edit by the user.
       COMMON/Vld20/Vldtng
       COMMON/VERTC/IAORZ,CWIDTH,CHEIGHT
       common/HCFPHI/hcfpdescr(MP)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       dimension HCIA(MS),HCEA(MS),IHCIA(MS),IHCEA(MS)
@@ -2698,6 +2719,7 @@ C held in a *.htc file.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/HCFP/IHCFP,ST(MP),EN(MP),HCI(MP,MS),HCE(MP,MS),
      &            ICTL(MP),IHCI(MP,MS),IHCE(MP,MS),CVdata(MP,MS,8)

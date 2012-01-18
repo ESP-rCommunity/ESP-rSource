@@ -90,7 +90,7 @@ C We assume one "building zone", NPCOMP "surfaces" each representing
 C a plant component, ME "elements per surface" each element holding
 C resp. temperature, 1th and 2nd phase mass flow rate for a plant
 C component node, and one window, and one door.
-      NCOMP=1
+      NCOMP=1   ! consider renaming so no clash with common c1
       NSUR=NPCOMP
       NELT=ME
       NWIN=1

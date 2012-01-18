@@ -231,6 +231,14 @@ C Name of current application
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer NITEMS,INO ! max items and current menu item
 
+#ifdef OSI
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+#else
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+#endif
+
 C For help messages
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
@@ -336,9 +344,15 @@ C messages to stderr in case of rule script program control.
 
 C Open the text display box equal to LIMTTY if MODEL = 8.
       IF(MODEL.EQ.8)THEN
-        CALL WIN3D(MENUCHW,8,10,2,3,IGL,IGR,IGT,IGB,IGW,IGWH)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=8; iiw2=10; iiw3=2; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        CALL WIN3D(MENUCHW,8,10,2,3,IGL,IGR,IGT,IGB,IGW,IGWH)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opensetup
@@ -937,15 +951,20 @@ C Grid commons
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
       integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
       integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
 C Clear the screen
       CALL startbuffer
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C Set the new x y and z view limits. Currently do not scroll
 C left further than X = -5m and down to Y = -5m.
@@ -1005,21 +1024,21 @@ C Draw the grid with the current scaling parameters.
 
 C Draw the Lower and Left extents of the grid and labels.
       IF(IVIEW.EQ.1.OR.IVIEW.EQ.2)THEN
-        CALL horaxis(Xmin,Xmax,igl,igr,igb,xadd,XSC,1,
+        CALL horaxis(Xmin,Xmax,iigl,iigr,iigb,xadd,XSC,1,
      &    'X (all grid dimensions in m)')
       ELSE
-        CALL horaxis(Xmin,Xmax,igl,igr,igb,xadd,XSC,1,
+        CALL horaxis(Xmin,Xmax,iigl,iigr,iigb,xadd,XSC,1,
      &    'Y (all grid dimensions in m)')
       ENDIF
 
       IF(IVIEW.EQ.1)THEN      
-        CALL vrtaxis(Ymin,Ymax,igl,igb,igt,yadd,YSC,1,0,'Y')
+        CALL vrtaxis(Ymin,Ymax,iigl,iigb,iigt,yadd,YSC,1,0,'Y')
       ELSE
-        CALL vrtaxis(Ymin,Ymax,igl,igb,igt,yadd,YSC,1,0,'Z')
+        CALL vrtaxis(Ymin,Ymax,iigl,iigb,iigt,yadd,YSC,1,0,'Z')
       ENDIF
 
 C Store the scaling parameters used in drawing the axes.
-      CALL linescale(igl,xadd,XSC,igb,yadd,YSC)
+      CALL linescale(iigl,xadd,XSC,iigb,yadd,YSC)
 
 C Draw the upper and right extents.
       call u2pixel(XMAX,YMIN,ix1,iy1)

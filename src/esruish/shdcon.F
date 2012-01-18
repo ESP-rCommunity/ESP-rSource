@@ -192,6 +192,7 @@ c   icont  - >0 if shaded surfaces were found
 #include "geometry.h"
 
       common/outin/iuout,iuin
+      integer izstocn
       common/c24/izstocn(mcom,ms)
 
       integer mon,isc,iyd
@@ -330,7 +331,7 @@ C Calculates the direct and diffuse solar shading. Called from shdcon.
       common/prec8/slat,slon
       common/shad1/isunup
       common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa,ipexcl
-      common/shad4/oshd(mox,moz)
+      common/shad4/oshd(mox,moz),ihit(mox,moz)
       common/grid11/xop(mox,moz),zop(mox,moz)
       integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
@@ -470,8 +471,8 @@ C step. gssa, the overall shading on target surface, is initialised
 C here for use in shdtst.
             do 40 ip=1,146
 
-C Reset ioshd and oshd before each sun or sky patch loop, setting any
-C grid point not within target surface to -1.
+C Reset ioshd() and oshd() before each sun or sky patch loop, setting
+C ioshd() for any grid point not within target surface to -1.
               do 403 i=1,nox(icomp)
                  do 404 j=1,noz(icomp)
                     call point1(icomp,itsur,xop(i,j),zop(i,j),ians)
@@ -553,6 +554,11 @@ C from the sun or sky patch.
 C Complete projection transformation on an obstruction block (ibn)
 C and surface-by-surface (ibs) basis.
                do 50 ibn=1,nbobs(icomp)
+                 do 501 i=1,nox(icomp)
+                   do 502 j=1,noz(icomp)
+                    ihit(i,j)=0
+  502              continue
+  501            continue
 
 C Compute X, Y and Z coordinates of obstruction block corners 
 C relative to the original site coordinate system.
@@ -944,7 +950,8 @@ C establish if it is within the target surface and shadow polygon.
       common/shad2/ishd,npoint,xs(5),zs(5)
       common/grid11/xop(mox,moz),zop(mox,moz)
       common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa,ipexcl
-      common/shad4/oshd(mox,moz)
+      common/shad4/oshd(mox,moz),ihit(mox,moz)
+      common/outin/iuout,iuin
 
       if(ishd.eq.0)return
 
@@ -960,13 +967,16 @@ C Do nothing if point is not within the shadow polygon as held in common/shad2/.
             call point2(xop(i,j),zop(i,j),ians)
             if(ians.eq.0)goto 20
 
-C Point obscured by current obstruction block.
-             ioshd(i,j)=1
+C Point obscured by current obstruction block face. Point shaded
+C if any face obscures so only increment oshd for first hit, ignoring
+C other hits.
+            ihit(i,j)=ihit(i,j)+1
+            ioshd(i,j)=1
 
-C Summate the related obstruction block opacity factors, op,
-C and constrain to a maximum of 1 (totally shaded).
-             oshd(i,j)=oshd(i,j)+op
-             if(oshd(i,j).gt.1.0)oshd(i,j)=1.0
+C If more than one obstruction block shaded then opacities need to be
+C compounded.
+            if(ihit(i,j).eq.1)oshd(i,j)=1.0-(1.0-oshd(i,j))*(1.0-op)
+            if(oshd(i,j).gt.1.0)oshd(i,j)=1.0
    20    continue
    10 continue
 

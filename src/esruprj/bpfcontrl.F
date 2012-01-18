@@ -3149,7 +3149,7 @@ C Edit plant control function II.
       CHARACTER outs*124,SSTR*96,TMP*96,SALT*40,PSALT*40,KEY*1
       character outsa*84,outsb*84,outsc*84,ltmp*248
 
-      CHARACTER hold*60
+      CHARACTER hold*70
       logical close1
       integer MVERT,IVERT ! max items and current menu item
 
@@ -3453,7 +3453,7 @@ C Define mode, number of items, std items, then mode specific items.
  11       WRITE(HOLD,'(2f8.0,2f7.2)')cm(3),cm(4),cm(5),cm(6)
           CALL EASKS(HOLD,
      &      ' Max htg/clg cap [W], Min htg/clg cap [W], setpoint,',
-     &      ' throtl range for PID ctl: ',60,' 1000. 0. 20. 2. ',
+     &      ' throtl range for PID ctl: ',70,' 1000. 0. 20. 2. ',
      &      'PID max min stpnt throt',IER,nbhelp)
           K=0
          CALL EGETWR(HOLD,K,cm(3),0.,999999.,'F','Mx htg/clg',IER)
@@ -3551,7 +3551,7 @@ C Define mode, number of items, std items, then mode specific items.
  21      WRITE(HOLD,'(2f8.0,2f7.2)')cm(3),cm(4),cm(5),cm(6)
           CALL EASKS(HOLD,
      &      ' Max flow [kg/s], Min flow [kg/s], setpoint,',
-     &      ' throtl range for PID ctl: ',60,' 0.01 0.0001 20. 2.',
+     &      ' throtl range for PID ctl: ',70,' 0.01 0.0001 20. 2.',
      &      'PID max min stpnt throt',IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,cm(3),0.,100.,'F','Max flow',IER)
@@ -3613,7 +3613,7 @@ C Numerical proportional controller.
   31      WRITE(HOLD,'(5f7.2)')cm(2),cm(3),cm(4),cm(5),cm(6)
           CALL EASKS(HOLD,
      &    ' Max output, min output, upper setpoint, lower setpoint, ',
-     &    ' output to overcome hysteresis',60,
+     &    ' output to overcome hysteresis',70,
      &      ' 2. 1. 2. 1. 0.1 ','num`l prop`l ctlr',IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,cm(2),0.,0.,'-','Max ouput',IER)
@@ -3642,7 +3642,7 @@ C Optimum start controller.
   41      WRITE(HOLD,'(6f7.2)')cm(2),cm(3),cm(4),cm(5),cm(6),cm(7)
           CALL EASKS(HOLD,
      &      ' Max output, desired time of arrival, desired temp,',
-     &      ' 1st B&J coeft, 2nd B&J coeft, 3rd B&J coeft ',60,
+     &      ' 1st B&J coeft, 2nd B&J coeft, 3rd B&J coeft ',70,
      &      ' 1000.0 9.0 20. 1. 1. 1. ','optimum start ctlr',
      &      IER,nbhelp)
           K=0
@@ -3673,7 +3673,7 @@ C Proportional damper controller.
   51      WRITE(HOLD,'(6f7.2)')cm(2),cm(3),cm(4),cm(5),cm(6),cm(7)
           CALL EASKS(HOLD,
      &    ' Max damp pos, Min damp pos, flow at max pos, flow at',
-     &    ' min pos, 1st connection number, 2nd connection number',60,
+     &    ' min pos, 1st connection number, 2nd connection number',70,
      &      ' 1. 0.  ','optimum start ctlr',IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,cm(2),0.,1.,'F','Max dmpr pos',IER)
@@ -3710,7 +3710,7 @@ C Duty Cycle controller.
   71      WRITE(HOLD,'(3f7.2)')cm(2),cm(3),cm(4)
           CALL EASKS(HOLD,
      &      ' Duty cycle prd, times steps off, 1st off time-step',
-     &      'in cycle period',60,' 4. 1. 1. ','Duty cycle ctlr',
+     &      'in cycle period',70,' 4. 1. 1. ','Duty cycle ctlr',
      &      IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,cm(2),1.,1440.,'F','Cycle perd',IER)
@@ -3728,17 +3728,17 @@ C On-off controller.
             call edisp(iuout,' Current on-off controller data is:')
             call edisp(iuout,' Mode, on setpt, off setpt, o/p at hi,
      &                         o/p at lo, sen lag, act lag')
-            write(outs,'(7F9.2)')cm(2),cm(3),cm(4),cm(5),cm(6),cm(7),
+            write(outs,'(7F10.2)')cm(2),cm(3),cm(4),cm(5),cm(6),cm(7),
      &                           cm(8)
             call edisp(iuout,outs)
           endif
           cm(1)=7.0
 
-  81      WRITE(HOLD,'(7f7.2)')cm(2),cm(3),cm(4),cm(5),cm(6),cm(7),
+  81      WRITE(HOLD,'(7f9.2)')cm(2),cm(3),cm(4),cm(5),cm(6),cm(7),
      &                            cm(8)
           CALL EASKS(HOLD,
      &    'Mode of operation, on set point, off set point, o/p at hi',
-     &    ' o/p at lo, sen lag, act lag ',60,' 1. 2. 1. 1. 1. 1. 1.',
+     &    ' o/p at lo, sen lag, act lag ',70,' 1. 2. 1. 1. 1. 1. 1.',
      &    'on-off ctl',IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,cm(2),-999.,999.,'W','Mode',IER)
@@ -3889,7 +3889,7 @@ C Proportional Integral Room controller
           CALL EASKS(HOLD,
      &    ' nominal, max, min, prop band, BDATA, reset time (sec)',
      &    'optional control loop, static value (see help)',
-     &    60,HOLD,'PI room ctrlr',IER,nbhelp)
+     &    70,HOLD,'PI room ctrlr',IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,cm(2),1.,1.,'-','Setpoint nominal ',IER)
           CALL EGETWR(HOLD,K,cm(3),1.,1.,'-','Setpoint max',IER)
@@ -3913,7 +3913,7 @@ C Outside temperature compensation controller
   111     write(HOLD,'(3(F5.2,1X))')cm(2),cm(3),cm(4)
           CALL EDISP(IUOUT,HOLD)
           CALL EASKS(HOLD,'alpha, beta, gamma',
-     &    '(see help)',60,HOLD,'OTC ctrlr',IER,nbhelp)
+     &    '(see help)',70,HOLD,'OTC ctrlr',IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,cm(2),1.,1.,'-','alpha ',IER)
           CALL EGETWR(HOLD,K,cm(3),1.,1.,'-','beta',IER)
@@ -3925,8 +3925,8 @@ C Outside temperature compensation controller
      &    CM(9),CM(10),CM(11)
           CALL EDISP(IUOUT,HOLD)
           CALL EASKS(HOLD,'nominal1, nominal, max, min, BDATA',
-     &    'optional control loop, static value (see help)'
-     &    ,60,HOLD,'OTC ctrlr',IER,nbhelp)
+     &      'optional control loop, static value (see help)',
+     &      70,HOLD,'OTC ctrlr',IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,cm(5),1.,1.,'-','nominal1',IER)
           CALL EGETWR(HOLD,K,cm(6),1.,1.,'-','nominal',IER)

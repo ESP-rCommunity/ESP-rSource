@@ -35,6 +35,7 @@ C CFMNGE - Manages CFD calcs and results output when BSim and CFD are conflated.
       common/outin/iuout,iuin
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)

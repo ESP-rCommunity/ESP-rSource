@@ -54,6 +54,7 @@ C Use geometry for common g0/g1/g2/g4/g5/g6/g7/prec16/precz/c20.
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/user/browse
       common/cctlnm/ctldoc,lctlf
@@ -332,7 +333,7 @@ C User will begin with a minimal GEN body.
         JVN(1,4)=4
         NZTV(icomp)=NTV
         SNAME(ICOMP,1)='first'
-        SOTF(1)='OPAQ'
+        SOTF(1)='OPAQUE'
         SMLCN(1)='UNKN'
         SVFC(1)='FLOR'
         SOTHER(1,1)='UNKNOWN'
@@ -349,7 +350,7 @@ C Update the connection list and hash for initial surface.
         ICCC=ICCC+1
         IC1(ICCC)=ICOMP
         IE1(ICCC)=1
-        ICT(ICCC)=0
+        ICT(ICCC)=-1  ! mark as unknown
         IC2(ICCC)=0
         IE2(ICCC)=0
         SSNAME(iccc)=SNAME(ICOMP,1)
@@ -511,6 +512,7 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
@@ -527,6 +529,7 @@ C For help messages
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
+      integer ianother   ! flag for jumping to a different zone
 
       helpinsub='NEWZONE'  ! set for subroutine
 
@@ -550,9 +553,14 @@ C Input dimensions.
 
 C Provide scratch description and the default assumptions for
 C other zone files. If the cfg file is version 4 or newer then
-C set to create version 1.1 zone geometry files.
+C set to create version 1.1 zone geometry files. Do not bother
+C to react to user request for jump to prior or next zone.
         CALL SCRZONE(IC,IER)
-        CALL EDZONE(ITRC,IC,IER)
+        CALL EDZONE(ITRC,IC,ianother,IER)
+        if(ianother.ne.0)then
+          call usrmsg('Ignoring request to jump to different zone',
+     &      '  ','-')
+        endif
         iZBFLG(IC)=0
         return
 
@@ -646,7 +654,7 @@ C Update the connection list and then the model configuration.
           icascf(NCOMP)=0
           call CTLWRT(ICTLF,IER)
         endif
-        ICCC=NCON
+        ICCC=NCON   ! connection number of the newest surface
 
 C If surface attributes are adaibetic or similar then use these in
 C the connections list, then remind user to double check topology.
@@ -656,14 +664,16 @@ C the connections list, then remind user to double check topology.
           IC1(ICCC)=IC
           IE1(ICCC)=ICC
           if(SOTHER(icc,1)(1:8).eq.'EXTERIOR')then
+            write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
+     &        ' is a EXTERIOR connection which will be used.'
+            call edisp(iuout,outs)
             ICT(ICCC)=0
             IC2(ICCC)=0
             IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:7).eq.'SIMILAR')then
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
-     &        ' is a SIMILAR connection. Use the'
-            call usrmsg(outs,
-     &       'surface attribute facility to confirm its details.','W')
+     &        ' is a SIMILAR connection which will be used.'
+            call edisp(iuout,outs)
             ICT(ICCC)=1
             IC2(ICCC)=0
             IE2(ICCC)=0
@@ -673,25 +683,24 @@ C the connections list, then remind user to double check topology.
             IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:8).eq.'CONSTANT')then
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
-     &        ' is a CONSTANT connection. Use the'
-            call usrmsg(outs,
-     &       'surface attribute facility to confirm its details.','W')
-            ICT(ICCC)=0
+     &    ' was a CONSTANT connection. Confirm its surface attributes.'
+            call edisp(iuout,outs)
+            SOTHER(icc,1)='UNKNOWN'
+            ICT(ICCC)=-1
             IC2(ICCC)=0
             IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:6).eq.'GROUND')then
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
-     &        ' is a GROUND connection. Use the'
-            call usrmsg(outs,
-     &       'surface attribute facility to confirm its details.','W')
-            ICT(ICCC)=0
+     &      ' was a GROUND connection. Confirm its surface attributes.'
+            call edisp(iuout,outs)
+            SOTHER(icc,1)='UNKNOWN'
+            ICT(ICCC)=-1
             IC2(ICCC)=0
             IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:7).eq.'UNKNOWN')then
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
-     &        ' has an undefined boundary. Confirm its'
-            call usrmsg(outs,
-     &        'surface attributes or use topology tool.','W')
+     &    ' has an undefined boundary. Confirm its surface attributes.'
+            call edisp(iuout,outs)
             ICT(ICCC)=-1
             IC2(ICCC)=0
             IE2(ICCC)=0
@@ -699,9 +708,8 @@ C the connections list, then remind user to double check topology.
 
 C Existing partitions in an imported zone are reset to UNKNOWN.
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
-     &        ' is a partition. Confirm its'
-            call usrmsg(outs,
-     &        'surface attributes or use topology tool.','W')
+     &        ' was a partition. Confirm its surface attributes.'
+            call edisp(iuout,outs)
             SOTHER(icc,1)='UNKNOWN'
             ICT(ICCC)=-1
             IC2(ICCC)=0
@@ -711,9 +719,8 @@ C Existing partitions in an imported zone are reset to UNKNOWN.
 
 C Existing partitions in an imported zone are reset to UNKNOWN.
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
-     &        ' might be a partition. Confirm its'
-            call usrmsg(outs,
-     &        'surface attributes or use topology tool.','W')
+     &        ' might be a partition. Confirm its surface attributes.'
+            call edisp(iuout,outs)
             SOTHER(icc,1)='UNKNOWN'
             ICT(ICCC)=-1
             IC2(ICCC)=0
@@ -970,6 +977,7 @@ C espriou.h provides currentfile.
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
