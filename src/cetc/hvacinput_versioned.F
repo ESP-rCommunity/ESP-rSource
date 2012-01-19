@@ -3577,6 +3577,64 @@ C.......Set gloabal error flag
 
       return
       end subroutine AreTokensValid
+      
+C=======================================================================
+c FAN_SIZE_improved
+C 
+c This routine re-implements fan_size, above. Instead of trying
+c to deduct the fan size for each system, it merely reports the
+c computed fan-size for the specified system.
+c INPUTS:
+c       isys            number for hvac system
+c       HVAC_INPUT_DATA common for HVAC input data
+c       HEAT_PUMP_INPUT_DATA
+c                       common for heat pump input data
+c       
+c OUTPUTS:
+c       FAN_SIZE        size of the indoor circulation fan in W
+c *********************************************************************
+      real function Fan_AutoSize_improved(iSystem)
+      implicit none 
+#include "hvac_parameters.h"
+#include "building.h"
+#include "hvac_common.h"
+
+      integer iSystem
+
+C Make sure system has a fan!
+      Sys_Has_Fan: if ( iFan_Operation(iSystem) == iFan_None ) then
+
+        Fan_AutoSize_improved = 0.0
+
+      else
+C Check HVAC type, and compute fan size
+
+        HVAC_Type: select case ( iHVAC_type(iSystem) )
+
+          case ( iSysFurnace, iSysBoiler, iSysBaseboard )
+
+            Fan_AutoSize_improved = 0.0194 * ss_capacity(iSystem)
+
+          case ( iSysASHP, iSysGSHP, iSysGSHP_GCEP )
+
+            Fan_AutoSize_improved = 0.0467 * ss_capacity(iSystem)
+
+          case ( iSysIMS_P10 )
+
+            ! What to do here?
+
+          case default
+
+            ! Can't happen - ihvac_type tested earlier
+
+        end select HVAC_Type
+
+      endif Sys_Has_Fan
+      
+      return
+      end      
+      
+      
 C===================== Initialize_tokens ===============================
 C-----------------------------------------------------------------------
 C Initialize token lists. These arrays describe the various

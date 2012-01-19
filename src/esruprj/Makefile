@@ -34,7 +34,7 @@ OBJECTS = h3kmodule.o prj.o anlytc.o aim2_module.o aim2_inputs.o arrow.o ascii_m
 	  prjdmds.o prjfmk.o prjqa.o psychro.o rcdblist.o read3dv.o readTrnsys.o \
 	  rwipv.o rwroam.o rwsbem.o sendd.o sendflt.o senrwl.o sensa.o \
 	  setup.o sort.o spmisc.o stndrds.o startup.o tdfedit.o tdfile.o tdgraph.o \
-	  hvacinput.o PltDummy.o \
+	  hvacinput.o PltDummy.o hvacinput_versioned.o CETC_plt_dummy.F 
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod aim2_inputs.mod aim2_inputs_inputdata.mod \
 	  h3kmodule.mod	
@@ -243,6 +243,9 @@ ground_temp_mains.F:
 hvacinput.F:
 	rm -f hvacinput.F
 	ln -s $(CETCdir)/hvacinput.F .
+hvacinput_versioned.F:
+	rm -f hvacinput_versioned.F
+	ln -s $(CETCdir)/hvacinput_versioned.F .  
 PltDummy.F:
 	rm -f PltDummy.F
 	ln -s $(PLTdir)/PltDummy.F .
@@ -252,7 +255,10 @@ readTrnsys.F:
 h3kmodule.f90:
 	rm -f h3kmodule.f90
 	ln -s $(CETCdir)/h3kmodule.f90 .
-
+CETC_plt_dummy.F:
+	rm -f CETC_plt_dummy.F
+	ln -s $(PLTdir)/CETC_plt_dummy.F .
+  
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
 
@@ -270,7 +276,7 @@ clean:
 	item.F mcdbscn.F mfcdat.F mfelst.F mfnmsc.F mfrlst.F MultiYear_climate.F mvalid.F \
 	net2pdf.F newnet.F nwkrewr.F plelevvc.F pltcfg.F psychro.F rcdblist.F rwipv.F rwroam.F \
 	rwsbem.F senrwl.F sort.F spmisc.F stndrds.F startup.F tdfile.F  \
-	readTrnsys.F PltDummy.F h3kmodule.f90
+	readTrnsys.F PltDummy.F h3kmodule.f90 hvacinput_versioned.F CETC_plt_dummy.F
 
 
 
