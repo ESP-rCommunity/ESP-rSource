@@ -944,26 +944,35 @@ C a climate file by reading records 366 and 367.
         call gethelptext(helpinsub,helptopic,nbhelp)
         iclim=ifil
         call erpfree(iclim,istat)
+
+C Take into account weather file location.
+        lndbp=lnblnk(standardclmpath)
+        if(ipathclim.eq.0.or.ipathclim.eq.1)then
+          llclmdb=LCLIM
+        elseif(ipathclim.eq.2)then
+          write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &      LCLIM(1:lnblnk(LCLIM))
+        endif
 	
-        write(llclmdb,'(a)') LCLIM
+C        write(llclmdb,'(a)') LCLIM
  291    llt=lnblnk(llclmdb)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
-            CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
+            CALL EASKF(llclmdb,'Weather file:',
      &        ' ',96,DCLIM,'climate file name',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
-            CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
+            CALL EASKF(llclmdb,'Weather file:',
      &        ' ',124,DCLIM,'climate file name',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
-            CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
+            CALL EASKF(llclmdb,'Weather file:',
      &        ' ',144,DCLIM,'climate file name',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
-          CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
+          CALL EASKF(llclmdb,'Weather file:',
      &      ' ',144,DCLIM,'climate file name',IER,nbhelp)
         else
-          CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
+          CALL EASKF(llclmdb,'Weather file:',
      &      ' ',96,DCLIM,'climate file name',IER,nbhelp)
         endif
         IF(llclmdb(1:2).EQ.'  ')GOTO 291

@@ -173,6 +173,7 @@ C has a matching name.gnd.
 	write(weathergr,'(2a)') weather(1:lnw),'.gnd'
         lnwg=lnblnk(weathergr)
 
+C << todo take into account location >>
         write(subpath,'(4a)')
      &    dinstpath(1:lnblnk(dinstpath)),fs,'climate',fs
         write(LCLIM,'(2a)') subpath(1:lnblnk(subpath)),
@@ -201,6 +202,8 @@ C Also look in the folder where the model is being created.
           write(currentfile,'(a)') LCLIM(1:lnblnk(LCLIM))
           write(groundfile,'(3a)') mpath(1:lnblnk(mpath)),fs,
      &      weathergr(1:lnwg)
+
+C << todo take into account location >>
 
           CALL ERPFREE(ICLIM,ISTAT)
           CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)

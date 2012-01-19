@@ -228,6 +228,8 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
 
       CHARACTER*72 hvacfile
 
+      character llclmdb*144  ! to expand weather file
+
       dimension VAL(MBITS+2)
       logical ok,itpmod,WDARDO,MSTROK,MSTRZN
       logical rewnd,irew,tsclaw,pasone
@@ -277,6 +279,8 @@ C water
 
       logical autook
       integer ier,IClmErr
+      logical unixok
+      character fs*1
 
 C SUN F90 has spotty support for cpu_time intrinsic
 #ifdef F90
@@ -287,6 +291,14 @@ C Store start time for reporting simulationd duration
 
       ier=0       ! set prior to use
       IClmErr=0
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C*h3koutput* Initialize data variables
       call H3KSTORE_ZERO_DATA
@@ -665,8 +677,19 @@ C water
 C If this is a single year simulation, open the climate file. During
 C multi-year simulations, the climate files will be opened inside
 C the simulation loop
-      if ( .not. bMY_sim_enabled ) 
-     &   call EFOPRAN(ICLIM,LCLIM,144,0,IClmErr)
+      if ( .not. bMY_sim_enabled ) then
+
+C Take into account weather file location.
+        lndbp=lnblnk(standardclmpath)
+        if(ipathclim.eq.0.or.ipathclim.eq.1)then
+          llclmdb=LCLIM
+        elseif(ipathclim.eq.2)then
+          write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &      LCLIM(1:lnblnk(LCLIM))
+        endif
+        call EFOPRAN(ICLIM,llclmdb,144,0,IClmErr)
+
+      endif
 
 C In the case that we have a gshp input file, dhw input file, and/or basesimp 
 C input file, then call routines to determine degree days and ground temperature

@@ -13646,6 +13646,8 @@ C Passed parameters.
      &   15.,46.,74.,95.,135.,166.,196.,227.,258.,288.,319.,349./
 
       iclim=IFIL
+
+C << todo take into account location >>
       call EFOPRAN(ICLIM,LCLIM,144,0,IER)
       IF(ier.ne.0)return
 

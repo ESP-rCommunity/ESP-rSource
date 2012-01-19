@@ -61,7 +61,10 @@ C Indicator of possible command line action to take and the
 C file associated with this action.
       common/ract/paction,pascif
 
-C Path to problem and command line file (if any).
+C Path to problem and command line file (if any).  Note: within
+C prj there is a concept of standard location for weather data or
+C model located weather data. Clm might or might not know about
+C this.
       common/rpath/path
       common/rcmd/LCMDFL
 

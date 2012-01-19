@@ -1304,6 +1304,7 @@ C are not referenced. Could we use these slots for something else?
   140 CONTINUE
   
 C Finally check if the climate file read in above exists.
+C << take into account location >>
    44 IUNITC=IFIL+5
       call EFOPRAN(IUNITC,LCLIM,144,0,IER)
       IF(IER.LT.0)then

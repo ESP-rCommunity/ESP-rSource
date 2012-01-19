@@ -2114,6 +2114,8 @@ C Set delimiter in reports to standard/literal format.
 
 C First check if climate datase exists: if so open.
       CALL ERPFREE(ICLIM,ISTAT)
+
+C << todo take into account location >>
       CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
       if(ISTAT.ge.0)then
         CALL ERPFREE(ICLIM,ISTAT)

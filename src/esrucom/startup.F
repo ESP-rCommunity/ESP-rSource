@@ -1116,6 +1116,7 @@ C Set defaults and exemplars depending on whether Unix or NT.
         write(cdblfil,'(2a)') instpath(1:ln),'/climate/climatelist'
         write(altdot,'(2a)') instpath(1:ln),'/esprc'
         write(standarddbpath,'(2a)') instpath(1:ln),'/databases'
+        write(standardclmpath,'(2a)') instpath(1:ln),'/climate'
       else
         write(gxwdcmd,'(a)')'xwud -out c:/temp/gxwd.xwd'
         tprlbl='Text dump'
@@ -1130,6 +1131,7 @@ C Set defaults and exemplars depending on whether Unix or NT.
         write(cdblfil,'(2a)') instpath(1:ln),'/climate/climatelist'
         write(altdot,'(2a)') instpath(1:ln),'/esprc'
         write(standarddbpath,'(2a)') instpath(1:ln),'/databases'
+        write(standardclmpath,'(2a)') instpath(1:ln),'/climate'
       endif
 
 C Debug.
