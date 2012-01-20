@@ -300,7 +300,7 @@ C HVAC AIM-2
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST
       LOGICAL GRND3D,MSTROK,MSTRZN
-      logical dll,closemat1,closemat2,unixok
+      logical dll,closemat1,closemat2,unixok,concat
 
 C GSHP
 C Common holding flag indicating presence of gshp data input file:
@@ -769,7 +769,7 @@ C the global model definition, as it can be specified separately.
 C Take into account weather file location.
          lndbp=lnblnk(standardclmpath)
          if(ipathclim.eq.0.or.ipathclim.eq.1)then
-           llclmdb=LCLIM
+           call addpath(lclim,llclmdb,concat)
          elseif(ipathclim.eq.2)then
            write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
      &       LCLIM(1:lnblnk(LCLIM))

@@ -228,8 +228,6 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
 
       CHARACTER*72 hvacfile
 
-      character llclmdb*144  ! to expand weather file
-
       dimension VAL(MBITS+2)
       logical ok,itpmod,WDARDO,MSTROK,MSTRZN
       logical rewnd,irew,tsclaw,pasone
@@ -279,8 +277,10 @@ C water
 
       logical autook
       integer ier,IClmErr
-      logical unixok
+      logical unixok,concat
       character fs*1
+      character llclmdb*144  ! to expand weather file
+      integer lndbp          ! length of weather folder path
 
 C SUN F90 has spotty support for cpu_time intrinsic
 #ifdef F90
@@ -682,11 +682,12 @@ C the simulation loop
 C Take into account weather file location.
         lndbp=lnblnk(standardclmpath)
         if(ipathclim.eq.0.or.ipathclim.eq.1)then
-          llclmdb=LCLIM
+          call addpath(lclim,llclmdb,concat)
         elseif(ipathclim.eq.2)then
           write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
      &      LCLIM(1:lnblnk(LCLIM))
         endif
+
         call EFOPRAN(ICLIM,llclmdb,144,0,IClmErr)
 
       endif

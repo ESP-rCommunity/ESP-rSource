@@ -120,17 +120,18 @@ C an extra record is used.
      &I=21,NCOMP)
 
 C Note: LCLIM is 144 char so this assume a minimal record width.
-C To make it easier for res expand to full path if using a standard
+C To make it easier for res, expand to full path if using a standard
 C folder.
       IREC = IREC + 1
     4 continue
       if(ipathclim.eq.0.or.ipathclim.eq.1)then
-        llclmdb=LCLIM
+        call addpath(lclim,llclmdb,concat)
       elseif(ipathclim.eq.2)then
         lndbp=lnblnk(standardclmpath)
         write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
      &    LCLIM(1:lnblnk(LCLIM))
       endif
+
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)llclmdb
       IREC=IREC+1
 

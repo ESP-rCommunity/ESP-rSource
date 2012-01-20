@@ -1003,9 +1003,8 @@ C Read climate file name.
         lnsb=lnblnk(secondbit)
 	write(LCLIM,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
 
-C << todo shall we take into account location ? >>
 C Debug.
-C        write(6,*) LCLIM
+C        write(6,*) 'plant lclim is ',LCLIM
 
       endif
 
