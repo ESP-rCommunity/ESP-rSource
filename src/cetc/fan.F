@@ -97,18 +97,18 @@ c Declare local variables
       iBackupSysIndex = iBackup_Sys_num(isys)
       
 c Simulation time step
-       time_step = 3600. / float(NTSTEP)
-      !write (*,*) " ---------- Fan --------------------------"
-      !write(*,*) "isys", isys
-      !write(*,*) "plfp, plfb", plfp, plfb
-      !write(*,*) "plrp, plrb", plrp, plrb
-      !write(*,*) "ihvac_type(isys)", ihvac_type(isys) 
-      !write(*,*) "iunit_function(isys)",iunit_function(isys)
-      !write(*,*) "ifan_operation(isys)", ifan_operation(isys)
-      !if ( ibackup_sys_num(isys) > 0 ) then 
-      !write(*,*) "ibac_operation(isys)", 
-      !&               ifan_operation(ibackup_sys_num(isys)) 
-      !endif 
+      time_step = 3600. / float(NTSTEP)
+!      write (*,*) " ---------- Fan --------------------------"
+!      write(*,*) "isys", isys
+!      write(*,*) "plfp, plfb", plfp, plfb
+!      write(*,*) "plrp, plrb", plrp, plrb
+!      write(*,*) "ihvac_type(isys)", ihvac_type(isys) 
+!      write(*,*) "iunit_function(isys)",iunit_function(isys)
+!      write(*,*) "ifan_operation(isys)", ifan_operation(isys)
+!      if ( ibackup_sys_num(isys) > 0 ) then 
+!      write(*,*) "ibac_operation(isys)", 
+!     &               ifan_operation(ibackup_sys_num(isys)) 
+!      endif 
       FanMode: if ( ifan_operation(isys) == 0 ) then 
 c if there is no circulation fan, set power to zero. 
         fHVAC_PL_primary = 0.      
@@ -207,20 +207,21 @@ C.......This section should be deleted (or
           FanTSFracAuto = 1. - FanPlr 
 
         endif 
-
-        FAN_ENERGY_CON = 
-     &         FanPlr        * ( time_step * fan_power(isys)      )
-     &       + FanTSFracAuto * ( time_step * fan_power_auto(isys) )
-        
+      
       endif FanCtlLoopActive
 
-      !write(*,*) "time_step", time_step
-      !write(*,*) "fan_power", fan_power(isys)
-      !write(*,*) "fan_power_auto", fan_power_auto(isys) 
-      !!write(*,*) "fHVAC_PL", fHVAC_PL_primary, fHVAC_PL_backup
-      !!write(*,*) "FanPlr", FanPlr
-      !write(*,*) "FAN_ENERGY_CON", FAN_ENERGY_CON
-      !write(*,*) " done "
+      FAN_ENERGY_CON = 
+     &         FanPlr        * ( time_step * fan_power(isys)      )
+     &       + FanTSFracAuto * ( time_step * fan_power_auto(isys) )
+      
+      
+!      write(*,*) "time_step", time_step
+!      write(*,*) "fan_power", fan_power(isys)
+!      write(*,*) "fan_power_auto", fan_power_auto(isys) 
+!      write(*,*) "fHVAC_PL", fHVAC_PL_primary, fHVAC_PL_backup
+!      write(*,*) "FanPlr", FanPlr
+!      write(*,*) "FAN_ENERGY_CON", FAN_ENERGY_CON
+!      write(*,*) " done "
  
      
       return 

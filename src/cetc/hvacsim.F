@@ -561,7 +561,7 @@ C...........PIN is within construction
           if ( bDebug) write (*,*) " HVAC module: system : ", i
           if ( bDebug) write (*,*) 
      &    "              calling characterization code for type ",
-     &    iHVAC_type(i)
+     &    iHVAC_type(i), iUnit_Function(i), ipriority(i)
           if ( bDebug) write (*,*) 
      &    "              Heating Load: ", heating_load
           if ( bDebug) write (*,*) 
@@ -989,9 +989,10 @@ C-----------------------------------------------------------------------
         FanCtlLoop: do iFanLoop = 1, max_fan_loops
         
 C.........Is this loop active?
-
+!          print*, "> fan loop ", iFanLoop , "?", 
+!     &             bFanCtlLoopActive(iFanLoop)
           LoopActive: if ( bFanCtlLoopActive(iFanLoop ) ) then 
-          
+           
             fFanTotPLR      = 0.
             fFanMaxPower_hi = 0.
             fFanMaxPower_lo = 0. 
@@ -1027,6 +1028,9 @@ C...........Add ventilation requirements to PLR computation
             
             fCirc_and_Vent_PLR = max ( fFanTotPLR, fVentPLR)
 
+            !print*, "FANPLRs:", fFanTotPLR, fVentPLR, fCirc_and_Vent_PLR 
+            
+            
             if ( fCirc_and_Vent_PLR > 1. ) 
      &           fCirc_and_Vent_PLR = 1. 
      
@@ -1035,6 +1039,8 @@ C...........circulation and ventilation requirements. (W)
             fFanPower =  fFanMaxPower_hi * fCirc_and_Vent_PLR 
      &                 + fFanMaxPower_lo * (1.- fCirc_and_Vent_PLR )
 
+            !print *, "    ->>>>>>> P:", fCirc_and_Vent_PLR , fFanPower
+     
 C...........Fan power is computed! Loop through the hvac systems 
 C...........again and save fan power to fan_energy arrays
             HVAC_FanStorLoop: do i = 1, num_hvac_sys      

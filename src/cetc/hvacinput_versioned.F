@@ -1387,18 +1387,23 @@ C-----------------------------------------------------------------------
           case ( iSysFurnace )
 
             call HVAC_FuranaceBoiler_Input(iSystem,iSysFurnace)
+            iUnit_Function(iSystem) = iFuncHeating
 
           case ( iSysBoiler )
 
             call HVAC_FuranaceBoiler_Input(iSystem,iSysBoiler)
-
+            iUnit_Function(iSystem) = iFuncHeating
+            
+            
           case ( iSysBaseboard )
 
             call HVAC_Baseboard_Input(iSystem)
+            iUnit_Function(iSystem) = iFuncHeating
 
           case ( iSysIMS_P10 )
 
             call HVAC_IMS_P10_Input(iSystem)
+            iUnit_Function(iSystem) = iFuncHeating
 
           case ( iSysASHP )
 
