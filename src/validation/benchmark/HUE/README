@@ -1,0 +1,28 @@
+PEG or program for regression equation generation runs thermal
+simulations for a large number of models using different climates and
+generates regression equations to quantify energy performance as a
+function of climatic parameters.
+
+The folder structure and equation generation process is described below:
+
+base_prototype: holds an ESP-r base model from which other models are
+generated automatically
+
+climate: holds climate files needed for simulation, more files can be
+added as described in the manual
+
+doc: documentation
+
+gen_prototype: holds programs to create the prototypes, simulate these
+and to generate results
+
+results: holds final results database (FRDB) of regression coefficients
+raw results databases that are made for individual climates are held in
+tmp/energy_res. This folder also holds the monthly climate data
+summaries to be used with the FRDB
+
+src: source code for some of the programs used
+
+tmp: prototypes once generated are held here alongwith various auxiliary
+and support files
+

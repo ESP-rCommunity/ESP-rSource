@@ -1304,14 +1304,14 @@ C Use separate absorptivities for diffuse radiation from outside to inside.
 C Use average absorptivity for diffuse radiation from inside to outside.
                   ABF=(ABFSKY+ABFGND)/2.
 
-C Assign 0 for middle gas layer                
+C Assign 0 for middle gas layer.                
                 ELSEIF(J.EQ.2)THEN
                   ABD=0.0
                   ABFSKY=0.0
                   ABFGND=0.0
                   ABF=0.0
 
-C For internal layer assign the calculated absorptance on the inner layer
+C For internal layer, assign the calculated absorptance on the inner layer.
                 ELSEIF(J.EQ.3)THEN
                   ABD=a_inner_layer
                   ABFSKY=a_dfSKYinner(IBIDIR,IBISET_timestep)
@@ -1333,17 +1333,13 @@ C For internal layer assign the calculated absorptance on the inner layer
                 FAB=(SKYDIF(I)*ABFSKY+GRDDIF(I)*ABFGND)*(1.-POFF)
               ENDIF
 
-C Debug.
-C              write(6,'(a,i4,6f8.5)') 'Nodal data: ',IBOFOT(ICOMP,I),
-C     &                                        XX1,XX2,ABD,YY1,YY2,ABF
-
               EXSHAD(I)=PO(ICOMP,I,IHRF)
               EXSHADF(I)=POF(ICOMP,I,IHRF)
               EXDIR(I)=SRADDO(I)*(1.-EXSHAD(I))
               EXDIF(I)=SRADF(I)*(1.-EXSHADF(I))
-              EXRAD(I)=EXDIR(I)+SRADF(I)
+              EXRAD(I)=EXDIR(I)+EXDIF(I)
 
-C This code ensures that EXDIR and EXDIF are zero if EXRAD is zero.
+C Ensures that EXDIR and EXDIF are zero if EXRAD is zero.
              call eclose(EXRAD(I), 0.0,0.001,bCloseToZero)
              if ( bCloseToZero ) then
                 EXDIR(I) = 0.
@@ -2154,31 +2150,31 @@ C Output QSOLE and QSOLI for each construction if sun up.
       write(outs,'(a)') ' Solar nodal absorptions (W/m^2):'
       call edisp(itu,outs)
       call edisp(itu,' ')
-      call edisp(itu,' Surface     External  Internal  TMC node abs.')
-      call edisp(itu,' name        solar     solar     (from outside)')
-      call edisp(itu,'             abs.      abs.')
+      call edisp(itu,' Surface        Dir.  Dif.  Ext.  Int.  TMC ')
+      call edisp(itu,' name           shad. shad. solar solar node')
+      call edisp(itu,'                            abs.  abs.  abs.')
       DO 9991 I=1,NC
         ITMC=ITMCFL(ICOMP,I)
         if(ITMC.LE.0)then
-          write(outs,'(1X,a,F8.1,2X,F8.1)')sname(icomp,I),QSOLE(I,2),
-     &                                  QSOLI(I,2)
+          write(outs,'(1X,a,5(1X,F5.1))')sname(icomp,I),EXSHAD(I),
+     &                     EXSHADF(I),QSOLE(I,2),QSOLI(I,2)
           call edisp(itu,outs)
         else
           NN=NNDC(ICOMP,I)
           if(NN.le.12)then
-            write(outs,'(1X,a,F8.1,2X,F8.1,12(F6.1,1X))')sname(icomp,I),
-     &                    QSOLE(I,2),QSOLI(I,2),(QTMCA(I,J,2),J=1,NN)
+            write(outs,'(1X,a,16(1X,F5.1))')sname(icomp,I),EXSHAD(I),
+     &          EXSHADF(I),QSOLE(I,2),QSOLI(I,2),(QTMCA(I,J,2),J=1,NN)
             call edisp(itu,outs)
           elseif(NN.gt.12)then
-            write(outs,'(1X,a,F8.1,2X,F8.1,12(F6.1,1X))')sname(icomp,I),
-     &                    QSOLE(I,2),QSOLI(I,2),(QTMCA(I,J,2),J=1,12)
+            write(outs,'(1X,a,16(1X,F5.1))')sname(icomp,I),EXSHAD(I),
+     &          EXSHADF(I),QSOLE(I,2),QSOLI(I,2),(QTMCA(I,J,2),J=1,12)
             call edisp(itu,outs)
-            write(outs,'(31X,20(F6.1,1X))')(QTMCA(I,J,2),J=13,NN)
+            write(outs,'(31X,20(1X,F5.1))')(QTMCA(I,J,2),J=13,NN)
             call edisp(itu,outs)
           endif
 
 C Output direct and diffuse solar passing glazing and then clear.
-          write(outs,'(2a,F8.1,a,F8.1,a)') '  Transmissions (W):',
+          write(outs,'(2a,F6.1,a,F6.1,a)') '  Transmissions (W):',
      &      ' direct = ',tdtrace(i),'; diffuse = ',tfftrace(i)
           call edisp(itu,outs)
           tdtrace(i)=0.
@@ -3199,9 +3195,10 @@ c         The assumption is made that if the array address
 c         of the first window considered in some surface
 c         is given then information is available for each
 c         and every window in that surface.
-c PO    - gives the shading of each external exposed opaque
-c         surface considered and for each hour in the
-c         representative day.
+c PO    - gives the direct shading of each external surface
+c         for each hour in the representative day.
+c POF   - gives the diffuse shading of each external surface
+c         for each hour in the representative day.
 c IRS   - defines the internal surfaces which potentially
 c         would receive direct transmitted solar radiation
 c         from each of the considered window/shutter

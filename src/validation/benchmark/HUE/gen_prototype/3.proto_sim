@@ -1,0 +1,341 @@
+#!/bin/sh
+## SAPP 2009 Project File
+## Script to run simulations
+
+XX=5 # Exposure
+II=5 # Insulation level
+AA=5 # Air tightness
+CC=2 # Position of thermal capacity
+SS=3 # Solar ingress
+OO=5 # Occupant density
+LL=5 # Living area fraction
+
+Xfrom=1 ; Ifrom=1 ; Afrom=1 ; Cfrom=1 ; Sfrom=1 ; Ofrom=1 ; Lfrom=1
+Xto=$XX ; Ito=$II ; Ato=$AA ; Cto=$CC ; Sto=$SS ; Oto=$OO ; Lto=$LL
+
+# Remind user that climate files need to be in required folder
+echo ' '
+echo 'Make sure that climate files are in the ../dbs folder'
+echo 'and that their names are present in this script'
+echo ' '
+echo 'Run in test mode [y/n]? (default y)'
+echo ' In test mode only a few models are run'
+echo ' These are edited manually in this script'
+read runtest
+if [ $runtest != 'y' ] ; then
+  echo 'Run all models [y/n]'
+  read runall
+  if [ $runall != 'y' ] ; then
+    echo 'Select range of models to run'
+    echo 'X (exposure) models (available from 1 to '$XX')'
+    echo ' from ...' ; read Xfrom
+    echo ' to ...' ; read Xto
+    echo ' '
+
+    echo 'I (insulation level) models (available from 1 to '$II')'
+    echo ' from ...' ; read Ifrom
+    echo ' to ...' ; read Ito
+    echo ' '
+
+    echo 'A (air tightness) models (available from 1 to '$AA')'
+    echo ' from ...' ; read Afrom
+    echo ' to ...' ; read Ato
+    echo ' '
+
+    echo 'C (position of thermal capacity) models (available from 1 to '$CC')'
+    echo ' from ...' ; read Cfrom
+    echo ' to ...' ; read Cto
+    echo ' '
+
+    echo 'S (solar ingress) models (available from 1 to '$SS')'
+    echo ' from ...' ; read Sfrom
+    echo ' to ...' ; read Sto
+    echo ' '
+
+    echo 'O (occupant density) models (available from 1 to '$OO')'
+    echo ' from ...' ; read Ofrom
+    echo ' to ...' ; read Oto
+    echo ' '
+
+    echo 'L (living area fraction) models (available from 1 to '$LL')'
+    echo ' from ...' ; read Lfrom
+    echo ' to ...' ; read Lto
+    echo ' '
+  fi
+else
+  Xfrom=2 ; Xto=2 ; Ifrom=1 ; Ito=1 ; Afrom=1 ; Ato=1 ; Cfrom=1 ; Cto=1
+  Sfrom=2 ; Sto=2 ; Ofrom=1 ; Oto=1 ; Lfrom=1 ; Lto=2
+fi
+
+# Run simulations for all *.clm files in ../dbs and extract results
+for x in `seq $Xfrom $Xto`;
+do
+  for i in `seq $Ifrom $Ito`;
+  do
+    for a in `seq $Afrom $Ato`;
+    do
+      for c in `seq $Cfrom $Cto`;
+      do
+        for s in `seq $Sfrom $Sto`;
+        do
+          for o in `seq $Ofrom $Oto`
+          do
+            for l in `seq $Lfrom $Lto`
+            do
+              for clmfile in `ls ../tmp/models/dbs/uk_SAPP*.bin`
+              do
+                # Remove intermediate files
+                rm -rf  temp.* libb data.grt* core.* *.txt *.res ~/*.res
+
+                # initialise file names etc.
+                cfgfilename='X'$x'I'$i'A'$a'C'$c'S'$s'O'$o'L'$l'.cfg'
+                len=${#clmfile}
+                bin_clm_file=${clmfile:18:$len}
+                touch '../results/'$bin_clm_file'results.file'
+
+                # Replace climate.file with actual file name in  ../dbs
+                sed -e s/climate.file/$bin_clm_file/ '../tmp/models/cfg/'$cfgfilename > ../tmp/models/cfg/cfgfileR2S
+
+                # Run simulation
+                bps -mode text -file ../tmp/models/cfg/cfgfileR2S -p annual silent
+
+                # Extract results from save level 6 results file
+                echo $cfgfilename >> '../results/'$bin_clm_file'results.file'
+                echo $bin_clm_file >> '../results/'$bin_clm_file'results.file'
+                sed s/','/' '/g ../tmp/models/cfg/SAPPmodels.txt > temp.0
+                sed s/'MH'//g temp.0 > temp.1
+                sed s/'MC'/'100'/g temp.1 > temp.0
+                sed s/'non-living'/'2'/g temp.0 > temp.1
+                sed s/'living'/'1'/g temp.1 > SAPPmodels.rep.txt
+
+                # Run awk to extract results (replicate code for each floor area)
+                if [ $l == 1 ] ; then
+                awk '
+                   BEGIN{
+                    # Initialise
+                    for (i=1;i<13;i++){
+                      Heat[i] = 0.0 ; Cool[i] = 0.0
+                      TFA    = 0.0
+                    }
+                  }
+                  {
+                    for (i=1;i<13;i++){
+		      if ($2 == 1){
+                        TFA=90*0.25
+                      }
+		      if ($2 == 2){
+                        TFA=90-90*0.25
+                      }
+		      if ($3 == i){
+                        Heat[i]=Heat[i]+$4*TFA
+                      }
+                      j=1000+i
+                      if ($3 == j){
+                        Cool[i]=Cool[i]+$4*TFA
+                      }
+                    }
+                  }
+                  END{
+                    for (i=1;i<10;i++){
+                      print "Heating for month 0"i" is " Heat[i]
+                    }
+                    for (i=10;i<13;i++){
+                      print "Heating for month "i" is " Heat[i]
+                    }
+                    for (i=1;i<10;i++){
+                      print "Cooling for month 0"i" is " Cool[i]
+                    }
+                    for (i=10;i<13;i++){
+                      print "Cooling for month "i" is " Cool[i]
+                    }
+                  }
+                ' SAPPmodels.rep.txt >> '../results/'$bin_clm_file'results.file'
+                fi
+                if [ $l == 2 ] ; then
+                awk '
+                   BEGIN{
+                    # Initialise
+                    for (i=1;i<13;i++){
+                      Heat[i] = 0.0 ; Cool[i] = 0.0
+                      TFA    = 0.0
+                    }
+                  }
+                  {
+                    for (i=1;i<13;i++){
+		      if ($2 == 1){
+                        TFA=90*0.30
+                      }
+		      if ($2 == 2){
+                        TFA=90-90*0.30
+                      }
+		      if ($3 == i){
+                        Heat[i]=Heat[i]+$4*TFA
+                      }
+                      j=1000+i
+                      if ($3 == j){
+                        Cool[i]=Cool[i]+$4*TFA
+                      }
+                    }
+                  }
+                  END{
+                    for (i=1;i<10;i++){
+                      print "Heating for month 0"i" is " Heat[i]
+                    }
+                    for (i=10;i<13;i++){
+                      print "Heating for month "i" is " Heat[i]
+                    }
+                    for (i=1;i<10;i++){
+                      print "Cooling for month 0"i" is " Cool[i]
+                    }
+                    for (i=10;i<13;i++){
+                      print "Cooling for month "i" is " Cool[i]
+                    }
+                  }
+                ' SAPPmodels.rep.txt >> '../results/'$bin_clm_file'results.file'
+                fi
+                if [ $l == 3 ] ; then
+                awk '
+                   BEGIN{
+                    # Initialise
+                    for (i=1;i<13;i++){
+                      Heat[i] = 0.0 ; Cool[i] = 0.0
+                      TFA    = 0.0
+                    }
+                  }
+                  {
+                    for (i=1;i<13;i++){
+		      if ($2 == 1){
+                        TFA=90*0.35
+                      }
+		      if ($2 == 2){
+                        TFA=90-90*0.35
+                      }
+		      if ($3 == i){
+                        Heat[i]=Heat[i]+$4*TFA
+                      }
+                      j=1000+i
+                      if ($3 == j){
+                        Cool[i]=Cool[i]+$4*TFA
+                      }
+                    }
+                  }
+                  END{
+                    for (i=1;i<10;i++){
+                      print "Heating for month 0"i" is " Heat[i]
+                    }
+                    for (i=10;i<13;i++){
+                      print "Heating for month "i" is " Heat[i]
+                    }
+                    for (i=1;i<10;i++){
+                      print "Cooling for month 0"i" is " Cool[i]
+                    }
+                    for (i=10;i<13;i++){
+                      print "Cooling for month "i" is " Cool[i]
+                    }
+                  }
+                ' SAPPmodels.rep.txt >> '../results/'$bin_clm_file'results.file'
+                fi
+                if [ $l == 4 ] ; then
+                awk '
+                   BEGIN{
+                    # Initialise
+                    for (i=1;i<13;i++){
+                      Heat[i] = 0.0 ; Cool[i] = 0.0
+                      TFA    = 0.0
+                    }
+                  }
+                  {
+                    for (i=1;i<13;i++){
+		      if ($2 == 1){
+                        TFA=90*0.40
+                      }
+		      if ($2 == 2){
+                        TFA=90-90*0.40
+                      }
+		      if ($3 == i){
+                        Heat[i]=Heat[i]+$4*TFA
+                      }
+                      j=1000+i
+                      if ($3 == j){
+                        Cool[i]=Cool[i]+$4*TFA
+                      }
+                    }
+                  }
+                  END{
+                    for (i=1;i<10;i++){
+                      print "Heating for month 0"i" is " Heat[i]
+                    }
+                    for (i=10;i<13;i++){
+                      print "Heating for month "i" is " Heat[i]
+                    }
+                    for (i=1;i<10;i++){
+                      print "Cooling for month 0"i" is " Cool[i]
+                    }
+                    for (i=10;i<13;i++){
+                      print "Cooling for month "i" is " Cool[i]
+                    }
+                  }
+                ' SAPPmodels.rep.txt >> '../results/'$bin_clm_file'results.file'
+                fi
+                if [ $l == 5 ] ; then
+                awk '
+                   BEGIN{
+                    # Initialise
+                    for (i=1;i<13;i++){
+                      Heat[i] = 0.0 ; Cool[i] = 0.0
+                      TFA    = 0.0
+                    }
+                  }
+                  {
+                    for (i=1;i<13;i++){
+		      if ($2 == 1){
+                        TFA=90*0.50
+                      }
+		      if ($2 == 2){
+                        TFA=90-90*0.50
+                      }
+		      if ($3 == i){
+                        Heat[i]=Heat[i]+$4*TFA
+                      }
+                      j=1000+i
+                      if ($3 == j){
+                        Cool[i]=Cool[i]+$4*TFA
+                      }
+                    }
+                  }
+                  END{
+                    for (i=1;i<10;i++){
+                      print "Heating for month 0"i" is " Heat[i]
+                    }
+                    for (i=10;i<13;i++){
+                      print "Heating for month "i" is " Heat[i]
+                    }
+                    for (i=1;i<10;i++){
+                      print "Cooling for month 0"i" is " Cool[i]
+                    }
+                    for (i=10;i<13;i++){
+                      print "Cooling for month "i" is " Cool[i]
+                    }
+                  }
+                ' SAPPmodels.rep.txt >> '../results/'$bin_clm_file'results.file'
+                fi
+              done
+            done
+          done
+        done
+      done
+    done
+  done
+done
+
+# Now write out raw results data base with formatted monthly
+# heating / cooling loads, climate summary information (as generated above)
+for clmfile in `ls ../tmp/models/dbs/uk_SAPP*.bin`
+do
+  len=${#clmfile}
+  bin_clm_file=${clmfile:18:$len}
+  clm_file_only=${clmfile:26:$len-4-26}
+  ./.regress_input.pl '../results/'$bin_clm_file'results.file' > temp.output
+  sed s/' '/','/g temp.output > '../results/RRDB.'$clm_file_only'.csv'
+done
+rm -rf temp.* ../tmp/models/cfg/cfgfileR2S ../results/*.file *.txt

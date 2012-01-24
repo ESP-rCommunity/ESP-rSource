@@ -234,7 +234,8 @@ C No shading case.
       qpnl=exrad(ispmloc(ispmnod,2))
 
 C Shading case.
-      if(exshad(ispmloc(ispmnod,2)).gt.1E-6)then
+      if((exshad(ispmloc(ispmnod,2)).gt.0.0).or.
+     &   (exshadf(ispmloc(ispmnod,2)).gt.0.0))then
          if(ishad.eq.0.or.ishad.eq.1)then
             qpnl=exrad(ispmloc(ispmnod,2)) 
          elseif(ishad.eq.2)then
@@ -1303,8 +1304,7 @@ C Special materials.
       real    exdir		!- direct solar radiation incident on surface
 				!  per unit area (includes shading effects)
       real    exdif		!- diffuse solar radiation incident on surface
-				!  per unit area (shading effect does not
-				!  apply on diffuse component)
+				!  per unit area (included shading effects)
       real    exshad		!- direct shaded portion expressed as a factor
 				!  b/w 0 and 1 of surface
       real    exshadf		!- diffuse shaded portion expressed as a factor

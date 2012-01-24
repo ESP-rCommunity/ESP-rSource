@@ -877,9 +877,9 @@ C         write(6,*)(pso(i,j),j=1,24)
    10 continue
 
 C Write insolation factors.
-      if(ishd(mnth).eq.0.or.ishd(mnth).eq.1.or.nwins.eq.0)then
-        lastrecwritten=irec
-        return
+      if(ishd(mnth).eq.0.or.ishd(mnth).eq.1.or.nwins.eq.0) then
+         lastrecwritten=irec
+         return
       endif
       write(ifilsi,rec=irec,iostat=istat,err=1000)
      &                                (ioffs(i),i=1,nzsur(icomp))
