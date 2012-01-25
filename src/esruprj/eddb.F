@@ -169,27 +169,27 @@ C yet defined.
       endif
 
       WRITE(ITEMS(6),'(2A)')  'b multi-year weather    : ',cTemp(1:43)
-      if(ipathapres.eq.0)then
-        WRITE(ITEMS(7),'(2A)')'c pressure coefficients : ',
-     &    LAPRES(1:43)
-      elseif(ipathapres.eq.1)then
-        lndbpth=lnblnk(dbspth)+2
-        WRITE(ITEMS(7),'(2A)')'c pressure coefficients : <mod>',
-     &    LAPRES(lndbpth:38)
-      elseif(ipathapres.eq.2)then
-        WRITE(ITEMS(7),'(2A)')'c pressure coefficients : <std>',
-     &    LAPRES(1:38)
-      endif
       if(ipathmat.eq.0)then
-        WRITE(ITEMS(8),'(2A)')'d material properties   : ',
+        WRITE(ITEMS(7),'(2A)')'c material properties   : ',
      &    LFMAT(1:43)
       elseif(ipathmat.eq.1)then
         lndbpth=lnblnk(dbspth)+2
-        WRITE(ITEMS(8),'(2A)')'d material properties   : <mod>',
+        WRITE(ITEMS(7),'(2A)')'c material properties   : <mod>',
      &    LFMAT(lndbpth:38)  ! try to print file name only
       elseif(ipathmat.eq.2)then
-        WRITE(ITEMS(8),'(2A)')'d material properties   : <std>',
+        WRITE(ITEMS(7),'(2A)')'c material properties   : <std>',
      &    LFMAT(1:38)
+      endif
+      if(ipathoptdb.eq.0)then
+        WRITE(ITEMS(8),'(2A)')'d optical properties    : ',
+     &    LOPTDB(1:43)
+      elseif(ipathoptdb.eq.1)then
+        lndbpth=lnblnk(dbspth)+2
+        WRITE(ITEMS(8),'(2A)')'d optical properties    : <mod>',
+     &    LOPTDB(lndbpth:38)
+      elseif(ipathoptdb.eq.2)then
+        WRITE(ITEMS(8),'(2A)')'d optical properties    : <std>',
+     &    LOPTDB(1:38)
       endif
 
       if(ipathmul.eq.0)then
@@ -203,16 +203,16 @@ C yet defined.
         WRITE(ITEMS(9),'(2A)')'e constructions         : <std>',
      &    LFMUL(1:38)
       endif
-      if(ipathpcdb.eq.0)then
-        WRITE(ITEMS(10),'(2A)')'f plant components      : ',
-     &    LPCDB(1:43)
-      elseif(ipathpcdb.eq.1)then
+      if(ipathmsc.eq.0)then
+        WRITE(ITEMS(10),'(2A)')'f active components     : ',
+     &    MCMPDBFL(1:43)
+      elseif(ipathmsc.eq.1)then
         lndbpth=lnblnk(dbspth)+2
-        WRITE(ITEMS(10),'(2A)')'f plant components      : <mod>',
-     &    LPCDB(lndbpth:38)
-      elseif(ipathpcdb.eq.2)then
-        WRITE(ITEMS(10),'(2A)')'f plant components      : <std>',
-     &    LPCDB(1:38)
+        WRITE(ITEMS(10),'(2A)')'f active components     : <mod>',
+     &    MCMPDBFL(lndbpth:38)
+      elseif(ipathmsc.eq.2)then
+        WRITE(ITEMS(10),'(2A)')'f active components     : <std>',
+     &    MCMPDBFL(1:38)
       endif
       if(ipathprodb.eq.0)then
         WRITE(ITEMS(11),'(2A)')'g event profiles        : ',
@@ -225,40 +225,40 @@ C yet defined.
         WRITE(ITEMS(11),'(2A)')'g event profiles        : <std>',
      &    LPRFDB(1:38)
       endif
-      if(ipathoptdb.eq.0)then
-        WRITE(ITEMS(12),'(2A)')'h optical properties    : ',
-     &    LOPTDB(1:43)
-      elseif(ipathoptdb.eq.1)then
+      if(ipathapres.eq.0)then
+        WRITE(ITEMS(12),'(2A)')'h pressure coefficients : ',
+     &    LAPRES(1:43)
+      elseif(ipathapres.eq.1)then
         lndbpth=lnblnk(dbspth)+2
-        WRITE(ITEMS(12),'(2A)')'h optical properties    : <mod>',
-     &    LOPTDB(lndbpth:38)
-      elseif(ipathoptdb.eq.2)then
-        WRITE(ITEMS(12),'(2A)')'h optical properties    : <std>',
-     &    LOPTDB(1:38)
+        WRITE(ITEMS(12),'(2A)')'h pressure coefficients : <mod>',
+     &    LAPRES(lndbpth:38)
+      elseif(ipathapres.eq.2)then
+        WRITE(ITEMS(12),'(2A)')'h pressure coefficients : <std>',
+     &    LAPRES(1:38)
+      endif
+      if(ipathpcdb.eq.0)then
+        WRITE(ITEMS(13),'(2A)')'i plant components      : ',
+     &    LPCDB(1:43)
+      elseif(ipathpcdb.eq.1)then
+        lndbpth=lnblnk(dbspth)+2
+        WRITE(ITEMS(13),'(2A)')'i plant components      : <mod>',
+     &    LPCDB(lndbpth:38)
+      elseif(ipathpcdb.eq.2)then
+        WRITE(ITEMS(13),'(2A)')'i plant components      : <std>',
+     &    LPCDB(1:38)
       endif
       if(ipathmould.eq.0)then
-        WRITE(ITEMS(13),'(2A)')'i mould isopleths       : ',
+        WRITE(ITEMS(14),'(2A)')'j mould isopleths       : ',
      &    lfmould(1:43)
       elseif(ipathmould.eq.1)then
         lndbpth=lnblnk(dbspth)+2
-        WRITE(ITEMS(13),'(2A)')'i mould isopleths       : <mod>',
+        WRITE(ITEMS(14),'(2A)')'j mould isopleths       : <mod>',
      &    lfmould(lndbpth:38)
       elseif(ipathmould.eq.2)then
-        WRITE(ITEMS(13),'(2A)')'i mould isopleths       : <std>',
+        WRITE(ITEMS(14),'(2A)')'j mould isopleths       : <std>',
      &    lfmould(1:38)
       endif
 
-      if(ipathmsc.eq.0)then
-        WRITE(ITEMS(14),'(2A)')'j active components     : ',
-     &    MCMPDBFL(1:43)
-      elseif(ipathmsc.eq.1)then
-        lndbpth=lnblnk(dbspth)+2
-        WRITE(ITEMS(14),'(2A)')'j active components     : <mod>',
-     &    MCMPDBFL(lndbpth:38)
-      elseif(ipathmsc.eq.2)then
-        WRITE(ITEMS(14),'(2A)')'j active components     : <std>',
-     &    MCMPDBFL(1:38)
-      endif
       ITEMS(15)='  _______________________________ '
       ITEMS(16)='? help                            '
       ITEMS(17)='- exit this menu                  '
@@ -362,13 +362,8 @@ C with save level 5.
          call usrmsg('The use of multi-year assessments is',
      &               'limited to results save level 5.','W')
          call MY_clm_db_menu()
-        
+
       ELSEIF(INO.EQ.7)THEN
-
-C Pressure distribution db.
-        call eddbpres(moddb,'    ')
-
-      ELSEIF(INO.EQ.8)THEN
 
 C Manage materials db and if a model loaded then warn user 
 C if db name or contents have changed.
@@ -386,6 +381,20 @@ C if db name or contents have changed.
           endif
         endif
 
+      ELSEIF(INO.EQ.8)THEN
+
+C Optical properties.
+        call eddbopt(moddb,'    ')
+        if(cfgroot(1:2).ne.'  '.and.cfgroot(1:4).ne.'UNKN')then
+          if(moddb)then
+            call edisp(iuout,
+     &      'The file name or details have changed. If you')
+            call edisp(iuout,
+     &      'want to keep it use the `save model` option.')
+            call edisp(iuout,' ')
+          endif
+        endif
+
       ELSEIF(INO.EQ.9)THEN
 
 C Deal with constructions.
@@ -400,17 +409,8 @@ C Deal with constructions.
 
       ELSEIF(INO.EQ.10)THEN
 
-C Plant templates.
-        call eddbpcdb(moddb,'    ')
-        if(cfgroot(1:2).ne.'  '.and.cfgroot(1:4).ne.'UNKN')then
-          if(moddb)then
-            call edisp(iuout,
-     &      'The file name or details have changed. If you')
-            call edisp(iuout,
-     &      'want to keep it use the `save model` option.')
-            call edisp(iuout,' ')
-          endif
-        endif
+C Manage common active components file.
+        call EDDBMSC(moddb,'    ')
 
       ELSEIF(INO.EQ.11)THEN
 
@@ -425,11 +425,16 @@ C Event profiles.
             call edisp(iuout,' ')
           endif
         endif
-
+        
       ELSEIF(INO.EQ.12)THEN
 
-C Optical properties.
-        call eddbopt(moddb,'    ')
+C Pressure distribution db.
+        call eddbpres(moddb,'    ')
+
+      ELSEIF(INO.EQ.13)THEN
+
+C Plant templates.
+        call eddbpcdb(moddb,'    ')
         if(cfgroot(1:2).ne.'  '.and.cfgroot(1:4).ne.'UNKN')then
           if(moddb)then
             call edisp(iuout,
@@ -440,15 +445,10 @@ C Optical properties.
           endif
         endif
 
-      ELSEIF(INO.EQ.13)THEN
+      ELSEIF(INO.EQ.14)THEN
 
 C Mould isopleths.
         call EDDBMOULD(moddb,'    ')
-
-      ELSEIF(INO.EQ.14)THEN
-
-C Manage common active components file.
-        call EDDBMSC(moddb,'    ')
 
       ELSEIF(INO.EQ.15)THEN
 
@@ -1261,10 +1261,13 @@ C << temporary shorter string until EASKXORGTKF >>
           call edisp(iuout,LLTMP)
           goto 60    ! jump back and reload and re-display
         else
+          lastpathmat=ipathmat
+	  ipathmat=0 ! reset to expect full path for binary
           CALL MKBPRC(IAF,LLASCI,IER)
           write(LFMAT,'(a)') lltmp(1:lnblnk(lltmp))  ! restore original file name
           call edisp(iuout,'Restoring the previous materials db')
           call edisp(iuout,LLTMP)
+          ipathmat=lastpathmat
           goto 60    ! jump back and reload and re-display
         endif
 
