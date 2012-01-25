@@ -764,7 +764,8 @@ C Default ESP-r distribution path.
       character dirpath*48
       integer iglib  ! for detecting GTK or X11
 
-      CHARACTER outs248*248,APP*4
+      CHARACTER APP*4
+C      CHARACTER outs248*248
       LOGICAL OK,XST,DOK,concat
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72
@@ -1459,7 +1460,8 @@ C     if blank then no file name change implied.
       CHARACTER LTMP*72,lltmp*144,lprev*144
       character longtfile*144
       CHARACTER DOIT*300,fs*1,LCOPY*144
-      CHARACTER OUTS*124,outs248*248,APP*4
+      CHARACTER OUTS*124,APP*4
+C      CHARACTER outs248*248
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,tmode*8
@@ -1860,7 +1862,8 @@ C << introduce concept of types of profiles
       character LLASCI*144,lbin*144,llbin*144
       character longtfile*144,LCOPY*144
       CHARACTER fs*1,APP*4
-      CHARACTER OUTS*124,OUTS248*248
+      CHARACTER OUTS*124
+C      CHARACTER OUTS248*248
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,dirpath*48
@@ -2387,7 +2390,7 @@ C Default esp-r distribution path.
       CHARACTER LTMP*72,lltmp*144,lprev*144
       character longtfile*144,LCOPY*144
       CHARACTER fs*1,APP*4
-      CHARACTER outs248*248
+C      CHARACTER outs248*248
       LOGICAL OK,XST,DOK
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,dirpath*48
@@ -2756,7 +2759,7 @@ C This facility offers browsing for GTK version.
       CHARACTER LTMP*72,lltmp*144,lprev*144
       character longtfile*144,LCOPY*144
       CHARACTER fs*1,APP*4
-      CHARACTER outs248*248
+C      CHARACTER outs248*248
       character GTYPE*12,GDESCR*36,SOPT*12
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat
@@ -3127,7 +3130,7 @@ C This facility offers browsing for GTK version.
       CHARACTER LTMP*72,lltmp*144,lprev*144
       character longtfile*144,LCOPY*144
       CHARACTER fs*1,APP*4
-      CHARACTER outs248*248
+C      CHARACTER outs248*248
 
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
       character cfgroot*24,LCFGF*72
@@ -4332,7 +4335,7 @@ C is via a text editor.
       CHARACTER lltmp*144,lprev*144
       character longtfile*144,longtfiledos*144,LCOPY*144
       CHARACTER DOIT*300,fs*1,APP*4
-      CHARACTER outs248*248
+C      CHARACTER outs248*248
       LOGICAL OK,COPYDEF,MODDB,XST,DOK,concat
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,dirpath*48
@@ -5048,13 +5051,15 @@ C Local variables:
       character cfgroot*24,LCFGF*72
       character path*72
       character sourcefile*144  ! the file to copy
-
+      character longtfile*144,longtfiledos*144
+      
 C Local strings for user selections dependent on graphic library.
       character lpath*72,fname*72 ! for use with fdroot
 
       integer lndbp   ! for length of standard database path
       integer ier
       logical unixok  ! to check for database path file separators
+      logical concat
 
 C Clear string buffers.
       ltmp=' '
@@ -5256,9 +5261,22 @@ C Standard dos copy logic.
         call usrmsg('copying file via',doit,'-')
         call runit(doit,'-')
 
-C Use LTMP or LCOPY depending on the path because the path will already
-C be pre-pended when using most inbuilt file opening calls.
-        call FINDFIL(LCOPY,XST)
+C Depending on whether Unix or DOS based setup explicit path
+C to detect if a file exists at the desired location. If DOS
+C then check for spaces in name and change / to \.
+        call isunix(unixok)
+        if(unixok)then
+          call addpath(LTMP,longtfile,concat)
+        else
+          call addpath(LTMP,longtfile,concat)
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
+        endif
+        ltf=max(1,LNBLNK(longtfile))
+        INQUIRE (FILE=longtfile(1:ltf),EXIST=xst)
+
+C If it exists then update the common block name.
         if(XST)then
           call fdroot(lcopy,lpath,fname)
           if(topic(1:3).eq.'mat')then
@@ -5289,33 +5307,9 @@ C be pre-pended when using most inbuilt file opening calls.
 
           endif
         else
-          if(topic(1:3).eq.'mat')then
-            write(LFMAT,'(a)') LTMP(1:lnblnk(LTMP))
-          elseif(topic(1:3).eq.'mlc')then
-            write(LFMUL,'(a)') LTMP(1:lnblnk(LTMP))
-          elseif(topic(1:3).eq.'opt')then
-            write(LOPTDB,'(a)') LTMP(1:lnblnk(LTMP))
-          elseif(topic(1:3).eq.'pdb')then
-            write(LPCDB,'(a)') LTMP(1:lnblnk(LTMP))
-          elseif(topic(1:3).eq.'prs')then
-            write(lapres,'(a)') LTMP(1:lnblnk(LTMP))
-          elseif(topic(1:3).eq.'msc')then
-            write(MCMPDBFL,'(a)') LTMP(1:lnblnk(LTMP))
-          elseif(topic(1:3).eq.'mld')then
-            write(lfmould,'(a)') LTMP(1:lnblnk(LTMP))
-          elseif(topic(1:3).eq.'pro')then
-            write(LPRFDB,'(a)') LTMP(1:lnblnk(LTMP))
-          else
-
-          endif
-          call FINDFIL(LTMP,XST)
-          if(XST)then
-            continue
-          else
-            call edisp(iuout,'Problem locating the new file.')
-            call edisp(iuout,'Try browsing ../dbs to find it.')
-            call edisp(iuout,' ')
-          endif
+          call edisp(iuout,'Problem locating the local file.')
+          call edisp(iuout,'Try browsing ../dbs to find it.')
+          call edisp(iuout,' ')
         endif
 
 C On return parent code can use this flag.
