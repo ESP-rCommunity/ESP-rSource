@@ -5033,7 +5033,7 @@ void opengdisp_(menu_char,displ_l,dialogue_l,gdw,gdh)
   winfnt_(&small_fnt);
   wire_left = disp.b_right - (f_width * 26);
   capture_left = disp.b_right - (f_width * 8);
-  captext_left = disp.b_right - (f_width * 20);
+  captext_left = disp.b_right - (f_width * 8);
   elevplus_left = disp.b_right - (f_width * 30);
   elevminus_left = disp.b_right - (f_width * 33);
   elev_left = disp.b_right - (f_width * 44);
@@ -5086,7 +5086,7 @@ void opengdisp_(menu_char,displ_l,dialogue_l,gdw,gdh)
    bottom = disp.b_top; left = capture_left;
    doitbox(capture,"capture",7,8,&saved_font,&small_fnt,&bottom,&left,"capture",'-');
    bottom = fbb.b_bottom; left = captext_left;
-   doitbox(capture,"capture text buffer",19,20,&saved_font,&small_fnt,&bottom,&left,"captext",'-');
+   doitbox(capture,"capture",7,8,&saved_font,&small_fnt,&bottom,&left,"captext",'-');
  }
 
 /* include azimuth button */
@@ -7701,7 +7701,7 @@ point*/
 /* capture text button */
         saved_font = current_font;
         bottom = fbb.b_bottom; left = captext_left;
-        doitbox(capture,"capture text buffer",19,20,&saved_font,&small_fnt,&bottom,&left,"captext",'!');
+        doitbox(capture,"capture",7,8,&saved_font,&small_fnt,&bottom,&left,"captext",'!');
         but_rlse = 1;
       } else if (azi_avail >=1 && xboxinside(aziplus,x,y)) {
 
@@ -8106,7 +8106,7 @@ void updcapt_(avail)
     bottom = disp.b_top; left = capture_left;
     doitbox(capture,"capture",7,8,&saved_font,&small_fnt,&bottom,&left,"capture",'-');
     bottom = fbb.b_bottom; left = captext_left;
-    doitbox(capture,"capture text buffer",19,20,&saved_font,&small_fnt,&bottom,&left,"captext",'-');
+    doitbox(capture,"capture",7,8,&saved_font,&small_fnt,&bottom,&left,"captext",'-');
     capture_avail = *avail;         /* tell the world it is available */
   } else {
     capture_avail = *avail;         /* tell the world it is available */
@@ -8126,7 +8126,7 @@ void updazi_(avail)
     if (saved_font != small_fnt) winfnt_(&small_fnt);
     wire_left = disp.b_right - (f_width * 26);
     capture_left = disp.b_right - (f_width * 8);
-    captext_left = disp.b_right - (f_width * 20);
+    captext_left = disp.b_right - (f_width * 8);
     elevplus_left = disp.b_right - (f_width * 30);
     elevminus_left = disp.b_right - (f_width * 33);
     elev_left = disp.b_right - (f_width * 44);

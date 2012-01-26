@@ -197,7 +197,7 @@ C............' - Source:    BRANCH @ rXYZ (modified state)'
         if ( bVersioned ) then 
             
           write (cTemp_a,'(5A)') 
-     &      "  SVN Source -       ",
+     &      "  SVN source -       ",
      &      cBranch(1:lnblnk(cBranch)), 
      &      "@r",
      &      cRevision(1:lnblnk(cRevision))
@@ -212,7 +212,7 @@ C............' - Source:    BRANCH @ rXYZ (modified state)'
         
         else
            write (cTemp_a,'(A)') 
-     &       "  SVN Source -       UNKNOWN"
+     &       "  SVN source -       UNKNOWN"
         endif 
         call edisp(iuout,cTemp_a)      
           
@@ -232,7 +232,7 @@ C.........Compiliers ( eg: gcc/g++/g77)
 
         call getXlibs(cXlibs)    ! find out the graphic library used
         
-        write (cTemp_a,'(2A)')   "  Graphics Library - ",
+        write (cTemp_a,'(2A)')   "  Graphics library - ",
      &         cXLibs(1:3)
         call edisp(iuout,cTemp_a)
 
