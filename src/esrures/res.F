@@ -380,11 +380,6 @@ C Setup and pass in parameters to win3d.
       ITRC=1
       IF(MMOD.NE.-6)ICOUT=IUOUT
       CALL ESPrVersion("summary",cAppName,IUOUT)
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow, Scotland.'
-      call edisp(IUOUT,outs)
-      call edisp(IUOUT,' ')
 
 C Find the users home folder then get users custom settings.
 C Make temporary use of file unit ixunit.
@@ -432,9 +427,9 @@ C Scan the defaults file for default configuration.
 C Take command line file name as initial results file name.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
         LCMDFL=inf
-        write(outs248,'(a,a)')' the input file is: ',LCMDFL
-        call edisp248(iuout,outs,80)
-        call tstamp('>',outs)
+        call edisp(iuout,'  ')  ! echo blank line
+        write(outs248,'(a,a)')'The input file is: ',LCMDFL
+        call edisp248(iuout,outs248,90)
       else
         LCMDFL='UNKNOWN'
       endif
@@ -442,9 +437,9 @@ C Take command line file name as initial results file name.
 C Check for command line actions.
       if(act(1:2).ne.'  '.and.act(1:4).ne.'UNKN')then
          paction=act
-         write(outs,'(a,a)')' the action is: ',paction
+         write(outs,'(2a)') 'The action is: ',paction
          call edisp(iuout,outs)
-         write(outs,'(a,a)')'RES: the input action is: ',paction
+         write(outs,'(2a)') 'RES: the input action is: ',paction
          call tstamp('>',outs)
          if(aut(1:6).eq.'silent')then
            autook=.true.

@@ -180,6 +180,7 @@ C file, while the GTK version will be returning the
 C name with the full path. L144 is the suggested name and
 C lltmp is the file name returned by the user selection.
         lltmp='  '
+        call edisp(iuout,'  ')  ! echo a blank line
         CALL EASKXORGTKF(L144,
      &    'Viewer export file name?',' ',
      &    dvfil,lltmp,'viewer file',IER,nbhelp)
@@ -244,6 +245,7 @@ C DXF creation. Process similar to ecnv filter for VIEWER.
 C L144 is the suggested name and lltmp is the file name returned
 C by the user selection.
         lltmp='  '
+        call edisp(iuout,'  ')  ! echo a blank line
         CALL EASKXORGTKF(L144,'DXF export file name?',' ',
      &    dvfil,lltmp,'dxf file',IER,nbhelp)
 
@@ -1152,6 +1154,7 @@ C Offer user choice of home folder or another location. In GTK
 C there is a file browser returning folder name via lltmp.
                     write(lguess,'(a)') upath(1:lnblnk(upath))
                     write(dguess,'(a)') upath(1:lnblnk(upath))
+                    call edisp(iuout,'  ')  ! echo a blank line
                     CALL EASKXORGTKF(lguess,
      &                'Place model as subfolder of?',' ',
      &                dguess,lltmp,'models folder',IER,nbhelp)
@@ -1194,6 +1197,7 @@ C Offer user choice of home folder or another location. In GTK
 C there is a file browser returning folder name via lltmp.
                     write(lguess,'(a)') upath(1:lnblnk(upath))
                     write(dguess,'(a)') upath(1:lnblnk(upath))
+                    call edisp(iuout,'  ')  ! echo a blank line
                     CALL EASKXORGTKF(lguess,
      &                'Place model as subfolder of?',' ',
      &                dguess,lltmp,'models folder',IER,nbhelp)

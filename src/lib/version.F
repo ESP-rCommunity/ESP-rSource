@@ -119,21 +119,17 @@ C  e.g.: 'ESP-r integrated builing performance simulator (bps)'
 C.....ESP-r banner 
       if ( bRelease ) then 
 C.......Release version        
-        write(cTemp_a,'(7A)') "ESP-r ", 
+        write(cTemp_a,'(5A)') "ESP-r ", 
      &       cBinDesc(iBinIndex)(1:lnblnk(cBinDesc(iBinIndex))), 
-     &       " (",
-     &       cAppName(1:lnblnk(cAppName)),
-     &       ") Release ", 
+     &       " Release ", 
      &       cRelease_Num(1:lnblnk(cRelease_Num)),
      &       "."
         call edisp(iuout,cTemp_a)      
       
       else 
         
-        write(cTemp_a,'(5A)') "ESP-r ", 
-     &       cBinDesc(iBinIndex)(1:lnblnk(cBinDesc(iBinIndex))), " (",
-     &       cAppName(1:lnblnk(cAppName)),
-     &       ")."
+        write(cTemp_a,'(2A)') "ESP-r ", 
+     &       cBinDesc(iBinIndex)(1:lnblnk(cBinDesc(iBinIndex)))
         call edisp(iuout,cTemp_a)      
         
         write(cTemp_a,'(6A)') "This is a development copy of ", 
@@ -152,7 +148,7 @@ C Copyright information:
      &  "Copyright resides with the member organisations of the ESP-r")
       call edisp(iuout,"development consortium as listed at:")
       call edisp(iuout,
-     &  "http://www.esru.strath.ac.uk/Programs/ESP-r_central.htm")      
+     &  "http://www.esru.strath.ac.uk/Programs/ESP-r_central.htm.")      
 
 C Check if source was versioned (that is, was svn available, and 
 C is it a working copy)
@@ -201,7 +197,7 @@ C............' - Source:    BRANCH @ rXYZ (modified state)'
         if ( bVersioned ) then 
             
           write (cTemp_a,'(5A)') 
-     &      "  - SVN Source:       ",
+     &      "  SVN Source -       ",
      &      cBranch(1:lnblnk(cBranch)), 
      &      "@r",
      &      cRevision(1:lnblnk(cRevision))
@@ -216,19 +212,19 @@ C............' - Source:    BRANCH @ rXYZ (modified state)'
         
         else
            write (cTemp_a,'(A)') 
-     &       "  - SVN Source:       UNKNOWN"
+     &       "  SVN Source -       UNKNOWN"
         endif 
         call edisp(iuout,cTemp_a)      
           
 C.........Build Platform (e.g.: i686:LINUX:2.6.9-gentoo-r1)
-        write (cTemp_a,'(6A)')   "  - Platform:         ",
+        write (cTemp_a,'(6A)')   "  Platform -         ",
      &         cArchitecture(1:lnblnk(cArchitecture)),":",
      &         cOperSystem(1:lnblnk(cOperSystem)),":",
      &         cOSversion(1:lnblnk(cOSversion))
         call edisp(iuout,cTemp_a)      
          
 C.........Compiliers ( eg: gcc/g++/g77)
-        write (cTemp_a,'(6A)')   "  - Compilers:        ",
+        write (cTemp_a,'(6A)')   "  Compilers -        ",
      &         cCC(1:lnblnk(cCC)),"/",
      &         cCPL(1:lnblnk(cCPL)),"/",
      &         cFC(1:lnblnk(cFC))
@@ -236,7 +232,7 @@ C.........Compiliers ( eg: gcc/g++/g77)
 
         call getXlibs(cXlibs)    ! find out the graphic library used
         
-        write (cTemp_a,'(2A)')   "  - Graphics Library: ",
+        write (cTemp_a,'(2A)')   "  Graphics Library - ",
      &         cXLibs(1:3)
         call edisp(iuout,cTemp_a)
 
@@ -250,7 +246,7 @@ C.........Compiliers ( eg: gcc/g++/g77)
 
         endif 
         
-        write (cTemp_a,'(2A)')   "  - XML output:       ",
+        write (cTemp_a,'(2A)')   "  XML output -       ",
      &         cXML_support(1:lnblnk(cXML_support))
         call edisp(iuout,cTemp_a)
           

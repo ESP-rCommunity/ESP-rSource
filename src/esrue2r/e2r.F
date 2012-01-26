@@ -374,13 +374,8 @@ C        CALL win3d(menuchw,2,2,2,3,igl,igr,igt,igb,igw,igwh)
         call startbuffer()
       ENDIF
 
+C Echo version number.
       CALL ESPrVersion("summary",cAppName,IUOUT)
-      
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow Scotland.'
-      call edisp(IUOUT,outs)
-      call edisp(iuout,' ')
 
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)

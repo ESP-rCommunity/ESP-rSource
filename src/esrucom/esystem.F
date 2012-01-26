@@ -3203,6 +3203,7 @@ C system configuration file.
 
 C Get lat:long description.
       call sitell2s(sitelat,sitelongdif,sdesc)
+      CALL EDISP(ITRU,'  ')  ! echo blank line before site info
       WRITE(OUTSTR,'(3a)')' Site location: ',sdesc,
      &  ' of local meridian.'
       CALL EDISP(ITRU,OUTSTR)

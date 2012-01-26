@@ -142,7 +142,6 @@ C Setup and pass in parameters to win3d.
         iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
         CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
-C        CALL win3d(menuchw,1,1,1,1,igl,igr,igt,igb,igw,igwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
@@ -160,6 +159,7 @@ C        CALL win3d(menuchw,1,1,1,1,igl,igr,igt,igb,igw,igwh)
       ENDIF
 
       CALL ESPrVersion("summary",cAppName,IUOUT)
+      call edisp(iuout,'  ')  ! echo blank line
       call edisp(iuout,' Max no of:  points  surfaces  edges  bodies ')
       write(outs,'(11x,I8,I9,I8,I8)')MPT,MSF,MED,MBB
       call edisp(iuout,outs)
@@ -167,9 +167,11 @@ C        CALL win3d(menuchw,1,1,1,1,igl,igr,igt,igb,igw,igwh)
 C Take command line file name as initail viewer file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
         LCMDFL=inf
-        write(outs248,'(a,a)')' the input file is: ',LCMDFL
+        call edisp(iuout,'  ')  ! echo blank line
+        write(outs248,'(a,a)')'The input file is: ',LCMDFL
         call edisp248(iuout,outs248,80)
       else
+        call edisp(iuout,'  ')  ! echo blank line
         LCMDFL=' '
       endif
 

@@ -608,7 +608,6 @@ C Setup and pass in parameters to win3d.
 
 C Write version.
       CALL ESPrVersion("summary",cAppName,IUOUT)
-      CALL EDISP(IUOUT,' ')
 
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)
@@ -655,8 +654,9 @@ C after scan of .esprc file.
 C Take command line file name as initial configuration file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
         LCMDFL=inf
-        write(outs248,'(a,a)')' the input file is: ',LCMDFL
-        call edisp(iuout,outs248)
+        call edisp(iuout,'  ')  ! echo blank line
+        write(outs248,'(a,a)') 'The input file is: ',LCMDFL
+        call edisp248(iuout,outs248,90)
         call tstamp('>',outs248)
       else
         LCMDFL='UNKNOWN'

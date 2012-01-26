@@ -345,7 +345,6 @@ C     &    mdispl,nifgrey,ncset,ngset,nzonec
 
       ENDIF
       CALL ESPrVersion("summary",cAppName,IUOUT)
-      call edisp(iuout,' ')
 
 C Find the user's home folder then get user's custom settings.
       call usrhome(upath)
@@ -399,7 +398,8 @@ C Take command line zone name and
 C determine if focus should be to a single zone.
       if(inz(1:1).ne.' ')then
         inzone=inz
-        write(outs,'(a,a)')' the input zone is: ',inzone
+        call edisp(iuout,'  ') ! echo a blank line
+        write(outs,'(a,a)')'The input zone is: ',inzone
         call edisp(iuout,outs)
         call tstamp('>',outs)
       else

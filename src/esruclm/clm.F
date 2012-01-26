@@ -298,12 +298,6 @@ C Setup and pass in parameters to win3d.
       blank='  '
       call edisp(IUOUT,blank)
       CALL ESPrVersion("summary",cAppName,IUOUT)
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow, Scotland.'
-      call edisp(IUOUT,outs)
-      call edisp(IUOUT,blank)
-
 
 C Find the user's home folder then get user's custom settings.
 C Make temporary use of file unit IAF=IFIL+1.
