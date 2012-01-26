@@ -447,6 +447,9 @@ C Optional title for graph and up to 5 other labels and their positions.
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
+      integer ireportunit ! zero is default one is W two is kW three Joules
+      common/repunit/ireportunit
+
 C Pre calculated data (filtered).
       common/MMAFDAT/IFILT,RDFMAX(MCOM,3,MZRL),RDFMIN(MCOM,3,MZRL),
      &    RDFAVE(MCOM,3,MZRL),RDTFMAX(MCOM,3,MZRL),RDTFMIN(MCOM,3,MZRL)
@@ -699,7 +702,10 @@ C << place ILFLAG here to define tabular labels >>
       endif
       if (MENUTYPE.eq.3) then
         ITEM(27)='+ Add another profile'
+        ITEM(28)='                     '
       else
+
+C Set delimiter, and for tabular lists allow unit choice.
         if(delim.eq.'-')then
           ITEM(27)='^ Delim >> normal '
         elseif(delim.eq.'T')then
@@ -711,21 +717,32 @@ C << place ILFLAG here to define tabular labels >>
         elseif(delim.eq.'X')then
           ITEM(27)='^ delim >> tagged '
         endif
+        if (MENUTYPE.eq.4) then
+          if(ireportunit.eq.0)then
+            ITEM(28)='" Units >> normal '
+          elseif(ireportunit.eq.1)then
+            ITEM(28)='" Units >> W or Whr'
+          elseif(ireportunit.eq.2)then
+            ITEM(28)='" Units >> kW or kWhr'
+          endif
+        else
+          ITEM(28)='                     '
+        endif
       endif
       if(MENUTYPE.eq.3) then
-        ITEM(28)='! Draw graph    '
-        ITEM(29)='* Labels        '
+        ITEM(29)='! Draw graph    '
+        ITEM(30)='* Labels        '
         nl=2
       elseif(MENUTYPE.eq.4)then
-        ITEM(28)='! List data    '
+        ITEM(29)='! List data    '
         nl=1
       else
         nl=0
       endif
-      ITEM(28+nl)='? Help           '
-      ITEM(29+nl)='- Exit           '
+      ITEM(29+nl)='? Help           '
+      ITEM(30+nl)='- Exit           '
 
-      NITMS=29+nl
+      NITMS=30+nl
       INO=-2
 
 C Instanciate the help text for this menu.
@@ -772,15 +789,22 @@ C Check for ADDLIN in time series plot - must choose metric if ADDLIN=1.
         if (INO.lt.5.or.INO.gt.26) goto 1
       endif
 
+C Depending on the option (INO) selected process the request.
       IF(INO.EQ.1)then
+
         CALL MORESS
         INO=-1
+
       elseif(INO.EQ.2)then
+
         CALL MOOPER
         INO=-1
+
       elseif(INO.EQ.3)then
+
         CALL MOZDFN
         INO=-1
+
       elseif(INO.EQ.5)then
 
 C Climate sub-list. Note: on first entry only the solar direct
@@ -961,6 +985,7 @@ C IGET = 19 Direct solar. Set text based on current value of irtype.
           write(TABLABEL(NGET),'(2a)')GLABEL(NGET)(1:LNGLABEL(NGET))
           LNTABLABEL(NGET)=LNSLABEL(NGET)
         endif
+
       elseif(INO.EQ.6)then
 
 C Temperatures sub-menu.
@@ -1190,6 +1215,7 @@ C IGET = 14  Zone dew point.
             endif
           endif
         endif
+
       elseif(INO.EQ.7)then
 
 C IGET = 23  Comfort, ask which index and initialise.
@@ -1309,6 +1335,7 @@ C IGET = 23  Comfort, ask which index and initialise.
         idd=1
         izz=1
         CALL MOCMFT(idd,izz,'I')
+
       elseif(INO.EQ.8)then
 
 C Solar processes.
@@ -1374,6 +1401,7 @@ C IGET = 40 Solar absorbed in zone (W)
             LNSLABEL(NGET)=32
           endif
         endif
+
       elseif(INO.EQ.10)then
 
 C Zone flux paths. Additional items could be included if we went
@@ -1562,6 +1590,7 @@ C IGET = 45 Zone balance transparent partitions conv.
             SLABEL(NGET)='Total surf conv (Whr)'; LNSLABEL(NGET)=21
           endif
         endif
+
       elseif(INO.EQ.11)then
 
 C IGET = 16,17,18 Surface fluxes
@@ -2148,7 +2177,9 @@ C Report flux/m^2.
             endif
           endif
         endif
+
       elseif(INO.EQ.12)then
+
         helptopic='res_menu_sensible_latent'
         call gethelptext(helpinsub,helptopic,nbhelp)
         inoc=0
@@ -2275,6 +2306,7 @@ C IGET = 33  All sensible+latent zone loads.
             LNSLABEL(NGET)=26
           endif
         endif
+
       elseif(INO.EQ.13)then
 
 C IGET = 13  Zone RH.
@@ -2293,6 +2325,7 @@ C IGET = 13  Zone RH.
           SLABEL(NGET)='Zn relative humidity (%hr)'
           LNSLABEL(NGET)=26
         endif
+
       elseif(INO.EQ.14)then
 
 C IGET = 15  Casual gains.
@@ -2769,6 +2802,7 @@ C Test.
             endif
           endif
         endif
+
       elseif(INO.EQ.15)then
 
 C Electrical power flow.
@@ -2862,11 +2896,13 @@ C and node logic below.
 C Network flow.
         call mfoutp('-')
         goto 1
+
       elseif(INO.EQ.19)then
 
 C CFD flow.
         call edisp(iuout,'Not yet available here.')
         goto 1
+
       elseif(INO.EQ.20)then
 
 C Measured data.
@@ -2943,6 +2979,7 @@ C Edit selections.
           call edgoget
           goto 1
         endif
+
       elseif(INO.EQ.23)then
 
 C Output redirect.
@@ -2959,6 +2996,7 @@ C If user request cancel then return after resetting ixopen to zero.
           ixopen=0
           goto 1
         endif
+
       elseif(INO.EQ.24)then
 
 C Data presentation format (actual or rate of change).
@@ -2987,6 +3025,7 @@ C         IROC=II-1
           call usrmsg ('Clearing current selections....','  ','W')
           call GOMSETUP
         endif
+
       elseif(INO.EQ.25)then
 
 C Clear all selections (time series plot).
@@ -3044,7 +3083,10 @@ C << revise for additional casual gain types >>
             iocupf=0
           endif
         endif
+
       elseif(INO.EQ.26)then
+
+C Set axis limits or the format of time in tabular lists.
         if(MENUTYPE.eq.3) then
 
 C Set axis limits.
@@ -3108,7 +3150,9 @@ C Toggle time format and day separators.
      &      'displaying or writing data :','no','yes',IDH,nbhelp)
           IDHFLG=IDH-1
         endif
+
       elseif(INO.EQ.27)then
+
         if(MENUTYPE.eq.3) then
 
 C Add another selection - time series plot only.
@@ -3135,7 +3179,31 @@ C Toggle delimeter.
             delim = 'X'
           endif
         endif
-      elseif(INO.eq.28.and.nl.ne.0) then
+
+      elseif(INO.EQ.28)then
+
+        if(MENUTYPE.ne.4) then
+          continue
+        else
+
+C Toggle units.
+          helptopic='tabular_delimiter_choice'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          IWM=0
+          CALL EASKATOG('Units to use when reporting flux:',' ',
+     &      'normal unit','W or Whr ','kW or kWhr','continue',' ',
+     &      ' ',' ',IWM,nbhelp)
+          if(iwm.eq.1)then
+            ireportunit = 0
+          elseif(iwm.eq.2)then
+            ireportunit = 1
+          elseif(iwm.eq.3)then
+            ireportunit = 2
+          endif
+        endif
+        write(6,*) 'ireportunit ',ireportunit
+
+      elseif(INO.eq.29.and.nl.ne.0) then
 
 C Debug...
 C        do 999 I=1,NGET
@@ -3157,6 +3225,7 @@ C replicated).
           if(pifltog(1:3).eq.'ON ')call WRITEPIF(MENUTYPE)
           return
         endif
+
       elseif(INO.EQ.(NITMS-2).and.MENUTYPE.eq.3)then
 
 C Add in a title for this graph 64 char string graftitle.
@@ -3235,14 +3304,18 @@ C Find out point where text should be drawn.
         CALL ASKOK('Include another user supplied label?',' ',OKL,dok,
      &    nbhelp)
         if(OKL) goto 291
+
       elseif(INO.EQ.(NITMS-1))then
 
 C Show help message for the current menu type.
         CALL PHELPD(MTITLE,nbofhelp,'-',0,0,IER)
+
       elseif(INO.EQ.NITMS)then
+
         call usrmsg('  ','  ','-')
         MENUTYPE=-1
         return
+
       else
         goto 1
       endif
@@ -3619,6 +3692,9 @@ C All NGET metrics are recovered by repeatedly calling GOGETIT.
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
 
+      integer ireportunit ! zero is default one is W two is kW three Joules
+      common/repunit/ireportunit
+
       dimension XVAL(MZS),XVALOLD(MZS)
 
 C Clear GET arrays of old data:
@@ -3699,12 +3775,16 @@ C This recovers one day.
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
       COMMON/CCTL/ICASCF(MCOM)
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
+      common/getmenu/menutype,igetind(65),igetflux(65)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
            
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
+
+      integer ireportunit ! zero is default one is W two is kW three Joules
+      common/repunit/ireportunit
       
       character outs*124,CSTR*25
       dimension CQ(MTS),GC(MTS)
@@ -3753,54 +3833,88 @@ C IGETNO(KGET,1) =  7 Node temperature (MLC)
         CALL GTMC(IDAY,IGETNO(KGET,2),IGETNO(KGET,3),IGETNO(KGET,4),
      &                                               IGETNO(KGET,5))
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+
       elseif(IGETNO(KGET,1).eq.8)then
 
 C IGETNO(KGET,1) =  8 Sensible heating load and convert to KW.
+C However if menu type 4 take into account ireportunit.
         CALL GZQMH(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
         N=24*NTS
-        do 30 I=1,N
-          GVAL(I)=GVAL(I)/1000.
- 30     continue
+        if(menutype.ne.4)then
+          do 30 I=1,N
+            GVAL(I)=GVAL(I)/1000.  ! do normal conversion to kWhr
+ 30       continue
+        else
+          if(ireportunit.eq.0.or.ireportunit.eq.2)then
+            do 300 I=1,N
+              GVAL(I)=GVAL(I)/1000. ! selective conversion
+ 300        continue
+          endif
+        endif
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+
       elseif(IGETNO(KGET,1).eq.9)then
 
 C IGETNO(KGET,1) =  9 Sensible cooling load and convert to KW.
+C However if menu type 4 take into account ireportunit.
         CALL GZQMC(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
         N=24*NTS
-        do 31 I=1,N
-          GVAL(I)=GVAL(I)/1000.
- 31     continue
+        if(menutype.ne.4)then
+          do 31 I=1,N
+            GVAL(I)=GVAL(I)/1000.  ! do normal conversion to kWhr
+ 31       continue
+        else
+          if(ireportunit.eq.0.or.ireportunit.eq.2)then
+            do 301 I=1,N
+              GVAL(I)=GVAL(I)/1000. ! selective conversion
+ 301        continue
+          endif
+        endif
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.10)then
 
 C IGETNO(KGET,1) = 10 Total plant flux and convert to KW.
+C However if menu type 4 take into account ireportunit.
         CALL GZQM(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
         N=24*NTS
-        do 32 I=1,N
-          GVAL(I)=GVAL(I)/1000.
- 32     continue
+        if(menutype.ne.4)then
+          do 32 I=1,N
+            GVAL(I)=GVAL(I)/1000.  ! do normal conversion to kW
+ 32       continue
+        else
+          if(ireportunit.eq.0.or.ireportunit.eq.2)then
+            do 302 I=1,N
+              GVAL(I)=GVAL(I)/1000. ! selective conversion
+ 302        continue
+          endif
+        endif
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+
       elseif(IGETNO(KGET,1).eq.11)then
 
 C IGETNO(KGET,1) = 11 Infiltration
         CALL GQV1(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+
       elseif(IGETNO(KGET,1).eq.12)then
 
 C IGETNO(KGET,1) = 12 Ventilation
         CALL GQV2(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+
       elseif(IGETNO(KGET,1).eq.13)then
 
 C IGETNO(KGET,1) = 13 Zone RH (%)
         CALL GZRH(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+
       elseif(IGETNO(KGET,1).eq.14)then
 
 C IGETNO(KGET,1) = 14 Zone dew point.
 C Get zone air temperatureand RH, use xdum and xdum1 for processing.
         CALL GZDP(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+
       elseif(IGETNO(KGET,1).eq.15)then
 
 C IGETNO(KGET,1) = 15 Casual gains. Total, convective, radiant or by
@@ -3986,6 +4100,7 @@ C Casual gain fraction (controlled).
             CALL XTVAL1(GVAL,ISTART,IEND,KGET)
           endif
         endif
+
       elseif(IGETNO(KGET,1).eq.16)then
 
 C IGETNO(KGET,1) = 16 Surface convection.
@@ -4016,36 +4131,43 @@ C Total inside surface convection.
           call GSURIC(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
           CALL XTVAL1(XDUM,ISTART,IEND,KGET)
         endif
+
       elseif(IGETNO(KGET,1).eq.17)then
 
 C IGETNO(KGET,1) = 17 Solar absorbed on external surfaces
         CALL GQSE(IDAY,IGETNO(KGET,2),IGETNO(KGET,3),IGETNO(KGET,5))
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+
       elseif(IGETNO(KGET,1).eq.18)then
 
 C IGETNO(KGET,1) = 18 Solar absorbed on internal surfaces
         CALL GQSI(IDAY,IGETNO(KGET,2),IGETNO(KGET,3),IGETNO(KGET,5))
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+
       elseif(IGETNO(KGET,1).eq.19)then
 
 C IGETNO(KGET,1) = 19 Direct solar (climate parameter)
         CALL MOCLIM (IDAY,24)
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+
       elseif(IGETNO(KGET,1).eq.20)then
 
 C IGETNO(KGET,1) = 20 Diffuse solar (climate parameter)
         CALL MOCLIM (IDAY,25)
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+
       elseif(IGETNO(KGET,1).eq.21)then
 
 C IGETNO(KGET,1) = 21 Wind speed (climate parameter)
         CALL MOCLIM (IDAY,26)
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+
       elseif(IGETNO(KGET,1).eq.22)then
 
 C IGETNO(KGET,1) = 22 Ambient RH (climate parameter)
         CALL MOCLIM (IDAY,28)
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+
       elseif(IGETNO(KGET,1).eq.23)then
 
 C IGETNO(KGET,1) = 23 Comfort (IGETNO(KGET,3)= 1,2 or 3 - PMV/PPD..)
@@ -4057,6 +4179,7 @@ C IGETNO(KGET,1) = 23 Comfort (IGETNO(KGET,3)= 1,2 or 3 - PMV/PPD..)
           CALL MOCMFT(IDAY,IGETNO(KGET,2),'D')
         endif
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+
       elseif(IGETNO(KGET,1).eq.24)then
 
 C IGETNO(KGET,1) = 24 Mean radiant temperature
@@ -4069,6 +4192,7 @@ C recover data for sensor.
         CALL SENMRT(IDAY,IGETNO(KGET,2),IGETNO(KGET,3),IGETNO(KGET,5),0)
           CALL XTVAL1(GVAL,ISTART,IEND,KGET)
         endif
+
       elseif(IGETNO(KGET,1).eq.25)then
 
 C IGET = 25 Surface flux (various IGET,4) where 1=conduction (inside),
@@ -4249,38 +4373,74 @@ C IGETNO(KGET,1) = 29 Delta T zone - ambient.
       elseif(IGETNO(KGET,1).eq.30)then
 
 C IGETNO(KGET,1) = 30 Latent load (dehumidification) and convert to KW.
+C However if menu type 4 take into account ireportunit.
         CALL GZLLC(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
         N=24*NTS
-        do 33 I=1,N
-          GVAL(I)=GVAL(I)/1000.
- 33     continue
+        if(menutype.ne.4)then
+          do 33 I=1,N
+            GVAL(I)=GVAL(I)/1000.  ! do normal conversion to kW
+ 33       continue
+        else
+          if(ireportunit.eq.0.or.ireportunit.eq.2)then
+            do 303 I=1,N
+              GVAL(I)=GVAL(I)/1000. ! selective conversion
+ 303        continue
+          endif
+        endif
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.31)then
 
 C IGETNO(KGET,1) = 31 Latent load (humidification) and convert to KW.
+C However if menu type 4 take into account ireportunit.
         CALL GZLLH(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
         N=34*NTS
-        do 34 I=1,N
-          GVAL(I)=GVAL(I)/1000.
- 34     continue
+        if(menutype.ne.4)then
+          do 34 I=1,N
+            GVAL(I)=GVAL(I)/1000.  ! do normal conversion to kW
+ 34       continue
+        else
+          if(ireportunit.eq.0.or.ireportunit.eq.2)then
+            do 304 I=1,N
+              GVAL(I)=GVAL(I)/1000. ! selective conversion
+ 304        continue
+          endif
+        endif
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.32)then
 
 C IGETNO(KGET,1) = 32 All latent load and convert to KW.
+C However if menu type 4 take into account ireportunit.
         CALL GZLL(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
         N=35*NTS
-        do 35 I=1,N
-          GVAL(I)=GVAL(I)/1000.
- 35     continue
+        if(menutype.ne.4)then
+          do 35 I=1,N
+            GVAL(I)=GVAL(I)/1000.  ! do normal conversion to kW
+ 35       continue
+        else
+          if(ireportunit.eq.0.or.ireportunit.eq.2)then
+            do 305 I=1,N
+              GVAL(I)=GVAL(I)/1000. ! selective conversion
+ 305        continue
+          endif
+        endif
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.33)then
 
 C IGETNO(KGET,1) = 33 Sensible plus latent load and convert to KW. 
+C However if menu type 4 take into account ireportunit.
         CALL GZQSL(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
         N=36*NTS
-        do 36 I=1,N
-          GVAL(I)=GVAL(I)/1000.
- 36     continue
+        if(menutype.ne.4)then
+          do 36 I=1,N
+            GVAL(I)=GVAL(I)/1000.  ! do normal conversion to kW
+ 36       continue
+        else
+          if(ireportunit.eq.0.or.ireportunit.eq.2)then
+            do 306 I=1,N
+              GVAL(I)=GVAL(I)/1000. ! selective conversion
+ 306        continue
+          endif
+        endif
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.34)then
 
