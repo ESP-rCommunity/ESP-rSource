@@ -579,7 +579,7 @@ C #include "espriou.h"
       DIMENSION KSTR(10),HSYSNM(MCOM+1),JSTR(8),LSYS(10)
       DIMENSION ITEMZ(MREN+5),LSTR(10)
       character cfgroot*24,LCFGF*72,NNAME*72
-      character outs*124
+      character outs*124,messg*42
       character ITEMS*50,D64*64,ITEMX*50,ITEMH*70
       CHARACTER HSYSNM*70,TMPSTR*64
       character EXT*4,APE*6
@@ -1117,7 +1117,7 @@ C If no zones specified in model advise user and go back to menu
             IF(IHLZ(IZ).EQ.0)THEN
               TMPSTR=' No HVAC system for this zone!'
             ELSE
-              WRITE(TMPSTR,'(2A)')' ',HVACNAME(IZ)
+              WRITE(TMPSTR,'(2A)')' ',HVACNAME(IHLZ(IZ))
             ENDIF
             WRITE(OUTS,'(3A,I3,A)')
      &       'Zone ',zname(IZ)(1:lnzname(iz)),
@@ -1128,15 +1128,22 @@ C If no zones specified in model advise user and go back to menu
           call gethelptext(helpinsub,helptopic,nbhelp)
           DO 402 IZ=1,NCOMP
             IA=1
-            WRITE(OUTS,'(2A)')'Choose HVAC system for zone ',
+            WRITE(messg,'(2A)')'Choose HVAC system for ',
      &      zname(IZ)(1:lnzname(IZ))
             JSTR(1)=0
  914        CALL EPICKS(IA,JSTR,' ','Link zones to HVAC systems',
-     &      70,NCMSYS+1,HSYSNM,OUTS(1:40),IER,nbhelp)
+     &      70,NCMSYS+1,HSYSNM,messg,IER,nbhelp)
             IF(JSTR(1).EQ.0)GOTO 914
             IHLZ(IZ)=JSTR(1)-1
  402      CONTINUE
         ENDIF
+
+        helptopic='ncm_save_changes'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        dok=.true.
+        CALL ASKOK('Update NCM descriptions (see help)',' ',
+     &    OK,dok,nbhelp)
+        if(ok) call mksbem
         goto 222  ! see what the user wants to do next
 
       ELSEIF(KSTR(1).EQ.7)THEN
@@ -1175,11 +1182,11 @@ C Link DHW systems and zones
           call gethelptext(helpinsub,helptopic,nbhelp)
           DO 404 IZ=1,NCOMP
             IA=1
-            WRITE(OUTS,'(2A)')'Choose DHW system for zone ',
+            WRITE(messg,'(2A)')'Choose DHW system for ',
      &      zname(IZ)(1:lnzname(IZ))
             JSTR(1)=0
             CALL EPICKS(IA,JSTR,' ','Link zones to DHW systems',
-     &        70,NDHWSYS+2,HSYSNM,OUTS(1:44),IER,nbhelp)
+     &        70,NDHWSYS+2,HSYSNM,messg,IER,nbhelp)
             IF(JSTR(1).EQ.0)GOTO 404
             IF(JSTR(1).EQ.1)THEN
               IDHWLZ(IZ)=0
@@ -1204,6 +1211,13 @@ C Link DHW systems and zones
      &    '-',10.,'DHW gen eff ',IER,nbhelp)
  404      CONTINUE
         ENDIF
+
+        helptopic='ncm_save_changes'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        dok=.true.
+        CALL ASKOK('Update NCM descriptions (see help)',' ',
+     &    OK,dok,nbhelp)
+        if(ok) call mksbem
         goto 222  ! see what the user wants to do next
 
       ELSEIF(KSTR(1).EQ.8)THEN
@@ -1225,11 +1239,11 @@ C selections via the array
                 itemfromactivity(ICAC)=IAT  ! remember which was the source
               ENDIF
  130        CONTINUE
-            WRITE(OUTS,'(2A)')'Choose activity for zone ',
-     &      zname(IZ)(1:lnzname(IZ))
+            WRITE(messg,'(2A)')'Choose activity for ',
+     &        zname(IZ)(1:lnzname(IZ))
             IX=1
             CALL EPICKS(IX,KSYS,' ',OUTS(1:LNBLNK(OUTS)),
-     &        40,ICAC,ITEMS,OUTS(1:LNBLNK(OUTS)),IER,nbhelp)
+     &        40,ICAC,ITEMS,messg,IER,nbhelp)
 
 C Save the string describing the activity into trymatch.
             mainactivity=KSYS(1)
