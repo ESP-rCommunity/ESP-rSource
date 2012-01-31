@@ -410,9 +410,12 @@ C Generate all the model variants and run assessments and generate EPC.
 
         iuact = 2
         CFGROOT = CFGROOT_O ! re-establish the initial root name
+
+C << for admin buidling comment out creation of notional building
         CALL EMKSBM(iier)   ! generate Notional model
         if(iier.eq.2.or.iier.eq.3.or.iier.eq.4) goto 42  ! Ask user what to do
         call edisp(iuout,'Notional model completed...')
+
         CALL EMKREF  ! Reference model
         call edisp(iuout,'Reference model completed...')
         CALL EMKTYP  ! Typical model
@@ -3454,7 +3457,7 @@ C Where ESP-r was installed (as recorded when it was compiled).
                                  !controls to zones.
       character APE*6,EXT*4
       character delim*1
-      character louts*400        ! buffer of 400 char to support larger models
+      character louts*1000        ! buffer of 1k char to support larger models
       real CDAY,RDOTY            ! reals for timestamp calculations
       integer itime,ip           ! integers for timestamp calculations
       integer iafil              ! file unit for writing temporal header
@@ -4233,10 +4236,11 @@ C As they will be in the standard database folder use the *std...
 C Loop through each zone in the model and first scan in the zone
 C geometry, next use surrel to update parent/child information and
 C write out the zone.
+      DO 550 ICOMP=1,NCOMP
 
 C << Zones which should not participate in the NCM geometric revisions
 C << (e.g. a zero activity) need to be marked at this point.
-      DO 550 ICOMP=1,NCOMP
+
         IUF=IFIL+2
         EXT='.geo'
         call eclose(gversion(icomp),1.1,0.01,newgeo)
@@ -4385,7 +4389,7 @@ C For each surface in this zone.
 
 C For all exterior surfaces that are marked wall or roof.
             if(ssother(icc,1)(1:8).eq.'EXTERIOR'.AND.(
-     &      SNM(1:4).EQ.'WALL'.or.SNM(1:4).EQ.'ROOF'))then
+     &        SNM(1:4).EQ.'WALL'.or.SNM(1:4).EQ.'ROOF'))then
 
 C Only the following types of areas will be retained in this exterior
 C type surface with use roof or wall.
@@ -13624,8 +13628,10 @@ C    NBS Journal of Research, Vol. 71C, Jan-Mar. 1967, pp 43-50.
       subroutine GTCALC(ZD,act,IER)
       implicit none
 #include "building.h"
-#include "esprdbfile.h"
+#include "model.h"
 #include "site.h"
+#include "esprdbfile.h"
+#include "espriou.h"
 
 C Passed parameters.
       real ZD          ! Depth at which temperature required
@@ -13634,6 +13640,8 @@ C Passed parameters.
 
       common/FILEP/IFIL
       integer ifil   
+      integer iuout,iuin
+      common/OUTIN/IUOUT,IUIN
 
       COMMON/LongRad/iExtLgRadFlag,eGrdTp(12)
       INTEGER iExtLgRadFlag
@@ -13654,15 +13662,40 @@ C Passed parameters.
       real Theta       ! Hour number of the 15th day of the month
       integer II,I,irec,istat,j,k
       integer I_coldmonth  !Month of the year with coldest average temperature
+      logical unixok
+      character fs*1
+      character llclmdb*144
+      integer llt,lndbp
 
       REAL MidMonthDay(12)
       DATA MidMonthDay/
      &   15.,46.,74.,95.,135.,166.,196.,227.,258.,288.,319.,349./
 
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
       iclim=IFIL
 
-C << todo take into account location >>
-      call EFOPRAN(ICLIM,LCLIM,144,0,IER)
+      call edisp(iuout,'Generating ground temperatures.')
+
+C Setup string buffer with distribution weather folder name.
+      llt=lnblnk(LCLIM)
+      lndbp=lnblnk(standardclmpath)
+      if(ipathclim.eq.0.or.ipathclim.eq.1)then
+        llclmdb=LCLIM
+      elseif(ipathclim.eq.2)then
+        write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &    LCLIM(1:lnblnk(LCLIM))
+      endif
+
+      call EFOPRAN(ICLIM,llclmdb,144,0,IER)
+      write(6,*) ier,' ',llclmdb
+      write(6,*) '  '
       IF(ier.ne.0)return
 
 C Initialise
@@ -13756,6 +13789,7 @@ C Offset is 0.60 for locations where this month is January.
         T_mnt(k)=T_avg - T_amp
      &           *cos(Theta*2.0*pi/YearHours - PhaseLag - Phi)*GM
  200  CONTINUE
+      write(6,*) '  ',T_mnt
       
 C Write to common depending on which mode it was called with.
       DO 27 I=1,12
