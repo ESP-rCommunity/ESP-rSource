@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,conservatory # tag version, format, zone name
-*date Thu Aug 23 18:13:58 2007  # latest file modification 
+*date Tue Dec 13 17:57:35 2011  # latest file modification 
 conservatory describes a...
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,11.40400,5.25100,0.00000  #   1
@@ -13,7 +13,7 @@ conservatory describes a...
 *vertex,10.63100,5.04400,2.70000  #   9
 *vertex,11.40400,5.25100,2.70000  #  10
 *vertex,11.92200,3.31900,0.00000  #  11
-*vertex,7.38200,2.10300,0.00000  #  12
+*vertex,7.38198,2.10307,0.00000  #  12
 *vertex,6.60900,1.89600,0.00000  #  13
 *vertex,6.60900,1.89600,0.40000  #  14
 *vertex,6.60900,1.89600,2.00000  #  15
@@ -24,8 +24,8 @@ conservatory describes a...
 *vertex,11.40400,5.25100,0.40000  #  20
 *vertex,11.40400,5.25100,2.40000  #  21
 *vertex,8.07000,4.35800,2.40000  #  22
-*vertex,8.07000,4.35800,2.70000  #  23
-*vertex,6.09100,3.82800,2.40000  #  24
+*vertex,8.06998,4.35807,2.70000  #  23
+*vertex,6.09026,3.83078,2.40000  #  24
 *vertex,11.12456,3.20317,2.03303  #  25
 *vertex,7.38200,2.10300,0.20000  #  26
 *vertex,11.92200,3.31900,0.20000  #  27
@@ -48,12 +48,12 @@ conservatory describes a...
 *edges,5,22,24,8,29,23  # 13
 # 
 # surf attributes:
-#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
+#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
 *surf,liv_con,VERT,-,-,-,ext_wall_rev,OPAQUE,ANOTHER,01,04  #   1 ||< liv_con:living_room
-*surf,glazing,VERT,-,-,-,double_glaz,DCF7672_06nb,ANOTHER,01,09  #   2 ||< glazing:living_room
+*surf,glazing,VERT,liv_con,-,-,double_glaz,DCF7672_06nb,ANOTHER,01,09  #   2 ||< glazing:living_room
 *surf,w_glaz,VERT,-,-,-,single_glaz,SCF8782_06nb,EXTERIOR,0,0  #   3 ||< external
 *surf,s_glaz,VERT,-,-,-,single_glaz,SCF8782_06nb,EXTERIOR,0,0  #   4 ||< external
 *surf,e_glaz,VERT,-,-,-,single_glaz,SCF8782_06nb,EXTERIOR,0,0  #   5 ||< external

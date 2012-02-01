@@ -3837,6 +3837,7 @@ C << could it use ?? instead of G1? >>
       LOGICAL CLOSE,closeaz,closeel
       CHARACTER outs*124
       integer lln   ! length of surface name
+      real distance,ofby
 
 C ZGUPDATE assumes that the zone geometry file has been read prior to
 C its invocation and that the read of the model configuration file has
@@ -3846,6 +3847,7 @@ C Set area summations to zero & consider each surface of the zone in turn.
       ier=0
       PI = 4.0 * ATAN(1.0)
       R=PI/180.
+
       DO 10 I=1,NZSUR(icomp)
 
 C Recover the connection associated with this zone and surface.
@@ -3915,26 +3917,49 @@ C Link back to start vertex.
         SSPERIM(icc)=SSPERIM(icc)+vdis
 
 
-C Derive the equation of the polygon.
+C Derive the equation of the polygon, if problems generating the
+C equation echo warnings.
         DO 60 KK=1,NVER(i)
           XX(KK) = X(JVN(I,KK))
           YY(KK) = Y(JVN(I,KK))
           ZZ(KK) = Z(JVN(I,KK))
    60   CONTINUE
         N = NVER(i)
+        ierr=0
         call PLEQN(XX,YY,ZZ,N,CG,EQN,IERR)
+	lln=lnblnk(ssname(icc)) 
+	if(ierr.ne.0.and.itrc.gt.0)then
+          if(ierr.eq.1)then
+	    write(outs,'(5a)') ' Surface ',ssname(icc)(1:lln),
+     &        ' in ',zname(icomp)(1:lnzname(icomp)),
+     &        ' not enough points for plneqn.'
+          elseif(ierr.eq.-1)then
+	    write(outs,'(5a)') ' Surface ',ssname(icc)(1:lln),
+     &        ' in ',zname(icomp)(1:lnzname(icomp)),
+     &        ' issue with unit vector in plneqn.'
+          else
+	    write(outs,'(5a)') ' Surface ',ssname(icc)(1:lln),
+     &        ' in ',zname(icomp)(1:lnzname(icomp)),
+     &        ' issue in plneqn.'
+          endif
+          call edisp(iuout,outs)
+        endif
 
 C See if any points are out of the plane. Note a point that is
 C only a few mm off of the line can result in a warp which is
 C reported as a larger number.
-        iwhich=0
         ofby=0.0
+        DO 64 KK=1,NVER(i)
+          distance = EQN(1)*XX(KK) + EQN(2)*YY(KK) + EQN(3)*ZZ(KK)
+     &      - EQN(4)
+          if(distance.gt.ofby) ofby=distance
+  64    continue
 	lln=lnblnk(ssname(icc)) 
-	call CHECKWARP(1,iuout,i,N,XX,YY,ZZ,iwhich,ofby,ivoff)
-	if(ivoff.gt.0.and.ofby.gt.0.01)then
-	  write(outs,'(5a)') ' Surface ',ssname(icc)(1:lln),' in ',
-     &      zname(icomp)(1:lnzname(icomp)),
-     &      ' is probably warped. Please check via surface transforms.'
+	if(ofby.gt.0.01.and.itrc.gt.0)then
+	  write(outs,'(5a,F6.4,a)') ' Surface ',ssname(icc)(1:lln),
+     &      ' in ',zname(icomp)(1:lnzname(icomp)),
+     &      ' is warped by ',ofby,
+     &      'm. Please check via surface transforms.'
           call edisp(iuout,outs)
         endif
 

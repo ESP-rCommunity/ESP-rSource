@@ -131,6 +131,7 @@ C prec17 common is described in geometry.h.
       integer INPICK  ! to use with epkvert
       integer iissmlci  ! index for other side mlc
       integer icob    ! for passing to clickon facility
+      integer itrcl   ! local trace on first entry to zone
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -265,7 +266,8 @@ C which include solar obstructions. << needs to be tested >>
 
 C Find current derived zone geometric information, check location if user
 C might have edited vertices or added a surface.
-      call zgupdate(itrc,icomp,ier)
+      itrcl=1
+      call zgupdate(itrcl,icomp,ier)
 
       OPQ=0.
       TRN=0.
@@ -8874,7 +8876,7 @@ C the connections list, then remind user to double check topology.
       NCON=ICCC
 
 C Update the G7 common blocks and then write out configuration file.
-      call zgupdate(0,NCOMP,ier)
+      call zgupdate(1,NCOMP,ier)
 
 C Make up a zone geometry file name for this new zone.
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then

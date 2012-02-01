@@ -1,9 +1,9 @@
 *Geometry 1.1,GEN,loft # tag version, format, zone name
-*date Thu Aug 23 18:13:58 2007  # latest file modification 
+*date Tue Dec 13 17:43:59 2011  # latest file modification 
 loft describes a...
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,9.77300,11.33700,4.80000  #   1
-*vertex,7.45500,10.71600,4.80000  #   2
+*vertex,7.45502,10.71593,4.79991  #   2
 *vertex,4.75700,9.99300,4.80000  #   3
 *vertex,1.36900,9.08500,4.80000  #   4
 *vertex,1.92800,7.00000,4.80000  #   5
@@ -23,7 +23,7 @@ loft describes a...
 *vertex,2.18500,6.04300,7.26500  #  19
 # 
 # tag, number of vertices followed by list of associated vert
-*edges,6,1,2,3,4,19,18  #  1
+*edges,6,3,4,19,18,1,2  #  1
 *edges,4,4,5,6,19  #  2
 *edges,6,6,7,8,9,18,19  #  3
 *edges,4,9,10,1,18  #  4
@@ -35,7 +35,7 @@ loft describes a...
 *edges,5,9,8,12,11,10  # 10
 # 
 # surf attributes:
-#  surf name, surf position VERT/CIIL/FLOR/SLOP/UNKN
+#  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
