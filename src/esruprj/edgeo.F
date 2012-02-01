@@ -6836,6 +6836,7 @@ C Make use of VERINFO to display the current vertex surface connections.
 
       DIMENSION VERT(36),options(9)
       DIMENSION TMAT(4,4),RMAT(4,4),EQN(4),CG(3),EP(3)  ! for warp checks
+      real XX,YY,ZZ,XT,YT,ZT
       DIMENSION XX(MV),YY(MV),ZZ(MV),XT(MV),YT(MV),ZT(MV),jvn1(MV)
       dimension ivlst(MTV)  ! for vertex selection
       CHARACTER VERT*34,options*34,KEY*1,SN*12,T14*14,D14*14
@@ -7125,7 +7126,7 @@ C See if any points are out of the plane.
           call CHECKWARP(2,iuout,is,N,XX,YY,ZZ,iwhich,ofby,ivoff)
           if(ivoff.gt.0)then
 
-C We need to loop through each edges. If at loop=kk then setthe
+C We need to loop through each edges. If at loop=kk then set the
 C coordiantes to next vertex (e.g. ignore one). Then compute equation
 C and use checkwarp until there is one of the variants
 C which results in no deviation.
@@ -7194,7 +7195,7 @@ C warped vertex calculate how much it is off the plane.
                 call eclose(ZZZ,1.0,0.001,close)
                 ofby=zzz
                 diff=1.0-ZZZ
-                WRITE(outs,'(a,F7.4,a,3F9.5)') ' Vertex is off by ',
+                WRITE(outs,'(a,F7.5,a,3F9.5)') ' Vertex is off by ',
      &            diff,'m @ ',X(JVN(is,loop)),
      &            Y(JVN(is,loop)),Z(JVN(is,loop))
                 CALL EDISP(iuout,outs)

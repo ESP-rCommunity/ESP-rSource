@@ -171,16 +171,16 @@
 *help	A set of relatively detailed models.
 *item
 *name	house with sun-space, winter operation
-*cfg	/usr/esru/esp-r/training/house/sun_space/cfg/house_win.cfg
-*root	/usr/esru/esp-r/training/house/sun_space
+*cfg	/usr/esru/esp-r/training/sun_space/cfg/house_win.cfg
+*root	/usr/esru/esp-r/training/sun_space
 *item
-*name	... summer operation
-*cfg	/usr/esru/esp-r/training/house/sun_space/cfg/house_sum.cfg
-*root	/usr/esru/esp-r/training/house/sun_space
+*name	house with sun-space, summer operation
+*cfg	/usr/esru/esp-r/training/sun_space/cfg/house_sum.cfg
+*root	/usr/esru/esp-r/training/sun_space
 *item
 *name	house with solar ventilation pre-heat
-*cfg	/usr/esru/esp-r/training/house/svph/cfg/linford.cfg
-*root	/usr/esru/esp-r/training/house/svph
+*cfg	/usr/esru/esp-r/training/svph/cfg/linford.cfg
+*root	/usr/esru/esp-r/training/svph
 *item
 *name	office with natural ventilation
 *cfg	/usr/esru/esp-r/training/office/cfg/office_sum.cfg
