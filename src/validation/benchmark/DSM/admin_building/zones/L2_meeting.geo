@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_meeting # tag version, format, zone name
-*date Sun Aug 21 11:37:46 2011  # latest file modification 
+*date Mon Jan 30 17:45:10 2012  # latest file modification 
 L2_meeting describes corner meeting room wutg angled wall
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,23.17941,52.45000  #   1
@@ -56,12 +56,12 @@ L2_meeting describes corner meeting room wutg angled wall
 *surf,door,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,22,09  #   3 ||< ptn_meet_c:L2_open_pln
 *surf,ptn_open_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,22,08  #   4 ||< ptn_frame:L2_open_pln
 *surf,frame_open,VERT,-,-,-,mull_90,OPAQUE,ANOTHER,20,19  #   5 ||< side_fr:L2_careers
-*surf,fac_frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   6 ||< external
-*surf,fac_glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
-*surf,fac_glaz_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   8 ||< external
-*surf,fac_glaz_c,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   9 ||< external
+*surf,fac_frame,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   6 ||< external
+*surf,fac_glaz_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
+*surf,fac_glaz_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   8 ||< external
+*surf,fac_glaz_c,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   9 ||< external
 *surf,pa_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,14  #  10 ||< pa_fac_l2:ne_facade
-*surf,gl_fac_l2,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  11 ||< external
+*surf,gl_fac_l2,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  11 ||< external
 *surf,pb_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,15  #  12 ||< pb_fac_l2:ne_facade
 *surf,ptn_toilet,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,33,01  #  13 ||< pt_meeting:L2_toil_psg
 *surf,ceiling_mt,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,50,16  #  14 ||< ceiling_mt:L3_ufloor

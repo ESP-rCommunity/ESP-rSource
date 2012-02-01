@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_confer # tag version, format, zone name
-*date Fri Aug 26 06:12:01 2011  # latest file modification 
+*date Tue Jan 31 09:08:22 2012  # latest file modification 
 L5_confer describes conference room on level five
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,7.50000,64.15000  #   1
@@ -93,12 +93,12 @@ L5_confer describes conference room on level five
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,fac_gl_a,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   1 ||< external
-*surf,fac_frb,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   2 ||< external
-*surf,fac_frc,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   3 ||< external
-*surf,fac_frd,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   4 ||< external
-*surf,fac_fre,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   5 ||< external
-*surf,fac_frf,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   6 ||< external
+*surf,fac_gl_a,VERT,-,C-WINDOW,CLOSED,mull_90,OPAQUE,EXTERIOR,0,0  #   1 ||< external
+*surf,fac_frb,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   2 ||< external
+*surf,fac_frc,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   3 ||< external
+*surf,fac_frd,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   4 ||< external
+*surf,fac_fre,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   5 ||< external
+*surf,fac_frf,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   6 ||< external
 *surf,ptn_open,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,69,22  #   7 ||< ptn_conf:L5_open_lft
 *surf,ptn_lobby,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,67,01  #   8 ||< ptn_conf:L5_lobby
 *surf,ptn_kita,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,66,01  #   9 ||< pnt_cnf:L5_kitch2
@@ -109,15 +109,15 @@ L5_confer describes conference room on level five
 *surf,ptn_opn_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,77,07  #  14 ||< gptn_c:L5_sw_void
 *surf,ptn_opn_d,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,77,06  #  15 ||< gptn_b:L5_sw_void
 *surf,ptn_opn_fr,VERT,-,-,-,mull_90,OPAQUE,ANOTHER,77,05  #  16 ||< ptn_fr:L5_sw_void
-*surf,roof,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  17 ||< external
+*surf,roof,CEIL,-,ROOF,FLAT,roof_0.2,OPAQUE,EXTERIOR,0,0  #  17 ||< external
 *surf,floor_conf,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,81,11  #  18 ||< floor_conf:L5_uf_plen
-*surf,fac_fr,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  19 ||< external
-*surf,glaz_a,VERT,fac_gl_a,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  20 ||< external
-*surf,fac_glb,VERT,fac_frb,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  21 ||< external
-*surf,fac_glc,VERT,fac_frc,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  22 ||< external
-*surf,fac_gld,VERT,fac_frd,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
-*surf,fac_gle,VERT,fac_fre,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  24 ||< external
-*surf,fac_glf,VERT,fac_frf,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  25 ||< external
+*surf,fac_fr,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  19 ||< external
+*surf,glaz_a,VERT,fac_gl_a,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  20 ||< external
+*surf,fac_glb,VERT,fac_frb,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  21 ||< external
+*surf,fac_glc,VERT,fac_frc,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  22 ||< external
+*surf,fac_gld,VERT,fac_frd,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
+*surf,fac_gle,VERT,fac_fre,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  24 ||< external
+*surf,fac_glf,VERT,fac_frf,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  25 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

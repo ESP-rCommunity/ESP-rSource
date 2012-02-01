@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_ufloor # tag version, format, zone name
-*date Mon Aug 22 21:07:46 2011  # latest file modification 
+*date Tue Jan 31 08:51:28 2012  # latest file modification 
 L3_ufloor describes floor void under L3 occupied spaces
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,12.00000,35.70000,55.59300  #   1
@@ -354,19 +354,19 @@ L3_ufloor describes floor void under L3 occupied spaces
 *surf,l3_flrv_ff,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,44,11  #  46 ||< l3_flrv_f:L3_light_w2
 *surf,l3_flrv_ll,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,44,12  #  47 ||< l3_flrv_l:L3_light_w2
 *surf,l3_flrv_bb,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,44,13  #  48 ||< l3_flrv_b:L3_light_w2
-*surf,ptn_untoil,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  49 ||< external
+*surf,ptn_untoil,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  49 ||< external
 *surf,cel319_ceil,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,28,10  #  50 ||< cel319_ceil:L2_cor_cell
-*surf,srv_fac_a,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  51 ||< external
-*surf,srv_fac,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  52 ||< external
-*surf,ne_facade,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  53 ||< external
+*surf,srv_fac_a,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  51 ||< external
+*surf,srv_fac,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  52 ||< external
+*surf,ne_facade,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  53 ||< external
 *surf,to_stair_l3f,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,57  #  54 ||< l3_flr_vdc:stair_2
-*surf,street_faca,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  55 ||< external
-*surf,seg_g,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,19,07  #  56 ||< seg_g:L2_circular
+*surf,street_faca,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  55 ||< external
+*surf,seg_g,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,19,07  #  56 ||< segment_tL2:L2_circular
 *surf,seg_kk,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,19,08  #  57 ||< seg_k:L2_circular
 *surf,fill_small,VERT,-,-,-,slab_275,OPAQUE,ADIABATIC,0,0  #  58 ||< adiabatic
-*surf,tiny-59,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  59 ||< external
-*surf,tiny-60,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  60 ||< external
-*surf,tiny-61,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  61 ||< external
+*surf,tiny-59,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  59 ||< external
+*surf,tiny-60,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  60 ||< external
+*surf,tiny-61,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  61 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

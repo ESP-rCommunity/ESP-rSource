@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_toil_psg # tag version, format, zone name
-*date Sat Aug 27 14:20:59 2011  # latest file modification 
+*date Tue Jan 31 09:01:59 2012  # latest file modification 
 L4_toil_psg describes toilet and passage on level four
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,23.17941,60.25000  #   1
@@ -46,7 +46,7 @@ L4_toil_psg describes toilet and passage on level four
 #  boundary condition tag followed by two data items
 *surf,pt_meeting,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,54,09  #   1 ||< ptn_toilet:L4_meeting
 *surf,pta_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,24  #   2 ||< pta_fac_l4:ne_facade
-*surf,gl_facade_l4,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
+*surf,gl_facade_l4,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
 *surf,ptnc_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,27  #   4 ||< ptnc_fac_l4:ne_facade
 *surf,ptna_str_l4,VERT,-,-,-,door,OPAQUE,ANOTHER,02,13  #   5 ||< ptna_str_l4:stair_2
 *surf,ptn_cel_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,58,18  #   6 ||< ptn_cel_b:L4_open_plr

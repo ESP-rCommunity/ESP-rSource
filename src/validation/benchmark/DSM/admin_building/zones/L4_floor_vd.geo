@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_flrvoid # tag version, format, zone name
-*date Thu Aug 25 21:02:59 2011  # latest file modification 
+*date Tue Jan 31 09:25:55 2012  # latest file modification 
 column describes a dummy zone for columns
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,7.69500,9.16750,59.49300  #   1
@@ -252,13 +252,13 @@ column describes a dummy zone for columns
 *surf,rflrb_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,03,27  #  45 ||< rflrb_l4:lifts
 *surf,rflrc_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,03,31  #  46 ||< rflrc_l4:lifts
 *surf,ex-small-57,VERT,-,-,-,conc_250,OPAQUE,ADIABATIC,0,0  #  47 ||< adiabatic
-*surf,ex_small-58,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  48 ||< external
-*surf,street_st_a,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #  49 ||< external
+*surf,ex_small-58,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  48 ||< external
+*surf,street_st_a,VERT,-,WALL,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #  49 ||< external
 *surf,srv_facade,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,80,05  #  50 ||< srv_facade:L4_srv_void
 *surf,crescnt,CEIL,floor_l4opr,-,-,top_pln,OPAQUE,ANOTHER,52,20  #  51 ||< L3_segm_flr:L4_circular
-*surf,tiny-ex-a,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #  52 ||< external
-*surf,tiny_ex-b,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #  53 ||< external
-*surf,str_of_fac,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #  54 ||< external
+*surf,tiny-ex-a,VERT,-,WALL,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #  52 ||< external
+*surf,tiny_ex-b,VERT,-,WALL,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #  53 ||< external
+*surf,str_of_fac,VERT,-,WALL,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #  54 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

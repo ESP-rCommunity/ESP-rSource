@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_kitch2 # tag version, format, zone name
-*date Wed Aug 31 06:01:31 2011  # latest file modification 
+*date Tue Jan 31 09:08:43 2012  # latest file modification 
 L5_kitch2 describes kitchen adjacent to conference level five
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,6.75000,17.75000,64.15000  #   1
@@ -54,7 +54,7 @@ L5_kitch2 describes kitchen adjacent to conference level five
 *surf,ptn_elev,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,03,17  #   7 ||< left_5:lifts
 *surf,ptn_open_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,77,11  #   8 ||< gptn_g:L5_sw_void
 *surf,ptn_open_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,77,10  #   9 ||< gptn_f:L5_sw_void
-*surf,roof,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  10 ||< external
+*surf,roof,CEIL,-,ROOF,FLAT,roof_0.2,OPAQUE,EXTERIOR,0,0  #  10 ||< external
 *surf,floor_kitch2,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,81,12  #  11 ||< floor_kitch2:L5_uf_plen
 *surf,ptn_kitb,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,65,10  #  12 ||< ptn_kitb:L5_confer
 *surf,ptn_kitc,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,65,11  #  13 ||< ptn_kitc:L5_confer

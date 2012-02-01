@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_kitchen # tag version, format, zone name
-*date Sun Aug 21 11:14:22 2011  # latest file modification 
+*date Mon Jan 30 17:49:09 2012  # latest file modification 
 L2_kitchen describes L2 kitchenette on service road facade
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,41.37145,35.70000,52.45000  #   1
@@ -32,9 +32,9 @@ L2_kitchen describes L2 kitchenette on service road facade
 #  boundary condition tag followed by two data items
 *surf,Wall-1,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,11  #   1 ||< Wall-11:L2_coridor
 *surf,Wall-2,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,28,09  #   2 ||< Wall-11:L2_cor_cell
-*surf,Wall-3,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #   3 ||< external
-*surf,Wall-4,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
-*surf,Wall-5,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #   5 ||< external
+*surf,Wall-3,VERT,-,WALL,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #   3 ||< external
+*surf,Wall-4,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
+*surf,Wall-5,VERT,-,WALL,-,stone_vent,OPAQUE,EXTERIOR,0,0  #   5 ||< external
 *surf,Wall-6,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,10  #   6 ||< ptn_stair:L2_cell_srv
 *surf,Top-7,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,50,25  #   7 ||< Top-7:L3_ufloor
 *surf,Base-8,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,17,57  #   8 ||< Base-8:L2_uf_plen

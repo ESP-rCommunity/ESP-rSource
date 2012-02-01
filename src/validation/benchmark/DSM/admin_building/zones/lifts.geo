@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,lifts # tag version, format, zone name
-*date Sat Aug 27 11:14:09 2011  # latest file modification 
+*date Mon Jan 30 17:25:29 2012  # latest file modification 
 lifts describes the elevator shaft
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,24.00000,52.45000  #   1
@@ -125,7 +125,7 @@ lifts describes the elevator shaft
 *surf,ptn_vd3,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,47,22  #  35 ||< ptn_vd3:L3_sw_void
 *surf,ptn_vd4,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,51,22  #  36 ||< ptn_vd3:L4_sw_void
 *surf,ptn_vd5,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,77,22  #  37 ||< ptn_vd3:L5_sw_void
-*surf,roof,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  38 ||< external
+*surf,roof,CEIL,-,ROOF,FLAT,roof_0.2,OPAQUE,EXTERIOR,0,0  #  38 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

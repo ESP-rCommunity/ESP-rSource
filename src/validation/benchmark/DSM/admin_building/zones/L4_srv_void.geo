@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_srv_void # tag version, format, zone name
-*date Thu Aug 25 20:45:40 2011  # latest file modification 
+*date Tue Jan 31 09:27:41 2012  # latest file modification 
 L4_srv_void describes floor void at service facade
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,35.70000,60.25000  #   1
@@ -60,11 +60,11 @@ L4_srv_void describes floor void at service facade
 *surf,ceiling_pz,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,41,07  #   7 ||< ceiling_pz:L3_print_zn
 *surf,Top-13,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,42,13  #   8 ||< Top-13:L3_social
 *surf,ceiling,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,46,09  #   9 ||< ceiling:L3_toilet
-*surf,right_end,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  10 ||< external
+*surf,right_end,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  10 ||< external
 *surf,fill_a,VERT,-,-,-,conc_250,OPAQUE,SIMILAR,00,00  #  11 ||< identical environment
 *surf,fill_b,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,58  #  12 ||< l4_flrvdc:stair_2
-*surf,left_facade,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  13 ||< external
-*surf,srv_edge,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  14 ||< external
+*surf,left_facade,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  13 ||< external
+*surf,srv_edge,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  14 ||< external
 *surf,to_stair_1,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,13  #  15 ||< l4_flrva:stair_1
 # 
 *insol,3,0,0,0  # default insolation distribution

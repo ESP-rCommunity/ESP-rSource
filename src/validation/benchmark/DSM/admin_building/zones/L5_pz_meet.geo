@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_pz_meet # tag version, format, zone name
-*date Sat Aug 27 09:24:29 2011  # latest file modification 
+*date Tue Jan 31 09:13:09 2012  # latest file modification 
 L5_pz_meet is the L5 print zone plus meeting room adj stair2
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,46.25000,36.00000,64.15000  #   1
@@ -64,9 +64,9 @@ L5_pz_meet is the L5 print zone plus meeting room adj stair2
 *surf,ptn_psg,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,74,07  #   7 ||< ptn_cel_b:L5_toil_psg
 *surf,ptn_staira,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,44  #   8 ||< ptnc_str_l5:stair_2
 *surf,ptn_stairb,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,48  #   9 ||< ptnd_str_l5:stair_2
-*surf,fac_fr_a,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  10 ||< external
-*surf,fac_fr_b,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  11 ||< external
-*surf,roof,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  12 ||< external
+*surf,fac_fr_a,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  10 ||< external
+*surf,fac_fr_b,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  11 ||< external
+*surf,roof,CEIL,-,ROOF,FLAT,roof_0.2,OPAQUE,EXTERIOR,0,0  #  12 ||< external
 *surf,floor_pz_m,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,81,17  #  13 ||< floor_pz_m:L5_uf_plen
 *surf,fac_gl_a,VERT,fac_fr_a,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  14 ||< external
 *surf,fac_gl_b,VERT,fac_fr_b,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external

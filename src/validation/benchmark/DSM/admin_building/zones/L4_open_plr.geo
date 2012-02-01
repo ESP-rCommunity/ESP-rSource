@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_open_plr # tag version, format, zone name
-*date Tue Aug 30 21:15:13 2011  # latest file modification 
+*date Tue Jan 31 09:00:49 2012  # latest file modification 
 L4_open_plr describes right half of level four open plan area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,27.48911,13.95529,60.25000  #   1
@@ -134,7 +134,7 @@ L4_open_plr describes right half of level four open plan area
 #  boundary condition tag followed by two data items
 *surf,ptn_vc_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,21  #   1 ||< Wall-8:L3_L4_cir_vd
 *surf,ptn_vc_b,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,37,20  #   2 ||< Wall-7:L3_L4_cir_vd
-*surf,stone_wall,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #   3 ||< external
+*surf,stone_wall,VERT,-,WALL,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #   3 ||< external
 *surf,ptn_vb_a,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,38,23  #   4 ||< ptn_vb_a:L3_void_b
 *surf,ptn_vb_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,38,24  #   5 ||< ptn_vb_b:L3_void_b
 *surf,open_fict,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,57,11  #   6 ||< fic_to_rb:L4_open_s
@@ -175,7 +175,7 @@ L4_open_plr describes right half of level four open plan area
 *surf,ptn_open_f,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,54,06  #  41 ||< ptn_open_f:L4_cell_srv
 *surf,ptn_open_g,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,54,07  #  42 ||< ptn_open_g:L4_cell_srv
 *surf,cell_fill,VERT,-,-,-,gyp_aco_gyp,OPAQUE,SIMILAR,00,00  #  43 ||< identical environment
-*surf,to_roof_l4,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  44 ||< external
+*surf,to_roof_l4,CEIL,-,ROOF,FLAT,roof_0.2,OPAQUE,EXTERIOR,0,0  #  44 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L1_support # tag version, format, zone name
-*date Sat Aug  6 12:28:20 2011  # latest file modification 
+*date Mon Jan 30 17:39:00 2012  # latest file modification 
 L1_support is the level one plant rooms and delivery and securit
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,12.00000,30.50000,47.95000  #   1
@@ -93,20 +93,20 @@ L1_support is the level one plant rooms and delivery and securit
 *surf,ptn_del_a,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,11,11  #   2 ||< ptn_open_b:L1_training
 *surf,ptn_open_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,10,16  #   3 ||< ptn_901:L1_open_off
 *surf,ptn_open_a,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,10,15  #   4 ||< ptn_bulk:L1_open_off
-*surf,stone_b,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   5 ||< external
-*surf,louv_a,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   6 ||< external
-*surf,stone_c,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   7 ||< external
-*surf,louv_b,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   8 ||< external
-*surf,stone_d,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   9 ||< external
-*surf,door_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  10 ||< external
-*surf,louv_c,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  11 ||< external
-*surf,stone_e,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  12 ||< external
-*surf,louv_d,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  13 ||< external
-*surf,stone_f,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  14 ||< external
-*surf,louvre_e,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  15 ||< external
-*surf,stone_g,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  16 ||< external
-*surf,door_plant,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  17 ||< external
-*surf,louvre_pl,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  18 ||< external
+*surf,stone_b,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   5 ||< external
+*surf,louv_a,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   6 ||< external
+*surf,stone_c,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   7 ||< external
+*surf,louv_b,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   8 ||< external
+*surf,stone_d,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   9 ||< external
+*surf,door_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  10 ||< external
+*surf,louv_c,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  11 ||< external
+*surf,stone_e,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  12 ||< external
+*surf,louv_d,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  13 ||< external
+*surf,stone_f,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  14 ||< external
+*surf,louvre_e,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  15 ||< external
+*surf,stone_g,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  16 ||< external
+*surf,door_plant,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  17 ||< external
+*surf,louvre_pl,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  18 ||< external
 *surf,ptn_toilsw,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,12,03  #  19 ||< ptn_corc_l1:L1_toilet
 *surf,ptn_stairsw,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,35  #  20 ||< ptn_corc_one:stair_1
 *surf,ceiling,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,17,32  #  21 ||< ceiling_sp:L2_uf_plen
@@ -115,7 +115,7 @@ L1_support is the level one plant rooms and delivery and securit
 *surf,ptn_toil,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,13,07  #  24 ||< ptn_cel_b:L1_toil_psg
 *surf,ptn_str_a,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,32  #  25 ||< ptnc_str_l1:stair_2
 *surf,ptn_str_b,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,54  #  26 ||< ptn_str_b:stair_2
-*surf,stone_a,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  27 ||< external
+*surf,stone_a,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  27 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 
@@ -129,10 +129,10 @@ L1_support is the level one plant rooms and delivery and securit
 # block entities:
 #  *obs = obstructions
 *block_start, 20 20 # geometric blocks
-*obs,13.250,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_a,mull_90  # block  16
-*obs,20.250,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_b,mull_90  # block  17
-*obs,26.750,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_c,mull_90  # block  18
-*obs,33.750,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_d,mull_90  # block  19
-*obs,40.750,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_e,mull_90  # block  20
-*obs,47.250,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_f,mull_90  # block  21
+*obs,13.250,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_a,mull_90  # block   1
+*obs,20.250,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_b,mull_90  # block   2
+*obs,26.750,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_c,mull_90  # block   3
+*obs,33.750,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_d,mull_90  # block   4
+*obs,40.750,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_e,mull_90  # block   5
+*obs,47.250,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_f,mull_90  # block   6
 *end_block

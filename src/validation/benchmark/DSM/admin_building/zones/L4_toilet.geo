@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_toilet # tag version, format, zone name
-*date Thu Aug 25 07:05:56 2011  # latest file modification 
+*date Tue Jan 31 09:01:30 2012  # latest file modification 
 L4_toilet describes toilets on level four srv rd
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,35.70000,60.25000  #   1
@@ -39,12 +39,12 @@ L4_toilet describes toilets on level four srv rd
 *surf,ptn_cora_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,09  #   1 ||< ptnb_toil_l4:stair_1
 *surf,ptn_corb_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,10  #   2 ||< ptna_toil_l4:stair_1
 *surf,ptn_corc_l3,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,63,12  #   3 ||< ptn_toilet:L4_admin
-*surf,fac_a_l3,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   4 ||< external
-*surf,fac_b_l3,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   5 ||< external
-*surf,fac_c_l3,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   6 ||< external
-*surf,fac_d_l3,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   7 ||< external
+*surf,fac_a_l3,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   4 ||< external
+*surf,fac_b_l3,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   5 ||< external
+*surf,fac_c_l3,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   6 ||< external
+*surf,fac_d_l3,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   7 ||< external
 *surf,ptn_vd_l3,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,51,15  #   8 ||< Wall-15:L4_sw_void
-*surf,ceiling,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #   9 ||< external
+*surf,ceiling,CEIL,-,ROOF,FLAT,roof_0.2,OPAQUE,EXTERIOR,0,0  #   9 ||< external
 *surf,floor,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,80,01  #  10 ||< floor_l4toi:L4_srv_void
 # 
 *insol,3,0,0,0  # default insolation distribution

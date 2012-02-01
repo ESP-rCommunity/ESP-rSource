@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_careers # tag version, format, zone name
-*date Sun Aug 21 11:37:34 2011  # latest file modification 
+*date Mon Jan 30 17:44:11 2012  # latest file modification 
 L2_careers describes open space over the careers service area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,13.06217,52.45000  #   1
@@ -67,13 +67,13 @@ L2_careers describes open space over the careers service area
 #  boundary condition tag followed by two data items
 *surf,lower_fict,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,08,40  #   1 ||< upper_fict:L1_careers
 *surf,upper_slab,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,49,29  #   2 ||< ovhang:L3_open_rig
-*surf,fac_frame_a,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   3 ||< external
-*surf,fac_glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
-*surf,stone_wall,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #   5 ||< external
-*surf,fac_glaz_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   6 ||< external
-*surf,fac_glaz_c,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
-*surf,fac_frame_b,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   8 ||< external
-*surf,end_glazing,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   9 ||< external
+*surf,fac_frame_a,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   3 ||< external
+*surf,fac_glaz_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
+*surf,stone_wall,VERT,-,WALL,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #   5 ||< external
+*surf,fac_glaz_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   6 ||< external
+*surf,fac_glaz_c,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
+*surf,fac_frame_b,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   8 ||< external
+*surf,end_glazing,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   9 ||< external
 *surf,balcony,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,22,46  #  10 ||< balcony:L2_open_pln
 *surf,struc,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,50,15  #  11 ||< struc:L3_ufloor
 *surf,fict_opening,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,22,41  #  12 ||< ptn_void_c:L2_open_pln

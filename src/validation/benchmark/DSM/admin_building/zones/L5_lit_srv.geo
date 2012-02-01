@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_lit_srv # tag version, format, zone name
-*date Fri Aug 26 06:12:34 2011  # latest file modification 
+*date Tue Jan 31 09:09:52 2012  # latest file modification 
 L5_lit_srv describes kitchen at the service facade
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,17.00000,30.50000,64.15000  #   1
@@ -46,10 +46,10 @@ L5_lit_srv describes kitchen at the service facade
 *surf,ptn_lobby,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,69,17  #   1 ||< ptn_kitb:L5_open_lft
 *surf,ptn_open,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,69,16  #   2 ||< ptn_kita:L5_open_lft
 *surf,ptn_mixed,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,70,21  #   3 ||< ptn_kit2:L5_srv_cell
-*surf,fac_fr_a,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   4 ||< external
-*surf,fac_fr_b,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   5 ||< external
+*surf,fac_fr_a,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   4 ||< external
+*surf,fac_fr_b,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   5 ||< external
 *surf,ptn_toilet,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,73,03  #   6 ||< ptn_k2:L5_toilet
-*surf,roof,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #   7 ||< external
+*surf,roof,CEIL,-,ROOF,FLAT,roof_0.2,OPAQUE,EXTERIOR,0,0  #   7 ||< external
 *surf,floor_srv,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,81,14  #   8 ||< floor_srv:L5_uf_plen
 *surf,fac_gl_a,VERT,fac_fr_a,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   9 ||< external
 *surf,fac_gl_b,VERT,fac_fr_b,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  10 ||< external

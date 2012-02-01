@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_uf_plen # tag version, format, zone name
-*date Sun Aug 21 10:59:00 2011  # latest file modification 
+*date Mon Jan 30 17:41:40 2012  # latest file modification 
 L2_uf_plen describes raised floor for level two
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,12.00000,35.70000,51.69300  #   1
@@ -327,16 +327,16 @@ L2_uf_plen describes raised floor for level two
 *surf,rflr_door_c,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,15,35  #  34 ||< rflr_door_c:L1_sw_void
 *surf,rflr_door_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,15,36  #  35 ||< rflr_door_b:L1_sw_void
 *surf,up_ptn_toil,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,15,38  #  36 ||< up_ptn_toil:L1_sw_void
-*surf,serv_fac_a,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  37 ||< external
-*surf,serv_fac_b,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  38 ||< external
-*surf,serv_fac_c,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  39 ||< external
-*surf,serv_fac,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  40 ||< external
-*surf,street,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  41 ||< external
-*surf,meet_fac_a,VERT,-,-,-,spandrel_x,OPAQUE,EXTERIOR,0,0  #  42 ||< external
-*surf,meet_fac_b,VERT,-,-,-,spandrel_x,OPAQUE,EXTERIOR,0,0  #  43 ||< external
-*surf,Wmeet_fac_c,VERT,-,-,-,spandrel_x,OPAQUE,EXTERIOR,0,0  #  44 ||< external
+*surf,serv_fac_a,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  37 ||< external
+*surf,serv_fac_b,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  38 ||< external
+*surf,serv_fac_c,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  39 ||< external
+*surf,serv_fac,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  40 ||< external
+*surf,street,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  41 ||< external
+*surf,meet_fac_a,VERT,-,WALL,-,spandrel_x,OPAQUE,EXTERIOR,0,0  #  42 ||< external
+*surf,meet_fac_b,VERT,-,WALL,-,spandrel_x,OPAQUE,EXTERIOR,0,0  #  43 ||< external
+*surf,Wmeet_fac_c,VERT,-,WALL,-,spandrel_x,OPAQUE,EXTERIOR,0,0  #  44 ||< external
 *surf,Top,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,07,19  #  45 ||< Top:L1_circular
-*surf,Base,CEIL,-,-,-,top_pln,OPAQUE,ANOTHER,19,17  #  46 ||< Base:L2_circular
+*surf,Base,CEIL,-,-,-,top_pln,OPAQUE,ANOTHER,19,17  #  46 ||< L2_cir_floor:L2_circular
 *surf,floor_mt,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,21,15  #  47 ||< floor_mt:L2_meeting
 *surf,floor_a,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,22,31  #  48 ||< floor_a:L2_open_pln
 *surf,floor_b,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,22,39  #  49 ||< floor_b:L2_open_pln

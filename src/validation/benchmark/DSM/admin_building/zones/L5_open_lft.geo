@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_open_lft # tag version, format, zone name
-*date Fri Aug 26 06:12:46 2011  # latest file modification 
+*date Tue Jan 31 09:11:24 2012  # latest file modification 
 L5_open_lft describes the left half of opens space level five
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,13.70000,10.50000,64.15000  #   1
@@ -129,15 +129,15 @@ L5_open_lft describes the left half of opens space level five
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,fac_frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   1 ||< external
-*surf,fac_fra,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   2 ||< external
-*surf,fac_frb,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   3 ||< external
-*surf,fac_frc,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   4 ||< external
-*surf,fac_frd,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   5 ||< external
-*surf,fac_frf,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   6 ||< external
-*surf,fac_frg,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   7 ||< external
-*surf,fac_frh,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   8 ||< external
-*surf,fac_fri,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   9 ||< external
+*surf,fac_frame,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   1 ||< external
+*surf,fac_fra,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   2 ||< external
+*surf,fac_frb,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   3 ||< external
+*surf,fac_frc,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   4 ||< external
+*surf,fac_frd,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   5 ||< external
+*surf,fac_frf,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   6 ||< external
+*surf,fac_frg,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   7 ||< external
+*surf,fac_frh,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   8 ||< external
+*surf,fac_fri,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   9 ||< external
 *surf,fic_open_r,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,80,01  #  10 ||< fic_open_r:L5_open_rt
 *surf,fic_open_rb,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,80,02  #  11 ||< fic_open_rb:L5_open_rt
 *surf,ptn-cella,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,70,04  #  12 ||< gptn_opn_c:L5_srv_cell
@@ -148,17 +148,17 @@ L5_open_lft describes the left half of opens space level five
 *surf,ptn_kitb,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,68,01  #  17 ||< ptn_lobby:L5_lit_srv
 *surf,door,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,67,04  #  18 ||< door2_open:L5_lobby
 *surf,door_2,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,67,02  #  19 ||< door_open:L5_lobby
-*surf,roof_open_lf,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  20 ||< external
+*surf,roof_open_lf,CEIL,-,ROOF,FLAT,roof_0.2,OPAQUE,EXTERIOR,0,0  #  20 ||< external
 *surf,floor_opn_lf,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,81,15  #  21 ||< floor_opn_lf:L5_uf_plen
 *surf,ptn_conf,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,65,07  #  22 ||< ptn_open:L5_confer
-*surf,fac_glb,VERT,fac_fra,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
-*surf,fac_glc,VERT,fac_frb,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  24 ||< external
-*surf,fac_gld,VERT,fac_frc,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  25 ||< external
-*surf,fac_gle,VERT,fac_frd,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  26 ||< external
-*surf,fac_glf,VERT,fac_frf,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  27 ||< external
-*surf,fac_glg,VERT,fac_frg,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  28 ||< external
-*surf,fac_glh,VERT,fac_frh,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external
-*surf,fac_gli,VERT,fac_fri,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  30 ||< external
+*surf,fac_glb,VERT,fac_fra,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
+*surf,fac_glc,VERT,fac_frb,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  24 ||< external
+*surf,fac_gld,VERT,fac_frc,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  25 ||< external
+*surf,fac_gle,VERT,fac_frd,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  26 ||< external
+*surf,fac_glf,VERT,fac_frf,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  27 ||< external
+*surf,fac_glg,VERT,fac_frg,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  28 ||< external
+*surf,fac_glh,VERT,fac_frh,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external
+*surf,fac_gli,VERT,fac_fri,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  30 ||< external
 *surf,l3_lw2_fr,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,75,01  #  31 ||< l3_lw2_fr:L5_light_w1
 *surf,l3_lw2_ri,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,75,02  #  32 ||< l3_lw2_ri:L5_light_w1
 *surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,75,08  #  33 ||< front_rail:L5_light_w1

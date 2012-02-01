@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_meeting # tag version, format, zone name
-*date Fri Aug 26 06:10:42 2011  # latest file modification 
+*date Tue Jan 31 08:58:04 2012  # latest file modification 
 L4_meeting describes corner meeting room in L4
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,17.00457,60.25000  #   1
@@ -54,13 +54,13 @@ L4_meeting describes corner meeting room in L4
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,fac_frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   1 ||< external
-*surf,fac_glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   2 ||< external
-*surf,fac_glaz_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
-*surf,fac_glaz_c,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
-*surf,fac_glaz_d,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   5 ||< external
+*surf,fac_frame,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   1 ||< external
+*surf,fac_glaz_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   2 ||< external
+*surf,fac_glaz_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
+*surf,fac_glaz_c,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
+*surf,fac_glaz_d,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   5 ||< external
 *surf,pa_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,31  #   6 ||< pa_fac_l4:ne_facade
-*surf,gl_fac_l4,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
+*surf,gl_fac_l4,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
 *surf,pb_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,32  #   8 ||< pb_fac_l4:ne_facade
 *surf,ptn_toilet,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,62,01  #   9 ||< pt_meeting:L4_toil_psg
 *surf,ptn_open_a,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,58,21  #  10 ||< ptn_open_a:L4_open_plr

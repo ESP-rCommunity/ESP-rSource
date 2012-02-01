@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_sw_void # tag version, format, zone name
-*date Sun Aug 21 11:13:02 2011  # latest file modification 
+*date Tue Jan 31 08:48:54 2012  # latest file modification 
 L3_sw_void describes void over stair at SW facade
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,-6.03235,5.93735,55.59300  #   1
@@ -112,10 +112,10 @@ L3_sw_void describes void over stair at SW facade
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,fr_fac_gla,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   1 ||< external
-*surf,fr_fac_glb,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   2 ||< external
-*surf,fr_fac_glc,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
-*surf,fr_fac_bld,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
+*surf,fr_fac_gla,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   1 ||< external
+*surf,fr_fac_glb,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   2 ||< external
+*surf,fr_fac_glc,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
+*surf,fr_fac_bld,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
 *surf,ptn_l3a,VERT,-,-,-,mull_90,OPAQUE,ANOTHER,48,19  #   5 ||< ptn_l3a:L3_open_lft
 *surf,ptn_l3b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,48,20  #   6 ||< ptn_l3b:L3_open_lft
 *surf,ptn_l3c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,48,21  #   7 ||< ptn_l3c:L3_open_lft
@@ -127,10 +127,10 @@ L3_sw_void describes void over stair at SW facade
 *surf,ptn_l3_dr,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,48,26  #  13 ||< ptn_l3_dr:L3_open_lft
 *surf,ptn_l3_sta,VERT,-,-,-,vd_stn_stair,OPAQUE,ANOTHER,01,30  #  14 ||< ptn_void_l3:stair_1
 *surf,ptn_l3_toil,VERT,-,-,-,stone_cast_i,OPAQUE,ANOTHER,46,08  #  15 ||< ptn_vd_l3:L3_toilet
-*surf,bk_fac_gla,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
-*surf,bk_fac_glb,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external
-*surf,bk_fac_glc,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
-*surf,bk_fac_gld,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
+*surf,bk_fac_gla,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
+*surf,bk_fac_glb,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external
+*surf,bk_fac_glc,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
+*surf,bk_fac_gld,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
 *surf,upper,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,51,21  #  20 ||< Base-27:L4_sw_void
 *surf,lower,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,34,32  #  21 ||< upper:L2_se_void
 *surf,ptn_vd3,VERT,-,-,-,vd_stn_stair,OPAQUE,ANOTHER,03,35  #  22 ||< ptn_vd3:lifts
@@ -142,8 +142,8 @@ L3_sw_void describes void over stair at SW facade
 *surf,l3_facade_b,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,04,05  #  28 ||< l3_facade_b:sw_facade
 *surf,l3_facade_c,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,04,06  #  29 ||< l3_facade_c:sw_facade
 *surf,l3_facade_d,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,04,07  #  30 ||< l3_facade_d:sw_facade
-*surf,fac_glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  31 ||< external
-*surf,fac_glaz_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  32 ||< external
+*surf,fac_glaz_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  31 ||< external
+*surf,fac_glaz_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  32 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

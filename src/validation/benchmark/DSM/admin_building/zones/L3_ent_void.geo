@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_ent_void # tag version, format, zone name
-*date Sun Aug 21 15:37:37 2011  # latest file modification 
+*date Tue Jan 31 08:46:37 2012  # latest file modification 
 L3_ent_void describes third level atrium over the entrance
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,0.00000,56.35000  #   1
@@ -155,23 +155,23 @@ L3_ent_void describes third level atrium over the entrance
 *surf,Wall-9,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,48,13  #   7 ||< Wall-9:L3_open_lft
 *surf,Wall-10,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,48,14  #   8 ||< Wall-10:L3_open_lft
 *surf,Wall-11,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,48,15  #   9 ||< Wall-11:L3_open_lft
-*surf,fac_frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  10 ||< external
-*surf,fac_glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  11 ||< external
-*surf,fac_glaz_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  12 ||< external
-*surf,fac_glaz_c,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  13 ||< external
-*surf,fac_glaz_d,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  14 ||< external
-*surf,fac_glaz_e,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
-*surf,fac_glaz_f,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
-*surf,fac_glaz_g,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external
-*surf,fac_glaz_h,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
-*surf,fac_glaz_i,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
-*surf,fac_glaz_j,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  20 ||< external
-*surf,fac_glaz_k,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  21 ||< external
-*surf,fac_glaz_l,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  22 ||< external
-*surf,side_frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  23 ||< external
-*surf,side_glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  24 ||< external
-*surf,side_glaz_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  25 ||< external
-*surf,entrance,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  26 ||< external
+*surf,fac_frame,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  10 ||< external
+*surf,fac_glaz_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  11 ||< external
+*surf,fac_glaz_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  12 ||< external
+*surf,fac_glaz_c,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  13 ||< external
+*surf,fac_glaz_d,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  14 ||< external
+*surf,fac_glaz_e,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
+*surf,fac_glaz_f,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
+*surf,fac_glaz_g,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external
+*surf,fac_glaz_h,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
+*surf,fac_glaz_i,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
+*surf,fac_glaz_j,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  20 ||< external
+*surf,fac_glaz_k,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  21 ||< external
+*surf,fac_glaz_l,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  22 ||< external
+*surf,side_frame,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  23 ||< external
+*surf,side_glaz_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  24 ||< external
+*surf,side_glaz_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  25 ||< external
+*surf,entrance,VERT,-,H-DOOR,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  26 ||< external
 *surf,seg_a,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,36,01  #  27 ||< seg_a:L3_circular
 *surf,seg_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,36,02  #  28 ||< seg_b:L3_circular
 *surf,seg_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,36,03  #  29 ||< seg_c:L3_circular

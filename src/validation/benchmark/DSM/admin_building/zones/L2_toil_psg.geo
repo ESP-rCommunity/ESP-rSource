@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_toil_psg # tag version, format, zone name
-*date Sun Aug 21 11:14:22 2011  # latest file modification 
+*date Mon Jan 30 17:50:08 2012  # latest file modification 
 L2_toil_psg describes L2 toilet and passage to stair_2
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,23.17941,52.45000  #   1
@@ -47,7 +47,7 @@ L2_toil_psg describes L2 toilet and passage to stair_2
 *surf,pt_meeting,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,21,13  #   1 ||< ptn_toilet:L2_meeting
 *surf,pta_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,18  #   2 ||< pta_fac_l2:ne_facade
 *surf,ptb_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,19  #   3 ||< ptb_fac_l2:ne_facade
-*surf,gl_facade_l2,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
+*surf,gl_facade_l2,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
 *surf,ptnc_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,20  #   5 ||< ptnc_fac_l2:ne_facade
 *surf,ptna_str_l2,VERT,-,-,-,door,OPAQUE,ANOTHER,02,09  #   6 ||< ptna_str_l2:stair_2
 *surf,ptn_cel_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,26,13  #   7 ||< ptn_cel_b:L2_core_cel

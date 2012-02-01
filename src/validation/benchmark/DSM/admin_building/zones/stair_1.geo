@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,stair_1 # tag version, format, zone name
-*date Fri Aug 26 06:46:05 2011  # latest file modification 
+*date Mon Jan 30 17:19:36 2012  # latest file modification 
 stair_1 describes stair number one
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,30.50000,52.45000  #   1
@@ -134,14 +134,14 @@ stair_1 describes stair number one
 *surf,l3_flrva,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,50,01  #  14 ||< l3_flrva:L3_ufloor
 *surf,l2_flrva,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,17,01  #  15 ||< l2_flrva:L2_uf_plen
 *surf,floor_1,FLOR,-,-,-,foundation,OPAQUE,GROUND,01,0  #  16 ||< ground profile  1
-*surf,ceil_l4,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  17 ||< external
-*surf,l5_flrva,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  18 ||< external
-*surf,fac_a_l5,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  19 ||< external
-*surf,fac_b_l5,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  20 ||< external
+*surf,ceil_l4,CEIL,-,ROOF,FLAT,roof_0.2,OPAQUE,EXTERIOR,0,0  #  17 ||< external
+*surf,l5_flrva,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  18 ||< external
+*surf,fac_a_l5,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  19 ||< external
+*surf,fac_b_l5,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  20 ||< external
 *surf,l2_flrvb,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,17,02  #  21 ||< l2_flrvb:L2_uf_plen
 *surf,l3_flrvb,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,50,02  #  22 ||< l3_flrvb:L3_ufloor
 *surf,l4_flrvb,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,78,37  #  23 ||< l4_flrvb:L4_flrvoid
-*surf,l5_flrvb,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,81,30  #  24 ||< ptn_flrvd_b:L5_uf_plen
+*surf,l5_flrvb,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,81,30  #  24 ||< l5_flrvb:L5_uf_plen
 *surf,ptn_flrv_l2,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,15,34  #  25 ||< stair_rflr:L1_sw_void
 *surf,ptn_flrv_l3,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,47,23  #  26 ||< ptn_flrv_l3:L3_sw_void
 *surf,pnt_flrv_l4,VERT,-,-,-,stn_stair,OPAQUE,ANOTHER,51,23  #  27 ||< ptn_flrv_l4:L4_sw_void
@@ -162,7 +162,7 @@ stair_1 describes stair number one
 *surf,ptn_cora_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,55,13  #  42 ||< ptn_cora_l4:L4_sw_meet
 *surf,ptn_corb_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,55,14  #  43 ||< ptn_corb_l4:L4_sw_meet
 *surf,ptn_corc_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,56,12  #  44 ||< ptn_stair:L4_open_s
-*surf,l5_flrvc,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,81,31  #  45 ||< l5_flrvb:L5_uf_plen
+*surf,l5_flrvc,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,81,31  #  45 ||< l5_flrvc:L5_uf_plen
 *surf,ptn_cora_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,67,15  #  46 ||< ptn_cora_l5:L5_lobby
 *surf,ptn_corb_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,67,16  #  47 ||< ptn_corb_l5:L5_lobby
 *surf,ptn_corc_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,73,10  #  48 ||< ptn_corc_l5:L5_toilet

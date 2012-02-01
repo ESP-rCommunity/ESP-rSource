@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_cell_srv # tag version, format, zone name
-*date Thu Aug 25 20:43:16 2011  # latest file modification 
+*date Tue Jan 31 08:59:57 2012  # latest file modification 
 L4_cell_srv describes row of cellular offices srv facade 4th lev
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,27.69180,35.70000,60.25000  #   1
@@ -177,39 +177,39 @@ L4_cell_srv describes row of cellular offices srv facade 4th lev
 *surf,ptn_open_g,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,57,42  #   7 ||< ptn_open_g:L4_open_plr
 *surf,ptn_filler,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,36  #   8 ||< fill_l4:stair_2
 *surf,ptn_stair_cb,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,49  #   9 ||< ptnd_str_l4:stair_2
-*surf,stone_h,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  10 ||< external
-*surf,stone_g,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  11 ||< external
-*surf,glaz_g,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  12 ||< external
-*surf,vent_g,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  13 ||< external
-*surf,glaz_f,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  14 ||< external
-*surf,glaz_e,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
-*surf,vent_f,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  16 ||< external
-*surf,glaz_d,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external
-*surf,stone_c,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  18 ||< external
-*surf,glaz_c,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
-*surf,vent_e,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  20 ||< external
-*surf,glaz_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  21 ||< external
-*surf,stone_a,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  22 ||< external
-*surf,glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
-*surf,vent_d,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  24 ||< external
+*surf,stone_h,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  10 ||< external
+*surf,stone_g,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  11 ||< external
+*surf,glaz_g,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  12 ||< external
+*surf,vent_g,VERT,-,WALL,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  13 ||< external
+*surf,glaz_f,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  14 ||< external
+*surf,glaz_e,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
+*surf,vent_f,VERT,-,WALL,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  16 ||< external
+*surf,glaz_d,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external
+*surf,stone_c,VERT,-,WALL,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  18 ||< external
+*surf,glaz_c,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
+*surf,vent_e,VERT,-,WALL,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  20 ||< external
+*surf,glaz_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  21 ||< external
+*surf,stone_a,VERT,-,WALL,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  22 ||< external
+*surf,glaz_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
+*surf,vent_d,VERT,-,WALL,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  24 ||< external
 *surf,ptn_pz,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,64,02  #  25 ||< ptn_cel:L4_printz
-*surf,Top-29,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  26 ||< external
+*surf,Top-29,CEIL,-,ROOF,FLAT,roof_0.2,OPAQUE,EXTERIOR,0,0  #  26 ||< external
 *surf,Base-30,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,80,04  #  27 ||< Base-30:L4_srv_void
-*surf,stone_f,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  28 ||< external
-*surf,glaz_g_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external
-*surf,glaz_g_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  30 ||< external
-*surf,glaz_f_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  31 ||< external
-*surf,glaz_f_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  32 ||< external
-*surf,glaz_e_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  33 ||< external
-*surf,glaz_e_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  34 ||< external
-*surf,glaz_d_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  35 ||< external
-*surf,glaz_d_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  36 ||< external
-*surf,glaz_c_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  37 ||< external
-*surf,glaz_c_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  38 ||< external
-*surf,glaz_b_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  39 ||< external
-*surf,glaz_b_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  40 ||< external
-*surf,glaz_a_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  41 ||< external
-*surf,glaz_a_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  42 ||< external
+*surf,stone_f,VERT,-,WALL,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  28 ||< external
+*surf,glaz_g_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external
+*surf,glaz_g_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  30 ||< external
+*surf,glaz_f_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  31 ||< external
+*surf,glaz_f_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  32 ||< external
+*surf,glaz_e_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  33 ||< external
+*surf,glaz_e_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  34 ||< external
+*surf,glaz_d_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  35 ||< external
+*surf,glaz_d_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  36 ||< external
+*surf,glaz_c_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  37 ||< external
+*surf,glaz_c_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  38 ||< external
+*surf,glaz_b_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  39 ||< external
+*surf,glaz_b_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  40 ||< external
+*surf,glaz_a_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  41 ||< external
+*surf,glaz_a_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  42 ||< external
 *surf,int_ptna,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,55,44  #  43 ||< int_ptna_:L4_cell_srv
 *surf,int_ptna_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,55,43  #  44 ||< int_ptna:L4_cell_srv
 *surf,int_ptnb,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,55,46  #  45 ||< int_ptnb_:L4_cell_srv

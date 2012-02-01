@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,ne_facade # tag version, format, zone name
-*date Sat Aug 27 14:57:37 2011  # latest file modification 
+*date Mon Jan 30 17:28:23 2012  # latest file modification 
 ne_facade describes the stone facade on NE with air void
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,58.30000,18.66702,51.69300  #   1
@@ -170,19 +170,19 @@ ne_facade describes the stone facade on NE with air void
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,stone_a,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   1 ||< external
-*surf,stone_b,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   2 ||< external
-*surf,stone_c,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   3 ||< external
-*surf,stone_e,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   4 ||< external
-*surf,stone_f,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   5 ||< external
-*surf,stone_h,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   6 ||< external
-*surf,stone_i,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   7 ||< external
-*surf,stone_j,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   8 ||< external
-*surf,stone_k,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   9 ||< external
-*surf,filler_a,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  10 ||< external
-*surf,return_a,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  11 ||< external
-*surf,Top-24,CEIL,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  12 ||< external
-*surf,Base-25,FLOR,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  13 ||< external
+*surf,stone_a,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   1 ||< external
+*surf,stone_b,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   2 ||< external
+*surf,stone_c,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   3 ||< external
+*surf,stone_e,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   4 ||< external
+*surf,stone_f,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   5 ||< external
+*surf,stone_h,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   6 ||< external
+*surf,stone_i,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   7 ||< external
+*surf,stone_j,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   8 ||< external
+*surf,stone_k,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   9 ||< external
+*surf,filler_a,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  10 ||< external
+*surf,return_a,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  11 ||< external
+*surf,Top-24,CEIL,-,ROOF,FLAT,stone_eldon,OPAQUE,EXTERIOR,0,0  #  12 ||< external
+*surf,Base-25,FLOR,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  13 ||< external
 *surf,pa_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,21,10  #  14 ||< pa_fac_l2:L2_meeting
 *surf,pb_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,21,12  #  15 ||< pb_fac_l2:L2_meeting
 *surf,pa_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,39,06  #  16 ||< pa_fac_l3:L3_meeting
@@ -204,10 +204,10 @@ ne_facade describes the stone facade on NE with air void
 *surf,pb_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,54,08  #  32 ||< pb_fac_l4:L4_meeting
 *surf,pa_fac_l5,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,72,06  #  33 ||< pa_fac_l4:L5_meeting
 *surf,pb_fac_l5,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,72,08  #  34 ||< pb_fac_l4:L5_meeting
-*surf,jamb_b,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  35 ||< external
-*surf,jamb_a,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  36 ||< external
-*surf,sill_a,CEIL,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  37 ||< external
-*surf,head_a,FLOR,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  38 ||< external
+*surf,jamb_b,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  35 ||< external
+*surf,jamb_a,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  36 ||< external
+*surf,sill_a,CEIL,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  37 ||< external
+*surf,head_a,FLOR,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  38 ||< external
 *surf,lv_fv_a,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,17,09  #  39 ||< lv_fv_a:L2_uf_plen
 *surf,l3_fv_ma,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,50,09  #  40 ||< l3_fv_ma:L3_ufloor
 *surf,l3_fv_ta,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,50,10  #  41 ||< l3_fv_ta:L3_ufloor
@@ -215,11 +215,11 @@ ne_facade describes the stone facade on NE with air void
 *surf,l5_fv_ma,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,81,57  #  43 ||< to_ne_fac_b:L5_uf_plen
 *surf,l4_fv_ta,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,42  #  44 ||< l4_fv_ta:L4_flrvoid
 *surf,l5_fv_ta,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,36  #  45 ||< l5_fv_ta:L5_uf_plen
-*surf,inner_parap,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  46 ||< external
-*surf,sill_b,CEIL,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  47 ||< external
-*surf,jamb_c,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  48 ||< external
-*surf,jamb_d,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  49 ||< external
-*surf,head_b,FLOR,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  50 ||< external
+*surf,inner_parap,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  46 ||< external
+*surf,sill_b,CEIL,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  47 ||< external
+*surf,jamb_c,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  48 ||< external
+*surf,jamb_d,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  49 ||< external
+*surf,head_b,FLOR,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  50 ||< external
 *surf,l3_fv_tb,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,50,11  #  51 ||< l3_fv_tb:L3_ufloor
 *surf,l4_fv_tb,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,43  #  52 ||< l4_fv_tb:L4_flrvoid
 *surf,l5_fv_tb,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,37  #  53 ||< l5_fv_tb:L5_uf_plen

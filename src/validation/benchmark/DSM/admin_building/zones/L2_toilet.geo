@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_toilet # tag version, format, zone name
-*date Sun Aug 21 11:14:22 2011  # latest file modification 
+*date Mon Jan 30 17:49:38 2012  # latest file modification 
 L2_toilet describes toilets adjacent to stair one
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,35.70000,52.45000  #   1
@@ -39,10 +39,10 @@ L2_toilet describes toilets adjacent to stair one
 *surf,ptn_cora_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,05  #   1 ||< ptnb_toil_l2:stair_1
 *surf,ptn_corb_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,04  #   2 ||< ptna_toil_l2:stair_1
 *surf,ptn_corc_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,29,29  #   3 ||< ptn_toil:L2_cell_srv
-*surf,fac_a_l2,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   4 ||< external
-*surf,fac_b_l2,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   5 ||< external
-*surf,fac_c_l2,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   6 ||< external
-*surf,fac_d_l2,VERT,-,-,-,stone_cast,OPAQUE,EXTERIOR,0,0  #   7 ||< external
+*surf,fac_a_l2,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   4 ||< external
+*surf,fac_b_l2,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   5 ||< external
+*surf,fac_c_l2,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   6 ||< external
+*surf,fac_d_l2,VERT,-,WALL,-,stone_cast,OPAQUE,EXTERIOR,0,0  #   7 ||< external
 *surf,ptn_vd_l2,VERT,-,-,-,stone_cast,OPAQUE,ANOTHER,34,15  #   8 ||< ptn_toilet:L2_se_void
 *surf,ceiling_toi,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,50,26  #   9 ||< ceiling_toi:L3_ufloor
 *surf,floor_toi,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,17,58  #  10 ||< floor_toi:L2_uf_plen

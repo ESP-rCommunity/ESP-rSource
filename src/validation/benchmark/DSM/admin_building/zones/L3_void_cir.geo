@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_L4_cir_vd # tag version, format, zone name
-*date Tue Aug 30 21:14:06 2011  # latest file modification 
+*date Mon Jan 30 17:54:01 2012  # latest file modification 
 L3_void_cir describes a void adjacent to circular meeting at L3
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,13.06200,56.35000  #   1
@@ -81,8 +81,8 @@ L3_void_cir describes a void adjacent to circular meeting at L3
 *surf,seg_bc,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,36,13  #   2 ||< seg_m:L3_circular
 *surf,seg_cc,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,36,14  #   3 ||< seg_n:L3_circular
 *surf,seg_dc,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,36,15  #   4 ||< seg_o:L3_circular
-*surf,fac_glaz,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   5 ||< external
-*surf,fac_stone,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #   6 ||< external
+*surf,fac_glaz,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   5 ||< external
+*surf,fac_stone,VERT,-,WALL,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #   6 ||< external
 *surf,fict_open,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,49,04  #   7 ||< fict_open:L3_open_rig
 *surf,fict_open_b,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,48,32  #   8 ||< fict_open_b:L3_open_lft
 *surf,L3_vc_low,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,20,17  #   9 ||< L3_vc_low:L2_careers
@@ -94,17 +94,17 @@ L3_void_cir describes a void adjacent to circular meeting at L3
 *surf,seg_bcu,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,52,13  #  15 ||< seg_m:L4_circular
 *surf,seg_ccu,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,52,14  #  16 ||< seg_n:L4_circular
 *surf,seg_dcu,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,52,15  #  17 ||< seg_o:L4_circular
-*surf,fac_glu,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
-*surf,fac_stoneu,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #  19 ||< external
+*surf,fac_glu,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
+*surf,fac_stoneu,VERT,-,WALL,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #  19 ||< external
 *surf,Wall-7,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,57,02  #  20 ||< ptn_vc_b:L4_open_plr
 *surf,Wall-8,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,57,01  #  21 ||< ptn_vc_a:L4_open_plr
-*surf,Top-9,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  22 ||< external
-*surf,fac_fr_l,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  23 ||< external
-*surf,fac_fr_u,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  24 ||< external
+*surf,Top-9,CEIL,-,ROOF,FLAT,roof_0.2,OPAQUE,EXTERIOR,0,0  #  22 ||< external
+*surf,fac_fr_l,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  23 ||< external
+*surf,fac_fr_u,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  24 ||< external
 *surf,balcony_au,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,57,32  #  25 ||< balcony_au:L4_open_plr
 *surf,balcony_bu,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,57,33  #  26 ||< balcony_bu:L4_open_plr
-*surf,parapet_a,VERT,-,-,-,stone_cast_i,OPAQUE,EXTERIOR,0,0  #  27 ||< external
-*surf,parapet_b,VERT,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  28 ||< external
+*surf,parapet_a,VERT,-,WALL,-,stone_cast_i,OPAQUE,EXTERIOR,0,0  #  27 ||< external
+*surf,parapet_b,VERT,-,WALL,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  28 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_uf_plen # tag version, format, zone name
-*date Sat Aug 27 15:00:41 2011  # latest file modification 
+*date Tue Jan 31 09:29:39 2012  # latest file modification 
 L5_uf_plen describes structure for level five
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,29.16426,14.39213,63.39300  #   1
@@ -300,20 +300,20 @@ L5_uf_plen describes structure for level five
 *surf,struc_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,77,52  #  46 ||< struc_b:L5_atroofltl
 *surf,struc_c,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,77,53  #  47 ||< struc_c:L5_atroofltl
 *surf,L5_op_rt_flr,CEIL,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,79,31  #  48 ||< L5_op_rt_flr:L5_open_rt
-*surf,srv_fac-a,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  49 ||< external
-*surf,srv_fac_b,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  50 ||< external
+*surf,srv_fac-a,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  49 ||< external
+*surf,srv_fac_b,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  50 ||< external
 *surf,rflrb_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,03,28  #  51 ||< rflrb_l5:lifts
-*surf,proj_a,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  52 ||< external
-*surf,proj_b,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  53 ||< external
+*surf,proj_a,CEIL,-,ROOF,FLAT,roof_0.2,OPAQUE,EXTERIOR,0,0  #  52 ||< external
+*surf,proj_b,CEIL,-,ROOF,FLAT,roof_0.2,OPAQUE,EXTERIOR,0,0  #  53 ||< external
 *surf,wee_fill_cr,VERT,-,-,-,slab_275,OPAQUE,SIMILAR,00,00  #  54 ||< identical environment
 *surf,floor_l5_tp,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,73,11  #  55 ||< floor:L5_toil_psg
-*surf,ext_ne_fac_a,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  56 ||< external
+*surf,ext_ne_fac_a,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  56 ||< external
 *surf,to_ne_fac_b,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,43  #  57 ||< l5_fv_ma:ne_facade
-*surf,ext_ne_fac_b,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  58 ||< external
-*surf,str_fac_d,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  59 ||< external
-*surf,str_fac_e,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  60 ||< external
-*surf,str_fac_f,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  61 ||< external
-*surf,str_fac_g,SLOP,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  62 ||< external
+*surf,ext_ne_fac_b,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  58 ||< external
+*surf,str_fac_d,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  59 ||< external
+*surf,str_fac_e,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  60 ||< external
+*surf,str_fac_f,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  61 ||< external
+*surf,str_fac_g,SLOP,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  62 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

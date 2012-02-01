@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_toil_psg # tag version, format, zone name
-*date Sat Aug 27 14:56:41 2011  # latest file modification 
+*date Tue Jan 31 09:15:45 2012  # latest file modification 
 L5_toil_psg describes is the toilet and passage on top level
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,23.17941,64.15000  #   1
@@ -47,13 +47,13 @@ L5_toil_psg describes is the toilet and passage on top level
 *surf,pt_meeting,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,72,09  #   1 ||< ptn_toilet:L5_meeting
 *surf,pta_fac_l5,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,22  #   2 ||< pta_fac_l5:ne_facade
 *surf,ptb_fac_l5,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,23  #   3 ||< ptb_fac_l5:ne_facade
-*surf,gl_facade_l5,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
+*surf,gl_facade_l5,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
 *surf,ptnc_fac_l5,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,26  #   5 ||< ptnc_fac_l5:ne_facade
 *surf,ptna_str_l5,VERT,-,-,-,door,OPAQUE,ANOTHER,02,15  #   6 ||< ptna_str_l5:stair_2
 *surf,ptn_cel_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,71,07  #   7 ||< ptn_psg:L5_pz_meet
 *surf,ptna_opn_l5,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,71,06  #   8 ||< prn_toil:L5_pz_meet
 *surf,ptnb_opn_l5,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,80,22  #   9 ||< ptnb_opn_l5:L5_open_rt
-*surf,top,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  10 ||< external
+*surf,top,CEIL,-,ROOF,FLAT,roof_0.2,OPAQUE,EXTERIOR,0,0  #  10 ||< external
 *surf,floor,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,81,55  #  11 ||< floor_l5_tp:L5_uf_plen
 *surf,ptnbb_str_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,16  #  12 ||< ptnb_str_l5:stair_2
 # 

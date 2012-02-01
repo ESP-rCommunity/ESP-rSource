@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,stair_2 # tag version, format, zone name
-*date Fri Aug 26 06:46:05 2011  # latest file modification 
+*date Tue Jan 31 10:45:04 2012  # latest file modification 
 stair_2 describes stair tower with glazed side stair_2
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,58.30000,30.50000,52.45000  #   1
@@ -168,9 +168,9 @@ stair_2 describes stair tower with glazed side stair_2
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,glaz_a_l2,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   1 ||< external
-*surf,glaz_b_l2,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   2 ||< external
-*surf,glaz_c_l2,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
+*surf,glaz_a_l2,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   1 ||< external
+*surf,glaz_b_l2,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   2 ||< external
+*surf,glaz_c_l2,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
 *surf,struc_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,28,12  #   4 ||< struc_l2:L2_cor_cell
 *surf,Wall-14,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,28,13  #   5 ||< filler:L2_cor_cell
 *surf,Wall-15,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,26,15  #   6 ||< Wall-15:L2_core_cel
@@ -185,48 +185,48 @@ stair_2 describes stair tower with glazed side stair_2
 *surf,ptna_str_l5,VERT,-,-,-,door,OPAQUE,ANOTHER,74,06  #  15 ||< ptna_str_l5:L5_toil_psg
 *surf,ptnb_str_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,74,12  #  16 ||< ptnbb_str_l5:L5_toil_psg
 *surf,ptn_stair,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,21  #  17 ||< ptn_stair:ne_facade
-*surf,glaz_b_l1,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
-*surf,glaz_c_l1,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
-*surf,glaz_a_l1,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  20 ||< external
-*surf,facade_n,VERT,-,-,-,glz_block,OPAQUE,EXTERIOR,0,0  #  21 ||< external
+*surf,glaz_b_l1,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
+*surf,glaz_c_l1,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
+*surf,glaz_a_l1,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  20 ||< external
+*surf,facade_n,VERT,-,WALL,-,glz_block,OPAQUE,EXTERIOR,0,0  #  21 ||< external
 *surf,l2_flr_vd,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,17,04  #  22 ||< l2_flr_vd:L2_uf_plen
 *surf,l3_flr_vd,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,50,04  #  23 ||< l3_flr_vd:L3_ufloor
 *surf,l4_flr_vd,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,78,39  #  24 ||< l4_flr_vd:L4_flrvoid
-*surf,l5_flr_vd,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,81,32  #  25 ||< l5_flrvc:L5_uf_plen
+*surf,l5_flr_vd,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,81,32  #  25 ||< l5_flr_vd:L5_uf_plen
 *surf,Wall-51,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,14,23  #  26 ||< Wall-51:L1_support
-*surf,glaz_a_l3,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  27 ||< external
-*surf,glaz_b_l3,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  28 ||< external
-*surf,glaz_c_l3,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external
-*surf,glaz_a_l4,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  30 ||< external
-*surf,glaz_b_l4,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  31 ||< external
+*surf,glaz_a_l3,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  27 ||< external
+*surf,glaz_b_l3,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  28 ||< external
+*surf,glaz_c_l3,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external
+*surf,glaz_a_l4,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  30 ||< external
+*surf,glaz_b_l4,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  31 ||< external
 *surf,ptnc_str_l1,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,14,25  #  32 ||< ptn_str_a:L1_support
 *surf,ptnc_str_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,26,14  #  33 ||< ptnc_str_l2:L2_core_cel
 *surf,struc_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,40,08  #  34 ||< ptn_filler:L3_cell_srv
-*surf,glaz_c_l4,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  35 ||< external
+*surf,glaz_c_l4,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  35 ||< external
 *surf,fill_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,54,08  #  36 ||< ptn_filler:L4_cell_srv
-*surf,glaz_a_l5,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  37 ||< external
-*surf,glaz_b_l5,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  38 ||< external
-*surf,glaz_c_l5,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  39 ||< external
+*surf,glaz_a_l5,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  37 ||< external
+*surf,glaz_b_l5,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  38 ||< external
+*surf,glaz_c_l5,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  39 ||< external
 *surf,struc_l1,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,17,61  #  40 ||< Wall-61:L2_uf_plen
-*surf,struc_l5,VERT,-,-,-,stone_cast,OPAQUE,EXTERIOR,0,0  #  41 ||< external
+*surf,struc_l5,VERT,-,WALL,-,stone_cast,OPAQUE,EXTERIOR,0,0  #  41 ||< external
 *surf,ptnc_str_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,49,01  #  42 ||< ptnc_str_l3:L3_open_rig
 *surf,ptnc_str_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,58,19  #  43 ||< ptnc_str_l4:L4_open_plr
 *surf,ptnc_str_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,71,08  #  44 ||< ptn_staira:L5_pz_meet
 *surf,l4_flr_vda,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,78,40  #  45 ||< l4_flr_vda:L4_flrvoid
-*surf,l5_flr_vda,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,81,33  #  46 ||< l5_flr_vd:L5_uf_plen
+*surf,l5_flr_vda,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,81,33  #  46 ||< l5_flr_vda:L5_uf_plen
 *surf,l3_flr_vda,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,50,05  #  47 ||< l3_flr_vda:L3_ufloor
 *surf,ptnd_str_l5,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,71,09  #  48 ||< ptn_stairb:L5_pz_meet
 *surf,ptnd_str_l4,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,54,09  #  49 ||< ptn_stair_cb:L4_cell_srv
 *surf,ptnd_str_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,49,02  #  50 ||< ptnd_str_l3:L3_open_rig
 *surf,Base,FLOR,-,-,-,foundation,OPAQUE,GROUND,01,00  #  51 ||< ground profile  1
-*surf,ceiling,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  52 ||< external
+*surf,ceiling,CEIL,-,ROOF,FLAT,roof_0.2,OPAQUE,EXTERIOR,0,0  #  52 ||< external
 *surf,l2_flr_vdst,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,17,05  #  53 ||< l2_flr_vdst:L2_uf_plen
 *surf,ptn_str_b,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,14,26  #  54 ||< ptn_str_b:L1_support
 *surf,stair_end,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,27,08  #  55 ||< stair_end:L2_coridor
 *surf,ptn_stair_cb,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,40,09  #  56 ||< ptn_stair_cb:L3_cell_srv
 *surf,l3_flr_vdc,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,50,54  #  57 ||< to_stair_l3f:L3_ufloor
 *surf,l4_flrvdc,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,80,12  #  58 ||< fill_b:L4_srv_void
-*surf,l5_flr_vdc,VERT,-,-,-,stone_cast,OPAQUE,EXTERIOR,0,0  #  59 ||< external
+*surf,l5_flr_vdc,VERT,-,WALL,-,stone_cast,OPAQUE,EXTERIOR,0,0  #  59 ||< external
 *surf,ptnd_str_l4b,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,57,20  #  60 ||< ptnd_str_l4:L4_open_plr
 # 
 *insol,3,0,0,0  # default insolation distribution

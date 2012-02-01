@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L1_sw_void # tag version, format, zone name
-*date Sat Aug  6 12:29:02 2011  # latest file modification 
+*date Mon Jan 30 17:40:04 2012  # latest file modification 
 L1_sw_void describes ground level void at SW facade
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,-7.50400,5.60500,47.95000  #   1
@@ -131,10 +131,10 @@ L1_sw_void describes ground level void at SW facade
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,fac_glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   1 ||< external
-*surf,fac_glaz_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   2 ||< external
-*surf,fac_glaz_c,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
-*surf,fac_glaz_d,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
+*surf,fac_glaz_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   1 ||< external
+*surf,fac_glaz_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   2 ||< external
+*surf,fac_glaz_c,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
+*surf,fac_glaz_d,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
 *surf,part_gl_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,06,43  #   5 ||< part_gl_a:L1_ent_recp
 *surf,ptn_door_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,06,44  #   6 ||< ptn_door_a:L1_ent_recp
 *surf,ptn_gl_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,06,45  #   7 ||< ptn_gl_b:L1_ent_recp
@@ -144,25 +144,25 @@ L1_sw_void describes ground level void at SW facade
 *surf,ptn_door_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,11,18  #  11 ||< ptn_v_sw_c:L1_training
 *surf,ptn_elev,VERT,-,-,-,vd_stn_stair,OPAQUE,ANOTHER,03,08  #  12 ||< back_1:lifts
 *surf,ptn_toilet,VERT,-,-,-,stone_cast_i,OPAQUE,ANOTHER,12,08  #  13 ||< ptn_vd_l1:L1_toilet
-*surf,serv_gla_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  14 ||< external
-*surf,serv_gla_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
-*surf,serv_gla_c,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
-*surf,serv_gla_d,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external
-*surf,king_gla_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
-*surf,king_gla_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
-*surf,king_gla_c,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  20 ||< external
-*surf,king_gla_d,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  21 ||< external
-*surf,king_gla_e,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  22 ||< external
-*surf,king_gla_f,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
-*surf,king_gla_g,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  24 ||< external
-*surf,king_gla_h,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  25 ||< external
-*surf,king_gla_i,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  26 ||< external
-*surf,king_gla_j,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  27 ||< external
-*surf,king_gla_k,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  28 ||< external
-*surf,king_gla_l,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external
+*surf,serv_gla_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  14 ||< external
+*surf,serv_gla_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
+*surf,serv_gla_c,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
+*surf,serv_gla_d,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external
+*surf,king_gla_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
+*surf,king_gla_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
+*surf,king_gla_c,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  20 ||< external
+*surf,king_gla_d,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  21 ||< external
+*surf,king_gla_e,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  22 ||< external
+*surf,king_gla_f,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
+*surf,king_gla_g,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  24 ||< external
+*surf,king_gla_h,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  25 ||< external
+*surf,king_gla_i,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  26 ||< external
+*surf,king_gla_j,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  27 ||< external
+*surf,king_gla_k,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  28 ||< external
+*surf,king_gla_l,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external
 *surf,upper,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,34,33  #  30 ||< base:L2_se_void
 *surf,base,FLOR,-,-,-,foundation,OPAQUE,GROUND,01,00  #  31 ||< ground profile  1
-*surf,frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  32 ||< external
+*surf,frame,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  32 ||< external
 *surf,elev_rflr,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,03,34  #  33 ||< ptn_vd2:lifts
 *surf,stair_rflr,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,01,25  #  34 ||< ptn_flrv_l2:stair_1
 *surf,rflr_door_c,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,17,34  #  35 ||< rflr_door_c:L2_uf_plen

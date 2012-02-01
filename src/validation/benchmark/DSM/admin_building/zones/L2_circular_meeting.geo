@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_circular # tag version, format, zone name
-*date Wed Aug 24 05:54:13 2011  # latest file modification 
+*date Mon Jan 30 17:43:07 2012  # latest file modification 
 L2_circular describes circular meeting room on level two
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,28.92676,7.59981,52.45000  #   1
@@ -83,9 +83,9 @@ L2_circular describes circular meeting room on level two
 *surf,seg_m,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,20,14  #  10 ||< seg_b:L2_careers
 *surf,seg_n,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,20,15  #  11 ||< seg_c:L2_careers
 *surf,seg_o,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,20,16  #  12 ||< seg_d:L2_careers
-*surf,facade_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  13 ||< external
-*surf,frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  14 ||< external
-*surf,facade_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
+*surf,facade_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  13 ||< external
+*surf,frame,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  14 ||< external
+*surf,facade_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
 *surf,ceil_l2_cir,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,36,20  #  16 ||< L3_cir_flor:L3_circular
 *surf,L2_cir_floor,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,17,46  #  17 ||< Base:L2_uf_plen
 *surf,seg_al,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,22,03  #  18 ||< seg_a:L2_open_pln
@@ -109,22 +109,22 @@ L2_circular describes circular meeting room on level two
 *obs,28.800,7.200,47.950,0.100,0.200,15.440,13.000,1.00,sol_vm,mull_90  # block   1
 *obs,31.200,7.800,47.950,0.100,0.200,15.440,13.000,1.00,sol_vn,mull_90  # block   2
 *obs,33.800,8.400,47.950,0.100,0.200,15.440,13.000,1.00,sol_vo,mull_90  # block   3
-*obs,28.999,6.900,51.980,7.250,0.450,0.050,14.721,1.00,hor_e,mull_90  # block   8
-*obs,28.999,6.900,52.260,7.250,0.450,0.050,14.721,1.00,hor_f,mull_90  # block   9
-*obs,28.999,6.900,52.540,7.250,0.450,0.050,14.721,1.00,hor_g,mull_90  # block  10
-*obs,28.999,6.900,52.820,7.250,0.450,0.050,14.721,1.00,hor_h,mull_90  # block  11
-*obs,28.999,6.900,53.100,7.250,0.450,0.050,14.721,1.00,hor_i,mull_90  # block  12
-*obs,28.999,6.900,53.380,7.250,0.450,0.050,14.721,1.00,hor_j,mull_90  # block  13
-*obs,28.999,6.900,53.660,7.250,0.450,0.050,14.721,1.00,hor_k,mull_90  # block  14
-*obs,28.999,6.900,53.940,7.250,0.450,0.050,14.721,1.00,hor_l,mull_90  # block  15
-*obs,28.999,6.900,54.220,7.250,0.450,0.050,14.721,1.00,hor_m,mull_90  # block  16
-*obs,28.999,6.900,54.500,7.250,0.450,0.050,14.721,1.00,hor_n,mull_90  # block  17
-*obs,28.999,6.900,54.780,7.250,0.450,0.050,14.721,1.00,hor_o,mull_90  # block  18
-*obs,28.999,6.900,55.060,7.250,0.450,0.050,14.721,1.00,hor_p,mull_90  # block  19
-*obs,28.999,6.900,55.340,7.250,0.450,0.050,14.721,1.00,hor_q,mull_90  # block  20
-*obs,28.999,6.900,55.620,7.250,0.450,0.050,14.721,1.00,hor_r,mull_90  # block  21
-*obs,28.999,6.900,55.900,7.250,0.450,0.050,14.721,1.00,hor_s,mull_90  # block  22
-*obs,28.999,6.900,56.180,7.250,0.450,0.050,14.721,1.00,hor_t,mull_90  # block  23
-*obs,28.999,6.900,56.460,7.250,0.450,0.050,14.721,1.00,hor_u,mull_90  # block  24
-*obs,28.999,6.900,56.740,7.250,0.450,0.050,14.721,1.00,hor_v,mull_90  # block  25
+*obs,28.999,6.900,51.980,7.250,0.450,0.050,14.721,1.00,hor_e,mull_90  # block   4
+*obs,28.999,6.900,52.260,7.250,0.450,0.050,14.721,1.00,hor_f,mull_90  # block   5
+*obs,28.999,6.900,52.540,7.250,0.450,0.050,14.721,1.00,hor_g,mull_90  # block   6
+*obs,28.999,6.900,52.820,7.250,0.450,0.050,14.721,1.00,hor_h,mull_90  # block   7
+*obs,28.999,6.900,53.100,7.250,0.450,0.050,14.721,1.00,hor_i,mull_90  # block   8
+*obs,28.999,6.900,53.380,7.250,0.450,0.050,14.721,1.00,hor_j,mull_90  # block   9
+*obs,28.999,6.900,53.660,7.250,0.450,0.050,14.721,1.00,hor_k,mull_90  # block  10
+*obs,28.999,6.900,53.940,7.250,0.450,0.050,14.721,1.00,hor_l,mull_90  # block  11
+*obs,28.999,6.900,54.220,7.250,0.450,0.050,14.721,1.00,hor_m,mull_90  # block  12
+*obs,28.999,6.900,54.500,7.250,0.450,0.050,14.721,1.00,hor_n,mull_90  # block  13
+*obs,28.999,6.900,54.780,7.250,0.450,0.050,14.721,1.00,hor_o,mull_90  # block  14
+*obs,28.999,6.900,55.060,7.250,0.450,0.050,14.721,1.00,hor_p,mull_90  # block  15
+*obs,28.999,6.900,55.340,7.250,0.450,0.050,14.721,1.00,hor_q,mull_90  # block  16
+*obs,28.999,6.900,55.620,7.250,0.450,0.050,14.721,1.00,hor_r,mull_90  # block  17
+*obs,28.999,6.900,55.900,7.250,0.450,0.050,14.721,1.00,hor_s,mull_90  # block  18
+*obs,28.999,6.900,56.180,7.250,0.450,0.050,14.721,1.00,hor_t,mull_90  # block  19
+*obs,28.999,6.900,56.460,7.250,0.450,0.050,14.721,1.00,hor_u,mull_90  # block  20
+*obs,28.999,6.900,56.740,7.250,0.450,0.050,14.721,1.00,hor_v,mull_90  # block  21
 *end_block

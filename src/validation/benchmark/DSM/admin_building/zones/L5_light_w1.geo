@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_light_w1 # tag version, format, zone name
-*date Fri Aug 26 06:46:06 2011  # latest file modification 
+*date Tue Jan 31 09:17:33 2012  # latest file modification 
 L5_light_w1 describes light well one at level 5
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,13.70000,21.30000,64.15000  #   1
@@ -74,23 +74,23 @@ L5_light_w1 describes light well one at level 5
 *surf,l3_lw2_ri,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,69,32  #   2 ||< l3_lw2_ri:L5_open_lft
 *surf,l3_lw2_bk,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,67,03  #   3 ||< ptn_lw1:L5_lobby
 *surf,l3_lw2_lef,VERT,-,-,-,fictitious,SC_fictit,ANOTHER,67,19  #   4 ||< l3_lw2_lef:L5_lobby
-*surf,up_l3_lw2,SLOP,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   5 ||< external
+*surf,up_l3_lw2,SLOP,-,ROOF,FLAT,mull_90,OPAQUE,EXTERIOR,0,0  #   5 ||< external
 *surf,l3_lw2_base,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,59,05  #   6 ||< up_l3_lw2:L4_light_w1
 *surf,left_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,67,20  #   7 ||< left_rail:L5_lobby
 *surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,69,33  #   8 ||< front_rail:L5_open_lft
 *surf,right_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,69,34  #   9 ||< right_rail:L5_open_lft
-*surf,l3_flrv_r,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,20  #  10 ||< floor_toil:L5_uf_plen
-*surf,l3_flrv_f,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,21  #  11 ||< l3_flrv_r:L5_uf_plen
-*surf,l3_flrv_l,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,22  #  12 ||< l3_flrv_f:L5_uf_plen
-*surf,l3_flrv_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,23  #  13 ||< l3_flrv_l:L5_uf_plen
-*surf,parap_f,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  14 ||< external
-*surf,glaz_fr,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
-*surf,parap_ri,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  16 ||< external
-*surf,frame_ri,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  17 ||< external
-*surf,parap_bk,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  18 ||< external
-*surf,glaz_bk,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
-*surf,parap_left,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  20 ||< external
-*surf,frame_left,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  21 ||< external
+*surf,l3_flrv_r,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,20  #  10 ||< l3_flrv_r:L5_uf_plen
+*surf,l3_flrv_f,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,21  #  11 ||< l3_flrv_f:L5_uf_plen
+*surf,l3_flrv_l,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,22  #  12 ||< l3_flrv_l:L5_uf_plen
+*surf,l3_flrv_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,23  #  13 ||< l3_flrv_b:L5_uf_plen
+*surf,parap_f,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  14 ||< external
+*surf,glaz_fr,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
+*surf,parap_ri,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  16 ||< external
+*surf,frame_ri,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  17 ||< external
+*surf,parap_bk,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  18 ||< external
+*surf,glaz_bk,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
+*surf,parap_left,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  20 ||< external
+*surf,frame_left,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  21 ||< external
 *surf,up_glz,SLOP,up_l3_lw2,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  22 ||< external
 *surf,glaz_left,VERT,frame_left,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
 *surf,glaz_right,VERT,frame_ri,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  24 ||< external

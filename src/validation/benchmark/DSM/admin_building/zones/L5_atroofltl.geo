@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_atroofltl # tag version, format, zone name
-*date Fri Aug 26 06:46:06 2011  # latest file modification 
+*date Tue Jan 31 11:17:57 2012  # latest file modification 
 L5_atroofltl describes the main roof light over atria
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,4.00000,3.75000,64.15000  #   1
@@ -159,12 +159,12 @@ L5_atroofltl describes the main roof light over atria
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,low_wall_a,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   1 ||< external
-*surf,right,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   2 ||< external
-*surf,back_wall_a,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   3 ||< external
-*surf,left,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   4 ||< external
-*surf,roof_a,SLOP,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   5 ||< external
-*surf,roof_c,SLOP,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   6 ||< external
+*surf,low_wall_a,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   1 ||< external
+*surf,right,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   2 ||< external
+*surf,back_wall_a,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   3 ||< external
+*surf,left,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   4 ||< external
+*surf,roof_a,SLOP,-,S-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   5 ||< external
+*surf,roof_c,SLOP,-,S-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   6 ||< external
 *surf,balc_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,56,01  #   7 ||< balc_a:L4_open_s
 *surf,wall_a,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,56,02  #   8 ||< wall_a:L4_open_s
 *surf,wall_b,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,56,03  #   9 ||< wall_b:L4_open_s
@@ -185,35 +185,35 @@ L5_atroofltl describes the main roof light over atria
 *surf,seg_d,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,52,04  #  24 ||< seg_d:L4_circular
 *surf,seg_e,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,52,05  #  25 ||< seg_e:L4_circular
 *surf,seg_f,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,52,06  #  26 ||< seg_f:L4_circular
-*surf,fac_gl_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  27 ||< external
-*surf,fac_gl_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  28 ||< external
-*surf,fac_gl_c,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external
-*surf,fac_gl_d,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  30 ||< external
-*surf,fac_gl_e,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  31 ||< external
-*surf,fac_gl_f,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  32 ||< external
-*surf,fac_gl_g,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  33 ||< external
-*surf,fac_gl_h,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  34 ||< external
-*surf,fac_gl_i,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  35 ||< external
-*surf,fac_gl_j,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  36 ||< external
-*surf,fac_gl_k,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  37 ||< external
-*surf,fac_gl_l,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  38 ||< external
-*surf,fac_fr,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  39 ||< external
-*surf,side_fac_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  40 ||< external
-*surf,side_fac_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  41 ||< external
+*surf,fac_gl_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  27 ||< external
+*surf,fac_gl_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  28 ||< external
+*surf,fac_gl_c,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external
+*surf,fac_gl_d,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  30 ||< external
+*surf,fac_gl_e,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  31 ||< external
+*surf,fac_gl_f,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  32 ||< external
+*surf,fac_gl_g,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  33 ||< external
+*surf,fac_gl_h,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  34 ||< external
+*surf,fac_gl_i,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  35 ||< external
+*surf,fac_gl_j,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  36 ||< external
+*surf,fac_gl_k,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  37 ||< external
+*surf,fac_gl_l,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  38 ||< external
+*surf,fac_fr,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  39 ||< external
+*surf,side_fac_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  40 ||< external
+*surf,side_fac_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  41 ||< external
 *surf,to_meeting,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,55,01  #  42 ||< Wall-1:L4_sw_meet
-*surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,38  #  43 ||< l5_fv_tb:L5_uf_plen
-*surf,struc_d,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,39  #  44 ||< struc_a:L5_uf_plen
-*surf,struc_e,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,40  #  45 ||< struc_d:L5_uf_plen
-*surf,struc_f,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,41  #  46 ||< struc_e:L5_uf_plen
-*surf,struc_g,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,42  #  47 ||< struc_f:L5_uf_plen
-*surf,struc_h,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,43  #  48 ||< struc_g:L5_uf_plen
-*surf,struc_i,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,44  #  49 ||< struc_h:L5_uf_plen
-*surf,struc_j,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,45  #  50 ||< struc_i:L5_uf_plen
-*surf,roof_b,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  51 ||< external
-*surf,struc_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,46  #  52 ||< struc_j:L5_uf_plen
-*surf,struc_c,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,47  #  53 ||< struc_b:L5_uf_plen
-*surf,roof_d,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  54 ||< external
-*surf,roof_e,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  55 ||< external
+*surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,38  #  43 ||< struc_a:L5_uf_plen
+*surf,struc_d,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,39  #  44 ||< struc_d:L5_uf_plen
+*surf,struc_e,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,40  #  45 ||< struc_e:L5_uf_plen
+*surf,struc_f,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,41  #  46 ||< struc_f:L5_uf_plen
+*surf,struc_g,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,42  #  47 ||< struc_g:L5_uf_plen
+*surf,struc_h,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,43  #  48 ||< struc_h:L5_uf_plen
+*surf,struc_i,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,44  #  49 ||< struc_i:L5_uf_plen
+*surf,struc_j,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,45  #  50 ||< struc_j:L5_uf_plen
+*surf,roof_b,CEIL,-,ROOF,FLAT,roof_0.2,OPAQUE,EXTERIOR,0,0  #  51 ||< external
+*surf,struc_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,46  #  52 ||< struc_b:L5_uf_plen
+*surf,struc_c,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,47  #  53 ||< struc_c:L5_uf_plen
+*surf,roof_d,CEIL,-,ROOF,FLAT,roof_0.2,OPAQUE,EXTERIOR,0,0  #  54 ||< external
+*surf,roof_e,CEIL,-,ROOF,FLAT,roof_0.2,OPAQUE,EXTERIOR,0,0  #  55 ||< external
 *surf,filler,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,57,15  #  56 ||< filler:L4_open_plr
 # 
 *insol,3,0,0,0  # default insolation distribution

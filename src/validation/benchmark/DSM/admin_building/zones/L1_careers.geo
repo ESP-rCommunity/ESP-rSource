@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L1_careers # tag version, format, zone name
-*date Tue Aug 23 21:03:55 2011  # latest file modification 
+*date Mon Jan 30 17:34:08 2012  # latest file modification 
 L1_careers describes the level one careers service area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,29.25000,17.25000,47.95000  #   1
@@ -124,11 +124,11 @@ L1_careers describes the level one careers service area
 #  construction name, optical name
 #  boundary condition tag followed by two data items
 *surf,door_atr,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,06,49  #   1 ||< door_atr:L1_ent_recp
-*surf,fac_gl_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   2 ||< external
-*surf,stone_wall,VERT,-,-,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #   3 ||< external
-*surf,fac_gla_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
-*surf,fac_gla_c,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   5 ||< external
-*surf,fac_frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   6 ||< external
+*surf,fac_gl_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   2 ||< external
+*surf,stone_wall,VERT,-,WALL,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #   3 ||< external
+*surf,fac_gla_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
+*surf,fac_gla_c,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   5 ||< external
+*surf,fac_frame,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   6 ||< external
 *surf,door_serv,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,10,14  #   7 ||< door_serv:L1_open_off
 *surf,ptn_gla_a,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,10,13  #   8 ||< seg_l:L1_open_off
 *surf,ptn_gla_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,10,12  #   9 ||< seg_k:L1_open_off
@@ -146,8 +146,8 @@ L1_careers describes the level one careers service area
 *surf,door_mt,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,09,03  #  21 ||< door:L1_meeting
 *surf,ptn_open_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,09,04  #  22 ||< ptn_open_c:L1_meeting
 *surf,ptn_frame,VERT,-,-,-,mull_90,OPAQUE,ANOTHER,09,05  #  23 ||< ptn_frame:L1_meeting
-*surf,exit_fr,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  24 ||< external
-*surf,door,VERT,exit_fr,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  25 ||< external
+*surf,exit_fr,VERT,-,H-DOOR,CLOSED,mull_90,OPAQUE,EXTERIOR,0,0  #  24 ||< external
+*surf,door,VERT,exit_fr,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  25 ||< external
 *surf,seg_o,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,07,15  #  26 ||< seg_o:L1_circular
 *surf,seg_n,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,07,14  #  27 ||< seg_n:L1_circular
 *surf,seg_m,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,07,13  #  28 ||< seg_m:L1_circular
@@ -155,12 +155,12 @@ L1_careers describes the level one careers service area
 *surf,seg_i,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,07,09  #  30 ||< seg_i:L1_circular
 *surf,seg_j,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,07,10  #  31 ||< seg_j:L1_circular
 *surf,seg_k,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,07,11  #  32 ||< seg_k:L1_circular
-*surf,cir_fac_fr,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  33 ||< external
+*surf,cir_fac_fr,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  33 ||< external
 *surf,fv_seg_l,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,17,22  #  34 ||< fv_seg_l:L2_uf_plen
 *surf,fv_seg_m,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,17,23  #  35 ||< fv_seg_m:L2_uf_plen
 *surf,fv_seg_n,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,17,24  #  36 ||< fv_seg_n:L2_uf_plen
 *surf,fv_seg_o,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,17,25  #  37 ||< fv_seg_o:L2_uf_plen
-*surf,over_door,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  38 ||< external
+*surf,over_door,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  38 ||< external
 *surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,17,26  #  39 ||< struc_a:L2_uf_plen
 *surf,upper_fict,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,20,01  #  40 ||< lower_fict:L2_careers
 # 

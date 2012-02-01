@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_cor_cell # tag version, format, zone name
-*date Sun Aug 21 11:14:22 2011  # latest file modification 
+*date Mon Jan 30 17:47:02 2012  # latest file modification 
 L2_cor_cell describes cellular offices at corner of level two
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,44.69600,35.70000,52.45000  #   1
@@ -59,21 +59,21 @@ L2_cor_cell describes cellular offices at corner of level two
 #  boundary condition tag followed by two data items
 *surf,ptn_cora,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,10  #   1 ||< Wall-10:L2_coridor
 *surf,ptn_corb,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,09  #   2 ||< Wall-9:L2_coridor
-*surf,side_fac,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   3 ||< external
-*surf,stone_g,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   4 ||< external
-*surf,glaz_g,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   5 ||< external
-*surf,vent_g,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #   6 ||< external
-*surf,glaz_f,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
-*surf,stone_f,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #   8 ||< external
+*surf,side_fac,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   3 ||< external
+*surf,stone_g,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   4 ||< external
+*surf,glaz_g,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   5 ||< external
+*surf,vent_g,VERT,-,WALL,-,stone_vent,OPAQUE,EXTERIOR,0,0  #   6 ||< external
+*surf,glaz_f,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
+*surf,stone_f,VERT,-,WALL,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #   8 ||< external
 *surf,Wall-11,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,30,02  #   9 ||< Wall-2:L2_kitchen
 *surf,cel319_ceil,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,50,50  #  10 ||< cel319_ceil:L3_ufloor
 *surf,cel319_floor,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,17,54  #  11 ||< cel319_floor:L2_uf_plen
 *surf,struc_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,04  #  12 ||< struc_l2:stair_2
 *surf,filler,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,05  #  13 ||< Wall-14:stair_2
-*surf,glaz_g_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  14 ||< external
-*surf,glaz_g_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
-*surf,glaz_f_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
-*surf,glaz_f_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external
+*surf,glaz_g_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  14 ||< external
+*surf,glaz_g_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
+*surf,glaz_f_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
+*surf,glaz_f_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

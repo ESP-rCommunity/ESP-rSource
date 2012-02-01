@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_meeting # tag version, format, zone name
-*date Fri Aug 26 06:46:06 2011  # latest file modification 
+*date Tue Jan 31 10:51:13 2012  # latest file modification 
 L5_meeting describes corner meeting room on top level
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,17.00457,64.15000  #   1
@@ -54,13 +54,13 @@ L5_meeting describes corner meeting room on top level
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,fac_frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #   1 ||< external
-*surf,fac_glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   2 ||< external
-*surf,fac_glaz_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
-*surf,fac_glaz_c,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
-*surf,fac_glaz_d,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   5 ||< external
+*surf,fac_frame,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   1 ||< external
+*surf,fac_glaz_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   2 ||< external
+*surf,fac_glaz_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
+*surf,fac_glaz_c,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
+*surf,fac_glaz_d,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   5 ||< external
 *surf,pa_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,33  #   6 ||< pa_fac_l5:ne_facade
-*surf,gl_fac_l4,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
+*surf,gl_fac_l4,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
 *surf,pb_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,34  #   8 ||< pb_fac_l5:ne_facade
 *surf,ptn_toilet,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,74,01  #   9 ||< pt_meeting:L5_toil_psg
 *surf,ptn_open_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,80,12  #  10 ||< ptn_open_a:L5_open_rt
@@ -68,8 +68,8 @@ L5_meeting describes corner meeting room on top level
 *surf,door,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,80,14  #  12 ||< door:L5_open_rt
 *surf,ptn_open_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,80,15  #  13 ||< ptn_open_c:L5_open_rt
 *surf,ptn_frame,VERT,-,-,-,mull_90,OPAQUE,ANOTHER,80,16  #  14 ||< ptn_frame:L5_open_rt
-*surf,ceiling,CEIL,-,-,-,roof_0.2,OPAQUE,EXTERIOR,0,0  #  15 ||< external
-*surf,floor,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,81,18  #  16 ||< xflor_pz_m:L5_uf_plen
+*surf,ceiling,CEIL,-,ROOF,FLAT,roof_0.2,OPAQUE,EXTERIOR,0,0  #  15 ||< external
+*surf,floor,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,81,18  #  16 ||< floor:L5_uf_plen
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

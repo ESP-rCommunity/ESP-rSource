@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_toilet # tag version, format, zone name
-*date Thu Aug 25 20:32:15 2011  # latest file modification 
+*date Mon Jan 30 17:59:53 2012  # latest file modification 
 L3_toilet describes toilet on level three at srv road
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,35.70000,56.35000  #   1
@@ -39,10 +39,10 @@ L3_toilet describes toilet on level three at srv road
 *surf,ptn_cora_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,07  #   1 ||< ptnb_toil_l3:stair_1
 *surf,ptn_corb_l3,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,01,08  #   2 ||< ptna_toil_l3:stair_1
 *surf,ptn_corc_l3,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,42,12  #   3 ||< ptn_toilet:L3_social
-*surf,fac_a_l3,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   4 ||< external
-*surf,fac_b_l3,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   5 ||< external
-*surf,fac_c_l3,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   6 ||< external
-*surf,fac_d_l3,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   7 ||< external
+*surf,fac_a_l3,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   4 ||< external
+*surf,fac_b_l3,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   5 ||< external
+*surf,fac_c_l3,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   6 ||< external
+*surf,fac_d_l3,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   7 ||< external
 *surf,ptn_vd_l3,VERT,-,-,-,stone_cast,OPAQUE,ANOTHER,47,15  #   8 ||< ptn_l3_toil:L3_sw_void
 *surf,ceiling,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,80,09  #   9 ||< ceiling:L4_srv_void
 *surf,floor,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,50,37  #  10 ||< floor_toil:L3_ufloor

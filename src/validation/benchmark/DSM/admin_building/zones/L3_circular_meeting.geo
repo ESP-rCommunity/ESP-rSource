@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_circular # tag version, format, zone name
-*date Wed Aug 31 06:00:23 2011  # latest file modification 
+*date Mon Jan 30 17:52:36 2012  # latest file modification 
 L3_circular describes circular meeting room at level three
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,28.92676,7.59981,56.35000  #   1
@@ -86,9 +86,9 @@ L3_circular describes circular meeting room at level three
 *surf,seg_m,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,02  #  13 ||< seg_bc:L3_L4_cir_vd
 *surf,seg_n,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,03  #  14 ||< seg_cc:L3_L4_cir_vd
 *surf,seg_o,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,37,04  #  15 ||< seg_dc:L3_L4_cir_vd
-*surf,facade_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
-*surf,frame,VERT,-,-,-,mull_90,OPAQUE,EXTERIOR,0,0  #  17 ||< external
-*surf,facade_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
+*surf,facade_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
+*surf,frame,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  17 ||< external
+*surf,facade_b,VERT,-,WALL,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
 *surf,L3_cir_ceil,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,52,26  #  19 ||< L4_circ_flor:L4_circular
 *surf,L3_cir_flor,FLOR,-,-,-,slab_275,OPAQUE,ANOTHER,19,16  #  20 ||< ceil_l2_cir:L2_circular
 *surf,seg_kup,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,10  #  21 ||< seg_kup:L4_flrvoid

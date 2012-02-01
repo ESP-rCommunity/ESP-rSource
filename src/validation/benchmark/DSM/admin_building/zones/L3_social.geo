@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_social # tag version, format, zone name
-*date Thu Aug 25 20:45:16 2011  # latest file modification 
+*date Tue Jan 31 10:48:31 2012  # latest file modification 
 L3_social describes the social room on L3 adj to service rd
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,12.00000,35.70000,56.35000  #   1
@@ -78,26 +78,26 @@ L3_social describes the social room on L3 adj to service rd
 *surf,ptn_corid_a,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,48,37  #   1 ||< ptn_corid_a:L3_open_lft
 *surf,ptn_corid_b,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,48,38  #   2 ||< ptn_corid_b:L3_open_lft
 *surf,ptn_print,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,41,06  #   3 ||< ptn_social:L3_print_zn
-*surf,stone_c,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #   4 ||< external
-*surf,glaz_d,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   5 ||< external
-*surf,vent_b,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #   6 ||< external
-*surf,glaz_c,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
-*surf,stone_b,VERT,-,-,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #   8 ||< external
-*surf,glaz_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   9 ||< external
-*surf,vent_a,VERT,-,-,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  10 ||< external
-*surf,glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  11 ||< external
+*surf,stone_c,VERT,-,WALL,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #   4 ||< external
+*surf,glaz_d,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   5 ||< external
+*surf,vent_b,VERT,-,WALL,-,stone_vent,OPAQUE,EXTERIOR,0,0  #   6 ||< external
+*surf,glaz_c,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
+*surf,stone_b,VERT,-,WALL,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #   8 ||< external
+*surf,glaz_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   9 ||< external
+*surf,vent_a,VERT,-,WALL,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  10 ||< external
+*surf,glaz_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  11 ||< external
 *surf,ptn_toilet,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,46,03  #  12 ||< ptn_corc_l3:L3_toilet
 *surf,Top-13,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,80,08  #  13 ||< Top-13:L4_srv_void
 *surf,Base-14,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,50,31  #  14 ||< Base-14:L3_ufloor
-*surf,stone_a,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  15 ||< external
-*surf,glaz_d_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
-*surf,glaz_d_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external
-*surf,glaz_c_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
-*surf,glaz_c_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
-*surf,glaz_b_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  20 ||< external
-*surf,glaz_b_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  21 ||< external
-*surf,glaz_a_low,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  22 ||< external
-*surf,glaz_a_hi,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
+*surf,stone_a,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  15 ||< external
+*surf,glaz_d_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
+*surf,glaz_d_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external
+*surf,glaz_c_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
+*surf,glaz_c_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
+*surf,glaz_b_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  20 ||< external
+*surf,glaz_b_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  21 ||< external
+*surf,glaz_a_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  22 ||< external
+*surf,glaz_a_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

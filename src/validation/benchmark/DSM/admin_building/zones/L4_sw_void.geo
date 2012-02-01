@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_sw_void # tag version, format, zone name
-*date Mon Aug 22 21:36:44 2011  # latest file modification 
+*date Tue Jan 31 08:56:31 2012  # latest file modification 
 L4_sw_void describes void at level four at SW facade
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,-6.03235,5.93735,59.49300  #   1
@@ -112,10 +112,10 @@ L4_sw_void describes void at level four at SW facade
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,Wall-1,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   1 ||< external
-*surf,Wall-2,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   2 ||< external
-*surf,Wall-3,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
-*surf,Wall-4,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
+*surf,se_glz_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   1 ||< external
+*surf,se_glz_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   2 ||< external
+*surf,se_glz_c,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
+*surf,se_glz_d,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
 *surf,Wall-5,VERT,-,-,-,mull_90,OPAQUE,ANOTHER,55,15  #   5 ||< ptn_fr:L4_sw_meet
 *surf,Wall-6,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,55,16  #   6 ||< gl_ptn_b:L4_sw_meet
 *surf,Wall-7,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,55,17  #   7 ||< Wall-7:L4_sw_meet
@@ -127,10 +127,10 @@ L4_sw_void describes void at level four at SW facade
 *surf,Wall-13,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,56,07  #  13 ||< Wall-8:L4_sw_meet
 *surf,Wall-14,VERT,-,-,-,vd_stn_stair,OPAQUE,ANOTHER,01,31  #  14 ||< ptn_void_l4:stair_1
 *surf,Wall-15,VERT,-,-,-,vd_stn_stair,OPAQUE,ANOTHER,61,08  #  15 ||< ptn_vd_l3:L4_toilet
-*surf,Wall-16,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
-*surf,Wall-17,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external
-*surf,Wall-18,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
-*surf,Wall-19,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
+*surf,ns_glz_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
+*surf,nw_glz_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external
+*surf,nw_glz_c,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
+*surf,nw_glz_d,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
 *surf,Top-26,CEIL,-,-,-,fictitious,SC_fictit,ANOTHER,77,21  #  20 ||< fict_base:L5_sw_void
 *surf,Base-27,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,47,20  #  21 ||< upper:L3_sw_void
 *surf,ptn_vd3,VERT,-,-,-,vd_stn_stair,OPAQUE,ANOTHER,03,36  #  22 ||< ptn_vd4:lifts
@@ -142,8 +142,8 @@ L4_sw_void describes void at level four at SW facade
 *surf,l4_facade_b,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,04,17  #  28 ||< l4_facc:sw_facade
 *surf,l4_facade_c,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,04,18  #  29 ||< l4_facb:sw_facade
 *surf,l4_facade_d,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,04,19  #  30 ||< l4_faca:sw_facade
-*surf,fac_glaz_a,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  31 ||< external
-*surf,fac_glaz_b,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  32 ||< external
+*surf,fac_glaz_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  31 ||< external
+*surf,fac_glaz_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  32 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

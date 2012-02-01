@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L1_toil_psg # tag version, format, zone name
-*date Sat Aug  6 12:27:50 2011  # latest file modification 
+*date Mon Jan 30 17:37:00 2012  # latest file modification 
 L1_toil_psg describes toilet and passage on level one
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,23.17941,47.95000  #   1
@@ -45,10 +45,10 @@ L1_toil_psg describes toilet and passage on level one
 #  construction name, optical name
 #  boundary condition tag followed by two data items
 *surf,pt_meeting,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,09,13  #   1 ||< ptn_toilet:L1_meeting
-*surf,faca_l1,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   2 ||< external
-*surf,facb_l1,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   3 ||< external
-*surf,gl_facade,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
-*surf,facc_l1,VERT,-,-,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   5 ||< external
+*surf,faca_l1,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   2 ||< external
+*surf,facb_l1,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   3 ||< external
+*surf,gl_facade,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
+*surf,facc_l1,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   5 ||< external
 *surf,ptna_str_l1,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,07  #   6 ||< ptna_str_l1:stair_2
 *surf,ptn_cel_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,14,24  #   7 ||< ptn_toil:L1_support
 *surf,ptna_opn_l1,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,10,21  #   8 ||< ptna_opn_l1:L1_open_off

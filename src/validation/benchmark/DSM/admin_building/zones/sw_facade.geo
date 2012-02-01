@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,sw_facade # tag version, format, zone name
-*date Wed Aug 17 06:12:12 2011  # latest file modification 
+*date Mon Jan 30 17:27:21 2012  # latest file modification 
 sw_facade describes the stone facade on the south west
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,-8.20400,4.08490,55.59300  #   1
@@ -114,21 +114,21 @@ sw_facade describes the stone facade on the south west
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,stone_end,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   1 ||< external
-*surf,stone_reveal,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   2 ||< external
+*surf,stone_end,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   1 ||< external
+*surf,stone_reveal,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   2 ||< external
 *surf,l3_facade_a,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,47,27  #   3 ||< l3_facade_a:L3_sw_void
 *surf,l4_facade_a,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,51,27  #   4 ||< l4_facade_a:L4_sw_void
 *surf,l3_facade_b,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,47,28  #   5 ||< l3_facade_b:L3_sw_void
 *surf,l3_facade_c,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,47,29  #   6 ||< l3_facade_c:L3_sw_void
 *surf,l3_facade_d,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,47,30  #   7 ||< l3_facade_d:L3_sw_void
-*surf,stone_rev_b,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   8 ||< external
-*surf,stone_end_b,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   9 ||< external
-*surf,stone_a,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  10 ||< external
-*surf,stone_c,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  11 ||< external
-*surf,stone_d,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  12 ||< external
-*surf,stone_e,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  13 ||< external
-*surf,Top,CEIL,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  14 ||< external
-*surf,Base-20,FLOR,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  15 ||< external
+*surf,stone_rev_b,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   8 ||< external
+*surf,stone_end_b,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #   9 ||< external
+*surf,stone_a,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  10 ||< external
+*surf,stone_c,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  11 ||< external
+*surf,stone_d,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  12 ||< external
+*surf,stone_e,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  13 ||< external
+*surf,Top,CEIL,-,ROOF,FLAT,stone_eldon,OPAQUE,EXTERIOR,0,0  #  14 ||< external
+*surf,Base-20,FLOR,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  15 ||< external
 *surf,l5_facade_a,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,77,27  #  16 ||< l5_faade_a:L5_sw_void
 *surf,l4_facc,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,51,28  #  17 ||< l4_facade_b:L4_sw_void
 *surf,l4_facb,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,51,29  #  18 ||< l4_facade_c:L4_sw_void
@@ -136,16 +136,16 @@ sw_facade describes the stone facade on the south west
 *surf,l5_faca,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,77,30  #  20 ||< l5_facade_d:L5_sw_void
 *surf,l5_facb,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,77,29  #  21 ||< l5_facad_c:L5_sw_void
 *surf,l5_facc,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,77,28  #  22 ||< l5_facade_b:L5_sw_void
-*surf,parapet,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  23 ||< external
-*surf,jamb_a,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  24 ||< external
-*surf,jamb_b,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  25 ||< external
-*surf,sill_a,CEIL,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  26 ||< external
-*surf,head_a,FLOR,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  27 ||< external
-*surf,jamb_d,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  28 ||< external
-*surf,jamb_c,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  29 ||< external
-*surf,stone_b,VERT,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  30 ||< external
-*surf,sill_b,CEIL,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  31 ||< external
-*surf,head_b,FLOR,-,-,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  32 ||< external
+*surf,parapet,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  23 ||< external
+*surf,jamb_a,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  24 ||< external
+*surf,jamb_b,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  25 ||< external
+*surf,sill_a,CEIL,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  26 ||< external
+*surf,head_a,FLOR,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  27 ||< external
+*surf,jamb_d,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  28 ||< external
+*surf,jamb_c,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  29 ||< external
+*surf,stone_b,VERT,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  30 ||< external
+*surf,sill_b,CEIL,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  31 ||< external
+*surf,head_b,FLOR,-,WALL,-,stone_eldon,OPAQUE,EXTERIOR,0,0  #  32 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

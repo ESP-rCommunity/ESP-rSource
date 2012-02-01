@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_toil_psg # tag version, format, zone name
-*date Mon Aug 22 20:44:40 2011  # latest file modification 
+*date Mon Jan 30 17:59:34 2012  # latest file modification 
 L3_toil_psg describes toilet and passage at level three
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,23.17941,56.35000  #   1
@@ -47,7 +47,7 @@ L3_toil_psg describes toilet and passage at level three
 *surf,pt_meeting,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,39,09  #   1 ||< ptn_toilet:L3_meeting
 *surf,pta_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,28  #   2 ||< pta_fac_l3:ne_facade
 *surf,ptb_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,29  #   3 ||< ptb_fac_l3:ne_facade
-*surf,gl_facade_l3,VERT,-,-,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
+*surf,gl_facade_l3,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
 *surf,ptnc_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,30  #   5 ||< ptnc_fac_l3:ne_facade
 *surf,ptna_str_l3,VERT,-,-,-,door,OPAQUE,ANOTHER,02,11  #   6 ||< ptna_str_l3:stair_2
 *surf,ptn_cel_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,49,23  #   7 ||< ptn_cel_b:L3_open_rig
