@@ -555,19 +555,19 @@ if((fst_3 = XLoadQueryFont(theDisp,font_3)) == NULL) {
   exit(1);
 }
 /* a few variable width fonts, if fail drop back to fixed width */
-strncpy(font_4,"-*-helvetica-medium-r-*-*-10-*-*-*-*-*-*-*",42);
+strncpy(font_4,  "-*-helvetica-medium-r-*-*-10-*-*-*-*-*-*-*",42);
 if((fst_4 = XLoadQueryFont(theDisp,font_4)) == NULL) {
   fprintf(stderr,"display %s doesn't know font %s ...\n",DisplayString(theDisp),font_4);
-  strncpy(font_4,"6x12",4);
+  strncpy(font_4,"6x12                                      ",42);
   if((fst_4 = XLoadQueryFont(theDisp,font_4)) == NULL) {
     fprintf(stderr,"2nd choice font %s has not been found so quitting.\n",font_4);
     exit(1);
   }
 }
-strncpy(font_5,"-*-helvetica-medium-r-*-*-12-*-*-*-*-*-*-*",42);
+strncpy(font_5,  "-*-helvetica-medium-r-*-*-12-*-*-*-*-*-*-*",42);
 if((fst_5 = XLoadQueryFont(theDisp,font_5)) == NULL) {
   fprintf(stderr,"display %s doesn't know font %s ...\n",DisplayString(theDisp),font_5);
-  strncpy(font_5,"6x13",4);
+  strncpy(font_5,"6x13                                      ",42);
   if((fst_5 = XLoadQueryFont(theDisp,font_5)) == NULL) {
     fprintf(stderr,"2nd choice font %s has not been found so quitting.\n",font_5);
     exit(1);

@@ -1147,7 +1147,7 @@ C Call rexmpl to get the exemplar. If ier is set to 2 then the
 C user didn't pick anything. If useraction is set to 'browse' then
 C ensure the toggle is set accordingly.
               useraction = ' '
-              call rexmpl(IUF,exemplar,useraction,ier)
+              call rexmpl(ITRC,IUF,exemplar,useraction,ier)
               call tstamp('>','PRJ: scanning exemplars return')
               if(ier.eq.2)then
                 ier=0
@@ -1207,8 +1207,8 @@ C action if there is no match in the paths.
                 endif
 
 C Debug.
-                write(outs,*) '* Browse status ',browse,itisanexemplar
-                call edisp(iuout,outs)
+C                write(outs,*) '* Browse status ',browse,itisanexemplar
+C                call edisp(iuout,outs)
 
 C If running on a Windows machine the the file browser would have been
 C used and there is no need to check the path.
