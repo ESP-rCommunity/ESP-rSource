@@ -236,7 +236,6 @@ C in the current model. A -1 means not applicable
       integer siteinfo,databaseinfo,contextinfo,controlinfo,netinfo
       integer plantinfo,geominfo,schedinfo,zoneextrainfo,fileinfo
       integer destination
-      integer lndbp
 
       integer iercl  ! error state returned for scanning climate list.
       integer llbm,llbn  ! string lengths for obstructions
@@ -263,6 +262,8 @@ C in the current model. A -1 means not applicable
       character louts*248,loutsd*248
       character lltmp*144,lguess*144,lldef*144  ! for working with EASKXORGTKF
       character lpath*72,fname*72 ! for use with fdroot
+      character llclmdb*144
+      integer llt,lndbp
 
       logical newgeo  ! to use for testing if new/old geometry file.
       logical nameok  ! to use for testing if duplicate names in zone
@@ -1162,9 +1163,20 @@ C Re-read sbem db and then the descriptive file.
           endif          
         endif
 
-C << take into account location >>
+
+C Setup string buffer with distribution weather folder name.
         CALL ERPFREE(ICLIM,ISTAT)
-        CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
+        llt=lnblnk(LCLIM)
+        lndbp=lnblnk(standardclmpath)
+        if(ipathclim.eq.0.or.ipathclim.eq.1)then
+          llclmdb=LCLIM
+        elseif(ipathclim.eq.2)then
+          write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &      LCLIM(1:lnblnk(LCLIM))
+        endif
+
+        call EFOPRAN(ICLIM,llclmdb,144,0,IER)
+C        CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
         IREC=367
         READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLMLOC
 
@@ -1389,8 +1401,16 @@ C the climate file and attempt to print out IPV contents.
             else
               INQUIRE (FILE=cdblfil,EXIST=XST)
               if(XST)then
+                llt=lnblnk(LCLIM)
+                lndbp=lnblnk(standardclmpath)
+                if(ipathclim.eq.0.or.ipathclim.eq.1)then
+                  llclmdb=LCLIM
+                elseif(ipathclim.eq.2)then
+                  write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &              LCLIM(1:lnblnk(LCLIM))
+                endif
                 IUF=IFIL+2
-                call scancdblist(IUF,LCLIM,ok,iercl)
+                call scancdblist(IUF,llclmdb,ok,iercl)
                 if(iercl.eq.0)then
                   call listipvdat(itu,'a',ier)
                 else
@@ -2538,6 +2558,11 @@ C Flags noting whether casual gain periods are currently sorted.
       integer iuo  ! file unit for operations file.
       integer imgloop ! loop counter for images
 
+C For dealing with climate file.
+      character llclmdb*144
+      character fs*1
+      integer llt,lndbp
+
 C For help messages
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
@@ -2547,6 +2572,12 @@ C For help messages
       
 C Check if Unix-based or DOS based.
       call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
       newgeo=.false.  ! assume older format geometry.
       sorted=.false.  ! assume casual gains not sorted.
 
@@ -2579,7 +2610,15 @@ C for this to happen.
         INQUIRE (FILE=cdblfil,EXIST=XST)
         if(XST)then
           IUF=IFIL+2
-          call scancdblist(IUF,LCLIM,ok,iercl)
+          llt=lnblnk(LCLIM)
+          lndbp=lnblnk(standardclmpath)
+          if(ipathclim.eq.0.or.ipathclim.eq.1)then
+            llclmdb=LCLIM
+          elseif(ipathclim.eq.2)then
+            write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &        LCLIM(1:lnblnk(LCLIM))
+          endif
+          call scancdblist(IUF,llclmdb,ok,iercl)
           if(iercl.eq.0)then
             ihaveseason=1
             allnew=.false.
@@ -2809,7 +2848,15 @@ C file and then include seasonal tokens in the model.
             INQUIRE (FILE=cdblfil,EXIST=XST)
             if(XST)then
               IUF=IFIL+2
-              call scancdblist(IUF,LCLIM,ok,iercl)
+              llt=lnblnk(LCLIM)
+              lndbp=lnblnk(standardclmpath)
+              if(ipathclim.eq.0.or.ipathclim.eq.1)then
+                llclmdb=LCLIM
+              elseif(ipathclim.eq.2)then
+                write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &            LCLIM(1:lnblnk(LCLIM))
+              endif
+              call scancdblist(IUF,llclmdb,ok,iercl)
               if(iercl.eq.0)then
                 ihaveseason=1
                 CALL EMKCFG('-',IER)

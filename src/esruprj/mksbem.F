@@ -412,9 +412,9 @@ C Generate all the model variants and run assessments and generate EPC.
         CFGROOT = CFGROOT_O ! re-establish the initial root name
 
 C << for admin buidling comment out creation of notional building
-        CALL EMKSBM(iier)   ! generate Notional model
-        if(iier.eq.2.or.iier.eq.3.or.iier.eq.4) goto 42  ! Ask user what to do
-        call edisp(iuout,'Notional model completed...')
+C        CALL EMKSBM(iier)   ! generate Notional model
+C        if(iier.eq.2.or.iier.eq.3.or.iier.eq.4) goto 42  ! Ask user what to do
+C        call edisp(iuout,'Notional model completed...')
 
         CALL EMKREF  ! Reference model
         call edisp(iuout,'Reference model completed...')
@@ -4260,7 +4260,7 @@ C << (e.g. a zero activity) need to be marked at this point.
         endif
 
 C Find the index of the MLC which matches each surface.
-        write(6,*) icomp,NZSUR(icomp),nmlc
+C        write(6,*) icomp,NZSUR(icomp),nmlc
         DO 9994 I=1,NZSUR(icomp)
           icn1=izstocn(icomp,i)
           ssmlcindex(icn1)=0  ! assume no matching MLC          
@@ -4272,8 +4272,8 @@ C Find the index of the MLC which matches each surface.
  9994   continue
 
 C Debug the ssmlcindex array.
-        write(6,*) ssmlcindex(1),ssmlcindex(2),ssmlcindex(3),
-     &    ssmlcindex(4),ssmlcindex(5),ssmlcindex(6),ssmlcindex(7)
+C        write(6,*) ssmlcindex(1),ssmlcindex(2),ssmlcindex(3),
+C     &    ssmlcindex(4),ssmlcindex(5),ssmlcindex(6),ssmlcindex(7)
 
         CALL FNCNGR(LGEOM_O(ICOMP),APE,EXT,NNAME)
         LGEOM(ICOMP)=NNAME
@@ -13694,8 +13694,6 @@ C Setup string buffer with distribution weather folder name.
       endif
 
       call EFOPRAN(ICLIM,llclmdb,144,0,IER)
-      write(6,*) ier,' ',llclmdb
-      write(6,*) '  '
       IF(ier.ne.0)return
 
 C Initialise
@@ -13789,7 +13787,6 @@ C Offset is 0.60 for locations where this month is January.
         T_mnt(k)=T_avg - T_amp
      &           *cos(Theta*2.0*pi/YearHours - PhaseLag - Phi)*GM
  200  CONTINUE
-      write(6,*) '  ',T_mnt
       
 C Write to common depending on which mode it was called with.
       DO 27 I=1,12

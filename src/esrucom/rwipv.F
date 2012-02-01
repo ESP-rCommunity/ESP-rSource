@@ -529,9 +529,10 @@ C 4 also read in the group name for the zones associated with the metric.
         endif
         CALL EGETP(OUTSTR,K,metrglbl(imset),'W','metric 20 descr',IER)
 
-C Read in the associated zones (on multiple lines is needed).
+C Read in the associated zones (on multiple lines is needed). Be sure
+C to update warning range if model complexity changes in building.h
         if(nzmg(imset).gt.0)then
-          CALL EGETWIA(ifu,list,nzmg(imset),1,72,'W',
+          CALL EGETWIA(ifu,list,nzmg(imset),1,82,'W',
      &      'IPV metrics associated zones',IER)
           DO 118 KV=1,nzmg(imset)
             izmg(imset,KV)=list(KV)
