@@ -6091,10 +6091,10 @@ C Find if Unix or NT.
         call getenv('HOME',upath)
       else
         call getenv ('HOMEDRIVE',homedrive)
-        write(outs,*) 'homedrive is ',homedrive
+        write(outs,*) '  Homedrive - ',homedrive
         call edisp(IUOUT,outs)
         call getenv ('HOMEPATH',homepath)
-        write(outs,*) 'homepath is ',homepath
+        write(outs,*) '  Homepath - ',homepath
         call edisp(IUOUT,outs)
         if(homedrive(1:1).ne.' '.and.homepath(1:1).ne.' ')then
           write(upath,'(2a)') homedrive(1:lnblnk(homedrive)),

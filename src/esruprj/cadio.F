@@ -139,6 +139,7 @@ C code tends to overwrite this and thus the user choice
 C is lost. 
         iw=0
         if(path(1:2).ne.'./'.and.path(1:2).ne.'  ')then
+          call edisp(iuout,'  ')
           write(outs,'(A,A)') 'The current path is: ',path
           call edisp(iuout,outs)
           CALL EASKAB('The model is in a remote folder.',
@@ -1065,7 +1066,8 @@ C Present information on an exemplar.
             elseif(WORD(1:4).eq.'*cfg')then
               call egetrm(outstr,K,exemplar,'W','name',IER)
               if(iglib.eq.2.or.iglib.eq.3)then
-                call edisp(iuout,' Model is:')  ! echo if gtk
+                call edisp(iuout,'  ')
+                call edisp(iuout,'Examplar model is:')  ! echo if gtk
                 call edisp(iuout,exemplar)
               endif
 
@@ -1075,20 +1077,22 @@ C of the string till a file separator of either DOS or Unix type is reached.
               call isunix(unixok)
               if(.NOT.unixok)then
                 thecfgis=' '
-                ilexem = lnblnk(exemplar)
+                ilexem = lnblnk(exemplar)  ! last character
                 ipos = ilexem
  344            continue
                 ipos=ipos-1
                 if(exemplar(ipos:ipos).eq.fs)then
                   write(thecfgis,'(a)') exemplar(ipos+1:ilexem)
                   if(itrc.gt.0)then
-                    call edisp(iuout,'The model is...')
+                    call edisp(iuout,'  ')
+                    call edisp(iuout,'The model configuration file is:')
                     call edisp(iuout,thecfgis)
                   endif
                 elseif(exemplar(ipos:ipos).eq.'/')then
                   write(thecfgis,'(a)') exemplar(ipos+1:ilexem)
                   if(itrc.gt.0)then
-                    call edisp(iuout,'The model is...')
+                    call edisp(iuout,'  ')
+                    call edisp(iuout,'The model configuration file is:')
                     call edisp(iuout,thecfgis)
                   endif
                 else
@@ -1126,24 +1130,25 @@ C to the list of exemplars.
 
 C Reached the end of the item, check if it is to be chosen and
 C if there are zones existing, remove them from memory.
-              CALL EASKABC(exdescr,'Actions:','browse',
-     &          'own it','cancel',IW,nbhelp)
+              CALL EASKAB(exdescr,'Actions:',
+     &          'proceed','cancel',IW,nbhelp)
               if(IW.eq.1)then
-                call tstamp('>','PRJ: browse exemplar')
-                useraction='browse  '
-              elseif(IW.eq.2)then
                 if(upath.ne.' ')then
 
-C See if can derive the local configuration name.
+C See if can derive the local configuration name. cfg_root is the last
+C word in the path to the exemplar root folder.
                   call fdroot(rootp,cfg_path,cfg_root)
                   lex=lnblnk(exemplar)
                   lcfgr=lnblnk(cfg_root)
 
 C Debug the model source.
-                  write(outs,'(a,2i4,2a)') 'cfg_root = ',lex,lcfgr,
-     &              '  ',cfg_root(1:lcfgr)
-                  call edisp(iuout,outs)
+C                  write(outs,'(a,2i4,2a)') 'cfg_root = ',lex,lcfgr,
+C     &              '  ',cfg_root(1:lcfgr)
+C                  call edisp(iuout,outs)
 
+C Loop along the exemplar string to locate the position of the root
+C folder in the path of the exemplar.
+                  ilex=1
                   do 342 ilex=1,lex-lcfgr
                     if(cfg_root(1:lcfgr).eq.
      &                exemplar(ilex:ilex+lcfgr-1))then
@@ -1154,21 +1159,29 @@ C Debug the model source.
                   call isunix(unixok)
                   if(unixok)then
 
-C Offer user choice of home folder or another location. In GTK
-C there is a file browser returning folder name via lltmp.
-                    write(lguess,'(a)') upath(1:lnblnk(upath))
-                    write(dguess,'(a)') upath(1:lnblnk(upath))
+C Offer user choice of home folder plus the exemplar root name. In GTK
+C there is a file browser returning folder name via lltmp. If lltmp
+C folder does not exist then need to create it.
+                    write(lguess,'(3a)') upath(1:lnblnk(upath)),fs,
+     &                cfg_root(1:lcfgr)
+                    write(dguess,'(3a)') upath(1:lnblnk(upath)),fs,
+     &                cfg_root(1:lcfgr)
                     call edisp(iuout,'  ')  ! echo a blank line
                     CALL EASKXORGTKF(lguess,' ','Place model in:',               
      &                dguess,lltmp,'models folder',IER,nbhelp)
 
-                    write(doit,'(4a)') 'cp -r ',
-     &               rootp(1:lnblnk(rootp)),' ',lltmp(1:lnblnk(lltmp))
+                    write(doit,'(2a)') 'mkdir ',lltmp(1:lnblnk(lltmp))
+                    call runit(doit,'-')
+                    call pausems(400)
+
+C Make up the command to copy from the exemplar source folder to the
+C users defined destination.
+                    write(doit,'(5a)') 'cp -r ',rootp(1:lnblnk(rootp)),
+     &                fs,'*  ',lltmp(1:lnblnk(lltmp))
                   else
 
-C Debug statements for native windows version.  If lnblankrp or
-C lnblankup is one then there are no spaces in the string so double quotes
-C are not required.  But in either case it is useful to change any '/'
+C If lnblankrp or lnblankup is one then there are no spaces in the 
+C string so double quotes are not required.  Change any '/'
 C in rootp and upath to '\'. 
                     rootpdos=' '
                     upathdos=' '
@@ -1176,100 +1189,116 @@ C in rootp and upath to '\'.
                     lnblankrp=iprevblnk(rootp,lnrp)
 
 C Debug the model source.
-                    write(outs,'(a,2i3,2a)') 'rootp = ',lnrp,lnblankrp,
-     &                ' ',rootp(1:lnrp)
-                    call edisp(iuout,outs)
+C                    write(outs,'(a,2i3,2a)') 'rootp = ',lnrp,lnblankrp,
+C     &                ' ',rootp(1:lnrp)
+C                    call edisp(iuout,outs)
 
                     call backslashit(rootp,rootpdos)
-                    write(outs,'(2a)') 'Getting model from...',
-     &                rootpdos(1:lnrp)
-                    call edisp(iuout,outs)
+                    if(itrc.gt.0)then
+                      write(outs,'(2a)') 'Getting model from...',
+     &                  rootpdos(1:lnrp)
+                      call edisp(iuout,outs)
+                    endif
 
 C For an xcopy command we need the destination to also include the
 C model folder so use fdroot to extract this from rootp.
                     call fdroot(rootpdos,rootpath,modelroot)
                     lnmr=lnblnk(modelroot)
 
-C Debug the model destination.
-                    write(outs,'(2a)') 'the model root folder is = ',
-     &                modelroot(1:lnmr)
-                    call edisp(iuout,outs)
-
                     call edisp(iuout,' ')
 
-C Offer user choice of home folder or another location. In GTK
+C Offer user choice of home folder plus the exemplar root name. In GTK
 C there is a file browser returning folder name via lltmp.
-                    write(lguess,'(a)') upath(1:lnblnk(upath))
-                    write(dguess,'(a)') upath(1:lnblnk(upath))
+                    write(lguess,'(3a)') upath(1:lnblnk(upath)),fs,
+     &                cfg_root(1:lcfgr)
+                    write(dguess,'(3a)') upath(1:lnblnk(upath)),fs,
+     &                cfg_root(1:lcfgr)
                     call edisp(iuout,'  ')  ! echo a blank line
-                    CALL EASKXORGTKF(lguess,
-     &                'Place model as subfolder of?',' ',
+                    CALL EASKXORGTKF(lguess,' ','Place model in:',
      &                dguess,lltmp,'models folder',IER,nbhelp)
+
                     lnup=lnblnk(lltmp)
                     lnblankup=iprevblnk(lltmp,lnup)
                     call backslashit(lltmp,upathdos)
+
 C Debug.
-                    write(outs,'(a,2i3,2a)') 'upath = ',lnup,lnblankup,
-     &                ' ',upath(1:lnup)
-                    call edisp(iuout,outs)
-                    write(outs,'(2a)') 'destination = ',upathdos(1:lnup)
-                    call edisp(iuout,outs)
+C                    write(outs,'(a,2i3,2a)') 'upath = ',lnup,lnblankup,
+C     &                ' ',upath(1:lnup)
+C                    call edisp(iuout,outs)
+C                    write(outs,'(2a)') 'destination = ',upathdos(1:lnup)
+C                    call edisp(iuout,outs)
+
+C If upathdos folder does not exist then need to create it.
+                    if(lnblankup.gt.1)then
+
+C There are blanks in destination strings.
+                      write(doit,'(4a)') 'mkdir ',dq,upathdos(1:lnup),dq
+                    elseif(lnblankup.eq.1)then
+
+C There are no blanks in destination string.
+                      write(doit,'(2a)') 'mkdir ',upathdos(1:lnup)
+                    endif
+                    call runit(doit,'-')
+
                     if(lnblankrp.gt.1.and.lnblankup.gt.1)then
 
 C There are blanks in both source or destination strings.
-                      write(doit,'(10a)') 'xcopy /e /i /y /c ',dq,
-     &                  rootpdos(1:lnrp),dq,' ',dq,
-     &                  upathdos(1:lnup),fs,modelroot(1:lnmr),dq
+                      write(doit,'(11a)') 'xcopy /e /i /y /c ',dq,
+     &                  rootpdos(1:lnrp),fs,'*',dq,'  ',dq,
+     &                  upathdos(1:lnup),fs,dq
                     elseif(lnblankrp.eq.1.and.lnblankup.gt.1)then
 
 C There are blanks in destination string.
-                      write(doit,'(8a)') 'xcopy /e /i /y /c ',
-     &                  rootpdos(1:lnrp),' ',dq,
-     &                  upathdos(1:lnup),fs,modelroot(1:lnmr),dq
+                      write(doit,'(9a)') 'xcopy /e /i /y /c ',
+     &                  rootpdos(1:lnrp),fs,'*  ',dq,
+     &                  upathdos(1:lnup),fs,dq
                     elseif(lnblankrp.gt.1.and.lnblankup.eq.1)then
 
 C There are blanks in source string.
-                      write(doit,'(8a)') 'xcopy /e /i /y /c ',dq,
-     &                  rootpdos(1:lnrp),dq,' ',
-     &                  upathdos(1:lnup),fs,modelroot(1:lnmr)
+                      write(doit,'(9a)') 'xcopy /e /i /y /c ',dq,
+     &                  rootpdos(1:lnrp),fs,'*',dq,'  ',
+     &                  upathdos(1:lnup),fs
                     elseif(lnblankrp.eq.1.and.lnblankup.eq.1)then
 
 C There are no blanks in either source or destination strings.
                       write(doit,'(6a)') 'xcopy /e /i /y /c ',
-     &                  rootpdos(1:lnrp),' ',
-     &                  upathdos(1:lnup),fs,modelroot(1:lnmr)
+     &                  rootpdos(1:lnrp),fs,'*  ',
+     &                  upathdos(1:lnup),fs
                     endif
                   endif
 
 C If trace is verbose echo the command.
                   if(itrc.gt.0)then
-                    call lusrmsg(
-     &               'Copying exemplar to your destination folder.',
-     &               doit,'P')
+                    call edisp(iuout,
+     &                'Copying exemplar to destination folder via:')
+                    call edisp248(iuout,doit,100)
                   endif
                   call runit(doit,'-')
                   if(unixok)then
 
 C If Unix-like then append tail of exemplar string to the users selected
-C path to get the new exemplar name.
-                    write(exemplar,'(3a)') lltmp(1:lnblnk(lltmp)),fs,
+C path to get the new exemplar name.  Since this has already been
+C taken into account in the users suggested folder location we need
+C to add lcfgr from ilex to get the correct place to write
+C the remaining path characters into the file name.
+                    ilex=ilex+lcfgr
+                    write(exemplar,'(2a)') lltmp(1:lnblnk(lltmp)),
      &                exemplar(ilex:lnblnk(exemplar))
                   else
 
-C If Windows based then append the modelroot string to the path to make
-C up the exemplar name.
-                    lnmr=lnblnk(modelroot)
-                    write(exemplar,'(7a)')upathdos(1:lnblnk(upathdos)),
-     &                fs,modelroot(1:lnmr),fs,'cfg',fs,
-     &                thecfgis(1:lnblnk(thecfgis))
+C If Windows based then append cfg & cfg file string to the path to make
+C up the exemplar name (this assumes a standard layout of model).
+                    write(exemplar,'(5a)')upathdos(1:lnblnk(upathdos)),
+     &                fs,'cfg',fs,thecfgis(1:lnblnk(thecfgis))
                   endif
+                  call edisp(iuout,'  ')
                   call edisp(iuout,'The model configuration file is:')
                   call edisp(iuout,exemplar)
                   call tstamp('>','PRJ: owning exemplar')
                   call tstamp('>',exemplar)
                   useraction='ownit   '
                 endif
-              elseif(IW.eq.3)then
+              elseif(IW.eq.2)then
 
 C User asked to cancel current selection, rewind the file and jump back to
 C the top menu to re-resent groups.
@@ -1278,23 +1307,23 @@ C the top menu to re-resent groups.
                 useraction='continue'
                 goto 41
               endif
-              if(IW.eq.1.or.IW.eq.2)then
-                CALL ERPFREE(iexfil,ISTAT)
-                if(ncomp.gt.0.or.INDCFG.eq.2)then
-                  call usrmsg('Please wait... ',
-     &                        'Clearing previous model.','-')
-                  call startbuffer()
-                  call clrprb
-                endif
+
+C If there was a prior model in memory clear it.
+              CALL ERPFREE(iexfil,ISTAT)
+              if(ncomp.gt.0.or.INDCFG.eq.2)then
+                call usrmsg('Please wait... ',
+     &                      'Clearing previous model.','-')
+                call startbuffer()
+                call clrprb
+              endif
 
 C If the image browser was started in a previous session warn
 C the user to kill it.
-                if(iton.eq.1)then
-                  noimg=0
-                  iton=0
-                endif
-                return
+              if(iton.eq.1)then
+                noimg=0
+                iton=0
               endif
+              return
               goto 92
             else
               goto 4
