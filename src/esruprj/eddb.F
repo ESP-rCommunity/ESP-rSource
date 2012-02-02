@@ -1863,7 +1863,7 @@ C << introduce concept of types of profiles
       character longtfile*144,LCOPY*144
       CHARACTER fs*1,APP*4
       CHARACTER OUTS*124
-C      CHARACTER OUTS248*248
+      CHARACTER OUTS248*248
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,dirpath*48
@@ -1906,8 +1906,8 @@ C Remember the initial file name in case user choice fails.
       endif
 
 C Debug.
-C      write(outs248,*) 'Current profiles ',lprev(1:lnblnk(lprev))
-C      call edisp248(iuout,outs248,100)
+      write(outs248,*) 'Current profiles ',lprev(1:lnblnk(lprev))
+      call edisp248(iuout,outs248,100)
 
   60  continue
 
@@ -1941,17 +1941,13 @@ C text or X11 option e edits the string while for GTK there are two
 C options to browse for files in ../dbs or the esp-r distribution.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       if(iglib.eq.1.or.iglib.eq.3)then
-        opte='e binary > ascii'
-        optf='f ascii > binary'
-        optg='g edit file name'
-        opth=' '
-        opti=' '
+        opte='e edit file name'
+        optf=' '
+        optg=' '
       elseif(iglib.eq.2)then
-        opte='e binary > ascii'
-        optf='f ascii > binary'
-        optg='g browse model ../dbs'
-        opth='h browse esp-r distribution'
-        opti='i make copy of another file'
+        opte='e browse model ../dbs'
+        opth='f browse esp-r distribution'
+        opti='g make copy of another file'
       endif
 
       IF(.NOT.XST)THEN
@@ -1959,31 +1955,31 @@ C options to browse for files in ../dbs or the esp-r distribution.
 C If db does not exist locally offer limited choices:
         idno=2
         isw=0
-        call MENUATOL('  ','Event Profiles db',
+        call MENUATOL('  ','Event Profiles',
      &    ' ','b select from list',
-     &    'c create a new db','d copy standard db',
-     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,nbhelp)
+     &    'c create new events','d copy standard events',
+     &    opte,optf,optg,'  ',' ',' ',' ',' ',isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
-        if(isw.eq.9)copydef=.false.
+        if(isw.eq.7)copydef=.false.
       elseif(longtfile(1:ldirpath).eq.dirpath(1:ldirpath))then
 
 C If standard file then offer the following choices (incl /):
         idno=1
         isw=0
-        call MENUATOL('  ','Event Profiles db',
-     &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard db',
-     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,nbhelp)
+        call MENUATOL('  ','Event Profiles',
+     &    'a browse/edit','b select from list',
+     &    'c create a new events','d copy standard events',
+     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
         copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
 C If standard file then offer the following choices (without /):
         idno=1
         isw=0
-        call MENUATOL('  ','Event Profiles db',
-     &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard db',
-     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,nbhelp)
+        call MENUATOL('  ','Event Profiles',
+     &    'a browse/edit','b select from list',
+     &    'c create a new events','d copy standard events',
+     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
         copydef=.false.
       else
 
@@ -1991,12 +1987,12 @@ C If db exists locally toggle whether the user is asked to copy the
 C default file or the current database.
         idno=1
         isw=0
-        call MENUATOL('  ','Event Profiles db',
-     &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard db',
-     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,nbhelp)
+        call MENUATOL('  ','Event Profiles',
+     &    'a browse/edit','b select from list',
+     &    'c create a new events','d copy standard events',
+     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
-        if(isw.eq.9)copydef=.false.
+        if(isw.eq.7)copydef=.false.
       endif
 
 C Act on the users choice. If nothing selected return to main menu.
@@ -2061,7 +2057,7 @@ C The name of the ascii file includes an .a at the end.
         CGS1(1,1)=100.0
         CGL1(1,1)=100.0
 
-C The model file is now an ASCII version.
+C The events file is ASCII version.
         if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
           LLASCI=LPRFDB
         elseif(ipathprodb.eq.2)then
@@ -2074,10 +2070,10 @@ C The model file is now an ASCII version.
 C If file exists and user wants to browse then scan the file and
 C use the editing facility.
         if(lnblnk(LPRFDB).lt.100)then
-          write(outs,'(3a)') 'Events db ',LPRFDB(1:lnblnk(LPRFDB)),
+          write(outs,'(3a)') 'Event profiles ',LPRFDB(1:lnblnk(LPRFDB)),
      &     ' created.'
         else
-          write(outs,'(3a)') 'Events db ',LPRFDB(1:100),
+          write(outs,'(3a)') 'Event profiles ',LPRFDB(1:100),
      &     '... created.'
         endif
         dok=.true.
@@ -2087,10 +2083,10 @@ C use the editing facility.
           goto 44
         endif
 
-      elseif(isw.eq.4.or.isw.eq.9)then
+      elseif(isw.eq.4.or.isw.eq.7)then
 
 C Copy a standard file to project dbs folder. If iws is 4 then the
-C user has asked for the default file. If isw is 9 then the
+C user has asked for the default file. If isw is 7 then the
 C user wishes to browse for the source file.  Suggest a local
 C file name based on the project root name. Update common to
 C reflect it is local.   
@@ -2098,7 +2094,7 @@ C reflect it is local.
 	numhelp=nbhelp
 	lltmp='  '
         call copycommonfile('pro',copydef,allowbrowse,
-     &  numhelp,lltmp,istat,moddb)
+     &    numhelp,lltmp,istat,moddb)
      
         if(istat.eq.1)then
           LPRFDB=lprev
@@ -2109,140 +2105,14 @@ C reflect it is local.
 
       elseif(isw.eq.5)then
 
-C Event profile db: BINARY > ASCII. 
-
-C Users selects a binary file (initial guess is LPRFDB and
-C the file name is returned in lltmp.
-        IAF=IFIL+1
-        lltmp='  '
-
-C << lguess logic to be added later >>
-        call edisp(iuout,'  ')  ! echo blank line
-        CALL EASKXORGTKF(LPRFDB,'Event Profiles db (source)?',' ',
-     &    DPRFDB,lltmp,'source events db',IER,nbhelp)
-
-C If user request jump back and re-display the menu.
-        if(ier.eq.-3)then
-          goto 60  ! restore name and redisplay menu.
-        endif
-
-        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
-          continue
-        else
-          goto 60
-        endif
-
-C Create the ASCII version as variant of lltmp. If it does not 
-C end in .a then update LLASACI
-        llt=lnblnk(lltmp)
-        if(lltmp(llt-1:llt).eq.'.a')then
-          LLASCI=lltmp
-        else
-          if(llt.le.141)then 
-            write(LLASCI,'(2a)') lltmp(1:llt),'.a'
-          else
-            write(LLASCI,'(2a)') lltmp(1:141),'.a'
-          endif
-        endif
-
-C Read binary file lltmp into common blocks.
-        call TRIPROBIN(IPRODB,lltmp,IER)
-
-C Write commons to ASCII and then redisplay the menu.
-        if(ier.eq.0)then
-          ier=0  ! reset prior to call to troprocom
-          call TROPROCOM(IAF,LLASCI,IER)
-          if(ier.eq.0)then
-            call edisp(iuout,'Binary -> ASCII conversion done.')
-          else
-            call edisp(iuout,'Binary -> ASCII conversion problems.')
-          endif
-          call tstamp('>','PRO: convert binary to ascii')
-          goto 60
-        else
-          call edisp(iuout,
-     &      'Source file was probably not a binary events file.')
-          goto 60
-        endif
-
-      elseif(isw.eq.6)then
-
-C Profile db: ASCII > BINARY.
-C Ask for the ASCII file name and then confirm the binary db name.
-C Guess ASCII name based on current LPRFDB.
-        IAF=IFIL+1
-
-C Check the last two characters of the file name. Append a '.a'
-C to the current LPRFDB as an initial guess for the name.
-        llt=lnblnk(LPRFDB)
-        if(LPRFDB(llt-1:llt).eq.'.a')then
-          if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
-            write(LLASCI,'(a)') LPRFDB(1:llt)
-          elseif(ipathprodb.eq.2)then
-            lndbp=lnblnk(standarddbpath)
-            write(LLASCI,'(3a)') standarddbpath(1:lndbp),fs,
-     &        LPRFDB(1:llt)
-          endif
-        else
-          if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
-            write(LLASCI,'(2a)') LPRFDB(1:llt),'.a'
-          elseif(ipathprodb.eq.2)then
-            lndbp=lnblnk(standarddbpath)
-            write(LLASCI,'(4a)') standarddbpath(1:lndbp),fs,
-     &        LPRFDB(1:llt),'.a'
-          endif
-        endif
-
-C Return the selected file in lltmp based on initial guess LLASCI.
-        call edisp(iuout,'  ')  ! echo blank line
-        CALL EASKXORGTKF(LLASCI,
-     &    'Event Profiles db (ASCII source)?',' ',
-     &    DPRFDB,lltmp,'ascii events db',IER,nbhelp)
-
-
-C If lltmp ends with .a then make up a temporary file name
-C lbin for the binary that has the .a stripped off. Return
-C llbin for use in tripro.
-        llt=lnblnk(lltmp)
-        llbin=' '
-        lbin=' '
-        if(lltmp(llt-1:llt).eq.'.a')then
-          write(lbin,'(a)') lltmp(1:llt-2)
-        else
-          write(lbin,'(a)') lltmp(1:llt)
-        endif
-        CALL EASKXORGTKF(lbin,'Event Profiles db (binary)?',' ',
-     &    DPRFDB,llbin,'binary events db',IER,nbhelp)
-
-C If user request jump back and re-display the menu.
-        if(ier.eq.-3)then
-          goto 60  ! redisplay menu.
-        endif
-
-        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
-
-C Convert data in lltmp to binary form in llbin (this does not alter
-c the current event profiles.
-          CALL TRIPRO(IAF,IPRODB,lltmp,llbin,IER)
-          if(ier.eq.0)then
-            call edisp(iuout,'ASCII -> Binary conversion done.')
-          else
-            call edisp(iuout,'ASCII -> Binary conversion problems.')
-          endif
-          goto 60  ! re-display the menu
-        else
-          goto 60  ! re-display the menu
-        endif
-
-      elseif(isw.eq.7)then
-
 C Make up browse to the model ../dbs folder suggest the name LCOPY
 C and return file name in lltmp.
         lltmp=' '
         call edisp(iuout,'  ')  ! echo blank line
         write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
-        CALL EASKXORGTKF(LCOPY,'Event Profiles db?',' ',
-     &    DPRFDB,lltmp,'ascii events db',IER,nbhelp)
+        CALL EASKXORGTKF(LCOPY,
+     &    'Event Profiles hold % of sensible & latent gains',
+     &    'Confirm:',DPRFDB,lltmp,'event profiles',IER,nbhelp)
 
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then
@@ -2275,7 +2145,7 @@ C correct location value via call to findwhichdbpath.
           goto 60
         endif
 
-      elseif(isw.eq.8)then
+      elseif(isw.eq.6)then
 
 C Browse distribution database folder. Setup LCOPY to point to
 C the database folder (but no particular file). Use easkf to
@@ -2285,7 +2155,7 @@ C call to eroptdb and if this is not successful reset LPRFDB.
         if(iglib.eq.2)then
           write(LCOPY,'(4a)') dinstpath(1:lnblnk(dinstpath)),
      &      fs,'databases',fs
-          CALL EASKF(LCOPY,' ','Event Profiles db?',
+          CALL EASKF(LCOPY,' ','Event Profiles?',
      &      144,DPRFDB,'Event profiles database',IER,nbhelp)
           if(ier.eq.-3)then
             LPRFDB=lprev
@@ -2310,14 +2180,14 @@ C data.
    44 continue
 
 C Debug.
-C      write(outs248,'(2a)') 'Accessing event profile db: ',
+C      write(outs248,'(2a)') 'Accessing event profile: ',
 C     &  LPRFDB(1:lnblnk(LPRFDB))
 C      call edisp248(iuout,outs248,100)
       IER=0
 
-C Scan file (with full path) as a binary event profiles database. 
-C If an error state is returned as -2 then it might be an ASCII
-C file. Either way commons are filled.
+C << switch to assumption that file is ASCII first >>
+
+C Scan ASCII file (with full path) to fill common blocks.
       lndbp=lnblnk(standarddbpath)
       if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
         lltmp=LPRFDB  ! use as is
@@ -2325,35 +2195,21 @@ C file. Either way commons are filled.
         write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
      &    LPRFDB(1:lnblnk(LPRFDB))  ! prepend db folder path
       endif
-      call TRIPROBIN(IPRODB,lltmp,IER)
-      if(ier.eq.-2)then
+      CALL ERPFREE(IPRODB,ISTAT)
+      CALL USRMSG('opened profiles db...',' ','-')
+      ier=0   ! reset ier before TRIPROCOM call
+      call TRIPROCOM(IPRODB,lltmp,IER)
+      if(ier.ne.0)then
+        call usrmsg('Error opening the profiles db. Please use one',
+     &              'of the other options.','W')
+        LPRFDB=lprev
+        goto 60
+      else
         CALL ERPFREE(IPRODB,ISTAT)
-        CALL USRMSG('opened profiles db...',' ','-')
-        ier=0   ! reset ier after triprobin call
-        call TRIPROCOM(IPRODB,lltmp,IER)
-        if(ier.ne.0)then
-          call usrmsg('Error opening the profiles db. Please use one',
-     &                'of the other options.','W')
-          LPRFDB=lprev
-          goto 60
-        else
-          CALL ERPFREE(IPRODB,ISTAT)
-          CALL USRMSG('opened profiles db...ok',' ','-')
-
-C Call casfmk for the editing/browsing interface.
-          call casfmk(ier)
-          return
-        endif
-      elseif(ier.eq.0)then
         CALL USRMSG('opened profiles db...ok',' ','-')
 
 C Call casfmk for the editing/browsing interface.
         call casfmk(ier)
-        return
-      else
-        call usrmsg('Error opening the profiles db. Please use one',
-     &              'of the other options.','W')
-        LPRFDB=lprev
         goto 60
       endif
       return
@@ -2483,9 +2339,9 @@ C options to browse for files in ../dbs or the esp-r distribution.
 C If db does not exist locally offer limited choices.
         idno=2
         isw=0
-        call MENUATOL('  ','Constructions db',
+        call MENUATOL('  ','Constructions',
      &    ' ','b select from list',
-     &    'c create a new db','d copy standard db',
+     &    'c create a new','d copy standard file',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
         if(isw.eq.7)copydef=.false.
