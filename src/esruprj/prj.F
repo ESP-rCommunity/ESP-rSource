@@ -2533,7 +2533,10 @@ C IPV data could be internal to cfg file.
   39  CALL EASKABCD(' ','IPV options:',
      &  'run required simulations','extract reports',
      &  'compare reports','cancel',irs,nbhelp)
+
       if(irs.eq.1)then
+
+C Run the simulations.
         CALL EASKABC(' ','Simulation options:',
      &    'run interactively','run silently',
      &    'cancel',isauto,nbhelp)
@@ -2616,7 +2619,10 @@ C          call usrmsg('Beginning assessment via',doit,'-')
           endif
 C          call edisp(iuout,'* IPV run complete.')
   667   continue
+
       elseif(irs.eq.2)then
+
+C Extract performance report from the standard results files.
         CALL EASKABC(' ','IPV extraction options:',
      &    'run interactively','run silently','cancel',
      &    isauto,nbhelp)
@@ -2632,9 +2638,9 @@ C          call edisp(iuout,'* IPV run complete.')
         elseif(isauto.eq.3)then
           return
         endif
-        call easkabcd('IPV recovery options:',' ','intermediate',
-     &    'scan intermediate ->annual','all','cancel',IRT,nbhelp)
-        if(IRT.eq.4) goto 39  ! redisplay menu.
+        call easkab('IPV recovery options:',' ',
+     &    'recover & append summary','cancel',IRT,nbhelp)
+        if(IRT.eq.2) goto 39  ! redisplay menu.
 
 C Extract only for the number of assessments required. Note: the strings
 C ipv_win ipv_win1 ipv_aut etc are set in the IPV descriptive process and
@@ -2669,7 +2675,8 @@ C Logic to react when browsing a model.
 C Debug.
 C        write(6,*) 'status of browse and remote ',browse,remote
 
-        if(IRT.eq.1.or.IRT.eq.3)then
+        if(IRT.eq.1)then
+          call edisp(iuout,'  ')
           do 668 ij=1,nipvassmt
             tfile=sblres(ij)
             if(remote)then
@@ -2710,44 +2717,8 @@ C            call usrmsg('Beginning performance recovery via',doit,'-')
      &        runtag(ij)(7:lnblnk(runtag(ij))),' is complete.'
             call edisp(iuout,outs)
  668      continue
-          if(IRT.eq.3)then
-            tfile=sblres(nipvassmt)
-            if(remote)then
-              call fdroot(tfile,ltpath,filen)
-              call isunix(unixok)
-              if(unixok)then
-                if (ICHAR(ltpath(1:1)).ne.47) then
-                  write(tfile,'(3a)') upath(1:lnblnk(upath)),fs,
-     &              filen(1:lnblnk(filen))
-                endif
-              else
-                if (ltpath(2:2).ne.':') then
-                  write(tfile,'(3a)') upath(1:lnblnk(upath)),fs,
-     &              filen(1:lnblnk(filen))
-                endif
-              endif
 
-C Debug.
-C              write(6,*) 'itr3 reset tfile to ',tfile
-
-            endif
-            if(iappw.gt.0.and.iappw.le.200)then
-              write(doit,'(3a,3i4,4a)') 'res -mode ',tmode,
-     &          ' -s ',iappw,iappx+15,iappy+50,' -file ',
-     &          tfile(1:lnblnk(tfile)),' -act ipv_annual ',aut
-            else
-              write(doit,'(6a)') 'res -mode ',tmode,' -file ',
-     &          tfile(1:lnblnk(tfile)),' -act ipv_annual ',aut
-            endif
-C            call usrmsg('Beginning performance recovery via',doit,'-')
-            if(isauto.eq.2)then
-              call runit(doit,'-')
-            else
-              call runit(doit,tmode)
-            endif
-C            call edisp(iuout,'* IPV report complete.')
-          endif
-        elseif(IRT.eq.2)then
+C Having done the assessments re-open and append summary.
           tfile=sblres(nipvassmt)
           if(remote)then
             call fdroot(tfile,ltpath,filen)
@@ -2765,7 +2736,7 @@ C            call edisp(iuout,'* IPV report complete.')
             endif
 
 C Debug.
-C            write(6,*) ' irt2 reset tfile to ',tfile
+C            write(6,*) 'itr3 reset tfile to ',tfile
 
           endif
           if(iappw.gt.0.and.iappw.le.200)then
@@ -2782,7 +2753,9 @@ C          call usrmsg('Beginning performance recovery via',doit,'-')
           else
             call runit(doit,tmode)
           endif
+C          call edisp(iuout,'* IPV report complete.')
         endif
+
       elseif(irs.eq.3)then
 
 C Compare two IPV reports.  First ask for separator.
@@ -3131,6 +3104,7 @@ C Not one we are intrested in at the moment.
         else
           goto 142
         endif
+
       elseif(irs.eq.4)then
         return
       endif 
