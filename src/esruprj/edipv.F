@@ -2176,11 +2176,9 @@ C Setup string buffer with distribution weather folder name.
       endif
 
       call EFOPRAN(ICLIM,llclmdb,144,0,IER)
-C      CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
       if(ISTAT.ge.0)then
         CALL ERPFREE(ICLIM,ISTAT)
         call EFOPRAN(ICLIM,llclmdb,144,1,IER)
-C        CALL FPRAND(ICLIM,ISTAT,144,1,LCLIM)
         call edisp(iuout,' opened climate file')
       endif
 

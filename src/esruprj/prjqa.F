@@ -1176,7 +1176,6 @@ C Setup string buffer with distribution weather folder name.
         endif
 
         call EFOPRAN(ICLIM,llclmdb,144,0,IER)
-C        CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
         IREC=367
         READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLMLOC
 
