@@ -109,6 +109,9 @@ C Comfort parameters and hash table.
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
+      integer ireportunit ! zero is default one is W two is kW three Joules
+      common/repunit/ireportunit
+
 C CFD commons.
       common/flvimg/imgtyp,IMOPTS
       common/flvpar/Lflpar(MCOM)
@@ -139,9 +142,11 @@ C IEEE callback (Solaris)
 #ifdef OSI
       integer iigl,iigr,iigt,iigb,iigw,iigwh
       integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iicapture   ! to pass to updcapt
 #else
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
       integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iicapture   ! to pass to updcapt
 #endif
       
       character cAppName*12      
@@ -163,6 +168,9 @@ C IEEE callback (Solaris)
       character graftitle*64,grlbl*24
       character firstbit*72,secondbit*72
       character longtmp*144
+
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer NITMS,INO ! max items and current menu item
@@ -196,6 +204,7 @@ C     NSIGFIG=3
       IUTDF=IFIL+7
       IUTDFA=IFIL+8
       matver=0.0   ! initial assumption of binary materials database
+      ireportunit=0 ! assume normal units for tabular listings
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -322,8 +331,15 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=16
         LIMIT =16
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r Results Analysis ',
+     &  cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r Results Analysis: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
+
       IF(MMOD.EQ.-6)then
         ICOUT=0
       else
@@ -340,18 +356,17 @@ C Setup and pass in parameters to win3d.
           iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
           CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &      iigl,iigr,iigt,iigb,iigw,iigwh)
-C          call win3d(menuchw,15,15,5,3,igl,igr,igt,igb,igw,igwh)
           igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
           igw=int(iigw); igwh=int(iigwh)
           call opencpw
           call opensetup
-          call updcapt(1)
+          iicapture=1
+          call updcapt(iicapture)
         elseif(iglib.eq.2)then
           iiw1=9; iiw2=20; iiw3=5; iiw4=3; iimenu=menuchw
           iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
           CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &      iigl,iigr,iigt,iigb,iigw,iigwh)
-C          CALL win3d(menuchw,9,20,5,3,igl,igr,igt,igb,igw,igwh)
           igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
           igw=int(iigw); igwh=int(iigwh)
         endif
@@ -369,11 +384,6 @@ C          CALL win3d(menuchw,9,20,5,3,igl,igr,igt,igb,igw,igwh)
       ITRC=1
       IF(MMOD.NE.-6)ICOUT=IUOUT
       CALL ESPrVersion("summary",cAppName,IUOUT)
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow, Scotland.'
-      call edisp(IUOUT,outs)
-      call edisp(IUOUT,' ')
 
 C Find the users home folder then get users custom settings.
 C Make temporary use of file unit ixunit.
@@ -421,9 +431,9 @@ C Scan the defaults file for default configuration.
 C Take command line file name as initial results file name.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
         LCMDFL=inf
-        write(outs248,'(a,a)')' the input file is: ',LCMDFL
-        call edisp248(iuout,outs,80)
-        call tstamp('>',outs)
+        call edisp(iuout,'  ')  ! echo blank line
+        write(outs248,'(a,a)')'The input file is: ',LCMDFL
+        call edisp248(iuout,outs248,90)
       else
         LCMDFL='UNKNOWN'
       endif
@@ -431,9 +441,9 @@ C Take command line file name as initial results file name.
 C Check for command line actions.
       if(act(1:2).ne.'  '.and.act(1:4).ne.'UNKN')then
          paction=act
-         write(outs,'(a,a)')' the action is: ',paction
+         write(outs,'(2a)') 'The action is: ',paction
          call edisp(iuout,outs)
-         write(outs,'(a,a)')'RES: the input action is: ',paction
+         write(outs,'(2a)') 'RES: the input action is: ',paction
          call tstamp('>',outs)
          if(aut(1:6).eq.'silent')then
            autook=.true.

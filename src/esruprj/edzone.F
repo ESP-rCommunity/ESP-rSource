@@ -382,6 +382,7 @@ C in the new geometry files is established.
               itrc=0
               MODE='ALL '
               IAPROB=IPRODB
+              call edisp(iuout,'  ')  ! echo blank line in case of warnings
               CALL ERSYS(LCFGF,IFCFG,IAPROB,MODE,itrc,IER)
             endif
             return

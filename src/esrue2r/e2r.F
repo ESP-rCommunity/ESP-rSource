@@ -98,6 +98,10 @@ C Name of current application
       character ltmp72*72,dtmp72*72,ltmp*72
       character pf*72,gf*72,df*72,VALT*28
       character brw*4   ! to signal whether browsing model
+
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
+
       DIMENSION ITEM(24)
       DIMENSION IVALV(20),VALT(20),IPVALV(20)  ! for selecting view from list
 
@@ -345,8 +349,14 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=16
         LIMIT =16
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'Radiance desktop ',
+     &  cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'Radiance desktop:  enquiries to esru@strath.ac.uk')
+     &  pagestitle)
 
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
@@ -378,13 +388,8 @@ C        CALL win3d(menuchw,2,2,2,3,igl,igr,igt,igb,igw,igwh)
         call startbuffer()
       ENDIF
 
-C ag@02072009 comment out the following verbosity (6 lines):
-C      CALL ESPrVersion("summary",cAppName,IUOUT)
-C      write(outs,'(2a)')
-C     & ' Systems Research Unit, University of',
-C     & ' Strathclyde, Glasgow Scotland.'
-C      call edisp(IUOUT,outs)
-C      call edisp(iuout,' ')
+C Echo version number.
+c      CALL ESPrVersion("summary",cAppName,IUOUT)
 
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)

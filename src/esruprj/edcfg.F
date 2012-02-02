@@ -3348,6 +3348,7 @@ C Also scan utility files if they exist.
         call gethelptext(helpinsub,helptopic,nbhelp)
 
         LTMP=' '    ! reset return string
+        call edisp(iuout,'  ')  ! echo a blank line
         CALL EASKXORGTKF(LCMDFL,
      &    'System configuration file?',' ',
      &    DFCFG,LTMP,'config file name',IER,nbhelp)
@@ -3763,6 +3764,7 @@ C Otherwise allow a choice to switch to a different level.
      &      IW,0)
           itrc=IW-1
         endif
+        call edisp(iuout,'  ')  ! echo blank line in case of warning
         MODE='ALL '
         IUF=IPRODB   ! assign second file unit to the events db unit
         CALL ERSYS(LCFGF,IFCFG,IUF,MODE,itrc,IER)
@@ -4083,6 +4085,7 @@ C file, while the GTK version will be returning the
 C name with the full path. L144 is the suggested name and
 C lltmp is the file name returned by the user selection.
         lltmp='  '
+        call edisp(iuout,'  ')  ! echo a blank line
         CALL EASKXORGTKF(L144,
      &    'Viewer export file name?',' ',
      &    dvfil,lltmp,'viewer file',IER,nbhelp)

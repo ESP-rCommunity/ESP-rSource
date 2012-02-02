@@ -2194,14 +2194,24 @@ C ivoff is the number of vertices which are more than 3mm off.
       SUBROUTINE CHECKWARP(ITRC,itru,isurf,N,X,Y,Z,iwhich,ofby,ivoff)
       implicit none
 #include "building.h"
-      integer isurf,iwhich,itrc,itru,n,ivoff
-      real X,Y,Z,ofby
+
+C Passed parameters.
+      integer itrc,itru  ! trace level and trace channel
+      integer isurf,n    ! focus surface in the room and how many surfaces
+      real X,Y,Z         ! arrays of X Y Z coords
       DIMENSION  X(MV),Y(MV),Z(MV)
+      integer iwhich     ! which point has largest difference
+      real ofby          ! largest difference
+      integer ivoff      ! nb of points beyond tollerance
+
+C Local variables
 
       integer i,j,ierr   ! types for local variables
-      real TMAT,RMAT,VP,EP,EQN,X1,Y1,ZZZ,diff
+      real TMAT,RMAT,VP,EP,EQN
       DIMENSION  TMAT(4,4),RMAT(4,4)
       DIMENSION  VP(3),EP(3),EQN(4)
+      real X1,Y1,ZZZ     ! returned 2D x y and z of offset point
+      real differ,offset ! difference and offset from plane
       CHARACTER OUTSTR*124
       logical close
 
@@ -2231,25 +2241,26 @@ C Report if user has toggled trace on.
       ENDIF
 
 C Call eyemat with 1m offset.
-      CALL  EYEMAT(EP,VP,1.0,TMAT,RMAT)
+      offset=1.00
+      CALL  EYEMAT(EP,VP,offset,TMAT,RMAT)
 
 C Transform all points in surface and check for ZZZ which differs
-C from the 1m offset.The tollerance is currently set to 3mm.
+C from the 1m offset.The tollerance is currently set to 5mm.
       ivoff=0
       ofby=0.0
       DO 300 I=1,N
         CALL ORTTRN(X(I),Y(I),Z(I),TMAT,X1,Y1,ZZZ,IERR)
-        call eclose(ZZZ,1.0,0.003,close)
+        call eclose(ZZZ,offset,0.005,close)
         if(.NOT.close)then
-	  ivoff=ivoff+1   ! increment number of vertices off by more than 3mm
-	  diff=1.0-ZZZ
-          if(abs(diff).gt.abs(ofby))then  ! keep track of largest diff
+	  ivoff=ivoff+1   ! increment number of vertices off by more than 5mm
+	  differ=offset-ZZZ
+          if(abs(differ).gt.abs(ofby))then  ! keep track of largest diff
             iwhich=i
-            ofby=diff
+            ofby=differ
           endif
           if(ITRC.GT.1)then
-            WRITE(OUTSTR,'(a,i3,a,i3,a,F7.4,a,3F8.4)')' Point ',I,
-     &        ' in surf ',isurf,' is off by ',diff,' @ ',X(I),Y(I),Z(I)
+            WRITE(OUTSTR,'(a,i3,a,3F9.4,a,i3,a,F7.5)')' Point ',I,
+     &      ' @ ',X(I),Y(I),Z(I),' in surf ',isurf,' is off by ',differ
             CALL EDISP(ITRU,OUTSTR)
           endif
         endif

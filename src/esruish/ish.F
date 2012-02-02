@@ -169,6 +169,10 @@ C Name of current application.
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
       character xfile*144,tg*1,delim*1,mode*4
       character exportfile*72 ! for ascii shading file
+
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
+
       logical silent,unixok,there,context,existing
       logical modify,modlen,modbnd,xst
       logical ok,dok,cfgok,mldbok,matdbok,ctlok,optkok
@@ -187,11 +191,13 @@ C Name of current application.
       integer numberofzones ! to pass to updwire rather than ncomp
       integer iigl,iigr,iigt,iigb,iigw,iigwh
       integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iicapture,iiazi    ! to pass to updcapt updazi
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 numberofzones
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
       integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iicapture,iiazi    ! to pass to updcapt updazi
 #endif
 
 C For help messages
@@ -345,8 +351,14 @@ C feedback).
          limtty=16
          limit =16
       endif
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r Shading & Insolation ',
+     &  cVnum(1:lnblnk(cVnum))
+
       call epages(mmod,iuin,iuout,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r Shading & Insolation: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
 
 C Open the text display box equal to limtty if mmod = 8.
       if(mmod.eq.8)then
@@ -354,7 +366,6 @@ C Open the text display box equal to limtty if mmod = 8.
         iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
         CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
-C        call win3d(menuchw,2,1,1,3,igl,igr,igt,igb,igw,igwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
@@ -363,8 +374,9 @@ C        call win3d(menuchw,2,1,1,3,igl,igr,igt,igb,igw,igwh)
           call opensetup
           numberofzones=0
           call updwire(numberofzones)  ! pass local integer
-          call updcapt(1)
-          call updazi(1)
+          iicapture=1; iiazi=1
+          call updcapt(iicapture)
+          call updazi(iiazi)
         endif
         call setzscale()
         mdispl=0
@@ -377,77 +389,9 @@ C        call win3d(menuchw,2,1,1,3,igl,igr,igt,igb,igw,igwh)
       endif
       if(mmod.ne.-6)icout=iuout
 
-C Find the user's home folder then get user's custom settings.
-      call usrhome(upath)
-      if(unixok)then
-         write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'.esprc'
-      else
-         write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'esprc'
-      endif
-      call scesprc(esprc,iuf,0,ier)
-
-C If there is a journal active, set up to add to itl. First get
-C the journal file from the user's home folder. All subsequent
-C tstamp messages will be appended to the journal.
-      if(journio.eq.1)then
-         uname=' '
-         call usrname(uname)
-         cjfile=' '
-         write(cjfile,'(a,a1,3a)')upath(1:lnblnk(upath)),fs,'.',
-     &                            uname(1:lnblnk(uname)),'cur_j'
-         there=.false.
-         inquire(file=cjfile,exist=there)
-         if(there)then
-            close(iuj)
-            open(iuj,file=cjfile,status='UNKNOWN',err=901)
-            call stripc(iuj,outstr,0,ND,1,'header',ier)
-            if(outstr(1:15).eq.'Current_Journal')then
-               k=16
-               call egetrm(outstr,K,jfile,'W','root journ',ier)
-            endif
-            close(iuj)
-         endif
-
-         write(outs,'(2a)')'Journal (shading/insolation) for:',
-     &                     uname(1:lnblnk(uname))
-         call tstamp('>',outs)
-      endif
-  902 continue
-
-C Scan the defaults file for default configuration.
-      call escdef(iuf,ier)
-
-C Take command line file name as initial configuration file.
-      if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
-         lcmdfl=inf
-         write(outs248,'(2a)')'Input file is: ',lcmdfl
-         if(pact(1:13).eq.'update_silent'.or.
-     &      pact(1:16).eq.'useupdate_silent')then
-           continue
-         else
-           call edisp248(iuout,outs248,80)
-         endif
-      else
-         lcmdfl=' '
-      endif
-
-C Take command line zone name and determine if focus should be
-C on a single zone.
-      if(inz(1:1).ne.' ')then
-         inzone=inz
-         write(outs,'(2a)')'Input zone is: ',inzone
-         if(pact(1:13).eq.'update_silent'.or.
-     &      pact(1:16).eq.'useupdate_silent')then
-           continue
-         else
-           call edisp(iuout,outs)
-         endif
-         write(outs,'(2a)')'Ish: the input zone is: ',inzone
-         call tstamp('>',outs)
-      else
-         inzone='ALL'
-         call tstamp('>','Ish: no focus zone')
-      endif
+C Because ish can be started up in several modes delay echo
+C of the version & scan of the esprc file until after the
+C input parameters have been determined.
 
 C Take command line action parameter. If paction = 'recalculate' then
 C after the configuration is read in, do a standard annual calculation
@@ -504,6 +448,80 @@ C Not in silent recalculation mode so present application version
 C information.
         CALL ESPrVersion("summary",cAppName,IUOUT)
       endif 
+
+C Find the user's home folder then get user's custom settings.
+      call usrhome(upath)
+      if(unixok)then
+         write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'.esprc'
+      else
+         write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'esprc'
+      endif
+      call scesprc(esprc,iuf,0,ier)
+
+C If there is a journal active, set up to add to itl. First get
+C the journal file from the user's home folder. All subsequent
+C tstamp messages will be appended to the journal.
+      if(journio.eq.1)then
+         uname=' '
+         call usrname(uname)
+         cjfile=' '
+         write(cjfile,'(a,a1,3a)')upath(1:lnblnk(upath)),fs,'.',
+     &                            uname(1:lnblnk(uname)),'cur_j'
+         there=.false.
+         inquire(file=cjfile,exist=there)
+         if(there)then
+            close(iuj)
+            open(iuj,file=cjfile,status='UNKNOWN',err=901)
+            call stripc(iuj,outstr,0,ND,1,'header',ier)
+            if(outstr(1:15).eq.'Current_Journal')then
+               k=16
+               call egetrm(outstr,K,jfile,'W','root journ',ier)
+            endif
+            close(iuj)
+         endif
+
+         write(outs,'(2a)')'Journal (shading/insolation) for:',
+     &                     uname(1:lnblnk(uname))
+         call tstamp('>',outs)
+      endif
+  902 continue
+
+C Scan the defaults file for default configuration.
+      call escdef(iuf,ier)
+
+C Take command line file name as initial configuration file.
+      if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
+         lcmdfl=inf
+         call edisp(iuout,'  ')  ! echo blank line
+         write(outs248,'(2a)')'Input file is: ',lcmdfl
+         if(pact(1:13).eq.'update_silent'.or.
+     &      pact(1:16).eq.'useupdate_silent')then
+           continue
+         else
+           call edisp248(iuout,outs248,80)
+         endif
+      else
+         lcmdfl=' '
+      endif
+
+C Take command line zone name and determine if focus should be
+C on a single zone.
+      if(inz(1:1).ne.' ')then
+         inzone=inz
+         write(outs,'(2a)')'Input zone is: ',inzone
+         if(pact(1:13).eq.'update_silent'.or.
+     &      pact(1:16).eq.'useupdate_silent')then
+           continue
+         else
+           call edisp(iuout,'  ')  ! echo blank line
+           call edisp(iuout,outs)
+         endif
+         write(outs,'(2a)')'Ish: the input zone is: ',inzone
+         call tstamp('>',outs)
+      else
+         inzone='ALL'
+         call tstamp('>','Ish: no focus zone')
+      endif
 
       ical=0
       multic=0

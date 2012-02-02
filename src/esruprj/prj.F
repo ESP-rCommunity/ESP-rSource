@@ -193,6 +193,9 @@ C Returned parameters from silentread.
       dimension ivals(MCOM)
       logical silent  ! for dependency checking on transform or rotate
 
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
+
 C Passed parameters to cfgtogg
 #ifdef OSI
       integer icfg_type  ! model cfg type
@@ -222,11 +225,13 @@ C For help messages
       integer numberofzones ! to pass to updwire rather than ncomp
       integer iigl,iigr,iigt,iigb,iigw,iigwh
       integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iicapture,iiazi    ! to pass to updcapt updazi
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 numberofzones
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
       integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iicapture,iiazi    ! to pass to updcapt updazi
 #endif
 
 C Initialize variables and recover command line arguments.
@@ -421,8 +426,13 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=16
         LIMIT =16
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r Project Manager ',cVnum
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r Project Manager: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
 
 C Open the text display box equal to LIMTTY if MMOD = 8.  Model
 C not yet know so pass 0 to the wireframe control routine (updwire).
@@ -435,7 +445,6 @@ C Setup and pass in parameters to win3d.
         iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
         CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
-C        CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
@@ -444,8 +453,9 @@ C        CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
           call opensetup
           numberofzones=0
           call updwire(numberofzones)  ! pass local integer
-          call updcapt(1)
-          call updazi(1)
+          iicapture=1; iiazi=1
+          call updcapt(iicapture)
+          call updazi(iiazi)
         endif
         call setzscale()
         nifgrey=0
@@ -1095,64 +1105,9 @@ C based on the current compiled in limits.
         CALL PHELPD('Introduction',nbhelp+13,'-',0,0,IER)
         call tstamp('>','PRJ: intro help')
 
-C Offer topical help in addition to the standard message.
-C - command line options for the project manager
-C - applications within the ESP-r suite
-C - ESP-r interface variants
-C - ESP-r operating system variants
-C - layout of a typical ESP-r distribution
-C - layout of a typical ESP-r model
-C - planning simulation tasks
-C - implementing simulation models
-C - ensuring the quality of models
-C - options for finding out more about ESP-r
-C - continue
-  142   iqno=1
-        isw=0
-        helptopic='options_for_topics'
+        helptopic='find_out_more'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        call MENUATOL('Further information','Further information',
-     &    'a command line options','b applications in ESP-r suite',
-     &    'c ESP-r interface variants','d ESP-r OS implementations',
-     &    'e layout of ESP-r distribution','f layout of ESP-r models',
-     &    'g planning simulation tasks','h implementing models',
-     &    'i ensuring model quality','j find out more',
-     &    'k back to interface...',' ',isw,iqno,nbhelp)
-        if(isw.eq.1)then
-          helptopic='topic_cmd_line'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.2)then
-          helptopic='topic_other_apps'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.3)then
-          helptopic='topic_other_interface'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.4)then
-          helptopic='topic_other_OS'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.5)then
-          helptopic='layout_distribution'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.6)then
-          helptopic='layout_models'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.7)then
-          helptopic='planning_models'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.8)then
-          helptopic='implementing_models'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.9)then
-          helptopic='ensuring_model_quality'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.10)then
-          helptopic='find_out_more'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.11.or.isw.eq.0)then
-          goto 3
-        endif
         CALL PHELPD('Introduction-more',nbhelp,'-',0,0,IER)
-        goto 142   ! jump back to see if another topic
 
       ELSEIF(INO.EQ.2)THEN
 
@@ -1194,7 +1149,7 @@ C Call rexmpl to get the exemplar. If ier is set to 2 then the
 C user didn't pick anything. If useraction is set to 'browse' then
 C ensure the toggle is set accordingly.
               useraction = ' '
-              call rexmpl(IUF,exemplar,useraction,ier)
+              call rexmpl(ITRC,IUF,exemplar,useraction,ier)
               call tstamp('>','PRJ: scanning exemplars return')
               if(ier.eq.2)then
                 ier=0
@@ -1254,8 +1209,8 @@ C action if there is no match in the paths.
                 endif
 
 C Debug.
-                write(outs,*) '* Browse status ',browse,itisanexemplar
-                call edisp(iuout,outs)
+C                write(outs,*) '* Browse status ',browse,itisanexemplar
+C                call edisp(iuout,outs)
 
 C If running on a Windows machine the the file browser would have been
 C used and there is no need to check the path.

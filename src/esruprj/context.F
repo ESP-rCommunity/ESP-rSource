@@ -489,9 +489,13 @@ C then re-initialize the calendar.
           call calenmanage('i',ier)
         elseif(nbdaytype.gt.3)then
 
-C Perform check that calendar day types correspond with simulation year
-C If more than three day types are declared then retain those day types
-C otherwise overwrite. (Same logic as in esystem.F 
+C Perform check that calendar day types correspond with simulation year.
+C The logic below assumes that the first three day types are still weekday
+C saturday sunday. It loops through each Julian day and if the model
+C calendar day type is one of the standard 3 it checks that the model weekday
+C is the same as a Julian weekday. Any calendar day types beyond 3 are 
+C retained. If no calendar was defined in the model then it should do the
+C work silently. (Same logic as in esystem.F) 
           ICREPORT=0
           DO 123 IDOL=1,365
             IF(ICALENDER(IDOL).LE.3)THEN
@@ -504,14 +508,20 @@ C otherwise overwrite. (Same logic as in esystem.F
               ELSEIF(IDWKNUM.EQ.7)THEN
                 IDTYY=3 ! SUNDAY
               ENDIF
-              IF(ICALENDER(IDOL).NE.IDTYY)THEN
-                ICALENDER(IDOL)=IDTYY
+              IF(ICALENDER(IDOL).EQ.0)THEN
+                ICALENDER(IDOL)=IDTYY  ! update the model calendar
+                ICREPORT=2             ! do it silently
+              ELSEIF(ICALENDER(IDOL).NE.IDTYY)THEN
+                ICALENDER(IDOL)=IDTYY  ! update the model calendar
                 ICREPORT=1
               ENDIF
             ENDIF
  123      CONTINUE
-          IF(ICREPORT.EQ.1)CALL EDISP(IUOUT,
-     &      'Simulation year and calendar mismatch rectified')
+          if(ICREPORT.EQ.1)then
+            CALL EDISP(IUOUT,'  ')
+            CALL EDISP(IUOUT,
+     &        'Simulation year and calendar mismatch rectified')
+          endif
         endif
         dok=.false.
         call askok(' ','View calendar?',ok,dok,nbhelp)

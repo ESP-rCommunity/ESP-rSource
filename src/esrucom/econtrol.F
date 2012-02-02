@@ -1010,7 +1010,6 @@ C where possible.
       do 70 i=1,ncc
         ii=i
         icc=ii
-        CALL EDISP(ITRU,' ')
 
 C Read header : * control mf-functions.
         CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'* Control mass ',IER)
@@ -1067,6 +1066,7 @@ C Range checking.
      &    ITPCMP(ifan(II,2)).EQ.250))THEN
           WRITE(outs,333) ITPCMP(ifan(II,2))
  333      FORMAT(' Component type ',I3,' cannot be actuated.')
+          call edisp(itru,'  ')
           call edisp(itru,outs)
           call edisp(itru,' Actuate a connection instead.')
         ENDIF
@@ -1088,6 +1088,7 @@ C Day types.
 
 C Reporting:
         IF(ITRC.GE.1)THEN
+          call edisp(itru,'  ')
           CALL EDISP(ITRU,' For mass flow network control')
           CALL EDISP(ITRU,' The following day types have been defined')
           DO 788 IDTY=1,NBDAYTYPE
@@ -1337,6 +1338,7 @@ C Day types.
 
 C Reporting:
         IF(ITRC.GE.1)THEN
+          call edisp(itru,'  ')
           CALL EDISP(ITRU,' For electrical control')
           CALL EDISP(ITRU,' The following day types have been defined')
           DO 578 IDTY=1,NBDAYTYPE

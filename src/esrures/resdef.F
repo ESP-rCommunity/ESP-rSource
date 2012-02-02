@@ -207,6 +207,8 @@ C as the simulator uses.
         irec=1
         read(iunit,rec=irec,iostat=ios,err=13)nsim,nreclx
         if (nreclx.lt.nzrl) then
+
+C The simulator created record width is less so close and reopen.
           nzrl = nreclx
           close(iunit)
           call EFOPRAN(iunit,LTMP,nzrl,1,IER)
@@ -214,16 +216,26 @@ C as the simulator uses.
           write(outs,'(A,I3)')' Opening file with record length',nzrl
           call edisp(iuout,outs)
         elseif (nreclx.gt.nzrl) then
-C          nzrl = nreclx
-C          close(iunit)
-C          call EFOPRAN(iunit,LTMP,nzrl,1,IER)
-C          write(outs,'(A,I3)')' Opening file with record length',nzrl
-C          call edisp(iuout,outs)
-          call usrmsg(
-     &      'Unable to open library (record width to large). Stopping!',
-     &      LTMP,'W')
-          CALL EPAGEND
-          STOP
+
+C The simulator created record width is larger so close and reopen.
+          nzrl = nreclx
+          close(iunit)
+          call EFOPRAN(iunit,LTMP,nzrl,1,IER)
+          irec=1
+          read(iunit,rec=irec,iostat=ios,err=13)nsim,nreclx
+          if (nreclx.gt.nzrl) then
+
+C If the record widths still do not match then give up.
+            write(outs,'(a,i3,a)') 
+     &        'Unable to open library (record width',nreclx,
+     &        'to large). Stopping!'
+            call usrmsg(outs,LTMP,'W')
+            CALL EPAGEND
+            STOP
+          endif
+          write(outs,'(A,I3)')' Opening file with record length',nzrl
+          call edisp(iuout,outs)
+          IBLIB=1
         else
           if(LTMP.eq.DEFRLB) then
             call edisp(iuout,' Default results library assigned.')

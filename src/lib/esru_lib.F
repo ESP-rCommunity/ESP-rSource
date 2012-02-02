@@ -860,9 +860,10 @@ C Parameters
       COMMON/OUTIN/IUOUT,IUIN
 
       CHARACTER outs248*248
-      character llitem*144   ! local string buffer
+      character llitem*144     ! local string buffer
+      character LTMP72*72      ! local string buffer
       character LTMP96*96      ! local string buffer
-      character LTMP124*124      ! local string buffer
+      character LTMP124*124    ! local string buffer
       integer iglib      ! for detecting GTK or X11
       INTEGER llt,lfn    ! length of the local string buffer
 
@@ -870,6 +871,11 @@ C Depending on whether it is X11 or GTK or text setup dialogs. The
 C X11 and text will work with 96 or 124 char string.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       lfn=lnblnk(FILEN)
+      if(lfn.lt.72)then
+        write(LTMP72,'(a)') FILEN(1:lfn)   ! for X11 and text editing
+      else
+        write(LTMP72,'(a)') FILEN(1:72)    ! for X11 and text editing
+      endif
       if(lfn.lt.96)then
         write(LTMP96,'(a)') FILEN(1:lfn)   ! for X11 and text editing
       else
@@ -881,13 +887,22 @@ C X11 and text will work with 96 or 124 char string.
         write(LTMP124,'(a)') FILEN(1:124)  ! for X11 and text editing
       endif
       write(llitem,'(a)') FILEN(1:lfn)     ! for GTK dialog
+
+C If in text or GTK mode echo FILEN.
       llt=lnblnk(llitem)
-      write(outs248,'(2a)') 'The current file is:',llitem(1:llt)
-      call edisp248(iuout,outs248,100)
+      if(iglib.eq.2.or.iglib.eq.3)then
+        call edisp(iuout,'  ')
+        write(outs248,'(2a)') 'Current file or folder:',llitem(1:llt)
+        call edisp248(iuout,outs248,100)
+      endif
       if(iglib.eq.1.or.iglib.eq.3)then
 
-C Adjust dialog depending on initial length of file name.
-        if(llt.lt.96)then
+C Adjust dialog depending on initial length of file name. If shorter
+C than 32 char the use shortest width.
+        if(llt.lt.42)then
+          CALL EASKF(LTMP72,PROMP1,PROMP2,72,DFILE,ERMSG,IER,NHELP)
+          write(llitem,'(a)') LTMP72(1:lnblnk(LTMP72))
+        elseif(llt.lt.96)then
           CALL EASKF(LTMP96,PROMP1,PROMP2,96,DFILE,ERMSG,IER,NHELP)
           write(llitem,'(a)') LTMP96(1:lnblnk(LTMP96))
         elseif(llt.ge.96.and.llt.lt.124)then
@@ -7178,12 +7193,12 @@ C Trap phrases longer than the outs buffer.
 C ********************* clrtextbuf
 C clrtextbuf clears the text buffer common blocks.
       subroutine clrtextbuf()
-      common/textbuf/dispbuf(360)
-      common/textbufl/indexbuf,lnbuf(360)
+      common/textbuf/dispbuf(500)
+      common/textbufl/indexbuf,lnbuf(500)
       character dispbuf*124
 
       indexbuf=0
-      do 42 i=1,360
+      do 42 i=1,500
         dispbuf(i)='  '
         lnbuf(i)=1
   42  continue

@@ -993,6 +993,7 @@ C code is general rather than specific (for later consolidation).
             write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
      &        LFMAT(1:lnblnk(LFMAT))
         endif
+          call edisp(iuout,'  ')  ! echo blank line
           CALL EASKXORGTKF(lguess,
      &      'Materials file name (source)?',' ',
      &      DFCON,lltmp,'materials database',IER,nbhelp)
@@ -1220,6 +1221,7 @@ C << temporary shorter string until EASKXORGTKF >>
 C Make up browse to the model ../dbs folder suggest the name LCOPY
 C and return file name in lltmp.
         lltmp=' '
+        call edisp(iuout,'  ')  ! echo blank line
         write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
         CALL EASKXORGTKF(LCOPY,'Materials db?',' ',
      &    DFCON,lltmp,'materials db',IER,nbhelp)
@@ -1645,6 +1647,7 @@ C code is general rather than specific (for later consolidation).
             write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
      &        lpcdb(1:lnblnk(lpcdb))
           endif
+          call edisp(iuout,'  ')  ! echo blank line
           CALL EASKXORGTKF(lguess,
      &      'Plant template file name (source)?',' ',
      &      DPCDB,lltmp,'plant templates database',IER,nbhelp)
@@ -1739,7 +1742,8 @@ C be pre-pended when using most inbuilt file opening calls.
 C Make up browse to the model ../dbs folder suggest the name LCOPY
 C and return file name in lltmp.
         lltmp=' '
-          write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
+        call edisp(iuout,'  ')  ! echo blank line
+        write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
 
         CALL EASKXORGTKF(LCOPY,'Plant templates db?',' ',
      &    DPCDB,lltmp,'plant templates database',IER,nbhelp)
@@ -2145,6 +2149,7 @@ C Provide a guess based on the current LPRFDB.
             write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
      &        LPRFDB(1:lnblnk(LPRFDB))  ! prepend db folder path
           endif
+          call edisp(iuout,'  ')  ! echo blank line
           CALL EASKXORGTKF(lguess,'Event Profiles db (source)?',' ',
      &      DPRFDB,lltmp,'events db',IER,nbhelp)
           sourcefile = lltmp
@@ -2242,6 +2247,7 @@ C the file name is returned in lltmp.
         lltmp='  '
 
 C << lguess logic to be added later >>
+        call edisp(iuout,'  ')  ! echo blank line
         CALL EASKXORGTKF(LPRFDB,'Event Profiles db (source)?',' ',
      &    DPRFDB,lltmp,'source events db',IER,nbhelp)
 
@@ -2318,6 +2324,7 @@ C to the current LPRFDB as an initial guess for the name.
         endif
 
 C Return the selected file in lltmp based on initial guess LLASCI.
+        call edisp(iuout,'  ')  ! echo blank line
         CALL EASKXORGTKF(LLASCI,
      &    'Event Profiles db (ASCII source)?',' ',
      &    DPRFDB,lltmp,'ascii events db',IER,nbhelp)
@@ -2362,7 +2369,8 @@ c the current profiles database.
 C Make up browse to the model ../dbs folder suggest the name LCOPY
 C and return file name in lltmp.
         lltmp=' '
-          write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
+        call edisp(iuout,'  ')  ! echo blank line
+        write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
         CALL EASKXORGTKF(LCOPY,'Event Profiles db?',' ',
      &    DPRFDB,lltmp,'ascii events db',IER,nbhelp)
 
@@ -2748,6 +2756,7 @@ C Provide a guess based on the current LFMUL.
             write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
      &        lfmul(1:lnblnk(lfmul))  ! prepend db folder path
           endif
+          call edisp(iuout,'  ')  ! echo blank line
           CALL EASKXORGTKF(lguess,'Constructions db (source)?',
      &      ' ',DFMUL,lltmp,'MLC source database',IER,nbhelp)
           sourcefile = lltmp
@@ -2840,6 +2849,7 @@ C be pre-pended when using most inbuilt file opening calls.
 C Make up browse to the model ../dbs folder suggest the name LCOPY
 C and return file name in lltmp.
         lltmp=' '
+        call edisp(iuout,'  ')  ! echo blank line
         write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
         CALL EASKXORGTKF(LCOPY,'Constructions db?',' ',
      &    DFMUL,lltmp,'MLC db in ../dbs',IER,nbhelp)
@@ -3215,6 +3225,7 @@ C Provide a guess based on the current LOPTDB.
             write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
      &        loptdb(1:lnblnk(loptdb))  ! prepend db folder path
           endif
+          call edisp(iuout,'  ')  ! echo blank line
           CALL EASKXORGTKF(lguess,'Optical Properties db (source)?',
      &      ' ',DOPTDB,lltmp,'optical properties database',IER,nbhelp)
           sourcefile = lltmp
@@ -3306,7 +3317,8 @@ C be pre-pended when using most inbuilt file opening calls.
 C Make up browse to the model ../dbs folder suggest the name LCOPY
 C and return file name in lltmp.
         lltmp=' '
-          write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
+        call edisp(iuout,'  ')  ! echo blank line
+        write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
         CALL EASKXORGTKF(LCOPY,'Optical Properties db?',' ',
      &    DOPTDB,lltmp,'optical properties db',IER,nbhelp)
 
@@ -3653,6 +3665,7 @@ C Provide a guess based on the current lapres.
             write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
      &        lapres(1:lnblnk(lapres))  ! prepend db folder path
           endif
+          call edisp(iuout,'  ')  ! echo blank line
           CALL EASKXORGTKF(lguess,
      &      'Pressure coefficients db (source)?',' ',
      &      dapres,lltmp,'pressure coef database',IER,nbhelp)
@@ -3746,7 +3759,8 @@ C be pre-pended when using most inbuilt file opening calls.
 C Make up browse to the model ../dbs folder suggest the name LCOPY
 C and return file name in lltmp.
         lltmp=' '
-          write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
+        call edisp(iuout,'  ')  ! echo blank line
+        write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
 
         CALL EASKXORGTKF(LCOPY,'Pressure coefficients db?',' ',
      &    dapres,lltmp,'pressure coef database',IER,nbhelp)
@@ -4507,9 +4521,13 @@ C Update year
           call calenmanage('i',ier)
         elseif(nbdaytype.gt.3)then
 
-C Perform check that calendar day types correspond with simulation year
-C If more than three day types are declared then retain those day types
-C otherwise overwrite. (Same logic as in esystem.F 
+C Perform check that calendar day types correspond with simulation year.
+C The logic below assumes that the first three day types are still weekday
+C saturday sunday. It loops through each Julian day and if the model
+C calendar day type is one of the standard 3 it checks that the model weekday
+C is the same as a Julian weekday. Any calendar day types beyond 3 are 
+C retained. If no calendar was defined in the model then it should do the
+C work silently. (Same logic as in esystem.F) 
           ICREPORT=0
           DO 123 IDOL=1,365
             IF(ICALENDER(IDOL).LE.3)THEN
@@ -4522,14 +4540,20 @@ C otherwise overwrite. (Same logic as in esystem.F
               ELSEIF(IDWKNUM.EQ.7)THEN
                 IDTYY=3 ! SUNDAY
               ENDIF
-              IF(ICALENDER(IDOL).NE.IDTYY)THEN
-                ICALENDER(IDOL)=IDTYY
+              IF(ICALENDER(IDOL).EQ.0)THEN
+                ICALENDER(IDOL)=IDTYY  ! update the model calendar
+                ICREPORT=2             ! do it silently
+              ELSEIF(ICALENDER(IDOL).NE.IDTYY)THEN
+                ICALENDER(IDOL)=IDTYY  ! update the model calendar
                 ICREPORT=1
               ENDIF
             ENDIF
  123      CONTINUE
-          IF(ICREPORT.EQ.1)CALL EDISP(IUOUT,
-     &      'Simulation year and calendar mismatch rectified')
+          if(ICREPORT.EQ.1)then
+            CALL EDISP(IUOUT,'  ')
+            CALL EDISP(IUOUT,
+     &        'Simulation year and calendar mismatch rectified')
+          endif
         endif
       ENDIF        
 
@@ -4787,6 +4811,7 @@ C Provide a guess based on the current MCMPDDBFL.
             write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
      &        MCMPDBFL(1:lnblnk(MCMPDBFL))  ! prepend db folder path
           endif
+          call edisp(iuout,'  ')  ! echo blank line
           CALL EASKXORGTKF(lguess,'Miscellaneous comp db (source)?',
      &      ' ',DMCMPDBFL,lltmp,'miscel comp database',IER,nbhelp)
           sourcefile = lltmp
@@ -4878,6 +4903,7 @@ C be pre-pended when using most inbuilt file opening calls.
 C Make up browse to the model ../dbs folder suggest the name LCOPY
 C and return file name in lltmp.
         lltmp=' '
+        call edisp(iuout,'  ')  ! echo blank line
         write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
         CALL EASKXORGTKF(LCOPY,'Miscellaneous comp db?',' ',
      &    DMCMPDBFL,lltmp,'misc comp db',IER,nbhelp)

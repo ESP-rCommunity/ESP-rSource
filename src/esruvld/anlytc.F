@@ -897,6 +897,7 @@ C Copy the default validation model.
       IUnit=IFIL+1
       IFCFG=IFIL+5
       IAPROB=IFIL+6
+      call edisp(iuout,'  ')  ! echo blank line in case of warning
       MODE='ALL '
       CALL ERSYS(LCFGF,IFCFG,IAPROB,MODE,ITRC,IER)
       NZONES=NCOMP

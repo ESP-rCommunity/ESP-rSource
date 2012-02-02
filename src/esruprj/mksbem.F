@@ -528,6 +528,7 @@ C Generate EPC information
 C Clear the commons, restore file names and reload the original model
 C before returning.
         call clrprb
+        call edisp(iuout,'  ')  ! echo blank line in case of warnings
         NGRDP=NGRDP_O
         LCFGF   = LCFGF_O
         CFGROOT = CFGROOT_O

@@ -41,7 +41,7 @@ typedef struct _box{
 #define IPOFF		2
 #define	NFONTS 		6
 #define	HELP_LIST_LEN	60
-#define	EDISP_LIST_LEN	300
+#define	EDISP_LIST_LEN	500
 #define	MENU_LIST_LEN	40
 #define PROFMA_LEN	40
 #define STARTX		100
