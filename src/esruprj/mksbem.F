@@ -412,9 +412,9 @@ C Generate all the model variants and run assessments and generate EPC.
         CFGROOT = CFGROOT_O ! re-establish the initial root name
 
 C << for admin buidling comment out creation of notional building
-C        CALL EMKSBM(iier)   ! generate Notional model
-C        if(iier.eq.2.or.iier.eq.3.or.iier.eq.4) goto 42  ! Ask user what to do
-C        call edisp(iuout,'Notional model completed...')
+        CALL EMKSBM(iier)   ! generate Notional model
+        if(iier.eq.2.or.iier.eq.3.or.iier.eq.4) goto 42  ! Ask user what to do
+        call edisp(iuout,'Notional model completed...')
 
         CALL EMKREF  ! Reference model
         call edisp(iuout,'Reference model completed...')
@@ -4156,12 +4156,16 @@ C This routine assumes newer geometry files are being used.
       CHARACTER CFGROOT*24
       CHARACTER LCFGF*72,NNAME*72
       CHARACTER OUTS*124,ADF*124,SNM*12,USE*8,USE2*8
-      character SN*12
+      character SN*12,msg*42
       CHARACTER*12 XJCCU,XKCCU
 
 C ivalsg keeps track of whether a geometry file has alread been copied.
 C irmw keeps track of up to 90 surfaces in each zone which can be deleted
       dimension ivalsg(MCOM),IRMV(MCOM,90),nrmv(mcom)
+
+C ivalxocup array signals which zones are not occupied or controlled.
+      logical ivalocup
+      dimension ivalocup(MCOM)
 
       DIMENSION COE(3),POINT(3),TRANS(3)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS),TARSURF(MCON)
@@ -4176,6 +4180,20 @@ C      logical closeelv ! true if surface is close to vertical
       LOGICAL MODIFY,MODLEN,MODBND,QUIET,XST,NEAR
       integer LOOPMAX  ! loop iterator for shifting surface list
       integer ISCURRENT ! the current connection to be deleted
+      logical ok,dok
+
+C Test whether required constructions exist.
+      logical haveopDoor,haveVehicle,haveNot_D,haveNot_G,haveframe
+      logical haveWall_Sc,haveWall_EW,haveFl_r,haveSC_P,haveEW_notP
+      logical haveSol_gr,havepa_fl,haveinv_pa_f,haveparty_w,haveint_g
+      logical haveWall_NI
+      logical changeuse   ! to signal change of use of surface
+
+C mlcindex for each of these required constructions.
+      integer mlciopDoor,mlciVehicle,mlciNot_D,mlciNot_G,mlciframe
+      integer mlciWall_Sc,mlciWall_EW,mlciFl_r,mlciSC_P,mlciEW_notP
+      integer mlciSol_gr,mlcipa_fl,mlciinv_pa_f,mlciparty_w,mlciint_g
+      integer mlciWall_NI
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -4218,13 +4236,56 @@ C Adapt original title of model.
 C Set flag for cfg file that this is a notional model
       INOTI=1
 
+C Test to see if certain constructions are currently available
+C if if found remember their index in the constructions array
+C in order to instanciate ssmlcindex.
+      do 6 ii=1,nmlc
+        if(DESC(ii)(1:12).eq.'opDoorWind_n') then
+          haveopDoor=.true.; mlciopDoor=ii
+        elseif(DESC(ii)(1:12).eq.'Vehicle_door') then
+          haveVehicle=.true.; mlciVehicle=ii
+        elseif(DESC(ii)(1:12).eq.'Not_DisplayG') then
+          haveNot_D=.true.; mlciNot_D=ii
+        elseif(DESC(ii)(1:12).eq.'window_Not_G') then
+          haveNot_G=.true.; mlciNot_G=ii
+        elseif(DESC(ii)(1:12).eq.'frame_notion') then
+          haveframe=.true.; mlciframe=ii
+        elseif(DESC(ii)(1:12).eq.'Wall_Scot_no') then
+          haveWall_Sc=.true.; mlciWall_Sc=ii
+        elseif(DESC(ii)(1:12).eq.'Wall_EW_noti') then
+          haveWall_EW=.true.; mlciWall_EW=ii
+        elseif(DESC(ii)(1:12).eq.'Wall_NI_noti') then
+          haveWall_NI=.true.; mlciWall_NI=ii
+        elseif(DESC(ii)(1:12).eq.'Fl_roof_noti') then
+          haveFl_r=.true.; mlciFl_r=ii
+        elseif(DESC(ii)(1:12).eq.'SC_Pitch_roo') then
+          haveSC_P=.true.; mlciSC_P=ii
+        elseif(DESC(ii)(1:12).eq.'EW_notPitch_') then
+          haveEW_notP=.true.; mlciEW_notP=ii
+        elseif(DESC(ii)(1:12).eq.'Sol_grnd_not') then
+          haveSol_gr=.true.; mlciSol_gr=ii
+        elseif(DESC(ii)(1:12).eq.'pa_fl_notion') then
+          havepa_fl=.true.; mlcipa_fl=ii
+        elseif(DESC(ii)(1:12).eq.'inv_pa_fl_no') then
+          haveinv_pa_f=.true.; mlciinv_pa_f=ii
+        elseif(DESC(ii)(1:12).eq.'party_wall_n') then
+          haveparty_w=.true.; mlciparty_w=ii
+        elseif(DESC(ii)(1:12).eq.'internal_glz') then
+          haveint_g=.true.; mlciint_g=ii
+        endif
+  6   continue
+
 C Assign standard databases containing UK NCM materials and constructions
 C These files are UK_notional.constrdb, material.db3.a and optics.db2
 C As they will be in the standard database folder use the *std...
       ipathmat=2
       WRITE(LFMAT,'(A)') 'material.db3.a'
       ipathmul=2
-      WRITE(LFMUL,'(A)') 'UK_notional.constrdb'
+
+C << for testing use multicon.db3. return to UK_notional >>
+
+C      WRITE(LFMUL,'(A)') 'UK_notional.constrdb'
+      WRITE(LFMUL,'(A)') 'multicon.db3'
       ipathoptdb=2
       WRITE(LOPTDB,'(A)') 'optics.db2'
       ipathpcdb=2
@@ -4260,7 +4321,9 @@ C << (e.g. a zero activity) need to be marked at this point.
         endif
 
 C Find the index of the MLC which matches each surface.
+C Debug.
 C        write(6,*) icomp,NZSUR(icomp),nmlc
+
         DO 9994 I=1,NZSUR(icomp)
           icn1=izstocn(icomp,i)
           ssmlcindex(icn1)=0  ! assume no matching MLC          
@@ -4311,6 +4374,18 @@ C Make a copy of constructions file and tmc file if applicable.
 C Remember this geometry file has been done so that a later selection
 C of constructions does not re-do it.
  500    ivalsg(icomp)=icomp
+
+C Ask if zone is occupied and environmentally controlled.
+        DOK=.true.
+        write(msg,'(3a)') 'Is ',zname(icomp),
+     &    ' occupied and conditioned?'
+        CALL ASKOK(msg,'Confirm:',
+     &    OK,DOK,nbhelp)
+        if(OK)then
+          ivalocup(icomp)=.true.
+        else
+          ivalocup(icomp)=.false.
+        endif
 
 C Initialise indices of surfaces to be deleted
         NRMV(icomp)=0
@@ -4364,7 +4439,12 @@ C then read in the zone geometry file to re-gather information on
 C parent child relationships.
       DO 559 ICOMP=1,NCOMP
         IELF=0
+        if(.NOT.ivalocup(icomp))then
+          NRMV(icomp)=0
+          goto 559  ! skip window mangling
+        endif
         if(ivalsg(icomp).eq.icomp)then
+          changeuse=.false.  ! no change of use yet
           IUF=IFIL+2
           call eclose(gversion(icomp),1.1,0.01,newgeo)
           call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
@@ -4376,77 +4456,202 @@ C Get gross area of this surface (add child areas to it)
 C Areas of parents are hence held as parent + child in TARSURF and
 C areas of children are held as 0.0.
 
-C << Surfaces marked frame would be removed if they are child surfaces
-C << of a wall or roof. If they are geometrically parent surfaces ?? >>
-
-C << for fully glazed facades transparent surfaces may not be
-C << child surfaces and the logic needs to be revised.
-
 C For each surface in this zone.
           do 555 isur=1,nzsur(icomp)
             ICC=IZSTOCN(icomp,isur)
             write(SNM,'(a)') SSUSE(ICC,1)
 
 C For all exterior surfaces that are marked wall or roof.
-            if(ssother(icc,1)(1:8).eq.'EXTERIOR'.AND.(
-     &        SNM(1:4).EQ.'WALL'.or.SNM(1:4).EQ.'ROOF'))then
+            if(ssother(icc,1)(1:8).eq.'EXTERIOR')then
+              if(SNM(1:4).EQ.'WALL'.or.SNM(1:4).EQ.'ROOF')then
 
 C Only the following types of areas will be retained in this exterior
 C type surface with use roof or wall.
-              XPDAREA(ICC)=0. ! pedestrian door area in this parent
-              XVDAREA(ICC)=0. ! vehicular door area in this parent
-              XDWAREA(ICC)=0. ! display window area in this parent
-              XNWAREA(ICC)=0. ! normal window area in this parent
-              XREAREA(ICC)=0. ! If requisite area is more than required
-                              ! do not put any glazing in this surface
-              TARSURF(ICC)=SSNA(ICC)
-              DO 5500 IGCD=1,NBGCHILD(ICC)
-                KCC=IGCHILD(ICC,IGCD)
-                NRMV(icomp)=NRMV(icomp)+1
-                IRMV(ICOMP,NRMV(icomp))=KCC
-                XKCCU=SSUSE(KCC,1)
-                TARSURF(ICC)=TARSURF(ICC)+SSNA(KCC)
-                IF(XKCCU(1:6).EQ.'P-DOOR')THEN
-                  XPDAREA(ICC)=XPDAREA(ICC)+SSNA(KCC)
-                  XREAREA(ICC)=XREAREA(ICC)+SSNA(KCC)
-                ELSEIF(XKCCU(1:6).EQ.'V-DOOR')THEN
-                  XVDAREA(ICC)=XVDAREA(ICC)+SSNA(KCC)
-                  XREAREA(ICC)=XREAREA(ICC)+SSNA(KCC)
-                ELSEIF(XKCCU(1:8).EQ.'D-WINDOW')THEN
-                  XDWAREA(ICC)=XDWAREA(ICC)+SSNA(KCC)
-                  XREAREA(ICC)=XREAREA(ICC)+SSNA(KCC)
-                ELSEIF(XKCCU(1:8).EQ.'S-WINDOW'.OR.
-     &                 XKCCU(1:8).EQ.'C-WINDOW')THEN
-                  XNWAREA(ICC)=XNWAREA(ICC)+SSNA(KCC)
-                  XREAREA(ICC)=XREAREA(ICC)+SSNA(KCC)
-                ENDIF
- 5500         CONTINUE
-              DO 553 ICHL=1,NBCHILD(ICC)
+                XPDAREA(ICC)=0. ! pedestrian door area in this parent
+                XVDAREA(ICC)=0. ! vehicular door area in this parent
+                XDWAREA(ICC)=0. ! display window area in this parent
+                XNWAREA(ICC)=0. ! normal window area in this parent
+                XREAREA(ICC)=0. ! If requisite area is more than required
+                                ! do not put any glazing in this surface
+                TARSURF(ICC)=SSNA(ICC)
+
+C For each grand child.
+                DO 5500 IGCD=1,NBGCHILD(ICC)
+                  KCC=IGCHILD(ICC,IGCD)
+                  NRMV(icomp)=NRMV(icomp)+1
+                  IRMV(ICOMP,NRMV(icomp))=KCC
+                  XKCCU=SSUSE(KCC,1)
+                  TARSURF(ICC)=TARSURF(ICC)+SSNA(KCC)
+                  IF(XKCCU(1:6).EQ.'P-DOOR')THEN
+                    XPDAREA(ICC)=XPDAREA(ICC)+SSNA(KCC)
+                    XREAREA(ICC)=XREAREA(ICC)+SSNA(KCC)
+                  ELSEIF(XKCCU(1:6).EQ.'V-DOOR')THEN
+                    XVDAREA(ICC)=XVDAREA(ICC)+SSNA(KCC)
+                    XREAREA(ICC)=XREAREA(ICC)+SSNA(KCC)
+                  ELSEIF(XKCCU(1:8).EQ.'D-WINDOW')THEN
+                    XDWAREA(ICC)=XDWAREA(ICC)+SSNA(KCC)
+                    XREAREA(ICC)=XREAREA(ICC)+SSNA(KCC)
+                  ELSEIF(XKCCU(1:8).EQ.'S-WINDOW'.OR.
+     &                   XKCCU(1:8).EQ.'C-WINDOW')THEN
+                    XNWAREA(ICC)=XNWAREA(ICC)+SSNA(KCC)
+                    XREAREA(ICC)=XREAREA(ICC)+SSNA(KCC)
+                  ENDIF
+ 5500           CONTINUE
+                DO 553 ICHL=1,NBCHILD(ICC)
 
 C Mark child surfaces for removal (via IRMV) and add their surface
 C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
-                JCC=ICHILD(ICC,ICHL)
-                NRMV(icomp)=NRMV(icomp)+1
-                IRMV(ICOMP,NRMV(icomp))=JCC
-                XJCCU=SSUSE(JCC,1)
-                TARSURF(ICC)=TARSURF(ICC)+SSNA(JCC)
-                IF(XJCCU(1:6).EQ.'P-DOOR')THEN
-                  XPDAREA(ICC)=XPDAREA(ICC)+SSNA(JCC)
-                  XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
-                ELSEIF(XJCCU(1:6).EQ.'V-DOOR')THEN
-                  XVDAREA(ICC)=XVDAREA(ICC)+SSNA(JCC)
-                  XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
-                ELSEIF(XJCCU(1:8).EQ.'D-WINDOW')THEN
-                  XDWAREA(ICC)=XDWAREA(ICC)+SSNA(JCC)
-                  XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
-                ELSEIF(XJCCU(1:8).EQ.'S-WINDOW'.OR.
-     &                 XJCCU(1:8).EQ.'C-WINDOW')THEN
-                  XNWAREA(ICC)=XNWAREA(ICC)+SSNA(JCC)
-                  XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
-                ENDIF
- 553          CONTINUE
-            ENDIF
- 555      CONTINUE
+                  JCC=ICHILD(ICC,ICHL)
+                  NRMV(icomp)=NRMV(icomp)+1
+                  IRMV(ICOMP,NRMV(icomp))=JCC
+                  XJCCU=SSUSE(JCC,1)
+                  TARSURF(ICC)=TARSURF(ICC)+SSNA(JCC)
+                  IF(XJCCU(1:6).EQ.'P-DOOR')THEN
+                    XPDAREA(ICC)=XPDAREA(ICC)+SSNA(JCC)
+                    XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                  ELSEIF(XJCCU(1:6).EQ.'V-DOOR')THEN
+                    XVDAREA(ICC)=XVDAREA(ICC)+SSNA(JCC)
+                    XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                  ELSEIF(XJCCU(1:8).EQ.'D-WINDOW')THEN
+                    XDWAREA(ICC)=XDWAREA(ICC)+SSNA(JCC)
+                    XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                  ELSEIF(XJCCU(1:8).EQ.'S-WINDOW'.OR.
+     &                   XJCCU(1:8).EQ.'C-WINDOW')THEN
+                    XNWAREA(ICC)=XNWAREA(ICC)+SSNA(JCC)
+                    XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                  ENDIF
+ 553            CONTINUE  ! for each child of current surface
+
+              elseif(SNM(1:5).EQ.'C-WIN'.or.SNM(1:5).EQ.'S-WIN')then
+
+C For some glazed facades transparent surfaces may not be child
+C surfaces. They need to be converted into WALL uses and constructions
+C into which compliant glass and frames can be added subsequently.
+                if(iparent(icc).eq.0)then
+                  TARSURF(ICC)=SSNA(ICC)
+                  XPDAREA(ICC)=0. ! pedestrian door area in this parent
+                  XVDAREA(ICC)=0. ! vehicular door area in this parent
+                  XDWAREA(ICC)=0. ! display window area in this parent
+                  XNWAREA(ICC)=0. ! window area area in this parent
+                  XREAREA(ICC)=0. ! If requisite area is more than required
+                                  ! do not put any glazing in this surface
+C Debug.
+C                  write(6,*) 'found external glazed parent surface',icc
+C                  write(6,*) 'it has ',nbchild(icc),' child surfaces'
+
+                  DO 554 ICHL=1,NBCHILD(ICC)
+
+C Mark child surfaces for removal (via IRMV) and add their surface
+C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
+                    JCC=ICHILD(ICC,ICHL)
+                    NRMV(icomp)=NRMV(icomp)+1
+                    IRMV(ICOMP,NRMV(icomp))=JCC
+                    XJCCU=SSUSE(JCC,1)
+                    TARSURF(ICC)=TARSURF(ICC)+SSNA(JCC)
+                    IF(XJCCU(1:6).EQ.'P-DOOR')THEN
+                      XPDAREA(ICC)=XPDAREA(ICC)+SSNA(JCC)
+                      XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                    ELSEIF(XJCCU(1:6).EQ.'V-DOOR')THEN
+                      XVDAREA(ICC)=XVDAREA(ICC)+SSNA(JCC)
+                      XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                    ELSEIF(XJCCU(1:8).EQ.'D-WINDOW')THEN
+                      XDWAREA(ICC)=XDWAREA(ICC)+SSNA(JCC)
+                      XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                    ELSEIF(XJCCU(1:8).EQ.'S-WINDOW'.OR.
+     &                     XJCCU(1:8).EQ.'C-WINDOW')THEN
+                      XNWAREA(ICC)=XNWAREA(ICC)+SSNA(JCC)
+                      XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                    ENDIF
+ 554              CONTINUE  ! for each child of current surface
+                  IF(IRGG.EQ.2)THEN ! Scottish regulations
+                    SSMLCN(ICC)='Wall_Scot_no'
+                    SSOTF(ICC)='OPAQUE'  ! OTF type
+                    if(haveWall_Sc) ssmlcindex(ICC)=mlciWall_Sc
+                  ELSEIF(IRGG.EQ.3)THEN ! Northern Ireland regulations
+                    SSMLCN(icc)='Wall_NI_noti'
+                    SSOTF(ICC)='OPAQUE'  ! OTF type
+                    if(haveWall_NI) ssmlcindex(ICC)=mlciWall_NI
+                  ELSE ! England and Wales regulations (and omissions)
+                    SSMLCN(ICC)='Wall_EW_noti'
+                    SSOTF(ICC)='OPAQUE'  ! OTF type
+                    if(haveWall_EW) ssmlcindex(ICC)=mlciWall_EW
+                  ENDIF
+                  write(SSUSE(ICC,1),'(a)') 'WALL'
+C Debug.
+C                  write(6,*) 'reset ',ssname(icc),'  ',SSMLCN(ICC),
+C     &              ' ',SSOTF(ICC),' ',SSUSE(ICC,1)
+                  changeuse=.true.  ! change of use
+                else
+                  continue
+                endif
+              elseif(SNM(1:7).EQ.'F-FRAME')then
+
+C Surfaces marked frame will be removed if they are child surfaces
+C of a wall or roof. If they are geometrically parent surfaces then
+C they need to be converted into wall uses and constructions.
+                if(iparent(icc).eq.0)then
+                  TARSURF(ICC)=SSNA(ICC)
+                  XPDAREA(ICC)=0. ! pedestrian door area in this parent
+                  XVDAREA(ICC)=0. ! vehicular door area in this parent
+                  XDWAREA(ICC)=0. ! display window area in this parent
+                  XNWAREA(ICC)=0. ! window area
+                  XREAREA(ICC)=0. ! If requisite area is more than required
+                                  ! do not put any glazing in this surface
+                  DO 556 ICHL=1,NBCHILD(ICC)
+
+C Mark child surfaces for removal (via IRMV) and add their surface
+C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
+                    JCC=ICHILD(ICC,ICHL)
+                    NRMV(icomp)=NRMV(icomp)+1
+                    IRMV(ICOMP,NRMV(icomp))=JCC
+                    XJCCU=SSUSE(JCC,1)
+                    TARSURF(ICC)=TARSURF(ICC)+SSNA(JCC)
+                    IF(XJCCU(1:6).EQ.'P-DOOR')THEN
+                      XPDAREA(ICC)=XPDAREA(ICC)+SSNA(JCC)
+                      XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                    ELSEIF(XJCCU(1:6).EQ.'V-DOOR')THEN
+                      XVDAREA(ICC)=XVDAREA(ICC)+SSNA(JCC)
+                      XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                    ELSEIF(XJCCU(1:8).EQ.'D-WINDOW')THEN
+                      XDWAREA(ICC)=XDWAREA(ICC)+SSNA(JCC)
+                      XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                    ELSEIF(XJCCU(1:8).EQ.'S-WINDOW'.OR.
+     &                     XJCCU(1:8).EQ.'C-WINDOW')THEN
+                      XNWAREA(ICC)=XNWAREA(ICC)+SSNA(JCC)
+                      XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                    ENDIF
+ 556              CONTINUE  ! for each child of current surface
+                  IF(IRGG.EQ.2)THEN ! Scottish regulations
+                    SSMLCN(ICC)='Wall_Scot_no'
+                    SSOTF(ICC)='OPAQUE'  ! OTF type
+                    if(haveWall_Sc) ssmlcindex(ICC)=mlciWall_Sc
+                  ELSEIF(IRGG.EQ.3)THEN ! Northern Ireland regulations
+                    SSMLCN(icc)='Wall_NI_noti'
+                    SSOTF(ICC)='OPAQUE'  ! OTF type
+                    if(haveWall_NI) ssmlcindex(ICC)=mlciWall_NI
+                  ELSE ! England and Wales regulations (and omissions)
+                    SSMLCN(ICC)='Wall_EW_noti'
+                    SSOTF(ICC)='OPAQUE'  ! OTF type
+                    if(haveWall_EW) ssmlcindex(ICC)=mlciWall_EW
+                  ENDIF
+                  write(SSUSE(ICC,1),'(a)') 'WALL'
+C Debug.
+C                  write(6,*) 'reset ',ssname(icc),'  ',SSMLCN(ICC),
+C     &              ' ',SOTF(ICC)
+                  changeuse=.true.  ! change of use
+                else
+                  continue
+                endif
+              endif
+            endif
+ 555      CONTINUE  ! loop all surfaces in zone
+
+C If we have altered the use of a parent glazing or frame save this
+C to the geometry file prior to deleting surfaces.
+          if(changeuse)then
+            call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+          endif
+ 
         ENDIF
  559  CONTINUE
 
@@ -4537,6 +4742,7 @@ C that remain in the model. Do this by looping through
 C each zone in the model and in each of the surfaces
 C in the current zone check its attributes.
       DO 557 ICOMP=1,NCOMP
+        if(.NOT.ivalocup(icomp)) goto 557  ! do not bother if unoccupied & unconditioned
         do 200 isur=1,nzsur(icomp)
           ICC=IZSTOCN(icomp,isur)
           SNM=SSUSE(ICC,1)
@@ -4576,6 +4782,7 @@ C out. If the logic in one is updated then check the others to
 C ensure they are updated (if required).
 C << need to trap error state in georead >>
       DO 551 ICOMP=NCOMP,1,-1
+        if(.NOT.ivalocup(icomp)) goto 551  ! do not bother if unoccupied & unconditioned
         NUMBS=NZSUR(ICOMP)
         do 580 isur=NUMBS,1,-1
           call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
@@ -4645,8 +4852,6 @@ C default values.
               call addedsurf(icomp,icon,itrc,ier)
 
 C Add surfaces attribution parameters
-
-C << need to find mlc index of opDoorWind_n for ssmlcindex >>
               ICT(ICON)=0
               IC2(ICON)=0
               IE2(ICON)=0
@@ -4654,6 +4859,7 @@ C << need to find mlc index of opDoorWind_n for ssmlcindex >>
               SSOTHER(ICON,2)='0'
               SSOTHER(ICON,3)='0'
               SSMLCN(ICON)='opDoorWind_n' ! MLC type
+              if(haveopDoor) ssmlcindex(ICON)=mlciopDoor
               SSPARENT(ICON)=SSNAME(ICC)
               SSOTF(ICON)='OPAQUE'  ! OTF type
               SSVFC(ICON)=SSVFC(ICC)
@@ -4729,8 +4935,6 @@ C default values.
               call addedsurf(icomp,icon,itrc,ier)
 
 C Add surfaces attribution parameters
-
-C << need to find mlc index of Vehicle_door for ssmlcindex >>
               ICT(ICON)=0
               IC2(ICON)=0
               IE2(ICON)=0
@@ -4738,6 +4942,7 @@ C << need to find mlc index of Vehicle_door for ssmlcindex >>
               SSOTHER(ICON,2)='0'
               SSOTHER(ICON,3)='0'
               SSMLCN(ICON)='Vehicle_door' ! MLC type
+              if(haveVehicle) ssmlcindex(ICON)=mlciVehicle
               SSPARENT(ICON)=SSNAME(ICC)
               SSOTF(ICON)='OPAQUE'  ! OTF type
               SSVFC(ICON)=SSVFC(ICC)
@@ -4812,8 +5017,6 @@ C default values.
               call addedsurf(icomp,icon,itrc,ier)
 
 C Add surfaces attribution parameters
-
-C << need to find mlc index of Not_DisplayG for ssmlcindex >>
               ICT(ICON)=0
               IC2(ICON)=0
               IE2(ICON)=0
@@ -4821,6 +5024,7 @@ C << need to find mlc index of Not_DisplayG for ssmlcindex >>
               SSOTHER(ICON,2)='0'
               SSOTHER(ICON,3)='0'
               SSMLCN(ICON)='Not_DisplayG'  ! MLC type
+              if(haveNot_D) ssmlcindex(ICON)=mlciNot_D
               SSPARENT(ICON)=SSNAME(ICC)
               SSOTF(ICON)='dispGlz_not' ! OTF type
               SSVFC(ICON)=SSVFC(ICC)
@@ -4896,8 +5100,6 @@ C default values.
               call addedsurf(icomp,icon,itrc,ier)
 
 C Add surfaces attribution parameters
-
-C << need to find mlc index of window_Not_G for ssmlcindex >>
               ICT(ICON)=0
               IC2(ICON)=0
               IE2(ICON)=0
@@ -4905,6 +5107,7 @@ C << need to find mlc index of window_Not_G for ssmlcindex >>
               SSOTHER(ICON,2)='0'
               SSOTHER(ICON,3)='0'
               SSMLCN(ICON)='window_Not_G'  ! MLC type
+              if(haveNot_G) ssmlcindex(ICON)=mlciNot_G
               SSPARENT(ICON)=SSNAME(ICC)
               SSOTF(ICON)='Glaz_notiona' ! OTF type
               SSVFC(ICON)=SSVFC(ICC)
@@ -4970,8 +5173,6 @@ C default values.
               call addedsurf(icomp,icon,itrc,ier)
 
 C Add surfaces attribution parameters
-
-C << need to find mlc index of frame_notion for ssmlcindex >>
               ICT(ICON)=0
               IC2(ICON)=0
               IE2(ICON)=0
@@ -4979,6 +5180,7 @@ C << need to find mlc index of frame_notion for ssmlcindex >>
               SSOTHER(ICON,2)='0'
               SSOTHER(ICON,3)='0'
               SSMLCN(ICON)='frame_notion'  ! MLC type
+              if(haveframe) ssmlcindex(ICON)=mlciframe
               SSPARENT(ICON)=SSNAME(ICC)
               SSOTF(ICON)='OPAQUE' ! OTF type
               SSVFC(ICON)=SSVFC(ICC)
@@ -5009,10 +5211,9 @@ C Update the image if running in graphic mode.
  580    CONTINUE
  551  CONTINUE
 
-C Change constructions for different surfaces now based on use
-
-C << need to find mlc index of each Wall_Scot_no etc for ssmlcindex >>
-
+C Change constructions for different surfaces now based on use.
+C Update the value of ssmlcindex as well as SSMLCN. This is done
+C for all zones whether they are occupied and conditioned or not.
       DO 600 ICOMP=1,NCOMP
         call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
         DO 601 I=1,NZSUR(icomp)
@@ -5024,39 +5225,61 @@ C << need to find mlc index of each Wall_Scot_no etc for ssmlcindex >>
             IF(USE(1:4).EQ.'WALL')THEN
               IF(IRGG.EQ.2)THEN ! Scottish regulations
                 SSMLCN(ICC)='Wall_Scot_no'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(haveWall_Sc) ssmlcindex(ICC)=mlciWall_Sc
               ELSEIF(IRGG.EQ.3)THEN ! Northern Ireland regulations
                 SSMLCN(icc)='Wall_NI_noti'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(haveWall_NI) ssmlcindex(ICC)=mlciWall_NI
               ELSE ! England and Wales regulations (and omissions)
                 SSMLCN(ICC)='Wall_EW_noti'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(haveWall_EW) ssmlcindex(ICC)=mlciWall_EW
               ENDIF
             ELSEIF(USE(1:4).EQ.'ROOF')THEN
               IF(USE2(1:4).EQ.'FLAT')THEN
                 SSMLCN(ICC)='Fl_roof_noti'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(haveFl_r) ssmlcindex(ICC)=mlciFl_r
               ELSE
                 IF(IRGG.EQ.2)THEN ! Scottish regulations
                   SSMLCN(ICC)='SC_Pitch_roo'
+                  SSOTF(ICC)='OPAQUE'  ! OTF type
+                  if(haveSC_P) ssmlcindex(ICC)=mlciSC_P
                 ELSE ! England, Wales and N. Ireland regulations
                   SSMLCN(ICC)='EW_notPitch_'
+                  SSOTF(ICC)='OPAQUE'  ! OTF type
+                  if(haveEW_notP) ssmlcindex(ICC)=mlciEW_notP
                 ENDIF
               ENDIF
             ELSEIF(USE(3:6).EQ.'DOOR')THEN
               IF(USE(1:1).EQ.'V')THEN
                 SSMLCN(ICC)='Vehicle_door'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(haveVehicle) ssmlcindex(ICC)=mlciVehicle
               ELSE
                 SSMLCN(ICC)='opDoorWind_n'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(haveopDoor) ssmlcindex(ICC)=mlciopDoor
               ENDIF
             ELSEIF(USE(3:8).EQ.'WINDOW')THEN
               IF(USE(1:1).EQ.'D')THEN
                 SSMLCN(ICC)='Not_DisplayG'
                 SSOTF(ICC)='dispGlz_not'
+                if(haveNot_D) ssmlcindex(ICC)=mlciNot_D
               ELSE
                 SSMLCN(ICC)='window_Not_G'
                 SSOTF(ICC)='Glaz_notiona'
+                if(haveNot_G) ssmlcindex(ICC)=mlciNot_G
               ENDIF
             ELSEIF(USE(1:5).EQ.'FLOOR')THEN
               SSMLCN(ICC)='Sol_grnd_not'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveSol_gr) ssmlcindex(ICC)=mlciSol_gr
             ELSEIF(USE(1:7).EQ.'F-FRAME')THEN
               SSMLCN(ICC)='frame_notion'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveframe) ssmlcindex(ICC)=mlciframe
             ELSE
               SNM=SSNAME(ICC)
               WRITE(OUTS,'(5A)')'No relevant use defined for ',
@@ -5065,44 +5288,68 @@ C << need to find mlc index of each Wall_Scot_no etc for ssmlcindex >>
               CALL EDISP(IUOUT,OUTS)
               IF(IRGG.EQ.2)THEN ! Scottish regulations
                 SSMLCN(ICC)='Wall_Scot_no'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(haveWall_Sc) ssmlcindex(ICC)=mlciWall_Sc
               ELSEIF(IRGG.EQ.3)THEN ! Northern Ireland regulations
                 SSMLCN(icc)='Wall_NI_noti'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(haveWall_NI) ssmlcindex(ICC)=mlciWall_NI
               ELSE ! England and Wales regulations (and omissions)
                 SSMLCN(ICC)='Wall_EW_noti'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(haveWall_EW) ssmlcindex(ICC)=mlciWall_EW
               ENDIF
             ENDIF
           ELSEIF(ssother(icc,1)(1:6).eq.'GROUND')THEN
             SSMLCN(ICC)='Sol_grnd_not'
+            if(haveSol_gr) ssmlcindex(ICC)=mlciSol_gr
           ELSE
             IF(USE(1:5).EQ.'FLOOR')THEN
               SSMLCN(ICC)='pa_fl_notion'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(havepa_fl) ssmlcindex(ICC)=mlcipa_fl
             ELSEIF(USE(1:4).EQ.'WALL')THEN
               SSMLCN(ICC)='party_wall_n'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveparty_w) ssmlcindex(ICC)=mlciparty_w
             ELSEIF(USE(3:8).EQ.'WINDOW')THEN
               SSMLCN(ICC)='internal_glz'
+              if(haveint_g) ssmlcindex(ICC)=mlciint_g
               SSOTF(ICC)='Glaz_notiona'
             ELSEIF(ADF(1:4).EQ.'FLOR')THEN
               SSMLCN(ICC)='pa_fl_notion'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(havepa_fl) ssmlcindex(ICC)=mlcipa_fl
             ELSEIF(ADF(1:4).EQ.'CEIL')THEN
               SSMLCN(ICC)='inv_pa_fl_no'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveinv_pa_f) ssmlcindex(ICC)=mlciinv_pa_f
             ELSEIF(ADF(1:4).EQ.'VERT')THEN
               SSMLCN(ICC)='party_wall_n'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveparty_w) ssmlcindex(ICC)=mlciparty_w
             ELSE
               SNM=SSNAME(ICC)
               WRITE(OUTS,'(5A)')'No relevant use defined for ',
      &        SNM(1:LNBLNK(SNM)),' in zone ',zname(icomp),
      &        ' - Setting to internal wall'
               SSMLCN(ICC)='party_wall_n'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveparty_w) ssmlcindex(ICC)=mlciparty_w
               CALL EDISP(IUOUT,OUTS)
             ENDIF
           ENDIF
  601    CONTINUE
 
+C Write geometry file to save off changes in constructions prior to
+C applying the thermal bridge information.
+        call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+
 C Add 10% thermal bridge by silently calling appropriate subroutine.
 C This will overwrite thermal bridge information in the original model.
         CALL LINTHBRDG(ICOMP,'s',0.1)
 
-C Write geometry file version 1.1 (1.0 does not support UK NCM)
+C Write geometry file to ensure thermal bridge data saved.
         call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
         QUIET=.TRUE.
 
