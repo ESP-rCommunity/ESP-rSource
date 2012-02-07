@@ -4322,7 +4322,7 @@ C << (e.g. a zero activity) need to be marked at this point.
 
 C Find the index of the MLC which matches each surface.
 C Debug.
-C        write(6,*) icomp,NZSUR(icomp),nmlc
+        write(6,*) icomp,NZSUR(icomp),nmlc
 
         DO 9994 I=1,NZSUR(icomp)
           icn1=izstocn(icomp,i)
@@ -4335,8 +4335,8 @@ C        write(6,*) icomp,NZSUR(icomp),nmlc
  9994   continue
 
 C Debug the ssmlcindex array.
-C        write(6,*) ssmlcindex(1),ssmlcindex(2),ssmlcindex(3),
-C     &    ssmlcindex(4),ssmlcindex(5),ssmlcindex(6),ssmlcindex(7)
+        write(6,*) ssmlcindex(1),ssmlcindex(2),ssmlcindex(3),
+     &    ssmlcindex(4),ssmlcindex(5),ssmlcindex(6),ssmlcindex(7)
 
         CALL FNCNGR(LGEOM_O(ICOMP),APE,EXT,NNAME)
         LGEOM(ICOMP)=NNAME
@@ -4660,8 +4660,8 @@ C for deletion in IRMV
       DO 6100 ICOMP=1,NCOMP
 
 C Debug the initial list of surfaces to remove.
-C        write(6,*) 'about to remove ',NRMV(icomp),' surfs in z ',
-C     &    icomp
+        write(6,*) 'about to remove ',NRMV(icomp),' surfs in z ',
+     &    icomp
 C        write(6,*) 'list ',IRMV(ICOMP,1),IRMV(ICOMP,2),IRMV(ICOMP,3),
 C     &    IRMV(ICOMP,4),IRMV(ICOMP,5),IRMV(ICOMP,6),IRMV(ICOMP,7),
 C     &    IRMV(ICOMP,8),IRMV(ICOMP,9),IRMV(ICOMP,10),IRMV(ICOMP,11)
@@ -4768,7 +4768,7 @@ C not put in additional windows but retain if any are present
 C Area of doors and windows is less than glazings to be put in so put in
 C additional windows
               XNWAREA(ICC)=
-     &        TARSURF(ICC)*GLZFR-XREAREA(ICC)+XNWAREA(ICC)
+     &          TARSURF(ICC)*GLZFR-XREAREA(ICC)+XNWAREA(ICC)
             ENDIF
           endif
  200    continue
@@ -4810,13 +4810,15 @@ C and frame areas.
 C Get scale factors
             TOTAREA=TARSURF(ICC)
             REQDAREA=XPDAREA(ICC)+XVDAREA(ICC)+
-     &      XDWAREA(ICC)+XNWAREA(ICC)
+     &               XDWAREA(ICC)+XNWAREA(ICC)
             SCALEFACTORPD=SQRT(REQDAREA/TOTAREA)
             SCALEFACTORFR=SQRT(FRMFR)
 
 C First put pedestrian door in if there was one in the original model.
-            CALL ECLOSE(XPDAREA(ICC),0.0,0.01,NEAR)
-            IF(.NOT.NEAR)THEN
+C If likely new surface complexity is within limits add door.
+            CALL ECLOSE(XPDAREA(ICC),0.0,0.1,NEAR)
+            if(2*NVER(IS)+2.lt.42.and.(.NOT.NEAR).and.
+     &        (NSUR+1.lt.MS)) then
               IELF=IELF+1
               ICON=ICON+1
               NSUR=NSUR+1
@@ -4894,12 +4896,14 @@ C Update the wireframe image if running in graphics mode.
               endif
             ENDIF
 
-C Now put vehicle door in if there was one in the original model.
+C Now put vehicle door in if there was one in the original model
+C and the new surface will be within complexity limits.
             REQDAREA=XVDAREA(ICC)+
      &               XDWAREA(ICC)+XNWAREA(ICC)
             SCALEFACTORVD=SQRT(REQDAREA/TOTAREA)
-            CALL ECLOSE(XVDAREA(ICC),0.0,0.01,NEAR)
-            IF(.NOT.NEAR)THEN
+            CALL ECLOSE(XVDAREA(ICC),0.0,0.1,NEAR)
+            if(2*NVER(IS)+2.lt.42.and.(.NOT.NEAR).and.
+     &        (NSUR+1.lt.MS)) then
               IELF=IELF+1
               ICON=ICON+1
               NSUR=NSUR+1
@@ -4977,11 +4981,13 @@ C Update the image if running in graphics mode.
               endif
             ENDIF
 
-C Now put display glazing in if there was one in the original model.
+C Now put display glazing in if there was one in the original model
+C and within complexity limits.
             REQDAREA=XDWAREA(ICC)+XNWAREA(ICC)
             SCALEFACTORDG=SQRT(REQDAREA/TOTAREA)
-            CALL ECLOSE(XDWAREA(ICC),0.0,0.01,NEAR)
-            IF(.NOT.NEAR)THEN
+            CALL ECLOSE(XDWAREA(ICC),0.0,0.1,NEAR)
+            if(2*NVER(IS)+2.lt.42.and.(.NOT.NEAR).and.
+     &        (NSUR+1.lt.MS)) then
               IELF=IELF+1
               ICON=ICON+1
               NSUR=NSUR+1
@@ -5063,8 +5069,12 @@ C Now put glazing and frame based on the NCM requirements (there might
 C not have been a window or frame in the original model).
             REQDAREA=XNWAREA(ICC)
             SCALEFACTORNG=SQRT(REQDAREA/TOTAREA)
-            CALL ECLOSE(XNWAREA(ICC),0.0,0.01,NEAR)
-            IF(.NOT.NEAR)THEN
+            CALL ECLOSE(XNWAREA(ICC),0.0,0.1,NEAR)
+
+C If likely new surface complexity is within limits and we have not
+C already gotten enough glazing area add another window and frame.
+            if(2*NVER(IS)+2.lt.42.and.(.NOT.NEAR).and.
+     &        (NSUR+2.lt.MS)) then
               IELF=IELF+1
               ICON=ICON+1
               NSUR=NSUR+1
@@ -5074,6 +5084,8 @@ C not have been a window or frame in the original model).
               WRITE(SN,'(i2,2A)')
      &          is,CHAR(96+IELF),'_glz'  ! Name
               write(outs,'(2a)') 'Adding new surf ',SN(1:lnblnk(SN))
+              write(6,*) icomp,nsur,is,nver(is)
+              write(6,*) outs
               call edisp(iuout,outs)
               ISUR2=NSUR
               DO 7512 NV=1,NVER(IS)
