@@ -4215,7 +4215,7 @@ C Trace output
 
 C Seed the random number generator
       ISEED=DHWDrawSeed
-      CALL SRAND(ISEED)
+      CALL SRAND1(ISEED)
 
 
 C
