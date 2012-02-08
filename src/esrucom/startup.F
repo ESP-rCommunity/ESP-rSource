@@ -56,6 +56,7 @@ C Parse command lines.
       IMPLICIT NONE
 
       integer lnblnk  ! function definition
+      integer iargc   ! needed for F90
 
 C Common blocks
       COMMON/OUTIN/IUOUT,IUIN

@@ -3306,7 +3306,7 @@ C Passed parameters for cfgtogg
 #endif
 
 C Passed parameters for pregist.
-      character root*24,mpath*72,folder*12,menu*72
+      character root*24,mpath*72,menu*72
 
       integer igraphiclib  ! external definition
 #ifdef OSI
@@ -3931,9 +3931,8 @@ C mode (with blanks for the parameters).
         call clrprb
         root=' '
         mpath=' '
-        folder=' '
         menu=' '
-        call pregist('i ',root,mpath,folder,menu,ier)
+        call pregist('i ',root,mpath,menu,ier)
         IF(IER.LT.0)RETURN
 
         CFGOK=.TRUE.

@@ -118,6 +118,7 @@
 *root	/usr/esru/esp-r/training/cellular_natv
 *item
 *name	... with hybrid natural & mechanical ventilation
+*log    /usr/esru/esp-r/training/cellular_hybrid/dbs/readme.txt
 *cfg	/usr/esru/esp-r/training/cellular_hybrid/cfg/cellular_mctl.cfg
 *root	/usr/esru/esp-r/training/cellular_hybrid
 *item

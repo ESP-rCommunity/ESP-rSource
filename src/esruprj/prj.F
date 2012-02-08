@@ -178,7 +178,7 @@ C      character outs248*248
       character fs*1
 
 C Passed parameters for pregist.
-      character root*24,mpath*72,folder*12
+      character root*24,mpath*72
 
 C Returned parameters from silentread.
       character theprimedirective*8
@@ -1306,9 +1306,8 @@ C Start new project, begin with registration.
         call tstamp('>','PRJ: beginning new model')
         root=' '
         mpath=' '
-        folder=' '
         menu=' '
-        call pregist('i ',root,mpath,folder,menu,ier)
+        call pregist('i ',root,mpath,menu,ier)
       ELSEIF(INO.EQ.10)THEN
 
 C Root name of the model.

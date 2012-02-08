@@ -741,13 +741,14 @@ C to quit the image browser.
       common/imagfi/noimg,iton
 
       dimension name(30),mitem(30),label(30),inl2in(30),group(15)
-      dimension gitem(18),gh(13),cfgitem(30),inl2ngr(30)
+      dimension gitem(18),gh(13),cfgitem(30),inl2ngr(30),itemlog(30)
       character name*70,label*42,mitem*72,gitem*44,OUTSTR*124,WORD*20
       character group*42,tgroup*42,key*1,look*70,tlook*70
       character line*72,outs*124,rootp*72,separ*42
       character doit*248
       character gh*72,cfgitem*144,exdescr*81,doc*72,head*42
       character cfg*144,cfg_path*72,cfg_root*72,doc_file*72
+      character itemlog*144,ilog*144
 
 C Strings for dos version of rootp and upath and a double quote.
       character rootpdos*72,upathdos*72,rootpath*72,modelroot*72
@@ -755,6 +756,7 @@ C Strings for dos version of rootp and upath and a double quote.
       character lltmp*144,lguess*144,dguess*144
       logical XST,unixok
       integer NCOG,ICOG,NCO,ICO,icod ! max items and current menu item
+      integer loop  ! for looping
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 
 #ifdef OSI
@@ -793,6 +795,17 @@ C the user decides to cancel the selection.
         CALL EFOPSEQ(iexfil,exemfl,1,IER)
       endif
       if(ier.ne.0) return
+
+C Clear some of the local strings.
+      do 38 loop=1,30
+        name(loop)='  '
+        label(loop)='  '
+        cfgitem(loop)='  '
+        itemlog(loop)='  '
+        inl2in(loop)=0
+        inl2ngr(loop)=0
+  38  continue
+
 C Read the header and see if '*EXEMPLARS'
       CALL STRIPC(iexfil,OUTSTR,0,ND,0,'exemplars header',IER)
       if(outstr(1:10).ne.'*EXEMPLARS')then
@@ -808,10 +821,10 @@ C Clear group related help and length of menu.
         gh(i)=' '
   2   continue
       exemplar='UNKNOWN'
+      ilog='  '
       ngr=0
       ing=0
       inl=0
-      inl2ngr(1)=0
       igrsel=0
       icod=0
 
@@ -866,22 +879,30 @@ C Help text for this menu.
       else
         CALL EMENU('Exemplar Categories',gitem,NCOG,ICOG)
       endif
+
       IF(ICOG.EQ.NCOG)THEN
+
+C Exit from the menu.
         CALL ERPFREE(iexfil,ISTAT)
         return
+
       ELSEIF(ICOG.EQ.(NCOG-1))THEN
 
 C Help @ db file level.
         helptopic='exemplar_menu_help'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('exemplar menu',nbhelp,'-',0,0,IER)
+
       ELSEIF(ICOG.GT.0.AND.ICOG.LT.(NCOG-2))THEN
+
+C User selected an exemplar category from the menu display.
         if(gitem(ICOG)(1:2).eq.'  ')goto 142
         if(inl2ngr(ICOG).gt.0.and.inl2ngr(ICOG).le.15)then
           igrsel=inl2ngr(ICOG)
         else
           goto 142
         endif
+
 C Re-open the exemplar file.
         if(exemfl(1:1).eq.'/')then
           call FPOPEN(iexfil,ISTAT,1,0,exemfl)
@@ -896,7 +917,8 @@ C Re-open the exemplar file.
           call egetrm(outstr,K,tgroup,'W','group id',IER)
           if(tgroup(1:42).eq.group(igrsel)(1:42))then
 
-C We have a match with the selected group so now fill the menu.
+C We have a match with the selected group so now fill the menu
+C strings so they can be presented to the user.
             nghelp=0
             in=0
             inl=0
@@ -926,7 +948,8 @@ C If we have reached the next group then we have scanned far enough.
               goto 16
             elseif(WORD(1:4).eq.'*log')then
 
-C In case of older exemplar file.
+C In case there is a log file mentioned.
+              call egetrm(outstr,K,itemlog(in),'W','item log',IER)
               goto 16
             elseif(WORD(1:6).eq.'*label')then
               inl=inl+1
@@ -950,10 +973,10 @@ C In case of older exemplar file.
  902  CALL ERPFREE(iexfil,ISTAT)
       goto 142
 
-C Present the display.
+C Present the list of this category of exemplars.
   42  ICO= -2
       mitem(in+1)=  '  _______________________________'
-      mitem(in+2)=  '* exemplar documentation         '
+      mitem(in+2)=  '* view exemplar documentation    '
       mitem(in+3)=  '? help                           '
       mitem(in+4)=  '- exit this menu                 '
       NCO=in+4
@@ -979,6 +1002,7 @@ C file for this topic.
  33     continue
       endif
 
+C Make up a menu as wide as required if in graphic mode.
       if(MMOD.EQ.8)then
         impx=0
         impy=0
@@ -986,16 +1010,27 @@ C file for this topic.
       else
         CALL EMENU(head,mitem,NCO,ICO)
       endif
+
+C Process the user selection.
       IF(ICO.EQ.NCO)THEN
 
 C Exit from detail level back to group level.
         CALL ERPFREE(iexfil,ISTAT)
         goto 41
+
       ELSEIF(ICO.EQ.(NCO-1))THEN
 
 C Display the basic help plus help from exemplars file.
         CALL PHELPD('exemplar menu',nbhelp+nghelp,'-',0,0,IER)
+
       ELSEIF(ICO.EQ.(NCO-2))THEN
+
+C User picked the documentation item in the menu. Present the list
+C again so the user can select which model they want to find more
+C about.
+        call edisp(iuout,'  ')
+        call edisp(iuout,
+     &    'Select which exemplar you want to know more about.')
         icod=0
         if(MMOD.EQ.8)then
           impx=0
@@ -1023,6 +1058,7 @@ C Open the related configuration file (if it exists), find its log file.
      &          doc(1:lnblnk(doc))
               CALL ERPFREE(iexfil+1,ISTAT)
               call tstamp('>','PRJ: list exemplar documentation')
+              call edisp(iuout,'  ')
               CALL LISTAS(iexfil+1,doc_file,IER)
             else
               goto 242
@@ -1032,9 +1068,10 @@ C Open the related configuration file (if it exists), find its log file.
      &            'See your ESP-r administrator for access.','W')
           endif
         endif
+
       ELSEIF(ICO.GE.1.AND.ICO.LT.(NCO-3))THEN
 
-C Present information on an exemplar.
+C User selected an exemplar, attempt to access it.
         if(inl2in(ICO).eq.0)goto 42
         look=name(inl2in(ICO))
         if(exemfl(1:1).eq.'/')then
@@ -1124,9 +1161,17 @@ C to the list of exemplars.
               call egetrm(outstr,K,rootp,'W','exem root dir',IER)
               goto 4
             elseif(WORD(1:4).eq.'*log')then
-              call egetrm(outstr,K,line,'W','old format log',IER)
+
+C In case there is a log file mentioned.
+              call egetrm(outstr,K,ilog,'W','item log',IER)
               goto 4
             elseif(WORD(1:5).eq.'*item')then
+
+C If a log file mentioned in exemplars file show it.
+              if(ilog(1:2).ne.'  ')then
+                call edisp(iuout,'  ')
+                CALL LISTAS(iexfil+1,ilog,IER)
+              endif
 
 C Reached the end of the item, check if it is to be chosen and
 C if there are zones existing, remove them from memory.
@@ -1323,20 +1368,19 @@ C the user to kill it.
                 noimg=0
                 iton=0
               endif
-              return
-              goto 92
+              return  ! we now know the model we want to load
             else
               goto 4
-            endif
+            endif  ! of finding a matching item token
           else
             goto 3
           endif
         else
           goto 3
-        endif
+        endif      ! of processing a name token
       else
         goto 42
-      endif
+      endif        ! of processing user selection
       goto 42
 
   92  CALL ERPFREE(iexfil,ISTAT)

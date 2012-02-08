@@ -32,19 +32,17 @@ C silentmodel creates a model from passed parameters.
 C The parameters are:
 C action (8 char) as follows:
 C    'new' creates model folders based on information
-C       in root, mpath folder parameters.
+C       in root and mpath parameters.
 C    'within' assumes that the current folder will be used.
 C root   (24 char) the root name of the model
 C mpath  (72 char) the path to the folder with cfg file.
-C folder (12 char) model folder layout: 'single' or 'distributed'
 C weather (32 char) the weather file name (no path included)
 C simact (6 char) assessments to be carried out '------' if
 C   none requested, otherwise follow pattern in edipv.F.
 
 C Current functionality is to update the climate & site data.
 
-      subroutine silentmodel(action,root,mpath,folder,weather,simact,
-     &  ier)
+      subroutine silentmodel(action,root,mpath,weather,simact,ier)
 #include "building.h"
 #include "model.h"
 #include "site.h"
@@ -81,7 +79,7 @@ C Simulation parameter sets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
 C Passed in parameters.
-      character action*8,root*24,mpath*72,folder*12,menu*72
+      character action*8,root*24,mpath*72,menu*72
       character fs*1           ! file separator
       character weather*32     ! file name for the location (no path)
       character weathergr*36   ! file name for weather related ground temps (no path)
@@ -115,7 +113,7 @@ C If the action is `within` do not create new folders for the model.
 
 C Debug
       if(unixok)then
-        write(6,*)  'action ',action,' ',root,' ',folder
+        write(6,*)  'action ',action,' ',root
         write(6,*)  'menu ',modeltitle
         write(6,*)  'mpath ',mpath
         write(6,*)  'weather ',weather
@@ -124,12 +122,12 @@ C Debug
 
       if(action(1:3).eq.'new')then
         write(menu,'(a)') modeltitle(1:lnblnk(modeltitle))
-        call pregist('sn',root,mpath,folder,menu,ier)
+        call pregist('sn',root,mpath,menu,ier)
       elseif(action(1:6).eq.'within')then
 
 C Assume the model folders exist when calling pregist.
         write(menu,'(a)') modeltitle(1:lnblnk(modeltitle))
-        call pregist('sw',root,mpath,folder,menu,ier)
+        call pregist('sw',root,mpath,menu,ier)
       endif
 
 C If there is a line with the root name of a climate file look
@@ -1308,7 +1306,7 @@ C used by scanning code to identify the contents of a silent file.
       character fs*1           ! file separator
 
 C For passing to silentmodel.
-      character actions*8,root*24,mpath*72,folder*12
+      character actions*8,root*24,mpath*72
 
 C Same as local variable actions which is passed back to calling code.
       character silentreturndirec*8
@@ -1376,7 +1374,6 @@ C in the file.
       if(act(1:1).ne.'?')then
         actions=' '
         root=' '
-        folder=' '
         mpath=' '
         modeltitle=' '
         modeldocblock=' '
@@ -1568,14 +1565,12 @@ C *action,new,boxer,single,/tmp/boxer
         silentreturndirec=actions
         if(actions(1:3).eq.'new'.or.actions(1:6).eq.'within')then
           CALL EGETW(OUTSTR,K,root,'W','root name',IER)
-          CALL EGETW(OUTSTR,K,folder,'W','folder directive',IER)
           CALL EGETRM(OUTSTR,K,mpath,'W','model folder',IER)
 
 C Debug.
           call isunix(unixok)
           if(unixok)then
             write(6,*)  's action ',actions,' root ',root
-            write(6,*)  's folder ',folder
             write(6,*)  's mpath ',mpath
           endif
         endif
@@ -2508,11 +2503,9 @@ C Process the data if the end of the file reached or if the
 C *end mark was found.
  1000 CALL ERPFREE(IUNIT,ios)
 
-C Create new model. Note for a single folder option the
-C configuration will be in /tmp/box if mpath is /tmp/box. For the
-C distributed folder option the onfiguration file will be in the
+C Create new model. Note the onfiguration file will be in the
 C folder /tmp/box/cfg if mpath is /tmp/box.
-      call silentmodel(actions,root,mpath,folder,weather,simact,ier)
+      call silentmodel(actions,root,mpath,weather,simact,ier)
 
 C Add in site information if tokens were included.
       if(havesite)then
@@ -2734,7 +2727,7 @@ C the contents of the file via model.h.
       character fs*1           ! file separator
 
 C For passing to silentmodel.
-      character actions*8,root*24,mpath*72,folder*12
+      character actions*8,root*24,mpath*72
 
       logical dll,unixok
 
@@ -2761,7 +2754,7 @@ C Site related local variables.
       dimension i_ctl_link(MCOM),ht_Setpoint(MCOM),cl_Setpoint(MCOM)
       integer isilentncf !silent decide how many control functions needed
       character tab*1
-      integer lnzp,lnnp,lncp,lndcp,lndbp ! lengths of paths to model folders
+      integer lnzp,lnnp,lnap,lncp,lndcp,lndbp ! lengths of paths to model folders
       integer lnc  ! for length of climate file
       integer metaver  ! one for 1.1 and two for 1.2
 
@@ -2817,19 +2810,13 @@ C zone details and then write into the file.
       write(actions,'(a)') 'new'
       write(root,'(a)') cfgroot
 
-C If all of the associated folder paths are ./ then we have a
-C single folder model, otherwise use distributed folders.
+C Assume distributed folders.
       lnzp=lnblnk(zonepth)
       lnnp=lnblnk(netpth)
-      lncp=lnblnk(ctlpth)
       lnap=lnblnk(aimpth)
+      lncp=lnblnk(ctlpth)
       lndcp=lnblnk(docpth)
       lndbp=lnblnk(dbspth)
-      if((lnzp+lnnp+lncp+lnap+lndcp+lndbp).lt.12)then
-        write(folder,'(a)') 'single'  ! multiple folders
-      else
-        write(folder,'(a)') 'distributed'  ! multiple folders
-      endif
       write(mpath,'(a)') cfgroot  ! model folder will take root name
 
 C Currently set the block of text to the model title.
@@ -2952,10 +2939,9 @@ C *meta_file
      &  modeldocblock(1:lnblnk(modeldocblock))
       write(ifilg,'(4a)',IOSTAT=IOS,ERR=13)'*date',tab,dstmp,
      &  '  # latest file modification '
-      write(ifilg,'(9a)',IOSTAT=IOS,ERR=13)'*action',tab,
+      write(ifilg,'(7a)',IOSTAT=IOS,ERR=13)'*action',tab,
      &  actions(1:lnblnk(actions)),tab,
-     &  root(1:lnblnk(root)),tab,
-     &  folder(1:lnblnk(folder)),tab,mpath(1:lnblnk(mpath))
+     &  root(1:lnblnk(root)),tab,mpath(1:lnblnk(mpath))
 
 C Include the model folder tags as in the cfg file. This will be used when
 C extracting to a set of standard ESP-r files.
@@ -2965,7 +2951,7 @@ C extracting to a set of standard ESP-r files.
      &  '  # path to networks'
       write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*ctlpth ',ctlpth(1:lncp),
      &  '  # path to controls'
-      write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*aimpth ',aimpth(1:lncp),
+      write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*aimpth ',aimpth(1:lnap),
      &  '  # path to aim2'
       write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*radpth ',radpth,
      &  '  # path to radiance files'
