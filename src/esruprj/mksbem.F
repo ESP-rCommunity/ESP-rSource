@@ -38,6 +38,7 @@ C  EDSBMREGS Edits the building regs definition within the UK NCM file.
 C Model generation subroutines
 C  EMKSTRIPPED first pass for notional model creation
 C  EMKSBM   generates notional model
+C  EMKSBM2   alt method to generate notional model
 C  EMKREF   Generates reference model
 C  EMKTYP   Generates typical model
 
@@ -4239,60 +4240,76 @@ C Set flag for cfg file that this is a notional model
 C Test to see if certain constructions are currently available
 C if if found remember their index in the constructions array
 C in order to instanciate ssmlcindex.
+      call opendb(ier) ! make sure materials & constructions known
+  41  mlcf=0
       do 6 ii=1,nmlc
         if(DESC(ii)(1:12).eq.'opDoorWind_n') then
-          haveopDoor=.true.; mlciopDoor=ii
+          haveopDoor=.true.; mlciopDoor=ii; mlcf=mlcf+1
         elseif(DESC(ii)(1:12).eq.'Vehicle_door') then
-          haveVehicle=.true.; mlciVehicle=ii
+          haveVehicle=.true.; mlciVehicle=ii; mlcf=mlcf+1
         elseif(DESC(ii)(1:12).eq.'Not_DisplayG') then
-          haveNot_D=.true.; mlciNot_D=ii
+          haveNot_D=.true.; mlciNot_D=ii; mlcf=mlcf+1
         elseif(DESC(ii)(1:12).eq.'window_Not_G') then
-          haveNot_G=.true.; mlciNot_G=ii
+          haveNot_G=.true.; mlciNot_G=ii; mlcf=mlcf+1
         elseif(DESC(ii)(1:12).eq.'frame_notion') then
-          haveframe=.true.; mlciframe=ii
+          haveframe=.true.; mlciframe=ii; mlcf=mlcf+1
         elseif(DESC(ii)(1:12).eq.'Wall_Scot_no') then
-          haveWall_Sc=.true.; mlciWall_Sc=ii
+          haveWall_Sc=.true.; mlciWall_Sc=ii; mlcf=mlcf+1
         elseif(DESC(ii)(1:12).eq.'Wall_EW_noti') then
-          haveWall_EW=.true.; mlciWall_EW=ii
+          haveWall_EW=.true.; mlciWall_EW=ii; mlcf=mlcf+1
         elseif(DESC(ii)(1:12).eq.'Wall_NI_noti') then
-          haveWall_NI=.true.; mlciWall_NI=ii
+          haveWall_NI=.true.; mlciWall_NI=ii; mlcf=mlcf+1
         elseif(DESC(ii)(1:12).eq.'Fl_roof_noti') then
-          haveFl_r=.true.; mlciFl_r=ii
+          haveFl_r=.true.; mlciFl_r=ii; mlcf=mlcf+1
         elseif(DESC(ii)(1:12).eq.'SC_Pitch_roo') then
-          haveSC_P=.true.; mlciSC_P=ii
+          haveSC_P=.true.; mlciSC_P=ii; mlcf=mlcf+1
         elseif(DESC(ii)(1:12).eq.'EW_notPitch_') then
-          haveEW_notP=.true.; mlciEW_notP=ii
+          haveEW_notP=.true.; mlciEW_notP=ii; mlcf=mlcf+1
         elseif(DESC(ii)(1:12).eq.'Sol_grnd_not') then
-          haveSol_gr=.true.; mlciSol_gr=ii
+          haveSol_gr=.true.; mlciSol_gr=ii; mlcf=mlcf+1
         elseif(DESC(ii)(1:12).eq.'pa_fl_notion') then
-          havepa_fl=.true.; mlcipa_fl=ii
+          havepa_fl=.true.; mlcipa_fl=ii; mlcf=mlcf+1
         elseif(DESC(ii)(1:12).eq.'inv_pa_fl_no') then
-          haveinv_pa_f=.true.; mlciinv_pa_f=ii
+          haveinv_pa_f=.true.; mlciinv_pa_f=ii; mlcf=mlcf+1
         elseif(DESC(ii)(1:12).eq.'party_wall_n') then
-          haveparty_w=.true.; mlciparty_w=ii
+          haveparty_w=.true.; mlciparty_w=ii; mlcf=mlcf+1
         elseif(DESC(ii)(1:12).eq.'internal_glz') then
-          haveint_g=.true.; mlciint_g=ii
+          haveint_g=.true.; mlciint_g=ii; mlcf=mlcf+1
         endif
   6   continue
+
+C Debug.
+      write(6,*) 'Index of required UK NCM constructions...'
+      write(6,*) mlciopDoor,mlciVehicle,mlciNot_D,mlciNot_G,mlciframe
+      write(6,*) mlciWall_Sc,mlciWall_EW,mlciFl_r,mlciSC_P,mlciEW_notP
+      write(6,*) mlciSol_gr,mlcipa_fl,mlciinv_pa_f,mlciparty_w,
+     &  mlciint_g,mlciWall_NI
+
+      if(mlcf.eq.16)then
+        call edisp(iuout,'All reqd MLC found so using std databases')
+        continue  ! all of the necessary constructions available
+      else
 
 C Assign standard databases containing UK NCM materials and constructions
 C These files are UK_notional.constrdb, material.db3.a and optics.db2
 C As they will be in the standard database folder use the *std...
-      ipathmat=2
-      WRITE(LFMAT,'(A)') 'material.db3.a'
-      ipathmul=2
+        call edisp(iuout,'Not all reqd MLC so using std databases')
+        ipathmat=2
+        WRITE(LFMAT,'(A)') 'material.db3.a'
+        ipathmul=2
 
 C << for testing use multicon.db3. return to UK_notional >>
-
 C      WRITE(LFMUL,'(A)') 'UK_notional.constrdb'
-      WRITE(LFMUL,'(A)') 'multicon.db3'
-      ipathoptdb=2
-      WRITE(LOPTDB,'(A)') 'optics.db2'
-      ipathpcdb=2
-      WRITE(LPCDB,'(A)') 'plantc.db1'
-      ipathsbem=2
-      WRITE(LSBEM,'(a)') 'SBEM.db1'
-      call opendb(ier)
+        WRITE(LFMUL,'(A)') 'multicon.db3'
+        ipathoptdb=2
+        WRITE(LOPTDB,'(A)') 'optics.db2'
+        ipathpcdb=2
+        WRITE(LPCDB,'(A)') 'plantc.db1'
+        ipathsbem=2
+        WRITE(LSBEM,'(a)') 'SBEM.db1'
+        call opendb(ier)
+        goto 41  ! now try and rescan for required
+      endif
 
 C Loop through each zone in the model and first scan in the zone
 C geometry, next use surrel to update parent/child information and
@@ -4335,8 +4352,8 @@ C Debug.
  9994   continue
 
 C Debug the ssmlcindex array.
-        write(6,*) ssmlcindex(1),ssmlcindex(2),ssmlcindex(3),
-     &    ssmlcindex(4),ssmlcindex(5),ssmlcindex(6),ssmlcindex(7)
+C        write(6,*) ssmlcindex(1),ssmlcindex(2),ssmlcindex(3),
+C     &    ssmlcindex(4),ssmlcindex(5),ssmlcindex(6),ssmlcindex(7)
 
         CALL FNCNGR(LGEOM_O(ICOMP),APE,EXT,NNAME)
         LGEOM(ICOMP)=NNAME
@@ -4459,26 +4476,26 @@ C areas of children are held as 0.0.
 C For each surface in this zone.
           do 555 isur=1,nzsur(icomp)
             ICC=IZSTOCN(icomp,isur)
-            write(SNM,'(a)') SSUSE(ICC,1)
+            write(SNM,'(a)') SSUSE(ICC,1)  ! remember surface use
+
+C Only the following types of areas will be retained in this exterior
+C type surface with use roof or wall.
+            TARSURF(ICC)=SSNA(ICC)
+            XPDAREA(ICC)=0. ! pedestrian door area in this parent
+            XVDAREA(ICC)=0. ! vehicular door area in this parent
+            XDWAREA(ICC)=0. ! display window area in this parent
+            XNWAREA(ICC)=0. ! normal window area in this parent
+            XREAREA(ICC)=0. ! If requisite area is more than required
+                            ! do not put any glazing in this surface
 
 C For all exterior surfaces that are marked wall or roof.
             if(ssother(icc,1)(1:8).eq.'EXTERIOR')then
               if(SNM(1:4).EQ.'WALL'.or.SNM(1:4).EQ.'ROOF')then
 
-C Only the following types of areas will be retained in this exterior
-C type surface with use roof or wall.
-                XPDAREA(ICC)=0. ! pedestrian door area in this parent
-                XVDAREA(ICC)=0. ! vehicular door area in this parent
-                XDWAREA(ICC)=0. ! display window area in this parent
-                XNWAREA(ICC)=0. ! normal window area in this parent
-                XREAREA(ICC)=0. ! If requisite area is more than required
-                                ! do not put any glazing in this surface
-                TARSURF(ICC)=SSNA(ICC)
-
 C For each grand child.
                 DO 5500 IGCD=1,NBGCHILD(ICC)
-                  KCC=IGCHILD(ICC,IGCD)
-                  NRMV(icomp)=NRMV(icomp)+1
+                  KCC=IGCHILD(ICC,IGCD)      ! index of grand child
+                  NRMV(icomp)=NRMV(icomp)+1  ! increment list of surfaces to remove
                   IRMV(ICOMP,NRMV(icomp))=KCC
                   XKCCU=SSUSE(KCC,1)
                   TARSURF(ICC)=TARSURF(ICC)+SSNA(KCC)
@@ -4493,16 +4510,24 @@ C For each grand child.
                     XREAREA(ICC)=XREAREA(ICC)+SSNA(KCC)
                   ELSEIF(XKCCU(1:8).EQ.'S-WINDOW'.OR.
      &                   XKCCU(1:8).EQ.'C-WINDOW')THEN
-                    XNWAREA(ICC)=XNWAREA(ICC)+SSNA(KCC)
-                    XREAREA(ICC)=XREAREA(ICC)+SSNA(KCC)
+
+C If the area of the glazed grndchild is greater than the required notional
+C area for the parent reset to the required area.
+                    IF(SSNA(KCC).GT.TARSURF(ICC)*GLZFR)THEN
+                      XNWAREA(ICC)=TARSURF(ICC)*GLZFR
+                      XREAREA(ICC)=XREAREA(ICC)+XNWAREA(ICC)
+                    ELSE
+                      XNWAREA(ICC)=XNWAREA(ICC)+SSNA(KCC)
+                      XREAREA(ICC)=XREAREA(ICC)+SSNA(KCC)
+                    ENDIF
                   ENDIF
  5500           CONTINUE
                 DO 553 ICHL=1,NBCHILD(ICC)
 
 C Mark child surfaces for removal (via IRMV) and add their surface
 C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
-                  JCC=ICHILD(ICC,ICHL)
-                  NRMV(icomp)=NRMV(icomp)+1
+                  JCC=ICHILD(ICC,ICHL)        ! index of child surface
+                  NRMV(icomp)=NRMV(icomp)+1   ! increment list of surfaces to remove
                   IRMV(ICOMP,NRMV(icomp))=JCC
                   XJCCU=SSUSE(JCC,1)
                   TARSURF(ICC)=TARSURF(ICC)+SSNA(JCC)
@@ -4517,8 +4542,16 @@ C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
                     XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
                   ELSEIF(XJCCU(1:8).EQ.'S-WINDOW'.OR.
      &                   XJCCU(1:8).EQ.'C-WINDOW')THEN
-                    XNWAREA(ICC)=XNWAREA(ICC)+SSNA(JCC)
-                    XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+
+C If the area of the glazed child is greater than the required notional
+C area for the parent reset to the required area.
+                    IF(SSNA(JCC).GT.TARSURF(ICC)*GLZFR)THEN
+                      XNWAREA(ICC)=TARSURF(ICC)*GLZFR
+                      XREAREA(ICC)=XREAREA(ICC)+XNWAREA(ICC)
+                    ELSE
+                      XNWAREA(ICC)=XNWAREA(ICC)+SSNA(JCC)
+                      XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                    ENDIF
                   ENDIF
  553            CONTINUE  ! for each child of current surface
 
@@ -4528,16 +4561,10 @@ C For some glazed facades transparent surfaces may not be child
 C surfaces. They need to be converted into WALL uses and constructions
 C into which compliant glass and frames can be added subsequently.
                 if(iparent(icc).eq.0)then
-                  TARSURF(ICC)=SSNA(ICC)
-                  XPDAREA(ICC)=0. ! pedestrian door area in this parent
-                  XVDAREA(ICC)=0. ! vehicular door area in this parent
-                  XDWAREA(ICC)=0. ! display window area in this parent
-                  XNWAREA(ICC)=0. ! window area area in this parent
-                  XREAREA(ICC)=0. ! If requisite area is more than required
-                                  ! do not put any glazing in this surface
+
 C Debug.
-C                  write(6,*) 'found external glazed parent surface',icc
-C                  write(6,*) 'it has ',nbchild(icc),' child surfaces'
+                  write(6,*) 'found external glazed parent surface',icc
+                  write(6,*) 'it has ',nbchild(icc),' child surfaces'
 
                   DO 554 ICHL=1,NBCHILD(ICC)
 
@@ -4559,8 +4586,16 @@ C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
                       XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
                     ELSEIF(XJCCU(1:8).EQ.'S-WINDOW'.OR.
      &                     XJCCU(1:8).EQ.'C-WINDOW')THEN
-                      XNWAREA(ICC)=XNWAREA(ICC)+SSNA(JCC)
-                      XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+
+C If the area of the glazed child is greater than the required notional
+C area for the parent reset to the required area.
+                      IF(SSNA(JCC).GT.TARSURF(ICC)*GLZFR)THEN
+                        XNWAREA(ICC)=TARSURF(ICC)*GLZFR
+                        XREAREA(ICC)=XREAREA(ICC)+XNWAREA(ICC)
+                      ELSE
+                        XNWAREA(ICC)=XNWAREA(ICC)+SSNA(JCC)
+                        XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                      ENDIF
                     ENDIF
  554              CONTINUE  ! for each child of current surface
                   IF(IRGG.EQ.2)THEN ! Scottish regulations
@@ -4590,13 +4625,6 @@ C Surfaces marked frame will be removed if they are child surfaces
 C of a wall or roof. If they are geometrically parent surfaces then
 C they need to be converted into wall uses and constructions.
                 if(iparent(icc).eq.0)then
-                  TARSURF(ICC)=SSNA(ICC)
-                  XPDAREA(ICC)=0. ! pedestrian door area in this parent
-                  XVDAREA(ICC)=0. ! vehicular door area in this parent
-                  XDWAREA(ICC)=0. ! display window area in this parent
-                  XNWAREA(ICC)=0. ! window area
-                  XREAREA(ICC)=0. ! If requisite area is more than required
-                                  ! do not put any glazing in this surface
                   DO 556 ICHL=1,NBCHILD(ICC)
 
 C Mark child surfaces for removal (via IRMV) and add their surface
@@ -4617,8 +4645,16 @@ C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
                       XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
                     ELSEIF(XJCCU(1:8).EQ.'S-WINDOW'.OR.
      &                     XJCCU(1:8).EQ.'C-WINDOW')THEN
-                      XNWAREA(ICC)=XNWAREA(ICC)+SSNA(JCC)
-                      XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+
+C If the area of the glazed child is greater than the required notional
+C area for the parent reset to the required area.
+                      IF(SSNA(JCC).GT.TARSURF(ICC)*GLZFR)THEN
+                        XNWAREA(ICC)=TARSURF(ICC)*GLZFR
+                        XREAREA(ICC)=XREAREA(ICC)+XNWAREA(ICC)
+                      ELSE
+                        XNWAREA(ICC)=XNWAREA(ICC)+SSNA(JCC)
+                        XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                      ENDIF
                     ENDIF
  556              CONTINUE  ! for each child of current surface
                   IF(IRGG.EQ.2)THEN ! Scottish regulations
@@ -4662,16 +4698,13 @@ C for deletion in IRMV
 C Debug the initial list of surfaces to remove.
         write(6,*) 'about to remove ',NRMV(icomp),' surfs in z ',
      &    icomp
-C        write(6,*) 'list ',IRMV(ICOMP,1),IRMV(ICOMP,2),IRMV(ICOMP,3),
-C     &    IRMV(ICOMP,4),IRMV(ICOMP,5),IRMV(ICOMP,6),IRMV(ICOMP,7),
-C     &    IRMV(ICOMP,8),IRMV(ICOMP,9),IRMV(ICOMP,10),IRMV(ICOMP,11)
 
 C In the current zone we need to delete NRMV surfaces.
         DO 6001 IR=1,NRMV(icomp)
 
 C Debug.
-C          write(6,*) ' doing conn surf',IRMV(ICOMP,IR),
-C     &      ie1(IRMV(ICOMP,IR)),' for ir ',ir
+          write(6,*) ' x conn surf ',IRMV(ICOMP,IR),' ',
+     &      ssname(IRMV(ICOMP,IR)),' ',ie1(IRMV(ICOMP,IR)),' for ir ',ir
 
 C Pack the list of TARSURF etc from the current connection data
 C to one less than the end of the number of connections in the
@@ -4704,24 +4737,29 @@ C connection index held in IRMV.
  6006     CONTINUE
 
 C Debug the packed irmv array.
-C        write(6,*) 'listx ',IRMV(ICOMP,1),IRMV(ICOMP,2),IRMV(ICOMP,3),
-C     &    IRMV(ICOMP,4),IRMV(ICOMP,5),IRMV(ICOMP,6),IRMV(ICOMP,7),
-C     &    IRMV(ICOMP,8),IRMV(ICOMP,9),IRMV(ICOMP,10),IRMV(ICOMP,11)
+        write(6,*) 'listx ',IRMV(ICOMP,1),IRMV(ICOMP,2),IRMV(ICOMP,3),
+     &    IRMV(ICOMP,4),IRMV(ICOMP,5),IRMV(ICOMP,6),IRMV(ICOMP,7),
+     &    IRMV(ICOMP,8),IRMV(ICOMP,9),IRMV(ICOMP,10),IRMV(ICOMP,11)
 
 C Remove the surface. Get is from the irmv list (which is
 C connection based).
           is=ie1(IRMV(ICOMP,IR))
 
 C Debug.
-C          write(6,*) 'ir is ',ir,' removing surf ',is,' in zone ',icomp
+          write(6,*) 'removing surf ',ssname(irmv(icomp,ir))
+          write(6,*) 'ir is ',ir,' surf ',is,' in zone ',icomp
 
 C Re-scan the geometry, use ADDSUR to delete surface index 'is' and then
 C update the model cfg file and then re-write the geometry file.
           iopt=0
           call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
+          write(6,*) 'before addsur d ',NZSUR(icomp)
           CALL ADDSUR(ITRC,ICOMP,IS,'D','A',iopt,IER)
+          write(6,*) 'after addsur d ',NZSUR(icomp)
           CALL EMKCFG('-',IER)
+          write(6,*) 'after emkcfg d ',NZSUR(icomp)
           call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+          write(6,*) 'after geowrite d ',NZSUR(icomp)
 
 C Update the image if working in graphics mode.
           if(MMOD.eq.8)then
@@ -4732,7 +4770,7 @@ C Update the image if working in graphics mode.
             nznog(1)=ICOMP
             izgfoc=ICOMP
             CALL ADJVIEW(IER)
-            call pausems(500)
+            call pausems(900)
           endif
  6001   CONTINUE
  6100 CONTINUE
@@ -4749,8 +4787,8 @@ C in the current zone check its attributes.
 
 C For all exterior surfaces that are wall or roof define the
 C glazing and frame percentage.
-          if(ssother(icC,1)(1:8).eq.'EXTERIOR'.AND.(
-     &    SNM(1:4).EQ.'WALL'.or.SNM(1:4).EQ.'ROOF'))then
+          if(ssother(icC,1)(1:8).eq.'EXTERIOR'.AND.
+     &      (SNM(1:4).EQ.'WALL'.or.SNM(1:4).EQ.'ROOF'))then
             IF(SNM(1:4).EQ.'WALL')THEN
               GLZFR=WALLFR
               FRMFR=WALLFRFR
@@ -4761,7 +4799,7 @@ C glazing and frame percentage.
             IF(XREAREA(ICC).GT.TARSURF(ICC)*GLZFR)THEN
 
 C Area of doors and windows is greater than glazings to be put in so do
-C not put in additional windows but retain if any are present
+C not put in additional windows but retain if any are present.
               CONTINUE
             ELSE
 
@@ -4770,6 +4808,8 @@ C additional windows
               XNWAREA(ICC)=
      &          TARSURF(ICC)*GLZFR-XREAREA(ICC)+XNWAREA(ICC)
             ENDIF
+            write(6,*) 'estimating ',icc,GLZFR,FRMFR,TARSURF(ICC),
+     &        XREAREA(ICC),XNWAREA(ICC)
           endif
  200    continue
  557  continue
@@ -4814,6 +4854,10 @@ C Get scale factors
             SCALEFACTORPD=SQRT(REQDAREA/TOTAREA)
             SCALEFACTORFR=SQRT(FRMFR)
 
+C Debug.
+            write(6,*) '580 ',ICC,TOTAREA,REQDAREA,SCALEFACTORPD,
+     &        SCALEFACTORFR,XPDAREA(ICC)
+
 C First put pedestrian door in if there was one in the original model.
 C If likely new surface complexity is within limits add door.
             CALL ECLOSE(XPDAREA(ICC),0.0,0.1,NEAR)
@@ -4851,7 +4895,9 @@ C If likely new surface complexity is within limits add door.
 
 C Update the connection list. Move all others up and then insert with
 C default values.
+              write(6,*) 'before adddedsurf a ',icon,NZSUR(icomp)
               call addedsurf(icomp,icon,itrc,ier)
+              write(6,*) 'after adddedsurf a ',icon,NZSUR(icomp)
 
 C Add surfaces attribution parameters
               ICT(ICON)=0
@@ -4901,6 +4947,11 @@ C and the new surface will be within complexity limits.
             REQDAREA=XVDAREA(ICC)+
      &               XDWAREA(ICC)+XNWAREA(ICC)
             SCALEFACTORVD=SQRT(REQDAREA/TOTAREA)
+
+C Debug.
+            write(6,*) 'V-door ',ICC,REQDAREA,SCALEFACTORVD,
+     &        XVDAREA(ICC)
+
             CALL ECLOSE(XVDAREA(ICC),0.0,0.1,NEAR)
             if(2*NVER(IS)+2.lt.42.and.(.NOT.NEAR).and.
      &        (NSUR+1.lt.MS)) then
@@ -4936,7 +4987,9 @@ C and the new surface will be within complexity limits.
 
 C Update the connection list. Move all others up and then insert with
 C default values.
+              write(6,*) 'before adddedsurf b ',icon,NZSUR(icomp)
               call addedsurf(icomp,icon,itrc,ier)
+              write(6,*) 'after adddedsurf b ',icon,NZSUR(icomp)
 
 C Add surfaces attribution parameters
               ICT(ICON)=0
@@ -4985,6 +5038,11 @@ C Now put display glazing in if there was one in the original model
 C and within complexity limits.
             REQDAREA=XDWAREA(ICC)+XNWAREA(ICC)
             SCALEFACTORDG=SQRT(REQDAREA/TOTAREA)
+
+C Debug.
+            write(6,*) 'D-glz ',ICC,REQDAREA,SCALEFACTORDG,
+     &        XDWAREA(ICC)
+
             CALL ECLOSE(XDWAREA(ICC),0.0,0.1,NEAR)
             if(2*NVER(IS)+2.lt.42.and.(.NOT.NEAR).and.
      &        (NSUR+1.lt.MS)) then
@@ -5020,7 +5078,9 @@ C and within complexity limits.
 
 C Update the connection list. Move all others up and then insert with
 C default values.
+              write(6,*) 'before adddedsurf c ',icon,NZSUR(icomp)
               call addedsurf(icomp,icon,itrc,ier)
+              write(6,*) 'after adddedsurf c ',icon,NZSUR(icomp)
 
 C Add surfaces attribution parameters
               ICT(ICON)=0
@@ -5069,6 +5129,11 @@ C Now put glazing and frame based on the NCM requirements (there might
 C not have been a window or frame in the original model).
             REQDAREA=XNWAREA(ICC)
             SCALEFACTORNG=SQRT(REQDAREA/TOTAREA)
+
+C Debug.
+            write(6,*) 'glz ',ICC,REQDAREA,SCALEFACTORNG,
+     &        XNWAREA(ICC)
+
             CALL ECLOSE(XNWAREA(ICC),0.0,0.1,NEAR)
 
 C If likely new surface complexity is within limits and we have not
@@ -5109,7 +5174,9 @@ C already gotten enough glazing area add another window and frame.
 
 C Update the connection list. Move all others up and then insert with
 C default values.
+              write(6,*) 'before adddedsurf d ',icon,NZSUR(icomp)
               call addedsurf(icomp,icon,itrc,ier)
+              write(6,*) 'after adddedsurf d ',icon,NZSUR(icomp)
 
 C Add surfaces attribution parameters
               ICT(ICON)=0
@@ -5182,7 +5249,9 @@ C been a frame in the original model).
 
 C Update the connection list. Move all others up and then insert with
 C default values.
+              write(6,*) 'before adddedsurf e ',icon,NZSUR(icomp)
               call addedsurf(icomp,icon,itrc,ier)
+              write(6,*) 'after adddedsurf e ',icon,NZSUR(icomp)
 
 C Add surfaces attribution parameters
               ICT(ICON)=0
@@ -5406,7 +5475,7 @@ C Adapt original title of model.
       END
 
 C ********************* EMKTYP
-C EMKSBM creates a model variant based on the SBEM methodology. Details
+C EMKTYP creates a model variant based on the SBEM methodology. Details
 C of this can be found in relevant EU and UK building regulations.
 C This subroutine copies and modifies the cfg file and
 C makes a new model representative of the typical building.
