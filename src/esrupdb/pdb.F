@@ -30,9 +30,9 @@ C Boston, MA 02111-1307 USA.
       integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
 
-C The Plant component DataBase program maintains a
-C database containing plant component descriptions.
-C The database holds the data needed by ESRUbps to
+C The Plant component template management program maintains
+C a file containing plant component descriptions.
+C The file holds the data needed by ESRUbps to
 C allow simulation of plant operation.
 C Facilities are provided to enter, list, edit and
 C delete component descriptions.
@@ -63,7 +63,8 @@ C Name of current application
       logical     unixok,OK,DOK,XST
       CHARACTER ZITEM(10)*30 
       CHARACTER PZDESC*25,LTMP*72,cdesc*80,inf*144,L144*144
-      character lcmdfl*144,outs*124,outs248*248
+      character lcmdfl*144,lltmp*144
+      character outs*124,outs248*248
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,fs*1
 
@@ -222,36 +223,22 @@ C Take command line file name as initial file.
         LCMDFL='UNKNOWN'
       endif
 
-C Initialize plant component database file.
+C Initialize plant component template file.
   100 helptopic='pdb_file_name_select'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      L144=LCMDFL
-      llt=lnblnk(L144)
+      lltmp=' '  ! clear file name to be returned
+      call edisp(iuout,'  ')  ! echo blank line
+      L144=LCMDFL  ! set initial guess to command line file
+      CALL EASKXORGTKF(L144,'Plant component templates','Confirm:',
+     &  DPCDB,lltmp,'plant templates',IER,nbhelp)
 
-C The X11 version will be returning only the name of the
-C file, while the GTK version will be returning the
-C name with the full path.
-      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-      if(iglib.eq.1.or.iglib.eq.3)then
-        if(llt.lt.96)then
-          CALL EASKF(L144,'Plant component templates file','Confirm:',
-     &      96,DPCDB,' Database name ',IER,nbhelp)
-        elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(L144,'Plant component templates file','Confirm:',
-     &      124,DPCDB,' Database name ',IER,nbhelp)
-        elseif(llt.ge.124.and.llt.le.144)then
-          CALL EASKF(L144,'Plant component templates file','Confirm:',
-     &      144,DPCDB,' Database name ',IER,nbhelp)
-        endif
-      elseif(iglib.eq.2)then
-        CALL EASKF(L144,'Plant component templates file','Confirm:',
-     &    144,DPCDB,' Database name ',IER,nbhelp)
-      else
-        CALL EASKF(L144,'Plant component templates file','Confirm:',
-     &    96,DPCDB,' Database name ',IER,nbhelp)
+C If user cancel display the menu without loading file.
+      if(ier.eq.-3)then
+        goto 210  ! display menu.
       endif
 
-      if(L144(1:2).ne.'  ')LCMDFL=L144
+C Set LCMDFL based on user confirmation.
+      if(lltmp(1:2).ne.'  ')LCMDFL=lltmp
 
 C Find the path and local file name, if exists open otherwise fill.
       call fdroot(LCMDFL,path,LTMP)
@@ -268,7 +255,8 @@ C IRECLN= from plantdb.h file.
         IREC = 1
         READ (IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1) PZDESC
         IF (PZDESC .NE. ' PLANT COMPONENT DATABASE')then
-          call usrmsg('File is not a plant component database,',
+          call usrmsg(
+     &      'File is not a plant component templates file,',
      &      'please supply the file name again.','W')
           goto 100
         endif
@@ -297,11 +285,11 @@ C New file.
         call EFOPRAN(IFIL,LTMP,IRECLN,3,IER)
         CALL PCUPDT (0)
         imod=1
-        call usrmsg(' ',' Creating new database.','-')
+        call usrmsg(' ','Creating new plant components file.','-')
       endif
 
 C Build main menu.
-      write(zitem(1),'(a,a)') 'a File: ',LTMP(1:19)
+  210  write(zitem(1),'(a,a)') 'a File: ',LTMP(1:19)
       zitem(2)='  _______________________   '
       zitem(3)='b List & export components  '
       zitem(4)='c Insert & import components'
@@ -313,7 +301,7 @@ C Build main menu.
       zitem(10)='- Finish                   '
 
 C Display menu.
-  210 NITEMS = 10
+      NITEMS = 10
       INO = -5
 
 C Use askabout to instanciate the initial help messages (2nd parameter is one).
@@ -379,7 +367,7 @@ C Error handling.
   1   dok=.true.
       helptopic='pdb_confusion_warning'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      write(outs,'(a)') 'Error in pdb main database scan. '
+      write(outs,'(a)') 'Error in pdb main component scan. '
       CALL ASKOK(outs,' Exit from ESRUpdb ?',OK,dok,2)
       if(ok)then
         CALL EPAGEND
@@ -390,7 +378,7 @@ C Error handling.
       END
 
 C ******** list  ********
-C This subroutine lists components in database in a window.
+C This subroutine lists component templates in a window.
 C Components colud then be picked from list.
 C 'inpc'        : number of components.
 C 'ival'        : array to contain selected component(s) position
@@ -442,7 +430,7 @@ C Now display the menu.
   1   dok=.true.
       helptopic='pdb_could_not_scan'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      write(outs,'(a)') 'Error in pdb list database scan. '
+      write(outs,'(a)') 'Error in pdb list component scan. '
       CALL ASKOK(outs,' Exit from ESRUpdb ?',OK,dok,2)
       if(OK)then
         CALL EPAGEND

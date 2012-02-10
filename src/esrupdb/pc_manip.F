@@ -19,9 +19,9 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C pc_manip hold routines which manipulate entities in
-C a plant component database.
+C a plant component templates.
 
-C The plant component database has a record width of IRECLN, and
+C The plant component templates has a record width of IRECLN, and
 C contains, per record IREC, the following:
 C
 C Record      Contents
@@ -95,6 +95,8 @@ C write it to the terminal.
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
+      character lcmdfl*144
+      common/rcmd/LCMDFL
 
       dimension ival(MAXPC)
       logical ok,dok
@@ -102,7 +104,8 @@ C write it to the terminal.
       EXTERNAL PCEXCH, COMPDS, COMPNO
       LOGICAL COMPDS, COMPNO
       CHARACTER ZITEM(11)*30
-      character LTMP*72,buffer*120
+      character lltmp*144,L144*144
+      character buffer*120
       integer NITEMS,MNUPIK ! max items and current menu item
       integer lastmmod      ! so can restore display
 
@@ -163,18 +166,26 @@ C Clear dialogue box.
 
         if(mnupik.eq.1)then
 
-C Output to file.
-
-C << use standard file dialogs for this >>
-
+C Output to file using standard file dialog.
           helptopic='pdb_list_options_menu'
           call gethelptext(helpinsub,helptopic,nbhelp)
-          ltmp=' '
-  210     CALL EASKS(LTMP,
+  210     lltmp=' '  ! clear file name to be returned
+          call edisp(iuout,'  ')  ! echo blank line
+
+C Set initial guess for export file to command line file +a
+          write(L144,'(2a)') LCMDFL(1:lnblnk(LCMDFL)),'a'  
+          CALL EASKXORGTKF(L144,
      &      'ASCII export file name (then select component order)',
-     &      'Confirm:',72,' ','ASCII export file',IER,nbhelp)
+     &      'Confirm:','exported.dta',
+     &      lltmp,'export plant templates',IER,nbhelp)
+
+C If user cancel display the menu without loading file.
+          if(ier.eq.-3)then
+            goto 110  ! re-display menu.
+          endif
+
           IUCHAN = IFIL+1
-          CALL FPOPEN (IUCHAN,ISTAT,4,3,LTMP)
+          CALL FPOPEN (IUCHAN,ISTAT,4,3,LLTMP)
           IF (ISTAT .LT. 0)then
             dok=.false.
             helptopic='pdb_list_ascii_fail'
@@ -206,7 +217,7 @@ C Output in numerical order
             INDXPR(I) = I
   108     CONTINUE
           if(NPC.GE.100)then
-            call usrmsg(' PCLIST: sorting database...',' ','-')
+            call usrmsg(' PCLIST: sorting components...',' ','-')
           endif
           CALL PSHELL (NPC,COMPNO,PCEXCH)
           DO 310 I = 1, NPC
@@ -231,7 +242,7 @@ C Output in alphabetical order.
             INDXPR(I) = I
   107     CONTINUE
           IF(NPC.GE.100)then
-            call usrmsg(' PCLIST: sorting database...',' ','-')
+            call usrmsg(' PCLIST: sorting components...',' ','-')
           endif
           CALL PSHELL (NPC,COMPDS,PCEXCH)
           DO 410 I = 1, NPC
@@ -709,7 +720,7 @@ C Error handling.
   1   dok=.true.
       helptopic='pdb_is_confused'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      CALL ASKOK(' Error in pdb:pcget reading database. ',
+      CALL ASKOK(' Error in pdb:pcget reading components. ',
      &           ' Exit from ESRUpdb ?',OK,dok,nbhelp)
       if(OK)then
         CALL EPAGEND
@@ -981,7 +992,7 @@ C Error handling.
   1   dok=.true.
       helptopic='pdb_is_confused'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      write(outs,'(a,i4)') 'Error pcput: database writing @ rec: ',irec
+      write(outs,'(a,i4)') 'Error pcput: component writing @ rec:',irec
       CALL ASKOK(outs,' Exit from ESRUpdb ?',OK,dok,nbhelp)
       if(OK)then
         CALL EPAGEND
@@ -1049,8 +1060,8 @@ C Error handling
   1   dok=.true.
       helptopic='pdb_is_confused'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      write(outs,'(a,i4)') 'Error pcput: database writing @ rec: ',irec
-      CALL ASKOK('Error in pdb:pcrmv database compacting. ',
+      write(outs,'(a,i4)') 'Error pcput: component writing @ rec:',irec
+      CALL ASKOK('Error in pdb:pcrmv components file compacting. ',
      &  ' Exit from ESRUpdb ?',OK,dok,2)
       if(OK)then
         CALL EPAGEND
@@ -1115,7 +1126,7 @@ C Error handling
   1   dok=.true.
       helptopic='pdb_is_confused'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      CALL ASKOK('Error in pdb:pcupdt database updating. ',
+      CALL ASKOK('Error in pdb:pcupdt components updating. ',
      &  ' Exit from ESRUpdb ?',OK,dok,nbhelp)
       if(OK)then
         CALL EPAGEND
