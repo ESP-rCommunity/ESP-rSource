@@ -61,14 +61,15 @@ C Name of current application
       character cAppName*12
 
       logical     unixok,OK,DOK,XST
-      CHARACTER ZITEM(9)*26 
+      CHARACTER ZITEM(10)*30 
       CHARACTER PZDESC*25,LTMP*72,cdesc*80,inf*144,L144*144
       character lcmdfl*144,outs*124,outs248*248
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,fs*1
 
       character cVnum*16      ! returned from ESPrVersionNum
-      character pagestitle*42 ! for banner title via epages call
+      character pagestitle*48 ! for banner title via epages call
+      character buffer*124    ! for listing summary of components
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer ier
@@ -125,14 +126,14 @@ C Clear temporary descriptions.
 
       MMOD=MODL
       if(iappw.eq.0.and.iappx.eq.0.and.iappy.eq.0)then
-        iappw=510
+        iappw=520
         iappx=85
         iappy=110
       else
         if(iappx.le.0)iappx=85
         if(iappy.le.0)iappy=110
         if(iappw.le.200)then
-          iappwi=int(510*iappw*0.01)
+          iappwi=int(520*iappw*0.01)
           iappw=iappwi
         elseif(iappw.gt.200)then
           continue
@@ -141,14 +142,15 @@ C Clear temporary descriptions.
 
 C Set pixels high to iappw and pixels wide to factor in monitor size.
       iapphi=iappw
-      iappwi=int(real(iappw)*(1024.0/780.0))
+C      iappwi=int(real(iappw)*(1024.0/780.0))
+      iappwi=int(real(iappw)*(1024.0/720.0))
 
       if(iappw.gt.0.and.iappw.lt.100)then
         menuchw = MAX0(int(24*iappw*0.01),20)
         LIMIT =26
         LIMTTY=26
       else
-        menuchw = 22
+        menuchw = 32
         LIMIT =26
         LIMTTY=26
       endif
@@ -166,7 +168,7 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
 
 C Find the current ESP-r version number and add it to application title.
       call ESPrVersionNum(cVnum)
-      write(pagestitle,'(2a)') 'ESP-r Plant db Manager ',
+      write(pagestitle,'(2a)') 'ESP-r Plant component manager ',
      &  cVnum(1:lnblnk(cVnum))
 
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
@@ -213,7 +215,8 @@ C after scan of .esprc file.
 C Take command line file name as initial file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
         LCMDFL=inf
-        write(outs248,'(a,a)')' the input file is: ',LCMDFL
+        write(outs248,'(a,a)')'Input file is: ',LCMDFL
+        call edisp(iuout,'  ')
         call edisp248(iuout,outs248,80)
       else
         LCMDFL='UNKNOWN'
@@ -231,20 +234,20 @@ C name with the full path.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       if(iglib.eq.1.or.iglib.eq.3)then
         if(llt.lt.96)then
-          CALL EASKF(L144,'Plant component database file name? ',' ',
+          CALL EASKF(L144,'Plant component templates file','Confirm:',
      &      96,DPCDB,' Database name ',IER,nbhelp)
         elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(L144,'Plant component database file name? ',' ',
+          CALL EASKF(L144,'Plant component templates file','Confirm:',
      &      124,DPCDB,' Database name ',IER,nbhelp)
         elseif(llt.ge.124.and.llt.le.144)then
-          CALL EASKF(L144,'Plant component database file name? ',' ',
+          CALL EASKF(L144,'Plant component templates file','Confirm:',
      &      144,DPCDB,' Database name ',IER,nbhelp)
         endif
       elseif(iglib.eq.2)then
-        CALL EASKF(L144,'Plant component database file name? ',' ',
+        CALL EASKF(L144,'Plant component templates file','Confirm:',
      &    144,DPCDB,' Database name ',IER,nbhelp)
       else
-        CALL EASKF(L144,'Plant component database file name? ',' ',
+        CALL EASKF(L144,'Plant component templates file','Confirm:',
      &    96,DPCDB,' Database name ',IER,nbhelp)
       endif
 
@@ -284,17 +287,9 @@ C Recover item pointers.
 
 C Recover item code numbers.
         call edisp(iuout,' ')
-        call edisp(iuout,
-     &  ' Database contains the following plant component entries:')
-        call edisp(iuout,' ')
-        DO 120 I = 1,NPC
-          IREC = ITMLOC(I,1)
-          READ (IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1)IDUM, ITMLOC(I,2)
-          irec=irec+2
-          read(ifil,REC=IREC,IOSTAT=ISTAT,ERR=1) cdesc
-          write(outs,'(i3,a,a80)') i,'- ',cdesc
-          call edisp(iuout,outs)
-  120   CONTINUE
+        write(outs,'(a,i3,a)') 'There are ',NPC,
+     &    ' plant component template entries.'
+        call edisp(iuout,outs)
       else
 
 C New file.
@@ -306,24 +301,25 @@ C New file.
       endif
 
 C Build main menu.
-      write(zitem(1),'(a,a)') 'a Db: ',LTMP(1:16)
-      zitem(2)='  ____________________   '
-      zitem(3)='b List & export compnts  '
-      zitem(4)='c Insert & import compnts'
-      zitem(5)='d Delete components      '
-      zitem(6)='e Edit a component       '
-      zitem(7)='  ____________________   '
-      zitem(8)='? Help                   '
-      zitem(9)='- Finish ESRUpdb         '
+      write(zitem(1),'(a,a)') 'a File: ',LTMP(1:19)
+      zitem(2)='  _______________________   '
+      zitem(3)='b List & export components  '
+      zitem(4)='c Insert & import components'
+      zitem(5)='d Delete components         '
+      zitem(6)='e Edit a component          '
+      zitem(7)='  _______________________   '
+      zitem(8)='! Summary of entries        '
+      zitem(9)='? Help                      '
+      zitem(10)='- Finish                   '
 
 C Display menu.
-  210 NITEMS = 9
+  210 NITEMS = 10
       INO = -5
 
 C Use askabout to instanciate the initial help messages (2nd parameter is one).
       call askabout('pdb ',1)
 
-  220 CALL EMENU('  ESP-r plant db',ZITEM,NITEMS,INO)
+  220 CALL EMENU('  ESP-r plant components',ZITEM,NITEMS,INO)
       if(imod.ne.1.and.ifchk.eq.0.and.
      &       (ino.eq.4.or.ino.eq.5.or.ino.eq.6)) then
 
@@ -338,17 +334,31 @@ C Display warning message.
           ifchk=1
         endif
       endif
-      if(INO.EQ.9)then
+      if(INO.EQ.10)then
 
 C Exit from program.
-        call usrmsg(' Closing plant dbase management...',' ','P')
+        call usrmsg(' Closing plant component management...',' ','P')
         call erpfree(ifil,istat)
         CALL EPAGEND
         STOP
-      elseif(INO .EQ. 8)then
+      elseif(INO .EQ. 9)then
 
 C Describe components and menu structure.
         call askabout('pdb ',0)
+      elseif(INO .EQ. 8)then
+
+C Provide summary of entries. Note INDXPC is in common via pdb_data.h
+C and it the identity index of the component.
+        call edisp(iuout,' Entry  Model Description')
+        DO 910 I = 1,NPC
+          CALL PCGET (I)
+          IF (INDXPC .EQ. I) THEN
+            WRITE (buffer,15) INDXPC,ICODE,ZCDESC(1:LNBLNK(ZCDESC))
+   15       FORMAT (I3,' =',I5,' ',A)
+            call edisp(iuout,buffer)
+          ENDIF
+  910   CONTINUE
+
       ELSEIF (INO .EQ. 1)then
         goto 100
       ELSEIF (INO .EQ. 3)then

@@ -101,7 +101,7 @@ C write it to the terminal.
 
       EXTERNAL PCEXCH, COMPDS, COMPNO
       LOGICAL COMPDS, COMPNO
-      CHARACTER ZITEM(11)*24
+      CHARACTER ZITEM(11)*30
       character LTMP*72,buffer*120
       integer NITEMS,MNUPIK ! max items and current menu item
       integer lastmmod      ! so can restore display
@@ -120,6 +120,7 @@ C Check library is not empty.
       ENDIF
 
       lastmmod=mmod   ! remember the display mode
+      IUCHAN = IUOUT  ! start with list to feedback
 
 C Initialize print list array INDXPR.
       DO 100 I = 1, NPC
@@ -127,20 +128,28 @@ C Initialize print list array INDXPR.
   100 CONTINUE
 
 C Build menu list options.
-        zitem(1) ='a To file              '
-        zitem(2) ='  ---------------------'
-        zitem(3) ='b In numerical order   '
-        zitem(4) ='c In alphabetical order'
-        zitem(5) ='d User defined order   '
-        zitem(6) ='e Unordered (as in db) '
-        zitem(7) ='  ---------------------'
-        zitem(8) ='f Summary of entries   '
-        zitem(9) ='  ---------------------'
-        zitem(10)='? Help                 '
-        zitem(11)='- Return to main menu  '
+        if(IUCHAN.eq.IUOUT)then
+          zitem(1) ='a List >> feedback      '
+        else
+          zitem(1) ='a List >> file          '
+        endif
+        zitem(2) ='  ------------------------'
+        zitem(3) ='b In numerical order      '
+        zitem(4) ='c In alphabetical order   '
+        zitem(5) ='d In user defined order   '
+        zitem(6) ='e Unordered (as in file)  '
+        zitem(7) ='  ------------------------'
+        zitem(8) ='f Summary of entries      '
+        zitem(9) ='  ------------------------'
+        zitem(10)='? Help                    '
+        zitem(11)='- Exit                    '
 
 C Display menu and interpret pick.
-  110   IUCHAN = IUOUT
+  110   if(IUCHAN.ne.IUOUT)then
+          call edisp(iuout,'  ')
+          call edisp(iuout,'Component export request completed.')
+          IUCHAN = IUOUT  ! reset output channel
+        endif
   120   NITEMS = 11
         MNUPIK = -5
 
@@ -155,11 +164,15 @@ C Clear dialogue box.
         if(mnupik.eq.1)then
 
 C Output to file.
+
+C << use standard file dialogs for this >>
+
           helptopic='pdb_list_options_menu'
           call gethelptext(helpinsub,helptopic,nbhelp)
           ltmp=' '
-  210     CALL EASKS(LTMP,' ASCII file name? ',' ',72,' ',
-     &      ' ASCII file',IER,nbhelp)
+  210     CALL EASKS(LTMP,
+     &      'ASCII export file name (then select component order)',
+     &      'Confirm:',72,' ','ASCII export file',IER,nbhelp)
           IUCHAN = IFIL+1
           CALL FPOPEN (IUCHAN,ISTAT,4,3,LTMP)
           IF (ISTAT .LT. 0)then
@@ -184,7 +197,7 @@ C Output to file.
 
 C Write to file
           call edisp(iuchan,' PLANT COMPONENT DATABASE Listing')
-          CALL USRMSG(' ',' Please select listing type from menu','-')
+          CALL USRMSG(' ',' Please select listing type from menu','P')
           GOTO 120
         elseif(mnupik.eq.3)then
 
