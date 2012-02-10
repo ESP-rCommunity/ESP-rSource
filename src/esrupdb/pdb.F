@@ -62,12 +62,13 @@ C Name of current application
 
       logical     unixok,OK,DOK,XST
       CHARACTER ZITEM(10)*30 
-      CHARACTER PZDESC*25,LTMP*72,cdesc*80,inf*144,L144*144
-      character lcmdfl*144,lltmp*144
+      CHARACTER PZDESC*25,LTMP*72,cdesc*80
+      character inf*144,L144*144,paction*16,pact*16
+      character lcmdfl*144,lltmp*144,ascif*72,pascif*72
       character outs*124,outs248*248
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,fs*1
-
+      character tab*1
       character cVnum*16      ! returned from ESPrVersionNum
       character pagestitle*48 ! for banner title via epages call
       character buffer*124    ! for listing summary of components
@@ -99,6 +100,7 @@ C If left & top offsets are 0 then use defaults.
       cAppName = 'pdb'
       helpinapp='pdb'  ! set once for the application
       helpinsub='pdb'  ! set for MAIN
+      tab = CHAR(9)
       IUOUT=6
       IUIN=5
       IFIL=10
@@ -106,7 +108,11 @@ C If left & top offsets are 0 then use defaults.
       imod=0
       ltmp=' '
       ITFS=1
-      call parpsf(MODL,iappw,iappx,iappy,inf)
+
+C Parse the command line which might include instructions to carry
+C out an ascii->bin or bin->ascii conversion.
+C      call parpsf(MODL,iappw,iappx,iappy,inf)
+      call parsfact(MODL,iappw,iappx,iappy,inf,pact,ascif)
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -221,6 +227,157 @@ C Take command line file name as initial file.
         call edisp248(iuout,outs248,80)
       else
         LCMDFL='UNKNOWN'
+      endif
+
+C Take command line action parameter:
+C If paction = 'asci2bin' then fill binary file `inf` with data 
+C from `ascif` and exit.
+C If paction is `bin2asci` file ascii file `ascif` with data from
+C the binary file `inf` and exit.
+      if(pact(1:1).ne.' ')then
+        paction=pact
+        write(outs,'(a,a)')' the action is: ',paction
+        call edisp(iuout,outs)
+        write(outs,'(a,a)')'pdb: the input action is: ',paction
+        call tstamp('>',outs)
+        if(paction(1:8).eq.'asci2bin')then
+
+C Convert ascii file to binary (LCMDFL) and exit.
+          pascif=ascif
+
+          IUFIL = IFIL+1
+          CALL FPOPEN (IUFIL,ISTAT,1,1,pascif)
+          IF (ISTAT .EQ. -3)then
+            call usrmsg(
+     &        'Plant component import file could not be opend',
+     &        'so exiting without doing anything.','W')
+            CALL EPAGEND
+            STOP
+          endif
+
+C Create empty binary file. Use fdroot to set LTMP.
+          call fdroot(LCMDFL,path,LTMP)
+          ier=0
+          call EFOPRAN(IFIL,LTMP,IRECLN,3,IER)
+          CALL PCUPDT (0)
+          imod=1
+
+C Read components data from file
+          READ (IUFIL,2) PZDESC
+    2     FORMAT (A25,/)
+          IF(PZDESC(1:25).NE.' PLANT COMPONENT DATABASE') THEN
+            call usrmsg(
+     &        'Import file does not appear to be a plant templates',
+     &        'ascii file so exiting without doing anything.','W')
+            CALL EPAGEND
+            STOP
+          endif
+  212     CALL PCRDF(IUFIL)
+          IF(INDXPC.GT.0) THEN
+            CALL PCPUT (INDXPC)
+            WRITE(buffer,'(a,i5,a)')
+     &       ' Plant component entry ',INDXPC,' added'
+            call edisp(iuout,buffer)
+            GOTO 212  ! jump back and read more and dump to binary
+          ELSE IF(INDXPC.LT.0) THEN
+            GOTO 212  ! jump back and read more and dump to binary
+          ELSE
+            CALL ERPFREE(IUFIL,ISTAT)
+          END IF
+
+          call tstamp('>',
+     &      'Finished plant component conversion ASCI2BIN')
+          write(outs248,'(5a)')'Plant_conversion',tab,
+     &      pascif(1:lnblnk(pascif)),tab,LCMDFL(1:lnblnk(LCMDFL))
+          call edisp248(iuout,outs248,90)
+          call pausems(1000)  ! so users can see completion message
+          CALL EPAGEND
+          STOP
+        elseif(paction(1:8).eq.'bin2asci')then
+
+C Read in the supplied plant template file (LCMDFL), scan it to find
+C number of components and where each component starts in the file.
+          pascif=ascif
+          call fdroot(LCMDFL,path,LTMP)
+          XST=.false.
+          call findfil(LTMP,XST)
+          if(XST)then
+
+C Existing file, so check header. IRECLN is from plantdb.h file.
+            ier=0
+            call EFOPRAN(IFIL,LTMP,IRECLN,1,IER)
+            if(ier.ne.0)then
+              call usrmsg(
+     &          'Plant component templates file could not be opend',
+     &          'so exiting without doing anything.','W')
+              CALL EPAGEND
+              STOP
+            endif
+
+            IREC = 1
+            READ (IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1) PZDESC
+            IF (PZDESC .NE. ' PLANT COMPONENT DATABASE')then
+              call usrmsg(
+     &          'File is not a plant component templates file,',
+     &          'so exiting without doing anything.','W')
+              CALL EPAGEND
+              STOP
+            endif
+            IREC = 2
+            READ (IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1) NPC,NXTREC
+
+C Check library is not empty.
+            IF (NPC .EQ. 0) THEN
+              call usrmsg('No components in file so ascii file cannot',
+     &                    'be created. Exiting with no action.','W')
+              CALL EPAGEND
+              STOP
+            ENDIF
+
+C Recover item pointers which will be used by PCGET.
+            NR = 1
+            DO 111 I = 3, MHEADR
+              NRR = NR + IRECLN - 1
+              IREC = I
+              READ (IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1)
+     &                          (ITMLOC(J,1),J=NR,NRR)
+              NR = NR + IRECLN
+  111       CONTINUE
+
+C Set file unit for export and open it for writing.
+            IUCHAN = IFIL+1
+            CALL FPOPEN (IUCHAN,ISTAT,4,3,pascif)
+            IF (ISTAT .LT. 0)then
+              call usrmsg(
+     &          'Unable to open ASCII export file so exiting without',
+     &          'doing anything.','W')
+              CALL EPAGEND
+              STOP
+            endif
+
+C Write to file
+            call edisp(iuchan,' PLANT COMPONENT DATABASE Listing')
+
+C Output unordered.
+            DO 810 I = 1, NPC
+              CALL PCGET (I)
+              IF (INDXPC .GT. 0) THEN
+                CALL PCWRT (IUCHAN)
+              ENDIF
+  810       CONTINUE
+            close(IUCHAN)
+            write(outs248,'(5a)')'Plant_conversion',tab,
+     &        LCMDFL(1:lnblnk(LCMDFL)),tab,pascif(1:lnblnk(pascif))
+            call edisp248(iuout,outs248,90)
+            call pausems(1000)  ! so users can see completion message
+          else
+            call usrmsg(
+     &        'Unable to find plant file so exiting without',
+     &        'doing any conversion.','W')
+          endif
+          CALL EPAGEND
+          STOP
+        endif
       endif
 
 C Initialize plant component template file.
