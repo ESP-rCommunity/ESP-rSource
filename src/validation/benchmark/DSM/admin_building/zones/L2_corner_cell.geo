@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_cor_cell # tag version, format, zone name
-*date Mon Jan 30 17:47:02 2012  # latest file modification 
+*date Sat Feb 11 17:15:48 2012  # latest file modification 
 L2_cor_cell describes cellular offices at corner of level two
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,44.69600,35.70000,52.45000  #   1
@@ -61,25 +61,35 @@ L2_cor_cell describes cellular offices at corner of level two
 *surf,ptn_corb,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,09  #   2 ||< Wall-9:L2_coridor
 *surf,side_fac,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   3 ||< external
 *surf,stone_g,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   4 ||< external
-*surf,glaz_g,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   5 ||< external
+*surf,glaz_g,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   5 ||< external
 *surf,vent_g,VERT,-,WALL,-,stone_vent,OPAQUE,EXTERIOR,0,0  #   6 ||< external
-*surf,glaz_f,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
+*surf,glaz_f,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
 *surf,stone_f,VERT,-,WALL,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #   8 ||< external
 *surf,Wall-11,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,30,02  #   9 ||< Wall-2:L2_kitchen
 *surf,cel319_ceil,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,50,50  #  10 ||< cel319_ceil:L3_ufloor
 *surf,cel319_floor,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,17,54  #  11 ||< cel319_floor:L2_uf_plen
 *surf,struc_l2,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,04  #  12 ||< struc_l2:stair_2
 *surf,filler,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,05  #  13 ||< Wall-14:stair_2
-*surf,glaz_g_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  14 ||< external
-*surf,glaz_g_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
-*surf,glaz_f_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
-*surf,glaz_f_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external
+*surf,glaz_g_low,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  14 ||< external
+*surf,glaz_g_hi,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
+*surf,glaz_f_low,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
+*surf,glaz_f_hi,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 
 # shading directives
-*shad_calc,none  # no temporal shading requested
+*shad_calc,all_applicable  10 # list of surfs
+  3  4  5  6  7  8 14 15 16 17
 # 
-*insol_calc,none  # no insolation requested
+*insol_calc,all_applicable   6 # insolation sources
+  5  7 14 15 16 17
 # 
 *base_list,1,11,    31.22 0  # zone base list
+# 
+# block entities:
+#  *obs = obstructions
+*block_start, 20 20 # geometric blocks
+*obs,40.750,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_e,stone_eldon  # block   1
+*obs,47.250,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_f,stone_eldon  # block   2
+*obs,13.250,50.750,48.000,36.000,1.000,13.450,0.000,1.00,other_bld,stone_eldon  # block   3
+*end_block

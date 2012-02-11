@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_print_zn # tag version, format, zone name
-*date Mon Jan 30 17:58:01 2012  # latest file modification 
+*date Sat Feb 11 17:31:53 2012  # latest file modification 
 L3_print_zn describes the print zone on L3 at srv facade
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,24.03439,35.70000,56.35000  #   1
@@ -39,19 +39,28 @@ L3_print_zn describes the print zone on L3 at srv facade
 *surf,ptn_pr_op,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,48,36  #   1 ||< ptn_pr_op:L3_open_lft
 *surf,ptn_cel,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,40,25  #   2 ||< ptn_pz:L3_cell_srv
 *surf,vent_d,VERT,-,WALL,-,stone_vent,OPAQUE,EXTERIOR,0,0  #   3 ||< external
-*surf,glaz_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
+*surf,glaz_a,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
 *surf,stone_a,VERT,-,WALL,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #   5 ||< external
 *surf,ptn_social,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,42,03  #   6 ||< ptn_print:L3_social
 *surf,ceiling_pz,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,80,07  #   7 ||< ceiling_pz:L4_srv_void
 *surf,floor_pz,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,50,30  #   8 ||< floor_pz:L3_ufloor
-*surf,upper_gla_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   9 ||< external
-*surf,low_gla_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  10 ||< external
+*surf,upper_gla_a,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   9 ||< external
+*surf,low_gla_a,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  10 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 
 # shading directives
-*shad_calc,none  # no temporal shading requested
+*shad_calc,all_applicable   5 # list of surfs
+  3  4  5  9 10
 # 
-*insol_calc,none  # no insolation requested
+*insol_calc,all_applicable   3 # insolation sources
+  4  9 10
 # 
 *base_list,1,8,    18.05 0  # zone base list
+# 
+# block entities:
+#  *obs = obstructions
+*block_start, 20 20 # geometric blocks
+*obs,27.100,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_c,stone_eldon  # block   1
+*obs,13.250,50.750,48.000,36.000,1.000,13.450,0.000,1.00,other_bld,stone_eldon  # block   2
+*end_block

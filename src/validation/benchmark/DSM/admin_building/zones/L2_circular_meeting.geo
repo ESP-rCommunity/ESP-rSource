@@ -83,9 +83,9 @@ L2_circular describes circular meeting room on level two
 *surf,seg_m,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,20,14  #  10 ||< seg_b:L2_careers
 *surf,seg_n,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,20,15  #  11 ||< seg_c:L2_careers
 *surf,seg_o,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,20,16  #  12 ||< seg_d:L2_careers
-*surf,facade_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  13 ||< external
+*surf,facade_a,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  13 ||< external
 *surf,frame,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  14 ||< external
-*surf,facade_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
+*surf,facade_b,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
 *surf,ceil_l2_cir,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,36,20  #  16 ||< L3_cir_flor:L3_circular
 *surf,L2_cir_floor,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,17,46  #  17 ||< Base:L2_uf_plen
 *surf,seg_al,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,22,03  #  18 ||< seg_a:L2_open_pln

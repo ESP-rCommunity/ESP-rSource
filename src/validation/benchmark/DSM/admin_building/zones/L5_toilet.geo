@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_toilet # tag version, format, zone name
-*date Tue Jan 31 09:14:54 2012  # latest file modification 
+*date Sat Feb 11 18:24:42 2012  # latest file modification 
 L5_toilet describes toilet adjacent to stair one on level 5
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,13.25000,30.50000,64.15000  #   1
@@ -58,6 +58,7 @@ L5_toilet describes toilet adjacent to stair one on level 5
 # shading directives
 *shad_calc,none  # no temporal shading requested
 # 
-*insol_calc,none  # no insolation requested
+*insol_calc,all_applicable   1 # insolation sources
+  9
 # 
 *base_list,1,8,    27.50 0  # zone base list

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,sw_facade # tag version, format, zone name
-*date Mon Jan 30 17:27:21 2012  # latest file modification 
+*date Sat Feb 11 16:30:31 2012  # latest file modification 
 sw_facade describes the stone facade on the south west
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,-8.20400,4.08490,55.59300  #   1

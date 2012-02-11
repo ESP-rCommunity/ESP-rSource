@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_kitchen # tag version, format, zone name
-*date Mon Jan 30 17:49:09 2012  # latest file modification 
+*date Sat Feb 11 17:22:29 2012  # latest file modification 
 L2_kitchen describes L2 kitchenette on service road facade
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,41.37145,35.70000,52.45000  #   1
@@ -33,7 +33,7 @@ L2_kitchen describes L2 kitchenette on service road facade
 *surf,Wall-1,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,11  #   1 ||< Wall-11:L2_coridor
 *surf,Wall-2,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,28,09  #   2 ||< Wall-11:L2_cor_cell
 *surf,Wall-3,VERT,-,WALL,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #   3 ||< external
-*surf,Wall-4,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
+*surf,glazing,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
 *surf,Wall-5,VERT,-,WALL,-,stone_vent,OPAQUE,EXTERIOR,0,0  #   5 ||< external
 *surf,Wall-6,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,10  #   6 ||< ptn_stair:L2_cell_srv
 *surf,Top-7,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,50,25  #   7 ||< Top-7:L3_ufloor
@@ -42,8 +42,17 @@ L2_kitchen describes L2 kitchenette on service road facade
 *insol,3,0,0,0  # default insolation distribution
 # 
 # shading directives
-*shad_calc,none  # no temporal shading requested
+*shad_calc,all_applicable   3 # list of surfs
+  3  4  5
 # 
-*insol_calc,none  # no insolation requested
+*insol_calc,all_applicable   1 # insolation sources
+  4
 # 
 *base_list,1,8,    16.86 0  # zone base list
+# 
+# block entities:
+#  *obs = obstructions
+*block_start, 20 20 # geometric blocks
+*obs,40.750,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_e,stone_eldon  # block   1
+*obs,13.250,50.750,48.000,36.000,1.000,13.450,0.000,1.00,other_bld,stone_eldon  # block   2
+*end_block

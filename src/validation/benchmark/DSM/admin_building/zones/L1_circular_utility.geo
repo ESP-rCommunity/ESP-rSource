@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L1_circular # tag version, format, zone name
-*date Mon Jan 30 17:31:47 2012  # latest file modification 
+*date Fri Feb 10 07:22:09 2012  # latest file modification 
 L1_circular describes a circular vent shaft at level one
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,28.92676,7.59981,47.95000  #   1
@@ -81,18 +81,20 @@ L1_circular describes a circular vent shaft at level one
 *surf,seg_m,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,08,28  #  13 ||< seg_m:L1_careers
 *surf,seg_n,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,08,27  #  14 ||< seg_n:L1_careers
 *surf,seg_o,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,08,26  #  15 ||< seg_o:L1_careers
-*surf,facade_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
+*surf,facade_a,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
 *surf,frame,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  17 ||< external
-*surf,facade_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
+*surf,facade_b,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
 *surf,Top,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,17,45  #  19 ||< Top:L2_uf_plen
 *surf,Base,FLOR,-,-,-,foundation,OPAQUE,GROUND,01,00  #  20 ||< ground profile  1
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 
 # shading directives
-*shad_calc,none  # no temporal shading requested
+*shad_calc,all_applicable   3 # list of surfs
+ 16 17 18
 # 
-*insol_calc,none  # no insolation requested
+*insol_calc,all_applicable   2 # insolation sources
+ 16 18
 # 
 *base_list,0,42.00,0  # zone base
 # 

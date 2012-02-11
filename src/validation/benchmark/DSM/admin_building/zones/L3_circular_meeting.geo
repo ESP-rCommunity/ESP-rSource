@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_circular # tag version, format, zone name
-*date Mon Jan 30 17:52:36 2012  # latest file modification 
+*date Sat Feb 11 17:24:28 2012  # latest file modification 
 L3_circular describes circular meeting room at level three
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,28.92676,7.59981,56.35000  #   1
@@ -86,7 +86,7 @@ L3_circular describes circular meeting room at level three
 *surf,seg_m,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,02  #  13 ||< seg_bc:L3_L4_cir_vd
 *surf,seg_n,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,03  #  14 ||< seg_cc:L3_L4_cir_vd
 *surf,seg_o,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,37,04  #  15 ||< seg_dc:L3_L4_cir_vd
-*surf,facade_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
+*surf,facade_a,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
 *surf,frame,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  17 ||< external
 *surf,facade_b,VERT,-,WALL,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
 *surf,L3_cir_ceil,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,52,26  #  19 ||< L4_circ_flor:L4_circular
@@ -98,9 +98,11 @@ L3_circular describes circular meeting room at level three
 *insol,3,0,0,0  # default insolation distribution
 # 
 # shading directives
-*shad_calc,none  # no temporal shading requested
+*shad_calc,all_applicable   3 # list of surfs
+ 16 17 18
 # 
-*insol_calc,none  # no insolation requested
+*insol_calc,all_applicable   2 # insolation sources
+ 16 18
 # 
 *base_list,0,42.00,0  # zone base
 # 

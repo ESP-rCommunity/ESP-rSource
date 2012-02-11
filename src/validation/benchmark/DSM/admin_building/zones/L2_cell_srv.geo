@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_cell_srv # tag version, format, zone name
-*date Tue Jan 31 10:47:12 2012  # latest file modification 
+*date Sat Feb 11 17:50:59 2012  # latest file modification 
 L2_cell_srv describes a series of cellular offices facing servic
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,12.00000,35.70000,52.45000  #   1
@@ -198,45 +198,45 @@ L2_cell_srv describes a series of cellular offices facing servic
 *surf,ptn_cor_i,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,27,12  #   9 ||< Wall-12:L2_coridor
 *surf,ptn_stair,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,30,06  #  10 ||< Wall-6:L2_kitchen
 *surf,stone_a,VERT,-,WALL,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  11 ||< external
-*surf,glaz_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  12 ||< external
+*surf,glaz_a,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  12 ||< external
 *surf,stone_b,VERT,-,WALL,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  13 ||< external
-*surf,glaz_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  14 ||< external
+*surf,glaz_b,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  14 ||< external
 *surf,stone_c,VERT,-,WALL,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  15 ||< external
-*surf,glaz_c,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
+*surf,glaz_c,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
 *surf,stone_d,VERT,-,WALL,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  17 ||< external
-*surf,glaz_d,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
+*surf,glaz_d,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
 *surf,stone_e,VERT,-,WALL,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  19 ||< external
 *surf,stone_f,VERT,-,WALL,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  20 ||< external
-*surf,glaze_f,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  21 ||< external
+*surf,glaze_f,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  21 ||< external
 *surf,vent_b,VERT,-,WALL,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  22 ||< external
-*surf,glaz_h,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
+*surf,glaz_h,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
 *surf,stone_h,VERT,-,WALL,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  24 ||< external
-*surf,glaz_i,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  25 ||< external
+*surf,glaz_i,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  25 ||< external
 *surf,vent_a,VERT,-,WALL,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  26 ||< external
-*surf,glaz_k,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  27 ||< external
+*surf,glaz_k,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  27 ||< external
 *surf,stone_k,VERT,-,WALL,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  28 ||< external
 *surf,ptn_toil,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,32,03  #  29 ||< ptn_corc_l2:L2_toilet
 *surf,ceiling,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,50,24  #  30 ||< ceiling:L3_ufloor
 *surf,floor_l2_cc,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,17,56  #  31 ||< floor_l2_cc:L2_uf_plen
-*surf,glaz_a_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  32 ||< external
-*surf,glaz_a_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  33 ||< external
-*surf,glaz_b_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  34 ||< external
-*surf,glaz_b_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  35 ||< external
-*surf,glaz_c_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  36 ||< external
-*surf,glaz_c_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  37 ||< external
-*surf,glaz_d_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  38 ||< external
-*surf,glaz_d_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  39 ||< external
-*surf,glaz_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  40 ||< external
-*surf,glaz,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  41 ||< external
-*surf,glaz_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  42 ||< external
-*surf,glaz_k_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  43 ||< external
-*surf,glaz_k_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  44 ||< external
-*surf,glaz_i_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  45 ||< external
-*surf,glaz_i_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  46 ||< external
-*surf,glaz_h_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  47 ||< external
-*surf,glaz_h_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  48 ||< external
-*surf,glaz_f_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  49 ||< external
-*surf,glaz_f_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  50 ||< external
+*surf,glaz_a_low,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  32 ||< external
+*surf,glaz_a_hi,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  33 ||< external
+*surf,glaz_b_low,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  34 ||< external
+*surf,glaz_b_hi,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  35 ||< external
+*surf,glaz_c_low,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  36 ||< external
+*surf,glaz_c_hi,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  37 ||< external
+*surf,glaz_d_low,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  38 ||< external
+*surf,glaz_d_hi,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  39 ||< external
+*surf,glaz_low,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  40 ||< external
+*surf,glaz,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  41 ||< external
+*surf,glaz_hi,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  42 ||< external
+*surf,glaz_k_low,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  43 ||< external
+*surf,glaz_k_hi,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  44 ||< external
+*surf,glaz_i_low,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  45 ||< external
+*surf,glaz_i_hi,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  46 ||< external
+*surf,glaz_h_low,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  47 ||< external
+*surf,glaz_h_hi,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  48 ||< external
+*surf,glaz_f_low,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  49 ||< external
+*surf,glaz_f_hi,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  50 ||< external
 *surf,int_ptn_a,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,52  #  51 ||< int_ptn_a_:L2_cell_srv
 *surf,int_ptn_a_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,51  #  52 ||< int_ptn_a:L2_cell_srv
 *surf,int_ptn_b,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,29,54  #  53 ||< int_ptn_b_:L2_cell_srv
@@ -251,8 +251,21 @@ L2_cell_srv describes a series of cellular offices facing servic
 *insol,3,0,0,0  # default insolation distribution
 # 
 # shading directives
-*shad_calc,none  # no temporal shading requested
+*shad_calc,all_applicable  37 # list of surfs
+ 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50
 # 
-*insol_calc,none  # no insolation requested
+*insol_calc,all_applicable  27 # insolation sources
+ 12 14 16 18 21 23 25 27 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50
 # 
 *base_list,1,31,   146.74 0  # zone base list
+# 
+# block entities:
+#  *obs = obstructions
+*block_start, 20 20 # geometric blocks
+*obs,13.900,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_a,stone_eldon  # block   1
+*obs,20.900,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_b,stone_eldon  # block   2
+*obs,27.100,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_c,stone_eldon  # block   3
+*obs,33.750,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_d,stone_eldon  # block   4
+*obs,40.750,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_e,stone_eldon  # block   5
+*obs,13.250,50.750,48.000,36.000,1.000,13.450,0.000,1.00,other_bld,stone_eldon  # block   6
+*end_block

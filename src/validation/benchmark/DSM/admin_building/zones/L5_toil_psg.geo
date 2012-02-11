@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_toil_psg # tag version, format, zone name
-*date Tue Jan 31 09:15:45 2012  # latest file modification 
+*date Sat Feb 11 18:25:26 2012  # latest file modification 
 L5_toil_psg describes is the toilet and passage on top level
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,23.17941,64.15000  #   1
@@ -47,7 +47,7 @@ L5_toil_psg describes is the toilet and passage on top level
 *surf,pt_meeting,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,72,09  #   1 ||< ptn_toilet:L5_meeting
 *surf,pta_fac_l5,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,22  #   2 ||< pta_fac_l5:ne_facade
 *surf,ptb_fac_l5,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,23  #   3 ||< ptb_fac_l5:ne_facade
-*surf,gl_facade_l5,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
+*surf,gl_facade_l5,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
 *surf,ptnc_fac_l5,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,26  #   5 ||< ptnc_fac_l5:ne_facade
 *surf,ptna_str_l5,VERT,-,-,-,door,OPAQUE,ANOTHER,02,15  #   6 ||< ptna_str_l5:stair_2
 *surf,ptn_cel_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,71,07  #   7 ||< ptn_psg:L5_pz_meet
@@ -60,8 +60,19 @@ L5_toil_psg describes is the toilet and passage on top level
 *insol,3,0,0,0  # default insolation distribution
 # 
 # shading directives
-*shad_calc,none  # no temporal shading requested
+*shad_calc,all_applicable   2 # list of surfs
+  4 10
 # 
-*insol_calc,none  # no insolation requested
+*insol_calc,all_applicable   1 # insolation sources
+  4
 # 
 *base_list,2,15,11,    53.76 0  # zone base list
+# 
+# block entities:
+#  *obs = obstructions
+*block_start, 20 20 # geometric blocks
+*obs,59.105,29.490,64.140,0.620,0.800,0.010,90.000,0.00,gl_facads,stone_eldon  # block   1
+*obs,59.105,29.490,67.375,0.620,0.800,0.010,90.000,0.00,gl_facadh,stone_eldon  # block   2
+*obs,59.105,29.490,64.140,0.010,0.800,3.245,90.000,0.00,gl_facadl,stone_eldon  # block   3
+*obs,59.105,30.100,64.140,0.010,0.800,3.245,90.000,0.00,gl_facadr,stone_eldon  # block   4
+*end_block

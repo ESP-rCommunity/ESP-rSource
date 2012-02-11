@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_cell_srv # tag version, format, zone name
-*date Tue Jan 31 08:59:57 2012  # latest file modification 
+*date Sat Feb 11 18:05:37 2012  # latest file modification 
 L4_cell_srv describes row of cellular offices srv facade 4th lev
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,27.69180,35.70000,60.25000  #   1
@@ -179,37 +179,37 @@ L4_cell_srv describes row of cellular offices srv facade 4th lev
 *surf,ptn_stair_cb,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,49  #   9 ||< ptnd_str_l4:stair_2
 *surf,stone_h,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  10 ||< external
 *surf,stone_g,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  11 ||< external
-*surf,glaz_g,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  12 ||< external
+*surf,glaz_g,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  12 ||< external
 *surf,vent_g,VERT,-,WALL,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  13 ||< external
-*surf,glaz_f,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  14 ||< external
-*surf,glaz_e,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
+*surf,glaz_f,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  14 ||< external
+*surf,glaz_e,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
 *surf,vent_f,VERT,-,WALL,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  16 ||< external
-*surf,glaz_d,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external
+*surf,glaz_d,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external
 *surf,stone_c,VERT,-,WALL,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  18 ||< external
-*surf,glaz_c,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
+*surf,glaz_c,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
 *surf,vent_e,VERT,-,WALL,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  20 ||< external
-*surf,glaz_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  21 ||< external
+*surf,glaz_b,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  21 ||< external
 *surf,stone_a,VERT,-,WALL,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  22 ||< external
-*surf,glaz_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
+*surf,glaz_a,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
 *surf,vent_d,VERT,-,WALL,-,stone_vent,OPAQUE,EXTERIOR,0,0  #  24 ||< external
 *surf,ptn_pz,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,64,02  #  25 ||< ptn_cel:L4_printz
 *surf,Top-29,CEIL,-,ROOF,FLAT,roof_0.2,OPAQUE,EXTERIOR,0,0  #  26 ||< external
 *surf,Base-30,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,80,04  #  27 ||< Base-30:L4_srv_void
 *surf,stone_f,VERT,-,WALL,-,stone_gyp,OPAQUE,EXTERIOR,0,0  #  28 ||< external
-*surf,glaz_g_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external
-*surf,glaz_g_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  30 ||< external
-*surf,glaz_f_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  31 ||< external
-*surf,glaz_f_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  32 ||< external
-*surf,glaz_e_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  33 ||< external
-*surf,glaz_e_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  34 ||< external
-*surf,glaz_d_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  35 ||< external
-*surf,glaz_d_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  36 ||< external
-*surf,glaz_c_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  37 ||< external
-*surf,glaz_c_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  38 ||< external
-*surf,glaz_b_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  39 ||< external
-*surf,glaz_b_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  40 ||< external
-*surf,glaz_a_low,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  41 ||< external
-*surf,glaz_a_hi,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  42 ||< external
+*surf,glaz_g_low,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external
+*surf,glaz_g_hi,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  30 ||< external
+*surf,glaz_f_low,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  31 ||< external
+*surf,glaz_f_hi,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  32 ||< external
+*surf,glaz_e_low,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  33 ||< external
+*surf,glaz_e_hi,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  34 ||< external
+*surf,glaz_d_low,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  35 ||< external
+*surf,glaz_d_hi,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  36 ||< external
+*surf,glaz_c_low,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  37 ||< external
+*surf,glaz_c_hi,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  38 ||< external
+*surf,glaz_b_low,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  39 ||< external
+*surf,glaz_b_hi,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  40 ||< external
+*surf,glaz_a_low,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  41 ||< external
+*surf,glaz_a_hi,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  42 ||< external
 *surf,int_ptna,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,55,44  #  43 ||< int_ptna_:L4_cell_srv
 *surf,int_ptna_,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,55,43  #  44 ||< int_ptna:L4_cell_srv
 *surf,int_ptnb,VERT,-,PARTN,-,gyp_aco_gyp,OPAQUE,ANOTHER,55,46  #  45 ||< int_ptnb_:L4_cell_srv
@@ -226,8 +226,20 @@ L4_cell_srv describes row of cellular offices srv facade 4th lev
 *insol,3,0,0,0  # default insolation distribution
 # 
 # shading directives
-*shad_calc,none  # no temporal shading requested
+*shad_calc,all_applicable  31 # list of surfs
+ 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 26 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42
 # 
-*insol_calc,none  # no insolation requested
+*insol_calc,all_applicable  21 # insolation sources
+ 12 14 15 17 19 21 23 29 30 31 32 33 34 35 36 37 38 39 40 41 42
 # 
 *base_list,1,30,   118.03 0  # zone base list
+# 
+# block entities:
+#  *obs = obstructions
+*block_start, 20 20 # geometric blocks
+*obs,27.100,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_c,stone_eldon  # block   1
+*obs,33.750,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_d,stone_eldon  # block   2
+*obs,40.750,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_e,stone_eldon  # block   3
+*obs,47.250,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_f,stone_eldon  # block   4
+*obs,13.250,50.750,48.000,36.000,1.000,13.450,0.000,1.00,other_bld,stone_eldon  # block   5
+*end_block

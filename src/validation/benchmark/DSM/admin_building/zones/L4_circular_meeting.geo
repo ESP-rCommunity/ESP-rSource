@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_circular # tag version, format, zone name
-*date Tue Jan 31 10:50:21 2012  # latest file modification 
+*date Sat Feb 11 18:04:58 2012  # latest file modification 
 L4_circular describes circular meeting room at level four
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,28.92676,7.59981,60.25000  #   1
@@ -94,9 +94,9 @@ L4_circular describes circular meeting room at level four
 *surf,seg_m,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,15  #  13 ||< seg_bcu:L3_L4_cir_vd
 *surf,seg_n,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,37,16  #  14 ||< seg_ccu:L3_L4_cir_vd
 *surf,seg_o,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,37,17  #  15 ||< seg_dcu:L3_L4_cir_vd
-*surf,facade_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
+*surf,facade_a,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
 *surf,frame,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  17 ||< external
-*surf,facade_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
+*surf,facade_b,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
 *surf,L4_cir_roof,CEIL,-,ROOF,FLAT,roof_0.2,OPAQUE,EXTERIOR,0,0  #  19 ||< external
 *surf,L3_segm_flr,FLOR,-,-,-,flr_ov_pln,OPAQUE,ANOTHER,78,51  #  20 ||< crescnt:L4_flrvoid
 *surf,seg_hl,VERT,-,-,-,gyp_ins_gyp,OPAQUE,ANOTHER,57,10  #  21 ||< seg_h:L4_open_plr
@@ -109,9 +109,11 @@ L4_circular describes circular meeting room at level four
 *insol,3,0,0,0  # default insolation distribution
 # 
 # shading directives
-*shad_calc,none  # no temporal shading requested
+*shad_calc,all_applicable   4 # list of surfs
+ 16 17 18 19
 # 
-*insol_calc,none  # no insolation requested
+*insol_calc,all_applicable   2 # insolation sources
+ 16 18
 # 
 *base_list,0,42.00,0  # zone base
 # 

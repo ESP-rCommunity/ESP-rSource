@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_open_rt # tag version, format, zone name
-*date Tue Jan 31 09:26:56 2012  # latest file modification 
+*date Sat Feb 11 18:30:47 2012  # latest file modification 
 L5_open_rt describes right portion of level five open plan
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,13.00000,64.15000  #   1
@@ -121,13 +121,13 @@ L5_open_rt describes right portion of level five open plan
 *surf,front_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,76,08  #  20 ||< front_rail:L5_light_w2
 *surf,right_rail,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,76,09  #  21 ||< right_rail:L5_light_w2
 *surf,ptnb_opn_l5,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,74,09  #  22 ||< ptnb_opn_l5:L5_toil_psg
-*surf,fac_fr_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
-*surf,fac_fr_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  24 ||< external
-*surf,fac_fr_c,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  25 ||< external
-*surf,fac_fr_d,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  26 ||< external
-*surf,fac_fr_e,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  27 ||< external
-*surf,fac_fr_f,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  28 ||< external
-*surf,fac_fr_g,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external
+*surf,fac_fr_a,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  23 ||< external
+*surf,fac_fr_b,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  24 ||< external
+*surf,fac_fr_c,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  25 ||< external
+*surf,fac_fr_d,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  26 ||< external
+*surf,fac_fr_e,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  27 ||< external
+*surf,fac_fr_f,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  28 ||< external
+*surf,fac_fr_g,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external
 *surf,L5_oprt_ceil,CEIL,-,ROOF,FLAT,roof_0.2,OPAQUE,EXTERIOR,0,0  #  30 ||< external
 *surf,L5_op_rt_flr,FLOR,-,-,-,top_pln,OPAQUE,ANOTHER,81,48  #  31 ||< L5_op_rt_flr:L5_uf_plen
 # 
@@ -136,6 +136,7 @@ L5_open_rt describes right portion of level five open plan
 # shading directives
 *shad_calc,none  # no temporal shading requested
 # 
-*insol_calc,none  # no insolation requested
+*insol_calc,all_applicable   7 # insolation sources
+ 23 24 25 26 27 28 29
 # 
 *base_list,0,230.78,0  # zone base

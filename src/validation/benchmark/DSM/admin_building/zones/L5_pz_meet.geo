@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_pz_meet # tag version, format, zone name
-*date Tue Jan 31 09:13:09 2012  # latest file modification 
+*date Sat Feb 11 18:23:04 2012  # latest file modification 
 L5_pz_meet is the L5 print zone plus meeting room adj stair2
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,46.25000,36.00000,64.15000  #   1
@@ -76,6 +76,7 @@ L5_pz_meet is the L5 print zone plus meeting room adj stair2
 # shading directives
 *shad_calc,none  # no temporal shading requested
 # 
-*insol_calc,none  # no insolation requested
+*insol_calc,all_applicable   2 # insolation sources
+ 14 15
 # 
 *base_list,1,13,    55.40 0  # zone base list

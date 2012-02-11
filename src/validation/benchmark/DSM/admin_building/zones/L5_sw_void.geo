@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_sw_void # tag version, format, zone name
-*date Tue Jan 31 10:52:39 2012  # latest file modification 
+*date Sat Feb 11 18:29:17 2012  # latest file modification 
 L5_sw_void describes void at level five SW
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,-6.03235,5.93735,63.39300  #   1
@@ -112,10 +112,10 @@ L5_sw_void describes void at level five SW
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,fac_gla,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   1 ||< external
-*surf,fac_glb,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   2 ||< external
-*surf,fac_glc,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
-*surf,fac_gld,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
+*surf,fac_gla,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   1 ||< external
+*surf,fac_glb,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   2 ||< external
+*surf,fac_glc,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
+*surf,fac_gld,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
 *surf,ptn_fr,VERT,-,-,-,mull_90,OPAQUE,ANOTHER,65,16  #   5 ||< ptn_opn_fr:L5_confer
 *surf,gptn_b,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,65,15  #   6 ||< ptn_opn_d:L5_confer
 *surf,gptn_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,65,14  #   7 ||< ptn_opn_c:L5_confer
@@ -127,10 +127,10 @@ L5_sw_void describes void at level five SW
 *surf,ptn_lob_dr,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,67,05  #  13 ||< gptn_open:L5_lobby
 *surf,ptn_stair,VERT,-,-,-,stone_cast_i,OPAQUE,ANOTHER,01,32  #  14 ||< ptn_void_l5:stair_1
 *surf,bit_facade,VERT,-,WALL,-,stone_stone,OPAQUE,EXTERIOR,0,0  #  15 ||< external
-*surf,bk_fac_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
-*surf,bk_fac_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external
-*surf,back_fac_c,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
-*surf,bk_fac_d,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
+*surf,bk_fac_a,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
+*surf,bk_fac_b,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  17 ||< external
+*surf,back_fac_c,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  18 ||< external
+*surf,bk_fac_d,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
 *surf,roof,CEIL,-,ROOF,FLAT,roof_0.2,OPAQUE,EXTERIOR,0,0  #  20 ||< external
 *surf,fict_base,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,51,20  #  21 ||< Top-26:L4_sw_void
 *surf,ptn_vd3,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,03,37  #  22 ||< ptn_vd5:lifts
@@ -142,14 +142,22 @@ L5_sw_void describes void at level five SW
 *surf,l5_facade_b,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,04,22  #  28 ||< l5_facc:sw_facade
 *surf,l5_facad_c,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,04,21  #  29 ||< l5_facb:sw_facade
 *surf,l5_facade_d,VERT,-,-,-,inside_kw_el,OPAQUE,ANOTHER,04,20  #  30 ||< l5_faca:sw_facade
-*surf,fac_glaz_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  31 ||< external
-*surf,fac_glaz_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  32 ||< external
+*surf,fac_glaz_a,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  31 ||< external
+*surf,fac_glaz_b,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  32 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 
 # shading directives
-*shad_calc,none  # no temporal shading requested
+*shad_calc,all_applicable  13 # list of surfs
+  1  2  3  4 15 16 17 18 19 20 26 31 32
 # 
-*insol_calc,none  # no insolation requested
+*insol_calc,all_applicable  10 # insolation sources
+  1  2  3  4 16 17 18 19 31 32
 # 
 *base_list,1,21,   223.76 0  # zone base list
+# 
+# block entities:
+#  *obs = obstructions
+*block_start, 20 20 # geometric blocks
+*obs,-7.400,4.227,52.450,0.100,1.300,14.500,0.000,1.00,sw_stone,stone_eldon  # block   1
+*end_block

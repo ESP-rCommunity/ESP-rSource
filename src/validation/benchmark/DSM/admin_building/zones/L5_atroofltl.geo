@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_atroofltl # tag version, format, zone name
-*date Tue Jan 31 11:17:57 2012  # latest file modification 
+*date Sat Feb 11 18:29:40 2012  # latest file modification 
 L5_atroofltl describes the main roof light over atria
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,4.00000,3.75000,64.15000  #   1
@@ -185,21 +185,21 @@ L5_atroofltl describes the main roof light over atria
 *surf,seg_d,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,52,04  #  24 ||< seg_d:L4_circular
 *surf,seg_e,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,52,05  #  25 ||< seg_e:L4_circular
 *surf,seg_f,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,52,06  #  26 ||< seg_f:L4_circular
-*surf,fac_gl_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  27 ||< external
-*surf,fac_gl_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  28 ||< external
-*surf,fac_gl_c,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external
-*surf,fac_gl_d,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  30 ||< external
-*surf,fac_gl_e,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  31 ||< external
-*surf,fac_gl_f,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  32 ||< external
-*surf,fac_gl_g,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  33 ||< external
-*surf,fac_gl_h,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  34 ||< external
-*surf,fac_gl_i,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  35 ||< external
-*surf,fac_gl_j,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  36 ||< external
-*surf,fac_gl_k,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  37 ||< external
-*surf,fac_gl_l,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  38 ||< external
+*surf,fac_gl_a,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  27 ||< external
+*surf,fac_gl_b,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  28 ||< external
+*surf,fac_gl_c,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  29 ||< external
+*surf,fac_gl_d,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  30 ||< external
+*surf,fac_gl_e,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  31 ||< external
+*surf,fac_gl_f,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  32 ||< external
+*surf,fac_gl_g,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  33 ||< external
+*surf,fac_gl_h,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  34 ||< external
+*surf,fac_gl_i,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  35 ||< external
+*surf,fac_gl_j,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  36 ||< external
+*surf,fac_gl_k,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  37 ||< external
+*surf,fac_gl_l,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  38 ||< external
 *surf,fac_fr,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  39 ||< external
-*surf,side_fac_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  40 ||< external
-*surf,side_fac_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  41 ||< external
+*surf,side_fac_a,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  40 ||< external
+*surf,side_fac_b,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  41 ||< external
 *surf,to_meeting,VERT,-,-,-,gyp_aco_gyp,OPAQUE,ANOTHER,55,01  #  42 ||< Wall-1:L4_sw_meet
 *surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,38  #  43 ||< struc_a:L5_uf_plen
 *surf,struc_d,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,39  #  44 ||< struc_d:L5_uf_plen
@@ -219,9 +219,11 @@ L5_atroofltl describes the main roof light over atria
 *insol,3,0,0,0  # default insolation distribution
 # 
 # shading directives
-*shad_calc,none  # no temporal shading requested
+*shad_calc,all_applicable  24 # list of surfs
+  1  2  3  4  5  6 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 51 54 55
 # 
-*insol_calc,none  # no insolation requested
+*insol_calc,all_applicable  16 # insolation sources
+  5  6 27 28 29 30 31 32 33 34 35 36 37 38 40 41
 # 
 *base_list,1,19,   174.39 0  # zone base list
 # 

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L1_meeting # tag version, format, zone name
-*date Mon Jan 30 17:35:31 2012  # latest file modification 
+*date Sat Feb 11 16:55:08 2012  # latest file modification 
 L1_meeting describes corner meeting adj career services
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,23.17941,47.95000  #   1
@@ -57,11 +57,11 @@ L1_meeting describes corner meeting adj career services
 *surf,ptn_open_c,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,08,22  #   4 ||< ptn_open_c:L1_careers
 *surf,ptn_frame,VERT,-,-,-,mull_90,OPAQUE,ANOTHER,08,23  #   5 ||< ptn_frame:L1_careers
 *surf,fac_frame,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   6 ||< external
-*surf,fac_glaz_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
-*surf,fac_glaz_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   8 ||< external
-*surf,fac_glaz_c,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   9 ||< external
+*surf,fac_glaz_a,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
+*surf,fac_glaz_b,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   8 ||< external
+*surf,fac_glaz_c,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   9 ||< external
 *surf,pa_fac_l2,VERT,-,WALL,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  10 ||< external
-*surf,gl_fac_l2,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  11 ||< external
+*surf,gl_fac_l2,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  11 ||< external
 *surf,pb_fac_l2,VERT,-,WALL,-,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  12 ||< external
 *surf,ptn_toilet,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,13,01  #  13 ||< pt_meeting:L1_toil_psg
 *surf,ceiling,CEIL,-,-,-,slab_275,OPAQUE,ANOTHER,17,27  #  14 ||< ceiling_mt:L2_uf_plen
@@ -70,8 +70,16 @@ L1_meeting describes corner meeting adj career services
 *insol,3,0,0,0  # default insolation distribution
 # 
 # shading directives
-*shad_calc,none  # no temporal shading requested
+*shad_calc,all_applicable   7 # list of surfs
+  6  7  8  9 10 11 12
 # 
-*insol_calc,none  # no insolation requested
+*insol_calc,all_applicable   6 # insolation sources
+  7  8  9 10 11 12
 # 
 *base_list,1,15,    35.33 0  # zone base list
+# 
+# block entities:
+#  *obs = obstructions
+*block_start, 20 20 # geometric blocks
+*obs,58.400,17.700,51.700,0.100,0.900,16.500,0.000,1.00,stone_fin,stone_eldon  # block   1
+*end_block

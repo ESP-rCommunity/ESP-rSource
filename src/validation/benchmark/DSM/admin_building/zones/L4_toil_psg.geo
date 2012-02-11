@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_toil_psg # tag version, format, zone name
-*date Tue Jan 31 09:01:59 2012  # latest file modification 
+*date Sat Feb 11 17:39:52 2012  # latest file modification 
 L4_toil_psg describes toilet and passage on level four
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,23.17941,60.25000  #   1
@@ -46,7 +46,7 @@ L4_toil_psg describes toilet and passage on level four
 #  boundary condition tag followed by two data items
 *surf,pt_meeting,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,54,09  #   1 ||< ptn_toilet:L4_meeting
 *surf,pta_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,24  #   2 ||< pta_fac_l4:ne_facade
-*surf,gl_facade_l4,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
+*surf,gl_facade_l4,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
 *surf,ptnc_fac_l4,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,27  #   4 ||< ptnc_fac_l4:ne_facade
 *surf,ptna_str_l4,VERT,-,-,-,door,OPAQUE,ANOTHER,02,13  #   5 ||< ptna_str_l4:stair_2
 *surf,ptn_cel_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,58,18  #   6 ||< ptn_cel_b:L4_open_plr
@@ -60,8 +60,19 @@ L4_toil_psg describes toilet and passage on level four
 *insol,3,0,0,0  # default insolation distribution
 # 
 # shading directives
-*shad_calc,none  # no temporal shading requested
+*shad_calc,all_applicable   1 # list of surfs
+  3
 # 
-*insol_calc,none  # no insolation requested
+*insol_calc,all_applicable   1 # insolation sources
+  3
 # 
 *base_list,2,15,10,    53.76 0  # zone base list
+# 
+# block entities:
+#  *obs = obstructions
+*block_start, 20 20 # geometric blocks
+*obs,59.105,29.490,60.240,0.620,0.800,0.010,90.000,0.00,gl_facads,stone_eldon  # block   1
+*obs,59.105,29.490,63.393,0.620,0.800,0.010,90.000,0.00,gl_facadh,stone_eldon  # block   2
+*obs,59.105,29.490,60.240,0.010,0.800,3.163,90.000,0.00,gl_facadl,stone_eldon  # block   3
+*obs,59.105,30.100,60.240,0.010,0.800,3.163,90.000,0.00,gl_facadr,stone_eldon  # block   4
+*end_block

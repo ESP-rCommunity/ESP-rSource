@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_toil_psg # tag version, format, zone name
-*date Mon Jan 30 17:50:08 2012  # latest file modification 
+*date Sat Feb 11 17:23:16 2012  # latest file modification 
 L2_toil_psg describes L2 toilet and passage to stair_2
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,23.17941,52.45000  #   1
@@ -47,7 +47,7 @@ L2_toil_psg describes L2 toilet and passage to stair_2
 *surf,pt_meeting,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,21,13  #   1 ||< ptn_toilet:L2_meeting
 *surf,pta_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,18  #   2 ||< pta_fac_l2:ne_facade
 *surf,ptb_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,19  #   3 ||< ptb_fac_l2:ne_facade
-*surf,gl_facade_l2,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
+*surf,gl_facade_l2,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
 *surf,ptnc_fac_l2,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,20  #   5 ||< ptnc_fac_l2:ne_facade
 *surf,ptna_str_l2,VERT,-,-,-,door,OPAQUE,ANOTHER,02,09  #   6 ||< ptna_str_l2:stair_2
 *surf,ptn_cel_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,26,13  #   7 ||< ptn_cel_b:L2_core_cel
@@ -60,8 +60,19 @@ L2_toil_psg describes L2 toilet and passage to stair_2
 *insol,3,0,0,0  # default insolation distribution
 # 
 # shading directives
-*shad_calc,none  # no temporal shading requested
+*shad_calc,all_applicable   1 # list of surfs
+  4
 # 
-*insol_calc,none  # no insolation requested
+*insol_calc,all_applicable   1 # insolation sources
+  4
 # 
 *base_list,2,15,11,    53.76 0  # zone base list
+# 
+# block entities:
+#  *obs = obstructions
+*block_start, 20 20 # geometric blocks
+*obs,59.105,29.490,52.440,0.620,0.800,0.010,90.000,0.00,gl_facads,stone_eldon  # block   1
+*obs,59.105,29.490,55.593,0.620,0.800,0.010,90.000,0.00,gl_facadh,stone_eldon  # block   2
+*obs,59.105,29.490,52.440,0.010,0.800,3.163,90.000,0.00,gl_facadl,stone_eldon  # block   3
+*obs,59.105,30.100,52.440,0.010,0.800,3.163,90.000,0.00,gl_facadr,stone_eldon  # block   4
+*end_block

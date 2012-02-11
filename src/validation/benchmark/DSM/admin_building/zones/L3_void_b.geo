@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_void_b # tag version, format, zone name
-*date Tue Jan 31 08:47:16 2012  # latest file modification 
+*date Sat Feb 11 17:25:25 2012  # latest file modification 
 L3_void_b describes void above the careers services area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,45.64634,11.68470,56.35000  #   1
@@ -73,25 +73,25 @@ L3_void_b describes void above the careers services area
 #  construction name, optical name
 #  boundary condition tag followed by two data items
 *surf,stone,VERT,-,WALL,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #   1 ||< external
-*surf,fac_gla,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   2 ||< external
-*surf,fac_glb,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
+*surf,fac_gla,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   2 ||< external
+*surf,fac_glb,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   3 ||< external
 *surf,fac_frame,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   4 ||< external
-*surf,side_gl_a,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   5 ||< external
-*surf,side_gl_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   6 ||< external
-*surf,side_gl_c,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
+*surf,side_gl_a,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   5 ||< external
+*surf,side_gl_b,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   6 ||< external
+*surf,side_gl_c,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   7 ||< external
 *surf,side_fr,VERT,-,-,-,mull_90,OPAQUE,ANOTHER,39,14  #   8 ||< ptn_frame:L3_meeting
 *surf,int_glaz,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,49,06  #   9 ||< int_glaz:L3_open_rig
 *surf,int_glazb,VERT,-,-,-,glaz_ptn,SCF8477_10nb,ANOTHER,49,05  #  10 ||< int_glazb:L3_open_rig
 *surf,fict_low,FLOR,-,-,-,fictitious,SC_fictit,ANOTHER,20,18  #  11 ||< fict_low:L2_careers
 *surf,struc_b,SLOP,-,-,-,slab_275,OPAQUE,ANOTHER,78,15  #  12 ||< struc_bvb:L4_flrvoid
 *surf,struc_a,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,78,16  #  13 ||< struc_avb:L4_flrvoid
-*surf,side_gl_au,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  14 ||< external
-*surf,side_gl_bu,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
-*surf,side_gl_cu,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
+*surf,side_gl_au,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  14 ||< external
+*surf,side_gl_bu,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
+*surf,side_gl_cu,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  16 ||< external
 *surf,side_fru,VERT,-,-,-,mull_90,OPAQUE,ANOTHER,53,14  #  17 ||< ptn_frame:L4_meeting
 *surf,stone_u,VERT,-,WALL,-,stone_m_ell,OPAQUE,EXTERIOR,0,0  #  18 ||< external
-*surf,fac_gla_u,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
-*surf,fac_glb_u,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  20 ||< external
+*surf,fac_gla_u,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
+*surf,fac_glb_u,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  20 ||< external
 *surf,fac_fra_u,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  21 ||< external
 *surf,roof,CEIL,-,ROOF,FLAT,roof_0.2,OPAQUE,EXTERIOR,0,0  #  22 ||< external
 *surf,ptn_vb_a,VERT,-,-,-,stone_atr_pt,OPAQUE,ANOTHER,57,04  #  23 ||< ptn_vb_a:L4_open_plr
@@ -102,9 +102,11 @@ L3_void_b describes void above the careers services area
 *insol,3,0,0,0  # default insolation distribution
 # 
 # shading directives
-*shad_calc,none  # no temporal shading requested
+*shad_calc,all_applicable  15 # list of surfs
+  1  2  3  4  5  6  7 14 15 16 18 19 20 21 22
 # 
-*insol_calc,none  # no insolation requested
+*insol_calc,all_applicable  10 # insolation sources
+  2  3  5  6  7 14 15 16 19 20
 # 
 *base_list,1,11,    27.18 0  # zone base list
 # 

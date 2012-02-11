@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L1_support # tag version, format, zone name
-*date Mon Jan 30 17:39:00 2012  # latest file modification 
+*date Sat Feb 11 17:08:03 2012  # latest file modification 
 L1_support is the level one plant rooms and delivery and securit
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,12.00000,30.50000,47.95000  #   1
@@ -98,7 +98,7 @@ L1_support is the level one plant rooms and delivery and securit
 *surf,stone_c,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   7 ||< external
 *surf,louv_b,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #   8 ||< external
 *surf,stone_d,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   9 ||< external
-*surf,door_b,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  10 ||< external
+*surf,door_b,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  10 ||< external
 *surf,louv_c,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  11 ||< external
 *surf,stone_e,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  12 ||< external
 *surf,louv_d,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  13 ||< external
@@ -120,7 +120,8 @@ L1_support is the level one plant rooms and delivery and securit
 *insol,3,0,0,0  # default insolation distribution
 # 
 # shading directives
-*shad_calc,none  # no temporal shading requested
+*shad_calc,all_applicable  15 # list of surfs
+  5  6  7  8  9 10 11 12 13 14 15 16 17 18 27
 # 
 *insol_calc,none  # no insolation requested
 # 
@@ -129,10 +130,11 @@ L1_support is the level one plant rooms and delivery and securit
 # block entities:
 #  *obs = obstructions
 *block_start, 20 20 # geometric blocks
-*obs,13.250,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_a,mull_90  # block   1
-*obs,20.250,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_b,mull_90  # block   2
-*obs,26.750,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_c,mull_90  # block   3
-*obs,33.750,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_d,mull_90  # block   4
-*obs,40.750,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_e,mull_90  # block   5
-*obs,47.250,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_f,mull_90  # block   6
+*obs,13.900,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_a,stone_eldon  # block   1
+*obs,20.900,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_b,stone_eldon  # block   2
+*obs,27.100,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_c,stone_eldon  # block   3
+*obs,33.750,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_d,stone_eldon  # block   4
+*obs,40.750,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_e,stone_eldon  # block   5
+*obs,47.250,40.750,51.690,1.000,1.000,13.450,0.000,1.00,vnt_f,stone_eldon  # block   6
+*obs,13.250,50.750,48.000,36.000,1.000,13.450,0.000,1.00,other_bld,stone_eldon  # block   7
 *end_block

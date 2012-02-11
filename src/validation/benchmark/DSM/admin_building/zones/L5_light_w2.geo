@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_light_w2 # tag version, format, zone name
-*date Tue Jan 31 09:19:15 2012  # latest file modification 
+*date Sat Feb 11 18:25:58 2012  # latest file modification 
 L5_light_w2 describes light well two at level 5
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,21.30000,64.15000  #   1
@@ -84,11 +84,11 @@ L5_light_w2 describes light well two at level 5
 *surf,l3_flrv_l,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,26  #  12 ||< l3_flrv_l2:L5_uf_plen
 *surf,l3_flrv_b,VERT,-,-,-,slab_275,OPAQUE,ANOTHER,81,27  #  13 ||< l3_flrv_b2:L5_uf_plen
 *surf,parap_f,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  14 ||< external
-*surf,glaz_fr,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
+*surf,glaz_fr,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  15 ||< external
 *surf,parap_ri,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  16 ||< external
 *surf,frame_ri,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  17 ||< external
 *surf,parap_bk,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  18 ||< external
-*surf,glaz_bk,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
+*surf,glaz_bk,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  19 ||< external
 *surf,parap_left,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #  20 ||< external
 *surf,frame_left,VERT,-,WALL,-,mull_90,OPAQUE,EXTERIOR,0,0  #  21 ||< external
 *surf,up_glaz,SLOP,up_l3_lw2,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #  22 ||< external
@@ -100,6 +100,7 @@ L5_light_w2 describes light well two at level 5
 # shading directives
 *shad_calc,none  # no temporal shading requested
 # 
-*insol_calc,none  # no insolation requested
+*insol_calc,all_applicable   5 # insolation sources
+ 15 19 22 23 24
 # 
 *base_list,1,6,    27.00 0  # zone base list

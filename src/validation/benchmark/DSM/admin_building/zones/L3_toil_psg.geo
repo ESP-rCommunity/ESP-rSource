@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_toil_psg # tag version, format, zone name
-*date Mon Jan 30 17:59:34 2012  # latest file modification 
+*date Sat Feb 11 18:04:12 2012  # latest file modification 
 L3_toil_psg describes toilet and passage at level three
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,23.17941,56.35000  #   1
@@ -47,7 +47,7 @@ L3_toil_psg describes toilet and passage at level three
 *surf,pt_meeting,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,39,09  #   1 ||< ptn_toilet:L3_meeting
 *surf,pta_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,28  #   2 ||< pta_fac_l3:ne_facade
 *surf,ptb_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,29  #   3 ||< ptb_fac_l3:ne_facade
-*surf,gl_facade_l3,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
+*surf,gl_facade_l3,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
 *surf,ptnc_fac_l3,VERT,-,-,-,masny_at_st,OPAQUE,ANOTHER,05,30  #   5 ||< ptnc_fac_l3:ne_facade
 *surf,ptna_str_l3,VERT,-,-,-,door,OPAQUE,ANOTHER,02,11  #   6 ||< ptna_str_l3:stair_2
 *surf,ptn_cel_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,49,23  #   7 ||< ptn_cel_b:L3_open_rig
@@ -60,8 +60,19 @@ L3_toil_psg describes toilet and passage at level three
 *insol,3,0,0,0  # default insolation distribution
 # 
 # shading directives
-*shad_calc,none  # no temporal shading requested
+*shad_calc,all_applicable   1 # list of surfs
+  4
 # 
-*insol_calc,none  # no insolation requested
+*insol_calc,all_applicable   1 # insolation sources
+  4
 # 
 *base_list,2,15,11,    53.76 0  # zone base list
+# 
+# block entities:
+#  *obs = obstructions
+*block_start, 20 20 # geometric blocks
+*obs,59.105,29.490,56.340,0.620,0.800,0.010,90.000,0.00,gl_facads,stone_eldon  # block   1
+*obs,59.105,29.490,59.493,0.620,0.800,0.010,90.000,0.00,gl_facadh,stone_eldon  # block   2
+*obs,59.105,29.490,56.340,0.010,0.800,3.163,90.000,0.00,gl_facadl,stone_eldon  # block   3
+*obs,59.105,30.100,56.340,0.010,0.800,3.163,90.000,0.00,gl_facadr,stone_eldon  # block   4
+*end_block

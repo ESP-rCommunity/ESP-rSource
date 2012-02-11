@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_confer # tag version, format, zone name
-*date Tue Jan 31 09:08:22 2012  # latest file modification 
+*date Sat Feb 11 18:22:12 2012  # latest file modification 
 L5_confer describes conference room on level five
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,7.50000,64.15000  #   1
@@ -122,8 +122,16 @@ L5_confer describes conference room on level five
 *insol,3,0,0,0  # default insolation distribution
 # 
 # shading directives
-*shad_calc,none  # no temporal shading requested
+*shad_calc,all_applicable  14 # list of surfs
+  1  2  3  4  5  6 17 19 20 21 22 23 24 25
 # 
-*insol_calc,none  # no insolation requested
+*insol_calc,all_applicable   6 # insolation sources
+ 20 21 22 23 24 25
 # 
 *base_list,1,18,   120.03 0  # zone base list
+# 
+# block entities:
+#  *obs = obstructions
+*block_start, 20 20 # geometric blocks
+*obs,0.000,5.800,67.375,20.000,1.600,0.300,12.500,1.00,overhang,stone_eldon  # block   1
+*end_block

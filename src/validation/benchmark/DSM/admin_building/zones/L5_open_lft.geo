@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_open_lft # tag version, format, zone name
-*date Tue Jan 31 09:11:24 2012  # latest file modification 
+*date Sat Feb 11 18:21:06 2012  # latest file modification 
 L5_open_lft describes the left half of opens space level five
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,13.70000,10.50000,64.15000  #   1
@@ -169,8 +169,16 @@ L5_open_lft describes the left half of opens space level five
 *insol,3,0,0,0  # default insolation distribution
 # 
 # shading directives
-*shad_calc,none  # no temporal shading requested
+*shad_calc,all_applicable  18 # list of surfs
+  1  2  3  4  5  6  7  8  9 20 23 24 25 26 27 28 29 30
 # 
-*insol_calc,none  # no insolation requested
+*insol_calc,all_applicable   8 # insolation sources
+ 23 24 25 26 27 28 29 30
 # 
 *base_list,1,21,   362.11 0  # zone base list
+# 
+# block entities:
+#  *obs = obstructions
+*block_start, 20 20 # geometric blocks
+*obs,0.000,5.600,67.375,33.000,1.800,0.300,12.500,1.00,overhang,stone_eldon  # block   1
+*end_block

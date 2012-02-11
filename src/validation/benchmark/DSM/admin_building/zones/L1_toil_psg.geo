@@ -47,7 +47,7 @@ L1_toil_psg describes toilet and passage on level one
 *surf,pt_meeting,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,09,13  #   1 ||< ptn_toilet:L1_meeting
 *surf,faca_l1,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   2 ||< external
 *surf,facb_l1,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   3 ||< external
-*surf,gl_facade,VERT,-,D-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
+*surf,gl_facade,VERT,-,C-WINDOW,CLOSED,db_lpasol,DSF4554_06nb,EXTERIOR,0,0  #   4 ||< external
 *surf,facc_l1,VERT,-,WALL,-,stone_masnry,OPAQUE,EXTERIOR,0,0  #   5 ||< external
 *surf,ptna_str_l1,VERT,-,-,-,conc_250,OPAQUE,ANOTHER,02,07  #   6 ||< ptna_str_l1:stair_2
 *surf,ptn_cel_b,VERT,-,-,-,gyp_blk_ptn,OPAQUE,ANOTHER,14,24  #   7 ||< ptn_toil:L1_support
