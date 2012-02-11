@@ -1324,7 +1324,7 @@ C decides to do some browsing).
         if(iglib.eq.2)then
           write(LCOPY,'(4a)') dinstpath(1:lnblnk(dinstpath)),
      &      fs,'databases',fs
-          CALL EASKF(LCOPY,' ','Materials db?',
+          CALL EASKF(LCOPY,'Standard materials file','Confirm:',
      &      144,DFCON,'materials database',IER,nbhelp)
           if(ier.eq.-3)then
             LFMAT=lprev
@@ -1461,8 +1461,9 @@ C     if blank then no file name change implied.
       common/rpath/path
       common/deflt4/dinstpath
 
-      CHARACTER LTMP*72,lltmp*144,lprev*144
-      character longtfile*144
+      CHARACTER DFILE*72,LLASCI*144
+      character LTMP*72,lltmp*144,lprev*144
+      character longtfile*144,longtafile*144,longtmp*144
       CHARACTER DOIT*300,fs*1,LCOPY*144
       CHARACTER OUTS*124,APP*4
 C      CHARACTER outs248*248
@@ -1472,7 +1473,7 @@ C      CHARACTER outs248*248
       character dirpath*48
 
 C Local strings for user selections dependent on graphic library.
-      character opte*28,optf*28,optg*28
+      character optg*28,opth*28,opti*28
       character lpath*72,fname*72 ! for use with fdroot
       CHARACTER ZPDESC*25
       integer lndbp   ! for length of standard path
@@ -1555,13 +1556,13 @@ C option (list select) is not available for plant templates. If using
 C text or X11 option e edits the string while for GTK there are two
 C options to browse for files in ../dbs or the esp-r distribution.
       if(iglib.eq.1.or.iglib.eq.3)then
-        opte='e edit file name'
-        optf='   '
-        optg='   '
+        optg='g edit file name'
+        opth='   '
+        opti='   '
       elseif(iglib.eq.2)then
-        opte='e browse model ../dbs'
-        optf='f browse esp-r distribution'
-        optg='g make copy of another file'
+        optg='g browse model ../dbs'
+        opth='h browse esp-r distribution'
+        opti='i make copy of another file'
       endif
 
       IF(.NOT.XST)THEN
@@ -1572,9 +1573,10 @@ C If db does not exist locally offer limited choices.
         call MENUATOL('  ','Plant components',
      &    ' ','b select from list','c create new components',
      &    'd copy standard components',
-     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
+     &    'e components >> ascii export','f ascii >> components',
+     &    optg,opth,opti,' ',' ',' ',isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
-        if(isw.eq.7)copydef=.false.
+        if(isw.eq.9)copydef=.false.
       elseif(longtfile(1:ldirpath).eq.dirpath(1:ldirpath))then
 
 C If standard file then offer the following choices (incl /):
@@ -1583,7 +1585,8 @@ C If standard file then offer the following choices (incl /):
         call MENUATOL('  ','Plant components',
      &    'a browse/edit','b select from list',
      &    'c create new components','d copy standard components',
-     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
+     &    'e components >> ascii export','f ascii >> components',
+     &    optg,opth,opti,' ',' ',' ',isw,idno,nbhelp)
         copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
@@ -1593,7 +1596,8 @@ C If standard file then offer the following choices (without /):
         call MENUATOL('  ','Plant components <std>',
      &    'a browse/edit','b select from list',
      &    'c create new components','d copy it to model',
-     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
+     &    'e components >> ascii export','f ascii >> components',
+     &    optg,opth,opti,' ',' ',' ',isw,idno,nbhelp)
         copydef=.false.
       else
 
@@ -1604,9 +1608,10 @@ C default file or the current file.
         call MENUATOL('  ','Plant components <mod>',
      &    'a browse/edit','b select from list',
      &    'c create new components','d copy standard components',
-     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
+     &    'e components >> ascii export','f ascii >> components',
+     &    optg,opth,opti,' ',' ',' ',isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
-        if(isw.eq.7)copydef=.false.
+        if(isw.eq.9)copydef=.false.
       endif
 
 C Act on the user's choice. If no choice return to calling menu.
@@ -1683,10 +1688,10 @@ C use the editing facility.
           goto 44
         endif
 
-      elseif(isw.eq.4.or.isw.eq.7)then
+      elseif(isw.eq.4.or.isw.eq.9)then
 
 C Copy a file to project folder. If iws is 4 then the
-C user has asked for the default database. If isw is 7 then the
+C user has asked for the default database. If isw is 9 then the
 C user wishes to browse for the source file. Suggest a local
 C file name based on the project root name.  Suggest a local
 C file name based on the project root name. Update common to
@@ -1705,6 +1710,118 @@ C reflect it is local.
         endif
        
       elseif(isw.eq.5)then
+
+C Components >> ASCII. If current components are
+C in standard folder start ASCII name in users home folder.
+C Confirm suggested name and then write out asci file.
+        DFILE='./plant_templates.a'
+        if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+          write(LLASCI,'(2a)') LPCDB(1:lnblnk(LPCDB)),'.a'
+        elseif(ipathpcdb.eq.2)then
+          write(LLASCI,'(4a)') path(1:lnblnk(path)),fs,
+     &      LPCDB(1:lnblnk(LPCDB)),'.a'
+        endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          CALL EASKF(LLASCI,'Export ASCII components file','Confirm:',
+     &      96,DFILE,'asci plant comp file name',IER,nbhelp)
+        elseif(iglib.eq.2)then
+          CALL EASKF(LLASCI,'Export ASCII components file','Confirm:',
+     &      144,DFILE,'asci plant comp file name',IER,nbhelp)
+        else
+          CALL EASKF(LLASCI,'Export ASCII components file','Confirm:',
+     &      96,DFILE,'asci plant comp file name',IER,nbhelp)
+        endif
+        if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
+
+C Convert both current binary and asci file names into full paths prior
+C to asking pdb to do the conversion.
+        if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+          lltmp=LPCDB  ! use as is
+        elseif(ipathpcdb.eq.2)then
+          write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
+        endif
+        if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+          call addpath(lltmp,longtfile,concat)
+        elseif(ipathpcdb.eq.2)then
+          longtfile=lltmp
+        endif
+        call addpath(LLASCI,longtafile,concat)
+
+C Setup the command line for pdb.
+        doit = ' '
+        write(doit,'(4a)') 'pdb -mode text -file ',
+     &    longtfile(1:lnblnk(longtfile)),' -act bin2asci ',
+     &    longtafile(1:lnblnk(longtafile))
+        write(6,*) doit
+        call runit(doit,tmode)
+
+        call edisp(iuout,'  ')
+        call edisp(iuout,'The conversion resulted in a new file:')
+        call edisp(iuout,longtafile)
+        goto 60  ! jump to redisplay menu.
+       
+      elseif(isw.eq.6)then
+
+C Components: ASCII >> BINARY
+C Confirm suggested name and then write out binary file.
+        if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+          write(LLASCI,'(2a)') LPCDB(1:lnblnk(LPCDB)),'.a'
+        elseif(ipathpcdb.eq.2)then
+          write(LLASCI,'(4a)') path(1:lnblnk(path)),fs,
+     &      LPCDB(1:lnblnk(LPCDB)),'.a'
+        endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          CALL EASKF(LLASCI,'ASCII (source) file','Confirm:',
+     &      96,DFILE,'asci plant comp file name',IER,nbhelp)
+        elseif(iglib.eq.2)then
+          CALL EASKF(LLASCI,'ASCII (source) file','Confirm:',
+     &      144,DFILE,'asci plant comp file name',IER,nbhelp)
+        else
+          CALL EASKF(LLASCI,'ASCII (source) file','Confirm:',
+     &      96,DFILE,'asci plant comp file name',IER,nbhelp)
+        endif
+        if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
+
+        longtmp=LPCDB
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          CALL EASKF(longtmp,'New plant templates file','Confirm:',
+     &      96,DPCDB,'plant file name',IER,nbhelp)
+        elseif(iglib.eq.2)then
+          CALL EASKF(longtmp,'New plant templates file','Confirm:',
+     &      144,DPCDB,'plant file name',IER,nbhelp)
+        else
+          CALL EASKF(longtmp,'New plant templates file','Confirm:',
+     &      96,DPCDB,'plant file name',IER,nbhelp)
+        endif
+        if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
+
+C Convert both binary and asci file names into full paths prior
+C to asking pdb to do the conversion.
+        if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+          call addpath(longtmp,longtfile,concat)
+        elseif(ipathpcdb.eq.2)then
+          longtfile=longtmp
+        endif
+        call addpath(LLASCI,longtafile,concat)
+
+C Setup the command line for pdb.
+        doit = ' '
+        write(doit,'(4a)') 'pdb -mode text -file ',
+     &    longtfile(1:lnblnk(longtfile)),' -act asci2bin ',
+     &    longtafile(1:lnblnk(longtafile))
+        write(6,*) doit
+        call runit(doit,tmode)
+
+        call edisp(iuout,'  ')
+        call edisp(iuout,'The conversion resulted in a new file:')
+        call edisp(iuout,longtfile)
+        goto 60  ! jump to re-display the menu.
+       
+      elseif(isw.eq.7)then
 
 C Make up browse to the model ../dbs folder suggest the name LCOPY
 C and return file name in lltmp.
@@ -1747,7 +1864,7 @@ C correct location value via call to findwhichdbpath.
           goto 60
         endif
 
-      elseif(isw.eq.6)then
+      elseif(isw.eq.8)then
 
 C Browse distribution database folder. Setup LCOPY to point to
 C the database folder (but no particular file). Use easkf to
@@ -1786,9 +1903,6 @@ C otherwise edit the data. Pay attention to the implied path.
         longtfile=lltmp
       endif
 
-C Debug.
-C      write(6,*) 'longtfile plant b ',longtfile(1:lnblnk(longtfile))
-
       ier=0
       call EFOPRAN(ipcdb,longtfile,IRECLN,1,IER)
       IF(ier.eq.0)THEN
@@ -1822,10 +1936,11 @@ C Get logical name of child process terminal type and create a string to drive p
      &      ' &'
         endif
         call runit(doit,tmode)
+        goto 60  ! re-display menu
       else
         call usrmsg('Error opening db. Please use one',
      &              'of the other options.','W')
-        goto 60
+        goto 60  ! re-display menu
       endif
 
       return
@@ -1861,7 +1976,7 @@ C << introduce concept of types of profiles
       common/deflt4/dinstpath
 
       CHARACTER LTMP*72,lltmp*144,lprev*144
-      character LLASCI*144,lbin*144,llbin*144
+      character LLASCI*144
       character longtfile*144,LCOPY*144
       CHARACTER fs*1,APP*4
       CHARACTER OUTS*124
@@ -1871,7 +1986,7 @@ C << introduce concept of types of profiles
       character dinstpath*48,path*72,dirpath*48
 
 C Local strings for user selections dependent on graphic library.
-      character opte*28,optf*28,optg*28,opth*28,opti*28
+      character opte*28,optf*28,optg*28
       character lpath*72,fname*72 ! for use with fdroot
       logical unixok  ! to check for path file separators
       integer iglib  ! for detecting GTK or X11
@@ -1920,7 +2035,6 @@ C Generate file name lltmp taking into account ipathprodb for use later.
         write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
      &    LPRFDB(1:lnblnk(LPRFDB))  ! prepend db folder path
       endif
-      llt=lnblnk(lltmp)
 
       helptopic='events_db_manage'
       call gethelptext(helpinsub,helptopic,nbhelp)
@@ -1948,8 +2062,8 @@ C options to browse for files in ../dbs or the esp-r distribution.
         optg=' '
       elseif(iglib.eq.2)then
         opte='e browse model ../dbs'
-        opth='f browse esp-r distribution'
-        opti='g make copy of another file'
+        optf='f browse esp-r distribution'
+        optg='g make copy of another file'
       endif
 
       IF(.NOT.XST)THEN
@@ -3378,10 +3492,9 @@ C Calendar.
       CHARACTER DOIT*248,fs*1,TMODE*8,CLMLOC*30,LCOPY*72
       CHARACTER OUTS*124,APP*6,ext*4,llclmdb*144
       LOGICAL OK,concat,COPYDEF,MODDB,XST,DOK,UNIXOK
-      character cfgroot*24,LCFGF*72,linstd*60
+      character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72
       character dirpath*48
-      CHARACTER lltmp*144,lguess*144
       CHARACTER*72 NNAME
       dimension ICLM(24,6)
       integer llt  ! length of string buffer
@@ -3420,8 +3533,6 @@ C Take into account whether weather file is in standard folder.
 C If so llclmdb will be expanded to the full path.
       moddb=.false.
  552  llt=lnblnk(LCLIM)
-      lltmp='  '
-      lguess='  '
       lndbp=lnblnk(standardclmpath)
       if(ipathclim.eq.0.or.ipathclim.eq.1)then
         llclmdb=LCLIM
@@ -3542,20 +3653,20 @@ C << todo suggest name within the model dbs folder >>
               if(iglib.eq.1.or.iglib.eq.3)then
                 if(llt.lt.96)then
                   CALL EASKF(llclmdb,'Weather file:',
-     &              ' ',96,DCLIM,'climate file name',IER,nbhelp)
+     &              'Confirm:',96,DCLIM,'climate file name',IER,nbhelp)
                 elseif(llt.ge.96.and.llt.lt.124)then
                   CALL EASKF(llclmdb,'Weather file:',
-     &              ' ',124,DCLIM,'climate file name',IER,nbhelp)
+     &              'Confirm:',124,DCLIM,'climate file name',IER,nbhelp)
                 elseif(llt.ge.124.and.llt.le.144)then
                   CALL EASKF(llclmdb,'Weather file:',
-     &              ' ',144,DCLIM,'climate file name',IER,nbhelp)
+     &              'Confirm:',144,DCLIM,'climate file name',IER,nbhelp)
                 endif
               elseif(iglib.eq.2)then
                 CALL EASKF(llclmdb,'Weather file:',
-     &            ' ',144,DCLIM,'climate file name',IER,nbhelp)
+     &            'Confirm:',144,DCLIM,'climate file name',IER,nbhelp)
               else
                 CALL EASKF(llclmdb,'Weather file:',
-     &            ' ',96,DCLIM,'climate file name',IER,nbhelp)
+     &            'Confirm:',96,DCLIM,'climate file name',IER,nbhelp)
               endif
               IF(llclmdb(1:2).EQ.'  ')GOTO 291
               IER=0
@@ -3638,16 +3749,16 @@ C it with zeros and present editing facility.
 
 C If using X11 assume that the full path is less than 96 chars
 C but if using GTK then we need the full length to avoid truncation.
- 553    iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(longtmp,' ','Weather file:',
-     &      96,DCLIM,'climate file name',IER,nbhelp)
+          CALL EASKF(longtmp,'New weather file (full of zeros)',
+     &      'Confirm:',96,DCLIM,'climate file name',IER,nbhelp)
         elseif(iglib.eq.2)then
-          CALL EASKF(longtmp,' ','Weather file:',
-     &      144,DCLIM,'climate file name',IER,nbhelp)
+          CALL EASKF(longtmp,'New weather file (full of zeros)',
+     &      'Confirm:',144,DCLIM,'climate file name',IER,nbhelp)
         else
-          CALL EASKF(longtmp,' ','Weather file:',
-     &      96,DCLIM,'climate file name',IER,nbhelp)
+          CALL EASKF(longtmp,'New weather file (full of zeros)',
+     &      'Confirm:',96,DCLIM,'climate file name',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
 
@@ -3773,13 +3884,13 @@ C If using X11 assume that the full path is less than 96 chars
 C but if using GTK then we need the full length to avoid truncation.
  554    iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(longtmp,' ','Weather file:',
+          CALL EASKF(longtmp,'Weather file (in model)','Confirm:',
      &      96,DCLIM,'climate file name',IER,nbhelp)
         elseif(iglib.eq.2)then
-          CALL EASKF(longtmp,' ','Weather file:',
+          CALL EASKF(longtmp,'Weather file (in model)','Confirm:',
      &      144,DCLIM,'climate file name',IER,nbhelp)
         else
-          CALL EASKF(longtmp,' ','Weather file:',
+          CALL EASKF(longtmp,'Weather file (in model)','Confirm:',
      &      96,DCLIM,'climate file name',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
@@ -3875,13 +3986,13 @@ C Confirm suggested name and then write out asci file.
         endif
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(LLASCI,' ','Export ASCII file:',
+          CALL EASKF(LLASCI,'Export ASCII weather file','Confirm:',
      &      96,DFILE,'climate file name',IER,nbhelp)
         elseif(iglib.eq.2)then
-          CALL EASKF(LLASCI,' ','Export ASCII file:',
+          CALL EASKF(LLASCI,'Export ASCII weather file','Confirm:',
      &      144,DFILE,'climate file name',IER,nbhelp)
         else
-          CALL EASKF(LLASCI,' ','Export ASCII file:',
+          CALL EASKF(LLASCI,'Export ASCII weather file','Confirm:',
      &      96,DFILE,'climate file name',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
@@ -3896,7 +4007,7 @@ C to asking clm to do the conversion.
         call addpath(LLASCI,longtafile,concat)
         call tstamp('>','PRJ: start clm for conversion')
         doit = ' '
-        write(doit,'(5a)') 'clm -mode text -file ',
+        write(doit,'(4a)') 'clm -mode text -file ',
      &    longtfile(1:lnblnk(longtfile)),' -act bin2asci silent ',
      &    longtafile(1:lnblnk(longtafile))
         call runit(doit,tmode)
@@ -3915,13 +4026,13 @@ C Confirm suggested name and then write out binary file.
         endif
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(LLASCI,' ','ASCII file:',
+          CALL EASKF(LLASCI,'ASCII (source) weather file','Confirm:',
      &      96,DFILE,'climate file name',IER,nbhelp)
         elseif(iglib.eq.2)then
-          CALL EASKF(LLASCI,' ','ASCII file:',
+          CALL EASKF(LLASCI,'ASCII (source) weather file','Confirm:',
      &      144,DFILE,'climate file name',IER,nbhelp)
         else
-          CALL EASKF(LLASCI,' ','ASCII file:',
+          CALL EASKF(LLASCI,'ASCII (source) weather file','Confirm:',
      &      96,DFILE,'climate file name',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
@@ -3929,14 +4040,14 @@ C Confirm suggested name and then write out binary file.
         longtmp=LCLIM
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(longtmp,' ','Weather file:',
-     &      96,DCLIM,'climate file name',IER,nbhelp)
+          CALL EASKF(longtmp,'New weather file','Confirm:',
+     &      96,DCLIM,'new weather file name',IER,nbhelp)
         elseif(iglib.eq.2)then
-          CALL EASKF(longtmp,' ','Weather file:',
-     &      144,DCLIM,'climate file name',IER,nbhelp)
+          CALL EASKF(longtmp,'New weather file','Confirm:',
+     &      144,DCLIM,'new weather file name',IER,nbhelp)
         else
-          CALL EASKF(longtmp,' ','Weather file:',
-     &      96,DCLIM,'climate file name',IER,nbhelp)
+          CALL EASKF(longtmp,'New weather file','Confirm:',
+     &      96,DCLIM,'new weather file name',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
 
@@ -3980,13 +4091,13 @@ C Confirm suggested name and then write out binary file.
         endif
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(LLASCI,' ','EPW file:',
+          CALL EASKF(LLASCI,'EPW (source) file','Confirm:',
      &      96,DFILE,'climate file name',IER,nbhelp)
         elseif(iglib.eq.2)then
-          CALL EASKF(LLASCI,' ','EPW file:',
+          CALL EASKF(LLASCI,'EPW (source) file','Confirm:',
      &      144,DFILE,'climate file name',IER,nbhelp)
         else
-          CALL EASKF(LLASCI,' ','EPW file:',
+          CALL EASKF(LLASCI,'EPW (source) file','Confirm:',
      &      96,DFILE,'climate file name',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
@@ -3994,14 +4105,14 @@ C Confirm suggested name and then write out binary file.
         longtmp=LCLIM
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(longtmp,' ','Weather file:',
-     &      96,DCLIM,'climate file name',IER,nbhelp)
+          CALL EASKF(longtmp,'New weather file','Confirm:',
+     &      96,DCLIM,'new weather file name',IER,nbhelp)
         elseif(iglib.eq.2)then
-          CALL EASKF(longtmp,' ','Weather file:',
-     &      144,DCLIM,'climate file name',IER,nbhelp)
+          CALL EASKF(longtmp,'New weather file','Confirm:',
+     &      144,DCLIM,'new weather file name',IER,nbhelp)
         else
-          CALL EASKF(longtmp,' ','Weather file:',
-     &      96,DCLIM,'climate file name',IER,nbhelp)
+          CALL EASKF(longtmp,'New weather file','Confirm:',
+     &      96,DCLIM,'new weather file name',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
 
@@ -4431,7 +4542,7 @@ C call to eroptdb and if this is not successful reset LOPTDB.
           write(LCOPY,'(4a)') dinstpath(1:lnblnk(dinstpath)),
      &      fs,'databases',fs
           CALL EASKF(LCOPY,'Active components file.','Confirm:',
-     &      144,DMCMPDBFL,'misc comp database',IER,nbhelp)
+     &      144,DMCMPDBFL,'active components file',IER,nbhelp)
           if(ier.eq.-3)then
             MCMPDBFL=lprev
             goto 60  ! cancel detected, restore name and redisplay menu.

@@ -236,8 +236,10 @@ C If paction is `bin2asci` file ascii file `ascif` with data from
 C the binary file `inf` and exit.
       if(pact(1:1).ne.' ')then
         paction=pact
-        write(outs,'(a,a)')' the action is: ',paction
-        call edisp(iuout,outs)
+        if(paction(1:4).ne.'NONE')then
+          write(outs,'(a,a)')' the action is: ',paction
+          call edisp(iuout,outs)
+        endif
         write(outs,'(a,a)')'pdb: the input action is: ',paction
         call tstamp('>',outs)
         if(paction(1:8).eq.'asci2bin')then
@@ -380,14 +382,59 @@ C Output unordered.
         endif
       endif
 
+C Take the command line plant template file and if it can be
+C correctly read in do not ask the user for further confirmation.
+      L144=LCMDFL  ! set initial guess to command line file
+      call fdroot(LCMDFL,path,LTMP)
+      XST=.false.
+      call findfil(LTMP,XST)
+      if(XST)then
+
+C Existing file, so check header.
+C IRECLN= from plantdb.h file.
+        ier=0
+        call EFOPRAN(IFIL,LTMP,IRECLN,1,IER)
+        if(ier.ne.0)goto 100
+
+        IREC = 1
+        READ (IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1) PZDESC
+        IF (PZDESC .NE. ' PLANT COMPONENT DATABASE')then
+          call usrmsg(
+     &      'File is not a plant component templates file,',
+     &      'please supply the file name again.','W')
+          goto 100
+        endif
+        IREC = 2
+        READ (IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1) NPC,NXTREC
+
+C Recover item pointers.
+        NR = 1
+        DO 113 I = 3, MHEADR
+           NRR = NR + IRECLN - 1
+           IREC = I
+           READ (IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1)
+     &                          (ITMLOC(J,1),J=NR,NRR)
+           NR = NR + IRECLN
+  113   CONTINUE
+
+C Recover item code numbers.
+        call edisp(iuout,' ')
+        write(outs,'(a,i3,a)') 'There are ',NPC,
+     &    ' plant component templates in the command line file.'
+        call edisp(iuout,outs)
+        goto 210
+      endif
+
+
 C Initialize plant component template file.
   100 helptopic='pdb_file_name_select'
       call gethelptext(helpinsub,helptopic,nbhelp)
       lltmp=' '  ! clear file name to be returned
       call edisp(iuout,'  ')  ! echo blank line
       L144=LCMDFL  ! set initial guess to command line file
-      CALL EASKXORGTKF(L144,'Plant component templates','Confirm:',
-     &  DPCDB,lltmp,'plant templates',IER,nbhelp)
+      CALL EASKXORGTKF(L144,
+     &  'Plant component templates (if new an empty file is created)',
+     &  'Confirm:',DPCDB,lltmp,'plant templates',IER,nbhelp)
 
 C If user cancel display the menu without loading file.
       if(ier.eq.-3)then
