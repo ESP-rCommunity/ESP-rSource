@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_confer # tag version, format, zone name
-*date Sat Feb 11 18:22:12 2012  # latest file modification 
+*date Sun Feb 12 08:17:30 2012  # latest file modification 
 L5_confer describes conference room on level five
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,7.50000,64.15000  #   1

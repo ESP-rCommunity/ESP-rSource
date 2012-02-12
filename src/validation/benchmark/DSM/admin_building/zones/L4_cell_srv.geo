@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_cell_srv # tag version, format, zone name
-*date Sat Feb 11 18:05:37 2012  # latest file modification 
+*date Sun Feb 12 08:15:05 2012  # latest file modification 
 L4_cell_srv describes row of cellular offices srv facade 4th lev
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,27.69180,35.70000,60.25000  #   1

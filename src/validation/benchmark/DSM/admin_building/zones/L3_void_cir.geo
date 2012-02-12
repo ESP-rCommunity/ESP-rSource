@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_L4_cir_vd # tag version, format, zone name
-*date Sat Feb 11 17:24:46 2012  # latest file modification 
+*date Sun Feb 12 08:12:05 2012  # latest file modification 
 L3_void_cir describes a void adjacent to circular meeting at L3
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,13.06200,56.35000  #   1

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_kitchen # tag version, format, zone name
-*date Sat Feb 11 17:22:29 2012  # latest file modification 
+*date Sun Feb 12 08:10:24 2012  # latest file modification 
 L2_kitchen describes L2 kitchenette on service road facade
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,41.37145,35.70000,52.45000  #   1

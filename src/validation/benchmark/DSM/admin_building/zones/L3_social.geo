@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_social # tag version, format, zone name
-*date Sat Feb 11 18:00:37 2012  # latest file modification 
+*date Sun Feb 12 08:13:29 2012  # latest file modification 
 L3_social describes the social room on L3 adj to service rd
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,12.00000,35.70000,56.35000  #   1

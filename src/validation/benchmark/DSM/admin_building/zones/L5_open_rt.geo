@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_open_rt # tag version, format, zone name
-*date Sat Feb 11 18:30:47 2012  # latest file modification 
+*date Sun Feb 12 08:21:12 2012  # latest file modification 
 L5_open_rt describes right portion of level five open plan
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,13.00000,64.15000  #   1

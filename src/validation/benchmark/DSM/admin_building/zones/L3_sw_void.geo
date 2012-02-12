@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_sw_void # tag version, format, zone name
-*date Sat Feb 11 18:04:25 2012  # latest file modification 
+*date Sun Feb 12 08:14:05 2012  # latest file modification 
 L3_sw_void describes void over stair at SW facade
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,-6.03235,5.93735,55.59300  #   1

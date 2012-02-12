@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_srv_cell # tag version, format, zone name
-*date Sat Feb 11 18:22:46 2012  # latest file modification 
+*date Sun Feb 12 08:18:38 2012  # latest file modification 
 L5_srv_cell describes cellular offices at service facade five
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,21.25000,32.75000,64.15000  #   1

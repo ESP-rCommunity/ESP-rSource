@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_light_w1 # tag version, format, zone name
-*date Sat Feb 11 18:25:44 2012  # latest file modification 
+*date Sun Feb 12 08:20:10 2012  # latest file modification 
 L5_light_w1 describes light well one at level 5
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,13.70000,21.30000,64.15000  #   1

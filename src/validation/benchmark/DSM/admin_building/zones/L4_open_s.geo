@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_open_s # tag version, format, zone name
-*date Fri Aug 26 06:11:10 2011  # latest file modification 
+*date Sun Feb 12 08:16:24 2012  # latest file modification 
 L4_open_s describes left half of level four open plan area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,4.49566,8.24205,60.25000  #   1
@@ -58,14 +58,12 @@ L4_open_s describes left half of level four open plan area
 *vertex,17.45000,21.30000,60.25000  #  54
 *vertex,17.45000,35.70000,63.39300  #  55
 *vertex,17.45000,35.70000,60.25000  #  56
-*vertex,12.00000,35.70000,60.25000  #  57
-*vertex,17.38456,35.70000,60.25000  #  58
-*vertex,17.38456,35.70000,63.39300  #  59
-*vertex,12.00000,35.70000,63.39300  #  60
-*vertex,24.03439,35.70000,60.25000  #  61
-*vertex,24.03439,35.70000,63.39300  #  62
-*vertex,27.69180,35.70000,60.25000  #  63
-*vertex,27.69180,35.70000,63.39300  #  64
+*vertex,17.38456,35.70000,60.25000  #  57
+*vertex,17.38456,35.70000,63.39300  #  58
+*vertex,24.03439,35.70000,60.25000  #  59
+*vertex,24.03439,35.70000,63.39300  #  60
+*vertex,27.69180,35.70000,60.25000  #  61
+*vertex,27.69180,35.70000,63.39300  #  62
 # 
 # tag, number of vertices followed by list of associated vert
 *edges,4,1,2,38,37  #  1
@@ -85,8 +83,8 @@ L4_open_s describes left half of level four open plan area
 *edges,4,16,17,35,34  # 15
 *edges,4,17,18,36,35  # 16
 *edges,5,18,1,37,19,36  # 17
-*edges,27,19,20,21,22,23,24,25,26,27,28,29,30,62,55,48,44,45,52,48,55,59,31,32,33,34,35,36  # 18
-*edges,27,1,18,17,16,15,14,13,58,56,49,50,53,54,49,56,61,12,11,10,9,8,7,6,5,4,3,2  # 19
+*edges,27,19,20,21,22,23,24,25,26,27,28,29,30,60,55,48,44,45,52,48,55,58,31,32,33,34,35,36  # 18
+*edges,27,1,18,17,16,15,14,13,57,56,49,50,53,54,49,56,59,12,11,10,9,8,7,6,5,4,3,2  # 19
 *edges,4,37,38,20,19  # 20
 *edges,4,39,40,24,23  # 21
 *edges,4,41,42,28,27  # 22
@@ -97,9 +95,9 @@ L4_open_s describes left half of level four open plan area
 *edges,4,53,50,51,46  # 27
 *edges,4,54,53,46,43  # 28
 *edges,4,49,54,43,47  # 29
-*edges,4,58,13,31,59  # 30
-*edges,4,61,58,59,62  # 31
-*edges,4,63,61,62,64  # 32
+*edges,4,57,13,31,58  # 30
+*edges,4,59,57,58,60  # 31
+*edges,4,61,59,60,62  # 32
 # 
 # surf attributes:
 #  surf name, surf position VERT/CEIL/FLOR/SLOP/UNKN

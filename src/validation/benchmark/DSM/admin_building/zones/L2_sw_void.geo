@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_se_void # tag version, format, zone name
-*date Sat Feb 11 17:23:28 2012  # latest file modification 
+*date Sun Feb 12 08:11:02 2012  # latest file modification 
 L2_se_void describes void at south-west facade with stair
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,-7.50400,5.60500,52.45000  #   1

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_pz_meet # tag version, format, zone name
-*date Sat Feb 11 18:23:04 2012  # latest file modification 
+*date Sun Feb 12 08:18:54 2012  # latest file modification 
 L5_pz_meet is the L5 print zone plus meeting room adj stair2
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,46.25000,36.00000,64.15000  #   1

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_cor_cell # tag version, format, zone name
-*date Sat Feb 11 17:15:48 2012  # latest file modification 
+*date Sun Feb 12 08:09:40 2012  # latest file modification 
 L2_cor_cell describes cellular offices at corner of level two
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,44.69600,35.70000,52.45000  #   1

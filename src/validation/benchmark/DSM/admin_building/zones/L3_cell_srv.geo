@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_cell_srv # tag version, format, zone name
-*date Sat Feb 11 17:28:56 2012  # latest file modification 
+*date Sun Feb 12 08:12:54 2012  # latest file modification 
 L3_cell_srv describes row of cellular offices at service rd faca
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,27.69180,35.70000,56.35000  #   1

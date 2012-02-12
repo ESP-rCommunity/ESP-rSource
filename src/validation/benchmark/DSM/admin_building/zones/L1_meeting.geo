@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L1_meeting # tag version, format, zone name
-*date Sat Feb 11 16:55:08 2012  # latest file modification 
+*date Sun Feb 12 08:06:18 2012  # latest file modification 
 L1_meeting describes corner meeting adj career services
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,23.17941,47.95000  #   1

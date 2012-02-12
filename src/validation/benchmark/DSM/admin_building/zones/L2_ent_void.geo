@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_ent_void # tag version, format, zone name
-*date Mon Jan 30 17:42:27 2012  # latest file modification 
+*date Sun Feb 12 08:07:58 2012  # latest file modification 
 L2_ent_void describes void over the entrance reception
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,-0.04750,52.45000  #   1

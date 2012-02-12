@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L1_sw_void # tag version, format, zone name
-*date Sat Feb 11 16:36:07 2012  # latest file modification 
+*date Sun Feb 12 08:07:39 2012  # latest file modification 
 L1_sw_void describes ground level void at SW facade
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,-7.50400,5.60500,47.95000  #   1

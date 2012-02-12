@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_meeting # tag version, format, zone name
-*date Sat Feb 11 17:25:45 2012  # latest file modification 
+*date Sun Feb 12 08:12:39 2012  # latest file modification 
 L3_meeting describes corner meeting room in L3
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,17.00457,56.35000  #   1

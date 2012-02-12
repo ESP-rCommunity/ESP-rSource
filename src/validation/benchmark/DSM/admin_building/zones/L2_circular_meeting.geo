@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_circular # tag version, format, zone name
-*date Mon Jan 30 17:43:07 2012  # latest file modification 
+*date Sun Feb 12 08:08:12 2012  # latest file modification 
 L2_circular describes circular meeting room on level two
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,28.92676,7.59981,52.45000  #   1

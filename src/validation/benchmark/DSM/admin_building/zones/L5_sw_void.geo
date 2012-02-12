@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_sw_void # tag version, format, zone name
-*date Sat Feb 11 18:29:17 2012  # latest file modification 
+*date Sun Feb 12 08:20:38 2012  # latest file modification 
 L5_sw_void describes void at level five SW
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,-6.03235,5.93735,63.39300  #   1

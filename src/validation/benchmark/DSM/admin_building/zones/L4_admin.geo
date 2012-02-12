@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L4_admin # tag version, format, zone name
-*date Sat Feb 11 17:41:51 2012  # latest file modification 
+*date Sun Feb 12 08:16:59 2012  # latest file modification 
 L4_admin describes mix of office types at srv facade level four
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,12.00000,35.70000,60.25000  #   1

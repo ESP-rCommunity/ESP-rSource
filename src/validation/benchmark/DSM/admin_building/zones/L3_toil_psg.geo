@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_toil_psg # tag version, format, zone name
-*date Sat Feb 11 18:04:12 2012  # latest file modification 
+*date Sun Feb 12 08:13:49 2012  # latest file modification 
 L3_toil_psg describes toilet and passage at level three
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,51.60000,23.17941,56.35000  #   1

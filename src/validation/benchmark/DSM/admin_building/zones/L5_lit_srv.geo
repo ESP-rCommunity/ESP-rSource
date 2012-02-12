@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_lit_srv # tag version, format, zone name
-*date Tue Jan 31 09:09:52 2012  # latest file modification 
+*date Sun Feb 12 08:18:02 2012  # latest file modification 
 L5_lit_srv describes kitchen at the service facade
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,17.00000,30.50000,64.15000  #   1
@@ -60,6 +60,7 @@ L5_lit_srv describes kitchen at the service facade
 # shading directives
 *shad_calc,none  # no temporal shading requested
 # 
-*insol_calc,none  # no insolation requested
+*insol_calc,all_applicable   2 # insolation sources
+  9 10
 # 
 *base_list,1,8,    23.38 0  # zone base list

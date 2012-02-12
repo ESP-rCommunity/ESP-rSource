@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_core_cel # tag version, format, zone name
-*date Sat Aug 13 14:50:48 2011  # latest file modification 
+*date Sat Feb 11 17:12:27 2012  # latest file modification 
 L2_core_cel describes set of cellular offices adj to open plan
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.24663,28.50000,52.45000  #   1

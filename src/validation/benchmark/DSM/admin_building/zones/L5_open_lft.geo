@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L5_open_lft # tag version, format, zone name
-*date Sat Feb 11 18:21:06 2012  # latest file modification 
+*date Sun Feb 12 08:18:21 2012  # latest file modification 
 L5_open_lft describes the left half of opens space level five
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,13.70000,10.50000,64.15000  #   1

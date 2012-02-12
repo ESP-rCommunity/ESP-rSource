@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L1_ent_recp # tag version, format, zone name
-*date Fri Feb 10 07:21:45 2012  # latest file modification 
+*date Sun Feb 12 08:05:20 2012  # latest file modification 
 L1_ent_recp describes lower atria at reception at level one
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,28.92700,7.60000,47.95000  #   1

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L3_print_zn # tag version, format, zone name
-*date Sat Feb 11 17:31:53 2012  # latest file modification 
+*date Sun Feb 12 08:13:13 2012  # latest file modification 
 L3_print_zn describes the print zone on L3 at srv facade
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,24.03439,35.70000,56.35000  #   1

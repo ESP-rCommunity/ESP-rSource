@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,L2_careers # tag version, format, zone name
-*date Mon Jan 30 17:44:11 2012  # latest file modification 
+*date Sun Feb 12 08:08:35 2012  # latest file modification 
 L2_careers describes open space over the careers service area
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.25000,13.06217,52.45000  #   1
