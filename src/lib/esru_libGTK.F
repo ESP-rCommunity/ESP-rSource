@@ -3104,23 +3104,23 @@ C limtty is the initial request for text feedback height (in lines)
       CHARACTER*5 MM
 
 c If MMOD set to valid index, assume it, dont ask.
-      MM=' '
-  10  IF(MM.EQ.'-6   '.OR.MODEL.EQ.-6)THEN
+      MM='     '
+  10  IF(MM(1:5).EQ.'-6   '.OR.MODEL.EQ.-6)THEN
         MMOD=-6
         LIMTTY=24
         LIMIT=24
         RETURN
-      ELSEIF(MM.EQ.'-2   '.OR.MODEL.EQ.-2)THEN
+      ELSEIF(MM(1:5).EQ.'-2   '.OR.MODEL.EQ.-2)THEN
         MMOD=-2
         LIMTTY=24
         LIMIT=24
         RETURN
-      ELSEIF(MM.EQ.'-1   '.OR.MODEL.EQ.-1)THEN
+      ELSEIF(MM(1:5).EQ.'-1   '.OR.MODEL.EQ.-1)THEN
         MMOD=-1
         LIMTTY=24
         LIMIT=24
         RETURN
-      ELSEIF(MM.eq.'8    '.OR.MODEL.EQ.8)THEN
+      ELSEIF(MM(1:5).eq.'8    '.OR.MODEL.EQ.8)THEN
         MMOD = 8
         write(HEAD,'(a)') TITLE
 
@@ -3148,8 +3148,8 @@ C Open the dialogue box and begin message.
  200    FORMAT(' Terminal mode (? gives options): ')
         READ(IIN,101,ERR=500,IOSTAT=IOS)MM
  101    FORMAT(A5)
-        IF(MM.EQ.'-6   '.OR.MM.EQ.'-2   '.OR.
-     &     MM.EQ.'-1   '.OR.MM.EQ.'8    ')THEN
+        IF(MM(1:5).EQ.'-6   '.OR.MM(1:5).EQ.'-2   '.OR.
+     &     MM(1:5).EQ.'-1   '.OR.MM(1:5).EQ.'8    ')THEN
           goto 10
         ELSEIF(MM(1:1).EQ.'?')THEN
           WRITE(IOUT,102)

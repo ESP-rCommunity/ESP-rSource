@@ -1,6 +1,6 @@
              Setting OSX 10.5 or 10.6 for ESP-r
                       Jon W. Hand, ESRU
-                       31 August 2011
+                       23 December 2011
 
 INTRODUCTION
 
@@ -49,8 +49,18 @@ from the HPC Mac site (see below) in conjunction with the standard
 Install script produces an ish module which works.  Also note that
 the X11 version can be compiled with the standard Install script
 which forces a 32bit executable. The GTK version requires the
-Install script to be edited to change -m32 to -m64 because the
-GTK libraries are 64bit.
+Install script to force a -m64 because the GTK libraries are 
+64bit. Look for Install_osx_64_10.6 in the source bin folder.
+
+FONTS
+
+On OSX 10.6 sometimes the GTK version of ESP-r will crash, in
+particular when attempting to display a pop-up message or display
+such as the wire-frame control proforma. This is usually resolved
+by re-freshing the font cache via the following command:
+  sudo fc-cache -f -v
+
+It might take several minutes to do this refresh of the font cache.
 
 FINK
 

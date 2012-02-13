@@ -10427,24 +10427,11 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'The name you supply will be used as the root name for the various'
 'files corresponding to the model you will later establish.'
 'Up to 24 characters allowed.'
-*enditem
-        CALL EASKSCMD(LCFTMP,' ','Model root name?',
-*item pregist cfg_overwrite_warning
-'If you overwrite the existing configuration file its contents'
-'will be lost unless you have backed up your data.'
-' '
-'If you want to create a new model variant say no and enter'
-'a different file name.'
-*enditem
-          call askok('There is an existing configuration with',
-*item pregist cfg_standard_folders
-'ESP-r organises a model within a standard set of folders (the
-'usual response is to use these folders to organize the data in'
-'the model.'
 '  '
 'The root name of the model is generally the same as the name'
 'of the model folder structure. In it will be the following'
 'folders:'
+'  '
 ' cfg (system files)'
 ' ctl (control files)'
 ' aim2 (aim2 files)'
@@ -10455,12 +10442,16 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 ' tmp (odds+ends)'
 ' dbs (model specific databases)'
 ' bsm (BASESIMP files)'
-'  '
-'Or, if the model will be small (one or two zones) all the'
-'files can be in one folder.'
-' '
 *enditem
-        CALL EASKABC(' Create model in:',
+        CALL EASKSCMD(LCFTMP,' ','Model root name?',
+*item pregist cfg_overwrite_warning
+'If you overwrite the existing configuration file its contents'
+'will be lost unless you have backed up your data.'
+' '
+'If you want to create a new model variant say no and enter'
+'a different file name.'
+*enditem
+          call askok('There is an existing configuration with',
 *item pregist cfg_model_descriptor
 'A model has an associated descriptor (<72 characters, which is'
 'used later as an identifier, e.g. Low energy building with'

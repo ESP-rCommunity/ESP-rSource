@@ -180,7 +180,7 @@ C      character outs248*248
       character fs*1
 
 C Passed parameters for pregist.
-      character root*24,mpath*72,folder*12
+      character root*24,mpath*72
 
 C Returned parameters from silentread.
       character theprimedirective*8
@@ -1308,9 +1308,8 @@ C Start new project, begin with registration.
         call tstamp('>','PRJ: beginning new model')
         root=' '
         mpath=' '
-        folder=' '
         menu=' '
-        call pregist('i ',root,mpath,folder,menu,ier)
+        call pregist('i ',root,mpath,menu,ier)
       ELSEIF(INO.EQ.10)THEN
 
 C Root name of the model.
@@ -3831,8 +3830,7 @@ C attempt to match the focus with the image.
 
 C If running on a non-unix machine see if there are spaces in the name
 C and change any / to \.  If X11 then an external application is used
-C an double quoting is useful. If GTK then internal function used and
-C quotes are not required.
+C an double quoting is useful. If GTK then internal function used.
                     call addpath(limgfil(img),longtfile,concat)
                     if(iglib.eq.1)then
                       call cmdfiledos(longtfile,longtfiledos,ier)
@@ -3908,6 +3906,7 @@ C << tag for editing ?? >>
                 longtfile=' '
                 if(unixok)then
                   call addpath(limgfil(img),longtfile,concat)
+                  ixl=lnblnk(longtfile)
                 else
 
 C If running on a non-unix machine see if there are spaces in the name
@@ -3916,6 +3915,7 @@ C and change any / to \.
                   call cmdfiledos(longtfile,longtfiledos,ier)
                   longtfile=' '
                   longtfile=longtfiledos
+                  ixl=lnblnk(longtfile)
                 endif
 
 C If version 4 or newer then display the text otherwise make

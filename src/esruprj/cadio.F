@@ -139,6 +139,7 @@ C code tends to overwrite this and thus the user choice
 C is lost. 
         iw=0
         if(path(1:2).ne.'./'.and.path(1:2).ne.'  ')then
+          call edisp(iuout,'  ')
           write(outs,'(A,A)') 'The current path is: ',path
           call edisp(iuout,outs)
           CALL EASKAB('The model is in a remote folder.',
@@ -740,13 +741,14 @@ C to quit the image browser.
       common/imagfi/noimg,iton
 
       dimension name(30),mitem(30),label(30),inl2in(30),group(15)
-      dimension gitem(18),gh(13),cfgitem(30),inl2ngr(30)
+      dimension gitem(18),gh(13),cfgitem(30),inl2ngr(30),itemlog(30)
       character name*70,label*42,mitem*72,gitem*44,OUTSTR*124,WORD*20
       character group*42,tgroup*42,key*1,look*70,tlook*70
       character line*72,outs*124,rootp*72,separ*42
       character doit*248
       character gh*72,cfgitem*144,exdescr*81,doc*72,head*42
       character cfg*144,cfg_path*72,cfg_root*72,doc_file*72
+      character itemlog*144,ilog*144
 
 C Strings for dos version of rootp and upath and a double quote.
       character rootpdos*72,upathdos*72,rootpath*72,modelroot*72
@@ -754,6 +756,7 @@ C Strings for dos version of rootp and upath and a double quote.
       character lltmp*144,lguess*144,dguess*144
       logical XST,unixok
       integer NCOG,ICOG,NCO,ICO,icod ! max items and current menu item
+      integer loop  ! for looping
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 
 #ifdef OSI
@@ -792,6 +795,17 @@ C the user decides to cancel the selection.
         CALL EFOPSEQ(iexfil,exemfl,1,IER)
       endif
       if(ier.ne.0) return
+
+C Clear some of the local strings.
+      do 38 loop=1,30
+        name(loop)='  '
+        label(loop)='  '
+        cfgitem(loop)='  '
+        itemlog(loop)='  '
+        inl2in(loop)=0
+        inl2ngr(loop)=0
+  38  continue
+
 C Read the header and see if '*EXEMPLARS'
       CALL STRIPC(iexfil,OUTSTR,0,ND,0,'exemplars header',IER)
       if(outstr(1:10).ne.'*EXEMPLARS')then
@@ -807,10 +821,10 @@ C Clear group related help and length of menu.
         gh(i)=' '
   2   continue
       exemplar='UNKNOWN'
+      ilog='  '
       ngr=0
       ing=0
       inl=0
-      inl2ngr(1)=0
       igrsel=0
       icod=0
 
@@ -865,22 +879,30 @@ C Help text for this menu.
       else
         CALL EMENU('Exemplar Categories',gitem,NCOG,ICOG)
       endif
+
       IF(ICOG.EQ.NCOG)THEN
+
+C Exit from the menu.
         CALL ERPFREE(iexfil,ISTAT)
         return
+
       ELSEIF(ICOG.EQ.(NCOG-1))THEN
 
 C Help @ db file level.
         helptopic='exemplar_menu_help'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('exemplar menu',nbhelp,'-',0,0,IER)
+
       ELSEIF(ICOG.GT.0.AND.ICOG.LT.(NCOG-2))THEN
+
+C User selected an exemplar category from the menu display.
         if(gitem(ICOG)(1:2).eq.'  ')goto 142
         if(inl2ngr(ICOG).gt.0.and.inl2ngr(ICOG).le.15)then
           igrsel=inl2ngr(ICOG)
         else
           goto 142
         endif
+
 C Re-open the exemplar file.
         if(exemfl(1:1).eq.'/')then
           call FPOPEN(iexfil,ISTAT,1,0,exemfl)
@@ -895,7 +917,8 @@ C Re-open the exemplar file.
           call egetrm(outstr,K,tgroup,'W','group id',IER)
           if(tgroup(1:42).eq.group(igrsel)(1:42))then
 
-C We have a match with the selected group so now fill the menu.
+C We have a match with the selected group so now fill the menu
+C strings so they can be presented to the user.
             nghelp=0
             in=0
             inl=0
@@ -925,7 +948,8 @@ C If we have reached the next group then we have scanned far enough.
               goto 16
             elseif(WORD(1:4).eq.'*log')then
 
-C In case of older exemplar file.
+C In case there is a log file mentioned.
+              call egetrm(outstr,K,itemlog(in),'W','item log',IER)
               goto 16
             elseif(WORD(1:6).eq.'*label')then
               inl=inl+1
@@ -949,10 +973,10 @@ C In case of older exemplar file.
  902  CALL ERPFREE(iexfil,ISTAT)
       goto 142
 
-C Present the display.
+C Present the list of this category of exemplars.
   42  ICO= -2
       mitem(in+1)=  '  _______________________________'
-      mitem(in+2)=  '* exemplar documentation         '
+      mitem(in+2)=  '* view exemplar documentation    '
       mitem(in+3)=  '? help                           '
       mitem(in+4)=  '- exit this menu                 '
       NCO=in+4
@@ -978,6 +1002,7 @@ C file for this topic.
  33     continue
       endif
 
+C Make up a menu as wide as required if in graphic mode.
       if(MMOD.EQ.8)then
         impx=0
         impy=0
@@ -985,16 +1010,27 @@ C file for this topic.
       else
         CALL EMENU(head,mitem,NCO,ICO)
       endif
+
+C Process the user selection.
       IF(ICO.EQ.NCO)THEN
 
 C Exit from detail level back to group level.
         CALL ERPFREE(iexfil,ISTAT)
         goto 41
+
       ELSEIF(ICO.EQ.(NCO-1))THEN
 
 C Display the basic help plus help from exemplars file.
         CALL PHELPD('exemplar menu',nbhelp+nghelp,'-',0,0,IER)
+
       ELSEIF(ICO.EQ.(NCO-2))THEN
+
+C User picked the documentation item in the menu. Present the list
+C again so the user can select which model they want to find more
+C about.
+        call edisp(iuout,'  ')
+        call edisp(iuout,
+     &    'Select which exemplar you want to know more about.')
         icod=0
         if(MMOD.EQ.8)then
           impx=0
@@ -1022,6 +1058,7 @@ C Open the related configuration file (if it exists), find its log file.
      &          doc(1:lnblnk(doc))
               CALL ERPFREE(iexfil+1,ISTAT)
               call tstamp('>','PRJ: list exemplar documentation')
+              call edisp(iuout,'  ')
               CALL LISTAS(iexfil+1,doc_file,IER)
             else
               goto 242
@@ -1031,9 +1068,10 @@ C Open the related configuration file (if it exists), find its log file.
      &            'See your ESP-r administrator for access.','W')
           endif
         endif
+
       ELSEIF(ICO.GE.1.AND.ICO.LT.(NCO-3))THEN
 
-C Present information on an exemplar.
+C User selected an exemplar, attempt to access it.
         if(inl2in(ICO).eq.0)goto 42
         look=name(inl2in(ICO))
         if(exemfl(1:1).eq.'/')then
@@ -1065,7 +1103,8 @@ C Present information on an exemplar.
             elseif(WORD(1:4).eq.'*cfg')then
               call egetrm(outstr,K,exemplar,'W','name',IER)
               if(iglib.eq.2.or.iglib.eq.3)then
-                call edisp(iuout,' Model is:')  ! echo if gtk
+                call edisp(iuout,'  ')
+                call edisp(iuout,'Examplar model is:')  ! echo if gtk
                 call edisp(iuout,exemplar)
               endif
 
@@ -1075,20 +1114,22 @@ C of the string till a file separator of either DOS or Unix type is reached.
               call isunix(unixok)
               if(.NOT.unixok)then
                 thecfgis=' '
-                ilexem = lnblnk(exemplar)
+                ilexem = lnblnk(exemplar)  ! last character
                 ipos = ilexem
  344            continue
                 ipos=ipos-1
                 if(exemplar(ipos:ipos).eq.fs)then
                   write(thecfgis,'(a)') exemplar(ipos+1:ilexem)
                   if(itrc.gt.0)then
-                    call edisp(iuout,'The model is...')
+                    call edisp(iuout,'  ')
+                    call edisp(iuout,'The model configuration file is:')
                     call edisp(iuout,thecfgis)
                   endif
                 elseif(exemplar(ipos:ipos).eq.'/')then
                   write(thecfgis,'(a)') exemplar(ipos+1:ilexem)
                   if(itrc.gt.0)then
-                    call edisp(iuout,'The model is...')
+                    call edisp(iuout,'  ')
+                    call edisp(iuout,'The model configuration file is:')
                     call edisp(iuout,thecfgis)
                   endif
                 else
@@ -1120,30 +1161,39 @@ C to the list of exemplars.
               call egetrm(outstr,K,rootp,'W','exem root dir',IER)
               goto 4
             elseif(WORD(1:4).eq.'*log')then
-              call egetrm(outstr,K,line,'W','old format log',IER)
+
+C In case there is a log file mentioned.
+              call egetrm(outstr,K,ilog,'W','item log',IER)
               goto 4
             elseif(WORD(1:5).eq.'*item')then
 
+C If a log file mentioned in exemplars file show it.
+              if(ilog(1:2).ne.'  ')then
+                call edisp(iuout,'  ')
+                CALL LISTAS(iexfil+1,ilog,IER)
+              endif
+
 C Reached the end of the item, check if it is to be chosen and
 C if there are zones existing, remove them from memory.
-              CALL EASKABC(exdescr,'Actions:','browse',
-     &          'own it','cancel',IW,nbhelp)
+              CALL EASKAB(exdescr,'Actions:',
+     &          'proceed','cancel',IW,nbhelp)
               if(IW.eq.1)then
-                call tstamp('>','PRJ: browse exemplar')
-                useraction='browse  '
-              elseif(IW.eq.2)then
                 if(upath.ne.' ')then
 
-C See if can derive the local configuration name.
+C See if can derive the local configuration name. cfg_root is the last
+C word in the path to the exemplar root folder.
                   call fdroot(rootp,cfg_path,cfg_root)
                   lex=lnblnk(exemplar)
                   lcfgr=lnblnk(cfg_root)
 
 C Debug the model source.
-                  write(outs,'(a,2i4,2a)') 'cfg_root = ',lex,lcfgr,
-     &              '  ',cfg_root(1:lcfgr)
-                  call edisp(iuout,outs)
+C                  write(outs,'(a,2i4,2a)') 'cfg_root = ',lex,lcfgr,
+C     &              '  ',cfg_root(1:lcfgr)
+C                  call edisp(iuout,outs)
 
+C Loop along the exemplar string to locate the position of the root
+C folder in the path of the exemplar.
+                  ilex=1
                   do 342 ilex=1,lex-lcfgr
                     if(cfg_root(1:lcfgr).eq.
      &                exemplar(ilex:ilex+lcfgr-1))then
@@ -1154,21 +1204,29 @@ C Debug the model source.
                   call isunix(unixok)
                   if(unixok)then
 
-C Offer user choice of home folder or another location. In GTK
-C there is a file browser returning folder name via lltmp.
-                    write(lguess,'(a)') upath(1:lnblnk(upath))
-                    write(dguess,'(a)') upath(1:lnblnk(upath))
+C Offer user choice of home folder plus the exemplar root name. In GTK
+C there is a file browser returning folder name via lltmp. If lltmp
+C folder does not exist then need to create it.
+                    write(lguess,'(3a)') upath(1:lnblnk(upath)),fs,
+     &                cfg_root(1:lcfgr)
+                    write(dguess,'(3a)') upath(1:lnblnk(upath)),fs,
+     &                cfg_root(1:lcfgr)
                     call edisp(iuout,'  ')  ! echo a blank line
                     CALL EASKXORGTKF(lguess,' ','Place model in:',               
      &                dguess,lltmp,'models folder',IER,nbhelp)
 
-                    write(doit,'(4a)') 'cp -r ',
-     &               rootp(1:lnblnk(rootp)),' ',lltmp(1:lnblnk(lltmp))
+                    write(doit,'(2a)') 'mkdir ',lltmp(1:lnblnk(lltmp))
+                    call runit(doit,'-')
+                    call pausems(400)
+
+C Make up the command to copy from the exemplar source folder to the
+C users defined destination.
+                    write(doit,'(5a)') 'cp -r ',rootp(1:lnblnk(rootp)),
+     &                fs,'*  ',lltmp(1:lnblnk(lltmp))
                   else
 
-C Debug statements for native windows version.  If lnblankrp or
-C lnblankup is one then there are no spaces in the string so double quotes
-C are not required.  But in either case it is useful to change any '/'
+C If lnblankrp or lnblankup is one then there are no spaces in the 
+C string so double quotes are not required.  Change any '/'
 C in rootp and upath to '\'. 
                     rootpdos=' '
                     upathdos=' '
@@ -1176,100 +1234,116 @@ C in rootp and upath to '\'.
                     lnblankrp=iprevblnk(rootp,lnrp)
 
 C Debug the model source.
-                    write(outs,'(a,2i3,2a)') 'rootp = ',lnrp,lnblankrp,
-     &                ' ',rootp(1:lnrp)
-                    call edisp(iuout,outs)
+C                    write(outs,'(a,2i3,2a)') 'rootp = ',lnrp,lnblankrp,
+C     &                ' ',rootp(1:lnrp)
+C                    call edisp(iuout,outs)
 
                     call backslashit(rootp,rootpdos)
-                    write(outs,'(2a)') 'Getting model from...',
-     &                rootpdos(1:lnrp)
-                    call edisp(iuout,outs)
+                    if(itrc.gt.0)then
+                      write(outs,'(2a)') 'Getting model from...',
+     &                  rootpdos(1:lnrp)
+                      call edisp(iuout,outs)
+                    endif
 
 C For an xcopy command we need the destination to also include the
 C model folder so use fdroot to extract this from rootp.
                     call fdroot(rootpdos,rootpath,modelroot)
                     lnmr=lnblnk(modelroot)
 
-C Debug the model destination.
-                    write(outs,'(2a)') 'the model root folder is = ',
-     &                modelroot(1:lnmr)
-                    call edisp(iuout,outs)
-
                     call edisp(iuout,' ')
 
-C Offer user choice of home folder or another location. In GTK
+C Offer user choice of home folder plus the exemplar root name. In GTK
 C there is a file browser returning folder name via lltmp.
-                    write(lguess,'(a)') upath(1:lnblnk(upath))
-                    write(dguess,'(a)') upath(1:lnblnk(upath))
+                    write(lguess,'(3a)') upath(1:lnblnk(upath)),fs,
+     &                cfg_root(1:lcfgr)
+                    write(dguess,'(3a)') upath(1:lnblnk(upath)),fs,
+     &                cfg_root(1:lcfgr)
                     call edisp(iuout,'  ')  ! echo a blank line
-                    CALL EASKXORGTKF(lguess,
-     &                'Place model as subfolder of?',' ',
+                    CALL EASKXORGTKF(lguess,' ','Place model in:',
      &                dguess,lltmp,'models folder',IER,nbhelp)
+
                     lnup=lnblnk(lltmp)
                     lnblankup=iprevblnk(lltmp,lnup)
                     call backslashit(lltmp,upathdos)
+
 C Debug.
-                    write(outs,'(a,2i3,2a)') 'upath = ',lnup,lnblankup,
-     &                ' ',upath(1:lnup)
-                    call edisp(iuout,outs)
-                    write(outs,'(2a)') 'destination = ',upathdos(1:lnup)
-                    call edisp(iuout,outs)
+C                    write(outs,'(a,2i3,2a)') 'upath = ',lnup,lnblankup,
+C     &                ' ',upath(1:lnup)
+C                    call edisp(iuout,outs)
+C                    write(outs,'(2a)') 'destination = ',upathdos(1:lnup)
+C                    call edisp(iuout,outs)
+
+C If upathdos folder does not exist then need to create it.
+                    if(lnblankup.gt.1)then
+
+C There are blanks in destination strings.
+                      write(doit,'(4a)') 'mkdir ',dq,upathdos(1:lnup),dq
+                    elseif(lnblankup.eq.1)then
+
+C There are no blanks in destination string.
+                      write(doit,'(2a)') 'mkdir ',upathdos(1:lnup)
+                    endif
+                    call runit(doit,'-')
+
                     if(lnblankrp.gt.1.and.lnblankup.gt.1)then
 
 C There are blanks in both source or destination strings.
-                      write(doit,'(10a)') 'xcopy /e /i /y /c ',dq,
-     &                  rootpdos(1:lnrp),dq,' ',dq,
-     &                  upathdos(1:lnup),fs,modelroot(1:lnmr),dq
+                      write(doit,'(11a)') 'xcopy /e /i /y /c ',dq,
+     &                  rootpdos(1:lnrp),fs,'*',dq,'  ',dq,
+     &                  upathdos(1:lnup),fs,dq
                     elseif(lnblankrp.eq.1.and.lnblankup.gt.1)then
 
 C There are blanks in destination string.
-                      write(doit,'(8a)') 'xcopy /e /i /y /c ',
-     &                  rootpdos(1:lnrp),' ',dq,
-     &                  upathdos(1:lnup),fs,modelroot(1:lnmr),dq
+                      write(doit,'(9a)') 'xcopy /e /i /y /c ',
+     &                  rootpdos(1:lnrp),fs,'*  ',dq,
+     &                  upathdos(1:lnup),fs,dq
                     elseif(lnblankrp.gt.1.and.lnblankup.eq.1)then
 
 C There are blanks in source string.
-                      write(doit,'(8a)') 'xcopy /e /i /y /c ',dq,
-     &                  rootpdos(1:lnrp),dq,' ',
-     &                  upathdos(1:lnup),fs,modelroot(1:lnmr)
+                      write(doit,'(9a)') 'xcopy /e /i /y /c ',dq,
+     &                  rootpdos(1:lnrp),fs,'*',dq,'  ',
+     &                  upathdos(1:lnup),fs
                     elseif(lnblankrp.eq.1.and.lnblankup.eq.1)then
 
 C There are no blanks in either source or destination strings.
                       write(doit,'(6a)') 'xcopy /e /i /y /c ',
-     &                  rootpdos(1:lnrp),' ',
-     &                  upathdos(1:lnup),fs,modelroot(1:lnmr)
+     &                  rootpdos(1:lnrp),fs,'*  ',
+     &                  upathdos(1:lnup),fs
                     endif
                   endif
 
 C If trace is verbose echo the command.
                   if(itrc.gt.0)then
-                    call lusrmsg(
-     &               'Copying exemplar to your destination folder.',
-     &               doit,'P')
+                    call edisp(iuout,
+     &                'Copying exemplar to destination folder via:')
+                    call edisp248(iuout,doit,100)
                   endif
                   call runit(doit,'-')
                   if(unixok)then
 
 C If Unix-like then append tail of exemplar string to the users selected
-C path to get the new exemplar name.
-                    write(exemplar,'(3a)') lltmp(1:lnblnk(lltmp)),fs,
+C path to get the new exemplar name.  Since this has already been
+C taken into account in the users suggested folder location we need
+C to add lcfgr from ilex to get the correct place to write
+C the remaining path characters into the file name.
+                    ilex=ilex+lcfgr
+                    write(exemplar,'(2a)') lltmp(1:lnblnk(lltmp)),
      &                exemplar(ilex:lnblnk(exemplar))
                   else
 
-C If Windows based then append the modelroot string to the path to make
-C up the exemplar name.
-                    lnmr=lnblnk(modelroot)
-                    write(exemplar,'(7a)')upathdos(1:lnblnk(upathdos)),
-     &                fs,modelroot(1:lnmr),fs,'cfg',fs,
-     &                thecfgis(1:lnblnk(thecfgis))
+C If Windows based then append cfg & cfg file string to the path to make
+C up the exemplar name (this assumes a standard layout of model).
+                    write(exemplar,'(5a)')upathdos(1:lnblnk(upathdos)),
+     &                fs,'cfg',fs,thecfgis(1:lnblnk(thecfgis))
                   endif
+                  call edisp(iuout,'  ')
                   call edisp(iuout,'The model configuration file is:')
                   call edisp(iuout,exemplar)
                   call tstamp('>','PRJ: owning exemplar')
                   call tstamp('>',exemplar)
                   useraction='ownit   '
                 endif
-              elseif(IW.eq.3)then
+              elseif(IW.eq.2)then
 
 C User asked to cancel current selection, rewind the file and jump back to
 C the top menu to re-resent groups.
@@ -1278,36 +1352,35 @@ C the top menu to re-resent groups.
                 useraction='continue'
                 goto 41
               endif
-              if(IW.eq.1.or.IW.eq.2)then
-                CALL ERPFREE(iexfil,ISTAT)
-                if(ncomp.gt.0.or.INDCFG.eq.2)then
-                  call usrmsg('Please wait... ',
-     &                        'Clearing previous model.','-')
-                  call startbuffer()
-                  call clrprb
-                endif
+
+C If there was a prior model in memory clear it.
+              CALL ERPFREE(iexfil,ISTAT)
+              if(ncomp.gt.0.or.INDCFG.eq.2)then
+                call usrmsg('Please wait... ',
+     &                      'Clearing previous model.','-')
+                call startbuffer()
+                call clrprb
+              endif
 
 C If the image browser was started in a previous session warn
 C the user to kill it.
-                if(iton.eq.1)then
-                  noimg=0
-                  iton=0
-                endif
-                return
+              if(iton.eq.1)then
+                noimg=0
+                iton=0
               endif
-              goto 92
+              return  ! we now know the model we want to load
             else
               goto 4
-            endif
+            endif  ! of finding a matching item token
           else
             goto 3
           endif
         else
           goto 3
-        endif
+        endif      ! of processing a name token
       else
         goto 42
-      endif
+      endif        ! of processing user selection
       goto 42
 
   92  CALL ERPFREE(iexfil,ISTAT)
