@@ -1064,7 +1064,6 @@ C << MUST be updated to reflect ipath and longer database names >>
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/LLOG/LPRJLG
 
       common/cctlnm/ctldoc,lctlf
 
@@ -1097,7 +1096,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       character SHOCCshlFile*72,SHOCCshzFile*72
 
       CHARACTER LCFGF*72
-      CHARACTER LPRJLG*72,LOUT*72
+      CHARACTER LOUT*72
       CHARACTER CTLDOC*248,LCTLF*72,cfgroot*24
       character indxcmt*24
 
@@ -1133,8 +1132,6 @@ C Comment for configuration index (upgrade registration level).
      &  '  # path to radiance files'
       WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*imgpth ',imgpth,
      &  '  # path to project images'
-      WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*tmppth ',tmppth,
-     &  '  # path to project scratch folder'
       WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*docpth ',docpth,
      &  '  # path to project documents'
       WRITE(ioout,'(3a)',IOSTAT=IOS,ERR=3) '*dbspth ',dbspth,
@@ -1262,7 +1259,7 @@ C Write primary energy conversions if these have been set.
      &    phwco2,phwnox,phwsox,' # dhw emissions CO2,NOX,SOX'
       endif
       write(ioout,'(a)')'* PROJ LOG'
-      WRITE(ioout,'(A)')LPRJLG(1:lnblnk(LPRJLG))
+      WRITE(ioout,'(A)')lmodellog(1:lnblnk(lmodellog))
       write(ioout,'(a)')'* Building'
       WRITE(ioout,'(A)')modeltitle(1:lnblnk(modeltitle))
       return

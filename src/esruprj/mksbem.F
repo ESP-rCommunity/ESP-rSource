@@ -7376,7 +7376,7 @@ C It finally generate BRUKL input document and other SBEM reports.
      &               thbrpercent,uavtotal(MCOM)
       common/rpath/path
       character DOIT*248
-      character limgpth*24,ldocpth*24,ltmppth*24,lcfgroot*24,lpath*72
+      character limgpth*24,ldocpth*24,lcfgroot*24,lpath*72
       character path*72,lupath*72
       character fs*1, col*1
       character BATCHFL*72
@@ -8446,13 +8446,12 @@ C If not UNIX, first determine the path of the current model folder
         lupath=upath
         limgpth=imgpth
         ldocpth=docpth
-        ltmppth=tmppth
         ibrowse = 0
         iincomp=ncomp
         iincon=ncon
 
 C Pass info on the path of current model to c code.
-        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,ltmppth,
+        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,
      &    ibrowse,iincomp,iincon)
 
         fs = char(92)
@@ -8513,7 +8512,7 @@ C Subroutine EPCCAL generates the UK Energy Performance input file.
 
       common/rpath/path
       character DOIT*248
-      character limgpth*24,ldocpth*24,ltmppth*24,lcfgroot*24,lpath*72
+      character limgpth*24,ldocpth*24,lcfgroot*24,lpath*72
       character path*72,lupath*72
       character fs*1, col*1, quote*1
       CHARACTER EPCBATFL*72,EPCINIFL*72
@@ -13237,13 +13236,12 @@ C If not UNIX, first determine the path of the current model folder
         lupath=upath
         limgpth=imgpth
         ldocpth=docpth
-        ltmppth=tmppth
         ibrowse = 0
         iincomp=ncomp
         iincon=ncon
 
 C Determine the path of current model
-        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,ltmppth,
+        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,
      &    ibrowse,iincomp,iincon)
         fs = char(92)
         col = char(58)

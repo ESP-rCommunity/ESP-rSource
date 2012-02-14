@@ -230,9 +230,6 @@ C                   then no control is imposed.
 C lctlf (72 char) - model control file name.
       common/cctlnm/ctldoc,lctlf
 
-C LPRJLG (72 char) model log file.
-      COMMON/LLOG/LPRJLG
-
 C Images in the model.
 C  imgfmt (4 char) gives the format of each image associated with
 C         the model, it must match one of the known fmttag.
@@ -467,7 +464,6 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER loutstr*248,OUTSTR*124,OUTS*124,text*124,t117*117
       CHARACTER*72 FILE,LCFD
       CHARACTER*72 LAPROB,LPNF
-      character LPRJLG*72
       character lworking*144
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,ZN*12
@@ -486,7 +482,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character gshpfile*72
       character gcepfile*72
       character dllsubr*12,dllmesg*124
-      character limgpth*24,ldocpth*24,ltmppth*24,lcfgroot*24,lpath*72
+      character limgpth*24,ldocpth*24,lcfgroot*24,lpath*72
       character path*72,lupath*72
       character namez*12,namen*12
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM
@@ -726,9 +722,7 @@ C via tags.
           CALL EGETRM(OUTSTR,K,imgpth,'W','path to img',IER)
           IF(IER.NE.0)goto 1
           goto 34
-        elseif(WORD(1:7).eq.'*tmppth')then
-          CALL EGETRM(OUTSTR,K,tmppth,'W','path to scratch',IER)
-          IF(IER.NE.0)goto 1
+        elseif(WORD(1:7).eq.'*tmppth')then  ! do not bother with this folder name
           goto 34
         elseif(WORD(1:7).eq.'*docpth')then
           CALL EGETRM(OUTSTR,K,docpth,'W','path to documents',IER)
@@ -1439,8 +1433,9 @@ C Annual IPV report depreciated in favour of sipvres.
 
 C Project log file, read and then go on to fabric/plant description.
         CALL STRIPC(IUC,OUTSTR,0,ND,1,'project log file',IER)
-        LPRJLG=OUTSTR(1:LNBLNK(OUTSTR))
+        lmodellog=OUTSTR(1:LNBLNK(OUTSTR))
         goto 45
+
       else
         call usrmsg(' Unknown entry format... ',outstr,'W')
         dok=.true.
@@ -2466,16 +2461,15 @@ C Pass information about the current model to the C interface.
       lupath=upath
       limgpth=imgpth
       ldocpth=docpth
-      ltmppth=tmppth
       iincomp=ncomp
       iincon=ncon
       if(browse)then
         ibrowse=1
-        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,ltmppth,
+        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,
      &    ibrowse,iincomp,iincon)
       else
         ibrowse=0
-        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,ltmppth,
+        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,
      &    ibrowse,iincomp,iincon)
       endif
       RETURN

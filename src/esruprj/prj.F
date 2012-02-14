@@ -90,8 +90,7 @@ C IEEE callback (Solaris)
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
-C Project log file, journal on/off, unit number, cmd, file name.
-      common/LLOG/LPRJLG
+C Journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
 C Ground topology.
@@ -155,7 +154,7 @@ C Name of current application
 
       character dstmp*24,uname*24
       character LUALF*72,LCNG*15,LLOC*15
-      character*72 LCFGF,LPRJLG
+      character*72 LCFGF
       character LTMP*72
       character inf*144,inz*16,inzone*16,act*16,inact*16,LCMDFL*144
       character outs*124,outstr*124
@@ -289,7 +288,6 @@ C Set folder separator (fs) to \ or / as required.
       write(imgpth,'(a1,a1)')'.',fs
       write(radpth,'(a1,a1)')'.',fs
       write(docpth,'(a1,a1)')'.',fs
-      write(tmppth,'(a1,a1)')'.',fs
       write(dbspth,'(a1,a1)')'.',fs
       write(bsmpth,'(a1,a1)')'.',fs
       write(hvacpth,'(a1,a1)')'.',fs
@@ -590,7 +588,7 @@ C Text/graphic feedback redirection on channel ifil +9
       ixunit = ifil + 9
 
 C Project log.
-      LPRJLG='job.notes'
+      lmodellog='project.notes'
 
 C If -actf was included in the command line then see if it
 C is a known command that can be acted on.

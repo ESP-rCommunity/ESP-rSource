@@ -1217,7 +1217,7 @@ C folder does not exist then need to create it.
 
                     write(doit,'(2a)') 'mkdir ',lltmp(1:lnblnk(lltmp))
                     call runit(doit,'-')
-                    call pausems(400)
+                    call pausems(100)
 
 C Make up the command to copy from the exemplar source folder to the
 C users defined destination.
@@ -1486,7 +1486,6 @@ C ICLIM,LCLIM (for climate file)
       INTEGER :: IFPNF
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       INTEGER :: iairn,icaas
-      common/LLOG/LPRJLG
       common/cctlnm/ctldoc,lctlf
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       common/GTFIL/GTGEOM
@@ -1529,7 +1528,7 @@ C ICLIM,LCLIM (for climate file)
       INTEGER :: ibsimp
 
       character LUALF*72,LCNG*15,LLOC*15,LCFGF*72
-      character LPRJLG*72,LPNF*72,LMOIST*72
+      character LPNF*72,LMOIST*72
       character*72 LCFD
       character LCMDFL*144,LFIL*72
       
@@ -1975,7 +1974,7 @@ C Temporal database.
       endif
 
 C Project log file.
-      call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LPRJLG)
+      call wtarentry(iunit,pathome,tr,ltr,tp,ltp,lmodellog)
 
 C Ground information.
       IF(GRND3D)THEN

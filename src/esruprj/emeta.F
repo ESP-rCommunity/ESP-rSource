@@ -1590,8 +1590,7 @@ C Debug.
       elseif(WORD(1:7).eq.'*imgpth')then
         CALL EGETRM(OUTSTR,K,imgpth,'W','path to img',IER)
         goto 43
-      elseif(WORD(1:7).eq.'*tmppth')then
-        CALL EGETRM(OUTSTR,K,tmppth,'W','path to scratch',IER)
+      elseif(WORD(1:7).eq.'*tmppth')then  ! do not bother with this path
         goto 43
       elseif(WORD(1:7).eq.'*docpth')then
         CALL EGETRM(OUTSTR,K,docpth,'W','path to documents',IER)
@@ -2957,8 +2956,6 @@ C extracting to a set of standard ESP-r files.
      &  '  # path to radiance files'
       write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*imgpth ',imgpth,
      &  '  # path to project images'
-      write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*tmppth ',tmppth,
-     &  '  # path to project scratch folder'
       write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*docpth ',docpth(1:lndcp),
      &  '  # path to project documents'
       write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*dbspth ',dbspth(1:lndbp),
