@@ -1,0 +1,518 @@
+*Materials 1.1
+*date,Sat Feb 13 12:15:16 2010
+# materials database defined in material.db3.a
+*doc,ESP-r Materials based on scan of a legacy ASCII materials database constr.db3 with required materials for UK code complience. Additional infomation and documentation uses standard assumptions which should be updated as required.
+18  # number of classifications
+#  
+# Materials have the following attributes:
+#  conductivity (W/(m-K), density (kg/m**3) specific heat (J/(kg-K)
+#  emissivity out (-) emissivity in (-)#   absorptivity out (-) absorptivity in (-)
+#  diffusion rest (?) default thickness (mm)
+#  flag [-] legacy [o] opaque [t] transparent
+#       [g] gas data+T cor [h] gas data at 4T
+#  
+# Transparent material attributes:
+#  longwave tran (-) solar direct tran (-) solar reflec out (-) solar refled in (-)
+#  visable tran (-) visable reflec out (-) visable reflec in (-) colour rendering (-)
+#  
+# Gas material attributes:
+#  (first 9 items the same) [g] or [h]
+#  air gap resistance for vert horiz other
+#  [g] 2 conduction, 2 viscosity, 2 density
+#      2 prandtl, 2 specific heat
+#  [h] 4 conduction, 4 viscosity, 4 density
+#      prandtl, specific heat
+#  
+# class index |nb items|description (32 char)
+*class, 1,11,Brick
+Category ( 1) Brick includes a range of brick types. Based on data traditionally distributed with ESP-r.
+*item,Paviour brick,  1, 1,Paviour brick
+0.960,2000.000,840.000,0.930,0.930,0.700,0.700,12.000,100.0,-
+*item,breeze block,  2, 1,Breeze block
+0.440,1500.000,650.000,0.900,0.900,0.650,0.650,15.000,100.0,-
+*item,inner leaf brick,  3, 1,Inner leaf brick
+0.620,1800.000,840.000,0.930,0.930,0.700,0.700,29.000,100.0,-
+*item,outer leaf brick,  4, 1,Outer leaf brick
+0.960,2000.000,650.000,0.900,0.900,0.930,0.930,25.000,100.0,-
+*item,vermic insul brk,  5, 1,Vermiculite insulating brick
+0.270,700.000,840.000,0.900,0.900,0.650,0.650,12.000,100.0,-
+*item,Lt brown brick,  6, 1,Light brown brick
+0.960,2000.000,650.000,0.900,0.900,0.700,0.700,25.000,100.0,-
+*item,brick (MK),  7, 1,Brick (milton keyns)
+0.840,1700.000,800.000,0.900,0.900,0.700,0.700,25.000,100.0,-
+*item,mat_008,  8, 1,Vermiculite refractory brick (www.matweb.com search)
+0.120,375.000,940.000,0.900,0.900,0.650,0.650,12.000,100.0,-
+*item,Brick slips 25 mm,  9, 1,Brick 25 mm (UK code)
+0.770,1700.000,940.000,0.900,0.900,0.650,0.650,12.000,25.0,-
+*item,Brick outer leaf, 10, 1,Brick (UK code)
+0.770,1700.000,1000.000,0.900,0.900,0.700,0.700,12.000,102.0,-
+*item,brick honeycomb, 11, 1,Brick extruded honeycomb from IBO PassivHaus
+0.270,800.000,1000.000,0.900,0.900,0.700,0.700,35.000,102.0,-
+# class index |nb items|description (32 char)
+*class, 2,20,Concrete
+Category ( 2) Concrete includes a mix of concrete types from heavy weight to lightweight insulating types. Based on data traditionally distributed with ESP-r.
+*item,light mix concrete, 21, 2,Light mix concrete
+0.380,1200.000,653.000,0.900,0.900,0.650,0.650,6.000,100.0,-
+*item,aerated conc block, 22, 2,Aerated concrete block
+0.240,750.000,1000.000,0.900,0.900,0.650,0.650,10.000,100.0,-
+*item,aerated concrete, 23, 2,Aerated concrete
+0.160,500.000,840.000,0.900,0.900,0.650,0.650,13.000,100.0,-
+*item,refrac insul conc, 24, 2,Refracory insulating concrete
+0.250,10.000,837.000,0.900,0.900,0.650,0.650,12.000,100.0,-
+*item,vermic aggr conc, 25, 2,Vermiculite aggregate concrete
+0.170,450.000,837.000,0.900,0.900,0.650,0.650,12.000,100.0,-
+*item,no fines concrete, 26, 2,No fines concrete
+0.960,1800.000,840.000,0.900,0.900,0.650,0.650,18.000,100.0,-
+*item,foamed slagm, 27, 2,Foamed slag concrete
+0.250,1040.000,960.000,0.900,0.900,0.650,0.650,8.000,100.0,-
+*item,block inner, 28, 2,Block inner (3% mc)
+0.510,1400.000,1000.000,0.900,0.900,0.650,0.650,10.000,100.0,-
+*item,foamed inner blk, 29, 2,Foamed inner block (3%mc)
+0.160,600.000,1000.000,0.900,0.900,0.650,0.650,6.000,100.0,-
+*item,foamed outer blk, 30, 2,Foamed outer block (5%mc)
+0.170,600.000,1000.000,0.900,0.900,0.650,0.650,8.000,100.0,-
+*item,Glass reinf conc, 31, 2,Glass fibre reinforced concrete
+0.900,1950.000,840.000,0.900,0.900,0.650,0.650,18.000,100.0,-
+*item,heavy mix concrete, 32, 2,Heavy mix concrete
+1.400,2100.000,653.000,0.900,0.900,0.650,0.650,19.000,100.0,-
+*item,Stone clr concrete, 33, 2,Stone colour heavy mix concrete
+1.400,2100.000,653.000,0.900,0.900,0.480,0.480,19.000,100.0,-
+*item,white ptd concrete, 34, 2,White painted heavy mix concrete
+1.400,2100.000,653.000,0.900,0.900,0.210,0.210,19.000,100.0,-
+*item,block white ptd, 35, 2,block white painted inner (3% mc)
+0.510,1400.000,1000.000,0.900,0.900,0.250,0.250,10.000,100.0,-
+*item,concrete block, 36, 2,concrete block (milton keynes)
+1.060,1950.000,1000.000,0.900,0.900,0.400,0.400,18.000,100.0,-
+*item,mat_037, 37, 2,Aerated concrete autoclaved  .8 g/cc (www.matweb.com search)
+0.230,800.000,1000.000,0.900,0.900,0.650,0.650,13.000,100.0,-
+*item,concrete 150mm, 38, 2,Concrete high density 150mm (UK code)
+1.930,2400.000,1000.000,0.900,0.900,0.700,0.700,13.000,150.0,-
+*item,Cast concrete 100 mm, 39, 2,Cast concrete 100 mm (UK code)
+1.350,2000.000,1000.000,0.900,0.900,0.700,0.700,13.000,100.0,-
+*item,Concrete med density (1800), 40, 2,Blockwork (UK code)
+1.130,1800.000,1008.000,0.900,0.900,0.700,0.700,13.000,100.0,-
+# class index |nb items|description (32 char)
+*class, 3,10,Metal
+Category ( 3) Metal has a range of metals, some are the same but are painted differently. Based on data traditionally distributed with ESP-r.
+*item,copper, 41, 3,Copper
+200.000,8900.000,418.000,0.720,0.720,0.650,0.650,19200.000,5.0,-
+*item,steel, 42, 3,Steel
+50.000,7800.000,502.000,0.120,0.120,0.200,0.200,19200.000,5.0,-
+*item,aluminium, 43, 3,Aluminium
+210.000,2700.000,880.000,0.220,0.220,0.200,0.200,19200.000,5.0,-
+*item,beige ptd steel, 44, 3,Beige painted steel
+40.000,7800.000,502.000,0.820,0.820,0.450,0.450,19200.000,5.0,-
+*item,white ptd steel, 45, 3,White painted steel
+40.000,7800.000,502.000,0.820,0.820,0.300,0.300,19200.000,5.0,-
+*item,grey cotd alum, 46, 3,Grey coated aluminium
+210.000,2700.000,880.000,0.820,0.820,0.720,0.720,19200.000,5.0,-
+*item,wt cotd alum, 47, 3,White coated aluminium
+210.000,2700.000,880.000,0.820,0.820,0.320,0.320,19200.000,5.0,-
+*item,Thermobrite, 48, 3,Thermobrite
+210.000,2700.000,880.000,0.050,0.050,0.050,0.050,19200.000,5.0,-
+*item,mat_049, 49, 3,Lead as per CIBSE data
+210.000,2700.000,880.000,0.050,0.050,0.050,0.050,19200.000,5.0,-
+*item,steelSheedSBEM, 51, 3,Steel sheed SBEM
+60.000,7800.000,502.000,0.120,0.120,0.200,0.200,19200.000,1.0,-
+# class index |nb items|description (32 char)
+*class, 4,23,Wood
+Category ( 4) Wood holds a range of wood types. Based on data traditionally distributed with ESP-r.
+*item,wood block, 61, 4,Block (wood)
+0.160,800.000,2093.000,0.900,0.900,0.650,0.650,11.000,25.0,-
+*item,Hardboard medium, 62, 4,Hardboard (medium density)
+0.080,600.000,2000.000,0.910,0.910,0.700,0.700,110.000,25.0,-
+*item,Hardboard std, 63, 4,Hardboard (standard density)
+0.130,900.000,2000.000,0.910,0.910,0.700,0.700,140.000,25.0,-
+*item,fir, 64, 4,Fir (20% mc)
+0.140,419.000,2720.000,0.900,0.900,0.650,0.650,12.000,25.0,-
+*item,flooring, 65, 4,Flooring (source does not clarify what it is)
+0.140,600.000,1210.000,0.910,0.910,0.650,0.650,14.000,25.0,-
+*item,cork board, 66, 4,Cork board
+0.040,160.000,1888.000,0.900,0.900,0.600,0.600,14.000,25.0,-
+*item,chipboard, 67, 4,Chipboard
+0.150,800.000,2093.000,0.910,0.910,0.650,0.650,96.000,25.0,-
+*item,weatherboard, 68, 4,Weatherboard (source does not clarify what it is)
+0.140,650.000,2000.000,0.910,0.910,0.650,0.650,100.000,25.0,-
+*item,oak, 69, 4,Oak (radial cut)
+0.190,700.000,2390.000,0.900,0.900,0.650,0.650,12.000,25.0,-
+*item,plywood 560d, 70, 4,Plywood (generic 560 density)
+0.150,560.000,2500.000,0.900,0.900,0.650,0.650,576.000,25.0,-
+*item,softwood, 71, 4,Softwood (generic)
+0.130,630.000,2760.000,0.900,0.900,0.650,0.650,12.000,25.0,-
+*item,plywood 700d, 72, 4,Plywood (700 density)
+0.150,700.000,1420.000,0.900,0.900,0.650,0.650,576.000,25.0,-
+*item,Softboard, 73, 4,Softboard (source does not clarify what it is)
+0.560,350.000,1000.000,0.900,0.900,0.650,0.650,13.000,25.0,-
+*item,plywood lt grain, 74, 4,Light grain Plywood
+0.150,700.000,1420.000,0.900,0.900,0.680,0.680,576.000,25.0,-
+*item,floorboards, 75, 4,floorboards (milton keynes)
+0.160,950.000,2093.000,0.910,0.910,0.650,0.650,11.000,25.0,-
+*item,plywood sheathing, 76, 4,Plywood sheathing (UK code)
+0.120,540.000,1210.000,0.900,0.900,0.900,0.900,576.000,25.0,-
+*item,hardboard siding, 77, 4,Hardboard siding (UK code)
+0.787,1900.000,1170.000,0.900,0.900,0.900,0.900,576.000,25.0,-
+*item,Plywood deck, 78, 4,Plywood/felt (UK code)
+0.130,500.000,1500.000,0.900,0.900,0.700,0.700,576.000,19.0,-
+*item,OSB, 79, 4,OSB wood based on the SBEM database
+0.130,650.000,1700.000,0.900,0.900,0.700,0.700,1200.000,9.0,-
+*item,MDF, 80, 4,MDF based on info in IBO PassivHaus
+0.080,780.000,2000.000,0.900,0.900,0.700,0.700,55.000,9.0,-
+*item,parquet, 89, 4,Parquet (ready to install) from IBO PassivHaus
+0.170,740.000,2000.000,0.900,0.900,0.650,0.650,250.000,12.0,-
+*item,HighDensityParticleBd, 91, 4,HDF based on info in Handbook of Heat Transfer by Thomas Irvine
+0.170,1000.000,1300.000,0.900,0.900,0.700,0.700,55.000,9.0,-
+*item,western larch, 92, 4,Wester Larch from simetric.co.uk and matbase specific ht via physical r prop and moisture relations of wood W Simpson and A TenWolde www.fs.d us/ccrc wood hanbook
+0.140,590.000,1800.000,0.900,0.900,0.650,0.650,12.000,25.0,-
+# class index |nb items|description (32 char)
+*class, 5, 9,Stone
+Category ( 5) Stone includes building stone and gravels. Based on data traditionally distributed with ESP-r.
+*item,sandstone, 81, 5,Sandstone
+1.830,2200.000,712.000,0.900,0.900,0.600,0.600,29.000,200.0,-
+*item,red granite, 82, 5,Red granite
+2.900,2650.000,900.000,0.900,0.900,0.550,0.550,77.000,200.0,-
+*item,white marble, 83, 5,White marble
+2.000,2500.000,880.000,0.900,0.900,0.460,0.460,38.000,200.0,-
+*item,limestone, 84, 5,Limestone
+1.500,2180.000,720.000,0.900,0.900,0.600,0.600,29.000,200.0,-
+*item,slate, 85, 5,Slate
+2.000,2700.000,753.000,0.900,0.900,0.600,0.600,48.000,200.0,-
+*item,gravel, 86, 5,Gravel
+0.360,1840.000,840.000,0.900,0.900,0.600,0.600,2.000,200.0,-
+*item,chippings, 87, 5,Chippings
+0.960,1800.000,1000.000,0.900,0.900,0.600,0.600,2.000,200.0,-
+*item,mat_088, 88, 5,Basalt (www.matweb.com search)
+0.800,2700.000,720.000,0.900,0.900,0.600,0.600,1960.000,200.0,-
+*item,lime cement mortar, 90, 5,lime cement mortar from IBO PassivHaus
+0.800,1800.000,1120.000,0.900,0.900,0.600,0.600,75.000,10.0,-
+# class index |nb items|description (32 char)
+*class, 6,14,Plaster
+Category ( 6) Plaster includes both tranditional plaster and gypsum plaster boards. Based on data traditionally distributed with ESP-r.
+*item,dense plaster,101, 6,Dense plaster
+0.500,1300.000,1000.000,0.910,0.910,0.500,0.500,11.000,12.5,-
+*item,light plaster,102, 6,Light weight plaster
+0.160,600.000,1000.000,0.910,0.910,0.500,0.500,8.000,12.5,-
+*item,perlite plasterboard,103, 6,Perlite plasterboard
+0.180,800.000,837.000,0.910,0.910,0.600,0.600,9.000,12.5,-
+*item,gypsum plaster,104, 6,Gypsum based plaster
+0.420,1200.000,837.000,0.910,0.910,0.500,0.500,11.000,12.5,-
+*item,perlite plaster,105, 6,Perlite plaster
+0.080,400.000,837.000,0.910,0.910,0.500,0.500,11.000,12.5,-
+*item,vermiculite plaster,106, 6,Vermiculite plaster
+0.200,720.000,837.000,0.910,0.910,0.500,0.500,11.000,12.5,-
+*item,gypsum plasterboard,107, 6,Gypsum plasterboard (generic)
+0.190,950.000,840.000,0.910,0.910,0.500,0.500,11.000,12.5,-
+*item,white gypboard,108, 6,White paintedd Gypboard
+0.190,950.000,840.000,0.910,0.910,0.220,0.220,11.000,12.5,-
+*item,beige gypboard,109, 6,Beige painted Gypboard
+0.190,950.000,840.000,0.910,0.910,0.260,0.260,11.000,12.5,-
+*item,Plasterboard (wallboard),110, 6,Internal finish (UK code)
+0.210,900.000,1000.000,0.910,0.910,0.260,0.260,11.000,13.0,-
+*item,Plasterboard (ceiling),111, 6,Plasterboard Gypsum (10 mm) (UK code)
+0.210,900.000,1000.000,0.910,0.910,0.700,0.700,11.000,9.5,-
+*item,Plasterboard (UK code),112, 6,Plasterboard (UK code)
+0.210,900.000,1000.000,0.910,0.910,0.700,0.700,11.000,13.0,-
+*item,lime plaster,113, 6,lime plaster from IBO PassivHaus
+0.700,1400.000,920.000,0.910,0.910,0.700,0.700,10.000,12.0,-
+*item,lime cement plaster,114, 6,lime cement plaster from IBO PassivHaus
+0.800,1800.000,1100.000,0.910,0.910,0.700,0.700,75.000,12.0,-
+# class index |nb items|description (32 char)
+*class, 7,12,Screeds and renders
+Category ( 7) Screeds are products typically used horizontally and renders are used on walls. Based on data traditionally distributed with ESP-r.
+*item,mat_121,121, 7,Lightweight conc screed
+0.410,1200.000,840.000,0.900,0.900,0.800,0.800,30.000,50.0,-
+*item,cast conc screed,122, 7,Cast concrete screed
+1.280,2100.000,1007.000,0.900,0.900,0.650,0.650,44.000,50.0,-
+*item,granolithic screed,123, 7,Granolithic screed
+0.870,2085.000,837.000,0.900,0.900,0.650,0.650,35.000,50.0,-
+*item,cement screed,124, 7,Cement screed
+1.400,2100.000,650.000,0.910,0.910,0.650,0.650,19.000,50.0,-
+*item,white dry render,125, 7,White (coloured) dry render
+0.500,1300.000,1000.000,0.910,0.910,0.500,0.500,19.000,50.0,-
+*item,rendering dry,126, 7,Rendering (1% mc)
+1.130,1431.000,1000.000,0.910,0.910,0.500,0.500,19.000,50.0,-
+*item,rendering not-dry,127, 7,Rendering (8% mc)
+0.790,1329.000,1000.000,0.910,0.910,0.500,0.500,19.000,50.0,-
+*item,aged rendering,128, 7,Aged Rendering
+0.790,1329.000,1000.000,0.910,0.910,0.740,0.740,19.000,50.0,-
+*item,Screed 50mm,129, 7,Flooring screed 50mm (UK code)
+0.410,1200.000,1000.000,0.910,0.910,0.700,0.700,19.000,50.0,-
+*item,Render External 20 mm,130, 7,Render External 20 mm (UK code)
+0.570,1300.000,1000.000,0.910,0.910,0.700,0.700,19.000,20.0,-
+*item,mat_131,131, 7,White dry render (copy of mat_125) (UK code)
+0.500,1300.000,1000.000,0.910,0.910,0.500,0.500,19.000,50.0,-
+*item,mat_132,132, 7,Rendering (8% mc) (copy of mat_127) (UK code)
+0.790,1329.000,1000.000,0.910,0.910,0.500,0.500,19.000,50.0,-
+# class index |nb items|description (32 char)
+*class, 8,17,Tiles
+Category ( 8) Tiles includes both floor tiles, ceiling tiles and roof tile. Based on data traditionally distributed with ESP-r.
+*item,clay tile,141, 8,Clay tile
+0.850,1900.000,837.000,0.900,0.900,0.600,0.600,52.000,6.0,-
+*item,concrete tile,142, 8,Concrete tile
+1.100,2100.000,837.000,0.900,0.900,0.650,0.650,20.000,6.0,-
+*item,Slate tile,143, 8,Slate tile
+2.000,2700.000,753.000,0.950,0.950,0.850,0.850,48.000,6.0,-
+*item,plastic tile,144, 8,Plastic tile
+0.500,1050.000,837.000,0.900,0.900,0.400,0.400,1000.000,6.0,-
+*item,rubber tile,145, 8,Rubber tile
+0.300,1600.000,2000.000,0.940,0.940,0.820,0.820,1000.000,6.0,-
+*item,cork tile,146, 8,Cork tile
+0.080,530.000,1800.000,0.900,0.900,0.600,0.600,58.000,6.0,-
+*item,asphalt,147, 8,Asphalt/asbestos based tile
+0.550,1900.000,837.000,0.900,0.900,0.700,0.700,150.000,6.0,-
+*item,plastic tile,148, 8,P.V.C./asbestos
+0.850,2000.000,837.000,0.900,0.900,0.600,0.600,1000.000,6.0,-
+*item,tile bedding,149, 8,Tile bedding/grout
+1.400,2100.000,650.000,0.900,0.900,0.600,0.600,25.000,6.0,-
+*item,ceiling mineral,150, 8,Ceiling acoustic tile (mineral fibre based)
+0.030,290.000,2000.000,0.900,0.900,0.600,0.600,8.000,6.0,-
+*item,ceiling (plaster),151, 8,Ceiling (plaster)
+0.380,1120.000,840.000,0.900,0.900,0.600,0.600,12.000,6.0,-
+*item,Marley MTC110,152, 8,Marley MTC110 tiles
+0.850,1050.000,837.000,0.900,0.900,0.800,0.800,1000.000,6.0,-
+*item,floor tiles,153, 8,floor tiles (milton keynes)
+0.600,500.000,750.000,0.900,0.900,0.650,0.650,52.000,6.0,-
+*item,mat_154,154, 8,PVC tile as per CSTC Belgium 1980
+0.190,1200.000,1470.000,0.900,0.900,0.600,0.600,1000.000,6.0,-
+*item,Ceiling tile,155, 8,Ceiling tiles
+0.060,250.000,1000.000,0.900,0.900,0.700,0.700,1000.000,15.0,o
+*item,Tiles Concrete 10 mm,156, 8,Tiles
+1.500,2100.000,1000.000,0.900,0.900,0.700,0.700,1000.000,10.0,o
+*item,EDPM rubber,157, 8,Rubber EDPM from IBO PassivHaus
+0.250,1200.000,1000.000,0.940,0.940,0.820,0.820,19200.000,6.0,-
+# class index |nb items|description (32 char)
+*class, 9,13,Asphalt and bitumen
+Category ( 9) Asphalt and bitumen also includes materials which use bitumen and asphalt like compositions. Based on data traditionally distributed with ESP-r.
+*item,bitumen felt,161, 9,Bitumen felt
+0.500,1700.000,1000.000,0.900,0.900,0.900,0.900,1000.000,6.0,-
+*item,roofing felt,162, 9,Roofing felt
+0.190,960.000,837.000,0.900,0.900,0.900,0.900,15.000,6.0,-
+*item,mastic roofing,163, 9,Asphalt mastic roofing
+1.150,2325.000,837.000,0.900,0.900,0.900,0.900,19200.000,6.0,-
+*item,asphalt,164, 9,Asphalt
+1.200,2300.000,1700.000,0.900,0.900,0.900,0.900,1900.000,6.0,-
+*item,bitumen composit,165, 9,Bitumen composit (floor)
+0.850,2400.000,1000.000,0.900,0.900,0.900,0.900,1500.000,6.0,-
+*item,bitumen paper,166, 9,Bitumen impregnt`d paper
+0.060,1090.000,1000.000,0.900,0.900,0.900,0.900,3000.000,6.0,-
+*item,reflective coat,167, 9,Asphalt reflective coating
+1.200,2300.000,1700.000,0.300,0.300,0.300,0.300,1900.000,6.0,-
+*item,asphalt shingles,168, 9,Asphalt shingles
+1.290,1100.000,1260.000,0.950,0.950,0.950,0.950,1900.000,6.0,-
+*item,mat_169,169, 9,laminated paper (ASHRAE Handbook 1985)
+0.072,480.000,1380.000,0.900,0.900,0.900,0.900,15.000,6.0,-
+*item,mat_170,170, 9,Polyvinylchloride pipe estimated from CIBSE data
+0.160,1380.000,1000.000,0.900,0.900,0.800,0.800,19200.000,6.0,-
+*item,mat_171,171, 9,HDPE (high density polyethylene pipe (www.matweb.com)
+0.290,918.000,2200.000,0.900,0.900,0.800,0.800,19200.000,6.0,-
+*item,mat_172,172, 9,ABS (Acrylonitrile Butadiene Styrene) pipe (www.matweb.com)
+0.250,1020.000,1400.000,0.900,0.900,0.800,0.800,19200.000,6.0,-
+*item,mat_173,173, 9,wool felt underlay (UK assumptions)
+0.040,160.000,1360.000,0.900,0.900,0.900,0.900,15.000,6.0,-
+# class index |nb items|description (32 char)
+*class,10, 4,Asbestos
+Category (10) Asbestos is included for historic reasons, but some regions still use asbestos in building products. Based on data traditionally distributed with ESP-r.
+*item,asbestos cement,181,10,Asbestos cement
+0.360,1500.000,1000.000,0.900,0.900,0.600,0.600,300.000,6.0,-
+*item,cement sheet,182,10,Cement sheet
+0.360,700.000,1050.000,0.960,0.960,0.600,0.600,150.000,6.0,-
+*item,asbestos sheet,183,10,Asbestos sheet
+0.160,2500.000,1050.000,0.900,0.900,0.960,0.960,300.000,6.0,-
+*item,asbestos insulation,184,10,Asbestos insulation
+0.160,577.000,840.000,0.900,0.900,0.600,0.600,3.000,6.0,-
+# class index |nb items|description (32 char)
+*class,11,21,Insulation materials (1)
+Category (11) Insulation materials (1) is an initial tranche of loose, batt and foam insulating materials. Based on data traditionally distributed with ESP-r.
+*item,fibreboard,201,11,Fibreboard
+0.060,300.000,1000.000,0.900,0.900,0.500,0.500,13.000,100.0,-
+*item,woodwool,202,11,Woodwool
+0.100,500.000,1000.000,0.900,0.900,0.500,0.500,5.000,100.0,-
+*item,UF foam,203,11,UF foam
+0.030,30.000,1764.000,0.900,0.900,0.500,0.500,5.000,100.0,-
+*item,Thermalite,204,11,Thermalite
+0.190,753.000,837.000,0.900,0.900,0.700,0.700,10.000,100.0,-
+*item,Polyurethane foam bd,205,11,Polyurethane foam board
+0.030,30.000,837.000,0.900,0.900,0.500,0.500,90.000,100.0,-
+*item,Siporex,206,11,Siporex
+0.120,550.000,1004.000,0.900,0.900,0.400,0.400,60.000,100.0,-
+*item,PVC,207,11,PVC
+0.160,1379.000,1004.000,0.900,0.900,0.600,0.600,70.000,10.0,-
+*item,hard rubber,208,11,Hard rubber
+0.150,1200.000,1000.000,0.940,0.940,0.920,0.920,500.000,10.0,-
+*item,cratherm board,209,11,Cratherm board
+0.050,176.000,837.000,0.900,0.900,0.500,0.500,20.000,100.0,-
+*item,silicon,210,11,Silicon (source is not specific)
+0.180,700.000,1004.000,0.900,0.900,0.600,0.600,10.000,100.0,-
+*item,glasswool,211,11,Glasswool (generic)
+0.040,250.000,840.000,0.900,0.900,0.300,0.300,4.000,100.0,-
+*item,roof insulation bd,212,11,Roof insulation board
+0.190,960.000,950.000,0.900,0.900,0.550,0.550,15.000,20.0,-
+*item,felt sheathing,213,11,Felt sheathing
+0.190,960.000,950.000,0.900,0.900,0.900,0.900,15.000,10.0,-
+*item,EPS,214,11,EPS (expanded polystyrene)
+0.030,25.000,1000.000,0.900,0.900,0.300,0.300,67.000,100.0,-
+*item,expanded PVC,215,11,Expanded PVC
+0.040,100.000,750.000,0.900,0.900,0.600,0.600,40.000,100.0,-
+*item,mineral fibre,216,11,Mineral fibre
+0.040,105.000,1800.000,0.900,0.900,0.600,0.600,1.000,100.0,-
+*item,cork insulation,217,11,Cork insulation
+0.040,105.000,1800.000,0.900,0.900,0.600,0.600,15.000,100.0,-
+*item,straw thatch,218,11,Straw thatch
+0.070,240.000,180.000,0.900,0.900,0.500,0.500,3.000,100.0,-
+*item,Thermalite,219,11,Thermalite turbo blk
+0.110,480.000,1050.000,0.900,0.900,0.650,0.650,10.000,100.0,-
+*item,XPS CO2 foamed,220,11,XPS extruded polystyrene foamed with Co2 from IBO PassivHaus
+0.040,38.000,1450.000,0.900,0.900,0.300,0.300,350.000,100.0,-
+*item,celulose fiber flakes,233,11,cellulose fibre insulation flakes from IBO PassivHaus
+0.040,35.000,1900.000,0.900,0.900,0.300,0.300,10.000,100.0,-
+# class index |nb items|description (32 char)
+*class,12,12,Carpet
+Category (12) Carpet includes both natural and synthetic carpets, some differ only in colour. Based on data traditionally distributed with ESP-r.
+*item,Wilton,221,12,Wilton weave wool carpet
+0.060,186.000,1360.000,0.900,0.900,0.600,0.600,10.000,5.0,-
+*item,sheeps wool,222,12,Sheeps wool (simulated)
+0.060,198.000,1360.000,0.900,0.900,0.600,0.600,10.000,5.0,-
+*item,wool felt underlay,223,12,Wool felt underlay
+0.040,160.000,1360.000,0.900,0.900,0.650,0.650,10.000,5.0,-
+*item,cellular rub underlay,224,12,Cellular rubber carpet underlay
+0.100,400.000,1360.000,0.900,0.900,0.650,0.650,1000.000,5.0,-
+*item,synthetic carpet,225,12,Synthetic carpet
+0.060,160.000,2500.000,0.900,0.900,0.650,0.650,10.000,5.0,-
+*item,dk grey Wilton,226,12,Dark grey Wilton carpet
+0.060,186.000,1360.000,0.900,0.900,0.850,0.850,10.000,5.0,-
+*item,blue Wilton,227,12,Blue (dye) Wilton carpet
+0.060,186.000,1360.000,0.900,0.900,0.900,0.900,10.000,5.0,-
+*item,grey loop pile,228,12,Grey loop pile synthetic carpet
+0.060,160.000,2500.000,0.900,0.900,0.850,0.850,10.000,5.0,-
+*item,grey cord synth,229,12,Grey cord synthetic carpet
+0.060,160.000,2500.000,0.900,0.900,0.900,0.900,10.000,5.0,-
+*item,ttgrey cord synth,230,12,Light grey cord synthetic carpet
+0.060,160.000,2500.000,0.900,0.900,0.780,0.780,10.000,5.0,-
+*item,mat_231,231,12,wool felt underlay (UK assumptions)
+0.040,160.000,1360.000,0.900,0.900,0.600,0.600,10.000,5.0,-
+*item,mat_232,232,12,linoleum as per CSTC Belgium 1980
+0.190,1200.000,1470.000,0.900,0.900,0.600,0.600,10.000,5.0,-
+# class index |nb items|description (32 char)
+*class,13,10,Glass
+Category (13) Glass with additional single layer optical properties (some estimated, some still all zero). Based on data traditionally distributed with ESP-r.
+*item,glass block,241,13,Glass block with placeholder single layer optics
+0.700,3500.000,837.000,0.830,0.830,0.050,0.050,19200.000,6.0,t,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000
+*item,plate glass,242,13,Plate glass with placeholder single layer optics
+0.760,2710.000,837.000,0.830,0.830,0.050,0.050,19200.000,6.0,t,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000
+*item,clear float,243,13,4mm clear float glass with optics from UK national method datase for 3 mm clear glass Not coated not tinted
+1.050,2500.000,750.000,0.830,0.830,0.050,0.050,19200.000,6.0,t,0.000,0.837,0.075,0.075,0.898,0.081,0.081,0.000
+*item,antisun 6mm,244,13,6mm Antisun glass with placeholder single layer optics
+1.050,2500.000,750.000,0.590,0.590,0.060,0.060,19200.000,6.0,t,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000
+*item,fict,245,13,fictitious material (almost not there) with matching single layer optics
+20.000,10.000,10.000,0.990,0.990,0.010,0.010,19200.000,6.0,t,0.000,0.999,0.001,0.001,0.999,0.001,0.001,0.000
+*item,low_e glass,246,13,6mm CF Low_e glass with placeholder single layer optics
+1.050,2500.000,750.000,0.050,0.050,0.060,0.060,19200.000,6.0,t,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000
+*item,REF A CLEAR LO 6MM,247,13,optics from UK national method datase Low-e coated not tinted
+1.050,2500.000,750.000,0.840,0.400,0.060,0.060,19200.000,6.0,t,0.000,0.066,0.341,0.493,0.080,0.410,0.370,0.000
+*item,REF A CLEAR MID 6MM,248,13,optics from UK national method datase Low-e coated not tinted
+1.050,2500.000,750.000,0.840,0.470,0.060,0.060,19200.000,6.0,t,0.000,0.110,0.270,0.430,0.140,0.310,0.350,0.000
+*item,LoE CLEAR 6MM,249,13,optics from UK national method datase Low-e coated not tinted
+1.050,2500.000,750.000,0.840,0.100,0.060,0.060,19200.000,6.0,t,0.000,0.600,0.170,0.220,0.840,0.055,0.078,0.000
+*item,dispGlz_not_modCond,250,13,6 mm clear glass (copy of 6 mm clear glass)
+30.000,2500.000,750.000,0.840,0.840,0.060,0.060,19200.000,6.0,t,0.000,0.780,0.000,0.070,0.880,0.080,0.080,0.000
+# class index |nb items|description (32 char)
+*class,14, 8,Earth
+Category (14) Earth includes loose materials. Also check the stone category for other gravels. Based on data traditionally distributed with ESP-r.
+*item,earth infusorial,261,14,Infusorial (9% mc)
+0.090,480.000,180.000,0.900,0.900,0.850,0.850,5.000,200.0,-
+*item,gravel based,262,14,Gravel based
+0.520,2050.000,184.000,0.900,0.900,0.850,0.850,2.000,200.0,-
+*item,earth std,263,14,Common_earth
+1.280,1460.000,879.000,0.900,0.900,0.850,0.850,5.000,200.0,-
+*item,earth (MK),264,14,earth (milton keynes)
+1.750,1900.000,1700.000,0.900,0.900,0.850,0.850,5.000,200.0,-
+*item,mat_265,265,14,sand as per Indian Standards Institution
+1.740,2240.000,840.000,0.900,0.900,0.850,0.850,5.000,200.0,-
+*item,mat_266,266,14,sand kiln dried CIBSE
+1.740,2240.000,920.000,0.900,0.900,0.850,0.850,5.000,200.0,-
+*item,mat_267,267,14,alluvial clay with 40% sand as per Indian Standards Institution
+1.210,1960.000,840.000,0.900,0.900,0.850,0.850,5.000,200.0,-
+*item,Clay underfloor 750 mm,268,14,Clay underfloor default 750 mm
+1.500,1500.000,2085.000,0.900,0.900,0.700,0.700,5.000,750.0,-
+# class index |nb items|description (32 char)
+*class,15,21,Insulation materials (2)
+Category (15) Insulation materials (2) is a second tranche of loose, batt and foam insulating materials. Based on data traditionally distributed with ESP-r.
+*item,glass fibre quilt,281,15,Glass Fibre Quilt
+0.040,12.000,840.000,0.900,0.900,0.650,0.650,30.000,100.0,-
+*item,cavity wall insul,282,15,cavity wall insulation
+0.037,300.000,1000.000,0.900,0.900,0.600,0.600,1.000,100.0,-
+*item,fiberglass batt,283,15,fiberglass batt insulation
+0.036,100.000,960.000,0.930,0.930,0.930,0.930,30.000,100.0,-
+*item,KarnsStudR11,284,15,KarnsStudR11 (Mfg specific product)
+0.055,159.100,1200.000,0.900,0.900,0.900,0.900,30.000,100.0,-
+*item,KarnsTrussAir,285,15,KarnsTrussAir (Mfg specific product)
+0.222,43.190,1630.000,0.050,0.050,0.050,0.050,30.000,100.0,-
+*item,KarnsTrussR19,286,15,KarnsTrussR19 (Mfg specific product)
+0.034,132.730,1200.000,0.050,0.050,0.050,0.050,30.000,100.0,-
+*item,KarnsJoistR19,287,15,KarnsJoistR19 (Mfg specific product)
+0.140,185.460,1200.000,0.200,0.200,0.200,0.200,30.000,100.0,-
+*item,mat_288,288,15,Loose Vermiculite for high temperature use (www.matweb.com search)
+0.069,60.100,1030.000,0.900,0.900,0.650,0.650,30.000,100.0,-
+*item,EPS 80mm,289,15,EPS 80mm
+0.040,15.000,1000.000,0.900,0.900,0.700,0.700,30.000,80.0,-
+*item,EPS 160 mm,290,15,EPS 160mm
+0.050,15.000,1000.000,0.900,0.900,0.700,0.700,30.000,160.0,-
+*item,Min wool quilt 250 mm,291,15,Insulation (Min wool quilt default 250 mm)
+0.040,12.000,1000.000,0.900,0.900,0.700,0.700,30.000,250.0,-
+*item,Min wool quilt 250 mm tb,292,15,Quilt (Min wool quilt default 250 mm)
+0.050,12.000,1000.000,0.900,0.900,0.700,0.700,30.000,250.0,-
+*item,Min wool quilt 50mm tb,293,15,Studwork
+0.050,12.000,1000.000,0.900,0.900,0.700,0.700,30.000,50.0,-
+*item,Mineral wool batt 100mm,294,15,Insulation (Mineral wool batt default 100mm)
+0.040,25.000,1000.000,0.900,0.900,0.700,0.700,30.000,100.0,-
+*item,Min wool quilt 60 mm,295,15,Insulation (Min wool quilt default 60 mm)
+0.040,12.000,1030.000,0.900,0.900,0.700,0.700,30.000,60.0,-
+*item,PUR,296,15,notional floor UK material
+0.026,12.000,1030.000,0.900,0.900,0.700,0.700,30.000,60.0,-
+*item,foamed glass 105kg,297,15,foamed glass with density of 105 kg/m3 in pannels
+0.045,105.000,1000.000,0.900,0.900,0.700,0.700,19600.000,100.0,-
+*item,foamed glass chippings,298,15,foamed glass with density of 105 kg/m3 chips glass 105kg)
+0.100,105.000,1000.000,0.900,0.900,0.700,0.700,25.000,100.0,-
+*item,hemp insulation panels,299,15,hemp insulation panels with supporting fibres from IBO PassivHaus
+0.040,30.000,1550.000,0.900,0.900,0.700,0.700,10.000,100.0,-
+*item,lambswool felt insulation,300,15,lambswool insulation felt from IBO PassivHaus
+0.040,30.000,1500.000,0.900,0.900,0.700,0.700,10.000,100.0,-
+*item,cork insul panel,306,15,cork insulation panel from IBO PassivHaus
+0.040,120.000,1670.000,0.900,0.900,0.700,0.700,90.000,100.0,-
+# class index |nb items|description (32 char)
+*class,16, 5,Board
+Category (16) Board is similar to plaster and wood. Based on data traditionally distributed with ESP-r.
+*item,gypsum board,301,16,Gypsum board
+0.160,800.000,1090.000,0.900,0.900,0.900,0.900,10.000,12.5,-
+*item,particle board underlay,302,16,Particle board underlayment
+0.110,640.000,1210.000,0.900,0.900,0.900,0.900,10.000,12.5,-
+*item,fibreboard 250kg,303,16,Porous wood fiberboard 250 kg/m3 from IBO PassivHaus (diffusion is a guess)
+0.050,250.000,2000.000,0.900,0.900,0.650,0.650,5.000,25.0,-
+*item,porous fibreboard 270,304,16,Porous wood fiberboard 270 kg/m3 from IBO PassivHaus (diffusion is a guess)
+0.050,270.000,2000.000,0.900,0.900,0.650,0.650,5.000,25.0,-
+*item,sound impact EPS,305,16,Sound impact EPS 11kg/m3 from IBO PassivHaus (diffusion is a guess guess)
+0.044,11.000,1500.000,0.900,0.900,0.650,0.650,20.000,5.0,-
+# class index |nb items|description (32 char)
+*class,17, 3,Sheathing
+Category (17) Sheathing is similar to the wood category. It also includes a test air gap layer. Based on data traditionally distributed with ESP-r.
+*item,sheating std,321,17,regular density sheathing
+0.055,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,100.0,-
+*item,air 12mm,322,17,place holder for testing an air material type for isbem
+0.055,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,12.0,g,0.02496,0.000080,0.00001761,0.00000005,1.2320,-0.00430,0.000000,0.000000,1008.000,0.000000
+*item,virtual_loft_space,323,17,for notional building loft space air 12mm)
+0.130,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,39.0,-
+# class index |nb items|description (32 char)
+*class,18, 6,GAPS
+Category (18) holds the implied air material with a legacy index of zero.
+*item,air gap,  0,18,Air layer with default properties assumed for legacy treatment of air (index zero).
+0.000,0.000,0.000,0.990,0.990,0.990,0.990,1.000,25.0,-
+*item,Void 400mm,-99,18,Void 400mm
+0.000,0.000,0.000,0.990,0.990,0.990,0.990,1.000,25.0,g,0.00000,0.000000,0.00000000,0.00000000,0.0000,0.00000,0.000000,0.000000,0.000,0.000000
+*item,Loft space,-99,18,Loft space (R=0.2)
+0.000,0.000,0.000,0.990,0.990,0.990,0.990,1.000,200.0,h,0.00000,0.00000,0.00000,0.00000,0.00000000,0.00000000,0.00000000,0.00000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000
+*item,Air layer 25 mm wall,-99,18,Battens
+0.140,0.000,0.000,0.990,0.990,0.990,0.990,1.000,22.0,h,0.00000,0.00000,0.00000,0.00000,0.00000000,0.00000000,0.00000000,0.00000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000
+*item,Air layer 50mm wall,-99,18,Air cavity
+0.140,0.000,0.000,0.990,0.990,0.990,0.990,1.000,50.0,h,0.00000,0.00000,0.00000,0.00000,0.00000000,0.00000000,0.00000000,0.00000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000
+*item,Argon 16 mm,-99,18,Argon 16 mm
+0.020,1.700,519.000,0.990,0.990,0.990,0.990,1.000,16.0,g,0.00000,0.000000,0.00000000,0.00000000,0.0000,0.00000,0.000000,0.000000,0.000,0.000000
+*end
