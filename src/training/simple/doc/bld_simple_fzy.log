@@ -1,6 +1,8 @@
 Notes on simple 1 zone building model with convective heating
 and fuzzy control:
 
+This model is rather old and needs to be updated and tested.
+
 This model (bld_simple.cfg) relates to an L-shaped room
 with convective heating.  This simple representation
 contains a single thermal zone and is used to allow an

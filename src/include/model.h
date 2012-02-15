@@ -16,9 +16,10 @@ C The title and summary of the model
       character modeldocblock*248   ! text block of documentation for model
       common/modeltd/modeltitle,modeldocblock
 
-C Model log file
+C Model log file and contents file
       character lmodellog*144   ! ASCII file for project documentation
-      common/LLOG/lmodellog
+      character lmodelqa*144    ! model contents report
+      common/LLOG/lmodellog,lmodelqa
 
 C Paths from model cfg file folder to other model file types. As the
 C folder names are in the form of ../nets the string length is short.

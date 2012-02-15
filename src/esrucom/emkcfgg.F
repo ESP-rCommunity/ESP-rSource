@@ -522,6 +522,18 @@ C Write control file if known.
      &    LCTLF(1:lnblnk(LCTLF))
       endif
 
+C Write model contents file if known.
+      if(lnblnk(lmodelqa).eq.0)then
+        continue
+      elseif(lmodelqa(1:7).eq.'UNKNOWN')then
+        continue
+      elseif(lmodelqa(1:2).eq.'  ')then
+        continue
+      else
+        WRITE(IFCFG,'(a,a)',IOSTAT=IOS,ERR=2) '*contents ',
+     &    lmodelqa(1:lnblnk(lmodelqa))
+      endif
+
 C Write contaminant model description
       IF(NOCNTM.GT.0)WRITE(IFCFG,'(A,A,A)',IOSTAT=IOS,ERR=2)
      & '*ctm  ',CNTMFIL(1:lnblnk(CNTMFIL))

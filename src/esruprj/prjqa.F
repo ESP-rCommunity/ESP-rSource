@@ -194,6 +194,7 @@ C Remember if each zone is fully attributed.
       logical allattribok,changedit,ok,dok,concat,unixok,showother
       dimension areamlc(MCOM)
       real areamlc
+      character items*33
       dimension items(25)
 
       character*72 LTMP
@@ -201,10 +202,9 @@ C Remember if each zone is fully attributed.
       character GTNAME*15,CLMLOC*30,lipvdatf*72
       character LCFGF*72,lco*72,lcot*72
       character longtfile*144,longtfiledos*144
-      character LFIL*96,llitem*144    ! for editing the QA report file.
       character DESCRC*25
       character cfgroot*24,ZN*12,SN*12
-      character aok*17,CTLDOC*248,LCTLF*72,items*33
+      character aok*17,CTLDOC*248,LCTLF*72
       character xfile*144,tg*1,delim*1,head*21
       character outs*124,outs248*248
       character dstmp*24,mlcname*12
@@ -387,7 +387,7 @@ C Setup the selection menu.
     3 INO=-4
       IER=0
       write(items(1),'(a)')  '1 browse folders '
-      write(items(2),'(2a)') '2 model log file ',lmodellog(1:15)
+      write(items(2),'(2a)') '2 edit log: ',lmodellog(1:20)
       items(3) ='3 graphing tool               '
       items(4) ='4 diagram editing tool        '
       items(5) ='5 image viewer                '
@@ -484,12 +484,28 @@ C Setup the selection menu.
         items(19)='m file names >> included'
       endif
       if(destination.eq.0)then
-        items(20)='> QA report to >> text feedback'
+        items(20)='> QA report >> text feedback'
       elseif(destination.eq.1)then
-        items(20)='> QA report to >> text file'
+        if(lmodelqa(1:4).eq.'UNKN'.or.lmodelqa(1:2).eq.'  ')then
+          items(20)='> QA report >> file UNKNOWN'
+        else
+          write(items(20),'(2a)') '> QA report >> ',lmodelqa(1:17) 
+        endif
       endif
       items(21)  ='! generate QA report       '
-      items(22)  ='* edit the QA report       '
+      if(destination.eq.0)then
+        if(lmodelqa(1:4).eq.'UNKN'.or.lmodelqa(1:2).eq.'  ')then
+          items(22)='  QA report not yet defined'
+        else
+          write(items(22),'(2a)') '* edit QA: ',lmodelqa(1:21) 
+        endif
+      elseif(destination.eq.1)then
+        if(lmodelqa(1:4).eq.'UNKN'.or.lmodelqa(1:2).eq.'  ')then
+          items(22)='  QA report not yet defined'
+        else
+          write(items(22),'(2a)') '* edit QA: ',lmodelqa(1:21) 
+        endif
+      endif
       items(23)  ='  _________________________'
       items(24)  ='? help                     '
       items(25)  ='- exit menu                '
@@ -901,10 +917,69 @@ C If writing to file call ctlexp to close it and switch back to text feedback.
         fileinfo=fileinfo+1
         if(fileinfo.gt.1)fileinfo=0
       elseif(ino.eq.20)then
+
+C Setup the name of the model contents report. If name already known
+C then use it in dialog, otherwise make up standard name in the doc
+C folder if it exists.
         if(destination.eq.0)then
           destination = 1
           itu = ixunit
-          write(xfile,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.contents'
+          if(lmodelqa(1:4).eq.'UNKN'.or.lmodelqa(1:2).eq.'  ')then
+
+C Create model QA report in the doc folder if possible. Use similar 
+C pattern to management of lmodellog.
+            lr=lnblnk(cfgroot)
+            if(docpth(1:2).eq.'  '.or.docpth(1:2).eq.'./')then
+              write(lmodelqa,'(2a)') cfgroot(1:lr),'.contents'
+            elseif(docpth(1:3).eq.'../')then
+              write(lmodelqa,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &          cfgroot(1:lr),'.contents'
+            else
+              write(lmodelqa,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &         cfgroot(1:lr),'.contents'
+            endif
+          endif
+
+C Detect if working on X11 or GTK.
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          lltmp='  '
+          lguess='  '
+          lldef='model.contents'
+          if(iglib.eq.2)then
+            call addpath(lmodelqa,longtfile,concat)  ! expand path for GTK browser
+            write(lguess,'(a)') longtfile(1:lnblnk(longtfile))
+          else
+            write(lguess,'(a)') lmodelqa(1:lnblnk(lmodelqa))
+          endif
+          call edisp(iuout,'  ')  ! echo blank line
+          CALL EASKXORGTKF(lguess,'Model contents file:',
+     &      ' ',lldef,lltmp,'QA file',IER,nbhelp)
+
+C If user request jump back and re-display the menu.
+          if(ier.eq.-3)then
+            goto 3  ! cancel detected, restore name and redisplay menu.
+          endif
+
+C Ask user whether file is in ../doc and if so use fdroot if GTK.
+          if(iglib.eq.2)then
+            dok=.true.
+            CALL ASKOK('Is this file in the model ../doc folder?',
+     &        ' ',OK,dok,3)
+            if(OK)then
+              call fdroot(lltmp,lpath,fname)
+              write(lmodelqa,'(3a)') docpth(1:lnblnk(docpth)),fs,
+     &          fname(1:lnblnk(fname))
+            endif
+          else
+            write(lmodelqa,'(a)') lguess(1:lnblnk(lguess))
+          endif
+
+C Save the model configuration file to register the report.
+          CALL EMKCFG('-',IER)
+
+C Copy lmodelqa to xfile so that ctlexp can deal with it.
+          write(xfile,'(2a)')lmodelqa(1:lnblnk(lmodelqa))
+
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','QA text',IER)
           if(ier.eq.-3)then
             destination = 0
@@ -914,43 +989,43 @@ C If writing to file call ctlexp to close it and switch back to text feedback.
           destination = 0
           itu = iuout
         endif
+
       elseif(ino.eq.21)then
 
 C Generate the report based on current options.
         goto 55
+
       elseif(ino.eq.22)then
 
 C If user just wrote to a file then allow browse and then
 C edit of that QA file.  Use file browser if in GTK mode.
 C If vi then spawn a new window to do the editing in.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        write(LFIL,'(a)') xfile(1:96)
-        llitem=xfile
-        if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(LFIL,'ASCII file name?',
-     &      ' ',96,'xxx.rep','ASCII file',IER,nbhelp)
-          write(llitem,'(a)') LFIL(1:lnblnk(LFIL))
-        elseif(iglib.eq.2)then
-          CALL EASKF(llitem,'ASCII file name?',
-     &      ' ',144,'xxx.rep','ASCII file',IER,nbhelp)
+        lltmp='  '
+        lguess='  '
+        lldef='model.contents'
+        if(iglib.eq.2)then
+          call addpath(lmodelqa,longtfile,concat)  ! expand path for GTK browser
+          write(lguess,'(a)') longtfile(1:lnblnk(longtfile))
         else
-          CALL EASKF(LFIL,'ASCII file name?',
-     &      ' ',96,'xxx.rep','ASCII file',IER,nbhelp)
-          write(llitem,'(a)') LFIL(1:lnblnk(LFIL))
+          write(lguess,'(a)') lmodelqa(1:lnblnk(lmodelqa))
         endif
+        call edisp(iuout,'  ')  ! echo blank line
+        CALL EASKXORGTKF(lguess,'Model contents file:',
+     &    ' ',lldef,lltmp,'QA file',IER,nbhelp)
 
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then
-          goto 3  ! redisplay menu.
+          goto 3  ! cancel detected, restore name and redisplay menu.
         endif
 
 C Depending on whether Unix or DOS based setup paths. If DOS
 C then check for spaces in name and change / to \.
         call isunix(unixok)
         if(unixok)then
-          call addpath(llitem,longtfile,concat)
+          call addpath(lltmp,longtfile,concat)
         else
-          call addpath(llitem,longtfile,concat)
+          call addpath(lltmp,longtfile,concat)
           call cmdfiledos(longtfile,longtfiledos,ier)
           longtfile=' '
           longtfile=longtfiledos

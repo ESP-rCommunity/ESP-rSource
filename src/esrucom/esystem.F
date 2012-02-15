@@ -1040,6 +1040,9 @@ C SBEM database file in standard location.
       elseif(WORD(1:4).eq.'*ctl')then
         CALL EGETRM(LOUTSTR,K,LCTLF,'W','config control',IER)
 
+      elseif(WORD(1:9).eq.'*contents')then
+        CALL EGETRM(LOUTSTR,K,lmodelqa,'W','model contents',IER)
+
       elseif(WORD(1:5).eq.'*gref')then
 
 C Ground reflectivity model, no-snow monthly albedos, snow albedo
