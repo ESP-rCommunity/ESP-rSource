@@ -1,160 +1,20 @@
 Synopsis
  
-This is a synopsis of the model supermarket sales defined in
-Supermarket_2008_ncm.cfg generated on Thu Feb 16 09:42:30 2012. Notes
-associated with the model are in ../doc/SMsales.log
+This is a synopsis of the model supermarket sales 2008 stds (all days
+assessments) defined in Supermarket_2008_ann.cfg generated on Thu Feb 16
+09:41:23 2012. Notes associated with the model are in ../doc/SMsales.log
  
 The model is located at latitude   52.00 with a longitude difference of   0.00
 from the local time meridian. The year used in simulations is 2005 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical city centre and the ground reflectance is 0.20.
  
-Project name: not yet defined
-Building address: not yet defined
-Building city: not yet defined
-Building Postcode: not yet defined
-Building owner name: not yet defined
-Building owner telephone: not yet defined
-Building owner address: not yet defined
-Building owner city: not yet defined
-Building owner Postcode: not yet defined
-Certifier name: not yet defined
-Certifier telephone: not yet defined
-Certifier address: not yet defined
-Certifier city: not yet defined
-Certifier postcode: not yet defined
- 
-Energy Assessor and additional building details
-Unique Property Reference Number (UPRN): 000000000000
-Inspection date:  1   1  2010
-Accreditation Scheme (E,W and NI only): not yet defined
-Assessor registration number (E,W and NI only):ABCD123456
-Employer/trading name of energy assessor: not yet defined
-Employer/trading address of energy assessor: not yet defined
-Related party disclosure: not yet defined
-Qualifications of energy assessor:NOS3
-Insurance company: not yet defined
-Insurance policy number: not yet defined
-Insurance policy start date:  1   1  2010
-Insurance policy expiry date:  1   1  2011
-Insurance policy cover limit:         0
-Complexity level of the project: Level 5
  
 Simulationist name: not yet defined
 Simulationist telephone: not yet defined
 Simulationist address: not yet defined
 Simulationist city: not yet defined
 Simulationist postcode: not yet defined
- 
-The current building type is 12 Retail                                            .
-The NCM guide table 4 reference is an office, shop or place of assembly with roof
-glazing fraction   0.20 and a wall glazing fraction   0.40.
-Building services strategy:   1 Heated and naturally ventilated
-Building Regulations:   1 England and Wales Building Regulations Part L
-Building Design Stage:   1 As built
-Scottish building type:   0 Scottish regulations not being followed!
-Accredited construction details (Scotland) followed?  N/A
- 
-Number of HVAC Systems:   2
-For HVAC system number:  1
-Name: HVAC system public index: 15 type: Fan coil systems
-Heating gen efficiency: 0.650 index:    4 name: MTHW boiler
-BRUKL heat generator index number:   1
-fuel type index:    1 name:   Natural Gas
-Cool gen efficiency:  2.500 index:    1 name: Remote-condenser chiller
-BRUKL cool generator index number:    1
-Specific fan power W/l/s (0 if fans N/A) 1.500
-BRUKL fan index number   37
-LeakageClass ductwork: No, use default leakage AHU: No, use default leakage
-Auxil Energy Calculation duct constant: 0.1500 AHU constant: 0.0600
-For HVAC system number:  2
-Name: chiller HVAC system index: 16 type: Induction system
-Heating gen efficiency: 0.810 index:    9 name: Heat pump air source (not ECA)
-BRUKL heat generator index number:  17
-fuel type index:    1 name:   Natural Gas
-Cool gen efficiency:  2.500 index:    1 name: Remote-condenser chiller
-BRUKL cool generator index number:   17
-Specific fan power W/l/s (0 if fans N/A) 1.500
-BRUKL fan index number   37
-LeakageClass ductwork: No, use default leakage AHU: No, use default leakage
-Auxil Energy Calculation duct constant: 0.1500 AHU constant: 0.0600
- 
-Zone to system linkage for  14 zones
-Zone Sales is linked to system number   1 HVAC system public
-Zone Refrig is linked to system number   1 HVAC system public
-Zone Foyer is linked to system number   1 HVAC system public
-Zone Office1 is linked to system number   1 HVAC system public
-Zone Cafe is linked to system number   1 HVAC system public
-Zone Office3 is linked to system number   1 HVAC system public
-Zone passage is linked to system number   1 HVAC system public
-Zone Staff_traing is linked to system number   1 HVAC system public
-Zone Store1 is linked to system number   1 HVAC system public
-Zone Store2 is linked to system number   1 HVAC system public
-Zone Cabinet_hi is linked to system number   2 chiller HVAC system
-Zone Cabinet_lw is linked to system number   2 chiller HVAC system
-Zone cold_store is linked to system number   2 chiller HVAC system
-Zone m_vent_mix is linked to system number   1 HVAC system public
- 
-DHW generators included:   0
-Zone to DHW linkage for  14 zones
-Zone      dead-leg (m)    linked DHW system no. & name
-Sales         0.00        0  Default DHW system
-Refrig        0.00        0  Default DHW system
-Foyer         0.00        0  Default DHW system
-Office1       0.00        0  Default DHW system
-Cafe          0.00        0  Default DHW system
-Office3       0.00        0  Default DHW system
-passage       0.00        0  Default DHW system
-Staff_traing  0.00        0  Default DHW system
-Store1        0.00        0  Default DHW system
-Store2        0.00        0  Default DHW system
-Cabinet_hi    0.00        0  Default DHW system
-Cabinet_lw    0.00        0  Default DHW system
-cold_store    0.00        0  Default DHW system
-m_vent_mix    0.00        0  Default DHW system
- 
-Zone to activity linkages
-Zone Sales is linked to   12    10 Sales area - general
-Zone Refrig is linked to   15    11 Sales area - chilled
-Zone Foyer is linked to    4     4 Circulation areas
-Zone Office1 is linked to    2     2 Open plan office
-Zone Cafe is linked to   11     9 Eating/drinking area
-Zone Office3 is linked to    2     2 Open plan office
-Zone passage is linked to    4     4 Circulation areas
-Zone Staff_traing is linked to   18   377 Common room/staff room/lounge
-Zone Store1 is linked to    3     3 Storage area
-Zone Store2 is linked to    3     3 Storage area
-Zone Cabinet_hi is linked to   16    12 Storage area - chilled
-Zone Cabinet_lw is linked to   21   494 Storage area - cold room (<0degC)
-Zone cold_store is linked to   21   494 Storage area - cold room (<0degC)
-Zone m_vent_mix is linked to   14    14 Plant room
- 
-Zone to lighting type linkage
-default_type Zone Sales        is linked to lighting type
-   1T12 (37mm dia) halophosphate coated fluorescent tube
-default_type Zone Refrig       is linked to lighting type
-   1T12 (37mm dia) halophosphate coated fluorescent tube
-default_type Zone Foyer        is linked to lighting type
-   2T8 (25mm dia) halophosphate coated fluorescent tube standard ballast
-default_type Zone Office1      is linked to lighting type
-   2T8 (25mm dia) halophosphate coated fluorescent tube standard ballast
-default_type Zone Cafe         is linked to lighting type
-   1T12 (37mm dia) halophosphate coated fluorescent tube
-default_type Zone Office3      is linked to lighting type
-   2T8 (25mm dia) halophosphate coated fluorescent tube standard ballast
-default_type Zone passage      is linked to lighting type
-   2T8 (25mm dia) halophosphate coated fluorescent tube standard ballast
-default_type Zone Staff_traing is linked to lighting type
-   2T8 (25mm dia) halophosphate coated fluorescent tube standard ballast
-default_type Zone Store1       is linked to lighting type
-   2T8 (25mm dia) halophosphate coated fluorescent tube standard ballast
-default_type Zone Store2       is linked to lighting type
-   2T8 (25mm dia) halophosphate coated fluorescent tube standard ballast
-Zone Cabinet_hi is linked to lighting type  0 (undefined type)
-Zone Cabinet_lw is linked to lighting type  0 (undefined type)
-default_type Zone cold_store   is linked to lighting type
-   5Compact fluorescent
-Zone m_vent_mix is linked to lighting type  0 (undefined type)
  
 The climate is: ESP test climate and is held in: ../dbs/Supermarket.climate
 with hour centred solar data.
@@ -202,24 +62,24 @@ An Integrated Performance View has been defined:
 The climate used was not in the climatelist and
 no local seasons set - default seasons assumed.
 Title : supermarket sales
-Version   : Version SMsales
+Version   : Version SMsales all days
 synopsis:
 :The SMsales
 Images    :   0
  
 Simulations to be undertaken:
 ____simulations ( 5)____________days descrip___
-1st win Sun-09-Jan to Sat-15-Jan   7 Supermarket_2008 1st winter run
-spring  Sun-06-Mar to Sat-12-Mar   7 Supermarket_2008 spring run
-summer  Mon-11-Jul to Sun-17-Jul   7 Supermarket_2008 summer run
-autumn  Sun-02-Oct to Sat-08-Oct   7 Supermarket_2008 autumn run
-2nd win Sun-20-Nov to Sat-26-Nov   7 Supermarket_2008 2nd winter run
+1st win Sat-01-Jan to Mon-28-Feb  59 Supermarket_2008_a 1st winter sea
+spring  Tue-01-Mar to Sat-30-Apr  61 Supermarket_2008_a spring sea
+summer  Sun-01-May to Wed-31-Aug 123 Supermarket_2008_a summer sea
+autumn  Thu-01-Sep to Mon-31-Oct  61 Supermarket_2008_a autumn sea
+2nd win Tue-01-Nov to Sat-31-Dec  61 Supermarket_2008_a 2nd winter sea
  
-display day Mon-10-Jan.
-display day Mon-07-Mar.
-display day Tue-12-Jul.
-display day Mon-03-Oct.
-display day Mon-21-Nov.
+display day Sun-02-Jan.
+display day Wed-02-Mar.
+display day Mon-02-May.
+display day Fri-02-Sep.
+display day Wed-02-Nov.
  
 Seasons (as found in climatelist file):
          winter  spring  summer  autumn  winter
@@ -228,12 +88,12 @@ Seasons (as found in climatelist file):
   days     59       61     123      61      61
  
  Ratios for:  winter spring summer autumn winter
- heating       8.00   8.67  30.26   9.01   8.71
- cooling       8.00   8.00  17.00   8.00   8.00
- lighting      8.00   8.00  17.00   8.00   8.00
- small power   8.00   8.00  17.00   8.00   8.00
- fans&pumps    8.00   8.00  17.00   8.00   8.00
- DHW           8.00   8.00  17.00   8.00   8.00
+ heating       1.00   1.00   1.00   1.00   1.00
+ cooling       1.00   1.00   1.00   1.00   1.00
+ lighting      1.00   1.00   1.00   1.00   1.00
+ small power   1.00   1.00   1.00   1.00   1.00
+ fans&pumps    1.00   1.00   1.00   1.00   1.00
+ DHW           1.00   1.00   1.00   1.00   1.00
  
 Metric                zones area scaling weight  type name
  1 Zone db T (degC)    2 2300.00 1.000 1.000 ZndbT dbt_zones

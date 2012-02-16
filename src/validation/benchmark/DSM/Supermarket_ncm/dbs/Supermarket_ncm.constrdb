@@ -1,6 +1,6 @@
 # composite construction db defined in ../dbs/Supermarket_ncm.constrdb
 # based on materials db ../dbs/Supermarket.materialdb
-   54     # no of composites 
+   55     # no of composites 
 # layers  description   optics name   symmetry tag
     4    extern_wall   OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
@@ -368,3 +368,12 @@
    32    0.1500  heavy mix concrete : Heavy mix concrete
   205    0.0500  Polyurethane foam bd : Polyurethane foam board
    45    0.0020  white ptd steel : White painted steel
+# layers  description   optics name   symmetry tag
+    6    SM_roof28pv   OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  243    0.0060  clear float : 4mm clear float glass with optics from UK national method
+  252    0.0020  EVA layer : EVA layer for embedded PV cells (copy of low-iron-glass)
+    0    0.0500  air  0.170 0.170 0.170
+   44    0.0010  beige ptd steel : Beige painted steel
+  205    0.1150  Polyurethane foam bd : Polyurethane foam board
+   45    0.0010  white ptd steel : White painted steel

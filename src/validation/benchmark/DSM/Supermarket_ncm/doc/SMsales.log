@@ -1,0 +1,35 @@
+
+This model approximates a retail box shed supermarket in the
+UK with 2008 standard constructions.  There is diversity in
+the internal gains. The public spaces are represented as a
+foyer (with air mixing to the outside), main shop (with
+internal mass of shelfs included), refrigerated section within
+which is an abstract low temperature chilled cabinet and a
+standard chilled cabinet (air is mixed with the cabinets to
+approximate people accessing the cabinets).
+
+There is a cafe on the right of the foyer and a newstand
+and office on the left. The upper level includes an
+office and a staff room with a passage connecting them.
+
+The service areas at the back of the building include a
+double height shipping and receiving area and storage
+space for goods in transet and a small cold storage room.
+
+Because of the large number of people that might be in the
+building make-up air (6l/s/p) is passed through a tempered mixing
+box (16C). The make-up air rate is reduced overnight. 
+
+There are several models:
+Supermarket_2008.cfg - a standard model
+Supermarket_2008_ann.cfg - standard model for assessing all-days all-seasons
+Supermarket_2008_ncm.cfg - with additional attribution for code checks
+Supermarket_2008_pv.cfg - with a large PV array added to sales roof
+Supermarket_2008_a_pv.cfg - ditto but assesses all-days all-seasons
+
+The Supermarket_2008_ncm.cfg includes a UK NCM description so that 
+complience assessments can be carried out.  Note: you manually have
+to remove the flow control definition from the control file prior
+to runing the NCM assessments.
+
+The model is work-in-progress.

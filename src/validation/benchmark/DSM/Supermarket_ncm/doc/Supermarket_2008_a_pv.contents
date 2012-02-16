@@ -1,7 +1,7 @@
 Synopsis
  
-This is a synopsis of the model supermarket sales defined in
-Supermarket_2008_ncm.cfg generated on Thu Feb 16 09:42:30 2012. Notes
+This is a synopsis of the model supermarket sales with PV on roof defined in
+Supermarket_2008_a_pv.cfg generated on Thu Feb 16 09:41:55 2012. Notes
 associated with the model are in ../doc/SMsales.log
  
 The model is located at latitude   52.00 with a longitude difference of   0.00
@@ -209,17 +209,17 @@ Images    :   0
  
 Simulations to be undertaken:
 ____simulations ( 5)____________days descrip___
-1st win Sun-09-Jan to Sat-15-Jan   7 Supermarket_2008 1st winter run
-spring  Sun-06-Mar to Sat-12-Mar   7 Supermarket_2008 spring run
-summer  Mon-11-Jul to Sun-17-Jul   7 Supermarket_2008 summer run
-autumn  Sun-02-Oct to Sat-08-Oct   7 Supermarket_2008 autumn run
-2nd win Sun-20-Nov to Sat-26-Nov   7 Supermarket_2008 2nd winter run
+1st win Sat-01-Jan to Mon-28-Feb  59 Supermarket_pv 1st winter sea
+spring  Tue-01-Mar to Sat-30-Apr  61 Supermarket_pv spring sea
+summer  Sun-01-May to Wed-31-Aug 123 Supermarket_pv summer sea
+autumn  Thu-01-Sep to Mon-31-Oct  61 Supermarket_pv autumn sea
+2nd win Tue-01-Nov to Sat-31-Dec  61 Supermarket_pv 2nd winter sea
  
-display day Mon-10-Jan.
-display day Mon-07-Mar.
-display day Tue-12-Jul.
-display day Mon-03-Oct.
-display day Mon-21-Nov.
+display day Sun-02-Jan.
+display day Wed-02-Mar.
+display day Mon-02-May.
+display day Fri-02-Sep.
+display day Wed-02-Nov.
  
 Seasons (as found in climatelist file):
          winter  spring  summer  autumn  winter
@@ -228,12 +228,12 @@ Seasons (as found in climatelist file):
   days     59       61     123      61      61
  
  Ratios for:  winter spring summer autumn winter
- heating       8.00   8.67  30.26   9.01   8.71
- cooling       8.00   8.00  17.00   8.00   8.00
- lighting      8.00   8.00  17.00   8.00   8.00
- small power   8.00   8.00  17.00   8.00   8.00
- fans&pumps    8.00   8.00  17.00   8.00   8.00
- DHW           8.00   8.00  17.00   8.00   8.00
+ heating       1.00   1.00   1.00   1.00   1.00
+ cooling       1.00   1.00   1.00   1.00   1.00
+ lighting      1.00   1.00   1.00   1.00   1.00
+ small power   1.00   1.00   1.00   1.00   1.00
+ fans&pumps    1.00   1.00   1.00   1.00   1.00
+ DHW           1.00   1.00   1.00   1.00   1.00
  
 Metric                zones area scaling weight  type name
  1 Zone db T (degC)    2 2300.00 1.000 1.000 ZndbT dbt_zones
@@ -629,7 +629,7 @@ m_vent_mix   -> vent_mix
  
 ID Zone         Volume|          Surface
    Name         m^3   | No. Opaque  Transp  ~Floor
- 1 Sales       24531.5  48  9995.4   718.5  3774.0  Sales describes a
+ 1 Sales       24531.5  49  9995.4   718.5  3774.0  Sales describes a
  2 Refrig       9944.2  21  3984.6  1034.0  1776.0  Refrig describes a
  3 Foyer        2052.0  17  1111.4   313.1   486.0  Foyer describes a
  4 Office1       912.0   7   809.0    48.0   304.0  Office1 describes a
@@ -643,16 +643,16 @@ ID Zone         Volume|          Surface
 12 Cabinet_lw    800.0  10  1777.1   320.0   320.0  Cabinet_lw describes a low temperature frozen cabinet
 13 cold_store    228.0   6   257.0     0.0    76.0  cold_store is a storage for cold product at zero degrees.
 14 m_vent_mix    152.0   6   222.0     0.0    76.0  m_vent_mix describes a mixing box for ventilation preheat
-   all         47898.  178  27146.   2982.  10434.
+   all         47898.  179  27146.   2982.  10434.
  
  
- Zone Sales ( 1) is composed of 48 surfaces and 93 vertices.
+ Zone Sales ( 1) is composed of 49 surfaces and 97 vertices.
  It encloses a volume of 24500.m^3 of space, with a total surface
  area of 10700.m^2 & user edited floor area of 3770.m^2
  Sales describes a
  There is 4137.2m2 of exposed surface area, 360.75m2 of which is vertical.
  Outside walls are 2.9412 % of floor area & avg U of 0.353 & UA of 39.130
- Sloped roof is 100.06 % of floor area & avg U of 0.252 & UA of 950.44
+ Sloped roof is 100.06 % of floor area & avg U of 0.247 & UA of 932.84
  Glazing is 6.6177 % of floor & 69.231 % facade with avg U of 2.241 & UA of 559.68
  Ground contact is 100.00 % of floor area & avg U of 0.383 & perimeter 55.500
  
@@ -663,7 +663,7 @@ ID Zone         Volume|          Surface
   1  361.     90.   0. fict_refr    SC_ficti VERT -     fictitious   ||< fict_store:Refrig
   2  204.      0.   0. ptn_st2      OPAQUE   VERT -     mass_part    ||< ptn_sales:Store2
   3  111.    270.   0. left_fac     OPAQUE   VERT WALL  SMexwal2008  ||< external
-  4  1890.   180.  88. roof_a       OPAQUE   SLOP ROOF  SM_roof2008  ||< external
+  4  283.    180.  88. roof_a       OPAQUE   SLOP ROOF  SM_roof2008  ||< external
   5  3770.     0. -90. floor        OPAQUE   FLOR FLOOR SM_grnd_floo ||< ground profile  1
   6  108.    180.   0. ptn_psg      OPAQUE   VERT -     mass_part    ||< ptn_store:passage
   7  108.    180.   0. ptn_foy      SC_ficti VERT -     fictitious   ||< ptn_shop:Foyer
@@ -708,60 +708,63 @@ ID Zone         Volume|          Surface
  46  46.5    270.   0. shelf_r_     OPAQUE   VERT PARTN dry_product  ||< shelf_r:Sales
  47  46.5     90.   0. shelf_s      OPAQUE   VERT PARTN dry_product  ||< shelf_s_:Sales
  48  46.5    270.   0. shelf_s_     OPAQUE   VERT PARTN dry_product  ||< shelf_s:Sales
+ 49  1600.   180.  88. PV_cells     OPAQUE   SLOP ROOF  SM_roof28pv  ||< external
  
  Vertices ( index X Y Z) in the zone...
-vertex   1    0.00000   13.50000    0.00000   vertex  47   39.00000   19.50000    2.20000
-vertex   2   68.00000   13.50000    0.00000   vertex  48   45.00000   19.50000    0.20000
-vertex   3   68.00000   69.00000    0.00000   vertex  49   45.00000   39.75000    0.20000
-vertex   4    0.00000   69.00000    0.00000   vertex  50   45.00000   39.75000    2.20000
-vertex   5    0.00000   13.50000    6.00000   vertex  51   45.00000   19.50000    2.20000
-vertex   6   68.00000   13.50000    6.00000   vertex  52   51.00000   19.50000    0.20000
-vertex   7   68.00000   69.00000    6.00000   vertex  53   51.00000   39.75000    0.20000
-vertex   8    0.00000   69.00000    6.00000   vertex  54   51.00000   39.75000    2.20000
-vertex   9   32.00000   13.50000    0.00000   vertex  55   51.00000   19.50000    2.20000
-vertex  10   32.00000   13.50000    3.00000   vertex  56   68.00000   41.25000    7.00000
-vertex  11   68.00000   13.50000    3.00000   vertex  57    0.00000   41.25000    7.00000
-vertex  12    0.00000   13.50000    3.00000   vertex  58    3.00000   42.75000    0.20000
-vertex  13   32.00000   13.50000    6.00000   vertex  59    3.00000   66.00000    0.20000
-vertex  14    0.00000   69.00000    3.00000   vertex  60    3.00000   66.00000    2.20000
-vertex  15   68.00000   69.00000    3.00000   vertex  61    3.00000   42.75000    2.20000
-vertex  16    0.00000   65.28220    0.40192   vertex  62    9.00000   42.75000    0.20000
-vertex  17    0.00000   17.21779    0.40192   vertex  63    9.00000   66.00000    0.20000
-vertex  18    0.00000   17.21779    5.59808   vertex  64    9.00000   66.00000    2.20000
-vertex  19    0.00000   65.28220    5.59808   vertex  65    9.00000   42.75000    2.20000
-vertex  20    3.00000   16.50000    0.20000   vertex  66   15.00000   42.75000    0.20000
-vertex  21    3.00000   39.75000    0.20000   vertex  67   15.00000   66.00000    0.20000
-vertex  22    3.00000   39.75000    2.20000   vertex  68   15.00000   66.00000    2.20000
-vertex  23    3.00000   16.50000    2.20000   vertex  69   15.00000   42.75000    2.20000
-vertex  24    9.00000   16.50000    0.20000   vertex  70   21.00000   42.75000    0.20000
-vertex  25    9.00000   39.75000    0.20000   vertex  71   21.00000   66.00000    0.20000
-vertex  26    9.00000   39.75000    2.20000   vertex  72   21.00000   66.00000    2.20000
-vertex  27    9.00000   16.50000    2.20000   vertex  73   21.00000   42.75000    2.20000
-vertex  28   15.00000   16.50000    0.20000   vertex  74   27.00000   42.75000    0.20000
-vertex  29   15.00000   39.75000    0.20000   vertex  75   27.00000   66.00000    0.20000
-vertex  30   15.00000   39.75000    2.20000   vertex  76   27.00000   66.00000    2.20000
-vertex  31   15.00000   16.50000    2.20000   vertex  77   27.00000   42.75000    2.20000
-vertex  32   21.00000   16.50000    0.20000   vertex  78   33.00000   42.75000    0.20000
-vertex  33   21.00000   39.75000    0.20000   vertex  79   33.00000   66.00000    0.20000
-vertex  34   21.00000   39.75000    2.20000   vertex  80   33.00000   66.00000    2.20000
-vertex  35   21.00000   16.50000    2.20000   vertex  81   33.00000   42.75000    2.20000
-vertex  36   27.00000   16.50000    0.20000   vertex  82   45.00000   42.75000    0.20000
-vertex  37   27.00000   39.75000    0.20000   vertex  83   45.00000   66.00000    0.20000
-vertex  38   27.00000   39.75000    2.20000   vertex  84   45.00000   66.00000    2.20000
-vertex  39   27.00000   16.50000    2.20000   vertex  85   45.00000   42.75000    2.20000
-vertex  40   33.00000   19.50000    0.20000   vertex  86   51.00000   42.75000    0.20000
-vertex  41   33.00000   39.75000    0.20000   vertex  87   51.00000   66.00000    0.20000
-vertex  42   33.00000   39.75000    2.20000   vertex  88   51.00000   66.00000    2.20000
-vertex  43   33.00000   19.50000    2.20000   vertex  89   51.00000   42.75000    2.20000
-vertex  44   39.00000   19.50000    0.20000   vertex  90   57.00000   42.75000    0.20000
-vertex  45   39.00000   39.75000    0.20000   vertex  91   57.00000   66.00000    0.20000
-vertex  46   39.00000   39.75000    2.20000   vertex  92   57.00000   66.00000    2.20000
-                                              vertex  93   57.00000   42.75000    2.20000
+vertex   1    0.00000   13.50000    0.00000   vertex  49   45.00000   39.75000    0.20000
+vertex   2   68.00000   13.50000    0.00000   vertex  50   45.00000   39.75000    2.20000
+vertex   3   68.00000   69.00000    0.00000   vertex  51   45.00000   19.50000    2.20000
+vertex   4    0.00000   69.00000    0.00000   vertex  52   51.00000   19.50000    0.20000
+vertex   5    0.00000   13.50000    6.00000   vertex  53   51.00000   39.75000    0.20000
+vertex   6   68.00000   13.50000    6.00000   vertex  54   51.00000   39.75000    2.20000
+vertex   7   68.00000   69.00000    6.00000   vertex  55   51.00000   19.50000    2.20000
+vertex   8    0.00000   69.00000    6.00000   vertex  56   68.00000   41.25000    7.00000
+vertex   9   32.00000   13.50000    0.00000   vertex  57    0.00000   41.25000    7.00000
+vertex  10   32.00000   13.50000    3.00000   vertex  58    3.00000   42.75000    0.20000
+vertex  11   68.00000   13.50000    3.00000   vertex  59    3.00000   66.00000    0.20000
+vertex  12    0.00000   13.50000    3.00000   vertex  60    3.00000   66.00000    2.20000
+vertex  13   32.00000   13.50000    6.00000   vertex  61    3.00000   42.75000    2.20000
+vertex  14    0.00000   69.00000    3.00000   vertex  62    9.00000   42.75000    0.20000
+vertex  15   68.00000   69.00000    3.00000   vertex  63    9.00000   66.00000    0.20000
+vertex  16    0.00000   65.28220    0.40192   vertex  64    9.00000   66.00000    2.20000
+vertex  17    0.00000   17.21779    0.40192   vertex  65    9.00000   42.75000    2.20000
+vertex  18    0.00000   17.21779    5.59808   vertex  66   15.00000   42.75000    0.20000
+vertex  19    0.00000   65.28220    5.59808   vertex  67   15.00000   66.00000    0.20000
+vertex  20    3.00000   16.50000    0.20000   vertex  68   15.00000   66.00000    2.20000
+vertex  21    3.00000   39.75000    0.20000   vertex  69   15.00000   42.75000    2.20000
+vertex  22    3.00000   39.75000    2.20000   vertex  70   21.00000   42.75000    0.20000
+vertex  23    3.00000   16.50000    2.20000   vertex  71   21.00000   66.00000    0.20000
+vertex  24    9.00000   16.50000    0.20000   vertex  72   21.00000   66.00000    2.20000
+vertex  25    9.00000   39.75000    0.20000   vertex  73   21.00000   42.75000    2.20000
+vertex  26    9.00000   39.75000    2.20000   vertex  74   27.00000   42.75000    0.20000
+vertex  27    9.00000   16.50000    2.20000   vertex  75   27.00000   66.00000    0.20000
+vertex  28   15.00000   16.50000    0.20000   vertex  76   27.00000   66.00000    2.20000
+vertex  29   15.00000   39.75000    0.20000   vertex  77   27.00000   42.75000    2.20000
+vertex  30   15.00000   39.75000    2.20000   vertex  78   33.00000   42.75000    0.20000
+vertex  31   15.00000   16.50000    2.20000   vertex  79   33.00000   66.00000    0.20000
+vertex  32   21.00000   16.50000    0.20000   vertex  80   33.00000   66.00000    2.20000
+vertex  33   21.00000   39.75000    0.20000   vertex  81   33.00000   42.75000    2.20000
+vertex  34   21.00000   39.75000    2.20000   vertex  82   45.00000   42.75000    0.20000
+vertex  35   21.00000   16.50000    2.20000   vertex  83   45.00000   66.00000    0.20000
+vertex  36   27.00000   16.50000    0.20000   vertex  84   45.00000   66.00000    2.20000
+vertex  37   27.00000   39.75000    0.20000   vertex  85   45.00000   42.75000    2.20000
+vertex  38   27.00000   39.75000    2.20000   vertex  86   51.00000   42.75000    0.20000
+vertex  39   27.00000   16.50000    2.20000   vertex  87   51.00000   66.00000    0.20000
+vertex  40   33.00000   19.50000    0.20000   vertex  88   51.00000   66.00000    2.20000
+vertex  41   33.00000   39.75000    0.20000   vertex  89   51.00000   42.75000    2.20000
+vertex  42   33.00000   39.75000    2.20000   vertex  90   57.00000   42.75000    0.20000
+vertex  43   33.00000   19.50000    2.20000   vertex  91   57.00000   66.00000    0.20000
+vertex  44   39.00000   19.50000    0.20000   vertex  92   57.00000   66.00000    2.20000
+vertex  45   39.00000   39.75000    0.20000   vertex  93   57.00000   42.75000    2.20000
+vertex  46   39.00000   39.75000    2.20000   vertex  94    2.65355   14.58288    6.03902
+vertex  47   39.00000   19.50000    2.20000   vertex  95   65.34645   14.58288    6.03902
+vertex  48   45.00000   19.50000    0.20000   vertex  96   65.34645   40.16712    6.96098
+                                              vertex  97    2.65355   40.16712    6.96098
  Number of vertices followed by list of associated vert
 *edges,7,2,3,15,7,56,6,11   fict_refr
 *edges,4,14,8,7,15   ptn_st2
 *edges,13,4,1,12,5,57,8,14,4,16,19,18,17,16   left_fac
-*edges,5,5,13,6,56,57   roof_a
+*edges,11,5,13,6,56,57,5,94,97,96,95,94   roof_a
 *edges,5,1,4,3,2,9   floor
 *edges,4,10,11,6,13   ptn_psg
 *edges,4,9,2,11,10   ptn_foy
@@ -806,6 +809,7 @@ vertex  46   39.00000   39.75000    2.20000   vertex  92   57.00000   66.00000  
 *edges,4,87,86,89,88   shelf_r_
 *edges,4,90,91,92,93   shelf_s
 *edges,4,91,90,93,92   shelf_s_
+*edges,4,94,95,96,97   PV_cells
  
  All surfaces will receive diffuse insolation (if shading not calculated).
  No shading analysis requested.
@@ -2085,7 +2089,7 @@ sunda  3 EquiptW    0-24      0.0      0.0       0.50       0.50
  There is 9917.3m2 of outside surface area, 2153.2m2 of which is vertical.
  
  Outside walls are 15.863 % of floor area & avg U of 0.395 & UA of 654.29 & max MLC thickness 0.200
- Sloped roof is 56.373 % of floor area & avg U of 0.252 & UA of 1480.3
+ Sloped roof is 56.373 % of floor area & avg U of 0.249 & UA of 1462.7
  Flat roof is 16.523 % of floor area & avg U of 0.252 & UA of 434.72
  Glazing is 5.5017 % of floor & 26.660 % facade with avg U of 2.256 & UA of 1295.0
  Skylights are 0.78678 % of floor area & avg U of 3.069 & UA of 251.98
@@ -2213,7 +2217,7 @@ sunda  3 EquiptW    0-24      0.0      0.0       0.50       0.50
     2  205  115.0     0.030    30.   837. 0.90 0.50    90.  3.83 Polyurethane foam bd : Polyurethane foam boa
  Int    45    1.0    40.000  7800.   502. 0.82 0.30 19200.  0.00 white ptd steel : White painted steel
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.250  0.252  0.247 (partition)  0.244
- Total area of SM_roof2008 is   7529.97
+ Total area of SM_roof2008 is   5924.98
  
  Details of opaque construction: SMexwal2008 and overall thickness  0.082
  
@@ -2268,3 +2272,16 @@ sunda  3 EquiptW    0-24      0.0      0.0       0.50       0.50
  Int    45    2.0    40.000  7800.   502. 0.82 0.30 19200.  0.00 white ptd steel : White painted steel
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.236  0.238  0.234 (partition)  0.231
  Total area of SM_grnd_cab is    640.00
+ 
+ Details of opaque construction: SM_roof28pv and overall thickness  0.175
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   243    6.0     1.050  2500.   750. 0.83 0.05 19200.  0.01 clear float : 4mm clear float glass with opt
+    2  252    2.0     0.380   920.  2100. 0.90 0.50 19200.  0.01 EVA layer : EVA layer for embedded PV cells
+    3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    4   44    1.0    40.000  7800.   502. 0.82 0.45 19200.  0.00 beige ptd steel : Beige painted steel
+    5  205  115.0     0.030    30.   837. 0.90 0.50    90.  3.83 Polyurethane foam bd : Polyurethane foam boa
+ Int    45    1.0    40.000  7800.   502. 0.82 0.30 19200.  0.00 white ptd steel : White painted steel
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.239  0.241  0.237 (partition)  0.234
+ Total area of SM_roof28pv is   1604.99
