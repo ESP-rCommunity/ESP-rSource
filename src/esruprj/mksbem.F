@@ -4769,8 +4769,10 @@ C connection based).
           is=ie1(IRMV(ICOMP,IR))
 
 C Debug.
-          write(6,*) 'removing surf ',ssname(irmv(icomp,ir))
-          write(6,*) 'ir is ',ir,' surf ',is,' in zone ',icomp
+          write(outs,*) 'removing surface ',ssname(irmv(icomp,ir)),
+     &      ' in zone ',icomp
+          call edisp(iuout,outs)
+C          write(6,*) 'ir is ',ir,' surf ',is,' in zone ',icomp
 
 C Re-scan the geometry, use ADDSUR to delete surface index 'is' and then
 C update the model cfg file and then re-write the geometry file.
@@ -5558,6 +5560,8 @@ C mlcindex for each of these required constructions.
      &  mlciEW_notP,mlciSol_gr,mlcipa_fl,mlciinv_pa_f,mlciparty_w,
      &  mlciint_g,mlciWall_NI,mlciWall_ty,mlciFL_rty,mlciwin_Typ_G,
      &  mlciSol_gr_typ
+     
+      integer nbdbstries  ! how many iterations looking for req constr
 
 C Check if Notional Model Flag has been set (NCM data has been defined)
 C If not then advise user and send him/her back
@@ -5566,6 +5570,7 @@ C If not then advise user and send him/her back
         RETURN
       ENDIF
       APE='_not  '
+      nbdbstries = 0
 
 C The inital task is to make copies of the relevant zone files
 C which is functionally equivalent to the code blocks in subroutine
@@ -5649,19 +5654,30 @@ C Debug.
         continue  ! all of the necessary constructions available
       else
 
+C If this is a 2nd try scanning then the standard is also a problem
+C on this machine.
+        if(nbdbstries.gt.2)then
+          call usrmsg('Unable to locate all of the required con-',
+     &      'structions in the standard sources. Giving up.','W')
+          ier=2  ! signal insufficient details
+          RETURN
+        endif
 
 C Assign standard databases containing UK NCM materials and constructions
 C These files are UK_notional.constrdb, material.db3.a and optics.db2
 C As they will be in the standard database folder use the *std...
         call edisp(iuout,'Not all reqd MLC so using std databases')
+        nbdbstries=nbdbstries+1
         ipathmat=2
         WRITE(LFMAT,'(A)') 'material.db3.a'
         ipathmul=2
 
-C << for testing use multicon.db3. return to UK_notional >>
-
-C      WRITE(LFMUL,'(A)') 'UK_notional.constrdb'
-        WRITE(LFMUL,'(A)') 'multicon.db3'
+C Use multicon.db3 or then UK_notional.constrdb
+        if(nbdbstries.eq.1)then
+          WRITE(LFMUL,'(A)') 'multicon.db3'
+        elseif(nbdbstries.eq.2)then
+          WRITE(LFMUL,'(A)') 'UK_notional.constrdb'
+        endif
         ipathoptdb=2
         WRITE(LOPTDB,'(A)') 'optics.db2'
         ipathpcdb=2
@@ -5832,7 +5848,9 @@ C Debug.
       write(6,*) mlciopDoor,mlciVehicle,mlciNot_D,mlciNot_G,mlciframe
       write(6,*) mlciWall_Sc,mlciWall_EW,mlciFl_r,mlciSC_P,mlciEW_notP
       write(6,*) mlciSol_gr,mlcipa_fl,mlciinv_pa_f,mlciparty_w,
-     &  mlciint_g,mlciWall_NI
+     &  mlciint_g
+      write(6,*) mlciWall_NI,mlciWall_ty,mlciFL_rty,mlciwin_Typ_G
+      write(6,*) mlciSol_gr_typ
 
 C The inital task is to make copies of the relevant zone files
 C which is functionally equivalent to the code blocks in subroutine
@@ -6247,26 +6265,23 @@ C Re-scan the geometry, use ADDSUR to delete surface index 'is' and then
 C update the model cfg file and then re-write the geometry file.
         iopt=0
         call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
-        write(6,*) 'before addsur d ',NZSUR(icomp)
         CALL ADDSUR(ITRC,ICOMP,IS,'D','A',iopt,IER)
-        write(6,*) 'after addsur d ',NZSUR(icomp)
         CALL EMKCFG('-',IER)
-        write(6,*) 'after emkcfg d ',NZSUR(icomp)
         call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
-        write(6,*) 'after geowrite d ',NZSUR(icomp)
+ 6001 CONTINUE
 
 C Update the image if working in graphics mode.
-        if(MMOD.eq.8)then
-          MODBND=.TRUE.
-          MODIFY=.TRUE.
-          CALL INLNST(1)
-          nzg=1
-          nznog(1)=ICOMP
-          izgfoc=ICOMP
-          CALL ADJVIEW(IER)
-          call pausems(900)
-        endif
- 6001 CONTINUE
+      if(MMOD.eq.8)then
+        call edisp(iuout,'Zone with child surfaces removed...')
+        MODBND=.TRUE.
+        MODIFY=.TRUE.
+        CALL INLNST(1)
+        nzg=1
+        nznog(1)=ICOMP
+        izgfoc=ICOMP
+        CALL ADJVIEW(IER)
+        call pausems(900)
+      endif
 
 C Work out area of glazings etc. into all exterior surfaces
 C that remain in the model. Do this by looping through
@@ -7328,7 +7343,7 @@ C IMODE = 4 -> Typical model
      & ICHT,ICCL,ICLT,ICAUX,LZNL,IM,Istart,Ifinish,INDX,icomp
       CHARACTER LTXTF*72,OUTSTR*248,WORD1*72,WORD2*24,WORD3*24,
      & LASTZONE*12,TWOL*2,outs*124
-      LOGICAL EOF,Getmonth,cl
+      LOGICAL EOF,Getmonth,cl,closer
       REAL VALZ,tbasea,Heating_efficiency,Cooling_efficiency,
      & DHW_efficiency,total_Heat_S,total_Cool_S,total_DHW_S,total_Light,
      & total_Aux,total_Heat_D,total_Cool_D,total_DHW_D
@@ -7584,12 +7599,19 @@ C Get monthly auxiliary loads
           Aux_Supply(IM)=Aux_Supply(IM)+VALZ
           total_Aux=total_Aux+VALZ
 
-C Get monthly DHW loads (if expressed in kWh).
+C Get monthly DHW loads (if expressed in kWh). If DHW_efficiency
+C is zero the prevent divide by zero.
         ELSEIF(WORD3(1:12).EQ.'z_DHW_Month_'.AND.
      &         (WORD3(15:17).EQ.'kWh'.OR.WORD3(16:18).EQ.'kWh'))THEN
+          CALL ECLOSE(0.0,DHW_efficiency,0.01,CLOSER)
           DHW_Demand(IM)=DHW_Demand(IM)+VALZ
-          DHW_Supply(IM)=DHW_Supply(IM)+VALZ/DHW_efficiency
-          total_DHW_S=total_DHW_S+VALZ/DHW_efficiency
+          if(closer)then
+            DHW_Supply(IM)=DHW_Supply(IM)+0.
+            total_DHW_S=total_DHW_S+0.
+          else
+            DHW_Supply(IM)=DHW_Supply(IM)+VALZ/DHW_efficiency
+            total_DHW_S=total_DHW_S+VALZ/DHW_efficiency
+          endif
           total_DHW_D=total_DHW_D+VALZ
 
 C Get DHW energy
@@ -7896,10 +7918,11 @@ C Get Cooling energy
           Cool_Demand(12)=Cool_Demand(12)+VALZ*zbasea(icht)
           call eclose(0.,Cooling_efficiency,0.001,cl)
           if(.not.cl)then
-          Cool_Supply(12)=Cool_Supply(12)+VALZ*zbasea(icht)
-     &    /Cooling_efficiency
-          total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/Cooling_efficiency
-          total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
+            Cool_Supply(12)=Cool_Supply(12)+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
           endif
         ELSEIF(WORD3(1:4).EQ.'MC11')THEN
           IF(IMODE.EQ.1)THEN
@@ -7914,10 +7937,11 @@ C Get Cooling energy
           Cool_Demand(11)=Cool_Demand(11)+VALZ*zbasea(icht)
           call eclose(0.,Cooling_efficiency,0.001,cl)
           if(.not.cl)then
-          Cool_Supply(11)=Cool_Supply(11)+VALZ*zbasea(icht)
-     &    /Cooling_efficiency
-          total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/Cooling_efficiency
-          total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
+            Cool_Supply(11)=Cool_Supply(11)+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
           endif
         ELSEIF(WORD3(1:4).EQ.'MC10')THEN
           IF(IMODE.EQ.1)THEN
@@ -7932,10 +7956,11 @@ C Get Cooling energy
           Cool_Demand(10)=Cool_Demand(10)+VALZ*zbasea(icht)
           call eclose(0.,Cooling_efficiency,0.001,cl)
           if(.not.cl)then
-          Cool_Supply(10)=Cool_Supply(10)+VALZ*zbasea(icht)
-     &    /Cooling_efficiency
-          total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/Cooling_efficiency
-          total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
+            Cool_Supply(10)=Cool_Supply(10)+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
           endif
         ELSEIF(WORD3(1:3).EQ.'MC9')THEN
           IF(IMODE.EQ.1)THEN
@@ -7950,10 +7975,11 @@ C Get Cooling energy
           Cool_Demand(9)=Cool_Demand(9)+VALZ*zbasea(icht)
           call eclose(0.,Cooling_efficiency,0.001,cl)
           if(.not.cl)then
-          Cool_Supply(9)=Cool_Supply(9)+VALZ*zbasea(icht)
-     &    /Cooling_efficiency
-          total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/Cooling_efficiency
-          total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
+            Cool_Supply(9)=Cool_Supply(9)+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
           endif
         ELSEIF(WORD3(1:3).EQ.'MC8')THEN
           IF(IMODE.EQ.1)THEN
@@ -7968,10 +7994,11 @@ C Get Cooling energy
           Cool_Demand(8)=Cool_Demand(8)+VALZ*zbasea(icht)
           call eclose(0.,Cooling_efficiency,0.001,cl)
           if(.not.cl)then
-          Cool_Supply(8)=Cool_Supply(8)+VALZ*zbasea(icht)
-     &    /Cooling_efficiency
-          total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/Cooling_efficiency
-          total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
+            Cool_Supply(8)=Cool_Supply(8)+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
           endif
         ELSEIF(WORD3(1:3).EQ.'MC7')THEN
           IF(IMODE.EQ.1)THEN
@@ -7986,10 +8013,11 @@ C Get Cooling energy
           Cool_Demand(7)=Cool_Demand(7)+VALZ*zbasea(icht)
           call eclose(0.,Cooling_efficiency,0.001,cl)
           if(.not.cl)then
-          Cool_Supply(7)=Cool_Supply(7)+VALZ*zbasea(icht)
-     &    /Cooling_efficiency
-          total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/Cooling_efficiency
-          total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
+            Cool_Supply(7)=Cool_Supply(7)+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
           endif
         ELSEIF(WORD3(1:3).EQ.'MC6')THEN
           IF(IMODE.EQ.1)THEN
@@ -8004,10 +8032,11 @@ C Get Cooling energy
           Cool_Demand(6)=Cool_Demand(6)+VALZ*zbasea(icht)
           call eclose(0.,Cooling_efficiency,0.001,cl)
           if(.not.cl)then
-          Cool_Supply(6)=Cool_Supply(6)+VALZ*zbasea(icht)
-     &    /Cooling_efficiency
-          total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/Cooling_efficiency
-          total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
+            Cool_Supply(6)=Cool_Supply(6)+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
           endif
         ELSEIF(WORD3(1:3).EQ.'MC5')THEN
           IF(IMODE.EQ.1)THEN
@@ -8022,10 +8051,11 @@ C Get Cooling energy
           Cool_Demand(5)=Cool_Demand(5)+VALZ*zbasea(icht)
           call eclose(0.,Cooling_efficiency,0.001,cl)
           if(.not.cl)then
-          Cool_Supply(5)=Cool_Supply(5)+VALZ*zbasea(icht)
-     &    /Cooling_efficiency
-          total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/Cooling_efficiency
-          total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
+            Cool_Supply(5)=Cool_Supply(5)+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
           endif
         ELSEIF(WORD3(1:3).EQ.'MC4')THEN
           IF(IMODE.EQ.1)THEN
@@ -8040,10 +8070,11 @@ C Get Cooling energy
           Cool_Demand(4)=Cool_Demand(4)+VALZ*zbasea(icht)
           call eclose(0.,Cooling_efficiency,0.001,cl)
           if(.not.cl)then
-          Cool_Supply(4)=Cool_Supply(4)+VALZ*zbasea(icht)
-     &    /Cooling_efficiency
-          total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/Cooling_efficiency
-          total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
+            Cool_Supply(4)=Cool_Supply(4)+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
           endif
         ELSEIF(WORD3(1:3).EQ.'MC3')THEN
           IF(IMODE.EQ.1)THEN
@@ -8058,10 +8089,11 @@ C Get Cooling energy
           Cool_Demand(3)=Cool_Demand(3)+VALZ*zbasea(icht)
           call eclose(0.,Cooling_efficiency,0.001,cl)
           if(.not.cl)then
-          Cool_Supply(3)=Cool_Supply(3)+VALZ*zbasea(icht)
-     &    /Cooling_efficiency
-          total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/Cooling_efficiency
-          total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
+            Cool_Supply(3)=Cool_Supply(3)+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
           endif
         ELSEIF(WORD3(1:3).EQ.'MC2')THEN
           IF(IMODE.EQ.1)THEN
@@ -8076,10 +8108,11 @@ C Get Cooling energy
           Cool_Demand(2)=Cool_Demand(2)+VALZ*zbasea(icht)
           call eclose(0.,Cooling_efficiency,0.001,cl)
           if(.not.cl)then
-          Cool_Supply(2)=Cool_Supply(2)+VALZ*zbasea(icht)
-     &    /Cooling_efficiency
-          total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/Cooling_efficiency
-          total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
+            Cool_Supply(2)=Cool_Supply(2)+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
           endif
         ELSEIF(WORD3(1:3).EQ.'MC1')THEN
           IF(IMODE.EQ.1)THEN
@@ -8094,10 +8127,11 @@ C Get Cooling energy
           Cool_Demand(1)=Cool_Demand(1)+VALZ*zbasea(icht)
           call eclose(0.,Cooling_efficiency,0.001,cl)
           if(.not.cl)then
-          Cool_Supply(1)=Cool_Supply(1)+VALZ*zbasea(icht)
-     &    /Cooling_efficiency
-          total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/Cooling_efficiency
-          total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
+            Cool_Supply(1)=Cool_Supply(1)+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
           endif
         ELSEIF(WORD3(1:21).EQ.'integrZACforFloorArea')THEN
           IF(IMODE.EQ.1)THEN
