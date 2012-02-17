@@ -513,6 +513,7 @@ C Simulation parameters
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL XST,OK,DOK,IGDCVS,IGDCNC,IGDNDC,IGDTAQ,cnnok
       LOGICAL OK3DCVS,OK3DCNC,OK3DNDC,OK3DTAQ
+      logical foundmould,foundsbem
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER loutstr*248,OUTSTR*124,OUTS*124,text*124,t117*117,h*72
       CHARACTER LCFD*72
@@ -586,6 +587,7 @@ C Check if running in dll mode.
       call isadll(dll)
       itru=iuout   ! set trace unit to use in subroutine calls
       iflag=0      ! initial value
+      foundmould=.false.; foundsbem=.false.
 
 C Initalizing starting point for parsing simulation presets (*sps)
       iSet_start = 1
@@ -986,10 +988,11 @@ C set the LPRFDB common block string via call to findwhichdbpath.
 C Process the file name folloing *mld and depending on its path
 C set the lfmould common block string via call to findwhichdbpath.
         call findwhichdbpath('mld',lworking,ier)
+        foundmould=.true.
       elseif(WORD(1:9).eq.'*stdmould')then
         ipathmould=2  ! standard folder for mould isopleths
         CALL EGETRM(LOUTSTR,K,lfmould,'W','mould isopleths',IER)
-
+        foundmould=.true.
       elseif(WORD(1:4).eq.'*clm')then
         CALL EGETRM(LOUTSTR,K,lworking,'W','weather file',IER)
 
@@ -1046,6 +1049,7 @@ C set the LSBEM common block string via call to findwhichdbpath.
         call findwhichdbpath('sbm',lworking,ier)
         ISBEM=1
         IRNCMD=1
+        foundsbem=.true.
 
       elseif(WORD(1:8).eq.'*stdsbem')then
 
@@ -1054,6 +1058,7 @@ C SBEM database file in standard location.
         CALL EGETRM(LOUTSTR,K,LSBEM,'W','standard SBEM db',IER)
         ISBEM=1
         IRNCMD=1
+        foundsbem=.true.
 
       elseif(WORD(1:4).eq.'*ctl')then
         CALL EGETRM(LOUTSTR,K,LCTLF,'W','config control',IER)
@@ -2211,6 +2216,22 @@ C If ground information was read in but still registration level then exit.
       if(INDCFG.EQ.0)then
         CALL ERPFREE(IUC,ISTAT)
         RETURN
+      endif
+
+C If mould database tag was not found instanciate it.
+      if(foundmould)then
+        continue
+      else
+        call findwhichdbpath('mld',dmdbnam,ier)
+      endif
+
+C If SBEM database tag was not found instanciate it.
+      if(foundsbem)then
+        continue
+      else
+        call findwhichdbpath('sbm',DSBEM,ier)
+        ISBEM=1
+        IRNCMD=1
       endif
 
 C Number of building zones.
