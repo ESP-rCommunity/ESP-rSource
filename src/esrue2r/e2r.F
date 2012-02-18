@@ -1028,7 +1028,7 @@ C Check for existing file names based on available view and picture info.
           XST=.false.
           write(pf,'(5a)') runpath(1:lnrp),
      &      picfil(1:lnblnk(picfil)),'_',
-     &      rvewsh(iv)(1:lnblnk(rvewsh(iv))),'.pic'
+     &      rvewsh(iv)(1:lnblnk(rvewsh(iv))),'.hdr'
           INQUIRE (FILE=pf,EXIST=XST)
           if (XST) then
             npics=npics+1
@@ -1051,7 +1051,7 @@ C If there are no images then re-display the menu.
           goto 10
         endif
         if (IVALV(1).eq.(npics+1)) then
-          write(pf,'(a)') 'UNKNOWN.pic'
+          write(pf,'(a)') 'UNKNOWN.hdr'
           write(gf,'(a)') 'UNKNOWN.glr'
         else
           ipckvew=IPVALV(IVALV(1))
@@ -1059,7 +1059,7 @@ C If there are no images then re-display the menu.
 C Generate default file names.
           write(pf,'(5a)') runpath(1:lnrp),
      &      picfil(1:lnblnk(picfil)),'_',
-     &      rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.pic'
+     &      rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.hdr'
           write(gf,'(5a)') runpath(1:lnrp),
      &      picfil(1:lnblnk(picfil)),'_',
      &      rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.glr'
@@ -1311,7 +1311,7 @@ C lfile contains path as well as file name.
         tmode='graph'
         if(teditor(1:2).eq.'vi')tmode='text'
         write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),
-     &                                      lfile(1:lnblnk(lfile)),' &'
+     &                           lfile(1:lnblnk(lfile)),' &'
         call runit(doit,tmode)
       endif
       return
