@@ -844,7 +844,7 @@ C text or X11 option g edits the string while for GTK there are two
 C options to browse for files in ../dbs or the esp-r distribution.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       if(iglib.eq.1.or.iglib.eq.3)then
-        opte='g edit file name'
+        opte='g browse model ../dbs'
         optf='   '
         optg='   '
       elseif(iglib.eq.2)then
@@ -1276,40 +1276,13 @@ C << temporary shorter string until EASKXORGTKF >>
 
       elseif(isw.eq.7)then
 
-C Make up browse to the model ../dbs folder suggest the name LCOPY
-C and return file name in lltmp.
-        lltmp=' '
-        call edisp(iuout,'  ')  ! echo blank line
-        write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
-        CALL EASKXORGTKF(LCOPY,'Materials db?',' ',
-     &    DFCON,lltmp,'materials db',IER,nbhelp)
-
-C If user request jump back and re-display the menu.
-        if(ier.eq.-3)then
-          goto 60  ! redisplay menu.
-        endif
-
-        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
-
-C Ask user whether file is in ../dbs and if so use fdroot if GTK.
-          if(iglib.eq.2)then
-            dok=.true.
-            CALL ASKOK('Is this file in the model ../dbs folder?',
-     &        ' ',OK,dok,3)
-            if(OK)then
-              call fdroot(lltmp,lpath,fname)
-              write(LFMAT,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &          fname(1:lnblnk(fname))
-              ipathmat=1  ! signal that it is a local file.
-              moddb=.true.
-              goto 44
-            endif
-          endif
-
-C Check what the user might have edited to be sure of setting the
-C correct location value via call to findwhichdbpath.
-          call findwhichdbpath('mat',lltmp,ier)
-          moddb=.true.
+C Allow user to look in the model ../dbs folder for an
+C materials file. If moddb was set to true then proceed to edit
+C the optics.
+	numhelp=nbhelp
+	lltmp='  '
+        call usemodeldbsfile('mat',numhelp,lltmp,istat,moddb)
+        if(istat.eq.0.and.moddb)then
           goto 44
         else
           goto 60
@@ -1754,7 +1727,9 @@ C Setup the command line for pdb.
         write(doit,'(4a)') 'pdb -mode text -file ',
      &    longtfile(1:lnblnk(longtfile)),' -act bin2asci ',
      &    longtafile(1:lnblnk(longtafile))
-        write(6,*) doit
+
+C Debug.
+C        write(6,*) doit
         call runit(doit,tmode)
 
         call edisp(iuout,'  ')
@@ -1813,7 +1788,9 @@ C Setup the command line for pdb.
         write(doit,'(4a)') 'pdb -mode text -file ',
      &    longtfile(1:lnblnk(longtfile)),' -act asci2bin ',
      &    longtafile(1:lnblnk(longtafile))
-        write(6,*) doit
+
+C Debug.
+C        write(6,*) doit
         call runit(doit,tmode)
 
         call edisp(iuout,'  ')
@@ -5313,6 +5290,204 @@ C Signal that file is a local to model.
       else
         goto 66  ! ask for the file name again
       endif
+      
+      end
+      
+
+C ******** usemodeldbsfile
+C usemodeldbsfile is a general facility to browse files in the
+C model ../dbs folder. All files in the ../dbs folder will 
+C be added to a menu list for selection. Selected file becomes
+C the current common file type and is returned via lltmp.
+      subroutine usemodeldbsfile(topic,numhelp,lltmp,istat,moddb)
+#include "building.h"
+#include "model.h"
+#include "esprdbfile.h"
+
+      common/OUTIN/IUOUT,IUIN
+      
+      integer lnblnk  ! function definition
+      
+C Passed parameters:
+      character topic*3   ! which type of file e.g. mat = materials
+                          ! mlc = constructions  opt = optics
+                          ! pdb = plant components  prs = pressure coef
+                          ! msc = active components  mld = mould isopleths
+                          ! pro = event profiles
+      integer numhelp     ! number of help lines from calling code
+      character lltmp*144 ! the returned file name
+      integer istat       ! return status index for calling code
+      logical moddb       ! set true if file name change
+      integer nfile       ! nb of files in dbs folder
+
+C Local variables:
+      character sourcemsg*48     ! dialog for source dialog
+      character sfile*72,snpfile*72,fname*96
+
+      character lguess*144
+      character fs*1
+
+      CHARACTER outs248*248
+      
+C Local strings for user selections dependent on graphic library.
+
+      integer lndbp   ! for length of standard database path
+      integer ier
+      logical unixok  ! to check for database path file separators
+
+C Clear string buffers.
+      lltmp='  '
+      lguess='  '
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Remember current file for the current topic, set message to
+C users and the guess for file name.
+      lndbp=lnblnk(standarddbpath)
+      if(topic(1:3).eq.'mat')then
+        sourcemsg='material properties file (in ../dbs).'   ! dialog
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          write(lguess,'(a)') LFMAT(1:lnblnk(LFMAT)) ! suggested name
+        elseif(ipathmat.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LFMAT(1:lnblnk(LFMAT))
+        endif
+      elseif(topic(1:3).eq.'mlc')then
+        sourcemsg='constructions file (in ../dbs).'
+        if(ipathmul.eq.0.or.ipathmul.eq.1)then
+          lguess=LFMUL  ! use as is
+        elseif(ipathmul.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lfmul(1:lnblnk(lfmul))  ! prepend db folder path
+        endif
+      elseif(topic(1:3).eq.'opt')then
+        sourcemsg='optical properties file (in ../dbs).'
+        if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
+          lguess=LOPTDB  ! use as is
+        elseif(ipathoptdb.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LOPTDB(1:lnblnk(LOPTDB))  ! prepend db folder path
+        endif
+      elseif(topic(1:3).eq.'pdb')then
+        sourcemsg='plant components file (in ../dbs).'
+        if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+          lguess=LPCDB
+        elseif(ipathpcdb.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lpcdb(1:lnblnk(lpcdb))
+        endif
+      elseif(topic(1:3).eq.'prs')then
+        sourcemsg='pressure coefficients file (in ../dbs).'
+        if(ipathapres.eq.0.or.ipathapres.eq.1)then
+          lguess=LPCDB
+        elseif(ipathapres.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lapres(1:lnblnk(lapres))
+        endif
+      elseif(topic(1:3).eq.'msc')then
+        sourcemsg='active components file (in ../dbs).'
+        if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
+          lguess=MCMPDBFL
+        elseif(ipathmsc.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      MCMPDBFL(1:lnblnk(MCMPDBFL))
+        endif
+      elseif(topic(1:3).eq.'mld')then
+        sourcemsg='mould isopleths file (in ../dbs).'
+        if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
+          lguess=lfmould
+        elseif(ipathmsc.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lfmould(1:lnblnk(lfmould))
+        endif
+      elseif(topic(1:3).eq.'pro')then
+        sourcemsg='event profile file (in ../dbs).'
+        if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+          lguess=LPRFDB
+        elseif(ipathprodb.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LPRFDB(1:lnblnk(LPRFDB))
+        endif
+      endif
+
+C Remind user the current common data file.
+      write(outs248,'(4a)') 'Currently using:',
+     &  lguess(1:lnblnk(lguess)),' please identify a ',
+     &  sourcemsg(1:lnblnk(sourcemsg))
+      call edisp248(iuout,outs248,90)
+
+C Use the standard ESP-r folder browse facility.
+      sfile=' '
+      snpfile=' '
+      call edisp(iuout,' ')
+      call browsefilelist('?','dbs','fil',sfile,snpfile,nfile,iier)
+      if(nfile.gt.0)then
+        sfile=' '
+        snpfile=' '
+        call browsefilelist('b','dbs','fil',sfile,snpfile,nfile,iier)
+        if(snpfile(1:2).ne.'  ')then
+          write(fname,'(3a)')dbspth(1:lnblnk(dbspth)),fs,
+     &      snpfile(1:lnblnk(snpfile))
+
+C Debug.
+          if(unixok) write(6,*) fname
+
+        else
+
+C User did not select a file. Take them back to the question.
+          call usrmsg('You did not select any existing file.',
+     &      'Canceling the action.','W')
+          istat=1
+          moddb=.false.
+          return  ! cancel detected, restore name and redisplay menu.
+        endif
+      else
+        call usrmsg('You did not select any existing file.',
+     &    'Canceling the action.','W')
+        istat=1
+        moddb=.false.
+        return  ! cancel detected, restore name and redisplay menu.
+      endif
+
+      moddb=.true.
+      if(topic(1:3).eq.'mat')then
+        ipathmat=1  ! signal that it is a local file.
+        write(LFMAT,'(a)') fname(1:lnblnk(fname))
+      elseif(topic(1:3).eq.'mlc')then
+        ipathmul=1  ! signal that it will be a local file.
+        write(LFMUL,'(a)') fname(1:lnblnk(fname))
+      elseif(topic(1:3).eq.'opt')then
+        ipathoptdb=1  ! signal that it will be a local file.
+        write(LOPTDB,'(a)') fname(1:lnblnk(fname))
+      elseif(topic(1:3).eq.'pdb')then
+        ipathpcdb=1  ! signal that it will be a local file.
+        write(LPCDB,'(a)') fname(1:lnblnk(fname))
+      elseif(topic(1:3).eq.'prs')then
+        ipathapres=1  ! signal that it is a local file.
+        write(LPCDB,'(a)') fname(1:lnblnk(fname))
+      elseif(topic(1:3).eq.'msc')then
+        ipathmsc=1  ! signal that it will be a local file.
+        write(MCMPDBFL,'(a)') fname(1:lnblnk(fname))
+      elseif(topic(1:3).eq.'mld')then
+        ipathmould=1  ! signal that it will be a local file.
+        write(lfmould,'(a)') fname(1:lnblnk(fname))
+      elseif(topic(1:3).eq.'pro')then
+        ipathprodb=1  ! signal that it is a local file.
+        write(LPRFDB,'(a)') fname(1:lnblnk(fname))
+      else
+
+      endif
+
+C By definition of the filebrowse facility the selected file
+C will exist.
+      istat=0   ! after return use the new file
+      return
       
       end
       
