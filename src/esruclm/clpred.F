@@ -20,7 +20,7 @@ C Boston, MA 02111-1307 USA.
 
 C clpred.F includes the following subroutines:
 C   CLPRED allows the user to predict/transform climatic data.
-C   POLYTR transforms climate data for a given period according to some
+C   POLYTR transforms weather data for a given period according to some
 C          polynomial function.
 C   PDRAW will draw the predicted climatic data for any period.
 C   PSOLRD uses method J.K. Page (Sheffield), to predict the direct
@@ -106,7 +106,7 @@ C For help messages
    55 CONTINUE
 
       WRITE(STR,'(2A)')'Modified ',CLMLOC(1:21)
-      CALL EASKS(STR,'On changing climate data it is usual to change'
+      CALL EASKS(STR,'On changing weather data it is usual to change'
      &   ,'synopsis ',30,'synopsis. ','new synopsis',IER,0)
       ICV=0
       DO 10 I=1,4
@@ -139,7 +139,7 @@ C For help messages
       elseif(ist.eq.3)then
         ITEM(10)='! Draw curve-fit data    '
       endif
-      ITEM(11)='s Save climate data        '
+      ITEM(11)='s Save weather data        '
       ITEM(12)='  ------------------------ '
       ITEM(13)='? Help                     '
       ITEM(14)='- Exit                     '
@@ -147,11 +147,11 @@ C For help messages
 
       INO=-2
       if(ist.eq.1)then
-        CALL EMENU(' Climate prediction',ITEM,NITEMS,INO)
+        CALL EMENU(' Weather prediction',ITEM,NITEMS,INO)
       elseif(ist.eq.2)then
-        CALL EMENU(' Climate transforms',ITEM,NITEMS,INO)
+        CALL EMENU(' Weather transforms',ITEM,NITEMS,INO)
       elseif(ist.eq.3)then
-        CALL EMENU(' Climate curve-fits',ITEM,NITEMS,INO)
+        CALL EMENU(' Weather curve-fits',ITEM,NITEMS,INO)
       endif
       if(ino.eq.nitems)then
 
@@ -185,7 +185,7 @@ C When exiting, return to the whole year period.
             RETURN
           endif
 
-C Update climate binary file for the period the user had selected
+C Update weather binary file for the period the user had selected
 C as well as writing out the tail of the file.
           DO 256 IDAY=IYDS,IYDF
             IDI=IDAY-IYDS+1
@@ -207,7 +207,7 @@ C as well as writing out the tail of the file.
           IREC=368
           WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG
           ISAVE=1
-          call edisp(iuout,'Climate data saved for...')
+          call edisp(iuout,'Weather data saved for...')
           call edisp(iuout,PERST2)
           ID1=1
           IM1=1
@@ -222,7 +222,7 @@ C as well as writing out the tail of the file.
       ELSEIF(INO.EQ.NITEMS-1)THEN
         helptopic='curve_fitting_overview'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        CALL PHELPD('climate prediction',nbhelp,'clm_predict',0,0,IER)
+        CALL PHELPD('weather prediction',nbhelp,'clm_predict',0,0,IER)
       elseif(ino.eq.1)then
         goto 1
       ELSEIF(INO.GE.3.AND.INO.LE.9)THEN
@@ -431,12 +431,12 @@ C Draw variables.
             helptopic='specify_more_variables'
             call gethelptext(helpinsub,helptopic,nbhelp)
             CALL ASKOK(' Do you want to make any more changes before',
-     &        ' saving the climate data?',OK,dok,nbhelp)
+     &        ' saving the weather data?',OK,dok,nbhelp)
             IF(OK)THEN
               goto 11
             else
 
-C Update climate binary file for each altered day as well as the tail.
+C Update weather binary file for each altered day as well as the tail.
               DO 156 IDAY=IYDS,IYDF
                 IDI=IDAY-IYDS+1
                 DO 157 IT=1,MT 
@@ -457,7 +457,7 @@ C Update climate binary file for each altered day as well as the tail.
               IREC=368
               WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG
               ISAVE=1
-              call edisp(iuout,'Climate data saved for...')
+              call edisp(iuout,'Weather data saved for...')
               call edisp(iuout,PERST2)
               GOTO 11
             ENDIF
@@ -475,13 +475,13 @@ C Error handling
      &  0,0,IER)
       RETURN
 
-1000  write(outs,'(A,I4)')' Problem writing climate data on rec ',IREC
+1000  write(outs,'(A,I4)')' Problem writing weather data on rec ',IREC
       call usrmsg(outs,' returning....','W')
       goto 999
 
       END
 
-C POLYTR transforms climate data for a given period according to some
+C POLYTR transforms weather data for a given period according to some
 C polynomial function
       SUBROUTINE POLYTR(ICLMT,IYDS,IYDF)
       PARAMETER (MT=24,MD=365)
@@ -497,7 +497,7 @@ C For help messages
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
 
-C Setup limits for climate parameters
+C Setup limits for weather parameters
       helpinsub='POLYTR'  ! set for this subroutine
       IF(ICLMT.EQ.1)THEN
         CLMIN=0.
@@ -524,7 +524,7 @@ C Setup limits for climate parameters
       call gethelptext(helpinsub,helptopic,nbhelp)
       COEFFS=' '
       ILC=1
-      CALL EASKATOG('Change original climate value ','(see help)'
+      CALL EASKATOG('Change original weather value','(see help)'
      & ,'set to constant','change by constant','fraction of original'
      &    ,'polynomial transform ','continue',' ',' ',ILC,nbhelp)
       IF(ILC.EQ.5)RETURN
@@ -532,20 +532,20 @@ C Setup limits for climate parameters
       IF(ILC.EQ.1)THEN
         NORD=0
         CALL EASKS(COEFFS,'What is the constant value','(see help)',
-     &   5,' ','constant climate parameter',IER,nbhelp)
+     &   5,' ','constant weather parameter',IER,nbhelp)
         CALL EGETWR(COEFFS,K,A(1),CLMIN,CLMAX,'-','coefficients',IER)
         IF(IER.NE.0)GOTO 999
       ELSEIF(ILC.EQ.2)THEN
         NORD=1
         CALL EASKS(COEFFS,'Change by what constant value','(see help)',
-     &   5,' ','constant climate parameter',IER,nbhelp)
+     &   5,' ','constant weather parameter',IER,nbhelp)
         CALL EGETWR(COEFFS,K,A(2),CLMIN,CLMAX,'-','coefficients',IER)
         IF(IER.NE.0)GOTO 999
         A(1)=1.
       ELSEIF(ILC.EQ.3)THEN
         NORD=1
         CALL EASKS(COEFFS,'Change by what fraction','(see help)',
-     &   5,' ','constant climate parameter',IER,nbhelp)
+     &   5,' ','constant weather parameter',IER,nbhelp)
         CALL EGETWR(COEFFS,K,A(1),CLMIN,CLMAX,'-','coefficients',IER)
         IF(IER.NE.0)GOTO 999
         A(2)=0.
@@ -914,12 +914,12 @@ C Parameters:
       integer iday    ! the current day of the month
       integer ihr     ! the current hour of the day
       integer IGLOBH  ! global horizontal value (in w/m2)
-      real LONGITUDE  ! the climate longitude (west: positive)
+      real LONGITUDE  ! the weather site longitude (west: positive)
       real DIFFGRNWCH ! local time difference from Greenwich. Assumes
                       ! that west is positive (e.g. use -2 for Greece)
       real DRAD       ! diffuse value to be returned Muneer or Maxwell (in w/m2)
 
-C RADTYP Common might be needed in order to specify that climate
+C RADTYP Common might be needed in order to specify that weather
 C is based on global horizontal and not direct normal. At the moment
 C this is specified in MKOREANCLM when this is subroutine is used
 C      COMMON/RADTYP/IDNGH
