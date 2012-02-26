@@ -678,7 +678,7 @@ C Open the inside geometry/composition file.
         rzfil=ltmp72
         write(tfile,'(a,a)')runpath(1:lnrp),rzfil(1:lnblnk(rzfil))
         call FPOPEN(irzfil,ISTAT,1,4,tfile)
-      else
+      else ! silent mode
         write(tfile,'(a,a)')runpath(1:lnrp),rzfil(1:lnblnk(rzfil))
         call FPOPEN(irzfil,ISTAT,1,3,tfile)
       endif

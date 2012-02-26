@@ -780,8 +780,9 @@ C Set default names based on above.
 C Additional details for specific purposes.
       if (IRP.eq.4) then
 
-C Set up daylight factor calc points.
-        call setdfgrid(MODE,izone,ier)
+C Set up daylight factor calc points for focus zone.
+c        call setdfgrid(MODE,izone,ier)
+        call setdfgrid(MODE,ifocz,ier)
       elseif (IRP.eq.5.or.IRP.eq.6) then 
 
 C Get sensor information from cgc file.
@@ -1331,7 +1332,7 @@ C Clear rcf file unit no/ channel.
 
 C Recover zone index from command line variable zone.
       if (zone(1:4).eq.'Def_') then
-c        izone=-1 ! does not seem to be used by the code except in "newscene()"
+        izone=-1 ! does not seem to be used by the code except in "newscene()"
       else
         if (aim(1:8).eq.'External') then
           izone=1 ! use zone 1 as "default zone"
@@ -1348,6 +1349,7 @@ C If rcf file does exist then search for existing rif file.
           if (SCENEPURP(I)(1:5).eq.aim(1:5)) then
 C Possible match, further check - look at rif file if not UNKNOWN (not set) for zone,scene ...
             if (RIFNAME(izone,I,1)(1:4) .ne. 'UNKN') then
+              ifocz=-1 ! ? added 26.02.2012, as in development_branch
               call RRIF(ITA2,ITA3,RIFNAME(izone,I,1),'s',IER)
               if (ifocz.eq.izone) then
 C Got match.
