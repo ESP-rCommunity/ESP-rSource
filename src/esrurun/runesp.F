@@ -76,7 +76,6 @@ C Path to problem and command line file (if any).
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
-      common/LLOG/LPRJLG
       common/GTFIL/GTGEOM
 
 C Name of current application
@@ -111,7 +110,7 @@ C Uncertainty.
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character GTGEOM*72,lipvdatf*72
       character*10 wkd1, wkd2
-      character*72 LCFGF,LPRJLG
+      character*72 LCFGF
       character LCTLF*72,ctldoc*248
       character LAPROB*72 
       character bidirfile*72,bidirname*12
@@ -177,7 +176,6 @@ C Set folder separator (fs) to \ or / as required.
       write(imgpth,'(a1,a1)')'.',fs
       write(radpth,'(a1,a1)')'.',fs
       write(docpth,'(a1,a1)')'.',fs
-      write(tmppth,'(a1,a1)')'.',fs
       write(dbspth,'(a1,a1)')'.',fs
       write(bsmpth,'(a1,a1)')'.',fs
       IYEAR=2007
@@ -278,7 +276,7 @@ C Temporal information on channel IFIL+7.
       LPCDB=DPCDB
 
 C Project log.
-      LPRJLG='job.notes'
+      lmodellog='project.notes'
 
       INIT =0
 

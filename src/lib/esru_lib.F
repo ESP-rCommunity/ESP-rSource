@@ -3706,16 +3706,18 @@ C single character then ixl is ix.
         else
           length=ix
           itrunc = i-1
-          goto 1
+          goto 1  ! cannot write more to the packed string
         endif
   43  continue
       length=ixl
       return
 
    1  continue
-      write(outs,*) 'ASFLIST: truncation writing array at item: ',
-     &  itrunc,' & pos ',length
-      call edisp(iuout,outs)
+
+C Debug.
+C      write(outs,*) 'ASFLIST: truncation writing array at item: ',
+C     &  itrunc,' & pos ',length
+C      call edisp(iuout,outs)
       return
       END
 

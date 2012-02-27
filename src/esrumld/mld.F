@@ -35,6 +35,8 @@ C Boston, MA 02111-1307 USA.
      &,imdur0(mould),i1max(mould),i0max(mould),imup(mould),
      &imdn(mould)
       common/iopnmld/iopmld
+      common/mdbase/mdbnam
+      character mdbnam*72
 
       common/OUTIN/IUOUT,IUIN
       common/SHOUT/ICOUT
@@ -169,7 +171,6 @@ C Setup and pass in parameters to win3d.
         iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
         CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
-C        CALL win3d(menuchw,12,12,4,3,igl,igr,igt,igb,igw,igwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
@@ -185,6 +186,15 @@ C        CALL win3d(menuchw,12,12,4,3,igl,igr,igt,igb,igw,igwh)
         call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
         call startbuffer()
       ENDIF
+
+C Take `c' command line file name, convert to fortran string LCMDFL.
+      if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
+        LCMDFL=inf
+        write(mdbnam,'(a)') inf(1:lnblnk(inf))
+      else
+        LCMDFL='UNKNOWN'
+        mdbnam='UNKNOWN'
+      endif
 
 C Set additional output units to stdout. Then redirect warning
 C messages to stderr in case of rule script program control.

@@ -92,8 +92,7 @@ C IEEE callback (Solaris)
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
-C Project log file, journal on/off, unit number, cmd, file name.
-      common/LLOG/LPRJLG
+C Journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
 C Ground topology.
@@ -157,7 +156,7 @@ C Name of current application
 
       character dstmp*24,uname*24
       character LUALF*72,LCNG*15,LLOC*15
-      character*72 LCFGF,LPRJLG
+      character*72 LCFGF
       character LTMP*72
       character inf*144,inz*16,inzone*16,act_16*16,inact*16,LCMDFL*144
       character outs*124,outstr*124
@@ -269,11 +268,12 @@ C focus and actions arguments).
       isavgh=0
       NSIGFIG=3
 
-C Initial assumptions about databases (prior to configuration file scan
-C that the default database files will be defined explicitly).
+C Initial assumptions about common data files (prior to configuration file scan
+C that the default common data files will be defined explicitly).
       matver=0.0   ! initial assumption of binary materials database
       ipathapres=0; ipathoptdb=0; ipathpcdb=0; ipathprodb=0
       ipathmat=0; ipathmul=0; ipathclim=0; ipathsbem=0; ipathmsc=0
+      ipathmould=0
       
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -291,7 +291,6 @@ C Set folder separator (fs) to \ or / as required.
       write(imgpth,'(a1,a1)')'.',fs
       write(radpth,'(a1,a1)')'.',fs
       write(docpth,'(a1,a1)')'.',fs
-      write(tmppth,'(a1,a1)')'.',fs
       write(dbspth,'(a1,a1)')'.',fs
       write(bsmpth,'(a1,a1)')'.',fs
       write(hvacpth,'(a1,a1)')'.',fs
@@ -522,6 +521,7 @@ C Scan the defaults file for default system configuration file.
 C Make temporary use of file unit IFIL+5.  Note: escdef must come
 C after scan of .esprc file.
       call escdef(IFIL+5,IER)
+      write(6,*) 'def mould is ',dmdbnam(1:lnblnk(dmdbnam))
 
 C Take command line file name as initial configuration file.
       if(inf(1:2).eq.'  '.or.inf(1:4).eq.'UNKN')then
@@ -553,11 +553,11 @@ C databases may make use of this unit temporarily).
 
       write(LAPRES,'(a)') DAPRES(1:lnblnk(DAPRES))
 
-C Multi-layer constructions db on channel IFIL+3.
+C Common constructions on channel IFIL+3.
       IFMUL=IFIL+3
       write(LFMUL,'(a)') DFMUL(1:lnblnk(DFMUL))
 
-C Materials db on channel IFIL+4.
+C Common Materials on channel IFIL+4.
       IFMAT=IFIL+4
       write(LFMAT,'(a)') DFCON(1:lnblnk(DFCON))
 
@@ -591,8 +591,9 @@ C Special materials/miscel component database.
 C Text/graphic feedback redirection on channel ifil +9 
       ixunit = ifil + 9
 
-C Project log.
-      LPRJLG='job.notes'
+C Project log and contents.
+      lmodellog='project.notes'
+      lmodelqa='UNKNOWN'
 
 C If -actf was included in the command line then see if it
 C is a known command that can be acted on.

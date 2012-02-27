@@ -59,9 +59,6 @@ C espriou.h provides currentfile and MFFOLD.
 C Plant network.
       COMMON/C23/IFPNF,LPNF
 
-C Project log file.
-      common/LLOG/LPRJLG
-
 C Images.
       character imgfmt*4  ! GIF XBMP TIF JPG
       character imgfoc*4  ! FZON FNET FCTL FDFS
@@ -80,7 +77,13 @@ C External text editor.
 
 C Calendar.
       common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+#ifdef OSI
+      integer nwlistf
       dimension nwlistf(MFFOLD)
+#else
+      integer*8 nwlistf
+      dimension nwlistf(MFFOLD)
+#endif
 
 C Passed in parameters.
       character root*24,mpath*72,menu*72
@@ -90,7 +93,7 @@ C Passed in parameters.
 
       character dstmp*24,LCFTMP*24
       character*72 LTMP
-      character path*72,LCMDFL*144,LPRJLG*72,LPNF*72,odir*72
+      character path*72,LCMDFL*144,LPNF*72,odir*72
       character LCFGF*72,cfgroot*24
       character doit*248,longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20
@@ -100,8 +103,11 @@ C Passed in parameters.
       character fs*1
       character*72 listf(MFFOLD),listfc(MFFOLD)
       character subpath*72,action*3,outs*124
+      character lltmp*144,lguess*144,lldef*144  ! for working with EASKXORGTKF
+      character lpath*72,fname*72 ! for use with fdroot
 
       integer iyeart    ! for local editing
+      integer iglib  ! for detecting GTK or X11
       integer lnmp,lncr,lnod ! for with of mpath, cfgroot, odir strings
       character tcname*248   ! for editing image notes
       character WORDS(12)*32,testw*32
@@ -187,7 +193,7 @@ C Current default version is v4.
       NCOMP=0
       noimg=0
       LPNF='UNKNOWN'
-      LPRJLG='UNKNOWN'
+      lmodellog='UNKNOWN'
       nbdaytype=0
       call st2file(LCFTMP,LCMDFL)
 
@@ -370,7 +376,6 @@ C Check that the dbs folder path is standard.
         call pausems(100)
 
         write(radpth,'(3a)')'..',fs,'rad'
-        write(tmppth,'(3a)')'..',fs,'tmp'
 
 C Check that the bsm (BASESIMP) folder path is standard.
         call GETTOKENS(bsmpth,IW,WORDS)
@@ -391,15 +396,25 @@ C Re-establish pwd and then project folders.
      &      'System configuration file is located in folder:')
         call edisp(iuout,path)
 
-C Write out the model log file.
+C Write out the model log file within the model doc folder.
         uname=' '
         call usrname(uname)
         call usrdir(pwd)
         write(modeltitle,'(a)') menu(1:lnblnk(menu))
-        write(LPRJLG,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.log'
-        write(currentfile,'(a)') LPRJLG(1:lnblnk(LPRJLG))
+        lr=lnblnk(cfgroot)
+        if(docpth(1:2).eq.'  '.or.docpth(1:2).eq.'./')then
+          write(lmodellog,'(2a)') cfgroot(1:lr),'.log'
+        elseif(docpth(1:3).eq.'../')then
+          write(lmodellog,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &      cfgroot(1:lr),'.log'
+        else
+          write(lmodellog,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &      cfgroot(1:lr),'.log'
+        endif
+C        write(lmodellog,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.log'
+        write(currentfile,'(a)') lmodellog(1:lnblnk(lmodellog))
         IUNIT=IFIL+1
-        CALL EFOPSEQ(IUNIT,LPRJLG,3,IER)
+        CALL EFOPSEQ(IUNIT,lmodellog,3,IER)
         write(iunit,'(2a)')'Project notes for ',LCFGF(1:lnblnk(LCFGF))
         write(iunit,'(2a)')'Title: ',modeltitle(1:lnblnk(modeltitle))
         write(iunit,'(2a)')'In folder: ',pwd(1:lnblnk(pwd))
@@ -410,7 +425,9 @@ C Write out the model log file.
         write(iunit,'(a)')'Project reference: '
         write(iunit,'(a)')'_____________________________'
         write(iunit,'(a)')'Notes: '
+        write(iunit,'(a)')'  '
         write(iunit,'(a)')'_____________________________'
+        write(iunit,'(a)')'  '
         CALL ERPFREE(IUNIT,ISTAT)
         goto 77
 
@@ -445,7 +462,6 @@ C Instanciate standard folder names for use within model configuration file.
       write(imgpth,'(3a)')'..',fs,'images'
       write(radpth,'(3a)')'..',fs,'rad'
       write(docpth,'(3a)')'..',fs,'doc'
-      write(tmppth,'(3a)')'..',fs,'tmp'
       write(dbspth,'(3a)')'..',fs,'dbs'
       write(bsmpth,'(3a)')'..',fs,'bsm'
       write(hvacpth,'(3a)')'..',fs,'hvac'
@@ -475,9 +491,6 @@ C Instanciate standard folder names for use within model configuration file.
       call runit(doit,'-')
       call pausems(100)
       write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'doc'
-      call runit(doit,'-')
-      call pausems(100)
-      write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'tmp'
       call runit(doit,'-')
       call pausems(100)
       write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'rad'
@@ -537,16 +550,51 @@ C General description of the model.
 C Documentation.
   53  helptopic='cfg_model_log_file'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      if(LPRJLG(1:2).eq.'  '.or.LPRJLG(1:4).eq.'UNKN')then
-        write(LPRJLG,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.log'
+      if(lmodellog(1:2).eq.'  '.or.lmodellog(1:4).eq.'UNKN')then
+        lr=lnblnk(cfgroot)
+        if(docpth(1:2).eq.'  '.or.docpth(1:2).eq.'./')then
+          write(lmodellog,'(2a)') cfgroot(1:lr),'.log'
+        elseif(docpth(1:3).eq.'../')then
+          write(lmodellog,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &      cfgroot(1:lr),'.log'
+        else
+          write(lmodellog,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &      cfgroot(1:lr),'.log'
+        endif
       endif
-      ltmp=LPRJLG
-      CALL EASKS(ltmp,' ','Project log file?',
-     &  72,'project.log','log file',IER,nbhelp)
-      if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-        LPRJLG=ltmp
+
+C Detect if working on X11 or GTK.
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      lltmp='  '
+      lguess='  '
+      lldef='project.log'
+      if(iglib.eq.2)then
+        call addpath(lmodellog,longtfile,concat)  ! expand path for GTK browser
+        write(lguess,'(a)') longtfile(1:lnblnk(longtfile))
       else
-        goto 53
+        write(lguess,'(a)') lmodellog(1:lnblnk(lmodellog))
+      endif
+      call edisp(iuout,'  ')  ! echo blank line
+      CALL EASKXORGTKF(lguess,
+     &  'Project log file:',' ',lldef,lltmp,'log file',IER,nbhelp)
+
+C If user request jump back and re-display the menu.
+      if(ier.eq.-3)then
+        goto 53  ! cancel detected, restore name and redisplay menu.
+      endif
+
+C Ask user whether file is in ../doc and if so use fdroot if GTK.
+      if(iglib.eq.2)then
+        dok=.true.
+        CALL ASKOK('Is this file in the model ../doc folder?',
+     &    ' ',OK,dok,3)
+        if(OK)then
+          call fdroot(lltmp,lpath,fname)
+          write(lmodellog,'(3a)') docpth(1:lnblnk(docpth)),fs,
+     &      fname(1:lnblnk(fname))
+        endif
+      else
+        write(lmodellog,'(a)') lguess(1:lnblnk(lguess))
       endif
 
 C See if file exists, otherwise create it and write basic
@@ -554,10 +602,10 @@ C information.
       uname=' '
       call usrname(uname)
       call usrdir(pwd)
-      call FINDFIL(LPRJLG,XST)
+      call FINDFIL(lmodellog,XST)
       IUNIT=IFIL+1
       if(XST)then
-        CALL LISTAS(IUNIT,LPRJLG,IER)
+        CALL LISTAS(IUNIT,lmodellog,IER)
         IF(IER.ne.0)THEN
           dok=.true.
           CALL ASKOK('Problem detected with log file!',
@@ -565,8 +613,8 @@ C information.
           IF(OK)GOTO 53
         ENDIF
       else
-        write(currentfile,'(a)') LPRJLG(1:lnblnk(LPRJLG))
-        CALL EFOPSEQ(IUNIT,LPRJLG,3,IER)
+        write(currentfile,'(a)') lmodellog(1:lnblnk(lmodellog))
+        CALL EFOPSEQ(IUNIT,lmodellog,3,IER)
         write(iunit,'(a,a)')'Project notes for ',LCFGF(1:lnblnk(LCFGF))
         write(iunit,'(a,a)')'Title: ',modeltitle(1:lnblnk(modeltitle))
         write(iunit,'(a,a)')'In folder: ',pwd(1:lnblnk(pwd))
@@ -577,7 +625,9 @@ C information.
         write(iunit,'(a)')'Project reference: '
         write(iunit,'(a)')'_____________________________'
         write(iunit,'(a)')'Notes: '
+        write(iunit,'(a)')'  '
         write(iunit,'(a)')'_____________________________'
+        write(iunit,'(a)')'  '
         CALL ERPFREE(IUNIT,ISTAT)
       endif
 
@@ -595,12 +645,12 @@ C << which uses GTK facilities.
 C Check if Unix-based or DOS based.
         call isunix(unixok)
         if(unixok)then
-          call addpath(LPRJLG,longtfile,concat)
+          call addpath(lmodellog,longtfile,concat)
         else
 
 C If running on a non-unix machine see if there are spaces in the name
 C and change any / to \.
-          call addpath(LPRJLG,longtfile,concat)
+          call addpath(lmodellog,longtfile,concat)
           call cmdfiledos(longtfile,longtfiledos,ier)
           longtfile=' '
           longtfile=longtfiledos
@@ -748,7 +798,13 @@ C External text editor.
       common/user/browse
 
 C Remember width of file/folder names passed back from getfilelist.
+#ifdef OSI
+      integer nwlistf
       dimension nwlistf(MFFOLD)
+#else
+      integer*8 nwlistf
+      dimension nwlistf(MFFOLD)
+#endif
       logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical concat,unixok,changedit,browse
 
@@ -842,7 +898,7 @@ C        write(6,*) 'OSX path is ',path
       WRITE(ITEMS(7),'(2A)') 'e network : ',netpth(1:20)
       WRITE(ITEMS(8),'(2A)') 'f images  : ',imgpth(1:20)
       WRITE(ITEMS(9),'(2A)') 'g document: ',docpth(1:20)
-      WRITE(ITEMS(10),'(2A)')'h temp.   : ',tmppth(1:20)
+      WRITE(ITEMS(10),'(A)') '          : '
       WRITE(ITEMS(11),'(2A)')'i radiance: ',radpth(1:20)
       WRITE(ITEMS(12),'(2A)')'j local db: ',dbspth(1:20)
       WRITE(ITEMS(13),'(2A)')'k hvac    : ',hvacpth(1:20)
@@ -1018,23 +1074,7 @@ C            write(6,*) 'iier is ',iier,nli
 
       elseif(ino.eq.10)then
 
-        if(.NOT.browse)then
-          t24=tmppth
-          CALL EASKS(t24,'Relative path from cfg',
-     &      'folder to temporary folder?',24,'../doc',
-     &      'relative temp path',IER,nbhelp)
-          if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')then
-            tmppth=t24
-            changedit=.true.
-            sfile=' '
-            snpfile=' '
-            call browsefilelist('p','tmp','fil',sfile,snpfile,nli,iier)
-          endif
-        else
-          sfile=' '
-          snpfile=' '
-          call browsefilelist('p','tmp','fil',sfile,snpfile,nli,iier)
-        endif
+C Nothing uses this tmp option currently.
 
       elseif(ino.eq.11)then
 

@@ -5,7 +5,51 @@ By: jon
 Date: Sun Jun  3 13:50:36 2001
 For: 
 Project reference: 
-Notes: 
+Notes: This model is a portion of an office building in Ottawa
+which has been adapted for detailed air flow studies via CFD.
 _____________________________
+
+The following configurations are included:
+office_vent.cfg  is the base case with scheduled infiltration
+
+office_vent_dfs.cfg includes a CFD domain for manager
+
+office_vent_dfs_conf.cfg includes a conflated CFD domain in the manager
+
+More information about the CFD domains is included in the model nets folder.
+
+The common data for the models:
+ 
+The model is located at latitude   46.00 with a longitude difference of   0.00
+from the local time meridian. The year used in simulations is 1997 and
+weekends occur on Saturday and Sunday.
+The site exposure is typical city centre and the ground reflectance is 0.20.
+ 
+Databases associated with the model:
+ pressure distributions : pressc.db1
+ materials              : /usr/esru/esp-r/databases/material.db3.a
+ constructions          : ../dbs/office_vent_constr.db2
+ plant components       : plantc.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
+ optical properties     : optics.db2
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 manager        40.5  11    61.6    10.4    13.5  manager describes cellular office
+ 2 general       175.5  32   212.6    49.6    58.5  general describes an open plan with 4 desks
+ 3 conference    141.8  28   173.4    36.7    61.8  conference describes a conference room for 10-12
+ 4 reception     182.3  18   198.6    38.7    10.1  reception of office group adj to conference room
+ 5 ceil_void      90.0  11   390.0     0.0   180.0  ceil_void is a 0.5m ceiling void over offices
+ 6 mixing_box      9.0   6    45.0     0.0    18.0  mixing_box is a zonal representation of ahu
+   all           639.  106   1081.    135.    342.
+
  
  
+Databases associated with both models:
+ pressure distributions : pressc.db1
+ materials              : /usr/esru/esp-r/databases/material.db3.a
+ constructions          : ../dbs/office_vent_constr.db2
+ plant components       : plantc.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
+ optical properties     : optics.db2

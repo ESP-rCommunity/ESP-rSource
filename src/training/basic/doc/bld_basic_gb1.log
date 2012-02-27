@@ -30,4 +30,22 @@ zones/roof_space.con
 zones/reception.tmc      zone TMC files.
 zones/office.tmc        
 
-_________
+_________ 
+
+ Zone to contol loop linkages:
+ zone ( 1) reception    << control  1
+ zone ( 2) office       << control  2
+ zone ( 3) roof_space   << control  0
+ 
+ Global control includes  1 loops.
+global on-off
+ 
+ The sensor for function  1 sensors are not used in global controls
+ The actuator for function  1 is actuation not used in global controls
+ There have been  1 day types defined.
+ Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 undefined law         undefined law       1.0 2.0
+
+( reporting incomplete for global controls).
+

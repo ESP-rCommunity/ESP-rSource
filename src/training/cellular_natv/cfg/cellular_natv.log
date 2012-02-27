@@ -1,6 +1,6 @@
-Project notes for cellular_offices_bc.cfg
+Project notes for cellular_natv.cfg
 Description: base case model of two adjacent cellular offices
-In folder: /home/jon/training/ibpsa_course
+In folder: cellular_natv
 By: jon
 Date: Mon Aug  1 10:11:58 2005
 For: 
@@ -8,4 +8,26 @@ Project reference:
 Notes: 
 _____________________________
  
+This is the standard cellular office model which has been
+extended to include a flow network with operable windows. 
  
+Databases associated with the model:
+ pressure distributions : pressc.db1
+ materials              : ../dbs/cellular.materials.a
+ constructions          : ../dbs/cellular.constrdb
+ plant components       : plantc.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
+ optical properties     : optics.db2
+ 
+The model includes ideal controls as follows:
+Control description:
+Ideal control for dual office model. Weekdays normal office hours,
+saturday reduced occupied hours, sunday stand-by only. One person per
+office, 100W lighting and 150W small power.
+
+The model includes a flow network including each of the zones.
+There are four flow control loops defined to adjust flow at
+the windows in the model.  It uses a range based controller
+for the windows so they are almost fully closed below 19C
+and above 26C. If less than 26 and greater than 21C the
+windows open to 1.5x their normal area.

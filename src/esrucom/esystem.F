@@ -283,9 +283,6 @@ C                   then no control is imposed.
 C lctlf (72 char) - model control file name.
       common/cctlnm/ctldoc,lctlf
 
-C LPRJLG (72 char) model log file.
-      COMMON/LLOG/LPRJLG
-
 C Images in the model.
 C  imgfmt (4 char) gives the format of each image associated with
 C         the model, it must match one of the known fmttag.
@@ -519,11 +516,11 @@ C Simulation parameters
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL XST,OK,DOK,IGDCVS,IGDCNC,IGDNDC,IGDTAQ,cnnok
       LOGICAL OK3DCVS,OK3DCNC,OK3DNDC,OK3DTAQ
+      logical foundmould,foundsbem
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER loutstr*248,OUTSTR*124,OUTS*124,text*124,t117*117,h*72
       CHARACTER LCFD*72
       CHARACTER*72 LAPROB,LPNF
-      character LPRJLG*72
       character lworking*144
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,NODID*12,CXSTR*78
@@ -541,7 +538,7 @@ C Simulation parameters
       character gshpfile*72
       character gcepfile*72
       character dllsubr*12,dllmesg*124
-      character limgpth*24,ldocpth*24,ltmppth*24,lcfgroot*24,lpath*72
+      character limgpth*24,ldocpth*24,lcfgroot*24,lpath*72
       character path*72,lupath*72
       character namez*12,namen*12
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM
@@ -593,6 +590,7 @@ C Check if running in dll mode.
       call isadll(dll)
       itru=iuout   ! set trace unit to use in subroutine calls
       iflag=0      ! initial value
+      foundmould=.false.; foundsbem=.false.
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -621,7 +619,7 @@ C Note: escdef must come after scan of .esprc file.
       write(LPCDB,'(a)')  DPCDB(1:lnblnk(DPCDB))
       write(LSBEM,'(a)')  DSBEM(1:lnblnk(DSBEM))  ! assign default SBEM db
       write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
-
+      write(lfmould,'(a)') dmdbnam(1:lnblnk(dmdbnam))
 
 C Clear the model common blocks.
       call clrprb
@@ -806,9 +804,7 @@ C embedded in the configuration file.
           CALL EGETRM(OUTSTR,K,imgpth,'W','path to img',IER)
           IF(IER.NE.0)goto 1
           goto 34
-        elseif(WORD(1:7).eq.'*tmppth')then
-          CALL EGETRM(OUTSTR,K,tmppth,'W','path to scratch',IER)
-          IF(IER.NE.0)goto 1
+        elseif(WORD(1:7).eq.'*tmppth')then  ! do not bother with this folder name
           goto 34
         elseif(WORD(1:7).eq.'*docpth')then
           CALL EGETRM(OUTSTR,K,docpth,'W','path to documents',IER)
@@ -926,7 +922,7 @@ C If '* CONFIGURATION' found then read in the databases.
         endif
       endif
 
-C Read databases until '* PROJ LOG' found.  If starts with *std
+C Read common data until '* PROJ LOG' found.  If starts with *std
 C then set the whichdbpath variable to signal that it is in
 C the standard location. If tag does not start with *std then
 C check the intial portion of the file name to see if it is
@@ -947,6 +943,7 @@ C so LSTRIPC and LOUTSTR are used.
 C Process the file name following *prm and depending on its path
 C set the LFMAT common block string via call to findwhichdbpath.
         call findwhichdbpath('mat',lworking,ier)
+
       elseif(WORD(1:4).eq.'*mat')then
         CALL EGETRM(LOUTSTR,K,lworking,'W','material db',IER)
 
@@ -966,6 +963,7 @@ C set the LFMUL common block string via call to findwhichdbpath.
       elseif(WORD(1:7).eq.'*stdmlc')then
         CALL EGETRM(LOUTSTR,K,LFMUL,'W','multilayer db',IER)
         ipathmul=2  ! standard folder for MLC database
+
       elseif(WORD(1:4).eq.'*opt')then
         CALL EGETRM(LOUTSTR,K,lworking,'W','optical db',IER)
 
@@ -975,6 +973,7 @@ C set the LOPTDB common block string via call to findwhichdbpath.
       elseif(WORD(1:7).eq.'*stdopt')then
         ipathoptdb=2  ! standard folder for optical database
         CALL EGETRM(LOUTSTR,K,LOPTDB,'W','optical db',IER)
+
       elseif(WORD(1:4).eq.'*prs')then
         CALL EGETRM(LOUTSTR,K,lworking,'W','pressure db',IER)
 
@@ -984,6 +983,7 @@ C set the lapres common block string via call to findwhichdbpath.
       elseif(WORD(1:7).eq.'*stdprs')then
         ipathapres=2  ! standard folder for pressure coef database
         CALL EGETRM(LOUTSTR,K,LAPRES,'W','pressure db',IER)
+
       elseif(WORD(1:4).eq.'*evn')then
         CALL EGETRM(LOUTSTR,K,lworking,'W','profiles db',IER)
 
@@ -994,6 +994,17 @@ C set the LPRFDB common block string via call to findwhichdbpath.
         CALL EGETRM(LOUTSTR,K,LPRFDB,'W','profile db',IER)
         ipathprodb=2  ! standard folder for profiles database
 
+      elseif(WORD(1:6).eq.'*mould')then
+        CALL EGETRM(LOUTSTR,K,lworking,'W','mould isopleths',IER)
+
+C Process the file name folloing *mld and depending on its path
+C set the lfmould common block string via call to findwhichdbpath.
+        call findwhichdbpath('mld',lworking,ier)
+        foundmould=.true.
+      elseif(WORD(1:9).eq.'*stdmould')then
+        ipathmould=2  ! standard folder for pressure coef database
+        CALL EGETRM(LOUTSTR,K,lfmould,'W','mould isopleths',IER)
+        foundmould=.true.
       elseif(WORD(1:4).eq.'*clm')then
 
 C << to be done - introduce *stdclm to signal standard location >>
@@ -1046,6 +1057,7 @@ C set the LSBEM common block string via call to findwhichdbpath.
         call findwhichdbpath('sbm',lworking,ier)
         ISBEM=1
         IRNCMD=1
+        foundsbem=.true.
 
       elseif(WORD(1:8).eq.'*stdsbem')then
 
@@ -1054,9 +1066,13 @@ C SBEM database file in standard location.
         CALL EGETRM(LOUTSTR,K,LSBEM,'W','standard SBEM db',IER)
         ISBEM=1
         IRNCMD=1
+        foundsbem=.true.
 
       elseif(WORD(1:4).eq.'*ctl')then
         CALL EGETRM(LOUTSTR,K,LCTLF,'W','config control',IER)
+
+      elseif(WORD(1:9).eq.'*contents')then
+        CALL EGETRM(LOUTSTR,K,lmodelqa,'W','model contents',IER)
 
       elseif(WORD(1:5).eq.'*gref')then
 
@@ -2048,8 +2064,8 @@ C Next tokens relate to simulationist address.
       elseif(loutstr(1:10).eq.'* PROJ LOG')then
 
 C Project log file, read and then go on to fabric/plant description.
-        CALL STRIPC(IUC,OUTSTR,0,ND,1,'project log file',IER)
-        LPRJLG=OUTSTR(1:LNBLNK(OUTSTR))
+        CALL STRIPC(IUC,LOUTSTR,0,ND,1,'project log file',IER)
+        write(lmodellog,'(a)') LOUTSTR(1:LNBLNK(LOUTSTR))
         goto 45
         
       
@@ -2208,6 +2224,22 @@ C If ground information was read in but still registration level then exit.
       if(INDCFG.EQ.0)then
         CALL ERPFREE(IUC,ISTAT)
         RETURN
+      endif
+
+C If mould database tag was not found instanciate it.
+      if(foundmould)then
+        continue
+      else
+        call findwhichdbpath('mld',dmdbnam,ier)
+      endif
+
+C If SBEM database tag was not found instanciate it.
+      if(foundsbem)then
+        continue
+      else
+        call findwhichdbpath('sbm',DSBEM,ier)
+        ISBEM=1
+        IRNCMD=1
       endif
 
 C Number of building zones.
@@ -3132,16 +3164,15 @@ C Pass information about the current model to the C interface.
       lupath=upath
       limgpth=imgpth
       ldocpth=docpth
-      ltmppth=tmppth
       iincomp=ncomp
       iincon=ncon
       if(browse)then
         ibrowse=1
-        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,ltmppth,
+        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,
      &    ibrowse,iincomp,iincon)
       else
         ibrowse=0
-        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,ltmppth,
+        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,
      &    ibrowse,iincomp,iincon)
       endif
       RETURN
@@ -3453,8 +3484,9 @@ C Depending on which database (the parameter topic) the
 C common block file string and whichdbpath variable is updated.
 C topic =  'opt' for optics, 'pdb' for plant component templates
 C       =  'prs' for pressure coef, 'sbm' for UK SBEM database,
-C       =  'mat' for materials database, 'evn' for profiles database
-C       =  'mul' for MLC database, 'msc' for miscellaneous components
+C       =  'mat' for common materials, 'evn' for event profiles
+C       =  'mul' for common constructions, 'msc' for active components
+C       =  'mld' for mould isopleths
       subroutine findwhichdbpath(topic,file,ier)
       implicit none
 #include "esprdbfile.h"
@@ -3481,29 +3513,32 @@ C Set OS and check that standarddbpath has been set.
       if(unixok)then
         if(file(1:7).eq.'../dbs/')then
           if(topic(1:3).eq.'opt')then
-            ipathoptdb=1  ! local folder for optical database
+            ipathoptdb=1  ! local folder for common optics
             write(LOPTDB,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'pdb')then
             ipathpcdb=1  ! local folder for plant database
             write(LPCDB,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'prs')then
-            ipathapres=1  ! local folder for pressure database
+            ipathapres=1  ! local folder for pressure distributions
             write(lapres,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'sbm')then
             ipathsbem=1  ! local folder for UK SBEM database
             write(lsbem,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'mat')then
-            ipathmat=1  ! local folder for materials database
+            ipathmat=1  ! local folder for common materials
             write(LFMAT,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'evn')then
-            ipathprodb=1  ! local folder for profiles database
+            ipathprodb=1  ! local folder for event profiles
             write(LPRFDB,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'mul')then
-            ipathmul=1  ! local folder for MLC database
+            ipathmul=1  ! local folder for common constructions
             write(LFMUL,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'msc')then
-            ipathmsc=1  ! local folder for miscel comp database
+            ipathmsc=1  ! local folder for active components
             write(MCMPDBFL,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'mld')then
+            ipathmould=1  ! local folder for mould isopleths
+            write(lfmould,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
 
@@ -3532,6 +3567,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'msc')then
             ipathmsc=2
             write(MCMPDBFL,'(a)') file(lndbp+2:lnwkg) ! without path
+          elseif(topic(1:3).eq.'mld')then
+            ipathmould=2
+            write(lfmould,'(a)') file(lndbp+2:lnwkg) ! without path
           endif
         else
           if(topic(1:3).eq.'opt')then
@@ -3558,6 +3596,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'msc')then
             ipathmsc=0
             write(MCMPDBFL,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'mld')then
+            ipathmould=1  ! local folder for mould isopleths
+            write(lfmould,'(a)') file(1:lnwkg) ! assign directly
           endif
         endif
       else
@@ -3584,8 +3625,11 @@ C The initial part of the path matches so only save the file name w/o path.
             ipathmul=1  ! local folder for MLC database
             write(LFMUL,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'msc')then
-            ipathmsc=1  ! local folder for miscel comp database
+            ipathmsc=1  ! local folder for active components
             write(MCMPDBFL,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'mld')then
+            ipathmould=1  ! local folder for mould isopleths
+            write(lfmould,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
           if(topic(1:3).eq.'opt')then
@@ -3612,6 +3656,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'msc')then
             ipathmsc=2
             write(MCMPDBFL,'(a)') file(lndbp+2:lnwkg) ! without path
+          elseif(topic(1:3).eq.'mld')then
+            ipathmould=2
+            write(lfmould,'(a)') file(lndbp+2:lnwkg) ! without path
           endif
         else
           if(topic(1:3).eq.'opt')then
@@ -3638,6 +3685,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'msc')then
             ipathmsc=0
             write(MCMPDBFL,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'mld')then
+            ipathmould=0
+            write(lfmould,'(a)') file(1:lnwkg) ! assign directly
           endif
         endif
       endif

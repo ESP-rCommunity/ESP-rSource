@@ -195,9 +195,6 @@ C CPCALC description
       REAL :: ble,bwi,bhi,blox,bloy,bloz,orient,ra,sbh,pad,wvpe
       INTEGER :: icpcon,irt
 
-C Project log file, paths to standard file locations.
-      COMMON/LLOG/LPRJLG
-
 C Images.
       common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
       character imgfmt*4  ! GIF XBMP TIF JPG
@@ -263,7 +260,7 @@ C door width and height.
       common/ginsert/defwininsert,defdoorwidth,defdoorheight
 
       CHARACTER LCFD*72
-      CHARACTER*72 LAPROB,LPRJLG,LPNF
+      CHARACTER*72 LAPROB,LPNF
 
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
@@ -292,7 +289,7 @@ C Initial assumption is no SHOCC files.
       bSHOCCed=.false.
       SHOCCshlFile=' '
 
-      LPRJLG='job.notes'
+      lmodellog='job.notes'
       LPNF='UNKNOWN'
       LGDCVS='UNKNOWN'
       LGDCNC='UNKNOWN'
@@ -840,7 +837,6 @@ C ***** Notice that an active description button has been pressed.
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       COMMON/C23/IFPNF,LPNF
-      COMMON/LLOG/LPRJLG
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       common/entfile/entflnam, ientxist
@@ -858,7 +854,7 @@ C Images.
       character h*72,act*1
       character entflnam*72
       CHARACTER LCFD*72
-      CHARACTER LAPROB*72,LPNF*72,CNTMFIL*72,LPRJLG*72
+      CHARACTER LAPROB*72,LPNF*72,CNTMFIL*72
       CHARACTER ctldoc*248,lctlf*72
       character CNTMDESC*124,CONTMNAM*12
 
@@ -870,7 +866,7 @@ C Registration, show all available images.
         h(1)='The current model is named:'
         write(h(2),'(a)')modeltitle
         h(3)='The model is documented in: '
-        write(h(4),'(a)')LPRJLG
+        write(h(4),'(a)')lmodellog(1:70)
         h(5)=' '
         write(h(6),'(a,i2,a)')'There are ',noimg,' linked images.'
         h(7)=' '
@@ -887,7 +883,7 @@ C Zone button, show zone/site/gridding related images.
      &    ' zones and',NCON,' surfaces.'
         h(5)=' '
         h(6)='The model is documented in: '
-        write(h(7),'(a)')LPRJLG
+        write(h(7),'(a)')lmodellog(1:70)
         nh=7
         do 42 i=1,NCOMP
           if(LCFD(i).eq.'UNKNOWN')then

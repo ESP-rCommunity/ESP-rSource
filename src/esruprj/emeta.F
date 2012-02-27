@@ -1590,8 +1590,7 @@ C Debug.
       elseif(WORD(1:7).eq.'*imgpth')then
         CALL EGETRM(OUTSTR,K,imgpth,'W','path to img',IER)
         goto 43
-      elseif(WORD(1:7).eq.'*tmppth')then
-        CALL EGETRM(OUTSTR,K,tmppth,'W','path to scratch',IER)
+      elseif(WORD(1:7).eq.'*tmppth')then  ! do not bother with this path
         goto 43
       elseif(WORD(1:7).eq.'*docpth')then
         CALL EGETRM(OUTSTR,K,docpth,'W','path to documents',IER)
@@ -2956,8 +2955,6 @@ C extracting to a set of standard ESP-r files.
      &  '  # path to radiance files'
       write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*imgpth ',imgpth,
      &  '  # path to project images'
-      write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*tmppth ',tmppth,
-     &  '  # path to project scratch folder'
       write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*docpth ',docpth(1:lndcp),
      &  '  # path to project documents'
       write(ifilg,'(3a)',IOSTAT=IOS,ERR=13) '*dbspth ',dbspth(1:lndbp),
@@ -3024,8 +3021,8 @@ C line of 12 values for each included profile.
   28    CONTINUE
       endif
 
-C Write databases related to this model.
-C Material database has the option of two different syntax to
+C Write common data files related to this model.
+C Common material data has the option of two different syntax to
 C reflect whether the standard database folder is being used.
       if(ipathmat.eq.0.or.ipathmat.eq.1)then
         WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*mat  ',
@@ -3035,7 +3032,7 @@ C reflect whether the standard database folder is being used.
      &      LFMAT(1:lnblnk(LFMAT)),' # materials db'
       endif
 
-C MLC database has the option of two different syntax.
+C Common constructions data has the option of two different syntax.
       if(ipathmul.eq.0.or.ipathmul.eq.1)then
         WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*mlc  ',
      &      LFMUL(1:lnblnk(LFMUL)),' # constructions db'
@@ -3044,7 +3041,7 @@ C MLC database has the option of two different syntax.
      &      LFMUL(1:lnblnk(LFMUL)),' # constructions db'
       endif
 
-C Optical database has the option of two different syntax to
+C Common optical data has the option of two different syntax to
 C reflect whether the standard database folder is being used.
       if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
         WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*opt  ',
@@ -3054,7 +3051,7 @@ C reflect whether the standard database folder is being used.
      &      LOPTDB(1:lnblnk(LOPTDB)),' # optical db'
       endif
 
-C Pressure coef database has the option of two different syntax to
+C Pressure coefficients have the option of two different syntax to
 C reflect whether the standard database folder is being used.
       if(ipathapres.eq.0.or.ipathapres.eq.1)then
         WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*prs  ',
@@ -3063,6 +3060,8 @@ C reflect whether the standard database folder is being used.
         WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*stdprs  ',
      &      LAPRES(1:lnblnk(LAPRES)),' # pressure coef db'
       endif
+
+C Common event profiles (ditto).
       if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
         WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*evn  ',
      &      LPRFDB(1:lnblnk(LPRFDB)),' # profiles db'
@@ -3070,12 +3069,23 @@ C reflect whether the standard database folder is being used.
         WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*stdevn  ',
      &      LPRFDB(1:lnblnk(LPRFDB)),' # profiles db'
       endif
+
+C Common active materials (ditto).
       if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
         WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*mscldb  ',
      &      MCMPDBFL(1:lnblnk(MCMPDBFL)),' # miscel cmp db'
       elseif(ipathmsc.eq.2)then
         WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*stdmscldb  ',
      &      MCMPDBFL(1:lnblnk(MCMPDBFL)),' # miscel cmp db'
+      endif
+
+C Common mould isopleths (ditto).
+      if(ipathmould.eq.0.or.ipathmould.eq.1)then
+        WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*mould  ',
+     &    lfmould(1:lnblnk(lfmould)),' # mould isopleths'
+      elseif(ipathmould.eq.2)then
+        WRITE(ifilg,'(3A)',IOSTAT=IOS,ERR=13) '*stdmould  ',
+     &    lfmould(1:lnblnk(lfmould)),' # mould isopleths'
       endif
 
 C << plant template file needs to be written >>

@@ -354,7 +354,6 @@ static char cappl[5];	/* f77 application name */
 /* static char upath[73];	f77 users path    */
 /* static char imgpth[25];	f77 relative path to images    */
 /* static char docpth[25];	f77 relative path to documents    */
-/* static char tmppth[25];	f77 relative path to scratch folder    */
 static int browse;	/* if = 0 then user owns, if = 1 user browsing */
 
 /* flag for network graphics routines*/

@@ -1217,7 +1217,7 @@ C folder does not exist then need to create it.
 
                     write(doit,'(2a)') 'mkdir ',lltmp(1:lnblnk(lltmp))
                     call runit(doit,'-')
-                    call pausems(400)
+                    call pausems(100)
 
 C Make up the command to copy from the exemplar source folder to the
 C users defined destination.
@@ -1488,7 +1488,6 @@ C provides LRADCF
       INTEGER :: IFPNF
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       INTEGER :: iairn,icaas
-      common/LLOG/LPRJLG
       common/cctlnm/ctldoc,lctlf
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       common/GTFIL/GTGEOM
@@ -1531,7 +1530,7 @@ C provides LRADCF
       INTEGER :: ibsimp
 
       character LUALF*72,LCNG*15,LLOC*15,LCFGF*72
-      character LPRJLG*72,LPNF*72,LMOIST*72
+      character LPNF*72,LMOIST*72
       character*72 LCFD
       character LCMDFL*144,LFIL*72
       
@@ -1795,7 +1794,7 @@ C Build up a list of the current files used in the model.
 
 C For each of the databases figure out if the database is
 C local (if ipath* value is 1).
-      do 41 i=1,7
+      do 41 i=1,8
         localdb=.false.
         if(i.eq.1)then
           LFL=LFMAT
@@ -1817,6 +1816,9 @@ C local (if ipath* value is 1).
         elseif(i.eq.7)then
           LFL=LPCDB
           if(ipathpcdb.eq.1) localdb=.true.
+        elseif(i.eq.8)then
+          LFL=lfmould
+          if(ipathmould.eq.1) localdb=.true.
         endif
         if(localdb.and.LFL(1:4).ne.'UNKN')then
           call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LFL)
@@ -1977,7 +1979,7 @@ C Temporal database.
       endif
 
 C Project log file.
-      call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LPRJLG)
+      call wtarentry(iunit,pathome,tr,ltr,tp,ltp,lmodellog)
 
 C Ground information.
       IF(GRND3D)THEN

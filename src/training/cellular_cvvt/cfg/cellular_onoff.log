@@ -10,4 +10,12 @@ _____________________________
 Derived from the cellular base case model. Used to test
 out ideal zone control law 10 which has separate on off
 setpoints for heating and cooling.
+ ____________________________________________________________
+ 
+The model includes ideal controls as follows:
+Control description:
+Represents separate on off setpoint for heating and cooling. Heating
+on below 18C and off above 20C. Cooling on above 24C and off below
+22C. Loop 1 is for manager_a loop 2 equiv on/off manager_b and the
+corridor (note how the two offices perform).
  

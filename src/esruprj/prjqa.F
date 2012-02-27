@@ -147,9 +147,6 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
 
-C Project log file.
-      common/LLOG/LPRJLG
-
 C External text editor.
       common/texted/tedlbl,teditor
 
@@ -197,6 +194,7 @@ C Remember if each zone is fully attributed.
       logical allattribok,changedit,ok,dok,concat,unixok,showother
       dimension areamlc(MCOM)
       real areamlc
+      character items*33
       dimension items(25)
 
       character*72 LTMP
@@ -204,10 +202,9 @@ C Remember if each zone is fully attributed.
       character GTNAME*15,CLMLOC*30,lipvdatf*72
       character LCFGF*72,lco*72,lcot*72
       character longtfile*144,longtfiledos*144
-      character LFIL*96,llitem*144    ! for editing the QA report file.
       character DESCRC*25
       character cfgroot*24,ZN*12,SN*12
-      character aok*17,CTLDOC*248,LCTLF*72,items*33
+      character aok*17,CTLDOC*248,LCTLF*72
       character xfile*144,tg*1,delim*1,head*21
       character outs*124,outs248*248
       character dstmp*24,mlcname*12
@@ -217,7 +214,7 @@ C Remember if each zone is fully attributed.
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
       character figlbl*20,figexe*48
       character grflbl*20,grfexe*48,foldlbl*20,foldexe*48
-      character LPRJLG*72,tmode*8,fmttag*4,fmtexe*20
+      character tmode*8,fmttag*4,fmtexe*20
       character tedlbl*20,teditor*20
       character uname*24,pwd*40
       character ipvaction*3  ! signal that external ipv file
@@ -264,13 +261,18 @@ C in the current model. A -1 means not applicable
 
       character*10 wkd1, wkd2
       character louts*248,loutsd*248
+      character lltmp*144,lguess*144,lldef*144  ! for working with EASKXORGTKF
+      character lpath*72,fname*72 ! for use with fdroot
+
       logical newgeo  ! to use for testing if new/old geometry file.
       logical nameok  ! to use for testing if duplicate names in zone
       integer NITMS   ! max items
       integer im,k,mnulen   ! multi column lines
+      integer lr      ! length of model root string
+      integer iglib  ! for detecting GTK or X11
       logical odd   ! for display of vertex info
       
-      INTEGER :: i,icc,icoth,ie,ieripv,iglib,irec,iprb,inv
+      INTEGER :: i,icc,icoth,ie,ieripv,irec,iprb,inv
       INTEGER :: ins4,ino,imlc,imerr,ilcot,ijk,ij,ii,igrdp
       INTEGER :: ictlf,iuo,iunit1,iunit,iuf,iub,itu,itru,itrc,itbmenu
       INTEGER :: itb,istat,isc,is,ic,ins1,isel,iz,izo,izc,izz
@@ -385,7 +387,7 @@ C Setup the selection menu.
     3 INO=-4
       IER=0
       write(items(1),'(a)')  '1 browse folders '
-      write(items(2),'(2a)') '2 model log file ',LPRJLG(1:15)
+      write(items(2),'(2a)') '2 edit log: ',lmodellog(1:20)
       items(3) ='3 graphing tool               '
       items(4) ='4 diagram editing tool        '
       items(5) ='5 image viewer                '
@@ -482,12 +484,28 @@ C Setup the selection menu.
         items(19)='m file names >> included'
       endif
       if(destination.eq.0)then
-        items(20)='> QA report to >> text feedback'
+        items(20)='> QA report >> text feedback'
       elseif(destination.eq.1)then
-        items(20)='> QA report to >> text file'
+        if(lmodelqa(1:4).eq.'UNKN'.or.lmodelqa(1:2).eq.'  ')then
+          items(20)='> QA report >> file UNKNOWN'
+        else
+          write(items(20),'(2a)') '> QA report >> ',lmodelqa(1:17) 
+        endif
       endif
       items(21)  ='! generate QA report       '
-      items(22)  ='* edit the QA report       '
+      if(destination.eq.0)then
+        if(lmodelqa(1:4).eq.'UNKN'.or.lmodelqa(1:2).eq.'  ')then
+          items(22)='  QA report not yet defined'
+        else
+          write(items(22),'(2a)') '* edit QA: ',lmodelqa(1:21) 
+        endif
+      elseif(destination.eq.1)then
+        if(lmodelqa(1:4).eq.'UNKN'.or.lmodelqa(1:2).eq.'  ')then
+          items(22)='  QA report not yet defined'
+        else
+          write(items(22),'(2a)') '* edit QA: ',lmodelqa(1:21) 
+        endif
+      endif
       items(23)  ='  _________________________'
       items(24)  ='? help                     '
       items(25)  ='- exit menu                '
@@ -524,18 +542,52 @@ C << need to sort out changing to main project folder >>
 
 C Edit project documentation.
         if(CFGOK)then
-  54      if(LPRJLG(1:2).eq.'  '.or.LPRJLG(1:4).eq.'UNKN')then
-            write(LPRJLG,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.log'
+  54      if(lmodellog(1:2).eq.'  '.or.lmodellog(1:4).eq.'UNKN')then
+            lr=lnblnk(cfgroot)
+            if(docpth(1:2).eq.'  '.or.docpth(1:2).eq.'./')then
+              write(lmodellog,'(2a)') cfgroot(1:lr),'.log'
+            elseif(docpth(1:3).eq.'../')then
+              write(lmodellog,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &          cfgroot(1:lr),'.log'
+            else
+              write(lmodellog,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &          cfgroot(1:lr),'.log'
+            endif
+C            write(lmodellog,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.log'
           endif
-          ltmp=LPRJLG
-          CALL EASKS(ltmp,
-     &      'A log file (notes/documentation) for this project,',
-     &      'Its name? ',72,'project.notes','log file',IER,nbhelp)
-          if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-            LPRJLG=ltmp
-            changedit=.true.
+
+C Detect if working on X11 or GTK.
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          lltmp='  '
+          lguess='  '
+          lldef='project.log'
+          if(iglib.eq.2)then
+            call addpath(lmodellog,longtfile,concat)  ! expand path for GTK browser
+            write(lguess,'(a)') longtfile(1:lnblnk(longtfile))
           else
-            goto 54
+            write(lguess,'(a)') lmodellog(1:lnblnk(lmodellog))
+          endif
+          call edisp(iuout,'  ')  ! echo blank line
+          CALL EASKXORGTKF(lguess,
+     &      'Project log file:',' ',lldef,lltmp,'log file',IER,nbhelp)
+          write(lmodellog,'(a)') lguess(1:lnblnk(lguess))
+
+C If user request jump back and re-display the menu.
+          if(ier.eq.-3)then
+            goto 54  ! cancel detected, restore name and redisplay menu.
+          endif
+          changedit=.true.
+
+C Ask user whether file is in ../doc and if so use fdroot if GTK.
+          if(iglib.eq.2)then
+            dok=.true.
+            CALL ASKOK('Is this file in the model ../doc folder?',
+     &        ' ',OK,dok,3)
+            if(OK)then
+              call fdroot(lltmp,lpath,fname)
+              write(lmodellog,'(3a)') docpth(1:lnblnk(docpth)),fs,
+     &          fname(1:lnblnk(fname))
+            endif
           endif
 
 C See if file exists, (it should have been created within pregist
@@ -543,10 +595,10 @@ C when the model was initially created.
           uname=' '
           call usrname(uname)
           call usrdir(pwd)
-          call FINDFIL(LPRJLG,XST)
+          call FINDFIL(lmodellog,XST)
           IUNIT=IFIL+1
           if(XST)then
-            CALL LISTAS(IUNIT,LPRJLG,IER)
+            CALL LISTAS(IUNIT,lmodellog,IER)
             IF(IER.ne.0)THEN
               dok=.true.
               CALL ASKOK('Problem detected while trying to preview',
@@ -567,12 +619,12 @@ C necessary.  If vi then spawn a new window to do the editing.
      &      OK,dok,nbhelp)
           IF(OK)then
             if(unixok)then
-              call addpath(LPRJLG,longtfile,concat)
+              call addpath(lmodellog,longtfile,concat)
             else
 
 C If running on a non-unix machine see if there are spaces in the name
 C and change any / to \.
-              call addpath(LPRJLG,longtfile,concat)
+              call addpath(lmodellog,longtfile,concat)
               call cmdfiledos(longtfile,longtfiledos,ier)
               longtfile=' '
               longtfile=longtfiledos
@@ -868,10 +920,69 @@ C If writing to file call ctlexp to close it and switch back to text feedback.
         fileinfo=fileinfo+1
         if(fileinfo.gt.1)fileinfo=0
       elseif(ino.eq.20)then
+
+C Setup the name of the model contents report. If name already known
+C then use it in dialog, otherwise make up standard name in the doc
+C folder if it exists.
         if(destination.eq.0)then
           destination = 1
           itu = ixunit
-          write(xfile,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.contents'
+          if(lmodelqa(1:4).eq.'UNKN'.or.lmodelqa(1:2).eq.'  ')then
+
+C Create model QA report in the doc folder if possible. Use similar 
+C pattern to management of lmodellog.
+            lr=lnblnk(cfgroot)
+            if(docpth(1:2).eq.'  '.or.docpth(1:2).eq.'./')then
+              write(lmodelqa,'(2a)') cfgroot(1:lr),'.contents'
+            elseif(docpth(1:3).eq.'../')then
+              write(lmodelqa,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &          cfgroot(1:lr),'.contents'
+            else
+              write(lmodelqa,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &         cfgroot(1:lr),'.contents'
+            endif
+          endif
+
+C Detect if working on X11 or GTK.
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          lltmp='  '
+          lguess='  '
+          lldef='model.contents'
+          if(iglib.eq.2)then
+            call addpath(lmodelqa,longtfile,concat)  ! expand path for GTK browser
+            write(lguess,'(a)') longtfile(1:lnblnk(longtfile))
+          else
+            write(lguess,'(a)') lmodelqa(1:lnblnk(lmodelqa))
+          endif
+          call edisp(iuout,'  ')  ! echo blank line
+          CALL EASKXORGTKF(lguess,'Model contents file:',
+     &      ' ',lldef,lltmp,'QA file',IER,nbhelp)
+
+C If user request jump back and re-display the menu.
+          if(ier.eq.-3)then
+            goto 3  ! cancel detected, restore name and redisplay menu.
+          endif
+
+C Ask user whether file is in ../doc and if so use fdroot if GTK.
+          if(iglib.eq.2)then
+            dok=.true.
+            CALL ASKOK('Is this file in the model ../doc folder?',
+     &        ' ',OK,dok,3)
+            if(OK)then
+              call fdroot(lltmp,lpath,fname)
+              write(lmodelqa,'(3a)') docpth(1:lnblnk(docpth)),fs,
+     &          fname(1:lnblnk(fname))
+            endif
+          else
+            write(lmodelqa,'(a)') lguess(1:lnblnk(lguess))
+          endif
+
+C Save the model configuration file to register the report.
+          CALL EMKCFG('-',IER)
+
+C Copy lmodelqa to xfile so that ctlexp can deal with it.
+          write(xfile,'(2a)')lmodelqa(1:lnblnk(lmodelqa))
+
           call ctlexp(xfile,ixopen,ixloc,ixunit,'T','QA text',IER)
           if(ier.eq.-3)then
             destination = 0
@@ -881,43 +992,43 @@ C If writing to file call ctlexp to close it and switch back to text feedback.
           destination = 0
           itu = iuout
         endif
+
       elseif(ino.eq.21)then
 
 C Generate the report based on current options.
         goto 55
+
       elseif(ino.eq.22)then
 
 C If user just wrote to a file then allow browse and then
 C edit of that QA file.  Use file browser if in GTK mode.
 C If vi then spawn a new window to do the editing in.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        write(LFIL,'(a)') xfile(1:96)
-        llitem=xfile
-        if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(LFIL,'ASCII file name?',
-     &      ' ',96,'xxx.rep','ASCII file',IER,nbhelp)
-          write(llitem,'(a)') LFIL(1:lnblnk(LFIL))
-        elseif(iglib.eq.2)then
-          CALL EASKF(llitem,'ASCII file name?',
-     &      ' ',144,'xxx.rep','ASCII file',IER,nbhelp)
+        lltmp='  '
+        lguess='  '
+        lldef='model.contents'
+        if(iglib.eq.2)then
+          call addpath(lmodelqa,longtfile,concat)  ! expand path for GTK browser
+          write(lguess,'(a)') longtfile(1:lnblnk(longtfile))
         else
-          CALL EASKF(LFIL,'ASCII file name?',
-     &      ' ',96,'xxx.rep','ASCII file',IER,nbhelp)
-          write(llitem,'(a)') LFIL(1:lnblnk(LFIL))
+          write(lguess,'(a)') lmodelqa(1:lnblnk(lmodelqa))
         endif
+        call edisp(iuout,'  ')  ! echo blank line
+        CALL EASKXORGTKF(lguess,'Model contents file:',
+     &    ' ',lldef,lltmp,'QA file',IER,nbhelp)
 
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then
-          goto 3  ! redisplay menu.
+          goto 3  ! cancel detected, restore name and redisplay menu.
         endif
 
 C Depending on whether Unix or DOS based setup paths. If DOS
 C then check for spaces in name and change / to \.
         call isunix(unixok)
         if(unixok)then
-          call addpath(llitem,longtfile,concat)
+          call addpath(lltmp,longtfile,concat)
         else
-          call addpath(llitem,longtfile,concat)
+          call addpath(lltmp,longtfile,concat)
           call cmdfiledos(longtfile,longtfiledos,ier)
           longtfile=' '
           longtfile=longtfiledos
@@ -944,7 +1055,7 @@ C Generate the QA report.
      &  modeltitle(1:lnblnk(modeltitle)),' defined in ',
      &  LCFGF(1:lnblnk(LCFGF)),' generated on ',
      &  dstmp,'. Notes associated with the model',
-     &  ' are in ',LPRJLG(1:lnblnk(LPRJLG))
+     &  ' are in ',lmodellog(1:lnblnk(lmodellog))
       call edisp248(itu,outs248,80)
       call edisp(itu,' ')
 
@@ -1406,6 +1517,16 @@ C Databases associated with the model. First print the file names.
           WRITE(outs248,'(2a)')' standard UK NCM data   : ',
      &      LSBEM(1:lnblnk(LSBEM))
           call edisp248(itu,outs248,100)   
+        endif
+
+        if(ipathmould.eq.0.or.ipathmould.eq.1)then
+          WRITE(outs248,'(2A)')' mould isopleths        : ',
+     &      lfmould(1:lnblnk(lfmould))
+          call edisp248(itu,outs248,100)
+        elseif(ipathmould.eq.2)then
+          WRITE(outs248,'(2A)')' standard mould isopleth: ',
+     &      lfmould(1:lnblnk(lfmould))
+          call edisp248(itu,outs248,100)
         endif
       endif
 

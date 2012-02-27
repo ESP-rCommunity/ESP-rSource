@@ -27,7 +27,6 @@ char path[73];	/* f77 project path    */
 char upath[73];	/* f77 users path    */
 char imgpth[25];	/* f77 relative path to images    */
 char docpth[25];	/* f77 relative path to documents    */
-char tmppth[25];	/* f77 relative path to scratch folder    */
 
 /* the wwc_ok and wwc_macro are treated as extern types in esru_x.c */
 int  wwc_ok = 0;   /* assume no echo of drawing commands to wwc */
@@ -386,22 +385,21 @@ void wwcsetend_()		/* indicate end of a set of drawing commands */
 }
 
 /* curproject_() - pass in info on the current project from fortran */
-void curproject_(fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth,ibrowse,
-  iincomp,iincon,len_root,len_fpath,len_fupath,len_fimgpth,len_fdocpth,len_ftmppth)
+void curproject_(fcfgroot,fpath,fupath,fimgpth,fdocpth,ibrowse,
+  iincomp,iincon,len_root,len_fpath,len_fupath,len_fimgpth,len_fdocpth)
   char *fcfgroot;	/* f77 project root name    */
-  char *fpath;	/* f77 project path    */
-  char *fupath;	/* f77 users path    */
-  char *fimgpth;	/* f77 relative path to images    */
-  char *fdocpth;	/* f77 relative path to documents    */
-  char *ftmppth;	/* f77 relative path to scratch folder    */
+  char *fpath;	/* fortran project path    */
+  char *fupath;	/* fortran users path    */
+  char *fimgpth;	/* fortran relative path to images    */
+  char *fdocpth;	/* fortran relative path to documents    */
   long int *ibrowse;	/* if = 0 then user owns, if = 1 user browsing */
   long int *iincomp;	/* current number of zones in model */
   long int *iincon;	/* current number of connections in model */
-  int  len_root,len_fpath,len_fupath,len_fimgpth,len_fdocpth,len_ftmppth;	/* length of strings from f77  */
+  int  len_root,len_fpath,len_fupath,len_fimgpth,len_fdocpth;	/* length of strings from fortran  */
 {
-  int  l_root,l_fpath,l_fupath,l_fimgpth,l_fdocpth,l_ftmppth;
+  int  l_root,l_fpath,l_fupath,l_fimgpth,l_fdocpth;
 
-  l_root = l_fpath = l_fupath = l_fimgpth = l_fdocpth = l_ftmppth =0;
+  l_root = l_fpath = l_fupath = l_fimgpth = l_fdocpth =0;
   browse = (int) *ibrowse;
   strncpy(cfgroot,"                        ",24);
   f_to_c_l(fcfgroot,&len_root,&l_root); strncpy(cfgroot,fcfgroot,(unsigned int)l_root);	/* copy to static */
@@ -412,9 +410,6 @@ void curproject_(fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth,ibrowse,
   strncpy(docpth, "                        ",24);
   f_to_c_l(fdocpth,&len_fdocpth,&l_fdocpth); strncpy(docpth,fdocpth,(unsigned int)l_fdocpth);	/* copy to static */
   docpth[l_fdocpth] = '\0';
-  strncpy(tmppth, "                        ",24);
-  f_to_c_l(ftmppth,&len_ftmppth,&l_ftmppth); strncpy(tmppth,ftmppth,(unsigned int)l_ftmppth);	/* copy to static */
-  tmppth[l_ftmppth] = '\0';
   strncpy(path, "                                                                         ",72);
   f_to_c_l(fpath,&len_fpath,&l_fpath); strncpy(path,fpath,(unsigned int)l_fpath);	/* copy to static */
   path[l_fpath] = '\0';

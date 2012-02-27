@@ -80,7 +80,6 @@ char cappl[5];	/* f77 application name */
 /* char upath[73];	f77 users path    */
 /* char imgpth[25];	f77 relative path to images    */
 /* char docpth[25];	f77 relative path to documents    */
-/* char tmppth[25];	f77 relative path to scratch folder    */
 char capt_wf_exe[73];	/* command to execute for capture wire frame */
 char capt_tf_file[73];	/* file for text feedback buffer dump */
 char capt_all_exe[73];	/* command for capture all of display */

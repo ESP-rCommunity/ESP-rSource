@@ -87,9 +87,6 @@ C Plant network.
       COMMON/C23/IFPNF,LPNF
       INTEGER :: ifpnf
 
-C Project log file, paths to standard file locations.
-      COMMON/LLOG/LPRJLG
-
 C Configuration control.
       common/cctlnm/ctldoc,lctlf
 
@@ -294,7 +291,7 @@ C If 0 then the calculation includes diffuse shading.
       CHARACTER*72 LBSIMP,hvacfile,LFClds
 
       CHARACTER LCFGF*72
-      CHARACTER LAPROB*72,LPRJLG*72
+      CHARACTER LAPROB*72
       CHARACTER CXSTR*78,cfgroot*24
       CHARACTER LPNF*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
@@ -522,8 +519,6 @@ C Begin writing the file with version number in the header.
      &  '  # path to radiance files'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*imgpth  ',imgpth,
      &  '  # path to project images'
-      WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*tmppth  ',tmppth,
-     &  '  # path to project scratch folder'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*docpth  ',docpth,
      &  '  # path to project documents'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*dbspth  ',dbspth,
@@ -603,6 +598,13 @@ C reflect whether the standard database folder is being used.
       elseif(ipathmsc.eq.2)then
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdmscldb  ',
      &      MCMPDBFL(1:lnblnk(MCMPDBFL))
+      endif
+      if(ipathmould.eq.0.or.ipathmould.eq.1)then
+        WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2) '*mould  ',
+     &    lfmould(1:lnblnk(lfmould)),' # mould isopleths'
+      elseif(ipathmould.eq.2)then
+        WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2) '*stdmould  ',
+     &    lfmould(1:lnblnk(lfmould)),' # mould isopleths'
       endif
 
 C Ground reflectivity model, no-snow monthly albedos, snow albedo
@@ -745,6 +747,18 @@ C Write control file if known.
       else
         WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*ctl  ',
      &    LCTLF(1:lnblnk(LCTLF))
+      endif
+
+C Write model contents file if known.
+      if(lnblnk(lmodelqa).eq.0)then
+        continue
+      elseif(lmodelqa(1:7).eq.'UNKNOWN')then
+        continue
+      elseif(lmodelqa(1:2).eq.'  ')then
+        continue
+      else
+        WRITE(IFCFG,'(a,a)',IOSTAT=IOS,ERR=2) '*contents ',
+     &    lmodelqa(1:lnblnk(lmodelqa))
       endif
 
 C Write contaminant model description
@@ -1217,7 +1231,7 @@ C Write out contact details of simulation team.
 
 C Write project log file related to this model.
       WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) '* PROJ LOG'
-      WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) LPRJLG(1:lnblnk(LPRJLG))
+      WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2)lmodellog(1:lnblnk(lmodellog))
 
 C Ground information.
       dogrnd = .false.

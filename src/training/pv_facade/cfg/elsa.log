@@ -5,7 +5,35 @@ By: nick
 Date: Sat Oct 17 16:19:14 1998
 For: 
 Project reference: 
-Notes: 
+Notes: This model was generated to test a combined assessment of thermal
+and electrical characteristics of PV embedded in a facade.
 _____________________________
+ 
+The model is located at latitude   50.00 with a longitude difference of   0.00
+from the local time meridian. The year used in simulations is 1999 and
+weekends occur on Saturday and Sunday.
+The site exposure is typical rural site and the ground reflectance is 0.20.
+ 
+Databases associated with the model:
+ pressure distributions : /usr/esru/esp-r/databases/pressc.db1
+ materials              : ../dbs/elsa.prc.a
+ constructions          : ../dbs/elsa.mlc
+ plant components       : /usr/esru/esp-r/databases/plantc.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
+ optical properties     : ../dbs/elsa.odb
+ 
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 factory_area31263.0  17  6530.8    93.5  1248.0  factory_area describes a
+ 2 office_fl1   1241.4   7  1076.8    59.1   413.8  office_fl1 describes a
+ 3 office_fl2   1944.9   7  1245.3    65.2   413.8  office_fl2 describes a
+ 4 office_fl3   1944.9   7  1245.3    65.2   413.8  office_fl3 describes a
+ 5 pv_layer1      59.6   9   318.2   230.3    14.4  pv_layer1 describes a
+ 6 pv_layer2      46.2   9   259.6   172.5    14.4  pv_layer2 describes a
+ 7 pv_layer3      46.2   9   259.6   172.5    14.4  pv_layer3 describes a
+ 8 pv_layer4      29.6   9   167.7   119.0    14.4  pv_layer4 describes a
+   all         36576.   74  11103.    977.   2547.
  
  

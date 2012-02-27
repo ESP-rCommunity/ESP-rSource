@@ -10,4 +10,12 @@ _____________________________
 Derived from the cellular base case model. Used to test
 out ideal zone control law 8 which represents a CV HVAC
 system with variable supply temperature control. 
+ ____________________________________________________________
+ 
+The model includes ideal controls as follows:
+Control description:
+Approximation of CV HVAC with variable supply temperature (10C cooling
+35C heating supply at an flow rate equivalent to 5ach. Loop 2 is for
+office loop 3 for corididor. 1 person per office, 100W lights and.
+150W small power.
  

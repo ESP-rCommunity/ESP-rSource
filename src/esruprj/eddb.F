@@ -58,6 +58,9 @@ C default file names for databases
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
+      character cfgroot*24,LCFGF*72
+      common/C21/IFCFG,cfgroot,LCFGF
+
       common/rpath/path
       common/user/browse
 
@@ -70,7 +73,8 @@ C default file names for databases
       integer NITMS,INO ! max items and current menu item
 
       character path*72
-      character*72 ITEMS(15)
+      character*72 ITEMS(16)
+      character lworking*144  ! for processing database file names
       
 C Strings for dos version of source and destination of db file.
 C      character rootpdos*72,upathdos*72
@@ -91,78 +95,172 @@ C For help messages
       moddb=.false.
       modcon=.false.
 
-C Begin with menu of default dbs.
+C Begin with menu of the current databases. If there is
+C currently no model focus then use calls to findwhichdbpath
+C to establish whether standard (2) or local (1) or (0) not
+C yet defined.
+      if(cfgroot(1:2).ne.'  '.and.cfgroot(1:4).ne.'UNKN')then
+        continue
+      else
+        lworking=LAPRES
+        call findwhichdbpath('prs',lworking,ier)
+        lworking=LFMAT
+        call findwhichdbpath('mat',lworking,ier)
+        lworking=LFMUL
+        call findwhichdbpath('mul',lworking,ier)
+        lworking=LPCDB
+        call findwhichdbpath('pdb',lworking,ier)
+        lworking=LPRFDB
+        call findwhichdbpath('evn',lworking,ier)
+        lworking=LOPTDB
+        call findwhichdbpath('opt',lworking,ier)
+        lworking=MCMPDBFL
+        call findwhichdbpath('msc',lworking,ier)
+      endif
+ 
     3 INO=-4
       IER=0
 
       if ( bMY_climates_defined ) then
-         cTemp = cMY_climate_db_name
+        cTemp = cMY_climate_db_name
       else
-         cTemp = 'None'
+        cTemp = 'None'
       endif
       
-      WRITE(ITEMS(1),'(2A)')'  model path: ',path(1:56)
-      ITEMS(2) ='  _______________________________ '
-      WRITE(ITEMS(3),'(2A)')  'a annual climate         : ',LCLIM(1:43)
-      WRITE(ITEMS(4),'(2A)')  'b multi-year climate     : ',cTemp(1:43)
-      if(ipathapres.eq.0.or.ipathapres.eq.1)then
-        WRITE(ITEMS(5),'(2A)')'c pressure distributions : ',LAPRES(1:43)
+      lndbp=lnblnk(standarddbpath)
+      if(lndbp.lt.45)then
+        WRITE(ITEMS(1),'(2A)')'  standard db path (std): ',
+     &    standarddbpath(1:lndbp)
+      else
+        WRITE(ITEMS(1),'(2A)')'  standard db path (std): ',
+     &    standarddbpath(1:45)
+      endif
+      if(cfgroot(1:2).ne.'  '.and.cfgroot(1:4).ne.'UNKN')then
+        lnpth=lnblnk(path)
+        lndbpth=lnblnk(dbspth)
+        if(lnpth+lndbpth.lt.45)then
+          WRITE(ITEMS(2),'(3A)')
+     &      '  model db path (mod): ',path(1:lnpth),dbspth(1:lndbpth)
+        else
+          if(lnpth.lt.40)then
+            WRITE(ITEMS(2),'(3A)')
+     &        '  model db path (mod): ',path(1:lnpth),dbspth(1:5)
+          else
+            WRITE(ITEMS(2),'(2A)')
+     &        '  model db path (mod): ',path(1:lnpth)
+          endif
+        endif
+      else
+        WRITE(ITEMS(2),'(A)')
+     &    '  model db path (mod): no model defined yet'
+      endif
+      ITEMS(3) ='  _______________________________ '
+      WRITE(ITEMS(4),'(2A)')  'a annual weather        : ',LCLIM(1:43)
+      WRITE(ITEMS(5),'(2A)')  'b multi-year weather    : ',cTemp(1:43)
+      if(ipathapres.eq.0)then
+        WRITE(ITEMS(6),'(2A)')'c pressure distribution : ',
+     &    LAPRES(1:43)
+      elseif(ipathapres.eq.1)then
+        lndbpth=lnblnk(dbspth)+2
+        WRITE(ITEMS(6),'(2A)')'c pressure distribution : <mod> ',
+     &    LAPRES(lndbpth:38)
       elseif(ipathapres.eq.2)then
-        WRITE(ITEMS(5),'(2A)')'c std pressure distrib   : ',LAPRES(1:43)
+        WRITE(ITEMS(6),'(2A)')'c pressure distribution : <std> ',
+     &    LAPRES(1:38)
       endif
-      if(ipathmat.eq.0.or.ipathmat.eq.1)then
-        WRITE(ITEMS(6),'(2A)')'d materials              : ',LFMAT(1:43)
+      if(ipathmat.eq.0)then
+        WRITE(ITEMS(7),'(2A)')'d materials             : ',
+     &    LFMAT(1:43)
+      elseif(ipathmat.eq.1)then
+        lndbpth=lnblnk(dbspth)+2
+        WRITE(ITEMS(7),'(2A)')'d materials             : <mod> ',
+     &    LFMAT(lndbpth:38)  ! try to print file name only
       elseif(ipathmat.eq.2)then
-        WRITE(ITEMS(6),'(2A)')'d std materials          : ',LFMAT(1:43)
+        WRITE(ITEMS(7),'(2A)')'d materials             : <std> ',
+     &    LFMAT(1:38)
       endif
 
-      if(ipathmul.eq.0.or.ipathmul.eq.1)then
-        WRITE(ITEMS(7),'(2A)')'e constructions          : ',LFMUL(1:43)
+      if(ipathmul.eq.0)then
+        WRITE(ITEMS(8),'(2A)')'e constructions         : ',
+     &    LFMUL(1:43)
+      elseif(ipathmul.eq.1)then
+        lndbpth=lnblnk(dbspth)+2
+        WRITE(ITEMS(8),'(2A)')'e constructions         : <mod> ',
+     &    LFMUL(lndbpth:38)
       elseif(ipathmul.eq.2)then
-        WRITE(ITEMS(7),'(2A)')'e std constructions      : ',LFMUL(1:43)
+        WRITE(ITEMS(8),'(2A)')'e constructions         : <std> ',
+     &    LFMUL(1:38)
       endif
-      if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
-        WRITE(ITEMS(8),'(2A)')'f plant components       : ',LPCDB(1:43)
+      if(ipathpcdb.eq.0)then
+        WRITE(ITEMS(9),'(2A)')'f plant components      : ',
+     &    LPCDB(1:43)
+      elseif(ipathpcdb.eq.1)then
+        lndbpth=lnblnk(dbspth)+2
+        WRITE(ITEMS(9),'(2A)')'f plant components      : <mod> ',
+     &    LPCDB(lndbpth:38)
       elseif(ipathpcdb.eq.2)then
-        WRITE(ITEMS(8),'(2A)')'f std plant components   : ',LPCDB(1:43)
+        WRITE(ITEMS(9),'(2A)')'f plant components      : <std> ',
+     &    LPCDB(1:38)
       endif
-      if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
-        WRITE(ITEMS(9),'(2A)')'g event profiles         : ',
+      if(ipathprodb.eq.0)then
+        WRITE(ITEMS(10),'(2A)')'g event profiles        : ',
      &    LPRFDB(1:43)
+      elseif(ipathprodb.eq.1)then
+        lndbpth=lnblnk(dbspth)+2
+        WRITE(ITEMS(10),'(2A)')'g event profiles        : <mod> ',
+     &    LPRFDB(lndbpth:38)
       elseif(ipathprodb.eq.2)then
-        WRITE(ITEMS(9),'(2A)')'g std event profiles     : ',
-     &    LPRFDB(1:43)
+        WRITE(ITEMS(10),'(2A)')'g event profiles        : <std> ',
+     &    LPRFDB(1:38)
       endif
-      if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
-        WRITE(ITEMS(10),'(2A)')'h optical properties     : ',
+      if(ipathoptdb.eq.0)then
+        WRITE(ITEMS(11),'(2A)')'h optical properties    : ',
      &    LOPTDB(1:43)
+      elseif(ipathoptdb.eq.1)then
+        lndbpth=lnblnk(dbspth)+2
+        WRITE(ITEMS(11),'(2A)')'h optical properties    : <mod> ',
+     &    LOPTDB(lndbpth:38)
       elseif(ipathoptdb.eq.2)then
-        WRITE(ITEMS(10),'(2A)')'h std optical properties : ',
-     &    LOPTDB(1:43)
+        WRITE(ITEMS(11),'(2A)')'h optical properties    : <std> ',
+     &    LOPTDB(1:38)
       endif
-      WRITE(ITEMS(11),'(A)')   'i mould & mycotoxins     : None'
+      if(ipathmould.eq.0)then
+        WRITE(ITEMS(12),'(2A)')'i mould isopleths       : ',
+     &    lfmould(1:43)
+      elseif(ipathmould.eq.1)then
+        lndbpth=lnblnk(dbspth)+2
+        WRITE(ITEMS(12),'(2A)')'i mould isopleths       : <mod> ',
+     &    lfmould(lndbpth:38)
+      elseif(ipathmould.eq.2)then
+        WRITE(ITEMS(12),'(2A)')'i mould isopleths       : <std> ',
+     &    lfmould(1:38)
+      endif
 
-      if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
-        WRITE(ITEMS(12),'(2A)')'j miscel components      : ',
+      if(ipathmsc.eq.0)then
+        WRITE(ITEMS(13),'(2A)')'j special components    : ',
      &    MCMPDBFL(1:43)
+      elseif(ipathmsc.eq.1)then
+        lndbpth=lnblnk(dbspth)+2
+        WRITE(ITEMS(13),'(2A)')'j special components    : <mod> ',
+     &    MCMPDBFL(lndbpth:38)
       elseif(ipathmsc.eq.2)then
-        WRITE(ITEMS(12),'(2A)')'j std miscel components  : ',
-     &    MCMPDBFL(1:43)
+        WRITE(ITEMS(13),'(2A)')'j special components    : <std> ',
+     &    MCMPDBFL(1:38)
       endif
-      ITEMS(13)='  _______________________________ '
-      ITEMS(14)='? help                            '
-      ITEMS(15)='- exit this menu                  '
+      ITEMS(14)='  _______________________________ '
+      ITEMS(15)='? help                            '
+      ITEMS(16)='- exit this menu                  '
 
 C Try to compact the width of the menu.
       IW=0
-      do 141 ij=1,15
+      do 141 ij=1,16
         if(lnblnk(ITEMS(ij)).gt.IW)IW=lnblnk(ITEMS(ij))
  141  continue
 
 C Help text for this menu.
       helptopic='database_mgt_overview'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      NITMS=15
+      NITMS=16
       if(MMOD.EQ.8)then
         impx=0
         impy=0
@@ -172,8 +270,29 @@ C Help text for this menu.
       else
         CALL EMENU('Database Maintenance',ITEMS,NITMS,INO)
       endif
-      IF(INO.EQ.15)THEN
-        if(browse)return
+      IF(INO.EQ.16)THEN
+        if(browse)return   ! no change since browsing
+
+        if(cfgroot(1:2).ne.'  '.and.cfgroot(1:4).ne.'UNKN')then
+          continue
+        else
+
+C No model yet so reset to the default names and exit.
+          write(LCLIM,'(a)') DCLIM(1:lnblnk(DCLIM))
+          write(LAPRES,'(a)') DAPRES(1:lnblnk(DAPRES))
+          write(LFMAT,'(a)') DFCON(1:lnblnk(DFCON))
+          write(LFMUL,'(a)') DFMUL(1:lnblnk(DFMUL))
+          write(LOPTDB,'(a)') DOPTDB(1:lnblnk(DOPTDB))
+          write(LPRFDB,'(a)') DPRFDB(1:lnblnk(DPRFDB))
+          write(LPCDB,'(a)')  DPCDB(1:lnblnk(DPCDB))
+          write(LSBEM,'(a)')  DSBEM(1:lnblnk(DSBEM))  ! assign default SBEM db
+          write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
+          write(lfmould,'(a)') dmdbnam(1:lnblnk(dmdbnam))
+          return
+        endif
+
+C If a model has been loaded and there are possible changes ask
+C user for confirmation.
         if(cfgok.and.moddb)then
           dok=.true.
           CALL ASKOK(
@@ -218,12 +337,13 @@ C See if there are existing zone construction files.
           QUIET=.false.
         endif
         RETURN
-      elseif(INO.EQ.3)then
+
+      elseif(INO.EQ.4)then
 
 C Climate database.
         call eddbclm(moddb,'      ',-1)
 
-      ELSEIF(INO.eq.4)THEN
+      ELSEIF(INO.eq.5)THEN
 
 C Multi-year climate database - only works in conjunction
 C with save level 5.
@@ -231,79 +351,94 @@ C with save level 5.
      &               'limited to results save level 5.','W')
          call MY_clm_db_menu()
         
-      ELSEIF(INO.EQ.5)THEN
+      ELSEIF(INO.EQ.6)THEN
 
 C Pressure distribution db.
         call eddbpres(moddb,'    ')
 
-      ELSEIF(INO.EQ.6)THEN
+      ELSEIF(INO.EQ.7)THEN
 
-C Manage materials db.
+C Manage materials db and if a model loaded then warn user 
+C if db name or contents have changed.
         call eddbmaterial(moddb,modcon,'    ')
-        if(moddb)then
-          call usrmsg(
+        if(cfgroot(1:2).ne.'  '.and.cfgroot(1:4).ne.'UNKN')then
+          if(moddb)then
+            call usrmsg(
      &      'The database name might have changed. Suggest',
      &      'using the `save model` option to record this.','W')
-        endif
-        if(modcon)then
-          call usrmsg(
+          endif
+          if(modcon)then
+            call usrmsg(
      &      'The database details might have changed. In a moment',
      &      'you will be offered the option to update zone files.','W')
+          endif
         endif
-      ELSEIF(INO.EQ.7)THEN
+
+      ELSEIF(INO.EQ.8)THEN
 
 C Deal with construction databases.
         call eddbmlcon(moddb,modcon,'    ')
-        if(modcon)then
-          call usrmsg(
+        if(cfgroot(1:2).ne.'  '.and.cfgroot(1:4).ne.'UNKN')then
+          if(modcon)then
+            call usrmsg(
      &      'The database details might have changed. In a moment',
      &      'you will be offered the option to update zone files.','W')
+          endif
         endif
-      ELSEIF(INO.EQ.8)THEN
+
+      ELSEIF(INO.EQ.9)THEN
 
 C Plant template database.
         call eddbpcdb(moddb,'    ')
-        if(moddb)then
-          call edisp(iuout,
+        if(cfgroot(1:2).ne.'  '.and.cfgroot(1:4).ne.'UNKN')then
+          if(moddb)then
+            call edisp(iuout,
      &      'The database name or details have changed. If you')
-          call edisp(iuout,
+            call edisp(iuout,
      &      'want to keep it use the `save model` option.')
-          call edisp(iuout,' ')
+            call edisp(iuout,' ')
+          endif
         endif
-      ELSEIF(INO.EQ.9)THEN
+
+      ELSEIF(INO.EQ.10)THEN
 
 C Profiles database.
         call eddbprofile(moddb,'    ')
-        if(moddb)then
-          call edisp(iuout,
+        if(cfgroot(1:2).ne.'  '.and.cfgroot(1:4).ne.'UNKN')then
+          if(moddb)then
+            call edisp(iuout,
      &      'The database name or details have changed. If you')
-          call edisp(iuout,
+            call edisp(iuout,
      &      'want to keep it use the `save model` option.')
-          call edisp(iuout,' ')
+            call edisp(iuout,' ')
+          endif
         endif
-      ELSEIF(INO.EQ.10)THEN
+
+      ELSEIF(INO.EQ.11)THEN
 
 C Optical database.
         call eddbopt(moddb,'    ')
-        if(moddb)then
-          call edisp(iuout,
+        if(cfgroot(1:2).ne.'  '.and.cfgroot(1:4).ne.'UNKN')then
+          if(moddb)then
+            call edisp(iuout,
      &      'The database name or details have changed. If you')
-          call edisp(iuout,
+            call edisp(iuout,
      &      'want to keep it use the `save model` option.')
-          call edisp(iuout,' ')
+            call edisp(iuout,' ')
+          endif
         endif
-      ELSEIF(INO.EQ.11)THEN
 
-C Place holder for mould database
-         call UsrMsg(
-     &   'Project Manager does not yet invoke the mould',
-     &   'db manager. Start `mld` manually.','W')
       ELSEIF(INO.EQ.12)THEN
 
-C Manage miscellaneous componens database.
+C Mould isopleths.
+        call EDDBMOULD(moddb,'    ')
+
+      ELSEIF(INO.EQ.13)THEN
+
+C Manage common active components file.
         call EDDBMSC(moddb,'    ')
 
-      ELSEIF(INO.EQ.14)THEN
+      ELSEIF(INO.EQ.15)THEN
 
 C Menu help text.
         helptopic='database_mgt_overview'
@@ -340,11 +475,12 @@ C Menu help text.
           CALL PHELPD('plant db overview',nbhelp,'plant_db_fld',
      &      0,0,IER)
         endif
+
       ELSE
         INO=-4
         GOTO 3
       ENDIF
-C      call usrmsg(' ',' ','-')
+
       INO=-4
       GOTO 3
 
@@ -664,9 +800,9 @@ C Take into account the current value of ipathmat.
      &    LFMAT(1:lnblnk(LFMAT))
       endif
 
-C Inform user.
-      write(outs248,*) 'Current materials ',lprev(1:lnblnk(lprev))
-      call edisp248(iuout,outs248,100)
+C Debug.
+C      write(outs248,*) 'Current materials ',lprev(1:lnblnk(lprev))
+C      call edisp248(iuout,outs248,100)
 
 C Setup lltmp to hold the full path to the file for use in dialog.
   60  continue
@@ -1288,9 +1424,11 @@ C common block lpcdb will have been updated by call to findwhichdbpath.
 C Test the selected or copied database. If a problem loop back
 C otherwise edit the database contents.
    44 continue
-      write(outs248,'(2a)') 'Accessing materials db: ',
-     &  LFMAT(1:lnblnk(LFMAT))
-      call edisp248(iuout,outs248,100)
+
+C Debug.
+C      write(outs248,'(2a)') 'Accessing materials db: ',
+C     &  LFMAT(1:lnblnk(LFMAT))
+C      call edisp248(iuout,outs248,100)
       ier=0
 
 C Scan the binary file data into materials commons and if this was
@@ -1457,9 +1595,9 @@ C Take into account the current value of whichdbpath.
      &    lpcdb(1:lnblnk(lpcdb))
       endif
 
-C Inform user.
-      write(outs248,*) 'Current plant ',lprev(1:lnblnk(lprev))
-      call edisp248(iuout,outs248,100)
+C Debug.
+C      write(outs248,*) 'Current plant ',lprev(1:lnblnk(lprev))
+C      call edisp248(iuout,outs248,100)
 
   60  continue
       if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
@@ -1940,9 +2078,9 @@ C Remember the initial file name in case user choice fails.
      &    LPRFDB(1:lnblnk(LPRFDB))
       endif
 
-C Inform user.
-      write(outs248,*) 'Current profiles ',lprev(1:lnblnk(lprev))
-      call edisp248(iuout,outs248,100)
+C Debug.
+C      write(outs248,*) 'Current profiles ',lprev(1:lnblnk(lprev))
+C      call edisp248(iuout,outs248,100)
 
   60  continue
 
@@ -2438,9 +2576,11 @@ C Test the selected or copied database. If a problem restore
 C the previous file name and loop back, otherwise edit the
 C database contents.
    44 continue
-      write(outs248,'(2a)') 'Accessing event profile db: ',
-     &  LPRFDB(1:lnblnk(LPRFDB))
-      call edisp248(iuout,outs248,100)
+
+C Debug.
+C      write(outs248,'(2a)') 'Accessing event profile db: ',
+C     &  LPRFDB(1:lnblnk(LPRFDB))
+C      call edisp248(iuout,outs248,100)
       IER=0
 
 C Scan file (with full path) as a binary event profiles database. 
@@ -2563,9 +2703,9 @@ C Take into account the current value of whichdbpath.
      &    lfmul(1:lnblnk(lfmul))
       endif
 
-C Inform user.
-      write(outs248,*) 'Current MLC ',lprev(1:lnblnk(lprev))
-      call edisp248(iuout,outs248,100)
+C Debug.
+C      write(outs248,*) 'Current MLC ',lprev(1:lnblnk(lprev))
+C      call edisp248(iuout,outs248,100)
 
   60  continue
       if(ipathmul.eq.0.or.ipathmul.eq.1)then
@@ -2916,9 +3056,12 @@ C common block will be updated with call to findwhichdbpath.
 C Test the selected or copied database. If a problem loop back
 C otherwise edit the database contents.
    44 continue
-      write(outs248,'(2a)') 'Accessing MLC db: ',
-     &  LFMUL(1:lnblnk(LFMUL))
-      call edisp248(iuout,outs248,100)
+
+C Debug.
+C      write(outs248,'(2a)') 'Accessing MLC db: ',
+C     &  LFMUL(1:lnblnk(LFMUL))
+C      call edisp248(iuout,outs248,100)
+
       ier=0
       call tstamp('>','PRJ: enter MLC db')
       CALL ERMLDB(0,IUOUT,IER)
@@ -3021,9 +3164,9 @@ C Take into account the current value of whichdbpath.
      &    loptdb(1:lnblnk(loptdb))
       endif
 
-C Inform user.
-      write(outs248,*) 'Current optics ',lprev(1:lnblnk(lprev))
-      call edisp248(iuout,outs248,100)
+C Debug.
+C      write(outs248,*) 'Current optics ',lprev(1:lnblnk(lprev))
+C      call edisp248(iuout,outs248,100)
 
   60  continue
       if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
@@ -3385,9 +3528,12 @@ C common block will be updated with call to findwhichdbpath.
 C Test the selected or copied database. If a problem loop back
 C otherwise edit the database contents.
    44 continue
-      write(outs248,'(2a)') 'Accessing optics db: ',
-     &  LOPTDB(1:lnblnk(LOPTDB))
-      call edisp248(iuout,outs248,100)
+
+C Debug.
+C      write(outs248,'(2a)') 'Accessing optics db: ',
+C     &  LOPTDB(1:lnblnk(LOPTDB))
+C      call edisp248(iuout,outs248,100)
+
       SOPT='ALL'
       ier=0
       call tstamp('>','PRJ: enter optical db')
@@ -3482,9 +3628,9 @@ C Take into account the current value of whichdbpath.
      &    lapres(1:lnblnk(lapres))
       endif
 
-C Inform user.
-      write(outs248,*) 'Current presure coef ',lprev(1:lnblnk(lprev))
-      call edisp248(iuout,outs248,100)
+C Debug.
+C      write(outs248,*) 'Current presure coef ',lprev(1:lnblnk(lprev))
+C      call edisp248(iuout,outs248,100)
 
   60  continue
       if(ipathapres.eq.0.or.ipathapres.eq.1)then
@@ -3828,9 +3974,12 @@ C common block will be updated with call to findwhichdbpath.
 C Test the selected or copied database. If a problem loop back
 C otherwise edit the database contents.
    44 continue
-      write(outs248,'(2a)') 'Accessing presure coef db: ',
-     &  lapres(1:lnblnk(lapres))
-      call edisp248(iuout,outs248,100)
+
+C Debug.
+C      write(outs248,'(2a)') 'Accessing presure coef db: ',
+C     &  lapres(1:lnblnk(lapres))
+C      call edisp248(iuout,outs248,100)
+
       moddb=.true.
       if(ipathapres.eq.0.or.ipathapres.eq.1)then
         CALL EFOPSEQ(IAPRES,lapres,1,IER)
@@ -4595,7 +4744,7 @@ C from version manager
       END
 
 C ********** EDDBMSC
-C EDDBMSC Changes the misc comp database current cfg file references.
+C EDDBMSC Changes the active components database current cfg file references.
 C moddb is from version manager
 C APP is 4 character file name modifier (from version facility)
 C     if blank then no file name change implied.
@@ -4669,10 +4818,10 @@ C Take into account the current value of whichdbpath.
      &    MCMPDBFL(1:lnblnk(MCMPDBFL))
       endif
 
-C Inform user.
-      write(outs248,*) 'Current misc components ',
-     &   MCMPDBFL(1:lnblnk(MCMPDBFL))
-      call edisp248(iuout,outs248,100)
+C Debug.
+C      write(outs248,*) 'Current misc components ',
+C     &   MCMPDBFL(1:lnblnk(MCMPDBFL))
+C      call edisp248(iuout,outs248,100)
 
   60  continue
       if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
@@ -4971,9 +5120,11 @@ C common block will be updated with call to findwhichdbpath.
 C Test the selected or copied database. If a problem loop back
 C otherwise edit the database contents.
    44 continue
-      write(outs248,'(2a)') 'Accessing miscellaneous comp db: ',
-     &  MCMPDBFL(1:lnblnk(MCMPDBFL))
-      call edisp248(iuout,outs248,100)
+
+C Debug.
+C      write(outs248,'(2a)') 'Accessing miscellaneous comp db: ',
+C     &  MCMPDBFL(1:lnblnk(MCMPDBFL))
+C      call edisp248(iuout,outs248,100)
 
       if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
         lltmp=MCMPDBFL  ! use as is
@@ -5010,6 +5161,457 @@ C altered the file name when saving via the editor.
         moddb=.true.   ! set so user is asked to update cfg file
       else
         MCMPDBFL=lprev
+      endif
+
+      return
+      end
+
+
+C ********** EDDBMOULD
+C EDDBMOULD Changes the mould isopleths current cfg file references.
+C moddb is from version manager
+C APP is 4 character file name modifier (from version facility)
+C     if blank then no file name change implied.
+C This facility offers browsing for GTK version and follows the pattern
+C of the other db file management facilties except that there is no
+C working option for creating a new database and editing of the database
+C is via a text editor.
+      SUBROUTINE EDDBMOULD(moddb,APP)
+#include "building.h"
+#include "model.h"
+#include "esprdbfile.h"
+      
+      integer lnblnk  ! function definition
+
+      common/FILEP/IFIL
+      common/OUTIN/IUOUT,IUIN
+      common/appw/iappw,iappx,iappy
+
+      common/texted/tedlbl,teditor
+      character tedlbl*20,teditor*20
+
+      common/C21/IFCFG,cfgroot,LCFGF
+      common/rpath/path
+      common/deflt4/dinstpath
+
+      CHARACTER LTMP*72,lltmp*144,lprev*144
+      character longtfile*144,longtfiledos*144,LCOPY*144
+      character lguess*144,message*48
+      CHARACTER DOIT*300,fs*1,APP*4,ext*4
+      CHARACTER outs248*248
+      LOGICAL OK,COPYDEF,MODDB,XST,DOK,concat
+      character cfgroot*24,LCFGF*72
+      character dinstpath*48,path*72,dirpath*48
+      character sourcefile*144  ! the file to copy ??
+      character tmode*8
+
+C Local strings for user selections dependent on graphic library.
+      character opte*28,optf*28,optg*28
+      character lpath*72,fname*72 ! for use with fdroot
+      integer lndbp   ! for length of standard database path
+      logical unixok  ! to check for database path file separators
+      integer iglib  ! for detecting GTK or X11
+#ifdef OSI
+      integer ICPMOD     ! passed from tchild
+#else
+      integer*8 ICPMOD     ! passed from tchild
+#endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDDBMOULD'  ! set for subroutine
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Setup string buffer with distribution database folder name.
+      write(dirpath,'(4a)') dinstpath(1:lnblnk(dinstpath)),
+     &  fs,'databases',fs
+      ldirpath=lnblnk(dirpath)
+
+C Remember the initial file name in case user choice fails.
+C Take into account the current value of whichdbpath.
+      moddb=.false.
+      lndbp=lnblnk(standarddbpath)
+      if(ipathmould.eq.0.or.ipathmould.eq.1)then
+        lprev=lfmould
+      elseif(ipathmould.eq.2)then
+        write(lprev,'(3a)') standarddbpath(1:lndbp),fs,
+     &    lfmould(1:lnblnk(lfmould))
+      endif
+
+C Debug.
+      write(outs248,*) 'Current mould isopleths ',
+     &   lfmould(1:lnblnk(lfmould))
+      call edisp248(iuout,outs248,100)
+
+  60  continue
+      if(ipathmould.eq.0.or.ipathmould.eq.1)then
+        lltmp=lfmould  ! use as is
+      elseif(ipathmould.eq.2)then
+        write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &    lfmould(1:lnblnk(lfmould))  ! prepend db folder path
+      endif
+
+      helptopic='mould_db_manage'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
+      IMCFIL=IFIL+1
+      CALL ERPFREE(IMCFIL,ISTAT)
+
+C If local or absolute path call addpath otherwise if a standard
+C database then set longtfile equal to LLTMP.
+      if(ipathmould.eq.0.or.ipathmould.eq.1)then
+        call addpath(LLTMP,longtfile,concat)
+      else
+        longtfile=LLTMP
+      endif
+      ltf=max(1,LNBLNK(longtfile))
+      INQUIRE (FILE=longtfile(1:ltf),EXIST=xst)
+
+C Make up additional options depending on graphics lib. The second
+C option (list select) is not available for moulds. If using
+C text or X11 option e edits the string while for GTK there are two
+C options to browse for files in ../dbs or the esp-r distribution.
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      if(iglib.eq.1.or.iglib.eq.3)then
+        opte='f edit file name'
+        optf='   '
+        optg='   '
+      elseif(iglib.eq.2)then
+        opte='f browse model ../dbs'
+        optf='g browse esp-r distribution'
+        optg='h make copy of another file'
+      endif
+
+      IF(.NOT.XST)THEN
+
+C If db does not exist locally offer limited choices.
+        idno=2
+        isw=0
+        call MENUATOL('  ','Mould isopleths',
+     &    ' ','b select from list',
+     &    'c create a new db','d copy standard db',
+     &    'e invoke mould utility',opte,optf,optg,
+     &    ' ',' ',' ',' ',isw,idno,nbhelp)
+        if(isw.eq.5)copydef=.true.
+        if(isw.eq.8)copydef=.false.
+      elseif(longtfile(1:ldirpath).eq.dirpath(1:ldirpath))then
+
+C If corportate database then offer the following choices (incl /):
+        idno=1
+        isw=0
+        call MENUATOL('  ','Mould isopleths',
+     &    'a browse/edit db','b select from list',
+     &    'c create a new db','d copy standard db',
+     &    'e invoke mould utility',opte,optf,optg,
+     &    ' ',' ',' ',' ',isw,idno,nbhelp)
+        copydef=.false.
+      elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
+
+C If corportate database then offer the following choices (without /):
+        idno=1
+        isw=0
+        call MENUATOL('  ','Mould isopleths',
+     &    'a browse/edit db','b select from list',
+     &    'c create a new db','d copy standard db',
+     &    'e invoke mould utility',opte,optf,optg,
+     &    ' ',' ',' ',' ',isw,idno,nbhelp)
+        copydef=.false.
+      else
+
+C If db exists locally toggle whether the user is asked to copy the
+C default database or the current database.
+        idno=1
+        isw=0
+        call MENUATOL('  ','Mould isopleths',
+     &    'a browse/edit db','b select from list',
+     &    'c create a new db','d copy standard db',
+     &    'e invoke mould utility',opte,optf,optg,
+     &    ' ',' ',' ',' ',isw,idno,nbhelp)
+        if(isw.eq.5)copydef=.true.
+        if(isw.eq.8)copydef=.false.
+      endif
+
+C Act on the users choice. If no choice, return to calling menu.
+      if(isw.eq.0)then
+        return
+      elseif(isw.eq.1)then
+
+C If file exists read it and enter editing facility after
+C check to see if it is local or standard or absolute path.
+        if(XST)then
+          call findwhichdbpath('mld',lltmp,ier)
+          goto 44
+        else
+          call edisp(iuout,
+     &    'No file to browse/edit. Please use another option.')
+          lfmould=lprev
+          goto 60
+        endif
+      elseif(isw.eq.2)then
+
+C There is no select by list for misc comp database.
+        call edisp(iuout,'No list select for mould isopleths.')
+        goto 60
+      elseif(isw.eq.3)then
+
+C There is no select by list for mould isopleths.
+        call edisp(iuout,'No create new for mould isopleths.')
+        goto 60
+
+      elseif(isw.eq.4.or.isw.eq.8)then
+
+C Copy a common data file to project dbs folder. If iws is 4 then the
+C user has asked for the default database. If isw is 7 then the
+C user wishes to browse for the source file. Suggest a local
+C file name based on the project root name then do the copy.
+C Use LTMP (short buffer) for the file name as known to esp-r
+C and LCOPY for the system cp call.
+        if(copydef)then
+          write(outs248,'(2a)') 'The source file is:',
+     &      dmdbnam(1:lnblnk(dmdbnam))
+          call edisp248(iuout,outs248,100)
+          sourcefile = dmdbnam
+        else
+
+C Provide a guess based on the current lfmould.
+          lltmp='  '
+          lguess='  '
+          if(ipathmould.eq.0.or.ipathmould.eq.1)then
+            lguess=lfmould  ! use as is
+          elseif(ipathmould.eq.2)then
+            write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &        lfmould(1:lnblnk(lfmould))  ! prepend db folder path
+          endif
+          call edisp(iuout,'  ')  ! echo blank line
+          CALL EASKXORGTKF(lguess,'Mould isopleths (source)?',
+     &      ' ',dmdbnam,lltmp,'mould isopleths',IER,nbhelp)
+          sourcefile = lltmp
+
+C If user request jump back and re-display the menu.
+          if(ier.eq.-3)then
+            goto 60  ! cancel detected, redisplay menu.
+          endif
+          ipathmould=1  ! signal that it will be a local database.
+        endif
+
+        lr=lnblnk(cfgroot)
+        if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
+          write(LTMP,'(2a)') cfgroot(1:lr),'.moulddta'
+        elseif(dbspth(1:3).eq.'../')then
+          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+     &      cfgroot(1:lr),'.moulddta'
+        else
+          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+     &      cfgroot(1:lr),'.moulddta'
+        endif
+  66    CALL EASKS(LTMP,
+     &    'File name after it is copied into the project?',
+     &    ' ',72,'mould.db','copied mould isopleths',IER,nbhelp)
+        call isunix(unixok)
+        IF(LTMP(1:2).NE.'  ')then
+
+C If Unix and the path is ./ then no need to prepend this (to
+C avoid .//../dbs in the buffer).  If path ends with file separator
+C no need to duplicat the file separator.
+          if(unixok)then
+            lpp=lnblnk(path)
+            if(path(1:2).eq.'./')then
+              write(LCOPY,'(a)') LTMP(1:lnblnk(LTMP))
+            elseif(path(lpp:lpp).eq.fs)then
+              write(LCOPY,'(2a)') path(1:lnblnk(path)),
+     &          LTMP(1:lnblnk(LTMP))
+            else
+              write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
+     &          LTMP(1:lnblnk(LTMP))
+            endif
+          else
+            write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
+     &        LTMP(1:lnblnk(LTMP))
+          endif
+
+C Now copy sourcefile to lcopy.
+          doit = ' '
+          if(unixok)then
+            write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+     &        sourcefile(1:lnblnk(sourcefile)),' ',
+     &        LCOPY(1:lnblnk(LCOPY))
+          else
+
+C Standard dos copy logic.
+            message='getting mould file from '
+            call dblongdoscopy(sourcefile,lcopy,message,doit,ier)
+          endif
+          call usrmsg('copying default file via',doit,'-')
+          call runit(doit,'-')
+
+C Use LTMP or LCOPY depending on the path because the path will already
+C be pre-pended when using most inbuilt file opening calls.
+          call FINDFIL(LCOPY,XST)
+          if(XST)then
+            call fdroot(lcopy,lpath,fname)
+            write(lfmould,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &        fname(1:lnblnk(fname))
+          else
+            call FINDFIL(LTMP,XST)
+            if(XST)then
+              write(lfmould,'(a)') LTMP(1:lnblnk(LTMP))
+            else
+              write(lfmould,'(a)') LTMP(1:lnblnk(LTMP))
+              call edisp(iuout,'Problem locating the new file.')
+              call edisp(iuout,'Try browsing ../dbs to find it.')
+              call edisp(iuout,' ')
+            endif
+          endif
+          moddb=.true.
+          ipathmould=1  ! signal that it is a local database.
+          goto 44
+        else
+          goto 66
+        endif
+
+      elseif(isw.eq.5)then
+
+C Start the mould utility.
+        doit = ' '
+        call tchild(ICPMOD)
+        call termode(ICPMOD,tmode)
+        if(iappw.gt.0.and.iappw.le.200)then
+          write(doit,'(3a,3i4,3a)') 'mld -mode ',tmode,
+     &      ' -s ',iappw,iappx+10,iappy+40,' -file ',
+     &      longtfile(1:lnblnk(longtfile)),' &'
+        else
+          write(doit,'(5a)') 'mld -mode ',tmode,
+     &      ' -s 0 0 0 -file ',longtfile(1:lnblnk(longtfile)),
+     &      ' &'
+        endif
+        call runit(doit,tmode)
+        goto 60  ! redisplay menu.
+
+      elseif(isw.eq.6)then
+
+C Make up browse to the model ../dbs folder suggest the name LCOPY
+C and return file name in lltmp.
+        lltmp=' '
+        call edisp(iuout,'  ')  ! echo blank line
+        write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
+        CALL EASKXORGTKF(LCOPY,'Mould isopleths?',' ',
+     &    dmdbnam,lltmp,'mould isopleths',IER,nbhelp)
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          goto 60  ! redisplay menu.
+        endif
+
+        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
+
+C Ask user whether file is in ../dbs and if so use fdroot if GTK.
+          if(iglib.eq.2)then
+            dok=.true.
+            CALL ASKOK('Is this file in the model ../dbs folder?',
+     &        ' ',OK,dok,nbhelp)
+            if(OK)then
+              call fdroot(lltmp,lpath,fname)
+              write(lfmould,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &          fname(1:lnblnk(fname))
+              ipathmould=1  ! signal that it is a local database.
+              moddb=.true.
+              goto 44
+            endif
+          endif
+
+C Check what the user might have edited to be sure of setting the
+C correct location value via call to findwhichdbpath.
+          call findwhichdbpath('mld',lltmp,ier)
+          moddb=.true.
+          goto 44
+        else
+          goto 60
+        endif
+
+      elseif(isw.eq.7)then
+
+C Browse distribution database folder. Setup LCOPY to point to
+C the database folder (but no particular file). Use easkf to
+C return a file (which might be from somewhere else if the user
+C decides to do some browsing). Test this suggested file via
+C call to eroptdb and if this is not successful reset LOPTDB.
+        if(iglib.eq.2)then
+          write(LCOPY,'(4a)') dinstpath(1:lnblnk(dinstpath)),
+     &      fs,'databases',fs
+          CALL EASKF(LCOPY,' ','Mould isopleths file?',
+     &      144,dmdbnam,'mould isopleths',IER,nbhelp)
+          if(ier.eq.-3)then
+            lfmould=lprev
+            goto 60  ! cancel detected, restore name and redisplay menu.
+          endif
+
+C This is yet another place where we need to check what the user might
+C have edited to be sure of setting the correct location value. The
+C common block will be updated with call to findwhichdbpath.
+          call findwhichdbpath('mld',LCOPY,ier)
+          moddb=.true.
+          goto 44
+        else
+          call usrmsg('Browse feature not available.',' ','W')
+          goto 60
+        endif
+
+      endif
+
+C Test the selected or copied database. If a problem loop back
+C otherwise edit the database contents.
+   44 continue
+
+C Debug.
+      write(outs248,'(2a)') 'Accessing mould isopleths: ',
+     &  lfmould(1:lnblnk(lfmould))
+      call edisp248(iuout,outs248,100)
+
+      if(ipathmould.eq.0.or.ipathmould.eq.1)then
+        lltmp=lfmould  ! use as is
+      elseif(ipathmould.eq.2)then
+        write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &    lfmould(1:lnblnk(lfmould))  ! prepend db folder path
+      endif
+
+C Depending on whether Unix or DOS based setup paths. If DOS
+C then check for spaces in name and change / to \.
+      call isunix(unixok)
+      if(unixok)then
+        call addpath(lltmp,longtfile,concat)
+      else
+        call addpath(lltmp,longtfile,concat)
+        call cmdfiledos(longtfile,longtfiledos,ier)
+        longtfile=' '
+        longtfile=longtfiledos
+      endif
+      tmode='graph'
+      if(teditor(1:2).eq.'vi')tmode='text'
+      write(doit,'(a,2x,a)') teditor(1:lnblnk(teditor)),
+     &  longtfile(1:lnblnk(longtfile))
+      call runit(doit,tmode)
+
+C If this is ok to use then set moddb true but do not try
+C and overwrite the file name so that no additional mangling
+C happens to the path.  This assumes that the user has not
+C altered the file name when saving via the editor.
+      dok=.false.
+      CALL ASKOK('  ','Use this edited database (see help)?',
+     &  OK,dok,nbhelp)
+      if(OK)then
+        moddb=.true.   ! set so user is asked to update cfg file
+      else
+        lfmould=lprev
       endif
 
       return
