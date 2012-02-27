@@ -1345,10 +1345,13 @@ C << temporary shorter string until EASKXORGTKF >>
           call edisp(iuout,LLTMP)
           goto 60    ! jump back and reload and re-display
         else
+          lastpathmat=ipathmat
+          ipathmat=0 ! reset to expect full path for binary
           CALL MKBPRC(IAF,LLASCI,IER)
           write(LFMAT,'(a)') lltmp(1:lnblnk(lltmp))  ! restore original file name
           call edisp(iuout,'Restoring the previous materials db')
           call edisp(iuout,LLTMP)
+          ipathmat=lastpathmat
           goto 60    ! jump back and reload and re-display
         endif
 
