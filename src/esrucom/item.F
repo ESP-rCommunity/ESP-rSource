@@ -29,8 +29,8 @@ C IER=0 OK, IER=1 problem.
       character h*72
       common/pophelp/h(60)
       COMMON/TDFGH1/NITEMS
-      COMMON/TDFGH2/GTYPES(24),GMENUS(24)
-      DIMENSION ISGGT(27),IVAL(27)
+      COMMON/TDFGH2/GTYPES(25),GMENUS(25)
+      DIMENSION ISGGT(28),IVAL(28)
       LOGICAL FOUND
       CHARACTER GMENUS*16,GTYPES*8
       CHARACTER KEY*1,ISGGT*30,FOCUS*8
@@ -95,7 +95,7 @@ C Related to generic items. See __ for details.
 C  GTYPES(): 8 char generic type tag for type of processing and info.
 C  GMENUS(): 16 char descriptive text for use in selection menus.
       COMMON/TDFGH1/NITEMS
-      COMMON/TDFGH2/GTYPES(24),GMENUS(24)
+      COMMON/TDFGH2/GTYPES(25),GMENUS(25)
 
 C Related to generic ITEMS.
 C  GAIDE: 40 char description of the generic item.
@@ -127,7 +127,7 @@ C       GMH='2,1,0,0,1,0,-999.0'
       LOGICAL FOUND
 
 C Pick up the arrays used for displaying current generic items.
-      NITEMS=24
+      NITEMS=25
       GTYPES(1) ='ALLCLMT'
       GMENUS(1) ='Climate data:  '
       GTYPES(2) ='CASUALT'
@@ -176,6 +176,9 @@ C Pick up the arrays used for displaying current generic items.
       GMENUS(23)='Msr Dry Bulb T:'
       GTYPES(24)='SURTM'
       GMENUS(24)='Msr surface T: '
+      GTYPES(25)='ILLUM'
+      GMENUS(25)='Illuminance at sensors '
+
 
 C If not looking for a specific item then return.
       IF(FOCUS(1:7).EQ.'ALLCLMT')THEN
@@ -310,6 +313,21 @@ C External air temperature: one data item.
         GDHDRT(3)='Direct normal solar radiation (W/m2):'
         GMF(1)='REAL,1,0.0,0.0,600.0'
         MGMA(1)='Direct normal solar rad (W/m2): '
+        FOUND=.TRUE.
+      ELSEIF(FOCUS(1:5).EQ.'ILLUM')THEN
+
+C Illuminance data
+C << 
+C << 
+        GAIDE   ='Illuminance values at sensor in Zone '
+        GHELP(1)='values are imported as lux values '
+        GHELP(2)=' '
+        GMH='2,1,0,0,1,0,-999.0'
+        GDHDRT(1)='   time  |       illuminance      '
+        GDHDRT(2)='   of day|         data           ' 
+        GDHDRT(3)=' Illuminance (Lm) '
+        GMF(1)='REAL,1,0.0,0.0,100000.0'
+        MGMA(1)='Illuminance (Lm):       '
         FOUND=.TRUE.
       ELSEIF(FOCUS(1:7).EQ.'CASUALT')THEN
 

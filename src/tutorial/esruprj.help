@@ -3962,6 +3962,17 @@ C         CALL EASKR(cm(ndx+6),' ',' Aux sensor "fraction ON"? ',
 '  tal facing up sensors are allowed.'
 *enditem
           CALL EASKS(HOLD,' Sensor x y z & ux uy uz',
+*item EDCASCTL ctl_tdf_input
+'Two input parameters are expected for an external sensor:'
+' '
+'* add here tdf help'
+'  photocell is to be located.'
+' '
+'* Indication of the photocell orientation:'
+'  0.0 - measure global horizontal illuminance'
+'  1.0 - measure global vertical illuminance'
+*enditem
+          CALL EASKS(HOLD,' Sensor x y z & ux uy uz',
 *item EDCASCTL ctl_external_location
 'Two input parameters are expected for an external sensor:'
 ' '

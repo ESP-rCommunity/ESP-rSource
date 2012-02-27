@@ -381,6 +381,8 @@ C Vertical axis label depending on generic type.
         LABEL1='fractions & degC'
       ELSEIF(FOCUS(1:8).EQ.'BIDIRSET')THEN
         LABEL1='set numb. (1-40)'
+      ELSEIF(FOCUS(1:7).EQ.'ILLUM')THEN
+        LABEL1='Lumen           '
       ELSE
 
 C Add in additional generic data definitions here.

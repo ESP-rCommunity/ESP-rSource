@@ -962,6 +962,9 @@ C  FRAC : fraction of casual gain (returned value)
       SUBROUTINE INTLUM(ICOMP,FRAC)
 #include "building.h"
 #include "model.h"
+  
+C temporal file definitions      
+#include "tdf2.h"      
 
 C geometry.h provides commons G0/G1/G2/precz.
 #include "geometry.h"
@@ -1023,6 +1026,8 @@ C Switch off delay time memory common block
 
 C Illuminance database.
       common/ILDB/NDBENT,DBILLA(200,5),DBILLS(200,MLCOM,MDF)
+
+      DIMENSION VAL(MBITS+2)
 
       DIMENSION selum(MLCOM,MDF),alt(8),SENTMP(MLCOM,MDF)
       DIMENSION QDFTMP(MLCOM,MDF),QDRTMP(MLCOM,MDF),Yb(MLCOM,MDF)
@@ -1128,6 +1133,20 @@ C vertical unobstructed illum otherwise use horizontal illum.
           IF(IFT.EQ.1)call edisp(itu,
      &      '  not external surface, sensor not allowed!')
         ENDIF
+
+C tdf method read illuminace value from tdf file        
+      ELSEIF(IDFST(ICOMP,N).EQ.6)THEN
+         suma= 0.0
+         do 141 I=1,NDF(ICOMP,N)
+C recover indice of variable for tdf file data
+           IFOC = IILLUM(ICOMP,N,I)
+           CALL RCTDFB(itrc, btimef, VAL, ISD,IFOC,IER)
+           selum(N,I) = VAL(ISD)
+           suma = suma + VAL(ISD)
+  141    continue
+C level at zone
+         zelum(N) = suma/NDF(ICOMP,N)             
+
 
 C Daylight coefficient method. Test if there is any diffuse 
 C irradiation and if solar altitude is positive

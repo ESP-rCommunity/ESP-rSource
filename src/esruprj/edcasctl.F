@@ -31,6 +31,7 @@ C EDCASCTL - edit casual gain control data.
 C geometry.h provides commons G0/G1/G2/G5/c20/precz.
 #include "geometry.h"
 #include "prj3dv.h"
+#include "tdf2.h"      
       
       integer lnblnk  ! function definition
 
@@ -46,6 +47,9 @@ C geometry.h provides commons G0/G1/G2/G5/c20/precz.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
+
+C  tdf common block
+      COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
 C Zone casual gain control data.
       common/CGCIND/cgcdesc(MCOM)
@@ -70,6 +74,9 @@ C TMC common block:
       COMMON/TMCB1/IBCMT(MCOM,MTMC)
 
       common/RAY3/MODIFY,MODLEN,MODBND
+
+C tags for tdf illuminance data
+      character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
 
       DIMENSION ITMC2DF(30),KSTR(MDTY)
       DIMENSION  COG1(3),COG2(3),COG3(3),tip(3),ipoints(6,2)
@@ -260,6 +267,8 @@ C If we got to this point and no lighting zone then there should be at least one
         write(ITEM(9),'(A)')  'e Calculation type: Time step coupling'
       elseif(IDFST(ICOMP,N).eq.5)then
         write(ITEM(9),'(A)')  'e Calculation type: Daylight coeff.' 
+      elseif(IDFST(ICOMP,N).eq.6)then
+        write(ITEM(9),'(A)')  'e Calculation type: tdf file' 
       endif
       write(ITEM(10),'(A,4F6.1,I3)') 'f Control data  :',SETPT(ICOMP,N),
      & SOFFLL(ICOMP,N),SMLOUT(ICOMP,N),SMEOUT(ICOMP,N),IOFFDT(ICOMP,N)
@@ -298,7 +307,26 @@ C Method 3 (external sensor).
         write(ITEM(m),'(A,2F6.1)')key,CGX(ICOMP,N,1),CGY(ICOMP,N,1)
 C Set third coordinate to dummy value:
         CGH(ICOMP,N,1)=0.0       
+      elseif(IDFST(ICOMP,N).EQ.6)then
 
+C For each sensor for methods 6.
+        write(ITEM(12),'(A)') '  tdf file column '
+        m=12
+C counts  number of sensors from IILUM variable
+c        ICOUNT = 0
+c        do J = 1,MDF
+c          IF(IILLUM(ICOMP,N,J) .NE. 0) ICOUNT = ICOUNT + 1
+c        enddo
+c        NDF(ICOMP,N) = ICOUNT          
+        do 142 J = 1,NDF(ICOMP,N)
+          m=m+1
+          CALL EMKEY(m,KEY,IER)
+C copy the tdf value to CGX variable for saving in ctl file          
+          IILLUM(ICOMP,N,J)=INT(CGX(ICOMP,N,J))
+
+          write(ITEM(m),'(A,2X,A)') key,TAG(IILLUM(ICOMP,N,J)) 
+  142    continue
+        call forceflush()
       elseif(IDFST(ICOMP,N).EQ.5)then
 C Daylight coef method (5).
         write(ITEM(12),'(A)') '    Posn: x  y   z    ux   uy    uz   DC'
@@ -716,7 +744,7 @@ C Calculation type.
         IRT=1
         call EASKATOG(' Calculation type:',' ',
      &      'Analyt DF','User DF','Extern','Coupling','DayCoeff',
-     &      'cancel',' ',IRT,nbhelp)
+     &      'tdf file','cancel',IRT,nbhelp)
         if(irt.eq.1)then
           IDFST(ICOMP,N)=1
           ldcoef=.false.
@@ -740,6 +768,9 @@ C Loop through all surfaces and find out number of TMCs:
         elseif(irt.eq.5)then
           IDFST(ICOMP,N)=5
           ldcoef=.true.
+        elseif(irt.eq.6)then
+          IDFST(ICOMP,N)=6
+          ldcoef=.false.
         endif
         MODIFY=.TRUE.
         goto 20
@@ -823,6 +854,36 @@ C Sensor data for lighting zone.
           MODIFY=.TRUE.
           goto 20
 
+        ELSEIF(IDFST(ICOMP,N).EQ.6)then
+          helptopic='ctl_tdf_input'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          call edisp(iuout,' ______Temporal file contents__________')
+          call edisp(iuout,' |temporal     |generic |description   ')
+          call edisp(iuout,' |entity name  |type    |              ')
+          M=0
+          if(NITDF.eq.0)then
+             call edisp(iuout,' in model context select tdf file!')
+          return
+          endif
+          DO 10 L=1,NITDF
+             M=M+1
+             WRITE(outs,14)M,TAG(L),TTYPE(L),TMENU(L)
+   14        FORMAT(i2,1X,A,1X,A,1X,A)
+             call edisp(iuout,outs)
+   10     CONTINUE
+
+          J = INO - 12
+C column in CGX          
+ 143      WRITE(HOLD,'(1F6.2)')CGX(ICOMP,N,J)
+          CALL EASKS(HOLD,' TDF column for sensor',
+     &         ' ',40,' 1 ',' sensor ',IER,nbhelp)
+          K=0
+          CALL EGETWR(HOLD,K,aa,-100.,100.,'W','tdf column',IER)
+          if(ier.ne.0)goto 143
+          CGX(ICOMP,N,J)=aa
+          MODIFY=.TRUE.
+          goto 20
+
         ELSEIF(IDFST(ICOMP,N).EQ.3)THEN
 C External sensor method.
           helptopic='ctl_external_location'
@@ -840,7 +901,7 @@ C External sensor method.
           CGY(ICOMP,N,1)=ab
 C Set third coordinate to dummy value:
           CGH(ICOMP,N,1)=0.0
-
+        
         ELSEIF(IDFST(ICOMP,N).EQ.5)THEN
 C Daylight coef method (5).
           helptopic='daylight_coef_method'

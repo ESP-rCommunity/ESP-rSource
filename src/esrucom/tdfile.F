@@ -75,6 +75,11 @@ C Related to TDF ITEMS file.
       COMMON/C1/NCOMP,NCON
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
+C     this common added to assign measured illuminance to lighting zones      
+      COMMON/DAYF/NDF(MCOM,MLCOM),DFDAT(MCOM,MLCOM,MGT,MDF),
+     & AZIJL(MCOM,MGT),SUMDF(MCOM,MLCOM,MDF),NUDWIN(MCOM)
+
+
 C Need to loop for number of surfaces for bidirectional and vertical solar radiation data
 
       COMMON/TDFOPEN/OPTDF
@@ -142,6 +147,12 @@ C Bidirectional data are assigned per surface
                             IBIDIRS(itd3,IS)=itd4
                           endif
   75                    continue
+                      endif
+                      
+                      if(DBTASK(ITD1)(1:5).eq.'ILLUM') then
+                         READ(DBSN(itd1),*) ILZONE
+                         ISENSOR = NDF(idt3,ILZONE)
+C                         IILLUM(itd3,ILZONE,ISENSOR)=itd4
                       endif
 
 C Vertical solar radiation data are assigned per surface

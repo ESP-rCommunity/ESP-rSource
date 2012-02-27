@@ -100,7 +100,8 @@ C a non-zero indicates the index of the item. For example icasual(3)=6
 C says that the 3rd zone in the model uses a casual gains item which
 C is the 6th item in the temporal file.
       integer IALLCLM  ! if non-zero a item holding all climate data used
-      integer ICASUAL  ! if non-zero lumped casual gains are used 
+      integer ICASUAL  ! if non-zero lumped casual gains are used
+      integer IILLUM   ! if non-zero illuminance data is used in controlled gains 
       integer IZIVENT  ! if non-zero ventilation & infiltration used
       integer IRAIRVL  ! if non-zero room air velocity (not yet used)
       integer ISETPTT  ! if non-zero single set point temperature used
@@ -129,4 +130,4 @@ C is the 6th item in the temporal file.
      &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
      &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
      &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM),ISURTMEAS(MCOM,MS)
+     &       IDBTZNM(MCOM),ISURTMEAS(MCOM,MS),IILLUM(MCOM,4,MDF)

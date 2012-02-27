@@ -67,6 +67,8 @@ C IDCFID   - Daylight coefficient sensor ID
 #include "building.h"
 #include "geometry.h"
 #include "espriou.h"
+C inlclude tdf data
+#include "tdf2.h"      
       
       integer lnblnk  ! function definition
 
@@ -188,7 +190,7 @@ C and calculation type:
       CALL EGETWR(OUTSTR,K,sy,0.,1.,'F','zone cg %',IER)
       CALL EGETWI(OUTSTR,K,nls,1,MDF,'F',
      &              'no. of light sensors',IER)
-      CALL EGETWI(OUTSTR,K,idc,1,5,'F','sensor type',IER)
+      CALL EGETWI(OUTSTR,K,idc,1,6,'F','sensor type',IER)
       SYSPER(ICOMP,N)=sy
       NDF(ICOMP,N)=nls
       IDFST(ICOMP,N)=idc
@@ -207,9 +209,11 @@ C Read Daylight coefficient sensor identification data:
         CALL EGETWR(OUTSTR,K,cy,0.,0.,'-','comp sens y',IER)
         CALL EGETWR(OUTSTR,K,cz,0.,0.,'-','comp sens ht',IER)
         CGX(ICOMP,N,J)=cx
+C  if tdf file for illuminance upgrde IILLUM data        
+        IF (IDFST(ICOMP,N).eq.6) IILLUM(ICOMP,N,J) = INT(cx)
         CGY(ICOMP,N,J)=cy
         CGH(ICOMP,N,J)=cz
-        if(IDFST(ICOMP,N).ne.3)then
+        if((IDFST(ICOMP,N).ne.3) .or. (IDFST(ICOMP,N).ne.6))then
           CALL EGETWR(OUTSTR,K,cux,0.,0.,'-','comp sens ux',IER)
           CALL EGETWR(OUTSTR,K,cuy,0.,0.,'-','comp sens uy',IER)
           CALL EGETWR(OUTSTR,K,cuz,0.,0.,'-','comp sens uh',IER)
@@ -557,6 +561,11 @@ C Write data to file.
         ELSEIF(IDFST(ICOMP,N).EQ.3)THEN
             WRITE(IUNIT,'(2F7.3,A)',IOSTAT=ios,ERR=1) CGX(ICOMP,N,1),
      &        CGY(ICOMP,N,1),' # Sensor location & type'
+        ELSEIF(IDFST(ICOMP,N).EQ.6)THEN
+          DO J=1,NDF(ICOMP,N)
+             WRITE(IUNIT,'(1F7.3,A)',IOSTAT=ios,ERR=1) CGX(ICOMP,N,J),
+     &        ' # tdf column data '
+          ENDDO
         ELSE
           DO 200 J=1,NDF(ICOMP,N)
             WRITE(IUNIT,'(6F7.3,A)',IOSTAT=ios,ERR=1) CGX(ICOMP,N,J),

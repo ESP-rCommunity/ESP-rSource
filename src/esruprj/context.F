@@ -2007,6 +2007,31 @@ C Measured surface T (associated with a zone and up to 6 surfaces).
      &        ' ',IER)
             IF(ISUR.EQ.0.OR.ISUR.EQ.-1)GOTO 355
             write(DBSN(ITE),'(a)') sname(IC,ISUR)(1:12) 
+C if the tdf type is ILLUM type avoid association since it is done in
+C casual gain definition          
+           elseif(TTYPE(it)(1:5).eq.'ILLUM')then
+
+            call edisp(iuout,' ILLUMINANCE association is performed  ')
+            call edisp(iuout,' in controlled casual gain definition  ')
+            DBZN(ITE)='ALL'
+            DBSN(ITE)='ALL'            
+C Depending on the type of data, ask for associated surface 
+c            IC=-1
+c 356        izdef=0
+c            call askzone(ic,izdef,
+c     &        ' Related zone for illuminance sensors',
+c     &        'Related zone','-','illuminance sensors require a zone.',
+c     &         ier)
+c            IF(IC.EQ.0.OR.IC.EQ.-1)GOTO 356
+c            write(DBZN(ITE),'(a)') zname(IC)(1:12)
+C  stores the lighting zone 
+c            call easki(ISUR, ' ', 'Light Zone Number?', 1, 'F', 4, 'F',
+c     &                 1, 'Light zone number', IER,2) 
+c            call easksur(IC,ISUR,'-',
+c     &           'Select light zone for illuminance sensors',' ',IER)
+c            IF(ISUR.EQ.0.OR.ISUR.EQ.-1)GOTO 356
+c           write the number of light zone            
+c            write(DBSN(ITE),'(I5)') ISUR
           else
             DBZN(ITE)='ALL'
             DBSN(ITE)='ALL'            
