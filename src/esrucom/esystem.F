@@ -1363,7 +1363,7 @@ C Solar radiation (half hour data) flag.
         call egetwi(loutstr,k,iSlr_half_hr_flg,0,1,'W',
      &    'solar half-hour flag',IER)
 
-      elseif(WORD(1:17).eq.'*exlude_diff_shad')then
+      elseif(WORD(1:18).eq.'*exclude_diff_shad')then
 
 C Solar radiation (half hour data) flag.
         call egetwi(loutstr,k,iexcludediff_flag,0,1,'W',
@@ -2075,11 +2075,12 @@ C Project log file, read and then go on to fabric/plant description.
 
       else
 
-        call edisp ( iuout, 'Unknown entry in .cfg file:' )
-        call edisp ( iuout, outstr )
+        call edisp(iuout,'Unknown entry in .cfg file:')
+        call edisp(iuout, WORD)
+        call edisp248(iuout,loutstr,90)
         
-          ier=1
-          return
+        ier=1
+        return
       endif
 
 C Loop back for next database file.
@@ -3585,7 +3586,7 @@ C The initial part of the path matches so only save the file name w/o path.
             ipathmsc=0
             write(MCMPDBFL,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'mld')then
-            ipathmould=1  ! local folder for mould isopleths
+            ipathmould=0  ! local folder for mould isopleths
             write(lfmould,'(a)') file(1:lnwkg) ! assign directly
           endif
         endif
