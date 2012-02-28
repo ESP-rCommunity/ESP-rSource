@@ -33,6 +33,10 @@ C Standard path to corporate common files (based on Install data)
       common/stddbpath/standarddbpath
       character standarddbpath*72
 
+C Standard path to corporate weather files (based on Install data)
+      common/stdclmpath/standardclmpath
+      character standardclmpath*72
+
 C Array of integers indicating whether common files are defined via
 C an absolute path (zero), local path (one), standard path (2)
       common/whichdbpath/ipathapres,ipathoptdb,ipathpcdb,ipathprodb,

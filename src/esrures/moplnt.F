@@ -1004,7 +1004,7 @@ C Read climate file name.
 	write(LCLIM,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
 
 C Debug.
-C        write(6,*) LCLIM
+C        write(6,*) 'plant lclim is ',LCLIM
 
       endif
 

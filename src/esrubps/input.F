@@ -300,7 +300,7 @@ C HVAC AIM-2
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST
       LOGICAL GRND3D,MSTROK,MSTRZN
-      logical dll,closemat1,closemat2,unixok
+      logical dll,closemat1,closemat2,unixok,concat
 
 C GSHP
 C Common holding flag indicating presence of gshp data input file:
@@ -326,7 +326,7 @@ C Status of multi-year climate database
       logical bMY_clm_err 
       integer lndbp   ! for length of standard database path
       character lltmp*144  ! to re-create plant database file name with path
-      character lworking*144,fs*1
+      character lworking*144,fs*1,llclmdb*144
 
       integer IClmErr  ! the error state for climate file opening
       integer ier, irep
@@ -765,9 +765,19 @@ C been properly entered.
 C Collect & process single-year climate file
 C Note: the climate file uses a different error flag than
 C the global model definition, as it can be specified separately.
-         write(currentfile,'(a)') lclim(1:lnblnk(lclim))
+
+C Take into account weather file location.
+         lndbp=lnblnk(standardclmpath)
+         if(ipathclim.eq.0.or.ipathclim.eq.1)then
+           call addpath(lclim,llclmdb,concat)
+         elseif(ipathclim.eq.2)then
+           write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &       LCLIM(1:lnblnk(LCLIM))
+         endif
+
+         write(currentfile,'(a)') llclmdb(1:lnblnk(llclmdb))
          IClmErr=0   ! clear error state before call
-         call EFOPRAN(ICLIM,LCLIM,144,0,IClmErr)
+         call EFOPRAN(ICLIM,llclmdb,144,0,IClmErr)
          IF(iClmErr.eq.0)THEN
             IREC=366
             READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)ICYEAR,ICDNGH
@@ -806,7 +816,7 @@ C Kill simulation if in DLL mode
 C Warn the user that the climate file definition has failed. 
                write(louts,'(A,A,A)')
      &           'Warning: specified climate file (',
-     &           LCLIM(1:LNBLNK(LCLIM)), ') could not be found.'
+     &           llclmdb(1:LNBLNK(llclmdb)), ') could not be found.'
               
                call edisp248 (iuout,louts,100)
                if ( autook ) then

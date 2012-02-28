@@ -588,8 +588,18 @@ C reflect whether the standard database folder is being used.
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdevn  ',
      &      LPRFDB(1:lnblnk(LPRFDB))
       endif
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*clm  ',
+
+      if(ipathclim.eq.0.or.ipathclim.eq.1)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*clm  ',
      &      LCLIM(1:lnblnk(LCLIM))
+      elseif(ipathclim.eq.2)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdclm  ',
+     &      LCLIM(1:lnblnk(LCLIM))
+      endif
+
+C      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*clm  ',
+C     &      LCLIM(1:lnblnk(LCLIM))
+
       if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*mscldb  ',
      &      MCMPDBFL(1:lnblnk(MCMPDBFL))

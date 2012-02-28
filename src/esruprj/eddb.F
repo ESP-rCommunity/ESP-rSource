@@ -155,7 +155,19 @@ C yet defined.
      &    '  model db path (mod): no model defined yet'
       endif
       ITEMS(3) ='  _______________________________ '
-      WRITE(ITEMS(4),'(2A)')  'a annual weather        : ',LCLIM(1:43)
+      if(ipathclim.eq.0)then
+        WRITE(ITEMS(4),'(2A)')'a annual weather        : ',
+     &    LCLIM(1:43)
+      elseif(ipathclim.eq.1)then
+        lndbpth=lnblnk(dbspth)+2
+        WRITE(ITEMS(4),'(2A)')'a annual weather        : <mod> ',
+     &    LCLIM(lndbpth:38)
+      elseif(ipathclim.eq.2)then
+        WRITE(ITEMS(4),'(2A)')'a annual weather        : <std> ',
+     &    LCLIM(1:38)
+      endif
+C      WRITE(ITEMS(4),'(2A)')  'a annual weather        : ',LCLIM(1:43)
+
       WRITE(ITEMS(5),'(2A)')  'b multi-year weather    : ',cTemp(1:43)
       if(ipathapres.eq.0)then
         WRITE(ITEMS(6),'(2A)')'c pressure distribution : ',
@@ -1414,7 +1426,7 @@ C decides to do some browsing).
 
 C This is yet another place where we need to check what the user might
 C have edited to be sure of setting the correct location value. The
-C common block lpcdb will have been updated by call to findwhichdbpath.
+C common block will have been updated by call to findwhichdbpath.
           call findwhichdbpath('mat',lcopy,ier)
           moddb=.true.
           goto 44
@@ -4064,12 +4076,16 @@ C Calendar.
       LOGICAL OK,concat,COPYDEF,MODDB,XST,DOK,UNIXOK
       character cfgroot*24,LCFGF*72,linstd*60
       character dinstpath*48,path*72
+      character dirpath*48
+      CHARACTER lltmp*144,lguess*144
       CHARACTER*72 NNAME
       dimension ICLM(24,6)
       integer llt  ! length of string buffer
       integer ier
       integer icreport  ! to signal that calendar has been updated.
       integer IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY  ! for correcting calendar
+      logical closelat,closelong
+      
 #ifdef OSI
       integer ICPMOD     ! passed from tchild
 #else
@@ -4091,9 +4107,24 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
 
+C Setup string buffer with distribution weather folder name.
+      write(dirpath,'(4a)') dinstpath(1:lnblnk(dinstpath)),
+     &  fs,'climate',fs
+      ldirpath=lnblnk(dirpath)
+
+C Take into account whether weather file is in standard folder.
+C If so llclmdb will be expanded to the full path.
       moddb=.false.
  552  llt=lnblnk(LCLIM)
-      write(llclmdb,'(a)') lclim(1:llt)
+      lltmp='  '
+      lguess='  '
+      lndbp=lnblnk(standardclmpath)
+      if(ipathclim.eq.0.or.ipathclim.eq.1)then
+        llclmdb=LCLIM
+      elseif(ipathclim.eq.2)then
+        write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &    LCLIM(1:lnblnk(LCLIM))
+      endif
 
       helptopic='clm_db_manage'
       call gethelptext(helpinsub,helptopic,nbhelp)
@@ -4104,40 +4135,38 @@ C Just in case we got this far and ICLIM was not instanciated do it now.
       endif
       CALL ERPFREE(ICLIM,ISTAT)
 
-C Get length of path to where esp-r databases were installed.
-      write(linstd,'(2a)') dinstpath(1:lnblnk(dinstpath)),
-     &    '/databases'
-      linst=lnblnk(linstd)
+C Depending on where the weather is located offer different options.
       call FINDFIL(llclmdb,XST)
       IF(.NOT.XST)THEN
         idno=2
         isw=0
-        call MENUATOL('  ','Climate db',
-     &    ' ','b select another db',
-     &    'c create a new db','d copy standard db',
+        call MENUATOL('  ','Weather',
+     &    ' ','b select another from list',
+     &    'c create new weather','d copy standard weather',
      &    ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,nbhelp)
         copydef=.true.
-      elseif(llclmdb(1:linst).eq.linstd(1:linst))then
+      elseif(llclmdb(1:ldirpath).eq.dirpath(1:ldirpath))then
 
-C If corportate database then offer the following choices:
+C If corportate weather then offer the following choices:
         idno=1
         isw=0
-        call MENUATOL('  ','Climate db',
-     &    'a browse/edit db','b select another db',
-     &    'c create a new db','d copy standard db',
-     &    'e binary >> ascii export','f ascii >> binary import',
-     &    'g EPW >> binary import',' ',' ',' ',' ',' ',isw,idno,nbhelp)
+        call MENUATOL('  ','Weather <std>',
+     &    'a browse/edit weather','b select another from list',
+     &    'c create new weather','d copy it to model',
+     &    'e weather >> ascii export','f ascii >> weather import',
+     &    'g EPW >> weather import',' ',' ',' ',' ',' ',
+     &    isw,idno,nbhelp)
         copydef=.false.
       else
 
 C If db exists locally offer the following choices:
         idno=1
         isw=0
-        call MENUATOL('  ','Climate db',
-     &    'a browse/edit db','b select another db',
-     &    'c create a new db','d copy standard db',
-     &    'e binary >> ascii export','f ascii >> binary import',
-     &    'g EPW >> binary import',' ',' ',' ',' ',' ',
+        call MENUATOL('  ','Weather <model>',
+     &    'a browse/edit weather','b select another from list',
+     &    'c create new weather','d copy standard weather',
+     &    'e weather >> ascii export','f ascii >> weather import',
+     &    'g EPW >> weather import',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
         copydef=.true.
       endif
@@ -4153,12 +4182,8 @@ C If file exists read it and enter editing facility.
           call EFOPRAN(ICLIM,llclmdb,144,0,IER)
           if(ier.eq.0)then
             moddb=.true.
-
-C Cast back to LCLIM.
-            llt=lnblnk(llclmdb)
-            write(LCLIM,'(a)') llclmdb(1:llt)
           else
-            call usrmsg('Problem encountered with Climate db!',
+            call usrmsg('Problem encountered with weather!',
      &                  'Please check db location and content.','W')
             goto 552
           endif
@@ -4178,7 +4203,11 @@ C << update to deal with dos paths >>
         doit = ' '
         call tchild(ICPMOD)
         call termode(ICPMOD,tmode)
-        call addpath(LCLIM,longtfile,concat)
+        if(ipathclim.eq.0.or.ipathclim.eq.1)then
+          call addpath(llclmdb,longtfile,concat)
+        elseif(ipathclim.eq.2)then
+          longtfile=llclmdb
+        endif
         if(iappw.gt.0.and.iappw.le.200)then
           write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
      &        ' -s ',iappw,iappx+10,iappy+10,' -file ',
@@ -4188,6 +4217,7 @@ C << update to deal with dos paths >>
      &        longtfile(1:lnblnk(longtfile))
         endif
         call runit(doit,tmode)
+
       elseif(isw.eq.2)then
 
 C Pull up the official list of climate files and if the user selects
@@ -4199,25 +4229,28 @@ C use a file browser to go looking for it.
           call rdblist(IUF,longtfile,ier)
           if(ier.eq.0)then
             if(longtfile(1:12).eq.'USER_DEFINED')then
+
+C << todo suggest name within the model dbs folder >>
               write(llclmdb,'(a)') 'newclim'
+              ipathclim=0
  291          llt=lnblnk(llclmdb)
               iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
               if(iglib.eq.1.or.iglib.eq.3)then
                 if(llt.lt.96)then
-                  CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
+                  CALL EASKF(llclmdb,'Weather file:',
      &              ' ',96,DCLIM,'climate file name',IER,nbhelp)
                 elseif(llt.ge.96.and.llt.lt.124)then
-                  CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
+                  CALL EASKF(llclmdb,'Weather file:',
      &              ' ',124,DCLIM,'climate file name',IER,nbhelp)
                 elseif(llt.ge.124.and.llt.le.144)then
-                  CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
+                  CALL EASKF(llclmdb,'Weather file:',
      &              ' ',144,DCLIM,'climate file name',IER,nbhelp)
                 endif
               elseif(iglib.eq.2)then
-                CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
+                CALL EASKF(llclmdb,'Weather file:',
      &            ' ',144,DCLIM,'climate file name',IER,nbhelp)
               else
-                CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
+                CALL EASKF(llclmdb,'Weather file:',
      &            ' ',96,DCLIM,'climate file name',IER,nbhelp)
               endif
               IF(llclmdb(1:2).EQ.'  ')GOTO 291
@@ -4231,33 +4264,42 @@ C Cast back to LCLIM.
               call usrmsg('Nothing selected from the list!',' ','W')
               goto 552
             else
-              write(LCLIM,'(a)') longtfile(1:lnblnk(longtfile))
+
+C Assign weather file name based on its location via findwhichdbpath.
+              call findwhichdbpath('clm',longtfile,ier)
+              if(ipathclim.eq.0.or.ipathclim.eq.1)then
+                llclmdb=LCLIM
+              elseif(ipathclim.eq.2)then
+                write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &            LCLIM(1:lnblnk(LCLIM))
+              endif
             endif
           endif
         else
-          call usrmsg('No Climate db list available so using default.',
+          call usrmsg('No weather list available so using default.',
      &      '(Check with administrator about the `climatelist` file.)',
      &      'W')
           goto 552
         endif
 
         CALL ERPFREE(ICLIM,ISTAT)
-        call FINDFIL(LCLIM,XST)
+        call FINDFIL(llclmdb,XST)
         IF(XST)THEN
 
 C If file exists and user wants to browse then scan the file and
 C use the editing facility.
-
-C << next try using llclmdb for the file opening and then try >>
-C << it instead of longtfile >>
           IER=0
-          call EFOPRAN(ICLIM,LCLIM,144,0,IER)
+          call EFOPRAN(ICLIM,llclmdb,144,0,IER)
           if(ier.eq.0)then
             call tstamp('>','PRJ: start clm')
             doit = ' '
             call tchild(ICPMOD)
             call termode(ICPMOD,tmode)
-            call addpath(LCLIM,longtfile,concat)
+            if(ipathclim.eq.0.or.ipathclim.eq.1)then
+              call addpath(llclmdb,longtfile,concat)
+            elseif(ipathclim.eq.2)then
+              longtfile=llclmdb
+            endif
             if(iappw.gt.0.and.iappw.le.200)then
               write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
      &            ' -s ',iappw,iappx+10,iappy+10,' -file ',
@@ -4273,17 +4315,15 @@ C << it instead of longtfile >>
             goto 552
           endif
         else
-          call usrmsg('No Climate db to browse/edit.',
+          call usrmsg('No weather to browse/edit.',
      &                'Please use one of the other options.','W')
           goto 552
         endif
+
       elseif(isw.eq.3)then
 
-C No climate db found so set-up minimal common block, create
-C a new db, populate it and present editing facility.
-
-C << revise to support browsing for the file (askf has a cancel option now) >>
-
+C Set-up minimal common block, create a new weather file, populate
+C it with zeros and present editing facility.
         lr=lnblnk(cfgroot)
         if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
           write(longtmp,'(2a)') cfgroot(1:lr),'.climate'
@@ -4296,22 +4336,16 @@ C If using X11 assume that the full path is less than 96 chars
 C but if using GTK then we need the full length to avoid truncation.
  553    iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
+          CALL EASKF(longtmp,' ','Weather file:',
      &      96,DCLIM,'climate file name',IER,nbhelp)
         elseif(iglib.eq.2)then
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
+          CALL EASKF(longtmp,' ','Weather file:',
      &      144,DCLIM,'climate file name',IER,nbhelp)
         else
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
+          CALL EASKF(longtmp,' ','Weather file:',
      &      96,DCLIM,'climate file name',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
-
-        if(longtmp(1:2).ne.'  '.and.longtmp(1:4).ne.'UNKN')then
-          LCLIM=longtmp
-        else
-          goto 553
-        endif
 
 C Create a blank climate file (code similar to clm.F).
         moddb=.true.
@@ -4329,7 +4363,7 @@ C Create a blank climate file (code similar to clm.F).
         CLONG=0.
         IDNGH=0
         IER=0
-        call EFOPRAN(ICLIM,LCLIM,144,4,IER)
+        call EFOPRAN(ICLIM,longtmp,144,4,IER)
 
 C Loop through days and zero the data to be written.
         DO 101 I=IDS,IDF
@@ -4360,8 +4394,17 @@ C Insert Climatic Year at tail of file and close.
         CALL ERPFREE(ICLIM,ISTAT)
 
         dok=.true.
-        CALL ASKOK(' ','Browse/edit new climate data?',OK,dok,nbhelp)
+        CALL ASKOK(' ','Browse/edit new weather data?',OK,dok,nbhelp)
         IF(OK)then
+
+C Assign weather file name based on longtmp location via findwhichdbpath.
+          call findwhichdbpath('clm',longtmp,ier)
+          if(ipathclim.eq.0.or.ipathclim.eq.1)then
+            llclmdb=LCLIM
+          elseif(ipathclim.eq.2)then
+            write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &        LCLIM(1:lnblnk(LCLIM))
+          endif
 
 C Get logical name of child process terminal type, expand climate 
 C name to include the path and create a string to drive clm.
@@ -4369,7 +4412,13 @@ C name to include the path and create a string to drive clm.
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          call addpath(LCLIM,longtfile,concat)
+
+C Take into account location for clm command parameters.
+          if(ipathclim.eq.0.or.ipathclim.eq.1)then
+            call addpath(llclmdb,longtfile,concat)
+          elseif(ipathclim.eq.2)then
+            longtfile=llclmdb
+          endif
           if(iappw.gt.0.and.iappw.le.200)then
             write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
      &          ' -s ',iappw,iappx+10,iappy+10,' -file ',
@@ -4378,24 +4427,35 @@ C name to include the path and create a string to drive clm.
             write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
      &          longtfile(1:lnblnk(longtfile))
           endif
-          CALL ASKOK(' ','Browse/edit new climate data?',OK,dok,nbhelp)
-          if(ok)then
-            call runit(doit,tmode)
+          call runit(doit,tmode)
+
+C Note: this new climate site might be altered or not so lets
+C not do the fall-through for site data unless the user asks.
+          dok=.false.
+          CALL ASKOK(' ','Check new site data against model?',
+     &      OK,dok,nbhelp)
+          if(OK)then
+            continue
+          else
+            goto 552
           endif
         endif
+
       elseif(isw.eq.4)then
 
-C Copy the standard db to project folder. Suggest a local
+C Copy standard weather to project folder. Suggest a local
 C file name based on the project root name. Lastly do the copy.
 C If the default is to be copied ask for local name. Use longtmp for
 C the file name as known to esp-r and LCOPY for the system cp call.   
         if(copydef)then
-          call edisp(iuout,'The source file is:')
+          call edisp(iuout,' ')
+          call edisp(iuout,'The source weather is:')
           call edisp(iuout,DCLIM)
           call edisp(iuout,' ')
         else
-          call edisp(iuout,'The source file is:')
-          call edisp(iuout,LCLIM)
+          call edisp(iuout,' ')
+          call edisp(iuout,'The source weather is:')
+          call edisp(iuout,llclmdb)
           call edisp(iuout,' ')
         endif
         lr=lnblnk(cfgroot)
@@ -4410,13 +4470,13 @@ C If using X11 assume that the full path is less than 96 chars
 C but if using GTK then we need the full length to avoid truncation.
  554    iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
+          CALL EASKF(longtmp,' ','Weather file:',
      &      96,DCLIM,'climate file name',IER,nbhelp)
         elseif(iglib.eq.2)then
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
+          CALL EASKF(longtmp,' ','Weather file:',
      &      144,DCLIM,'climate file name',IER,nbhelp)
         else
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
+          CALL EASKF(longtmp,' ','Weather file:',
      &      96,DCLIM,'climate file name',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
@@ -4447,22 +4507,36 @@ C Similar logic but using DCLIM.
             doit = ' '
             if(unixok)then
               write(doit,'(4a)',IOSTAT=IOS) 'cp ',
-     &          LCLIM(1:lnblnk(LCLIM)),' ',LCOPY(1:lnblnk(LCOPY))
+     &          llclmdb(1:lnblnk(llclmdb)),' ',LCOPY(1:lnblnk(LCOPY))
             else
 
 C Similar logic but using LCLIM.
-              message='getting climate file from '
-              call dbdoscopy(LCLIM,lcopy,message,doit,ier)
+              message='getting weather file from '
+              call dbdoscopy(llclmdb,lcopy,message,doit,ier)
             endif
             call runit(doit,'-')
-            LCLIM=longtmp
+
+C Assign weather file name based on longtmp location via findwhichdbpath.
+            call findwhichdbpath('clm',longtmp,ier)
+            if(ipathclim.eq.0.or.ipathclim.eq.1)then
+              llclmdb=LCLIM
+            elseif(ipathclim.eq.2)then
+              write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &          LCLIM(1:lnblnk(LCLIM))
+            endif
           endif
           moddb=.true.
           call tstamp('>','PRJ: start clm')
           doit = ' '
           call tchild(ICPMOD)
           call termode(ICPMOD,tmode)
-          call addpath(LCLIM,longtfile,concat)
+
+C Take into account location.
+          if(ipathclim.eq.0.or.ipathclim.eq.1)then
+            call addpath(llclmdb,longtfile,concat)
+          elseif(ipathclim.eq.2)then
+            longtfile=llclmdb
+          endif
 
 C Clm is started up in forground mode because when it was starting
 C up in background mode the questions about whether to use its
@@ -4486,54 +4560,65 @@ C latitude & longitude and year pop-up over the climate module.
 
       elseif(isw.eq.5)then
 
-C Climate binary >> ascii export.
+C Weather >> ascii export.  If current weather is
+C in standard folder start ASCII name in users home folder.
 C Confirm suggested name and then write out asci file.
         DFILE='./climate.a'
-        LLASCI=' '
-        write(LLASCI,'(2a)') LCLIM(1:lnblnk(LCLIM)),'.a'
+        if(ipathclim.eq.0.or.ipathclim.eq.1)then
+          write(LLASCI,'(2a)') LCLIM(1:lnblnk(LCLIM)),'.a'
+        elseif(ipathclim.eq.2)then
+          write(LLASCI,'(4a)') path(1:lnblnk(path)),fs,
+     &      LCLIM(1:lnblnk(LCLIM)),'.a'
+        endif
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
+          CALL EASKF(LLASCI,' ','Export ASCII file:',
      &      96,DFILE,'climate file name',IER,nbhelp)
         elseif(iglib.eq.2)then
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
+          CALL EASKF(LLASCI,' ','Export ASCII file:',
      &      144,DFILE,'climate file name',IER,nbhelp)
         else
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
+          CALL EASKF(LLASCI,' ','Export ASCII file:',
      &      96,DFILE,'climate file name',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
 
 C Convert both binary and asci file names into full paths prior
 C to asking clm to do the conversion.
-        call addpath(LCLIM,longtfile,concat)
+        if(ipathclim.eq.0.or.ipathclim.eq.1)then
+          call addpath(llclmdb,longtfile,concat)
+        elseif(ipathclim.eq.2)then
+          longtfile=llclmdb
+        endif
         call addpath(LLASCI,longtafile,concat)
         call tstamp('>','PRJ: start clm for conversion')
         doit = ' '
         write(doit,'(5a)') 'clm -mode text -file ',
-     &      longtfile(1:lnblnk(longtfile)),' -act bin2asci silent ',
-     &      longtafile(1:lnblnk(longtafile))
-        CALL ASKOK(' ','Browse/edit exported climate data?',
-     &    OK,dok,nbhelp)
-        if(ok)then
-          call runit(doit,tmode)
-        endif
+     &    longtfile(1:lnblnk(longtfile)),' -act bin2asci silent ',
+     &    longtafile(1:lnblnk(longtafile))
+        call runit(doit,tmode)
+        goto 552  ! jump to redisplay menu.
+
       elseif(isw.eq.6)then
 
-C Climate ascii >> binary import
+C Climate ascii >> weather import.
 C Confirm suggested name and then write out binary file.
         DFILE='./climate.a'
-        LLASCI=' '
-        write(LLASCI,'(2a)') LCLIM(1:lnblnk(LCLIM)),'.a'
+        if(ipathclim.eq.0.or.ipathclim.eq.1)then
+          write(LLASCI,'(2a)') LCLIM(1:lnblnk(LCLIM)),'.a'
+        elseif(ipathclim.eq.2)then
+          write(LLASCI,'(4a)') path(1:lnblnk(path)),fs,
+     &      LCLIM(1:lnblnk(LCLIM)),'.a'
+        endif
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
+          CALL EASKF(LLASCI,' ','ASCII file:',
      &      96,DFILE,'climate file name',IER,nbhelp)
         elseif(iglib.eq.2)then
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
+          CALL EASKF(LLASCI,' ','ASCII file:',
      &      144,DFILE,'climate file name',IER,nbhelp)
         else
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
+          CALL EASKF(LLASCI,' ','ASCII file:',
      &      96,DFILE,'climate file name',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
@@ -4541,50 +4626,64 @@ C Confirm suggested name and then write out binary file.
         longtmp=LCLIM
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
+          CALL EASKF(longtmp,' ','Weather file:',
      &      96,DCLIM,'climate file name',IER,nbhelp)
         elseif(iglib.eq.2)then
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
+          CALL EASKF(longtmp,' ','Weather file:',
      &      144,DCLIM,'climate file name',IER,nbhelp)
         else
-          CALL EASKF(longtmp,' ',' Climate file name ? ',
+          CALL EASKF(longtmp,' ','Weather file:',
      &      96,DCLIM,'climate file name',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
-        if(longtmp(1:2).ne.'  '.and.longtmp(1:4).ne.'UNKN')then
-          LCLIM=longtmp
-        endif
 
 C Convert both binary and asci file names into full paths prior
 C to asking clm to do the conversion.
-        call addpath(LCLIM,longtfile,concat)
+        if(ipathclim.eq.0.or.ipathclim.eq.1)then
+          call addpath(longtmp,longtfile,concat)
+        elseif(ipathclim.eq.2)then
+          longtfile=longtmp
+        endif
         call addpath(LLASCI,longtafile,concat)
         call tstamp('>','PRJ: start clm for conversion')
         doit = ' '
         write(doit,'(5a)') 'clm -mode text -file ',
-     &      longtfile(1:lnblnk(longtfile)),' -act asci2bin silent ',
-     &      longtafile(1:lnblnk(longtafile))
-        CALL ASKOK(' ','Browse/edit exported climate data?',
-     &    OK,dok,nbhelp)
-        if(ok)then
-          call runit(doit,tmode)
+     &    longtfile(1:lnblnk(longtfile)),' -act asci2bin silent ',
+     &    longtafile(1:lnblnk(longtafile))
+        call runit(doit,tmode)
+
+C Assign weather file name based on longtmp location via findwhichdbpath.
+        call findwhichdbpath('clm',longtfile,ier)
+        if(ipathclim.eq.0.or.ipathclim.eq.1)then
+          llclmdb=LCLIM
+        elseif(ipathclim.eq.2)then
+          write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &      LCLIM(1:lnblnk(LCLIM))
         endif
+
+C After clm module run there will be a new binary file so fall
+C through to the code near line 4700 to check contents.
+
       elseif(isw.eq.7)then
 
-C EPW >> binary import
+C EPW >> weather import
 C Confirm suggested name and then write out binary file.
-        DFILE='./climate.a'
-        LLASCI=' '
-        write(LLASCI,'(2a)') LCLIM(1:lnblnk(LCLIM)),'.a'
+        DFILE='./climate.epw'
+        if(ipathclim.eq.0.or.ipathclim.eq.1)then
+          write(LLASCI,'(2a)') LCLIM(1:lnblnk(LCLIM)),'.epw'
+        elseif(ipathclim.eq.2)then
+          write(LLASCI,'(4a)') path(1:lnblnk(path)),fs,
+     &      LCLIM(1:lnblnk(LCLIM)),'.epw'
+        endif
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
+          CALL EASKF(LLASCI,' ','EPW file:',
      &      96,DFILE,'climate file name',IER,nbhelp)
         elseif(iglib.eq.2)then
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
+          CALL EASKF(LLASCI,' ','EPW file:',
      &      144,DFILE,'climate file name',IER,nbhelp)
         else
-          CALL EASKF(LLASCI,' ',' Climate file name (ASCII)?',
+          CALL EASKF(LLASCI,' ','EPW file:',
      &      96,DFILE,'climate file name',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
@@ -4592,84 +4691,106 @@ C Confirm suggested name and then write out binary file.
         longtmp=LCLIM
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(longtmp,' ',' Climate file name (binary)? ',
+          CALL EASKF(longtmp,' ','Weather file:',
      &      96,DCLIM,'climate file name',IER,nbhelp)
         elseif(iglib.eq.2)then
-          CALL EASKF(longtmp,' ',' Climate file name (binary)? ',
+          CALL EASKF(longtmp,' ','Weather file:',
      &      144,DCLIM,'climate file name',IER,nbhelp)
         else
-          CALL EASKF(longtmp,' ',' Climate file name (binary)? ',
+          CALL EASKF(longtmp,' ','Weather file:',
      &      96,DCLIM,'climate file name',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
-        if(longtmp(1:2).ne.'  '.and.longtmp(1:4).ne.'UNKN')then
-          LCLIM=longtmp
-        endif
 
 C Convert both binary and asci file names into full paths prior
 C to asking clm to do the conversion.
-        call addpath(LCLIM,longtfile,concat)
+        if(ipathclim.eq.0.or.ipathclim.eq.1)then
+          call addpath(longtmp,longtfile,concat)
+        elseif(ipathclim.eq.2)then
+          longtfile=longtmp
+        endif
         call addpath(LLASCI,longtafile,concat)
         call tstamp('>','PRJ: start clm for conversion')
         doit = ' '
         write(doit,'(5a)') 'clm -mode text -file ',
      &      longtfile(1:lnblnk(longtfile)),' -act epw2bin silent ',
      &      longtafile(1:lnblnk(longtafile))
-        dok=.false.
-        CALL ASKOK(' ','Browse/edit imported climate data?',
-     &    OK,dok,nbhelp)
-        if(ok)then
-          call runit(doit,tmode)
+        call runit(doit,tmode)
+
+C Assign weather file name based on longtmp location via findwhichdbpath.
+        call findwhichdbpath('clm',longtfile,ier)
+        if(ipathclim.eq.0.or.ipathclim.eq.1)then
+          llclmdb=LCLIM
+        elseif(ipathclim.eq.2)then
+          write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &      LCLIM(1:lnblnk(LCLIM))
         endif
+
+C After clm module run there will be a new binary file so fall through.
+
       endif
 
 C Confirm with user about update Site latitude and longitude, recover
 C clat and clong. First check if climate file exists: if so open,
 C otherwise create with 0 length.
       CALL ERPFREE(ICLIM,ISTAT)
-      CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
+      call EFOPRAN(ICLIM,llclmdb,144,0,IER)
       if(ISTAT.ge.0)then
         CALL ERPFREE(ICLIM,ISTAT)
-        CALL FPRAND(ICLIM,ISTAT,144,1,LCLIM)
+        call EFOPRAN(ICLIM,llclmdb,144,1,IER)
         IREC=366
         READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)ICYEAR,ICDNGH
         IREC=368
         READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG
         CALL ERPFREE(ICLIM,ISTAT)
+      else
+        call usrmsg('Unable to open weather file.',llclmdb,'W')
+        goto 552  ! jump back to redisplay menu
       endif
-      write(outs,'(A,F7.3,A,F7.3,a,i4,i5,a,2F7.3,a)')
-     &   'The climate lat is ',clat,
-     &   ' & long diff is ',clong,' & Year & DN flag ',ICYEAR,ICDNGH,
-     &   '. The model currently uses ',sitelat,sitelongdif,'.'
-      dok=.false.
-      CALL ASKOK(outs,
-     &  'Update your model with climate data?',OK,DOK,3)
-      IF(OK)THEN
-        sitelat=CLAT
-        sitelongdif=CLONG
-        WRITE(OUTS,'(A,F6.2,A,F6.2,A)')'A latitude of ',sitelat,
-     &    ' and longitude diff of ',sitelongdif,
-     &    ' is associated with the model.'
-        CALL EDISP(IUOUT,OUTS)
-        CALL EDISP(IUOUT,' ')
+
+C Check if weather site and model site differ.
+      call eclose(clat,sitelat,0.01,closelat)
+      call eclose(clong,sitelongdif,0.01,closelong)
+      if(closelat.and.closelong)then
+        continue
+      else
+        write(outs,'(A,F6.2,A,F6.2,a,i4,a,2F6.2,a)')
+     &    'The climate lat is ',clat,
+     &    ' & long diff is ',clong,' & Year & DN flag ',ICYEAR,
+     &    '. The model uses ',sitelat,sitelongdif,'.'
+        dok=.false.
+        CALL ASKOK(outs,
+     &    'Update your model with climate data?',OK,DOK,3)
+        if(OK)then
+          sitelat=CLAT
+          sitelongdif=CLONG
+          WRITE(OUTS,'(A,F6.2,A,F6.2,A)')'A latitude of ',sitelat,
+     &     ' and longitude diff of ',sitelongdif,
+     &     ' is associated with the model.'
+          CALL EDISP(IUOUT,OUTS)
+          CALL EDISP(IUOUT,' ')
+        endif
       ENDIF
 
-C Update year 
-      dok=.false.
-      WRITE(OUTS,'(A,I4,a,I4,a)')'The climate year is ',ICYEAR,
-     &  '. and the model year is ',IYEAR,'.'      
-      CALL ASKOK(OUTS,
-     &  'Use climate year in your model? (see help)',OK,DOK,nbhelp)
-      IF(OK)THEN
-        IYEAR=ICYEAR
-        WRITE(OUTS,'(I4,A)')IYEAR,' will be used as simulation year.'
-        CALL EDISP(IUOUT,OUTS)
-        CALL EDISP(IUOUT,' ')
-        if(nbdaytype.eq.0)then
-          call calenmanage('i',ier)
-        elseif(nbdaytype.eq.3)then
-          call calenmanage('i',ier)
-        elseif(nbdaytype.gt.3)then
+C Update year.
+      if(icyear.eq.iyear)then
+        continue
+      else 
+        dok=.false.
+        WRITE(OUTS,'(A,I4,a,I4,a)')'The climate year is ',ICYEAR,
+     &    '. and the model year is ',IYEAR,'.'      
+        CALL ASKOK(OUTS,
+     &    'Use climate year in your model? (see help)',OK,DOK,nbhelp)
+        IF(OK)THEN
+          IYEAR=ICYEAR
+          WRITE(OUTS,'(I4,A)')IYEAR,' will be used as simulation year.'
+          CALL EDISP(IUOUT,OUTS)
+          CALL EDISP(IUOUT,' ')
+          if(nbdaytype.eq.0)then
+            call calenmanage('i',ier)
+          elseif(nbdaytype.eq.3)then
+            call calenmanage('i',ier)
+          elseif(nbdaytype.gt.3)then
 
 C Perform check that calendar day types correspond with simulation year.
 C The logic below assumes that the first three day types are still weekday
@@ -4678,31 +4799,32 @@ C calendar day type is one of the standard 3 it checks that the model weekday
 C is the same as a Julian weekday. Any calendar day types beyond 3 are 
 C retained. If no calendar was defined in the model then it should do the
 C work silently. (Same logic as in esystem.F) 
-          ICREPORT=0
-          DO 123 IDOL=1,365
-            IF(ICALENDER(IDOL).LE.3)THEN
-              CALL EDAYR(IDOL,IDAYNUM,IMTHNUM)
-              CALL EWEEKD(IDAYNUM,IMTHNUM,IYEAR,IDWKNUM)
-              IF(IDWKNUM.LT.6)THEN
-                IDTYY=1 ! WEEKDAY
-              ELSEIF(IDWKNUM.EQ.6)THEN
-                IDTYY=2 ! SATURDAY
-              ELSEIF(IDWKNUM.EQ.7)THEN
-                IDTYY=3 ! SUNDAY
+            ICREPORT=0
+            DO 123 IDOL=1,365
+              IF(ICALENDER(IDOL).LE.3)THEN
+                CALL EDAYR(IDOL,IDAYNUM,IMTHNUM)
+                CALL EWEEKD(IDAYNUM,IMTHNUM,IYEAR,IDWKNUM)
+                IF(IDWKNUM.LT.6)THEN
+                  IDTYY=1 ! WEEKDAY
+                ELSEIF(IDWKNUM.EQ.6)THEN
+                  IDTYY=2 ! SATURDAY
+                ELSEIF(IDWKNUM.EQ.7)THEN
+                  IDTYY=3 ! SUNDAY
+                ENDIF
+                IF(ICALENDER(IDOL).EQ.0)THEN
+                  ICALENDER(IDOL)=IDTYY  ! update the model calendar
+                  ICREPORT=2             ! do it silently
+                ELSEIF(ICALENDER(IDOL).NE.IDTYY)THEN
+                  ICALENDER(IDOL)=IDTYY  ! update the model calendar
+                  ICREPORT=1
+                ENDIF
               ENDIF
-              IF(ICALENDER(IDOL).EQ.0)THEN
-                ICALENDER(IDOL)=IDTYY  ! update the model calendar
-                ICREPORT=2             ! do it silently
-              ELSEIF(ICALENDER(IDOL).NE.IDTYY)THEN
-                ICALENDER(IDOL)=IDTYY  ! update the model calendar
-                ICREPORT=1
-              ENDIF
-            ENDIF
- 123      CONTINUE
-          if(ICREPORT.EQ.1)then
-            CALL EDISP(IUOUT,'  ')
-            CALL EDISP(IUOUT,
-     &        'Simulation year and calendar mismatch rectified')
+ 123        CONTINUE
+            if(ICREPORT.EQ.1)then
+              CALL EDISP(IUOUT,'  ')
+              CALL EDISP(IUOUT,
+     &          'Simulation year and calendar mismatch rectified')
+            endif
           endif
         endif
       ENDIF        
