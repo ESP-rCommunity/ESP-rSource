@@ -754,9 +754,9 @@ C Default ESP-r distribution path.
       logical moddb,modcon,copydef,clkok,chgdb
       logical closemat1,closemat2
 
-      character LLTMP*144,LTMP*92,lguess*144
-      character fs*1,message*48
-      character doit*300,LCOPY*144
+      character LLTMP*144,LTMP*92
+      character fs*1
+      character LCOPY*144
       character DFILE*144,LLASCI*144,LLTMPFL*144
       character lprev*144
       character longtfile*144
@@ -764,11 +764,11 @@ C Default ESP-r distribution path.
       character dirpath*48
       integer iglib  ! for detecting GTK or X11
 
-      CHARACTER outs248*248,APP*4
+      CHARACTER APP*4
+C      CHARACTER outs248*248
       LOGICAL OK,XST,DOK,concat
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72
-      character sourcefile*144  ! the file to copy
 
 C Local strings for user selections dependent on graphic library.
       character opte*28,optf*28,optg*28
@@ -777,6 +777,7 @@ C Local strings for user selections dependent on graphic library.
       integer lndbp   ! for length of standard database path
       integer ier
       logical unixok  ! to check for database path file separators
+      logical allowbrowse ! to be done
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -827,9 +828,6 @@ C Setup lltmp to hold the full path to the file for use in dialog.
 
       helptopic='mat_db_edit_menu'
       call gethelptext(helpinsub,helptopic,nbhelp)
-
-C If GTK library then there are additional options so include in help.
-      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
 
 C If local or absolute path call addpath otherwise if a standard
 C database then set longtfile equal to LLTMP.
@@ -1119,115 +1117,22 @@ C expects to be passed the expanded file name.
 
       elseif(isw.eq.4.or.isw.eq.9)then
 
-C Copy a database to project folder. If iws is 4 then the
+C Copy standard file to model folder. If iws is 4 then the
 C user has asked for the default database. If isw is 9 then the
 C user wishes to browse for the source file. Suggest a local
-C file name based on the project root name. Lastly do the copy.
-C If the default is to be copied ask for local name. Use LTMP for
-C the file name as known to esp-r and LCOPY for the system cp call.
-C Remember the file to be copied as sourcefile so that subsequent
-C code is general rather than specific (for later consolidation).   
-        if(copydef)then
-          write(outs248,'(2a)') 'The source file is:',
-     &      DFCON(1:lnblnk(DFCON))
-          call edisp248(iuout,outs248,100)
-          sourcefile = DFCON
-        else
-          lltmp='  '
-          lguess='  '
-          if(ipathmat.eq.0.or.ipathmat.eq.1)then
-            write(lguess,'(a)') LFMAT(1:lnblnk(LFMAT))
-          elseif(ipathmat.eq.2)then
-            write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
-     &        LFMAT(1:lnblnk(LFMAT))
-          endif
-          call edisp(iuout,'  ')  ! echo blank line
-          CALL EASKXORGTKF(lguess,
-     &      'Materials file name (source)?',' ',
-     &      DFCON,lltmp,'materials database',IER,nbhelp)
-
-          sourcefile = lltmp   ! remember this
-
-C If user request jump back and re-display the menu.
-          if(ier.eq.-3)then
-            goto 60  ! cancel detected, restore name and redisplay menu.
-          endif
-          ipathmat=1  ! signal that it is a local database.
-        endif
-
-        lr=lnblnk(cfgroot)
-        if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-          write(LTMP,'(2a)') cfgroot(1:lr),'.materialdb'
-        elseif(dbspth(1:3).eq.'../')then
-          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &      cfgroot(1:lr),'.materialdb'
-        else
-          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &      cfgroot(1:lr),'.materialdb'
-        endif
-   66   CALL EASKS(LTMP,
-     &    'Database name after it is copied into the project?',
-     &    ' ',92,'material.db','copied material database',IER,nbhelp)
-        call isunix(unixok)
-        IF(LTMP(1:2).NE.'  ')then
-
-C If Unix and the path is ./ then no need to prepend this (to
-C avoid .//../dbs in the buffer).  If path ends with file separator
-C no need to duplicat the file separator.
-          if(unixok)then
-            lpp=lnblnk(path)
-            if(path(1:2).eq.'./')then
-              write(LCOPY,'(a)') LTMP(1:lnblnk(LTMP))
-            elseif(path(lpp:lpp).eq.fs)then
-              write(LCOPY,'(2a)') path(1:lnblnk(path)),
-     &          LTMP(1:lnblnk(LTMP))
-            else
-              write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &          LTMP(1:lnblnk(LTMP))
-            endif
-          else
-            write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &        LTMP(1:lnblnk(LTMP))
-          endif
-
-C Now copy sourcefile to lcopy.
-          doit = ' '
-          if(unixok)then
-            write(doit,'(4a)',IOSTAT=IOS) 'cp ',
-     &        sourcefile(1:lnblnk(sourcefile)),' ',
-     &        LCOPY(1:lnblnk(LCOPY))
-          else
-
-C Standard dos copy logic.
-            message='getting materials file from '
-            call dblongdoscopy(sourcefile,lcopy,message,doit,ier)
-          endif
-          call usrmsg('copying default file via',doit,'-')
-          call runit(doit,'-')
-
-C Use LTMP or LCOPY depending on the path because the path will already
-C be pre-pended when using most inbuilt file opening calls.
-          call FINDFIL(LCOPY,XST)
-          if(XST)then
-            call fdroot(lcopy,lpath,fname)
-            write(LFMAT,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        fname(1:lnblnk(fname))
-          else
-            call FINDFIL(LTMP,XST)
-            if(XST)then
-              write(LFMAT,'(a)') LTMP(1:lnblnk(LTMP))
-            else
-              write(LFMAT,'(a)') LTMP(1:lnblnk(LTMP))
-              call edisp(iuout,'Problem locating the new database.')
-              call edisp(iuout,'Try browsing ../dbs to find it.')
-              call edisp(iuout,' ')
-            endif
-          endif
-          moddb=.true.
-          ipathmat=1  ! signal that it is a local database.
+C file name based on the project root name. Update common to
+C reflect it is local.
+	allowbrowse=.false.
+	numhelp=nbhelp
+	lltmp='  '
+        call copycommonfile('mat',copydef,allowbrowse,
+     &  numhelp,lltmp,istat,moddb)
+     
+        if(istat.eq.1)then
+          LFMAT=lprev
+          goto 60  ! cancel detected, restore name and redisplay menu.
+        elseif(istat.eq.0)then
           goto 44
-        else
-          goto 66
         endif
 
       elseif(isw.eq.5)then
@@ -1556,13 +1461,13 @@ C     if blank then no file name change implied.
       common/deflt4/dinstpath
 
       CHARACTER LTMP*72,lltmp*144,lprev*144
-      character longtfile*144,lguess*144,message*48
+      character longtfile*144
       CHARACTER DOIT*300,fs*1,LCOPY*144
-      CHARACTER OUTS*124,outs248*248,APP*4,ext*4
+      CHARACTER OUTS*124,APP*4
+C      CHARACTER outs248*248
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,tmode*8
-      character sourcefile*144  ! the file to copy ??
       character dirpath*48
 
 C Local strings for user selections dependent on graphic library.
@@ -1573,6 +1478,8 @@ C Local strings for user selections dependent on graphic library.
       integer ier
       logical unixok  ! to check for database path file separators
       integer iglib  ! for detecting GTK or X11
+      logical allowbrowse ! to be done
+      
 #ifdef OSI
       integer ICPMOD     ! passed from tchild
 #else
@@ -1781,115 +1688,22 @@ C use the editing facility.
 C Copy a database to project folder. If iws is 4 then the
 C user has asked for the default database. If isw is 7 then the
 C user wishes to browse for the source file. Suggest a local
-C file name based on the project root name. Lastly do the copy.
-C If the default is to be copied ask for local name. Use LTMP for
-C the file name as known to esp-r and LCOPY for the system cp call.
-C Remember the file to be copied as sourcefile so that subsequent
-C code is general rather than specific (for later consolidation).   
-        if(copydef)then
-          write(outs248,'(2a)') 'The source file is:',
-     &      DPCDB(1:lnblnk(DPCDB))
-          call edisp248(iuout,outs248,100)
-          sourcefile = DPCDB
-        else
-          lltmp='  '
-          lguess='  '
-          if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
-            lguess=LPCDB
-          elseif(ipathpcdb.eq.2)then
-            write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
-     &        lpcdb(1:lnblnk(lpcdb))
-          endif
-          call edisp(iuout,'  ')  ! echo blank line
-          CALL EASKXORGTKF(lguess,
-     &      'Plant template file name (source)?',' ',
-     &      DPCDB,lltmp,'plant templates database',IER,nbhelp)
-
-          sourcefile = lltmp   ! remember this
-
-C If user request jump back and re-display the menu.
-          if(ier.eq.-3)then
-            goto 60  ! cancel detected, restore name and redisplay menu.
-          endif
-          ipathpcdb=1  ! signal that it will be a local database.
-        endif
-
-        lr=lnblnk(cfgroot)
-        if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-          write(LTMP,'(2a)') cfgroot(1:lr),'.plantdb'
-        elseif(dbspth(1:3).eq.'../')then
-          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &      cfgroot(1:lr),'.plantdb'
-        else
-          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &      cfgroot(1:lr),'.plantdb'
-        endif
-   66   CALL EASKS(LTMP,
-     &    'Database name after it is copied into the project?',
-     &    ' ',72,'plant.db','copied plant database',IER,nbhelp)
-        call isunix(unixok)
-        IF(LTMP(1:2).NE.'  ')then
-
-C If Unix and the path is ./ then no need to prepend this (to
-C avoid .//../dbs in the buffer).  If path ends with file separator
-C no need to duplicat the file separator.
-          if(unixok)then
-            lpp=lnblnk(path)
-            if(path(1:2).eq.'./')then
-              write(LCOPY,'(a)') LTMP(1:lnblnk(LTMP))
-            elseif(path(lpp:lpp).eq.fs)then
-              write(LCOPY,'(2a)') path(1:lnblnk(path)),
-     &          LTMP(1:lnblnk(LTMP))
-            else
-              write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &          LTMP(1:lnblnk(LTMP))
-            endif
-          else
-            write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &        LTMP(1:lnblnk(LTMP))
-          endif
-
-C Now copy sourcefile to lcopy.
-          doit = ' '
-          if(unixok)then
-            write(doit,'(4a)',IOSTAT=IOS) 'cp ',
-     &        sourcefile(1:lnblnk(sourcefile)),' ',
-     &        LCOPY(1:lnblnk(LCOPY))
-          else
-
-C Standard dos copy logic.
-            message='getting plant db file from '
-            call dblongdoscopy(sourcefile,lcopy,message,doit,ier)
-          endif
-          call usrmsg('copying default file via',doit,'-')
-          call runit(doit,'-')
-
-C Use LTMP or LCOPY depending on the path because the path will already
-C be pre-pended when using most inbuilt file opening calls.
-          call FINDFIL(LCOPY,XST)
-          if(XST)then
-            call fdroot(lcopy,lpath,fname)
-            write(LPCDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        fname(1:lnblnk(fname))
-          else
-            call FINDFIL(LTMP,XST)
-            if(XST)then
-              write(LPCDB,'(a)') LTMP(1:lnblnk(LTMP))
-            else
-              write(LPCDB,'(a)') LTMP(1:lnblnk(LTMP))
-              call edisp(iuout,'Problem locating the new database.')
-              call edisp(iuout,'Try browsing ../dbs to find it.')
-              call edisp(iuout,' ')
-            endif
-          endif
-          moddb=.true.
-          ipathpcdb=1  ! signal that it is a local database.
-          lltmp=LPCDB  ! reset lltmp for use at 44
+C file name based on the project root name.  Suggest a local
+C file name based on the project root name. Update common to
+C reflect it is local.   
+	allowbrowse=.false.
+	numhelp=nbhelp
+	lltmp='  '
+        call copycommonfile('pdb',copydef,allowbrowse,
+     &  numhelp,lltmp,istat,moddb)
+     
+        if(istat.eq.1)then
+          LPCDB=lprev
+          goto 60  ! cancel detected, restore name and redisplay menu.
+        elseif(istat.eq.0)then
           goto 44
-        else
-          goto 66
         endif
-
+       
       elseif(isw.eq.5)then
 
 C Make up browse to the model ../dbs folder suggest the name LCOPY
@@ -2048,10 +1862,11 @@ C << introduce concept of types of profiles
       common/deflt4/dinstpath
 
       CHARACTER LTMP*72,lltmp*144,lprev*144
-      character LLASCI*144,lbin*144,llbin*144,lguess*144
-      character longtfile*144,LCOPY*144,message*48
-      CHARACTER DOIT*300,fs*1,APP*4,ext*4
-      CHARACTER OUTS*124,OUTS248*248
+      character LLASCI*144,lbin*144,llbin*144
+      character longtfile*144,LCOPY*144
+      CHARACTER fs*1,APP*4
+      CHARACTER OUTS*124
+C      CHARACTER OUTS248*248
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,dirpath*48
@@ -2059,9 +1874,9 @@ C << introduce concept of types of profiles
 C Local strings for user selections dependent on graphic library.
       character opte*28,optf*28,optg*28,opth*28,opti*28
       character lpath*72,fname*72 ! for use with fdroot
-      character sourcefile*144  ! the file to copy
       logical unixok  ! to check for database path file separators
       integer iglib  ! for detecting GTK or X11
+      logical allowbrowse  ! future facility
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -2281,113 +2096,19 @@ C use the editing facility.
 C Copy a database to project dbs folder. If iws is 4 then the
 C user has asked for the default database. If isw is 9 then the
 C user wishes to browse for the source file.  Suggest a local
-C file name based on the project root name. Lastly do the copy.
-C If the default is to be copied ask for local name. Use LTMP for
-C the file name as known to esp-r and LCOPY for the system cp call.
-C Remember the file to be copied as sourcefile so that subsequent
-C code is general rather than specific (for later consolidation).   
-        if(copydef)then
-          write(outs248,'(2a)') 'The source file is:',
-     &      DPRFDB(1:lnblnk(DPRFDB))
-          call edisp248(iuout,outs248,100)
-          sourcefile = DPRFDB
-        else
-
-C Provide a guess based on the current LPRFDB.
-          lltmp='  '
-          lguess='  '
-          if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
-            lguess=LPRFDB  ! use as is
-          elseif(ipathprodb.eq.2)then
-            write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
-     &        LPRFDB(1:lnblnk(LPRFDB))  ! prepend db folder path
-          endif
-          call edisp(iuout,'  ')  ! echo blank line
-          CALL EASKXORGTKF(lguess,'Event Profiles db (source)?',' ',
-     &      DPRFDB,lltmp,'events db',IER,nbhelp)
-          sourcefile = lltmp
-
-C If user request jump back and re-display the menu.
-          if(ier.eq.-3)then
-            goto 60  ! restore name and redisplay menu.
-          endif
-          ipathprodb=1  ! signal that it is a local database.
-        endif
-
-C Ask the user what to call the local file (suggest name).
-        lr=lnblnk(cfgroot)
-        if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-          write(LTMP,'(2a)') cfgroot(1:lr),'.eventdb.a'
-        elseif(dbspth(1:3).eq.'../')then
-          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &      cfgroot(1:lr),'.eventdb.a'
-        else
-          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &      cfgroot(1:lr),'.eventdb.a'
-        endif
-  66    CALL EASKS(LTMP,
-     &    'Database name after it is copied into the project?',
-     &    ' ',72,'event.db','copied events database',IER,nbhelp)
-        call isunix(unixok)
-        IF(LTMP(1:2).NE.'  ')then
-
-C If Unix and the path is ./ then no need to prepend this (to
-C avoid .//../dbs in the buffer).  If path ends with file separator
-C no need to duplicat the file separator.
-          if(unixok)then
-            lpp=lnblnk(path)
-            if(path(1:2).eq.'./')then
-              write(LCOPY,'(a)') LTMP(1:lnblnk(LTMP))
-            elseif(path(lpp:lpp).eq.fs)then
-              write(LCOPY,'(2a)') path(1:lnblnk(path)),
-     &          LTMP(1:lnblnk(LTMP))
-            else
-              write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &          LTMP(1:lnblnk(LTMP))
-            endif
-          else
-            write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &        LTMP(1:lnblnk(LTMP))
-          endif
-
-C Now copy sourcefile to lcopy.
-          doit = ' '
-          if(unixok)then
-            write(doit,'(4a)',IOSTAT=IOS) 'cp ',
-     &        sourcefile(1:lnblnk(sourcefile)),' ',
-     &        LCOPY(1:lnblnk(LCOPY))
-          else
-
-C Logic for copy similar to the pattern established above.
-            message='getting events db file from '
-            call dblongdoscopy(sourcefile,lcopy,message,doit,ier)
-          endif
-          call usrmsg('copying default file via',doit,'-')
-          call runit(doit,'-')
-
-C Use LTMP or LCOPY depending on the path because the path will already
-C be pre-pended when using most inbuilt file opening calls.
-          call FINDFIL(LCOPY,XST)
-          if(XST)then
-            call fdroot(lcopy,lpath,fname)
-            write(LPRFDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        fname(1:lnblnk(fname))
-          else
-            call FINDFIL(LTMP,XST)
-            if(XST)then
-              write(LPRFDB,'(a)') LTMP(1:lnblnk(LTMP))
-            else
-              write(LPRFDB,'(a)') LTMP(1:lnblnk(LTMP))
-              call edisp(iuout,'Problem locating the new database.')
-              call edisp(iuout,'Try browsing ../dbs to find it.')
-              call edisp(iuout,' ')
-            endif
-          endif
-          moddb=.true.
-          ipathprodb=1  ! signal that it is a local database.
+C file name based on the project root name. Update common to
+C reflect it is local.   
+	allowbrowse=.false.
+	numhelp=nbhelp
+	lltmp='  '
+        call copycommonfile('pro',copydef,allowbrowse,
+     &  numhelp,lltmp,istat,moddb)
+     
+        if(istat.eq.1)then
+          LPRFDB=lprev
+          goto 60  ! cancel detected, restore name and redisplay menu.
+        elseif(istat.eq.0)then
           goto 44
-        else
-          goto 66
         endif
 
       elseif(isw.eq.5)then
@@ -2670,19 +2391,19 @@ C Default esp-r distribution path.
       logical moddb,modcon,modmlc,copydef,clkok
 
       CHARACTER LTMP*72,lltmp*144,lprev*144
-      character longtfile*144,LCOPY*144,lguess*144,message*48
-      CHARACTER DOIT*300,fs*1,APP*4,ext*4
-      CHARACTER outs248*248
+      character longtfile*144,LCOPY*144
+      CHARACTER fs*1,APP*4
+C      CHARACTER outs248*248
       LOGICAL OK,XST,DOK
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,dirpath*48
-      character sourcefile*144  ! the file to copy ??
 
 C Local strings for user selections dependent on graphic library.
       character opte*28,optf*28,optg*28
       character lpath*72,fname*72 ! for use with fdroot
       integer lndbp   ! for length of standard database path
       logical unixok  ! to check for database path file separators
+      logical allowbrowse ! future option
       integer iglib  ! for detecting GTK or X11
 
 C For help messages
@@ -2892,111 +2613,19 @@ C Scan the new file and use the editing facility.
 C Copy a database to project dbs folder. If iws is 4 then the
 C user has asked for the default database. If isw is 7 then the
 C user wishes to browse for the source file. Suggest a local
-C file name based on the project root name then do the copy.
-C Use LTMP (short buffer) for the file name as known to esp-r
-C and LCOPY for the system cp call.
-        if(copydef)then
-          write(outs248,'(2a)') 'The source file is:',
-     &      DFMUL(1:lnblnk(DFMUL))
-          call edisp248(iuout,outs248,100)
-          sourcefile = DFMUL
-        else
-
-C Provide a guess based on the current LFMUL.
-          lltmp='  '
-          lguess='  '
-          if(ipathmul.eq.0.or.ipathmul.eq.1)then
-            lguess=LFMUL  ! use as is
-          elseif(ipathmul.eq.2)then
-            write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
-     &        lfmul(1:lnblnk(lfmul))  ! prepend db folder path
-          endif
-          call edisp(iuout,'  ')  ! echo blank line
-          CALL EASKXORGTKF(lguess,'Constructions db (source)?',
-     &      ' ',DFMUL,lltmp,'MLC source database',IER,nbhelp)
-          sourcefile = lltmp
-
-C If user request jump back and re-display the menu.
-          if(ier.eq.-3)then
-            goto 60  ! cancel detected, redisplay menu.
-          endif
-          ipathmul=1  ! signal that it will be a local database.
-        endif
-
-        lr=lnblnk(cfgroot)
-        if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-          write(LTMP,'(2a)') cfgroot(1:lr),'.constrdb'
-        elseif(dbspth(1:3).eq.'../')then
-          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &      cfgroot(1:lr),'.constrdb'
-        else
-          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &      cfgroot(1:lr),'.constrdb'
-        endif
-  66    CALL EASKS(LTMP,
-     &    'Database name after it is copied into the project?',
-     &    ' ',72,'construction.db','copied MLC database',IER,nbhelp)
-        call isunix(unixok)
-        IF(LTMP(1:2).NE.'  ')then
-
-C If Unix and the path is ./ then no need to prepend this (to
-C avoid .//../dbs in the buffer).  If path ends with file separator
-C no need to duplicat the file separator.
-          if(unixok)then
-            lpp=lnblnk(path)
-            if(path(1:2).eq.'./')then
-              write(LCOPY,'(a)') LTMP(1:lnblnk(LTMP))
-            elseif(path(lpp:lpp).eq.fs)then
-              write(LCOPY,'(2a)') path(1:lnblnk(path)),
-     &          LTMP(1:lnblnk(LTMP))
-            else
-              write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &          LTMP(1:lnblnk(LTMP))
-            endif
-          else
-            write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &        LTMP(1:lnblnk(LTMP))
-          endif
-
-C Now copy sourcefile to lcopy.
-          doit = ' '
-          if(unixok)then
-            write(doit,'(4a)',IOSTAT=IOS) 'cp ',
-     &        sourcefile(1:lnblnk(sourcefile)),' ',
-     &        LCOPY(1:lnblnk(LCOPY))
-          else
-
-C Standard dos copy logic.
-            message='getting MLC db file from '
-            call dblongdoscopy(sourcefile,lcopy,message,doit,ier)
-          endif
-          call usrmsg('copying default file via',doit,'-')
-          call runit(doit,'-')
-
-C Use LTMP or LCOPY depending on the path because the path will already
-C be pre-pended when using most inbuilt file opening calls.
-          call FINDFIL(LCOPY,XST)
-          if(XST)then
-            call fdroot(lcopy,lpath,fname)
-            write(LFMUL,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        fname(1:lnblnk(fname))
-          else
-            call FINDFIL(LTMP,XST)
-            if(XST)then
-              write(LFMUL,'(a)') LTMP(1:lnblnk(LTMP))
-            else
-              write(LFMUL,'(a)') LTMP(1:lnblnk(LTMP))
-              call edisp(iuout,'Problem locating the new database.')
-              call edisp(iuout,'Try browsing ../dbs to find it.')
-              call edisp(iuout,' ')
-            endif
-          endif
-          moddb=.true.
-          mldbok=.true.
-          ipathmul=1  ! signal that it is a local database.
+C file name based on the project root name.  Update common to
+C reflect it is local.
+	allowbrowse=.false.
+	numhelp=nbhelp
+	lltmp='  '
+        call copycommonfile('mlc',copydef,allowbrowse,
+     &  numhelp,lltmp,istat,moddb)
+     
+        if(istat.eq.1)then
+          LFMUL=lprev
+          goto 60  ! cancel detected, restore name and redisplay menu.
+        elseif(istat.eq.0)then
           goto 44
-        else
-          goto 66
         endif
 
       elseif(isw.eq.5)then
@@ -3131,21 +2760,21 @@ C This facility offers browsing for GTK version.
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       CHARACTER LTMP*72,lltmp*144,lprev*144
-      character longtfile*144,LCOPY*144,lguess*144,message*48
-      CHARACTER DOIT*300,fs*1,APP*4,ext*4
-      CHARACTER outs248*248
+      character longtfile*144,LCOPY*144
+      CHARACTER fs*1,APP*4
+C      CHARACTER outs248*248
       character GTYPE*12,GDESCR*36,SOPT*12
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,dirpath*48
-      character sourcefile*144  ! the file to copy ??
 
 C Local strings for user selections dependent on graphic library.
       character opte*28,optf*28,optg*28
       character lpath*72,fname*72 ! for use with fdroot
       integer lndbp   ! for length of standard database path
       logical unixok  ! to check for database path file separators
+      logical allowbrowse  ! future facility
       integer iglib  ! for detecting GTK or X11
 
 C For help messages
@@ -3364,110 +2993,19 @@ C Scan the new file and use the editing facility.
 C Copy a database to project dbs folder. If iws is 4 then the
 C user has asked for the default database. If isw is 7 then the
 C user wishes to browse for the source file. Suggest a local
-C file name based on the project root name then do the copy.
-C Use LTMP (short buffer) for the file name as known to esp-r
-C and LCOPY for the system cp call.
-        if(copydef)then
-          write(outs248,'(2a)') 'The source file is:',
-     &      DOPTDB(1:lnblnk(DOPTDB))
-          call edisp248(iuout,outs248,100)
-          sourcefile = DOPTDB
-        else
-
-C Provide a guess based on the current LOPTDB.
-          lltmp='  '
-          lguess='  '
-          if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
-            lguess=LOPTDB  ! use as is
-          elseif(ipathoptdb.eq.2)then
-            write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
-     &        loptdb(1:lnblnk(loptdb))  ! prepend db folder path
-          endif
-          call edisp(iuout,'  ')  ! echo blank line
-          CALL EASKXORGTKF(lguess,'Optical Properties db (source)?',
-     &      ' ',DOPTDB,lltmp,'optical properties database',IER,nbhelp)
-          sourcefile = lltmp
-
-C If user request jump back and re-display the menu.
-          if(ier.eq.-3)then
-            goto 60  ! cancel detected, redisplay menu.
-          endif
-          ipathoptdb=1  ! signal that it will be a local database.
-        endif
-
-        lr=lnblnk(cfgroot)
-        if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-          write(LTMP,'(2a)') cfgroot(1:lr),'.opticdb'
-        elseif(dbspth(1:3).eq.'../')then
-          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &      cfgroot(1:lr),'.opticdb'
-        else
-          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &      cfgroot(1:lr),'.opticdb'
-        endif
-  66    CALL EASKS(LTMP,
-     &    'Database name after it is copied into the project?',
-     &    ' ',72,'optics.db','copied optics database',IER,nbhelp)
-        call isunix(unixok)
-        IF(LTMP(1:2).NE.'  ')then
-
-C If Unix and the path is ./ then no need to prepend this (to
-C avoid .//../dbs in the buffer).  If path ends with file separator
-C no need to duplicat the file separator.
-          if(unixok)then
-            lpp=lnblnk(path)
-            if(path(1:2).eq.'./')then
-              write(LCOPY,'(a)') LTMP(1:lnblnk(LTMP))
-            elseif(path(lpp:lpp).eq.fs)then
-              write(LCOPY,'(2a)') path(1:lnblnk(path)),
-     &          LTMP(1:lnblnk(LTMP))
-            else
-              write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &          LTMP(1:lnblnk(LTMP))
-            endif
-          else
-            write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &        LTMP(1:lnblnk(LTMP))
-          endif
-
-C Now copy sourcefile to lcopy.
-          doit = ' '
-          if(unixok)then
-            write(doit,'(4a)',IOSTAT=IOS) 'cp ',
-     &        sourcefile(1:lnblnk(sourcefile)),' ',
-     &        LCOPY(1:lnblnk(LCOPY))
-          else
-
-C Standard dos copy logic.
-            message='getting optics db file from '
-            call dblongdoscopy(sourcefile,lcopy,message,doit,ier)
-          endif
-          call usrmsg('copying default file via',doit,'-')
-          call runit(doit,'-')
-
-C Use LTMP or LCOPY depending on the path because the path will already
-C be pre-pended when using most inbuilt file opening calls.
-          call FINDFIL(LCOPY,XST)
-          if(XST)then
-            call fdroot(lcopy,lpath,fname)
-            write(LOPTDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        fname(1:lnblnk(fname))
-          else
-            call FINDFIL(LTMP,XST)
-            if(XST)then
-              write(LOPTDB,'(a)') LTMP(1:lnblnk(LTMP))
-            else
-              write(LOPTDB,'(a)') LTMP(1:lnblnk(LTMP))
-              call edisp(iuout,'Problem locating the new database.')
-              call edisp(iuout,'Try browsing ../dbs to find it.')
-              call edisp(iuout,' ')
-            endif
-          endif
-          moddb=.true.
-          ipathoptdb=1  ! signal that it is a local database.
+C file name based on the project root name.  Update common to
+C reflect it is local.
+	allowbrowse=.false.
+	numhelp=nbhelp
+	lltmp='  '
+        call copycommonfile('opt',copydef,allowbrowse,
+     &  numhelp,lltmp,istat,moddb)
+     
+        if(istat.eq.1)then
+          LOPTDB=lprev
+          goto 60  ! cancel detected, restore name and redisplay menu.
+        elseif(istat.eq.0)then
           goto 44
-        else
-          goto 66
         endif
 
       elseif(isw.eq.5)then
@@ -3593,14 +3131,13 @@ C This facility offers browsing for GTK version.
       common/MFLDOC/DEPRE(MPRD)
 
       CHARACTER LTMP*72,lltmp*144,lprev*144
-      character longtfile*144,LCOPY*144,lguess*144,message*48
-      CHARACTER DOIT*300,fs*1,APP*4
-      CHARACTER outs248*248
+      character longtfile*144,LCOPY*144
+      CHARACTER fs*1,APP*4
+C      CHARACTER outs248*248
 
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,dirpath*48
-      character sourcefile*144  ! the file to copy ??
       character OUTSTR*124      ! string buffer for data read
       character t144*144        ! for passing to erprcdb
 
@@ -3610,6 +3147,7 @@ C Local strings for user selections dependent on graphic library.
       character lworking*144   ! file name in std folder
       integer lndbp   ! for length of standard database path
       logical unixok  ! to check for database path file separators
+      logical allowbrowse ! future option
       integer iglib  ! for detecting GTK or X11
 
 C For help messages
@@ -3806,113 +3344,19 @@ C Scan the new file and use the editing facility.
 C Copy a database to project dbs folder. If iws is 4 then the
 C user has asked for the default database. If isw is 7 then the
 C user wishes to browse for the source file. Suggest a local
-C file name based on the project root name then do the copy.
-C Use LTMP (short buffer) for the file name as known to esp-r
-C and LCOPY for the system cp call.
-        if(copydef)then
-          write(outs248,'(2a)') 'The source file is:',
-     &      DAPRES(1:lnblnk(DAPRES))
-          call edisp248(iuout,outs248,100)
-          call edisp(iuout,' ')
-          sourcefile = DAPRES
-        else
-
-C Provide a guess based on the current lapres.
-          lltmp='  '
-          lguess='  '
-          if(ipathapres.eq.0.or.ipathapres.eq.1)then
-            lguess=lapres
-          elseif(ipathapres.eq.2)then
-            write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
-     &        lapres(1:lnblnk(lapres))  ! prepend db folder path
-          endif
-          call edisp(iuout,'  ')  ! echo blank line
-          CALL EASKXORGTKF(lguess,
-     &      'Pressure coefficients db (source)?',' ',
-     &      dapres,lltmp,'pressure coef database',IER,nbhelp)
-          sourcefile = lltmp
-
-C If user request jump back and re-display the menu.
-          if(ier.eq.-3)then
-            goto 60  ! cancel detected, redisplay menu.
-          endif
-          ipathapres=1  ! signal that it is a local database.
-        endif
-
-        lr=lnblnk(cfgroot)
-        if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-          write(LTMP,'(2a)') cfgroot(1:lr),'.pressuredb'
-        elseif(dbspth(1:3).eq.'../')then
-          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &      cfgroot(1:lr),'.pressuredb'
-        else
-          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &      cfgroot(1:lr),'.pressuredb'
-        endif
-  66    CALL EASKS(LTMP,
-     &    'Database name after it is copied into the project?',
-     &    ' ',72,'pressure.db','copied pres coef database',
-     &    IER,nbhelp)
-        call isunix(unixok)
-        IF(LTMP(1:2).NE.'  ')then
-
-C If Unix and the path is ./ then no need to prepend this (to
-C avoid .//../dbs in the buffer).  If path ends with file separator
-C no need to duplicat the file separator.
-          if(unixok)then
-            lpp=lnblnk(path)
-            if(path(1:2).eq.'./')then
-              write(LCOPY,'(a)') LTMP(1:lnblnk(LTMP))
-            elseif(path(lpp:lpp).eq.fs)then
-              write(LCOPY,'(2a)') path(1:lnblnk(path)),
-     &          LTMP(1:lnblnk(LTMP))
-            else
-              write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &          LTMP(1:lnblnk(LTMP))
-            endif
-          else
-            write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &        LTMP(1:lnblnk(LTMP))
-          endif
-
-C Now copy sourcefile to lcopy.
-          doit = ' '
-          if(unixok)then
-            write(doit,'(4a)',IOSTAT=IOS) 'cp ',
-     &        sourcefile(1:lnblnk(sourcefile)),' ',
-     &        LCOPY(1:lnblnk(LCOPY))
-          else
-
-C Standard dos copy logic.
-            message='getting pressure db file from '
-            call dblongdoscopy(sourcefile,lcopy,message,doit,ier)
-          endif
-          call usrmsg('copying default file via',doit,'-')
-          call runit(doit,'-')
-
-C Use LTMP or LCOPY depending on the path because the path will already
-C be pre-pended when using most inbuilt file opening calls.
-          call FINDFIL(LCOPY,XST)
-          if(XST)then
-            call fdroot(lcopy,lpath,fname)
-            write(lapres,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        fname(1:lnblnk(fname))
-          else
-            call FINDFIL(LTMP,XST)
-            if(XST)then
-              write(lapres,'(a)') LTMP(1:lnblnk(LTMP))
-            else
-              write(lapres,'(a)') LTMP(1:lnblnk(LTMP))
-              call edisp(iuout,'Problem locating the new database.')
-              call edisp(iuout,'Try browsing ../dbs to find it.')
-              call edisp(iuout,' ')
-            endif
-          endif
-          moddb=.true.
-          ipathapres=1  ! signal that it is a local database.
+C file name based on the project root name. Update common to
+C reflect it is local.
+	allowbrowse=.false.
+	numhelp=nbhelp
+	lltmp='  '
+        call copycommonfile('prs',copydef,allowbrowse,
+     &  numhelp,lltmp,istat,moddb)
+     
+        if(istat.eq.1)then
+          lapres=lprev
+          goto 60  ! cancel detected, restore name and redisplay menu.
+        elseif(istat.eq.0)then
           goto 44
-        else
-          goto 66
         endif
 
       elseif(isw.eq.5)then
@@ -4444,9 +3888,8 @@ C not do the fall-through for site data unless the user asks.
       elseif(isw.eq.4)then
 
 C Copy standard weather to project folder. Suggest a local
-C file name based on the project root name. Lastly do the copy.
-C If the default is to be copied ask for local name. Use longtmp for
-C the file name as known to esp-r and LCOPY for the system cp call.   
+C file name based on the project root name. Update common to
+C reflect it is local.   
         if(copydef)then
           call edisp(iuout,' ')
           call edisp(iuout,'The source weather is:')
@@ -4892,15 +4335,13 @@ C is via a text editor.
       common/rpath/path
       common/deflt4/dinstpath
 
-      CHARACTER LTMP*72,lltmp*144,lprev*144
+      CHARACTER lltmp*144,lprev*144
       character longtfile*144,longtfiledos*144,LCOPY*144
-      character lguess*144,message*48
-      CHARACTER DOIT*300,fs*1,APP*4,ext*4
-      CHARACTER outs248*248
+      CHARACTER DOIT*300,fs*1,APP*4
+C      CHARACTER outs248*248
       LOGICAL OK,COPYDEF,MODDB,XST,DOK,concat
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,dirpath*48
-      character sourcefile*144  ! the file to copy ??
       character tmode*8
 
 C Local strings for user selections dependent on graphic library.
@@ -4908,6 +4349,7 @@ C Local strings for user selections dependent on graphic library.
       character lpath*72,fname*72 ! for use with fdroot
       integer lndbp   ! for length of standard database path
       logical unixok  ! to check for database path file separators
+      logical allowbrowse  ! future facility
       integer iglib  ! for detecting GTK or X11
 
 C For help messages
@@ -5064,110 +4506,19 @@ C There is no select by list for misc comp database.
 C Copy a database to project dbs folder. If iws is 4 then the
 C user has asked for the default database. If isw is 7 then the
 C user wishes to browse for the source file. Suggest a local
-C file name based on the project root name then do the copy.
-C Use LTMP (short buffer) for the file name as known to esp-r
-C and LCOPY for the system cp call.
-        if(copydef)then
-          write(outs248,'(2a)') 'The source file is:',
-     &      DMCMPDBFL(1:lnblnk(DMCMPDBFL))
-          call edisp248(iuout,outs248,100)
-          sourcefile = DMCMPDBFL
-        else
-
-C Provide a guess based on the current MCMPDDBFL.
-          lltmp='  '
-          lguess='  '
-          if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
-            lguess=MCMPDBFL  ! use as is
-          elseif(ipathmsc.eq.2)then
-            write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
-     &        MCMPDBFL(1:lnblnk(MCMPDBFL))  ! prepend db folder path
-          endif
-          call edisp(iuout,'  ')  ! echo blank line
-          CALL EASKXORGTKF(lguess,'Miscellaneous comp db (source)?',
-     &      ' ',DMCMPDBFL,lltmp,'miscel comp database',IER,nbhelp)
-          sourcefile = lltmp
-
-C If user request jump back and re-display the menu.
-          if(ier.eq.-3)then
-            goto 60  ! cancel detected, redisplay menu.
-          endif
-          ipathmsc=1  ! signal that it will be a local database.
-        endif
-
-        lr=lnblnk(cfgroot)
-        if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-          write(LTMP,'(2a)') cfgroot(1:lr),'.miscdb'
-        elseif(dbspth(1:3).eq.'../')then
-          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &      cfgroot(1:lr),'.miscdb'
-        else
-          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &      cfgroot(1:lr),'.miscdb'
-        endif
-  66    CALL EASKS(LTMP,
-     &    'Database name after it is copied into the project?',
-     &    ' ',72,'optics.db','copied msc comp database',IER,nbhelp)
-        call isunix(unixok)
-        IF(LTMP(1:2).NE.'  ')then
-
-C If Unix and the path is ./ then no need to prepend this (to
-C avoid .//../dbs in the buffer).  If path ends with file separator
-C no need to duplicat the file separator.
-          if(unixok)then
-            lpp=lnblnk(path)
-            if(path(1:2).eq.'./')then
-              write(LCOPY,'(a)') LTMP(1:lnblnk(LTMP))
-            elseif(path(lpp:lpp).eq.fs)then
-              write(LCOPY,'(2a)') path(1:lnblnk(path)),
-     &          LTMP(1:lnblnk(LTMP))
-            else
-              write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &          LTMP(1:lnblnk(LTMP))
-            endif
-          else
-            write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &        LTMP(1:lnblnk(LTMP))
-          endif
-
-C Now copy sourcefile to lcopy.
-          doit = ' '
-          if(unixok)then
-            write(doit,'(4a)',IOSTAT=IOS) 'cp ',
-     &        sourcefile(1:lnblnk(sourcefile)),' ',
-     &        LCOPY(1:lnblnk(LCOPY))
-          else
-
-C Standard dos copy logic.
-            message='getting optics db file from '
-            call dblongdoscopy(sourcefile,lcopy,message,doit,ier)
-          endif
-          call usrmsg('copying default file via',doit,'-')
-          call runit(doit,'-')
-
-C Use LTMP or LCOPY depending on the path because the path will already
-C be pre-pended when using most inbuilt file opening calls.
-          call FINDFIL(LCOPY,XST)
-          if(XST)then
-            call fdroot(lcopy,lpath,fname)
-            write(MCMPDBFL,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        fname(1:lnblnk(fname))
-          else
-            call FINDFIL(LTMP,XST)
-            if(XST)then
-              write(MCMPDBFL,'(a)') LTMP(1:lnblnk(LTMP))
-            else
-              write(MCMPDBFL,'(a)') LTMP(1:lnblnk(LTMP))
-              call edisp(iuout,'Problem locating the new database.')
-              call edisp(iuout,'Try browsing ../dbs to find it.')
-              call edisp(iuout,' ')
-            endif
-          endif
-          moddb=.true.
-          ipathmsc=1  ! signal that it is a local database.
+C file name based on the project root name. Update common to
+C reflect it is local.
+	allowbrowse=.false.
+	numhelp=nbhelp
+	lltmp='  '
+        call copycommonfile('msc',copydef,allowbrowse,
+     &  numhelp,lltmp,istat,moddb)
+     
+        if(istat.eq.1)then
+          MCMPDBFL=lprev
+          goto 60  ! cancel detected, restore name and redisplay menu.
+        elseif(istat.eq.0)then
           goto 44
-        else
-          goto 66
         endif
 
       elseif(isw.eq.5)then
@@ -5317,21 +4668,20 @@ C is via a text editor.
       common/rpath/path
       common/deflt4/dinstpath
 
-      CHARACTER LTMP*72,lltmp*144,lprev*144
+      CHARACTER lltmp*144,lprev*144
       character longtfile*144,longtfiledos*144,LCOPY*144
-      character lguess*144,message*48
-      CHARACTER DOIT*300,fs*1,APP*4,ext*4
+      CHARACTER DOIT*300,fs*1,APP*4
       CHARACTER outs248*248
       LOGICAL OK,COPYDEF,MODDB,XST,DOK,concat
       character cfgroot*24,LCFGF*72
       character dinstpath*48,path*72,dirpath*48
-      character sourcefile*144  ! the file to copy ??
       character tmode*8
 
 C Local strings for user selections dependent on graphic library.
       character opte*28,optf*28,optg*28
       character lpath*72,fname*72 ! for use with fdroot
       integer lndbp   ! for length of standard database path
+      logical allowbrowse  ! future feature
       logical unixok  ! to check for database path file separators
       integer iglib  ! for detecting GTK or X11
 #ifdef OSI
@@ -5496,110 +4846,19 @@ C There is no select by list for mould isopleths.
 C Copy a common data file to project dbs folder. If iws is 4 then the
 C user has asked for the default database. If isw is 7 then the
 C user wishes to browse for the source file. Suggest a local
-C file name based on the project root name then do the copy.
-C Use LTMP (short buffer) for the file name as known to esp-r
-C and LCOPY for the system cp call.
-        if(copydef)then
-          write(outs248,'(2a)') 'The source file is:',
-     &      dmdbnam(1:lnblnk(dmdbnam))
-          call edisp248(iuout,outs248,100)
-          sourcefile = dmdbnam
-        else
-
-C Provide a guess based on the current lfmould.
-          lltmp='  '
-          lguess='  '
-          if(ipathmould.eq.0.or.ipathmould.eq.1)then
-            lguess=lfmould  ! use as is
-          elseif(ipathmould.eq.2)then
-            write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
-     &        lfmould(1:lnblnk(lfmould))  ! prepend db folder path
-          endif
-          call edisp(iuout,'  ')  ! echo blank line
-          CALL EASKXORGTKF(lguess,'Mould isopleths (source)?',
-     &      ' ',dmdbnam,lltmp,'mould isopleths',IER,nbhelp)
-          sourcefile = lltmp
-
-C If user request jump back and re-display the menu.
-          if(ier.eq.-3)then
-            goto 60  ! cancel detected, redisplay menu.
-          endif
-          ipathmould=1  ! signal that it will be a local database.
-        endif
-
-        lr=lnblnk(cfgroot)
-        if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-          write(LTMP,'(2a)') cfgroot(1:lr),'.moulddta'
-        elseif(dbspth(1:3).eq.'../')then
-          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &      cfgroot(1:lr),'.moulddta'
-        else
-          write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
-     &      cfgroot(1:lr),'.moulddta'
-        endif
-  66    CALL EASKS(LTMP,
-     &    'File name after it is copied into the project?',
-     &    ' ',72,'mould.db','copied mould isopleths',IER,nbhelp)
-        call isunix(unixok)
-        IF(LTMP(1:2).NE.'  ')then
-
-C If Unix and the path is ./ then no need to prepend this (to
-C avoid .//../dbs in the buffer).  If path ends with file separator
-C no need to duplicat the file separator.
-          if(unixok)then
-            lpp=lnblnk(path)
-            if(path(1:2).eq.'./')then
-              write(LCOPY,'(a)') LTMP(1:lnblnk(LTMP))
-            elseif(path(lpp:lpp).eq.fs)then
-              write(LCOPY,'(2a)') path(1:lnblnk(path)),
-     &          LTMP(1:lnblnk(LTMP))
-            else
-              write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &          LTMP(1:lnblnk(LTMP))
-            endif
-          else
-            write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &        LTMP(1:lnblnk(LTMP))
-          endif
-
-C Now copy sourcefile to lcopy.
-          doit = ' '
-          if(unixok)then
-            write(doit,'(4a)',IOSTAT=IOS) 'cp ',
-     &        sourcefile(1:lnblnk(sourcefile)),' ',
-     &        LCOPY(1:lnblnk(LCOPY))
-          else
-
-C Standard dos copy logic.
-            message='getting mould file from '
-            call dblongdoscopy(sourcefile,lcopy,message,doit,ier)
-          endif
-          call usrmsg('copying default file via',doit,'-')
-          call runit(doit,'-')
-
-C Use LTMP or LCOPY depending on the path because the path will already
-C be pre-pended when using most inbuilt file opening calls.
-          call FINDFIL(LCOPY,XST)
-          if(XST)then
-            call fdroot(lcopy,lpath,fname)
-            write(lfmould,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        fname(1:lnblnk(fname))
-          else
-            call FINDFIL(LTMP,XST)
-            if(XST)then
-              write(lfmould,'(a)') LTMP(1:lnblnk(LTMP))
-            else
-              write(lfmould,'(a)') LTMP(1:lnblnk(LTMP))
-              call edisp(iuout,'Problem locating the new file.')
-              call edisp(iuout,'Try browsing ../dbs to find it.')
-              call edisp(iuout,' ')
-            endif
-          endif
-          moddb=.true.
-          ipathmould=1  ! signal that it is a local database.
+C file name based on the project root name. Update common to
+C reflect it is local.
+	allowbrowse=.false.
+	numhelp=nbhelp
+	lltmp='  '
+        call copycommonfile('mld',copydef,allowbrowse,
+     &  numhelp,lltmp,istat,moddb)
+     
+        if(istat.eq.1)then
+          lfmould=lprev
+          goto 60  ! cancel detected, restore name and redisplay menu.
+        elseif(istat.eq.0)then
           goto 44
-        else
-          goto 66
         endif
 
       elseif(isw.eq.5)then
@@ -5739,4 +4998,354 @@ C altered the file name when saving via the editor.
 
       return
       end
+
+C ******** copycommonfile
+C Copycommonfile is a general facility handling copying files
+C from the ESP-r distribution common file store to a model ../dbs
+C folder.   If copydef true the user has asked for the default
+C file name for the file type. If allowbrowse true then the
+C user wishes to browse for the source file. Suggest a local
+C file name based on the project root name. Lastly do the copy.
+C If the default is to be copied confirm local name. Use LTMP for
+C the file name as known to esp-r and LCOPY for the system cp call.
+C Remember the file to be copied as sourcefile so that subsequent
+C code is general rather than specific (for later consolidation).
+      subroutine copycommonfile(topic,copydef,allowbrowse,
+     &  numhelp,lltmp,istat,moddb)
+#include "building.h"
+#include "model.h"
+#include "esprdbfile.h"
+
+      common/OUTIN/IUOUT,IUIN
+
+      common/C21/IFCFG,cfgroot,LCFGF
+      common/rpath/path
+      
+      integer lnblnk  ! function definition
+      
+C Passed parameters:
+      character topic*3   ! which type of file e.g. mat = materials
+                          ! mlc = constructions  opt = optics
+                          ! pdb = plant components  prs = pressure coef
+                          ! msc = active components  mld = mould isopleths
+                          ! pro = event profiles
+      logical copydef     ! copy the default file or current file
+      logical allowbrowse ! whether browse of common folder allowed
+      integer numhelp     ! number of help lines from calling code
+      character lltmp*144 ! the returned file name
+      integer istat       ! return status index for calling code
+      logical moddb       ! set true if new file is change of file
+
+C Local variables:
+      character defaultfile*144  ! default file name
+      character sourcemsg*48     ! dialog for source dialog
+      character ending*12         ! end of file name
+      character gdef*72          ! fall back file name
+      logical clkok
+
+      character LTMP*92,lguess*144
+      character fs*1,message*48
+      character doit*300,LCOPY*144
+      integer iglib  ! for detecting GTK or X11
+      integer lr     ! length of model root
+
+      CHARACTER outs248*248
+      LOGICAL XST
+      character cfgroot*24,LCFGF*72
+      character path*72
+      character sourcefile*144  ! the file to copy
+      character longtfile*144,longtfiledos*144
+      
+C Local strings for user selections dependent on graphic library.
+      character lpath*72,fname*72 ! for use with fdroot
+
+      integer lndbp   ! for length of standard database path
+      integer ier
+      logical unixok  ! to check for database path file separators
+      logical concat
+
+C Clear string buffers.
+      ltmp=' '
+      lltmp='  '
+      lguess='  '
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Setup assumptions based on topic.
+      lndbp=lnblnk(standarddbpath)
+      if(topic(1:3).eq.'mat')then
+        defaultfile=dfcon     ! default standard file
+        sourcemsg='Materials file name (in source folder).'   ! dialog
+        ending='.materialdb'  ! file ending
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          write(lguess,'(a)') LFMAT(1:lnblnk(LFMAT)) ! suggested name
+        elseif(ipathmat.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LFMAT(1:lnblnk(LFMAT))
+        endif
+      elseif(topic(1:3).eq.'mlc')then
+        defaultfile=dfmul
+        sourcemsg='Constructions file name (in source folder).'
+        ending='.constrdb'
+        if(ipathmul.eq.0.or.ipathmul.eq.1)then
+          lguess=LFMUL  ! use as is
+        elseif(ipathmul.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lfmul(1:lnblnk(lfmul))  ! prepend db folder path
+        endif
+      elseif(topic(1:3).eq.'opt')then
+        defaultfile=doptdb
+        sourcemsg='Optics file name (in source folder).'
+        ending='.opticdb'
+        if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
+          lguess=LOPTDB  ! use as is
+        elseif(ipathoptdb.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LOPTDB(1:lnblnk(LOPTDB))  ! prepend db folder path
+        endif
+      elseif(topic(1:3).eq.'pdb')then
+        defaultfile=DPCDB
+        sourcemsg='Plant components file name (in source folder).'
+        ending='.plantdb'
+        if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+          lguess=LPCDB
+        elseif(ipathpcdb.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lpcdb(1:lnblnk(lpcdb))
+        endif
+      elseif(topic(1:3).eq.'prs')then
+        defaultfile=DAPRES
+        sourcemsg='Pressure coefficients file (in source folder).'
+        ending='.pressuredb'
+        if(ipathapres.eq.0.or.ipathapres.eq.1)then
+          lguess=LPCDB
+        elseif(ipathapres.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lapres(1:lnblnk(lapres))
+        endif
+      elseif(topic(1:3).eq.'msc')then
+        defaultfile=DMCMPDBFL
+        sourcemsg='Active components file (in source folder).'
+        ending='.miscdb'
+        if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
+          lguess=MCMPDBFL
+        elseif(ipathmsc.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      MCMPDBFL(1:lnblnk(MCMPDBFL))
+        endif
+      elseif(topic(1:3).eq.'mld')then
+        defaultfile=dmdbnam
+        sourcemsg='Mould isopleths file (in source folder).'
+        ending='.moulddta'
+        if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
+          lguess=lfmould
+        elseif(ipathmsc.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lfmould(1:lnblnk(lfmould))
+        endif
+      elseif(topic(1:3).eq.'pro')then
+        defaultfile=DPRFDB
+        sourcemsg='Event profile file (in source folder).'
+        ending='.eventdb.a'
+        if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+          lguess=LPRFDB
+        elseif(ipathprodb.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LPRFDB(1:lnblnk(LPRFDB))
+        endif
+
+      endif
+
+C Create a general fall-back file name.
+      lr=lnblnk(cfgroot)
+      write(GDEF,'(2a)') cfgroot(1:lr),ending(1:lnblnk(ending))
+   
+      if(copydef)then
+        write(outs248,'(2a)') 'The source file is:',
+     &    defaultfile(1:lnblnk(defaultfile))
+        call edisp248(iuout,outs248,100)
+        sourcefile = defaultfile
+      else
+        call edisp(iuout,'  ')  ! echo blank line
+        CALL EASKXORGTKF(lguess,sourcemsg,'Confirm:',
+     &    defaultfile,lltmp,'sourcefile name',IER,numhelp)
+        sourcefile = lltmp   ! remember this
+
+C If user request jump back and re-display the menu.
+        if(ier.eq.-3)then
+          moddb=.false.
+          istat=1
+          return  ! cancel detected, restore name and redisplay menu.
+        endif
+
+        if(topic(1:3).eq.'mat')then
+          ipathmat=1  ! signal that it is a local database.
+        elseif(topic(1:3).eq.'mlc')then
+          ipathmul=1  ! signal that it will be a local database.
+        elseif(topic(1:3).eq.'opt')then
+          ipathoptdb=1  ! signal that it will be a local database.
+        elseif(topic(1:3).eq.'pdb')then
+          ipathpcdb=1  ! signal that it will be a local database.
+        elseif(topic(1:3).eq.'prs')then
+          ipathapres=1  ! signal that it is a local database.
+        elseif(topic(1:3).eq.'msc')then
+          ipathmsc=1  ! signal that it will be a local database.
+        elseif(topic(1:3).eq.'mld')then
+          ipathmould=1  ! signal that it will be a local database.
+        elseif(topic(1:3).eq.'pro')then
+          ipathprodb=1  ! signal that it is a local database.
+        else
+
+        endif
+      endif
+
+      lr=lnblnk(cfgroot)
+      if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
+        write(LTMP,'(2a)') cfgroot(1:lr),ending(1:lnblnk(ending))
+      elseif(dbspth(1:3).eq.'../')then
+        write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+     &    cfgroot(1:lr),ending(1:lnblnk(ending))
+      else
+        write(LTMP,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+     &    cfgroot(1:lr),ending(1:lnblnk(ending))
+      endif
+
+C Confirm name of model file.
+   66 clkok=.false.
+      CALL EASKSCNCL(ltmp,
+     & 'Suggested name of the model copy of standard file.','Confirm:',
+     &  'cancel',clkok,72,gdef,'copied file',IER,numhelp)
+      if(clkok)then
+        moddb=.false.
+        istat=1
+        return  ! cancel detected, restore name and redisplay menu.
+      endif
+
+      call isunix(unixok)
+      IF(LTMP(1:2).NE.'  ')then
+
+C If Unix and the path is ./ then no need to prepend this (to
+C avoid .//../dbs in the buffer).  If path ends with file separator
+C no need to duplicat the file separator.
+        if(unixok)then
+          lpp=lnblnk(path)
+          if(path(1:2).eq.'./')then
+            write(LCOPY,'(a)') LTMP(1:lnblnk(LTMP))
+          elseif(path(lpp:lpp).eq.fs)then
+            write(LCOPY,'(2a)') path(1:lnblnk(path)),
+     &        LTMP(1:lnblnk(LTMP))
+          else
+            write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
+     &        LTMP(1:lnblnk(LTMP))
+          endif
+        else
+          write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
+     &      LTMP(1:lnblnk(LTMP))
+        endif
+
+C Now copy sourcefile to lcopy.
+        doit = ' '
+        if(unixok)then
+          write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+     &      sourcefile(1:lnblnk(sourcefile)),' ',
+     &      LCOPY(1:lnblnk(LCOPY))
+        else
+
+C Standard dos copy logic.
+          message='getting materials file from '
+          call dblongdoscopy(sourcefile,lcopy,message,doit,ier)
+        endif
+        call usrmsg('copying file via',doit,'-')
+        call runit(doit,'-')
+
+C Depending on whether Unix or DOS based setup explicit path
+C to detect if a file exists at the desired location. If DOS
+C then check for spaces in name and change / to \.
+        call isunix(unixok)
+        if(unixok)then
+          call addpath(LTMP,longtfile,concat)
+        else
+          call addpath(LTMP,longtfile,concat)
+          call cmdfiledos(longtfile,longtfiledos,ier)
+          longtfile=' '
+          longtfile=longtfiledos
+        endif
+        ltf=max(1,LNBLNK(longtfile))
+        INQUIRE (FILE=longtfile(1:ltf),EXIST=xst)
+
+C If it exists then update the common block name.
+        if(XST)then
+          call fdroot(lcopy,lpath,fname)
+          if(topic(1:3).eq.'mat')then
+            write(LFMAT,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &        fname(1:lnblnk(fname))
+          elseif(topic(1:3).eq.'mlc')then
+            write(LFMUL,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &        fname(1:lnblnk(fname))
+          elseif(topic(1:3).eq.'opt')then
+            write(LOPTDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &        fname(1:lnblnk(fname))
+          elseif(topic(1:3).eq.'pdb')then
+            write(LPCDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &        fname(1:lnblnk(fname))
+          elseif(topic(1:3).eq.'prs')then
+            write(lapres,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &        fname(1:lnblnk(fname))
+          elseif(topic(1:3).eq.'msc')then
+            write(MCMPDBFL,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &        fname(1:lnblnk(fname))
+          elseif(topic(1:3).eq.'mld')then
+            write(lfmould,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &        fname(1:lnblnk(fname))
+          elseif(topic(1:3).eq.'pro')then
+            write(LPRFDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &        fname(1:lnblnk(fname))
+          else
+
+          endif
+        else
+          call edisp(iuout,'Problem locating the local file.')
+          call edisp(iuout,'Try browsing ../dbs to find it.')
+          call edisp(iuout,' ')
+        endif
+
+C On return parent code can use this flag.
+        moddb=.true.
+
+C Signal that file is a local to model.
+        if(topic(1:3).eq.'mat')then
+          ipathmat=1
+        elseif(topic(1:3).eq.'mlc')then
+          ipathmul=1  
+        elseif(topic(1:3).eq.'opt')then
+          ipathoptdb=1
+        elseif(topic(1:3).eq.'pdb')then
+          ipathpcdb=1
+          lltmp=LPCDB  ! reset lltmp for use at 44
+        elseif(topic(1:3).eq.'prs')then
+          ipathapres=1
+        elseif(topic(1:3).eq.'msc')then
+          ipathmsc=1
+        elseif(topic(1:3).eq.'mld')then
+          ipathmould=1
+        elseif(topic(1:3).eq.'pro')then
+          ipathprodb=1  ! signal that it is a local database.
+        else
+
+        endif
+        istat=0   ! after return use the new file
+        return
+      else
+        goto 66  ! ask for the file name again
+      endif
+      
+      end
+      
+
 
