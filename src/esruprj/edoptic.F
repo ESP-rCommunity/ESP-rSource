@@ -1483,7 +1483,7 @@ C actual data seems to start at column 38 (and after a :)
       elseif(outstr(1:22).eq.'--- Split solar factor')then
         continue  ! not yet used
       elseif(outstr(1:41).eq.
-     &  ' solar direct transmittance   	         :')then
+     &  ' solar direct transmittance              :')then
         continue  ! not yet used
       elseif(outstr(1:42).eq.
      &  ' solar factor convective                 :')then

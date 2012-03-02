@@ -1,7 +1,7 @@
 C This file is part of the ESP-r system.
 C Copyright Energy Systems Research Unit, University of
 C Strathclyde, Glasgow Scotland, 2001-2007.
-
+    
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
@@ -1120,9 +1120,9 @@ C user has asked for the default file. If isw is 9 then the
 C user wishes to browse for the source file. Suggest a local
 C file name based on the project root name. Update common to
 C reflect it is local.
-	allowbrowse=.false.
-	numhelp=nbhelp
-	lltmp='  '
+        allowbrowse=.false.
+        numhelp=nbhelp
+        lltmp='  '
         call copycommonfile('mat',copydef,allowbrowse,
      &  numhelp,lltmp,istat,moddb)
      
@@ -1264,7 +1264,7 @@ C << temporary shorter string until EASKXORGTKF >>
           goto 60    ! jump back and reload and re-display
         else
           lastpathmat=ipathmat
-	  ipathmat=0 ! reset to expect full path for binary
+          ipathmat=0 ! reset to expect full path for binary
           CALL MKBPRC(IAF,LLASCI,IER)
           write(LFMAT,'(a)') lltmp(1:lnblnk(lltmp))  ! restore original file name
           call edisp(iuout,'Restoring the previous materials db')
@@ -1278,8 +1278,8 @@ C << temporary shorter string until EASKXORGTKF >>
 C Allow user to select from the model ../dbs folder for an
 C materials file. If moddb was set to true then proceed to edit
 C the materials.
-	numhelp=nbhelp
-	lltmp='  '
+        numhelp=nbhelp
+        lltmp='  '
         call usemodeldbsfile('mat',numhelp,lltmp,istat,moddb)
         if(istat.eq.0.and.moddb)then
           goto 44
@@ -1667,9 +1667,9 @@ C user wishes to browse for the source file. Suggest a local
 C file name based on the project root name.  Suggest a local
 C file name based on the project root name. Update common to
 C reflect it is local.   
-	allowbrowse=.false.
-	numhelp=nbhelp
-	lltmp='  '
+        allowbrowse=.false.
+        numhelp=nbhelp
+        lltmp='  '
         call copycommonfile('pdb',copydef,allowbrowse,
      &  numhelp,lltmp,istat,moddb)
      
@@ -1801,8 +1801,8 @@ C        write(6,*) doit
 C Allow user to select from the model ../dbs folder for an
 C plant template file. If moddb was set to true then proceed 
 C to pdb
-	numhelp=nbhelp
-	lltmp='  '
+        numhelp=nbhelp
+        lltmp='  '
         call usemodeldbsfile('pdb',numhelp,lltmp,istat,moddb)
         if(istat.eq.0.and.moddb)then
           goto 44
@@ -2152,9 +2152,9 @@ C user has asked for the default file. If isw is 7 then the
 C user wishes to browse for the source file.  Suggest a local
 C file name based on the project root name. Update common to
 C reflect it is local.   
-	allowbrowse=.false.
-	numhelp=nbhelp
-	lltmp='  '
+        allowbrowse=.false.
+        numhelp=nbhelp
+        lltmp='  '
         call copycommonfile('pro',copydef,allowbrowse,
      &    numhelp,lltmp,istat,moddb)
      
@@ -2170,8 +2170,8 @@ C reflect it is local.
 C Allow user to select from the model ../dbs folder for an
 C profiles file. If moddb was set to true then proceed to edit
 C the profiles.
-	numhelp=nbhelp
-	lltmp='  '
+        numhelp=nbhelp
+        lltmp='  '
         call usemodeldbsfile('pro',numhelp,lltmp,istat,moddb)
         if(istat.eq.0.and.moddb)then
           goto 44
@@ -2502,9 +2502,9 @@ C user has asked for the default file. If isw is 7 then the
 C user wishes to browse for the source file. Suggest a local
 C file name based on the project root name.  Update common to
 C reflect it is local.
-	allowbrowse=.false.
-	numhelp=nbhelp
-	lltmp='  '
+        allowbrowse=.false.
+        numhelp=nbhelp
+        lltmp='  '
         call copycommonfile('mlc',copydef,allowbrowse,
      &  numhelp,lltmp,istat,moddb)
      
@@ -2520,8 +2520,8 @@ C reflect it is local.
 C Allow user to select from the model ../dbs folder for an
 C constructions file. If moddb was set to true then proceed to edit
 C the constructions.
-	numhelp=nbhelp
-	lltmp='  '
+        numhelp=nbhelp
+        lltmp='  '
         call usemodeldbsfile('mlc',numhelp,lltmp,istat,moddb)
         if(istat.eq.0.and.moddb)then
           goto 44
@@ -2855,9 +2855,9 @@ C user has asked for the default file. If isw is 7 then the
 C user wishes to browse for the source file. Suggest a local
 C file name based on the project root name.  Update common to
 C reflect it is local.
-	allowbrowse=.false.
-	numhelp=nbhelp
-	lltmp='  '
+        allowbrowse=.false.
+        numhelp=nbhelp
+        lltmp='  '
         call copycommonfile('opt',copydef,allowbrowse,
      &  numhelp,lltmp,istat,moddb)
      
@@ -2873,8 +2873,8 @@ C reflect it is local.
 C Allow user to select from the model ../dbs folder for an
 C optics file. If moddb was set to true then proceed to edit
 C the optics.
-	numhelp=nbhelp
-	lltmp='  '
+        numhelp=nbhelp
+        lltmp='  '
         call usemodeldbsfile('opt',numhelp,lltmp,istat,moddb)
         if(istat.eq.0.and.moddb)then
           goto 44
@@ -3179,9 +3179,9 @@ C user has asked for the default file. If isw is 7 then the
 C user wishes to browse for the source file. Suggest a local
 C file name based on the project root name. Update common to
 C reflect it is local.
-	allowbrowse=.false.
-	numhelp=nbhelp
-	lltmp='  '
+        allowbrowse=.false.
+        numhelp=nbhelp
+        lltmp='  '
         call copycommonfile('prs',copydef,allowbrowse,
      &  numhelp,lltmp,istat,moddb)
      
@@ -3197,8 +3197,8 @@ C reflect it is local.
 C Allow user to select from the model ../dbs folder for an
 C pressure coefficients file. If moddb was set to true then proceed
 C to edit the coefficients.
-	numhelp=nbhelp
-	lltmp='  '
+        numhelp=nbhelp
+        lltmp='  '
         call usemodeldbsfile('prs',numhelp,lltmp,istat,moddb)
         if(istat.eq.0.and.moddb)then
           goto 44
@@ -4307,9 +4307,9 @@ C user has asked for the default file. If isw is 7 then the
 C user wishes to browse for the source file. Suggest a local
 C file name based on the project root name. Update common to
 C reflect it is local.
-	allowbrowse=.false.
-	numhelp=nbhelp
-	lltmp='  '
+        allowbrowse=.false.
+        numhelp=nbhelp
+        lltmp='  '
         call copycommonfile('msc',copydef,allowbrowse,
      &  numhelp,lltmp,istat,moddb)
      
@@ -4325,8 +4325,8 @@ C reflect it is local.
 C Allow user to select from the model ../dbs folder for an
 C actove components file. If moddb was set to true then proceed to edit
 C the components.
-	numhelp=nbhelp
-	lltmp='  '
+        numhelp=nbhelp
+        lltmp='  '
         call usemodeldbsfile('msc',numhelp,lltmp,istat,moddb)
         if(istat.eq.0.and.moddb)then
           goto 44
@@ -4619,11 +4619,11 @@ C user has asked for the default file. If isw is 7 then the
 C user wishes to browse for the source file. Suggest a local
 C file name based on the project root name. Update common to
 C reflect it is local.
-	allowbrowse=.false.
-	numhelp=nbhelp
-	lltmp='  '
+        allowbrowse=.false.
+        numhelp=nbhelp
+        lltmp='  '
         call copycommonfile('mld',copydef,allowbrowse,
-     &  numhelp,lltmp,istat,moddb)
+     &    numhelp,lltmp,istat,moddb)
      
         if(istat.eq.1)then
           lfmould=lprev
@@ -4655,8 +4655,8 @@ C Start the mould utility.
 C Allow user to select from the model ../dbs folder for an
 C mould file. If moddb was set to true then proceed to edit
 C the isopleths.
-	numhelp=nbhelp
-	lltmp='  '
+        numhelp=nbhelp
+        lltmp='  '
         call usemodeldbsfile('mld',numhelp,lltmp,istat,moddb)
         if(istat.eq.0.and.moddb)then
           goto 44

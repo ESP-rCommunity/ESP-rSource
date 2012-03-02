@@ -1945,7 +1945,7 @@ C format for each type of obstruction.
               write(outs,'(2a)')
      &        'Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. ',
      &        'Orientation Name Material'
-	      call edisp(iuout,outs)
+              call edisp(iuout,outs)
               DO 9995 I=1,nbobs(icomp)
                 lnbn=LNBLOCKNAME(icomp,I)
                 lnbm=LNBLOCKMAT(icomp,I)
@@ -7779,7 +7779,7 @@ C where geometry and configuration is saved and re-display managed.
             goto 77
           endif
         endif   ! of the new surface options (IRT)
-	
+
 C If user created surface via existing vertices then check if
 C it is warped.
         if(IRT.eq.1.or.IRT.eq.2)then
@@ -8003,10 +8003,10 @@ C Derive the equation of the polygon.
 C See if any points are out of the plane.
         iwhich=0
         ofby=0.0 
-	call CHECKWARP(1,iuout,ifoc,N,XX,YY,ZZ,iwhich,ofby,ivoff)
-	if(ivoff.gt.0)then
+        call CHECKWARP(1,iuout,ifoc,N,XX,YY,ZZ,iwhich,ofby,ivoff)
+        if(ivoff.gt.0)then
           lln=lnblnk(sname(icomp,ifoc))
-	  write(outs,'(a,i3,2a,i3,a)') ' Surf ',ifoc,
+          write(outs,'(a,i3,2a,i3,a)') ' Surf ',ifoc,
      &      sname(icomp,ifoc)(1:lln),
      &      ' is warped. Please check via surface transform options.'
           call edisp(iuout,outs)
@@ -8788,7 +8788,7 @@ C If base area has not yet been calculated, do this now and
 C get surface areas via call to zinfo.
       if(checkbase)then
         call zinfo(sna,zoa,pazi,pelv,zvol)
-	vol(icomp)=zvol
+        vol(icomp)=zvol
         zonetotsurfacearea(icomp)=zoa
         do 43 ijj=1,NSUR
           if(SVFC(ijj).eq.'FLOR')then

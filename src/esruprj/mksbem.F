@@ -543,7 +543,7 @@ C before returning.
         MODE='ALL '
         ITRC=0
         CALL ERSYS(LCFGF,IFCFG,IAPROB,MODE,itrc,IER)
-        IYEAR=IYEAR_O 	          ! re-establish simulation year
+        IYEAR=IYEAR_O             ! re-establish simulation year
         modeltitle  = LSNAM_O     ! re-establish model title
         LASBEM = LASBEM_O    ! re-establish ncm name in original model
         INOTI=0              ! reset to original model, but

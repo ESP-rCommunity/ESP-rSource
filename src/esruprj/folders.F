@@ -1603,7 +1603,7 @@ C Edit zone name - read and then write the geometry file.
      &    IER,nbhelp)
         if(T15.NE.' ')then
           call st2name(T15,zname(IZ))
-	  lnzname(IZ)=lnblnk(zname(IZ))  ! updated the length of this string.
+          lnzname(IZ)=lnblnk(zname(IZ))  ! updated the length of this string.
           call eclose(gversion(IZ),1.1,0.01,newgeo)
           if(igupgrade.eq.2.and.(.NOT.newgeo))then
             gversion(iz) =1.1

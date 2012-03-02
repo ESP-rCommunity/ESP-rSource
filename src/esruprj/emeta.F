@@ -331,7 +331,7 @@ C For julian day ijd find month and day of month and day of week.
           icalender(ijd)=3
           nbcaldays(3)=nbcaldays(3)+1
         endif
-  542 continue                    	
+  542 continue
   
       CALL EMKCFG('-',IER)
 
@@ -1802,7 +1802,7 @@ C   `five_season` followed by `typical_week` `forthnight` `user` or `season`
 
 C Feedback. simact is passed to silentmodel.
         write(outs,*) 'the value of simact is ',simact
-	call edisp(iuout,outs)
+        call edisp(iuout,outs)
 
         goto 43
       elseif(WORD(1:8).eq.'*cooling')then
