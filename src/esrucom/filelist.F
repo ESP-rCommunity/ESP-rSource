@@ -100,6 +100,7 @@ C Array for browse menu.
 C relative is the portion of the path which needs to be prepended
 C to the selected file to have it relative to the cfg folder.
       character subpath*72,action*3,outs*124,relative*60
+      character subpathd*72  ! to use for native windows
       logical unixok
 
 C Set folder separator (fs) to \ or / as required.
@@ -184,15 +185,32 @@ C project manager was started from).
         write(relative,'(6a)',iostat=ios,err=2)
      &    dinstpath(1:lnblnk(dinstpath)),fs,'training',fs,'pattern',fs
       elseif(where(1:3).eq.'clm')then
-        write(subpath,'(4a)',iostat=ios,err=1)
-     &    dinstpath(1:lnblnk(dinstpath)),fs,'climate',fs
-        write(relative,'(4a)',iostat=ios,err=2)
-     &    dinstpath(1:lnblnk(dinstpath)),fs,'climate',fs
+        if(unixok)then
+          write(subpath,'(4a)',iostat=ios,err=1)
+     &      dinstpath(1:lnblnk(dinstpath)),fs,'climate',fs
+          write(relative,'(4a)',iostat=ios,err=2)
+     &      dinstpath(1:lnblnk(dinstpath)),fs,'climate',fs
+        else
+          write(subpathd,'(4a)',iostat=ios,err=1)
+     &      dinstpath(1:lnblnk(dinstpath)),fs,'climate',fs
+          call backslashit(subpathd,subpath)
+          write(relative,'(a)',iostat=ios,err=2)
+     &      subpath(1:lnblnk(subpath))
+        endif
       elseif(where(1:3).eq.'dbm')then
-        write(subpath,'(4a)',iostat=ios,err=1)
-     &    dinstpath(1:lnblnk(dinstpath)),fs,'databases',fs
-        write(relative,'(4a)',iostat=ios,err=2)
-     &    dinstpath(1:lnblnk(dinstpath)),fs,'databases',fs
+
+C The install path works ok as-is in Unix variants, however it
+C needs to be backslashed to properly work in Native Windows.
+        if(unixok)then
+          write(subpath,'(4a)',iostat=ios,err=1)
+     &      dinstpath(1:lnblnk(dinstpath)),fs,'databases',fs
+        else
+          write(subpathd,'(4a)',iostat=ios,err=1)
+     &      dinstpath(1:lnblnk(dinstpath)),fs,'databases',fs
+          call backslashit(subpathd,subpath)
+        endif
+        write(relative,'(a)',iostat=ios,err=2)
+     &    subpath(1:lnblnk(subpath))
       elseif(where(1:3).eq.'bsm')then
         write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
      &    path(1:lnblnk(path)),bsmpth(1:lnblnk(bsmpth))

@@ -3420,7 +3420,6 @@ C and so we treat that model as if browsing.
             call edisp(iuout,'Folder permission prevents modificaton!')
           else
             browse=.false.
-C            call edisp(iuout,'User can modify this model.')
           endif
 
           iglib = igraphiclib()  ! find out if GTK.
@@ -3478,7 +3477,6 @@ C          write(6,*) 'b iaccess is ',iaccess,icerr,ifold,path
             call edisp(iuout,'Folder permission prevents modificaton.')
           else
             browse=.false.
-C            call edisp(iuout,'User can modify this model.')
           endif
         endif
       endif
@@ -3511,6 +3509,8 @@ C configuration files.
         write(t144,'(3a)')LCMDFL(1:lnblnk(LCMDFL)),fs,'cfg'
         ifold=-1
         call ckaccess(ifold,iaccess,icerr,t144)
+C Debug.
+C        write(6,*) 'd iaccess is ',iaccess,icerr,ifold,t144
         if(ifold.eq.1.and.icerr.eq.0)then
           lex=MIN0(lnblnk(LCMDFL),24)
           write(cfgroot,'(a)',IOSTAT=ios,ERR=13) LCMDFL(1:lex)

@@ -833,9 +833,15 @@ C      write(6,*) 'usrdir is ',odir(1:lnod)
 C      write(6,*) 'path is ',path(1:lnpath)
 
       subpath=' '
-      if(lnod+lnpath+1.le.72)then
-        write(subpath,'(3a)') odir(1:lnod),fs,path(1:lnpath)
+      if(unixok)then
+        if(lnod+lnpath+1.le.72)then
+          write(subpath,'(3a)') odir(1:lnod),fs,path(1:lnpath)
+        else
+          write(subpath,'(a)') path(1:lnpath)
+        endif
       else
+
+C For native windows do not bother with usrdir.
         write(subpath,'(a)') path(1:lnpath)
       endif
       write(outs,'(2a)') 'configuration files in ',

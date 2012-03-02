@@ -222,7 +222,12 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
   f_to_c_l(folder,&lenfolder,&ilen); strncpy(name2,folder,(unsigned int)ilen); name2[ilen] = '\0';
   f_to_c_l(act,&lenact,&ialen); strncpy(act2,act,(unsigned int)ialen); act2[ialen] = '\0';
   i = stat(name2, &st);
+
+#ifdef MINGW
+  ifolder = 1;  /* name is probably a folder */
+#else	/* something other than windows */   
   ifolder = (st.st_mode&0x4000); /* returns nonzero if a folder */
+#endif    
   if (ifolder == 0) {
     fprintf(stderr,"folder name passed %s is not recognized as a folder.\n",name2);
     return;
@@ -233,8 +238,6 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
   }
 
 /* Open the folder */
-  i = stat(name2, &st);
-  ifolder = (st.st_mode&0x4000); /* returns nonzero if a folder */
   if ( ifolder != 0 ) {
     if (NULL == (dir = opendir(name2))) {
 	fprintf(stderr, "%s: cannot read.\n", name2);
@@ -251,13 +254,13 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
       if(strcmp("dir",act2)== 0) { /* If request for folders only, then build this list. */
         i = stat(dirt->d_name, &st);
         ifolder = (st.st_mode&0x4000); /* returns nonzero if a folder */
-/* debug    fprintf(stderr,"%s returns ifolder %d\n", dirt->d_name,ifolder);  */
+/* debug   fprintf(stderr,"%s returns ifolder %d\n", dirt->d_name,ifolder);  */
         if (ifolder != 0 ) { foundone = 1; type[0] = 'D'; type[1] = '\0';}
 
       } else if(strcmp("fil",act2)== 0) { /* If request for files only, then build this list. */
         i = stat(dirt->d_name, &st);
         ifolder = (st.st_mode&0x8000); /* returns zero if a regular file */
-/* debug    fprintf(stderr,"%s returns ifolder %d\n", dirt->d_name,ifolder); */
+/* debug   fprintf(stderr,"%s returns ifolder %d\n", dirt->d_name,ifolder); */
         if (ifolder == 0 ) { foundone = 1; type[0] = 'L'; type[1] = '\0'; }
       } else if(strcmp("cfg",act2)== 0) { /* If request for cfg files only, then build this list. */
         if (strstr(dirt->d_name,".cfg")) foundone = 1;
@@ -399,12 +402,19 @@ void getfileslist_(folder,act,nflist,lenfolder,lenact)
   locnflist = 0;
 
 /* Work with copy of folder name. */
-  f_to_c_l(folder,&lenfolder,&ilen); strncpy(name2,folder,(unsigned int)ilen); name2[ilen] = '\0';
+  f_to_c_l(folder,&lenfolder,&ilen);
+  if ( ilen > lenfolder ) ilen = lenfolder;  /* in case ilen is corrupt */
+  strncpy(name2,folder,(unsigned int)ilen); name2[ilen] = '\0';
   f_to_c_l(act,&lenact,&ialen); strncpy(act2,act,(unsigned int)ialen); act2[ialen] = '\0';
   i = stat(name2, &st);
+
+#ifdef MINGW
+  ifolder = 1;  /* name is probably a folder */
+#else	/* something other than windows */   
   ifolder = (st.st_mode&0x4000); /* returns nonzero if a folder */
+#endif    
   if (ifolder == 0) {
-    fprintf(stderr,"folder name passed %s is not recognized as a folder.\n",name2);
+    fprintf(stderr,"getfileslist folder name passed %s is not recognized as a folder.\n",name2);
     return;
   }
   if (lenact == 0) {
@@ -413,8 +423,6 @@ void getfileslist_(folder,act,nflist,lenfolder,lenact)
   }
 
 /* Open the folder */
-  i = stat(name2, &st);
-  ifolder = (st.st_mode&0x4000); /* returns nonzero if a folder */
   if ( ifolder != 0 ) {
     if (NULL == (dir = opendir(name2))) {
 	fprintf(stderr, "%s: cannot read.\n", name2);
@@ -430,14 +438,18 @@ void getfileslist_(folder,act,nflist,lenfolder,lenact)
 /* debug     printf("current %s\n", dirt->d_name); */
       if(strcmp("dir",act2)== 0) { /* If request for folders only, then build this list. */
         i = stat(dirt->d_name, &st);
+#ifdef MINGW
+        ifolder = 1;  /* name is probably a folder */
+#else	/* something other than windows */   
         ifolder = (st.st_mode&0x4000); /* returns nonzero if a folder */
-/* debug    fprintf(stderr,"%s returns ifolder %d\n", dirt->d_name,ifolder);  */
+#endif    
+/* debug   fprintf(stderr,"%s returns ifolder %d\n", dirt->d_name,ifolder); */
         if (ifolder != 0 ) { foundone = 1; strncpy(type,"D",1); type[1] = '\0';}
 
       } else if(strcmp("fil",act2)== 0) { /* If request for files only, then build this list. */
         i = stat(dirt->d_name, &st);
         ifolder = (st.st_mode&0x8000); /* returns zero if a regular file */
-/* debug    fprintf(stderr,"%s returns ifolder %d\n", dirt->d_name,ifolder); */
+/* debug   fprintf(stderr,"%s returns ifolder %d\n", dirt->d_name,ifolder); */
         if (ifolder == 0 ) { foundone = 1; strncpy(type,"L",1); type[1] = '\0'; }
       } else if(strcmp("cfg",act2)== 0) { /* If request for cfg files only, then build this list. */
         if (strstr(dirt->d_name,".cfg")) foundone = 1;
