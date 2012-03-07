@@ -673,7 +673,7 @@ C        lnrp=lnblnk(runpath)
             CALL ASKOK('Do you wish to keep the Radiance scene files?',
      &        '(see help)',KEEP,dok,nbhelp)
           else
-	  
+  
 C User owns the model. Only copy the lradcf file back to the cfg
 C folder (the other files can stay where they are).
             write (outs,'(5a)')'cp -f ',runpath(1:lnrp),
@@ -683,7 +683,7 @@ C folder (the other files can stay where they are).
             KEEP=.false.
           endif
         else
-	  
+  
 C User owns the model. Only copy the lradcf file back to the cfg
 C folder (the other files can stay where they are).
           write (outs,'(5a)')'cp -f ',runpath(1:lnrp),
@@ -1248,7 +1248,7 @@ C If unix and browsing get PID for use in /tmp directory structure.
             pathtype='radinhome'
             call edisp(iuout,' Currently using runpath in user home')
           else
-	  
+  
 C If user owns the model then use the ../rad or ./cfg folder so no
 C need to create a folder.
             if(radpth(1:3).eq.'./ '.or.radpth(1:3).eq.'.\\ ')then

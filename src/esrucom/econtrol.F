@@ -3589,11 +3589,11 @@ C Multisensing controller
             WRITE(LMSG,'(3A,i4,2a)')LMSG(1:LN),MSG2(1:LN2),' ',
      &      nlps,' ',MSG1(1:LN1)
  5050     CONTINUE
-	  IF(NINT(CM(NCLP*3+1)).EQ.1)THEN
-	    MSG2='Actuates massflow loop #'
-	  ELSEIF(NINT(CM(NCLP*3+1)).EQ.2)THEN
-	    MSG2='Actuates plant loop #'
-	  ENDIF
+          IF(NINT(CM(NCLP*3+1)).EQ.1)THEN
+            MSG2='Actuates massflow loop #'
+          ELSEIF(NINT(CM(NCLP*3+1)).EQ.2)THEN
+            MSG2='Actuates plant loop #'
+          ENDIF
           IALP=NINT(CM(NCLP*3+2))
           LN=LNBLNK(LMSG)
           LN2=LNBLNK(MSG2)

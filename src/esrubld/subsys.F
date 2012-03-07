@@ -1495,7 +1495,7 @@ c         else
 
 C Trap 0 volumes in case notional building is not properly generated.
           call eclose(VOL(ICOMP),0.0,0.001,closeto0)
-          closetozero: if(closeto0)then	      
+          closetozero: if(closeto0)then      
             write(outs,'(2A)')' Volume of 0 found in zone: ',
      &      zname(ICOMP)
             call edisp(itu,outs)
@@ -1752,7 +1752,7 @@ C that contain another fluid.
         cvair=0.33
         cvother=1000.0*zfldC/3600.0
         xmod=1.
-        IF(znotair(ICOMP))xmod=cvother/cvair	 ! zone is not air filled
+        IF(znotair(ICOMP))xmod=cvother/cvair  ! zone is not air filled
 
 C Computation of ventilation depends on wether the air flow network is active.      
         AssignVent: if ( bAFN ) then 
@@ -1767,11 +1767,11 @@ C Collect data from air flow module.
 
 C Impose computed conductance for scheduled ventilation for .opr or 
 C .aim2 case. 
-	CV1=CVVN(ID1,ICOMP,IT1)*xmod
-	CV2=CVVN(ID2,ICOMP,IT2)*xmod
-	IC2=ICCN(ID2,ICOMP,IT2)
-	TA1=TIAN(ID1,ICOMP,IT1)
-	TA2=TIAN(ID2,ICOMP,IT2)
+          CV1=CVVN(ID1,ICOMP,IT1)*xmod
+          CV2=CVVN(ID2,ICOMP,IT2)*xmod
+          IC2=ICCN(ID2,ICOMP,IT2)
+          TA1=TIAN(ID1,ICOMP,IT1)
+          TA2=TIAN(ID2,ICOMP,IT2)
         CF=CV1+(TRAT*(CV2-CV1))
         ICF=IC2
         TAF=TA2
@@ -1950,8 +1950,8 @@ C Output computed results.
      &                           ' ACH    = ',ACH(ICOMP)
       call edisp(itu,outs)
 
-      flowi=CVIF/1006.0		! infiltration mass flow rate
-      flowv=CVVF/1006.0		! ventilation mass flow rate
+      flowi=CVIF/1006.0   ! infiltration mass flow rate
+      flowv=CVVF/1006.0   ! ventilation mass flow rate
       if(znotair(ICOMP)) then
          flowi=flowi*1006.0/zfldc
          flowv=flowv*1006.0/zfldc
@@ -2523,7 +2523,7 @@ C It excludes start-up timesteps
       do 1 im=1,12
         zonAuxil(im,icomp)=0.
         m2zonAuxil(im,icomp)=0.
-  	fmonthAuxil_ncm_Energy(im,icomp)=0.
+        fmonthAuxil_ncm_Energy(im,icomp)=0.
  1    continue
       iactvalue=theactivityindex(ICOMP)
 

@@ -24,7 +24,7 @@ C*******************************************************************************
 C************************************************************************************
 C   MODULE PARSE_COMMAND_LINE written to extract the communality in all the modules for
 C   setting up environemt and parsing command lines.
-C	Francesca Macdonald 4/5/2011
+C   Francesca Macdonald 4/5/2011
 C************************************************************************************
       MODULE PARSE_COMMAND_LINE
       IMPLICIT NONE
@@ -52,7 +52,7 @@ C ******************************************************************************
 C Parse command lines.
       SUBROUTINE GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &   iverb,sps,data1,data2,data3)
       IMPLICIT NONE
 
       integer lnblnk  ! function definition
@@ -70,9 +70,9 @@ C Declare  calling parameter types
       character(144), intent(out)  :: inf, inf2
       character(16), intent(out)   :: zone,act
       character(72), intent(out)   :: actf,ascif
-      character(12), intent(out)	  :: aut,aim
-      character(4), intent(out)	  :: browse
-      character(8), intent(out)	  :: sps
+      character(12), intent(out)   :: aut,aim
+      character(4), intent(out)    :: browse
+      character(8), intent(out)    :: sps
 
 C Variable declaration
       character(8)  :: ModuleName
@@ -82,7 +82,7 @@ C Variable declaration
       character(24)  :: appn
       character(248) :: outs
       character(48)  :: prog
-      integer 	:: m, i, IOS, IUOUT,IUIN, iXavail
+      integer :: m, i, IOS, IUOUT,IUIN, iXavail
       integer   :: iTimeoutFlag
       logical :: unixok
 
@@ -108,7 +108,7 @@ C Variable initialisation
       inf2  = 'UNKNOWN'
       actf = 'UNKNOWN'
       ascif  = 'UNKNOWN'
-      if (module.eq.CONST_PARRES)	act = 'UNKNOWN'
+      if (module.eq.CONST_PARRES) act = 'UNKNOWN'
       if (module.eq.CONST_PARSIM) aut  = 'default'
 
 
@@ -476,8 +476,8 @@ C Local variables for GetCommandLineArguments.
 
       module = CONST_PARPSF
       call GetCommandLineArguments(module,termtype,iappw,iappx,
-     &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &   iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
+     &   iverb,sps,data1,data2,data3)
 
       end subroutine parpsf
 
@@ -502,8 +502,8 @@ C Local variables for GetCommandLineArguments.
 
       module = CONST_PARPSFF
       call GetCommandLineArguments(module,termtype,iappw,iappx,
-     &             iappy,infa,infb,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &   iappy,infa,infb,zone,act,actf,aut,ascif,aim,browse,
+     &   iverb,sps,data1,data2,data3)
 
       end subroutine parpsff
 
@@ -535,8 +535,8 @@ C Local variables for GetCommandLineArguments.
 
       module = CONST_PARRES
       call GetCommandLineArguments(module,termtype,iappw,iappx,
-     &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &   iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
+     &   iverb,sps,data1,data2,data3)
       end subroutine parres
 
 C ********* parclm
@@ -564,8 +564,8 @@ C Local variables for GetCommandLineArguments.
 
       module = CONST_PARCLM
       call GetCommandLineArguments(module,termtype,iappw,iappx,
-     &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &   iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
+     &   iverb,sps,data1,data2,data3)
 
       end subroutine parclm
 
@@ -595,8 +595,8 @@ C Local variables for GetCommandLineArguments.
 
       module = CONST_PARSISH
       call GetCommandLineArguments(module,termtype,iappw,iappx,
-     &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &   iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
+     &   iverb,sps,data1,data2,data3)
 
       end subroutine parsish
 
@@ -623,8 +623,8 @@ C Local variables for GetCommandLineArguments.
 
       module = CONST_PARSPRJ
       call GetCommandLineArguments(module,termtype,iappw,iappx,
-     &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &   iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
+     &   iverb,sps,data1,data2,data3)
       end subroutine parsprj
 
 C ********* parsfz (equivalent to startsfz.c)
@@ -651,8 +651,8 @@ C Local variables for GetCommandLineArguments.
 
       module = CONST_PARSFZ
       call GetCommandLineArguments(module,termtype,iappw,iappx,
-     &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &   iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
+     &   iverb,sps,data1,data2,data3)
       end subroutine parsfz
 
 
@@ -679,8 +679,8 @@ C Local variables for GetCommandLineArguments.
 
       module = CONST_PARTF
       call GetCommandLineArguments(module,termtype,iappw,iappx,
-     &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &   iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
+     &   iverb,sps,data1,data2,data3)
       end subroutine partf
 
 C ********* partfa (equivalent to partf with an action parameter)
@@ -707,8 +707,8 @@ C Local variables for GetCommandLineArguments.
 
       module = CONST_PARTFA
       call GetCommandLineArguments(module,termtype,iappw,iappx,
-     &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &   iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
+     &   iverb,sps,data1,data2,data3)
       end subroutine partfa
 
 C ********* parse2r
@@ -736,8 +736,8 @@ C Local variables for GetCommandLineArguments.
 
       module = CONST_PARSE2R
       call GetCommandLineArguments(module,termtype,iappw,iappx,
-     &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &   iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
+     &   iverb,sps,data1,data2,data3)
       end subroutine parse2r
 
 C ********* parsim
@@ -765,8 +765,8 @@ C Local variables for GetCommandLineArguments.
 
       module = CONST_PARSIM
       call GetCommandLineArguments(module,termtype,iappw,iappx,
-     &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &   iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
+     &   iverb,sps,data1,data2,data3)
 
       end subroutine parsim
 
@@ -795,8 +795,8 @@ C Local variables for GetCommandLineArguments.
 
       module = CONST_PARSFACT
       call GetCommandLineArguments(module,termtype,iappw,iappx,
-     &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &   iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
+     &   iverb,sps,data1,data2,data3)
       end subroutine parsfact
 
       END MODULE START_UP

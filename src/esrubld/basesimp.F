@@ -66,7 +66,7 @@ C (20 x 20 meters).
       character outs*124,OUTSTR*124,dllsubr*12,dllmesg*124,t60*60
       logical dll
 
-      REAL fBASESIMPVersionNumber	! version number of BASESIMP input file
+      REAL fBASESIMPVersionNumber  ! version number of BASESIMP input file
 C Limits for parameter values to be read in
       REAL fMinFoundLength, fMaxFoundLength, fMinFoundWidth,
      &     fMaxFoundWidth, fMinInsulRSI,  fMaxInsulRSI, fMinSoilCond,
@@ -84,7 +84,7 @@ C    bsOVER(i): Insulation overlap for "combination" configurations for zone `i'
 C    bsRSI(i):  Insulation resistance in RSI for zone `i'.
 C    bsSOIL(i): Soil conductivity for zone `i'.
 C    bsWTD(i):  Water-table depth for zone `i'.
-C    bsTGavg(i) Anually-averaged soil temperature	
+C    bsTGavg(i) Anually-averaged soil temperature
 C    bsTGamp(i) Amplitude of ground-temperature's annual sine wave 
 C    bsTGps(i)  Phase lag of ground-temperature's annual sine wave
 C NOTE: the references to the zone numbers have been removed, as these values are not
@@ -332,7 +332,7 @@ C locations.
           t60='Cannot read average of ground Temp or out of range'
           goto 1000
         endif
-        bsTGavg(icomp)=VAL	
+        bsTGavg(icomp)=VAL
 
 C Read amplitude of ground-temperature's annual sine wave.
         CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
@@ -343,7 +343,7 @@ C Read amplitude of ground-temperature's annual sine wave.
           t60='Cannot read amplitude of ground Temp or out of range'
           goto 1000
         endif
-        bsTGamp(icomp)=VAL	
+        bsTGamp(icomp)=VAL
 
 C Read phase lag of ground-temperature's annual sine wave.
         CALL STRIPC(IUNIT,OUTSTR,1,ND,1,' BASESIMP data',IER)
@@ -422,7 +422,7 @@ C Error handling.
         call edisp(iuout,outs)
         IER=1
         CALL ERPFREE(IUNIT,ISTAT)
-	
+
 C modified Feb 4, 2004 SPH
 C Exit instead of returning
         call pauses(3)  ! time for user to see message
@@ -935,7 +935,7 @@ C weather file and Moore model.
       endif    
        
 C Steady component of below-grade heat loss (W).
-	  Qbgavg = Sbgavg(icon) * 
+      Qbgavg = Sbgavg(icon) * 
      &             ( TBSAVG-basesimp_grd_temp_avg )
 
 C Time-varying component of below-grade heat loss (W). `time' measures the

@@ -408,7 +408,7 @@ C Controller type 10, 11, 17 or 23: senses relative humidity (%).
             PATMOS=1013.25
             call eclose(CSVF(IN,2),0.00,0.01,close)
             if(close)then
-	      SVCTL=0.0   ! trap for zero denominator
+              SVCTL=0.0   ! trap for zero denominator
             else
               SVCTL=PCRH2(CSVF(IN,1),CSVF(IN,3)/CSVF(IN,2),PATMOS)
             endif

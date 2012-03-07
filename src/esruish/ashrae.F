@@ -205,13 +205,13 @@ C 'shrat' is insolated portion.
       call edisp(itru,'        Shading')
       iprint=0
       do 20 i=1,24
-        if(isun(i).eq.0)then			! Sun not up.
+        if(isun(i).eq.0)then    ! Sun not up.
           if(iprint.eq.2)then
              write(outs,'(i2,a)')i,':00   After sun-set'
              call edisp(itru,outs)
 C Don't write again.
              iprint=-1
-          else					! Sun up.
+          else     ! Sun up.
             iprint=1
           endif
         else

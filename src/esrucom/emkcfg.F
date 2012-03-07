@@ -1009,14 +1009,14 @@ C it in the configuration file.
 C Use call mkipvdat to write into the cfg file and then clear name of
 C the external IPV file (also notify the user they can remove it).
           ipvaction='cfg'
-	  if(ipvform.eq.0) ipvform=2  ! if format not defined set to tab separated
+          if(ipvform.eq.0) ipvform=2  ! if format not defined set to tab separated
           call mkipvdat(ifcfg,LCFGF,ipvaction)
           if(lnipv.eq.0)then
             continue
           elseif(lipvdatf(1:7).eq.'UNKNOWN')then
             continue
           else
-	    lipvdatf=' '  ! ensure old file name is no longer referenced
+            lipvdatf=' '  ! ensure old file name is no longer referenced
           endif
         endif
       endif

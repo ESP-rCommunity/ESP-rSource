@@ -2432,11 +2432,11 @@ C gain control file.  If matching gain(s) set ACTIVE=1.0.
       ENDIF
       IGC=NCGTC(IZONE,IDTY)
       IF(NCAS(IDTY).GE.1)THEN
-     	DO 30 ICNN=1,NCAS(IDTY)
-     	  IF(ICGT(IDTY,ICNN).EQ.IGC)THEN
-     	    IF(IH.GT.ICGS(IDTY,ICNN).AND.IH.LE.ICGF(IDTY,ICNN))ACTIVE=1.
-     	  ENDIF
-   30	CONTINUE
+        DO 30 ICNN=1,NCAS(IDTY)
+          IF(ICGT(IDTY,ICNN).EQ.IGC)THEN
+            IF(IH.GT.ICGS(IDTY,ICNN).AND.IH.LE.ICGF(IDTY,ICNN))ACTIVE=1.
+          ENDIF
+   30   CONTINUE
       ENDIF
       RETURN
       END

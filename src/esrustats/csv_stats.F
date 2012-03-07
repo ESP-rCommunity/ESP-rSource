@@ -77,7 +77,6 @@ C Initial assumptions.
 
 C Get command line parameters.
       call partfa(MODL,inf,act)
-C      call parpsf(MODL,iappw,iappx,iappy,inf)
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -103,8 +102,6 @@ C Set pixels high to iappw and pixels wide to factor in monitor size.
       LIMTTY=24
       LIMIT =24
 
-C Find the current ESP-r version number and add it to application title.
-C      call ESPrVersionNum(cVnum)
       write(pagestitle,'(a)') 'ESP-r csv parser '
 
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
@@ -206,7 +203,7 @@ C Common blocks for day patterns collected.
       dimension calender(366)
       integer calender  ! for each Julian day the pattern index
       character loutc*96
-      character actname*48
+      character actname*60
       integer loutlen,itrunc  ! for printing calendar list
       integer lnb,lnd         ! for length of file name
           
@@ -399,7 +396,7 @@ c        write(outs,'(a,i3)') 'First day pattern on day ',icurday
 c        call edisp(iuout,outs)
 
 C Debug.
-c        write(6,'(24F5.2)') (dayvals(1,ih),ih=1,24)
+C        write(6,'(24F5.2)') (dayvals(1,ih),ih=1,24)
 C        write(6,'(24F5.2)') (dayvals(2,ih),ih=1,24)
 C        write(6,'(24F5.2)') (dayvals(3,ih),ih=1,24)
 C        write(6,*) (dayvals(4,ih),ih=1,24)
@@ -457,9 +454,9 @@ C and thus we should create a new pattern
   47    continue
 
 C Debug.
-C        write(outs,'(a,i3,a,i3)') 'New Julian day pattern ',
-C     &    nbdaypattern,' for Julian day ',icurday
-C        call edisp(iuout,outs)
+        write(outs,'(a,i3,a,i3)') 'New Julian day pattern ',
+     &    nbdaypattern,' for Julian day ',icurday
+        call edisp(iuout,outs)
 C        write(6,*) (dayvals(1,ih),ih=1,24)
 
 C Point the pattern index to the Julian day. 
@@ -467,7 +464,6 @@ C Point the pattern index to the Julian day.
         daysthispattern(nbdaypattern,1)=
      &    daysthispattern(nbdaypattern,1)+1
         if(LLOOP.ge.8760) goto 99    ! to force 365 days
-C        if(LLOOP.ge.8784) goto 99
         goto 42  ! read another line of the file
 
       elseif(nbdaypattern.ge.599)then
@@ -731,8 +727,9 @@ C Common blocks for day patterns collected.
       common/allact/iactindex(0:700),ndayusedby(599),
      &  idayusedby(599,0:700),actnbdaytype(0:700),
      &  actdaytypelist(0:700,599)
-      character actname*48 ! name of activity in ID order
-      common/charact/actname(0:700)
+      character actname*60 ! name of activity in ID order
+      character actbld*48   ! building type for activity in ID order
+      common/charact/actname(0:700),actbld(0:700)
 
 
       character INTER*144,LFOUT*144,LFLABEL*144
@@ -755,7 +752,7 @@ C Common blocks for day patterns collected.
       logical alredyknown   ! for testing if prior day type known by activity
       integer icurday  ! the current day of the year
       character outs*144,outsd*144
-      character t48*48
+      character t60*60,t48b*48,dq*1
       character outstr*124,outstrlbl*124
       integer calender     ! for each Julian day the pattern index
       integer actcalender  ! also remember for each of the activities
@@ -772,6 +769,7 @@ C Assume csv file is on IFIL.
       IUNIT=IFIL
       IUF=IFIL+1
       IUL=IFIL+2
+      dq=char(34)   ! double quote
 
       CALL EFOPSEQ(IUNIT,INTER,1,IER)
       if(ier.ne.0)then
@@ -805,10 +803,12 @@ C Clear the arrays for all possible activities.
       do 30 k=0,700
         iactindex(k)=-1   ! set -1 for not referenced
         actname(k)='UNKNOWN'
+        actbld(k)='UNKNOWN'
   30  continue
 
 C Check and see if the file EHWandAuxE.csv exists.
-      LFLABEL='DHWandAuxE.csv'
+C      LFLABEL='DHWandAuxE.csv'
+      LFLABEL='activity_names.csv'
       CALL EFOPSEQ(IUL,LFLABEL,1,IER)
       if(ier.eq.0)then
 
@@ -819,10 +819,15 @@ C If it exists, then remember each of the activity type labels.
           K2=0
           CALL EGETWI(OUTSTRLBL,K2,IOC,0,700,'W','occup index',IER)
           if(IOC.le.700)then
-            call egetdq(OUTSTRLBL,K2,t48,'-','room activity type',ier)
-            write(actname(ioc),'(a)') t48
+            call egetdq(OUTSTRLBL,K2,t60,'-','room activity type',ier)
+            write(actname(ioc),'(a)') t60
+            call egetdq(OUTSTRLBL,K2,t48b,'-','room building type',ier)
+            write(actbld(ioc),'(a)') t48b
             iactindex(ioc)=ioc   ! set activity index in ID order
-            write(6,*) ioc,'  ',t48
+
+C Debug.
+C            write(6,*) ioc,iactindex(ioc),'  ',t60(1:lnblnk(t60)),' ',
+C     &        t48b(1:lnblnk(t48b))
             goto 49
           else
             goto 49
@@ -995,7 +1000,7 @@ C or test the day values against the known patterns.
         call edisp(iuout,outs)
 
 C Debug.
-        write(6,'(24F5.2)') (dayvals(1,ih),ih=1,24)
+C        write(6,'(24F5.2)') (dayvals(1,ih),ih=1,24)
 C        write(6,'(24F5.2)') (dayvals(2,ih),ih=1,24)
 C        write(6,'(24F5.2)') (dayvals(3,ih),ih=1,24)
 C        write(6,*) (dayvals(4,ih),ih=1,24)
@@ -1076,7 +1081,7 @@ C Debug.
      &    nbdaypattern,' for Julian day ',icurday,' act ',
      &    iocind
         call edisp(iuout,outs)
-        write(6,*) (dayvals(1,ih),ih=1,24)
+C        write(6,*) (dayvals(1,ih),ih=1,24)
 
 C Point the pattern index to the Julian day. 
         calender(icurday)=nbdaypattern
@@ -1115,38 +1120,38 @@ C Also list the indeix of activities that use this day pattern (via ailist).
         call SDELIM(outs,outsd,'C',IW)
         call edisp(IUF,outsd)
 
-C Cast idayusedby to single dimension array for use in ailist.
+C For each of the activities that reference this day type list
+C their index and name and building type.
         do 76 k2=1,ndayusedby(ipat)
-          loop700(k2)=idayusedby(ipat,k2)
+          idu=idayusedby(ipat,k2)   ! the activity index
+          ldu=lnblnk(actname(idu))  ! its name length
+          ldub=lnblnk(actbld(idu))  ! its building type length
+          write(outs,'(a,i3,8a)') '*Refbyactivity,',idu,',',dq,
+     &      actname(idu)(1:ldu),dq,',',dq,actbld(idu)(1:ldub),dq
+          call edisp(IUF,outs)
   76    continue
-        itrunc=1
-        ipos=1
-        do while (itrunc.ne.0)
-          call ailist(ipos,ndayusedby(ipat),loop700,700,'C',loutc,
-     &      loutlen,itrunc)
-          call edisp(IUF,loutc)
-          ipos=itrunc+1
-        end do
-        write(outs,'(a,24F5.2)') '*Ocupfrac ',
-     &    (daypattern(ipat,1,ih),ih=1,24)
-        call SDELIM(outs,outsd,'C',IW)
-        call edisp(IUF,outsd)
-        write(outs,'(a,24F5.2)') '*Lightfrac ',
-     &     (daypattern(ipat,2,ih),ih=1,24)
-        call SDELIM(outs,outsd,'C',IW)
-        call edisp(IUF,outsd)
-        write(outs,'(a,24F5.2)') '*Equipfrac ',
-     &    (daypattern(ipat,3,ih),ih=1,24)
-        call SDELIM(outs,outsd,'C',IW)
-        call edisp(IUF,outsd)
-        write(outs,'(a,24F5.0)') '*HeatSP ',
-     &    (daypattern(ipat,4,ih),ih=1,24)
-        call SDELIM(outs,outsd,'C',IW)
-        call edisp(IUF,outsd)
-        write(outs,'(a,24F5.0)') '*CoolSP ',
-     &    (daypattern(ipat,5,ih),ih=1,24)
-        call SDELIM(outs,outsd,'C',IW)
-        call edisp(IUF,outsd)
+
+C The list of 24 numbers could be printed out if needed.
+C        write(outs,'(a,24F5.2)') '*Ocupfrac ',
+C     &    (daypattern(ipat,1,ih),ih=1,24)
+C        call SDELIM(outs,outsd,'C',IW)
+C        call edisp(IUF,outsd)
+C        write(outs,'(a,24F5.2)') '*Lightfrac ',
+C     &     (daypattern(ipat,2,ih),ih=1,24)
+C        call SDELIM(outs,outsd,'C',IW)
+C        call edisp(IUF,outsd)
+C        write(outs,'(a,24F5.2)') '*Equipfrac ',
+C     &    (daypattern(ipat,3,ih),ih=1,24)
+C        call SDELIM(outs,outsd,'C',IW)
+C        call edisp(IUF,outsd)
+C        write(outs,'(a,24F5.0)') '*HeatSP ',
+C     &    (daypattern(ipat,4,ih),ih=1,24)
+C        call SDELIM(outs,outsd,'C',IW)
+C        call edisp(IUF,outsd)
+C        write(outs,'(a,24F5.0)') '*CoolSP ',
+C     &    (daypattern(ipat,5,ih),ih=1,24)
+C        call SDELIM(outs,outsd,'C',IW)
+C        call edisp(IUF,outsd)
         do 199 iper=1,nbperpat(ipat)
           write(outs,'(a,2f7.3,3f8.4,2f7.2)') '*Period ',
      &      perpatstart(ipat,iper),
@@ -1163,8 +1168,10 @@ C the csv file write out an entry.
       do 201 iact=1,nbactivitiesread
         index=iactindex(iact)  ! shortcut to the activity index
         lan=lnblnk(actname(index))
-        write(outs,'(a,i4,2a)')  '*Activity_pattern ',index,
-     &    ' named ',ACTNAME(index)(1:lan)
+        lanb=lnblnk(actbld(index))
+        write(outs,'(a,i3,8a)')  '*Activity_pattern,',index,
+     &    ',',dq,ACTNAME(index)(1:lan),dq,' in ',
+     &    dq,actbld(index)(1:lanb),dq
         call edisp(IUF,outs)
 
 C Document the list of patterns used by this activity
@@ -1199,7 +1206,7 @@ C List the calendar.
         itrunc=1
         ipos=1
         do while (itrunc.ne.0)
-          call ailist(ipos,366,calender,366,'C',loutc,loutlen,itrunc)
+          call ailist(ipos,365,calender,366,'C',loutc,loutlen,itrunc)
 C Debug
 C        write(6,'(1x,a)',IOSTAT=ios,ERR=2) loutc(1:loutlen)
 
@@ -1308,9 +1315,9 @@ C data and then set the timings and update the *was values.
             perdata(ipat,4,iper)=heatwas
             perdata(ipat,5,iper)=coolwas
 C Debug.
-            write(6,*) 'st end',perpatstart(ipat,iper),
-     &        perpatend(ipat,iper),occupwas,lightwas,equipwas,
-     &        heatwas,coolwas
+C            write(6,*) 'st end',perpatstart(ipat,iper),
+C     &        perpatend(ipat,iper),occupwas,lightwas,equipwas,
+C     &        heatwas,coolwas
 
             occupwas=occupis  ! shift current to past for each value
             lightwas=lightis
@@ -1318,11 +1325,11 @@ C Debug.
             heatwas=heatis
             coolwas=coolis
 C Debug.
-            write(6,*) iper,ihour
+C            write(6,*) iper,ihour
             iper=iper+1   ! increment the period
             nbperpat(ipat)=iper
             perpatstart(ipat,iper)= real (ihour)  ! mark start of next
-            write(6,*) 'st next',iper,ihour,perpatstart(ipat,iper)
+C            write(6,*) 'st next',iper,ihour,perpatstart(ipat,iper)
           endif
 
   41    continue
@@ -1334,9 +1341,9 @@ C Debug.
           perdata(ipat,4,iper)=heatwas
           perdata(ipat,5,iper)=coolwas
         endif
-        write(6,*) 'last start end',iper,perpatstart(ipat,iper),
-     &    perpatend(ipat,iper),occupwas,lightwas,equipwas
-        write(6,*) 'finished 24 hours'
+C        write(6,*) 'last start end',iper,perpatstart(ipat,iper),
+C     &    perpatend(ipat,iper),occupwas,lightwas,equipwas
+C        write(6,*) 'finished 24 hours'
 
   42  continue
 

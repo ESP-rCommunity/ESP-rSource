@@ -1689,7 +1689,7 @@ C stop. This will later be replaced by a dedicated call to res.
 C Debug.
 C            WRITE(*,'(A,I2)') 'Dumpimg BEMS data ..... Zone ',ICOMP
             WRITE(60,*) '#Zone  Day  Time   Temperature '
-	    
+    
             CALL ECLOSE(BTIMEF,1.000,0.001,CLOSE)
             IF(CLOSE)THEN
               WRITE(60,'(I6,1X,F8.4,1X,F8.4,1X,F8.4)') 
@@ -2569,20 +2569,20 @@ C -- Energy stored.
         
 C --------- OTHER FACE -----------
 C Calculate only if facing exterior type boundary condition.
-        IF(IE(icomp,ISFN).EQ.0)THEN	! check that it is facing exterior (note that facing attic does not count)
-          DELXE=THRMLI(ICOMP,ISFN,1,4)/FLOAT(NNDL(ICOMP,ISFN,1))	! exterior surface layer thickness / exterior layer nodes (typically 2)
+        IF(IE(icomp,ISFN).EQ.0)THEN  ! check that it is facing exterior (note that facing attic does not count)
+          DELXE=THRMLI(ICOMP,ISFN,1,4)/FLOAT(NNDL(ICOMP,ISFN,1))  ! exterior surface layer thickness / exterior layer nodes (typically 2)
           
 C -- Conduction.
-          if(IVTHPZ(icomp))then	! ? is this to set the variable on the first hour?
-	! present timestep
+          if(IVTHPZ(icomp))then  ! ? is this to set the variable on the first hour?
+        ! present timestep
             qconde(ICOMP,ISFN,1)=THCONp(ISFN,1)*sna(ICOMP,ISFN)*
      &                       (tpc(icomp,ISFN,2)-tpc(ICOMP,ISFN,1))/DELXE
-	! future timestep
+        ! future timestep
             qconde(ICOMP,ISFN,2)=THCONf(ISFN,1)*sna(ICOMP,ISFN)*
      &                       (tfc(ICOMP,ISFN,2)-tfc(ICOMP,ISFN,1))/DELXE
           else
             ! present timestep
-            qconde(ICOMP,ISFN,1)=qconde(ICOMP,ISFN,2)	! present equals previous future
+            qconde(ICOMP,ISFN,1)=qconde(ICOMP,ISFN,2)  ! present equals previous future
             ! future timestep
             ! qconde = k * A / l * (node temps 2 - 1
             qconde(ICOMP,ISFN,2)=THRMLI(ICOMP,ISFN,1,1)*sna(ICOMP,ISFN)*
@@ -2649,7 +2649,7 @@ C -- Shortwave radiation. Test if TMC.
 
 C -- Energy stored.
           qstore(ICOMP,ISFN,1)=qstore(ICOMP,ISFN,2)
-	! qstore = density * spec heat * A * thickness / 2 * temp of node * num of time steps per hr / 3600 s/h
+  ! qstore = density * spec heat * A * thickness / 2 * temp of node * num of time steps per hr / 3600 s/h
           qstore(ICOMP,ISFN,2)=THRMLI(ICOMP,ISFN,1,2)*
      &                         THRMLI(ICOMP,ISFN,1,3)*sna(ICOMP,ISFN)*
      &                   (DELXE/2.)*tfc(ICOMP,ISFN,1)*real(ntstep)/3600.

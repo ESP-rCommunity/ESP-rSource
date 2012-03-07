@@ -1645,12 +1645,12 @@ C call ripvdat for data within the cfg file.
           CALL ERPFREE(IUTDF,ISTAT)
           call FINDFIL(lipvdatf,XST)
           if(XST)then
-	    ipvact='ipv'
+            ipvact='ipv'
             call ripvdat(IUTDF,lipvdatf,ipvact,ier)
             CALL ERPFREE(IUTDF,ISTAT)
           endif
         elseif(ND.ge.3)then
-	
+
 C The IPV data line needs to be scanned prior to calling ripvdat
 C for the rest of the data.
           K=0
@@ -1662,9 +1662,9 @@ C for the rest of the data.
           else
             ipvsimu='------'
           endif
-	  ipvact='cfg'
-          call ripvdat(iuc,FILE,ipvact,ier)	
-	endif
+          ipvact='cfg'
+          call ripvdat(iuc,FILE,ipvact,ier)
+        endif
       elseif(WORD(1:5).eq.'*dmds')then
 
 C Building fans/pumps/DHW demands file.
@@ -2754,7 +2754,7 @@ C obstructions files. If this is the case then scan them.
               endif
             endif
           else
-	    
+    
 C If MODE='ALL ' also scan obstruction blocks from zone
 C obstruction file if older model.
             call egomin(iuf,LGEOM(ICOMP),ICOMP,1,0,itru,ier)
@@ -2783,7 +2783,7 @@ C obstruction file if older model.
 
 C Call to zgupdate is after connection lists established.
           call zgupdate(0,icomp,ier)
-	    
+    
 C If MODE='ALL ' also find co-planer surfaces & edges of similar materials. 
           if(MODE(1:3).eq.'ALL'.or.MODE(1:3).eq.'all')then
             call suredgeadj(itrc,'-',icomp,ier)

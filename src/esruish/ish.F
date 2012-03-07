@@ -182,7 +182,7 @@ C Name of current application.
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer lnshd   ! length of current shading file string.
-      integer ier
+      integer ier,itrc
       integer nitems,inos ! max items and current menu item
       integer ISFSUM  ! number of surfaces found
 
@@ -227,6 +227,7 @@ C iunit  - zone transitional shading file
 C ifilsi - zone shading & insolation db
 C iuf    - miscellaneous other files
 C ifcfg  - system configuration file
+      itrc=0
       ifil=11
       iunit=ifil
       iuf=ifil+1
@@ -415,7 +416,7 @@ C and then call the ascii export facility and exit.
          elseif(paction(1:16).eq.'useupdate_silent')then
             silent=.true.
          elseif(paction(1:8).eq.'asci2bin')then
-	    write(ascif,'(a)') pascif(1:lnblnk(pascif))
+            write(ascif,'(a)') pascif(1:lnblnk(pascif))
             if(ascif(1:4).eq.'UNKN')then
               call edisp(iuout,'ish: the action file is unknown!')
               call pauses(1)
@@ -424,7 +425,7 @@ C and then call the ascii export facility and exit.
             endif
             silent=.true.
          elseif(paction(1:8).eq.'bin2asci')then
-	    write(ascif,'(a)') pascif(1:lnblnk(pascif))
+            write(ascif,'(a)') pascif(1:lnblnk(pascif))
             if(ascif(1:4).eq.'UNKN')then
               call edisp(iuout,'ish: the action file is unknown!')
               call pauses(1)
@@ -456,7 +457,11 @@ C Find the user's home folder then get user's custom settings.
       else
          write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'esprc'
       endif
-      call scesprc(esprc,iuf,0,ier)
+      if(.NOT.silent)then
+        call scesprc(esprc,iuf,1,ier)
+      else
+        call scesprc(esprc,iuf,0,ier)
+      endif
 
 C If there is a journal active, set up to add to itl. First get
 C the journal file from the user's home folder. All subsequent
@@ -564,7 +569,7 @@ C Open core of databases if not already done so.
      &               'or Optical Properties db.','W')
               endif
             endif
-	    
+    
             if(paction(1:13).eq.'update_silent'.or.
      &         paction(1:16).eq.'useupdate_silent')then
               continue
@@ -1195,7 +1200,7 @@ C in the zone transitional shading file or from common blocks).
      &        1,'F',12,'F',1,'month number',ier,nbhelp)
             if(ier.ne.0)goto 201
             call eday(iavdec(mon),mon,iyd)
-	    
+    
 C If there is a transitional shading file then use it when composing
 C the synopsis. If not found (i.e. if binary file is based on reading
 C an ascii shading file) then use an alternative approach.
@@ -1216,7 +1221,7 @@ C shading file.
               call edisp(iuout,outs)
               call retrv1(icomp)
               call shsynp(icomp)
-	       
+       
             else
 
 C Shading synopsis is based on common block information.
@@ -1642,7 +1647,7 @@ C or if the user requested a file conversion.
            elseif(paction(1:8).eq.'asci2bin')then
              continue
            else
-	     write(exportfile,'(2a)') 
+             write(exportfile,'(2a)') 
      &         lshad(icomp)(1:lnblnk(lshad(icomp))),'a'
              call findfil(exportfile,xst)
              if(xst)then
@@ -1780,8 +1785,8 @@ C Depending on location check existance.
           elseif(IER.eq.2)then
             MLDBOK=.FALSE.
           endif
-	  goto 138    ! if silent and no materials jump to optics
-	endif
+          goto 138    ! if silent and no materials jump to optics
+        endif
         IF(IER.eq.1)then
           write(outs248,'(3a)') 
      &    ' Problems with materials used by Constructions db',

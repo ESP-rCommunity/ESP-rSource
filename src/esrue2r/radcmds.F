@@ -366,7 +366,7 @@ C Calculate patch direction vector (location).
 
 C Debug
 C          write(6,*) 'IPTCH',' Xp',' Yp',' Zp',' azim',' alt'
-C          write(6,*) IPTCH,' ',xp,' ',yp,' ',zp,' ',aazim,' ',pzalt	   
+C          write(6,*) IPTCH,' ',xp,' ',yp,' ',zp,' ',aazim,' ',pzalt   
 C End Debug
 
           write(ITA3,'(a)') 'patch_light source patch'

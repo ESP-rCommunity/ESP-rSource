@@ -269,9 +269,9 @@ C to write less than 72 char into NAM
           IF(ND.GT.2)THEN
             CALL EGETRM(OUTSTR,K,RSTR,'W','layer name:gap R',IER)
             lex=MIN0(LNBLNK(RSTR),72)
-	    write(NAM,'(a)')RSTR(1:lex)
+            write(NAM,'(a)')RSTR(1:lex)
             lex=MIN0(LNBLNK(RSTR),124)
-	    write(LAYDESC(I,IL),'(a)')RSTR(1:lex)
+            write(LAYDESC(I,IL),'(a)')RSTR(1:lex)
 
 C See if there is a matching matarray index, if so assign values
 C to the IPRMAT array so for each IPR there is a IPRMAT. Note:
@@ -341,7 +341,7 @@ C For a layer with no legacy index use the matarray index and assign values.
                 DBSHT=matdbsht(matarrayindex)
 
 C If g or h air gap and version 1.2 then assign DRAIR
-	        if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+                if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &             matopaq(matarrayindex)(1:1).eq.'h')then
                   if(closemat2)then
                     DRAIR(I,IL,1)=matgapares(matarrayindex,1)
@@ -362,7 +362,7 @@ C And check the matarray index in case this is a gap and assign values.
               if(matarrayindex.gt.0)then
 
 C If g or h air gap and version 1.2 then assign DRAIR
-	        if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+                if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &             matopaq(matarrayindex)(1:1).eq.'h')then
                   if(closemat2)then
                     DRAIR(I,IL,1)=matgapares(matarrayindex,1)
@@ -1124,7 +1124,7 @@ C Make up NAM as combination of matnam and matdoc.
 C Also check if it is a gap.
             if(matarrayindex.eq.0)then
               continue
-	    elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
+            elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &             matopaq(matarrayindex)(1:1).eq.'h')then
               if(closemat2)then
                 DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
