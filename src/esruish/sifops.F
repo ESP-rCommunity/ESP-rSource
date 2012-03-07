@@ -450,7 +450,7 @@ C value lastrec which is equivalent to irecx.
          if(iret.ne.icomp)then
            call usrmsg(
      &      'Number of surfaces in file does not match current model!',
-     &      exportfile,'W')
+     &      expfil,'W')
            call erpfree(iuj,istat)
            goto 17
          endif
