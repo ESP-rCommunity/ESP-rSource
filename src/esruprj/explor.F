@@ -76,6 +76,7 @@ C IALT is the number of text alternatives available for a text field.
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/GDPER/igbdoy,igedoy
+      CHARACTER LIMP*96,LEXP*96
       COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP
 
 C Explicit use of pophelp required because of dynamic generation.
@@ -92,7 +93,7 @@ C Explicit use of pophelp required because of dynamic generation.
       CHARACTER outs*124,LINE*72,OLINE*72,itypes*34,msgl2*48
       logical changed,clkok,textalt,edited,XST
       character*35 ITEMS(9)      
-      CHARACTER DFILE*72,tfile*72,LIMP*72,LEXP*72
+      CHARACTER DFILE*96,tfile*96
       CHARACTER OUTSTR*124
       integer IPDL,INODA,nitms,INO  ! max items and current menu item
 
@@ -476,10 +477,12 @@ C import NCM data for UK
           helptopic='temporal_import_source'
           call gethelptext(helpinsub,helptopic,nbhelp)
           DFILE='/tmp/71.csv'
-          tfile=DFILE
+          write(tfile,'(a)') DFILE(1:lnblnk(DFILE))
           CALL EASKS(tfile,' Import file name? ',
-     &      ' ',72,DFILE,'import file name',IER,nbhelp)
-          if(tfile(1:2).ne.'  ') LIMP=tfile
+     &      ' ',96,DFILE,'import file name',IER,nbhelp)
+          if(tfile(1:2).ne.'  ')then
+            write(LIMP,'(a)') tfile(1:lnblnk(tfile))
+          endif
           IF(ITIMP.EQ.1)THEN
             CALL ERPFREE(IUIMP,ISTAT)
             call findfil(LIMP,XST)
@@ -861,14 +864,14 @@ C IPS is the timestep to insert data at.
       
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
+      CHARACTER LIMP*96,LEXP*96
       COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
 
       DIMENSION IMPT(21),IMSTC(MBITS),SALT(6)
       CHARACTER IMPT*42,KEY*1,OUTSTR*124,WORD*20,OUTS*124
-      CHARACTER*72 LIMP,LEXP
       CHARACTER SALT*16
-      CHARACTER DFILE*72,tfile*72,msgl2*48
+      CHARACTER DFILE*96,tfile*96,msgl2*48
       logical warncas,XST
       integer IMPTL,INODA ! max items and current menu item
 
@@ -940,10 +943,12 @@ C Help text for this menu.
         RETURN
       ELSEIF(INODA.EQ.3)THEN
         DFILE='data.imp'
-        tfile=LIMP
+        write(tfile,'(a)') LIMP(1:lnblnk(LIMP))
         CALL EASKS(tfile,' Import file name? ',
-     &   ' ',72,DFILE,'import file name',IER,nbhelp)
-        if(tfile(1:2).ne.'  ')LIMP=tfile
+     &   ' ',96,DFILE,'import file name',IER,nbhelp)
+        if(tfile(1:2).ne.'  ')then
+          write(LIMP,'(a)') tfile(1:lnblnk(tfile))
+        endif
         IF(ITIMP.EQ.1)THEN
           CALL ERPFREE(IUIMP,ISTAT)
           call findfil(LIMP,XST)
@@ -1184,12 +1189,12 @@ C from a file and to which static value it matches.
       
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
+      CHARACTER LIMP*96,LEXP*96
       COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP
      
       DIMENSION IMPT(27),IMSTC(MBITS)
       CHARACTER IMPT*42,KEY*1,OUTSTR*124,WORD*20,OUTS*124
-      CHARACTER*72 LIMP,LEXP
-      CHARACTER DFILE*72,tfile*72,msgl2*48
+      CHARACTER DFILE*96,tfile*96,msgl2*48
       logical XST
       integer IMPTL,INODA ! max items and current menu item
 
@@ -1262,10 +1267,12 @@ C Help text for this menu.
         RETURN
       ELSEIF(INODA.EQ.3)THEN
         DFILE='data.csv'
-        tfile=LIMP
+        write(tfile,'(a)') LIMP(1:lnblnk(LIMP))
         CALL EASKS(tfile,' Import file name? ',
-     &   ' ',72,DFILE,'import file name',IER,nbhelp)
-        if(tfile(1:2).ne.'  ')LIMP=tfile
+     &   ' ',96,DFILE,'import file name',IER,nbhelp)
+        if(tfile(1:2).ne.'  ')then
+          write(LIMP,'(a)') tfile(1:lnblnk(tfile))
+        endif
         IF(ITIMP.EQ.1)THEN
           CALL ERPFREE(IUIMP,ISTAT)
           call findfil(LIMP,XST)

@@ -745,14 +745,14 @@ C to quit the image browser.
       dimension gitem(18),gh(13),cfgitem(30),inl2ngr(30),itemlog(30)
       character name*70,label*42,mitem*72,gitem*44,OUTSTR*124,WORD*20
       character group*42,tgroup*42,key*1,look*70,tlook*70
-      character line*72,outs*124,rootp*72,separ*42
+      character line*72,outs*124,rootp*84,separ*42
       character doit*248
       character gh*72,cfgitem*144,exdescr*81,doc*72,head*42
-      character cfg*144,cfg_path*72,cfg_root*72,doc_file*72
+      character cfg*144,cfg_path*84,cfg_root*72,doc_file*96
       character itemlog*144,ilog*144
 
 C Strings for dos version of rootp and upath and a double quote.
-      character rootpdos*72,upathdos*72,rootpath*72,modelroot*72
+      character rootpdos*84,upathdos*72,rootpath*72,modelroot*72
       character dq*1,fs*1,thecfgis*72
       character lltmp*144,lguess*144,dguess*144
       logical XST,unixok

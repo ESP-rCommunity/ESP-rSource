@@ -242,6 +242,7 @@ C Common for electrical file
       INTEGER :: ispmxist,ientxist
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       COMMON/GR1D04/GAM,RGAM
       REAL :: GAM, RGAM
@@ -285,7 +286,6 @@ C Mechanical Ventilation systems.
 C For reading in of bi-directional data.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
 
       CHARACTER OUTSTR*124,LCFGF*72,MODE*4,cfgroot*24

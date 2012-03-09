@@ -41,6 +41,7 @@ C delete component descriptions.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Path to problem and command line file (if any).
@@ -66,7 +67,6 @@ C Name of current application
       character inf*144,L144*144,paction*16,pact*16
       character lcmdfl*144,lltmp*144,ascif*72,pascif*72
       character outs*124,outs248*248
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,fs*1
       character tab*1
       character cVnum*16      ! returned from ESPrVersionNum

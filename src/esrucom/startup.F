@@ -81,7 +81,7 @@ C Variable declaration
       character(8)   :: mode
       character(24)  :: appn
       character(248) :: outs
-      character(48)  :: prog
+      character(72)  :: prog
       integer :: m, i, IOS, IUOUT,IUIN, iXavail
       integer   :: iTimeoutFlag
       logical :: unixok
@@ -818,7 +818,7 @@ C parcnv parse command line paramters for ecnv.
       integer termtype
       integer i,iverb,itmprm,iobs,ichop
       real conv
-      character argument*72,prog*48,inf*144,outs*248,appn*24
+      character argument*72,prog*72,inf*144,outs*248,appn*24
       character iform*24,oform*24,ouf*144,ucfg*72,mode*8
 
       inf  = 'UNKNOWN'
@@ -1026,6 +1026,7 @@ C Graphic capture, window dump & text print: label, command.
       common/tprint/tprlbl,tprcmd
 
 C Where validation tests are kept.
+      character vldlbl*20,vldfl*96
       common/vldlst/vldlbl,vldfl
 
       logical localdot,unixok,dll
@@ -1042,7 +1043,6 @@ C Where validation tests are kept.
       character figlbl*20,figexe*48
       character grflbl*20,grfexe*48
       character foldlbl*20,foldexe*48
-      character vldlbl*20,vldfl*72
       character journcmd*20,jfile*72
 
 C Altdot is an alternative location for the esprc file in
@@ -1299,8 +1299,8 @@ C Turn journaling on/off.
       elseif(WORD(1:16).eq.'*validation_stds')then
         CALL EGETP(OUTSTR,K,vldlbl,'W','validation list lbl',IER)
         CALL EGETP(OUTSTR,K,vldfl,'W','validation stds file',IER)
-        write(outs,'(4a)')' Validation: ',vldlbl,' in ',vldfl
-        if(itrc.gt.0)call edisp(iuout,outs)
+        write(outs248,'(4a)')' Validation: ',vldlbl,' in ',vldfl
+        if(itrc.gt.1)call edisp248(iuout,outs248,100)
       elseif(WORD(1:12).eq.'*db_climates')then
         CALL EGETP(OUTSTR,K,cdblbl,'W','clm db list lbl',IER)
         CALL EGETRM(OUTSTR,K,cdblfil,'W','clm db list file',IER)
@@ -1356,6 +1356,7 @@ C Use espriou.h for climatelist file name and defdbfl.
       COMMON/OUTIN/IUOUT,IUIN
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
       common/deflt4/dinstpath
@@ -1391,24 +1392,28 @@ C cdintglz (char*32) internal glazing/window
      &  cdintfloor(5),cdintceil(5),cdintptn(5),cdintdoor(5),cdintglz(5)
 
       CHARACTER OUTSTR*124,WORD*20,outs248*248
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DFCFD
+
+C << consider increasing size of these strings >>
+      character*72 DFCFD
       character*72 DECMPDBFL,DICONDBFL
-      character dinstpath*48,di*48
+      character dinstpath*60,di*60
       logical unixok,dll
 #include "espinstalldir.h"
 
 C Assume default db names (in case of failure to find defaults
 C file or failure reading it).
+
+C << make a pass sorting out these default file names >>
       call isunix(unixok)
       if(unixok)then
         write(dinstpath,'(a)') instpath(1:lnblnk(instpath))
         write(di,'(a)') instpath(1:lnblnk(instpath))
         ln=lnblnk(di)
-        write(DFCFG,'(2a)') di(1:min(ln,36)),
-     &    '/training/3z_bld/cfg/building_basic'
-        write(DFCTL,'(2a)') di(1:min(ln,38)),
-     &    '/training/3z_bld/ctl/building.ctl'
-        write(DAPROB,'(2a)') di(1:min(ln,34)),
+        write(DFCFG,'(2a)') di(1:min(ln,34)),
+     &    '/training/basic/cfg/bld_basic.cfg'
+        write(DFCTL,'(2a)') di(1:min(ln,34)),
+     &    '/training/basic/ctl/bld_basic.ctl'
+        write(DAPROB,'(2a)') di(1:min(ln,38)),
      &    'training/basic/nets/bld_basic_af1.afn'
         write(DPNF,'(2a)') di(1:min(ln,31)),
      &    '/training/plant/vent_simple/cfg/vent.cfg'
@@ -1435,11 +1440,11 @@ C        dinstpath = 'c:/esru/esp-r'
         write(dinstpath,'(a)') instpath(1:lnblnk(instpath))
         write(di,'(a)') instpath(1:lnblnk(instpath))
         ln=lnblnk(di)
-        write(DFCFG,'(2a)') di(1:min(ln,36)),
-     &    '/training/3z_bld/cfg/building_basic'
-        write(DFCTL,'(2a)') di(1:min(ln,38)),
-     &    '/training/3z_bld/ctl/building.ctl'
-        write(DAPROB,'(2a)') di(1:min(ln,34)),
+        write(DFCFG,'(2a)') di(1:min(ln,34)),
+     &    '/training/basic/cfg/bld_basic.cfg'
+        write(DFCTL,'(2a)') di(1:min(ln,34)),
+     &    '/training/basic/ctl/bld_basic.ctl'
+        write(DAPROB,'(2a)') di(1:min(ln,38)),
      &    'training/basic/nets/bld_basic_af1.afn'
         write(DPNF,'(2a)') di(1:min(ln,31)),
      &    '/training/plant/vent_simple/cfg/vent.cfg'

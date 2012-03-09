@@ -60,7 +60,7 @@ C seasons.h provides typper and typsea
 
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
-      character dinstpath*48
+      character dinstpath*60
 
 C Climate data.
       COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
@@ -437,7 +437,7 @@ C Parameters
 
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
-      character dinstpath*48
+      character dinstpath*60
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types
@@ -471,7 +471,7 @@ C hasname (string array) the surface name for each surface (so fillsur does not 
       character ctldoc*248,LCTLF*72,zd*64
       character DFILE*72,CFILE*72,OFILE*72,TFILE*72
       character act*2
-      character subpath*72,sfile*144
+      character subpath*84,sfile*144
       character icact*8,iwatt*8,afact*8,iflow*8,vflow*8
       character sn*12,constr*12,opt*12,outs*124
       LOGICAL browse,OKC,XST,unixok

@@ -171,7 +171,7 @@ C      character outs248*248
       character ALOC*12,ALOCLBL*12,ALOCTYP*4,CMDLBL*12,CMDLNAM*80
       CHARACTER cpth*48,cmdn*48,topt*72
       character t24*24,DFILE*72,DCNN*72,bidirfile*72,bidirname*12
-      CHARACTER dinstpath*48,dirpath*72
+      CHARACTER dinstpath*60,dirpath*72
       character useraction*8  ! returned from exemplar access call.
       character menu*72       ! blank model title for pregist call
       character fs*1
