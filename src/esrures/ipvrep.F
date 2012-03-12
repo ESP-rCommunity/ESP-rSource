@@ -1956,6 +1956,11 @@ C Write IPV report based on description held in common.
 
       logical XST,dmdsok,closea,closeb,closec,closed,closee
 
+C For use with seasonal summaries.
+      real SSWHD,SSWCD,SSWLD,SSWFD,SSWSPD,SSWDHWD,SSWPVD,sdenom
+      dimension SSWHD(MSPS),SSWCD(MSPS),SSWLD(MSPS),SSWFD(MSPS)
+      dimension SSWSPD(MSPS),SSWDHWD(MSPS),SSWPVD(MSPS),sdenom(MSPS)
+
 C For help messages
       character helpinsub*24   ! subroutine name
       character helptopic*24 ! string (unique) for topic
@@ -2034,6 +2039,28 @@ C Recover the distribution of resultant temperature in each bin for each season.
       call ipvgcmft(ifu,NHW,ier)
       CALL  ERPFREE(ifu,ISTAT)
 
+C Scan for each season to get seasonal summary data (if scaling is
+C something other than unity). For each we need to rewind to the start 
+C look for the relevant section and gather stats (into an array for.
+C each season).
+      CALL EFOPSEQ(ifu,sipvres,1,IER)
+      if(nipvassmt.gt.1)then
+        do 459 ij=1,nipvassmt
+          call eclose(ddmheat(ij),1.0,0.01,closea)
+          call eclose(ddmcool(ij),1.0,0.01,closeb)
+          if(closea.and.closeb)then
+            continue
+          else
+            call ipvseadmd(ifu,ij,dmdsok,SWHD,SWCD,SWLD,SWFD,SWSPD,
+     &        SWDHWD,SWPVD,denom,ier)
+            SSWHD(ij)=SWHD; SSWCD(ij)=SWCD; SSWLD(ij)=SWLD; 
+            SSWFD(ij)=SWFD; SSWSPD(ij)=SWSPD; SSWDHWD(ij)=SWDHWD
+            SSWPVD(ij)=SWPVD; sdenom(ij)=denom
+          endif
+  459   continue
+        CALL  ERPFREE(ifu,ISTAT)
+      endif
+
 C Append the summary to the intermediate report to create finished report.
       write(xfile,'(a)') sipvres(1:lnblnk(sipvres))
       call ipvexp(xfile,ixopen,ixunit,'a','T','IPV summay',IER)
@@ -2051,7 +2078,7 @@ C If there was a cancel request return, otherwise write the report.
       endif
 
 C If the number of assessments is more than one and the scaling factors
-C for each season are something other than unity, generate seasonal
+C for each season are something other than unity, write seasonal
 C sub-totals as well.
       if(nipvassmt.gt.1)then
         do 448 ij=1,nipvassmt
@@ -2061,29 +2088,31 @@ C sub-totals as well.
      &      ipvadesc(ij)(1:lnblnk(ipvadesc(ij)))
           call edisp(itru,outs)
           call edisp(itru,' ')
-          closea=.false.
-          closeb=.false.
-C          call eclose(ddmheat(ij),1.0,0.01,closea)
-C          call eclose(ddmcool(ij),1.0,0.01,closeb)
+          call eclose(ddmheat(ij),1.0,0.01,closea)
+          call eclose(ddmcool(ij),1.0,0.01,closeb)
           if(closea.and.closeb)then
-            continue
+
+C Write the end marker of the seasonal summary only.
+            write(outs,'(3a)') '*End_seasonal_summary',tab,
+     &        ipvadesc(ij)(1:lnblnk(ipvadesc(ij)))
+            call edisp(itru,outs)
           else
-            call ipvseadmd(ifu,ij,dmdsok,SWHD,SWCD,SWLD,SWFD,SWSPD,
-     &        SWDHWD,SWPVD,denom,ier)
-            THE= SWHD*ddmheat(ij)
-            THEKW= SWHD*ddmheat(ij)*denom
-            TCE= abs((SWCD*ddmcool(ij)))
-            TCEKW= abs((SWCD*ddmcool(ij)*denom))
-            tlight= SWLD*ddmlight(ij)
-            tlightkw= SWLD*ddmlight(ij)*denom
-            tpumps= SWFD*ddmfan(ij)
-            tpumpskw= SWFD*ddmfan(ij)*denom
-            tsmlpw= SWSPD*ddmsmlpw(ij)
-            tsmlpwkw= SWSPD*ddmsmlpw(ij)*denom
-            tdhw= SWDHWD*ddmdhw(ij)
-            tdhwkw= SWDHWD*ddmdhw(ij)*denom
-            tpv= SWPVD*ddmdhw(ij)
-            tpvkw= SWPVD*ddmdhw(ij)*denom
+
+C Use the information gathered earlier from scan of seasons.
+            THE= SSWHD(ij)*ddmheat(ij)
+            THEKW= SSWHD(ij)*ddmheat(ij)*sdenom(ij)
+            TCE= abs((SSWCD(ij)*ddmcool(ij)))
+            TCEKW= abs((SSWCD(ij)*ddmcool(ij)*sdenom(ij)))
+            tlight= SSWLD(ij)*ddmlight(ij)
+            tlightkw= SSWLD(ij)*ddmlight(ij)*sdenom(ij)
+            tpumps= SSWFD(ij)*ddmfan(ij)
+            tpumpskw= SSWFD(ij)*ddmfan(ij)*sdenom(ij)
+            tsmlpw= SSWSPD(ij)*ddmsmlpw(ij)
+            tsmlpwkw= SSWSPD(ij)*ddmsmlpw(ij)*sdenom(ij)
+            tdhw= SSWDHWD(ij)*ddmdhw(ij)
+            tdhwkw= SSWDHWD(ij)*ddmdhw(ij)*sdenom(ij)
+            tpv= SSWPVD(ij)*ddmdhw(ij)
+            tpvkw= SSWPVD(ij)*ddmdhw(ij)*sdenom(ij)
 
 C << find an iget number for this >>
             write(outs,'(9a)') '*report',tab,'98',tab,'energy',tab,
