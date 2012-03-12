@@ -1,0 +1,161 @@
+# composite construction db defined in ../dbs/3BR_semi_learwick.constrdb
+# based on materials db material.db3.a
+   39     # no of composites 
+# layers  description   optics name   symmetry tag
+    1    Extwall_ti    OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Partywall_ti                                    
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Parttim                                         
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Parttim_wet                                     
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Floorti_low   OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Floorti_lowc  OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Floorti_up                                      
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Floorti_upc                                     
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Flortim_rf                                      
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Floorti_int   OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Floorti_intc                                    
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Ceilti_crl                                      
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Ceilti_crlc                                     
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Ceilti_low    OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Ceilti_lowc   OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Ceilti_up                                       
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Ceilti_int                                      
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Ceilti_intc                                     
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Roof                                            
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Roof_stairs                                     
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    3    Window_ext    OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  243    0.0060  clear float : 4mm clear float glass with optics from UK national method
+    0    0.0120  air  0.170 0.170 0.170
+  243    0.0060  clear float : 4mm clear float glass with optics from UK national method
+# layers  description   optics name   symmetry tag
+    1    Window_frme   OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   92    0.0200  western larch : Wester Larch from simetric.co.uk and matbase specific h
+# layers  description   optics name   symmetry tag
+    1    Glazint_glas                                    
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Glazint_panl                                    
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Door_ext                                        
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Doorfrm_ext                                     
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Doorint_sol                                     
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Door_fire                                       
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Extwall_st                                      
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Extwall_stw                                     
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Partywall_st                                    
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Partstone                                       
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Partst_wet_i                                    
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Partst_wet_o                                    
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Ceiling_st                                      
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Floor_st                                        
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Floor_stc                                       
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    Windowpanel                                     
+# mat ref thickness (m) mat descr & air gap R
+    1    0.1000  Paviour brick : Paviour brick
+# layers  description   optics name   symmetry tag
+    1    fict          TRAN  SC_fictit     SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  245    0.0040  fict : fictitious material (almost not there) with matching single laye
