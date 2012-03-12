@@ -1,8 +1,8 @@
 Synopsis
  
-This is a synopsis of the model supermarket sales with PV on roof defined in
-Supermarket_2008_a_pv.cfg generated on Thu Feb 23 20:17:05 2012. Notes
-associated with the model are in ../doc/SMsales.log
+This is a synopsis of the model supermarket PV on roof annual all days rev 6
+19Wlts +equip defined in Supermarket_2008_ann_pv_r6.cfg generated on Mon Mar
+12 08:34:01 2012. Notes associated with the model are in ../doc/SMsales.log
  
 The model is located at latitude   52.00 with a longitude difference of   0.00
 from the local time meridian. The year used in simulations is 2005 and
@@ -156,18 +156,6 @@ default_type Zone cold_store   is linked to lighting type
    5Compact fluorescent
 Zone m_vent_mix is linked to lighting type  0 (undefined type)
  
-The climate is: ESP test climate and is held in: ../dbs/Supermarket.climate
-with hour centred solar data.
- annual weather         : ../dbs/Supermarket.climate
-Calculated ground temp at 0.5m depth
-3.0888 4.3008 6.6610 8.8949 13.123 15.349 15.963 14.834 12.227 8.9770 5.7777 3.6649
-Calculated ground temp at 1.0m depth
-3.6630 4.5020 6.4738 8.4398 12.343 14.560 15.374 14.612 12.434 9.5459 6.5633 4.4524
-Calculated ground temp at 2.0m depth
-4.7588 5.0557 6.4004 7.8990 11.149 13.226 14.259 14.027 12.542 10.298 7.7730 5.7855
-Calculated ground temp at 4.0m depth
-6.4880 6.2779 6.8663 7.7174 9.8661 11.475 12.517 12.771 12.121 10.800 9.0880 7.5409
- 
 Primary energy conversions (demand kWhr to primary kWhr) are:
  heating   : 1.530
  cooling   : 1.440
@@ -187,12 +175,12 @@ Primary energy conversions (demand kWhr to primary kWhr) are:
 The model includes dispersed casual gains (e.g. pumps & fans).
  
 Notes:
-no dispersed demands notes (yet)
+represents HVAC fans
  No. weekdays demands =  2
  Gain Type Start Finish Sensible  Latent    Radiant   Convec
            Hour  Hour   Magn. (W) Magn. (W) Frac      Frac
    1 Pumps Wm2    0 24      1.0      0.0       0.50       0.50
-   2 Fans  Wm2    0 24      1.0      0.0       0.50       0.50
+   2 Fans  Wm2    0 24      0.5      0.0       0.50       0.50
  
  No. saturday demands =  0
  
@@ -201,25 +189,21 @@ no dispersed demands notes (yet)
 An Integrated Performance View has been defined:
 The climate used was not in the climatelist and
 no local seasons set - default seasons assumed.
-Title : supermarket sales
-Version   : Version SMsales
+Title : supermarket sales +lights +equip
+Version   : Version SMsales annual
 synopsis:
-:The SMsales
+:The SMsales has  additional lighting and equipment  as per Tozer
 Images    :   0
  
 Simulations to be undertaken:
-____simulations ( 5)____________days descrip___
-1st win Sat-01-Jan to Mon-28-Feb  59 Supermarket_pv 1st winter sea
-spring  Tue-01-Mar to Sat-30-Apr  61 Supermarket_pv spring sea
-summer  Sun-01-May to Wed-31-Aug 123 Supermarket_pv summer sea
-autumn  Thu-01-Sep to Mon-31-Oct  61 Supermarket_pv autumn sea
-2nd win Tue-01-Nov to Sat-31-Dec  61 Supermarket_pv 2nd winter sea
+____simulations ( 1)____________days descrip___
+annual Sat-01-Jan to Sat-31-Dec 365 Supermarket_pv annual run
  
-display day Sun-02-Jan.
-display day Wed-02-Mar.
-display day Mon-02-May.
-display day Fri-02-Sep.
-display day Wed-02-Nov.
+display day Mon-10-Jan.
+display day Mon-07-Mar.
+display day Tue-12-Jul.
+display day Mon-03-Oct.
+display day Mon-21-Nov.
  
 Seasons (as found in climatelist file):
          winter  spring  summer  autumn  winter
@@ -227,13 +211,13 @@ Seasons (as found in climatelist file):
   finish 28-Feb  30-Apr  31-Aug  31-Oct  31-Dec
   days     59       61     123      61      61
  
- Ratios for:  winter spring summer autumn winter
- heating       1.00   1.00   1.00   1.00   1.00
- cooling       1.00   1.00   1.00   1.00   1.00
- lighting      1.00   1.00   1.00   1.00   1.00
- small power   1.00   1.00   1.00   1.00   1.00
- fans&pumps    1.00   1.00   1.00   1.00   1.00
- DHW           1.00   1.00   1.00   1.00   1.00
+Ratios between assessments and all seasons:
+ heating       1.00
+ cooling       1.00
+ lighting      1.00
+ small power   1.00
+ fans&pumps    1.00
+ DHW           1.00
  
 Metric                zones area scaling weight  type name
  1 Zone db T (degC)    2 2300.00 1.000 1.000 ZndbT dbt_zones
@@ -269,25 +253,25 @@ Control description:
 assumes air based heating and cooling in shop offices cafe storage
  
 Zones control includes 14 functions.
-no zone control description supplied
+this revision boosts air flow in late afternoon, tigher overnight setpoints
  
  The sensor for function  1 senses dry bulb temperature in Sales.
  The actuator for function  1 is the air point in Sales.
  There have been  1 day types defined.
  Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 16.0 25.0 0.0
+   1  0.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 17.0 24.0 0.0
 basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
-capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
-25.00C.
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+24.00C.
    2  7.00 db temp   > flux      basic control       99999.0 0.0 159999.0 0.0 18.0 23.0 0.0
 basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
 capacity 159999.0W min cooling capacity 0.0W. Heating setpoint 18.00C cooling setpoint
 23.00C.
-   3 21.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 16.0 25.0 0.0
+   3 21.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 17.0 24.0 0.0
 basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
-capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
-25.00C.
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+24.00C.
  
  The sensor for function  2 senses dry bulb temperature in Refrig.
  The actuator for function  2 is the air point in Refrig.
@@ -312,9 +296,9 @@ capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 15.00C cooling set
  There have been  1 day types defined.
  Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 -100.0 3.0 0.0
-basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
-capacity 99999.0W min cooling capacity 0.0W. Heating setpoint -100.00C cooling setpoint
+   1  0.00 db temp   > flux      basic control       9999.0 0.0 120000.0 0.0 -100.0 3.0 0.0
+basic control: max heating capacity 9999.0W min heating capacity 0.0W max cooling
+capacity 120000.0W min cooling capacity 0.0W. Heating setpoint -100.00C cooling setpoint
 3.00C.
  
  The sensor for function  4 senses dry bulb temperature in Cabinet_lw.
@@ -322,9 +306,9 @@ capacity 99999.0W min cooling capacity 0.0W. Heating setpoint -100.00C cooling s
  There have been  1 day types defined.
  Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  1 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 -100.0 -12.0 0.0
-basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
-capacity 99999.0W min cooling capacity 0.0W. Heating setpoint -100.00C cooling setpoint
+   1  0.00 db temp   > flux      basic control       9999.0 0.0 120000.0 0.0 -100.0 -12.0 0.0
+basic control: max heating capacity 9999.0W min heating capacity 0.0W max cooling
+capacity 120000.0W min cooling capacity 0.0W. Heating setpoint -100.00C cooling setpoint
 -12.00C.
  
  The sensor for function  5 senses dry bulb temperature in Foyer.
@@ -332,17 +316,17 @@ capacity 99999.0W min cooling capacity 0.0W. Heating setpoint -100.00C cooling s
  There have been  1 day types defined.
  Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 14.0 28.0 0.0
+   1  0.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 13.0 28.0 0.0
 basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
-capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 14.00C cooling setpoint
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 13.00C cooling setpoint
 28.00C.
-   2  7.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 16.0 26.0 0.0
-basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
-capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
-26.00C.
-   3 21.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 14.0 28.0 0.0
+   2  7.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 14.0 26.0 0.0
 basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
 capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 14.00C cooling setpoint
+26.00C.
+   3 21.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 13.0 28.0 0.0
+basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 13.00C cooling setpoint
 28.00C.
  
  The sensor for function  6 senses dry bulb temperature in Office1.
@@ -350,90 +334,90 @@ capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 14.00C cooling set
  There have been  1 day types defined.
  Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 16.0 28.0 0.0
+   1  0.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 17.0 27.0 0.0
 basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
-capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
-28.00C.
-   2  7.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 20.0 24.0 0.0
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+27.00C.
+   2  7.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 21.0 24.0 0.0
 basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
-capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 20.00C cooling setpoint
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
 24.00C.
-   3 21.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 16.0 28.0 0.0
+   3 21.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 17.0 27.0 0.0
 basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
-capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
-28.00C.
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+27.00C.
  
  The sensor for function  7 senses dry bulb temperature in Cafe.
  The actuator for function  7 is the air point in Cafe.
  There have been  1 day types defined.
  Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 16.0 28.0 0.0
+   1  0.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 16.0 27.0 0.0
 basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
 capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
-28.00C.
+27.00C.
    2  8.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 20.0 24.0 0.0
 basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
 capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 20.00C cooling setpoint
 24.00C.
-   3 21.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 16.0 28.0 0.0
+   3 21.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 16.0 27.0 0.0
 basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
 capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
-28.00C.
+27.00C.
  
  The sensor for function  8 senses dry bulb temperature in Office3.
  The actuator for function  8 is the air point in Office3.
  There have been  1 day types defined.
  Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 16.0 28.0 0.0
+   1  0.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 16.0 27.0 0.0
 basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
 capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
-28.00C.
-   2  8.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 20.0 24.0 0.0
+27.00C.
+   2  8.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 21.0 24.0 0.0
 basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
-capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 20.00C cooling setpoint
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
 24.00C.
-   3 21.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 16.0 28.0 0.0
+   3 21.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 16.0 27.0 0.0
 basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
 capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
-28.00C.
+27.00C.
  
  The sensor for function  9 senses dry bulb temperature in passage.
  The actuator for function  9 is the air point in passage.
  There have been  1 day types defined.
  Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 16.0 28.0 0.0
+   1  0.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 16.0 27.0 0.0
 basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
 capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
-28.00C.
+27.00C.
    2  8.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 20.0 24.0 0.0
 basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
 capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 20.00C cooling setpoint
 24.00C.
-   3 21.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 16.0 28.0 0.0
+   3 21.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 16.0 27.0 0.0
 basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
 capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
-28.00C.
+27.00C.
  
  The sensor for function 10 senses dry bulb temperature in Staff_traing.
  The actuator for function 10 is the air point in Staff_traing.
  There have been  1 day types defined.
  Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  3 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 16.0 28.0 0.0
+   1  0.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 17.0 27.0 0.0
 basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
-capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
-28.00C.
-   2  8.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 20.0 24.0 0.0
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+27.00C.
+   2  8.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 21.0 24.0 0.0
 basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
-capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 20.00C cooling setpoint
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
 24.00C.
-   3 21.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 16.0 28.0 0.0
+   3 21.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 17.0 27.0 0.0
 basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
-capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
-28.00C.
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+27.00C.
  
  The sensor for function 11 senses dry bulb temperature in Store1.
  The actuator for function 11 is the air point in Store1.
@@ -528,86 +512,110 @@ capacity 1000.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setp
  zone (14) m_vent_mix   << control 14
  
  Flow control includes  6 loops.
-control the makeup air fan roughly on occupancy
+control the makeup air fan roughly on occupancy boost late afternoon
  
  The sensor for function  1 senses node (1) Sales
  The actuator for function  1 is flow connection:  26 vent_mix - Sales via makeup300p
  There have been  1 day types defined.
- Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  3 periods.
+ Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  5 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            0.0 1.0 0.2
 on/off setpoint 0.00 direct action ON fraction 0.200.
    2  8.00 dry bulb > flow       on / off            0.0 1.0 1.0
 on/off setpoint 0.00 direct action ON fraction 1.000.
-   3 19.00 dry bulb > flow       on / off            0.0 1.0 0.2
-on/off setpoint 0.00 direct action ON fraction 0.200.
+   3 15.00 dry bulb > flow       on / off            0.0 1.0 1.3
+on/off setpoint 0.00 direct action ON fraction 1.250.
+   4 19.00 dry bulb > flow       on / off            0.0 1.0 1.0
+on/off setpoint 0.00 direct action ON fraction 1.000.
+   5 22.00 dry bulb > flow       on / off            0.0 1.0 0.4
+on/off setpoint 0.00 direct action ON fraction 0.400.
  
  The sensor for function  2 senses node (2) Refrig
  The actuator for function  2 is flow connection:  27 vent_mix - Refrig via makeup50p
  There have been  1 day types defined.
- Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  3 periods.
+ Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  5 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            0.0 1.0 0.2
 on/off setpoint 0.00 direct action ON fraction 0.200.
    2  8.00 dry bulb > flow       on / off            0.0 1.0 1.0
 on/off setpoint 0.00 direct action ON fraction 1.000.
-   3 19.00 dry bulb > flow       on / off            0.0 1.0 0.2
-on/off setpoint 0.00 direct action ON fraction 0.200.
+   3 15.00 dry bulb > flow       on / off            0.0 1.0 1.3
+on/off setpoint 0.00 direct action ON fraction 1.250.
+   4 19.00 dry bulb > flow       on / off            0.0 1.0 1.0
+on/off setpoint 0.00 direct action ON fraction 1.000.
+   5 22.00 dry bulb > flow       on / off            0.0 1.0 0.4
+on/off setpoint 0.00 direct action ON fraction 0.400.
  
  The sensor for function  3 senses node (5) Cafe
  The actuator for function  3 is flow connection:  28 vent_mix - Cafe via makeup20p
  There have been  1 day types defined.
- Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  3 periods.
+ Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  5 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            0.0 1.0 0.2
 on/off setpoint 0.00 direct action ON fraction 0.200.
    2  8.00 dry bulb > flow       on / off            0.0 1.0 1.0
 on/off setpoint 0.00 direct action ON fraction 1.000.
-   3 19.00 dry bulb > flow       on / off            0.0 1.0 0.2
-on/off setpoint 0.00 direct action ON fraction 0.200.
+   3 15.00 dry bulb > flow       on / off            0.0 1.0 1.3
+on/off setpoint 0.00 direct action ON fraction 1.250.
+   4 19.00 dry bulb > flow       on / off            0.0 1.0 1.0
+on/off setpoint 0.00 direct action ON fraction 1.000.
+   5 22.00 dry bulb > flow       on / off            0.0 1.0 0.4
+on/off setpoint 0.00 direct action ON fraction 0.400.
  
  The sensor for function  4 senses node (4) Office1
  The actuator for function  4 is flow connection:  29 vent_mix - Office1 via makeup10p
  There have been  1 day types defined.
- Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  3 periods.
+ Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  5 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            0.0 1.0 0.2
 on/off setpoint 0.00 direct action ON fraction 0.200.
    2  8.00 dry bulb > flow       on / off            0.0 1.0 1.0
 on/off setpoint 0.00 direct action ON fraction 1.000.
-   3 19.00 dry bulb > flow       on / off            0.0 1.0 0.2
-on/off setpoint 0.00 direct action ON fraction 0.200.
+   3 15.00 dry bulb > flow       on / off            0.0 1.0 1.3
+on/off setpoint 0.00 direct action ON fraction 1.250.
+   4 19.00 dry bulb > flow       on / off            0.0 1.0 1.0
+on/off setpoint 0.00 direct action ON fraction 1.000.
+   5 22.00 dry bulb > flow       on / off            0.0 1.0 0.4
+on/off setpoint 0.00 direct action ON fraction 0.400.
  
  The sensor for function  5 senses node (6) Office3
  The actuator for function  5 is flow connection:  30 vent_mix - Office3 via makeup10p
  There have been  1 day types defined.
- Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  3 periods.
+ Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  5 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            0.0 1.0 0.2
 on/off setpoint 0.00 direct action ON fraction 0.200.
    2  8.00 dry bulb > flow       on / off            0.0 1.0 1.0
 on/off setpoint 0.00 direct action ON fraction 1.000.
-   3 19.00 dry bulb > flow       on / off            0.0 1.0 0.2
-on/off setpoint 0.00 direct action ON fraction 0.200.
+   3 15.00 dry bulb > flow       on / off            0.0 1.0 1.3
+on/off setpoint 0.00 direct action ON fraction 1.250.
+   4 19.00 dry bulb > flow       on / off            0.0 1.0 1.0
+on/off setpoint 0.00 direct action ON fraction 1.000.
+   5 22.00 dry bulb > flow       on / off            0.0 1.0 0.4
+on/off setpoint 0.00 direct action ON fraction 0.400.
  
  The sensor for function  6 senses node (8) Staff_traing
  The actuator for function  6 is flow connection:  31 vent_mix - Staff_traing via makeup10p
  There have been  1 day types defined.
- Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  3 periods.
+ Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  5 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 dry bulb > flow       on / off            0.0 1.0 0.2
 on/off setpoint 0.00 direct action ON fraction 0.200.
    2  8.00 dry bulb > flow       on / off            0.0 1.0 1.0
 on/off setpoint 0.00 direct action ON fraction 1.000.
-   3 19.00 dry bulb > flow       on / off            0.0 1.0 0.2
-on/off setpoint 0.00 direct action ON fraction 0.200.
+   3 15.00 dry bulb > flow       on / off            0.0 1.0 1.3
+on/off setpoint 0.00 direct action ON fraction 1.250.
+   4 19.00 dry bulb > flow       on / off            0.0 1.0 1.0
+on/off setpoint 0.00 direct action ON fraction 1.000.
+   5 22.00 dry bulb > flow       on / off            0.0 1.0 0.4
+on/off setpoint 0.00 direct action ON fraction 0.400.
  ____________________________________________________________
  
 The model includes an air flow network.
  
  Flow network description.
  
-  25 nodes,  16 components,  31 connections;     wind reduction =  1.000
+  25 nodes,  18 components,  34 connections;     wind reduction =  1.000
    # Node      Fluid   Node Type           Height Temperature    Data_1       Data_2
    1 Sales        air   internal & unknown    3.5000   20.000     (-)     0.000  vol ********
    2 Refrig       air   internal & unknown    3.5000   20.000     (-)     0.000  vol 9944.200
@@ -638,10 +646,10 @@ The model includes an air flow network.
  Component    Type C+ L+ Description
  
  win_cr        120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
- Fluid  1.0 crack width (m)  0.0080 crack length (m) 40.000
+ Fluid  1.0 crack width (m)  0.0100 crack length (m) 40.000
  
  door_cr       120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
- Fluid  1.0 crack width (m)  0.0100 crack length (m)  5.000
+ Fluid  1.0 crack width (m)  0.0200 crack length (m)  5.000
  
  grill0.5      110  2  0 Specific air flow opening           m = rho.f(A,dP)
  Fluid  1.0 opening area (m)  0.500
@@ -659,7 +667,7 @@ The model includes an air flow network.
  Fluid  1.0 width  2.000 height 2.500 ref ht  3.000 discharge factor 0.500
  
  vehc_cr       120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
- Fluid  1.0 crack width (m)  0.0100 crack length (m) 30.000
+ Fluid  1.0 crack width (m)  0.0250 crack length (m) 30.000
  
  makeup400p     30  2  0 Constant vol. flow rate component   m = rho.a
  Fluid  1.0 flow rate (m^3/s)   2.4000
@@ -671,7 +679,7 @@ The model includes an air flow network.
  Fluid  1.0 width  4.000 height 2.500 ref ht  3.500 discharge factor 0.400
  
  entry_alt     130  5  0 Specific air flow door              m = rho.f(W,H,dP)
- Fluid  1.0 width  1.000 height 2.500 ref ht  3.000 discharge factor 0.400
+ Fluid  1.0 width  1.500 height 2.500 ref ht  3.000 discharge factor 0.500
  
  makeup300p     30  2  0 Constant vol. flow rate component   m = rho.a
  Fluid  1.0 flow rate (m^3/s)   1.8000
@@ -684,6 +692,12 @@ The model includes an air flow network.
  
  makeup10p      30  2  0 Constant vol. flow rate component   m = rho.a
  Fluid  1.0 flow rate (m^3/s)  0.60000E-01
+ 
+ entry_cafe    130  5  0 Specific air flow door              m = rho.f(W,H,dP)
+ Fluid  1.0 width  1.000 height 2.500 ref ht  3.000 discharge factor 0.400
+ 
+ grill0.1      110  2  0 Specific air flow opening           m = rho.f(A,dP)
+ Fluid  1.0 opening area (m)  0.100
  
     # +Node         dHght   -Node         dHght   Component       Z @+    Z @-
     1 staff_fr      0.000   Staff_traing  0.000   win_cr          4.500   4.500
@@ -702,14 +716,14 @@ The model includes an air flow network.
    14 Store2        0.250   Refrig       -0.250   grill0.5        3.250   3.250
    15 Store2       -0.000   cold_store    0.000   door_cr         3.000   1.500
    16 Foyer         0.000   Sales        -0.000   foyer-sales     3.000   3.500
-   17 Foyer        -0.000   Cafe          0.000   entry           3.000   1.500
+   17 Foyer        -0.000   Cafe          0.000   entry_cafe      3.000   1.500
    18 Sales         0.000   Refrig        0.000   sales-refr      3.500   3.500
-   19 Refrig        0.000   Cabinet_hi    0.000   cab1.0ach       3.500   1.250
+   19 Refrig        0.000   Cabinet_hi    0.000   cab10ach        3.500   1.250
    20 Cabinet_hi    0.000   Refrig        0.000   grill0.5        1.250   3.500
-   21 Refrig        0.000   Cabinet_lw    0.000   cab1.0ach       3.500   1.250
+   21 Refrig        0.000   Cabinet_lw    0.000   cab10ach        3.500   1.250
    22 Cabinet_lw    0.000   Refrig        0.000   grill0.5        1.250   3.500
-   23 Staff_traing  0.000   passage       0.000   door_cr         4.500   4.500
-   24 passage       0.000   Office3       0.000   door_cr         4.500   4.500
+   23 Staff_traing  0.000   passage       0.000   grill0.1        4.500   4.500
+   24 passage       0.000   Office3       0.000   grill0.1        4.500   4.500
    25 vehicle       0.000   vent_mix      0.000   grill0.5        2.000   4.700
    26 vent_mix     -0.000   Sales         0.000   makeup300p      4.700   3.500
    27 vent_mix     -0.000   Refrig        0.000   makeup50p       4.700   3.500
@@ -717,6 +731,9 @@ The model includes an air flow network.
    29 vent_mix     -0.000   Office1       0.000   makeup10p       4.700   1.500
    30 vent_mix     -0.000   Office3       0.000   makeup10p       4.700   4.500
    31 vent_mix     -0.000   Staff_traing  0.000   makeup10p       4.700   4.500
+   32 Foyer        -0.000   Office1       0.000   entry_cafe      3.000   1.500
+   33 vent_mix     -0.000   Store1        0.000   makeup10p       4.700   1.500
+   34 vent_mix     -0.000   Store2        0.000   makeup10p       4.700   3.000
 thermal zone to air flow node mapping:
 thermal zone -> air flow node
 Sales        -> Sales
@@ -931,7 +948,7 @@ vertex  48   45.00000   19.50000    0.20000   vertex  96   65.34645   40.16712  
  and the associated network node is: Sales
  
 Notes:
-General sales area
+General sales area with lighting 19 and 7W/m2 and equipment at 15W/m2
 Number of weekdays     casual gains= 27
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
@@ -958,10 +975,10 @@ weekd 20 OccuptW   20-21  26652.6  19492.2       0.20       0.80
 weekd 21 OccuptW   21-22  16309.8  11934.0       0.20       0.80
 weekd 22 OccuptW   22-23  10740.6   7956.0       0.20       0.80
 weekd 23 OccuptW   23-24   8353.8   6364.8       0.20       0.80
-weekd 24 LightsWm2  0- 7      3.0      0.0       0.20       0.80
-weekd 25 LightsWm2  7-22     10.0      0.0       0.20       0.80
-weekd 26 LightsWm2 22-24      3.0      0.0       0.20       0.80
-weekd 27 EquiptWm2  0-24      6.0      0.0       0.20       0.80
+weekd 24 LightsWm2  0- 7      7.0      0.0       0.20       0.80
+weekd 25 LightsWm2  7-22     19.0      0.0       0.20       0.80
+weekd 26 LightsWm2 22-24      7.0      0.0       0.20       0.80
+weekd 27 EquiptWm2  0-24     15.0      0.0       0.20       0.80
 Number of saturday     casual gains= 27
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
@@ -988,10 +1005,10 @@ satur 20 OccuptW   20-21  29835.0  21879.0       0.20       0.80
 satur 21 OccuptW   21-22  18696.6  13525.2       0.20       0.80
 satur 22 OccuptW   22-23  12331.8   9149.4       0.20       0.80
 satur 23 OccuptW   23-24   9547.2   7160.4       0.20       0.80
-satur 24 LightsWm2  0- 7      3.0      0.0       0.20       0.80
-satur 25 LightsWm2  7-22     10.0      0.0       0.20       0.80
-satur 26 LightsWm2 22-24      3.0      0.0       0.20       0.80
-satur 27 EquiptWm2  0-24      6.0      0.0       0.20       0.80
+satur 24 LightsWm2  0- 7      7.0      0.0       0.20       0.80
+satur 25 LightsWm2  7-22     19.0      0.0       0.20       0.80
+satur 26 LightsWm2 22-24      7.0      0.0       0.20       0.80
+satur 27 EquiptWm2  0-24     15.0      0.0       0.20       0.80
 Number of sunday       casual gains= 27
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
@@ -1018,10 +1035,10 @@ sunda 20 OccuptW   20-21  29835.0  21879.0       0.20       0.80
 sunda 21 OccuptW   21-22  18696.6  13525.2       0.20       0.80
 sunda 22 OccuptW   22-23  12331.8   9149.4       0.20       0.80
 sunda 23 OccuptW   23-24   9547.2   7160.4       0.20       0.80
-sunda 24 LightsWm2  0- 7      3.0      0.0       0.20       0.80
-sunda 25 LightsWm2  7-22     10.0      0.0       0.20       0.80
-sunda 26 LightsWm2 22-24      3.0      0.0       0.20       0.80
-sunda 27 EquiptWm2  0-24      6.0      0.0       0.20       0.80
+sunda 24 LightsWm2  0- 7      7.0      0.0       0.20       0.80
+sunda 25 LightsWm2  7-22     19.0      0.0       0.20       0.80
+sunda 26 LightsWm2 22-24      7.0      0.0       0.20       0.80
+sunda 27 EquiptWm2  0-24     15.0      0.0       0.20       0.80
  
  ____________________________________________________________
  
@@ -1114,7 +1131,8 @@ vertex  19   77.50000   62.50000    0.00000   vertex  38   68.00000   41.25000  
  and the associated network node is: Refrig
  
 Notes:
-Area for chilled sales withing which are cabinets
+Area for chilled sales within which are cabinets with lighting
+7:19W/m2 and equip at 12W/m2
 Number of weekdays     casual gains= 27
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
@@ -1141,10 +1159,10 @@ weekd 20 OccuptW   20-21  12542.4   9172.8       0.20       0.80
 weekd 21 OccuptW   21-22   7675.2   5616.0       0.20       0.80
 weekd 22 OccuptW   22-23   5054.4   3744.0       0.20       0.80
 weekd 23 OccuptW   23-24   3931.2   2995.2       0.20       0.80
-weekd 24 LightsWm2  0- 7      3.0      0.0       0.20       0.80
-weekd 25 LightsWm2  7-22     10.0      0.0       0.20       0.80
-weekd 26 LightsWm2 22-24      3.0      0.0       0.20       0.80
-weekd 27 EquiptWm2  0-24      6.0      0.0       0.20       0.80
+weekd 24 LightsWm2  0- 7      7.0      0.0       0.20       0.80
+weekd 25 LightsWm2  7-22     19.0      0.0       0.20       0.80
+weekd 26 LightsWm2 22-24      7.0      0.0       0.20       0.80
+weekd 27 EquiptWm2  0-24     12.0      0.0       0.20       0.80
 Number of saturday     casual gains= 27
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
@@ -1171,10 +1189,10 @@ satur 20 OccuptW   20-21  14040.0  10296.0       0.20       0.80
 satur 21 OccuptW   21-22   8798.4   6364.8       0.20       0.80
 satur 22 OccuptW   22-23   5803.2   4305.6       0.20       0.80
 satur 23 OccuptW   23-24   4492.8   3369.6       0.20       0.80
-satur 24 LightsWm2  0- 7      3.0      0.0       0.20       0.80
-satur 25 LightsWm2  7-22     10.0      0.0       0.20       0.80
-satur 26 LightsWm2 22-24      3.0      0.0       0.20       0.80
-satur 27 EquiptWm2  0-24      6.0      0.0       0.20       0.80
+satur 24 LightsWm2  0- 7      7.0      0.0       0.20       0.80
+satur 25 LightsWm2  7-22     19.0      0.0       0.20       0.80
+satur 26 LightsWm2 22-24      7.0      0.0       0.20       0.80
+satur 27 EquiptWm2  0-24     12.0      0.0       0.20       0.80
 Number of sunday       casual gains= 27
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
@@ -1201,10 +1219,10 @@ sunda 20 OccuptW   20-21  14040.0  10296.0       0.20       0.80
 sunda 21 OccuptW   21-22   8798.4   6364.8       0.20       0.80
 sunda 22 OccuptW   22-23   5803.2   4305.6       0.20       0.80
 sunda 23 OccuptW   23-24   4492.8   3369.6       0.20       0.80
-sunda 24 LightsWm2  0- 7      3.0      0.0       0.20       0.80
-sunda 25 LightsWm2  7-22     10.0      0.0       0.20       0.80
-sunda 26 LightsWm2 22-24      3.0      0.0       0.20       0.80
-sunda 27 EquiptWm2  0-24      6.0      0.0       0.20       0.80
+sunda 24 LightsWm2  0- 7      7.0      0.0       0.20       0.80
+sunda 25 LightsWm2  7-22     19.0      0.0       0.20       0.80
+sunda 26 LightsWm2 22-24      7.0      0.0       0.20       0.80
+sunda 27 EquiptWm2  0-24     12.0      0.0       0.20       0.80
  
  ____________________________________________________________
  
@@ -1290,7 +1308,8 @@ vertex  19   68.00000   11.00000    6.00000   vertex  38   68.00000    0.50000  
  and the associated network node is: Foyer
  
 Notes:
-Minimally conditioned space for shelter and transit
+Minimally conditioned space for shelter and transit plus lighting
+6:18W/m2
 Number of weekdays     casual gains= 27
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
@@ -1317,9 +1336,9 @@ weekd 20 OccuptW   20-21   3979.8   2910.6       0.20       0.80
 weekd 21 OccuptW   21-22   2435.4   1782.0       0.20       0.80
 weekd 22 OccuptW   22-23   1603.8   1188.0       0.20       0.80
 weekd 23 OccuptW   23-24   1247.4    950.4       0.20       0.80
-weekd 24 LightsWm2  0- 7      3.0      0.0       0.20       0.80
-weekd 25 LightsWm2  7-22     10.0      0.0       0.20       0.80
-weekd 26 LightsWm2 22-24      3.0      0.0       0.20       0.80
+weekd 24 LightsWm2  0- 7      6.0      0.0       0.20       0.80
+weekd 25 LightsWm2  7-22     18.0      0.0       0.20       0.80
+weekd 26 LightsWm2 22-24      6.0      0.0       0.20       0.80
 weekd 27 EquiptWm2  0-24      6.0      0.0       0.20       0.80
 Number of saturday     casual gains= 27
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
@@ -1347,9 +1366,9 @@ satur 20 OccuptW   20-21   4455.0   3267.0       0.20       0.80
 satur 21 OccuptW   21-22   2791.8   2019.6       0.20       0.80
 satur 22 OccuptW   22-23   1841.4   1366.2       0.20       0.80
 satur 23 OccuptW   23-24   1425.6   1069.2       0.20       0.80
-satur 24 LightsWm2  0- 7      3.0      0.0       0.20       0.80
-satur 25 LightsWm2  7-22     10.0      0.0       0.20       0.80
-satur 26 LightsWm2 22-24      3.0      0.0       0.20       0.80
+satur 24 LightsWm2  0- 7      6.0      0.0       0.20       0.80
+satur 25 LightsWm2  7-22     18.0      0.0       0.20       0.80
+satur 26 LightsWm2 22-24      6.0      0.0       0.20       0.80
 satur 27 EquiptWm2  0-24      6.0      0.0       0.20       0.80
 Number of sunday       casual gains= 27
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
@@ -1377,9 +1396,9 @@ sunda 20 OccuptW   20-21   4455.0   3267.0       0.20       0.80
 sunda 21 OccuptW   21-22   2791.8   2019.6       0.20       0.80
 sunda 22 OccuptW   22-23   1841.4   1366.2       0.20       0.80
 sunda 23 OccuptW   23-24   1425.6   1069.2       0.20       0.80
-sunda 24 LightsWm2  0- 7      3.0      0.0       0.20       0.80
-sunda 25 LightsWm2  7-22     10.0      0.0       0.20       0.80
-sunda 26 LightsWm2 22-24      3.0      0.0       0.20       0.80
+sunda 24 LightsWm2  0- 7      6.0      0.0       0.20       0.80
+sunda 25 LightsWm2  7-22     18.0      0.0       0.20       0.80
+sunda 26 LightsWm2 22-24      6.0      0.0       0.20       0.80
 sunda 27 EquiptWm2  0-24      6.0      0.0       0.20       0.80
  
  ____________________________________________________________
@@ -1437,37 +1456,43 @@ sunda 27 EquiptWm2  0-24      6.0      0.0       0.20       0.80
  and the associated network node is: Office1
  
 Notes:
-General office area 10Wm2 lights 6Wm2 equipment
-Number of weekdays     casual gains=  7
+General office area 5:12Wm2 lights 3:6Wm2 equipment
+Number of weekdays     casual gains=  9
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 weekd  1 OccuptW    0- 9    259.2    172.8       0.20       0.80
 weekd  2 OccuptW    9-19   2894.4   2160.0       0.20       0.80
 weekd  3 OccuptW   19-24    259.2    172.8       0.20       0.80
-weekd  4 LightsWm2  0- 9      0.0      0.0       0.50       0.50
-weekd  5 LightsWm2  9-19     10.0      0.0       0.20       0.80
-weekd  6 LightsWm2 19-24      0.0      0.0       0.50       0.50
-weekd  7 EquiptWm2  0-24      6.8      0.0       0.20       0.80
-Number of saturday     casual gains=  7
+weekd  4 LightsWm2  0- 9      5.0      0.0       0.50       0.50
+weekd  5 LightsWm2  9-19     12.0      0.0       0.20       0.80
+weekd  6 LightsWm2 19-24      5.0      0.0       0.50       0.50
+weekd  7 EquiptWm2  0- 8      3.0      0.0       0.50       0.50
+weekd  8 EquiptWm2  8-20      6.8      0.0       0.20       0.80
+weekd  9 EquiptWm2 20-24      2.0      0.0       0.50       0.50
+Number of saturday     casual gains=  9
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 satur  1 OccuptW    0- 9    259.2    194.4       0.20       0.80
 satur  2 OccuptW    9-19   2894.4   2160.0       0.20       0.80
 satur  3 OccuptW   19-24    259.2    194.4       0.20       0.80
-satur  4 LightsWm2  0- 9      0.0      0.0       0.50       0.50
-satur  5 LightsWm2  9-19     10.0      0.0       0.20       0.80
-satur  6 LightsWm2 19-24      0.0      0.0       0.50       0.50
-satur  7 EquiptWm2  0-24      6.8      0.0       0.20       0.80
-Number of sunday       casual gains=  7
+satur  4 LightsWm2  0- 9      5.0      0.0       0.50       0.50
+satur  5 LightsWm2  9-19     12.0      0.0       0.20       0.80
+satur  6 LightsWm2 19-24      5.0      0.0       0.50       0.50
+satur  7 EquiptWm2  0- 8      3.0      0.0       0.50       0.50
+satur  8 EquiptWm2  8-20      6.8      0.0       0.20       0.80
+satur  9 EquiptWm2 20-24      2.0      0.0       0.50       0.50
+Number of sunday       casual gains=  9
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 sunda  1 OccuptW    0- 9    259.2    194.4       0.20       0.80
 sunda  2 OccuptW    9-19   2635.2   2160.0       0.20       0.80
 sunda  3 OccuptW   19-24    259.2    194.4       0.20       0.80
-sunda  4 LightsWm2  0- 9      0.0      0.0       0.50       0.50
-sunda  5 LightsWm2  9-19     10.0      0.0       0.20       0.80
-sunda  6 LightsWm2 19-24      0.0      0.0       0.50       0.50
-sunda  7 EquiptWm2  0-24      6.8      0.0       0.20       0.80
+sunda  4 LightsWm2  0- 9      5.0      0.0       0.50       0.50
+sunda  5 LightsWm2  9-19     12.0      0.0       0.20       0.80
+sunda  6 LightsWm2 19-24      5.0      0.0       0.50       0.50
+sunda  7 EquiptWm2  0- 8      3.0      0.0       0.50       0.50
+sunda  8 EquiptWm2  8-20      6.8      0.0       0.20       0.80
+sunda  9 EquiptWm2 20-24      2.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -1524,38 +1549,44 @@ sunda  7 EquiptWm2  0-24      6.8      0.0       0.20       0.80
  and the associated network node is: Cafe
  
 Notes:
-Occupants are transient lights and small power 10Wm2 and 7Wm2. power.
-There is not infiltration or ventilation.
-Number of weekdays     casual gains=  7
+Occupants are transient lights and small power 3:12Wm2 and 7:20Wm2.
+power. Infiltration via doors.
+Number of weekdays     casual gains=  9
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 weekd  1 OccuptW    0- 9      0.0      0.0       0.50       0.50
 weekd  2 OccuptW    9-19   2736.0   1216.0       0.50       0.50
 weekd  3 OccuptW   19-24      0.0      0.0       0.50       0.50
 weekd  4 LightsWm2  0- 8      3.0      0.0       0.50       0.50
-weekd  5 LightsWm2  8-19      7.0      0.0       0.50       0.50
+weekd  5 LightsWm2  8-19     12.0      0.0       0.50       0.50
 weekd  6 LightsWm2 19-24      3.0      0.0       0.50       0.50
-weekd  7 EquiptWm2  0-24      7.0      7.0       0.50       0.50
-Number of saturday     casual gains=  7
+weekd  7 EquiptWm2  0- 7      7.0      7.0       0.50       0.50
+weekd  8 EquiptWm2  7-19     20.0     20.0       0.50       0.50
+weekd  9 EquiptWm2 19-24      7.0      7.0       0.50       0.50
+Number of saturday     casual gains=  9
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 satur  1 OccuptW    0- 9      0.0      0.0       0.50       0.50
 satur  2 OccuptW    9-19   2736.0   1216.0       0.50       0.50
 satur  3 OccuptW   19-24      0.0      0.0       0.50       0.50
 satur  4 LightsWm2  0- 8      3.0      0.0       0.50       0.50
-satur  5 LightsWm2  8-19      7.0      0.0       0.50       0.50
+satur  5 LightsWm2  8-19     12.0      0.0       0.50       0.50
 satur  6 LightsWm2 19-24      3.0      0.0       0.50       0.50
-satur  7 EquiptWm2  0-24      7.0      7.0       0.50       0.50
-Number of sunday       casual gains=  7
+satur  7 EquiptWm2  0- 7      7.0      7.0       0.50       0.50
+satur  8 EquiptWm2  7-19     20.0     20.0       0.50       0.50
+satur  9 EquiptWm2 19-24      7.0      7.0       0.50       0.50
+Number of sunday       casual gains=  9
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 sunda  1 OccuptW    0- 9      0.0      0.0       0.50       0.50
 sunda  2 OccuptW    9-19   2736.0   1216.0       0.50       0.50
 sunda  3 OccuptW   19-24      0.0      0.0       0.50       0.50
 sunda  4 LightsWm2  0- 8      3.0      0.0       0.50       0.50
-sunda  5 LightsWm2  8-19      7.0      0.0       0.50       0.50
+sunda  5 LightsWm2  8-19     12.0      0.0       0.50       0.50
 sunda  6 LightsWm2 19-24      3.0      0.0       0.50       0.50
-sunda  7 EquiptWm2  0-24      0.0      0.0       0.50       0.50
+sunda  7 EquiptWm2  0- 7      7.0      7.0       0.50       0.50
+sunda  8 EquiptWm2  7-19     20.0     20.0       0.50       0.50
+sunda  9 EquiptWm2 19-24      7.0      7.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -1615,7 +1646,47 @@ sunda  7 EquiptWm2  0-24      0.0      0.0       0.50       0.50
  
  
  
- Uses same operations as zone Office1
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: Office3
+ 
+Notes:
+General office area 10Wm2 lights 6Wm2 equipment
+Number of weekdays     casual gains=  9
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+weekd  1 OccuptW    0- 9    259.2    172.8       0.20       0.80
+weekd  2 OccuptW    9-19   2894.4   2160.0       0.20       0.80
+weekd  3 OccuptW   19-24    259.2    172.8       0.20       0.80
+weekd  4 LightsWm2  0- 9      1.0      0.0       0.50       0.50
+weekd  5 LightsWm2  9-19     10.0      0.0       0.20       0.80
+weekd  6 LightsWm2 19-24      1.0      0.0       0.50       0.50
+weekd  7 EquiptWm2  0- 8      3.0      0.0       0.50       0.50
+weekd  8 EquiptWm2  8-20      6.8      0.0       0.20       0.80
+weekd  9 EquiptWm2 20-24      3.0      0.0       0.50       0.50
+Number of saturday     casual gains=  9
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+satur  1 OccuptW    0- 9    259.2    194.4       0.20       0.80
+satur  2 OccuptW    9-19   2894.4   2160.0       0.20       0.80
+satur  3 OccuptW   19-24    259.2    194.4       0.20       0.80
+satur  4 LightsWm2  0- 9      0.0      0.0       0.50       0.50
+satur  5 LightsWm2  9-19     10.0      0.0       0.20       0.80
+satur  6 LightsWm2 19-24      0.0      0.0       0.50       0.50
+satur  7 EquiptWm2  0- 8      3.0      0.0       0.50       0.50
+satur  8 EquiptWm2  8-20      6.8      0.0       0.20       0.80
+satur  9 EquiptWm2 20-24      3.0      0.0       0.50       0.50
+Number of sunday       casual gains=  9
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+sunda  1 OccuptW    0- 9    259.2    194.4       0.20       0.80
+sunda  2 OccuptW    9-19   2635.2   2160.0       0.20       0.80
+sunda  3 OccuptW   19-24    259.2    194.4       0.20       0.80
+sunda  4 LightsWm2  0- 9      0.0      0.0       0.50       0.50
+sunda  5 LightsWm2  9-19     10.0      0.0       0.20       0.80
+sunda  6 LightsWm2 19-24      1.0      0.0       0.50       0.50
+sunda  7 EquiptWm2  0- 8      3.0      0.0       0.50       0.50
+sunda  8 EquiptWm2  8-20      6.8      0.0       0.20       0.80
+sunda  9 EquiptWm2 20-24      3.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -1666,7 +1737,41 @@ sunda  7 EquiptWm2  0-24      0.0      0.0       0.50       0.50
  
  
  
- Uses same operations as zone Office1
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: passage
+ 
+Notes:
+Passage between staff areas
+Number of weekdays     casual gains=  7
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+weekd  1 OccuptW    0- 9     54.0     40.5       0.20       0.80
+weekd  2 OccuptW    9-19    513.0    378.0       0.20       0.80
+weekd  3 OccuptW   19-24     54.0     40.5       0.20       0.80
+weekd  4 LightsWm2  0- 7      3.2      0.0       0.20       0.80
+weekd  5 LightsWm2  7-19      6.4      0.0       0.20       0.80
+weekd  6 LightsWm2 19-24      3.2      0.0       0.20       0.80
+weekd  7 EquiptWm2  0-24      1.0      0.0       0.20       0.80
+Number of saturday     casual gains=  7
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+satur  1 OccuptW    0- 9     54.0     40.5       0.20       0.80
+satur  2 OccuptW    9-19    513.0    378.0       0.20       0.80
+satur  3 OccuptW   19-24     54.0     40.5       0.20       0.80
+satur  4 LightsWm2  0- 7      3.2      0.0       0.20       0.80
+satur  5 LightsWm2  7-19      6.4      0.0       0.20       0.80
+satur  6 LightsWm2 19-24      3.2      0.0       0.20       0.80
+satur  7 EquiptWm2  0-24      1.0      0.0       0.20       0.80
+Number of sunday       casual gains=  7
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+sunda  1 OccuptW    0- 9     51.3      0.0       0.20       0.80
+sunda  2 OccuptW    9-19    513.0      0.0       0.20       0.80
+sunda  3 OccuptW   19-24     51.3      0.0       0.20       0.80
+sunda  4 LightsWm2  0- 7      3.2      0.0       0.20       0.80
+sunda  5 LightsWm2  7-19      6.4      0.0       0.20       0.80
+sunda  6 LightsWm2 19-24      3.2      0.0       0.20       0.80
+sunda  7 EquiptWm2  0-24      1.0      0.0       0.20       0.80
  
  ____________________________________________________________
  
@@ -1726,7 +1831,47 @@ sunda  7 EquiptWm2  0-24      0.0      0.0       0.50       0.50
  
  
  
- Uses same operations as zone Office1
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: Staff_traing
+ 
+Notes:
+Training area for staff 10Wm2 lights 6Wm2 equipment
+Number of weekdays     casual gains=  9
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+weekd  1 OccuptW    0- 9    259.2    172.8       0.20       0.80
+weekd  2 OccuptW    9-19   2894.4   2160.0       0.20       0.80
+weekd  3 OccuptW   19-24    259.2    172.8       0.20       0.80
+weekd  4 LightsWm2  0- 9      1.0      0.0       0.50       0.50
+weekd  5 LightsWm2  9-19     10.0      0.0       0.20       0.80
+weekd  6 LightsWm2 19-24      1.0      0.0       0.50       0.50
+weekd  7 EquiptWm2  0- 8      3.0      0.0       0.50       0.50
+weekd  8 EquiptWm2  8-20      6.8      0.0       0.20       0.80
+weekd  9 EquiptWm2 20-24      3.0      0.0       0.50       0.50
+Number of saturday     casual gains=  9
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+satur  1 OccuptW    0- 9    259.2    194.4       0.20       0.80
+satur  2 OccuptW    9-19   2894.4   2160.0       0.20       0.80
+satur  3 OccuptW   19-24    259.2    194.4       0.20       0.80
+satur  4 LightsWm2  0- 9      0.0      0.0       0.50       0.50
+satur  5 LightsWm2  9-19     10.0      0.0       0.20       0.80
+satur  6 LightsWm2 19-24      0.0      0.0       0.50       0.50
+satur  7 EquiptWm2  0- 8      3.0      0.0       0.50       0.50
+satur  8 EquiptWm2  8-20      6.8      0.0       0.20       0.80
+satur  9 EquiptWm2 20-24      3.0      0.0       0.50       0.50
+Number of sunday       casual gains=  9
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+sunda  1 OccuptW    0- 9    259.2    194.4       0.20       0.80
+sunda  2 OccuptW    9-19   2635.2   2160.0       0.20       0.80
+sunda  3 OccuptW   19-24    259.2    194.4       0.20       0.80
+sunda  4 LightsWm2  0- 9      0.0      0.0       0.50       0.50
+sunda  5 LightsWm2  9-19     10.0      0.0       0.20       0.80
+sunda  6 LightsWm2 19-24      1.0      0.0       0.50       0.50
+sunda  7 EquiptWm2  0- 8      3.0      0.0       0.50       0.50
+sunda  8 EquiptWm2  8-20      6.8      0.0       0.20       0.80
+sunda  9 EquiptWm2 20-24      3.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -1783,37 +1928,37 @@ sunda  7 EquiptWm2  0-24      0.0      0.0       0.50       0.50
  and the associated network node is: Store1
  
 Notes:
-Storage for dry goods shipping and receiving
+Passage between staff areas
 Number of weekdays     casual gains=  7
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-weekd  1 OccuptW    0- 9    540.0    405.0       0.20       0.80
-weekd  2 OccuptW    9-19   5130.0   3780.0       0.20       0.80
-weekd  3 OccuptW   19-24    540.0    405.0       0.20       0.80
+weekd  1 OccuptW    0- 9    135.0    101.3       0.20       0.80
+weekd  2 OccuptW    9-19   1282.5    945.0       0.20       0.80
+weekd  3 OccuptW   19-24    135.0    101.3       0.20       0.80
 weekd  4 LightsWm2  0- 7      3.2      0.0       0.20       0.80
 weekd  5 LightsWm2  7-19      6.4      0.0       0.20       0.80
 weekd  6 LightsWm2 19-24      3.2      0.0       0.20       0.80
-weekd  7 EquiptWm2  0-24      6.0      0.0       0.20       0.80
+weekd  7 EquiptWm2  0-24      1.0      0.0       0.20       0.80
 Number of saturday     casual gains=  7
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-satur  1 OccuptW    0- 9    540.0    405.0       0.20       0.80
-satur  2 OccuptW    9-19   5130.0   3780.0       0.20       0.80
-satur  3 OccuptW   19-24    540.0    405.0       0.20       0.80
+satur  1 OccuptW    0- 9    135.0    101.3       0.20       0.80
+satur  2 OccuptW    9-19   1282.5    945.0       0.20       0.80
+satur  3 OccuptW   19-24    135.0    101.3       0.20       0.80
 satur  4 LightsWm2  0- 7      3.2      0.0       0.20       0.80
 satur  5 LightsWm2  7-19      6.4      0.0       0.20       0.80
 satur  6 LightsWm2 19-24      3.2      0.0       0.20       0.80
-satur  7 EquiptWm2  0-24      6.0      0.0       0.20       0.80
+satur  7 EquiptWm2  0-24      1.0      0.0       0.20       0.80
 Number of sunday       casual gains=  7
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-sunda  1 OccuptW    0- 9    513.0      0.0       0.20       0.80
-sunda  2 OccuptW    9-19   5130.0      0.0       0.20       0.80
-sunda  3 OccuptW   19-24    513.0      0.0       0.20       0.80
+sunda  1 OccuptW    0- 9    128.3      0.0       0.20       0.80
+sunda  2 OccuptW    9-19   1282.5      0.0       0.20       0.80
+sunda  3 OccuptW   19-24    128.3      0.0       0.20       0.80
 sunda  4 LightsWm2  0- 7      3.2      0.0       0.20       0.80
 sunda  5 LightsWm2  7-19      6.4      0.0       0.20       0.80
 sunda  6 LightsWm2 19-24      3.2      0.0       0.20       0.80
-sunda  7 EquiptWm2  0-24      6.0      0.0       0.20       0.80
+sunda  7 EquiptWm2  0-24      1.0      0.0       0.20       0.80
  
  ____________________________________________________________
  

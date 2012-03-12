@@ -26,10 +26,20 @@ Supermarket_2008_ann.cfg - standard model for assessing all-days all-seasons
 Supermarket_2008_ncm.cfg - with additional attribution for code checks
 Supermarket_2008_pv.cfg - with a large PV array added to sales roof
 Supermarket_2008_a_pv.cfg - ditto but assesses all-days all-seasons
+Supermarket_2008_ann_pv_r6.cfg ditto after calibration phase to adjust
+  lighting loads and small power as per the TARBASE database from
+  Napier University as well as adjusting fresh air rates and support
+  area casual gains to reflect occupancy patterns.
 
 The Supermarket_2008_ncm.cfg includes a UK NCM description so that 
 complience assessments can be carried out.  Note: you manually have
 to remove the flow control definition from the control file prior
 to runing the NCM assessments.
 
-The model is work-in-progress.
+The model is work-in-progress. The variant Supermarket_2008_ann_pv_r6.cfg
+can be used to compare performance with PV after the building description
+and use patterns have evolved.
+
+Note: in order to use the model the ../dbs/Supermarket.climate.a weather
+file must be converted from ASCII to binary via the clm module of ESP-r.
+ 

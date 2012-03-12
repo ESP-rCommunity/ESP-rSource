@@ -1,8 +1,8 @@
 *Operations 1.0
 *date Thu Feb 23 20:30:16 2012  # latest file modification 
-# operations of Office1 defined in: 
-# ../zones/Office.opr
-General office area 10Wm2 lights 6Wm2 equipment
+# operations of Staff_traing defined in: 
+# ../zones/Staff_traing.opr
+Training area for staff 10Wm2 lights 6Wm2 equipment
 # control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000     0.000
      1   # number of flow periods in day type: weekdays    

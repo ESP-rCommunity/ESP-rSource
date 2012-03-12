@@ -1,0 +1,230 @@
+# Radiance glazing definitions
+# (first line of file must not be edited)
+  
+void  glass  unknown_glz
+0 
+0 
+3    0.87    0.87    0.87
+  
+void glass d_glz
+0 
+0 
+3    0.83  0.83  0.83
+  
+void glass dbl_glz
+0 
+0 
+3    0.83  0.83  0.83
+  
+void glass switched_gl
+0 
+0 
+3    0.83  0.83  0.83
+  
+void glass fictitious
+0 
+0 
+3    1.08  1.08  1.08
+  
+void glass Not_DisplayG
+0 
+0 
+3    0.75  0.75  0.75
+  
+void glass window_Not_G
+0 
+0 
+3    0.75  0.75  0.75
+  
+void glass internal_glz
+0 
+0 
+3    0.75  0.75  0.75
+  
+void glass window_Typ_G
+0 
+0 
+3    0.59  0.59  0.59
+  
+void glass SM_glazing
+0 
+0 
+3    0.83  0.83  0.83
+  
+# Sales Surface defs..
+  
+# skipping fict surface: Sales:fict_refr                                                                                    
+  
+# skipping fict surface: Sales:ptn_foy                                                                                      
+  
+  
+#@mkillum e=SM_glazing d=48 s=32
+SM_glazing  polygon  Sales:left_glaz
+0 
+0 
+ 12
+    0.00000   65.28220    5.59808
+    0.00000   17.21779    5.59808
+    0.00000   17.21779    0.40192
+    0.00000   65.28220    0.40192
+# Refrig Surface defs..
+  
+# skipping fict surface: Refrig:fict_store                                                                                  
+  
+  
+#@mkillum e=SM_glazing d=48 s=32
+SM_glazing  polygon  Refrig:fac_glaz
+0 
+0 
+ 12
+  100.00000   32.47468    3.94868
+  100.00000   50.02532    3.94868
+  100.00000   50.02532    2.05132
+  100.00000   32.47468    2.05132
+# skipping fict surface: Refrig:low_cab_top                                                                                 
+  
+# skipping fict surface: Refrig:cab_top                                                                                     
+  
+# Foyer Surface defs..
+  
+# skipping fict surface: Foyer:ptn_shop                                                                                     
+  
+  
+#@mkillum e=SM_glazing d=48 s=32
+SM_glazing  polygon  Foyer:entry_glz
+0 
+0 
+ 12
+   37.27208    0.00000    2.56066
+   62.72792    0.00000    2.56066
+   62.72792    0.00000    0.43934
+   37.27208    0.00000    0.43934
+  
+#@mkillum e=dbl_glz d=48 s=32
+dbl_glz  polygon  Foyer:inner_glaz
+0 
+0 
+ 12
+   62.72792   11.00000    5.56066
+   37.27208   11.00000    5.56066
+   37.27208   11.00000    3.43934
+   62.72792   11.00000    3.43934
+  
+#@mkillum e=dbl_glz d=48 s=32
+dbl_glz  polygon  Foyer:skylight
+0 
+0 
+ 12
+   41.95016    7.95967    5.17082
+   58.04984    7.95967    5.17082
+   58.04984    3.04032    3.82918
+   41.95016    3.04032    3.82918
+  
+#@mkillum e=dbl_glz d=48 s=32
+dbl_glz  polygon  Foyer:left_door
+0 
+0 
+ 12
+   32.00000    3.50000    2.50000
+   32.00000    0.50000    2.50000
+   32.00000    0.50000    0.00000
+   32.00000    3.50000    0.00000
+  
+#@mkillum e=dbl_glz d=48 s=32
+dbl_glz  polygon  Foyer:right_door
+0 
+0 
+ 12
+   68.00000    0.50000    2.50000
+   68.00000    3.50000    2.50000
+   68.00000    3.50000    0.00000
+   68.00000    0.50000    0.00000
+# Office1 Surface defs..
+  
+  
+#@mkillum e=SM_glazing d=48 s=32
+SM_glazing  polygon  Office1:fac_glz
+0 
+0 
+ 12
+    4.68629    4.00000    2.56066
+   27.31371    4.00000    2.56066
+   27.31371    4.00000    0.43934
+    4.68629    4.00000    0.43934
+# Cafe Surface defs..
+  
+  
+#@mkillum e=SM_glazing d=48 s=32
+SM_glazing  polygon  Cafe:fac_glz
+0 
+0 
+ 12
+   72.68629    4.00000    2.56066
+   95.31371    4.00000    2.56066
+   95.31371    4.00000    0.43934
+   72.68629    4.00000    0.43934
+# Office3 Surface defs..
+  
+  
+#@mkillum e=SM_glazing d=48 s=32
+SM_glazing  polygon  Office3:fac_glaz
+0 
+0 
+ 12
+    4.68629    4.00000    5.56066
+   27.31371    4.00000    5.56066
+   27.31371    4.00000    3.43934
+    4.68629    4.00000    3.43934
+# passage Surface defs..
+  
+  
+# skipping transparent surface: passage:inner_glaz                                                                          
+  
+# Staff_traing Surface defs..
+  
+  
+#@mkillum e=SM_glazing d=48 s=32
+SM_glazing  polygon  Staff_traing:fac_glaz
+0 
+0 
+ 12
+   72.68629    4.00000    5.56066
+   95.31371    4.00000    5.56066
+   95.31371    4.00000    3.43934
+   72.68629    4.00000    3.43934
+# Store1 Surface defs..
+  
+  
+#@mkillum e=SM_glazing d=48 s=32
+SM_glazing  polygon  Store1:fac_glaz
+0 
+0 
+ 12
+   65.81139   78.50000    1.97434
+   34.18861   78.50000    1.97434
+   34.18861   78.50000    1.02566
+   65.81139   78.50000    1.02566
+# Store2 Surface defs..
+  
+  
+#@mkillum e=SM_glazing d=48 s=32
+SM_glazing  polygon  Store2:fac_glz
+0 
+0 
+ 12
+   65.81139   78.50000    4.97434
+   34.18861   78.50000    4.97434
+   34.18861   78.50000    4.02566
+   65.81139   78.50000    4.02566
+# Cabinet_hi Surface defs..
+  
+# skipping fict surface: Cabinet_hi:cab_top                                                                                 
+  
+# Cabinet_lw Surface defs..
+  
+# skipping fict surface: Cabinet_lw:lt_cab_top                                                                              
+  
+# cold_store Surface defs..
+  
+# m_vent_mix Surface defs..
+  

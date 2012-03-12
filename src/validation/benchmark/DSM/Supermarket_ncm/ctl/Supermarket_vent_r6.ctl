@@ -1,6 +1,6 @@
 assumes air based heating and cooling in shop offices cafe storage
 * Building
-this revision lowers temp in foyer and +1 in offices
+this revision boosts air flow in late afternoon, tigher overnight setpoints
   14  # No. of functions
 * Control function    1
 # senses dry bulb temperature in Sales.
@@ -12,13 +12,13 @@ this revision lowers temp in foyer and +1 in offices
      3  # No. of periods in day: weekdays    
     0    1   0.000  # ctl type, law (basic control), start @
       7.  # No. of data items
-  99999.000 0.000 99999.000 0.000 16.000 25.000 0.000
+  99999.000 0.000 99999.000 0.000 17.000 24.000 0.000
     0    1   7.000  # ctl type, law (basic control), start @
       7.  # No. of data items
   99999.000 0.000 159999.000 0.000 18.000 23.000 0.000
     0    1  21.000  # ctl type, law (basic control), start @
       7.  # No. of data items
-  99999.000 0.000 99999.000 0.000 16.000 25.000 0.000
+  99999.000 0.000 99999.000 0.000 17.000 24.000 0.000
 * Control function    2
 # senses dry bulb temperature in Refrig.
     2    0    0    0  # sensor data
@@ -46,7 +46,7 @@ this revision lowers temp in foyer and +1 in offices
      1  # No. of periods in day: weekdays    
     0    1   0.000  # ctl type, law (basic control), start @
       7.  # No. of data items
-  99999.000 0.000 99999.000 0.000 -100.000 3.000 0.000
+  9999.000 0.000 120000.000 0.000 -100.000 3.000 0.000
 * Control function    4
 # senses dry bulb temperature in Cabinet_lw.
    12    0    0    0  # sensor data
@@ -57,7 +57,7 @@ this revision lowers temp in foyer and +1 in offices
      1  # No. of periods in day: weekdays    
     0    1   0.000  # ctl type, law (basic control), start @
       7.  # No. of data items
-  99999.000 0.000 99999.000 0.000 -100.000 -12.000 0.000
+  9999.000 0.000 120000.000 0.000 -100.000 -12.000 0.000
 * Control function    5
 # senses dry bulb temperature in Foyer.
     3    0    0    0  # sensor data
@@ -68,13 +68,13 @@ this revision lowers temp in foyer and +1 in offices
      3  # No. of periods in day: weekdays    
     0    1   0.000  # ctl type, law (basic control), start @
       7.  # No. of data items
-  99999.000 0.000 99999.000 0.000 14.000 28.000 0.000
+  99999.000 0.000 99999.000 0.000 13.000 28.000 0.000
     0    1   7.000  # ctl type, law (basic control), start @
       7.  # No. of data items
   99999.000 0.000 99999.000 0.000 14.000 26.000 0.000
     0    1  21.000  # ctl type, law (basic control), start @
       7.  # No. of data items
-  99999.000 0.000 99999.000 0.000 14.000 28.000 0.000
+  99999.000 0.000 99999.000 0.000 13.000 28.000 0.000
 * Control function    6
 # senses dry bulb temperature in Office1.
     4    0    0    0  # sensor data
@@ -85,13 +85,13 @@ this revision lowers temp in foyer and +1 in offices
      3  # No. of periods in day: weekdays    
     0    1   0.000  # ctl type, law (basic control), start @
       7.  # No. of data items
-  99999.000 0.000 99999.000 0.000 16.000 28.000 0.000
+  99999.000 0.000 99999.000 0.000 17.000 27.000 0.000
     0    1   7.000  # ctl type, law (basic control), start @
       7.  # No. of data items
   99999.000 0.000 99999.000 0.000 21.000 24.000 0.000
     0    1  21.000  # ctl type, law (basic control), start @
       7.  # No. of data items
-  99999.000 0.000 99999.000 0.000 16.000 28.000 0.000
+  99999.000 0.000 99999.000 0.000 17.000 27.000 0.000
 * Control function    7
 # senses dry bulb temperature in Cafe.
     5    0    0    0  # sensor data
@@ -102,13 +102,13 @@ this revision lowers temp in foyer and +1 in offices
      3  # No. of periods in day: weekdays    
     0    1   0.000  # ctl type, law (basic control), start @
       7.  # No. of data items
-  99999.000 0.000 99999.000 0.000 16.000 28.000 0.000
+  99999.000 0.000 99999.000 0.000 16.000 27.000 0.000
     0    1   8.000  # ctl type, law (basic control), start @
       7.  # No. of data items
   99999.000 0.000 99999.000 0.000 20.000 24.000 0.000
     0    1  21.000  # ctl type, law (basic control), start @
       7.  # No. of data items
-  99999.000 0.000 99999.000 0.000 16.000 28.000 0.000
+  99999.000 0.000 99999.000 0.000 16.000 27.000 0.000
 * Control function    8
 # senses dry bulb temperature in Office3.
     6    0    0    0  # sensor data
@@ -119,13 +119,13 @@ this revision lowers temp in foyer and +1 in offices
      3  # No. of periods in day: weekdays    
     0    1   0.000  # ctl type, law (basic control), start @
       7.  # No. of data items
-  99999.000 0.000 99999.000 0.000 16.000 28.000 0.000
+  99999.000 0.000 99999.000 0.000 16.000 27.000 0.000
     0    1   8.000  # ctl type, law (basic control), start @
       7.  # No. of data items
   99999.000 0.000 99999.000 0.000 21.000 24.000 0.000
     0    1  21.000  # ctl type, law (basic control), start @
       7.  # No. of data items
-  99999.000 0.000 99999.000 0.000 16.000 28.000 0.000
+  99999.000 0.000 99999.000 0.000 16.000 27.000 0.000
 * Control function    9
 # senses dry bulb temperature in passage.
     7    0    0    0  # sensor data
@@ -136,13 +136,13 @@ this revision lowers temp in foyer and +1 in offices
      3  # No. of periods in day: weekdays    
     0    1   0.000  # ctl type, law (basic control), start @
       7.  # No. of data items
-  99999.000 0.000 99999.000 0.000 16.000 28.000 0.000
+  99999.000 0.000 99999.000 0.000 16.000 27.000 0.000
     0    1   8.000  # ctl type, law (basic control), start @
       7.  # No. of data items
   99999.000 0.000 99999.000 0.000 20.000 24.000 0.000
     0    1  21.000  # ctl type, law (basic control), start @
       7.  # No. of data items
-  99999.000 0.000 99999.000 0.000 16.000 28.000 0.000
+  99999.000 0.000 99999.000 0.000 16.000 27.000 0.000
 * Control function   10
 # senses dry bulb temperature in Staff_traing.
     8    0    0    0  # sensor data
@@ -153,13 +153,13 @@ this revision lowers temp in foyer and +1 in offices
      3  # No. of periods in day: weekdays    
     0    1   0.000  # ctl type, law (basic control), start @
       7.  # No. of data items
-  99999.000 0.000 99999.000 0.000 16.000 28.000 0.000
+  99999.000 0.000 99999.000 0.000 17.000 27.000 0.000
     0    1   8.000  # ctl type, law (basic control), start @
       7.  # No. of data items
   99999.000 0.000 99999.000 0.000 21.000 24.000 0.000
     0    1  21.000  # ctl type, law (basic control), start @
       7.  # No. of data items
-  99999.000 0.000 99999.000 0.000 16.000 28.000 0.000
+  99999.000 0.000 99999.000 0.000 17.000 27.000 0.000
 * Control function   11
 # senses dry bulb temperature in Store1.
     9    0    0    0  # sensor data
@@ -235,7 +235,7 @@ this revision lowers temp in foyer and +1 in offices
 # Function:Zone links
  1,2,5,6,7,8,9,10,11,12,3,4,13,14
 * Mass Flow
-control the makeup air fan roughly on occupancy
+control the makeup air fan roughly on occupancy boost late afternoon
    6  # No. of controls
 * Control mass    1
 # senses node (1) Sales
@@ -244,16 +244,22 @@ control the makeup air fan roughly on occupancy
    -3   26    0  # actuator data
     1  # all daytypes
     1  365  # valid Sat-01-Jan - Sat-31-Dec
-     3  # No. of periods in day: weekdays    
+     5  # No. of periods in day: weekdays    
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 0.200.), starting @
       3.  # No. of data items
   0.00000 1.00000 0.20000
     1    0   8.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
   0.00000 1.00000 1.00000
+    1    0  15.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 1.000.), starting @
+      3.  # No. of data items
+  0.00000 1.00000 1.25000
     1    0  19.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 0.200.), starting @
       3.  # No. of data items
-  0.00000 1.00000 0.20000
+  0.00000 1.00000 1.00000
+    1    0  22.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 0.200.), starting @
+      3.  # No. of data items
+  0.00000 1.00000 0.40000
 * Control mass    2
 # senses node (2) Refrig
    -4    2    0    0  # sensor data
@@ -261,16 +267,22 @@ control the makeup air fan roughly on occupancy
    -3   27    0  # actuator data
     1  # all daytypes
     1  365  # valid Sat-01-Jan - Sat-31-Dec
-     3  # No. of periods in day: weekdays    
+     5  # No. of periods in day: weekdays    
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 0.200.), starting @
       3.  # No. of data items
   0.00000 1.00000 0.20000
     1    0   8.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
   0.00000 1.00000 1.00000
+    1    0  15.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 1.000.), starting @
+      3.  # No. of data items
+  0.00000 1.00000 1.25000
     1    0  19.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 0.200.), starting @
       3.  # No. of data items
-  0.00000 1.00000 0.20000
+  0.00000 1.00000 1.00000
+    1    0  22.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 0.200.), starting @
+      3.  # No. of data items
+  0.00000 1.00000 0.40000
 * Control mass    3
 # senses node (5) Cafe
    -4    5    0    0  # sensor data
@@ -278,16 +290,22 @@ control the makeup air fan roughly on occupancy
    -3   28    0  # actuator data
     1  # all daytypes
     1  365  # valid Sat-01-Jan - Sat-31-Dec
-     3  # No. of periods in day: weekdays    
+     5  # No. of periods in day: weekdays    
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 0.200.), starting @
       3.  # No. of data items
   0.00000 1.00000 0.20000
     1    0   8.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
   0.00000 1.00000 1.00000
+    1    0  15.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 1.000.), starting @
+      3.  # No. of data items
+  0.00000 1.00000 1.25000
     1    0  19.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 0.200.), starting @
       3.  # No. of data items
-  0.00000 1.00000 0.20000
+  0.00000 1.00000 1.00000
+    1    0  22.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 0.200.), starting @
+      3.  # No. of data items
+  0.00000 1.00000 0.40000
 * Control mass    4
 # senses node (4) Office1
    -4    4    0    0  # sensor data
@@ -295,16 +313,22 @@ control the makeup air fan roughly on occupancy
    -3   29    0  # actuator data
     1  # all daytypes
     1  365  # valid Sat-01-Jan - Sat-31-Dec
-     3  # No. of periods in day: weekdays    
+     5  # No. of periods in day: weekdays    
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 0.200.), starting @
       3.  # No. of data items
   0.00000 1.00000 0.20000
     1    0   8.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
   0.00000 1.00000 1.00000
+    1    0  15.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 1.000.), starting @
+      3.  # No. of data items
+  0.00000 1.00000 1.25000
     1    0  19.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 0.200.), starting @
       3.  # No. of data items
-  0.00000 1.00000 0.20000
+  0.00000 1.00000 1.00000
+    1    0  22.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 0.200.), starting @
+      3.  # No. of data items
+  0.00000 1.00000 0.40000
 * Control mass    5
 # senses node (6) Office3
    -4    6    0    0  # sensor data
@@ -312,16 +336,22 @@ control the makeup air fan roughly on occupancy
    -3   30    0  # actuator data
     1  # all daytypes
     1  365  # valid Sat-01-Jan - Sat-31-Dec
-     3  # No. of periods in day: weekdays    
+     5  # No. of periods in day: weekdays    
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 0.200.), starting @
       3.  # No. of data items
   0.00000 1.00000 0.20000
     1    0   8.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
   0.00000 1.00000 1.00000
+    1    0  15.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 1.000.), starting @
+      3.  # No. of data items
+  0.00000 1.00000 1.25000
     1    0  19.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 0.200.), starting @
       3.  # No. of data items
-  0.00000 1.00000 0.20000
+  0.00000 1.00000 1.00000
+    1    0  22.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 0.200.), starting @
+      3.  # No. of data items
+  0.00000 1.00000 0.40000
 * Control mass    6
 # senses node (8) Staff_traing
    -4    8    0    0  # sensor data
@@ -329,13 +359,19 @@ control the makeup air fan roughly on occupancy
    -3   31    0  # actuator data
     1  # all daytypes
     1  365  # valid Sat-01-Jan - Sat-31-Dec
-     3  # No. of periods in day: weekdays    
+     5  # No. of periods in day: weekdays    
     1    0   0.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 0.200.), starting @
       3.  # No. of data items
   0.00000 1.00000 0.20000
     1    0   8.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 1.000.), starting @
       3.  # No. of data items
   0.00000 1.00000 1.00000
+    1    0  15.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 1.000.), starting @
+      3.  # No. of data items
+  0.00000 1.00000 1.25000
     1    0  19.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 0.200.), starting @
       3.  # No. of data items
-  0.00000 1.00000 0.20000
+  0.00000 1.00000 1.00000
+    1    0  22.000  # ctl type (dry bulb > flow), law (on/off setpoint 0.00 direct action ON fraction 0.200.), starting @
+      3.  # No. of data items
+  0.00000 1.00000 0.40000

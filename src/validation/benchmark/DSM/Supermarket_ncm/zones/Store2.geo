@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,Store2 # tag version, format, zone name
-*date Mon Feb 13 18:06:09 2012  # latest file modification 
+*date Sat Feb 18 19:57:32 2012  # latest file modification 
 Store2 describes a
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.00000,69.00000,3.00000  #   1
@@ -50,13 +50,13 @@ Store2 describes a
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,ptn_refr,VERT,-,-,-,mass_part,OPAQUE,ANOTHER,02,20  #   1 ||< ptn_refr:Refrig
+*surf,ptn_refr,VERT,-,-,-,mass_part,OPAQUE,ANOTHER,02,20  #   1 ||< ptn_refra:Refrig
 *surf,right_fac,VERT,-,WALL,-,SMexwal2008,OPAQUE,EXTERIOR,0,0  #   2 ||< external
 *surf,back_fac,VERT,-,WALL,-,SMexwal2008,OPAQUE,EXTERIOR,0,0  #   3 ||< external
 *surf,left_fac,VERT,-,WALL,-,SMexwal2008,OPAQUE,EXTERIOR,0,0  #   4 ||< external
 *surf,roof,CEIL,-,ROOF,FLAT,SM_roof2008,OPAQUE,EXTERIOR,0,0  #   5 ||< external
 *surf,floor,FLOR,-,-,-,susp_flr_re,OPAQUE,ANOTHER,09,03  #   6 ||< ceiling:Store1
-*surf,fac_glz,VERT,back_fac,C-WINDOW,CLOSED,SM_glazing,OPAQUE,EXTERIOR,0,0  #   7 ||< external
+*surf,fac_glz,VERT,back_fac,C-WINDOW,CLOSED,SM_glazing,DCF7671_06nb,EXTERIOR,0,0  #   7 ||< external
 *surf,ptn_sales,VERT,-,-,-,mass_part,OPAQUE,ANOTHER,01,02  #   8 ||< ptn_st2:Sales
 *surf,ptn_storage,FLOR,-,-,-,insul_cab,OPAQUE,ANOTHER,13,04  #   9 ||< ceiling:cold_store
 *surf,ptn_st1,VERT,-,ANOTHER,09,insul_cab,OPAQUE,ANOTHER,09,07  #  10 ||< ptn_storage:Store1
