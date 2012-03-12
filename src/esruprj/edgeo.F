@@ -6026,8 +6026,8 @@ C inserting the new vertex index.
                       JVN(ivj,ivjj+1)=iwhich3
 
 C Debug...
-                     write(6,'(a,42i4)') 'now jvn is ',
-     &                (JVN(ivj,ii),ii=1,NVER(ivj))
+C                     write(6,'(a,42i4)') 'now jvn is ',
+C     &                (JVN(ivj,ii),ii=1,NVER(ivj))
 
 C Surface (ivj) vertex list has been updated. Go on to next surface.
                       goto 346 
