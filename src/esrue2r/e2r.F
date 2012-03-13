@@ -60,6 +60,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Path to model.
@@ -91,11 +92,10 @@ C Name of current application
       CHARACTER outs*124,ITEM*30
       CHARACTER inf*144,LCMDFL*144,LCFGF*72,L144*144
       character tfile*72
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,cfgroot*24
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
       character OUTSTR*124
-      character ltmp72*72,dtmp72*72,ltmp*72
+      character ltmp72*72,dtmp72*72,ltmp*72,dtmp96*96
       character pf*72,gf*72,df*72,VALT*28
       character brw*4   ! to signal whether browsing model
 
@@ -451,7 +451,7 @@ C therfore get one.
         helptopic='e2r_cfg_file_not_found'
         call gethelptext(helpinsub,helptopic,nbhelp)
         l144=LCMDFL
-        dtmp72=DFCFG
+        dtmp96=DFCFG
  1289   llt=lnblnk(L144)
 
 C The X11 version will be returning only the name of the
@@ -460,20 +460,20 @@ C name with the full path.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
-            CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
+            CALL EASKF(L144,' Model configuration file?',' ',96,dtmp96,
      &        'config file name',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
             CALL EASKF(L144,' Model configuration file?',' ',124,
-     &        dtmp72,'config file name',IER,nbhelp)
+     &        dtmp96,'config file name',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
             CALL EASKF(L144,' Model configuration file?',' ',144,
-     &        dtmp72,'config file name',IER,nbhelp)
+     &        dtmp96,'config file name',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
-          CALL EASKF(L144,' Model configuration file?',' ',144,dtmp72,
+          CALL EASKF(L144,' Model configuration file?',' ',144,dtmp96,
      &      'config file name',IER,nbhelp)
         else
-          CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
+          CALL EASKF(L144,' Model configuration file?',' ',96,dtmp96,
      &      'config file name',IER,nbhelp)
         endif
 
@@ -719,25 +719,25 @@ C ESP-r configuration file.
   289   helptopic='model_config_file_name'
         call gethelptext(helpinsub,helptopic,nbhelp)
         l144=LCMDFL
-        dtmp72=DFCFG
+        dtmp96=DFCFG
         llt=lnblnk(L144)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
-            CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
+            CALL EASKF(L144,' Model configuration file?',' ',96,dtmp96,
      &        'config file name',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
             CALL EASKF(L144,' Model configuration file?',' ',124,
-     &        dtmp72,'config file name',IER,nbhelp)
+     &        dtmp96,'config file name',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
             CALL EASKF(L144,' Model configuration file?',' ',144,
-     &        dtmp72,'config file name',IER,nbhelp)
+     &        dtmp96,'config file name',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
-          CALL EASKF(L144,' Model configuration file?',' ',144,dtmp72,
+          CALL EASKF(L144,' Model configuration file?',' ',144,dtmp96,
      &      'config file name',IER,nbhelp)
         else
-          CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
+          CALL EASKF(L144,' Model configuration file?',' ',96,dtmp96,
      &      'config file name',IER,nbhelp)
         endif
 

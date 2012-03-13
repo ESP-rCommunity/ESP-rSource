@@ -49,6 +49,7 @@ C *********************************************************************
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
+      character h*72
       common/pophelp/h(60)
       COMMON/Vld01/NLayer,Cond(ME),Dens(ME),Cp(ME),DX(ME),NPLyr(ME)
       COMMON/Vld02/Tinit,IndBO,IndBI,Tout,Tin,Hout,Hin
@@ -58,8 +59,9 @@ C *********************************************************************
       common/deflt4/dinstpath
 
       character item(12)*28,STRS*124,STRA*124,MsgB*25,MsgC*8
-      CHARACTER*72 h,Msg,MsgT,LstDtl,VlDirR,VlDirL,FileS,FileA,FileF
-      CHARACTER Promp*72,dinstpath*48
+      CHARACTER*72 Msg,MsgT,LstDtl,FileS,FileA,FileF
+      character VlDirR*96,VlDirL*72
+      CHARACTER Promp*72,dinstpath*60
 
       logical VldOK,Vldtng
       integer MITEM,INO ! max items and current menu item
@@ -860,7 +862,8 @@ C #include "geometry.h"
       COMMON/Vld10/VlDirR,VlDirL
 
       character h*72,doit*124,cfgroot*24,MODE*4
-      CHARACTER*72 path,VlDirR,VlDirL,LCFGF
+      CHARACTER*72 path,LCFGF
+      character VlDirR*96,VlDirL*72
       character LCMDFL*144
 
       logical xst
@@ -1055,7 +1058,7 @@ C *********************************************************************
       COMMON/Vld04/DTime,NTime,MonNod,NRoot,NIter
       common/deflt4/dinstpath
 
-      CHARACTER*72 FILE,path,dinstpath*48
+      CHARACTER*72 FILE,path,dinstpath*60
 
       IUF=IFil+2
       FILE='RunFile.exe'

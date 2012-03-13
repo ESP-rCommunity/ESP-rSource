@@ -1350,8 +1350,9 @@ fi
 
 ####### create an installdir.h file so startup.F knows where to look
   echo "c this is where esp-r is installed" > ${SRCdir}/include/espinstalldir.h
-  echo "       character instpath*48" >> ${SRCdir}/include/espinstalldir.h
-  echo "       instpath = '${ESPdir}'" >> ${SRCdir}/include/espinstalldir.h
+  echo "       character instpath*60" >> ${SRCdir}/include/espinstalldir.h
+  echo "       instpath = " >> ${SRCdir}/include/espinstalldir.h
+  echo "     & '${ESPdir}'" >> ${SRCdir}/include/espinstalldir.h
 
 
 ##### Initiate make:
@@ -1738,7 +1739,7 @@ echo "*ipth ${ESPdir}" >> ${ESPdir}/default
 # included in this list/
 echo "*cfg ${ESPdir}/training/basic/cfg/bld_basic.cfg" >> ${ESPdir}/default
 echo "*ctl ${ESPdir}/training/basic/ctl/bld_basic.ctl" >> ${ESPdir}/default
-echo "*mfn ${ESPdir}/training/basic/networks/bld_basic_af1.afn" >> ${ESPdir}/default
+echo "*mfn ${ESPdir}/training/basic/nets/bld_basic_af1.afn" >> ${ESPdir}/default
 echo "*dfd ${ESPdir}/training/cfd/template.dfd" >> ${ESPdir}/default
 echo "*pnf ${ESPdir}/training/plant/vent_simple/cfg/vent.cfg" >> ${ESPdir}/default
 

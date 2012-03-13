@@ -147,6 +147,7 @@ C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       common/deflt2/dfcfg,dfctl,defrlb,dafres,daprob,dpnf
       
 C Significant figure reporting limit.
@@ -165,7 +166,6 @@ C Name of current application.
       character path*72,cfgroot*24,outstr*124
       character inz*16,inzone*16,zn*12,pact*16,paction*16
       character ascif*72,pascif*72
-      character*72 dfcfg,dfctl,defrlb,daprob,dafres,dpnf
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
       character xfile*144,tg*1,delim*1,mode*4
       character exportfile*72 ! for ascii shading file

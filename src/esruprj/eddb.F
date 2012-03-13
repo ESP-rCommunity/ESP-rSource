@@ -761,14 +761,14 @@ C Default ESP-r distribution path.
       character lprev*144
       character longtfile*144
       character lworking*144
-      character dirpath*48
+      character dirpath*72
       integer iglib  ! for detecting GTK or X11
 
       CHARACTER APP*4
 C      CHARACTER outs248*248
       LOGICAL OK,XST,DOK,concat
       character cfgroot*24,LCFGF*72
-      character dinstpath*48,path*72
+      character dinstpath*60,path*72
 
 C Local strings for user selections dependent on graphic library.
       character opte*28,optf*28,optg*28
@@ -1466,8 +1466,8 @@ C     if blank then no file name change implied.
 C      CHARACTER outs248*248
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
       character cfgroot*24,LCFGF*72
-      character dinstpath*48,path*72,tmode*8
-      character dirpath*48
+      character dinstpath*60,path*72,tmode*8
+      character dirpath*72
 
 C Local strings for user selections dependent on graphic library.
       character opte*28,optf*28,optg*28
@@ -1866,7 +1866,7 @@ C << introduce concept of types of profiles
 C      CHARACTER OUTS248*248
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
       character cfgroot*24,LCFGF*72
-      character dinstpath*48,path*72,dirpath*48
+      character dinstpath*60,path*72,dirpath*72
 
 C Local strings for user selections dependent on graphic library.
       character opte*28,optf*28,optg*28,opth*28,opti*28
@@ -2392,7 +2392,7 @@ C Default esp-r distribution path.
 C      CHARACTER outs248*248
       LOGICAL OK,XST,DOK
       character cfgroot*24,LCFGF*72
-      character dinstpath*48,path*72,dirpath*48
+      character dinstpath*60,path*72,dirpath*72
 
 C Local strings for user selections dependent on graphic library.
       character opte*28,optf*28,optg*28
@@ -2762,7 +2762,7 @@ C      CHARACTER outs248*248
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat
       character cfgroot*24,LCFGF*72
-      character dinstpath*48,path*72,dirpath*48
+      character dinstpath*60,path*72,dirpath*72
 
 C Local strings for user selections dependent on graphic library.
       character opte*28,optf*28,optg*28
@@ -3132,7 +3132,7 @@ C      CHARACTER outs248*248
 
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
       character cfgroot*24,LCFGF*72
-      character dinstpath*48,path*72,dirpath*48
+      character dinstpath*60,path*72,dirpath*72
       character OUTSTR*124      ! string buffer for data read
       character t144*144        ! for passing to erprcdb
 
@@ -3514,8 +3514,8 @@ C Calendar.
       CHARACTER OUTS*124,APP*6,ext*4,llclmdb*144
       LOGICAL OK,concat,COPYDEF,MODDB,XST,DOK,UNIXOK
       character cfgroot*24,LCFGF*72,linstd*60
-      character dinstpath*48,path*72
-      character dirpath*48
+      character dinstpath*60,path*72
+      character dirpath*72
       CHARACTER lltmp*144,lguess*144
       CHARACTER*72 NNAME
       dimension ICLM(24,6)
@@ -4336,7 +4336,7 @@ C is via a text editor.
 C      CHARACTER outs248*248
       LOGICAL OK,COPYDEF,MODDB,XST,DOK,concat
       character cfgroot*24,LCFGF*72
-      character dinstpath*48,path*72,dirpath*48
+      character dinstpath*60,path*72,dirpath*72
       character tmode*8
 
 C Local strings for user selections dependent on graphic library.
@@ -4667,7 +4667,7 @@ C is via a text editor.
       CHARACTER outs248*248
       LOGICAL OK,COPYDEF,MODDB,XST,DOK,concat
       character cfgroot*24,LCFGF*72
-      character dinstpath*48,path*72,dirpath*48
+      character dinstpath*60,path*72,dirpath*72
       character tmode*8
 
 C Local strings for user selections dependent on graphic library.

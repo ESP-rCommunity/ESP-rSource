@@ -3400,6 +3400,7 @@ C required models ') which returned iuact=1.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C TDF related.
+      CHARACTER LIMP*96,LEXP*96
       COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
 
@@ -3419,12 +3420,12 @@ C Need to write TDF info in the cfg file. Use next common(s) for this.
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
      &               thbrpercent,uavtotal(MCOM)
 
-      CHARACTER DFILE*72,LIMP*72,LEXP*72
+      CHARACTER DFILE*72
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
 
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
-      character dinstpath*48
+      character dinstpath*60
       character subpath*72
       CHARACTER OUTSTR*124
 
