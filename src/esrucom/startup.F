@@ -1217,7 +1217,7 @@ C Capture rectangular area of screen via capexgf is in wwlib.c
         CALL EGETP(OUTSTR,K,gprlbl,'W','rect area lbl',IER)
         CALL EGETP(OUTSTR,K,gprcmd,'W','rect area exe',IER)
         write(outs,'(a,a,2x,a)')' Rectangular area grab:',gprlbl,gprcmd
-        if(itrc.gt.0)call edisp(iuout,outs)
+        if(itrc.gt.1)call edisp(iuout,outs)
         call capexgf(gprcmd)
       elseif(WORD(1:5).eq.'*gxwd')then
 
@@ -1225,7 +1225,7 @@ C Screen capture commands - dump whole screem via capexall in wwlib.c
         CALL EGETP(OUTSTR,K,gxwdlbl,'W','screen dump lbl',IER)
         CALL EGETP(OUTSTR,K,gxwdcmd,'W','screen dump exe',IER)
         write(outs,'(a,a,2x,a)')' Screen dump: ',gxwdlbl,gxwdcmd
-        if(itrc.gt.0)call edisp(iuout,outs)
+        if(itrc.gt.1)call edisp(iuout,outs)
         call capexall(gxwdcmd)
       elseif(WORD(1:5).eq.'*tprn')then
 
@@ -1233,14 +1233,14 @@ C Caputre text buffer to a file, capextf is in wwlib.c
         CALL EGETP(OUTSTR,K,tprlbl,'W','text print lbl',IER)
         CALL EGETP(OUTSTR,K,tprcmd,'W','text print file',IER)
         write(outs,'(a,a,2x,a)')' Local text print: ',tprlbl,tprcmd
-        if(itrc.gt.0)call edisp(iuout,outs)
+        if(itrc.gt.1)call edisp(iuout,outs)
         call capextf(tprcmd)
       elseif(WORD(1:4).eq.'*cad')then
         CALL EGETP(OUTSTR,K,cadlbl,'W','cad lbl',IER)
         CALL EGETP(OUTSTR,K,cadexe,'W','cad exe',IER)
         CALL EGETW(OUTSTR,K,cadfmt,'W','cad fnt',IER)
         write(outs,'(a,a,2x,a,2x,a)')' Local CAD: ',cadlbl,cadexe,cadfmt
-        if(itrc.gt.0)call edisp(iuout,outs)
+        if(itrc.gt.1)call edisp(iuout,outs)
       elseif(WORD(1:13).eq.'*tutorial_app')then
 
 C Tutorial application depreciated.
@@ -1260,37 +1260,37 @@ C Turn journaling on/off.
         CALL EGETP(OUTSTR,K,fmtexe(imgtyp),'W','img exe',IER)
         write(outs,'(4a)')' Images : ',fmttag(imgtyp),' via ',
      &    fmtexe(imgtyp)
-        if(itrc.gt.0)call edisp(iuout,outs)
+        if(itrc.gt.1)call edisp(iuout,outs)
       elseif(WORD(1:7).eq.'*editor')then
         CALL EGETP(OUTSTR,K,tedlbl,'W','manual editor lbl',IER)
         CALL EGETP(OUTSTR,K,teditor,'W','editor exe',IER)
         write(outs,'(4a)')' Editor: ',tedlbl,' via ',teditor
-        if(itrc.gt.0)call edisp(iuout,outs)
+        if(itrc.gt.1)call edisp(iuout,outs)
       elseif(WORD(1:11).eq.'*docpreview')then
         CALL EGETP(OUTSTR,K,tprevlbl,'W','document previewer lbl',IER)
         CALL EGETP(OUTSTR,K,tpreview,'W','doc previewer exe',IER)
         write(outs,'(4a)')' Preview: ',tprevlbl,' via ',tpreview
-        if(itrc.gt.0)call edisp(iuout,outs)
+        if(itrc.gt.1)call edisp(iuout,outs)
       elseif(WORD(1:7).eq.'*figure')then
         CALL EGETP(OUTSTR,K,figlbl,'W','figure editor lbl',IER)
         CALL EGETP(OUTSTR,K,figexe,'W','figure editor exe',IER)
         write(outs,'(4a)')' Preview: ',figlbl,' via ',figexe
-        if(itrc.gt.0)call edisp(iuout,outs)
+        if(itrc.gt.1)call edisp(iuout,outs)
       elseif(WORD(1:9).eq.'*graphing')then
         CALL EGETP(OUTSTR,K,grflbl,'W','graphing tool lbl',IER)
         CALL EGETP(OUTSTR,K,grfexe,'W','graphing tool exe',IER)
         write(outs,'(4a)')' Graphing: ',grflbl,' via ',grfexe
-        if(itrc.gt.0)call edisp(iuout,outs)
+        if(itrc.gt.1)call edisp(iuout,outs)
       elseif(WORD(1:9).eq.'*folderbr')then
         CALL EGETP(OUTSTR,K,foldlbl,'W','folder br tool lbl',IER)
         CALL EGETP(OUTSTR,K,foldexe,'W','folder tool exe',IER)
         write(outs,'(4a)')' Folder browsing: ',foldlbl,' via ',foldexe
-        if(itrc.gt.0)call edisp(iuout,outs)
+        if(itrc.gt.1)call edisp(iuout,outs)
       elseif(WORD(1:10).eq.'*exemplars')then
         CALL EGETP(OUTSTR,K,exemlbl,'W','exemplars list lbl',IER)
         CALL EGETRM(OUTSTR,K,exemfl,'W','exemplars file',IER)
         write(outs248,'(4a)')' Exemplars: ',exemlbl,' in ',exemfl
-        if(itrc.gt.0)call edisp248(iuout,outs248,100)
+        if(itrc.gt.1)call edisp248(iuout,outs248,100)
       elseif(WORD(1:12).eq.'*db_defaults')then
         CALL EGETP(OUTSTR,K,dfdblbl,'W','def db list lbl',IER)
         CALL EGETRM(OUTSTR,K,defdbfl,'W','default db file',IER)
@@ -1305,12 +1305,12 @@ C Turn journaling on/off.
         CALL EGETP(OUTSTR,K,cdblbl,'W','clm db list lbl',IER)
         CALL EGETRM(OUTSTR,K,cdblfil,'W','clm db list file',IER)
         write(outs248,'(4a)')' Climate list: ',cdblbl,' in ',cdblfil
-        if(itrc.gt.0)call edisp248(iuout,outs248,100)
+        if(itrc.gt.1)call edisp248(iuout,outs248,100)
       elseif(WORD(1:11).eq.'*report_gen')then
         CALL EGETP(OUTSTR,K,replbl,'W','report gen lbl',IER)
         CALL EGETP(OUTSTR,K,repexe,'W','report gen exe',IER)
         write(outs,'(4a)')' Reports: ',replbl,' via ',repexe
-        if(itrc.gt.0)call edisp(iuout,outs)
+        if(itrc.gt.1)call edisp(iuout,outs)
       elseif(WORD(1:5).eq.'*year')then
       elseif(WORD(1:4).eq.'*end')then
         goto 45
