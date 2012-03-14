@@ -1032,7 +1032,8 @@ C Where validation tests are kept.
       logical localdot,unixok,dll
 
       character*(*) LFDEF
-      CHARACTER OUTSTR*124,WORD*20,outs*124,outs248*248
+      CHARACTER OUTSTR*124,WORD*20
+      character outs*124,outs248*248
       character fmttag*4,fmtexe*20,cadlbl*20,cadexe*20,cadfmt*4
       character replbl*20,repexe*20
       character gprlbl*20,gprcmd*48
@@ -1178,11 +1179,13 @@ C      write(6,*) 'lfdef is ',lfdef
           esprc=altdot  ! assign the install folder file as the esprc file.
           call edisp(iuout,
      &      '  Preferences (esprc) file - standard version.')
+          write(currentfile,'(a)') esprc(1:lnblnk(esprc))
         endif
       else
         localdot=.true.
         call edisp(iuout,
      &    '  Preferences (.esprc) file - users version.')
+        write(currentfile,'(a)') lfdef(1:lnblnk(lfdef))
       ENDIF
 
 C Read '*ESPRC' tag.
@@ -1283,7 +1286,7 @@ C Turn journaling on/off.
         if(itrc.gt.1)call edisp(iuout,outs)
       elseif(WORD(1:9).eq.'*folderbr')then
         CALL EGETP(OUTSTR,K,foldlbl,'W','folder br tool lbl',IER)
-        CALL EGETP(OUTSTR,K,foldexe,'W','folder tool exe',IER)
+        CALL EGETRM(OUTSTR,K,foldexe,'W','folder tool exe',IER)
         write(outs,'(4a)')' Folder browsing: ',foldlbl,' via ',foldexe
         if(itrc.gt.1)call edisp(iuout,outs)
       elseif(WORD(1:10).eq.'*exemplars')then
@@ -1298,7 +1301,7 @@ C Turn journaling on/off.
         if(itrc.gt.0)call edisp248(iuout,outs248,100)
       elseif(WORD(1:16).eq.'*validation_stds')then
         CALL EGETP(OUTSTR,K,vldlbl,'W','validation list lbl',IER)
-        CALL EGETP(OUTSTR,K,vldfl,'W','validation stds file',IER)
+        CALL EGETRM(OUTSTR,K,vldfl,'W','validation stds file',IER)
         write(outs248,'(4a)')' Validation: ',vldlbl,' in ',vldfl
         if(itrc.gt.1)call edisp248(iuout,outs248,100)
       elseif(WORD(1:12).eq.'*db_climates')then
@@ -1308,7 +1311,7 @@ C Turn journaling on/off.
         if(itrc.gt.1)call edisp248(iuout,outs248,100)
       elseif(WORD(1:11).eq.'*report_gen')then
         CALL EGETP(OUTSTR,K,replbl,'W','report gen lbl',IER)
-        CALL EGETP(OUTSTR,K,repexe,'W','report gen exe',IER)
+        CALL EGETRM(OUTSTR,K,repexe,'W','report gen exe',IER)
         write(outs,'(4a)')' Reports: ',replbl,' via ',repexe
         if(itrc.gt.1)call edisp(iuout,outs)
       elseif(WORD(1:5).eq.'*year')then
