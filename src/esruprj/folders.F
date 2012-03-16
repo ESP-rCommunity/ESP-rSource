@@ -86,11 +86,12 @@ C Passed in parameters.
 
       character dstmp*24,LCFTMP*24
       character*72 LTMP
-      character path*72,LCMDFL*144,LPNF*72,odir*72
+      character path*72,LCMDFL*144,LPNF*72
+      character odir*84,pwd*84
       character LCFGF*72,cfgroot*24
       character doit*248,longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20
-      character uname*24,pwd*40,tmode*8
+      character uname*24,tmode*8
       character limg*72,act*2
       character iformat*4,ifocus*4
       character fs*1
@@ -432,6 +433,9 @@ C Assume a standard set of folders to hold the model description.
 
 C Setup the various paths to distributed folders and then create.
 C Check longer paths cause the path variable to have a string buffer overflow.
+
+C << consider uprating path string length to ~84 characters >>
+
       odir=' '
       call usrdir(odir)
       lnod=lnblnk(odir)

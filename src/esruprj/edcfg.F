@@ -3293,7 +3293,8 @@ C Defaults.
       character path*72,LCMDFL*144,LTMP*144,GTGEOM*72
       character MODE*4,LCFGF*72,cfgroot*24,fs*1,outs*124
       character OUTSTR*124,ctldoc*248,LCTLF*72,t96*96,t144*144,ETEXT*82
-      character sfile*144,odir*72,subpath*72,action*3,GTNAME*15
+      character sfile*144,odir*84,subpath*84
+      character action*3,GTNAME*15
       CHARACTER dinstpath*60,dirpath*72
 
 C Passed parameters for cfgtogg
