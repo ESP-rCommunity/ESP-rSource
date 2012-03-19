@@ -1676,7 +1676,7 @@ C Check if infiltration is thermostatically controlled, according to
 C wind speed.
 C (How can infiltration be thermostatically controlled? Should
 C  this code infact be operating on CVVF?)
-            OprInfWindCtl: if( ITCTL(ICOMP) == 4 ) then 
+            OprInfWindCtl: if( abs(ITCTL(ICOMP)) == 4 ) then 
               AMH=ACIH(ICOMP)
               AMX=ACIU(ICOMP)
               AMN=ACIL(ICOMP)
