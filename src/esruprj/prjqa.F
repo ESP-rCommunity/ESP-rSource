@@ -2431,7 +2431,11 @@ C if the zones are fully attributed.
      &        foundUv,' & perimeter ',t16b(1:lnb),
      &        ' & max MLC thickness ',xfndthkg
             call edisp(itu,outs)
-            betaprime= xtoground/(xperimlength*0.5)
+            if(xperimlength.gt.0.1)then
+              betaprime= xtoground/(xperimlength*0.5)
+            else
+              betaprime= xtoground  ! avoid div by zero
+            endif
             deltathick= xvthk + 1.5 * ((1.0/foundUv)+0.04)
             PI = 4.0 * ATAN(1.0)
             Ufleft = (2.0 * 1.5)/ ((Pi * betaprime) + deltathick)
