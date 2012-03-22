@@ -460,7 +460,7 @@ C Find the user's home folder then get user's custom settings.
       if(.NOT.silent)then
         call scesprc(esprc,iuf,1,ier)
       else
-        call scesprc(esprc,iuf,0,ier)
+        call scesprc(esprc,iuf,-1,ier)
       endif
 
 C If there is a journal active, set up to add to itl. First get
@@ -808,7 +808,9 @@ C Proceed with shading and then insolation calculations.
                  call edisp(iuout,outs)
                endif
             else
-               call edisp(iuout,
+
+C If in graphic mode remind user, otherwise be silent.
+               if(mmod.eq.8) call edisp(iuout,
      &           'No obstructions, calculating insolation.')
             endif
             icstat=0
@@ -1597,8 +1599,10 @@ C Get name of obstruction file.
          continue   ! any obstructions are in the geometry file.
       elseif(iobs(icomp).eq.0)then
          if(silent)then
-            call edisp(iuout,
-     &             'No obstructions so only compute insolation.')
+
+C If silent then only print this if running in graphic mode.
+            if(mmod.eq.8) call edisp(iuout,
+     &        'No obstructions so only compute insolation.')
          else
             helptopic='obs_not_associated'
             call gethelptext(helpinsub,helptopic,nbhelp)
