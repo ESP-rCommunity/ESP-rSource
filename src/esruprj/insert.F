@@ -3224,8 +3224,8 @@ C Update common blocks G6 & G7
         IZSTOCN(icomp,nsur)=icon
 
 C Debug.
-        write(6,*) 'addedsurf icomp icon nsur izs',icomp,icon,nsur,
-     &    IZSTOCN(icomp,nsur)
+C        write(6,*) 'addedsurf icomp icon nsur izs',icomp,icon,nsur,
+C     &    IZSTOCN(icomp,nsur)
         SSNAME(ICON)=SNAME(ICOMP,NSUR)
         SSOTF(ICON)=SOTF(NSUR)
         SSMLCN(ICON)=SMLCN(NSUR)
