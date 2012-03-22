@@ -166,7 +166,11 @@ C geometry facility first.
       ig=0
       DO 11 I=1,NZSUR(icomp)
         icn1=izstocn(icomp,i)
-        if(SSMLCN(icn1)(1:4).EQ.'UNKN')ig=ig+1
+        if(icn1.eq.0)then
+          ig=ig+1
+        else
+          if(SSMLCN(icn1)(1:4).EQ.'UNKN')ig=ig+1
+        endif
   11  CONTINUE
       if(ig.gt.3)then
         helptopic='many_not_attributed'
@@ -1188,6 +1192,9 @@ C with ier=1.
 
  244  DO 10 IS=1,NZSUR(icomp)
         ioc=IZSTOCN(ICOMP,is)
+        if(ioc.eq.0)then
+          goto 244  ! An unknown surface in the master list. << what to do? >>
+        endif
 
 C Take the composite name associated with this surface and find the
 C equivalent composite db.  If composite name is UNKN then must ask

@@ -2594,9 +2594,15 @@ C Traps for possible blank strings if data structure corrupted.
      &      outsd(1:lnblnk(outsd)),'  # ',I,' ',OTHSTR(1:loth)
         else
 
-C There was an array fault so write out a placeholder surface.
-          WRITE(outs,'(2a)',IOSTAT=ios,ERR=13) '*surf,fault,UNKN,-,-,',
-     &      '-,UNKN,OPAQUE,EXTERIOR,0,0'
+C There was an array fault so write out a placeholder surface. As
+C there might be more than one fault make name unique.
+
+C Debug.
+C          write(6,'(a,2i2,a)',IOSTAT=ios,ERR=13) '*surf,fault',i,
+C     &      ',UNKN,-,-,-,UNKN,OPAQUE,EXTERIOR,0,0'
+
+          write(ifilg,'(a,2i2,a)',IOSTAT=ios,ERR=13) '*surf,fault',i,
+     &      ',UNKN,-,-,-,UNKN,OPAQUE,EXTERIOR,0,0'
         endif
   102 CONTINUE
 
@@ -5417,16 +5423,23 @@ C and length is its maximum length.
       COMMON/C24/IZSTOCN(MCOM,MS)
       
       dimension lstsf(mcom,ms),iva(ms)
-      CHARACTER sdescr*80,sn*12
+      CHARACTER sdescr*80,sn*12,msg*124
       logical unixok
 
 C Find out overall length and build 1D array iva.
       length=0
       do 42 i=1,nbsur
         icc=izstocn(icomp,lstsf(icomp,i))
-        iva(i)=lstsf(icomp,i)
-        lna=lnblnk(SSNAME(icc))
-        length=length+lna+1
+        if(icc.eq.0)then
+          write(msg,'(a,i2,a,i2,a)') 'Surface list item ',i,
+     &      ' in zone ',icomp,' not found.'
+          call usrmsg(msg,'Check your model.','W')
+          ierr=1
+        else
+          iva(i)=lstsf(icomp,i)
+          lna=lnblnk(SSNAME(icc))
+          length=length+lna+1
+        endif
   42  continue
       if(length.lt.80)then
 
@@ -5436,26 +5449,32 @@ C Write out a packed string (space separated) of each surface name.
         ixl=0
         do 43 i=1,nbsur
           ico=izstocn(icomp,lstsf(icomp,i))
-          sn=SSNAME(ico)
-          lna=max(1,lnblnk(sn))
-          if(lna.eq.1)then
-            ixl=ix
-          else
-            ixl=ix+(lna-1)
-          endif
-          write(sdescr(ix:ixl),'(a)',iostat=ios,err=1)sn(1:lna)
-          if(i.lt.nbsur)then
-            write(sdescr(ixl+1:ixl+1),'(a)') ' '
-            ix=ix+lna+1
-          else
-            ix=ix+lna+1
+          if(ico.ne.0)then
+            sn=SSNAME(ico)
+            lna=max(1,lnblnk(sn))
+            if(lna.eq.1)then
+              ixl=ix
+            else
+              ixl=ix+(lna-1)
+            endif
+            write(sdescr(ix:ixl),'(a)',iostat=ios,err=1)sn(1:lna)
+            if(i.lt.nbsur)then
+              write(sdescr(ixl+1:ixl+1),'(a)') ' '
+              ix=ix+lna+1
+            else
+              ix=ix+lna+1
+            endif
           endif
   43    continue
         return
       else
         if(nbsur.eq.1)then
           ic1=izstocn(icomp,lstsf(icomp,1))
-          WRITE(SDESCR,'(A)',iostat=ios,err=1) SSNAME(ic1)
+          if(ic1.ne.0)then
+            WRITE(SDESCR,'(A)',iostat=ios,err=1) SSNAME(ic1)
+          else
+            WRITE(SDESCR,'(A)',iostat=ios,err=1) 'unknown surf'
+          endif
         elseif(nbsur.gt.1)THEN
 
 C Write indices into one packed string sdescr (i.e. truncate).
