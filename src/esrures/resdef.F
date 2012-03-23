@@ -228,7 +228,7 @@ C The simulator created record width is larger so close and reopen.
 C If the record widths still do not match then give up.
             write(outs,'(a,i3,a)') 
      &        'Unable to open library (record width',nreclx,
-     &        'to large). Stopping!'
+     &        'too large). Stopping!'
             call usrmsg(outs,LTMP,'W')
             CALL EPAGEND
             STOP
