@@ -50,6 +50,7 @@ C espriou.h for parameter MFFOLD
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
+      character h*72
       common/pophelp/h(60)
       common/rpath/path
 
@@ -92,18 +93,19 @@ C   `hva` hvac files, `bsm` (looks for BASESIMP files).
 
       integer ivlist
       dimension ivlist(MFFOLD)
-      character where*3,what*3,sfile*72,snpfile*72,tsfile*72,h*72
+      character where*3,what*3,sfile*72,snpfile*72,tsfile*72
       character*72 path,odir
       character*72 listf(MFFOLD),listfc(MFFOLD)
       character fs*1,act*1
-      character dinstpath*48
+      character dinstpath*60
 
 C Array for browse menu.
       character*70 listfc70(MFFOLD)
 
 C relative is the portion of the path which needs to be prepended
 C to the selected file to have it relative to the cfg folder.
-      character subpath*72,action*3,outs*124,relative*60
+      character subpath*84,action*3,outs*248,relative*60
+      character subpathd*84  ! to use for native windows
       logical unixok
 
 C Set folder separator (fs) to \ or / as required.
@@ -321,7 +323,7 @@ C In DOS no need to prepend odir (just use the relative path defined above).
         write(outs,*) 'ZIP/cflo3 files in ',subpath
       endif
 
-      call edisp(iuout,outs) 
+      call edisp248(iuout,outs,90) 
 
 C Clear the list of files and recover a list of files matching
 C the current criteria. Copy this list into listfc for use by
@@ -501,12 +503,14 @@ C Passed parameters
       character t96*96
       character*72 printfile
       integer ilp  ! for length of string
+      integer lntitle
 
       if(nlist.eq.0)then
         return
       else
         call edisp(iuout,'  ')
-        call edisp(iuout,title)
+        lntitle=lnblnk(title)
+        call edisp248(iuout,title,90)
         if(act.eq.'l')then
           do 42 i=1,nlist
             ilp=lnblnk(listf(i))

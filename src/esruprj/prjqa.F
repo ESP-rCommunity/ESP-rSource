@@ -1165,6 +1165,7 @@ C Re-read sbem db and then the descriptive file.
           endif          
         endif
 
+C << take into account location >>
         CALL ERPFREE(ICLIM,ISTAT)
         CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
         IREC=367
@@ -1183,6 +1184,16 @@ C Tell about climate taking note of timing of solar data.
      &      ' with half hour centred solar data.'
         endif
         call edisp248(itu,outs248,80)
+
+        if(ipathclim.eq.0.or.ipathclim.eq.1)then
+          WRITE(outs248,'(2A)')' annual weather         : ',
+     &      LCLIM(1:lnblnk(LCLIM))
+          call edisp248(itu,outs248,100)
+        elseif(ipathclim.eq.2)then
+          WRITE(outs248,'(2A)')' standard annual weather: ',
+     &      LCLIM(1:lnblnk(LCLIM))
+          call edisp248(itu,outs248,100)
+        endif
 
 C List out the estimated ground temperatures based on the
 C current weather data at 0.5m, 1m, 2m, 4m depth.

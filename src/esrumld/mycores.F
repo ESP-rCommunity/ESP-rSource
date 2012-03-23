@@ -92,7 +92,7 @@ C Open the mould database.
       if(iopmld.eq.0) then
         lnmdb=lnblnk(mdbnam)
         if(mdbnam(1:4).eq.'UNKN'.or.mdbnam(1:2).eq.'  ')then
-          mdbnam=dmdbnam
+          write(mdbnam,'(a)') dmdbnam(1:lnblnk(dmdbnam))
         endif
         helptopic='mould_database_name'
         call gethelptext(helpinsub,helptopic,nbhelp)

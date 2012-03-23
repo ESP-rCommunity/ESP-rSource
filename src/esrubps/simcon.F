@@ -1898,10 +1898,10 @@ C Determine the number of zone days simulated.
 
 C Write out appropriate message.
       write(louts,'(a,a)')  ' Climate file         : ',
-     &  LCLIM(:lnblnk(LCLIM))
+     &  LCLIM(1:lnblnk(LCLIM))
       call edisp248(icout,louts,100)
       write(outs,'(a,a)')   ' Configuration file   : ',
-     &  LCFGF(:lnblnk(LCFGF))
+     &  LCFGF(1:lnblnk(LCFGF))
       call edisp(icout,outs)
       write(outs,'(a,a)')   ' Configuration name   : ',
      &  modeltitle(:lnblnk(modeltitle))

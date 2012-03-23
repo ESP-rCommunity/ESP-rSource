@@ -173,7 +173,7 @@ C      character outs248*248
       character ALOC*12,ALOCLBL*12,ALOCTYP*4,CMDLBL*12,CMDLNAM*80
       CHARACTER cpth*48,cmdn*48,topt*72
       character t24*24,DFILE*72,DCNN*72,bidirfile*72,bidirname*12
-      CHARACTER dinstpath*48,dirpath*72
+      CHARACTER dinstpath*60,dirpath*72
       character useraction*8  ! returned from exemplar access call.
       character menu*72       ! blank model title for pregist call
       character fs*1
@@ -521,7 +521,9 @@ C Scan the defaults file for default system configuration file.
 C Make temporary use of file unit IFIL+5.  Note: escdef must come
 C after scan of .esprc file.
       call escdef(IFIL+5,IER)
-      write(6,*) 'def mould is ',dmdbnam(1:lnblnk(dmdbnam))
+
+C Debug.
+C      write(6,*) 'def mould is ',dmdbnam(1:lnblnk(dmdbnam))
 
 C Take command line file name as initial configuration file.
       if(inf(1:2).eq.'  '.or.inf(1:4).eq.'UNKN')then

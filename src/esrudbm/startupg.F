@@ -436,7 +436,7 @@ C Defaults.
       CHARACTER OUTSTR*124,WORD*20,outs*124,outs248*248
       character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character*72 DFCFD,DECMPDBFL,DICONDBFL
-      character dinstpath*48,di*48
+      character dinstpath*60,di*60
       logical unixok,dll
 #include "espinstalldir.h"
 

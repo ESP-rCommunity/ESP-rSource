@@ -378,7 +378,7 @@ C espriou.h provides currentfile.
 
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
-      character dinstpath*48
+      character dinstpath*60
 
       common/dllerr/dllsubr,dllmesg
       character dllsubr*12,dllmesg*124  ! messages if errors in dll

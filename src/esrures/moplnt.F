@@ -739,8 +739,8 @@ C the best-guess of file names (but with full path).
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
 
       character DFILE*72,LTMP*144,outs*124,louts*248
@@ -1004,7 +1004,7 @@ C Read climate file name.
 	write(LCLIM,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
 
 C Debug.
-C        write(6,*) LCLIM
+C        write(6,*) 'plant lclim is ',LCLIM
 
       endif
 

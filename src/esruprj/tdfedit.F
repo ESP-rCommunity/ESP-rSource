@@ -52,6 +52,7 @@ C CREATE,PREV,NEXT,EDIT,LIST,NONE
       common/C21/IFCFG,cfgroot,LCFGF
 
 C Related to inport and export files.
+      CHARACTER LIMP*96,LEXP*96
       COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP
 
 C Logical flags for file openings.
@@ -61,10 +62,10 @@ C Logical flags for file openings.
       logical FOUND,XST,unixok,silent
 
       DIMENSION ITEM(30),ikeybk(30),itemsel(MIT),itemval(MIT)
-      CHARACTER LIMP*72,LEXP*72,tdaide*72
-      character afil*72,tfile*72,TTAG*12
+      CHARACTER tdaide*72
+      character afil*96,tfile*96,TTAG*12
       CHARACTER LTMPFL*72
-      CHARACTER ITEM*50,itemsel*50,KEY*1,FOCUS*8,DFILE*72
+      CHARACTER ITEM*50,itemsel*50,KEY*1,FOCUS*8,DFILE*96
       CHARACTER PERST1*14,PERST2*44,PERST3*44
       character path*72,outs*124,fs*1
       character act*16,actf*72,action*16,msgl2*124
@@ -357,9 +358,9 @@ C accompanied by refresh of the gereric arrays GTYPES,GMENUS
         helptopic='tdf_file_name'
         call gethelptext(helpinsub,helptopic,nbhelp)
         DFILE='tdf.dba'
-        tfile=LTDFA
+        write(tfile,'(a)') LTDFA(1:lnblnk(LTDFA))
         CALL EASKS(tfile,' Temporal file name? ',
-     &   ' ',72,DFILE,'TDF file name',IER,nbhelp)
+     &   ' ',96,DFILE,'TDF file name',IER,nbhelp)
 
 C Check if the file exists and if it does use supplyandcheck
 C to see if it is binary (make an ascii version) or ascii (make
@@ -546,7 +547,7 @@ C            write(6,*) 'compacting from ',nuwpr,' to ',itnwpr
         elseif(ire.eq.3)then
           afil='  '
           CALL EASKS(afil,' Ascii export file name? ',' ',
-     &      72,LEXP,'ascii export',IER,nbhelp)
+     &      96,LEXP,'ascii export',IER,nbhelp)
           call ewtdfa(itrc,afil,IUEXP,0,ier)
         elseif(ire.eq.4)then
           write(outs,'(a,i4,a)')'Currently there are ',NTSPH,' ts/h. '
@@ -562,7 +563,7 @@ C            write(6,*) 'compacting from ',nuwpr,' to ',itnwpr
           CALL EASKI(incr,' Number of steps to recover ',' ? ',
      &      1,'F',100,'F',1,'steps to recover',IER,nbhelp)
           CALL EASKS(afil,' Ascii export file name? ',' ',
-     &      72,LEXP,'ascii export',IER,nbhelp)
+     &      96,LEXP,'ascii export',IER,nbhelp)
           msgl2='  '
           call USRMSG('Extracting from file...',msgl2,'-')
           call extracts(itrc,afil,IUEXP,TIMEJD,incr,ier)
@@ -964,12 +965,12 @@ C data preference menu. This source used to be found in esrutdf/setup.F
       SUBROUTINE SETUPTDF(IER)
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      CHARACTER LIMP*96,LEXP*96
       COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP
       LOGICAL XST
 
       DIMENSION SETUPM(7)
-      CHARACTER*72 LIMP,LEXP
-      CHARACTER SETUPM*50,DFILE*72,tfile*72
+      CHARACTER SETUPM*50,DFILE*96,tfile*96
       integer NITMS,ISETUP ! max items and current menu item
 
 C For help messages
@@ -1041,10 +1042,12 @@ C Define a standard import file name & format for use by other parts of TDF.
         ITIMP=IWM-1
 
         DFILE='data.imp'
-        tfile=LIMP
+        write(tfile,'(a)') LIMP(1:lnblnk(LIMP))
         CALL EASKS(tfile,' Import file name? ',
-     &   ' ',72,DFILE,'import file name',IER,nbhelp)
-        if(tfile(1:2).ne.'  ')LIMP=tfile
+     &   ' ',96,DFILE,'import file name',IER,nbhelp)
+        if(tfile(1:2).ne.'  ')then
+          write(LIMP,'(a)') tfile(1:lnblnk(tfile))
+        endif
         IF(ITIMP.EQ.1)THEN
           CALL ERPFREE(IUIMP,ISTAT)
           call findfil(LIMP,XST)
@@ -1063,10 +1066,12 @@ C of TDF.  Ask for the type then see if it exists.
      &       0,'F',3,'F',1,'export format',IER,nbhelp)
 
         DFILE='data.exp'
-        tfile=LEXP
+        write(tfile,'(a)') LEXP(1:lnblnk(LEXP))
         CALL EASKS(tfile,' Export file name? ',
-     &   ' ',72,DFILE,'export file name',IER,nbhelp)
-        if(tfile(1:2).ne.'  ')LEXP=tfile
+     &   ' ',96,DFILE,'export file name',IER,nbhelp)
+        if(tfile(1:2).ne.'  ')then
+          write(LEXP,'(a)') tfile(1:lnblnk(tfile))
+        endif
 
         IF(ITEXP.EQ.1)THEN
           CALL ERPFREE(IUEXP,ISTAT)

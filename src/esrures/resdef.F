@@ -54,11 +54,11 @@ C Record lengths for zone (nzrl), plant (nprl), electrical(nerl) results librari
       common/recver/izver,ipver,iever
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
  
       character LTMP*72,outs*124,outs248*248
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
@@ -914,8 +914,8 @@ C Nothing references ZGAE and ZGAI.
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
       CHARACTER LCFGF*72,CHDUM*72
 
@@ -931,7 +931,22 @@ C For help messages
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
 
+C For weather file.
+      logical unixok,concat
+      character fs*1
+      character llclmdb*144  ! to expand weather file
+      integer lndbp          ! length of weather folder path
+
       helpinsub='MOINIT'  ! set for subroutine
+
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
       IER=0
       IUNIT=IFIL
@@ -977,9 +992,9 @@ C read again.
       READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(NCCODE(I),I=21,NCOMP)
       IREC=IREC+1
 
-C Recover CLIMATE file name used at simulation time.
-C << if there is an error it might be because of the version
-C << of the database file
+C Recover CLIMATE file name used at simulation time.  Note this file
+C name will be updated when the model cfg file is scanned in subsequent
+C call to ersys later in this subroutine.
 
     4 READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)LCLIM
       IREC=IREC+1
@@ -1256,6 +1271,16 @@ C Open core databases (materials, constructions, optics).
           endif
         ENDIF
 
+C Take into account weather file location.
+       lndbp=lnblnk(standardclmpath)
+       if(ipathclim.eq.0.or.ipathclim.eq.1)then
+         call addpath(lclim,llclmdb,concat)
+       elseif(ipathclim.eq.2)then
+         write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &     LCLIM(1:lnblnk(LCLIM))
+       endif
+       lclim=llclmdb  ! overwrite weather with expanded file name
+
 C If izver is >=4 then the only information needed from the zone
 C operation file is the user name for each casual gain type. Scan
 C this information.
@@ -1304,6 +1329,7 @@ C are not referenced. Could we use these slots for something else?
   140 CONTINUE
   
 C Finally check if the climate file read in above exists.
+C << take into account location >>
    44 IUNITC=IFIL+5
       call EFOPRAN(IUNITC,LCLIM,144,0,IER)
       IF(IER.LT.0)then

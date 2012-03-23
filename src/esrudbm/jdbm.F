@@ -1829,7 +1829,7 @@ C      common/gendb/LGENDB
       character outs*124,LTMP*72,afil*72,LEXP*72
       character tfile*72,act*1,dba*12,db*12,dbask*12,fs*1,doit*248
       character LAGENDB*72,LGENDB*72
-      character dinstpath*48,path*72,dirpath*48
+      character dinstpath*60,path*72,dirpath*72
       logical unixok,browse,moddb,copydef,XST,newfile
       logical legacy,asciifound
       integer ier

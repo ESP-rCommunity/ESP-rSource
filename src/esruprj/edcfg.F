@@ -91,6 +91,7 @@ C Plant network.
       INTEGER :: IFPNF
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Uncertainty.
@@ -151,7 +152,7 @@ C Uncertainty.
       character longtfile*144,longtfiledos*144
       character LCFGF*72,ITEMS*34,ETEXT*82
       character NDNAM*12,LFIL*72
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DCNN,ltmp
+      character*72 DCNN,ltmp
       character tmode*8,doit*248
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,entflnam*72
@@ -3271,6 +3272,7 @@ C espriou.h for parameter MFFOLD
       common/deflt4/dinstpath
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -3293,10 +3295,9 @@ C Defaults.
 
       character path*72,LCMDFL*144,LTMP*144,GTGEOM*72
       character MODE*4,LCFGF*72,cfgroot*24,fs*1,outs*124
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character OUTSTR*124,ctldoc*248,LCTLF*72,t96*96,t144*144,ETEXT*82
       character sfile*144,odir*72,subpath*72,action*3,GTNAME*15
-      CHARACTER dinstpath*48,dirpath*72
+      CHARACTER dinstpath*60,dirpath*72
 
 C Passed parameters for cfgtogg
 #ifdef OSI

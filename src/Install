@@ -944,8 +944,8 @@ esac
 case $compiler in
    sunF90)   CC=cc;  CPL=CC;  FC=f90  ;;
    GNU) case $gnu_version in
-           gcc4)     CC=gcc-mp-4.6;   CPL=g++-mp-4.6;    FC=gfortran-mp-4.6  ;;
-#           gcc4)     CC=gcc;   CPL=g++;    FC=gfortran  ;;
+#           gcc4)     CC=gcc-mp-4.6;   CPL=g++-mp-4.6;    FC=gfortran-mp-4.6  ;;
+           gcc4)     CC=gcc;   CPL=g++;    FC=gfortran  ;;
         esac;;
    intel)    CC=icc;  CPL=icpc;  FC=ifort ;;
 esac
@@ -1354,8 +1354,9 @@ fi
 
 ####### create an installdir.h file so startup.F knows where to look
   echo "c this is where esp-r is installed" > ${SRCdir}/include/espinstalldir.h
-  echo "       character instpath*48" >> ${SRCdir}/include/espinstalldir.h
-  echo "       instpath = '${ESPdir}'" >> ${SRCdir}/include/espinstalldir.h
+  echo "       character instpath*60" >> ${SRCdir}/include/espinstalldir.h
+  echo "       instpath = " >> ${SRCdir}/include/espinstalldir.h
+  echo "     & '${ESPdir}'" >> ${SRCdir}/include/espinstalldir.h
 
 
 ##### Initiate make:
@@ -1742,7 +1743,7 @@ echo "*ipth ${ESPdir}" >> ${ESPdir}/default
 # included in this list/
 echo "*cfg ${ESPdir}/training/basic/cfg/bld_basic.cfg" >> ${ESPdir}/default
 echo "*ctl ${ESPdir}/training/basic/ctl/bld_basic.ctl" >> ${ESPdir}/default
-echo "*mfn ${ESPdir}/training/basic/networks/bld_basic_af1.afn" >> ${ESPdir}/default
+echo "*mfn ${ESPdir}/training/basic/nets/bld_basic_af1.afn" >> ${ESPdir}/default
 echo "*dfd ${ESPdir}/training/cfd/template.dfd" >> ${ESPdir}/default
 echo "*pnf ${ESPdir}/training/plant/vent_simple/cfg/vent.cfg" >> ${ESPdir}/default
 

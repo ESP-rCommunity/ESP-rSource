@@ -1002,17 +1002,21 @@ C set the lfmould common block string via call to findwhichdbpath.
         call findwhichdbpath('mld',lworking,ier)
         foundmould=.true.
       elseif(WORD(1:9).eq.'*stdmould')then
-        ipathmould=2  ! standard folder for pressure coef database
+        ipathmould=2  ! standard folder for mould isopleths
         CALL EGETRM(LOUTSTR,K,lfmould,'W','mould isopleths',IER)
         foundmould=.true.
       elseif(WORD(1:4).eq.'*clm')then
+        CALL EGETRM(LOUTSTR,K,lworking,'W','weather file',IER)
 
-C << to be done - introduce *stdclm to signal standard location >>
-
-C Read name of standard climate file and set a flag indicating
-C that a single-year climate database has been defined
-        CALL EGETRM(LOUTSTR,K,LCLIM,'W','climate db',IER)
+C Read name of standard weather file and set a flag indicating
+C that a single-year climate weather has been defined.
+        call findwhichdbpath('clm',lworking,ier)
         bSY_climate_defined = .true.        
+      elseif(WORD(1:7).eq.'*stdclm')then
+        ipathclim=2  ! standard folder for weather
+        CALL EGETRM(LOUTSTR,K,lclim,'W','weather file',IER)
+        bSY_climate_defined = .true.
+        
       elseif(WORD(1:6).eq.'*myclm') then
 
 C Read multi-year climate database and set flag indicating hat a muli-year
@@ -1375,7 +1379,7 @@ C Solar radiation (half hour data) flag.
         call egetwi(loutstr,k,iSlr_half_hr_flg,0,1,'W',
      &    'solar half-hour flag',IER)
 
-      elseif(WORD(1:17).eq.'*exlude_diff_shad')then
+      elseif(WORD(1:18).eq.'*exclude_diff_shad')then
 
 C Solar radiation (half hour data) flag.
         call egetwi(loutstr,k,iexcludediff_flag,0,1,'W',
@@ -2087,11 +2091,12 @@ C Project log file, read and then go on to fabric/plant description.
 
       else
 
-        call edisp ( iuout, 'Unknown entry in .cfg file:' )
-        call edisp ( iuout, outstr )
+        call edisp(iuout,'Unknown entry in .cfg file:')
+        call edisp(iuout, WORD)
+        call edisp248(iuout,loutstr,90)
         
-          ier=1
-          return
+        ier=1
+        return
       endif
 
 C Loop back for next database file.
@@ -3486,7 +3491,7 @@ C topic =  'opt' for optics, 'pdb' for plant component templates
 C       =  'prs' for pressure coef, 'sbm' for UK SBEM database,
 C       =  'mat' for common materials, 'evn' for event profiles
 C       =  'mul' for common constructions, 'msc' for active components
-C       =  'mld' for mould isopleths
+C       =  'mld' for mould isopleths, 'clm' for weather
       subroutine findwhichdbpath(topic,file,ier)
       implicit none
 #include "esprdbfile.h"
@@ -3497,12 +3502,13 @@ C       =  'mld' for mould isopleths
 C Currently works with optical and plant template database.
       character*(*) file
       character topic*3 ! identify which type of database
-      integer lndbp   ! for length of standard database path
+      integer lndbp,lnclmp ! length of standard database weather paths
       integer lnwkg   ! for length of working file name
       logical unixok  ! to check for database path file separators
 
-C Set OS and check that standarddbpath has been set.
+C Set OS and check that standarddbpath standardweatherpath have been set.
       lndbp=lnblnk(standarddbpath)
+      lnclmp=lnblnk(standardclmpath)
       lnwkg=lnblnk(file)
       if(lndbp.lt.1.or.lnwkg.lt.1)then
         ier=2
@@ -3512,6 +3518,8 @@ C Set OS and check that standarddbpath has been set.
       
       if(unixok)then
         if(file(1:7).eq.'../dbs/')then
+
+C Local model dbs folder.
           if(topic(1:3).eq.'opt')then
             ipathoptdb=1  ! local folder for common optics
             write(LOPTDB,'(a)') file(1:lnwkg) ! assign directly
@@ -3539,10 +3547,13 @@ C Set OS and check that standarddbpath has been set.
           elseif(topic(1:3).eq.'mld')then
             ipathmould=1  ! local folder for mould isopleths
             write(lfmould,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'clm')then
+            ipathclim=1  ! local folder for weather
+            write(LCLIM,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
 
-C The initial part of the path matches so only save the file name w/o path.
+C The initial part of database path matches so save the file name w/o path.
           if(topic(1:3).eq.'opt')then
             ipathoptdb=2
             write(LOPTDB,'(a)') file(lndbp+2:lnwkg)  ! without path
@@ -3570,6 +3581,16 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'mld')then
             ipathmould=2
             write(lfmould,'(a)') file(lndbp+2:lnwkg) ! without path
+          elseif(topic(1:3).eq.'clm')then
+            ipathclim=2
+            write(LCLIM,'(a)') file(lndbp+2:lnwkg) ! without path
+          endif
+        elseif(file(1:lnclmp).eq.standardclmpath(1:lnclmp))then
+
+C The initial part of the weather path matches save the file name w/o path.
+          if(topic(1:3).eq.'clm')then
+            ipathclim=2
+            write(LCLIM,'(a)') file(lnclmp+2:lnwkg) ! without path
           endif
         else
           if(topic(1:3).eq.'opt')then
@@ -3597,8 +3618,11 @@ C The initial part of the path matches so only save the file name w/o path.
             ipathmsc=0
             write(MCMPDBFL,'(a)') file(1:lnwkg) ! assign directly
           elseif(topic(1:3).eq.'mld')then
-            ipathmould=1  ! local folder for mould isopleths
+            ipathmould=0  ! local folder for mould isopleths
             write(lfmould,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'clm')then
+            ipathclim=0
+            write(LCLIM,'(a)') file(1:lnwkg) ! assign directly
           endif
         endif
       else
@@ -3630,6 +3654,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'mld')then
             ipathmould=1  ! local folder for mould isopleths
             write(lfmould,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'clm')then
+            ipathclim=1  ! local folder for weather
+            write(LCLIM,'(a)') file(1:lnwkg) ! assign directly
           endif
         elseif(file(1:lndbp).eq.standarddbpath(1:lndbp))then
           if(topic(1:3).eq.'opt')then
@@ -3659,6 +3686,14 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'mld')then
             ipathmould=2
             write(lfmould,'(a)') file(lndbp+2:lnwkg) ! without path
+          elseif(topic(1:3).eq.'clm')then
+            ipathclim=2
+            write(LCLIM,'(a)') file(lndbp+2:lnwkg) ! without path
+          endif
+        elseif(file(1:lnclmp).eq.standardclmpath(1:lnclmp))then
+          if(topic(1:3).eq.'clm')then
+            ipathclim=2
+            write(LCLIM,'(a)') file(lnclmp+2:lnwkg) ! without path
           endif
         else
           if(topic(1:3).eq.'opt')then
@@ -3688,6 +3723,9 @@ C The initial part of the path matches so only save the file name w/o path.
           elseif(topic(1:3).eq.'mld')then
             ipathmould=0
             write(lfmould,'(a)') file(1:lnwkg) ! assign directly
+          elseif(topic(1:3).eq.'clm')then
+            ipathclim=0
+            write(LCLIM,'(a)') file(1:lnwkg) ! assign directly
           endif
         endif
       endif

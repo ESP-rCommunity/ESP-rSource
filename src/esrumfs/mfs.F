@@ -88,6 +88,7 @@ C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Activation of connections
@@ -109,7 +110,6 @@ C Name of current application
       LOGICAL LAST,OK,DOK,unixok,there,ACTCNN
       CHARACTER*24 ITEM(18)
       CHARACTER OUTSTR*124,inf*144,outs*124
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72
       character tg*1,delim*1,xfile*144
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72

@@ -56,7 +56,7 @@ C geometry.h provides commons G0/G1/G2/G4/G5/G7/prec17/precz/c20/GS5/GS6.
 
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
-      character dinstpath*48
+      character dinstpath*60
 
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)

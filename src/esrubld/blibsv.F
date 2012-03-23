@@ -65,10 +65,22 @@ c AND THE CURRENTLY ASSIGNED CLIMATE FILE NAME ARE ALSO SAVED.
 
       dimension izdum(MZS)
       CHARACTER*72 LCFGF
-      CHARACTER ZNPAD*15,doit*248,outs248*248
+      CHARACTER ZNPAD*15,outs248*248
+C      character doit*248
+      character llclmdb*144  ! for expanded climate file name
       CHARACTER*6 NAME
       character outs*124,tfile*72,cfgroot*24,longtfile*144
-      logical concat
+      character fs*1
+      logical concat,unixok
+      integer lndbp  ! length of weather folder path
+      
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C << following block of code is for testing >>
 C Create tables for SQL database.
@@ -108,8 +120,19 @@ C an extra record is used.
      &I=21,NCOMP)
 
 C Note: LCLIM is 144 char so this assume a minimal record width.
+C To make it easier for res, expand to full path if using a standard
+C folder.
       IREC = IREC + 1
-    4 WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LCLIM
+    4 continue
+      if(ipathclim.eq.0.or.ipathclim.eq.1)then
+        call addpath(lclim,llclmdb,concat)
+      elseif(ipathclim.eq.2)then
+        lndbp=lnblnk(standardclmpath)
+        write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &    LCLIM(1:lnblnk(LCLIM))
+      endif
+
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)llclmdb
       IREC=IREC+1
 
 C Write one operation file name per record.

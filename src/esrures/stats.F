@@ -1997,9 +1997,15 @@ C Calcalate the sums and statistics to display during relevant period.
         endif
    65 CONTINUE
       if(act(1:1).ne.'i') then
-        write(outs,67)THE,tzhtime,TCE,tzctime,TLHE,tzlhtime,TLCE,
-     &    tzlctime
-   67   format(1X,'   All',9X,4(F15.2,F10.1))
+        if(THE.gt.99999.0.or.TCE.lt.-99999.0)then
+          write(outs,67)THE,tzhtime,TCE,tzctime,TLHE,tzlhtime,TLCE,
+     &      tzlctime
+   67     format(1X,'   All',8X,4(F11.1,F7.0))
+        else
+          write(outs,68)THE,tzhtime,TCE,tzctime,TLHE,tzlhtime,TLCE,
+     &      tzlctime
+   68     format(1X,'   All',9X,4(F11.2,F7.1))
+        endif
         call edisp(itru,' ')
         call eddisp(itru,outs)
         call edisp(itru,' ')

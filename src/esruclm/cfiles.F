@@ -886,7 +886,7 @@ C or passed into clm module).
       logical rescan
 
       CHARACTER CLMLOC*30,outs*124,tab*1,outs248*248
-      character LCMDFL*144,clmdb*144,L144*144
+      character LCMDFL*144,clmdb*144,L144*144,lltmp*144
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -1031,20 +1031,30 @@ C First check if it exists: if so open, otherwise create with 0 length.
         ICLIM=IFIL
       endif
       CALL ERPFREE(ICLIM,ISTAT)
-      CALL FPRAND(ICLIM,ISTAT,144,0,LCMDFL)
+
+C Take into account the location of the weather file.
+      lndbp=lnblnk(standarddbpath)
+      if(ipathclim.eq.0.or.ipathclim.eq.1)then
+        lltmp=LCMDFL
+      elseif(ipathclim.eq.2)then
+        write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &    LCMDFL(1:lnblnk(LCMDFL))  ! prepend db folder path
+      endif
+
+      CALL FPRAND(ICLIM,ISTAT,144,0,lltmp)
       if(ISTAT.eq.-301)then
         CALL ERPFREE(ICLIM,ISTAT)
-        CALL FPRAND(ICLIM,ISTAT,144,3,LCMDFL)
+        CALL FPRAND(ICLIM,ISTAT,144,3,lltmp)
         if(.NOT.silent)call edisp(iuout,' opened new weather file')
-        llf=lnblnk(LCMDFL)
-        write(LCLIM,'(a)') LCMDFL(1:llf)
+        llf=lnblnk(lltmp)
+        write(LCLIM,'(a)') lltmp(1:llf)
         RETURN
       elseif(ISTAT.ge.0)then
         CALL ERPFREE(ICLIM,ISTAT)
-        CALL FPRAND(ICLIM,ISTAT,144,1,LCMDFL)
+        CALL FPRAND(ICLIM,ISTAT,144,1,lltmp)
         if(.NOT.silent)call edisp(iuout,' opened weather file')
-        llf=lnblnk(LCMDFL)
-        write(LCLIM,'(a)') LCMDFL(1:llf)
+        llf=lnblnk(lltmp)
+        write(LCLIM,'(a)') lltmp(1:llf)
         if(LCLIM.eq.DCLIM)call edisp(iuout,' Default weather assigned.')
       endif
 

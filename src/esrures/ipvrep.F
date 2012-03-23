@@ -492,6 +492,7 @@ C If java then include fields for `project contact` and `site location`
         endif
 
 C Open the climate file and get its location name.
+C << take into account location >>
         IUNITC=IFIL+5
         CALL FPRAND(IUNITC,ISTAT,144,1,LCLIM)
         IRECC=367

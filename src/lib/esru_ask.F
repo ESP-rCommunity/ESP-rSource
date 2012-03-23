@@ -708,7 +708,8 @@ C Local variables.
       integer lno          ! length of outstr
       integer K            ! position
       integer trywhich     ! if one then primary help file if two use secondary
-      character helpfil*72 ! the help file to load
+
+      character helpfil*96 ! the help file to load
       dimension folder(4),lnf(4)  ! up to 3 subsequent folders to look in and their lengths
       character folder*8   ! the source folder for the application
       integer lnf

@@ -5829,6 +5829,9 @@ C CSP = cooling set point temp. (deg.C)
       QFUT=0.0
       TFUT=TNP
 
+C << consider how this control can be used outwith the UK NCM
+C << regime.
+
 C Turn cooling off if no UK NCM cooling generator is linked to this zone
 C If there is no system associated with the zone then set QCM to zero.
 C If this is the reference model then cooling will be present regardless
