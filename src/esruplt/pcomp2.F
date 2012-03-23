@@ -473,12 +473,21 @@ C
 C Hensen J L M (1991) 'On the thermal interaction of building
 C     structure and heating and ventilating system', PhD Thesis,
 C     Eindhoven University of Technology.
+C Set default values (just to be on the safe side) 
+        fQ_node1_frac = 0.0 
+        fQ_node2_frac = 1.0 
 
         if ( bNoFlow ) then
 
           fQ_node1_frac = (TS-TE) / ( TS + TX - 2.0 * TE)
+          !check for the case where TS=TE=TX 
+          call eclose(TS,TE,0.001,closea) 
+          IF(closea) fQ_node1_frac = 0. 
 
           fQ_node2_frac = (TX-TE) / ( TS + TX - 2.0 * TE)
+          !check for the case where TS=TE=TX 
+          call eclose(TX,TE,0.001,closea) 
+          IF(closea) fQ_node2_frac = 0. 
 
 C Make sure Resulting heat transfer does not cool nodes below environment
 C temperature
@@ -503,8 +512,6 @@ C temperature
           fQ_node2_frac = 1.0
 
         endif
-
-
 
 C Calculate current component time-constant TC
          TC(IPCOMP)=AMAX1(

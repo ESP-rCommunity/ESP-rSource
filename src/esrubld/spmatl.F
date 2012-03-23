@@ -698,6 +698,7 @@ C Urban location.
             pwr=0.32
             rough=5.
 
+
 C Suburban location
          elseif(iloc.eq.2)then
             pwr=0.23
@@ -788,6 +789,7 @@ C New wind speed and direction.
                   endif
                endif
 
+
 C Check that the wind is strong enough for the turbine to cut in.
                if(wispdm.ge.ciwspd)then
 
@@ -821,6 +823,7 @@ C i.e. index 1 = wind normal to surface).
                iwdr2=nint((widirm-aziou)/22.5)+1
                if(iwdr2.lt.1)iwdr2=iwdr2+16
                if(iwdr2.gt.16)iwdr2=iwdr2-16
+
 
 C Calculate wind pressure and include stack pressure based on
 C P = 0 and height = 0.
@@ -875,6 +878,7 @@ C (i.e. index 1 = wind normal to surface)
          iwdr2=nint((widir-aziou)/22.5)+1
          if(iwdr2.lt.1)iwdr2=iwdr2+16
          if(iwdr2.gt.16)iwdr2=iwdr2-16
+
 
 C Calculate wind pressure and include stack pressure based on
 C P = 0 for height=0.
@@ -989,6 +993,7 @@ C Iteration counter.
       iter=1
    20 continue
 
+
 C Average fluid temperature.
       dt1=tcol-tin
       dt2=tcol-tout
@@ -1086,6 +1091,7 @@ C Save the power output.
 C Modify thermal output to be an average of future and present values.
        qthermq=(qthermqf+qthermqp)*0.5
 
+
 C Alter the nodal absorption according to whether node is an external
 C (ie=1) or internal (ie=0) surface, and opaque (1) or transparent (0). 
        if(ispmtyp(ispmnod,2).gt.0)then
@@ -1107,6 +1113,7 @@ C node as well as the two boundary nodes.
           qtmca(ispmloc(ispmnod,2),ispmloc(ispmnod,3)-1,2)=
      &    qtmca(ispmloc(ispmnod,2),ispmloc(ispmnod,3)-1,2)-(qthermq/4.)
        endif
+
 
 C Trace output.
       if(itc.le.0.or.nsinc.lt.itc.or.ispmxist.eq.0)goto 999
@@ -1424,6 +1431,7 @@ C Local variables.
 
       integer iNum_layers	!- number of layers in PV module surface
 
+
       real    fTrans_Ads(5)	!- transmission at 5 angles (0,40,55,70,80 degrees)
 				!  for PV module surface calculated as the sum of
 				!  the transmission for all layers in the surface
@@ -1455,6 +1463,7 @@ C Module voltage at maximum power point and reference condition.
 
 C Module current at maximum power point and reference condition.
       fImpRef=spmdat(ispmnod,4)
+
 
 C Reference insolation and temperature.
       fQref=spmdat(ispmnod,5)
@@ -1614,6 +1623,7 @@ C No external shading case.
 C Calculate cell short circuit current.
        fIsc=fIscRef/iNPBrch*(fQPnl/fQref)*(1.+fAlpha*(fTPnl-fTref))
 
+
 C Calculate cell open circuit voltage.
        call eclose(fQPnl,0.0,0.001,close)
        if(.not.close)then
@@ -1718,6 +1728,7 @@ C Check that the maximum number of iterations is not exceeded.
              endif
              iter=iter+1
           enddo
+
 
 C Current of entire module.
           fPVcurrent=fIcell*iNPBrch
@@ -2264,6 +2275,7 @@ C Phase change materials in glazing, state flag
       common/PcmState/iPcmStateFlag 
       integer iPcmStateFlag !flag that indicates the state of PCM at each timestep 
                             !if iPcmStateFlag is 1: solid, if 2: mixed, if 3: liquid 
+
 
 
       character spmlabel*16,spflnam*72,outs*124,strspm*16,unitspm*16,
@@ -3828,7 +3840,7 @@ C Phase change material parameters.
       logical LHSimple        !- .true. is simple model, .false. is extended model
  
 C Local variables.
-      real aa,bb,ff,LH_T1,LH_T2,v_func
+      real aa,bb,ff,LH_T1,LH_T2,v_func,extfunc
 
 C Which function?
       if(k.eq.0)then 
@@ -3851,13 +3863,25 @@ C Which function?
          LatentHeat=exp(aa)/bb*(exp(bb*T1)-exp(bb*T2))
       else    
 
-C Calculate functions to build LatentHeat.
-         LH_T1=T1**ff*v_func(k,T1)-ff*T1**(ff-1)*v_func(k,T1)  ! integral approximation
-         LH_T2=T2**ff*v_func(k,T2)-ff*T2**(ff-1)*v_func(k,T2)
-         LatentHeat=(LH_T1-LH_T2)*1000.0   !- change upper and lower boundary 
-                                           !  of array to comply with sign
-                                           !  definition for LatentHeat and
-                                           !  adapt unit from J/g to J/kg
+C Calculate change in LatentHeat from T1 to T2.
+         if (ff.eq.99) then	
+         ! Coefficients for extended function with a,b,c,d,e only
+           LH_T1=v_func(k,T1)
+           LH_T2=v_func(k,T2)
+
+           LatentHeat=(LH_T1-LH_T2)*1000.0  !- change upper and lower boundary 
+                                            !  of array to comply with sign
+                                            !  definition for LatentHeat and
+                                            !  adapt unit from J/g to J/kg
+         else
+         ! integral approximation with a,b,c,d,e and f according
+         ! to "Keppler" method (from T2 to T1) - 23.03.2012:
+           LatentHeat=(T1-T2)/6.0
+           LatentHeat=LatentHeat*(
+     &                 extfunc(k,T2)+4.0*extfunc(k,(T1+T2)/2.0)
+     &                 +extfunc(k,T1))
+           LatentHeat=1000.0*LatentHeat ! Adapt from J/g to J/kg
+         endif
       endif
 
 C More than |Lges| is not possible.
@@ -3867,7 +3891,7 @@ C More than |Lges| is not possible.
       end
 
 C ***************** v_func *****************
-C Functions for extended latent heat integral.
+C Function for extended latent heat integral.
 
       real function v_func(k,T)
       implicit none
@@ -3905,8 +3929,8 @@ C Coefficients for extended function.
          dd=d1
          ee=e1
       endif
-      
-C Calculate coefficients.
+
+C Calculate coefficients (v(FP,Theta)).
       CC1=2.0*aa*(dd**2.0)+(bb**2.0)*ee-bb*cc*dd-2.0*dd*ee
       CC2=2.0*dd/SQRT((-(bb**2.0)+4.0*dd))
       C3=bb/(sqrt(-bb**2.0+4.0*dd))
@@ -3923,6 +3947,57 @@ C Calculate coefficients.
       return
       end
 
+C ***************** extfunc *****************
+C Extended Hoffmann function for latent heat for 
+C PCM materials.
+
+      real function extfunc(k,T)
+      implicit none
+      
+      integer k
+      real T
+      
+C Phase change material parameters.
+      common/pcmparm/tsoli,tmelt,sub,Lges,consol,conliq,shcsol,shcliq,
+     &                    a1,b1,c1,d1,e1,f1,a2,b2,c2,d2,e2,f2,LHSimple
+      real tsoli        !- solidification temperature (degC)
+      real tmelt        !- melting temperature (degC)
+      real sub          !- sub-cooling temperature difference (degC)
+      real Lges         !- total latent heat capacity of PCM (J/kg)
+      real consol,conliq  !- conductivity of solid and liquid phase (W/m.K)
+      real shcsol,shcliq  !- specific heat of solid and liquid phase (J/kg.K)
+      real a1,b1,c1,d1,e1,f1  !- equation parameters for non-subcooling (a1-f1)
+      real a2,b2,c2,d2,e2,f2  !  and subcooling (a2-f2) states
+      logical LHSimple        !- .true. is simple model, .false. is extended model
+
+C Local variables.
+      REAL aa,bb,cc,dd,ee,ff
+
+C Coefficients for Hoffmann function.
+      if(k.eq.0)then !- subcooling / solidification
+         aa=a2
+         bb=b2
+         cc=c2
+         dd=d2
+         ee=e2
+         ff=f2
+      else           !- non-subcooling / melting
+         aa=a1
+         bb=b1
+         cc=c1
+         dd=d1
+         ee=e1
+         ff=f1
+      endif
+
+C Calculate function value.
+      extfunc=aa+cc*T+ee*(T**2)
+      extfunc=extfunc/(1.0+bb*T+dd*(T**2))
+      extfunc=extfunc*(T**ff)
+
+      return
+      end
+	  
 C ***************** PCMSTORE *****************
 C This routine keeps track of the latent heat stored/released by a
 C PCM. The routine is called once each simulation time step and for
@@ -4092,6 +4167,7 @@ C PCM temperature decrease.
 
 C PCM behaves according to non-subcooling properties.
             if(TnS.le.tmelt)then
+
 
 C PCM is solid (case 1), StoredLH = 0.
                AppCon=consol
