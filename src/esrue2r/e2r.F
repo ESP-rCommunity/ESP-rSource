@@ -176,6 +176,7 @@ C Set folder separator (fs) to \ or / as required.
       endif
       write(path,'(a1,a1)')'.',fs
 
+C First steps in dealing with command line parameters.
 C Make case insensitive.
       if (aim(1:8).eq.'External') zone='  '
       if (aim(1:8).eq.'coupling') aim='Coupling'
@@ -595,7 +596,9 @@ C Check for command line information.
       ITEM(10)=               'd  sky type, location & time  '
       ITEM(11)=               'e  zone & outside composition '
       ITEM(12)=               'f  other (furniture&fittings) '
-      if (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
+      if (SCENEPURP(ISCENE)(1:8).eq.'Day_fact'.or.
+     &    SCENEPURP(ISCENE)(1:7).eq.'Day_lux'.or.
+     &    SCENEPURP(ISCENE)(1:5).eq.'Illum') then
         ITEM(13)=             'g  edit/display grid          '
       elseif (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
         ITEM(13)=             'g                             '
@@ -620,7 +623,11 @@ C Check for command line information.
       elseif (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
         ITEM(17)=             'j  view calculated illuminance'
       elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_coef') then
-        ITEM(17)=             'j  view daylight coeffs       '
+        ITEM(17)=             'j  view daylight coefficients '
+      elseif (SCENEPURP(ISCENE)(1:7).eq.'Day_lux') then
+        ITEM(17)=             'j  view daylight lux @ points '
+      elseif (SCENEPURP(ISCENE)(1:5).eq.'Illum') then
+        ITEM(17)=             'j  view illuminance @ points  '
       else
         ITEM(17)=             'j  view visualisation results '
       endif
@@ -811,7 +818,9 @@ C Other descriptions.
       elseif(INO.EQ.13)then
 
 C Depending on value of SCENEPURP.
-        if (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
+        if (SCENEPURP(ISCENE)(1:8).eq.'Day_fact'.or.
+     &      SCENEPURP(ISCENE)(1:7).eq.'Day_lux'.or.
+     &      SCENEPURP(ISCENE)(1:5).eq.'Illum') then
           call ERPFREE(ITA1,ISTAT)
           write(tfile,'(a,a)')runpath(1:lnrp),
      &                        LDFGRID(1:lnblnk(LDFGRID))
@@ -895,7 +904,7 @@ C Scene parameter options.
 
 C Based on purpose calculate DF or sensor illum or daylight coeffs or render.
 
-C Generate image/ visualisation data/ daylight factors.
+C Generate image/ visualisation data/ daylight factors, illuminance.
 C Check and see if there is an existing octree file.  Probably best
 C to remove it before proceeding.
         CALL ERPFREE(ITA2,ISTAT)
@@ -942,6 +951,11 @@ C Extra calculations for glare.
 
 C Daylight factors - calculate and display.
           call getdf
+        elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_lux'.or.
+     &          SCENEPURP(ISCENE)(1:5).eq.'Illum') then
+
+C Illuminance at grid points - calculate and display.
+          call getlux
         endif
 
       elseif(INO.eq.17)then
@@ -951,10 +965,12 @@ C Based on purpose view DF or illuminance or daylight coef or image.
      &      SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
           call usrmsg('No results display for this option.','  ','W')
           goto 10
-        elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
+        elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_fact'.or.
+     &          SCENEPURP(ISCENE)(1:7).eq.'Day_lux'.or.
+     &          SCENEPURP(ISCENE)(1:5).eq.'Illum') then
         
-C Check for daylight factor results. Note: the results could have been
-C shifted to a *.df- file so check that as well.
+C Check for daylight factor or illuminance results. Note: the results
+C could have been shifted to a *.df- file so check that as well.
           ITA1 = IFIL+6
 C          lnrp=lnblnk(runpath)
           write(df,'(2a)')SCENERT(NSCENE)(1:lnblnk(SCENERT(NSCENE))),
@@ -982,16 +998,16 @@ C              write(6,*) 'found  ',ltmp
               continue
             else
               call edisp(iuout,
-     &          'Could not find the daylight factors file.')
+     &          'Could not find daylight factors or illuminance file.')
               call edisp(iuout,ltmp)
               goto 10
             endif
           endif
 
-C Read the DF data and calculate averages.  
+C Read the DF or illuminance data and calculate averages.  
           NDFP=0
           AVEDF=0.
-          DFMIN=10000.
+          DFMIN=100000.
           if(ISTAT.eq.0)then
   43        CALL STRIPC(ITA1,OUTSTR,0,ND,0,'DF results',IFER)
             if (IFER.eq.0) then
@@ -1011,12 +1027,24 @@ C Read the DF data and calculate averages.
             endif
             call ERPFREE(ITA1,ISTAT)
             AVEDF=AVEDF/real(NDFP)
-            write(outs,'(a,f5.2,a)')'Average daylight factor ',AVEDF,'%'
+            if (SCENEPURP(ISCENE)(1:8).eq.'Day_fact')then
+              write(outs,'(a,f5.2,a)')'Average daylight factor ',
+     &          AVEDF,'%'
+            elseif( SCENEPURP(ISCENE)(1:7).eq.'Day_lux'.or.
+     &              SCENEPURP(ISCENE)(1:5).eq.'Illum')then
+              write(outs,'(a,f5.2,a)')'Average illuminance ',
+     &          AVEDF,'%'
+            endif
             call edisp (iuout,outs)
             write(outs,'(a,f5.2)')'Uniformity ratio (min/ave) ',
      &                                  DFMIN/AVEDF
             call edisp (iuout,outs)
-            call DFGRIDLBL('d')
+            if (SCENEPURP(ISCENE)(1:8).eq.'Day_fact')then
+              call DFGRIDLBL('d')
+            elseif( SCENEPURP(ISCENE)(1:7).eq.'Day_lux'.or.
+     &              SCENEPURP(ISCENE)(1:5).eq.'Illum')then
+              call DFGRIDLBL('l')
+            endif
           endif
           goto 10
         endif

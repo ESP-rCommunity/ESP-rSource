@@ -244,6 +244,10 @@ C Find the longest string in this scene.
         if (SCENEPURP(I)(1:8).eq.'Day_fact') then
           OUTS=LDFGRID
           write(IRCFG,'(a,a,a)')'*rgd ',OUTS(1:IML),' # DF grid data'
+        elseif (SCENEPURP(I)(1:7).eq.'Day_lux'.or.
+     &          SCENEPURP(I)(1:5).eq.'Illum') then
+          OUTS=LDFGRID
+          write(IRCFG,'(a,a,a)')'*rgd ',OUTS(1:IML),' # lux grid data'
         elseif (SCENEPURP(I)(1:8).eq.'Coupling') then
           OUTS=LDFGRID
           write(IRCFG,'(a,a,a)')'*slc ',OUTS(1:IML),
@@ -542,8 +546,14 @@ C Ask for purpose of scene if new scene.
         elseif (aim(1:8).eq.'Day_coef') then
           IRP=6
           call zindex(zone,izone)
-        elseif (aim(1:7).eq.'Sun_pos') then
+        elseif (aim(1:7).eq.'Day_lux') then
           IRP=7
+          call zindex(zone,izone)
+        elseif (aim(1:5).eq.'Illum') then
+          IRP=8
+          call zindex(zone,izone)
+        elseif (aim(1:7).eq.'Sun_pos') then
+          IRP=9
           izone=-1
         endif
       elseif (MODE.eq.'a') then
@@ -553,8 +563,9 @@ C Ask for purpose of scene if new scene.
         idno=1
         call MENUATOL('Select a default scene.',' Default scene',
      &    'a External images','b Internal images','c Glare sources',
-     &    'd Daylight factors',' ',' ',
-     &    ' ',' ',' ',' ',' ',' ',ino,idno,nbhelp)
+     &    'd Daylight factors','e not applicable','f not applicable',
+     &    'g Daylight lux @points','h Illuminance @points',' ',' ',
+     &    ' ',' ',ino,idno,nbhelp)
         IRP=INO
       else
         helptopic='purpose_of_rif_scene'
@@ -564,7 +575,8 @@ C Ask for purpose of scene if new scene.
         call MENUATOL('Select a scene purpose.',' Scene purpose',
      &    'a External images','b Internal images','c Glare sources',
      &    'd Daylight factors','e Coupling','f Daylight coefficients',
-     &    ' ',' ',' ',' ',' ',' ',ino,idno,nbhelp)
+     &    'g Daylight lux @points','h Illuminance @points',' ',' ',
+     &    ' ',' ',ino,idno,nbhelp)
         IRP=INO
       endif
 
@@ -591,7 +603,8 @@ C Reset the number of chosen zones (nzg) to NCOMP.
  3    continue
 
 C Now ask for zone for internal and glare purposes.
-      if (IRP.eq.2.or.IRP.eq.3.or.IRP.eq.5.or.IRP.eq.6) then
+      if (IRP.eq.2.or.IRP.eq.3.or.IRP.eq.5.or.IRP.eq.6.or.
+     &    IRP.eq.7.or.IRP.eq.8) then
         if (IZONE.le.0) then
           helptopic='pick_zone_for_int_view'
           call gethelptext(helpinsub,helptopic,nbhelp)
@@ -604,6 +617,7 @@ C Now ask for zone for internal and glare purposes.
           ifocz=IZONE
         endif
       endif
+      
 C Set assumptions for each scene purpose and gather any additional 
 C information.
       if (IRP.eq.1) then 
@@ -685,6 +699,32 @@ C Daylight coefficient calculation selected. (thermal/lighting simulation)
         coconv = '  '
       elseif (IRP.eq.7) then 
 
+C Daylight lux (illuminance at grid points with CIE sky) calculation selected.
+        SCENEPURP(ISCENE)='Day_lux'
+        intext = 1
+        imgqua = 'Medium'
+        detlvl = 'Medium'
+        llvar  = 'High'
+        indrcb = 2
+        ipicx  = 258
+        penumb = 'True'
+        crenrp = '-av 0 0 0 -ab 1'
+        coconv = '  '
+      elseif (IRP.eq.8) then 
+
+C Illuminance at grid points with std sky calculation selected.
+        SCENEPURP(ISCENE)='Illum'
+        intext = 1
+        imgqua = 'Hedium'
+        detlvl = 'Medium'
+        llvar  = 'High'
+        indrcb = 2
+        ipicx  = 258
+        penumb = 'True'
+        crenrp = '-av 0 0 0 -ab 1'
+        coconv = '  '
+      elseif (IRP.eq.9) then 
+
 C Sun positions.
         SCENEPURP(ISCENE)='Sun_pos'
         intext = 0
@@ -700,7 +740,8 @@ C Sun positions.
       endif
 
 C Set default names based on above.
-      if (IRP.eq.2.or.IRP.eq.3.or.IRP.eq.5.or.IRP.eq.6) then
+      if (IRP.eq.2.or.IRP.eq.3.or.IRP.eq.5.or.IRP.eq.6.or.
+     &    IRP.eq.7.or.IRP.eq.8) then
         write (outs,'(3a)') zname(ifocz)(1:lnzname(ifocz)),
      &     '_',SCENEPURP(ISCENE)(1:6)
         write (SCENEDESC(ISCENE),'(5a)') 'Scene of ',
@@ -721,10 +762,11 @@ C Set default names based on above.
      &            SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'_a.rif'
 
 C Additional details for specific purposes.
-      if (IRP.eq.4) then
+      if (IRP.eq.4.or.IRP.eq.7.or.IRP.eq.8) then
 
-C Set up daylight factor calc points.
+C Set up daylight factor or illuminance calc points.
         call setdfgrid(MODE,izone,ier)
+
       elseif (IRP.eq.5.or.IRP.eq.6) then 
 
 C Get sensor information from cgc file.
@@ -831,7 +873,8 @@ C Create new scene file.
       END
 
 C ********************** setdfgrid **********************
-C setdfgrid allows the creation of the daylight factor grid points.
+C setdfgrid allows the creation of the daylight factor grid points or
+C illuminance grid points.
 C if MODE is not - then sensor points file name confirmation required.
       subroutine setdfgrid(MODE,izone,ier)
 #include "building.h"
@@ -881,7 +924,7 @@ C Ask for zone (if not defined), surface and working plane height.
         call gethelptext(helpinsub,helptopic,nbhelp)
  32     INPIC=1
         CALL EPICKS(INPIC,IVALS,
-     &    'Generate daylight factors for which zone. ',
+     &    'Generate DF or illuminance for which zone. ',
      &    '(You will then be asked to grid a surface.) ',
      &    12,NCOMP,zname,'Select zone',IER,nbhelp)
         if (INPIC.eq.0) goto 32
@@ -984,7 +1027,7 @@ C Get file name for grid points.
       write (LDFGRID,'(a,a4)') 
      &  SCENERT(NSCENE)(1:lnblnk(SCENERT(NSCENE))),'.grd'
       if (MODE.eq.'-') then
- 55     CALL EASKS(LDFGRID,'Daylight factor grid points file name?',
+ 55     CALL EASKS(LDFGRID,'DF or illuminance grid points file name?',
      &    ' ',72,'points.grd','df points file name',IER,nbhelp)
         IF(LDFGRID.EQ.' ') GOTO 55
       endif
@@ -1008,10 +1051,8 @@ C Write points and sensor direction (plane normal).
 C Display grid on the zone... (if in graphic mode)
       if (MMOD.EQ.8) then
         call edisp(iuout,'  ')
-        write (outs,'(a,a)') 'The proposed daylight factor calculation',
-     &                  ' points are shown as'
-        call edisp(iuout,outs)
-        call edisp(iuout,'dots in the graphic feedback.')
+        call edisp(iuout,'The proposed calculation points are shown')
+        call edisp(iuout,'as dots in the graphic feedback.')
         MODIFY=.TRUE.
         ITZNM=1
         ITSNM=1
@@ -1035,7 +1076,7 @@ C Reset display options.
 
 C ********************** DFGRIDLBL **********************
 C DFGRIDLBL writes out an index of daylight grid point (act = g|G) or
-C the daylight factor (act = d|D).
+C the daylight factor (act = d|D) or lux (act = l|L).
       SUBROUTINE DFGRIDLBL(act)
 #include "building.h"
 #include "prj3dv.h"
@@ -1056,7 +1097,7 @@ C      COMMON/OUTIN/IUOUT,IUIN
 
       DIMENSION  COG1(3),COG2(3),COG3(3)
 
-      CHARACTER VT*5,act*1
+      CHARACTER VT*6,act*1
       character OUTSTR*124,tfile*72
 
 #ifdef OSI
@@ -1143,11 +1184,17 @@ C Loop through grid points.
           ELSEIF(I.gt.99)THEN
             WRITE(VT,'(i3)') I
           ENDIF
-        else
+        elseif(act.eq.'d'.or.act.eq.'D')then
           IF(DFVALS(I).lt.10.0)THEN
             WRITE(VT,'(f4.2)') DFVALS(I)
           ELSEIF(DFVALS(I).ge.10.0)THEN
             WRITE(VT,'(f4.1)') DFVALS(I)
+          ENDIF
+        elseif(act.eq.'l'.or.act.eq.'L')then
+          IF(DFVALS(I).lt.1000.0)THEN
+            WRITE(VT,'(f5.0)') DFVALS(I)
+          ELSEIF(DFVALS(I).ge.1000.0)THEN
+            WRITE(VT,'(f6.0)') DFVALS(I)
           ENDIF
         endif
         iid1=iix+1; iid2=iiy-1;
