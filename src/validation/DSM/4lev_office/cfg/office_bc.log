@@ -1,0 +1,60 @@
+Project notes for office_4l_bc.cfg
+Description: 
+In folder: validation/DSM/4lev_office
+By: Jon Hand
+Date: Tue Nov 02 12:00:00 2012
+For: Testing ideas for small offices
+Project reference: 
+Notes: 
+_____________________________
+
+A four level shallow plan office building which includes core
+zones at each level, the ground and 1st level are low resolution,
+the 2nd level is subdivided by orientation and the upper level
+is again, lower resolution. Ceiling voids are treated explicitly
+as is the roof space.
+
+There are two zones representing mixing boxes but they are
+place holders for variants which use flow networks to represent
+a slightly temperated fresh air supply.
+
+There are several scripts included in the model cfg folder. These
+were created in an earlier project and are not yet operational. They
+are intended to support parametric assessments which shift the model
+to different cities.  Here are the earlier notes on the scripts:
+
+::manage_shd.csh does several tasks including creating
+QA reports for each model variant, forcing a recalculation
+of shading files for each city (used if moving between
+computers). This was tested in Nov 2006 for creating
+QA reports and re-calculating shading.
+
+::mod_cp.csh is used when initially setting up a model when
+the initial case model is correct and ready to be replicated
+to different cities. The script is intended to update the
+site information, the shading files, the titles in the
+model and the integrated performance view text. It relies
+mostly on the facilities in 'make-me-a-variant'. Note that
+mod_cp.csh needs to be edited to match the name of the
+initial model file and, because it gets copied from place
+to place and there are slight changes in the ESP-r interface
+the one in this folder has not been checked.
+
+::run_assessments.csh is a script to perform a sequence of
+weekly or seasonal assessments for one or more of the
+cities. In the weekly mode it uses information in the 
+integrated performance view to run 5 assessments and scale 
+the information to an annual values.  In seasonal mode
+(assuming there are variants of the model configuration files
+which are setup with simulation parameters which include
+every day of the season) it runs 5 assessments with a scaling
+factor of one. This is useful for models which are large or
+need short timesteps and would otherwise produce huge
+results files which are slow to scan.  This script has
+a foreach in it that includes the names of the cities
+to be run and this needs to be edited to suit the current
+needs.  I tend to run one or two cities and check the
+results. Note the current file is setup to remove all the
+results files (except for winter run) and only keep a *.stats 
+file and an IPV report.  Tested this for chicago on 7 November 2006.
+
