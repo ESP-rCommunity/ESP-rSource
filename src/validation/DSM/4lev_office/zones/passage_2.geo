@@ -1,6 +1,6 @@
 *Geometry 1.1,GEN,passage_2 # tag version, format, zone name
-*date Mon Apr  2 09:25:23 2012  # latest file modification 
-passage_2 is the passages of level 2
+*date Mon Apr  2 12:47:18 2012  # latest file modification 
+passage_2 is the passages of level 2 wraps around core
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,34.00000,14.00000,8.05000  #   1
 *vertex,25.00000,14.00000,8.05000  #   2
@@ -54,19 +54,19 @@ passage_2 is the passages of level 2
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,north_2,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,09,03  #   1 ||< north_2:core_three
+*surf,north_2,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,09,03  #   1 ||< north_2:core_two
 *surf,top,CEIL,-,-,-,ceiling_dr,OPAQUE,ANOTHER,18,20  #   2 ||< top_epag:ceiling_3
 *surf,bottom,FLOR,-,-,-,inter_flr,OPAQUE,ANOTHER,17,21  #   3 ||< bottom_ep2:ceiling_2
-*surf,ptn_core_a,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,09,01  #   4 ||< ptn_core_a:core_three
-*surf,ptn_cor_b,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,09,02  #   5 ||< ptn_cor_b:core_three
+*surf,ptn_core_a,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,09,01  #   4 ||< ptn_core_a:core_two
+*surf,ptn_cor_b,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,09,02  #   5 ||< ptn_cor_b:core_two
 *surf,corid_a,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,12,17  #   6 ||< corid_ae:office_2_sth
 *surf,corid_c,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,11,13  #   7 ||< corid_ce:office_2_nor
 *surf,corid_b,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,13,09  #   8 ||< corid_b:office_e2e
 *surf,corid_aw,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,12,05  #   9 ||< corid_a:office_2_sth
-*surf,north_2w,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,09,06  #  10 ||< ptn_f:core_three
-*surf,ptn_cor_bw,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,09,05  #  11 ||< ptn_e:core_three
+*surf,north_2w,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,09,06  #  10 ||< ptn_f:core_two
+*surf,ptn_cor_bw,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,09,05  #  11 ||< ptn_e:core_two
 *surf,corid_cw,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,11,06  #  12 ||< corid_c:office_2_nor
-*surf,ptn_core_aw,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,09,04  #  13 ||< ptn_d:core_three
+*surf,ptn_core_aw,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,09,04  #  13 ||< ptn_d:core_two
 *surf,west_p_cor,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,14,09  #  14 ||< corid_b:office_w2w
 *surf,top_w,CEIL,-,-,-,ceiling_dr,OPAQUE,ANOTHER,18,21  #  15 ||< top_wpag:ceiling_3
 *surf,bottom_w,FLOR,-,-,-,inter_flr,OPAQUE,ANOTHER,17,20  #  16 ||< bottom_wp2:ceiling_2

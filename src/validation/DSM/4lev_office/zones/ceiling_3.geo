@@ -1,6 +1,6 @@
-*Geometry 1.1,GEN,ceiling_3 # tag version, format, zone name
-*date Mon Apr  2 09:26:37 2012  # latest file modification 
-ceiling_3 is the ceiling of the 3rd level
+*Geometry 1.1,GEN,ceiling_2 # tag version, format, zone name
+*date Mon Apr  2 13:00:06 2012  # latest file modification 
+ceiling_2 is the ceiling of the 2nd level
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,25.00000,8.00000,10.85000  #   1
 *vertex,40.00000,8.00000,10.85000  #   2
@@ -79,18 +79,18 @@ ceiling_3 is the ceiling of the 3rd level
 *surf,south_w,VERT,-,-,-,ext_wall,OPAQUE,EXTERIOR,0,0  #   5 ||< external
 *surf,west,VERT,-,-,-,ext_wall,OPAQUE,EXTERIOR,0,0  #   6 ||< external
 *surf,north_w,VERT,-,-,-,ext_wall,OPAQUE,EXTERIOR,0,0  #   7 ||< external
-*surf,east_c1,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,09,10  #   8 ||< east_c1:core_three
+*surf,east_c1,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,09,10  #   8 ||< east_c2:core_two
 *surf,top_w,CEIL,-,-,-,inter_flrev,OPAQUE,ANOTHER,06,07  #   9 ||< bottom:office_w_3
-*surf,core_c1_b,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,09,08  #  10 ||< core_c1_b:core_three
-*surf,north_c1p,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,09,11  #  11 ||< north_c1:core_three
-*surf,north_c2p,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,09,12  #  12 ||< north_c2:core_three
-*surf,core_c1w_ap,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,09,09  #  13 ||< core_c1w_a:core_three
-*surf,core_c1_ap,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,09,07  #  14 ||< core_c1_a:core_three
-*surf,top_w2w,FLOR,-,-,-,ceiling_dr,OPAQUE,ANOTHER,14,02  #  15 ||< top:office_w2w
-*surf,top_e2e,FLOR,-,-,-,ceiling_dr,OPAQUE,ANOTHER,13,02  #  16 ||< top:office_e2e
-*surf,top_se,FLOR,-,-,-,ceiling_dr,OPAQUE,ANOTHER,12,19  #  17 ||< top_e:office_2_sth
-*surf,top_sw,FLOR,-,-,-,ceiling_dr,OPAQUE,ANOTHER,12,01  #  18 ||< top:office_2_sth
-*surf,top_north,FLOR,-,-,-,ceiling_dr,OPAQUE,ANOTHER,11,02  #  19 ||< top:office_2_nor
+*surf,core_c2_b,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,09,08  #  10 ||< core_c2_b:core_two
+*surf,north_c2psw,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,09,11  #  11 ||< north_c2wc:core_two
+*surf,north_c2pse,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,09,12  #  12 ||< north_c2_c:core_two
+*surf,core_c2w_ap,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,09,09  #  13 ||< core_c2w_a:core_two
+*surf,core_c2_ap,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,09,07  #  14 ||< core_c2_a:core_two
+*surf,over_w2w,FLOR,-,-,-,ceiling_dr,OPAQUE,ANOTHER,14,02  #  15 ||< top:office_w2w
+*surf,over_e2e,FLOR,-,-,-,ceiling_dr,OPAQUE,ANOTHER,13,02  #  16 ||< top:office_e2e
+*surf,over_se,FLOR,-,-,-,ceiling_dr,OPAQUE,ANOTHER,12,19  #  17 ||< top_e:office_2_sth
+*surf,over_sw,FLOR,-,-,-,ceiling_dr,OPAQUE,ANOTHER,12,01  #  18 ||< top:office_2_sth
+*surf,over_north,FLOR,-,-,-,ceiling_dr,OPAQUE,ANOTHER,11,02  #  19 ||< top:office_2_nor
 *surf,top_epag,FLOR,-,-,-,ceiling_dr,OPAQUE,ANOTHER,15,02  #  20 ||< top:passage_2
 *surf,top_wpag,FLOR,-,-,-,ceiling_dr,OPAQUE,ANOTHER,15,15  #  21 ||< top_w:passage_2
 # 
@@ -101,4 +101,4 @@ ceiling_3 is the ceiling of the 3rd level
 # 
 *insol_calc,none  # no insolation requested
 # 
-*base_list,6,15,16,17,18,19,20,   406.00 0  # zone base list
+*base_list,6,15,16,17,18,19,20,   432.00 0  # zone base list

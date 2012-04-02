@@ -1,6 +1,6 @@
 *Geometry 1.1,GEN,roof # tag version, format, zone name
-*date Mon Apr  2 09:26:54 2012  # latest file modification 
-roof describes a...roof
+*date Mon Apr  2 13:01:06 2012  # latest file modification 
+roof describes a low slope roof space
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,10.00000,8.00000,14.70000  #   1
 *vertex,40.00000,8.00000,14.70000  #   2

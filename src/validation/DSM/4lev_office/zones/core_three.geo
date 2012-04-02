@@ -1,6 +1,6 @@
-*Geometry 1.1,GEN,core_three # tag version, format, zone name
-*date Mon Apr  2 09:23:04 2012  # latest file modification 
-core_three is core zone of 3rd level of office building
+*Geometry 1.1,GEN,core_two # tag version, format, zone name
+*date Mon Apr  2 12:39:57 2012  # latest file modification 
+core_two is core zone of 2nd level of office building
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,25.00000,20.00000,8.05000  #   1
 *vertex,25.00000,20.00000,10.85000  #   2
@@ -60,15 +60,15 @@ core_three is core zone of 3rd level of office building
 *surf,ptn_d,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,15,13  #   4 ||< ptn_core_aw:passage_2
 *surf,ptn_e,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,15,11  #   5 ||< ptn_cor_bw:passage_2
 *surf,ptn_f,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,15,10  #   6 ||< north_2w:passage_2
-*surf,core_c1_a,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,18,14  #   7 ||< core_c1_ap:ceiling_3
-*surf,core_c1_b,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,18,10  #   8 ||< core_c1_b:ceiling_3
-*surf,core_c1w_a,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,18,13  #   9 ||< core_c1w_ap:ceiling_3
-*surf,east_c1,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,18,08  #  10 ||< east_c1:ceiling_3
-*surf,north_c1,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,18,11  #  11 ||< north_c1p:ceiling_3
-*surf,north_c2,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,18,12  #  12 ||< north_c2p:ceiling_3
+*surf,core_c2_a,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,18,14  #   7 ||< core_c1_ap:ceiling_3
+*surf,core_c2_b,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,18,10  #   8 ||< core_c1_b:ceiling_3
+*surf,core_c2w_a,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,18,13  #   9 ||< core_c1w_ap:ceiling_3
+*surf,east_c2,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,18,08  #  10 ||< east_c1:ceiling_3
+*surf,north_c2wc,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,18,11  #  11 ||< north_c1p:ceiling_3
+*surf,north_c2_c,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,18,12  #  12 ||< north_c2p:ceiling_3
 *surf,base_e,FLOR,-,-,-,inter_flr,OPAQUE,ANOTHER,17,23  #  13 ||< core3_be:ceiling_2
 *surf,top,CEIL,-,-,-,inter_flrev,OPAQUE,ANOTHER,06,16  #  14 ||< top_core3w:office_w_3
-*surf,base_cor2,FLOR,-,-,-,inter_flrev,OPAQUE,ANOTHER,08,14  #  15 ||< top:core_two
+*surf,base_cor2,FLOR,-,-,-,inter_flrev,OPAQUE,ANOTHER,08,14  #  15 ||< top:core_one
 *surf,base_w,FLOR,-,-,-,inter_flr,OPAQUE,ANOTHER,17,22  #  16 ||< base_w:ceiling_2
 *surf,base_core_t,CEIL,-,-,-,inter_flr,OPAQUE,ANOTHER,10,08  #  17 ||< base:core_top
 *surf,top_e,CEIL,-,-,-,inter_flrev,OPAQUE,ANOTHER,05,16  #  18 ||< top_e:office_e_3

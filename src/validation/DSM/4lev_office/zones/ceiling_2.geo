@@ -1,6 +1,6 @@
-*Geometry 1.1,GEN,ceiling_2 # tag version, format, zone name
-*date Mon Apr  2 09:26:11 2012  # latest file modification 
-ceiling_2 describes the ceiling over level 2
+*Geometry 1.1,GEN,ceiling_1 # tag version, format, zone name
+*date Mon Apr  2 12:56:46 2012  # latest file modification 
+ceiling_1 describes the ceiling over level 1
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,25.00000,8.00000,7.00000  #   1
 *vertex,40.00000,8.00000,7.00000  #   2
@@ -78,26 +78,26 @@ ceiling_2 describes the ceiling over level 2
 *surf,south_e,VERT,-,-,-,ext_wall,OPAQUE,EXTERIOR,0,0  #   1 ||< external
 *surf,east,VERT,-,-,-,ext_wall,OPAQUE,EXTERIOR,0,0  #   2 ||< external
 *surf,north_e,VERT,-,-,-,ext_wall,OPAQUE,EXTERIOR,0,0  #   3 ||< external
-*surf,north_c2,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,08,12  #   4 ||< north_c2:core_two
-*surf,bottom_e,FLOR,-,-,-,ceiling_dr,OPAQUE,ANOTHER,03,06  #   5 ||< top:office_e_1
+*surf,north_c1_c,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,08,12  #   4 ||< north_c1_c:core_one
+*surf,ovr_off_e,FLOR,-,-,-,ceiling_dr,OPAQUE,ANOTHER,03,06  #   5 ||< top:office_e_1
 *surf,south_w,VERT,-,-,-,ext_wall,OPAQUE,EXTERIOR,0,0  #   6 ||< external
 *surf,west,VERT,-,-,-,ext_wall,OPAQUE,EXTERIOR,0,0  #   7 ||< external
 *surf,north_w,VERT,-,-,-,ext_wall,OPAQUE,EXTERIOR,0,0  #   8 ||< external
-*surf,east_c1,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,08,10  #   9 ||< east_c1:core_two
-*surf,north_c1,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,08,11  #  10 ||< north_c1:core_two
-*surf,bottom_w,FLOR,-,-,-,ceiling_dr,OPAQUE,ANOTHER,04,06  #  11 ||< top:office_w_1
-*surf,core_c1_a,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,08,07  #  12 ||< core_c1_a:core_two
-*surf,core_c1_b,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,08,08  #  13 ||< core_c1_b:core_two
-*surf,core_c1w_a,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,08,09  #  14 ||< core_c1w_a:core_two
-*surf,bottom_wo,CEIL,-,-,-,inter_flrev,OPAQUE,ANOTHER,14,03  #  15 ||< bottom:office_w2w
-*surf,bottom_eo,CEIL,-,-,-,inter_flr,OPAQUE,ANOTHER,13,03  #  16 ||< bottom:office_e2e
-*surf,bottom_s,CEIL,-,-,-,inter_flrev,OPAQUE,ANOTHER,12,02  #  17 ||< bottom:office_2_sth
-*surf,base_east,CEIL,-,-,-,inter_flrev,OPAQUE,ANOTHER,12,20  #  18 ||< base_east:office_2_sth
-*surf,bottom_n,CEIL,-,-,-,inter_flrev,OPAQUE,ANOTHER,11,03  #  19 ||< bottom:office_2_nor
+*surf,east_c1,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,08,10  #   9 ||< east_c1:core_one
+*surf,north_c1,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,08,11  #  10 ||< north_c1:core_one
+*surf,ovr_off_w,FLOR,-,-,-,ceiling_dr,OPAQUE,ANOTHER,04,06  #  11 ||< top:office_w_1
+*surf,core_c1_a,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,08,07  #  12 ||< core_c1_a:core_one
+*surf,core_c1_b,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,08,08  #  13 ||< core_c1_b:core_one
+*surf,core_c1w_a,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,08,09  #  14 ||< core_c1w_a:core_one
+*surf,under_off_w,CEIL,-,-,-,inter_flrev,OPAQUE,ANOTHER,14,03  #  15 ||< bottom:office_w2w
+*surf,under_off_e,CEIL,-,-,-,inter_flr,OPAQUE,ANOTHER,13,03  #  16 ||< bottom:office_e2e
+*surf,under_off_sw,CEIL,-,-,-,inter_flrev,OPAQUE,ANOTHER,12,02  #  17 ||< bottom:office_2_sth
+*surf,under_off_se,CEIL,-,-,-,inter_flrev,OPAQUE,ANOTHER,12,20  #  18 ||< base_east:office_2_sth
+*surf,under_north,CEIL,-,-,-,inter_flrev,OPAQUE,ANOTHER,11,03  #  19 ||< bottom:office_2_nor
 *surf,bottom_wp2,CEIL,-,-,-,inter_flrev,OPAQUE,ANOTHER,15,16  #  20 ||< bottom_w:passage_2
 *surf,bottom_ep2,CEIL,-,-,-,inter_flrev,OPAQUE,ANOTHER,15,03  #  21 ||< bottom:passage_2
-*surf,base_w,CEIL,-,-,-,inter_flrev,OPAQUE,ANOTHER,09,16  #  22 ||< base_w:core_three
-*surf,core3_be,CEIL,-,-,-,inter_flrev,OPAQUE,ANOTHER,09,13  #  23 ||< base_e:core_three
+*surf,base_w,CEIL,bottom_wp2,-,-,inter_flrev,OPAQUE,ANOTHER,09,16  #  22 ||< base_w:core_two
+*surf,core3_be,CEIL,bottom_ep2,-,-,inter_flrev,OPAQUE,ANOTHER,09,13  #  23 ||< base_e:core_two
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

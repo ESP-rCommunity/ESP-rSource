@@ -1,6 +1,6 @@
-*Geometry 1.1,GEN,ceiling_1 # tag version, format, zone name
-*date Mon Apr  2 09:25:44 2012  # latest file modification 
-ceiling_1 ceiling over the ground level
+*Geometry 1.1,GEN,ceiling_g # tag version, format, zone name
+*date Mon Apr  2 12:51:10 2012  # latest file modification 
+ceiling_g ceiling over the ground level
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,25.00000,8.00000,3.15000  #   1
 *vertex,40.00000,8.00000,3.15000  #   2
@@ -62,7 +62,7 @@ ceiling_1 ceiling over the ground level
 *surf,south_e,VERT,-,-,-,ext_wall,OPAQUE,EXTERIOR,0,0  #   1 ||< external
 *surf,east,VERT,-,-,-,ext_wall,OPAQUE,EXTERIOR,0,0  #   2 ||< external
 *surf,north_e,VERT,-,-,-,ext_wall,OPAQUE,EXTERIOR,0,0  #   3 ||< external
-*surf,north_c2,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,07,11  #   4 ||< north_c2:entry_core
+*surf,north_c1_f,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,07,11  #   4 ||< north_c2:entry_core
 *surf,top_e,CEIL,-,-,-,inter_flrev,OPAQUE,ANOTHER,03,07  #   5 ||< bottom:office_e_1
 *surf,south_w,VERT,-,-,-,ext_wall,OPAQUE,EXTERIOR,0,0  #   6 ||< external
 *surf,west,VERT,-,-,-,ext_wall,OPAQUE,EXTERIOR,0,0  #   7 ||< external
@@ -73,8 +73,8 @@ ceiling_1 ceiling over the ground level
 *surf,core_c1_a,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,07,05  #  12 ||< core_c1_a:entry_core
 *surf,core_c1_b,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,07,06  #  13 ||< core_c1_b:entry_core
 *surf,core_c1w_a,VERT,-,-,-,partn_ltw,OPAQUE,ANOTHER,07,07  #  14 ||< core_c1w_a:entry_core
-*surf,top,FLOR,-,-,-,ceiling_dr,OPAQUE,ANOTHER,01,06  #  15 ||< top:office_e_0
-*surf,bottom_w,FLOR,-,-,-,ceiling_dr,OPAQUE,ANOTHER,02,06  #  16 ||< top:office_w_0
+*surf,ovr_off_g_e,FLOR,-,-,-,ceiling_dr,OPAQUE,ANOTHER,01,06  #  15 ||< top:office_e_0
+*surf,ovr_off_w_g,FLOR,-,-,-,ceiling_dr,OPAQUE,ANOTHER,02,06  #  16 ||< top:office_w_0
 *surf,over_entr,FLOR,-,-,-,ceiling_dr,OPAQUE,ANOTHER,07,08  #  17 ||< over_entr:entry_core
 # 
 *insol,3,0,0,0  # default insolation distribution
