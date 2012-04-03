@@ -622,7 +622,7 @@ C Set assumptions for each scene purpose and gather any additional
 C information.
       if (IRP.eq.1) then 
         SCENEPURP(ISCENE)='External'
-        intext = 0
+        intext = 0   ! external view
         imgqua = 'Medium'
         detlvl = 'Medium'
         llvar  = 'High'
@@ -636,7 +636,7 @@ C information.
 
 C Internal image selected.
         SCENEPURP(ISCENE)='Internal'
-        intext = 1
+        intext = 1  ! internal view
         imgqua = 'Medium'
         detlvl = 'Medium'
         llvar  = 'High'
