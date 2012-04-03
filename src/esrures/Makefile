@@ -12,8 +12,10 @@ REPdir = $(SRCdir)/cetc/h3kreports
 .SUFFIXES: .o .F
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
+%.o : %.f90
+	$(MCC) $(FFLAGS) -c $<
 
-MODULE_OBJECTS = startup.o aim2_module.o
+MODULE_OBJECTS = h3kmodule.o startup.o aim2_module.o
 
 OBJECTS = res.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o bscoeff.o \
    bscoeff_extended.o c2fdum.o castyp.o cfdat.o cfgrid.o cfutil.o cgd.o \
@@ -29,7 +31,7 @@ OBJECTS = res.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o bscoeff.o \
 	  vgraph.o visgrd.o visual.o visvec.o
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod \
-	parse_command_line.mod
+	parse_command_line.mod h3kmodule.mod
 
 $(PROG): $(MODULE_OBJECTS) $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS)
@@ -175,6 +177,10 @@ visual.F:
 visvec.F:
 	rm -f visvec.F
 	ln -s $(DFSdir)/visvec.F .
+h3kmodule.f90:
+	rm -f h3kmodule.f90
+	ln -s $(CETCdir)/h3kmodule.f90 .
+
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -191,4 +197,4 @@ clean:
 	egeometry.F emfnetw.F enetmisc.F enetrewr.F eroper.F esru_misc.F \
 	esystem.F filelist.F fanger.F initalc.F item.F mfcdat.F mfutil.F nwkrewr.F pltcfg.F \
 	psychro.F readTrnsys.F rwipv.F rwsbem.F sort.F spmatl.F spmisc.F startup.F tdfile.F \
-	visgrd.F visual.F visvec.F
+	visgrd.F visual.F visvec.F h3kmodule.f90

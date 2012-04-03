@@ -11,7 +11,11 @@ PROG = dbm$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-MODULE_OBJECTS = aim2_module.o
+%.o : %.f90
+	$(MCC) $(FFLAGS) -c $<
+
+
+MODULE_OBJECTS = h3kmodule.o aim2_module.o
 
 OBJECTS = jdbm.o basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
 	bcffile.o c2fdum.o ctlexp.o ctread.o dbmedit.o dossupport.o edprof.o \
@@ -21,7 +25,8 @@ OBJECTS = jdbm.o basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
 	prsitem.o sort.o startupg.o tdfile.o readTrnsys.o
 
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod \
+          h3kmodule.mod
 
 $(PROG) : $(MODULE_OBJECTS) $(OBJECTS)
 	$(MFC) $(FFLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS)
@@ -95,6 +100,9 @@ tdfile.F:
 readTrnsys.F:
 	rm -f readTrnsys.F
 	ln -s $(COMdir)/readTrnsys.F .
+h3kmodule.f90:
+	rm -f h3kmodule.f90
+	ln -s $(CETCdir)/h3kmodule.f90 .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -107,4 +115,4 @@ clean :
 	aim2_module.F basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
 	c2fdum.F ctlexp.F ctread.F dossupport.F edatabase.F \
 	egeometry.F emfnetw.F emkcfgg.F eroper.F esru_misc.F filelist.F item.F mfcdat.F nwkrewr.F \
-	pltcfg.F sort.F tdfile.F readTrnsys.F
+	pltcfg.F sort.F tdfile.F readTrnsys.F h3kmodule.f90
