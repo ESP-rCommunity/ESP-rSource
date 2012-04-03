@@ -663,7 +663,7 @@ C Glare image selected.
 C Daylight factor calculation selected.
         SCENEPURP(ISCENE)='Day_fact'
         intext = 1
-        imgqua = 'High'
+        imgqua = 'Medium'
         detlvl = 'Medium'
         llvar  = 'High'
         indrcb = 2
@@ -902,6 +902,7 @@ C if MODE is not - then sensor points file name confirmation required.
       character DESCRC*25
       character outs*124,tfile*72
       character ITEM(MV)*15, t12*12, MODE*1
+      logical dok,keep
 
       dimension IVALS(MCOM), PEQN(4), ITEMV(MV)
 
@@ -1061,12 +1062,23 @@ C Display grid on the zone... (if in graphic mode)
         CALL DFGRIDLBL('g')
       endif
 
+C Ask user if focus should remain on this zone or whole model
+      dok=.false.
+      helptopic='df_stay_focused'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL ASKOK('Keep graphic feedback focused on this zone?',
+     &  '(see help)',KEEP,dok,nbhelp)
+      if(KEEP)then
+        continue
+      else
+
 C Reset the number of chosen zones (nzg) to NCOMP.
-      nzg=NCOMP
-      izgfoc=0
-      do 300 I=1,NCOMP
-        nznog(I)=I
- 300  continue
+        nzg=NCOMP
+        izgfoc=0
+        do 300 I=1,NCOMP
+          nznog(I)=I
+ 300    continue
+      endif
 
 C Reset display options.
       call RCDSOPT
