@@ -25,7 +25,7 @@ C rif file to be used and its intended purpose.
 C RADCFGIN:  reads the contents of the radiance configuration file.
 C RADCFGOUT: writes the contents of the radiance configuration file.
 C whichrif:  presents a list of existing rif files.
-C newscene:  asks default questions for new rif file or 
+C newscene:  asks default questions for new rif file.
 C ADDSCENE:  allows the creation of a default translation from ESP-r to radiance.
 C setdfgrid: allows the creation of the daylight factor grid points.
 C DFGRIDLBL: writes out an index of daylight grid point (act = g|G) or
@@ -157,6 +157,9 @@ C this scene represent alternate blind states.
           elseif (WORD(1:4).eq.'*rpu') then
             CALL EGETW(OUTSTR,K,SCENEPURP(I),'W','scene purp',IFLAG)
           elseif (WORD(1:4).eq.'*rgd') then
+
+C Note: there is only one grid or sensor data file name, no matter 
+C how many scenes there are. << todo change to an array >>.
             CALL EGETW(OUTSTR,K,LDFGRID,'W','grid data',IFLAG)
           elseif (WORD(1:4).eq.'*slc') then
             CALL EGETW(OUTSTR,K,LDFGRID,'W','sensor data',IFLAG)
@@ -272,7 +275,7 @@ C If MODE is 's' then create a static list, 'm' then allow modification.
 
       COMMON/FILEP/IFIL
 
-      character MODE*1, VERT*24, KEY*1
+      character MODE*1, VERT*30, KEY*1
 
       dimension VERT(35)
 
@@ -319,7 +322,7 @@ C current menu line index. Build up text strings for the menu.
           M=M+1
           CALL EMKEY(L,KEY,IER)
           WRITE(VERT(M),14)KEY,SCENE(L)
-   14     FORMAT(A1,1X,A12)
+   14     FORMAT(A1,1X,A)
         ENDIF
    10 CONTINUE
 
@@ -328,7 +331,7 @@ C Number of actual items displayed.
 
 C If a long list include page facility text and info on portion seen.      
       IF(IPFLG.EQ.0)THEN
-        VERT(M+1)=  '  ------------------'
+        VERT(M+1)=  '  ----------------------'
       ELSE
         WRITE(VERT(M+1),15)IPM,MPM 
    15   FORMAT ('0 page part: ',I1,' -- of:',I1)
@@ -338,12 +341,12 @@ C If MODE has been passed as a M then add an item at the end allowing
 C list to be modified otherwise blank choice.  If user is browsing
 C no need to show additional options.
       IF(MODE.EQ.'M'.OR.MODE.EQ.'m')THEN
-        VERT(M+2)='* add/delete/copy  '
-        VERT(M+3)  ='? help           '
-        VERT(M+4)  ='- exit this menu '
+        VERT(M+2)='* add/delete/copy scene '
+        VERT(M+3)  ='? help                '
+        VERT(M+4)  ='- exit this menu      '
       ELSE
-        VERT(M+2)  ='? help           '
-        VERT(M+3)  ='- exit this menu '
+        VERT(M+2)  ='? help                '
+        VERT(M+3)  ='- exit this menu      '
       ENDIF
 
 C Display the menu.
@@ -373,7 +376,7 @@ C be deleted or copied, respectively.
         CALL KEYIND(MVERT,IVERT,IFOC,IO)
         SELECT=.TRUE.
         ISCENE=IFOC
-        if(delzone)then
+        if(delzone)then   ! act on prior request to delete
           do 1110 I=IFOC,NSCENE
             if (I.eq.NSCENE) then
               SCENE(I)='UNDEFINED'
@@ -394,7 +397,7 @@ C be deleted or copied, respectively.
           NSCENE=NSCENE-1
           ISCENE=1
           modscene=.true.
-        elseif(cpyzone)then
+        elseif(cpyzone)then  ! act on previous request to copy scene
           NSCENE=NSCENE+1
           SCENE(NSCENE)=SCENE(IFOC)
           RIFNAME(NSCENE)=RIFNAME(IFOC)
@@ -405,9 +408,11 @@ C be deleted or copied, respectively.
           ISCENE=NSCENE
 
 C Check new scenes data by calling newscene.  As newscene adds one to NSCENE 
-C subtract one just now, no other data will be effected.
+C subtract one just now, no other data will be effected. It assumes that
+C the user will provide appropriate alternative names.
           NSCENE=NSCENE-1
-          call usrmsg(' Edit copied scene.',' ','W')
+          call usrmsg('Edit copied scene (alter name & data).',
+     &      ' ','W')
           call newscene('-')
           modscene=.true.
         endif
@@ -437,17 +442,19 @@ C Allow a scene to be added or deleted.
           CALL EASKATOG(' ','Action: ','add scene','delete scene',
      &      'copy scene','cancel',' ',' ',' ',IW,nbhelp)
           if(IW.EQ.1)then
+
+C Add a new scene (new rif file etc).
             delzone = .false.
             CALL EASKABC(' ','Create scene:','silently',
      &        'interactively','cancel',IWDV,nbhelp)
             if (IWDV.eq.1) then
-              call newscene('c')
+              call newscene('c')   ! silent creation
               cmdact='Create'
               call autorad
               ICHK=4
               call radcfgout(ICHK)
-            elseif (IWDV.eq.1) then
-              call newscene('-')
+            elseif (IWDV.eq.2) then
+              call newscene('-')   ! interactive creation
               cmdact='Create'
               call autorad
               ICHK=4
@@ -455,17 +462,19 @@ C Allow a scene to be added or deleted.
             else
               goto 92
             endif
-            ICHK=4
-            call RADCFGOUT(ICHK)
             RETURN
           elseif(IW.EQ.2)then
+
+C Delete a scene.
             delzone = .true.
-            call usrmsg(' ','Select scene to delete. ','-')
+            call usrmsg(' ','Select scene to delete from list.','-')
             IVERT=-2
             goto 3
           elseif(IW.EQ.3)then
+
+C Copy a scene
             cpyzone = .true.
-            call usrmsg(' ','Select scene to copy. ','-')
+            call usrmsg(' ','Select scene to copy from list.','-')
             IVERT=-2
             goto 3
           endif
@@ -495,7 +504,8 @@ C ********************* newscene *********************
 C newscene asks default questions for new rif file or 
 C sets values if MODE='s' (silent) from command line or
 C if MODE='a' (aim) will ask for aim and name files automatically or
-C if MODE='c' (create) then allow all purposes and auto name files.
+C if MODE='c' (create) then allow all purposes and auto name files or
+C if MODE='-' is similar to 'a' but does not use word default in dialog.
       SUBROUTINE newscene(MODE)
 #include "building.h"
 #include "geometry.h"
@@ -568,6 +578,8 @@ C Ask for purpose of scene if new scene.
      &    ' ',' ',ino,idno,nbhelp)
         IRP=INO
       else
+
+C Mode is not c or a.
         helptopic='purpose_of_rif_scene'
         call gethelptext(helpinsub,helptopic,nbhelp)
         ino=0
@@ -857,7 +869,7 @@ C Check for command line information.
         endif
       elseif(IWDV.eq.2)then
 
-C Create new scene file.
+C Create new scene file asking the user what the purpose is.
         call tstamp('>','E2R: controlling default scene')
         write (pfile,'(a,a)') runpath(1:lnrp),LRADCF(1:lnblnk(LRADCF))
         call ERPFREE(IRCFG,ISTAT)
