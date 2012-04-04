@@ -312,7 +312,8 @@ C Run rtrace. << ?? what about pathtype?? >>
         write(doitl,'(4a,1x,9a)') 'cd ',runpath(1:lnrp),
      &      '; rtrace -ov -I -h @',
      &      optnfil(1:lnblnk(optnfil)),octfil(1:lnblnk(octfil)),
-     &       ' < ',LDFGRID(1:lnblnk(LDFGRID)),' | rcalc -e ',QT,
+     &       ' < ',LDFGRID(ISCENE)(1:lnblnk(LDFGRID(ISCENE))),
+     &       ' | rcalc -e ',QT,
      &       '$1=179*(0.265*$1+0.670*$2+0.065*$3)',QT,' >> ',
      &      cmdact(1:lnblnk(cmdact))
         call runit(doitl,'-')
@@ -429,8 +430,9 @@ C Run rtrace.
           write(doitl,'(4a,1x,9a)') 'cd ',runpath(1:lnrp),
      &      '; rtrace -ov -I -h @',
      &      optnfil(1:lnblnk(optnfil)),octfil(1:lnblnk(octfil)),
-     &       ' < ',LDFGRID(1:lnblnk(LDFGRID)),' | rcalc -e ',QT,
-     &       '$1=(0.265*$1+0.670*$2+0.065*$3)/(1000000*2*PI/145.)',
+     &      ' < ',LDFGRID(ISCENE)(1:lnblnk(LDFGRID(ISCENE))),
+     &      ' | rcalc -e ',QT,
+     &      '$1=(0.265*$1+0.670*$2+0.065*$3)/(1000000*2*PI/145.)',
      &                               QT,' >>',LTMPFA(1:lnblnk(LTMPFA))
           call runit(doitl,'-')
 
@@ -489,21 +491,42 @@ C For help messages
 C Ask winter am/pm spring am/pm summer am/pm
       helptopic='standard_times_of_day'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      CALL EASKABCD('A scene is created for a specific day and time.',
-     &  'Select one from these defaults:','winter AM','winter PM',
-     &  'summer AM','summer PM',IWDT,nbhelp)
+      ino=0
+      idno=1
+      call MENUATOL('Select day & time for scene.',
+     &    'Select one from list:',
+     &    'a winter morning','b winter noon','c winter afternoon',
+     &    'd spring morning','e spring noon','f spring afternoon',
+     &    'g summer morning','h summer noon','i summer afternoon',' ',
+     &    ' ',' ',ino,idno,nbhelp)
+      IWDT=INO
       if(IWDT.eq.1)then
         irdoy=15
         rtime=10.0
       elseif(IWDT.eq.2)then
         irdoy=15
-        rtime=15.0
+        rtime=12.0
       elseif(IWDT.eq.3)then
+        irdoy=15
+        rtime=15.0
+      elseif(IWDT.eq.4)then
+        irdoy=74
+        rtime=9.5
+      elseif(IWDT.eq.5)then
+        irdoy=74
+        rtime=12.0
+      elseif(IWDT.eq.6)then
+        irdoy=74
+        rtime=15.5
+      elseif(IWDT.eq.7)then
         irdoy=160
         rtime=9.0
-      elseif(IWDT.eq.4)then
+      elseif(IWDT.eq.8)then
         irdoy=160
-        rtime=15.0
+        rtime=12.0
+      elseif(IWDT.eq.9)then
+        irdoy=160
+        rtime=16.0
       endif
       CALL EDAYR(irdoy,IRD,IRM)
       XRT=rtime
@@ -1330,7 +1353,7 @@ C Check for daylight factor points - if none then try and read grid file.
       if (NDFP.eq.0) then
         call ERPFREE(ITA1,ISTAT)
         write(tfile,'(a,a)')runpath(1:lnrp),
-     &                      LDFGRID(1:lnblnk(LDFGRID))
+     &    LDFGRID(ISCENE)(1:lnblnk(LDFGRID(ISCENE)))
         call FPOPEN(ITA1,ISTAT,1,1,tfile)
         if(ISTAT.eq.0)then
   42      CALL STRIPC(ITA1,OUTSTR,0,ND,0,'grid points',IFER)
@@ -1397,7 +1420,7 @@ C Ask if the parameters should be reset.
       endif
 
 C Daylight factors output file.
-      write (df,'(2a)') SCENERT(NSCENE)(1:lnblnk(SCENERT(NSCENE))),'.df'
+      write (df,'(2a)') SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'.df'
       call ERPFREE(ITA1,ISTAT)
  1111 write (ltmp,'(2a)') runpath(1:lnrp),df(1:lnblnk(df))
       call FINDFIL(ltmp,XST)
@@ -1433,7 +1456,8 @@ C the logic jumps back to if additional resolution is required.
  99   write(doit,'(4a,1x,6a,f5.2,4a)') 'cd ',runpath(1:lnrp),
      &  '; rtrace -opv -I -h @',optnfil(1:lnblnk(optnfil)),
      &  octfil(1:lnblnk(octfil)),
-     &  ' < ',LDFGRID(1:lnblnk(LDFGRID)),' | rcalc -e ',QT,
+     &  ' < ',LDFGRID(ISCENE)(1:lnblnk(LDFGRID(ISCENE))),
+     &  ' | rcalc -e ',QT,
      &  '$1=$1;$2=$2;$3=$3;$4=((0.265*$4+0.670*$5+0.065*$6)*100)/(PI*',
      &  ga,')',QT,' > ',df(1:lnblnk(df))
       call runit(doit,'-')
@@ -1623,7 +1647,7 @@ C Check for illuminance points - if none then try and read grid file.
       if (NDFP.eq.0) then
         call ERPFREE(ITA1,ISTAT)
         write(tfile,'(a,a)')runpath(1:lnrp),
-     &                      LDFGRID(1:lnblnk(LDFGRID))
+     &    LDFGRID(ISCENE)(1:lnblnk(LDFGRID(ISCENE)))
         call FPOPEN(ITA1,ISTAT,1,1,tfile)
         if(ISTAT.eq.0)then
   42      CALL STRIPC(ITA1,OUTSTR,0,ND,0,'grid points',IFER)
@@ -1690,7 +1714,7 @@ C Ask if the parameters should be reset.
       endif
 
 C Illuminance output file.
-      write (df,'(2a)') SCENERT(NSCENE)(1:lnblnk(SCENERT(NSCENE))),
+      write (df,'(2a)') SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),
      &  '.lux'
       call ERPFREE(ITA1,ISTAT)
  1111 write (ltmp,'(2a)') runpath(1:lnrp),df(1:lnblnk(df))
@@ -1727,7 +1751,8 @@ C the logic jumps back to if additional resolution is required.
  99   write(doit,'(4a,1x,9a)') 'cd ',runpath(1:lnrp),
      &  '; rtrace -opv -I -h @',optnfil(1:lnblnk(optnfil)),
      &  octfil(1:lnblnk(octfil)),
-     &  ' < ',LDFGRID(1:lnblnk(LDFGRID)),' | rcalc -e ',QT,
+     &  ' < ',LDFGRID(ISCENE)(1:lnblnk(LDFGRID(ISCENE))),
+     &  ' | rcalc -e ',QT,
      &  '$1=$1;$2=$2;$3=$3;$4=179*(0.265*$4+0.670*$5+0.065*$6)',
      &  QT,' > ',df(1:lnblnk(df))
       call runit(doit,'-')

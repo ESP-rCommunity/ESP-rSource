@@ -194,6 +194,7 @@ C Make case insensitive.
         SCENEDESC(I)='UNKNOWN'
         SCENEPURP(I)='UNKNOWN'
         LBSRIF(I)='NONE'
+        LDFGRID(I)='NONE'
         NBSRIF(I)=-1
  9    continue
 
@@ -208,7 +209,6 @@ C Set defaults.
       MODLEN=.false.
       MODBND=.false.
       XST=.false.
-      LDFGRID='NONE'
       LRADCF='UNKNOWN'
       LCFGF='UNKNOWN'
       rofil='UNKNOWN'
@@ -822,8 +822,8 @@ C Depending on value of SCENEPURP.
      &      SCENEPURP(ISCENE)(1:7).eq.'Day_lux'.or.
      &      SCENEPURP(ISCENE)(1:5).eq.'Illum') then
           call ERPFREE(ITA1,ISTAT)
-          write(tfile,'(a,a)')runpath(1:lnrp),
-     &                        LDFGRID(1:lnblnk(LDFGRID))
+          lndf=lnblnk(LDFGRID(ISCENE))
+          write(tfile,'(2a)')runpath(1:lnrp),LDFGRID(ISCENE)(1:lndf)
           call FPOPEN(ITA1,ISTAT,1,1,tfile)
           if(ISTAT.eq.0)then
             NDFP=0

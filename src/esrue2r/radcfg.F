@@ -158,11 +158,10 @@ C this scene represent alternate blind states.
             CALL EGETW(OUTSTR,K,SCENEPURP(I),'W','scene purp',IFLAG)
           elseif (WORD(1:4).eq.'*rgd') then
 
-C Note: there is only one grid or sensor data file name, no matter 
-C how many scenes there are. << todo change to an array >>.
-            CALL EGETW(OUTSTR,K,LDFGRID,'W','grid data',IFLAG)
+C Note: there is one grid or sensor data file name per scene.
+            CALL EGETW(OUTSTR,K,LDFGRID(I),'W','grid data',IFLAG)
           elseif (WORD(1:4).eq.'*slc') then
-            CALL EGETW(OUTSTR,K,LDFGRID,'W','sensor data',IFLAG)
+            CALL EGETW(OUTSTR,K,LDFGRID(I),'W','sensor data',IFLAG)
           else
             call usrmsg(' Unrecognised data prefix.',' ','W')
           endif
@@ -245,14 +244,14 @@ C Find the longest string in this scene.
         write(IRCFG,'(a,a,a)')'*rpu ',OUTS(1:IML),' # Intended use'
 
         if (SCENEPURP(I)(1:8).eq.'Day_fact') then
-          OUTS=LDFGRID
+          OUTS=LDFGRID(I)
           write(IRCFG,'(a,a,a)')'*rgd ',OUTS(1:IML),' # DF grid data'
         elseif (SCENEPURP(I)(1:7).eq.'Day_lux'.or.
      &          SCENEPURP(I)(1:5).eq.'Illum') then
-          OUTS=LDFGRID
+          OUTS=LDFGRID(I)
           write(IRCFG,'(a,a,a)')'*rgd ',OUTS(1:IML),' # lux grid data'
         elseif (SCENEPURP(I)(1:8).eq.'Coupling') then
-          OUTS=LDFGRID
+          OUTS=LDFGRID(I)
           write(IRCFG,'(a,a,a)')'*slc ',OUTS(1:IML),
      &                                          ' # Sensor locations'
         endif
@@ -914,6 +913,7 @@ C if MODE is not - then sensor points file name confirmation required.
       character DESCRC*25
       character outs*124,tfile*72
       character ITEM(MV)*15, t12*12, MODE*1
+      character ldfg*72   ! local file name
       logical dok,keep
 
       dimension IVALS(MCOM), PEQN(4), ITEMV(MV)
@@ -1037,16 +1037,18 @@ C Calculate grid points.
       call ERPFREE(ITA1,ISTAT)
 
 C Get file name for grid points.
-      write (LDFGRID,'(a,a4)') 
+      write (ldfg,'(a,a4)') 
      &  SCENERT(NSCENE)(1:lnblnk(SCENERT(NSCENE))),'.grd'
       if (MODE.eq.'-') then
- 55     CALL EASKS(LDFGRID,'DF or illuminance grid points file name?',
+ 55     CALL EASKS(LDFG,'DF or illuminance grid points file name?',
      &    ' ',72,'points.grd','df points file name',IER,nbhelp)
-        IF(LDFGRID.EQ.' ') GOTO 55
+        IF(LDFG.EQ.' ') GOTO 55
+        LDFGRID(NSCENE)=LDFG
       endif
 
 C Open df points file in working directory.
-      write (tfile,'(a,a)') runpath(1:lnrp),LDFGRID(1:lnblnk(LDFGRID))
+      write (tfile,'(a,a)') runpath(1:lnrp),
+     &  LDFGRID(NSCENE)(1:lnblnk(LDFGRID(NSCENE)))
       call FPOPEN(ITA1,ISTAT,1,3,tfile)
       do 552 IC=1,3
         PEQN(IC)=PEQN(IC)*dirf
@@ -1108,6 +1110,9 @@ C the daylight factor (act = d|D) or lux (act = l|L).
       
       integer lnblnk  ! function definition
 
+C Parameters
+      character act*1  ! action
+
 C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -1121,7 +1126,7 @@ C      COMMON/OUTIN/IUOUT,IUIN
 
       DIMENSION  COG1(3),COG2(3),COG3(3)
 
-      CHARACTER VT*6,act*1
+      CHARACTER VT*6
       character OUTSTR*124,tfile*72
 
 #ifdef OSI
@@ -1140,14 +1145,14 @@ C there is a *.df file or a *.df- file that can be scanned again.
 
         call ERPFREE(ITA1,ISTAT)
         write(tfile,'(a,a)')runpath(1:lnrp),
-     &                      LDFGRID(1:lnblnk(LDFGRID))
+     &    LDFGRID(ISCENE)(1:lnblnk(LDFGRID(ISCENE)))
         call FPOPEN(ITA1,ISTAT,1,1,tfile)
         if(ISTAT.eq.0)then
           continue
         else
           call ERPFREE(ITA1,ISTAT)
           write(tfile,'(3a)')runpath(1:lnrp),
-     &                      LDFGRID(1:lnblnk(LDFGRID)),'-'
+     &      LDFGRID(ISCENE)(1:lnblnk(LDFGRID(ISCENE))),'-'
           call FPOPEN(ITA1,ISTAT,1,1,tfile)
           if(ISTAT.eq.0)then
             continue
@@ -1284,12 +1289,12 @@ C Set local file name.
       call ercgcf(itrc,itru,LCGCINT,ICOMP,ier)
 
 C Open sensor info file (do not add path as radiance is run locally).
-      write(LDFGRID,'(a,a)')
+      write(LDFGRID(ISCENE),'(a,a)')
      &  SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'.slc'
 
 C Check for file (add working dir path)
       write (outs,'(a,a)') runpath(1:lnblnk(runpath)),
-     &  LDFGRID(1:lnblnk(LDFGRID))
+     &  LDFGRID(ISCENE)(1:lnblnk(LDFGRID(ISCENE)))
       call FINDFIL(outs,XST)
       if(XST)then
         call FPOPEN(ITA1,ISTAT,1,0,outs)
