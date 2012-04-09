@@ -774,6 +774,7 @@ C corresponding to graphical result display.
 
       SUBROUTINE MODHED(act,zlist,iocupf,ialstused)
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
@@ -786,7 +787,6 @@ C corresponding to graphical result display.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
 
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
@@ -795,7 +795,6 @@ C corresponding to graphical result display.
       CHARACTER ETEXT*94,GTEXT*94,PDESCR*60,SDESCR*44,act*1
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character outsd*80,outsd1*81,RSNAME*40
-      character ALOC*12,ALOCLBL*12,ALOCTYP*4
       logical zlist
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.

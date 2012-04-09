@@ -194,10 +194,6 @@ C MMGFUN controls all UK NCM related tasks
       INTEGER iExtLgRadFlag
       REAL eGrdTp
 
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
-      INTEGER NALOC
-      CHARACTER ALOC*12,ALOCLBL*12,ALOCTYP*4
-
       COMMON/C6/INDCFG
       INTEGER INDCFG
 

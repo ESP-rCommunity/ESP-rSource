@@ -137,7 +137,6 @@ C IDST tool commands
       common/idsta/CMDCFG,CMDCLM,CMDCLMN,CMDNOTE,CMDRES,CMDLBL(10),
      &             CMDLNAM(10)
       common/idstb/nidst
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
 
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
       COMMON/Vld20/Vldtng
@@ -149,7 +148,7 @@ C Name of current application
       integer iverb     ! verbosity passed on command line
       logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,MODSIT
       logical MODIFY,MODLEN,MODBND,browse,confirm,XST,ckpath
-      logical unixok,isdok,Vldtng,changedit
+      logical unixok,Vldtng,changedit
       logical itisanexemplar  ! passed to newprb to ensure browse mode.
 
       character dstmp*24,uname*24
@@ -168,7 +167,7 @@ C      character outs248*248
       character GTGEOM*72,lipvdatf*72,longtfile*144
       character*10 wkd1, wkd2
       character CMDCFG*72,CMDCLM*72,CMDCLMN*72,CMDNOTE*64,CMDRES*72
-      character ALOC*12,ALOCLBL*12,ALOCTYP*4,CMDLBL*12,CMDLNAM*80
+      character CMDLBL*12,CMDLNAM*80
       CHARACTER cpth*48,cmdn*48,topt*72
       character t24*24,DFILE*72,DCNN*72,bidirfile*72,bidirname*12
       CHARACTER dinstpath*60,dirpath*72
@@ -712,46 +711,7 @@ C If an input file has been specified then load it.
       if(LCMDFL(1:2).ne.'  '.and.LCMDFL(1:4).ne.'UNKN')then
         INQUIRE (FILE=LCMDFL,EXIST=XST)
         if(XST)then
-
-C Check to see if the command line file is an IDST command file.
-C If it is, extract configuration file name and command data.
-          isdok=.false.
           CALL ERPFREE(IFCFG,ISTAT)
-          call FPOPEN(IFCFG,ISTAT,1,1,LCMDFL)
-          CALL STRIPC(IFCFG,OUTSTR,0,ND,1,'IDST header',IER)
-          if(OUTSTR(1:14).eq.'*IDST COMMANDS')then
-            isdok=.true.
-            cpth=' '
-            cmdn=' '
- 22         CALL STRIPC(IFCFG,OUTSTR,0,ND,0,'idst tags',IIER)
-            if(iier.ne.0)then
-
-C Debug.
-C              write(6,*)'idst naloc =',nidst,naloc
-
-              goto 23
-            endif
-            if(OUTSTR(1:9).eq.'*abs_path')then
-              k=10
-              CALL EGETRM(OUTSTR,K,cpth,'W','idst cfg path',IER)
-              goto 22
-            elseif(OUTSTR(1:8).eq.'*win_cfg'.or.
-     &             OUTSTR(1:8).eq.'*trn_cfg'.or.
-     &             OUTSTR(1:8).eq.'*sum_cfg')then
-              k=9
-              CALL EGETRM(OUTSTR,K,cmdn,'W','config',IER)
-              if(cpth(1:2).ne.'  ')then
-                write(CMDCFG,'(a,a)') cpth(1:lnblnk(cpth)),
-     &            cmdn(1:lnblnk(cmdn))
-              else
-                write(CMDCFG,'(a)') cmdn(1:lnblnk(cmdn))
-              endif
-              write(LCMDFL,'(a)') CMDCFG(1:lnblnk(CMDCFG))
-              goto 23
-            endif
-            goto 22
-          endif
-  23      CALL ERPFREE(IFCFG,ISTAT)
 
 C Call newprb without the need to confirm model but to check its path.
 C Assume that the file passed is not an exemplar.
@@ -763,8 +723,6 @@ C Assume that the file passed is not an exemplar.
             ier=0
             goto 3  ! cancel detected, redisplay menu
           endif
-
-C          call edisp(iuout,'* Loading supplied model description.')
           call tstamp('>','PRJ: loading supplied model')
           call tstamp('>',LCFGF)
         else
@@ -877,13 +835,6 @@ C has been specified update view info to this.
                 VIEWM(2)=VIEWMI(2)
                 VIEWM(3)=VIEWMI(3)
                 ANG=ANGI
-              endif
-
-C Re-read the command line file as an IDST command file and extract data.
-C Package code within isdok block into a separate subroutine
-C to clarify code and allow for future evolution.
-              if(isdok)then
-                 call IPVCMD('-',inf)
               endif
 
 C Pass information to C library code if running in graphic mode.

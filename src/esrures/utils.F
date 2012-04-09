@@ -1118,28 +1118,19 @@ C Check for selections and copy to call parameters for passing back.
 C ******************** PICKANC ********************
 C PICKANC: call to enquire which anchor point the user wishes data to 
 C be recovered for.  Returns lists of zone and surface numbers for 
-C anchor type 'SURF'.
-C Anchor commons:
-C NALOC = nb of anchors,
-C ALOC = substitution attribute used with the the anchor (usually
-C   passed from a command to a function which manipulates the anchor.),
-C ALOCLBL = user's name for the anchor,
-C ALOCTYP = type (SURF|CTRL|LOAD) for the anchor,
-C IALOC = nb of links (surfaces, etc.) associated with the anchor,
-C lstanchr = links for each anchor
+C anchor type 'SURF'. Definitions in model.h.
 
       SUBROUTINE PICKANC(ATYPE,IZLST,ISLST,NSANC,IER)
 #include "building.h"
+#include "model.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
-      common/anchorb/IALOC(20),lstanchr(20,60)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
 
       DIMENSION IV(20),IZLST(MCON),ISLST(MCON)
 
-      character ALOC*12,ALOCLBL*12,ALOCTYP*4,ATYPE*4
+      character ATYPE*4
       character ST(20)*12,outs*124
 
 C For help messages
