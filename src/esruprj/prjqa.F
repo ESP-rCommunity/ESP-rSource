@@ -1049,7 +1049,7 @@ C Generate the QA report.
       call dstamp(dstmp)
       call edisp(itu,'Synopsis')
       call edisp(itu,' ')
-      write(outs248,'(9A)') 'This is a synopsis of the model ',
+      write(outs248,'(9A)') 'Synopsis of the model ',
      &  modeltitle(1:lnblnk(modeltitle)),' defined in ',
      &  LCFGF(1:lnblnk(LCFGF)),' generated on ',
      &  dstmp,'. Notes associated with the model',
