@@ -1,24 +1,3 @@
-Project notes for 3BR_semi_timber.cfg
-Title: 3BR wood clad semi-detched house in Shetland
-In folder: validation/DSM/3BR_semi_timber
-By: jon
-Date: Mon Feb 20 14:02:05 2012
-Client: 
-Project reference: 
-_____________________________
-Notes: 
- 
-This 3BR simi detached house was taken from plans and 
-represents timber-kit construction which is in advance 
-of late 1990s building standards in the far north of Scotland. 
-
-For flexibility, each room of the dwelling has been
-represented as well as spaces which are likely to be
-at variant temperatures (under stairs, crawl space
-and roof void).
-
-The building construction is assumed to be tighter
-than normal in terms of infiltration.
 Model variants in this folder:
 
 Activities:
@@ -49,6 +28,3 @@ kitchen_liv p1m p2m p2h variants (assumed to have a storage unit)
 3BR_semi_timber_p2m_avg.cfg - activity p2m with average comfort
 3BR_semi_timber_p2m_cool.cfg - activity p2m with cool comfort
 3BR_semi_timber_p2m_warm.cfg - activity p2m with warm comfort
-
-_____________________________
-  

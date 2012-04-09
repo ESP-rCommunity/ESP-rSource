@@ -1,6 +1,6 @@
 # composite construction db defined in ../dbs/learwick_a.constrdb
 # based on materials db material.db3.a
-   41     # no of composites 
+   45     # no of composites 
 # layers  description   optics name   symmetry tag
     6    Extwall_ti    OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
@@ -292,3 +292,34 @@
     1    Crawl_wall    OPAQ  OPAQUE        SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
    36    0.1200  concrete block : concrete block (milton keynes)
+# layers  description   optics name   symmetry tag
+    4    conc_blck_rn  OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  128    0.0300  aged rendering : Aged Rendering
+   36    0.2250  concrete block : concrete block (milton keynes)
+    0    0.0130  air  0.170 0.170 0.170
+  101    0.0300  dense plaster : Dense plaster
+# layers  description   optics name   symmetry tag
+    6    pwcon_blck_r  OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  128    0.0300  aged rendering : Aged Rendering
+   36    0.1120  concrete block : concrete block (milton keynes)
+    0    0.0600  air  0.170 0.170 0.170
+   36    0.1120  concrete block : concrete block (milton keynes)
+    0    0.0130  air  0.170 0.170 0.170
+  101    0.0300  dense plaster : Dense plaster
+# layers  description   optics name   symmetry tag
+    6    incon_blck_r  OPAQ  OPAQUE        NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  128    0.0300  aged rendering : Aged Rendering
+   36    0.1120  concrete block : concrete block (milton keynes)
+  211    0.0850  glasswool : Glasswool (generic)
+   36    0.1120  concrete block : concrete block (milton keynes)
+    0    0.0130  air  0.170 0.170 0.170
+  101    0.0300  dense plaster : Dense plaster
+# layers  description   optics name   symmetry tag
+    3    intcnc_block  OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+  101    0.0300  dense plaster : Dense plaster
+   36    0.1120  concrete block : concrete block (milton keynes)
+  101    0.0300  dense plaster : Dense plaster
