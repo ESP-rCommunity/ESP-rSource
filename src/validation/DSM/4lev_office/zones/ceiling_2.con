@@ -1,25 +1,25 @@
-# thermophysical properties of ceiling_2 defined in ../zones/ceiling_2.con
+# thermophysical properties of ceiling_1 defined in ../zones/ceiling_2.con
 # no of |air |surface(from geo)| multilayer construction
 # layers|gaps|  no.  name      | database name 
      6,     2  #  1 south_e      ext_wall    
      6,     2  #  2 east         ext_wall    
      6,     2  #  3 north_e      ext_wall    
-     3,     1  #  4 north_c2     partn_ltw   
-     1,     0  #  5 bottom_e     ceiling_dr  
+     3,     1  #  4 north_c1_c   partn_ltw   
+     1,     0  #  5 ovr_off_e    ceiling_dr  
      6,     2  #  6 south_w      ext_wall    
      6,     2  #  7 west         ext_wall    
      6,     2  #  8 north_w      ext_wall    
      3,     1  #  9 east_c1      partn_ltw   
      3,     1  # 10 north_c1     partn_ltw   
-     1,     0  # 11 bottom_w     ceiling_dr  
+     1,     0  # 11 ovr_off_w    ceiling_dr  
      3,     1  # 12 core_c1_a    partn_ltw   
      3,     1  # 13 core_c1_b    partn_ltw   
      3,     1  # 14 core_c1w_a   partn_ltw   
-     3,     0  # 15 bottom_wo    inter_flrev 
-     3,     0  # 16 bottom_eo    inter_flr   
-     3,     0  # 17 bottom_s     inter_flrev 
-     3,     0  # 18 base_east    inter_flrev 
-     3,     0  # 19 bottom_n     inter_flrev 
+     3,     0  # 15 under_off_w  inter_flrev 
+     3,     0  # 16 under_off_e  inter_flr   
+     3,     0  # 17 under_off_sw inter_flrev 
+     3,     0  # 18 under_off_se inter_flrev 
+     3,     0  # 19 under_north  inter_flrev 
      3,     0  # 20 bottom_wp2   inter_flrev 
      3,     0  # 21 bottom_ep2   inter_flrev 
      3,     0  # 22 base_w       inter_flrev 

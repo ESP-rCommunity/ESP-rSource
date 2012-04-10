@@ -1,7 +1,7 @@
 Synopsis
  
-This is a synopsis of the model Four level small office building (base case
-operations) defined in office_4l_bc.cfg generated on Mon Apr  2 13:44:40 2012.
+This is a synopsis of the model Four level small office building with lighting
+control defined in office_4l_cgc.cfg generated on Tue Apr 10 11:08:59 2012.
 Notes associated with the model are in office_bc.log
  
 The model is located at latitude   57.20 with a longitude difference of  -2.22
@@ -50,9 +50,9 @@ Primary energy conversions (demand kWhr to primary kWhr) are:
  hot water: 190.00   0.30   0.20
 An Integrated Performance View has been defined:
 Title : Four level office building with ceil
-Version   : base case with no flow network
+Version   : lighting control with no flow network
 synopsis:
-:An office building taken from IEA Annex 46
+:An office building with no overhangs but with lighting controls6
 Images    :   0
  
 Simulations to be undertaken:
@@ -133,7 +133,7 @@ Databases associated with the model:
  
  ____________________________________________________________
  
-Ideal control is defined in: ../ctl/office_4l_bc.ctl as follows:
+The model includes ideal controls as follows:
 Control description:
 Four level office building base case heating to 22.22C and cooling to
 23.8C all hours. Supply and extract zones not yet used
@@ -290,13 +290,13 @@ ID Zone         Volume|          Surface
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  18.2     90.   0. east         OPAQUE   VERT -     ext_wall     ||< external
-  2  21.1      0.   0. north_1      OPAQUE   VERT -     ext_wall     ||< external
+  2  21.1    360.   0. north_1      OPAQUE   VERT -     ext_wall     ||< external
   3  16.8    270.   0. west_1       OPAQUE   VERT -     partn_ltw    ||< ptn_a:entry_core
-  4  11.2      0.   0. north_2      OPAQUE   VERT -     partn_ltw    ||< north_2:entry_core
+  4  11.2    360.   0. north_2      OPAQUE   VERT -     partn_ltw    ||< north_2:entry_core
   5  16.8    270.   0. west_2       OPAQUE   VERT -     partn_ltw    ||< west_2:office_w_0
   6  240.      0.  90. top          OPAQUE   CEIL -     ceiling_dr   ||< ovr_off_g_e:ceiling_g
   7  240.      0. -90. bottom       OPAQUE   FLOR -     foundation   ||< user def grnd profile  1
-  8  2.26      0.   0. frm_north    OPAQUE   VERT -     gl_frame     ||< external
+  8  2.26    360.  -0. frm_north    OPAQUE   VERT -     gl_frame     ||< external
   9  0.678    90.   0. frm_est_1    OPAQUE   VERT -     gl_frame     ||< external
  10  0.630    90.   0. frm_est_2    OPAQUE   VERT -     gl_frame     ||< external
  11  24.2     90.   0. east_b       OPAQUE   VERT -     ext_wall     ||< external
@@ -305,7 +305,7 @@ ID Zone         Volume|          Surface
  14  8.40    180.   0. ptn_core_a   OPAQUE   VERT -     partn_ltw    ||< ptn_b:entry_core
  15  16.8    270.   0. ptn_cor_b    OPAQUE   VERT -     partn_ltw    ||< ptn_c:entry_core
  16  14.1    180.   0. south_gl     DC_8074_ VERT C-WIN double_glz   ||< external
- 17  15.8      0.   0. north_gl     DC_8074_ VERT C-WIN double_glz   ||< external
+ 17  15.8      0.  -0. north_gl     DC_8074_ VERT C-WIN double_glz   ||< external
  18  3.52     90.   0. est_1_gl     DC_8074_ VERT C-WIN double_glz   ||< external
  19  3.15     90.   0. est_2_gl     DC_8074_ VERT C-WIN double_glz   ||< external
  
@@ -361,6 +361,7 @@ vertex  25   40.00000   16.00000    0.35000   vertex  50   40.00000   17.38000  
 frm_north frm_est_1 frm_est_2 south_frame
  
  
+ Casual gains are controlled in this zone.
  Shading patterns have been calculated for this zone.
  
  
@@ -457,13 +458,13 @@ sunda  3 EquiptW    0-24    572.5      0.0       0.50       0.50
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  18.2    270.   0. west_a       OPAQUE   VERT -     ext_wall     ||< external
-  2  21.1      0.   0. north_wall   OPAQUE   VERT -     ext_wall     ||< external
+  2  21.1    360.   0. north_wall   OPAQUE   VERT -     ext_wall     ||< external
   3  16.8     90.   0. west_1       OPAQUE   VERT -     partn_ltw    ||< west_1:entry_core
-  4  11.2      0.   0. north_2      OPAQUE   VERT -     partn_ltw    ||< ptn_g:entry_core
+  4  11.2    360.   0. north_2      OPAQUE   VERT -     partn_ltw    ||< ptn_g:entry_core
   5  16.8     90.   0. west_2       OPAQUE   VERT -     partn_ltw    ||< west_2:office_e_0
   6  240.      0.  90. top          OPAQUE   CEIL -     ceiling_dr   ||< ovr_off_w_g:ceiling_g
   7  240.      0. -90. bottom       OPAQUE   FLOR -     foundation   ||< user def grnd profile  1
-  8  2.26      0.   0. frm_north    OPAQUE   VERT -     gl_frame     ||< external
+  8  2.26    360.   0. frm_north    OPAQUE   VERT -     gl_frame     ||< external
   9  0.678   270.   0. frm_wst_1    OPAQUE   VERT -     gl_frame     ||< external
  10  0.630   270.   0. frm_wst_2    OPAQUE   VERT -     gl_frame     ||< external
  11  24.2    270.   0. east_b       OPAQUE   VERT -     ext_wall     ||< external
@@ -471,7 +472,7 @@ sunda  3 EquiptW    0-24    572.5      0.0       0.50       0.50
  13  2.46    180.   0. south_frm    OPAQUE   VERT -     gl_frame     ||< external
  14  8.40    180.   0. ptn_core_a   OPAQUE   VERT -     partn_ltw    ||< ptn_e:entry_core
  15  16.8     90.   0. ptn_cor_b    OPAQUE   VERT -     partn_ltw    ||< ptn_f:entry_core
- 16  15.8      0.   0. north_gl     DC_8074_ VERT C-WIN double_glz   ||< external
+ 16  15.8      0.  -0. north_gl     DC_8074_ VERT C-WIN double_glz   ||< external
  17  3.52    270.   0. gl_wst_1     DC_8074_ VERT C-WIN double_glz   ||< external
  18  3.15    270.   0. gl_wst_2     DC_8074_ VERT C-WIN double_glz   ||< external
  19  14.1    180.   0. south_gl     DC_8074_ VERT C-WIN double_glz   ||< external
@@ -528,6 +529,7 @@ vertex  25   10.00000   16.00000    0.35000   vertex  50   10.38000    8.00000  
 frm_north frm_wst_1 frm_wst_2 south_frm
  
  
+ Casual gains are controlled in this zone.
  Shading patterns have been calculated for this zone.
  
  
@@ -623,13 +625,13 @@ sunda  3 EquiptW    0-24    572.5      0.0       0.50       0.50
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  18.2     90.   0. east         OPAQUE   VERT -     ext_wall     ||< external
-  2  23.9      0.   0. north_1      OPAQUE   VERT -     ext_wall     ||< external
+  2  23.9    360.   0. north_1      OPAQUE   VERT -     ext_wall     ||< external
   3  16.8    270.   0. west_1       OPAQUE   VERT -     partn_ltw    ||< west_1:office_w_1
   4  11.2      0.   0. north_2      OPAQUE   VERT -     partn_ltw    ||< north_e1:core_one
   5  16.8    270.   0. west_2       OPAQUE   VERT -     partn_ltw    ||< west_2:office_w_1
   6  246.      0.  90. top          OPAQUE   CEIL -     ceiling_dr   ||< ovr_off_e:ceiling_1
   7  246.      0. -90. bottom       OPAQUE   FLOR -     inter_flr    ||< top_e:ceiling_g
-  8  2.26      0.   0. frm_north    OPAQUE   VERT -     gl_frame     ||< external
+  8  2.26    360.  -0. frm_north    OPAQUE   VERT -     gl_frame     ||< external
   9  0.678    90.   0. frm_est_1    OPAQUE   VERT -     gl_frame     ||< external
  10  0.630    90.   0. frm_est_2    OPAQUE   VERT -     gl_frame     ||< external
  11  24.2     90.   0. east_b       OPAQUE   VERT -     ext_wall     ||< external
@@ -637,7 +639,7 @@ sunda  3 EquiptW    0-24    572.5      0.0       0.50       0.50
  13  2.46    180.   0. south_frm    OPAQUE   VERT -     gl_frame     ||< external
  14  11.2    180.   0. ptn_core_a   OPAQUE   VERT -     partn_ltw    ||< ptn_core_a:core_one
  15  16.8    270.   0. ptn_cor_b    OPAQUE   VERT -     partn_ltw    ||< ptn_cor_b:core_one
- 16  15.8      0.   0. gl_north     DC_8074_ VERT C-WIN double_glz   ||< external
+ 16  15.8    360.  -0. gl_north     DC_8074_ VERT C-WIN double_glz   ||< external
  17  3.52     90.   0. gl_est_1     DC_8074_ VERT C-WIN double_glz   ||< external
  18  3.15     90.   0. gl_est_2     DC_8074_ VERT C-WIN double_glz   ||< external
  19  14.1    180.   0. south_gl     DC_8074_ VERT C-WIN double_glz   ||< external
@@ -694,6 +696,7 @@ vertex  25   40.00000   16.00000    4.20000   vertex  50   25.38000    8.00000  
 frm_north frm_est_1 frm_est_2 south_frm
  
  
+ Casual gains are controlled in this zone.
  Shading patterns have been calculated for this zone.
  
  
@@ -789,13 +792,13 @@ sunda  3 EquiptW    0-24    595.0      0.0       0.50       0.50
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  18.2    270.   0. east         OPAQUE   VERT -     ext_wall     ||< external
-  2  23.9      0.   0. north_1      OPAQUE   VERT -     ext_wall     ||< external
+  2  23.9    360.   0. north_1      OPAQUE   VERT -     ext_wall     ||< external
   3  16.8     90.   0. west_1       OPAQUE   VERT -     partn_ltw    ||< west_1:office_e_1
   4  11.2      0.   0. north_2      OPAQUE   VERT -     partn_ltw    ||< ptn_f:core_one
   5  16.8     90.   0. west_2       OPAQUE   VERT -     partn_ltw    ||< west_2:office_e_1
   6  246.      0.  90. top          OPAQUE   CEIL -     ceiling_dr   ||< ovr_off_w:ceiling_1
   7  246.      0. -90. bottom       OPAQUE   FLOR -     inter_flr    ||< top_w:ceiling_g
-  8  2.26      0.   0. frm_north    OPAQUE   VERT -     gl_frame     ||< external
+  8  2.26    360.   0. frm_north    OPAQUE   VERT -     gl_frame     ||< external
   9  0.678   270.   0. frm_wst_1    OPAQUE   VERT -     gl_frame     ||< external
  10  0.630   270.   0. frm_wst_2    OPAQUE   VERT -     gl_frame     ||< external
  11  24.2    270.   0. east_b       OPAQUE   VERT -     ext_wall     ||< external
@@ -803,7 +806,7 @@ sunda  3 EquiptW    0-24    595.0      0.0       0.50       0.50
  13  2.46    180.   0. south_frm    OPAQUE   VERT -     gl_frame     ||< external
  14  11.2    180.   0. ptn_core_a   OPAQUE   VERT -     partn_ltw    ||< ptn_d:core_one
  15  16.8     90.   0. ptn_cor_b    OPAQUE   VERT -     partn_ltw    ||< ptn_e:core_one
- 16  15.8      0.   0. gl_north     DC_8074_ VERT C-WIN double_glz   ||< external
+ 16  15.8    360.  -0. gl_north     DC_8074_ VERT C-WIN double_glz   ||< external
  17  3.52    270.   0. gl_wst_1     DC_8074_ VERT C-WIN double_glz   ||< external
  18  3.15    270.   0. gl_wst_2     DC_8074_ VERT C-WIN double_glz   ||< external
  19  14.1    180.   0. south_gl     DC_8074_ VERT C-WIN double_glz   ||< external
@@ -860,6 +863,7 @@ vertex  25   10.00000   16.00000    4.20000   vertex  50   10.38000    8.00000  
 frm_north frm_wst_1 frm_wst_2 south_frm
  
  
+ Casual gains are controlled in this zone.
  Shading patterns have been calculated for this zone.
  
  
@@ -961,7 +965,7 @@ sunda  3 EquiptW    0-24    595.0      0.0       0.50       0.50
   5  16.8    270.   0. west_2       OPAQUE   VERT -     partn_ltw    ||< west_2:office_w_3
   6  246.      0.  90. top          OPAQUE   CEIL -     ceiling_dr   ||< top:roof
   7  216.      0. -90. bottom       OPAQUE   FLOR -     inter_flr    ||< top_e:ceiling_2
-  8  2.26      0.   0. frm_north    OPAQUE   VERT -     gl_frame     ||< external
+  8  2.26      0.  -0. frm_north    OPAQUE   VERT -     gl_frame     ||< external
   9  0.678    90.   0. frm_est_1    OPAQUE   VERT -     gl_frame     ||< external
  10  0.630    90.   0. frm_est_2    OPAQUE   VERT -     gl_frame     ||< external
  11  24.2     90.   0. east_b       OPAQUE   VERT -     ext_wall     ||< external
@@ -970,7 +974,7 @@ sunda  3 EquiptW    0-24    595.0      0.0       0.50       0.50
  14  11.2    180.   0. ptn_core_a   OPAQUE   VERT -     partn_ltw    ||< ptn_core_a:core_top
  15  16.8    270.   0. ptn_cor_b    OPAQUE   VERT -     partn_ltw    ||< ptn_cor_b:core_top
  16  30.0      0. -90. top_e        OPAQUE   FLOR -     inter_flr    ||< top_e:core_two
- 17  15.8      0.   0. gl_north     DC_8074_ VERT C-WIN double_glz   ||< external
+ 17  15.8      0.  -0. gl_north     DC_8074_ VERT C-WIN double_glz   ||< external
  18  3.52     90.   0. gl_est_1     DC_8074_ VERT C-WIN double_glz   ||< external
  19  3.15     90.   0. gl_est_2     DC_8074_ VERT C-WIN double_glz   ||< external
  20  14.1    180.   0. south_gl     DC_8074_ VERT C-WIN double_glz   ||< external
@@ -1029,6 +1033,7 @@ vertex  26   40.00000   16.00000   14.70000   vertex  52   25.38000    8.00000  
 frm_north frm_est_1 frm_est_2 south_frm
  
  
+ Casual gains are controlled in this zone.
  Shading patterns have been calculated for this zone.
  
  
@@ -1139,7 +1144,7 @@ sunda  3 EquiptW    0-24    595.0      0.0       0.50       0.50
  14  11.2    180.   0. ptn_core_a   OPAQUE   VERT -     partn_ltw    ||< ptn_core_c:core_top
  15  16.8     90.   0. ptn_cor_b    OPAQUE   VERT -     partn_ltw    ||< ptn_cor_d:core_top
  16  30.0      0. -90. top_core3w   OPAQUE   FLOR -     inter_flr    ||< top:core_two
- 17  15.8      0.   0. gl_north     DC_8074_ VERT C-WIN double_glz   ||< external
+ 17  15.8      0.  -0. gl_north     DC_8074_ VERT C-WIN double_glz   ||< external
  18  3.52    270.   0. gl_wst_1     DC_8074_ VERT C-WIN double_glz   ||< external
  19  3.15    270.   0. gl_wst_2     DC_8074_ VERT C-WIN double_glz   ||< external
  20  14.1    180.   0. south_gl     DC_8074_ VERT C-WIN double_glz   ||< external
@@ -1198,6 +1203,7 @@ vertex  26   10.00000   16.00000   14.70000   vertex  52   10.38000    8.00000  
 frm_north frm_wst_1 frm_wst_2 south_frm
  
  
+ Casual gains are controlled in this zone.
  Shading patterns have been calculated for this zone.
  
  
@@ -1286,7 +1292,7 @@ sunda  3 EquiptW    0-24    595.0      0.0       0.50       0.50
  entry_core is the entrance and core at ground level
  There is 5.6000m2 of exposed surface area, 5.6000m2 of which is vertical.
  Outside walls are 2.1538 % of floor area & avg U of 3.316 & UA of 3.7137
- Glazing is 8.6154 % of floor & 80.001 % facade with avg U of 2.877 & UA of 12.888
+ Glazing is 8.6154 % of floor & 80.000 % facade with avg U of 2.877 & UA of 12.888
  Ground contact is 115.38 % of floor area & avg U of 0.430 & perimeter 2.0000
  
  A summary of the surfaces in entry_core( 7) follows:
@@ -1311,7 +1317,7 @@ sunda  3 EquiptW    0-24    595.0      0.0       0.50       0.50
  16  60.0      0. -90. slab_floor   OPAQUE   FLOR -     foundation   ||< user def grnd profile  1
  17  48.0      0.  90. upper_at_slb OPAQUE   CEIL -     inter_flrev  ||< base:core_one
  18  1.12      0.   0. entry_frame  OPAQUE   VERT -     window_frame ||< external
- 19  4.48      0.   0. entry_door   DC_8074_ VERT -     double_glz   ||< external
+ 19  4.48    360.   0. entry_door   DC_8074_ VERT -     double_glz   ||< external
  20  42.6      0.  90. drop_ceil    OPAQUE   CEIL -     ceiling_dr   ||< drop_ceilr:entry_core
  21  42.6      0. -90. drop_ceilr   OPAQUE   FLOR -     ceiling_dr   ||< drop_ceil:entry_core
  
@@ -1762,26 +1768,26 @@ sunda  2 EquiptW    0-24    129.0      0.0       0.50       0.50
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
-  1  23.9      0.   0. north_1      OPAQUE   VERT -     ext_wall     ||< external
+  1  23.9    360.   0. north_1      OPAQUE   VERT -     ext_wall     ||< external
   2  125.      0.  90. top          OPAQUE   CEIL -     ceiling_dr   ||< over_north:ceiling_2
   3  125.      0. -90. bottom       OPAQUE   FLOR -     inter_flr    ||< under_north:ceiling_1
-  4  2.26    360.   0. frm_north    OPAQUE   VERT -     gl_frame     ||< external
+  4  2.26      0.   0. frm_north    OPAQUE   VERT -     gl_frame     ||< external
   5  19.8    225.   0. nw_ptn       OPAQUE   VERT -     partn_ltw    ||< nw_ptn:office_w2w
   6  28.0    180.   0. corid_c      OPAQUE   VERT -     partn_ltw    ||< corid_cw:passage_2
   7  12.5    270.   0. wf_ptn_c     OPAQUE   VERT -     partn_ltw    ||< wf_ptn_cc:office_2_nor
   8  12.5     90.   0. wf_ptn_cc    OPAQUE   VERT -     partn_ltw    ||< wf_ptn_c:office_2_nor
-  9  12.5    270.   0. wf_ptn_d     OPAQUE   VERT -     partn_ltw    ||< wf_ptn_dd:office_2_nor
- 10  12.5     90.  -0. wf_ptn_dd    OPAQUE   VERT -     partn_ltw    ||< wf_ptn_d:office_2_nor
- 11  2.26    360.   0. frm_neh      OPAQUE   VERT -     gl_frame     ||< external
- 12  23.9      0.   0. north_1e     OPAQUE   VERT -     ext_wall     ||< external
+  9  12.5    270.  -0. wf_ptn_d     OPAQUE   VERT -     partn_ltw    ||< wf_ptn_dd:office_2_nor
+ 10  12.5     90.   0. wf_ptn_dd    OPAQUE   VERT -     partn_ltw    ||< wf_ptn_d:office_2_nor
+ 11  2.26      0.  -0. frm_neh      OPAQUE   VERT -     gl_frame     ||< external
+ 12  23.9    360.   0. north_1e     OPAQUE   VERT -     ext_wall     ||< external
  13  28.0    180.   0. corid_ce     OPAQUE   VERT -     partn_ltw    ||< corid_c:passage_2
  14  12.5     90.   0. ff_ptn_c     OPAQUE   VERT -     partn_ltw    ||< ff_ptn_cc:office_2_nor
- 15  12.5    270.   0. ff_ptn_cc    OPAQUE   VERT -     partn_ltw    ||< ff_ptn_c:office_2_nor
- 16  12.5     90.   0. ff_ptn_d     OPAQUE   VERT -     partn_ltw    ||< ff_ptn_dd:office_2_nor
+ 15  12.5    270.  -0. ff_ptn_cc    OPAQUE   VERT -     partn_ltw    ||< ff_ptn_c:office_2_nor
+ 16  12.5     90.  -0. ff_ptn_d     OPAQUE   VERT -     partn_ltw    ||< ff_ptn_dd:office_2_nor
  17  12.5    270.   0. ff_ptn_dd    OPAQUE   VERT -     partn_ltw    ||< ff_ptn_d:office_2_nor
  18  19.8    135.   0. ne_ptn       OPAQUE   VERT -     partn_ltw    ||< ne_ptn:office_e2e
- 19  15.8      0.   0. gl_north     DC_8074_ VERT C-WIN double_glz   ||< external
- 20  15.8      0.   0. gl_neh       DC_8074_ VERT C-WIN double_glz   ||< external
+ 19  15.8      0.  -0. gl_north     DC_8074_ VERT C-WIN double_glz   ||< external
+ 20  15.8      0.  -0. gl_neh       DC_8074_ VERT C-WIN double_glz   ||< external
  
  Vertices ( index X Y Z) in the zone...
 vertex   1   10.00000   26.00000    8.05000   vertex  23   27.00000   26.00000   10.25000
@@ -1919,7 +1925,7 @@ sunda  3 EquiptW    0-24    297.5      0.0       0.50       0.50
  office_2_sth is the south perimeter cellular offices
  There is 84.000m2 of exposed surface area, 84.000m2 of which is vertical.
  Outside walls are 44.644 % of floor area & avg U of 0.530 & UA of 29.591
- Glazing is 22.556 % of floor & 33.566 % facade with avg U of 2.877 & UA of 81.110
+ Glazing is 22.556 % of floor & 33.566 % facade with avg U of 2.877 & UA of 81.109
  
  A summary of the surfaces in office_2_sth(12) follows:
  
@@ -1929,19 +1935,19 @@ sunda  3 EquiptW    0-24    297.5      0.0       0.50       0.50
   2  62.5      0. -90. bottom       OPAQUE   FLOR -     inter_flr    ||< under_off_sw:ceiling_1
   3  25.4    180.   0. south_wall   OPAQUE   VERT -     ext_wall     ||< external
   4  2.46    180.   0. south_swfrm  OPAQUE   VERT -     gl_frame     ||< external
-  5  28.0      0.   0. corid_a      OPAQUE   VERT -     partn_ltw    ||< corid_aw:passage_2
+  5  28.0    360.   0. corid_a      OPAQUE   VERT -     partn_ltw    ||< corid_aw:passage_2
   6  19.8    315.   0. sw_ptn       OPAQUE   VERT -     partn_ltw    ||< sw_ptn:office_w2w
   7  12.5    270.   0. wf_ptn_a     OPAQUE   VERT -     partn_ltw    ||< wf_ptn_aa:office_2_sth
   8  12.5     90.   0. wf_ptn_aa    OPAQUE   VERT -     partn_ltw    ||< wf_ptn_a:office_2_sth
-  9  12.5    270.   0. wf_ptn_b     OPAQUE   VERT -     partn_ltw    ||< wf_ptn_bb:office_2_sth
+  9  12.5    270.  -0. wf_ptn_b     OPAQUE   VERT -     partn_ltw    ||< wf_ptn_bb:office_2_sth
  10  12.5     90.   0. wf_ptn_bb    OPAQUE   VERT -     partn_ltw    ||< wf_ptn_b:office_2_sth
  11  25.4    180.   0. south_walle  OPAQUE   VERT -     ext_wall     ||< external
  12  2.46    180.   0. south_sefrm  OPAQUE   VERT -     gl_frame     ||< external
  13  12.5     90.   0. ff_ptn_a     OPAQUE   VERT -     partn_ltw    ||< ff_ptn_aa:office_2_sth
- 14  12.5    270.   0. ff_ptn_aa    OPAQUE   VERT -     partn_ltw    ||< ff_ptn_a:office_2_sth
- 15  12.5     90.   0. ff_ptn_b     OPAQUE   VERT -     partn_ltw    ||< ff_ptn_bb:office_2_sth
+ 14  12.5    270.  -0. ff_ptn_aa    OPAQUE   VERT -     partn_ltw    ||< ff_ptn_a:office_2_sth
+ 15  12.5     90.  -0. ff_ptn_b     OPAQUE   VERT -     partn_ltw    ||< ff_ptn_bb:office_2_sth
  16  12.5    270.   0. ff_ptn_bb    OPAQUE   VERT -     partn_ltw    ||< ff_ptn_b:office_2_sth
- 17  28.0      0.   0. corid_ae     OPAQUE   VERT -     partn_ltw    ||< corid_a:passage_2
+ 17  28.0    360.   0. corid_ae     OPAQUE   VERT -     partn_ltw    ||< corid_a:passage_2
  18  19.8     45.   0. se_ptn       OPAQUE   VERT -     partn_ltw    ||< se_ptn:office_e2e
  19  62.5      0.  90. top_e        OPAQUE   CEIL -     ceiling_dr   ||< over_se:ceiling_2
  20  62.5      0. -90. base_east    OPAQUE   FLOR -     inter_flr    ||< under_off_se:ceiling_1
@@ -2088,7 +2094,7 @@ sunda  3 EquiptW    0-24    297.5      0.0       0.50       0.50
  office_e2e is the east perimeter offices of level 2
  There is 50.400m2 of exposed surface area, 50.400m2 of which is vertical.
  Outside walls are 67.275 % of floor area & avg U of 0.376 & UA of 16.445
- Glazing is 10.263 % of floor & 13.236 % facade with avg U of 2.877 & UA of 19.191
+ Glazing is 10.263 % of floor & 13.237 % facade with avg U of 2.877 & UA of 19.191
  
  A summary of the surfaces in office_e2e(13) follows:
  
@@ -2379,18 +2385,18 @@ sunda  3 EquiptW    0-24    157.1      0.0       0.50       0.50
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
-  1  25.2    360.   0. north_2      OPAQUE   VERT -     partn_ltw    ||< north_2:core_two
+  1  25.2      0.   0. north_2      OPAQUE   VERT -     partn_ltw    ||< north_2:core_two
   2  26.0      0.  90. top          OPAQUE   CEIL -     ceiling_dr   ||< top_epag:ceiling_2
   3  26.0      0. -90. bottom       OPAQUE   FLOR -     inter_flr    ||< bottom_ep2:ceiling_1
   4  25.2    180.   0. ptn_core_a   OPAQUE   VERT -     partn_ltw    ||< ptn_core_a:core_two
   5  16.8    270.   0. ptn_cor_b    OPAQUE   VERT -     partn_ltw    ||< ptn_cor_b:core_two
   6  28.0    180.   0. corid_a      OPAQUE   VERT -     partn_ltw    ||< corid_ae:office_2_sth
-  7  28.0      0.   0. corid_c      OPAQUE   VERT -     partn_ltw    ||< corid_ce:office_2_nor
+  7  28.0    360.   0. corid_c      OPAQUE   VERT -     partn_ltw    ||< corid_ce:office_2_nor
   8  22.4     90.   0. corid_b      OPAQUE   VERT -     partn_ltw    ||< corid_b:office_e2e
   9  28.0    180.   0. corid_aw     OPAQUE   VERT -     partn_ltw    ||< corid_a:office_2_sth
- 10  25.2    360.   0. north_2w     OPAQUE   VERT -     partn_ltw    ||< ptn_f:core_two
+ 10  25.2      0.   0. north_2w     OPAQUE   VERT -     partn_ltw    ||< ptn_f:core_two
  11  16.8     90.   0. ptn_cor_bw   OPAQUE   VERT -     partn_ltw    ||< ptn_e:core_two
- 12  28.0      0.   0. corid_cw     OPAQUE   VERT -     partn_ltw    ||< corid_c:office_2_nor
+ 12  28.0    360.   0. corid_cw     OPAQUE   VERT -     partn_ltw    ||< corid_c:office_2_nor
  13  25.2    180.   0. ptn_core_aw  OPAQUE   VERT -     partn_ltw    ||< ptn_d:core_two
  14  22.4    270.   0. west_p_cor   OPAQUE   VERT -     partn_ltw    ||< corid_b:office_w2w
  15  26.0      0.  90. top_w        OPAQUE   CEIL -     ceiling_dr   ||< top_wpag:ceiling_2
@@ -2497,16 +2503,16 @@ sunda  2 EquiptW    0-24    140.0      0.0       0.50       0.50
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
-  1  15.8    180.   0. south_e      OPAQUE   VERT -     ext_wall     ||< external
+  1  15.7    180.   0. south_e      OPAQUE   VERT -     ext_wall     ||< external
   2  18.9     90.   0. east         OPAQUE   VERT -     ext_wall     ||< external
-  3  15.8      0.   0. north_e      OPAQUE   VERT -     ext_wall     ||< external
-  4  4.20    360.   0. north_c1_f   OPAQUE   VERT -     partn_ltw    ||< north_c2:entry_core
+  3  15.7    360.   0. north_e      OPAQUE   VERT -     ext_wall     ||< external
+  4  4.20      0.   0. north_c1_f   OPAQUE   VERT -     partn_ltw    ||< north_c2:entry_core
   5  246.      0.  90. top_e        OPAQUE   CEIL -     inter_flrev  ||< bottom:office_e_1
   6  15.7    180.   0. south_w      OPAQUE   VERT -     ext_wall     ||< external
   7  18.9    270.   0. west         OPAQUE   VERT -     ext_wall     ||< external
-  8  15.7      0.   0. north_w      OPAQUE   VERT -     ext_wall     ||< external
+  8  15.7    360.   0. north_w      OPAQUE   VERT -     ext_wall     ||< external
   9  6.30     90.   0. east_c1      OPAQUE   VERT -     partn_ltw    ||< east_c1:entry_core
- 10  4.20    360.   0. north_c1     OPAQUE   VERT -     partn_ltw    ||< north_c1:entry_core
+ 10  4.20      0.   0. north_c1     OPAQUE   VERT -     partn_ltw    ||< north_c1:entry_core
  11  246.      0.  90. top_w        OPAQUE   CEIL -     inter_flrev  ||< bottom:office_w_1
  12  4.20    180.   0. core_c1_a    OPAQUE   VERT -     partn_ltw    ||< core_c1_a:entry_core
  13  6.30    270.   0. core_c1_b    OPAQUE   VERT -     partn_ltw    ||< core_c1_b:entry_core
@@ -2673,13 +2679,13 @@ vertex  21   25.00000   20.00000    7.00000   vertex  42   35.00000   14.00000  
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
-  1  15.8    180.   0. south_e      OPAQUE   VERT -     ext_wall     ||< external
+  1  15.7    180.   0. south_e      OPAQUE   VERT -     ext_wall     ||< external
   2  18.9     90.   0. east         OPAQUE   VERT -     ext_wall     ||< external
-  3  15.8      0.   0. north_e      OPAQUE   VERT -     ext_wall     ||< external
+  3  15.7      0.   0. north_e      OPAQUE   VERT -     ext_wall     ||< external
   4  216.      0.  90. top_e        OPAQUE   CEIL -     inter_flrev  ||< bottom:office_e_3
-  5  15.8    180.   0. south_w      OPAQUE   VERT -     ext_wall     ||< external
+  5  15.7    180.   0. south_w      OPAQUE   VERT -     ext_wall     ||< external
   6  18.9    270.   0. west         OPAQUE   VERT -     ext_wall     ||< external
-  7  15.8      0.   0. north_w      OPAQUE   VERT -     ext_wall     ||< external
+  7  15.7      0.   0. north_w      OPAQUE   VERT -     ext_wall     ||< external
   8  6.30     90.   0. east_c1      OPAQUE   VERT -     partn_ltw    ||< east_c2:core_two
   9  216.      0.  90. top_w        OPAQUE   CEIL -     inter_flrev  ||< bottom:office_w_3
  10  6.30    270.   0. core_c2_b    OPAQUE   VERT -     partn_ltw    ||< core_c2_b:core_two
@@ -2953,21 +2959,10 @@ Number of weekdays     casual gains=  0
  ____________________________________________________________
  Multi-layer constructions used:
  
- Details of opaque construction: roof and overall thickness  0.161
+ Details of opaque construction: ext_wall linked to ext_wall_r   & with overall thickness  0.300
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext    47    3.0    40.000  7800.   502. 0.82 0.72 19200.  0.00 Grey ptd steel : Grey ptd steel
-    2    0   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3  212  130.0     0.190   960.   950. 0.90 0.55    15.  0.68 Roof insulation board : Roof insulation boar
- Int    42    3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
- ISO 6946 U values (horiz/upward/downward heat flow)=  0.976  1.006  0.940 (partition)  0.897
- Total area of roof is    668.25
- 
- Details of opaque construction: ext_wall and overall thickness  0.300
- 
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext     6  100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 Lt brown brick : Lt brown brick
     2    0   10.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
     3    2  100.0     0.440  1500.   650. 0.90 0.65    15.  0.23 Breeze block : Breeze block
@@ -2975,15 +2970,15 @@ Number of weekdays     casual gains=  0
     5    0   10.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
  Int   108    5.0     0.190   950.   840. 0.91 0.22    11.  0.03 White ptd Gypboard : White ptd Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.297  0.300  0.293 (partition)  0.289
- Total area of ext_wall is   1091.20
+ Total area of ext_wall is     91.80
  
  Details of transparent construction: double_glz with DC_8074_04nb optics and overall thickness  0.020
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   243    4.0     1.050  2500.   750. 0.83 0.05 19200.  0.00 4mm clear float : 4mm clear float with place
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   243    4.0     1.050  2500.   750. 0.83 0.05 19200.  0.00 4mm clear float : 4mm clear float with placeholder single layer optics
     2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   243    4.0     1.050  2500.   750. 0.83 0.05 19200.  0.00 4mm clear float : 4mm clear float with place
+ Int   243    4.0     1.050  2500.   750. 0.83 0.05 19200.  0.00 4mm clear float : 4mm clear float with placeholder single layer optics
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.877  3.148  2.580 (partition)  2.285
  
  Clear glass 80/75,     4mm, no blind: with id of: DC_8074_04nb
@@ -2994,76 +2989,42 @@ Number of weekdays     casual gains=  0
     1  0.113 0.124 0.134 0.148 0.154
     2  0.001 0.002 0.003 0.004 0.005
     3  0.087 0.094 0.097 0.087 0.062
- Total area of double_glz is    297.01
+ Total area of double_glz is     36.57
  
  Details of opaque construction: partn_ltw and overall thickness  0.049
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 White ptd Gypboard : White ptd Gypboard
     2    0   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
  Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 White ptd Gypboard : White ptd Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.144  2.292  1.975 (partition)  1.798
- Total area of partn_ltw is   1903.19
+ Total area of partn_ltw is     72.80
  
- Details of opaque construction: foundation and overall thickness  1.480
+ Details of opaque construction: inter_flr linked to inter_flrev  & with overall thickness  0.110
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common_earth : Common_earth
-    2  263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common_earth : Common_earth
-    3  263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common_earth : Common_earth
-    4  263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common_earth : Common_earth
-    5  263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common_earth : Common_earth
-    6  262  100.0     0.520  2050.   184. 0.90 0.85     2.  0.19 Gravel based : Gravel based
-    7  205   25.0     0.030    30.   837. 0.90 0.50    90.  0.83 Polyurethane foam board : Polyurethane foam
-    8   32  100.0     1.400  2100.   653. 0.90 0.65    19.  0.07 Heavy mix concrete : Heavy mix concrete
- Int   228    5.0     0.060   160.  2500. 0.90 0.85    10.  0.08 Grey loop pile synth : Grey loop pile synth
- ISO 6946 U values (horiz/upward/downward heat flow)=  0.430  0.435  0.422 (partition)  0.414
- Total area of foundation is    540.00
- 
- Details of opaque construction: inter_flr and overall thickness  0.110
- 
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext    42    3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
     2   32  101.6     1.400  2100.   653. 0.90 0.65    19.  0.07 Heavy mix concrete : Heavy mix concrete
  Int   228    5.0     0.060   160.  2500. 0.90 0.85    10.  0.08 Grey loop pile synth : Grey loop pile synth
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.068  3.379  2.733 (partition)  2.404
- Total area of inter_flr is   1620.00
- 
- Details of opaque construction: inter_flrev and overall thickness  0.110
- 
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   228    5.0     0.060   160.  2500. 0.90 0.85    10.  0.08 Grey loop pile synth : Grey loop pile synth
-    2   32  101.6     1.400  2100.   653. 0.90 0.65    19.  0.07 Heavy mix concrete : Heavy mix concrete
- Int    42    3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
- ISO 6946 U values (horiz/upward/downward heat flow)=  3.068  3.379  2.733 (partition)  2.404
- Total area of inter_flrev is   1620.00
+ Total area of inter_flr is    246.00
  
  Details of opaque construction: ceiling_dr and overall thickness  0.010
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
     1  150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 Ceiling (mineral) : Ceiling (mineral)
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.987  2.113  1.840 (partition)  1.685
- Total area of ceiling_dr is   3997.12
+ Total area of ceiling_dr is    246.00
  
- Details of opaque construction: window_frame and overall thickness  0.025
+ Details of opaque construction: gl_frame and overall thickness  0.029
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
-    1   69   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 Oak (radial) : Oak (radial)
- ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
- Total area of window_frame is      1.12
- 
- Details of opaque construction: gl_frame and overall thickness  0.000
- 
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 Grey cotd aluminium : Grey cotd aluminium
     2    0   20.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
  Int    46    5.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 Grey cotd aluminium : Grey cotd aluminium
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.941  3.225  2.631 (partition)  2.325
- Total area of gl_frame is     48.27
+ Total area of gl_frame is      6.03

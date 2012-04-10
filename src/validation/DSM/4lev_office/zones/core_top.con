@@ -3,7 +3,7 @@
 # layers|gaps|  no.  name      | database name 
      3,     1  #  1 ptn_core_a   partn_ltw   
      3,     1  #  2 ptn_cor_b    partn_ltw   
-     3,     1  #  3 north_2      partn_ltw   
+     3,     1  #  3 ptn_f        partn_ltw   
      3,     1  #  4 ptn_core_c   partn_ltw   
      3,     1  #  5 ptn_cor_d    partn_ltw   
      3,     1  #  6 ptn_e        partn_ltw   

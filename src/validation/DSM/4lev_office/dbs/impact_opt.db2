@@ -1,5 +1,5 @@
-# optical properties db for default windows,
-# TMC files and casual gain control
+# optical properties db for transparent,
+# constructions (TMC) and casual gain control
 # 
 # Glazed info follows:
 # 12 char id |  description       | thick | blind
@@ -149,16 +149,16 @@ DCF6741_06n   :dbl_air_low
   1.000 0.001 0.001 0.001 0.001 0.001
   1.520 0.066 0.069 0.069 0.061 0.044
 # 12 char id |  description       | thick | blind
-DC_PVpn_06nb  :a-Si PV panel    ,     13mm, no blind
+DC_PVpn_06nb  :a-Si PV panel    ,     13mm, no blin
 # def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
-  1,  4, 0.70,  0.10, 0.20, 4.48
+  1   4  0.700  0.100  0.200  4.480
 # direct trn @ 5 angles, total heat gain @ 5 angles
-  0.586, 0.553, 0.476, 0.272, 0.089, 0.505, 0.472, 0.398, 0.240, 0.092
+  0.586 0.553 0.476 0.272 0.089 0.505 0.472 0.398 0.240 0.092
 # refr index, absorption @ 5 angles for each tmc layer
-  1.52,  0.031, 0.035, 0.039, 0.045, 0.049 
-  1.52,  0.089, 0.097, 0.105, 0.108, 0.094 
-  1.52,  0.062, 0.066, 0.068, 0.062, 0.045
-  1.52,  0.018, 0.019, 0.018, 0.013, 0.007 
+  1.520 0.031 0.035 0.039 0.045 0.049
+  1.520 0.089 0.097 0.105 0.108 0.094
+  1.520 0.062 0.066 0.068 0.062 0.045
+  1.520 0.018 0.019 0.018 0.013 0.007
 # 12 char id |  description       | thick | blind
 SOLAREX       :PV-hybrid-cell_3mm
 # def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
@@ -168,3 +168,13 @@ SOLAREX       :PV-hybrid-cell_3mm
 # refr index, absorption @ 5 angles for each tmc layer
   1.520 0.011 0.012 0.013 0.014 0.014
   1.520 0.839 0.831 0.794 0.663 0.421
+# 12 char id |  description       | thick | blind
+Darkdoublen   :Nearly opaque glass 4mm
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   3  0.800  0.120  0.210  2.800
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.004 0.003 0.002 0.001 0.001 0.749 0.731 0.687 0.520 0.265
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.014 0.014 0.014 0.014 0.015
+  1.000 0.001 0.002 0.003 0.004 0.005
+  1.520 0.940 0.950 0.950 0.950 0.960

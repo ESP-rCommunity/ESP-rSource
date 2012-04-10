@@ -1,10 +1,10 @@
-# thermophysical properties of ceiling_1 defined in ../zones/ceiling_1.con
+# thermophysical properties of ceiling_g defined in ../zones/ceiling_1.con
 # no of |air |surface(from geo)| multilayer construction
 # layers|gaps|  no.  name      | database name 
      6,     2  #  1 south_e      ext_wall    
      6,     2  #  2 east         ext_wall    
      6,     2  #  3 north_e      ext_wall    
-     3,     1  #  4 north_c2     partn_ltw   
+     3,     1  #  4 north_c1_f   partn_ltw   
      3,     0  #  5 top_e        inter_flrev 
      6,     2  #  6 south_w      ext_wall    
      6,     2  #  7 west         ext_wall    
@@ -15,8 +15,8 @@
      3,     1  # 12 core_c1_a    partn_ltw   
      3,     1  # 13 core_c1_b    partn_ltw   
      3,     1  # 14 core_c1w_a   partn_ltw   
-     1,     0  # 15 top          ceiling_dr  
-     1,     0  # 16 bottom_w     ceiling_dr  
+     1,     0  # 15 ovr_off_g_e  ceiling_dr  
+     1,     0  # 16 ovr_off_w_g  ceiling_dr  
      1,     0  # 17 over_entr    ceiling_dr  
 # air gap position & resistance for surface  1
   2,   0.170, 5,   0.170,
