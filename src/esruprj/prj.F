@@ -3898,9 +3898,12 @@ C function in lib/esp_draw.c
 
 C ********************* CFGVER 
 C CFGVER supports the creation of model variants.
-C It copies a project and gives it a new name   
+C It copies model files and gives them new names   
 C thereby facilitating creatiion of multiple versions
 C of the same project that can later be modified.
+
+C << logic would be simpler if models had to be upgraded to
+C << the latest version prior to running this facility.
 
       SUBROUTINE CFGVER
 #include "building.h"
@@ -3913,12 +3916,12 @@ C of the same project that can later be modified.
       common/user/browse
       common/C21/IFCFG,cfgroot,LCFGF
 
-      dimension items(7),items2(33)
+      dimension items2(33)
       CHARACTER*72 H,LCFGF
-      CHARACTER ITEMS*36,ITEMS2*36,APP*6
+      CHARACTER ITEMS2*36,APP*6
       CHARACTER NBSTR*6,CFGROOT*24,OUTS*124
-      LOGICAL BROWSE
-      integer MITEM,INO,MITEMS2,KNO ! max items and current menu item
+      LOGICAL BROWSE,clkok
+      integer MITEMS2,KNO ! max items and current menu item
 
       IF(BROWSE)THEN
         CALL EDISP(IUOUT,
@@ -3950,272 +3953,240 @@ C Help message for version manager menu
       H(21)= 'Several changes may be applied within a single'
       H(22)= 'variant.'
       H(23)= ' '
-      H(24)= 'A five character postfix is requested from the'
-      H(25)= 'user and this is appended to the names of new files.'
-      H(26)= ' '
-      H(27)= ' '
-      H(28)= '*****SBEM Notional Model*****'
-      H(29)= ' ESP-r creates the SBEM notional model in compliance with'
-      H(30)= ' CIBSE TM33 ??? This creates a model with the postfix'
-      H(31)= ' _not [i.e. filname.cfg is copied to filename_not.cfg]'
-      H(32)= ' '
-      H(33)= ' Details of how the notonal building relates to the '
-      H(34)= ' original building and plant model is defined in relevant'
-      H(35)= ' SBEM documentation'
-      H(36)= ' '
+      H(24)= 'An (up to) six character postfix is requested e.g.'
+      H(25)= '_hmass to be appended to the names of new files.'
 
 C Ask for changes to be made
- 200  INO=-3
-      ITEMS(1) = 'a make a project variant'
-      ITEMS(2) = 'b other 0 (under developmnet)'
-      ITEMS(3) = 'c other 1 (under development)'
-      ITEMS(4) = 'd other 2 (under development)'
-      ITEMS(5) = ' --------------------------'
-      ITEMS(6) = '? help'
-      ITEMS(7) = '- exit'
-      MITEM=7
-      CALL EMENU('Variants Manager',ITEMS,MITEM,INO)
-      IF(INO.EQ.1)THEN
-        APP='_xyz  '
-        CALL EASKS(APP,' ',
-     &     'Specify up to 6 characters to append to project name?',
-     &     6,'project','root name modifier',IER,36)
-        K=0
-        CALL EGETRM(APP,K,NBSTR,'W','cfg modifier ',IER)
-        APP=NBSTR
-        WRITE(OUTS,'(4A)')'* New project name will be `',
-     &        CFGROOT(1:LNBLNK(CFGROOT)),APP,'`.'
-        CALL EDISP(IUOUT,OUTS)
+      APP='_xyz  '
+      CALL EASKSCMD(APP,' ',
+     &  'Specify up to 6 characters to append to project name?',
+     &  'cancel',clkok,6,'_xyz','root name modifier',IER,25)
+      call usrmsg(' ',' ','-')
+      if(clkok) return         ! User selected cancel.
+
+      K=0
+      CALL EGETRM(APP,K,NBSTR,'W','cfg modifier ',IER)
+      APP=NBSTR
+      WRITE(OUTS,'(4A)')'* New project name will be `',
+     &  CFGROOT(1:LNBLNK(CFGROOT)),APP,'`.'
+      CALL EDISP(IUOUT,OUTS)
 
 C Change string holding cfg description
-        CALL EASKS(modeltitle,' ','Description for this variant?',
-     &     72,'project','description modifier',IER,35)
-C        CALL EDISP(IUOUT,'* New project description will be ')
-C        CALL EDISP(IUOUT,modeltitle)
+      CALL EASKS(modeltitle,' ','Description for this variant?',
+     &   72,'project','description modifier',IER,35)
 
 C Set up menu for different variants
-        LRCR=0
- 201    KNO=-3
-        ITEMS2(1) = ' ___ Site and location ___'
-        ITEMS2(2) = 'a global tasks and site exposure'
-        ITEMS2(3) = 'b site exposure & ground reflectance'
-        ITEMS2(4) = 'c climate, latitude and longitude'
-        ITEMS2(5) = 'd pressure distribution'
-        ITEMS2(6) = 'e ground temperature profiles'
-        ITEMS2(7) = ' ___ Form and fabric ___'
-        ITEMS2(8) = 'f geometry and attribution'
-        ITEMS2(9) = 'g shading and insolation'
-        ITEMS2(10)= 'h view factors and radiant sensors'
-        ITEMS2(11)= 'i glazed area'
-        ITEMS2(12)= 'j zone constructions'
-        ITEMS2(13)= 'k zone materials properties'
-        ITEMS2(14)= 'l computational fluid dynamics'
-        ITEMS2(15)= 'm convection regimes'
-        ITEMS2(16)= 'n active materials/advanced optics'
-        ITEMS2(17)= 'o adaptive gridding and moisture'
-        ITEMS2(18)= 'p building integrated renewables'
-        ITEMS2(19)= 'q integrated performance view'
-        ITEMS2(20)= '___ Networks ___'
-        ITEMS2(21)= 'r fluid flow'
-        ITEMS2(22)= 's electrical'
-        ITEMS2(23)= 't plant'
-        ITEMS2(24)= 'u contaminants'
-        ITEMS2(25)= '___ Usage ___'
-        ITEMS2(26)= 'v zone operations'
-        ITEMS2(27)= 'w controls'
-        ITEMS2(28)= 'x casual gains control'
-        ITEMS2(29)= 'y event profiles'
-        ITEMS2(30)= 'z mould and mycotoxins'
-        ITEMS2(31)=' --------------------------------'
-        ITEMS2(32)='? help'
-        ITEMS2(33)='- exit this menu'
-        MITEMS2=33
+      LRCR=0
+ 201  KNO=-3
+      ITEMS2(1) = ' ___ Site and location ___'
+      ITEMS2(2) = 'a global tasks and site exposure'
+      ITEMS2(3) = 'b site exposure & ground reflectance'
+      ITEMS2(4) = 'c climate, latitude and longitude'
+      ITEMS2(5) = 'd pressure distribution'
+      ITEMS2(6) = 'e ground temperature profiles'
+      ITEMS2(7) = ' ___ Form and fabric ___'
+      ITEMS2(8) = 'f geometry and attribution'
+      ITEMS2(9) = 'g shading and insolation'
+      ITEMS2(10)= 'h view factors and radiant sensors'
+      ITEMS2(11)= 'i - future option -'
+      ITEMS2(12)= 'j zone constructions'
+      ITEMS2(13)= 'k zone materials properties'
+      ITEMS2(14)= 'l computational fluid dynamics'
+      ITEMS2(15)= 'm convection regimes'
+      ITEMS2(16)= 'n active materials/advanced optics'
+      ITEMS2(17)= 'o adaptive gridding and moisture'
+      ITEMS2(18)= 'p building integrated renewables'
+      ITEMS2(19)= 'q integrated performance view'
+      ITEMS2(20)= '___ Networks ___'
+      ITEMS2(21)= 'r fluid flow'
+      ITEMS2(22)= 's electrical'
+      ITEMS2(23)= 't plant'
+      ITEMS2(24)= 'u contaminants'
+      ITEMS2(25)= '___ Usage ___'
+      ITEMS2(26)= 'v zone operations'
+      ITEMS2(27)= 'w controls'
+      ITEMS2(28)= 'x casual gains control'
+      ITEMS2(29)= 'y event profiles'
+      ITEMS2(30)= 'z mould and mycotoxins'
+      ITEMS2(31)=' --------------------------------'
+      ITEMS2(32)='? help'
+      ITEMS2(33)='- exit this menu'
+      MITEMS2=33
 
 C Help.
-        h(1) ='Change options:'
-        h(2) =' global tasks - work in progress - use with caution.'
-        h(3) =' '
-        h(4) =' site exposure & ground reflectivity - modifies these'
-        h(5) ='   values within revised configuration file.'
-        h(6) =' '
-        h(7) =' geometry & attribution - copies zone files so that'
-        h(8) ='   subsequent changes are saved to new files. If there'
-        h(9) ='   are viewfactor, shading, obstruction, hc regime or'
-        h(10)='   or casual gain ctl files these are copied as'
-        h(11)='   well as revised configuration and connections files.'
-        h(12)=' '
-        h(13)=' shading - if selected will duplicate and then update'
-        h(14)='   existing shading files e.g. a change in site.'
-        h(15)=' '
-        h(16)=' climate data & latitude/longitude - finds dependencies'
-        h(17)='   associated with such changes (ground temps, shading,'
-        h(18)='   IPV) and updates the model accordingly.'
-        h(19)=' '
-        h(20)=' pressure distributions - either alters cp definitions'
-        h(21)='   (so-called cpcalc method) or copies and then edits'
-        h(22)='   pressure distributions database.'
-        h(23)=' '
-        h(24)=' glazed area - not yet operational'
-        h(25)=' '
-        h(26)=' zone constructions - copies geometry, construction '
-        h(27)='   and tmc files to hold subsequent changes by the'
-        h(28)='   user. Also creates variant connections and model'
-        h(29)='   configuration file. If number of surfaces will'
-        h(30)='   be altered select `geometry & attribution` first.'
-        h(31)=' '
-        h(32)=' materials database - makes copy of current database'
-        h(33)='   to hold subsequent changes by the user.'
-        h(34)=' '
-        h(35)=' cfd domain - makes copy of current domains to hold'
-        h(36)='   subsequent changes by the user.'
-        h(37)=' '
-        h(38)=' ground temperature profiles - select this if site'
-        h(39)='   details are being altered.'
-        h(40)=' '
-        h(41)=' convection regimes - make copy of current regimes'
-        h(42)='   to hold subsequent changes by the user'
-        h(43)=' '
-        h(44)=' active materials - not yet implemented'
-        h(45)=' adaptive gridding - not yet implemented'
-        h(46)=' '
-        h(47)=' building integrated reneuables - not yet implemented'
-        h(48)=' '
-        h(49)=' integrated performance view - select this to update'
-        h(50)='   documentation and title (probably should be done'
-        h(51)='   in conjunction with any other variant task).'
-        h(52)=' '
-        h(53)=' flow network - copy current network to hold'
-        h(54)='   subsequent user changes.'
-        h(55)=' '
-        h(56)=' schedules - copy current zone operations to hold'
-        h(57)='   subseuent user changes.'
-        h(58)=' '
-        CALL EMENU('Model Variants',ITEMS2,MITEMS2,KNO)
+      h(1) ='Change options:'
+      h(2) ='Note: some options are restricted to changing existing'
+      h(3) ='descriptions rather than adding new data types. '
+      h(4) =' site exposure & ground reflectivity - modifies these'
+      h(5) ='   values within revised configuration file.'
+      h(6) =' '
+      h(7) =' geometry & attribution - copies zone files so that'
+      h(8) ='   subsequent changes are saved to new files. If there'
+      h(9) ='   are viewfactor, shading, obstruction, hc regime or'
+      h(10)='   or casual gain ctl files these are copied as'
+      h(11)='   well as revised configuration and connections files.'
+      h(12)=' '
+      h(13)=' shading - if selected will duplicate and then update'
+      h(14)='   existing shading files. Note that changing many other'
+      h(15)='   aspects of a model will update these files so this'
+      h(16)='   option normally does not need to be selected.'
+      h(17)=' '
+      h(18)=' climate data & latitude/longitude - finds dependencies'
+      h(19)='   associated with such changes (ground temps, shading,'
+      h(20)='   IPV) and updates the model accordingly.'
+      h(21)=' '
+      h(22)=' pressure distributions - either alters cp definitions'
+      h(23)='   (so-called cpcalc method) or copies and then edits'
+      h(24)='   pressure distributions database.'
+      h(25)=' '
+      h(26)=' zone constructions - copies geometry, construction '
+      h(27)='   and tmc files to hold subsequent changes by the'
+      h(28)='   user. Also creates variant connections and model'
+      h(29)='   configuration file. If number of surfaces will'
+      h(30)='   be altered select `geometry & attribution` first.'
+      h(31)=' '
+      h(32)=' materials database - makes copy of current database'
+      h(33)='   to hold subsequent changes by the user.'
+      h(34)=' '
+      h(35)=' cfd domain - makes copy of current domains to hold'
+      h(36)='   subsequent changes by the user.'
+      h(37)=' '
+      h(38)=' ground temperature profiles - select this if site'
+      h(39)='   details are being altered.'
+      h(40)=' '
+      h(41)=' convection regimes - make copy of current regimes'
+      h(42)='   to hold subsequent changes by the user'
+      h(43)=' '
+      h(44)=' active materials - not yet implemented'
+      h(45)=' adaptive gridding - not yet implemented'
+      h(46)=' '
+      h(47)=' building integrated reneuables - not yet implemented'
+      h(48)=' '
+      h(49)=' integrated performance view - select this to update'
+      h(50)='   documentation and title. If an IPV exists do this'
+      h(51)='   in conjunction with any other variant task).'
+      h(52)=' '
+      h(53)=' flow network - copy current network to hold'
+      h(54)='   subsequent user changes.'
+      h(55)=' '
+      h(56)=' schedules - copy current zone operations to hold'
+      h(57)='   subseuent user changes.'
+      h(58)=' '
+      CALL EMENU('Model Variants',ITEMS2,MITEMS2,KNO)
 
-        IF(KNO.EQ.2)THEN
+      IF(KNO.EQ.2)THEN
 
 C Site and location
 C global tasks and site exposure 
-          CALL VERMAN(APP,1,LRCR)
-        ELSEIF(KNO.EQ.3)THEN
+        CALL VERMAN(APP,1,LRCR)
+      ELSEIF(KNO.EQ.3)THEN
 
 C site exposure and ground reflectance
-          CALL VERMAN(APP,3,LRCR)
-        ELSEIF(KNO.EQ.4)THEN
+        CALL VERMAN(APP,3,LRCR)
+      ELSEIF(KNO.EQ.4)THEN
 
 C climate, latitiude and longitude
-          CALL VERMAN(APP,6,LRCR)
-        ELSEIF(KNO.EQ.5)THEN
+        CALL VERMAN(APP,6,LRCR)
+      ELSEIF(KNO.EQ.5)THEN
 
 C pressure distributions
-          CALL VERMAN(APP,7,LRCR)
-        ELSEIF(KNO.EQ.6)THEN
+        CALL VERMAN(APP,7,LRCR)
+      ELSEIF(KNO.EQ.6)THEN
 
 C ground temperature profiles
-          CALL VERMAN(APP,12,LRCR)
-        ELSEIF(KNO.EQ.8)THEN
+        CALL VERMAN(APP,12,LRCR)
+      ELSEIF(KNO.EQ.8)THEN
 
 C geometry and attribution
-          CALL VERMAN(APP,2,LRCR)
-        ELSEIF(KNO.EQ.9)THEN
+        CALL VERMAN(APP,2,LRCR)
+      ELSEIF(KNO.EQ.9)THEN
 
 C shading and insolation
-          CALL VERMAN(APP,4,LRCR)
-        ELSEIF(KNO.EQ.10)THEN
+        CALL VERMAN(APP,4,LRCR)
+      ELSEIF(KNO.EQ.10)THEN
 
 C view factors and radiant sensors
-          CALL VERMAN(APP,5,LRCR)
-        ELSEIF(KNO.EQ.11)THEN
+        CALL VERMAN(APP,5,LRCR)
+      ELSEIF(KNO.EQ.11)THEN
 
-C Form and fabric information
-C glazed area
-          CALL VERMAN(APP,8,LRCR)
-        ELSEIF(KNO.EQ.12)THEN
+C Future option (CALL VERMAN(APP,8,LRCR))
+        GOTO 201
+      ELSEIF(KNO.EQ.12)THEN
 
 C variant zone constructions
-          CALL VERMAN(APP,9,LRCR)
-        ELSEIF(KNO.EQ.13)THEN
+        CALL VERMAN(APP,9,LRCR)
+      ELSEIF(KNO.EQ.13)THEN
 
 C variant material database
-          CALL VERMAN(APP,10,LRCR)
-        ELSEIF(KNO.EQ.14)THEN
+        CALL VERMAN(APP,10,LRCR)
+      ELSEIF(KNO.EQ.14)THEN
 
 C CFD domain
-          CALL VERMAN(APP,11,LRCR)
-        ELSEIF(KNO.EQ.15)THEN
+        CALL VERMAN(APP,11,LRCR)
+      ELSEIF(KNO.EQ.15)THEN
 
 C convection calculations
-          CALL VERMAN(APP,13,LRCR)
-        ELSEIF(KNO.EQ.16)THEN
+        CALL VERMAN(APP,13,LRCR)
+      ELSEIF(KNO.EQ.16)THEN
 
 C active materials and advanced optics
-          CALL VERMAN(APP,14,LRCR)
-        ELSEIF(KNO.EQ.17)THEN
+        CALL VERMAN(APP,14,LRCR)
+      ELSEIF(KNO.EQ.17)THEN
 
 C adaptive gridding and moisture
-          CALL VERMAN(APP,15,LRCR)
-        ELSEIF(KNO.EQ.18)THEN
+        CALL VERMAN(APP,15,LRCR)
+      ELSEIF(KNO.EQ.18)THEN
 
 C building integrated renewables
-          CALL VERMAN(APP,16,LRCR)
-        ELSEIF(KNO.EQ.19)THEN
+        CALL VERMAN(APP,16,LRCR)
+      ELSEIF(KNO.EQ.19)THEN
 
 C integrated performance view
-          CALL VERMAN(APP,17,LRCR)
-        ELSEIF(KNO.EQ.21)THEN
+        CALL VERMAN(APP,17,LRCR)
+      ELSEIF(KNO.EQ.21)THEN
          
 C fluid flow network
-          CALL VERMAN(APP,18,LRCR)
-        ELSEIF(KNO.EQ.22)THEN
+        CALL VERMAN(APP,18,LRCR)
+      ELSEIF(KNO.EQ.22)THEN
 
 C electrical network
-          CALL VERMAN(APP,19,LRCR)
-        ELSEIF(KNO.EQ.23)THEN
+        CALL VERMAN(APP,19,LRCR)
+      ELSEIF(KNO.EQ.23)THEN
 
 C plant components / plant network
-          CALL VERMAN(APP,20,LRCR)
-        ELSEIF(KNO.EQ.24)THEN
+        CALL VERMAN(APP,20,LRCR)
+      ELSEIF(KNO.EQ.24)THEN
 
 C contaminants network
-          CALL VERMAN(APP,21,LRCR)
-        ELSEIF(KNO.EQ.26)THEN
+        CALL VERMAN(APP,21,LRCR)
+      ELSEIF(KNO.EQ.26)THEN
 
 C Usage information
 C zone operations
-          CALL VERMAN(APP,22,LRCR)
-        ELSEIF(KNO.EQ.27)THEN
+        CALL VERMAN(APP,22,LRCR)
+      ELSEIF(KNO.EQ.27)THEN
 
 C controls
-          CALL VERMAN(APP,23,LRCR)
-        ELSEIF(KNO.EQ.28)THEN
+        CALL VERMAN(APP,23,LRCR)
+      ELSEIF(KNO.EQ.28)THEN
 
 C casual gains control
-          CALL VERMAN(APP,24,LRCR)
-        ELSEIF(KNO.EQ.29)THEN
+        CALL VERMAN(APP,24,LRCR)
+      ELSEIF(KNO.EQ.29)THEN
 
 C event profiles
-          CALL VERMAN(APP,25,LRCR)
-        ELSEIF(KNO.EQ.30)THEN
+        CALL VERMAN(APP,25,LRCR)
+      ELSEIF(KNO.EQ.30)THEN
 
 C mould and mycotoxins
-          CALL VERMAN(APP,26,LRCR)
-        ELSEIF(KNO.EQ.32)THEN
-          CALL PHELPD('version tasks',58,'-',0,0,IER)
-          GOTO 201
-        ELSEIF(KNO.EQ.33)THEN
-          GOTO 200
-        ENDIF
-        IF(LRCR.EQ.2)RETURN
+        CALL VERMAN(APP,26,LRCR)
+      ELSEIF(KNO.EQ.32)THEN
+        CALL PHELPD('version tasks',58,'-',0,0,IER)
         GOTO 201
-      ELSEIF(INO.EQ.6)THEN
-        CALL PHELPD('version intro',36,'-',0,0,IER)
-        GOTO 200
-      ELSEIF(INO.EQ.7)THEN
-        RETURN
-      ELSE
-        GOTO 200
       ENDIF
-      RETURN
+      IF(LRCR.EQ.2)RETURN  ! user said no more changes
+      GOTO 201             ! jump back and see if more changes
+      
       END
 
 C ********************* VERMAN 
@@ -4336,7 +4307,7 @@ C Assume that a new connections file does not need to be created.
       docnn=.false.
       newgeo=.false.  ! assume older format geometry.
 
-C Change name of configuration file
+C Change name of configuration file.
       IF(LRCR.eq.0)THEN
         EXT='.cfg'
         CALL FNCNGR(LCFGF,APE,EXT,NNAME)
@@ -4553,12 +4524,12 @@ C Selection strings for site exposure.
      &       0.0,'W',0.99,'W',0.2,'ground reflectance',IER,1)
         MODSIT=.true.
         msg1='updating model for site exposure changes...'
-C        call edisp(iuout,'* New cfg file will hold new site data.')
+        docnn=.true.
       ELSEIF(M.EQ.4)THEN
 
 C Shading and insolation choices. First find out if any of the
 C zones curently include shading or obstruction files. If none do then
-C aloow the user to select one or more zones.
+C allow the user to select one or more zones.
 
 C << it would be convenient if the number of obstructions was in
 C << an array so files did not need to be scanned.
@@ -4669,6 +4640,7 @@ C Older format geometry file so use separate zone obstructions file.
                   IF(IOBS(ICOMP).eq.0)then
                     ZOBS(ICOMP)=' '
                   endif
+                  docnn=.true.
                 endif
  152          continue
             endif
@@ -4678,6 +4650,7 @@ C Older format geometry file so use separate zone obstructions file.
      &        '* Shading files being copied. If site details')
             call edisp(iuout,
      &        'change shading/insolation will be recalculated.')
+            docnn=.true.
           endif
         elseif(ishd.eq.1)then
 
@@ -4728,6 +4701,7 @@ C << formats e.g. to remove obstructions from within geometry file.
                 ISI(ICOMP)=0
  153          continue
               msg1='updating model for shading changes...'
+              docnn=.true.
             endif
           elseif(iw.eq.2)then
 
@@ -4743,6 +4717,7 @@ C files (iobs=1). Ignore zones with obstructions within geometry file.
                 if(iobs(icomp).eq.1) IOBS(ICOMP)=0
  154          continue
               msg1='updating model for shading changes...'
+              docnn=.true.
             endif
           elseif(iw.eq.3)then
             inpic=0
@@ -4757,6 +4732,7 @@ C files (iobs=1). Ignore zones with obstructions within geometry file.
  155          continue
             endif
             msg1='updating model for shading changes...'
+            docnn=.true.
           elseif(iw.eq.4)then
 
 C Create an obstructions file for each of the selected zones
@@ -4837,6 +4813,7 @@ C << version of the zone shading file and copy it to the new name.
 
  156          continue
               msg1='updating model for obstruction changes...'
+              docnn=.true.
             endif
           elseif(iw.eq.5)then
             msg1='shading changes not selected'
@@ -4903,6 +4880,7 @@ C configuration file has been updated.
             call edisp(iuout,
      &          '* View factor files being copied to allow updates')
             call edisp(iuout,'should geometry subsequent change.')
+            docnn=.true.
           endif
         endif
       ELSEIF(M.EQ.6)THEN
@@ -4967,6 +4945,7 @@ C Update the titles.
      &    'Enter Project sysnopsis for this variant','synopsis',IER,5)
           CALL IPVDAT('-')
         endif
+        docnn=.true.
         msg1='updating model for climate changes...'
       ELSEIF(M.EQ.7)THEN
 
@@ -4998,14 +4977,12 @@ C Pressure distribution
         ELSEIF(IW.EQ.1)THEN
           CALL CPCDAT
         ENDIF
+        docnn=.true.
         msg1='updating model for pressure db changes...'
       ELSEIF(M.EQ.8)THEN
 
-C Form and fabric information
-C glazed area
-        h(1)='glazing area currently not supported' 
-        CALL PHELPD('glazing area not supported',1,'-',0,0,IER)
-        msg1='updating model for glazing area changes...'
+C Slot for future option.
+        msg1='no action taken...'
       ELSEIF(M.EQ.9)THEN
 
 C Variant zone constructions (this includes geometry, construction
@@ -5081,8 +5058,10 @@ C Check if geometry file has already been updated.
         endif
       ELSEIF(M.EQ.10)THEN
 
-C Construction database variant. Depending on location expand path to file.
+C Construction data file variant. Depending on location expand path to file.
+
 C << probably should only allow a variant if a local database >>
+
         if(ipathmul.eq.0.or.ipathmul.eq.1)then
           lworking=LFMUL
         elseif(ipathmul.eq.2)then
@@ -5192,18 +5171,20 @@ C CFD domain
         endif
       ELSEIF(M.EQ.12)THEN
 
-C ground temperature profiles
+C Ground temperature profiles. Does changing this imply other
+C files need to change?
         CALL EDDGTP(modsit) 
         msg1='updating model for ground temperature changes...'
+        docnn=.true.
         call edisp(iuout,
      &    '* Configuration file holds revised greound temperatures.')
       ELSEIF(M.EQ.13)THEN
 
-C variant convection calculations
-C Get list of zones
+C Variant convection calculations. Start by getting a list of
+C zones (which already have htc files).
         inpic=0
         call askmultizone(inpic,ivals,
-     &    ' Select zones for hc regime variant?',
+     &    'Select zones for hc regime variant?',
      &    'Zone hc regime variant','h',ier)
         if(inpic.gt.0)then
           EXT='.htc'
@@ -5217,6 +5198,7 @@ C Get list of zones
             CALL EMKHTC(LHCCO(ICOMP),ICOMP,IUF,ITRU,IER)
  188      CONTINUE
           msg1='updating model for convective regime changes...'
+          docnn=.true.
           call edisp(iuout,
      &      '* Subsequent changes will be applied to the new files.')
         endif
@@ -5281,6 +5263,7 @@ C Update the titles.
           CALL EASKS248(ipvsynop,'Synopsis',' ',72,
      &    'Enter Project sysnopsis for this variant','synopsis',IER,5)
           CALL IPVDAT('-')
+          docnn=.true.
         ELSE
           if(icfgv.lt.4)then
             CALL EDISP(IUOUT,
@@ -5297,6 +5280,7 @@ C Update the titles.
           CALL EASKS248(ipvsynop,'Synopsis',' ',72,
      &    'Enter Project sysnopsis for this variant','synopsis',IER,5)
           CALL IPVDAT('-') 
+          docnn=.true.
         ENDIF
         if(icfgv.lt.4)then
           ipvaction='ipv'
@@ -5304,7 +5288,9 @@ C Update the titles.
           msg1='updating model for IPV changes...'
           call edisp(iuout,
      &      '* IPV file being copied and edited text included.')
+          docnn=.true.
         endif
+        
       ELSEIF(M.EQ.18)THEN
          
 C variant fluid flow network
@@ -5347,6 +5333,7 @@ C Found a graphic network file, advise user and exit.
           CALL MFWRIT(IUM)
         ENDIF
         msg1='updating model for air flow network changes...'
+        docnn=.true.
         call edisp(iuout,'* Mass flow file being copied.')
       ELSEIF(M.EQ.19)THEN
 
@@ -5376,6 +5363,7 @@ C << written out as fort.83 in ../cfg and not as ../nets/.ctm
         IUNIT=72
         CALL CTWRIT(iunit)
         msg1='updating model for contaminants network changes...'
+        docnn=.true.
         call edisp(iuout,'* Contaminants network being copied.')
       ELSEIF(M.EQ.22)THEN
 
@@ -5409,6 +5397,7 @@ C alternative file name.
             CALL EDISP(IUOUT,MSG1)
  148      CONTINUE
           msg1='updating model for zone operation changes...'
+          docnn=.true.
           call edisp(iuout,
      &      '* Subsequent changes will be applied to the new files.')
         endif
@@ -5429,6 +5418,7 @@ C common block data.
         LCTLF=NNAME
         CALL CTLWRT(IUNIT,IER)
         msg1='Updating model for zone controls changes...'
+        docnn=.true.
         call edisp(iuout,'* Control file being copied.')
       ELSEIF(M.EQ.24)THEN
 
@@ -5450,7 +5440,7 @@ C mould and mycotoxins
         msg1='Updating model for mould and mycotoxins changes...'
       ENDIF
 
-C if notional model generation then return now
+C If notional model generation then return now.
       IF(LRCR.EQ.3)RETURN
 
 C Reached this point after user has selected a topic whether or
