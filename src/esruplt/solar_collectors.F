@@ -27,9 +27,9 @@ C     Created on: January 2006
 C     Copyright:  CETC 2006
 C-----------------------------------------------------------------------
 C     ABSTRACT:
-C     Establishes for a simplified solar collector whether the correct 
-C     number of control variables have been specified, whether the 
-C     number of water connections is correct and whether the connections 
+C     Establishes for a simplified solar collector whether the correct
+C     number of control variables have been specified, whether the
+C     number of water connections is correct and whether the connections
 C     are to the correct fluid type.
 C
 C=======================================================================
@@ -39,7 +39,7 @@ C=======================================================================
 C---- Set implicit to none to force declaration of all variables
 
       IMPLICIT NONE
-      
+
 C---- Include statements
 
 #include "plant.h"
@@ -48,15 +48,15 @@ C---- Include statements
 C---- Arguments
 
       INTEGER IPCOMP
-      
+
 C---- Common blocks
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
-      
+
       COMMON/TC/ITC,ICNT
       INTEGER ITC,ICNT
-      
+
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       INTEGER ITCF,ITRACE,IZNTRC,ITU
 
@@ -77,15 +77,15 @@ C---- Common blocks
      &             PCTP(MPCON),PCRP(MPCON),PUAP(MPNODE),PCQP(MPNODE),
      &             PCNTMP(MPCOM)
       REAL PCTF,PCRF,PUAF,PCQF,PCNTMF,PCTP,PCRP,PUAP,PCQP,PCNTMP
-      
-C---- Local variables      
+
+C---- Local variables
 
       INTEGER IX1,NITMS
       INTEGER J
       INTEGER NCITM,NCONS
       INTEGER IPCON,IPCONC
       LOGICAL ERROR_FLAG, ERROR_FLAG2, CLOSEA,CLOSEB
-      INTEGER IAM_CORR_METHOD   ! Incidence angle correction method (=1 fit; =2 interpolation) 
+      INTEGER IAM_CORR_METHOD   ! Incidence angle correction method (=1 fit; =2 interpolation)
       INTEGER ICOUNTER          ! Loop counter
       INTEGER IAM_CORR_NUM_DATA_PAIRS
                                 ! Number of data pairs for incidence angle correction using
@@ -101,11 +101,11 @@ C---- Set error flag to false
 C Set collector local variables based on user-input values
 C---- Flag for incidence angle correction method
 C---- =1 use standard quadratic equation
-C---- =2 use set of pairs of cutoff angles and correction factors        
+C---- =2 use set of pairs of cutoff angles and correction factors
       IAM_CORR_METHOD = INT(ADATA(IPCOMP,8))
 C---- Number of data pairs for incidence angle correction data
       IAM_CORR_NUM_DATA_PAIRS = INT(ADATA(IPCOMP,11))
-C---- Pairs of angles and incidence angle correction factors        
+C---- Pairs of angles and incidence angle correction factors
       DO ICOUNTER = 1,2*IAM_CORR_NUM_DATA_PAIRS
         IAM_CORR_DATA(ICOUNTER) = ADATA(IPCOMP,11+ICOUNTER)
       END DO
@@ -123,7 +123,7 @@ C---- Trace output
         call epagew
       END IF ! Matches to IF(ITC.GT.0.AND.ITRACE(35).NE.0)
 
-C---- Check that glycol mass fraction is either 0. for pure water or 
+C---- Check that glycol mass fraction is either 0. for pure water or
 C     50% glycol and water. Correlations are currently implemented for
 C     only 50% glycol mixtures
       CALL ECLOSE(GLYCOL_MASS_FRACTION,0.,1.,CLOSEA)
@@ -177,7 +177,7 @@ C---- than the max of 10
       WRITE(IUOUT,*) ' simple_solar_coll_static: Number of data '
       WRITE(IUOUT,*) ' pairs for incidence angle modifiers for '
       WRITE(IUOUT,*) ' component ', IPCOMP, ' can not be more '
-      WRITE(IUOUT,*) ' than 10 ' 
+      WRITE(IUOUT,*) ' than 10 '
       STOP ' simple_solar_coll_coeff_gen: unresolvable error'
       ENDIF ! Matches to IF((IAM_CORR_METHOD.EQ.2) ...
 
@@ -196,7 +196,7 @@ C---- given in accending order of incidence angle
         END DO
       ENDIF ! Matches to IF(closea)
 
-C---- Check that two adjacent data pairs for incidence angle correction do 
+C---- Check that two adjacent data pairs for incidence angle correction do
 C     not have the same angle of incidence. This will help prevent division by 0.
 C     in subroutine "simple_solar_coll_static"
 
@@ -212,7 +212,7 @@ C     in subroutine "simple_solar_coll_static"
       STOP ' simple_solar_coll_static: unresolvable error'
           ENDIF ! Matches to IF(CLOSEA)
        END DO
-      ENDIF ! Matches to IF(IAM_CORR_METHOD.EQ.2) 
+      ENDIF ! Matches to IF(IAM_CORR_METHOD.EQ.2)
 
 C---- Error handling
 
@@ -221,12 +221,12 @@ C---- Error handling
       WRITE(IUOUT,*) ' for component ',IPCOMP,' should be ',NCONS
       WRITE(IUOUT,*) ' connection(s)'
       STOP ' simple_solar_coll_static: unresolvable error'
-      ENDIF ! Matches IF(ERROR_FLAG) 
+      ENDIF ! Matches IF(ERROR_FLAG)
 
       IF(ERROR_FLAG2) THEN
-      STOP ' Fatal error for simple_solar_coll_static - specify a 
+      STOP ' Fatal error for simple_solar_coll_static - specify a
      &containment !'
-      ENDIF ! Matches IF(ERROR_FLAG2) 
+      ENDIF ! Matches IF(ERROR_FLAG2)
 
       RETURN
       END
@@ -247,13 +247,13 @@ C Hensen, J.L.M. (1991), On the Thermal Ineraction of Building Structure
 C and Heating and Ventilating Systems, Ph.D. Thesis, Eindhoven University
 C of Technology, The Netherlands.
 
-C Thevenard, D., Haddad, K., and Purdy, J., Development of a New Solar 
+C Thevenard, D., Haddad, K., and Purdy, J., Development of a New Solar
 C Collector Model in ESP-r. Proceedings of the 1st Canadian Solar Buildings
 C Research Network.August 2006.
 C=======================================================================
 
       SUBROUTINE simple_solar_coll_coeff_gen(IPCOMP,COUT,ISTATS)
-
+      use h3kmodule
 C-----------------------------------------------------------------------
 C     Declarations
 C-----------------------------------------------------------------------
@@ -268,7 +268,7 @@ C---- Include statements
 #include "plant.h"
 #include "hvac_parameters.h"
 #include "h3kstore_parameters.h"
-#include "h3kstore_common.h"  
+#include "h3kstore_common.h"
 
 C---- Arguments
 
@@ -306,7 +306,7 @@ C---- ESP-r Common blocks
 
       COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
       REAL ADATA,BDATA
-      
+
       COMMON/PCVAL/CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
       REAL CSVF,CSVP
 
@@ -320,7 +320,7 @@ C---- ESP-r Common blocks
      &             ICONDX(MPCOM,MNODEC,MPCONC)
       REAL CONVAR
       INTEGER ICONTP,ICONDX
-      
+
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),NAPDAT(MPCOM)
       REAL QDATA,PCAOUT
       INTEGER NAPDAT
@@ -334,7 +334,7 @@ C---- ESP-r Common blocks
       REAL SAZI,SALT
       INTEGER ISUNUP
 
-C---- Parameters 
+C---- Parameters
 
       REAL SMALL
       PARAMETER (SMALL=1.0E-15)
@@ -356,13 +356,13 @@ C---- Collector parameters
       REAL    CP_TST          ! Test fluid heat capacitance (kJ/kg/C)
       REAL    COLLSLOP        ! Collector slope (degree, hrz=0, vrt=90)
       REAL    COLLAZMT        ! Collector azimuth (degree, S=0, E=90)
-      INTEGER    IAM_CORR_METHOD 
-                              ! Incidence angle correction method (=1 fit; =2 interpolation)    
+      INTEGER    IAM_CORR_METHOD
+                              ! Incidence angle correction method (=1 fit; =2 interpolation)
       INTEGER    IAM_CORR_NUM_DATA_PAIRS
                               ! Number of data pairs for incidence angle correction using
                               ! interpolation
       REAL    IAM_CORR_DATA(20)
-                              ! Data pairs for angle and correction factor 
+                              ! Data pairs for angle and correction factor
       REAL    GLYCOL_MASS_FRACTION
                               ! Mass fraction of glycol in mixture (%)
       REAL    COLL_MASS       ! Collector mass (kg)
@@ -374,7 +374,7 @@ C---- Local variables
       REAL    BU              ! Auxiliary variable for calculation of R
       REAL    BT              ! Auxiliary variable for calculation of R
       REAL    CAI             ! Cosine of angle of incidence (-)
-      LOGICAL CLOSEA          ! Auxiliary variable 
+      LOGICAL CLOSEA          ! Auxiliary variable
       REAL    DELTAT          ! Temperature difference (C)
       REAL    ETA0_LIN        ! Constant term of linearized eff. equ.
       REAL    ETA1_LIN        ! Linear coef of linearized eff. equ.
@@ -402,9 +402,9 @@ C---- Local variables
       REAL    RADIANS_TO_DEGREES
                               ! Conversion factor from radians --> degrees
       INTEGER ICOUNTER        ! Loop counter
-      REAL    INC_ANGLE       ! Incidence angle in radians  
+      REAL    INC_ANGLE       ! Incidence angle in radians
       LOGICAL INC_ANGLE_INT_FOUND
-                              ! Indicates whether proper incidence angle bounding interval found     
+                              ! Indicates whether proper incidence angle bounding interval found
       INTEGER INC_ANGLE_INT_NUM
                               ! Incidence angle interval
       REAL    GLYCOL_VOL_FRACTION
@@ -415,7 +415,7 @@ C---- Local variables
       REAL    UA_ACTUAL       ! Actual UA to surrounding (W/m2-K)
       REAL    MDOT_USE        ! Total mass flow rate through collector (kg/s)
       REAL    TBOIL           ! Boiling temperature of glycol-water mixture (Deg C)
-      
+
       REAL    TFREEZE         ! Freezing temperature of glycol-water mixture (Deg C)
 
 C---- Declare ESP-r function types
@@ -448,12 +448,12 @@ C=======================================================================
       IF(ISTATS.EQ.1) THEN
 
 C---- Conversion factor from degrees to radians
-      
+
         RADIANS_TO_DEGREES = 180. / 3.14159
-      
+
 C---- Initialise component parameters from the database information
 
-C---- Collector area   
+C---- Collector area
         COLLAREA = ADATA(IPCOMP,1)
 C---- Collector efficiency equation type
 C---- 1 indicates equation is based on inlet temperature
@@ -471,7 +471,7 @@ C---- Specific heat of fluid during testing
         CP_TST = ADATA(IPCOMP,7)
 C---- Flag for incidence angle correction method
 C---- =1 use standard quadratic equation
-C---- =2 use set of pairs of cutoff angles and correction factors        
+C---- =2 use set of pairs of cutoff angles and correction factors
         IAM_CORR_METHOD = INT(ADATA(IPCOMP,8))
 C---- Linear term in incidence angle correction fit
         B0 = ADATA(IPCOMP,9)
@@ -479,7 +479,7 @@ C---- Quadratic term in incidence angle correction fit
         B1 = ADATA(IPCOMP,10)
 C---- Number of data pairs for incidence angle correction data
         IAM_CORR_NUM_DATA_PAIRS = INT(ADATA(IPCOMP,11))
-C---- Pairs of angles and incidence angle correction factors        
+C---- Pairs of angles and incidence angle correction factors
         DO ICOUNTER = 1,2*IAM_CORR_NUM_DATA_PAIRS
           IAM_CORR_DATA(ICOUNTER) = ADATA(IPCOMP,11+ICOUNTER)
         END DO
@@ -497,12 +497,12 @@ C---- Collector average capacitance
 C-----------------------------------------------------------------------
 C     Calculate tilted solar radiation and incidence angle modifier
 C-----------------------------------------------------------------------
-        
-C---- Calculate cosine of angle of incidence. Set to zero if 
+
+C---- Calculate cosine of angle of incidence. Set to zero if
 C     surface facing away from the sun or sun is not up
 
-        CAI = COS(SALT * DTOR) * SIN(COLLSLOP * DTOR) * 
-     &        COS((COLLAZMT - SAZI) * DTOR) + 
+        CAI = COS(SALT * DTOR) * SIN(COLLSLOP * DTOR) *
+     &        COS((COLLAZMT - SAZI) * DTOR) +
      &        SIN(SALT * DTOR) * COS(COLLSLOP * DTOR)
         CAI = MAX(CAI,0.)
         IF (SALT.LE.0.) CAI = 0.
@@ -518,7 +518,7 @@ C     Do not attempt calculation if sun is not up
         IF (QD.GT.0. .OR. QF.GT.0.) THEN
           IF (SALT.LE.0.) THEN
             G = QF
-          ELSE 
+          ELSE
             CALL MZSRAD0(COLLSLOP,QD,QF,CAI,SRADD,SRADF,SKYDIF,GRDDIF)
             G = SRADD + SRADF
           ENDIF ! Matches to IF (SALT.LE.0.)
@@ -560,15 +560,15 @@ C---- use the correction factor for the 1st data pair
             IF((INC_ANGLE_INT_FOUND).AND.
      &                      (INC_ANGLE_INT_NUM.EQ.1)) THEN
               XIAM = IAM_CORR_DATA(2)
-C---- If the interval number found is larger than 1, then interpolate 
+C---- If the interval number found is larger than 1, then interpolate
 C---- between two consecutive values
             ELSEIF((INC_ANGLE_INT_FOUND).AND.
      &                      (INC_ANGLE_INT_NUM.GT.1)) THEN
-              XIAM = ((IAM_CORR_DATA(2*INC_ANGLE_INT_NUM) - 
+              XIAM = ((IAM_CORR_DATA(2*INC_ANGLE_INT_NUM) -
      &          IAM_CORR_DATA(2*(INC_ANGLE_INT_NUM-1))) /
      &         (IAM_CORR_DATA(2*INC_ANGLE_INT_NUM-1) -
      &          IAM_CORR_DATA(2*(INC_ANGLE_INT_NUM-1)-1))) *
-     &         (INC_ANGLE - 
+     &         (INC_ANGLE -
      &          IAM_CORR_DATA(2*(INC_ANGLE_INT_NUM-1)-1)) +
      &          IAM_CORR_DATA(2*(INC_ANGLE_INT_NUM-1))
 C---- If no interval is found, then incidence angle is higher than
@@ -578,7 +578,7 @@ C---- correction  factor as that associated with the highest angle
               XIAM = IAM_CORR_DATA(2*IAM_CORR_NUM_DATA_PAIRS)
             ENDIF ! Matches IF((INC_ANGLE_INT_FOUND) ...
           ENDIF ! Matches IF(CAI.GT.0.)
-        ENDIF ! Matches if IF(closea) 
+        ENDIF ! Matches if IF(closea)
         XIAM = MAX(XIAM,0.)
 
 C-----------------------------------------------------------------------
@@ -587,7 +587,7 @@ C     temperatures at the future time step (and may therefore
 C     require iterations on the part of ESP-r)
 C     Note 1: the temperature used to linearize the equation is either
 C     the inlet temperature or the average temperature. However when the
-C     flowrate is zero, it is the collector temperature itself that is 
+C     flowrate is zero, it is the collector temperature itself that is
 C     used since the purpose becomes the calculation of the collector
 C     stagnation temperature
 C-----------------------------------------------------------------------
@@ -599,13 +599,13 @@ C-----------------------------------------------------------------------
 C---- In the case that the efficiency equation is based on inlet temperature
           IF (EFFTYPE.EQ.1) THEN
             DELTAT = CONVAR(ICON1,1) - PCNTMF(IPCOMP)
-C---- If the efficiency equation is based on the average temperature 
+C---- If the efficiency equation is based on the average temperature
           ELSE
-            DELTAT = (CSVF(INOD1,1) + 
+            DELTAT = (CSVF(INOD1,1) +
      &               CONVAR(ICON1,1)) / 2. - PCNTMF(IPCOMP)
           ENDIF ! Matches IF (EFFTYPE.EQ.1)
         ENDIF ! Matches IF (closea)
-C---- Following two modified coefficients are based on Equation 9 in 
+C---- Following two modified coefficients are based on Equation 9 in
 C     paper by Thevenard et al. (2006)
         ETA0_LIN = ETA0
         ETA1_LIN = ETA1 + ETA2 * DELTAT
@@ -614,7 +614,7 @@ C-----------------------------------------------------------------------
 C     Calculate heat capacity flow rates
 C-----------------------------------------------------------------------
 
-C---- Calculate heat capacity rate for test fluid (W/K), 
+C---- Calculate heat capacity rate for test fluid (W/K),
 C     ie. SUM(mass flow * specific heat)
 
         MDOTCP_TST = MDOT_TST * CP_TST
@@ -627,7 +627,7 @@ C     glycol mass flow
 
 C---- Find glycol volume fraction in incoming flow
 
-        GLYCOL_VOL_FRACTION = 
+        GLYCOL_VOL_FRACTION =
      &  GLYCOL_VOL_FRACTION_FIND(GLYCOL_MASS_FRACTION,
      &                           CONVAR(ICON1,1))
 
@@ -643,7 +643,7 @@ C---- Set incoming flow collector temperature using upper and lower bounds
 
         AUX = MAX(TFREEZE,MIN(TBOIL,CONVAR(ICON1,1)))
 
-C---- Calculate heat capacity rate for the actual collector fluid (W/K), 
+C---- Calculate heat capacity rate for the actual collector fluid (W/K),
 C     ie. SUM(mass flow * specific heat)
 
         MDOTCP_USE = MDOT_USE *
@@ -652,7 +652,7 @@ C     ie. SUM(mass flow * specific heat)
 C-----------------------------------------------------------------------
 C     Calculate flowrate correction factor
 C     The flow rate correction equation uses the efficiency
-C     equation based on (Tin-Te). ETA1_IN is the linear 
+C     equation based on (Tin-Te). ETA1_IN is the linear
 C     parameters of the efficiency equation in that format
 C     Note: the correction is done only if the flow rate is > 0
 C-----------------------------------------------------------------------
@@ -664,12 +664,12 @@ C-----------------------------------------------------------------------
             ETA1_IN = ETA1_LIN
           ELSE
 C---- Equation 14 in Thevenrd et al. (2006)
-            ETA1_IN = ETA1_LIN / 
+            ETA1_IN = ETA1_LIN /
      &                (1. + COLLAREA * ETA1_LIN / 2. / MDOTCP_TST)
           ENDIF ! Matches IF (EFFTYPE.EQ.1)
- 
+
 C---- Equation 13 in Thevenard et al. (2006)
-          FPUL = -MDOTCP_TST / COLLAREA * 
+          FPUL = -MDOTCP_TST / COLLAREA *
      &            LOG(1. - ETA1_IN * COLLAREA / MDOTCP_TST)
 C---- Equation 11 in Thevenard et al. (2006)
           BT = MDOTCP_TST / COLLAREA / FPUL
@@ -681,7 +681,7 @@ C---- Equation 10 in Thevenard at al. (2006)
 
 C-----------------------------------------------------------------------
 C     Modify the heat capacity rate to account for the fact that
-C     the efficiency is expressed as a function of the inlet or 
+C     the efficiency is expressed as a function of the inlet or
 C     average collector temperature
 C-----------------------------------------------------------------------
 
@@ -697,7 +697,7 @@ C-----------------------------------------------------------------------
 C     Calculate gains and losses
 C-----------------------------------------------------------------------
 
-C---- Calculate heat gain from solar (not accounting for the 
+C---- Calculate heat gain from solar (not accounting for the
 C     heat losses to ambient)
 
 C---- Euations 7 and 8 in Thevenard et al. (2006)
@@ -736,7 +736,7 @@ C---- Actual UA to surrounding
 
 C---- Collector time constant
 
-        TC(IPCOMP) = 
+        TC(IPCOMP) =
      &       COLL_MASS_CP_PROD / (UA_ACTUAL + MDOTCP_USE + SMALL)
 
 C ------Set up implicit/explicit weighting factor ALPHA (1 = fully implicit)
@@ -760,7 +760,7 @@ C-------Steady-state.
             ALPHA = 1.
         ENDIF ! Matches IF(IMPEXP.EQ.1)
 
-C--------------------------------------------------------------------- 
+C---------------------------------------------------------------------
 C     Establish matrix equation self- and cross-coupling coefficients
 C     and then present-time coefficient
 C     These coefficients appear in equation 5.4 of Hensen (1991)
@@ -772,14 +772,14 @@ C     calculate the collector plate stagnation temperature
 C---------------------------------------------------------------------
         call eclose(MDOTCP_USE,0.00,0.000001,closea)
         IF (.NOT.closea) THEN
-          COUT(1) = -ALPHA * (MDOTCP_MOD + UA) - 
+          COUT(1) = -ALPHA * (MDOTCP_MOD + UA) -
      &             COLL_MASS_CP_PROD / TIMSEC
           COUT(2) = ALPHA * MDOTCP_MOD
           COUT(3) = ((1. - ALPHA) * (PCRP(ICON1) + PUAP(INOD1)) -
      &           COLL_MASS_CP_PROD / TIMSEC) * CSVP(INOD1,1) -
      &           (1. - ALPHA) * PCRP(ICON1) * PCTP(ICON1) -
      &            ALPHA * (UA * PCNTMF(IPCOMP) + HEATGAIN) -
-     &           (1. - ALPHA) * (PUAP(INOD1) * PCNTMP(IPCOMP) + 
+     &           (1. - ALPHA) * (PUAP(INOD1) * PCNTMP(IPCOMP) +
      &           PCQP(INOD1))
         ELSE
           COUT(1) = -ALPHA * UA - COLL_MASS_CP_PROD / TIMSEC
@@ -787,7 +787,7 @@ C---------------------------------------------------------------------
           COUT(3) = ((1. - ALPHA) * PUAP(INOD1) -
      &           COLL_MASS_CP_PROD / TIMSEC) * CSVP(INOD1,1) -
      &           ALPHA * (UA * PCNTMF(IPCOMP) + HEATGAIN) -
-     &           (1. - ALPHA) * (PUAP(INOD1) * PCNTMP(IPCOMP) + 
+     &           (1. - ALPHA) * (PUAP(INOD1) * PCNTMP(IPCOMP) +
      &           PCQP(INOD1))
         ENDIF ! Matches IF (.NOT.closea)
 
@@ -795,7 +795,7 @@ C---- Store "environment" variables future values
 
 C---- UA to surrounding
         PUAF(INOD1) = UA
-C---- Temperature of incoming flow to collector        
+C---- Temperature of incoming flow to collector
         PCTF(ICON1) = CONVAR(ICON1,1)
 C---- Mass flow rate x capacitance of incoming flow
         PCRF(ICON1) = MDOTCP_MOD
@@ -809,7 +809,7 @@ C---- output
         IF((.NOT.closea).AND.(MDOTCP_MOD.GT.0.)) THEN
 C---- Modify heat gain and loss by the heat capacity ratio
           HEATGAIN_ACTUAL = HEATGAIN * MDOTCP_USE / MDOTCP_MOD
-          HEATLOSS_ACTUAL = 
+          HEATLOSS_ACTUAL =
      &                  UA * (CSVF(INOD1,1) - PCNTMF(IPCOMP)) *
      &                  MDOTCP_USE / MDOTCP_MOD
         ELSE
@@ -835,24 +835,15 @@ C---- Net collector heat gain
           NETHEATGAIN = HEATGAIN_ACTUAL - HEATLOSS_ACTUAL
         ELSE
           NETHEATGAIN = 0.
-        ENDIF 
-
-C---- Store collector net heat gain for h3kstore output
-        fSDHW_TScoll_netheatgain_watts = NETHEATGAIN
+        ENDIF
 
 C.....add to XML ouput
-        call add_to_xml_reporting(
-     &       fSDHW_TScoll_netheatgain_watts,
-     &       'plant/SDHW_summary/recovered_heat',
-     &       'units','(W)',
-     &       'SHDW system: Collector net heat gain')
+        call AddToReport(rvPltSDHWSumRecH%Identifier,
+     &         NETHEATGAIN)
 
 C.......Report total insolation on collector external surface
-        call add_to_xml_reporting(
-     &          G * COLLAREA,
-     &          'plant/SDHW_summary/available_solar_energy',
-     &          'units','(W)',
-     &          'SDHW system: insolation on collector' )
+        call AddToReport(rvPltSDHWsumAvailSolEn%Identifier,
+     &            G * COLLAREA)
 
 C---- Call h3k store routine for solar DHW systems
         call H3KSTORE_SDHW
@@ -874,7 +865,7 @@ C---- Mass fraction of propylene glycol in working fluid
          GLYCOL_MASS_FRACTION = ADATA(IPCOMP,34)
          COUT(1) = 1.
          COUT(2) = 0.
-         COUT(3) = MDOT_USE * (1 - GLYCOL_MASS_FRACTION / 100.) 
+         COUT(3) = MDOT_USE * (1 - GLYCOL_MASS_FRACTION / 100.)
 
 C=======================================================================
 C     Generate coefficients for 2nd phase flow equation.
@@ -927,7 +918,7 @@ C---- Trace output
           WRITE(ITU,*) ' XIAM=      =', XIAM
           WRITE(ITU,*) ' '
           WRITE(ITU,*) ' MDOTCP_USE =', MDOTCP_USE
-          WRITE(ITU,*) ' MDOTCP_MOD =', MDOTCP_MOD 
+          WRITE(ITU,*) ' MDOTCP_MOD =', MDOTCP_MOD
           WRITE(ITU,*) ' R          =', R
           WRITE(ITU,*) ' '
           WRITE(ITU,*) ' HEATGAIN   =', HEATGAIN
@@ -952,8 +943,8 @@ C     This function returns boiling temperature in Deg C of propylene
 C     glycol water mixture for a certain glycol volume fraction
 C
 C References:
-C Physical Properties of Secondary Coolants (Brines). Chapter 21 of the 
-C 1997 ASHRAE Handbook of Fundamentals. 
+C Physical Properties of Secondary Coolants (Brines). Chapter 21 of the
+C 1997 ASHRAE Handbook of Fundamentals.
 C=======================================================================
 
       REAL FUNCTION GLYCOL_WATER_TBOIL(GLYCOL_VOL_FRACTION)
@@ -964,8 +955,8 @@ C=======================================================================
 
 C---- Set boiling temperature
 
-      GLYCOL_WATER_TBOIL = 
-     &                    0.0000000768 * GLYCOL_VOL_FRACTION**5 - 
+      GLYCOL_WATER_TBOIL =
+     &                    0.0000000768 * GLYCOL_VOL_FRACTION**5 -
      &                    0.0000134283 * GLYCOL_VOL_FRACTION**4 +
      &                    0.0008116883 * GLYCOL_VOL_FRACTION**3 -
      &                    0.0177068683 * GLYCOL_VOL_FRACTION**2 +
@@ -985,8 +976,8 @@ C     This function returns freezing temperature in Deg C of propylene
 C     glycol water mixture for a certain glycol volume fraction
 C
 C References:
-C Physical Properties of Secondary Coolants (Brines). Chapter 21 of the 
-C 1997 ASHRAE Handbook of Fundamentals. 
+C Physical Properties of Secondary Coolants (Brines). Chapter 21 of the
+C 1997 ASHRAE Handbook of Fundamentals.
 C=======================================================================
 
       REAL FUNCTION GLYCOL_WATER_TFREEZE(GLYCOL_VOL_FRACTION)
@@ -997,8 +988,8 @@ C=======================================================================
 
 C---- Set freezing point temperature
 
-      GLYCOL_WATER_TFREEZE = 
-     &                   -0.00018486 * GLYCOL_VOL_FRACTION**3 + 
+      GLYCOL_WATER_TFREEZE =
+     &                   -0.00018486 * GLYCOL_VOL_FRACTION**3 +
      &                    0.00290062 * GLYCOL_VOL_FRACTION**2 -
      &                    0.35822839 * GLYCOL_VOL_FRACTION +
      &                    0.04705087
@@ -1013,13 +1004,13 @@ C     Copyright:  CETC 2006
 C-----------------------------------------------------------------------
 C     ABSTRACT:
 C     This function returns specific heat in J/kg-DegC of propylene
-C     glycol water mixture for a certain glycol volume fraction and 
+C     glycol water mixture for a certain glycol volume fraction and
 C     temperature
 C     Note: Only glycol fractions of 0. and 50.% are currently supported
 C
 C References:
-C Physical Properties of Secondary Coolants (Brines). Chapter 21 of the 
-C 1997 ASHRAE Handbook of Fundamentals. 
+C Physical Properties of Secondary Coolants (Brines). Chapter 21 of the
+C 1997 ASHRAE Handbook of Fundamentals.
 C=======================================================================
 
       REAL FUNCTION GLYCOL_WATER_CP(GLYCOL_VOL_FRACTION,TEMP)
@@ -1030,7 +1021,7 @@ C=======================================================================
       REAL TEMP                   ! Temperature of mixture (Deg C)
       REAL SHTFLD                 ! Function for specific heat of water (J/kg-Deg C)
 
-      LOGICAL close0,close50      
+      LOGICAL close0,close50
 
 C---- Check whether glycol volume fraction is close to 0. or 50.%
       call eclose(GLYCOL_VOL_FRACTION,0.,1.,close0)
@@ -1044,8 +1035,8 @@ C---- Function for pure water
       ELSE
 
 C---- The following correlation is used for all other volume fractions.
-C---- This correlation though is intended to apply for 50% vol. fraction      
-        GLYCOL_WATER_CP = 3.858548 * TEMP + 
+C---- This correlation though is intended to apply for 50% vol. fraction
+        GLYCOL_WATER_CP = 3.858548 * TEMP +
      &                    3454.717742
 
       ENDIF ! Matches IF(close0)
@@ -1060,16 +1051,16 @@ C     Copyright:  CETC 2006
 C-----------------------------------------------------------------------
 C     ABSTRACT:
 C     This function returns density in kg/m3 of propylene
-C     glycol water mixture for a certain glycol volume fraction and 
+C     glycol water mixture for a certain glycol volume fraction and
 C     temperature
 C     Note: Only glycol fractions of 0 and 50% are currently supported
 C
 C References:
-C Physical Properties of Secondary Coolants (Brines). Chapter 21 of the 
-C 1997 ASHRAE Handbook of Fundamentals. 
+C Physical Properties of Secondary Coolants (Brines). Chapter 21 of the
+C 1997 ASHRAE Handbook of Fundamentals.
 C=======================================================================
 
-      REAL FUNCTION 
+      REAL FUNCTION
      &     GLYCOL_WATER_DENSITY(GLYCOL_VOL_FRACTION,TEMP)
 
       IMPLICIT NONE
@@ -1097,16 +1088,16 @@ C---- This is the function for pure water
       ELSEIF(close90) THEN
 
 C---- This is the correlation for 90% vol glycol
-        GLYCOL_WATER_DENSITY = 
+        GLYCOL_WATER_DENSITY =
      &                   -0.00046217 * TEMP**2 -
      &                    0.75925000 * TEMP    +
      &                    1066.45671302
 
 C---- The following correlation is used for all other volume fractions.
-C---- This correlation though is intended to apply for 50% vol. fraction      
+C---- This correlation though is intended to apply for 50% vol. fraction
       ELSE
-        
-        GLYCOL_WATER_DENSITY = 
+
+        GLYCOL_WATER_DENSITY =
      &               -0.00256715 * TEMP**2 -
      &                0.44036616 * TEMP +
      &                1052.70468968
@@ -1126,8 +1117,8 @@ C     This function returns glycol volume fraction based on mass fraction in
 C     water glycol-mixture
 C
 C References:
-C Physical Properties of Secondary Coolants (Brines). Chapter 21 of the 
-C 1997 ASHRAE Handbook of Fundamentals. 
+C Physical Properties of Secondary Coolants (Brines). Chapter 21 of the
+C 1997 ASHRAE Handbook of Fundamentals.
 C=======================================================================
 
       REAL FUNCTION GLYCOL_VOL_FRACTION_FIND(MASS_FRACTION,TEMP)
@@ -1144,13 +1135,13 @@ C=======================================================================
       REAL MIX_TEMP          ! Temperature of the glycol-water mixture (Deg C)
       REAL GLY_WATER_DEN     ! Density of glycol-water mixture (kg/m3)
       REAL GLY_DEN           ! Density of glycol (kg/m3)
-      REAL GLYCOL_WATER_DENSITY 
+      REAL GLYCOL_WATER_DENSITY
                              ! Function for glycol-water mixture density (kg/m3)
       REAL GLYCOL_WATER_TBOIL
-                             ! Function for glycol-water boiling temperature 
+                             ! Function for glycol-water boiling temperature
       REAL GLYCOL_WATER_TFREEZE
                              ! Function for glycol-water freezing point
-      REAL SMALL             
+      REAL SMALL
       PARAMETER (SMALL=1.0E-15)
 
       logical bNumsAreClose
@@ -1161,7 +1152,7 @@ C---- Initially set volume fraction of glycol to mass fraction
 C---- High limit for iteration error
       ERROR = 1.
 
-C---- Iterate to find the volume fraction      
+C---- Iterate to find the volume fraction
       DO WHILE(ERROR.GT.0.01)
 
 C---- Boiling point of glycol-water mixture
@@ -1179,19 +1170,19 @@ C---- glycol mixture
         GLY_DEN = GLYCOL_WATER_DENSITY(90.,MIX_TEMP)
 
 C---- Density of glycol-water mixture
-        GLY_WATER_DEN = 
+        GLY_WATER_DEN =
      &     GLYCOL_WATER_DENSITY(VOL_FRACTION_OLD,MIX_TEMP)
 
 C---- Glycol volume fraction in mixture
-        VOL_FRACTION_NEW = MASS_FRACTION * 
+        VOL_FRACTION_NEW = MASS_FRACTION *
      &               GLY_WATER_DEN / (GLY_DEN + SMALL)
 
 C---- Update error: Check if volume fraction is close to zero
         call eclose ( VOL_FRACTION_OLD, 0.0, SMALL, bNumsAreClose)
 
-        if ( .not. bNumsAreClose ) then 
+        if ( .not. bNumsAreClose ) then
 
-          ERROR = 
+          ERROR =
      &      abs((VOL_FRACTION_NEW - VOL_FRACTION_OLD) /
      &       VOL_FRACTION_OLD + SMALL)
 
@@ -1219,16 +1210,16 @@ C     Created on: June 2006
 C     Copyright:  CETC 2006
 C-----------------------------------------------------------------------
 C     ABSTRACT:
-C     This function returns glycol-water mixture viscosity for a given 
+C     This function returns glycol-water mixture viscosity for a given
 C     volume fraction of glycol and mixture temperature
 C     Note: Only glycol fractions of 0 and 50% are currently supported
 C
 C References:
-C Physical Properties of Secondary Coolants (Brines). Chapter 21 of the 
-C 1997 ASHRAE Handbook of Fundamentals. 
+C Physical Properties of Secondary Coolants (Brines). Chapter 21 of the
+C 1997 ASHRAE Handbook of Fundamentals.
 C=======================================================================
 
-      REAL FUNCTION 
+      REAL FUNCTION
      &GLYCOL_WATER_VISCOSITY(GLYCOL_VOL_FRACTION,TEMP)
 
       REAL GLYCOL_VOL_FRACTION     ! Volume fraction in the mixture (%)
@@ -1273,24 +1264,24 @@ C---- Check whether volume fraction is 0 or 50%
 C---- Following correlations are for 50% vol. glycol in mixture
         IF(TEMP.LT.0.) THEN
 
-          GLYCOL_WATER_VISCOSITY = (-6.06667E-3 * TEMP**3 - 
+          GLYCOL_WATER_VISCOSITY = (-6.06667E-3 * TEMP**3 -
      &                 9.02857E-2 * TEMP**2 -
-     &                 2.2869 * TEMP + 
+     &                 2.2869 * TEMP +
      &                 15.018) / 1.E3
 
         ELSEIF((TEMP.GE.0.).AND.(TEMP.LT.60.)) THEN
-       
+
           GLYCOL_WATER_VISCOSITY = (2.3901E-6 * TEMP**4 -
-     &                 4.17092E-4 * TEMP**3 + 
+     &                 4.17092E-4 * TEMP**3 +
      &                 2.87333E-2 * TEMP**2 -
-     &                 1.01465 * TEMP + 
+     &                 1.01465 * TEMP +
      &                 18.346) / 1.E3
 
         ELSE
 
-          GLYCOL_WATER_VISCOSITY = (-2.84382E-6 * TEMP**3 + 
+          GLYCOL_WATER_VISCOSITY = (-2.84382E-6 * TEMP**3 +
      &                 1.03287E-3 * TEMP**2 -
-     &                 1.33042E-1 * TEMP + 
+     &                 1.33042E-1 * TEMP +
      &                 6.61086) / 1.E3
 
         ENDIF ! Matches IF(TEMP.LT.0.)
@@ -1307,16 +1298,16 @@ C     Created on: June 2006
 C     Copyright:  CETC 2006
 C-----------------------------------------------------------------------
 C     ABSTRACT:
-C     This function returns glycol-water mixture thermal conductivity for 
+C     This function returns glycol-water mixture thermal conductivity for
 C     a given volume fraction of glycol and mixture temperature
 C     Note: Only glycol fractions of 0 and 50% are currently supported
 C
 C References:
-C Physical Properties of Secondary Coolants (Brines). Chapter 21 of the 
-C 1997 ASHRAE Handbook of Fundamentals. 
+C Physical Properties of Secondary Coolants (Brines). Chapter 21 of the
+C 1997 ASHRAE Handbook of Fundamentals.
 C=======================================================================
 
-      REAL FUNCTION 
+      REAL FUNCTION
      &GLYCOL_WATER_COND(GLYCOL_VOL_FRACTION,TEMP)
 
       REAL GLYCOL_VOL_FRACTION     ! Volume fraction in the mixture (%)
@@ -1333,17 +1324,17 @@ C---- Check whether volume fraction is 0 or 50%
 
       IF(close0) THEN
 
-C---- This is the function for pure water      
+C---- This is the function for pure water
         TEMP_DEGK = TEMP + 273.15
         DENSITY = RHOFLD(3,TEMP)
         GLYCOL_WATER_COND = FUNCOND(TEMP_DEGK,DENSITY)
 
       ELSE
 
-C---- Following correlation is for 50% vol. glycol in mixture        
-        GLYCOL_WATER_COND = -3.8581E-6 * TEMP**2 + 
-     &                       7.107268E-4 * TEMP + 
-     &                       3.494378982E-1  
+C---- Following correlation is for 50% vol. glycol in mixture
+        GLYCOL_WATER_COND = -3.8581E-6 * TEMP**2 +
+     &                       7.107268E-4 * TEMP +
+     &                       3.494378982E-1
 
       ENDIF ! Matches IF(close0)
 
@@ -1358,18 +1349,18 @@ C     Copyright:  CETC 2009
 C-----------------------------------------------------------------------
 C     ABSTRACT:
 C     This function returns coefficient of thermal expansion (beta)
-C     for glycol-water mixture for a given volume fraction of glycol 
+C     for glycol-water mixture for a given volume fraction of glycol
 C     and mixture temperature
 C     Note: Only glycol fractions of 0 and 50% are currently supported
 C
 C References:
-C Calculated from first principles, beta = -(1/Rho)·(dRho/dT) where Rho 
-C is the density and T the temperature. See Incropera and DeWitt, 
+C Calculated from first principles, beta = -(1/Rho)·(dRho/dT) where Rho
+C is the density and T the temperature. See Incropera and DeWitt,
 C Fundamentals of Heat and Mass Transfer, 3rd edition, John Wiley & Sons,
 C 1990, eq. 9.4.
 C=======================================================================
 
-      REAL FUNCTION 
+      REAL FUNCTION
      &     GLYCOL_WATER_THERMEXP(GLYCOL_VOL_FRACTION,TEMP)
 
       IMPLICIT NONE
@@ -1398,7 +1389,7 @@ C     Numerical derivation
      &  ( GLYCOL_WATER_DENSITY(GLYCOL_VOL_FRACTION,TEMPSUP) -
      &    GLYCOL_WATER_DENSITY(GLYCOL_VOL_FRACTION,TEMPINF) ) /
      &  ( TEMPINF - TEMPSUP) /
-     &  GLYCOL_WATER_DENSITY(GLYCOL_VOL_FRACTION,VTEMP) 
+     &  GLYCOL_WATER_DENSITY(GLYCOL_VOL_FRACTION,VTEMP)
 
       RETURN
       END

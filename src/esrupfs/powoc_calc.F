@@ -657,12 +657,12 @@ C Common for passing error messages to calling routine (only used when running
 C in dll mode).
 C---------------------------------------------------------------------------------
       common/dllerr/dllsubr, dllmesg
-      
+
 C---------------------------------------------------------------------------------
 C Common created by Neil Saldanha for customized controller with SE and lithium
-C ion battery (see his thesis for more info) 
+C ion battery (see his thesis for more info)
 C---------------------------------------------------------------------------------
-      common/Res_elec_ctl/house_load      
+      common/Res_elec_ctl/house_load
 
 
 C---------------------------------------------------------------------------------
@@ -729,7 +729,7 @@ C Power only components
 
       PPOWOC(IPWC) = -1. * q_nonHVAC_elec * POWCDAT(IPWC,1)
       QPOWOC(IPWC) = 0.
-      
+
       house_load = PPOWOC(IPWC) ! Store dwelling house load for custom controller (see common block declaration above)
 
 
@@ -1239,6 +1239,7 @@ C     PENODL(i)        Real power load on node 'i'; i is the node sending curren
 C     PENODG(i)        Real power generation on node 'i'; i is the node receiving current from the PCU
 C --------------------------------------------------------------------------------
       SUBROUTINE POWOC_PCU(IPWC)
+      use h3kmodule
       implicit none
 #include "power.h"
 #include "plant.h"
@@ -1406,8 +1407,7 @@ C.....Database index number for PCU power-only-component
       integer PCU_id
       parameter( PCU_id = 20 )
 
-C.....Strings used for XML output reporting
-      CHARACTER*128  hold_name, root_name, H3K_rep_NAME
+      INTEGER iNameLength  !Used to capture variable name's length (Reporting)
 
 
 C----------------------------------------------------------------------------------------------------
@@ -1634,71 +1634,30 @@ C XML Output
 C-------------------------------------------
 
 
-C.... Get component name
-      hold_name = powcomnam(IPWC)
+C.... Get component name's length
+      iNameLength = lnblnk(powcomnam(IPWC))
+
 C.....Format string as 'electrical_net/power_only_components/NAME/misc_data'
-
-      write(root_name, '(A,A,A,A)')
-     &     'electrical_net/',
-     &     'power_only_components/',
-     &     hold_name(1:lnblnk(hold_name)),
-     &     '/misc_data'
-
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/PCU_power_loss'
-
-
-      call add_to_xml_reporting(
-     &                       fPwrLoss,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(W)',
-     &                       'Power loss from PCU' )
+      Call AddToReport(rvEPowPCUPowLoss%Identifier,
+     &      fPwrLoss,
+     &      powcomnam(IPWC)(1:iNameLength))
 
 C.....Only report efficiency if unit is on
       if ( .not. bPower_Zero ) then
 
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/PCU_efficiency'
-
-
-      call add_to_xml_reporting(
-     &                       fPCUEff,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(-)',
-     &                       'Efficiency of PCU' )
+      Call AddToReport(rvEPowPCUEff%Identifier,
+     &      fPCUEff,
+     &      powcomnam(IPWC)(1:iNameLength))
 
       endif
 
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/PCU_power_input'
+      Call AddToReport(rvEPowPCUPowIn%Identifier,
+     &      fPwrInput,
+     &      powcomnam(IPWC)(1:iNameLength))
 
-
-      call add_to_xml_reporting(
-     &                       fPwrInput,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(W)',
-     &                       'Power input to PCU' )
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:lnblnk(root_name)),
-     &     '/PCU_power_output'
-
-
-      call add_to_xml_reporting(
-     &                       fPwrOutput,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(W)',
-     &                       'Power output from PCU' )
-
-
+      Call AddToReport(rvEPowPCUPowOut%Identifier,
+     &      fPwrOutput,
+     &      powcomnam(IPWC)(1:iNameLength))
 
           RETURN
           END
@@ -1735,6 +1694,7 @@ C                   [from common/ENETPOWC]
 
 C --------------------------------------------------------------------------------
       SUBROUTINE POWOC_nonHVACld_BCD(iComponent)
+      use h3kmodule
       implicit none
 #include "plant.h"
 #include "power.h"
@@ -1837,12 +1797,6 @@ C.....Named constants
       save bWarned
       data bWarned /.false./
 
-      CHARACTER*128  hold_name, root_name, H3K_rep_NAME       ! strings used for XML output reporting
-      integer ilength                      ! non-blank length of string
-
-C.....External functions.
-      integer lnblnk
-
 C---------------------------------------------------------------------------------
 C     References
 C---------------------------------------------------------------------------------
@@ -1938,55 +1892,14 @@ C................Issue warning to user.
 C-------------------------------------------------------
 C XML output
 C-------------------------------------------------------
+      Call AddToReport(rvEPowLoadProf%Identifier,
+     &      fE_Load_profile)
 
+      Call AddToReport(rvEPowH2Load%Identifier,
+     &      fH2_app_load_TOTAL)
 
-C.... Get component name
-      hold_name = powcomnam(iComponent)
-C.....Format string as 'electrical_net/power_only_components/NAME/misc_data'
-
-      write(root_name, '(A,A,A)')
-     &     'electrical_net/',
-     &     'power_only_components/',
-C     &     hold_name(1:lnblnk(hold_name)),
-C     &     '/elec_load'
-     &     'elec_load'
-
-      ilength = lnblnk(root_name)
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:ilength),
-     &     '/elec_load_profile'
-
-      call add_to_xml_reporting(
-     &                       fE_Load_profile,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(W)',
-     &                       'Original E-load' )
-
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:ilength),
-     &     '/elec_H2_loads'
-
-      call add_to_xml_reporting(
-     &                       fH2_app_load_TOTAL,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(W)',
-     &                       'Total H2 loads' )
-
-
-      write(H3K_rep_NAME,'(A,A)')
-     &     root_name(1:ilength),
-     &     '/elec_load_adjusted'
-
-      call add_to_xml_reporting(
-     &                       fE_Load,
-     &                       H3K_rep_name,
-     &                       'units',
-     &                       '(W)',
-     &                       'Adjusted E-load' )
+      Call AddToReport(rvEPowLoadAdj%Identifier,
+     &      fE_Load)
 
 
       RETURN

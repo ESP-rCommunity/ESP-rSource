@@ -1,7 +1,7 @@
 C This file is part of the ESP-r system.
 C Copyright Natural Resources Canada, Government
 C of Canada 2004/2005. Please Contact Ian
-C Beausoliel-Morrison for details concerning licensing.                       
+C Beausoliel-Morrison for details concerning licensing.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
@@ -24,7 +24,7 @@ C
 C This file contains code necessary to model a natural convection
 C heat exchanger from experimental performance results.
 C
-C This calculation requires two major sections: 
+C This calculation requires two major sections:
 C   - the natural convection heat exchanger plant component model
 C     which solves for the exit temperatures of the heat exchanger
 C   - the natural convection flow rate generator component model
@@ -33,7 +33,7 @@ C     the loop.
 C
 C   NCHE_coeff_gen: Routine called by the plant modelling domain to
 C                   characterize the natural convection heat exchanger
-C   NCHE_flow: Calculates the natural convection flow rate based on the 
+C   NCHE_flow: Calculates the natural convection flow rate based on the
 C              pressure drop correlation input by the user
 C   NCHE_H3Kreports_module: Transports data to the h3kreports module
 C   NCHE_static_template: Static template executed prior to time-step simulation.
@@ -43,7 +43,7 @@ C
 C REFERENCES:
 C
 C J. Purdy 2005, "Natural Convection Heat Exchanger and Natural
-C Convection Flow-rate Generator Specification for SDHW System", 
+C Convection Flow-rate Generator Specification for SDHW System",
 C CETC-O, Natural Resources Canada Internal Report.
 C
 C This report was updated in 2007 and several equations in this
@@ -87,13 +87,13 @@ C----------------------------------------------------------------------
 C     Passed arguments
 C----------------------------------------------------------------------
       INTEGER iComp_index     ! pointer to component in network
-      INTEGER ISTATS          ! index of matrix to be solved, will generate 
-                              ! coefficients for energy balances (ISTATS=1), 
-                              ! 1st phase mass balances (ISTATS=2), or 
+      INTEGER ISTATS          ! index of matrix to be solved, will generate
+                              ! coefficients for energy balances (ISTATS=1),
+                              ! 1st phase mass balances (ISTATS=2), or
                               ! 2nd phase mass balances (ISTATS=3).
 
 
-      REAL fCoefficients(mpcoe)   ! array containing matrix coefficients 
+      REAL fCoefficients(mpcoe)   ! array containing matrix coefficients
                                   ! calculated by the component.
 
 C----------------------------------------------------------------------
@@ -176,7 +176,7 @@ C.....Simulation timestep
 
 C      common/pltcon/bPltCon,LastTSTP
 C      logical bPltCon           ! Boolean indicating whether plant domain has converged.
-C      real LastTStp             ! not used       
+C      real LastTStp             ! not used
 
 C----------------------------------------------------------------------
 C     ESP-r functions
@@ -186,9 +186,9 @@ C----------------------------------------------------------------------
                         ! of air, water vapor, or water.
 
 
-      REAL glycol_water_cp          ! Function for glycol-water specific heat 
-      REAL glycol_vol_fraction_find ! Function for finding volume fraction of 
-                                    ! ...glycol inside water-glycol mixture   
+      REAL glycol_water_cp          ! Function for glycol-water specific heat
+      REAL glycol_vol_fraction_find ! Function for finding volume fraction of
+                                    ! ...glycol inside water-glycol mixture
 
 C----------------------------------------------------------------------
 C     Local variables
@@ -225,14 +225,14 @@ C.....Heat exchanger glycol-water solution fluid properties
 
 C.....Model Topology
 C....... Nodal indices
-      INTEGER iHX_Hot_Node_index  ! Index of heat exchanger component hot side 
+      INTEGER iHX_Hot_Node_index  ! Index of heat exchanger component hot side
                                   !  node in plant network.
-      INTEGER iHX_Cold_Node_index ! Index of heat exchanger component cold side 
+      INTEGER iHX_Cold_Node_index ! Index of heat exchanger component cold side
                                   !  node in plant network.
 C....... Connection indices
-      INTEGER iHX_hot_conn_index  ! Index number of HX component hot node 
+      INTEGER iHX_hot_conn_index  ! Index number of HX component hot node
                                   !  in plant network
-      INTEGER iHX_cold_conn_index ! Index number of HX component cold node 
+      INTEGER iHX_cold_conn_index ! Index number of HX component cold node
                                   !  in plant network
 
 C.....Temperature iteration loop controls
@@ -245,9 +245,9 @@ C.....Temperature iteration loop controls
 
       real fTempDifference        ! Difference between search loop bounds
 
-      real fSaved_HX_cold_mass_flow(MPCOM) ! Variable storing computed 
+      real fSaved_HX_cold_mass_flow(MPCOM) ! Variable storing computed
       save fSaved_HX_cold_mass_flow        !   cold-side flow rate.
-      
+
 C-----------------------------------------------------------------------
 C     Named constants
 C-----------------------------------------------------------------------
@@ -270,14 +270,14 @@ C-----------------------------------------------------------------------
      &            iReport     = 2 )
 
 
-C      LOGICAL close             ! Logical variable used to check how close a number is 
+C      LOGICAL close             ! Logical variable used to check how close a number is
 C                                ! to zero
 
       logical bNoFlowHot, bNoFlowCold,  ! Flags for no-flow condition
      &        bTempsEqual, bNoNCHEFlow  !   on hot and cold sides.
 
       REAL small    ! used to ensure there are no divide by zero errors
-      PARAMETER ( small = 1.0E-15 )  
+      PARAMETER ( small = 1.0E-15 )
 
       INTEGER I
       integer i_temp_loop       ! Counter - temperature convergence loop
@@ -348,7 +348,7 @@ C.....     as a pointer.
       iHX_cold_conn_index = icondx ( iComp_index, 2, 1 ) ! connection to node 2 (cold)
 
 
-C.....check to see if this is the first timestep, i.e., the variables need to 
+C.....check to see if this is the first timestep, i.e., the variables need to
 C.....be initialized
       check_initialized: if ( .not. bInitialized ( iComp_index ) ) then
 
@@ -361,7 +361,7 @@ C........Set flag to ensure initialization is not repeated
 
 C........Initialize stored cold-side flow rate
          fSaved_HX_cold_mass_flow( iComp_index ) = 0.0
-         
+
       endif check_initialized
 
 C----------------------------------------------------------------------
@@ -486,13 +486,13 @@ C-----------------------------------------------------------------------
 C           Start iteration loop:
 C-----------------------------------------------------------------------
 
-            bSearchUnconverged = .true. 
+            bSearchUnconverged = .true.
             i_temp_loop = 0
 
 
 C---------------------------------------------------------------------
 C  If the initial temperatures between the hot and cold flows are
-C  very close together, there won't be any flow generated 
+C  very close together, there won't be any flow generated
 C---------------------------------------------------------------------
               fTempDifference =   fHX_cold_temp_out_UB
      &                          - fHX_cold_temp_out_LB
@@ -524,7 +524,7 @@ C.............And check if result is zero.
 
 C-----------------------------------------------------------------------
 C             If there is flow through both sides of the heat
-C             exchanger, characterize heat transfer. 
+C             exchanger, characterize heat transfer.
 C-----------------------------------------------------------------------
               no_cold_flow: if ( .not. bNoNCHEFlow ) then
 
@@ -540,7 +540,7 @@ C...............  where X=1 -> air, X=2 -> vapor, X=3 -> liq. water
      &                          * SHtFld ( 3, fHX_cold_temp_in ) ! W/K
 
 C-------------------------------------------------------------------------
-C               The performance of natural convection heat exchangers 
+C               The performance of natural convection heat exchangers
 C               is based on modified performance indices.
 C-------------------------------------------------------------------------
 C...............Capacitance Ratio
@@ -552,7 +552,7 @@ C...............But the correlation is apparently only
 C...............valid when 0<=Cr<1.1 (See Figure 5 in Purdy.)
                 fHX_mod_cap_ratio_adj = min( fHX_mod_cap_ratio, 1.1 )
 
-  
+
 C...............Effectiveness, based on experimental results
 C...............(equation 30 Purdy, 2007)
                 fHX_mod_eff = fHX_eff_CR_a ( iComp_index ) *
@@ -592,7 +592,7 @@ C...............If the computed outlet temperature is higher than
 C...............the mid-point temperature, or there is no flow rate,
 C...............raise lower bound.
 
-                update_bounds: if ( bNoNCHEFlow .or. 
+                update_bounds: if ( bNoNCHEFlow .or.
      &                               ( fHX_cold_temp_out_comp >
      &                                 fHX_cold_temp_out_MD
      &                                )
@@ -606,7 +606,7 @@ C...............raise lower bound.
                   fHX_cold_temp_out_UB = fHX_cold_temp_out_MD
 
                 endif update_bounds
-                
+
               endif check_convergence
 
             enddo temp_search_loop
@@ -634,7 +634,7 @@ C-----------------------------------------------------------------------
 
 C-----------------------------------------------------------------------
 C           For no-flow situation, heat transfer is zero. Set outlet
-C           temperatures to inlet temperatures. 
+C           temperatures to inlet temperatures.
 C-----------------------------------------------------------------------
 C............assign ESP-r plant temperature solution matrix coefficients
 C
@@ -681,13 +681,13 @@ C                 a11 = - hot-side heat capacity
 C----------------------------------------------------------------------------
 
             fCoefficients(1) = -1.0 * fHX_hot_heat_cap
-         
+
 C----------------------------------------------------------------------------
 C              Second self-coupling coefficient (equation 16 in Purdy, 2007):
 C
 C                  a22 = cold-side heat capacity
 C----------------------------------------------------------------------------
- 
+
             fCoefficients(2) = fHX_cold_heat_cap
 
 C----------------------------------------------------------------------------
@@ -698,15 +698,15 @@ C----------------------------------------------------------------------------
 
             fCoefficients(3) = fHX_hot_heat_cap
 
-C---------------------------------------------------------------------------- 
+C----------------------------------------------------------------------------
 C              Second cross coupling coefficient (equation 18 in Purdy, 2007):
 C
 C                 a24 = - cold-side heat capacity
 C----------------------------------------------------------------------------
- 
+
             fCoefficients(4) = -1.0 * fHX_cold_heat_cap
-         
-C----------------------------------------------------------------------------         
+
+C----------------------------------------------------------------------------
 C              Present-time & known coefficient 1 (equation 19 in Purdy, 2007):
 C
 C                 R1 = Future HX heat
@@ -756,7 +756,7 @@ C       2nd-phase (gylcol) solution. Glycol mixutures are supported
 C       on the hot-side of the heat exchanger.
 C-----------------------------------------------------------------------
 
-        case ( i2ndFlow ) 
+        case ( i2ndFlow )
 C........ assign ESP-r plant flow solution matrix coefficients
 C         'mass-flow' scenario:
 C           |  1   -   -1  -   |  | M_{h_o} |     |    0   |
@@ -777,7 +777,7 @@ C---------Node 2: flow in and flow out equal zero.
 C---------RHS coefficients
           fCoefficients( 5 ) = 0.0
           fCoefficients( 6 ) = 0.0
-          
+
       end select check_ISTATS
 
 C Check to ensure hot outlet temperature is not higher than inlet temperature
@@ -790,7 +790,7 @@ C
 C     -> Report instantaneous data describing system operation at
 C        end of the timestep.
 C----------------------------------------------------------------------
-C.....Heat Exchanger modified effectiveness 
+C.....Heat Exchanger modified effectiveness
       fReport_HX_effectiveness( iComp_index ) = fHX_mod_eff
 
 C.....Heat Exchanger heat transfer rate
@@ -805,7 +805,7 @@ C.....Inlet and outlet water temperatures
      &                         CSVF( iHX_Hot_Node_index, iTemp )    ! (oC)
 
       fReport_HX_cold_temp_in( iComp_index )  = fHX_cold_temp_in    ! (oC)
-      fReport_HX_cold_temp_out( iComp_index ) = 
+      fReport_HX_cold_temp_out( iComp_index ) =
      &                         CSVF( iHX_Cold_Node_index, iTemp )   ! (oC)
 
 
@@ -860,11 +860,11 @@ C Initial Creation Date: November 22, 2005.
 C Copyright CETC 2005
 C
 C This subroutine is used to evaluate the natural convection flow rate in the
-C stratified storage tank-side loop of a solar domestic hot water (SDHW) system. 
-C 
+C stratified storage tank-side loop of a solar domestic hot water (SDHW) system.
+C
 C This component requires information input by the user for the Natural Convection
 C Heat Exchanger (NCHE) model - component 120 - specifically the heat exchanger
-C Flow Rate vs Pressure Drop (DP) coeffiecients, c and d, where 
+C Flow Rate vs Pressure Drop (DP) coeffiecients, c and d, where
 C flow=c*DP^d.
 C
 C INPUTS
@@ -873,14 +873,14 @@ C    fHX_flow_P_d       ! Natural convection flow rate vs. pressure drop coeffic
 C    fTank_height       ! Height of storage tank (m)
 C    fHX_height         ! Height of heat exchanger (m)
 C    fHX_cold_temp_in   ! HX cold side inlet temperature (oC)
-c    fHX_cold_temp_out  ! HX cold side outlet temperature (oC) 
+c    fHX_cold_temp_out  ! HX cold side outlet temperature (oC)
 C
 C OUTPUTS
 C    fNCHE_flow         ! natural convection flow rate around loop
 C
 C Reference:
 C J. Purdy 2005, "Natural Convection Heat Exchanger and Natural
-C Convection Flow-rate Generator Specification for SDHW System", 
+C Convection Flow-rate Generator Specification for SDHW System",
 C CETC-O, Natural Resources Canada Internal Report.
 C------------------------------------------------------------------------------------
 
@@ -899,7 +899,7 @@ C-------------------------------------------------------------------------------
 C Passed Variables
       INTEGER iComp_index    ! pointer to component in network
       REAL fHX_cold_temp_in  ! HX cold side inlet temperature (oC)
-      REAL fHX_cold_temp_out ! HX cold side outlet temperature (oC) 
+      REAL fHX_cold_temp_out ! HX cold side outlet temperature (oC)
 
 C Local Variables
       REAL fTank_temp_mean   ! mean stratified storage tank temperature
@@ -913,8 +913,8 @@ C Local Variables
       INTEGER iFluid_type    ! fluid type in storage tank (water=2)
 
 C Called Function
-      REAL DENSIT            ! ESP-r function that returns the density (kg/m^3) 
-                             ! as function of fluid type (1=air, 2=water) and 
+      REAL DENSIT            ! ESP-r function that returns the density (kg/m^3)
+                             ! as function of fluid type (1=air, 2=water) and
                              ! fluid temperature (C)
 
 
@@ -935,18 +935,18 @@ C.....Simulation timestep
       INTEGER nsinc             ! time step number
       INTEGER its               ! not used in current context
 
-C Constants 
+C Constants
       g = 9.81               ! acceleration due gravity (m/s^2)
-      iFluid_type = 2        ! fluid type in cold-side of HX -> water 
+      iFluid_type = 2        ! fluid type in cold-side of HX -> water
 
 
-C The value of fTank_Height (Stratified tank height) is retrieved from the stratified tank model 
-C ADATA items in the NCHE static template (NCHE_static_template) and 
+C The value of fTank_Height (Stratified tank height) is retrieved from the stratified tank model
+C ADATA items in the NCHE static template (NCHE_static_template) and
 C is stored in COMMON/NCHE_coefficients/.
 C      fTank_height          ! Height of storage tank (m)
 
 
-C The average tank temperature is retrieved from the stratified tank model for the present timestep. 
+C The average tank temperature is retrieved from the stratified tank model for the present timestep.
 C This value is stored in the common block defined in stratified_tank.h
 
        fTank_temp_mean =
@@ -959,18 +959,18 @@ C-------------------------------------------------------------------------------
 C..... DENSIT is a standard ESP-r subroutine that returns density (kg/m^3) as function of
 C..... fluid type (1=air, 2=water) and fluid temperature (oC)
 
-      fRHO_tank_mean = DENSIT( iFluid_type, fTank_temp_mean ) 
+      fRHO_tank_mean = DENSIT( iFluid_type, fTank_temp_mean )
 
 
 C---------------------------------------------------------------------------------
 C   Calculate the densities of the fluid at the heat exchanger cold-side
 C   inlet and outlet
 C---------------------------------------------------------------------------------
-C..... DENSIT is a standard ESP-r subroutine that returns density (kg/m^3) as 
+C..... DENSIT is a standard ESP-r subroutine that returns density (kg/m^3) as
 C..... function of fluid type (1=air, 2=water) and fluid temperature (oC)
 
-      fRHO_HX_cold_in  = DENSIT( iFluid_type,fHX_cold_temp_in ) 
-      fRHO_HX_cold_out = DENSIT( iFluid_type,fHX_cold_temp_out )       
+      fRHO_HX_cold_in  = DENSIT( iFluid_type,fHX_cold_temp_in )
+      fRHO_HX_cold_out = DENSIT( iFluid_type,fHX_cold_temp_out )
 
 
 C---------------------------------------------------------------------------------
@@ -980,11 +980,11 @@ C-------------------------------------------------------------------------------
      &    (
      &      ( fRHO_tank_mean * fTank_height ) -
      &      ( fRHO_HX_cold_in * ( fHX_height (iComp_index) / 2 )) -
-     &      ( fRHO_HX_cold_out * 
+     &      ( fRHO_HX_cold_out *
      &        ( fTank_height - fHX_height (iComp_index) / 2 ))
      &     )
 
-C..... Check for possible negative pressure drop around the loop. 
+C..... Check for possible negative pressure drop around the loop.
       if (fNCHE_DP .LT. 0.0 ) fNCHE_DP = 0.0
 
 C---------------------------------------------------------------------------------
@@ -999,9 +999,9 @@ C-------------------------------------------------------------------------------
      &   ITRACE(37).ne.0) THEN
          WRITE(ITU,*) ' NCHE_flow subroutine:'
          WRITE(ITU,*) ' fHX_flow_P_c (iComp_index) =',
-     &                    fHX_flow_P_c (iComp_index)   
+     &                    fHX_flow_P_c (iComp_index)
          WRITE(ITU,*) ' fHX_flow_P_d (iComp_index) =',
-     &                    fHX_flow_P_d (iComp_index)       
+     &                    fHX_flow_P_d (iComp_index)
          WRITE(ITU,*) ' fNCHE_DP =', fNCHE_DP
          WRITE(ITU,*) ' fNCHE_flow =', fNCHE_flow
          WRITE(ITU,*) ' leaving NCHE_flow subroutine:'
@@ -1029,6 +1029,7 @@ C
 C-----------------------------------------------------------------------
 
       SUBROUTINE NCHE_H3Kreports_module ( iIndex, iStatus )
+      use h3kmodule
       IMPLICIT NONE
 
 #include "plant.h"
@@ -1045,167 +1046,97 @@ C-----------------------------------------------------------------------
       COMMON/pcnam/pcname(mpcom)        ! Plant component names
       CHARACTER*15, pcname
 
-C-----------------------------------------------------------------------      
+C-----------------------------------------------------------------------
 C     Local variables
 C-----------------------------------------------------------------------
-      CHARACTER*128 H3Kname       ! holding variable
-
       INTEGER iNameLength(mpcom)  ! length of plant component name
 
-      REAL fDay                   ! day of the year (0.0 - 365.0) 
+      REAL fDay                   ! day of the year (0.0 - 365.0)
 
       LOGICAL bInitialized(mpcom) ! Flag for initializing parameters.
       SAVE bInitialized
       DATA bInitialized / mpcom * .false. /
- 
 
-      INTEGER lnblnk             ! function returning length of a string      
 
-      REAL fReportData            ! Data value to be reported
-
+      INTEGER lnblnk             ! function returning length of a string
 
 
 C----------------------------------------------------------------------
 C     References
-C----------------------------------------------------------------------     
+C----------------------------------------------------------------------
 
       REAL fConvert_Current_TS_to_DAY ! Function converting the current
                                       ! timestep to a REAL # representing
-                                      ! the current day & fraction thereof   
+                                      ! the current day & fraction thereof
 
 
 
 C-----------------------------------------------------------------------
-C     First call - determine length of string 
+C     First call - determine length of string
 C-----------------------------------------------------------------------
       if ( .not. bInitialized ( iIndex ) ) then
 
-        ! Note: LNBLNK will be called once for each component    
+        ! Note: LNBLNK will be called once for each component
         iNameLength( iIndex ) = lnblnk ( pcname ( iIndex ) )
-        bInitialized ( iIndex ) = .true. 
+        bInitialized ( iIndex ) = .true.
 
-      endif 
+      endif
 
-C........Get current day 
+C........Get current day
          fDay = fConvert_Current_TS_to_DAY()
 
 C----------------------------------------------------------------------
-C.....Heat exchanger effectiveness 
-C........Prepare string for reporting...
-      write(H3Kname,'(A,A,A)')
-     &      'plant/',
-     &      pcname(iIndex)(1:iNameLength(iIndex)),
-     &      '/heat_exchanger/effectiveness'
-     
-C     ...and report value 
-      fReportData = 1.0
-      call add_to_xml_reporting(
-     &   fReport_HX_effectiveness( iIndex ),
-     &   H3Kname,
-     &   'units', '(-)',
-     &   'NCHE: Heat exchanger effectiveness'
-     &   )
+C.....Heat exchanger effectiveness
+C     Report value
+      call AddToReport(rvPltHXchgEff%Identifier,
+     &         fReport_HX_effectiveness( iIndex ),
+     &         pcname(iIndex)(1:iNameLength(iIndex)))
 
 C----------------------------------------------------------------------
 C.....Heat Exchanger heat transfer rate
-      write(H3Kname,'(A,A,A)')
-     &      'plant/',
-     &      pcname(iIndex)(1:iNameLength(iIndex)),
-     &      '/heat_exchanger/heat_transfer'
-      fReportData = 1.0
-      call add_to_xml_reporting(
-     &   fReport_HX_q( iIndex ),
-     &   H3Kname,
-     &   'units', '(W)',
-     &   'NCHE: Heat exchanger heat transfer rate'
-     &   )
-
+      call AddToReport(rvPltHXchgHTrans%Identifier,
+     &      fReport_HX_q( iIndex ),
+     &      pcname(iIndex)(1:iNameLength(iIndex)))
 
 C---------------------------------------------------------------------
-C.....Hot and cold stream flow rates (kg/s) 
+C.....Hot and cold stream flow rates (kg/s)
 C---------------------------------------------------------------------
 C.....Write a name: Hot water (forced flow) mass flow rate
-      write(H3Kname,'(A,A,A)')
-     &      'plant/',
-     &      pcname(iIndex)(1:iNameLength(iIndex)),
-     &      '/heat_exchanger/hot/flow_rate'
-      fReportData = 1.0
-      call add_to_xml_reporting(
-     &   fReport_HX_hot_mass_flow( iIndex ),
-     &   H3Kname,
-     &   'units', '(kg/s)',
-     &   'NCHE: flow rate of water at HX inlet from solar collector'
-     &   )
+      call AddToReport(rvPltHXchgHFlowRate%Identifier,
+     &      fReport_HX_hot_mass_flow( iIndex ),
+     &      pcname(iIndex)(1:iNameLength(iIndex)))
+
 C---------------------------------------------------------------------
 C.....Write a name: Cold water (natural convection) mass flow rate
-      write(H3Kname,'(A,A,A)')
-     &      'plant/',
-     &      pcname(iIndex)(1:iNameLength(iIndex)),
-     &      '/heat_exchanger/cold/flow_rate'
-      fReportData = 1.0
-      call add_to_xml_reporting(
-     &   fReport_HX_cold_mass_flow( iIndex ),
-     &   H3Kname,
-     &   'units', '(kg/s)',
-     &   'NCHE: flow rate of water at HX inlet from storage tank'
-     &   )
-
+      call AddToReport(rvPltHXchgCFlowRate%Identifier,
+     &      fReport_HX_cold_mass_flow( iIndex ),
+     &      pcname(iIndex)(1:iNameLength(iIndex)))
 
 C---------------------------------------------------------------------
 C.....Inlet and outlet fluid temperatures
 C-------------------------------------------------------------------
 C.....Write a name: Hot fluid inlet temperature
-      write(H3Kname,'(A,A,A)')
-     &      'plant/',
-     &      pcname(iIndex)(1:iNameLength(iIndex)),
-     &      '/heat_exchanger/hot/temperature_in'
-      fReportData = 1.0
-      call add_to_xml_reporting(
-     &   fReport_HX_hot_temp_in( iIndex ),
-     &   H3Kname,
-     &   'units', '(oC)',
-     &   'NCHE: temperature of fluid at HX inlet from solar collector'
-     &   )
+      call AddToReport(rvPltHXchgHTempIn%Identifier,
+     &      fReport_HX_hot_temp_in( iIndex ),
+     &      pcname(iIndex)(1:iNameLength(iIndex)))
+
 C-------------------------------------------------------------------
 C.....Write a name: Hot fluid outlet temperature
-      write(H3Kname,'(A,A,A)')
-     &      'plant/',
-     &      pcname(iIndex)(1:iNameLength(iIndex)),
-     &      '/heat_exchanger/hot/temperature_out'
-      fReportData = 1.0
-      call add_to_xml_reporting(
-     &   fReport_HX_hot_temp_out( iIndex ),
-     &   H3Kname,
-     &   'units', '(oC)',
-     &   'NCHE: temperature of fluid at return to solar collector'
-     &   )
+      call AddToReport(rvPltHXchgHTempOut%Identifier,
+     &      fReport_HX_hot_temp_out( iIndex ),
+     &      pcname(iIndex)(1:iNameLength(iIndex)))
+
 C-----------------------------------------------------------------
 C.....Write a name: Cold water inlet temperature
-      write(H3Kname,'(A,A,A)')
-     &      'plant/',
-     &      pcname(iIndex)(1:iNameLength(iIndex)),
-     &      '/heat_exchanger/cold/temperature_in'
-      fReportData = 1.0
-      call add_to_xml_reporting(
-     &   fReport_HX_cold_temp_in( iIndex ),
-     &   H3Kname,
-     &   'units', '(oC)',
-     &   'NCHE: temperature of water at HX inlet from storage tank'
-     &   )
+      call AddToReport(rvPltHXchgCTempIn%Identifier,
+     &      fReport_HX_cold_temp_in( iIndex ),
+     &      pcname(iIndex)(1:iNameLength(iIndex)))
+
 C------------------------------------------------------------------
 C.....Write a name: Cold water outlet temperature
-      write(H3Kname,'(A,A,A)')
-     &      'plant/',
-     &      pcname(iIndex)(1:iNameLength(iIndex)),
-     &      '/heat_exchanger/cold/temperature_out'
-      fReportData = 1.0
-      call add_to_xml_reporting(
-     &   fReport_HX_cold_temp_out( iIndex ),
-     &   H3Kname,
-     &   'units', '(oC)',
-     &   'NCHE: temperature of water at return to storage tank'
-     &   )
-
+      call AddToReport(rvPltHEXchgCTempOut%Identifier,
+     &      fReport_HX_cold_temp_out( iIndex ),
+     &      pcname(iIndex)(1:iNameLength(iIndex)))
 
       return
 
@@ -1215,16 +1146,16 @@ C.....Write a name: Cold water outlet temperature
 
 
 C---------------------- NCHE_static_template ----------------------------
-C 
+C
 C Date:      September 10, 2007
 C Author:    Julia Purdy
 C Copyright: Natural Resources Canada
 C
 C ABSTRACT:
-C This subroutine is the static template for the natural convection 
-C heat exchanger (NCHE) component. 
+C This subroutine is the static template for the natural convection
+C heat exchanger (NCHE) component.
 C
-C It checks whether the component is properly used in the user-defined 
+C It checks whether the component is properly used in the user-defined
 C plant network and it collects time-invariant plant component parameters
 C stored in ESP-r's adata & bdata arrays, and stores them in the
 C common block COMMON/NCHE_coefficients/.
@@ -1248,7 +1179,7 @@ C    IUOUT        output channel to feedback to user
 C    ITC          trace output index (>0 gives a trace output)
 C    ITU          output channel for trace output
 C    ITRACE(35)   flag indicating one of the plant traces (1= active)
-  
+
 C OUTPUTS:
 C    NONE
 C
@@ -1288,7 +1219,7 @@ C.....Plant component configuration data - read from input file
 
 C.....Plant component connection data
       COMMON/pcond/convar, icontp, icondx
-      REAL    convar(mpcon,mconvr)        ! connection ->  state variables,  
+      REAL    convar(mpcon,mconvr)        ! connection ->  state variables,
                                           ! ...temperature/flow data
       INTEGER icontp(mpcon)               ! connection -> type
       INTEGER icondx(mpcom,mnodec,mpconc) ! connection -> index for each
@@ -1335,10 +1266,10 @@ C-------------------------------------------------------------------------------
       INTEGER J               ! counter
       INTEGER iTemp_trace
 
-C --- Plant connection index numbers 
-      integer iHX_cold_node_number ! Node number for heat exchanger component cold side 
+C --- Plant connection index numbers
+      integer iHX_cold_node_number ! Node number for heat exchanger component cold side
                                    ! ...node in plant network (Node 2)
-      integer iHX_hot_node_number  ! Node number for heat exchanger component cold side 
+      integer iHX_hot_node_number  ! Node number for heat exchanger component cold side
                                    ! ...node in plant network (Node 1)
       integer iHX_Conn_Index_in    ! index of incoming fluid connection
                                    ! ...to cold side (Node 2) of NCHE model
@@ -1353,7 +1284,7 @@ C---Logical variables
       LOGICAL mistake,CLOSE
 
       LOGICAL bFatal_error     ! flag indicating error has occurred.
-      
+
       bFatal_error = .false.
 
 C Set the value of bInitialized to false
@@ -1374,7 +1305,7 @@ C-------------------------------------------------------------------------------
         WRITE(ITU,*) ' ADATA ',( ADATA(iComp_index,J),J = 1,NumADATA )
         IF( ITU==IUOUT ) THEN  ! trace output going to screen, not file
           iTemp_trace=( iComp_index/5 ) * 5
-          IF( iTemp_trace == iComp_index .OR. iComp_index == NPCOMP ) 
+          IF( iTemp_trace == iComp_index .OR. iComp_index == NPCOMP )
      &                 call epagew ! write 5 lines at a time.
         END IF
       END IF
@@ -1425,11 +1356,11 @@ C-----Write error message if the number of connections to the nodes are incorrec
 
 
 C---------------------------------------------------------------------------------
-C Check that the connection to nodes 1 and 2 are of the correct type. 
-C The connections should be of type ISV=20 so that the NCHE component can 
+C Check that the connection to nodes 1 and 2 are of the correct type.
+C The connections should be of type ISV=20 so that the NCHE component can
 C be used in networks in which both first and second phase mass balances are formed.
 C Variables used:
-C    ICONTP(i)  holds the state variable index (ISV) of the sending 
+C    ICONTP(i)  holds the state variable index (ISV) of the sending
 C                node for connection `i'.
 C    ISV        defines nodal fluid type & coefficient generator model capabilities:
 C               ISV = 0,10,20 node represents water + ....
@@ -1443,14 +1374,14 @@ C-------------------------------------------------------------------------------
 
       IF( ICONTP( ICONDX(iComp_index,1,1) ) /= 20 ) mistake=.true.
       IF( mistake )THEN
-        WRITE( IUOUT,* ) 
+        WRITE( IUOUT,* )
      &   ' NCHE_static_template: incorrect connection type'
         WRITE( IUOUT,* ) ' to node 1 for component ',iComp_index
         STOP ' NCHE_static_template: unresolvable error'
       END IF
       IF( ICONTP( ICONDX(iComp_index,2,1) ) /= 20 ) mistake=.true.
       IF( mistake )THEN
-        WRITE( IUOUT,* ) 
+        WRITE( IUOUT,* )
      &   ' NCHE_static_template: incorrect connection type'
         WRITE( IUOUT,* ) ' to node 2 for component ',iComp_index
         STOP ' NCHE_static_template: unresolvable error'
@@ -1458,9 +1389,9 @@ C-------------------------------------------------------------------------------
 
 
 C----------------------------------------------------------------------------------
-C Check that the cold (natural convection) side of the heat exchanger is connected 
-C to an appropriate storage tank. This is required by the empirical model so that 
-C a pressure differential between the top and the bottom of the storage tank will 
+C Check that the cold (natural convection) side of the heat exchanger is connected
+C to an appropriate storage tank. This is required by the empirical model so that
+C a pressure differential between the top and the bottom of the storage tank will
 C promote natural convection flow.
 C
 C There should be a connection to/from:
@@ -1481,28 +1412,28 @@ C.....Storage tank to node 2 (HX-cold side) water connection index
 C.....  -> icondx (i,j,k) holds the connection number for the k'th
 C.....     connection to the j'th node of component i. It is used
 C.....     as a pointer.
-      iHX_Conn_Index_in = 
+      iHX_Conn_Index_in =
      &             ICONDX( iComp_index,iHX_Cold_Node_number,1 )
 
 
-C-----Determine the connection type/index for the incoming and outgoing 
-C-----connections 
-C.....Incoming connection type 
+C-----Determine the connection type/index for the incoming and outgoing
+C-----connections
+C.....Incoming connection type
 C.....  IPC2(iHX_Conn_Index_in)  ! <- sending component
       iSendCompIndex = IPC2( iHX_Conn_Index_in )
       iSendCompNodeNumber = IPN2( iHX_Conn_Index_in )
 
 
 C.....Outgoing connection index
-C.....  IPC2(iHX_Conn_Index_in)  ! <- receiving component 
+C.....  IPC2(iHX_Conn_Index_in)  ! <- receiving component
       DO iCon = 1, NPCON
 
-         IF ( ( IPC2( iCon ) .EQ. iSendCompIndex )  .AND.  
+         IF ( ( IPC2( iCon ) .EQ. iSendCompIndex )  .AND.
      &             ( IPN2( iCon ) .EQ. iSendCompNodeNumber ) ) THEN
 
              iRecevCompIndex = IPC2( iCon )
              iRecevCompNodeNumber = IPN2( iCon )
-         ENDIF 
+         ENDIF
 
       ENDDO
 
@@ -1516,12 +1447,12 @@ C-----the same, then the heat exchanger is connected to only one component
 
 C......Determine if the NCHE cold-side connection is to:
 C...... the stratified tank model (iRecevCompIndex = 122); or
-C...... the soon-to-be-developed stratified in-tank heat exchanger model 
+C...... the soon-to-be-developed stratified in-tank heat exchanger model
 
-C......Stratified storage tank 
+C......Stratified storage tank
          IF ( NPCDAT(iRecevCompIndex,4) == 122 ) THEN
 
-C........... Variable iStrat_tank_CompIndex is saved to the common block. 
+C........... Variable iStrat_tank_CompIndex is saved to the common block.
 C........... It is used to get the average stratified tank temperature each timestep.
             iStrat_tank_CompIndex = iRecevCompIndex
 
@@ -1532,7 +1463,7 @@ C............Call to function to get tank height from stratified tank model
 C If there are more than 1 stratified tank components in the network, the NCHE model
 C needs to know which component number (1 - maximum number of stratified tank components)
 C is connected to it.
-C This variable will be referenced every timestep to get the average stratified tank temperature 
+C This variable will be referenced every timestep to get the average stratified tank temperature
 C For the first release, this value will be always set to one.
             iStrat_tank_number = 1    ! reference to the first stratified tank in the network
 
@@ -1540,39 +1471,39 @@ C---there is currently only one valid stratified tank model. When the in-tank he
 C---exchanger model is added to the stratified storage tank, this code will be
 C---enabled.
 C         ELSEIF ( iRecevCompIndex == 119 ) THEN
-C...........Call to functions for appropriate case to get tank height and 
-C...........average temperature  
+C...........Call to functions for appropriate case to get tank height and
+C...........average temperature
 C            fTank_Height = fHX_get_in_tank_hx_height( iRecevCompIndex )
 
 
          ELSE
 C......Node 2 of the NCHE is not connected to an acceptable storage tank
-            WRITE( IUOUT,* ) 
+            WRITE( IUOUT,* )
      &          ' NCHE_static_template: side-arm heat exchanger '
             WRITE( IUOUT,* ) ' must be connected to a stratified tank '
             STOP ' NCHE_static_template: unresolvable error'
 
          ENDIF
- 
+
       ENDIF
 
 
 C--------------------------------------------------------------------
 C Read in the time-invariant user-input data (ADATA) from the
-C plant input and store this data in the common block 
+C plant input and store this data in the common block
 C COMMON/NCHE_coefficients/.
 C--------------------------------------------------------------------
 C     Heat Exchanger Empirical Results
 C--------------------------------------------------------------------
 
-C.....Modified effectiveness vs. capacitance ratio    
+C.....Modified effectiveness vs. capacitance ratio
       fHX_eff_CR_a ( iComp_index ) = ADATA ( iComp_index, 1 )
       fHX_eff_CR_b ( iComp_index ) = ADATA ( iComp_index, 2 )
 
 C.....Natural convection flow rate vs. pressure drop
       fHX_flow_P_c ( iComp_index ) = ADATA ( iComp_index, 3 )
       fHX_flow_P_d ( iComp_index ) = ADATA ( iComp_index, 4 )
-      
+
 C--------------------------------------------------------------------
 C     Heat Exchanger height (m)
 C--------------------------------------------------------------------
@@ -1591,9 +1522,9 @@ C.....Is HX height close to zero?
 
          bFatal_error = .true.
 
-      ENDIF 
+      ENDIF
 
-      IF (bFatal_error) 
+      IF (bFatal_error)
      &   stop 'NCHE_static_template (NCHE.F): Fatal error!'
 
       RETURN
@@ -1603,9 +1534,9 @@ C.....Is HX height close to zero?
 
 C ****************** fHX_get_stratified_tank_height ******************
 
-C fHX_get_stratified_tank_height is a real function which returns the 
+C fHX_get_stratified_tank_height is a real function which returns the
 C height (m) of the stratified tank model.
-C This stratified tank is connected to the cold side (Node 2) of the 
+C This stratified tank is connected to the cold side (Node 2) of the
 C NCHE - Natural Convection Heat Exchanger
 
       FUNCTION fHX_get_stratified_tank_height( iStrat_tank_CompIndex )
@@ -1621,7 +1552,7 @@ C NCHE - Natural Convection Heat Exchanger
       REAL fHX_get_stratified_tank_height
 
 
-      fHX_get_stratified_tank_height = 
+      fHX_get_stratified_tank_height =
      &                        ADATA( iStrat_tank_CompIndex,2 )
 
 
@@ -1631,8 +1562,8 @@ C ********************************************************************
 
 C ****************** fHX_get_stratified_tank_avg_temp ******************
 
-C fHX_get_stratified_tank_avg_temp is a real function which returns the 
-C average temperature (degrees C) of the stratified tank model for the 
+C fHX_get_stratified_tank_avg_temp is a real function which returns the
+C average temperature (degrees C) of the stratified tank model for the
 C current timestep.
 
       FUNCTION fHX_get_stratified_tank_avg_temp( iStrat_tank )
@@ -1650,7 +1581,7 @@ C current timestep.
 
 
       RETURN
-      END 
+      END
 C ********************************************************************
 
 

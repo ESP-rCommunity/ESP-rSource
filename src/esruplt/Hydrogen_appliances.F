@@ -36,39 +36,40 @@ C   to Ix = 0 for all values of ISTATS. This routien also
 C   retrieves the hydrogen appliance load, and calcualates
 C   the required hydrogen flow rate.
 C
-C convert_lds_to_bin_file: Collects hourly loads from an ascii 
+C convert_lds_to_bin_file: Collects hourly loads from an ascii
 C   file and converts them to binary format.
 C
 C recover_lds_from_bin_file: Recovers loads from binary temp
 C   file at runtime
 C
 C*************************************H2_appliance_coeff_gen*************************************
-C 
+C
 C This subroutine generates the coefficients needed for plant simulation for a Hydrogen appliance.
 C This component represents an appliance that burns Hydrogen. At this point the component does
 C not connect to other components under the plant network. The H2 consumption is based on a load
-C profile read from a data file. 
+C profile read from a data file.
 C
 C Input:
 C IPCOMP: Number for the appliance plant component in the plant network
-C ISTATS: Flag indicating which matrix is being solved 
+C ISTATS: Flag indicating which matrix is being solved
 C          1 -> temperature
 C          2 -> 1st phase flow
 C          3 -> 2nd phase flow
-C          4 -> hydrogen flow         1 
+C          4 -> hydrogen flow         1
 C
 C Output:
 C COUT:   Array holding matrix coefficients for component
 C
 C--------------------------------------------------------------------------------------------------
       subroutine H2_appliance_coeff_gen( iPComp, COut, iStats )
+      use h3kmodule
       implicit none
 
 #include "plant.h"
 #include "chemical_properties.h"
 #include "Hydrogen_demand_controller.h"
 
-C External functions.     
+C External functions.
       integer lnblnk
 
 C Passed arguements
@@ -77,7 +78,7 @@ C Passed arguements
                             ! istats = 1 -> temperature
                             ! istats = 2 -> 1st phase flow
                             ! istats = 3 -> 2nd phase flow
-                            ! istats = 4 -> hydrogen flow 
+                            ! istats = 4 -> hydrogen flow
       real COut(mpcoe)      ! array of matrix coefficients for
                             ! given component
 
@@ -87,23 +88,23 @@ C-------------------------------------------------------------------------------
 C.....I/O channes
       integer iuout,iuin
       common/outin/iuout,iuin
-C.....Plant component parameters      
+C.....Plant component parameters
       real adata(mpcom,madata),bdata(mpcom,mbdata)
       common/pdbdt/adata,bdata
 C.....Plant component name
       common/pcnam/pcname(mpcom)        ! Plant component names
       character*15, pcname
-      
+
 C-------------------------------------------------------------------------------
 C     Local variables
 C-------------------------------------------------------------------------------
       integer iCol_index     ! Index of column containing hydrogen appliance load
-      
+
       integer iInterp_Method ! Flag specifying boundary condition
                              ! interpolation method
 
       real    fApp_Scale_Factor    ! Scale factor to be applied to appliance electric
-                                   ! load read in data file 
+                                   ! load read in data file
 
       real fApp_Efficiency   ! Appliance effective efficiency (-)
 
@@ -113,7 +114,7 @@ C-------------------------------------------------------------------------------
       data bInitialized /.false./   ! Note: initialization applies to procdure,
                                     !   and is not done component-by-component
       save bInitialized
-                                          
+
       integer iCount
 
       real fH2_HHV            ! Higher heating value of hydrogen (J/kg)
@@ -122,47 +123,46 @@ C-------------------------------------------------------------------------------
       real fH2_mass_flow      ! hydrogen flow rate (kg/s)
 
       real fH2_app_load       ! Appliance heating load (W)
-      
+
       logical bClose          ! Result of close-to-zero comparison
 
       character*248 cName_buffer ! Buffer passed to BC data facility
 
-      character*124  hold_name, root_name, H3K_rep_NAME    ! strings used for XML reporting
+      integer hold_len           !Stores the lenght of the comp pass to reporting
 
-      
 C.....Chemical composition buffer
       real fComposition ( iCompound_count )
-      
+
 C-------------------------------------------------------------------------------
 C     Named constants
 C-------------------------------------------------------------------------------
-      INTEGER iPropTemp       ! named constant for temperature properity 
+      INTEGER iPropTemp       ! named constant for temperature properity
       INTEGER iProp1stFlow    ! named constant for first phase flow properity
-      INTEGER iProp2ndFlow    ! named constant for second phase flow properity    
-      INTEGER iPropH2Flow     ! named constant for hydrogen flow 
+      INTEGER iProp2ndFlow    ! named constant for second phase flow properity
+      INTEGER iPropH2Flow     ! named constant for hydrogen flow
       PARAMETER ( iPropTemp     = 1,
-     &            iProp1stFlow = 2, 
+     &            iProp1stFlow = 2,
      &            iProp2ndFlow = 3,
      &            iPropH2Flow  = 4 )
 
 C-------------------------------------------------------------------------------
 C     References
-C-------------------------------------------------------------------------------     
+C-------------------------------------------------------------------------------
       real fConvert_current_TS_to_DAY    ! Function returing current day
       real fEval_Mixture_HV         ! Function to evaluate a mixture's
                                     !   heating value
       real fEval_Mixture_MM         ! Function to evaluate a mixture's
                                     !   molar mass
       real fGet_BC_data_by_name     ! Function retrieving data from
-                                    !   boundary condition routine                                     
+                                    !   boundary condition routine
 
 
-      
+
       if ( .not. bInitialized ) then
 C-------------------------------------------------------------------------------
-C        Calculate the higher heating value of hydrogen under stp conditions 
+C        Calculate the higher heating value of hydrogen under stp conditions
 C-------------------------------------------------------------------------------
-         do iCount = 1, iCompound_Count    
+         do iCount = 1, iCompound_Count
             fComposition ( iCompound_Count ) = 0.0
          enddo
          fComposition ( iHydrogen ) = 1.0
@@ -179,36 +179,36 @@ C--------------------------------------------------------------------
      &             / fEval_Mixture_MM ( fComposition )       ! J/kg
 
          bInitialized = .true.
-        
-      endif 
+
+      endif
 
 C-------------------------------------------------------------------------------
 C     Write out contextual buffer
-C-------------------------------------------------------------------------------      
+C-------------------------------------------------------------------------------
       write (cMessage, '(A,I2,A)')
      & 'Collecting appliance hydrogen demand for plant component ',
      & iPComp,' from boundary conditions.'
 
 C-------------------------------------------------------------------------------
-C     Write out component name 
+C     Write out component name
 C-------------------------------------------------------------------------------
       write (cName_buffer, '(A)') pcname (iPComp )
-     
+
 C-------------------------------------------------------------------------------
 C     Get inputs
 C-------------------------------------------------------------------------------
       iInterp_Method        = int ( ADATA(iPComp, 1) )
       fApp_Efficiency       = ADATA(iPComp, 2)
-      fApp_Scale_Factor     = ADATA(iPComp, 3)      
+      fApp_Scale_Factor     = ADATA(iPComp, 3)
 
 
 C-------------------------------------------------------------------------------
-C     Get current day, or fraction thereof 
+C     Get current day, or fraction thereof
 C-------------------------------------------------------------------------------
       fDay = fConvert_current_TS_to_DAY()
 
 C-------------------------------------------------------------------------------
-C     Get appliance heating load 
+C     Get appliance heating load
 C-------------------------------------------------------------------------------
       fH2_app_load = fGet_BC_data_by_name(
      &                                     cName_buffer,
@@ -230,11 +230,11 @@ C-------------------------------------------------------------------------------
 C---------------------------------------------------------------------------------
 C        Hydrogen flow rate:
 C
-C                         appliance load 
+C                         appliance load
 C         H2 flow = -----------------------------
 C                   H2 HHV * appliance efficiency
 C
-C---------------------------------------------------------------------------------      
+C---------------------------------------------------------------------------------
          fH2_mass_flow = fH2_app_load / ( fH2_HHV * fApp_Efficiency )  ! kg/s
 
       else
@@ -245,20 +245,20 @@ C-------------------------------------------------------------------------------
       endif
 
 C-------------------------------------------------------------------------------
-C     Assign hydrogen appliance load and required hydrogen to commons 
+C     Assign hydrogen appliance load and required hydrogen to commons
 C-------------------------------------------------------------------------------
       fH2_plt_app_load ( iPComp )   = fH2_app_load            ! (W)
       fH2_plt_IMP_demand ( iPComp ) = fH2_mass_flow           ! (kg/s)
-      
+
 C-------------------------------------------------------------------------------
 C     Check value of ISTATS, and set coeffArray accordingly:
-C     
+C
 C     .   State eqn:  COUT(1) * T_(i) + COUT(2) * T_(i-1) = COUT(3)
 C
 C     Note: in it's present impletation, the H2 appliance is inert ---
 C     it has no incomming or outgoing connections.  The state variables
-C     (COUT(1)) are set to zero for all values of istats. 
-C     
+C     (COUT(1)) are set to zero for all values of istats.
+C
 C-------------------------------------------------------------------------------
 
       IF ( istats .EQ. iPropTemp ) THEN
@@ -270,7 +270,7 @@ C-------------------------------------------------------------------------------
          COUT(1) = 1.0
          COUT(2) = 0.0
          COUT(3) = 0.0
-         
+
       ELSEIF ( istats .EQ. iProp1stFlow ) THEN
 
 C-------------------------------------------------------------------------------
@@ -280,21 +280,21 @@ C-------------------------------------------------------------------------------
          COUT(1) = 1.0
          COUT(2) = 0.0
          COUT(3) = 0.0
-         
+
       ELSEIF ( istats .EQ. iProp2ndFlow ) THEN
 
 C-------------------------------------------------------------------------------
-C     .  2nd phase flow: no flow 
+C     .  2nd phase flow: no flow
 C-------------------------------------------------------------------------------
 
          COUT(1) = 1.0
          COUT(2) = 0.0
          COUT(3) = 0.0
 
-      ELSEIF ( istats .EQ. iPropH2Flow ) THEN 
+      ELSEIF ( istats .EQ. iPropH2Flow ) THEN
 
 C-------------------------------------------------------------------------------
-C     .  H2 flow: no flow 
+C     .  H2 flow: no flow
 C-------------------------------------------------------------------------------
 
         COUT(1) = 1.0
@@ -307,37 +307,16 @@ C-------------------------------------------------------------------------------
 C XML output
 C----------------------------------------------------------------------------------------
 
-C.....Get component name
-      hold_name = pcname(IPCOMP) 
-C.....Format string as: 'plant/NAME/misc_data'
+C.....Get component name's lenght
+      hold_len = lnblnk(pcname(IPCOMP))
+C.....Push values to reporting engine
+       call AddToReport(rvPltH2AppLoad%Identifier,
+     &         fH2_app_load,
+     &         pcname(IPCOMP)(1:hold_len))
 
-       WRITE(root_name,'(A,A,A)') 
-     &     'plant/',
-     &     hold_name(1:lnblnk(hold_name)),
-     &     '/misc_data'
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/H2_app_load'
-
-       call add_to_xml_reporting(
-     &                   fH2_app_load,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &                   'Hydrogen appliance electric load' )
-
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/H2_app_demand'
-
-       call add_to_xml_reporting(
-     &                   fH2_mass_flow,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(kg/s)',
-     &                   'Hydrogen demand of appliance' )
-
-
+      call AddToReport(rvPltH2AppDemand%Identifier,
+     &         fH2_mass_flow,
+     &         pcname(IPCOMP)(1:hold_len))
 
       RETURN
       END
@@ -365,7 +344,7 @@ C-------------------------------------------------------------------------------
 
 #include "plant.h"
 
-C External functions.     
+C External functions.
       integer lnblnk
 
 C Passed arguements
@@ -375,7 +354,7 @@ C Passed arguements
 C-------------------------------------------------------------------------------
 C     ESP-r commons
 C-------------------------------------------------------------------------------
-      COMMON/FILEP/IFIL                 ! Base ESP-r file unit number 
+      COMMON/FILEP/IFIL                 ! Base ESP-r file unit number
       INTEGER IFIL
 
       COMMON/OUTIN/IUOUT,IUIN           ! Number for default output and input screens
@@ -397,7 +376,7 @@ C-------------------------------------------------------------------------------
       INTEGER I                         ! Do loop counter
       INTEGER num_col                   ! Number of columns in each of the records in the load
                                         ! profile data file
-      
+
       CHARACTER OUTSTR*124              ! Data record from load profile data file
       LOGICAL bError                  ! Flag indicating if there were any problems opening
                                         ! data file and reading data from file
@@ -445,11 +424,11 @@ C-----Find the number of non-blank characters in the assigned file name
 C-----Assign unit number for load profile data file. Use ifil+1 for temporarly-opened
 C-----files.
       ascii_file_num = IFIL+1
-      
-C-----Notify user that we're processing the hourly file       
+
+C-----Notify user that we're processing the hourly file
       call edisp(iuout,'  ->Processing hourly profile ' //
      &                   load_file_name(1:nonblank_name_length) )
-     
+
       bError = .false.
 
 C-----Open load profile data file
@@ -581,7 +560,7 @@ C Open a file with direct access (i.e. a binary file) that will be used during
 C the time-step simulation to set the hydrogen load on the appliance. This
 C temporary file will be deleted following completion of the time-step simulation.
 C---------------------------------------------------------------------------------
-      
+
       CALL ERPFREE(load_file_num,ISTAT)
       INQUIRE (UNIT=load_file_num,EXIST=load_file_exists) ! check if file exists
 
@@ -632,14 +611,14 @@ C open for later access
 C************************************ recover_lds_from_bin_file ****************************************
 C
 C This subroutine returns the appropriate load for a given hour/day/year according
-C to the supplied profile. 
+C to the supplied profile.
 C
 C Input:
 C
 C   load_file_num: IO channel for binary load file (already open)
 C   fHour: hour of the day
 C   iDay_of_Year: day of the year
-C   iYear: year 
+C   iYear: year
 
 C
 C Output:
@@ -663,8 +642,8 @@ C-------------------------------------------------------------------------------
                                            ! requested (0.0->24.0)
       integer iDay_of_Year                 ! Day of year for which data is
                                            ! requested (1->365)
-      integer iYear                        ! year for which data is requested                                          
-                                                
+      integer iYear                        ! year for which data is requested
+
 
 C-------------------------------------------------------------------------------
 C     ESP-r commons
@@ -705,9 +684,9 @@ C-------------------------------------------------------------------------------
                                            ! 7 for Sunday)
 
       integer hour_index                   ! Current hour
-      real hour_fraction                   ! Fraction of current hour that has lapsed                                           
+      real hour_fraction                   ! Fraction of current hour that has lapsed
 
-                                           
+
       INTEGER month_index                  ! Index to keep track of the month of the year (varies from 1 to 12)
 
       INTEGER dayofmonth_index             ! Index to keep track of day number for the month
@@ -718,7 +697,7 @@ C-------------------------------------------------------------------------------
       REAL frac_hr                         ! Fraction of the hour past the beginning of the hour
 
       logical bClose                       ! Flag for numerical comparisons
-      
+
 C-------------------------------------------------------------------------------
 C     Named constants
 C-------------------------------------------------------------------------------
@@ -773,7 +752,7 @@ C-----profile for weekdays and another average profile for the weekends:
 C-------If the day type for the future day in plant domain is a weekday, then record number
 C-------in the load profile data file is hour_index + 1
         IF((day_type.GE.1).AND.(day_type.LE.5)) THEN
-          record_num = 1 + hour_index 
+          record_num = 1 + hour_index
 C-------If the day type for the future day in plant domain is a weekend, then the record
 C-------number in the load profile file is the same as that for a weekday + 24
         ELSEIF((day_type.EQ.6).OR.(day_type.EQ.7)) THEN
