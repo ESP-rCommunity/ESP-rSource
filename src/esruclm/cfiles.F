@@ -140,7 +140,7 @@ C Define the year if not already done.
           helptopic='confirm_year'
           call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKI(IYEAR,' ',' What is the year ? ',
-     &             1900,'W',2005,'W',2003,'year',IER,nbhelp)
+     &             1900,'W',2015,'W',2001,'year',IER,nbhelp)
 
           CLMLOC=' '
           helptopic='confirm_site_name'
