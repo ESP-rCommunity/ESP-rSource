@@ -1,23 +1,3 @@
-Project notes for 1BR_4in_block.cfg
-Title: The lower and upper flats of a 4 in one building
-In folder: validation/benchmark/DSM/1Br_4in_block
-By: jon
-Date: Thu Feb 16 14:11:23 2012
-Client: 
-Project reference: 
-_____________________________
-Notes: 
-
-This is one half of a four unit dwelling (a lower one BR
-flat and an upper one BR flat).  Its composition is representative
-of timber-kit energy efficient public housing in the late
-1990s in the North of Scotland.
-
-Each room is explicitly represented as is the roof space 
-and the crawl space. This allows transient occupancy patterns
-to be studied as well as the impact on different infiltration
-regimes.
-
 Model variants in this folder:
 
 Activities:
@@ -50,6 +30,3 @@ kitchen_liv p1m p2m p2h variants (assumed to have a storage unit)
 1BR_4in_block_p2m_avg.cfg - activity p2m with average comfort
 1BR_4in_block_p2m_cool.cfg - activity p2m with cool comfort
 1BR_4in_block_p2m_warm.cfg - activity p2m with warm comfort
-  
-_____________________________
-  
