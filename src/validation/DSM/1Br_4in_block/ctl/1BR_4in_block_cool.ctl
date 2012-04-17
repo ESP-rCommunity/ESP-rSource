@@ -822,4 +822,4 @@ capacity in the various rooms needs to be checked
       7.  # No. of data items
   1000.000 0.000 0.000 0.000 10.000 100.000 0.000
 # Function:Zone links
- 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+ 0,0,1,5,2,1,4,0,1,5,2,1,4,0,0

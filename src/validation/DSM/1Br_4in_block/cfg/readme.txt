@@ -24,9 +24,9 @@ kitchen_liv p1m p2m p2h variants (assumed to have a storage unit)
 1BR_4in_block_p1m_avg.cfg - activity p1m with average comfort
 1BR_4in_block_p1m_cool.cfg - activity p1m with cool comfort
 1BR_4in_block_p1m_warm.cfg - activity p1m with warm comfort
-1BR_4in_block_p2h_avg.cfg - activity p2h with average comfort
-1BR_4in_block_p2h_cool.cfg - activity p2h with cool comfort
-1BR_4in_block_p2h_warm.cfg - activity p2h with warm comfirt
+1BR_4in_block_p2h_avg.cfg - activity p2h with average comfort MIGHT NOT BE USEFUL
+1BR_4in_block_p2h_cool.cfg - activity p2h with cool comfort MIGHT NOT BE USEFUL
+1BR_4in_block_p2h_warm.cfg - activity p2h with warm comfirt MIGHT NOT BE USEFUL
 1BR_4in_block_p2m_avg.cfg - activity p2m with average comfort
 1BR_4in_block_p2m_cool.cfg - activity p2m with cool comfort
 1BR_4in_block_p2m_warm.cfg - activity p2m with warm comfort
