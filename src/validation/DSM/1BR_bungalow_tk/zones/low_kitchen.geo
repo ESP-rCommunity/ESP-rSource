@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,low_kitchen # tag version, format, zone name
-*date Mon Apr 16 19:33:18 2012  # latest file modification 
+*date Tue Apr 17 12:10:59 2012  # latest file modification 
 low_kitchen describes kitchen for lower flat in the corner
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,6.50000,0.30000,0.20000  #   1
@@ -55,7 +55,7 @@ low_kitchen describes kitchen for lower flat in the corner
 *surf,door_liv,VERT,-,-,-,Doorint_sol,OPAQUE,ANOTHER,07,10  #   6 ||< door_kit:lowliving
 *surf,ptn_liv_b,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,07,09  #   7 ||< ptn_b:lowliving
 *surf,ptn_bath,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,03,04  #   8 ||< ptn_bath:bathroom
-*surf,kitch_ceil,CEIL,-,-,-,Ceilti_up,OPAQUE,ANOTHER,08,03  #   9 ||< ovr_kitchen:roof
+*surf,kitch_ceil,CEIL,-,-,-,Ceiltk_up,OPAQUE,ANOTHER,08,03  #   9 ||< ovr_kitchen:roof
 *surf,kitch_floor,FLOR,-,-,-,Floorti_low,OPAQUE,ANOTHER,15,04  #  10 ||< kitch_floor:crawl
 *surf,frame,VERT,-,F-FRAME,CLOSED,Window_frme,OPAQUE,EXTERIOR,0,0  #  11 ||< external
 *surf,sill,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #  12 ||< external

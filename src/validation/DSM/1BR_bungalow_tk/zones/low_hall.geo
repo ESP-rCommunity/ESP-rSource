@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,low_hall # tag version, format, zone name
-*date Mon Apr 16 19:33:19 2012  # latest file modification 
+*date Tue Apr 17 12:11:13 2012  # latest file modification 
 low_hall describes circulation space in lower flat
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,5.50000,2.60000,0.20000  #   1
@@ -72,7 +72,7 @@ low_hall describes circulation space in lower flat
 *surf,ptn_stor_d,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,02,03  #  13 ||< ptn_hall_a:store2
 *surf,ptn_bath_a,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,03,08  #  14 ||< ptn_hall_c:bathroom
 *surf,ptn_bath_b,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,03,07  #  15 ||< ptn_hall_b:bathroom
-*surf,hall_ceil,CEIL,-,-,-,Ceilti_up,OPAQUE,ANOTHER,08,04  #  16 ||< ovr_hall:roof
+*surf,hall_ceil,CEIL,-,-,-,Ceiltk_up,OPAQUE,ANOTHER,08,04  #  16 ||< ovr_hall:roof
 *surf,hall_floor,FLOR,-,-,-,Floorti_lowc,OPAQUE,ANOTHER,15,05  #  17 ||< hall_floor:crawl
 # 
 *insol,3,0,0,0  # default insolation distribution

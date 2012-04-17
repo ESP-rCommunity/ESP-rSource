@@ -1,6 +1,6 @@
 # composite construction db defined in ../dbs/learwick_a.constrdb
 # based on materials db material.db3.a
-   46     # no of composites 
+   48     # no of composites 
 # layers  description   optics name   symmetry tag
     6    Extwall_ti    OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
@@ -330,3 +330,13 @@
    36    0.1540  concrete block : concrete block (milton keynes)
     0    0.1400  air  0.190 0.190 0.190
   108    0.0180  white gypboard : White paintedd Gypboard
+# layers  description   optics name   symmetry tag
+    2    Floortk_rf    OPAQ  OPAQUE        Ceiltk_up     
+# material ref thickness (m) description & air gap R
+  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum (10 mm) (UK code)
+  294    0.1500  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+# layers  description   optics name   symmetry tag
+    2    Ceiltk_up     OPAQ  OPAQUE        Floortk_rf    
+# material ref thickness (m) description & air gap R
+  294    0.1500  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+  111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum (10 mm) (UK code)

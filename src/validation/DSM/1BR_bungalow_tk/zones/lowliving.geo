@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,lowliving # tag version, format, zone name
-*date Mon Apr 16 19:33:28 2012  # latest file modification 
+*date Tue Apr 17 12:11:42 2012  # latest file modification 
 lowliving describes living dining of lower flat
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,8.60000,2.60000,0.20000  #   1
@@ -63,7 +63,7 @@ lowliving describes living dining of lower flat
 *surf,ptn_a,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,03,05  #   8 ||< ptn_hall_a:bathroom
 *surf,ptn_b,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,04,07  #   9 ||< ptn_liv_b:low_kitchen
 *surf,door_kit,VERT,-,-,-,Doorint_sol,OPAQUE,ANOTHER,04,06  #  10 ||< door_liv:low_kitchen
-*surf,living_ceil,CEIL,-,-,-,Ceilti_up,OPAQUE,ANOTHER,08,06  #  11 ||< ovr_living:roof
+*surf,living_ceil,CEIL,-,-,-,Ceiltk_up,OPAQUE,ANOTHER,08,06  #  11 ||< ovr_living:roof
 *surf,liv_floor,FLOR,-,-,-,Floorti_lowc,OPAQUE,ANOTHER,15,07  #  12 ||< liv_floor:crawl
 *surf,frame,VERT,-,F-FRAME,CLOSED,Window_frme,OPAQUE,EXTERIOR,0,0  #  13 ||< external
 *surf,sill,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #  14 ||< external

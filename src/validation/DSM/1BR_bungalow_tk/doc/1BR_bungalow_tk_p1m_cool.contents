@@ -1,8 +1,8 @@
 Synopsis
  
-Synopsis of the model A small timber-kit bungalow in North Scotland P2M
-average comfort defined in 1BR_bungalow_tk_p2m_avg.cfg generated on Tue Apr 17
-12:16:58 2012. Notes associated with the model are in ../doc/1BR_bungalow.log
+Synopsis of the model A small timber-kit bungalow in North Scotland P1M cool
+comfort defined in 1BR_bungalow_tk_p1m_cool.cfg generated on Tue Apr 17
+12:15:18 2012. Notes associated with the model are in ../doc/1BR_bungalow.log
  
 The model is located at latitude   55.90 with a longitude difference of  -4.10
 from the local time meridian. The year used in simulations is 2007 and
@@ -45,18 +45,18 @@ Primary energy conversions (demand kWhr to primary kWhr) are:
  hot water: 190.00   0.30   0.20
 An Integrated Performance View has been defined:
 Title : A small timber-kit bungalow in North Sco
-Version   : Version 1BR_bungalow_tk_p2m_avg
+Version   : Version 1BR_bungalow_tk_p1m_cool
 synopsis:
-:The 1BR_bungalow_tk_p2m_avg
+:The 1BR_bungalow_tk_p1m_cool
 Images    :   0
  
 Simulations to be undertaken:
 ____simulations ( 5)____________days descrip___
-1st win Tue-06-Feb to Mon-12-Feb   7 1BR_bungalow_tk_p2m_avg 1st winter run
-spring  Tue-17-Apr to Mon-23-Apr   7 1BR_bungalow_tk_p2m_avg spring run
-summer  Tue-03-Jul to Mon-09-Jul   7 1BR_bungalow_tk_p2m_avg summer run
-autumn  Tue-02-Oct to Mon-08-Oct   7 1BR_bungalow_tk_p2m_avg autumn run
-2nd win Tue-20-Nov to Mon-26-Nov   7 1BR_bungalow_tk_p2m_avg 2nd winter run
+1st win Tue-06-Feb to Mon-12-Feb   7 1BR_bungalow_tk_p1m_cool 1st winter run
+spring  Tue-17-Apr to Mon-23-Apr   7 1BR_bungalow_tk_p1m_cool spring run
+summer  Tue-03-Jul to Mon-09-Jul   7 1BR_bungalow_tk_p1m_cool summer run
+autumn  Tue-02-Oct to Mon-08-Oct   7 1BR_bungalow_tk_p1m_cool autumn run
+2nd win Tue-20-Nov to Mon-26-Nov   7 1BR_bungalow_tk_p1m_cool 2nd winter run
  
 display day Wed-07-Feb.
 display day Wed-18-Apr.
@@ -105,7 +105,7 @@ Databases associated with the model:
  
 The model includes ideal controls as follows:
 Control description:
-Average comfort settings 19C in bedrooms 21C in living areas. Loop 1
+Cooler comfort settings 17C in bedrooms 19C in living areas. Loop 1
 for bedrooms Loop 2 for hall. Loop 3 for study. Loop 4 for living.
 Loop 5 for kitchen
  
@@ -128,136 +128,136 @@ holiday
  Weekday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
    6 23.00 db temp   > flux      free floating
  Saturday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
    6 23.00 db temp   > flux      free floating
  Sunday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  7 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
-   5 16.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   5 16.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
-   6 20.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   6 20.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
    7 23.00 db temp   > flux      free floating
  Day type  4 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  5 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  6 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  7 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  8 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
@@ -299,133 +299,133 @@ holiday
  Weekday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
+   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
    3  9.00 db temp   > flux      free floating
    4 13.00 db temp   > flux      free floating
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
+   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
    6 23.00 db temp   > flux      free floating
  Saturday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
+   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
+   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
+   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
+   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
    6 23.00 db temp   > flux      free floating
  Sunday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  7 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
+   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
+   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
+   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
-   5 16.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
+   5 16.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
-   6 20.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
+   6 20.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
    7 23.00 db temp   > flux      free floating
  Day type  4 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
+   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
+   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
+   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  5 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
+   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
+   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
+   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
+   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  6 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
+   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
+   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
+   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  7 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
+   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
+   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
+   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
+   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  8 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
@@ -467,12 +467,345 @@ holiday
  Weekday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
  Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      free floating
+   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+100.00C.
+   3  9.00 db temp   > flux      free floating
+   4 13.00 db temp   > flux      free floating
+   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+100.00C.
+   6 23.00 db temp   > flux      free floating
+ Saturday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+100.00C.
+   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+100.00C.
+   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+100.00C.
+   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+100.00C.
+   6 23.00 db temp   > flux      free floating
+ Sunday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  7 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+100.00C.
+   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+100.00C.
+   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+100.00C.
+   5 16.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+100.00C.
+   6 20.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+100.00C.
+   7 23.00 db temp   > flux      free floating
+ Day type  4 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+100.00C.
+   3  9.00 db temp   > flux      free floating
+   4 13.00 db temp   > flux      free floating
+   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+100.00C.
+   6 23.00 db temp   > flux      free floating
+ Day type  5 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+100.00C.
+   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+100.00C.
+   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+100.00C.
+   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+100.00C.
+   6 23.00 db temp   > flux      free floating
+ Day type  6 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+100.00C.
+   3  9.00 db temp   > flux      free floating
+   4 13.00 db temp   > flux      free floating
+   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+100.00C.
+   6 23.00 db temp   > flux      free floating
+ Day type  7 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+100.00C.
+   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+100.00C.
+   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+100.00C.
+   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+100.00C.
+   6 23.00 db temp   > flux      free floating
+ Day type  8 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+   2  7.00 db temp   > flux      free floating
+   3  9.00 db temp   > flux      free floating
+   4 13.00 db temp   > flux      free floating
+   5 18.00 db temp   > flux      free floating
+   6 23.00 db temp   > flux      free floating
+ Day type  9 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+   2  7.00 db temp   > flux      free floating
+   3  9.00 db temp   > flux      free floating
+   4 13.00 db temp   > flux      free floating
+   5 18.00 db temp   > flux      free floating
+   6 23.00 db temp   > flux      free floating
+ Day type 10 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 10.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 10.00C cooling setpoint
+100.00C.
+ 
+ The sensor for function  4 senses the temperature of the current zone.
+ The actuator for function  4 is air point of the current zone
+ The following day types are defined:
+weekdays
+saturday
+sunday
+win_wkday
+win_wkend
+trn_wkday
+trn_wkend
+sum_wkday
+sum_wkend
+holiday
+ Weekday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+   2  6.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   3  9.00 db temp   > flux      free floating
+   4 13.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   5 18.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   6 23.00 db temp   > flux      free floating
+ Saturday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+   2  6.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   3  9.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   4 13.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   5 18.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   6 23.00 db temp   > flux      free floating
+ Sunday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  7 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+   2  6.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   3  9.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   4 13.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   5 16.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   6 20.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   7 23.00 db temp   > flux      free floating
+ Day type  4 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+   2  6.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   3  9.00 db temp   > flux      free floating
+   4 13.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   5 18.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   6 23.00 db temp   > flux      free floating
+ Day type  5 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+   2  7.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   3  9.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   4 13.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   5 18.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   6 23.00 db temp   > flux      free floating
+ Day type  6 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+   2  6.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   3  9.00 db temp   > flux      free floating
+   4 13.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   5 18.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   6 23.00 db temp   > flux      free floating
+ Day type  7 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+   2  7.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   3  9.00 db temp   > flux      free floating
+   4 13.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   5 18.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   6 23.00 db temp   > flux      free floating
+ Day type  8 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+   2  7.00 db temp   > flux      free floating
+   3  9.00 db temp   > flux      free floating
+   4 13.00 db temp   > flux      free floating
+   5 18.00 db temp   > flux      free floating
+   6 23.00 db temp   > flux      free floating
+ Day type  9 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+   2  7.00 db temp   > flux      free floating
+   3  9.00 db temp   > flux      free floating
+   4 13.00 db temp   > flux      free floating
+   5 18.00 db temp   > flux      free floating
+   6 23.00 db temp   > flux      free floating
+ Day type 10 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 10.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 10.00C cooling setpoint
+100.00C.
+ 
+ The sensor for function  5 senses the temperature of the current zone.
+ The actuator for function  5 is air point of the current zone
+ The following day types are defined:
+weekdays
+saturday
+sunday
+win_wkday
+win_wkend
+trn_wkday
+trn_wkend
+sum_wkday
+sum_wkend
+holiday
+ Weekday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
    2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
 capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      free floating
+   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
    5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
 capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
@@ -530,7 +863,10 @@ basic control: max heating capacity 1000.0W min heating capacity 0.0W max coolin
 capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      free floating
+   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
    5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
 capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
@@ -564,7 +900,10 @@ basic control: max heating capacity 1000.0W min heating capacity 0.0W max coolin
 capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      free floating
+   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
    5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
 capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
@@ -577,10 +916,7 @@ capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoin
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
 capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
 100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   3  9.00 db temp   > flux      free floating
    4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
 capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
@@ -588,342 +924,6 @@ capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoin
    5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
 basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
 capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   6 23.00 db temp   > flux      free floating
- Day type  8 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      free floating
-   3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      free floating
-   5 18.00 db temp   > flux      free floating
-   6 23.00 db temp   > flux      free floating
- Day type  9 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      free floating
-   3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      free floating
-   5 18.00 db temp   > flux      free floating
-   6 23.00 db temp   > flux      free floating
- Day type 10 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 10.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 10.00C cooling setpoint
-100.00C.
- 
- The sensor for function  4 senses the temperature of the current zone.
- The actuator for function  4 is air point of the current zone
- The following day types are defined:
-weekdays
-saturday
-sunday
-win_wkday
-win_wkend
-trn_wkday
-trn_wkend
-sum_wkday
-sum_wkend
-holiday
- Weekday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   6 23.00 db temp   > flux      free floating
- Saturday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   4 13.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   6 23.00 db temp   > flux      free floating
- Sunday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  7 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   4 13.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   5 16.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   6 20.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   7 23.00 db temp   > flux      free floating
- Day type  4 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   6 23.00 db temp   > flux      free floating
- Day type  5 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   4 13.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   6 23.00 db temp   > flux      free floating
- Day type  6 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   6 23.00 db temp   > flux      free floating
- Day type  7 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   6 23.00 db temp   > flux      free floating
- Day type  8 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      free floating
-   3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      free floating
-   5 18.00 db temp   > flux      free floating
-   6 23.00 db temp   > flux      free floating
- Day type  9 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      free floating
-   3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      free floating
-   5 18.00 db temp   > flux      free floating
-   6 23.00 db temp   > flux      free floating
- Day type 10 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 10.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 10.00C cooling setpoint
-100.00C.
- 
- The sensor for function  5 senses the temperature of the current zone.
- The actuator for function  5 is air point of the current zone
- The following day types are defined:
-weekdays
-saturday
-sunday
-win_wkday
-win_wkend
-trn_wkday
-trn_wkend
-sum_wkday
-sum_wkend
-holiday
- Weekday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   6 23.00 db temp   > flux      free floating
- Saturday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   6 23.00 db temp   > flux      free floating
- Sunday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  7 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   5 16.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   6 20.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   7 23.00 db temp   > flux      free floating
- Day type  4 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   6 23.00 db temp   > flux      free floating
- Day type  5 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   6 23.00 db temp   > flux      free floating
- Day type  6 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   6 23.00 db temp   > flux      free floating
- Day type  7 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 21.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  8 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
@@ -1660,8 +1660,8 @@ vertex  13    6.50000    0.30000    2.40000   vertex  26    4.74000    0.30000  
  
  
  Air schedule notes:
-Standard periods for all day types. P2M. Full bathroom 1 adult & child
-in during afternoon moderate electricity usage. Lighting is seasonal.
+Standard periods for all day types. P1M. Full bathroom people at work.
+Careful electricity usage.  Lighting is seasonal.
  Control: no control of air flow
  
 Number of air change periods for daytype weekdays     :    1
@@ -1715,8 +1715,8 @@ Number of air change periods for daytype holiday      :    1
   1  0 - 24     0.80  0.0022    0.00  0.0000   0     0.00
  
 Notes:
-Standard periods for all day types. P2M. Full bathroom 1 adult & child
-in during afternoon moderate electricity usage. Lighting is seasonal.
+Standard periods for all day types. P1M. Full bathroom people at work.
+Careful electricity usage.  Lighting is seasonal.
 Number of weekdays     casual gains= 27
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
@@ -2082,14 +2082,14 @@ vertex  12    9.60000    0.30000    2.40000   vertex  24    7.84000    0.30000  
  
  
  Air schedule notes:
-Standard periods for all day types. P2M. Small kitchen with 1 adult in
-afternoons and careful use of electrical. Lighting is seasonal.
+Standard periods for all day types. P1M. Small kitchen with people at
+work and careful users of electrical. Lighting is seasonal.
  Control: infil only: zone temp
  Lower/Middle/High temp setpoints:   10.00  21.00  23.00
                     Infil. ac/h m^3/s  Vent. ac/h m^3/s  from  data
  Lower range data     0.400  0.0017     0.000  0.0000    0     0.000
- Middle range data    1.500  0.0065     0.000  0.0000    0     0.000
- High range data      2.000  0.0087     0.000  0.0000    0     0.000
+ Middle range data    2.000  0.0087     0.000  0.0000    0     0.000
+ High range data      3.000  0.0131     0.000  0.0000    0     0.000
  
 Number of air change periods for daytype weekdays     :    1
   Period   Infiltration   Ventilation     From Source
@@ -2142,8 +2142,8 @@ Number of air change periods for daytype holiday      :    1
   1  0 - 24     0.80  0.0035    0.00  0.0000   0     0.00
  
 Notes:
-Standard periods for all day types. P2M. Small kitchen with 1 adult in
-afternoons and careful use of electrical. Lighting is seasonal.
+Standard periods for all day types. P1M. Small kitchen with people at
+work and careful users of electrical. Lighting is seasonal.
 Number of weekdays     casual gains= 27
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
@@ -2151,13 +2151,13 @@ weekd  1 OccuptW    0- 7      0.0      0.0       0.50       0.50
 weekd  2 OccuptW    7- 9    107.0     53.0       0.50       0.50
 weekd  3 OccuptW    9-12      0.0      0.0       0.50       0.50
 weekd  4 OccuptW   12-13      0.0      0.0       0.50       0.50
-weekd  5 OccuptW   13-17     53.0     27.0       0.50       0.50
+weekd  5 OccuptW   13-17      0.0      0.0       0.50       0.50
 weekd  6 OccuptW   17-18    107.0     53.0       0.50       0.50
-weekd  7 OccuptW   18-20      0.0      0.0       0.50       0.50
+weekd  7 OccuptW   18-20     53.0     27.0       0.50       0.50
 weekd  8 OccuptW   20-23      0.0      0.0       0.50       0.50
 weekd  9 OccuptW   23-24      0.0      0.0       0.50       0.50
 weekd 10 LightsW    0- 7      0.0      0.0       0.30       0.70
-weekd 11 LightsW    7- 9     50.0      0.0       0.30       0.70
+weekd 11 LightsW    7- 9    100.0      0.0       0.30       0.70
 weekd 12 LightsW    9-12      0.0      0.0       0.30       0.70
 weekd 13 LightsW   12-13      0.0      0.0       0.30       0.70
 weekd 14 LightsW   13-17      0.0      0.0       0.30       0.70
@@ -2179,7 +2179,7 @@ Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 satur  1 OccuptW    0- 7      0.0      0.0       0.50       0.50
 satur  2 OccuptW    7- 9    107.0     53.0       0.50       0.50
-satur  3 OccuptW    9-12    107.0     53.0       0.50       0.50
+satur  3 OccuptW    9-12     53.0     27.0       0.50       0.50
 satur  4 OccuptW   12-13    107.0     53.0       0.50       0.50
 satur  5 OccuptW   13-17      0.0      0.0       0.50       0.50
 satur  6 OccuptW   17-18    107.0     53.0       0.50       0.50
@@ -2198,7 +2198,7 @@ satur 18 LightsW   23-24      0.0      0.0       0.30       0.70
 satur 19 EquiptW    0- 7     20.0      0.0       0.40       0.60
 satur 20 EquiptW    7- 9    360.0      0.0       0.40       0.60
 satur 21 EquiptW    9-12    187.0      0.0       0.40       0.60
-satur 22 EquiptW   12-13    900.0      0.0       0.40       0.60
+satur 22 EquiptW   12-13    360.0      0.0       0.40       0.60
 satur 23 EquiptW   13-17     20.0      0.0       0.40       0.60
 satur 24 EquiptW   17-18    900.0    225.0       0.40       0.60
 satur 25 EquiptW   18-20    370.0      0.0       0.40       0.60
@@ -2209,7 +2209,7 @@ Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 sunda  1 OccuptW    0- 7      0.0      0.0       0.50       0.50
 sunda  2 OccuptW    7- 9    107.0     53.0       0.50       0.50
-sunda  3 OccuptW    9-12    107.0     53.0       0.50       0.50
+sunda  3 OccuptW    9-12     53.0     27.0       0.50       0.50
 sunda  4 OccuptW   12-13    107.0     53.0       0.50       0.50
 sunda  5 OccuptW   13-17      0.0      0.0       0.50       0.50
 sunda  6 OccuptW   17-18    107.0     53.0       0.50       0.50
@@ -2228,7 +2228,7 @@ sunda 18 LightsW   23-24      0.0      0.0       0.30       0.70
 sunda 19 EquiptW    0- 7     20.0      0.0       0.40       0.60
 sunda 20 EquiptW    7- 9    360.0      0.0       0.40       0.60
 sunda 21 EquiptW    9-12    187.0      0.0       0.40       0.60
-sunda 22 EquiptW   12-13    900.0      0.0       0.40       0.60
+sunda 22 EquiptW   12-13    360.0      0.0       0.40       0.60
 sunda 23 EquiptW   13-17     20.0      0.0       0.40       0.60
 sunda 24 EquiptW   17-18    900.0    225.0       0.40       0.60
 sunda 25 EquiptW   18-20    370.0      0.0       0.40       0.60
@@ -2241,8 +2241,8 @@ win_w  1 OccuptW    0- 7      0.0      0.0       0.50       0.50
 win_w  2 OccuptW    7- 9    107.0     53.0       0.50       0.50
 win_w  3 OccuptW    9-12      0.0      0.0       0.50       0.50
 win_w  4 OccuptW   12-13      0.0      0.0       0.50       0.50
-win_w  5 OccuptW   13-17     53.0     27.0       0.50       0.50
-win_w  6 OccuptW   17-18    107.0     53.0       0.50       0.50
+win_w  5 OccuptW   13-17      0.0      0.0       0.50       0.50
+win_w  6 OccuptW   17-18     53.0     27.0       0.50       0.50
 win_w  7 OccuptW   18-20      0.0      0.0       0.50       0.50
 win_w  8 OccuptW   20-23      0.0      0.0       0.50       0.50
 win_w  9 OccuptW   23-24      0.0      0.0       0.50       0.50
@@ -2269,7 +2269,7 @@ Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 win_w  1 OccuptW    0- 7      0.0      0.0       0.50       0.50
 win_w  2 OccuptW    7- 9    107.0     53.0       0.50       0.50
-win_w  3 OccuptW    9-12    107.0     53.0       0.50       0.50
+win_w  3 OccuptW    9-12     53.0     27.0       0.50       0.50
 win_w  4 OccuptW   12-13    107.0     53.0       0.50       0.50
 win_w  5 OccuptW   13-17      0.0      0.0       0.50       0.50
 win_w  6 OccuptW   17-18    107.0     53.0       0.50       0.50
@@ -2277,7 +2277,7 @@ win_w  7 OccuptW   18-20     53.0     27.0       0.50       0.50
 win_w  8 OccuptW   20-23      0.0      0.0       0.50       0.50
 win_w  9 OccuptW   23-24      0.0      0.0       0.50       0.50
 win_w 10 LightsW    0- 7      0.0      0.0       0.30       0.70
-win_w 11 LightsW    7- 9     50.0      0.0       0.30       0.70
+win_w 11 LightsW    7- 9    100.0      0.0       0.30       0.70
 win_w 12 LightsW    9-12    100.0      0.0       0.30       0.70
 win_w 13 LightsW   12-13      0.0      0.0       0.30       0.70
 win_w 14 LightsW   13-17     50.0      0.0       0.30       0.70
@@ -2288,7 +2288,7 @@ win_w 18 LightsW   23-24      0.0      0.0       0.30       0.70
 win_w 19 EquiptW    0- 7     20.0      0.0       0.40       0.60
 win_w 20 EquiptW    7- 9    360.0      0.0       0.40       0.60
 win_w 21 EquiptW    9-12    187.0      0.0       0.40       0.60
-win_w 22 EquiptW   12-13    900.0      0.0       0.40       0.60
+win_w 22 EquiptW   12-13    360.0      0.0       0.40       0.60
 win_w 23 EquiptW   13-17     20.0      0.0       0.40       0.60
 win_w 24 EquiptW   17-18    900.0    225.0       0.40       0.60
 win_w 25 EquiptW   18-20    370.0      0.0       0.40       0.60
@@ -2301,19 +2301,19 @@ trn_w  1 OccuptW    0- 7      0.0      0.0       0.50       0.50
 trn_w  2 OccuptW    7- 9    107.0     53.0       0.50       0.50
 trn_w  3 OccuptW    9-12      0.0      0.0       0.50       0.50
 trn_w  4 OccuptW   12-13      0.0      0.0       0.50       0.50
-trn_w  5 OccuptW   13-17     53.0     27.0       0.50       0.50
+trn_w  5 OccuptW   13-17      0.0      0.0       0.50       0.50
 trn_w  6 OccuptW   17-18    107.0     53.0       0.50       0.50
-trn_w  7 OccuptW   18-20      0.0      0.0       0.50       0.50
+trn_w  7 OccuptW   18-20     53.0     27.0       0.50       0.50
 trn_w  8 OccuptW   20-23      0.0      0.0       0.50       0.50
 trn_w  9 OccuptW   23-24      0.0      0.0       0.50       0.50
 trn_w 10 LightsW    0- 7      0.0      0.0       0.30       0.70
-trn_w 11 LightsW    7- 9     50.0      0.0       0.30       0.70
+trn_w 11 LightsW    7- 9    100.0      0.0       0.30       0.70
 trn_w 12 LightsW    9-12      0.0      0.0       0.30       0.70
 trn_w 13 LightsW   12-13      0.0      0.0       0.30       0.70
 trn_w 14 LightsW   13-17      0.0      0.0       0.30       0.70
 trn_w 15 LightsW   17-18      0.0      0.0       0.30       0.70
 trn_w 16 LightsW   18-20      0.0      0.0       0.30       0.70
-trn_w 17 LightsW   20-23     50.0      0.0       0.30       0.70
+trn_w 17 LightsW   20-23      0.0      0.0       0.30       0.70
 trn_w 18 LightsW   23-24      0.0      0.0       0.30       0.70
 trn_w 19 EquiptW    0- 7     20.0      0.0       0.40       0.60
 trn_w 20 EquiptW    7- 9    360.0      0.0       0.40       0.60
@@ -2329,7 +2329,7 @@ Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 trn_w  1 OccuptW    0- 7      0.0      0.0       0.50       0.50
 trn_w  2 OccuptW    7- 9    107.0     53.0       0.50       0.50
-trn_w  3 OccuptW    9-12    107.0     53.0       0.50       0.50
+trn_w  3 OccuptW    9-12     53.0     27.0       0.50       0.50
 trn_w  4 OccuptW   12-13    107.0     53.0       0.50       0.50
 trn_w  5 OccuptW   13-17      0.0      0.0       0.50       0.50
 trn_w  6 OccuptW   17-18    107.0     53.0       0.50       0.50
@@ -2337,18 +2337,18 @@ trn_w  7 OccuptW   18-20     53.0     27.0       0.50       0.50
 trn_w  8 OccuptW   20-23      0.0      0.0       0.50       0.50
 trn_w  9 OccuptW   23-24      0.0      0.0       0.50       0.50
 trn_w 10 LightsW    0- 7      0.0      0.0       0.30       0.70
-trn_w 11 LightsW    7- 9     50.0      0.0       0.30       0.70
+trn_w 11 LightsW    7- 9    100.0      0.0       0.30       0.70
 trn_w 12 LightsW    9-12      0.0      0.0       0.30       0.70
 trn_w 13 LightsW   12-13      0.0      0.0       0.30       0.70
 trn_w 14 LightsW   13-17      0.0      0.0       0.30       0.70
 trn_w 15 LightsW   17-18      0.0      0.0       0.30       0.70
-trn_w 16 LightsW   18-20     50.0      0.0       0.30       0.70
+trn_w 16 LightsW   18-20      0.0      0.0       0.30       0.70
 trn_w 17 LightsW   20-23      0.0      0.0       0.30       0.70
 trn_w 18 LightsW   23-24      0.0      0.0       0.30       0.70
 trn_w 19 EquiptW    0- 7     20.0      0.0       0.40       0.60
 trn_w 20 EquiptW    7- 9    360.0      0.0       0.40       0.60
 trn_w 21 EquiptW    9-12    187.0      0.0       0.40       0.60
-trn_w 22 EquiptW   12-13    900.0      0.0       0.40       0.60
+trn_w 22 EquiptW   12-13    360.0      0.0       0.40       0.60
 trn_w 23 EquiptW   13-17     20.0      0.0       0.40       0.60
 trn_w 24 EquiptW   17-18    900.0    225.0       0.40       0.60
 trn_w 25 EquiptW   18-20    370.0      0.0       0.40       0.60
@@ -2361,13 +2361,13 @@ sum_w  1 OccuptW    0- 7      0.0      0.0       0.50       0.50
 sum_w  2 OccuptW    7- 9    107.0     53.0       0.50       0.50
 sum_w  3 OccuptW    9-12      0.0      0.0       0.50       0.50
 sum_w  4 OccuptW   12-13      0.0      0.0       0.50       0.50
-sum_w  5 OccuptW   13-17     53.0     27.0       0.50       0.50
+sum_w  5 OccuptW   13-17      0.0      0.0       0.50       0.50
 sum_w  6 OccuptW   17-18    107.0     53.0       0.50       0.50
-sum_w  7 OccuptW   18-20      0.0      0.0       0.50       0.50
+sum_w  7 OccuptW   18-20     53.0     27.0       0.50       0.50
 sum_w  8 OccuptW   20-23      0.0      0.0       0.50       0.50
 sum_w  9 OccuptW   23-24      0.0      0.0       0.50       0.50
 sum_w 10 LightsW    0- 7      0.0      0.0       0.30       0.70
-sum_w 11 LightsW    7- 9      0.0      0.0       0.30       0.70
+sum_w 11 LightsW    7- 9    100.0      0.0       0.30       0.70
 sum_w 12 LightsW    9-12      0.0      0.0       0.30       0.70
 sum_w 13 LightsW   12-13      0.0      0.0       0.30       0.70
 sum_w 14 LightsW   13-17      0.0      0.0       0.30       0.70
@@ -2389,7 +2389,7 @@ Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 sum_w  1 OccuptW    0- 7      0.0      0.0       0.50       0.50
 sum_w  2 OccuptW    7- 9    107.0     53.0       0.50       0.50
-sum_w  3 OccuptW    9-12    107.0     53.0       0.50       0.50
+sum_w  3 OccuptW    9-12     53.0     27.0       0.50       0.50
 sum_w  4 OccuptW   12-13    107.0     53.0       0.50       0.50
 sum_w  5 OccuptW   13-17      0.0      0.0       0.50       0.50
 sum_w  6 OccuptW   17-18    107.0     53.0       0.50       0.50
@@ -2408,7 +2408,7 @@ sum_w 18 LightsW   23-24      0.0      0.0       0.30       0.70
 sum_w 19 EquiptW    0- 7     20.0      0.0       0.40       0.60
 sum_w 20 EquiptW    7- 9    360.0      0.0       0.40       0.60
 sum_w 21 EquiptW    9-12    187.0      0.0       0.40       0.60
-sum_w 22 EquiptW   12-13    900.0      0.0       0.40       0.60
+sum_w 22 EquiptW   12-13    360.0      0.0       0.40       0.60
 sum_w 23 EquiptW   13-17     20.0      0.0       0.40       0.60
 sum_w 24 EquiptW   17-18    900.0    225.0       0.40       0.60
 sum_w 25 EquiptW   18-20    370.0      0.0       0.40       0.60
@@ -2515,9 +2515,8 @@ vertex  15    4.70000    2.60000    0.20000   vertex  30    4.70000    2.60000  
  
  
  Air schedule notes:
-Standard periods for all day types. P2M. Circulation spaces with 1
-adult + 1 child in afternoons and careful electricity use. Lighting
-seasonal.
+Standard periods for all day types. P1M Circulation spaces people at
+work and careful electricity use. Lighting seasonal.
  Control: no control of air flow
  
 Number of air change periods for daytype weekdays     :    1
@@ -2571,9 +2570,8 @@ Number of air change periods for daytype holiday      :    1
   1  0 - 24     0.80  0.0024    0.00  0.0000   0     0.00
  
 Notes:
-Standard periods for all day types. P2M. Circulation spaces with 1
-adult + 1 child in afternoons and careful electricity use. Lighting
-seasonal.
+Standard periods for all day types. P1M Circulation spaces people at
+work and careful electricity use. Lighting seasonal.
 Number of weekdays     casual gains= 27
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
@@ -2587,11 +2585,11 @@ weekd  7 OccuptW   18-20     13.0      7.0       0.50       0.50
 weekd  8 OccuptW   20-23      7.0      3.0       0.50       0.50
 weekd  9 OccuptW   23-24      0.0      0.0       0.50       0.50
 weekd 10 LightsW    0- 7      0.0      0.0       0.30       0.70
-weekd 11 LightsW    7- 9     50.0      0.0       0.30       0.70
+weekd 11 LightsW    7- 9     25.0      0.0       0.30       0.70
 weekd 12 LightsW    9-12      0.0      0.0       0.30       0.70
 weekd 13 LightsW   12-13      0.0      0.0       0.30       0.70
 weekd 14 LightsW   13-17      0.0      0.0       0.30       0.70
-weekd 15 LightsW   17-18     50.0      0.0       0.30       0.70
+weekd 15 LightsW   17-18      0.0      0.0       0.30       0.70
 weekd 16 LightsW   18-20     50.0      0.0       0.30       0.70
 weekd 17 LightsW   20-23     50.0      0.0       0.30       0.70
 weekd 18 LightsW   23-24      0.0      0.0       0.30       0.70
@@ -2619,8 +2617,8 @@ satur  9 OccuptW   23-24      0.0      0.0       0.50       0.50
 satur 10 LightsW    0- 7      0.0      0.0       0.30       0.70
 satur 11 LightsW    7- 9     50.0      0.0       0.30       0.70
 satur 12 LightsW    9-12      0.0      0.0       0.30       0.70
-satur 13 LightsW   12-13     25.0      0.0       0.30       0.70
-satur 14 LightsW   13-17     25.0      0.0       0.30       0.70
+satur 13 LightsW   12-13      0.0      0.0       0.30       0.70
+satur 14 LightsW   13-17      0.0      0.0       0.30       0.70
 satur 15 LightsW   17-18     50.0      0.0       0.30       0.70
 satur 16 LightsW   18-20     50.0      0.0       0.30       0.70
 satur 17 LightsW   20-23     50.0      0.0       0.30       0.70
@@ -2649,8 +2647,8 @@ sunda  9 OccuptW   23-24      0.0      0.0       0.50       0.50
 sunda 10 LightsW    0- 7      0.0      0.0       0.30       0.70
 sunda 11 LightsW    7- 9     50.0      0.0       0.30       0.70
 sunda 12 LightsW    9-12      0.0      0.0       0.30       0.70
-sunda 13 LightsW   12-13     25.0      0.0       0.30       0.70
-sunda 14 LightsW   13-17     25.0      0.0       0.30       0.70
+sunda 13 LightsW   12-13      0.0      0.0       0.30       0.70
+sunda 14 LightsW   13-17      0.0      0.0       0.30       0.70
 sunda 15 LightsW   17-18     50.0      0.0       0.30       0.70
 sunda 16 LightsW   18-20     50.0      0.0       0.30       0.70
 sunda 17 LightsW   20-23     50.0      0.0       0.30       0.70
@@ -2954,8 +2952,8 @@ vertex  17    5.40000    7.30000    2.40000   vertex  34    5.36000    7.30000  
  
  
  Air schedule notes:
-Standard periods for all day types. P2M. Main bedroom with adult +
-child in afternoons and careful users of electrical. Sesonal lighting.
+Standard periods for all day types. P1M. Main bedroom people out at
+work and careful users of electrical. Lighting is seasonal.
  Control: no control of air flow
  
 Number of air change periods for daytype weekdays     :    1
@@ -3009,8 +3007,8 @@ Number of air change periods for daytype holiday      :    1
   1  0 - 24     0.80  0.0055    0.00  0.0000   0     0.00
  
 Notes:
-Standard periods for all day types. P2M. Main bedroom with adult +
-child in afternoons and careful users of electrical. Sesonal lighting.
+Standard periods for all day types. P1M. Main bedroom people out at
+work and careful users of electrical. Lighting is seasonal.
 Number of weekdays     casual gains= 27
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
@@ -3030,7 +3028,7 @@ weekd 13 LightsW   12-13      0.0      0.0       0.30       0.70
 weekd 14 LightsW   13-17      0.0      0.0       0.30       0.70
 weekd 15 LightsW   17-18      0.0      0.0       0.30       0.70
 weekd 16 LightsW   18-20      0.0      0.0       0.30       0.70
-weekd 17 LightsW   20-23    120.0      0.0       0.30       0.70
+weekd 17 LightsW   20-23     25.0      0.0       0.30       0.70
 weekd 18 LightsW   23-24      0.0      0.0       0.30       0.70
 weekd 19 EquiptW    0- 7      5.0      0.0       0.40       0.60
 weekd 20 EquiptW    7- 9    165.0      0.0       0.40       0.60
@@ -3054,13 +3052,13 @@ satur  7 OccuptW   18-20      0.0      0.0       0.50       0.50
 satur  8 OccuptW   20-23      0.0      0.0       0.50       0.50
 satur  9 OccuptW   23-24    160.0     80.0       0.50       0.50
 satur 10 LightsW    0- 7      0.0      0.0       0.30       0.70
-satur 11 LightsW    7- 9     25.0      0.0       0.30       0.70
+satur 11 LightsW    7- 9      0.0      0.0       0.30       0.70
 satur 12 LightsW    9-12      0.0      0.0       0.30       0.70
 satur 13 LightsW   12-13      0.0      0.0       0.30       0.70
 satur 14 LightsW   13-17      0.0      0.0       0.30       0.70
 satur 15 LightsW   17-18      0.0      0.0       0.30       0.70
 satur 16 LightsW   18-20      0.0      0.0       0.30       0.70
-satur 17 LightsW   20-23    120.0      0.0       0.30       0.70
+satur 17 LightsW   20-23     25.0      0.0       0.30       0.70
 satur 18 LightsW   23-24      0.0      0.0       0.30       0.70
 satur 19 EquiptW    0- 7      5.0      0.0       0.40       0.60
 satur 20 EquiptW    7- 9    165.0      0.0       0.40       0.60
@@ -3084,13 +3082,13 @@ sunda  7 OccuptW   18-20      0.0      0.0       0.50       0.50
 sunda  8 OccuptW   20-23      0.0      0.0       0.50       0.50
 sunda  9 OccuptW   23-24    160.0     80.0       0.50       0.50
 sunda 10 LightsW    0- 7      0.0      0.0       0.30       0.70
-sunda 11 LightsW    7- 9     25.0      0.0       0.30       0.70
+sunda 11 LightsW    7- 9      0.0      0.0       0.30       0.70
 sunda 12 LightsW    9-12      0.0      0.0       0.30       0.70
 sunda 13 LightsW   12-13      0.0      0.0       0.30       0.70
 sunda 14 LightsW   13-17      0.0      0.0       0.30       0.70
 sunda 15 LightsW   17-18      0.0      0.0       0.30       0.70
 sunda 16 LightsW   18-20      0.0      0.0       0.30       0.70
-sunda 17 LightsW   20-23    120.0      0.0       0.30       0.70
+sunda 17 LightsW   20-23     25.0      0.0       0.30       0.70
 sunda 18 LightsW   23-24      0.0      0.0       0.30       0.70
 sunda 19 EquiptW    0- 7      5.0      0.0       0.40       0.60
 sunda 20 EquiptW    7- 9    165.0      0.0       0.40       0.60
@@ -3114,13 +3112,13 @@ win_w  7 OccuptW   18-20      0.0      0.0       0.50       0.50
 win_w  8 OccuptW   20-23      0.0      0.0       0.50       0.50
 win_w  9 OccuptW   23-24    160.0     80.0       0.50       0.50
 win_w 10 LightsW    0- 7      0.0      0.0       0.30       0.70
-win_w 11 LightsW    7- 9     25.0      0.0       0.30       0.70
+win_w 11 LightsW    7- 9    145.0      0.0       0.30       0.70
 win_w 12 LightsW    9-12      0.0      0.0       0.30       0.70
 win_w 13 LightsW   12-13      0.0      0.0       0.30       0.70
 win_w 14 LightsW   13-17      0.0      0.0       0.30       0.70
 win_w 15 LightsW   17-18      0.0      0.0       0.30       0.70
 win_w 16 LightsW   18-20      0.0      0.0       0.30       0.70
-win_w 17 LightsW   20-23    120.0      0.0       0.30       0.70
+win_w 17 LightsW   20-23    145.0      0.0       0.30       0.70
 win_w 18 LightsW   23-24      0.0      0.0       0.30       0.70
 win_w 19 EquiptW    0- 7      5.0      0.0       0.40       0.60
 win_w 20 EquiptW    7- 9    165.0      0.0       0.40       0.60
@@ -3144,13 +3142,13 @@ win_w  7 OccuptW   18-20      0.0      0.0       0.50       0.50
 win_w  8 OccuptW   20-23      0.0      0.0       0.50       0.50
 win_w  9 OccuptW   23-24    160.0     80.0       0.50       0.50
 win_w 10 LightsW    0- 7      0.0      0.0       0.30       0.70
-win_w 11 LightsW    7- 9     25.0      0.0       0.30       0.70
+win_w 11 LightsW    7- 9    145.0      0.0       0.30       0.70
 win_w 12 LightsW    9-12      0.0      0.0       0.30       0.70
 win_w 13 LightsW   12-13      0.0      0.0       0.30       0.70
 win_w 14 LightsW   13-17      0.0      0.0       0.30       0.70
 win_w 15 LightsW   17-18      0.0      0.0       0.30       0.70
 win_w 16 LightsW   18-20      0.0      0.0       0.30       0.70
-win_w 17 LightsW   20-23    120.0      0.0       0.30       0.70
+win_w 17 LightsW   20-23    145.0      0.0       0.30       0.70
 win_w 18 LightsW   23-24      0.0      0.0       0.30       0.70
 win_w 19 EquiptW    0- 7      5.0      0.0       0.40       0.60
 win_w 20 EquiptW    7- 9    165.0      0.0       0.40       0.60
@@ -3174,7 +3172,7 @@ trn_w  7 OccuptW   18-20      0.0      0.0       0.50       0.50
 trn_w  8 OccuptW   20-23      0.0      0.0       0.50       0.50
 trn_w  9 OccuptW   23-24    160.0     80.0       0.50       0.50
 trn_w 10 LightsW    0- 7      0.0      0.0       0.30       0.70
-trn_w 11 LightsW    7- 9     25.0      0.0       0.30       0.70
+trn_w 11 LightsW    7- 9    120.0      0.0       0.30       0.70
 trn_w 12 LightsW    9-12      0.0      0.0       0.30       0.70
 trn_w 13 LightsW   12-13      0.0      0.0       0.30       0.70
 trn_w 14 LightsW   13-17      0.0      0.0       0.30       0.70
@@ -3382,9 +3380,8 @@ vertex  14    8.60000    7.30000    2.40000   vertex  28    8.56000    7.30000  
  
  
  Air schedule notes:
-Standard periods for all day types. P2M. Separate living room or
-lounge with 1 adult & 1 child in afternoons and careful electrical.
-Lighting is seasonal.
+Standard periods for all day types. P1M. Separate living room or
+lounge people at work and careful electrical use. Lighitng is seasonal.
  Control: no control of air flow
  
 Number of air change periods for daytype weekdays     :    1
@@ -3438,9 +3435,8 @@ Number of air change periods for daytype holiday      :    1
   1  0 - 24     0.80  0.0080    0.00  0.0000   0     0.00
  
 Notes:
-Standard periods for all day types. P2M. Separate living room or
-lounge with 1 adult & 1 child in afternoons and careful electrical.
-Lighting is seasonal.
+Standard periods for all day types. P1M. Separate living room or
+lounge people at work and careful electrical use. Lighitng is seasonal.
 Number of weekdays     casual gains= 27
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
@@ -3448,7 +3444,7 @@ weekd  1 OccuptW    0- 7      0.0      0.0       0.50       0.50
 weekd  2 OccuptW    7- 9     53.0     27.0       0.50       0.50
 weekd  3 OccuptW    9-12      0.0      0.0       0.50       0.50
 weekd  4 OccuptW   12-13      0.0      0.0       0.50       0.50
-weekd  5 OccuptW   13-17     87.0     43.0       0.50       0.50
+weekd  5 OccuptW   13-17      0.0      0.0       0.50       0.50
 weekd  6 OccuptW   17-18    173.0     87.0       0.50       0.50
 weekd  7 OccuptW   18-20    130.0     65.0       0.50       0.50
 weekd  8 OccuptW   20-23    173.0     87.0       0.50       0.50
@@ -3500,7 +3496,7 @@ satur 23 EquiptW   13-17    520.0      0.0       0.40       0.60
 satur 24 EquiptW   17-18    270.0      0.0       0.40       0.60
 satur 25 EquiptW   18-20    520.0      0.0       0.40       0.60
 satur 26 EquiptW   20-23    270.0      0.0       0.40       0.60
-satur 27 EquiptW   23-24      0.0      0.0       0.40       0.60
+satur 27 EquiptW   23-24     20.0      0.0       0.40       0.60
 Number of sunday       casual gains= 27
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
@@ -3538,7 +3534,7 @@ win_w  1 OccuptW    0- 7      0.0      0.0       0.50       0.50
 win_w  2 OccuptW    7- 9     53.0     27.0       0.50       0.50
 win_w  3 OccuptW    9-12      0.0      0.0       0.50       0.50
 win_w  4 OccuptW   12-13      0.0      0.0       0.50       0.50
-win_w  5 OccuptW   13-17     87.0     43.0       0.50       0.50
+win_w  5 OccuptW   13-17      0.0      0.0       0.50       0.50
 win_w  6 OccuptW   17-18    173.0     87.0       0.50       0.50
 win_w  7 OccuptW   18-20    130.0     65.0       0.50       0.50
 win_w  8 OccuptW   20-23    173.0     87.0       0.50       0.50
@@ -3596,9 +3592,9 @@ Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 trn_w  1 OccuptW    0- 7      0.0      0.0       0.50       0.50
 trn_w  2 OccuptW    7- 9     53.0     27.0       0.50       0.50
-trn_w  3 OccuptW    9-12    260.0    130.0       0.50       0.50
-trn_w  4 OccuptW   12-13    260.0    130.0       0.50       0.50
-trn_w  5 OccuptW   13-17    260.0    130.0       0.50       0.50
+trn_w  3 OccuptW    9-12      0.0      0.0       0.50       0.50
+trn_w  4 OccuptW   12-13      0.0      0.0       0.50       0.50
+trn_w  5 OccuptW   13-17      0.0      0.0       0.50       0.50
 trn_w  6 OccuptW   17-18    173.0     87.0       0.50       0.50
 trn_w  7 OccuptW   18-20    130.0     65.0       0.50       0.50
 trn_w  8 OccuptW   20-23    173.0     87.0       0.50       0.50
@@ -3650,15 +3646,15 @@ trn_w 23 EquiptW   13-17    520.0      0.0       0.40       0.60
 trn_w 24 EquiptW   17-18    270.0      0.0       0.40       0.60
 trn_w 25 EquiptW   18-20    520.0      0.0       0.40       0.60
 trn_w 26 EquiptW   20-23    270.0      0.0       0.40       0.60
-trn_w 27 EquiptW   23-24      0.0      0.0       0.40       0.60
+trn_w 27 EquiptW   23-24     20.0      0.0       0.40       0.60
 Number of sum_wkday    casual gains= 27
 Day Gain Type      Period Sensible  Latent     Radiant    Convec
     No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
 sum_w  1 OccuptW    0- 7      0.0      0.0       0.50       0.50
 sum_w  2 OccuptW    7- 9     53.0     27.0       0.50       0.50
-sum_w  3 OccuptW    9-12    260.0    130.0       0.50       0.50
-sum_w  4 OccuptW   12-13    260.0    130.0       0.50       0.50
-sum_w  5 OccuptW   13-17    260.0    130.0       0.50       0.50
+sum_w  3 OccuptW    9-12      0.0      0.0       0.50       0.50
+sum_w  4 OccuptW   12-13      0.0      0.0       0.50       0.50
+sum_w  5 OccuptW   13-17      0.0      0.0       0.50       0.50
 sum_w  6 OccuptW   17-18    173.0     87.0       0.50       0.50
 sum_w  7 OccuptW   18-20    130.0     65.0       0.50       0.50
 sum_w  8 OccuptW   20-23    173.0     87.0       0.50       0.50

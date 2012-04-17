@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,bathroom # tag version, format, zone name
-*date Mon Apr 16 19:33:15 2012  # latest file modification 
+*date Tue Apr 17 12:10:44 2012  # latest file modification 
 bathroom describes lower bathroom between store2 & kitchen
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,4.50000,0.30000,0.20000  #   1
@@ -59,7 +59,7 @@ bathroom describes lower bathroom between store2 & kitchen
 *surf,ptn_hall_b,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,05,15  #   7 ||< ptn_bath_b:low_hall
 *surf,ptn_hall_c,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,05,14  #   8 ||< ptn_bath_a:low_hall
 *surf,ptn_store,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,02,02  #   9 ||< ptn_bath:store2
-*surf,bath_ceil,CEIL,-,-,-,Ceilti_up,OPAQUE,ANOTHER,08,02  #  10 ||< ovr_bath:roof
+*surf,bath_ceil,CEIL,-,-,-,Ceiltk_up,OPAQUE,ANOTHER,08,02  #  10 ||< ovr_bath:roof
 *surf,bath_floor,FLOR,-,-,-,Floorti_low,OPAQUE,ANOTHER,15,03  #  11 ||< bath_floor:crawl
 *surf,frame,VERT,-,F-FRAME,CLOSED,Window_frme,OPAQUE,EXTERIOR,0,0  #  12 ||< external
 *surf,sill,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #  13 ||< external

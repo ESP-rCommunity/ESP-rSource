@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,low_bedroom # tag version, format, zone name
-*date Mon Apr 16 19:33:24 2012  # latest file modification 
+*date Tue Apr 17 12:11:27 2012  # latest file modification 
 low_bedroom describes lower flat bedroom and closet
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,5.50000,4.40000,0.20000  #   1
@@ -75,7 +75,7 @@ low_bedroom describes lower flat bedroom and closet
 *surf,ptn_hall_d,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,05,06  #  11 ||< ptn_br_c:low_hall
 *surf,ptn_hall_c,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,05,05  #  12 ||< ptn_br_b:low_hall
 *surf,door_hall,VERT,-,-,-,Doorint_sol,OPAQUE,ANOTHER,05,04  #  13 ||< door_br:low_hall
-*surf,br_ceiling,CEIL,-,-,-,Ceilti_up,OPAQUE,ANOTHER,08,05  #  14 ||< ovr_bedroom:roof
+*surf,br_ceiling,CEIL,-,-,-,Ceiltk_up,OPAQUE,ANOTHER,08,05  #  14 ||< ovr_bedroom:roof
 *surf,br_floor,FLOR,-,-,-,Floorti_lowc,OPAQUE,ANOTHER,15,06  #  15 ||< br_floor:crawl
 *surf,frame,VERT,-,F-FRAME,CLOSED,Window_frme,OPAQUE,EXTERIOR,0,0  #  16 ||< external
 *surf,sill,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #  17 ||< external

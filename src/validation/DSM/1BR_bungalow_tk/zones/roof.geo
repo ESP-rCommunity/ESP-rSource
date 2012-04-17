@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,roof # tag version, format, zone name
-*date Mon Apr 16 19:33:44 2012  # latest file modification 
+*date Tue Apr 17 12:12:04 2012  # latest file modification 
 roof describes cold roof space
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,2.60000,1.90000,2.40000  #   1
@@ -77,12 +77,12 @@ roof describes cold roof space
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,ovr_store,FLOR,-,-,-,Floorti_rf,OPAQUE,ANOTHER,02,11  #   1 ||< stor2_ceil:store2
-*surf,ovr_bath,FLOR,-,-,-,Floorti_rf,OPAQUE,ANOTHER,03,10  #   2 ||< bath_ceil:bathroom
-*surf,ovr_kitchen,FLOR,-,-,-,Floorti_rf,OPAQUE,ANOTHER,04,09  #   3 ||< kitch_ceil:low_kitchen
-*surf,ovr_hall,FLOR,-,-,-,Floorti_rf,OPAQUE,ANOTHER,05,16  #   4 ||< hall_ceil:low_hall
-*surf,ovr_bedroom,FLOR,-,-,-,Floorti_rf,OPAQUE,ANOTHER,06,14  #   5 ||< br_ceiling:low_bedroom
-*surf,ovr_living,FLOR,-,-,-,Floorti_rf,OPAQUE,ANOTHER,07,11  #   6 ||< living_ceil:lowliving
+*surf,ovr_store,FLOR,-,-,-,Floortk_rf,OPAQUE,ANOTHER,02,11  #   1 ||< stor2_ceil:store2
+*surf,ovr_bath,FLOR,-,-,-,Floortk_rf,OPAQUE,ANOTHER,03,10  #   2 ||< bath_ceil:bathroom
+*surf,ovr_kitchen,FLOR,-,-,-,Floortk_rf,OPAQUE,ANOTHER,04,09  #   3 ||< kitch_ceil:low_kitchen
+*surf,ovr_hall,FLOR,-,-,-,Floortk_rf,OPAQUE,ANOTHER,05,16  #   4 ||< hall_ceil:low_hall
+*surf,ovr_bedroom,FLOR,-,-,-,Floortk_rf,OPAQUE,ANOTHER,06,14  #   5 ||< br_ceiling:low_bedroom
+*surf,ovr_living,FLOR,-,-,-,Floortk_rf,OPAQUE,ANOTHER,07,11  #   6 ||< living_ceil:lowliving
 *surf,roof_a,SLOP,-,ROOF,PITCHED,Roof,OPAQUE,EXTERIOR,0,0  #   7 ||< external
 *surf,roof_back,SLOP,-,ROOF,PITCHED,Roof,OPAQUE,EXTERIOR,0,0  #   8 ||< external
 *surf,front_a,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #   9 ||< external

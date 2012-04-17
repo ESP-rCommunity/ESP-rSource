@@ -2,7 +2,7 @@ Synopsis
  
 Synopsis of the model A small timber-kit bungalow in North Scotland P2M cool
 comfort defined in 1BR_bungalow_tk_p2m_cool.cfg generated on Tue Apr 17
-11:00:21 2012. Notes associated with the model are in ../doc/1BR_bungalow.log
+12:17:35 2012. Notes associated with the model are in ../doc/1BR_bungalow.log
  
 The model is located at latitude   55.90 with a longitude difference of  -4.10
 from the local time meridian. The year used in simulations is 2007 and
@@ -1201,7 +1201,7 @@ holid  3 EquiptW    0-24      0.0      0.0       0.50       0.50
   8  1.76    270.  -0. ptn_stair    OPAQUE   VERT -     Door_fire    ||< ptn_lowstore:stairs
   9  0.440   180.   0. ext          OPAQUE   VERT WALL  tk_block_rn  ||< external
  10  3.52    270.  -0. left_fac     OPAQUE   VERT WALL  tk_block_rn  ||< external
- 11  4.07      0.  90. stor2_ceil   OPAQUE   CEIL -     Ceilti_up    ||< ovr_store:roof
+ 11  4.07      0.  90. stor2_ceil   OPAQUE   CEIL -     Ceiltk_up    ||< ovr_store:roof
  12  4.07      0. -90. store2_floor OPAQUE   FLOR -     Floorti_low  ||< Base-12:crawl
  
  Vertices ( index X Y Z) in the zone...
@@ -1616,7 +1616,7 @@ holid 27 EquiptW   23-24      0.0      0.0       0.40       0.60
   7  1.76      0.  -0. ptn_hall_b   OPAQUE   VERT -     Parttim      ||< ptn_bath_b:low_hall
   8  0.440     0.   0. ptn_hall_c   OPAQUE   VERT -     Parttim      ||< ptn_bath_a:low_hall
   9  5.06    270.   0. ptn_store    OPAQUE   VERT -     Parttim      ||< ptn_bath:store2
- 10  4.60      0.  90. bath_ceil    OPAQUE   CEIL -     Ceilti_up    ||< ovr_bath:roof
+ 10  4.60      0.  90. bath_ceil    OPAQUE   CEIL -     Ceiltk_up    ||< ovr_bath:roof
  11  4.60      0. -90. bath_floor   OPAQUE   FLOR -     Floorti_low  ||< bath_floor:crawl
  12  0.114   180.   0. frame        OPAQUE   VERT F-FRA Window_frme  ||< external
  13  0.770   180.  -0. sill         OPAQUE   VERT WALL  tk_block_rn  ||< external
@@ -2040,7 +2040,7 @@ holid 27 EquiptW   23-24      0.0      0.0       0.40       0.60
   6  2.64      0.  -0. door_liv     OPAQUE   VERT -     Doorint_sol  ||< door_kit:lowliving
   7  1.98      0.  -0. ptn_liv_b    OPAQUE   VERT -     Parttim      ||< ptn_b:lowliving
   8  5.06    270.   0. ptn_bath     OPAQUE   VERT -     Parttim      ||< ptn_bath:bathroom
-  9  7.13      0.  90. kitch_ceil   OPAQUE   CEIL -     Ceilti_up    ||< ovr_kitchen:roof
+  9  7.13      0.  90. kitch_ceil   OPAQUE   CEIL -     Ceiltk_up    ||< ovr_kitchen:roof
  10  7.13      0. -90. kitch_floor  OPAQUE   FLOR -     Floorti_low  ||< kitch_floor:crawl
  11  0.138   180.   0. frame        OPAQUE   VERT F-FRA Window_frme  ||< external
  12  0.420   180.   0. sill         OPAQUE   VERT WALL  tk_block_rn  ||< external
@@ -2471,7 +2471,7 @@ holid 27 EquiptW   23-24     20.0      0.0       0.40       0.60
  13  0.440   180.  -0. ptn_stor_d   OPAQUE   VERT -     Parttim      ||< ptn_hall_a:store2
  14  0.440   180.  -0. ptn_bath_a   OPAQUE   VERT -     Parttim      ||< ptn_hall_c:bathroom
  15  1.76    180.   0. ptn_bath_b   OPAQUE   VERT -     Parttim      ||< ptn_hall_b:bathroom
- 16  4.93      0.  90. hall_ceil    OPAQUE   CEIL -     Ceilti_up    ||< ovr_hall:roof
+ 16  4.93      0.  90. hall_ceil    OPAQUE   CEIL -     Ceiltk_up    ||< ovr_hall:roof
  17  4.93      0. -90. hall_floor   OPAQUE   FLOR -     Floorti_lowc ||< hall_floor:crawl
  
  Vertices ( index X Y Z) in the zone...
@@ -2902,7 +2902,7 @@ holid 27 EquiptW   23-24      0.0      0.0       0.40       0.60
  11  1.98     90.  -0. ptn_hall_d   OPAQUE   VERT -     Parttim      ||< ptn_br_c:low_hall
  12  1.10    180.   0. ptn_hall_c   OPAQUE   VERT -     Parttim      ||< ptn_br_b:low_hall
  13  1.98    180.  -0. door_hall    OPAQUE   VERT -     Doorint_sol  ||< door_br:low_hall
- 14  11.2      0.  90. br_ceiling   OPAQUE   CEIL -     Ceilti_up    ||< ovr_bedroom:roof
+ 14  11.2      0.  90. br_ceiling   OPAQUE   CEIL -     Ceiltk_up    ||< ovr_bedroom:roof
  15  11.2      0. -90. br_floor     OPAQUE   FLOR -     Floorti_lowc ||< br_floor:crawl
  16  0.158   360.  -0. frame        OPAQUE   VERT F-FRA Window_frme  ||< external
  17  0.385   360.  -0. sill         OPAQUE   VERT WALL  tk_block_rn  ||< external
@@ -3336,7 +3336,7 @@ holid 27 EquiptW   23-24      0.0      0.0       0.40       0.60
   8  0.880   180.   0. ptn_a        OPAQUE   VERT -     Parttim      ||< ptn_hall_a:bathroom
   9  1.98    180.   0. ptn_b        OPAQUE   VERT -     Parttim      ||< ptn_liv_b:low_kitchen
  10  2.64    180.   0. door_kit     OPAQUE   VERT -     Doorint_sol  ||< door_liv:low_kitchen
- 11  16.5      0.  90. living_ceil  OPAQUE   CEIL -     Ceilti_up    ||< ovr_living:roof
+ 11  16.5      0.  90. living_ceil  OPAQUE   CEIL -     Ceiltk_up    ||< ovr_living:roof
  12  16.5      0. -90. liv_floor    OPAQUE   FLOR -     Floorti_lowc ||< liv_floor:crawl
  13  0.248   360.  -0. frame        OPAQUE   VERT F-FRA Window_frme  ||< external
  14  0.520     0.   0. sill         OPAQUE   VERT WALL  tk_block_rn  ||< external
@@ -3756,12 +3756,12 @@ holid 27 EquiptW   23-24     20.0      0.0       0.40       0.60
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
-  1  4.07      0. -90. ovr_store    OPAQUE   FLOR -     Floorti_rf   ||< stor2_ceil:store2
-  2  4.60      0. -90. ovr_bath     OPAQUE   FLOR -     Floorti_rf   ||< bath_ceil:bathroom
-  3  7.13      0. -90. ovr_kitchen  OPAQUE   FLOR -     Floorti_rf   ||< kitch_ceil:low_kitchen
-  4  4.93      0. -90. ovr_hall     OPAQUE   FLOR -     Floorti_rf   ||< hall_ceil:low_hall
-  5  11.2      0. -90. ovr_bedroom  OPAQUE   FLOR -     Floorti_rf   ||< br_ceiling:low_bedroom
-  6  16.5      0. -90. ovr_living   OPAQUE   FLOR -     Floorti_rf   ||< living_ceil:lowliving
+  1  4.07      0. -90. ovr_store    OPAQUE   FLOR -     Floortk_rf   ||< stor2_ceil:store2
+  2  4.60      0. -90. ovr_bath     OPAQUE   FLOR -     Floortk_rf   ||< bath_ceil:bathroom
+  3  7.13      0. -90. ovr_kitchen  OPAQUE   FLOR -     Floortk_rf   ||< kitch_ceil:low_kitchen
+  4  4.93      0. -90. ovr_hall     OPAQUE   FLOR -     Floortk_rf   ||< hall_ceil:low_hall
+  5  11.2      0. -90. ovr_bedroom  OPAQUE   FLOR -     Floortk_rf   ||< br_ceiling:low_bedroom
+  6  16.5      0. -90. ovr_living   OPAQUE   FLOR -     Floortk_rf   ||< living_ceil:lowliving
   7  27.8    180.  60. roof_a       OPAQUE   SLOP ROOF  Roof         ||< external
   8  27.8      0.  60. roof_back    OPAQUE   SLOP ROOF  Roof         ||< external
   9  0.183   180.   0. front_a      OPAQUE   VERT WALL  tk_block_rn  ||< external
@@ -4309,24 +4309,6 @@ holid  3 EquiptW    0-24      0.0      0.0       0.50       0.50
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.215  0.216  0.213 (partition)  0.211
  Total area of Ceilti_crlc is     32.56
  
- Details of opaque construction: Ceilti_up linked to Floorti_rf   & with overall thickness  0.313
- 
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   294  300.0     0.040    25.  1000. 0.90 0.70    30.  7.50 Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
- Int   111   12.5     0.210   900.  1000. 0.91 0.70    11.  0.06 Plasterboard (ceiling) : Plasterboard Gypsum (10 mm) (UK code)
- ISO 6946 U values (horiz/upward/downward heat flow)=  0.129  0.130  0.129 (partition)  0.128
- Total area of Ceilti_up is     48.36
- 
- Details of opaque construction: Floorti_rf linked to Ceilti_up    & with overall thickness  0.313
- 
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   111   12.5     0.210   900.  1000. 0.91 0.70    11.  0.06 Plasterboard (ceiling) : Plasterboard Gypsum (10 mm) (UK code)
- Int   294  300.0     0.040    25.  1000. 0.90 0.70    30.  7.50 Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
- ISO 6946 U values (horiz/upward/downward heat flow)=  0.129  0.130  0.129 (partition)  0.128
- Total area of Floorti_rf is     48.36
- 
  Details of opaque construction: Crawl_wall and overall thickness  0.120
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
@@ -4345,3 +4327,21 @@ holid  3 EquiptW    0-24      0.0      0.0       0.50       0.50
  Int   108   18.0     0.190   950.   840. 0.91 0.22    11.  0.09 white gypboard : White paintedd Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.567  1.645  1.475 (partition)  1.374
  Total area of tk_block_rn is     59.64
+ 
+ Details of opaque construction: Floortk_rf linked to Ceiltk_up    & with overall thickness  0.163
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   111   12.5     0.210   900.  1000. 0.91 0.70    11.  0.06 Plasterboard (ceiling) : Plasterboard Gypsum (10 mm) (UK code)
+ Int   294  150.0     0.040    25.  1000. 0.90 0.70    30.  3.75 Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.251  0.253  0.249 (partition)  0.246
+ Total area of Floortk_rf is     48.36
+ 
+ Details of opaque construction: Ceiltk_up linked to Floortk_rf   & with overall thickness  0.163
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   294  150.0     0.040    25.  1000. 0.90 0.70    30.  3.75 Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+ Int   111   12.5     0.210   900.  1000. 0.91 0.70    11.  0.06 Plasterboard (ceiling) : Plasterboard Gypsum (10 mm) (UK code)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.251  0.253  0.249 (partition)  0.246
+ Total area of Ceiltk_up is     48.36
