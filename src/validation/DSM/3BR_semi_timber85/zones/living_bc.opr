@@ -3,8 +3,14 @@
 # operations of living defined in: 
 # ../zones/living_bc.opr
 Standard periods for all day types.  No values have been entered.
-# control(no control of air flow  ), low mid & high setpoints 
-   0     0.000     0.000     0.000
+# control(infil only: zone temp   ), low mid & high setpoints 
+ -11    10.000    23.000    24.000
+# lower: infil, vent, source, data
+     0.400     0.000    0     0.000
+# middle: infil, vent, source, data
+     2.000     0.000    0     0.000
+# high: infil, vent, source, data
+     3.000     0.000    0     0.000
      1   # number of flow periods in day type: weekdays    
 # start, stop, infil, ventil, source, data
    0, 24,    0.800    0.000    0    0.000

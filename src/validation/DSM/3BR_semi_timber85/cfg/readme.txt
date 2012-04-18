@@ -1,3 +1,16 @@
+ 
+This 3BR simi detached house was taken from plans and 
+represents timber-kit construction which is in advance 
+of late 1990s building standards in the far north of Scotland. 
+
+For flexibility, each room of the dwelling has been
+represented as well as spaces which are likely to be
+at variant temperatures (under stairs, crawl space
+and roof void).
+
+The building construction is assumed to be tighter
+than normal in terms of infiltration.
+
 Model variants in this folder:
 
 Activities:
