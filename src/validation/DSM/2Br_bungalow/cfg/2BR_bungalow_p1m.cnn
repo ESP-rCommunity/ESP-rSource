@@ -1,5 +1,5 @@
-*connections for 2BR_bungalow_p1m_cool
-*Date Wed Apr 18 16:29:13 2012
+*connections for 2BR_bungalow_p1m_warm
+*Date Wed Apr 18 16:38:16 2012
     136   # number of connections
    1   1   0   0   0  #    1 left_fac in BR_two is External
    1   2   0   0   0  #    2 fr_fac_a in BR_two is External

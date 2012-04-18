@@ -1,12 +1,3 @@
-Project notes for 2BR_bungalow.cfg
-Title: A two bedroom bungalow in Shetland
-In folder: validation/benchmark/DSM/2BR_bungalo
-By: jon
-Date: Mon Feb 20 08:42:29 2012
-Client: 
-Project reference: 
-_____________________________
-Notes: 
 
 This is one half of bungalo semi (2 BR). Its composition is 
 representative of timber energy efficient public housing 
