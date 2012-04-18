@@ -2,39 +2,45 @@
 *date Wed Apr  4 17:24:26 2012  # latest file modification 
 # operations of living defined in: 
 # ../zones/living_p2h.opr
-Standard periods for all day types. P2H. Separate living room or lounge with 1 adult & 1 child in afternoons and profligate electrical use. Lighting seasonal.
-# control(no control of air flow  ), low mid & high setpoints 
-   0     0.000     0.000     0.000
+Standard periods for all day types. P2H. Separate living room or lounge with 1 adult & 1 child in afternoons and profligate electrical use. Lighting seasonal. Older building.
+# control(infil only: zone temp   ), low mid & high setpoints 
+ -11    10.000    23.000    24.000
+# lower: infil, vent, source, data
+     0.400     0.000    0     0.000
+# middle: infil, vent, source, data
+     2.000     0.000    0     0.000
+# high: infil, vent, source, data
+     3.000     0.000    0     0.000
      1   # number of flow periods in day type: weekdays    
 # start, stop, infil, ventil, source, data
-   0, 24,    0.800    0.000    0    0.000
+   0, 24,    1.200    0.000    0    0.000
      1   # number of flow periods in day type: saturday    
 # start, stop, infil, ventil, source, data
-   0, 24,    0.800    0.000    0    0.000
+   0, 24,    1.200    0.000    0    0.000
      1   # number of flow periods in day type: sunday      
 # start, stop, infil, ventil, source, data
-   0, 24,    0.800    0.000    0    0.000
+   0, 24,    1.200    0.000    0    0.000
      1   # number of flow periods in day type: win_wkday   
 # start, stop, infil, ventil, source, data
-   0, 24,    0.800    0.000    0    0.000
+   0, 24,    1.200    0.000    0    0.000
      1   # number of flow periods in day type: win_wkend   
 # start, stop, infil, ventil, source, data
-   0, 24,    0.800    0.000    0    0.000
+   0, 24,    1.200    0.000    0    0.000
      1   # number of flow periods in day type: trn_wkday   
 # start, stop, infil, ventil, source, data
-   0, 24,    0.800    0.000    0    0.000
+   0, 24,    1.200    0.000    0    0.000
      1   # number of flow periods in day type: trn_wkend   
 # start, stop, infil, ventil, source, data
-   0, 24,    0.800    0.000    0    0.000
+   0, 24,    1.200    0.000    0    0.000
      1   # number of flow periods in day type: sum_wkday   
 # start, stop, infil, ventil, source, data
-   0, 24,    0.800    0.000    0    0.000
+   0, 24,    1.200    0.000    0    0.000
      1   # number of flow periods in day type: sum_wkend   
 # start, stop, infil, ventil, source, data
-   0, 24,    0.800    0.000    0    0.000
+   0, 24,    1.200    0.000    0    0.000
      1   # number of flow periods in day type: holiday     
 # start, stop, infil, ventil, source, data
-   0, 24,    0.800    0.000    0    0.000
+   0, 24,    1.200    0.000    0    0.000
     27   # number of casual gains in day type: weekdays    
 # type, start, stop, sens, latent, rad_frac, conv_frac
     1,   0,   7,      0.0,      0.0, 0.500, 0.500
