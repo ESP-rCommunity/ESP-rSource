@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,low_bedroom # tag version, format, zone name
-*date Wed Mar 21 11:15:22 2012  # latest file modification 
+*date Mon Apr 16 19:33:24 2012  # latest file modification 
 low_bedroom describes lower flat bedroom and closet
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,5.50000,4.40000,0.20000  #   1
@@ -64,11 +64,11 @@ low_bedroom describes lower flat bedroom and closet
 #  boundary condition tag followed by two data items
 *surf,ptn_hall_a,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,05,03  #   1 ||< ptn_br_a:low_hall
 *surf,ptn_living,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,07,06  #   2 ||< ptn_br:lowliving
-*surf,bk_fac_a,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #   3 ||< external
-*surf,bk_head,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #   4 ||< external
-*surf,bk_fac_b,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #   5 ||< external
-*surf,left_fac,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #   6 ||< external
-*surf,left_fac_b,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #   7 ||< external
+*surf,bk_fac_a,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #   3 ||< external
+*surf,bk_head,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #   4 ||< external
+*surf,bk_fac_b,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #   5 ||< external
+*surf,left_fac,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #   6 ||< external
+*surf,left_fac_b,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #   7 ||< external
 *surf,ptn_stair_a,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,01,11  #   8 ||< ptn_lowbr:stairs
 *surf,ptn_stair_b,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,01,12  #   9 ||< ptn_lwwardr:stairs
 *surf,ptn_hall_e,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,05,07  #  10 ||< ptn_br_d:low_hall
@@ -78,7 +78,7 @@ low_bedroom describes lower flat bedroom and closet
 *surf,br_ceiling,CEIL,-,-,-,Ceilti_up,OPAQUE,ANOTHER,08,05  #  14 ||< ovr_bedroom:roof
 *surf,br_floor,FLOR,-,-,-,Floorti_lowc,OPAQUE,ANOTHER,15,06  #  15 ||< br_floor:crawl
 *surf,frame,VERT,-,F-FRAME,CLOSED,Window_frme,OPAQUE,EXTERIOR,0,0  #  16 ||< external
-*surf,sill,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #  17 ||< external
+*surf,sill,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #  17 ||< external
 *surf,glazing,VERT,frame,C-WINDOW,CLOSED,Window_ext,DC_8074_04nb,EXTERIOR,0,0  #  18 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution

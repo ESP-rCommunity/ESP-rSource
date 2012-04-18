@@ -9,13 +9,13 @@
      2,     0  #  6 ovr_living   Floorti_rf  
      2,     0  #  7 roof_a       Roof        
      2,     0  #  8 roof_back    Roof        
-     6,     2  #  9 front_a      Extwall_ti  
-     6,     2  # 10 left_b       Extwall_ti  
-     6,     2  # 11 right_a      Extwall_ti  
-     6,     2  # 12 right_b      Extwall_ti  
-     6,     2  # 13 left_c       Extwall_ti  
-     6,     2  # 14 back_a       Extwall_ti  
-     6,     2  # 15 left         Extwall_ti  
+     6,     2  #  9 front_a      tk_block_rn 
+     6,     2  # 10 left_b       tk_block_rn 
+     6,     2  # 11 right_a      tk_block_rn 
+     6,     2  # 12 right_b      tk_block_rn 
+     6,     2  # 13 left_c       tk_block_rn 
+     6,     2  # 14 back_a       tk_block_rn 
+     6,     2  # 15 left         tk_block_rn 
      3,     1  # 16 ptn_stor     Parttim     
      3,     1  # 17 mid_floor    Parttim     
 # air gap position & resistance for surface  9

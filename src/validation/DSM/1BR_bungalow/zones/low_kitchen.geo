@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,low_kitchen # tag version, format, zone name
-*date Wed Mar 21 11:15:03 2012  # latest file modification 
+*date Mon Apr 16 19:33:18 2012  # latest file modification 
 low_kitchen describes kitchen for lower flat in the corner
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,6.50000,0.30000,0.20000  #   1
@@ -47,9 +47,9 @@ low_kitchen describes kitchen for lower flat in the corner
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,fr_wall_a,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #   1 ||< external
-*surf,head,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #   2 ||< external
-*surf,fr_wall_b,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #   3 ||< external
+*surf,fr_wall_a,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #   1 ||< external
+*surf,head,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #   2 ||< external
+*surf,fr_wall_b,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #   3 ||< external
 *surf,right_wall,VERT,-,WALL,-,Partywall_ti,OPAQUE,SIMILAR,00,00  #   4 ||< identical environment
 *surf,ptn_liv_a,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,07,01  #   5 ||< ptn_kitch_a:lowliving
 *surf,door_liv,VERT,-,-,-,Doorint_sol,OPAQUE,ANOTHER,07,10  #   6 ||< door_kit:lowliving
@@ -58,7 +58,7 @@ low_kitchen describes kitchen for lower flat in the corner
 *surf,kitch_ceil,CEIL,-,-,-,Ceilti_up,OPAQUE,ANOTHER,08,03  #   9 ||< ovr_kitchen:roof
 *surf,kitch_floor,FLOR,-,-,-,Floorti_low,OPAQUE,ANOTHER,15,04  #  10 ||< kitch_floor:crawl
 *surf,frame,VERT,-,F-FRAME,CLOSED,Window_frme,OPAQUE,EXTERIOR,0,0  #  11 ||< external
-*surf,sill,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #  12 ||< external
+*surf,sill,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #  12 ||< external
 *surf,glazing,VERT,frame,C-WINDOW,CLOSED,Window_ext,DC_8074_04nb,EXTERIOR,0,0  #  13 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution

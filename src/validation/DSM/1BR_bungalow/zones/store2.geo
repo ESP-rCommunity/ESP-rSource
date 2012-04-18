@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,store2 # tag version, format, zone name
-*date Wed Mar 21 11:14:27 2012  # latest file modification 
+*date Mon Apr 16 19:33:11 2012  # latest file modification 
 store2 describes storage room adj entrance
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,2.80000,0.30000,0.20000  #   1
@@ -42,7 +42,7 @@ store2 describes storage room adj entrance
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,fr_facade,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #   1 ||< external
+*surf,fr_facade,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #   1 ||< external
 *surf,ptn_bath,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,03,09  #   2 ||< ptn_store:bathroom
 *surf,ptn_hall_a,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,05,13  #   3 ||< ptn_stor_d:low_hall
 *surf,door_hall,VERT,-,-,-,Doorint_sol,OPAQUE,ANOTHER,05,12  #   4 ||< door_stor:low_hall
@@ -50,8 +50,8 @@ store2 describes storage room adj entrance
 *surf,ptn_hall_c,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,05,10  #   6 ||< ptn_stor_b:low_hall
 *surf,ptn_hall_d,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,05,09  #   7 ||< ptn_stor_a:low_hall
 *surf,ptn_stair,VERT,-,-,-,Door_fire,OPAQUE,ANOTHER,01,10  #   8 ||< ptn_lowstore:stairs
-*surf,ext,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #   9 ||< external
-*surf,left_fac,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #  10 ||< external
+*surf,ext,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #   9 ||< external
+*surf,left_fac,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #  10 ||< external
 *surf,stor2_ceil,CEIL,-,-,-,Ceilti_up,OPAQUE,ANOTHER,08,01  #  11 ||< ovr_store:roof
 *surf,store2_floor,FLOR,-,-,-,Floorti_low,OPAQUE,ANOTHER,15,02  #  12 ||< Base-12:crawl
 # 

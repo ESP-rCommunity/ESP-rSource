@@ -1,13 +1,13 @@
 # thermophysical properties of stairs defined in ../zones/stairs.con
 # no of |air |surface(from geo)| multilayer construction
 # layers|gaps|  no.  name      | database name 
-     6,     2  #  1 front_a      Extwall_ti  
-     6,     2  #  2 front_b      Extwall_ti  
-     6,     2  #  3 front_c      Extwall_ti  
+     6,     2  #  1 front_a      tk_block_rn 
+     6,     2  #  2 front_b      tk_block_rn 
+     6,     2  #  3 front_c      tk_block_rn 
      3,     1  #  4 ptn_stor     Parttim     
-     6,     2  #  5 back_b       Extwall_ti  
-     6,     2  #  6 back_a       Extwall_ti  
-     6,     2  #  7 left_side    Extwall_ti  
+     6,     2  #  5 back_b       tk_block_rn 
+     6,     2  #  6 back_a       tk_block_rn 
+     6,     2  #  7 left_side    tk_block_rn 
      5,     1  #  8 ceiling      Roof_stairs 
      4,     1  #  9 floor        Floorti_low 
      1,     0  # 10 ptn_lowstore Door_fire   

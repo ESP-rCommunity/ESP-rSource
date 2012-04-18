@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,bathroom # tag version, format, zone name
-*date Wed Mar 21 11:14:53 2012  # latest file modification 
+*date Mon Apr 16 19:33:15 2012  # latest file modification 
 bathroom describes lower bathroom between store2 & kitchen
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,4.50000,0.30000,0.20000  #   1
@@ -50,9 +50,9 @@ bathroom describes lower bathroom between store2 & kitchen
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,fr_wall_a,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #   1 ||< external
-*surf,head,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #   2 ||< external
-*surf,fr_wall_b,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #   3 ||< external
+*surf,fr_wall_a,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #   1 ||< external
+*surf,head,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #   2 ||< external
+*surf,fr_wall_b,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #   3 ||< external
 *surf,ptn_bath,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,04,08  #   4 ||< ptn_bath:low_kitchen
 *surf,ptn_hall_a,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,07,08  #   5 ||< ptn_a:lowliving
 *surf,door_hall,VERT,-,-,-,Doorint_sol,OPAQUE,ANOTHER,05,01  #   6 ||< door_bath:low_hall
@@ -62,7 +62,7 @@ bathroom describes lower bathroom between store2 & kitchen
 *surf,bath_ceil,CEIL,-,-,-,Ceilti_up,OPAQUE,ANOTHER,08,02  #  10 ||< ovr_bath:roof
 *surf,bath_floor,FLOR,-,-,-,Floorti_low,OPAQUE,ANOTHER,15,03  #  11 ||< bath_floor:crawl
 *surf,frame,VERT,-,F-FRAME,CLOSED,Window_frme,OPAQUE,EXTERIOR,0,0  #  12 ||< external
-*surf,sill,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #  13 ||< external
+*surf,sill,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #  13 ||< external
 *surf,glazing,VERT,frame,C-WINDOW,CLOSED,Window_ext,DC_8074_04nb,EXTERIOR,0,0  #  14 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution

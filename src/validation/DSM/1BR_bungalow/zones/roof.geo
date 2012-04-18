@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,roof # tag version, format, zone name
-*date Wed Mar 21 11:16:26 2012  # latest file modification 
+*date Mon Apr 16 19:33:44 2012  # latest file modification 
 roof describes cold roof space
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,2.60000,1.90000,2.40000  #   1
@@ -85,13 +85,13 @@ roof describes cold roof space
 *surf,ovr_living,FLOR,-,-,-,Floorti_rf,OPAQUE,ANOTHER,07,11  #   6 ||< living_ceil:lowliving
 *surf,roof_a,SLOP,-,ROOF,PITCHED,Roof,OPAQUE,EXTERIOR,0,0  #   7 ||< external
 *surf,roof_back,SLOP,-,ROOF,PITCHED,Roof,OPAQUE,EXTERIOR,0,0  #   8 ||< external
-*surf,front_a,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #   9 ||< external
-*surf,left_b,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #  10 ||< external
-*surf,right_a,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #  11 ||< external
-*surf,right_b,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #  12 ||< external
-*surf,left_c,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #  13 ||< external
-*surf,back_a,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #  14 ||< external
-*surf,left,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #  15 ||< external
+*surf,front_a,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #   9 ||< external
+*surf,left_b,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #  10 ||< external
+*surf,right_a,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #  11 ||< external
+*surf,right_b,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #  12 ||< external
+*surf,left_c,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #  13 ||< external
+*surf,back_a,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #  14 ||< external
+*surf,left,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #  15 ||< external
 *surf,ptn_stor,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,01,04  #  16 ||< ptn_stor:stairs
 *surf,mid_floor,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,01,14  #  17 ||< mid_floor:stairs
 # 

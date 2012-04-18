@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,crawl # tag version, format, zone name
-*date Wed Mar 21 11:00:40 2012  # latest file modification 
+*date Mon Apr 16 19:33:45 2012  # latest file modification 
 crawl describes crawl space under 4-in-block
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.50000,1.90000,0.20000  #   1
@@ -82,7 +82,7 @@ crawl describes crawl space under 4-in-block
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,floor,CEIL,-,-,-,Ceilti_crl,OPAQUE,ANOTHER,01,09  #   1 ||< ceiling:stairs
+*surf,floor,CEIL,-,-,-,Ceilti_crl,OPAQUE,ANOTHER,01,09  #   1 ||< floor:stairs
 *surf,Base-12,CEIL,-,-,-,Ceilti_crl,OPAQUE,ANOTHER,02,12  #   2 ||< store2_floor:store2
 *surf,bath_floor,CEIL,-,-,-,Ceilti_crl,OPAQUE,ANOTHER,03,11  #   3 ||< bath_floor:bathroom
 *surf,kitch_floor,CEIL,-,-,-,Ceilti_crl,OPAQUE,ANOTHER,04,10  #   4 ||< kitch_floor:low_kitchen
