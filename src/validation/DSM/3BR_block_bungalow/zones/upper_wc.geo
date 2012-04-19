@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,upper_wc # tag version, format, zone name
-*date Thu Apr  5 11:12:02 2012  # latest file modification 
+*date Thu Apr 19 10:35:21 2012  # latest file modification 
 upper_wc describes WC at top of landing
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,5.50000,2.40000,2.80000  #   1
@@ -51,7 +51,7 @@ upper_wc describes WC at top of landing
 *surf,ptn_wc_b,VERT,-,-,-,intcnc_block,OPAQUE,ANOTHER,05,09  #   6 ||< ptn_wc_b:upstair_pa
 *surf,door_wc_b,VERT,-,-,-,Doorint_sol,OPAQUE,ANOTHER,05,10  #   7 ||< door_wc_b:upstair_pa
 *surf,ptn_wc_c,VERT,-,-,-,intcnc_block,OPAQUE,ANOTHER,05,11  #   8 ||< ptn_wc_c:upstair_pa
-*surf,wc_ceiling,CEIL,-,-,-,Ceilti_up,OPAQUE,ANOTHER,10,03  #   9 ||< wc_ceiling:roof_space
+*surf,wc_ceiling,CEIL,-,-,-,Ceiltk_up,OPAQUE,ANOTHER,10,03  #   9 ||< wc_ceiling:roof_space
 *surf,frame,VERT,facade,F-FRAME,CLOSED,Window_frme,OPAQUE,EXTERIOR,0,0  #  10 ||< external
 *surf,glazing,VERT,frame,C-WINDOW,CLOSED,Window_ext,DC_8074_04nb,EXTERIOR,0,0  #  11 ||< external
 # 

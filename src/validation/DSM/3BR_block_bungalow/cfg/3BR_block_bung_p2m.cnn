@@ -1,7 +1,7 @@
-*connections for 3BR_block_bungalow_p1m
-*Date Mon Apr  9 13:16:43 2012
+*connections for 3BR_block_bung_p2m_warm
+*Date Thu Apr 19 12:14:08 2012
     201   # number of connections
-   1   1   0   0   0  #    1 ptn_other in lower_bath is External
+   1   1   0   0   0  #    1 fac_side in lower_bath is External
    1   2   0   0   0  #    2 fac_a in lower_bath is External
    1   3   0   0   0  #    3 sill_v in lower_bath is External
    1   4   0   0   0  #    4 fac_b in lower_bath is External
@@ -69,7 +69,7 @@
    4   6   0   0   0  #   66 low_fac_a in up_br2 is External
    4   7   0   0   0  #   67 frame in up_br2 is External
    4   8   0   0   0  #   68 low_fac_b in up_br2 is External
-   4   9   1   0   0  #   69 side_wall in up_br2 >|< Identical environment
+   4   9   0   0   0  #   69 side_wall in up_br2 is External
    4  10   0   0   0  #   70 sloped_roof in up_br2 is External
    4  11   3   3  10  #   71 br2_floor in up_br2 >|< liv_ceiling in living
    4  12   0   0   0  #   72 sky_frame in up_br2 is External
@@ -131,7 +131,7 @@
    8   3   3   5   6  #  128 ptn_psg_a in up_br_three >|< ptn_br3_b in upstair_pa
    8   4   3   5   5  #  129 door_psg in up_br_three >|< door_br3 in upstair_pa
    8   5   3   5   4  #  130 ptn_psg_b in up_br_three >|< ptn_br3_a in upstair_pa
-   8   6   1   0   0  #  131 ptn_other in up_br_three >|< Identical environment
+   8   6   0   0   0  #  131 ptn_other in up_br_three is External
    8   7   0   0   0  #  132 low_fac_c in up_br_three is External
    8   8   0   0   0  #  133 low_frame in up_br_three is External
    8   9   0   0   0  #  134 low_fac_b in up_br_three is External

@@ -1,40 +1,40 @@
 *Operations 2.0
-*date Wed Apr  4 17:24:26 2012  # latest file modification 
-# operations of main_bath defined in: 
-# ../zones/main_bath_p1m.opr
+*date Thu Apr 19 10:51:40 2012  # latest file modification 
+# operations of lower_bath defined in: 
+# ../zones/main_bath_p1M.opr
 Standard periods for all day types. P1M. Full bathroom people at work. Careful electricity usage.  Lighting is seasonal.
 # control(no control of air flow  ), low mid & high setpoints 
    0     0.000     0.000     0.000
      1   # number of flow periods in day type: weekdays    
 # start, stop, infil, ventil, source, data
-   0, 24,    0.800    0.000    0    0.000
+   0, 24,    1.200    0.000    0    0.000
      1   # number of flow periods in day type: saturday    
 # start, stop, infil, ventil, source, data
-   0, 24,    0.800    0.000    0    0.000
+   0, 24,    1.200    0.000    0    0.000
      1   # number of flow periods in day type: sunday      
 # start, stop, infil, ventil, source, data
-   0, 24,    0.800    0.000    0    0.000
+   0, 24,    1.200    0.000    0    0.000
      1   # number of flow periods in day type: win_wkday   
 # start, stop, infil, ventil, source, data
-   0, 24,    0.800    0.000    0    0.000
+   0, 24,    1.200    0.000    0    0.000
      1   # number of flow periods in day type: win_wkend   
 # start, stop, infil, ventil, source, data
-   0, 24,    0.800    0.000    0    0.000
+   0, 24,    1.200    0.000    0    0.000
      1   # number of flow periods in day type: trn_wkday   
 # start, stop, infil, ventil, source, data
-   0, 24,    0.800    0.000    0    0.000
+   0, 24,    1.200    0.000    0    0.000
      1   # number of flow periods in day type: trn_wkend   
 # start, stop, infil, ventil, source, data
-   0, 24,    0.800    0.000    0    0.000
+   0, 24,    1.200    0.000    0    0.000
      1   # number of flow periods in day type: sum_wkday   
 # start, stop, infil, ventil, source, data
-   0, 24,    0.800    0.000    0    0.000
+   0, 24,    1.200    0.000    0    0.000
      1   # number of flow periods in day type: sum_wkend   
 # start, stop, infil, ventil, source, data
-   0, 24,    0.800    0.000    0    0.000
+   0, 24,    1.200    0.000    0    0.000
      1   # number of flow periods in day type: holiday     
 # start, stop, infil, ventil, source, data
-   0, 24,    0.800    0.000    0    0.000
+   0, 24,    1.200    0.000    0    0.000
     27   # number of casual gains in day type: weekdays    
 # type, start, stop, sens, latent, rad_frac, conv_frac
     1,   0,   7,      0.0,      0.0, 0.500, 0.500

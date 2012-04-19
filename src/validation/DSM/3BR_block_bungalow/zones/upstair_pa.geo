@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,upstair_pa # tag version, format, zone name
-*date Thu Apr  5 11:12:00 2012  # latest file modification 
+*date Thu Apr 19 10:35:20 2012  # latest file modification 
 upstair_pa describes upper portion of stairs and passage
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,5.50000,4.90000,2.80000  #   1
@@ -102,7 +102,7 @@ upstair_pa describes upper portion of stairs and passage
 *surf,fict,FLOR,-,-,-,fict,SC_fictit,ANOTHER,02,21  #  17 ||< fict:entry
 *surf,fac_sloped,VERT,-,WALL,-,conc_blck_rn,OPAQUE,EXTERIOR,0,0  #  18 ||< external
 *surf,struc_a,VERT,-,-,-,intcnc_block,OPAQUE,SIMILAR,00,00  #  19 ||< identical environment
-*surf,ceil_staur,CEIL,-,-,-,Ceilti_up,OPAQUE,ANOTHER,10,02  #  20 ||< ceil_staur:roof_space
+*surf,ceil_staur,CEIL,-,-,-,Ceiltk_up,OPAQUE,ANOTHER,10,02  #  20 ||< ceil_staur:roof_space
 *surf,struc_c,VERT,-,-,-,intcnc_block,OPAQUE,SIMILAR,00,00  #  21 ||< identical environment
 *surf,frame,VERT,low_facade,F-FRAME,CLOSED,Window_frme,OPAQUE,EXTERIOR,0,0  #  22 ||< external
 *surf,glaz,VERT,frame,C-WINDOW,CLOSED,Window_ext,DC_8074_04nb,EXTERIOR,0,0  #  23 ||< external

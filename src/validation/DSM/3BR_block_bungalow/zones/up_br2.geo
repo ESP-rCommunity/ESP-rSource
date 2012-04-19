@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,up_br2 # tag version, format, zone name
-*date Thu Apr  5 11:11:58 2012  # latest file modification 
+*date Thu Apr 19 10:41:48 2012  # latest file modification 
 up_br2 describes main upper bedroom two
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,-1.60000,3.90000,2.80000  #   1
@@ -62,12 +62,12 @@ up_br2 describes main upper bedroom two
 *surf,low_fac_a,VERT,-,WALL,-,conc_blck_rn,OPAQUE,EXTERIOR,0,0  #   6 ||< external
 *surf,frame,VERT,-,F-FRAME,CLOSED,Window_frme,OPAQUE,EXTERIOR,0,0  #   7 ||< external
 *surf,low_fac_b,VERT,-,WALL,-,conc_blck_rn,OPAQUE,EXTERIOR,0,0  #   8 ||< external
-*surf,side_wall,VERT,-,-,-,Partywall_ti,OPAQUE,SIMILAR,00,00  #   9 ||< identical environment
+*surf,side_wall,VERT,-,-,-,conc_blck_rn,OPAQUE,EXTERIOR,0,0  #   9 ||< external
 *surf,sloped_roof,SLOP,-,ROOF,PITCHED,Roof_stairs,OPAQUE,EXTERIOR,0,0  #  10 ||< external
 *surf,br2_floor,FLOR,-,-,-,Floorti_upc,OPAQUE,ANOTHER,03,10  #  11 ||< liv_ceiling:living
 *surf,sky_frame,SLOP,sloped_roof,F-FRAME,CLOSED,Window_frme,OPAQUE,EXTERIOR,0,0  #  12 ||< external
 *surf,sky_lt,SLOP,sky_frame,-,-,Window_ext,DC_8074_04nb,EXTERIOR,0,0  #  13 ||< external
-*surf,br2_ceiling,CEIL,-,-,-,Ceilti_up,OPAQUE,ANOTHER,10,01  #  14 ||< br2_ceiling:roof_space
+*surf,br2_ceiling,CEIL,-,-,-,Ceiltk_up,OPAQUE,ANOTHER,10,01  #  14 ||< br2_ceiling:roof_space
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 
@@ -76,4 +76,4 @@ up_br2 describes main upper bedroom two
 # 
 *insol_calc,none  # no insolation requested
 # 
-*base_list,2,13,11,    13.75 0  # zone base list
+*base_list,2,13,11,    19.02 0  # zone base list

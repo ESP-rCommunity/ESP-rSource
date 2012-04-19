@@ -1,10 +1,10 @@
 *Geometry 1.1,GEN,living # tag version, format, zone name
-*date Sun Apr  8 09:34:56 2012  # latest file modification 
+*date Thu Apr 19 10:50:50 2012  # latest file modification 
 living describes the main downatairs space
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,4.50000,7.00000,0.20000  #   1
 *vertex,2.80000,7.00000,0.20000  #   2
-*vertex,1.20000,7.00000,0.20000  #   3
+*vertex,0.70000,7.00000,0.20000  #   3
 *vertex,-1.60000,7.00000,0.20000  #   4
 *vertex,-1.60000,5.40000,0.20000  #   5
 *vertex,-1.60000,2.80000,0.20000  #   6
@@ -16,7 +16,7 @@ living describes the main downatairs space
 *vertex,4.50000,6.10000,0.20000  #  12
 *vertex,4.50000,7.00000,2.60000  #  13
 *vertex,2.80000,7.00000,2.60000  #  14
-*vertex,1.20000,7.00000,2.60000  #  15
+*vertex,0.70000,7.00000,2.60000  #  15
 *vertex,-1.60000,7.00000,2.60000  #  16
 *vertex,-1.60000,5.40000,2.60000  #  17
 *vertex,-1.60000,2.80000,2.60000  #  18
@@ -27,12 +27,12 @@ living describes the main downatairs space
 *vertex,4.50000,4.90000,2.60000  #  23
 *vertex,4.50000,6.10000,2.60000  #  24
 *vertex,2.80000,7.00000,0.95000  #  25
-*vertex,1.20000,7.00000,0.95000  #  26
+*vertex,0.70000,7.00000,0.95000  #  26
 *vertex,2.80000,7.00000,2.30000  #  27
-*vertex,1.20000,7.00000,2.30000  #  28
+*vertex,0.70000,7.00000,2.30000  #  28
 *vertex,2.76000,7.00000,0.99000  #  29
-*vertex,1.24000,7.00000,0.99000  #  30
-*vertex,1.24000,7.00000,2.26000  #  31
+*vertex,0.74000,7.00000,0.99000  #  30
+*vertex,0.74000,7.00000,2.26000  #  31
 *vertex,2.76000,7.00000,2.26000  #  32
 *vertex,4.50000,6.10000,1.20000  #  33
 *vertex,4.50000,7.00000,1.20000  #  34

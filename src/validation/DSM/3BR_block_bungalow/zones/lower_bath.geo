@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,lower_bath # tag version, format, zone name
-*date Thu Apr  5 11:11:48 2012  # latest file modification 
+*date Thu Apr 19 10:37:51 2012  # latest file modification 
 lower_bath describes main bathroom of house adj entrance
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,4.50000,0.20000,0.20000  #   1
@@ -47,7 +47,7 @@ lower_bath describes main bathroom of house adj entrance
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,ptn_other,VERT,-,-,-,Partywall_ti,OPAQUE,EXTERIOR,0,0  #   1 ||< external
+*surf,fac_side,VERT,-,-,-,conc_blck_rn,OPAQUE,EXTERIOR,0,0  #   1 ||< external
 *surf,fac_a,VERT,-,WALL,-,conc_blck_rn,OPAQUE,EXTERIOR,0,0  #   2 ||< external
 *surf,sill_v,VERT,-,WALL,-,conc_blck_rn,OPAQUE,EXTERIOR,0,0  #   3 ||< external
 *surf,fac_b,VERT,-,WALL,-,conc_blck_rn,OPAQUE,EXTERIOR,0,0  #   4 ||< external

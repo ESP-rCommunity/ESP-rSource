@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,roof_space # tag version, format, zone name
-*date Thu Apr  5 11:12:15 2012  # latest file modification 
+*date Thu Apr 19 10:35:23 2012  # latest file modification 
 roof_space describes cold roof above bedrooms
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,4.50000,5.57568,5.60000  #   1
@@ -44,11 +44,11 @@ roof_space describes cold roof above bedrooms
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,br2_ceiling,FLOR,-,-,-,Floorti_rf,OPAQUE,ANOTHER,04,14  #   1 ||< br2_ceiling:up_br2
-*surf,ceil_staur,FLOR,-,-,-,Floorti_rf,OPAQUE,ANOTHER,05,20  #   2 ||< ceil_staur:upstair_pa
-*surf,wc_ceiling,FLOR,-,-,-,Floorti_rf,OPAQUE,ANOTHER,06,09  #   3 ||< wc_ceiling:upper_wc
-*surf,br1_ceiling,FLOR,-,-,-,Floorti_rf,OPAQUE,ANOTHER,07,12  #   4 ||< br1_ceiling:up_br_one
-*surf,br3_ceiling,FLOR,-,-,-,Floorti_rf,OPAQUE,ANOTHER,08,13  #   5 ||< br3_ceiling:up_br_three
+*surf,br2_ceiling,FLOR,-,-,-,Floortk_rf,OPAQUE,ANOTHER,04,14  #   1 ||< br2_ceiling:up_br2
+*surf,ceil_staur,FLOR,-,-,-,Floortk_rf,OPAQUE,ANOTHER,05,20  #   2 ||< ceil_staur:upstair_pa
+*surf,wc_ceiling,FLOR,-,-,-,Floortk_rf,OPAQUE,ANOTHER,06,09  #   3 ||< wc_ceiling:upper_wc
+*surf,br1_ceiling,FLOR,-,-,-,Floortk_rf,OPAQUE,ANOTHER,07,12  #   4 ||< br1_ceiling:up_br_one
+*surf,br3_ceiling,FLOR,-,-,-,Floortk_rf,OPAQUE,ANOTHER,08,13  #   5 ||< br3_ceiling:up_br_three
 *surf,r1,SLOP,-,ROOF,PITCHED,Roof,OPAQUE,EXTERIOR,0,0  #   6 ||< external
 *surf,wc_side_wall,VERT,-,WALL,-,conc_blck_rn,OPAQUE,EXTERIOR,0,0  #   7 ||< external
 *surf,side_wall,VERT,-,WALL,-,conc_blck_rn,OPAQUE,EXTERIOR,0,0  #   8 ||< external
@@ -61,4 +61,4 @@ roof_space describes cold roof above bedrooms
 # 
 *insol_calc,none  # no insolation requested
 # 
-*base_list,0,23.52,0  # zone base
+*base_list,0,29.77,0  # zone base

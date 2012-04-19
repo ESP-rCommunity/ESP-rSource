@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,up_br_three # tag version, format, zone name
-*date Thu Apr  5 11:12:08 2012  # latest file modification 
+*date Thu Apr 19 10:42:42 2012  # latest file modification 
 up_br_three describes a small bedroom three on upper level
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,3.10000,0.20000,2.80000  #   1
@@ -63,14 +63,14 @@ up_br_three describes a small bedroom three on upper level
 *surf,ptn_psg_a,VERT,-,-,-,intcnc_block,OPAQUE,ANOTHER,05,06  #   3 ||< ptn_br3_b:upstair_pa
 *surf,door_psg,VERT,-,-,-,Doorint_sol,OPAQUE,ANOTHER,05,05  #   4 ||< door_br3:upstair_pa
 *surf,ptn_psg_b,VERT,-,-,-,intcnc_block,OPAQUE,ANOTHER,05,04  #   5 ||< ptn_br3_a:upstair_pa
-*surf,ptn_other,VERT,-,-,-,Partywall_ti,OPAQUE,SIMILAR,00,00  #   6 ||< identical environment
+*surf,ptn_other,VERT,-,-,-,conc_blck_rn,OPAQUE,EXTERIOR,0,0  #   6 ||< external
 *surf,low_fac_c,VERT,-,WALL,-,conc_blck_rn,OPAQUE,EXTERIOR,0,0  #   7 ||< external
 *surf,low_frame,VERT,-,F-FRAME,CLOSED,Window_frme,OPAQUE,EXTERIOR,0,0  #   8 ||< external
 *surf,low_fac_b,VERT,-,WALL,-,conc_blck_rn,OPAQUE,EXTERIOR,0,0  #   9 ||< external
 *surf,sloped_roof,SLOP,-,ROOF,PITCHED,Roof_stairs,OPAQUE,EXTERIOR,0,0  #  10 ||< external
 *surf,br3_floor,FLOR,-,-,-,Floorti_upc,OPAQUE,ANOTHER,12,17  #  11 ||< ceil_liv_br3:kit_dining
 *surf,ptn_br,VERT,-,-,-,intcnc_block,OPAQUE,ANOTHER,04,01  #  12 ||< ptn_br:up_br2
-*surf,br3_ceiling,CEIL,-,-,-,Ceilti_up,OPAQUE,ANOTHER,10,05  #  13 ||< br3_ceiling:roof_space
+*surf,br3_ceiling,CEIL,-,-,-,Ceiltk_up,OPAQUE,ANOTHER,10,05  #  13 ||< br3_ceiling:roof_space
 *surf,sky_frame,SLOP,sloped_roof,F-FRAME,CLOSED,Doorint_sol,OPAQUE,EXTERIOR,0,0  #  14 ||< external
 *surf,sky_glz,SLOP,sky_frame,S-WINDOW,CLOSED,Window_ext,DC_8074_04nb,EXTERIOR,0,0  #  15 ||< external
 *surf,br3_flr_a,FLOR,-,-,-,Ceilti_lowc,OPAQUE,ANOTHER,03,18  #  16 ||< ceil_br3_b:living
@@ -82,4 +82,4 @@ up_br_three describes a small bedroom three on upper level
 # 
 *insol_calc,none  # no insolation requested
 # 
-*base_list,1,11,    12.95 0  # zone base list
+*base_list,1,11,    19.24 0  # zone base list

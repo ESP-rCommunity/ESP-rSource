@@ -19,19 +19,12 @@ living p1m p2m p2h variants (assumed to have a storage unit)
 kitchen p1m p2m p2h variants
 kitchen_liv p1m p2m p2h variants (assumed to have a storage unit)
 
-3BR_block_bungalow.cfg - minimally attributed model on which further
-  variants can be created.
-3BR_block_bungalow_p1m_avg.cfg - activity p1m with average comfort
-3BR_block_bungalow_p1m_cool.cfg - activity p1m with cool comfort
-3BR_block_bungalow_p1m_warm.cfg - activity p1m with warm comfort
-3BR_block_bungalow_p2h_avg.cfg - activity p2h with average comfort
-3BR_block_bungalow_p2h_cool.cfg - activity p2h with cool comfort
-3BR_block_bungalow_p2h_warm.cfg - activity p2h with warm comfirt
-3BR_block_bungalow_p2m.cfg - general model without zone operations
-3BR_block_bungalow_p2m_avg.cfg - activity p2m with average comfort
-3BR_block_bungalow_p2m_cool.cfg - activity p2m with cool comfort
-3BR_block_bungalow_p2m_warm.cfg - activity p2m with warm comfort
-
-Each model (except 3BR_block_bungalow.cfg and 3BR_block_bungalow_p2m.cfg)
-have IPv definitions and have been test simulated one week in each
-season.
+3BR_block_bung_p1m_avg.cfg - activity p1m with average comfort
+3BR_block_bung_p1m_cool.cfg - activity p1m with cool comfort
+3BR_block_bung_p1m_warm.cfg - activity p1m with warm comfort
+3BR_block_bung_p2h_avg.cfg - activity p2h with average comfort
+3BR_block_bung_p2h_cool.cfg - activity p2h with cool comfort
+3BR_block_bung_p2h_warm.cfg - activity p2h with warm comfirt
+3BR_block_bung_p2m_avg.cfg - activity p2m with average comfort
+3BR_block_bung_p2m_cool.cfg - activity p2m with cool comfort
+3BR_block_bung_p2m_warm.cfg - activity p2m with warm comfort

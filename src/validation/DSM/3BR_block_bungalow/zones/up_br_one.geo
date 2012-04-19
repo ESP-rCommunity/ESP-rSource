@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,up_br_one # tag version, format, zone name
-*date Thu Apr  5 11:12:05 2012  # latest file modification 
+*date Thu Apr 19 10:35:22 2012  # latest file modification 
 up_br_one describes small bedroom or study on an upper floor
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,6.50000,0.20000,2.80000  #   1
@@ -64,7 +64,7 @@ up_br_one describes small bedroom or study on an upper floor
 *surf,ptn_br3,VERT,-,-,-,intcnc_block,OPAQUE,ANOTHER,08,02  #   9 ||< ptn_br1:up_br_three
 *surf,door_br1,VERT,-,-,-,Doorint_sol,OPAQUE,ANOTHER,05,07  #  10 ||< door_br1:upstair_pa
 *surf,ptn_br1a,VERT,-,-,-,intcnc_block,OPAQUE,ANOTHER,05,08  #  11 ||< ptn_br1:upstair_pa
-*surf,br1_ceiling,CEIL,-,-,-,Ceilti_up,OPAQUE,ANOTHER,10,04  #  12 ||< br1_ceiling:roof_space
+*surf,br1_ceiling,CEIL,-,-,-,Ceiltk_up,OPAQUE,ANOTHER,10,04  #  12 ||< br1_ceiling:roof_space
 *surf,sky_frame,SLOP,sloped_roof,F-FRAME,CLOSED,Window_frme,OPAQUE,EXTERIOR,0,0  #  13 ||< external
 *surf,sky_glz,SLOP,sky_frame,S-WINDOW,CLOSED,Window_ext,DC_8074_04nb,EXTERIOR,0,0  #  14 ||< external
 *surf,br_floor_k,FLOR,-,-,-,Floorti_upc,OPAQUE,ANOTHER,12,16  #  15 ||< liv_ceil_a:kit_dining
