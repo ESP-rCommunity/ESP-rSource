@@ -1,0 +1,1504 @@
+*IPV_REPORT,4,2
+defined_within_cfg_file
+ 
+*title,A insulated wood two bedroom bungalow in
+*version,Version 2BR_bungalow_p1m_avg
+*date,Wed Apr 18 16:13:03 2012
+*climate,ESP test climate
+*latitude, 55.90
+*longitude, -4.10
+*synopsis,:The 2BR_bungalow_p1m_avg
+ 
+*simulations,  5
+# start & finish days for each season
+Tue-06-Feb 2007,Mon-12-Feb 2007,2BR_bungalow_p1m_avg 1st winter run
+Tue-17-Apr 2007,Mon-23-Apr 2007,2BR_bungalow_p1m_avg spring run
+Tue-03-Jul 2007,Mon-09-Jul 2007,2BR_bungalow_p1m_avg summer run
+Tue-02-Oct 2007,Mon-08-Oct 2007,2BR_bungalow_p1m_avg autumn run
+Tue-20-Nov 2007,Mon-26-Nov 2007,2BR_bungalow_p1m_avg 2nd winter run
+ 
+*days,5
+# list of days with detailed information
+Wed-07-Feb 2007
+Wed-18-Apr 2007
+Wed-04-Jul 2007
+Wed-03-Oct 2007
+Wed-21-Nov 2007
+ 
+*groups, 4
+# group name & number of zones & zone names
+storage,2,hall,livingdin
+panel,4,BR_two,BR_one,bath,kitchen
+living, 3,hall,livingdin,kitchen
+bedrooms, 2,BR_two,BR_one
+*end_heading
+ 
+*assessment, 1,2BR_bungalow_p1m_avg 1st winter run
+ 
+*report,70,diversified,capacity,storage
+*title,Diversified capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,1071.9,0.0,220.0,0.0,0.0,520.0,0.0
+*end_report
+ 
+*report,70,diffuse,capacity,storage
+*title,Diffuse capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,1071.9,0.0,220.0,0.0,0.0,520.0,0.0
+*end_report
+ 
+*report,70,in_one_zone,capacity,storage
+*title,Maximum in any one zone capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,820.4,0.0,170.0,0.0,0.0,520.0,0.0
+*end_report
+ 
+*report,70,minimum,capacity,storage
+*title,Minimum capacity (diversified),W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+*end_report
+ 
+*report,70,demand,integrated,storage
+*title,Integrated demand,kWhr
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,30.56,0.00,12.59,0.00,0.00,24.61,0.00
+*end_report
+ 
+ 
+*report,70,diversified,capacity,panel
+*title,Diversified capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,1036.6,0.0,284.4,0.0,0.0,976.9,0.0
+*end_report
+ 
+*report,70,diffuse,capacity,panel
+*title,Diffuse capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,1186.9,0.0,320.0,0.0,0.0,1126.9,0.0
+*end_report
+ 
+*report,70,in_one_zone,capacity,panel
+*title,Maximum in any one zone capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,353.0,0.0,145.0,0.0,0.0,811.9,0.0
+*end_report
+ 
+*report,70,minimum,capacity,panel
+*title,Minimum capacity (diversified),W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+*end_report
+ 
+*report,70,demand,integrated,panel
+*title,Integrated demand,kWhr
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,31.30,0.00,12.76,0.00,0.00,25.79,0.00
+*end_report
+ 
+*report, 6,distribution,comfort,living
+*title,Resultant temperature,degC
+*format,frequency,12,5,12.0,2.0,30.0
+*fields,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+0,<12.0,0,0.0,0.0,0.0
+1,12.0-14.0,0,0.00,0,0.00
+2,14.0-16.0,49,9.72,49,9.72
+3,16.0-18.0,96,19.05,145,28.77
+4,18.0-20.0,128,25.40,273,54.17
+5,20.0-22.0,161,31.94,434,86.11
+6,22.0-24.0,62,12.30,496,98.41
+7,24.0-26.0,4,0.79,500,99.21
+8,26.0-28.0,4,0.79,504,100.00
+9,28.0-30.0,0,0.00,504,100.00
+10,30.0-32.0,0,0.00,504,100.00
+11,>32.0,0,0.0,0.0,0.0
+*end_report
+ 
+*report, 6,stats,comfort,living
+*title,Resultant temperature,degC
+*format,table,1,3
+*fields,maximum,minimum,average
+*data,26.495,14.512,19.414
+*end_report
+ 
+*report, 6,distribution,comfort,bedrooms
+*title,Resultant temperature,degC
+*format,frequency,12,5,12.0,2.0,30.0
+*fields,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+0,<12.0,0,0.0,0.0,0.0
+1,12.0-14.0,1,0.30,1,0.30
+2,14.0-16.0,51,15.18,52,15.48
+3,16.0-18.0,130,38.69,182,54.17
+4,18.0-20.0,128,38.10,310,92.26
+5,20.0-22.0,26,7.74,336,100.00
+6,22.0-24.0,0,0.00,336,100.00
+7,24.0-26.0,0,0.00,336,100.00
+8,26.0-28.0,0,0.00,336,100.00
+9,28.0-30.0,0,0.00,336,100.00
+10,30.0-32.0,0,0.00,336,100.00
+11,>32.0,0,0.0,0.0,0.0
+*end_report
+ 
+*report, 6,stats,comfort,bedrooms
+*title,Resultant temperature,degC
+*format,table,1,3
+*fields,maximum,minimum,average
+*data,21.939,13.932,17.640
+*end_report
+ 
+*day_to_display,Wed-07-Feb 2007
+ 
+*report,70,demand,per_unit_time,storage
+*title,Energy Demand per Unit Time,W
+*format,tabular,24,7
+*fields,Time,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data
+38.0208,0.0,0.0,0.0,0.0,20.0,0.0
+38.0625,0.0,0.0,0.0,0.0,20.0,0.0
+38.1042,0.0,0.0,0.0,0.0,20.0,0.0
+38.1458,0.0,0.0,0.0,0.0,20.0,0.0
+38.1875,0.0,0.0,0.0,0.0,20.0,0.0
+38.2292,96.1,0.0,0.0,0.0,20.0,0.0
+38.2708,859.9,0.0,6.3,0.0,20.0,0.0
+38.3125,613.1,0.0,93.8,0.0,20.0,0.0
+38.3542,405.1,0.0,93.8,0.0,20.0,0.0
+38.3958,0.0,0.0,6.3,0.0,20.0,0.0
+38.4375,0.0,0.0,0.0,0.0,20.0,0.0
+38.4792,0.0,0.0,0.0,0.0,20.0,0.0
+38.5208,83.3,0.0,0.0,0.0,20.0,0.0
+38.5625,735.4,0.0,0.0,0.0,20.0,0.0
+38.6042,577.7,0.0,0.0,0.0,20.0,0.0
+38.6458,499.5,0.0,0.0,0.0,20.0,0.0
+38.6875,472.6,0.0,13.8,0.0,35.6,0.0
+38.7292,156.2,0.0,206.3,0.0,254.4,0.0
+38.7708,60.5,0.0,220.0,0.0,270.0,0.0
+38.8125,56.4,0.0,220.0,0.0,285.6,0.0
+38.8542,55.2,0.0,220.0,0.0,504.4,0.0
+38.8958,52.9,0.0,220.0,0.0,520.0,0.0
+38.9375,45.3,0.0,206.3,0.0,488.8,0.0
+38.9792,0.1,0.0,13.8,0.0,51.3,0.0
+*end_report
+ 
+*report,70,demand,per_unit_time,panel
+*title,Energy Demand per Unit Time,W
+*format,tabular,24,7
+*fields,Time,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data
+38.0208,0.0,0.0,0.0,0.0,25.0,0.0
+38.0625,0.0,0.0,0.0,0.0,25.0,0.0
+38.1042,0.0,0.0,0.0,0.0,25.0,0.0
+38.1458,0.0,0.0,0.0,0.0,25.0,0.0
+38.1875,0.0,0.0,0.0,0.0,25.0,0.0
+38.2292,70.5,0.0,0.0,0.0,25.0,0.0
+38.2708,712.6,0.0,15.3,0.0,56.3,0.0
+38.3125,261.3,0.0,229.7,0.0,493.8,0.0
+38.3542,134.9,0.0,229.7,0.0,504.2,0.0
+38.3958,0.0,0.0,15.3,0.0,212.8,0.0
+38.4375,0.0,0.0,0.0,0.0,192.0,0.0
+38.4792,0.0,0.0,0.0,0.0,181.6,0.0
+38.5208,72.4,0.0,0.0,0.0,35.4,0.0
+38.5625,670.4,0.0,0.0,0.0,25.0,0.0
+38.6042,540.5,0.0,0.0,0.0,25.0,0.0
+38.6458,473.8,0.0,0.0,0.0,25.0,0.0
+38.6875,463.1,0.0,3.1,0.0,90.0,0.0
+38.7292,269.6,0.0,54.7,0.0,933.8,0.0
+38.7708,248.8,0.0,167.2,0.0,71.3,0.0
+38.8125,230.8,0.0,179.4,0.0,6.3,0.0
+38.8542,239.7,0.0,240.6,0.0,23.8,0.0
+38.8958,242.4,0.0,245.0,0.0,25.0,0.0
+38.9375,242.4,0.0,229.7,0.0,25.0,0.0
+38.9792,13.0,0.0,15.3,0.0,25.0,0.0
+*end_report
+*report, 6,thermal_comfort,comfort,living
+*title,Resultant temperature,degC
+*format,tabular,24, 4
+*fields,Time,hall,livingdin,kitchen
+*data
+# Timestep performance metrics.
+# Lib: 2BR_bungalow_p1m_avg_win1.res: Results for 2BR_bungalow_p1m_avg
+# Period: Wed-07-Feb@00h07(2007) to Wed-07-Feb@23h52(2007) : sim@15m, output@60m (averaged)
+#Time Resultanttemperature(degC) Resultanttemperature(degC) Resultanttemperature(degC)
+38.0208,17.64,18.92,18.87
+38.0625,17.03,18.10,18.23
+38.1042,16.54,17.39,17.62
+38.1458,16.13,16.77,17.04
+38.1875,15.76,16.21,16.50
+38.2292,15.63,15.91,16.19
+38.2708,18.77,18.79,18.82
+38.3125,19.75,19.65,20.68
+38.3542,19.92,19.76,22.06
+38.3958,17.95,17.80,21.15
+38.4375,16.80,17.02,21.06
+38.4792,16.15,16.65,20.94
+38.5208,15.92,16.56,19.57
+38.5625,18.87,19.17,20.15
+38.6042,19.66,19.81,20.32
+38.6458,19.88,19.91,20.35
+38.6875,19.95,19.94,20.48
+38.7292,20.18,20.49,23.98
+38.7708,20.20,20.71,22.32
+38.8125,20.20,20.94,21.25
+38.8542,20.23,21.67,20.87
+38.8958,20.28,22.13,20.74
+38.9375,20.21,21.85,20.63
+38.9792,18.41,19.40,19.33
+*end_report
+ 
+*report, 6,thermal_comfort,comfort,bedrooms
+*title,Resultant temperature,degC
+*format,tabular,24, 3
+*fields,Time,BR_two,BR_one
+*data
+# Timestep performance metrics.
+# Lib: 2BR_bungalow_p1m_avg_win1.res: Results for 2BR_bungalow_p1m_avg
+# Period: Wed-07-Feb@00h07(2007) to Wed-07-Feb@23h52(2007) : sim@15m, output@60m (averaged)
+#Time Resultanttemperature(degC) Resultanttemperature(degC)
+38.0208,16.86,17.54
+38.0625,16.51,17.42
+38.1042,16.18,17.28
+38.1458,15.86,17.12
+38.1875,15.58,16.96
+38.2292,15.45,16.88
+38.2708,17.30,17.89
+38.3125,17.85,18.90
+38.3542,17.99,19.72
+38.3958,16.33,17.90
+38.4375,15.55,16.62
+38.4792,15.15,15.93
+38.5208,15.04,15.60
+38.5625,17.35,17.52
+38.6042,18.01,18.03
+38.6458,18.19,18.14
+38.6875,18.18,18.16
+38.7292,19.02,18.16
+38.7708,18.70,18.15
+38.8125,18.49,18.15
+38.8542,18.40,18.32
+38.8958,18.33,18.28
+38.9375,18.25,18.22
+38.9792,17.08,17.29
+*end_report
+ 
+*end_day_to_display
+ 
+*end_assessment
+ 
+ 
+*assessment, 2,2BR_bungalow_p1m_avg spring run
+ 
+*report,70,diversified,capacity,storage
+*title,Diversified capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,804.2,0.0,216.9,0.0,0.0,520.0,0.0
+*end_report
+ 
+*report,70,diffuse,capacity,storage
+*title,Diffuse capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,804.2,0.0,216.9,0.0,0.0,520.0,0.0
+*end_report
+ 
+*report,70,in_one_zone,capacity,storage
+*title,Maximum in any one zone capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,621.9,0.0,166.9,0.0,0.0,520.0,0.0
+*end_report
+ 
+*report,70,minimum,capacity,storage
+*title,Minimum capacity (diversified),W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+*end_report
+ 
+*report,70,demand,integrated,storage
+*title,Integrated demand,kWhr
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,15.02,0.00,7.46,0.00,0.00,24.50,0.00
+*end_report
+ 
+ 
+*report,70,diversified,capacity,panel
+*title,Diversified capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,605.7,0.0,253.1,0.0,0.0,933.8,0.0
+*end_report
+ 
+*report,70,diffuse,capacity,panel
+*title,Diffuse capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,664.4,0.0,278.1,0.0,0.0,1126.9,0.0
+*end_report
+ 
+*report,70,in_one_zone,capacity,panel
+*title,Maximum in any one zone capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,232.3,0.0,112.5,0.0,0.0,811.9,0.0
+*end_report
+ 
+*report,70,minimum,capacity,panel
+*title,Minimum capacity (diversified),W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+*end_report
+ 
+*report,70,demand,integrated,panel
+*title,Integrated demand,kWhr
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,10.58,0.00,5.05,0.00,0.00,25.47,0.00
+*end_report
+ 
+*report, 6,distribution,comfort,living
+*title,Resultant temperature,degC
+*format,frequency,12,5,12.0,2.0,30.0
+*fields,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+0,<12.0,0,0.0,0.0,0.0
+1,12.0-14.0,0,0.00,0,0.00
+2,14.0-16.0,4,0.79,4,0.79
+3,16.0-18.0,54,10.71,58,11.51
+4,18.0-20.0,121,24.01,179,35.52
+5,20.0-22.0,170,33.73,349,69.25
+6,22.0-24.0,110,21.83,459,91.07
+7,24.0-26.0,26,5.16,485,96.23
+8,26.0-28.0,13,2.58,498,98.81
+9,28.0-30.0,5,0.99,503,99.80
+10,30.0-32.0,1,0.20,504,100.00
+11,>32.0,0,0.0,0.0,0.0
+*end_report
+ 
+*report, 6,stats,comfort,living
+*title,Resultant temperature,degC
+*format,table,1,3
+*fields,maximum,minimum,average
+*data,31.499,15.529,20.871
+*end_report
+ 
+*report, 6,distribution,comfort,bedrooms
+*title,Resultant temperature,degC
+*format,frequency,12,5,12.0,2.0,30.0
+*fields,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+0,<12.0,0,0.0,0.0,0.0
+1,12.0-14.0,0,0.00,0,0.00
+2,14.0-16.0,2,0.60,2,0.60
+3,16.0-18.0,51,15.18,53,15.77
+4,18.0-20.0,192,57.14,245,72.92
+5,20.0-22.0,52,15.48,297,88.39
+6,22.0-24.0,30,8.93,327,97.32
+7,24.0-26.0,9,2.68,336,100.00
+8,26.0-28.0,0,0.00,336,100.00
+9,28.0-30.0,0,0.00,336,100.00
+10,30.0-32.0,0,0.00,336,100.00
+11,>32.0,0,0.0,0.0,0.0
+*end_report
+ 
+*report, 6,stats,comfort,bedrooms
+*title,Resultant temperature,degC
+*format,table,1,3
+*fields,maximum,minimum,average
+*data,25.788,15.474,19.396
+*end_report
+ 
+*day_to_display,Wed-18-Apr 2007
+ 
+*report,70,demand,per_unit_time,storage
+*title,Energy Demand per Unit Time,W
+*format,tabular,24,7
+*fields,Time,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data
+108.0208,0.0,0.0,3.1,0.0,18.8,0.0
+108.0625,0.0,0.0,0.0,0.0,20.0,0.0
+108.1042,0.0,0.0,0.0,0.0,20.0,0.0
+108.1458,0.0,0.0,0.0,0.0,20.0,0.0
+108.1875,0.0,0.0,0.0,0.0,20.0,0.0
+108.2292,50.0,0.0,0.0,0.0,20.0,0.0
+108.2708,399.0,0.0,4.7,0.0,20.0,0.0
+108.3125,266.6,0.0,70.3,0.0,20.0,0.0
+108.3542,165.9,0.0,70.3,0.0,20.0,0.0
+108.3958,0.0,0.0,4.7,0.0,20.0,0.0
+108.4375,0.0,0.0,0.0,0.0,20.0,0.0
+108.4792,0.0,0.0,0.0,0.0,20.0,0.0
+108.5208,31.8,0.0,0.0,0.0,20.0,0.0
+108.5625,235.9,0.0,0.0,0.0,20.0,0.0
+108.6042,189.7,0.0,0.0,0.0,20.0,0.0
+108.6458,185.6,0.0,0.0,0.0,20.0,0.0
+108.6875,181.0,0.0,0.0,0.0,35.6,0.0
+108.7292,49.0,0.0,10.6,0.0,254.4,0.0
+108.7708,37.8,0.0,159.4,0.0,270.0,0.0
+108.8125,39.2,0.0,170.0,0.0,285.6,0.0
+108.8542,14.9,0.0,170.0,0.0,504.4,0.0
+108.8958,11.5,0.0,170.0,0.0,520.0,0.0
+108.9375,13.6,0.0,162.5,0.0,487.5,0.0
+108.9792,0.5,0.0,57.5,0.0,32.5,0.0
+*end_report
+ 
+*report,70,demand,per_unit_time,panel
+*title,Energy Demand per Unit Time,W
+*format,tabular,24,7
+*fields,Time,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data
+108.0208,0.0,0.0,0.0,0.0,25.0,0.0
+108.0625,0.0,0.0,0.0,0.0,25.0,0.0
+108.1042,0.0,0.0,0.0,0.0,25.0,0.0
+108.1458,0.0,0.0,0.0,0.0,25.0,0.0
+108.1875,0.0,0.0,0.0,0.0,25.0,0.0
+108.2292,13.1,0.0,0.0,0.0,25.0,0.0
+108.2708,111.0,0.0,16.9,0.0,56.3,0.0
+108.3125,2.3,0.0,253.1,0.0,493.8,0.0
+108.3542,0.0,0.0,253.1,0.0,504.2,0.0
+108.3958,0.0,0.0,16.9,0.0,212.8,0.0
+108.4375,0.0,0.0,0.0,0.0,192.0,0.0
+108.4792,0.0,0.0,0.0,0.0,181.6,0.0
+108.5208,6.7,0.0,0.0,0.0,35.4,0.0
+108.5625,56.6,0.0,0.0,0.0,25.0,0.0
+108.6042,57.1,0.0,0.0,0.0,25.0,0.0
+108.6458,59.2,0.0,0.0,0.0,25.0,0.0
+108.6875,61.5,0.0,0.0,0.0,90.0,0.0
+108.7292,69.9,0.0,4.7,0.0,933.8,0.0
+108.7708,91.9,0.0,70.3,0.0,71.3,0.0
+108.8125,107.5,0.0,71.9,0.0,6.3,0.0
+108.8542,103.1,0.0,28.1,0.0,23.8,0.0
+108.8958,120.0,0.0,25.0,0.0,25.0,0.0
+108.9375,151.8,0.0,23.4,0.0,25.0,0.0
+108.9792,8.4,0.0,1.6,0.0,25.0,0.0
+*end_report
+*report, 6,thermal_comfort,comfort,living
+*title,Resultant temperature,degC
+*format,tabular,24, 4
+*fields,Time,hall,livingdin,kitchen
+*data
+# Timestep performance metrics.
+# Lib: 2BR_bungalow_p1m_avg_spr.res: Results for 2BR_bungalow_p1m_avg
+# Period: Wed-18-Apr@00h07(2007) to Wed-18-Apr@23h52(2007) : sim@15m, output@60m (averaged)
+#Time Resultanttemperature(degC) Resultanttemperature(degC) Resultanttemperature(degC)
+108.0208,21.48,21.85,22.58
+108.0625,20.79,21.11,22.01
+108.1042,20.26,20.41,21.33
+108.1458,19.80,19.78,20.69
+108.1875,19.35,19.19,20.06
+108.2292,19.02,18.75,19.54
+108.2708,20.18,20.12,20.39
+108.3125,20.51,20.50,22.71
+108.3542,20.55,20.59,24.03
+108.3958,19.54,19.66,23.39
+108.4375,19.04,19.37,23.84
+108.4792,18.91,19.36,24.82
+108.5208,19.09,19.50,24.92
+108.5625,20.44,20.65,24.83
+108.6042,20.81,20.82,24.31
+108.6458,20.84,20.82,23.50
+108.6875,20.81,20.78,23.19
+108.7292,20.77,21.40,28.04
+108.7708,20.79,22.09,24.88
+108.8125,20.78,22.21,23.27
+108.8542,20.87,22.59,22.37
+108.8958,20.79,22.76,21.67
+108.9375,20.73,22.70,21.27
+108.9792,20.21,20.51,20.52
+*end_report
+ 
+*report, 6,thermal_comfort,comfort,bedrooms
+*title,Resultant temperature,degC
+*format,tabular,24, 3
+*fields,Time,BR_two,BR_one
+*data
+# Timestep performance metrics.
+# Lib: 2BR_bungalow_p1m_avg_spr.res: Results for 2BR_bungalow_p1m_avg
+# Period: Wed-18-Apr@00h07(2007) to Wed-18-Apr@23h52(2007) : sim@15m, output@60m (averaged)
+#Time Resultanttemperature(degC) Resultanttemperature(degC)
+108.0208,21.99,20.36
+108.0625,21.50,20.40
+108.1042,20.96,20.30
+108.1458,20.46,20.14
+108.1875,19.97,19.95
+108.2292,19.50,19.74
+108.2708,19.19,19.69
+108.3125,19.09,21.15
+108.3542,19.15,21.92
+108.3958,18.99,20.48
+108.4375,19.90,19.43
+108.4792,21.64,18.93
+108.5208,23.19,18.64
+108.5625,23.80,18.98
+108.6042,23.37,19.03
+108.6458,22.59,19.03
+108.6875,21.78,18.99
+108.7292,22.51,18.92
+108.7708,22.01,18.82
+108.8125,21.65,18.72
+108.8542,20.57,18.65
+108.8958,19.74,18.60
+108.9375,19.20,18.52
+108.9792,18.72,18.04
+*end_report
+ 
+*end_day_to_display
+ 
+*end_assessment
+ 
+ 
+*assessment, 3,2BR_bungalow_p1m_avg summer run
+ 
+*report,70,diversified,capacity,storage
+*title,Diversified capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.0,0.0,120.0,0.0,0.0,520.0,0.0
+*end_report
+ 
+*report,70,diffuse,capacity,storage
+*title,Diffuse capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.0,0.0,120.0,0.0,0.0,520.0,0.0
+*end_report
+ 
+*report,70,in_one_zone,capacity,storage
+*title,Maximum in any one zone capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.0,0.0,120.0,0.0,0.0,520.0,0.0
+*end_report
+ 
+*report,70,minimum,capacity,storage
+*title,Minimum capacity (diversified),W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+*end_report
+ 
+*report,70,demand,integrated,storage
+*title,Integrated demand,kWhr
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.00,0.00,1.47,0.00,0.00,24.65,0.00
+*end_report
+ 
+ 
+*report,70,diversified,capacity,panel
+*title,Diversified capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.0,0.0,93.8,0.0,0.0,933.8,0.0
+*end_report
+ 
+*report,70,diffuse,capacity,panel
+*title,Diffuse capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.0,0.0,143.8,0.0,0.0,1126.9,0.0
+*end_report
+ 
+*report,70,in_one_zone,capacity,panel
+*title,Maximum in any one zone capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.0,0.0,93.8,0.0,0.0,811.9,0.0
+*end_report
+ 
+*report,70,minimum,capacity,panel
+*title,Minimum capacity (diversified),W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+*end_report
+ 
+*report,70,demand,integrated,panel
+*title,Integrated demand,kWhr
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.00,0.00,2.53,0.00,0.00,25.47,0.00
+*end_report
+ 
+*report, 6,distribution,comfort,living
+*title,Resultant temperature,degC
+*format,frequency,12,5,12.0,2.0,30.0
+*fields,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+0,<12.0,0,0.0,0.0,0.0
+1,12.0-14.0,0,0.00,0,0.00
+2,14.0-16.0,0,0.00,0,0.00
+3,16.0-18.0,0,0.00,0,0.00
+4,18.0-20.0,0,0.00,0,0.00
+5,20.0-22.0,50,10.42,50,10.42
+6,22.0-24.0,201,41.88,251,52.29
+7,24.0-26.0,100,20.83,351,73.13
+8,26.0-28.0,67,13.96,418,87.08
+9,28.0-30.0,43,8.96,461,96.04
+10,30.0-32.0,19,3.96,480,100.00
+11,>32.0,24,0.0,0.0,0.0
+*end_report
+ 
+*report, 6,stats,comfort,living
+*title,Resultant temperature,degC
+*format,table,1,3
+*fields,maximum,minimum,average
+*data,39.149,20.822,25.113
+*end_report
+ 
+*report, 6,distribution,comfort,bedrooms
+*title,Resultant temperature,degC
+*format,frequency,12,5,12.0,2.0,30.0
+*fields,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+0,<12.0,0,0.0,0.0,0.0
+1,12.0-14.0,0,0.00,0,0.00
+2,14.0-16.0,0,0.00,0,0.00
+3,16.0-18.0,0,0.00,0,0.00
+4,18.0-20.0,0,0.00,0,0.00
+5,20.0-22.0,10,3.04,10,3.04
+6,22.0-24.0,199,60.49,209,63.53
+7,24.0-26.0,75,22.80,284,86.32
+8,26.0-28.0,33,10.03,317,96.35
+9,28.0-30.0,7,2.13,324,98.48
+10,30.0-32.0,5,1.52,329,100.00
+11,>32.0,7,0.0,0.0,0.0
+*end_report
+ 
+*report, 6,stats,comfort,bedrooms
+*title,Resultant temperature,degC
+*format,table,1,3
+*fields,maximum,minimum,average
+*data,34.798,21.568,24.250
+*end_report
+ 
+*day_to_display,Wed-04-Jul 2007
+ 
+*report,70,demand,per_unit_time,storage
+*title,Energy Demand per Unit Time,W
+*format,tabular,24,7
+*fields,Time,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data
+185.0208,0.0,0.0,0.0,0.0,20.0,0.0
+185.0625,0.0,0.0,0.0,0.0,20.0,0.0
+185.1042,0.0,0.0,0.0,0.0,20.0,0.0
+185.1458,0.0,0.0,0.0,0.0,20.0,0.0
+185.1875,0.0,0.0,0.0,0.0,20.0,0.0
+185.2292,0.0,0.0,0.0,0.0,20.0,0.0
+185.2708,0.0,0.0,0.0,0.0,20.0,0.0
+185.3125,0.0,0.0,0.0,0.0,20.0,0.0
+185.3542,0.0,0.0,0.0,0.0,20.0,0.0
+185.3958,0.0,0.0,0.0,0.0,20.0,0.0
+185.4375,0.0,0.0,0.0,0.0,20.0,0.0
+185.4792,0.0,0.0,0.0,0.0,20.0,0.0
+185.5208,0.0,0.0,0.0,0.0,20.0,0.0
+185.5625,0.0,0.0,0.0,0.0,20.0,0.0
+185.6042,0.0,0.0,0.0,0.0,20.0,0.0
+185.6458,0.0,0.0,0.0,0.0,20.0,0.0
+185.6875,0.0,0.0,0.0,0.0,35.6,0.0
+185.7292,0.0,0.0,0.0,0.0,254.4,0.0
+185.7708,0.0,0.0,0.0,0.0,270.0,0.0
+185.8125,0.0,0.0,3.1,0.0,285.6,0.0
+185.8542,0.0,0.0,46.9,0.0,504.4,0.0
+185.8958,0.0,0.0,50.0,0.0,520.0,0.0
+185.9375,0.0,0.0,46.9,0.0,488.8,0.0
+185.9792,0.0,0.0,3.1,0.0,51.3,0.0
+*end_report
+ 
+*report,70,demand,per_unit_time,panel
+*title,Energy Demand per Unit Time,W
+*format,tabular,24,7
+*fields,Time,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data
+185.0208,0.0,0.0,0.0,0.0,25.0,0.0
+185.0625,0.0,0.0,0.0,0.0,25.0,0.0
+185.1042,0.0,0.0,0.0,0.0,25.0,0.0
+185.1458,0.0,0.0,0.0,0.0,25.0,0.0
+185.1875,0.0,0.0,0.0,0.0,25.0,0.0
+185.2292,0.0,0.0,0.0,0.0,25.0,0.0
+185.2708,0.0,0.0,6.3,0.0,56.3,0.0
+185.3125,0.0,0.0,93.8,0.0,493.8,0.0
+185.3542,0.0,0.0,93.8,0.0,504.2,0.0
+185.3958,0.0,0.0,6.3,0.0,212.8,0.0
+185.4375,0.0,0.0,0.0,0.0,192.0,0.0
+185.4792,0.0,0.0,0.0,0.0,181.6,0.0
+185.5208,0.0,0.0,0.0,0.0,35.4,0.0
+185.5625,0.0,0.0,0.0,0.0,25.0,0.0
+185.6042,0.0,0.0,0.0,0.0,25.0,0.0
+185.6458,0.0,0.0,0.0,0.0,25.0,0.0
+185.6875,0.0,0.0,0.0,0.0,90.0,0.0
+185.7292,0.0,0.0,0.0,0.0,933.8,0.0
+185.7708,0.0,0.0,0.0,0.0,71.3,0.0
+185.8125,0.0,0.0,4.7,0.0,6.3,0.0
+185.8542,0.0,0.0,70.3,0.0,23.8,0.0
+185.8958,0.0,0.0,75.0,0.0,25.0,0.0
+185.9375,0.0,0.0,70.3,0.0,25.0,0.0
+185.9792,0.0,0.0,4.7,0.0,25.0,0.0
+*end_report
+*report, 6,thermal_comfort,comfort,living
+*title,Resultant temperature,degC
+*format,tabular,24, 4
+*fields,Time,hall,livingdin,kitchen
+*data
+# Timestep performance metrics.
+# Lib: 2BR_bungalow_p1m_avg_sum.res: Results for 2BR_bungalow_p1m_avg
+# Period: Wed-04-Jul@00h07(2007) to Wed-04-Jul@23h52(2007) : sim@15m, output@60m (averaged)
+#Time Resultanttemperature(degC) Resultanttemperature(degC) Resultanttemperature(degC)
+185.0208,22.68,23.10,23.33
+185.0625,22.34,22.58,22.95
+185.1042,22.01,22.06,22.54
+185.1458,21.68,21.57,22.05
+185.1875,21.35,21.13,21.59
+185.2292,21.08,20.88,21.29
+185.2708,20.92,20.82,21.31
+185.3125,21.01,21.00,24.49
+185.3542,21.18,21.40,26.52
+185.3958,21.27,21.72,25.84
+185.4375,21.38,21.93,25.99
+185.4792,21.58,22.18,26.69
+185.5208,21.86,22.46,26.41
+185.5625,22.18,22.70,26.24
+185.6042,22.44,22.88,26.04
+185.6458,22.65,23.02,25.70
+185.6875,22.83,23.18,25.50
+185.7292,23.03,24.11,30.94
+185.7708,23.20,24.48,28.61
+185.8125,23.25,24.41,26.67
+185.8542,23.21,25.28,25.60
+185.8958,23.20,25.58,24.92
+185.9375,23.06,25.50,24.46
+185.9792,22.87,23.91,23.86
+*end_report
+ 
+*report, 6,thermal_comfort,comfort,bedrooms
+*title,Resultant temperature,degC
+*format,tabular,24, 3
+*fields,Time,BR_two,BR_one
+*data
+# Timestep performance metrics.
+# Lib: 2BR_bungalow_p1m_avg_sum.res: Results for 2BR_bungalow_p1m_avg
+# Period: Wed-04-Jul@00h07(2007) to Wed-04-Jul@23h52(2007) : sim@15m, output@60m (averaged)
+#Time Resultanttemperature(degC) Resultanttemperature(degC)
+185.0208,22.76,22.76
+185.0625,22.67,22.70
+185.1042,22.40,22.81
+185.1458,22.08,22.72
+185.1875,21.78,22.61
+185.2292,21.64,22.62
+185.2708,21.68,22.75
+185.3125,21.57,23.12
+185.3542,21.80,23.35
+185.3958,21.98,22.62
+185.4375,22.75,22.29
+185.4792,23.71,22.15
+185.5208,24.54,22.10
+185.5625,24.85,22.13
+185.6042,24.85,22.19
+185.6458,24.73,22.29
+185.6875,24.51,22.43
+185.7292,25.44,22.49
+185.7708,24.92,22.48
+185.8125,24.43,22.29
+185.8542,24.00,22.20
+185.8958,23.57,22.05
+185.9375,23.28,21.86
+185.9792,23.18,22.42
+*end_report
+ 
+*end_day_to_display
+ 
+*end_assessment
+ 
+ 
+*assessment, 4,2BR_bungalow_p1m_avg autumn run
+ 
+*report,70,diversified,capacity,storage
+*title,Diversified capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,489.6,0.0,216.9,0.0,0.0,520.0,0.0
+*end_report
+ 
+*report,70,diffuse,capacity,storage
+*title,Diffuse capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,489.6,0.0,216.9,0.0,0.0,520.0,0.0
+*end_report
+ 
+*report,70,in_one_zone,capacity,storage
+*title,Maximum in any one zone capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,382.1,0.0,166.9,0.0,0.0,520.0,0.0
+*end_report
+ 
+*report,70,minimum,capacity,storage
+*title,Minimum capacity (diversified),W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+*end_report
+ 
+*report,70,demand,integrated,storage
+*title,Integrated demand,kWhr
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,5.49,0.00,7.46,0.00,0.00,24.50,0.00
+*end_report
+ 
+ 
+*report,70,diversified,capacity,panel
+*title,Diversified capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,212.6,0.0,253.1,0.0,0.0,933.8,0.0
+*end_report
+ 
+*report,70,diffuse,capacity,panel
+*title,Diffuse capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,271.8,0.0,278.1,0.0,0.0,1126.9,0.0
+*end_report
+ 
+*report,70,in_one_zone,capacity,panel
+*title,Maximum in any one zone capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,127.6,0.0,112.5,0.0,0.0,811.9,0.0
+*end_report
+ 
+*report,70,minimum,capacity,panel
+*title,Minimum capacity (diversified),W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+*end_report
+ 
+*report,70,demand,integrated,panel
+*title,Integrated demand,kWhr
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,1.76,0.00,5.05,0.00,0.00,25.47,0.00
+*end_report
+ 
+*report, 6,distribution,comfort,living
+*title,Resultant temperature,degC
+*format,frequency,12,5,12.0,2.0,30.0
+*fields,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+0,<12.0,0,0.0,0.0,0.0
+1,12.0-14.0,0,0.00,0,0.00
+2,14.0-16.0,0,0.00,0,0.00
+3,16.0-18.0,0,0.00,0,0.00
+4,18.0-20.0,72,14.31,72,14.31
+5,20.0-22.0,204,40.56,276,54.87
+6,22.0-24.0,122,24.25,398,79.13
+7,24.0-26.0,63,12.52,461,91.65
+8,26.0-28.0,28,5.57,489,97.22
+9,28.0-30.0,11,2.19,500,99.40
+10,30.0-32.0,3,0.60,503,100.00
+11,>32.0,1,0.0,0.0,0.0
+*end_report
+ 
+*report, 6,stats,comfort,living
+*title,Resultant temperature,degC
+*format,table,1,3
+*fields,maximum,minimum,average
+*data,32.300,18.105,22.313
+*end_report
+ 
+*report, 6,distribution,comfort,bedrooms
+*title,Resultant temperature,degC
+*format,frequency,12,5,12.0,2.0,30.0
+*fields,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+0,<12.0,0,0.0,0.0,0.0
+1,12.0-14.0,0,0.00,0,0.00
+2,14.0-16.0,0,0.00,0,0.00
+3,16.0-18.0,0,0.00,0,0.00
+4,18.0-20.0,124,36.90,124,36.90
+5,20.0-22.0,122,36.31,246,73.21
+6,22.0-24.0,70,20.83,316,94.05
+7,24.0-26.0,15,4.46,331,98.51
+8,26.0-28.0,3,0.89,334,99.40
+9,28.0-30.0,2,0.60,336,100.00
+10,30.0-32.0,0,0.00,336,100.00
+11,>32.0,0,0.0,0.0,0.0
+*end_report
+ 
+*report, 6,stats,comfort,bedrooms
+*title,Resultant temperature,degC
+*format,table,1,3
+*fields,maximum,minimum,average
+*data,28.382,18.353,21.051
+*end_report
+ 
+*day_to_display,Wed-03-Oct 2007
+ 
+*report,70,demand,per_unit_time,storage
+*title,Energy Demand per Unit Time,W
+*format,tabular,24,7
+*fields,Time,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data
+276.0208,0.0,0.0,3.1,0.0,18.8,0.0
+276.0625,0.0,0.0,0.0,0.0,20.0,0.0
+276.1042,0.0,0.0,0.0,0.0,20.0,0.0
+276.1458,0.0,0.0,0.0,0.0,20.0,0.0
+276.1875,0.0,0.0,0.0,0.0,20.0,0.0
+276.2292,47.9,0.0,0.0,0.0,20.0,0.0
+276.2708,382.4,0.0,4.7,0.0,20.0,0.0
+276.3125,231.7,0.0,70.3,0.0,20.0,0.0
+276.3542,115.2,0.0,70.3,0.0,20.0,0.0
+276.3958,0.0,0.0,4.7,0.0,20.0,0.0
+276.4375,0.0,0.0,0.0,0.0,20.0,0.0
+276.4792,0.0,0.0,0.0,0.0,20.0,0.0
+276.5208,15.2,0.0,0.0,0.0,20.0,0.0
+276.5625,104.2,0.0,0.0,0.0,20.0,0.0
+276.6042,69.2,0.0,0.0,0.0,20.0,0.0
+276.6458,70.3,0.0,0.0,0.0,20.0,0.0
+276.6875,76.0,0.0,0.0,0.0,35.6,0.0
+276.7292,18.6,0.0,10.6,0.0,254.4,0.0
+276.7708,16.5,0.0,159.4,0.0,270.0,0.0
+276.8125,13.8,0.0,170.0,0.0,285.6,0.0
+276.8542,0.0,0.0,170.0,0.0,504.4,0.0
+276.8958,0.0,0.0,170.0,0.0,520.0,0.0
+276.9375,0.0,0.0,162.5,0.0,487.5,0.0
+276.9792,0.0,0.0,57.5,0.0,32.5,0.0
+*end_report
+ 
+*report,70,demand,per_unit_time,panel
+*title,Energy Demand per Unit Time,W
+*format,tabular,24,7
+*fields,Time,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data
+276.0208,0.0,0.0,0.0,0.0,25.0,0.0
+276.0625,0.0,0.0,0.0,0.0,25.0,0.0
+276.1042,0.0,0.0,0.0,0.0,25.0,0.0
+276.1458,0.0,0.0,0.0,0.0,25.0,0.0
+276.1875,0.0,0.0,0.0,0.0,25.0,0.0
+276.2292,14.6,0.0,0.0,0.0,25.0,0.0
+276.2708,122.1,0.0,16.9,0.0,56.3,0.0
+276.3125,2.3,0.0,253.1,0.0,493.8,0.0
+276.3542,0.0,0.0,253.1,0.0,504.2,0.0
+276.3958,0.0,0.0,16.9,0.0,212.8,0.0
+276.4375,0.0,0.0,0.0,0.0,192.0,0.0
+276.4792,0.0,0.0,0.0,0.0,181.6,0.0
+276.5208,0.0,0.0,0.0,0.0,35.4,0.0
+276.5625,0.0,0.0,0.0,0.0,25.0,0.0
+276.6042,0.0,0.0,0.0,0.0,25.0,0.0
+276.6458,0.2,0.0,0.0,0.0,25.0,0.0
+276.6875,5.9,0.0,0.0,0.0,90.0,0.0
+276.7292,18.9,0.0,4.7,0.0,933.8,0.0
+276.7708,30.2,0.0,70.3,0.0,71.3,0.0
+276.8125,36.9,0.0,71.9,0.0,6.3,0.0
+276.8542,24.3,0.0,28.1,0.0,23.8,0.0
+276.8958,29.1,0.0,25.0,0.0,25.0,0.0
+276.9375,32.7,0.0,23.4,0.0,25.0,0.0
+276.9792,2.2,0.0,1.6,0.0,25.0,0.0
+*end_report
+*report, 6,thermal_comfort,comfort,living
+*title,Resultant temperature,degC
+*format,tabular,24, 4
+*fields,Time,hall,livingdin,kitchen
+*data
+# Timestep performance metrics.
+# Lib: 2BR_bungalow_p1m_avg_aut.res: Results for 2BR_bungalow_p1m_avg
+# Period: Wed-03-Oct@00h07(2007) to Wed-03-Oct@23h52(2007) : sim@15m, output@60m (averaged)
+#Time Resultanttemperature(degC) Resultanttemperature(degC) Resultanttemperature(degC)
+276.0208,21.06,21.58,21.95
+276.0625,20.39,20.91,21.39
+276.1042,19.91,20.29,20.81
+276.1458,19.51,19.73,20.26
+276.1875,19.16,19.22,19.75
+276.2292,18.91,18.84,19.32
+276.2708,20.14,20.13,20.28
+276.3125,20.51,20.53,22.81
+276.3542,20.58,20.64,24.52
+276.3958,19.79,20.02,23.82
+276.4375,19.43,19.93,23.88
+276.4792,19.32,20.02,24.13
+276.5208,19.47,20.21,24.16
+276.5625,20.52,20.89,24.56
+276.6042,20.85,21.02,24.47
+276.6458,20.90,21.03,23.76
+276.6875,20.88,21.00,23.52
+276.7292,20.87,22.01,28.52
+276.7708,20.91,22.84,25.81
+276.8125,20.95,23.05,24.15
+276.8542,21.32,23.48,23.43
+276.8958,21.58,23.64,22.89
+276.9375,21.65,23.75,22.53
+276.9792,21.57,22.10,22.16
+*end_report
+ 
+*report, 6,thermal_comfort,comfort,bedrooms
+*title,Resultant temperature,degC
+*format,tabular,24, 3
+*fields,Time,BR_two,BR_one
+*data
+# Timestep performance metrics.
+# Lib: 2BR_bungalow_p1m_avg_aut.res: Results for 2BR_bungalow_p1m_avg
+# Period: Wed-03-Oct@00h07(2007) to Wed-03-Oct@23h52(2007) : sim@15m, output@60m (averaged)
+#Time Resultanttemperature(degC) Resultanttemperature(degC)
+276.0208,21.11,19.91
+276.0625,20.75,20.05
+276.1042,20.35,20.06
+276.1458,19.97,20.00
+276.1875,19.61,19.93
+276.2292,19.26,19.81
+276.2708,19.03,19.79
+276.3125,19.09,21.34
+276.3542,19.33,22.15
+276.3958,19.27,20.63
+276.4375,19.75,19.95
+276.4792,20.26,19.64
+276.5208,21.63,19.48
+276.5625,22.93,19.44
+276.6042,23.28,19.41
+276.6458,22.64,19.32
+276.6875,21.93,19.22
+276.7292,22.70,19.14
+276.7708,22.44,19.06
+276.8125,22.27,19.00
+276.8542,21.58,18.97
+276.8958,21.18,18.95
+276.9375,20.82,18.94
+276.9792,20.67,19.35
+*end_report
+ 
+*end_day_to_display
+ 
+*end_assessment
+ 
+ 
+*assessment, 5,2BR_bungalow_p1m_avg 2nd winter run
+ 
+*report,70,diversified,capacity,storage
+*title,Diversified capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,938.8,0.0,220.0,0.0,0.0,520.0,0.0
+*end_report
+ 
+*report,70,diffuse,capacity,storage
+*title,Diffuse capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,938.8,0.0,220.0,0.0,0.0,520.0,0.0
+*end_report
+ 
+*report,70,in_one_zone,capacity,storage
+*title,Maximum in any one zone capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,718.7,0.0,170.0,0.0,0.0,520.0,0.0
+*end_report
+ 
+*report,70,minimum,capacity,storage
+*title,Minimum capacity (diversified),W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+*end_report
+ 
+*report,70,demand,integrated,storage
+*title,Integrated demand,kWhr
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,27.76,0.00,12.59,0.00,0.00,24.61,0.00
+*end_report
+ 
+ 
+*report,70,diversified,capacity,panel
+*title,Diversified capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,845.6,0.0,284.4,0.0,0.0,976.9,0.0
+*end_report
+ 
+*report,70,diffuse,capacity,panel
+*title,Diffuse capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,985.5,0.0,320.0,0.0,0.0,1126.9,0.0
+*end_report
+ 
+*report,70,in_one_zone,capacity,panel
+*title,Maximum in any one zone capacity,W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,298.8,0.0,145.0,0.0,0.0,811.9,0.0
+*end_report
+ 
+*report,70,minimum,capacity,panel
+*title,Minimum capacity (diversified),W
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,0.0,0.0,0.0,0.0,0.0,0.0,0.0
+*end_report
+ 
+*report,70,demand,integrated,panel
+*title,Integrated demand,kWhr
+*format,table,1,7
+*fields,Heating,Cooling,Lighting (unctld),Lighting (ctld),Fans,Small Power,Hot water
+*data,28.27,0.00,12.76,0.00,0.00,25.79,0.00
+*end_report
+ 
+*report, 6,distribution,comfort,living
+*title,Resultant temperature,degC
+*format,frequency,12,5,12.0,2.0,30.0
+*fields,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+0,<12.0,0,0.0,0.0,0.0
+1,12.0-14.0,0,0.00,0,0.00
+2,14.0-16.0,28,5.56,28,5.56
+3,16.0-18.0,106,21.03,134,26.59
+4,18.0-20.0,133,26.39,267,52.98
+5,20.0-22.0,171,33.93,438,86.90
+6,22.0-24.0,53,10.52,491,97.42
+7,24.0-26.0,11,2.18,502,99.60
+8,26.0-28.0,2,0.40,504,100.00
+9,28.0-30.0,0,0.00,504,100.00
+10,30.0-32.0,0,0.00,504,100.00
+11,>32.0,0,0.0,0.0,0.0
+*end_report
+ 
+*report, 6,stats,comfort,living
+*title,Resultant temperature,degC
+*format,table,1,3
+*fields,maximum,minimum,average
+*data,26.394,15.299,19.600
+*end_report
+ 
+*report, 6,distribution,comfort,bedrooms
+*title,Resultant temperature,degC
+*format,frequency,12,5,12.0,2.0,30.0
+*fields,range,distribution,percent,cumulative_distrib,cumulative_percent
+*data
+0,<12.0,0,0.0,0.0,0.0
+1,12.0-14.0,0,0.00,0,0.00
+2,14.0-16.0,34,10.12,34,10.12
+3,16.0-18.0,126,37.50,160,47.62
+4,18.0-20.0,155,46.13,315,93.75
+5,20.0-22.0,19,5.65,334,99.40
+6,22.0-24.0,2,0.60,336,100.00
+7,24.0-26.0,0,0.00,336,100.00
+8,26.0-28.0,0,0.00,336,100.00
+9,28.0-30.0,0,0.00,336,100.00
+10,30.0-32.0,0,0.00,336,100.00
+11,>32.0,0,0.0,0.0,0.0
+*end_report
+ 
+*report, 6,stats,comfort,bedrooms
+*title,Resultant temperature,degC
+*format,table,1,3
+*fields,maximum,minimum,average
+*data,22.662,14.866,17.830
+*end_report
+ 
+*day_to_display,Wed-21-Nov 2007
+ 
+*report,70,demand,per_unit_time,storage
+*title,Energy Demand per Unit Time,W
+*format,tabular,24,7
+*fields,Time,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data
+325.0208,0.0,0.0,0.0,0.0,20.0,0.0
+325.0625,0.0,0.0,0.0,0.0,20.0,0.0
+325.1042,0.0,0.0,0.0,0.0,20.0,0.0
+325.1458,0.0,0.0,0.0,0.0,20.0,0.0
+325.1875,0.0,0.0,0.0,0.0,20.0,0.0
+325.2292,102.6,0.0,0.0,0.0,20.0,0.0
+325.2708,938.8,0.0,6.3,0.0,20.0,0.0
+325.3125,656.1,0.0,93.8,0.0,20.0,0.0
+325.3542,448.1,0.0,93.8,0.0,20.0,0.0
+325.3958,0.0,0.0,6.3,0.0,20.0,0.0
+325.4375,0.0,0.0,0.0,0.0,20.0,0.0
+325.4792,0.0,0.0,0.0,0.0,20.0,0.0
+325.5208,83.7,0.0,0.0,0.0,20.0,0.0
+325.5625,744.8,0.0,0.0,0.0,20.0,0.0
+325.6042,577.5,0.0,0.0,0.0,20.0,0.0
+325.6458,493.5,0.0,0.0,0.0,20.0,0.0
+325.6875,456.3,0.0,13.8,0.0,35.6,0.0
+325.7292,144.6,0.0,206.3,0.0,254.4,0.0
+325.7708,53.2,0.0,220.0,0.0,270.0,0.0
+325.8125,48.1,0.0,220.0,0.0,285.6,0.0
+325.8542,46.1,0.0,220.0,0.0,504.4,0.0
+325.8958,43.4,0.0,220.0,0.0,520.0,0.0
+325.9375,36.4,0.0,206.3,0.0,488.8,0.0
+325.9792,0.0,0.0,13.8,0.0,51.3,0.0
+*end_report
+ 
+*report,70,demand,per_unit_time,panel
+*title,Energy Demand per Unit Time,W
+*format,tabular,24,7
+*fields,Time,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data
+325.0208,0.0,0.0,0.0,0.0,25.0,0.0
+325.0625,0.0,0.0,0.0,0.0,25.0,0.0
+325.1042,0.0,0.0,0.0,0.0,25.0,0.0
+325.1458,0.0,0.0,0.0,0.0,25.0,0.0
+325.1875,0.0,0.0,0.0,0.0,25.0,0.0
+325.2292,86.0,0.0,0.0,0.0,25.0,0.0
+325.2708,845.6,0.0,15.3,0.0,56.3,0.0
+325.3125,330.4,0.0,229.7,0.0,493.8,0.0
+325.3542,157.4,0.0,229.7,0.0,504.2,0.0
+325.3958,0.0,0.0,15.3,0.0,212.8,0.0
+325.4375,0.0,0.0,0.0,0.0,192.0,0.0
+325.4792,0.0,0.0,0.0,0.0,181.6,0.0
+325.5208,72.7,0.0,0.0,0.0,35.4,0.0
+325.5625,645.3,0.0,0.0,0.0,25.0,0.0
+325.6042,470.9,0.0,0.0,0.0,25.0,0.0
+325.6458,383.6,0.0,0.0,0.0,25.0,0.0
+325.6875,397.2,0.0,3.1,0.0,90.0,0.0
+325.7292,229.7,0.0,54.7,0.0,933.8,0.0
+325.7708,213.7,0.0,167.2,0.0,71.3,0.0
+325.8125,184.9,0.0,179.4,0.0,6.3,0.0
+325.8542,181.0,0.0,240.6,0.0,23.8,0.0
+325.8958,170.3,0.0,245.0,0.0,25.0,0.0
+325.9375,166.1,0.0,229.7,0.0,25.0,0.0
+325.9792,8.6,0.0,15.3,0.0,25.0,0.0
+*end_report
+*report, 6,thermal_comfort,comfort,living
+*title,Resultant temperature,degC
+*format,tabular,24, 4
+*fields,Time,hall,livingdin,kitchen
+*data
+# Timestep performance metrics.
+# Lib: 2BR_bungalow_p1m_avg_win2.res: Results for 2BR_bungalow_p1m_avg
+# Period: Wed-21-Nov@00h07(2007) to Wed-21-Nov@23h52(2007) : sim@15m, output@60m (averaged)
+#Time Resultanttemperature(degC) Resultanttemperature(degC) Resultanttemperature(degC)
+325.0208,17.70,18.90,18.90
+325.0625,17.01,17.94,18.14
+325.1042,16.45,17.17,17.44
+325.1458,15.97,16.48,16.78
+325.1875,15.51,15.83,16.16
+325.2292,15.30,15.43,15.76
+325.2708,18.66,18.55,18.66
+325.3125,19.70,19.47,20.55
+325.3542,19.87,19.68,21.83
+325.3958,17.82,17.62,20.93
+325.4375,16.65,16.84,20.85
+325.4792,16.00,16.46,20.72
+325.5208,15.76,16.39,19.40
+325.5625,18.81,19.11,20.21
+325.6042,19.65,19.79,20.59
+325.6458,19.91,19.90,20.60
+325.6875,19.98,19.94,20.65
+325.7292,20.22,20.61,24.44
+325.7708,20.25,21.01,22.70
+325.8125,20.26,21.32,21.79
+325.8542,20.30,21.98,21.43
+325.8958,20.34,22.20,21.17
+325.9375,20.29,22.36,20.94
+325.9792,18.71,20.33,19.85
+*end_report
+ 
+*report, 6,thermal_comfort,comfort,bedrooms
+*title,Resultant temperature,degC
+*format,tabular,24, 3
+*fields,Time,BR_two,BR_one
+*data
+# Timestep performance metrics.
+# Lib: 2BR_bungalow_p1m_avg_win2.res: Results for 2BR_bungalow_p1m_avg
+# Period: Wed-21-Nov@00h07(2007) to Wed-21-Nov@23h52(2007) : sim@15m, output@60m (averaged)
+#Time Resultanttemperature(degC) Resultanttemperature(degC)
+325.0208,16.74,17.45
+325.0625,16.28,17.22
+325.1042,15.87,17.01
+325.1458,15.48,16.78
+325.1875,15.12,16.53
+325.2292,14.90,16.36
+325.2708,17.11,17.71
+325.3125,17.75,18.70
+325.3542,17.93,19.41
+325.3958,16.18,17.59
+325.4375,15.37,16.34
+325.4792,14.93,15.67
+325.5208,14.87,15.37
+325.5625,17.44,17.43
+325.6042,18.38,17.98
+325.6458,18.48,18.12
+325.6875,18.35,18.16
+325.7292,19.28,18.19
+325.7708,18.98,18.20
+325.8125,18.66,18.21
+325.8542,18.55,18.41
+325.8958,18.46,18.36
+325.9375,18.38,18.32
+325.9792,17.42,17.64
+*end_report
+ 
+*end_day_to_display
+ 
+*end_assessment
+*end
+ 
+*Seasonal_summary,2BR_bungalow_p1m_avg 1st winter run
+ 
+*report,98,energy,performance,aggregate
+*title,Integrated demand,kWh/m^2
+*format,table,1,6
+*fields,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data,12.914,0.000,5.292,0.000,10.522,0.000
+*end_report
+ 
+*report,98,energy,building_performance,aggregate
+*title,Integrated building demand,kWh
+*format,table,1,6
+*fields,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data,618.6,0.0,253.5,0.0,504.0,0.0
+*end_report
+ 
+*End_seasonal_summary,2BR_bungalow_p1m_avg 1st winter run
+ 
+*Seasonal_summary,2BR_bungalow_p1m_avg spring run
+ 
+*report,98,energy,performance,aggregate
+*title,Integrated demand,kWh/m^2
+*format,table,1,6
+*fields,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data,4.810,0.000,2.351,0.000,9.389,0.000
+*end_report
+ 
+*report,98,energy,building_performance,aggregate
+*title,Integrated building demand,kWh
+*format,table,1,6
+*fields,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data,230.4,0.0,112.6,0.0,449.7,0.0
+*end_report
+ 
+*End_seasonal_summary,2BR_bungalow_p1m_avg spring run
+ 
+*Seasonal_summary,2BR_bungalow_p1m_avg summer run
+ 
+*report,98,energy,performance,aggregate
+*title,Integrated demand,kWh/m^2
+*format,table,1,6
+*fields,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data,0.000,0.000,1.336,0.000,16.742,0.000
+*end_report
+ 
+*report,98,energy,building_performance,aggregate
+*title,Integrated building demand,kWh
+*format,table,1,6
+*fields,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data,0.0,0.0,64.0,0.0,801.9,0.0
+*end_report
+ 
+*End_seasonal_summary,2BR_bungalow_p1m_avg summer run
+ 
+*Seasonal_summary,2BR_bungalow_p1m_avg autumn run
+ 
+*report,98,energy,performance,aggregate
+*title,Integrated demand,kWh/m^2
+*format,table,1,6
+*fields,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data,1.274,0.000,2.089,0.000,8.346,0.000
+*end_report
+ 
+*report,98,energy,building_performance,aggregate
+*title,Integrated building demand,kWh
+*format,table,1,6
+*fields,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data,61.0,0.0,100.1,0.0,399.8,0.0
+*end_report
+ 
+*End_seasonal_summary,2BR_bungalow_p1m_avg autumn run
+ 
+*Seasonal_summary,2BR_bungalow_p1m_avg 2nd winter run
+ 
+*report,98,energy,performance,aggregate
+*title,Integrated demand,kWh/m^2
+*format,table,1,6
+*fields,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data,10.528,0.000,4.763,0.000,9.470,0.000
+*end_report
+ 
+*report,98,energy,building_performance,aggregate
+*title,Integrated building demand,kWh
+*format,table,1,6
+*fields,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data,504.3,0.0,228.2,0.0,453.6,0.0
+*end_report
+ 
+*End_seasonal_summary,2BR_bungalow_p1m_avg 2nd winter run
+ 
+*Summary
+ 
+*report,98,energy,performance,aggregate
+*title,Integrated demand,kWh/m^2.a
+*format,table,1,6
+*fields,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data,29.526,0.000,15.831,0.000,54.468,0.000
+*end_report
+ 
+*report,98,energy,building_performance,aggregate
+*title,Integrated building demand,kWh/a
+*format,table,1,6
+*fields,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data,1414.3,0.0,758.3,0.0,2609.0,0.0
+*end_report
+ 
+*report,74,power,capacity,aggregate
+*title,Maximum capacity,W/m^2
+*format,table,1,6
+*fields,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data,44.019,0.000,10.530,0.000,31.251,0.000
+*end_report
+ 
+*report,74,power,capacity,aggregate
+*title,Maximum building capacity,kW
+*format,table,1,6
+*fields,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data,2.11,0.00,0.50,0.00,1.50,0.00
+*end_report
+ 
+*report,75,emissions,pollutant,aggregate
+*title,Pollutant emissions,kg/m^2.a
+*format,table,3,6
+*fields,Pollutant,CO2,NOx,SOx,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data,8.583,0.000,13.952,0.000,120.004,0.000
+*data,0.014,0.000,0.047,0.000,0.404,0.000
+*data,0.009,0.000,0.173,0.000,1.484,0.000
+*end_report
+ 
+*report,75,emissions,pollutant,aggregate
+*title,Pollutant building emissions,kg/a
+*format,table,3,6
+*fields,Pollutant,CO2,NOx,SOx,Heating,Cooling,Lighting,Fans,Small Power,Hot water
+*data,411.14,0.00,668.29,0.00,5748.17,0.00
+*data,0.65,0.00,2.25,0.00,19.35,0.00
+*data,0.43,0.00,8.27,0.00,71.10,0.00
+*end_report
+ 
+*report76,distribution,thermal_comfort,aggregate
+*title,Resultant Temperature,degC
+*format,frequency,9,6,16.0,2.0,30.0
+*fields,range,winter_early,spring,summer,autumn,winter_late
+*data
+<16,0,0,0,0,0
+16-18,1,0,0,0,0
+18-20,51,2,0,0,34
+20-22,130,51,0,0,126
+22-24,128,192,0,124,155
+24-26,26,52,10,122,19
+26-28,0,30,199,70,2
+28-30,0,9,75,15,0
+>30,0,0,33,3,0
+*end_report
+*end
