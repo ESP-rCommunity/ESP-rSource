@@ -3,9 +3,9 @@
 # layers|gaps|  no.  name      | database name 
      3,     1  #  1 ptn_kitch_a  Parttim     
      5,     1  #  2 right_other  Partywall_ti
-     4,     1  #  3 bk_fac_a     tk_block_rn 
-     4,     1  #  4 head         tk_block_rn 
-     4,     1  #  5 bk_fac_b     tk_block_rn 
+     4,     1  #  3 bk_fac_a     Extwall_ti  
+     4,     1  #  4 head         Extwall_ti  
+     4,     1  #  5 bk_fac_b     Extwall_ti  
      3,     1  #  6 ptn_br       Parttim     
      3,     1  #  7 ptn_hall     Parttim     
      3,     1  #  8 ptn_a        Parttim     
@@ -14,7 +14,7 @@
      2,     0  # 11 living_ceil  Ceilti_up   
      5,     1  # 12 liv_floor    Floorti_lowc
      1,     0  # 13 frame        Window_frme 
-     4,     1  # 14 sill         tk_block_rn 
+     4,     1  # 14 sill         Extwall_ti  
      3,     1  # 15 glazing      Window_ext  
 # air gap position & resistance for surface  1
   2,   0.170,

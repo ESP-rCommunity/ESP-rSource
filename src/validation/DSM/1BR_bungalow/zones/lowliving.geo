@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,lowliving # tag version, format, zone name
-*date Mon Apr 16 19:33:28 2012  # latest file modification 
+*date Thu Apr 19 07:58:04 2012  # latest file modification 
 lowliving describes living dining of lower flat
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,8.60000,2.60000,0.20000  #   1
@@ -55,9 +55,9 @@ lowliving describes living dining of lower flat
 #  boundary condition tag followed by two data items
 *surf,ptn_kitch_a,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,04,05  #   1 ||< ptn_liv_a:low_kitchen
 *surf,right_other,VERT,-,WALL,-,Partywall_ti,OPAQUE,SIMILAR,00,00  #   2 ||< identical environment
-*surf,bk_fac_a,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #   3 ||< external
-*surf,head,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #   4 ||< external
-*surf,bk_fac_b,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #   5 ||< external
+*surf,bk_fac_a,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #   3 ||< external
+*surf,head,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #   4 ||< external
+*surf,bk_fac_b,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #   5 ||< external
 *surf,ptn_br,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,06,02  #   6 ||< ptn_living:low_bedroom
 *surf,ptn_hall,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,05,02  #   7 ||< ptn_liv:low_hall
 *surf,ptn_a,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,03,05  #   8 ||< ptn_hall_a:bathroom
@@ -66,7 +66,7 @@ lowliving describes living dining of lower flat
 *surf,living_ceil,CEIL,-,-,-,Ceilti_up,OPAQUE,ANOTHER,08,06  #  11 ||< ovr_living:roof
 *surf,liv_floor,FLOR,-,-,-,Floorti_lowc,OPAQUE,ANOTHER,15,07  #  12 ||< liv_floor:crawl
 *surf,frame,VERT,-,F-FRAME,CLOSED,Window_frme,OPAQUE,EXTERIOR,0,0  #  13 ||< external
-*surf,sill,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #  14 ||< external
+*surf,sill,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #  14 ||< external
 *surf,glazing,VERT,frame,C-WINDOW,CLOSED,Window_ext,DC_8074_04nb,EXTERIOR,0,0  #  15 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution

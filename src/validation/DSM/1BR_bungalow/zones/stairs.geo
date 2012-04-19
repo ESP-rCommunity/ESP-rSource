@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,stairs # tag version, format, zone name
-*date Mon Apr 16 19:33:08 2012  # latest file modification 
+*date Thu Apr 19 07:57:49 2012  # latest file modification 
 stairs describes the public access stairs in building
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.50000,1.90000,0.20000  #   1
@@ -70,13 +70,13 @@ stairs describes the public access stairs in building
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,front_a,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #   1 ||< external
-*surf,front_b,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #   2 ||< external
-*surf,front_c,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #   3 ||< external
+*surf,front_a,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #   1 ||< external
+*surf,front_b,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #   2 ||< external
+*surf,front_c,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #   3 ||< external
 *surf,ptn_stor,VERT,-,-,-,Parttim,OPAQUE,ANOTHER,08,16  #   4 ||< ptn_stor:roof
-*surf,back_b,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #   5 ||< external
-*surf,back_a,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #   6 ||< external
-*surf,left_side,VERT,-,WALL,-,tk_block_rn,OPAQUE,EXTERIOR,0,0  #   7 ||< external
+*surf,back_b,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #   5 ||< external
+*surf,back_a,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #   6 ||< external
+*surf,left_side,VERT,-,WALL,-,Extwall_ti,OPAQUE,EXTERIOR,0,0  #   7 ||< external
 *surf,ceiling,SLOP,-,ROOF,PITCHED,Roof_stairs,OPAQUE,EXTERIOR,0,0  #   8 ||< external
 *surf,floor,FLOR,-,-,-,Floorti_low,OPAQUE,ANOTHER,15,01  #   9 ||< floor:crawl
 *surf,ptn_lowstore,VERT,-,-,-,Door_fire,OPAQUE,ANOTHER,02,08  #  10 ||< ptn_stair:store2

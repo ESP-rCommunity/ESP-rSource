@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,crawl # tag version, format, zone name
-*date Mon Apr 16 19:33:45 2012  # latest file modification 
+*date Thu Apr 19 07:58:10 2012  # latest file modification 
 crawl describes crawl space under 4-in-block
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,0.50000,1.90000,0.20000  #   1

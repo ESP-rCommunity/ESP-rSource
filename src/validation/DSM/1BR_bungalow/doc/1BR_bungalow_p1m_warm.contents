@@ -1,7 +1,7 @@
 Synopsis
  
 Synopsis of the model A small insul wood bungalow in North Scotland P1M warm
-comfort defined in 1BR_bungalow_p1m_warm.cfg generated on Wed Apr 18 15:08:42
+comfort defined in 1BR_bungalow_p1m_warm.cfg generated on Thu Apr 19 08:03:24
 2012. Notes associated with the model are in ../doc/1BR_bungalow.log
  
 The model is located at latitude   55.90 with a longitude difference of  -4.10
@@ -44,7 +44,7 @@ Primary energy conversions (demand kWhr to primary kWhr) are:
  small pr:  612.00   2.06   7.57
  hot water: 190.00   0.30   0.20
 An Integrated Performance View has been defined:
-Title : A small timber-kit bungalow in North Sco
+Title : A small timber bungalow in North Scotlan
 Version   : Version 1BR_bungalow_p1m_warm
 synopsis:
 :The 1BR_bungalow_p1m_warm
@@ -883,7 +883,7 @@ ID Zone         Volume|          Surface
  area of 63.8m^2 & approx floor area of 7.98m^2
  stairs describes the public access stairs in building
  There is 27.482m2 of exposed surface area, 19.070m2 of which is vertical.
- Outside walls are 228.07 % of floor area & avg U of 1.534 & UA of 27.927
+ Outside walls are 228.07 % of floor area & avg U of 0.446 & UA of 8.1189
  Sloped roof is 105.41 % of floor area & avg U of 0.234 & UA of 1.9648
  Glazing is 10.902 % of floor & 4.5621 % facade with avg U of 2.877 & UA of 2.5027
  
@@ -891,13 +891,13 @@ ID Zone         Volume|          Surface
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
-  1  0.687   180.   0. front_a      OPAQUE   VERT WALL  tk_block_rn  ||< external
-  2  1.02    180.   0. front_b      OPAQUE   VERT WALL  tk_block_rn  ||< external
-  3  0.288   180.  -0. front_c      OPAQUE   VERT WALL  tk_block_rn  ||< external
+  1  0.687   180.   0. front_a      OPAQUE   VERT WALL  Extwall_ti   ||< external
+  2  1.02    180.   0. front_b      OPAQUE   VERT WALL  Extwall_ti   ||< external
+  3  0.288   180.  -0. front_c      OPAQUE   VERT WALL  Extwall_ti   ||< external
   4  1.90     90.  -0. ptn_stor     OPAQUE   VERT -     Parttim      ||< ptn_stor:roof
-  5  2.99    360.  -0. back_b       OPAQUE   VERT WALL  tk_block_rn  ||< external
-  6  2.37    360.   0. back_a       OPAQUE   VERT WALL  tk_block_rn  ||< external
-  7  7.49    270.   0. left_side    OPAQUE   VERT WALL  tk_block_rn  ||< external
+  5  2.99    360.  -0. back_b       OPAQUE   VERT WALL  Extwall_ti   ||< external
+  6  2.37    360.   0. back_a       OPAQUE   VERT WALL  Extwall_ti   ||< external
+  7  7.49    270.   0. left_side    OPAQUE   VERT WALL  Extwall_ti   ||< external
   8  8.41    270.  72. ceiling      OPAQUE   SLOP ROOF  Roof_stairs  ||< external
   9  7.98      0. -90. floor        OPAQUE   FLOR -     Floorti_low  ||< floor:crawl
  10  1.76     90.   0. ptn_lowstore OPAQUE   VERT -     Door_fire    ||< ptn_stair:store2
@@ -1034,13 +1034,13 @@ holiday     3 EquiptW    0-24      0.0      0.0       0.50       0.50
  area of 27.1m^2 & approx floor area of 4.07m^2
  store2 describes storage room adj entrance
  There is 7.7000m2 of exposed surface area, 7.7000m2 of which is vertical.
- Outside walls are 189.19 % of floor area & avg U of 1.567 & UA of 12.069
+ Outside walls are 189.19 % of floor area & avg U of 0.233 & UA of 1.7912
  
  A summary of the surfaces in store2( 2) follows:
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
-  1  3.74    180.  -0. fr_facade    OPAQUE   VERT WALL  tk_block_rn  ||< external
+  1  3.74    180.  -0. fr_facade    OPAQUE   VERT WALL  Extwall_ti   ||< external
   2  5.06     90.  -0. ptn_bath     OPAQUE   VERT -     Parttim      ||< ptn_store:bathroom
   3  0.440     0.   0. ptn_hall_a   OPAQUE   VERT -     Parttim      ||< ptn_stor_d:low_hall
   4  1.76      0.  -0. door_hall    OPAQUE   VERT -     Doorint_sol  ||< door_stor:low_hall
@@ -1048,8 +1048,8 @@ holiday     3 EquiptW    0-24      0.0      0.0       0.50       0.50
   6  0.220    90.  -0. ptn_hall_c   OPAQUE   VERT -     Parttim      ||< ptn_stor_b:low_hall
   7  0.440     0.   0. ptn_hall_d   OPAQUE   VERT -     Parttim      ||< ptn_stor_a:low_hall
   8  1.76    270.  -0. ptn_stair    OPAQUE   VERT -     Door_fire    ||< ptn_lowstore:stairs
-  9  0.440   180.   0. ext          OPAQUE   VERT WALL  tk_block_rn  ||< external
- 10  3.52    270.  -0. left_fac     OPAQUE   VERT WALL  tk_block_rn  ||< external
+  9  0.440   180.   0. ext          OPAQUE   VERT WALL  Extwall_ti   ||< external
+ 10  3.52    270.  -0. left_fac     OPAQUE   VERT WALL  Extwall_ti   ||< external
  11  4.07      0.  90. stor2_ceil   OPAQUE   CEIL -     Ceilti_up    ||< ovr_store:roof
  12  4.07      0. -90. store2_floor OPAQUE   FLOR -     Floorti_low  ||< Base-12:crawl
  
@@ -1396,16 +1396,16 @@ holiday    27 EquiptW   23-24      0.0      0.0       0.40       0.60
  area of 28.1m^2 & approx floor area of 4.60m^2
  bathroom describes lower bathroom between store2 & kitchen
  There is 4.4000m2 of exposed surface area, 4.4000m2 of which is vertical.
- Outside walls are 85.948 % of floor area & avg U of 1.570 & UA of 6.2086
+ Outside walls are 85.948 % of floor area & avg U of 0.274 & UA of 1.0831
  Glazing is 9.7044 % of floor & 10.145 % facade with avg U of 2.877 & UA of 1.2842
  
  A summary of the surfaces in bathroom( 3) follows:
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
-  1  0.440   180.  -0. fr_wall_a    OPAQUE   VERT WALL  tk_block_rn  ||< external
-  2  0.210   180.  -0. head         OPAQUE   VERT WALL  tk_block_rn  ||< external
-  3  2.42    180.   0. fr_wall_b    OPAQUE   VERT WALL  tk_block_rn  ||< external
+  1  0.440   180.  -0. fr_wall_a    OPAQUE   VERT WALL  Extwall_ti   ||< external
+  2  0.210   180.  -0. head         OPAQUE   VERT WALL  Extwall_ti   ||< external
+  3  2.42    180.   0. fr_wall_b    OPAQUE   VERT WALL  Extwall_ti   ||< external
   4  5.06     90.  -0. ptn_bath     OPAQUE   VERT -     Parttim      ||< ptn_bath:low_kitchen
   5  0.880     0.  -0. ptn_hall_a   OPAQUE   VERT -     Parttim      ||< ptn_a:lowliving
   6  1.32      0.   0. door_hall    OPAQUE   VERT -     Doorint_sol  ||< door_bath:low_hall
@@ -1415,7 +1415,7 @@ holiday    27 EquiptW   23-24      0.0      0.0       0.40       0.60
  10  4.60      0.  90. bath_ceil    OPAQUE   CEIL -     Ceilti_up    ||< ovr_bath:roof
  11  4.60      0. -90. bath_floor   OPAQUE   FLOR -     Floorti_low  ||< bath_floor:crawl
  12  0.114   180.   0. frame        OPAQUE   VERT F-FRA Window_frme  ||< external
- 13  0.770   180.  -0. sill         OPAQUE   VERT WALL  tk_block_rn  ||< external
+ 13  0.770   180.  -0. sill         OPAQUE   VERT WALL  Extwall_ti   ||< external
  14  0.446   180.   0. glazing      DC_8074_ VERT C-WIN Window_ext   ||< external
  
  Vertices ( index X Y Z) in the zone...
@@ -1768,16 +1768,16 @@ holiday    27 EquiptW   23-24      0.0      0.0       0.40       0.60
  area of 38.0m^2 & approx floor area of 7.13m^2
  low_kitchen describes kitchen for lower flat in the corner
  There is 6.8200m2 of exposed surface area, 6.8200m2 of which is vertical.
- Outside walls are 87.484 % of floor area & avg U of 1.570 & UA of 9.7911
+ Outside walls are 87.484 % of floor area & avg U of 0.264 & UA of 1.6489
  Glazing is 8.1683 % of floor & 8.5396 % facade with avg U of 2.877 & UA of 1.6754
  
  A summary of the surfaces in low_kitchen( 4) follows:
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
-  1  2.86    180.  -0. fr_wall_a    OPAQUE   VERT WALL  tk_block_rn  ||< external
-  2  0.180   180.   0. head         OPAQUE   VERT WALL  tk_block_rn  ||< external
-  3  2.64    180.  -0. fr_wall_b    OPAQUE   VERT WALL  tk_block_rn  ||< external
+  1  2.86    180.  -0. fr_wall_a    OPAQUE   VERT WALL  Extwall_ti   ||< external
+  2  0.180   180.   0. head         OPAQUE   VERT WALL  Extwall_ti   ||< external
+  3  2.64    180.  -0. fr_wall_b    OPAQUE   VERT WALL  Extwall_ti   ||< external
   4  5.06     90.   0. right_wall   OPAQUE   VERT WALL  Partywall_ti ||< identical environment
   5  2.20      0.   0. ptn_liv_a    OPAQUE   VERT -     Parttim      ||< ptn_kitch_a:lowliving
   6  2.64      0.  -0. door_liv     OPAQUE   VERT -     Doorint_sol  ||< door_kit:lowliving
@@ -1786,7 +1786,7 @@ holiday    27 EquiptW   23-24      0.0      0.0       0.40       0.60
   9  7.13      0.  90. kitch_ceil   OPAQUE   CEIL -     Ceilti_up    ||< ovr_kitchen:roof
  10  7.13      0. -90. kitch_floor  OPAQUE   FLOR -     Floorti_low  ||< kitch_floor:crawl
  11  0.138   180.   0. frame        OPAQUE   VERT F-FRA Window_frme  ||< external
- 12  0.420   180.   0. sill         OPAQUE   VERT WALL  tk_block_rn  ||< external
+ 12  0.420   180.   0. sill         OPAQUE   VERT WALL  Extwall_ti   ||< external
  13  0.582   180.   0. glazing      DC_8074_ VERT C-WIN Window_ext   ||< external
  
  Vertices ( index X Y Z) in the zone...
@@ -2522,7 +2522,7 @@ holiday    27 EquiptW   23-24      0.0      0.0       0.40       0.60
  area of 54.5m^2 & approx floor area of 11.2m^2
  low_bedroom describes lower flat bedroom and closet
  There is 11.220m2 of exposed surface area, 11.220m2 of which is vertical.
- Outside walls are 93.315 % of floor area & avg U of 1.569 & UA of 16.368
+ Outside walls are 93.315 % of floor area & avg U of 0.254 & UA of 2.6536
  Glazing is 7.0429 % of floor & 7.0178 % facade with avg U of 2.877 & UA of 2.2651
  
  A summary of the surfaces in low_bedroom( 6) follows:
@@ -2531,11 +2531,11 @@ holiday    27 EquiptW   23-24      0.0      0.0       0.40       0.60
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  1.32    180.   0. ptn_hall_a   OPAQUE   VERT -     Parttim      ||< ptn_br_a:low_hall
   2  6.38     90.   0. ptn_living   OPAQUE   VERT -     Parttim      ||< ptn_br:lowliving
-  3  1.54      0.  -0. bk_fac_a     OPAQUE   VERT WALL  tk_block_rn  ||< external
-  4  0.210     0.  -0. bk_head      OPAQUE   VERT WALL  tk_block_rn  ||< external
-  5  4.18      0.  -0. bk_fac_b     OPAQUE   VERT WALL  tk_block_rn  ||< external
-  6  3.52    270.   0. left_fac     OPAQUE   VERT WALL  tk_block_rn  ||< external
-  7  0.440   360.  -0. left_fac_b   OPAQUE   VERT WALL  tk_block_rn  ||< external
+  3  1.54      0.  -0. bk_fac_a     OPAQUE   VERT WALL  Extwall_ti   ||< external
+  4  0.210     0.  -0. bk_head      OPAQUE   VERT WALL  Extwall_ti   ||< external
+  5  4.18      0.  -0. bk_fac_b     OPAQUE   VERT WALL  Extwall_ti   ||< external
+  6  3.52    270.   0. left_fac     OPAQUE   VERT WALL  Extwall_ti   ||< external
+  7  0.440   360.  -0. left_fac_b   OPAQUE   VERT WALL  Extwall_ti   ||< external
   8  2.86    270.  -0. ptn_stair_a  OPAQUE   VERT -     Parttim      ||< ptn_lowbr:stairs
   9  1.98    270.   0. ptn_stair_b  OPAQUE   VERT -     Parttim      ||< ptn_lwwardr:stairs
  10  3.30    180.   0. ptn_hall_e   OPAQUE   VERT -     Parttim      ||< ptn_br_d:low_hall
@@ -2545,7 +2545,7 @@ holiday    27 EquiptW   23-24      0.0      0.0       0.40       0.60
  14  11.2      0.  90. br_ceiling   OPAQUE   CEIL -     Ceilti_up    ||< ovr_bedroom:roof
  15  11.2      0. -90. br_floor     OPAQUE   FLOR -     Floorti_lowc ||< br_floor:crawl
  16  0.158   360.  -0. frame        OPAQUE   VERT F-FRA Window_frme  ||< external
- 17  0.385   360.  -0. sill         OPAQUE   VERT WALL  tk_block_rn  ||< external
+ 17  0.385   360.  -0. sill         OPAQUE   VERT WALL  Extwall_ti   ||< external
  18  0.787     0.   0. glazing      DC_8074_ VERT C-WIN Window_ext   ||< external
  
  Vertices ( index X Y Z) in the zone...
@@ -2911,7 +2911,7 @@ holiday    27 EquiptW   23-24      0.0      0.0       0.40       0.60
  area of 69.0m^2 & approx floor area of 16.5m^2
  lowliving describes living dining of lower flat
  There is 7.7000m2 of exposed surface area, 7.7000m2 of which is vertical.
- Outside walls are 32.995 % of floor area & avg U of 1.572 & UA of 8.5328
+ Outside walls are 32.995 % of floor area & avg U of 0.298 & UA of 1.6187
  Glazing is 13.814 % of floor & 29.512 % facade with avg U of 2.877 & UA of 6.5370
  
  A summary of the surfaces in lowliving( 7) follows:
@@ -2920,9 +2920,9 @@ holiday    27 EquiptW   23-24      0.0      0.0       0.40       0.60
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  2.20    180.   0. ptn_kitch_a  OPAQUE   VERT -     Parttim      ||< ptn_liv_a:low_kitchen
   2  10.3     90.  -0. right_other  OPAQUE   VERT WALL  Partywall_ti ||< identical environment
-  3  2.20      0.   0. bk_fac_a     OPAQUE   VERT WALL  tk_block_rn  ||< external
-  4  0.480     0.   0. head         OPAQUE   VERT WALL  tk_block_rn  ||< external
-  5  1.98      0.  -0. bk_fac_b     OPAQUE   VERT WALL  tk_block_rn  ||< external
+  3  2.20      0.   0. bk_fac_a     OPAQUE   VERT WALL  Extwall_ti   ||< external
+  4  0.480     0.   0. head         OPAQUE   VERT WALL  Extwall_ti   ||< external
+  5  1.98      0.  -0. bk_fac_b     OPAQUE   VERT WALL  Extwall_ti   ||< external
   6  6.38    270.  -0. ptn_br       OPAQUE   VERT -     Parttim      ||< ptn_living:low_bedroom
   7  3.96    270.  -0. ptn_hall     OPAQUE   VERT -     Parttim      ||< ptn_liv:low_hall
   8  0.880   180.   0. ptn_a        OPAQUE   VERT -     Parttim      ||< ptn_hall_a:bathroom
@@ -2931,7 +2931,7 @@ holiday    27 EquiptW   23-24      0.0      0.0       0.40       0.60
  11  16.5      0.  90. living_ceil  OPAQUE   CEIL -     Ceilti_up    ||< ovr_living:roof
  12  16.5      0. -90. liv_floor    OPAQUE   FLOR -     Floorti_lowc ||< liv_floor:crawl
  13  0.248   360.  -0. frame        OPAQUE   VERT F-FRA Window_frme  ||< external
- 14  0.520     0.   0. sill         OPAQUE   VERT WALL  tk_block_rn  ||< external
+ 14  0.520     0.   0. sill         OPAQUE   VERT WALL  Extwall_ti   ||< external
  15  2.27    360.  -0. glazing      DC_8074_ VERT C-WIN Window_ext   ||< external
  
  Vertices ( index X Y Z) in the zone...
@@ -2981,7 +2981,7 @@ vertex  14    8.60000    7.30000    2.40000   vertex  28    8.56000    7.30000  
  area of 118.m^2 & approx floor area of 48.4m^2
  roof describes cold roof space
  There is 67.404m2 of exposed surface area, 11.706m2 of which is vertical.
- Outside walls are 24.205 % of floor area & avg U of 1.567 & UA of 18.348
+ Outside walls are 24.205 % of floor area & avg U of 0.233 & UA of 2.7231
  Sloped roof is 115.18 % of floor area & avg U of 3.316 & UA of 184.71
  
  A summary of the surfaces in roof( 8) follows:
@@ -2996,13 +2996,13 @@ vertex  14    8.60000    7.30000    2.40000   vertex  28    8.56000    7.30000  
   6  16.5      0. -90. ovr_living   OPAQUE   FLOR -     Floorti_rf   ||< living_ceil:lowliving
   7  27.8    180.  60. roof_a       OPAQUE   SLOP ROOF  Roof         ||< external
   8  27.8      0.  60. roof_back    OPAQUE   SLOP ROOF  Roof         ||< external
-  9  0.183   180.   0. front_a      OPAQUE   VERT WALL  tk_block_rn  ||< external
- 10  0.731   270.  -0. left_b       OPAQUE   VERT WALL  tk_block_rn  ||< external
- 11  1.51     90.   0. right_a      OPAQUE   VERT WALL  tk_block_rn  ||< external
- 12  5.49     90.  -0. right_b      OPAQUE   VERT WALL  tk_block_rn  ||< external
- 13  0.731   270.   0. left_c       OPAQUE   VERT WALL  tk_block_rn  ||< external
- 14  0.183   360.  -0. back_a       OPAQUE   VERT WALL  tk_block_rn  ||< external
- 15  2.88    270.  -0. left         OPAQUE   VERT WALL  tk_block_rn  ||< external
+  9  0.183   180.   0. front_a      OPAQUE   VERT WALL  Extwall_ti   ||< external
+ 10  0.731   270.  -0. left_b       OPAQUE   VERT WALL  Extwall_ti   ||< external
+ 11  1.51     90.   0. right_a      OPAQUE   VERT WALL  Extwall_ti   ||< external
+ 12  5.49     90.  -0. right_b      OPAQUE   VERT WALL  Extwall_ti   ||< external
+ 13  0.731   270.   0. left_c       OPAQUE   VERT WALL  Extwall_ti   ||< external
+ 14  0.183   360.  -0. back_a       OPAQUE   VERT WALL  Extwall_ti   ||< external
+ 15  2.88    270.  -0. left         OPAQUE   VERT WALL  Extwall_ti   ||< external
  16  1.90    270.   0. ptn_stor     OPAQUE   VERT -     Parttim      ||< ptn_stor:stairs
  17  0.760   270.   0. mid_floor    OPAQUE   VERT -     Parttim      ||< mid_floor:stairs
  
@@ -3278,14 +3278,27 @@ holiday     3 EquiptW    0-24      0.0      0.0       0.50       0.50
  In contact with ground 56.340m2.
  There is 145.61m2 of outside surface area, 81.496m2 of which is vertical.
  
- Outside walls are 47.527 % of floor area & avg U of 1.891 & UA of 144.72 & max MLC thickness 0.342
+ Outside walls are 47.527 % of floor area & avg U of 0.851 & UA of 65.116 & max MLC thickness 0.258
  Sloped roof is 39.810 % of floor area & avg U of 2.912 & UA of 186.68
  Glazing is 3.0791 % of floor & 6.0845 % facade with avg U of 2.877 & UA of 14.264
  Ground contact is 34.985 % of floor area & avg U of 0.652 & perimeter 32.200 & max MLC thickness 1.600
- CIBSE ground beta! 3.499 dt 2.703 Ufleft 0.219 Ufright 1.623 Uf 0.355 R extra @ virtual layer 1.279
+ CIBSE ground beta! 3.499 dt 2.619 Ufleft 0.220 Ufright 1.648 Uf 0.363 R extra @ virtual layer 1.219
  
  ____________________________________________________________
  Multi-layer constructions used:
+ 
+ Details of opaque construction: Extwall_ti and overall thickness  0.258
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    68   21.0     0.140   650.  2000. 0.91 0.65   100.  0.15 weatherboard : Weatherboard (source does not clarify what it is)
+    2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3   76    9.5     0.120   540.  1210. 0.90 0.90   576.  0.08 plywood sheathing : Plywood sheathing (UK code)
+    4  294  140.0     0.040    25.  1000. 0.90 0.70    30.  3.50 Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+    5    0   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   112   12.5     0.210   900.  1000. 0.91 0.70    11.  0.06 Plasterboard (UK code) : Plasterboard (UK code)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.233  0.234  0.230 (partition)  0.228
+ Total area of Extwall_ti is     59.64
  
  Details of opaque construction: Partywall_ti and overall thickness  0.236
  
@@ -3460,14 +3473,3 @@ holiday     3 EquiptW    0-24      0.0      0.0       0.50       0.50
     1   36  120.0     1.060  1950.  1000. 0.90 0.40    18.  0.11 concrete block : concrete block (milton keynes)
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.531  3.949  3.094 (partition)  2.679
  Total area of Crawl_wall is     12.88
- 
- Details of opaque construction: tk_block_rn and overall thickness  0.342
- 
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   128   30.0     0.790  1329.  1000. 0.91 0.74    19.  0.04 aged rendering : Aged Rendering
-    2   36  154.0     1.060  1950.  1000. 0.90 0.40    18.  0.15 concrete block : concrete block (milton keynes)
-    3    0  140.0     0.000     0.     0. 0.99 0.99     1.  0.19 air  0.19 0.19 0.19
- Int   108   18.0     0.190   950.   840. 0.91 0.22    11.  0.09 white gypboard : White paintedd Gypboard
- ISO 6946 U values (horiz/upward/downward heat flow)=  1.567  1.645  1.475 (partition)  1.374
- Total area of tk_block_rn is     59.64
