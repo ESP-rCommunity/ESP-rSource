@@ -26,6 +26,8 @@ C ******************** mznuma
 C The main controller for the numerical simulation.
 
       subroutine mznuma
+      use h3kmodule
+
 
 C Include files req'd for deleting temporary files after the simulation is complete.
 #include "H2_wind.h"
@@ -51,7 +53,7 @@ C HOT3000: Fuel cell.
 
 C CWEC Degree Day and ground temperature parameters
 #include "ground_temp_mains_common.h"
-      
+
       integer lnblnk  ! function definition
 
       common/outin/iuout,iuin
@@ -60,7 +62,7 @@ C CWEC Degree Day and ground temperature parameters
       common/tc/itc,icnt
       common/trc/itrc
       COMMON/SAVE/ISAVE
-      
+
       integer ncomp,ncon
       common/c1/ncomp,ncon
       common/c6/indcfg
@@ -251,8 +253,6 @@ C foundshoc will become true if any zones have SHOCC descriptions.
 
 C H3Kreporting object
       CHARACTER*128 H3K_rep_NAME, H3K_rep_value
-      logical rep_xmlstatus ! function indicating if h3kreports is available.
-      logical bH3K_rep_enabled ! function indicating if h3kreports is enabled.
 
 C Expected finish time variables.
       character*24 ectime
@@ -282,7 +282,7 @@ C Flag for whether there is basesimp file
 C Plant network data
       COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
       common/c9/npcomp,nci(mpcom),cdata(mpcom,mmiscd)
-C Flag for whether plant network has storage tank that uses mains make up 
+C Flag for whether plant network has storage tank that uses mains make up
 C water
       logical itank_flag
 
@@ -314,8 +314,19 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
 
-C*h3koutput* Initialize data variables
-      call H3KSTORE_ZERO_DATA
+C Set the H3k reporting on/off
+      IF(isReportingInstalled() .eqv. .false.) THEN
+         call SetReportEnable(.false.)
+      ENDIF
+
+      IF(isH3KEnabled()) THEN
+C Send the simulation information to the h3k report
+         Call UpdateH3kSimInfo(isd1,ism2,isd2,ism2,isds,isdf,ntstep)
+C Initialise the h3k report variables
+         Call UpdateH3kReport
+C*h3koutput* Initialize fortran data variables
+         Call H3KSTORE_ZERO_DATA
+      ENDIF
 
 C Open file to store hvac simulation results. This is only a temporary
 C measure and will be removed once development of the HVAC routines
@@ -332,9 +343,9 @@ C modify coefficients computed in MZCOE1.
         TSTEP=1./FLOAT(NTSTEP)
       ELSE
         TSTEP = 1
-      ENDIF 
+      ENDIF
 
-C Scale MZCOE1 coefficients as necessary      
+C Scale MZCOE1 coefficients as necessary
       CALL MZCOE2(TSTEP)
       DTfalse=TSTEP*3600.0
 
@@ -374,7 +385,7 @@ C multiyear and warn the user.
       call initprj(ncomp)
 
       if(bSHOCCed) then
-        
+
         if ( bMY_sim_enabled ) then
 
 C Running SHOCC in multi-year mode might(?) cause
@@ -449,7 +460,7 @@ C Adjust multi-year simulation start year to account for pre-new-year
 C start-up period.
         if ( bMY_sim_enabled ) then
           iMY_Start_year = iMY_Start_year - 1
-        endif 
+        endif
 
       ENDIF
 
@@ -457,7 +468,7 @@ C Determine indicies of start and end years, with respect to
 C start and end of defined multi-year climate database.
       if ( bMY_sim_enabled ) then
 
-C Start year: Note: result can be less than one      
+C Start year: Note: result can be less than one
         iMY_start_yr_index =
      &        iMY_start_year - iMY_clm_file_years ( 1 ) + 1
 
@@ -473,11 +484,11 @@ C not presently supported.
 C.....H3Kreports.(timesteps).start.................
 C.....Minutes per timetep (building domain)
 C.....-> set name
-      if ( bH3K_rep_enabled() )  then
+      if ( isH3KEnabled() )  then
         WRITE(H3K_rep_NAME,'(A)')'minutes_per_step'
         WRITE(H3K_rep_VALUE,'(f7.3)') 60./real(ntstep)
 C.....-> update meta-data
-        call REP_SET_PARAMETER(
+        call SetReportParameter(
      &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
      &     H3K_rep_value(1:LNBLNK(H3K_rep_VALUE)))
 C.....Timestep averaging parameter
@@ -490,7 +501,7 @@ C  in input.xml )
         WRITE(H3K_rep_VALUE,'(I3)')  idaver
 
 C.....-> update meta-data
-        call REP_SET_PARAMETER(
+        call SetReportParameter(
      &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
      &     H3K_rep_value(1:LNBLNK(H3K_rep_VALUE)))
 
@@ -500,14 +511,14 @@ C.....-> set name
         WRITE(H3K_rep_VALUE,'(I9)') ((isf-iss+1))*NTSTEP*24
 
 C.....-> update meta-data
-        call REP_SET_PARAMETER(
+        call SetReportParameter(
      &     H3K_rep_NAME(1:LNBLNK(H3K_rep_NAME)),
      &     H3K_rep_value(1:LNBLNK(H3K_rep_VALUE)))
 
 
 C.....H3Kreports.(timesteps).end.................
 
-      endif ! <- matches 'if ( bH3K_rep_enabled() )...'
+      endif ! <- matches 'if ( isH3KEnabled() )...'
 
 
 C Check to see if flexible boundary condition file has been defined,
@@ -534,7 +545,7 @@ C Initialize file unit number. This number should correspond
 C to the climate file number. However, the climate file name
 C and number saved in common C22 is used to handle the
 C climate file.
-      iunit=ifil 
+      iunit=ifil
 
 C Simulation year from configuration, if old way uncomment next 3 lines.
 C Determine simulation year from climate file.
@@ -667,7 +678,7 @@ C Open the file for  structured mesh temperatures.
 
 C Flag for whether there is a basesimp file set to false
       bsm_flag = .false.
-C Check and see whether there is actually bsm file and set flag to true      
+C Check and see whether there is actually bsm file and set flag to true
       do 11 ibsm_counter = 1,mcom
         if(iBSIMP(ibsm_counter).eq.1) then
           bsm_flag = .true.
@@ -678,14 +689,14 @@ C Check whether plant network has a storage tank that uses mains make up
 C water
       itank_flag = .false.
       do 12 itank_counter = 1,npcomp
-        iplant_comp_type = NPCDAT(itank_counter,4) 
+        iplant_comp_type = NPCDAT(itank_counter,4)
         if((iplant_comp_type.eq.81).or.
      &     (iplant_comp_type.eq.82).or.
      &      (iplant_comp_type.eq.83).or.
      &     (iplant_comp_type.eq.113).or.
      &      (iplant_comp_type.eq.114)) then
           itank_flag = .true.
-        endif 
+        endif
  12   continue
 
 C If this is a single year simulation, open the climate file. During
@@ -706,7 +717,7 @@ C Take into account weather file location.
 
       endif
 
-C In the case that we have a gshp input file, dhw input file, and/or basesimp 
+C In the case that we have a gshp input file, dhw input file, and/or basesimp
 C input file, then call routines to determine degree days and ground temperature
 C parameters
       if((igshp.eq.1).or.(iDHW_Flag.eq.1).or.
@@ -714,9 +725,9 @@ C parameters
 
 C Degree Days and Monthly Average Ambient Temperature
 c Call to subroutine that calculates the number of annual heating degree days
-c and the average monthly temperatures based on the climate file chosen. 
+c and the average monthly temperatures based on the climate file chosen.
 c These values are required to calculate the mains water temperature.
-c This calculation is performed once per simulation or once per climate file - in the 
+c This calculation is performed once per simulation or once per climate file - in the
 c case of multi-year simulations.
          call CLM_DEG_DAY
 
@@ -726,7 +737,7 @@ C Initialize ground temperature profile parameters
 
 C Start simulation day-loop.
 C (i =curr day, iss = sim start day, isf = finish day)
-      do 10 i=iss,isf 
+      do 10 i=iss,isf
 
 C For multi-year simulaitons, determine the current
 C and future time row years, and the incidies of these
@@ -775,7 +786,7 @@ C Ensure present & future day numbers are between 1 & 365
         if ( bMY_sim_enabled ) THEN
           idyp = i - ( iMY_current_year - iMY_start_year ) * 365
           idyf = i + 1 - ( iMY_future_year - iMY_start_year ) * 365
-        else    
+        else
           idyp=i
           idyf=i+1
 
@@ -821,25 +832,25 @@ C open the approprate climate file.
 
 C Close old file, if necessary.
             if ( iMY_current_yr_index .gt. 1 ) then
-              if ( bMY_clm_file_open ( iMY_current_yr_index - 1) ) 
+              if ( bMY_clm_file_open ( iMY_current_yr_index - 1) )
      &         call ERpFree( iClim , istat )
-            endif 
+            endif
 
 C Open new file.
-            ier=0   
+            ier=0
             call EfOpRan(iClim,cMY_clm_file_names(iMY_current_yr_index),
      &                144,0,IER)
 
-C set flag      
+C set flag
             bMY_clm_file_open ( iMY_current_yr_index ) = .true.
 
-C In the case that we have a gshp input file, dhw input file, and/or basesimp 
+C In the case that we have a gshp input file, dhw input file, and/or basesimp
 C input file, then call routines to determine degree days and ground temperature
 C parameters
             if((igshp.eq.1).or.(iDHW_Flag.eq.1).or.
      &        bsm_flag.or.itank_flag) then
-c If a new climate file is opened, then need to recalculate the number 
-c of annual heating degree days and the average monthly temperatures based on 
+c If a new climate file is opened, then need to recalculate the number
+c of annual heating degree days and the average monthly temperatures based on
 c this new climate information.
               call CLM_DEG_DAY
 
@@ -847,7 +858,7 @@ C Initialize ground temperature profile parameters
               call Ground_Temp_Profile
             endif
 
-          endif 
+          endif
 
         endif
 
@@ -873,10 +884,10 @@ C Open new file.
            call EfOpRan(iClim,cMY_clm_file_names(iMY_future_yr_index),
      &                144,0,IER)
 
-C Set flag 
+C Set flag
             bMY_clm_file_open ( iMY_future_yr_index ) = .true.
           endif
-        endif 
+        endif
 C Future day
         irec=idyf
 
@@ -1048,10 +1059,9 @@ C New day events in SHOCC occur when btimef first exceeds 24.0 ...
             if(btimef.gt.24.0)btimef=btimef-24.
 
 C H3Kreports: send simulation time to reporting object
-
-            if ( bH3K_rep_enabled() ) then
+            if ( isH3KEnabled() ) Then
               call H3K_Report_time(
-     &          btimep, btimef, ihrp, ihrf, idyp, idyf, its, ntstep, 
+     &          btimep, btimef, ihrp, ihrf, idyp, idyf, its, ntstep,
      &          nsinc )
             endif
 
@@ -1069,7 +1079,7 @@ C           write(itu,*) 'TS:',nsinc,' hr:',ihrp,' dy:',idyp,
 C     &                ' yr:', iMY_current_year
 C           call edisp(itu,outs)
 
-C Determine climatic parameters at the present and future time row. 
+C Determine climatic parameters at the present and future time row.
             call mzclmpt(1)
 
             if(indcfg.eq.2)goto 401
@@ -1220,10 +1230,10 @@ C Calculate roaming day of year
                   IRoamD=LDYS(IPDR)
                   IRoamM=LMTS(IPDR)
                   CALL EDAY(IRoamD,IRoamM,IYDNRoam)
-                  RTIME=REAL(IYDNRoam)+XLHRS(IPDR)/24.0 ! Calculate roaming time 
+                  RTIME=REAL(IYDNRoam)+XLHRS(IPDR)/24.0 ! Calculate roaming time
                   IF(S_TIME.LT.RTIME)THEN ! Roaming not started yet
                     CONTINUE
-                  ELSEIF(S_TIME.GE.RTIME)THEN 
+                  ELSEIF(S_TIME.GE.RTIME)THEN
                     DO 131 ISurf=1,MS
                       PAZI(ICOMP,ISurf)=PAZIO(ICOMP,ISurf)+LORNT(IPDR)
                       IF(PAZI(ICOMP,ISurf).GT.360.)
@@ -1314,7 +1324,7 @@ C Find number of data blocks per hour to be saved.
               ENDIF
 
 C transport miscellaneous simulation data to reporting object
-              if ( bH3K_rep_enabled() ) then
+              if ( isH3KEnabled() ) then
                  call H3K_transport_build_data(icomp)
                  if (IAIRN .ne. 0) THEn
                     call H3K_transport_mfn_data()
@@ -1355,7 +1365,7 @@ C Call DHW simulation controller if DHW models are active.
             endif
 
 C Transport climate data to reporting object
-            if ( bH3K_rep_enabled() )
+            if ( isH3KEnabled() )
      &          call H3K_transport_climi_data()
 
 C Perform ground simulation for the current time step
@@ -1529,7 +1539,7 @@ C  don't write plant libraries if save-levels 0 or 5 are active
               endif
 
 C write out plant results
-              if ( bH3K_rep_enabled() ) call H3KSTORE_Plant_TimeSteps()
+              if ( isH3KEnabled() ) call H3KSTORE_Plant_TimeSteps()
 
 C Post-process and save electrical network results:
               IF(IENTXIST.GT.0) then
@@ -1538,8 +1548,8 @@ C Database is not written if save-levels 0 or 5 are active.
                   CALL ENETLIBSV
                 endif
 
-C Call h3k reports electrical data transport routines 
-                if ( bH3K_rep_enabled() )
+C Call h3k reports electrical data transport routines
+                if ( isH3KEnabled() )
      &                call H3K_transport_electric_data()
               endif
 
@@ -1562,11 +1572,11 @@ C building-side only electrical network solution (no plant).
             IF(IENTXIST.GT.0.AND.INDCFG.EQ.1) THEN
               CALL ENETSOLV
 
-C Database is not written if save-levels 0 or 5 are active. 
+C Database is not written if save-levels 0 or 5 are active.
               if ( ISAVE .ne. 0 .and. isave .ne.5 ) then
                 CALL ENETLIBSV
               endif
-              if ( bH3K_rep_enabled() ) THEN
+              if ( isH3KEnabled() ) THEN
                 call H3K_transport_electric_data()
               ENDIF
             ENDIF
@@ -1575,13 +1585,13 @@ C For global control, increment pass counter.
             if(glbrwd)then
               ipassr=ipassr+1
               ksave=k
-              goto 87 
+              goto 87
             else
               ipassr=1
             endif
 
 C Save boundary condition data, if it exists
-            if ( bH3K_rep_enabled() ) call report_BC_data()
+            if ( isH3KEnabled() ) call report_BC_data()
 
 C Call SiteUtilities procedure to characterize purchased energy
 C usage
@@ -1604,14 +1614,14 @@ C.....Check to see present time is close to midnight
             endif
 
 C.....Update reports.
-            if ( bInStartup() ) then
-              iStartupFlag = 1
-            else
-              iStartupFlag = 0
-            endif
+!            if ( bInStartup() ) then
+!              iStartupFlag = 1
+!              iStartupFlag = 0
+!           endif
 
 C << NOTE: dummy call REP_UPDATE only has 3 parameters >>
-            call REP_UPDATE(nsinc,btimep,myday, iStartupFlag) ! <- store logged data
+            call ReportNextTimeStep(nsinc,btimep,myday,bInStartup())
+!            call REP_UPDATE(nsinc,btimep,myday, iStartupFlag) ! <- store logged data
 
    30     continue
 
@@ -1772,21 +1782,25 @@ C of modifications on simulation times.
       CALL EDISP(IUOUT,outs)
 #endif
 
+
 C H3Kreports.(SUMMARY).start......................
 C The following code is used to process and export
 C the data collected by the reporting object.
 C
 C Any changes to this code should be made within
 C the H3Kreports demarcaration comments
+C
 C Set the output root file name to the root file name of the 
 C building results library file ***(in work)***
       call GETTOKENS(sblres(1),IW,LocalWords)
       iRootLen=lnblnk(LocalWords(IW))
-	  iRootLen=iRootLen-4
+      iRootLen=iRootLen-4
 
       write(cOutputRoot,'(A)'),LocalWords(IW)(1:iRootLen)
-      CALL REP_XML_SUMMARY(cOutputRoot(1:iRootLen))
-      CALL REP_CLEANUP_FILES
+c      CALL GenerateOutput
+      CALL GenerateOutput(cOutputRoot(1:iRootLen))
+c      CALL REP_XML_SUMMARY(cOutputRoot(1:iRootLen))
+c      CALL REP_CLEANUP_FILES
 
 C........H3Kreports.(SUMMARY).end........................
 
@@ -1795,20 +1809,20 @@ C........H3Kreports.(SUMMARY).end........................
 C SUN F90 has spotty support for cpu_time intrinsic
 #ifdef F90
 #else
-C Use function rep_xmlstatus() to report if h3k reports is available.
+C Use function isReportingInstalled() to report if h3k reports is available.
 C If so, write out xml processing runtime - useful for investating
 C the impact of modifications on simulation times.
-      if ( rep_xmlstatus() ) then
+      if ( isReportingInstalled() ) then
          CALL cpu_time(sec_c)
          write(outs,'(A,F7.2,A)')
      &        'XML postprocessor cpu runtime: ',sec_c-sec_b,' seconds'
          CALL EDISP(IUOUT,outs)
          CALL EDISP(IOUTS,' ')
       endif
-#endif 
+#endif
 
 
-C Delete temporary file created for boundary conditions, if one exists.        
+C Delete temporary file created for boundary conditions, if one exists.
       if ( bBC_data_defined ) call cleanup_BC_data()
 
 C Delete temporary file created for lookup table facility if applicable

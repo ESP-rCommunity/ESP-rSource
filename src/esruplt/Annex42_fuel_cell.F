@@ -1,12 +1,12 @@
 C This file is part of the ESP-r system.
-C Copyright CANMET Energy Technology Centre 
+C Copyright CANMET Energy Technology Centre
 C Natural Resources Canada, Government of Canada
-C 2004-2007. Please Contact Ian Beausoliel-Morrison for details 
+C 2004-2007. Please Contact Ian Beausoliel-Morrison for details
 C concerning licensing.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -101,7 +101,7 @@ C Connecting node data.
       REAL CONVAR(MPCON,MCONVR)
       INTEGER ICONTP(MPCON),ICONDX(MPCOM,MNODEC,MPCONC)
 
-C Flag to enable inter-domain iteration 
+C Flag to enable inter-domain iteration
       common / Plt_Elec_Net / bInter_domain_iteration
       logical bInter_domain_iteration
 
@@ -314,9 +314,9 @@ C PCU.
       REAL PCU_u2               ! Ditto.
       INTEGER PCU_heat_to_where ! Indicates where heat loss from PCU goes.
 
-C Heat extraction for stack  cooling  (PEMFC)  
+C Heat extraction for stack  cooling  (PEMFC)
       COMMON/PEMFC_STACK_COOL/stack_cooling_present,
-     &                        T_stack,T_stack_0, 
+     &                        T_stack,T_stack_0,
      &                        s_cool_e_0,s_cool_e_1,
      &                        s_cool_e_2,s_cool_e_3,
      &                        UA_s_cool,
@@ -339,19 +339,19 @@ C Heat extraction for stack  cooling  (PEMFC)
       REAL s_cool_e_3            ! Ditto
 
       REAL UA_s_cool             ! UA value of stack cooling heat exchanger
-      REAL Mdot_s_cool        ! Massflow rate in stack cooling heat exchanger 
+      REAL Mdot_s_cool        ! Massflow rate in stack cooling heat exchanger
       REAL UA_s_cogen            ! UA value of heat exchanger for cogen from stack cooling
-      REAL Mdot_s_cogen       ! Massflow rate in heat exchanger for cogen from stack cooling 
+      REAL Mdot_s_cogen       ! Massflow rate in heat exchanger for cogen from stack cooling
       REAL Mdot_s_cogen_0        ! Nominal massflow rate in heat exchanger for cogen from stack cooling
       REAL A_s_cogen             ! Area of heat exchanger for cogen from stack cooling
       REAL R_s_cogen             ! Constant part of heat exchanger resistant
       REAL h_s_cogen_0           ! Nominal film heat transfer coefficient
-      REAL n_s_cogen             ! Exponent to water flow rate   
+      REAL n_s_cogen             ! Exponent to water flow rate
       REAL air_cool_f_0          ! Coeff to polynomial to calculate electrical power consumption of air cooler fan
       REAL air_cool_f_1          ! Ditto
       REAL air_cool_f_2          ! Ditto
       REAL s_cool_pump_heat_loss ! Ratio of heat loss of the stack cooling pump
-      REAL s_cool_pump_Pel       ! Electrical power consumption of the stack cooling pump 
+      REAL s_cool_pump_Pel       ! Electrical power consumption of the stack cooling pump
       INTEGER cogen_HX_state     ! state variable of the cogen-HX of stack cooling system
       LOGICAL Calc_UA_s_cogen    ! Flag to indicat whether UA_s_cogen has to be calculated in each timestep
 
@@ -519,7 +519,7 @@ C-------------------------------------------------------------------------------
 
 
 C=============
-C FUEL SUPPLY 
+C FUEL SUPPLY
 c=============
 
 C---------------------------------------------------------------------------------
@@ -614,7 +614,7 @@ C-------------------------------------------------------------------------------
 
 C---------------------------------------------------------------------------------
 C Determine method specified by user for establishing air supply to FCPM and
-C assign user-specified air-supply coefficients. 
+C assign user-specified air-supply coefficients.
 C---------------------------------------------------------------------------------
       FCPM_air_supply_method = INT( ADATA(IPCOMP,43) )
       FCPM_air_0             = ADATA(IPCOMP,44)
@@ -778,7 +778,7 @@ C=========
         WRITE(IUOUT,*)
      &' SOFC_A42_static: battery capacity must not be zero!'
         WRITE(IUOUT,*)' It has been set to 1.E-5 J'
-      ENDIF   
+      ENDIF
       battery_max_charge_rate    = ADATA(IPCOMP,105)
       battery_max_discharge_rate = ADATA(IPCOMP,106)
       battery_charge_eff         = ADATA(IPCOMP,107)
@@ -801,7 +801,7 @@ C STACK COOLING SYSTEM (PEMFC)
 C=============================
       stack_cooling_present = INT(ADATA(IPCOMP,115))
       SELECT CASE (stack_cooling_present)
-      CASE (s_cool_yes)  
+      CASE (s_cool_yes)
         T_stack               = ADATA(IPCOMP,116)
         T_stack_0             = ADATA(IPCOMP,117)
 
@@ -811,12 +811,12 @@ C=============================
         s_cool_e_3            = ADATA(IPCOMP,121)
         UA_s_cool             = ADATA(IPCOMP,122)
         Mdot_s_cool           = ADATA(IPCOMP,123)
-        CALL ECLOSE(Mdot_s_cool, 0.,1.E-12,CLOSE) 
+        CALL ECLOSE(Mdot_s_cool, 0.,1.E-12,CLOSE)
         IF (CLOSE) THEN                                 ! Flow in stack cool heat exchanger too small
            stack_cooling_present=s_cool_no              ! --> no stack cooling
         ENDIF
         UA_s_cogen            = ADATA(IPCOMP,124)
-        CALL ECLOSE(UA_s_cogen, 0.,1.E-12,Calc_UA_s_cogen) 
+        CALL ECLOSE(UA_s_cogen, 0.,1.E-12,Calc_UA_s_cogen)
 
         Mdot_s_cogen_0        = ADATA(IPCOMP,125)
         A_s_cogen             = ADATA(IPCOMP,126)
@@ -874,6 +874,7 @@ C         then flows to connected plant components.
 C -------------------------------------------------------------------------------------------
 
       SUBROUTINE SOFC_A42_coeffgen(IPCOMP,COUT,ISTATS)
+      use h3kmodule
       IMPLICIT NONE
 #include "Annex42_fuel_cell.h"
 #include "plant.h"
@@ -916,7 +917,7 @@ C Simulation time step data.
       INTEGER IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
 C Plant component pointer.
-      COMMON/C12PS/NPCDAT,IPOFS1,IPOFS2 
+      COMMON/C12PS/NPCDAT,IPOFS1,IPOFS2
       INTEGER NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
 
 C Iteration control.
@@ -959,11 +960,11 @@ C Plant component ASCII names.
 
 C Electrical domain data.
       common/elpcp/
-     &     NPEL,         ! number of "electrified" plant components 
+     &     NPEL,         ! number of "electrified" plant components
      &     PFP,          ! power factor of componet i (0->1)
      &     IPFP,         ! integer indicating if power factor lags (-1) or leads (+1)
      &     PWRP,         ! real power consumption of component (generation is -ive)
-     &     BVOLTP,       ! opertional voltage of component 
+     &     BVOLTP,       ! opertional voltage of component
      &     IPHP          ! phase component is connected to -> dummy variable
       INTEGER NPEL,IPFP(mpcom),IPHP(mpcom)
       REAL PFP(mpcom),PWRP(mpcom),BVOLTP(mpcom)
@@ -1176,9 +1177,9 @@ C PCU.
       REAL PCU_u2               ! Ditto.
       INTEGER PCU_heat_to_where ! Indicates where heat loss from PCU goes.
 
-C  Stack  cooling system  (PEMFC)  
+C  Stack  cooling system  (PEMFC)
       COMMON/PEMFC_STACK_COOL/stack_cooling_present,
-     &                        T_stack,T_stack_0, 
+     &                        T_stack,T_stack_0,
      &                        s_cool_e_0,s_cool_e_1,
      &                        s_cool_e_2,s_cool_e_3,
      &                        UA_s_cool,
@@ -1200,19 +1201,19 @@ C  Stack  cooling system  (PEMFC)
       REAL s_cool_e_3            ! Ditto
 
       REAL UA_s_cool             ! UA value of stack cooling heat exchanger
-      REAL Mdot_s_cool        ! Massflow rate in stack cooling heat exchanger 
+      REAL Mdot_s_cool        ! Massflow rate in stack cooling heat exchanger
       REAL UA_s_cogen            ! UA value of heat exchanger for cogen from stack cooling
-      REAL Mdot_s_cogen       ! Massflow rate in heat exchanger for cogen from stack cooling 
+      REAL Mdot_s_cogen       ! Massflow rate in heat exchanger for cogen from stack cooling
       REAL Mdot_s_cogen_0        ! Nominal massflow rate in heat exchanger for cogen from stack cooling
       REAL A_s_cogen             ! Area of heat exchanger for cogen from stack cooling
       REAL R_s_cogen             ! Constant part of heat exchanger resistant
       REAL h_s_cogen_0           ! Nominal film heat transfer coefficient
-      REAL n_s_cogen             ! Exponent to water flow rate   
+      REAL n_s_cogen             ! Exponent to water flow rate
       REAL air_cool_f_0          ! Coeff to polynomial to calculate electrical power consumption of air cooler fan
       REAL air_cool_f_1          ! Ditto
       REAL air_cool_f_2          ! Ditto
       REAL s_cool_pump_heat_loss ! Ratio of heat loss of the stack cooling pump
-      REAL s_cool_pump_Pel       ! Electrical power consumption of the stack cooling pump 
+      REAL s_cool_pump_Pel       ! Electrical power consumption of the stack cooling pump
       INTEGER cogen_HX_state     ! state variable of the cogen-HX of stack cooling system
       LOGICAL Calc_UA_s_cogen    ! Flag to indicat whether UA_s_cogen has to be calculated in each timestep
 
@@ -1243,7 +1244,7 @@ C Bookeeping variables:
                                  ! period (=.TRUE. when in start-up period).
       INTEGER month_mains        ! The month number (for the purposes of calculating the water mains temp).
       INTEGER day_mains          ! The day of the month (not used, but returned by a subroutine call).
-      CHARACTER*128 char_temp
+      INTEGER iNameLength        ! Used for the reporting
 
 C Variables related to electrical calculations:
       REAL eta_el                ! FCPM elec efficiency.
@@ -1333,7 +1334,7 @@ C Variables for modelling air supply blower:
       REAL blower_Pel            ! Elec power draw of air supply blower (W).
       SAVE blower_Pel            ! Variable saved as calculation of DC power flowing into PCU is iterative.
       REAL blower_q_loss         ! Heat loss from air supply blower to containing room (W).
-      REAL q_recover_to_air      ! Heat losses from auxiliary burner, battery, and PCU 
+      REAL q_recover_to_air      ! Heat losses from auxiliary burner, battery, and PCU
                                  ! that are recovered to heat the air at the FCPM inlet (W).
 
 C Variables for FCPM exhaust gases:
@@ -1391,7 +1392,7 @@ C Variables use in modelling auxiliary burner:
       SAVE auxburn_Pel           ! Variable saved as calculation of DC power flowing into PCU is iterative.
       REAL auxburn_skin_loss     ! Skin losses from auxiliary burner (W). This value is saved
       SAVE auxburn_skin_loss     ! since its value is required on the plant iteration following its
-                                 ! calculation. 
+                                 ! calculation.
       REAL T_auxburn_exh         ! Temp of auxiliary burner exhaust (oC).
       REAL C_auxburn             ! Heat capacity reate of aux burner exhaust gases (W/K).
       REAL T_auxburn_exh_guess
@@ -1423,16 +1424,16 @@ C Variables related to modelling PEM stack cooling:
       REAL Ndot_s_cool_out_cp    ! Heat capacity rate (W/K) water stream leaving stack cooling HX
       REAL Ndot_cogen_cp         ! Heat capacity rate (W/K) water stream entering cogen HX of stack cooling system
       REAL alpha_s_cool_HX       ! Coefficient of stack cooling HX
-      REAL h_s_cogen             ! Flow dependent film heat transfer coefficient in cogen HX of stack cooling system 
+      REAL h_s_cogen             ! Flow dependent film heat transfer coefficient in cogen HX of stack cooling system
       REAL alpha_cogen_HX        ! Coefficient of cogen HX of stack cooling system
       REAL beta_cogen_HX         ! ditto
       REAL T_21,T_22,T_23,T_25   ! Temperatures in stack cooling circuit.
       REAL T_23_nobypass,        ! Intermediate quantities for modelling stack cooling circuit.
      &     T_24_required
-      REAL q_s_cool              ! Heat to be extracted for stack cooling 
+      REAL q_s_cool              ! Heat to be extracted for stack cooling
       REAL q_s_cogen             ! Heat used for cogen from stack cooling
       REAL q_s_cool_air          ! Heat to be evacuated by air cooler
-      REAL P_air_el              ! Electrical power consumption of air cooler fan 
+      REAL P_air_el              ! Electrical power consumption of air cooler fan
       SAVE P_air_el
       REAL cp_21,cp_22,cp_25     ! Heat capacities at state points 21, 22 and 25
 
@@ -1749,7 +1750,7 @@ C Refer to section 5.3 and section 13 of the model spec.
 C---------------------------------------------------------------------------------
 C-------Estimate the gross AC power that must be produced by the PCU.
         AC_required_from_PCU = AC_demand_net + Pel_ancAC + blower_Pel
-     &                         + comp_Pel + pump_Pel + auxburn_Pel 
+     &                         + comp_Pel + pump_Pel + auxburn_Pel
      &                         + P_air_el + s_cool_pump_Pel
      &                         + Dilution_fanpower + HRV_fanpower
 C-------Update estimate of DC power that has to flow into PCU to meet net AC demand.
@@ -1797,7 +1798,7 @@ C the battery. The battery is subject to operating constraints. Refer to section
 C 12 of the model spec.  PCDATP(IPCOMP,6) represents the battery's SOC (fraction
 C of energy capacity) at the end of the last time-step/beginning of the current
 C time-step. Power drawn from the battery is treated as a positive flow and power
-C sent to charge the battery is treated as a negative flow. 
+C sent to charge the battery is treated as a negative flow.
 C---------------------------------------------------------------------------------
 C-------Battery's SOC at beginning of time-step. Initialize to user-input
 C-------if this is first time-step of simulation.
@@ -1890,7 +1891,7 @@ C-------------------------------------------------------------------------------
      &                  *FCPM_degrade_optime )
         IF ( eta_el <= 0. .or. eta_el > 1. ) THEN
           WRITE(IUOUT,*) ' SOFC_A42_coeffgen: FC elec eff =',eta_el
-          WRITE(IUOUT,*) ' This is unrealistic. Adjust coeffs.' 
+          WRITE(IUOUT,*) ' This is unrealistic. Adjust coeffs.'
           STOP ' SOFC_A42_coeffgen: unresolvable error'
         ENDIF
 
@@ -1966,7 +1967,7 @@ C-------------------------------------------------------------------------------
 C Calculate the heat loss from the compressor to the containing room (W). This
 C will be added as a source term to the energy balance of the containing room.
 C---------------------------------------------------------------------------------
-        comp_q_loss = Compressor_heat_loss * comp_Pel  
+        comp_q_loss = Compressor_heat_loss * comp_Pel
 
 
 C---------------------------------------------------------------------------------
@@ -2110,7 +2111,7 @@ C-------------------------------------------------------------------------------
 C Calculate the air supply rate to the FCPM and the excess air ratio
 C (section 5.6).
 C---------------------------------------------------------------------------------
-        SELECT CASE (FCPM_air_supply_method) 
+        SELECT CASE (FCPM_air_supply_method)
 
         CASE (const_excess_air_ratio)
           lambda_FCPM = FCPM_air_0
@@ -2156,7 +2157,7 @@ C Calculate the heat loss from the air supply blower to the containing room (W).
 C This will be added as a source term to the energy balance of the containing
 C room.
 C---------------------------------------------------------------------------------
-        blower_q_loss = Blower_heat_loss * blower_Pel  
+        blower_q_loss = Blower_heat_loss * blower_Pel
 
 
 C---------------------------------------------------------------------------------
@@ -2267,7 +2268,7 @@ C-------------------------------------------------------------------------------
 C Calculate the heat loss from the pump to the containing room (W). This
 C will be added as a source term to the energy balance of the containing room.
 C---------------------------------------------------------------------------------
-        pump_q_loss = Pump_heat_loss * pump_Pel  
+        pump_q_loss = Pump_heat_loss * pump_Pel
 
 
 C---------------------------------------------------------------------------------
@@ -2373,7 +2374,7 @@ C-------------------------------------------------------------------------------
         IF(T_FCPM_exh_guess<100.) THEN
           T_FCPM_exh_guess = 300.  ! Should only be necessary on first pass through this sub.
         END IF
-        deltaH_FCPM_exh = 
+        deltaH_FCPM_exh =
      &       Ndot_FCPMexh_N2*Shomate(deltaH,T_FCPM_exh_guess,N2,IUOUT)
      &     + Ndot_FCPMexh_Ar*Shomate(deltaH,T_FCPM_exh_guess,Ar,IUOUT)
      &     + Ndot_FCPMexh_O2*Shomate(deltaH,T_FCPM_exh_guess,O2,IUOUT)
@@ -2690,7 +2691,7 @@ C-------------------------------------------------------------------------------
         IF(T_auxburn_exh_guess<100.) THEN
           T_auxburn_exh_guess = 500.  ! Should only be necessary on first pass through this sub.
         END IF
-        deltaH_auxburn_exh = 
+        deltaH_auxburn_exh =
      &       Ndot_auxburnexh_N2
      &                    *Shomate(deltaH,T_auxburn_exh_guess,N2,IUOUT)
      &     + Ndot_auxburnexh_Ar
@@ -2920,7 +2921,7 @@ C Calculate the heat transfer from the gas to the water. This is not used in the
 C coefficients of the energy balance equations which are subsequently formed.
 C Rather, the heat transfer is calculated here simply for outputting to the
 C results file. For the condensing HX method the sensible and latent components
-C of the heat transfer are also calculated. This is necessary for the 
+C of the heat transfer are also calculated. This is necessary for the
 C establishment of the coefficients for the energy balances. These heat transfers
 C are calculated using temperatures at the previous iteration. Once the solution
 C converges these heat transfers should equal the converged solution.
@@ -3220,7 +3221,7 @@ C-------------------------------------------------------------------------------
           ELSE
             cp_21 = SHTFLD( 3,T_21 )
             cp_22 = SHTFLD( 3,T_22 )
-            cp_25 = SHTFLD( 3,T_25 ) 
+            cp_25 = SHTFLD( 3,T_25 )
           ENDIF
 
 
@@ -3253,7 +3254,7 @@ C-------------------------------------------------------------------------------
 C-----------Determine UA value of external HX: either user input or calculated.
             IF (Calc_UA_s_cogen) THEN
               h_s_cogen  = h_s_cogen_0*
-     &                     ( Mdot_s_cogen / Mdot_s_cogen_0 )**n_s_cogen 
+     &                     ( Mdot_s_cogen / Mdot_s_cogen_0 )**n_s_cogen
               UA_s_cogen = 1. / ( 1./( A_s_cogen*h_s_cogen )
      &                            + R_s_cogen )
             ENDIF
@@ -3283,10 +3284,10 @@ C-------------------------------------------------------------------------------
               cogen_HX_state = no_bypass
             ENDIF
 C---------------------------------------------------------------------------------
-C If the water in the heat recovery loop is hotter then in the stack cooling loop 
-C then heat would be transfered in the wrong direction. To prevent from this the 
+C If the water in the heat recovery loop is hotter then in the stack cooling loop
+C then heat would be transfered in the wrong direction. To prevent from this the
 C controller totally opens the bypass which has the same effect as if no water flows
-C in the heat recovery loop.     
+C in the heat recovery loop.
 C---------------------------------------------------------------------------------
 
             IF ( T_23_nobypass > T_22) THEN
@@ -3316,7 +3317,7 @@ C---------Heat that must be rejected from stack loop water via air cooler.
           IF( q_s_cool_air<0. ) q_s_cool_air = 0.
 C---------AC power draw of air cooler fan.
           P_air_el= ( air_cool_f_0                       ! power consumption of the cooler fan
-     &              + air_cool_f_1*q_s_cool_air  
+     &              + air_cool_f_1*q_s_cool_air
      &              + air_cool_f_2*q_s_cool_air**2.)
 C---------Air cooler also rejects the heat generated by the fan.
           q_s_cool_air = q_s_cool_air + P_air_el
@@ -3334,7 +3335,7 @@ C Calculate the net AC production from the FC-cogen device. This is the gross AC
 C produced by the PCU less the draws of the AC-powered ancillaries.
 C---------------------------------------------------------------------------------
         AC_production_net = AC_production_gross - Pel_ancAC - blower_Pel
-     &                      - comp_Pel - pump_Pel - auxburn_Pel 
+     &                      - comp_Pel - pump_Pel - auxburn_Pel
      &                      - P_air_el - s_cool_pump_Pel
      &                      - Dilution_fanpower - HRV_fanpower
 
@@ -3397,7 +3398,7 @@ C========================================================
      &                     ( ( Ndot_FCPM_fuel + Ndot_auxburn_fuel )
      &                       * LHV_fuel
      &                     )
-        LHV_to_therm_eff = q_HX / 
+        LHV_to_therm_eff = q_HX /
      &                     ( ( Ndot_FCPM_fuel + Ndot_auxburn_fuel )
      &                       * LHV_fuel
      &                     )
@@ -3486,7 +3487,7 @@ C---------CV7 (HX-gas).
           COUT(13) = HX_eff * C_min / C_gas - 1.      ! Coupling to gas inlet temp.
           COUT(14) = 1.                               ! Self-coupling.
           COUT(38) = HX_eff * C_min / C_gas           ! RHS (Cannot cross-couple to cold
-     &               * T_HX_water_in                  ! water inlet since only CV6 is physically                           
+     &               * T_HX_water_in                  ! water inlet since only CV6 is physically
                                                       ! connected to water inlet, so this
                                                       ! this appears instead on RHS.
 
@@ -3544,7 +3545,7 @@ C-----------CV7 (HX-gas).
             COUT(13) = ( C_gas/C_water -1. ) /
      &                 ( (  EXP ( UA_HX * (1./C_gas - 1./C_water) )  ) /
      &                   (  EXP (   ( UA_HX * Q_HX_latent     )
-     &                            / ( C_water * Q_HX_sensible ) ) )  
+     &                            / ( C_water * Q_HX_sensible ) ) )
      &                   - C_gas / C_water )
             COUT(14) = 1.
             COUT(38) = T_HX_water_in *
@@ -3555,14 +3556,14 @@ C-----------CV7 (HX-gas).
      &                 /
      &                 ( (  EXP ( UA_HX * (1./C_gas - 1./C_water) )  ) /
      &                   (  EXP (   ( UA_HX * Q_HX_latent     )
-     &                            / ( C_water * Q_HX_sensible ) ) )  
+     &                            / ( C_water * Q_HX_sensible ) ) )
      &                   - C_gas / C_water )
      &                -
      &                  ( Q_HX_latent / C_water )
      &                  /
      &                 ( (  EXP ( UA_HX * (1./C_gas - 1./C_water) )  ) /
      &                   (  EXP (   ( UA_HX * Q_HX_latent     )
-     &                            / ( C_water * Q_HX_sensible ) ) )  
+     &                            / ( C_water * Q_HX_sensible ) ) )
      &                   - C_gas / C_water )
           END IF
 
@@ -3658,7 +3659,7 @@ C CV14 (stack cooling system; outlet temperature of cogen HX (T_26))
             COUT(29) = 1.                                       ! self-coupling
             COUT(31) = -1.                                      ! cross coupling to cold water inlet
             COUT(45) = 0.                                       ! RHS
-          END SELECT                                       
+          END SELECT
 
         CASE (s_cool_no)
 C Stack cooling system is not present: coefficients are set to solve a temperature of -99.
@@ -3667,12 +3668,12 @@ C "flow through" in that the temperature of the water exiting is equal to that o
 C the water entering.
 C CV10  (stack cooling system; stack_HX inlet (T_21))
           COUT(19) = 1.                                       ! self coupling
-          COUT(20) = 0.                                       ! cross coupling to stack_HX outlet (T_22) 
+          COUT(20) = 0.                                       ! cross coupling to stack_HX outlet (T_22)
           COUT(41) = -99                                      ! RHS
 C CV11 (stack cooling system; stack_HX outlet (T_22))
           COUT(21) = 1.                                       ! self coupling
           COUT(42) = -99.                                     !RHS
-     &                   
+     &
 C CV12 (stack cooling system; outlet temperature of cogen_HX (T_23)
           COUT(22) = 0.                                       ! cross-coupling to stack HX inlet
           COUT(23) = 0.                                       ! cross-coupling to stack HX outlet
@@ -3690,7 +3691,7 @@ C CV14 (stack cooling system; outlet temperature of cogen HX (T_26))
           COUT(45) = 0.                                       ! RHS
 
         CASE DEFAULT
-        END SELECT 
+        END SELECT
 
 
 C---------------------------------------------------------------------------------
@@ -3847,7 +3848,7 @@ C CV9 (HRV).
         COUT(40) = 0.
 C CV10  (stack cooling system; stack_HX inlet (T_21))
         COUT(19) = 1.                                       ! self coupling
-        COUT(20) = 0.                                       ! cross coupling to stack_HX outlet (T_22) 
+        COUT(20) = 0.                                       ! cross coupling to stack_HX outlet (T_22)
         COUT(41) = -99.                                     ! RHS
 C CV11 (stack cooling system; stack_HX outlet (T_22))
         COUT(21) = 1.                                       ! self coupling
@@ -4009,7 +4010,7 @@ C CV9 (HRV).
         COUT(40) = 0.
 C CV10  (stack cooling system; stack_HX inlet (T_21))
         COUT(19) = 1.                                       ! self coupling
-        COUT(20) = 0.                                       ! cross coupling to stack_HX outlet (T_22) 
+        COUT(20) = 0.                                       ! cross coupling to stack_HX outlet (T_22)
         COUT(41) = -99.                                     ! RHS
 C CV11 (stack cooling system; stack_HX outlet (T_22))
         COUT(21) = 1.                                       ! self coupling
@@ -4160,7 +4161,7 @@ C CV9 (HRV).
         COUT(40) = 0.
 C CV10  (stack cooling system; stack_HX inlet (T_21))
         COUT(19) = 1.                                       ! self coupling
-        COUT(20) = 0.                                       ! cross coupling to stack_HX outlet (T_22) 
+        COUT(20) = 0.                                       ! cross coupling to stack_HX outlet (T_22)
         COUT(41) = -99.                                     ! RHS
 C CV11 (stack cooling system; stack_HX outlet (T_22))
         COUT(21) = 1.                                       ! self coupling
@@ -4311,7 +4312,7 @@ C CV10  (stack cooling system; stack_HX inlet (T_21))
 C CV11 (stack cooling system; stack_HX outlet (T_22))
         COUT(21) = 1.
         COUT(42) = 0.
-     &                   
+     &
 C CV12 (stack cooling system; outlet temperature of cogen_HX (T_23)
         COUT(22) = 0.
         COUT(23) = 0.
@@ -4342,322 +4343,252 @@ C Make select results available in XML and CVS output.
 C---------------------------------------------------------------------------------
       IF (ISTATS==1) THEN
 C-------FCPM.
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/A_Pel'
-        call add_to_xml_reporting( Pel, char_temp, 'units', '(W)',
-     &        'SOFC-A42: DC power delivered by FCPM' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/eta_el'
-        call add_to_xml_reporting( eta_el, char_temp, 'units', '(%LHV)',
-     &        'SOFC-A42: Electrical efficiency of FCPM' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/Ndot_FCPM_fuel'
-        call add_to_xml_reporting( Ndot_FCPM_fuel, char_temp, 'units',
-     &        '(kmol/s)',
-     &        'SOFC-A42: Fuel supply to FCPM' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/Ndot_FCPM_air'
-        call add_to_xml_reporting( Ndot_FCPM_air, char_temp, 'units',
-     &        '(kmol/s)','SOFC-A42: Air supply to FCPM' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/lambda_FCPM'
-        call add_to_xml_reporting( lambda_FCPM, char_temp, 'units',
-     &        '(-)',
-     &        'SOFC-A42: FCPM excess air ratio' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/Pel_ancAC'
-        call add_to_xml_reporting( Pel_ancAC, char_temp, 'units',
-     &        '(W)',
-     &        'SOFC-A42: FCPM AC ancillaries' )
+        iNameLength = lnblnk(pcname(IPCOMP))
+
+         call AddToReport(rvPltAPel%Identifier,
+     &           Pel,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltEtaEl%Identifier,
+     &           eta_el,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltNdotFCPMFuel%Identifier,
+     &           Ndot_FCPM_fuel,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltNdotFCPMAir%Identifier,
+     &           Ndot_FCPM_air,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltLambdaFCPM%Identifier,
+     &           lambda_FCPM,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltPelAncAc%Identifier,
+     &           Pel_ancAC,
+     &           pcname(IPCOMP)(1:iNameLength))
+
 C-------Auxiliary burner.
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/Ndot_auxburn_fuel'
-        call add_to_xml_reporting( Ndot_auxburn_fuel, char_temp,
-     &        'units', '(kmol/s)',
-     &        'SOFC-A42: Fuel supply to auxiliary burner' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/Ndot_auxburn_air'
-        call add_to_xml_reporting( Ndot_auxburn_air, char_temp,
-     &        'units', '(kmol/s)',
-     &        'SOFC-A42: Air supply to auxiliary burner' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/Q_auxburn'
-        call add_to_xml_reporting( Q_auxburn, char_temp,
-     &        'units', '(W)',
-     &        'SOFC-A42: Heat output of auxiliary burner' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/auxburn_Pel'
-        call add_to_xml_reporting( auxburn_Pel, char_temp,
-     &        'units', '(W)',
-     &        'SOFC-A42: Elec draw of auxiliary burner ancillaries' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/auxburn_skin_loss'
-        call add_to_xml_reporting( auxburn_skin_loss, char_temp,
-     &        'units', '(W)',
-     &        'SOFC-A42: Skin losses from auxiliary burner' )
+         call AddToReport(rvPltNdotAuxBurnFuel%Identifier,
+     &           Ndot_auxburn_fuel,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltNdotAuxBurnAir%Identifier,
+     &           Ndot_auxburn_air,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltQAuxBurn%Identifier,
+     &           Q_auxburn,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltAuxBurnPel%Identifier,
+     &           auxburn_Pel,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltAuxBurnSkinLoss%Identifier,
+     &           auxburn_skin_loss,
+     &           pcname(IPCOMP)(1:iNameLength))
+
 C-------Heat exchanger.
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/Q_HX'
-        call add_to_xml_reporting( Q_HX, char_temp, 'units', '(W)',
-     &        'SOFC-A42: Heat recovery to water' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/Q_HX_sensible'
-        call add_to_xml_reporting( Q_HX_sensible, char_temp, 'units',
-     &       '(W)', 'SOFC-A42: Sensible eat recovery to water' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/Q_HX_latent'
-        call add_to_xml_reporting( Q_HX_latent, char_temp, 'units',
-     &        '(W)', 'SOFC-A42: Latent heat recovery to water' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/C_water'
-        call add_to_xml_reporting( C_water, char_temp, 'units', '(W/K)',
-     &        'Heat capacity rate of water in HX' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/C_gas'
-        call add_to_xml_reporting( C_gas, char_temp, 'units', '(W/K)',
-     &        'Heat capacity rate of gas in HX' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/UA_HX'
-        call add_to_xml_reporting( UA_HX, char_temp, 'units', '(W/K)',
-     &        'Effective UA of HX' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/HX_Ndot_condense'
-        call add_to_xml_reporting( HX_Ndot_condense, char_temp,
-     &        'units', '(kmol/s)',
-     &        'Condensation rate in HX' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/HX_water_vap_frac'
-        call add_to_xml_reporting( HX_water_vap_frac, char_temp,
-     &        'units', '(-)',
-     &        'Fraction of water vapour in exhaust' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/HX_Hfg'
-        call add_to_xml_reporting( HX_Hfg, char_temp,
-     &        'units', '(J/kmol)',
-     &        'Latent heat of vapourization of water in HX' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/Ndot_HX_gas'
-        call add_to_xml_reporting( Ndot_HX_gas, char_temp,
-     &        'units', '(kmol/s)',
-     &        'Molar flow of gas through HX' )
+         call AddToReport(rvPltQHX%Identifier,
+     &           Q_HX,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+          call AddToReport(rvPltQHSSens%Identifier,
+     &           Q_HX_sensible,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltQHXLatent%Identifier,
+     &           Q_HX_latent,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltCWater%Identifier,
+     &           C_water,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltCGas%Identifier,
+     &           C_gas,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltUAHX%Identifier,
+     &           UA_HX,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltHXNdotCondense%Identifier,
+     &           HX_Ndot_condense,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltHXWaterVapFrac%Identifier,
+     &           HX_water_vap_frac,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltHXHfg%Identifier,
+     &           HX_Hfg,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltNdoHXGax%Identifier,
+     &           Ndot_HX_gas,
+     &           pcname(IPCOMP)(1:iNameLength))
+
 C-------Inter-model comparisons.
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/LHV_fuel'
-        call add_to_xml_reporting( LHV_fuel, char_temp, 'units',
-     &        '(J/kmol)', 'SOFC-A42: Fuel LHV' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/deltaH_FCPM_fuel'
-        call add_to_xml_reporting( deltaH_FCPM_fuel, char_temp, 'units',
-     &        '(W)', 'SOFC-A42: Enthalpy flow rate of fuel to FCPM' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/deltaH_FCPM_air'
-        call add_to_xml_reporting( deltaH_FCPM_air, char_temp, 'units',
-     &        '(W)', 'SOFC-A42: Enthalpy flow rate of air to FCPM' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/Ndot_FCPMexh_N2'
-        call add_to_xml_reporting( Ndot_FCPMexh_N2, char_temp, 'units',
-     &        '(kmol/s)', 'SOFC-A42: N2 exh' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/Ndot_FCPMexh_Ar'
-        call add_to_xml_reporting( Ndot_FCPMexh_Ar, char_temp, 'units',
-     &        '(kmol/s)', 'SOFC-A42: Ar exh' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/Ndot_FCPMexh_O2'
-        call add_to_xml_reporting( Ndot_FCPMexh_O2, char_temp, 'units',
-     &        '(kmol/s)', 'SOFC-A42: O2 exh' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/Ndot_FCPMexh_CO2'
-        call add_to_xml_reporting( Ndot_FCPMexh_CO2, char_temp, 'units',
-     &        '(kmol/s)', 'SOFC-A42: CO2 exh' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/Ndot_FCPMexh_H2O'
-        call add_to_xml_reporting( Ndot_FCPMexh_H2O, char_temp, 'units',
-     &        '(kmol/s)', 'SOFC-A42: H2O exh' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/deltaH_FCPM_exh'
-        call add_to_xml_reporting( deltaH_FCPM_exh, char_temp, 'units',
-     &        '(kmol/s)', 'SOFC-A42: deltaH_FCPM_exh' )
+         call AddToReport(rvPltLHVFuel%Identifier,
+     &           LHV_fuel,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltDeltaHFCPMFuel%Identifier,
+     &           deltaH_FCPM_fuel,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltDeltaHFCPMAir%Identifier,
+     &           deltaH_FCPM_air,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltNdotFCPMexhN2%Identifier,
+     &           Ndot_FCPMexh_N2,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltNdotFCPMexhAr%Identifier,
+     &           Ndot_FCPMexh_Ar,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltNdotFCPMexh02%Identifier,
+     &           Ndot_FCPMexh_O2,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltNdotFCPMexhC02%Identifier,
+     &           Ndot_FCPMexh_CO2,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltNdotFCPMexhH20%Identifier,
+     &           Ndot_FCPMexh_H2O,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltDeltaHFCPMexh%Identifier,
+     &           deltaH_FCPM_exh,
+     &           pcname(IPCOMP)(1:iNameLength))
+
 C-------Blower, compressor, pump.
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/blower_Pel'
-        call add_to_xml_reporting( blower_Pel, char_temp, 'units',
-     &        '(W)', 'SOFC-A42: blower_Pel' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/T_blower_in'
-        call add_to_xml_reporting( T_blower_in, char_temp, 'units',
-     &        '(oC)', 'SOFC-A42: T_blower_in' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/comp_Pel'
-        call add_to_xml_reporting( comp_Pel, char_temp, 'units',
-     &        '(W)', 'SOFC-A42: comp_Pel' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/pump_Pel'
-        call add_to_xml_reporting( pump_Pel, char_temp, 'units',
-     &        '(W)', 'SOFC-A42: pump_Pel' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/Ndot_FCPM_liqwater'
-        call add_to_xml_reporting( Ndot_FCPM_liqwater, char_temp,
-     &        'units', '(kmol/s)', 'SOFC-A42: Ndot_FCPM_liqwater' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/deltaH_FCPM_liqwater'
-        call add_to_xml_reporting( deltaH_FCPM_liqwater, char_temp,
-     &        'units', '(W)', 'SOFC-A42: deltaH_FCPM_liqwater' )
+         call AddToReport(rvPltBlowerPel%Identifier,
+     &           blower_Pel,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltTBlowerIn%Identifier,
+     &           T_blower_in,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltCompPel%Identifier,
+     &           comp_Pel,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltPumpPel%Identifier,
+     &           pump_Pel,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltNdotFCPMLiqWater%Identifier,
+     &           Ndot_FCPM_liqwater,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltDeltaHFCPMLiqWater%Identifier,
+     &           deltaH_FCPM_liqwater,
+     &           pcname(IPCOMP)(1:iNameLength))
+
 C-------Battery and PCU.
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/battery_SOC_p'
-        call add_to_xml_reporting( battery_SOC_p, char_temp,
-     &        'units', '(-)', 'SOFC-A42: battery_SOC_p' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/battery_SOC_f'
-        call add_to_xml_reporting( battery_SOC_f, char_temp,
-     &        'units', '(-)', 'SOFC-A42: battery_SOC_f' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/DC_required_by_PCU'
-        call add_to_xml_reporting( DC_required_by_PCU, char_temp,
-     &        'units', '(W)', 'SOFC-A42: DC_required_by_PCU' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/DC_into_PCU'
-        call add_to_xml_reporting( DC_into_PCU, char_temp,
-     &        'units', '(W)', 'SOFC-A42: DC_into_PCU' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/P_battery'
-        call add_to_xml_reporting( P_battery, char_temp,
-     &        'units', '(W)', 'SOFC-A42: P_battery' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/AC_demand_net'
-        call add_to_xml_reporting( AC_demand_net, char_temp,
-     &        'units', '(W)', 'SOFC-A42: AC_demand_net' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/AC_production_gross'
-        call add_to_xml_reporting( AC_production_gross, char_temp,
-     &        'units', '(W)', 'SOFC-A42: AC_production_gross' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/AC_production_net'
-        call add_to_xml_reporting( AC_production_net, char_temp,
-     &        'units', '(W)', 'SOFC-A42: AC_production_net' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/PCU_losses'
-        call add_to_xml_reporting( PCU_losses, char_temp,
-     &        'units', '(W)', 'SOFC-A42: PCU_losses' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/eta_PCU'
-        call add_to_xml_reporting( eta_PCU, char_temp,
-     &        'units', '(W)', 'SOFC-A42: eta_PCU' )
+         call AddToReport(rvPltBattSOCP%Identifier,
+     &           battery_SOC_p,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltBattSOCf%Identifier,
+     &           battery_SOC_f,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltDCReqPCU%Identifier,
+     &           DC_required_by_PCU,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltDCInPCU%Identifier,
+     &           DC_into_PCU,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltPBatt%Identifier,
+     &           P_battery,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltACDemNet%Identifier,
+     &           AC_demand_net,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltACProdGross%Identifier,
+     &           AC_production_gross,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltACProdNet%Identifier,
+     &           AC_production_net,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltPCULosses%Identifier,
+     &           PCU_losses,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltEtaPCU%Identifier,
+     &           eta_PCU,
+     &           pcname(IPCOMP)(1:iNameLength))
+
 C-------Stack cooling system
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/q_s_cool'
-        call add_to_xml_reporting( q_s_cool, char_temp, 'units',
-     &        '(W)', 'SOFC-A42: q_s_cool' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/q_s_cogen'
-        call add_to_xml_reporting( q_s_cogen, char_temp, 'units',
-     &        '(W)', 'SOFC-A42: q_s_cogen' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/q_s_cool_air'
-        call add_to_xml_reporting( q_s_cool_air, char_temp, 'units',
-     &        '(W)', 'SOFC-A42: q_s_cool_air' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/P_air_el'
-        call add_to_xml_reporting( P_air_el, char_temp, 'units',
-     &        '(W)', 'SOFC-A42: P_air_el' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/UA_s_cogen'
-        call add_to_xml_reporting( UA_s_cogen, char_temp, 'units',
-     &        '(W)', 'SOFC-A42: UA_s_cogen' )
+         call AddToReport(rvPltQSCool%Identifier,
+     &           q_s_cool,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltQSCogen%Identifier,
+     &           q_s_cogen,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltQSCoolAir%Identifier,
+     &           q_s_cool_air,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltPAirEl%Identifier,
+     &           P_air_el,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltUASCogen%Identifier,
+     &           UA_s_cogen,
+     &           pcname(IPCOMP)(1:iNameLength))
+
 C-------Dilution air system/HRV.
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/q_HRV'
-        call add_to_xml_reporting( q_HRV, char_temp, 'units',
-     &        '(W)', 'SOFC-A42: q_HRV' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/T_vent_air'
-        call add_to_xml_reporting( T_vent_air, char_temp, 'units',
-     &        '(oC)', 'SOFC-A42: T_vent_air' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/Dilution_heattoair'
-        call add_to_xml_reporting(Dilution_heattoair,char_temp,'units',
-     &        '(W)', 'SOFC-A42: Dilution_heattoair' )
+         call AddToReport(rvPltQHRV%Identifier,
+     &           q_HRV,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltTVentAir%Identifier,
+     &           T_vent_air,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltDilutionHeatToAir%Identifier,
+     &           Dilution_heattoair,
+     &           pcname(IPCOMP)(1:iNameLength))
+
 C-------Net efficiency values.
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/LHV_to_AC_eff'
-        call add_to_xml_reporting( LHV_to_AC_eff, char_temp, 'units',
-     &        '(-)', 'SOFC-A42: LHV_to_AC_eff' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/LHV_to_therm_eff'
-        call add_to_xml_reporting( LHV_to_therm_eff, char_temp, 'units',
-     &        '(-)', 'SOFC-A42: LHV_to_therm_eff' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/LHV_to_cogen_eff'
-        call add_to_xml_reporting( LHV_to_cogen_eff, char_temp, 'units',
-     &        '(-)', 'SOFC-A42: LHV_to_cogen_eff' )
+         call AddToReport(rvPltLHVToACEff%Identifier,
+     &           LHV_to_AC_eff,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltLHVToThermEff%Identifier,
+     &           LHV_to_therm_eff,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltLHVToCogenEff%Identifier,
+     &           LHV_to_cogen_eff,
+     &           pcname(IPCOMP)(1:iNameLength))
+
 C-------Heat transfer from FC-cogen unit to containing room.
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/heat_to_room_conv'
-        call add_to_xml_reporting( heat_to_room_conv, char_temp,'units',
-     &        '(W)', 'heat_to_room_conv' )
-        write(char_temp,'(A,A,A,A)') 'plant/',
-     &        pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))),'/misc_data',
-     &        '/heat_to_room_rad'
-        call add_to_xml_reporting( heat_to_room_rad, char_temp, 'units',
-     &        '(W)', 'heat_to_room_rad' )
+         call AddToReport(rvPltHeatToRoomConv%Identifier,
+     &           heat_to_room_conv,
+     &           pcname(IPCOMP)(1:iNameLength))
+
+         call AddToReport(rvPltHeatToRoomRad%Identifier,
+     &           heat_to_room_rad,
+     &           pcname(IPCOMP)(1:iNameLength))
 
       ENDIF
 
@@ -4768,7 +4699,7 @@ C Shomate coefficients from NIST web site for N2, O2, Ar, CO2, H2, CH4, and
 C liquid H2O (`liq_H2O').  Coefficients for other gases determined by Brent
 C Griffith (NREL) using procedure outlined above.  Note that "G" coefficients are
 C not required for the calculation of the properties considered by this
-C implementation. 
+C implementation.
 C---------------------------------------------------------------------------------
       DATA ( A(j),j=1,15 ) / 26.092, 29.659, 29.0373, 20.786,
      &                       24.99735, 33.066178, -0.703029,

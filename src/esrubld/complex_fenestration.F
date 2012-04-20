@@ -5067,6 +5067,8 @@ C Generates time-step output to h3k if active
 C
 C ********************************************************************
       subroutine CFCoutputH3K(icomp)
+      USE h3kmodule
+
       IMPLICIT NONE
 #include "building.h"
 #include "geometry.h"
@@ -5110,11 +5112,12 @@ C ********************************************************************
       integer i,j,k,l,nn,nc,ne,icfctp,icomp,ivblayr
       integer iH3K_NameLen(2)
 
-      CHARACTER*128 H3K_rep_NAME(2)
+c      CHARACTER*128 H3K_rep_NAME(2)
       CHARACTER*3 cConstrName,sIGU
       CHARACTER*3 cLayerName
-      character*3 cBuildingName ! root name for "building"
-      character*1 cSep ! The separator
+      CHARACTER*2 cZone,cSurface
+c      character*3 cBuildingName ! root name for "building"
+c      character*1 cSep ! The separator
 
       logical TGU,DGU
       
@@ -5125,8 +5128,15 @@ C ********************************************************************
       TB=2.5   ! DT = 15 K for approx. U_nom
 
 C Basic names (should be defined in a header, somewhere ...)
-      cBuildingName='bui'
-      cSep='/'
+c      cBuildingName='bui'
+c      cSep='/'
+
+C.......Pad zone index to 'XX'
+        if ( icomp .gt. 9 ) then
+          write (cZone,'(I2)') icomp
+        else
+          write (cZone,'(A,I1)') '0', icomp
+        endif
 
 C Number of constructions in zone:
       nc=nconst(icomp)
@@ -5147,32 +5157,32 @@ C Number of constructions in zone:
 
 C.......Pad construction index to 'XX'
         if ( i .gt. 9 ) then
-          write (cConstrName,'(A,I2)') 's', i
+          write (cSurface,'(I2)') i
         else
-          write (cConstrName,'(A,I1)') 's0', i
+          write (cSurface,'(A,I1)') '0', i
         endif
 
 C Build name for construction properties:
-        H3K_rep_NAME(1) = cBuildingName
-     &                 //cSep//zname(icomp)(1:lnzname(icomp))
-     &                 //cSep//cConstrName
+c        H3K_rep_NAME(1) = cBuildingName
+c     &                 //cSep//zname(icomp)(1:lnzname(icomp))
+c     &                 //cSep//cConstrName
 
-        iH3K_NameLen(1) = 3+1+lnzname(icomp)+1+3
+c        iH3K_NameLen(1) = 3+1+lnzname(icomp)+1+3
 
 C Output of CFC construction data ***********************************
 C CFC venetian blind slat angle
-        call add_to_xml_reporting (
-     &         vb_phiNew(icomp,icfctp),
-     &         H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc_vb/angle',
-     &         'units', '(°)',
-     &         'Venetian type blind slat angle' )
+c        call add_to_xml_reporting (
+c     &         vb_phiNew(icomp,icfctp),
+c     &         H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc_vb/angle',
+c     &         'units', '(°)',
+c     &         'Venetian type blind slat angle' )
 
 C CFC ON/OFF flag
-        call add_to_xml_reporting (
-     &         real(i_shd(icomp,icfctp)),
-     &         H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc_vb/on-off',
-     &         'units', '(-)',
-     &         'Venetian type blind ON/OFF flag' )
+c        call add_to_xml_reporting (
+c     &         real(i_shd(icomp,icfctp)),
+c     &         H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc_vb/on-off',
+c     &         'units', '(-)',
+c     &         'Venetian type blind ON/OFF flag' )
 
 C CFC Direct and diffuse radiation incidence
 C       RadIncDirS(icomp,i)
@@ -5180,80 +5190,80 @@ C       RadIncDifS(icomp,i),
 cx            call get_incident_solrad(icomp,i,solrad_dir,solrad_diff,
 cx     &                                 ang,psazi,pselv)
 
-            call add_to_xml_reporting (
-     &           RadIncDirS(icomp,i) + RadIncDifS(icomp,i),
+c            call add_to_xml_reporting (
+c     &           RadIncDirS(icomp,i) + RadIncDifS(icomp,i),
 cx     &           solrad_dir + solrad_diff,
-     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/totRad',
-     &           'units', '(W/m2)',
-     &           'CFC total radiation incidence (dir+diff)' )
+c     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/totRad',
+c     &           'units', '(W/m2)',
+c     &           'CFC total radiation incidence (dir+diff)' )
 
-            call add_to_xml_reporting (
-     &           RadIncDifSky(icomp,i),
-     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))//'/cfc/RadDifSky',
-     &           'units', '(W/m2)',
-     &           'CFC diffuse radiation incidence from sky' )
+c            call add_to_xml_reporting (
+c     &           RadIncDifSky(icomp,i),
+c     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))//'/cfc/RadDifSky',
+c     &           'units', '(W/m2)',
+c     &           'CFC diffuse radiation incidence from sky' )
 
-            call add_to_xml_reporting (
-     &           RadIncDifGrd(icomp,i),
-     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))//'/cfc/RadDifGrd',
-     &           'units', '(W/m2)',
-     &           'CFC diffuse radiation incidence from ground' )
+c            call add_to_xml_reporting (
+c     &           RadIncDifGrd(icomp,i),
+c     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))//'/cfc/RadDifGrd',
+c     &           'units', '(W/m2)',
+c     &           'CFC diffuse radiation incidence from ground' )
 
-            call add_to_xml_reporting (
-     &           ang,
-     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/inc_ang',
-     &           'units', '(°)',
-     &           'CFC radiation incidence angle' )
+c            call add_to_xml_reporting (
+c     &           ang,
+c     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/inc_ang',
+c     &           'units', '(°)',
+c     &           'CFC radiation incidence angle' )
 
-            call add_to_xml_reporting (
-     &           psazi,
-     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/psazi',
-     &           'units', '(°)',
-     &           'Solar azimuth angle rel. to CFC surf' )
+c            call add_to_xml_reporting (
+c     &           psazi,
+c     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/psazi',
+c     &           'units', '(°)',
+c     &           'Solar azimuth angle rel. to CFC surf' )
 
-            call add_to_xml_reporting (
-     &           pselv,
-     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/pselv',
-     &           'units', '(°)',
-     &           'Solar elevation angle rel. to CFC surf' )
+c            call add_to_xml_reporting (
+c     &           pselv,
+c     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/pselv',
+c     &           'units', '(°)',
+c     &           'Solar elevation angle rel. to CFC surf' )
 
-            call add_to_xml_reporting (
-     &           sazi,
-     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/sazi',
-     &           'units', '(°)',
-     &           'Solar azimuth angle' )
+c            call add_to_xml_reporting (
+c     &           sazi,
+c     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/sazi',
+c     &           'units', '(°)',
+c     &           'Solar azimuth angle' )
 
-            call add_to_xml_reporting (
-     &           salt,
-     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/salt',
-     &           'units', '(°)',
-     &           'Solar elevation angle' )
+c            call add_to_xml_reporting (
+c     &           salt,
+c     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/salt',
+c     &           'units', '(°)',
+c     &           'Solar elevation angle' )
 
 C CFC beam and diffuse transmission
-            call add_to_xml_reporting (
-     &           transBB_S(icomp,i),
-     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/transBB',
-     &           'units', '(W/m2)',
-     &           'CFC direct beam transmission' )
+c            call add_to_xml_reporting (
+c     &           transBB_S(icomp,i),
+c     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/transBB',
+c     &           'units', '(W/m2)',
+c     &           'CFC direct beam transmission' )
      
-            call add_to_xml_reporting (
-     &           transD_S(icomp,i),
-     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/transD',
-     &           'units', '(W/m2)',
-     &           'CFC diffuse transmission' )
+c            call add_to_xml_reporting (
+c     &           transD_S(icomp,i),
+c     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/transD',
+c     &           'units', '(W/m2)',
+c     &           'CFC diffuse transmission' )
 
 C CFC beam and diffuse transmission for light
-            call add_to_xml_reporting (
-     &           transBB_V(icomp,i),
-     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/transBB_V',
-     &           'units', '(-)',
-     &           'CFC direct beam transmission, light' )
+c            call add_to_xml_reporting (
+c     &           transBB_V(icomp,i),
+c     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/transBB_V',
+c     &           'units', '(-)',
+c     &           'CFC direct beam transmission, light' )
      
-            call add_to_xml_reporting (
-     &           transD_V(icomp,i),
-     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/transD_V',
-     &           'units', '(-)',
-     &           'CFC diffuse transmission, light' )
+c            call add_to_xml_reporting (
+c     &           transD_V(icomp,i),
+c     &           H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/transD_V',
+c     &           'units', '(-)',
+c     &           'CFC diffuse transmission, light' )
 
 
         do 15 l=1,ne
@@ -5270,20 +5280,20 @@ C.......Pad layer index to 'XX'
             endif
 
 C build name for layer properties:
-            H3K_rep_NAME(2) = cBuildingName
-     &                     //cSep//zname(icomp)(1:lnzname(icomp))
-     &                     //cSep//cConstrName
-     &                     //cSep//cLayerName
+c            H3K_rep_NAME(2) = cBuildingName
+c     &                     //cSep//zname(icomp)(1:lnzname(icomp))
+c     &                     //cSep//cConstrName
+c     &                     //cSep//cLayerName
 
-            iH3K_NameLen(2) = 3+1+lnzname(icomp)+1+3+1+3
+c            iH3K_NameLen(2) = 3+1+lnzname(icomp)+1+3+1+3
 
             if ( icfcltp(icomp,icfctp,l).eq.0 ) then
 C CFC gap resistance if layer is gap (convective, only!)
-              call add_to_xml_reporting (
-     &             cfcRgap(icomp,i,l,2),
-     &             H3K_rep_Name(2)(1:iH3K_NameLen(2))// '/cfc/Rgap',
-     &             'units', '(m2 K/W)',
-     &             'CFC gap resistance (convective only!)' )
+c              call add_to_xml_reporting (
+c     &             cfcRgap(icomp,i,l,2),
+c     &             H3K_rep_Name(2)(1:iH3K_NameLen(2))// '/cfc/Rgap',
+c     &             'units', '(m2 K/W)',
+c     &             'CFC gap resistance (convective only!)' )
             endif
 
 C Calculate U-value for IGU in CFC ...
@@ -5374,17 +5384,22 @@ C Now calculate and output U-value for IGU of this construction
         endif
         CFC_ISO_Uvalue(icomp,icfctp)=1.0/(RGap1nom + RGap2 + 0.17)
         CFC_nom_Uvalue(icomp,icfctp)=1.0/(RGap1 + RGap2 + Rsi + Rse)
-        call add_to_xml_reporting (
-     &       CFC_ISO_Uvalue(icomp,icfctp),
-     &       H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/Unom_' // sIGU ,
-     &       'units', '(W/(m2 K))',
-     &       'Nominal CFC IGU U-value' )
 
-        call add_to_xml_reporting (
-     &       CFC_nom_Uvalue(icomp,icfctp),
-     &       H3K_rep_Name(1)(1:iH3K_NameLen(1))// '/cfc/Uact_' // sIGU ,
-     &       'units', '(W/(m2 K))',
-     &       'Actual CFC IGU U-value' )
+        call AddToReport (
+     &         rvCFCUvalueISO%Identifier,
+     &         CFC_ISO_Uvalue(icomp,icfctp),
+c     &         cZone,
+     &         zname(icomp)(1:lnzname(icomp)),
+     &         cSurface,
+     &         sIGU)
+
+        call AddToReport (
+     &         rvCFCUvalueActual%Identifier,
+     &         CFC_nom_Uvalue(icomp,icfctp),
+c     &         cZone,
+     &         zname(icomp)(1:lnzname(icomp)),
+     &         cSurface,
+     &         sIGU)
 
 
       end if ! icfcfl .gt. 0

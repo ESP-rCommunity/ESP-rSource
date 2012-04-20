@@ -17,13 +17,16 @@ PROG = bps$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
+%.o : %.f90
+	$(MCC) $(FFLAGS) -c $<
+
 %.o : %.cpp
 	$(MCPL) $(CFLAGS) -c $<
 
 %.o : %.c
 	$(MCC) $(CFLAGS) -c $<
 
-MODULE_OBJECTS = startup.o aim2_module.o aim2_timestep.o
+MODULE_OBJECTS = h3kmodule.o startup.o aim2_module.o aim2_timestep.o
 
 BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o \
 	  bcfunc.o bctlf.o blibsv.o bmatsu.o bmatsv.o basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
@@ -60,7 +63,8 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o \
 	  ncm_overheating.o complex_fenestration.o editCFC.o NCHE.o stratified_tank_1HX.o stratified_tank_2HX.o \
 	  temper.o fanger.o AirFlowModelRoutines.o Res_elec_Ctl.o   
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod aim2_timestep.mod start_up.mod parse_command_line.mod
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod aim2_timestep.mod start_up.mod parse_command_line.mod \
+          h3kmodule.f90
 
 $(PROG): $(MODULE_OBJECTS) $(BPS_OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(BPS_OBJECTS) $(ULIBS) $(F_to_C_flags)
@@ -476,6 +480,9 @@ h3kstore.F:
 h3koutput.F:
 	rm -f h3koutput.F
 	ln -s $(CETCdir)/h3koutput.F .
+h3kmodule.f90:
+	rm -f h3kmodule.f90
+	ln -s $(CETCdir)/h3kmodule.f90 .
 FC_components.F:
 	rm -f FC_components.F
 	ln -s $(CETCdir)/FC_components.F .
@@ -729,4 +736,5 @@ clean:
 	ground_temp_mains.F readTrnsys.F trnsys_wrapper.F trnsys_lib.F \
 	tank_intank_hx.F mains_temp_draw_profiles.F stratified_tank.F \
 	complex_fenestration.F editCFC.F NCHE.F stratified_tank_1HX.F stratified_tank_2HX.F \
-	temper.F fanger.F AirFlowModelRoutines.F Res_elec_Ctl.F
+	temper.F fanger.F \
+	AirFlowModelRoutines.F Res_elec_Ctl.F h3kmodule.f90

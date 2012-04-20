@@ -26,9 +26,9 @@ c Copyright 2001: NRCan Buildings Group
 c Created October 4, 2001
 c Edited: BB Oct 4, 15, Nov 2
 c ---
-     
-c 
-      
+
+c
+
       Implicit None
 #include "Ventilation_Data.h"
       Integer iComp
@@ -69,7 +69,7 @@ c Created August  15, 2001
 c Edited: BB Aug 15, 16, 17, Oct 4, 10, 12, 23, 25, Nov 1, 2
 c ---
 
-     
+
 c ---
       USE AIM2_InputData, ONLY:AIM2_ref_zone,AIM2_CrawlSpace_zone,
      &            AIM2_attic_zone,AIM2_num_zones_infil,AIM2_zone_infil
@@ -103,12 +103,12 @@ c     Implicit None
       real fTempTol
       parameter ( fTempTol = 0.5 )
 
-     
+
       save J, iFun, i, iCycle
       save T, HLR, DeltaT, ZoneFraction
       save Msg
       save ExitNOW
-     
+
       Data iCycle / 9990 /
 
 
@@ -271,6 +271,7 @@ C This is used by the fuel cell controller to determine the house's total
 C electrical demand during each time-step in the plant domain.
 
 c
+      use h3kmodule
       Implicit None
 #include "Ventilation_Data.h"
 #include "SOFC.h"
@@ -305,7 +306,7 @@ c ---
 C Used in the xml reporting structure
 C      real fH3KSumEnergyUseElec(iNumUses)        ! Energy consumption assoc. w/ electricuty (W)
 
-     
+
 c
       If ( iFun .eq. 0 ) Then ! HRV INITIALIZATION
 c
@@ -485,25 +486,8 @@ c
             TotalPower = 0.
          Endif
 
-         call add_to_xml_reporting(
-     &
-     &       TotalPower,
-     &
-     &      'plant/ideal_hvac_models/HRV/elec_load',
-     &
-     &      'units',
-     &
-     &       '(W)',
-     &
-     &      'Idealized HVAC models: '
-     &      // 'Amount of '
-     &      // ' electricity '
-     &      // ' used by '
-     &      // ' Ventilation/HRV '
-     &      // ' system'
-     &
-     &      )
-
+         Call AddToReport(rvPltHvacHRVElecLd%Identifier,
+     &       TotalPower)
 
 C Store aggregate electricity use for reporting in Site Utility facilitity.
       fSUFuelEnergyUse( iElectricity,iUseHRV )
@@ -615,10 +599,10 @@ c
       Integer i, j, Duct
       Real HLcoef(3,4)
 c ---
-     
+
       Save Fleak, Diam, L, HTC, AvVel, CnstDD,  j, Duct
       Save HLcoef
-     
+
 c ---
 c  Flexible                           * V    const    * R    Cl
       Data (HLcoef(1,j), j = 1, 4) / 0.095,  1.000,  0.950,  3. /
@@ -737,7 +721,7 @@ c This IF ensures start-up is over.
 
 c Sum up monthly energies
 
-     
+
          fHRV_Elec_Energy(imonth) =
      &     fHRV_Elec_Energy(imonth) + TotalPower * 3600./REAL(NTSTEP) !(Watts)
 

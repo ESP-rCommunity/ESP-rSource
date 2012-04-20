@@ -227,21 +227,21 @@ C Pad index to 'XX'.
 C Output cfd surface heat transfer coefficients
 C and cfd surface - air heat flux.
       do IS=1,NCNST
-         call add_to_xml_reporting(
-     &     HC(IS),
-     &     'cfd/'//'z'// cZone_Chars //
-     &     '/' // SFNAM(IS)(1:lnblnk(SFNAM(IS))) //'/HC-CFD',
-     &     'units',
-     &     '(W/(m2 K)',
-     &     'CFD surface heat transfer coefficient')
+c         call add_to_xml_reporting(
+c     &     HC(IS),
+c     &     'cfd/'//'z'// cZone_Chars //
+c     &     '/' // SFNAM(IS)(1:lnblnk(SFNAM(IS))) //'/HC-CFD',
+c     &     'units',
+c     &     '(W/(m2 K)',
+c     &     'CFD surface heat transfer coefficient')
 	 
-         call add_to_xml_reporting(
-     &     -CONVF(iZone,IS),
-     &     'cfd/'//'z' // cZone_Chars //
-     &     '/' // SFNAM(IS)(1:lnblnk(SFNAM(IS))) // '/Qwall->air',
-     &     'units',
-     &     '(W)',
-     &     'Heat flux from wall to air, Qwall->air')
+c         call add_to_xml_reporting(
+c     &     -CONVF(iZone,IS),
+c     &     'cfd/'//'z' // cZone_Chars //
+c     &     '/' // SFNAM(IS)(1:lnblnk(SFNAM(IS))) // '/Qwall->air',
+c     &     'units',
+c     &     '(W)',
+c     &     'Heat flux from wall to air, Qwall->air')
       enddo
 
       return

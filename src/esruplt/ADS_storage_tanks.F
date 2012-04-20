@@ -1,12 +1,12 @@
 C This file is part of the ESP-r system.
-C Copyright CANMET Energy Technology Centre 
+C Copyright CANMET Energy Technology Centre
 C Natural Resources Canada, Government of Canada
-C 2004. Please Contact Ian Beausoliel-Morrison for details 
+C 2004. Please Contact Ian Beausoliel-Morrison for details
 C concerning licensing.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -64,8 +64,8 @@ C Initial Creation Date: October 20, 2004
 
 C This subroutine is the static template for a gas-fired water tank that is fed by
 C either a residential fuel cell system or an adsorption storage unit.
-C The original gas-fired water tank component model from which this 
-C model was adapted allowed only 2 connections whereas this component model allows 3. 
+C The original gas-fired water tank component model from which this
+C model was adapted allowed only 2 connections whereas this component model allows 3.
 C The component model was developed for connection to the residential fuel cell
 C component model and the adsorption storage component model but could be used in other
 C plant arrangements as well.
@@ -123,7 +123,7 @@ C    tank_fuel_molefrac_total  ditto
 C    molW_fuel_tank            molecular weight of fuel, kg/kmol (in MODULE FC_tanks)
 C    HHV_fuel_tank             HHV of fuel, MJ/kmol (in MODULE FC_tanks)
 C    tank_DHW_draw             flag indicating whether tank supplies DHW (in MODULE FC_tanks)
-C    tank_space_heat           flag indicating whether tank is connected to a 
+C    tank_space_heat           flag indicating whether tank is connected to a
 C                              fan-coil (in MODULE FC_tanks)
 C                              that supplies space heating (in MODULE FC_tanks)
 C    FC_DHW_nominal_Lperday    Nominal DHW draw (L/day) based on occupancy (in MODULE FC_tanks)
@@ -216,7 +216,7 @@ C-------------------------------------------------------------------------------
 C DHW nominal water draws.
 C---------------------------------------------------------------------------------
 C      DATA ( FC_DHW_CSA_Lperhour(jhour),jhour=1,24 )
-C     &                           /   9., 7., 0., 0., 0., 
+C     &                           /   9., 7., 0., 0., 0.,
 C     &                               0., 0., 8.,18.,15.,
 C     &                              16.,16.,14.,13.,12.,
 C     &                              10., 9.,10.,12.,16.,
@@ -225,7 +225,7 @@ C     &                              17.,14.,12.,11. /
 
 
 C---------------------------------------------------------------------------------
-C The gas-fired water tank with 3 connections cannot be used concurrently with 
+C The gas-fired water tank with 3 connections cannot be used concurrently with
 C the gas-fired water tank with 2 connections or the electric water tank (2
 C or 3 connections) because they share common variables through MODULE FC_tanks.
 C If there is a need in the future to allow multiple storage tanks, this
@@ -233,7 +233,7 @@ C restriction can be overcome by creating separate MODULEs for the four componen
 C models.
 C Variables used:
 C    NPCDAT(i,4)  pointer to static template and coefficient generator for component `i'
-C                 (in common/C12PS): =82 for electric component model (2 connections), 
+C                 (in common/C12PS): =82 for electric component model (2 connections),
 C                                    =81 for gas-fired component model (2 connections),
 C                                    =112 for electric component model (3 connections).
 C    NPCOMP       number of plant components in user-defined plant network
@@ -423,7 +423,7 @@ C-------------------------------------------------------------------------------
      &                     + FC_DHW_CSA_Lperhour(j)
       END DO
       DO j=1,24
-        FC_DHW_CSA_fraction(j) = 
+        FC_DHW_CSA_fraction(j) =
      &                       FC_DHW_CSA_Lperhour(j) / FC_DHW_CSA_Lperday
       END DO
 
@@ -502,8 +502,8 @@ C Adapted from FC_tank_fuel_coeff_gen created by Ian Beausoleil-Morrison
 C Initial Creation Date: October 20, 2004
 
 C This subroutine is the coefficient generator for the gas-fired storage tank component
-C model. The original gas-fired water tank component model from which this 
-C model was adapted allowed only 2 connections whereas this component model allows 3. 
+C model. The original gas-fired water tank component model from which this
+C model was adapted allowed only 2 connections whereas this component model allows 3.
 C The component model was developed for connection to the residential fuel cell
 C component model and the adsorber storage component model but could be used in other
 C plant arrangements as well.
@@ -576,7 +576,7 @@ C    IMPEXP                    identifies implicit/explicit handling of plant
 C                              equations (common/PCEQU)
 C    RATIMP                    user-specified implicit weighting fraction (common/PCEQU)
 C    TIMSEC                    time-step in explicit plant domain (seconds) (common/PCTIME)
-C    CDATA(i,j)                control signal for component `i', node `j' (common/C9) 
+C    CDATA(i,j)                control signal for component `i', node `j' (common/C9)
 
 C OUTPUTS:
 C    COUT(i)             coefficient for ISTATS balance for `i'th matrix position
@@ -586,6 +586,7 @@ C    TC(i)               time constant (seconds) of plant component `i'
 C -------------------------------------------------------------------------------------------
 
       SUBROUTINE ADS_tank_fuel_coeff_gen(IPCOMP,COUT,ISTATS)
+      use h3kmodule
       IMPLICIT NONE
 #include "plant.h"
 #include "building.h"
@@ -799,9 +800,7 @@ C-------------------------------------------------------------------------------
       INTEGER LNBLNK
       INTEGER I
 
-      CHARACTER*128 H3K_rep_NAME    ! H3Kreporting object name
-      character*128 root_name       ! root name of component node 
-      character*128 hold_name       ! temporary variable for string manipulation
+      INTEGER iNameLength           ! temporary variables's length
 
       real  check        ! for debugging
 
@@ -875,7 +874,7 @@ C time-row values of the UA-value. PUAF is mapped to PUAP by subroutine MZNASS
 C following the solution of the energy matrix for the current time-step.
 C Variables used:
 C    PUAP(i)  present time-row UA-value
-C    PUAF(i)  future time-row UA-value 
+C    PUAF(i)  future time-row UA-value
 C---------------------------------------------------------------------------------
 C-------Determine UA.
         tank_UA_future  = tank_UA  ! `tank_UA' from dbase (could be replaced by a correlation)
@@ -1035,10 +1034,10 @@ C-------------------------------------------------------------------------------
 
         mdotCp_DHW_present = DHW_draw_present
      &                     * RHOFLD(3,T_makeup_present)
-     &                     * SHTFLD( 3,T_makeup_present ) 
+     &                     * SHTFLD( 3,T_makeup_present )
         mdotCp_DHW_future  = DHW_draw_future
      &                     * RHOFLD(3,T_makeup_future)
-     &                     * SHTFLD( 3,T_makeup_future ) 
+     &                     * SHTFLD( 3,T_makeup_future )
 
 
 C---------------------------------------------------------------------------------
@@ -1239,12 +1238,12 @@ C-------------------------------------------------------------------------------
 C Calculate the enthalpy (kJ/kmol) of the combustion gases leaving node 2 and
 C entering node 3 (Beausoleil-Morrison 2001a eq 25). The function H_gas returns the
 C relative enthalpy of each fuel constituent in kJ/kmol. Evaluate the enthalpies
-C at the temperature solved the previous time-step. 
+C at the temperature solved the previous time-step.
 C The coefficients established for node 2 the previous iteration may have led
 C to an unrealistic CSVF solution. This is particularly prone to happen on the
 C very first plant simulation increment. In order to prevent the H_comb calculation
 C from blowing up, place a range check on T_comb to force it within a physically
-C realistic range. 
+C realistic range.
 C Variables used:
 C     CSVF(i,1)  future time-row temperature for node `i'.
 C---------------------------------------------------------------------------------
@@ -1290,7 +1289,7 @@ C The coefficients established for node 3 the previous iteration may have led
 C to an unrealistic CSVF solution. This is particularly prone to happen on the
 C very first plant simulation increment. In order to prevent the H_exh_tanka calculation
 C from blowing up, place a range check on T_exh_tank to force it within a physically
-C realistic range. 
+C realistic range.
 C Variables used:
 C     CSVF(i,1)  future time-row temperature for node `i'.
 C---------------------------------------------------------------------------------
@@ -1387,7 +1386,7 @@ C-------Steady-state.
 C---------------------------------------------------------------------------------
 C Preparation for forming matrix coefficients for energy balances is now complete.
 C Establish matrix equation self-coupling, cross-coupling, and RHS coefficients.
-C Node coefficient transport for COUT 
+C Node coefficient transport for COUT
 
 C       <--self-->|<cross>
 C  node   1  2  3 |  fc fan-coil adsorber   RHS
@@ -1493,7 +1492,7 @@ C-------If space-heat flag set, then second connection is real: otherwise make f
         if ( iDischarge_signal .eq. 1 ) then
            COUT(5) = 0.
            COUT(7) = -1. * PCONDR(con1c)
-        endif 
+        endif
 
 C-------Node 2: no balance required so make flow zero.
         COUT(2) = 1.
@@ -1590,137 +1589,52 @@ C-------------------------------------------------------------------------------
       if ( istats .eq. 1 ) then
 
 
-C.....Get component name
-      hold_name = pcname(IPCOMP) 
-C.....Format string as: 'plant/NAME/misc_data'
+C.....Get component name's length
+      iNameLength = lnblnk(pcname(IPCOMP))
 
-       WRITE(root_name,'(A,A,A)') 
-     &     'plant/',
-     &     hold_name(1:lnblnk(hold_name)),
-     &     '/misc_data'
+       call AddToReport(rvPltBurnerOut%Identifier,
+     &         q_burner,
+     &         pcname(IPCOMP)(1:iNameLength))
 
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/burner_output'
+       call AddToReport(rvPltBurnerWater%Identifier,
+     &         q_capture_future,
+     &         pcname(IPCOMP)(1:iNameLength))
 
-       call add_to_xml_reporting(
-     &                   q_burner,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &                   'Burner output' )
+       call AddToReport(rvPltFuelConsKGS%Identifier,
+     &         m_dot_fuel_kg_t,
+     &         pcname(IPCOMP)(1:iNameLength))
 
+       call AddToReport(rvPltFuelConsSLPM%Identifier,
+     &         Vdot_fuel_STP_t,
+     &         pcname(IPCOMP)(1:iNameLength))
 
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/burner_water'
+       call AddToReport(rvPltAirFlowKGS%Identifier,
+     &         m_dot_air_kg_t,
+     &         pcname(IPCOMP)(1:iNameLength))
 
-       call add_to_xml_reporting(
-     &                   q_capture_future,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &                   'Burner energy captured in water' )
+       call AddToReport(rvPltAirFlowSLPM%Identifier,
+     &         Vdot_air_STP_t,
+     &         pcname(IPCOMP)(1:iNameLength))
 
+       call AddToReport(rvPltTempComb%Identifier,
+     &         T_comb,
+     &         pcname(IPCOMP)(1:iNameLength))
 
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/fuel_consumption_kgs'
+       call AddToReport(rvPltTempExh%Identifier,
+     &         T_exh_tank,
+     &         pcname(IPCOMP)(1:iNameLength))
 
-       call add_to_xml_reporting(
-     &                   m_dot_fuel_kg_t,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(kg/s)',
-     &                   'Burner fuel consumption in kg/s' )
+       call AddToReport(rvPltHeatDumpFuture%Identifier,
+     &         q_heatdump_future,
+     &         pcname(IPCOMP)(1:iNameLength))
 
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/fuel_consumption_slpm'
+       call AddToReport(rvPltDHWDraw%Identifier,
+     &         DHW_draw_future,
+     &         pcname(IPCOMP)(1:iNameLength))
 
-       call add_to_xml_reporting(
-     &                   Vdot_fuel_STP_t,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(l/min)',
-     &                   'Burner fuel consumption in l/min' )
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/airflow_kgs'
-
-       call add_to_xml_reporting(
-     &                   m_dot_air_kg_t,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(kg/s)',
-     &                   'Airflow in kg/s' )
-
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/airflow_slpm'
-
-       call add_to_xml_reporting(
-     &                   Vdot_air_STP_t,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(l/min)',
-     &                   'Airflow in l/min' )
-
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/temp_comb'
-
-       call add_to_xml_reporting(
-     &                   T_comb,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(oC)',
-     &                   'Temperature of combustion gases' )
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/temp_exh'
-
-       call add_to_xml_reporting(
-     &                   T_exh_tank,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(oC)',
-     &                   'Temperature of exhaust gases' )
-
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/heatdump_future'
-
-       call add_to_xml_reporting(
-     &                   q_heatdump_future,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &                   'Heatdump for water storage tank' )
-
-
-
-        WRITE(H3K_rep_NAME,'(A,A)')
-     &       root_name(1:lnblnk(root_name)),'/dhw_draw'
-
-        call add_to_xml_reporting(
-     &                   DHW_draw_future,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(m3/s)',
-     &                   'Domestic hot water draw' )
-
-        WRITE(H3K_rep_NAME,'(A,A)')
-     &       root_name(1:lnblnk(root_name)),'/dhw_makeup_temp'
-
-        call add_to_xml_reporting(
-     &                   T_makeup_future,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(oC)',
-     &                   'Domestic hot water makeup temperature' )
-        
-
-
-
-
-
+       call AddToReport(rvPltDHWMakeupTemp%Identifier,
+     &         T_makeup_future,
+     &         pcname(IPCOMP)(1:iNameLength))
 
        endif
 
@@ -1731,7 +1645,7 @@ C-------------------------------------------------------------------------------
 C Store results to calculate monthly averages and (optionally) to produce an
 C ASCII file with time-step output.
 C
-C  - Note: report "present" (ie. last timestep values of all state variables) 
+C  - Note: report "present" (ie. last timestep values of all state variables)
 C          since they are not available for the current tiemstep yet
 C---------------------------------------------------------------------------------
 C      IF(ISTATS.eq.1) CALL H3KSTORE_FuelCell_Fossil_Tank(
@@ -1767,8 +1681,8 @@ C Initial Creation Date: October 21, 2004
 
 C This subroutine is the static template for an electrically heated water tank
 C that is fed by either a residential fuel cell system or an adsorption storage unit.
-C The original electrically heated water tank component model from which this 
-C model was adapted allowed only 2 connections whereas this component model allows 3. 
+C The original electrically heated water tank component model from which this
+C model was adapted allowed only 2 connections whereas this component model allows 3.
 C The component model was developed for connection to the residential fuel cell
 C component model and the adsorption storage  component model but could be used
 C in other plant arrangements as well.
@@ -1901,7 +1815,7 @@ C in the future to allow multiple storage tanks, this restriction can be overcom
 C by creating separate MODULEs for the two component models.
 C Variables used:
 C    NPCDAT(i,4)  pointer to static template and coefficient generator for component `i'
-C                 (in common/C12PS): =81 for gas-fired component model (2 connections), 
+C                 (in common/C12PS): =81 for gas-fired component model (2 connections),
 C                                    =111 for gas-fired component model (3 connections),
 C                                    =82 for electric component model (2 connections).
 C    NPCOMP       number of plant components in user-defined plant network
@@ -2058,7 +1972,7 @@ C-------------------------------------------------------------------------------
      &                     + FC_DHW_CSA_Lperhour(j)
       END DO
       DO j=1,24
-        FC_DHW_CSA_fraction(j) = 
+        FC_DHW_CSA_fraction(j) =
      &                       FC_DHW_CSA_Lperhour(j) / FC_DHW_CSA_Lperday
       END DO
 
@@ -2132,7 +2046,7 @@ C    IMPEXP                    identifies implicit/explicit handling of plant
 C                              equations (common/PCEQU)
 C    RATIMP                    user-specified implicit weighting fraction (common/PCEQU)
 C    TIMSEC                    time-step in explicit plant domain (seconds) (common/PCTIME)
-C    CDATA(i,j)   control signal for component `i', node `j' (common/C9) 
+C    CDATA(i,j)   control signal for component `i', node `j' (common/C9)
 
 C OUTPUTS:
 C    COUT(i)             coefficient for ISTATS balance for `i'th matrix position
@@ -2142,6 +2056,7 @@ C    TC(i)               time constant (seconds) of plant component `i'
 C -------------------------------------------------------------------------------------------
 
       SUBROUTINE ADS_tank_elec_coeff_gen(IPCOMP,COUT,ISTATS)
+      use h3kmodule
       IMPLICIT NONE
 #include "plant.h"
 #include "building.h"
@@ -2346,9 +2261,7 @@ C-------------------------------------------------------------------------------
 
       INTEGER lnblnk                ! implicit function returning the length of a string
 
-      CHARACTER*128 H3K_rep_NAME    ! H3Kreporting object name
-      character*128 root_name       ! root name of component node 
-      character*128 hold_name       ! temporary variable for string manipulation      
+      INTEGER iNameLength           ! temporary variable length
 
 C---------------------------------------------------------------------------------
 C Start trace if trace output requested.
@@ -2436,7 +2349,7 @@ C time-row values of the UA-value. PUAF is mapped to PUAP by subroutine MZNASS
 C following the solution of the energy matrix for the current time-step.
 C Variables used:
 C    PUAP(i)  present time-row UA-value
-C    PUAF(i)  future time-row UA-value 
+C    PUAF(i)  future time-row UA-value
 C---------------------------------------------------------------------------------
 C-------Determine UA.
         tank_UA_future  = tank_UA  ! `tank_UA' from dbase (could be replaced by a correlation)
@@ -2575,7 +2488,7 @@ C                  temperaturere `T'.
 C    SHTFLD(3,T)   function that returns heat capacity (J/kgK) of water (index 3)
 C                  at temperature `T'.
 C
-C    Modification: Check to see if the tank 
+C    Modification: Check to see if the tank
 C---------------------------------------------------------------------------------
         CALL FC_DHW_load(T_node1_future)
         mdotCp_DHW_present = DHW_draw_present
@@ -2583,7 +2496,7 @@ C-------------------------------------------------------------------------------
      &                     * SHTFLD( 3,T_makeup_present )
         mdotCp_DHW_future  = DHW_draw_future
      &                     * RHOFLD(3,T_makeup_future)
-     &                     * SHTFLD( 3,T_makeup_future ) 
+     &                     * SHTFLD( 3,T_makeup_future )
 
 
 C---------------------------------------------------------------------------------
@@ -2679,7 +2592,7 @@ C-------Steady-state.
 C---------------------------------------------------------------------------------
 C Preparation for forming matrix coefficients for energy balances is now complete.
 C Establish matrix equation self-coupling, cross-coupling, and RHS coefficients.
-C Node coefficient transport for COUT 
+C Node coefficient transport for COUT
 
 C       <-self->| <---cross-->
 C  node   1     |  fc fan-coil adsorber   RHS
@@ -2801,36 +2714,15 @@ C-------------------------------------------------------------------------------
 
 
 C.....Get component name
-      hold_name = pcname(IPCOMP) 
-C.....Format string as: 'plant/NAME/misc_data'
+      iNameLength = lnblnk(pcname(IPCOMP))
 
-       WRITE(root_name,'(A,A,A)') 
-     &     'plant/',
-     &     hold_name(1:lnblnk(hold_name)),
-     &     '/misc_data'
+       call AddToReport(rvPltHeatingOut%Identifier,
+     &        q_element,
+     &        pcname(IPCOMP)(1:iNameLength))
 
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/heating_output'
-
-       call add_to_xml_reporting(
-     &                   q_element,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &                   'Output of heating element' )
-
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/heatdump_future'
-
-       call add_to_xml_reporting(
-     &                   q_heatdump_future,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &                   'Heatdump for water storage tank' )
-
-
+       call AddToReport(rvPltHeatDumpFuture%Identifier,
+     &        q_heatdump_future,
+     &        pcname(IPCOMP)(1:iNameLength))
 
       RETURN
       END
@@ -2916,7 +2808,7 @@ C the input of pressure in order to take into account properties
 C of pressurized water. The modified version of the WCH pipe plant component
 C was used to model the adsorption storage unit and fuel cell plant network
 C investigated for Maria Mottillo's thesis work.
-C This coefficient generator subroutine determines the 
+C This coefficient generator subroutine determines the
 C matrix equation coefficients COUT (in order: self-coupling, cross-
 C coupling, and present-time coefficients) for energy balance (ISTATS=1),
 C 1st phase mass balance (ISTATS=2), or 2nd phase mass (ISTATS=3)
@@ -2963,7 +2855,7 @@ C     CDATA: none
 
       REAL      Press         !-pressure, Pa
       REAL      Temp          !-temperature, K
-      REAL      H20LiquidDensity    !-function that calculates density of water (kg/m^3) 
+      REAL      H20LiquidDensity    !-function that calculates density of water (kg/m^3)
                                     !-for a given temperature (K) and pressure (Pa)
       REAL      H20LiquidCp         !-function that calculates specific heat (J/kgK)
                                     !-for a given temperature (K) and pressure (Pa)
@@ -2981,7 +2873,7 @@ C Initialize pointers to inter-connection(s) ICON, and node(s) INOD
 
 
 C Obtain operating pressure
-      Press = ADATA(IPCOMP,7) * 1000.          !-convert input from kPa to Pa  
+      Press = ADATA(IPCOMP,7) * 1000.          !-convert input from kPa to Pa
 
 C Generate coefficients for energy balance equation
       IF(ISTATS.EQ.1) THEN
@@ -3001,7 +2893,7 @@ C First initialize UA modulus (for calculation of containment heat loss)
 
             Temp = TW + 273.15                       !-convert from oC to K
 
-C revised calculation of VW            
+C revised calculation of VW
             VW = WMFR / ( H20LiquidDensity(Temp,Press) *
      &                    ADATA(IPCOMP,6) )
 
@@ -3222,6 +3114,7 @@ C            4 Pressure (kPa)
 C     CDATA: 1 Volume flow rate (m^3/s)
 
       SUBROUTINE Press_WCH_pump_coeff_gen(IPCOMP,COUT,ISTATS)
+      use h3kmodule
 #include "plant.h"
 #include "building.h"
 #include "net_flow.h"
@@ -3271,9 +3164,7 @@ C Electrical details for specified plant components
       REAL      COUT(MPCOE)
       character outs*124
 
-      character*128  H3K_rep_NAME      ! H3Kreporting object name
-      character*128  root_name         ! root name of component node
-      character*128  hold_name         ! temporary variable for string manipulation
+      INTEGER   iNameLength        ! temporary variabele name length
 
       logical closea
 
@@ -3480,26 +3371,12 @@ C---------------------------------------------------------
 C XML output
 C--------------------------------------------------------
 
-C.....Get component name
-      hold_name = pcname(IPCOMP) 
-C.....Format string as: 'plant/NAME/misc_data'
+C.....Get component name's length
+      iNameLength = lnblnk(pcname(IPCOMP))
 
-       WRITE(root_name,'(A,A,A)') 
-     &     'plant/',
-     &     hold_name(1:lnblnk(hold_name)),
-     &     '/misc_data'
-
-       WRITE(H3K_rep_NAME,'(A,A)') 
-     &     root_name(1:lnblnk(root_name)), '/power_draw'
-
-       call add_to_xml_reporting(
-     &                   fPowerDraw,
-     &                   H3K_rep_name,
-     &                   'units',
-     &                   '(W)',
-     &                   'Power demand of pump' )
-
-
+      call AddToReport(rvPltPowDraw%Identifier,
+     &      fPowerDraw,
+     &      pcname(IPCOMP)(1:iNameLength))
 
       RETURN
       END

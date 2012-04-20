@@ -7,12 +7,17 @@ LIBnoX = libnoxesru.a
 LIBver = libversion.a
 LIBfpe = libfpe.a
 LIBxml = libXML.a
+LIBsqlite = libSQLite.a
 # .SUFFIXES: .o .F
 # .F.o:
 # 	$(MFC) $(LD_FLAGS) $(FFLAGS) -c $<
 # 
 # %.o : %.c
 # 	$(MCC) $(CFLAGS) -c $<
+
+%.o : %.f90
+	$(MCC) $(FFLAGS) -c $<
+
 
 OBJECTSX11 = esru_ask.o esru_blk.o esru_lib.o esru_libNonGTK.o esru_libX11.o esru_x.o esru_util.o
 OBJECTSGTK = esru_ask.o esru_blk.o esru_lib.o esru_libGTK.o esru_nox.o esru.o esru_util.o
@@ -24,12 +29,21 @@ OBJECTS_FPE_disable = fpe_disable.o
 
 
 # Additional C and Fortran objectives needed for H3Kreports
-XML_COBJECTS = TReportsManager.o TBinnedData.o TVariableData.o TXMLAdapter.o TWildCards.o
-XML_FOBJECTS = ConfigureH3kReports.o
+XML_COBJECTS = TBinnedData.o TXMLAdapter.o TWildCards.o TReportData.o TReportsManager.o log.o
+XML_FOBJECTS = h3kmodule.o ConfigureH3kReports.o 
 
 # C and Fortran stubs used to build bps without H3Kreports
 NO_XML_C_STUBS =
 NO_XML_F_STUBS = TReports_dummy.o
+
+# Additional C and Fortran objectives needed for SQLite
+SQLite_COBJECTS = DBManager.o
+SQLite_FOBJECTS = 
+
+# C and Fortran stubs used to build bps without SQLite
+NO_SQLite_C_STUBS = DBManager_stub.o
+NO_SQLite_F_STUBS = 
+
 
 GTKFLAGS = -I. -DG_DISABLE_DEPRECIATED -DGDK_DISABLE_DEPRECIATED \
 	-DGDK_PIXBUF_DISABLE_DEPRECIATED -DGTK_DISABLE_DEPRECIATED \
@@ -71,6 +85,19 @@ the_libNoFPE: $(OBJECTS_FPE_disable)
 	then ranlib $(LIBfpe) ; \
 	fi
 
+# Target to build bps with SQLite
+the_libSQLite: $(SQLite_FOBJECTS) $(SQLite_COBJECTS)
+	ar ruv $(LIBsqlite) $(SQLite_FOBJECTS) $(SQLite_COBJECTS)
+	if test -s /usr/bin/ranlib ; \
+	then ranlib $(LIBsqlite) ; \
+	fi
+
+# Target to build bps without SQLite
+the_libNoSQLite: $(NO_SQLite_C_STUBS) $(NO_SQLite_F_STUBS)
+	ar ruv $(LIBsqlite) $(NO_SQLite_C_STUBS) $(NO_SQLite_F_STUBS)
+	if test -s /usr/bin/ranlib ; \
+	then ranlib $(LIBsqlite) ; \
+	fi
 
 # Target to build bps with h3kreports
 the_libH3KReports: $(XML_FOBJECTS) $(XML_COBJECTS)
@@ -87,12 +114,14 @@ the_libNoH3KReports: $(NO_XML_C_STUBS) $(NO_XML_F_STUBS)
 	fi
 
 clean:
-	rm -f core $(LIBX11) $(LIBnoX) $(LIBGTK) $(LIBver) $(LIBfpe) $(LIBxml) \
+	rm -f core $(LIBX11) $(LIBnoX) $(LIBGTK) $(LIBver) $(LIBfpe) $(LIBxml) $(LIBsqlite)\
 	           $(OBJECTSX11) $(OBJECTSnoX) $(OBJECTSGTK) $(GTK_OBJ) \
 	           $(OBJECTSVersion) $(OBJECTS_FPE_enable) $(OBJECTS_FPE_disable) \
 	           $(XML_COBJECTS) $(XML_FOBJECTS) $(NO_XML_C_STUBS) $(NO_XML_F_STUBS) \
+		   $(SQLite_COBJECTS) $(SQLite_FOBJECTS) $(NO_SQLite_C_STUBS) $(NO_SQLite_F_STUBS) \
 	           TReports_dummy.F ConfigureH3kReports.F TReportsManager.cpp \
-	           TBinnedData.cpp TVariableData.cpp TXMLAdapter.cpp TWildCards.cpp 
+	           TBinnedData.cpp TXMLAdapter.cpp TWildCards.cpp DBManager.cpp TReportData.cpp \
+		        h3kmodule.f90 h3kmodule.mod DBManager_stub.cpp log.cpp
 # File-by-file build instructions:
 
 esp-r.o:
@@ -136,7 +165,6 @@ esru_util.o:
 version.o:
 	$(MFC) $(LD_FLAGS) $(FFLAGS) -c version.F
 
-
 # H3k-reports object files
 TReportsManager.o:
 	rm -f TReportsManager.cpp ;
@@ -146,10 +174,6 @@ TBinnedData.o:
 	rm -f TBinnedData.cpp ;
 	ln -s $(CETCdir)/h3kreports/TBinnedData.cpp .;
 	$(MCPL) $(LD_FLAGS) $(CFLAGS) -c TBinnedData.cpp
-TVariableData.o:
-	rm -f TVariableData.cpp ;
-	ln -s $(CETCdir)/h3kreports/TVariableData.cpp .;
-	$(MCPL) $(LD_FLAGS) $(CFLAGS) -c TVariableData.cpp
 TXMLAdapter.o:
 	rm -f TXMLAdapter.cpp ;
 	ln -s $(CETCdir)/h3kreports/TXMLAdapter.cpp . ;
@@ -163,6 +187,26 @@ TReports_dummy.o:
 	ln -s $(CETCdir)/h3kreports/TReports_dummy.F . ;
 	$(MFC) $(LD_FLAGS) $(FFLAGS) -c TReports_dummy.F
 ConfigureH3kReports.o:
-	rm -f ConfigureH3kReports.F ;
+	rm -f ConfigureH3kReports.F ;	
 	ln -s $(CETCdir)/h3kreports/ConfigureH3kReports.F . ;
 	$(MFC) $(LD_FLAGS) $(FFLAGS) -c ConfigureH3kReports.F
+h3kmodule.o:
+	rm -f h3kmodule.f90
+	ln -s $(CETCdir)/h3kmodule.f90 . ;
+	$(MFC) $(LD_FLAGS) $(FFLAGS) -c h3kmodule.f90; 
+DBManager.o:
+	rm -f DBManager.cpp ;
+	ln -s $(CETCdir)/h3kreports/DBManager.cpp .;
+	$(MCPL) $(LD_FLAGS) $(CFLAGS) -c DBManager.cpp
+DBManager_stub.o:
+	rm -f DBManager_stub.cpp ;
+	ln -s $(CETCdir)/h3kreports/DBManager_stub.cpp .;
+	$(MCPL) $(LD_FLAGS) $(CFLAGS) -c DBManager_stub.cpp
+TReportData.o:
+	rm -f TReportData.cpp ;
+	ln -s $(CETCdir)/h3kreports/TReportData.cpp .;
+	$(MCPL) $(LD_FLAGS) $(CFLAGS) -c TReportData.cpp
+log.o:
+	rm -f log.cpp ;
+	ln -s $(CETCdir)/h3kreports/log.cpp .;
+	$(MCPL) $(LD_FLAGS) $(CFLAGS) -c log.cpp

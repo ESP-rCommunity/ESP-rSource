@@ -11,7 +11,10 @@ PROG = ecnv$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-MODULE_OBJECTS = startup.o aim2_module.o
+%.o : %.f90
+	$(MCC) $(FFLAGS) -c $<
+
+MODULE_OBJECTS = h3kmodule.o startup.o aim2_module.o
 
 OBJECTS = ecnv.o ascii_mat.o basesimp.o basesimp_inputs.o \
 	  bscoeff.o bscoeff_extended.o c2fdum.o ctread.o e2vrml.o \
@@ -21,7 +24,8 @@ OBJECTS = ecnv.o ascii_mat.o basesimp.o basesimp_inputs.o \
 	  nwkrewr.o pltcfg.o readTrnsys.o rwipv.o rwsbem.o sort.o \
 	  tdfile.o wwxfig.o editCFC.o
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod \
+	parse_command_line.mod h3kmodule.mod
 
 $(PROG): $(MODULE_OBJECTS) $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS)
@@ -116,6 +120,9 @@ startup.F:
 tdfile.F:
 	rm -f tdfile.F
 	ln -s $(COMdir)/tdfile.F .
+h3kmodule.f90:
+	rm -f h3kmodule.f90
+	ln -s $(CETCdir)/h3kmodule.f90 .
 
 editCFC.F:
 	rm -f editCFC.F
@@ -133,4 +140,4 @@ clean:
 	c2fdum.F ctread.F econstr.F edatabase.F egeometry.F egtgeom.F \
 	emfnetw.F emkcfg.F enetmisc.F enetrewr.F eroper.F esru_misc.F esystem.F \
 	filelist.F item.F mfcdat.F nwkrewr.F pltcfg.F readTrnsys.F rwipv.F rwsbem.F \
-	sort.F startup.F tdfile.F editCFC.F
+	sort.F startup.F tdfile.F editCFC.F h3kmodule.f90
