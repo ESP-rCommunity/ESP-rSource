@@ -1875,7 +1875,7 @@ C NS is the number of surface in the zone << why pass this value? >>
       COMMON/HCCEN/CENLOC(MP,14)
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
-      character outs*124,SN*12,ITEM(MS+5)*30,KEY*1
+      character outs*124,SN*12,SNH*16,ITEM(MS+5)*32,KEY*1
       CHARACTER stuff*10
       character hcfpdescr*72
       logical close,ok,dok
@@ -1939,14 +1939,14 @@ C Initial menu entry setup.
 
 C Loop through the items until the page to be displayed. M is the
 C current menu line index. Build up text strings for the menu.
-        ITEM(1) ='  Surface   orien.  hci  hce'
+        ITEM(1) ='  Surface   orient.  hci  hce'
     3   M=MHEAD
         DO 10 L=1,ILEN
           IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
             M=M+1
             icc=izstocn(iz,l)
             CALL EMKEY(L,KEY,IER)
-            WRITE(ITEM(M),'(a,1x,3a,2f5.1)') KEY,SSNAME(icc),' ',
+            WRITE(ITEM(M),'(a,1x,3a,2f6.2)') KEY,SSNAME(icc),' ',
      &        SSVFC(icc),HCI(IN,L),HCE(IN,L)
           ENDIF
    10   CONTINUE
@@ -1968,7 +1968,7 @@ C Help text for this menu.
         helptopic='zone_htc_control_edit'
         call gethelptext(helpinsub,helptopic,nbhelp)
 
-        CALL EMENU('Conv coefficients',ITEM,NITEMS,INO)
+        CALL EMENU('Convection coefficients',ITEM,NITEMS,INO)
 
 C Edit data or display help.
         if (INO.eq.NITEMS) then
@@ -1989,12 +1989,12 @@ C Edit item identified by KEYIND.
           icc=izstocn(iz,is) 
           write(outs,'(a,i3,1x,a)')'Hc values for surface',is,
      &      SSNAME(ICC)(1:lnblnk(SSNAME(ICC)))
-          write (SN,'(2f5.1,1x)') HCI(IN,IS),HCE(IN,IS)
-          CALL EASKS(SN,outs,'inside, outside?',12,' -1.0 -1.0',
+          write (SNH,'(2f7.2)') HCI(IN,IS),HCE(IN,IS)
+          CALL EASKS(SNH,outs,'inside, outside?',16,' -1.0 -1.0 ',
      &      'hc values',IER,nbhelp)
           K=0
-          CALL EGETWR(SN,K,HCI(IN,IS),-1.5,1000.,'F','hci value',IER)
-          CALL EGETWR(SN,K,HCE(IN,IS),-1.5,1000.,'F','hce value',IER)
+          CALL EGETWR(SNH,K,HCI(IN,IS),-1.5,1000.,'F','hci value',IER)
+          CALL EGETWR(SNH,K,HCE(IN,IS),-1.5,1000.,'F','hce value',IER)
         else
 
 C Not one of the legal menu choices.
