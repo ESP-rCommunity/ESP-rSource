@@ -1177,17 +1177,30 @@ C.............get solar incidence angle on surface and total solar (dir + diff)
      &                                             solrad_diff, 
      &                                   inc_ang,psazi2,pselv2)
 
-c           call add_to_xml_reporting (
-c     &        (solrad_dir+solrad_diff),
-c     &        H3K_rep_Name(1:iH3K_NameLen) // '/totRad',
-c     &        'units', '(W/m2)',
-c     &        'Total solar radiation incidence on surface (dir+diff)')
+           call AddToReport (
+     &          rvExtSurfTotRad%Identifier,
+     &          (solrad_dir+solrad_diff),
+     &          zname(iZone)(1:lnzname(iZone)),
+     &          cSurf_Chars)
 
-c           call add_to_xml_reporting (
-c     &        psazi2,
-c     &        H3K_rep_Name(1:iH3K_NameLen) // '/psazi',
-c     &        'units', '(o)',
-c     &        'Solar azimuth angle relative to surface ' )
+           call AddToReport (
+     &          rvExtSurfSolAzi%Identifier,
+     &          psazi2,
+     &          zname(iZone)(1:lnzname(iZone)),
+     &          cSurf_Chars)
+
+           call AddToReport (
+     &          rvExtSurfSolElev%Identifier,
+     &          pselv2,
+     &          zname(iZone)(1:lnzname(iZone)),
+     &          cSurf_Chars)
+
+           call AddToReport (
+     &          rvExtSurfRadIncAng%Identifier,
+     &          inc_ang,
+     &          zname(iZone)(1:lnzname(iZone)),
+     &          cSurf_Chars)
+
 
          endif
 C node temperature for node "nndc" is zero for whatever reasons ... (???)
@@ -2405,6 +2418,11 @@ C.....Sky temperature and cloud cover
       REAL TSKY,CLOUDC,CLOUD1,CLOUD2,CLOUD3,TBAVE,TBROOF,TBNRTH
       REAL TBSUTH,TBEAST,TBWEST
 
+
+      COMMON/SUNPOS/SAZI,SALT,ISUNUP
+      real sazi,salt
+      integer ISUNUP
+
 C.....DECLARATIONS for H3Kreporting object
 
       character*3   cClimateName
@@ -2423,13 +2441,6 @@ C----------------------------------------------------------------------
 C.....The following code is used to transport data to
 C.....the H3K reporting object.
 
-C.....Set climate data output base name
-c      cClimateName='clm'
-
-C.......Set base name for climate data output
-c      H3K_rep_NAME = cClimateName
-c      iH3K_NameLen=lnblnk(H3K_rep_NAME)
-
 C.....DIFFUSE HORIZONTAL RADIATION
       call AddToReport(
      &   rvClimateSolarDiffuseHorizontalRadiation%Identifier,
@@ -2440,6 +2451,14 @@ C.....DIRECT NORMAL RADIATION
       call AddToReport(
      &    rvClimateSolarDirectNormalRadiation%Identifier,
      &    QDF)
+
+      call AddToReport(
+     &    rvClimateSolarAzimuth%Identifier,
+     &    sazi)
+
+      call AddToReport(
+     &    rvClimateSolarElevation%Identifier,
+     &    salt)
 
 C.....AMBIENT TEMPERATURE
       call AddToReport(
@@ -2452,18 +2471,14 @@ C.....Relative humidity
      &    HF)
 
 C .... Ambient AIR PARTIAL VAPOUR PRESSURE
-c      call add_to_xml_reporting (
-c     &         HF/100.0*Psat01(TF),
-c     &         H3K_rep_Name(1:iH3K_NameLen)// '/pvap',
-c     &         'units', '(Pa)',
-c     &         'Climate partial vapour pressure' )
+      call AddToReport(
+     &    rvClimateVapourPressure%Identifier,
+     &    HF/100.0*Psat01(TF))
 
 C .... Ambient AIR MOISTURE CONTENT
-c      call add_to_xml_reporting (
-c     &         HUMRT1(TF,HF,PATMOS,0),
-c     &         H3K_rep_Name(1:iH3K_NameLen)// '/moisture',
-c     &         'units', '(kg/kg_dry-air)',
-c     &         'Climate moisture content' )
+      call AddToReport(
+     &    rvClimateMoistureContent%Identifier,
+     &    HUMRT1(TF,HF,PATMOS,0))
 
 C.....WIND VELOCITY
       call AddToReport(

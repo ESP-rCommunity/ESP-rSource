@@ -115,10 +115,12 @@ MODULE h3kmodule
          rvBuildingAllZonesInternalGainsTotal, rvBuildingAllZonesInternalGainsUseful, &
          rvBuildingAllZonesInternalGainsAdverse, rvBuildingAllZonesEnergyBalanceNet, rvTemperature, &
          rvExtSurfTemperature, rvPlantContainmentFlux, rvHCi, rvHCe, rvPRT, rvHRi, rvAmbRT, &
+         rvExtSurfTotRad,rvExtSurfRadIncAng,rvExtSurfSolAzi,rvExtSurfSolElev, &
          rvClimateSolarDiffuseHorizontalRadiation, rvClimateSolarDirectNormalRadiation, &
          rvClimateDryBulbTemperature, rvClimateRelativeHumidity, rvClimateWindVelocity, &
          rvClimateWindDirection, rvClimateCloudCover, rvClimateSkyTemperature, &
-         rvClimateSkyTemperatureDepression, rvClimateAmbientAirTsat
+         rvClimateSkyTemperatureDepression, rvClimateAmbientAirTsat, &
+         rvClimateSolarAzimuth,rvClimateSolarElevation,rvClimateVapourPressure,rvClimateMoistureContent
    Type(ReportVariable) :: rvBuildingTimePresent, rvBuildingTimeFuture,rvBuildingHourPresent, &
          rvBuildingHourFuture,rvBuildingDayNumberPresent, rvBuildingDayNumberFuture,&
          rvBuildingYearPresent,rvBuildingYearFuture, rvBuildingDayPresent,rvBuildingMonth, &
@@ -141,7 +143,10 @@ MODULE h3kmodule
          rvMfnContamCon
 
    !Used by ComplexFenestration.F
-   Type(ReportVariable) :: rvCFCUvalueISO,rvCFCUvalueActual
+   Type(ReportVariable) :: rvCFCUvalueISO,rvCFCUvalueActual,rvCFCRgap, &
+         rvCFCvbAngle,rvCFCvbOnOff,rvCFCTransBB,rvCFCTransBBvis, &
+         rvCFCTransD,rvCFCTransDvis, &
+         rvCFCRadTot,rvCFCRadDifSky,rvCFCRadDifGrd,rvCFCIncAng
 
    !Used by SiteUtilities.F
    Type(ReportVariable) :: rvTFuelAllEndEnergyContent, rvTFuelAllEndQty, &
@@ -901,7 +906,31 @@ CONTAINS
       rvExtSurfTemperature%MetaType = 'units'
       rvExtSurfTemperature%VariableType = '(oC)'
       rvExtSurfTemperature%Description = 'Temperature on exterior face'
-      Call AddVariable(rvExtSurfTemperature )
+      Call AddVariable(rvExtSurfTemperature)
+
+      rvExtSurfTotRad%VariableName = 'bui/*/sur*/ext_surf_totRad'
+      rvExtSurfTotRad%MetaType = 'units'
+      rvExtSurfTotRad%VariableType = '(W/m2)'
+      rvExtSurfTotRad%Description = 'Total solar radiation incidence on ext. surface (dir+diff)'
+      Call AddVariable(rvExtSurfTotRad)
+
+      rvExtSurfSolAzi%VariableName = 'bui/*/sur*/psazi'
+      rvExtSurfSolAzi%MetaType = 'units'
+      rvExtSurfSolAzi%VariableType = '(°)'
+      rvExtSurfSolAzi%Description = 'Solar azimuth angle relative to surface'
+      Call AddVariable(rvExtSurfSolAzi)
+
+      rvExtSurfSolElev%VariableName = 'bui/*/sur*/pselv'
+      rvExtSurfSolElev%MetaType = 'units'
+      rvExtSurfSolElev%VariableType = '(°)'
+      rvExtSurfSolElev%Description = 'Solar elevation angle relative to surface'
+      Call AddVariable(rvExtSurfSolElev)
+
+      rvExtSurfRadIncAng%VariableName = 'bui/*/sur*/inc_ang'
+      rvExtSurfRadIncAng%MetaType = 'units'
+      rvExtSurfRadIncAng%VariableType = '(°)'
+      rvExtSurfRadIncAng%Description = 'Surface radiation incidence angle'
+      Call AddVariable(rvExtSurfRadIncAng)
 
       rvPlantContainmentFlux%VariableName = 'bui/z_*/s_*/plant_containment_flux'
       rvPlantContainmentFlux%MetaType = 'units'
@@ -957,6 +986,18 @@ CONTAINS
       rvClimateSolarDirectNormalRadiation%Description = 'Climate direct normal solar radiation'
       Call AddVariable(rvClimateSolarDirectNormalRadiation)
 
+      rvClimateSolarAzimuth%VariableName = 'clm/solar/sazi'
+      rvClimateSolarAzimuth%MetaType = 'units'
+      rvClimateSolarAzimuth%VariableType = '(°)'
+      rvClimateSolarAzimuth%Description = 'Solar azimuth angle'
+      Call AddVariable(rvClimateSolarAzimuth)
+
+      rvClimateSolarElevation%VariableName = 'clm/solar/salt'
+      rvClimateSolarElevation%MetaType = 'units'
+      rvClimateSolarElevation%VariableType = '(°)'
+      rvClimateSolarElevation%Description = 'Solar elevation angle'
+      Call AddVariable(rvClimateSolarElevation)
+
       rvClimateDryBulbTemperature%VariableName = 'clm/dry_bulb_temperature'
       rvClimateDryBulbTemperature%MetaType = 'units'
       rvClimateDryBulbTemperature%VariableType = '(oC)'
@@ -968,6 +1009,18 @@ CONTAINS
       rvClimateRelativeHumidity%VariableType = '(%)'
       rvClimateRelativeHumidity%Description = 'Climate relative humidity'
       Call AddVariable(rvClimateRelativeHumidity)
+
+      rvClimateVapourPressure%VariableName = 'clm/pvap'
+      rvClimateVapourPressure%MetaType = 'units'
+      rvClimateVapourPressure%VariableType = '(Pa)'
+      rvClimateVapourPressure%Description = 'Climate partial vapour pressure'
+      Call AddVariable(rvClimateVapourPressure)
+
+      rvClimateMoistureContent%VariableName = 'clm/relative_humidity'
+      rvClimateMoistureContent%MetaType = 'units'
+      rvClimateMoistureContent%VariableType = '(kg/kg_dry-air)'
+      rvClimateMoistureContent%Description = 'Climate moisture content'
+      Call AddVariable(rvClimateMoistureContent)
 
       rvClimateWindVelocity%VariableName = 'clm/wind/velocity'
       rvClimateWindVelocity%MetaType = 'units'
@@ -1300,17 +1353,77 @@ CONTAINS
       Call AddVariable(rvMfnContamCon)
 
       !Used by ComplexFenestration.F
-      rvCFCUvalueISO%VariableName = 'bui/*/s_*/CFC/Unom_*'
+      rvCFCUvalueISO%VariableName = 'bui/*/sur*/CFC_Unom_*'
       rvCFCUvalueISO%MetaType = 'units'
       rvCFCUvalueISO%VariableType = '(W/(m2 K))'
       rvCFCUvalueISO%Description = 'Nominal ISO CFC IGU U-value'
       Call AddVariable(rvCFCUvalueISO)
 
-      rvCFCUvalueActual%VariableName = 'bui/*/s_*/CFC/Uact_*'
+      rvCFCUvalueActual%VariableName = 'bui/*/sur_*/CFC_Uact_*'
       rvCFCUvalueActual%MetaType = 'units'
       rvCFCUvalueActual%VariableType = '(W/(m2 K))'
       rvCFCUvalueActual%Description = 'Actual CFC IGU U-value'
       Call AddVariable(rvCFCUvalueActual)
+
+      rvCFCRgap%VariableName = 'bui/*/sur*/lay*/CFC_Rgap'
+      rvCFCRgap%MetaType = 'units'
+      rvCFCRgap%VariableType = '(m2 K/W)'
+      rvCFCRgap%Description = 'CFC gap resistance (convective only!)'
+      Call AddVariable(rvCFCRgap)
+
+      rvCFCvbAngle%VariableName = 'bui/*/sur*/CFC_Vb_angle'
+      rvCFCvbAngle%MetaType = 'units'
+      rvCFCvbAngle%VariableType = '(°)'
+      rvCFCvbAngle%Description = 'Venetian type blind slat angle'
+      Call AddVariable(rvCFCvbAngle)
+
+      rvCFCvbOnOff%VariableName = 'bui/*/sur*/CFC_Vb_on-off'
+      rvCFCvbOnOff%MetaType = 'units'
+      rvCFCvbOnOff%VariableType = '(-)'
+      rvCFCvbOnOff%Description = 'Venetian type blind ON/OFF flag'
+      Call AddVariable(rvCFCvbOnOff)
+
+      rvCFCTransBB%VariableName = 'bui/*/sur*/CFC_transBB'
+      rvCFCTransBB%MetaType = 'units'
+      rvCFCTransBB%VariableType = '(W/m2)'
+      rvCFCTransBB%Description = 'CFC direct beam transmission'
+      Call AddVariable(rvCFCTransBB)
+
+      rvCFCTransD%VariableName = 'bui/*/sur*/CFC_transD'
+      rvCFCTransD%MetaType = 'units'
+      rvCFCTransD%VariableType = '(W/m2)'
+      rvCFCTransD%Description = 'CFC diffuse transmission'
+      Call AddVariable(rvCFCTransD)
+
+      rvCFCTransBBvis%VariableName = 'bui/*/sur*/CFC_transBB_vis'
+      rvCFCTransBBvis%MetaType = 'units'
+      rvCFCTransBBvis%VariableType = '(-)'
+      rvCFCTransBBvis%Description = 'CFC direct beam transmission, visible light'
+      Call AddVariable(rvCFCTransBBvis)
+
+      rvCFCTransDvis%VariableName = 'bui/*/sur*/CFC_transD_vis'
+      rvCFCTransDvis%MetaType = 'units'
+      rvCFCTransDvis%VariableType = '(-)'
+      rvCFCTransDvis%Description = 'CFC diffuse transmission, visible light'
+      Call AddVariable(rvCFCTransDvis)
+
+      rvCFCRadTot%VariableName = 'bui/*/sur*/CFC_totRad'
+      rvCFCRadTot%MetaType = 'units'
+      rvCFCRadTot%VariableType = '(W/m2)'
+      rvCFCRadTot%Description = 'CFC total radiation incidence (dir+diff)'
+      Call AddVariable(rvCFCRadTot)
+
+      rvCFCRadDifGrd%VariableName = 'bui/*/sur*/CFC_RadDifGrd'
+      rvCFCRadDifGrd%MetaType = 'units'
+      rvCFCRadDifGrd%VariableType = '(W/m2)'
+      rvCFCRadDifGrd%Description = 'CFC diffuse radiation from ground'
+      Call AddVariable(rvCFCRadDifGrd)
+
+      rvCFCRadDifSky%VariableName = 'bui/*/sur*/CFC_RadDifSky'
+      rvCFCRadDifSky%MetaType = 'units'
+      rvCFCRadDifSky%VariableType = '(W/m2)'
+      rvCFCRadDifSky%Description = 'CFC diffuse radiation from sky'
+      Call AddVariable(rvCFCRadDifSky)
 
       !Used by SiteUtilities.F
       rvTFuelAllEndEnergyContent%VariableName = 'total_fuel_use/*/all_end_uses/energy_content'
