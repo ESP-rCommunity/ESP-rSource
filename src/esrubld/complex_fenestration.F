@@ -5212,13 +5212,13 @@ C CFC beam and diffuse transmission
 
 C CFC beam and diffuse transmission for light
         call AddToReport (
-     &         rvCFCTransBB%Identifier,
+     &         rvCFCTransBBvis%Identifier,
      &         transBB_V(icomp,i),
      &         zname(icomp)(1:lnzname(icomp)),
      &         cSurface)
 
         call AddToReport (
-     &         rvCFCTransD%Identifier,
+     &         rvCFCTransDvis%Identifier,
      &         transD_V(icomp,i),
      &         zname(icomp)(1:lnzname(icomp)),
      &         cSurface)

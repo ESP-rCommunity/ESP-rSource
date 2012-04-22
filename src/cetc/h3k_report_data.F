@@ -2340,26 +2340,24 @@ C......=====================================================
 C......NODE DATA -- MAX node number 99
 C......Include only if h3k reports on building/zone_*/surf_*/node_* variables
          if (lIncl_Node) then
-!       for comparison with development branch, disable these values
-!       since tester.pl does full data dump
-!       the way this is design, unless the <dump_all_data> is set to true
-!       or you request one of these node values then the loop will be bypassed.
-!
-!          do iNode = 1, (nndc (iZone, iSurface )-1)
-!             if ( iNode .gt. 9 ) then
-!               write(cNode_Chars, '(I2)')  iNode
-!             else
-!               write(cNode_Chars, '(A,I1)') '0', iNode
-!             endif
-!
-!C...........MLC layer temperature
-!C...........->Report data
-!            Call AddToReport(rvNodeTemp%Identifier,
-!     &         tfc(iZone,iSurface,iNode),
-!     &         zname(iZone)(1:lnzname(iZone)),
-!     &         cSurf_Chars,
-!     &         cNode_Chars)
-!          enddo  ! <- end iNode = 1,N of iSurface 1,N of iZone
+c        Unless the <dump_all_data> is set to true or you request 
+c        one of these node values then the loop will be bypassed.
+
+          do iNode = 1, (nndc (iZone, iSurface )-1)
+             if ( iNode .gt. 9 ) then
+               write(cNode_Chars, '(I2)')  iNode
+             else
+               write(cNode_Chars, '(A,I1)') '0', iNode
+             endif
+
+C...........MLC layer temperature
+C...........->Report data
+            Call AddToReport(rvNodeTemp%Identifier,
+     &         tfc(iZone,iSurface,iNode),
+     &         zname(iZone)(1:lnzname(iZone)),
+     &         cSurf_Chars,
+     &         cNode_Chars)
+          enddo  ! <- end iNode = 1,N of iSurface 1,N of iZone
          endif ! <- end lIncl_Node
       enddo ! <- end iSurface 1,N of iZone
 

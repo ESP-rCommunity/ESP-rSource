@@ -968,7 +968,7 @@ CONTAINS
       rvAmbRT%Description = 'Ambient radiant temperature for exterior surface'
       Call AddVariable(rvAmbRT)
 
-      rvNodeTemp%VariableName = 'bui/*/s*/node_*/temperature'
+      rvNodeTemp%VariableName = 'bui/*/s*/n*/temp'
       rvNodeTemp%MetaType = 'units'
       rvNodeTemp%VariableType = '(oC)'
       rvNodeTemp%Description = 'Temperature at node within multilayer construction'
