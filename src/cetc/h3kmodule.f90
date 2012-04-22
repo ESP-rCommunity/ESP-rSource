@@ -896,19 +896,19 @@ CONTAINS
       rvBuildingAllZonesEnergyBalanceNet%Description = 'Energy balance in building (Gains + Plant interaction - Loads; all zones).'
       Call AddVariable(rvBuildingAllZonesEnergyBalanceNet)
 
-      rvTemperature%VariableName = 'bui/*/s*/temperature'
+      rvTemperature%VariableName = 'bui/*/s*/temp_inside'
       rvTemperature%MetaType = 'units'
       rvTemperature%VariableType = '(oC)'
       rvTemperature%Description = 'Temperature on zone inside face'
       Call AddVariable(rvTemperature)
 
-      rvExtSurfTemperature%VariableName = 'bui/*/s*/ext_surf_temperature'
+      rvExtSurfTemperature%VariableName = 'bui/*/s*/temp_outside'
       rvExtSurfTemperature%MetaType = 'units'
       rvExtSurfTemperature%VariableType = '(oC)'
       rvExtSurfTemperature%Description = 'Temperature on exterior face'
       Call AddVariable(rvExtSurfTemperature)
 
-      rvExtSurfTotRad%VariableName = 'bui/*/s*/ext_surf_totRad'
+      rvExtSurfTotRad%VariableName = 'bui/*/s*/totRad'
       rvExtSurfTotRad%MetaType = 'units'
       rvExtSurfTotRad%VariableType = '(W/m2)'
       rvExtSurfTotRad%Description = 'Total solar radiation incidence on ext. surface (dir+diff)'
@@ -1016,7 +1016,7 @@ CONTAINS
       rvClimateVapourPressure%Description = 'Climate partial vapour pressure'
       Call AddVariable(rvClimateVapourPressure)
 
-      rvClimateMoistureContent%VariableName = 'clm/relative_humidity'
+      rvClimateMoistureContent%VariableName = 'clm/moisture_content'
       rvClimateMoistureContent%MetaType = 'units'
       rvClimateMoistureContent%VariableType = '(kg/kg_dry-air)'
       rvClimateMoistureContent%Description = 'Climate moisture content'
