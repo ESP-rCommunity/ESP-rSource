@@ -71,7 +71,7 @@
 ** log.cpp: singleton class available to push messages and errors to
 **    file.
 ** ***************************************************************** */
-#define DUMPALLDATA 3
+//-- #define DUMPALLDATA 3
 
 ///convert int i to string
 char* StringValue(char* sDestination, int i)
@@ -175,6 +175,13 @@ char* ReplaceChar(char *str,const char *insert, int start, int end, char cDelimi
    //create a space for the insert, sizeof of the insert
    memmove(pch+insertlenght-1,pch,strlenght-pchlenght+1);
 
+   //insert the characters
+   while(insertlenght-- >0)
+   {
+       str[pchlenght+insertlenght] = insert[start+insertlenght];
+   }
+    
+   return str;
 }
 
 extern "C"
@@ -1214,7 +1221,7 @@ void TReportsManager::AddToReportDataList(int id, const char* sDelimiter, float 
 }
 
 /*
- * Function returing the current status of reporting output file name
+ * Function returning the current status of reporting output file name
  */
 bool TReportsManager::UseResFilenameRoot(){
    return bUseResFilenameRoot;

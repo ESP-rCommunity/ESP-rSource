@@ -163,42 +163,6 @@ class TReportsManager
       *  Parse an XML input file
       */
       void ParseConfigFile( const std::string& filePath );
-  /**
-   * Update configuration file with new options
-   */
-     void UpdateConfigFile();
-
-  /**
-   * Return the current status of h3k output file name (enabled/disabled)
-   */
-     bool UseResFilenameRoot();
-     
-    /**
-     * set CSV file name string
-     */
-    void setCSVFileName(const std::string& sFileName);
-
-    /**
-   * Increment vector count, and return new value.
-   */
-  int Increment_set_vector_count();
-  
-  /**
-   * Read and write data from/to storage data base.
-   */  
-  bool Write_to_db_file(int var_index, double val, long step);
-  double Read_from_db_file(int var_index, long step);
-     
-  /**
-   * Save meta data passed from add_to_xml_reporting call 
-   */
-  void SaveMetaItems(char* sMetaName,
-                        char* sMetaValue,
-                        char* sDescription,
-                        int sMetaNameLength,
-                        int sMetaValueLength,
-                        int sDescriptionLength);
-
 
       /**
       * Return the current status of h3k reports output (enabled/disabled)
@@ -231,13 +195,29 @@ class TReportsManager
                           std::string cValue );
 
       /**
-      * Toggle an on-off configuration parameter
-      */
-      bool ToggleConfig(std::string cParam);
+       * Toggle an on-off configuration parameter
+       */
+       bool ToggleConfig(std::string cParam);
 
 
-      // Clean-up files
+      /**
+       * Update configuration file with new options
+       */
+      void UpdateConfigFile();
+
+
+    // Clean-up files
       void Cleanup();
+    
+      /**
+       * Return the current status of h3k output file name (enabled/disabled)
+       */
+      bool UseResFilenameRoot();
+    
+      /**
+       * set CSV file name string
+       */
+      void setCSVFileName(const std::string& sFileName);
 
    private:
       //contains all variables found in h3kmodule.f90

@@ -366,325 +366,325 @@ CONTAINS
       Call AddVariable(rvPlantPumpElec)
 
       !Used by h3k_report_data.F
-      rvHeatFluxRadiationShortwave%VariableName = 'bui/z_*/s_*/heat_flux/radiation/shortwave'
+      rvHeatFluxRadiationShortwave%VariableName = 'bui/*/s*/heat_flux/radiation/shortwave'
       rvHeatFluxRadiationShortwave%MetaType = 'units'
       rvHeatFluxRadiationShortwave%VariableType = '(W)'
       rvHeatFluxRadiationShortwave%Description = 'Short-wave solar radiation'
       Call AddVariable(rvHeatFluxRadiationShortwave)
 
-      rvHeatFluxRadiationShortwaveUnitArea%VariableName = 'bui/z_*/s_*/heat_flux/radiation/shortwave/unit_area'
+      rvHeatFluxRadiationShortwaveUnitArea%VariableName = 'bui/*/s*/heat_flux/radiation/shortwave/unit_area'
       rvHeatFluxRadiationShortwaveUnitArea%MetaType = 'units'
       rvHeatFluxRadiationShortwaveUnitArea%VariableType = '(W/m2)'
       rvHeatFluxRadiationShortwaveUnitArea%Description = 'Short-wave solar radiation per unit area'
       Call AddVariable(rvHeatFluxRadiationShortwaveUnitArea)
 
-      rvHeatFluxAboveGradeNet%VariableName = 'bui/z_*/s_*/heat_flux/above_grade/net'
+      rvHeatFluxAboveGradeNet%VariableName = 'bui/*/s*/heat_flux/above_grade/net'
       rvHeatFluxAboveGradeNet%MetaType = 'units'
       rvHeatFluxAboveGradeNet%VariableType = '(W)'
       rvHeatFluxAboveGradeNet%Description = 'Heat transfer through building envelope (above-grade)'
       Call AddVariable(rvHeatFluxAboveGradeNet)
 
-      rvHeatFluxSpecifiedBCsNet%VariableName = 'bui/z_*/s_*/heat_flux/to_specified_BCs/net'
+      rvHeatFluxSpecifiedBCsNet%VariableName = 'bui/*/s*/heat_flux/to_specified_BCs/net'
       rvHeatFluxSpecifiedBCsNet%MetaType = 'units'
       rvHeatFluxSpecifiedBCsNet%VariableType = '(W)'
       rvHeatFluxSpecifiedBCsNet%Description = 'Heat loss to specified boundary conditions'
       Call AddVariable(rvHeatFluxSpecifiedBCsNet)
 
-      rvHeatFluxBelowGradeNet%VariableName = 'bui/z_*/s_*/heat_flux/below_grade/net'
+      rvHeatFluxBelowGradeNet%VariableName = 'bui/*/s*/heat_flux/below_grade/net'
       rvHeatFluxBelowGradeNet%MetaType = 'units'
       rvHeatFluxBelowGradeNet%VariableType = '(W)'
       rvHeatFluxBelowGradeNet%Description = 'Heat transfer through building envelope (below-grade)'
       Call AddVariable(rvHeatFluxBelowGradeNet)
 
-      rvHeatFluxCENPartitionNet%VariableName = 'bui/z_*/s_*/heat_flux/CEN_partition/net'
+      rvHeatFluxCENPartitionNet%VariableName = 'bui/*/s*/heat_flux/CEN_partition/net'
       rvHeatFluxCENPartitionNet%MetaType = 'units'
       rvHeatFluxCENPartitionNet%VariableType = '(W)'
       rvHeatFluxCENPartitionNet%Description = 'Heat transfer through CEN 13917 partition'
       Call AddVariable(rvHeatFluxCENPartitionNet)
 
-      rvAirPointTemperature%VariableName = 'bui/z_*/air_point/temperature'
+      rvAirPointTemperature%VariableName = 'bui/*/air_point/temperature'
       rvAirPointTemperature%MetaType = 'units'
       rvAirPointTemperature%VariableType = '(oC)'
       rvAirPointTemperature%Description = 'Zone air-point temperature'
       Call AddVariable(rvAirPointTemperature)
 
-      rvWindowsPosition%VariableName = 'bui/z_*/windows/position'
+      rvWindowsPosition%VariableName = 'bui/*/windows/position'
       rvWindowsPosition%MetaType = 'units'
       rvWindowsPosition%VariableType = '(-)'
       rvWindowsPosition%Description = 'Window position as per BCL25 controller (0->1)'
       Call AddVariable(rvWindowsPosition)
 
-      rvAirFlowModel%VariableName = 'bui/z_*/air_flow_model'
+      rvAirFlowModel%VariableName = 'bui/*/air_flow_model'
       rvAirFlowModel%MetaType = 'units'
       rvAirFlowModel%VariableType = '(-)'
       rvAirFlowModel%Description = 'Air-flow-model (0->3)'
       Call AddVariable(rvAirFlowModel)
 
-      rvAirPointRelativeHumidity%VariableName = 'bui/z_*/air_point/relative_humidity'
+      rvAirPointRelativeHumidity%VariableName = 'bui/*/air_point/relative_humidity'
       rvAirPointRelativeHumidity%MetaType = 'units'
       rvAirPointRelativeHumidity%VariableType = '(%)'
       rvAirPointRelativeHumidity%Description = 'Zone relative humidity'
       Call AddVariable(rvAirPointRelativeHumidity)
 
-      rvSuppliedEnergyNet%VariableName = 'bui/z_*/supplied_energy/net'
+      rvSuppliedEnergyNet%VariableName = 'bui/*/supplied_energy/net'
       rvSuppliedEnergyNet%MetaType = 'units'
       rvSuppliedEnergyNet%VariableType = '(W)'
       rvSuppliedEnergyNet%Description = 'Zone net heat injection/extraction'
       Call AddVariable(rvSuppliedEnergyNet)
 
-      rvSuppliedEnergyHeating%VariableName = 'bui/z_*/supplied_energy/heating'
+      rvSuppliedEnergyHeating%VariableName = 'bui/*/supplied_energy/heating'
       rvSuppliedEnergyHeating%MetaType = 'units'
       rvSuppliedEnergyHeating%VariableType = '(W)'
       rvSuppliedEnergyHeating%Description = 'Zone net heat injection'
       Call AddVariable(rvSuppliedEnergyHeating )
 
-      rvSuppliedEnergyCooling%VariableName = 'bui/z_*/supplied_energy/cooling'
+      rvSuppliedEnergyCooling%VariableName = 'bui/*/supplied_energy/cooling'
       rvSuppliedEnergyCooling%MetaType = 'units'
       rvSuppliedEnergyCooling%VariableType = '(W)'
       rvSuppliedEnergyCooling%Description = 'Zone net heat extraction'
       Call AddVariable(rvSuppliedEnergyCooling )
 
-      rvSuppliedEnergyNetPerm2%VariableName = 'bui/z_*/supplied_energy/net_Perm2'
+      rvSuppliedEnergyNetPerm2%VariableName = 'bui/*/supplied_energy/net_Perm2'
       rvSuppliedEnergyNetPerm2%MetaType = 'units'
       rvSuppliedEnergyNetPerm2%VariableType = '(W/m2)'
       rvSuppliedEnergyNetPerm2%Description = 'Zone net heat injection/extraction'
       Call AddVariable(rvSuppliedEnergyNetPerm2 )
 
-      rvSuppliedEnergyHeatingPerm2%VariableName = 'bui/z_*/supplied_energy/heating_Perm2'
+      rvSuppliedEnergyHeatingPerm2%VariableName = 'bui/*/supplied_energy/heating_Perm2'
       rvSuppliedEnergyHeatingPerm2%MetaType = 'units'
       rvSuppliedEnergyHeatingPerm2%VariableType = '(W/m2)'
       rvSuppliedEnergyHeatingPerm2%Description = 'Zone net heat injection'
       Call AddVariable(rvSuppliedEnergyHeatingPerm2 )
 
-      rvSuppliedEnergyCoolingPerm2%VariableName = 'bui/z_*/supplied_energy/cooling_Perm2'
+      rvSuppliedEnergyCoolingPerm2%VariableName = 'bui/*/supplied_energy/cooling_Perm2'
       rvSuppliedEnergyCoolingPerm2%MetaType = 'units'
       rvSuppliedEnergyCoolingPerm2%VariableType = '(W/m2)'
       rvSuppliedEnergyCoolingPerm2%Description = 'Zone net heat extraction'
       Call AddVariable(rvSuppliedEnergyCoolingPerm2)
 
-      rvThermalLoadsHeatingTotal%VariableName = 'bui/z_*/thermal_loads/heating/total'
+      rvThermalLoadsHeatingTotal%VariableName = 'bui/*/thermal_loads/heating/total'
       rvThermalLoadsHeatingTotal%MetaType = 'units'
       rvThermalLoadsHeatingTotal%VariableType = '(W)'
       rvThermalLoadsHeatingTotal%Description = 'Total heating load ( heat loss ' // &
             'trough envelope + ventilation and infiltration loads )'
       Call AddVariable(rvThermalLoadsHeatingTotal)
 
-      rvThermalLoadsCoolingTotal%VariableName = 'bui/z_*/thermal_loads/cooling/total'
+      rvThermalLoadsCoolingTotal%VariableName = 'bui/*/thermal_loads/cooling/total'
       rvThermalLoadsCoolingTotal%MetaType = 'units'
       rvThermalLoadsCoolingTotal%VariableType = '(W)'
       rvThermalLoadsCoolingTotal%Description = 'Total cooling load ( heat gain ' // &
             'trough envelope + ventilation and infiltration loads )'
       Call AddVariable(rvThermalLoadsCoolingTotal)
 
-      rvThermalLoadsNetLoad%VariableName = 'bui/z_*/thermal_loads/net_load'
+      rvThermalLoadsNetLoad%VariableName = 'bui/*/thermal_loads/net_load'
       rvThermalLoadsNetLoad%MetaType = 'units'
       rvThermalLoadsNetLoad%VariableType = '(W)'
       rvThermalLoadsNetLoad%Description = 'Net load ( heat gain/loss trough ' // &
             'envelope + ventilation and infiltration loads )'
       Call AddVariable(rvThermalLoadsNetLoad)
 
-      rvThermalLoadsHeatingTotalPerm2%VariableName = 'bui/z_*/thermal_loads/heating/total_Perm2'
+      rvThermalLoadsHeatingTotalPerm2%VariableName = 'bui/*/thermal_loads/heating/total_Perm2'
       rvThermalLoadsHeatingTotalPerm2%MetaType = 'units'
       rvThermalLoadsHeatingTotalPerm2%VariableType = '(W/m2)'
       rvThermalLoadsHeatingTotalPerm2%Description = 'Total heating load ( heat ' // &
             'loss trough envelope + ventilation and infiltration loads )'
       Call AddVariable(rvThermalLoadsHeatingTotalPerm2)
 
-      rvThermalLoadsCoolingTotalPerm2%VariableName = 'bui/z_*/thermal_loads/cooling/total_Perm2'
+      rvThermalLoadsCoolingTotalPerm2%VariableName = 'bui/*/thermal_loads/cooling/total_Perm2'
       rvThermalLoadsCoolingTotalPerm2%MetaType = 'units'
       rvThermalLoadsCoolingTotalPerm2%VariableType = '(W/m2)'
       rvThermalLoadsCoolingTotalPerm2%Description = 'Total cooling load ( heat gain ' // &
             'trough envelope + ventilation and infiltration loads )'
       Call AddVariable(rvThermalLoadsCoolingTotalPerm2 )
 
-      rvThermalLoadsNetLoadPerm2%VariableName = 'bui/z_*/thermal_loads/net_load_Perm2'
+      rvThermalLoadsNetLoadPerm2%VariableName = 'bui/*/thermal_loads/net_load_Perm2'
       rvThermalLoadsNetLoadPerm2%MetaType = 'units'
       rvThermalLoadsNetLoadPerm2%VariableType = '(W/m2)'
       rvThermalLoadsNetLoadPerm2%Description = 'Net load ( heat gain/loss trough ' // &
             'envelope + ventilation and infiltration loads )'
       Call AddVariable(rvThermalLoadsNetLoadPerm2 )
 
-      rvEnvWindowsHeatLoss%VariableName = 'bui/z_*/envelope/windows/heat_loss'
+      rvEnvWindowsHeatLoss%VariableName = 'bui/*/envelope/windows/heat_loss'
       rvEnvWindowsHeatLoss%MetaType = 'units'
       rvEnvWindowsHeatLoss%VariableType = '(W)'
       rvEnvWindowsHeatLoss%Description = 'Contribution of windows to heating load'
       Call AddVariable(rvEnvWindowsHeatLoss)
 
-      rvEnvWallsHeatLoss%VariableName = 'bui/z_*/envelope/walls/heat_loss'
+      rvEnvWallsHeatLoss%VariableName = 'bui/*/envelope/walls/heat_loss'
       rvEnvWallsHeatLoss%MetaType = 'units'
       rvEnvWallsHeatLoss%VariableType = '(W)'
       rvEnvWallsHeatLoss%Description = 'Contribution of walls to heating load'
       Call AddVariable(rvEnvWallsHeatLoss)
 
-      rvEnvFloorsHeatLoss%VariableName = 'bui/z_*/envelope/floors/heat_loss'
+      rvEnvFloorsHeatLoss%VariableName = 'bui/*/envelope/floors/heat_loss'
       rvEnvFloorsHeatLoss%MetaType = 'units'
       rvEnvFloorsHeatLoss%VariableType = '(W)'
       rvEnvFloorsHeatLoss%Description = 'Contribution of overhanging floors to heating load'
       Call AddVariable(rvEnvFloorsHeatLoss)
 
-      rvEnvCeilingsHeatLoss%VariableName = 'bui/z_*/envelope/ceilings/heat_loss'
+      rvEnvCeilingsHeatLoss%VariableName = 'bui/*/envelope/ceilings/heat_loss'
       rvEnvCeilingsHeatLoss%MetaType = 'units'
       rvEnvCeilingsHeatLoss%VariableType = '(W)'
       rvEnvCeilingsHeatLoss%Description = 'Contribution of Ceilings to heating load'
       Call AddVariable(rvEnvCeilingsHeatLoss)
 
-      rvEnvFoundationHeatLoss%VariableName = 'bui/z_*/envelope/foundation/heat_loss'
+      rvEnvFoundationHeatLoss%VariableName = 'bui/*/envelope/foundation/heat_loss'
       rvEnvFoundationHeatLoss%MetaType = 'units'
       rvEnvFoundationHeatLoss%VariableType = '(W)'
       rvEnvFoundationHeatLoss%Description = 'Contribution of foundation to heating load'
       Call AddVariable(rvEnvFoundationHeatLoss)
 
-      rvEnvInfAirChangePerHour%VariableName = 'bui/z_*/envelope/infiltration/air_changes_per_hour'
+      rvEnvInfAirChangePerHour%VariableName = 'bui/*/envelope/infiltration/air_changes_per_hour'
       rvEnvInfAirChangePerHour%MetaType = 'units'
       rvEnvInfAirChangePerHour%VariableType = '(ACH)'
       rvEnvInfAirChangePerHour%Description = 'Zone infiltration (air changes per hour)'
       Call AddVariable(rvEnvInfAirChangePerHour)
 
-      rvEnvInfHeatGain%VariableName = 'bui/z_*/envelope/infiltration/heat_gain'
+      rvEnvInfHeatGain%VariableName = 'bui/*/envelope/infiltration/heat_gain'
       rvEnvInfHeatGain%MetaType = 'units'
       rvEnvInfHeatGain%VariableType = '(W)'
       rvEnvInfHeatGain%Description = 'Contribution of infiltration to cooling load'
       Call AddVariable(rvEnvInfHeatGain)
 
-      rvEnvInfHeatLoss%VariableName = 'bui/z_*/envelope/infiltration/heat_loss'
+      rvEnvInfHeatLoss%VariableName = 'bui/*/envelope/infiltration/heat_loss'
       rvEnvInfHeatLoss%MetaType = 'units'
       rvEnvInfHeatLoss%VariableType = '(W)'
       rvEnvInfHeatLoss%Description = 'Contribution of infiltration to heating load'
       Call AddVariable(rvEnvInfHeatLoss)
 
-      rvEnvInfLoad%VariableName = 'bui/z_*/envelope/infiltration/load'
+      rvEnvInfLoad%VariableName = 'bui/*/envelope/infiltration/load'
       rvEnvInfLoad%MetaType = 'units'
       rvEnvInfLoad%VariableType = '(W)'
       rvEnvInfLoad%Description = 'Contribution of infiltration to heating load'
       Call AddVariable(rvEnvInfLoad)
 
-      rvEnvInfNetFlux%VariableName = 'bui/z_*/envelope/infiltration/net_flux'
+      rvEnvInfNetFlux%VariableName = 'bui/*/envelope/infiltration/net_flux'
       rvEnvInfNetFlux%MetaType = 'units'
       rvEnvInfNetFlux%VariableType = '(W)'
       rvEnvInfNetFlux%Description = 'Contribution of infiltration to net heat flux'
       Call AddVariable(rvEnvInfNetFlux)
 
-      rvEnvInfBalanceAir%VariableName = 'bui/z_*/envelope/infiltration/balance/air'
+      rvEnvInfBalanceAir%VariableName = 'bui/*/envelope/infiltration/balance/air'
       rvEnvInfBalanceAir%MetaType = 'units'
       rvEnvInfBalanceAir%VariableType = '(kg/s?)'
       rvEnvInfBalanceAir%Description = 'Air movement into zone'
       Call AddVariable(rvEnvInfBalanceAir)
 
-      rvEnvInfBalanceAirExchange%VariableName = 'bui/z_*/envelope/infiltration/balance/air_exchange'
+      rvEnvInfBalanceAirExchange%VariableName = 'bui/*/envelope/infiltration/balance/air_exchange'
       rvEnvInfBalanceAirExchange%MetaType = 'units'
       rvEnvInfBalanceAirExchange%VariableType = '(ACH)'
       rvEnvInfBalanceAirExchange%Description = 'Air movement into zone'
       Call AddVariable(rvEnvInfBalanceAirExchange)
 
-      rvEnvAllComponentsHeatLost%VariableName = 'bui/z_*/envelope/all_components/heat_loss'
+      rvEnvAllComponentsHeatLost%VariableName = 'bui/*/envelope/all_components/heat_loss'
       rvEnvAllComponentsHeatLost%MetaType = 'units'
       rvEnvAllComponentsHeatLost%VariableType = '(W)'
       rvEnvAllComponentsHeatLost%Description = 'Heat lost through all components of envelope'
       Call AddVariable(rvEnvAllComponentsHeatLost )
 
-      rvEnvWindowsHeatGain%VariableName = 'bui/z_*/envelope/windows/heat_gain'
+      rvEnvWindowsHeatGain%VariableName = 'bui/*/envelope/windows/heat_gain'
       rvEnvWindowsHeatGain%MetaType = 'units'
       rvEnvWindowsHeatGain%VariableType = '(W)'
       rvEnvWindowsHeatGain%Description = 'Contribution of windows to cooling load'
       Call AddVariable(rvEnvWindowsHeatGain)
 
-      rvEnvWallsHeatGain%VariableName = 'bui/z_*/envelope/walls/heat_gain'
+      rvEnvWallsHeatGain%VariableName = 'bui/*/envelope/walls/heat_gain'
       rvEnvWallsHeatGain%MetaType = 'units'
       rvEnvWallsHeatGain%VariableType = '(W)'
       rvEnvWallsHeatGain%Description = 'Contribution of walls to cooling load'
       Call AddVariable(rvEnvWallsHeatGain)
 
-      rvEnvFloorsHeatGain%VariableName = 'bui/z_*/envelope/floors/heat_gain'
+      rvEnvFloorsHeatGain%VariableName = 'bui/*/envelope/floors/heat_gain'
       rvEnvFloorsHeatGain%MetaType = 'units'
       rvEnvFloorsHeatGain%VariableType = '(W)'
       rvEnvFloorsHeatGain%Description = 'Contribution of overhanging floors to cooling load'
       Call AddVariable(rvEnvFloorsHeatGain)
 
-      rvEnvCeilingsHeatGain%VariableName = 'bui/z_*/envelope/ceilings/heat_gain'
+      rvEnvCeilingsHeatGain%VariableName = 'bui/*/envelope/ceilings/heat_gain'
       rvEnvCeilingsHeatGain%MetaType = 'units'
       rvEnvCeilingsHeatGain%VariableType = '(W)'
       rvEnvCeilingsHeatGain%Description = 'Contribution of ceilings to cooling load'
       Call AddVariable(rvEnvCeilingsHeatGain )
 
-      rvEnvFoundationHeatGain%VariableName = 'bui/z_*/envelope/foundation/heat_gain'
+      rvEnvFoundationHeatGain%VariableName = 'bui/*/envelope/foundation/heat_gain'
       rvEnvFoundationHeatGain%MetaType = 'units'
       rvEnvFoundationHeatGain%VariableType = '(W)'
       rvEnvFoundationHeatGain%Description = 'Contribution of foundation to cooling load'
       Call AddVariable(rvEnvFoundationHeatGain)
 
-      rvEnvAllComponentsHeatGain%VariableName = 'bui/z_*/envelope/all_components/heat_gain'
+      rvEnvAllComponentsHeatGain%VariableName = 'bui/*/envelope/all_components/heat_gain'
       rvEnvAllComponentsHeatGain%MetaType = 'units'
       rvEnvAllComponentsHeatGain%VariableType = '(W)'
       rvEnvAllComponentsHeatGain%Description = 'Heat gained through all components of envelope'
       Call AddVariable(rvEnvAllComponentsHeatGain )
 
-      rvEnvWindowsNetFlux%VariableName = 'bui/z_*/envelope/windows/net_flux'
+      rvEnvWindowsNetFlux%VariableName = 'bui/*/envelope/windows/net_flux'
       rvEnvWindowsNetFlux%MetaType = 'units'
       rvEnvWindowsNetFlux%VariableType = '(W)'
       rvEnvWindowsNetFlux%Description = 'Contribution of windows to net heat flux'
       Call AddVariable(rvEnvWindowsNetFlux)
 
-      rvEnvWallsNetFlux%VariableName = 'bui/z_*/envelope/walls/net_flux'
+      rvEnvWallsNetFlux%VariableName = 'bui/*/envelope/walls/net_flux'
       rvEnvWallsNetFlux%MetaType = 'units'
       rvEnvWallsNetFlux%VariableType = '(W)'
       rvEnvWallsNetFlux%Description = 'Contribution of walls to net heat flux'
       Call AddVariable(rvEnvWallsNetFlux )
 
-      rvEnvFloorsNetFlux%VariableName = 'bui/z_*/envelope/floors/net_flux'
+      rvEnvFloorsNetFlux%VariableName = 'bui/*/envelope/floors/net_flux'
       rvEnvFloorsNetFlux%MetaType = 'units'
       rvEnvFloorsNetFlux%VariableType = '(W)'
       rvEnvFloorsNetFlux%Description = 'Contribution of overhanging floors to net heat flux'
       Call AddVariable(rvEnvFloorsNetFlux )
 
-      rvEnvCeilingsNetFlux%VariableName = 'bui/z_*/envelope/ceilings/net_flux'
+      rvEnvCeilingsNetFlux%VariableName = 'bui/*/envelope/ceilings/net_flux'
       rvEnvCeilingsNetFlux%MetaType = 'units'
       rvEnvCeilingsNetFlux%VariableType = '(W)'
       rvEnvCeilingsNetFlux%Description = 'Contribution of ceilings to net heat flux'
       Call AddVariable(rvEnvCeilingsNetFlux)
 
-      rvEnvFoundationNetFlux%VariableName = 'bui/z_*/envelope/foundation/net_flux'
+      rvEnvFoundationNetFlux%VariableName = 'bui/*/envelope/foundation/net_flux'
       rvEnvFoundationNetFlux%MetaType = 'units'
       rvEnvFoundationNetFlux%VariableType = '(W)'
       rvEnvFoundationNetFlux%Description = 'Contribution of foundation to net heat flux'
       Call AddVariable(rvEnvFoundationNetFlux)
 
-      rvEnvAllComponentsNetFlux%VariableName = 'bui/z_*/envelope/all_components/net_flux'
+      rvEnvAllComponentsNetFlux%VariableName = 'bui/*/envelope/all_components/net_flux'
       rvEnvAllComponentsNetFlux%MetaType = 'units'
       rvEnvAllComponentsNetFlux%VariableType = '(W)'
       rvEnvAllComponentsNetFlux%Description = 'Net flux through all components of envelope'
       Call AddVariable(rvEnvAllComponentsNetFlux)
 
-      rvInsolationTotal%VariableName = 'bui/z_*/insolation/total'
+      rvInsolationTotal%VariableName = 'bui/*/insolation/total'
       rvInsolationTotal%MetaType = 'units'
       rvInsolationTotal%VariableType = '(W)'
       rvInsolationTotal%Description = 'Solar gains admitted through glazing'
       Call AddVariable(rvInsolationTotal)
 
-      rvInsolationUseful%VariableName = 'bui/z_*/insolation/useful'
+      rvInsolationUseful%VariableName = 'bui/*/insolation/useful'
       rvInsolationUseful%MetaType = 'units'
       rvInsolationUseful%VariableType = '(W)'
       rvInsolationUseful%Description = 'Solar gains admitted through glazing that supplant heating loads'
       Call AddVariable(rvInsolationUseful)
 
-      rvInsolationAdverse%VariableName = 'bui/z_*/insolation/adverse'
+      rvInsolationAdverse%VariableName = 'bui/*/insolation/adverse'
       rvInsolationAdverse%MetaType = 'units'
       rvInsolationAdverse%VariableType = '(W)'
       rvInsolationAdverse%Description = 'Solar gains admitted through glazing that increase cooling loads'
       Call AddVariable(rvInsolationAdverse )
 
-      rvInternalGainsTotal%VariableName = 'bui/z_*/internal_gains/total'
+      rvInternalGainsTotal%VariableName = 'bui/*/internal_gains/total'
       rvInternalGainsTotal%MetaType = 'units'
       rvInternalGainsTotal%VariableType = '(W)'
       rvInternalGainsTotal%Description = 'Internal heat gains (convective + radiant)'
       Call AddVariable(rvInternalGainsTotal)
 
-      rvInternalGainsUseful%VariableName = 'bui/z_*/internal_gains/useful'
+      rvInternalGainsUseful%VariableName = 'bui/*/internal_gains/useful'
       rvInternalGainsUseful%MetaType = 'units'
       rvInternalGainsUseful%VariableType = '(W)'
       rvInternalGainsUseful%Description = 'Internal heat gains (convective + radiant) that supplant heating loads'
       Call AddVariable(rvInternalGainsUseful )
 
-      rvInternalGainsAdverse%VariableName = 'bui/z_*/internal_gains/adverse'
+      rvInternalGainsAdverse%VariableName = 'bui/*/internal_gains/adverse'
       rvInternalGainsAdverse%MetaType = 'units'
       rvInternalGainsAdverse%VariableType = '(W)'
       rvInternalGainsAdverse%Description = 'Internal heat gains (convective + radiant) that increase cooling loads'
@@ -896,79 +896,79 @@ CONTAINS
       rvBuildingAllZonesEnergyBalanceNet%Description = 'Energy balance in building (Gains + Plant interaction - Loads; all zones).'
       Call AddVariable(rvBuildingAllZonesEnergyBalanceNet)
 
-      rvTemperature%VariableName = 'bui/z_*/s_*/temperature'
+      rvTemperature%VariableName = 'bui/*/s*/temperature'
       rvTemperature%MetaType = 'units'
       rvTemperature%VariableType = '(oC)'
       rvTemperature%Description = 'Temperature on zone inside face'
       Call AddVariable(rvTemperature)
 
-      rvExtSurfTemperature%VariableName = 'bui/z_*/s_*/ext_surf_temperature'
+      rvExtSurfTemperature%VariableName = 'bui/*/s*/ext_surf_temperature'
       rvExtSurfTemperature%MetaType = 'units'
       rvExtSurfTemperature%VariableType = '(oC)'
       rvExtSurfTemperature%Description = 'Temperature on exterior face'
       Call AddVariable(rvExtSurfTemperature)
 
-      rvExtSurfTotRad%VariableName = 'bui/*/sur*/ext_surf_totRad'
+      rvExtSurfTotRad%VariableName = 'bui/*/s*/ext_surf_totRad'
       rvExtSurfTotRad%MetaType = 'units'
       rvExtSurfTotRad%VariableType = '(W/m2)'
       rvExtSurfTotRad%Description = 'Total solar radiation incidence on ext. surface (dir+diff)'
       Call AddVariable(rvExtSurfTotRad)
 
-      rvExtSurfSolAzi%VariableName = 'bui/*/sur*/psazi'
+      rvExtSurfSolAzi%VariableName = 'bui/*/s*/psazi'
       rvExtSurfSolAzi%MetaType = 'units'
       rvExtSurfSolAzi%VariableType = '(°)'
       rvExtSurfSolAzi%Description = 'Solar azimuth angle relative to surface'
       Call AddVariable(rvExtSurfSolAzi)
 
-      rvExtSurfSolElev%VariableName = 'bui/*/sur*/pselv'
+      rvExtSurfSolElev%VariableName = 'bui/*/s*/pselv'
       rvExtSurfSolElev%MetaType = 'units'
       rvExtSurfSolElev%VariableType = '(°)'
       rvExtSurfSolElev%Description = 'Solar elevation angle relative to surface'
       Call AddVariable(rvExtSurfSolElev)
 
-      rvExtSurfRadIncAng%VariableName = 'bui/*/sur*/inc_ang'
+      rvExtSurfRadIncAng%VariableName = 'bui/*/s*/inc_ang'
       rvExtSurfRadIncAng%MetaType = 'units'
       rvExtSurfRadIncAng%VariableType = '(°)'
       rvExtSurfRadIncAng%Description = 'Surface radiation incidence angle'
       Call AddVariable(rvExtSurfRadIncAng)
 
-      rvPlantContainmentFlux%VariableName = 'bui/z_*/s_*/plant_containment_flux'
+      rvPlantContainmentFlux%VariableName = 'bui/*/s*/plant_containment_flux'
       rvPlantContainmentFlux%MetaType = 'units'
       rvPlantContainmentFlux%VariableType = '(W)'
       rvPlantContainmentFlux%Description = 'Plant containment radiant heat flux at surface'
       Call AddVariable(rvPlantContainmentFlux)
 
-      rvHCi%VariableName = 'bui/z_*/s_*/HCi'
+      rvHCi%VariableName = 'bui/*/s*/HCi'
       rvHCi%MetaType = 'units'
       rvHCi%VariableType = '(W/(m2 K))'
       rvHCi%Description = 'Internal side convective coefficient'
       Call AddVariable(rvHCi)
 
-      rvHCe%VariableName = 'bui/z_*/s_*/HCe'
+      rvHCe%VariableName = 'bui/*/s*/HCe'
       rvHCe%MetaType = 'units'
       rvHCe%VariableType = '(W/(m2 K))'
       rvHCe%Description = 'External side convective coefficient'
       Call AddVariable(rvHCe)
 
-      rvPRT%VariableName = 'bui/z_*/s_*/PRT'
+      rvPRT%VariableName = 'bui/*/s*/PRT'
       rvPRT%MetaType = 'units'
       rvPRT%VariableType = '(oC)'
       rvPRT%Description = 'Plane radiant temperature on zone inside face'
       Call AddVariable(rvPRT)
 
-      rvHRi%VariableName = 'bui/z_*/s_*/HRi'
+      rvHRi%VariableName = 'bui/*/s*/HRi'
       rvHRi%MetaType = 'units'
       rvHRi%VariableType = '(W/(m2 K))'
       rvHRi%Description = 'Radiant heat transfer coef. (inside face)'
       Call AddVariable(rvHRi )
 
-      rvAmbRT%VariableName = 'bui/z_*/s_*/AmbRT'
+      rvAmbRT%VariableName = 'bui/*/s*/AmbRT'
       rvAmbRT%MetaType = 'units'
       rvAmbRT%VariableType = '(oC)'
       rvAmbRT%Description = 'Ambient radiant temperature for exterior surface'
       Call AddVariable(rvAmbRT)
 
-      rvNodeTemp%VariableName = 'bui/z_*/s_*/node_*/temperature'
+      rvNodeTemp%VariableName = 'bui/*/s*/node_*/temperature'
       rvNodeTemp%MetaType = 'units'
       rvNodeTemp%VariableType = '(oC)'
       rvNodeTemp%Description = 'Temperature at node within multilayer construction'
@@ -1353,73 +1353,73 @@ CONTAINS
       Call AddVariable(rvMfnContamCon)
 
       !Used by ComplexFenestration.F
-      rvCFCUvalueISO%VariableName = 'bui/*/sur*/CFC_Unom_*'
+      rvCFCUvalueISO%VariableName = 'bui/*/s*/CFC_Unom_*'
       rvCFCUvalueISO%MetaType = 'units'
       rvCFCUvalueISO%VariableType = '(W/(m2 K))'
       rvCFCUvalueISO%Description = 'Nominal ISO CFC IGU U-value'
       Call AddVariable(rvCFCUvalueISO)
 
-      rvCFCUvalueActual%VariableName = 'bui/*/sur_*/CFC_Uact_*'
+      rvCFCUvalueActual%VariableName = 'bui/*/s*/CFC_Uact_*'
       rvCFCUvalueActual%MetaType = 'units'
       rvCFCUvalueActual%VariableType = '(W/(m2 K))'
       rvCFCUvalueActual%Description = 'Actual CFC IGU U-value'
       Call AddVariable(rvCFCUvalueActual)
 
-      rvCFCRgap%VariableName = 'bui/*/sur*/lay*/CFC_Rgap'
+      rvCFCRgap%VariableName = 'bui/*/s*/*/CFC_Rgap'
       rvCFCRgap%MetaType = 'units'
       rvCFCRgap%VariableType = '(m2 K/W)'
       rvCFCRgap%Description = 'CFC gap resistance (convective only!)'
       Call AddVariable(rvCFCRgap)
 
-      rvCFCvbAngle%VariableName = 'bui/*/sur*/CFC_Vb_angle'
+      rvCFCvbAngle%VariableName = 'bui/*/s*/CFC_Vb_angle'
       rvCFCvbAngle%MetaType = 'units'
       rvCFCvbAngle%VariableType = '(°)'
       rvCFCvbAngle%Description = 'Venetian type blind slat angle'
       Call AddVariable(rvCFCvbAngle)
 
-      rvCFCvbOnOff%VariableName = 'bui/*/sur*/CFC_Vb_on-off'
+      rvCFCvbOnOff%VariableName = 'bui/*/s*/CFC_Vb_on-off'
       rvCFCvbOnOff%MetaType = 'units'
       rvCFCvbOnOff%VariableType = '(-)'
       rvCFCvbOnOff%Description = 'Venetian type blind ON/OFF flag'
       Call AddVariable(rvCFCvbOnOff)
 
-      rvCFCTransBB%VariableName = 'bui/*/sur*/CFC_transBB'
+      rvCFCTransBB%VariableName = 'bui/*/s*/CFC_transBB'
       rvCFCTransBB%MetaType = 'units'
       rvCFCTransBB%VariableType = '(W/m2)'
       rvCFCTransBB%Description = 'CFC direct beam transmission'
       Call AddVariable(rvCFCTransBB)
 
-      rvCFCTransD%VariableName = 'bui/*/sur*/CFC_transD'
+      rvCFCTransD%VariableName = 'bui/*/s*/CFC_transD'
       rvCFCTransD%MetaType = 'units'
       rvCFCTransD%VariableType = '(W/m2)'
       rvCFCTransD%Description = 'CFC diffuse transmission'
       Call AddVariable(rvCFCTransD)
 
-      rvCFCTransBBvis%VariableName = 'bui/*/sur*/CFC_transBB_vis'
+      rvCFCTransBBvis%VariableName = 'bui/*/s*/CFC_transBB_vis'
       rvCFCTransBBvis%MetaType = 'units'
       rvCFCTransBBvis%VariableType = '(-)'
       rvCFCTransBBvis%Description = 'CFC direct beam transmission, visible light'
       Call AddVariable(rvCFCTransBBvis)
 
-      rvCFCTransDvis%VariableName = 'bui/*/sur*/CFC_transD_vis'
+      rvCFCTransDvis%VariableName = 'bui/*/s*/CFC_transD_vis'
       rvCFCTransDvis%MetaType = 'units'
       rvCFCTransDvis%VariableType = '(-)'
       rvCFCTransDvis%Description = 'CFC diffuse transmission, visible light'
       Call AddVariable(rvCFCTransDvis)
 
-      rvCFCRadTot%VariableName = 'bui/*/sur*/CFC_totRad'
+      rvCFCRadTot%VariableName = 'bui/*/s*/CFC_totRad'
       rvCFCRadTot%MetaType = 'units'
       rvCFCRadTot%VariableType = '(W/m2)'
       rvCFCRadTot%Description = 'CFC total radiation incidence (dir+diff)'
       Call AddVariable(rvCFCRadTot)
 
-      rvCFCRadDifGrd%VariableName = 'bui/*/sur*/CFC_RadDifGrd'
+      rvCFCRadDifGrd%VariableName = 'bui/*/s*/CFC_RadDifGrd'
       rvCFCRadDifGrd%MetaType = 'units'
       rvCFCRadDifGrd%VariableType = '(W/m2)'
       rvCFCRadDifGrd%Description = 'CFC diffuse radiation from ground'
       Call AddVariable(rvCFCRadDifGrd)
 
-      rvCFCRadDifSky%VariableName = 'bui/*/sur*/CFC_RadDifSky'
+      rvCFCRadDifSky%VariableName = 'bui/*/s*/CFC_RadDifSky'
       rvCFCRadDifSky%MetaType = 'units'
       rvCFCRadDifSky%VariableType = '(W/m2)'
       rvCFCRadDifSky%Description = 'CFC diffuse radiation from sky'
@@ -4489,7 +4489,7 @@ CONTAINS
    !           results.  The lookup does not perform a regular expression
    !           check, it only verifies if the cPattern is part of an
    !           enabled variable VariableName defined above.
-   ! Params:   cPattern, string pattern ex: "/z_*/s_*/"
+   ! Params:   cPattern, string pattern ex: "/*/s*/"
    ! Returns:  true/false is enabled or not
    ! Author:   Claude Lamarche
    ! Mod Date: 2011-10-04

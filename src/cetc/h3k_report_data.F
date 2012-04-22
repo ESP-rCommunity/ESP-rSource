@@ -894,13 +894,13 @@ C-----------------------------------------------------------------------
          call AddToReport(
      &       rvHeatFluxRadiationShortwave%identifier,
      &       qswrde(iZone,iSurface,2),
-     &       cZone_Chars,
+     &       zname(iZone)(1:lnzname(iZone)),
      &       cSurf_Chars)
 
         call AddToReport(
      &       rvHeatFluxRadiationShortwaveUnitArea%identifier,
      &       qswrde(iZone,iSurface,2)/sna(iZone,iSurface),
-     &       cZone_Chars,
+     &       zname(iZone)(1:lnzname(iZone)),
      &       cSurf_Chars)
 
 C-----------------------------------------------------------------------
@@ -996,7 +996,7 @@ C...........Above-grade heat loss
             call AddToReport(
      &       rvHeatFluxAboveGradeNet%identifier,
      &       fSurface_balance_net,
-     &       cZone_Chars,
+     &       zname(iZone)(1:lnzname(iZone)),
      &       cSurf_Chars)
 
 C...........Append above grade heat loss to running total
@@ -1017,7 +1017,7 @@ C...........Flux to known conditions
             call AddToReport(
      &       rvHeatFluxSpecifiedBCsNet%identifier,
      &       fSurface_balance_net,
-     &       cZone_Chars,
+     &       zname(iZone)(1:lnzname(iZone)),
      &       cSurf_Chars)
 
             iSurfType = iSurfOrient( iZone, iSurface )
@@ -1033,7 +1033,7 @@ C...........Below-grade heat loss
             call AddToReport(
      &       rvHeatFluxBelowGradeNet%identifier,
      &       fSurface_balance_net,
-     &       cZone_Chars,
+     &       zname(iZone)(1:lnzname(iZone)),
      &       cSurf_Chars)
 
             iSurfType = iSurfFoundation
@@ -1044,7 +1044,7 @@ C...........Heat transfer to CEN partition
             call AddToReport(
      &       rvHeatFluxCENPartitionNet%identifier,
      &       fSurface_balance_net,
-     &       cZone_Chars,
+     &       zname(iZone)(1:lnzname(iZone)),
      &       cSurf_Chars)
 
             iSurfType = iSurfOrient( iZone, iSurface )
@@ -1054,7 +1054,7 @@ C...........Internal partition
             call AddToReport(
      &       rvHeatFluxAboveGradeNet%identifier,
      &       fSurface_balance_net,
-     &       cZone_Chars,
+     &       zname(iZone)(1:lnzname(iZone)),
      &       cSurf_Chars)
 
             iSurfType = iSurfOrient( iZone, iSurface )
@@ -1168,7 +1168,7 @@ C             code from complex_fenestration.f, line 2101 ff.
         call AddToReport (
      &         rvExtSurfTemperature%Identifier,
      &         TFC(iZone,iSurface,nd_ext),
-     &         cZone_Chars,
+     &         zname(iZone)(1:lnzname(iZone)),
      &         cSurf_Chars)
 
         if (IE(iZone,iSurface) .eq. 0) THEN ! the surface faces external
@@ -1669,7 +1669,7 @@ C.....AIR POINT TEMPERATURE
       call AddToReport (
      &         rvAirPointTemperature%Identifier,
      &         TFA(iZone),
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
 C .... ZONE DRY AIR MASS
 c      call add_to_xml_reporting (
@@ -1688,19 +1688,19 @@ C.....Window position from BCL25 controller
       call AddToReport (
      &         rvWindowsPosition%Identifier,
      &         fWindowPosition,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvAirFlowModel%Identifier,
      &         real(iAirFlowModel(iZone)),
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
 C.....Zone relative humidity
       fZoneRH = PCRH2(TFA(iZone),GFA(iZone),PATMOS)
       call AddToReport (
      &         rvAirPointRelativeHumidity%Identifier,
      &         fZoneRH,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
 c
 c     &         GFA(iZone),
@@ -1728,17 +1728,17 @@ C.....ZONE HEAT INJECTION / EXTRACTION
       call AddToReport (
      &         rvSuppliedEnergyNet%Identifier,
      &         Q_ZONE,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvSuppliedEnergyHeating%Identifier,
      &         Q_Heat,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvSuppliedEnergyCooling%Identifier,
      &         Q_cool,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
 C Convert heat injection/extraction metrics to "per m2 of floor area"
       Qm2_ZONE=Q_ZONE/zbasea(iZone)
@@ -1747,33 +1747,33 @@ C Convert heat injection/extraction metrics to "per m2 of floor area"
       call AddToReport (
      &         rvSuppliedEnergyNetPerm2%Identifier,
      &         Qm2_ZONE,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvSuppliedEnergyHeatingPerm2%Identifier,
      &         Qm2_Heat,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvSuppliedEnergyCoolingPerm2%Identifier,
      &         Qm2_cool,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
 C.....Total heating and cooling loads
       call AddToReport (
      &         rvThermalLoadsHeatingTotal%Identifier,
      &         fZoneHeatLoad,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvThermalLoadsCoolingTotal%Identifier,
      &         fZoneCoolLoad,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvThermalLoadsNetLoad%Identifier,
      &         fZoneHeatFlux,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
 C Conver Total heating and cooling loads to  "per m2 of floor area"
       fm2ZoneHeatLoad=fZoneHeatLoad/zbasea(iZone)
@@ -1782,76 +1782,76 @@ C Conver Total heating and cooling loads to  "per m2 of floor area"
       call AddToReport (
      &         rvThermalLoadsHeatingTotalPerm2%Identifier,
      &         fm2ZoneHeatLoad,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvThermalLoadsCoolingTotalPerm2%Identifier,
      &         fm2ZoneCoolLoad,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvThermalLoadsNetLoadPerm2%Identifier,
      &         fm2ZoneHeatFlux,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
 C.....Envelope heat loss
       call AddToReport (
      &         rvEnvWindowsHeatLoss%Identifier,
      &         fZoneHeatLossWindows,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvEnvWallsHeatLoss%Identifier,
      &         fZoneHeatLossWalls,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvEnvFloorsHeatLoss%Identifier,
      &         fZoneHeatLossFloor,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvEnvCeilingsHeatLoss%Identifier,
      &         fZoneHeatLossCeiling,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvEnvFoundationHeatLoss%Identifier,
      &         fZoneHeatLossBelowGrade,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
 
 C.....Zone air change rate (AIM2)
       call AddToReport (
      &         rvEnvInfAirChangePerHour%Identifier,
      &         fZoneInfiltrationACH,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvEnvInfHeatGain%Identifier,
      &         fZoneHeatGainInfiltration,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvEnvInfHeatLoss%Identifier,
      &         fZoneHeatLossInfiltration,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       !C.L. for testing of h3kmodule.f90 remove corrected variable
 !      call AddToReport (
 !     &         rvEnvInfLoad%Identifier,
 !     &         fZoneInfiltrationLoad,
-!     &         cZone_Chars)
+!     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvEnvInfBalanceAir%Identifier,
      &         ZMBI(iZone,1),
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvEnvInfBalanceAirExchange%Identifier,
      &         ZMBI(iZone,1) / 1.275  * 3600. / vol(iZone),
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvEnvAllComponentsHeatLost%Identifier,
@@ -1861,33 +1861,33 @@ C.....Zone air change rate (AIM2)
      &           + fZoneHeatLossFloor
      &           + fZoneHeatLossWindows
      &           + fZoneHeatLossBelowGrade,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
 C.....Envelope heat gains
       call AddToReport (
      &         rvEnvWindowsHeatGain%Identifier,
      &         fZoneHeatGainWindows,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvEnvWallsHeatGain%Identifier,
      &         fZoneHeatGainWalls,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvEnvFloorsHeatGain%Identifier,
      &         fZoneHeatGainFloor,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvEnvCeilingsHeatGain%Identifier,
      &         fZoneHeatGainCeiling,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvEnvFoundationHeatGain%Identifier,
      &         fZoneHeatGainBelowGrade,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvEnvAllComponentsHeatGain%Identifier,
@@ -1897,38 +1897,38 @@ C.....Envelope heat gains
      &           + fZoneHeatGainFloor
      &           + fZoneHeatGainWindows
      &           + fZoneHeatGainBelowGrade,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
 C.....Envelope: net flux
       call AddToReport (
      &         rvEnvWindowsNetFlux%Identifier,
      &         fZoneHeatLossWindows-fZoneHeatGainWindows,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvEnvWallsNetFlux%Identifier,
      &         fZoneHeatLossWalls-fZoneHeatGainWalls,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvEnvFloorsNetFlux%Identifier,
      &         fZoneHeatLossFloor-fZoneHeatGainFloor,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvEnvCeilingsNetFlux%Identifier,
      &         fZoneHeatLossCeiling-fZoneHeatGainCeiling,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvEnvFoundationNetFlux%Identifier,
      &         fZoneHeatLossBelowGrade-fZoneHeatGainBelowGrade,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvEnvInfNetFlux%Identifier,
      &         fZoneHeatLossInfiltration-fZoneHeatGainInfiltration,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
       call AddToReport (
      &         rvEnvAllComponentsNetFlux%Identifier,
@@ -1944,20 +1944,20 @@ C.....Envelope: net flux
      &              + fZoneHeatGainFloor
      &              + fZoneHeatGainWindows
      &              + fZoneHeatGainBelowGrade),
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
 
 C.....Zone solar gains
       call AddToReport (
      &         rvInsolationTotal%Identifier,
      &         fZoneSolarGains,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
 C.....Zone solar gains coinciding with heating loads
       call AddToReport (
      &         rvInsolationUseful%Identifier,
      &         fZoneUsefulSolarGains,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
 C C.....Zone solar gains coinciding with heating loads per m2 of floor area
 C       call add_to_xml_reporting (
@@ -1971,19 +1971,19 @@ C.....Zone solar gains coinciding with heating loads !cooling loads?
       call AddToReport (
      &         rvInsolationAdverse%Identifier,
      &         fZoneAdverseSolarGains,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
 C.....TOTAL CASUAL GAINS
       call AddToReport (
      &         rvInternalGainsTotal%Identifier,
      &         fZoneInternalGains,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
 C.....Useful internal gains
       call AddToReport (
      &         rvInternalGainsUseful%Identifier,
      &         fZoneUsefulInternalGains,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
 C C.....Useful internal gains per m2
 C       call add_to_xml_reporting (
@@ -1997,7 +1997,7 @@ C.....Adverse internal gains
       call AddToReport (
      &         rvInternalGainsAdverse%Identifier,
      &         fZoneAdverseInternalGains,
-     &         cZone_Chars)
+     &         zname(iZone)(1:lnzname(iZone)))
 
 C-----------------------------------------------------------------------
 C     Check zone number: if this is the last zone, dump out aggregated
@@ -2224,7 +2224,7 @@ C........->Report data
          call AddToReport(
      &      rvTemperature%Identifier,
      &      tfs(iZone,iSurface),
-     &      cZone_Chars,
+     &      zname(iZone)(1:lnzname(iZone)),
      &      cSurf_Chars)
 
 C........External facing surfaces -> Surface temperature
@@ -2234,7 +2234,7 @@ C........->Report data
             call AddToReport (
      &         rvExtSurfTemperature%Identifier,
      &         TFC(iZone,iSurface,1),
-     &         cZone_Chars,
+     &         zname(iZone)(1:lnzname(iZone)),
      &         cSurf_Chars)
          Endif ! if ie = 0
 
@@ -2243,7 +2243,7 @@ C........->Report data
          call AddToReport (
      &      rvPlantContainmentFlux%Identifier,
      &      fSurface_radiant_gain(iZone,iSurface,iFuture),
-     &      cZone_Chars,
+     &      zname(iZone)(1:lnzname(iZone)),
      &      cSurf_Chars)
 
 C.......CONVECTIVE COEFFICIENTS
@@ -2252,7 +2252,7 @@ C........->Report data
          call AddToReport (
      &      rvHCi%Identifier,
      &      HCIP(iZone,iSurface),
-     &      cZone_Chars,
+     &      zname(iZone)(1:lnzname(iZone)),
      &      cSurf_Chars)
 
 C........Internal surface convective coefficient model index
@@ -2267,7 +2267,7 @@ C........->Report data
          call AddToReport (
      &      rvHCe%Identifier,
      &      HCOP(iZone,iSurface),
-     &      cZone_Chars,
+     &      zname(iZone)(1:lnzname(iZone)),
      &      cSurf_Chars)
 
 C........External surface convective coefficient model index
@@ -2298,7 +2298,7 @@ C........->Report data
             call AddToReport (
      &        rvPRT%Identifier,
      &         trsum,
-     &         cZone_Chars,
+     &         zname(iZone)(1:lnzname(iZone)),
      &         cSurf_Chars)
 
 C........Emissivity weighted plane radiant temperature
@@ -2315,7 +2315,7 @@ C........->Report data
      &         EI(iZone,iSurface)*SBC*
      &            (TFS(iZone,iSurface)+trsum+2.*273.15)*
      &            ((TFS(iZone,iSurface)+273.15)**2.+(trsum+273.15)**2.),
-     &         cZone_Chars,
+     &         zname(iZone)(1:lnzname(iZone)),
      &         cSurf_Chars)
 
          ENDIF ! <- end if viewfactor file present
@@ -2331,7 +2331,7 @@ C........->Report data
             call AddToReport (
      &        rvAmbRT%Identifier,
      &         trsum,
-     &         cZone_Chars,
+     &         zname(iZone)(1:lnzname(iZone)),
      &         cSurf_Chars)
 
          endif ! <- end if surface faces external
@@ -2356,7 +2356,7 @@ C......Include only if h3k reports on building/zone_*/surf_*/node_* variables
 !C...........->Report data
 !            Call AddToReport(rvNodeTemp%Identifier,
 !     &         tfc(iZone,iSurface,iNode),
-!     &         cZone_Chars,
+!     &         zname(iZone)(1:lnzname(iZone)),
 !     &         cSurf_Chars,
 !     &         cNode_Chars)
 !          enddo  ! <- end iNode = 1,N of iSurface 1,N of iZone
