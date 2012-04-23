@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,bedroom1 # tag version, format, zone name
-*date Tue Aug 17 14:26:49 2010  # latest file modification 
+*date Mon Apr 23 16:58:48 2012  # latest file modification 
 bedroom1 describes bedroom 1 and wardrobe
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,7.60000,3.20000,0.00000  #   1
@@ -166,9 +166,9 @@ bedroom1 describes bedroom 1 and wardrobe
 *surf,frame_d,VERT,-,-,-,sash_frame,OPAQUE,EXTERIOR,0,0  #  35 ||< external
 *surf,frame_f,VERT,-,-,-,sash_frame,OPAQUE,EXTERIOR,0,0  #  36 ||< external
 *surf,frame_h,VERT,-,-,-,sash_frame,OPAQUE,EXTERIOR,0,0  #  37 ||< external
-*surf,glass_d,VERT,frame_d,-,-,single_glz,SCF8783_06nb,EXTERIOR,0,0  #  38 ||< external
-*surf,glass_f,VERT,frame_f,-,-,single_glz,SCF8783_06nb,EXTERIOR,0,0  #  39 ||< external
-*surf,glass_h,VERT,frame_h,-,-,single_glz,SCF8783_06nb,EXTERIOR,0,0  #  40 ||< external
+*surf,glass_d,VERT,frame_d,-,-,Window_ext,TRAN,EXTERIOR,0,0  #  38 ||< external
+*surf,glass_f,VERT,frame_f,-,-,Window_ext,TRAN,EXTERIOR,0,0  #  39 ||< external
+*surf,glass_h,VERT,frame_h,-,-,Window_ext,TRAN,EXTERIOR,0,0  #  40 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

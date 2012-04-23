@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,bedroom2 # tag version, format, zone name
-*date Tue Aug 17 14:27:27 2010  # latest file modification 
+*date Mon Apr 23 16:58:51 2012  # latest file modification 
 bedroom2 describes east facing bedroom
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,11.80000,9.20000,0.00000  #   1
@@ -87,7 +87,7 @@ bedroom2 describes east facing bedroom
 *surf,frame_c,VERT,-,-,-,sash_frame,OPAQUE,EXTERIOR,0,0  #  16 ||< external
 *surf,head_c,VERT,-,-,-,stone_0.4m,OPAQUE,EXTERIOR,0,0  #  17 ||< external
 *surf,angle_d,VERT,-,-,-,stone_0.4m,OPAQUE,EXTERIOR,0,0  #  18 ||< external
-*surf,glass_c,VERT,frame_c,-,-,single_glz,SCF8783_06nb,EXTERIOR,0,0  #  19 ||< external
+*surf,glass_c,VERT,frame_c,-,-,Window_ext,TRAN,EXTERIOR,0,0  #  19 ||< external
 *surf,door_br2,VERT,ptn_hall,-,-,door,OPAQUE,ANOTHER,07,28  #  20 ||< door_br2:hall
 # 
 *insol,3,0,0,0  # default insolation distribution

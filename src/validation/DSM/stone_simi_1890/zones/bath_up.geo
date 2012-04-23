@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,bath # tag version, format, zone name
-*date Tue Aug 17 14:27:07 2010  # latest file modification 
+*date Mon Apr 23 16:58:50 2012  # latest file modification 
 bath describes long thin bathroom
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,11.80000,7.60000,0.00000  #   1
@@ -73,7 +73,7 @@ bath describes long thin bathroom
 *surf,skirt_d,VERT,-,-,-,stone_0.4m,OPAQUE,EXTERIOR,0,0  #  13 ||< external
 *surf,frame_c,VERT,-,-,-,sash_frame,OPAQUE,EXTERIOR,0,0  #  14 ||< external
 *surf,head_c,VERT,-,-,-,stone_0.4m,OPAQUE,EXTERIOR,0,0  #  15 ||< external
-*surf,glass_c,VERT,frame_c,-,-,single_glz,SCF8783_06nb,EXTERIOR,0,0  #  16 ||< external
+*surf,glass_c,VERT,frame_c,-,-,Window_ext,TRAN,EXTERIOR,0,0  #  16 ||< external
 *surf,door_bath,VERT,ptn_hall,-,-,door,OPAQUE,ANOTHER,07,25  #  17 ||< door_bath:hall
 # 
 *insol,3,0,0,0  # default insolation distribution

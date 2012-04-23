@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,upper # tag version, format, zone name
-*date Mon Mar 19 14:34:53 2012  # latest file modification 
+*date Mon Apr 23 16:59:02 2012  # latest file modification 
 upper describes space over kitchen br1 bath hall stair
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,4.00000,7.60000,3.20000  #   1

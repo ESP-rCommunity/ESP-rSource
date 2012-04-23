@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,living # tag version, format, zone name
-*date Tue Aug 17 14:27:59 2010  # latest file modification 
+*date Mon Apr 23 16:58:54 2012  # latest file modification 
 living describes corner living room
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,10.60000,13.00000,0.00000  #   1
@@ -138,9 +138,9 @@ living describes corner living room
 *surf,head_d,VERT,-,-,-,stone_0.4m,OPAQUE,EXTERIOR,0,0  #  28 ||< external
 *surf,frame_f,VERT,-,-,-,sash_frame,OPAQUE,EXTERIOR,0,0  #  29 ||< external
 *surf,head_f,VERT,-,-,-,stone_0.4m,OPAQUE,EXTERIOR,0,0  #  30 ||< external
-*surf,glass_b,VERT,frame_b,-,-,single_glz,SCF8783_06nb,EXTERIOR,0,0  #  31 ||< external
-*surf,glass_d,VERT,frame_d,-,-,single_glz,SCF8783_06nb,EXTERIOR,0,0  #  32 ||< external
-*surf,glass_f,VERT,frame_f,-,-,single_glz,SCF8783_06nb,EXTERIOR,0,0  #  33 ||< external
+*surf,glass_b,VERT,frame_b,-,-,Window_ext,TRAN,EXTERIOR,0,0  #  31 ||< external
+*surf,glass_d,VERT,frame_d,-,-,Window_ext,TRAN,EXTERIOR,0,0  #  32 ||< external
+*surf,glass_f,VERT,frame_f,-,-,Window_ext,TRAN,EXTERIOR,0,0  #  33 ||< external
 *surf,door_liv,VERT,ptn_hallb,-,-,door,OPAQUE,ANOTHER,07,26  #  34 ||< door_liv:hall
 # 
 *insol,3,0,0,0  # default insolation distribution

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,kiten_util # tag version, format, zone name
-*date Mon Mar 19 14:21:32 2012  # latest file modification 
+*date Mon Apr 23 16:58:45 2012  # latest file modification 
 kiten_util describes the kitchen utility and alcove
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,2.60000,3.20000,0.00000  #   1
@@ -168,8 +168,8 @@ kiten_util describes the kitchen utility and alcove
 *surf,head_m,VERT,-,-,-,stone_0.4m,OPAQUE,EXTERIOR,0,0  #  38 ||< external
 *surf,frame_h,VERT,-,-,-,sash_frame,OPAQUE,EXTERIOR,0,0  #  39 ||< external
 *surf,head_h,VERT,-,-,-,stone_0.4m,OPAQUE,EXTERIOR,0,0  #  40 ||< external
-*surf,glass_m,VERT,frame_m,-,-,single_glz,SCF8783_06nb,EXTERIOR,0,0  #  41 ||< external
-*surf,glass_h,VERT,frame_h,-,-,single_glz,SCF8783_06nb,EXTERIOR,0,0  #  42 ||< external
+*surf,glass_m,VERT,frame_m,-,-,Window_ext,TRAN,EXTERIOR,0,0  #  41 ||< external
+*surf,glass_h,VERT,frame_h,-,-,Window_ext,TRAN,EXTERIOR,0,0  #  42 ||< external
 *surf,door_k,VERT,ptn_hall,-,-,door,OPAQUE,ANOTHER,07,23  #  43 ||< door_k:hall
 # 
 *insol,3,0,0,0  # default insolation distribution

@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,lower_ne # tag version, format, zone name
-*date Tue Aug 17 14:30:37 2010  # latest file modification 
+*date Mon Apr 23 16:59:01 2012  # latest file modification 
 lower_ne describes space below liv b2 study family
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,4.00000,17.20000,0.00000  #   1

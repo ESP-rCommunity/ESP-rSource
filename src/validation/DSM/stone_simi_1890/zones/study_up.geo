@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,study # tag version, format, zone name
-*date Tue Aug 17 14:28:49 2010  # latest file modification 
+*date Mon Apr 23 16:58:57 2012  # latest file modification 
 study describes small north facing room
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,7.60000,14.00000,0.00000  #   1
@@ -80,7 +80,7 @@ study describes small north facing room
 *surf,skirt_e,VERT,-,-,-,stone_0.7m,OPAQUE,EXTERIOR,0,0  #  15 ||< external
 *surf,frame_c,VERT,-,-,-,sash_frame,OPAQUE,EXTERIOR,0,0  #  16 ||< external
 *surf,head_c,VERT,-,-,-,stone_0.4m,OPAQUE,EXTERIOR,0,0  #  17 ||< external
-*surf,glass_c,VERT,frame_c,-,-,single_glz,SCF8783_06nb,EXTERIOR,0,0  #  18 ||< external
+*surf,glass_c,VERT,frame_c,-,-,Window_ext,TRAN,EXTERIOR,0,0  #  18 ||< external
 *surf,door_st,VERT,sptn_hall,-,-,door,OPAQUE,ANOTHER,07,24  #  19 ||< door_st:hall
 # 
 *insol,3,0,0,0  # default insolation distribution

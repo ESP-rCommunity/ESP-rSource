@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,lower # tag version, format, zone name
-*date Mon Mar 19 13:23:00 2012  # latest file modification 
+*date Mon Apr 23 16:59:00 2012  # latest file modification 
 lower describes space below flat (crawl or another flat)
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,4.00000,7.60000,0.00000  #   1
@@ -123,7 +123,7 @@ lower describes space below flat (crawl or another flat)
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,floor_str,CEIL,-,-,-,cl_to_floori,OPAQUE,ANOTHER,01,02  #   1 ||< floor_str:common_str
+*surf,floor_str,CEIL,-,-,-,cl_to_floori,OPAQUE,ANOTHER,01,02  #   1 ||< floor_str:guest_room
 *surf,floor_ku,CEIL,-,-,-,cl_to_floori,OPAQUE,ANOTHER,02,20  #   2 ||< floor_ku:kiten_util
 *surf,floor_br1,CEIL,-,-,-,cl_to_floori,OPAQUE,ANOTHER,03,19  #   3 ||< floor_br1:bedroom1
 *surf,floor_bth,CEIL,-,-,-,cl_to_floori,OPAQUE,ANOTHER,04,09  #   4 ||< floor_bth:bath

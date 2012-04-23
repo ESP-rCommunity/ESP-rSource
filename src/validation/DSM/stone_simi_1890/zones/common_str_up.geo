@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,guest_room # tag version, format, zone name
-*date Mon Mar 19 14:37:35 2012  # latest file modification 
+*date Mon Apr 23 16:58:39 2012  # latest file modification 
 guest room describes rarely used room for guests
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,4.00000,7.60000,0.00000  #   1
@@ -111,7 +111,7 @@ guest room describes rarely used room for guests
 *surf,ext_wall,VERT,-,WALL,-,stone_0.9m,OPAQUE,EXTERIOR,0,0  #  25 ||< external
 *surf,k_ptn_gues,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,02,08  #  26 ||< k_ptn_d:kiten_util
 *surf,skirt_d-gues,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,02,26  #  27 ||< skirt_d:kiten_util
-*surf,glazing,VERT,br3_glz_frm,C-WINDOW,CLOSED,single_glz,SCF8783_06nb,EXTERIOR,0,0  #  28 ||< external
+*surf,glazing,VERT,br3_glz_frm,C-WINDOW,CLOSED,Window_ext,DC_8074_04nb,EXTERIOR,0,0  #  28 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

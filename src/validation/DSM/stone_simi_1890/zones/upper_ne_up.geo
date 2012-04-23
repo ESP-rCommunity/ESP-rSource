@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,upper_ne # tag version, format, zone name
-*date Tue Aug 17 14:32:49 2010  # latest file modification 
+*date Mon Apr 23 16:59:03 2012  # latest file modification 
 upper_ne describes space over br2 living study family
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,15.20000,9.20000,3.20000  #   1
@@ -179,22 +179,22 @@ upper_ne describes space over br2 living study family
 *surf,Wall-35,VERT,-,-,-,pla_pla_ptn,OPAQUE,ANOTHER,12,20  #  35 ||< Wall-20:upper
 *surf,Wall-36,VERT,-,-,-,pla_pla_ptn,OPAQUE,ANOTHER,12,19  #  36 ||< Wall-19:upper
 *surf,n_slope_w,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,12,39  #  37 ||< n_slope_w:upper
-*surf,back_a,VERT,-,-,-,masonry0.2,OPAQUE,EXTERIOR,00,00  #  38 ||< external
-*surf,back_b,VERT,-,-,-,masonry0.2,OPAQUE,EXTERIOR,00,00  #  39 ||< external
+*surf,back_a,VERT,-,-,-,masonry0.2,OPAQUE,EXTERIOR,0,0  #  38 ||< external
+*surf,back_b,VERT,-,-,-,masonry0.2,OPAQUE,EXTERIOR,0,0  #  39 ||< external
 *surf,west_slope,VERT,-,-,-,masonry0.2,OPAQUE,SIMILAR,00,00  #  40 ||< identical environment
 *surf,h_fill,FLOR,-,-,-,masonry0.2,OPAQUE,SIMILAR,00,00  #  41 ||< identical environment
-*surf,soffet_n,FLOR,-,-,-,door,OPAQUE,EXTERIOR,00,00  #  42 ||< external
-*surf,soffet_e,FLOR,-,-,-,door,OPAQUE,EXTERIOR,00,00  #  43 ||< external
-*surf,slope_a,SLOP,-,-,-,slate_roof,OPAQUE,EXTERIOR,00,00  #  44 ||< external
-*surf,slope_b,SLOP,-,-,-,slate_roof,OPAQUE,EXTERIOR,00,00  #  45 ||< external
-*surf,slope_c,SLOP,-,-,-,slate_roof,OPAQUE,EXTERIOR,00,00  #  46 ||< external
-*surf,slope_d,SLOP,-,-,-,slate_roof,OPAQUE,EXTERIOR,00,00  #  47 ||< external
-*surf,north_slope,SLOP,-,-,-,slate_roof,OPAQUE,EXTERIOR,00,00  #  48 ||< external
-*surf,east_slope,SLOP,-,-,-,slate_roof,OPAQUE,EXTERIOR,00,00  #  49 ||< external
-*surf,corner,SLOP,-,-,-,slate_roof,OPAQUE,EXTERIOR,00,00  #  50 ||< external
-*surf,slope_e,SLOP,-,-,-,slate_roof,OPAQUE,EXTERIOR,00,00  #  51 ||< external
-*surf,slope_f,SLOP,-,-,-,slate_roof,OPAQUE,EXTERIOR,00,00  #  52 ||< external
-*surf,slope_g,SLOP,-,-,-,slate_roof,OPAQUE,EXTERIOR,00,00  #  53 ||< external
+*surf,soffet_n,FLOR,-,-,-,door,OPAQUE,EXTERIOR,0,0  #  42 ||< external
+*surf,soffet_e,FLOR,-,-,-,door,OPAQUE,EXTERIOR,0,0  #  43 ||< external
+*surf,slope_a,SLOP,-,-,-,slate_roof,OPAQUE,EXTERIOR,0,0  #  44 ||< external
+*surf,slope_b,SLOP,-,-,-,slate_roof,OPAQUE,EXTERIOR,0,0  #  45 ||< external
+*surf,slope_c,SLOP,-,-,-,slate_roof,OPAQUE,EXTERIOR,0,0  #  46 ||< external
+*surf,slope_d,SLOP,-,-,-,slate_roof,OPAQUE,EXTERIOR,0,0  #  47 ||< external
+*surf,north_slope,SLOP,-,-,-,slate_roof,OPAQUE,EXTERIOR,0,0  #  48 ||< external
+*surf,east_slope,SLOP,-,-,-,slate_roof,OPAQUE,EXTERIOR,0,0  #  49 ||< external
+*surf,corner,SLOP,-,-,-,slate_roof,OPAQUE,EXTERIOR,0,0  #  50 ||< external
+*surf,slope_e,SLOP,-,-,-,slate_roof,OPAQUE,EXTERIOR,0,0  #  51 ||< external
+*surf,slope_f,SLOP,-,-,-,slate_roof,OPAQUE,EXTERIOR,0,0  #  52 ||< external
+*surf,slope_g,SLOP,-,-,-,slate_roof,OPAQUE,EXTERIOR,0,0  #  53 ||< external
 # 
 *insol,3,0,0,0  # default insolation distribution
 # 

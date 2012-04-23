@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,family # tag version, format, zone name
-*date Mon Mar 19 13:10:06 2012  # latest file modification 
+*date Mon Apr 23 16:58:59 2012  # latest file modification 
 family describes family room on the north
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,4.00000,12.60000,0.00000  #   1
@@ -75,8 +75,8 @@ family describes family room on the north
 #  child of (surface name), useage (pair of tags) 
 #  construction name, optical name
 #  boundary condition tag followed by two data items
-*surf,f_ptn_g,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,04  #   1 ||< skirt_g:common_str
-*surf,f_ptn_h,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,06  #   2 ||< skirt_h:common_str
+*surf,f_ptn_g,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,04  #   1 ||< fam_ptn_g:guest_room
+*surf,f_ptn_h,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,06  #   2 ||< fa_ptn_h:guest_room
 *surf,fptn_hall,VERT,-,-,-,pla_pla_ptn,OPAQUE,ANOTHER,07,10  #   3 ||< hptn_fam:hall
 *surf,fptn_stdy,VERT,-,-,-,pla_pla_ptn,OPAQUE,ANOTHER,08,08  #   4 ||< sptn_fam:study
 *surf,north_a,VERT,-,-,-,stone_0.7m,OPAQUE,EXTERIOR,0,0  #   5 ||< external
@@ -95,9 +95,9 @@ family describes family room on the north
 *surf,frame_c,VERT,-,-,-,sash_frame,OPAQUE,EXTERIOR,0,0  #  18 ||< external
 *surf,head_c,VERT,-,-,-,stone_0.4m,OPAQUE,EXTERIOR,0,0  #  19 ||< external
 *surf,skirt_f,VERT,-,-,-,masonry0.3,OPAQUE,EXTERIOR,0,0  #  20 ||< external
-*surf,skirt_g,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,03  #  21 ||< floor_str:common_str
-*surf,skirt_h,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,05  #  22 ||< fam_ptn_g:common_str
-*surf,glass_c,VERT,frame_c,-,-,single_glz,SCF8783_06nb,EXTERIOR,0,0  #  23 ||< external
+*surf,skirt_g,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,03  #  21 ||< skirt_g:guest_room
+*surf,skirt_h,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,05  #  22 ||< skirt_h:guest_room
+*surf,glass_c,VERT,frame_c,-,-,Window_ext,TRAN,EXTERIOR,0,0  #  23 ||< external
 *surf,door_fam,VERT,fptn_hall,-,-,door,OPAQUE,ANOTHER,07,27  #  24 ||< door_fam:hall
 # 
 *insol,3,0,0,0  # default insolation distribution

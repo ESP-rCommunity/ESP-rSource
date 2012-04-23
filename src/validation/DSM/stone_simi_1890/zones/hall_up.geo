@@ -1,5 +1,5 @@
 *Geometry 1.1,GEN,hall # tag version, format, zone name
-*date Mon Mar 19 13:10:06 2012  # latest file modification 
+*date Mon Apr 23 16:58:55 2012  # latest file modification 
 hall describes corridor within the flat
 # tag, X co-ord, Y co-ord, Z co-ord
 *vertex,7.60000,7.60000,0.00000  #   1
@@ -108,18 +108,18 @@ hall describes corridor within the flat
 *surf,hptn_liva,VERT,-,-,-,pla_pla_ptn,OPAQUE,ANOTHER,06,12  #   8 ||< ptn_halla:living
 *surf,hptn_study,VERT,-,-,-,door,OPAQUE,ANOTHER,08,01  #   9 ||< sptn_hall:study
 *surf,hptn_fam,VERT,-,-,-,pla_pla_ptn,OPAQUE,ANOTHER,09,03  #  10 ||< fptn_hall:family
-*surf,ptn_a,VERT,-,-,-,door,OPAQUE,ANOTHER,01,07  #  11 ||< fa_ptn_h:common_str
-*surf,ptn_b,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,08  #  12 ||< ptn_a:common_str
-*surf,ptn_c,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,09  #  13 ||< ptn_b:common_str
-*surf,ptn_d,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,10  #  14 ||< ptn_c:common_str
-*surf,ptn_e,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,11  #  15 ||< ptn_d:common_str
+*surf,ptn_a,VERT,-,-,-,door,OPAQUE,ANOTHER,01,07  #  11 ||< ptn_a:guest_room
+*surf,ptn_b,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,08  #  12 ||< ptn_b:guest_room
+*surf,ptn_c,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,09  #  13 ||< ptn_c:guest_room
+*surf,ptn_d,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,10  #  14 ||< ptn_d:guest_room
+*surf,ptn_e,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,11  #  15 ||< ptn_e:guest_room
 *surf,ceiling_hall,CEIL,-,-,-,ceil_to_roof,OPAQUE,ANOTHER,12,05  #  16 ||< ceiling_hall:upper
 *surf,floor_hall,FLOR,-,-,-,floor_to_cli,OPAQUE,ANOTHER,10,05  #  17 ||< floor_hall:lower
-*surf,skirt_a,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,12  #  18 ||< ptn_e:common_str
-*surf,skirt_b,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,13  #  19 ||< skirt_a:common_str
-*surf,skirt_c,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,14  #  20 ||< skirt_b:common_str
-*surf,skirt_d,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,15  #  21 ||< skirt_c:common_str
-*surf,skirt_e,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,16  #  22 ||< skirt_d:common_str
+*surf,skirt_a,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,12  #  18 ||< skirt_a:guest_room
+*surf,skirt_b,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,13  #  19 ||< skirt_b:guest_room
+*surf,skirt_c,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,14  #  20 ||< skirt_c:guest_room
+*surf,skirt_d,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,15  #  21 ||< skirt_d:guest_room
+*surf,skirt_e,VERT,-,-,-,masonry0.2,OPAQUE,ANOTHER,01,16  #  22 ||< skirt_e:guest_room
 *surf,door_k,VERT,hptn_kit,-,-,door,OPAQUE,ANOTHER,02,43  #  23 ||< door_k:kiten_util
 *surf,door_st,VERT,hptn_study,-,-,door,OPAQUE,ANOTHER,08,19  #  24 ||< door_st:study
 *surf,door_bath,VERT,hptn_bath,-,-,door,OPAQUE,ANOTHER,04,17  #  25 ||< door_bath:bath
