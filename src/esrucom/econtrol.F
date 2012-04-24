@@ -188,7 +188,13 @@ C                   fenestration control function.
 C                 iCFCactuator(?,1)=0 actuates shade layer ON/OFF
 C                                  =1 actuates slat angle of slat-type shade
 C                                  =2 actuates both shade layer ON/OFF status
-C                                   and slat angle (for schedule only)
+C                                     and slat angle (for schedule only)
+C                                  =3 actuates slat angle w/ three settings
+C                                  =4 actuates slat angle "cut-off", retracts
+C                                  =5 actuates slat angle w/ two settings, 
+C                                     retraction and wind-protection sensor
+C                                  =6 actuates slat angle "cut-off", 
+C                                     retraction and wind-protection sensor
 C                 iCFCactuator(?,2) is the zone index
 C                 iCFCactuator(?,3) is the CFC type
 
@@ -1851,7 +1857,7 @@ C Reporting: Get a string describing the current sensor based on common.
 
 C Range checking.
           if(iCFCactuator(ii,1).lt.0.or.
-     &     iCFCactuator(ii,1).gt.4)goto 1005
+     &     iCFCactuator(ii,1).gt.6)goto 1005
           if(iCFCactuator(ii,2).le.0.or.iCFCactuator(ii,3).lt.0.or.
      &     iCFCactuator(ii,2).gt.mcom.or.
      &     iCFCactuator(ii,3).gt.mcfc)goto 1005
@@ -2576,6 +2582,20 @@ C Actuator.
      &       sn(1:lnblnk(sn)),' in ',zn(1:lnblnk(zn)),'.'
           ELSEIF(iCFCactuator(II,1).EQ.2)THEN
             WRITE(SSTR,'(5a)')'Shade ON/OFF and slat angle(schedule)',
+     &       sn(1:lnblnk(sn)),' in ',zn(1:lnblnk(zn)),'.'     
+          ELSEIF(iCFCactuator(II,1).EQ.3)THEN
+            WRITE(SSTR,'(5a)')' --- unclear function ---',
+     &       sn(1:lnblnk(sn)),' in ',zn(1:lnblnk(zn)),'.'     
+          ELSEIF(iCFCactuator(II,1).EQ.4)THEN
+            WRITE(SSTR,'(5a)')'Slat angle "cut-off" in CFC type',
+     &       sn(1:lnblnk(sn)),' in ',zn(1:lnblnk(zn)),'.'     
+          ELSEIF(iCFCactuator(II,1).EQ.5)THEN
+            WRITE(SSTR,'(5a)')
+     &       'Slat angle with wind-safety in CFC type',
+     &       sn(1:lnblnk(sn)),' in ',zn(1:lnblnk(zn)),'.'     
+          ELSEIF(iCFCactuator(II,1).EQ.6)THEN
+            WRITE(SSTR,'(5a)')
+     &       'Slat angle "cut-off" w/ wind-safety in CFC type',
      &       sn(1:lnblnk(sn)),' in ',zn(1:lnblnk(zn)),'.'     
           ENDIF
         ENDIF

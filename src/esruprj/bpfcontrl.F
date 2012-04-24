@@ -3087,13 +3087,13 @@ C control type.
           cm(5)=0.0        ! open slat angle [deg]
         elseif(ictyp.eq.3)then ! senses solar radiation, actuates shade ON/OFF
           cm(1)=2.0
-          cm(2)=500.0      ! shade ON setpoint [W/m2]
-          cm(3)=400.0      ! shade OFF setpoint [W/m2]
+          cm(2)=180.0      ! shade ON setpoint [W/m2]
+          cm(3)=100.0      ! shade OFF setpoint [W/m2]
         elseif(ictyp.eq.4)then ! senses solar radiation, actuates slat angle
           cm(1)=4.0
-          cm(2)=500.0      ! slats closed setpoint [W/m2]
-          cm(3)=400.0      ! slats open setpoint [W/m2]
-          cm(4)=80.0       ! closed slat angle [deg]
+          cm(2)=180.0      ! slats closed setpoint [W/m2]
+          cm(3)=100.0      ! slats open setpoint [W/m2]
+          cm(4)=75.0       ! closed slat angle [deg]
           cm(5)=0.0        ! open slat angle [deg]        
         elseif(ictyp.eq.5)then ! senses wind speed, actuates shade ON/OFF
           cm(1)=2.0

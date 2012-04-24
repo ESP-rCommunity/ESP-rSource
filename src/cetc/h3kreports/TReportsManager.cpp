@@ -886,7 +886,7 @@ TReportsManager::TReportsManager(  )
    //remove the out.csv and out.db3 on init since the save_to_disk
    //option will append to file and database as the simulation runs
    if (bUseResFilenameRoot) {
-       remove(sCSVFileName.c_str());
+       remove(sCSVFileName);
    } else {
        remove("out.csv");
    }

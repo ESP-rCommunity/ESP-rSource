@@ -4511,7 +4511,7 @@ C      real slat_angleX
       real shdOFFsetpoint
       real shdONslatPOSITION, shdINTslatPOSITION
       real shdOFFslatPOSITION
-      real schedule_slat_angle,cutoff
+      real schedule_slat_angle,cutoff,windvelmax
       real temp                     ! temperature [C] control parameter - can be dbt, dbt/mrt, sol-air
       real solrad                   ! solar radiation [W/m2] control parameter - can be diff hor, dir norm, total incident on surface
       real tmrt                     ! mrt temperature [C]
@@ -4519,12 +4519,13 @@ C      real slat_angleX
       real solrad_diff              ! incident diffuse solar radiation [W/m2] - returned by sub. get_incident_solrad
       real ang                      ! incident angle of radiation on surface
       real psazi,pselv              ! solar azimuth and elevation angles relativ to surface
-      real PI,R
+c      real PI,R
       
       character msgout*124
 
-      PI = 4.0 * ATAN(1.0)
-      R=PI/180.
+c      PI = 4.0 * ATAN(1.0)
+c      R=PI/180.
+       real funCutOffAngle
 
 C Prior to initiating control logic, set the default slat angle and 
 C shading state for the next time step in all zones and all CFC types
@@ -4618,7 +4619,8 @@ C -------------------------------------------------------------------
 C Determine actuator type and copy control data to working variables
 C -------------------------------------------------------------------
 
-  12      iact1 = iCFCactuator(ictlfun,1)           ! 0=shade ON/OFF, 1=slat angle, 2=both (for schedule), 3=??, 4=cut-off
+  12      iact1 = iCFCactuator(ictlfun,1)           ! 0=shade ON/OFF, 1=slat angle, 2=both (for schedule), 3=??, 
+                                                    ! 4=cut-off, 5=slat angle and wind max, 6=cut-off and wind max
           iact2 = iCFCactuator(ictlfun,2)           ! zone index
           iact3 = iCFCactuator(ictlfun,3)           ! CFC type
 
@@ -4651,6 +4653,14 @@ C Actuator controls slat angle of slat-type shade layer between 3 choices
 C       Set points with which "blind down" or not is decided
         shdONsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,2)
         shdOFFsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,3)
+C Actuator controls slat angle of slat-type shade layer between two positions
+C and retracts below radiation set point and above wind velocity set point
+      elseif(iact1.eq.5.or.iact1.eq.6)then
+        shdONsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,2)
+        shdOFFsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,3)
+        shdONslatPOSITION = CFCmiscdata(ictlfun,idaytype,iperiod,4)
+        shdOFFslatPOSITION = CFCmiscdata(ictlfun,idaytype,iperiod,5)
+        windvelmax = CFCmiscdata(ictlfun,idaytype,iperiod,6)
       endif
 
 C -------------------------------------------------------------------
@@ -4663,9 +4673,39 @@ C -------------------------------------------------------------------
           isen3 = iCFCsensor(ictlfun,3)
           ictype = iCFCctltype(ictlfun,idaytype,iperiod)
 
-C Determine appropriate temperature parameter to use
+C Controller types 3, 4 and 8 need solar radiation. Set this here for
+C code duplication avoidance.
+          if (ictype.eq.3.or.ictype.eq.4.or.ictype.eq.8) then
+          
+C Determine appropriate solar radiation parameter to use
+            if(isen1.eq.-3.and.isen2.eq.4)then      ! senses diff. horizontal solar radiation
+              solrad = QFF
+            elseif(isen1.eq.-3.and.isen2.eq.5)then  ! senses direct normal solar radiation
+              solrad = QDF
+            elseif(isen1.eq.-4)then                 ! senses total radiation incident on surface
+            
+C Check that ext. rad sensor is on external surface
+              if(IE(isen2,isen3).eq.0)then
+                call get_incident_solrad(isen2,isen3,solrad_dir,
+     &                                   solrad_diff,
+     &                                   ang,psazi,pselv)
+                solrad = solrad_dir + solrad_diff   ! total radiation incident on surface
+
+              else ! sensor surface not external ... error!
+               write(msgout,'(A,i3,A,i2)')
+     &              'In CFC control function ', ictlfun,
+     &              ' with type ',ictype
+               call USRMSG(msgout,
+     &          'Surface incident radiation sensor must be external.'
+     &          ,'W')
+C               Kill simulation     
+                stop    
+              endif ! IE .eq. 0
+            endif ! isen1 .eq. -3 ...
+          endif
+
           IF(ictype.eq.1.or.ictype.eq.2)then        ! senses temperature
-      
+C Determine appropriate temperature parameter to use
             if(isen1.eq.-3.and.isen2.eq.0)then      ! ambient temperature
               temp = TF
             elseif(isen1.eq.-3.and.isen2.eq.1)then  ! sol-air temperature
@@ -4703,108 +4743,70 @@ C Perform actual control of shade ON/OFF and slat angle here
               endif
             endif
         
-          ELSEIF(ictype.eq.3.or.ictype.eq.4)then    ! senses solar radiation
+          ELSEIF(ictype.eq.3.or.ictype.eq.4)then             ! senses solar radiation
 
-C Determine appropriate solar radiation parameter to use
-            if(isen1.eq.-3.and.isen2.eq.4)then      ! senses diff. horizontal solar radiation
-              solrad = QFF
-            elseif(isen1.eq.-3.and.isen2.eq.5)then  ! senses direct normal solar radiation
-              solrad = QDF
-            elseif(isen1.eq.-4)then                 ! senses total radiation incident on surface
+            if(solrad.gt.shdONsetpoint)then
+              if(iact1.eq.0)then
+                vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
+                i_shd(iact2,iact3)     = 1                    ! shade state ON
+              elseif(iact1.eq.1.or.iact1.eq.5)then
+                vb_phiNew(iact2,iact3) = shdONslatPOSITION    ! set new slag angle
+                i_shd(iact2,iact3)     = 1                    ! shade state ON
+C             on-off with intermediate angle control
+              elseif(iact1.eq.3)then
+                vb_phiNew(iact2,iact3) = shdONslatPOSITION    ! set new slag angle
+                i_shd(iact2,iact3)     = 3                    ! shade state ON, "closed"
+C             cut-off angle control
+              elseif(iact1.eq.4.or.iact1.eq.6)then
+                i_shd(iact2,iact3)     = 1                    ! shade state ON (careful: not Radiance-coupling-friendly!!)
+                vb_phiNew(iact2,iact3) = funCutOffAngle(iact2,iact3,
+     &                                  solrad_dir,psazi,pselv)
+
+              endif
             
-C Check that ext. rad sensor is on external surface
-              if(IE(isen2,isen3).eq.0)then
-                call get_incident_solrad(isen2,isen3,solrad_dir,
-     &                                   solrad_diff,
-     &                                   ang,psazi,pselv)
-                solrad = solrad_dir + solrad_diff   ! total radiation incident on surface
+            elseif(solrad.lt.shdOFFsetpoint)then
+              if(iact1.eq.0)then
+                vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
+                i_shd(iact2,iact3)     = 0                    ! shade state OFF
+              elseif(iact1.eq.1.or.iact1.eq.5)then
+                vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slag angle
+                i_shd(iact2,iact3)     = 0                    ! shade state OFF     
+C             on-off with intermediate angle control
+              elseif(iact1.eq.3)then
+                vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set new slag angle
+                i_shd(iact2,iact3)     = 1                    ! shade state ON, but "open"
+C             cut-off angle control
+              elseif(iact1.eq.4.or.iact1.eq.6)then
+                vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
+                i_shd(iact2,iact3)     = 0                    ! shade state OFF
+              endif
+            
+            else ! solrad is in interval between off and on set points
+              if(iact1.eq.1.or.iact1.eq.5)then
+                vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set new slag angle
+                i_shd(iact2,iact3)     = 0                    ! shade state ON     
+C             on-off with intermediate angle control
+              elseif (iact1.eq.3) then
+                vb_phiNew(iact2,iact3) = shdINTslatPOSITION   ! set new slag angle
+                i_shd(iact2,iact3)     = 2                    ! shade state ON, intermediate angle     
+C             cut-off angle control
+              elseif(iact1.eq.4.or.iact1.eq.6)then
+                vb_phiNew(iact2,iact3) = funCutOffAngle(iact2,iact3, ! set new slat angle (cut off)
+     &                                  solrad_dir,psazi,pselv)
+                i_shd(iact2,iact3)     = 1                    ! shade state ON (careful: not Radiance-coupling-friendly!!)
+              endif
+            endif
 
-C=============== CUT OFF =====================================
-                if (iact1.eq.4) then
-C                 Calculate cut-off angle
-C                 Blind assembly tilt angle PELV(icomp,isurf) is defined as
-C                   0°   for vertical surfaces
-C                  90°   for horizontal surfaces facing upward ('ceiling') and
-C                 -90°   for horizontal surfaces facing downward ('floor')
-C                 determin if horizontal or vertical and calc cut-off angle
-                  if (vb_VorH(iact2,iact3)(1:4).eq.'HORZ') then
-                    cutoff=
-     &                 asin( vb_s(iact2,iact3)/vb_w(iact2,iact3)
-     &                       *cos(pselv*R) )/R - pselv
-C                                                pselv = salt - pelv!
-C                   Allow control to horizontal, not negativ (??)
-C                   blind restrictions should be part of the blind description in .cfc IMO !!
-                    if (cutoff.lt.0.0) cutoff=0.0
-C                   check if this facade actually gets direct radiation. If not,
-C                   set blind to a "daylight friendly" angle ... (? 11.07.2011)
-                    if (solrad_dir.le.0.0) cutoff=20.0
-                  else ! vertical venetian type blind
-C *** this needs checking (neg inc angles!) ****
-                    cutoff=     
-     &                 asin( vb_s(iact2,iact3)/vb_w(iact2,iact3)
-     &                       *cos(psazi*R) )/R - psazi
-C                                                psazi = sazi - pazi!
-                  endif
-                endif ! iact1 .eq. 4, aka. "cut-off angle"
-C=============== END CUT OFF ==================================
+C           Controls with wind-protection, override setting due to
+C           solar radiation if wind velocity set point is exceeded
+            if (iact1.eq.5.or.iact1.eq.6) then
+              if(VF.gt.windvelmax)then
+                  vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
+                  i_shd(iact2,iact3)     = 0                    ! shade state OFF
+              endif
+            endif
 
-              else ! sensor surface not external ... error!
-                write(msgout,'(A,i3)')
-     &               'In CFC control function: ', ictlfun
-                call USRMSG(msgout,
-     &          'Surface incident radiation sensor must be external.'
-     &          ,'W')
-C               Kill simulation     
-                stop    
-              endif ! IE .eq. 0
-            endif ! isen1 .eq. -3 ...
-
-C Perform actual control of shade ON/OFF and slat angle here
-        if(solrad.gt.shdONsetpoint)then
-          if(iact1.eq.0)then
-              vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
-              i_shd(iact2,iact3)     = 1                    ! shade state ON
-          elseif(iact1.eq.1)then
-              vb_phiNew(iact2,iact3) = shdONslatPOSITION    ! set new slag angle
-              i_shd(iact2,iact3)     = 1                    ! shade state ON
-C         on-off with intermediate angle control
-          elseif(iact1.eq.3)then
-              vb_phiNew(iact2,iact3) = shdONslatPOSITION    ! set new slag angle
-              i_shd(iact2,iact3)     = 3                    ! shade state ON, "closed"
-C         cut-off angle control
-          elseif(iact1.eq.4)then
-              i_shd(iact2,iact3)     = 1                    ! shade state ON (careful: not Radiance-coupling-friendly!!)
-              vb_phiNew(iact2,iact3) = cutoff
-          endif
-        elseif(solrad.lt.shdOFFsetpoint)then
-          if(iact1.eq.0)then
-              vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
-              i_shd(iact2,iact3)     = 0                    ! shade state OFF
-          elseif(iact1.eq.1)then
-              vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set new slag angle
-              i_shd(iact2,iact3)     = 1                    ! shade state ON     
-C         on-off with intermediate angle control
-          elseif(iact1.eq.3)then
-              vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set new slag angle
-              i_shd(iact2,iact3)     = 1                    ! shade state ON, but "open"
-C         cut-off angle control
-          elseif(iact1.eq.4)then
-              i_shd(iact2,iact3)     = 0                    ! shade state OFF
-              vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
-          endif
-        else ! solrad is in interval between off and on set points
-C         on-off with intermediate angle control
-          if (iact1.eq.3) then
-              vb_phiNew(iact2,iact3) = shdINTslatPOSITION   ! set new slag angle
-              i_shd(iact2,iact3)     = 2                    ! shade state ON, intermediate angle     
-C         cut-off angle control
-          elseif(iact1.eq.4)then
-              i_shd(iact2,iact3)     = 1                    ! shade state ON (careful: not Radiance-coupling-friendly!!)
-              vb_phiNew(iact2,iact3) = cutoff
-          endif
-        endif
-
-          ELSEIF(ictype.eq.5)then                   ! senses wind speed, actuates shade ON/OFF
+          ELSEIF(ictype.eq.5)then       ! senses wind speed, actuates shade ON/OFF
       
             if(isen1.eq.-3.and.isen2.eq.2)then
 C Perform actual control of shade ON/OFF and slat angle here
@@ -4853,10 +4855,8 @@ C Perform actual control of shade ON/OFF and slat angle here
           ELSEIF(ictype.eq.7)then                   ! no sensor, schedule only
             i_shd(iact2,iact3) = ischedule_shdstateONorOFF
             vb_phiNew(iact2,iact3) = schedule_slat_angle
-          ENDIF    
 
-C Add "ictype.eq.8", control by solar rad with "turn off for wind speed exceeding setpoint"??
-C This would be a quite typical real-world control ...
+          ENDIF ! if ictype
 
 C Check that new slat angle is within correct range:
 C     -90 (deg.) < vb_phiNew < 90 (deg.)
@@ -4901,6 +4901,60 @@ C Save slat angle and shade state for use in future time-step.
 
       return
       end
+
+C ********************************************************************
+C                      --funCutOffAngle--
+C
+C Created by: Achim Geissler
+C Initial Creation Date: April 2012
+C
+C Calculates the cut-off angle for Venetian type blind control
+C for CFC constructions.
+C
+C *** this function should be corrected to "profile angle" !! (23/04/2012)
+C
+C                 Blind assembly tilt angle PELV(icomp,isurf) is defined as
+C                   0°   for vertical surfaces
+C                  90°   for horizontal surfaces facing upward ('ceiling') and
+C                 -90°   for horizontal surfaces facing downward ('floor')
+C
+C ********************************************************************
+      real function funCutOffAngle(iact2,iact3,solrad_dir,psazi,pselv)
+      IMPLICIT NONE
+#include "building.h"
+#include "CFC_common.h"
+
+C Function parameters
+      real psazi,pselv,solrad_dir
+      integer iact2,iact3
+
+C Local variables
+      real cutoff,PI,R
+
+      PI = 4.0 * ATAN(1.0)
+      R=PI/180.
+
+C       determine if horizontal or vertical and calc cut-off angle
+      if (vb_VorH(iact2,iact3)(1:4).eq.'HORZ') then
+            cutoff=asin( vb_s(iact2,iact3)/vb_w(iact2,iact3)
+     &             * cos(pselv*R) )/R - pselv
+C                                       pselv = salt - pelv!
+C         Allow control to horizontal, not negativ (??)
+C         blind restrictions should be part of the blind description in .cfc IMO !!
+          if (cutoff.lt.0.0) cutoff=0.0
+C         check if this facade actually gets direct radiation. If not,
+C         set blind to a "daylight friendly" angle ... (? 11.07.2011)
+          if (solrad_dir.le.0.0) cutoff=20.0
+      else ! vertical venetian type blind
+C *** this needs checking (neg inc angles!) ****
+          cutoff=asin( vb_s(iact2,iact3)/vb_w(iact2,iact3)
+     &            * cos(psazi*R) )/R - psazi
+C                                      psazi = sazi - pazi!
+      endif
+      
+      funCutOffAngle=cutoff
+      return
+      end ! funCutOffAngle
 
 C ********************************************************************
 C                      --get_incident_solrad--
@@ -5339,7 +5393,6 @@ C Now calculate and output U-value for IGU of this construction
         call AddToReport (
      &         rvCFCUvalueISO%Identifier,
      &         CFC_ISO_Uvalue(icomp,icfctp),
-c     &         cZone,
      &         zname(icomp)(1:lnzname(icomp)),
      &         cSurface,
      &         sIGU)
@@ -5347,11 +5400,9 @@ c     &         cZone,
         call AddToReport (
      &         rvCFCUvalueActual%Identifier,
      &         CFC_nom_Uvalue(icomp,icfctp),
-c     &         cZone,
      &         zname(icomp)(1:lnzname(icomp)),
      &         cSurface,
      &         sIGU)
-
 
       end if ! icfcfl .gt. 0
  13   continue ! loop through constructions of zone
