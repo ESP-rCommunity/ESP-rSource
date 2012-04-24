@@ -2751,9 +2751,9 @@ C checking.
 
 C Correlation indices.
             CALL EGETWIA(IUF,IHCIA,NS,-1,99,'W',
-     &               'inside face hc cor',IER)
+     &        'inside face hc cor',IER)
             CALL EGETWIA(IUF,IHCEA,NS,-1,99,'W',
-     &               'other face hc cor',IER)
+     &        'other face hc cor',IER)
             DO 115 KV=1,NS
               IHCI(I,KV)=IHCIA(KV)
               IHCE(I,KV)=IHCEA(KV)
@@ -3077,6 +3077,14 @@ C Set all to not applicable and then instanciate available options.
       hclngdescr(16)='Bar-Cohen buoyancy ventilated channels          '
       hcshtdescr(17)='ISO 15099 corr buoyancy in chan '
       hclngdescr(17)='ISO 15099 corr buoyancy flow in vented vert chan'
+      hcshtdescr(20)='Alamdari & Hammond vertical 2.6X'
+      hclngdescr(20)='Alamdari & Hammond 2.65X test for vertical surf '
+      hcshtdescr(21)='Alamdari & Hammond vertical 3X  '
+      hclngdescr(21)='Alamdari & Hammond 3X test for vertical surfaces'
+      hcshtdescr(22)='Alamdari & Hammond vertical 4.7X'
+      hclngdescr(22)='Alamdari & Hammond 4.69X test for vertical surf '
+      hcshtdescr(23)='Alamdari & Hammond vertical 1.7X'
+      hclngdescr(23)='Alamdari & Hammond 1.76X test for vertical surf '
       hcshtdescr(30)='Khalifa & M window over radiator'
       hclngdescr(30)='Khalifa & Marshall window over radiator         '
       hcshtdescr(31)='Khalifa & M windows no radiator '

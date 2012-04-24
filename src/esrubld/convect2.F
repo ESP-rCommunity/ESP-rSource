@@ -458,6 +458,65 @@ C eqn. 111 from ISO 15099:2003
      &     real(RAS),real(NUSS),HC
           call edisp(itu,outs)
         endif
+      ELSEIF(ICOR.EQ.20)THEN
+
+C Alamdari and Hammond TEST VERSION that returns 2.6X standard hc value
+C to explore situations where the one face of the surface area is larger
+C that the other face (e.g. in facade mullion extrusions and
+C where one face is profiled such as metal forming under a slab).
+C Such a facility should be made generic so that the multiplier could 
+C be passed as a parameter and also consider whether other correlations
+C might take a multiplier parameter.
+        HC=((1.50*((DT/HEIGHT)**0.25))**6.0
+     &     +(1.23*((DT)**(1.0/3.0)))**6.0)**(1.0/6.0)
+        HC=HC*2.6  ! test multiplier
+        if(dotrace)then
+          write(outs,'(A,2F9.3)')' Alamdari: 2X HC & DT',HC,DT
+          call edisp(itu,outs)
+        endif
+
+      ELSEIF(ICOR.EQ.21)THEN
+
+C Alamdari and Hammond TEST VERSION that returns 3X standard hc value
+C to explore situations where the one face of the surface area is larger
+C that the other face (e.g. in facade mullion extrusions and
+C where one face is profiled such as metal forming under a slab).
+        HC=((1.50*((DT/HEIGHT)**0.25))**6.0
+     &     +(1.23*((DT)**(1.0/3.0)))**6.0)**(1.0/6.0)
+        HC=HC*3.0  ! test multiplier
+        if(dotrace)then
+          write(outs,'(A,2F9.3)')' Alamdari: 3X HC & DT',HC,DT
+          call edisp(itu,outs)
+        endif
+
+      ELSEIF(ICOR.EQ.22)THEN
+
+C Alamdari and Hammond TEST VERSION that returns 4.69X standard hc value
+C to explore situations where the one face of the surface area is larger
+C that the other face (e.g. in facade mullion extrusions and
+C where one face is profiled such as metal forming under a slab).
+        HC=((1.50*((DT/HEIGHT)**0.25))**6.0
+     &     +(1.23*((DT)**(1.0/3.0)))**6.0)**(1.0/6.0)
+        HC=HC*4.69  ! test multiplier
+        if(dotrace)then
+          write(outs,'(A,2F9.3)')' Alamdari: 4.69X HC & DT',HC,DT
+          call edisp(itu,outs)
+        endif
+
+      ELSEIF(ICOR.EQ.23)THEN
+
+C Alamdari and Hammond TEST VERSION that returns 1.76X standard hc value
+C to explore situations where the one face of the surface area is larger
+C that the other face (e.g. in facade mullion extrusions and
+C where one face is profiled such as metal forming under a slab).
+        HC=((1.50*((DT/HEIGHT)**0.25))**6.0
+     &     +(1.23*((DT)**(1.0/3.0)))**6.0)**(1.0/6.0)
+        HC=HC*1.76  ! test multiplier
+        if(dotrace)then
+          write(outs,'(A,2F9.3)')' Alamdari: 1.76X HC & DT',HC,DT
+          call edisp(itu,outs)
+        endif
+
       ELSEIF(ICOR.EQ.30)THEN
 
 C######   WINDOWS   ############################################################
