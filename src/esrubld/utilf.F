@@ -491,9 +491,9 @@ C range check).
 
 C User specifies the correlation to use for each surface.
 C Read in the correlation indices.
-          CALL EGETWIA(iunit,IHCIA,NS,0,90,'W',
+          CALL EGETWIA(iunit,IHCIA,NS,-1,99,'W',
      &      'inside face hc cor',IER)
-          CALL EGETWIA(iunit,IHCEA,NS,0,90,'W',
+          CALL EGETWIA(iunit,IHCEA,NS,-1,99,'W',
      &     'other face hc cor',IER)
           DO 115 KV=1,NS
             IcIuse(ICOMP,KV,I)=IHCIA(KV)
