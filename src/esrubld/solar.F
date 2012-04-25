@@ -1869,7 +1869,7 @@ C              Sum up diffuse transmitted contributions (sky + ground)
                TRANSD_SYSV = TRANSD_SYS_BD +
      &                       TRANSD_SYS_SKY + TRANSD_SYS_GRD 
 
-               TRANSD_SYSV = TRANSD_SYSV
+c               TRANSD_SYSV = TRANSD_SYSV
 C              Absorbed visual is of no interest
 
              else 
@@ -1883,10 +1883,6 @@ C              Calculate CFC system VISUAL beam transmitted, diffuse transmitted
             END IF ! self-shaded?
 
 C save multilayer results for CFC output
-cx             RadIncDirS(icomp,i)=EXDIR(I)
-cx             RadIncDifS(icomp,i)=EXDIF(I)
-cx             RadIncDifSky(icomp,i)=EXDIFSKY(I)
-cx             RadIncDifGrd(icomp,i)=EXDIFGRD(I)
              issur_self_shd(icomp,i)=real(ians(i))
 C solar data
              transBB_S(icomp,i)=TRANSBB_SYS!*SNA(ICOMP,I)

@@ -4670,7 +4670,7 @@ C -------------------------------------------------------------------
 
           isen1 = iCFCsensor(ictlfun,1)
           isen2 = iCFCsensor(ictlfun,2)
-          isen3 = iCFCsensor(ictlfun,3)
+          isen3 = iCFCsensor(ictlfun,3) ! for isen1 .eq. -4 this is iSurf
           ictype = iCFCctltype(ictlfun,idaytype,iperiod)
 
 C Controller types 3, 4 and 8 need solar radiation. Set this here for
@@ -4758,9 +4758,10 @@ C             on-off with intermediate angle control
                 i_shd(iact2,iact3)     = 3                    ! shade state ON, "closed"
 C             cut-off angle control
               elseif(iact1.eq.4.or.iact1.eq.6)then
-                i_shd(iact2,iact3)     = 1                    ! shade state ON (careful: not Radiance-coupling-friendly!!)
-                vb_phiNew(iact2,iact3) = funCutOffAngle(iact2,iact3,
+                vb_phiNew(iact2,iact3) = funCutOffAngle(1,
+     &                                  iact2,isen3,iact3,
      &                                  solrad_dir,psazi,pselv)
+                i_shd(iact2,iact3)     = 1                    ! shade state ON (careful: not Radiance-coupling-friendly!!)
 
               endif
             
@@ -4791,7 +4792,8 @@ C             on-off with intermediate angle control
                 i_shd(iact2,iact3)     = 2                    ! shade state ON, intermediate angle     
 C             cut-off angle control
               elseif(iact1.eq.4.or.iact1.eq.6)then
-                vb_phiNew(iact2,iact3) = funCutOffAngle(iact2,iact3, ! set new slat angle (cut off)
+                vb_phiNew(iact2,iact3) = funCutOffAngle(1,
+     &                                  iact2,isen3,iact3,
      &                                  solrad_dir,psazi,pselv)
                 i_shd(iact2,iact3)     = 1                    ! shade state ON (careful: not Radiance-coupling-friendly!!)
               endif
@@ -4919,25 +4921,33 @@ C                  90°   for horizontal surfaces facing upward ('ceiling') and
 C                 -90°   for horizontal surfaces facing downward ('floor')
 C
 C ********************************************************************
-      real function funCutOffAngle(iact2,iact3,solrad_dir,psazi,pselv)
+      real function funCutOffAngle(pa,iZone,iSurf,icfctp,solrad_dir,
+     &                              psazi,pselv)
       IMPLICIT NONE
 #include "building.h"
 #include "CFC_common.h"
 
 C Function parameters
       real psazi,pselv,solrad_dir
-      integer iact2,iact3
+      integer iZone,iSurf,icfctp,pa
 
 C Local variables
-      real cutoff,PI,R
+      real cutoff,PI,R,solar_elev
 
       PI = 4.0 * ATAN(1.0)
       R=PI/180.
 
+C set solar elevation to either pselv or to profile angle
+      if (pa.eq.0) then
+        solar_elev=pselv
+      else
+        call profile_angle(iZone,iSurf,icfctp,solar_elev)
+      endif
+
 C       determine if horizontal or vertical and calc cut-off angle
-      if (vb_VorH(iact2,iact3)(1:4).eq.'HORZ') then
-            cutoff=asin( vb_s(iact2,iact3)/vb_w(iact2,iact3)
-     &             * cos(pselv*R) )/R - pselv
+      if (vb_VorH(iZone,icfctp)(1:4).eq.'HORZ') then
+            cutoff=asin( vb_s(iZone,icfctp)/vb_w(iZone,icfctp)
+     &             * cos(solar_elev*R) )/R - solar_elev
 C                                       pselv = salt - pelv!
 C         Allow control to horizontal, not negativ (??)
 C         blind restrictions should be part of the blind description in .cfc IMO !!
@@ -4947,7 +4957,7 @@ C         set blind to a "daylight friendly" angle ... (? 11.07.2011)
           if (solrad_dir.le.0.0) cutoff=20.0
       else ! vertical venetian type blind
 C *** this needs checking (neg inc angles!) ****
-          cutoff=asin( vb_s(iact2,iact3)/vb_w(iact2,iact3)
+          cutoff=asin( vb_s(iZone,icfctp)/vb_w(iZone,icfctp)
      &            * cos(psazi*R) )/R - psazi
 C                                      psazi = sazi - pazi!
       endif
