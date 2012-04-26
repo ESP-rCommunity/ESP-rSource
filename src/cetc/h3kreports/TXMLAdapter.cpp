@@ -26,7 +26,7 @@ TXMLAdapter::TXMLAdapter(string filePath)
         Input_file_test.close();
 
         if (  Input_file_test.fail() ){
-           printf("I'm failed!\n\n");
+           // printf("I'm failed!\n\n");
            m_document = NULL;
 
         }else{
