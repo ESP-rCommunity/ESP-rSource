@@ -2208,31 +2208,7 @@ echo " Installing standard databases. This may take some time."
   cp ${SRCdir}/databases/profiles.db2.a ${DESTdir}/esp-r/databases/profiles.db2.a
   echo " Done."
 
-     cd ${SRCdir}/databases
-
-     echo -n "   - Creating binary event profiles databases ..."
-     $PRJ -mode text >/dev/null 2>/dev/null <<zzz
-b
-g
-f
-profiles.db1.a
-${DESTdir}/esp-r/databases/profiles.db1
-y
--
--
-zzz
-
-     $PRJ -mode text >/dev/null 2>/dev/null <<zzz
-b
-g
-f
-profiles.db2.a
-${DESTdir}/esp-r/databases/profiles.db2
-y
--
--
-zzz
-   echo " Done."
+   cd ${SRCdir}/databases
 
    echo -n "   - Creating binary plant components databases..."
 
