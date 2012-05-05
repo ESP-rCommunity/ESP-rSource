@@ -327,6 +327,7 @@ C Required for WATSUN-PV model
 
       REAL fInc_angle          ! Angle of incidence for surface
 
+C Local variables for CFCs
       real proang
       real TRANSBB_SYS,TRANSD_SYS,REFL_SYS,CFCabs
       real TRANSBB_SYSV,TRANSD_SYSV,REFL_SYSV,CFCabsV
@@ -335,7 +336,9 @@ C Required for WATSUN-PV model
       character ctmp*2
 
       integer iSolVis ! switch for CFC solar / visual data calculation
+      integer i_direct ! switch for calling solar_multilayer
 
+C ...
       logical VTSOL,vsolfl,closea,neglum
 
       logical bCloseToZero     ! Boolean used for comparison to zero
@@ -1665,6 +1668,7 @@ C                 ------------------------------
             TFF=0.0
             tmpIDF=0.0  !interior diffuse source
             tmpIBM=0.0  !interior beam source
+            i_direct=0
 
 C Get shading data if it exists
             IF(ISHD(ICOMP).EQ.0.OR.ISHD(ICOMP).EQ.2)THEN
@@ -1697,12 +1701,11 @@ C............SOLAR PROPERTIES
              call cfc_eff_opt_prop(icomp,i,icfctp,angi(i),proang,
      &                                                     iSolVis)
 
-
 C            Check whether sky and ground diffuse calc. is requested
              if (i_ground_sky_diff_calc.eq.1) then
 
 C              Calculate CFC system solar BEAM transmitted
-               call solar_multilayer(0,icomp,i,icfctp,
+               call solar_multilayer(i_direct,icomp,i,icfctp,
      &                     EXDIR(I),tmpIDF,
      &                     tmpIBM,tmpIDF,iSolVis,
      &                     TRANSBB_SYS,TRANSD_SYS_BD,dummy,AbsSolDir)
@@ -1734,7 +1737,8 @@ C              Sum up solar absorbed contributions (direct + sky diff + ground d
 C              Legacy model.
 C              Calculate CFC system solar beam transmitted, diffuse transmitted, total reflected
 C              and absorbed fluxes in each CFC layer
-               call solar_multilayer(0,icomp,i,icfctp,EXDIR(I),EXDIF(I),
+               call solar_multilayer(i_direct,icomp,i,icfctp,
+     &           EXDIR(I),EXDIF(I),
      &           tmpIBM,tmpIDF,iSolVis,TRANSBB_SYS,TRANSD_SYS,REFL_SYS,
      &           AbsSol)
              endif
@@ -1749,8 +1753,8 @@ C............REPEAT for VISUAL
 C            Check whether sky and ground diffuse calc. is requested
              if (i_ground_sky_diff_calc.eq.1) then
 
-C              Calculate CFC system solar BEAM transmitted
-               call solar_multilayer(0,icomp,i,icfctp,
+C              Calculate CFC system visual BEAM transmitted
+               call solar_multilayer(i_direct,icomp,i,icfctp,
      &                     EXDIR(I),tmpIDF,
      &                     tmpIBM,tmpIDF,iSolVis,
      &                     TRANSBB_SYSV,TRANSD_SYS_BD,dummy,AbsSolDir)
@@ -1775,9 +1779,10 @@ C              Absorbed visual is of no interest
              else 
 C             Legacy model.
 C             Calculate CFC system visual beam transmitted, diffuse transmitted.
-              call solar_multilayer(0,icomp,i,icfctp,EXDIR(I),EXDIF(I),
-     &         tmpIBM,tmpIDF,iSolVis,TRANSBB_SYSV,TRANSD_SYSV,
-     &         REFL_SYSV,AbsVis)
+              call solar_multilayer(i_direct,icomp,i,icfctp,
+     &           EXDIR(I),EXDIF(I),
+     &           tmpIBM,tmpIDF,iSolVis,TRANSBB_SYSV,TRANSD_SYSV,
+     &           REFL_SYSV,AbsVis)
              endif
 
 C...........surface is self-shaded
@@ -1801,7 +1806,7 @@ C            Check whether sky and ground diffuse calc. is requested
              if(i_ground_sky_diff_calc.eq.1)then
 
 C              Calculate CFC system solar BEAM transmitted
-               call solar_multilayer(0,icomp,i,icfctp,
+               call solar_multilayer(i_direct,icomp,i,icfctp,
      &                     EXDIR(I),tmpIDF,
      &                     tmpIBM,tmpIDF,iSolVis,
      &                     TRANSBB_SYS,TRANSD_SYS_BD,dummy,AbsSolDir)
@@ -1833,7 +1838,7 @@ C              Sum up solar absorbed contributions (direct + sky diff + ground d
 C              Legacy model.
 C              Calculate CFC system solar beam transmitted, diffuse transmitted, 
 C              total reflected and absorbed fluxes in each CFC layer.
-               call solar_multilayer(0,icomp,i,icfctp,EXDIR(I),
+               call solar_multilayer(i_direct,icomp,i,icfctp,EXDIR(I),
      &             EXDIF(I),tmpIBM,tmpIDF,iSolVis,TRANSBB_SYS,
      &             TRANSD_SYS,REFL_SYS,AbsSol)
              endif ! sky/ground or legacy
@@ -1848,7 +1853,7 @@ C            Check whether sky and ground diffuse calc. is requested
              if (i_ground_sky_diff_calc.eq.1) then
 
 C              Calculate CFC system visual BEAM transmitted (TRANSBB_SYSV)
-               call solar_multilayer(0,icomp,i,icfctp,
+               call solar_multilayer(i_direct,icomp,i,icfctp,
      &                     EXDIR(I),tmpIDF,
      &                     tmpIBM,tmpIDF,iSolVis,
      &                     TRANSBB_SYSV,TRANSD_SYS_BD,dummy,AbsSolDir)
@@ -1875,7 +1880,8 @@ C              Absorbed visual is of no interest
              else 
 C              Legacy model.
 C              Calculate CFC system VISUAL beam transmitted, diffuse transmitted.
-               call solar_multilayer(0,icomp,i,icfctp,EXDIR(I),EXDIF(I),
+               call solar_multilayer(i_direct,icomp,i,icfctp,
+     &                 EXDIR(I),EXDIF(I),
      &                 tmpIBM,tmpIDF,iSolVis,TRANSBB_SYSV,TRANSD_SYSV,
      &                 REFL_SYSV,AbsVis)
              endif ! sky/ground or legacy
@@ -1883,77 +1889,79 @@ C              Calculate CFC system VISUAL beam transmitted, diffuse transmitted
             END IF ! self-shaded?
 
 C save multilayer results for CFC output
-             issur_self_shd(icomp,i)=real(ians(i))
+            issur_self_shd(icomp,i)=real(ians(i))
 C solar data
-             transBB_S(icomp,i)=TRANSBB_SYS!*SNA(ICOMP,I)
-             transD_S(icomp,i)=TRANSD_SYS!*SNA(ICOMP,I)
-             refl_S(icomp,i)=REFL_SYS!*SNA(ICOMP,I)
+            transBB_S(icomp,i)=TRANSBB_SYS!*SNA(ICOMP,I)
+            transD_S(icomp,i)=TRANSD_SYS!*SNA(ICOMP,I)
+            ! 5.5.12: this does not seem to be set when ground/sky diffuse mode is on?
+            refl_S(icomp,i)=REFL_SYS!*SNA(ICOMP,I)
 
 C visual data, normalise to radiation available for output/storing of 
 C fraction. These fractions are used in "casual.F/DWINVT()" as light 
-C transmittance values (direct/diffuse) ...
-             if (EXDIR(I).gt.0.) then
-               transBB_V(icomp,i)=TRANSBB_SYSV/EXDIR(I)
-             else
-               transBB_V(icomp,i)=0.
-             endif
-             if (i_ground_sky_diff_calc.eq.1) then
-               if ((EXDIR(I)+EXDIFSKY(I)+EXDIFGRD(I)).gt.0.) then
-                 transD_V(icomp,i)=TRANSD_SYSV/(EXDIR(I)+EXDIFSKY(I)
+C transmittance values (direct/diffuse) - the fraction is based on 
+C solar radiation with visual properties for CFC layers. 
+            if (EXDIR(I).gt.0.) then
+              transBB_V(icomp,i)=TRANSBB_SYSV/EXDIR(I)
+            else
+              transBB_V(icomp,i)=0.
+            endif
+            if (i_ground_sky_diff_calc.eq.1) then
+              if ((EXDIR(I)+EXDIFSKY(I)+EXDIFGRD(I)).gt.0.) then
+                transD_V(icomp,i)=TRANSD_SYSV/(EXDIR(I)+EXDIFSKY(I)
      &                                     +EXDIFGRD(I))
-               else
+              else
                  transD_V(icomp,i)=0.
-               endif
-             else ! legacy
-               if ((EXDIR(I)+EXDIF(I)).gt.0.) then
+              endif
+            else ! legacy
+              if ((EXDIR(I)+EXDIF(I)).gt.0.) then
                  transD_V(icomp,i)=TRANSD_SYSV/(EXDIR(I)+EXDIF(I))
-               else
+              else
                  transD_V(icomp,i)=0.
-               endif
+              endif
              
-             endif
+            endif
 
-             refl_V(icomp,i)=REFL_SYSV
+            refl_V(icomp,i)=REFL_SYSV
 
 C Calculate total solar absorbed in CFC
-             CFCabs=0.
-             do 999 ij=1,ncfc_el(icomp,icfctp)
-                    CFCabs=CFCabs+AbsSol(ij)
-  999        continue
-             q2cfc(2)=q2cfc(2)+CFCabs*SNA(ICOMP,I)
+            CFCabs=0.
+            do 999 ij=1,ncfc_el(icomp,icfctp)
+                CFCabs=CFCabs+AbsSol(ij)
+  999       continue
+            q2cfc(2)=q2cfc(2)+CFCabs*SNA(ICOMP,I)
 
 C Assign multilayer results to TD and TFF
-             TD=TRANSBB_SYS*SNA(ICOMP,I)
-             TFF=TRANSD_SYS*SNA(ICOMP,I)
-             tfftrace(i)=tff
-             tdtrace(i)=td
+            TD=TRANSBB_SYS*SNA(ICOMP,I)
+            TFF=TRANSD_SYS*SNA(ICOMP,I)
+            tfftrace(i)=tff
+            tdtrace(i)=td
 
 C Save total transmitted from ambient for output
-             QZNTOT=QZNTOT+TD+TFF
-             q1outs(2)=q1outs(2)+td+tff
+            QZNTOT=QZNTOT+TD+TFF
+            q1outs(2)=q1outs(2)+td+tff
 
 C Assign nodal absorptions to CFC layer nodes
-             ne=nelts(icomp,i)
-             inode=1
-             do 200 j=1,ne
-               nnod=nndl(icomp,i,j)
-               fnnod=float(nnod)
-               qtmca(i,inode,2)=qtmca(i,inode,2)+
+            ne=nelts(icomp,i)
+            inode=1
+            do 200 j=1,ne
+              nnod=nndl(icomp,i,j)
+              fnnod=float(nnod)
+              qtmca(i,inode,2)=qtmca(i,inode,2)+
      &                                  AbsSol(j)/(fnnod*2.)
-               qtmca_ext(icomp,i,inode)=qtmca(i,inode,2)    !save for CFC output
-               do 205 jj=2,nnod
-                  inode=inode+1
-                  qtmca(i,inode,2)=qtmca(i,inode,2)+
+              qtmca_ext(icomp,i,inode)=qtmca(i,inode,2)    !save for CFC output
+              do 205 jj=2,nnod
+                inode=inode+1
+                qtmca(i,inode,2)=qtmca(i,inode,2)+
      &                                  AbsSol(j)/fnnod
-                  qtmca_ext(icomp,i,inode)=qtmca(i,inode,2) !save for CFC output
+                qtmca_ext(icomp,i,inode)=qtmca(i,inode,2) !save for CFC output
 
-  205          continue
-               inode=inode+1
-               qtmca(i,inode,2)=qtmca(i,inode,2)+
+  205         continue
+              inode=inode+1
+              qtmca(i,inode,2)=qtmca(i,inode,2)+
      &                                  AbsSol(j)/(fnnod*2.)
-               qtmca_ext(icomp,i,inode)=qtmca(i,inode,2)    !save for CFC output
+              qtmca_ext(icomp,i,inode)=qtmca(i,inode,2)    !save for CFC output
 
-  200        continue
+  200       continue
 
           end if
 

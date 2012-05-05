@@ -886,7 +886,8 @@ TReportsManager::TReportsManager(  )
    //remove the out.csv and out.db3 on init since the save_to_disk
    //option will append to file and database as the simulation runs
    if (bUseResFilenameRoot) {
-       remove(sCSVFileName.c_str());
+       remove(sCSVFileName.c_str()); // name does not seem to be set at this point ...
+                                     // needs to be moved ... where to (5 May '12)?
    } else {
        remove("out.csv");
    }
@@ -2294,10 +2295,10 @@ void TReportsManager::OutputCSVData(const char *sFileName, stSortedMapKeyRef sor
                {
                   sTemp[i] = ':';
                }
-//               if(sTemp[i] == '_')
-//               {
-//                  sTemp[i] = ' ';
-//               }
+               if(sTemp[i] == '_')
+               {
+                  sTemp[i] = ' ';
+               }
             }
             sTemp+= " ";
 

@@ -1102,6 +1102,9 @@ C need thickness of glass layers for Fresnel calcs
       real w,s,phi,crown,wr,t !local slat width, spacing, crown, w/r ratio, thickness
       real sl_rad_overw
       logical Curved
+      
+C local copies of parameters that should'nt be changed (!!!)
+      real proang_rad,anginc_rad
 
 C variables for calculation of sky and ground diffuse transmittance
       real TXskydiff       ! front sky diffuse transmittance (slat blinds with horizontal slats)
@@ -1109,11 +1112,11 @@ C variables for calculation of sky and ground diffuse transmittance
       real TXgrddiff       ! front ground diffuse transmittance (slat blinds with horizontal slats)
       real RXgrddiff       ! front ground diffuse reflectance (slat blinds with horizontal slats)
 
-      integer j ,jj      ! iterators
+      integer j ,jj        ! iterators
 
 C temporary INPUT variables to hold solar and visible properties as
 C read from *.cfc file
-      real SolRufs,SolRdfs,SolTslat,VisRufs,VisRdfs,VisTslat
+      real Rufs,Rdfs,Tslat
 C temporary OUTPUT variables to hold effective solar and visible properties
       real OutRFbd,OutTFbb,OutTFbd,OutRBbd,OutTBbb,OutTBbd
       real OutRFdd,OutRBdd,OutTFdd,OutTBdd
@@ -1132,8 +1135,8 @@ C misc local variables
       ne=ncfc_el(icomp,icfctp)
 
 C convert profile and incidence angles to radians
-      proang=proang*r
-      anginc=anginc*r
+      proang_rad=proang*r
+      anginc_rad=anginc*r
 
 C loop through CFC layer types and compute solar optical properties for 
 C each layer, set air gap properties to 0 except for bb and dd transmission,
@@ -1169,54 +1172,56 @@ C index.
      &      /(1.-(RPERP*RPERP*TAU_A*TAU_A))
         RclearDN=RPERP*(1.+(TAU_A*TclearDN))
 
-        THETA1=ABS(anginc)
+        THETA1=ABS(anginc_rad)
         IF (THETA1.LT.0.1)THEN
-            TclearON=TclearDN
-            RclearON=RclearDN
+          TclearON=TclearDN
+          RclearON=RclearDN
         ELSE
 C Calculate beam OFF-NORMAL incidence transmittance and reflectance for
 C reference glass based on extinction coefficient and refractive index 
 C using Snell's law, Fresnel equations.
-        THETA2 = ASIN((SIN(THETA1))/N2)
-        TAU_A = EXP(-1.0*KL/COS(THETA2))
-        RPERP = ((SIN(THETA2-THETA1))/(SIN(THETA2+THETA1)))**2.
-        RPARL = ((TAN(THETA2-THETA1))/(TAN(THETA2+THETA1)))**2.
-        TAUPERP = (TAU_A*(1.0-RPERP)*(1.0-RPERP))/
+          THETA2 = ASIN((SIN(THETA1))/N2)
+          TAU_A = EXP(-1.0*KL/COS(THETA2))
+          RPERP = ((SIN(THETA2-THETA1))/(SIN(THETA2+THETA1)))**2.
+          RPARL = ((TAN(THETA2-THETA1))/(TAN(THETA2+THETA1)))**2.
+          TAUPERP = (TAU_A*(1.0-RPERP)*(1.0-RPERP))/
      &            (1.0-(RPERP*RPERP*TAU_A*TAU_A))
-        TAUPARL = (TAU_A*(1.0-RPARL)*(1.0-RPARL))/
+          TAUPARL = (TAU_A*(1.0-RPARL)*(1.0-RPARL))/
      &            (1.0-(RPARL*RPARL*TAU_A*TAU_A))
-        RHOPERP = RPERP*(1.0+(TAU_A*TAUPERP))
-        RHOPARL = RPARL*(1.0+(TAU_A*TAUPARL))
-        TclearON = (TAUPERP+TAUPARL)/2.0
-        RclearON = (RHOPERP+RHOPARL)/2.0
-
+          RHOPERP = RPERP*(1.0+(TAU_A*TAUPERP))
+          RHOPARL = RPARL*(1.0+(TAU_A*TAUPARL))
+          TclearON = (TAUPERP+TAUPARL)/2.0
+          RclearON = (RHOPERP+RHOPARL)/2.0
         END IF
 
 C Calculate glazing layer beam OFF-NORMAL front and back transmittance
 C and reflectance based on clear glass off-normal and normal values.
-        SolTFbb(icomp,isurf,icfctp,i)=
+        if (isolvis.eq.0) then ! solar
+          SolTFbb(icomp,isurf,icfctp,i)=
      &      (TclearON/TclearDN)*SolT(icomp,icfctp,i)
 
-        SolTBbb(icomp,isurf,icfctp,i)=SolTFbb(icomp,isurf,icfctp,i)
+          SolTBbb(icomp,isurf,icfctp,i)=SolTFbb(icomp,isurf,icfctp,i)
 
-        SolRFbb(icomp,isurf,icfctp,i)=1.-
+          SolRFbb(icomp,isurf,icfctp,i)=1.-
      &      (((1.-RclearON)/(1.-RclearDN))*(1.-SolRF(icomp,icfctp,i)))
 
-        SolRBbb(icomp,isurf,icfctp,i)=1.-
+          SolRBbb(icomp,isurf,icfctp,i)=1.-
      &      (((1.-RclearON)/(1.-RclearDN))*(1.-SolRB(icomp,icfctp,i)))
 
+        else ! visual data
 C Calculate glazing layer beam OFF-NORMAL front and back visual transmittance
 C and reflectance based on clear glass off-normal and normal values.
-        VisTFbb(icomp,isurf,icfctp,i)=
+          VisTFbb(icomp,isurf,icfctp,i)=
      &      (TclearON/TclearDN)*VisT(icomp,icfctp,i)
 
-        VisTBbb(icomp,isurf,icfctp,i)=VisTFbb(icomp,isurf,icfctp,i)
+          VisTBbb(icomp,isurf,icfctp,i)=VisTFbb(icomp,isurf,icfctp,i)
 
-        VisRFbb(icomp,isurf,icfctp,i)=1.-
+          VisRFbb(icomp,isurf,icfctp,i)=1.-
      &      (((1.-RclearON)/(1.-RclearDN))*(1.-VisRF(icomp,icfctp,i)))
 
-        VisRBbb(icomp,isurf,icfctp,i)=1.-
+          VisRBbb(icomp,isurf,icfctp,i)=1.-
      &      (((1.-RclearON)/(1.-RclearDN))*(1.-VisRB(icomp,icfctp,i)))
+        endif
 
 
 C Calculate DIFFUSE-DIFFUSE incidence transmittance and reflectance
@@ -1237,114 +1242,127 @@ C index.
         RclearON = (RHOPERP+RHOPARL)/2.0
 
 C calculate diffuse-diffuse for given glass layer
-        SolTFdd(icomp,isurf,icfctp,i)=
+        if (isolvis.eq.0) then ! solar
+          SolTFdd(icomp,isurf,icfctp,i)=
      &      (TclearON/TclearDN)*SolT(icomp,icfctp,i)
 
-        SolTBdd(icomp,isurf,icfctp,i)=SolTFdd(icomp,isurf,icfctp,i)
+          SolTBdd(icomp,isurf,icfctp,i)=SolTFdd(icomp,isurf,icfctp,i)
 
-        SolRFdd(icomp,isurf,icfctp,i)=1.-
+          SolRFdd(icomp,isurf,icfctp,i)=1.-
      &     (((1.-RclearON)/(1.-RclearDN))*(1.-SolRF(icomp,icfctp,i)))
 
-        SolRBdd(icomp,isurf,icfctp,i)=1.-
+          SolRBdd(icomp,isurf,icfctp,i)=1.-
      &     (((1.-RclearON)/(1.-RclearDN))*(1.-SolRB(icomp,icfctp,i)))
 
+        else ! visual data
 C calculate visual diffuse-diffuse for given glass layer
-        VisTFdd(icomp,isurf,icfctp,i)=
+          VisTFdd(icomp,isurf,icfctp,i)=
      &      (TclearON/TclearDN)*VisT(icomp,icfctp,i)
 
-        VisTBdd(icomp,isurf,icfctp,i)=VisTFdd(icomp,isurf,icfctp,i)
+          VisTBdd(icomp,isurf,icfctp,i)=VisTFdd(icomp,isurf,icfctp,i)
 
-        VisRFdd(icomp,isurf,icfctp,i)=1.-
+          VisRFdd(icomp,isurf,icfctp,i)=1.-
      &     (((1.-RclearON)/(1.-RclearDN))*(1.-VisRF(icomp,icfctp,i)))
 
-        VisRBdd(icomp,isurf,icfctp,i)=1.-
+          VisRBdd(icomp,isurf,icfctp,i)=1.-
      &     (((1.-RclearON)/(1.-RclearDN))*(1.-VisRB(icomp,icfctp,i)))
+        endif
 
 C set beam-diffuse eq. 0
-        SolTFbd(icomp,isurf,icfctp,i)=0.0
-        SolTBbd(icomp,isurf,icfctp,i)=0.0
-        SolRFbd(icomp,isurf,icfctp,i)=0.0
-        SolRBbd(icomp,isurf,icfctp,i)=0.0
-        
-        VisTFbd(icomp,isurf,icfctp,i)=0.0
-        VisTBbd(icomp,isurf,icfctp,i)=0.0
-        VisRFbd(icomp,isurf,icfctp,i)=0.0
-        VisRBbd(icomp,isurf,icfctp,i)=0.0
+        if (isolvis.eq.0) then ! solar
+          SolTFbd(icomp,isurf,icfctp,i)=0.0
+          SolTBbd(icomp,isurf,icfctp,i)=0.0
+          SolRFbd(icomp,isurf,icfctp,i)=0.0
+          SolRBbd(icomp,isurf,icfctp,i)=0.0
+        else
+          VisTFbd(icomp,isurf,icfctp,i)=0.0
+          VisTBbd(icomp,isurf,icfctp,i)=0.0
+          VisRFbd(icomp,isurf,icfctp,i)=0.0
+          VisRBbd(icomp,isurf,icfctp,i)=0.0
+        endif
 
        elseif(itype.eq.2)then   ! currently only slat-type blinds are considered 
        
 C If shade is retracted set solar transmittance to 1 and skip to next layer
         
         if (i_shd(icomp,icfctp) .eq.0) then ! blind is retracted, treat as air layer ...
-          SolTFbb(icomp,isurf,icfctp,i)=0.99999999
-          SolTBbb(icomp,isurf,icfctp,i)=0.99999999
-          SolRFbb(icomp,isurf,icfctp,i)=0.0
-          SolRBbb(icomp,isurf,icfctp,i)=0.0
-          SolTFbd(icomp,isurf,icfctp,i)=0.0
-          SolTBbd(icomp,isurf,icfctp,i)=0.0
-          SolRFbd(icomp,isurf,icfctp,i)=0.0
-          SolRBbd(icomp,isurf,icfctp,i)=0.0
-          SolTFdd(icomp,isurf,icfctp,i)=0.99999999
-          SolTBdd(icomp,isurf,icfctp,i)=0.99999999
-          SolRFdd(icomp,isurf,icfctp,i)=0.0
-          SolRBdd(icomp,isurf,icfctp,i)=0.0
-
-          VisTFbb(icomp,isurf,icfctp,i)=0.99999999
-          VisTBbb(icomp,isurf,icfctp,i)=0.99999999
-          VisRFbb(icomp,isurf,icfctp,i)=0.0
-          VisRBbb(icomp,isurf,icfctp,i)=0.0
-          VisTFbd(icomp,isurf,icfctp,i)=0.0
-          VisTBbd(icomp,isurf,icfctp,i)=0.0
-          VisRFbd(icomp,isurf,icfctp,i)=0.0
-          VisRBbd(icomp,isurf,icfctp,i)=0.0
-          VisTFdd(icomp,isurf,icfctp,i)=0.99999999
-          VisTBdd(icomp,isurf,icfctp,i)=0.99999999
-          VisRFdd(icomp,isurf,icfctp,i)=0.0
-          VisRBdd(icomp,isurf,icfctp,i)=0.0
+          if (isolvis.eq.0) then ! solar
+            SolTFbb(icomp,isurf,icfctp,i)=0.99999999
+            SolTBbb(icomp,isurf,icfctp,i)=0.99999999
+            SolRFbb(icomp,isurf,icfctp,i)=0.0
+            SolRBbb(icomp,isurf,icfctp,i)=0.0
+            SolTFbd(icomp,isurf,icfctp,i)=0.0
+            SolTBbd(icomp,isurf,icfctp,i)=0.0
+            SolRFbd(icomp,isurf,icfctp,i)=0.0
+            SolRBbd(icomp,isurf,icfctp,i)=0.0
+            SolTFdd(icomp,isurf,icfctp,i)=0.99999999
+            SolTBdd(icomp,isurf,icfctp,i)=0.99999999
+            SolRFdd(icomp,isurf,icfctp,i)=0.0
+            SolRBdd(icomp,isurf,icfctp,i)=0.0
+          else
+            VisTFbb(icomp,isurf,icfctp,i)=0.99999999
+            VisTBbb(icomp,isurf,icfctp,i)=0.99999999
+            VisRFbb(icomp,isurf,icfctp,i)=0.0
+            VisRBbb(icomp,isurf,icfctp,i)=0.0
+            VisTFbd(icomp,isurf,icfctp,i)=0.0
+            VisTBbd(icomp,isurf,icfctp,i)=0.0
+            VisRFbd(icomp,isurf,icfctp,i)=0.0
+            VisRBbd(icomp,isurf,icfctp,i)=0.0
+            VisTFdd(icomp,isurf,icfctp,i)=0.99999999
+            VisTBdd(icomp,isurf,icfctp,i)=0.99999999
+            VisRFdd(icomp,isurf,icfctp,i)=0.0
+            VisRBdd(icomp,isurf,icfctp,i)=0.0
+          endif
 
           ! also set the sky and ground diffuse properties 
           ! if the sky/ground calc has been requested.  
           if (i_ground_sky_diff_calc.eq.1) then 
-            SolTFskydd(icomp,isurf,icfctp,i)=0.9999999 
-            SolRFskydd(icomp,isurf,icfctp,i)=0.0
-            SolTFgrddd(icomp,isurf,icfctp,i)=0.9999999 
-            SolRFgrddd(icomp,isurf,icfctp,i)=0.0
+            if (isolvis.eq.0) then ! solar
+              SolTFskydd(icomp,isurf,icfctp,i)=0.9999999 
+              SolRFskydd(icomp,isurf,icfctp,i)=0.0
+              SolTFgrddd(icomp,isurf,icfctp,i)=0.9999999 
+              SolRFgrddd(icomp,isurf,icfctp,i)=0.0
 
-            SolTBskydd(icomp,isurf,icfctp,i)=0.9999999 
-            SolRBskydd(icomp,isurf,icfctp,i)=0.0 
-            SolTBgrddd(icomp,isurf,icfctp,i)=0.9999999 
-            SolRBgrddd(icomp,isurf,icfctp,i)=0.0
+              SolTBskydd(icomp,isurf,icfctp,i)=0.9999999 
+              SolRBskydd(icomp,isurf,icfctp,i)=0.0 
+              SolTBgrddd(icomp,isurf,icfctp,i)=0.9999999 
+              SolRBgrddd(icomp,isurf,icfctp,i)=0.0
+            else
+              ! visual
+              VisTFskydd(icomp,isurf,icfctp,i)=0.9999999 
+              VisRFskydd(icomp,isurf,icfctp,i)=0.0
+              VisTFgrddd(icomp,isurf,icfctp,i)=0.9999999 
+              VisRFgrddd(icomp,isurf,icfctp,i)=0.0
 
-            ! visual
-            VisTFskydd(icomp,isurf,icfctp,i)=0.9999999 
-            VisRFskydd(icomp,isurf,icfctp,i)=0.0
-            VisTFgrddd(icomp,isurf,icfctp,i)=0.9999999 
-            VisRFgrddd(icomp,isurf,icfctp,i)=0.0
-
-            VisTBskydd(icomp,isurf,icfctp,i)=0.9999999 
-            VisRBskydd(icomp,isurf,icfctp,i)=0.0
-            VisTBgrddd(icomp,isurf,icfctp,i)=0.9999999 
-            VisRBgrddd(icomp,isurf,icfctp,i)=0.0
-          end if 
+              VisTBskydd(icomp,isurf,icfctp,i)=0.9999999 
+              VisRBskydd(icomp,isurf,icfctp,i)=0.0
+              VisTBgrddd(icomp,isurf,icfctp,i)=0.9999999 
+              VisRBgrddd(icomp,isurf,icfctp,i)=0.0
+            endif
+          end if ! ground / sky
 
         else ! continue as usual
 
 C         Set beam-beam reflectances to zero
-          SolRFbb(icomp,isurf,icfctp,i)=0.0
-          SolRBbb(icomp,isurf,icfctp,i)=0.0
-          
-          VisRFbb(icomp,isurf,icfctp,i)=0.0
-          VisRBbb(icomp,isurf,icfctp,i)=0.0
-       
+          if (isolvis.eq.0) then ! solar
+            SolRFbb(icomp,isurf,icfctp,i)=0.0
+            SolRBbb(icomp,isurf,icfctp,i)=0.0
+          else
+            VisRFbb(icomp,isurf,icfctp,i)=0.0
+            VisRBbb(icomp,isurf,icfctp,i)=0.0
+          endif
+
 C         Assign direct normal solar/visible properties to local variables
-          SolRufs=solRF(icomp,icfctp,i)
-          SolRdfs=solRB(icomp,icfctp,i)
-          SolTslat=solT(icomp,icfctp,i)
-          
-          VisRufs=visRF(icomp,icfctp,i)
-          VisRdfs=visRB(icomp,icfctp,i)
-          VisTslat=visT(icomp,icfctp,i)
-       
+          if (isolvis.eq.0) then ! solar
+            Rufs=solRF(icomp,icfctp,i)
+            Rdfs=solRB(icomp,icfctp,i)
+            Tslat=solT(icomp,icfctp,i)
+          else
+            Rufs=visRF(icomp,icfctp,i)
+            Rdfs=visRB(icomp,icfctp,i)
+            Tslat=visT(icomp,icfctp,i)
+          endif
+
 C         Assign slat blind descriptors to local variables
           w=vb_w(icomp,icfctp)
           s=vb_s(icomp,icfctp)
@@ -1360,18 +1378,18 @@ C         Assign slat blind descriptors to local variables
             Curved=.true.
 
 C           Calculate front effective solar optical properties and assign to commons
-            call VB_SOL46_CURVE(s,w,sl_rad_overw,phi,proang,
-     &            SolRdfs,SolRufs,SolTslat,OutRFbd,OutTFbb,OutTFbd)
-            SolTFbb(icomp,isurf,icfctp,i)=OutTFbb
-            SolRFbd(icomp,isurf,icfctp,i)=OutRFbd
-            SolTFbd(icomp,isurf,icfctp,i)=OutTFbd
+            call VB_SOL46_CURVE(s,w,sl_rad_overw,phi,proang_rad,
+     &            Rdfs,Rufs,Tslat,OutRFbd,OutTFbb,OutTFbd)
 
-C           Calculate front effective visible properties and assign to commons
-            call VB_SOL46_CURVE(s,w,sl_rad_overw,phi,proang,
-     &            VisRdfs,VisRufs,VisTslat,OutRFbd,OutTFbb,OutTFbd)
-            VisTFbb(icomp,isurf,icfctp,i)=OutTFbb
-            VisRFbd(icomp,isurf,icfctp,i)=OutRFbd
-            VisTFbd(icomp,isurf,icfctp,i)=OutTFbd
+            if (isolvis.eq.0) then ! solar
+              SolTFbb(icomp,isurf,icfctp,i)=OutTFbb
+              SolRFbd(icomp,isurf,icfctp,i)=OutRFbd
+              SolTFbd(icomp,isurf,icfctp,i)=OutTFbd
+            else
+              VisTFbb(icomp,isurf,icfctp,i)=OutTFbb
+              VisRFbd(icomp,isurf,icfctp,i)=OutRFbd
+              VisTFbd(icomp,isurf,icfctp,i)=OutTFbd
+            endif
 
 C...........CALCULATE GROUND AND SKY DIFFUSE COMPONENTS (FRONT SURFACE)
 C           Check whether calculation of ground and sky diffuse
@@ -1380,59 +1398,52 @@ C           components has been requested.
             if (i_ground_sky_diff_calc.eq.1) then
 
               call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
-     &                               tilt,
-     &                               SolRdfs,SolRufs,SolTslat,
+     &                               tilt,Rdfs,Rufs,Tslat,
      &                               TXskydiff,RXskydiff,
      &                               TXgrddiff,RXgrddiff)
 
-              SolTFskydd(icomp,isurf,icfctp,i)=TXskydiff
-              SolRFskydd(icomp,isurf,icfctp,i)=RXskydiff
-              SolTFgrddd(icomp,isurf,icfctp,i)=TXgrddiff
-              SolRFgrddd(icomp,isurf,icfctp,i)=RXgrddiff
-
-C             Visual properties
-              call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
-     &                               tilt,
-     &                               VisRdfs,VisRufs,VisTslat,
-     &                               TXskydiff,RXskydiff,
-     &                               TXgrddiff,RXgrddiff)
-
-              VisTFskydd(icomp,isurf,icfctp,i)=TXskydiff
-              VisRFskydd(icomp,isurf,icfctp,i)=RXskydiff
-              VisTFgrddd(icomp,isurf,icfctp,i)=TXgrddiff
-              VisRFgrddd(icomp,isurf,icfctp,i)=RXgrddiff
-
+              if (isolvis.eq.0) then ! solar
+                SolTFskydd(icomp,isurf,icfctp,i)=TXskydiff
+                SolRFskydd(icomp,isurf,icfctp,i)=RXskydiff
+                SolTFgrddd(icomp,isurf,icfctp,i)=TXgrddiff
+                SolRFgrddd(icomp,isurf,icfctp,i)=RXgrddiff
+              else
+                VisTFskydd(icomp,isurf,icfctp,i)=TXskydiff
+                VisRFskydd(icomp,isurf,icfctp,i)=RXskydiff
+                VisTFgrddd(icomp,isurf,icfctp,i)=TXgrddiff
+                VisRFgrddd(icomp,isurf,icfctp,i)=RXgrddiff
+              endif
             end if ! end sky/ground diffuse request for Curved, FRONT
 
 C           Calculate front effective diffuse (hemispherical) 
 C           properties and assign to commons
-            call vb_eff_diff_properties(w,s,phi/r,SolRufs,
-     &            SolRdfs,SolTslat,OutRFdd,OutTFdd)
-            SolTFdd(icomp,isurf,icfctp,i)=OutTFdd
-            SolRFdd(icomp,isurf,icfctp,i)=OutRFdd
+            call vb_eff_diff_properties(w,s,phi/r,Rufs,
+     &            Rdfs,Tslat,OutRFdd,OutTFdd)
 
-C           Calculate front effective visible diffuse properties and assign to commons
-            call vb_eff_diff_properties(w,s,phi/r,VisRufs,
-     &            VisRdfs,VisTslat,OutRFdd,OutTFdd)
-            VisTFdd(icomp,isurf,icfctp,i)=OutTFdd
-            VisRFdd(icomp,isurf,icfctp,i)=OutRFdd
+            if (isolvis.eq.0) then ! solar
+              SolTFdd(icomp,isurf,icfctp,i)=OutTFdd
+              SolRFdd(icomp,isurf,icfctp,i)=OutRFdd
+            else
+              VisTFdd(icomp,isurf,icfctp,i)=OutTFdd
+              VisRFdd(icomp,isurf,icfctp,i)=OutRFdd
+            endif
 
 C...........Complementary angle for BACK
             phi=phi*(-1.0)
 
-C           Calculate back effective solar optical properties adn assign to commons
-            call VB_SOL46_CURVE(s,w,sl_rad_overw,phi,proang,
-     &            SolRdfs,SolRufs,SolTslat,OutRBbd,OutTBbb,OutTBbd)
-            SolTBbb(icomp,isurf,icfctp,i)=OutTBbb
-            SolRBbd(icomp,isurf,icfctp,i)=OutRBbd
-            SolTBbd(icomp,isurf,icfctp,i)=OutTBbd
+C           Calculate back effective optical properties and assign to commons
+            call VB_SOL46_CURVE(s,w,sl_rad_overw,phi,proang_rad,
+     &            Rdfs,Rufs,Tslat,OutRBbd,OutTBbb,OutTBbd)
 
-C           Calculate back effective visible properties and assign to commons
-            call VB_SOL46_CURVE(s,w,sl_rad_overw,phi,proang,
-     &            VisRdfs,VisRufs,VisTslat,OutRBbd,OutTBbb,OutTBbd)
-            VisTBbb(icomp,isurf,icfctp,i)=OutTBbb
-            VisRBbd(icomp,isurf,icfctp,i)=OutRBbd
-            VisTBbd(icomp,isurf,icfctp,i)=OutTBbd
+            if (isolvis.eq.0) then ! solar
+              SolTBbb(icomp,isurf,icfctp,i)=OutTBbb
+              SolRBbd(icomp,isurf,icfctp,i)=OutRBbd
+              SolTBbd(icomp,isurf,icfctp,i)=OutTBbd
+            else
+              VisTBbb(icomp,isurf,icfctp,i)=OutTBbb
+              VisRBbd(icomp,isurf,icfctp,i)=OutRBbd
+              VisTBbd(icomp,isurf,icfctp,i)=OutTBbd
+            endif
 
 C...........CALCULATE GROUND AND SKY DIFFUSE COMPONENTS (BACK SURFACE)
 C           Check whether calculation of ground and sky diffuse
@@ -1441,59 +1452,52 @@ C           components has been requested.
             if (i_ground_sky_diff_calc.eq.1) then
 
               call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
-     &                               tilt,
-     &                               SolRdfs,SolRufs,SolTslat,
+     &                               tilt,Rdfs,Rufs,Tslat,
      &                               TXskydiff,RXskydiff,
      &                               TXgrddiff,RXgrddiff)
 
-              SolTBskydd(icomp,isurf,icfctp,i)=TXskydiff
-              SolRBskydd(icomp,isurf,icfctp,i)=RXskydiff
-              SolTBgrddd(icomp,isurf,icfctp,i)=TXgrddiff
-              SolRBgrddd(icomp,isurf,icfctp,i)=RXgrddiff
-
-C             Visual properties
-              call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
-     &                               tilt,
-     &                               VisRdfs,VisRufs,VisTslat,
-     &                               TXskydiff,RXskydiff,
-     &                               TXgrddiff,RXgrddiff)
-
-              VisTBskydd(icomp,isurf,icfctp,i)=TXskydiff
-              VisRBskydd(icomp,isurf,icfctp,i)=RXskydiff
-              VisTBgrddd(icomp,isurf,icfctp,i)=TXgrddiff
-              VisRBgrddd(icomp,isurf,icfctp,i)=RXgrddiff
-
+              if (isolvis.eq.0) then ! solar
+                SolTBskydd(icomp,isurf,icfctp,i)=TXskydiff
+                SolRBskydd(icomp,isurf,icfctp,i)=RXskydiff
+                SolTBgrddd(icomp,isurf,icfctp,i)=TXgrddiff
+                SolRBgrddd(icomp,isurf,icfctp,i)=RXgrddiff
+              else
+                VisTBskydd(icomp,isurf,icfctp,i)=TXskydiff
+                VisRBskydd(icomp,isurf,icfctp,i)=RXskydiff
+                VisTBgrddd(icomp,isurf,icfctp,i)=TXgrddiff
+                VisRBgrddd(icomp,isurf,icfctp,i)=RXgrddiff
+              endif
             end if ! end sky/ground diffuse request for Curved, BACK
 
 C           Calculate back effective diffuse (hemispherical) 
 C           properties and assign to commons
-            call vb_eff_diff_properties(w,s,phi/r,SolRufs,
-     &            SolRdfs,SolTslat,OutRBdd,OutTBdd)
-            SolTBdd(icomp,isurf,icfctp,i)=OutTBdd
-            SolRBdd(icomp,isurf,icfctp,i)=OutRBdd
+            call vb_eff_diff_properties(w,s,phi/r,Rufs,
+     &            Rdfs,Tslat,OutRBdd,OutTBdd)
 
-C           Calculate back effective visible diffuse properties and assign to commons
-            call vb_eff_diff_properties(w,s,phi/r,VisRufs,
-     &            VisRdfs,VisTslat,OutRBdd,OutTBdd)
-            VisTBdd(icomp,isurf,icfctp,i)=OutTBdd
-            VisRBdd(icomp,isurf,icfctp,i)=OutRBdd
+            if (isolvis.eq.0) then ! solar
+              SolTBdd(icomp,isurf,icfctp,i)=OutTBdd
+              SolRBdd(icomp,isurf,icfctp,i)=OutRBdd
+            else
+              VisTBdd(icomp,isurf,icfctp,i)=OutTBdd
+              VisRBdd(icomp,isurf,icfctp,i)=OutRBdd
+            endif
 
           else ! slat is considered FLAT with thickness t [mm]
             Curved=.false.
 
 C           Calculate front effective solar optical properties and assign to commons
-            call VB_SOL46_THICK(s,w,t,phi,proang,
-     &            SolRdfs,SolRufs,SolTslat,OutRFbd,OutTFbb,OutTFbd)
-            SolTFbb(icomp,isurf,icfctp,i)=OutTFbb
-            SolRFbd(icomp,isurf,icfctp,i)=OutRFbd
-            SolTFbd(icomp,isurf,icfctp,i)=OutTFbd
+            call VB_SOL46_THICK(s,w,t,phi,proang_rad,
+     &            Rdfs,Rufs,Tslat,OutRFbd,OutTFbb,OutTFbd)
 
-C           Calculate front effective visible properties and assign to commons
-            call VB_SOL46_THICK(s,w,t,phi,proang,
-     &            VisRdfs,VisRufs,VisTslat,OutRFbd,OutTFbb,OutTFbd)
-            VisTFbb(icomp,isurf,icfctp,i)=OutTFbb
-            VisRFbd(icomp,isurf,icfctp,i)=OutRFbd
-            VisTFbd(icomp,isurf,icfctp,i)=OutTFbd
+            if (isolvis.eq.0) then ! solar
+              SolTFbb(icomp,isurf,icfctp,i)=OutTFbb
+              SolRFbd(icomp,isurf,icfctp,i)=OutRFbd
+              SolTFbd(icomp,isurf,icfctp,i)=OutTFbd
+            else
+              VisTFbb(icomp,isurf,icfctp,i)=OutTFbb
+              VisRFbd(icomp,isurf,icfctp,i)=OutRFbd
+              VisTFbd(icomp,isurf,icfctp,i)=OutTFbd
+            endif
 
 C...........CALCULATE GROUND AND SKY DIFFUSE COMPONENTS (FRONT SURFACE)
 C           Check whether calculation of ground and sky diffuse
@@ -1502,60 +1506,53 @@ C           components has been requested.
             if (i_ground_sky_diff_calc.eq.1) then
 
               call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
-     &                               tilt,
-     &                               SolRdfs,SolRufs,SolTslat,
+     &                               tilt,Rdfs,Rufs,Tslat,
      &                               TXskydiff,RXskydiff,
      &                               TXgrddiff,RXgrddiff)
 
-              SolTFskydd(icomp,isurf,icfctp,i)=TXskydiff
-              SolRFskydd(icomp,isurf,icfctp,i)=RXskydiff
-              SolTFgrddd(icomp,isurf,icfctp,i)=TXgrddiff
-              SolRFgrddd(icomp,isurf,icfctp,i)=RXgrddiff
-
-C             Visual properties
-              call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
-     &                               tilt,
-     &                               VisRdfs,VisRufs,VisTslat,
-     &                               TXskydiff,RXskydiff,
-     &                               TXgrddiff,RXgrddiff)
-
-              VisTFskydd(icomp,isurf,icfctp,i)=TXskydiff
-              VisRFskydd(icomp,isurf,icfctp,i)=RXskydiff
-              VisTFgrddd(icomp,isurf,icfctp,i)=TXgrddiff
-              VisRFgrddd(icomp,isurf,icfctp,i)=RXgrddiff
+              if (isolvis.eq.0) then ! solar
+                SolTFskydd(icomp,isurf,icfctp,i)=TXskydiff
+                SolRFskydd(icomp,isurf,icfctp,i)=RXskydiff
+                SolTFgrddd(icomp,isurf,icfctp,i)=TXgrddiff
+                SolRFgrddd(icomp,isurf,icfctp,i)=RXgrddiff
+              else
+                VisTFskydd(icomp,isurf,icfctp,i)=TXskydiff
+                VisRFskydd(icomp,isurf,icfctp,i)=RXskydiff
+                VisTFgrddd(icomp,isurf,icfctp,i)=TXgrddiff
+                VisRFgrddd(icomp,isurf,icfctp,i)=RXgrddiff
+              endif
 
             end if ! end sky/ground diffuse request for Flat, FRONT
 
 C           Calculate front effective diffuse (hemispherical) 
 C           properties and assign to commons
-            call VB_SOL_DD_THICK(s,w,t,phi,SolRufs,SolRdfs,
-     &            SolTslat,OutRFdd,OutTFdd)
-            SolTFdd(icomp,isurf,icfctp,i)=OutTFdd
-            SolRFdd(icomp,isurf,icfctp,i)=OutRFdd
+            call VB_SOL_DD_THICK(s,w,t,phi,Rufs,Rdfs,
+     &            Tslat,OutRFdd,OutTFdd)
 
-C           Calculate front effective visible diffuse properties 
-C           and assign to commons
-            call VB_SOL_DD_THICK(s,w,t,phi,VisRufs,VisRdfs,
-     &            VisTslat,OutRFdd,OutTFdd)
-            VisTFdd(icomp,isurf,icfctp,i)=OutTFdd
-            VisRFdd(icomp,isurf,icfctp,i)=OutRFdd
+            if (isolvis.eq.0) then ! solar
+              SolTFdd(icomp,isurf,icfctp,i)=OutTFdd
+              SolRFdd(icomp,isurf,icfctp,i)=OutRFdd
+            else
+              VisTFdd(icomp,isurf,icfctp,i)=OutTFdd
+              VisRFdd(icomp,isurf,icfctp,i)=OutRFdd
+            endif
 
 C...........Complementary angle for BACK
             phi=phi*(-1.0)
 
 C           Calculate back effective solar optical properties adn assign to commons
-            call VB_SOL46_THICK(s,w,t,phi,proang,
-     &            SolRdfs,SolRufs,SolTslat,OutRBbd,OutTBbb,OutTBbd)
-            SolTBbb(icomp,isurf,icfctp,i)=OutTBbb
-            SolRBbd(icomp,isurf,icfctp,i)=OutRBbd
-            SolTBbd(icomp,isurf,icfctp,i)=OutTBbd
+            call VB_SOL46_THICK(s,w,t,phi,proang_rad,
+     &            Rdfs,Rufs,Tslat,OutRBbd,OutTBbb,OutTBbd)
 
-C           Calculate back effective visible properties and assign to commons
-            call VB_SOL46_THICK(s,w,t,phi,proang,
-     &            VisRdfs,VisRufs,VisTslat,OutRBbd,OutTBbb,OutTBbd)
-            VisTBbb(icomp,isurf,icfctp,i)=OutTBbb
-            VisRBbd(icomp,isurf,icfctp,i)=OutRBbd
-            VisTBbd(icomp,isurf,icfctp,i)=OutTBbd
+            if (isolvis.eq.0) then ! solar
+              SolTBbb(icomp,isurf,icfctp,i)=OutTBbb
+              SolRBbd(icomp,isurf,icfctp,i)=OutRBbd
+              SolTBbd(icomp,isurf,icfctp,i)=OutTBbd
+            else
+              VisTBbb(icomp,isurf,icfctp,i)=OutTBbb
+              VisRBbd(icomp,isurf,icfctp,i)=OutRBbd
+              VisTBbd(icomp,isurf,icfctp,i)=OutTBbd
+            endif
 
 C...........CALCULATE GROUND AND SKY DIFFUSE COMPONENTS (BACK SURFACE)
 C           Check whether calculation of ground and sky diffuse
@@ -1563,97 +1560,93 @@ C           components has been requested.
             if (i_ground_sky_diff_calc.eq.1) then
 
               call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
-     &                               tilt,
-     &                               SolRdfs,SolRufs,SolTslat,
+     &                               tilt,Rdfs,Rufs,Tslat,
      &                               TXskydiff,RXskydiff,
      &                               TXgrddiff,RXgrddiff)
 
-              SolTBskydd(icomp,isurf,icfctp,i)=TXskydiff
-              SolRBskydd(icomp,isurf,icfctp,i)=RXskydiff
-              SolTBgrddd(icomp,isurf,icfctp,i)=TXgrddiff
-              SolRBgrddd(icomp,isurf,icfctp,i)=RXgrddiff
-
-C             Visual properties
-              call GroundSkyDiffCalc(Curved,s,w,sl_rad_overw,phi,
-     &                               tilt,
-     &                               VisRdfs,VisRufs,VisTslat,
-     &                               TXskydiff,RXskydiff,
-     &                               TXgrddiff,RXgrddiff)
-
-              VisTBskydd(icomp,isurf,icfctp,i)=TXskydiff
-              VisRBskydd(icomp,isurf,icfctp,i)=RXskydiff
-              VisTBgrddd(icomp,isurf,icfctp,i)=TXgrddiff
-              VisRBgrddd(icomp,isurf,icfctp,i)=RXgrddiff
+              if (isolvis.eq.0) then ! solar
+                SolTBskydd(icomp,isurf,icfctp,i)=TXskydiff
+                SolRBskydd(icomp,isurf,icfctp,i)=RXskydiff
+                SolTBgrddd(icomp,isurf,icfctp,i)=TXgrddiff
+                SolRBgrddd(icomp,isurf,icfctp,i)=RXgrddiff
+              else
+                VisTBskydd(icomp,isurf,icfctp,i)=TXskydiff
+                VisRBskydd(icomp,isurf,icfctp,i)=RXskydiff
+                VisTBgrddd(icomp,isurf,icfctp,i)=TXgrddiff
+                VisRBgrddd(icomp,isurf,icfctp,i)=RXgrddiff
+              endif
 
             end if ! end sky/ground diffuse request for Flat, BACK
 
 C           Calculate back effective diffuse (hemispherical) 
 C           properties and assign to commonss
-            call VB_SOL_DD_THICK(s,w,t,phi,SolRufs,SolRdfs,
-     &            SolTslat,OutRBdd,OutTBdd)
-            SolTBdd(icomp,isurf,icfctp,i)=OutTBdd
-            SolRBdd(icomp,isurf,icfctp,i)=OutRBdd
+            call VB_SOL_DD_THICK(s,w,t,phi,Rufs,Rdfs,
+     &            Tslat,OutRBdd,OutTBdd)
 
-C           Calculate back effective diffuse properties and assign to commons
-            call VB_SOL_DD_THICK(s,w,t,phi,VisRufs,VisRdfs,
-     &            VisTslat,OutRBdd,OutTBdd)
-            VisTBdd(icomp,isurf,icfctp,i)=OutTBdd
-            VisRBdd(icomp,isurf,icfctp,i)=OutRBdd
+            if (isolvis.eq.0) then ! solar
+              SolTBdd(icomp,isurf,icfctp,i)=OutTBdd
+              SolRBdd(icomp,isurf,icfctp,i)=OutRBdd
+            else
+              VisTBdd(icomp,isurf,icfctp,i)=OutTBdd
+              VisRBdd(icomp,isurf,icfctp,i)=OutRBdd
+            endif
 
           end if ! slat considered flat
         endif !  i_shd() .eq. 0 
 
        elseif(itype.eq.0)then ! gas filled cavity
 C       Set gas gap properties to 0 except for bb and dd transmission, set to 1. 
-        SolTFbb(icomp,isurf,icfctp,i)=0.99999999
-        SolTBbb(icomp,isurf,icfctp,i)=0.99999999
-        SolRFbb(icomp,isurf,icfctp,i)=0.0
-        SolRBbb(icomp,isurf,icfctp,i)=0.0
-        SolTFbd(icomp,isurf,icfctp,i)=0.0
-        SolTBbd(icomp,isurf,icfctp,i)=0.0
-        SolRFbd(icomp,isurf,icfctp,i)=0.0
-        SolRBbd(icomp,isurf,icfctp,i)=0.0
-        SolTFdd(icomp,isurf,icfctp,i)=0.99999999
-        SolTBdd(icomp,isurf,icfctp,i)=0.99999999
-        SolRFdd(icomp,isurf,icfctp,i)=0.0
-        SolRBdd(icomp,isurf,icfctp,i)=0.0
+         if (isolvis.eq.0) then ! solar
+           SolTFbb(icomp,isurf,icfctp,i)=0.99999999
+           SolTBbb(icomp,isurf,icfctp,i)=0.99999999
+           SolRFbb(icomp,isurf,icfctp,i)=0.0
+           SolRBbb(icomp,isurf,icfctp,i)=0.0
+           SolTFbd(icomp,isurf,icfctp,i)=0.0
+           SolTBbd(icomp,isurf,icfctp,i)=0.0
+           SolRFbd(icomp,isurf,icfctp,i)=0.0
+           SolRBbd(icomp,isurf,icfctp,i)=0.0
+           SolTFdd(icomp,isurf,icfctp,i)=0.99999999
+           SolTBdd(icomp,isurf,icfctp,i)=0.99999999
+           SolRFdd(icomp,isurf,icfctp,i)=0.0
+           SolRBdd(icomp,isurf,icfctp,i)=0.0
+         else
+           VisTFbb(icomp,isurf,icfctp,i)=0.99999999
+           VisTBbb(icomp,isurf,icfctp,i)=0.99999999
+           VisRFbb(icomp,isurf,icfctp,i)=0.0
+           VisRBbb(icomp,isurf,icfctp,i)=0.0
+           VisTFbd(icomp,isurf,icfctp,i)=0.0
+           VisTBbd(icomp,isurf,icfctp,i)=0.0
+           VisRFbd(icomp,isurf,icfctp,i)=0.0
+           VisRBbd(icomp,isurf,icfctp,i)=0.0
+           VisTFdd(icomp,isurf,icfctp,i)=0.99999999
+           VisTBdd(icomp,isurf,icfctp,i)=0.99999999
+           VisRFdd(icomp,isurf,icfctp,i)=0.0
+           VisRBdd(icomp,isurf,icfctp,i)=0.0
+         endif
+         ! also set the sky and ground diffuse properties 
+         ! if the sky/ground calc has been requested.  
+         if (i_ground_sky_diff_calc.eq.1) then 
+           if (isolvis.eq.0) then ! solar
+             SolTFskydd(icomp,isurf,icfctp,i)=0.9999999 
+             SolRFskydd(icomp,isurf,icfctp,i)=0.0
+             SolTFgrddd(icomp,isurf,icfctp,i)=0.9999999 
+             SolRFgrddd(icomp,isurf,icfctp,i)=0.0
 
-        VisTFbb(icomp,isurf,icfctp,i)=0.99999999
-        VisTBbb(icomp,isurf,icfctp,i)=0.99999999
-        VisRFbb(icomp,isurf,icfctp,i)=0.0
-        VisRBbb(icomp,isurf,icfctp,i)=0.0
-        VisTFbd(icomp,isurf,icfctp,i)=0.0
-        VisTBbd(icomp,isurf,icfctp,i)=0.0
-        VisRFbd(icomp,isurf,icfctp,i)=0.0
-        VisRBbd(icomp,isurf,icfctp,i)=0.0
-        VisTFdd(icomp,isurf,icfctp,i)=0.99999999
-        VisTBdd(icomp,isurf,icfctp,i)=0.99999999
-        VisRFdd(icomp,isurf,icfctp,i)=0.0
-        VisRBdd(icomp,isurf,icfctp,i)=0.0
+             SolTBskydd(icomp,isurf,icfctp,i)=0.9999999 
+             SolRBskydd(icomp,isurf,icfctp,i)=0.0 
+             SolTBgrddd(icomp,isurf,icfctp,i)=0.9999999 
+             SolRBgrddd(icomp,isurf,icfctp,i)=0.0
+           else
+             VisTFskydd(icomp,isurf,icfctp,i)=0.9999999 
+             VisRFskydd(icomp,isurf,icfctp,i)=0.0
+             VisTFgrddd(icomp,isurf,icfctp,i)=0.9999999 
+             VisRFgrddd(icomp,isurf,icfctp,i)=0.0
 
-        ! also set the sky and ground diffuse properties 
-        ! if the sky/ground calc has been requested.  
-        if (i_ground_sky_diff_calc.eq.1) then 
-          SolTFskydd(icomp,isurf,icfctp,i)=0.9999999 
-          SolRFskydd(icomp,isurf,icfctp,i)=0.0
-          SolTFgrddd(icomp,isurf,icfctp,i)=0.9999999 
-          SolRFgrddd(icomp,isurf,icfctp,i)=0.0
-
-          SolTBskydd(icomp,isurf,icfctp,i)=0.9999999 
-          SolRBskydd(icomp,isurf,icfctp,i)=0.0 
-          SolTBgrddd(icomp,isurf,icfctp,i)=0.9999999 
-          SolRBgrddd(icomp,isurf,icfctp,i)=0.0
-
-          ! visual
-          VisTFskydd(icomp,isurf,icfctp,i)=0.9999999 
-          VisRFskydd(icomp,isurf,icfctp,i)=0.0
-          VisTFgrddd(icomp,isurf,icfctp,i)=0.9999999 
-          VisRFgrddd(icomp,isurf,icfctp,i)=0.0
-
-          VisTBskydd(icomp,isurf,icfctp,i)=0.9999999 
-          VisRBskydd(icomp,isurf,icfctp,i)=0.0
-          VisTBgrddd(icomp,isurf,icfctp,i)=0.9999999 
-          VisRBgrddd(icomp,isurf,icfctp,i)=0.0
+             VisTBskydd(icomp,isurf,icfctp,i)=0.9999999 
+             VisRBskydd(icomp,isurf,icfctp,i)=0.0
+             VisTBgrddd(icomp,isurf,icfctp,i)=0.9999999 
+             VisRBgrddd(icomp,isurf,icfctp,i)=0.0
+           endif
         end if 
 
        else
@@ -1983,7 +1976,7 @@ c?            elseif(icalc_mode.eq.i_ground) then
 
  11     continue
       endif
- 
+
 !MULTILAYER CALCULATION
       n=LayNo+2
       m=2*n-4
@@ -2022,53 +2015,31 @@ c?            elseif(icalc_mode.eq.i_ground) then
       ENDDO
       D(m+1)=DD(m+1)+BD(m+1)
       
-      if (isolvis .eq. 0) then
-c        if ((GBM .gt. 0.0).or.(GDF .gt. 0.0)) then
 !Transmittance and Reflectance Calculation
-          TRANSBB_SYS = BB(1)! /GBM
-          TRANSBD_SYS = BD(1)! /GBM
-          TRANSDD_SYS = DD(1)! /GDF
-          TRANSD_SYS=TRANSDD_SYS+TRANSBD_SYS
+      TRANSBB_SYS = BB(1)! /GBM
+      TRANSBD_SYS = BD(1)! /GBM
+      TRANSDD_SYS = DD(1)! /GDF
+      TRANSD_SYS=TRANSDD_SYS+TRANSBD_SYS
 !      TRANS_SYS =(BB(1)+D(1)) !/(GBM+GDF)
-          REFL_SYS=(BB(m+1)+D(m+1))! /(GBM+GDF)
+      REFL_SYS=(BB(m+1)+D(m+1))! /(GBM+GDF)
 ! Layer Absorptance Calculation
-          DO i=1,n-2,1
-                xx=2*i-1
-                Bminus(n-i)=BB(xx)
-                Dminus(n-i)=D(xx)
-                xx=2*i
-                Bplus(n-i)=BB(xx)
-                Dplus(n-i)=D(xx)
-          ENDDO
-          Bminus(1)=GBM
-          Bplus(1)=BB(m+1)
-          Dminus(1)=GDF
-          Dplus(1)=D(m+1)
-          DO i=1,n-2,1
-            SS(i)=(Bminus(i)-Bplus(i)+Bplus(i+1)-Bminus(i+1)+Dminus(i)
+      DO i=1,n-2,1
+            xx=2*i-1
+            Bminus(n-i)=BB(xx)
+            Dminus(n-i)=D(xx)
+            xx=2*i
+            Bplus(n-i)=BB(xx)
+            Dplus(n-i)=D(xx)
+      ENDDO
+      Bminus(1)=GBM
+      Bplus(1)=BB(m+1)
+      Dminus(1)=GDF
+      Dplus(1)=D(m+1)
+      DO i=1,n-2,1
+        SS(i)=(Bminus(i)-Bplus(i)+Bplus(i+1)-Bminus(i+1)+Dminus(i)
      &                    -Dplus(i)+Dplus(i+1)-Dminus(i+1)) !/ (GBM+GDF)
-            AbsSol(i)=SS(i)
-          ENDDO
-c        endif ! only calculate values if SW radiation present
-      else ! visual data
-!  Visual transmittance and reflectance calculation, for visual, we want fractions
-        if (GBM .gt. 0.0) then
-          TRANSBB_SYS = BB(1)!/GBM
-          TRANSBD_SYS = BD(1)!/GBM
-        endif
-        if (GDF .gt. 0.0) then
-          TRANSDD_SYS = DD(1)!/GDF
-        endif
-        TRANSD_SYS=max(0.0,(TRANSDD_SYS+TRANSBD_SYS))
-!      TRANS_SYS =(BB(1)+D(1)) !/(GBM+GDF)
-        if ((GBM+GDF) .gt. 0.0) then
-          REFL_SYS=(BB(m+1)+D(m+1))/(GBM+GDF)
-        endif
-! Visual absorptance not of interest
-        do i=1,n-2,1
-          AbsSol(i)=0.0001
-        enddo
-      endif
+        AbsSol(i)=SS(i)
+      ENDDO
 
       IF (GBM.lt.0.001) THEN
             GBM=0.0     ! reset back to zero (???)
@@ -4675,7 +4646,7 @@ C -------------------------------------------------------------------
 
 C Controller types 3, 4 and 8 need solar radiation. Set this here for
 C code duplication avoidance.
-          if (ictype.eq.3.or.ictype.eq.4.or.ictype.eq.8) then
+          if (ictype.eq.3.or.ictype.eq.4) then
           
 C Determine appropriate solar radiation parameter to use
             if(isen1.eq.-3.and.isen2.eq.4)then      ! senses diff. horizontal solar radiation
@@ -4762,7 +4733,6 @@ C             cut-off angle control
      &                                  iact2,isen3,iact3,
      &                                  solrad_dir,psazi,pselv)
                 i_shd(iact2,iact3)     = 1                    ! shade state ON (careful: not Radiance-coupling-friendly!!)
-
               endif
             
             elseif(solrad.lt.shdOFFsetpoint)then
@@ -4784,8 +4754,8 @@ C             cut-off angle control
             
             else ! solrad is in interval between off and on set points
               if(iact1.eq.1.or.iact1.eq.5)then
-                vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set new slag angle
-                i_shd(iact2,iact3)     = 0                    ! shade state ON     
+                vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set "off" slag angle, usually 0 deg
+                i_shd(iact2,iact3)     = 1                    ! shade state ON     
 C             on-off with intermediate angle control
               elseif (iact1.eq.3) then
                 vb_phiNew(iact2,iact3) = shdINTslatPOSITION   ! set new slag angle
@@ -4954,7 +4924,9 @@ C         blind restrictions should be part of the blind description in .cfc IMO
           if (cutoff.lt.0.0) cutoff=0.0
 C         check if this facade actually gets direct radiation. If not,
 C         set blind to a "daylight friendly" angle ... (? 11.07.2011)
-          if (solrad_dir.le.0.0) cutoff=20.0
+C   ... commented out, typical sensors will not allow such a control?
+C   ... additional "glare" type of control would be preferable ... (5.5.12)
+c          if (solrad_dir.le.0.0) cutoff=20.0
       else ! vertical venetian type blind
 C *** this needs checking (neg inc angles!) ****
           cutoff=asin( vb_s(iZone,icfctp)/vb_w(iZone,icfctp)
@@ -5117,6 +5089,12 @@ C -------------------------------------------------------------------
       RadIncDifS(icomp,isur)=solrad_diff
       RadIncDifSky(icomp,isur)=SKYDIF*(1.-POFF)
       RadIncDifGrd(icomp,isur)=GRDDIF*(1.-POFF)
+
+C -------------
+C Calculated approximate illuminance values for control by light
+C sensors? ...
+c-      IncIllum(icomp,isur)=120*(solrad_dir+solrad_diff)
+C -------------
 
  1000 return
       end
