@@ -83,10 +83,11 @@ C ********************************************************************
       integer IFU,ival,itype,istat,loutlen,ln_outs,ln_zonepth
       integer lnblnk    !function definition
       CHARACTER outs*124
-      CHARACTER con_name*32,ltmp*72,louts*248
+      CHARACTER con_name*32,ltmp*72,louts*248,cval*13
 
       DIMENSION con_name(ms)        !local storage of CFC const. name 
       dimension ival(MS)
+      dimension cval(mcfc)
 
       LOGICAL XST,vb_xst
 
@@ -338,6 +339,14 @@ C Open *.cfc file
         GOTO 98
       ENDIF
 
+C===========V E R S I O N   2   F I L E S===================
+C Write out file version header if version 2 file
+      if (im_CFCfileversion(icomp).eq.2) then
+        WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
+     &    '*CFC_Fileversion 2'      
+      endif
+C-----------------------------------------------------------
+
 C Write out complex fenestration construction file data.
 
       WRITE(IFU,100,IOSTAT=ISTAT,ERR=98)
@@ -476,6 +485,7 @@ C commons.
 
 C write out layer type index
       DO 240 it=1,im_ncfc(icomp)
+
         vb_xst=.false.
         do 250 ij=1,im_ncfc_el(icomp,it)
           ival(ij)=im_cfcltp(icomp,it,ij)
@@ -493,6 +503,47 @@ C write out layer type index
           write(ifu,'(a)',ERR=98) louts(1:loutlen)
           ipos=itrunc+1
         end do
+
+C===========V E R S I O N   2   F I L E S===================
+      if (im_CFCfileversion(icomp).eq.2) then
+C     Write layer names and IGDB index to version 2 CFC files
+        write(outs,'(a,i2)')
+     &      '# layer names for cfc type: ',it
+        WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
+        itrunc=1
+        ipos=1
+
+        do 251 ij=1,im_ncfc_el(icomp,it)
+          cval(ij)=rim_LayNam(icomp,it,ij)(1:rim_lLayNam(icomp,it,ij))
+ 251    continue
+
+        do while (itrunc.ne.0)
+          call aslist(ipos,im_ncfc_el(icomp,it),cval,
+     &            mcfc,'C',louts,loutlen,itrunc)
+          write(ifu,'(a)',ERR=98) louts(1:loutlen)
+          ipos=itrunc+1
+        end do
+C       Write layer IGDB index
+        write(outs,'(a,i2)')
+     &      '# layer IGDB index for cfc type: ',it
+        WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
+        itrunc=1
+        ipos=1
+
+        do 252 ij=1,im_ncfc_el(icomp,it)
+          ival(ij)=rim_IGDBindex(icomp,it,ij)
+ 252    continue
+
+        do while (itrunc.ne.0)
+          call ailist(ipos,im_ncfc_el(icomp,it),
+     &            ival,mcfc,'C',louts,loutlen,itrunc)
+          write(ifu,'(a)',ERR=98) louts(1:loutlen)
+          ipos=itrunc+1
+        end do
+
+      endif ! version 2 file
+C------------------------------------------------------------
+        
       if(im_ncfc_el(icomp,it).eq.1)goto 241
 
 
@@ -611,13 +662,14 @@ C ********************************************************************
 
       integer IUF,icomp,icfctp,isur,IER,nelts_nogas,K,neimp,ivb_count
       integer j,nelts,i,ie,ND,IWA,litems,lgasgaps,ltypes,istat
+      integer iIGDBindex,Kg,Ki
       real rphi,rprop,rvb_w
 
       integer ln_outs
       integer lnblnk    !function definition
       
       CHARACTER OUTSTR*124,OUTS*124,GSLfile*72,ltype*3
-      CHARACTER LOUTSTR*248
+      CHARACTER LOUTSTR*248,gname*13
 
       logical vb_xst
 
@@ -726,16 +778,36 @@ C angle.
       endif
 
 C Read Solar optical, visual and longwave optical properties for
-C each layer. If venetian/slat-type blind, also read w/r ratio (Widht/radius
+C each layer. If venetian/slat-type blind, also read w/r ratio (width/radius
 C curvature ratio), slat thickness and slat apparent thickness
       nelts=ne(isur)
       do 20 i=1,nelts,2
          CALL LSTRIPC(IUF,LOUTSTR,99,litems,1,
      &            'optical properties in GSLedit file',IER)
          IF(IER.NE.0)GOTO 1001
-         K=23
+         
+         Kg=1
+         Ki=14 ! next character is first digit of IGDB index
+         im_CFCfileversion(icomp)=2 ! set this for read / write of cfc files
+                                    ! henceforth, all imported files are
+                                    ! version 2 (May 8, 2012)
+
+         K=23  ! next character is first digit of solar transmission
 
          if(im_cfcltp(icomp,icfctp,i).eq.1)then
+
+C Read of layer name (characters 1:13) and IGDB index
+C (characters 14:17) and store.
+cx This is (will be?) used in cfc2rad ... 08052012
+
+            CALL EGETW(LOUTSTR,Kg,gname,'F','layer name',IER)
+            rim_LayNam(icomp,icfctp,i)=gname
+            rim_lLayNam(icomp,icfctp,i)=
+     &                   lnblnk(rim_LayNam(icomp,icfctp,i))
+
+            CALL EGETWI(LOUTSTR,Ki,iIGDBindex,'F',0,50000,
+     &            'IGDB index',IER)
+            rim_IGDBindex(icomp,icfctp,i)=iIGDBindex
 
             CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
      &            'solar transmission',IER)
@@ -766,6 +838,13 @@ C curvature ratio), slat thickness and slat apparent thickness
             rim_lwEb(icomp,icfctp,i)=rprop
 
          elseif(im_cfcltp(icomp,icfctp,i).eq.2)then
+
+            CALL EGETW(LOUTSTR,Kg,gname,'F','layer name',IER)
+            rim_LayNam(icomp,icfctp,i)=gname
+            rim_lLayNam(icomp,icfctp,i)=
+     &                   lnblnk(rim_LayNam(icomp,icfctp,i))
+
+            rim_IGDBindex(icomp,icfctp,i)=0
 
             CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
      &            'solar slat transmission',IER)
@@ -946,18 +1025,58 @@ C ********************************************************************
       
       DIMENSION IVA(MS)
     
-      CHARACTER OUTSTR*124,OUTS*124,LUA*72,WORD*20
-
+      CHARACTER OUTSTR*124,OUTS*124,LUA*72,WORD*20,SVA*13
+      character dllsubr*12,dllmesg*124
+      
+      DIMENSION SVA(mcfc)
+      
       real val
-      logical vb_xst
+      logical vb_xst,dll
       val=0.
       vb_xst=.false.
+
+C Check if running in dll mode.
+      call isadll(dll) ! overkill, here?
 
       CALL EFOPSEQ(IUA,LUA,1,IER)
       IF(IER.NE.0)THEN
        IER=1
        goto 1000
       ENDIF
+
+C===========V E R S I O N   2   F I L E S===================
+C Get file version (i.e., if first line contaings "*CFC_", 
+C then it is a version 2 file (for now) ...
+C
+C Code logic copied from esrucom/esystem.F, lines 2928 ff.
+
+C Read the file header and check for first-line tag. If 4 items
+C then an older file so rewind the file and then call emfread.
+      CALL STRIPC(IUA,OUTSTR,99,ND,0,'1st line of file',IER)
+      ! check for fatal error
+      if(IER.NE.0)then
+        outs='Problem scanning CFC file...aborting cfg scan'
+        if(dll)then
+          dllsubr='mzinpt'
+          dllmesg=outs
+          ier=2
+          return
+        else
+          call edisp(iuout,outs)
+          goto 1000 ! close file and return
+        endif
+      endif
+      ! seems O.K., continue ...
+      if (OUTSTR(1:18).EQ.'*CFC_Fileversion 2') then
+        ! set file version variable to 2
+        im_CFCfileversion(icomp)=2
+      else
+        ! set file back to beginning and read "old" file
+        REWIND(IUA,ERR=999)
+        im_CFCfileversion(icomp)=0
+      endif
+
+C------------------------------------------------------------
 
 c Read zone complex fenestration construction properties from file.
 C Read lines from file, discarding comments.
@@ -974,8 +1093,8 @@ C if the surface attribute should be updated.
       ncfc(icomp)=0
       DO 10 I=1,NS
         icfcfl(icomp,i)=iva(i)
-       IF(icfcfl(icomp,i).NE.0.AND.
-     &     (SSOTF(IZSTOCN(ICOMP,I)).NE.'CFC '))THEN
+       IF(icfcfl(icomp,i).NE.0.AND.(SSOTF(izstocn(icomp,I)).NE. 
+     &                                                  'CFC '))THEN 
          WRITE(OUTS,'(5a)')' The CFC file ',LUA(1:lnblnk(LUA)),
      &      ' not sure if ',SSNAME(IZSTOCN(ICOMP,I)),
      &     ' is a complex fenestration constr.'
@@ -1148,6 +1267,27 @@ C icfcltp = 2 (currently only slat-type blinds and glazings allowed)
         vb_xst=.false.
       end if
 
+      if (im_CFCfileversion(icomp).eq.2) then
+C     Read layername and IGDB index here for 
+C     version 2 CFC files (starting May 8, 2012)
+
+        OUTSTR=' '
+        CALL EGETAGWSA(OUTSTR,1,IUA,IRVA,SVA,mcfc,'W',
+     &                          'cfc layer names',IER)
+
+        do 91 j=1,ncfc_el(icomp,i)
+cv             icfcltp(icomp,i,j)=IVA(j)
+   91   continue
+
+        CALL EGETWIA(IUA,IVA,IRVA,0,50000,'W',
+     &                          'cfc layer IGDB index',IER)
+
+        do 92 j=1,ncfc_el(icomp,i)
+cv             icfcltp(icomp,i,j)=IVA(j)
+   92   continue
+
+      endif ! version 2 file
+
 C Reporting
       IF(ITRC.GT.0)THEN
         CALL EDISP(ITRU,' ')
@@ -1156,10 +1296,10 @@ C Reporting
         CALL EDISP(ITRU,OUTS)
         CALL EDISP(ITRU,' ')
         CALL EDISP(ITRU,' Layer      type index')
-        DO 91, j=1,ncfc_el(icomp,i)
+        DO 93, j=1,ncfc_el(icomp,i)
           WRITE(OUTS,'(1X,i5,2X,i4)')i,icfcltp(icomp,i,j)
           CALL EDISP(ITRU,OUTS)
-   91   CONTINUE
+   93   CONTINUE
       ENDIF
 
       if(ncfc_el(icomp,i).eq.1)goto 81
@@ -1299,6 +1439,21 @@ C Error messages.
       CALL USRMSG(outs,' and try the model again!','W')
       IER=1
       goto 1000
+      
+C File rewind errors.
+  999 if(dll)then
+        dllsubr='ersys'
+        WRITE(dllmesg,'(2a)') 
+     &  ' Error rewinding CFC file ',lcfcin(icomp)(1:32)
+        ier=2
+        return
+      else
+        CALL USRMSG('Error rewinding CFC file:',
+     &    lcfcin(icomp),'W')
+        IER=1
+        GOTO 1000
+      endif 
+      
       end
 
 C ********************************************************************

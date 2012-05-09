@@ -50,7 +50,8 @@ C-------------------------------------------------------------------------------
       COMMON/impCFC/im_cfcfl(mcom,ms),
      &              im_ncfc(mcom),
      &              im_ncfc_el(mcom,mcfc),
-     &              im_cfcltp(mcom,mcfc,me)
+     &              im_cfcltp(mcom,mcfc,me),
+     &              im_cfcfileversion(mcom)
 
 C CFC type index: 
 C      0: not-CFC
@@ -69,6 +70,26 @@ C      0: gas gap
 C      1: glazing
 C      2: venetian blind
       INTEGER im_cfcltp
+
+C File version control
+      INTEGER im_cfcfileversion
+
+C---------------------------------------------------------------------------------
+C Name and IGBD index for each (glass) layer of CFC imported from *.GSL files.
+
+      COMMON/impCFCnam/rim_LayNam(mcom,mcfc,me),
+     &                 rim_lLayNam(mcom,mcfc,me),
+     &                 rim_IGDBindex(mcom,mcfc,me)
+
+C Layer name
+      CHARACTER rim_LayNam*13
+
+C length of layer name
+      INTEGER rim_lLayNam
+
+C IGDB index for layer (glazing, only)
+      INTEGER rim_IGDBindex
+
 
 C---------------------------------------------------------------------------------
 C Normal Solar Optical properties for each layer of CFC imported from *.GSL files.

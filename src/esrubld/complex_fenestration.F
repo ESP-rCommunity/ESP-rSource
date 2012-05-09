@@ -57,6 +57,7 @@ C      set_HR_to_zero
 C      set_QELW_to_zero
 C      CFCoutput
 C      CFC_control
+C      funCutOffAngle (A. Geissler)
 C      get_incident_solrad
 C      CFCoutputH3K (A. Geissler)
 
@@ -4882,8 +4883,6 @@ C Initial Creation Date: April 2012
 C
 C Calculates the cut-off angle for Venetian type blind control
 C for CFC constructions.
-C
-C *** this function should be corrected to "profile angle" !! (23/04/2012)
 C
 C                 Blind assembly tilt angle PELV(icomp,isurf) is defined as
 C                   0°   for vertical surfaces
