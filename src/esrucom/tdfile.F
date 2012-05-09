@@ -1031,7 +1031,7 @@ C espriou.h provides current file.
       CHARACTER*72 AFIL,tdaide
       CHARACTER act*1
       CHARACTER outs*124
-      character outstr*248,WORD*20,TMP*4,tail*8,msgl2*86
+      character outstr*248,LOUTSTR*1000,WORD*20,TMP*4,tail*8,msgl2*86
       integer ier
 
 C If not already opened free unit and check if file exists.
@@ -1264,17 +1264,17 @@ C maximums below zero.
           endif
   48    continue
 
-C Note tabular data might be up to 248 characters wide on 
+C Note tabular data might be up to 1k characters wide on 
 C each line and might extend to additional lines.
         DO 46 IP=1,NDBSTP
           CALL CLRTAB
-          CALL LSTRIPC(iafil,outstr,0,ND,1,'tabular data',IER)
+          CALL STRIPC1K(iafil,loutstr,0,ND,1,'tabular data',IER)
           K=0
-          CALL EGETWR(OUTSTR,K,TIMEJD,0.,0.,'-','TIMEJD',IER)
+          CALL EGETWR(LOUTSTR,K,TIMEJD,0.,0.,'-','TIMEJD',IER)
 
 C For nuwpr items read as many lines as required.
           IRVA=nuwpr
-          call EGETAGWRA(outstr,K,iafil,IRVA,TABU,0.00,1.00,'-',
+          call EGETAGWRA(loutstr,K,iafil,IRVA,TABU,0.00,1.00,'-',
      &        'raw tabular data',IER)
           if(itrc.gt.1)then
             write(outs,*) 'at time ',TIMEJD,'tabu is ',TABU
@@ -1526,7 +1526,7 @@ C to alter the number of columns check the value of iadcols.
       COMMON/OUTIN/IUOUT,IUIN
       common/TDFADDC/iadcols,deftabu(9)
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
-      CHARACTER delim*1,msgl2*48,louts*248,outs*124
+      CHARACTER delim*1,msgl2*48,louts*1000,outs*124
 
 C If nuwpr is zero then we have a problem.
       if(nuwpr+iadcols.eq.0)then

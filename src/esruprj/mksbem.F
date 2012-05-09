@@ -410,9 +410,12 @@ C Generate all the model variants and run assessments and generate EPC.
 
         iuact = 2
         CFGROOT = CFGROOT_O ! re-establish the initial root name
-        CALL EMKSBM(iier)   ! generate Notional model
-        if(iier.eq.2.or.iier.eq.3.or.iier.eq.4) goto 42  ! Ask user what to do
-        call edisp(iuout,'Notional model completed...')
+
+C << for admin buidling comment out creation of notional building
+C        CALL EMKSBM(iier)   ! generate Notional model
+C        if(iier.eq.2.or.iier.eq.3.or.iier.eq.4) goto 42  ! Ask user what to do
+C        call edisp(iuout,'Notional model completed...')
+
         CALL EMKREF  ! Reference model
         call edisp(iuout,'Reference model completed...')
         CALL EMKTYP  ! Typical model
@@ -579,7 +582,7 @@ C #include "espriou.h"
       DIMENSION KSTR(10),HSYSNM(MCOM+1),JSTR(8),LSYS(10)
       DIMENSION ITEMZ(MREN+5),LSTR(10)
       character cfgroot*24,LCFGF*72,NNAME*72
-      character outs*124
+      character outs*124,messg*42
       character ITEMS*50,D64*64,ITEMX*50,ITEMH*70
       CHARACTER HSYSNM*70,TMPSTR*64
       character EXT*4,APE*6
@@ -1117,7 +1120,7 @@ C If no zones specified in model advise user and go back to menu
             IF(IHLZ(IZ).EQ.0)THEN
               TMPSTR=' No HVAC system for this zone!'
             ELSE
-              WRITE(TMPSTR,'(2A)')' ',HVACNAME(IZ)
+              WRITE(TMPSTR,'(2A)')' ',HVACNAME(IHLZ(IZ))
             ENDIF
             WRITE(OUTS,'(3A,I3,A)')
      &       'Zone ',zname(IZ)(1:lnzname(iz)),
@@ -1128,15 +1131,22 @@ C If no zones specified in model advise user and go back to menu
           call gethelptext(helpinsub,helptopic,nbhelp)
           DO 402 IZ=1,NCOMP
             IA=1
-            WRITE(OUTS,'(2A)')'Choose HVAC system for zone ',
+            WRITE(messg,'(2A)')'Choose HVAC system for ',
      &      zname(IZ)(1:lnzname(IZ))
             JSTR(1)=0
  914        CALL EPICKS(IA,JSTR,' ','Link zones to HVAC systems',
-     &      70,NCMSYS+1,HSYSNM,OUTS(1:40),IER,nbhelp)
+     &      70,NCMSYS+1,HSYSNM,messg,IER,nbhelp)
             IF(JSTR(1).EQ.0)GOTO 914
             IHLZ(IZ)=JSTR(1)-1
  402      CONTINUE
         ENDIF
+
+        helptopic='ncm_save_changes'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        dok=.true.
+        CALL ASKOK('Update NCM descriptions (see help)',' ',
+     &    OK,dok,nbhelp)
+        if(ok) call mksbem
         goto 222  ! see what the user wants to do next
 
       ELSEIF(KSTR(1).EQ.7)THEN
@@ -1175,11 +1185,11 @@ C Link DHW systems and zones
           call gethelptext(helpinsub,helptopic,nbhelp)
           DO 404 IZ=1,NCOMP
             IA=1
-            WRITE(OUTS,'(2A)')'Choose DHW system for zone ',
+            WRITE(messg,'(2A)')'Choose DHW system for ',
      &      zname(IZ)(1:lnzname(IZ))
             JSTR(1)=0
             CALL EPICKS(IA,JSTR,' ','Link zones to DHW systems',
-     &        70,NDHWSYS+2,HSYSNM,OUTS(1:44),IER,nbhelp)
+     &        70,NDHWSYS+2,HSYSNM,messg,IER,nbhelp)
             IF(JSTR(1).EQ.0)GOTO 404
             IF(JSTR(1).EQ.1)THEN
               IDHWLZ(IZ)=0
@@ -1204,6 +1214,13 @@ C Link DHW systems and zones
      &    '-',10.,'DHW gen eff ',IER,nbhelp)
  404      CONTINUE
         ENDIF
+
+        helptopic='ncm_save_changes'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        dok=.true.
+        CALL ASKOK('Update NCM descriptions (see help)',' ',
+     &    OK,dok,nbhelp)
+        if(ok) call mksbem
         goto 222  ! see what the user wants to do next
 
       ELSEIF(KSTR(1).EQ.8)THEN
@@ -1225,11 +1242,11 @@ C selections via the array
                 itemfromactivity(ICAC)=IAT  ! remember which was the source
               ENDIF
  130        CONTINUE
-            WRITE(OUTS,'(2A)')'Choose activity for zone ',
-     &      zname(IZ)(1:lnzname(IZ))
+            WRITE(messg,'(2A)')'Choose activity for ',
+     &        zname(IZ)(1:lnzname(IZ))
             IX=1
             CALL EPICKS(IX,KSYS,' ',OUTS(1:LNBLNK(OUTS)),
-     &        40,ICAC,ITEMS,OUTS(1:LNBLNK(OUTS)),IER,nbhelp)
+     &        40,ICAC,ITEMS,messg,IER,nbhelp)
 
 C Save the string describing the activity into trymatch.
             mainactivity=KSYS(1)
@@ -3441,7 +3458,7 @@ C Where ESP-r was installed (as recorded when it was compiled).
                                  !controls to zones.
       character APE*6,EXT*4
       character delim*1
-      character louts*400        ! buffer of 400 char to support larger models
+      character louts*1000        ! buffer of 1k char to support larger models
       real CDAY,RDOTY            ! reals for timestamp calculations
       integer itime,ip           ! integers for timestamp calculations
       integer iafil              ! file unit for writing temporal header
@@ -4220,10 +4237,11 @@ C As they will be in the standard database folder use the *std...
 C Loop through each zone in the model and first scan in the zone
 C geometry, next use surrel to update parent/child information and
 C write out the zone.
+      DO 550 ICOMP=1,NCOMP
 
 C << Zones which should not participate in the NCM geometric revisions
 C << (e.g. a zero activity) need to be marked at this point.
-      DO 550 ICOMP=1,NCOMP
+
         IUF=IFIL+2
         EXT='.geo'
         call eclose(gversion(icomp),1.1,0.01,newgeo)
@@ -4243,7 +4261,7 @@ C << (e.g. a zero activity) need to be marked at this point.
         endif
 
 C Find the index of the MLC which matches each surface.
-        write(6,*) icomp,NZSUR(icomp),nmlc
+C        write(6,*) icomp,NZSUR(icomp),nmlc
         DO 9994 I=1,NZSUR(icomp)
           icn1=izstocn(icomp,i)
           ssmlcindex(icn1)=0  ! assume no matching MLC          
@@ -4255,8 +4273,8 @@ C Find the index of the MLC which matches each surface.
  9994   continue
 
 C Debug the ssmlcindex array.
-        write(6,*) ssmlcindex(1),ssmlcindex(2),ssmlcindex(3),
-     &    ssmlcindex(4),ssmlcindex(5),ssmlcindex(6),ssmlcindex(7)
+C        write(6,*) ssmlcindex(1),ssmlcindex(2),ssmlcindex(3),
+C     &    ssmlcindex(4),ssmlcindex(5),ssmlcindex(6),ssmlcindex(7)
 
         CALL FNCNGR(LGEOM_O(ICOMP),APE,EXT,NNAME)
         LGEOM(ICOMP)=NNAME
@@ -4372,7 +4390,7 @@ C For each surface in this zone.
 
 C For all exterior surfaces that are marked wall or roof.
             if(ssother(icc,1)(1:8).eq.'EXTERIOR'.AND.(
-     &      SNM(1:4).EQ.'WALL'.or.SNM(1:4).EQ.'ROOF'))then
+     &        SNM(1:4).EQ.'WALL'.or.SNM(1:4).EQ.'ROOF'))then
 
 C Only the following types of areas will be retained in this exterior
 C type surface with use roof or wall.
@@ -13611,8 +13629,10 @@ C    NBS Journal of Research, Vol. 71C, Jan-Mar. 1967, pp 43-50.
       subroutine GTCALC(ZD,act,IER)
       implicit none
 #include "building.h"
-#include "esprdbfile.h"
+#include "model.h"
 #include "site.h"
+#include "esprdbfile.h"
+#include "espriou.h"
 
 C Passed parameters.
       real ZD          ! Depth at which temperature required
@@ -13621,6 +13641,8 @@ C Passed parameters.
 
       common/FILEP/IFIL
       integer ifil   
+      integer iuout,iuin
+      common/OUTIN/IUOUT,IUIN
 
       COMMON/LongRad/iExtLgRadFlag,eGrdTp(12)
       INTEGER iExtLgRadFlag
@@ -13641,15 +13663,38 @@ C Passed parameters.
       real Theta       ! Hour number of the 15th day of the month
       integer II,I,irec,istat,j,k
       integer I_coldmonth  !Month of the year with coldest average temperature
+      logical unixok
+      character fs*1
+      character llclmdb*144
+      integer llt,lndbp
 
       REAL MidMonthDay(12)
       DATA MidMonthDay/
      &   15.,46.,74.,95.,135.,166.,196.,227.,258.,288.,319.,349./
 
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
       iclim=IFIL
 
-C << todo take into account location >>
-      call EFOPRAN(ICLIM,LCLIM,144,0,IER)
+      call edisp(iuout,'Generating ground temperatures.')
+
+C Setup string buffer with distribution weather folder name.
+      llt=lnblnk(LCLIM)
+      lndbp=lnblnk(standardclmpath)
+      if(ipathclim.eq.0.or.ipathclim.eq.1)then
+        llclmdb=LCLIM
+      elseif(ipathclim.eq.2)then
+        write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &    LCLIM(1:lnblnk(LCLIM))
+      endif
+
+      call EFOPRAN(ICLIM,llclmdb,144,0,IER)
       IF(ier.ne.0)return
 
 C Initialise
