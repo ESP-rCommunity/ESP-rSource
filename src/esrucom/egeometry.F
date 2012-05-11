@@ -2557,28 +2557,35 @@ C Surface list. Write as a packed list comma separated.
 
 C Based on the current contents of SOTHER(I,1) create a buffer SO
 C to write out.
-        lso=lnblnk(SSOTHER(icc,1))
-        lso2=lnblnk(SSOTHER(icc,2))
-        lso3=lnblnk(SSOTHER(icc,3))
-        lsml=lnblnk(SSMLCN(icc))
-        lspa=lnblnk(SSPARENT(icc))
-        lsna=lnblnk(SSNAME(icc))
-        lsot=lnblnk(SSOTF(icc))
-        loth=lnblnk(OTHSTR)
+        if(icc.gt.0)then
+          lso=lnblnk(SSOTHER(icc,1))
+          lso2=lnblnk(SSOTHER(icc,2))
+          lso3=lnblnk(SSOTHER(icc,3))
+          lsml=lnblnk(SSMLCN(icc))
+          lspa=lnblnk(SSPARENT(icc))
+          lsna=lnblnk(SSNAME(icc))
+          lsot=lnblnk(SSOTF(icc))
+          loth=lnblnk(OTHSTR)
 
 C Traps for possible blank strings if data structure corrupted.
-        if(SSVFC(icc)(1:4).eq.'    ') SSVFC(icc)='UNKN'
-        if(SSOTF(icc)(1:4).eq.'    ') SSOTF(icc)='UNKN'
-        if(SSPARENT(icc)(1:2).eq.'  ') SSPARENT(icc)='-'
-        WRITE(outs,'(20a)',IOSTAT=ios,ERR=13) '*surf ',
-     &    SSNAME(icc)(1:lsna),' ',SSVFC(icc),' ',
-     &    SSPARENT(icc)(1:lspa),' ',SSUSE(icc,1),' ',SSUSE(icc,2),
-     &    ' ',SSMLCN(icc)(1:lsml),' ',SSOTF(icc)(1:lsot),' ',
-     &    SSOTHER(icc,1)(1:lso),' ',SSOTHER(icc,2)(1:lso2),
-     &    ' ',SSOTHER(icc,3)(1:lso3)
-        call SDELIM(outs,outsd,'C',IW)
-        write(ifilg,'(2a,i3,2a)',IOSTAT=IOS,ERR=13) 
-     &    outsd(1:lnblnk(outsd)),'  # ',I,' ',OTHSTR(1:loth)
+          if(SSVFC(icc)(1:4).eq.'    ') SSVFC(icc)='UNKN'
+          if(SSOTF(icc)(1:4).eq.'    ') SSOTF(icc)='UNKN'
+          if(SSPARENT(icc)(1:2).eq.'  ') SSPARENT(icc)='-'
+          WRITE(outs,'(20a)',IOSTAT=ios,ERR=13) '*surf ',
+     &      SSNAME(icc)(1:lsna),' ',SSVFC(icc),' ',
+     &      SSPARENT(icc)(1:lspa),' ',SSUSE(icc,1),' ',SSUSE(icc,2),
+     &      ' ',SSMLCN(icc)(1:lsml),' ',SSOTF(icc)(1:lsot),' ',
+     &      SSOTHER(icc,1)(1:lso),' ',SSOTHER(icc,2)(1:lso2),
+     &      ' ',SSOTHER(icc,3)(1:lso3)
+          call SDELIM(outs,outsd,'C',IW)
+          write(ifilg,'(2a,i3,2a)',IOSTAT=IOS,ERR=13) 
+     &      outsd(1:lnblnk(outsd)),'  # ',I,' ',OTHSTR(1:loth)
+        else
+
+C There was an array fault so write out a placeholder surface.
+          WRITE(outs,'(2a)',IOSTAT=ios,ERR=13) '*surf,fault,UNKN,-,-,',
+     &      '-,UNKN,OPAQUE,EXTERIOR,0,0'
+        endif
   102 CONTINUE
 
 C Default insolation distribution as packed string.

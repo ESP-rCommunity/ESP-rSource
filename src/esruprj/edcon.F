@@ -270,25 +270,30 @@ C If in quiet mode: the file should exist => error if we are here.
 
 C Having done so check to see if there are any transparent surfaces.
 C If surface attribute other than OPAQUE reset ITMCFL otherwise reconcile mismatches!
-C Do not check for UK NCM notional model
+C Do not check for UK NCM models.
       TFOUND=.FALSE.
       DO 60 IS=1,NZSUR(icomp)
         icn1=izstocn(icomp,is)
-        IF((SSOTF(icn1)(1:4).EQ.'OPAQ').AND.ITMCFL(ICOMP,IS).ne.0.
-     &    and.inoti.ne.1)then
-          write(outs,'(A,A)')SSNAME(icn1),' is opaque.'
-          dok=.true.
-          helptopic='confirm_surf_opaque'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-          CALL ASKOK(outs,'Confirm surface is opaque?',
-     &      OK,DOK,nbhelp)
-          if(OK)then
-            ITMCFL(ICOMP,IS)=0
-            SSOTF(icn1)='OPAQUE'
+        write(6,*) icn1,SSOTF(icn1),ITMCFL(ICOMP,IS),inoti
+
+        IF((SSOTF(icn1)(1:4).EQ.'OPAQ').AND.ITMCFL(ICOMP,IS).ne.0)then
+          if(inoti.eq.0)then
+            write(outs,'(A,A)')SSNAME(icn1),' is opaque.'
+            dok=.true.
+            helptopic='confirm_surf_opaque'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL ASKOK(outs,'Confirm surface is opaque?',
+     &        OK,DOK,nbhelp)
+            if(OK)then
+              ITMCFL(ICOMP,IS)=0
+              SSOTF(icn1)='OPAQUE'
+            endif
+          else
+            continue
           endif
         endif
         IF(SSOTF(icn1)(1:4).NE.'OPAQ'.AND.
-     &            SSOTF(icn1)(1:4).NE.'CFC ')TFOUND=.TRUE.
+     &     SSOTF(icn1)(1:4).NE.'CFC ')TFOUND=.TRUE.
         IF(ITMCFL(ICOMP,IS).GT.0)TFOUND=.TRUE.
   60  CONTINUE
       IF(.NOT.TFOUND)THEN

@@ -1,6 +1,6 @@
 # composite construction db defined in ./multicon.db3
 # based on materials db ./material.db3.a
-   52     # no of composites 
+   53     # no of composites 
 # layers  description   optics name   symmetry tag
     4    extern_wall   OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
@@ -212,6 +212,12 @@
    43    0.0030  aluminium : Aluminium
     0    0.0080  air  0.060 0.060 0.060
    46    0.0030  grey cotd alum : Grey coated aluminium
+# layers  description   optics name   symmetry tag
+    3    frame_notion  OPAQ  OPAQUE        SYMMETRIC     
+# mat ref thickness (m) mat descr & air gap R
+   43    0.1000  aluminium : Aluminium
+    0    0.0100  air  0.285 0.285 0.285
+   43    0.1000  aluminium : Aluminium
 # layers  description   optics name   symmetry tag
     4    roof          OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
