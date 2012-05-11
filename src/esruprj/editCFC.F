@@ -87,7 +87,7 @@ C ********************************************************************
 
       DIMENSION con_name(ms)        !local storage of CFC const. name 
       dimension ival(MS)
-      dimension cval(mcfc)
+      dimension cval(me)
 
       LOGICAL XST,vb_xst
 
@@ -514,7 +514,8 @@ C     Write layer names and IGDB index to version 2 CFC files
         ipos=1
 
         do 251 ij=1,im_ncfc_el(icomp,it)
-          cval(ij)=rim_LayNam(icomp,it,ij)(1:rim_lLayNam(icomp,it,ij))
+          write(cval(ij),'(a)')
+     &          rim_LayNam(icomp,it,ij)(1:rim_lLayNam(icomp,it,ij))
  251    continue
 
         do while (itrunc.ne.0)
@@ -1028,7 +1029,7 @@ C ********************************************************************
       CHARACTER OUTSTR*124,OUTS*124,LUA*72,WORD*20,SVA*13
       character dllsubr*12,dllmesg*124
       
-      DIMENSION SVA(mcfc)
+      DIMENSION SVA(me)
       
       real val
       logical vb_xst,dll
@@ -1036,7 +1037,7 @@ C ********************************************************************
       vb_xst=.false.
 
 C Check if running in dll mode.
-      call isadll(dll) ! overkill, here?
+c      call isadll(dll) ! overkill, here?
 
       CALL EFOPSEQ(IUA,LUA,1,IER)
       IF(IER.NE.0)THEN
@@ -1050,21 +1051,21 @@ C then it is a version 2 file (for now) ...
 C
 C Code logic copied from esrucom/esystem.F, lines 2928 ff.
 
-C Read the file header and check for first-line tag. If 4 items
-C then an older file so rewind the file and then call emfread.
+C Read the file header and check for first-line tag. If
+C an older file rewind the file and then continue as usual.
       CALL STRIPC(IUA,OUTSTR,99,ND,0,'1st line of file',IER)
       ! check for fatal error
       if(IER.NE.0)then
         outs='Problem scanning CFC file...aborting cfg scan'
-        if(dll)then
-          dllsubr='mzinpt'
-          dllmesg=outs
-          ier=2
-          return
-        else
+c        if(dll)then
+c          dllsubr='mzinpt'
+c          dllmesg=outs
+c          ier=2
+c          return
+c        else
           call edisp(iuout,outs)
           goto 1000 ! close file and return
-        endif
+c        endif
       endif
       ! seems O.K., continue ...
       if (OUTSTR(1:18).EQ.'*CFC_Fileversion 2') then
@@ -1267,26 +1268,29 @@ C icfcltp = 2 (currently only slat-type blinds and glazings allowed)
         vb_xst=.false.
       end if
 
+C===========V E R S I O N   2   F I L E S===================
       if (im_CFCfileversion(icomp).eq.2) then
 C     Read layername and IGDB index here for 
 C     version 2 CFC files (starting May 8, 2012)
 
         OUTSTR=' '
-        CALL EGETAGWSA(OUTSTR,1,IUA,IRVA,SVA,mcfc,'W',
+        CALL EGETAGWSA(OUTSTR,1,IUA,IRVA,SVA,me,'W',
      &                          'cfc layer names',IER)
 
         do 91 j=1,ncfc_el(icomp,i)
-cv             icfcltp(icomp,i,j)=IVA(j)
+             rim_LayNam(icomp,i,j)=SVA(j)
+             rim_lLayNam(icomp,i,j)=lnblnk(rim_LayNam(icomp,i,j))
    91   continue
 
         CALL EGETWIA(IUA,IVA,IRVA,0,50000,'W',
      &                          'cfc layer IGDB index',IER)
 
         do 92 j=1,ncfc_el(icomp,i)
-cv             icfcltp(icomp,i,j)=IVA(j)
+             rim_IGDBindex(icomp,i,j)=IVA(j)
    92   continue
 
       endif ! version 2 file
+C-----------------------------------------------------------
 
 C Reporting
       IF(ITRC.GT.0)THEN
@@ -1430,7 +1434,7 @@ C Reporting
 c Free file.
  1000 CALL ERPFREE(IUA,ISTAT)
       return
-
+      
 C Error messages.
  1001 CALL USRMSG(' Problem reading data in:',OUTSTR,'W')
       IER=1
@@ -1441,19 +1445,19 @@ C Error messages.
       goto 1000
       
 C File rewind errors.
-  999 if(dll)then
-        dllsubr='ersys'
-        WRITE(dllmesg,'(2a)') 
-     &  ' Error rewinding CFC file ',lcfcin(icomp)(1:32)
-        ier=2
-        return
-      else
-        CALL USRMSG('Error rewinding CFC file:',
+c  999 if(dll)then
+c        dllsubr='ersys'
+c        WRITE(dllmesg,'(2a)') 
+c     &  ' Error rewinding CFC file ',lcfcin(icomp)(1:32)
+c        ier=2
+c        return
+c      else
+  999  CALL USRMSG('Error rewinding CFC file:',
      &    lcfcin(icomp),'W')
         IER=1
         GOTO 1000
-      endif 
-      
+c      endif 
+
       end
 
 C ********************************************************************
