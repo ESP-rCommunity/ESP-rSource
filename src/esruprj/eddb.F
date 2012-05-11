@@ -3523,7 +3523,7 @@ C Calendar.
       integer ier
       integer icreport  ! to signal that calendar has been updated.
       integer IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY  ! for correcting calendar
-      logical closelat,closelong
+      logical closelat,closelong,spawn
       
 #ifdef OSI
       integer ICPMOD     ! passed from tchild
@@ -3538,6 +3538,7 @@ C For help messages
 
       helpinsub='EDDBCLM'  ! set for subroutine
 
+      spawn=.true.
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
       if(unixok)then
@@ -3712,6 +3713,7 @@ C Assign weather file name based on its location via findwhichdbpath.
                 write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
      &            LCLIM(1:lnblnk(LCLIM))
               endif
+              spawn=.false. ! try to avoid spawing if file name given by user, ag@20120511
             endif
           endif
         else
@@ -3724,34 +3726,35 @@ C Assign weather file name based on its location via findwhichdbpath.
         CALL ERPFREE(ICLIM,ISTAT)
         call FINDFIL(llclmdb,XST)
         IF(XST)THEN
-
+          if (spawn) then
 C If file exists and user wants to browse then scan the file and
 C use the editing facility.
-          IER=0
-          call EFOPRAN(ICLIM,llclmdb,144,0,IER)
-          if(ier.eq.0)then
-            call tstamp('>','PRJ: start clm')
-            doit = ' '
-            call tchild(ICPMOD)
-            call termode(ICPMOD,tmode)
-            if(ipathclim.eq.0.or.ipathclim.eq.1)then
-              call addpath(llclmdb,longtfile,concat)
-            elseif(ipathclim.eq.2)then
-              longtfile=llclmdb
-            endif
-            if(iappw.gt.0.and.iappw.le.200)then
-              write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
+            IER=0
+            call EFOPRAN(ICLIM,llclmdb,144,0,IER)
+            if(ier.eq.0)then
+              call tstamp('>','PRJ: start clm')
+              doit = ' '
+              call tchild(ICPMOD)
+              call termode(ICPMOD,tmode)
+              if(ipathclim.eq.0.or.ipathclim.eq.1)then
+                call addpath(llclmdb,longtfile,concat)
+              elseif(ipathclim.eq.2)then
+                longtfile=llclmdb
+              endif
+              if(iappw.gt.0.and.iappw.le.200)then
+                write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
      &            ' -s ',iappw,iappx+10,iappy+10,' -file ',
      &            longtfile(1:lnblnk(longtfile))
-            else
-              write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
+              else
+                write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
      &            longtfile(1:lnblnk(longtfile))
-            endif
-            call runit(doit,tmode)
-          else
-            call usrmsg('Problem encountered with Climate db!',
+              endif
+              call runit(doit,tmode)
+            else
+              call usrmsg('Problem encountered with Climate db!',
      &                  'Please check db location and content.','W')
-            goto 552
+              goto 552
+            endif
           endif
         else
           call usrmsg('No weather to browse/edit.',
