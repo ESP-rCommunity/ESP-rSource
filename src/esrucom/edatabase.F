@@ -1096,24 +1096,47 @@ C             Layer data
               write(outstr,'(a)') 
      &               'Optical layer properties '
 		      CALL EDISP(ITRU,OUTSTR)
-              write(outstr,'(2a)') 
+              if (im_CFCfileversion(iZone).eq.2) then
+                write(outstr,'(2a)') 
+     &               '  type  t_sol rf_sol rb_sol  t_vis rf_vis',
+     &               ' rb_vis  eps_f  eps_b  IGDB  Name'
+              else
+                write(outstr,'(2a)') 
      &               '  type  t_sol rf_sol rb_sol  t_vis rf_vis',
      &               ' rb_vis  eps_f  eps_b'
+              endif
 		      CALL EDISP(ITRU,OUTSTR)
 C             Write out non-gas layer data (sequence order should be as in LBNL Window)
               do 19, iLay=1,LayNo
                 if (icfcltp(iZone,icfctp,iLay).ne.0) then
-                  write(outstr,'(2x,I4,1x,8(f6.3,1x))')
-     &               icfcltp(iZone,icfctp,iLay),
-     &               solT(iZone,icfctp,iLay),
-     &               solRF(iZone,icfctp,iLay),
-     &               solRB(iZone,icfctp,iLay),
-     &               visT(iZone,icfctp,iLay),
-     &               visRF(iZone,icfctp,iLay),
-     &               visRB(iZone,icfctp,iLay),
-     &               rlwEF(iZone,icfctp,iLay),
-     &               rlwEB(iZone,icfctp,iLay)
+                  if (im_CFCfileversion(iZone).eq.2) then
+                    write(outstr,'(2x,I4,1x,8(f6.3,1x),I5,2x,(a))')
+     &                 icfcltp(iZone,icfctp,iLay),
+     &                 solT(iZone,icfctp,iLay),
+     &                 solRF(iZone,icfctp,iLay),
+     &                 solRB(iZone,icfctp,iLay),
+     &                 visT(iZone,icfctp,iLay),
+     &                 visRF(iZone,icfctp,iLay),
+     &                 visRB(iZone,icfctp,iLay),
+     &                 rlwEF(iZone,icfctp,iLay),
+     &                 rlwEB(iZone,icfctp,iLay),
+     &                 rim_IGDBindex(iZone,icfctp,iLay),
+     &                 rim_LayNam(iZone,icfctp,iLay)
+     &                            (1:rim_lLayNam(iZone,icfctp,iLay))
+                  else
+                    write(outstr,'(2x,I4,1x,8(f6.3,1x))')
+     &                 icfcltp(iZone,icfctp,iLay),
+     &                 solT(iZone,icfctp,iLay),
+     &                 solRF(iZone,icfctp,iLay),
+     &                 solRB(iZone,icfctp,iLay),
+     &                 visT(iZone,icfctp,iLay),
+     &                 visRF(iZone,icfctp,iLay),
+     &                 visRB(iZone,icfctp,iLay),
+     &                 rlwEF(iZone,icfctp,iLay),
+     &                 rlwEB(iZone,icfctp,iLay)
+                  endif
                   CALL EDISP(ITRU,OUTSTR)
+                  
                 endif ! not gas layer
   19          continue
               write(outstr,'(a)') ' '

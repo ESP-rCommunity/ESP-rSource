@@ -80,13 +80,14 @@ C ********************************************************************
       integer IER,IS,icomp,icn1,ncfccount,igap,ie
       integer nmaxtypes,ntypes,icfctp,isame,iss,ncfctypes,i,icount
       integer ij,it,icompare1,icompare2,icn2,ibk,iwa,nmax,itrunc,ipos
-      integer IFU,ival,itype,istat,loutlen,ln_outs,ln_zonepth
+      integer IFU,ival,itype,istat,loutlen,ln_outs,ln_zonepth,igdbval
       integer lnblnk    !function definition
       CHARACTER outs*124
       CHARACTER con_name*32,ltmp*72,louts*248,cval*13
 
       DIMENSION con_name(ms)        !local storage of CFC const. name 
       dimension ival(MS)
+      dimension igdbval(me)
       dimension cval(me)
 
       LOGICAL XST,vb_xst
@@ -499,13 +500,14 @@ C write out layer type index
 
         do while (itrunc.ne.0)
           call ailist(ipos,im_ncfc_el(icomp,it),
-     &            ival,ME,'C',louts,loutlen,itrunc)
+     &            ival,MS,'C',louts,loutlen,itrunc)
           write(ifu,'(a)',ERR=98) louts(1:loutlen)
           ipos=itrunc+1
         end do
 
 C===========V E R S I O N   2   F I L E S===================
       if (im_CFCfileversion(icomp).eq.2) then
+
 C     Write layer names and IGDB index to version 2 CFC files
         write(outs,'(a,i2)')
      &      '# layer names for cfc type: ',it
@@ -520,10 +522,11 @@ C     Write layer names and IGDB index to version 2 CFC files
 
         do while (itrunc.ne.0)
           call aslist(ipos,im_ncfc_el(icomp,it),cval,
-     &            mcfc,'C',louts,loutlen,itrunc)
+     &            me,'C',louts,loutlen,itrunc)
           write(ifu,'(a)',ERR=98) louts(1:loutlen)
           ipos=itrunc+1
         end do
+
 C       Write layer IGDB index
         write(outs,'(a,i2)')
      &      '# layer IGDB index for cfc type: ',it
@@ -532,12 +535,12 @@ C       Write layer IGDB index
         ipos=1
 
         do 252 ij=1,im_ncfc_el(icomp,it)
-          ival(ij)=rim_IGDBindex(icomp,it,ij)
+          igdbval(ij)=rim_IGDBindex(icomp,it,ij)
  252    continue
 
         do while (itrunc.ne.0)
           call ailist(ipos,im_ncfc_el(icomp,it),
-     &            ival,mcfc,'C',louts,loutlen,itrunc)
+     &            igdbval,me,'C',louts,loutlen,itrunc)
           write(ifu,'(a)',ERR=98) louts(1:loutlen)
           ipos=itrunc+1
         end do
@@ -787,8 +790,8 @@ C curvature ratio), slat thickness and slat apparent thickness
      &            'optical properties in GSLedit file',IER)
          IF(IER.NE.0)GOTO 1001
          
-         Kg=1
-         Ki=14 ! next character is first digit of IGDB index
+         Kg=0
+         Ki=13 ! next character is first digit of IGDB index
          im_CFCfileversion(icomp)=2 ! set this for read / write of cfc files
                                     ! henceforth, all imported files are
                                     ! version 2 (May 8, 2012)
@@ -797,6 +800,7 @@ C curvature ratio), slat thickness and slat apparent thickness
 
          if(im_cfcltp(icomp,icfctp,i).eq.1)then
 
+C===========V E R S I O N   2   F I L E S===================
 C Read of layer name (characters 1:13) and IGDB index
 C (characters 14:17) and store.
 cx This is (will be?) used in cfc2rad ... 08052012
@@ -809,6 +813,7 @@ cx This is (will be?) used in cfc2rad ... 08052012
             CALL EGETWI(LOUTSTR,Ki,iIGDBindex,'F',0,50000,
      &            'IGDB index',IER)
             rim_IGDBindex(icomp,icfctp,i)=iIGDBindex
+C-----------------------------------------------------------
 
             CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
      &            'solar transmission',IER)
@@ -934,6 +939,11 @@ C Loop through CFC layers and assign gas properties to CFC commons
       do 30 ie=1,im_ncfc_el(icomp,icfctp)
         if(im_cfcltp(icomp,icfctp,ie).eq.0)then
 
+C===========V E R S I O N   2   F I L E S===================
+          rim_LayNam(icomp,icfctp,ie)='gas'
+          rim_lLayNam(icomp,icfctp,ie)=3
+C-----------------------------------------------------------
+
 C skip mixture composition and gap thickness data
           CALL STRIPC(IUF,OUTSTR,99,ltypes,1,'skip this line',IER)
 C import molecular mass of gas mixture (g/gmole)
@@ -1020,7 +1030,7 @@ C ********************************************************************
       real rairg
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
 
-      integer iva,itrc,itru,iua,icomp,ier,NS,IRVA,i,j,k,ierr
+      integer iva,itrc,itru,iua,icomp,ier,NS,IRVA,i,j,k,ierr,kk
       integer nshade_layers,ie,ND,ISR,icn,ntmpcfc_el,iflag,istat
       integer lnblnk    !function definition
       
@@ -1037,7 +1047,7 @@ C ********************************************************************
       vb_xst=.false.
 
 C Check if running in dll mode.
-c      call isadll(dll) ! overkill, here?
+      call isadll(dll) ! overkill, here?
 
       CALL EFOPSEQ(IUA,LUA,1,IER)
       IF(IER.NE.0)THEN
@@ -1057,15 +1067,15 @@ C an older file rewind the file and then continue as usual.
       ! check for fatal error
       if(IER.NE.0)then
         outs='Problem scanning CFC file...aborting cfg scan'
-c        if(dll)then
-c          dllsubr='mzinpt'
-c          dllmesg=outs
-c          ier=2
-c          return
-c        else
+        if(dll)then
+          dllsubr='mzinpt'
+          dllmesg=outs
+          ier=2
+          return
+        else
           call edisp(iuout,outs)
           goto 1000 ! close file and return
-c        endif
+        endif
       endif
       ! seems O.K., continue ...
       if (OUTSTR(1:18).EQ.'*CFC_Fileversion 2') then
@@ -1272,10 +1282,13 @@ C===========V E R S I O N   2   F I L E S===================
       if (im_CFCfileversion(icomp).eq.2) then
 C     Read layername and IGDB index here for 
 C     version 2 CFC files (starting May 8, 2012)
+        CALL STRIPC(IUA,OUTSTR,99,ND,1,'cfc layer name line',IER)
+        IF(IER.NE.0)GOTO 1001
 
-        OUTSTR=' '
-        CALL EGETAGWSA(OUTSTR,1,IUA,IRVA,SVA,me,'W',
+        kk=0 ! read from position
+        CALL EGETAGWSA(OUTSTR,kk,IUA,IRVA,SVA,me,'W',
      &                          'cfc layer names',IER)
+        IF(IER.NE.0)GOTO 1001
 
         do 91 j=1,ncfc_el(icomp,i)
              rim_LayNam(icomp,i,j)=SVA(j)
@@ -1284,6 +1297,8 @@ C     version 2 CFC files (starting May 8, 2012)
 
         CALL EGETWIA(IUA,IVA,IRVA,0,50000,'W',
      &                          'cfc layer IGDB index',IER)
+
+        IF(IER.NE.0)GOTO 1001
 
         do 92 j=1,ncfc_el(icomp,i)
              rim_IGDBindex(icomp,i,j)=IVA(j)
@@ -1445,18 +1460,18 @@ C Error messages.
       goto 1000
       
 C File rewind errors.
-c  999 if(dll)then
-c        dllsubr='ersys'
-c        WRITE(dllmesg,'(2a)') 
-c     &  ' Error rewinding CFC file ',lcfcin(icomp)(1:32)
-c        ier=2
-c        return
-c      else
-  999  CALL USRMSG('Error rewinding CFC file:',
+  999 if(dll)then
+        dllsubr='ersys'
+        WRITE(dllmesg,'(2a)') 
+     &  ' Error rewinding CFC file ',lcfcin(icomp)(1:32)
+        ier=2
+        return
+      else
+        CALL USRMSG('Error rewinding CFC file:',
      &    lcfcin(icomp),'W')
         IER=1
         GOTO 1000
-c      endif 
+      endif 
 
       end
 
