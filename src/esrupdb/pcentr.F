@@ -33,11 +33,14 @@ C 'PCPUT' is called to add it to the datatbase.
 
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
+      character lcmdfl*144
+      common/rcmd/LCMDFL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
       character PZDESC*25 
-      character LTMP*72,ltmpg*72,buffer*90
+      character ltmpg*144,buffer*90
+      character lltmp*144,L144*144
       LOGICAL OK,dok
 
 C For help messages
@@ -53,15 +56,26 @@ C Build menu items.
       CALL EASKABCD('Read component data:',' ','from file',
      &  'from user dialogue','from file to generic','continue',irt,
      &  nbhelp)
+
       if(irt.eq.1.or.irt.eq.3)then
 
 C Read from file, get filename
-        ltmp=' '
-  205   CALL EASKS(LTMP,' ASCII file name? ',' ',72,' ',
-     &    'ASCII file',IER,nbhelp)
+  205   lltmp=' '  ! clear file name to be returned
+        call edisp(iuout,'  ')  ! echo blank line
+
+C Set initial guess for import file to command line file +a
+        write(L144,'(2a)') LCMDFL(1:lnblnk(LCMDFL)),'a'  
+        CALL EASKXORGTKF(L144,
+     &    'ASCII import file name','Confirm:','importfile.dta',
+     &    lltmp,'import plant templates',IER,nbhelp)
+
+C If user cancel display the menu without loading file.
+        if(ier.eq.-3)then
+          return  ! re-display menu.
+        endif
 
         IUFIL = IFIL+1
-        CALL FPOPEN (IUFIL,ISTAT,1,1,LTMP)
+        CALL FPOPEN (IUFIL,ISTAT,1,1,LLTMP)
         IF (ISTAT .EQ. -3)   GOTO 100
         IF (ISTAT .NE. 0)goto 205
 
@@ -78,7 +92,7 @@ C Read components data from file
 
 C Fill the generic header.
         if(irt.eq.3)then
-          write(ltmpg,'(2a)') ltmp(1:lnblnk(ltmp)),'.gdba'
+          write(ltmpg,'(2a)') lltmp(1:lnblnk(lltmp)),'.gdba'
           IUFILG = IFIL+2
           CALL FPOPEN (IUFILG,ISTAT,1,3,LTMPG)
           call PCRDFGDB(IUFIL,'h')
@@ -92,7 +106,7 @@ C Fill the generic header.
         IF(INDXPC.GT.0) THEN
           CALL PCPUT (INDXPC)
           WRITE(buffer,'(a,i5,a)')
-     &     ' Plant component entry ',INDXPC,'added'
+     &     ' Plant component entry ',INDXPC,' added'
           call edisp(iuout,buffer)
           GOTO 210
         ELSE IF(INDXPC.LT.0) THEN
@@ -102,6 +116,7 @@ C Fill the generic header.
           CALL ERPFREE(IUFILG,ISTAT)
           GOTO 100
         END IF
+
       elseif(irt.eq.2)then
 
 C Read component data from user.
@@ -116,13 +131,14 @@ C Check if user accepts data.
         CALL ASKOK(' ',' Is this OK? ',OK,dok,nbhelp)
         IF(OK)GOTO 330
 
-C Changes required, so call 'PCEDIT'
+C Changes required, so call 'PCEDIT'.
         CALL PCEDIT(icode)
         GOTO 100
 
-C Put data into database
+C Put data into plant template file.
   330   CALL PCPUT (INDXPC)
         GOTO 100
+
       elseif(irt.eq.4)then
         return
       endif
