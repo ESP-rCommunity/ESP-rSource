@@ -814,25 +814,25 @@ C Loop from start and increment until at or past the finish time.
      &        -sitelongdif,' -m 0.0'
             CALL wrtsky(outs)
 
-C We will need pic & gif file for this time. Write out and then use
+C We will need hdr & gif file for this time. Write out and then use
 C sdelim with a N to remove spaces.
             write(tpic,'(a,2i3,f6.3,a)') runpath(1:lnrp),
-     &        IAMO,IADO,CURT,'.pic'
+     &        IAMO,IADO,CURT,'.hdr'
             call sdelim(tpic,tpicd,'N',IW)
             write(tgif,'(a,2i3,f6.3,a)') runpath(1:lnrp),
      &        IAMO,IADO,CURT,'.gif'
             call sdelim(tgif,tgifd,'N',IW)
 
-C If animation use a standard name for pic file (which is going to
-C be converted into a timestamp named gif file. Any existing pic
+C If animation use a standard name for hdr file (which is going to
+C be converted into a timestamp named gif file. Any existing hdr
 C file should be removed.
             if (ipckvew.gt.0) then
               write(pf,'(5a)') runpath(1:lnrp),
      &          picfil(1:lnblnk(picfil)),'_',
-     &          rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.pic'
+     &          rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.hdr'
             else
               write(pf,'(3a)') runpath(1:lnrp),
-     &          picfil(1:lnblnk(picfil)),'_X.pic'
+     &          picfil(1:lnblnk(picfil)),'_X.hdr'
             endif
             CALL ERPFREE(ITA2,ISTAT)
             INQUIRE (FILE=pf,EXIST=XST)
@@ -863,7 +863,7 @@ C call rad to create image(s) based on current setting of ipckvew.
             endif
 
 C Debug.
-C            write(6,*) doit
+            write(6,*) doit
 
             write(outs,'(2a,i3,F6.2)') 'Currently working on...',
      &        NMTHNM(IAMO),IADO,CURT
@@ -876,7 +876,7 @@ C Generate a label and put into tpic.
      &        tpicd(1:lnblnk(tpicd))
 
 C Debug.
-C            write(6,*) doit
+            write(6,*) doit
 
             call runit(doit,'-')
 
@@ -885,7 +885,7 @@ C Generate command to convert to a gif.
      &        tgifd(1:lnblnk(tgifd))
 
 C Debug.
-C            write(6,*) doit
+            write(6,*) doit
 
             call runit(doit,'-')
 
@@ -895,14 +895,14 @@ C Increment the current time.
           end do
         else
 
-C See if there is an existing pic file by this name.
+C See if there is an existing hdr file by this name.
           if (ipckvew.gt.0) then
             write(pf,'(5a)') runpath(1:lnrp),
      &        picfil(1:lnblnk(picfil)),'_',
-     &        rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.pic'
+     &        rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.hdr'
           else
             write(pf,'(3a)') runpath(1:lnrp),
-     &        picfil(1:lnblnk(picfil)),'_X.pic'
+     &        picfil(1:lnblnk(picfil)),'_X.hdr'
           endif
           CALL ERPFREE(ITA2,ISTAT)
           INQUIRE (FILE=pf,EXIST=XST)
@@ -952,7 +952,7 @@ C Set file name including path and open.
         endif
 
 C Debug.
-C        write(6,*) doit
+        write(6,*) doit
 
         call edisp(iuout,'Look in the text window for progress.')
         call runit(doit,'-')
@@ -1000,11 +1000,11 @@ C Assumes that the path to the image is given.
 C Generate picture and glare file names.
       if (ipckvew.gt.0) then
         write(pf,'(4a)') picfil(1:lnblnk(picfil)),'_',
-     &                rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.pic'
+     &                rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.hdr'
         write(gf,'(4a)') picfil(1:lnblnk(picfil)),'_',
      &                rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.glr'
       else
-        write(pf,'(2a)') picfil(1:lnblnk(picfil)),'_X.pic'
+        write(pf,'(2a)') picfil(1:lnblnk(picfil)),'_X.hdr'
         write(gf,'(2a)') picfil(1:lnblnk(picfil)),'_X.glr'
       endif
 
@@ -1263,20 +1263,20 @@ C        write(6,*) ' -dj',xval
 C Run findglare to identify glare sources.
       if (ipckvew.gt.0) then
         write(pf,'(a,a,a,a)') picfil(1:lnblnk(picfil)),'_',
-     &                rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.pic'
+     &                rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.hdr'
         write(gf,'(a,a,a,a)') picfil(1:lnblnk(picfil)),'_',
      &                rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.glr'
       else
-        write(pf,'(a,a)') picfil(1:lnblnk(picfil)),'_X.pic'
+        write(pf,'(a,a)') picfil(1:lnblnk(picfil)),'_X.hdr'
         write(gf,'(a,a)') picfil(1:lnblnk(picfil)),'_X.glr'
       endif
       write(doit,'(12a)') 'cd ',runpath(1:lnblnk(runpath)),
-     &            '; findglare -ga 5-',glst(1:lnblnk(glst)),':5 -p ',
-     &             pf(1:lnblnk(pf)),' ',rendopt(1:lnblnk(rendopt)),' ',
-     &             octfil(1:lnblnk(octfil)),' > ',gf(1:lnblnk(gf))
+     &  '; findglare -ga 5-',glst(1:lnblnk(glst)),':5 -p ',
+     &   pf(1:lnblnk(pf)),' ',rendopt(1:lnblnk(rendopt)),' ',
+     &   octfil(1:lnblnk(octfil)),' > ',gf(1:lnblnk(gf))
 
 C Debug.
-C      write(6,*) doit
+      write(6,*) doit
 
       call runit(doit,'-')
 
@@ -1417,11 +1417,11 @@ C Open sky file and read ground ambient level.
 C Call rtrace and calculate daylight factors. This is the point where
 C the logic jumps back to if additional resolution is required.
  99   write(doit,'(4a,1x,6a,f5.2,4a)') 'cd ',runpath(1:lnrp),
-     &        '; rtrace -opv -I -h @',optnfil(1:lnblnk(optnfil)),
-     &      octfil(1:lnblnk(octfil)),
-     &     ' < ',LDFGRID(1:lnblnk(LDFGRID)),' | rcalc -e ',QT,
-     &   '$1=$1;$2=$2;$3=$3;$4=((0.265*$4+0.670*$5+0.065*$6)*100)/(PI*',
-     &        ga,')',QT,' > ',df(1:lnblnk(df))
+     &  '; rtrace -opv -I -h @',optnfil(1:lnblnk(optnfil)),
+     &  octfil(1:lnblnk(octfil)),
+     &  ' < ',LDFGRID(1:lnblnk(LDFGRID)),' | rcalc -e ',QT,
+     &  '$1=$1;$2=$2;$3=$3;$4=((0.265*$4+0.670*$5+0.065*$6)*100)/(PI*',
+     &  ga,')',QT,' > ',df(1:lnblnk(df))
       call runit(doit,'-')
 
 C Now need to read in daylight factors and store in memory.
