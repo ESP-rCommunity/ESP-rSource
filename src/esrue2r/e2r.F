@@ -1340,7 +1340,7 @@ C lfile contains path as well as file name.
 
 
 C ************* inqu_tmc *************
-C inqu_tmc: Check if tmc control active.
+C inqu_tmc: Check if tmc (including CFC) control active.
       subroutine inqu_tmc
 #include "building.h"
 #include "model.h"
@@ -1349,6 +1349,7 @@ C inqu_tmc: Check if tmc control active.
 C geometry.h provides commons G0 and G2.
 C #include "geometry.h"
 #include "control.h"
+#include "CFC_common.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1364,7 +1365,8 @@ c      COMMON/TMCB1/IBCMT(MCOM,MTMC)
 
       logical XST
 
-      ITA1=IFIL+6
+      ITA1 = IFIL+6
+      ITA2 = IFIL+7
 
 C NABS = number of alternative blind states.
       NABS=0
@@ -1387,9 +1389,10 @@ C (need to test blind/ shuter control flags).
             CALL ECONST(LTHRM(ICOMP),ITA1,ICOMP,0,IUOUT,IER)
             CALL ERTWIN(0,IUOUT,ITA1,LTWIN(ICOMP),ICOMP,IER)
           else
-            write (outs,'(a,a)') ' Could not find construction file: ',
+            write (outs,'(a,a)')' Could not find construction file: ',
      &        LTHRM(ICOMP)
-            call usrmsg(outs,'blind control tracking not possible!','W')
+            call usrmsg(outs,
+     &                  'blind control tracking not possible!','W')
           endif
 
 C Check if tmc control found.
@@ -1400,20 +1403,39 @@ C Check if tmc control found.
  10   continue
 
 C Now do "the same" for CFC ...
+c << code addition 16 May 2012 ...
+      do 18 icomp=1,ncomp
+        if (icfc(icomp).eq.1) then
+          call FINDFIL(lcfcin(icomp),XST)
+          if(XST)then
+C           Scan CFC file to initialize commons
+            call read_in_cfc_file(itrc,iuout,ita2,
+     &                            lcfcin(icomp),icomp,ier)
+          else
+            write (outs,'(a,a)') ' Could not find CFC file: ',
+     &        lcfcin(icomp)
+            call usrmsg(outs,' ... calculations likely invalid!','W')
+          endif
+        endif
+ 18   continue
+c    end code addition 16 May 2012 >>
+ 
 c       write(*,*)'***inqu_tmc: nCFCctlloops= ',nCFCctlloops
-	     if (nCFCctlloops.gt.0) then
-         do 20 ictlfun=1,nCFCctlloops
-		       if (iCFCactuator(ictlfun,1) .eq.0) then
-			       NABS=max(NABS,1)
-		       elseif (iCFCactuator(ictlfun,1) .eq.1) then
-		         NABS=max(NABS,1)
-		       elseif (iCFCactuator(ictlfun,1) .eq.2) then
-		         NABS=max(NABS,1)
-		       elseif (iCFCactuator(ictlfun,1) .eq.3) then
-		         NABS=max(NABS,2)
-		       endif
-20       continue
-       endif
+      if (nCFCctlloops.gt.0) then
+        do 20 ictlfun=1,nCFCctlloops
+	       if (iCFCactuator(ictlfun,1) .eq.0) then
+             NABS=max(NABS,1)
+	       elseif (iCFCactuator(ictlfun,1) .eq.1) then
+	         NABS=max(NABS,1)
+	       elseif (iCFCactuator(ictlfun,1) .eq.2) then
+	         NABS=max(NABS,1)
+	       elseif (iCFCactuator(ictlfun,1) .eq.3) then
+	         NABS=max(NABS,2)
+           else
+	         NABS=max(NABS,1) ! use "one alternative position" as default
+	       endif
+20      continue
+      endif
 
       return
       end
