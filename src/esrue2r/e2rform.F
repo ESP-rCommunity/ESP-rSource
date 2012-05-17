@@ -459,6 +459,7 @@ C If ACT='i' then interactive, ACT='s' for silent.
 #include "esprdbfile.h"
 #include "material.h"
 #include "e2r_common.h"
+#include "CFC_common.h"
       
       integer lnblnk  ! function definition
 
@@ -500,15 +501,17 @@ C For obstruction blocks of type "obsp":
       DIMENSION XX(MV),YY(MV),ZZ(MV),XT(MV),YT(MV),ZT(MV),TRNS(3)
 
       character ZSN*28
-      character ZN*12,outs*124,material*12,QT*1
+      character ZN*12,outs*124,material*25,QT*1
       character GDESCR*36,DESCRC*25
       CHARACTER MLCN*12,OTF*4,OPT*12
       CHARACTER ACT_1*1,doit*144
       character outsn*124,outsd*124, tfile*72
       character pfile*72,atfile*72,ltmp72*72,dtmp72*72,ObsMatName*32
       integer lnbm  ! length of block material name
+      integer init  ! for CFC2rad, toggle for initialization
+      integer icfctp
 
-      LOGICAL OK,DOK,fict,extern,XST,similar
+      LOGICAL OK,DOK,fict,extern,XST,similar,BRTDfunc
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -543,10 +546,10 @@ C Find version of materials database.
 C Create a glazing file, default type is 'glass' with user choice 
 C to treat as 'mkillum'.
       call edisp(iuout,' creating glazing file. ')
-      CALL ERPFREE(iglzfil,ISTAT)
+      CALL ERPFREE(iglzfil,ISTAT) ! iglzfil is in e2r commons and is set in e2r main
       CALL ERPFREE(ita2,ISTAT)
       if(ACT_1.eq.'i')then
- 10     ltmp72=glzfil
+ 10     ltmp72=glzfil ! glzfil is in e2r commons
         dtmp72=glzfil
         CALL EASKS(ltmp72,' Glazing file name ?',' ',
      &    72,dtmp72,'glazing file name',IER,nbhelp)
@@ -693,13 +696,16 @@ C Write inside composition header.
       WRITE(irzfil,'(a)') '  '
 
 C List database.
+C << this is very un-nice!! Only materials used in the model should be 
+C    included in the materials file for Radiance! >>
       do 45 IM=1,NMLC
 
 C Initial assumption is that material is not ficticious and should
 C not be skipped.
         iskip(im)=0
 
-C Pick up general description of the composite.
+C Pick up general description of the composite from construction 
+C data base entry.
         WRITE(MLCN,'(A)') DESC(IM)(1:12) ! MLC construction name
         WRITE(OTF,'(A)') DESC(IM)(15:18) ! MLC type
         IF(OTF.EQ.' ') OTF='OPAQ'
@@ -725,8 +731,8 @@ C If a tmc then find tranmission functions.  If more transparent than
 C the ficticious limit then mark to be skipped. Convert visible
 C transmission to transmissivity (as per Ward 1/12/94 Radiance 2.4 paper).
 C If TMC has an opaque layer then set gvt to a small number.
-        if (OTF(1:4).NE.'OPAQ') then !<< need to exclude CFC here and treat separately!!
-          CALL EROPTDB(ITRC,iuout,OPT,GDESCR,IER) ! will probably return trash for CFCs!
+        if (OTF(1:4).eq.'TRAN') then
+          CALL EROPTDB(ITRC,iuout,OPT,GDESCR,IER)
           if(VTRN.gt.0.02)then
           gvt1=(sqrt(0.8402528435+(0.007252224*VTRN*VTRN))-0.9166530661)
           gvt=gvt1/0.0036261119/VTRN
@@ -745,8 +751,8 @@ C Setup equivalent for default use.
           WRITE(iglzfil,'(a,3F6.2)') '3  ',gvt,gvt,gvt
           WRITE(iglzfil,'(a)') '  '
 
-C Aternative glazing descriptions file.
-          if (NABS.gt.0) then
+C Aternative glazing descriptions file (not for CFC!).
+          if ((NABS.gt.0).and.(OTF(1:4).ne.'CFC ')) then
 
 C Check for blind shutter control.
             do 100 newfoc=1,ncomp
@@ -773,24 +779,29 @@ C Check for blind shutter control.
             WRITE(ita2,'(a)') '0 '
             WRITE(ita2,'(a,3F6.2)') '3  ',gvt,gvt,gvt
             WRITE(ita2,'(a)') '  '
-          endif
+          endif ! NABS > 0
 
-C Create a glass material entry for each CFC 
-C   (additional "if" would need to be added in/near line 727)
-C The visual transmittance is based on <???>
-C Only consider internal or external, not intermediate blinds!?
-c        elseif (OTF(1:4).EQ.'CFC ')then
-c          do ilay 1 to im_ncfc_el(izone,icfc)
-c          
-C      SUBROUTINE DWINVT(IZONE,ISURF,VTDIR,VTDIF,BLIND)
-C or
-C
-      ! For CFC, it is of no concern if blind control is active or not, as
-      ! visual transmittance values for the system include time step blind setting!
-      ! Which value to take here???
-c        VTDIR=transBB_V(IZONE,ISURF) ! value corresponding to current incidence angle on surface
-c        VTDIF=transD_V(IZONE,ISURF)
-c
+C       =================== C F C ====================
+        elseif (OTF(1:4).eq.'CFC ') then
+          init=1 ! create materials descriptions (check for "first loop"?)
+          BRTDfunc=.false.
+          do iZone=1,ncomp
+            do iSurf=1,NZSUR(iZone)
+              icn=IZSTOCN(iZone,iSurf)
+C             Check if surface is a cfc and compare names ...
+              if(ICFCFL(iZone,iSurf).gt.0.AND.
+     &            SSMLCN(icn)(1:12).eq.MLCN(1:12))then
+C               Create a glass material (BRTDfunc) entry for this CFC
+C               construction. << how to avoid repeated output of 
+C                             << identical constructions?? 
+                call CFC2rad(iglzfil,init,iZone,iSurf,BRTDfunc)
+              endif
+            enddo
+          enddo
+          ! For CFC, it is of no concern if blind control is active or not, as
+          ! visual transmittance values for the system include time step blind setting!
+          ! Which value to take here???
+C       -----------------------------------------------
 
         else ! Not a TMC or CFC ...
           WRITE(imatfil,'(a)') '# External MLC Colours... '
@@ -822,8 +833,11 @@ c
           srefl=1.0-AI
           WRITE(imatfil,'(a,3F5.2,a)') '5 ',srefl,srefl,srefl,' 0 0 '
           WRITE(imatfil,'(a)') '  '
-        endif
-   45 continue
+        endif ! TMC? CFC? OPAQ (the rest)
+
+   45 continue ! loop through all constructions in current data base
+               ! starting line 701
+
 
 C Open the outside geometry/composition file.
       call edisp(iuout,' creating outside composition. ')
@@ -1137,7 +1151,14 @@ C     &            .and.SSOTF(icn)(1:4).ne.'CFC ') then
               material='unknown'
             endif
           else
-            write(material,'(a)') SSMLCN(icn)(1:12)
+            ! CFCs get extended material name ...
+            if (SSOTF(icn)(1:4).eq.'CFC ') then
+              write(material,'(3a)')
+     &                    SSMLCN(icn)(1:lnblnk(SSMLCN(icn))),'_',
+     &                    SSNAME(icn)(1:lnblnk(SSNAME(icn)))            
+            else
+              write(material,'(a)') SSMLCN(icn)(1:12)
+            endif
             if (iskip(icf).eq.1) ifict=1
           endif
 

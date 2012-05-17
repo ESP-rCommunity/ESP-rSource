@@ -1120,6 +1120,7 @@ C if the surface attribute should be updated.
       ENDIF
 
 C Reporting.
+      itrc=1
       IF(ITRC.GT.0)THEN
         CALL EDISP(ITRU,' ')
         WRITE(OUTS,9996)zname(ICOMP)(1:lnblnk(zname(ICOMP)))
@@ -1136,6 +1137,7 @@ C Reporting.
           CALL EDISP(ITRU,OUTS)
    31   CONTINUE
       ENDIF
+      itrc=0
 
       DO 20 I=1,ncfc(icomp)
 

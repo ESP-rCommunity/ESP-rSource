@@ -1408,6 +1408,8 @@ c << code addition 16 May 2012 ...
         if (icfc(icomp).eq.1) then
           call FINDFIL(lcfcin(icomp),XST)
           if(XST)then
+C           Read construction file
+            CALL ECONST(LTHRM(icomp),ita2,icomp,itrc,iuout,IER) ! should fill /T1/
 C           Scan CFC file to initialize commons
             call read_in_cfc_file(itrc,iuout,ita2,
      &                            lcfcin(icomp),icomp,ier)

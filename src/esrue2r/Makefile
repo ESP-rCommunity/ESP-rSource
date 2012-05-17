@@ -18,7 +18,7 @@ PROG = e2r$(EXE)
 MODULE_OBJECTS = h3kmodule.o startup.o aim2_module.o
 
 OBJECTS = e2r.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o bscoeff.o \
-	  bscoeff_extended.o c2fdum.o common3dv.o cread3dv.o ctlexp.o ctread.o \
+	  bscoeff_extended.o c2fdum.o cfc2rad.o common3dv.o e2r_complex_fenestration.o cread3dv.o ctlexp.o ctread.o \
 	  dossupport.o e2rfile.o e2rform.o e2rvp.o e3dviews.o ecasctl.o econstr.o econtrol.o \
 	  edatabase.o edcondb.o egeometry.o egtgeom.o emfnetw.o enetmisc.o \
 	  eroper.o esru_misc.o esystem.o filelist.o grid.o initalc.o inside.o item.o mfcdat.o \
