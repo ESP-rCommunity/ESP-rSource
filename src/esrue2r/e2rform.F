@@ -507,11 +507,12 @@ C For obstruction blocks of type "obsp":
       CHARACTER ACT_1*1,doit*144
       character outsn*124,outsd*124, tfile*72
       character pfile*72,atfile*72,ltmp72*72,dtmp72*72,ObsMatName*32
+      character cfcfile*72
       integer lnbm  ! length of block material name
       integer init  ! for CFC2rad, toggle for initialization
       integer icfctp
 
-      LOGICAL OK,DOK,fict,extern,XST,similar,BRTDfunc
+      LOGICAL OK,DOK,fict,extern,XST,similar,BRTDfunc,ExplicitVB
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -537,17 +538,18 @@ C Find version of materials database.
       if(closemat1.or.closemat2)then
         continue
       else
-        call usrmsg('The materials arrays are incomplete so creation',
-     &    'of surface attributes not possible.','W')
+        call usrmsg('The material database version is neither 1.1',
+     &    'nor 1.2. Creation of Radiance model not possible!','W')
         ier=1
         return
       endif
 
 C Create a glazing file, default type is 'glass' with user choice 
 C to treat as 'mkillum'.
-      call edisp(iuout,' creating glazing file. ')
+      call edisp(iuout,' Creating glazing file. ')
       CALL ERPFREE(iglzfil,ISTAT) ! iglzfil is in e2r commons and is set in e2r main
       CALL ERPFREE(ita2,ISTAT)
+      CALL ERPFREE(icfcfil,ISTAT) ! icfcfil is in e2r commons and is set in e2r main
       if(ACT_1.eq.'i')then
  10     ltmp72=glzfil ! glzfil is in e2r commons
         dtmp72=glzfil
@@ -576,16 +578,43 @@ C Ask for alternative glazing file.
             call FPOPEN(ita2,ISTAT,1,4,atfile)
           endif
         endif
+
+C Ask for CFC file name
+        if (cfcxst) then
+C         << in interactive mode, this may be a good place to
+C            ask if "standard" ('glass') or "enhanced" (BRTDfunc)
+C            type of model is to be used?
+ 14       ltmp72=cfcfil ! cfcfil is in e2r commons
+          dtmp72=cfcfil
+          CALL EASKS(ltmp72,' CFC data file name ?',' ',
+     &      72,dtmp72,'CFC data file name',IER,nbhelp)
+          if(ltmp72(1:2).eq.'  ') goto 14
+          cfcfil=ltmp72
+          write(cfcfile,'(a,a)')
+     &           runpath(1:lnrp),cfcfil(1:lnblnk(cfcfil))
+          call FPOPEN(icfcfil,ISTAT,1,4,cfcfile)
+        endif
+
       else ! silent mode ... actually, a loop through NBSRIF() would be necessary, here, no?
         write(tfile,'(a,a)')runpath(1:lnrp),glzfil(1:lnblnk(glzfil))
         call FPOPEN(iglzfil,ISTAT,1,3,tfile)
+C       Open alternative glazing data set file (TMC) if control is active
         if (NABS.gt.0) then
           NBSRIF(ifocz,ISCENE)=NABS+1
           write(atfile,'(a,a)')runpath(1:lnrp),
      &                         aglzfil(1:lnblnk(aglzfil))
           call FPOPEN(ita2,ISTAT,1,3,atfile)
         endif
-      endif
+C       Open cfc file if model has CFC construction
+        if (cfcxst) then
+          write(cfcfile,'(a,a)')runpath(1:lnrp),
+     &                         cfcfil(1:lnblnk(cfcfil))
+          call FPOPEN(icfcfil,ISTAT,1,3,cfcfile)
+        endif
+
+      endif ! silent?
+
+C     << this error message should give the actual file that posed a problem!
       IF(ISTAT.LT.0)THEN
         call usrmsg(' Problem detected while opening:',glzfil,'W')
         IER=1
@@ -616,6 +645,13 @@ C << a loop through more than one "alternative" sets should be here, no?
         WRITE(ita2,'(a)') '  '
       endif
 
+C CFC glazing file
+      if (cfcxst) then
+        WRITE(icfcfil,'(a)') '# Radiance CFC glazing definitions'
+        WRITE(icfcfil,'(a)') 
+     &            '# (first line of file must not be edited)'
+        WRITE(icfcfil,'(a)') '  '
+      endif
 C Create an opaque materials file. Take all of the materials in
 C the existing mlc db and create a set of properties.
       call edisp(iuout,' creating materials for opaque surfaces. ')
@@ -785,16 +821,23 @@ C       =================== C F C ====================
         elseif (OTF(1:4).eq.'CFC ') then
           init=1 ! create materials descriptions (check for "first loop"?)
           BRTDfunc=.false.
+          ExplicitVB=.true.
           do iZone=1,ncomp
             do iSurf=1,NZSUR(iZone)
               icn=IZSTOCN(iZone,iSurf)
 C             Check if surface is a cfc and compare names ...
               if(ICFCFL(iZone,iSurf).gt.0.AND.
-     &            SSMLCN(icn)(1:12).eq.MLCN(1:12))then
+     &            SSMLCN(icn)(1:12).eq.MLCN(1:12)) then
 C               Create a glass material (BRTDfunc) entry for this CFC
 C               construction. << how to avoid repeated output of 
 C                             << identical constructions?? 
-                call CFC2rad(iglzfil,init,iZone,iSurf,BRTDfunc)
+                call CFC2rad(init,iZone,iSurf,ExplicitVB,BRTDfunc)
+c              else ! something wrong!
+c                write(outs,'(a,I2,a,I2)')'material in zone ',iZone,
+c     &                  ' surface ',iSurf
+c                call usrmsg(' Problem detected while writing CFC ',
+c     &                 outs,'W')
+c                return
               endif
             enddo
           enddo
@@ -1153,9 +1196,11 @@ C     &            .and.SSOTF(icn)(1:4).ne.'CFC ') then
           else
             ! CFCs get extended material name ...
             if (SSOTF(icn)(1:4).eq.'CFC ') then
-              write(material,'(3a)')
+              write(material,'(4a,I1)')
      &                    SSMLCN(icn)(1:lnblnk(SSMLCN(icn))),'_',
-     &                    SSNAME(icn)(1:lnblnk(SSNAME(icn)))            
+     &                    SSNAME(icn)(1:lnblnk(SSNAME(icn))),'_',
+     &                    newfoc
+
             else
               write(material,'(a)') SSMLCN(icn)(1:12)
             endif
@@ -1176,7 +1221,8 @@ C Aternative glazing descriptions file.
               WRITE(ita2,'(a)') '  '
             endif
           elseif(SSOTF(icn)(1:4).ne.'OPAQ') then
-C     &            .and.SSOTF(icn)(1:4).ne.'CFC ')then
+c     &            .and.SSOTF(icn)(1:4).ne.'CFC ')then
+C line above uncommented experimentally ag@20May2012
 
 C Create surface based on the following:
 C  Focus zone - create.

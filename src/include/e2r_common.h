@@ -21,19 +21,19 @@ C     optnfil  Radiance options file name (?)
 
       common/rad1/rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
       character*72 rofil,rzfil,rskyfil,octfil,picfil,rmfil,glzfil
-C     rofil
-C     rzfil
+C     rofil    `outside` objects
+C     rzfil    zone (inside) composition
 C     rskyfil  Radiance sky description file
 C     octfil   Radiance octree file
 C     picfil   Radiance picture file
-C     rmfil
+C     rmfil    miscel descriptions
 C     glzfil   Radiance glazing file
 
 
-      common/rad1a/aglzfil
-      character*72 aglzfil
+      common/rad1a/aglzfil,cfcfil
+      character*72 aglzfil,cfcfil
 C     aglzfil  Radiance alternative glazing data set file (?)
-
+C     cfcfil   Radiance CFC data file name
 
       common/e2rq/indrcb,itrack,imgqua,detlvl,llvar,penumb
       integer indrcb,itrack
@@ -48,14 +48,15 @@ C     penumb
 
       common/rad1m/matfil,rmmfil
       character*72 matfil,rmmfil
-C     matfil  Radiance materials definitions file
-C     rmmfil  
+C     matfil  Radiance materials definitions file name
+C     rmmfil  miscel geometries
 
 
-      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone
-      logical skydone,outdone,indone,misdone,vewdone,glzdone
+      common/raddn/skydone,outdone,indone,misdone,vewdone,glzdone,
+     &             cfcxst
+      logical skydone,outdone,indone,misdone,vewdone,glzdone,cfcxst
 C     *done  Radiance logical variables
-
+C     cfcxst Flag for existence of CFC construction in model 
 
       common/rad2/mono,intext,ifocz
       integer mono,intext,ifocz
@@ -97,12 +98,13 @@ C     rtime
 C     iryear
 
 
-      common/radif/irofil,irzfil,imatfil,iglzfil
-      integer irofil,irzfil,imatfil,iglzfil
+      common/radif/irofil,irzfil,imatfil,iglzfil,icfcfil
+      integer irofil,irzfil,imatfil,iglzfil,icfcfil
 C     irofil
 C     irzfil
-C     imatfil
-C     iglzfil
+C     imatfil  opaque materials data file unit - created once / mkriofil
+C     iglzfil  standard glazing data file unit - created once / mkriofil
+C     icfcfil  CFC data file unit (this is written on a time step basis)
 
 
       common/e2rc/crenrp,coconv

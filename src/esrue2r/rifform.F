@@ -393,6 +393,9 @@ C If no inside file has been defined, setup typical names.
       if(aglzfil(1:7).eq.'UNKNOWN'.or.use.eq.'f')then
         write(aglzfil,'(a,a10)') pre(1:lnblnk(pre)),'-glz_a.rad'
       endif
+      if(cfcfil(1:7).eq.'UNKNOWN'.or.use.eq.'f')then
+        write(cfcfil,'(a,a8)') pre(1:lnblnk(pre)),'-CFC.rad'
+      endif
 
 C Reset to no views.
       indxvew = 0

@@ -152,6 +152,7 @@ C Scene configuration file IRCFG = IFIL+17.
       imatfil = IFIL+11
       iglzfil = IFIL+16
       IRCFG = IFIL+17
+      icfcfil = IFIL+19 ! ? 
 
 C Primitives on IFIL+13, mlc on IFIL+14, optics on IFIL+15,
 C check for root journal file on iuj.
@@ -232,6 +233,7 @@ C Set defaults.
       rmmfil='UNKNOWN'
       glzfil='UNKNOWN'
       aglzfil='UNKNOWN'
+      cfcfil='UNKNOWN'
       iglzty=1
       indone=.false.
       rskyfil='UNKNOWN'
@@ -239,6 +241,7 @@ C Set defaults.
       misdone=.false.
       vewdone=.false.
       glzdone=.false.
+      cfcxst=.false.
       octfil='UNKNOWN'
       picfil='UNKNOWN'
       radpth='../rad'
@@ -1403,11 +1406,17 @@ C Check if tmc control found.
  10   continue
 
 C Now do "the same" for CFC ...
+C Actually, this code is used to populate CFC commonst "in any case",
+C no matter if CFCs are controlled or not. There may be a better place
+C for this code.
 c << code addition 16 May 2012 ...
       do 18 icomp=1,ncomp
         if (icfc(icomp).eq.1) then
+          cfcxst=.true.
           call FINDFIL(lcfcin(icomp),XST)
           if(XST)then
+C           Read geometry file
+            call georead(ita2,LGEOM(icomp),icomp,1,iuout,IER)
 C           Read construction file
             CALL ECONST(LTHRM(icomp),ita2,icomp,itrc,iuout,IER) ! should fill /T1/
 C           Scan CFC file to initialize commons
@@ -1424,19 +1433,20 @@ c    end code addition 16 May 2012 >>
  
 c       write(*,*)'***inqu_tmc: nCFCctlloops= ',nCFCctlloops
       if (nCFCctlloops.gt.0) then
-        do 20 ictlfun=1,nCFCctlloops
-	       if (iCFCactuator(ictlfun,1) .eq.0) then
-             NABS=max(NABS,1)
-	       elseif (iCFCactuator(ictlfun,1) .eq.1) then
-	         NABS=max(NABS,1)
-	       elseif (iCFCactuator(ictlfun,1) .eq.2) then
-	         NABS=max(NABS,1)
-	       elseif (iCFCactuator(ictlfun,1) .eq.3) then
-	         NABS=max(NABS,2)
-           else
-	         NABS=max(NABS,1) ! use "one alternative position" as default
-	       endif
-20      continue
+c        do 20 ictlfun=1,nCFCctlloops
+c	       if (iCFCactuator(ictlfun,1) .eq.0) then
+c             NABS=max(NABS,1)
+c	       elseif (iCFCactuatocr(ictlfun,1) .eq.1) then
+c	         NABS=max(NABS,1)
+c	       elseif (iCFCactuator(ictlfun,1) .eq.2) then
+c	         NABS=max(NABS,1)
+c	       elseif (iCFCactuator(ictlfun,1) .eq.3) then
+c	         NABS=max(NABS,2)
+c          else
+c	         NABS=max(NABS,1) ! use "one alternative position" as default
+c	       endif
+c20      continue
+        NABS=0 ! ... for CFCs we don't need NABS (do we?)
       endif
 
       return

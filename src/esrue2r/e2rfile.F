@@ -515,7 +515,36 @@ C Sky file.
         write(ITA2,'(a,a)')'scene= ',rskyfil(1:lnblnk(rskyfil))
       endif
 
-C Glazing file.
+C Materials file.
+      write (tfile,'(2a)') runpath(1:lnrp),matfil(1:lnblnk(matfil))
+      INQUIRE(FILE=tfile,EXIST=XST)
+      if (XST) then
+        indxscn = indxscn + 1
+        write(rscedes(indxscn),'(a)') matfil(1:lnblnk(matfil))
+        write(ITA2,'(a,a)')'scene= ',matfil(1:lnblnk(matfil))
+      endif
+
+C Glazing files.
+C CFC glazing file (as geometry is in "standard" glazing file, this
+C file must come first in the .rif!
+      if (cfcxst) then
+        write (tfile,'(2a)') runpath(1:lnrp),cfcfil(1:lnblnk(cfcfil))
+        INQUIRE(FILE=tfile,EXIST=XST)
+        if (.not.XST) then
+          rscedes(2)='  '
+          write(ITA2,'(a)')'scene= '
+        else
+          if (iglzty.eq.1) then ! ?? mkillum "switch" ??
+            write(rscedes(2),'(a)') cfcfil(1:lnblnk(cfcfil))
+            write(ITA2,'(a,a)')'scene= ',cfcfil(1:lnblnk(cfcfil))
+          else
+            write(rscedes(2),'(a)') cfcfil(1:lnblnk(cfcfil))
+            write(ITA2,'(a,a)')'illum= ',cfcfil(1:lnblnk(cfcfil))
+          endif
+        endif
+      endif
+
+C TMC glazing file(s)
 C First check if alternative glazing specified (in case of blind 
 C shutter control).
       if (IGL.gt.0) then
@@ -551,14 +580,8 @@ C shutter control).
       endif
 
 C Remaining scene files - only if found is anything written to the rif file(s).
-C Materials file.
-      write (tfile,'(2a)') runpath(1:lnrp),matfil(1:lnblnk(matfil))
-      INQUIRE(FILE=tfile,EXIST=XST)
-      if (XST) then
-        indxscn = indxscn + 1
-        write(rscedes(indxscn),'(a)') matfil(1:lnblnk(matfil))
-        write(ITA2,'(a,a)')'scene= ',matfil(1:lnblnk(matfil))
-      endif
+
+C -- materials file moved to befor glazing files ... May 20, 2012, AG
 
 C Outside description file.
       write (tfile,'(2a)') runpath(1:lnrp),rofil(1:lnblnk(rofil))

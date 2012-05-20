@@ -1417,6 +1417,7 @@ C    vb_VorH   = slat orientation ("HORZ" OR "VERT")
       CALL EGETWR(OUTSTR,K,VAL,-89.999,89.999,'W','slat angle(deg)',
      &              IER)
       vb_phi(icomp,i)=VAL
+      vb_phiNew(icomp,i)=VAL ! also set "new" angle to this default value
       CALL EGETW(OUTSTR,K,WORD,'W','slat orientation',IFLAG)
       vb_VorH(icomp,i)=WORD(1:4)
       CALL EGETWR(OUTSTR,K,VAL,0.0,vb_w(icomp,i)/2.,'W',
@@ -1428,6 +1429,9 @@ C    vb_VorH   = slat orientation ("HORZ" OR "VERT")
       CALL EGETWR(OUTSTR,K,VAL,0.0,300.,'W',
      &      'slat thickness (mm)',IER)
       vb_t(icomp,i)=VAL
+
+C << 18.05.2012
+      i_shd(icomp,i)=1 ! set blind to down position as default
 
 C Reporting
       IF(ITRC.GT.0)THEN

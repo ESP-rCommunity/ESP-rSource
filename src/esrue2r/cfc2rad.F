@@ -31,17 +31,18 @@ C ********************************************************************
 
 C it contains the following routines, copyright Achim Geissler:
 C
-C      CFC2rad
+C      CFC2rad  Writes Radiance files for CFC constructions. This
+C               subroutine expects that CFC commons are populated!
+C               File names / handles are used via e2r_common.h
 
 
 C ********************************************************************
 C                         -- CFC2rad --
 C
-C Create Radiance input for CFC surfaces. This routine is designed
-C to be called in e2r. 
+C Create Radiance definitions for CFC surfaces. This routine is
+C designed to be called in e2r.
 C
-C May 13: Called from mkriofil(), line 787.
-C         Is this called every time step???
+C May 13: Called from mkriofil(), line 833.
 C 
 C Created by: Achim Geissler
 C Initial Creation Date: May 2012
@@ -51,15 +52,18 @@ C   init       toggle for first call init=1 and subsequent
 C              calls (slat angle control) init=0
 C   icomp      zone 
 C   isurf      surface
+C   ExplicitVB toggle - if true, then explicit (genblinds) model is
+C              used for venetian type blinds
 C   BRTDfunc   toggle - if true, then separate setup for glazing and
-C              blind for (very) detailed calculations. If false, then
-C              visual transmittance is for CFC system including blind
+C              blind for (very) detailed calculations is used. If 
+C              false, then standard "glass" material is used for
+C              glazing
 C
 C Return values
-C   None (?)
+C   None (?)   >> writes Radiance definitions to file 'icfcfil'
 C
 C ********************************************************************
-      subroutine CFC2rad(iua,init,icomp,isurf,BRTDfunc)
+      subroutine CFC2rad(init,icomp,isurf,ExplicitVB,BRTDfunc)
 c      USE h3kmodule ! ? necessary??
 
       IMPLICIT NONE
@@ -70,22 +74,22 @@ c      USE h3kmodule ! ? necessary??
 
 C Parameters
       integer iua,init,icomp,isurf
-      logical BRTDfunc
+      logical ExplicitVB,BRTDfunc
 
 C Commons
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C Local variables
-      real r,PI,incang
+      real r,PI,incang,srefl
       real sw,sp,phi,crown,wr,sth,tilt
       real x0,y0,z0,cfc_width,cfc_height
       real dy,vb_width,vb_height
       real VTDIR,VTDIF,VTRAN,gvt1,gvt
 
-      integer ne,i,itype,nslats,icfctp,icn
-     
-      character matname*32,cmdstr*144,glaznam*72
+      integer ne,i,itype,nslats,icfctp,icn,vb_lay
+
+      character matname*72,cmdstr*144,transfstr*144,glaznam*72
 
 C *** from solar.F ***
 C Local variables for CFCs
@@ -107,33 +111,30 @@ C ********************
 C Function declarations
       integer lnblnk
 
-      write(*,*)' ** CFC2rad ** '
+C Check if combination of logical parameters is valid
+      if (BRTDfunc) then
+        if (.not.ExplicitVB) then
+        ! not possible!
+          call usrmsg(' BRTDfunc must use explicit blind!',
+     &                ' Aborting!','W')
+          return
+        endif
+      endif
+
+cx      write(*,*)' ** CFC2rad ** '
 C Misc preliminary calcs
       PI = 4.0 * ATAN(1.0)
       r=PI/180.
 
       icfctp=icfcfl(icomp,isurf) ! get type
       if (icfctp.ge.1) then ! we have a CFC
-        write(*,*)'CFC type ',icfctp
+cx        write(*,*)'CFC type ',icfctp
 
         if (BRTDfunc) then !
 
           ne=ncfc_el(icomp,icfctp) ! number of cfc layers for this type
-C -------------------------------------------------------------------
-C     Get lower left corner of CFC surface and surface width
-C     The Venetian type blind will be created wider by 2 x dy, so that 
-C     it overlaps the glazing area. Typically such an overlap will be
-C     in the range of 30 to 50 millimeters either side.
-C -------------------------------------------------------------------
-          dy=0.05 ! set fixed value, for now
- 
-          cfc_width=3.0 ! 
-          cfc_height=3.3 !
 
-          vb_width=cfc_width+2.*dy
-          vb_height=cfc_height
-
-C     Now loop through CFC layers and generate ... 
+C         Loop through CFC layers and generate ... 
 
           do 100 i=1,ne
             itype=icfcltp(icomp,icfctp,i)
@@ -205,90 +206,41 @@ C void alias ADIC_CFC SYP_YRE0146
                 ! Actually, for "not BRTDfunc", the above material would need to be
                 ! replaced / updated if blind setting has changed ...
               endif ! init for itype glass
-
-            elseif (itype.eq.2) then ! blind layer
-              write(*,*)' ** not implemented (2)! **'
-C -------------------------------------------------------------------
-C        Get venetian type blind data (if any)
-C -------------------------------------------------------------------
-C          Assign slat blind descriptors to local variables
-              sw=vb_w(icomp,icfctp)          ! slat width
-              sp=vb_s(icomp,icfctp)          ! slat pitch
-              phi=vb_phiNew(icomp,icfctp)    ! blind slat angle
-              crown=vb_crown(icomp,icfctp)   ! crown height
-c              wr=vb_wr(icomp,icfctp)         ! width/curvature ratio
-c              sth=vb_t(icomp,icfctp)         ! max slat thickness
-cx              tilt=PELV(icomp,isurf)         ! tilt of cfc surface
-
-              if (init.eq.1) then    ! initialization, once-off steps
-             ! Generate slat material description and append to 
-             ! materials file (??)
-
-c void trans Duraskin
-c 0
-c 0
-c 7  0.88  0.88  0.90  0.01  0.20  0.20  0.97
-c # t_red t_green t_blue specularity roughness transmissivity transmitted_specular
-
-              endif ! init for blind
-C -------------------------------------------------------------------
-C          Create Venetian type blind description (genblinds) with 
-C          current slat angle
-C -------------------------------------------------------------------
-
-C "blinds_30.norm" from model ADIC/Elev1:
-C!genblinds Duraskin blind 1 32.165 44 49 -30 +r 2.5 | xform -s 0.08 -rz -90 -rz  4.118 -t  0.000  -16.408  0.06
-
-C the "scale" used here is normalized to slat width (parameter 
-C "depth" in call to genblinds). All other numbers given
-C for the dimension should be calculated accordingly.
-C genblinds mat      name depth width height nslats angle [ -r|+r rcurv ]
-C!genblinds Duraskin blind 1    32.165  44     49 -<<phi>> +r <<crown>> | 
-
-              ! calculate number of slats necessary to cover height
-              nslats=floor(vb_height/sp)
-              ! rescale Venetian blind width and height to multiples of
-              ! slat width
-              vb_width=vb_width/sw
-              vb_height=vb_height/sw
-         
-C lower inside left corner (viewed from outside) is 0,0,0 (?!) 
-C       -s is the scale, enter slat width in [m] here!
-C               -rotation z, always necessary
-C                       -rotation z should be actual surface azimuth (psazi?)
-C                                  -translation to lower left coordinate of 
-C                                   CFC surface, lift by a small amount (?)
-C xform -s 0.08 -rz -90 -rz  4.118 -t  0.000  -16.408  0.06
-
-            endif ! itype check
-
+            endif ! itype
 100       continue ! CFC layer loop
 
-        else ! not BRTDfunc
-          i_shd(icomp,icfctp)=1 ! ... assume blind is not retracted ...
+        else ! use 'glass', not BRTDfunc
+          if (ExplicitVB) then
+            i_shd(icomp,icfctp)=0 ! glazing data is w/o blind
+          endif
 
-cx          write(*,*)'writing non-BRTDfunc values for CFC'
+cx          write(*,*)'CFC type ',icfctp,', vb on/off: ',
+cx     &              i_shd(icomp,icfctp),', vb angle: ',
+cx     &              vb_phiNew(icomp,icfctp)
 
 C ******************* from solar.F ********************************
-C All this code should probably be put in a designated subroutine.
+C The following code should probably be put in a designated subroutine.
 C Values for radiation and solar angle should only be set for
 C non-conflation type calls ("visualization" calls).
-            tmpIDF=0.0  !interior diffuse source
-            tmpIBM=0.0  !interior beam source
-            i_direct=0
+          tmpIDF=0.0   ! interior diffuse source
+          tmpIBM=0.0   ! interior beam source
+          i_direct=0   ! toggle for ... ?
 
-          EXDIR=10.  ! does this matter for calculated values?
-          EXDIF=10.
-          EXDIFSKY=5.
-          EXDIFGRD=5.
+          EXDIR=10.    ! does this matter for calculated values?
+          EXDIF=10.    ! A better approach would be to use 
+          EXDIFSKY=5.  ! some kind of realistic values based on
+          EXDIFGRD=5.  ! type of simulation. For conflation, the
+                       ! current actual values, of course.
+          incang=55. ! this should be calculated acc. to actual
+                     ! situation ...
+
+          iSolVis=1  ! calculate visual properties
 
           ! Determine values corresponding to current incidence 
           ! angle (??) on surface, values include (optional) blinds 
           ! at current blind angle
           call profile_angle(icomp,isurf,icfctp,proang)
-          iSolVis=1
-          incang=55. ! this should be calculated acc. to actual
-                     ! situation ...
+
           call cfc_eff_opt_prop(icomp,isurf,icfctp,incang,proang,
      &                                                     iSolVis)
 
@@ -366,20 +318,179 @@ C ******************************************************************
             gvt=0.02
           endif
 C         Write glazing material to file. Use construction name
-C         extended with surface name (the same construction can
-C         be used by different CFC layer setups / blind settings(!)
+C         extended with surface name and zone number (the same 
+C         construction can be used by different CFC layer setups 
+C         / blind settings(!) spread over more than one zone
           icn=IZSTOCN(icomp,isurf)
-          write(glaznam,'(3a)')
+          write(glaznam,'(4a,I1)')
      &                    SSMLCN(icn)(1:lnblnk(SSMLCN(icn))),'_',
-     &                    SSNAME(icn)(1:lnblnk(SSNAME(icn)))
-          WRITE(iua,'(a,a)') 'void glass ',
+     &                    SSNAME(icn)(1:lnblnk(SSNAME(icn))),'_',
+     &                    icomp
+          WRITE(icfcfil,'(a,a)') 'void glass ',
      &                 glaznam(1:lnblnk(glaznam))
-          WRITE(iua,'(a)') '0 '
-          WRITE(iua,'(a)') '0 '
-          WRITE(iua,'(a,3F6.2)') '3  ',gvt,gvt,gvt
-          WRITE(iua,'(a)') '  '
+          WRITE(icfcfil,'(a)') '0 '
+          WRITE(icfcfil,'(a)') '0 '
+          WRITE(icfcfil,'(a,3F6.2)') '3  ',gvt,gvt,gvt
+          WRITE(icfcfil,'(a)') '  '
+
         endif ! BRTDfunc ?
 
+C Glass data is set and Radiance data written. Now the blind
+C is generated, if "Explicit".
+
+        if (ExplicitVB) then
+          write(*,*)' ** not implemented (2)! **'
+
+C       get layer number in CFC 
+          ne=ncfc_el(icomp,icfctp) ! number of cfc layers for this type
+          do 110 i=1,ne
+            itype=icfcltp(icomp,icfctp,i)
+            if (itype.eq.2) vb_lay=i
+  110     continue
+
+          if (vb_lay.ne.1) then
+C           If it is not "1", then it is an
+C           intermediate blind ... do what? "Not possible"? (!!)
+       write(*,*)' Invalid blind position for Radiance coupling',
+     &           ' in explicit VB mode!'
+cx            return
+          endif
+
+C----------------------------------------------------------------
+C         Initialization?
+C----------------------------------------------------------------
+          if (init.eq.1) then    ! initialization, once-off steps
+            ! Generate slat material description and append to 
+            ! materials file 
+
+C           Check for transmission of slat material, if > zero,
+C           use "trans" material. Otherwise "plastic"
+            icn=IZSTOCN(icomp,isurf)
+            WRITE(matname,'(5a,I1)') 'vb_',
+     &                    SSMLCN(icn)(1:lnblnk(SSMLCN(icn))),'_',
+     &                    SSNAME(icn)(1:lnblnk(SSNAME(icn))),'_',
+     &                    icomp
+
+            if (visT(icomp,icfctp,vb_lay).gt.0.0) then
+            ! material 'trans'
+              WRITE(imatfil,'(2a)') 
+     &             'void trans ',matname(1:lnblnk(matname))
+              WRITE(imatfil,'(a)') '0 '
+              WRITE(imatfil,'(a)') '0 '
+              srefl=visRf(icomp,icfctp,vb_lay)
+C t_red t_green t_blue specularity roughness transmissivity transmitted_specular
+              WRITE(imatfil,'(a,3F5.2,a,F5.2,a)')
+     &              '7 ',srefl,srefl,srefl,' 0.01 0.10 ',
+     &              visT(icomp,icfctp,vb_lay),'  0.97'
+              WRITE(imatfil,'(a)') '  '
+
+            else ! material 'plastic'
+              WRITE(imatfil,'(2a)') 
+     &             'void plastic ',matname(1:lnblnk(matname))
+              WRITE(imatfil,'(a)') '0 '
+              WRITE(imatfil,'(a)') '0 '
+C 'back' vs. 'front' concept in Radiance for blind??
+              srefl=visRf(icomp,icfctp,vb_lay)
+C t_red t_green t_blue specularity roughness
+              WRITE(imatfil,'(a,3F5.2,a)')
+     &              '5 ',srefl,srefl,srefl,' 0 0 '
+              WRITE(imatfil,'(a)') '  '
+            endif ! slat transmissivity?
+
+          endif ! init for blind
+
+C -------------------------------------------------------------------
+C     Get lower left corner of CFC surface and surface width
+C     The Venetian type blind will be created wider by 2 x dy, so that 
+C     it overlaps the glazing area. Typically such an overlap will be
+C     in the range of 30 to 50 millimeters either side.
+C -------------------------------------------------------------------
+          dy=0.05 ! set fixed value, for now
+          
+          x0=0.08
+          y0=0.
+ 
+          cfc_width=2.84 ! x0=0.08, x1=2.92
+          
+          if (icfctp.eq.1) then
+            cfc_height=2.04 ! "win_bot"
+            z0=0.38
+          else
+            cfc_height=0.8 ! "win_top"
+            z0=2.42
+          endif
+
+          vb_width=cfc_width+2.*dy
+          vb_height=cfc_height
+
+          x0=x0-dy
+
+C -------------------------------------------------------------------
+C         Get venetian type blind data (if any)
+C -------------------------------------------------------------------
+C         Assign slat blind descriptors to local variables
+          sw=vb_w(icomp,icfctp)/1000.    ! slat width in [m]
+          sp=vb_s(icomp,icfctp)/1000.    ! slat pitch
+          phi=vb_phiNew(icomp,icfctp)    ! blind slat angle
+          crown=vb_crown(icomp,icfctp)   ! crown height [mm]
+c           wr=vb_wr(icomp,icfctp)         ! width/curvature ratio
+c           sth=vb_t(icomp,icfctp)         ! max slat thickness
+cx           tilt=PELV(icomp,isurf)         ! tilt of cfc surface
+
+C -------------------------------------------------------------------
+C         Create Venetian type blind description (genblinds) with 
+C         current slat angle
+C -------------------------------------------------------------------
+
+C "blinds_30.norm" from model ADIC/Elev1:
+C!genblinds Duraskin blind 1 32.165 44 49 -30 +r 2.5 | xform -s 0.08 -rz -90 -rz  4.118 -t  0.000  -16.408  0.06
+
+C the "scale" used here is normalized to slat width (parameter 
+C "depth" in call to genblinds). All other numbers given
+C for the dimension should be calculated accordingly.
+C genblinds mat      name depth width height nslats angle [ -r|+r rcurv ]
+C!genblinds <matname> blind 1    32.165  44     49 -<<phi>> +r <<crown>> | 
+
+C lower inside left corner (viewed from outside) is 0,0,0 (?!) 
+C       -s is the scale, enter slat width in [m] here!
+C               -rotation z, always necessary
+C                       -rotation z should be actual surface azimuth (psazi?)
+C                                  -translation to lower left coordinate of 
+C                                   CFC surface, lift by a small amount (?)
+C xform -s 0.08 -rz -90 -rz  4.118 -t  0.000  -16.408  0.06
+C
+C - x and y seem to be switched in Radiance ... (needs checking!)
+C - for some reason, there is a large gap between the split vb-s
+C   of the test model ... (needs checking!)
+C - file handling for non-init calls, i.e. when called on time step basis??
+
+            ! calculate number of slats necessary to cover height
+            nslats=ceiling(vb_height/sp) !+1
+            ! rescale Venetian blind width and height to multiples of
+            ! slat width
+            vb_width=vb_width/sw
+            vb_height=vb_height/sw
+
+            WRITE(cmdstr,
+     &             '(3a,I1,a,I1,a,F7.2,a,F6.2,a,I3,a,F5.1,a,F5.3)') 
+     &             '!genblinds ',matname(1:lnblnk(matname)),
+     &             ' blind_',icfctp,' ',1,' ',
+     &             vb_width,' ',vb_height,' ',nslats,' ',phi,
+     &             ' +r ',crown
+
+            WRITE(transfstr,
+     &             '(a,F7.4,a,3(F6.3,1x))')
+     &             'xform -s ',sw,' -rz 90 -t ',
+     &             cfc_width+2*dy,-sw,z0 !+sp/2.
+               ! use esp_y for lower right corner, here ("x")?
+
+            WRITE(icfcfil,'(a)') ' '
+            WRITE(icfcfil,'(a)') '# generate blinds and transfer:'
+            WRITE(icfcfil,'(3a)') cmdstr(1:lnblnk(cmdstr)),' | ',
+     &                            transfstr(1:lnblnk(transfstr))
+            WRITE(icfcfil,'(a)') '  '
+
+        endif ! ExplicitVB
       endif ! CFC type >= 1 (i.e. it is actually a CFC)
 
       return
