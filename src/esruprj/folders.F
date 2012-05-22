@@ -77,13 +77,6 @@ C External text editor.
 
 C Calendar.
       common/caleni/nbdaytype,nbcaldays(10),icalender(365)
-#ifdef OSI
-      integer nwlistf
-      dimension nwlistf(MFFOLD)
-#else
-      integer*8 nwlistf
-      dimension nwlistf(MFFOLD)
-#endif
 
 C Passed in parameters.
       character root*24,mpath*72,menu*72
@@ -101,7 +94,6 @@ C Passed in parameters.
       character limg*72,act*2
       character iformat*4,ifocus*4
       character fs*1
-      character*72 listf(MFFOLD),listfc(MFFOLD)
       character subpath*72,action*3,outs*124
       character lltmp*144,lguess*144,lldef*144  ! for working with EASKXORGTKF
       character lpath*72,fname*72 ! for use with fdroot
@@ -674,11 +666,9 @@ C Provide a listing of the current contents of the ../images folder.
         lnod=lnblnk(odir)
         write(subpath,'(4a)') odir(1:lnod),fs,
      &    path(1:lnblnk(path)),imgpth(1:lnblnk(imgpth))
-        call clearfilelist(listf,MFFOLD)
         action='fil'
-        call getfilelist(subpath,action,listf,nwlistf,nlistf)
-        call copyfilelist(listf,nwlistf,listfc,MFFOLD,maxw)
-        call printfilelist(outs,'p',listfc,MFFOLD,nlistf)
+        call getfileslist(subpath,action,nlistf)
+        call printfileslist(outs,'p')
 
         write(limg,'(a)')imgpth(1:lnblnk(imgpth))
         iformat='GIF '
@@ -797,14 +787,6 @@ C External text editor.
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       common/user/browse
 
-C Remember width of file/folder names passed back from getfilelist.
-#ifdef OSI
-      integer nwlistf
-      dimension nwlistf(MFFOLD)
-#else
-      integer*8 nwlistf
-      dimension nwlistf(MFFOLD)
-#endif
       logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical concat,unixok,changedit,browse
 
@@ -815,7 +797,6 @@ C Remember width of file/folder names passed back from getfilelist.
       character tedlbl*20,teditor*20
       character tmode*8,t24*24,act*1,outstr*124,outs*124
       character*33 ITEMS(24)
-      character*72 listf(MFFOLD),listfc(MFFOLD)
       character fs*1
       character subpath*72,action*3
       integer lnod   ! length for odir
@@ -852,9 +833,15 @@ C      write(6,*) 'usrdir is ',odir(1:lnod)
 C      write(6,*) 'path is ',path(1:lnpath)
 
       subpath=' '
-      if(lnod+lnpath+1.le.72)then
-        write(subpath,'(3a)') odir(1:lnod),fs,path(1:lnpath)
+      if(unixok)then
+        if(lnod+lnpath+1.le.72)then
+          write(subpath,'(3a)') odir(1:lnod),fs,path(1:lnpath)
+        else
+          write(subpath,'(a)') path(1:lnpath)
+        endif
       else
+
+C For native windows do not bother with usrdir.
         write(subpath,'(a)') path(1:lnpath)
       endif
       write(outs,'(2a)') 'configuration files in ',
@@ -881,11 +868,11 @@ C        write(6,*) 'OSX path is ',path
         continue
       endif
 #endif
-      call clearfilelist(listf,MFFOLD)
+
+C Remind user of available cfg files.
       action='cfg'
-      call getfilelist(subpath,action,listf,nwlistf,nlistf)
-      call copyfilelist(listf,nwlistf,listfc,MFFOLD,maxw)
-      call printfilelist(outs,'p',listfc,MFFOLD,nlistf)
+      call getfileslist(subpath,action,nlistf)
+      call printfileslist(outs,'p')
 
   42  continue
       INO=-4
@@ -1105,11 +1092,9 @@ C << interface for dbspath here >>
         write(subpath,'(4a)') odir(1:lnod),fs,
      &    path(1:lnblnk(path)),dbspth(1:lnblnk(dbspth))
         write(outs,*) 'files in ',subpath
-        call clearfilelist(listf,MFFOLD)
         action='fil'
-        call getfilelist(subpath,action,listf,nwlistf,nlistf)
-        call copyfilelist(listf,nwlistf,listfc,MFFOLD,maxw)
-        call printfilelist(outs,'p',listfc,MFFOLD,nlistf)
+        call getfileslist(subpath,action,nlistf)
+        call printfileslist(outs,'p')
 
       elseif(ino.eq.13)then
 
@@ -1618,7 +1603,7 @@ C Edit zone name - read and then write the geometry file.
      &    IER,nbhelp)
         if(T15.NE.' ')then
           call st2name(T15,zname(IZ))
-	  lnzname(IZ)=lnblnk(zname(IZ))  ! updated the length of this string.
+          lnzname(IZ)=lnblnk(zname(IZ))  ! updated the length of this string.
           call eclose(gversion(IZ),1.1,0.01,newgeo)
           if(igupgrade.eq.2.and.(.NOT.newgeo))then
             gversion(iz) =1.1

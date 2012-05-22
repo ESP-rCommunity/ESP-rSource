@@ -80,7 +80,7 @@ C Check if IPV file known and fill common blocks before reading command data.
           call usrmsg('IPV UNKNOWN. Cannot process command.',' ','W')
           goto 223
         else
-	  ipvaction='ipv'
+          ipvaction='ipv'
           call ripvdat(IFCFG,lipvdatf,ipvaction,ier)
         endif
       else
@@ -618,7 +618,7 @@ C Also update or create matched simulation parameter sets.
             if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN') lipvdatf=ltmp
 
 C Write out the current IPV definitions.
-	    ipvaction='ipv'
+            ipvaction='ipv'
             call mkipvdat(ifil+1,lipvdatf,ipvaction)
 
             if(nipvassmt.eq.1.or.nipvassmt.eq.3.or.nipvassmt.eq.5)then
