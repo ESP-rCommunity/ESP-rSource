@@ -1594,19 +1594,19 @@ C Display the simulation period.
         call stdate(iyear,ijdfinish,descrb,descrfn)
         write(ITEMS(7),'(4a)')        'g from: ',descrst,' - ',descrfn
         if(INDCFG.ne.2)then
-          write(ITEMS(8),'(a,a)')     'h zone results: ',
+          write(ITEMS(8),'(2a)')      'h zone results: ',
      &      sblres(isset)(1:16)
         else
           write(ITEMS(8),'(a)')       '  zone results: N/A'
         endif
         if(IAIRN.ge.1)then
-          write(ITEMS(9),'(a,a)')     'i flow results: ',
+          write(ITEMS(9),'(2a)')      'i flow results: ',
      &      sflres(isset)(1:16)
         else
           write(ITEMS(9),'(a)')       '  flow results: N/A'
         endif
         if(INDCFG.eq.2.or.INDCFG.eq.3)then
-          write(ITEMS(10),'(a,a)')    'j plant results: ',
+          write(ITEMS(10),'(2a)')     'j plant results: ',
      &      splres(isset)(1:15)
         else
           write(ITEMS(10),'(a)')      '  plant results: N/A'
@@ -1617,13 +1617,13 @@ C Display the simulation period.
           write(ITEMS(11),'(a)')      '  : N/A'
         endif
         if(MSTROK)then
-          write(ITEMS(12),'(a,a)')    'l moist. results: ',
+          write(ITEMS(12),'(2a)')     'l moist. results: ',
      &      smstres(isset)(1:15)
         else
           write(ITEMS(12),'(a)')      '  moisture results: N/A'
         endif
         if(ientxist.gt.0)then
-          write(ITEMS(13),'(a,a)')    'm elect. results: ',
+          write(ITEMS(13),'(2a)')     'm elect. results: ',
      &      selres(isset)(1:15)
         else
           write(ITEMS(13),'(a)')      '  electrical results: N/A'
@@ -1632,8 +1632,10 @@ C Display the simulation period.
           write(ITEMS(14),'(a)')      '  IPV report   : N/A'
         elseif(lipvdatf(1:7).eq.'UNKNOWN')then
           write(ITEMS(14),'(a)')      '  IPV report   : N/A'
+        elseif(lipvdatf(1:8).eq.'internal')then
+          write(ITEMS(14),'(2a)')  'n IPV report: ',sipvres(1:18)
         else
-          write(ITEMS(14),'(a,a15)')  'n IPV report: ',sipvres(1:15)
+          write(ITEMS(14),'(2a)')  'n IPV report: ',sipvres(1:18)
         endif    
         ITEMS(15)  ='o save or dereference parameters '
         ITEMS(16)  ='  ______________________________ '
@@ -1827,7 +1829,9 @@ C Debug.
           call runit(doit,tmode)
           return
         endif
+
       elseif(INO.EQ.MITEM-7)then
+
         helptopic='prj_simulation_menu'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABC('Fluid flow analysis via:',' ','Nodal Network',
@@ -1941,6 +1945,8 @@ C data is internal to the file then it will already have been scanned.
         helptopic='prj_sim_set_menu'
         call gethelptext(helpinsub,helptopic,nbhelp)
         if(icfgv.lt.4)then
+
+C IPV description held in a separate file.
           if(lnblnk(lipvdatf).eq.0.or.lipvdatf(1:7).eq.'UNKNOWN')then
             DOK=.false.
             CALL ASKOK('  ',' Proceed with parameter definitions?',
@@ -1949,7 +1955,7 @@ C data is internal to the file then it will already have been scanned.
               INO=-4
               GOTO 3
             endif
-            ID=1
+            ID=1   ! remember new state
           else
 
 C Scan the IPV description before asking user choice.
@@ -1969,7 +1975,7 @@ C Scan the IPV description before asking user choice.
               INO=-4
               GOTO 3
             endif
-            ID=3
+            ID=3   ! remember existing state
           endif
         else
 	
@@ -1982,7 +1988,7 @@ C There may be ipv data held in the configuration file.
               INO=-4
               GOTO 3
             endif
-            ID=1
+            ID=1   ! remember new state
           else
             DOK=.true.
             CALL ASKOK('An IPV description has been found. Proceed to',
@@ -1991,7 +1997,7 @@ C There may be ipv data held in the configuration file.
               INO=-4
               GOTO 3
             endif
-            ID=3	   
+            ID=3   ! remember existing state	   
           endif
         endif
 
@@ -2032,22 +2038,22 @@ C Setup one parameter set or several sets to match IPV description.
             cr=cfgroot
             lr=lnblnk(cfgroot)
             if(INDCFG.ne.2)then
-              WRITE(sblres(isset),'(A,A4)')cr(1:lr),'.res'
+              WRITE(sblres(isset),'(A,A4)') cr(1:lr),'.res'
             else
               sblres(isset)=' '
             endif
             if(IAIRN.ge.1)then
-              WRITE(sflres(isset),'(A,A4)')cr(1:lr),'.mfr'
+              WRITE(sflres(isset),'(A,A4)') cr(1:lr),'.mfr'
             else
              sflres(isset)=' '
             endif
             if(INDCFG.eq.2.or.INDCFG.eq.3)then
-              WRITE(splres(isset),'(A,A4)')cr(1:lr),'.plr'
+              WRITE(splres(isset),'(A,A4)') cr(1:lr),'.plr'
             else
              splres(isset)=' '
             endif
             if(MSTROK)then
-              WRITE(smstres(isset),'(A,A4)')cr(1:lr),'.msr'
+              WRITE(smstres(isset),'(A,A4)') cr(1:lr),'.msr'
             else
              smstres(isset)=' '
             endif
@@ -2055,8 +2061,10 @@ C Setup one parameter set or several sets to match IPV description.
               sipvres=' '
             elseif(lipvdatf(1:7).eq.'UNKNOWN')then
               sipvres=' '
+            elseif(lipvdatf(1:8).eq.'internal')then
+              WRITE(sipvres,'(A,A7)') cr(1:lr),'ipv.rep'
             else
-              WRITE(sipvres,'(A,A7)')cr(1:lr),'ipv.rep'
+              WRITE(sipvres,'(A,A7)') cr(1:lr),'ipv.rep'
             endif
           elseif(ID.eq.3)then
 
@@ -2065,6 +2073,7 @@ C Set parameter sets for current number of IPV assessments.
           endif
           modparms=.true.
         endif
+
       elseif(MITEM.eq.25.and.INO.EQ.1)then
 
 C Help text for this menu and all of the dialogs.
@@ -2450,7 +2459,8 @@ C Setup help messages for this menu and its dialogs.
       helptopic='prj_ipv_options'
       call gethelptext(helpinsub,helptopic,nbhelp)
  
-C IPV for the actual number of simulations required.
+C IPV for the actual number of simulations required.  A separate file
+C for legacy model cfg files.
       if(icfgv.lt.4)then
         if(lnblnk(lipvdatf).eq.0)then
           CALL PHELPD('IPV message',nbhelp,'-',0,0,IER)
@@ -2458,6 +2468,8 @@ C IPV for the actual number of simulations required.
         elseif(lipvdatf(1:7).eq.'UNKNOWN')then
           CALL PHELPD('IPV message',nbhelp,'-',0,0,IER)
           return
+        elseif(lipvdatf(1:8).eq.'internal')then
+          continue  ! carry on because IPV is within cfg file
         else
           call FINDFIL(lipvdatf,XST)
           IF(XST)then
@@ -5280,6 +5292,8 @@ C Update the titles.
           docnn=.true.
         ENDIF
         if(icfgv.lt.4)then
+
+C Older format writing to separate IPV file (depreciate).
           ipvaction='ipv'
           CALL MKIPVDAT(IFIL+1,LIPVDATF,ipvaction)
           msg1='updating model for IPV changes...'
