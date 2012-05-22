@@ -226,7 +226,7 @@ C Trace output
 C------------------------------------------------------
 C XML output
 C------------------------------------------------------
-       call AddToReportWild1(rvPltQAddedH%Identifier,
+       call AddToReport(rvPltQAddedH%Identifier,
      &         Q,
      &         pcname(IPCOMP)(1:lnblnk(pcname(IPCOMP))))
 
@@ -1073,7 +1073,7 @@ C Pass power consumption to Site Utilities facility
          call StorePltCompEnergyUse ( IPCOMP, fSUFuelEnergyUse )
 
 C Report power consumption
-         call AddToReportWild1(rvPltWCHPumpEInput%Identifier,
+         call AddToReport(rvPltWCHPumpEInput%Identifier,
      &         ABS(E),
      &         pcname(ipcomp)(1:iPltNameLen(ipcomp)))
 
@@ -5910,43 +5910,41 @@ C Make select results available in XML and CVS output.
 C---------------------------------------------------------------------------------
         IPCOMP_LEN = lnblnk(pcname(IPCOMP))
 
-        call AddToReportWild1(rvPltHOut%Identifier,
+        call AddToReport(rvPltHOut%Identifier,
      &         HeatOutput,
      &         pcname(IPCOMP)(1:IPCOMP_LEN))
 
-        call AddToReportWild1(rvPltCOP%Identifier,
+        call AddToReport(rvPltCOP%Identifier,
      &         COP,
      &         pcname(IPCOMP)(1:IPCOMP_LEN))
 
-        call AddToReportWild1(rvPltTambient%Identifier,
+        call AddToReport(rvPltTambient%Identifier,
      &         Tamb,
      &         pcname(IPCOMP)(1:IPCOMP_LEN))
 
         tmpdev=float(DeviceONOFF)
-        call AddToReportWild1(rvPltDeviceONOFF%Identifier,
+        call AddToReport(rvPltDeviceONOFF%Identifier,
      &         tmpdev,
      &         pcname(IPCOMP)(1:IPCOMP_LEN))
 
-        call AddToReportWild1(rvPltReturnTSP%Identifier,
+        call AddToReport(rvPltReturnTSP%Identifier,
      &         ReturnSP,
      &         pcname(IPCOMP)(1:IPCOMP_LEN))
 
-       call AddToReportWild1(rvPltRealPow%Identifier,
+       call AddToReport(rvPltRealPow%Identifier,
      &         TotRealPower,
      &         pcname(IPCOMP)(1:IPCOMP_LEN))
 
-        call AddToReportWild1(rvPltReacPow%Identifier,
+        call AddToReport(rvPltReacPow%Identifier,
      &         TotReacPower,
      &         pcname(IPCOMP)(1:IPCOMP_LEN))
 
-       call AddToReportWild1(rvPltApparPow%Identifier,
+       call AddToReport(rvPltApparPow%Identifier,
      &         TotApparentPower,
      &         pcname(IPCOMP)(1:IPCOMP_LEN))
 
-!Claude: I think there's something wrong here.... it sets to the same
-!variable, added a new variable out
        DefrostStat=PCAOUT(IPCOMP,9)
-       call AddToReportWild1(rvPltDefrostStat%Identifier,
+       call AddToReport(rvPltDefrostStat%Identifier,
      &         DefrostStat,
      &         pcname(IPCOMP)(1:IPCOMP_LEN))
 
@@ -6780,7 +6778,7 @@ C.....Get component name's length
         iNameLength = lnblnk(pcname(IPCOMP))
 
 C.....Format string as: 'plant/NAME/misc_data/DHW_draw_stoch'
-        Call AddToReportWild1(rvPltDHWDrawStoch%Identifier,
+        Call AddToReport(rvPltDHWDrawStoch%Identifier,
      &         DHWDrawV*(DenS/1000.),
      &         pcname(IPCOMP)(1:iNameLength))
 
@@ -6788,7 +6786,7 @@ C.....Format string as: 'plant/NAME/misc_data/DHW_draw_stoch'
             write(char_tmp,'(I2)')iDHWType
 
 C.....Format string as: 'plant/NAME/misc_data/DHW_draw_stoch/type_#'
-            Call AddToReportWild2(rvPltDHWDrawStochTp%Identifier,
+            Call AddToReport(rvPltDHWDrawStochTp%Identifier,
      &               DHWDrawTypeTotV(iDHWType)*(DenS/1000.),
      &               pcname(IPCOMP)(1:iNameLength),
      &               char_tmp(1:lnblnk(char_tmP)))

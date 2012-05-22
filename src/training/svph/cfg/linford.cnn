@@ -1,0 +1,158 @@
+*connections for linford
+*Date Tue Dec 13 17:57:36 2011
+    155   # number of connections
+   1   1   3   3   7  #    1 hall_liv in living_room >|< p_living in hall
+   1   2   3   4   5  #    2 kit_liv in living_room >|< kit_liv in kitchen
+   1   3   3   2   5  #    3 din_liv in living_room >|< din_liv in dining_room
+   1   4   3  15   1  #    4 liv_con in living_room >|< liv_con in conservatory
+   1   5   0   0   0  #    5 e_ext in living_room is External
+   1   6   3   7   8  #    6 ceil_b2 in living_room >|< flr_liv in bedroom_2
+   1   7   3   9   8  #    7 ceil_b4 in living_room >|< flr_liv in bedroom_4
+   1   8   4   0   1  #    8 floor in living_room >|< user def ground profile 1
+   1   9   3  15   2  #    9 glazing in living_room >|< glazing in conservatory
+   2   1   3   4   4  #   10 kit_din in dining_room >|< kit_din in kitchen
+   2   2   3  14   4  #   11 gar_kit in dining_room >|< gar_din in garage
+   2   3   0   0   0  #   12 w_ext in dining_room is External
+   2   4   0   0   0  #   13 s_ext in dining_room is External
+   2   5   3   1   3  #   14 din_liv in dining_room >|< din_liv in living_room
+   2   6   3   9   9  #   15 ceil_b4 in dining_room >|< flr_din in bedroom_4
+   2   7   3   6  11  #   16 ceil_b1 in dining_room >|< flr_din in bedroom_1
+   2   8   4   0   1  #   17 floor in dining_room >|< user def ground profile 1
+   2   9   0   0   0  #   18 glazing in dining_room is External
+   3   1   0   0   0  #   19 north_b in hall is External
+   3   2   3  12   4  #   20 p_lobbya in hall >|< inl_halc in int_lobby
+   3   3   3  12   3  #   21 p_lobbyb in hall >|< inl_halb in int_lobby
+   3   4   3  12   2  #   22 p_lobbyc in hall >|< inl_hal in int_lobby
+   3   5   0   0   0  #   23 north_c in hall is External
+   3   6   3   4   6  #   24 p_kitchen in hall >|< kit_hall in kitchen
+   3   7   3   1   1  #   25 p_living in hall >|< hall_liv in living_room
+   3   8   0   0   0  #   26 east in hall is External
+   3   9   3   8   6  #   27 ceil_b3 in hall >|< flr_hall in bedroom_3
+   3  10   3  10   9  #   28 ceil_z10 in hall >|< flr_hall in upper_hall
+   3  11   4   0   1  #   29 floor in hall >|< user def ground profile 1
+   3  12   0   0   0  #   30 glass in hall is External
+   4   1   0   0   0  #   31 n_ext in kitchen is External
+   4   2   3  11   3  #   32 exl_kit in kitchen >|< exl_kit in ext_lobby
+   4   3   3  14   5  #   33 gar_kit in kitchen >|< gar_kit in garage
+   4   4   3   2   1  #   34 kit_din in kitchen >|< kit_din in dining_room
+   4   5   3   1   2  #   35 kit_liv in kitchen >|< kit_liv in living_room
+   4   6   3   3   6  #   36 kit_hall in kitchen >|< p_kitchen in hall
+   4   7   3  10  10  #   37 kit_uh in kitchen >|< flr_kit in upper_hall
+   4   8   3   5   9  #   38 ceil_k_bth in kitchen >|< flr_kit in bath
+   4   9   3   6  10  #   39 ceil_k_b1 in kitchen >|< flr_kit in bedroom_1
+   4  10   4   0   1  #   40 floor in kitchen >|< user def ground profile 1
+   4  11   0   0   0  #   41 window in kitchen is External
+   5   1   0   0   0  #   42 n_ext in bath is External
+   5   2   3  11   4  #   43 u_exl_bth in bath >|< exl_bath in ext_lobby
+   5   3   3  14   8  #   44 gar_bth in bath >|< gar_bath in garage
+   5   4   0   0   0  #   45 w_ext in bath is External
+   5   5   3   6   1  #   46 bth_b1 in bath >|< p_bath_b1 in bedroom_1
+   5   6   3  10   3  #   47 bth_uhb in bath >|< prt_btha in upper_hall
+   5   7   3  10   2  #   48 bth_uha in bath >|< prt_bth in upper_hall
+   5   8   3  13   7  #   49 ceil in bath >|< ceil_bath in loft
+   5   9   3   4   8  #   50 flr_kit in bath >|< ceil_k_bth in kitchen
+   5  10   0   0   0  #   51 winda in bath is External
+   5  11   0   0   0  #   52 windb in bath is External
+   6   1   3   5   5  #   53 p_bath_b1 in bedroom_1 >|< bth_b1 in bath
+   6   2   3  14   7  #   54 p_garage in bedroom_1 >|< gar_b1 in garage
+   6   3   0   0   0  #   55 w_ext in bedroom_1 is External
+   6   4   0   0   0  #   56 s_ext in bedroom_1 is External
+   6   5   3   9   4  #   57 p_bed4b in bedroom_1 >|< prt_b1_b4b in bedroom_4
+   6   6   3   9   3  #   58 p_bed4a in bedroom_1 >|< prt_b1_b4a in bedroom_4
+   6   7   3   9   2  #   59 p_bed4 in bedroom_1 >|< prt_b1_b4 in bedroom_4
+   6   8   3  10   4  #   60 p_hall in bedroom_1 >|< prt_b1 in upper_hall
+   6   9   3  13   8  #   61 ceil in bedroom_1 >|< ceil_b1 in loft
+   6  10   3   4   9  #   62 flr_kit in bedroom_1 >|< ceil_k_b1 in kitchen
+   6  11   3   2   7  #   63 flr_din in bedroom_1 >|< ceil_b1 in dining_room
+   6  12   0   0   0  #   64 window in bedroom_1 is External
+   7   1   3   8   3  #   65 p_bed3 in bedroom_2 >|< p_bed2 in bedroom_3
+   7   2   3  10   6  #   66 p_hall in bedroom_2 >|< prt_b2 in upper_hall
+   7   3   3   9   6  #   67 p_bed4 in bedroom_2 >|< prt_b4_b2 in bedroom_4
+   7   4   0   0   0  #   68 s_ext in bedroom_2 is External
+   7   5   3  15  12  #   69 p_conserv in bedroom_2 >|< b2_con in conservatory
+   7   6   0   0   0  #   70 e_ext in bedroom_2 is External
+   7   7   3  13  10  #   71 ceil in bedroom_2 >|< ceil_b2 in loft
+   7   8   3   1   6  #   72 flr_liv in bedroom_2 >|< ceil_b2 in living_room
+   7   9   0   0   0  #   73 window in bedroom_2 is External
+   8   1   0   0   0  #   74 n_ext in bedroom_3 is External
+   8   2   3  10   7  #   75 p_hall in bedroom_3 >|< prt_h_b3 in upper_hall
+   8   3   3   7   1  #   76 p_bed2 in bedroom_3 >|< p_bed3 in bedroom_2
+   8   4   0   0   0  #   77 e_ext in bedroom_3 is External
+   8   5   3  13   5  #   78 ceil in bedroom_3 >|< ceil_b3 in loft
+   8   6   3   3   9  #   79 flr_hall in bedroom_3 >|< ceil_b3 in hall
+   8   7   3  12   5  #   80 flr_lobby in bedroom_3 >|< ceil in int_lobby
+   8   8   0   0   0  #   81 window in bedroom_3 is External
+   9   1   3  10   5  #   82 p_hall in bedroom_4 >|< prt_b4 in upper_hall
+   9   2   3   6   7  #   83 prt_b1_b4 in bedroom_4 >|< p_bed4 in bedroom_1
+   9   3   3   6   6  #   84 prt_b1_b4a in bedroom_4 >|< p_bed4a in bedroom_1
+   9   4   3   6   5  #   85 prt_b1_b4b in bedroom_4 >|< p_bed4b in bedroom_1
+   9   5   0   0   0  #   86 s_ext in bedroom_4 is External
+   9   6   3   7   3  #   87 prt_b4_b2 in bedroom_4 >|< p_bed4 in bedroom_2
+   9   7   3  13   9  #   88 ceil in bedroom_4 >|< ceil_b4 in loft
+   9   8   3   1   7  #   89 flr_liv in bedroom_4 >|< ceil_b4 in living_room
+   9   9   3   2   6  #   90 flr_din in bedroom_4 >|< ceil_b4 in dining_room
+   9  10   3  15  13  #   91 Surf-10 in bedroom_4 >|< b4_con in conservatory
+   9  11   0   0   0  #   92 window in bedroom_4 is External
+  10   1   0   0   0  #   93 n_ext in upper_hall is External
+  10   2   3   5   7  #   94 prt_bth in upper_hall >|< bth_uha in bath
+  10   3   3   5   6  #   95 prt_btha in upper_hall >|< bth_uhb in bath
+  10   4   3   6   8  #   96 prt_b1 in upper_hall >|< p_hall in bedroom_1
+  10   5   3   9   1  #   97 prt_b4 in upper_hall >|< p_hall in bedroom_4
+  10   6   3   7   2  #   98 prt_b2 in upper_hall >|< p_hall in bedroom_2
+  10   7   3   8   2  #   99 prt_h_b3 in upper_hall >|< p_hall in bedroom_3
+  10   8   3  13   6  #  100 ceil in upper_hall >|< ceil_hall in loft
+  10   9   3   3  10  #  101 flr_hall in upper_hall >|< ceil_z10 in hall
+  10  10   3   4   7  #  102 flr_kit in upper_hall >|< kit_uh in kitchen
+  10  11   0   0   0  #  103 window in upper_hall is External
+  11   1   0   0   0  #  104 n_ext in ext_lobby is External
+  11   2   3  14   6  #  105 gar_exl in ext_lobby >|< gar_exl in garage
+  11   3   3   4   2  #  106 exl_kit in ext_lobby >|< exl_kit in kitchen
+  11   4   3   5   2  #  107 exl_bath in ext_lobby >|< u_exl_bth in bath
+  11   5   0   0   0  #  108 e_ext in ext_lobby is External
+  11   6   0   0   0  #  109 roof in ext_lobby is External
+  11   7   4   0   1  #  110 floor in ext_lobby >|< user def ground profile 1
+  11   8   3  14  14  #  111 door in ext_lobby >|< door in garage
+  12   1   0   0   0  #  112 n_ext in int_lobby is External
+  12   2   3   3   4  #  113 inl_hal in int_lobby >|< p_lobbyc in hall
+  12   3   3   3   3  #  114 inl_halb in int_lobby >|< p_lobbyb in hall
+  12   4   3   3   2  #  115 inl_halc in int_lobby >|< p_lobbya in hall
+  12   5   3   8   7  #  116 ceil in int_lobby >|< flr_lobby in bedroom_3
+  12   6   4   0   1  #  117 floor in int_lobby >|< user def ground profile 1
+  12   7   0   0   0  #  118 door in int_lobby is External
+  13   1   0   0   0  #  119 north in loft is External
+  13   2   0   0   0  #  120 west in loft is External
+  13   3   0   0   0  #  121 south in loft is External
+  13   4   0   0   0  #  122 east in loft is External
+  13   5   3   8   5  #  123 ceil_b3 in loft >|< ceil in bedroom_3
+  13   6   3  10   8  #  124 ceil_hall in loft >|< ceil in upper_hall
+  13   7   3   5   8  #  125 ceil_bath in loft >|< ceil in bath
+  13   8   3   6   9  #  126 ceil_b1 in loft >|< ceil in bedroom_1
+  13   9   3   9   7  #  127 ceil_b4 in loft >|< ceil in bedroom_4
+  13  10   3   7   7  #  128 ceil_b2 in loft >|< ceil in bedroom_2
+  14   1   0   0   0  #  129 n_ext in garage is External
+  14   2   0   0   0  #  130 w_ext in garage is External
+  14   3   0   0   0  #  131 s_ext in garage is External
+  14   4   3   2   2  #  132 gar_din in garage >|< gar_kit in dining_room
+  14   5   3   4   3  #  133 gar_kit in garage >|< gar_kit in kitchen
+  14   6   3  11   2  #  134 gar_exl in garage >|< gar_exl in ext_lobby
+  14   7   3   6   2  #  135 gar_b1 in garage >|< p_garage in bedroom_1
+  14   8   3   5   3  #  136 gar_bath in garage >|< gar_bth in bath
+  14   9   0   0   0  #  137 north in garage is External
+  14  10   0   0   0  #  138 north_up in garage is External
+  14  11   0   0   0  #  139 south in garage is External
+  14  12   0   0   0  #  140 south_up in garage is External
+  14  13   4   0   1  #  141 floor in garage >|< user def ground profile 1
+  14  14   3  11   8  #  142 door in garage >|< door in ext_lobby
+  15   1   3   1   4  #  143 liv_con in conservatory >|< liv_con in living_room
+  15   2   3   1   9  #  144 glazing in conservatory >|< glazing in living_room
+  15   3   0   0   0  #  145 w_glaz in conservatory is External
+  15   4   0   0   0  #  146 s_glaz in conservatory is External
+  15   5   0   0   0  #  147 e_glaz in conservatory is External
+  15   6   0   0   0  #  148 r_glazing in conservatory is External
+  15   7   0   0   0  #  149 w_frame in conservatory is External
+  15   8   0   0   0  #  150 s_frame in conservatory is External
+  15   9   0   0   0  #  151 e_frame in conservatory is External
+  15  10   0   0   0  #  152 r_frame in conservatory is External
+  15  11   4   0   1  #  153 floor in conservatory >|< user def ground profile 1
+  15  12   3   7   5  #  154 b2_con in conservatory >|< p_conserv in bedroom_2
+  15  13   3   9  10  #  155 b4_con in conservatory >|< Surf-10 in bedroom_4

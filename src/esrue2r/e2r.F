@@ -24,6 +24,7 @@ C File naming convention:  UNKNOWN - required but not yet defined,
 C blank or NONE not required and not yet defined.
 
       program e2r
+      USE START_UP      
 #include "building.h"
 #include "model.h"
 #include "esprdbfile.h"
@@ -59,6 +60,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Path to model.
@@ -90,13 +92,16 @@ C Name of current application
       CHARACTER outs*124,ITEM*30
       CHARACTER inf*144,LCMDFL*144,LCFGF*72,L144*144
       character tfile*72
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,cfgroot*24
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
       character OUTSTR*124
-      character ltmp72*72,dtmp72*72,ltmp*72
+      character ltmp72*72,dtmp72*72,ltmp*72,dtmp96*96
       character pf*72,gf*72,df*72,VALT*28
       character brw*4   ! to signal whether browsing model
+
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
+
       DIMENSION ITEM(24)
       DIMENSION IVALV(20),VALT(20),IPVALV(20)  ! for selecting view from list
 
@@ -106,7 +111,15 @@ C Name of current application
       logical browse  ! is true if parameter passed as yes
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSI
       integer numberofzones ! to pass to updwire rather than ncomp
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+#else
+      integer*8 numberofzones
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+#endif
       integer NITEMS,INO ! max items and current menu item
 
 C For help messages
@@ -322,14 +335,26 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=16
         LIMIT =16
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'Radiance desktop ',
+     &  cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'Radiance desktop:  enquiries to esru@strath.ac.uk')
+     &  pagestitle)
 
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
-        CALL win3d(menuchw,2,2,2,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=2; iiw2=2; iiw3=2; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        CALL win3d(menuchw,2,2,2,3,igl,igr,igt,igb,igw,igwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
@@ -349,13 +374,8 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         call startbuffer()
       ENDIF
 
+C Echo version number.
       CALL ESPrVersion("summary",cAppName,IUOUT)
-      
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow Scotland.'
-      call edisp(IUOUT,outs)
-      call edisp(iuout,' ')
 
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)
@@ -431,7 +451,7 @@ C therfore get one.
         helptopic='e2r_cfg_file_not_found'
         call gethelptext(helpinsub,helptopic,nbhelp)
         l144=LCMDFL
-        dtmp72=DFCFG
+        dtmp96=DFCFG
  1289   llt=lnblnk(L144)
 
 C The X11 version will be returning only the name of the
@@ -440,20 +460,20 @@ C name with the full path.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
-            CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
+            CALL EASKF(L144,' Model configuration file?',' ',96,dtmp96,
      &        'config file name',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
             CALL EASKF(L144,' Model configuration file?',' ',124,
-     &        dtmp72,'config file name',IER,nbhelp)
+     &        dtmp96,'config file name',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
             CALL EASKF(L144,' Model configuration file?',' ',144,
-     &        dtmp72,'config file name',IER,nbhelp)
+     &        dtmp96,'config file name',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
-          CALL EASKF(L144,' Model configuration file?',' ',144,dtmp72,
+          CALL EASKF(L144,' Model configuration file?',' ',144,dtmp96,
      &      'config file name',IER,nbhelp)
         else
-          CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
+          CALL EASKF(L144,' Model configuration file?',' ',96,dtmp96,
      &      'config file name',IER,nbhelp)
         endif
 
@@ -699,25 +719,25 @@ C ESP-r configuration file.
   289   helptopic='model_config_file_name'
         call gethelptext(helpinsub,helptopic,nbhelp)
         l144=LCMDFL
-        dtmp72=DFCFG
+        dtmp96=DFCFG
         llt=lnblnk(L144)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
-            CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
+            CALL EASKF(L144,' Model configuration file?',' ',96,dtmp96,
      &        'config file name',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
             CALL EASKF(L144,' Model configuration file?',' ',124,
-     &        dtmp72,'config file name',IER,nbhelp)
+     &        dtmp96,'config file name',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
             CALL EASKF(L144,' Model configuration file?',' ',144,
-     &        dtmp72,'config file name',IER,nbhelp)
+     &        dtmp96,'config file name',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
-          CALL EASKF(L144,' Model configuration file?',' ',144,dtmp72,
+          CALL EASKF(L144,' Model configuration file?',' ',144,dtmp96,
      &      'config file name',IER,nbhelp)
         else
-          CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
+          CALL EASKF(L144,' Model configuration file?',' ',96,dtmp96,
      &      'config file name',IER,nbhelp)
         endif
 
@@ -1008,7 +1028,7 @@ C Check for existing file names based on available view and picture info.
           XST=.false.
           write(pf,'(5a)') runpath(1:lnrp),
      &      picfil(1:lnblnk(picfil)),'_',
-     &      rvewsh(iv)(1:lnblnk(rvewsh(iv))),'.pic'
+     &      rvewsh(iv)(1:lnblnk(rvewsh(iv))),'.hdr'
           INQUIRE (FILE=pf,EXIST=XST)
           if (XST) then
             npics=npics+1
@@ -1031,7 +1051,7 @@ C If there are no images then re-display the menu.
           goto 10
         endif
         if (IVALV(1).eq.(npics+1)) then
-          write(pf,'(a)') 'UNKNOWN.pic'
+          write(pf,'(a)') 'UNKNOWN.hdr'
           write(gf,'(a)') 'UNKNOWN.glr'
         else
           ipckvew=IPVALV(IVALV(1))
@@ -1039,7 +1059,7 @@ C If there are no images then re-display the menu.
 C Generate default file names.
           write(pf,'(5a)') runpath(1:lnrp),
      &      picfil(1:lnblnk(picfil)),'_',
-     &      rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.pic'
+     &      rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.hdr'
           write(gf,'(5a)') runpath(1:lnrp),
      &      picfil(1:lnblnk(picfil)),'_',
      &      rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.glr'
@@ -1131,7 +1151,11 @@ C Path to model.
       LOGICAL unixok
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical browse  ! as set in e2r command line.
+#ifdef OSI
       integer numberofzones ! to pass to updwire rather than ncomp
+#else
+      integer*8 numberofzones
+#endif
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1287,7 +1311,7 @@ C lfile contains path as well as file name.
         tmode='graph'
         if(teditor(1:2).eq.'vi')tmode='text'
         write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),
-     &                                      lfile(1:lnblnk(lfile)),' &'
+     &                           lfile(1:lnblnk(lfile)),' &'
         call runit(doit,tmode)
       endif
       return

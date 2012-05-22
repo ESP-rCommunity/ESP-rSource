@@ -3,8 +3,8 @@
 !       Created by Alex Ferguson
 !       Created on March 19, 2004
 !
-!       This file contains stubs required compile ESP-r without 
-!       support for XML output. 
+!       This file contains stubs required compile ESP-r without
+!       support for XML output.
 !
 ! Logical function indicating that H3KREPORTS is not available
       LOGICAL FUNCTION REP_XMLSTATUS()
@@ -61,6 +61,11 @@
       return
       end
 
+      logical function is_variable_enabled()
+      is_variable_enabled = .false.
+      return
+      end
+
 
 
 
@@ -83,27 +88,27 @@
       End Subroutine
 
       logical Function isH3KEnabled()
-      isH3KEnabled = .false. 
+      isH3KEnabled = .false.
       End Function isH3KEnabled
 
       Subroutine UpdateH3kReport()
       End Subroutine
 
-      
+
 !.....
       subroutine rep_toggle_config(cVariable)
       character(len=*), intent(in)::cVariable
-      return 
+      return
       end subroutine
 !.....
       subroutine rep_update_config_file()
-      return 
+      return
       end subroutine
 !.....
       logical function rep_report_list(cType,cValue)
       character(len=*), intent(in)::cType, cValue
       rep_report_list = .false.
-      return 
+      return
       end function rep_report_list
 !.....
       character(50) function rep_report_config(cDescription)
@@ -113,113 +118,112 @@
       end function rep_report_config
 !.....
       subroutine h3k_enable_reports(bStatus)
-      logical bStatus 
+      logical bStatus
 
-      return 
+      return
       end subroutine
 !.....
       subroutine generate_output()
       return
-      end 
+      end
 !.....
       subroutine report_next_time_step(iStep, iTime, iDay, bStartup)
       integer, intent(in) :: iStep
-      real, intent(in) :: iTime 
+      real, intent(in) :: iTime
       integer, intent(in) :: iDay
       logical, intent(in) :: bStartup
-      return 
-      end 
-!..... 
+      return
+      end
+!.....
       subroutine rep_Update_Config(cVariable,cValue)
       character(len=*), intent(in)::cVariable,cValue
       return
       end
-!.....      
-      subroutine add_to_report_wild3(iIdentifier, rValue, cWild1, 
+!.....
+      subroutine add_to_report_wild3(iIdentifier, rValue, cWild1,
      & cWild2, cWild3)
       integer,intent(in) :: iIdentifier
       real, intent(in) :: rValue
       character(len=*), intent(in) :: cWild1, cWild2, cWild3
-      return 
-      End 
-      
-      subroutine add_to_report_wild2(iIdentifier, rValue, cWild1, 
+      return
+      End
+
+      subroutine add_to_report_wild2(iIdentifier, rValue, cWild1,
      & cWild2)
       integer,intent(in) :: iIdentifier
       real, intent(in) :: rValue
       character(len=*), intent(in) :: cWild1, cWild2
-      return 
-      End       
-       
+      return
+      End
+
       subroutine add_to_report_wild1(iIdentifier, rValue, cWild1)
       integer,intent(in) :: iIdentifier
       real, intent(in) :: rValue
       character(len=*), intent(in) :: cWild1
-      return 
-      End      
+      return
+      End
 !.....
-      subroutine add_to_report_details(iIdentifier, cUnit, cType, 
+      subroutine add_to_report_details(iIdentifier, cUnit, cType,
      &                                 cDescription)
       integer,intent(in) :: iIdentifier
       character(len=*), intent(in) :: cUnit, cType, cDescription
-      return 
-      End Subroutine     
-!.....      
-      subroutine add_to_report_details_wild3(iIdentifier, cWild1, 
+      return
+      End Subroutine
+!.....
+      subroutine add_to_report_details_wild3(iIdentifier, cWild1,
      &  cWild2, cWild3, cUnit, cType, cDescription)
       integer,intent(in) :: iIdentifier
-      character(len=*), intent(in) :: cUnit, cType, cDescription, 
+      character(len=*), intent(in) :: cUnit, cType, cDescription,
      &      cWild1, cWild2, cWild3
-      return 
-      end 
-      
-      subroutine add_to_report_details_wild2(iIdentifier, cWild1, 
+      return
+      end
+
+      subroutine add_to_report_details_wild2(iIdentifier, cWild1,
      &  cWild2, cUnit, cType, cDescription)
       integer,intent(in) :: iIdentifier
-      character(len=*), intent(in) :: cUnit, cType, cDescription, 
+      character(len=*), intent(in) :: cUnit, cType, cDescription,
      &      cWild1, cWild2
-      return 
-      end 
-      
-      subroutine add_to_report_details_wild1(iIdentifier, cWild1, 
+      return
+      end
+
+      subroutine add_to_report_details_wild1(iIdentifier, cWild1,
      &  cUnit, cType, cDescription)
       integer,intent(in) :: iIdentifier
-      character(len=*), intent(in) :: cUnit, cType, cDescription, 
+      character(len=*), intent(in) :: cUnit, cType, cDescription,
      &      cWild1
-      return 
-      end    
+      return
+      end
 
       subroutine add_to_report(iIdentifier, rValue)
       integer,intent(in) :: iIdentifier
       real, intent(in) :: rValue
-      return 
-      end 
-   
-      subroutine set_report_variable(Ident, 
-     &                               Enabled, 
-     &                               int_1, 
-     &                               int_2, 
-     &                               int_3, 
-     &                               int_4, 
-     &                               VariableName, 
-     &                               MetaType, 
-     &                               VariableType, 
+      return
+      end
+
+      subroutine set_report_variable(Ident,
+     &                               Enabled,
+     &                               int_1,
+     &                               int_2,
+     &                               int_3,
+     &                               int_4,
+     &                               VariableName,
+     &                               MetaType,
+     &                               VariableType,
      &                               Description)
-     
-      integer Ident 
-      character(256)	:: VariableName 
-      character(16)  :: MetaType 
-      character(16)  :: VariableType 
-      character(512) :: Description 
-      logical*1      :: Enabled 
+
+      integer Ident
+      character(256)	:: VariableName
+      character(16)  :: MetaType
+      character(16)  :: VariableType
+      character(512) :: Description
+      logical*1      :: Enabled
       integer int_1, int_2, int_3, int_4
 
-      return 
-      end 
-!.....      
+      return
+      end
+!.....
       subroutine  set_report_simulation_info(isd1,ism1, isd2, ism2,
      &                                       isds,isdf,ntstep)
       integer,intent(in)::isd1,ism1,isd2,ism2,isds,isdf,ntstep
-      return 
-      end 
-      
+      return
+      end

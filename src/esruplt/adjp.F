@@ -91,10 +91,7 @@ C    temperatures, PCNTMF, if defined to exist
 C Contextual buffer
       character cContext*124
       character outs*124  ! for warning messages
-      
-C External reference      
-      real fGet_BC_data_by_col
-      
+
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
      &   ITRACE(40).NE.0) THEN

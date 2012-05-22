@@ -55,10 +55,12 @@ C Stores all MFRP monitoring values, maximum and minimum values.
       integer ipltwd,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
+      integer iigl,iigr,iigt,iigb,iigw,iigwh,iglmon
 #else
       integer*8 ipltwd,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh,iglmon
 #endif
 
       LOGICAL RDR
@@ -68,6 +70,9 @@ C Stores all MFRP monitoring values, maximum and minimum values.
 
       RDR=.FALSE.
       RDR=.TRUE.
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C Increment plot counter.  Check if negative (indicates max iterations
 C have been increased, therefore force redraw).
@@ -157,9 +162,9 @@ C Calculate plotting box locations.
      &                xsc,ysc,sca,xadd,yadd)
 
 C Scale and draw residuals plot.
-        CALL horaxis(plxmin,plxmax,igl,igr,igb,xadd,XSC,0,
-     &                                        'Number of Iterations')
-        CALL linescale(igl,xadd,xsc,igb,yadd,ysc)
+        CALL horaxis(plxmin,plxmax,iigl,iigr,iigb,xadd,XSC,0,
+     &    'Number of Iterations')
+        CALL linescale(iigl,xadd,xsc,iigb,yadd,ysc)
         iupdown=0
         isym=0
         CALL etplot(plxmin,YMIN,iupdown,isym)
@@ -169,8 +174,8 @@ C Scale and draw residuals plot.
         CALL etplot(plxmax,YMIN,iupdown,isym)
 
 C Scale and draw monitoring plot.
-        CALL horaxis(plxmin,plxmax,iglmon,igr,igb,xadd,XSC,0,' ')
-        CALL linescale(iglmon,xadd,xsc,igb,yadd,ysc)
+        CALL horaxis(plxmin,plxmax,iglmon,iigr,iigb,xadd,XSC,0,' ')
+        CALL linescale(iglmon,xadd,xsc,iigb,yadd,ysc)
         iupdown=0
         isym=0
         CALL etplot(plxmin,YMIN,iupdown,isym)
@@ -199,7 +204,7 @@ C Rescale axis for first curve.
           igheight=igwh
           CALL axiscale(ipltwd,igheight,Xmin,Xmax,Ymin,Ymax,
      &                  xsc,ysc,sca,xadd,yadd)
-          CALL linescale(igl,xadd,xsc,igb,yadd,ysc)
+          CALL linescale(iigl,xadd,xsc,iigb,yadd,ysc)
         endif
 
 C If graph was re-scaled re-draw all residuals.
@@ -240,7 +245,7 @@ C Rescale axis for each curve.
         igheight=igwh
         CALL axiscale(ipltwd,igheight,Xmin,Xmax,Ymin,Ymax,
      &                  xsc,ysc,sca,xadd,yadd)
-        CALL linescale(iglmon,xadd,xsc,igb,yadd,ysc)
+        CALL linescale(iglmon,xadd,xsc,iigb,yadd,ysc)
 
 C If graph was re-scaled re-draw all residuals.
         IF(RDR)THEN

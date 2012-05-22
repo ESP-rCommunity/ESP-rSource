@@ -8,14 +8,14 @@ model has been increased by including a shading and
 insolation analysis.
 
 The obstructions represent an adjacent building.  Several
-obstructions are used so as not to intersect the east and 
-west walls and the roof. 
+obstructions are used to represent adjacent buildings and
+a tree. 
 
 The following files are used in this example problem.
 
    file                 description
 ________________________________________________________________
-bld_simple_shd.cfg   problem configuration
+bld_simple_shd.cfg   model configuration
 bld_simple.ctl       configuration control (convective heating
                      and ideal control)
 bld_simple_shd.log   project notes (this file)

@@ -21,6 +21,7 @@
 #include "TWildCards.h"
 #include "TXMLAdapter.h"
 #include "TReportData.h"
+#include "log.h"
 
 //Optional SQLite support
 #ifdef SQLITE
@@ -38,7 +39,7 @@
 //Used for the save_to_disk option to manage memory footprint
 #define SAVE_TO_DISK_MIN 100
 #define SAVE_TO_DISK_MAX 100000
-#define SAVE_TO_DISK_DEFAULT 10000
+#define SAVE_TO_DISK_DEFAULT 1000
 #define SAVE_TO_DISK_TRIGGER 100000 //This should cap around 750MB max
 
 
@@ -141,6 +142,7 @@ class TReportsManager
 
       //True/false if the report variable is enabled
       bool IsVariableEnable(int id);
+      bool IsVariableEnable(const char* cPattern);//match by pattern (contains)
 
       //True/false if the report variable is set with a wild description (normally false)
       bool IsReportDetailWildSet(int id, const char* sDelimiter);
@@ -217,6 +219,8 @@ class TReportsManager
       //Contains all the data collected during a simulation
       ReportDataMap m_ReportDataList;
 
+
+
       //The constructor / destructure is private because we're a Singleton
       TReportsManager();
       ~TReportsManager();
@@ -225,8 +229,6 @@ class TReportsManager
       void GetVariableName(const char* sVarName, const char* sDelimiter, char *Destination);
 
       int GetMonthIndex(int iDay);
-
-      int GetMonthIndex(int iDay,int iStartIndex);
 
       //Methods used for generating outputs
       void OutputCSVData(const char* sFileName, stSortedMapKeyRef sortedRef[]);
@@ -249,8 +251,10 @@ class TReportsManager
       int m_iStartMonthIndex; //Store the simulation start month index
       int m_iCurrentMonthIndex; //Store the current month index;
       int m_iTimeStepPerHour; //Store the number of timesteps in an hour (from cfg)
+      int m_iYearCount; //Counts the current years number
       float m_fMinutePerTimeStep; //# of ts per min
-
+      vector<long> m_BinStepCount; //Contains to total steps for each bin
+      long m_AnnualBinStepCount; //Contains the total step count for annual bin... for now total step count
 
       //Since step output can be incremental during a simluation we need to variable
       //to store how many steps were outputed so far.
@@ -274,17 +278,12 @@ class TReportsManager
       std::set<std::string> m_summary_nodes;
       // list of xsl styles sheet to be applied..in order..
       std::vector<std::string> m_stylesheet_list;
-      // dummy list to be used with the DUMPALLDATA flag
-      std::set<std::string> m_dummy_list;
 
       // Stylesheets and transform files:
       map<std::string,std::string> m_StyleSheets;
 
       // list of transform targets.
       std::vector<std::string> m_xsl_targets;
-
-      // vector indicating which timesteps contain monthly bins
-      std::vector<int> m_month_bin_ts;
 
       /**
       * Flags for results post-processing options
@@ -303,8 +302,8 @@ class TReportsManager
       bool bWildCardsEnabled;
       bool bTS_averaging;
       bool bDumpDictionary;
-      bool bDumpDictionaryAll;
       bool bSortOutput;
+      bool bIndexDatabase;
 
       bool bStyleSheetGood;
       bool bLinkStyleSheet;

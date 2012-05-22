@@ -755,7 +755,7 @@ C---- Additional outputs
       PCAOUT(IPCOMP,6) = QIMMERSED_HX
 
 C---- XML output
-      call AddToReportWild1(rvPltAvgTemp%Identifier,
+      call AddToReport(rvPltAvgTemp%Identifier,
      &      TAVGF_STANK(I_STANK),
      &       pcname(ipcomp)(1:iPltNameLen(ipcomp)))
 

@@ -666,9 +666,9 @@ C a different colour for each name.
       logical unixok
       
 #ifdef OSI
-      integer iix,iiy
+      integer iix,iiy,iicol
 #else
-      integer*8 iix,iiy
+      integer*8 iix,iiy,iicol
 #endif
 
 C Figure out how much text there is to write out. isecond is the last
@@ -687,7 +687,8 @@ C Full name of zone can be written. Find position of "Zones"
 C Set ix to last character position before looping through zones.
         word='Zones:'
         call findviewtext(2,line,isize,ix,iy)
-        call winscl('-',0)
+        iicol=0
+        call winscl('-',iicol)
         iix=ix; iiy=iy;
         call wstxpt(iix,iiy,word)
         icx=9
@@ -701,7 +702,8 @@ C Then get index of colour for this zone, then plot text in that colour.
           call textatxy(ix,iy,word,'z',NZNO(i))
           icx=icx+lna+1
   43    continue
-        call winscl('-',0)
+        iicol=0
+        call winscl('-',iicol)
         call forceflush()
         return
       elseif(length.lt.140)then
@@ -710,7 +712,8 @@ C Try writing full name of zone on two lines. Find position of "Zones"
 C Set ix to last character position before looping through zones.
         word='Zones:'
         call findviewtext(2,line,isize,ix,iy)
-        call winscl('-',0)
+        iicol=0
+        call winscl('-',iicol)
         iix=ix; iiy=iy;
         call wstxpt(iix,iiy,word)
         icx=9
@@ -742,14 +745,16 @@ C Then get index of colour for this zone, then plot text in that colour.
             icx=icx+lna+1
  144      continue
         endif
-        call winscl('-',0)
+        iicol=0
+        call winscl('-',iicol)
         call forceflush()
         return
       else
         if(NZ.eq.1)then
           write(word,'(A,I2,A)',iostat=ios,err=1)' Zone (',NZNO(1),') '
           call findviewtext(2,line,isize,ix,iy)
-          call winscl('-',0)
+          iicol=0
+          call winscl('-',iicol)
           iix=ix; iiy=iy;
           call wstxpt(iix,iiy,word)
           icx=11
@@ -757,12 +762,14 @@ C Then get index of colour for this zone, then plot text in that colour.
           lna=lnzname(NZNO(1))
           write(word,'(a)',iostat=ios,err=1) zname(NZNO(1))(1:lna)
           call textatxy(ix,iy,word,'z',NZNO(1))
-          call winscl('-',0)
+          iicol=0
+          call winscl('-',iicol)
           call forceflush()
         elseif(NZ.gt.1.and.NZ.LE.20)THEN
           word='Zones:'
           call findviewtext(2,line,isize,ix,iy)
-          call winscl('-',0)
+          iicol=0
+          call winscl('-',iicol)
           iix=ix; iiy=iy;
           call wstxpt(iix,iiy,word)
           icx=9
@@ -773,13 +780,15 @@ C Then get index of colour for this zone, then plot text in that colour.
             call textatxy(ix,iy,word,'z',NZNO(i))
             icx=icx+lna+1
   44      continue
-          call winscl('-',0)
+          iicol=0
+          call winscl('-',iicol)
           call forceflush()
           return
         ELSEIF(NZ.GT.20.AND.NZ.LE.24)THEN
           word='Zones:'
           call findviewtext(2,line,isize,ix,iy)
-          call winscl('-',0)
+          iicol=0
+          call winscl('-',iicol)
           iix=ix; iiy=iy;
           call wstxpt(iix,iiy,word)
           icx=9
@@ -795,13 +804,15 @@ C Then get index of colour for this zone, then plot text in that colour.
             call textatxy(ix,iy,word,'z',NZNO(i))
             icx=icx+lna+1
   45      continue
-          call winscl('-',0)
+          iicol=0
+          call winscl('-',iicol)
           call forceflush()
           return
         ELSEIF(NZ.GT.24.AND.NZ.LE.28)THEN
           word='Zn:'
           call findviewtext(2,line,isize,ix,iy)
-          call winscl('-',0)
+          iicol=0
+          call winscl('-',iicol)
           iix=ix; iiy=iy;
           call wstxpt(iix,iiy,word)
           icx=5
@@ -817,7 +828,8 @@ C Then get index of colour for this zone, then plot text in that colour.
             call textatxy(ix,iy,word,'z',NZNO(i))
             icx=icx+lna+1
   46      continue
-          call winscl('-',0)
+          iicol=0
+          call winscl('-',iicol)
           call forceflush()
           return
         ELSEIF(NZ.GT.28)THEN
@@ -834,7 +846,8 @@ C Then get index of colour for this zone, then plot text in that colour.
             call textatxy(ix,iy,word,'z',NZNO(i))
             icx=icx+lna+1
   47      continue
-          call winscl('z',0)
+          iicol=0
+          call winscl('z',iicol)
           call forceflush()
           return
         ENDIF

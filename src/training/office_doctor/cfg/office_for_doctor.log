@@ -1,10 +1,37 @@
 Project notes for office_for_doctor.cfg
-Description: for training session on thursday
+Description: for training sessions
 In folder: C:/Esru/Models
 By: user
 Date: Thu Jun 04 13:40:43 2009
 Client: 
 Project reference: 
 _____________________________
-Notes: 
+Notes: this model is closely associated with the early chapters
+of the ESP-r Cookbook. It can be used as a reference by workshop
+participants or it can be used as a reference or fall-back.
+
 _____________________________
+ 
+The model is located at latitude   55.90 with a longitude difference of  -4.10
+from the local time meridian. The year used in simulations is 2007 and
+weekends occur on Saturday and Sunday.
+The site exposure is typical city centre and the ground reflectance is 0.20.
+ 
+The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
+with hour centred solar data.
+ 
+Databases associated with the model:
+ standard pressure distr: pressc.db1
+ materials              : ../dbs/office_for_doctor.materiald
+ constructions          : ../dbs/office_for_doctor.constrdb
+ 
+ standard plant comp    : plantc.db1
+ standard event profiles: profiles.db2.a
+ standard optical prop  : optics.db2
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 reception     120.0  12   165.5     4.5    40.0  reception has one staff and up to 4 visitors
+ 2 examination    60.0  11    86.0     7.0    25.9  examination for one doctor and one visitor
+   all           180.   23    252.     12.     66.

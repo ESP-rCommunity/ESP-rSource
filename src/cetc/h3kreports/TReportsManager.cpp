@@ -1,8 +1,76 @@
 #include "TReportsManager.h"
 
 #define DEBUG 0
+/* ********************************************************************
+** Tips for troubleshooting a variable:
+** For tracing a variable define the TRACE_VARIABLE, run a simulation and
+** look at the log_trace.txt that gets produced.  From there see wich
+** variable you wish to trace and write that number beside the TRACE_VARIABLE
+** then compile/run the simulation again.  Output of the variable will
+** be appended at the end fo the log_trace.txt.
+** ***************************************************************** */
+//#define TRACE_VARIABLE 157
 
-using namespace std;
+/* ********************************************************************
+** H3KReport main workflow
+** notes: all the data between esp-r and the C++ code if funnel through
+**        then h3kmodule.f90 and the TReportsmanager.cpp.
+** 1. esrubps/bmatsv.F: sends then simulation information and initialize
+**    the report variables (TReportManager::SetSimulationInfo) &
+**    (TReportManager::AddToVariableInfoList)
+** 2. TReportsManager stores the simulation information in class
+**    variables and the report variable information in m_VariableInfoList
+** 3. TReportsManager reads the input.xml for report configuration options
+** 4. esru*: runs through a timestep, sending data for report variables
+**    encountered to the TReportsManager::AddToReportDataList
+** 5. TReportsManager stores the data into a map object of TReportData
+**    The TReportData class will only store the data requested in the
+**    input.xml file.  TReportData will use the TBinnedData.call class
+**    to store bin data <log_variable>.
+** 6. esrubps/bmatsv.F pushes the timestep forward and informs H3kReports
+**    (TReportsManager::AddToTimeStepList)
+** 7. Step 4-6 are repeated until the simulation is done.
+** 8. esrubps/bmatsv.F request the output to be produced.
+**    TReportsManager::GenerateOutput
+** 9. For each requested output format the TReportManager will loop through
+**    to collected results in TReportData and send to output.  The
+**    DBManager and TXMLAdapter classes are used to send the results to
+**    SQLite and xml.
+** 10.esrubps/bmatsv.F terminated the simulation TReportsManager::Cleanup
+** 11.TReportsManager destroys itselft.
+**
+** Alternate flow - Asynchronus save
+** notes: the main workflow applies for the exception that when a
+**        timestep is incremented (step 6) the TReportManager may trigger a
+**        save routine to push the collected result to the requested output
+**        format.
+**
+**        ***************************************************
+**
+** Class information
+** H3Kmodule.f90: module if fortran that constains all the definitions
+**    of all the possible report variables.  It also serves as a wrapper
+**    between the h3kreports cpp and fortran code.
+** TReportsManager.cpp: main driver for the H3K reports.  Used as
+**    singleton this class will interact with all the other H3KReports
+**    classes to store, calculate and the data it receives.
+** TXMLAdapter.cpp: used by the TReportsManager to retrieve / populate
+**    the configuration information from the input.xml and to generate
+**    the out.xml file.
+** TWildCards.cpp: used by the TReportsManager to perform wilcard
+**    matching operations, a feature available when requesting specific
+**    report variables in the input.xml file.
+** TReportData.cpp: used by the TReportsManager to store all the data
+**    for one variable.  The TReportsManager will maintain a map of
+**    these class instance. (one for each different variable).
+** TBinnedData.cpp: used by the TReportData to store and calculate
+**    one bin data.  The TReportData will store a vector of these bins.
+**    one for each month + one for the annual data bin.
+** DBManager.cpp: used by the TReportsManager to output the collected
+**    data into an SQLite format.
+** log.cpp: singleton class available to push messages and errors to
+**    file.
+** ***************************************************************** */
 
 ///convert int i to string
 char* StringValue(char* sDestination, int i)
@@ -13,6 +81,20 @@ char* StringValue(char* sDestination, int i)
 
    #ifndef _WIN32
      snprintf(sDestination, 255, "%i", i);
+   #endif
+
+   return sDestination;
+}
+
+///convert long i to string
+char* StringValue(char* sDestination, long i)
+{
+   #ifdef _WIN32
+     _snprintf(sDestination, 255, "%ld", i);
+   #endif
+
+   #ifndef _WIN32
+     snprintf(sDestination, 255, "%ld", i);
    #endif
 
    return sDestination;
@@ -672,7 +754,6 @@ extern "C"
       generate_output__();
    }
 
-
    /* ********************************************************************
    ** Method:   report_next_time_step()
    ** Purpose:  Called by the fortran code to indicate the start of the
@@ -697,9 +778,45 @@ extern "C"
    {
       report_next_time_step__(iStep,iHour,iDay,iStartup);
    }
+
+
+   /* ********************************************************************
+   ** Method:   is_variable_enabled
+   ** Purpose:  Called by the fortran code to query the report variables
+   **           to see if the passed in pattern relates to at least one
+   **           enabled variable.  This will b used by esp-r for avoiding
+   **           sections of code, if h3k_reports does not report on these
+   **           variables.  Comparison performs a string match between the
+   **           passed string and variable name defined in the h3kmodule.
+   **           The match is not a regular expression comparison.
+   ** Scope:    Public
+   ** Params:   sPatter - pattern to verify
+   **           iLength - length of pattern string
+   ** Returns:  true/false if enabled
+   ** Author:   Claude Lamarche
+   ** Mod Date: 2011-10-04
+   ** ***************************************************************** */
+   bool is_variable_enabled__(char* sPattern, int iLength)
+   {
+      std::string strPattern = std::string(sPattern, iLength);
+
+      return TReportsManager::Instance()->IsVariableEnable(strPattern.c_str());
+   }
+   bool is_variable_enabled_(char* sPattern, int iLength)
+   {
+      return is_variable_enabled__(sPattern, iLength);
+   }
 }
 
 
+
+
+/* ********************************************************************
+** Class:   TReportsManager
+** Purpose: Main driver of the H3KReports.
+** Used by: esrubps/bmatsv.F
+** Error handling: to be implemented...
+** ***************************************************************** */
 TReportsManager* TReportsManager::ptr_Instance = NULL;
 /* ********************************************************************
 ** Method:   Instance
@@ -736,6 +853,8 @@ TReportsManager::TReportsManager(  )
    m_lOutputStepCount = 0;
    m_iStartMonthIndex = 0;
    m_lSaveToDisk = 0; //set by input.xml
+   m_AnnualBinStepCount = 0;
+   m_iYearCount = 0;
    bReports_Enabled = false;
 
 
@@ -751,8 +870,6 @@ TReportsManager::TReportsManager(  )
 
 }
 
-
-
 /* ********************************************************************
 ** Method:   ~TReportsManager
 ** Scope:    Private
@@ -763,9 +880,7 @@ TReportsManager::TReportsManager(  )
 //Destructor -- called by the Cleanup routine.
 TReportsManager::~TReportsManager()
 {
-
 }
-
 
 /* ********************************************************************
 ** Method:   SetSimulationInfo
@@ -802,7 +917,6 @@ void TReportsManager::SetSimulationInfo(int iStartDay,int iEndDay,int iTimeStep)
 }
 
 
-
 /* ********************************************************************
 ** Method:   AddToTimeStepList()
 ** Scope:    public
@@ -815,6 +929,9 @@ void TReportsManager::SetSimulationInfo(int iStartDay,int iEndDay,int iTimeStep)
 ** Comments: This method will not check for duplicate time step, it is
 **           expected that the fortran code will only call this once
 **           per timestep during the simulation loop.
+**
+**           If you needed to set the bin size to something else then
+**           Monthly, this is where you would control this.
 ** Author:   Claude Lamarche
 ** Mod Date: 2011-07-14
 ** ***************************************************************** */
@@ -848,19 +965,31 @@ void TReportsManager::AddToTimeStepList(bool bStartup, int iStep, int iDay, int 
    ts.Day = iDay;
    ts.Hour = iHour;
 
+
+   //A year change is indicate by the iDay being smaller then the last one sent
+   if(m_TimeStepList.size() > 0)
+   {
+      int ttmp;
+      if(iDay < m_TimeStepList.back().Day)
+      {
+         m_iYearCount++;
+      }
+   }
+
+
    //once out of startup mode it never returns
-   if(!bStartup)
+   if(!bStartup || bReportStartup)
    {
       //Increment Active Step Counter
       m_lActiveSteps++;
       //Store the actual first day data was recorded
       if (m_lActiveSteps == 1){
          m_iActualStartDay = iDay;
-         m_iStartMonthIndex = GetMonthIndex(iDay);
+         m_iStartMonthIndex = GetMonthIndex(iDay + (m_iYearCount*365));
       }
 
       //Store the current Time Step's month index;, ignore startup steps.
-      m_iCurrentMonthIndex = GetMonthIndex(iDay,m_iCurrentMonthIndex);
+      m_iCurrentMonthIndex = GetMonthIndex(iDay + (m_iYearCount*365));
 
       //Code will be executed only once, when the simulation first exits startup.
       if(!bOutofStartup)
@@ -875,8 +1004,23 @@ void TReportsManager::AddToTimeStepList(bool bStartup, int iStep, int iDay, int 
       }
    }
 
+   //Store the Monthly Bin data's total time step count
+   while(m_BinStepCount.size() < m_iCurrentMonthIndex -m_iStartMonthIndex +1)
+   {
+      m_BinStepCount.push_back(0); //creates bin if it does not exist
+   }
+
+   if(bReportStartup || !bStartup)
+   {
+      m_BinStepCount.back() = m_BinStepCount[m_iCurrentMonthIndex- m_iStartMonthIndex] + 1;
+
+      //Store the annual bin data's total time step count
+      m_AnnualBinStepCount++;
+   }
+
    //Push on vector
    m_TimeStepList.push_back(ts);
+
 }
 
 
@@ -937,7 +1081,7 @@ void TReportsManager::AddToReportDetails(int id,const char* sDelimiter, const st
    if(it != m_ReportDataList.end())
    {
       //populate the variables unit,type,description.
-      it->second.SetVariableDescriptoinWild(sUnit,sType,sDescription);
+      it->second.SetVariableDescriptionWild(sUnit,sType,sDescription);
    }
 
    //if not found ignore, maybe error report too?
@@ -1018,7 +1162,30 @@ void TReportsManager::AddToReportDataList(int id, const char* sDelimiter, float 
          //Create the fully qualified variable name
          GetVariableName(itInfoMap->second.VarName,sDelimiter,it->second.sVarName);
       }
+
+      // **** used for troubleshooting only, code block will normally not be compiled *****
+      #ifdef TRACE_VARIABLE
+         //print all the variable names
+         char sTraceTemp[512];
+
+         sprintf(sTraceTemp,"ID:%5d; Delimiters:%15s; h3kmodule:%60s; derived:%s;",
+                id,sDelimiter,itInfoMap->second.VarName, it->second.sVarName);
+         log::Instance()->writeTrace(sTraceTemp);
+      #endif
+
    }
+
+   // **** used for troubleshooting only, code block will normally not be compiled *****
+   #ifdef TRACE_VARIABLE
+   if(TRACE_VARIABLE == id)
+   {
+      char sTraceTemp2[512];
+
+      sprintf(sTraceTemp2,"From BPS: id:%5d; Value:%13f; CurrentStep:%4ld; ActiveSteps:%4ld; OutputStepCount:%4ld",
+              id,fValue,m_lCurrentStep,m_lActiveSteps,m_lOutputStepCount);
+      log::Instance()->writeTrace(sTraceTemp2);
+   }
+   #endif
 
    //Push the value to the storage bins,
    if(bReportStartup)
@@ -1075,42 +1242,37 @@ void TReportsManager::GetVariableName(const char* sVarName, const char* sDelimit
 ** Scope:    private
 ** Purpose:  Return the month index of the passed in day
 **             ex: 1-31 = 0, 32-59 = 1 ... (no leap year!)
+**                 366 = 12...
 ** Params:   iDay - the day number
-**           iStartIndex(optional) - kick start the loop to a
-**             predefined location, 0 if not specified.
 ** Note:     Leap years are now a factor, based on 12 month per year,
 **           365 days in a year.
 ** Returns:  month index (0-Jan,1-Feb...12-Jan,13-Feb ...)
 ** Author:   Claude Lamarche
-** Mod Date: 2011-07-21
+** Mod Date: 2012-01-31
 ** ***************************************************************** */
-int TReportsManager::GetMonthIndex(int iDay){GetMonthIndex(iDay,0);}
-int TReportsManager::GetMonthIndex(int iDay,int iStartIndex)
+int TReportsManager::GetMonthIndex(int iDay)
 {
-   int i,x,y;
-   x = 0;
-   y= iStartIndex;
+   const int DAYSINYEAR = 365; //365 is part of the year
+   int iNumberYears = 0;
+   int i;
 
-   //Inifinite loop to handle the multi year
-   while(1)
+   //count the number of years
+   if(iDay > 0 )
    {
-      //Find the month index
-      for(i=y;i<12-1;i++){
-         if(iDay <= kMonthlyTimesteps[i]+(x*365))
-            break;
-      }
-
-      //in a multi year, we need to loop again for another year
-      if(iDay > kMonthlyTimesteps[i]+(x*365)){
-         x++;
-         y = 0; //back to 0
-      }
-      else{
-         break; //exit infinite loop
-      }
+      iNumberYears = iDay / (DAYSINYEAR +1); //integer arithmetic
    }
 
-   return i+(x*12);
+   iDay = iDay - (iNumberYears * DAYSINYEAR);
+
+
+   //Find the month index
+   for(i=0;i<12;i++)
+   {
+      if(iDay <= kMonthlyTimesteps[i])
+         break;
+   }
+
+   return i+(iNumberYears*12);
 }
 
 /* ********************************************************************
@@ -1140,6 +1302,42 @@ bool TReportsManager::IsVariableEnable(int iVarIdentifier)
 
 
 /* ********************************************************************
+** Method:   IsVariableEnable
+** Purpose:  Method that looks if the patern passed matches one active
+**           variable.  This will be use by esp-r to before performance
+**           improvement by only reporting section of code if a variable
+**           was requested in the output.
+** Params:   const char* pattern - the pattern to look for an active
+**           variable
+** Returns:  true/false if pattern matchs an active variable
+** Author:   Claude Lamarche
+** Mod Date: 2011-10-04
+** ***************************************************************** */
+bool TReportsManager::IsVariableEnable(const char* cPattern)
+{
+   bool bReturn = false;
+   VariableInfoMap::const_iterator itInfoMap;
+   int i;
+
+   //loop through set varaibles
+   for(itInfoMap = m_VariableInfoList.begin(); itInfoMap != m_VariableInfoList.end(); itInfoMap++)
+   {
+      //short-circuit evaluation left to right, the enable status will be evaluated before
+      //the expensive strstr operation is performed
+      if(itInfoMap->second.Enabled && strstr(itInfoMap->second.VarName,cPattern)!=NULL)
+      {
+         bReturn = true;
+         break;
+      }
+   }
+
+   return bReturn;
+}
+
+
+
+
+/* ********************************************************************
 ** Method:   GenerateOutput()
 ** Scope:    public
 ** Purpose:  Method used to generate all the reports configures in the
@@ -1155,7 +1353,6 @@ void TReportsManager::GenerateOutput(){
    TXMLAdapter XMLAdapter;
    DBManager *objDBManager;
    int i;
-
 
    //Loop through all collection variables
    i = 0;
@@ -1186,7 +1383,9 @@ void TReportsManager::GenerateOutput(){
 
 
    //Print the dictionary
-   OutputDictionary("out.dictionary", sortedMapKeylist );
+   if(bDumpDictionary)
+      OutputDictionary("out.dictionary", sortedMapKeylist );
+
 
    //Print the XML Data
    if(bOutLogXML)
@@ -1208,12 +1407,29 @@ void TReportsManager::GenerateOutput(){
       //Initialize the database file & table structure
       objDBManager = new DBManager("out.db3");
 
+      //Send cerr to screen
+      if(!objDBManager->isEnable())
+      {
+         cerr << "ESP-r was not built with the --SQLite option.  Database support is disable.\n";
+         log::Instance()->writeError("ESP-r was not built with the --SQLite option.  Database support is disable.",-1);
+      }
+
       //Output the database
       OutputSQLiteData(objDBManager);
 
+      //create the views _ not a good way to flatten a table, better
+      //let the user of the SQLite database flatten only the column he/she needs instead
+      //objDBManager->createDataViews();
+
+
       //add the indexes, this operation takes a considerable amount of time
       //but searching on an unindex database would be greatly inaficient.
-      objDBManager->indexDatabase();
+      if(bIndexDatabase)
+      {
+         cout<< "Indexing database...\n";
+         objDBManager->indexDatabase();
+      }
+
 
       //close the database, delete the object
       delete objDBManager;
@@ -1399,9 +1615,12 @@ void TReportsManager::OutputSQLiteData(DBManager *objDBManager)
                                                         itDataMap->first.delimiters.c_str(),
                                                         itDataMap->second.sVarName);
             //backfill zero for unitialize variable (will only occurs in save_to_disk mode).
-            for(i=1; i <= m_lOutputStepCount; i++)
+            if(bOutStepDB)
             {
-               objDBManager->addValue(i,lVariableID,0.0);
+               for(i=1; i <= m_lOutputStepCount; i++)
+               {
+                  objDBManager->addValue(i,lVariableID,0.0);
+               }
             }
          }
          else //name already set (during step save)
@@ -1435,25 +1654,26 @@ void TReportsManager::OutputSQLiteData(DBManager *objDBManager)
          {
             //Send the monthly binned data
             i = 0;
-            itDataMap->second.GetNextMonthlyBinReset();
-            ptrBin = itDataMap->second.GetNextMonthlyBin();
+            itDataMap->second.GetNextLogBinReset();
+            ptrBin = itDataMap->second.GetNextLogBin();
             while(ptrBin != NULL)
             {
-               objDBManager->addBinData(lVariableID,i++,(int)ptrBin->Timesteps(),(int)ptrBin->ActiveTimesteps(),
+               objDBManager->addBinData(lVariableID,i,(int)m_BinStepCount[i],(int)ptrBin->ActiveTimesteps(),
                                               ptrBin->Sum(), ptrBin->Max(), ptrBin->Min(), ptrBin->ActiveAverage(),
-                                              ptrBin->TotalAverage(),1);
+                                              ptrBin->TotalAverage(m_BinStepCount[i]),1);
 
 
                //Get next
-               ptrBin = itDataMap->second.GetNextMonthlyBin();
+               ptrBin = itDataMap->second.GetNextLogBin();
+               i++;
             }
 
 
             //Send the annual binned data
             ptrBin = itDataMap->second.GetAnnualBin();
-            objDBManager->addBinData(lVariableID,0,(int)ptrBin->Timesteps(),(int)ptrBin->ActiveTimesteps(),
+            objDBManager->addBinData(lVariableID,0,(int)m_AnnualBinStepCount,(int)ptrBin->ActiveTimesteps(),
                                               ptrBin->Sum(), ptrBin->Max(), ptrBin->Min(), ptrBin->ActiveAverage(),
-                                              ptrBin->TotalAverage(),0);
+                                              ptrBin->TotalAverage(m_AnnualBinStepCount),0);
 
 
             //send the integrated data
@@ -1511,8 +1731,8 @@ void TReportsManager::OutputSQLiteData(DBManager *objDBManager)
                i = 0;
 
                //Integrate monthly bin data
-               itDataMap->second.GetNextMonthlyBinReset();
-               ptrBin = itDataMap->second.GetNextMonthlyBin();
+               itDataMap->second.GetNextLogBinReset();
+               ptrBin = itDataMap->second.GetNextLogBin();
                while(ptrBin != NULL)
                {
                   //for W->J, convert result calculated in GJ
@@ -1525,7 +1745,7 @@ void TReportsManager::OutputSQLiteData(DBManager *objDBManager)
                   objDBManager->addIntegratedData(lVariableID,i,sIntegratedUnits.c_str(),dTotal, BIN_MONTH_TYPE);
 
                   //Get Next bin
-                  ptrBin = itDataMap->second.GetNextMonthlyBin();
+                  ptrBin = itDataMap->second.GetNextLogBin();
                   i++;
                }
 
@@ -1708,23 +1928,25 @@ void TReportsManager::OutputXMLData(const char *sFileName, stSortedMapKeyRef sor
 
             //START add monthly bin
             i = 0;
-            itDataMap->second.GetNextMonthlyBinReset();
-            ptrBin = itDataMap->second.GetNextMonthlyBin();
+            itDataMap->second.GetNextLogBinReset();
+            ptrBin = itDataMap->second.GetNextLogBin();
             while(ptrBin != NULL)
             {
+
                currentNode = objXMLdoc.AddNode(tokenNode,"binned_data","");
                objXMLdoc.AddAttribute(currentNode, "type", "monthly");
-               objXMLdoc.AddNode(currentNode, "index", StringValue(sTemp,i++));
-               objXMLdoc.AddNode(currentNode, "steps", StringValue(sTemp,(int)ptrBin->Timesteps()));
+               objXMLdoc.AddNode(currentNode, "index", StringValue(sTemp,i));
+               objXMLdoc.AddNode(currentNode, "steps", StringValue(sTemp,(int)m_BinStepCount[i]));
                objXMLdoc.AddNode(currentNode, "active_steps", StringValue(sTemp,(int)ptrBin->ActiveTimesteps()));
                objXMLdoc.AddNode(currentNode, "sum", StringValue(sTemp,ptrBin->Sum()));
                objXMLdoc.AddNode(currentNode, "max", StringValue(sTemp,ptrBin->Max()));
                objXMLdoc.AddNode(currentNode, "min", StringValue(sTemp,ptrBin->Min()));
                objXMLdoc.AddNode(currentNode, "active_average", StringValue(sTemp,ptrBin->ActiveAverage()));
-               objXMLdoc.AddNode(currentNode, "total_average", StringValue(sTemp,ptrBin->TotalAverage()));
+               objXMLdoc.AddNode(currentNode, "total_average", StringValue(sTemp,ptrBin->TotalAverage(m_BinStepCount[i])));
 
                //Get next
-               ptrBin = itDataMap->second.GetNextMonthlyBin();
+               ptrBin = itDataMap->second.GetNextLogBin();
+               i++;
             }
             //END add monthly bin
 
@@ -1732,7 +1954,7 @@ void TReportsManager::OutputXMLData(const char *sFileName, stSortedMapKeyRef sor
             ptrBin = itDataMap->second.GetAnnualBin();
             currentNode = objXMLdoc.AddNode(tokenNode,"binned_data","");
             objXMLdoc.AddAttribute(currentNode,"type","annual");
-            objXMLdoc.AddNode(currentNode,"steps",StringValue(sTemp,(int)ptrBin->Timesteps()));
+            objXMLdoc.AddNode(currentNode,"steps",StringValue(sTemp,m_AnnualBinStepCount));
             objXMLdoc.AddNode(currentNode,"active_steps",StringValue(sTemp,(int)ptrBin->ActiveTimesteps()));
             objXMLdoc.AddNode(currentNode,"sum",StringValue(sTemp,ptrBin->Sum()));
             if(ptrBin->ActiveTimesteps() > 0) //these are only valid if the variable is active
@@ -1746,7 +1968,7 @@ void TReportsManager::OutputXMLData(const char *sFileName, stSortedMapKeyRef sor
                objXMLdoc.AddNode(currentNode, "min", "NaN");
             }
             objXMLdoc.AddNode(currentNode, "active_average", StringValue(sTemp,ptrBin->ActiveAverage()));
-            objXMLdoc.AddNode(currentNode, "total_average", StringValue(sTemp,ptrBin->TotalAverage()));
+            objXMLdoc.AddNode(currentNode, "total_average", StringValue(sTemp,ptrBin->TotalAverage(m_AnnualBinStepCount)));
             //END annual bin
 
             //START Custom manipulation: Integrate mass/energy flow
@@ -1792,8 +2014,8 @@ void TReportsManager::OutputXMLData(const char *sFileName, stSortedMapKeyRef sor
 
                //Integrate monthly bin data
                i = 0;
-               itDataMap->second.GetNextMonthlyBinReset();
-               ptrBin = itDataMap->second.GetNextMonthlyBin();
+               itDataMap->second.GetNextLogBinReset();
+               ptrBin = itDataMap->second.GetNextLogBin();
                while(ptrBin != NULL)
                {
                   //for W->J, convert result calculated in GJ
@@ -1807,7 +2029,7 @@ void TReportsManager::OutputXMLData(const char *sFileName, stSortedMapKeyRef sor
                   objXMLdoc.AddAttribute(currentNode, "type", "monthly");
 
                   //Get Next bin
-                  ptrBin = itDataMap->second.GetNextMonthlyBin();
+                  ptrBin = itDataMap->second.GetNextLogBin();
                   i++;
                }
 
@@ -1899,7 +2121,7 @@ void TReportsManager::OutputTXTsummary(const char *sFileName, stSortedMapKeyRef 
             sVarName = itDataMap->second.sVarName;
 
             //push to output stream
-            summaryFile << sVarName << "::Total_Average " << StringValue(buffer,ptrBin->TotalAverage()) << " " << sMetaValue << "\n";
+            summaryFile << sVarName << "::Total_Average " << StringValue(buffer,ptrBin->TotalAverage(m_AnnualBinStepCount)) << " " << sMetaValue << "\n";
             summaryFile << sVarName << "::Active_Average " << StringValue(buffer,ptrBin->ActiveAverage()) << " " << sMetaValue << "\n";
 
             if(ptrBin->ActiveTimesteps() > 0)
@@ -2006,6 +2228,7 @@ void TReportsManager::OutputCSVData(const char *sFileName, stSortedMapKeyRef sor
 
             //Make the header more readable
             sTemp = itDataMap->second.sVarName;
+
             for(i=0;i<sTemp.length();i++)
             {
                if(sTemp[i] == '/')
@@ -2018,6 +2241,7 @@ void TReportsManager::OutputCSVData(const char *sFileName, stSortedMapKeyRef sor
                }
             }
             sTemp+= " ";
+
             if(itDataMap->second.IsVariableDescriptionWild())
                sTemp+= itDataMap->second.getVariableMetaValue();
             else
@@ -2195,32 +2419,53 @@ void TReportsManager::OutputDictionary(const char* sFileName, stSortedMapKeyRef 
 {
    VariableInfoMap::const_iterator itInfoMap;
    ReportDataMap::iterator itDataMap;
-   const char *sMetaValue, *sDescription;
-   ofstream outfile(sFileName,ios::trunc);
+   const char *sMetaValue, *sDescription, *sVarName;
+   FILE *pFile;
+
+   pFile = fopen(sFileName,"w");
    int j;
 
    //Code that loops and outputs all the variable with wildcards
    //and their information.
-   if(outfile.is_open())
+   if(pFile!=NULL)
    {
-      //loop will output all available variable in esp-r initialized in the h3kmodule.f90
-      if(bDumpDictionaryAll)
+      //apply a sort algorithm
+      j = 0;
+      if(bSortOutput)
       {
-
-         for(itInfoMap = m_VariableInfoList.begin();itInfoMap != m_VariableInfoList.end(); itInfoMap++)
-         {
-            outfile << itInfoMap->second.VarName
-                     << ":\n\n     "
-                     << itInfoMap->second.Description
-                     << " "
-                     << itInfoMap->second.MetaValue
-                     << "\n\n";
-
-         }
+         if(j < m_ReportDataList.size())
+            itDataMap = m_ReportDataList.find(*sortedRef[j++].mapKey);
+         else
+            itDataMap = m_ReportDataList.end();
       }
-      else //only the variable encountered during the simulation
+      else
+         itDataMap = m_ReportDataList.begin();
+
+      //get the data
+      while(itDataMap != m_ReportDataList.end())
       {
-         j = 0;
+         itInfoMap =  m_VariableInfoList.find(itDataMap->first.identifier);
+         sVarName = itInfoMap->second.VarName; //variable name with *
+
+         //Get the information differently if variable's information was overwritten
+         //during the simulation by the add_to_report_details routines. usually-false
+         if(itDataMap->second.IsVariableDescriptionWild())
+         {
+            sMetaValue = itDataMap->second.getVariableMetaValue().c_str();
+            sDescription = itDataMap->second.getVariableDescription().c_str();
+         }
+         else
+         {
+            sMetaValue = itInfoMap->second.MetaValue;
+            sDescription = itInfoMap->second.Description;
+         }
+
+         //format print
+         fprintf(pFile,"\"%s\",\"%s\",\"%s\",\"%s\"\n",
+                 sVarName,itDataMap->first.delimiters.c_str(),
+                 itInfoMap->second.Description, itInfoMap->second.MetaValue);
+
+         //Get next ReportData Map iterator
          if(bSortOutput)
          {
             if(j < m_ReportDataList.size())
@@ -2229,60 +2474,11 @@ void TReportsManager::OutputDictionary(const char* sFileName, stSortedMapKeyRef 
                itDataMap = m_ReportDataList.end();
          }
          else
-            itDataMap = m_ReportDataList.begin();
-
-         while(itDataMap != m_ReportDataList.end())
-         {
-            //Get the information differently if variable's information was overwritten
-            //during the simulation by the add_to_report_details routines. usually-false
-            if(itDataMap->second.IsVariableDescriptionWild())
-            {
-               sMetaValue = itDataMap->second.getVariableMetaValue().c_str();
-               sDescription = itDataMap->second.getVariableDescription().c_str();
-            }
-            else
-            {
-               itInfoMap =  m_VariableInfoList.find(itDataMap->first.identifier);
-               sMetaValue = itInfoMap->second.MetaValue;
-               sDescription = itInfoMap->second.Description;
-            }
-
-            outfile << itDataMap->second.sVarName
-                  << ":\n\n     "
-                  << sDescription
-                  << " "
-                  << sMetaValue
-                  << "\n\n";
-
-
-
-            //Get next ReportData Map iterator
-            if(bSortOutput)
-            {
-               if(j < m_ReportDataList.size())
-                  itDataMap = m_ReportDataList.find(*sortedRef[j++].mapKey);
-               else
-                  itDataMap = m_ReportDataList.end();
-            }
-            else
-               itDataMap = ++itDataMap;
-         }
+            itDataMap = ++itDataMap;
       }
    }
-
-   //Close file
-   outfile.close();
+   fclose(pFile);
 }
-
-
-
-/** Claude: obsolete for now... need to figure out later
-void TReportsManager::AddUserDefinedTimeRange(TTimeDataRange range)
-{
-  m_userDefinedTime.push_back(range);
-}
-*/
-
 
 
 /**
@@ -2478,6 +2674,8 @@ void TReportsManager::ParseConfigFile( const std::string& filePath  )
   // Sort the output flag
   m_params["sort_output"] = inputXML.GetFirstNodeValue("sort_output", inputXML.RootNode());
 
+  // Index the database files
+  m_params["index_database"] = inputXML.GetFirstNodeValue("index_database",inputXML.RootNode());
 
   return;
 }
@@ -2598,34 +2796,15 @@ void TReportsManager::SetFlags(){
     bReportStartup = false;
   }
 
-  // Dictionary output: all, sim, off, (true, false) for legacy support
-  if ( m_params["output_dictionary"] == "all" )
-  {
-     bDumpDictionaryAll = true;
-     bDumpDictionary = true;
-  }
-  else if(m_params["output_dictionary"] == "sim")
-  {
-     bDumpDictionaryAll = false;
-     bDumpDictionary = true;
-  }
-  else if(m_params["output_dictionary"] == "off")
-  {
-     bDumpDictionaryAll = false;
-     bDumpDictionary = false;
-  }
-  else if ( m_params["output_dictionary"] == "true" )
-  {
-    bDumpDictionary = true;
-    bDumpDictionaryAll = false;
-  }
-  else //false or anything else
-  {
-    m_params["output_dictionary"] = "off";
-    bDumpDictionary = false;
-    bDumpDictionaryAll = false;
-  }
-
+   // Dictionary output: true/false(default)
+   if ( m_params["output_dictionary"] == "true" ){
+      bDumpDictionary = true;
+   }
+   else
+   {
+      m_params["output_dictionary"] = "false";
+      bDumpDictionary = false;
+   }
 
   // Timestep averaging
   if ( m_params["time_step_averaging"] == "false" ){
@@ -2633,7 +2812,6 @@ void TReportsManager::SetFlags(){
   }else if (m_params["time_step_averaging"] == "true" ){
       bTS_averaging = true;
   }
-
 
    // Optionally store data on disk (push step every x)
    // default - false
@@ -2655,14 +2833,18 @@ void TReportsManager::SetFlags(){
       m_lSaveToDisk = SAVE_TO_DISK_MIN;
    else if(m_lSaveToDisk > SAVE_TO_DISK_MAX)
       m_lSaveToDisk = SAVE_TO_DISK_MAX;
-   else
-      m_lSaveToDisk = SAVE_TO_DISK_DEFAULT;
 
-  // Optional sort output data, default true for legacy support
+  // Optional sort output data, default true
   if (m_params["sort_output"] == "false")
     bSortOutput = false;
   else
     bSortOutput = true;
+
+   // Optional index database, default true for legacy support
+   if (m_params["index_database"] == "false")
+      bIndexDatabase = false;
+   else
+      bIndexDatabase = true;
 
    //Log output mode: default XML
    bOutLogXML = bOutLogDB = false;
@@ -2850,7 +3032,6 @@ unsigned char TReportsManager::GetOutputType(const char* search_text){
 }
 
 
-
 /**
  * Delete temporary file
  */
@@ -2858,6 +3039,7 @@ void TReportsManager::Cleanup(){
 
    //This will trigger the destructor
    delete Instance();
+   delete log::Instance();
 
    return;
 }

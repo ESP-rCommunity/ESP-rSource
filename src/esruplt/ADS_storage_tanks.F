@@ -1592,47 +1592,47 @@ C-------------------------------------------------------------------------------
 C.....Get component name's length
       iNameLength = lnblnk(pcname(IPCOMP))
 
-       call AddToReportWild1(rvPltBurnerOut%Identifier,
+       call AddToReport(rvPltBurnerOut%Identifier,
      &         q_burner,
      &         pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltBurnerWater%Identifier,
+       call AddToReport(rvPltBurnerWater%Identifier,
      &         q_capture_future,
      &         pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltFuelConsKGS%Identifier,
+       call AddToReport(rvPltFuelConsKGS%Identifier,
      &         m_dot_fuel_kg_t,
      &         pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltFuelConsSLPM%Identifier,
+       call AddToReport(rvPltFuelConsSLPM%Identifier,
      &         Vdot_fuel_STP_t,
      &         pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltAirFlowKGS%Identifier,
+       call AddToReport(rvPltAirFlowKGS%Identifier,
      &         m_dot_air_kg_t,
      &         pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltAirFlowSLPM%Identifier,
+       call AddToReport(rvPltAirFlowSLPM%Identifier,
      &         Vdot_air_STP_t,
      &         pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltTempComb%Identifier,
+       call AddToReport(rvPltTempComb%Identifier,
      &         T_comb,
      &         pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltTempExh%Identifier,
+       call AddToReport(rvPltTempExh%Identifier,
      &         T_exh_tank,
      &         pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltHeatDumpFuture%Identifier,
+       call AddToReport(rvPltHeatDumpFuture%Identifier,
      &         q_heatdump_future,
      &         pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltDHWDraw%Identifier,
+       call AddToReport(rvPltDHWDraw%Identifier,
      &         DHW_draw_future,
      &         pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltDHWMakeupTemp%Identifier,
+       call AddToReport(rvPltDHWMakeupTemp%Identifier,
      &         T_makeup_future,
      &         pcname(IPCOMP)(1:iNameLength))
 
@@ -2716,11 +2716,11 @@ C-------------------------------------------------------------------------------
 C.....Get component name
       iNameLength = lnblnk(pcname(IPCOMP))
 
-       call AddToReportWild1(rvPltHeatingOut%Identifier,
+       call AddToReport(rvPltHeatingOut%Identifier,
      &        q_element,
      &        pcname(IPCOMP)(1:iNameLength))
 
-       call AddToReportWild1(rvPltHeatDumpFuture%Identifier,
+       call AddToReport(rvPltHeatDumpFuture%Identifier,
      &        q_heatdump_future,
      &        pcname(IPCOMP)(1:iNameLength))
 
@@ -3374,7 +3374,7 @@ C--------------------------------------------------------
 C.....Get component name's length
       iNameLength = lnblnk(pcname(IPCOMP))
 
-      call AddToReportWild1(rvPltPowDraw%Identifier,
+      call AddToReport(rvPltPowDraw%Identifier,
      &      fPowerDraw,
      &      pcname(IPCOMP)(1:iNameLength))
 

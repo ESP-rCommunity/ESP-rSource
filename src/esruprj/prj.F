@@ -31,6 +31,7 @@ C   FNCNGR: changes the name of file ORIGNAM by appending APP
 
 C ********** MAIN
       program prj
+      USE START_UP
 #include "building.h"
 #include "model.h"
 
@@ -82,13 +83,14 @@ C IEEE callback (Solaris)
       common/C1/NCOMP,NCON
       common/C6/INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
       common/cctlnm/ctldoc,lctlf
 
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
 
-C Project log file, journal on/off, unit number, cmd, file name.
-      common/LLOG/LPRJLG
+C Journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
 C Ground topology.
@@ -144,6 +146,7 @@ C Name of current application
       common/APPNAME/cAppName
       character cAppName*12
 
+      integer iverb     ! verbosity passed on command line
       logical OK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,MODSIT
       logical MODIFY,MODLEN,MODBND,browse,confirm,XST,ckpath
       logical unixok,isdok,Vldtng,changedit
@@ -151,7 +154,7 @@ C Name of current application
 
       character dstmp*24,uname*24
       character LUALF*72,LCNG*15,LLOC*15
-      character*72 LCFGF,LPRJLG
+      character*72 LCFGF
       character LTMP*72
       character inf*144,inz*16,inzone*16,act*16,inact*16,LCMDFL*144
       character outs*124,outstr*124
@@ -168,24 +171,43 @@ C      character outs248*248
       character ALOC*12,ALOCLBL*12,ALOCTYP*4,CMDLBL*12,CMDLNAM*80
       CHARACTER cpth*48,cmdn*48,topt*72
       character t24*24,DFILE*72,DCNN*72,bidirfile*72,bidirname*12
-      CHARACTER dinstpath*48,dirpath*72
+      CHARACTER dinstpath*60,dirpath*72
       character useraction*8  ! returned from exemplar access call.
       character menu*72       ! blank model title for pregist call
       character fs*1
 
 C Passed parameters for pregist.
-      character root*24,mpath*72,folder*12
+      character root*24,mpath*72
 
 C Returned parameters from silentread.
       character theprimedirective*8
 
+      integer itrc    ! feedback level during scans
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       real d1,d2,d3   ! data used with transfor or rotate command line
       integer ivals   ! holds list of zones to be rotated or transformed.
-      integer numberofzones ! to pass to updwire rather than ncomp
       integer MITEM,INO ! max items and current menu item
       dimension ivals(MCOM)
       logical silent  ! for dependency checking on transform or rotate
+
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
+
+C Passed parameters to cfgtogg
+#ifdef OSI
+      integer icfg_type  ! model cfg type
+      integer icfgz      ! if non-zero then there are zones
+      integer icfgn      ! if non-zero then there are networks
+      integer icfgc      ! if non-zero then cfg file known
+      integer icfgdfn    ! if non-zero then cdf domain exists
+      integer iicfgz     ! there are zone related images
+      integer iicfgn     ! there are network related images
+      integer iicfgc     ! there are control related images
+      integer iicfgdfn   ! there are cfd related images
+#else
+      integer*8 icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz
+      integer*8 iicfgn,iicfgc,iicfgdfn
+#endif
 
 C For help messages
       common/pophelp/h(60)   ! needed for dynamic popup
@@ -193,11 +215,20 @@ C For help messages
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
+      integer ianother   ! jump to previous or next zone flag
 
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
+      integer numberofzones ! to pass to updwire rather than ncomp
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iicapture,iiazi    ! to pass to updcapt updazi
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 numberofzones
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iicapture,iiazi    ! to pass to updcapt updazi
 #endif
 
 C Initialize variables and recover command line arguments.
@@ -206,7 +237,6 @@ C Initialize variables and recover command line arguments.
       cAppName = 'prj'
       helpinapp='prj'  ! set once for the application
       helpinsub='prj'  ! set for MAIN
-      ITRC=0
       IUOUT=6
       IUIN=5
       LIMTTY=24
@@ -223,7 +253,8 @@ C  ifil+11 (external help text), ifil+19 ifil+20 ifil+21 anlyt.
 
 C Recover command line parameters (terminal, size, config file, zone
 C focus and actions arguments).
-      call parsprj(MODL,iappw,iappx,iappy,inf,inz,act,d1,d2,d3)
+      call parsprj(MODL,iappw,iappx,iappy,inf,inz,act,d1,d2,d3,iverb)
+      itrc=iverb    ! set trace level after call to parsprj
       IFDAY=2
       IFTIME=0
       nsset=0
@@ -235,11 +266,12 @@ C focus and actions arguments).
       isavgh=0
       NSIGFIG=3
 
-C Initial assumptions about databases (prior to configuration file scan
-C that the default database files will be defined explicitly).
+C Initial assumptions about common data files (prior to configuration file scan
+C that the default common data files will be defined explicitly).
       matver=0.0   ! initial assumption of binary materials database
       ipathapres=0; ipathoptdb=0; ipathpcdb=0; ipathprodb=0
       ipathmat=0; ipathmul=0; ipathclim=0; ipathsbem=0; ipathmsc=0
+      ipathmould=0
       
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -257,7 +289,6 @@ C Set folder separator (fs) to \ or / as required.
       write(imgpth,'(a1,a1)')'.',fs
       write(radpth,'(a1,a1)')'.',fs
       write(docpth,'(a1,a1)')'.',fs
-      write(tmppth,'(a1,a1)')'.',fs
       write(dbspth,'(a1,a1)')'.',fs
       write(bsmpth,'(a1,a1)')'.',fs
       write(hvacpth,'(a1,a1)')'.',fs
@@ -392,25 +423,36 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=16
         LIMIT =16
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r Project Manager ',cVnum
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r Project Manager: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
 
 C Open the text display box equal to LIMTTY if MMOD = 8.  Model
 C not yet know so pass 0 to the wireframe control routine (updwire).
 C If starting as a reduced percentage of default then widen the
 C graphic display to compensate.
       IF(MMOD.EQ.8)THEN
-        CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=4; iiw2=1; iiw3=1; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
           call opensetup
           numberofzones=0
           call updwire(numberofzones)  ! pass local integer
-          call updcapt(1)
-          call updazi(1)
+          iicapture=1; iiazi=1
+          call updcapt(iicapture)
+          call updazi(iiazi)
         endif
         call setzscale()
         nifgrey=0
@@ -478,6 +520,9 @@ C Make temporary use of file unit IFIL+5.  Note: escdef must come
 C after scan of .esprc file.
       call escdef(IFIL+5,IER)
 
+C Debug.
+C      write(6,*) 'def mould is ',dmdbnam(1:lnblnk(dmdbnam))
+
 C Take command line file name as initial configuration file.
       if(inf(1:2).eq.'  '.or.inf(1:4).eq.'UNKN')then
         LCMDFL='UNKNOWN'
@@ -508,11 +553,11 @@ C databases may make use of this unit temporarily).
 
       write(LAPRES,'(a)') DAPRES(1:lnblnk(DAPRES))
 
-C Multi-layer constructions db on channel IFIL+3.
+C Common constructions on channel IFIL+3.
       IFMUL=IFIL+3
       write(LFMUL,'(a)') DFMUL(1:lnblnk(DFMUL))
 
-C Materials db on channel IFIL+4.
+C Common Materials on channel IFIL+4.
       IFMAT=IFIL+4
       write(LFMAT,'(a)') DFCON(1:lnblnk(DFCON))
 
@@ -546,8 +591,9 @@ C Special materials/miscel component database.
 C Text/graphic feedback redirection on channel ifil +9 
       ixunit = ifil + 9
 
-C Project log.
-      LPRJLG='job.notes'
+C Project log and contents.
+      lmodellog='project.notes'
+      lmodelqa='UNKNOWN'
 
 C If -actf was included in the command line then see if it
 C is a known command that can be acted on.
@@ -579,11 +625,8 @@ C Clear allocatable arrays
             endif
           endif
         endif
-C Actions that operate on on the model input files        
-      elseif(inact(1:9) .eq.'transform'.or.
-     &       inact(1:6) .eq.'rotate'   .or.
-     &       inact(1:2) .eq.'QA'       .or.
-     &       inact(1:16).eq.'update_con_files' ) then
+      elseif(inact(1:9).eq.'transform'.or.inact(1:6).eq.'rotate'.or.
+     &       inact(1:2).eq.'QA')then
         XST=.false.
         if(LCMDFL(1:2).ne.'  '.and.LCMDFL(1:4).ne.'UNKN')then
           INQUIRE (FILE=LCMDFL,EXIST=XST)
@@ -622,16 +665,16 @@ C Scan control file if one exists.
             if(XST)then
               CALL EZCTLR(ICTLF,0,IUOUT,IER)
             endif
-
+	    
 C Now implement the transform based on data passed in command line
 C for all the zones in the model. NOTE: in the next line set the
 C value of silent = .false if you want to interact with the transform
 C or rotation.
 C            silent= .false.
             silent= .true.
-            inpic=NCOMP
-            do 29 iz=1,inpic
-              ivals(iz)=iz
+	    inpic=NCOMP
+	    do 29 iz=1,inpic
+	      ivals(iz)=iz
   29        continue
   
 C Perform either the transform or rotation or generate QA report.
@@ -642,12 +685,10 @@ C Perform either the transform or rotation or generate QA report.
               call globalrotate(d1,d2,d3,inpic,ivals,silent,itru,ier)
             elseif(inact(1:2).eq.'QA')then
               call prjqa(inpic,ivals,silent,ier)
-            elseif(inact(1:16).eq.'update_con_files')then
-              call Update_Con_Files_Silent(ITRC,ITRU,IER)
-            endif
+	    endif
             if(silent)then 
               call usrmsg(
-     &          'Processing of transform:rotate:QA:update complete.',
+     &          'Processing of transform:rotate:QA complete.',
      &          'Exiting from project manager','W')
 
 C Clear allocatable arrays
@@ -744,7 +785,7 @@ C Provide site information, update wireframe control with
 C current number of zones if a model has been loaded.
       if(LCMDFL(1:2).ne.'  '.and.LCMDFL(1:4).ne.'UNKN')then
         if(ier.eq.0)then
-          IF(MMOD.EQ.8)then
+          if(MMOD.EQ.8)then
             numberofzones=ncomp
             call updwire(numberofzones)  ! pass local integer
             call cfgtogg(icfg_type,icfgz,icfgn,icfgc,icfgdfn,
@@ -772,6 +813,26 @@ C Open core of databases if not already done so.
               ier = 0
             endif
           endif
+
+C Scan for matching MLC for surfaces.
+          do 30 ICOMP=1,NCOMP
+            call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,iuout,ier)
+
+C Find the index of the MLC which matches each surface.
+            DO 9994 I=1,NZSUR(icomp)
+              icn1=izstocn(icomp,i)
+              ssmlcindex(icn1)=0  ! assume no matching MLC          
+              do 5 ii=1,nmlc
+                if(SSMLCN(icn1)(1:12).eq.DESC(ii)(1:12)) then
+                  ssmlcindex(icn1)=ii   ! remember MLC index     
+                endif
+  5           continue
+ 9994       continue
+ 30       continue
+
+C Debug the ssmlcindex array.
+C          write(6,*) ssmlcindex(1),ssmlcindex(2),ssmlcindex(3),
+C     &      ssmlcindex(4),ssmlcindex(5),ssmlcindex(6),ssmlcindex(7)
 
 C Scan control file if one exists.
           ICTLF=IFIL+1
@@ -852,13 +913,14 @@ C Pass information to C library code if running in graphic mode.
             call georead(IFIL+1,LGEOM(index),index,1,iuout,IER)
             IF(IER.NE.0)goto 3
 
-            CALL EDZONE(ITRC,index,IER)
+C Change focus to zone but do not act on any ianother jump command.
+            CALL EDZONE(ITRC,index,ianother,IER)
             MODIFY=.TRUE.
           endif
         endif
       endif
 
-      ITRC=1
+C      ITRC=1  ! why reset this ?
     3 INO=-4
       ITEMS(1) =  'a introduction to ESP-r'
       ITEMS(2) =  'b database maintenance'
@@ -1044,64 +1106,9 @@ C based on the current compiled in limits.
         CALL PHELPD('Introduction',nbhelp+13,'-',0,0,IER)
         call tstamp('>','PRJ: intro help')
 
-C Offer topical help in addition to the standard message.
-C - command line options for the project manager
-C - applications within the ESP-r suite
-C - ESP-r interface variants
-C - ESP-r operating system variants
-C - layout of a typical ESP-r distribution
-C - layout of a typical ESP-r model
-C - planning simulation tasks
-C - implementing simulation models
-C - ensuring the quality of models
-C - options for finding out more about ESP-r
-C - continue
-  142   iqno=1
-        isw=0
-        helptopic='options_for_topics'
+        helptopic='find_out_more'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        call MENUATOL('Further information','Further information',
-     &    'a command line options','b applications in ESP-r suite',
-     &    'c ESP-r interface variants','d ESP-r OS implementations',
-     &    'e layout of ESP-r distribution','f layout of ESP-r models',
-     &    'g planning simulation tasks','h implementing models',
-     &    'i ensuring model quality','j find out more',
-     &    'k back to interface...',' ',isw,iqno,nbhelp)
-        if(isw.eq.1)then
-          helptopic='topic_cmd_line'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.2)then
-          helptopic='topic_other_apps'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.3)then
-          helptopic='topic_other_interface'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.4)then
-          helptopic='topic_other_OS'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.5)then
-          helptopic='layout_distribution'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.6)then
-          helptopic='layout_models'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.7)then
-          helptopic='planning_models'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.8)then
-          helptopic='implementing_models'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.9)then
-          helptopic='ensuring_model_quality'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.10)then
-          helptopic='find_out_more'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-        elseif(isw.eq.11.or.isw.eq.0)then
-          goto 3
-        endif
         CALL PHELPD('Introduction-more',nbhelp,'-',0,0,IER)
-        goto 142   ! jump back to see if another topic
 
       ELSEIF(INO.EQ.2)THEN
 
@@ -1143,7 +1150,7 @@ C Call rexmpl to get the exemplar. If ier is set to 2 then the
 C user didn't pick anything. If useraction is set to 'browse' then
 C ensure the toggle is set accordingly.
               useraction = ' '
-              call rexmpl(IUF,exemplar,useraction,ier)
+              call rexmpl(ITRC,IUF,exemplar,useraction,ier)
               call tstamp('>','PRJ: scanning exemplars return')
               if(ier.eq.2)then
                 ier=0
@@ -1203,8 +1210,8 @@ C action if there is no match in the paths.
                 endif
 
 C Debug.
-                write(outs,*) '* Browse status ',browse,itisanexemplar
-                call edisp(iuout,outs)
+C                write(outs,*) '* Browse status ',browse,itisanexemplar
+C                call edisp(iuout,outs)
 
 C If running on a Windows machine the the file browser would have been
 C used and there is no need to check the path.
@@ -1302,9 +1309,8 @@ C Start new project, begin with registration.
         call tstamp('>','PRJ: beginning new model')
         root=' '
         mpath=' '
-        folder=' '
         menu=' '
-        call pregist('i ',root,mpath,folder,menu,ier)
+        call pregist('i ',root,mpath,menu,ier)
       ELSEIF(INO.EQ.10)THEN
 
 C Root name of the model.
@@ -2527,7 +2533,10 @@ C IPV data could be internal to cfg file.
   39  CALL EASKABCD(' ','IPV options:',
      &  'run required simulations','extract reports',
      &  'compare reports','cancel',irs,nbhelp)
+
       if(irs.eq.1)then
+
+C Run the simulations.
         CALL EASKABC(' ','Simulation options:',
      &    'run interactively','run silently',
      &    'cancel',isauto,nbhelp)
@@ -2610,7 +2619,10 @@ C          call usrmsg('Beginning assessment via',doit,'-')
           endif
 C          call edisp(iuout,'* IPV run complete.')
   667   continue
+
       elseif(irs.eq.2)then
+
+C Extract performance report from the standard results files.
         CALL EASKABC(' ','IPV extraction options:',
      &    'run interactively','run silently','cancel',
      &    isauto,nbhelp)
@@ -2626,9 +2638,9 @@ C          call edisp(iuout,'* IPV run complete.')
         elseif(isauto.eq.3)then
           return
         endif
-        call easkabcd('IPV recovery options:',' ','intermediate',
-     &    'scan intermediate ->annual','all','cancel',IRT,nbhelp)
-        if(IRT.eq.4) goto 39  ! redisplay menu.
+        call easkab('IPV recovery options:',' ',
+     &    'recover & append summary','cancel',IRT,nbhelp)
+        if(IRT.eq.2) goto 39  ! redisplay menu.
 
 C Extract only for the number of assessments required. Note: the strings
 C ipv_win ipv_win1 ipv_aut etc are set in the IPV descriptive process and
@@ -2663,7 +2675,8 @@ C Logic to react when browsing a model.
 C Debug.
 C        write(6,*) 'status of browse and remote ',browse,remote
 
-        if(IRT.eq.1.or.IRT.eq.3)then
+        if(IRT.eq.1)then
+          call edisp(iuout,'  ')
           do 668 ij=1,nipvassmt
             tfile=sblres(ij)
             if(remote)then
@@ -2704,44 +2717,8 @@ C            call usrmsg('Beginning performance recovery via',doit,'-')
      &        runtag(ij)(7:lnblnk(runtag(ij))),' is complete.'
             call edisp(iuout,outs)
  668      continue
-          if(IRT.eq.3)then
-            tfile=sblres(nipvassmt)
-            if(remote)then
-              call fdroot(tfile,ltpath,filen)
-              call isunix(unixok)
-              if(unixok)then
-                if (ICHAR(ltpath(1:1)).ne.47) then
-                  write(tfile,'(3a)') upath(1:lnblnk(upath)),fs,
-     &              filen(1:lnblnk(filen))
-                endif
-              else
-                if (ltpath(2:2).ne.':') then
-                  write(tfile,'(3a)') upath(1:lnblnk(upath)),fs,
-     &              filen(1:lnblnk(filen))
-                endif
-              endif
 
-C Debug.
-C              write(6,*) 'itr3 reset tfile to ',tfile
-
-            endif
-            if(iappw.gt.0.and.iappw.le.200)then
-              write(doit,'(3a,3i4,4a)') 'res -mode ',tmode,
-     &          ' -s ',iappw,iappx+15,iappy+50,' -file ',
-     &          tfile(1:lnblnk(tfile)),' -act ipv_annual ',aut
-            else
-              write(doit,'(6a)') 'res -mode ',tmode,' -file ',
-     &          tfile(1:lnblnk(tfile)),' -act ipv_annual ',aut
-            endif
-C            call usrmsg('Beginning performance recovery via',doit,'-')
-            if(isauto.eq.2)then
-              call runit(doit,'-')
-            else
-              call runit(doit,tmode)
-            endif
-C            call edisp(iuout,'* IPV report complete.')
-          endif
-        elseif(IRT.eq.2)then
+C Having done the assessments re-open and append summary.
           tfile=sblres(nipvassmt)
           if(remote)then
             call fdroot(tfile,ltpath,filen)
@@ -2759,7 +2736,7 @@ C            call edisp(iuout,'* IPV report complete.')
             endif
 
 C Debug.
-C            write(6,*) ' irt2 reset tfile to ',tfile
+C            write(6,*) 'itr3 reset tfile to ',tfile
 
           endif
           if(iappw.gt.0.and.iappw.le.200)then
@@ -2776,7 +2753,9 @@ C          call usrmsg('Beginning performance recovery via',doit,'-')
           else
             call runit(doit,tmode)
           endif
+C          call edisp(iuout,'* IPV report complete.')
         endif
+
       elseif(irs.eq.3)then
 
 C Compare two IPV reports.  First ask for separator.
@@ -3125,6 +3104,7 @@ C Not one we are intrested in at the moment.
         else
           goto 142
         endif
+
       elseif(irs.eq.4)then
         return
       endif 
@@ -3166,6 +3146,7 @@ C to include the path and create a string to drive the modules.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
@@ -3824,8 +3805,7 @@ C attempt to match the focus with the image.
 
 C If running on a non-unix machine see if there are spaces in the name
 C and change any / to \.  If X11 then an external application is used
-C an double quoting is useful. If GTK then internal function used and
-C quotes are not required.
+C an double quoting is useful. If GTK then internal function used.
                     call addpath(limgfil(img),longtfile,concat)
                     if(iglib.eq.1)then
                       call cmdfiledos(longtfile,longtfiledos,ier)
@@ -3901,6 +3881,7 @@ C << tag for editing ?? >>
                 longtfile=' '
                 if(unixok)then
                   call addpath(limgfil(img),longtfile,concat)
+                  ixl=lnblnk(longtfile)
                 else
 
 C If running on a non-unix machine see if there are spaces in the name
@@ -3909,6 +3890,7 @@ C and change any / to \.
                   call cmdfiledos(longtfile,longtfiledos,ier)
                   longtfile=' '
                   longtfile=longtfiledos
+                  ixl=lnblnk(longtfile)
                 endif
 
 C If version 4 or newer then display the text otherwise make

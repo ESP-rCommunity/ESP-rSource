@@ -739,8 +739,8 @@ C the best-guess of file names (but with full path).
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
 
       character DFILE*72,LTMP*144,outs*124,louts*248
@@ -1004,7 +1004,7 @@ C Read climate file name.
 	write(LCLIM,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
 
 C Debug.
-C        write(6,*) LCLIM
+C        write(6,*) 'plant lclim is ',LCLIM
 
       endif
 
@@ -1346,11 +1346,11 @@ C MOSYSSU clears commons/ sets default values for systems plotting.
 
       COMMON/MSYSPICK/NPGET,IPGETNO(MSYSRS,8)
 
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/SYSLABEL/SPLABEL(MSYSRS),GPLABEL(MSYSRS)
 
-      integer YAXSET, ADDLIN
+      integer YAXSET,ADDLIN,horaxisdiv
       character SPLABEL*32,GPLABEL*20
 
 C Reset axis max and min values to 1.0 and 0.0 resp.
@@ -1412,7 +1412,7 @@ C act='p' iget parameters already set.
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
       COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
       common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
 
@@ -1460,15 +1460,23 @@ C Flags identifying if results libries are available. =0 no lib, =1 lib exists.
       dimension FAVE(MSYSRS), FSTD(MSYSRS), NF(MSYSRS)
       dimension TMAX(MSYSRS), TMIN(MSYSRS), IQHRS(MSYSRS)
 
-      integer YAXSET, ADDLIN
+      integer YAXSET,ADDLIN,horaxisdiv
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
+      integer IGX  ! see common graf2
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym,iid1,iid2    ! passed to etplot
+      integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
+      integer*8 IGX  ! see common graf2
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym,iid1,iid2    ! passed to etplot
+      integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       logical colok,ok,dok,unixok
@@ -2056,9 +2064,15 @@ C Write graph head and set up axis positions and draw.
             call feedbox(menuchw,2,igfw,igfh)
             call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
           endif
-          call win3d(menuchw,9,30,4,3,igl,igr,igt,igb,igw,igwh)
-          igw=igr-igl
-          igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+          iiw1=9; iiw2=30; iiw3=4; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+C          call win3d(menuchw,9,30,4,3,igl,igr,igt,igb,igw,igwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
           call startbuffer()
         ENDIF
 
@@ -2306,7 +2320,7 @@ C Do the other menu types. If graph reset scaling factor for appropriate axis.
             do 400 IX=1,NPGET
               if (MENUTYPE.eq.3) then
                 Iax=IPGETNO(IX,8)
-                call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
+                call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))
                 if (TIMEold(IX).lt.0.0.or.ADDLIN.eq.1) then
                   TIMEold(IX)=0
                   Yold(IX)=VAL(IX)
@@ -2356,7 +2370,8 @@ C than that of the number of colours re-use an earlier colour.
                     ICM=IPGETNO(IX,2)
                     if(ICM.gt.nzonec) ICM=IPGETNO(IX,2)-nzonec
                     if(ICM.gt.nzonec) ICM=IPGETNO(IX,2)-nzonec
-                    call winscl('z',ICM)
+                    iicol=ICM
+                    call winscl('z',iicol)
                   endif
                 endif
 
@@ -2365,7 +2380,10 @@ C then reset to forground colour.
                 iupdown=IPEN
                 isym=MARK
                 call etplot(GTIME,Yold(IX),iupdown,isym)
-                if(colok)call winscl('-',0)
+                if(colok)then
+                  iicol=0
+                  call winscl('-',iicol)
+                endif
                 call forceflush()
               elseif (MENUTYPE.eq.5) then
 
@@ -2553,7 +2571,8 @@ C Do the other menu types. If graph reset scaling factor for appropriate axis.
               do 401 IX=1,NPGET
                 if (MENUTYPE.eq.3) then
                   Iax=IPGETNO(IX,8)
-                  call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
+                  call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),
+     &              YSC(Iax))
                   if (TIMEold(IX).lt.0.0.or.ADDLIN.eq.1) then
                     TIMEold(IX)=0
                     Yold(IX)=VAL(IX)
@@ -2604,7 +2623,8 @@ C than that of the number of colours re-use an earlier colour.
                       ICM=IPGETNO(IX,2)
                       if(ICM.gt.nzonec) ICM=IPGETNO(IX,2)-nzonec
                       if(ICM.gt.nzonec) ICM=IPGETNO(IX,2)-nzonec
-                      call winscl('z',ICM)
+                      iicol=ICM
+                      call winscl('z',iicol)
                     endif
                   endif
 
@@ -2613,7 +2633,10 @@ C then reset to forground colour.
                   iupdown=IPEN
                   isym=MARK
                   call etplot(GTIME,Yold(IX),iupdown,isym)
-                  if(colok)call winscl('-',0)
+                  if(colok)then
+                    iicol=0
+                    call winscl('-',iicol)
+                  endif
                   call forceflush()
                 elseif (MENUTYPE.eq.5) then
 
@@ -2708,9 +2731,15 @@ C Write graph head and set up axis positions and draw.
                 call feedbox(menuchw,2,igfw,igfh)
                 call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
               endif
-              call win3d(menuchw,9,30,4,3,igl,igr,igt,igb,igw,igwh)
-              igw=igr-igl
-              igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+              iiw1=9; iiw2=30; iiw3=4; iiw4=3; iimenu=menuchw
+              iigl=igl; iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              call win3d(menuchw,9,30,4,3,igl,igr,igt,igb,igw,igwh)
+              igl=int(iigl); igr=int(iigr);igt=int(iigt);igb=int(iigb)
+              igw=int(iigw); igwh=int(iigwh)
               call startbuffer()
             ENDIF
 
@@ -2787,19 +2816,23 @@ C histogram metric is selected it will be the first one.
 C Finally label lines, matching zone line colour if used.
         do 202 I=1,NPGET
           Iax=IPGETNO(I,8)
-          call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
+          call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))
           t20=GPLABEL(I)
           if(colok)then
             if(IPGETNO(I,2).gt.0)then
               ICM=IPGETNO(I,2)
               if(ICM.gt.nzonec) ICM=IPGETNO(I,2)-nzonec
               if(ICM.gt.nzonec) ICM=IPGETNO(I,2)-nzonec
-              call winscl('z',ICM)
+              iicol=ICM
+              call winscl('z',iicol)
             endif
           endif
           call u2pixel(TIMEold(I),Yold(I),iid1,iid2)
           call wstxpt(iid1,iid2,t20)
-          if(colok)call winscl('-',0)
+          if(colok)then
+            iicol=0
+            call winscl('-',iicol)
+          endif
           call forceflush()
  202    continue
 

@@ -26,10 +26,8 @@ C ******************** mznuma
 C The main controller for the numerical simulation.
 
       subroutine mznuma
+      use h3kmodule
 
-C~Claude
-      USE h3kmodule
-C~End Claude
 
 C Include files req'd for deleting temporary files after the simulation is complete.
 #include "H2_wind.h"
@@ -245,7 +243,6 @@ C foundshoc will become true if any zones have SHOCC descriptions.
 C H3Kreporting object
       CHARACTER*128 H3K_rep_NAME, H3K_rep_value
 
-
 C Expected finish time variables.
       character*24 ectime
 
@@ -280,6 +277,10 @@ C water
 
       logical autook
       integer ier,IClmErr
+      logical unixok,concat
+      character fs*1
+      character llclmdb*144  ! to expand weather file
+      integer lndbp          ! length of weather folder path
 
 C SUN F90 has spotty support for cpu_time intrinsic
 #ifdef F90
@@ -291,8 +292,16 @@ C Store start time for reporting simulationd duration
       ier=0       ! set prior to use
       IClmErr=0
 
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
 C Set the H3k reporting on/off
-      IF(REP_XMLSTATUS() .eqv. .false.) THEN
+      IF(isReportingInstalled() .eqv. .false.) THEN
          call SetReportEnable(.false.)
       ENDIF
 
@@ -679,8 +688,20 @@ C water
 C If this is a single year simulation, open the climate file. During
 C multi-year simulations, the climate files will be opened inside
 C the simulation loop
-      if ( .not. bMY_sim_enabled )
-     &   call EFOPRAN(ICLIM,LCLIM,144,0,IClmErr)
+      if ( .not. bMY_sim_enabled ) then
+
+C Take into account weather file location.
+        lndbp=lnblnk(standardclmpath)
+        if(ipathclim.eq.0.or.ipathclim.eq.1)then
+          call addpath(lclim,llclmdb,concat)
+        elseif(ipathclim.eq.2)then
+          write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &      LCLIM(1:lnblnk(LCLIM))
+        endif
+
+        call EFOPRAN(ICLIM,llclmdb,144,0,IClmErr)
+
+      endif
 
 C In the case that we have a gshp input file, dhw input file, and/or basesimp
 C input file, then call routines to determine degree days and ground temperature
@@ -1763,10 +1784,10 @@ C........H3Kreports.(SUMMARY).end........................
 C SUN F90 has spotty support for cpu_time intrinsic
 #ifdef F90
 #else
-C Use function rep_xmlstatus() to report if h3k reports is available.
+C Use function isReportingInstalled() to report if h3k reports is available.
 C If so, write out xml processing runtime - useful for investating
 C the impact of modifications on simulation times.
-      if ( rep_xmlstatus() ) then
+      if ( isReportingInstalled() ) then
          CALL cpu_time(sec_c)
          write(outs,'(A,F7.2,A)')
      &        'XML postprocessor cpu runtime: ',sec_c-sec_b,' seconds'

@@ -14,17 +14,22 @@ PROG = dbm$(EXE)
 %.o : %.f90
 	$(MCC) $(FFLAGS) -c $<
 
-OBJECTS = h3kmodule.o aim2_module.o jdbm.o basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
+
+MODULE_OBJECTS = h3kmodule.o aim2_module.o
+
+OBJECTS = jdbm.o basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
 	bcffile.o c2fdum.o ctlexp.o ctread.o dbmedit.o dossupport.o edprof.o \
 	egeometry.o emfnetw.o emkcfgg.o enved.o eroper.o esru_misc.o esystemg.o \
 	filelist.o gendbb.o hyged.o implegadb.o item.o \
 	mfcdat.o mlced.o nwkrewr.o pltcfg.o \
-	prsitem.o sort.o startupg.o tdfile.o readTrnsys.o 
+	prsitem.o sort.o startupg.o tdfile.o readTrnsys.o
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod h3kmodule.mod	
 
-$(PROG) : $(OBJECTS)
-	$(MFC) $(FFLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) 
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod \
+          h3kmodule.mod
+
+$(PROG) : $(MODULE_OBJECTS) $(OBJECTS)
+	$(MFC) $(FFLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS)
 
 aim2_module.F:
 	rm -f aim2_module.F
@@ -106,7 +111,7 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean :
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
+	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
 	aim2_module.F basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
 	c2fdum.F ctlexp.F ctread.F dossupport.F edatabase.F \
 	egeometry.F emfnetw.F emkcfgg.F eroper.F esru_misc.F filelist.F item.F mfcdat.F nwkrewr.F \

@@ -57,7 +57,6 @@ C ICLIM,LCLIM (for climate file)
 #include "seasons.h"
 #include "UserSimulationToggles.h"
 #include "schedule.h"
-#include "dhw_common.h"
 
       INTEGER, PARAMETER :: MSTMC=20,MSGAL=40
       
@@ -69,8 +68,8 @@ C ICLIM,LCLIM (for climate file)
       INTEGER :: iuout,iuin
       common/pophelp/h(60)
       
-      COMMON/C1/NCOMP,NCON
       integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
@@ -79,15 +78,12 @@ C ICLIM,LCLIM (for climate file)
       INTEGER :: INDCFG
       common/C21/IFCFG,cfgroot,LCFGF
       INTEGER :: ifcfg
-      COMMON/C24/IZSTOCN(MCOM,MS)
       INTEGER :: IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
 C Plant network.
       COMMON/C23/IFPNF,LPNF
       INTEGER :: ifpnf
-
-C Project log file, paths to standard file locations.
-      COMMON/LLOG/LPRJLG
 
 C Configuration control.
       common/cctlnm/ctldoc,lctlf
@@ -240,6 +236,10 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       logical bSHOCCed,bZoneSHOCCed
       character SHOCCshlFile*72,SHOCCshzFile*72
       
+C DHW.
+      common/dhw/sDHW_InputFileName,iDHW_FLAG
+      character sDHW_InputFileName*72
+      INTEGER   iDHW_FLAG
 
 C Fuel cell.
       common/Fcell/iFClds,LFClds
@@ -289,7 +289,7 @@ C If 0 then the calculation includes diffuse shading.
       CHARACTER*72 LBSIMP,hvacfile,LFClds
 
       CHARACTER LCFGF*72
-      CHARACTER LAPROB*72,LPRJLG*72
+      CHARACTER LAPROB*72
       CHARACTER CXSTR*78,cfgroot*24
       CHARACTER LPNF*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
@@ -517,8 +517,6 @@ C Begin writing the file with version number in the header.
      &  '  # path to radiance files'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*imgpth  ',imgpth,
      &  '  # path to project images'
-      WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*tmppth  ',tmppth,
-     &  '  # path to project scratch folder'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*docpth  ',docpth,
      &  '  # path to project documents'
       WRITE(IFCFG,'(3a)',IOSTAT=IOS,ERR=3) '*dbspth  ',dbspth,
@@ -590,14 +588,31 @@ C reflect whether the standard database folder is being used.
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdevn  ',
      &      LPRFDB(1:lnblnk(LPRFDB))
       endif
-      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*clm  ',
+
+      if(ipathclim.eq.0.or.ipathclim.eq.1)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*clm  ',
      &      LCLIM(1:lnblnk(LCLIM))
+      elseif(ipathclim.eq.2)then
+        WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdclm  ',
+     &      LCLIM(1:lnblnk(LCLIM))
+      endif
+
+C      WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*clm  ',
+C     &      LCLIM(1:lnblnk(LCLIM))
+
       if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*mscldb  ',
      &      MCMPDBFL(1:lnblnk(MCMPDBFL))
       elseif(ipathmsc.eq.2)then
         WRITE(IFCFG,'(2A)',IOSTAT=IOS,ERR=2) '*stdmscldb  ',
      &      MCMPDBFL(1:lnblnk(MCMPDBFL))
+      endif
+      if(ipathmould.eq.0.or.ipathmould.eq.1)then
+        WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2) '*mould  ',
+     &    lfmould(1:lnblnk(lfmould)),' # mould isopleths'
+      elseif(ipathmould.eq.2)then
+        WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2) '*stdmould  ',
+     &    lfmould(1:lnblnk(lfmould)),' # mould isopleths'
       endif
 
 C Ground reflectivity model, no-snow monthly albedos, snow albedo
@@ -740,6 +755,18 @@ C Write control file if known.
       else
         WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*ctl  ',
      &    LCTLF(1:lnblnk(LCTLF))
+      endif
+
+C Write model contents file if known.
+      if(lnblnk(lmodelqa).eq.0)then
+        continue
+      elseif(lmodelqa(1:7).eq.'UNKNOWN')then
+        continue
+      elseif(lmodelqa(1:2).eq.'  ')then
+        continue
+      else
+        WRITE(IFCFG,'(a,a)',IOSTAT=IOS,ERR=2) '*contents ',
+     &    lmodelqa(1:lnblnk(lmodelqa))
       endif
 
 C Write contaminant model description
@@ -1212,7 +1239,7 @@ C Write out contact details of simulation team.
 
 C Write project log file related to this model.
       WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) '* PROJ LOG'
-      WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2) LPRJLG(1:lnblnk(LPRJLG))
+      WRITE(IFCFG,'(A)',IOSTAT=IOS,ERR=2)lmodellog(1:lnblnk(lmodellog))
 
 C Ground information.
       dogrnd = .false.
@@ -1499,8 +1526,8 @@ C if possible. If ICON=0 then generate a text heading.
       integer lnblnk  ! function definition
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      COMMON/C24/IZSTOCN(MCOM,MS)
       INTEGER :: IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
       CHARACTER CXSTR*78,SST1*12,ZST1*12,SST2*12,ZST2*12
 
       IF(ICON.EQ.0.AND.ICF.GT.0)THEN
@@ -1611,6 +1638,7 @@ C Parameters
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       logical dup,first

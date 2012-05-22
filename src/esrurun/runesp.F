@@ -45,6 +45,7 @@ C deal with reading a silentread input file.
 C ************************************************************
 
       program runesp
+      USE START_UP
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
@@ -74,7 +75,6 @@ C Path to problem and command line file (if any).
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
-      common/LLOG/LPRJLG
       common/GTFIL/GTGEOM
 
 C Name of current application
@@ -109,7 +109,7 @@ C Uncertainty.
       character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character GTGEOM*72,lipvdatf*72
       character*10 wkd1, wkd2
-      character*72 LCFGF,LPRJLG
+      character*72 LCFGF
       character LCTLF*72,ctldoc*248
       character LAPROB*72 
       character bidirfile*72,bidirname*12
@@ -175,7 +175,6 @@ C Set folder separator (fs) to \ or / as required.
       write(imgpth,'(a1,a1)')'.',fs
       write(radpth,'(a1,a1)')'.',fs
       write(docpth,'(a1,a1)')'.',fs
-      write(tmppth,'(a1,a1)')'.',fs
       write(dbspth,'(a1,a1)')'.',fs
       write(bsmpth,'(a1,a1)')'.',fs
       IYEAR=2007
@@ -276,7 +275,7 @@ C Temporal information on channel IFIL+7.
       LPCDB=DPCDB
 
 C Project log.
-      LPRJLG='job.notes'
+      lmodellog='project.notes'
 
       INIT =0
 
@@ -378,7 +377,7 @@ C espriou.h provides currentfile.
 
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
-      character dinstpath*48
+      character dinstpath*60
 
       common/dllerr/dllsubr,dllmesg
       character dllsubr*12,dllmesg*124  ! messages if errors in dll
@@ -1206,6 +1205,46 @@ C Dummy routines from common3dv.F
       end
 
       subroutine chgelev(icelev)
+      return
+      end
+
+      subroutine chgsun(isunhour)
+      return
+      end
+
+      subroutine chgeye(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,
+     &   JITOBS,JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,JITHLZ,
+     &   JITPPSW)
+
+C Passed paramters.
+      real EVX,EVY,EVZ,VX,VY,VZ,EAN,DIS
+
+C Depending on computer type set integer size of passed parameters.
+#ifdef OSI
+      integer JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
+      integer JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+#else
+      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
+      integer*8 JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+#endif     
+      return
+      end
+
+      subroutine chgzonpik(jizgfoc,jnzg)
+#ifdef OSI
+      integer jizgfoc,jnzg  ! for use with viewtext
+#else
+      integer*8 jizgfoc,jnzg  ! for use with viewtext
+#endif
+      return
+      end
+
+      subroutine chgzonpikarray(jnznog,jnznogv)
+#ifdef OSI
+      integer jnznog,jnznogv
+#else
+      integer*8 jnznog,jnznogv
+#endif
       return
       end
 

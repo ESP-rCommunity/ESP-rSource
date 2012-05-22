@@ -244,18 +244,18 @@ C.....Get component name
       hold_len = lnblnk(hold_name)
 
 C.....Heat transfer to air
-         call AddToReportWild1(rvPltHeatTransAir%Identifier,
+         call AddToReport(rvPltHeatTransAir%Identifier,
      &         fHeat_Xfer_to_air,
      &         hold_name(1:hold_len))
 
 C.....Air side humidity ratio
-         call AddToReportWild1(rvPltAirHumRatio%Identifier,
+         call AddToReport(rvPltAirHumRatio%Identifier,
      &         fHumidity_Ratio,
      &         hold_name(1:lnblnk(hold_name)))
 
 
 C.....Heat transfer to water
-         call AddToReportWild1(rvPltHTransWater2%Identifier,
+         call AddToReport(rvPltHTransWater2%Identifier,
      &         fHeat_Xfer_to_water,
      &         hold_name(1:lnblnk(hold_name)))
 

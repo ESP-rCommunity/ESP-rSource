@@ -29,14 +29,13 @@ C  EDBUILD: edits building information for system configuration file.
 C ********** pregist
 C Register a new project. Parameter act = 'i ' then initial pass,
 C if 'e ' then provide editing menu, if 'sn' use passed parameters
-C for the root and path and folder layout to create a new model,
-C if 'sc' silent continue, if 'sw' then pased root and folder layout
-C but model is assumed to be created silently within the current folder.
+C for the root and path to create a new model, if 'sc' silent continue,
+C if 'sw' then pased root and model is assumed to be created silently 
+C within the current folder.
 C root (24 char) root name (for 'sn' case)
 C mpath (72 char) path to model folder (for 'sn' case)
-C folder (12 char) is 'single' or 'distributed' folder structure
 C menu (72 char) brief title of model
-      subroutine pregist(act,root,mpath,folder,menu,ier)
+      subroutine pregist(act,root,mpath,menu,ier)
 #include "building.h"
 #include "model.h"
 #include "site.h"
@@ -60,9 +59,6 @@ C espriou.h provides currentfile and MFFOLD.
 C Plant network.
       COMMON/C23/IFPNF,LPNF
 
-C Project log file.
-      common/LLOG/LPRJLG
-
 C Images.
       character imgfmt*4  ! GIF XBMP TIF JPG
       character imgfoc*4  ! FZON FNET FCTL FDFS
@@ -81,17 +77,23 @@ C External text editor.
 
 C Calendar.
       common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+#ifdef OSI
+      integer nwlistf
       dimension nwlistf(MFFOLD)
+#else
+      integer*8 nwlistf
+      dimension nwlistf(MFFOLD)
+#endif
 
 C Passed in parameters.
-      character root*24,mpath*72,folder*12,menu*72
+      character root*24,mpath*72,menu*72
 
       logical XST,OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical OKI,concat,unixok,clkok
 
       character dstmp*24,LCFTMP*24
       character*72 LTMP
-      character path*72,LCMDFL*144,LPRJLG*72,LPNF*72,odir*72
+      character path*72,LCMDFL*144,LPNF*72,odir*72
       character LCFGF*72,cfgroot*24
       character doit*248,longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20
@@ -101,8 +103,11 @@ C Passed in parameters.
       character fs*1
       character*72 listf(MFFOLD),listfc(MFFOLD)
       character subpath*72,action*3,outs*124
+      character lltmp*144,lguess*144,lldef*144  ! for working with EASKXORGTKF
+      character lpath*72,fname*72 ! for use with fdroot
 
       integer iyeart    ! for local editing
+      integer iglib  ! for detecting GTK or X11
       integer lnmp,lncr,lnod ! for with of mpath, cfgroot, odir strings
       character tcname*248   ! for editing image notes
       character WORDS(12)*32,testw*32
@@ -137,7 +142,7 @@ C Silent continue, there is nothing to do (currently).
 C Silent new within the pre-registration process.
 
 C Debug.
-C        write(6,*)  ' pregist ',root,' ',folder
+C        write(6,*)  ' pregist ',root
 C        write(6,*)  ' pregist ',mpath
 
         write(LCFTMP,'(a)') root(1:lnblnk(root))
@@ -146,7 +151,7 @@ C        write(6,*)  ' pregist ',mpath
 C Silent within the pre-registration process.
 
 C Debug.
-C        write(6,*)  ' pregist ',root,' ',folder
+C        write(6,*)  ' pregist ',root
 C        write(6,*)  ' pregist ',mpath
 
         write(LCFTMP,'(a)') root(1:lnblnk(root))
@@ -188,7 +193,7 @@ C Current default version is v4.
       NCOMP=0
       noimg=0
       LPNF='UNKNOWN'
-      LPRJLG='UNKNOWN'
+      lmodellog='UNKNOWN'
       nbdaytype=0
       call st2file(LCFTMP,LCMDFL)
 
@@ -246,248 +251,170 @@ C Get the current folder and display options to the user.
       lnod=lnblnk(odir)
       if(act(1:2).eq.'sw')then
 
-C Silent within the pre-registration process.
-        if(folder(1:6).eq.'single')then
-
-C Assume all types of files go in the current folder. Set path
-C variable to equal mpath (which was passed into this subroutine).
-          lnmp=lnblnk(mpath)
-          write(path,'(a)') mpath(1:lnmp)
-          write(zonepth,'(2a)')'.',fs
-          write(netpth,'(2a)')'.',fs
-          write(ctlpth,'(2a)')'.',fs
-          write(aimpth,'(2a)')'.',fs
-          write(imgpth,'(2a)')'.',fs
-          write(radpth,'(2a)')'.',fs
-          write(docpth,'(2a)')'.',fs
-          write(tmppth,'(2a)')'.',fs
-          write(dbspth,'(2a)')'.',fs
-          write(bsmpth,'(2a)')'.',fs
-          write(hvacpth,'(2a)')'.',fs
-
-C Re-establish pwd and then project folders.
-          call edisp(iuout,
-     &        'System configuration file is located in folder:')
-          call edisp(iuout,path)
-
-C Write out the model log file and then jump past the standard
-C dialogs.
-          uname=' '
-          call usrname(uname)
-          call usrdir(pwd)
-          write(modeltitle,'(a)') menu(1:lnblnk(menu))
-          write(LPRJLG,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.log'
-          write(currentfile,'(a)') LPRJLG(1:lnblnk(LPRJLG))
-          IUNIT=IFIL+1
-          CALL EFOPSEQ(IUNIT,LPRJLG,3,IER)
-          write(iunit,'(2a)')'Project notes for ',LCFGF(1:lnblnk(LCFGF))
-          write(iunit,'(2a)')'Title: ',modeltitle(1:lnblnk(modeltitle))
-          write(iunit,'(2a)')'In folder: ',pwd(1:lnblnk(pwd))
-          write(iunit,'(2a)')'By: ',uname(1:lnblnk(uname))
-          call dstamp(dstmp)
-          write(iunit,'(2a)')'Date: ',dstmp
-          write(iunit,'(a)')'Client: '
-          write(iunit,'(a)')'Project reference: '
-          write(iunit,'(a)')'_____________________________'
-          write(iunit,'(a)')'Notes: '
-          write(iunit,'(a)')'_____________________________'
-          CALL ERPFREE(IUNIT,ISTAT)
-          goto 77
-        endif
+        continue ! silent within the pre-registration process.
 
       elseif(act(1:2).eq.'sn')then
 
 C Silent new within the pre-registration process.
-        if(folder(1:6).eq.'single')then
 
-C Assume all types of files go in the single project folder (mpath).
-          lnmp=lnblnk(mpath)
-          write(doit,'(2a)') 'mkdir ',mpath(1:lnmp)
-          call usrmsg('Creating model folder:',doit,'-')
-          call runit(doit,'-')
-          call pausems(400)
-          call usrmsg('  ','  ','-')
-          write(zonepth,'(2a)')'.',fs
-          write(netpth,'(2a)')'.',fs
-          write(ctlpth,'(2a)')'.',fs
-          write(aimpth,'(2a)')'.',fs
-          write(imgpth,'(2a)')'.',fs
-          write(radpth,'(2a)')'.',fs
-          write(docpth,'(2a)')'.',fs
-          write(tmppth,'(2a)')'.',fs
-          write(dbspth,'(2a)')'.',fs
-          write(bsmpth,'(2a)')'.',fs
-          write(hvacpth,'(2a)')'.',fs
-
-C Re-establish pwd and then project folders.
-          write(path,'(2a)')mpath(1:lnblnk(mpath)),fs
-          call edisp(iuout,
-     &        'System configuration file is located in folder:')
-          call edisp(iuout,path)
-
-        elseif(folder(1:11).eq.'distributed')then
-
-C Create the folder mpath and inside that the standard folders.
-          lnmp=lnblnk(mpath)
-          write(doit,'(2a)') 'mkdir ',mpath(1:lnmp)
-          call usrmsg('Creating model folder:',doit,'-')
-          call runit(doit,'-')
-          call pausems(400)
-          call usrmsg('  ','  ','-')
-          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'cfg'
-          call usrmsg('Creating folder:',doit,'-')
-          call runit(doit,'-')
-          call pausems(400)
+C Create the folder mpath and inside that the standard model folders.
+        lnmp=lnblnk(mpath)
+        write(doit,'(2a)') 'mkdir ',mpath(1:lnmp)
+        call usrmsg('Creating model folders...','  ','-')
+        call runit(doit,'-')
+        call pausems(100)
+        call usrmsg('  ','  ','-')
+        write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'cfg'
+        call runit(doit,'-')
+        call pausems(100)
 
 C Check that the control folder path is standard.
-          call GETTOKENS(ctlpth,IW,WORDS)
-          lnw=lnblnk(WORDS(IW))
-          testw=WORDS(IW)
-          if(testw(1:lnw).eq.'ctl'.or.testw(lnw:lnw).eq.'.')then
-            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'ctl'
-            write(ctlpth,'(3a)')'..',fs,'ctl'
-          else
-            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
-          endif
-          call usrmsg('Creating folder:',doit,'-')
-          call runit(doit,'-')
-          call pausems(400)
+        call GETTOKENS(ctlpth,IW,WORDS)
+        lnw=lnblnk(WORDS(IW))
+        testw=WORDS(IW)
+        if(testw(1:lnw).eq.'ctl'.or.testw(lnw:lnw).eq.'.')then
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'ctl'
+          write(ctlpth,'(3a)')'..',fs,'ctl'
+        else
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+        endif
+        call runit(doit,'-')
+        call pausems(100)
 
 C Check that the aim2 folder path is standard.
-          call GETTOKENS(aimpth,IW,WORDS)
-          lnw=lnblnk(WORDS(IW))
-          testw=WORDS(IW)
-          if(testw(1:lnw).eq.'aim2'.or.testw(lnw:lnw).eq.'.')then
-            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'aim2'
-            write(aimpth,'(3a)')'..',fs,'aim2'
-          else
-            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
-          endif
-          call usrmsg('Creating folder:',doit,'-')
-          call runit(doit,'-')
-          call pausems(400)
+        call GETTOKENS(aimpth,IW,WORDS)
+        lnw=lnblnk(WORDS(IW))
+        testw=WORDS(IW)
+        if(testw(1:lnw).eq.'aim2'.or.testw(lnw:lnw).eq.'.')then
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'aim2'
+          write(aimpth,'(3a)')'..',fs,'aim2'
+        else
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+        endif
+        call runit(doit,'-')
+        call pausems(100)
 
 C Check that the zones folder path is standard or was not yet defined.
-          call GETTOKENS(zonepth,IW,WORDS)
-          lnw=lnblnk(WORDS(IW))
-          testw=WORDS(IW)
-          if(testw(1:lnw).eq.'zones'.or.testw(lnw:lnw).eq.'.')then
-            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'zones'
-            write(zonepth,'(3a)')'..',fs,'zones'
-          else
-            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
-          endif
-          call usrmsg('Creating folder:',doit,'-')
-          call runit(doit,'-')
-          call pausems(400)
+        call GETTOKENS(zonepth,IW,WORDS)
+        lnw=lnblnk(WORDS(IW))
+        testw=WORDS(IW)
+        if(testw(1:lnw).eq.'zones'.or.testw(lnw:lnw).eq.'.')then
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'zones'
+          write(zonepth,'(3a)')'..',fs,'zones'
+        else
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+        endif
+        call runit(doit,'-')
+        call pausems(100)
 
 C Check that the nets folder path is standard.
-          call GETTOKENS(netpth,IW,WORDS)
-          lnw=lnblnk(WORDS(IW))
-          testw=WORDS(IW)
-          if(testw(1:lnw).eq.'nets'.or.testw(lnw:lnw).eq.'.')then
-            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'nets'
-            write(netpth,'(3a)')'..',fs,'nets'
-          else
-            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
-          endif
-          call usrmsg('Creating folder:',doit,'-')
-          call runit(doit,'-')
-          call pausems(400)
+        call GETTOKENS(netpth,IW,WORDS)
+        lnw=lnblnk(WORDS(IW))
+        testw=WORDS(IW)
+        if(testw(1:lnw).eq.'nets'.or.testw(lnw:lnw).eq.'.')then
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'nets'
+          write(netpth,'(3a)')'..',fs,'nets'
+        else
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+        endif
+        call runit(doit,'-')
+        call pausems(100)
 
 C Check that the images folder path is standard.
-          call GETTOKENS(imgpth,IW,WORDS)
-          lnw=lnblnk(WORDS(IW))
-          testw=WORDS(IW)
-          if(testw(1:lnw).eq.'images'.or.testw(lnw:lnw).eq.'.')then
-            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'images'
-            write(imgpth,'(3a)')'..',fs,'images'
-          else
-            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
-          endif
-          call usrmsg('Creating folder:',doit,'-')
-          call runit(doit,'-')
-          call pausems(400)
+        call GETTOKENS(imgpth,IW,WORDS)
+        lnw=lnblnk(WORDS(IW))
+        testw=WORDS(IW)
+        if(testw(1:lnw).eq.'images'.or.testw(lnw:lnw).eq.'.')then
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'images'
+          write(imgpth,'(3a)')'..',fs,'images'
+        else
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+        endif
+        call runit(doit,'-')
+        call pausems(100)
 
 C Check that the doc folder path is standard.
-          call GETTOKENS(docpth,IW,WORDS)
-          lnw=lnblnk(WORDS(IW))
-          testw=WORDS(IW)
-          if(testw(1:lnw).eq.'doc'.or.testw(lnw:lnw).eq.'.')then
-            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'doc'
-            write(docpth,'(3a)')'..',fs,'doc'
-          else
-            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
-          endif
-          call usrmsg('Creating folder:',doit,'-')
-          call runit(doit,'-')
-          call pausems(400)
-          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'rad'
-          call usrmsg('Creating folder:',doit,'-')
-          call runit(doit,'-')
-          call pausems(400)
+        call GETTOKENS(docpth,IW,WORDS)
+        lnw=lnblnk(WORDS(IW))
+        testw=WORDS(IW)
+        if(testw(1:lnw).eq.'doc'.or.testw(lnw:lnw).eq.'.')then
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'doc'
+          write(docpth,'(3a)')'..',fs,'doc'
+        else
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+        endif
+        call runit(doit,'-')
+        call pausems(100)
+        write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'rad'
+        call runit(doit,'-')
+        call pausems(100)
 
 C Check that the hvac folder path is standard.
-          call GETTOKENS(hvacpth,IW,WORDS)
-          lnw=lnblnk(WORDS(IW))
-          testw=WORDS(IW)
-          if(testw(1:lnw).eq.'hvac'.or.testw(lnw:lnw).eq.'.')then
-            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'hvac'
-            write(hvacpth,'(3a)')'..',fs,'hvac'
-          else
-            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
-          endif
-          call usrmsg('Creating folder:',doit,'-')
-          call runit(doit,'-')
-          call pausems(400)
+        call GETTOKENS(hvacpth,IW,WORDS)
+        lnw=lnblnk(WORDS(IW))
+        testw=WORDS(IW)
+        if(testw(1:lnw).eq.'hvac'.or.testw(lnw:lnw).eq.'.')then
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'hvac'
+          write(hvacpth,'(3a)')'..',fs,'hvac'
+        else
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+        endif
+        call runit(doit,'-')
+        call pausems(100)
 
 C Check that the dbs folder path is standard.
-          call GETTOKENS(dbspth,IW,WORDS)
-          lnw=lnblnk(WORDS(IW))
-          testw=WORDS(IW)
-          if(testw(1:lnw).eq.'dbs'.or.testw(lnw:lnw).eq.'.')then
-            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'dbs'
-            write(dbspth,'(3a)')'..',fs,'dbs'
-          else
-            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
-          endif
-          call usrmsg('Creating folder:',doit,'-')
-          call runit(doit,'-')
-          call pausems(400)
+        call GETTOKENS(dbspth,IW,WORDS)
+        lnw=lnblnk(WORDS(IW))
+        testw=WORDS(IW)
+        if(testw(1:lnw).eq.'dbs'.or.testw(lnw:lnw).eq.'.')then
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'dbs'
+          write(dbspth,'(3a)')'..',fs,'dbs'
+        else
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+        endif
+        call runit(doit,'-')
+        call pausems(100)
 
-          write(radpth,'(3a)')'..',fs,'rad'
-          write(tmppth,'(3a)')'..',fs,'tmp'
+        write(radpth,'(3a)')'..',fs,'rad'
 
 C Check that the bsm (BASESIMP) folder path is standard.
-          call GETTOKENS(bsmpth,IW,WORDS)
-          lnw=lnblnk(WORDS(IW))
-          testw=WORDS(IW)
-          if(testw(1:lnw).eq.'bsm'.or.testw(lnw:lnw).eq.'.')then
-            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'bsm'
-            write(dbspth,'(3a)')'..',fs,'bsm'
-          else
-            write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
-          endif
-          call usrmsg('Creating folder:',doit,'-')
-          call runit(doit,'-')
-          call pausems(400)
+        call GETTOKENS(bsmpth,IW,WORDS)
+        lnw=lnblnk(WORDS(IW))
+        testw=WORDS(IW)
+        if(testw(1:lnw).eq.'bsm'.or.testw(lnw:lnw).eq.'.')then
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,'bsm'
+          write(dbspth,'(3a)')'..',fs,'bsm'
+        else
+          write(doit,'(4a)') 'mkdir ',mpath(1:lnmp),fs,testw(1:lnw)
+        endif
+        call runit(doit,'-')
+        call pausems(100)
 
 C Re-establish pwd and then project folders.
-          write(path,'(4a)')mpath(1:lnblnk(mpath)),fs,'cfg',fs
-          call edisp(iuout,
-     &        'System configuration file is located in folder:')
-          call edisp(iuout,path)
-        endif 
+        write(path,'(4a)')mpath(1:lnblnk(mpath)),fs,'cfg',fs
+        call edisp(iuout,
+     &      'System configuration file is located in folder:')
+        call edisp(iuout,path)
 
-C Write out the model log file.
+C Write out the model log file within the model doc folder.
         uname=' '
         call usrname(uname)
         call usrdir(pwd)
         write(modeltitle,'(a)') menu(1:lnblnk(menu))
-        write(LPRJLG,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.log'
-        write(currentfile,'(a)') LPRJLG(1:lnblnk(LPRJLG))
+        lr=lnblnk(cfgroot)
+        if(docpth(1:2).eq.'  '.or.docpth(1:2).eq.'./')then
+          write(lmodellog,'(2a)') cfgroot(1:lr),'.log'
+        elseif(docpth(1:3).eq.'../')then
+          write(lmodellog,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &      cfgroot(1:lr),'.log'
+        else
+          write(lmodellog,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &      cfgroot(1:lr),'.log'
+        endif
+C        write(lmodellog,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.log'
+        write(currentfile,'(a)') lmodellog(1:lnblnk(lmodellog))
         IUNIT=IFIL+1
-        CALL EFOPSEQ(IUNIT,LPRJLG,3,IER)
+        CALL EFOPSEQ(IUNIT,lmodellog,3,IER)
         write(iunit,'(2a)')'Project notes for ',LCFGF(1:lnblnk(LCFGF))
         write(iunit,'(2a)')'Title: ',modeltitle(1:lnblnk(modeltitle))
         write(iunit,'(2a)')'In folder: ',pwd(1:lnblnk(pwd))
@@ -498,180 +425,112 @@ C Write out the model log file.
         write(iunit,'(a)')'Project reference: '
         write(iunit,'(a)')'_____________________________'
         write(iunit,'(a)')'Notes: '
+        write(iunit,'(a)')'  '
         write(iunit,'(a)')'_____________________________'
+        write(iunit,'(a)')'  '
         CALL ERPFREE(IUNIT,ISTAT)
         goto 77
 
       elseif(act(1:1).eq.'i')then
 
-C Offer choice of single folder or standard set of folders to hold
-C the model description.
-        helptopic='cfg_standard_folders'
-        call gethelptext(helpinsub,helptopic,nbhelp)
-        CALL EASKABC(' Create model in:',
-     &    '(see help)','single folder','standard set of folders',
-     &    'cancel',IW,nbhelp)
+C Assume a standard set of folders to hold the model description.
+        IW=2
       endif
 
-      if(IW.eq.1)then
-
-C Assume all types of files go in the single project folder.
-        write(zonepth,'(2a)')'.',fs
-        write(netpth,'(2a)')'.',fs
-        write(ctlpth,'(2a)')'.',fs
-        write(aimpth,'(2a)')'.',fs
-        write(imgpth,'(2a)')'.',fs
-        write(radpth,'(2a)')'.',fs
-        write(docpth,'(2a)')'.',fs
-        write(tmppth,'(2a)')'.',fs
-        write(dbspth,'(2a)')'.',fs
-        write(bsmpth,'(2a)')'.',fs
-        write(hvacpth,'(2a)')'.',fs
-        lncr=lnblnk(cfgroot)
-        write(odir,'(a)')cfgroot(1:lncr)
-        lnod=lncr
-        write(doit,'(2a)') 'mkdir ',cfgroot(1:lncr)
-        call usrmsg('Creating folder:',doit,'-')
-        call runit(doit,'-')
-        call pausems(400)
-        call usrmsg('  ','  ','-')
-
-C Re-establish pwd and then project folders. Check that path is
-c within the 72 char limit because it will be used in a fully
-C expanded model at various points in ESP-r.
-        odir=' '
-        call usrdir(odir)
-        lnod=lnblnk(odir)
-        if(lnod+lncr+2.lt.72)then
-          write(path,'(4a)')odir(1:lnod),fs,cfgroot(1:lncr),fs
-          call edisp(iuout,
-     &        'System configuration file is located in folder:')
-          call edisp(iuout,path)
-        else
-          write(outs,'(4a)') odir(1:lnod),fs,cfgroot(1:lncr),fs
-          call usrmsg(
-     &      'The derived path (below) is > 72 char give shorter root',
-     &       outs,'W')
-          goto 289
-        endif
-
-C Having tested the explicit path reset.
-        write(path,'(2a)') cfgroot(1:lncr),fs
-        write(outs,'(2a)') 'Resetting path to: ',path
-        call edisp(iuout,outs)
-
-      elseif(IW.eq.2)then
 
 C Setup the various paths to distributed folders and then create.
 C Check longer paths cause the path variable to have a string buffer overflow.
-        odir=' '
-        call usrdir(odir)
-        lnod=lnblnk(odir)
-        lncr=lnblnk(cfgroot)
-        if(lnod+lncr+6.lt.72)then
-          continue
-        else
-          write(outs,'(6a)')odir(1:lnod),fs,cfgroot(1:lncr),fs,'cfg',fs
-          call usrmsg(
-     &      'The derived path (below) is > 72 char give shorter root',
-     &      outs,'W')
-          goto 289
-        endif
-        write(zonepth,'(3a)')'..',fs,'zones'
-        write(netpth,'(3a)')'..',fs,'nets'
-        write(ctlpth,'(3a)')'..',fs,'ctl'
-        write(aimpth,'(3a)')'..',fs,'aim2'
-        write(imgpth,'(3a)')'..',fs,'images'
-        write(radpth,'(3a)')'..',fs,'rad'
-        write(docpth,'(3a)')'..',fs,'doc'
-        write(tmppth,'(3a)')'..',fs,'tmp'
-        write(dbspth,'(3a)')'..',fs,'dbs'
-        write(bsmpth,'(3a)')'..',fs,'bsm'
-        write(hvacpth,'(3a)')'..',fs,'hvac'
-        lncr=lnblnk(cfgroot)
-        write(odir,'(a)')cfgroot(1:lncr)
-        lnod=lncr
-        write(doit,'(2a)') 'mkdir ',cfgroot(1:lncr)
-        call usrmsg('Creating folder:',doit,'-')
-        call runit(doit,'-')
-        call pausems(400)
-        write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'cfg'
-        call usrmsg('Creating folder:',doit,'-')
-        call runit(doit,'-')
-        call pausems(400)
-        write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'ctl'
-        call usrmsg('Creating folder:',doit,'-')
-        call runit(doit,'-')
-        call pausems(400)
-        write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'aim2'
-        call usrmsg('Creating folder:',doit,'-')
-        call runit(doit,'-')
-        call pausems(400)
-        write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'zones'
-        call usrmsg('Creating folder:',doit,'-')
-        call runit(doit,'-')
-        call pausems(400)
-        write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'nets'
-        call usrmsg('Creating folder:',doit,'-')
-        call runit(doit,'-')
-        call pausems(400)
-        write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'images'
-        call usrmsg('Creating folder:',doit,'-')
-        call runit(doit,'-')
-        call pausems(400)
-        write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'doc'
-        call usrmsg('Creating folder:',doit,'-')
-        call runit(doit,'-')
-        call pausems(400)
-        write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'tmp'
-        call usrmsg('Creating folder:',doit,'-')
-        call runit(doit,'-')
-        call pausems(400)
-        write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'rad'
-        call usrmsg('Creating folder:',doit,'-')
-        call runit(doit,'-')
-        call pausems(400)
-        write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'dbs'
-        call usrmsg('Creating folder:',doit,'-')
-        call runit(doit,'-')
-        call pausems(400)
-        write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'hvac'
-        call usrmsg('Creating folder:',doit,'-')
-        call runit(doit,'-')
-        call pausems(400)
-        write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'bsm'
-        call usrmsg('Creating folder:',doit,'-')
-        call runit(doit,'-')
-        call pausems(400)
-        call usrmsg('  ','  ','-')
+      odir=' '
+      call usrdir(odir)
+      lnod=lnblnk(odir)
+      lncr=lnblnk(cfgroot)
+      if(lnod+lncr+6.lt.72)then
+        continue
+      else
+        write(outs,'(6a)')odir(1:lnod),fs,cfgroot(1:lncr),fs,'cfg',fs
+        call usrmsg(
+     &    'The derived path (below) is > 72 char give shorter root',
+     &    outs,'W')
+        goto 289
+      endif
+
+C Instanciate standard folder names for use within model configuration file.
+      write(zonepth,'(3a)')'..',fs,'zones'
+      write(netpth,'(3a)')'..',fs,'nets'
+      write(ctlpth,'(3a)')'..',fs,'ctl'
+      write(aimpth,'(3a)')'..',fs,'aim2'
+      write(imgpth,'(3a)')'..',fs,'images'
+      write(radpth,'(3a)')'..',fs,'rad'
+      write(docpth,'(3a)')'..',fs,'doc'
+      write(dbspth,'(3a)')'..',fs,'dbs'
+      write(bsmpth,'(3a)')'..',fs,'bsm'
+      write(hvacpth,'(3a)')'..',fs,'hvac'
+      lncr=lnblnk(cfgroot)
+      write(odir,'(a)')cfgroot(1:lncr)
+      lnod=lncr
+      write(doit,'(2a)') 'mkdir ',cfgroot(1:lncr)
+      call usrmsg('Creating folders...','  ','-')
+      call runit(doit,'-')
+      call pausems(100)
+      write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'cfg'
+      call runit(doit,'-')
+      call pausems(100)
+      write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'ctl'
+      call runit(doit,'-')
+      call pausems(100)
+      write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'aim2'
+      call runit(doit,'-')
+      call pausems(100)
+      write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'zones'
+      call runit(doit,'-')
+      call pausems(100)
+      write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'nets'
+      call runit(doit,'-')
+      call pausems(100)
+      write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'images'
+      call runit(doit,'-')
+      call pausems(100)
+      write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'doc'
+      call runit(doit,'-')
+      call pausems(100)
+      write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'rad'
+      call runit(doit,'-')
+      call pausems(100)
+      write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'dbs'
+      call runit(doit,'-')
+      call pausems(100)
+      write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'hvac'
+      call runit(doit,'-')
+      call pausems(100)
+      write(doit,'(4a)') 'mkdir ',cfgroot(1:lncr),fs,'bsm'
+      call runit(doit,'-')
+      call pausems(100)
+      call usrmsg('Creating folders...done.','  ','P')
 
 C Re-establish pwd and then project folders.  Note longer paths
 C can cause the path variable to have a string buffer overflow.
-        odir=' '
-        call usrdir(odir)
-        lnod=lnblnk(odir)
-        lncr=lnblnk(cfgroot)
-        if(lnod+lncr+6.lt.72)then
-          write(path,'(6a)')odir(1:lnod),fs,cfgroot(1:lncr),fs,'cfg',fs
-          call edisp(iuout,
-     &        'System configuration file is located in folder:')
-          call edisp(iuout,path)
-        else
-          write(outs,'(6a)')odir(1:lnod),fs,cfgroot(1:lncr),fs,'cfg',fs
-          call usrmsg(
-     &      'The derived path (below) is > 72 char give shorter root',
-     &      outs,'W')
-          goto 289
-        endif
+      odir=' '
+      call usrdir(odir)
+      lnod=lnblnk(odir)
+      lncr=lnblnk(cfgroot)
+      if(lnod+lncr+6.lt.72)then
+        call edisp(iuout,'  ')
+        write(path,'(6a)')odir(1:lnod),fs,cfgroot(1:lncr),fs,'cfg',fs
+        call edisp(iuout,
+     &    'New model configuration file is in folder:')
+        call edisp(iuout,path)
+      else
+        write(outs,'(6a)')odir(1:lnod),fs,cfgroot(1:lncr),fs,'cfg',fs
+        call usrmsg(
+     &    'The derived path (below) is > 72 char give shorter root',
+     &    outs,'W')
+        goto 289
+      endif
 
 C Having tested the explicit path reset.
-        write(path,'(4a)') cfgroot(1:lncr),fs,'cfg',fs
-        write(outs,'(2a)') 'Resetting path to: ',path
-        call edisp(iuout,outs)
-
-      elseif(IW.eq.3)then
-        return
-      endif
+      write(path,'(4a)') cfgroot(1:lncr),fs,'cfg',fs
+      write(outs,'(2a)') 'Resetting model path to: ',path
+      call edisp(iuout,outs)
 
 C General description of the model.
   52  helptopic='cfg_model_descriptor'
@@ -691,16 +550,51 @@ C General description of the model.
 C Documentation.
   53  helptopic='cfg_model_log_file'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      if(LPRJLG(1:2).eq.'  '.or.LPRJLG(1:4).eq.'UNKN')then
-        write(LPRJLG,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.log'
+      if(lmodellog(1:2).eq.'  '.or.lmodellog(1:4).eq.'UNKN')then
+        lr=lnblnk(cfgroot)
+        if(docpth(1:2).eq.'  '.or.docpth(1:2).eq.'./')then
+          write(lmodellog,'(2a)') cfgroot(1:lr),'.log'
+        elseif(docpth(1:3).eq.'../')then
+          write(lmodellog,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &      cfgroot(1:lr),'.log'
+        else
+          write(lmodellog,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &      cfgroot(1:lr),'.log'
+        endif
       endif
-      ltmp=LPRJLG
-      CALL EASKS(ltmp,' ','Project log file?',
-     &  72,'project.log','log file',IER,nbhelp)
-      if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-        LPRJLG=ltmp
+
+C Detect if working on X11 or GTK.
+      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+      lltmp='  '
+      lguess='  '
+      lldef='project.log'
+      if(iglib.eq.2)then
+        call addpath(lmodellog,longtfile,concat)  ! expand path for GTK browser
+        write(lguess,'(a)') longtfile(1:lnblnk(longtfile))
       else
-        goto 53
+        write(lguess,'(a)') lmodellog(1:lnblnk(lmodellog))
+      endif
+      call edisp(iuout,'  ')  ! echo blank line
+      CALL EASKXORGTKF(lguess,
+     &  'Project log file:',' ',lldef,lltmp,'log file',IER,nbhelp)
+
+C If user request jump back and re-display the menu.
+      if(ier.eq.-3)then
+        goto 53  ! cancel detected, restore name and redisplay menu.
+      endif
+
+C Ask user whether file is in ../doc and if so use fdroot if GTK.
+      if(iglib.eq.2)then
+        dok=.true.
+        CALL ASKOK('Is this file in the model ../doc folder?',
+     &    ' ',OK,dok,3)
+        if(OK)then
+          call fdroot(lltmp,lpath,fname)
+          write(lmodellog,'(3a)') docpth(1:lnblnk(docpth)),fs,
+     &      fname(1:lnblnk(fname))
+        endif
+      else
+        write(lmodellog,'(a)') lguess(1:lnblnk(lguess))
       endif
 
 C See if file exists, otherwise create it and write basic
@@ -708,10 +602,10 @@ C information.
       uname=' '
       call usrname(uname)
       call usrdir(pwd)
-      call FINDFIL(LPRJLG,XST)
+      call FINDFIL(lmodellog,XST)
       IUNIT=IFIL+1
       if(XST)then
-        CALL LISTAS(IUNIT,LPRJLG,IER)
+        CALL LISTAS(IUNIT,lmodellog,IER)
         IF(IER.ne.0)THEN
           dok=.true.
           CALL ASKOK('Problem detected with log file!',
@@ -719,8 +613,8 @@ C information.
           IF(OK)GOTO 53
         ENDIF
       else
-        write(currentfile,'(a)') LPRJLG(1:lnblnk(LPRJLG))
-        CALL EFOPSEQ(IUNIT,LPRJLG,3,IER)
+        write(currentfile,'(a)') lmodellog(1:lnblnk(lmodellog))
+        CALL EFOPSEQ(IUNIT,lmodellog,3,IER)
         write(iunit,'(a,a)')'Project notes for ',LCFGF(1:lnblnk(LCFGF))
         write(iunit,'(a,a)')'Title: ',modeltitle(1:lnblnk(modeltitle))
         write(iunit,'(a,a)')'In folder: ',pwd(1:lnblnk(pwd))
@@ -731,7 +625,9 @@ C information.
         write(iunit,'(a)')'Project reference: '
         write(iunit,'(a)')'_____________________________'
         write(iunit,'(a)')'Notes: '
+        write(iunit,'(a)')'  '
         write(iunit,'(a)')'_____________________________'
+        write(iunit,'(a)')'  '
         CALL ERPFREE(IUNIT,ISTAT)
       endif
 
@@ -749,12 +645,12 @@ C << which uses GTK facilities.
 C Check if Unix-based or DOS based.
         call isunix(unixok)
         if(unixok)then
-          call addpath(LPRJLG,longtfile,concat)
+          call addpath(lmodellog,longtfile,concat)
         else
 
 C If running on a non-unix machine see if there are spaces in the name
 C and change any / to \.
-          call addpath(LPRJLG,longtfile,concat)
+          call addpath(lmodellog,longtfile,concat)
           call cmdfiledos(longtfile,longtfiledos,ier)
           longtfile=' '
           longtfile=longtfiledos
@@ -902,7 +798,13 @@ C External text editor.
       common/user/browse
 
 C Remember width of file/folder names passed back from getfilelist.
+#ifdef OSI
+      integer nwlistf
       dimension nwlistf(MFFOLD)
+#else
+      integer*8 nwlistf
+      dimension nwlistf(MFFOLD)
+#endif
       logical OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical concat,unixok,changedit,browse
 
@@ -996,7 +898,7 @@ C        write(6,*) 'OSX path is ',path
       WRITE(ITEMS(7),'(2A)') 'e network : ',netpth(1:20)
       WRITE(ITEMS(8),'(2A)') 'f images  : ',imgpth(1:20)
       WRITE(ITEMS(9),'(2A)') 'g document: ',docpth(1:20)
-      WRITE(ITEMS(10),'(2A)')'h temp.   : ',tmppth(1:20)
+      WRITE(ITEMS(10),'(A)') '          : '
       WRITE(ITEMS(11),'(2A)')'i radiance: ',radpth(1:20)
       WRITE(ITEMS(12),'(2A)')'j local db: ',dbspth(1:20)
       WRITE(ITEMS(13),'(2A)')'k hvac    : ',hvacpth(1:20)
@@ -1172,23 +1074,7 @@ C            write(6,*) 'iier is ',iier,nli
 
       elseif(ino.eq.10)then
 
-        if(.NOT.browse)then
-          t24=tmppth
-          CALL EASKS(t24,'Relative path from cfg',
-     &      'folder to temporary folder?',24,'../doc',
-     &      'relative temp path',IER,nbhelp)
-          if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')then
-            tmppth=t24
-            changedit=.true.
-            sfile=' '
-            snpfile=' '
-            call browsefilelist('p','tmp','fil',sfile,snpfile,nli,iier)
-          endif
-        else
-          sfile=' '
-          snpfile=' '
-          call browsefilelist('p','tmp','fil',sfile,snpfile,nli,iier)
-        endif
+C Nothing uses this tmp option currently.
 
       elseif(ino.eq.11)then
 

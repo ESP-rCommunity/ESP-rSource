@@ -50,6 +50,7 @@ C espriou.h for parameter MFFOLD
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
+      character h*72
       common/pophelp/h(60)
       common/rpath/path
 
@@ -60,7 +61,7 @@ C where can be: `cfg` (looks in cfg folder), `dbs` (looks in ../dbs),
 C   `zon` (looks in ../zones), `net` (looks in ../nets),
 C   `ctl` (looks in ../ctl), `img` (looks in ../images),
 C   `rad` (looks in ../rad), `doc` (looks in ../doc),
-C   `tmp` (looks in ../temp), `usr` (looks in users home folder).
+C   `usr` (looks in users home folder).
 C   `pat` (looks in {where esp-r installed}/training/pattern).
 C   `clm` (looks in {where esp-r installed}/climate).
 C   `dba` (looks in {where esp-r installed}/databases).
@@ -82,20 +83,29 @@ C   `xbm` X bitmap files, `gif` gif image files,
 C   `ipv` IPV definition file, `rep` IPV report file
 C   `qac` QA contents file, `zip` cflo3 zip (geometry) file, 
 C   `hva` hvac files, `bsm` (looks for BASESIMP files).
+#ifdef OSI
+      integer nwlistf
+      dimension nwlistf(MFFOLD)
+#else
+      integer*8 nwlistf
+      dimension nwlistf(MFFOLD)
+#endif
 
-      dimension nwlistf(MFFOLD),ivlist(MFFOLD)
-      character where*3,what*3,sfile*72,snpfile*72,tsfile*72,h*72
+      integer ivlist
+      dimension ivlist(MFFOLD)
+      character where*3,what*3,sfile*72,snpfile*72,tsfile*72
       character*72 path,odir
       character*72 listf(MFFOLD),listfc(MFFOLD)
       character fs*1,act*1
-      character dinstpath*48
+      character dinstpath*60
 
 C Array for browse menu.
       character*70 listfc70(MFFOLD)
 
 C relative is the portion of the path which needs to be prepended
 C to the selected file to have it relative to the cfg folder.
-      character subpath*72,action*3,outs*124,relative*60
+      character subpath*84,action*3,outs*248,relative*60
+      character subpathd*84  ! to use for native windows
       logical unixok
 
 C Set folder separator (fs) to \ or / as required.
@@ -164,11 +174,6 @@ C project manager was started from).
      &    path(1:lnblnk(path)),docpth(1:lnblnk(docpth))
         write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
      &    docpth(1:lnblnk(docpth))
-      elseif(where(1:3).eq.'tmp')then
-        write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
-     &    path(1:lnblnk(path)),tmppth(1:lnblnk(tmppth))
-        write(relative,'(2a)',iostat=ios,err=2) path(1:lnblnk(path)),
-     &    tmppth(1:lnblnk(tmppth))
       elseif(where(1:3).eq.'bsm')then
         write(subpath,'(4a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
      &    path(1:lnblnk(path)),bsmpth(1:lnblnk(bsmpth))
@@ -318,7 +323,7 @@ C In DOS no need to prepend odir (just use the relative path defined above).
         write(outs,*) 'ZIP/cflo3 files in ',subpath
       endif
 
-      call edisp(iuout,outs) 
+      call edisp248(iuout,outs,90) 
 
 C Clear the list of files and recover a list of files matching
 C the current criteria. Copy this list into listfc for use by
@@ -349,7 +354,8 @@ C Try to use information gathered from file scan.
           ix=1
           do 76 ij=1,nlistf
             listfc70(ij)=' '
-            write(listfc70(ij),'(a)') listfc(ij)(1:nwlistf(ij))
+            lex=MIN0(nwlistf(ij),70)  ! trap file names longer than 70
+            write(listfc70(ij),'(a)') listfc(ij)(1:lex)
   76      continue
           CALL EPICKS(IX,ivlist,outs,' ',
      &      maxw,nlistf,listfc70,'Available files',IER,3)
@@ -434,7 +440,9 @@ C clearfilelist clears a string array of size iasize which should
 C be equivalent to MFFOLD (char*72 listf(iasize))
 C used before call to getfilelist.
       subroutine clearfilelist(listf,iasize)
+      integer iasize
       character*72 listf(iasize)
+
       do 42 i=1,iasize
         listf(i)=' '
   42  continue
@@ -442,16 +450,24 @@ C used before call to getfilelist.
       end
 
 C ********* copyfilelist
-C copyfilelist takes string array of size iasize which should
-C be equivalent to MFFOLD (char*72 listf(iasize)) returned
-C from call to getfilelist and copies it into another string
-C array (char*72 listfc(iasize)). nwlistf(iasize) is the length of
-C each string (returned from getfilelist call).
-C maxw is the maximum width of any string in the list of file
-C names.
+C copyfilelist takes string array from call to getfilelist
+c and copies it into another string using known length
+C of string array. Computes maximum width of the array.
       subroutine copyfilelist(listf,nwlistf,listfc,iasize,maxw)
-      character*72 listf(iasize),listfc(iasize)
+
+C Passed parameters
+      integer iasize             ! array size equiv to MMFOLD
+      character*72 listf(iasize) ! passed in array of file names
+#ifdef OSI
+      integer nwlistf
       dimension nwlistf(iasize)
+#else
+      integer*8 nwlistf
+      dimension nwlistf(iasize)
+#endif
+      character*72 listfc(iasize) ! returned array of file names
+      integer maxw               ! maximum width found in list
+
       integer loop
 
       loop=iasize-1  ! loop is one less than the size
@@ -472,22 +488,36 @@ C names.
 C ********* printfilelist
 C printfilelist reports a list of file and/or folder names
 C recovered from call to C function getfilelist.
-C listf: file/folder names - a string array (char*72 listf(iasize))
-C act: (char*1) `l` as list, `p` as packed line(s).
       subroutine printfilelist(title,act,listf,iasize,nlist)
+
+C Function definition.
+      integer lnblnk
+
+C Passed parameters
+      character*(*) title   ! title of the printed list
+      character act*1       ! action l is list p is packed lines
+      integer iasize,nlist  ! array size and number of items in list
+      character*72 listf(iasize)  ! array of file names
+
       common/OUTIN/IUOUT,IUIN
-      character*(*) title
-      character act*1,t96*96
-      integer iasize,nlist
-      character*72 listf(iasize)
+      character t96*96
+      character*72 printfile
+      integer ilp  ! for length of string
+      integer lntitle
 
       if(nlist.eq.0)then
         return
       else
-        call edisp(iuout,title)
+        call edisp(iuout,'  ')
+        lntitle=lnblnk(title)
+        call edisp248(iuout,title,90)
         if(act.eq.'l')then
           do 42 i=1,nlist
-            call edisp(iuout,listf(i))
+            ilp=lnblnk(listf(i))
+            if(ilp.gt.1)then  ! do not bother with blank or 1 char names
+              write(printfile,'(a)') listf(i)(1:ilp)
+              call edisp(iuout,printfile)
+            endif
   42      continue
           return
         elseif(act.eq.'p')then

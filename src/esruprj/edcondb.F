@@ -53,7 +53,7 @@ C Parameters
 
 C CLSDES (30 char) is an array for menu items listing each class.
 C CLSSEL (36 char) is an array for menu items for the selected class.
-      DIMENSION CLSDES(30),PDBM(35),CLSSEL(30),ICLSSEL(30)
+      DIMENSION CLSDES(30),PDBM(37),CLSSEL(30),ICLSSEL(30)
       integer iwhicharray   ! for each item in menu point back to array
       dimension iwhicharray(60)
       character ACTION*1,CLSSEL*36,lltmp*144,CLSDES*32
@@ -184,6 +184,7 @@ C If user canceled the listing the reset unit to iuout and loop back.
             WRITE(outs,'(3a,i2,a)')' Classification: ',
      &        matcatname(IC)(1:lnblnk(matcatname(IC))),' (',IC,')'
             call edisp(itu,outs)
+            call edisp248(itu,matcatdoc(IC),100)
             call edisp(itu,' ')
             call edisp(itu,
      &      'Index|Con-   |Den- |Specif|IR  |Solr|Vapour|Description')
@@ -295,15 +296,15 @@ C Loop through data for this classification for manipulation.
 C Display the materials of the classification in a menu.
     3   PDBM(1)= '  Units:  Conductivity W/(m deg.C), Density kg/m**3'
         PDBM(2)= '          Specific Heat J/(kg deg.C) '
-        WRITE(PDBM(3),33)matcatname(IC)(1:lnblnk(matcatname(IC))),IC
-   33   FORMAT    ('a Classification: ',A,' (',I2,')')
-        WRITE(PDBM(4),'(A,I3)')'  Number of materials:',matcatitems(IC)
-        PDBM(5)=   '  ___________________________________'
-        PDBM(6)=
+        WRITE(PDBM(3),'(3a,i2,a,i2,a)') '1 Classification: ',
+     &    matcatname(IC)(1:lnblnk(matcatname(IC))),' (',IC,') with ',
+     &    matcatitems(IC),' entries.'
+        PDBM(4)=   '  ___________________________________'
+        PDBM(5)=
      &  ' |Conduc-|Den- |Specif|IR  |Solr|Diffu|Description  '
-        PDBM(7)=
+        PDBM(6)=
      &  ' |tivity |sity |heat  |emis|abs |resis|of material  '
-        M=7
+        M=6
         DO 30 J=1,matdbitems
 
 C Loop through all of the items in the array and list out those that are
@@ -346,17 +347,15 @@ C Remember the array index that goes with the menu position (m).
         NC=M
         PDBM(NC+1)=  '  __________________________     '
         if(ACTION.eq.'M'.or.ACTION.eq.'m')then
-          PDBM(NC+2)='1 add/ delete material           '
-          PDBM(NC+3)='2 copy material                  '
-          PDBM(NC+4)='! save materials database        '
+          PDBM(NC+2)='* add/ delete/ copy material     '
+          PDBM(NC+3)='! save materials database        '
         elseif(ACTION.eq.'-')then
           PDBM(NC+2)='                                 '
           PDBM(NC+3)='                                 '
-          PDBM(NC+4)='                                 '
         endif
-        PDBM(NC+5)=  '? help                           '
-        PDBM(NC+6)=  '- exit this menu                 '
-        NITMS=NC+6
+        PDBM(NC+4)=  '? help                           '
+        PDBM(NC+5)=  '- exit this menu                 '
+        NITMS=NC+5
         INO=-4
 
 C Help text for this menu.
@@ -436,15 +435,15 @@ C Edit classification name.
           endif
 
 C Also edit classification documentation.
-          t248=matdoc(IC)(1:lnblnk(matdoc(IC)))
+          t248=matcatdoc(IC)(1:lnblnk(matcatdoc(IC)))
           CALL EASKS248(t248,'Category notes:',' ',
      &      72,'this category...','category notes',IER,nbhelp)
           if(t248(1:2).ne.'  ')then
-            write(matdoc(IC),'(a)') t248(1:lnblnk(t248))
+            write(matcatdoc(IC),'(a)') t248(1:lnblnk(t248))
             chgdb=.true.
             MODDB=.TRUE.
           endif
-        ELSEIF(INO.GE.4.AND.INO.LE.7)THEN
+        ELSEIF(INO.GE.4.AND.INO.LE.6)THEN
           GOTO 2
         ELSEIF(INO.EQ.NITMS-1)THEN
           helptopic='materials_db_overview'
@@ -495,86 +494,10 @@ C Reset flag to show db is current with local arrays.
           ENDIF
         ELSEIF(INO.EQ.NITMS-3)THEN
 
-C Copy an existing material to a new one at end of the array.
-C Use iwhicharray to go from the menu position to the array
-C end of the array.  
-          CALL USRMSG(' ',' Which item of list?','-')
-          CALL EMENU('Copy material',PDBM,NITMS,IW)
-          IWHICH=iwhicharray(IW)
-          ILNE=matdbitems+1
-
-C See if there is an available slot in the 0-600 list of legacy
-C indices. If so make up the initial name but allow the user to
-C edit it. If not then assign -99 and make up initial name based
-C on the original.
-          ip=matlegindex(IWHICH)
-          call getnextascislot(ip,inext)
-          if(inext.le.600)then 
-            write(matname(ILNE),'(a,i3.3)') 'mat_',inext
-            matlegindex(ILNE)=inext
-            mathash(inext)=ILNE
-          else
-            write(matname(ILNE),'(2a)') 
-     &        matname(IWHICH)(1:lnblnk(matname(IWHICH))),'c'
-            matlegindex(ILNE)=-99
-          endif
-
-C If there is room add a note about its origin.
-          ils=lnblnk(matdoc(IWHICH))
-          iln=lnblnk(matname(IWHICH))
-          if(ils.le.200)then
-            write(matdoc(ILNE),'(4a)') 
-     &        matdoc(IWHICH)(1:ils),' (copy of ',
-     &        matname(IWHICH)(1:iln),')'
-          else
-            matdoc(ILNE)=matdoc(IWHICH)
-          endif
-          matdbcon(ILNE)=matdbcon(IWHICH)
-          matdbden(ILNE)=matdbden(IWHICH)
-          matdbsht(ILNE)=matdbsht(IWHICH)
-          matdboute(ILNE)=matdboute(IWHICH)
-          matdbine(ILNE)=matdbine(IWHICH)
-          matdbouta(ILNE)=matdbouta(IWHICH)
-          matdbina(ILNE)=matdbina(IWHICH)
-          matdbdrv(ILNE)=matdbdrv(IWHICH)
-          matdbthick(ILNE)=matdbthick(IWHICH)
-          matcatindex(ILNE)=matcatindex(IWHICH)  ! keep in same category
-          matopaq(ILNE)=matopaq(IWHICH)
-          matirtran(ILNE)=matirtran(IWHICH)
-          matsoldrtrn(ILNE)=matsoldrtrn(IWHICH)
-          matsoldrotrfl(ILNE)=matsoldrotrfl(IWHICH)
-          matsoldrinrfl(ILNE)=matsoldrinrfl(IWHICH)
-          matvistran(ILNE)=matvistran(IWHICH)
-          matvisotrfl(ILNE)=matvisotrfl(IWHICH)
-          matvisinrfl(ILNE)=matvisinrfl(IWHICH)
-          matrender(ILNE)=matrender(IWHICH)
-
-          matgapcnd(ILNE,1)=matgapcnd(IWHICH,1)
-          matgapcnd(ILNE,2)=matgapcnd(IWHICH,2)
-          matgapcnd(ILNE,3)=matgapcnd(IWHICH,3)
-          matgapcnd(ILNE,4)=matgapcnd(IWHICH,4)
-          matvisco(ILNE,1)=matvisco(IWHICH,1)
-          matvisco(ILNE,2)=matvisco(IWHICH,2)
-          matvisco(ILNE,3)=matvisco(IWHICH,3)
-          matvisco(ILNE,4)=matvisco(IWHICH,4)
-          matgapden(ILNE,1)=matgapden(IWHICH,1)
-          matgapden(ILNE,2)=matgapden(IWHICH,2)
-          matgapden(ILNE,3)=matgapden(IWHICH,3)
-          matgapden(ILNE,4)=matgapden(IWHICH,4)
-          matprandtl(ILNE,1)=matprandtl(IWHICH,1)
-          matprandtl(ILNE,2)=matprandtl(IWHICH,2)
-          matgapsht(ILNE,1)=matgapsht(IWHICH,1)
-          matgapsht(ILNE,2)=matgapsht(IWHICH,2)
-          matdbitems=matdbitems+1
-          matcatitems(IC)=matcatitems(IC)+1
-          MODDB=.TRUE.
-          chgdb=.true.
-        ELSEIF(INO.EQ.NITMS-4)THEN
-
-C Add or delete and material from db.
-          CALL EASKABCD(' ','Options: ','Delete existing material',
+C Add delete or copy material from db.
+          CALL EASKATOG('Options: ',' ','Delete existing material',
      &      'Add material','Derive non-homogeneous material',
-     &      'continue',IW,nbhelp)
+     &      'copy existing material','cancel','  ','  ',IW,nbhelp)
           IF(IW.EQ.1)THEN
 
 C Ask the user which one to remove then loop through materials and
@@ -862,11 +785,88 @@ C The additional properties just use the 1st material (change this later).
               matcatindex(ILNE)=IC      ! keep in current category
             endif
           ELSEIF(IW.EQ.4)THEN
-            GOTO 3
+
+C Copy an existing material to a new one at end of the array.
+C Use iwhicharray to go from the menu position to the array
+C end of the array.  
+            CALL USRMSG(' ',' Which item of list?','-')
+            CALL EMENU('Copy material',PDBM,NITMS,IW)
+            IWHICH=iwhicharray(IW)
+            ILNE=matdbitems+1
+
+C See if there is an available slot in the 0-600 list of legacy
+C indices. If so make up the initial name but allow the user to
+C edit it. If not then assign -99 and make up initial name based
+C on the original.
+            ip=matlegindex(IWHICH)
+            call getnextascislot(ip,inext)
+            if(inext.le.600)then 
+              write(matname(ILNE),'(a,i3.3)') 'mat_',inext
+              matlegindex(ILNE)=inext
+              mathash(inext)=ILNE
+            else
+              write(matname(ILNE),'(2a)') 
+     &          matname(IWHICH)(1:lnblnk(matname(IWHICH))),'c'
+              matlegindex(ILNE)=-99
+            endif
+
+C If there is room add a note about its origin.
+            ils=lnblnk(matdoc(IWHICH))
+            iln=lnblnk(matname(IWHICH))
+            if(ils.le.200)then
+              write(matdoc(ILNE),'(4a)') 
+     &          matdoc(IWHICH)(1:ils),' (copy of ',
+     &          matname(IWHICH)(1:iln),')'
+            else
+              matdoc(ILNE)=matdoc(IWHICH)
+            endif
+            matdbcon(ILNE)=matdbcon(IWHICH)
+            matdbden(ILNE)=matdbden(IWHICH)
+            matdbsht(ILNE)=matdbsht(IWHICH)
+            matdboute(ILNE)=matdboute(IWHICH)
+            matdbine(ILNE)=matdbine(IWHICH)
+            matdbouta(ILNE)=matdbouta(IWHICH)
+            matdbina(ILNE)=matdbina(IWHICH)
+            matdbdrv(ILNE)=matdbdrv(IWHICH)
+            matdbthick(ILNE)=matdbthick(IWHICH)
+            matcatindex(ILNE)=matcatindex(IWHICH)  ! keep in same category
+            matopaq(ILNE)=matopaq(IWHICH)
+            matirtran(ILNE)=matirtran(IWHICH)
+            matsoldrtrn(ILNE)=matsoldrtrn(IWHICH)
+            matsoldrotrfl(ILNE)=matsoldrotrfl(IWHICH)
+            matsoldrinrfl(ILNE)=matsoldrinrfl(IWHICH)
+            matvistran(ILNE)=matvistran(IWHICH)
+            matvisotrfl(ILNE)=matvisotrfl(IWHICH)
+            matvisinrfl(ILNE)=matvisinrfl(IWHICH)
+            matrender(ILNE)=matrender(IWHICH)
+
+            matgapcnd(ILNE,1)=matgapcnd(IWHICH,1)
+            matgapcnd(ILNE,2)=matgapcnd(IWHICH,2)
+            matgapcnd(ILNE,3)=matgapcnd(IWHICH,3)
+            matgapcnd(ILNE,4)=matgapcnd(IWHICH,4)
+            matvisco(ILNE,1)=matvisco(IWHICH,1)
+            matvisco(ILNE,2)=matvisco(IWHICH,2)
+            matvisco(ILNE,3)=matvisco(IWHICH,3)
+            matvisco(ILNE,4)=matvisco(IWHICH,4)
+            matgapden(ILNE,1)=matgapden(IWHICH,1)
+            matgapden(ILNE,2)=matgapden(IWHICH,2)
+            matgapden(ILNE,3)=matgapden(IWHICH,3)
+            matgapden(ILNE,4)=matgapden(IWHICH,4)
+            matprandtl(ILNE,1)=matprandtl(IWHICH,1)
+            matprandtl(ILNE,2)=matprandtl(IWHICH,2)
+            matgapsht(ILNE,1)=matgapsht(IWHICH,1)
+            matgapsht(ILNE,2)=matgapsht(IWHICH,2)
+            matdbitems=matdbitems+1
+            matcatitems(IC)=matcatitems(IC)+1
+            MODDB=.TRUE.
+            chgdb=.true.
+
+          ELSEIF(IW.EQ.5)THEN
+            GOTO 3    ! user declined
           ENDIF
-        ELSEIF(INO.EQ.NITMS-5)THEN
+        ELSEIF(INO.EQ.NITMS-4)THEN
           GOTO 2
-        ELSEIF(INO.GT.7.AND.INO.LT.NITMS-5)THEN
+        ELSEIF(INO.GT.6.AND.INO.LT.NITMS-4)THEN
 
 C Identified one of the materials to edit or select.
           IFOC=iwhicharray(INO)
@@ -1376,7 +1376,7 @@ C If this parameter is changed also change it in subroutine GVALUE
       CHARACTER MLCN*12,OTF*4,OPT*12,PROMP2*56,PROMP1*56,T72*72
       CHARACTER*29 MLCITM(36)
       CHARACTER xfile*144,tg*1,delim*1,outs*124
-      character NAM*72,NAM99*72,LAYD*124
+      character NAM*72,NAM99*72,LAYD*124  ! note NAM not actually used
       character lworking*144,fs*1
       CHARACTER STGLP(7)*56
       DIMENSION IVALS(7)
@@ -1452,7 +1452,7 @@ C current menu line index. Build up text strings for the menu.
         IF(IM.GE.IST.AND.(IM.LE.(IST+MIFULL)))THEN
           M=M+1
           CALL EMKEY(M,KEY,IER)
-          call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM)
+          call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM,isymindex)
           WRITE(MLCITM(M),22)KEY,MLCN(1:12),' ',OPT
   22      FORMAT(A1,1X,A12,a,a)
         ENDIF
@@ -1591,13 +1591,15 @@ C Ask for name of the new construction
           IPRMAT(NMLC,1)=1
           DTHK(NMLC,1)=0.10
 
-C Bring up editing menu for new item.
+C Bring up editing menu for new item. Ignore jump requests.
           CALL EPMENSV
-          CALL EDWALL(ITRC,NMLC,moddb,IER)
+          CALL EDWALL(ITRC,NMLC,moddb,jump,IER)
           CALL EPMENRC
           ILEN=NMLC
           IPACT=CREATE
           CALL EKPAGE(IPACT)
+          if(jump.ne.0) call edisp(iuout,
+     &      'Sorry, no jump after new construction.')
         elseif(IW.EQ.2)then
 
 C Compact the list by moving all the items in common MLC up one.
@@ -1655,7 +1657,7 @@ C Copy an existing construction to a new one at end of list.
 
 C Clear the symmetric link so SYMMETRIC or NONSYMMETRIC can be re-established.
 C When editing the construction name use a slightly wider string buffer.
-          call parsemlcdesc(DESC(NMLC),MLCN,OTF,OPT,MLCSYM)
+          call parsemlcdesc(DESC(NMLC),MLCN,OTF,OPT,MLCSYM,isymindex)
           call ismlcsymmetric(nmlc,layermatch)
           if(layermatch)then
             MLCSYM='SYMMETRIC   '
@@ -1671,11 +1673,13 @@ C When editing the construction name use a slightly wider string buffer.
 
 C Bring up editing menu for new item.
           CALL EPMENSV
-          CALL EDWALL(ITRC,NMLC,moddb,IER)
+          CALL EDWALL(ITRC,NMLC,moddb,jump,IER)
           CALL EPMENRC
           ILEN=NMLC
           IPACT=CREATE
           CALL EKPAGE(IPACT)
+          if(jump.ne.0) call edisp(iuout,
+     &      'Sorry, no jump after copy construction.')
         ELSEIF(IW.EQ.4)THEN
 
 C Invert an existing construction. Ask user to select original and if
@@ -1696,7 +1700,7 @@ C there is room in the database copy data to a new item.
           DESC(NMLC)=DESC(IWHICH)
 
 C Extract construction name and check that mlc name has no illegal characters.
-          call parsemlcdesc(DESC(NMLC),T12,OTF,OPT,MLCSYM)
+          call parsemlcdesc(DESC(NMLC),T12,OTF,OPT,MLCSYM,isymindex)
           WRITE(T12OTH,'(A)')DESC(IWHICH)(1:12)
 
 C If there is space attach an "_i" to the end of the name to save the
@@ -1724,7 +1728,7 @@ C Update DESC including the name of the original MLC.
    89     FORMAT(A12,2X,A4,2X,A12,2X,A12)
 
 C Update the original to point to the inverted item.
-          call parsemlcdesc(DESC(IWHICH),T12,OTF,OPT,MLCSYM)
+          call parsemlcdesc(DESC(IWHICH),T12,OTF,OPT,MLCSYM,isymindex)
           WRITE(DESC(IWHICH),89)T12,OTF,OPT,MLCN
 
 C Copy other data associated with the MLC.
@@ -1773,11 +1777,13 @@ C Finally copy temporary data into opposite layer.
 
 C Bring up detailed editing menu.
           CALL EPMENSV
-          CALL EDWALL(ITRC,NMLC,moddb,IER)
+          CALL EDWALL(ITRC,NMLC,moddb,jump,IER)
           CALL EPMENRC
           ILEN=NMLC
           IPACT=CREATE
           CALL EKPAGE(IPACT)
+          if(jump.ne.0) call edisp(iuout,
+     &      'Sorry, no jump after copy invert construction.')
         ENDIF
       ELSEIF(INO.EQ.NITMS-6)THEN
 
@@ -1799,7 +1805,7 @@ C First check if mlc is transparent
         moddb = .true.
         chgdb=.true.
         THCON=CLAMDA(IWH)
-        call parsemlcdesc(DESC(IWH),MLCN,OTF,OPT,MLCSYM)
+        call parsemlcdesc(DESC(IWH),MLCN,OTF,OPT,MLCSYM,isymindex)
         IF(OPT(1:4).EQ.'OPAQ'.OR.OPT(1:4).EQ.'UNKN'.OR.
      &     OPT(1:4).EQ.'CFC ')THEN
           CALL EDISP(IUOUT,' ')
@@ -1902,15 +1908,26 @@ C Call subroutine to calculate g-value and report
       ELSEIF(INO.GT.MHEAD.AND.INO.LT.(NITMS-MCTL+1))THEN
 
 C Edit block identified by KEYIND, remind user of details and then
-C bring up an editing facility.
+C bring up an editing facility. User may have indicated that they
+C would like to jump to a previous or subsequent construction.
+C << recode later to avoid goto statement >>
         CALL KEYIND(NITMS,INO,IFOC,IO)
-        CALL EDISP(iuout,' ')
+ 99     CALL EDISP(iuout,' ')
         call etmldb(2,iuout,IFOC,imerr)
         CALL EPMENSV
-        CALL EDWALL(ITRC,IFOC,moddb,IER)
+        CALL EDWALL(ITRC,IFOC,moddb,jump,IER)
         CALL EPMENRC
         ISEL=IFOC
         chgdb=moddb
+        if(jump.eq.0)then
+          continue
+        elseif(jump.eq.-1)then
+          ifoc=ifoc-1
+          goto 99
+        elseif(jump.eq.1)then
+          ifoc=ifoc+1
+          goto 99
+        endif
       else
         INO=-1
         GOTO 2
@@ -1940,7 +1957,7 @@ C Some of the items in the GAPS material category have a -99
 C index (no equivalent in legacy databases) and the current code
 C assumes that -99 entities may be gasses.
 
-      SUBROUTINE EDWALL(ITRC,IFOC,moddb,IER)
+      SUBROUTINE EDWALL(ITRC,IFOC,moddb,jump,IER)
 #include "building.h"
 #include "model.h"
 
@@ -1955,6 +1972,7 @@ C Paramters
       integer ITRC  ! if > 1 then be verbose
       integer IFOC  ! index in the construction (array)
       logical moddb ! set to true of construction altered
+      integer jump  ! zero no jump, 1 jump to next, -1 jump to previous
       integer IER   ! zero is ok, one is a problem
 
       COMMON/FILEP/IFIL
@@ -1962,6 +1980,7 @@ C Paramters
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -1978,7 +1997,7 @@ C Material properties.
       logical closemat1,closemat2
 
 C Note: size of MLED supports a dozen layers in a construction.
-      DIMENSION MLED(27),PNAM(ME),MMLAY(ME+2),imlay(ME+2)
+      DIMENSION MLED(29),PNAM(ME),MMLAY(ME+2),imlay(ME+2)
       character*72 LTMP
       CHARACTER NAM*72,KEY*1,GDESCR*36
       CHARACTER MLCN*12,OTF*4,OPT*12,SOPT*12,LAYD*124
@@ -2034,7 +2053,7 @@ C is true then we can continue (the common blocks are filled).
 
 C Extract construction name, opaque/transp, optical and symmetry properties.
 C Check that mlc name has no illegal characters.
-      call parsemlcdesc(DESC(IFOC),T12,OTF,OPT,MLCSYM)
+      call parsemlcdesc(DESC(IFOC),T12,OTF,OPT,MLCSYM,isymindex)
       call st2name(T12,MLCN)
       if(T12.ne.MLCN)then
         write(outs,'(a,a12,a,a12,a)')' WARNING: Corrected mlc ',
@@ -2167,6 +2186,22 @@ C 0.10 inside upward flow and 0.17 inside downward flow.
       M=M+1
       MLED(M)='* adjust layer to reach U-value  '
       M=M+1
+
+C If possible to jump previous.
+      if(ifoc.eq.1)then
+        MLED(M)='<                              '
+      else
+        MLED(M)='< previous construction        '
+      endif
+      M=M+1
+
+C If possible to jump next.
+      if(ifoc.eq.NMLC)then
+        MLED(M)='>                              '
+      else
+        MLED(M)='> next construction            '
+      endif
+      M=M+1
       MLED(M)='? help                           '
       M=M+1
       MLED(M)='- exit this menu                 '
@@ -2188,7 +2223,7 @@ C Help text for this menu.
       call gethelptext(helpinsub,helptopic,nbhelp)
  
       CALL EMENU('Construction editing',MLED,NLED,ILED)
-      IF(ILED.EQ.NLED)THEN
+      IF(ILED.EQ.NLED.or.ILED.EQ.NLED-2.or.ILED.EQ.NLED-3)THEN
 
 C Check to see that mlc of a single air layer is not specified.
         if(LAYERS(IFOC).eq.1.and.IPR(IFOC,1).EQ.0)then
@@ -2289,6 +2324,15 @@ C Update DESC before returning.
           call edisp(iuout,
      &      'Please ensure that you save the database...')
         endif
+
+C Take into account whether the user as requested a jump.
+        if(ILED.EQ.NLED-2)then
+          jump=1
+        elseif(ILED.EQ.NLED-3)then
+          jump=-1
+        else
+          jump=0
+        endif
         RETURN
       ELSEIF(ILED.EQ.NLED-1)THEN
 
@@ -2296,7 +2340,7 @@ C List the help.
         helptopic='edit_wall_details'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('construction editing',nbhelp,'-',0,0,IER)
-      ELSEIF(ILED.EQ.NLED-2)THEN
+      ELSEIF(ILED.EQ.NLED-4)THEN
 
 C Adjust layer.
         CALL EASKABCD('Adjust options: ',' ','Alter (solid) thickness',
@@ -2317,13 +2361,17 @@ C Ask for which layer to adjust, make sure it is not a gap.
           CALL EPMENRC
         ENDIF
         IF(IW.EQ.1)THEN
+
+C If adjust thickness and a layer picked start thickness equal to
+C what exists up to 250mm.
           if(IX.eq.1.and.imlay(1).gt.2)then
             IWHICH=imlay(1)-2
             write(outs,'(3A,F7.4,A)')' Adjusting ',PNAM(IWHICH)(1:18),
      &        '... which is currently ',DTHK(IFOC,IWHICH)*1000.0,
      &        ' thick.'
             call edisp(iuout,outs)
-            t32='   1  250   0.1  '
+            write(t32,'(f7.1,a)') DTHK(IFOC,IWHICH)*1000.0,
+     &        '  250   0.1  '
             CALL EASKS(t32,
      &        'Thickness (minimum & maximum mm) & desired U value',
      &        ' ',32,' ','thickness and U',IER,nbhelp)
@@ -2439,7 +2487,8 @@ C No longer getting closer so step back one and report.
      &        '... which has current ',DRAIR(IFOC,IWHICH,1),
      &        ' air gap resistance.'
             call edisp(iuout,outs)
-            t32='   0.17  0.60   1.4  '
+            write(t32,'(f7.4,a)') DRAIR(IFOC,IWHICH,1),
+     &        '  0.60   1.4  '
             CALL EASKS(t32,
      &        'Air gap resistance (min & max) & desired U value',
      &        ' ',32,' ','resistance and U',IER,nbhelp)
@@ -2448,7 +2497,7 @@ C No longer getting closer so step back one and report.
             CALL EGETWR(t32,K,VALY,0.1,250.,'W','maximum r',IER)
             CALL EGETWR(t32,K,VALZ,0.001,10.,'W','desired U',IER)
 
-C Start at the VALX thickness and increment 1mm each time until
+C Start at the VALX resistance and increment by .002 each time until
 C close to VALZ.
             deltau=abs(currentu-valz)  ! remember difference
             write(outs,'(a,f6.3,a)') 'Improvement of ',deltau,' needed.'
@@ -2561,7 +2610,7 @@ C No longer getting closer so step back one and report.
 
 C Process the request.
 
-      ELSEIF(ILED.EQ.NLED-3)THEN
+      ELSEIF(ILED.EQ.NLED-5)THEN
 
 C +- Layer.
         CALL EASKABCD(' Layer options: ',' ',' Delete',
@@ -2817,12 +2866,12 @@ C for the current item.
           WRITE(DESC(IFOC),89)MLCN,OTF,OPT,MLCSYM
           do 795 k=1,NMLC
             if(DESC(k)(1:12).eq.MLCSYM(1:12))then
-              call parsemlcdesc(DESC(k),T12,OTF,OPT,MLCSYM)
+              call parsemlcdesc(DESC(k),T12,OTF,OPT,MLCSYM,isymindex)
               WRITE(T12OTH,'(A)')DESC(IFOC)(1:12)
               WRITE(DESC(k),89)T12,OTF,OPT,T12OTH
             endif
   795     continue
-          call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM)
+          call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
         endif
         moddb = .true.
       ELSEIF(ILED.EQ.2)THEN
@@ -2877,6 +2926,7 @@ C << geometry file before writing it out.
             WRITE(outs,94)
             call edisp(iuout,outs)
             modgeo=.false.
+
             do 91 i=1,nsur
               ioc=IZSTOCN(IZ,i)
               if(SSMLCN(ioc)(1:12).eq.DESC(IFOC)(1:12))then
@@ -2957,12 +3007,14 @@ C Allow linking to inverted construction.
             if(LAYERS(IFOC).eq.LAYERS(iwhich))then
 
 C Update the linked construction to point back to the current item.
-              call parsemlcdesc(DESC(IWHICH),T12,OTF,OPT,MLCSYM)
+              call parsemlcdesc(DESC(IWHICH),T12,OTF,OPT,MLCSYM,
+     &          isymindex)
               WRITE(T12OTH,'(A)')DESC(IFOC)(1:12)
               WRITE(DESC(IWHICH),89)T12,OTF,OPT,T12OTH
 
 C Extract strings from focus DESC prior to updating its SYM tag.
-              call parsemlcdesc(DESC(IFOC),T12,OTF,OPT,MLCSYM)
+              call parsemlcdesc(DESC(IFOC),T12,OTF,OPT,MLCSYM,
+     &          isymindex)
               WRITE(T12OTH,'(A)')DESC(IWHICH)(1:12)
               WRITE(MLCSYM,'(A)')DESC(IWHICH)(1:12)
               WRITE(DESC(IFOC),89)T12,OTF,OPT,T12OTH
@@ -3362,6 +3414,7 @@ C so that partitions are counted as half area).
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       character mlcname*12

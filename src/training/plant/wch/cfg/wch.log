@@ -14,34 +14,35 @@ University of Technology, 1991.
 
 
 
-          7.4.3.  Influence of  Acceleration  Heating  on  Room  Thermostat
-          Behaviour
+7.4.3.  Influence of  Acceleration  Heating  on  Room  Thermostat
+        Behaviour
 
-          This final case study was inspired by experimental findings  from
-          the  pilot  measurements which were mentioned in Chapter 1. These
-          measurements, reported in (Hensen et al. 1987), were carried  out
-          in a relatively small flat with ditto heating system (wet central
-          heating system, controlled  by  a  mechanical  room  thermostat).
-          Technical considerations led to some modifications of the heating
-          system during the measurements, one of which  was  disabling  the
-          thermostat's  acceleration  heating  (which  is used to raise the
-          temperature of the sensor more  rapidly  towards  the  switch-off
-          temperature  in  order  to decrease the room air temperature dif-
-          ferential). The  acceleration  heating  is  very  important  with
-          respect to the boiler switch frequency. In this specific case and
-          given the prevailing environmental conditions, the  burner  cycle
-          time  (burner-on  till  burner-on) was about 90 times longer when
-          the acceleration heating was disabled. The total burner-on time -
-          for an equal period of time - was approximately 50% shorter, sug-
-          gesting a strong decrease in fuel consumption. It should be noted
-          however, that in this specific case both the number of cycles per
-          hour (at average heating season conditions ~ 30) and  the  boiler
-          stand-by heat losses may be regarded as well above average.
-          A longer cycle time also has consequences  with  respect  to  the
-          fluctuation of the air temperature. Without the acceleration ele-
-          ment the fluctuation of the mean room air temperature during  one
-          cycle, is much larger. Thermal comfort acceptability criteria for
-          these fluctuating conditions, were discussed in Chapter 2.
+This final case study was inspired by experimental findings  from
+the  pilot  measurements which were mentioned in Chapter 1. These
+measurements, reported in (Hensen et al. 1987), were carried  out
+in a relatively small flat with ditto heating system (wet central
+heating system, controlled  by  a  mechanical  room  thermostat).
+Technical considerations led to some modifications of the heating
+system during the measurements, one of which  was  disabling  the
+thermostat's  acceleration  heating  (which  is used to raise the
+temperature of the sensor more  rapidly  towards  the  switch-off
+temperature  in  order  to decrease the room air temperature dif-
+ferential). The  acceleration  heating  is  very  important  with
+respect to the boiler switch frequency. In this specific case and
+given the prevailing environmental conditions, the  burner  cycle
+time  (burner-on  till  burner-on) was about 90 times longer when
+the acceleration heating was disabled. The total burner-on time -
+for an equal period of time - was approximately 50% shorter, sug-
+gesting a strong decrease in fuel consumption. It should be noted
+however, that in this specific case both the number of cycles per
+hour (at average heating season conditions ~ 30) and  the  boiler
+stand-by heat losses may be regarded as well above average.
+
+A longer cycle time also has consequences  with  respect  to  the
+fluctuation of the air temperature. Without the acceleration ele-
+ment the fluctuation of the mean room air temperature during  one
+cycle, is much larger. Thermal comfort acceptability criteria for
+these fluctuating conditions, were discussed in Chapter 2.
 
 
 
@@ -50,186 +51,186 @@ University of Technology, 1991.
                by (part of) a wet central heating system.
 
 
-          The objective of the present case study is  to  see  whether  the
-          above  mentioned observations can be repeated - by computer simu-
-          lation - for a more general  case,  and  to  investigate  whether
-          decrease  of thermostat acceleration heating might be a potential
-          energy conservation strategy.  Due to  available  resources,  the
-          following is a very limited attempt in this respect, but is to be
-          felt useful in demonstrating yet another field of application  of
-          the models described in this dissertation.
+The objective of the present case study is  to  see  whether  the
+above  mentioned observations can be repeated - by computer simu-
+lation - for a more general  case,  and  to  investigate  whether
+decrease  of thermostat acceleration heating might be a potential
+energy conservation strategy.  Due to  available  resources,  the
+following is a very limited attempt in this respect, but is to be
+felt useful in demonstrating yet another field of application  of
+the models described in this dissertation.
 
-          Imagine a building and plant configuration as schematically shown
-          in  Figure  7.12. The room is facing due south, and is located at
-          ground level of a reference house for energy related research  as
-          described  in  (NOVEM  1990),  which  represents a typical Dutch,
-          garden-orientated, terraced house. The exterior envelope is insu-
-          lated  according to prevailing regulations (walls and roof: ther-
-                                   2                                 2
-          mal resistance R  ~ 2.5 m K/W;  ground  floor:   R  ~ 1.3 m K/W).
-                          c ~                               c ~
-          For the present study, the air temperatures of the spaces adjoin-
-          ing the living room are kept at constant values as  indicated  in
-          Figure 7.12. The infiltration rate (1.0 air changes per hour) was
-          also kept constant, and for the casual gains a reference  profile
-          as  suggested by Van der Laan et al. (1988) was used.  The living
-          room is serviced by (part  of)  a  wet  central  heating  system,
-          comprising:
-          - a (two node model) radiator (M = 25 kg; c = 600 J/kgK)  with  a
-            nominal  heat  emission  of  2000  W  (at  nominal temperatures
-            90/70/20),  and  heat  emission  exponent  1.3.  The   radiator
-            environment  temperature  is  evaluated (using equation (5.37))
-            from the living room air temperature  and  the  inside  surface
-            temperatures  of  the  facade and the ground floor.  The latter
-            two are both assigned a weight factor (see equation (5.37))  of
-            0.5.
-          - the (two node model) boiler (M = 25 kg; c = 1000 J/kgK) denoted
-            A2  in  Figure  5.12a, and with respect to stand-by losses, the
-            boiler denoted C in Figure  5.12b.  The  normalized  start-stop
-            losses  are  set  at 1 s, and upper boiler temperature limit is
-                     o
-            set at 95 C.  The gas consumption in stand-by mode is set at 1%
-            of  the full load gas consumption. The latter is scaled down to
-                                                                    3
-            accommodate the current single radiator system: 8.3E-5 m /s gas
-                                                     3              0
-            with  a  caloric heating value of 35 MJ/m , which yields a heat
-                                                     0
-            output of approximately 2500 W when the water sided  efficiency
-            is 0.86.
-                                                                 3
-          - a pump delivering a fixed water flow rate of 2.4E-5 m /s
-          - two connecting lengths (10 m each) of 15  mm  in  diameter  wet
-            central heating pipe
-          - a  mechanical  room  thermostat  (M = 0.05 kg;  c = 1000 J/kgK)
-            located  in  the living room, and sensing a mix of air tempera-
-            ture and inside surface temperature of the common dividing wall
-            with  the neighbouring house and the wall separating the living
-            from the hall.  The  equivalent  thermal  conductances  between
-            these  temperatures  and  the  sensor  were estimated at: 0.04,
-            0.01, and 0.01 W/K respectively.
+Imagine a building and plant configuration as schematically shown
+in  Figure  7.12. The room is facing due south, and is located at
+ground level of a reference house for energy related research  as
+described  in  (NOVEM  1990),  which  represents a typical Dutch,
+garden-orientated, terraced house. The exterior envelope is insu-
+lated  according to prevailing regulations (walls and roof: ther-
+			 2				   2
+mal resistance R  ~ 2.5 m K/W;  ground  floor:   R  ~ 1.3 m K/W).
+		c ~				  c ~
+For the present study, the air temperatures of the spaces adjoin-
+ing the living room are kept at constant values as  indicated  in
+Figure 7.12. The infiltration rate (1.0 air changes per hour) was
+also kept constant, and for the casual gains a reference  profile
+as  suggested by Van der Laan et al. (1988) was used.  The living
+room is serviced by (part  of)  a  wet  central  heating  system,
+comprising:
+- a (two node model) radiator (M = 25 kg; c = 600 J/kgK)  with  a
+  nominal  heat  emission  of  2000  W  (at  nominal temperatures
+  90/70/20),  and  heat  emission  exponent  1.3.  The   radiator
+  environment  temperature  is  evaluated (using equation (5.37))
+  from the living room air temperature  and  the  inside  surface
+  temperatures  of  the  facade and the ground floor.  The latter
+  two are both assigned a weight factor (see equation (5.37))  of
+  0.5.
+- the (two node model) boiler (M = 25 kg; c = 1000 J/kgK) denoted
+  A2  in  Figure  5.12a, and with respect to stand-by losses, the
+  boiler denoted C in Figure  5.12b.  The  normalized  start-stop
+  losses  are  set  at 1 s, and upper boiler temperature limit is
+	   o
+  set at 95 C.  The gas consumption in stand-by mode is set at 1%
+  of  the full load gas consumption. The latter is scaled down to
+							  3
+  accommodate the current single radiator system: 8.3E-5 m /s gas
+					   3		  0
+  with  a  caloric heating value of 35 MJ/m , which yields a heat
+					   0
+  output of approximately 2500 W when the water sided  efficiency
+  is 0.86.
+						       3
+- a pump delivering a fixed water flow rate of 2.4E-5 m /s
+- two connecting lengths (10 m each) of 15  mm  in  diameter  wet
+  central heating pipe
+- a  mechanical  room  thermostat  (M = 0.05 kg;  c = 1000 J/kgK)
+  located  in  the living room, and sensing a mix of air tempera-
+  ture and inside surface temperature of the common dividing wall
+  with  the neighbouring house and the wall separating the living
+  from the hall.  The  equivalent  thermal  conductances  between
+  these  temperatures  and  the  sensor  were estimated at: 0.04,
+  0.01, and 0.01 W/K respectively.
 
-          With respect to building/plant interaction and control, the  fol-
-          lowing was defined:
-          - a building side control function (as described in Section 5.6),
-            defining  that  the heat output of the radiator would be effec-
-            tuated at the building zone air point. Note that for all  other
-                                                                     o
-            plant components a constant containment temperature of 18 C was
-            assumed
-          - a first plant control loop to actuate the boiler on  the  basis
-            of the temperature sensed by the room thermostat. Unless stated
-                                                          o
-            otherwise, the set point temperature was  21.5 C,  and  a  hys-
-            teresis of 0.5 K was assumed.
-          - a second plant control loop  sensing  whether  the  boiler  was
-            actually  on  or off during a certain simulation time step, and
-            which - in case it was on - inputs a heat flux into the sensing
-            element.  This  control  loop  thus  simulates the acceleration
-            heating of the room thermostat.
-
-
-
-
-               Figure 7.13 Influence of acceleration heating on  fluc-
-               tuation of mean living room air temperature and on tem-
-               perature as sensed by the room thermostat during a  two
-               hour simulation period.
-
-
-          The degree of heat input is the  primary  parameter  to  be  con-
-          sidered  in  the  following.  To  illustrate the influence of the
-          degree of acceleration heating, Figure 7.13 shows some simulation
-          results  comprising  a two hour period of a Dutch climatic refer-
-          ence year for energy research (Bruggen  1978).   The  simulations
-          were  performed for two values of thermostat heat input: 0.05 and
-          0.10 W. For the given conditions, this gives either approximately
-          1  or  2  cycles per hour, resulting in air temperature differen-
-          tials of approximately 1 and 2 K respectively. Figure  7.13  also
-          indicates  the set point differential. It may be seen that in the
-          0.05 W input case, the sensed temperature still rises even  after
-          the burner is switched off. This is due to the fact that at those
-          points in time the room air temperature is actually  higher  than
-          the  thermostat set point. Note that there are two transient fac-
-          tors which play a role in the time lag and damping of the  sensed
-          temperature  when  compared  to the room air temperature: (1) the
-          sensed temperature depends on both air temperature  and  building
-          construction  temperatures  (which  lag behind because of thermal
-          inertia of the  building  materials),  and  (2)  thermal  inertia
-          effects of the heating system itself.
+With respect to building/plant interaction and control, the  fol-
+lowing was defined:
+- a building side control function (as described in Section 5.6),
+  defining  that  the heat output of the radiator would be effec-
+  tuated at the building zone air point. Note that for all  other
+							   o
+  plant components a constant containment temperature of 18 C was
+  assumed
+- a first plant control loop to actuate the boiler on  the  basis
+  of the temperature sensed by the room thermostat. Unless stated
+						o
+  otherwise, the set point temperature was  21.5 C,  and  a  hys-
+  teresis of 0.5 K was assumed.
+- a second plant control loop  sensing  whether  the  boiler  was
+  actually  on  or off during a certain simulation time step, and
+  which - in case it was on - inputs a heat flux into the sensing
+  element.  This  control  loop  thus  simulates the acceleration
+  heating of the room thermostat.
 
 
 
-               Figure  7.14 Influence of thermal load on sustained de-
-               viation between room  air  temperature  and  set  point
-                    o
-               (21.5 C)  of  mechanical  room thermostat. Note the en-
-               larged top y-axis scaling!
+
+     Figure 7.13 Influence of acceleration heating on  fluc-
+     tuation of mean living room air temperature and on tem-
+     perature as sensed by the room thermostat during a  two
+     hour simulation period.
 
 
-          As also demonstrated by Figure 7.13, the resulting  average  room
-          air  temperature  is  affected  too by the degree of acceleration
-          heating; ie the average air temperature increases with decreasing
-          acceleration  heating.  There is however yet another factor which
-          influences the resulting average room air temperature: the  ther-
-          mal  load  of  the  system  (which affects the length of time the
-          thermostat is switched on). This is clearly demonstrated by  Fig-
-          ure  7.14 which shows the room air temperature (and its deviation
-          from the thermostat set point) in relation to  the  ambient  tem-
-          perature  which  is  obviously  a  measure  for  the thermal load
-          imposed on the heating system.  When compared to average climatic
-          conditions for The Netherlands, the data for January 13 represent
-          an extremely cold day, while the data for January 15 represent  a
-          fairly average day.
-          For the simulations presented in Figure 7.14, a heat input to the
-          thermostat  sensing element of 0.20 W was assumed, which resulted
-          in burner cycle frequencies of approximately 3, 4, and 5 per hour
-          for  the  periods around 1:00 and 12:00 on January 13, and around
-          12:00 on January 15 respectively. This illustrates that the cycle
-          frequency   decreases   when  the  thermal  load  increases.  The
-          corresponding relative burner-on periods were approximately  73%,
-          62%, and 32% respectively.
+The degree of heat input is the  primary  parameter  to  be  con-
+sidered  in  the  following.  To  illustrate the influence of the
+degree of acceleration heating, Figure 7.13 shows some simulation
+results  comprising  a two hour period of a Dutch climatic refer-
+ence year for energy research (Bruggen  1978).   The  simulations
+were  performed for two values of thermostat heat input: 0.05 and
+0.10 W. For the given conditions, this gives either approximately
+1  or  2  cycles per hour, resulting in air temperature differen-
+tials of approximately 1 and 2 K respectively. Figure  7.13  also
+indicates  the set point differential. It may be seen that in the
+0.05 W input case, the sensed temperature still rises even  after
+the burner is switched off. This is due to the fact that at those
+points in time the room air temperature is actually  higher  than
+the  thermostat set point. Note that there are two transient fac-
+tors which play a role in the time lag and damping of the  sensed
+temperature  when  compared  to the room air temperature: (1) the
+sensed temperature depends on both air temperature  and  building
+construction  temperatures  (which  lag behind because of thermal
+inertia of the  building  materials),  and  (2)  thermal  inertia
+effects of the heating system itself.
 
 
-               Table  7.6  Results  of  simulations  -  comprising the
-               period January 12 to January 15 inclusive - for various
-               degrees of acceleration heating applied to the mechani-
-               cal room thermostat
-          
 
-          To investigate  whether  the  overall  gas  consumption  is  also
-          affected,  several simulations - comprising the period January 12
-          to January 15 inclusive - were performed for various  degrees  of
-          acceleration heating.  From the results presented above it may be
-          clear that when the  simulations  would  start  from  a  constant
-          thermostat set point, this would lead to different  average  room
-          air  temperatures.  Obviously the results would then be incompar-
-          able. Therefore some of the thermostat set  points  where  chosen
-          (by  trial  and  error)  such that the resulting average room air
-          temperature (for January 15) would be equal. The  most  important
-          simulation  results  - with respect to the investigated problem -
-          are collected in Table 7.6.
+     Figure  7.14 Influence of thermal load on sustained de-
+     viation between room  air  temperature  and  set  point
+	  o
+     (21.5 C)  of  mechanical  room thermostat. Note the en-
+     larged top y-axis scaling!
 
-          When the cycle frequencies and the corresponding air  temperature
-          differentials  are  compared with the thermal comfort criteria as
-          described in Chapter 2, all cases presented  in  Table  7.6  fall
-          within  the  comfort  limits  for  transient conditions. Only the
-          cases with the smallest degree of heating acceleration seem to be
-          critical  during  the  extremly cold day; ie air temperature dif-
-          ferential (= peak-to-peak  amplitude)  approximately  3.3  K.  It
-          should be noted however that the criteria as described in Chapter
-          2 should be applied to the operative temperature, the fluctuation
-          of  which  is  much smaller than the air temperature fluctuation.
-          This is evidenced by Figure 7.15 which shows  simulation  results
-                                           o
-          for  the  "0.01 W and O    = 21.5 C" case during January 15. From
-                                 set
-          this figure it may also be concluded  that  in  order  to  create
-          thermally  comfortable conditions, the thermostat set point would
-                                     o
-          have to be higher than 21.5 C, because the operative  temperature
-          falls  below  the thermal comfort zone if we assume normal indoor
-          clothing and nearly sedentary activity.
+
+As also demonstrated by Figure 7.13, the resulting  average  room
+air  temperature  is  affected  too by the degree of acceleration
+heating; ie the average air temperature increases with decreasing
+acceleration  heating.  There is however yet another factor which
+influences the resulting average room air temperature: the  ther-
+mal  load  of  the  system  (which affects the length of time the
+thermostat is switched on). This is clearly demonstrated by  Fig-
+ure  7.14 which shows the room air temperature (and its deviation
+from the thermostat set point) in relation to  the  ambient  tem-
+perature  which  is  obviously  a  measure  for  the thermal load
+imposed on the heating system.  When compared to average climatic
+conditions for The Netherlands, the data for January 13 represent
+an extremely cold day, while the data for January 15 represent  a
+fairly average day.
+For the simulations presented in Figure 7.14, a heat input to the
+thermostat  sensing element of 0.20 W was assumed, which resulted
+in burner cycle frequencies of approximately 3, 4, and 5 per hour
+for  the  periods around 1:00 and 12:00 on January 13, and around
+12:00 on January 15 respectively. This illustrates that the cycle
+frequency   decreases	when  the  thermal  load  increases.  The
+corresponding relative burner-on periods were approximately  73%,
+62%, and 32% respectively.
+
+
+     Table  7.6  Results  of  simulations  -  comprising the
+     period January 12 to January 15 inclusive - for various
+     degrees of acceleration heating applied to the mechani-
+     cal room thermostat
+
+
+To investigate  whether  the  overall  gas  consumption  is  also
+affected,  several simulations - comprising the period January 12
+to January 15 inclusive - were performed for various  degrees  of
+acceleration heating.  From the results presented above it may be
+clear that when the  simulations  would  start  from  a  constant
+thermostat set point, this would lead to different  average  room
+air  temperatures.  Obviously the results would then be incompar-
+able. Therefore some of the thermostat set  points  where  chosen
+(by  trial  and  error)  such that the resulting average room air
+temperature (for January 15) would be equal. The  most  important
+simulation  results  - with respect to the investigated problem -
+are collected in Table 7.6.
+
+When the cycle frequencies and the corresponding air  temperature
+differentials  are  compared with the thermal comfort criteria as
+described in Chapter 2, all cases presented  in  Table  7.6  fall
+within  the  comfort  limits  for  transient conditions. Only the
+cases with the smallest degree of heating acceleration seem to be
+critical  during  the  extremly cold day; ie air temperature dif-
+ferential (= peak-to-peak  amplitude)  approximately  3.3  K.  It
+should be noted however that the criteria as described in Chapter
+2 should be applied to the operative temperature, the fluctuation
+of  which  is  much smaller than the air temperature fluctuation.
+This is evidenced by Figure 7.15 which shows  simulation  results
+				 o
+for  the  "0.01 W and O    = 21.5 C" case during January 15. From
+		       set
+this figure it may also be concluded  that  in  order  to  create
+thermally  comfortable conditions, the thermostat set point would
+			   o
+have to be higher than 21.5 C, because the operative  temperature
+falls  below  the thermal comfort zone if we assume normal indoor
+clothing and nearly sedentary activity.
 
 
 
@@ -239,40 +240,40 @@ University of Technology, 1991.
                 th               set
 
 
-          When comparing the gas consumption results  for  the  cases  with
-          equal average air temperature, Table 7.6 indeed evidences that it
-          is possible to conserve energy - while maintaining thermally com-
-          fortable  conditions  - by decreasing the burner cycle frequency.
-                                                        -1
-          Lowering the cycle frequency from 4.5 to 2.0 h  ,  results  in  a
-          gas  consumption  reduction  of  only 1% when the whole period is
-          taken into account, but in a 7% reduction when just the  "average
-          heating  season  day" (ie January 15) is taken into account. This
-          suggests that the optimal strategy is to apply  the  "cycle  fre-
-          quency control" strategy selectively; ie weather dependent.
+ When comparing the gas consumption results  for  the  cases  with
+ equal average air temperature, Table 7.6 indeed evidences that it
+ is possible to conserve energy - while maintaining thermally com-
+ fortable  conditions  - by decreasing the burner cycle frequency.
+					       -1
+ Lowering the cycle frequency from 4.5 to 2.0 h  ,  results  in  a
+ gas  consumption  reduction  of  only 1% when the whole period is
+ taken into account, but in a 7% reduction when just the  "average
+ heating  season  day" (ie January 15) is taken into account. This
+ suggests that the optimal strategy is to apply  the  "cycle  fre-
+ quency control" strategy selectively; ie weather dependent.
 
-          Obviously the above has to be investigated further  with  respect
-          to  what  is  the  optimal  strategy (ie development of rules for
-          intelligent controllers), and for which type  of  systems  is  it
-          applicable.  In  the  present  context, this case study should be
-          regarded as a demonstration of applying the models  presented  in
-          this thesis.
-
-
-          References
+ Obviously the above has to be investigated further  with  respect
+ to  what  is  the  optimal  strategy (ie development of rules for
+ intelligent controllers), and for which type  of  systems  is  it
+ applicable.  In  the  present  context, this case study should be
+ regarded as a demonstration of applying the models  presented  in
+ this thesis.
 
 
-          Bruggen, R.J.A. van der 1978.  "Energy  consumption  for  heating
-               and  cooling  in  relation  to  building  design,"  Doctoral
-               dissertation Eindhoven University of Technology (FAGO).
+ References
 
-          Hensen, J.L.M., L.C.H. Dings, and W.J.A. van de Ven 1987.  "Meet-
-               project  Someren," rapport FAGO 87.08.K., Technische Univer-
-               siteit Eindhoven, Eindhoven.
 
-          Laan, M.J. van der, M.  Dubbeld,  and  J.E.F.  van  Dongen  1988.
-               "Ontwerp van een standaard referentiegedrag voor energiever-
-               bruiksberekeningen," TNO-MT rapport R 88/080, Delft.
+ Bruggen, R.J.A. van der 1978.  "Energy  consumption  for  heating
+      and  cooling  in  relation  to  building  design,"  Doctoral
+      dissertation Eindhoven University of Technology (FAGO).
 
-          NOVEM 1990.  Referentie Tuinkamerwoning, Nederlandse Maatschappij
-               voor Energie en Milieu, Sittard.
+ Hensen, J.L.M., L.C.H. Dings, and W.J.A. van de Ven 1987.  "Meet-
+      project  Someren," rapport FAGO 87.08.K., Technische Univer-
+      siteit Eindhoven, Eindhoven.
+
+ Laan, M.J. van der, M.  Dubbeld,  and  J.E.F.  van  Dongen  1988.
+      "Ontwerp van een standaard referentiegedrag voor energiever-
+      bruiksberekeningen," TNO-MT rapport R 88/080, Delft.
+
+ NOVEM 1990.  Referentie Tuinkamerwoning, Nederlandse Maatschappij
+      voor Energie en Milieu, Sittard.

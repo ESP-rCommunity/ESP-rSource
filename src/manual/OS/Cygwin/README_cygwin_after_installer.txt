@@ -11,10 +11,10 @@ Method one - In the Cygwin command window (note alternative ./link_to commands):
   HOME=/home/your_user_name
   export HOME
   cd bin
-  ./link_to /usr/esru/esp-r/bin_X11
+  ./link_to /usr/esru/esp-r/binX11
 
 or
-  ./link_to /usr/esru/esp-r/bin_GTK
+  ./link_to /usr/esru/esp-r/binGTK
 
 If the link_to script fails to run it may be because it uses the csh command
 interpretor. There is an alternative link_to_bash in /usr/esru/bin.
@@ -40,16 +40,16 @@ Method two
 Some users of ESP-r prefer to use the "C" shell. The entry in the .cshrc file in your home folder might look something like:
 
   set path = ( $path /usr/local/bin /usr/local/bin/ray /usr/local/lib/ray /home/fred/bin \
-    /usr/esru/esp-r/bin_X11 )
+    /usr/esru/esp-r/binX11 )
 
 or
   set path = ( $path /usr/local/bin /usr/local/bin/ray /usr/local/lib/ray /home/fred/bin \
-    /usr/esru/esp-r/bin_GTK )
+    /usr/esru/esp-r/binGTK )
 
 If you are running the bash shell then you would look for an entry
 in the .profile file something like:
 
-export PATH=/usr/local/bin:/usr/esru/esp-r/bin_X11:/home/fred/bin:$PATH
+export PATH=/usr/local/bin:/usr/esru/esp-r/binX11:/home/fred/bin:$PATH
 
 Once you have updated either the .cshrc file or the .profile file then you will need to log out and then back in again.  To see if the environment variables are correct give the following command:
 

@@ -108,6 +108,9 @@ C Name of current application
       character dba*12,act*1,action*12
 C      character curfile*72
 
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
+
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer ier
       integer mitm,INO  ! max items and current menu item
@@ -119,8 +122,12 @@ C For help messages
 
 #ifdef OSI
       integer impx,impy,iw
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 impx,impy,iw
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       call ezero
@@ -199,14 +206,26 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=18
         LIMIT =18
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r db manager ',
+     &  cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r db manager: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
 
 C Open the text display box equal to LIMTTY if MODEL = 8.
       IF(MODEL.EQ.8)THEN
-        CALL win3d(menuchw,8,20,3,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=8; iiw2=20; iiw3=3; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        CALL win3d(menuchw,8,20,3,3,igl,igr,igt,igb,igw,igwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
@@ -823,6 +842,46 @@ C ***** dummy routines for c code active descriptions buttons.
       return
       end
 
+      subroutine chgsun(isunhour)
+      return
+      end
+
+      subroutine chgeye(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,
+     &   JITOBS,JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,JITHLZ,
+     &   JITPPSW)
+
+C Passed paramters.
+      real EVX,EVY,EVZ,VX,VY,VZ,EAN,DIS
+
+C Depending on computer type set integer size of passed parameters.
+#ifdef OSI
+      integer JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
+      integer JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+#else
+      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
+      integer*8 JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+#endif     
+      return
+      end
+
+      subroutine chgzonpik(jizgfoc,jnzg)
+#ifdef OSI
+      integer jizgfoc,jnzg  ! for use with viewtext
+#else
+      integer*8 jizgfoc,jnzg  ! for use with viewtext
+#endif
+      return
+      end
+
+      subroutine chgzonpikarray(jnznog,jnznogv)
+#ifdef OSI
+      integer jnznog,jnznogv
+#else
+      integer*8 jnznog,jnznogv
+#endif
+      return
+      end
+
 C **** kact returns a single character for use as a key in a menu based
 C on browse or modify act character.
       character*1 function kact(act,key)
@@ -1238,14 +1297,13 @@ C Create a matching ascii version of the generic db.
               endif
             elseif(idp.eq.11)then
 
-C Convert binary events profiles database into the ASCII version
-C filling the common blocks. 
+C Scan events profiles database into common blocks. 
               write(LPRFDB,'(a)') gendbfn(idp)
               IPRODB=IFIL+2
-              CALL TROPRO(IAFIL,afil,IER)
+              call TRIPROCOM(IPRODB,afil,IER)
               if(ier.eq.0)then
                 lenf=lnblnk(afil)
-                write(outs,*) 'Legacy asci profiles ',afil(1:lenf),
+                write(outs,*) 'Legacy event profiles ',afil(1:lenf),
      &            ' created...'
                 call edisp(iuout,outs)
                 call IMPROFL(IAFIL,afil,IBFIL,LBGENDB,idp,IER)
@@ -1506,7 +1564,7 @@ C Event profiles.
 C << move to using common blocks version of events >>
             write(LPRFDB,'(a)') gendbfn(idp)
             IPRODB=IFIL+2
-            CALL TROPRO(IAFIL,afil,IER)
+            call TRIPROCOM(IPRODB,afil,IER)
             if(ier.eq.0)then
               lenf=lnblnk(afil)
               write(outs,*) 'Legacy asci profiles ',afil(1:lenf),
@@ -1770,7 +1828,7 @@ C      common/gendb/LGENDB
       character outs*124,LTMP*72,afil*72,LEXP*72
       character tfile*72,act*1,dba*12,db*12,dbask*12,fs*1,doit*248
       character LAGENDB*72,LGENDB*72
-      character dinstpath*48,path*72,dirpath*48
+      character dinstpath*60,path*72,dirpath*72
       logical unixok,browse,moddb,copydef,XST,newfile
       logical legacy,asciifound
       integer ier
@@ -2235,7 +2293,7 @@ C Event profiles database.
 C << need to move to common block version of data >>
             write(LPRFDB,'(a)')  gendbfn(idbhash)
             IPRODB=IFIL+2
-            CALL TROPRO(IAFIL,afil,IER)
+            call TRIPROCOM(IPRODB,afil,IER)
             if(ier.eq.0)then
               lenf=lnblnk(afil)
               write(outs,*) 'Legacy asci profiles ',afil(1:lenf),
@@ -2425,6 +2483,7 @@ C calls in esru_lib.F
       ier=0
       return
       end
+
 
       SUBROUTINE EMKVIEW(IUO,CFGOK,IER)
       logical cfgok

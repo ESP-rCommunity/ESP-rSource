@@ -1785,6 +1785,12 @@ C levels 2, 3 and 4 finding the max, min and average values and times of
 C max and min occurances as offsets from the output period start day in 
 C hours.
 
+C The data structure e.g.for RDMAX holds the peak value, RDMIN the minimum
+C value and RDAVE the average value and rdt ax & RDTMIN are the times of
+C occurrance for the max and min.  The data structure is an array of three
+C where the first is by zone, the 2nd is for three records associated with
+C zone information and the 3rd dimension is the width of the record.
+
       SUBROUTINE MMAPER
 #include "building.h"
 #include "geometry.h"

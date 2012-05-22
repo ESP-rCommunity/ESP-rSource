@@ -38,6 +38,7 @@ C  EDSBMREGS Edits the building regs definition within the UK NCM file.
 C Model generation subroutines
 C  EMKSTRIPPED first pass for notional model creation
 C  EMKSBM   generates notional model
+C  EMKSBM2   alt method to generate notional model
 C  EMKREF   Generates reference model
 C  EMKTYP   Generates typical model
 
@@ -80,20 +81,18 @@ C MMGFUN controls all UK NCM related tasks
 
       integer lnblnk  ! function definition
 
-      common/pophelp/h(60)
-      character*72 h
-      common/FILEP/IFIL
       integer ifil
-      common/OUTIN/IUOUT,IUIN
+      common/FILEP/IFIL
       integer iuout,iuin
+      common/OUTIN/IUOUT,IUIN
 
-      COMMON/HVACINFO/IHVACFLAG,HVACFILE
       INTEGER :: ihvacflag
       CHARACTER*72 HVACFILE
+      COMMON/HVACINFO/IHVACFLAG,HVACFILE
 
-      COMMON/C21/IFCFG,CFGROOT,LCFGF
       INTEGER IFCFG
       CHARACTER CFGROOT*24,LCFGF*72
+      COMMON/C21/IFCFG,CFGROOT,LCFGF
 
       COMMON/SPFLDAT/NSSET,ISSET,ISSTUP,ISBNSTEP,ISPNSTEP,ISSAVE,ISAVGH
       COMMON/SPFLPER/ISSTDAY(MSPS),ISSTMON(MSPS),ISFNDAY(MSPS),
@@ -148,8 +147,8 @@ C MMGFUN controls all UK NCM related tasks
       INTEGER ICOMP,IAIRN,ICAAS
       CHARACTER*72 LAPROB
 
-      COMMON/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
+      COMMON/C1/NCOMP,NCON
 
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       CHARACTER LUALF*72,LCNG*15,LLOC*15
@@ -214,6 +213,12 @@ C MMGFUN controls all UK NCM related tasks
       character LASBEM_O*72  ! to re-establish the ncm file name
       CHARACTER*72 LCNN_O
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MMGFUN'  ! set for subroutine
 
 C Initialise
       OK=.TRUE.
@@ -285,12 +290,10 @@ C stripped model. Define the simulation parameters for the run.
       ISBEM=2    ! have description as well as SBEM db
       INOTI=4    ! mark explicitly as stripped model
       IYEAR=2008 ! match SBEM activities database version year
-      H(1)='Assessment period choices allow you to do quick'
-      H(2)='checks of your model for the month of January or'
-      H(3)='April or July. And eventually you MUST do the'
-      H(4)='annual assessment REQUIRED by the code.'
+      helptopic='ncm_assessment_period'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKABCD(' ','Initial assessment period (see help)',
-     &      'January','April','July','Annual (official)',IW,4)
+     &  'January','April','July','Annual (official)',IW,nbhelp)
       if(isstup.le.0)isstup=20
       if(isbnstep.le.2)isbnstep=6   ! 1 tsph for testing 4 std 12 for 5m
       if(ispnstep.le.2)ispnstep=10
@@ -394,41 +397,11 @@ C Check if the model is sufficiently attributed for NCM purposes.
       endif
 
 C Offer choice to generate stripped model and running assessments.
-  42  H(1) ='This facility takes information provided in the model'
-      H(2) ='context menu NCM descriptions and will use it to'
-      H(3) ='create several alternative models and optionally run'
-      H(4) ='a series of assessments to confirm the performance of the'
-      H(5) ='design.'
-      H(6) =' '
-      H(7) ='If the model is incomplete you may need to supply'
-      H(8) ='additional information or return to the model context'
-      H(9) ='or zone geometry menus. '
-      H(10)=' '
-      H(11)='1. Generate models (with standard constructions'
-      H(12)='   and glazing areas) and usage patterns, run '
-      H(13)='   assessments and generate EPC.'
-      H(14)=' '
-      H(15)='2. If you did not have time to run the assessments in'
-      H(16)='   step one you can use the model variants and run the'
-      H(17)='   assessments for the energy performance certificate'
-      H(18)='   EPC and/or generate BRUKL specific information.'
-      H(19)=' '
-      H(20)='3. Scan existing results from assessments and re-generate'
-      H(21)='   the NCM file (for testing purposes).'
-      H(22)=' '
-      H(23)='If you plan on using existing models and or existing'
-      H(24)='assessments check that you have loaded your ORIGINAL'
-      H(25)='model prior to asking for assessments or reports.'
-      H(26)=' '
-      H(27)='If you are running your assessments on a Linux or OSX or'
-      H(28)='under the Cygwin emulation environment you will have to'
-      H(29)='transfer the BRUKL.inp and EPCGen.inp files to a Windows'
-      H(30)='computer to complete the final step. '
-      H(31)=' '
-      H(32)='Remember to make backup copies of your models!'
+  42  helptopic='ncm_context'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKABCD('Options (see help): ',' ',
      &  'generate models & make EPC','run assessments & make EPC',
-     &  'use existing runs & make EPC','exit NCM',iecmoption,32)
+     &  'use existing runs & make EPC','exit NCM',iecmoption,nbhelp)
       if(iecmoption.eq.1)then
 
 C Generate all the model variants and run assessments and generate EPC.
@@ -438,25 +411,24 @@ C Generate all the model variants and run assessments and generate EPC.
 
         iuact = 2
         CFGROOT = CFGROOT_O ! re-establish the initial root name
-        CALL EMKSBM(iier)   ! generate Notional model
+
+C << for admin buidling comment out creation of notional building
+C        CALL EMKSBM(iier)   ! generate Notional model
+        CALL EMKSBM2(iier)   ! alternative generate Notional model
         if(iier.eq.2.or.iier.eq.3.or.iier.eq.4) goto 42  ! Ask user what to do
         call edisp(iuout,'Notional model completed...')
+
         CALL EMKREF  ! Reference model
         call edisp(iuout,'Reference model completed...')
         CALL EMKTYP  ! Typical model
         call edisp(iuout,'Typical model completed...')
 
 C Ask user if they want to run the assessments.
-        H(1)='You are using new UK NCM stripped, notional,'
-        H(2)='reference and typical models. In order to generate'
-        H(3)='EPC and BRUKL (UK building regulations) specific'
-        H(4)='information annual simulations for all these models'
-        H(5)='need to run and may take some time. You may choose not'
-        H(6)='to run simulations at this time and run these at a'
-        H(7)='later time (via the 2nd option).'
+        helptopic='ncm_run_now_later'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK(
      &    'Run NCM simulations based on these models (see help)',
-     &    ' ',OK,dok,7)
+     &    ' ',OK,dok,nbhelp)
 
 C Run simulation and recover information from save level 6 results file
         if(ok)then
@@ -491,15 +463,11 @@ C        if(iier.eq.2.or.iier.eq.3.or.iier.eq.4) goto 42  ! Ask user what to do
 C        CALL EMKREF  ! Reference model
 C        CALL EMKTYP  ! Typical model
 
-        H(1)='You are using existing UK NCM stripped, notional,'
-        H(2)='reference and typical models. In order to generate'
-        H(3)='EPC and BRUKL (UK building regulations) specific'
-        H(4)='information annual simulations for all these models'
-        H(5)='need to run and may take some time. If you picked this'
-        H(6)='choice in error just say no.'
+        helptopic='ncm_run_now_later'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK(
      &    'Run NCM simulations based on existing models (see help)',
-     &    ' ',OK,dok,6)
+     &    ' ',OK,dok,nbhelp)
 
 C Run simulation and recover information from save level 6 results file
         if(ok)then
@@ -530,14 +498,11 @@ C Recover information from save level 6 results file
 C Reset cfg files and call rsl6tf.  Do the notional
 C set first to make sure AER is filled.
         dok=.false.
-        H(1)='You are using existing save level 6 files from'
-        H(2)='stripped, notional, reference and typical model runs.'
-        H(3)='In order to generate EPC and BRUKL (UK building'
-        H(4)='regulations) data will be re-scanned. FOR TESTING'
-        H(5)='PURPOSES.'
+        helptopic='ncm_run_with_6'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK(
      &    'Re-scan prior assessments to generate EPC (see help)',' ',
-     &    ok,dok,5)
+     &    ok,dok,nbhelp)
         if(ok)then
           LCFGF=LCFGF_N
           CALL RSL6TF(2)
@@ -568,6 +533,7 @@ C Generate EPC information
 C Clear the commons, restore file names and reload the original model
 C before returning.
         call clrprb
+        call edisp(iuout,'  ')  ! echo blank line in case of warnings
         NGRDP=NGRDP_O
         LCFGF   = LCFGF_O
         CFGROOT = CFGROOT_O
@@ -605,9 +571,9 @@ C #include "espriou.h"
 
       integer lnblnk  ! function definition
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
@@ -618,7 +584,7 @@ C #include "espriou.h"
       DIMENSION KSTR(10),HSYSNM(MCOM+1),JSTR(8),LSYS(10)
       DIMENSION ITEMZ(MREN+5),LSTR(10)
       character cfgroot*24,LCFGF*72,NNAME*72
-      character outs*124,h*72
+      character outs*124,messg*42
       character ITEMS*50,D64*64,ITEMX*50,ITEMH*70
       CHARACTER HSYSNM*70,TMPSTR*64
       character EXT*4,APE*6
@@ -647,6 +613,13 @@ C For tdf to call arlist:
       integer ivalue ! for editing integers
       CHARACTER*32 SURFOTF
       LOGICAL CLOSER
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='sbmedit'  ! set for subroutine
       CLOSER=.TRUE.
 
 C Change cfgroot to have only 20 characters instead of the usual 24 (to
@@ -680,70 +653,12 @@ C Remember zone specific files
 
       call isunix(unixok)
 
-      H(1) = 'You have chose to configure you model for UK NCM based'
-      H(2) = 'calculations to generate Energy Performance Certificate'
-      H(3) = '(EPC_ Make sure that the original model follows the'
-      H(4) = 'following assumptions: '
-      H(5) = '1. Exterior surfaces that have other surfaces within them'
-      H(6) = '   are called parents. Parents may have more surfaces '
-      H(7) = '   within them. Only a three tier hierarchy is allowed '
-      H(8) = '   i.e. only parent, child and grandchild are allowed '
-      H(9) = '   e.g. a wall with a frame and a window). '
-      H(10)= '  '
-      H(11)= '2. Each exterior surface needs to have a usage. You will'
-      H(12)= '   be asked to provide it if not already defined in the'
-      H(13)= '   geometry and attributions menu.'
-      H(14)= '  '
-      H(15)= '   Only the following usages can be associated with '
-      H(16)= '   exterior surfaces that are parents: '
-      H(17)= '   - if exterior & vertical & opaque = WALL '
-      H(18)= '   - if exterior & horiz UP & opaque = ROOF FLAT'
-      H(19)= '   - if exterior & horiz DOWN & opaque = not allowed'
-      H(20)= '   - if exterior & pitched & opaque = ROOF PITCHED'
-      H(21)= '   - if facing ground & horizontal = GROUND'
-      H(22)= '   - if facing another room & any orientation = PARTN'
-      H(23)= '  '
-      H(24)= '   Usages associated with child and grandchild surfaces'
-      H(25)= '   (e.g. not walls and roofs) :'
-      H(26)= '   - if exterior & horiz UP & transp = WINDOW SKYLIGHT'
-      H(27)= '   - if exterior & pitched & transp = WINDOW SKYLIGHT'
-      H(28)= '   - if exterior & vertical & transp = WINDOW'
-      H(29)= '   - if exterior & vertical & opaque = FRAME or DOOR'
-      H(30)= '   - if facing another room = FRAME or DOOR'
-      H(31) = '  '
-      H(32)= '3. Exterior surfaces should   | |                      '
-      H(33)= '   avoid extreme L shapes.    | |  obtuse interior     '
-      H(34)= '   Surfaces with lots of      | | /   angle here       '
-      H(35)= '   edges can cause problems.  | |/_____                '
-      H(36)= '   (e.g. ceiling of passage)  |________                '
-      H(37) = '  '
-      H(38)= '4. Only one child surface is allowed per parent, if more '
-      H(39)= '   child surfaces are required divide a parent into two '
-      H(40)= '   surfaces and make one child in each.'
-      H(41)= ' '
-      H(42)= 'When generating the notional model all areas for parents'
-      H(43)= '& children that are not glazed are conserved. Additional'
-      H(44)= 'glazing is added to all exterior surfaces as per UK NCM. '
-      H(45)= '* if parent surface is not wall/roof no glazing is added'
-      H(46)= '(This is exceptional and is discouraged)'
-      H(47)= 'In order to calculate the required glazed area, gross  '
-      H(48)= 'parent area is used (e.g. if a wall has a door in it then'
-      H(49)= 'the glazed area is some % of (wall area + door area))'
-      H(50)= ' '
-      H(51)= 'If glazing area in original is more than required for  '
-      H(52)= 'notional then the same area is retained in notional model'
-      H(53)= ' '
-      H(54)= '5. If you have not attributed some use (eg door) to zone'
-      H(55)= '   surfaces then do so before defining a notional model.'
-      H(56)= ' '
-      H(57)= 'For interior surfaces it is assumed that all vertical '
-      H(58)= 'surfaces are walls. Horizontal interior surfaces are '
-      H(59)= 'internal roofs/ceilings. '
-
-      CALL PHELPD('SBEM Assumptions',59,'-',0,0,IER)
+      helptopic='ncm_zone_rules'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL PHELPD('SBEM Assumptions',nbhelp,'-',0,0,IER)
       dok=.false.
       CALL ASKOK('Continue with UK NCM setup/calculations?',
-     &  ' ',OK,dok,58)
+     &  ' ',OK,dok,nbhelp)
       if(.not.OK)return
 
 C Read sbem db.
@@ -840,50 +755,8 @@ C and certPC.
       ENDIF
 
 C Generate help text
- 222  H(1) ='UK NCM calculations require a number of inputs from'
-      H(2) ='the user. You are presented with several sections'
-      H(3) ='to document the project and specify the type of building'
-      H(4) ='as well as standard occupancy profiles within the'
-      H(5) ='building. If you have all of the relevant information'
-      H(6) ='you can complete these discriptions in the current'
-      H(7) ='session. If not you can continue in later sessions.'
-      H(8) =' '
-      H(9) ='The building, owner and certifier information forms '
-      H(10)='part of the energy certificate and is required. '
-      H(11)=' '
-      H(12)='You must select a buidling type from the list provided'
-      H(13)='as well as select the region of the UK (there are'
-      H(14)='some differences in the calculations between regions).'
-      H(15)=' '
-      H(16)='One or more HVAC system types need to be defined and'
-      H(17)='these need to be linked to the zones in the model.'
-      H(18)=' '
-      H(19)='DHW use is associated with the activity assoicated with'
-      H(20)='each zone. If DHW is produced separately from the HVAC'
-      H(21)='system then define them. The link DHW systems option'
-      H(22)='allows you to define additional DHW use beyond what is'
-      H(23)='assumed in the zone activity schedules.'
-      H(24)=' '
-      H(25)='Each zone in the model must be assigned with one of the'
-      H(26)='standard room activity profiles. Regardless of what'
-      H(27)='was defined in the original model, standard profiles of'
-      H(28)='occupancy, lighting and small power will be imposed along'
-      H(29)='with assumptions about infiltration.'
-      H(30)=' '
-      H(31)='It is a GOOD IDEA to use the display current information'
-      H(32)='choice to review the current contents before proceeding'
-      H(33)='to the `setting up required models` stage. '
-      H(34)=' '
-      H(35)='Facade surfaces in the model must be attributed for their'
-      H(36)='USE e.g. WINDOW DISPLAY prior to setting up the models.'
-      H(37)='It is recommended that you FIRST define the information'
-      H(38)='in the first three menu items (to register the model as'
-      H(39)='being used for code assessments and THEN return to the'
-      H(40)='zone attribution menu and define the surface USE'
-      H(41)='attributes (only certain USE types are allowed). '
-      H(42)=' '
-      H(43)='It is a good idea to back up your model after you have'
-      H(44)='setup the required models. '
+ 222  helptopic='ncm_user_inputs'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Make high level menu asking for different parts of UK NCM
       ITEMX(1) = 'Building, owner and certifier information'
@@ -903,7 +776,7 @@ C      ITEMX(14)= 'Proceed with setting up required models '
 C      ITEMX(15)= 'Run required assessments '
       IX=1
       CALL EPICKS(IX,KSTR,' ','Define UK NCM data',
-     &  50,13,ITEMX,'Define UK NCM data',IER,44)
+     &  50,13,ITEMX,'Define UK NCM data',IER,nbhelp)
       IF(KSTR(1).EQ.0)THEN
 
 C User did not pick anything. Save any changes in the NCM
@@ -921,10 +794,11 @@ C        call mksbem2
 
 C Enter building, owner and verifier information
         call edsbmbld()  ! edit the contact information
-        h(1)='You have been editing NCM data. If you want to save'
-        h(2)='recent changes in the model configuration say yes.'
+        helptopic='ncm_save_changes'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         dok=.true.
-        CALL ASKOK('Update NCM descriptions (see help)',' ',OK,dok,2)
+        CALL ASKOK('Update NCM descriptions (see help)',' ',
+     &    OK,dok,nbhelp)
         if(ok)then
           call mksbem
           call emkcfg('-',IER) ! the cfg file holds this info
@@ -935,10 +809,11 @@ C Enter building, owner and verifier information
 
 C Enter energy assessor and additional building information
         call edsbmassor()
-        h(1)='You have been editing NCM data. If you want to save'
-        h(2)='recent changes say yes. '
+        helptopic='ncm_save_changes'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         dok=.true.
-        CALL ASKOK('Update NCM descriptions (see help)',' ',OK,dok,2)
+        CALL ASKOK('Update NCM descriptions (see help)',' ',
+     &    OK,dok,nbhelp)
         if(ok) call mksbem
         goto 222  ! see what the user wants to do next
 
@@ -946,10 +821,11 @@ C Enter energy assessor and additional building information
 
 C Enter building regulations to be used
         call edsbmregs()
-        h(1)='You have been editing NCM data. If you want to save'
-        h(2)='recent changes say yes. '
+        helptopic='ncm_save_changes'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         dok=.true.
-        CALL ASKOK('Update NCM descriptions (see help)',' ',OK,dok,2)
+        CALL ASKOK('Update NCM descriptions (see help)',' ',
+     &    OK,dok,nbhelp)
         if(ok) call mksbem
         goto 222  ! see what the user wants to do next
 
@@ -957,10 +833,11 @@ C Enter building regulations to be used
 
 C Edit HVAC and system information
         call edsbmsys()
-        h(1)='You have been editing NCM data. If you want to save'
-        h(2)='recent changes say yes. '
+        helptopic='ncm_save_changes'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         dok=.true.
-        CALL ASKOK('Update NCM descriptions (see help)',' ',OK,dok,2)
+        CALL ASKOK('Update NCM descriptions (see help)',' ',
+     &    OK,dok,nbhelp)
         if(ok) call mksbem
         goto 222  ! see what the user wants to do next
 
@@ -978,27 +855,29 @@ C Define DHW systems
         ITEMH(NDHWSYS+4)='- exit'
         NITEMH=NDHWSYS+4
         CALL EMENU('DHW systems defined',ITEMH,NITEMH,IDO)
+        helptopic='ncm_no_help_yet'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IF(IDO.EQ.NITEMH-1)THEN
-          CALL PHELPD('DHW help not defined (yet)',2,'-',0,0,IER)
+          CALL PHELPD('DHW help not defined (yet)',nbhelp,'-',0,0,IER)
         ELSEIF(IDO.EQ.NITEMH-2)THEN
           JC=0
           CALL EASKABC('Choose option',' ',
-     &         'add','delete','cancel',JC,2)
+     &         'add','delete','cancel',JC,nbhelp)
 
 C Add new DHW system
           IF(JC.EQ.1)THEN
             NDHWSYS=NDHWSYS+1
             DHWNAME(NDHWSYS)=' new DHW generator '
             CALL EASKS(DHWNAME(NDHWSYS),'DHW system name',
-     &        '(<30 characters)',30,D64,'DHW sys name',IER,1)
+     &        '(<30 characters)',30,D64,'DHW sys name',IER,nbhelp)
             IY=1
             KSYS(1)=0
  909        CALL EPICKS(IY,KSYS,' ','Select DHW system type',
-     &        25,MDW,DHWGEN,'system types',IER,2)
+     &        25,MDW,DHWGEN,'system types',IER,nbhelp)
             IF(KSYS(1).EQ.0)GOTO 909
             IDHWS(NDHWSYS)=KSYS(1)
             CALL EASKABC('Was the DHW generator built before 1998',
-     &        ' ','yes','no','Do not know',IW,2)
+     &        ' ','yes','no','Do not know',IW,nbhelp)
             IF(IW.EQ.1.or.iw.eq.3)THEN
               HWEF(NDHWSYS)=DHWEFF(MDW,1)
             ELSE
@@ -1006,7 +885,7 @@ C Add new DHW system
             ENDIF
             CALL EASKR(HWEF(NDHWSYS),
      &        'Enter system efficiency or accept default',' ',
-     &        0.,'F',0.,'-',10.,'DHW gen eff ',IER,2)
+     &        0.,'F',0.,'-',10.,'DHW gen eff ',IER,nbhelp)
             ITEMS(1)='natural gas                      '
             ITEMS(2)='LPG                              '
             ITEMS(3)='Biogas                           '
@@ -1020,7 +899,7 @@ C Add new DHW system
             JSTR(1)=0
  910        CALL EPICKS(IDA,JSTR,
      &      ' ','Choose fuel type for DHW generator',
-     &      30,8,ITEMS,'Choose fuel type for DHW generator',IER,2)
+     &      30,8,ITEMS,'Choose fuel type for DHW generator',IER,nbhelp)
             IF(JSTR(1).EQ.0)GOTO 910
 
 C Hold same fuel type indices as found for heating/cooling HVAC systems
@@ -1046,13 +925,13 @@ C Add storage and loop information (only if not instantaneous heater)
             ELSE
               IDHWSS(NDHWSYS)=0
               CALL EASKABC('Is there a water storage system',
-     &        ' ','yes','no','Do not know',IDL,2)
+     &        ' ','yes','no','Do not know',IDL,nbhelp)
               IF(IDL.EQ.1)THEN
                 IDHWSS(NDHWSYS)=1
                 CALL EASKABC('Which of the following do you know',
-     &          '(Choose volume if you know both) ',
-     &          'Storage volume (lit)','Storage losses (MJ/month)',
-     &          'Do not know either',IDM,2)
+     &            '(Choose volume if you know both) ',
+     &            'Storage volume (lit)','Storage losses (MJ/month)',
+     &            'Do not know either',IDM,nbhelp)
                 DHWSPD(NDHWSYS,1)=0.0
                 DHWSPD(NDHWSYS,2)=0.0
                 DHWSPD(NDHWSYS,3)=0.0
@@ -1060,37 +939,37 @@ C Add storage and loop information (only if not instantaneous heater)
                 DHWSPD(NDHWSYS,5)=0.0
                 IF(IDM.EQ.1)THEN
                   CALL EASKR(DHWSPD(NDHWSYS,1),
-     &            'Enter system volume (litres)',' ',
-     &            0.,'F',1000.,'-',100.,'DHW capacity ',IER,2)
+     &              'Enter system volume (litres)',' ',
+     &              0.,'F',1000.,'-',100.,'DHW capacity ',IER,nbhelp)
                 ELSEIF(IDM.EQ.2)THEN
                   CALL EASKR(DHWSPD(NDHWSYS,2),
-     &            'Enter system losses (MJ/month)',' ',
-     &            0.,'F',1000000.,'-',10000.,'DHW capacity ',IER,2)
+     &              'Enter system losses (MJ/month)',' ',0.,
+     &              'F',1000000.,'-',10000.,'DHW capacity ',IER,nbhelp)
                 ENDIF
                 CALL EASKABC('Is there a water circulation loop',
-     &          ' ','yes','no','Do not know',IDN,2)
+     &            ' ','yes','no','Do not know',IDN,nbhelp)
                 IF(IDN.EQ.1)THEN
                   IDHWSS(NDHWSYS)=2
                   CALL EASKAB('Do you know circulation losses (W/m)',
-     &            ' ','yes','no',IDO,2)
+     &              ' ','yes','no',IDO,nbhelp)
                   IF(IDO.EQ.1)THEN
                     CALL EASKR(DHWSPD(NDHWSYS,3),
-     &              'Enter circulation losses (W/m)',' ',
-     &              0.,'F',10.,'-',50.,'DHW circ loss',IER,2)
+     &                'Enter circulation losses (W/m)',' ',
+     &                0.,'F',10.,'-',50.,'DHW circ loss',IER,nbhelp)
                   ENDIF
                   CALL EASKAB('Do you know pump power (kW)',
-     &            ' ','yes','no',IDP,2)
+     &              ' ','yes','no',IDP,nbhelp)
                   IF(IDP.EQ.1)THEN
                     CALL EASKR(DHWSPD(NDHWSYS,4),
-     &              'Enter pump power (kW)',' ',
-     &              0.,'F',10.,'-',10.,'DHW pump power ',IER,2)
+     &                'Enter pump power (kW)',' ',
+     &                0.,'F',10.,'-',10.,'DHW pump power ',IER,nbhelp)
                   ENDIF
                   CALL EASKAB('Do you know loop length (m)',
-     &            ' ','yes','no',IDQ,2)
+     &            ' ','yes','no',IDQ,nbhelp)
                   IF(IDQ.EQ.1)THEN
                     CALL EASKR(DHWSPD(NDHWSYS,5),
-     &              'Enter loop length (m)',' ',
-     &              0.,'F',10000.,'-',1000.,'DHW loop length ',IER,2)
+     &              'Enter loop length (m)',' ',0.,
+     &              'F',10000.,'-',1000.,'DHW loop length ',IER,nbhelp)
                   ENDIF
                 ENDIF
               ENDIF
@@ -1102,7 +981,7 @@ C Delete existing system
             JSTR(1)=0
  911        CALL EPICKS(IDA,JSTR,
      &        ' ','Choose DHW generator to delete',
-     &        30,8,DHWNAME,'Choose DHW generator to delete',IER,2)
+     &        30,8,DHWNAME,'Choose DHW generator to delete',IER,nbhelp)
             IF(JSTR(1).EQ.0)GOTO 911
             IF(JSTR(1).NE.0)THEN
               NDHWSYS=NDHWSYS-1
@@ -1119,23 +998,23 @@ C Edit existing DHW system
         ELSEIF(IDO.GE.1.AND.IDO.LE.NDHWSYS)THEN
           IDHWSYS=IDO
           CALL EASKS(DHWNAME(IDHWSYS),'DHW system name',
-     &      '(<30 characters)',30,D64,'DHW sys name',IER,1)
+     &      '(<30 characters)',30,D64,'DHW sys name',IER,nbhelp)
           IY=1
           KSYS(1)=IDHWS(IDHWSYS)
  912      CALL EPICKS(IY,KSYS,' ','Select DHW system type',
-     &    25,MDW,DHWGEN,'system types',IER,2)
+     &      25,MDW,DHWGEN,'system types',IER,nbhelp)
           IF(KSYS(1).EQ.0)GOTO 912
           IDHWS(IDHWSYS)=KSYS(1)
           CALL EASKABC('Was the DHW generator built before 1998',
-     &      ' ','yes','no','Do not know',IW,2)
+     &      ' ','yes','no','Do not know',IW,nbhelp)
           IF(IW.EQ.1)THEN
             HWEF(IDHWSYS)=DHWEFF(MDW,1)
           ELSE
             HWEF(IDHWSYS)=DHWEFF(MDW,2)
           ENDIF
           CALL EASKR(HWEF(IDHWSYS),
-     &    'Enter DHW system efficiency or accept previous'
-     &    ,' ',0.,'F',0.,'-',10.,'DHW gen eff ',IER,2)
+     &      'Enter DHW system efficiency or accept previous',
+     &      ' ',0.,'F',0.,'-',10.,'DHW gen eff ',IER,nbhelp)
           ITEMS(1)='natural gas                   '
           ITEMS(2)='LPG                           '
           ITEMS(3)='Biogas                        '
@@ -1148,8 +1027,8 @@ C Edit existing DHW system
           IDA=1
           JSTR(1)=IDHFL(IDHWSYS)
  913      CALL EPICKS(IDA,JSTR,
-     &    ' ','Choose fuel type for DHW generator',
-     &    30,8,ITEMS,'Choose fuel type for DHW generator',IER,2)
+     &      ' ','Choose fuel type for DHW generator',
+     &      30,8,ITEMS,'Choose fuel type for DHW generator',IER,nbhelp)
           IF(JSTR(1).EQ.0)GOTO 913
 
 C Hold same fuel type indices as found for heating/cooling HVAC systems
@@ -1167,13 +1046,13 @@ C Hold same fuel type indices as found for heating/cooling HVAC systems
 C Add storage and loop information
           IDHWSS(IDHWSYS)=0
           CALL EASKABC('Is there a water storage system',
-     &    ' ','yes','no','Do not know',IDL,2)
+     &      ' ','yes','no','Do not know',IDL,nbhelp)
           IF(IDL.EQ.1)THEN
             IDHWSS(IDHWSYS)=1
             CALL EASKABC('Which of the following do you know',
-     &      '(Choose volume if you know both) ',
-     &      'Storage volume (lit)','Storage losses (MJ/month)',
-     &      'Do not know either',IDM,2)
+     &        '(Choose volume if you know both) ',
+     &        'Storage volume (lit)','Storage losses (MJ/month)',
+     &        'Do not know either',IDM,nbhelp)
             DHWSPD(IDHWSYS,1)=0.0
             DHWSPD(IDHWSYS,2)=0.0
             DHWSPD(IDHWSYS,3)=0.0
@@ -1181,47 +1060,48 @@ C Add storage and loop information
             DHWSPD(IDHWSYS,5)=0.0
             IF(IDM.EQ.1)THEN
               CALL EASKR(DHWSPD(IDHWSYS,1),
-     &        'Enter system volume (litres)'
-     &        ,' ',0.,'F',1000.,'-',100.,'DHW capacity ',IER,2)
+     &          'Enter system volume (litres)',
+     &          ' ',0.,'F',1000.,'-',100.,'DHW capacity ',IER,nbhelp)
             ELSEIF(IDM.EQ.2)THEN
               CALL EASKR(DHWSPD(IDHWSYS,2),
-     &        'Enter system losses (MJ/month)'
-     &        ,' ',0.,'F',1000000.,'-',10000.,'DHW capacity ',IER,2)
+     &          'Enter system losses (MJ/month)',' ',0.,
+     &          'F',1000000.,'-',10000.,'DHW capacity ',IER,nbhelp)
             ENDIF
             CALL EASKABC('Is there a water circulation loop',
-     &      ' ','yes','no','Do not know',IDN,2)
+     &        ' ','yes','no','Do not know',IDN,nbhelp)
             IF(IDN.EQ.1)THEN
               IDHWSS(IDHWSYS)=2
               CALL EASKAB('Do you know circulation losses (W/m)',
-     &        ' ','yes','no',IDO,2)
+     &          ' ','yes','no',IDO,nbhelp)
               IF(IDO.EQ.1)THEN
                 CALL EASKR(DHWSPD(IDHWSYS,3),
-     &          'Enter circulation losses (W/m)'
-     &          ,' ',0.,'F',10.,'-',50.,'DHW circ loss',IER,2)
+     &            'Enter circulation losses (W/m)',' ',0.,
+     &            'F',10.,'-',50.,'DHW circ loss',IER,nbhelp)
               ENDIF
               CALL EASKAB('Do you know pump power (kW)',
-     &        ' ','yes','no',IDP,2)
+     &          ' ','yes','no',IDP,nbhelp)
               IF(IDP.EQ.1)THEN
                 CALL EASKR(DHWSPD(IDHWSYS,4),
-     &          'Enter pump power (kW)'
-     &          ,' ',0.,'F',10.,'-',10.,'DHW pump power ',IER,2)
+     &            'Enter pump power (kW)',' ',0.,
+     &            'F',10.,'-',10.,'DHW pump power ',IER,nbhelp)
               ENDIF
               CALL EASKAB('Do you know loop length (m)',
-     &        ' ','yes','no',IDQ,2)
+     &          ' ','yes','no',IDQ,nbhelp)
               IF(IDQ.EQ.1)THEN
                 CALL EASKR(DHWSPD(IDHWSYS,5),
-     &          'Enter loop length (m)'
-     &          ,' ',0.,'F',10000.,'-',1000.,'DHW loop length ',IER,2)
+     &            'Enter loop length (m)',' ',0.,
+     &            'F',10000.,'-',1000.,'DHW loop length ',IER,nbhelp)
               ENDIF
             ENDIF
           ENDIF
         ENDIF
         IF(IDO.NE.NITEMH)GOTO 207
 
-        h(1)='You have been editing NCM data. If you want to save'
-        h(2)='recent changes say yes. '
+        helptopic='ncm_save_changes'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         dok=.true.
-        CALL ASKOK('Update NCM descriptions (see help)',' ',OK,dok,2)
+        CALL ASKOK('Update NCM descriptions (see help)',' ',
+     &    OK,dok,nbhelp)
         if(ok) call mksbem
         goto 222  ! see what the user wants to do next
 
@@ -1242,24 +1122,33 @@ C If no zones specified in model advise user and go back to menu
             IF(IHLZ(IZ).EQ.0)THEN
               TMPSTR=' No HVAC system for this zone!'
             ELSE
-              WRITE(TMPSTR,'(2A)')' ',HVACNAME(IZ)
+              WRITE(TMPSTR,'(2A)')' ',HVACNAME(IHLZ(IZ))
             ENDIF
             WRITE(OUTS,'(3A,I3,A)')
      &       'Zone ',zname(IZ)(1:lnzname(iz)),
      &       ' is linked to system number ',IHLZ(IZ),TMPSTR
             CALL EDISP(IUOUT,OUTS)
  102      CONTINUE
+          helptopic='ncm_link_hvac_zone'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           DO 402 IZ=1,NCOMP
             IA=1
-            WRITE(OUTS,'(2A)')'Choose HVAC system for zone ',
+            WRITE(messg,'(2A)')'Choose HVAC system for ',
      &      zname(IZ)(1:lnzname(IZ))
             JSTR(1)=0
  914        CALL EPICKS(IA,JSTR,' ','Link zones to HVAC systems',
-     &      70,NCMSYS+1,HSYSNM,OUTS(1:40),IER,2)
+     &      70,NCMSYS+1,HSYSNM,messg,IER,nbhelp)
             IF(JSTR(1).EQ.0)GOTO 914
             IHLZ(IZ)=JSTR(1)-1
  402      CONTINUE
         ENDIF
+
+        helptopic='ncm_save_changes'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        dok=.true.
+        CALL ASKOK('Update NCM descriptions (see help)',' ',
+     &    OK,dok,nbhelp)
+        if(ok) call mksbem
         goto 222  ! see what the user wants to do next
 
       ELSEIF(KSTR(1).EQ.7)THEN
@@ -1294,13 +1183,15 @@ C Link DHW systems and zones
      &       ABS(IDHWLZ(IZ)),TMPSTR
             CALL EDISP(IUOUT,OUTS)
  109      CONTINUE
+          helptopic='ncm_link_dhw_zone'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           DO 404 IZ=1,NCOMP
             IA=1
-            WRITE(OUTS,'(2A)')'Choose DHW system for zone ',
+            WRITE(messg,'(2A)')'Choose DHW system for ',
      &      zname(IZ)(1:lnzname(IZ))
             JSTR(1)=0
             CALL EPICKS(IA,JSTR,' ','Link zones to DHW systems',
-     &      70,NDHWSYS+2,HSYSNM,OUTS(1:44),IER,2)
+     &        70,NDHWSYS+2,HSYSNM,messg,IER,nbhelp)
             IF(JSTR(1).EQ.0)GOTO 404
             IF(JSTR(1).EQ.1)THEN
               IDHWLZ(IZ)=0
@@ -1309,8 +1200,8 @@ C Link DHW systems and zones
                 IA=1
                 KSYS(1)=0
  916            CALL EPICKS(IA,KSYS,' ',
-     &          'Link zones-HVAC systems for DHW',30,NCMSYS,HVACNAME,
-     &          'Link zones-HVAC systems for DHW',IER,2)
+     &            'Link zones-HVAC systems for DHW',30,NCMSYS,HVACNAME,
+     &            'Link zones-HVAC systems for DHW',IER,nbhelp)
                 IF(KSYS(1).EQ.0)GOTO 916
                 IDHWLZ(IZ)=-KSYS(1)
               ELSE
@@ -1322,9 +1213,16 @@ C Link DHW systems and zones
           CALL EASKR(DEADLEG(IZ),
      &    'Enter dead leg length of water draw off point'
      &    ,'(average if more than one draw off points) ',0.,'F',10.,
-     &    '-',10.,'DHW gen eff ',IER,2)
+     &    '-',10.,'DHW gen eff ',IER,nbhelp)
  404      CONTINUE
         ENDIF
+
+        helptopic='ncm_save_changes'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        dok=.true.
+        CALL ASKOK('Update NCM descriptions (see help)',' ',
+     &    OK,dok,nbhelp)
+        if(ok) call mksbem
         goto 222  ! see what the user wants to do next
 
       ELSEIF(KSTR(1).EQ.8)THEN
@@ -1333,6 +1231,8 @@ C Link activity types and zones. Loop through all of the activities
 C which are associated with this building type and make up a list
 C to present to the user. Remember the IAT index for each of the
 C selections via the array
+        helptopic='ncm_link_use_zone'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IF(IBUSERTYP.NE.0)THEN
           call lstncm('o',iuout)  ! first list current activities
           DO 140 IZ=1,NCOMP
@@ -1344,11 +1244,11 @@ C selections via the array
                 itemfromactivity(ICAC)=IAT  ! remember which was the source
               ENDIF
  130        CONTINUE
-            WRITE(OUTS,'(2A)')'Choose activity for zone ',
-     &      zname(IZ)(1:lnzname(IZ))
+            WRITE(messg,'(2A)')'Choose activity for ',
+     &        zname(IZ)(1:lnzname(IZ))
             IX=1
             CALL EPICKS(IX,KSYS,' ',OUTS(1:LNBLNK(OUTS)),
-     &      40,ICAC,ITEMS,OUTS(1:LNBLNK(OUTS)),IER,2)
+     &        40,ICAC,ITEMS,messg,IER,nbhelp)
 
 C Save the string describing the activity into trymatch.
             mainactivity=KSYS(1)
@@ -1381,10 +1281,11 @@ C with tdf). Also set iactytyp to itemfromactivity (i.e.1-65)
  151        continue
  140      CONTINUE
 
-          h(1)='You have been editing NCM data. If you want to save'
-          h(2)='recent changes say yes. '
+          helptopic='ncm_save_changes'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           dok=.true.
-          CALL ASKOK('Update NCM descriptions (see help)',' ',OK,dok,2)
+          CALL ASKOK('Update NCM descriptions (see help)',' ',
+     &      OK,dok,nbhelp)
           if(ok) call mksbem
         ELSE
           CALL EDISP(IUOUT,'Define building type first')
@@ -1395,6 +1296,8 @@ C with tdf). Also set iactytyp to itemfromactivity (i.e.1-65)
         ISaveChanges=0
 
 C Link lighting systems with zones
+        helptopic='ncm_link_lighting_zone'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         DO 160 IZ=1,NCOMP
           CALL EDISP(IUOUT,' ')
           IF(ILIGHTUSER(IZ).EQ.1)THEN
@@ -1406,12 +1309,14 @@ C Link lighting systems with zones
             CALL EDISP(IUOUT,TLIGHT(ILITYP(iz)))
           ENDIF
           ILIGHTUSER(IZ)=0
+
+C << Something is wrong about passed parameter in this call. >>
           CALL EASKABC(
      &      'Options for defining lighting heat gains for zone:',
      &      zname(IZ)(1:lnzname(IZ)),
      &      'user defined W/m2 per 100 lux','pick from list',
      &      'do not modify at this time',
-     &      Iwaylight,2)
+     &      Iwaylight,nbhelp)
           IF(Iwaylight.EQ.1)THEN
 
 C flag needed for the casual.F to account for lighting gains
@@ -1421,18 +1326,18 @@ C depending on the way they are specified by the user.
             ISaveChanges=1
             
 C If users pick this then they have to demonstrate that this
-C value is a realistic one
+C value is a realistic one.  
             light_input_watt=LIGHTWATTAGE(IZ)
             CALL EASKR(light_input_watt,
      &   'Lighting gains W/m^2 per 100 lux (assume 100% on) for zone:',
      &      zname(IZ)(1:lnzname(IZ)),0.,'F',3.75,'-',
-     &      LIGHTWATTAGE(IZ),'light heat gains ',IER,2)
+     &      LIGHTWATTAGE(IZ),'light heat gains ',IER,nbhelp)
             LIGHTWATTAGE(IZ)=light_input_watt
           ELSEIF(Iwaylight.EQ.2)THEN
             WRITE(OUTS,'(2A)')'Choose lighting for zone ',
      &      zname(IZ)(1:lnzname(IZ))
             CALL EPICKS(IY,LSYS,' ',OUTS(1:LNBLNK(OUTS)),
-     &        70,MILS,TLIGHT,OUTS(1:LNBLNK(OUTS)),IER,2)
+     &        70,MILS,TLIGHT,OUTS(1:LNBLNK(OUTS)),IER,nbhelp)
             ILITYP(IZ)=LSYS(1)
             ISaveChanges=1
           ELSEIF(Iwaylight.EQ.3)THEN
@@ -1457,7 +1362,7 @@ C control types
             CALL EASKABCD('Choose lighting control type for',
      &      zname(IZ)(1:lnzname(IZ)),
      &      'Local manual switching ','Photoelectric control',
-     &      'Both','No control',Ilightcontrol(iz),2)
+     &      'Both','No control',Ilightcontrol(iz),nbehlp)
 
 C If photoelectric control then ask whether switching or dimming
             if(Ilightcontrol(iz).eq.2.or.Ilightcontrol(iz).eq.3)then
@@ -1472,17 +1377,14 @@ C If photoelectric control then ask whether switching or dimming
 
               Ipe_control(iz)=0
               CALL EASKAB('Type of photoelectric control in zone',
-     &        zname(IZ)(1:lnzname(IZ)),
-     &        'Switching','Dimming',Ipe_control(iz),2)
+     &          zname(IZ)(1:lnzname(IZ)),
+     &          'Switching','Dimming',Ipe_control(iz),nbhelp)
               Ipe_sensor=0
               CALL EASKAB('Type of photoelectric control sensor',
-     &        zname(IZ)(1:lnzname(IZ)),
-     &        'Standalone','Addresable',Ipe_sensor,2)
+     &          zname(IZ)(1:lnzname(IZ)),
+     &          'Standalone','Addresable',Ipe_sensor,nbhelp)
 
 C Confirm front sensor or front and back sensor.
-              h(1)='Photoelectric controls are based on one sensor at'
-              h(2)='the front of the room or front and back sensors '
-              h(3)='in the room. '
               IF(Idaylightzoning(iz).EQ.1)THEN
                 outs='Currently there is a front of room sensor'
               ELSEIF(Idaylightzoning(iz).EQ.2)THEN
@@ -1496,7 +1398,7 @@ C Confirm front sensor or front and back sensor.
               CALL EASKABC('Choose lighting sensor location for',
      &          zname(IZ)(1:lnzname(IZ)),
      &          'Front of room','Front and back of room',
-     &          'continue',ivalue,3)
+     &          'continue',ivalue,nbhelp)
               if(ivalue.eq.1.or.ivalue.eq.2)then
                 Idaylightzoning(iz)=ivalue
               endif
@@ -1513,13 +1415,10 @@ C Confirm photoelectric sensor parasitic power W/m2
               ELSEIF(Ipe_sensor.EQ.2)THEN
                 PE_sensor_PP(iz)=0.57
               ENDIF
-              h(1)='If you selected a standalone sensor then parasitic'
-              h(2)='power is assumed to be 0.3W/m2. If the sensor is '
-              h(3)='addressable (advanced) the PP is assumed to be 0.57'
-              h(4)='W/m2. If you have other data please supply it now. '
               CALL EASKR(PE_sensor_PP(iz),
-     &        'Confirm photo-electric sensor parasitic power',
-     &        ' ',0.,'-',0.,'-',10.,'sensor parasitic power',IER,4)
+     &          'Confirm photo-electric sensor parasitic power',
+     &          ' ',0.,'-',0.,'-',10.,'sensor parasitic power',
+     &          IER,nbhelp)
             else
 
 C Set sensor parasitic power to zero
@@ -1548,30 +1447,11 @@ C Ask for occupancy sensing
               OUTS='Currently NONE'
             ENDIF
             CALL EDISP(IUOUT,OUTS)
-            h(1)='This is equivalent to the choices offered by the UK'
-            h(2)='iSBEM application which is minimally documented in'
-            h(3)='the UK SBEM technical manual table 20. Your choice'
-            h(4)='will set an occupancy modifier which is used in '
-            h(5)='the control.  '
-            h(6)=' '
-            h(7)='For systems without automatic presence or absence '
-            h(8)='detection the following options are allowed: '
-            h(9) =' Manual on/off switching  Foc=1.0 '
-            h(10)=' Manual on/off switching with additional automatic'
-            h(11)='   sweeping extinction signal  Foc=0.95'
-            h(12)=' '
-            h(13)='For systems with automatic presence and/or abscence'
-            h(14)='detection the following options are allowed: '
-            h(15)=' '
-            h(16)=' Auto On with dimming on absence   Foc=0.95'
-            h(17)=' Auto On with off on absence       Foc=0.90'
-            h(18)=' Manual On with dimming on absence Foc=0.90'
-            h(19)=' Manual On with off on absence     Foc=0.82'
             CALL EASKATOG(
      &      'Is there occupancy sensing in zone',
      &      zname(iz)(1:lnzname(IZ)),'MAN-ON-OFF+EXT','AUTO-ON-DIMMED',
      &      'AUTO-ON-OFF','MAN-ON-DIMMED','MAN-ON-AUTO-OFF','NONE',
-     &      ' ',IOcc_sensing(iz),19)
+     &      ' ',IOcc_sensing(iz),nbhelp)
 
 C Confirm occupancy sensor parasitic power W/m2
             if(IOcc_sensing(iz).ne.6)then
@@ -1580,8 +1460,9 @@ C Confirm occupancy sensor parasitic power W/m2
               call edisp(iuout,outs)
               Occ_sensor_PP(iz)=0.3
               CALL EASKR(Occ_sensor_PP(iz),
-     &        'Confirm occupancy sensor parasitic power',
-     &        ' ',0.,'-',0.,'-',10.,'sensor parasitic power',IER,2)
+     &          'Confirm occupancy sensor parasitic power',
+     &          ' ',0.,'-',0.,'-',10.,'sensor parasitic power',
+     &          IER,nbhelp)
             else
               Occ_sensor_PP(iz)=0.0
             endif
@@ -1612,10 +1493,11 @@ C          write(6,*)vert_glz,horz_glz,zonetotsurfacearea(IZ)
           DFRear(IZ) =0.25*DF
  160    CONTINUE
         if(ISaveChanges.ne.0)then
-          h(1)='You have been editing NCM data. If you want to save'
-          h(2)='recent changes say yes. '
+          helptopic='ncm_save_changes'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           dok=.true.
-          CALL ASKOK('Update NCM descriptions (see help)',' ',OK,dok,2)
+          CALL ASKOK('Update NCM descriptions (see help)',' ',
+     &      OK,dok,nbhelp)
           if(ok) call mksbem
         endif
         goto 222  ! see what the user wants to do next
@@ -1651,12 +1533,10 @@ C                2 = % of building space heating demand supplied
 C                3 = % of DHW supplied
 C                4 = CHP heat to power ratio
 C                5 = fuel type index
-        H(1) ='You can add renewable energy in this menu'
-        H(2) =' '
-        H(3) =' '
-        H(4) =' '
-        H(5) =' '
-        H(6) =' '
+
+C Help has not yet been done for this topic.
+        helptopic='ncm_no_ren_help_yet'
+        call gethelptext(helpinsub,helptopic,nbhelp)
  1584   INN=-1
         IADD=0
         IDEL=0
@@ -1673,7 +1553,7 @@ C                5 = fuel type index
         CALL EMENU('Renewables',ITEMZ,nitms,INN)
         IF(INN.LE.NREN.AND.INN.GE.1)THEN
           dok=.false.
-          CALL ASKOK('Edit this component?',' ',OK,dok,6)
+          CALL ASKOK('Edit this component?',' ',OK,dok,nbhelp)
           IF(OK)THEN
             IED=INN
           ENDIF
@@ -1682,14 +1562,15 @@ C                5 = fuel type index
         ELSEIF(INN.EQ.NREN+2)THEN
           CALL EDISP(IUOUT,'Information display not available yet')
         ELSEIF(INN.EQ.NREN+3)THEN
-          CALL EASKABC('Choose action',' ','add','delete','cancel',IA,6)
+          CALL EASKABC('Choose action',' ','add','delete','cancel',
+     &      IA,nbhelp)
           IF(IA.EQ.1)THEN
             IADD=1
           ELSEIF(IA.EQ.2)THEN
             IDEL=1
           ENDIF
         ELSEIF(INN.EQ.NREN+4)THEN
-          CALL PHELPD('Renewables help',6,'-',0,0,IER)
+          CALL PHELPD('Renewables help',nbhelp,'-',0,0,IER)
         ENDIF
 
 C Delete renewable systems
@@ -1718,19 +1599,19 @@ C Add/edit renewable systems
             RENNAME(INDEX)=' '
             D24=' '
             CALL EASKS(RENNAME(INDEX),'Name of renewable energy system',
-     &        '(<24 characters)',24,D24,'RENNAME',IER,6)
+     &        '(<24 characters)',24,D24,'RENNAME',IER,nbhelp)
           ELSEIF(IED.GT.0)THEN
             INDEX=IED
             D24=RENNAME(INDEX)
             CALL EASKS(RENNAME(INDEX),'Name of renewable energy system',
-     &        '(<24 characters)',24,D24,'RENNAME',IER,6)
+     &        '(<24 characters)',24,D24,'RENNAME',IER,nbhelp)
           ENDIF
           IDNO=0 ; IB=0
           call MENUATOL('Choose renewable energy system',
-     &    'Choose renewable energy system',
-     &    'a solar thermal (for DHW)','b solar PV',
-     &    'c wind turbine','d combined heat and power',' ',' ',
-     &    ' ',' ',' ',' ',' ',' ',IB,idno,6)
+     &      'Choose renewable energy system',
+     &      'a solar thermal (for DHW)','b solar PV',
+     &      'c wind turbine','d combined heat and power',' ',' ',
+     &      ' ',' ',' ',' ',' ',' ',IB,idno,nbhelp)
           IF(IB.EQ.1)THEN
 
 C Solar thermal collectors
@@ -1751,27 +1632,29 @@ C Solar thermal collectors
               IX=1
               CALL EPICKS(IX,LSTR,'Choose which DHW system ',
      &          'to link with this thermal collector',
-     &          30,NDHWSYS,DHWNAME,'Choose DHW system',IER,6)
+     &          30,NDHWSYS,DHWNAME,'Choose DHW system',IER,nbhelp)
               RENDATA(INDEX,1)=REAL(LSTR(1))
             ENDIF
             CALL EASKR(RENDATA(INDEX,2),
      &        'Enter area in m2 of collector',
-     &        ' ',0.,'-',0.,'-',10.,'collector area ',IER,6)
+     &        ' ',0.,'-',0.,'-',10.,'collector area ',IER,nbhelp)
             CALL EASKR(RENDATA(INDEX,3),
      &        'Enter orientation of collector (degrees from North)',
-     &        ' ',0.,'-',0.,'-',360.,'collector orientation ',IER,6)
+     &        ' ',0.,'-',0.,'-',360.,'collector orientation ',
+     &        IER,nbhelp)
             CALL EASKR(RENDATA(INDEX,4),
      &        'Enter inclination of collector (90deg = vertical)',
-     &        ' ',0.,'-',0.,'-',90.,'collector inclination ',IER,6)
+     &        ' ',0.,'-',0.,'-',90.,'collector inclination ',
+     &        IER,nbhelp)
           ELSEIF(IB.EQ.2)THEN
 
 C Solar PV collectors
             NRENTYPE(INDEX)=2
             IE=0 ; IENO=0
             call MENUATOL('Choose PV type','Choose PV type',
-     &      'a mono-crystalline silicon','b poly-crystalline silicon',
-     &      'c amorphous silicon','d other thin films',' ',' ',
-     &      ' ',' ',' ',' ',' ',' ',IE,ieno,6)
+     &        'a mono-crystalline silicon','b poly-crystalline silicon',
+     &        'c amorphous silicon','d other thin films',' ',' ',
+     &        ' ',' ',' ',' ',' ',' ',IE,ieno,nbhelp)
 
 C Hold PV efficiency from table 26, page 80, SBEM technical manual
 C version 1 of 10-dec-07
@@ -1786,13 +1669,15 @@ C version 1 of 10-dec-07
             ENDIF
             CALL EASKR(RENDATA(INDEX,2),
      &        'Enter area in m2 of collector',
-     &        ' ',0.,'-',0.,'-',10.,'collector area ',IER,6)
+     &        ' ',0.,'-',0.,'-',10.,'collector area ',IER,nbhelp)
             CALL EASKR(RENDATA(INDEX,3),
      &        'Enter orientation of collector (degrees from North)',
-     &        ' ',0.,'-',0.,'-',360.,'collector orientation ',IER,6)
+     &        ' ',0.,'-',0.,'-',360.,'collector orientation ',
+     &        IER,nbhelp)
             CALL EASKR(RENDATA(INDEX,4),
      &        'Enter inclination of collector (90deg = vertical)',
-     &        ' ',0.,'-',0.,'-',90.,'collector inclination ',IER,6)
+     &        ' ',0.,'-',0.,'-',90.,'collector inclination ',
+     &        IER,nbhelp)
           ELSEIF(IB.EQ.3)THEN
 
 C Wind turbines
@@ -1811,36 +1696,36 @@ C Wind turbines
             CALL EDISP(IUOUT,' ')
             IE=0 ; IENO=0
             call MENUATOL('Choose terrain type',
-     &      'Choose terrain (see text feed back area) ',
-     &      'a type 1 (open)','b type 2 (farm land)',
-     &      'c type 3 (suburban etc)','d type 4 (urban)',' ',' ',
-     &      ' ',' ',' ',' ',' ',' ',IE,ieno,6)
+     &        'Choose terrain (see text feed back area) ',
+     &        'a type 1 (open)','b type 2 (farm land)',
+     &        'c type 3 (suburban etc)','d type 4 (urban)',' ',' ',
+     &        ' ',' ',' ',' ',' ',' ',IE,ieno,nbhelp)
             RENDATA(INDEX,1)=REAL(IE)
             CALL EASKR(RENDATA(INDEX,2),
      &        'Enter diameter of turbine (m)',' ',
-     &        0.,'-',0.,'-',10.,'turbine diameter',IER,6)
+     &        0.,'-',0.,'-',10.,'turbine diameter',IER,nbhelp)
             CALL EASKR(RENDATA(INDEX,3),
      &        'Enter hub height (m)',' ',
-     &        0.,'-',0.,'-',20.,'hub height',IER,6)
+     &        0.,'-',0.,'-',20.,'hub height',IER,nbhelp)
             CALL EASKR(RENDATA(INDEX,4),
      &        'Enter rated power (kW)',' ',
-     &        0.,'-',0.,'-',500.,'rated power',IER,6)
+     &        0.,'-',0.,'-',500.,'rated power',IER,nbhelp)
           ELSEIF(IB.EQ.4)THEN
             NRENTYPE(INDEX)=4
             CALL EASKR(RENDATA(INDEX,1),
      &        'Enter thermal seasonal efficiency of CHP unit (-)',
-     &        ' ',0.,'-',0.,'-',1.,'efficiency',IER,6)
+     &        ' ',0.,'-',0.,'-',1.,'efficiency',IER,nbhelp)
             CALL EASKR(RENDATA(INDEX,2),
      &        'Enter % of building space heating demand ',
      &        'supplied by CHP generator ',0.,'-',0.,'-',100.,
-     &        '% bldg demand ',IER,6)
+     &        '% bldg demand ',IER,nbhelp)
             CALL EASKR(RENDATA(INDEX,3),
      &        'Enter % of building DHW demand ',
      &        'supplied by CHP generator ',0.,'-',0.,'-',100.,
-     &        '% DHW demand ',IER,6)
+     &        '% DHW demand ',IER,nbhelp)
             CALL EASKR(RENDATA(INDEX,4),
      &        'Enter CHP heat to power ratio (-) ',
-     &        ' ',0.,'-',0.,'-',1.,'heat to power ratio ',IER,6)
+     &        ' ',0.,'-',0.,'-',1.,'heat to power ratio ',IER,nbhelp)
             ITEMS(1)='natural gas                   '
             ITEMS(2)='LPG                           '
             ITEMS(3)='Biogas                        '
@@ -1855,8 +1740,9 @@ C Wind turbines
             IDA=1
             JSTR(1)=0
  993        CALL EPICKS(IDA,JSTR,
-     &      ' ','Choose fuel type for CHP generator',
-     &      30,11,ITEMS,'Choose fuel type for CHP generator',IER,2)
+     &        ' ','Choose fuel type for CHP generator',
+     &        30,11,ITEMS,'Choose fuel type for CHP generator',
+     &        IER,nbhelp)
             IF(JSTR(1).EQ.0)GOTO 993
 
 C Synchronise with fuel types as defined in SBEM.db1
@@ -1871,11 +1757,10 @@ C Synchronise with fuel types as defined in SBEM.db1
 
 C Loop for the different available HVAC systems
         do 352 iavailsyst=1,NCMSYS
-          H(1)='Are there any controls for the specific HVAC system?'
-          H(2)='This is only used in the recommendations report for'
-          H(3)='EPC.'
+          helptopic='ncm_hvac_ctl_options'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKAB('Define controls for system: ',
-     &      HVACNAME(iavailsyst),'yes','no',IANSWER,3)
+     &      HVACNAME(iavailsyst),'yes','no',IANSWER,nbhelp)
           if(IANSWER.eq.1)then
 
 C Ask for systems controls
@@ -1884,16 +1769,10 @@ C Ask for systems controls
             Opt_NCM_CTL(3)='Local Time Control (i.e. room by room)  '
             Opt_NCM_CTL(4)='Local Temperature Control (room by room)'
             Opt_NCM_CTL(5)='Weather Compensation Control            '
-            H(1)='Select systems controls that apply to the specific'
-            H(2)='HVAC system. These are based on the HVAC Non-Domestic'
-            H(3)='guide. They are only used for the Energy Performance'
-            H(4)='Recommendations report and they are not currently '
-            H(5)='affecting the calculated values for the energy loads.'
-            H(6)='This is in accordance with iSBEM vers. 3.2b '
             IPICKS=5
             CALL EPICKS(IPICKS,iselected,' ',
      &       ' Controls (used only for EPC recommendations)?',40,5,
-     &       Opt_NCM_CTL,'controls list (see help)',IER,6)
+     &       Opt_NCM_CTL,'controls list (see help)',IER,nbhelp)
             do 351 i=1,IPICKS
               iSelFlag = iselected(i)
 
@@ -1920,25 +1799,15 @@ C << Need to initialise iRecControls
 
 C Configure stripped model to use the same assumptions for overheating
 C and for calculating Auxiliary energy as the assumptions for the notional building.
-        H(1)='This option is password protected because it is'
-        H(2)='only meant to be used for testing DSM against'
-        H(3)='requirements set accrediting the software. They'
-        H(4)='do not have any practical use. The differences'
-        H(5)='when this flag is set are related with overheating'
-        H(6)='and the calculation of the auxiliary energy.'
+        helptopic='ncm_testing_assumptions'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call easki(IPASS,' ','Password?',
-     &                            0,'-',0,'-',0,'password',ieri,6)
+     &    0,'-',0,'-',0,'password',ieri,nbhelp)
         if(IPASS.eq.101) then
           call tstamp('>','PRJ: set advanced flag for DSM testing')
 
-          H(1)='default 0: stripped does NOT follow the rules of '
-          H(2)='the notional/reference building.'
-          H(3)='if equal to 1: stripped follows the rules of the '
-          H(4)='notional building. '
-          H(5)='if equal to 2: stripped follows the rules of the '
-          H(6)='reference building. '
           call easki(iDsmTestingFlag,' ','DSM tests flag (see help)?',
-     &      0,'-',0,'-',iDsmTestingFlag,'flag',ieri,6)
+     &      0,'-',0,'-',iDsmTestingFlag,'flag',ieri,nbhelp)
         endif
         goto 222  ! see what the user wants to do next
 
@@ -2354,8 +2223,6 @@ C EDSBMSYS edits the system definition within the UK NCM file.
 
       common/OUTIN/IUOUT,IUIN
       integer iuout,iuin
-      common/pophelp/h(60)
-      character h*72
 
       integer JC,IY,IIN  ! positions in menu
       integer ICMSYS,KSYS,ITHND,IHSYS,IHCG,ICS,ICNDX
@@ -2366,11 +2233,19 @@ C EDSBMSYS edits the system definition within the UK NCM file.
                        !mechanical extract/supply ventilation system
       integer nitEmH,IHO ! max items and current menu item
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='edsbmsys'  ! set for subroutine
+
 C Edit HVAC and system information after a display of current contents.
       call lstncm('s',iuout)
+
  205  IHO=-2
-      H(1)='Help text for adding UK NCM HVAC systems'
-      H(2)='This message still needs to be generated'
+      helptopic='ncm_sys_help_a'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       DO 201 ICMSYS=1,NCMSYS
         WRITE(ITEMH(ICMSYS),'(A,1X,A)')CHAR(96+ICMSYS),
      &    HVACNAME(ICMSYS)
@@ -2384,128 +2259,29 @@ C Edit HVAC and system information after a display of current contents.
       IF(IHO.EQ.NCMSYS+4)THEN
         return
       ELSEIF(IHO.EQ.NCMSYS+3)THEN
-        CALL PHELPD('NCM HVAC help',2,'-',0,0,IER)
+        CALL PHELPD('NCM HVAC help',nbhelp,'-',0,0,IER)
       ELSEIF(IHO.EQ.NCMSYS+2)THEN
         JC=0
-        CALL EASKABC('Choose option',' ','add','delete','cancel',JC,2)
+        CALL EASKABC('Choose option',' ','add','delete','cancel',
+     &    JC,nbhelp)
         IF(JC.EQ.1)THEN
 
 C Add HVAC and system information
           NCMSYS=NCMSYS+1
-          H(1) ='Choose the type of HVAC environment control system'
-          H(2) ='that satisfies / comes closest to your requirements'
-          H(3) ='(see section 7.6.2 of the iSBEM users guide). The'
-          H(4) ='available selections are summarized below: '
-          H(5) =' '
-          H(6) ='Central heating using water: radiators '
-          H(7) ='  Centrally generated heat with water distribution'
-          H(8) ='  using radiators in rooms. Natural vent assumed.'
-          H(9) =' '
-          H(10)='Central heating using water: convectors '
-          H(11) =' '
-          H(12)='  As above but using convectors in rooms.'
-          H(13)=' '
-          H(14)='Central heating using water: floor heating '
-          H(15)='  As above but with under floor heating.'
-          H(16)=' '
-          H(17)='Central heating with air distribution '
-          H(18)='  As above but with air distribution.'
-          H(19)=' '
-          H(20)='Other local room heater - fanned. Includes gas'
-          H(21)='  fires, gas convectors, direct electric heaters,'
-          H(22)='  electric storage (with fans). Large units should'
-          H(23)='  be treated as forced convection air heaters.'
-          H(24)=' '
-          H(25)='Other local room heater - unfanned. Includes gas'
-          H(26)='  fires, gas convectors, direct electric heaters,'
-          H(27)='  electric storage (w/o fans).'
-          H(28)=' '
-          H(29)='Unflued radiant heater - high temperature overhead'
-          H(30)='  radiant (electric or gas) without flue.'
-          H(31)=' '
-          H(32)='Flued radiant heater - high temperature overhead'
-          H(33)='  radiant (electric or gas) with flue.'
-          H(34)=' '
-          H(35)='Multi-burner radiant heaters - high temperature'
-          H(36)='  overhead gas units'
-          H(37)=' '
-          H(38)='Flued forced-convective air heaters - optional fan'
-          H(39)='  to assist combustion.'
-          H(40)=' '
-          H(41)='Unflued forced-convective air heaters - typically'
-          H(42)='  called direct gas heaters. Adequate ventilation'
-          H(43)='  must be provided.'
-          H(44)=' '
-          H(45)='continued... '
-          CALL PHELPD('SBEM HVAC choices',45,'-',0,0,IER)
-          H(1) ='Air based HVAC systems follow... '
-          H(2) =' '
-          H(3) ='Single-duct VAV - all air system where volume is'
-          H(4) ='  adjusted to match cooling load. Reheat optional.'
-          H(5) ='  Assumed to provide heating. Optional perimeter'
-          H(6) ='  heating.'
-          H(7) =' '
-          H(8) ='Dual-duct VAV - as above except separate hot and'
-          H(9) ='  cold air ducts.'
-          H(10)=' '
-          H(11)='Indoor packaged cabinet (VAV) - local cooling &'
-          H(12)='  heating units supplying to room or floor or'
-          H(13)='  ceiling voids. Optional locally varied recirc'
-          H(14)='  rate and electric top-up heating.'
-          H(15)=' '
-          H(16)='Fan coil system - local fanned terminal unit (in'
-          H(17)='  ceiling/on wall/on floor) with central chilled'
-          H(18)='  water. 2/3/4-pipe. Assumed to provide heating.'
-          H(19)=' '
-          H(20)='Induction system - high pressure central supply'
-          H(21)='  air with heating and cooling within terminal'
-          H(22)='  unit. 2/3/4-pipe. Assumed to provide heating.'
-          H(23)=' '
-          H(24)='Constant volume system with fixed fresh air - '
-          H(25)='  Fixed air volume units w/o terminal reheat.'
-          H(26)='  Assumed to provide heating.'
-          H(27)=' '
-          H(28)='Constant volume system with vairable fresh air -'
-          H(29)='  As above but with free cooling economiser.'
-          H(30)=' '
-          H(31)='Multizone hot deck/cold deck - central AHU with a'
-          H(32)='  single duct to each room. Provides heating.'
-          H(33)=' '
-          H(34)='Terminal reheat - Central chilled air supply with'
-          H(35)='  reheat at terminal. Assumed to provide heating'
-          H(36)='  and optional perimeter heating.'
-          H(37)=' '
-          H(38)='Dual duct (constant volume) - separate hot and '
-          H(39)='  cold air supplies locally mixed at each zone.'
-          H(40)='  Assumed to provide heat, optional perimeter.'
-          H(41)=' '
-          H(42)='Chilled ceilings or passive chilled beams - A '
-          H(43)='  combination of chilled ceiling or passive'
-          H(44)='  chilled beam with separate tempered ventilation'
-          H(45)='  air. Heating via LTHW. Assumes displacement vent.'
-          H(46)=' '
-          H(47)='Active chilled beams - typically induction units'
-          H(48)='  via central high pressure air supply. Heating'
-          H(49)='  via LTHW. May include local fans.'
-          H(50)=' '
-          H(51)='Water loop heat pump - local heat pumps served by'
-          H(52)='  common water loop. Central heating or cooling '
-          H(53)='  plant used. Assumed to provide heating.'
-          H(54)=' '
-          H(55)='Split or multi-split system - outdoor and indoor'
-          H(56)='  units connected via refrigerant. No mechanical'
-          H(57)='  vent. Also for ducted split systems.'
-          H(58)=' '
-          H(59)='Single room cooling - integral units w/o ducts. '
-          CALL PHELPD('SBEM HVAC choices',59,'-',0,0,IER)
+          helptopic='ncm_sys_help_a'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('SBEM HVAC choices',nbhelp,'-',0,0,IER)
+          helptopic='ncm_sys_help_b'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('SBEM HVAC choices',nbhelp,'-',0,0,IER)
 
           HVACNAME(NCMSYS)=' default HVAC system '
           CALL EASKS(HVACNAME(NCMSYS),'HVAC system name',
-     &      '(<30 characters)',30,D64,'HVAC sys name',IER,59)
+     &      '(<30 characters)',30,D64,'HVAC sys name',IER,nbhelp)
           IY=1
           KSYS(1)=0
  906      CALL EPICKS(IY,KSYS,' ','Select system type',
-     &      70,MHT,HSYSNAME,'system types',IER,59)
+     &      70,MHT,HSYSNAME,'system types',IER,nbhelp)
           IF(KSYS(1).EQ.0)GOTO 906
           IHSYS=KSYS(1)
           IF(IHSYS.GE.1)INCMSYS(NCMSYS)=IHSYS
@@ -2524,39 +2300,31 @@ C Add corresponding heat generator, efficiency and fuel type
           IY=1
           KSYS(1)=0
           CALL EPICKS(IY,KSYS,' ','Select heat generator',
-     &      60,IHCG-1,PRSSN,'system types',IER,2)
+     &      60,IHCG-1,PRSSN,'system types',IER,nbhelp)
           IF(KSYS(1).EQ.0)GOTO 330
           IHGEF(NCMSYS)=ITHND(KSYS(1))
 
 C Display HVAC heat generator exceptions if applicable
           IF(IHGEF(NCMSYS).EQ.21)THEN
-            H(1)='You will be asked for system efficiency/COP next'
-            H(2)='For the district heating option note that default'
-            H(3)='emission factor specified in iSBEM v3.4.a is 0.293'
-            H(4)='kgCO2/kWh. Default efficiency of the system is '
-            H(5)='set to 0.65, this corresponds to natural gas as fuel'
-            H(6)='for aforementioned emission factor.'
-            CALL PHELPD('SBEM HVAC exceptions',6,'-',0,0,IER)
+            helptopic='ncm_sys_help_c'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL PHELPD('SBEM HVAC exceptions',nbhelp,'-',0,0,IER)
             HGEF(NCMSYS)=0.65
           ELSEIF(IHGEF(NCMSYS).LE.20.AND.IHGEF(NCMSYS).GE.9)THEN
-            H(1)='You will be asked for system efficiency/COP next'
-            H(2)='For heat pumps values for natural gas are quoted as'
-            H(3)='default values. The same values are applicable to '
-            H(4)='oil as well. If electricity is being used as fuel '
-            H(5)='then it is appropriate to multiply the COP with 2.5'
-            H(6)='(following iSBEM ver 3.4.a)'
-            CALL PHELPD('SBEM HVAC exceptions',6,'-',0,0,IER)
+            helptopic='ncm_sys_help_d'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL PHELPD('SBEM HVAC exceptions',nbhelp,'-',0,0,IER)
           ENDIF
 
 C Ask for system efficiency
           CALL EASKR(HGEF(NCMSYS),
      &      'Enter heat generator efficiency/COP or accept default',
-     &      ' ',0.,'F',0.,'-',10.,'heat gen eff ',IER,2)
+     &      ' ',0.,'F',0.,'-',10.,'heat gen eff ',IER,nbhelp)
  331      IY=1
           KSYS(1)=0
           CALL EDISP(IUOUT,'Select fuel type')
           CALL EPICKS(IY,KSYS,' ','Select fuel type',
-     &      42,MFT,FUELNAME,'Fuel Types',IER,2)
+     &      42,MFT,FUELNAME,'Fuel Types',IER,nbhelp)
           IF(KSYS(1).EQ.0)GOTO 331
           IFTYP(NCMSYS)=KSYS(1)
 
@@ -2569,9 +2337,9 @@ C Add corresponding cool generator if applicable
             IF(ICS.GE.6)GOTO 456
             IF(ICS.LE.3)THEN
               CALL EASKABCD('Enter power rating of system (kW)',' ',
-     &        '0-100','101-500','501-750','751-3500',IADC,1)
+     &          '0-100','101-500','501-750','751-3500',IADC,nbhelp)
               CALL EASKAB('Is this system in the ECA list',
-     &        ' ','yes','no',IECA,2)
+     &          ' ','yes','no',IECA,nbhelp)
               ICNDX=8*(ICS-1)+2*(IADC-1)+IECA
             ELSE
 
@@ -2585,7 +2353,7 @@ C which are 125% of Seasonal EER value so multiply by 0.8
             CGEF(NCMSYS)=SYSEFFC(ICNDX,IHSYS)*0.8
             CALL EASKR(CGEF(NCMSYS),
      &        'Enter cool generator efficiency/COP or accept default',
-     &        ' ',0.,'F',0.,'-',10.,'cool gen eff ',IER,2)
+     &        ' ',0.,'F',0.,'-',10.,'cool gen eff ',IER,nbhelp)
           ELSE
             CGEF(NCMSYS)=0.0
             ICGEF(NCMSYS)=0
@@ -2597,7 +2365,7 @@ C Ask for ventilation specific fan power SFP if applicable
             CALL EASKR(SFPHS(NCMSYS),
      &        'Enter ventilation system specifc fan power SFP or',
      &        'accept default (Watts/liter/sec)',
-     &        0.,'F',0.,'-',50.,'heat gen eff ',IER,2)
+     &        0.,'F',0.,'-',50.,'heat gen eff ',IER,nbhelp)
 
 C Define system adjustment inputs for ductwork and AHU
             call defLeakage(NCMSYS,IER)
@@ -2607,24 +2375,13 @@ C Define system adjustment inputs for ductwork and AHU
           ENDIF
 
 C Ask if there is a supply/extract fun (for nat. ventil. cases only)
-          H(1) ='If supply/extract then additional ventilation '
-          H(2) ='losses will be taken for the heating loads plus'
-          H(3) ='additional auxiliary loads.'
-          H(4) =' '
-          H(5) ='Choose centralised system for centralised balanced'
-          H(6) ='mechanical ventilation system including air supplies'
-          H(7) ='to centralised air conditioning system'
-          H(8) =''
-          H(9) ='Choose zonal supply for where the fan in remote from'
-          H(10)='the zone such as ceiling void or roof mounted units'
-          H(11) =''
-          H(12)='Choose zonal extract where the fan is remote from the'
-          H(13)='zone'
+          helptopic='ncm_sys_extract'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABCD('Zone ventilation type (see help)',
      &    ' ','Natural','Centralised balanced',
-     &    'Zonal supply','Zonal extract',Ivent(ncmsys),13)
+     &    'Zonal supply','Zonal extract',Ivent(ncmsys),nbhelp)
           CALL EASKAB('Does system have local ventilation only units',
-     &    'e.g. toilet exhausts ','Yes','No',IIN,1)
+     &      'e.g. toilet exhausts ','Yes','No',IIN,nbhelp)
           INatMech=IVENT(NCMSYS)+1
           IF(IIN.EQ.1)IVENT(NCMSYS)=10+IVENT(NCMSYS)
           if(INatMech.eq.1)then
@@ -2632,19 +2389,19 @@ C Ask if there is a supply/extract fun (for nat. ventil. cases only)
           else
             SFPHS(NCMSYS)=1.5 !1.5 W/l/s is the default in SBEM
             CALL EASKR(SFPHS(NCMSYS),
-     &      'Enter supply/extract specifc fan power SFP or',
-     &      'accept default (Watts/liter/sec)',
-     &      0.,'F',0.,'-',50.,'sfp mech ',IER,2)
+     &        'Enter supply/extract specifc fan power SFP or',
+     &        'accept default (Watts/liter/sec)',
+     &        0.,'F',0.,'-',50.,'sfp mech ',IER,nbhelp)
           endif
         ELSEIF(JC.EQ.2)THEN
 
 C Delete HVAC and system information
-          H(1) = 'Choose HVAC system to delete or simply exit without'
-          H(2) = 'making any choice to retain all defined systems'
+          helptopic='ncm_sys_delete'
+          call gethelptext(helpinsub,helptopic,nbhelp)
  907      IZ=1
           KSYS(1)=0
           CALL EPICKS(IZ,KSYS,' ','HVAC system to delete',
-     &      70,NCMSYS,ITEMH,'HVAC system to delete',IER,2)
+     &      70,NCMSYS,ITEMH,'HVAC system to delete',IER,nbhelp)
           IF(KSYS(1).EQ.0)GOTO 907
           IF(KSYS(1).GE.1)THEN
             DO 203 ICMSYS=KSYS(1),NCMSYS
@@ -2665,10 +2422,10 @@ C Delete HVAC and system information
       ELSEIF(IHO.LE.NCMSYS+3.AND.IHO.GE.1)THEN
 
 C Edit HVAC and system information
-        H(1) = 'Choose HVAC system to replace current system'
-        H(2) = '(see text feed back area) or exit to retain current'
+        helptopic='ncm_sys_replace'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKS(HVACNAME(IHO),'HVAC system name',
-     &    '(<30 characters)',30,D64,'HVAC sys name',IER,1)
+     &    '(<30 characters)',30,D64,'HVAC sys name',IER,nbhelp)
         IY=1
         KSYS(1)=0
  908    WRITE(OUTS,'(2A)')'Current HVAC system is ',
@@ -2677,7 +2434,7 @@ C Edit HVAC and system information
         call edisp(iuout,
      &    'Choose HVAC system to replace it or exit to retain current')
         CALL EPICKS(IY,KSYS,' ','Select system type',
-     &    70,MHT,HSYSNAME,'system types',IER,2)
+     &    70,MHT,HSYSNAME,'system types',IER,nbhelp)
         IF(KSYS(1).EQ.0)GOTO 908
         IHSYS=KSYS(1)
         IF(IHSYS.GE.1)THEN
@@ -2700,68 +2457,62 @@ C Edit corresponding heat generator, efficiency and fuel type
         IY=1
         KSYS(1)=0
         CALL EPICKS(IY,KSYS,' ','Select heat generator',
-*     &    60,IHCG,PRSSN,'system types',IER,2)
-     &    60,IHCG-1,PRSSN,'system types',IER,2)
+*     &    60,IHCG,PRSSN,'system types',IER,nbhelp)
+     &    60,IHCG-1,PRSSN,'system types',IER,nbhelp)
         IF(KSYS(1).EQ.0)GOTO 339
         IHGEF(IHO)=ITHND(KSYS(1))
 
 C Display HVAC heat generator exceptions if applicable
         IF(IHGEF(IHO).EQ.21)THEN
-          H(1)='You will be asked for system efficiency/COP next'
-          H(2)='For the district heating option note that default'
-          H(3)='emission factor specified in iSBEM v3.4.a is 0.293'
-          H(4)='kgCO2/kWh. Default efficiency of the system is '
-          H(5)='set to 0.65, this corresponds to natural gas as fuel'
-          H(6)='for aforementioned emission factor.'
-          CALL PHELPD('SBEM HVAC exceptions',6,'-',0,0,IER)
+          helptopic='ncm_sys_cop_a'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('SBEM HVAC exceptions',nbhelp,'-',0,0,IER)
           HGEF(IHO)=0.65
         ELSEIF(IHGEF(IHO).LE.20.AND.IHGEF(IHO).GE.9)THEN
-          H(1)='You will be asked for system efficiency/COP next'
-          H(2)='For heat pumps values for natural gas are quoted as'
-          H(3)='default values. The same values are applicable to '
-          H(4)='oil as well. If electricity is being used as fuel '
-          H(5)='then it is appropriate to multiply the COP with 2.5'
-          H(6)='(following iSBEM ver 3.4.a)'
-          CALL PHELPD('SBEM HVAC exceptions',6,'-',0,0,IER)
+          helptopic='ncm_sys_cop_b'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('SBEM HVAC exceptions',nbhelp,'-',0,0,IER)
         ENDIF
 
         CALL EASKR(HGEF(IHO),
      &    'Edit heat/cool generator efficiency/COP',' ',
-     &    0.,'F',0.,'-',10.,'heat gen eff ',IER,2)
+     &    0.,'F',0.,'-',10.,'heat gen eff ',IER,nbhelp)
  341    IY=1
         KSYS(1)=0
         CALL EDISP(IUOUT,'Select fuel type')
         CALL EPICKS(IY,KSYS,' ','Select fuel type',
-     &    42,MFT,FUELNAME,'Fuel Types',IER,2)
+     &    42,MFT,FUELNAME,'Fuel Types',IER,nbhelp)
         IF(KSYS(1).EQ.0)GOTO 341
         IFTYP(IHO)=KSYS(1)
 
-C Edit corresponding cool generator if applicable
+C Edit corresponding cool generator if applicable.
         IF(IBRUKLC(1,IHSYS).NE.-1111)THEN
- 457        CALL EASKATOG(' Choose cooling system',' ',SYSNAME(MPT-4),
+          helptopic='ncm_cooling_gen'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+ 457      CALL EASKATOG(' Choose cooling system',' ',SYSNAME(MPT-4),
      &      SYSNAME(MPT-3),SYSNAME(MPT-2),SYSNAME(MPT-1),SYSNAME(MPT),
-     &      ' ',' ',ICGEF(IHO),2)
-            ICS=ICGEF(IHO)
-            IF(ICS.GE.6)GOTO 457
-            IF(ICS.LE.3)THEN
-              CALL EASKABCD('Enter power rating of system (kW)',' ',
+     &      ' ',' ',ICGEF(IHO),nbhelp)
+          ICS=ICGEF(IHO)
+          IF(ICS.GE.6)GOTO 457
+          IF(ICS.LE.3)THEN
+            CALL EASKABCD('Enter power rating of system (kW)',' ',
      &        '0-100','101-500','501-750','751-3500',IADC,1)
-              CALL EASKAB('Is this system in the ECA list',
-     &        ' ','yes','no',IECA,2)
-              ICNDX=8*(ICS-1)+2*(IADC-1)+IECA
-            ELSE
+            CALL EASKAB('Is this system in the ECA list',
+     &        ' ','yes','no',IECA,nbhelp)
+            ICNDX=8*(ICS-1)+2*(IADC-1)+IECA
+          ELSE
 
 C Heat pumps do not have range of power ratings (use maximum value of
 C counters above)
-              ICNDX=8*(3-1)+2*(4-1)+2+ICS
-            ENDIF
+            ICNDX=8*(3-1)+2*(4-1)+2+ICS
+          ENDIF
 
 C Values in database are nominal energy efficiency ratio (EER) values
 C which are 125% of Seasonal EER value so multiply by 0.8
-            CGEF(IHO)=SYSEFFC(ICNDX,IHSYS)*0.8
-            CALL EASKR(CGEF(IHO),
-     &        'Enter cool generator efficiency/COP or accept default',
-     &        ' ',0.,'F',0.,'-',10.,'cool gen eff ',IER,2)
+          CGEF(IHO)=SYSEFFC(ICNDX,IHSYS)*0.8
+          CALL EASKR(CGEF(IHO),
+     &      'Enter cool generator efficiency/COP or accept default',
+     &      ' ',0.,'F',0.,'-',10.,'cool gen eff ',IER,2)
         ELSE
           CGEF(IHO)=0.0
           ICGEF(IHO)=0
@@ -2769,21 +2520,22 @@ C which are 125% of Seasonal EER value so multiply by 0.8
 
 C Edit ventilation specific fan power SFP if applicable
         IF(IBRUKLF(IHSYS).NE.-1111)THEN
+          helptopic='ncm_vent_fan_sfp'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKR(SFPHS(IHO),
      &      'Enter ventilation system specifc fan power SFP or',
      &      'accept default (Watts/liter/sec)',
-     &      0.,'F',0.,'-',50.,'heat gen eff ',IER,2)
+     &      0.,'F',0.,'-',50.,'heat gen eff ',IER,nbhelp)
 
 C Define system adjustment inputs for ductwork and AHU
           call defLeakage(IHO,IER)
         ELSE
 
 C Ask if there is a supply/extract fun (for nat. ventil. cases only)
-          H(1) ='If supply/extract then additional ventilation '
-          H(2) =' losses will be taken for the heating loads plus'
-          H(3) =' additional auxiliary loads.'
+          helptopic='ncm_vent_take_from'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKAB('Zone ventilation type',
-     &    ' ','Natural','Machanical supply or extract',INatMech,3)
+     &    ' ','Natural','Machanical supply or extract',INatMech,nbhelp)
           if(INatMech.eq.1)then
             SFPHS(IHO)=0.0
           elseif(INatMech.eq.2)then
@@ -2791,7 +2543,7 @@ C Ask if there is a supply/extract fun (for nat. ventil. cases only)
             CALL EASKR(SFPHS(IHO),
      &      'Enter supply/extract specifc fan power SFP or',
      &      'accept default (Watts/liter/sec)',
-     &      0.,'F',0.,'-',50.,'sfp mech ',IER,2)
+     &      0.,'F',0.,'-',50.,'sfp mech ',IER,nbhelp)
           endif
           duct_tDLd(IHO)=0.0
           AHU_tDLd(IHO)=0.0
@@ -2811,11 +2563,16 @@ C EDSBMBLD edits the building contact definition within the UK NCM file.
 
       common/OUTIN/IUOUT,IUIN
       integer iuout,iuin
-      common/pophelp/h(60)
-      character h*72
       DIMENSION ITEMS(33)
       character HEAD*30,ITEMS*50,D64*64,D20*20,outs*124
       integer nitms,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='edsbmbld'  ! set for subroutine
 
 C Enter building, owner and verifier information
       call edisp(iuout,' ')          
@@ -2905,12 +2662,8 @@ C Enter building, owner and verifier information
       WRITE(HEAD,'(2A)')'Project details for BRUKL/EPC'
 
 C Help text for this menu.
-      H(1)='This menu allows the definition of project'
-      H(2)='details. These will be used by BRUKL/EPC for'
-      H(3)='reporting purposes and are required data.'
-      H(4)=' '
-      H(5)='The enter all details will ask for for all the details'
-      H(6)='shown in the menu (in sequence).'
+      helptopic='ncm_contact_data'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Menu for building details.
       CALL EMENU(HEAD,ITEMS,nitms,INO)
@@ -2918,14 +2671,13 @@ C Menu for building details.
       IF(INO.EQ.nitms-1)THEN
 
 C Produce help text for the menu.
-        CALL PHELPD(HEAD,6,'-',0,0,IER)
+        CALL PHELPD(HEAD,nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.1)THEN
 
 C Building project description. Echo after edit.
         D20='Project un-named'
-        H(1)='Input a succinct description of the project name here.'
         CALL EASKS(pjname,'project name?','(20 characters maximum)',
-     &    20,D20,'project name',IER,1)
+     &    20,D20,'project name',IER,nbhelp)
         call tstamp('>','PRJ: edited project name')
         write(outs,'(2a)')'Project name: ',pjname(1:lnblnk(pjname))
         call edisp(iuout,outs)
@@ -2933,9 +2685,8 @@ C Building project description. Echo after edit.
 
 C Building address. Echo after edit.
         D64='No site selected.'
-        H(1)='Input the building street address.'
         CALL EASKS(baddress,'building address?','(<64 characters)',
-     &    64,D64,'build address',IER,1)
+     &    64,D64,'build address',IER,nbhelp)
         call tstamp('>','PRJ: edited project address')
         write(outs,'(2a)')'Building address: ',
      &    baddress(1:lnblnk(baddress))
@@ -2944,9 +2695,8 @@ C Building address. Echo after edit.
 
 C Building city name. Echo after edit.
         D64='No site selected.'
-        H(1)='Input the names of the town/city of the building.'
         CALL EASKS(bcity,'building city?','(<64 characters)',
-     &    64,D64,'city building',IER,1)
+     &    64,D64,'city building',IER,nbhelp)
         call tstamp('>','PRJ: edited project city')
         write(outs,'(2a)')'Building city: ',bcity(1:lnblnk(bcity))
         call edisp(iuout,outs)
@@ -2954,9 +2704,8 @@ C Building city name. Echo after edit.
 
 C Building post code. Echo after edit.
         D64='No site selected.'
-        H(1)='Input for: building post code'
         CALL EASKS(buildingPC,'building post code?',
-     &    '(<64 characters)',64,D64,'building PC',IER,1)
+     &    '(<64 characters)',64,D64,'building PC',IER,nbhelp)
         call tstamp('>','PRJ: edited project post code')
         write(outs,'(2a)')'Building Postcode: ',
      &    buildingPC(1:lnblnk(buildingPC))
@@ -2965,9 +2714,8 @@ C Building post code. Echo after edit.
 
 C Building owner name. Echo after edit.
         D64='Owner name withheld'
-        H(1)='Input a succinct description of the owner name here'
         CALL EASKS(ownername,'Name of owner?','(<64 characters)',
-     &    64,D64,'owner name',IER,1)
+     &    64,D64,'owner name',IER,nbhelp)
         call tstamp('>','PRJ: edited project owner name')
         write(outs,'(2a)')'Building owner name: ',
      &    ownername(1:lnblnk(ownername))
@@ -2976,9 +2724,8 @@ C Building owner name. Echo after edit.
 
 C Building owner phone number.
         D64='Owner phone withheld'
-        H(1)='telephone number of the owner'
         CALL EASKS(ownertel,'Phone of owner?','(<64 characters)',
-     &    64,D64,'owner tel',IER,1)
+     &    64,D64,'owner tel',IER,nbhelp)
         call tstamp('>','PRJ: edited project owner phone')
         write(outs,'(2a)')'Building owner telephone: ',
      &    ownertel(1:lnblnk(ownertel))
@@ -2987,9 +2734,8 @@ C Building owner phone number.
 
 C Building owner address.
         D64='Owner address withheld.'
-        H(1)='Street address of the owner'
         CALL EASKS(owneraddr,'Address of owner?','(<64 characters)',
-     &    64,D64,'owner address',IER,1)
+     &    64,D64,'owner address',IER,nbhelp)
         call tstamp('>','PRJ: edited project owner address')
         write(outs,'(2a)')'Building owner address: ',
      &    owneraddr(1:lnblnk(owneraddr))
@@ -2998,9 +2744,8 @@ C Building owner address.
 
 C Building owner city.
         D64='Owner city withheld.'
-        H(1)='City (where the owner is located)'
         CALL EASKS(ownercity,'City of owner?','(<64 characters)',
-     &    64,D64,'owner city',IER,1)
+     &    64,D64,'owner city',IER,nbhelp)
         call tstamp('>','PRJ: edited project owner city')
         write(outs,'(2a)')'Building owner city: ',
      &    ownercity(1:lnblnk(ownercity))
@@ -3009,9 +2754,8 @@ C Building owner city.
 
 C Building owner postcode.
         D64='Owner postcode withheld.'
-        H(1)='Post code (where the owner is located)'
         CALL EASKS(ownerPC,'Post code for owner?','(<64 characters)',
-     &    64,D64,'owner post code',IER,1)
+     &    64,D64,'owner post code',IER,nbhelp)
         call tstamp('>','PRJ: edited project owner postcode')
         write(outs,'(2a)')'Building owner Postcode: ',
      &    ownerPC(1:lnblnk(ownerPC))
@@ -3020,9 +2764,8 @@ C Building owner postcode.
 
 C Building certifier name.
         D64='Certifier name withheld.'
-        H(1)='certifier name'
         CALL EASKS(certifname,'Name of certifier?','(<64 characters)',
-     &    64,D64,'certifier name',IER,1)
+     &    64,D64,'certifier name',IER,nbhelp)
         call tstamp('>','PRJ: edited project certifier')
         write(outs,'(2a)')'Certifier name: ',
      &    certifname(1:lnblnk(certifname))
@@ -3031,9 +2774,8 @@ C Building certifier name.
 
 C Building certifier phone number.
         D64='Certifier phone number withheld.'
-        H(1)='certifier telephone number'
         CALL EASKS(certTel,'Phone of certifier?','(<64 characters)',
-     &    64,D64,'certifier tel',IER,1)
+     &    64,D64,'certifier tel',IER,nbhelp)
         call tstamp('>','PRJ: edited project certifier phone')
         write(outs,'(2a)')'Certifier telephone: ',
      &    certTel(1:lnblnk(certTel))
@@ -3042,9 +2784,8 @@ C Building certifier phone number.
 
 C Building certifier address.
         D64='Certifier address withheld.'
-        H(1)='certifier street address'
         CALL EASKS(certaddress,'Address of certifier?',
-     &    '(<64 characters)',64,D64,'certifier address',IER,1)
+     &    '(<64 characters)',64,D64,'certifier address',IER,nbhelp)
         call tstamp('>','PRJ: edited project cert address')
         write(outs,'(2a)')'Certifier address: ',
      &    certaddress(1:lnblnk(certaddress))
@@ -3053,9 +2794,8 @@ C Building certifier address.
 
 C Building certifier city.
         D64='Certifier city withheld.'
-        H(1)='Name of city of the certifier.'
         CALL EASKS(certcity,'City of certifier?','(<64 characters)',
-     &    64,D64,'certifier city',IER,1)
+     &    64,D64,'certifier city',IER,nbhelp)
         call tstamp('>','PRJ: edited project certifier city')
         write(outs,'(2a)')'Certifier city: ',
      &    certcity(1:lnblnk(certcity))
@@ -3064,9 +2804,8 @@ C Building certifier city.
 
 C Building certifier postcode.
         D64='Certifier postcode withheld.'
-        H(1)='certifier post code'
         CALL EASKS(certPC,'Post code of certifier?',
-     &    '(<64 characters)',64,D64,'certifier Post code',IER,1)
+     &    '(<64 characters)',64,D64,'certifier Post code',IER,nbhelp)
         call tstamp('>','PRJ: edited project cert post code')
         write(outs,'(2a)')'Certifier postcode: ',
      &    certPC(1:lnblnk(certPC))
@@ -3075,61 +2814,47 @@ C Building certifier postcode.
 
 C Enter all information
         D20='Project un-named'
-        H(1)='Input a succinct description of the project name here.'
         CALL EASKS(pjname,'project name?','(20 characters maximum)',
-     &    20,D20,'project name',IER,1)
+     &    20,D20,'project name',IER,nbhelp)
         D64='No site selected.'
-        H(1)='Input the building street address.'
         CALL EASKS(baddress,'building address?','(<64 characters)',
-     &    64,D64,'build address',IER,1)
+     &    64,D64,'build address',IER,nbhelp)
         D64='No site selected.'
-        H(1)='Input the names of the town/city of the building.'
         CALL EASKS(bcity,'building city?','(<64 characters)',
-     &    64,D64,'city building',IER,1)
+     &    64,D64,'city building',IER,nbhelp)
         D64='No site selected.'
-        H(1)='Input for: building post code'
         CALL EASKS(buildingPC,'building post code?',
-     &    '(<64 characters)',64,D64,'building PC',IER,1)
+     &    '(<64 characters)',64,D64,'building PC',IER,nbhelp)
         D64='Owner name withheld'
-        H(1)='Input a succinct description of the owner name here'
         CALL EASKS(ownername,'Name of owner?','(<64 characters)',
-     &    64,D64,'owner name',IER,1)
+     &    64,D64,'owner name',IER,nbhelp)
         D64='Owner phone withheld'
-        H(1)='telephone number of the owner'
         CALL EASKS(ownertel,'Telephone of owner?','(<64 characters)',
-     &    64,D64,'owner tel',IER,1)
+     &    64,D64,'owner tel',IER,nbhelp)
         D64='Owner address withheld.'
-        H(1)='Street address of the owner'
         CALL EASKS(owneraddr,'Address of owner?','(<64 characters)',
-     &    64,D64,'owner address',IER,1)
+     &    64,D64,'owner address',IER,nbhelp)
         D64='Owner city withheld.'
-        H(1)='City (where the owner is located)'
         CALL EASKS(ownercity,'City of owner?','(<64 characters)',
-     &    64,D64,'owner city',IER,1)
+     &    64,D64,'owner city',IER,nbhelp)
         D64='Owner postcode withheld.'
-        H(1)='Post code (where the owner is located)'
         CALL EASKS(ownerPC,'Post code for owner?','(<64 characters)',
-     &    64,D64,'owner post code',IER,1)
+     &    64,D64,'owner post code',IER,nbhelp)
         D64='Certifier name withheld.'
-        H(1)='certifier name'
         CALL EASKS(certifname,'Name of certifier?',
-     &    '(<64 characters)',64,D64,'certifier name',IER,1)
+     &    '(<64 characters)',64,D64,'certifier name',IER,nbhelp)
         D64='Certifier phone number withheld.'
-        H(1)='certifier telephone number'
         CALL EASKS(certTel,'Phone of certifier?','(<64 characters)',
-     &    64,D64,'certifier tel',IER,1)
+     &    64,D64,'certifier tel',IER,nbhelp)
         D64='Certifier address withheld.'
-        H(1)='Certifier street address'
         CALL EASKS(certaddress,'Address of certifier?',
-     &    '(<64 characters)',64,D64,'certifier address',IER,1)
+     &    '(<64 characters)',64,D64,'certifier address',IER,nbhelp)
         D64='Certifier city withheld.'
-        H(1)='Name of city of the certifier.'
         CALL EASKS(certcity,'City of certifier ?','(<64 characters)',
-     &    64,D64,'certifier city',IER,1)
+     &    64,D64,'certifier city',IER,nbhelp)
         D64='Certifier postcode withheld.'
-        H(1)='certifier post code'
         CALL EASKS(certPC,'Post code of certifier?',
-     &    '(<64 characters)',64,D64,'certifier Post code',IER,1)
+     &    '(<64 characters)',64,D64,'certifier Post code',IER,nbhelp)
         call lstncm('p',iuout)
       ELSEIF(INO.EQ.31)THEN
 
@@ -3151,11 +2876,16 @@ C EDSBMASSOR edits the assessor contact definition within the UK NCM file.
 
       common/OUTIN/IUOUT,IUIN
       integer iuout,iuin
-      common/pophelp/h(60)
-      character h*72
       DIMENSION ITEMS(33)
       character HEAD*30,ITEMS*50,D64*64,outs*124
       integer nitms,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='edsbmassor'  ! set for subroutine
 
 C List current state of the energy assessor data.
       call lstncm('e',iuout)
@@ -3203,13 +2933,8 @@ C Enter energy assessor and additional building information
       WRITE(HEAD,'(A)')'Project details for BRUKL/EPC'
 
 C Help text for this menu.
-      H(1) ='This menu allows the definition of'
-      H(2) ='project details. These will be used by'
-      H(3) ='BRUKL/EPC for reporting purposes'
-      H(4) =' '
-      H(5) ='The Unisque Property Reference Number is applicable'
-      H(6) ='in England, Wales & Northern Ireland.'
-      H(7) ='<< help message is work-in-progress >> '
+      helptopic='ncm_assessor_data'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Menu for energy assessor details.
       CALL EMENU(HEAD,ITEMS,nitms,INO)
@@ -3217,17 +2942,15 @@ C Menu for energy assessor details.
       IF(INO.EQ.nitms-1)THEN
 
 C Produce help text for the menu.
-        CALL PHELPD(HEAD,6,'-',0,0,IER)
+        CALL PHELPD(HEAD,nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.1)THEN
 
 C Unique Property Reference Number (UPRN)
 C Leave it as a string because it is not certain if this is always an integer
 C (it may be a mix of letters and numbers).
         D64='000000000000'
-        H(1)='Input the Unique Property Reference Number (UPRN) here.'
-        H(2)='Applicable only for England, Wales & Northern Ireland.'
         CALL EASKS(UPRN,'Unique Property Reference Number (UPRN)?',
-     &    '(<64 characters)',64,D64,'UPR Number',IER,2)
+     &    '(<64 characters)',64,D64,'UPR Number',IER,nbhelp)
         call tstamp('>','PRJ: edited UPRN')
         write(outs,'(2a)') 'Unique Property Reference Number (UPRN): ',
      &    UPRN(1:lnblnk(UPRN))
@@ -3235,19 +2958,14 @@ C (it may be a mix of letters and numbers).
       ELSEIF(INO.EQ.3)THEN
 
 C Month and day of month of inspection.
-        H(1)='Input the month and the day of the month of the '
-        H(2)='inspection. Applicable only for England, '
-        H(3)='Wales & Northern Ireland.'
         CALL EASKI(D_inspect,' ','Day of inspection?',
-     &    1,'W',31,'W',1,'day',IERI,3)
+     &    1,'W',31,'W',1,'day',IERI,nbhelp)
         CALL EASKI(M_inspect,' ','Month of inspection?',
-     &    1,'W',12,'W',1,'month',IERI,3)
+     &    1,'W',12,'W',1,'month',IERI,nbhelp)
 
 C Year for which the energy assessor inspected the building.
-        H(1)='Input the year of the inspection. Applicable '
-        H(2)='only for England, Wales & Northern Ireland.'
         CALL EASKI(Y_inspect,' ','Year of inspection?',
-     &    1900,'W',2080,'W',2009,'year',IERI,2)
+     &    1900,'W',2080,'W',2009,'year',IERI,nbhelp)
         call tstamp('>','PRJ: edited date of inspection')
         write(outs,'(A,I2,A,I2,A,I4)') 'Inspection date: ',
      &    D_inspect,'  ',M_inspect,'  ',Y_inspect
@@ -3255,11 +2973,8 @@ C Year for which the energy assessor inspected the building.
       ELSEIF(INO.EQ.5)THEN
 
 C Accreditation scheme
-        H(1)='Input certifier/energy assessor accreditation scheme.'
-        H(2)='Applicable only for England, Wales & Northern Ireland.'
-        H(3)='This is the scheme name from CIBSE or BRE. '
         CALL EASKS(Accr_Scheme,'Accreditation scheme ?',
-     &    '(<64 characters)',64,D64,'accreditation scheme',IER,3)
+     &    '(<64 characters)',64,D64,'accreditation scheme',IER,nbhelp)
         call tstamp('>','PRJ: edited accreditation scheme')
         write(outs,'(2a)') 'Accreditation Scheme (E,W and NI only): ',
      &    Accr_Scheme(1:lnblnk(Accr_Scheme))
@@ -3267,13 +2982,10 @@ C Accreditation scheme
       ELSEIF(INO.EQ.7)THEN
 
 C Assessor registration number
-        H(1)='The assessor registration number should be in the'
-        H(2)='form of CCCCNNNNNN where C is character and N is a'
-        H(3)='number such as ABCD123456.'
         D64='ABCD123456'
         CALL EASKS(assessRegNumber,
      &    'Assessor regisration number (see help)?',
-     &    '(e.g. ABCD123456)',64,D64,'assessor number',IER,3)
+     &    '(e.g. ABCD123456)',64,D64,'assessor number',IER,nbhelp)
         call tstamp('>','PRJ: edited assessor registration number')
         D64='<this item has not been described>'
         write(outs,'(2a)')
@@ -3284,11 +2996,8 @@ C Assessor registration number
 
 C Employer or trading name of energy assessor
         D64='Not a registered company.'
-        H(1)='The employer or the trading name of the energy'
-        H(2)='assessor. Applicable only for England, '
-        H(3)='Wales & Northern Ireland.'
         CALL EASKS(empl_Trading_name,'Employer/trading name ?',
-     &    '(<64 characters)',64,D64,'trading name',IER,3)
+     &    '(<64 characters)',64,D64,'trading name',IER,nbhelp)
         call tstamp('>','PRJ: edited employer/traing name')
         write(outs,'(2a)')
      &    'Employer/trading name of energy assessor: ',
@@ -3298,11 +3007,8 @@ C Employer or trading name of energy assessor
 
 C Employer/trading address of energy assessor
         D64='PO box in Basingstoke.'
-        H(1)='The employer or the trading address of the energy'
-        H(2)='assessor. Applicable only for England, '
-        H(3)='Wales & Northern Ireland.'
         CALL EASKS(addr_empl_Trading,'Employer/trading address ?',
-     &    '(<64 characters)',64,D64,'owner address',IER,3)
+     &    '(<64 characters)',64,D64,'owner address',IER,nbhelp)
         call tstamp('>','PRJ: edited employer/trading address')
         write(outs,'(2a)')
      &    'Employer/trading name of energy assessor: ',
@@ -3312,11 +3018,8 @@ C Employer/trading address of energy assessor
 
 C Related party disclosure
         D64='No related party.'
-        H(1)='Any related party disclosure by the energy'
-        H(2)='assessor. Applicable only for England, '
-        H(3)='Wales & Northern Ireland.'
         CALL EASKS(party_disclosure,'Party disclosure ?',
-     &    '(<64 characters)',64,D64,'owner city',IER,3)
+     &    '(<64 characters)',64,D64,'owner city',IER,nbhelp)
         call tstamp('>','PRJ: edited party disclosure')
         write(outs,'(2a)') 'Related party disclosure: ',
      &    party_disclosure(1:lnblnk(party_disclosure))
@@ -3324,12 +3027,8 @@ C Related party disclosure
       ELSEIF(INO.EQ.15)THEN
 
 C Qualifications of the energy assessor (3 choices)
-        H(1)='Qualifications of the energy assessor.'
-        H(2)='Applicable only for England, Wales & '
-        H(3)='Northern Ireland. There are 3 choices: '
-        H(4)='NOS3, NOS4 and NOS5'
         CALL EASKABC(' ','Energy assessor qualifications:',
-     &    'NOS3','NOS4','NOS5',IRT,4)
+     &    'NOS3','NOS4','NOS5',IRT,nbhelp)
         if(IRT.eq.1)then
           write(qualifications_assessor,'(A)') 'NOS3'
         elseif(IRT.eq.2)then
@@ -3345,10 +3044,8 @@ C Qualifications of the energy assessor (3 choices)
 
 C Name of the energy assessor's insurance company
         D64='Not insured.'
-        H(1)='Name of the insurance company. Applicable '          
-        H(2)='only for England, Wales & Northern Ireland.'
         CALL EASKS(insurer_Company,'Name of insurance company ?',
-     &    '(<64 characters)',64,D64,'insurance company',IER,2)
+     &    '(<64 characters)',64,D64,'insurance company',IER,nbhelp)
         call tstamp('>','PRJ: edited insurer company name')
         write(outs,'(2a)') 'Insurance company: ',
      &    insurer_Company(1:lnblnk(insurer_Company))
@@ -3357,10 +3054,8 @@ C Name of the energy assessor's insurance company
 
 C The energy assessor's insurance policy number
         D64='Not insured.'
-        H(1)='Enter insurance policy number. Applicable '          
-        H(2)='only for England, Wales & Northern Ireland.'
         CALL EASKS(policyNumberInsurance,'Policy number ?',
-     &    '(<64 characters)',64,D64,'policy number',IER,2)
+     &    '(<64 characters)',64,D64,'policy number',IER,nbhelp)
         call tstamp('>','PRJ: edited insurance policy number')
         write(outs,'(2a)') 'Insurance policy number: ',
      &    policyNumberInsurance(1:lnblnk(policyNumberInsurance))
@@ -3368,15 +3063,12 @@ C The energy assessor's insurance policy number
       ELSEIF(INO.EQ.21)THEN
 
 C Insurance policy start date
-        H(1)='Input the date for start of the insurance. '
-        H(2)='Applicable only for England, Wales & Northern'
-        H(3)='Ireland.'
         CALL EASKI(S_Dinsur,' ','Insurance start (day)?',
-     &    1,'W',31,'W',1,'day',IERI,3)
+     &    1,'W',31,'W',1,'day',IERI,nbhelp)
         CALL EASKI(S_Minsur,' ','Insurance start (month)?',
-     &    1,'W',12,'W',1,'month',IERI,3)
+     &    1,'W',12,'W',1,'month',IERI,nbhelp)
         CALL EASKI(S_Yinsur,' ','Insurance start (year)?',
-     &    1900,'W',2080,'W',2009,'year',IERI,3)
+     &    1900,'W',2080,'W',2009,'year',IERI,nbhelp)
         call tstamp('>','PRJ: edited start date of insurance')
         write(outs,'(A,I2,A,I2,A,I4)') 'Insurance policy start date: ',
      &    S_Dinsur,'  ',S_Minsur,'  ',S_Yinsur
@@ -3384,15 +3076,12 @@ C Insurance policy start date
       ELSEIF(INO.EQ.23)THEN
 
 C Insurance policy expiry date - year
-        H(1)='Input the date for the expiry of the insurance. '
-        H(2)='Applicable only for England, Wales & Northern'
-        H(3)='Ireland.'
         CALL EASKI(E_Dinsur,' ','Insurance expiry (day)?',
-     &    1,'W',31,'W',1,'day',IERI,3)
+     &    1,'W',31,'W',1,'day',IERI,nbhelp)
         CALL EASKI(E_Minsur,' ','Insurance expiry (month)?',
-     &    1,'W',12,'W',1,'month',IERI,3)
+     &    1,'W',12,'W',1,'month',IERI,nbhelp)
         CALL EASKI(E_Yinsur,' ','Insurance expiry (year)?',
-     &    1900,'W',2080,'W',2010,'year',IERI,3)
+     &    1900,'W',2080,'W',2010,'year',IERI,nbhelp)
         call tstamp('>','PRJ: edited expiry date of insurance')
         write(outs,'(A,I2,A,I2,A,I4)')'Insurance policy expiry date: ',
      &    E_Dinsur,'  ',E_Minsur,'  ',E_Yinsur
@@ -3400,11 +3089,8 @@ C Insurance policy expiry date - year
       ELSEIF(INO.EQ.25)THEN
 
 C Insurance policy cover limit
-        H(1)='Input the insurance policy cover limit. '
-        H(2)='Applicable only for England, Wales & Northern'
-        H(3)='Ireland.'
         CALL EASKI(pi_limit,' ','Insurance cover limit?',
-     &    1,'W',999999999,'W',500000,'cover limit',IERI,3)
+     &    1,'W',999999999,'W',500000,'cover limit',IERI,nbhelp)
         call tstamp('>','PRJ: edited insurance cover limit')
         write(outs,'(A,I9)') 'Insurance policy cover limit: ',
      &    pi_limit
@@ -3412,15 +3098,8 @@ C Insurance policy cover limit
       ELSEIF(INO.EQ.27)THEN
 
 C Define the complexity level
-        H(1)='Complexity level of the project. Applicable only for'
-        H(2)='England, Wales & Northern Ireland.'
-        H(3)='There are 4 choices: '
-        H(4)=' Undefined - no opinion (yet)'
-        H(5)=' Level 3 less than 100kW heating & less than 12kW cooling'
-        H(6)=' Level 4 more than 100kW heating & 12kW cooling'
-        H(7)=' Level 5 building cannot be done via sBEM.'
         CALL EASKABCD(' ','Complexity level ?',
-     &    'Undefined','Level 3','Level 4','Level 5',IW,7)
+     &    'Undefined','Level 3','Level 4','Level 5',IW,nbhelp)
         if(IW.eq.1)then
           write(pjLevComplexity,'(A)') 'Undefined'
         elseif(IW.eq.2)then
@@ -3450,8 +3129,6 @@ C EDSBMREGS edits the building regs definition within the UK NCM file.
 
       common/OUTIN/IUOUT,IUIN
       integer iuout,iuin
-      common/pophelp/h(60)
-      character h*72
       integer ncomp,ncon
       common/C1/NCOMP,NCON
 
@@ -3466,6 +3143,13 @@ C EDSBMREGS edits the building regs definition within the UK NCM file.
       logical NEAR
       real Air_infilt
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='edsbmregs'  ! set for subroutine
+
 C Echo the current state of regulations.
       call lstncm('b',iuout)
 
@@ -3475,10 +3159,12 @@ c individual editing of infiltration.
         iedit(iz)=0
  230  continue
 
+      helptopic='ncm_bldg_regs'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       IX=1
       JSTR(1)=IRGG
  902  CALL EPICKS(IX,JSTR,' ','Define building regulations to use',
-     &  50,MREG,BLDREG,'Define building services strategy',IER,2)
+     &  50,MREG,BLDREG,'Define building services strategy',IER,nbhelp)
       IF(JSTR(1).EQ.0)GOTO 902
       if(JSTR(1).LE.4.AND.JSTR(1).GE.1)then
         IRGG=JSTR(1)
@@ -3490,8 +3176,8 @@ c individual editing of infiltration.
 C Enter bulding design stage
       IX=1
       JSTR(1)=ISTG
- 903  CALL EPICKS(IX,JSTR,' ','Define building regulations to use',
-     &  12,MSTG,BLDSTG,'Define building services strategy',IER,2)
+ 903  CALL EPICKS(IX,JSTR,' ','Define building stage to use',
+     &  12,MSTG,BLDSTG,'Define building stage',IER,nbhelp)
       IF(JSTR(1).EQ.0)GOTO 903
       if(JSTR(1).LE.2.AND.JSTR(1).GE.1)then
         ISTG=JSTR(1)
@@ -3505,12 +3191,12 @@ C Enter Scottish building types if Scottish regs to be used
         IX=1
         JSTR(1)=ISBT
  904    CALL EPICKS(IX,JSTR,' ','Define building type',
-     &    40,MSBT,SBTYP,'Define building type',IER,2)
+     &    40,MSBT,SBTYP,'Define building type',IER,nbhelp)
         IF(JSTR(1).EQ.0)GOTO 904
         IF(JSTR(1).LE.2.AND.JSTR(1).GE.1)ISBT=JSTR(1)
         CALL EASKABC('Is the building built/designed following',
      &    'guidance in Accredited Construction Details (Scotland)',
-     &    'yes','no','Do not know',IW,2)
+     &    'yes','no','Do not know',IW,nbhelp)
         IF(IW.EQ.1)THEN
           SBREF='YES'
         ELSE
@@ -3523,11 +3209,11 @@ C Enter Scottish building types if Scottish regs to be used
 C Enter building permeability
       CALL EASKR(BINF50,
      &  'Enter building permeability at 50Pa in m3/m2.hour',
-     &  ' ',0.,'F',0.,'-',10.,'heat gen eff ',IER,2)
+     &  ' ',0.,'F',0.,'-',10.,'heat gen eff ',IER,nbhelp)
       CALL EASKABC(
      &  'Is a compliance check to be performed on the building',
      &  'regarding air permeability value?',
-     &  'yes','no','Do not know',IW,2)
+     &  'yes','no','Do not know',IW,nbhelp)
       IF(IW.EQ.2)THEN
         APCHK='NO '
       ELSE
@@ -3539,12 +3225,13 @@ C communicated by AECOM
 c      CALL EASKABC(
 c     &  'Infer air changes per hour from permeability',
 c     &  'value using CIBSE data',
-c     &  'yes','no','Do not know',IW,2)
+c     &  'yes','no','Do not know',IW,nbhelp)
       IW=1
- 4252 IF(IW.EQ.1)THEN
+      IF(IW.EQ.1)THEN
         ICIBSE1=1 ; ICIBSE2=1 ; ICIBSE3=1 ! initialise
         CALL EPICKS(IX,JSTR,' ','CIBSE building selection',
-     &  54,8,CIBSESTR1,'Pick building that best matches model',IER,2)
+     &    54,8,CIBSESTR1,'Pick building that best matches model',
+     &    IER,nbhelp)
         ICIBSE1=JSTR(1)
         DO 134 IBT=1,4
           IF(ICIBSESTOR(ICIBSE1,IBT).EQ.0)THEN
@@ -3560,8 +3247,9 @@ c     &  'yes','no','Do not know',IW,2)
           ENDIF
  134    CONTINUE
         CALL EPICKS(IX,JSTR,'Pick storeys and floor area ',
-     &  'per floor that best matches model',
-     &  46,4,CIBSESTR2,'Pick closest storeys and/or floor area',IER,2)
+     &    'per floor that best matches model',
+     &    46,4,CIBSESTR2,'Pick closest storeys and/or floor area',
+     &    IER,nbhelp)
         ICIBSE2=JSTR(1)
 
 C Select CIBSE table value that best fits user supplied permeability value
@@ -3639,17 +3327,13 @@ C If a long list include page facility text and info on portion seen.
       ZITEMS(M+3)= '- exit this menu                 '
       nitms=M+3
 
-C Help text for this menu.
-      H(1)='Air leakage rates can be specified for'
-      H(2)='for every zone in terms of air changes per hour. '
-
       CALL EMENU('zone air changes per hour',ZITEMS,nitms,INO)
       IF(INO.EQ.nitms)THEN
         continue
       ELSEIF(INO.EQ.nitms-1)THEN
 
 C Produce help text for the menu.
-        CALL PHELPD('AIR LEAKAGE',2,'-',0,0,IER)
+        CALL PHELPD('AIR LEAKAGE',nbhelp,'-',0,0,IER)
         goto 3
       ELSEIF(INO.EQ.nitms-2)THEN
 
@@ -3664,7 +3348,7 @@ C If there are enough items allow paging control via EKPAGE.
         Air_infilt=ACH(INO)
         CALL EASKR(Air_infilt,' ',
      &   'Air changes per hour for this zone?',0.0,'W',30.0,'W',0.0,
-     &   'air leakage for the zone',IER,0)
+     &   'air leakage for the zone',IER,nbhelp)
         ACH(INO)=Air_infilt
         iedit(ino)=1
         goto 3
@@ -3674,16 +3358,9 @@ C If there are enough items allow paging control via EKPAGE.
 
 C Use existing building type if non-zero.
       call lstncm('b',iuout)
-      h(1)='For the UK National Calculation Method you are required'
-      h(2)='to select one of these building types. '
-      h(3)=' '
-      h(4)='Depending on the type of building the notional model will'
-      h(5)='have different assumptions about glazing areas. The '
-      h(6)='building type will also help in the selection of room '
-      h(7)='use patterns. '
       IX=1
  905  CALL EPICKS(IX,IVALSS,' ','Building type:',
-     &  42,29,BTYPNAME,'building types',IER,7)
+     &  42,29,BTYPNAME,'building types',IER,nbhelp)
       IF(IVALSS(1).EQ.0)GOTO 905
       if(IVALSS(1).gt.0)then
         ibusertyp=IVALSS(1)
@@ -3729,12 +3406,12 @@ C required models ') which returned iuact=1.
       INTEGER :: ifil
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: iuout,iuin
-      common/pophelp/h(60)
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
       INTEGER :: IFCFG
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY6/LINSTY(MCON)
@@ -3742,6 +3419,7 @@ C required models ') which returned iuact=1.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C TDF related.
+      CHARACTER LIMP*96,LEXP*96
       COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP
       COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
 
@@ -3761,19 +3439,19 @@ C Need to write TDF info in the cfg file. Use next common(s) for this.
      &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
      &               thbrpercent,uavtotal(MCOM)
 
-      CHARACTER DFILE*72,LIMP*72,LEXP*72
+      CHARACTER DFILE*72
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
 
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
-      character dinstpath*48
+      character dinstpath*60
       character subpath*72
       CHARACTER OUTSTR*124
 
       CHARACTER ACT*1,ADF*124
       character cfgroot*24,LCFGF*72,NNAME*72
       character fs*1,msgl2*48,tab*1
-      character outs*124,h*72,GUESS*24
+      character outs*124,GUESS*24
 
       LOGICAL NEWGEO,MODIFY,MODLEN,MODBND
       logical unixok,XST
@@ -3782,7 +3460,7 @@ C Where ESP-r was installed (as recorded when it was compiled).
                                  !controls to zones.
       character APE*6,EXT*4
       character delim*1
-      character louts*400        ! buffer of 400 char to support larger models
+      character louts*1000        ! buffer of 1k char to support larger models
       real CDAY,RDOTY            ! reals for timestamp calculations
       integer itime,ip           ! integers for timestamp calculations
       integer iafil              ! file unit for writing temporal header
@@ -3810,6 +3488,13 @@ C For tdf to call arlist:
       integer iloc1,iloc2,iloc3,iloc4,iloc5  !for writing tdf location data in the file
       REAL val_converted
       real ZD  ! depth for ground temp calc
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EMKSTRIPPED'  ! set for subroutine
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -4092,9 +3777,9 @@ C Write control file (filename.ctl is saved to filename_str.ctl)
         XST=.FALSE.
         call FINDFIL(LCTLF,XST)  ! using model path
         IF(XST)THEN
-          H(1) = ' Control file exists. Choose to overwrite in '
-          H(2) = ' question that will follow '
-          CALL PHELPD('File exists',2,'-',0,0,IER)
+          helptopic='ncm_str_ctl_warn'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('File exists',nbhelp,'-',0,0,IER)
         ENDIF
         CALL CTLWRT(ICTLF,IER)
 
@@ -4116,9 +3801,9 @@ C first temporal item.
         XST=.FALSE.
         call findfil(LTDFA,XST)
         IF(XST)THEN
-          H(1)='Temporal data file exists. Choose to overwrite in '
-          H(2)='question that will follow '
-          CALL PHELPD('File exists',2,'-',0,0,IER)
+          helptopic='ncm_str_ctl_warn'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('File exists',nbhelp,'-',0,0,IER)
         ENDIF
         iafil=IUTDFA
         ITDFLG=3
@@ -4321,7 +4006,7 @@ C the minimum/maximum of that column.
             VAL=0.
             CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
             CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
-            TABU(ITCOL(iimport,12))=VAL
+            TABU(ITCOL(iimport,12)) = VAL
             if(TABU(ITCOL(iimport,12)).lt.TABUMN(ITCOL(iimport,12)))
      &        TABUMN(ITCOL(iimport,12))=TABU(ITCOL(iimport,12))
             if(TABU(ITCOL(iimport,12)).gt.TABUMX(ITCOL(iimport,12)))
@@ -4330,7 +4015,7 @@ C the minimum/maximum of that column.
             COLUMNTDF(iarraycount,istrip)=TABU(ITCOL(iimport,12))
 
             CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
-            TABU(ITCOL(iimport,13))=VAL
+            TABU(ITCOL(iimport,13)) = VAL
             if(TABU(ITCOL(iimport,13)).lt.TABUMN(ITCOL(iimport,13)))
      &        TABUMN(ITCOL(iimport,13))=TABU(ITCOL(iimport,13))
             if(TABU(ITCOL(iimport,13)).gt.TABUMX(ITCOL(iimport,13)))
@@ -4339,7 +4024,7 @@ C the minimum/maximum of that column.
             COLUMNTDF(iarraycount,istrip)=TABU(ITCOL(iimport,13))
 
             CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
-            TABU(ITCOL(iimport,14))=VAL
+            TABU(ITCOL(iimport,14)) = VAL
             if(TABU(ITCOL(iimport,14)).lt.TABUMN(ITCOL(iimport,14)))
      &        TABUMN(ITCOL(iimport,14))=TABU(ITCOL(iimport,14))
             if(TABU(ITCOL(iimport,14)).gt.TABUMX(ITCOL(iimport,14)))
@@ -4348,7 +4033,7 @@ C the minimum/maximum of that column.
             COLUMNTDF(iarraycount,istrip)=TABU(ITCOL(iimport,14))
 
             CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
-            TABU(ITCOL(iimport,15))=INT(VAL)
+            TABU(ITCOL(iimport,15))= VAL
             if(TABU(ITCOL(iimport,15)).lt.TABUMN(ITCOL(iimport,15)))
      &        TABUMN(ITCOL(iimport,15))=TABU(ITCOL(iimport,15))
             if(TABU(ITCOL(iimport,15)).gt.TABUMX(ITCOL(iimport,15)))
@@ -4357,7 +4042,7 @@ C the minimum/maximum of that column.
             COLUMNTDF(iarraycount,istrip)=TABU(ITCOL(iimport,15))
 
             CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
-            TABU(ITCOL(iimport,16))=INT(VAL)
+            TABU(ITCOL(iimport,16))= VAL
             if(TABU(ITCOL(iimport,16)).lt.TABUMN(ITCOL(iimport,16)))
      &        TABUMN(ITCOL(iimport,16))=TABU(ITCOL(iimport,16))
             if(TABU(ITCOL(iimport,16)).gt.TABUMX(ITCOL(iimport,16)))
@@ -4450,21 +4135,21 @@ C This routine assumes newer geometry files are being used.
 #include "sbem.h"
 #include "esprdbfile.h"
 #include "model.h"
+#include "material.h"
 
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      COMMON/C1/NCOMP,NCON
       integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
       common/C21/IFCFG,cfgroot,LCFGF
-      COMMON/C24/IZSTOCN(MCOM,MS)
       INTEGER :: IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       common/FILEP/IFIL
 
@@ -4472,14 +4157,18 @@ C This routine assumes newer geometry files are being used.
       character EXT*4    ! up to 4 characters in file extension
       character APE*6    ! up to 6 characters in variant name
       CHARACTER CFGROOT*24
-      CHARACTER LCFGF*72,NNAME*72,H*72
+      CHARACTER LCFGF*72,NNAME*72
       CHARACTER OUTS*124,ADF*124,SNM*12,USE*8,USE2*8
-      character SN*12
+      character SN*12,msg*42
       CHARACTER*12 XJCCU,XKCCU
 
 C ivalsg keeps track of whether a geometry file has alread been copied.
 C irmw keeps track of up to 90 surfaces in each zone which can be deleted
       dimension ivalsg(MCOM),IRMV(MCOM,90),nrmv(mcom)
+
+C ivalxocup array signals which zones are not occupied or controlled.
+      logical ivalocup
+      dimension ivalocup(MCOM)
 
       DIMENSION COE(3),POINT(3),TRANS(3)
       DIMENSION SNA(MS),PAZI(MS),PELV(MS),TARSURF(MCON)
@@ -4494,6 +4183,39 @@ C      logical closeelv ! true if surface is close to vertical
       LOGICAL MODIFY,MODLEN,MODBND,QUIET,XST,NEAR
       integer LOOPMAX  ! loop iterator for shifting surface list
       integer ISCURRENT ! the current connection to be deleted
+      logical ok,dok
+
+C Test whether required constructions exist.
+      logical haveopDoor,haveVehicle,haveNot_D,haveNot_G,haveframe
+      logical haveWall_Sc,haveWall_EW,haveFl_r,haveSC_P,haveEW_notP
+      logical haveSol_gr,havepa_fl,haveinv_pa_f,haveparty_w,haveint_g
+      logical haveWall_NI,haveexWall_ty,haveFl_rty,havewin_Typ_G
+      logical haveSol_gr_typ
+      common/havereqmlc/haveopDoor,haveVehicle,haveNot_D,haveNot_G,
+     &  haveframe,haveWall_Sc,haveWall_EW,haveFl_r,haveSC_P,
+     &  haveEW_notP,haveSol_gr,havepa_fl,haveinv_pa_f,haveparty_w,
+     &  haveint_g,haveWall_NI,haveexWall_ty,haveFl_rty,havewin_Typ_G,
+     &  haveSol_gr_typ
+      logical changeuse   ! to signal change of use of surface
+
+C mlcindex for each of these required constructions.
+      integer mlciopDoor,mlciVehicle,mlciNot_D,mlciNot_G,mlciframe
+      integer mlciWall_Sc,mlciWall_EW,mlciFl_r,mlciSC_P,mlciEW_notP
+      integer mlciSol_gr,mlcipa_fl,mlciinv_pa_f,mlciparty_w,mlciint_g
+      integer mlciWall_NI,mlciWall_ty,mlciFL_rty,mlciwin_Typ_G
+      integer mlciSol_gr_typ
+      common/mlcireq/mlciopDoor,mlciVehicle,mlciNot_D,mlciNot_G,
+     &  mlciframe,mlciWall_Sc,mlciWall_EW,mlciFl_r,mlciSC_P,
+     &  mlciEW_notP,mlciSol_gr,mlcipa_fl,mlciinv_pa_f,mlciparty_w,
+     &  mlciint_g,mlciWall_NI,mlciWall_ty,mlciFL_rty,mlciwin_Typ_G,
+     &  mlciSol_gr_typ
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EMKSBM'  ! set for subroutine
 
 C Initialise variables
       SN=' '
@@ -4501,12 +4223,9 @@ C Initialise variables
 C Check if Notional Model Flag has been set (NCM data has been defined)
 C If not then advise user and send him/her back
       IF(ISBEM.NE.2)THEN
-        H(1) = 'You have not defined NCM details about the building. '
-        H(2) = 'These can be defined by choosing model context in the '
-        H(3) = 'browse / edit / simulate menu and then choosing  '
-        H(4) = 'option UK NCM specifications. '
-        H(5) = 'You are being returned to the NCM editing facility. '
-        CALL PHELPD('NCM details undefined!',5,'-',0,0,IER)
+        helptopic='ncm_details_missing'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('NCM details undefined!',nbhelp,'-',0,0,IER)
         ier=2  ! signal insufficient details
         RETURN
       ENDIF
@@ -4532,25 +4251,98 @@ C Adapt original title of model.
 C Set flag for cfg file that this is a notional model
       INOTI=1
 
+C Test to see if certain constructions are currently available
+C if if found remember their index in the constructions array
+C in order to instanciate ssmlcindex.
+      call opendb(ier) ! make sure materials & constructions known
+  41  mlcf=0
+      do 6 ii=1,nmlc
+        if(DESC(ii)(1:12).eq.'opDoorWind_n') then
+          haveopDoor=.true.; mlciopDoor=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'Vehicle_door') then
+          haveVehicle=.true.; mlciVehicle=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'Not_DisplayG') then
+          haveNot_D=.true.; mlciNot_D=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'window_Not_G') then
+          haveNot_G=.true.; mlciNot_G=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'frame_notion') then
+          haveframe=.true.; mlciframe=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'Wall_Scot_no') then
+          haveWall_Sc=.true.; mlciWall_Sc=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'Wall_EW_noti') then
+          haveWall_EW=.true.; mlciWall_EW=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'Wall_NI_noti') then
+          haveWall_NI=.true.; mlciWall_NI=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'Fl_roof_noti') then
+          haveFl_r=.true.; mlciFl_r=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'SC_Pitch_roo') then
+          haveSC_P=.true.; mlciSC_P=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'EW_notPitch_') then
+          haveEW_notP=.true.; mlciEW_notP=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'Sol_grnd_not') then
+          haveSol_gr=.true.; mlciSol_gr=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'pa_fl_notion') then
+          havepa_fl=.true.; mlcipa_fl=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'inv_pa_fl_no') then
+          haveinv_pa_f=.true.; mlciinv_pa_f=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'party_wall_n') then
+          haveparty_w=.true.; mlciparty_w=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'internal_glz') then
+          haveint_g=.true.; mlciint_g=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'exWall_typic') then
+          haveexWall_ty=.true.; mlciWall_ty=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'Fl_roof_typi') then
+          haveFl_rty=.true.; mlciFL_rty=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'window_Typ_G') then
+          havewin_Typ_G=.true.; mlciwin_Typ_G=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'Sol_grnd_typ') then
+          haveSol_gr_typ=.true.; mlciSol_gr_typ=ii; mlcf=mlcf+1
+        endif
+  6   continue
+
+C Debug.
+      write(6,*) 'Index of required UK NCM constructions...'
+      write(6,*) mlciopDoor,mlciVehicle,mlciNot_D,mlciNot_G,mlciframe
+      write(6,*) mlciWall_Sc,mlciWall_EW,mlciFl_r,mlciSC_P,mlciEW_notP
+      write(6,*) mlciSol_gr,mlcipa_fl,mlciinv_pa_f,mlciparty_w,
+     &  mlciint_g
+      write(6,*) mlciWall_NI,mlciWall_ty,mlciFL_rty,mlciwin_Typ_G
+      write(6,*) mlciSol_gr_typ
+
+      if(mlcf.eq.20)then
+        call edisp(iuout,'All reqd MLC found so using std databases')
+        continue  ! all of the necessary constructions available
+      else
+
 C Assign standard databases containing UK NCM materials and constructions
 C These files are UK_notional.constrdb, material.db3.a and optics.db2
 C As they will be in the standard database folder use the *std...
-      ipathmat=2
-      WRITE(LFMAT,'(A)') 'material.db3.a'
-      ipathmul=2
-      WRITE(LFMUL,'(A)') 'UK_notional.constrdb'
-      ipathoptdb=2
-      WRITE(LOPTDB,'(A)') 'optics.db2'
-      ipathpcdb=2
-      WRITE(LPCDB,'(A)') 'plantc.db1'
-      ipathsbem=2
-      WRITE(LSBEM,'(a)') 'SBEM.db1'
-      call opendb(ier)
+        call edisp(iuout,'Not all reqd MLC so using std databases')
+        ipathmat=2
+        WRITE(LFMAT,'(A)') 'material.db3.a'
+        ipathmul=2
+
+C << for testing use multicon.db3. return to UK_notional >>
+C      WRITE(LFMUL,'(A)') 'UK_notional.constrdb'
+        WRITE(LFMUL,'(A)') 'multicon.db3'
+        ipathoptdb=2
+        WRITE(LOPTDB,'(A)') 'optics.db2'
+        ipathpcdb=2
+        WRITE(LPCDB,'(A)') 'plantc.db1'
+        ipathsbem=2
+        WRITE(LSBEM,'(a)') 'SBEM.db1'
+        call opendb(ier)
+        goto 41  ! now try and rescan for required
+      endif
 
 C Loop through each zone in the model and first scan in the zone
 C geometry, next use surrel to update parent/child information and
 C write out the zone.
       DO 550 ICOMP=1,NCOMP
+
+C << Zones which should not participate in the NCM geometric revisions
+C << (e.g. a zero activity) need to be marked at this point.
+
         IUF=IFIL+2
         EXT='.geo'
         call eclose(gversion(icomp),1.1,0.01,newgeo)
@@ -4562,14 +4354,30 @@ C write out the zone.
           ier = 2
         endif
         if(ier.ne.0)then
-          H(1)='A problem was found when scanning the origial'
-          H(2)='model geometry. You may need to alter the original'
-          H(3)='model in order to proceed.'
-          H(4)='You are being returned to the NCM editing facility. '
-          CALL PHELPD('NCM details undefined!',4,'-',0,0,IER)
+          helptopic='ncm_geom_scan_issue'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('NCM details undefined!',nbhelp,'-',0,0,IER)
           ier=3  ! signal geometry issue
           return
         endif
+
+C Find the index of the MLC which matches each surface.
+C Debug.
+        write(6,*) icomp,NZSUR(icomp),nmlc
+
+        DO 9994 I=1,NZSUR(icomp)
+          icn1=izstocn(icomp,i)
+          ssmlcindex(icn1)=0  ! assume no matching MLC          
+          do 5 ii=1,nmlc
+            if(SSMLCN(icn1)(1:12).eq.DESC(ii)(1:12)) then
+              ssmlcindex(icn1)=ii   ! remember MLC index     
+            endif
+  5       continue
+ 9994   continue
+
+C Debug the ssmlcindex array.
+C        write(6,*) ssmlcindex(1),ssmlcindex(2),ssmlcindex(3),
+C     &    ssmlcindex(4),ssmlcindex(5),ssmlcindex(6),ssmlcindex(7)
 
         CALL FNCNGR(LGEOM_O(ICOMP),APE,EXT,NNAME)
         LGEOM(ICOMP)=NNAME
@@ -4597,10 +4405,9 @@ C Make a copy of constructions file and tmc file if applicable.
         LTWIN(ICOMP)=NNAME
         CALL MKTWIN(IFU,ICOMP,QUIET,IER)
         if(ier.ne.0)then
-          H(1)='A problem was found when copying origial'
-          H(2)='model files. Check if you have write permission.'
-          H(3)='You are being returned to the NCM editing facility. '
-          CALL PHELPD('NCM details undefined!',3,'-',0,0,IER)
+          helptopic='ncm_file_copy_issue'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('NCM details undefined!',nbhelp,'-',0,0,IER)
           ier=4  ! signal geometry issue
           return
         endif
@@ -4608,6 +4415,18 @@ C Make a copy of constructions file and tmc file if applicable.
 C Remember this geometry file has been done so that a later selection
 C of constructions does not re-do it.
  500    ivalsg(icomp)=icomp
+
+C Ask if zone is occupied and environmentally controlled.
+        DOK=.true.
+        write(msg,'(3a)') 'Is ',zname(icomp),
+     &    ' occupied and conditioned?'
+        CALL ASKOK(msg,'Confirm:',
+     &    OK,DOK,nbhelp)
+        if(OK)then
+          ivalocup(icomp)=.true.
+        else
+          ivalocup(icomp)=.false.
+        endif
 
 C Initialise indices of surfaces to be deleted
         NRMV(icomp)=0
@@ -4648,9 +4467,9 @@ C Re-establish glazing fractions based on UK NCM guidelines
         WALLFRFR=0.10
         GLZFR=0.
       else
-        H(1)='A problem was found - the NCM building type'
-        H(2)='was not defined. Please do this and try again.'
-        CALL PHELPD('NCM building type undefined!',2,'-',0,0,IER)
+        helptopic='ncm_bld_type_not'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('NCM building type undefined!',nbhelp,'-',0,0,IER)
         ier=5  ! signal ncm issue
         return
       endif
@@ -4658,10 +4477,15 @@ C Re-establish glazing fractions based on UK NCM guidelines
 
 C Loop through each zone in the model and if ivalsg was set earlier
 C then read in the zone geometry file to re-gather information on
-C parent child relationships
+C parent child relationships.
       DO 559 ICOMP=1,NCOMP
         IELF=0
+        if(.NOT.ivalocup(icomp))then
+          NRMV(icomp)=0
+          goto 559  ! skip window mangling
+        endif
         if(ivalsg(icomp).eq.icomp)then
+          changeuse=.false.  ! no change of use yet
           IUF=IFIL+2
           call eclose(gversion(icomp),1.1,0.01,newgeo)
           call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
@@ -4671,69 +4495,223 @@ C Get surface areas via call to zinfo.
 
 C Get gross area of this surface (add child areas to it)
 C Areas of parents are hence held as parent + child in TARSURF and
-C areas of children are held as 0.0
-C For each surface in this zone
+C areas of children are held as 0.0.
+
+C For each surface in this zone.
           do 555 isur=1,nzsur(icomp)
             ICC=IZSTOCN(icomp,isur)
-            write(SNM,'(a)') SSUSE(ICC,1)
-
-C For all exterior surfaces that are wall or roof
-            if(ssother(icc,1)(1:8).eq.'EXTERIOR'.AND.(
-     &      SNM(1:4).EQ.'WALL'.or.SNM(1:4).EQ.'ROOF'))then
+            write(SNM,'(a)') SSUSE(ICC,1)  ! remember surface use
 
 C Only the following types of areas will be retained in this exterior
-C type surface with use roof or wall
-              XPDAREA(ICC)=0. ! pedestrian door area in this parent
-              XVDAREA(ICC)=0. ! vehicular door area in this parent
-              XDWAREA(ICC)=0. ! display window area in this parent
-              XNWAREA(ICC)=0. ! normal window area in this parent
-              XREAREA(ICC)=0. ! If requisite area is more than required
-                              ! do not put any glazing in this surface
-              TARSURF(ICC)=SSNA(ICC)
-              DO 5500 IGCD=1,NBGCHILD(ICC)
-                KCC=IGCHILD(ICC,IGCD)
-                NRMV(icomp)=NRMV(icomp)+1
-                IRMV(ICOMP,NRMV(icomp))=KCC
-                XKCCU=SSUSE(KCC,1)
-                TARSURF(ICC)=TARSURF(ICC)+SSNA(KCC)
-                IF(XKCCU(1:6).EQ.'P-DOOR')THEN
-                  XPDAREA(ICC)=XPDAREA(ICC)+SSNA(KCC)
-                  XREAREA(ICC)=XREAREA(ICC)+SSNA(KCC)
-                ELSEIF(XKCCU(1:6).EQ.'V-DOOR')THEN
-                  XVDAREA(ICC)=XVDAREA(ICC)+SSNA(KCC)
-                  XREAREA(ICC)=XREAREA(ICC)+SSNA(KCC)
-                ELSEIF(XKCCU(1:8).EQ.'D-WINDOW')THEN
-                  XDWAREA(ICC)=XDWAREA(ICC)+SSNA(KCC)
-                  XREAREA(ICC)=XREAREA(ICC)+SSNA(KCC)
-                ELSEIF(XKCCU(1:8).EQ.'S-WINDOW'.OR.
-     &                 XKCCU(1:8).EQ.'C-WINDOW')THEN
-                  XNWAREA(ICC)=XNWAREA(ICC)+SSNA(KCC)
-                  XREAREA(ICC)=XREAREA(ICC)+SSNA(KCC)
-                ENDIF
- 5500         CONTINUE
-              DO 553 ICHL=1,NBCHILD(ICC)
-                JCC=ICHILD(ICC,ICHL)
-                NRMV(icomp)=NRMV(icomp)+1
-                IRMV(ICOMP,NRMV(icomp))=JCC
-                XJCCU=SSUSE(JCC,1)
-                TARSURF(ICC)=TARSURF(ICC)+SSNA(JCC)
-                IF(XJCCU(1:6).EQ.'P-DOOR')THEN
-                  XPDAREA(ICC)=XPDAREA(ICC)+SSNA(JCC)
-                  XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
-                ELSEIF(XJCCU(1:6).EQ.'V-DOOR')THEN
-                  XVDAREA(ICC)=XVDAREA(ICC)+SSNA(JCC)
-                  XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
-                ELSEIF(XJCCU(1:8).EQ.'D-WINDOW')THEN
-                  XDWAREA(ICC)=XDWAREA(ICC)+SSNA(JCC)
-                  XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
-                ELSEIF(XJCCU(1:8).EQ.'S-WINDOW'.OR.
-     &                 XJCCU(1:8).EQ.'C-WINDOW')THEN
-                  XNWAREA(ICC)=XNWAREA(ICC)+SSNA(JCC)
-                  XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
-                ENDIF
- 553          CONTINUE
-            ENDIF
- 555      CONTINUE
+C type surface with use roof or wall.
+            TARSURF(ICC)=SSNA(ICC)
+            XPDAREA(ICC)=0. ! pedestrian door area in this parent
+            XVDAREA(ICC)=0. ! vehicular door area in this parent
+            XDWAREA(ICC)=0. ! display window area in this parent
+            XNWAREA(ICC)=0. ! normal window area in this parent
+            XREAREA(ICC)=0. ! If requisite area is more than required
+                            ! do not put any glazing in this surface
+
+C For all exterior surfaces that are marked wall or roof.
+            if(ssother(icc,1)(1:8).eq.'EXTERIOR')then
+              if(SNM(1:4).EQ.'WALL'.or.SNM(1:4).EQ.'ROOF')then
+
+C For each grand child.
+                DO 5500 IGCD=1,NBGCHILD(ICC)
+                  KCC=IGCHILD(ICC,IGCD)      ! index of grand child
+                  NRMV(icomp)=NRMV(icomp)+1  ! increment list of surfaces to remove
+                  IRMV(ICOMP,NRMV(icomp))=KCC
+                  XKCCU=SSUSE(KCC,1)
+                  TARSURF(ICC)=TARSURF(ICC)+SSNA(KCC)
+                  IF(XKCCU(1:6).EQ.'P-DOOR')THEN
+                    XPDAREA(ICC)=XPDAREA(ICC)+SSNA(KCC)
+                    XREAREA(ICC)=XREAREA(ICC)+SSNA(KCC)
+                  ELSEIF(XKCCU(1:6).EQ.'V-DOOR')THEN
+                    XVDAREA(ICC)=XVDAREA(ICC)+SSNA(KCC)
+                    XREAREA(ICC)=XREAREA(ICC)+SSNA(KCC)
+                  ELSEIF(XKCCU(1:8).EQ.'D-WINDOW')THEN
+                    XDWAREA(ICC)=XDWAREA(ICC)+SSNA(KCC)
+                    XREAREA(ICC)=XREAREA(ICC)+SSNA(KCC)
+                  ELSEIF(XKCCU(1:8).EQ.'S-WINDOW'.OR.
+     &                   XKCCU(1:8).EQ.'C-WINDOW')THEN
+
+C If the area of the glazed grndchild is greater than the required notional
+C area for the parent reset to the required area.
+                    IF(SSNA(KCC).GT.TARSURF(ICC)*GLZFR)THEN
+                      XNWAREA(ICC)=TARSURF(ICC)*GLZFR
+                      XREAREA(ICC)=XREAREA(ICC)+XNWAREA(ICC)
+                    ELSE
+                      XNWAREA(ICC)=XNWAREA(ICC)+SSNA(KCC)
+                      XREAREA(ICC)=XREAREA(ICC)+SSNA(KCC)
+                    ENDIF
+                  ENDIF
+ 5500           CONTINUE
+                DO 553 ICHL=1,NBCHILD(ICC)
+
+C Mark child surfaces for removal (via IRMV) and add their surface
+C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
+                  JCC=ICHILD(ICC,ICHL)        ! index of child surface
+                  NRMV(icomp)=NRMV(icomp)+1   ! increment list of surfaces to remove
+                  IRMV(ICOMP,NRMV(icomp))=JCC
+                  XJCCU=SSUSE(JCC,1)
+                  TARSURF(ICC)=TARSURF(ICC)+SSNA(JCC)
+                  IF(XJCCU(1:6).EQ.'P-DOOR')THEN
+                    XPDAREA(ICC)=XPDAREA(ICC)+SSNA(JCC)
+                    XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                  ELSEIF(XJCCU(1:6).EQ.'V-DOOR')THEN
+                    XVDAREA(ICC)=XVDAREA(ICC)+SSNA(JCC)
+                    XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                  ELSEIF(XJCCU(1:8).EQ.'D-WINDOW')THEN
+                    XDWAREA(ICC)=XDWAREA(ICC)+SSNA(JCC)
+                    XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                  ELSEIF(XJCCU(1:8).EQ.'S-WINDOW'.OR.
+     &                   XJCCU(1:8).EQ.'C-WINDOW')THEN
+
+C If the area of the glazed child is greater than the required notional
+C area for the parent reset to the required area.
+                    IF(SSNA(JCC).GT.TARSURF(ICC)*GLZFR)THEN
+                      XNWAREA(ICC)=TARSURF(ICC)*GLZFR
+                      XREAREA(ICC)=XREAREA(ICC)+XNWAREA(ICC)
+                    ELSE
+                      XNWAREA(ICC)=XNWAREA(ICC)+SSNA(JCC)
+                      XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                    ENDIF
+                  ENDIF
+ 553            CONTINUE  ! for each child of current surface
+
+              elseif(SNM(1:5).EQ.'C-WIN'.or.SNM(1:5).EQ.'S-WIN')then
+
+C For some glazed facades transparent surfaces may not be child
+C surfaces. They need to be converted into WALL uses and constructions
+C into which compliant glass and frames can be added subsequently.
+                if(iparent(icc).eq.0)then
+
+C Debug.
+                  write(6,*) 'found external glazed parent surface',icc
+                  write(6,*) 'it has ',nbchild(icc),' child surfaces'
+
+                  DO 554 ICHL=1,NBCHILD(ICC)
+
+C Mark child surfaces for removal (via IRMV) and add their surface
+C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
+                    JCC=ICHILD(ICC,ICHL)
+                    NRMV(icomp)=NRMV(icomp)+1
+                    IRMV(ICOMP,NRMV(icomp))=JCC
+                    XJCCU=SSUSE(JCC,1)
+                    TARSURF(ICC)=TARSURF(ICC)+SSNA(JCC)
+                    IF(XJCCU(1:6).EQ.'P-DOOR')THEN
+                      XPDAREA(ICC)=XPDAREA(ICC)+SSNA(JCC)
+                      XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                    ELSEIF(XJCCU(1:6).EQ.'V-DOOR')THEN
+                      XVDAREA(ICC)=XVDAREA(ICC)+SSNA(JCC)
+                      XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                    ELSEIF(XJCCU(1:8).EQ.'D-WINDOW')THEN
+                      XDWAREA(ICC)=XDWAREA(ICC)+SSNA(JCC)
+                      XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                    ELSEIF(XJCCU(1:8).EQ.'S-WINDOW'.OR.
+     &                     XJCCU(1:8).EQ.'C-WINDOW')THEN
+
+C If the area of the glazed child is greater than the required notional
+C area for the parent reset to the required area.
+                      IF(SSNA(JCC).GT.TARSURF(ICC)*GLZFR)THEN
+                        XNWAREA(ICC)=TARSURF(ICC)*GLZFR
+                        XREAREA(ICC)=XREAREA(ICC)+XNWAREA(ICC)
+                      ELSE
+                        XNWAREA(ICC)=XNWAREA(ICC)+SSNA(JCC)
+                        XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                      ENDIF
+                    ENDIF
+ 554              CONTINUE  ! for each child of current surface
+                  IF(IRGG.EQ.2)THEN ! Scottish regulations
+                    SSMLCN(ICC)='Wall_Scot_no'
+                    SSOTF(ICC)='OPAQUE'  ! OTF type
+                    if(haveWall_Sc) ssmlcindex(ICC)=mlciWall_Sc
+                  ELSEIF(IRGG.EQ.3)THEN ! Northern Ireland regulations
+                    SSMLCN(icc)='Wall_NI_noti'
+                    SSOTF(ICC)='OPAQUE'  ! OTF type
+                    if(haveWall_NI) ssmlcindex(ICC)=mlciWall_NI
+                  ELSE ! England and Wales regulations (and omissions)
+                    SSMLCN(ICC)='Wall_EW_noti'
+                    SSOTF(ICC)='OPAQUE'  ! OTF type
+                    if(haveWall_EW) ssmlcindex(ICC)=mlciWall_EW
+                  ENDIF
+                  write(SSUSE(ICC,1),'(a)') 'WALL'
+C Debug.
+C                  write(6,*) 'reset ',ssname(icc),'  ',SSMLCN(ICC),
+C     &              ' ',SSOTF(ICC),' ',SSUSE(ICC,1)
+                  changeuse=.true.  ! change of use
+                else
+                  continue
+                endif
+              elseif(SNM(1:7).EQ.'F-FRAME')then
+
+C Surfaces marked frame will be removed if they are child surfaces
+C of a wall or roof. If they are geometrically parent surfaces then
+C they need to be converted into wall uses and constructions.
+                if(iparent(icc).eq.0)then
+                  DO 556 ICHL=1,NBCHILD(ICC)
+
+C Mark child surfaces for removal (via IRMV) and add their surface
+C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
+                    JCC=ICHILD(ICC,ICHL)
+                    NRMV(icomp)=NRMV(icomp)+1
+                    IRMV(ICOMP,NRMV(icomp))=JCC
+                    XJCCU=SSUSE(JCC,1)
+                    TARSURF(ICC)=TARSURF(ICC)+SSNA(JCC)
+                    IF(XJCCU(1:6).EQ.'P-DOOR')THEN
+                      XPDAREA(ICC)=XPDAREA(ICC)+SSNA(JCC)
+                      XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                    ELSEIF(XJCCU(1:6).EQ.'V-DOOR')THEN
+                      XVDAREA(ICC)=XVDAREA(ICC)+SSNA(JCC)
+                      XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                    ELSEIF(XJCCU(1:8).EQ.'D-WINDOW')THEN
+                      XDWAREA(ICC)=XDWAREA(ICC)+SSNA(JCC)
+                      XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                    ELSEIF(XJCCU(1:8).EQ.'S-WINDOW'.OR.
+     &                     XJCCU(1:8).EQ.'C-WINDOW')THEN
+
+C If the area of the glazed child is greater than the required notional
+C area for the parent reset to the required area.
+                      IF(SSNA(JCC).GT.TARSURF(ICC)*GLZFR)THEN
+                        XNWAREA(ICC)=TARSURF(ICC)*GLZFR
+                        XREAREA(ICC)=XREAREA(ICC)+XNWAREA(ICC)
+                      ELSE
+                        XNWAREA(ICC)=XNWAREA(ICC)+SSNA(JCC)
+                        XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                      ENDIF
+                    ENDIF
+ 556              CONTINUE  ! for each child of current surface
+                  IF(IRGG.EQ.2)THEN ! Scottish regulations
+                    SSMLCN(ICC)='Wall_Scot_no'
+                    SSOTF(ICC)='OPAQUE'  ! OTF type
+                    if(haveWall_Sc) ssmlcindex(ICC)=mlciWall_Sc
+                  ELSEIF(IRGG.EQ.3)THEN ! Northern Ireland regulations
+                    SSMLCN(icc)='Wall_NI_noti'
+                    SSOTF(ICC)='OPAQUE'  ! OTF type
+                    if(haveWall_NI) ssmlcindex(ICC)=mlciWall_NI
+                  ELSE ! England and Wales regulations (and omissions)
+                    SSMLCN(ICC)='Wall_EW_noti'
+                    SSOTF(ICC)='OPAQUE'  ! OTF type
+                    if(haveWall_EW) ssmlcindex(ICC)=mlciWall_EW
+                  ENDIF
+                  write(SSUSE(ICC,1),'(a)') 'WALL'
+C Debug.
+C                  write(6,*) 'reset ',ssname(icc),'  ',SSMLCN(ICC),
+C     &              ' ',SOTF(ICC)
+                  changeuse=.true.  ! change of use
+                else
+                  continue
+                endif
+              endif
+            endif
+ 555      CONTINUE  ! loop all surfaces in zone
+
+C If we have altered the use of a parent glazing or frame save this
+C to the geometry file prior to deleting surfaces.
+          if(changeuse)then
+            call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+          endif
+ 
         ENDIF
  559  CONTINUE
 
@@ -4742,18 +4720,15 @@ C for deletion in IRMV
       DO 6100 ICOMP=1,NCOMP
 
 C Debug the initial list of surfaces to remove.
-C        write(6,*) 'about to remove ',NRMV(icomp),' surfs in z ',
-C     &    icomp
-C        write(6,*) 'list ',IRMV(ICOMP,1),IRMV(ICOMP,2),IRMV(ICOMP,3),
-C     &    IRMV(ICOMP,4),IRMV(ICOMP,5),IRMV(ICOMP,6),IRMV(ICOMP,7),
-C     &    IRMV(ICOMP,8),IRMV(ICOMP,9),IRMV(ICOMP,10),IRMV(ICOMP,11)
+        write(6,*) 'about to remove ',NRMV(icomp),' surfs in z ',
+     &    icomp
 
 C In the current zone we need to delete NRMV surfaces.
         DO 6001 IR=1,NRMV(icomp)
 
 C Debug.
-C          write(6,*) ' doing conn surf',IRMV(ICOMP,IR),
-C     &      ie1(IRMV(ICOMP,IR)),' for ir ',ir
+          write(6,*) ' x conn surf ',IRMV(ICOMP,IR),' ',
+     &      ssname(IRMV(ICOMP,IR)),' ',ie1(IRMV(ICOMP,IR)),' for ir ',ir
 
 C Pack the list of TARSURF etc from the current connection data
 C to one less than the end of the number of connections in the
@@ -4786,24 +4761,33 @@ C connection index held in IRMV.
  6006     CONTINUE
 
 C Debug the packed irmv array.
-C        write(6,*) 'listx ',IRMV(ICOMP,1),IRMV(ICOMP,2),IRMV(ICOMP,3),
-C     &    IRMV(ICOMP,4),IRMV(ICOMP,5),IRMV(ICOMP,6),IRMV(ICOMP,7),
-C     &    IRMV(ICOMP,8),IRMV(ICOMP,9),IRMV(ICOMP,10),IRMV(ICOMP,11)
+        write(6,*) 'listx ',IRMV(ICOMP,1),IRMV(ICOMP,2),IRMV(ICOMP,3),
+     &    IRMV(ICOMP,4),IRMV(ICOMP,5),IRMV(ICOMP,6),IRMV(ICOMP,7),
+     &    IRMV(ICOMP,8),IRMV(ICOMP,9),IRMV(ICOMP,10),IRMV(ICOMP,11)
 
 C Remove the surface. Get is from the irmv list (which is
 C connection based).
           is=ie1(IRMV(ICOMP,IR))
 
 C Debug.
-C          write(6,*) 'ir is ',ir,' removing surf ',is,' in zone ',icomp
+          write(outs,*) 'removing surface ',ssname(irmv(icomp,ir)),
+     &      ' in zone ',icomp
+          call edisp(iuout,outs)
+C          write(6,*) 'ir is ',ir,' surf ',is,' in zone ',icomp
 
+C Re-scan the geometry, use ADDSUR to delete surface index 'is' and then
+C update the model cfg file and then re-write the geometry file.
           iopt=0
           call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
+          write(6,*) 'before addsur d ',NZSUR(icomp)
           CALL ADDSUR(ITRC,ICOMP,IS,'D','A',iopt,IER)
+          write(6,*) 'after addsur d ',NZSUR(icomp)
           CALL EMKCFG('-',IER)
+          write(6,*) 'after emkcfg d ',NZSUR(icomp)
           call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+          write(6,*) 'after geowrite d ',NZSUR(icomp)
 
-C Update the image.
+C Update the image if working in graphics mode.
           if(MMOD.eq.8)then
             MODBND=.TRUE.
             MODIFY=.TRUE.
@@ -4812,7 +4796,7 @@ C Update the image.
             nznog(1)=ICOMP
             izgfoc=ICOMP
             CALL ADJVIEW(IER)
-            call pausems(500)
+            call pausems(900)
           endif
  6001   CONTINUE
  6100 CONTINUE
@@ -4822,13 +4806,15 @@ C that remain in the model. Do this by looping through
 C each zone in the model and in each of the surfaces
 C in the current zone check its attributes.
       DO 557 ICOMP=1,NCOMP
+        if(.NOT.ivalocup(icomp)) goto 557  ! do not bother if unoccupied & unconditioned
         do 200 isur=1,nzsur(icomp)
           ICC=IZSTOCN(icomp,isur)
           SNM=SSUSE(ICC,1)
 
-C For all exterior surfaces that are wall or roof
-          if(ssother(icC,1)(1:8).eq.'EXTERIOR'.AND.(
-     &    SNM(1:4).EQ.'WALL'.or.SNM(1:4).EQ.'ROOF'))then
+C For all exterior surfaces that are wall or roof define the
+C glazing and frame percentage.
+          if(ssother(icC,1)(1:8).eq.'EXTERIOR'.AND.
+     &      (SNM(1:4).EQ.'WALL'.or.SNM(1:4).EQ.'ROOF'))then
             IF(SNM(1:4).EQ.'WALL')THEN
               GLZFR=WALLFR
               FRMFR=WALLFRFR
@@ -4839,23 +4825,30 @@ C For all exterior surfaces that are wall or roof
             IF(XREAREA(ICC).GT.TARSURF(ICC)*GLZFR)THEN
 
 C Area of doors and windows is greater than glazings to be put in so do
-C not put in additional windows but retain if any are present
+C not put in additional windows but retain if any are present.
               CONTINUE
             ELSE
 
 C Area of doors and windows is less than glazings to be put in so put in
 C additional windows
               XNWAREA(ICC)=
-     &        TARSURF(ICC)*GLZFR-XREAREA(ICC)+XNWAREA(ICC)
+     &          TARSURF(ICC)*GLZFR-XREAREA(ICC)+XNWAREA(ICC)
             ENDIF
+            write(6,*) 'estimating ',icc,GLZFR,FRMFR,TARSURF(ICC),
+     &        XREAREA(ICC),XNWAREA(ICC)
           endif
  200    continue
  557  continue
 
 C Now loop through the model in reverse zone order and
-C add required surfaces.
+C add required surfaces. If there was a pedestrian door or a
+C vehicle door or display glazing then re-instate them. You will
+C notice several repeating blocks of code below which carries this
+C out. If the logic in one is updated then check the others to
+C ensure they are updated (if required).
 C << need to trap error state in georead >>
       DO 551 ICOMP=NCOMP,1,-1
+        if(.NOT.ivalocup(icomp)) goto 551  ! do not bother if unoccupied & unconditioned
         NUMBS=NZSUR(ICOMP)
         do 580 isur=NUMBS,1,-1
           call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
@@ -4863,12 +4856,13 @@ C << need to trap error state in georead >>
           ICON=IZSTOCN(icomp,nsur)  ! the last surface in the zone
           IELF=0
           ICC=IZSTOCN(icomp,isur)   ! connection for current surface
-          COE(1)=SSURCOG(ICC,1)
+          COE(1)=SSURCOG(ICC,1)     ! centre of gravity for current surface
           COE(2)=SSURCOG(ICC,2)
           COE(3)=SSURCOG(ICC,3)
           SNM=SSUSE(ICC,1)
 
-C For all exterior surfaces that are wall or roof
+C For all exterior surfaces that are wall or roof set the glazing
+C and frame areas.
           if(ssother(icC,1)(1:8).eq.'EXTERIOR'.AND.
      &      (SNM(1:4).EQ.'WALL'.or.SNM(1:4).EQ.'ROOF'))then
             IF(SNM(1:4).EQ.'WALL')THEN
@@ -4882,13 +4876,19 @@ C For all exterior surfaces that are wall or roof
 C Get scale factors
             TOTAREA=TARSURF(ICC)
             REQDAREA=XPDAREA(ICC)+XVDAREA(ICC)+
-     &      XDWAREA(ICC)+XNWAREA(ICC)
+     &               XDWAREA(ICC)+XNWAREA(ICC)
             SCALEFACTORPD=SQRT(REQDAREA/TOTAREA)
             SCALEFACTORFR=SQRT(FRMFR)
 
-C First put pedestrian door in
-            CALL ECLOSE(XPDAREA(ICC),0.0,0.01,NEAR)
-            IF(.NOT.NEAR)THEN
+C Debug.
+            write(6,*) '580 ',ICC,TOTAREA,REQDAREA,SCALEFACTORPD,
+     &        SCALEFACTORFR,XPDAREA(ICC)
+
+C First put pedestrian door in if there was one in the original model.
+C If likely new surface complexity is within limits add door.
+            CALL ECLOSE(XPDAREA(ICC),0.0,0.1,NEAR)
+            if(2*NVER(IS)+2.lt.42.and.(.NOT.NEAR).and.
+     &        (NSUR+1.lt.MS)) then
               IELF=IELF+1
               ICON=ICON+1
               NSUR=NSUR+1
@@ -4921,7 +4921,9 @@ C First put pedestrian door in
 
 C Update the connection list. Move all others up and then insert with
 C default values.
+              write(6,*) 'before adddedsurf a ',icon,NZSUR(icomp)
               call addedsurf(icomp,icon,itrc,ier)
+              write(6,*) 'after adddedsurf a ',icon,NZSUR(icomp)
 
 C Add surfaces attribution parameters
               ICT(ICON)=0
@@ -4931,6 +4933,7 @@ C Add surfaces attribution parameters
               SSOTHER(ICON,2)='0'
               SSOTHER(ICON,3)='0'
               SSMLCN(ICON)='opDoorWind_n' ! MLC type
+              if(haveopDoor) ssmlcindex(ICON)=mlciopDoor
               SSPARENT(ICON)=SSNAME(ICC)
               SSOTF(ICON)='OPAQUE'  ! OTF type
               SSVFC(ICON)=SSVFC(ICC)
@@ -4952,7 +4955,7 @@ C added as child of door and not child of original surface.
               is=nsur
               TOTAREA=REQDAREA
 
-C Update the image.
+C Update the wireframe image if running in graphics mode.
               if(MMOD.eq.8)then
                 MODBND=.TRUE.
                 MODIFY=.TRUE.
@@ -4965,12 +4968,19 @@ C Update the image.
               endif
             ENDIF
 
-C Now put vehicle door in
+C Now put vehicle door in if there was one in the original model
+C and the new surface will be within complexity limits.
             REQDAREA=XVDAREA(ICC)+
-     &      XDWAREA(ICC)+XNWAREA(ICC)
+     &               XDWAREA(ICC)+XNWAREA(ICC)
             SCALEFACTORVD=SQRT(REQDAREA/TOTAREA)
-            CALL ECLOSE(XVDAREA(ICC),0.0,0.01,NEAR)
-            IF(.NOT.NEAR)THEN
+
+C Debug.
+            write(6,*) 'V-door ',ICC,REQDAREA,SCALEFACTORVD,
+     &        XVDAREA(ICC)
+
+            CALL ECLOSE(XVDAREA(ICC),0.0,0.1,NEAR)
+            if(2*NVER(IS)+2.lt.42.and.(.NOT.NEAR).and.
+     &        (NSUR+1.lt.MS)) then
               IELF=IELF+1
               ICON=ICON+1
               NSUR=NSUR+1
@@ -5003,7 +5013,9 @@ C Now put vehicle door in
 
 C Update the connection list. Move all others up and then insert with
 C default values.
+              write(6,*) 'before adddedsurf b ',icon,NZSUR(icomp)
               call addedsurf(icomp,icon,itrc,ier)
+              write(6,*) 'after adddedsurf b ',icon,NZSUR(icomp)
 
 C Add surfaces attribution parameters
               ICT(ICON)=0
@@ -5013,6 +5025,7 @@ C Add surfaces attribution parameters
               SSOTHER(ICON,2)='0'
               SSOTHER(ICON,3)='0'
               SSMLCN(ICON)='Vehicle_door' ! MLC type
+              if(haveVehicle) ssmlcindex(ICON)=mlciVehicle
               SSPARENT(ICON)=SSNAME(ICC)
               SSOTF(ICON)='OPAQUE'  ! OTF type
               SSVFC(ICON)=SSVFC(ICC)
@@ -5034,7 +5047,7 @@ C added as child of door and not child of original surface.
               is=nsur
               TOTAREA=REQDAREA
 
-C Update the image.
+C Update the image if running in graphics mode.
               if(MMOD.eq.8)then
                 MODBND=.TRUE.
                 MODIFY=.TRUE.
@@ -5047,11 +5060,18 @@ C Update the image.
               endif
             ENDIF
 
-C Now put display glazing in
+C Now put display glazing in if there was one in the original model
+C and within complexity limits.
             REQDAREA=XDWAREA(ICC)+XNWAREA(ICC)
             SCALEFACTORDG=SQRT(REQDAREA/TOTAREA)
-            CALL ECLOSE(XDWAREA(ICC),0.0,0.01,NEAR)
-            IF(.NOT.NEAR)THEN
+
+C Debug.
+            write(6,*) 'D-glz ',ICC,REQDAREA,SCALEFACTORDG,
+     &        XDWAREA(ICC)
+
+            CALL ECLOSE(XDWAREA(ICC),0.0,0.1,NEAR)
+            if(2*NVER(IS)+2.lt.42.and.(.NOT.NEAR).and.
+     &        (NSUR+1.lt.MS)) then
               IELF=IELF+1
               ICON=ICON+1
               NSUR=NSUR+1
@@ -5084,7 +5104,9 @@ C Now put display glazing in
 
 C Update the connection list. Move all others up and then insert with
 C default values.
+              write(6,*) 'before adddedsurf c ',icon,NZSUR(icomp)
               call addedsurf(icomp,icon,itrc,ier)
+              write(6,*) 'after adddedsurf c ',icon,NZSUR(icomp)
 
 C Add surfaces attribution parameters
               ICT(ICON)=0
@@ -5094,6 +5116,7 @@ C Add surfaces attribution parameters
               SSOTHER(ICON,2)='0'
               SSOTHER(ICON,3)='0'
               SSMLCN(ICON)='Not_DisplayG'  ! MLC type
+              if(haveNot_D) ssmlcindex(ICON)=mlciNot_D
               SSPARENT(ICON)=SSNAME(ICC)
               SSOTF(ICON)='dispGlz_not' ! OTF type
               SSVFC(ICON)=SSVFC(ICC)
@@ -5115,7 +5138,7 @@ C added as child of door and not child of original surface.
               is=nsur
               TOTAREA=REQDAREA
 
-C Update the image.
+C Update the image if running in graphic mode.
               if(MMOD.eq.8)then
                 MODBND=.TRUE.
                 MODIFY=.TRUE.
@@ -5128,11 +5151,21 @@ C Update the image.
               endif
             ENDIF
 
-C Now put glazing and frame
+C Now put glazing and frame based on the NCM requirements (there might
+C not have been a window or frame in the original model).
             REQDAREA=XNWAREA(ICC)
             SCALEFACTORNG=SQRT(REQDAREA/TOTAREA)
-            CALL ECLOSE(XNWAREA(ICC),0.0,0.01,NEAR)
-            IF(.NOT.NEAR)THEN
+
+C Debug.
+            write(6,*) 'glz ',ICC,REQDAREA,SCALEFACTORNG,
+     &        XNWAREA(ICC)
+
+            CALL ECLOSE(XNWAREA(ICC),0.0,0.1,NEAR)
+
+C If likely new surface complexity is within limits and we have not
+C already gotten enough glazing area add another window and frame.
+            if(2*NVER(IS)+2.lt.42.and.(.NOT.NEAR).and.
+     &        (NSUR+2.lt.MS)) then
               IELF=IELF+1
               ICON=ICON+1
               NSUR=NSUR+1
@@ -5142,6 +5175,8 @@ C Now put glazing and frame
               WRITE(SN,'(i2,2A)')
      &          is,CHAR(96+IELF),'_glz'  ! Name
               write(outs,'(2a)') 'Adding new surf ',SN(1:lnblnk(SN))
+              write(6,*) icomp,nsur,is,nver(is)
+              write(6,*) outs
               call edisp(iuout,outs)
               ISUR2=NSUR
               DO 7512 NV=1,NVER(IS)
@@ -5165,7 +5200,9 @@ C Now put glazing and frame
 
 C Update the connection list. Move all others up and then insert with
 C default values.
+              write(6,*) 'before adddedsurf d ',icon,NZSUR(icomp)
               call addedsurf(icomp,icon,itrc,ier)
+              write(6,*) 'after adddedsurf d ',icon,NZSUR(icomp)
 
 C Add surfaces attribution parameters
               ICT(ICON)=0
@@ -5175,6 +5212,7 @@ C Add surfaces attribution parameters
               SSOTHER(ICON,2)='0'
               SSOTHER(ICON,3)='0'
               SSMLCN(ICON)='window_Not_G'  ! MLC type
+              if(haveNot_G) ssmlcindex(ICON)=mlciNot_G
               SSPARENT(ICON)=SSNAME(ICC)
               SSOTF(ICON)='Glaz_notiona' ! OTF type
               SSVFC(ICON)=SSVFC(ICC)
@@ -5191,7 +5229,7 @@ C Update connections list before displaying notional model zone
               call emkcfg('-',IER)
               is=nsur
 
-C Update the image.
+C Update the image if running in graphic mode.
               if(MMOD.eq.8)then
                 MODBND=.TRUE.
                 MODIFY=.TRUE.
@@ -5203,7 +5241,8 @@ C Update the image.
                 call pausems(500)
               endif
 
-C Now put frame
+C Now put frame based on the NCM requirements (e.g. there might not have
+C been a frame in the original model).
               IELF=IELF+1
               ICON=ICON+1
               NSUR=NSUR+1
@@ -5236,7 +5275,9 @@ C Now put frame
 
 C Update the connection list. Move all others up and then insert with
 C default values.
+              write(6,*) 'before adddedsurf e ',icon,NZSUR(icomp)
               call addedsurf(icomp,icon,itrc,ier)
+              write(6,*) 'after adddedsurf e ',icon,NZSUR(icomp)
 
 C Add surfaces attribution parameters
               ICT(ICON)=0
@@ -5246,6 +5287,7 @@ C Add surfaces attribution parameters
               SSOTHER(ICON,2)='0'
               SSOTHER(ICON,3)='0'
               SSMLCN(ICON)='frame_notion'  ! MLC type
+              if(haveframe) ssmlcindex(ICON)=mlciframe
               SSPARENT(ICON)=SSNAME(ICC)
               SSOTF(ICON)='OPAQUE' ! OTF type
               SSVFC(ICON)=SSVFC(ICC)
@@ -5260,7 +5302,7 @@ C Update connections list before displaying notional model zone
               call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
               call emkcfg('-',IER)
 
-C Update the image.
+C Update the image if running in graphic mode.
               if(MMOD.eq.8)then
                 MODBND=.TRUE.
                 MODIFY=.TRUE.
@@ -5276,7 +5318,9 @@ C Update the image.
  580    CONTINUE
  551  CONTINUE
 
-C Change constructions for different surfaces now based on use
+C Change constructions for different surfaces now based on use.
+C Update the value of ssmlcindex as well as SSMLCN. This is done
+C for all zones whether they are occupied and conditioned or not.
       DO 600 ICOMP=1,NCOMP
         call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
         DO 601 I=1,NZSUR(icomp)
@@ -5285,42 +5329,66 @@ C Change constructions for different surfaces now based on use
           USE2=SSUSE(ICC,2)
           ADF=SSVFC(icc)
           IF(ssother(icc,1)(1:8).eq.'EXTERIOR')THEN
+
+C For surfaces facing the outside.
             IF(USE(1:4).EQ.'WALL')THEN
               IF(IRGG.EQ.2)THEN ! Scottish regulations
                 SSMLCN(ICC)='Wall_Scot_no'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(haveWall_Sc) ssmlcindex(ICC)=mlciWall_Sc
               ELSEIF(IRGG.EQ.3)THEN ! Northern Ireland regulations
                 SSMLCN(icc)='Wall_NI_noti'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(haveWall_NI) ssmlcindex(ICC)=mlciWall_NI
               ELSE ! England and Wales regulations (and omissions)
                 SSMLCN(ICC)='Wall_EW_noti'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(haveWall_EW) ssmlcindex(ICC)=mlciWall_EW
               ENDIF
             ELSEIF(USE(1:4).EQ.'ROOF')THEN
               IF(USE2(1:4).EQ.'FLAT')THEN
                 SSMLCN(ICC)='Fl_roof_noti'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(haveFl_r) ssmlcindex(ICC)=mlciFl_r
               ELSE
                 IF(IRGG.EQ.2)THEN ! Scottish regulations
                   SSMLCN(ICC)='SC_Pitch_roo'
+                  SSOTF(ICC)='OPAQUE'  ! OTF type
+                  if(haveSC_P) ssmlcindex(ICC)=mlciSC_P
                 ELSE ! England, Wales and N. Ireland regulations
                   SSMLCN(ICC)='EW_notPitch_'
+                  SSOTF(ICC)='OPAQUE'  ! OTF type
+                  if(haveEW_notP) ssmlcindex(ICC)=mlciEW_notP
                 ENDIF
               ENDIF
             ELSEIF(USE(3:6).EQ.'DOOR')THEN
               IF(USE(1:1).EQ.'V')THEN
                 SSMLCN(ICC)='Vehicle_door'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(haveVehicle) ssmlcindex(ICC)=mlciVehicle
               ELSE
                 SSMLCN(ICC)='opDoorWind_n'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(haveopDoor) ssmlcindex(ICC)=mlciopDoor
               ENDIF
             ELSEIF(USE(3:8).EQ.'WINDOW')THEN
               IF(USE(1:1).EQ.'D')THEN
                 SSMLCN(ICC)='Not_DisplayG'
                 SSOTF(ICC)='dispGlz_not'
+                if(haveNot_D) ssmlcindex(ICC)=mlciNot_D
               ELSE
                 SSMLCN(ICC)='window_Not_G'
                 SSOTF(ICC)='Glaz_notiona'
+                if(haveNot_G) ssmlcindex(ICC)=mlciNot_G
               ENDIF
             ELSEIF(USE(1:5).EQ.'FLOOR')THEN
               SSMLCN(ICC)='Sol_grnd_not'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveSol_gr) ssmlcindex(ICC)=mlciSol_gr
             ELSEIF(USE(1:7).EQ.'F-FRAME')THEN
               SSMLCN(ICC)='frame_notion'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveframe) ssmlcindex(ICC)=mlciframe
             ELSE
               SNM=SSNAME(ICC)
               WRITE(OUTS,'(5A)')'No relevant use defined for ',
@@ -5329,51 +5397,1596 @@ C Change constructions for different surfaces now based on use
               CALL EDISP(IUOUT,OUTS)
               IF(IRGG.EQ.2)THEN ! Scottish regulations
                 SSMLCN(ICC)='Wall_Scot_no'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(haveWall_Sc) ssmlcindex(ICC)=mlciWall_Sc
               ELSEIF(IRGG.EQ.3)THEN ! Northern Ireland regulations
                 SSMLCN(icc)='Wall_NI_noti'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(haveWall_NI) ssmlcindex(ICC)=mlciWall_NI
               ELSE ! England and Wales regulations (and omissions)
                 SSMLCN(ICC)='Wall_EW_noti'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(haveWall_EW) ssmlcindex(ICC)=mlciWall_EW
               ENDIF
             ENDIF
           ELSEIF(ssother(icc,1)(1:6).eq.'GROUND')THEN
-              SSMLCN(ICC)='Sol_grnd_not'
+
+C Surfaces facing the ground.
+            SSMLCN(ICC)='Sol_grnd_not'
+            SSOTF(ICC)='OPAQUE'  ! OTF type
+            if(haveSol_gr) ssmlcindex(ICC)=mlciSol_gr
           ELSE
+
+C Surfaces facing something else.
             IF(USE(1:5).EQ.'FLOOR')THEN
               SSMLCN(ICC)='pa_fl_notion'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(havepa_fl) ssmlcindex(ICC)=mlcipa_fl
             ELSEIF(USE(1:4).EQ.'WALL')THEN
               SSMLCN(ICC)='party_wall_n'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveparty_w) ssmlcindex(ICC)=mlciparty_w
             ELSEIF(USE(3:8).EQ.'WINDOW')THEN
               SSMLCN(ICC)='internal_glz'
+              if(haveint_g) ssmlcindex(ICC)=mlciint_g
               SSOTF(ICC)='Glaz_notiona'
             ELSEIF(ADF(1:4).EQ.'FLOR')THEN
-              SSMLCN(ICC)='pa_fl_notion'
+
+C This could be an internal partition. If original is opaque then use
+C  pa_fl_notion if transparent use internal_glz.
+              if(SSOTF(ICC)(1:6).eq.'OPAQUE')then
+                SSMLCN(ICC)='pa_fl_notion'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(havepa_fl) ssmlcindex(ICC)=mlcipa_fl
+              else
+                SSMLCN(ICC)='internal_glz'
+                if(haveint_g) ssmlcindex(ICC)=mlciint_g
+                SSOTF(ICC)='Glaz_notiona'
+              endif
             ELSEIF(ADF(1:4).EQ.'CEIL')THEN
-              SSMLCN(ICC)='inv_pa_fl_no'
+
+C This could be an internal partition. If original is opaque then use
+C  inv_pa_fl_no if transparent use internal_glz.
+              if(SSOTF(ICC)(1:6).eq.'OPAQUE')then
+                SSMLCN(ICC)='inv_pa_fl_no'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(haveinv_pa_f) ssmlcindex(ICC)=mlciinv_pa_f
+              else
+                SSMLCN(ICC)='internal_glz'
+                if(haveint_g) ssmlcindex(ICC)=mlciint_g
+                SSOTF(ICC)='Glaz_notiona'
+              endif
             ELSEIF(ADF(1:4).EQ.'VERT')THEN
-              SSMLCN(ICC)='party_wall_n'
+
+C This could be an internal partition. If original is opaque then use
+C  party_wall_n if transparent use internal_glz.
+              if(SSOTF(ICC)(1:6).eq.'OPAQUE')then
+                SSMLCN(ICC)='party_wall_n'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(haveparty_w) ssmlcindex(ICC)=mlciparty_w
+              else
+                SSMLCN(ICC)='internal_glz'
+                if(haveint_g) ssmlcindex(ICC)=mlciint_g
+                SSOTF(ICC)='Glaz_notiona'
+              endif
             ELSE
+
+C This could be an internal partition. If original is opaque then use
+C  party_wall_n if transparent use internal_glz.
               SNM=SSNAME(ICC)
-              WRITE(OUTS,'(5A)')'No relevant use defined for ',
-     &        SNM(1:LNBLNK(SNM)),' in zone ',zname(icomp),
-     &        ' - Setting to internal wall'
-              SSMLCN(ICC)='party_wall_n'
+              if(SSOTF(ICC)(1:6).eq.'OPAQUE')then
+                WRITE(OUTS,'(5A)')'No relevant use defined for ',
+     &          SNM(1:LNBLNK(SNM)),' in zone ',zname(icomp),
+     &          ' - Setting to internal wall'
+                SSMLCN(ICC)='party_wall_n'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(haveparty_w) ssmlcindex(ICC)=mlciparty_w
+              else
+                WRITE(OUTS,'(5A)')'No relevant use defined for ',
+     &          SNM(1:LNBLNK(SNM)),' in zone ',zname(icomp),
+     &          ' - Setting to internal_glz'
+                SSMLCN(ICC)='internal_glz'
+                if(haveint_g) ssmlcindex(ICC)=mlciint_g
+                SSOTF(ICC)='Glaz_notiona'
+              endif
               CALL EDISP(IUOUT,OUTS)
             ENDIF
           ENDIF
  601    CONTINUE
 
-C Add 10% thermal bridge by silently calling appropriate subroutine
+C Write geometry file to save off changes in constructions prior to
+C applying the thermal bridge information.
+        call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+
+C Add 10% thermal bridge by silently calling appropriate subroutine.
+C This will overwrite thermal bridge information in the original model.
         CALL LINTHBRDG(ICOMP,'s',0.1)
 
-C Write geometry file version 1.1 (1.0 does not support UK NCM)
+C Write geometry file to ensure thermal bridge data saved.
         call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
         QUIET=.TRUE.
 
-C Update constructions and tmc files if applicable
+C Update constructions and tmc files if applicable.
         CALL EDCON(ITRC,ITRU,ICOMP,QUIET,IER)
  600  CONTINUE
       RETURN
       END
+
+C ********************* EMKSBM2
+C The setup part of creating notional model.
+      SUBROUTINE EMKSBM2(ier)
+#include "building.h"
+#include "geometry.h"
+#include "sbem.h"
+#include "esprdbfile.h"
+#include "model.h"
+#include "material.h"
+
+      integer lnblnk  ! function definition
+
+      common/OUTIN/IUOUT,IUIN
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
+      common/C21/IFCFG,cfgroot,LCFGF
+
+      character EXT*4    ! up to 4 characters in file extension
+      character APE*6    ! up to 6 characters in variant name
+      CHARACTER CFGROOT*24
+      CHARACTER LCFGF*72,NNAME*72
+      CHARACTER OUTS*124
+      character msg*42
+      logical ok,dok
+
+C Test whether required constructions exist.
+      logical haveopDoor,haveVehicle,haveNot_D,haveNot_G,haveframe
+      logical haveWall_Sc,haveWall_EW,haveFl_r,haveSC_P,haveEW_notP
+      logical haveSol_gr,havepa_fl,haveinv_pa_f,haveparty_w,haveint_g
+      logical haveWall_NI,haveexWall_ty,haveFl_rty,havewin_Typ_G
+      logical haveSol_gr_typ
+      common/havereqmlc/haveopDoor,haveVehicle,haveNot_D,haveNot_G,
+     &  haveframe,haveWall_Sc,haveWall_EW,haveFl_r,haveSC_P,
+     &  haveEW_notP,haveSol_gr,havepa_fl,haveinv_pa_f,haveparty_w,
+     &  haveint_g,haveWall_NI,haveexWall_ty,haveFl_rty,havewin_Typ_G,
+     &  haveSol_gr_typ
+      logical changeuse   ! to signal change of use of surface
+
+C mlcindex for each of these required constructions.
+      integer mlciopDoor,mlciVehicle,mlciNot_D,mlciNot_G,mlciframe
+      integer mlciWall_Sc,mlciWall_EW,mlciFl_r,mlciSC_P,mlciEW_notP
+      integer mlciSol_gr,mlcipa_fl,mlciinv_pa_f,mlciparty_w,mlciint_g
+      integer mlciWall_NI,mlciWall_ty,mlciFL_rty,mlciwin_Typ_G
+      integer mlciSol_gr_typ
+      common/mlcireq/mlciopDoor,mlciVehicle,mlciNot_D,mlciNot_G,
+     &  mlciframe,mlciWall_Sc,mlciWall_EW,mlciFl_r,mlciSC_P,
+     &  mlciEW_notP,mlciSol_gr,mlcipa_fl,mlciinv_pa_f,mlciparty_w,
+     &  mlciint_g,mlciWall_NI,mlciWall_ty,mlciFL_rty,mlciwin_Typ_G,
+     &  mlciSol_gr_typ
+     
+      integer nbdbstries  ! how many iterations looking for req constr
+
+C Check if Notional Model Flag has been set (NCM data has been defined)
+C If not then advise user and send him/her back
+      IF(ISBEM.NE.2)THEN
+        ier=2  ! signal insufficient details
+        RETURN
+      ENDIF
+      APE='_not  '
+      nbdbstries = 0
+
+C The inital task is to make copies of the relevant zone files
+C which is functionally equivalent to the code blocks in subroutine
+C verman for the case of geometry and attribution (ILM=2).
+
+C Change name of configuration file to filename_not.cfg
+      LCFGF=LCFGF_N
+      cfgroot=cfgroot_n  ! set to notional
+
+C Adapt original title of model.
+      lns=lnblnk(LSNAM_O)
+      if(lns.lt.61)then
+        write(modeltitle,'(2a)') LSNAM_O(1:lns),' (notional)'
+      else
+        write(modeltitle,'(2a)') LSNAM_O(1:61),' (notional)'
+      endif
+
+C Set flag for cfg file that this is a notional model
+      INOTI=1
+
+C Test to see if certain constructions are currently available
+C if if found remember their index in the constructions array
+C in order to instanciate ssmlcindex.
+      call opendb(ier) ! make sure materials & constructions known
+   41  mlcf=0
+      do 6 ii=1,nmlc
+        if(DESC(ii)(1:12).eq.'opDoorWind_n') then
+          haveopDoor=.true.; mlciopDoor=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'Vehicle_door') then
+          haveVehicle=.true.; mlciVehicle=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'Not_DisplayG') then
+          haveNot_D=.true.; mlciNot_D=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'window_Not_G') then
+          haveNot_G=.true.; mlciNot_G=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'frame_notion') then
+          haveframe=.true.; mlciframe=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'Wall_Scot_no') then
+          haveWall_Sc=.true.; mlciWall_Sc=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'Wall_EW_noti') then
+          haveWall_EW=.true.; mlciWall_EW=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'Wall_NI_noti') then
+          haveWall_NI=.true.; mlciWall_NI=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'Fl_roof_noti') then
+          haveFl_r=.true.; mlciFl_r=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'SC_Pitch_roo') then
+          haveSC_P=.true.; mlciSC_P=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'EW_notPitch_') then
+          haveEW_notP=.true.; mlciEW_notP=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'Sol_grnd_not') then
+          haveSol_gr=.true.; mlciSol_gr=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'pa_fl_notion') then
+          havepa_fl=.true.; mlcipa_fl=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'inv_pa_fl_no') then
+          haveinv_pa_f=.true.; mlciinv_pa_f=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'party_wall_n') then
+          haveparty_w=.true.; mlciparty_w=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'internal_glz') then
+          haveint_g=.true.; mlciint_g=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'exWall_typic') then
+          haveexWall_ty=.true.; mlciWall_ty=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'Fl_roof_typi') then
+          haveFl_rty=.true.; mlciFL_rty=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'window_Typ_G') then
+          havewin_Typ_G=.true.; mlciwin_Typ_G=ii; mlcf=mlcf+1
+        elseif(DESC(ii)(1:12).eq.'Sol_grnd_typ') then
+          haveSol_gr_typ=.true.; mlciSol_gr_typ=ii; mlcf=mlcf+1
+        endif
+  6   continue
+
+C Debug.
+      write(6,*) 'Index of required UK NCM constructions...'
+      write(6,*) mlciopDoor,mlciVehicle,mlciNot_D,mlciNot_G,mlciframe
+      write(6,*) mlciWall_Sc,mlciWall_EW,mlciFl_r,mlciSC_P,mlciEW_notP
+      write(6,*) mlciSol_gr,mlcipa_fl,mlciinv_pa_f,mlciparty_w,
+     &  mlciint_g
+      write(6,*) mlciWall_NI,mlciWall_ty,mlciFL_rty,mlciwin_Typ_G
+      write(6,*) mlciSol_gr_typ
+
+      if(mlcf.eq.20)then
+        call edisp(iuout,'All reqd MLC found so using std databases')
+        continue  ! all of the necessary constructions available
+      else
+
+C If this is a 2nd try scanning then the standard is also a problem
+C on this machine.
+        if(nbdbstries.gt.2)then
+          call usrmsg('Unable to locate all of the required con-',
+     &      'structions in the standard sources. Giving up.','W')
+          ier=2  ! signal insufficient details
+          RETURN
+        endif
+
+C Assign standard databases containing UK NCM materials and constructions
+C These files are UK_notional.constrdb, material.db3.a and optics.db2
+C As they will be in the standard database folder use the *std...
+        call edisp(iuout,'Not all reqd MLC so using std databases')
+        nbdbstries=nbdbstries+1
+        ipathmat=2
+        WRITE(LFMAT,'(A)') 'material.db3.a'
+        ipathmul=2
+
+C Use multicon.db3 or then UK_notional.constrdb
+        if(nbdbstries.eq.1)then
+          WRITE(LFMUL,'(A)') 'multicon.db3'
+        elseif(nbdbstries.eq.2)then
+          WRITE(LFMUL,'(A)') 'UK_notional.constrdb'
+        endif
+        ipathoptdb=2
+        WRITE(LOPTDB,'(A)') 'optics.db2'
+        ipathpcdb=2
+        WRITE(LPCDB,'(A)') 'plantc.db1'
+        ipathsbem=2
+        WRITE(LSBEM,'(a)') 'SBEM.db1'
+        call opendb(ier)
+        goto 41  ! now try and rescan for required
+      endif
+
+C Check if Notional Model Flag has been set (NCM data has been defined)
+C If not then advise user and send him/her back
+      IF(ISBEM.NE.2)THEN
+        ier=2  ! signal insufficient details
+        call edisp(iuout,'Insufficient details for notional.')
+        RETURN
+      ENDIF
+
+C Check length of cfgroot string and add _not to it.
+      IROOTLEN=LNBLNK(CFGROOT_O)
+      write(cfgroot,'(2a)')cfgroot_O(1:irootlen),ape(1:4)
+
+C Variant connections file also required set up its name and
+C then use emkcfg to create it.
+      EXT='.cnn'
+      CALL FNCNGR(LCNN,APE,EXT,NNAME)
+      LCNN=NNAME
+      CALL EMKCFG('-',IER)
+
+C Inform the user that we are setting up the notional model.
+      WRITE (OUTS,'(2A)')'Writing notional configuration file ',LCFGF
+      CALL EDISP(IUOUT,OUTS)
+
+C Loop through each zone in the model and if ivalsg was set earlier
+C then read in the zone geometry file to re-gather information on
+C parent child relationships.
+      DO 559 IZ=1,NCOMP
+        dok=.false.
+        write(msg,'(2a)') 'Attempt to notionalize ',
+     &    zname(IZ)(1:lnzname(iz))
+        CALL ASKOK(msg,' ',OK,dok,0)
+        if(OK)then
+          call EMKSBMZN(iz,ier)
+        endif
+ 559  CONTINUE
+
+      return
+      end
+
+
+C ********************* EMKSBMZN
+C EMKSBMZN updates a zone based on the SBEM methodology. Details
+C of this can be found in relevant EU and UK building regulations.
+C This subroutine copies the cfg, cnn and mandatory zones files and
+C makes a new model representative of the notional building.
+C UK standard construction and materials databases are also copied.
+C Changes to the model are then made, geometry and construction files
+C are changed and so are the constructions and materials databases.
+C If ier=0 no problems, ier=2 insufficient data.
+C This routine assumes newer geometry files are being used.
+
+C << assumes that the cfg and cnn have already been setup. >>
+      SUBROUTINE EMKSBMZN(icomp,ier)
+#include "building.h"
+#include "geometry.h"
+#include "sbem.h"
+#include "esprdbfile.h"
+#include "model.h"
+#include "material.h"
+
+      integer lnblnk  ! function definition
+
+      common/OUTIN/IUOUT,IUIN
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
+      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      INTEGER :: ic1,ie1,ict,ic2,ie2
+      common/C21/IFCFG,cfgroot,LCFGF
+      INTEGER :: IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
+
+      common/FILEP/IFIL
+
+      CHARACTER*1 ACT
+      character EXT*4    ! up to 4 characters in file extension
+      character APE*6    ! up to 6 characters in variant name
+      CHARACTER CFGROOT*24
+      CHARACTER LCFGF*72,NNAME*72
+      CHARACTER OUTS*124,ADF*124,SNM*12,USE*8,USE2*8
+      character SN*12,msg*42
+      CHARACTER*12 XJCCU,XKCCU
+
+C ivalsg keeps track of whether a geometry file has alread been copied.
+C irmw keeps track of up to 90 surfaces in each zone which can be deleted
+      dimension ivalsg(MCOM),IRMV(MCOM,90),nrmv(mcom)
+
+C ivalxocup array signals which zones are not occupied or controlled.
+      logical ivalocup
+      dimension ivalocup(MCOM)
+
+      DIMENSION COE(3),POINT(3),TRANS(3)
+      DIMENSION SNA(MS),PAZI(MS),PELV(MS),TARSURF(MCON)
+      DIMENSION XPDAREA(MCON) ! Pedestrian door area in surface
+      DIMENSION XREAREA(MCON) ! If requisite area is more than required
+                              ! do not put any glazing in this surface
+      DIMENSION XVDAREA(MCON) ! Vehicle door area in surface
+      DIMENSION XDWAREA(MCON) ! Display window area in surface
+      DIMENSION XNWAREA(MCON) ! Normal window area in surface
+      logical newgeo  ! to use for testing if new/old geometry file.
+C      logical closeelv ! true if surface is close to vertical
+      LOGICAL MODIFY,MODLEN,MODBND,QUIET,XST,NEAR
+      integer LOOPMAX  ! loop iterator for shifting surface list
+      integer ISCURRENT ! the current connection to be deleted
+      logical ok,dok
+
+C Test whether required constructions exist.
+      logical haveopDoor,haveVehicle,haveNot_D,haveNot_G,haveframe
+      logical haveWall_Sc,haveWall_EW,haveFl_r,haveSC_P,haveEW_notP
+      logical haveSol_gr,havepa_fl,haveinv_pa_f,haveparty_w,haveint_g
+      logical haveWall_NI,haveexWall_ty,haveFl_rty,havewin_Typ_G
+      logical haveSol_gr_typ
+      common/havereqmlc/haveopDoor,haveVehicle,haveNot_D,haveNot_G,
+     &  haveframe,haveWall_Sc,haveWall_EW,haveFl_r,haveSC_P,
+     &  haveEW_notP,haveSol_gr,havepa_fl,haveinv_pa_f,haveparty_w,
+     &  haveint_g, haveWall_NI,haveexWall_ty,haveFl_rty,havewin_Typ_G,
+     &  haveSol_gr_typ
+      logical changeuse   ! to signal change of use of surface
+
+C mlcindex for each of these required constructions.
+      integer mlciopDoor,mlciVehicle,mlciNot_D,mlciNot_G,mlciframe
+      integer mlciWall_Sc,mlciWall_EW,mlciFl_r,mlciSC_P,mlciEW_notP
+      integer mlciSol_gr,mlcipa_fl,mlciinv_pa_f,mlciparty_w,mlciint_g
+      integer mlciWall_NI,mlciWall_ty,mlciFL_rty,mlciwin_Typ_G
+      integer mlciSol_gr_typ
+      common/mlcireq/mlciopDoor,mlciVehicle,mlciNot_D,mlciNot_G,
+     &  mlciframe,mlciWall_Sc,mlciWall_EW,mlciFl_r,mlciSC_P,
+     &  mlciEW_notP,mlciSol_gr,mlcipa_fl,mlciinv_pa_f,mlciparty_w,
+     &  mlciint_g,mlciWall_NI,mlciWall_ty,mlciFL_rty,mlciwin_Typ_G,
+     &  mlciSol_gr_typ
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EMKSBM'  ! set for subroutine
+
+C Initialise variables
+      SN=' '
+
+C Check if Notional Model Flag has been set (NCM data has been defined)
+C If not then advise user and send him/her back
+      IF(ISBEM.NE.2)THEN
+        helptopic='ncm_details_missing'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('NCM details undefined!',nbhelp,'-',0,0,IER)
+        ier=2  ! signal insufficient details
+        RETURN
+      ENDIF
+      APE='_not  '
+      newgeo=.true.  ! assume newer format geometry.
+
+C Debug.
+      write(6,*) 'Index of required UK NCM constructions...Z'
+      write(6,*) mlciopDoor,mlciVehicle,mlciNot_D,mlciNot_G,mlciframe
+      write(6,*) mlciWall_Sc,mlciWall_EW,mlciFl_r,mlciSC_P,mlciEW_notP
+      write(6,*) mlciSol_gr,mlcipa_fl,mlciinv_pa_f,mlciparty_w,
+     &  mlciint_g
+      write(6,*) mlciWall_NI,mlciWall_ty,mlciFL_rty,mlciwin_Typ_G
+      write(6,*) mlciSol_gr_typ
+
+C The inital task is to make copies of the relevant zone files
+C which is functionally equivalent to the code blocks in subroutine
+C verman for the case of geometry and attribution (ILM=2).
+
+C Loop through this zone and first scan geometry, next use surrel to
+C update parent/child information and write out the zone.
+      IUF=IFIL+2
+      EXT='.geo'
+      call eclose(gversion(icomp),1.1,0.01,newgeo)
+      if(newgeo)then
+        call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
+      else
+        call usrmsg('Older geometry file cannot be used.',
+     &    LGEOM(ICOMP),'W')
+        ier = 2
+      endif
+      if(ier.ne.0)then
+        helptopic='ncm_geom_scan_issue'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('NCM details undefined!',nbhelp,'-',0,0,IER)
+        ier=3  ! signal geometry issue
+        return
+      endif
+
+C Find the index of the MLC which matches each surface.
+C Debug.
+      write(6,*) icomp,NZSUR(icomp),nmlc
+
+      DO 9994 I=1,NZSUR(icomp)
+        icn1=izstocn(icomp,i)
+        ssmlcindex(icn1)=0  ! assume no matching MLC          
+        do 5 ii=1,nmlc
+          if(SSMLCN(icn1)(1:12).eq.DESC(ii)(1:12)) then
+            ssmlcindex(icn1)=ii   ! remember MLC index     
+          endif
+  5     continue
+ 9994 continue
+
+C Debug the ssmlcindex array.
+      write(6,*) ssmlcindex(1),ssmlcindex(2),ssmlcindex(3),
+     &  ssmlcindex(4),ssmlcindex(5),ssmlcindex(6),ssmlcindex(7)
+
+      CALL FNCNGR(LGEOM_O(ICOMP),APE,EXT,NNAME)
+      LGEOM(ICOMP)=NNAME
+      ACT='s'
+      CALL SURREL(ACT,ICOMP,IER)
+      call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+
+C Make a copy of constructions file and tmc file if applicable.
+      IUNIT=12
+      QUIET=.FALSE.
+      call FINDFIL(LTHRM(ICOMP),XST)
+      ITRC=0
+      ITRU=6
+      CALL ECONST(LTHRM(ICOMP),IUNIT,ICOMP,ITRC,ITRU,IER)
+      EXT='.con'
+      CALL FNCNGR(LTHRM(ICOMP),APE,EXT,NNAME)
+      LTHRM(ICOMP)=NNAME
+      CALL EMKCON(LTHRM(ICOMP),IUNIT,ICOMP,QUIET,IER)
+      call FINDFIL(LTWIN(ICOMP),XST)
+      IF(.NOT.XST)GOTO 500
+      IFU=13
+      CALL ERTWIN(ITRC,ITRU,IFU,LTWIN(ICOMP),ICOMP,IER)
+      EXT='.tmc'
+      CALL FNCNGR(LTWIN(ICOMP),APE,EXT,NNAME)
+      LTWIN(ICOMP)=NNAME
+      CALL MKTWIN(IFU,ICOMP,QUIET,IER)
+      if(ier.ne.0)then
+        helptopic='ncm_file_copy_issue'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('NCM details undefined!',nbhelp,'-',0,0,IER)
+        ier=4  ! signal geometry issue
+        return
+      endif
+
+C Remember this geometry file has been done so that a later selection
+C of constructions does not re-do it.
+ 500  ivalsg(icomp)=icomp
+
+C Ask if zone is occupied and environmentally controlled.
+      DOK=.true.
+      write(msg,'(3a)') 'Is ',zname(icomp),
+     &  ' occupied and conditioned?'
+      CALL ASKOK(msg,'Confirm:',
+     &  OK,DOK,nbhelp)
+      if(OK)then
+        ivalocup(icomp)=.true.
+      else
+        ivalocup(icomp)=.false.
+      endif
+
+C Initialise indices of surfaces to be deleted
+      NRMV(icomp)=0
+      do 40 i=1,90
+        irmv(ICOMP,i)=0
+ 40   continue
+
+C Re-establish glazing fractions based on UK NCM guidelines
+      if(ibusertyp.ne.0)then
+        ibtyp = IBTYPNDX(ibusertyp)
+        IF(IBTYP.EQ.1)THEN
+          ROOFFR=0.2
+          WALLFR=0.3
+        ELSEIF(IBTYP.EQ.2)THEN
+          ROOFFR=0.2
+          WALLFR=0.4
+        ELSEIF(IBTYP.EQ.3)THEN
+          ROOFFR=0.2
+          WALLFR=0.15
+        ENDIF
+        ROOFFRFR=0.30
+        WALLFRFR=0.10
+        GLZFR=0.
+      else
+        helptopic='ncm_bld_type_not'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('NCM building type undefined!',nbhelp,'-',0,0,IER)
+        ier=5  ! signal ncm issue
+        return
+      endif
+      itrc=0
+
+C Process zone in the model and if ivalsg was set earlier
+C then re-gather information on parent child relationships.
+      IELF=0
+      if(.NOT.ivalocup(icomp))then
+        NRMV(icomp)=0
+        goto 559  ! skip window mangling
+      endif
+      if(ivalsg(icomp).eq.icomp)then
+        changeuse=.false.  ! no change of use yet
+        IUF=IFIL+2
+
+C Get surface areas via call to zinfo.
+        call zinfo(sna,zoa,pazi,pelv,zvol)
+
+C Get gross area of this surface (add child areas to it)
+C Areas of parents are hence held as parent + child in TARSURF and
+C areas of children are held as 0.0.
+
+C For each surface in this zone.
+        do 555 isur=1,nzsur(icomp)
+          ICC=IZSTOCN(icomp,isur)
+          write(SNM,'(a)') SSUSE(ICC,1)  ! remember surface use
+
+C Only the following types of areas will be retained in this exterior
+C type surface with use roof or wall.
+          XPDAREA(ICC)=0. ! pedestrian door area in this parent
+          XVDAREA(ICC)=0. ! vehicular door area in this parent
+          XDWAREA(ICC)=0. ! display window area in this parent
+          XNWAREA(ICC)=0. ! normal window area in this parent
+          XREAREA(ICC)=0. ! If requisite area is more than required
+                              ! do not put any glazing in this surface
+          TARSURF(ICC)=SSNA(ICC)
+
+C For all exterior surfaces that are marked wall or roof.
+          if(ssother(icc,1)(1:8).eq.'EXTERIOR')then
+            if(SNM(1:4).EQ.'WALL'.or.SNM(1:4).EQ.'ROOF')then
+
+C For each grand child.
+              DO 5500 IGCD=1,NBGCHILD(ICC)
+                KCC=IGCHILD(ICC,IGCD)      ! index of grand child
+                NRMV(icomp)=NRMV(icomp)+1  ! increment list of surfaces to remove
+                IRMV(ICOMP,NRMV(icomp))=KCC
+                XKCCU=SSUSE(KCC,1)
+                TARSURF(ICC)=TARSURF(ICC)+SSNA(KCC)
+                IF(XKCCU(1:6).EQ.'P-DOOR')THEN
+                  XPDAREA(ICC)=XPDAREA(ICC)+SSNA(KCC)
+                  XREAREA(ICC)=XREAREA(ICC)+SSNA(KCC)
+                ELSEIF(XKCCU(1:6).EQ.'V-DOOR')THEN
+                  XVDAREA(ICC)=XVDAREA(ICC)+SSNA(KCC)
+                  XREAREA(ICC)=XREAREA(ICC)+SSNA(KCC)
+                ELSEIF(XKCCU(1:8).EQ.'D-WINDOW')THEN
+                  XDWAREA(ICC)=XDWAREA(ICC)+SSNA(KCC)
+                  XREAREA(ICC)=XREAREA(ICC)+SSNA(KCC)
+                ELSEIF(XKCCU(1:8).EQ.'S-WINDOW'.OR.
+     &                 XKCCU(1:8).EQ.'C-WINDOW')THEN
+
+C If the area of the glazed grndchild is greater than the required notional
+C area for the parent reset to the required area.
+                  IF(SSNA(KCC).GT.TARSURF(ICC)*GLZFR)THEN
+                    XNWAREA(ICC)=TARSURF(ICC)*GLZFR
+                    XREAREA(ICC)=XREAREA(ICC)+XNWAREA(ICC)
+                  ELSE
+                    XNWAREA(ICC)=XNWAREA(ICC)+SSNA(KCC)
+                    XREAREA(ICC)=XREAREA(ICC)+SSNA(KCC)
+                  ENDIF
+                ENDIF
+ 5500         CONTINUE
+              DO 553 ICHL=1,NBCHILD(ICC)
+
+C Mark child surfaces for removal (via IRMV) and add their surface
+C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
+                JCC=ICHILD(ICC,ICHL)        ! index of child surface
+                NRMV(icomp)=NRMV(icomp)+1   ! increment list of surfaces to remove
+                IRMV(ICOMP,NRMV(icomp))=JCC
+                XJCCU=SSUSE(JCC,1)
+                TARSURF(ICC)=TARSURF(ICC)+SSNA(JCC)
+                IF(XJCCU(1:6).EQ.'P-DOOR')THEN
+                  XPDAREA(ICC)=XPDAREA(ICC)+SSNA(JCC)
+                  XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                ELSEIF(XJCCU(1:6).EQ.'V-DOOR')THEN
+                  XVDAREA(ICC)=XVDAREA(ICC)+SSNA(JCC)
+                  XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                ELSEIF(XJCCU(1:8).EQ.'D-WINDOW')THEN
+                  XDWAREA(ICC)=XDWAREA(ICC)+SSNA(JCC)
+                  XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                ELSEIF(XJCCU(1:8).EQ.'S-WINDOW'.OR.
+     &                 XJCCU(1:8).EQ.'C-WINDOW')THEN
+
+C If the area of the glazed child is greater than the required notional
+C area for the parent reset to the required area.
+                  IF(SSNA(JCC).GT.TARSURF(ICC)*GLZFR)THEN
+                    XNWAREA(ICC)=TARSURF(ICC)*GLZFR
+                    XREAREA(ICC)=XREAREA(ICC)+XNWAREA(ICC)
+                  ELSE
+                    XNWAREA(ICC)=XNWAREA(ICC)+SSNA(JCC)
+                    XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                  ENDIF
+                ENDIF
+ 553          CONTINUE  ! for each child of current surface
+
+            elseif(SNM(1:5).EQ.'C-WIN'.or.SNM(1:5).EQ.'S-WIN')then
+
+C For some glazed facades transparent surfaces may not be child
+C surfaces. They need to be converted into WALL uses and constructions
+C into which compliant glass and frames can be added subsequently.
+              if(iparent(icc).eq.0)then
+
+C Debug.
+                write(6,*) 'found external glazed parent surface',icc
+                write(6,*) 'it has ',nbchild(icc),' child surfaces'
+
+                DO 554 ICHL=1,NBCHILD(ICC)
+
+C Mark child surfaces for removal (via IRMV) and add their surface
+C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
+                  JCC=ICHILD(ICC,ICHL)
+                  NRMV(icomp)=NRMV(icomp)+1
+                  IRMV(ICOMP,NRMV(icomp))=JCC
+                  XJCCU=SSUSE(JCC,1)
+                  TARSURF(ICC)=TARSURF(ICC)+SSNA(JCC)
+                  IF(XJCCU(1:6).EQ.'P-DOOR')THEN
+                    XPDAREA(ICC)=XPDAREA(ICC)+SSNA(JCC)
+                    XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                  ELSEIF(XJCCU(1:6).EQ.'V-DOOR')THEN
+                    XVDAREA(ICC)=XVDAREA(ICC)+SSNA(JCC)
+                    XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                  ELSEIF(XJCCU(1:8).EQ.'D-WINDOW')THEN
+                    XDWAREA(ICC)=XDWAREA(ICC)+SSNA(JCC)
+                    XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                  ELSEIF(XJCCU(1:8).EQ.'S-WINDOW'.OR.
+     &                   XJCCU(1:8).EQ.'C-WINDOW')THEN
+
+C If the area of the glazed child is greater than the required notional
+C area for the parent reset to the required area.
+                    IF(SSNA(JCC).GT.TARSURF(ICC)*GLZFR)THEN
+                      XNWAREA(ICC)=TARSURF(ICC)*GLZFR
+                      XREAREA(ICC)=XREAREA(ICC)+XNWAREA(ICC)
+                    ELSE
+                      XNWAREA(ICC)=XNWAREA(ICC)+SSNA(JCC)
+                      XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                    ENDIF
+                  ENDIF
+ 554            CONTINUE  ! for each child of current surface
+                IF(IRGG.EQ.2)THEN ! Scottish regulations
+                  SSMLCN(ICC)='Wall_Scot_no'
+                  SSOTF(ICC)='OPAQUE'  ! OTF type
+                  if(haveWall_Sc) ssmlcindex(ICC)=mlciWall_Sc
+                ELSEIF(IRGG.EQ.3)THEN ! Northern Ireland regulations
+                  SSMLCN(icc)='Wall_NI_noti'
+                  SSOTF(ICC)='OPAQUE'  ! OTF type
+                  if(haveWall_NI) ssmlcindex(ICC)=mlciWall_NI
+                ELSE ! England and Wales regulations (and omissions)
+                  SSMLCN(ICC)='Wall_EW_noti'
+                  SSOTF(ICC)='OPAQUE'  ! OTF type
+                  if(haveWall_EW) ssmlcindex(ICC)=mlciWall_EW
+                ENDIF
+                write(SSUSE(ICC,1),'(a)') 'WALL'
+C Debug.
+                write(6,*) 'reset ',ssname(icc),'  ',SSMLCN(ICC),
+     &            ' ',SSOTF(ICC),' ',SSUSE(ICC,1)
+                changeuse=.true.  ! change of use
+              else
+                continue
+              endif
+            elseif(SNM(1:7).EQ.'F-FRAME')then
+
+C Surfaces marked frame will be removed if they are child surfaces
+C of a wall or roof. If they are geometrically parent surfaces then
+C they need to be converted into wall uses and constructions.
+              if(iparent(icc).eq.0)then
+                DO 556 ICHL=1,NBCHILD(ICC)
+
+C Mark child surfaces for removal (via IRMV) and add their surface
+C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
+                  JCC=ICHILD(ICC,ICHL)
+                  NRMV(icomp)=NRMV(icomp)+1
+                  IRMV(ICOMP,NRMV(icomp))=JCC
+                  XJCCU=SSUSE(JCC,1)
+                  TARSURF(ICC)=TARSURF(ICC)+SSNA(JCC)
+                  IF(XJCCU(1:6).EQ.'P-DOOR')THEN
+                    XPDAREA(ICC)=XPDAREA(ICC)+SSNA(JCC)
+                    XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                  ELSEIF(XJCCU(1:6).EQ.'V-DOOR')THEN
+                    XVDAREA(ICC)=XVDAREA(ICC)+SSNA(JCC)
+                    XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                  ELSEIF(XJCCU(1:8).EQ.'D-WINDOW')THEN
+                    XDWAREA(ICC)=XDWAREA(ICC)+SSNA(JCC)
+                    XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                  ELSEIF(XJCCU(1:8).EQ.'S-WINDOW'.OR.
+     &                   XJCCU(1:8).EQ.'C-WINDOW')THEN
+
+C If the area of the glazed child is greater than the required notional
+C area for the parent reset to the required area.
+                    IF(SSNA(JCC).GT.TARSURF(ICC)*GLZFR)THEN
+                    XNWAREA(ICC)=TARSURF(ICC)*GLZFR
+                        XREAREA(ICC)=XREAREA(ICC)+XNWAREA(ICC)
+                    ELSE
+                      XNWAREA(ICC)=XNWAREA(ICC)+SSNA(JCC)
+                      XREAREA(ICC)=XREAREA(ICC)+SSNA(JCC)
+                    ENDIF
+                  ENDIF
+ 556            CONTINUE  ! for each child of current surface
+                IF(IRGG.EQ.2)THEN ! Scottish regulations
+                  SSMLCN(ICC)='Wall_Scot_no'
+                  SSOTF(ICC)='OPAQUE'  ! OTF type
+                  if(haveWall_Sc) ssmlcindex(ICC)=mlciWall_Sc
+                ELSEIF(IRGG.EQ.3)THEN ! Northern Ireland regulations
+                  SSMLCN(icc)='Wall_NI_noti'
+                  SSOTF(ICC)='OPAQUE'  ! OTF type
+                  if(haveWall_NI) ssmlcindex(ICC)=mlciWall_NI
+                ELSE ! England and Wales regulations (and omissions)
+                  SSMLCN(ICC)='Wall_EW_noti'
+                  SSOTF(ICC)='OPAQUE'  ! OTF type
+                  if(haveWall_EW) ssmlcindex(ICC)=mlciWall_EW
+                ENDIF
+                write(SSUSE(ICC,1),'(a)') 'WALL'
+C Debug.
+                write(6,*) 'reset ',ssname(icc),'  ',SSMLCN(ICC),
+     &            ' ',SOTF(ICC)
+                changeuse=.true.  ! change of use
+              else
+                continue
+              endif
+            endif
+          endif
+ 555    CONTINUE  ! loop all surfaces in zone
+
+C If we have altered the use of a parent glazing or frame save this
+C to the geometry file prior to deleting surfaces.
+        if(changeuse)then
+          call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+        endif
+ 
+      ENDIF
+
+C Remove surfaces marked for deletion in IRMV
+ 559  CONTINUE
+
+C Debug the initial list of surfaces to remove.
+      write(6,*) 'about to remove ',NRMV(icomp),' surfs in z ',
+     &  icomp
+
+C In the current zone we need to delete NRMV surfaces.
+      DO 6001 IR=1,NRMV(icomp)
+
+C Debug.
+        write(6,*) ' x conn surf ',IRMV(ICOMP,IR),' ',
+     &    ssname(IRMV(ICOMP,IR)),' ',ie1(IRMV(ICOMP,IR)),' for ir ',ir
+
+C Pack the list of TARSURF etc from the current connection data
+C to one less than the end of the number of connections in the
+C model. Set ISCURRENT to the current connection to delete (because
+C IRMV is going to be altered).
+        LOOPMAX=NCON-1
+        ISCURRENT=IRMV(ICOMP,IR)
+        DO 6004 IS2=ISCURRENT,LOOPMAX
+          TARSURF(IS2)=TARSURF(IS2+1)
+          XPDAREA(IS2)=XPDAREA(IS2+1)
+          XVDAREA(IS2)=XVDAREA(IS2+1)
+          XDWAREA(IS2)=XDWAREA(IS2+1)
+          XNWAREA(IS2)=XNWAREA(IS2+1)
+          XREAREA(IS2)=XREAREA(IS2+1)
+ 6004   CONTINUE
+
+C And for subsequent surfaces to delete in this zone, decrement the
+C connection index held in IRMV.
+        DO 6005 IRC=IR+1,NRMV(ICOMP)
+          IF(IRMV(ICOMP,IR).LT.IRMV(ICOMP,IRC))
+     &      IRMV(ICOMP,IRC)=IRMV(ICOMP,IRC)-1
+ 6005   CONTINUE
+
+C And for subsequent surfaces in subsequent zones, decrement their
+C connection index held in IRMV.
+        DO 6006 IC=ICOMP+1,NCOMP
+          DO 6007 IRC=1,NRMV(IC)
+            IRMV(IC,IRC)=IRMV(IC,IRC)-1
+ 6007     CONTINUE
+ 6006   CONTINUE
+
+C Remove the surface. Get is from the irmv list (which is
+C connection based).
+        is=ie1(IRMV(ICOMP,IR))
+
+C Debug.
+        write(6,*) 'removing surf ',ssname(irmv(icomp,ir))
+        write(6,*) 'ir is ',ir,' surf ',is,' in zone ',icomp
+
+C Re-scan the geometry, use ADDSUR to delete surface index 'is' and then
+C update the model cfg file and then re-write the geometry file.
+        iopt=0
+        call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
+        CALL ADDSUR(ITRC,ICOMP,IS,'D','A',iopt,IER)
+        CALL EMKCFG('-',IER)
+        call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+ 6001 CONTINUE
+
+C Update the image if working in graphics mode.
+      if(MMOD.eq.8)then
+        call edisp(iuout,'Zone with child surfaces removed...')
+        MODBND=.TRUE.
+        MODIFY=.TRUE.
+        CALL INLNST(1)
+        nzg=1
+        nznog(1)=ICOMP
+        izgfoc=ICOMP
+        CALL ADJVIEW(IER)
+        call pausems(900)
+      endif
+
+C Work out area of glazings etc. into all exterior surfaces
+C that remain in the model. Do this by looping through
+C each zone in the model and in each of the surfaces
+C in the current zone check its attributes.
+      if(.NOT.ivalocup(icomp)) goto 557  ! do not bother if unoccupied & unconditioned
+      do 200 isur=1,nzsur(icomp)
+        ICC=IZSTOCN(icomp,isur)
+        SNM=SSUSE(ICC,1)
+
+C For all exterior surfaces that are wall or roof define the
+C glazing and frame percentage.
+        if(ssother(icC,1)(1:8).eq.'EXTERIOR'.AND.
+     &    (SNM(1:4).EQ.'WALL'.or.SNM(1:4).EQ.'ROOF'))then
+          IF(SNM(1:4).EQ.'WALL')THEN
+            GLZFR=WALLFR
+            FRMFR=WALLFRFR
+          ELSEIF(SNM(1:4).EQ.'ROOF')THEN
+            GLZFR=ROOFFR
+            FRMFR=ROOFFRFR
+          ENDIF
+          IF(XREAREA(ICC).GT.TARSURF(ICC)*GLZFR)THEN
+
+C Area of doors and windows is greater than glazings to be put in so do
+C not put in additional windows but retain if any are present
+            CONTINUE
+          ELSE
+
+C Area of doors and windows is less than glazings to be put in so put in
+C additional windows
+            XNWAREA(ICC)=
+     &        TARSURF(ICC)*GLZFR-XREAREA(ICC)+XNWAREA(ICC)
+          ENDIF
+          write(6,*) 'estimating ',icc,GLZFR,FRMFR,TARSURF(ICC),
+     &      XREAREA(ICC),XNWAREA(ICC)
+        endif
+ 200  continue
+ 557  continue
+
+C Now loop add required surfaces. If there was a pedestrian door or a
+C vehicle door or display glazing then re-instate them. You will
+C notice several repeating blocks of code below which carries this
+C out. If the logic in one is updated then check the others to
+C ensure they are updated (if required).
+C << need to trap error state in georead >>
+      if(.NOT.ivalocup(icomp)) goto 551  ! do not bother if unoccupied & unconditioned
+      NUMBS=NZSUR(ICOMP)
+      do 580 isur=NUMBS,1,-1
+        is=isur
+        ICON=IZSTOCN(icomp,nsur)  ! the last surface in the zone
+        IELF=0
+        ICC=IZSTOCN(icomp,isur)   ! connection for current surface
+        COE(1)=SSURCOG(ICC,1)     ! centre of gravity for current surface
+        COE(2)=SSURCOG(ICC,2)
+        COE(3)=SSURCOG(ICC,3)
+        SNM=SSUSE(ICC,1)
+
+C For all exterior surfaces that are wall or roof set the glazing
+C and frame areas.
+        if(ssother(icC,1)(1:8).eq.'EXTERIOR'.AND.
+     &    (SNM(1:4).EQ.'WALL'.or.SNM(1:4).EQ.'ROOF'))then
+          IF(SNM(1:4).EQ.'WALL')THEN
+            GLZFR=WALLFR
+            FRMFR=WALLFRFR
+          ELSEIF(SNM(1:4).EQ.'ROOF')THEN
+            GLZFR=ROOFFR
+            FRMFR=ROOFFRFR
+          ENDIF
+
+C Get scale factors
+          TOTAREA=TARSURF(ICC)
+          REQDAREA=XPDAREA(ICC)+XVDAREA(ICC)+
+     &             XDWAREA(ICC)+XNWAREA(ICC)
+          SCALEFACTORPD=SQRT(REQDAREA/TOTAREA)
+          SCALEFACTORFR=SQRT(FRMFR)
+
+C Debug.
+          write(6,*) '580 ',ICC,TOTAREA,REQDAREA,SCALEFACTORPD,
+     &      SCALEFACTORFR,XPDAREA(ICC)
+
+C First put pedestrian door in if there was one in the original model.
+C If likely new surface complexity is within limits add door.
+          CALL ECLOSE(XPDAREA(ICC),0.0,0.1,NEAR)
+          if(2*NVER(IS)+2.lt.42.and.(.NOT.NEAR).and.
+     &      (NSUR+1.lt.MS)) then
+            IELF=IELF+1
+            ICON=ICON+1
+            NSUR=NSUR+1
+            NZTV(ICOMP)=NTV
+            WRITE(SNAME(ICOMP,NSUR),'(i2,2A)')
+     &        is,CHAR(96+IELF),'_Pdoor'  ! Name
+            WRITE(SN,'(i2,2A)')
+     &        is,CHAR(96+IELF),'_Pdoor'  ! Name
+            write(outs,'(2a)') 'Adding new surf ',SN(1:lnblnk(SN))
+            call edisp(iuout,outs)
+            ISUR2=NSUR
+            DO 7212 NV=1,NVER(IS)
+              POINT(1)=X(JVN(IS,NV))
+              POINT(2)=Y(JVN(IS,NV))
+              POINT(3)=Z(JVN(IS,NV))
+              CALL ENLARGE(POINT,TRANS,COE,SCALEFACTORPD)
+              X(NTV+NV)=TRANS(1)
+              Y(NTV+NV)=TRANS(2)
+              Z(NTV+NV)=TRANS(3)
+              JVN(ISUR2,NV)=NTV+NV
+              JVN(IS,2*NVER(IS)-NV+2)=NTV+NV
+ 7212       CONTINUE
+            JVN(IS,NVER(IS)+1)=JVN(IS,1)
+            JVN(IS,2*NVER(IS)+2)=JVN(IS,NVER(IS)+2)
+            NTV=NTV+NVER(IS) ! increment nb verts
+            NZTV(ICOMP)=NTV  ! update the zone array
+            NZSUR(ICOMP)=NSUR
+            NVER(ISUR2)=NVER(IS)
+            NVER(IS)=2*NVER(IS)+2
+
+C Update the connection list. Move all others up and then insert with
+C default values.
+            write(6,*) 'before adddedsurf a ',icon,NZSUR(icomp)
+            call addedsurf(icomp,icon,itrc,ier)
+            write(6,*) 'after adddedsurf a ',icon,NZSUR(icomp)
+
+C Add surfaces attribution parameters
+            ICT(ICON)=0
+            IC2(ICON)=0
+            IE2(ICON)=0
+            SSOTHER(ICON,1)='EXTERIOR'
+            SSOTHER(ICON,2)='0'
+            SSOTHER(ICON,3)='0'
+            SSMLCN(ICON)='opDoorWind_n' ! MLC type
+            if(haveopDoor) ssmlcindex(ICON)=mlciopDoor
+            SSPARENT(ICON)=SSNAME(ICC)
+            SSOTF(ICON)='OPAQUE'  ! OTF type
+            SSVFC(ICON)=SSVFC(ICC)
+            SSUSE(ICON,1)='P-DOOR'   ! USE
+            SSUSE(ICON,2)='-'
+
+C Update connections list before displaying notional model zone
+            call emkcfg('-',IER)
+            MODIFY=.TRUE.
+            NZSUR(ICOMP)=NSUR
+            call zgupdate(itrc,icomp,ier)
+            call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+            call emkcfg('-',IER)
+
+C Precondition variables IS and TOTAREA to set them up for other child
+C surfaces that may need to be put into this original surface. E.g. if a
+C door and a window are to be added to original surface, the window is
+C added as child of door and not child of original surface.
+            is=nsur
+            TOTAREA=REQDAREA
+
+C Update the wireframe image if running in graphics mode.
+            if(MMOD.eq.8)then
+              MODBND=.TRUE.
+              MODIFY=.TRUE.
+              CALL INLNST(1)
+              nzg=1
+              nznog(1)=ICOMP
+              izgfoc=ICOMP
+              CALL ADJVIEW(IER)
+              call pausems(500)
+            endif
+          ENDIF
+
+C Now put vehicle door in if there was one in the original model
+C and the new surface will be within complexity limits.
+          REQDAREA=XVDAREA(ICC)+
+     &             XDWAREA(ICC)+XNWAREA(ICC)
+          SCALEFACTORVD=SQRT(REQDAREA/TOTAREA)
+
+C Debug.
+          write(6,*) 'V-door ',ICC,REQDAREA,SCALEFACTORVD,
+     &      XVDAREA(ICC)
+
+          CALL ECLOSE(XVDAREA(ICC),0.0,0.1,NEAR)
+          if(2*NVER(IS)+2.lt.42.and.(.NOT.NEAR).and.
+     &      (NSUR+1.lt.MS)) then
+            IELF=IELF+1
+            ICON=ICON+1
+            NSUR=NSUR+1
+            NZTV(ICOMP)=NTV
+            WRITE(SNAME(ICOMP,NSUR),'(i2,2A)')
+     &        is,CHAR(96+IELF),'_Vdoor'  ! Name
+            WRITE(SN,'(i2,2A)')
+     &        is,CHAR(96+IELF),'_Vdoor'  ! Name
+            write(outs,'(2a)') 'Adding new surf ',SN(1:lnblnk(SN))
+            call edisp(iuout,outs)
+            ISUR2=NSUR
+            DO 7312 NV=1,NVER(IS)
+              POINT(1)=X(JVN(IS,NV))
+              POINT(2)=Y(JVN(IS,NV))
+              POINT(3)=Z(JVN(IS,NV))
+              CALL ENLARGE(POINT,TRANS,COE,SCALEFACTORVD)
+              X(NTV+NV)=TRANS(1)
+              Y(NTV+NV)=TRANS(2)
+              Z(NTV+NV)=TRANS(3)
+              JVN(ISUR2,NV)=NTV+NV
+              JVN(IS,2*NVER(IS)-NV+2)=NTV+NV
+ 7312       CONTINUE
+            JVN(IS,NVER(IS)+1)=JVN(IS,1)
+            JVN(IS,2*NVER(IS)+2)=JVN(IS,NVER(IS)+2)
+            NTV=NTV+NVER(IS)
+            NZTV(ICOMP)=NTV
+            NZSUR(ICOMP)=NSUR
+            NVER(ISUR2)=NVER(IS)
+            NVER(IS)=2*NVER(IS)+2
+
+C Update the connection list. Move all others up and then insert with
+C default values.
+            write(6,*) 'before adddedsurf b ',icon,NZSUR(icomp)
+            call addedsurf(icomp,icon,itrc,ier)
+            write(6,*) 'after adddedsurf b ',icon,NZSUR(icomp)
+
+C Add surfaces attribution parameters
+            ICT(ICON)=0
+            IC2(ICON)=0
+            IE2(ICON)=0
+            SSOTHER(ICON,1)='EXTERIOR'
+            SSOTHER(ICON,2)='0'
+            SSOTHER(ICON,3)='0'
+            SSMLCN(ICON)='Vehicle_door' ! MLC type
+            if(haveVehicle) ssmlcindex(ICON)=mlciVehicle
+            SSPARENT(ICON)=SSNAME(ICC)
+            SSOTF(ICON)='OPAQUE'  ! OTF type
+            SSVFC(ICON)=SSVFC(ICC)
+            SSUSE(ICON,1)='V-DOOR'  ! USE
+            SSUSE(ICON,2)='-'
+
+C Update connections list before displaying notional model zone
+            call emkcfg('-',IER)
+            MODIFY=.TRUE.
+            NZSUR(ICOMP)=NSUR
+            call zgupdate(itrc,icomp,ier)
+            call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+            call emkcfg('-',IER)
+
+C Precondition variables IS and TOTAREA to set them up for other child
+C surfaces that may need to be put into this original surface. E.g. if a
+C door and a window are to be added to original surface, the window is
+C added as child of door and not child of original surface.
+            is=nsur
+            TOTAREA=REQDAREA
+
+C Update the image if running in graphics mode.
+            if(MMOD.eq.8)then
+              MODBND=.TRUE.
+              MODIFY=.TRUE.
+              CALL INLNST(1)
+              nzg=1
+              nznog(1)=ICOMP
+              izgfoc=ICOMP
+              CALL ADJVIEW(IER)
+              call pausems(500)
+            endif
+          ENDIF
+
+C Now put display glazing in if there was one in the original model
+C and within complexity limits.
+          REQDAREA=XDWAREA(ICC)+XNWAREA(ICC)
+          SCALEFACTORDG=SQRT(REQDAREA/TOTAREA)
+
+C Debug.
+          write(6,*) 'D-glz ',ICC,REQDAREA,SCALEFACTORDG,
+     &      XDWAREA(ICC)
+
+          CALL ECLOSE(XDWAREA(ICC),0.0,0.1,NEAR)
+          if(2*NVER(IS)+2.lt.42.and.(.NOT.NEAR).and.
+     &      (NSUR+1.lt.MS)) then
+            IELF=IELF+1
+            ICON=ICON+1
+            NSUR=NSUR+1
+            NZTV(ICOMP)=NTV
+            WRITE(SNAME(ICOMP,NSUR),'(i2,2A)')
+     &        is,CHAR(96+IELF),'_dispglz'  ! Name
+            WRITE(SN,'(i2,2A)')
+     &        is,CHAR(96+IELF),'_dispglz'  ! Name
+            write(outs,'(2a)') 'Adding new surf ',SN(1:lnblnk(SN))
+            call edisp(iuout,outs)
+            ISUR2=NSUR
+            DO 7412 NV=1,NVER(IS)
+              POINT(1)=X(JVN(IS,NV))
+              POINT(2)=Y(JVN(IS,NV))
+              POINT(3)=Z(JVN(IS,NV))
+              CALL ENLARGE(POINT,TRANS,COE,SCALEFACTORDG)
+              X(NTV+NV)=TRANS(1)
+              Y(NTV+NV)=TRANS(2)
+              Z(NTV+NV)=TRANS(3)
+              JVN(ISUR2,NV)=NTV+NV
+              JVN(IS,2*NVER(IS)-NV+2)=NTV+NV
+ 7412       CONTINUE
+            JVN(IS,NVER(IS)+1)=JVN(IS,1)
+            JVN(IS,2*NVER(IS)+2)=JVN(IS,NVER(IS)+2)
+            NTV=NTV+NVER(IS)  ! increment nb of verts
+            NZTV(ICOMP)=NTV   ! update zone array
+            NZSUR(ICOMP)=NSUR
+            NVER(ISUR2)=NVER(IS)
+            NVER(IS)=2*NVER(IS)+2
+
+C Update the connection list. Move all others up and then insert with
+C default values.
+            write(6,*) 'before adddedsurf c ',icon,NZSUR(icomp)
+            call addedsurf(icomp,icon,itrc,ier)
+            write(6,*) 'after adddedsurf c ',icon,NZSUR(icomp)
+
+C Add surfaces attribution parameters
+            ICT(ICON)=0
+            IC2(ICON)=0
+            IE2(ICON)=0
+            SSOTHER(ICON,1)='EXTERIOR'
+            SSOTHER(ICON,2)='0'
+            SSOTHER(ICON,3)='0'
+            SSMLCN(ICON)='Not_DisplayG'  ! MLC type
+            if(haveNot_D) ssmlcindex(ICON)=mlciNot_D
+            SSPARENT(ICON)=SSNAME(ICC)
+            SSOTF(ICON)='dispGlz_not' ! OTF type
+            SSVFC(ICON)=SSVFC(ICC)
+            SSUSE(ICON,1)='D-WINDOW'    ! USE
+            SSUSE(ICON,2)='-'
+
+C Update connections list before displaying notional model zone
+            call emkcfg('-',IER)
+            MODIFY=.TRUE.
+            NZSUR(ICOMP)=NSUR
+            call zgupdate(itrc,icomp,ier)
+            call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+            call emkcfg('-',IER)
+
+C Precondition variables IS and TOTAREA to set them up for other child
+C surfaces that may need to be put into this original surface. E.g. if a
+C door and a window are to be added to original surface, the window is
+C added as child of door and not child of original surface.
+            is=nsur
+            TOTAREA=REQDAREA
+
+C Update the image if running in graphic mode.
+            if(MMOD.eq.8)then
+              MODBND=.TRUE.
+              MODIFY=.TRUE.
+              CALL INLNST(1)
+              nzg=1
+              nznog(1)=ICOMP
+              izgfoc=ICOMP
+              CALL ADJVIEW(IER)
+              call pausems(900)
+            endif
+          ENDIF
+
+C Now put glazing and frame based on the NCM requirements (there might
+C not have been a window or frame in the original model).
+          REQDAREA=XNWAREA(ICC)
+          SCALEFACTORNG=SQRT(REQDAREA/TOTAREA)
+
+C Debug.
+          write(6,*) 'glz ',ICC,REQDAREA,SCALEFACTORNG,
+     &      XNWAREA(ICC)
+
+          CALL ECLOSE(XNWAREA(ICC),0.0,0.1,NEAR)
+
+C If likely new surface complexity is within limits and we have not
+C already gotten enough glazing area add another window and frame.
+          if(2*NVER(IS)+2.lt.42.and.(.NOT.NEAR).and.
+     &      (NSUR+2.lt.MS)) then
+            IELF=IELF+1
+            ICON=ICON+1
+            NSUR=NSUR+1
+            NZTV(ICOMP)=NTV
+            WRITE(SNAME(ICOMP,NSUR),'(i2,2A)')
+     &        is,CHAR(96+IELF),'_glz'  ! Name
+            WRITE(SN,'(i2,2A)')
+     &        is,CHAR(96+IELF),'_glz'  ! Name
+            write(outs,'(2a)') 'Adding new surf ',SN(1:lnblnk(SN))
+            write(6,*) icomp,nsur,is,nver(is)
+            write(6,*) outs
+            call edisp(iuout,outs)
+            ISUR2=NSUR
+            DO 7512 NV=1,NVER(IS)
+              POINT(1)=X(JVN(IS,NV))
+              POINT(2)=Y(JVN(IS,NV))
+              POINT(3)=Z(JVN(IS,NV))
+              CALL ENLARGE(POINT,TRANS,COE,SCALEFACTORNG)
+              X(NTV+NV)=TRANS(1)
+              Y(NTV+NV)=TRANS(2)
+              Z(NTV+NV)=TRANS(3)
+              JVN(ISUR2,NV)=NTV+NV
+              JVN(IS,2*NVER(IS)-NV+2)=NTV+NV
+ 7512       CONTINUE
+            JVN(IS,NVER(IS)+1)=JVN(IS,1)
+            JVN(IS,2*NVER(IS)+2)=JVN(IS,NVER(IS)+2)
+            NTV=NTV+NVER(IS)  ! increment nb of verts
+            NZTV(ICOMP)=NTV   ! update zone array
+            NZSUR(ICOMP)=NSUR
+            NVER(ISUR2)=NVER(IS)
+            NVER(IS)=2*NVER(IS)+2
+
+C Update the connection list. Move all others up and then insert with
+C default values.
+            write(6,*) 'before adddedsurf d ',icon,NZSUR(icomp)
+            call addedsurf(icomp,icon,itrc,ier)
+            write(6,*) 'after adddedsurf d ',icon,NZSUR(icomp)
+
+C Add surfaces attribution parameters
+            ICT(ICON)=0
+            IC2(ICON)=0
+            IE2(ICON)=0
+            SSOTHER(ICON,1)='EXTERIOR'
+            SSOTHER(ICON,2)='0'
+            SSOTHER(ICON,3)='0'
+            SSMLCN(ICON)='window_Not_G'  ! MLC type
+            if(haveNot_G) ssmlcindex(ICON)=mlciNot_G
+            SSPARENT(ICON)=SSNAME(ICC)
+            SSOTF(ICON)='Glaz_notiona' ! OTF type
+            SSVFC(ICON)=SSVFC(ICC)
+            SSUSE(ICON,1)='C-WINDOW'    ! USE
+            IF(SNM(1:4).EQ.'ROOF')SSUSE(ICON,1)='S-WINDOW'
+            SSUSE(ICON,2)='-'
+
+C Update connections list before displaying notional model zone
+            call emkcfg('-',IER)
+            MODIFY=.TRUE.
+            NZSUR(ICOMP)=NSUR
+            call zgupdate(itrc,icomp,ier)
+            call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+            call emkcfg('-',IER)
+            is=nsur
+
+C Update the image if running in graphic mode.
+            if(MMOD.eq.8)then
+              MODBND=.TRUE.
+              MODIFY=.TRUE.
+              CALL INLNST(1)
+              nzg=1
+              nznog(1)=ICOMP
+              izgfoc=ICOMP
+              CALL ADJVIEW(IER)
+              call pausems(900)
+            endif
+
+C Now put frame based on the NCM requirements (e.g. there might not have
+C been a frame in the original model).
+            IELF=IELF+1
+            ICON=ICON+1
+            NSUR=NSUR+1
+            NZTV(ICOMP)=NTV
+            WRITE(SNAME(ICOMP,NSUR),'(i2,2A)')
+     &        is,CHAR(96+IELF),'_frm'  ! Name
+            WRITE(SN,'(i2,2A)')
+     &        is,CHAR(96+IELF),'_frm'  ! Name
+            write(outs,'(2a)') 'Adding new surf ',SN(1:lnblnk(SN))
+            call edisp(iuout,outs)
+            ISUR2=NSUR
+            DO 7612 NV=1,NVER(IS)
+              POINT(1)=X(JVN(IS,NV))
+              POINT(2)=Y(JVN(IS,NV))
+              POINT(3)=Z(JVN(IS,NV))
+              CALL ENLARGE(POINT,TRANS,COE,SCALEFACTORFR)
+              X(NTV+NV)=TRANS(1)
+              Y(NTV+NV)=TRANS(2)
+              Z(NTV+NV)=TRANS(3)
+              JVN(ISUR2,NV)=NTV+NV
+              JVN(IS,2*NVER(IS)-NV+2)=NTV+NV
+ 7612       CONTINUE
+            JVN(IS,NVER(IS)+1)=JVN(IS,1)
+            JVN(IS,2*NVER(IS)+2)=JVN(IS,NVER(IS)+2)
+            NTV=NTV+NVER(IS)  ! increment nb verts
+            NZTV(ICOMP)=NTV   ! update zone array
+            NZSUR(ICOMP)=NSUR
+            NVER(ISUR2)=NVER(IS)
+            NVER(IS)=2*NVER(IS)+2
+
+C Update the connection list. Move all others up and then insert with
+C default values.
+            write(6,*) 'before adddedsurf e ',icon,NZSUR(icomp)
+            call addedsurf(icomp,icon,itrc,ier)
+            write(6,*) 'after adddedsurf e ',icon,NZSUR(icomp)
+
+C Add surfaces attribution parameters
+            ICT(ICON)=0
+            IC2(ICON)=0
+            IE2(ICON)=0
+            SSOTHER(ICON,1)='EXTERIOR'
+            SSOTHER(ICON,2)='0'
+            SSOTHER(ICON,3)='0'
+            SSMLCN(ICON)='frame_notion'  ! MLC type
+            if(haveframe) ssmlcindex(ICON)=mlciframe
+            SSPARENT(ICON)=SSNAME(ICC)
+            SSOTF(ICON)='OPAQUE' ! OTF type
+            SSVFC(ICON)=SSVFC(ICC)
+            SSUSE(ICON,1)='F-FRAME'    ! USE
+            SSUSE(ICON,2)='-'
+
+C Update connections list before displaying notional model zone
+            call emkcfg('-',IER)
+            MODIFY=.TRUE.
+            NZSUR(ICOMP)=NSUR
+            call zgupdate(itrc,icomp,ier)
+            call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+            call emkcfg('-',IER)
+
+C Update the image if running in graphic mode.
+            if(MMOD.eq.8)then
+              MODBND=.TRUE.
+              MODIFY=.TRUE.
+              CALL INLNST(1)
+              nzg=1
+              nznog(1)=ICOMP
+              izgfoc=ICOMP
+              CALL ADJVIEW(IER)
+              call pausems(500)
+            endif
+          ENDIF
+        ENDIF
+ 580  CONTINUE
+ 551  CONTINUE
+
+C Change constructions for different surfaces now based on use.
+C Update the value of ssmlcindex as well as SSMLCN. This is done
+C for all zones whether they are occupied and conditioned or not.
+      DO 601 I=1,NZSUR(icomp)
+        icc=izstocn(icomp,i)
+        USE=SSUSE(ICC,1)
+        USE2=SSUSE(ICC,2)
+        ADF=SSVFC(icc)
+        IF(ssother(icc,1)(1:8).eq.'EXTERIOR')THEN
+
+C For surfaces facing the outside.
+          IF(USE(1:4).EQ.'WALL')THEN
+            IF(IRGG.EQ.2)THEN ! Scottish regulations
+              SSMLCN(ICC)='Wall_Scot_no'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveWall_Sc) ssmlcindex(ICC)=mlciWall_Sc
+            ELSEIF(IRGG.EQ.3)THEN ! Northern Ireland regulations
+              SSMLCN(icc)='Wall_NI_noti'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveWall_NI) ssmlcindex(ICC)=mlciWall_NI
+            ELSE ! England and Wales regulations (and omissions)
+              SSMLCN(ICC)='Wall_EW_noti'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveWall_EW) ssmlcindex(ICC)=mlciWall_EW
+            ENDIF
+          ELSEIF(USE(1:4).EQ.'ROOF')THEN
+            IF(USE2(1:4).EQ.'FLAT')THEN
+              SSMLCN(ICC)='Fl_roof_noti'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveFl_r) ssmlcindex(ICC)=mlciFl_r
+            ELSE
+              IF(IRGG.EQ.2)THEN ! Scottish regulations
+                SSMLCN(ICC)='SC_Pitch_roo'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(haveSC_P) ssmlcindex(ICC)=mlciSC_P
+              ELSE ! England, Wales and N. Ireland regulations
+                SSMLCN(ICC)='EW_notPitch_'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(haveEW_notP) ssmlcindex(ICC)=mlciEW_notP
+              ENDIF
+            ENDIF
+          ELSEIF(USE(3:6).EQ.'DOOR')THEN
+            IF(USE(1:1).EQ.'V')THEN
+              SSMLCN(ICC)='Vehicle_door'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveVehicle) ssmlcindex(ICC)=mlciVehicle
+            ELSE
+              SSMLCN(ICC)='opDoorWind_n'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveopDoor) ssmlcindex(ICC)=mlciopDoor
+            ENDIF
+          ELSEIF(USE(3:8).EQ.'WINDOW')THEN
+            IF(USE(1:1).EQ.'D')THEN
+              SSMLCN(ICC)='Not_DisplayG'
+              SSOTF(ICC)='dispGlz_not'
+              if(haveNot_D) ssmlcindex(ICC)=mlciNot_D
+            ELSE
+              SSMLCN(ICC)='window_Not_G'
+              SSOTF(ICC)='Glaz_notiona'
+              if(haveNot_G) ssmlcindex(ICC)=mlciNot_G
+            ENDIF
+          ELSEIF(USE(1:5).EQ.'FLOOR')THEN
+            SSMLCN(ICC)='Sol_grnd_not'
+            SSOTF(ICC)='OPAQUE'  ! OTF type
+            if(haveSol_gr) ssmlcindex(ICC)=mlciSol_gr
+          ELSEIF(USE(1:7).EQ.'F-FRAME')THEN
+            SSMLCN(ICC)='frame_notion'
+            SSOTF(ICC)='OPAQUE'  ! OTF type
+            if(haveframe) ssmlcindex(ICC)=mlciframe
+          ELSE
+            SNM=SSNAME(ICC)
+            WRITE(OUTS,'(5A)')'No relevant use defined for ',
+     &        SNM(1:LNBLNK(SNM)),' in zone ',zname(icomp),
+     &        ' setting to use: external wall'
+            CALL EDISP(IUOUT,OUTS)
+            IF(IRGG.EQ.2)THEN ! Scottish regulations
+              SSMLCN(ICC)='Wall_Scot_no'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveWall_Sc) ssmlcindex(ICC)=mlciWall_Sc
+            ELSEIF(IRGG.EQ.3)THEN ! Northern Ireland regulations
+              SSMLCN(icc)='Wall_NI_noti'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveWall_NI) ssmlcindex(ICC)=mlciWall_NI
+            ELSE ! England and Wales regulations (and omissions)
+              SSMLCN(ICC)='Wall_EW_noti'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveWall_EW) ssmlcindex(ICC)=mlciWall_EW
+            ENDIF
+          ENDIF
+        ELSEIF(ssother(icc,1)(1:6).eq.'GROUND')THEN
+
+C Surfaces facing the ground.
+          SSMLCN(ICC)='Sol_grnd_not'
+          if(haveSol_gr) ssmlcindex(ICC)=mlciSol_gr
+        ELSE
+
+C Surfaces facing something else.
+          IF(USE(1:5).EQ.'FLOOR')THEN
+            SSMLCN(ICC)='pa_fl_notion'
+            SSOTF(ICC)='OPAQUE'  ! OTF type
+            if(havepa_fl) ssmlcindex(ICC)=mlcipa_fl
+          ELSEIF(USE(1:4).EQ.'WALL')THEN
+            SSMLCN(ICC)='party_wall_n'
+            SSOTF(ICC)='OPAQUE'  ! OTF type
+            if(haveparty_w) ssmlcindex(ICC)=mlciparty_w
+          ELSEIF(USE(3:8).EQ.'WINDOW')THEN
+            SSMLCN(ICC)='internal_glz'
+            if(haveint_g) ssmlcindex(ICC)=mlciint_g
+            SSOTF(ICC)='Glaz_notiona'
+          ELSEIF(ADF(1:4).EQ.'FLOR')THEN
+
+C This could be an internal partition. If original is opaque then use
+C  pa_fl_notion if transparent use internal_glz.
+            if(SSOTF(ICC)(1:6).eq.'OPAQUE')then
+              SSMLCN(ICC)='pa_fl_notion'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(havepa_fl) ssmlcindex(ICC)=mlcipa_fl
+            else
+              SSMLCN(ICC)='internal_glz'
+              if(haveint_g) ssmlcindex(ICC)=mlciint_g
+              SSOTF(ICC)='Glaz_notiona'
+            endif
+          ELSEIF(ADF(1:4).EQ.'CEIL')THEN
+
+C This could be an internal partition. If original is opaque then use
+C  inv_pa_fl_no if transparent use internal_glz.
+            if(SSOTF(ICC)(1:6).eq.'OPAQUE')then
+              SSMLCN(ICC)='inv_pa_fl_no'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveinv_pa_f) ssmlcindex(ICC)=mlciinv_pa_f
+            else
+              SSMLCN(ICC)='internal_glz'
+              if(haveint_g) ssmlcindex(ICC)=mlciint_g
+              SSOTF(ICC)='Glaz_notiona'
+            endif
+          ELSEIF(ADF(1:4).EQ.'VERT')THEN
+
+C This could be an internal partition. If original is opaque then use
+C  party_wall_n if transparent use internal_glz.
+            if(SSOTF(ICC)(1:6).eq.'OPAQUE')then
+              SSMLCN(ICC)='party_wall_n'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveparty_w) ssmlcindex(ICC)=mlciparty_w
+            else
+              SSMLCN(ICC)='internal_glz'
+              if(haveint_g) ssmlcindex(ICC)=mlciint_g
+              SSOTF(ICC)='Glaz_notiona'
+            endif
+          ELSE
+
+C This could be an internal partition. If original is opaque then use
+C  party_wall_n if transparent use internal_glz.
+            SNM=SSNAME(ICC)
+            if(SSOTF(ICC)(1:6).eq.'OPAQUE')then
+              WRITE(OUTS,'(5A)')'No relevant use defined for ',
+     &        SNM(1:LNBLNK(SNM)),' in zone ',zname(icomp),
+     &        ' - Setting to internal wall'
+              SSMLCN(ICC)='party_wall_n'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveparty_w) ssmlcindex(ICC)=mlciparty_w
+            else
+              WRITE(OUTS,'(5A)')'No relevant use defined for ',
+     &        SNM(1:LNBLNK(SNM)),' in zone ',zname(icomp),
+     &        ' - Setting to internal_glz'
+              SSMLCN(ICC)='internal_glz'
+              if(haveint_g) ssmlcindex(ICC)=mlciint_g
+              SSOTF(ICC)='Glaz_notiona'
+            endif
+            CALL EDISP(IUOUT,OUTS)
+          ENDIF
+        ENDIF
+ 601  CONTINUE
+
+C Write geometry file to save off changes in constructions prior to
+C applying the thermal bridge information.
+      call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+
+C Add 10% thermal bridge by silently calling appropriate subroutine.
+C This will overwrite thermal bridge information in the original model.
+      CALL LINTHBRDG(ICOMP,'s',0.1)
+
+C Write geometry file to ensure thermal bridge data saved.
+      call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
+      QUIET=.TRUE.
+
+C Update constructions and tmc files if applicable.
+      CALL EDCON(ITRC,ITRU,ICOMP,QUIET,IER)
+      RETURN
+      END
+
 
 C ********************* EMKREF
 C EMKREF creates a model variant based on the SBEM methodology. Details
@@ -5410,7 +7023,7 @@ C Adapt original title of model.
       END
 
 C ********************* EMKTYP
-C EMKSBM creates a model variant based on the SBEM methodology. Details
+C EMKTYP creates a model variant based on the SBEM methodology. Details
 C of this can be found in relevant EU and UK building regulations.
 C This subroutine copies and modifies the cfg file and
 C makes a new model representative of the typical building.
@@ -5432,16 +7045,41 @@ C Changes to the model are then made.
       CHARACTER CFGROOT*24,LCFGF*72
       INTEGER IFCFG
 
-      common/C1/NCOMP,NCON
       integer ncomp,ncon
+      common/C1/NCOMP,NCON
 
-      COMMON/C24/IZSTOCN(MCOM,MS)
       INTEGER IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
       INTEGER IER,LNBLNK,ICOMP,IUNIT,ITRU,ITRC,ILEN,IFU,IUF,I,ICC,lns
       LOGICAL QUIET,XST
       CHARACTER EXT*4,APE*6,TNAME*72,NNAME*72
       character USE*8,OUTS*124,SNM*12
+
+C Test whether required constructions exist.
+      logical haveopDoor,haveVehicle,haveNot_D,haveNot_G,haveframe
+      logical haveWall_Sc,haveWall_EW,haveFl_r,haveSC_P,haveEW_notP
+      logical haveSol_gr,havepa_fl,haveinv_pa_f,haveparty_w,haveint_g
+      logical haveWall_NI,haveexWall_ty,haveFl_rty,havewin_Typ_G
+      logical haveSol_gr_typ
+      common/havereqmlc/haveopDoor,haveVehicle,haveNot_D,haveNot_G,
+     &  haveframe,haveWall_Sc,haveWall_EW,haveFl_r,haveSC_P,
+     &  haveEW_notP,haveSol_gr,havepa_fl,haveinv_pa_f,haveparty_w,
+     &  haveint_g,haveWall_NI,haveexWall_ty,haveFl_rty,havewin_Typ_G,
+     &  haveSol_gr_typ
+      logical changeuse   ! to signal change of use of surface
+
+C mlcindex for each of these required constructions.
+      integer mlciopDoor,mlciVehicle,mlciNot_D,mlciNot_G,mlciframe
+      integer mlciWall_Sc,mlciWall_EW,mlciFl_r,mlciSC_P,mlciEW_notP
+      integer mlciSol_gr,mlcipa_fl,mlciinv_pa_f,mlciparty_w,mlciint_g
+      integer mlciWall_NI,mlciWall_ty,mlciFL_rty,mlciwin_Typ_G
+      integer mlciSol_gr_typ
+      common/mlcireq/mlciopDoor,mlciVehicle,mlciNot_D,mlciNot_G,
+     &  mlciframe,mlciWall_Sc,mlciWall_EW,mlciFl_r,mlciSC_P,
+     &  mlciEW_notP,mlciSol_gr,mlcipa_fl,mlciinv_pa_f,mlciparty_w,
+     &  mlciint_g,mlciWall_NI,mlciWall_ty,mlciFL_rty,mlciwin_Typ_G,
+     &  mlciSol_gr_typ
 
 C Initialise
       IER=0
@@ -5505,21 +7143,34 @@ C Now change constructions.
           IF(ssother(icc,1)(1:8).eq.'EXTERIOR')THEN
             IF(USE(1:4).EQ.'WALL')THEN
               SSMLCN(ICC)='exWall_typic'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveexWall_ty) ssmlcindex(ICC)=mlciWall_ty
             ELSEIF(USE(1:4).EQ.'ROOF')THEN
               SSMLCN(ICC)='Fl_roof_typi'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveFl_rty) ssmlcindex(ICC)=mlciFL_rty
             ELSEIF(USE(3:6).EQ.'DOOR')THEN
               IF(USE(1:1).EQ.'V')THEN
                 SSMLCN(ICC)='Vehicle_door'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(haveVehicle) ssmlcindex(ICC)=mlciVehicle
               ELSE
                 SSMLCN(ICC)='opDoorWind_n'
+                SSOTF(ICC)='OPAQUE'  ! OTF type
+                if(haveopDoor) ssmlcindex(ICC)=mlciopDoor
               ENDIF
             ELSEIF(USE(3:8).EQ.'WINDOW')THEN
               SSMLCN(ICC)='window_Typ_G'
               SSOTF(ICC)='Glaz_typical'
+              if(havewin_Typ_G) ssmlcindex(ICC)=mlciwin_Typ_G
             ELSEIF(USE(1:5).EQ.'FLOOR')THEN
               SSMLCN(ICC)='Sol_grnd_typ'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveSol_gr_typ) ssmlcindex(ICC)=mlciSol_gr_typ
             ELSEIF(USE(1:7).EQ.'F-FRAME')THEN
               SSMLCN(ICC)='frame_notion'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveframe) ssmlcindex(ICC)=mlciframe
             ELSE
               SNM=SSNAME(ICC)
               WRITE(OUTS,'(5A)')'No relevant use defined for ',
@@ -5527,9 +7178,13 @@ C Now change constructions.
      &        ' setting to use: external wall in typical model'
               CALL EDISP(IUOUT,OUTS)
               SSMLCN(ICC)='exWall_typic'
+              SSOTF(ICC)='OPAQUE'  ! OTF type
+              if(haveexWall_ty) ssmlcindex(ICC)=mlciWall_ty
             ENDIF
           ELSEIF(ssother(icc,1)(1:6).eq.'GROUND')THEN
             SSMLCN(ICC)='Sol_grnd_typ'
+            SSOTF(ICC)='OPAQUE'  ! OTF type
+            if(haveSol_gr_typ) ssmlcindex(ICC)=mlciSol_gr_typ
           ENDIF
  601    CONTINUE
 
@@ -5678,21 +7333,18 @@ C IMODE = 4 -> Typical model
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
 
-      common/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
+      common/C1/NCOMP,NCON
 
       COMMON/C21/IFCFG,CFGROOT,LCFGF
       INTEGER IFCFG
       CHARACTER CFGROOT*24,LCFGF*72
 
-      common/pophelp/h(60)
-      character h*72
-
       INTEGER IUR,ND,ISTAT,K,LTW2,ICDHW,IER,IMODE,
      & ICHT,ICCL,ICLT,ICAUX,LZNL,IM,Istart,Ifinish,INDX,icomp
       CHARACTER LTXTF*72,OUTSTR*248,WORD1*72,WORD2*24,WORD3*24,
      & LASTZONE*12,TWOL*2,outs*124
-      LOGICAL EOF,Getmonth,cl
+      LOGICAL EOF,Getmonth,cl,closer
       REAL VALZ,tbasea,Heating_efficiency,Cooling_efficiency,
      & DHW_efficiency,total_Heat_S,total_Cool_S,total_DHW_S,total_Light,
      & total_Aux,total_Heat_D,total_Cool_D,total_DHW_D
@@ -5706,6 +7358,14 @@ C Monthly averaging parameters
       REAL Cool_Supply(12), Cool_Demand(12)
       REAL Aux_Supply(12)
       REAL Light_Supply(12)
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='RSL6TF'  ! set for subroutine
+
       DO 34 IM=1,12
         DHW_Supply(IM)  =0. ; DHW_Demand(IM)  =0.
         Heat_Supply(IM) =0. ; Heat_Demand(IM) =0.
@@ -5726,9 +7386,11 @@ C Get text file name and initialise variables
       ELSE ! warn if file could not be opened
         write(outs,'(2a)') 'could not open ',ltxtf(1:72)
         call edisp(iuout,outs)
-        H(1)='name of the text result file'
+        helptopic='ncm_save_six_file'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKS(LTXTF,'Name of text results file?',
-     &    '(<72 characters)',72,'result.txt','text res file',IER,1)
+     &    '(<72 characters)',72,'result.txt','text res file',
+     &    IER,nbhelp)
         CALL EFOPSEQ(IUR,LTXTF,1,IER)
         if(ier.eq.0)THEN
           write(currentfile,'(a)') LTXTF(1:lnblnk(LTXTF))
@@ -5938,12 +7600,19 @@ C Get monthly auxiliary loads
           Aux_Supply(IM)=Aux_Supply(IM)+VALZ
           total_Aux=total_Aux+VALZ
 
-C Get monthly DHW loads (if expressed in kWh).
+C Get monthly DHW loads (if expressed in kWh). If DHW_efficiency
+C is zero the prevent divide by zero.
         ELSEIF(WORD3(1:12).EQ.'z_DHW_Month_'.AND.
      &         (WORD3(15:17).EQ.'kWh'.OR.WORD3(16:18).EQ.'kWh'))THEN
+          CALL ECLOSE(0.0,DHW_efficiency,0.01,CLOSER)
           DHW_Demand(IM)=DHW_Demand(IM)+VALZ
-          DHW_Supply(IM)=DHW_Supply(IM)+VALZ/DHW_efficiency
-          total_DHW_S=total_DHW_S+VALZ/DHW_efficiency
+          if(closer)then
+            DHW_Supply(IM)=DHW_Supply(IM)+0.
+            total_DHW_S=total_DHW_S+0.
+          else
+            DHW_Supply(IM)=DHW_Supply(IM)+VALZ/DHW_efficiency
+            total_DHW_S=total_DHW_S+VALZ/DHW_efficiency
+          endif
           total_DHW_D=total_DHW_D+VALZ
 
 C Get DHW energy
@@ -6250,10 +7919,11 @@ C Get Cooling energy
           Cool_Demand(12)=Cool_Demand(12)+VALZ*zbasea(icht)
           call eclose(0.,Cooling_efficiency,0.001,cl)
           if(.not.cl)then
-          Cool_Supply(12)=Cool_Supply(12)+VALZ*zbasea(icht)
-     &    /Cooling_efficiency
-          total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/Cooling_efficiency
-          total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
+            Cool_Supply(12)=Cool_Supply(12)+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
           endif
         ELSEIF(WORD3(1:4).EQ.'MC11')THEN
           IF(IMODE.EQ.1)THEN
@@ -6268,10 +7938,11 @@ C Get Cooling energy
           Cool_Demand(11)=Cool_Demand(11)+VALZ*zbasea(icht)
           call eclose(0.,Cooling_efficiency,0.001,cl)
           if(.not.cl)then
-          Cool_Supply(11)=Cool_Supply(11)+VALZ*zbasea(icht)
-     &    /Cooling_efficiency
-          total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/Cooling_efficiency
-          total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
+            Cool_Supply(11)=Cool_Supply(11)+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
           endif
         ELSEIF(WORD3(1:4).EQ.'MC10')THEN
           IF(IMODE.EQ.1)THEN
@@ -6286,10 +7957,11 @@ C Get Cooling energy
           Cool_Demand(10)=Cool_Demand(10)+VALZ*zbasea(icht)
           call eclose(0.,Cooling_efficiency,0.001,cl)
           if(.not.cl)then
-          Cool_Supply(10)=Cool_Supply(10)+VALZ*zbasea(icht)
-     &    /Cooling_efficiency
-          total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/Cooling_efficiency
-          total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
+            Cool_Supply(10)=Cool_Supply(10)+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
           endif
         ELSEIF(WORD3(1:3).EQ.'MC9')THEN
           IF(IMODE.EQ.1)THEN
@@ -6304,10 +7976,11 @@ C Get Cooling energy
           Cool_Demand(9)=Cool_Demand(9)+VALZ*zbasea(icht)
           call eclose(0.,Cooling_efficiency,0.001,cl)
           if(.not.cl)then
-          Cool_Supply(9)=Cool_Supply(9)+VALZ*zbasea(icht)
-     &    /Cooling_efficiency
-          total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/Cooling_efficiency
-          total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
+            Cool_Supply(9)=Cool_Supply(9)+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
           endif
         ELSEIF(WORD3(1:3).EQ.'MC8')THEN
           IF(IMODE.EQ.1)THEN
@@ -6322,10 +7995,11 @@ C Get Cooling energy
           Cool_Demand(8)=Cool_Demand(8)+VALZ*zbasea(icht)
           call eclose(0.,Cooling_efficiency,0.001,cl)
           if(.not.cl)then
-          Cool_Supply(8)=Cool_Supply(8)+VALZ*zbasea(icht)
-     &    /Cooling_efficiency
-          total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/Cooling_efficiency
-          total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
+            Cool_Supply(8)=Cool_Supply(8)+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
           endif
         ELSEIF(WORD3(1:3).EQ.'MC7')THEN
           IF(IMODE.EQ.1)THEN
@@ -6340,10 +8014,11 @@ C Get Cooling energy
           Cool_Demand(7)=Cool_Demand(7)+VALZ*zbasea(icht)
           call eclose(0.,Cooling_efficiency,0.001,cl)
           if(.not.cl)then
-          Cool_Supply(7)=Cool_Supply(7)+VALZ*zbasea(icht)
-     &    /Cooling_efficiency
-          total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/Cooling_efficiency
-          total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
+            Cool_Supply(7)=Cool_Supply(7)+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
           endif
         ELSEIF(WORD3(1:3).EQ.'MC6')THEN
           IF(IMODE.EQ.1)THEN
@@ -6358,10 +8033,11 @@ C Get Cooling energy
           Cool_Demand(6)=Cool_Demand(6)+VALZ*zbasea(icht)
           call eclose(0.,Cooling_efficiency,0.001,cl)
           if(.not.cl)then
-          Cool_Supply(6)=Cool_Supply(6)+VALZ*zbasea(icht)
-     &    /Cooling_efficiency
-          total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/Cooling_efficiency
-          total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
+            Cool_Supply(6)=Cool_Supply(6)+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
           endif
         ELSEIF(WORD3(1:3).EQ.'MC5')THEN
           IF(IMODE.EQ.1)THEN
@@ -6376,10 +8052,11 @@ C Get Cooling energy
           Cool_Demand(5)=Cool_Demand(5)+VALZ*zbasea(icht)
           call eclose(0.,Cooling_efficiency,0.001,cl)
           if(.not.cl)then
-          Cool_Supply(5)=Cool_Supply(5)+VALZ*zbasea(icht)
-     &    /Cooling_efficiency
-          total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/Cooling_efficiency
-          total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
+            Cool_Supply(5)=Cool_Supply(5)+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
           endif
         ELSEIF(WORD3(1:3).EQ.'MC4')THEN
           IF(IMODE.EQ.1)THEN
@@ -6394,10 +8071,11 @@ C Get Cooling energy
           Cool_Demand(4)=Cool_Demand(4)+VALZ*zbasea(icht)
           call eclose(0.,Cooling_efficiency,0.001,cl)
           if(.not.cl)then
-          Cool_Supply(4)=Cool_Supply(4)+VALZ*zbasea(icht)
-     &    /Cooling_efficiency
-          total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/Cooling_efficiency
-          total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
+            Cool_Supply(4)=Cool_Supply(4)+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
           endif
         ELSEIF(WORD3(1:3).EQ.'MC3')THEN
           IF(IMODE.EQ.1)THEN
@@ -6412,10 +8090,11 @@ C Get Cooling energy
           Cool_Demand(3)=Cool_Demand(3)+VALZ*zbasea(icht)
           call eclose(0.,Cooling_efficiency,0.001,cl)
           if(.not.cl)then
-          Cool_Supply(3)=Cool_Supply(3)+VALZ*zbasea(icht)
-     &    /Cooling_efficiency
-          total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/Cooling_efficiency
-          total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
+            Cool_Supply(3)=Cool_Supply(3)+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
           endif
         ELSEIF(WORD3(1:3).EQ.'MC2')THEN
           IF(IMODE.EQ.1)THEN
@@ -6430,10 +8109,11 @@ C Get Cooling energy
           Cool_Demand(2)=Cool_Demand(2)+VALZ*zbasea(icht)
           call eclose(0.,Cooling_efficiency,0.001,cl)
           if(.not.cl)then
-          Cool_Supply(2)=Cool_Supply(2)+VALZ*zbasea(icht)
-     &    /Cooling_efficiency
-          total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/Cooling_efficiency
-          total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
+            Cool_Supply(2)=Cool_Supply(2)+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
           endif
         ELSEIF(WORD3(1:3).EQ.'MC1')THEN
           IF(IMODE.EQ.1)THEN
@@ -6448,10 +8128,11 @@ C Get Cooling energy
           Cool_Demand(1)=Cool_Demand(1)+VALZ*zbasea(icht)
           call eclose(0.,Cooling_efficiency,0.001,cl)
           if(.not.cl)then
-          Cool_Supply(1)=Cool_Supply(1)+VALZ*zbasea(icht)
-     &    /Cooling_efficiency
-          total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/Cooling_efficiency
-          total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
+            Cool_Supply(1)=Cool_Supply(1)+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_S=total_Cool_S+VALZ*zbasea(icht)/
+     &        Cooling_efficiency
+            total_Cool_D=total_Cool_D+VALZ*zbasea(icht)
           endif
         ELSEIF(WORD3(1:21).EQ.'integrZACforFloorArea')THEN
           IF(IMODE.EQ.1)THEN
@@ -6824,8 +8505,8 @@ C Part F for Northern Ireland.
 #include "building.h"
 #include "geometry.h"
 
-      common/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
+      common/C1/NCOMP,NCON
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
@@ -7638,6 +9319,7 @@ C It finally generate BRUKL input document and other SBEM reports.
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C21/IFCFG,cfgroot,LCFGF
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -7649,7 +9331,7 @@ C It finally generate BRUKL input document and other SBEM reports.
      &               thbrpercent,uavtotal(MCOM)
       common/rpath/path
       character DOIT*248
-      character limgpth*24,ldocpth*24,ltmppth*24,lcfgroot*24,lpath*72
+      character limgpth*24,ldocpth*24,lcfgroot*24,lpath*72
       character path*72,lupath*72
       character fs*1, col*1
       character BATCHFL*72
@@ -7688,6 +9370,12 @@ C Names of surfaces associated with highest U value.
 C Counters for components of buildings.
       integer N_WALL,N_FLOR,N_ROOF,N_WNRF,N_P_DR,N_V_DR
       integer N_H_DR,I_WALL,I_FLOR,I_ROOF,I_WNRF,I_P_DR,I_V_DR,I_H_DR
+
+#ifdef OSI
+      integer iincomp,iincon  ! to pass nb zones connections to c code
+#else
+      integer*8 iincomp,iincon  ! to pass nb zones connections to c code
+#endif
 
 C build_info is generated by the Install script.
 #include "build_info.h"
@@ -8713,12 +10401,13 @@ C If not UNIX, first determine the path of the current model folder
         lupath=upath
         limgpth=imgpth
         ldocpth=docpth
-        ltmppth=tmppth
         ibrowse = 0
+        iincomp=ncomp
+        iincon=ncon
 
-C Determine the path of current model
-        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,ltmppth,
-     &    ibrowse)
+C Pass info on the path of current model to c code.
+        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,
+     &    ibrowse,iincomp,iincon)
 
         fs = char(92)
         col = char(58)
@@ -8778,7 +10467,7 @@ C Subroutine EPCCAL generates the UK Energy Performance input file.
 
       common/rpath/path
       character DOIT*248
-      character limgpth*24,ldocpth*24,ltmppth*24,lcfgroot*24,lpath*72
+      character limgpth*24,ldocpth*24,lcfgroot*24,lpath*72
       character path*72,lupath*72
       character fs*1, col*1, quote*1
       CHARACTER EPCBATFL*72,EPCINIFL*72
@@ -8890,6 +10579,12 @@ C      character cXlibrary*32         !
       integer IHF !index for fuel number (as used in previous routines.
       integer ifueloriginal !to hold temporarily the fuel type index number
       INTEGER IMODE
+
+#ifdef OSI
+      integer iincomp,iincon  ! to pass nb zones connections to c code
+#else
+      integer*8 iincomp,iincon  ! to pass nb zones connections to c code
+#endif
 
 #include "build_info.h"
 
@@ -13496,12 +15191,13 @@ C If not UNIX, first determine the path of the current model folder
         lupath=upath
         limgpth=imgpth
         ldocpth=docpth
-        ltmppth=tmppth
         ibrowse = 0
+        iincomp=ncomp
+        iincon=ncon
 
 C Determine the path of current model
-        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,ltmppth,
-     &    ibrowse)
+        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,
+     &    ibrowse,iincomp,iincon)
         fs = char(92)
         col = char(58)
         quote = char(34)
@@ -13567,8 +15263,6 @@ C information)
 
       common/outin/iuout,iuin
       integer iuout,iuin
-      common/pophelp/h(60)
-      character h*72
       integer isystCurrent
       logical menulogical !Logical to use for a menu in order to avoid the GOTO statements
       logical pickedsomething ! set to true if one of the options selected
@@ -13578,6 +15272,13 @@ C information)
       character head*30,items*50
       integer IansLeakage
       integer nitms,ino ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='defLeakage'  ! set for subroutine
 
       pickedsomething=.false.
       menulogical=.false.
@@ -13595,13 +15296,8 @@ C information)
         write(head,'(a)')'Ductwork/AHU leakage details'
 
 C Help text for this menu.
-        H(1) ='This menu allows the definition of ductwork'
-        H(2) ='and Air Handling Unit details. These will '
-        H(3) ='be used for the Auxiliary Energy calculation'
-        H(4) ='for the stripped building. The defaults will'
-        H(5) ='use the worse case options: this for the '
-        H(6) ='ductwork question is "Class Worse than A"'
-        H(7) ='and for AHU is "Class worse than L3".'
+        helptopic='ncm_ductwork_details'
+        call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Menu for ductwork and AHU details.
         call emenu(head,items,nitms,ino)
@@ -13627,16 +15323,13 @@ C value it should be preserved.
         elseif(ino.eq.nitms-1)then
 
 C Produce help text for the menu.
-          call phelpd(head,7,'-',0,0,IER)
+          call phelpd(head,nbhelp,'-',0,0,IER)
           menulogical=.false.
         elseif(INO.EQ.1)THEN
-          H(1)='The default is the same as Class Worse than A.'
-          H(2)='Class B is the best option here. See '
-          H(3)='EN 13779 Standard for more details.'
           call easkabcd(' ',
-     &     'Has the ductwork been leakage tested ?',
-     &     'No use default leakage','Class B','Class A',
-     &     'Class Worse than A',IansLeakage,3)
+     &      'Has the ductwork been leakage tested ?',
+     &      'No use default leakage','Class B','Class A',
+     &      'Class Worse than A',IansLeakage,nbhelp)
           if(IansLeakage.eq.1)then
             write(ductwork(isystCurrent)(1:24),'(a)')
      &           'No, use default leakage'
@@ -13668,16 +15361,13 @@ C the auxiliary energy calculation in iSBEM.
           endif
           pickedsomething=.true.
         elseif(ino.eq.2)then
-          H(1)='The default is the same as Class Worse than L3.'
-          H(2)='Class L1 is the best option here. See EN 13779'
-          H(3)='Standard for more details.'
           i_default=1
           i_define=0
           call menuatol('Define AHU leakage',
-     &    'Does the AHU meet CEN leakage Standards?',
-     &    'a No, use default leakage','b Class L1','c Class L2',
-     &    'd Class L3','e Class Worse than L3',' ',' ',' ',' ',
-     &    ' ',' ',' ',i_define,i_default,3)
+     &      'Does the AHU meet CEN leakage Standards?',
+     &      'a No, use default leakage','b Class L1','c Class L2',
+     &      'd Class L3','e Class Worse than L3',' ',' ',' ',' ',
+     &      ' ',' ',' ',i_define,i_default,nbhelp)
           if(i_define.eq.1)then
             write(AHUleakage(isystCurrent)(1:24),'(a)')
      &          'No, use default leakage'
@@ -13761,6 +15451,7 @@ C   act = '-' work silently, 'w' print warnings.
       common/FILEP/IFIL
       integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       character acts*1   ! for call to surrel
@@ -13874,8 +15565,12 @@ C    NBS Journal of Research, Vol. 71C, Jan-Mar. 1967, pp 43-50.
       subroutine GTCALC(ZD,act,IER)
       implicit none
 #include "building.h"
-#include "esprdbfile.h"
+#include "model.h"
 #include "site.h"
+#include "esprdbfile.h"
+#include "espriou.h"
+
+      integer lnblnk  ! function definition
 
 C Passed parameters.
       real ZD          ! Depth at which temperature required
@@ -13884,6 +15579,8 @@ C Passed parameters.
 
       common/FILEP/IFIL
       integer ifil   
+      integer iuout,iuin
+      common/OUTIN/IUOUT,IUIN
 
       COMMON/LongRad/iExtLgRadFlag,eGrdTp(12)
       INTEGER iExtLgRadFlag
@@ -13904,13 +15601,37 @@ C Passed parameters.
       real Theta       ! Hour number of the 15th day of the month
       integer II,I,irec,istat,j,k
       integer I_coldmonth  !Month of the year with coldest average temperature
+      logical unixok
+      character fs*1
+      character llclmdb*144
+      integer lndbp
 
       REAL MidMonthDay(12)
       DATA MidMonthDay/
      &   15.,46.,74.,95.,135.,166.,196.,227.,258.,288.,319.,349./
 
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
       iclim=IFIL
-      call EFOPRAN(ICLIM,LCLIM,144,0,IER)
+
+      call edisp(iuout,'Generating ground temperatures.')
+
+C Setup string buffer with distribution weather folder name.
+      lndbp=lnblnk(standardclmpath)
+      if(ipathclim.eq.0.or.ipathclim.eq.1)then
+        llclmdb=LCLIM
+      elseif(ipathclim.eq.2)then
+        write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &    LCLIM(1:lnblnk(LCLIM))
+      endif
+
+      call EFOPRAN(ICLIM,llclmdb,144,0,IER)
       IF(ier.ne.0)return
 
 C Initialise

@@ -24,9 +24,9 @@ PROG = bps$(EXE)
 %.o : %.c
 	$(MCC) $(CFLAGS) -c $<
 
+MODULE_OBJECTS = h3kmodule.o startup.o aim2_module.o aim2_timestep.o
 
-
-BPS_OBJECTS = h3kmodule.o bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o aim2_module.o aim2_timestep.o ascii_mat.o \
+BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o \
 	  bcfunc.o bctlf.o blibsv.o bmatsu.o bmatsv.o basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
 	  bndarybl.o bndaryl.o bndaryt.o bsim2cfd.o btherm.o c2fdum.o casual.o cfcalc.o \
 	  cfconv.o cfdat.o cfdrw.o cfgrid.o cfmgerb.o cfutil.o chkconvg.o chtmst.o \
@@ -41,7 +41,7 @@ BPS_OBJECTS = h3kmodule.o bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o aim2_mod
 	  pcloop.o pcomp1.o pcomp2.o pcomp3.o pcomp4.o pcomps.o pcomps1.o \
 	  plibsv.o plot.o pltcfg.o pmatrx.o pplib.o ppsub.o precal.o psychro.o \
 	  reslib.o rnor.o rwipv.o rwroam.o rwsbem.o senrwl.o sensit.o sentim.o simcon.o solar.o sort.o \
-	  spmatl.o spmisc.o startup.o stofunc.o subsys.o tdfile.o tdrecbps.o trstyp.o \
+	  spmatl.o spmisc.o stofunc.o subsys.o tdfile.o tdrecbps.o trstyp.o \
 	  tscon.o utilf.o MechVentIN.o CentralVentSys.o \
 	  hvacinput.o hvacsim.o furnace.o init_hvac_var.o fan.o ashp.o \
 	  ashp_cooling.o baseboard.o hvac_output.o h3koutput.o h3kstore.o\
@@ -59,14 +59,13 @@ BPS_OBJECTS = h3kmodule.o bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o aim2_mod
 	  solar_collectors.o ground_temp_mains.o Lookup_data.o readTrnsys.o trnsys_wrapper.o trnsys_lib.o \
 	  tank_intank_hx.o mains_temp_draw_profiles.o stratified_tank.o SiteUtilities.o RE-H2-ctl.o \
 	  ncm_overheating.o complex_fenestration.o editCFC.o NCHE.o stratified_tank_1HX.o stratified_tank_2HX.o \
-	  AirFlowModelRoutines.o Res_elec_Ctl.o hvacinput_versioned.o Int_Mech_Sys.o
-  
+	  AirFlowModelRoutines.o Res_elec_Ctl.o   
 
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod aim2_timestep.mod start_up.mod parse_command_line.mod \
+          h3kmodule.f90
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod aim2_timestep.mod h3kmodule.mod
-
-$(PROG): $(BPS_OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(BPS_OBJECTS) $(ULIBS) $(F_to_C_flags)
+$(PROG): $(MODULE_OBJECTS) $(BPS_OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(BPS_OBJECTS) $(ULIBS) $(F_to_C_flags)
 
 adaptconf1.F:
 	rm -f adaptconf1.F
@@ -446,9 +445,6 @@ CentralVentSys.F:
 hvacinput.F:
 	rm -f hvacinput.F
 	ln -s $(CETCdir)/hvacinput.F .
-hvacinput_versioned.F:
-	rm -f hvacinput_versioned.F
-	ln -s $(CETCdir)/hvacinput_versioned.F .
 hvacsim.F:
 	rm -f hvacsim.F
 	ln -s $(CETCdir)/hvacsim.F .
@@ -682,10 +678,6 @@ stratified_tank_2HX.F:
 AirFlowModelRoutines.F:
 	rm -f AirFlowModelRoutines.F
 	ln -s $(BLDdir)/AirFlowModelRoutines.F .
-Int_Mech_Sys.F:
-	rm -f Int_Mech_Sys.F
-	ln -s $(PLTdir)/Int_Mech_Sys.F .
-
 
 
 strip:
@@ -696,7 +688,7 @@ install:
 
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(BPS_OBJECTS) $(MODULES) \
+	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(BPS_OBJECTS) $(MODULES) \
 	adaptconf1.F adaptconf2.F adjb.F adjp.F aim2_module.F aim2_timestep.F \
 	ascii_mat.F ashp.F ashp_cooling.F baseboard.F basesimp.F basesimp_inputs.F bcfunc.F bctlf.F \
 	blibsv.F bmatsu.F bndaryl.F bndarybl.F bndaryt.F bscoeff.F bscoeff_extended.F \
@@ -732,4 +724,4 @@ clean:
 	ground_temp_mains.F readTrnsys.F trnsys_wrapper.F trnsys_lib.F \
 	tank_intank_hx.F mains_temp_draw_profiles.F stratified_tank.F \
 	complex_fenestration.F editCFC.F NCHE.F stratified_tank_1HX.F stratified_tank_2HX.F \
-	AirFlowModelRoutines.F Res_elec_Ctl.F h3kmodule.f90 hvacinput_versioned.F Int_Mech_Sys.F
+	AirFlowModelRoutines.F Res_elec_Ctl.F h3kmodule.f90

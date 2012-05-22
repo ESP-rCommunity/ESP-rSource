@@ -181,8 +181,7 @@ c Steady-state heat pump capacity accounting for the effect of the outdoor
 c temperature
         ss_heat_pump_cap = ASHP_CAP(ss_capacity(isys),TP,
      &                     flow_rate(isys),
-     &                     flow_rate_r(isys),ifan_operation(isys),
-     &                     cutoff_temp(isys))
+     &                     flow_rate_r(isys),ifan_operation(isys))
       endif
 c GCEP (end)
 
@@ -492,13 +491,13 @@ c       ASHP_CAP    steady-state capacity of the heat pump at outdoor
 c                   temperature tout
 c **********************************************************************
       REAL FUNCTION ASHP_CAP(ss_cap,tout,flow_rate,flow_rate_r,
-     &                       ifan_operation,cutoff_temp)
+     &                       ifan_operation)
 
       IMPLICIT NONE
 
 c Variables passed in call
-      REAL ss_cap,tout,flow_rate,flow_rate_r, cutoff_temp
-      REAL cap_adjust 
+      REAL ss_cap,tout,flow_rate,flow_rate_r
+
       INTEGER ifan_operation
 
 c Local variables
@@ -512,25 +511,11 @@ c capacity of the heat pump
       d_cap = -1.4658e-5
       e_cap = -5.65296e-7
 
-      
-      if ( cutoff_temp > -20. ) then 
 c Set the steady-state capacity for the current time step
 c Equation 1 in Air-source heat pump Ref by Haddad
-         cap_adjust = (a_cap + b_cap * tout + 
-     &    c_cap * tout**2 + d_cap * tout**3 + e_cap * tout**4)
-      else 
-c Hard-coded capacity curve from Mitsibushi Zuba-Central 
-        if ( tout > -15. ) then 
-          cap_adjust = 1.0
-        elseif ( tout < -25. ) then 
-          cap_adjust = 0.0
-        else 
-          cap_adjust = 0.75 + 0.25 * ( tout - (-25.0) ) / 10. 
-        endif 
-      endif 
-         
-      heating_cap = ss_cap * cap_adjust
-      
+      heating_cap = ss_cap * (a_cap + b_cap * tout + 
+     &c_cap * tout**2 + d_cap * tout**3 + e_cap * tout**4)
+
 c Correct the capacity for the effect of air flow in case there is a
 c circulation fan
 c      if(ifan_operation.ne.0) then
@@ -615,12 +600,12 @@ c       ASHP_COP   steady-state cop of the heat pump at outdoor
 c                  temperature tout
 c **********************************************************************
       REAL FUNCTION ASHP_COP(ss_cop,tout,flow_rate,flow_rate_r,
-     &                       ifan_operation,cutoff_temp)
+     &                       ifan_operation)
 
       IMPLICIT NONE
 
 c Variables passed in call
-      REAL ss_cop,tout,flow_rate,flow_rate_r, cutoff_temp
+      REAL ss_cop,tout,flow_rate,flow_rate_r
 
       INTEGER ifan_operation
 
@@ -637,18 +622,8 @@ c of the heat pump
 
 c Set the steady-state C.O.P. for the current time step
 c Equation 2 in Air-source heat pump by Haddad
-
-      if ( cutoff_temp > -20. ) then 
-c Set the steady-state capacity for the current time step
-c Equation 1 in Air-source heat pump Ref by Haddad
-        cop = ss_cop * (a_cop + b_cop * tout + c_cop * tout**2 +
-     &        d_cop * tout**3 + e_cop * tout**4)
-      else 
-c Hard-coded performance curve from Mitsibushi Zuba-Central 
-        cop = 1.4 + (tout - (-25.) ) / ( 15. - ( -25. ) ) 
-     &            * ( 3.19 - 1.4 ) 
-      endif 
-        
+      cop = ss_cop * (a_cop + b_cop * tout + c_cop * tout**2 +
+     &d_cop * tout**3 + e_cop * tout**4)
 
 c Correct heat pump for the effect of flow rate in case there is a 
 c circulation fan

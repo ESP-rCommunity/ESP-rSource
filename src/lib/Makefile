@@ -21,7 +21,7 @@ LIBsqlite = libSQLite.a
 
 OBJECTSX11 = esru_ask.o esru_blk.o esru_lib.o esru_libNonGTK.o esru_libX11.o esru_x.o esru_util.o
 OBJECTSGTK = esru_ask.o esru_blk.o esru_lib.o esru_libGTK.o esru_nox.o esru.o esru_util.o
-OBJECTSnoX = esru_ask.o esru_blk.o esru_lib.o esru_libNonGTK.o esru_fc.o esru_nox.o esru_util.o
+OBJECTSnoX = esru_ask.o esru_blk.o esru_lib.o esru_libNonGTK.o esru_fc.o esru_util.o
 GTK_OBJ = esp-r.o esp_menu.o esp_text.o esp_ask.o esp_draw.o esp_file.o
 OBJECTSVersion = version.o
 OBJECTS_FPE_enable = fpe_enable.o
@@ -29,7 +29,7 @@ OBJECTS_FPE_disable = fpe_disable.o
 
 
 # Additional C and Fortran objectives needed for H3Kreports
-XML_COBJECTS = TBinnedData.o TXMLAdapter.o TWildCards.o TReportData.o TReportsManager.o
+XML_COBJECTS = TBinnedData.o TXMLAdapter.o TWildCards.o TReportData.o TReportsManager.o log.o
 XML_FOBJECTS = h3kmodule.o ConfigureH3kReports.o 
 
 # C and Fortran stubs used to build bps without H3Kreports
@@ -121,7 +121,7 @@ clean:
 		   $(SQLite_COBJECTS) $(SQLite_FOBJECTS) $(NO_SQLite_C_STUBS) $(NO_SQLite_F_STUBS) \
 	           TReports_dummy.F ConfigureH3kReports.F TReportsManager.cpp \
 	           TBinnedData.cpp TXMLAdapter.cpp TWildCards.cpp DBManager.cpp TReportData.cpp \
-		   h3kmodule.f90 h3kmodule.mod DBManager_stub.cpp
+		        h3kmodule.f90 h3kmodule.mod DBManager_stub.cpp log.cpp
 # File-by-file build instructions:
 
 esp-r.o:
@@ -159,12 +159,11 @@ esru_ask.o:
 esru_x.o:
 	$(MCC) $(LD_FLAGS) $(CFLAGS) -I$(XINSTALLDIR)/include -c esru_x.c
 esru_fc.o:
-	$(MFC) $(LD_FLAGS) $(FFLAGS) -c esru_fc.f
+	$(MFC) $(LD_FLAGS) $(FFLAGS) -c esru_fc.F
 esru_util.o:
-	$(MCC) $(LD_FLAGS) $(CFLAGS) -c esru_util.c
+	$(MCC) $(LD_FLAGS) $(CFLAGS) -I../lib -c esru_util.c
 version.o:
 	$(MFC) $(LD_FLAGS) $(FFLAGS) -c version.F
-
 
 # H3k-reports object files
 TReportsManager.o:
@@ -207,3 +206,7 @@ TReportData.o:
 	rm -f TReportData.cpp ;
 	ln -s $(CETCdir)/h3kreports/TReportData.cpp .;
 	$(MCPL) $(LD_FLAGS) $(CFLAGS) -c TReportData.cpp
+log.o:
+	rm -f log.cpp ;
+	ln -s $(CETCdir)/h3kreports/log.cpp .;
+	$(MCPL) $(LD_FLAGS) $(CFLAGS) -c log.cpp

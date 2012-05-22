@@ -216,10 +216,12 @@ C MS sensitive, print first 22 surfaces.
         call edisp(itu,outs)
  9992 CONTINUE
       DO 9000 I=1,NC
-      DO 9010 J=1,NC
-      QX(I,J)=HRF(I,J)*SNA(ICOMP,J)*(TFS(ICOMP,I)-TFS(ICOMP,J))
- 9010 CONTINUE
+        DO 9010 J=1,NC
+          QX(I,J)=HRF(I,J)*SNA(ICOMP,J)*(TFS(ICOMP,I)-TFS(ICOMP,J))
+ 9010   CONTINUE
  9000 CONTINUE
+
+C Write out flux for first 22 surfaces in the zone.
       call edisp(itu,' Radiative flux')
       call edisp(itu,' ')
       nss=min0(22,nc)
@@ -643,7 +645,7 @@ C Clear sky temperature as in bld #5.4 (after Swinbank).
         TSKY=TCSKY
       ENDIF
       IF(TSKY.LT.200.0.OR.TSKY.GT.325.0)then
-       write(outs,'(a,F8.2,a)')'MZELWE: a dubious sky temperature(',
+       write(outs,'(a,F7.1,a)')'MZELWE: a dubious sky temperature(',
      &   TSKY,' (degK)) has been calculated.'
         call edisp(iuout,outs)
         call edisp(iuout,
@@ -933,7 +935,7 @@ C Don't use correlation if artificial emissivity used (>1)
           write(outs,'(A)')
      &    ' This is considered high and a correlation will be used.'
           call edisp(iuout,outs)
-          write(outs,'(A,F7.1,A,F6.1,A,F6.1)')
+          write(outs,'(A,F7.1,A,F7.1,A,F7.1)')
      &    ' <sky = ',QELWFK(I),' <buildings = ',QELWFB(I),
      &    ' <ground = ',QELWFG(I)
           call edisp(iuout,outs)
@@ -1106,7 +1108,7 @@ C                 external temperature (for use in MZLS3).
       SUBROUTINE MZVENT(ICOMP)
       
       USE AIM2_InputData, ONLY:iAIM2
-      USE AIM2_TIMESTEP, ONLY:AIM2_CONTROL_conductance
+      USE AIM2_TIMESTEP, ONLY:AIM2_CONTROL
       
       IMPLICIT NONE
 
@@ -1115,7 +1117,6 @@ C                 external temperature (for use in MZLS3).
       include "tdf2.h"
       include "sbem.h"
       include "hvac_parameters.h"
-      include "net_flow.h"
       include "blc25_open_windows.h"   
       include "hvac_common.h"
  
@@ -1128,8 +1129,8 @@ C                 external temperature (for use in MZLS3).
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: IUOUT,IUIN
 
-      COMMON/C1/NCOMP,NCON
       integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
       COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
      &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
@@ -1260,11 +1261,6 @@ C mechanical ventilation and infiltration.
      &     flowi,flowv
 
 C      CHARACTER*2   cZone_Chars ! Padded zone number (two digits)
-
-      logical bFindAFN600Coupling  ! Function determining if 
-                                   ! air-flow network has a 
-                                   ! MF600 coupling component for 
-                                   ! this zone. 
       
 C Logical flags for indicating which air flow model is in use.      
       logical :: bOPR, bAFN, bAIM2, bNoFlow
@@ -1562,34 +1558,6 @@ C It is controlled. Establish sensed variable.
             IF(IVAL.EQ.4)TX=VF      
         endif ChkOprCtl
       
-
-C Compute parameters needed to acces infiltration/ventilation
-C schedules  Determine day, time parameters needed to access scheduled infiltration 
-C parameters from the OPR file. 
-        IDAY1=IDYP
-        IF(IT2.EQ.1) then
-          IDAY2=IDYP+1
-        ELSE
-          IDAY2 = IDYP
-        ENDIF
-        IF(IDAY2.GT.365)IDAY2=IDAY2-365
-        ID1=ICALENDER(IDAY1)
-        ID2=ICALENDER(IDAY2)
-        DtypeLt3: IF(NBDAYTYPE.LE.3)THEN
-          ID1=1
-          ID2=1
-          IF(IDWP.EQ.6)ID1=2
-          IF(IDWP.EQ.7)ID1=3
-          IF(IT2.EQ.1)then
-            IF(IDWF.EQ.6)ID2=2
-            IF(IDWF.EQ.7)ID2=3
-          else
-            IF(IDWP.EQ.6)ID2=2
-            IF(IDWP.EQ.7)ID2=3
-          endif
-        ENDIF DtypeLt3
-
-
 C Air flow infiltration is specified via the .opr file, 
 C the air-flow network, or the AIM-2 infiltration model. Check 
 C the contents of the iAirFlowModel array.  
@@ -1630,15 +1598,6 @@ C to the above priority table.
             ! afn/opr
             if ( iAIM2 == 1 ) then 
               bAIM2 = .true. 
-              
-              ! Test if this zone has a MF600 coupling connecting 
-              ! air-flow network to AIM2 model:
-              if ( bFindAFN600Coupling(iComp) ) then 
-                ! Yes, AIM2 infiltration will be imposed on air-flow 
-                ! network
-                bAIM2 = .false. 
-                bAFN  = .true. 
-              endif 
             elseif ( bAfnZoneActive(iComp) ) then
               bAFN = .true. 
             else
@@ -1675,7 +1634,30 @@ C User has not specified any air flow (Can't really happen!)
 C========================================================================         
         elseif (  bOPR ) then
 C User has provided scheduled air flows.     
-
+C Determine day, time parameters needed to access scheduled infiltration 
+C parameters from the OPR file. 
+        IDAY1=IDYP
+        IF(IT2.EQ.1) then
+          IDAY2=IDYP+1
+        ELSE
+          IDAY2 = IDYP
+        ENDIF
+        IF(IDAY2.GT.365)IDAY2=IDAY2-365
+        ID1=ICALENDER(IDAY1)
+        ID2=ICALENDER(IDAY2)
+        DtypeLt3: IF(NBDAYTYPE.LE.3)THEN
+          ID1=1
+          ID2=1
+          IF(IDWP.EQ.6)ID1=2
+          IF(IDWP.EQ.7)ID1=3
+          IF(IT2.EQ.1)then
+            IF(IDWF.EQ.6)ID2=2
+            IF(IDWF.EQ.7)ID2=3
+          else
+            IF(IDWP.EQ.6)ID2=2
+            IF(IDWP.EQ.7)ID2=3
+          endif
+        ENDIF DtypeLt3
 C Gather infiltration values from schedule.
         CV1=CVIN(ID1,ICOMP,IT1)
         CV2=CVIN(ID2,ICOMP,IT2)
@@ -1730,12 +1712,11 @@ C========================================================================
        
           ! Conductance of infiltration returned for that zone
           ! If the zone was not specified in the AIM-2 file then it will return a zero
-          CALL AIM2_CONTROL_conductance(ICOMP,ZONE_infil_cond)
+          CALL AIM2_CONTROL(ICOMP,ZONE_infil_cond)
         
           ! Assign this to ESP-r's standard infiltration conductance variable `CVIF' so that these
           ! loads are reflected in ESP-r's zonal energy balances.      
            CVIF = ZONE_infil_cond 
-           
         endif AssignInfil
         
 C If the mechanical ventilation model is active
@@ -1786,11 +1767,11 @@ C Collect data from air flow module.
 
 C Impose computed conductance for scheduled ventilation for .opr or 
 C .aim2 case. 
-        CV1=CVVN(ID1,ICOMP,IT1)*xmod
-        CV2=CVVN(ID2,ICOMP,IT2)*xmod
-        IC2=ICCN(ID2,ICOMP,IT2)
-        TA1=TIAN(ID1,ICOMP,IT1)
-        TA2=TIAN(ID2,ICOMP,IT2)
+	CV1=CVVN(ID1,ICOMP,IT1)*xmod
+	CV2=CVVN(ID2,ICOMP,IT2)*xmod
+	IC2=ICCN(ID2,ICOMP,IT2)
+	TA1=TIAN(ID1,ICOMP,IT1)
+	TA2=TIAN(ID2,ICOMP,IT2)
         CF=CV1+(TRAT*(CV2-CV1))
         ICF=IC2
         TAF=TA2
@@ -1869,7 +1850,7 @@ C Some other control.
         endif AssignVent
       endif TdfFlow
 
-C Set up zone air balance information for use in MZVAPC, unless
+C Set up zone moisture balance information for use in MZVAPC, unless
 C current zone is mapped to mass flow network node, in which case ZMBI
 C is filled by MFLF2B. 
 C ZMBI,1= infiltration mass flow rate; 2= product of zone coupling
@@ -1894,7 +1875,7 @@ C no node in the current zone.
 
 C Check infiltration.
          IF(CVIF.GT.0.0) THEN
-           ZMBI(ICOMP,1)=(CVIF + fCondFreeCool(ICOMP) ) / 1006.
+           ZMBI(ICOMP,1)=CVIF/1006.
            ZMBI(ICOMP,4)=ZMBI(ICOMP,4)+ZMBI(ICOMP,1)
          END IF
 

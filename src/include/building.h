@@ -1,6 +1,8 @@
 C ESP-r building-related definition file setting maximum
 C parameter values.
 C 72 zone 62 surface version 12.08 updated
+C 82 zone 62 surface version 08.2011 updated
+C 82 zone 80 surface version 10.2011 updated
 
 C Type declarations.
       integer MCOM,MCON,MTV,MV,ME,MGP,MN,MP,MDY,MT,MA,MC,MBP,MTMS
@@ -17,10 +19,10 @@ C Type declarations.
       integer MCFC
 
 C Geometry.
-      PARAMETER (MCOM=72)	!- Zones.
-      PARAMETER (MS=62)		!- Surfaces/zone (set MNSBZ in cfd.h to at least 2*MS).
-      PARAMETER (MCON=2200)	!- Edges/zone.
-      PARAMETER (MTV=200)	!- Vertices/zone.
+      PARAMETER (MCOM=82)	!- Zones.
+      PARAMETER (MS=80)		!- Surfaces/zone (set MNSBZ in cfd.h to at least 2*MS).
+      PARAMETER (MCON=2300)	!- Surfaces in model.
+      PARAMETER (MTV=300)	!- Vertices/zone.
       PARAMETER (MV=42)		!- Vertices/surface.
       PARAMETER (MST=MS)	!- Used with view factors.
       PARAMETER (MSM=MS+6)	!- Used with view factors.
@@ -109,7 +111,7 @@ C Results analysis.
       PARAMETER (MIPVA=MSPS)	!- IPV assessments.
       PARAMETER (MIPVM=12)	!- IPV metrics.
       PARAMETER (MZS=90)	!- Number of items to report in res.
-      PARAMETER (MZRL=MS+12)	!- Fields in a zone results library record
+      PARAMETER (MZRL=MCOM+12)	!- Fields in a zone results library record
                                 !  (minimum value is 36; if MCOM>MS use MCOM
                                 !  in formula).
 C Mathematical model.

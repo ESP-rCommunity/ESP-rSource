@@ -338,6 +338,7 @@ C Parameters
       logical QUIET        ! true acts silently
       integer IER          ! IER=0 OK, IER=1 problem
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
       COMMON/VTHP02/IVKON(MCOM,MS,ME)
@@ -352,9 +353,12 @@ C Parameters
 
 C Open any existing file by this name (CONFIL), 
 C (ask user for confirmation to over-write) or create a new file.
-
-      CALL EFOPSEQ(IFILT,CONFIL,4,IER)
-      
+C If in quiet mode then file should exist.
+      IF(QUIET) THEN
+        CALL EFOPSEQ(IFILT,CONFIL,1,IER)
+      ELSE
+        CALL EFOPSEQ(IFILT,CONFIL,4,IER)
+      ENDIF
       IF(IER.LT.0)THEN
         IER=1
         RETURN
@@ -487,6 +491,7 @@ C on common blocks. If isur=0 then all, otherwise for one surface.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
@@ -534,6 +539,8 @@ C Reporting.
 C Jump if not all requied and not the focus surface.
         if(isur.ne.0.and.isur.ne.i)goto 9994
         sn=SSNAME(icn1)
+
+C << possible place to use ssmlcindex >>
         imatch(i)=0
         RT(I)=0.
         do 5 ii=1,nmlc
@@ -746,6 +753,7 @@ c         (not used in the current implementation),
 
       COMMON/OUTIN/IUOUT,IUIN
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)

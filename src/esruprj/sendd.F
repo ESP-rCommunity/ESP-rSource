@@ -36,7 +36,6 @@ C SDDEF001 - Material properties distribution definition.
 #include "material.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
@@ -49,9 +48,16 @@ C SDDEF001 - Material properties distribution definition.
 
       CHARACTER NAM*72
       CHARACTER LUALF*72,LCNG*15,LLOC*15,t15*15
-      CHARACTER H*72, ITEM(8)*16, LELM(MMLC*ME)*36
+      CHARACTER ITEM(8)*16, LELM(MMLC*ME)*36
 
       DIMENSION IVALP(6),IVALE(MMLC*ME),IELM(MMLC*ME)
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SDDEF001'  ! set for subroutine
       
       IER=0
 
@@ -95,13 +101,11 @@ C Check for errors - add to the total error counter if error has occured.
         LELM(II)=NAM(1:36)
  20   CONTINUE
 
-      H(1)='Pick the required material. '
-      H(2)='   '
-      H(3)='Exit will return to the main menu '
-      H(4)='without saving any data. '
+      helptopic='uncert_material'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       IEPIC=NPRIM
       CALL EPICKS(IEPIC,IVALE,' ',' Which material : ',
-     &                   36,NPRIM,LELM,' Material',IERR,4)
+     &   36,NPRIM,LELM,' Material',IERR,nbhelp)
 
 C Check for errors - add to the total error counter if error has occured.
       if (IERR.ne.0) then
@@ -130,13 +134,9 @@ C Now determine the property of the element which is uncertain.
       ITEM(6) ='Diffusion res'
       NITMS=6
 
-      H(1)='Pick the required property. '
-      H(2)='   '
-      H(3)='Exit will return to the main menu '
-      H(4)='without saving any data. '
       IPPIC=6
       CALL EPICKS(IPPIC,IVALP,' ',' Which property : ',
-     &                       16,NITMS,ITEM,LELM(IVALE(1)),IERR,4)
+     &  16,NITMS,ITEM,LELM(IVALE(1)),IERR,nbhelp)
 
 C Check for errors - add to the total error counter if error has occured.
       if (IERR.ne.0) then
@@ -155,7 +155,7 @@ C If no type has been selected then return to main SA menu.
 
 C Ask for value of uncertainty.
       call EASKAB('Define parameter bounds:','  ',
-     &               'from default definitions','by data entry',IANS,0)
+     &  'from default definitions','by data entry',IANS,0)
       if (IANS.eq.2) then
         IALLOW=3
 
@@ -219,7 +219,6 @@ C SDDEF002 - Composite constructions distribution definition.
 #include "material.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
       COMMON/UA31/MATNAM(MNCNG,2)
@@ -228,11 +227,18 @@ C SDDEF002 - Composite constructions distribution definition.
       logical closemat1,closemat2
 
       CHARACTER NAM*72
-      CHARACTER H*72, LELM(MMLC*ME)*36
+      CHARACTER LELM(MMLC*ME)*36
       CHARACTER MATNAM*12
 
       DIMENSION IVALE(MMLC*ME)
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SDDEF002'  ! set for subroutine
+      
       IER=0
 
 C Establish if material data arrays have been filled. If not return.
@@ -249,7 +255,10 @@ C Establish if material data arrays have been filled. If not return.
 
 C Composite constructions.
       call EPKMLC(ISEL,'Which construction?','  ',IERR)
-
+      
+      helptopic='uncert_MLC'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      
 C Check for errors - add to the total error counter if error has occured.
       if (IERR.ne.0) then
         IER=101
@@ -257,7 +266,7 @@ C Check for errors - add to the total error counter if error has occured.
       endif
       write (MATNAM(ICDEF,1),'(a)') DESC(ISEL)(1:12)
       call EASKAB('Which composite construction parameter? ','  ',
-     &                 'A materials thickness','Whole composite',IRT,0)
+     &  'A materials thickness','Whole composite',IRT,nbhelp)
       if (IRT.eq.1) then
 
 C Pick a material in that MLC.
@@ -282,14 +291,10 @@ C Check for errors - add to the total error counter if error has occured.
           II=II+1
           LELM(II)=NAM(1:36)
  10     CONTINUE
-        H(1)='Pick the required material. '
-        H(2)='   '
-        H(3)='Exit will return to the main menu '
-        H(4)='without saving any data. '
         NPRIM=II
         INPIC=1
         CALL EPICKS(INPIC,IVALE,' ',' Which material : ',
-     &                   36,NPRIM,LELM,' material',IERR,4)
+     &     36,NPRIM,LELM,' material',IERR,nbhelp)
 
 C Check for errors - add to the total error counter if error has occured.
         if (IERR.ne.0) then
@@ -338,14 +343,23 @@ C SDDEF003 - Climatic parameters distribution definition.
 #include "uncertainty.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
 
-      CHARACTER ITEM(6)*20, H*72
+      CHARACTER ITEM(6)*20
 
       DIMENSION IVALP(6)
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SDDEF003'  ! set for subroutine
+
+      helptopic='uncert_climate'
+      call gethelptext(helpinsub,helptopic,nbhelp)  
+      
 C Now determine the climatic parameter which is uncertain.
       call edisp(iuout,' Climatic parameter selection. ')
       call edisp(iuout,'  ')
@@ -357,13 +371,9 @@ C Now determine the climatic parameter which is uncertain.
       ITEM(6) ='Relative humidity'
       NITMS=6
 
-      H(1)='Pick the required parameter. '
-      H(2)='   '
-      H(3)='Exit will return to the main menu '
-      H(4)='without saving any data. '
       INPIC=1
       CALL EPICKS(INPIC,IVALP,' ',' Which parameter : ',
-     &                     20,NITMS,ITEM,'Climatic parameters',IERR,4)
+     &   20,NITMS,ITEM,'Climatic parameters',IERR,nbhelp)
       if (IERR.ne.0.or.IVALP(1).eq.0) then
         IER=101
         return
@@ -392,33 +402,39 @@ C SDDEF004 - Operations distribution definition.
 #include "uncertainty.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
 
-      CHARACTER H*72
       integer IRT  ! for radio button
 
-C << contextual help should be added >>
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
 
+      helpinsub='SDDEF004'  ! set for subroutine
+      helptopic='uncert_operations'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      
       IER=0
 C Operations file data.
       call edisp(iuout,' Operations parameter selection. ')
       IRT=0
       call EASKAB('  ','Which scheduled parameter? ',
-     &                                'Casual gains','Air flow',IRT,0)
+     &            'Casual gains','Air flow',IRT,nbhelp)
       if (IRT.eq.1) then
         call EASKABC('  ','Which casual gain? ',
-     &                               'Type 1','Type 2','Type 3',IRT,0)
+     &               'Type 1','Type 2','Type 3',IRT,nbhelp)
         IDMAT(ICDEF,1)=IRT
         call EASKATOG('Which property? ',' ','Sensible','Latent',
-     &       'Radiant frac','Convective frac','Total','  ','  ',IRT,0)
+     &    'Radiant frac','Convective frac','Total','  ','  ',IRT,
+     &     nbhelp)
         IDMAT(ICDEF,2)=IRT
       else
         IDMAT(ICDEF,1)=0
         call EASKATOG('Which property? ',' ','Infiltration',
      &       'Ventilation','Zone coupled index','Source temp.','  ',
-     &                                               '  ','  ',IRT,0)
+     &       '  ','  ',IRT,nbhelp)
         IDMAT(ICDEF,2)=IRT
       endif
 
@@ -490,12 +506,21 @@ C SDDEF101 - Zone geometry distribution definition.
 
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SDDEF101'  ! set for subroutine
+       helptopic='uncert_air_volume'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      
       IDMAT(ICDEF,1)=1
       IDMAT(ICDEF,2)=1
 
       call edisp(iuout,'Zone geometry parameter distribution def.')
       call EASKAB('Only zone air volume enabled ! ','  ',
-     &                'Continue and define distribution','Cancel',IRT,0)
+     &  'Continue and define distribution','Cancel',IRT,nbhelp)
       if (IRT.eq.2) then
         IER=101
         return
@@ -522,69 +547,61 @@ C SDDBOUND - Operations distribution definition.
 C IALLOW - 3=perc, abs and explicit changes; 2=perc and abs only; 1=exp only
       subroutine SDDBOUND(IALLOW,XMPERC,XMABS,XLOW,XHIGH,IER)
 
-      common/pophelp/h(60)
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
 
-      CHARACTER H*72
+      helpinsub='SDDBOUND'  ! set for subroutine
 
       if (IALLOW.eq.3) then
 
+        helptopic='uncert_bounds_3'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        
 C Now ask for the numerical data.
-        H(1)='The upper and lower values that the parameter can '
-        H(2)='take are defined via one of three processes:'
-        H(3)='1) Percentage change: the upper and lower values will'
-        H(4)='   be the base case value +/- the percentage change.'
-        H(5)='2) Absolute change: the upper and lower values will be'
-        H(6)='   the base case value +/- the absolute change.'
-        H(7)='3) Explicitly: the upper and lower values will be '
-        H(8)='   defined explicitly.'
         call EASKABC(' Define parameter bounds',' via:',
-     &       'percentage change','absolute change','explicitly',ICNG,8)
+     &   'percentage change','absolute change','explicitly',ICNG,
+     &    nbhelp)
         PERC=0.
         ABS=0.
         EXPU=0.
         EXPL=0.
         if (ICNG.eq.1) then
-          H(1)=' A value greater than 0.00 is required. '
           call EASKR(PERC,' ',' Percentage change value? ',
-     &        0.,'F',XMPERC,'W',1.,' Percantage change ',IER,1)
+     &        0.,'F',XMPERC,'W',1.,' Percantage change ',IER,nbhelp)
           XLOW=PERC
         elseif (ICNG.eq.2) then
-          H(1)=' A value greater than 0.00 is required. '
           call EASKR(ABS,' ',' Absolute change value? ',
-     &        0.,'F',XMABS,'W',1.,' Absolute change ',IER,1)
+     &        0.,'F',XMABS,'W',1.,' Absolute change ',IER,nbhelp)
           XLOW=ABS
         elseif (ICNG.eq.3) then
-          H(1)=' The upper and lower values are required. '
-          H(2)=' There is no checking of these values, except that '
-          H(3)=' the upper value is greater than the lower. '
 22        call EASKR(EXPU,' ',' Explicit definition of upper value? ',
-     &         XLOW,'W',XHIGH,'W',1.,' Explicit def upper value',IER,3)
+     &      XLOW,'W',XHIGH,'W',1.,' Explicit def upper value',IER,
+     &      nbhelp)
           call EASKR(EXPL,' ',' Explicit definition of lower value? ',
-     &         XLOW,'W',XHIGH,'W',1.,' Explicit def lower value',IER,3)
+     &      XLOW,'W',XHIGH,'W',1.,' Explicit def lower value',IER,
+     &      nbhelp)
           if (EXPL.ge.EXPU) goto 22
           XLOW=EXPU
           XHIGH=EXPL
         endif
       elseif (IALLOW.eq.2) then
-        H(1)='The upper and lower values that the parameter can '
-        H(2)='take are defined via one of three processes:'
-        H(3)='1) Percentage change: the upper and lower values will'
-        H(4)='   be the base case value +/- the percentage change.'
-        H(5)='2) Absolute change: the upper and lower values will be'
-        H(6)='   the base case value +/- the absolute change.'
+        helptopic='uncert_bounds_3'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call EASKAB(' Define parameter bounds',' via:',
-     &       'percentage change','absolute change',ICNG,6)
+     &    'percentage change','absolute change',ICNG,nbhelp)
         PERC=0.
         ABS=0.
         if (ICNG.eq.1) then
-          H(1)=' A value greater than 0.00 is required. '
           call EASKR(PERC,' ',' Percentage change value? ',
-     &        0.,'F',XMPERC,'W',1.,' Percantage change ',IER,1)
+     &        0.,'F',XMPERC,'W',1.,' Percantage change ',IER,
+     &        nbhelp)
           XLOW=PERC
         elseif (ICNG.eq.2) then
-          H(1)=' A value greater than 0.00 is required. '
           call EASKR(ABS,' ',' Absolute change value? ',
-     &        0.,'F',XMABS,'W',1.,' Absolute change ',IER,1)
+     &        0.,'F',XMABS,'W',1.,' Absolute change ',IER,
+     &        nbhelp)
           XLOW=ABS
         endif
       endif

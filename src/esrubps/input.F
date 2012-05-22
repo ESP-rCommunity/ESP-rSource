@@ -242,6 +242,7 @@ C Common for electrical file
       INTEGER :: ispmxist,ientxist
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       COMMON/GR1D04/GAM,RGAM
       REAL :: GAM, RGAM
@@ -285,7 +286,6 @@ C Mechanical Ventilation systems.
 C For reading in of bi-directional data.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
 
       CHARACTER OUTSTR*124,LCFGF*72,MODE*4,cfgroot*24
@@ -300,7 +300,7 @@ C HVAC AIM-2
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       LOGICAL OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST
       LOGICAL GRND3D,MSTROK,MSTRZN
-      logical dll,closemat1,closemat2,unixok
+      logical dll,closemat1,closemat2,unixok,concat
 
 C GSHP
 C Common holding flag indicating presence of gshp data input file:
@@ -326,7 +326,7 @@ C Status of multi-year climate database
       logical bMY_clm_err 
       integer lndbp   ! for length of standard database path
       character lltmp*144  ! to re-create plant database file name with path
-      character lworking*144,fs*1
+      character lworking*144,fs*1,llclmdb*144
 
       integer IClmErr  ! the error state for climate file opening
       integer ier, irep
@@ -765,9 +765,19 @@ C been properly entered.
 C Collect & process single-year climate file
 C Note: the climate file uses a different error flag than
 C the global model definition, as it can be specified separately.
-         write(currentfile,'(a)') lclim(1:lnblnk(lclim))
+
+C Take into account weather file location.
+         lndbp=lnblnk(standardclmpath)
+         if(ipathclim.eq.0.or.ipathclim.eq.1)then
+           call addpath(lclim,llclmdb,concat)
+         elseif(ipathclim.eq.2)then
+           write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &       LCLIM(1:lnblnk(LCLIM))
+         endif
+
+         write(currentfile,'(a)') llclmdb(1:lnblnk(llclmdb))
          IClmErr=0   ! clear error state before call
-         call EFOPRAN(ICLIM,LCLIM,144,0,IClmErr)
+         call EFOPRAN(ICLIM,llclmdb,144,0,IClmErr)
          IF(iClmErr.eq.0)THEN
             IREC=366
             READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)ICYEAR,ICDNGH
@@ -806,7 +816,7 @@ C Kill simulation if in DLL mode
 C Warn the user that the climate file definition has failed. 
                write(louts,'(A,A,A)')
      &           'Warning: specified climate file (',
-     &           LCLIM(1:LNBLNK(LCLIM)), ') could not be found.'
+     &           llclmdb(1:LNBLNK(llclmdb)), ') could not be found.'
               
                call edisp248 (iuout,louts,100)
                if ( autook ) then
@@ -936,16 +946,16 @@ C geometry.h provides commons G0/G2/G5/c20/precz/prec16.
       common/trc/itrc
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       
-      COMMON/C1/NCOMP,NCON
       integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
-      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
-      COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
 C During setup scan for inbuilt and user defined ground temperatures.
 C igttype: if > 1 then index points to most often used standard profile
@@ -1000,7 +1010,7 @@ C Simulator parameters.
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
       LOGICAL ILTHPS,ILTHPZ,CLOSE
       logical dll,prob
-      dimension igarray(12),iguarray(12)
+      dimension igarray(mgrdp),iguarray(12)
 
       if (.not.startupok) ITCNST=0
       IWARN=0
@@ -1011,11 +1021,12 @@ C Zone-by-zone. Use IUNIT for geometry file.
       NNDS=0
       MNDS=0
 
-C Clear igarray() & iguarray()
+C Clear igarray() for inbuilt ground temps and iguarray()
+C for user defined ground temps. 
        igttype=0
-       do 9 ij=1,12
+       do 9 ij=1,mgrdp
          igarray(ij)=0
-         iguarray(ij)=0
+         if(ij.le.12) iguarray(ij)=0
   9    continue
       call usrmsg(' Checking zone descriptions... ',' ','-')
       ILTHPS=.FALSE.
@@ -1451,10 +1462,7 @@ C Identify special materials file & call routine to read it.
 
 C ******************** MZUTIL ********************
 
-C MZUTIL reads the zone utilities file if one is active. This
-C file contains information on the source of any data which should
-C be used in preference to the zone file defaults.
-C Timestep zone airflow is handled by tdf.
+C MZUTIL reads additional zone descriptions if active.
 
       SUBROUTINE MZUTIL(ICOMP,IER)
 #include "building.h"
@@ -1507,6 +1515,8 @@ C Reset warning flag and check and see if running in dll mode.
       call isadll(dll)
       
 C Open zone viewfactors, pre-calculated shading, convection regimes.
+C Report the contents of the shading file if the user has requested 
+C a trace and then re-scanned the model.
       IF(IVF(ICOMP).EQ.1)CALL MZVFIN(ICOMP)
       IF(ISI(ICOMP).EQ.1)CALL MZSHIN(ICOMP)
       IF(IHC(ICOMP).EQ.1)CALL MZHCFV2(ICOMP)
@@ -1902,6 +1912,7 @@ C Parameters
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       logical dup,first

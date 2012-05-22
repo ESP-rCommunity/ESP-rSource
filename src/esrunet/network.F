@@ -228,8 +228,19 @@ C Name of current application
       CHARACTER*72 LAPROB*72
       character*72 DFCFD,DECMPDBFL,DICONDBFL
 
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
+
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer NITEMS,INO ! max items and current menu item
+
+#ifdef OSI
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+#else
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+#endif
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -323,8 +334,14 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=16
         LIMIT =16
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r Network Tool ',
+     &  cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &  'ESP-r Network Tool: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
 
 C Set additional output units to stdout. Then redirect warning
 C messages to stderr in case of rule script program control.
@@ -336,9 +353,15 @@ C messages to stderr in case of rule script program control.
 
 C Open the text display box equal to LIMTTY if MODEL = 8.
       IF(MODEL.EQ.8)THEN
-        CALL WIN3D(MENUCHW,8,10,2,3,IGL,IGR,IGT,IGB,IGW,IGWH)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=8; iiw2=10; iiw3=2; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        CALL WIN3D(MENUCHW,8,10,2,3,IGL,IGR,IGT,IGB,IGW,IGWH)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opensetup
@@ -936,14 +959,23 @@ C Grid commons
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
+      integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iix1,iix2,iix3,iix4,iiy1,iiy2,iiy3,iiy4
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iix1,iix2,iix3,iix4,iiy1,iiy2,iiy3,iiy4
 #endif
 
 C Clear the screen
       CALL startbuffer
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C Set the new x y and z view limits. Currently do not scroll
 C left further than X = -5m and down to Y = -5m.
@@ -1003,29 +1035,31 @@ C Draw the grid with the current scaling parameters.
 
 C Draw the Lower and Left extents of the grid and labels.
       IF(IVIEW.EQ.1.OR.IVIEW.EQ.2)THEN
-        CALL horaxis(Xmin,Xmax,igl,igr,igb,xadd,XSC,1,
+        CALL horaxis(Xmin,Xmax,iigl,iigr,iigb,xadd,XSC,1,
      &    'X (all grid dimensions in m)')
       ELSE
-        CALL horaxis(Xmin,Xmax,igl,igr,igb,xadd,XSC,1,
+        CALL horaxis(Xmin,Xmax,iigl,iigr,iigb,xadd,XSC,1,
      &    'Y (all grid dimensions in m)')
       ENDIF
 
       IF(IVIEW.EQ.1)THEN      
-        CALL vrtaxis(Ymin,Ymax,igl,igb,igt,yadd,YSC,1,0,'Y')
+        CALL vrtaxis(Ymin,Ymax,iigl,iigb,iigt,yadd,YSC,1,0,'Y')
       ELSE
-        CALL vrtaxis(Ymin,Ymax,igl,igb,igt,yadd,YSC,1,0,'Z')
+        CALL vrtaxis(Ymin,Ymax,iigl,iigb,iigt,yadd,YSC,1,0,'Z')
       ENDIF
 
 C Store the scaling parameters used in drawing the axes.
-      CALL linescale(igl,xadd,XSC,igb,yadd,YSC)
+      CALL linescale(iigl,xadd,XSC,iigb,yadd,YSC)
 
 C Draw the upper and right extents.
       call u2pixel(XMAX,YMIN,ix1,iy1)
       call u2pixel(XMAX,YMAX,ix2,iy2)
-      call eswline(ix1,iy1,ix2,iy2)
+      iix1=ix1; iiy1=iy1; iix2=ix2; iiy2=iy2
+      call eswline(iix1,iiy1,iix2,iiy2)
       call u2pixel(XMIN,YMAX,ix3,iy3)
       call u2pixel(XMAX,YMAX,ix4,iy4)
-      call eswline(ix3,iy3,ix4,iy4)
+      iix3=ix3; iiy3=iy3; iix4=ix4; iiy4=iy4
+      call eswline(iix3,iiy3,iix4,iiy4)
 
 C Check that the grid is ON GRSPC(*)<>0.0
       IF(GON)THEN
@@ -1034,7 +1068,8 @@ C If libraries and monitor support greyscale then reset forground
 C to 50% grey when drawing dots.
         greyok=.false.
         if(nifgrey.gt.4)then
-          call winscl('i',nifgrey-3)
+          iicol=nifgrey-3
+          call winscl('i',iicol)
           greyok=.true.
         endif
 
@@ -1081,7 +1116,10 @@ C Draw on the Y grid lines.
         IF(GY.LT.YMAX) GOTO 20
 
 C Return to black lines after drawing grid.
-        if(greyok)call winscl('-',0)
+        if(greyok)then
+          iicol=0
+          call winscl('-',iicol)
+        endif
       ENDIF
 
 C Draw on the network description. 
@@ -2063,9 +2101,17 @@ C      REAL MATRIX_A,MATRIX_B
 #ifdef OSI
       integer iupdown,isym    ! passed to etplot
       integer iix1,iiy1,iix2,iiy2  ! passed to edline
+      integer iiix,iiiy,iijx,iijy,iixp,iiyp,iiax,iiay
+      integer iiux,iiuy
+      integer iicol
+      integer iiw4
 #else
       integer*8 iupdown,isym    ! passed to etplot
       integer*8 iix1,iiy1,iix2,iiy2 ! passed to edline
+      integer*8 iiix,iiiy,iijx,iijy,iixp,iiyp,iiax,iiay
+      integer*8 iiux,iiuy
+      integer*8 iicol
+      integer*8 iiw4
 #endif
 
       X=XYZICON(ICN,1)
@@ -2110,37 +2156,38 @@ C Move to the first point and plot the icon in highlighted mode.
             IE=IVEICN(ICN,I,2)
             call u2pixel(VCICON(ICN,IS,1),VCICON(ICN,IS,2),ix1,iy1)
             call u2pixel(VCICON(ICN,IE,1),VCICON(ICN,IE,2),ix2,iy2)
-            icol=IVEICN(ICN,I,3)
+            iicol=IVEICN(ICN,I,3)
             if(IVEICN(ICN,I,4).eq.0)then
-              call winscl('i',icol)
+              call winscl('i',iicol)
             elseif(IVEICN(ICN,I,4).eq.1)then
-              call winscl('g',icol)
+              call winscl('g',iicol)
             elseif(IVEICN(ICN,I,4).eq.2)then
-              call winscl('z',icol)
+              call winscl('z',iicol)
             endif
 
 C IVEICN(n,n,5) line type (1=solid, 2=dotted, 3=dashed, 4=double)
 C If select draw double thickness, otherwise use the line style of the icon.
             if(ISEL(ICN))then
-              call edwline(ix1,iy1,ix2,iy2)
+              iix1=IX1; iiy1=IY1; iix2=IX2; iiy2=IY2
+              call edwline(iix1,iiy1,iix2,iiy2)
             else
+              iix1=IX1; iiy1=IY1; iix2=IX2; iiy2=IY2
               if(IVEICN(ICN,I,5).eq.0)then
-                call eswline(ix1,iy1,ix2,iy2)
+                call eswline(iix1,iiy1,iix2,iiy2)
               elseif(IVEICN(ICN,I,5).eq.1)then
-                call eswline(ix1,iy1,ix2,iy2)
+                call eswline(iix1,iiy1,iix2,iiy2)
               elseif(IVEICN(ICN,I,5).eq.2)then
-                iix1=IX1
-                iiy1=IY1
-                iix2=IX2
-                iiy2=IY2
-                call edline(iix1,iiy1,iix2,iiy2,3)
+                iiw4=3
+                call edline(iix1,iiy1,iix2,iiy2,iiw4)
               elseif(IVEICN(ICN,I,5).eq.3)then
-                call edash(ix1,iy1,ix2,iy2,3)
+                iiw4=3
+                call edash(iix1,iiy1,iix2,iiy2,iiw4)
               elseif(IVEICN(ICN,I,5).eq.4)then
-                call edwline(ix1,iy1,ix2,iy2)
+                call edwline(iix1,iiy1,iix2,iiy2)
               endif
             endif
-            call winscl('-',0)
+            iicol=0
+            call winscl('-',iicol)
             call forceflush()
   10      CONTINUE
         endif
@@ -2150,13 +2197,13 @@ C Do any dots.
           DO 11 I=1,NIVD(ICN)
             IS=IVDOT(ICN,I,1)
             call u2pixel(VCICON(ICN,IS,1),VCICON(ICN,IS,2),ix1,iy1)
-            icol=IVDOT(ICN,I,2)
+            iicol=IVDOT(ICN,I,2)
             if(IVDOT(ICN,I,3).eq.0)then
-              call winscl('i',icol)
+              call winscl('i',iicol)
             elseif(IVDOT(ICN,I,3).eq.1)then
-              call winscl('g',icol)
+              call winscl('g',iicol)
             elseif(IVDOT(ICN,I,3).eq.2)then
-              call winscl('z',icol)
+              call winscl('z',iicol)
             endif
 
 C Draw small or large dot.
@@ -2167,7 +2214,8 @@ C Draw small or large dot.
             else
 	      call esymbol(ix1,iy1,32,1)
             endif
-            call winscl('-',0)
+            iicol=0
+            call winscl('-',iicol)
             call forceflush()
   11      CONTINUE
         endif
@@ -2186,17 +2234,17 @@ C pixel radius (ir1) via call to crowxyz.
      &          real(iy2),z2))
             iang1=IVARC(ICN,I,3)
             iang2=IVARC(ICN,I,4)
-            icol=IVARC(ICN,I,5)
+            iicol=IVARC(ICN,I,5)
             if(IVARC(ICN,I,6).eq.0)then
-              call winscl('i',icol)
+              call winscl('i',iicol)
             elseif(IVARC(ICN,I,6).eq.1)then
-              call winscl('g',icol)
+              call winscl('g',iicol)
             elseif(IVARC(ICN,I,6).eq.2)then
-              call winscl('z',icol)
+              call winscl('z',iicol)
             endif
 
 C Debug.
-C            write(6,*) ix1,iy1,is,ir,ir1,iang1,iang2,icol
+C            write(6,*) ix1,iy1,is,ir,ir1,iang1,iang2,iicol
 
 C Draw unfilled or filled arc.
             if(IVARC(ICN,I,7).eq.0)then
@@ -2204,7 +2252,8 @@ C Draw unfilled or filled arc.
             else
 	      call earc(ix1,iy1,ir1,iang1,iang2,1)
             endif
-            call winscl('-',0)
+            iicol=0
+            call winscl('-',iicol)
             call forceflush()
    9      CONTINUE
         endif
@@ -2213,20 +2262,22 @@ C Do any internal labels in smallest font in the specified colour.
         DO 12 I=1,NIVL(ICN)
           IS=IVLBL(ICN,I,1)
           call u2pixel(VCICON(ICN,IS,1),VCICON(ICN,IS,2),ix1,iy1)
+          iicol=IVLBL(ICN,I,2)
           icol=IVLBL(ICN,I,2)
           IF(IFS.GT.0)CALL winfnt(0)
           write(LBLINT,'(a)') NWICNLBL(ICN,I) 
           if(IVLBL(ICN,I,3).eq.0)then
-            call winscl('i',icol)
+            call winscl('i',iicol)
             call textatxy(ix1,iy1,LBLINT,'i',icol)
           elseif(IVLBL(ICN,I,3).eq.1)then
-            call winscl('g',icol)
+            call winscl('g',iicol)
             call textatxy(ix1,iy1,LBLINT,'g',icol)
           elseif(IVLBL(ICN,I,3).eq.2)then
-            call winscl('z',icol)
+            call winscl('z',iicol)
             call textatxy(ix1,iy1,LBLINT,'z',icol)
           endif
-          call winscl('-',0)
+          iicol=0
+          call winscl('-',iicol)
           IF(IFS.GT.0)CALL winfnt(IFS)
           call forceflush()
   12    CONTINUE
@@ -2245,7 +2296,8 @@ C it in black and use a smaller font if the scale is less than 1.
      &               .AND.IYL.LT.IGB)THEN
           if(SCALF.lt.1.0.and.IFS.GT.0)CALL winfnt(0)
           call textatxy(ixlc,iyl,LABL,'i',6)
-          call winscl('-',0)
+          iicol=0
+          call winscl('-',iicol)
           if(SCALF.lt.1.0.and.IFS.GT.0)CALL winfnt(IFS)
         ENDIF
       ELSE
@@ -2258,8 +2310,8 @@ C Draw on the connection points for the component (applies to all components)
 
 C Move to first position.
 C Set the drawing colour depending on the attachment type.
-          icol=ICNCT(ICN,I)
-          call winscl('z',icol)
+          iicol=ICNCT(ICN,I)
+          call winscl('z',iicol)
 
           if(INWKTYP.eq.6)then
 
@@ -2303,7 +2355,8 @@ C Otherwise draw a square.
           endif
 
 C Reset the line colour to standard.
-          call winscl('-',0)
+          iicol=0
+          call winscl('-',iicol)
           call forceflush()
 100     CONTINUE
       ENDIF
@@ -2358,7 +2411,15 @@ C Logical
       LOGICAL CLOSE,CLOSES,CLOSEE,CLOSEP,FOUND,ISEL,CSEL
 
       REAL PI
-
+#ifdef OSI
+      integer iicol,iixp,iiyp,iix,iiy
+      integer iisx1,iisy1,iisx2,iisy2,iisx3,iisy3,iisx4,iisy4
+      integer iijx,iijy,iiix,iiiy,iiax,iiay,iiux,iiuy
+#else
+      integer*8 iicol,iixp,iiyp,iix,iiy
+      integer*8 iisx1,iisy1,iisx2,iisy2,iisx3,iisy3,iisx4,iisy4
+      integer*8 iijx,iijy,iiix,iiiy,iiax,iiay,iiux,iiuy
+#endif
 C Draw the connection, with a square at each intermediate point.
 
 C Move to the start of the connection 
@@ -2414,8 +2475,8 @@ C If the layer is correct then check if the connection is within screen limits.
 
 C Move to the start of the connection.
 C Set the drawing colour depending on the connection type.
-      icol=ICNNT(ICON)
-      call winscl('z',icol)
+      iicol=ICNNT(ICON)
+      call winscl('z',iicol)
 
 C Store the start point as the previous point and start drawing the
 C connection. 
@@ -2457,10 +2518,11 @@ C record the pixel values of the way point.
 
 C If within the view limits then draw a line from the last point 
 C to the current point.
+           iixp=ixp; iiyp=iyp;iix=ix; iiy=iy
            if(csel(icon))then
-             call edwline(ixp,iyp,ix,iy)
+             call edwline(iixp,iiyp,iix,iiy)
            else
-             call eswline(ixp,iyp,ix,iy)
+             call eswline(iixp,iiyp,iix,iiy)
            endif
 
 C Get the pixel values of the square around the connection point. 
@@ -2468,18 +2530,20 @@ C Get the pixel values of the square around the connection point.
            call u2pixel(MP(1)+XYSIZCP/2.,MP(2)+XYSIZCP/2.,isx2,isy2)
            call u2pixel(MP(1)-XYSIZCP/2.,MP(2)+XYSIZCP/2.,isx3,isy3)
            call u2pixel(MP(1)-XYSIZCP/2.,MP(2)-XYSIZCP/2.,isx4,isy4)
+
 C Draw a square around the connection intermediate point.
-           
+           iisx1=isx1; iisy1=isy1; iisx2=isx2; iisy2=isy2           
+           iisx3=isx3; iisy3=isy3; iisx4=isx4; iisy4=isy4           
            IF(CSEL(ICON))THEN
-             CALL EDWLINE(isx1,isy1,isx2,isy2)
-             CALL EDWLINE(isx2,isy2,isx3,isy3)
-             CALL EDWLINE(isx3,isy3,isx4,isy4)
-             CALL EDWLINE(isx4,isy4,isx1,isy1)
+             CALL EDWLINE(iisx1,iisy1,iisx2,iisy2)
+             CALL EDWLINE(iisx2,iisy2,iisx3,iisy3)
+             CALL EDWLINE(iisx3,iisy3,iisx4,iisy4)
+             CALL EDWLINE(iisx4,iisy4,iisx1,iisy1)
            ELSE
-             CALL ESWLINE(isx1,isy1,isx2,isy2)
-             CALL ESWLINE(isx2,isy2,isx3,isy3)
-             CALL ESWLINE(isx3,isy3,isx4,isy4)
-             CALL ESWLINE(isx4,isy4,isx1,isy1)
+             CALL ESWLINE(iisx1,iisy1,iisx2,iisy2)
+             CALL ESWLINE(iisx2,iisy2,iisx3,iisy3)
+             CALL ESWLINE(iisx3,iisy3,iisx4,iisy4)
+             CALL ESWLINE(iisx4,iisy4,iisx1,iisy1)
            ENDIF
 
           CLOSEP=.TRUE.
@@ -2495,14 +2559,15 @@ C intersection and draw the connection.
           CP(1)=MP(1)
           CP(2)=MP(2)
           CALL CINTSCT(CP,PP,MIN1,MAX1,MIN2,MAX2,XI,YI,FOUND)
-          call u2pixel(xi,yi,iix,iiy)
+          call u2pixel(xi,yi,iax,iay)
 
 C Draw a square around the connection intermediate point.
 c          if(found)then
+            iiix=iax; iiiy=iay;iijx=ix; iijy=iy
             if(csel(icon))then 
-              call edwline(iix,iiy,ix,iy)
+              call edwline(iiix,iiiy,iijx,iijy)
             else
-              call eswline(iix,iiy,ix,iy)
+              call eswline(iiix,iiiy,iijx,iijy)
             endif
 c          endif
 C Get the pixel values of the square around the connection point. 
@@ -2510,18 +2575,21 @@ C Get the pixel values of the square around the connection point.
            call u2pixel(MP(1)+XYSIZCP/2.,MP(2)+XYSIZCP/2.,isx2,isy2)
            call u2pixel(MP(1)-XYSIZCP/2.,MP(2)+XYSIZCP/2.,isx3,isy3)
            call u2pixel(MP(1)-XYSIZCP/2.,MP(2)-XYSIZCP/2.,isx4,isy4)
+
 C Draw a square around the connection intermediate point.
+           iisx1=isx1; iisy1=isy1; iisx2=isx2; iisy2=isy2           
+           iisx3=isx3; iisy3=isy3; iisx4=isx4; iisy4=isy4           
            
            IF(CSEL(ICON))THEN
-             CALL EDWLINE(isx1,isy1,isx2,isy2)
-             CALL EDWLINE(isx2,isy2,isx3,isy3)
-             CALL EDWLINE(isx3,isy3,isx4,isy4)
-             CALL EDWLINE(isx4,isy4,isx1,isy1)
+             CALL EDWLINE(iisx1,iisy1,iisx2,iisy2)
+             CALL EDWLINE(iisx2,iisy2,iisx3,iisy3)
+             CALL EDWLINE(iisx3,iisy3,iisx4,iisy4)
+             CALL EDWLINE(iisx4,iisy4,iisx1,iisy1)
            ELSE
-             CALL ESWLINE(isx1,isy1,isx2,isy2)
-             CALL ESWLINE(isx2,isy2,isx3,isy3)
-             CALL ESWLINE(isx3,isy3,isx4,isy4)
-             CALL ESWLINE(isx4,isy4,isx1,isy1)
+             CALL ESWLINE(iisx1,iisy1,iisx2,iisy2)
+             CALL ESWLINE(iisx2,iisy2,iisx3,iisy3)
+             CALL ESWLINE(iisx3,iisy3,iisx4,iisy4)
+             CALL ESWLINE(iisx4,iisy4,iisx1,iisy1)
            ENDIF
 
            CLOSEP=.TRUE.
@@ -2533,12 +2601,13 @@ C previous point.
           CP(1)=MP(1)
           CP(2)=MP(2)
           CALL CINTSCT(CP,PP,MIN1,MAX1,MIN2,MAX2,XI,YI,FOUND)
-          call u2pixel(xi,yi,iix,iiy)
+          call u2pixel(xi,yi,iax,iay)
 c          if(found)then
+            iiix=iax; iiiy=iay;iixp=ixp; iiyp=iyp
             if(csel(icon))then 
-              call edwline(iix,iiy,ixp,iyp)
+              call edwline(iiix,iiiy,iixp,iiyp)
             else
-              call eswline(iix,iiy,ixp,iyp)
+              call eswline(iiix,iiiy,iixp,iiyp)
             endif  
 c          endif        
           CLOSEP=.FALSE.
@@ -2582,10 +2651,11 @@ C        CALL ECLOSE(EP(3),VIEWCEN(3),0.01,CLOSEE)
 
       IF(IX.GT.IGL.AND.IX.LT.IGR.AND.IY.GT.IGT
      &.AND.IY.LT.IGB.AND.CLOSEE.AND.CLOSEP)THEN
+        iiix=ix; iiiy=iy;iixp=ixp; iiyp=iyp
         if(csel(icon))then 
-          call edwline(ix,iy,ixp,iyp)
+          call edwline(iiix,iiiy,iixp,iiyp)
         else
-          call eswline(ix,iy,ixp,iyp)
+          call eswline(iiix,iiiy,iixp,iiyp)
         endif 
         
         IF(NCONWP(ICON).GT.0)THEN
@@ -2664,23 +2734,26 @@ C Lower right.
 C Draw the arrow.
         call u2pixel(AL(1),AL(2),iax,iay)
         call u2pixel(AU(1),AU(2),iux,iuy)
+        iiax=iax; iiay=iay;iiix=ix; iiiy=iy
+        iiux=iux; iiuy=iuy
         if(csel(icon))then 
-          call edwline(iax,iay,ix,iy)
-          call edwline(iux,iuy,ix,iy)
+          call edwline(iiax,iiay,iiix,iiiy)
+          call edwline(iiux,iiuy,iiix,iiiy)
         else
-          call eswline(iax,iay,ix,iy)
-          call eswline(iux,iuy,ix,iy)
+          call eswline(iiax,iiay,iiix,iiiy)
+          call eswline(iiux,iiuy,iiix,iiiy)
         endif
       ELSEIF(IX.GT.IGL.AND.IX.LT.IGR.AND.IY.GT.IGT
      &.AND.IY.LT.IGB.AND.CLOSEE.AND..NOT.CLOSEP)THEN
         CP(1)=EP(1)
         CP(2)=EP(2)
         CALL CINTSCT(CP,PP,MIN1,MAX1,MIN2,MAX2,XI,YI,FOUND)
-        call u2pixel(xi,yi,iix,iiy)
+        call u2pixel(xi,yi,iax,iay)
+        iiax=iax; iiay=iay;iiix=ix; iiiy=iy
         if(csel(icon))then 
-          call edwline(iix,iiy,ix,iy)
+          call edwline(iiax,iiay,iiix,iiiy)
         else
-          call eswline(iix,iiy,ix,iy)
+          call eswline(iiax,iiay,iiix,iiiy)
         endif
 
         IF(NCONWP(ICON).GT.0)THEN
@@ -2758,30 +2831,34 @@ C Lower right.
 C Draw the arrow.
         call u2pixel(AL(1),AL(2),iax,iay)
         call u2pixel(AU(1),AU(2),iux,iuy)
+        iiax=iax; iiay=iay;iiix=ix; iiiy=iy
+        iiux=iux; iiuy=iuy
         if(csel(icon))then 
-          call edwline(iax,iay,ix,iy)
-          call edwline(iux,iuy,ix,iy)
+          call edwline(iiax,iiay,iiix,iiiy)
+          call edwline(iiux,iiuy,iiix,iiiy)
         else
-          call eswline(iax,iay,ix,iy)
-          call eswline(iux,iuy,ix,iy)
+          call eswline(iiax,iiay,iiix,iiiy)
+          call eswline(iiux,iiuy,iiix,iiiy)
         endif
              
       ELSEIF(CLOSEE.AND.CLOSEP)THEN
         CP(1)=EP(1)
         CP(2)=EP(2)
         CALL CINTSCT(CP,PP,MIN1,MAX1,MIN2,MAX2,XI,YI,FOUND)
-        call u2pixel(xi,yi,iix,iiy)
+        call u2pixel(xi,yi,iax,iay)
+        iiix=iax; iiiy=iay;iixp=ixp; iiyp=iyp
         if(csel(icon))then 
-          call edwline(iix,iiy,ixp,iyp)
+          call edwline(iiix,iiiy,iixp,iiyp)
         else
-          call eswline(iix,iiy,ixp,iyp)
+          call eswline(iiix,iiiy,iixp,iiyp)
         endif
       ELSE
         continue
       ENDIF
       
 C Reset the line colour to standard.
-      call winscl('-',0)
+      iicol=0
+      call winscl('-',iicol)
       RETURN
       END
 

@@ -22,6 +22,7 @@ C ESRU: espvwf
 
 C Revised to take in configuration file and zone focus.
       program espvwf
+      USE START_UP
 #include "building.h"
 #include "model.h"
 
@@ -88,6 +89,7 @@ C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       
 C Significant figure reporting limit (NSIGFIG).
@@ -112,13 +114,25 @@ C Name of current application
       CHARACTER OUTSTR*124,CUBN*6,ITEM*29
       CHARACTER DFILE*72,inf*144,LCMDFL*144,LCFGF*72
       CHARACTER VFILE*72,ZN*12,LTMP*72,L144*144,LTMPFL*72
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,cfgroot*24
       character journcmd*20,jfile*72,uname*24
       character inz*16,inzone*16,fs*1,cjfile*72
 
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
+
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSI
       integer numberofzones ! to pass to updwire rather than ncomp
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iicapture,iiazi    ! to pass to updcapt updazi
+#else
+      integer*8 numberofzones
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iicapture,iiazi    ! to pass to updcapt updazi
+#endif
       integer NITEMS,INO ! max items and current menu item
 
 C For help messages
@@ -285,24 +299,36 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=16
         LIMIT =16
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r View Factors ',
+     &  cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r View Factors: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
 
 C Open the text display box equal to LIMTTY if MMOD = 8.
 C If starting as a reduced percentage of default then widen the
 C graphic display to compensate.
       IF(MMOD.EQ.8)THEN
-        CALL win3d(menuchw,4,2,2,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=4; iiw2=2; iiw3=2; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
           call opensetup
           numberofzones=0
           call updwire(numberofzones)  ! pass local integer
-          call updcapt(1)
-          call updazi(1)
+          iicapture=1; iiazi=1
+          call updcapt(iicapture)
+          call updazi(iiazi)
         endif
         call setzscale()
         mdispl=0
@@ -319,7 +345,6 @@ C     &    mdispl,nifgrey,ncset,ngset,nzonec
 
       ENDIF
       CALL ESPrVersion("summary",cAppName,IUOUT)
-      call edisp(iuout,' ')
 
 C Find the user's home folder then get user's custom settings.
       call usrhome(upath)
@@ -373,7 +398,8 @@ C Take command line zone name and
 C determine if focus should be to a single zone.
       if(inz(1:1).ne.' ')then
         inzone=inz
-        write(outs,'(a,a)')' the input zone is: ',inzone
+        call edisp(iuout,'  ') ! echo a blank line
+        write(outs,'(a,a)')'The input zone is: ',inzone
         call edisp(iuout,outs)
         call tstamp('>',outs)
       else
@@ -420,7 +446,7 @@ C successful then scan all the zones via ZDATA.
             CFGOK=.TRUE.
             numberofzones=ncomp
             IF(MMOD.EQ.8)call updwire(numberofzones)
-            CALL ZDATA (ITRC,IER,numberofzones,ISFSUM)
+            CALL ZDATA (ITRC,IER,int(numberofzones),ISFSUM)
 
 C Open scratch file now that path is known. Extend the name of the
 C vwf file. If this file exists
@@ -555,7 +581,7 @@ C Find the path and local file name.
           CFGOK=.TRUE.
           numberofzones=ncomp
           IF(MMOD.EQ.8) call updwire(numberofzones)
-          CALL ZDATA (ITRC,IER,numberofzones,ISFSUM)
+          CALL ZDATA (ITRC,IER,int(numberofzones),ISFSUM)
           call tstamp('>','VWF: scanning new model')
           call tstamp('>',LCFGF)
 

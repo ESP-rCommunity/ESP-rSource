@@ -11,8 +11,7 @@ c Global DHW Variables
      &  fDHWVersionNumber,
      &  fWaterDrawCurveHourly,fWaterDrawCurveTotal,
      &  sDHW_InputFileName,fDHW_ground_temp_avg,
-     &  fDHW_ground_temp_amp,iDHW_ground_temp_cal_flag,
-     &  fHPRoomLoad
+     &  fDHW_ground_temp_amp,iDHW_ground_temp_cal_flag
 
 C iDay    Contains the day of the year number.
 C iMonth  Contains the Month Number.
@@ -25,9 +24,6 @@ C             supplied in the dhw or internally calculated
       INTEGER iDay,iMonth,iNTSTEP,iNumberOfTanks,
      &        iDHW_ground_temp_cal_flag
 
-     
-      real     fHPRoomLoad  ! Heat transferred to room 
-      
 C fNumOfOccupants   Number of Occupants.
 C fWaterDraw        Water Draw for current time step
 C fCold_Main_Temp(12) Cold Main temp array (Monthly).

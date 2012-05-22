@@ -39,6 +39,7 @@ C  ILoss (Integer) = Flag to include the break & loos or not in the calculation 
 C  IRep (Integer) = Flag to define the reporting level (1: Summary , 2: Detailed)
 
       PROGRAM eco
+      USE START_UP
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
@@ -94,6 +95,7 @@ C Composites information
       COMMON/C21/IFCFG,cfgroot,LCFGF
 
 C Defaults and paths
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       common/rpath/path
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -153,7 +155,6 @@ C Name of current application
       CHARACTER LCFGF*72,cfgroot*24
       CHARACTER outs*124,ITEM*35,Hold*24
       CHARACTER inf*144,LCMDFL*144
-      CHARACTER*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       CHARACTER path*72,L144*144
       CHARACTER NAM*72
 C      CHARACTER tab*1
@@ -172,8 +173,21 @@ C      CHARACTER tab*1
       CHARACTER*12 CompoNam,LayerNam,MatNameco
       CHARACTER*72 MatDesc,MatCat,LayerDes
 
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
+
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSI
       integer numberofzones ! to pass to updwire rather than ncomp
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iicapture,iiazi    ! to pass to updcapt updazi
+#else
+      integer*8 numberofzones
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iicapture,iiazi    ! to pass to updcapt updazi
+#endif
       integer NITEMS,INO ! max items and current menu item
 
 C For help messages
@@ -336,25 +350,37 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=16
         LIMIT =16
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r Ecobalance ',
+     &  cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'Ecobalance: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
 
 C Open the text display box equal to LIMTTY if MMOD = 8.  Problem
 C not yet know so pass 0 to the wireframe control routine (updwire).
 C If starting as a reduced percentage of default then widen the
 C graphic display to compensate.
       IF(MMOD.EQ.8)THEN
-        CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+
+C Setup and pass in parameters to win3d.
+        iiw1=4; iiw2=1; iiw3=1; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        igw=igr-igl
-        igwh=igb-igt
         if(iglib.eq.1)then
           call opencpw
           call opensetup
           numberofzones=0
           call updwire(numberofzones)  ! pass local integer
-          call updcapt(1)
-          call updazi(1)
+          iicapture=1; iiazi=1
+          call updcapt(iicapture)
+          call updazi(iiazi)
         endif
         call setzscale()
         call setgscale()

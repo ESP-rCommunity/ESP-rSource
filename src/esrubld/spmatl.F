@@ -234,7 +234,8 @@ C No shading case.
       qpnl=exrad(ispmloc(ispmnod,2))
 
 C Shading case.
-      if(exshad(ispmloc(ispmnod,2)).gt.1E-6)then
+      if((exshad(ispmloc(ispmnod,2)).gt.0.0).or.
+     &   (exshadf(ispmloc(ispmnod,2)).gt.0.0))then
          if(ishad.eq.0.or.ishad.eq.1)then
             qpnl=exrad(ispmloc(ispmnod,2))
          elseif(ishad.eq.2)then
@@ -1304,8 +1305,7 @@ C Special materials.
       real    exdir		!- direct solar radiation incident on surface
 				!  per unit area (includes shading effects)
       real    exdif		!- diffuse solar radiation incident on surface
-				!  per unit area (shading effect does not
-				!  apply on diffuse component)
+				!  per unit area (included shading effects)
       real    exshad		!- direct shaded portion expressed as a factor
 				!  b/w 0 and 1 of surface
       real    exshadf		!- diffuse shaded portion expressed as a factor
@@ -1790,43 +1790,43 @@ C and the two boundary nodes.
        endif
 
 C XML output.
-       Call AddToReportWild1(rvBldSPMatlEffIrr%Identifier,
+       Call AddToReport(rvBldSPMatlEffIrr%Identifier,
      &         fQPnl,
      &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       Call AddToReportWild1(rvBldSPMatlIncAngl%Identifier,
+       Call AddToReport(rvBldSPMatlIncAngl%Identifier,
      &         fIncidence_angle,
      &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       Call AddToReportWild1(rvBldSPMatlTrnsAngl%Identifier,
+       Call AddToReport(rvBldSPMatlTrnsAngl%Identifier,
      &         fTrans_IncAng,
      &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       Call AddToReportWild1(rvBldSPMatlTrns0%Identifier,
+       Call AddToReport(rvBldSPMatlTrns0%Identifier,
      &         fTrans_0,
      &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       Call AddToReportWild1(rvBldSPMatlTrns60%Identifier,
+       Call AddToReport(rvBldSPMatlTrns60%Identifier,
      &         fTrans_60,
      &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       Call AddToReportWild1(rvBldSPMatlTtlIncAr%Identifier,
+       Call AddToReport(rvBldSPMatlTtlIncAr%Identifier,
      &         fQInc,
      &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       Call AddToReportWild1(rvBldSPMatlTtlIncTtl%Identifier,
+       Call AddToReport(rvBldSPMatlTtlIncTtl%Identifier,
      &         fQInc * fSurfArea,
      &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       Call AddToReportWild1(rvBldSPMatlDrtIncAr%Identifier,
+       Call AddToReport(rvBldSPMatlDrtIncAr%Identifier,
      &         exdir(ispmloc(ispmnod,2)),
      &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       Call AddToReportWild1(rvBldSPMatlDffIncAr%Identifier,
+       Call AddToReport(rvBldSPMatlDffIncAr%Identifier,
      &         exdif(ispmloc(ispmnod,2)),
      &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       Call AddToReportWild1(rvBldSPMatlPVPow%Identifier,
+       Call AddToReport(rvBldSPMatlPVPow%Identifier,
      &         fPVPower,
      &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
@@ -4149,14 +4149,14 @@ C Pad index to 'XX'.
 
 C Output available PCM layer data.
       do idat=1,ndat
-         Call AddToReportWild3(rvBuiSpm%Identifier,
+         Call AddToReport(rvBuiSpm%Identifier,
      &      dataspm(ispmnod,idat),
      &      spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod))),
      &      '/z' // cZone_Chars // '/s' // cSurf_Chars
      &   // '/nd' // cNode_Chars,
      &      strspm(ispmnod,idat)(1:lnblnk(strspm(ispmnod,idat))))
 
-         Call AddToReportDetailsWild3(rvBuiSpm%Identifier,
+         Call AddToReportDetails(rvBuiSpm%Identifier,
      &      spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod))),
      &      '/z' // cZone_Chars // '/s' // cSurf_Chars
      &   // '/nd' // cNode_Chars,

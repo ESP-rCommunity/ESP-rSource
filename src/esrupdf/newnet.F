@@ -66,6 +66,7 @@ C Mass flow network.
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Plant network.
@@ -102,7 +103,6 @@ C Common controlling format of plant network file
       character*20 simtyp(3)
       character lpnam*72,laprob*72,LPNF*72
 
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       dimension ival(mpcom)
       CHARACTER*44 ITEM(28)
       CHARACTER H*72,outs*124,ltmp*72,pcname*15, lctlf*72,ctldoc*248

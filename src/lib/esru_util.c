@@ -18,6 +18,7 @@ These routines are called from ESP-r fortran code. The routines are :-
 #include <dirent.h>
 #include <sys/time.h>
 #include <string.h>
+#include <fc_commons.h>
 /* external defines are found in wwxlegacy.h */
 #include "wwxlegacy.h"
 
@@ -26,7 +27,6 @@ char path[73];	/* f77 project path    */
 char upath[73];	/* f77 users path    */
 char imgpth[25];	/* f77 relative path to images    */
 char docpth[25];	/* f77 relative path to documents    */
-char tmppth[25];	/* f77 relative path to scratch folder    */
 
 /* the wwc_ok and wwc_macro are treated as extern types in esru_x.c */
 int  wwc_ok = 0;   /* assume no echo of drawing commands to wwc */
@@ -191,9 +191,8 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
 
 /* local working string arrays */
   char *locflist = flist;
-  char *locact = act;
   int locnflist = *nflist;
-  static char file_list[100][73];	/* character arrays to hold folder or file names. */
+  static char file_list[400][73];	/* character arrays to hold folder or file names. */
   char name2[80];	/* buffer for folder name */
   char act2[8];	/* buffer for act */
 
@@ -207,10 +206,9 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
 */
 /* clear the local return string array and reset nflist */
   locnflist = 0;
-  for ( i = 0; i < 99; i++ ) {
+  for ( i = 0; i < 399; i++ ) {
     nwflist[i] = (long int) 0;
-    strcpy(file_list[i],
-      "                                                                         ");
+    strncpy(file_list[i],"                                                                         ",73);
   }
 /* Work with copy of folder name. */
   f_to_c_l(folder,&lenfolder,&ilen); strncpy(name2,folder,(unsigned int)ilen); name2[ilen] = '\0';
@@ -316,7 +314,7 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
 /* the terminal index should match the size of the file_list[] buffer and that
  * should match the MFFOLD parameter on the fortran side! 
  */
-      if ((foundone == 1) && (locnflist <= 99)) {	/* add d_name to the fixed string array */
+      if ((foundone == 1) && (locnflist <= 399)) {	/* add d_name to the fixed string array */
         ic = (int) strlen(dirt->d_name);
         nwflist[locnflist] = ic;	/* remember width of d_name */
         strcpy(file_list[locnflist],dirt->d_name);
@@ -325,8 +323,7 @@ void getfilelist_(folder,act,flist,nwflist,nflist,lenfolder,lenact,lenflist)
     }
 /* get recovered folder or file names back into the original fortran array */
     ipos = 0;
-    strcpy(locflist,
-  "                                                                         ");
+    strncpy(locflist,"                                                                         ",73);
   for(num = 0; num < locnflist; num++) {	/* for each recovered string...  */
     strncpy(&locflist[ipos],file_list[num],(unsigned int)lenflist);	/* copy to local array */
     ipos=ipos+lenflist;
@@ -388,46 +385,111 @@ void wwcsetend_()		/* indicate end of a set of drawing commands */
 }
 
 /* curproject_() - pass in info on the current project from fortran */
-void curproject_(fcfgroot,fpath,fupath,fimgpth,fdocpth,ftmppth,ibrowse,
-  len_root,len_fpath,len_fupath,len_fimgpth,len_fdocpth,len_ftmppth)
+void curproject_(fcfgroot,fpath,fupath,fimgpth,fdocpth,ibrowse,
+  iincomp,iincon,len_root,len_fpath,len_fupath,len_fimgpth,len_fdocpth)
   char *fcfgroot;	/* f77 project root name    */
-  char *fpath;	/* f77 project path    */
-  char *fupath;	/* f77 users path    */
-  char *fimgpth;	/* f77 relative path to images    */
-  char *fdocpth;	/* f77 relative path to documents    */
-  char *ftmppth;	/* f77 relative path to scratch folder    */
+  char *fpath;	/* fortran project path    */
+  char *fupath;	/* fortran users path    */
+  char *fimgpth;	/* fortran relative path to images    */
+  char *fdocpth;	/* fortran relative path to documents    */
   long int *ibrowse;	/* if = 0 then user owns, if = 1 user browsing */
-  int  len_root,len_fpath,len_fupath,len_fimgpth,len_fdocpth,len_ftmppth;	/* length of strings from f77  */
+  long int *iincomp;	/* current number of zones in model */
+  long int *iincon;	/* current number of connections in model */
+  int  len_root,len_fpath,len_fupath,len_fimgpth,len_fdocpth;	/* length of strings from fortran  */
 {
-  int  l_root,l_fpath,l_fupath,l_fimgpth,l_fdocpth,l_ftmppth;
+  int  l_root,l_fpath,l_fupath,l_fimgpth,l_fdocpth;
 
-  l_root = l_fpath = l_fupath = l_fimgpth = l_fdocpth = l_ftmppth =0;
+  l_root = l_fpath = l_fupath = l_fimgpth = l_fdocpth =0;
   browse = (int) *ibrowse;
-  strcpy(cfgroot,"                       ");
+  strncpy(cfgroot,"                        ",24);
   f_to_c_l(fcfgroot,&len_root,&l_root); strncpy(cfgroot,fcfgroot,(unsigned int)l_root);	/* copy to static */
   cfgroot[l_root] = '\0';
-  strcpy(imgpth, "                       ");
+  strncpy(imgpth, "                        ",24);
   f_to_c_l(fimgpth,&len_fimgpth,&l_fimgpth); strncpy(imgpth,fimgpth,(unsigned int)l_fimgpth);	/* copy to static */
   imgpth[l_fimgpth] = '\0';
-  strcpy(docpth, "                       ");
+  strncpy(docpth, "                        ",24);
   f_to_c_l(fdocpth,&len_fdocpth,&l_fdocpth); strncpy(docpth,fdocpth,(unsigned int)l_fdocpth);	/* copy to static */
   docpth[l_fdocpth] = '\0';
-  strcpy(tmppth, "                       ");
-  f_to_c_l(ftmppth,&len_ftmppth,&l_ftmppth); strncpy(tmppth,ftmppth,(unsigned int)l_ftmppth);	/* copy to static */
-  tmppth[l_ftmppth] = '\0';
-  strcpy(path,
-      "                                                                         ");
+  strncpy(path, "                                                                         ",72);
   f_to_c_l(fpath,&len_fpath,&l_fpath); strncpy(path,fpath,(unsigned int)l_fpath);	/* copy to static */
   path[l_fpath] = '\0';
-  strcpy(upath,
-      "                                                                         ");
+  strncpy(upath,"                                                                         ",72);
   f_to_c_l(fupath,&len_fupath,&l_fupath); strncpy(upath,fupath,(unsigned int)l_fupath);	/* copy to static */
   upath[l_fupath] = '\0';
-/* debug  fprintf(stderr,"cfgroot %s\n",cfgroot);  */
-/* debug  fprintf(stderr,"imgpth %s\n",imgpth);  */
-/* debug  fprintf(stderr,"docpth %s\n",docpth);  */ 
-/* debug  fprintf(stderr,"path %s\n",path);  */
-/* debug  fprintf(stderr,"upath %s\n",upath);  */
-/* debug  fprintf(stderr,"browse %d\n",browse);  */
+  cc1_.NCOMP = *iincomp;  // pass curent number of zones and connections to cc1_ structure
+  cc1_.NCON = *iincon;    // needed to ensure 32 bit and 64 bit safe transfer between fortran and c
+  // fprintf(stderr,"cfgroot %s\n",cfgroot);
+  // fprintf(stderr,"imgpth %s\n",imgpth);
+  // fprintf(stderr,"docpth %s\n",docpth); 
+  // fprintf(stderr,"path %s\n",path);
+  // fprintf(stderr,"upath %s\n",upath);
+  // fprintf(stderr,"browse %d\n",browse);
+  // fprintf(stderr,"ibrowse %ld\n",*ibrowse);
+  // fprintf(stderr,"iincompb %d\n",cc1_.NCOMP);
+  // fprintf(stderr,"iincon %d\n",cc1_.NCON);
   return;
 }
+
+// good place for other functions to pass information from fortran to c (like cimage_ and cray2_)
+
+/* curviews_() - pass in info on the current views from fortran */
+void curviews_(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,JITOBS,
+     JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW)
+  float *EVX,*EVY,*EVZ;  // eye point X Y Z
+  float *VX,*VY,*VZ;     // viewed point X Y Z
+  float *EAN,*DIS;       // angle of view and distance
+  long int *JITZNM;  //zone name toggle: display = 0, hidden = 1
+  long int *JITSNM;  // surface name toggle: display = 0, hidden = 1
+  long int *JITVNO;  // vertex toggle: display = 0, hidden = 1
+  long int *JITOBS;  // obstruction toggle: 
+  long int *JITSNR;  // surf normal toggle: display = 0, hidden = 1
+  long int *JITGRD;  // grid toggle: display = 0, hidden = 1
+  long int *JITORG;  // origin toggle: display = 0, hidden = 1
+  long int *JITBND;  // bounds toggle: static = 0, optimum = 1, zone focus = 2
+  long int *JITDSP;  // labels toggle: all surf + obs = 0, all surf = 1, partn = 2,
+                     // similar = 4, surfs + obs+ ground = 5, ground only = 6
+  long int *JITHLS;  // highlight toggle: normal 0, constr 1, trans/opaq 2, part atrib 3
+  long int *JITHLZ;  // 2nd hilight attribute
+  long int *JITPPSW; // current view - perspective/plan/south/west
+{
+  cray2_.ITDSP = *JITDSP;
+  cray2_.ITBND = *JITBND;
+  cray2_.ITZNM = *JITZNM;
+  cray2_.ITSNM = *JITSNM;
+  cray2_.ITVNO = *JITVNO;
+  cray2_.ITORG = *JITORG;
+  cray2_.ITSNR = *JITSNR;
+  cray2_.ITOBS = *JITOBS;
+  cray2_.ITHLS = *JITHLS;
+  cray2_.ITHLZ = *JITHLZ;
+  cray2_.ITGRD = *JITGRD;
+  cray2_.GRDIS = *DIS;
+  cray2_.ITPPSW = *JITPPSW;
+  cimage_.EYEM[0] = *EVX;
+  cimage_.EYEM[1] = *EVY;
+  cimage_.EYEM[2] = *EVZ;
+  cimage_.VIEWM[0] = *VX;
+  cimage_.VIEWM[1] = *VY;
+  cimage_.VIEWM[2] = *VZ;
+  cimage_.ANG = *EAN;
+}
+
+/* pushgzonpik_() pass info on gzonpik common to C code from fortran. */
+void pushgzonpik_(jizgfoc,jnzg)
+  long int *jizgfoc;  // current index of focus zone
+  long int *jnzg;     // number of selected zones
+{
+  cgzonpik_.izgfoc = *jizgfoc;
+  cgzonpik_.nzg = *jnzg;
+}
+
+/* pushnznog_() pass one item of nznog array to C code from fortran. */
+void pushnznog_(jnznog,jnznogv)
+  long int *jnznog;  // index of the item (fortran counting)
+  long int *jnznogv; // value of the item
+{
+  int item;
+  item = (int)*jnznog-1;  // decrement index for c use
+  cgzonpik_.nznog[item]= *jnznogv;
+}
+

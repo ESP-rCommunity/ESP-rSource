@@ -2751,33 +2751,33 @@ C.....Fuel cell balance of plant electrical efficiency
 C.....
 
 C.....Total electrical demand
-      call AddToReportWild1(rvPltQElecDemand%Identifier,
+      call AddToReport(rvPltQElecDemand%Identifier,
      &      q_total_elec,
      &      hold_name(1:hold_len))
 
 C.....Net electrical output
-      call AddToReportWild1(rvPltQElecNet%Identifier,
+      call AddToReport(rvPltQElecNet%Identifier,
      &      q_net_elec,
      &      hold_name(1:hold_len))
 
 C.....Parasitic electrical losses
-      call AddToReportWild1(rvPltQElecParasitic%Identifier,
+      call AddToReport(rvPltQElecParasitic%Identifier,
      &      q_par_elec,
      &      hold_name(1:hold_len))
 
 C.....Net thermal output
-      call AddToReportWild1(rvPltQThermalNet%Identifier,
+      call AddToReport(rvPltQThermalNet%Identifier,
      &      UA_exh*(T_exh_recent-Twater_recent),
      &      hold_name(1:hold_len))
 
 C.....Fuel HHV
-      call AddToReportWild1(rvPltFuelHHV%Identifier,
+      call AddToReport(rvPltFuelHHV%Identifier,
      &      phi_source,
      &      hold_name(1:hold_len))
 
 
 C.....Electrical Efficiency - fuel cell
-      call AddToReportWild1(rvPltElecEffFC%Identifier,
+      call AddToReport(rvPltElecEffFC%Identifier,
      &      eta_fc*100.,
      &      hold_name(1:hold_len))
 
@@ -2786,7 +2786,7 @@ C.....-> only report if phi_source is non-zero
       call eclose (phi_source, 0.0, 0.1, bClose)
       if (.not. bClose) then
 
-         call AddToReportWild1(rvPltElecEffBOP%Identifier,
+         call AddToReport(rvPltElecEffBOP%Identifier,
      &      q_net_elec / phi_source *100.,
      &      hold_name(1:hold_len))
       endif
@@ -2794,66 +2794,66 @@ C.....-> only report if phi_source is non-zero
 
 C.....Thermal efficiency ~ only report if phi_source is non-zero
       if (.not. bClose) then
-         call AddToReportWild1(rvPltCogEff%Identifier,
+         call AddToReport(rvPltCogEff%Identifier,
      &        (q_net_elec + UA_exh*(T_exh_recent-Twater_recent) )
      &            / phi_source * 100.,
      &      hold_name(1:hold_len))
       endif
 
 C.....Fuel Flow
-      call AddToReportWild1(rvPltFuelFlowMass%Identifier,
+      call AddToReport(rvPltFuelFlowMass%Identifier,
      &        m_dot_fuel_kg,
      &      hold_name(1:hold_len))
 
 C.....Fuel Flow - slpm
-      call AddToReportWild1(rvPltFuelFlowVol%Identifier,
+      call AddToReport(rvPltFuelFlowVol%Identifier,
      &        Vdot_fuel_STP,
      &      hold_name(1:hold_len))
 
 C.....Air Flow - mass
-      call AddToReportWild1(rvPltAirFlowMass%Identifier,
+      call AddToReport(rvPltAirFlowMass%Identifier,
      &        m_dot_air_kg,
      &      hold_name(1:hold_len))
 
 C.....Air Flow - volume
-      call AddToReportWild1(rvPltAirFlowVol%Identifier,
+      call AddToReport(rvPltAirFlowVol%Identifier,
      &        Vdot_air_STP,
      &      hold_name(1:hold_len))
 
 C.....Air Flow - stoicheometry
-      call AddToReportWild1(rvPltAirFlowStoi%Identifier,
+      call AddToReport(rvPltAirFlowStoi%Identifier,
      &        stoichs,
      &      hold_name(1:hold_len))
 
 
 C.....water Flow - volume
-      call AddToReportWild1(rvPltWaterFlowVol%Identifier,
+      call AddToReport(rvPltWaterFlowVol%Identifier,
      &        Vdot_liqwater,
      &      hold_name(1:hold_len))
 
 C.....Exhaust Gas - mass flow
-      call AddToReportWild1(rvPltExhaustFlowMass%Identifier,
+      call AddToReport(rvPltExhaustFlowMass%Identifier,
      &        m_dot_exh_kg,
      &      hold_name(1:hold_len))
 
 
 C.....Exhaust Gas - volumetric flow
-      call AddToReportWild1(rvPltExhaustFlowVol%Identifier,
+      call AddToReport(rvPltExhaustFlowVol%Identifier,
      &        Vdot_exh_STP,
      &      hold_name(1:hold_len))
 
 C.....Exhaust Gas - temperature
-      call AddToReportWild1(rvPltExhaustFlowTemp%Identifier,
+      call AddToReport(rvPltExhaustFlowTemp%Identifier,
      &        T_exh_recent,
      &      hold_name(1:hold_len))
 
 C.....Heat exchanger exit temperature
-      call AddToReportWild1(rvPltHExchgExitTemp%Identifier,
+      call AddToReport(rvPltHExchgExitTemp%Identifier,
      &        T_exit_recent,
      &      hold_name(1:hold_len))
 
 C.....Heat exchanger heat transfer coefficient
-      call AddToReportWild1(rvPltHExchgUAVal%Identifier,
+      call AddToReport(rvPltHExchgUAVal%Identifier,
      &        UA_exh,
      &      hold_name(1:hold_len))
 

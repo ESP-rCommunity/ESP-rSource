@@ -126,6 +126,7 @@ C zbasea(),ibases(),iuzbasea(),izbaselist() are defined in geometry.h
 C Save total transparent surface area for surfaces connected to external BC.
       common/PREC18/ZTRANA(MCOM)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GR3D07/Y0S(MS),Y0SS(MSSZ),Y0SE(MSEZ)
@@ -977,6 +978,7 @@ C Parameters
       integer IER          ! IER 0 OK IER 1 problem
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C NOTE: G1 is only valid for the zone that has currently been
@@ -1321,6 +1323,7 @@ C Save total transparent surface area for surfaces connected to external BC.
 
 C << do we need transparent surface area facing different orientations? >>
       common/PREC18/ZTRANA(MCOM)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C Error subroutine and error details for dll mode.
@@ -1757,17 +1760,19 @@ C the constructions database.
 C When scanning geometry warn users if the optical description in the
 C geometry file is different from that of the optical property associated
 C with the construction (TRAN is an ok mis-match).
-                lnow=lnblnk(word)   ! length for token in file
-                lno=lnblnk(OPT)     ! length for mlc optics
-                if(WORD(1:lnow).ne.OPT(1:lno))then
-                  if(WORD(1:4).eq.'TRAN')then
-                    continue
-                  else
-		    write(outs,*) 'Optics ',WORD(1:lnow),
+                if(ICF.gt.0)then
+                  lnow=lnblnk(word)   ! length for token in file
+                  lno=lnblnk(OPT)     ! length for mlc optics
+                  if(WORD(1:lnow).ne.OPT(1:lno))then
+                    if(WORD(1:4).eq.'TRAN')then
+                      continue
+                    else
+		      write(outs,*) 'Optics ',WORD(1:lnow),
      &                ' in geo file does not match optics of the MLC ',
-     &                DESC(ICF)(1:12),' ',OPT(1:lno)
-                    call edisp(iuout,outs)
-                    optcorrected=.true.
+     &                  DESC(ICF)(1:12),' ',OPT(1:lno)
+                      call edisp(iuout,outs)
+                      optcorrected=.true.
+                    endif
                   endif
                 endif
 
@@ -2013,6 +2018,9 @@ C Simplified thermal bridge data starts here. Scan three reals after tag.
           uavtotal(icomp)=VAL
           goto 62
         elseif(WORD(1:11).eq.'*ukt_bridge')then
+
+C Phrases for thermal bridges are checked and ibrdg index assigned
+C based on exact match of characters in phrase.
           nbrdg(icomp)=nbrdg(icomp)+1
           CALL EGETP(LOUTSTR,K,phrase,'W','bridge tag',IER)
           if(phrase(1:10).eq.'roof-wall ')then
@@ -2416,6 +2424,7 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
 
 C ZNAME (12 char) - the zone name (from geometry.h).
 C ZDESC (64 char) - zone notes (from geometry.h).
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
                
 C Thermal bridge common block is described in esruprj/edgeo.F
@@ -2548,23 +2557,35 @@ C Surface list. Write as a packed list comma separated.
 
 C Based on the current contents of SOTHER(I,1) create a buffer SO
 C to write out.
-        lso=lnblnk(SSOTHER(icc,1))
-        lso2=lnblnk(SSOTHER(icc,2))
-        lso3=lnblnk(SSOTHER(icc,3))
-        lsml=lnblnk(SSMLCN(icc))
-        lspa=lnblnk(SSPARENT(icc))
-        lsna=lnblnk(SSNAME(icc))
-        lsot=lnblnk(SSOTF(icc))
-        loth=lnblnk(OTHSTR)
-        WRITE(outs,'(20a)',IOSTAT=ios,ERR=13) '*surf ',
-     &    SSNAME(icc)(1:lsna),' ',SSVFC(icc),' ',
-     &    SSPARENT(icc)(1:lspa),' ',SSUSE(icc,1),' ',SSUSE(icc,2),
-     &    ' ',SSMLCN(icc)(1:lsml),' ',SSOTF(icc)(1:lsot),' ',
-     &    SSOTHER(icc,1)(1:lso),' ',SSOTHER(icc,2)(1:lso2),
-     &    ' ',SSOTHER(icc,3)(1:lso3)
-        call SDELIM(outs,outsd,'C',IW)
-        write(ifilg,'(2a,i3,2a)',IOSTAT=IOS,ERR=13) 
-     &    outsd(1:lnblnk(outsd)),'  # ',I,' ',OTHSTR(1:loth)
+        if(icc.gt.0)then
+          lso=lnblnk(SSOTHER(icc,1))
+          lso2=lnblnk(SSOTHER(icc,2))
+          lso3=lnblnk(SSOTHER(icc,3))
+          lsml=lnblnk(SSMLCN(icc))
+          lspa=lnblnk(SSPARENT(icc))
+          lsna=lnblnk(SSNAME(icc))
+          lsot=lnblnk(SSOTF(icc))
+          loth=lnblnk(OTHSTR)
+
+C Traps for possible blank strings if data structure corrupted.
+          if(SSVFC(icc)(1:4).eq.'    ') SSVFC(icc)='UNKN'
+          if(SSOTF(icc)(1:4).eq.'    ') SSOTF(icc)='UNKN'
+          if(SSPARENT(icc)(1:2).eq.'  ') SSPARENT(icc)='-'
+          WRITE(outs,'(20a)',IOSTAT=ios,ERR=13) '*surf ',
+     &      SSNAME(icc)(1:lsna),' ',SSVFC(icc),' ',
+     &      SSPARENT(icc)(1:lspa),' ',SSUSE(icc,1),' ',SSUSE(icc,2),
+     &      ' ',SSMLCN(icc)(1:lsml),' ',SSOTF(icc)(1:lsot),' ',
+     &      SSOTHER(icc,1)(1:lso),' ',SSOTHER(icc,2)(1:lso2),
+     &      ' ',SSOTHER(icc,3)(1:lso3)
+          call SDELIM(outs,outsd,'C',IW)
+          write(ifilg,'(2a,i3,2a)',IOSTAT=IOS,ERR=13) 
+     &      outsd(1:lnblnk(outsd)),'  # ',I,' ',OTHSTR(1:loth)
+        else
+
+C There was an array fault so write out a placeholder surface.
+          WRITE(outs,'(2a)',IOSTAT=ios,ERR=13) '*surf,fault,UNKN,-,-,',
+     &      '-,UNKN,OPAQUE,EXTERIOR,0,0'
+        endif
   102 CONTINUE
 
 C Default insolation distribution as packed string.
@@ -3446,6 +3467,7 @@ C If context is .true. then give verbose description of the boundary.
 
       common/SFIG/NSIGFIG
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       logical context
@@ -3547,6 +3569,7 @@ C the connections file).
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       CHARACTER OTHSTR*30,SST2*12,ZST2*12
 
@@ -3814,12 +3837,14 @@ C VOL(MCOM)     - zone bounded volume
 C << could it use ?? instead of G1? >>
 
       common/OUTIN/IUOUT,IUIN
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       DIMENSION XSUM(MS),YSUM(MS),ZSUM(MS)
       DIMENSION XX(MV),YY(MV),ZZ(MV),CG(3),EQN(4)
       LOGICAL CLOSE,closeaz,closeel
       CHARACTER outs*124
       integer lln   ! length of surface name
+      real distance,ofby
 
 C ZGUPDATE assumes that the zone geometry file has been read prior to
 C its invocation and that the read of the model configuration file has
@@ -3829,6 +3854,7 @@ C Set area summations to zero & consider each surface of the zone in turn.
       ier=0
       PI = 4.0 * ATAN(1.0)
       R=PI/180.
+
       DO 10 I=1,NZSUR(icomp)
 
 C Recover the connection associated with this zone and surface.
@@ -3886,7 +3912,9 @@ C Compute perimeter of the surface.
           jj=JVN(i,ii)
           kk=JVN(i,ii+1)
           vdis=0.0
-          vdis= crowxyz(x(jj),y(jj),z(jj),x(kk),y(kk),z(kk))
+          if(jj.gt.0.and.kk.gt.0)then
+            vdis= crowxyz(x(jj),y(jj),z(jj),x(kk),y(kk),z(kk))
+          endif
           SSPERIM(icc)=SSPERIM(icc)+vdis
   42    continue
 
@@ -3894,28 +3922,55 @@ C Link back to start vertex.
         jj=JVN(i,NVER(i))
         kk=JVN(i,1)
         vdis=0.0
-        vdis= crowxyz(x(jj),y(jj),z(jj),x(kk),y(kk),z(kk))
+        if(jj.gt.0.and.kk.gt.0)then
+          vdis= crowxyz(x(jj),y(jj),z(jj),x(kk),y(kk),z(kk))
+        endif
         SSPERIM(icc)=SSPERIM(icc)+vdis
 
 
-C Derive the equation of the polygon.
+C Derive the equation of the polygon, if problems generating the
+C equation echo warnings.
         DO 60 KK=1,NVER(i)
           XX(KK) = X(JVN(I,KK))
           YY(KK) = Y(JVN(I,KK))
           ZZ(KK) = Z(JVN(I,KK))
    60   CONTINUE
         N = NVER(i)
+        ierr=0
         call PLEQN(XX,YY,ZZ,N,CG,EQN,IERR)
-
-C See if any points are out of the plane.
-        iwhich=0
-        ofby=0.0
 	lln=lnblnk(ssname(icc)) 
-	call CHECKWARP(1,iuout,i,N,XX,YY,ZZ,iwhich,ofby,ivoff)
-	if(ivoff.gt.0)then
-	  write(outs,'(5a)') ' Surface ',ssname(icc)(1:lln),' in ',
-     &      zname(icomp)(1:lnzname(icomp)),
-     &      ' is probably warped. Please check via surface transforms.'
+	if(ierr.ne.0.and.itrc.gt.0)then
+          if(ierr.eq.1)then
+	    write(outs,'(5a)') ' Surface ',ssname(icc)(1:lln),
+     &        ' in ',zname(icomp)(1:lnzname(icomp)),
+     &        ' not enough points for plneqn.'
+          elseif(ierr.eq.-1)then
+	    write(outs,'(5a)') ' Surface ',ssname(icc)(1:lln),
+     &        ' in ',zname(icomp)(1:lnzname(icomp)),
+     &        ' issue with unit vector in plneqn.'
+          else
+	    write(outs,'(5a)') ' Surface ',ssname(icc)(1:lln),
+     &        ' in ',zname(icomp)(1:lnzname(icomp)),
+     &        ' issue in plneqn.'
+          endif
+          call edisp(iuout,outs)
+        endif
+
+C See if any points are out of the plane. Note a point that is
+C only a few mm off of the line can result in a warp which is
+C reported as a larger number.
+        ofby=0.0
+        DO 64 KK=1,NVER(i)
+          distance = EQN(1)*XX(KK) + EQN(2)*YY(KK) + EQN(3)*ZZ(KK)
+     &      - EQN(4)
+          if(distance.gt.ofby) ofby=distance
+  64    continue
+	lln=lnblnk(ssname(icc)) 
+	if(ofby.gt.0.01.and.itrc.gt.0)then
+	  write(outs,'(5a,F6.4,a)') ' Surface ',ssname(icc)(1:lln),
+     &      ' in ',zname(icomp)(1:lnzname(icomp)),
+     &      ' is warped by ',ofby,
+     &      'm. Please check via surface transforms.'
           call edisp(iuout,outs)
         endif
 
@@ -4038,6 +4093,7 @@ C act is '-' derive geometric data or 'c' also determine parent
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       CHARACTER outs*124,act*1,h*72
@@ -4309,8 +4365,8 @@ C other must face the ground
                     endif
                   endif
 
-                  if(itrc.gt.1)then
-                  endif
+C                  if(itrc.gt.1)then
+C                  endif
 
 C Test if azimuth are within two degrees. For the special case of the
 C difference between the two being ~360deg call it closeazi
@@ -4480,12 +4536,13 @@ C be duplicates.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       DIMENSION IDVN(MV),nTbchild(MCON)
       DIMENSION ICOMVER(MS)  ! icomver is the number of vertices in common
-      dimension idupv(MS,12)    ! duplicate vertex indices
-      dimension iduplist(MS,12) ! position in list
+      dimension idupv(MS,6)    ! duplicate vertex indices
+      dimension iduplist(MS,6) ! position in list
       LOGICAL closeazi,closeelv
       CHARACTER ACT*1,CHILDRIN*12,PARENTIN*12
       integer isur   ! loop counter for parent surface loop
@@ -4736,6 +4793,7 @@ C << zone geometry file if havec24 is true?
       common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
 C Variables from geometry.h:
@@ -4942,6 +5000,7 @@ C << update documentation as well as reporting based on files >>
 #include "model.h"
 #include "geometry.h"
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &     nsurfinso(MCOM),isurfinso(MCOM,MS)
@@ -5048,8 +5107,16 @@ C Parameters
             ENDIF
  8794     CONTINUE
  8792   CONTINUE
-        WRITE(OUTSTR,9993)I,X(I),Y(I),Z(I),(ISASSO(IH),IH=1,IHIT)
- 9993   FORMAT(I5,3F10.3,'  ',10(I2,', '))
+        if(IHIT.lt.5)then
+
+C If there are less than 5 surfaces write our their names.
+          WRITE(OUTSTR,9994)I,X(I),Y(I),Z(I),
+     &      (SNAME(icomp,ISASSO(IH)),IH=1,IHIT)
+ 9994     FORMAT(I5,3F10.4,'  ',5(A,' '))
+        else
+          WRITE(OUTSTR,9993)I,X(I),Y(I),Z(I),(ISASSO(IH),IH=1,IHIT)
+ 9993     FORMAT(I5,3F10.4,'  ',10(I2,', '))
+        endif
         call edisp(ITRU,OUTSTR)
  8790 CONTINUE
 
@@ -5062,14 +5129,14 @@ C Surfaces with associated vertices.
       call edisp(ITRU,'        |Vertices|')
       DO 9991 I=1,NZSUR(ICOMP)
         NV=NVER(I)
-        if(NV.le.27)then
-          WRITE(OUTSTR,9990)I,NV,(JVN(I,J),J=1,NV)
+        if(NV.le.26)then
+          WRITE(OUTSTR,9990) SNAME(icomp,I),NV,(JVN(I,J),J=1,NV)
           call edisp(ITRU,OUTSTR)
         else
-          WRITE(LOUTSTR,9990)I,NV,(JVN(I,J),J=1,NV)
+          WRITE(LOUTSTR,9990)SNAME(icomp,I),NV,(JVN(I,J),J=1,NV)
           call edisp248(ITRU,LOUTSTR,90)
         endif 
- 9990   FORMAT(I6,I9,I5,42(',',I3))
+ 9990   FORMAT(A,I3,I5,42(',',I3))
  9991 CONTINUE
       RETURN
       END
@@ -5162,6 +5229,7 @@ C If 'is' is passed as 0 then check all, otherwise exclude surface is.
       
       integer lnblnk  ! function definition
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       character string*12,SN*12
       logical ok
@@ -5198,6 +5266,7 @@ C If 'is' is returned as 0 if no match.
       
       integer lnblnk  ! function definition
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       character string*12,SN*12
       
@@ -5227,6 +5296,7 @@ C and length is its maximum length.
       
       integer lnblnk  ! function definition
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       
       dimension lstsf(mcom,ms),iva(ms)

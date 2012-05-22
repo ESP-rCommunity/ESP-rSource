@@ -22,6 +22,7 @@ C The file edatabase.f is a collection of support facilities for
 C reading and reporting ESP-r databases and contains the following:
 
 C  ERMLDB:  Read an ASCII composite db and return data via block MLC.
+C  parsemlcdesc: Parse the DESC string from the MLC common block
 C  ETMLDB:  Provides reporting on current description of a composite.
 C  ETMLDBU returns U value of construction based on contents of common MLC.
 C  EPKMLC:  Select a composite construction with display of details.
@@ -238,7 +239,7 @@ C of a MLC with inverted layers or the keywords SYMMETRIC or NONSYMMERTIC).
         IF(IER.NE.0)GOTO 99
 
 C Parse the DESC string into string tokens.
-        call parsemlcdesc(DESC(I),MLCN,OTF,OPT,MLCSYM)
+        call parsemlcdesc(DESC(I),MLCN,OTF,OPT,MLCSYM,isymindex)
 
         IF(LAYERS(I).LE.0)GOTO 10
 
@@ -253,7 +254,7 @@ C -99 which requires further logic in order to locate the relevant
 C material properties.
           CALL EGETWI(OUTSTR,K,IPR(I,IL),-99,600,'F',
      &        'materials db index',IER)
-          CALL EGETWR(OUTSTR,K,DTHK(I,IL),0.0001,2.0,'W',
+          CALL EGETWR(OUTSTR,K,DTHK(I,IL),0.0001,0.5,'W',
      &        'layer thickness',IER)
 
 C Increment thickness of MLC.
@@ -516,7 +517,11 @@ C ******* parsemlcdesc
 C Parse the DESC string from the MLC common block returning text for
 C MLCN (its name) ,OTF (whether OPAQ/TRAN/CFC) ,OPT (optical name) ,MLCSYM
 C tag for symmetry. Where values are missing or unknown setup defaults.
-      subroutine parsemlcdesc(DES,MLCN,OTF,OPT,MLCSYM)
+C If isymindex is non-zero it is index of MLC for symmetric MLC.
+      subroutine parsemlcdesc(DES,MLCN,OTF,OPT,MLCSYM,isymindex)
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -538,12 +543,51 @@ C Clear parameters to be returned and then copy from DES.
       ENDIF
 
 C Read tag for name of inverted version or symmetry if the length of the
-C DESC string could hold the tag, otherwise set MLCSYM to a blank.
+C DESC string could hold the tag, otherwise set MLCSYM to a blank. Also
+C check the MLC index of MLCSYM so that can be returned.
       if(lnblnk(DES).gt.35)then
         WRITE(MLCSYM,'(A)') DES(35:46)
+
+C Look for index for MLCSYM in the current MLC database.
+        isymindex=0  ! assume no matching MLC          
+        do 5 ii=1,nmlc
+          if(MLCSYM(1:12).eq.DESC(ii)(1:12)) then
+            isymindex=ii   ! remember MLC index     
+          endif
+  5     continue
       else
         MLCSYM='  '
+        isymindex=0   ! signal not applicable     
       endif
+      return
+      end
+
+C ******* matchmlcdesc
+C matchmlcdesc parse string (DES) and see if first 12 char matches a MLC
+C item - if so return its MLC index. DES might be from SMLCN or some 
+C other source.
+      subroutine matchmlcdesc(DES,imlcindex)
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
+
+C Passed parameters
+      character*(*) DES
+      integer imlcindex
+
+C Local variable.
+      character MLCN*12
+      integer ii
+
+C Look for index for MLCN in the current MLC database.
+      imlcindex=0  ! assume no matching MLC          
+      WRITE(MLCN,'(A)')DES(1:12)
+      if(MLCN(1:4).eq.'UNKN') return
+      do 5 ii=1,nmlc
+        if(MLCN(1:12).eq.DESC(ii)(1:12)) then
+          imlcindex=ii   ! remember MLC index     
+        endif
+  5   continue
       return
       end
 
@@ -807,7 +851,7 @@ C construction based on contents of common MLC.
       
 C Pick up general description of the composite.
       ier=0
-      call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM)
+      call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
       IF(ITRC.GE.1)THEN
         CALL EDISP(ITRU,' ')
         IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
@@ -1033,7 +1077,7 @@ C Material properties.
       real RTG  ! sum of surface coef at foundation
 
 C Pick up general description of the composite.
-      call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM)
+      call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
 
 C Check version of material database.
       call eclose(matver,1.1,0.01,closemat1)

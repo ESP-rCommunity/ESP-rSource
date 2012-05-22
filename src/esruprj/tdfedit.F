@@ -33,7 +33,6 @@ C TDFUPD: updates TDF file from an exchange file.
 #include "model.h"
 #include "epara.h"
 #include "tdf2.h"
-#include "espriou.h"
       
       integer lnblnk  ! function definition
 
@@ -45,7 +44,6 @@ C CREATE,PREV,NEXT,EDIT,LIST,NONE
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/tdaid/tdaide(2)
       COMMON/GDPER/igbdoy,igedoy
@@ -54,6 +52,7 @@ C CREATE,PREV,NEXT,EDIT,LIST,NONE
       common/C21/IFCFG,cfgroot,LCFGF
 
 C Related to inport and export files.
+      CHARACTER LIMP*96,LEXP*96
       COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP
 
 C Logical flags for file openings.
@@ -63,19 +62,36 @@ C Logical flags for file openings.
       logical FOUND,XST,unixok,silent
 
       DIMENSION ITEM(30),ikeybk(30),itemsel(MIT),itemval(MIT)
-      CHARACTER LIMP*72,LEXP*72,H*72,tdaide*72
-      character afil*72,tfile*72,TTAG*12
+      CHARACTER tdaide*72
+      character afil*96,tfile*96,TTAG*12
       CHARACTER LTMPFL*72
-      CHARACTER ITEM*50,itemsel*50,KEY*1,FOCUS*8,DFILE*72
+      CHARACTER ITEM*50,itemsel*50,KEY*1,FOCUS*8,DFILE*96
       CHARACTER PERST1*14,PERST2*44,PERST3*44
       character path*72,outs*124,fs*1
       character act*16,actf*72,action*16,msgl2*124
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSI
       integer numberofzones ! to pass to updwire rather than ncomp
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iicapture,iiazi    ! to pass to updcapt updazi
+#else
+      integer*8 numberofzones
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iicapture,iiazi    ! to pass to updcapt updazi
+#endif
       integer IRE  ! for radio button
       integer MITEM,INO ! max items and current menu item
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='tdfedit'  ! set for subroutine
+      
 C For debugging set itrc =2
       ITRC=1
 
@@ -121,9 +137,14 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
           call winclr
           CALL feedbox(menuchw,2,igfw,igfh)
           CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-          CALL win3d(menuchw,9,12,7,3,igl,igr,igt,igb,igw,igwh)
-          igw=igr-igl
-          igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+          iiw1=9; iiw2=12; iiw3=7; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
           call opencpw
           call opensetup
         elseif(iglib.eq.2)then
@@ -208,8 +229,10 @@ C Convert scratch file data and attributes into temporal ascii file.
 
 C Extract a period of information from the scratch file into a
 C text file in 'extract' format (a cut down version of ascii temporal file).
-        H(1)='The selected format for the input of time is currently'
-        H(2)='set as a fraction of a day 0.4271 (eq 10h15).'
+
+C Help text for this menu.
+        helptopic='tdf_time_format'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         write(outs,'(a,i4,a)')'Currently there are ',NTSPH,' ts/h. '
         call edisp(iuout,outs)
         write(outs,'(a,i4,a,i4)')'and data is available from day ',
@@ -218,10 +241,10 @@ C text file in 'extract' format (a cut down version of ascii temporal file).
         TIMEJD=real(itdbdoy)
         CALL EASKR(TIMEJD,' Time (as julian day) to start recovery? ',
      &    '  ',real(itdbdoy),'F',real(itdedoy),'F',1.5,
-     &    'time=decimal day',IER,2)
+     &    'time=decimal day',IER,nbhelp)
         incr=NDBSTP - INT(NTSPH*24*(TIMEJD-real(itdbdoy)))
         CALL EASKI(incr,' Number of steps to recover ',' ? ',
-     &    1,'F',NDBSTP,'F',1,'steps to recover',IER,2)
+     &    1,'F',NDBSTP,'F',1,'steps to recover',IER,nbhelp)
         msgl2='  '
         call USRMSG('Extracting timestep data...',msgl2,'-')
         call extracts(itrc,actf,IUEXP,TIMEJD,incr,ier)
@@ -321,66 +344,10 @@ C Set the menu control text.
       ITEM(MITEM-1)  ='? Help                                 '
       ITEM(MITEM)    ='- Exit menu                            '
 
-      H(1)='The ESRU Temporal Definition supports the creation'
-      H(2)='and management of temporal data from 3rd party'
-      H(3)='experiments or 3rd party software. It can also hold'
-      H(4)='scheduling for short timestep casual gains, air'
-      H(5)='movement and boundary conditions. It is also useful'
-      H(6)='for data that changes at each timestep.'
-      H(7)=' '
-      H(8)='Preferences : file names & types, periods, import/export'
-      H(9)='             files & date display.'
-      H(10)='Save : Update the TDF file and/or convert between ascii.'
-      H(11)='       and binaray versions. '
-      H(12)=' '
-      H(13)='Currently the following item types are offered: '
-      H(14)=' ALLCLMT - all climate data (includes next 6 items)'
-      H(15)=' BDTEXTT - ambient temperature'
-      H(16)=' WINDVLT - wind velocity'
-      H(17)=' WINDDRT - wind direction'
-      H(18)=' RELHUMT - ambient relative humidity'
-      H(19)=' DIFHSLT - diffuse horizonal radiation'
-      H(20)=' GLOHSLT - global horizonal radiation'
-      H(21)=' DIRSOLT - direct normal solar radiation'
-      H(22)=' SETPTTT - control setpoint temperature'
-      H(23)=' CASUALT - zone casual gains (combined gains)'
-      H(24)=' CASUAL3T -zone casual gains (Occup/Lights/SM Pwr)'
-      H(25)=' ACTIVITY -global database: gains,setpoints, etc.'
-      H(26)=' BIDIRSET -alternate bidirectional datasets'
-      H(27)=' HTCLSETP -Specify columns to read H/C setpoints.'
-      H(28)=' DBTZNM   - measured zone db temperature'
-      H(29)=' SURTM    - measured surface temperature'
-      H(30)=' '
-      H(31)='To create a new file, select option 1 and follow the'
-      H(32)='instructions given. You will be asked for the year '        
-      H(33)='and the period and the timesteps per hour and then '        
-      H(34)='for an initial temporal type. '        
-      H(35)=' '        
-      H(36)='Insert by selecting an insertion point, the list will'
-      H(37)='expand and you can select a generic type. '
-      H(38)=' '        
-      H(39)='Delete by selecting a slot and the list will contract.'
-      H(40)=' '        
-      H(41)='Copy by selecting source and then destination.'
-      H(42)='The destination data will be overwritten - so you need'
-      H(43)='to have created a destination item to overwrite before'        
-      H(44)='you ask for a copy. '
-      H(45)=' '
-      H(46)='The TDF file is the main temporal file.'
-      H(47)='The period shown is related to all tabular data'
-      H(48)='and includes any `startup` time required by the'
-      H(49)='simulation.  Example: for a simulation at half hour '
-      H(50)='intervals over 10 days and with 2 startup days the '
-      H(51)='temporal file should include 288 timesteps. '
-      h(52)=' '
-      h(53)='Note on file headers:'
-      h(54)='Older asci temporal files may start with `TDFdatabase2`'
-      h(55)='before using them please change 1st line to use the'
-      h(56)='identifier ASCIITDF2'
-      h(57)='Newer ascii files will start with `ASCIITDF3`.'
-      h(58)='Also note that binary/scratch temporal files are'
-      h(59)='machine dependant and are not always safe for use on'
-      h(60)='another computer.'
+
+C Help text for this menu.
+      helptopic='tdf_overview_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Main tdf menu.
       CALL EMENU('  Temporal definitions',ITEM,MITEM,INO)
@@ -388,29 +355,12 @@ C Main tdf menu.
 
 C Define TDF file name then read the header information should be 
 C accompanied by refresh of the gereric arrays GTYPES,GMENUS
-        H(1)='The TDF file is the name of an ascii file which holds'
-        H(2)='the attributes and temporal (short timestep) data of '
-        H(3)='casual gains, boundary conditions, flow measurements etc.'
-        H(4)=' '
-        h(5)='While editing temporal data in this module or using the'
-        h(6)='data during a simulation or as results are being'
-        h(7)='recovered, a scratch (binary) file is created. '
-        h(8)=' '
-        h(9)='I you supply the name of a binary version of the '
-        h(10)='temporal file it will be translated into an ascii '
-        h(10)='version and a new scratch file created. '
-        h(11)=' '
-        h(12)='Note: if you need to create a new binary temporal file'
-        h(13)='from an ESP-r ascii temporal file use the command line'
-        h(14)='option to do the conversion: '
-        h(15)='tdf -file xx.tdf -act import -actf yy.tdf.a '
-        h(16)='  where xx.tdf is the name of the new binary file to'
-        h(17)='  create and yy.tdf.a is the asci temporal file to'
-        h(18)='  be read in.'
+        helptopic='tdf_file_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         DFILE='tdf.dba'
-        tfile=LTDFA
+        write(tfile,'(a)') LTDFA(1:lnblnk(LTDFA))
         CALL EASKS(tfile,' Temporal file name? ',
-     &   ' ',72,DFILE,'TDF file name',IER,18)
+     &   ' ',96,DFILE,'TDF file name',IER,nbhelp)
 
 C Check if the file exists and if it does use supplyandcheck
 C to see if it is binary (make an ascii version) or ascii (make
@@ -425,12 +375,8 @@ C a scratch file). If it does not exist offer to create one.
 C File not found so offer option to create a minimal file.
             WRITE(OUTS,'(2X,A,A)') tfile(1:lnblnk(tfile)),' not found!'
             dok=.true.
-            h(1)='No temporal file was found so a minimal file '
-            h(2)='will be created if you say yes. '
-            h(3)=' '
-            h(4)='If you say no, you can create one later. '
             CALL ASKOK(outs,' Create a new scratch & asci file?',
-     &        OK,dok,4)
+     &        OK,dok,nbhelp)
             IF(.NOT.OK) goto 3
             call isunix(unixok)
             if(unixok)then
@@ -471,11 +417,8 @@ C Write out an equivalent ascii file.
           endif
         endif
         if(NITDF.eq.0)then
-          h(1)='Initial setup prompts you for the necessary data to'
-          h(2)='setup a new temporal definition. You can also do it'
-          h(3)='manually. '
           CALL EASKAB(' Empty file. Options:',' ',
-     &     'setup initial data','continue',IRT,3)
+     &     'setup initial data','continue',IRT,nbhelp)
           if(IRT.eq.1)then
            call glbset('init')
           endif
@@ -527,16 +470,22 @@ C << for some reason efdelet does not actually remove the file?? >>
           call winclr
           CALL feedbox(menuchw,2,igfw,igfh)
           CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
-          CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
-          igw=igr-igl
-          igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+          iiw1=4; iiw2=1; iiw3=1; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
           if(iglib.eq.1)then
             call opencpw
             call opensetup
             numberofzones=0
             call updwire(numberofzones)  ! pass local integer
-            call updcapt(1)
-            call updazi(1)
+            iicapture=1; iiazi=1
+            call updcapt(iicapture)
+            call updazi(iiazi)
           elseif(iglib.eq.2)then
             continue
           endif
@@ -545,16 +494,18 @@ C << for some reason efdelet does not actually remove the file?? >>
       ELSEIF(INO.EQ.MITEM-1)THEN
 
 C Help about temporal facility.
-        CALL PHELPD('tdf opening',60,'-',0,0,IER)
+        helptopic='tdf_overview_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('tdf opening',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.MITEM-2)THEN
 
 C Save TDF data. May have to move to the last record before exiting.
-        h(1)='You may save the current binary file or'
-        h(2)='import or export a ASCII version. '
+        helptopic='tdf_save_data'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IRE=1
         CALL EASKATOG(' File options:',' ','save ascii file',
      &   'ascii temporal>binary','binary>ascii temporal',
-     &   'extract data','continue',' ',' ',IRE,2)
+     &   'extract data','continue',' ',' ',IRE,nbhelp)
         if(ire.eq.1)then
           CALL EWTDF(IER)
           CALL EDISP(IUOUT,' ')
@@ -594,14 +545,11 @@ C            write(6,*) 'compacting from ',nuwpr,' to ',itnwpr
      &      'temporal file.','W')
           goto 44
         elseif(ire.eq.3)then
-          h(1)='File name for ascii version of the temporal file.'
           afil='  '
           CALL EASKS(afil,' Ascii export file name? ',' ',
-     &      72,LEXP,'ascii export',IER,1)
+     &      96,LEXP,'ascii export',IER,nbhelp)
           call ewtdfa(itrc,afil,IUEXP,0,ier)
         elseif(ire.eq.4)then
-          H(1)='The selected format for the input of time is currently'
-          H(2)='set as a fraction of a day 0.4271 (eq 10h15).'
           write(outs,'(a,i4,a)')'Currently there are ',NTSPH,' ts/h. '
           call edisp(iuout,outs)
           write(outs,'(a,i4,a,i4)')'and data is available from day ',
@@ -610,12 +558,12 @@ C            write(6,*) 'compacting from ',nuwpr,' to ',itnwpr
           TIMEJD=real(itdbdoy)
           CALL EASKR(TIMEJD,' Time (as julian day) to start recovery?',
      &     '  ',real(itdbdoy),'F',real(itdedoy),'F',1.5,
-     &     'time=decimal day',IER,2)
+     &     'time=decimal day',IER,nbhelp)
           incr=1
           CALL EASKI(incr,' Number of steps to recover ',' ? ',
-     &      1,'F',100,'F',1,'steps to recover',IER,2)
+     &      1,'F',100,'F',1,'steps to recover',IER,nbhelp)
           CALL EASKS(afil,' Ascii export file name? ',' ',
-     &      72,LEXP,'ascii export',IER,1)
+     &      96,LEXP,'ascii export',IER,nbhelp)
           msgl2='  '
           call USRMSG('Extracting from file...',msgl2,'-')
           call extracts(itrc,afil,IUEXP,TIMEJD,incr,ier)
@@ -654,13 +602,10 @@ C Manage list. Begin by creating selection list.
   101     continue
         endif
 
-        H(1)='Adding an item - placed at the end of the list. '
-        H(2)='Deleting an item (irreversable) shifts subsequent '
-        H(3)=' items up in the list. '
-        H(4)='Copy of item will overwrite the contents of the  '
-        H(5)=' destination item. '
+        helptopic='tdf_add_an_item'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABC('Entry options:',' ',
-     &   'add entry','delete entry','copy entry',IRT,5)
+     &   'add entry','delete entry','copy entry',IRT,nbhelp)
         if(IRT.eq.1)then
           IFOC=NITDF+1
           CALL ITINSRT(ITRC,IFOC,IER)
@@ -671,22 +616,18 @@ C Manage list. Begin by creating selection list.
             msgl2=' Could not expand the current file.'
             CALL USRMSG(' ',msgl2,'-')
           else
-            H(1)='In order to find items in the TDF db a unique name'
-            H(2)='must be assigned to each entry. This name is a '
-            H(3)='string up to 12 characters long with no blanks.'
             TTAG=TAG(IFOC)
             CALL EASKS(TTAG,' ','Name for entry? ',
-     &         12,'new_item','item id',IER,3)
+     &         12,'new_item','item id',IER,nbhelp)
             if(TTAG(1:2).ne.'  ')then
               TAG(IFOC)=TTAG
             endif
           endif
         elseif(IRT.eq.2)then
           CALL EPMENSV
-          H(1)='Choose an item to delete.'
           inpic=1
           CALL EPICKS(INPIC,itemval,' ',' Which item to delete?',
-     &      50,NITDF,itemsel,' item list',IER,1)
+     &      50,NITDF,itemsel,' item list',IER,nbhelp)
           CALL EPMENRC
           if(inpic.eq.1)then
             ifoc=itemval(1)
@@ -700,20 +641,17 @@ C Manage list. Begin by creating selection list.
 C Perform copy of static and period data from one instance to
 C another (destination must already exist)..
           CALL EPMENSV
-          H(1)='Choose an item to copy. You will then be asked'
-          H(2)='for a destination (which must already exist).'
           inpic=1
           CALL EPICKS(INPIC,itemval,' ',' Which item to copy?',
-     &      50,NITDF,itemsel,' item list',IER,2)
+     &      50,NITDF,itemsel,' item list',IER,nbhelp)
           if(inpic.eq.1)then
             ifoc=itemval(1)
           endif
-          H(1)='Choose a destination item.'
           inpic=1
           CALL EPICKS(INPIC,itemval,
      &      '(destination item must exist and be the same type)',
      &      ' Which item as destination?',
-     &      50,NITDF,itemsel,' item list',IER,1)
+     &      50,NITDF,itemsel,' item list',IER,nbhelp)
           if(inpic.eq.1)then
             ifoc2=itemval(1)
           endif
@@ -793,37 +731,28 @@ C If foc='init' do initial setup.
 #include "tdf2.h"
 
       COMMON/TRC/ITRC
-      common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/tdaid/tdaide(2)
       COMMON/GDPER/igbdoy,igedoy
 
       character foc*4,TTAG*12
-      CHARACTER*72 H,tdaide,tmp72
+      CHARACTER*72 tdaide,tmp72
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='glbset'  ! set for subroutine
+      
       if(foc.eq.'init'.or.foc.eq.'date')then
 
 C Define the beginning and ending dates for the TDF file.
-        H(1)= 'Period of the temporal file:'
-        H(2)= 'The year is required. It should match that of '
-        H(3)= 'the climate file used in a simulation and can hold'
-        H(4)= 'data for a few days up to a year. '
-        H(5)= ' '
-        H(6)= 'The start day applies to all of the items in the '
-        H(7)= 'file.  Example:'
-        H(8)= ' '
-        H(9)= ' A week long simulation in July (say 7-14th) requires'
-        H(10)=' a 4 day startup period. A minumum TDF db would be'
-        H(11)=' 3-14 July.'
-        H(12)=' '
-        H(13)='If you are planning on importing timestep data'
-        H(14)='from an external file then the TDF start date '
-        H(15)='includes the startup period. SORT THIS OUT BEFORE'
-        H(16)='importing data (or it might be truncated).  '
-        if(foc.eq.'init')CALL PHELPD('setup period',16,'-',0,0,IER)
-        h(1)='Check initial help on dates. '
+        helptopic='tdf_global_questions'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        if(foc.eq.'init')CALL PHELPD('setup period',nbhelp,'-',0,0,IER)
         CALL EASKI(itdyear,' ',' What is the year?',
-     &             1900,'W',2010,'W',2000,'tdf year',IER,1)
+     &             1900,'W',2010,'W',2000,'tdf year',IER,nbhelp)
 
         CALL EASKPER('Period:',itdbdoy,itdedoy,IFDAY,IER)
 
@@ -834,16 +763,10 @@ C Note this will affect the tabular data!
       if(foc.eq.'init'.or.foc.eq.'tsph')then
 
 C Define the number of timestep per hour.
-        H(1)='Frequency of data:'
-        H(2)='Timestep data in your file will be at a fixed'
-        H(3)='timestep which should match that of the'
-        H(4)='simulation timestep.'
-        H(5)=' '
-        H(6)='If you are planning on importing TABULAR (timestep) '
-        H(7)='data then the TDF timestep and that of the other '
-        H(8)='file should match. '
+        helptopic='tdf_global_frequency'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKI(NTSPH,' ','No of timesteps/hour ? ',
-     &     1,'F',60,'F',1,'no of timesteps/hour',IER,8)
+     &     1,'F',60,'F',1,'no of timesteps/hour',IER,nbhelp)
         NDBSTP=NTSPH*24*(itdedoy-itdbdoy+1)
         igbdoy=itdbdoy
         igedoy=itdedoy
@@ -852,15 +775,13 @@ C Define the number of timestep per hour.
 
 C Allow user to imput up to 72 char describing this file. (Print out
 C the entire text first.)
-        H(1)='The file holds two documentation lines.  Such '
-        H(2)='documentation can save a lot of grief later.....'
         tmp72=tdaide(1)
         CALL EASKS(tmp72,' 1st line of documentation ?',
-     &    ' ',72,'no comment','aide',IER,2)
+     &    ' ',72,'no comment','aide',IER,nbhelp)
         tdaide(1)=tmp72
         tmp72=tdaide(2)
         CALL EASKS(tmp72,' 2nd line of documentation ?',
-     &    ' ',72,'no comment','aide',IER,2)
+     &    ' ',72,'no comment','aide',IER,nbhelp)
         tdaide(2)=tmp72
       endif
       if(foc.eq.'init') then
@@ -871,12 +792,9 @@ C Set up initial temporal data set.
         IF(IER.EQ.1)CALL USRMSG(' ',' Problem detected...','-')
 
 C Ask for entry name.
-        H(1)='In order to find items in the TDF db a unique name must'
-        H(2)='be assigned to each entry. This name is a character'
-        H(3)='string up to 12 characters long with no blanks.'
         TTAG=TAG(IFOC)
         CALL EASKS(TTAG,' ','Name for entry? ',
-     &     12,'new_item','item id',IER,3)
+     &     12,'new_item','item id',IER,nbhelp)
         if(TTAG(1:2).ne.'  ')then
           TAG(IFOC)=TTAG
         endif
@@ -1046,15 +964,21 @@ C SETUPTDF provides the menu's and control logic for the temporal
 C data preference menu. This source used to be found in esrutdf/setup.F
       SUBROUTINE SETUPTDF(IER)
 
-      common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      CHARACTER LIMP*96,LEXP*96
       COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP
       LOGICAL XST
 
       DIMENSION SETUPM(7)
-      CHARACTER*72 LIMP,LEXP
-      CHARACTER SETUPM*50,H*72,DFILE*72,tfile*72
+      CHARACTER SETUPM*50,DFILE*96,tfile*96
       integer NITMS,ISETUP ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub=' SETUPTDF'  ! set for subroutine
 
 C Present the preference menu, ISETUP is the menu index returned. Generate
 C the menu text from current common block into via UPSET.
@@ -1102,18 +1026,8 @@ C Display of time of day.
       SETUPM(7)=  '- Exit ^Main Menu^                              '
 
 C Help text for this menu.
-      H(1)='The import facility is available to allow users with '
-      H(2)='tabular data in a text file to select one or more '
-      H(3)='columns of such information and associate it with a '
-      H(4)='DB item which is of type TABULAR.  First define the '
-      H(5)='import file and its format in this menu, then select '
-      H(6)='the item which is to be filled and issue an import  '
-      H(7)='command. '
-      H(8)=' '
-      H(9)='The export command... '
-      H(10)=' '
-      H(11)='The date and time formats may be used to alter the '
-      H(12)='display as well as that of any exported data. '
+      helptopic='tdf_inport_options'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Menu control.
       NITMS=7
@@ -1122,21 +1036,18 @@ C Menu control.
       IF(ISETUP.EQ.1)THEN
 
 C Define a standard import file name & format for use by other parts of TDF.
-        H(1)='It is possible to import temporal information via an'
-        H(2)='ASCII file with columns of data.'
         CALL EASKABC('Import options:',' ',
-     &    'UNKNOWN','ASCII column text','continue',IWM,2)
+     &    'UNKNOWN','ASCII column text','continue',IWM,nbhelp)
         if(IWM.ge.3)goto 2
         ITIMP=IWM-1
 
-        H(1)='One import source file will be assumed throughout this'
-        H(2)='session. If this needs to be altered then the user'
-        H(3)='should return to this menu to give the new name.'
         DFILE='data.imp'
-        tfile=LIMP
+        write(tfile,'(a)') LIMP(1:lnblnk(LIMP))
         CALL EASKS(tfile,' Import file name? ',
-     &   ' ',72,DFILE,'import file name',IER,3)
-        if(tfile(1:2).ne.'  ')LIMP=tfile
+     &   ' ',96,DFILE,'import file name',IER,nbhelp)
+        if(tfile(1:2).ne.'  ')then
+          write(LIMP,'(a)') tfile(1:lnblnk(tfile))
+        endif
         IF(ITIMP.EQ.1)THEN
           CALL ERPFREE(IUIMP,ISTAT)
           call findfil(LIMP,XST)
@@ -1150,20 +1061,17 @@ C Define a standard import file name & format for use by other parts of TDF.
 
 C Define a standard export file name and format for use by other parts
 C of TDF.  Ask for the type then see if it exists.
-        H(1)='It is possible to export information from the db via'
-        H(2)='a number of file formats (ASCII currently available).'
         CALL EASKI(ITEXP,' Several export formats are available: ',
      &    '  0)UNKNOWN, 1)ASCII, 2)BINARY, 3)GRTOOL ? ',
-     &       0,'F',3,'F',1,'export format',IER,2)
+     &       0,'F',3,'F',1,'export format',IER,nbhelp)
 
-        H(1)='One export file will be used as the default name which'
-        H(2)='the user may override.  Return to this menu to change'
-        H(3)='the default name.'
         DFILE='data.exp'
-        tfile=LEXP
+        write(tfile,'(a)') LEXP(1:lnblnk(LEXP))
         CALL EASKS(tfile,' Export file name? ',
-     &   ' ',72,DFILE,'export file name',IER,3)
-        if(tfile(1:2).ne.'  ')LEXP=tfile
+     &   ' ',96,DFILE,'export file name',IER,nbhelp)
+        if(tfile(1:2).ne.'  ')then
+          write(LEXP,'(a)') tfile(1:lnblnk(tfile))
+        endif
 
         IF(ITEXP.EQ.1)THEN
           CALL ERPFREE(IUEXP,ISTAT)
@@ -1189,7 +1097,9 @@ C allow decimal day representation if day format is DOY
       ELSEIF(ISETUP.EQ.6)THEN
 
 C Respond to help requests.
-        CALL PHELPD('tdf preferences',12,'-',0,0,IER)
+        helptopic='tdf_inport_options'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('tdf preferences',nbhelp,'-',0,0,IER)
       ELSEIF(ISETUP.EQ.7)THEN
         RETURN
       ELSE

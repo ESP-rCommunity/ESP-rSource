@@ -19,7 +19,7 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C *********** CHEAD
-C Print climate heading for text based routines. Lines is the number
+C Print weather heading for text based routines. Lines is the number
 C of lines to include in the text portion of the display.
       SUBROUTINE CHEAD(LINES)
 
@@ -42,8 +42,12 @@ C of lines to include in the text portion of the display.
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C If in type 8 terminal make the text display area larger before
@@ -63,9 +67,15 @@ C displaying the following data ( but only clear it if LINES != LIMTTY)
           CALL feedbox(menuchw,2,igfw,igfh)
           CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
 
-          CALL win3d(menuchw,10,22,6,3,igl,igr,igt,igb,igw,igwh)
-          igw=igr-igl
-          igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+          iiw1=10; iiw2=22; iiw3=6; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+C          CALL win3d(menuchw,10,22,6,3,igl,igr,igt,igb,igw,igwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
         elseif(iglib.eq.2)then
           continue
         endif
@@ -74,16 +84,16 @@ C displaying the following data ( but only clear it if LINES != LIMTTY)
       ACLONG=ABS(CLONG)
       IF(CLONG.LT.0.0.AND.CLAT.GE.0.0)then
         WRITE(ETEXT,102)CLMLOC,ACLAT,ACLONG,IYEAR
- 102    FORMAT(' Climate analysis:',1X,A30,':',F6.2,'N',F6.2,'W :',I5)
+ 102    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'N',F6.2,'W :',I5)
       elseif(CLONG.GE.0.0.AND.CLAT.LT.0.0)then
         WRITE(ETEXT,103)CLMLOC,ACLAT,ACLONG,IYEAR
- 103    FORMAT(' Climate analysis:',1X,A30,':',F6.2,'S',F6.2,'E :',I5)
+ 103    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'S',F6.2,'E :',I5)
       elseif(CLONG.LT.0.0.AND.CLAT.LT.0.0)then
         WRITE(ETEXT,104)CLMLOC,ACLAT,ACLONG,IYEAR
- 104    FORMAT(' Climate analysis:',1X,A30,':',F6.2,'S',F6.2,'W :',I5)
+ 104    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'S',F6.2,'W :',I5)
       else
         WRITE(ETEXT,101)CLMLOC,ACLAT,ACLONG,IYEAR
- 101    FORMAT(' Climate analysis:',1X,A30,':',F6.2,'N',F6.2,'E :',I5)
+ 101    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'N',F6.2,'E :',I5)
       endif
       GTEXT=ETEXT
       if(MMOD.gt.0)then
@@ -112,7 +122,7 @@ C displaying the following data ( but only clear it if LINES != LIMTTY)
       RETURN
       END
 
-C Display heading for climate graph.
+C Display heading for weather graph.
       SUBROUTINE GHEAD(imenuch,onleft,onright)
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -136,8 +146,12 @@ C Display heading for climate graph.
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       IF(MMOD.EQ.8)THEN
@@ -159,44 +173,94 @@ C Display heading for climate graph.
 C The calling code will know how many axis are required.
           if(onright.eq.3)then
             if(onleft.eq.2)then
-              CALL win3d(menuchw,10,20,6,3,igl,igr,igt,igb,igw,igwh)
+
+C Setup and pass in parameters to win3d.
+              iiw1=10; iiw2=20; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl; iigr=igr; iigt=igt; iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,10,20,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.1)then
-              CALL win3d(menuchw,6,20,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=6; iiw2=20; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl; iigr=igr; iigt=igt; iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,6,20,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.0)then
-              CALL win3d(menuchw,3,20,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=3; iiw2=20; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl; iigr=igr; iigt=igt; iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,3,20,6,3,igl,igr,igt,igb,igw,igwh)
             endif
-            igw=igr-igl
-            igwh=igb-igt
+            igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+            igw=int(iigw); igwh=int(iigwh)
           elseif(onright.eq.2)then
             if(onleft.eq.2)then
-              CALL win3d(menuchw,10,16,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=10; iiw2=16; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl; iigr=igr; iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,10,16,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.1)then
-              CALL win3d(menuchw,6,16,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=6; iiw2=16; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl; iigr=igr; iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,6,16,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.0)then
-              CALL win3d(menuchw,3,16,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=3; iiw2=16; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl; iigr=igr; iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,3,16,6,3,igl,igr,igt,igb,igw,igwh)
             endif
-            igw=igr-igl
-            igwh=igb-igt
+            igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+            igw=int(iigw); igwh=int(iigwh)
           elseif(onright.eq.1)then
             if(onleft.eq.2)then
-              CALL win3d(menuchw,10,12,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=10; iiw2=12; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl; iigr=igr; iigt=igt; iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,10,12,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.1)then
-              CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=6; iiw2=16; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl; iigr=igr; iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.0)then
-              CALL win3d(menuchw,3,12,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=3; iiw2=16; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl; iigr=igr; iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,3,12,6,3,igl,igr,igt,igb,igw,igwh)
             endif
-            igw=igr-igl
-            igwh=igb-igt
+            igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+            igw=int(iigw); igwh=int(iigwh)
           elseif(onright.eq.0)then
             if(onleft.eq.2)then
-              CALL win3d(menuchw,10,6,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=10; iiw2=6; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl; iigr=igr; iigt=igt; iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,10,6,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.1)then
-              CALL win3d(menuchw,6,6,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=6; iiw2=6; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl; iigr=igr; iigt=igt; iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,6,6,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.0)then
-              CALL win3d(menuchw,3,6,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=3; iiw2=6; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl; iigr=igr; iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,3,6,6,3,igl,igr,igt,igb,igw,igwh)
             endif
-            igw=igr-igl
-            igwh=igb-igt
+            igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+            igw=int(iigw); igwh=int(iigwh)
           endif
         elseif(iglib.eq.2)then
           continue
@@ -206,16 +270,16 @@ C The calling code will know how many axis are required.
       ACLONG=ABS(CLONG)
       IF(CLONG.LT.0.0.AND.CLAT.GE.0.0)then
         WRITE(ETEXT,102)CLMLOC,ACLAT,ACLONG,IYEAR
- 102    FORMAT(' Climate analysis:',1X,A30,':',F6.2,'N',F6.2,'W :',I5)
+ 102    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'N',F6.2,'W :',I5)
       elseif(CLONG.GE.0.0.AND.CLAT.LT.0.0)then
         WRITE(ETEXT,103)CLMLOC,ACLAT,ACLONG,IYEAR
- 103    FORMAT(' Climate analysis:',1X,A30,':',F6.2,'S',F6.2,'E :',I5)
+ 103    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'S',F6.2,'E :',I5)
       elseif(CLONG.LT.0.0.AND.CLAT.LT.0.0)then
         WRITE(ETEXT,104)CLMLOC,ACLAT,ACLONG,IYEAR
- 104    FORMAT(' Climate analysis:',1X,A30,':',F6.2,'S',F6.2,'W :',I5)
+ 104    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'S',F6.2,'W :',I5)
       else
         WRITE(ETEXT,101)CLMLOC,ACLAT,ACLONG,IYEAR
- 101    FORMAT(' Climate analysis:',1X,A30,':',F6.2,'N',F6.2,'E :',I5)
+ 101    FORMAT(' Weather analysis:',1X,A30,':',F6.2,'N',F6.2,'E :',I5)
       endif
       GTEXT=ETEXT
       if(MMOD.gt.0)then

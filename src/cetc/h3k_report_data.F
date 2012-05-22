@@ -65,14 +65,11 @@ C*******************************************************************************
       USE AIM2_CalcData, ONLY:AIM2_infil_to_zones
 
       IMPLICIT NONE
-      
-      include "building.h"
-      include "model.h"
-      include "geometry.h"
-      include "control.h"
-      include "net_flow.h"
-      include "blc25_open_windows.h"
-
+#include "building.h"
+#include "model.h"
+#include "geometry.h"
+#include "control.h"
+#include "blc25_open_windows.h"
 C.....Passed variable
       integer iZone            ! Zone number
 
@@ -165,19 +162,17 @@ C.....Window properties
       real tmct, tmca, tmcref, tvtr
       integer itmcfl
 
-C Description of zone control action; these data are used
-C in H3Kreports to determine heating, cooling loads and 
-C to evaluate passive solar design performance. Also used 
-C by BCL25_open_windows, below. 
+C.....Description of zone control action; these data are used
+C.....in H3Kreports to determine heating, cooling loads and
+C.....to evaluate passive solar design performance.
       common/H3KReportsControl/bZoneHeated,   bZoneCooled,
-     &                         fHeatSetpoint, fCoolSetpoint,
-     &                         bSlaveActive
+     &                         fHeatSetpoint, fCoolSetpoint
 
-C Flags indicating zone is heated, cooled.
+C.....Flags indicating zone is heated, cooled.
       logical bZoneHeated(MCOM), bZoneCooled(MCOM)
-C Heating and cooling setpoint (oC)
+
+C.....Heating and cooling setpoint (oC)
       real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
-      logical bSlaveActive(MCOM) 
 
 C.....Ventilation, infiltration data
       common/coe39/cvip,cvvp,cvif,cvvf,qvnp,xx3,cvvpm,cvvfm
@@ -329,6 +324,13 @@ C.....Local variables
 C.....DECLARATIONS for H3Kreporting object
       CHARACTER*2   cZone_Chars, cSurf_Chars, cNode_Chars
 
+      Logical lIncl_Zone, lIncl_Surf, lIncl_Node
+      save lIncl_Zone, lIncl_Surf, lIncl_Node
+
+      logical lFirstPass   !first pass indicator
+      save lFirstPass
+      data lFirstPass/.true./
+
 C lnblnk is a function returning the index of last non-blank character in a string.
       INTEGER LNBLNK
 
@@ -366,7 +368,6 @@ C                                           ! per m2 of floor area
       real fZoneVentilationLoad           ! Ventilation load
       real fZoneInternalGains             ! Internal gains
       real fZoneUsefulInternalGains       ! Useful internal gains
-
 C       real fm2ZoneUsefulInternalGains     ! As fZoneUsefulInternalGains but
 C                                           ! per m2 of floor area
       real fZoneAdverseInternalGains      ! Gains during cooling
@@ -443,7 +444,7 @@ C.....Loads
       real fSUMHeatGainFloor                 !
       real fSUMHeatGainInfiltration          !
       real fSUMHeatGainVentilation
-      real fSUMFreeCooling                   ! Free cooling delivered 
+
 C.....Gains (W)
       real fSUMInternalGains                 ! Internal sources
       real fSUMUsefulInternalGains           !   - coincident with heating
@@ -471,19 +472,9 @@ C.....Air loads (W)
      &     fSUMHeatGainCeiling, fSUMHeatGainWindows, fSUMHeatGainWalls,
      &     fSUMHeatGainFloor, fSUMHeatLossVentilation,
      &     fSUMHeatGainVentilation, fSUMHeatLossInfiltration,
-     &     fSUMHeatGainInfiltration, fSUMFreeCooling
+     &     fSUMHeatGainInfiltration
 
 
-
-C Function counting # of operable windows in zone      
-      integer iCountAFN110Couplings 
-      
-C Window opening data
-      integer iWindowCount    
-      integer iWindow      
-C Flow control data 
-      COMMON/mfctl/ctlpos(MCNN)      
-      real ctlpos
 
 C----------------------------------------------------------------------
 C     Criteria to determine if solar gains are useful, or not;
@@ -507,11 +498,47 @@ C----------------------------------------------------------------------
       real PCRH2                   ! Function returning relative
                                    ! humidity given zone temperature,
                                    ! moisture content and atm. pressure.
+
+
+
+C----------------------------------------------------------------------
+C.....Set Performance indicators on first pass.  This is used to jump
+C.....over sections of code where no h3koutput is requested.
+C.....hierarchical relationship zone,surface,node
+C----------------------------------------------------------------------
+      if (lFirstPass) then
+       if (IsH3kVarEnabled('building/zone_*') .or.
+     &      IsH3kVarEnabled('building/all_zones')) then
+        lIncl_Zone = .true.
+        if (IsH3kVarEnabled('building/zone_*/surface_*')) then
+         lIncl_Surf = .true.
+         if (IsH3kVarEnabled('building/zone_*/surface_*/node_*')) then
+          lIncl_Node = .true.
+         else
+          lIncl_Node = .false.
+         endif
+        else
+         lIncl_Surf = .false.
+         lIncl_Node = .false.
+        endif
+       else
+         lIncl_Zone = .false.
+         lIncl_Surf = .false.
+         lIncl_Node = .false.
+       endif
+       lFirstPass = .false.
+      endif
+
+C.....If not reporting on any zone_* or all_zone variables then exit
+C.....subroutine
+      if (lIncl_Zone .eqv. .false.) then
+         return
+      endif
+
 C----------------------------------------------------------------------
 C     Check zone index. If iZone=1, re-zero running totals for
 C     entire building.
 C----------------------------------------------------------------------
-
       reset_building_totals: if ( iZone == 1 ) then
 
         bBuildingHeated                   = .false.
@@ -546,9 +573,8 @@ C----------------------------------------------------------------------
         fSUMAdverseInternalGains          = 0.0
         fSUMAdverseSolarGains             = 0.0
         fSUMHeatGainVentilation           = 0.0
-        fSUMFreeCooling                   = 0.0
-
       endif reset_building_totals
+
 
 C.....Pad zone index to 'XX'
       if ( iZone .gt. 9 ) then
@@ -556,6 +582,7 @@ C.....Pad zone index to 'XX'
       else
         write (cZone_Chars,'(A,I1)') '0', iZone
       endif
+
 
 C----------------------------------------------------------------------
 C.....Determine control function for current zone.
@@ -692,34 +719,13 @@ C.....Collect zone air-changes/hour
         END IF
       END IF
 
-
-C.....Data for debugging BCL25      
-C      iWindowCount = iCountAFN110Couplings (iZone,iFlowConnection )
-      
-C      CDebugWindowLoop: do iWindow = 1, iWindowCount
-
-C.......Pad window index to 'XX'
-C        if ( iWindow .gt. 9 ) then
-C          write (cWin_Chars,'(I2)') iWindow
-C        else
-C          write (cWin_Chars,'(A,I1)') '0', iWindow 
-C        endif
-C.......Create base name
-C        H3K_rep_NAME = 'building/zone_' // cZone_Chars
-C     &                                  // '/bcl25/Window_'
-C     &                                  // cWin_Chars  
-C              call add_to_xml_reporting (
-C     &              ctlpos(iFlowConnection(iWindow)) ,
-C     &              H3K_rep_NAME // '/ctlpos',
-C     &              'units', '(-)',
-C     &              'debug bcl25: window control signal ' )    
-            
-C      enddo DebugWindowLoop       
-
 C-----------------------------------------------------------------------
 C     Compute external heat loss/heat gain metrics by examining all
-C     surfaces.
+C     surfaces only if a building/zone_*/surface_* is requested in
+C     the output
 C-----------------------------------------------------------------------
+      incl_surface_cond: if (lIncl_Surf) then
+
       zone_surface_loop: do iSurface = 1, nzsur(iZone)
 
 C.......Pad surface index to 'XX'
@@ -734,13 +740,13 @@ C.......Pad surface index to 'XX'
 C-----------------------------------------------------------------------
 C       Report total short wave radiation on this surface.
 C-----------------------------------------------------------------------
-         call AddToReportWild2(
+         call AddToReport(
      &       rvHeatFluxRadiationShortwave%identifier,
      &       qswrde(iZone,iSurface,2),
      &       cZone_Chars,
      &       cSurf_Chars)
 
-        call AddToReportWild2(
+        call AddToReport(
      &       rvHeatFluxRadiationShortwaveUnitArea%identifier,
      &       qswrde(iZone,iSurface,2)/sna(iZone,iSurface),
      &       cZone_Chars,
@@ -836,7 +842,7 @@ C-----------------------------------------------------------------------
 
 
 C...........Above-grade heat loss
-            call AddToReportWild2(
+            call AddToReport(
      &       rvHeatFluxAboveGradeNet%identifier,
      &       fSurface_balance_net,
      &       cZone_Chars,
@@ -857,7 +863,7 @@ C.............Surface is transparent
           case ( iBCInternalConst, iBCInternalSame )
 
 C...........Flux to known conditions
-            call AddToReportWild2(
+            call AddToReport(
      &       rvHeatFluxSpecifiedBCsNet%identifier,
      &       fSurface_balance_net,
      &       cZone_Chars,
@@ -873,7 +879,7 @@ C...........Surface has zero heat transfer
           case ( iBCGround, iBCBASESIMP )
 
 C...........Below-grade heat loss
-            call AddToReportWild2(
+            call AddToReport(
      &       rvHeatFluxBelowGradeNet%identifier,
      &       fSurface_balance_net,
      &       cZone_Chars,
@@ -884,7 +890,7 @@ C...........Below-grade heat loss
           case ( iBCCEN13917 )
 
 C...........Heat transfer to CEN partition
-            call AddToReportWild2(
+            call AddToReport(
      &       rvHeatFluxCENPartitionNet%identifier,
      &       fSurface_balance_net,
      &       cZone_Chars,
@@ -894,7 +900,7 @@ C...........Heat transfer to CEN partition
 
           case default
 C...........Internal partition
-            call AddToReportWild2(
+            call AddToReport(
      &       rvHeatFluxAboveGradeNet%identifier,
      &       fSurface_balance_net,
      &       cZone_Chars,
@@ -1004,6 +1010,8 @@ C-----------------------------------------------------------------------
 
       enddo zone_surface_loop
 
+      endif incl_surface_cond
+
 C-----------------------------------------------------------------------
 C     Now determine if flux through walls is a heating or cooling load:
 C-----------------------------------------------------------------------
@@ -1112,8 +1120,7 @@ C.....Thermal loads
       fSUMHeatLoss = fSUMHeatLoss + fZoneHeatLoad
       fSUMHeatGain = fSUMHeatGain + fZoneCoolLoad
 
-      fSUMFreeCooling = fSUMFreeCooling + fFreeCoolDelivered(iZone) 
-      
+
 C.....Air load
       fSUMVentilationLoad  = fSUMVentilationLoad + fZoneVentilationLoad
       fSUMInfiltrationLoad =   fSUMInfiltrationLoad
@@ -1168,7 +1175,7 @@ C.....Set format depending on number of zones
 !      H3K_rep_NAME = 'building/zone_' // cZone_Chars
 
 C.....AIR POINT TEMPERATURE
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvAirPointTemperature%Identifier,
      &         TFA(iZone),
      &         cZone_Chars)
@@ -1180,78 +1187,70 @@ C.....Window position from BCL25 controller
         fWindowPosition = 0.0
       endif
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvWindowsPosition%Identifier,
      &         fWindowPosition,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvAirFlowModel%Identifier,
      &         real(iAirFlowModel(iZone)),
      &         cZone_Chars)
 
 C.....Zone relative humidity
       fZoneRH = PCRH2(TFA(iZone),GFA(iZone),PATMOS)
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvAirPointRelativeHumidity%Identifier,
      &         fZoneRH,
      &         cZone_Chars)
 
 C.....ZONE HEAT INJECTION / EXTRACTION
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvSuppliedEnergyNet%Identifier,
      &         Q_ZONE,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvSuppliedEnergyHeating%Identifier,
      &         Q_Heat,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvSuppliedEnergyCooling%Identifier,
      &         Q_cool,
      &         cZone_Chars)
 
-C.....Cooling delivered by free-cooling means
-
-      call AddToReportWild1 (
-     &         rvFreeCoolingDelivered%Identifier,
-     &         fFreeCoolDelivered(iZone),
-     &         cZone_Chars)
-    
-     
 C Convert heat injection/extraction metrics to "per m2 of floor area"
       Qm2_ZONE=Q_ZONE/zbasea(iZone)
       Qm2_Heat=Q_Heat/zbasea(iZone)
       Qm2_cool=Q_cool/zbasea(iZone)
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvSuppliedEnergyNetPerm2%Identifier,
      &         Qm2_ZONE,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvSuppliedEnergyHeatingPerm2%Identifier,
      &         Qm2_Heat,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvSuppliedEnergyCoolingPerm2%Identifier,
      &         Qm2_cool,
      &         cZone_Chars)
 
 C.....Total heating and cooling loads
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvThermalLoadsHeatingTotal%Identifier,
      &         fZoneHeatLoad,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvThermalLoadsCoolingTotal%Identifier,
      &         fZoneCoolLoad,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvThermalLoadsNetLoad%Identifier,
      &         fZoneHeatFlux,
      &         cZone_Chars)
@@ -1260,80 +1259,81 @@ C Conver Total heating and cooling loads to  "per m2 of floor area"
       fm2ZoneHeatLoad=fZoneHeatLoad/zbasea(iZone)
       fm2ZoneCoolLoad=fZoneCoolLoad/zbasea(iZone)
       fm2ZoneHeatFlux=fZoneHeatFlux/zbasea(iZone)
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvThermalLoadsHeatingTotalPerm2%Identifier,
      &         fm2ZoneHeatLoad,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvThermalLoadsCoolingTotalPerm2%Identifier,
      &         fm2ZoneCoolLoad,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvThermalLoadsNetLoadPerm2%Identifier,
      &         fm2ZoneHeatFlux,
      &         cZone_Chars)
 
 C.....Envelope heat loss
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvEnvWindowsHeatLoss%Identifier,
      &         fZoneHeatLossWindows,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvEnvWallsHeatLoss%Identifier,
      &         fZoneHeatLossWalls,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvEnvFloorsHeatLoss%Identifier,
      &         fZoneHeatLossFloor,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvEnvCeilingsHeatLoss%Identifier,
      &         fZoneHeatLossCeiling,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvEnvFoundationHeatLoss%Identifier,
      &         fZoneHeatLossBelowGrade,
      &         cZone_Chars)
 
 
 C.....Zone air change rate (AIM2)
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvEnvInfAirChangePerHour%Identifier,
      &         fZoneInfiltrationACH,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvEnvInfHeatGain%Identifier,
      &         fZoneHeatGainInfiltration,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvEnvInfHeatLoss%Identifier,
      &         fZoneHeatLossInfiltration,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
-     &         rvEnvInfLoad%Identifier,
-     &         fZoneInfiltrationLoad,
-     &         cZone_Chars)
+      !C.L. for testing of h3kmodule.f90 remove corrected variable
+!      call AddToReport (
+!     &         rvEnvInfLoad%Identifier,
+!     &         fZoneInfiltrationLoad,
+!     &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvEnvInfBalanceAir%Identifier,
      &         ZMBI(iZone,1),
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvEnvInfBalanceAirExchange%Identifier,
      &         ZMBI(iZone,1) / 1.275  * 3600. / vol(iZone),
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvEnvAllComponentsHeatLost%Identifier,
      &         fZoneHeatLossWalls
      &           + fZoneHeatLossInfiltration
@@ -1344,32 +1344,32 @@ C.....Zone air change rate (AIM2)
      &         cZone_Chars)
 
 C.....Envelope heat gains
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvEnvWindowsHeatGain%Identifier,
      &         fZoneHeatGainWindows,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvEnvWallsHeatGain%Identifier,
      &         fZoneHeatGainWalls,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvEnvFloorsHeatGain%Identifier,
      &         fZoneHeatGainFloor,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvEnvCeilingsHeatGain%Identifier,
      &         fZoneHeatGainCeiling,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvEnvFoundationHeatGain%Identifier,
      &         fZoneHeatGainBelowGrade,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvEnvAllComponentsHeatGain%Identifier,
      &         fZoneHeatGainWalls
      &           + fZoneHeatGainInfiltration
@@ -1380,37 +1380,37 @@ C.....Envelope heat gains
      &         cZone_Chars)
 
 C.....Envelope: net flux
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvEnvWindowsNetFlux%Identifier,
      &         fZoneHeatLossWindows-fZoneHeatGainWindows,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvEnvWallsNetFlux%Identifier,
      &         fZoneHeatLossWalls-fZoneHeatGainWalls,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvEnvFloorsNetFlux%Identifier,
      &         fZoneHeatLossFloor-fZoneHeatGainFloor,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvEnvCeilingsNetFlux%Identifier,
      &         fZoneHeatLossCeiling-fZoneHeatGainCeiling,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvEnvFoundationNetFlux%Identifier,
      &         fZoneHeatLossBelowGrade-fZoneHeatGainBelowGrade,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvEnvInfNetFlux%Identifier,
      &         fZoneHeatLossInfiltration-fZoneHeatGainInfiltration,
      &         cZone_Chars)
 
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvEnvAllComponentsNetFlux%Identifier,
      &         fZoneHeatLossWalls
      &           + fZoneHeatLossInfiltration
@@ -1428,13 +1428,13 @@ C.....Envelope: net flux
 
 
 C.....Zone solar gains
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvInsolationTotal%Identifier,
      &         fZoneSolarGains,
      &         cZone_Chars)
 
 C.....Zone solar gains coinciding with heating loads
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvInsolationUseful%Identifier,
      &         fZoneUsefulSolarGains,
      &         cZone_Chars)
@@ -1448,19 +1448,19 @@ C      & 'Solar gains admitted through glazing that supplant heating '
 C      & // 'loads')
 
 C.....Zone solar gains coinciding with heating loads !cooling loads?
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvInsolationAdverse%Identifier,
      &         fZoneAdverseSolarGains,
      &         cZone_Chars)
 
 C.....TOTAL CASUAL GAINS
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvInternalGainsTotal%Identifier,
      &         fZoneInternalGains,
      &         cZone_Chars)
 
 C.....Useful internal gains
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvInternalGainsUseful%Identifier,
      &         fZoneUsefulInternalGains,
      &         cZone_Chars)
@@ -1474,7 +1474,7 @@ C      &         'Internal heat gains'
 C      &         // '(convective + radiant) that supplant heating loads' )
 
 C.....Adverse internal gains
-      call AddToReportWild1 (
+      call AddToReport (
      &         rvInternalGainsAdverse%Identifier,
      &         fZoneAdverseInternalGains,
      &         cZone_Chars)
@@ -1501,11 +1501,6 @@ C.......Net flux for building
      &         rvBuildingAllZonesSuppliedEnergyNetFlux%Identifier,
      &         fSUMNetFlux)
 
-C.......Free cooling 
-      call AddToReport(
-     &         rvBuildingAllZonesFreeCooling%Identifier,
-     &         fSUMFreeCooling)     
-     
 C.......Total solar gains
       call AddToReport(
      &         rvBuildingAllZonesInsolationTotal%Identifier,
@@ -1673,9 +1668,10 @@ C.....Net energy balance
       endif report_whole_building
 
 C---------------------------------------------------------------------
-C     Loop through zone surfaces and MLC layers, reporting data
+C     Loop through zone surfaces and MLC layers, reporting data only
+C     if surface variables are reported on
 C---------------------------------------------------------------------
-
+      if (lIncl_Surf) then
 
       do iSurface = 1, nzsur(iZone)
 
@@ -1692,7 +1688,7 @@ C.......below should also make use of.
 
 C........Surface temperature
 C........->Report data
-         call AddToReportWild2 (
+         call AddToReport(
      &      rvTemperature%Identifier,
      &      tfs(iZone,iSurface),
      &      cZone_Chars,
@@ -1702,7 +1698,7 @@ C........External facing surfaces -> Surface temperature
          if (IE(iZone,iSurface) .eq. 0) THEN ! the surface faces external
 
 C........->Report data
-            call AddToReportWild2 (
+            call AddToReport (
      &         rvExtSurfTemperature%Identifier,
      &         TFC(iZone,iSurface,1),
      &         cZone_Chars,
@@ -1711,7 +1707,7 @@ C........->Report data
 
 C........Radiant heat injection associated with plant containment.
 C........->Report data
-         call AddToReportWild2 (
+         call AddToReport (
      &      rvPlantContainmentFlux%Identifier,
      &      fSurface_radiant_gain(iZone,iSurface,iFuture),
      &      cZone_Chars,
@@ -1720,7 +1716,7 @@ C........->Report data
 C.......CONVECTIVE COEFFICIENTS
 C........Internal surface convective coefficient.
 C........->Report data
-         call AddToReportWild2 (
+         call AddToReport (
      &      rvHCi%Identifier,
      &      HCIP(iZone,iSurface),
      &      cZone_Chars,
@@ -1728,7 +1724,7 @@ C........->Report data
 
 C........External surface convective coefficient.
 C........->Report data
-         call AddToReportWild2 (
+         call AddToReport (
      &      rvHCe%Identifier,
      &      HCOP(iZone,iSurface),
      &      cZone_Chars,
@@ -1752,7 +1748,7 @@ C     &                           (TFS(iZone,iViewSurface)+273.15)**4
 C            wtrsum = wtrsum**0.25 - 273.15
 C........Plane radiant temperature
 C........->Report data
-            call AddToReportWild2 (
+            call AddToReport (
      &        rvPRT%Identifier,
      &         trsum,
      &         cZone_Chars,
@@ -1773,7 +1769,7 @@ C     &         'Emissivity weighted plane radiant temp. (inside face)' )
 
 C.......RADIATION HEAT TRANSFER COEFFICIENT
 C........->Report data
-            call AddToReportWild2 (
+            call AddToReport (
      &        rvHRi%Identifier,
      &         EI(iZone,iSurface)*SBC*
      &            (TFS(iZone,iSurface)+trsum+2.*273.15)*
@@ -1791,7 +1787,7 @@ C calc mean surrounding temp of external surfaces
             trsum = trsum**0.25 - 273.15
 
 C........->Report data
-            call AddToReportWild2 (
+            call AddToReport (
      &        rvAmbRT%Identifier,
      &         trsum,
      &         cZone_Chars,
@@ -1800,33 +1796,33 @@ C........->Report data
          endif ! <- end if surface faces external
 
 C......=====================================================
-C......NODE DATA
+C......NODE DATA -- MAX node number 99
+C......Include only if h3k reports on building/zone_*/surf_*/node_* variables
+         if (lIncl_Node) then
+!       for comparison with development branch, disable these values
+!       since tester.pl does full data dump
+!       the way this is design, unless the <dump_all_data> is set to true
+!       or you request one of these node values then the loop will be bypassed.
+!
 !          do iNode = 1, (nndc (iZone, iSurface )-1)
 !             if ( iNode .gt. 9 ) then
 !               write(cNode_Chars, '(I2)')  iNode
 !             else
 !               write(cNode_Chars, '(A,I1)') '0', iNode
 !             endif
-!             H3K_format = '(A,A,A,A,A,A,A)'
 !
-! C...........MLC layer temperature
-! C...........-> set name
-!             WRITE(H3K_rep_NAME,H3K_FORMAT)
-!      &         'building/zone_',cZone_Chars,
-!      &         '/surface_',cSurf_Chars,
-!      &         '/node_',cNode_Chars,
-!      &         '/temperature'
-! C...........->Report data
-!             call add_to_xml_reporting (
-!      &         tfc(iZone,iSurface,iNode),
-!      &         H3K_rep_NAME,
-!      &         'units', '(oC)',
-!      &         'Temperature at node within multilayer construction' )
-!
+!C...........MLC layer temperature
+!C...........->Report data
+!            Call AddToReport(rvNodeTemp%Identifier,
+!     &         tfc(iZone,iSurface,iNode),
+!     &         cZone_Chars,
+!     &         cSurf_Chars,
+!     &         cNode_Chars)
 !          enddo  ! <- end iNode = 1,N of iSurface 1,N of iZone
-!
+         endif ! <- end lIncl_Node
       enddo ! <- end iSurface 1,N of iZone
 
+      endif ! <- end lIncl_Surf
 
       RETURN
       END
@@ -2141,6 +2137,9 @@ C.....Local variables
       integer char_len          ! holding variable's lenght
       character*2 Node_Num      ! node number char format
       character*3 Connect_Num   ! connection number char format
+      integer iNodeLength       ! the nodes's string length
+      integer iNodeNumLen       ! the length of the Node_Num
+      integer iConnNumLen       ! the length of the Connect_Num
 
       integer iState, iSim_Type ! node state and supported simulation type
                                 ! (results from ISV_convert)
@@ -2176,8 +2175,11 @@ C........Loop through nodes (NPCDAT(i,8)
 
 C...........Build node name
             if(jj<10)then  ! First nine nodes.
-              write(Node_Num, '(A,I1)') '0', jj
+               iNodeNumLen = 1
+              !write(Node_Num, '(A,I1)') '0', jj
+              write(Node_Num, '(I1)') jj
             else           ! This presumes that no plant component will have more than 99 nodes!
+               iNodeNumLen = 2
               write(Node_Num, '(I2)') jj
             endif
 
@@ -2211,42 +2213,61 @@ C...........istate = 0/1/9
                char_len = 7
             endif
 
+C...........Get the pcName(ii)'s length
+            iNodeLength = lnblnk(pcname(ii))
+
 C...........Transport State variables
 
            !Temperature:
-            call AddToReportWild2(
+            call AddToReport(
      &          rvPlantCompNodeTemperature%Identifier,
      &          CSVF(iNode,iProp_temp),
-     &          pcname(ii),
-     &          Node_Num)
-
+     &          pcname(ii)(1:iNodeLength),
+     &          Node_Num(1:iNodeNumLen))
 
            !Mass flow (1st phase)
             if (iState .ne.9) then
-               call AddToReportWild3(
+               call AddToReport(
      &            rvPlantCompNodeFirstPhaseFlow%Identifier,
      &            CSVF(iNode,iProp_1st_flow),
-     &            pcname(ii),
-     &            Node_Num,
+     &            pcname(ii)(1:iNodeLength),
+     &            Node_Num(1:iNodeNumLen),
      &            char_temp(1:char_len)
      &            )
             endif
 
+
            !Mass flow (2nd phase)
             if( iState .eq. 1 ) then
-               call AddToReportWild2(
-     &            rvPlantCompNodeSecondPhaseFlow%Identifier,
+               !C.L. for testing of h3kmodule.f90 removed the corrected variable and reinserted error
+!               call AddToReport(
+!     &            rvPlantCompNodeSecondPhaseFlow%Identifier,
+!     &            CSVF(iNode,iProp_2nd_flow),
+!     &            pcname(ii)(1:iNodeLength),
+!     &            Node_Num(1:iNodeNumLen))
+               call AddToReport(
+     &            rvPlantCompNodeFirstPhaseFlow%Identifier,
      &            CSVF(iNode,iProp_2nd_flow),
-     &            pcname(ii),
-     &            Node_Num)
+     &            pcname(ii)(1:iNodeLength),
+     &            Node_Num(1:iNodeNumLen),
+     &            'moisture')
+               !C.L. end of testing swap
             endif
 
             if( iState .eq. 2 ) then
-               call AddToReportWild2(
-     &            rvPlantCompNodeHydrogenFlow%Identifier,
+               !C.L. for testing of h3kmodule.f90 removed the corrected variable and reinserted error
+!               call AddToReport(
+!     &            rvPlantCompNodeHydrogenFlow%Identifier,
+!     &            CSVF(iNode,iProp_h2_flow),
+!     &            pcname(ii)(1:iNodeLength),
+!     &            Node_Num(1:iNodeNumLen))
+               call AddToReport(
+     &            rvPlantCompNodeFirstPhaseFlow%Identifier,
      &            CSVF(iNode,iProp_h2_flow),
-     &            pcname(ii),
-     &            Node_Num)
+     &            pcname(ii)(1:iNodeLength),
+     &            Node_Num(1:iNodeNumLen),
+     &            'hydrogen')
+               !C.L. end of testing swap
             endif
 
 C........-> Get connection data (MPDONC = max connections per node)
@@ -2261,11 +2282,14 @@ C.................Connection #
                   iConn_numb =  ICONDX(ii,jj,kk)
 
                   if(kk<10)then
-                     write(Connect_Num,'(A,I1)') '00', kk ! nodes 0 to 9
+                     iConnNumLen = 1
+                     write(Connect_Num,'(I1)') kk ! nodes 0 to 9
                   elseif(kk<100) then
-                     write(Connect_Num, '(A,I2)') '0', kk ! nodes 10 to 99
+                     iConnNumLen = 2
+                     write(Connect_Num,'(I2)') kk ! nodes 10 to 99
                   else
-                     write(Connect_num, '(I3)') kk ! nodes 100 to 999 (max 999)
+                     iConnNumLen = 3
+                     write(Connect_num,'(I3)') kk ! nodes 100 to 999 (max 999)
                   endif
 
 C.................Get connection properties using H3k_connect_property
@@ -2278,58 +2302,58 @@ C.................                     )
 
 C.................Temperature
 
-                  call AddToReportWild3(
+                  call AddToReport(
      &               rvPlantCompNodeConnectTemperature%Identifier,
      &               H3K_Connect_property(iConn_numb,iProp_temp),
-     &               pcname(ii),
-     &               Node_Num,
-     &               Connect_Num)
+     &               pcname(ii)(1:iNodeLength),
+     &               Node_Num(1:iNodeNumLen),
+     &               Connect_Num(1:iConnNumLen))
 
 C.................Mass flow rate - check state of material
                   if (iState .eq. 0) then
 C....................Connection is water. 1st-phase flow only!
-                     call AddToReportWild3(
+                     call AddToReport(
      &                  rvPlantCompNodeConnectWaterFlow%Identifier,
      &                  H3K_Connect_property(
      &                          iConn_numb,
      &                          iProp_1st_flow
      &                  ),
-     &                  pcname(ii),
-     &                  Node_Num,
-     &                  Connect_Num)
+     &                  pcname(ii)(1:iNodeLength),
+     &                  Node_Num(1:iNodeNumLen),
+     &                  Connect_Num(1:iConnNumLen))
 
                   elseif (iState .eq. 1) then
 C....................Connection is to air. 1st & 2nd phase flow
-                      call AddToReportWild3(
+                      call AddToReport(
      &                  rvPlantCompNodeConnectAirFlow%Identifier,
      &                  H3K_Connect_property(
      &                          iConn_numb,
      &                          iProp_1st_flow
      &                  ),
-     &                  pcname(ii),
-     &                  Node_Num,
-     &                  Connect_Num)
+     &                  pcname(ii)(1:iNodeLength),
+     &                  Node_Num(1:iNodeNumLen),
+     &                  Connect_Num(1:iConnNumLen))
 
-                      call AddToReportWild3(
+                      call AddToReport(
      &                rvPlantCompNodeConnectMoistureFlow%Identifier,
      &                  H3K_Connect_property(
      &                          iConn_numb,
      &                          iProp_2nd_flow),
-     &                  pcname(ii),
-     &                  Node_Num,
-     &                  Connect_Num)
+     &                  pcname(ii)(1:iNodeLength),
+     &                  Node_Num(1:iNodeNumLen),
+     &                  Connect_Num(1:iConnNumLen))
 
                   elseif (iState .eq. 2 ) then
 C....................Connection is to hydrogen.
-                    call AddToReportWild3(
+                    call AddToReport(
      &              rvPlantCompNodeConnectHydrogenFlow%Identifier,
      &                  H3K_Connect_property(
      &                          iConn_numb,
      &                          iProp_h2_flow
      &                    ),
-     &                  pcname(ii),
-     &                  Node_Num,
-     &                  Connect_Num)
+     &                  pcname(ii)(1:iNodeLength),
+     &                  Node_Num(1:iNodeNumLen),
+     &                  Connect_Num(1:iConnNumLen))
 
                   else
 C....................Connection is solid. No flow rate.
@@ -3097,50 +3121,50 @@ C.....is handy for testing
 
 C........Nodal voltage. Note that the voltage is a complex variable.
 C........Report both the magnitude and the angle of the voltage phasor.
-         call AddToReportWild1(
+         call AddToReport(
      &         rvElecNetNodesVoltageMagnitude%Identifier,
      &         REAL(ENODVLT(iElec_node)),
      &         node_num)
 
-         call AddToReportWild1(
+         call AddToReport(
      &         rvElecNetNodesVoltageAngle%Identifier,
      &         AIMAG(ENODVLT(iElec_node)),
      &         node_num)
 
 C........Nodal real load
-         call AddToReportWild1(
+         call AddToReport(
      &         rvElecNetNodesLoadReal%Identifier,
      &         penodl(iElec_node),
      &         node_num)
 
 C........nodal reactive load
-         call AddToReportWild1(
+         call AddToReport(
      &         rvElecNetNodesLoadReactive%Identifier,
      &         qenodl(iElec_node),
      &         node_num)
 
 C........Nodal real generation
-         call AddToReportWild1(
+         call AddToReport(
      &         rvElecNetNodesGenerationReal%Identifier,
      &         penodg(iElec_node),
      &         node_num)
 
 
 C........nodal reactive generation
-         call AddToReportWild1(
+         call AddToReport(
      &         rvElecNetNodesGenerationReactive%Identifier,
      &         qenodg(iElec_node),
      &         node_num)
 
 C........Nodal real transmission
-         call AddToReportWild1(
+         call AddToReport(
      &         rvElecNetNodesTransmissionReal%Identifier,
      &         penodt(iElec_node),
      &         node_num)
 
 
 C........nodal reactive transmission
-         call AddToReportWild1(
+         call AddToReport(
      &         rvElecNetNodesTransmissionReative%Identifier,
      &         qenodt(iElec_node),
      &         node_num)
@@ -3151,30 +3175,22 @@ C.....Write out electrical power of hybrid components.
       do iHybridComponent = 1, nHYBcom
 
 C........hybrid component flux
-         call AddToReportWild1(
+         call AddToReport(
      &      rvElecNetHybridComponentFlux%Identifier,
      &      Hybrid_Power_Real(iHybridComponent),
-     &      HYCOMNAM(iHybridComponent))
+     &      HYCOMNAM(iHybridComponent)
+     &         (1:lnblnk(HYCOMNAM(iHybridComponent))))
 
       enddo
 
 C.....Power-only component flux
       do iPOnlyComponent = 1, nPOWcom
-         call AddToReportWild1(
+
+         call AddToReport(
      &     rvElecNetPowerOnlyComponents%Identifier,
      &     PPOWOC(iPOnlyComponent),
-     &     POWCOMNAM(iPOnlyComponent))
-
-C........component flux
-C........-> set name
-!         WRITE(H3K_rep_NAME,'(A,A)')
-!     &        node_name(1:iLength), '/flux'
-!         call add_to_xml_reporting (
-!     &          PPOWOC(iPOnlyComponent),
-!     &          H3K_rep_NAME,
-!     &          'units', '(W)',
-!     &          'Electrical network power only component: '
-!     &          // 'electrical power')
+     &     POWCOMNAM(iPOnlyComponent)
+     *         (1:lnblnk(POWCOMNAM(iPOnlyComponent))))
       enddo
 
 C.....Call RE-H2-CTL reporting function
@@ -3495,21 +3511,21 @@ C...........Set string name to water/air/unknown (the latter shouldn't really ha
          NDNAM_len = LNBLNK(NDNAM(ii))
 C.........output node data
       ! total mass flow entering a node *******************************
-         call AddToReportWild2(
+         call AddToReport(
      &      rvMfnTotalNodeFlowRate%Identifier,
      &      real(FLWIN(ii)),
      &      fluid(1:fluid_len),
      &      NDNAM(ii)(1:NDNAM_len))
 
        ! total volume flow entering a node *******************************
-         call AddToReportWild2(
+         call AddToReport(
      &      rvMfnTotalNodeVolFlowRate%Identifier,
      &      real(FLWINV(ii)),
      &      fluid(1:fluid_len),
      &      NDNAM(ii)(1:NDNAM_len))
 
        ! node temperature from flow network *******************************
-         call AddToReportWild2(
+         call AddToReport(
      &      rvMfnTotalNodeTemp%Identifier,
      &      TNOD(ii),
      &      fluid(1:fluid_len),
@@ -3533,14 +3549,14 @@ C.........Loop through all interconnections in a flow network
 
                connect_len = LNBLNK(Connect_name)
        ! pressure drop between nodes of connection ***********************
-               call AddToReportWild2(
+               call AddToReport(
      &            rvMfnConnectPressureDrop%Identifier,
      &            real(PRES(ii)-PRES(i_neg)),
      &            fluid(1:fluid_len),
      &            Connect_Name(1:connect_len))
 
         ! flow through connection ****************************************
-               call AddToReportWild2(
+               call AddToReport(
      &            rvMfnConnectFlowRate%Identifier,
      &            real(FLW1(jj)),
      &            fluid(1:fluid_len),
@@ -3593,14 +3609,14 @@ C.........Loop through all interconnections in a flow network
                if (b_noveloc .eqv. .false.) THEN
         ! Now get density of "sending" node. If flw1(jj) is negative, use density of
         ! node "i_neg". Densit() returns density in kg/m3
-                  if (FLW1(jj) .lt. 0.) THEN
+                  if (FLW1(jj) .lt. 0) THEN
                     rhon=DENSIT(NDFLD(i_neg),TNOD(i_neg))
                   Else
                     rhon=DENSIT(NDFLD(ii),TNOD(ii))
                   Endif
 
         ! Finally, write to H3K reporting
-                  call AddToReportWild2(
+                  call AddToReport(
      &               rvMfnConnectVeloc%Identifier,
      &               real(FLW1(jj))/rhon/area,
      &               fluid(1:fluid_len),
@@ -3617,12 +3633,12 @@ C.........if contaminants are defined output these as well
            do ICONTM=1,NCONTM
 
 C.........output contaminant concentration
-         call AddToReportWild3(
+         call AddToReport(
      &        rvMfnContamCon%Identifier,
      &        CCONC(II,ICONTM),
      &        fluid(1:fluid_len),
-     &        NDNAM(ii)(1:LNBLNK(NDNAM(ii))),
-     &        CONTMNAM(ICONTM))
+     &        NDNAM(ii)(1:lnblnk(NDNAM(ii))),
+     &        CONTMNAM(ICONTM)(1:lnblnk(CONTMNAM(ICONTM))))
            END DO               !<- contaminants loop end
          ENDIF
 
@@ -3642,19 +3658,17 @@ C-----------------------------------------------------------------------
       blockdata initialize_h3k_zone_ctl_flags
 #include "building.h"
 
-C Description of zone control action; these data are used
-C in H3Kreports to determine heating, cooling loads and 
-C to evaluate passive solar design performance. Also used 
-C by BCL25_open_windows, below. 
+C.....Description of zone control action; these data are used
+C.....in H3Kreports to determine heating, cooling loads and
+C.....to evaluate passive solar design performance.
       common/H3KReportsControl/bZoneHeated,   bZoneCooled,
-     &                         fHeatSetpoint, fCoolSetpoint,
-     &                         bSlaveActive
+     &                         fHeatSetpoint, fCoolSetpoint
 
-C Flags indicating zone is heated, cooled.
+C.....Flags indicating zone is heated, cooled.
       logical bZoneHeated(MCOM), bZoneCooled(MCOM)
-C Heating and cooling setpoint (oC)
+
+C.....Heating and cooling setpoint (oC)
       real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
-      logical bSlaveActive(MCOM) 
 
       data bZoneHeated / MCOM * .false. /
       data bZoneCooled / MCOM * .false. /
@@ -3668,19 +3682,17 @@ C-----------------------------------------------------------------------
       subroutine h3kReports_reset_zone_flags()
 #include "building.h"
 
-C Description of zone control action; these data are used
-C in H3Kreports to determine heating, cooling loads and 
-C to evaluate passive solar design performance. Also used 
-C by BCL25_open_windows, below. 
+C.....Description of zone control action; these data are used
+C.....in H3Kreports to determine heating, cooling loads and
+C.....to evaluate passive solar design performance.
       common/H3KReportsControl/bZoneHeated,   bZoneCooled,
-     &                         fHeatSetpoint, fCoolSetpoint,
-     &                         bSlaveActive
+     &                         fHeatSetpoint, fCoolSetpoint
 
-C Flags indicating zone is heated, cooled.
+C.....Flags indicating zone is heated, cooled.
       logical bZoneHeated(MCOM), bZoneCooled(MCOM)
-C Heating and cooling setpoint (oC)
+
+C.....Heating and cooling setpoint (oC)
       real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
-      logical bSlaveActive(MCOM) 
 
       common/c1/ncomp,ncon
       integer ncomp          ! number of zones

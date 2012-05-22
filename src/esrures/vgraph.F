@@ -904,9 +904,14 @@ C VAXIS draws the graphical axes relating only to the requested profiles.
       character VITEM*24,HITEM*24,VIT*24,HIT*24
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C Interval on vertical axis.
       A=YMAXV-YMINV
@@ -928,16 +933,16 @@ C memory for access by plotting code.
       igheight=igwh
       call axiscale(igwid,igheight,YMINH,YMAXH,YMINV,YMAXV,xsc,ysc,sca,
      &              Xadd,Yadd)
-      call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
+      call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
 
 C Copy axis labels into local variable and then display the 
 C horizontal and vertical axis.
       HIT=' '
       HIT=HITEM
-      call horaxis(YMINH,YMAXH,igl,igr,igb,Xadd,xsc,0,HIT)
+      call horaxis(YMINH,YMAXH,iigl,iigr,iigb,Xadd,xsc,0,HIT)
       VIT=' '
       VIT=VITEM
-      call vrtaxis(YMINV,YMAXV,igl,igb,igt,Yadd,ysc,0,0,VIT)
+      call vrtaxis(YMINV,YMAXV,iigl,iigb,iigt,Yadd,ysc,0,0,VIT)
 
       RETURN
 
@@ -969,8 +974,12 @@ C to graphical result display.
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C Generate a descriptive string for the time period to be displayed.
@@ -984,9 +993,15 @@ C and the simulation and output timesteps.
           call feedbox(menuchw,2,igfw,igfh)
           call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         endif
-        call win3d(menuchw,10,8,5,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=10; iiw2=8; iiw3=5; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        call win3d(menuchw,10,8,5,3,igl,igr,igt,igb,igw,igwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         call startbuffer()
       ENDIF
 

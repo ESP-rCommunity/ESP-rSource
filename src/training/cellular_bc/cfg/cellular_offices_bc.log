@@ -1,11 +1,26 @@
 Project notes for cellular_offices_bc.cfg
 Description: base case model of two adjacent cellular offices
-In folder: /home/jon/training/ibpsa_course
+In folder: cellular_bc
 By: jon
 Date: Mon Aug  1 10:11:58 2005
 For: 
 Project reference: 
 Notes: 
 _____________________________
- 
+
+There are two variants in this folder:
+
+cellular_bc.cfg the basic version of cellular offices from which
+most of the other variants have been derived.
+
+The layout of the rooms was taken from CAD data - e.g. the
+surfaces are positioned in real-space. There is a ~50mm gap
+between the rooms. The partitions are thermally connected
+at the same time the geometry is separated.
+
+cellular_measured.cfg demonstrates how one might associated
+measured data (e.g. from an experiment) with predictions.
+
+Look in the file notes_measured_data.txt for lots more about
+how to do this.
  

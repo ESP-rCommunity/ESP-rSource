@@ -260,7 +260,6 @@ C (NPMTYP - 1)
 
          DO 20 INOD=1,NNODE
            IF(ISV(IPCOMP,INOD).LT.( min_PM_threshold -1 )*10) THEN
-             call elinc(2)
              WRITE(IUOUT,*) ' Plant matrix type ',NPMTYP,' cannot be',
      &                  ' established from'
              WRITE(IUOUT,*) ' component ',IPCOMP,' node ',INOD,
@@ -338,14 +337,12 @@ C Check if connection relates to current component as the receiving one
                IF(IPC1(IPCON).NE.IPCOMP) GOTO 32
                N=IPN1(IPCON)
                IF(N.LT.1.OR.N.GT.NNODE.OR.NDCON(IPCOMP,N).LE.0) THEN
-                  call elinc(1)
                   WRITE(IUOUT,*) ' No receiving connection allowed',
      &                     ' to component ',IPCOMP,' , node ',N
                   STOP ' MZPMXT: unresolvable error'
                END IF
                KNHIT(N)=KNHIT(N)+1
                IF(KNHIT(N).GT.NDCON(IPCOMP,N)) THEN
-                  call elinc(2)
                   WRITE(IUOUT,*) ' Max. number of connections exceeded',
      &                     ' for component ',IPCOMP,', node ',N
                   STOP ' MZPMXT: unresolvable error'
@@ -358,7 +355,6 @@ C which is only possible in case of a type 3 inter-connection
   32           IF(IPC2(IPCON).NE.IPCOMP.OR.IPCT(IPCON).NE.3) GOTO 39
                N=IPN2(IPCON)
                IF(N.LT.1.OR.N.GT.NNODE.OR.NDCON(IPCOMP,N).EQ.0) THEN
-                  call elinc(1)
                   WRITE(IUOUT,*) ' No connection allowed to component ',
      &                     IPCOMP,' , node ',N
                   STOP ' MZPMXT: unresolvable error'
@@ -422,7 +418,6 @@ C IFLD1/2 will be 0 for water, 1 for air, 9 for solid nodes
             STOP ' MZPMXT: unresolvable error on plant connection type'
          END IF
          IF(IFLD1.NE.IFLD2) THEN
-            call elinc(2)
             WRITE(IUOUT,*) ' Nodes with different fluid types',
      &                     ' connected by connection : ',IPCON
             STOP ' MZPMXT: unresolvable error'
@@ -664,7 +659,6 @@ C Note that PCONDR is set to 1 in case fluid mass flow solver active
          ICNOD=IDENN(IPNOD)
          IF(NDCON(IPCMP,ICNOD).EQ.0) GOTO 94
          IF(ZDR(IPNOD).LT.0.OR.ZDR(IPNOD).GT.1.) THEN
-            call elinc(3)
             write(outs,904) ipcmp,icnod
             call edisp(iuout,outs)
   904       format(' MZPMXT error: component ',i5,' node ',i5)
@@ -673,7 +667,6 @@ C Note that PCONDR is set to 1 in case fluid mass flow solver active
   905       format(' exit mass diversion ratio erroneous : ',f10.5)
             GOTO 999
          ELSE IF(ZDR(IPNOD).GT.0..AND.ZDR(IPNOD).LT.1.) THEN
-            call elinc(3)
             write(outs,906) ipcmp,icnod
             call edisp(iuout,outs)
   906       format(' MZPMXT warning: component ',i5,' node ',i5)
@@ -682,7 +675,6 @@ C Note that PCONDR is set to 1 in case fluid mass flow solver active
   907       format(' exit mass diversion ratios do not summate',
      &                     ' to unity, but ',f10.5)
          ELSE IF(ZDR(IPNOD).LT.SMALL.AND.ICNOD.NE.1) THEN
-            call elinc(3)
             write(outs,908) ipcmp,icnod
             call edisp(iuout,outs)
   908       format(' MZPMXT warning: component ',i5,' node ',i5)
@@ -738,15 +730,12 @@ C
       RETURN
 C
 C Error handling
-  990 call elinc(1)
-      WRITE(IUOUT,*) ' MZPMXT: connection ',IPCON,' is erroneous '
+  990 WRITE(IUOUT,*) ' MZPMXT: connection ',IPCON,' is erroneous '
       GOTO 999
-  992 call elinc(1)
-      WRITE(IUOUT,*) ' MZPMXT: mapping of connection ',IPCON,
+  992 WRITE(IUOUT,*) ' MZPMXT: mapping of connection ',IPCON,
      &               ' to fluid flow network is erroneous '
       GOTO 999
-  994 call elinc(1)
-      WRITE(IUOUT,*) ' MZPMXT: error reading plant library for',
+  994 WRITE(IUOUT,*) ' MZPMXT: error reading plant library for',
      &               ' component ',IPCOMP
       GOTO 999
 C
@@ -1483,7 +1472,6 @@ C 3-node stratified storage tank model with 2 immersed heat exchangers
 C New component equation generators inserted here
 
          ELSE
-            call elinc(1)
             WRITE(IUOUT,*) ' No coefficient generator for component '
      &           ,IPCOMP
             STOP ' MZPMSU: unresolvable error on component type'

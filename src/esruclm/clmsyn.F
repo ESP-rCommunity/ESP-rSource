@@ -18,8 +18,8 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C 'CLMSYN' Permis a synoptic analysis of the climate data held
-C within the climate file.
+C 'CLMSYN' Permis a synoptic analysis of the weather data held
+C within the weather file.
 C At present the maximum, minimum and mean external air temperature 
 C directonormal solar radiaitona dn diffuse horizontal solar radiation
 C (occurring within the user-specified period) can be identified. In
@@ -36,46 +36,49 @@ C characteristics of the chosen climatic collection.
       COMMON/RADTYP/IDNGH
       COMMON/OUTIN/IUOUT,IUIN
 
-      CHARACTER*24 ITEM(23)
+      CHARACTER*26 ITEM(23)
       character outs*124,VNAME*32
       logical ok,dok
       integer NITMS,INO  ! max items and current menu item
+      integer nbdays,nbhours  ! summation of days hours within range
+      logical close
 
 C For help messages
       character helpinsub*24   ! subroutine name
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
 
-      helpinsub='CLMSYN'  ! set for cfiles
+      helpinsub='CLMSYN'   ! set for cfiles
+      nbdays= 0; nbhours=0  ! clear
 
       call usrmsg('  ','  ','-')
-      ITEM(1) ='p set period            '
-      ITEM(2) ='  ____________________  '
-      ITEM(3) ='0 set time of day       '
-      ITEM(4) ='  ____________________  '
-      ITEM(5) ='1 dry bulb temperature  '
+      ITEM(1) ='p set period              '
+      ITEM(2) ='  ____________________    '
+      ITEM(3) ='0 set time of day         '
+      ITEM(4) ='  ____________________    '
+      ITEM(5) ='1 dry bulb temperature    '
       if(IDNGH.eq.0)then
-       ITEM(6)='2 direct normal solar   '
+       ITEM(6)='2 direct normal solar     '
       else
-       ITEM(6)='2 global horizon. solar '
+       ITEM(6)='2 global horizontal solar '
       endif
-      ITEM(7) ='3 diffuse horiz. solar  '
-      ITEM(8) ='4 wind speed (m/s)      '
-      ITEM(9) ='5 wind direction (deg)  '
-      ITEM(10)='6 relative humidity (%) '
-      ITEM(11)='  ____________________  '
-      ITEM(12)='m maximum & minimum     '
-      ITEM(13)='r days within a range   '
-      ITEM(14)='d degree days or hours  '
-      ITEM(15)='a average values        '
-      ITEM(16)='i integrate radiation   '
-      ITEM(17)='h frequency histogram   '
-      ITEM(18)='  ____________________  '
-      ITEM(19)='c climatic severity indx'
-      ITEM(20)='s find typical weeks    '
-      ITEM(21)='  ____________________  '
-      ITEM(22)='? help                  '
-      ITEM(23)='- exit                  '
+      ITEM(7) ='3 diffuse horizontal solar'
+      ITEM(8) ='4 wind speed (m/s)        '
+      ITEM(9) ='5 wind direction (deg)    '
+      ITEM(10)='6 relative humidity (%)   '
+      ITEM(11)='  ____________________    '
+      ITEM(12)='m maximum & minimum       '
+      ITEM(13)='r days within a range     '
+      ITEM(14)='d degree days or hours    '
+      ITEM(15)='a average values          '
+      ITEM(16)='i integrate radiation     '
+      ITEM(17)='h frequency histogram     '
+      ITEM(18)='  ____________________    '
+      ITEM(19)='c climatic severity index '
+      ITEM(20)='s find typical weeks      '
+      ITEM(21)='  ____________________    '
+      ITEM(22)='? help                    '
+      ITEM(23)='- exit                    '
 
       NITMS=23
       IP=0
@@ -87,7 +90,7 @@ C For help messages
       elseif(ino.eq.nitms-1)then
         helptopic='typical_week_overview'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        CALL PHELPD('climate synopsis',nbhelp,'-',0,0,IER)
+        CALL PHELPD('weather synopsis',nbhelp,'-',0,0,IER)
       elseif(ino.eq.1)then
         CALL selper(ier)
       elseif(ino.eq.3)then
@@ -125,7 +128,7 @@ C MAXIMUM, MINIMUM AND MEAN VALUES.
         IP=0
       elseif(ino.eq.13)then
 
-C Call sequence routine.
+C Call sequence routine to get days within a user defined range.
         if(IP.EQ.0)then
           ino= -1
           goto 6
@@ -137,9 +140,14 @@ C Make sure that upper is above lower.
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKR(XL,outs,' Lower value for range:  ',
      &    0.,'-',0.,'-',1.0,'lower range',IER,nbhelp)
+        call eclose(XU,0.0,0.001,close)
+        if(close.or.XU.lt.XL) XU=XL+1.0
         CALL EASKR(XU,outs,' Upper value for range:  ',
      &    XL,'F',0.,'-',1.0,'upper range',IER,nbhelp)
-        CALL CLMSEQ(IP,XL,XU)
+        CALL CLMSEQ(IP,XL,XU,nbdays,nbhours)
+        write(outs,'(a,i3,a,i4)') 'Total days within range is ',nbdays,
+     &    ' and total hours within range is ',nbhours
+        call edisp(iuout,outs)
         IP=0
       elseif(ino.eq.14)then
 
@@ -175,7 +183,7 @@ C Integration of radiation data.
 C Frequency distribution histogram.
       IF(IP.GT.0)CALL HISCLM(IP)
       IF(IP.LE.0)call edisp(iuout,
-     &  ' Climate variable has not been selected')
+     &  'Weather variable has not been selected.')
       elseif(ino.eq.19)then
 
 C CSI equation calculation.
@@ -206,7 +214,7 @@ C << But where are the best-fit weeks reported? >>
       END
 
 
-C ******** `CSIEQN' calculates the Severity of the climate in
+C ******** `CSIEQN' calculates the Severity of the weather in
 C  terms of a dimensionless number - the CSI.
       SUBROUTINE CSIEQN
       PARAMETER (MT=24)
@@ -232,6 +240,14 @@ C  terms of a dimensionless number - the CSI.
       DIMENSION AA(30),BB(30),CC(30),DD(30),EA(30),EB(30),EC(30),ED(30)
       DIMENSION CSIM(30),IVC(30)
       character CSIM*45
+
+#ifdef OSI
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+#else
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+#endif
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 
@@ -297,9 +313,15 @@ C displaying the following data.
           CALL feedbox(menuchw,2,igfw,igfh)
           CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         endif
-        CALL win3d(menuchw,10,20,5,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=10; iiw2=20; iiw3=5; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        CALL win3d(menuchw,10,20,5,3,igl,igr,igt,igb,igw,igwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         call startbuffer()
         call usrmsg(' ',' ','-')
       ENDIF
@@ -967,7 +989,6 @@ C for the given period.
 
 C Passed parameter
       character act*1  ! d for degree day h for degree hour reporting
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTPCH/ICOUT
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/DAYSF/KDS,KDF
@@ -1205,7 +1226,6 @@ C Manual inclusion of a parameter from building.h
 C seasons.h provides typper and typsea
 
       PARAMETER (MT=24)
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTPCH/ICOUT
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/exporttgi/ixopen,ixloc,ixunit
@@ -1226,7 +1246,7 @@ C For help messages
 C Jump out if no seasonal data is available.
       if(is1wins.eq.0.or.is2wins.eq.0.or.is1sprs.eq.0)then
         call usrmsg('No winter|transition|summer season definitions',
-     &    'found in the climate database. Skipping.','W')
+     &    'found in the weather database. Skipping.','W')
         return
       endif
 
@@ -1312,11 +1332,10 @@ C Loop through each seasonal period.
           IDSS=is2wins
           IDSF=is2winf
         endif
-        itrc=0
         CALL EPERSTR(IYEAR,IDSS,0,IDSF,24,1,
      &             IFDAY,IFTIME,PERST1,PERST2,PERST3,IER)
 
-C For each day read climate data, set parameters and analyse.
+C For each day read weather data, set parameters and analyse.
         DO 10 I=IDSS,IDSF
           IDD=I
           CALL CLMGET(IDD)
@@ -1397,7 +1416,6 @@ C SYNOPWDEG computes weekly heating and cooling DEGREE DAYS
 C for the given period.
       SUBROUTINE SYNOPWDEG
       PARAMETER (MT=24)
-      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTPCH/ICOUT
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
@@ -1474,7 +1492,7 @@ C READ VALUES OF THE CLIMATIC PARAMETERS FOR THIS DAY.
         IDD=I
         CALL CLMGET(IDD)
 
-C For each day read climate data, set parameters and analyse.
+C For each day read weather data, set parameters and analyse.
         DNJ=0
         UPJC=0
         JS=KDS

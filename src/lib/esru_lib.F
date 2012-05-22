@@ -860,9 +860,10 @@ C Parameters
       COMMON/OUTIN/IUOUT,IUIN
 
       CHARACTER outs248*248
-      character llitem*144   ! local string buffer
+      character llitem*144     ! local string buffer
+      character LTMP72*72      ! local string buffer
       character LTMP96*96      ! local string buffer
-      character LTMP124*124      ! local string buffer
+      character LTMP124*124    ! local string buffer
       integer iglib      ! for detecting GTK or X11
       INTEGER llt,lfn    ! length of the local string buffer
 
@@ -870,6 +871,11 @@ C Depending on whether it is X11 or GTK or text setup dialogs. The
 C X11 and text will work with 96 or 124 char string.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       lfn=lnblnk(FILEN)
+      if(lfn.lt.72)then
+        write(LTMP72,'(a)') FILEN(1:lfn)   ! for X11 and text editing
+      else
+        write(LTMP72,'(a)') FILEN(1:72)    ! for X11 and text editing
+      endif
       if(lfn.lt.96)then
         write(LTMP96,'(a)') FILEN(1:lfn)   ! for X11 and text editing
       else
@@ -881,13 +887,22 @@ C X11 and text will work with 96 or 124 char string.
         write(LTMP124,'(a)') FILEN(1:124)  ! for X11 and text editing
       endif
       write(llitem,'(a)') FILEN(1:lfn)     ! for GTK dialog
+
+C If in text or GTK mode echo FILEN.
       llt=lnblnk(llitem)
-      write(outs248,'(2a)') 'The current file is:',llitem(1:llt)
-      call edisp248(iuout,outs248,100)
+      if(iglib.eq.2.or.iglib.eq.3)then
+        call edisp(iuout,'  ')
+        write(outs248,'(2a)') 'Current file or folder:',llitem(1:llt)
+        call edisp248(iuout,outs248,100)
+      endif
       if(iglib.eq.1.or.iglib.eq.3)then
 
-C Adjust dialog depending on initial length of file name.
-        if(llt.lt.96)then
+C Adjust dialog depending on initial length of file name. If shorter
+C than 32 char the use shortest width.
+        if(llt.lt.42)then
+          CALL EASKF(LTMP72,PROMP1,PROMP2,72,DFILE,ERMSG,IER,NHELP)
+          write(llitem,'(a)') LTMP72(1:lnblnk(LTMP72))
+        elseif(llt.lt.96)then
           CALL EASKF(LTMP96,PROMP1,PROMP2,96,DFILE,ERMSG,IER,NHELP)
           write(llitem,'(a)') LTMP96(1:lnblnk(LTMP96))
         elseif(llt.ge.96.and.llt.lt.124)then
@@ -1880,20 +1895,59 @@ C otherwise ask what to do.
           else
             IX=2
           endif
-        else
-          H(1)='In order to manage long lists of selections or data'
-          H(2)='a number of viewports may be necessary.'
-          CALL EASKABC(' ',' Menu-page options:','previous','next',
-     &                 'goto page',IW,2)
-          IF(IW.EQ.3)then
-            H(1)='If page greater than length then last page assumed.'
-            CALL EASKI(IGTP,' ',' Which page ? ',1,'F',1,'-',1,
-     &        'menu page',IER,1)
-            IX=3
-          elseif(IW.EQ.2)then
+        elseif (MPM.eq.3) then
+
+C If three pages and on 1st jump to middle, if at end jump to middle
+C and if in middle ask user what to do.
+          if (IPM.eq.1) then
             IX=5
-          elseif(IW.EQ.1)then
+          elseif (IPM.eq.3) then
             IX=2
+          else
+            H(1)='In order to manage long lists of selections or data'
+            H(2)='a number of viewports may be necessary.'
+            CALL EASKABC(' ',' Menu-page options:','previous','next',
+     &                 'goto page',IW,2)
+            IF(IW.EQ.3)then
+              H(1)='If page greater than length then last page assumed.'
+              CALL EASKI(IGTP,' ',' Which page ? ',1,'F',1,'-',1,
+     &          'menu page',IER,1)
+              IX=3
+            elseif(IW.EQ.2)then
+              IX=5
+            elseif(IW.EQ.1)then
+              IX=2
+            endif
+            CALL USRMSG(' ',' ','-')
+          endif
+        else
+
+C If lots of pages track the 1st and last page otherwise ask user.
+          if (IPM.eq.1) then
+            IX=5
+          elseif (IPM.eq.MPM) then
+            IX=2
+          else
+            H(1)='In order to manage long lists of selections or data'
+            H(2)='a number of viewports may be necessary.'
+            CALL EASKATOG(' ',' Menu-page options:','first page',
+     &        'previous','next','goto page','last page','  ','  ',IW,2)
+            if(IW.eq.5)then
+              IGTP=MPM   ! set it to last page
+              IX=3
+            elseif(IW.EQ.4)then
+              H(1)='If page greater than length then last page assumed.'
+              CALL EASKI(IGTP,' ',' Which page ? ',1,'F',1,'-',1,
+     &          'menu page',IER,1)
+              IX=3
+            elseif(IW.EQ.3)then
+              IX=5
+            elseif(IW.EQ.2)then
+              IX=2
+            elseif(IW.EQ.1)then
+              IGTP=1   ! set it to first page
+              IX=3
+            endif
           endif
           CALL USRMSG(' ',' ','-')
         endif
@@ -3691,16 +3745,18 @@ C single character then ixl is ix.
         else
           length=ix
           itrunc = i-1
-          goto 1
+          goto 1  ! cannot write more to the packed string
         endif
   43  continue
       length=ixl
       return
 
    1  continue
-      write(outs,*) 'ASFLIST: truncation writing array at item: ',
-     &  itrunc,' & pos ',length
-      call edisp(iuout,outs)
+
+C Debug.
+C      write(outs,*) 'ASFLIST: truncation writing array at item: ',
+C     &  itrunc,' & pos ',length
+C      call edisp(iuout,outs)
       return
       END
 
@@ -3811,8 +3867,7 @@ C Find out the number of separate words/string groupings.
 
       END
 
-      
-C ******************** LSTRIPC_LN
+C ******************** LSTRIPC
 C LSTRIPC strips comments from a ASCII file (long) string and returns the data.
 C It assumes that if a string begins with a '#' then the whole line is
 C a comment an the next line is read.  If a ' #' is discovered within
@@ -3823,65 +3878,23 @@ C IEXP is the number of expected items in the line:
 C   IEXP = 0 means don't care or already know no. items - don't check
 C   IEXP >0  means a specific number of items expected (error if not)
 C   IEXP = 99 check number of items and return in ITEMS
-C LineOut is the line number of the string that was returned.
-      
-C LSTRIPC is a legacy interface to LSTRIPC_LN
+
       SUBROUTINE LSTRIPC(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
-      CHARACTER*248 OUTSTR,STRING,TMP
-      CHARACTER loutstr*248
-      CHARACTER*(*) MSG
-      
-      CALL LSTRIPC_LN(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER,LineNum)
-      
-      RETURN
-      END 
-      
-      SUBROUTINE LSTRIPC_LN(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER,LineOut)
 #include "espriou.h"
+      integer iCountWords
 
+      COMMON/OUTIN/IUOUT,IUIN
       CHARACTER*248 OUTSTR,STRING,TMP
-      CHARACTER loutstr*248
+      CHARACTER loutstr*248,outs*124
       CHARACTER*(*) MSG
-
-
-      logical bInitialized
-      save bInitialized
-      data bInitialized /.false./
-
-      character*248 cNewName, cOldName
-      save cOldName
-
-
-      integer LineNum
-      save LineNum
-      
-C Collect current file name
-      inquire (UNIT=INPCH, NAME=cNewName)
-      
-      if ( .not. bInitialized ) then
-        write ( cOldName, '(A)') cNewName 
-        bInitialized = .true. 
-      endif
-
-C If file has changed, reset line counter and update
-C file name buffer. 
-      if ( cOldName .ne. cNewName ) then 
-        write ( cOldName, '(A)') cNewName 
-        LineNum = 0
-      endif 
-        
+      logical unixok
 
 C Read a line of the file, strip off any trailing blanks, if the first
 C character is a # then read the next line from the file.
       IER=0
-C Empty string      
-    8 write (STRING, '(A)') ' '
-C Increment line number counter
-      LineNum = LineNum + 1
-      LineOut = LineNum          
-      READ(INPCH,10,IOSTAT=ISTAT,ERR=101,END=102)STRING
+    8 READ(INPCH,10,IOSTAT=ISTAT,ERR=101,END=102)STRING
    10 FORMAT(A)
-   11 tmp=STRING(1:LNBLNK(STRING))
+      tmp=STRING(1:LNBLNK(STRING))
 
 C Take the string and check for a #, discarding any text which follows.
       iloc = INDEX(tmp,'#')
@@ -3895,11 +3908,11 @@ C Take the string and check for a #, discarding any text which follows.
 
 C Find out the number of separate words/string groupings.
       if(IEXP.eq.99)then
-        CALL LCHITMS(OUTSTR,ITEMS)
+        items = iCountWords(OUTSTR)
       elseif(IEXP.eq.0)then
         ITEMS=0
       elseif(IEXP.gt.0)then
-        CALL LCHITMS(OUTSTR,ITEMS)
+        items = iCountWords(OUTSTR)
         if(IEXP.ne.ITEMS)then
           LN=max(1,lnblnk(currentfile))
           LNM=max(1,lnblnk(MSG))
@@ -3931,28 +3944,36 @@ C Find out the number of separate words/string groupings.
         CALL LUSRMSG(loutstr,OUTSTR,'W')
       ENDIF
       goto 4
-C End of file reached.
+
   102 IER=2
-C But if last line is non-blank, parse contents anyways.
-      if (lnblnk(STRING).gt.0 ) goto 11
-      OUTSTR = ''
       IF(IR.EQ.1)THEN
         LN=max(1,lnblnk(currentfile))
         LNM=max(1,lnblnk(MSG))
         if(currentfile(1:2).ne.'  ')then
-          WRITE(tmp,'(5A)')' In ',currentfile(1:LN),
+          WRITE(loutstr,'(5A)')' In ',currentfile(1:LN),
      &      ' error reading (',MSG(1:LNM),') EOF sensed.'
         else
-          WRITE(tmp,'(3A)',IOSTAT=IOS,ERR=1)' Error reading ',
+          WRITE(loutstr,'(3A)',IOSTAT=IOS,ERR=1)' Error reading ',
      &      MSG(1:LNM),' EOF sensed.'
         endif
-        CALL LUSRMSG(' ',tmp,'-')
+        CALL LUSRMSG(' ',loutstr,'-')
       ENDIF
       goto 4
-   1  write(6,*) 'LSTRIPC: error writing warning re: ',OUTSTR
+
+   1  call isunix(unixok)
+      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
+      if(IOS.eq.2)then
+        write(outs,*) 'LSTRIPC: permission error writing warning re: '
+        call edisp(iuout,outs)
+	call edisp(iuout,outstr(1:72))
+      else
+        write(outs,*) 'LSTRIPC: error writing warning re: '
+        call edisp(iuout,outs)
+	call edisp(iuout,outstr(1:72))
+      endif
+      return
 
       END
-      
 
 C ******************** STRIPC400
 C STRIPC400 strips comments from a ASCII file (400 char long) string and returns the data.
@@ -6072,10 +6093,10 @@ C Find if Unix or NT.
         call getenv('HOME',upath)
       else
         call getenv ('HOMEDRIVE',homedrive)
-        write(outs,*) 'homedrive is ',homedrive
+        write(outs,*) '  Homedrive - ',homedrive
         call edisp(IUOUT,outs)
         call getenv ('HOMEPATH',homepath)
-        write(outs,*) 'homepath is ',homepath
+        write(outs,*) '  Homepath - ',homepath
         call edisp(IUOUT,outs)
         if(homedrive(1:1).ne.' '.and.homepath(1:1).ne.' ')then
           write(upath,'(2a)') homedrive(1:lnblnk(homedrive)),
@@ -7213,12 +7234,12 @@ C Trap phrases longer than the outs buffer.
 C ********************* clrtextbuf
 C clrtextbuf clears the text buffer common blocks.
       subroutine clrtextbuf()
-      common/textbuf/dispbuf(360)
-      common/textbufl/indexbuf,lnbuf(360)
+      common/textbuf/dispbuf(500)
+      common/textbufl/indexbuf,lnbuf(500)
       character dispbuf*124
 
       indexbuf=0
-      do 42 i=1,360
+      do 42 i=1,500
         dispbuf(i)='  '
         lnbuf(i)=1
   42  continue
@@ -7258,9 +7279,9 @@ C Set MODIFY=true to force any wire-frame images to be redrawn.
       end
 
 C ********* WIREPK
-C WIREPK is called from C code in esru_x.c or esp-r.c  with current
+C WIREPK is called from C code in esru_x.c with current
 C number of zones which have been selected for display.
-C Compilation of X11 or GTK version assumes this will be available in
+C Compilation of X11 assumes this will be available in
 C each modules code somewhere.  If not needed then provide a dummy.
       subroutine wirepk(inpk)
 #include "building.h"

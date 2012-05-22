@@ -14,21 +14,23 @@ PROG = ish$(EXE)
 %.o : %.f90
 	$(MCC) $(FFLAGS) -c $<
 
+MODULE_OBJECTS = h3kmodule.o startup.o aim2_module.o
 
-OBJECTS = h3kmodule.o ish.o aim2_module.o arrow.o ascii_mat.o \
+OBJECTS = ish.o arrow.o ascii_mat.o \
 	  basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
-	  c2fdum.o common3dv.o cread3dv.o \
+   c2fdum.o common3dv.o cread3dv.o \
 	  ctlexp.o ctread.o dossupport.o e3dviews.o econstr.o \
 	  edatabase.o edcondb.o egeometry.o emfnetw.o enetmisc.o \
 	  esru_misc.o esystem.o sifile.o eroper.o filelist.o graph.o inscon.o \
 	  item.o mfcdat.o miscel.o nwkrewr.o plelevvc.o pltcfg.o \
 	  readTrnsys.o rwipv.o rwsbem.o shdcon.o sifops.o sort.o \
-	  startup.o synop.o trnfile.o trnsfs.o trnsfi.o ashrae.o
+	   synop.o trnfile.o trnsfs.o trnsfi.o ashrae.o
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod h3kmodule.mod
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod \
+	parse_command_line.mod h3kmodule.mod
 
-$(PROG): $(OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) 
+$(PROG): $(MODULE_OBJECTS) $(OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS)
 
 aim2_module.F:
 	rm -f aim2_module.F
@@ -146,7 +148,7 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
+	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
 	aim2_module.F arrow.F ascii_mat.F basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
 	c2fdum.F common3dv.F cread3dv.F ctlexp.F \
 	ctread.F dossupport.F e3dviews.F econstr.F edcondb.F edatabase.F \

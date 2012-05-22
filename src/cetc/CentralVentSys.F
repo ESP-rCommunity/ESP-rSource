@@ -73,8 +73,7 @@ c ---
 c ---
       USE AIM2_InputData, ONLY:AIM2_ref_zone,AIM2_CrawlSpace_zone,
      &            AIM2_attic_zone,AIM2_num_zones_infil,AIM2_zone_infil
-      USE AIM2_CalcData, ONLY:AIM2_house_vol, fAIM2_TotalHouseInfil !AIM2_zone_infil
-      
+      USE AIM2_CalcData, ONLY:AIM2_house_vol!AIM2_zone_infil
       IMPLICIT NONE
 #include "building.h"
 #include "geometry.h"
@@ -104,11 +103,6 @@ c     Implicit None
       real fTempTol
       parameter ( fTempTol = 0.5 )
 
-      
-      real fVentM3pS_natural
-      real, parameter :: fACHpHour_ERSreq = 0.3 
-      real FlowRate      
-      
 
       save J, iFun, i, iCycle
       save T, HLR, DeltaT, ZoneFraction
@@ -147,41 +141,6 @@ c
 c
          T = TF ! "future" outdoor air temp
 
-         
-         
-         ErsACH: if ( iCVSOpType == 8 ) then 
-C ERS 'magic' method: Operate HRV to ensure that natural + mechanical 
-C ventilation 0.3 ACH per hour as HOT2000 assumes during ERS calculations.
-           
-           FlowRate = Max ( CVSSupplyRate, CVSExhaustRate ) / 1000. ! L/s --> m3/s
-    
-           fVentPLR = 
-     &           ( ( fACHpHour_ERSreq * AIM2_house_vol / 3600. )
-     &                          - fAIM2_TotalHouseInfil )
-     &         / FlowRate
-     
-           
-           if ( fVentPLR > 1. ) fVentPLR = 1.
-           if ( fVentPLR < 0. ) fVentPLR = 0.
-           
-!           write (*,*) "MVNT: AIM2Total: ", fACHpHour_ERSreq
-!           write (*,*) "      AIM2Vol:   ", AIM2_house_vol
-!           write (*,*) "      Nat ACH:   ", 
-!     &           fAIM2_TotalHouseInfil * 3600./ AIM2_house_vol
-!           write (*,*) "      Frac:      ", fVentPLR
-     
-         elseif ( iCVSOpType == 9 ) then 
-     
-          fVentPLR = 8./24.
-     
-         else 
-     
-          fVentPLR  = CVSOpTime
-     
-         endif ErsACH         
-                 
-         
-         
 c If a CVS exists,call the appropriate subroutine to
 C determine temperatures and flowrates
          If ( iCVSType .eq. 2 ) Then ! HRV
@@ -191,11 +150,11 @@ c
             i = Max ( 1, IntDD(2,1) ) ! Zone in which exhaust duct is located
             ExhaustDuctRoomTemp  = TFA(i)
 c
-            Call HRV ( iFun, T, fVentPLR )
+            Call HRV ( iFun, T )
 c
          Else If ( iCVSType .eq. 3 ) Then ! ! Fans, no Heat recovery
 c
-            Call FANS_NO_HR ( iFun, T, fVentPLR )
+            Call FANS_NO_HR ( iFun, T )
 c
 c ---
          Endif
@@ -211,22 +170,21 @@ c in proportion to each room's volume
          ZoneFraction = 0.
 c
 C Check to ensure memory has been allocated
-        IF (ALLOCATED(AIM2_zone_infil)) THEN
+	 IF (ALLOCATED(AIM2_zone_infil)) THEN
            Do j = 1, AIM2_num_zones_infil
               If ( AIM2_zone_infil(j) .eq. iComp ) Then
-                 ZoneFraction = VOL(iComp) / AIM2_house_vol 
+                 ZoneFraction = VOL(iComp) / AIM2_house_vol
                  Exit
               Endif
            End Do
-        ELSE
+	 ELSE
           CALL EDISP(IUOUT,
      &          ' Warning: array AIM2_zone_infil not allocated')
-        END IF
+	 END IF
 c
 c --- Air heat loss rate for zone
 c
-         HLR = MCP * ( TFA(iComp) - CVSSupplyTemp ) * ZoneFraction 
-     &             * fVentPLR
+         HLR = MCP * ( TFA(iComp) - CVSSupplyTemp ) * ZoneFraction
 
 c
 c --- Convert air heat loss rate into an equivalent conductance (to outdoors)
@@ -276,7 +234,7 @@ c
 C -------------------------------------------------------------------
 C -------------------------------------------------------------------
 c$Message: ' File:Hrv.For'
-      Subroutine HRV ( iFun, T, OpTime )
+      Subroutine HRV ( iFun, T )
 c
 c          Model for Heat Recovery Ventilator
 c
@@ -313,15 +271,8 @@ C This is used by the fuel cell controller to determine the house's total
 C electrical demand during each time-step in the plant domain.
 
 c
-
-C      USE AIM2_InputData, ONLY:AIM2_ref_zone,AIM2_CrawlSpace_zone,
-C     &            AIM2_attic_zone,AIM2_num_zones_infil,AIM2_zone_infil
-            
-
       use h3kmodule
       Implicit None
-
-
 #include "Ventilation_Data.h"
 #include "SOFC.h"
 #include "OffsiteUtilitiesPublic.h"
@@ -342,8 +293,6 @@ c ---
       Real OpTime, Tlow, Thigh
       Character Msg*128
 
-      
-     
 c ---
       Save MonVar, PreHtr, Type2, m, i, x, TENDEG, U4, U5
 c ---
@@ -351,7 +300,7 @@ c ---
       Save EffHT, EffLT, dEffdT, FPc1, FPc2, PHrefT
       Save FanPwr, PrePwr, eHRVmax, eHRV
       Save Tpre, T7, Ts, Te, T2, Tx, T3, Tex
-      Save Tlow, Thigh
+      Save OpTime, Tlow, Thigh
       Save Msg
 
 C Used in the xml reporting structure
@@ -423,13 +372,12 @@ c Central Ventilation Sys. Upper limit for temperature control
          Else ! No temperature dependant operation
             Tlow  = -9999.
             Thigh = -Tlow
-                      
          Endif
 c ---
       Else If ( iFun .gt. 0 .and. iFun .le. 12 ) Then ! During month m
 c
          m = iFun
-
+         OpTime = CVSOpTime
 c ---
 c
 c T = Outdoor air temperature
@@ -509,12 +457,12 @@ c
 c HRV ventilation air heat loss rate
             HRVventHLR = HRVairHLR + ( sDuctHG + eDuctHG ) * OpTime
 c
-            ExhaustFanPower  = FanPwr * OpTime
-            PreheaterPower = PrePwr * OpTime 
+            ExhaustFanPower  = FanPwr
+            PreheaterPower = PrePwr
             HRVExhDuctHG = eDuctHG * OpTime
             HRVSupDuctHG = sDuctHG * OpTime
 c Summary data
-            TotalPower = ( FanPwr + FanPwr + PrePwr ) * OpTime 
+            TotalPower = FanPwr + FanPwr + PrePwr
 
 C Record the electrical draw (W) by the HRV fans and pre-heater for use by the
 C fuel cell controller.
@@ -544,7 +492,7 @@ c
 C Store aggregate electricity use for reporting in Site Utility facilitity.
       fSUFuelEnergyUse( iElectricity,iUseHRV )
      &                   = TotalPower
-C      write (*,*) " CVENT: Reporting ", TotalPower
+
 C     Pass fuel energy stroage data to site utilities
       call StoreSiteEnergyUse( iIdealVent, fSUFuelEnergyUse )
 
@@ -560,7 +508,7 @@ C ---------------------------------------------------------------------------
 
 
 c$Message: ' File:FaNoHR.For'
-      Subroutine FANS_NO_HR ( m, T, OpTime)
+      Subroutine FANS_NO_HR ( m, T )
 c
 c Monthly energy model for central Fan system (no heat recovery)
 c
@@ -578,7 +526,6 @@ c ---
 #include "Ventilation_Data.h"
       Integer m
       Real T
-      real OpTime
 c ---
       Real Tlow, Thigh
       Real sFP, FanPwr, x
@@ -615,7 +562,7 @@ c Temperature of air downstream of the supply fan
             CVSSupplyTemp = T + sFP / MCP
 c
             HRVventHLR = ( MCP * ( TMAIN - T ) -
-     x sFP ) * OpTime
+     x sFP ) * CVSOpTime
 c
          Else ! Not operating
 c

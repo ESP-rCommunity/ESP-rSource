@@ -199,7 +199,7 @@ C----------------------------------------------------------------------
       h(20)= '  a Enable/disable H3k Reports '
       h(21)= '  b Dictionary output: Optionally output a listing '
       h(22)= '    of all data variables used by H3K Reports in file '
-      h(23)= '    called out.dictionary.  Options include: (all)(sim)'
+      h(23)= '    called out.dictionary.  Options include: true/false'
       h(24)= '  c XML Structure: Use flat or nested ''tree'' format'
       h(25)= '    for XML output files.'
       h(26)= '  d TS averaging: Optionally overide bps''s time-step'
@@ -253,13 +253,10 @@ C----------------------------------------------------------------------
             cMenu(3) = '  Select options:             '
 
             call GetReportConfig ("output_dictionary",cValue)
-            if ((cValue(1:3) == 'sim') .or.
-     &                  (cValue(1:4) == 'true')) then
-               cMenu(4) = 'b Dictionary out: sim '
-            else if (cValue(1:3) == 'all') then
-               cMenu(4) = 'b Dictionary out: all '
+            if ( cValue(1:4) == 'true' ) then
+               cMenu(4) = 'b Dictionary output         *'
             else
-               cMenu(4) = 'b Dictionary out: off'
+               cMenu(4) = 'b Dictionary output '
             endif
 
             call GetReportConfig ("hierarchy",cValue)
@@ -454,16 +451,11 @@ C...........Toggle h3kreports on/off
 C...........Toggle dictionary all --> sim --> off
 C...........                  (support true/false legacy)
             if ( iChoice == 4 ) then
-                print *,"iChoice 4"
-                call GetReportConfig ("output_dictionary",cValue)
-                if((cValue(1:3) == "sim") .or.
-     &                        (cValue(1:4) == "true")) then
-                  call SetReportConfig ("output_dictionary","off")
-                elseif(cValue(1:3) == "all") then
-                  call SetReportConfig ("output_dictionary","sim")
-                else !assume sim (default)
-                  call SetReportConfig ("output_dictionary","all")
-                end if
+               if ( .not. ReportToggleConfig (
+     &                      "output_dictionary") ) then
+                  ! Possibly error trap
+               endif
+
 C..........Toggle flat/tree hierarchy
             elseif ( iChoice == 5 ) then
                call GetReportConfig ("hierarchy",cValue)

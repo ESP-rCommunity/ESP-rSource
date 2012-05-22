@@ -23,7 +23,8 @@ C**** convert from ww commands to xfig description.
       
       integer lnblnk  ! function definition
 
-      common/io/ioin,ioout,ioblk,iosblk,iotobs
+      integer ioin,ioout,ioblk
+      common/io/ioin,ioout,ioblk
       COMMON/OUTIN/IUOUT,IUIN
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -292,7 +293,9 @@ C ***** write out etplot line.
 C If iud > 0 then solid line, if 0 > iud > -100 then dashed,
 C if -101 > iud > -200 then chain, if -201 > iud > -300 dotted,
 C if -301 > iud > -400 then thick.
-      common/io/ioin,ioout,ioblk,iosblk,iotobs
+
+      integer ioin,ioout,ioblk
+      common/io/ioin,ioout,ioblk
       COMMON/OUTIN/IUOUT,IUIN
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh

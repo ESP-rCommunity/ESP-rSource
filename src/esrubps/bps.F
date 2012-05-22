@@ -4,7 +4,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -83,7 +83,7 @@ C           ifil+76 Runtime boundry condition definition file (BCD.tmp)
 C           ifil+77 Temporary binary file used when converting
 C                   hourly profiles 'Hrly_Load.tmp'
 C           ifil+80 CETC month status IO channel
-C           ifil+81 Runtime lookup table data file 
+C           ifil+81 Runtime lookup table data file
 C           ifil+82 File containing wind turbine power curve data
 
 C MMOD   -  index returned from the 'pages' routine
@@ -120,12 +120,12 @@ C  commons
 
 C======hot3000========================start
 C
-C  This bps main is here for convience. It 
+C  This bps main is here for convience. It
 C  allows the same version of this file to
 C  be used to compile the following forms
 C  of bps: a UNIX executable, a Windows
 C  EXE and a Windows DLL and bpsh3k.
-C 
+C
 C==========================================
       common/dllflg/dll
       character dllsubr*12,dllmesg*124
@@ -140,7 +140,8 @@ C======SubBps=========================
 C SubBps can be used where bps needs to be called as
 C a subroutine rather than as an application.
       subroutine SubBps
-
+      USE START_UP
+      use h3kmodule
 #include "building.h"
 #include "model.h"
 #include "plant.h"
@@ -151,7 +152,7 @@ C a subroutine rather than as an application.
 #include "esprdbfile.h"
 #include "material.h"
 #include "espriou.h"
-      
+
       integer lnblnk  ! function definition
 
 C For dll mode dllsubr is the subroutine name where an error occurs
@@ -168,8 +169,8 @@ C and dllmesg tells the details of the error.
 C IEEE callback (Solaris)
 #ifdef SUN
 #ifdef F90
-      external SIGFPE_bps      
-      integer SIGFPE_bps      
+      external SIGFPE_bps
+      integer SIGFPE_bps
 #endif
 #endif
 
@@ -249,7 +250,7 @@ C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
       common/SPFLN/spsname
 
-C BEMS interaction time for results dump. 
+C BEMS interaction time for results dump.
       COMMON/BEMSTIM/bemstime,ibems,bresfil
 
 C Uncertainty.
@@ -262,10 +263,10 @@ C Illuminance database.
 
 C Active domain common (expand to other domains?).
       common/ACTDOM/CFDOK
-      
+
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
-      
+
 C Timeout information (not currently referenced)
 C      common/TIMEOUT/sTimeout,iTimeoutFlag
 C      character sTimeout*72
@@ -273,7 +274,7 @@ C      integer iTimeoutFlag
 
 C Name of current application
       common/APPNAME/cAppName
-      
+
       character cAppName*12
       integer iverb     ! verbosity passed on command line
 
@@ -283,6 +284,7 @@ C Name of current application
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical unixok,there,photon,flwvis,dll,ACTCNN,areaSSO
 C      logical gopher  ! not references
+      logical concat
 
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
       character*29 item(15)
@@ -298,18 +300,27 @@ C      logical gopher  ! not references
       character journcmd*20,jfile*72,uname*24,cjfile*72,OUTSTR*124
       character dllsubr*12,dllmesg*124
       character t16*16,outs248*248
-      
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
+
 C Flags for multi-year simulation menus
       logical bOptOut, bDone, bMY_clm_err, bExists, bCreate
       logical bautook
 
-C Variables used to configure h3kreports      
-      logical bH3K_Rep_Enabled
-      logical rep_xmlstatus
-
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer ier
       integer NITMS,INO  ! max items and current menu item
+
+#ifdef OSI
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iicapture   ! to pass to updcapt
+#else
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iicapture   ! to pass to updcapt
+#endif
+
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -329,7 +340,7 @@ C mark in log file, start of simulation
 #ifdef F90
         open(UNIT=iLogFile, FILE=cLogFile,position='APPEND' )
 #else
-        OPEN( UNIT=iLogFile, FILE=cLogFile, ACCESS='APPEND' )     
+        OPEN( UNIT=iLogFile, FILE=cLogFile, ACCESS='APPEND' )
 #endif
         write( iLogFile, * ) "subroutine: bps() - dll run"
         write( iLogFile, * ) "checking input"
@@ -416,7 +427,7 @@ C all console write is rerouted to the log file
 #ifdef F90
         open(UNIT=iLogFile, FILE=cLogFile,position='APPEND' )
 #else
-        OPEN(UNIT=iLogFile, FILE=cLogFile, ACCESS='APPEND' )     
+        OPEN(UNIT=iLogFile, FILE=cLogFile, ACCESS='APPEND' )
 #endif
         call SetDllParms(MODL,iappw,iappx,iappy,inf,sps,aut,actf)
         browsing='no'
@@ -432,7 +443,7 @@ C in browsing mode.
      &   browsing(1:2).eq.'No')then
         browse=.false.
       elseif(browsing(1:3).eq.'yes'.or.browsing(1:3).eq.'YES'.or.
-     &   browsing(1:3).eq.'Yes')then 
+     &   browsing(1:3).eq.'Yes')then
         browse=.true.
       endif
 
@@ -458,8 +469,8 @@ C Set folder separator (fs) to \ or / as required.
       endif
       write(path,'(a1,a1)')'.',fs
 
-C Initialise the unit numbers for the various files used. See comments 
-C at begining for details. These must not be changed elsewhere. 
+C Initialise the unit numbers for the various files used. See comments
+C at begining for details. These must not be changed elsewhere.
       ifil=10
       IUNIT=IFIL+1
       ifcfg=IFIL+1
@@ -479,7 +490,7 @@ C at begining for details. These must not be changed elsewhere.
       nochan=ifil+23
       ISTemp=IFIL+60
 
-C Use process ID as seed for random number generator (for use in 
+C Use process ID as seed for random number generator (for use in
 C uncertainty analysis routines)
       call esppid(ipid)
       x=RSTART(ipid)
@@ -541,8 +552,15 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=20
         LIMIT =20
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r Integrated Simulator ',
+     &  cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r Integrated Simulator: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
+
       IF(MMOD.EQ.-6)then
         ICOUT=0
       else
@@ -553,16 +571,25 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
-          CALL win3d(menuchw,16,16,4,3,igl,igr,igt,igb,igw,igwh)
-          igw=igr-igl
-          igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+          iiw1=16; iiw2=16; iiw3=4; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
           call opencpw
           call opensetup
-          call updcapt(1)
+          iicapture=1
+          call updcapt(iicapture)
         elseif(iglib.eq.2)then
-          CALL win3d(menuchw,16,16,5,4,igl,igr,igt,igb,igw,igwh)
-          igw=igr-igl
-          igwh=igb-igt
+          iiw1=16; iiw2=16; iiw3=5; iiw4=4; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
         endif
         call setzscale()
         mdispl=0
@@ -577,7 +604,6 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
 
 C Write version.
       CALL ESPrVersion("summary",cAppName,IUOUT)
-      CALL EDISP(IUOUT,' ')
 
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)
@@ -624,8 +650,9 @@ C after scan of .esprc file.
 C Take command line file name as initial configuration file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
         LCMDFL=inf
-        write(outs248,'(a,a)')' the input file is: ',LCMDFL
-        call edisp(iuout,outs248)
+        call edisp(iuout,'  ')  ! echo blank line
+        write(outs248,'(a,a)') 'The input file is: ',LCMDFL
+        call edisp248(iuout,outs248,90)
         call tstamp('>',outs248)
       else
         LCMDFL='UNKNOWN'
@@ -682,7 +709,7 @@ C return to the main menu.
         INQUIRE (FILE=LCMDFL,EXIST=XST)
         IF(XST)THEN
 
-C Check for a simulator parameters - if requested then use the 
+C Check for a simulator parameters - if requested then use the
 C info in after reading the .cfg file.
           if(sps(1:2).ne.'  '.and.sps(1:4).ne.'UNKN')then
             write(spsname,'(a8)')sps(1:8)
@@ -704,7 +731,7 @@ C If running dll note the failure mode.
 #ifdef F90
             open(UNIT=iLogFile, FILE=cLogFile,position='APPEND' )
 #else
-            OPEN( UNIT=iLogFile, FILE=cLogFile, ACCESS='APPEND' )     
+            OPEN( UNIT=iLogFile, FILE=cLogFile, ACCESS='APPEND' )
 #endif
             write(iLogFile,*) 'bps failed in ',dllsubr
             write(iLogFile,*) 'details: ',dllmesg
@@ -722,8 +749,8 @@ C Increment input flag if no input data errors detected.
      &              'Fatal error: Model was not scanned correctly')
               call pauses(3)   ! pause for 2 seconds then abort program.
               call epagend
-              stop 
-            endif 
+              stop
+            endif
             if(dll)then
               dllsubr='bps MAIN'
               dllmesg='IER1 flag set while scanning the model.'
@@ -807,7 +834,7 @@ C Set up initial menu.
          ITEM(7)   ='y Multi-year sim >> ON    '
       else
          ITEM(7)   ='y Multi-year sim >> OFF   '
-      endif 
+      endif
       IF(IWMOFF.EQ.1)THEN
         ITEM(8) ='w Warnings >> OFF            '
       ELSEIF(IWMOFF.EQ.0)THEN
@@ -821,11 +848,11 @@ C Set up initial menu.
         ITEM(9) ='r Reporting >> detailed      '
       ENDIF
       ITEM(10)   ='  _________________________  '
-      if ( rep_xmlstatus() ) then 
+      if ( isReportingInstalled() ) then
          ITEM(11)  ='s Configure H3K Reports      '
       else
-         ITEM(11)  ='s H3K Reports unavailable    ' 
-      endif 
+         ITEM(11)  ='s H3K Reports unavailable    '
+      endif
       ITEM(12)  ='  _________________________  '
       ITEM(13)  ='? Help                       '
       ITEM(14)  ='- Quit                       '
@@ -838,9 +865,9 @@ C And menu is to be displayed.
 C Use askabout to instanciate the initial help messages (2nd parameter is one).
       call askabout('bps ',1)
 
-C Do not display the menu if in autook mode as defined in the 
+C Do not display the menu if in autook mode as defined in the
 C simulator parameter file.
-C NOTE: if the menu is changed then the values assigned to ino 
+C NOTE: if the menu is changed then the values assigned to ino
 C       will have to be updated.
       if(autook) then
         if(exitok) then
@@ -852,7 +879,7 @@ C       will have to be updated.
         CALL EMENU('ESP-r integrated simulator',ITEM,NITMS,INO)
       endif
 
-C Enter configuration file       
+C Enter configuration file
       IF(INO.EQ.1)THEN
         call tstamp('>','SIM: enter read model')
         CALL MZINPT(IREP,ier)
@@ -860,7 +887,7 @@ C Enter configuration file
 #ifdef F90
           open(UNIT=iLogFile, FILE=cLogFile,position='APPEND' )
 #else
-          OPEN(UNIT=iLogFile, FILE=cLogFile, ACCESS='APPEND' )     
+          OPEN(UNIT=iLogFile, FILE=cLogFile, ACCESS='APPEND' )
 #endif
           write(iLogFile,*) 'bps failed in ',dllsubr
           write(iLogFile,*) 'details: ',dllmesg
@@ -913,38 +940,46 @@ C a climate file by reading records 366 and 367.
         call gethelptext(helpinsub,helptopic,nbhelp)
         iclim=ifil
         call erpfree(iclim,istat)
-	
-        write(llclmdb,'(a)') LCLIM
+
+C Take into account weather file location.
+        lndbp=lnblnk(standardclmpath)
+        if(ipathclim.eq.0.or.ipathclim.eq.1)then
+          call addpath(lclim,llclmdb,concat)
+        elseif(ipathclim.eq.2)then
+          write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &      LCLIM(1:lnblnk(LCLIM))
+        endif
+
  291    llt=lnblnk(llclmdb)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
-            CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
-     &        ' ',96,DCLIM,'climate file name',IER,nbhelp)
+            CALL EASKF(llclmdb,'Weather file:',
+     &        ' ',96,DCLIM,'weather file name',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
-            CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
-     &        ' ',124,DCLIM,'climate file name',IER,nbhelp)
+            CALL EASKF(llclmdb,'Weather file:',
+     &        ' ',124,DCLIM,'weather file name',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
-            CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
-     &        ' ',144,DCLIM,'climate file name',IER,nbhelp)
+            CALL EASKF(llclmdb,'Weather file:',
+     &        ' ',144,DCLIM,'weather file name',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
-          CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
-     &      ' ',144,DCLIM,'climate file name',IER,nbhelp)
+          CALL EASKF(llclmdb,'Weather file:',
+     &      ' ',144,DCLIM,'weather file name',IER,nbhelp)
         else
-          CALL EASKF(llclmdb,' Climate file (esp-r binary)?',
-     &      ' ',96,DCLIM,'climate file name',IER,nbhelp)
+          CALL EASKF(llclmdb,'Weather file:',
+     &      ' ',96,DCLIM,'weather file name',IER,nbhelp)
         endif
         IF(llclmdb(1:2).EQ.'  ')GOTO 291
         IER=0
 
-C Cast back to LCLIM.
+C Cast expanded weather file name back to LCLIM.
         llt=lnblnk(llclmdb)
         write(LCLIM,'(a)') llclmdb(1:llt)
         call tstamp('>','SIM: change climate')
         call tstamp('>',LCLIM)
         ier=0
-        call EFOPRAN(ICLIM,LCLIM,144,0,IER)
+        call EFOPRAN(ICLIM,llclmdb,144,0,IER)
         IF(ier.eq.0)THEN
           IREC=366
           READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=103)ICYEAR,ICDNGH
@@ -987,20 +1022,20 @@ C Set flag: climate data ok
         ENDIF
 
 C Close & free file (it will be opened again before the start
-C of the simulation         
+C of the simulation
 C        CALL EPAGEND
         CALL ERPFREE(ICLIM,ISTAT)
 
       ELSEIF(INO.EQ.2 .and. bMY_sim_enabled ) then
 
 C Get multi-year climate file name - 'Fail': Do not allow user
-C to create new file if not found. 
+C to create new file if not found.
         t16='Fail'
         call spec_MY_clm_db (t16,bExists,bCreate)
 
         if ( bExists ) then
 
-C Parse file and check for errors. If no errors set status flag.        
+C Parse file and check for errors. If no errors set status flag.
           call parse_MY_clm_db (ICLIM, bautook, bMY_clm_err)
           if ( .not. bMY_clm_err ) then
              t16='fix'
@@ -1011,7 +1046,7 @@ C Parse file and check for errors. If no errors set status flag.
           else
             bMY_climates_defined = .false.
           endif
-        endif 
+        endif
 
 C Initiate simulation.
       ELSEIF(INO.EQ.4)THEN
@@ -1027,7 +1062,7 @@ C Check that climate & building configurations files are ok
      &           bMY_sim_enabled ) THEN
           CALL USRMSG(' ',
      &     'Multi-year climate database not yet entered.','W')
-     
+
         ELSE
 
           call tstamp('>','SIM: enter initiate simulation')
@@ -1041,16 +1076,16 @@ C For the multi-D model, check that the 1-D grid distribution is default.
 #ifdef F90
                 open(UNIT=iLogFile,FILE=cLogFile,position='APPEND' )
 #else
-                OPEN(UNIT=iLogFile,FILE=cLogFile,ACCESS = 'APPEND')     
+                OPEN(UNIT=iLogFile,FILE=cLogFile,ACCESS = 'APPEND')
 #endif
                 write( iLogFile, * ) "Simulation started"
                 close( iLogFile )
 #ifdef F90
                 open(UNIT=iLogFile,FILE=cLogFile,position='APPEND' )
 #else
-                OPEN(UNIT=iLogFile,FILE=cLogFile,ACCESS = 'APPEND')     
+                OPEN(UNIT=iLogFile,FILE=cLogFile,ACCESS = 'APPEND')
 #endif
-              endif          
+              endif
               CALL MZSIML
             ELSE
               CALL USRMSG(' FATAL ERROR:',
@@ -1063,34 +1098,34 @@ C For the multi-D model, check that the 1-D grid distribution is default.
         ENDIF
       elseif(ino.eq.6)then
 
-C Trace output. Begin by checking if configuration file exists.      
+C Trace output. Begin by checking if configuration file exists.
         IF (.NOT. INPOK ) THEN
           CALL USRMSG(' ','Configuration file not yet entered.','W')
         ELSE
 
 C Setup trace.
           call mztrac
-        ENDIF 
+        ENDIF
       elseif ( ino .eq. 7 ) then
 
 C Enable / disable multi-year simulations. First
 C toggle status flag, and warn user if required climate data
-C is not yet specified. 
+C is not yet specified.
         if ( bMY_sim_enabled ) then
           bMY_sim_enabled = .false.
 
           if ( .not. bSY_climate_defined )
      &      CALL USRMSG (' ',
      &        ' Single-year climate database must be defined','W')
-           
+
         else
 
           bMY_sim_enabled = .true.
           if ( .not. bMY_climates_defined )
      &      CALL USRMSG (' ',
      &        ' Multi-year climate database must be defined','W')
-           
-        endif 
+
+        endif
       elseif(ino.eq.(NITMS-6))then
 
 C Warning messages switch.
@@ -1113,7 +1148,7 @@ C Toggle trace level.
       elseif(ino.eq.(NITMS-3))then
 
 C Configure H3K reports.
-        if ( rep_xmlstatus() ) then
+        if ( isReportingInstalled() ) then
           call Config_H3k_reports_menu()
         else
           CALL USRMSG(' ',
@@ -1218,7 +1253,7 @@ C Error.
 C Dummy routines (needed for call back from c).
       subroutine imgdisp(iforce,focus,ier)
       character focus*4
-     
+
       return
       end
 
@@ -1234,6 +1269,46 @@ C calls in esru_lib.F
       end
 
       subroutine chgelev(icelev)
+      return
+      end
+
+      subroutine chgsun(isunhour)
+      return
+      end
+
+      subroutine chgeye(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,
+     &   JITOBS,JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,JITHLZ,
+     &   JITPPSW)
+
+C Passed paramters.
+      real EVX,EVY,EVZ,VX,VY,VZ,EAN,DIS
+
+C Depending on computer type set integer size of passed parameters.
+#ifdef OSI
+      integer JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
+      integer JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+#else
+      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
+      integer*8 JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+#endif
+      return
+      end
+
+      subroutine chgzonpik(jizgfoc,jnzg)
+#ifdef OSI
+      integer jizgfoc,jnzg  ! for use with viewtext
+#else
+      integer*8 jizgfoc,jnzg  ! for use with viewtext
+#endif
+      return
+      end
+
+      subroutine chgzonpikarray(jnznog,jnznogv)
+#ifdef OSI
+      integer jnznog,jnznogv
+#else
+      integer*8 jnznog,jnznogv
+#endif
       return
       end
 

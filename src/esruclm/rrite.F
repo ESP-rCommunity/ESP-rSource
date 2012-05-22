@@ -19,9 +19,9 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C ************ RRITE
-C 'RRITE' allows one day of hourly values (of the 6 climate
+C 'RRITE' allows one day of hourly values (of the 6 weather
 C parameters to be edtied by the user and merged into the
-C climate file.
+C weather file.
       SUBROUTINE RRITE
 #include "esprdbfile.h"
       PARAMETER (MT=24)
@@ -49,6 +49,14 @@ C climate file.
       integer onright ! number of right axis
       integer mitem,INO  ! max items and current menu item
 
+#ifdef OSI
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+#else
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+#endif
+
 C For help messages
       character helpinsub*24,helptopic*24
       integer nbhelp     ! number of help lines found
@@ -67,7 +75,7 @@ C Day to be transferred.
 C Read in the current data so partial editing possible.
       CALL CLMGET(IDAY)
 
-C Determine the record in the climate file.
+C Determine the record in the weather file.
       IREC=IDAY
   18  continue
       INO=-3
@@ -154,9 +162,15 @@ C Reset to the normal graphics area before exiting.
             CALL feedbox(menuchw,2,igfw,igfh)
             CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
           endif
-          CALL win3d(menuchw,10,22,7,3,igl,igr,igt,igb,igw,igwh)
-          igw=igr-igl
-          igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+          iiw1=10; iiw2=22; iiw3=7; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+C          CALL win3d(menuchw,10,22,7,3,igl,igr,igt,igb,igw,igwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
         endif
         return
       elseif(INO.eq.mitem-1)then
@@ -214,14 +228,14 @@ C Check if user wishes to edit another day.
 
    36 RETURN
 
-1000  write(outs,'(A,I4)')' Problem writing climate data on rec ',IREC
+1000  write(outs,'(A,I4)')' Problem writing weather data on rec ',IREC
       call usrmsg(outs,' returning....','W')
       goto 36
 
       END
 
 C ********** SITEDIT
-C SITEDIT edits site related data in a climate file.
+C SITEDIT edits site related data in a weather file.
       SUBROUTINE SITEDIT
 #include "esprdbfile.h"
       COMMON/FILEP/IFIL
@@ -245,30 +259,30 @@ C Ask for the year (2001 convenintly has monday on 1 Jan).
      &         1900,'F',2005,'W',2001,'year',IER,nbhelp)
       ICYEAR=IYEAR
 
-C Now transfer to the climate file.
+C Now transfer to the weather file.
       IREC=366
       IADN=IDNGH
       WRITE(IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1000)IYEAR,IADN
 
-C Determine the climate location.
+C Determine the weather data location.
       T30=CLMLOC
       helptopic='what_is_descr'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      CALL EASKS(T30,' ',' Climate site name ? ',
-     &    30,'North_Pole','climate site. ',IER,nbhelp)
+      CALL EASKS(T30,' ',' Weather site name ? ',
+     &    30,'North_Pole','weather site. ',IER,nbhelp)
       if(T30(1:2).ne.'  ') CLMLOC=T30
       IREC=367
       WRITE(IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLMLOC
 
       helptopic='what_is_latitude'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      CALL EASKR(CLAT,' ',' Climate latitude ? ',
-     &  -89.9,'W',89.9,'W',30.0,'climate latitude',IER,nbhelp)
+      CALL EASKR(CLAT,' ','Weather site latitude:',
+     &  -89.9,'W',89.9,'W',30.0,'weather latitude',IER,nbhelp)
 
       helptopic='what_is_long_diff'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      CALL EASKR(CLONG,' ',' Climate longitude diff ?',
-     &           -14.9,'W',14.9,'W',0.0,'climate long',IER,nbhelp)
+      CALL EASKR(CLONG,' ','Weather site longitude difference:',
+     &  -14.9,'W',14.9,'W',0.0,'weather long diff',IER,nbhelp)
       IREC=368
       WRITE(IFIL,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG
 

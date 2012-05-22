@@ -1248,115 +1248,115 @@ C--------------------------------------------------------------------------
 
 C.....Debugging output
       if ( bDebug ) then
-         call AddToReportWild1(rvDebugGasCylm3%Identifier,
+         call AddToReport(rvDebugGasCylm3%Identifier,
      &         fCyl_Volume,
      &         'Volume')
 
-         call AddToReportWild1(rvDebugGasCylkg%Identifier,
+         call AddToReport(rvDebugGasCylkg%Identifier,
      &         fCyl_solid_mass,
      &         'S_mass')
 
-         call AddToReportWild1(rvDebugGasCylJKgoC%Identifier,
+         call AddToReport(rvDebugGasCylJKgoC%Identifier,
      &         fCyl_solid_Cp,
      &         'S_Cp')
 
-         call AddToReportWild1(rvDebugGasCylWoC%Identifier,
+         call AddToReport(rvDebugGasCylWoC%Identifier,
      &         fCyl_UA_ambient,
      &         'UA')
 
-         call AddToReportWild1(rvDebugGasCylkPa%Identifier,
+         call AddToReport(rvDebugGasCylkPa%Identifier,
      &         fCyl_MAX_press,
      &         'press/max')
 
-         call AddToReportWild1(rvDebugGasCylkPa%Identifier,
+         call AddToReport(rvDebugGasCylkPa%Identifier,
      &         fCyl_MIN_press,
      &         'press/min')
 
-         call AddToReportWild1(rvDebugGasCylkPa%Identifier,
+         call AddToReport(rvDebugGasCylkPa%Identifier,
      &         fCyl_Init_press,
      &         'press/init')
 
-         call AddToReportWild1(rvDebugGasCylkjkgK%Identifier,
+         call AddToReport(rvDebugGasCylkjkgK%Identifier,
      &         fR_hydrogen,
      &         'H2_R')
 
-         call AddToReportWild1(rvDebugGasCyloC%Identifier,
+         call AddToReport(rvDebugGasCyloC%Identifier,
      &         fCyl_Temp_Present,
      &         'node/temp/present')
 
-         call AddToReportWild1(rvDebugGasCyloC%Identifier,
+         call AddToReport(rvDebugGasCyloC%Identifier,
      &         fCyl_Temp_Future,
      &         'node/temp/future')
 
-         call AddToReportWild1(rvDebugGasCylkgs%Identifier,
+         call AddToReport(rvDebugGasCylkgs%Identifier,
      &         fCyl_H2_demand,
      &         'H2_demand')
 
-         call AddToReportWild1(rvDebugGasCyloC%Identifier,
+         call AddToReport(rvDebugGasCyloC%Identifier,
      &         fConn_Temp_Future,
      &         'conn/temp/future')
 
-         call AddToReportWild1(rvDebugGasCyloC%Identifier,
+         call AddToReport(rvDebugGasCyloC%Identifier,
      &         fConn_Temp_Present,
      &         'conn/temp/present')
 
-          call AddToReportWild1(rvDebugGasCylw%Identifier,
+          call AddToReport(rvDebugGasCylw%Identifier,
      &         fSoln_alpha,
      &         'alpha')
 
-         call AddToReportWild1(rvDebugGasCylw%Identifier,
+         call AddToReport(rvDebugGasCylw%Identifier,
      &         fCoefficients(1),
      &         'coeff/1')
 
-         call AddToReportWild1(rvDebugGasCylw%Identifier,
+         call AddToReport(rvDebugGasCylw%Identifier,
      &         fCoefficients(2),
      &         'coeff/2')
 
-         call AddToReportWild1(rvDebugGasCylw%Identifier,
+         call AddToReport(rvDebugGasCylw%Identifier,
      &         fCoefficients(3),
      &         'coeff/3')
 
-         call AddToReportWild1(rvDebugGasCylw%Identifier,
+         call AddToReport(rvDebugGasCylw%Identifier,
      &         fCharge_Pv_present,
      &         'flow_work/charge/present')
 
-         call AddToReportWild1(rvDebugGasCylw%Identifier,
+         call AddToReport(rvDebugGasCylw%Identifier,
      &         fCharge_Pv_future,
      &         'flow_work/charge/future')
 
-         call AddToReportWild1(rvDebugGasCylw%Identifier,
+         call AddToReport(rvDebugGasCylw%Identifier,
      &         fDischarge_Pv_present,
      &         'flow_work/discharge/present')
 
-         call AddToReportWild1(rvDebugGasCylw%Identifier,
+         call AddToReport(rvDebugGasCylw%Identifier,
      &         fDischarge_Pv_future,
      &         'flow_work/discharge/future')
 
-         call AddToReportWild1(rvDebugGasCylw%Identifier,
+         call AddToReport(rvDebugGasCylw%Identifier,
      &         fConn_dU_present,
      &         'dU/charge/present')
 
-         call AddToReportWild1(rvDebugGasCylw%Identifier,
+         call AddToReport(rvDebugGasCylw%Identifier,
      &         fCyl_HeatLoss_present,
      &         'heat_loss/present')
 
-         call AddToReportWild1(rvDebugGasCyljkgk%Identifier,
+         call AddToReport(rvDebugGasCyljkgk%Identifier,
      &         fConn_H2_Cv_future,
      &         'H2/fConn_H2_Cv_future')
 
-         call AddToReportWild1(rvDebugGasCyljkgk%Identifier,
+         call AddToReport(rvDebugGasCyljkgk%Identifier,
      &         fConn_H2_Cv_present,
      &         'H2/fConn_H2_Cv_present')
 
-         call AddToReportWild1(rvDebugGasCyljkgk%Identifier,
+         call AddToReport(rvDebugGasCyljkgk%Identifier,
      &         fCyl_H2_Cv_future,
      &         'H2/fCyl_H2_Cv_future')
 
-         call AddToReportWild1(rvDebugGasCyljkgk%Identifier,
+         call AddToReport(rvDebugGasCyljkgk%Identifier,
      &         fCyl_H2_Cv_present,
      &         'H2/fCyl_H2_Cv_present')
 
-         call AddToReportWild1(rvDebugGasCyljkgk%Identifier,
+         call AddToReport(rvDebugGasCyljkgk%Identifier,
      &         fCyl_heat_cap,
      &         'heat_capacitance')
 
@@ -1787,56 +1787,56 @@ C----------------------------------------------------------------------
 
 C--------------------------------------------
 C.....Output data: Present time-row mass
-      call AddToReportWild1(rvPltMassPresent%Identifier,
+      call AddToReport(rvPltMassPresent%Identifier,
      &         fReport_H2_mass_present(iComponent),
      &         pcname(iComponent)(1:iNameLength))
 
 C--------------------------------------------
 C.....Output data: Future time-row mass
-      call AddToReportWild1(rvPltMassFuture%Identifier,
+      call AddToReport(rvPltMassFuture%Identifier,
      &         fReport_H2_mass_future(iComponent),
      &         pcname(iComponent)(1:iNameLength))
 
 C--------------------------------------------
 C.....Output data: H2 charge rate
-      call AddToReportWild1(rvPltHydroChargeRt%Identifier,
+      call AddToReport(rvPltHydroChargeRt%Identifier,
      &         fReport_H2_charge(iComponent),
      &         pcname(iComponent)(1:iNameLength))
 
 C--------------------------------------------
 C.....Output data: H2 discharge rate
-      call AddToReportWild1(rvPltHydroDischgRt%Identifier,
+      call AddToReport(rvPltHydroDischgRt%Identifier,
      &         fReport_H2_discharge(iComponent),
      &         pcname(iComponent)(1:iNameLength))
 
 C--------------------------------------------
 C.....Output data: Flow rate @ vent
-      call AddToReportWild1(rvPltVentH2Rt%Identifier,
+      call AddToReport(rvPltVentH2Rt%Identifier,
      &         fReport_H2_vent(iComponent),
      &         pcname(iComponent)(1:iNameLength))
 
 C----------------------------------------------------------------------
 C--------------------------------------------
 C.....Output data: Pressure at present time-row
-      call AddToReportWild1(rvPltPressPres%Identifier,
+      call AddToReport(rvPltPressPres%Identifier,
      &         fReport_H2_pressure_present(iComponent),
      &         pcname(iComponent)(1:iNameLength))
 
 C--------------------------------------------
 C.....Output data: Pressure at future time-row
-      call AddToReportWild1(rvPltPressFut%Identifier,
+      call AddToReport(rvPltPressFut%Identifier,
      &         fReport_H2_pressure_future(iComponent),
      &         pcname(iComponent)(1:iNameLength))
 
 C--------------------------------------------
 C.....Output data: H2 deficit implicit part
-      call AddToReportWild1(rvPltHydroDefIMP%Identifier,
+      call AddToReport(rvPltHydroDefIMP%Identifier,
      &         fReport_H2_deficit_IMP(iComponent),
      &         pcname(iComponent)(1:iNameLength))
 
 C--------------------------------------------
 C.....Output data: H2 deficit explicit part
-      call AddToReportWild1(rvPltHydroDefEXP%Identifier,
+      call AddToReport(rvPltHydroDefEXP%Identifier,
      &         fReport_H2_deficit_EXP(iComponent),
      &         pcname(iComponent)(1:iNameLength))
 

@@ -19,9 +19,9 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C pc_manip hold routines which manipulate entities in
-C a plant component database.
+C a plant component templates.
 
-C The plant component database has a record width of IRECLN, and
+C The plant component templates has a record width of IRECLN, and
 C contains, per record IREC, the following:
 C
 C Record      Contents
@@ -86,6 +86,7 @@ C the data and the routine 'PCWRT' to
 C write it to the terminal.
       SUBROUTINE PCLIST
 #include "plantdb.h"
+#include "pdb_data.h"
       
       integer lnblnk  ! function definition
 
@@ -94,24 +95,17 @@ C write it to the terminal.
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
-
-      common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
-      COMMON /PL/ INDXPR(MAXPC)
+      character lcmdfl*144
+      common/rcmd/LCMDFL
 
       dimension ival(MAXPC)
       logical ok,dok
 
       EXTERNAL PCEXCH, COMPDS, COMPNO
       LOGICAL COMPDS, COMPNO
-      CHARACTER ZITEM(11)*24
-      character LTMP*72,buffer*120
-      CHARACTER ZGTYPE*40,ZCDATE*16,ZCDESC*80,dtdesc*68,adodsc*30
+      CHARACTER ZITEM(11)*30
+      character lltmp*144,L144*144
+      character buffer*120
       integer NITEMS,MNUPIK ! max items and current menu item
       integer lastmmod      ! so can restore display
 
@@ -129,27 +123,36 @@ C Check library is not empty.
       ENDIF
 
       lastmmod=mmod   ! remember the display mode
+      IUCHAN = IUOUT  ! start with list to feedback
 
-C Initialize print list.
+C Initialize print list array INDXPR.
       DO 100 I = 1, NPC
         INDXPR(I) = I
   100 CONTINUE
 
 C Build menu list options.
-        zitem(1) ='a To file              '
-        zitem(2) ='  ---------------------'
-        zitem(3) ='b In numerical order   '
-        zitem(4) ='c In alphabetical order'
-        zitem(5) ='d User defined order   '
-        zitem(6) ='e Unordered (as in db) '
-        zitem(7) ='  ---------------------'
-        zitem(8) ='f Summary of entries   '
-        zitem(9) ='  ---------------------'
-        zitem(10)='? Help                 '
-        zitem(11)='- Return to main menu  '
+        if(IUCHAN.eq.IUOUT)then
+          zitem(1) ='a List >> feedback      '
+        else
+          zitem(1) ='a List >> file          '
+        endif
+        zitem(2) ='  ------------------------'
+        zitem(3) ='b In numerical order      '
+        zitem(4) ='c In alphabetical order   '
+        zitem(5) ='d In user defined order   '
+        zitem(6) ='e Unordered (as in file)  '
+        zitem(7) ='  ------------------------'
+        zitem(8) ='f Summary of entries      '
+        zitem(9) ='  ------------------------'
+        zitem(10)='? Help                    '
+        zitem(11)='- Exit                    '
 
 C Display menu and interpret pick.
-  110   IUCHAN = IUOUT
+  110   if(IUCHAN.ne.IUOUT)then
+          call edisp(iuout,'  ')
+          call edisp(iuout,'Component export request completed.')
+          IUCHAN = IUOUT  ! reset output channel
+        endif
   120   NITEMS = 11
         MNUPIK = -5
 
@@ -163,14 +166,26 @@ C Clear dialogue box.
 
         if(mnupik.eq.1)then
 
-C Output to file.
+C Output to file using standard file dialog.
           helptopic='pdb_list_options_menu'
           call gethelptext(helpinsub,helptopic,nbhelp)
-          ltmp=' '
-  210     CALL EASKS(LTMP,' ASCII file name? ',' ',72,' ',
-     &      ' ASCII file',IER,nbhelp)
+  210     lltmp=' '  ! clear file name to be returned
+          call edisp(iuout,'  ')  ! echo blank line
+
+C Set initial guess for export file to command line file +a
+          write(L144,'(2a)') LCMDFL(1:lnblnk(LCMDFL)),'a'  
+          CALL EASKXORGTKF(L144,
+     &      'ASCII export file name (then select component order)',
+     &      'Confirm:','exported.dta',
+     &      lltmp,'export plant templates',IER,nbhelp)
+
+C If user cancel display the menu without loading file.
+          if(ier.eq.-3)then
+            goto 110  ! re-display menu.
+          endif
+
           IUCHAN = IFIL+1
-          CALL FPOPEN (IUCHAN,ISTAT,4,3,LTMP)
+          CALL FPOPEN (IUCHAN,ISTAT,4,3,LLTMP)
           IF (ISTAT .LT. 0)then
             dok=.false.
             helptopic='pdb_list_ascii_fail'
@@ -193,7 +208,7 @@ C Output to file.
 
 C Write to file
           call edisp(iuchan,' PLANT COMPONENT DATABASE Listing')
-          CALL USRMSG(' ',' Please select listing type from menu','-')
+          CALL USRMSG(' ',' Please select listing type from menu','P')
           GOTO 120
         elseif(mnupik.eq.3)then
 
@@ -202,7 +217,7 @@ C Output in numerical order
             INDXPR(I) = I
   108     CONTINUE
           if(NPC.GE.100)then
-            call usrmsg(' PCLIST: sorting database...',' ','-')
+            call usrmsg(' PCLIST: sorting components...',' ','-')
           endif
           CALL PSHELL (NPC,COMPNO,PCEXCH)
           DO 310 I = 1, NPC
@@ -227,7 +242,7 @@ C Output in alphabetical order.
             INDXPR(I) = I
   107     CONTINUE
           IF(NPC.GE.100)then
-            call usrmsg(' PCLIST: sorting database...',' ','-')
+            call usrmsg(' PCLIST: sorting components...',' ','-')
           endif
           CALL PSHELL (NPC,COMPDS,PCEXCH)
           DO 410 I = 1, NPC
@@ -327,18 +342,12 @@ C Given a component code, the library is searched for this
 C component and its data is returned.
       SUBROUTINE PCFIND (ICDE)
 #include "plantdb.h"
+#include "pdb_data.h"
+
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
-
-      character dtdesc*68,adodsc*30
       logical ok,dok
 
 C For help messages
@@ -383,21 +392,13 @@ C The user is asked to confirm the entry
 C selected before deletion.
       SUBROUTINE PCDELT
 #include "plantdb.h"  
+#include "pdb_data.h"
+  
       common/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCCTL/MPC, NXTREC
-      common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
-
-      CHARACTER ZGTYPE*40,ZCDATE*16,ZCDESC*80,dtdesc*68,adodsc*30
       character buffer*120
 
       dimension ival(MAXPC)
@@ -507,40 +508,12 @@ C ******** PCGET ************
 C PCGET of ESRUpdb
       SUBROUTINE PCGET (INDEX)
 #include "plantdb.h" 
+#include "pdb_data.h"
+
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
-
-      common/pcdatd/ictype,mncomp,mncon,micode(maxcmp),icndat(maxcon,5),
-     &              rcndat(maxcon,3)
-
-C Mass flow components data
-      common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
-     &              supcmp(maxcon,maxflw), mfsdsc(maxcon,maxflw),
-     &              ltpcmp(maxcon), isdifc(maxcon)
-
-C TRNSYS types data
-      common/trnsys/ntypes,ittype(MXTSYS),ntadat(MXTSYS),ntbdat(MXTSYS),
-     &              ntcdat(MXTSYS),ntapot(MXTSYS),ntmisc(MXTSYS),
-     &              tdtdsc(MXTSYS,maxmsc),tdatms(MXTSYS,maxmsc),
-     &              trange(MXTSYS,maxmsc,2),tadods(MXTSYS,mxaout),
-     &              ntaotp(MXTSYS,mxaout),ittpcm(MXTSYS,maxcon),
-     &              itsdcm(MXTSYS,maxcon),itsdcn(MXTSYS,maxcon),
-     &              tsupcm(MXTSYS,maxcon,maxflw),
-     &              tmfsds(MXTSYS,maxcon,maxflw),
-     &              tltpcm(MXTSYS,maxcon),itsdif(MXTSYS,maxcon)
-
-      CHARACTER ZGTYPE*40,ZCDATE*16,ZCDESC*80
-      character dtdesc*68,mfsdsc*68,tdtdsc*68,tmfsds*68
-      character adodsc*30,tadods*30,ltpcmp*60,tltpcm*60
       logical ok,dok
 
 C For help messages
@@ -747,7 +720,7 @@ C Error handling.
   1   dok=.true.
       helptopic='pdb_is_confused'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      CALL ASKOK(' Error in pdb:pcget reading database. ',
+      CALL ASKOK(' Error in pdb:pcget reading components. ',
      &           ' Exit from ESRUpdb ?',OK,dok,nbhelp)
       if(OK)then
         CALL EPAGEND
@@ -761,41 +734,12 @@ C ******** PCPUT ***********
 C PCPUT of ESRUpdb
       SUBROUTINE PCPUT (NDX)
 #include "plantdb.h" 
+#include "pdb_data.h"
+ 
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCCTL/MPC, NXTREC
-      common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
-
-      common/pcdatd/ictype,mncomp,mncon,micode(maxcmp),icndat(maxcon,5),
-     &              rcndat(maxcon,3)
-
-C Mass flow components data
-      common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
-     &              supcmp(maxcon,maxflw), mfsdsc(maxcon,maxflw),
-     &              ltpcmp(maxcon), isdifc(maxcon)
-
-C TRNSYS types data
-      common/trnsys/ntypes,ittype(MXTSYS),ntadat(MXTSYS),ntbdat(MXTSYS),
-     &              ntcdat(MXTSYS),ntapot(MXTSYS),ntmisc(MXTSYS),
-     &              tdtdsc(MXTSYS,maxmsc),tdatms(MXTSYS,maxmsc),
-     &              trange(MXTSYS,maxmsc,2),tadods(MXTSYS,mxaout),
-     &              ntaotp(MXTSYS,mxaout),ittpcm(MXTSYS,maxcon),
-     &              itsdcm(MXTSYS,maxcon),itsdcn(MXTSYS,maxcon),
-     &              tsupcm(MXTSYS,maxcon,maxflw),
-     &              tmfsds(MXTSYS,maxcon,maxflw),
-     &              tltpcm(MXTSYS,maxcon),itsdif(MXTSYS,maxcon)
-
-      CHARACTER ZGTYPE*40,ZCDATE*16,ZCDESC*80
-      character dtdesc*68,mfsdsc*68,tdtdsc*68,tmfsds*68
-      character adodsc*30,tadods*30,ltpcmp*60,tltpcm*60
       character outs*124
       logical ok,dok
 
@@ -864,8 +808,8 @@ C Remove old entry if too small.
 
 C Make space at end of library.
         NPC = NPC + 1
-        ITMLOC(NPC,1) = NXTREC
-        ITMLOC(NPC,2) = ICODE
+        ITMLOC(NPC,1) = NXTREC  ! assign the start record
+        ITMLOC(NPC,2) = ICODE   ! remember the component code
         NXTREC = NXTREC + ISZ
         CALL PCUPDT (1)
         IREC = ITMLOC(NPC,1)
@@ -1048,7 +992,7 @@ C Error handling.
   1   dok=.true.
       helptopic='pdb_is_confused'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      write(outs,'(a,i4)') 'Error pcput: database writing @ rec: ',irec
+      write(outs,'(a,i4)') 'Error pcput: component writing @ rec:',irec
       CALL ASKOK(outs,' Exit from ESRUpdb ?',OK,dok,nbhelp)
       if(OK)then
         CALL EPAGEND
@@ -1060,12 +1004,11 @@ C Error handling.
 C ********* PCRMV ********
       SUBROUTINE PCRMV (NDX)
 #include "plantdb.h"
+#include "pdb_data.h"
+
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
-
-      common/PCCTL/MPC, NXTREC
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
 
 C Delete entry by compacting library
       INTEGER RECORD(IRECLN)
@@ -1117,8 +1060,8 @@ C Error handling
   1   dok=.true.
       helptopic='pdb_is_confused'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      write(outs,'(a,i4)') 'Error pcput: database writing @ rec: ',irec
-      CALL ASKOK('Error in pdb:pcrmv database compacting. ',
+      write(outs,'(a,i4)') 'Error pcput: component writing @ rec:',irec
+      CALL ASKOK('Error in pdb:pcrmv components file compacting. ',
      &  ' Exit from ESRUpdb ?',OK,dok,2)
       if(OK)then
         CALL EPAGEND
@@ -1132,12 +1075,12 @@ C Update header block after ITMLOC has changed. If IFLG = 0, then
 C zeroize header information
       SUBROUTINE PCUPDT (IFLG)
 #include "plantdb.h"
+#include "pdb_data.h"
+
       common/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCCTL/MPC, NXTREC
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
       CHARACTER PZDESC*25
       logical ok,dok
 
@@ -1183,7 +1126,7 @@ C Error handling
   1   dok=.true.
       helptopic='pdb_is_confused'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      CALL ASKOK('Error in pdb:pcupdt database updating. ',
+      CALL ASKOK('Error in pdb:pcupdt components updating. ',
      &  ' Exit from ESRUpdb ?',OK,dok,nbhelp)
       if(OK)then
         CALL EPAGEND

@@ -510,7 +510,6 @@ C Controller type 39: sensor measures relative humidity outdoor air.
 
 C Invalid controller type.
          ELSE
-           CALL ELINC(2)
            WRITE(IUOUT,*) ' GCFVAR: function ',ICF,' type ',IGTYPE
            STOP ' GCFVAR: invalid controller type for type -3 sensor'
          ENDIF
@@ -546,8 +545,7 @@ C Which is currently not supported.
 
       RETURN
 
-9998  CALL ELINC(2)
-      WRITE(IUOUT,*) ' GCFVAR: function ',igf,' type ',IGTYPE
+9998  WRITE(IUOUT,*) ' GCFVAR: function ',igf,' type ',IGTYPE
       STOP ' GCFVAR: incorrect match of sensor and controller type.'
 
       END

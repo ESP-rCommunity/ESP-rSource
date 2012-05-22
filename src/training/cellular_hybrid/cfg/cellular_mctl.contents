@@ -1,8 +1,8 @@
 Synopsis
  
 This is a synopsis of the model Cellular offices with tempered mech vent (via
-flow network) defined in cellular_mctl.cfg generated on Wed Sep 30 08:50:29
-2009. Notes associated with the model are in cellular_mctl.log
+flow network) defined in cellular_mctl.cfg generated on Tue Aug  2 12:39:48
+2011. Notes associated with the model are in cellular_mctl.log
  
 The model is located at latitude   39.18 with a longitude difference of  -1.67
 from the local time meridian. The year used in simulations is 2001 and
@@ -13,7 +13,6 @@ Project name: not yet defined
 Building address: not yet defined
 Building city: not yet defined
 Building Postcode: not yet defined
- 
 Building owner name: not yet defined
 Building owner telephone: not yet defined
 Building owner address: not yet defined
@@ -27,6 +26,15 @@ Simulationist city: not yet defined
 Simulationist postcode: not yet defined
 The climate is: BALTIMORE MD USA iwec 724060 and is held in:
 /usr/esru/esp-r/climate/USA_MD_Baltimore_iwec with hour centred solar data.
+Calculated ground temp at 0.5m depth
+2.2480 1.2275 3.0374 5.8697 13.278 18.995 22.851 24.025 22.025 17.587 11.655 6.1510
+Calculated ground temp at 1.0m depth
+3.6425 2.2443 3.4653 5.7834 12.298 17.614 21.448 22.982 21.633 17.930 12.662 7.5354
+Calculated ground temp at 2.0m depth
+6.0031 4.1847 4.5559 6.0604 11.017 15.499 19.083 21.007 20.597 18.080 13.993 9.6597
+Calculated ground temp at 4.0m depth
+9.1113 7.2467 6.8389 7.4030 10.209 13.228 15.995 17.922 18.373 17.282 14.882 11.950
+ 
 An Integrated Performance View has been defined:
 Title : base case model of two adjacent cellular
 Version   : Version cellular_offices_bc
@@ -78,12 +86,13 @@ Zones: coridor
  
  
 Databases associated with the model:
- pressure distributions : pressc.db1
+ standard pressure distr: pressc.db1
  materials              : ../dbs/cellular.materials.a
  constructions          : ../dbs/cellular.constrdb
- plant components       : plantc.db1
- event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
- optical properties     : optics.db2
+ standard plant comp    : plantc.db1
+ standard event profiles: profiles.db1.a
+ standard optical prop  : optics.db2
+ UK NCM data            : /Users/jon/esru_jwh/esp-r/databases/SBEM.db1
  
  ____________________________________________________________
  
@@ -283,14 +292,14 @@ ID Zone         Volume|          Surface
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  13.5     90.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_general:manager_b
   2  0.920   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frame:coridor
-  3  2.32    360.   0. door         OPAQUE   VERT -     door         ||< door:coridor
+  3  2.32      0.   0. door         OPAQUE   VERT -     door         ||< door:coridor
   4  6.00    270.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
   5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< identical environment
   6  13.5      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
   7  2.70    180.   0. spandral     OPAQUE   VERT -     insul_frame  ||< external
   8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
   9  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
- 10  4.48    360.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glaz:coridor
+ 10  4.48      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glaz:coridor
  11  1.28    360.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_corid:coridor
  12  0.450   270.   0. pt_other_a   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
  13  7.05    270.   0. pt_other_b   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
@@ -309,25 +318,25 @@ Notes:
 The office has one occupant during office hours, lighting at 10W/m2
 and one computer in the room. .
 Number of weekdays     casual gains=  7
-Day Gain Type     Period Sensible  Latent     Radiant    Convec
-    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
-Wkd  2 OccuptW    7 -  8     20.0     10.0       0.50       0.50
-Wkd  3 OccuptW    8 -  9     60.0     30.0       0.50       0.50
-Wkd  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
-Wkd  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
-Wkd  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
-Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+weekd  1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+weekd  2 OccuptW    7- 8     20.0     10.0       0.50       0.50
+weekd  3 OccuptW    8- 9     60.0     30.0       0.50       0.50
+weekd  4 OccuptW    9-12    100.0     50.0       0.50       0.50
+weekd  5 OccuptW   12-14     65.0     32.5       0.50       0.50
+weekd  6 OccuptW   14-17    100.0     50.0       0.50       0.50
+weekd  7 OccuptW   17-24      0.0      0.0       0.50       0.50
 Number of saturday     casual gains=  7
-Day Gain Type     Period Sensible  Latent     Radiant    Convec
-    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
-Wkd  2 OccuptW    7 -  8     20.0     10.0       0.50       0.50
-Wkd  3 OccuptW    8 -  9     60.0     30.0       0.50       0.50
-Wkd  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
-Wkd  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
-Wkd  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
-Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+satur  1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+satur  2 OccuptW    7- 8     20.0     10.0       0.50       0.50
+satur  3 OccuptW    8- 9     60.0     30.0       0.50       0.50
+satur  4 OccuptW    9-12    100.0     50.0       0.50       0.50
+satur  5 OccuptW   12-14     65.0     32.5       0.50       0.50
+satur  6 OccuptW   14-17    100.0     50.0       0.50       0.50
+satur  7 OccuptW   17-24      0.0      0.0       0.50       0.50
 Number of sunday       casual gains=  0
  
  ____________________________________________________________
@@ -346,14 +355,14 @@ Number of sunday       casual gains=  0
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  13.5    270.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_general:manager_a
   2  0.920   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frameb:coridor
-  3  2.32    360.   0. door         OPAQUE   VERT -     door         ||< door_b:coridor
+  3  2.32      0.   0. door         OPAQUE   VERT -     door         ||< door_b:coridor
   4  6.00     90.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
   5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< identical environment
   6  13.5      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
   7  2.70    180.   0. spandral     OPAQUE   VERT -     insul_frame  ||< external
   8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
   9  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
- 10  4.48    360.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glazb:coridor
+ 10  4.48      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glazb:coridor
  11  1.28      0.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_coridb:coridor
  12  0.450    90.   0. pt_other_a   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
  13  7.05     90.   0. pt_other_b   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
@@ -371,25 +380,25 @@ Number of sunday       casual gains=  0
 Notes:
 manager b has the same profile as manager a . . .
 Number of weekdays     casual gains=  7
-Day Gain Type     Period Sensible  Latent     Radiant    Convec
-    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
-Wkd  2 OccuptW    7 -  8     20.0     10.0       0.50       0.50
-Wkd  3 OccuptW    8 -  9     60.0     30.0       0.50       0.50
-Wkd  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
-Wkd  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
-Wkd  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
-Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+weekd  1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+weekd  2 OccuptW    7- 8     20.0     10.0       0.50       0.50
+weekd  3 OccuptW    8- 9     60.0     30.0       0.50       0.50
+weekd  4 OccuptW    9-12    100.0     50.0       0.50       0.50
+weekd  5 OccuptW   12-14     65.0     32.5       0.50       0.50
+weekd  6 OccuptW   14-17    100.0     50.0       0.50       0.50
+weekd  7 OccuptW   17-24      0.0      0.0       0.50       0.50
 Number of saturday     casual gains=  7
-Day Gain Type     Period Sensible  Latent     Radiant    Convec
-    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
-Wkd  2 OccuptW    7 -  8     20.0     10.0       0.50       0.50
-Wkd  3 OccuptW    8 -  9     60.0     30.0       0.50       0.50
-Wkd  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
-Wkd  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
-Wkd  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
-Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+satur  1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+satur  2 OccuptW    7- 8     20.0     10.0       0.50       0.50
+satur  3 OccuptW    8- 9     60.0     30.0       0.50       0.50
+satur  4 OccuptW    9-12    100.0     50.0       0.50       0.50
+satur  5 OccuptW   12-14     65.0     32.5       0.50       0.50
+satur  6 OccuptW   14-17    100.0     50.0       0.50       0.50
+satur  7 OccuptW   17-24      0.0      0.0       0.50       0.50
 Number of sunday       casual gains=  0
  
  ____________________________________________________________
@@ -410,7 +419,7 @@ Number of sunday       casual gains=  0
   5  6.10      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
   6  2.32    180.   0. door         OPAQUE   VERT -     door         ||< door:manager_a
   7  1.28    180.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_corid:manager_a
-  8  0.920   180.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frame:manager_a
+  8  0.920   180.  -0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frame:manager_a
   9  4.48    180.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glaz:manager_a
  10  0.920   180.   0. part_frameb  OPAQUE   VERT -     insul_frame  ||< part_frame:manager_b
  11  2.32    180.   0. door_b       OPAQUE   VERT -     door         ||< door:manager_b
@@ -431,32 +440,32 @@ Number of sunday       casual gains=  0
 Notes:
 half a person and 10W/m2 lighting
 Number of weekdays     casual gains=  6
-Day Gain Type     Period Sensible  Latent     Radiant    Convec
-    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-Wkd  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
-Wkd  2 OccuptW    8 - 20    100.0     50.0       0.50       0.50
-Wkd  3 OccuptW   20 - 24      0.0      0.0       0.50       0.50
-Wkd  4 LightsWm2  0 -  8      0.0      0.0       0.50       0.50
-Wkd  5 LightsWm2  8 - 20     10.0      0.0       0.50       0.50
-Wkd  6 LightsWm2 20 - 24      0.0      0.0       0.50       0.50
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+weekd  1 OccuptW    0- 8      0.0      0.0       0.50       0.50
+weekd  2 OccuptW    8-20    100.0     50.0       0.50       0.50
+weekd  3 OccuptW   20-24      0.0      0.0       0.50       0.50
+weekd  4 LightsWm2  0- 8      0.0      0.0       0.50       0.50
+weekd  5 LightsWm2  8-20     10.0      0.0       0.50       0.50
+weekd  6 LightsWm2 20-24      0.0      0.0       0.50       0.50
 Number of saturday     casual gains=  6
-Day Gain Type     Period Sensible  Latent     Radiant    Convec
-    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-Wkd  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
-Wkd  2 OccuptW    8 - 20    100.0     50.0       0.50       0.50
-Wkd  3 OccuptW   20 - 24      0.0      0.0       0.50       0.50
-Wkd  4 LightsWm2  0 -  8      0.0      0.0       0.50       0.50
-Wkd  5 LightsWm2  8 - 20     10.0      0.0       0.50       0.50
-Wkd  6 LightsWm2 20 - 24      0.0      0.0       0.50       0.50
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+satur  1 OccuptW    0- 8      0.0      0.0       0.50       0.50
+satur  2 OccuptW    8-20    100.0     50.0       0.50       0.50
+satur  3 OccuptW   20-24      0.0      0.0       0.50       0.50
+satur  4 LightsWm2  0- 8      0.0      0.0       0.50       0.50
+satur  5 LightsWm2  8-20     10.0      0.0       0.50       0.50
+satur  6 LightsWm2 20-24      0.0      0.0       0.50       0.50
 Number of sunday       casual gains=  6
-Day Gain Type     Period Sensible  Latent     Radiant    Convec
-    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-Wkd  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
-Wkd  2 OccuptW    8 - 20    100.0     50.0       0.50       0.50
-Wkd  3 OccuptW   20 - 24      0.0      0.0       0.50       0.50
-Wkd  4 LightsWm2  0 -  8      0.0      0.0       0.50       0.50
-Wkd  5 LightsWm2  8 - 20     10.0      0.0       0.50       0.50
-Wkd  6 LightsWm2 20 - 24      0.0      0.0       0.50       0.50
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+sunda  1 OccuptW    0- 8      0.0      0.0       0.50       0.50
+sunda  2 OccuptW    8-20    100.0     50.0       0.50       0.50
+sunda  3 OccuptW   20-24      0.0      0.0       0.50       0.50
+sunda  4 LightsWm2  0- 8      0.0      0.0       0.50       0.50
+sunda  5 LightsWm2  8-20     10.0      0.0       0.50       0.50
+sunda  6 LightsWm2 20-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -503,8 +512,8 @@ Number of weekdays     casual gains=  0
   2  0.300   270.   0. Surf-2       OPAQUE   VERT -     extern_wall  ||< adiabatic
   3  0.300   180.   0. Surf-3       OPAQUE   VERT -     extern_wall  ||< adiabatic
   4  0.300    90.   0. Surf-4       OPAQUE   VERT -     extern_wall  ||< adiabatic
-  5  1.000     0.  90. Surf-5       OPAQUE   CEIL -     extern_wall  ||< adiabatic
-  6  1.000     0. -90. Surf-6       OPAQUE   FLOR -     extern_wall  ||< adiabatic
+  5  1.00      0.  90. Surf-5       OPAQUE   CEIL -     extern_wall  ||< adiabatic
+  6  1.00      0. -90. Surf-6       OPAQUE   FLOR -     extern_wall  ||< adiabatic
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
@@ -522,17 +531,18 @@ Number of weekdays     casual gains=  0
  
  Project floor area is 37.420m2, wall area is 7.3600m2, window area is 10.640m2.
  Sloped roof area is 0.00m2, flat roof area is 0.00m2, skylight area is 0.00m2.
+ In contact with ground 0.00m2.
  There is 18.000m2 of outside surface area, 18.000m2 of which is vertical.
  
- Outside walls are 19.669 % of floor area & avg U of 0.461 & UA of 3.3916
+ Outside walls are 19.669 % of floor area & avg U of 0.461 & UA of 3.3916 & max MLC thickness 0.088
  Glazing is 28.434 % of floor & 59.111 % facade with avg U of 2.811 & UA of 29.905
  
  ____________________________________________________________
  Multi-layer constructions used:
  
- Details of opaque construction: extern_wall
+ Details of opaque construction: extern_wall and overall thickness  0.412
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext     6  100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 Lt brown brick : Lt brown brick
     2  211  150.0     0.040   250.   840. 0.90 0.30     4.  3.75 Glasswool : Glasswool
@@ -542,9 +552,9 @@ Number of weekdays     casual gains=  0
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.214  0.215  0.212 (partition)  0.210
  Total area of extern_wall is      6.40
  
- Details of opaque construction: insul_frame
+ Details of opaque construction: insul_frame and overall thickness  0.088
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 Grey cotd aluminium : Grey cotd aluminium
     2  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 Glass Fibre Quilt : Glass Fibre Quilt
@@ -552,17 +562,17 @@ Number of weekdays     casual gains=  0
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.461  0.467  0.452 (partition)  0.442
  Total area of insul_frame is     11.04
  
- Details of opaque construction: door
+ Details of opaque construction: door and overall thickness  0.025
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
     1   69   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 Oak (radial) : Oak (radial)
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
  Total area of door is     15.28
  
- Details of transparent construction: dbl_glz      with DCF7671_06nb optics.
+ Details of transparent construction: dbl_glz with DCF7671_06nb optics and overall thickness  0.024
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder s
     2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
@@ -579,9 +589,9 @@ Number of weekdays     casual gains=  0
     3  0.117 0.124 0.127 0.112 0.077
  Total area of dbl_glz is     28.56
  
- Details of opaque construction: susp_flr_re
+ Details of opaque construction: susp_flr_re and overall thickness  0.219
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
     2   32  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 Heavy mix concrete : Heavy mix concrete
@@ -591,18 +601,18 @@ Number of weekdays     casual gains=  0
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.500  1.570  1.415 (partition)  1.321
  Total area of susp_flr_re is     33.10
  
- Details of opaque construction: ceiling
+ Details of opaque construction: ceiling and overall thickness  0.110
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext   211  100.0     0.040   250.   840. 0.90 0.30     4.  2.50 Glasswool : Glasswool
  Int   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 Ceiling (mineral) : Ceiling (mineral)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.333  0.336  0.329 (partition)  0.323
  Total area of ceiling is     33.10
  
- Details of opaque construction: gyp_blk_ptn
+ Details of opaque construction: gyp_blk_ptn and overall thickness  0.226
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 White ptd Gypboard : White ptd Gypboard
     2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
@@ -612,9 +622,9 @@ Number of weekdays     casual gains=  0
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.186  1.230  1.133 (partition)  1.072
  Total area of gyp_blk_ptn is     18.30
  
- Details of opaque construction: gyp_gyp_ptn
+ Details of opaque construction: gyp_gyp_ptn and overall thickness  0.074
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
       |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 White ptd Gypboard : White ptd Gypboard
     2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
