@@ -1037,17 +1037,17 @@ C ********************************************************************
       DIMENSION IVA(MS)
     
       CHARACTER OUTSTR*124,OUTS*124,LUA*72,WORD*20,SVA*13
-      character dllsubr*12,dllmesg*124
+c      character dllsubr*12,dllmesg*124
       
-      DIMENSION SVA(me)
-      
+      DIMENSION SVA(MS)
+
       real val
-      logical vb_xst,dll
+      logical vb_xst !,dll
       val=0.
       vb_xst=.false.
 
 C Check if running in dll mode.
-      call isadll(dll) ! overkill, here?
+c      call isadll(dll) ! overkill, here?
 
       CALL EFOPSEQ(IUA,LUA,1,IER)
       IF(IER.NE.0)THEN
@@ -1067,24 +1067,26 @@ C an older file rewind the file and then continue as usual.
       ! check for fatal error
       if(IER.NE.0)then
         outs='Problem scanning CFC file...aborting cfg scan'
-        if(dll)then
-          dllsubr='mzinpt'
-          dllmesg=outs
-          ier=2
-          return
-        else
+c        if(dll)then
+c          dllsubr='mzinpt'
+c          dllmesg=outs
+c          ier=2
+c          return
+c        else
           call edisp(iuout,outs)
           goto 1000 ! close file and return
-        endif
+c        endif
       endif
       ! seems O.K., continue ...
       if (OUTSTR(1:18).EQ.'*CFC_Fileversion 2') then
+c      write(*,*)'CFC file version 2'
         ! set file version variable to 2
         im_CFCfileversion(icomp)=2
       else
         ! set file back to beginning and read "old" file
         REWIND(IUA,ERR=999)
-        im_CFCfileversion(icomp)=0
+        im_CFCfileversion(icomp)=1
+c       write(*,*)'CFC file version 1'
       endif
 
 C------------------------------------------------------------
@@ -1120,7 +1122,7 @@ C if the surface attribute should be updated.
       ENDIF
 
 C Reporting.
-      itrc=1
+c      ITRC=1
       IF(ITRC.GT.0)THEN
         CALL EDISP(ITRU,' ')
         WRITE(OUTS,9996)zname(ICOMP)(1:lnblnk(zname(ICOMP)))
@@ -1137,8 +1139,7 @@ C Reporting.
           CALL EDISP(ITRU,OUTS)
    31   CONTINUE
       ENDIF
-      itrc=0
-
+	  
       DO 20 I=1,ncfc(icomp)
 
 c Establish the number of layers in CFC type I, check that no. of 
@@ -1296,6 +1297,7 @@ C     version 2 CFC files (starting May 8, 2012)
              rim_LayNam(icomp,i,j)=SVA(j)
              rim_lLayNam(icomp,i,j)=lnblnk(rim_LayNam(icomp,i,j))
    91   continue
+c        write(*,*)
 
         CALL EGETWIA(IUA,IVA,IRVA,0,50000,'W',
      &                          'cfc layer IGDB index',IER)
@@ -1451,6 +1453,7 @@ C Reporting
       end if
 
    80 continue
+c      ITRC=0
 
 c Free file.
  1000 CALL ERPFREE(IUA,ISTAT)
@@ -1466,18 +1469,18 @@ C Error messages.
       goto 1000
       
 C File rewind errors.
-  999 if(dll)then
-        dllsubr='ersys'
-        WRITE(dllmesg,'(2a)') 
-     &  ' Error rewinding CFC file ',lcfcin(icomp)(1:32)
-        ier=2
-        return
-      else
-        CALL USRMSG('Error rewinding CFC file:',
+c  999 if(dll)then
+c        dllsubr='ersys'
+c        WRITE(dllmesg,'(2a)') 
+c     &  ' Error rewinding CFC file ',lcfcin(icomp)(1:32)
+c        ier=2
+c        return
+c      else
+ 999   CALL USRMSG('Error rewinding CFC file:',
      &    lcfcin(icomp),'W')
         IER=1
         GOTO 1000
-      endif 
+c      endif
 
       end
 
