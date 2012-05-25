@@ -1009,8 +1009,8 @@ C Note: 0.001 is added to VS to ensure it is non-zero.
       elseif (ICOR.eq.9) then
 
 C Use CIBSE Guide equation
-        VS=2.0/3.0*VR
         VR=VF
+        VS=2.0/3.0*VR
         HC=4.1*VS+5.8
         if(dotrace) then
           write(outs,'(A,4F9.3)')
@@ -1020,8 +1020,8 @@ C Use CIBSE Guide equation
       elseif (ICOR.eq.10) then
 
 C Use Loveday mixed correlation from four equations quoted by Guide Guide C3.
-        VS=2.0/3.0*VR
         VR=VF
+        VS=2.0/3.0*VR
         HC=16.7*VS**0.5
         if(dotrace) then
           write(outs,'(A,4F9.3)')

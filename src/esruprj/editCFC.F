@@ -810,7 +810,7 @@ cx This is (will be?) used in cfc2rad ... 08052012
             rim_lLayNam(icomp,icfctp,i)=
      &                   lnblnk(rim_LayNam(icomp,icfctp,i))
 
-            CALL EGETWI(LOUTSTR,Ki,iIGDBindex,'F',0,50000,
+            CALL EGETWI(LOUTSTR,Ki,iIGDBindex,0,50000,'F',
      &            'IGDB index',IER)
             rim_IGDBindex(icomp,icfctp,i)=iIGDBindex
 C-----------------------------------------------------------
@@ -1020,7 +1020,7 @@ C ********************************************************************
       subroutine read_in_cfc_file(itrc,itru,iua,lua,icomp,ier)
 #include "building.h"
 #include "geometry.h"
-#include "espriou.h"
+c#include "espriou.h"
 #include "CFC_common.h"
       integer iuout,iuin
       COMMON/OUTIN/IUOUT,IUIN
@@ -1973,8 +1973,8 @@ c      COMMON/precz/zname(MCOM),zdesc(MCOM)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+c      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+c     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
       INTEGER NAC,IACS,IACF,IPT,IDTY,IDAY,JDAY,KDAY
       REAL ACI,ACV,TA
 
@@ -2239,7 +2239,7 @@ C     =2 shade ON/OFF, =0 slat angle.
 C ********************************************************************
       subroutine editCFC_period_data(ICOMP,icfctype,IDT,IPER,itype)
 #include "building.h"
-#include "geometry.h"
+c#include "geometry.h"
 #include "CFC_common.h"
       
       integer lnblnk  ! function definition

@@ -1665,7 +1665,7 @@ C A fixed heat injection/extraction controller.
 
       SUBROUTINE BCL04
 #include "building.h"
-#include "geometry.h" ! for zbasea()
+#include "geometry.h"
 #include "control.h"
 
       COMMON/TC/ITC,ICNT

@@ -206,7 +206,7 @@ C Match mass flow controller type.
         endif
       else
         if((ICLCTP.NE.1.AND.ICLCTP.NE.2.AND.ICLCTP.NE.3
-     &           .AND.ICLCTP.NE.4.AND.ICLTP.NE.5.AND.ICLCTP.NE.7
+     &           .AND.ICLCTP.NE.4.AND.ICLCTP.NE.5.AND.ICLCTP.NE.7
      &           .AND.ICLCTP.NE.9.AND.ICLCTP.NE.11.AND.ICLCTP.NE.41)
      &           .AND.(ICLCTP.LT.24.OR.ICLCTP.GT.34))then
           WRITE(outs,*) ' CFFVAR: mass flow control function ',ICFP
@@ -908,6 +908,7 @@ C Day types
       CHARACTER*2 MODE
       REAL Wposs,Fposs,WNposs,ACavail,Havail,PF,PWRfan,FUNCW
       LOGICAL CLOSER
+      integer IYD
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -1063,7 +1064,7 @@ C Assume not occupied
       ISTARTOCC=0
 
 C Determine year day number of present day
-      IDAY=IYD
+      IYD=IDYP
       IDAY=ICALENDER(IYD)
 
 C Calculate the current and previous period id.

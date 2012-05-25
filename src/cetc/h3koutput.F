@@ -831,7 +831,7 @@ C     Test save option selected.
 C     [for NRCan]      tab=','
       
       tab=' '
-      IWU = iSL5UnitFileNumber  !Assign Output file  number to IWU
+      IWU = SL5UnitFileNumber  !Assign Output file  number to IWU
 c     Open output file
       open(unit=IWU,file=LCMDFL(1:LEN_TRIM(LCMDFL))//'.h3k'
      &     ,status='replace')

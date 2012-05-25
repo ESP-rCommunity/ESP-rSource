@@ -2019,10 +2019,11 @@ C Assign t and q values.
       isn3=ibsn(icf,3)
       if(isn1.gt.0.and.isn2.eq.0)tfa(icomp)=tfut
       if(isn1.le.0)tfa(icomp)=tfut
-	if(isn1.ne.icomp.and.isn1.gt.0.and.isn2.gt.0)tfa(icomp)=tfut
-	if(isn1.eq.icomp.and.isn2.gt.0.and.isn3.eq.0)tfs(icomp,isn2)=tfut
-	if(isn1.eq.icomp.and.isn2.gt.0.and.isn3.gt.0)tfc(icomp,isn2,isn3)=
-     &tfut
+      if(isn1.ne.icomp.and.isn1.gt.0.and.isn2.gt.0)tfa(icomp)=tfut
+      if(isn1.eq.icomp.and.isn2.gt.0.and.isn3.eq.0)
+     &                                        tfs(icomp,isn2)=tfut
+      if(isn1.eq.icomp.and.isn2.gt.0.and.isn3.gt.0)
+     &                                   tfc(icomp,isn2,isn3)=tfut
       qf=qfut
       qfa(icomp)=0.
       qfs(icomp)=0.

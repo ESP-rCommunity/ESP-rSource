@@ -332,7 +332,7 @@ C Local variables for CFCs
       real TRANSBB_SYS,TRANSD_SYS,REFL_SYS,CFCabs
       real TRANSBB_SYSV,TRANSD_SYSV,REFL_SYSV,CFCabsV
       real TRANSD_SYS_BD,TRANSD_SYS_SKY,TRANSD_SYS_GRD
-      real dummy
+      real dummy,dummy2
       character ctmp*2
 
       integer iSolVis ! switch for CFC solar / visual data calculation
@@ -1706,21 +1706,21 @@ C            Check whether sky and ground diffuse calc. is requested
 
 C              Calculate CFC system solar BEAM transmitted
                call solar_multilayer(i_direct,icomp,i,icfctp,
-     &                     EXDIR(I),tmpIDF,
-     &                     tmpIBM,tmpIDF,iSolVis,
-     &                     TRANSBB_SYS,TRANSD_SYS_BD,dummy,AbsSolDir)
+     &                   EXDIR(I),tmpIDF,
+     &                   tmpIBM,tmpIDF,iSolVis,
+     &                   TRANSBB_SYS,TRANSD_SYS_BD,dummy,AbsSolDir)
 
 C              Calculate CFC system solar SKY diffuse transmitted
                call solar_multilayer(i_sky,icomp,i,icfctp,
-     &                       tmpIBM,EXDIFSKY(I),
-     &                       tmpIBM,tmpIDF,iSolVis,
-     &                       dummy,TRANSD_SYS_SKY,dummy,AbsSolDifSky)
+     &                   tmpIBM,EXDIFSKY(I),
+     &                   tmpIBM,tmpIDF,iSolVis,
+     &                   dummy,TRANSD_SYS_SKY,dummy2,AbsSolDifSky)
 
 C              Calculate CFC system solar GROUND diffuse transmitted
                call solar_multilayer(i_ground,icomp,i,icfctp,
-     &                       tmpIBM,EXDIFGRD(I),
-     &                       tmpIBM,tmpIDF,iSolVis,
-     &                       dummy,TRANSD_SYS_GRD,dummy,AbsSolDifGrd)
+     &                   tmpIBM,EXDIFGRD(I),
+     &                   tmpIBM,tmpIDF,iSolVis,
+     &                   dummy,TRANSD_SYS_GRD,dummy2,AbsSolDifGrd)
 
 C              Sum up diffuse transmitted contributions (sky + ground)
                TRANSD_SYS = TRANSD_SYS_BD +
@@ -1755,21 +1755,21 @@ C            Check whether sky and ground diffuse calc. is requested
 
 C              Calculate CFC system visual BEAM transmitted
                call solar_multilayer(i_direct,icomp,i,icfctp,
-     &                     EXDIR(I),tmpIDF,
-     &                     tmpIBM,tmpIDF,iSolVis,
-     &                     TRANSBB_SYSV,TRANSD_SYS_BD,dummy,AbsSolDir)
+     &                   EXDIR(I),tmpIDF,
+     &                   tmpIBM,tmpIDF,iSolVis,
+     &                   TRANSBB_SYSV,TRANSD_SYS_BD,dummy,AbsSolDir)
 
 C              Calculate CFC system solar SKY diffuse transmitted
                call solar_multilayer(i_sky,icomp,i,icfctp,
-     &                       tmpIBM,EXDIFSKY(I),
-     &                       tmpIBM,tmpIDF,iSolVis,
-     &                       dummy,TRANSD_SYS_SKY,dummy,AbsSolDifSky)
+     &                   tmpIBM,EXDIFSKY(I),
+     &                   tmpIBM,tmpIDF,iSolVis,
+     &                   dummy,TRANSD_SYS_SKY,dummy2,AbsSolDifSky)
 
 C              Calculate CFC system solar GROUND diffuse transmitted
                call solar_multilayer(i_ground,icomp,i,icfctp,
-     &                       tmpIBM,EXDIFGRD(I),
-     &                       tmpIBM,tmpIDF,iSolVis,
-     &                       dummy,TRANSD_SYS_GRD,dummy,AbsSolDifGrd)
+     &                   tmpIBM,EXDIFGRD(I),
+     &                   tmpIBM,tmpIDF,iSolVis,
+     &                   dummy,TRANSD_SYS_GRD,dummy2,AbsSolDifGrd)
 
 C              Sum up diffuse transmitted contributions (sky + ground)
                TRANSD_SYSV = TRANSD_SYS_BD +
@@ -1807,21 +1807,21 @@ C            Check whether sky and ground diffuse calc. is requested
 
 C              Calculate CFC system solar BEAM transmitted
                call solar_multilayer(i_direct,icomp,i,icfctp,
-     &                     EXDIR(I),tmpIDF,
-     &                     tmpIBM,tmpIDF,iSolVis,
-     &                     TRANSBB_SYS,TRANSD_SYS_BD,dummy,AbsSolDir)
+     &                   EXDIR(I),tmpIDF,
+     &                   tmpIBM,tmpIDF,iSolVis,
+     &                   TRANSBB_SYS,TRANSD_SYS_BD,dummy,AbsSolDir)
 
 C              Calculate CFC system solar SKY diffuse transmitted
                call solar_multilayer(i_sky,icomp,i,icfctp,
-     &                       tmpIBM,EXDIFSKY(I),
-     &                       tmpIBM,tmpIDF,iSolVis,
-     &                       dummy,TRANSD_SYS_SKY,dummy,AbsSolDifSky)
+     &                   tmpIBM,EXDIFSKY(I),
+     &                   tmpIBM,tmpIDF,iSolVis,
+     &                   dummy,TRANSD_SYS_SKY,dummy2,AbsSolDifSky)
 
 C              Calculate CFC system solar GROUND diffuse transmitted
                call solar_multilayer(i_ground,icomp,i,icfctp,
-     &                       tmpIBM,EXDIFGRD(I),
-     &                       tmpIBM,tmpIDF,iSolVis,
-     &                       dummy,TRANSD_SYS_GRD,dummy,AbsSolDifGrd)
+     &                   tmpIBM,EXDIFGRD(I),
+     &                   tmpIBM,tmpIDF,iSolVis,
+     &                   dummy,TRANSD_SYS_GRD,dummy2,AbsSolDifGrd)
 
 C              Sum up diffuse transmitted contributions (sky + ground)
                TRANSD_SYS = TRANSD_SYS_BD +
@@ -1854,21 +1854,21 @@ C            Check whether sky and ground diffuse calc. is requested
 
 C              Calculate CFC system visual BEAM transmitted (TRANSBB_SYSV)
                call solar_multilayer(i_direct,icomp,i,icfctp,
-     &                     EXDIR(I),tmpIDF,
-     &                     tmpIBM,tmpIDF,iSolVis,
-     &                     TRANSBB_SYSV,TRANSD_SYS_BD,dummy,AbsSolDir)
+     &                   EXDIR(I),tmpIDF,
+     &                   tmpIBM,tmpIDF,iSolVis,
+     &                   TRANSBB_SYSV,TRANSD_SYS_BD,dummy,AbsSolDir)
 
 C              Calculate CFC system visual SKY diffuse transmitted
                call solar_multilayer(i_sky,icomp,i,icfctp,
-     &                       tmpIBM,EXDIFSKY(I),
-     &                       tmpIBM,tmpIDF,iSolVis,
-     &                       dummy,TRANSD_SYS_SKY,dummy,AbsSolDifSky)
+     &                   tmpIBM,EXDIFSKY(I),
+     &                   tmpIBM,tmpIDF,iSolVis,
+     &                   dummy,TRANSD_SYS_SKY,dummy2,AbsSolDifSky)
 
 C              Calculate CFC system visual GROUND diffuse transmitted
                call solar_multilayer(i_ground,icomp,i,icfctp,
-     &                       tmpIBM,EXDIFGRD(I),
-     &                       tmpIBM,tmpIDF,iSolVis,
-     &                       dummy,TRANSD_SYS_GRD,dummy,AbsSolDifGrd)
+     &                    tmpIBM,EXDIFGRD(I),
+     &                    tmpIBM,tmpIDF,iSolVis,
+     &                    dummy,TRANSD_SYS_GRD,dummy2,AbsSolDifGrd)
 
 C              Sum up diffuse transmitted contributions (sky + ground)
                TRANSD_SYSV = TRANSD_SYS_BD +

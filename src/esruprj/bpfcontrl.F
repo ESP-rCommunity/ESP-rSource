@@ -877,7 +877,7 @@ C Begin by selecting the loop to focus on.
      &      'control add/delete day type is not applicable.','W')
             goto 92
           endif 
-          call ADDCTLD(icfoc,IFOC,IER)
+          call ADDCTLD(icfoc,IFOC,IER,'--') ! interactive mode
         elseif(IW.eq.5)then
           goto 92
         endif
