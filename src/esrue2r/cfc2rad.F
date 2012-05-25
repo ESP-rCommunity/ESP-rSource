@@ -484,7 +484,7 @@ C - file handling for non-init calls, i.e. when called on time step basis??
             WRITE(transfstr,
      &             '(a,F7.4,a,3(F6.3,1x))')
      &             'xform -s ',sw,' -rz 90 -t ',
-     &             cfc_width+2*dy,-sw,z0 !+sp/2.
+     &             cfc_width+2.*dy,-(sw+0.04),z0 !+sp/2.
                ! use esp_y for lower right corner, here ("x")?
 
             WRITE(icfcfil,'(a)') ' '

@@ -1030,6 +1030,9 @@ c#include "espriou.h"
       real rairg
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
 
+C Error subroutine and error details for dll mode.
+      common/dllerr/dllsubr,dllmesg
+
       integer iva,itrc,itru,iua,icomp,ier,NS,IRVA,i,j,k,ierr,kk
       integer nshade_layers,ie,ND,ISR,icn,ntmpcfc_el,iflag,istat
       integer lnblnk    !function definition
@@ -1546,7 +1549,8 @@ C Set up top of menu.
       endif
       vert(2) =              '  -----------------------------'
       write(vert(3),'(3a,i2,a)') '> CFC schedule >> ',
-     & calentag(idtyp)(1:10),'(',n_ctl_periods(icomp,icfctype,idtyp),')'
+     & calentag(idtyp)(1:10),'(',
+     &                   n_ctl_periods(icomp,icfctype,idtyp),')'
 
 C Loop through the items until the page to be displayed. M is the 
 C current menu line index. Build up text strings for the menu.     
@@ -1984,10 +1988,14 @@ c     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
       integer ipltwd,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iimenu
 #else
       integer*8 ipltwd,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iimenu
 #endif
 
       IDTY=IDTYP
@@ -2009,6 +2017,8 @@ C Scan each days gains and find maximum flow.
  10   continue
 
 C Clear and setup plot area.
+      iimenu=menuchw
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
       CALL startbuffer()
       CALL win3d(menuchw,10,10,8,3,igl,igr,igt,igb,igw,igwh)
       igw=igr-igl
@@ -2032,9 +2042,9 @@ C Scale and draw right hand ON/OFF axis first.
 
 C Scale and draw for first day type requested
       CALL horaxis(plxmin,plxmax,igl,igr,igb,xadd,xsc,0,'Time (hrs)')
-      call vrtaxis(YMIN,YMAX,igl,igb,igt,yadd,ysc,0,0,
+      call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,yadd,ysc,0,0,
      &             'Slat Angle (deg)')
-      call linescale(igl,xadd,xsc,igb,yadd,ysc)
+      call linescale(iigl,xadd,xsc,iigb,yadd,ysc)
       iupdown=0
       isym=0
       CALL etplot(plxmax,YMIN,iupdown,isym)
@@ -2043,9 +2053,10 @@ C Scale and draw for first day type requested
       CALL etplot(plxmin,YMAX,iupdown,isym)
 
 C Draw 0 axis line
-      CALL etplot(plxmin,0.,-1,isym)      
-      CALL etplot(plxmax,0.,-1,isym)
-      
+      iupdown=-1
+      CALL etplot(plxmin,0.,iupdown,isym)      
+      CALL etplot(plxmax,0.,iupdown,isym)
+
 C Scale and draw second day type requested
       CALL horaxis(plxmin,plxmax,iglsat,igr,igb,xadd,XSC,0,' ')
       call linescale(iglsat,xadd,xsc,igb,yadd,ysc)
@@ -2058,8 +2069,9 @@ C Scale and draw second day type requested
       CALL etplot(plxmin,YMIN,iupdown,isym)
 
 C Draw 0 axis line
-      CALL etplot(plxmin,0.,-1,isym)      
-      CALL etplot(plxmax,0.,-1,isym)
+      iupdown=-1
+      CALL etplot(plxmin,0.,iupdown,isym)      
+      CALL etplot(plxmax,0.,iupdown,isym)
 
 C Scale and draw third day type requested
       CALL horaxis(plxmin,plxmax,iglsun,igr,igb,xadd,XSC,0,' ')
@@ -2073,9 +2085,9 @@ C Scale and draw third day type requested
 
 C Draw 0 axis line
       iupdown=0
-      CALL etplot(plxmin,0.,0,isym)      
-      iupdown=1
-      CALL etplot(plxmax,0.,-1,isym)
+      CALL etplot(plxmin,0.,iupdown,isym)      
+      iupdown=-1
+      CALL etplot(plxmax,0.,iupdown,isym)
 
 C Draw right hand axis on top of scaled ON/OFF axis to fill in gap
       iupdown=0
