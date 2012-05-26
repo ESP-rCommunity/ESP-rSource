@@ -86,7 +86,7 @@ C need to do once per simulaton. Skip if any of the UK NCM models
         IF(ISBNSTEP.GT.NTSPH.AND.ialrdy_warned.NE.1)THEN
           helptopic='tdf_timestep_mismatch'
           call gethelptext(helpinsub,helptopic,nbhelp)
-          CALL PHELPD('tdf warning',nbheop,'bsim-tdf-mismatch',0,0,IER)
+          CALL PHELPD('tdf warning',nbhelp,'bsim-tdf-mismatch',0,0,IER)
           ialrdy_warned=1
         ENDIF
       ENDIF

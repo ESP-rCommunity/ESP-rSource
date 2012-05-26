@@ -260,10 +260,10 @@ c Determine scaling ratios for the drawing and axis.
      &      xadd,yadd)
 
 c Draw a scale horizontal axis, move to beginning point.
-      call horaxis(xmin,xmax,iigl,iigr,iigb,xadd,xsc,1,'Time (hours)')
+      call horaxis(xmin,xmax,igl,igr,igb,xadd,xsc,1,'Time (hours)')
 
 c Draw a scale vertical axis.
-      call vrtaxis(ymin,ymax,iigl,iigb,iigt,yadd,ysc,1,0,label1)
+      call vrtaxis(ymin,ymax,igl,igb,igt,yadd,ysc,1,0,label1)
 
 c Restore original values for next call.
       if(mstate.eq.2.or.mstate.eq.3) then

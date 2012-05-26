@@ -2526,10 +2526,18 @@ C gas molar mass, A and B gas property coefficients
 
       logical closea
 
-C if gap is evacuated, set hc to 0.1
+C if gap is evacuated, set hc to 0.01
 C This is a crude idealized treatment.
       if(mlr_mass.lt.0.0001)then
             hc=0.01
+            goto 1000
+      endif
+
+C if temperature difference is close to zero, set hc to 0.001
+      dT=ABS(TA-TB)                    !temp. diff.
+      call eclose(dT,0.00,0.01,closea)
+      if (closea) then
+            hc=0.001
             goto 1000
       endif
 
@@ -2552,7 +2560,6 @@ C Calculate gas properties based on linear Temperature fit
 
       ro=(P*mlr_mass)/(R*Tm*1000.)     !density [kg/m^3]
 
-      dT=ABS(TA-TB)                    !temp. diff.
 
 C Calculate Rayleigh number (= Gr*Pr)
       Ra=ro*ro*cp*dT*L*L*L*g/(mu*k*Tm)
@@ -2624,14 +2631,23 @@ c        use max vertice z - min vertice z per surface?
         endif
         Nu2=0.242*exp(0.272*log(Ra/Agv))
         Nu_v=max(Nu1,Nu2)! Nusselt for vertical cavity
-    
+
 C       Value for 60deg is also used for more than one angle, also always calculate:
-        GG = 0.5/exp(0.1*log(1.+exp(20.6*log(Ra/3160.))))
-        Nu1= exp((1./7.)*log(1.+
-     &              exp(7.*log(0.0936*exp(0.314*log(Ra)))/(1.+GG))))
-        Nu2= (0.104+0.175/Agv)*exp(0.283*log(Ra))
+        if (Ra .gt. 500) then
+          XX = log(Ra/3160.)
+          XX = log(1.+ exp(20.6*XX))
+          GG = 0.5/exp(0.1*XX)
+
+          XX = exp(0.314*log(Ra))/(1.+GG)
+          XX = exp(7.*log(0.0936*XX))
+          Nu1= exp((1./7.)*log(1.+XX))
+        else
+          Nu1=0.25
+        endif
+
+        Nu2 = (0.104+0.175/Agv)*exp(0.283*log(Ra))
         Nu_60=max(Nu1,Nu2) ! Nusselt for 60 deg tilt
-     
+
 c       Check if vertical
         call eclose(ang,0.00,0.01,closea)
      

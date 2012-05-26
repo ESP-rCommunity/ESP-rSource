@@ -162,9 +162,9 @@ C Calculate plotting box locations.
      &                xsc,ysc,sca,xadd,yadd)
 
 C Scale and draw residuals plot.
-        CALL horaxis(plxmin,plxmax,iigl,iigr,iigb,xadd,XSC,0,
+        CALL horaxis(plxmin,plxmax,igl,igr,igb,xadd,XSC,0,
      &    'Number of Iterations')
-        CALL linescale(iigl,xadd,xsc,iigb,yadd,ysc)
+        CALL linescale(igl,xadd,xsc,igb,yadd,ysc)
         iupdown=0
         isym=0
         CALL etplot(plxmin,YMIN,iupdown,isym)
@@ -174,8 +174,8 @@ C Scale and draw residuals plot.
         CALL etplot(plxmax,YMIN,iupdown,isym)
 
 C Scale and draw monitoring plot.
-        CALL horaxis(plxmin,plxmax,iglmon,iigr,iigb,xadd,XSC,0,' ')
-        CALL linescale(iglmon,xadd,xsc,iigb,yadd,ysc)
+        CALL horaxis(plxmin,plxmax,iglmon,igr,igb,xadd,XSC,0,' ')
+        CALL linescale(iglmon,xadd,xsc,igb,yadd,ysc)
         iupdown=0
         isym=0
         CALL etplot(plxmin,YMIN,iupdown,isym)
@@ -204,7 +204,7 @@ C Rescale axis for first curve.
           igheight=igwh
           CALL axiscale(ipltwd,igheight,Xmin,Xmax,Ymin,Ymax,
      &                  xsc,ysc,sca,xadd,yadd)
-          CALL linescale(iigl,xadd,xsc,iigb,yadd,ysc)
+          CALL linescale(igl,xadd,xsc,igb,yadd,ysc)
         endif
 
 C If graph was re-scaled re-draw all residuals.
@@ -245,7 +245,7 @@ C Rescale axis for each curve.
         igheight=igwh
         CALL axiscale(ipltwd,igheight,Xmin,Xmax,Ymin,Ymax,
      &                  xsc,ysc,sca,xadd,yadd)
-        CALL linescale(iglmon,xadd,xsc,iigb,yadd,ysc)
+        CALL linescale(iglmon,xadd,xsc,igb,yadd,ysc)
 
 C If graph was re-scaled re-draw all residuals.
         IF(RDR)THEN
