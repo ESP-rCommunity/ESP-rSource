@@ -823,7 +823,7 @@ C Multilayer construction has not been defined.
           IF(IPR(ICF,IE).NE.0)THEN
             matarrayindex=IPRMAT(ICF,IE)   ! which legacy index
             if(matarrayindex.ge.0)then
-	      if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+              if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &           matopaq(matarrayindex)(1:1).eq.'h')then
 
 C Find air gap resistance for this layer.
@@ -977,7 +977,7 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht.
             endif
 
 C If g or h air gap and version 1.2 then assign DRAIR
-	    if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &         matopaq(matarrayindex)(1:1).eq.'h')then
               if(closemat2)then
                 DRAIR(IC,IL,1)=matgapares(matarrayindex,1)
@@ -1025,7 +1025,7 @@ C assign an appropriate U value to each air gap encountered.
             endif
           ELSE
             matarrayindex=IPRMAT(IC,IL)   ! which legacy index
-	    if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &         matopaq(matarrayindex)(1:1).eq.'h')then
               if(NAIRG(ISUR)+1.gt.MGP)then
                 call usrmsg(
@@ -1258,7 +1258,7 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht.
 C If g or h air gap and version 1.2 then assign DRAIR
             if(matarrayindex.eq.0)then
               continue
-	    elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
+            elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &             matopaq(matarrayindex)(1:1).eq.'h')then
               if(closemat2)then
                 DRAIR(IC,IL,1)=matgapares(matarrayindex,1)
@@ -1301,7 +1301,7 @@ C assign an appropriate U value to each air gap encountered.
             endif
           ELSE
             matarrayindex=IPRMAT(IC,IL)   ! which legacy index
-	    if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &         matopaq(matarrayindex)(1:1).eq.'h')then
               if(NAIRG(IS)+1.gt.MGP)then
                 call usrmsg(

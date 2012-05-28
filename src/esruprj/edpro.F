@@ -181,7 +181,7 @@ C Insert a profile.
 C Instanciate the data.
           NCG(NPDBITEMS)=IV
           PDBDESC(NPDBITEMS)='New profile'
-	  
+  
           IPACT=CREATE
           CALL EKPAGE(IPACT)
           CALL EPMENSV
@@ -198,7 +198,7 @@ C If update needed write ascii file from commons and
 C then jump back to 77 to check the number of items.
 C If LPRFDB does not end in .a then update LLASACI
             llt=lnblnk(LPRFDB)
-	    if(LPRFDB(llt-1:llt).eq.'.a')then
+            if(LPRFDB(llt-1:llt).eq.'.a')then
               if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
                 LLASCI=LPRFDB
               elseif(ipathprodb.eq.2)then
@@ -250,7 +250,7 @@ C If update needed write ascii file from common blocks
 C then jump back to 77 to rescan the header of the database.
           lndbp=lnblnk(standarddbpath)
           llt=lnblnk(LPRFDB)
-	  if(LPRFDB(llt-1:llt).eq.'.a')then
+          if(LPRFDB(llt-1:llt).eq.'.a')then
             if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
               LLASCI=LPRFDB
             elseif(ipathprodb.eq.2)then

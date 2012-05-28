@@ -6138,6 +6138,73 @@ C usrdir: Find current folder.
       return
       end
 
+C ************ clearfolderlist
+C Called from getfileslist_() in esru_util.c to clear the listfold
+C common block.
+      subroutine clearfolderlist()
+#include "espriou.h"
+C espriou.h for parameter MFFOLD
+      integer nboflistf  ! how many folders or file names passed
+      integer listfoldertype   ! zero if unused one if folder two if file
+      integer lenlistfolder    ! width of each string
+      character*72 listfolder  ! array of folder or file names
+      common/listfold/nboflistf,listfoldertype(MFFOLD),
+     &                lenlistfolder(MFFOLD),listfolder(MFFOLD)
+
+C Clear the list.
+      nboflistf=0
+      do 42 ilist=1,MFFOLD
+        listfoldertype(ilist)=0
+        listfolder(ilist)='  '
+        lenlistfolder(ilist)=0
+  42  continue
+      return
+      end
+
+C ************ addfolderlist
+C Called from getfileslist_() in esru_util.c to pass back a
+C file or folder name in the string folderf into a fortran
+C data structure for other code to use.
+      subroutine addfolderlist(type,folderf)
+#include "espriou.h"
+C espriou.h for parameter MFFOLD
+
+      integer lnblnk  ! function definition
+      
+      integer nboflistf  ! how many folders or file names passed
+      integer listfoldertype   ! zero if unused one if folder two if file
+      integer lenlistfolder    ! width of each string
+      character*72 listfolder  ! array of folder or file names
+      common/listfold/nboflistf,listfoldertype(MFFOLD),
+     &                lenlistfolder(MFFOLD),listfolder(MFFOLD)
+
+C Passed variables.
+      character folderf*(*)   ! file name null terminated within calling code
+      character type*(*)      ! type is D for directory and L for file
+
+C Local variables
+      CHARACTER WORD*96
+      integer iln
+      
+C Add to the list.
+      nboflistf=nboflistf+1
+      call c2fstr(folderf,WORD)
+      iln=lnblnk(WORD)
+C Debug.
+C      write(6,*) 'addfolderlist ',word(1:iln),' ',iln,nboflistf,type
+
+      listfolder(nboflistf)=WORD(1:iln)
+      lenlistfolder(nboflistf)=iln
+      if(type(1:1).eq.'D')then
+        listfoldertype(nboflistf)= 1
+      elseif(type(1:1).eq.'L')then
+        listfoldertype(nboflistf)= 2
+      else
+        listfoldertype(nboflistf)= 0
+      endif
+      return
+      end
+
 C ************* esppid
 C esppid: Find current process number.
       subroutine esppid(ipid)
