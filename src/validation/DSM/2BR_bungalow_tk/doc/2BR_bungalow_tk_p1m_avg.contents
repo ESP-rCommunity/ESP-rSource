@@ -1,8 +1,8 @@
 Synopsis
  
 Synopsis of the model A timber kit two bedroom bungalow in Shetland P1M
-average comfort defined in 2BR_bungalow_tk_p1m_avg.cfg generated on Wed Apr 18
-18:09:33 2012. Notes associated with the model are in ../doc/2BR_bungalo.log
+average comfort defined in 2BR_bungalow_tk_p1m_avg.cfg generated on Tue May 15
+11:46:11 2012. Notes associated with the model are in ../doc/2BR_bungalo.log
  
 The model is located at latitude   55.90 with a longitude difference of  -4.10
 from the local time meridian. The year used in simulations is 2007 and
@@ -66,9 +66,9 @@ display day Wed-21-Nov.
  
 Seasons (as found in climatelist file):
          winter  spring  summer  autumn  winter
-  start  02-Jan  13-Mar  15-May  04-Sep  30-Oct
-  finish 12-Mar  14-May  03-Sep  29-Oct  31-Dec
-  days     70       63     112      56      63
+  start  01-Jan  20-Mar  22-May  14-Aug  13-Nov
+  finish 19-Mar  21-May  13-Aug  12-Nov  31-Dec
+  days     78       63      84      91      49
  
  Ratios for:  winter spring summer autumn winter
  heating      10.00   9.00  23.47   8.42   9.00
@@ -132,9 +132,7 @@ holiday
 capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
 19.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
-capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
-19.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      free floating
    5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
 capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
 19.00C cooling setpoint 100.00C.
@@ -181,9 +179,7 @@ capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpo
 capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
 19.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
-capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
-19.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      free floating
    5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
 capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
 19.00C cooling setpoint 100.00C.
@@ -211,9 +207,7 @@ capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpo
 capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
 19.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
-capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
-19.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      free floating
    5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
 capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
 19.00C cooling setpoint 100.00C.
@@ -323,9 +317,7 @@ capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpo
 capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
 21.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
-capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
-21.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      free floating
    5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
 capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
 21.00C cooling setpoint 100.00C.
@@ -353,9 +345,7 @@ capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpo
 capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
 21.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
-capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
-21.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      free floating
    5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
 capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
 21.00C cooling setpoint 100.00C.
@@ -556,9 +546,7 @@ holiday
 capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
 21.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
-capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
-21.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      free floating
    5 18.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
 capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
 21.00C cooling setpoint 100.00C.
@@ -605,9 +593,7 @@ capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpo
 capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
 21.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
-capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
-21.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      free floating
    5 18.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
 capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
 21.00C cooling setpoint 100.00C.
@@ -635,9 +621,7 @@ capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpo
 capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
 21.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
-capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
-21.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      free floating
    5 18.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
 capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
 21.00C cooling setpoint 100.00C.
@@ -698,9 +682,7 @@ holiday
 capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
 21.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
-capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
-21.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      free floating
    5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
 capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
 21.00C cooling setpoint 100.00C.
@@ -747,9 +729,7 @@ capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpo
 capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
 21.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
-capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
-21.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      free floating
    5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
 capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
 21.00C cooling setpoint 100.00C.
@@ -777,9 +757,7 @@ capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpo
 capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
 21.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
-capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
-21.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      free floating
    5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
 capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
 21.00C cooling setpoint 100.00C.
