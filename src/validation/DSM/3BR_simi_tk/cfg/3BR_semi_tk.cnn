@@ -1,5 +1,5 @@
-*connections for 3BR_semi_tk_p2m_warm
-*Date Wed Apr 18 10:50:04 2012
+*connections for 3BR_semi_tk_p1m_warm
+*Date Tue May 15 10:06:20 2012
     182   # number of connections
    1   1   0   0   0  #    1 ptn_other in lower_bath is External
    1   2   0   0   0  #    2 fac_a in lower_bath is External
