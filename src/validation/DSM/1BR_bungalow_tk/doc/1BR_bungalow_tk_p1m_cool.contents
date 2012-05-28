@@ -1,8 +1,8 @@
 Synopsis
  
 Synopsis of the model A small timber-kit bungalow in North Scotland P1M cool
-comfort defined in 1BR_bungalow_tk_p1m_cool.cfg generated on Tue Apr 17
-12:15:18 2012. Notes associated with the model are in ../doc/1BR_bungalow.log
+comfort defined in 1BR_bungalow_tk_p1m_cool.cfg generated on Tue May 15
+11:34:45 2012. Notes associated with the model are in ../doc/1BR_bungalow.log
  
 The model is located at latitude   55.90 with a longitude difference of  -4.10
 from the local time meridian. The year used in simulations is 2007 and
@@ -66,9 +66,9 @@ display day Wed-21-Nov.
  
 Seasons (as found in climatelist file):
          winter  spring  summer  autumn  winter
-  start  02-Jan  13-Mar  15-May  04-Sep  30-Oct
-  finish 12-Mar  14-May  03-Sep  29-Oct  31-Dec
-  days     70       63     112      56      63
+  start  01-Jan  20-Mar  22-May  14-Aug  13-Nov
+  finish 19-Mar  21-May  13-Aug  12-Nov  31-Dec
+  days     78       63      84      91      49
  
  Ratios for:  winter spring summer autumn winter
  heating      10.00   9.00  23.47   8.42   9.00
@@ -126,142 +126,110 @@ sum_wkday
 sum_wkend
 holiday
  Weekday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
+   2  6.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
+   4 13.00 db temp   > flux      free floating
+   5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Saturday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
+   2  6.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   3  9.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Sunday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  7 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   5 16.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   6 20.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
+   2  6.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   3  9.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   5 16.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   6 20.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
    7 23.00 db temp   > flux      free floating
  Day type  4 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
+   2  6.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
+   4 13.00 db temp   > flux      free floating
+   5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  5 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
+   2  7.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   3  9.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  6 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
+   2  6.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
+   4 13.00 db temp   > flux      free floating
+   5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  7 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
+   2  7.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   3  9.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  8 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
    2  7.00 db temp   > flux      free floating
    3  9.00 db temp   > flux      free floating
@@ -269,7 +237,7 @@ capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoin
    5 18.00 db temp   > flux      free floating
    6 23.00 db temp   > flux      free floating
  Day type  9 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
    2  7.00 db temp   > flux      free floating
    3  9.00 db temp   > flux      free floating
@@ -277,11 +245,10 @@ capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoin
    5 18.00 db temp   > flux      free floating
    6 23.00 db temp   > flux      free floating
  Day type 10 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 10.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 10.00C cooling setpoint
-100.00C.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+10.00C cooling setpoint 100.00C.
  
  The sensor for function  2 senses the temperature of the current zone.
  The actuator for function  2 is air point of the current zone
@@ -297,139 +264,110 @@ sum_wkday
 sum_wkend
 holiday
  Weekday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   2  6.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
    4 13.00 db temp   > flux      free floating
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Saturday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   2  7.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   3  9.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Sunday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  7 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   5 16.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   6 20.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   2  7.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   3  9.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   5 16.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   6 20.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    7 23.00 db temp   > flux      free floating
  Day type  4 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   2  6.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   4 13.00 db temp   > flux      free floating
+   5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  5 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   2  7.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   3  9.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  6 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   2  6.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   4 13.00 db temp   > flux      free floating
+   5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  7 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   2  7.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   3  9.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  8 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
    2  7.00 db temp   > flux      free floating
    3  9.00 db temp   > flux      free floating
@@ -437,7 +375,7 @@ capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoin
    5 18.00 db temp   > flux      free floating
    6 23.00 db temp   > flux      free floating
  Day type  9 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
    2  7.00 db temp   > flux      free floating
    3  9.00 db temp   > flux      free floating
@@ -445,11 +383,10 @@ capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoin
    5 18.00 db temp   > flux      free floating
    6 23.00 db temp   > flux      free floating
  Day type 10 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 10.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 10.00C cooling setpoint
-100.00C.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+10.00C cooling setpoint 100.00C.
  
  The sensor for function  3 senses the temperature of the current zone.
  The actuator for function  3 is air point of the current zone
@@ -465,133 +402,110 @@ sum_wkday
 sum_wkend
 holiday
  Weekday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
+   2  6.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
    4 13.00 db temp   > flux      free floating
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
+   5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Saturday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
+   2  6.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   3  9.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Sunday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  7 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   5 16.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   6 20.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
+   2  6.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   3  9.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   5 16.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   6 20.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
    7 23.00 db temp   > flux      free floating
  Day type  4 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
+   2  6.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
    4 13.00 db temp   > flux      free floating
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
+   5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  5 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
+   2  7.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   3  9.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  6 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
+   2  6.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
    4 13.00 db temp   > flux      free floating
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
+   5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  7 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 17.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
-100.00C.
+   2  7.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   3  9.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
+   5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+17.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  8 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
    2  7.00 db temp   > flux      free floating
    3  9.00 db temp   > flux      free floating
@@ -599,7 +513,7 @@ capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoin
    5 18.00 db temp   > flux      free floating
    6 23.00 db temp   > flux      free floating
  Day type  9 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
    2  7.00 db temp   > flux      free floating
    3  9.00 db temp   > flux      free floating
@@ -607,11 +521,10 @@ capacity 0.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoin
    5 18.00 db temp   > flux      free floating
    6 23.00 db temp   > flux      free floating
  Day type 10 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 10.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 10.00C cooling setpoint
-100.00C.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+10.00C cooling setpoint 100.00C.
  
  The sensor for function  4 senses the temperature of the current zone.
  The actuator for function  4 is air point of the current zone
@@ -627,139 +540,108 @@ sum_wkday
 sum_wkend
 holiday
  Weekday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   2  6.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   4 13.00 db temp   > flux      free floating
+   5 18.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Saturday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   4 13.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   2  6.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   3  9.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   5 18.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Sunday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  7 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   4 13.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   5 16.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   6 20.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   2  6.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   3  9.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   5 16.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   6 20.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    7 23.00 db temp   > flux      free floating
  Day type  4 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   2  6.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   4 13.00 db temp   > flux      free floating
+   5 18.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  5 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   4 13.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   2  7.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   3  9.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   5 18.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  6 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   2  6.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   4 13.00 db temp   > flux      free floating
+   5 18.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  7 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   2  7.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1300.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1300.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   4 13.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   5 18.00 db temp   > flux      basic control: max heating capacity 1300.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  8 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
    2  7.00 db temp   > flux      free floating
    3  9.00 db temp   > flux      free floating
@@ -767,7 +649,7 @@ capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoin
    5 18.00 db temp   > flux      free floating
    6 23.00 db temp   > flux      free floating
  Day type  9 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
    2  7.00 db temp   > flux      free floating
    3  9.00 db temp   > flux      free floating
@@ -775,11 +657,10 @@ capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoin
    5 18.00 db temp   > flux      free floating
    6 23.00 db temp   > flux      free floating
  Day type 10 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 10.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 10.00C cooling setpoint
-100.00C.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+10.00C cooling setpoint 100.00C.
  
  The sensor for function  5 senses the temperature of the current zone.
  The actuator for function  5 is air point of the current zone
@@ -795,139 +676,108 @@ sum_wkday
 sum_wkend
 holiday
  Weekday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   2  6.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   4 13.00 db temp   > flux      free floating
+   5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Saturday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   2  6.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   3  9.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Sunday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  7 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   5 16.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   6 20.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   2  6.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   3  9.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   5 16.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   6 20.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    7 23.00 db temp   > flux      free floating
  Day type  4 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   2  6.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   4 13.00 db temp   > flux      free floating
+   5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  5 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   3  9.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   2  7.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   3  9.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   4 13.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  6 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  6.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   2  6.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   4 13.00 db temp   > flux      free floating
+   5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  7 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
-   2  7.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   2  7.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    3  9.00 db temp   > flux      free floating
-   4 13.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
-   5 18.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 19.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
-100.00C.
+   4 13.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
+   5 18.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+19.00C cooling setpoint 100.00C.
    6 23.00 db temp   > flux      free floating
  Day type  8 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
    2  7.00 db temp   > flux      free floating
    3  9.00 db temp   > flux      free floating
@@ -935,7 +785,7 @@ capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoin
    5 18.00 db temp   > flux      free floating
    6 23.00 db temp   > flux      free floating
  Day type  9 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  6 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
+ Per|Start|Sensing  |Actuating  | Control law description
    1  0.00 db temp   > flux      free floating
    2  7.00 db temp   > flux      free floating
    3  9.00 db temp   > flux      free floating
@@ -943,11 +793,10 @@ capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoin
    5 18.00 db temp   > flux      free floating
    6 23.00 db temp   > flux      free floating
  Day type 10 is valid Mon-01-Jan to Mon-31-Dec, 2007 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       1000.0 0.0 0.0 0.0 10.0 100.0 0.0
-basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 10.00C cooling setpoint
-100.00C.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 1000.0W min heating
+capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+10.00C cooling setpoint 100.00C.
  
  Zone to contol loop linkages:
  zone ( 1) stairs       << control  0
@@ -991,7 +840,7 @@ ID Zone         Volume|          Surface
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  0.687   180.   0. front_a      OPAQUE   VERT WALL  tk_block_rn  ||< external
   2  1.02    180.   0. front_b      OPAQUE   VERT WALL  tk_block_rn  ||< external
-  3  0.288   180.  -0. front_c      OPAQUE   VERT WALL  tk_block_rn  ||< external
+  3  0.288   180.   0. front_c      OPAQUE   VERT WALL  tk_block_rn  ||< external
   4  1.90     90.  -0. ptn_stor     OPAQUE   VERT -     Parttim      ||< ptn_stor:roof
   5  2.99    360.  -0. back_b       OPAQUE   VERT WALL  tk_block_rn  ||< external
   6  2.37    360.   0. back_a       OPAQUE   VERT WALL  tk_block_rn  ||< external
