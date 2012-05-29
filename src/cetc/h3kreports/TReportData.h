@@ -80,6 +80,10 @@ class TReportData
       //could be more efficient if we populate the sVarName
       //only when required.
       char sVarName[256];
+      
+      bool Enabled; 
+      unsigned char OutputType;
+
 
       //This boolean is to indicate if a step was previously outputted or not.
       //Initialize to false, set by calling class for outputting purpose.

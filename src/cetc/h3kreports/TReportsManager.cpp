@@ -1,13 +1,14 @@
 #include "TReportsManager.h"
 
-#define DEBUG 0
+#define DEBUG 1
+#define TRACE_VARIABLE 120
 /* ********************************************************************
 ** Tips for troubleshooting a variable:
 ** For tracing a variable define the TRACE_VARIABLE, run a simulation and
 ** look at the log_trace.txt that gets produced.  From there see wich
 ** variable you wish to trace and write that number beside the TRACE_VARIABLE
 ** then compile/run the simulation again.  Output of the variable will
-** be appended at the end fo the log_trace.txt.
+** be appended at the end of the log_trace.txt.
 ** ***************************************************************** */
 //#define TRACE_VARIABLE 157
 
@@ -716,7 +717,7 @@ extern "C"
       *iIdentifier = iVarIdentity;
 
       //Kludge: this enabled the fortran side to see if a variable is enabled
-      *bEnabled = TReportsManager::Instance()->IsVariableEnable(iVarIdentity);
+      //*bEnabled = TReportsManager::Instance()->IsVariableEnable(iVarIdentity);
 
       //Increment static identifier
       iVarIdentity++;
@@ -800,7 +801,7 @@ extern "C"
    {
       std::string strPattern = std::string(sPattern, iLength);
 
-      return TReportsManager::Instance()->IsVariableEnable(strPattern.c_str());
+      return true; //TReportsManager::Instance()->IsVariableEnable(strPattern.c_str());
    }
    bool is_variable_enabled_(char* sPattern, int iLength)
    {
@@ -1046,10 +1047,6 @@ void TReportsManager::AddToVariableInfoList(int id,const char* sVarName, const c
    rv.MetaValue = sMetaValue;
    rv.Description = sDescription;
 
-   //Use binary logic to see if variable was requested for any of the output
-   rv.OutputType = GetOutputType(sVarName);
-   (rv.OutputType&0xFF)?rv.Enabled=true:rv.Enabled=false;
-
    //insert the value to the map object
    m_VariableInfoList.insert(make_pair(id,rv));
 }
@@ -1129,11 +1126,12 @@ bool TReportsManager::IsReportDetailWildSet(int id, const char* sDelimiter)
 ** ***************************************************************** */
 void TReportsManager::AddToReportDataList(int id, const char* sDelimiter, float fValue){
    ReportDataMap::iterator it;
-   VariableInfoMap::const_iterator itInfoMap;
+   VariableInfoMap::iterator itInfoMap;
 
    //Find if it exits
    it = m_ReportDataList.find(stMapKey(id,string(sDelimiter)));
    if(it == m_ReportDataList.end()){
+      
       //create and retrieve the new member
       m_ReportDataList.insert(make_pair(stMapKey(id,string(sDelimiter)),TReportData(!m_bStartUp)));
       it = m_ReportDataList.find(stMapKey(id,string(sDelimiter)));
@@ -1156,11 +1154,23 @@ void TReportsManager::AddToReportDataList(int id, const char* sDelimiter, float 
       //populate some startup information that is found in the VariableInfo dictionary
       itInfoMap = m_VariableInfoList.find(id);
       if(itInfoMap != m_VariableInfoList.end()){
-         //set output type
-         it->second.SetOutputType(itInfoMap->second.OutputType);
+         
 
          //Create the fully qualified variable name
          GetVariableName(itInfoMap->second.VarName,sDelimiter,it->second.sVarName);
+         
+         //Determine if output is requested 
+         it->second.OutputType = GetOutputType(it->second.sVarName); 
+         
+         //set output type
+         it->second.SetOutputType(it->second.OutputType); 
+         
+         (it->second.OutputType&0xFF)? it->second.Enabled = true : it->second.Enabled = false;
+         if ( it->second.Enabled ) {
+          
+         }
+
+         
       }
 
       // **** used for troubleshooting only, code block will normally not be compiled *****
@@ -1287,17 +1297,16 @@ int TReportsManager::GetMonthIndex(int iDay)
 ** ***************************************************************** */
 bool TReportsManager::IsVariableEnable(int iVarIdentifier)
 {
-   bool bReturn = false;
-   VariableInfoMap::const_iterator it;
+//   bool bReturn = false;
+// ReportDataMap::const_iterator it;
+//  //find the member in m_VariableInfoList
+//   it = m_ReportDataList.find(stMapKey(id,string(sDelimiter)));
+//   if(it != m_ReportDataList.end()){
+//      //found
+//      bReturn = it->second.Enabled;
+//   }
 
-   //find the member in m_VariableInfoList
-   it = m_VariableInfoList.find(iVarIdentifier);
-   if(it != m_VariableInfoList.end()){
-      //found
-      bReturn = it->second.Enabled;
-   }
-
-   return bReturn;
+   return true; // bReturn;
 }
 
 
@@ -1315,23 +1324,25 @@ bool TReportsManager::IsVariableEnable(int iVarIdentifier)
 ** ***************************************************************** */
 bool TReportsManager::IsVariableEnable(const char* cPattern)
 {
-   bool bReturn = false;
-   VariableInfoMap::const_iterator itInfoMap;
-   int i;
-
-   //loop through set varaibles
-   for(itInfoMap = m_VariableInfoList.begin(); itInfoMap != m_VariableInfoList.end(); itInfoMap++)
-   {
-      //short-circuit evaluation left to right, the enable status will be evaluated before
-      //the expensive strstr operation is performed
-      if(itInfoMap->second.Enabled && strstr(itInfoMap->second.VarName,cPattern)!=NULL)
-      {
-         bReturn = true;
-         break;
-      }
-   }
-
-   return bReturn;
+   bool bReturn = true; 
+   return bReturn;  
+   
+//   ReportDataMap::const_iterator it;
+//   int i;
+//
+//   //loop through set varaibles
+//   for(it = m_ReportDataList.begin(); it != m_ReportDataList.end(); it++)
+//   {
+//      //short-circuit evaluation left to right, the enable status will be evaluated before
+//      //the expensive strstr operation is performed
+//      if(it->second.Enabled && strstr(it->second.sVarName,cPattern)!=NULL)
+//      {
+//         bReturn = true;
+//         break;
+//      }
+//   }
+//
+//   return bReturn;
 }
 
 
@@ -2419,6 +2430,8 @@ void TReportsManager::OutputDictionary(const char* sFileName, stSortedMapKeyRef 
 {
    VariableInfoMap::const_iterator itInfoMap;
    ReportDataMap::iterator itDataMap;
+
+   
    const char *sMetaValue, *sDescription, *sVarName;
    FILE *pFile;
 
@@ -2445,7 +2458,7 @@ void TReportsManager::OutputDictionary(const char* sFileName, stSortedMapKeyRef 
       while(itDataMap != m_ReportDataList.end())
       {
          itInfoMap =  m_VariableInfoList.find(itDataMap->first.identifier);
-         sVarName = itInfoMap->second.VarName; //variable name with *
+         sVarName = itDataMap->second.sVarName; //variable name without *
 
          //Get the information differently if variable's information was overwritten
          //during the simulation by the add_to_report_details routines. usually-false
@@ -2461,10 +2474,16 @@ void TReportsManager::OutputDictionary(const char* sFileName, stSortedMapKeyRef 
          }
 
          //format print
-         fprintf(pFile,"\"%s\",\"%s\",\"%s\",\"%s\"\n",
-                 sVarName,itDataMap->first.delimiters.c_str(),
-                 itInfoMap->second.Description, itInfoMap->second.MetaValue);
+         //fprintf(pFile,"%s\n  %s%s\",\"%s\"\n",
+         //        sVarName,itDataMap->first.delimiters.c_str(),
+         //        itInfoMap->second.Description, itInfoMap->second.MetaValue);
 
+         fprintf(pFile,"%s \n  [%s, Units: %s]\n\n",
+                 sVarName,
+                 itInfoMap->second.Description, 
+                 itInfoMap->second.MetaValue);
+                 
+                 
          //Get next ReportData Map iterator
          if(bSortOutput)
          {
@@ -2992,6 +3011,7 @@ unsigned char TReportsManager::GetOutputType(const char* search_text){
          for(it = m_nodes.begin(); it != m_nodes.end(); it++)
          {
             sStr = *it;
+            
             if(Cwildcard_engine.wildcardfit(sStr.c_str(),search_text) == 1)
             {
                cOutputType = cOutputType | OUT_LOG;
