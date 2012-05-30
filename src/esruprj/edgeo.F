@@ -9243,11 +9243,39 @@ C in a different colour for each type (to match colours listed above).
         CALL ADJVIEW(IER)
         do 778 I=1,NZSUR(icomp)
           ioc=IZSTOCN(icomp,i)
-          limit=NVER(i)-1
-          do 779, iyy = 1,limit
-            if(ibridgeshr(ioc,iyy).ne.0)then
-              izva=JVN(i,iyy)
-              izvb=JVN(i,iyy+1)
+          if(ioc.eq.0)then
+            continue  ! unknown surface
+          else
+            limit=NVER(i)-1
+            do 779, iyy = 1,limit
+              if(ibridgeshr(ioc,iyy).ne.0)then
+                izva=JVN(i,iyy)
+                izvb=JVN(i,iyy+1)
+                COG1(1)=VCOORD(icomp,izva,1)
+                COG1(2)=VCOORD(icomp,izva,2)
+                COG1(3)=VCOORD(icomp,izva,3)
+                CALL VECTRN(COG1,TEMAT,COG2,IER)
+                CALL VECTRN(COG2,ETSMAT,COG3,IER)
+                call u2pixel(COG3(1),COG3(2),iix,iiy)
+                COG1(1)=VCOORD(icomp,izvb,1)
+                COG1(2)=VCOORD(icomp,izvb,2)
+                COG1(3)=VCOORD(icomp,izvb,3)
+                CALL VECTRN(COG1,TEMAT,COG2,IER)
+                CALL VECTRN(COG2,ETSMAT,COG3,IER)
+                call u2pixel(COG3(1),COG3(2),iix2,iiy2)
+                iicol=ibridgeshr(ioc,iyy)
+                if(greyok)call winscl('z',iicol)
+                call edwline(iix,iiy,iix2,iiy2)
+                iicol=0
+                if(greyok)call winscl('-',iicol)
+                call forceflush()
+              endif
+  779       continue
+
+C Complete the polygon by going back to the origin.
+            if(ibridgeshr(ioc,NVER(i)).ne.0)then
+              izva=JVN(i,NVER(i))
+              izvb=JVN(i,1)
               COG1(1)=VCOORD(icomp,izva,1)
               COG1(2)=VCOORD(icomp,izva,2)
               COG1(3)=VCOORD(icomp,izva,3)
@@ -9260,37 +9288,13 @@ C in a different colour for each type (to match colours listed above).
               CALL VECTRN(COG1,TEMAT,COG2,IER)
               CALL VECTRN(COG2,ETSMAT,COG3,IER)
               call u2pixel(COG3(1),COG3(2),iix2,iiy2)
-              iicol=ibridgeshr(ioc,iyy)
+              iicol=ibridgeshr(ioc,NVER(i))
               if(greyok)call winscl('z',iicol)
               call edwline(iix,iiy,iix2,iiy2)
               iicol=0
               if(greyok)call winscl('-',iicol)
               call forceflush()
             endif
-  779     continue
-
-C Complete the polygon by going back to the origin.
-          if(ibridgeshr(ioc,NVER(i)).ne.0)then
-            izva=JVN(i,NVER(i))
-            izvb=JVN(i,1)
-            COG1(1)=VCOORD(icomp,izva,1)
-            COG1(2)=VCOORD(icomp,izva,2)
-            COG1(3)=VCOORD(icomp,izva,3)
-            CALL VECTRN(COG1,TEMAT,COG2,IER)
-            CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),iix,iiy)
-            COG1(1)=VCOORD(icomp,izvb,1)
-            COG1(2)=VCOORD(icomp,izvb,2)
-            COG1(3)=VCOORD(icomp,izvb,3)
-            CALL VECTRN(COG1,TEMAT,COG2,IER)
-            CALL VECTRN(COG2,ETSMAT,COG3,IER)
-            call u2pixel(COG3(1),COG3(2),iix2,iiy2)
-            iicol=ibridgeshr(ioc,NVER(i))
-            if(greyok)call winscl('z',iicol)
-            call edwline(iix,iiy,iix2,iiy2)
-            iicol=0
-            if(greyok)call winscl('-',iicol)
-            call forceflush()
           endif
   778   continue
       endif
