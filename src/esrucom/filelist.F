@@ -90,7 +90,7 @@ C   `hva` hvac files, `bsm` (looks for BASESIMP files).
       integer ivlist
       dimension ivlist(MFFOLD)
       character where*3,what*3,sfile*72,snpfile*72,tsfile*72
-      character*72 path,odir
+      character path*72
       character fs*1,act*1
       character dinstpath*60
       integer lex
@@ -100,8 +100,10 @@ C Array for browse menu.
 
 C relative is the portion of the path which needs to be prepended
 C to the selected file to have it relative to the cfg folder.
-      character subpath*84,action*3,outs*248,relative*60
+      character action*3,outs*248,relative*60
+      character subpath*84   ! combined path
       character subpathd*84  ! to use for native windows
+      character odir*84      ! the directory executable was started from
       logical unixok
 
 C Set folder separator (fs) to \ or / as required.
@@ -121,6 +123,12 @@ C model. odir is the current working directory (which is where the
 C project manager was started from).
       subpath=' '
       call usrdir(odir)
+
+C Debug.
+C      write(6,*) 'odir is ',odir(1:lnblnk(odir))
+C      write(6,*) 'path is ',path(1:lnblnk(path))
+C      write(6,*) 'imgpth is ',imgpth(1:lnblnk(imgpth))
+
       if(where(1:3).eq.'cfg')then
         write(subpath,'(3a)',iostat=ios,err=1) odir(1:lnblnk(odir)),fs,
      &    path(1:lnblnk(path))

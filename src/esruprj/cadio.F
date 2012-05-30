@@ -1534,7 +1534,8 @@ C ICLIM,LCLIM (for climate file)
       
 C The string buffer doit and option used for tar command.
       character doit*248,option*4
-      character path*72,cfgroot*24,curdir*72
+      character path*72,cfgroot*24
+      character curdir*84
       character LAPROB*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       character tp*32,tr*32
@@ -1886,7 +1887,7 @@ C Write images if any.
       if(noimg.gt.0)then
         lc=lnblnk(imgpth)
         do 42 img=1,noimg
-          LF=limgfil(img)
+          write(LF,'(a)') limgfil(img)
           if(imgpth(1:lc).eq.LF(1:lc))then
             if(imgpth(1:3).eq.'../')then
               if(.NOT.pathome)then
@@ -1996,21 +1997,21 @@ C Write zone files.
         do 921 J = 1,10
           LF='UNKNOWN'
           if(J.eq.1)then
-            LF=LGEOM(I)
+            write(LF,'(a)') LGEOM(I)
           elseif(J.eq.2)then
-            LF=LPROJ(I)
+            write(LF,'(a)') LPROJ(I)
           elseif(J.eq.3)then
-            LF=LTHRM(I)
+            write(LF,'(a)') LTHRM(I)
           elseif(J.eq.4.and.IOBS(I).EQ.1)then
-            LF=ZOBS(I)  ! if obs is separate file
+            write(LF,'(a)') ZOBS(I)  ! if obs is separate file
           elseif(J.eq.5.and.ITW(I).EQ.1)then
-            LF=LTWIN(I)
+            write(LF,'(a)') LTWIN(I)
           elseif(J.eq.6.and.IVF(I).EQ.1)then
-            LF=LVIEW(I)
+            write(LF,'(a)') LVIEW(I)
           elseif(J.eq.7.and.ICGC(I).EQ.1)then
-            LF=LCGCIN(I)
+            write(LF,'(a)') LCGCIN(I)
           elseif(J.eq.8.and.ISI(I).EQ.1)then
-            LF=LSHAD(I)  ! binary shading file
+            write(LF,'(a)') LSHAD(I)  ! binary shading file
           elseif(J.eq.9.and.ISI(I).EQ.1)then
             write(LF,'(2a)')LSHAD(I)(1:lnblnk(LSHAD(I))),'.a'  !ascii version
             call FINDFIL(LF,XST)
@@ -2020,7 +2021,7 @@ C Write zone files.
               LF='UNKNOWN'
             endif
           elseif(J.eq.10.and.IHC(I).EQ.1)then
-            LF=LHCCO(I)
+            write(LF,'(a)') LHCCO(I)
           endif
           if(LF(1:4).eq.'UNKN'.or.LF(1:2).eq.'  ')then
             continue
@@ -2049,7 +2050,7 @@ C Write zone BASESIMP description if known.
         if(iBSIMP(i).eq.0)then
           continue
         else
-          LF=LBSIMP(I)
+          write(LF,'(a)') LBSIMP(I)
           call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
         endif
 
@@ -2059,7 +2060,7 @@ C Write zone CFD file if known.
         elseif(LCFD(I)(1:7).eq.'UNKNOWN'.or.LCFD(I)(1:2).eq.'  ')then
           continue
         else
-          LF=LCFD(I)
+          write(LF,'(a)') LCFD(I)
           lc=lnblnk(zonepth)
           if(zonepth(1:lc).eq.LF(1:lc))then
             if(zonepth(1:3).eq.'../')then
@@ -2081,17 +2082,17 @@ C Write zone CFD file if known.
 
 C The following write statements do not detect the file location
         if(ZONE3D(I))then
-          LF=L3DCVS(I)
+          write(LF,'(a)') L3DCVS(I)
           call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
-          LF=L3DCNC(I)
+          write(LF,'(a)') L3DCNC(I)
           call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
-          LF=L3DNDC(I)
+          write(LF,'(a)') L3DNDC(I)
           call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
-          LF=L3DTAQ(I)
+          write(LF,'(a)') L3DTAQ(I)
           call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
         endif
         if(MSTRZN(I))then
-          LF=LMOIST(I)
+          write(LF,'(a)') LMOIST(I)
           call wtarentry(iunit,pathome,tr,ltr,tp,ltp,LF)
         endif
         if(IndxSt.EQ.I)then
@@ -2101,7 +2102,7 @@ C The following write statements do not detect the file location
 
 C Flow network.
       if(IAIRN.EQ.1)then
-        LF=LAPROB
+        write(LF,'(a)') LAPROB
         lc=lnblnk(netpth)
         if(netpth(1:lc).eq.LF(1:lc))then
           if(netpth(1:3).eq.'../')then
@@ -2123,7 +2124,7 @@ C Flow network.
       if(INDCFG.EQ.2.or.INDCFG.EQ.3)then
 
 C Plant network information.
-        LF=LPNF
+        write(LF,'(a)') LPNF
         lc=lnblnk(netpth)
         if(netpth(1:lc).eq.LF(1:lc))then
           if(netpth(1:3).eq.'../')then

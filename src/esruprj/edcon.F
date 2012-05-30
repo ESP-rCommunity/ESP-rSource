@@ -274,7 +274,9 @@ C Do not check for UK NCM models.
       TFOUND=.FALSE.
       DO 60 IS=1,NZSUR(icomp)
         icn1=izstocn(icomp,is)
-        write(6,*) icn1,SSOTF(icn1),ITMCFL(ICOMP,IS),inoti
+
+C Debug.
+C        write(6,*) icn1,SSOTF(icn1),ITMCFL(ICOMP,IS),inoti
 
         IF((SSOTF(icn1)(1:4).EQ.'OPAQ').AND.ITMCFL(ICOMP,IS).ne.0)then
           if(inoti.eq.0)then

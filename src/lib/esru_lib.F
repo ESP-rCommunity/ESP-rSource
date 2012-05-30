@@ -5002,7 +5002,7 @@ C comma is found.
      &      ' past end of line for ',MSG(1:LNM),' (phrase) in...'
         else
           WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
-     &      'FAILUREW: Past end of line for ',
+     &      'FAILURE: Past end of line for ',
      &      MSG(1:LNM),' (phrase) in...'
         endif
       endif
@@ -6129,11 +6129,31 @@ C usrdir: Find current folder.
       subroutine usrdir(upwd)
       common/OUTIN/IUOUT,IUIN
       character*(*) upwd
-      integer getcwd
+      character local*96   ! getcwd needs a fixed char array
+      integer i,jlen,kblnk
 
-      i= getcwd(upwd)
+C Older definition used function call.
+C      integer getcwd
+C      i= getcwd(upwd)
+
+C Modern compilers GCC F90 provide subroutine
+      call getcwd(local,i)
+      jlen= LEN(upwd)        ! defined length of upwd
+      kblnk= lnblnk(local)   ! actual length of local
+
+C Debug.
+C      write(6,*) 'getcwd ',i,jlen,kblnk,local
+
+C Ensure that string buffer does not overflow.
+      if(kblnk.lt.jlen)then
+        write(upwd,'(a)') local(1:kblnk)
+      else
+        write(upwd,'(a)') local(1:jlen)
+      endif
+
+C Normal return value is zero, otherwise provide warning
       if(i.ne.0)then
-        call edisp(iuout,'problem recovering current folder')
+        call edisp(iuout,'usrdir: problem recovering current folder')
       endif
       return
       end

@@ -216,7 +216,7 @@ C Remember if each zone is fully attributed.
       character grflbl*20,grfexe*48,foldlbl*20,foldexe*48
       character tmode*8,fmttag*4,fmtexe*20
       character tedlbl*20,teditor*20
-      character uname*24,pwd*40
+      character uname*24,pwd*84
       character ipvaction*3  ! signal that external ipv file
       character MLCSYM*12
       character MLCN*12,OTF*4,OPT*12 ! for use with prsmlcname
