@@ -738,7 +738,7 @@ C the name of the xbm file.
      &          snpfile(1:lnblnk(snpfile))
 
 C Debug.
-              write(6,*) fname
+C              write(6,*) fname
 
             else
 

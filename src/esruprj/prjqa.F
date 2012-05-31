@@ -216,7 +216,7 @@ C Remember if each zone is fully attributed.
       character grflbl*20,grfexe*48,foldlbl*20,foldexe*48
       character tmode*8,fmttag*4,fmtexe*20
       character tedlbl*20,teditor*20
-      character uname*24,pwd*40
+      character uname*24,pwd*84
       character ipvaction*3  ! signal that external ipv file
       character MLCSYM*12
       character MLCN*12,OTF*4,OPT*12 ! for use with prsmlcname
@@ -2431,7 +2431,11 @@ C if the zones are fully attributed.
      &        foundUv,' & perimeter ',t16b(1:lnb),
      &        ' & max MLC thickness ',xfndthkg
             call edisp(itu,outs)
-            betaprime= xtoground/(xperimlength*0.5)
+            if(xperimlength.gt.0.1)then
+              betaprime= xtoground/(xperimlength*0.5)
+            else
+              betaprime= xtoground  ! avoid div by zero
+            endif
             deltathick= xvthk + 1.5 * ((1.0/foundUv)+0.04)
             PI = 4.0 * ATAN(1.0)
             Ufleft = (2.0 * 1.5)/ ((Pi * betaprime) + deltathick)
@@ -3088,112 +3092,116 @@ C floor area for each.
         vexposed(IZZ) = 0.0
         do 111 ij=1,nzsur(izz)
           icc=izstocn(izz,ij)
-          CALL SURADJ(IZZ,IJ,IE,TMP,IZC,ISC,IC,DESCRC) ! not dependant on georead
+          if(icc.eq.0)then
+            continue  ! not a known surface connection
+          else
+            CALL SURADJ(IZZ,IJ,IE,TMP,IZC,ISC,IC,DESCRC) ! not dependant on georead
 
 C Check the U value for each surface.
-          UVH = 0.0
-          UVU = 0.0
-          UVD = 0.0
+            UVH = 0.0
+            UVU = 0.0
+            UVD = 0.0
 
 C << possible place to use ssmlcindex >>
 
-          do 511 ii=1,nmlc
-            if(SSMLCN(icc)(1:12).eq.DESC(ii)(1:12)) then
+            do 511 ii=1,nmlc
+              if(SSMLCN(icc)(1:12).eq.DESC(ii)(1:12)) then
 
 C Recover the ISO 6946 U values for horizontal, upwards and downwards
 C flow as well as internal partition (horizontal 0.13 both sides).
 C Note: ISO 6946 advises use of horizontal hc value for surfaces where
 C heat flow direction is unknown. This assumption is used in
 C the U and UA reporting below.
-              call etmldbu(0,itu,ii,UVH,UVU,UVD,UVI,UVG)
+                call etmldbu(0,itu,ii,UVH,UVU,UVD,UVI,UVG)
 
 C Debug.
-C              write(6,*) DESC(ii)(1:12),'ii UVH UVU UVD UVI UVG',
-C     &          ii,UVH,UVU,UVD,UVI,UVG
+C                write(6,*) DESC(ii)(1:12),'ii UVH UVU UVD UVI UVG',
+C     &            ii,UVH,UVU,UVD,UVI,UVG
 
-            else
-              continue
-            endif
-  511     continue
+              else
+                continue
+              endif
+  511       continue
 
-          if(IE.eq.0)then
+            if(IE.eq.0)then
 
 C For surfaces connected to the outside.
-            exposed(IZZ) = exposed(IZZ) + SSNA(icc)
-            xexposed = xexposed + SSNA(icc)
-            if(SSOTF(icc)(1:4).eq.'OPAQ')then
-              if(SSVFC(icc)(1:4).eq.'VERT')then
+              exposed(IZZ) = exposed(IZZ) + SSNA(icc)
+              xexposed = xexposed + SSNA(icc)
+              if(SSOTF(icc)(1:4).eq.'OPAQ')then
+                if(SSVFC(icc)(1:4).eq.'VERT')then
 
 C For vertical walls assume horizontal hc coef.
-                areawall(IZZ) = areawall(IZZ) + SSNA(icc)
-                uavwall(IZZ) = uavwall(IZZ) + (SSNA(icc) * UVH)
-                vexposed(IZZ) = vexposed(IZZ) + SSNA(icc)
-                xvexposed = xvexposed + SSNA(icc)
-                xareawall = xareawall + SSNA(icc)
-                xuavwall = xuavwall + (SSNA(icc) * UVH)
-                if(ssthick(icc).gt.xvthk) xvthk = ssthick(icc) ! keep track of thickest
-              elseif(SSVFC(icc)(1:4).eq.'SLOP')then
+                  areawall(IZZ) = areawall(IZZ) + SSNA(icc)
+                  uavwall(IZZ) = uavwall(IZZ) + (SSNA(icc) * UVH)
+                  vexposed(IZZ) = vexposed(IZZ) + SSNA(icc)
+                  xvexposed = xvexposed + SSNA(icc)
+                  xareawall = xareawall + SSNA(icc)
+                  xuavwall = xuavwall + (SSNA(icc) * UVH)
+                  if(ssthick(icc).gt.xvthk) xvthk = ssthick(icc) ! keep track of thickest
+                elseif(SSVFC(icc)(1:4).eq.'SLOP')then
 
 C For sloped surfaces assume upward hc coef.
-                areaslproof(IZZ) = areaslproof(IZZ) + SSNA(icc)
-                uavslproof(IZZ) = uavslproof(IZZ) + (SSNA(icc) * UVU)
-                xareaslproof = xareaslproof + SSNA(icc)
-                xuavslproof = xuavslproof + (SSNA(icc) * UVU)
-              elseif(SSVFC(icc)(1:4).eq.'CEIL')then
+                  areaslproof(IZZ) = areaslproof(IZZ) + SSNA(icc)
+                  uavslproof(IZZ) = uavslproof(IZZ) + (SSNA(icc) * UVU)
+                  xareaslproof = xareaslproof + SSNA(icc)
+                  xuavslproof = xuavslproof + (SSNA(icc) * UVU)
+                elseif(SSVFC(icc)(1:4).eq.'CEIL')then
 
 C For ceilings assume upward hc coef.
-                areafltroof(IZZ) = areafltroof(IZZ) + SSNA(icc)
-                uavfltroof(IZZ) = uavfltroof(IZZ) + (SSNA(icc) * UVU)
-                xareafltroof = xareafltroof + SSNA(icc)
-                xuavfltroof = xuavfltroof + (SSNA(icc) * UVU)
-              else
+                  areafltroof(IZZ) = areafltroof(IZZ) + SSNA(icc)
+                  uavfltroof(IZZ) = uavfltroof(IZZ) + (SSNA(icc) * UVU)
+                  xareafltroof = xareafltroof + SSNA(icc)
+                  xuavfltroof = xuavfltroof + (SSNA(icc) * UVU)
+                else
 
 C For floors facing outside assume downward hc coef.
-                areawall(IZZ) = areawall(IZZ) + SSNA(icc)
-                uavwall(IZZ) = uavwall(IZZ) + (SSNA(icc) * UVD)
-                xareawall = xareawall + SSNA(icc)
-                xuavwall = xuavwall + (SSNA(icc) * UVD)
-              endif
-            elseif(SSOTF(icc)(1:4).ne.'OPAQ'.and.
-     &             SSOTF(icc)(1:4).ne.'CFC ')then
-              if(SSVFC(icc)(1:4).eq.'CEIL'.or.
-     &           SSVFC(icc)(1:4).eq.'SLOP')then
+                  areawall(IZZ) = areawall(IZZ) + SSNA(icc)
+                  uavwall(IZZ) = uavwall(IZZ) + (SSNA(icc) * UVD)
+                  xareawall = xareawall + SSNA(icc)
+                  xuavwall = xuavwall + (SSNA(icc) * UVD)
+                endif
+              elseif(SSOTF(icc)(1:4).ne.'OPAQ'.and.
+     &               SSOTF(icc)(1:4).ne.'CFC ')then
+                if(SSVFC(icc)(1:4).eq.'CEIL'.or.
+     &             SSVFC(icc)(1:4).eq.'SLOP')then
 
 C Consider glazing on ceiling or sloped to be a skylight.
-                areaskylt(IZZ) = areaskylt(IZZ) + SSNA(icc)
-                uavgsky(IZZ) = uavgsky(IZZ) + (SSNA(icc) * UVU) 
-                xareaskylt = xareaskylt + SSNA(icc)
-                xuavgsky = xuavgsky + (SSNA(icc) * UVU)
-              elseif(SSVFC(icc)(1:4).eq.'VERT')then
+                  areaskylt(IZZ) = areaskylt(IZZ) + SSNA(icc)
+                  uavgsky(IZZ) = uavgsky(IZZ) + (SSNA(icc) * UVU) 
+                  xareaskylt = xareaskylt + SSNA(icc)
+                  xuavgsky = xuavgsky + (SSNA(icc) * UVU)
+                elseif(SSVFC(icc)(1:4).eq.'VERT')then
 
 C Consider glazing on walls to be a part of facade.
-                areatran(IZZ) = areatran(IZZ) + SSNA(icc)
-                uavgtran(IZZ) = uavgtran(IZZ) + (SSNA(icc) * UVH)
-                vexposed(IZZ) = vexposed(IZZ) + SSNA(icc)
-                xvexposed = xvexposed + SSNA(icc)
-                xareatran = xareatran + SSNA(icc)
-                xuavgtran = xuavgtran + (SSNA(icc) * UVH)
+                  areatran(IZZ) = areatran(IZZ) + SSNA(icc)
+                  uavgtran(IZZ) = uavgtran(IZZ) + (SSNA(icc) * UVH)
+                  vexposed(IZZ) = vexposed(IZZ) + SSNA(icc)
+                  xvexposed = xvexposed + SSNA(icc)
+                  xareatran = xareatran + SSNA(icc)
+                  xuavgtran = xuavgtran + (SSNA(icc) * UVH)
+                else
+                  areatran(IZZ) = areatran(IZZ) + SSNA(icc)
+                  uavgtran(IZZ) = uavgtran(IZZ) + (SSNA(icc) * UVD)
+                  vexposed(IZZ) = vexposed(IZZ) + SSNA(icc)
+                  xvexposed = xvexposed + SSNA(icc)
+                  xareatran = xareatran + SSNA(icc)
+                  xuavgtran = xuavgtran + (SSNA(icc) * UVD)
+                endif
               else
-                areatran(IZZ) = areatran(IZZ) + SSNA(icc)
-                uavgtran(IZZ) = uavgtran(IZZ) + (SSNA(icc) * UVD)
-                vexposed(IZZ) = vexposed(IZZ) + SSNA(icc)
-                xvexposed = xvexposed + SSNA(icc)
-                xareatran = xareatran + SSNA(icc)
-                xuavgtran = xuavgtran + (SSNA(icc) * UVD)
+                continue
               endif
+            elseif(IE.eq.4)then
+
+C For surfaces connected to the ground.
+              xtoground = xtoground + SSNA(icc)   ! increment area to ground
+              areaground(IZZ) = areaground(IZZ) + SSNA(icc) ! increment area to ground
+              xuavground = xuavground + (SSNA(icc) * UVG)
+              uavground(IZZ) = uavground(IZZ) + (SSNA(icc) * UVG)
+              if(ssthick(icc).gt.xfndthkg) xfndthkg = ssthick(icc)
             else
               continue
             endif
-          elseif(IE.eq.4)then
-
-C For surfaces connected to the ground.
-            xtoground = xtoground + SSNA(icc)   ! increment area to ground
-            areaground(IZZ) = areaground(IZZ) + SSNA(icc) ! increment area to ground
-            xuavground = xuavground + (SSNA(icc) * UVG)
-            uavground(IZZ) = uavground(IZZ) + (SSNA(icc) * UVG)
-            if(ssthick(icc).gt.xfndthkg) xfndthkg = ssthick(icc)
-          else
-            continue
           endif
  111    continue
 

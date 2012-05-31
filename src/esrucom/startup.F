@@ -1177,13 +1177,13 @@ C      write(6,*) 'lfdef is ',lfdef
         else
           localdot=.false.
           esprc=altdot  ! assign the install folder file as the esprc file.
-          call edisp(iuout,
+          if(itrc.ge.0) call edisp(iuout,
      &      '  Preferences (esprc) file - standard version.')
           write(currentfile,'(a)') esprc(1:lnblnk(esprc))
         endif
       else
         localdot=.true.
-        call edisp(iuout,
+        if(itrc.ge.0) call edisp(iuout,
      &    '  Preferences (.esprc) file - users version.')
         write(currentfile,'(a)') lfdef(1:lnblnk(lfdef))
       ENDIF
@@ -1292,13 +1292,13 @@ C Turn journaling on/off.
       elseif(WORD(1:10).eq.'*exemplars')then
         CALL EGETP(OUTSTR,K,exemlbl,'W','exemplars list lbl',IER)
         CALL EGETRM(OUTSTR,K,exemfl,'W','exemplars file',IER)
-        write(outs248,'(4a)')' Exemplars: ',exemlbl,' in ',exemfl
+        write(outs248,'(2a)')'  Exemplars (model list) - ',exemfl
         if(itrc.gt.1)call edisp248(iuout,outs248,100)
       elseif(WORD(1:12).eq.'*db_defaults')then
         CALL EGETP(OUTSTR,K,dfdblbl,'W','def db list lbl',IER)
         CALL EGETRM(OUTSTR,K,defdbfl,'W','default db file',IER)
-        write(outs248,'(4a)')' Default: ',dfdblbl,' in ',defdbfl
-        if(itrc.gt.0)call edisp248(iuout,outs248,100)
+        write(outs248,'(2a)')'  Default file - ',defdbfl
+        if(itrc.gt.1)call edisp248(iuout,outs248,100)
       elseif(WORD(1:16).eq.'*validation_stds')then
         CALL EGETP(OUTSTR,K,vldlbl,'W','validation list lbl',IER)
         CALL EGETRM(OUTSTR,K,vldfl,'W','validation stds file',IER)
@@ -1307,7 +1307,7 @@ C Turn journaling on/off.
       elseif(WORD(1:12).eq.'*db_climates')then
         CALL EGETP(OUTSTR,K,cdblbl,'W','clm db list lbl',IER)
         CALL EGETRM(OUTSTR,K,cdblfil,'W','clm db list file',IER)
-        write(outs248,'(4a)')' Climate list: ',cdblbl,' in ',cdblfil
+        write(outs248,'(2a)')'  Weather (list) - ',cdblfil
         if(itrc.gt.1)call edisp248(iuout,outs248,100)
       elseif(WORD(1:11).eq.'*report_gen')then
         CALL EGETP(OUTSTR,K,replbl,'W','report gen lbl',IER)

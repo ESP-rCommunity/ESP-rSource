@@ -957,7 +957,7 @@ C Display each of the current images by topic.
 
 C Add images from images folder or other location.
         CALL EASKABCD(' ','Project image options:',
-     &    'add from standard folder','add from another folder',
+     &    'add from ../images folder','add from another folder',
      &    'delete','cancel',IOK,nbhelp)
         if(iok.eq.1)then
           if(noimg.ge.MIMG)then
