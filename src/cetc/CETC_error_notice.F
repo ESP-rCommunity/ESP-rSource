@@ -9,6 +9,8 @@ C supproted.
       INTEGER	IUOUT,IUIN
       CHARACTER*124 cMSG
       
+      integer lnblnk
+      
       CALL EDISP(IUOUT,cMSG(1:lnblnk(cMSG)))
       RETURN
       END

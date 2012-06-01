@@ -158,7 +158,8 @@ C except where explicitly redefined.
       common/coe32/qsoli(ms,2),qsole(ms,2)
       common/coe32j/qtmca(ms,mn,2)
       common/pvpnl/tpnl,qpnl,pvpwr
-      common/prec1/sna(mcom,ms),zoa(mcom)
+      common/prec1/sna(mcom,ms)
+      common/prec4/zoa(mcom)
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       common/adjc/ie(mcom,ms),atp(mcom,ms),atf(mcom,ms),
      &            arp(mcom,ms),arf(mcom,ms)
@@ -464,7 +465,8 @@ C except where explicitly redefined.
       common/pvpnl/tpnl,qpnl,pvpwr
       common/adjc/ie(mcom,ms),atp(mcom,ms),atf(mcom,ms),
      &arp(mcom,ms),arf(mcom,ms)
-      common/prec1/sna(mcom,ms),zoa(mcom)
+      common/prec1/sna(mcom,ms)
+      common/prec4/zoa(mcom)
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       common/solext/exrad(ms),exdir(ms),exdif(ms),exshad(ms),
      &                                                    exshadf(ms)
@@ -954,7 +956,8 @@ C except where explicitly redefined.
       common/coe32/qsoli(ms,2),qsole(ms,2)
       common/coe32j/qtmca(ms,mn,2)
       common/pvpnl/tpnl,qpnl,pvpwr
-      common/prec1/sna(mcom,ms),zoa(mcom)
+      common/prec1/sna(mcom,ms)
+      common/prec4/zoa(mcom)
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
 
       real mu
@@ -1284,7 +1287,8 @@ C Special materials.
       common/pvpnl/tpnl,qpnl,pvpwr
       real    tpnl,qpnl,pvpwr
 
-      common/prec1/sna(mcom,ms),zoa(mcom)
+      common/prec1/sna(mcom,ms)
+      common/prec4/zoa(mcom)
       real    sna		!- surface area
       real    zoa		!- total surface area of the zone
 
@@ -2091,7 +2095,8 @@ C except where explicitly redefined.
      &         txtspm(mspmnod,MSPMRES)
       common/zonspmf/zspmf1(mcom),zspmf2(mcom)
       common/evapsur/vapsur(mcom)
-      common/prec1/sna(mcom,ms),zoa(mcom)
+      common/prec1/sna(mcom,ms)
+      common/prec4/zoa(mcom)
       common/fvala/tfa(mcom),qfa(mcom)
       common/fvals/tfs(mcom,ms),qfs(mcom)
       common/concoe/hcip(mcom,ms),hcif(mcom,ms),hcop(mcom,ms),
@@ -2223,7 +2228,8 @@ C thrmli(icomp,isurf,ielem,2) = density
 C thrmli(icomp,isurf,ielem,3) = specific heat
 C thrmli(icomp,isurf,ielem,4) = thickness
       common/vthp14/thrmli(mcom,ms,me,7)
-      common/prec1/sna(mcom,ms),zoa(mcom)
+      common/prec1/sna(mcom,ms)
+      common/prec4/zoa(mcom)
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)
       common/prec13/c(mcom,ms,mn,2),qc(mcom,ms,mn)
@@ -4258,7 +4264,8 @@ C.....Climate data (present and future time rows)
      &         txtspm(mspmnod,MSPMRES)
       common/zonspmf/zspmf1(mcom),zspmf2(mcom)
       common/evapsur/vapsur(mcom)
-      common/prec1/sna(mcom,ms),zoa(mcom)
+      common/prec1/sna(mcom,ms)
+      common/prec4/zoa(mcom)
       common/vthp14/thrmli(mcom,ms,me,7)
       common/fvala/tfa(mcom),qfa(mcom)
       common/fvals/tfs(mcom,ms),qfs(mcom)

@@ -1157,11 +1157,6 @@ C.....Simulation time
       integer npcomp, nci
       real cdata
       integer icfp, idtypp, iperp
-      integer ncl, ipsn, ipan, npcdt, ipcdv, npcdp
-      real tpcps
-C.....Control data
-      integer ipctyp, ipclaw
-      real pmiscd
 C.....Plant component indexes
       integer npcdat, ipofs1, ipofs2
 C.....Plant component parameters

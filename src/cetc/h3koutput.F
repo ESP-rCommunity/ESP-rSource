@@ -233,6 +233,12 @@ C     OUTPUT HEADERS
      &     'GCEP_PUMP MJ'
       CALL EDISP(IWU,OUTS) 
 
+C     Initialize sum variables
+      fFAN_ENERGY_TOTAL=0.0
+      fHRV_Elec_Energy_TOTAL=0.0
+      fGSHP_pump_energy_TOTAL=0.0
+      fGCEP_pump_energy_TOTAL=0.0
+
 C     LOOP THROUGH MONTH IN TIME PERIOD
       DO 20 IMONTH=ISM1,ISM2
 C     OUTPUT ENERGIES  

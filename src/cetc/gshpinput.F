@@ -221,7 +221,7 @@ C Initiates reading of global variables (common for all)
 C Use inputs specific to vertical configuration
 #include "gshp_v1_common.h"
 
-
+       COMMON/ER/IER
 
        common/gshpinfo/igshp
        common/gshpfile/gshpfile
@@ -404,6 +404,7 @@ C Use inputs specific to configuration
 
        COMMON /OUTIN/ IUOUT, IUIN
 
+       COMMON/ER/IER
        common/gshpinfo/igshp
        common/gshpfile/gshpfile
        
@@ -500,6 +501,7 @@ C Use inputs specific to vertical configuration
 #include "gshp_hs_common.h"
        COMMON /OUTIN/ IUOUT, IUIN
 
+       COMMON/ER/IER
        common/gshpinfo/igshp
        common/gshpfile/gshpfile
 
@@ -709,6 +711,7 @@ C Initiates reading of global variables (common for all)
        COMMON /OUTIN/ IUOUT, IUIN
        common/gshpinfo/igshp
        common/gshpfile/gshpfile
+       COMMON/ER/IER
        
 
        REAL val

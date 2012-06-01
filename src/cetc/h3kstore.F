@@ -469,6 +469,8 @@ C Inputs
       INTEGER JMONTH
       REAL total_foundation_losses
 
+      total_foundation_losses=0.0
+
 c     Ensures that the start up is over.
       CALL EDAY(ISD1,ISM1,IODS)
       CALL EDAY(ISD2,ISM2,IODF)

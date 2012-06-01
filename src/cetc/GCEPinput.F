@@ -185,6 +185,7 @@ C      USE GCEP_INPUT
       common/gcepinfo/igcep
       common/gcepfile/gcepfile
        
+      COMMON/ER/IER
 
       REAL    val
       INTEGER igcep
