@@ -1030,9 +1030,6 @@ c#include "espriou.h"
       real rairg
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
 
-C Error subroutine and error details for dll mode.
-      common/dllerr/dllsubr,dllmesg
-
       integer iva,itrc,itru,iua,icomp,ier,NS,IRVA,i,j,k,ierr,kk
       integer nshade_layers,ie,ND,ISR,icn,ntmpcfc_el,iflag,istat
       integer lnblnk    !function definition
@@ -1048,9 +1045,6 @@ c      character dllsubr*12,dllmesg*124
       logical vb_xst !,dll
       val=0.
       vb_xst=.false.
-
-C Check if running in dll mode.
-c      call isadll(dll) ! overkill, here?
 
       CALL EFOPSEQ(IUA,LUA,1,IER)
       IF(IER.NE.0)THEN
@@ -1070,15 +1064,8 @@ C an older file rewind the file and then continue as usual.
       ! check for fatal error
       if(IER.NE.0)then
         outs='Problem scanning CFC file...aborting cfg scan'
-c        if(dll)then
-c          dllsubr='mzinpt'
-c          dllmesg=outs
-c          ier=2
-c          return
-c        else
-          call edisp(iuout,outs)
-          goto 1000 ! close file and return
-c        endif
+        call edisp(iuout,outs)
+        goto 1000 ! close file and return
       endif
       ! seems O.K., continue ...
       if (OUTSTR(1:18).EQ.'*CFC_Fileversion 2') then
@@ -1470,20 +1457,12 @@ C Error messages.
       CALL USRMSG(outs,' and try the model again!','W')
       IER=1
       goto 1000
-      
-C File rewind errors.
-c  999 if(dll)then
-c        dllsubr='ersys'
-c        WRITE(dllmesg,'(2a)') 
-c     &  ' Error rewinding CFC file ',lcfcin(icomp)(1:32)
-c        ier=2
-c        return
-c      else
+
+C File rewind error.
  999   CALL USRMSG('Error rewinding CFC file:',
      &    lcfcin(icomp),'W')
         IER=1
         GOTO 1000
-c      endif
 
       end
 
@@ -1798,7 +1777,7 @@ C =2 with more than 3 day types allowed and sorted
       common/p3ver/ip3ver(MCOM)
 
       LOGICAL SELECT,XST
-      CHARACTER title*72
+      CHARACTER title*72,LCFD*72
       
       DIMENSION VERT(35)
       CHARACTER VERT*27,KEY*1
@@ -1984,18 +1963,20 @@ c     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
 
       character outs*124
       dimension TACI(24),TACV(24)
-#ifdef OSX
+#ifdef OSI
       integer ipltwd,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
       integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iimenu
+      integer iimenu,iiglsat,iiglsun,ioff
+      integer iiw1,iiw2,iiw3,iiw4
 #else
       integer*8 ipltwd,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iimenu
+      integer*8 iimenu,iiglsat,iiglsun,ioff
+      integer*8 iiw1,iiw2,iiw3,iiw4
 #endif
 
       IDTY=IDTYP
@@ -2019,11 +2000,14 @@ C Scan each days gains and find maximum flow.
 C Clear and setup plot area.
       iimenu=menuchw
       iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      iiw1=10;iiw2=10;iiw3=8;iiw4=3
       CALL startbuffer()
-      CALL win3d(menuchw,10,10,8,3,igl,igr,igt,igb,igw,igwh)
-      igw=igr-igl
-      igwh=igb-igt
-      igheight=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &                  iigl,iigr,iigt,iigb,iigw,iigwh)
+
+      igw=iigr-iigl
+      igwh=iigb-iigt
+      igheight=iigwh
 
 C Calculate plotting box locations.
       ipltwd=int(igw/3)-6
@@ -2038,10 +2022,11 @@ C Calculate plotting box locations.
 C Scale and draw right hand ON/OFF axis first.
       CALL axiscale(ipltwd,igheight,plxmin,plxmax,YMIN,YMAXF,
      &                                         xsc,ysc,sca,xadd,yadd)
-      call vrtaxis(0.,1.,igr,igb,igt,0.,20.,0,1,'Shade ON/OFF')
+      call vrtaxis(0.,1.,iigr,iigb,iigt,0.,20.,0,1,'Shade ON/OFF')
 
 C Scale and draw for first day type requested
-      CALL horaxis(plxmin,plxmax,igl,igr,igb,xadd,xsc,0,'Time (hrs)')
+      CALL horaxis(plxmin,plxmax,iigl,iigr,iigb,
+     &                                xadd,xsc,0,'Time (hrs)')
       call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,yadd,ysc,0,0,
      &             'Slat Angle (deg)')
       call linescale(iigl,xadd,xsc,iigb,yadd,ysc)
@@ -2058,8 +2043,10 @@ C Draw 0 axis line
       CALL etplot(plxmax,0.,iupdown,isym)
 
 C Scale and draw second day type requested
-      CALL horaxis(plxmin,plxmax,iglsat,igr,igb,xadd,XSC,0,' ')
-      call linescale(iglsat,xadd,xsc,igb,yadd,ysc)
+      iiglsat=iglsat
+      CALL horaxis(plxmin,plxmax,iiglsat,iigr,iigb,xadd,XSC,0,' ')
+      iiglsat=iglsat;iigb=igb
+      call linescale(iiglsat,xadd,xsc,iigb,yadd,ysc)
       iupdown=0
       isym=0
       CALL etplot(plxmax,YMIN,iupdown,isym)
@@ -2074,8 +2061,10 @@ C Draw 0 axis line
       CALL etplot(plxmax,0.,iupdown,isym)
 
 C Scale and draw third day type requested
-      CALL horaxis(plxmin,plxmax,iglsun,igr,igb,xadd,XSC,0,' ')
-      call linescale(iglsun,xadd,xsc,igb,yadd,ysc)
+      iiglsun=iglsun
+      CALL horaxis(plxmin,plxmax,iiglsun,iigr,iigb,xadd,XSC,0,' ')
+      iiglsun=iglsun;iigb=igb
+      call linescale(iiglsun,xadd,xsc,iigb,yadd,ysc)
       iupdown=0
       isym=0
       CALL etplot(plxmin,YMIN,iupdown,isym)
@@ -2112,7 +2101,8 @@ C first day type requested
       do 70 IHR=1,24
         XST=real(IHR-1)
         XFN=real(IHR)
-        call linescale(igl,xadd,xsc,igb,0.,20.)
+        iigl=igl;iigb=igb
+        call linescale(iigl,xadd,xsc,iigb,0.,20.)
         iupdown=0
         isym=0
         CALL etplot(XST,TACI(IHR),iupdown,isym)
@@ -2121,7 +2111,8 @@ C first day type requested
         if (IHR.ne.24)then
           CALL etplot(XFN,TACI(IHR+1),iupdown,isym)
         endif
-        call linescale(igl,xadd,xsc,igb,yadd,ysc)
+        iigl=igl;iigb=igb
+        call linescale(iigl,xadd,xsc,iigb,yadd,ysc)
         iupdown=0
         isym=0
         CALL etplot(XST,TACV(IHR),iupdown,isym)
@@ -2147,7 +2138,8 @@ C second day type requested
       do 170 IHR=1,24
         XST=real(IHR-1)
         XFN=real(IHR)
-        call linescale(iglsat,xadd,xsc,igb,0.,20.)
+        iiglsat=iglsat;iigb=igb
+        call linescale(iiglsat,xadd,xsc,iigb,0.,20.)
         iupdown=0
         isym=0
         CALL etplot(XST,TACI(IHR),iupdown,isym)
@@ -2156,7 +2148,8 @@ C second day type requested
         if (IHR.ne.24)then
           CALL etplot(XFN,TACI(IHR+1),iupdown,isym)
         endif
-        call linescale(iglsat,xadd,xsc,igb,yadd,ysc)
+        iiglsat=iglsat;iigb=igb
+        call linescale(iiglsat,xadd,xsc,iigb,yadd,ysc)
         iupdown=0
         isym=0
         CALL etplot(XST,TACV(IHR),iupdown,isym)
@@ -2183,7 +2176,8 @@ C third day type requested
       do 270 IHR=1,24
         XST=real(IHR-1)
         XFN=real(IHR)
-        call linescale(iglsun,xadd,xsc,igb,0.,20.)
+        iiglsun=iglsun;iigb=igb
+        call linescale(iiglsun,xadd,xsc,iigb,0.,20.)
         iupdown=0
         isym=0
         CALL etplot(XST,TACI(IHR),iupdown,isym)
@@ -2192,7 +2186,8 @@ C third day type requested
         if (IHR.ne.24)then
           CALL etplot(XFN,TACI(IHR+1),iupdown,isym)
         endif
-        call linescale(iglsun,xadd,xsc,igb,yadd,ysc)
+        iiglsun=iglsun;iigb=igb
+        call linescale(iiglsun,xadd,xsc,iigb,yadd,ysc)
         iupdown=0
         isym=0
         CALL etplot(XST,TACV(IHR),iupdown,isym)
@@ -2211,8 +2206,9 @@ C Title and labels.
       ifont=1
       call viewtext(outs,iside,isize,ifont)
 
-      call wstxpt(igl+20,igt-65,'Shading ON/OFF')
-      call wstxpt(igr-100,igt-65,'Slat Angle')
+      iigl=igl;iigt=igt;iigr=igr
+      call wstxpt(iigl+20,iigt-65,'Shading ON/OFF')
+      call wstxpt(iigr-100,iigt-65,'Slat Angle')
       call pixel2u(igl+120,igt-69,gx,gy)
       iupdown=0
       isym=0
@@ -2227,10 +2223,12 @@ C Title and labels.
       iupdown=1
       CALL etplot(gx,gy,iupdown,isym)
 
+      iigl=igl;iigt=igt;iigr=igr
+      iiglsat=iglsat;iiglsun=iglsun
       ioff=(int(ipltwd)/3)
-      call wstxpt(igl+ioff,igt-10,CALENTAG(IDAY))
-      call wstxpt(iglsat+ioff,igt-10,CALENTAG(JDAY))
-      call wstxpt(iglsun+ioff,igt-10,CALENTAG(KDAY))
+      call wstxpt(iigl+ioff,iigt-10,CALENTAG(IDAY))
+      call wstxpt(iiglsat+ioff,iigt-10,CALENTAG(JDAY))
+      call wstxpt(iiglsun+ioff,iigt-10,CALENTAG(KDAY))
       call forceflush()
 
       return

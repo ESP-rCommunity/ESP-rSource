@@ -40,12 +40,19 @@ C ********************************************************************
 C                         -- CFC2rad --
 C
 C Create Radiance definitions for CFC surfaces. This routine is
-C designed to be called in e2r.
+C designed to be called in e2r. There are three different cases
+C possible:
+C  1) Use overall model for glass and blinds (ExplicitVB false
+C     and BRTDfunc false)
+C  2) Use simple glazing model and exlplict blind model (ExplicitVB
+C     true and BRTDfunc false) and
+C  3) Use detailed glazing model (BRTDfunc) and explicit blind 
+C     model (ExplicitVB true and BRTDfunc true).
 C
 C May 13: Called from mkriofil(), line 833.
 C 
 C Created by: Achim Geissler
-C Initial Creation Date: May 2012
+C Initial Creation: May 2012
 C 
 C Call parameters
 C   init       toggle for first call init=1 and subsequent 
@@ -248,39 +255,39 @@ C non-conflation type calls ("visualization" calls).
      &                                                     iSolVis)
 
 C            Check whether sky and ground diffuse calc. is requested
-             if (i_ground_sky_diff_calc.eq.1) then
+          if (i_ground_sky_diff_calc.eq.1) then
 
-C              Calculate CFC system visual BEAM transmitted
-               call solar_multilayer(i_direct,icomp,isurf,icfctp,
-     &                   EXDIR,tmpIDF,
-     &                   tmpIBM,tmpIDF,iSolVis,
-     &                   TRANSBB_SYSV,TRANSD_SYS_BD,dummy1,AbsSolDir)
+C           Calculate CFC system visual BEAM transmitted
+            call solar_multilayer(i_direct,icomp,isurf,icfctp,
+     &                EXDIR,tmpIDF,
+     &                tmpIBM,tmpIDF,iSolVis,
+     &                TRANSBB_SYSV,TRANSD_SYS_BD,dummy1,AbsSolDir)
 
-C              Calculate CFC system solar SKY diffuse transmitted
-               call solar_multilayer(i_sky,icomp,isurf,icfctp,
-     &                   tmpIBM,EXDIFSKY,
-     &                   tmpIBM,tmpIDF,iSolVis,
-     &                   dummy1,TRANSD_SYS_SKY,dummy2,AbsSolDifSky)
+C           Calculate CFC system solar SKY diffuse transmitted
+            call solar_multilayer(i_sky,icomp,isurf,icfctp,
+     &                tmpIBM,EXDIFSKY,
+     &                tmpIBM,tmpIDF,iSolVis,
+     &                dummy1,TRANSD_SYS_SKY,dummy2,AbsSolDifSky)
 
-C              Calculate CFC system solar GROUND diffuse transmitted
-               call solar_multilayer(i_ground,icomp,isurf,icfctp,
-     &                   tmpIBM,EXDIFGRD,
-     &                   tmpIBM,tmpIDF,iSolVis,
-     &                   dummy1,TRANSD_SYS_GRD,dummy2,AbsSolDifGrd)
+C           Calculate CFC system solar GROUND diffuse transmitted
+            call solar_multilayer(i_ground,icomp,isurf,icfctp,
+     &                tmpIBM,EXDIFGRD,
+     &                tmpIBM,tmpIDF,iSolVis,
+     &                dummy1,TRANSD_SYS_GRD,dummy2,AbsSolDifGrd)
 
-C              Sum up diffuse transmitted contributions (sky + ground)
-               TRANSD_SYSV = TRANSD_SYS_BD +
-     &                       TRANSD_SYS_SKY + TRANSD_SYS_GRD 
-C              Absorbed visual is of no interest
+C           Sum up diffuse transmitted contributions (sky + ground)
+            TRANSD_SYSV = TRANSD_SYS_BD +
+     &                    TRANSD_SYS_SKY + TRANSD_SYS_GRD 
+C           Absorbed visual is of no interest
 
-             else 
-C             Legacy model.
-C             Calculate CFC system visual beam transmitted, diffuse transmitted.
-              call solar_multilayer(i_direct,icomp,isurf,icfctp,
-     &           EXDIR,EXDIF,
-     &           tmpIBM,tmpIDF,iSolVis,TRANSBB_SYSV,TRANSD_SYSV,
-     &           REFL_SYSV,AbsVis)
-             endif
+          else 
+C          Legacy model.
+C          Calculate CFC system visual beam transmitted, diffuse transmitted.
+           call solar_multilayer(i_direct,icomp,isurf,icfctp,
+     &        EXDIR,EXDIF,
+     &        tmpIBM,tmpIDF,iSolVis,TRANSBB_SYSV,TRANSD_SYSV,
+     &        REFL_SYSV,AbsVis)
+          endif
 
 C visual data, normalise to radiation available for output/storing of 
 C fraction. These fractions are used in "casual.F/DWINVT()" as light 
@@ -354,9 +361,10 @@ C       get layer number in CFC
           if (vb_lay.ne.1) then
 C           If it is not "1", then it is an
 C           intermediate blind ... do what? "Not possible"? (!!)
-       write(*,*)' Invalid blind position for Radiance coupling',
-     &           ' in explicit VB mode!'
-cx            return
+            call usrmsg(
+     &            ' Invalid blind position for Radiance coupling ',
+     &            ' in explicit VB mode! Aborting!','W')
+            return
           endif
 
 C----------------------------------------------------------------
@@ -410,8 +418,8 @@ C     in the range of 30 to 50 millimeters either side.
 C -------------------------------------------------------------------
           dy=0.05 ! set fixed value, for now
           
-          x0=0.08
-          y0=0.
+          x0=0.08  ! use lower left corner (?)
+          y0=0.    ! use lower left corner (?)
  
           cfc_width=2.84 ! x0=0.08, x1=2.92
           
@@ -445,10 +453,7 @@ C         Create Venetian type blind description (genblinds) with
 C         current slat angle
 C -------------------------------------------------------------------
 
-C "blinds_30.norm" from model ADIC/Elev1:
-C!genblinds Duraskin blind 1 32.165 44 49 -30 +r 2.5 | xform -s 0.08 -rz -90 -rz  4.118 -t  0.000  -16.408  0.06
-
-C the "scale" used here is normalized to slat width (parameter 
+C the "scale" used in genblind is the slat width (parameter 
 C "depth" in call to genblinds). All other numbers given
 C for the dimension should be calculated accordingly.
 C genblinds mat      name depth width height nslats angle [ -r|+r rcurv ]
@@ -458,14 +463,12 @@ C lower inside left corner (viewed from outside) is 0,0,0 (?!)
 C       -s is the scale, enter slat width in [m] here!
 C               -rotation z, always necessary
 C                       -rotation z should be actual surface azimuth (psazi?)
-C                                  -translation to lower left coordinate of 
-C                                   CFC surface, lift by a small amount (?)
+C                                  -translation to lower left coordinate of CFC surface
 C xform -s 0.08 -rz -90 -rz  4.118 -t  0.000  -16.408  0.06
 C
 C - x and y seem to be switched in Radiance ... (needs checking!)
-C - for some reason, there is a large gap between the split vb-s
-C   of the test model ... (needs checking!)
 C - file handling for non-init calls, i.e. when called on time step basis??
+C   Open/close file? 
 
             ! calculate number of slats necessary to cover height
             nslats=ceiling(vb_height/sp) !+1
