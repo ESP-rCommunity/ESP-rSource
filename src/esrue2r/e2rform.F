@@ -549,7 +549,7 @@ C to treat as 'mkillum'.
       call edisp(iuout,' Creating glazing file. ')
       CALL ERPFREE(iglzfil,ISTAT) ! iglzfil is in e2r commons and is set in e2r main
       CALL ERPFREE(ita2,ISTAT)
-      CALL ERPFREE(icfcfil,ISTAT) ! icfcfil is in e2r commons and is set in e2r main
+cx      CALL ERPFREE(icfcfil,ISTAT) ! icfcfil is in e2r commons and is set in e2r main
       if(ACT_1.eq.'i')then
  10     ltmp72=glzfil ! glzfil is in e2r commons
         dtmp72=glzfil
@@ -590,9 +590,9 @@ C            type of model is to be used?
      &      72,dtmp72,'CFC data file name',IER,nbhelp)
           if(ltmp72(1:2).eq.'  ') goto 14
           cfcfil=ltmp72
-          write(cfcfile,'(a,a)')
-     &           runpath(1:lnrp),cfcfil(1:lnblnk(cfcfil))
-          call FPOPEN(icfcfil,ISTAT,1,4,cfcfile)
+cx          write(cfcfile,'(a,a)')
+cx     &           runpath(1:lnrp),cfcfil(1:lnblnk(cfcfil))
+cx          call FPOPEN(icfcfil,ISTAT,1,4,cfcfile)
         endif
 
       else ! silent mode ... actually, a loop through NBSRIF() would be necessary, here, no?
@@ -606,11 +606,11 @@ C       Open alternative glazing data set file (TMC) if control is active
           call FPOPEN(ita2,ISTAT,1,3,atfile)
         endif
 C       Open cfc file if model has CFC construction
-        if (cfcxst) then
-          write(cfcfile,'(a,a)')runpath(1:lnrp),
-     &                         cfcfil(1:lnblnk(cfcfil))
-          call FPOPEN(icfcfil,ISTAT,1,3,cfcfile)
-        endif
+cx        if (cfcxst) then
+cx          write(cfcfile,'(a,a)')runpath(1:lnrp),
+cx     &                         cfcfil(1:lnblnk(cfcfil))
+cx          call FPOPEN(icfcfil,ISTAT,1,3,cfcfile)
+cx        endif
 
       endif ! silent?
 
@@ -646,12 +646,13 @@ C << a loop through more than one "alternative" sets should be here, no?
       endif
 
 C CFC glazing file
-      if (cfcxst) then
-        WRITE(icfcfil,'(a)') '# Radiance CFC glazing definitions'
-        WRITE(icfcfil,'(a)') 
-     &            '# (first line of file must not be edited)'
-        WRITE(icfcfil,'(a)') '  '
-      endif
+cx      if (cfcxst) then
+cx        WRITE(icfcfil,'(a)') '# Radiance CFC glazing definitions'
+cx        WRITE(icfcfil,'(a)') 
+cx     &            '# (first line of file must not be edited)'
+cx        WRITE(icfcfil,'(a)') '  '
+cx      endif
+
 C Create an opaque materials file. Take all of the materials in
 C the existing mlc db and create a set of properties.
       call edisp(iuout,' creating materials for opaque surfaces. ')
@@ -1372,16 +1373,7 @@ C               Additional entry for alternative data set?
  1175             continue
                 endif
               endif
-C 20/09/2011:
-C treat CFCs different? Or better: If CFC has internal or external blind
-C create one explicitly (at current angle?)?
-c              if (im_cfcltp(izone,icfc,ilay).eq.2) ! layer is blind
-c                create venetian blind ?
-c           
-C                genblind()
-c              endif
 
-C == huh?
             else
               WRITE(outs,'(a,a)')'# skipping transparent surface: ',
      &                                                         zsn(isf)

@@ -29,11 +29,20 @@ C     of Waterloo.
 C
 C ********************************************************************
 
-C it contains the following routines, copyright Achim Geissler:
+C The following routines are included (copyright Achim Geissler):
 C
-C      CFC2rad  Writes Radiance files for CFC constructions. This
-C               subroutine expects that CFC commons are populated!
-C               File names / handles are used via e2r_common.h
+C   CFC2rad            Writes Radiance files for CFC constructions.
+C                      This subroutine expects that CFC commons are 
+C                      populated! File names / handles are used via 
+C                      e2r_common.h
+C
+C   CFCGlazing         Writes glazing materials file for CFC 
+C                      constructions
+C
+C   CFCDetailedBlind   Writes detailed blind generation (genblinds)
+C
+C   CFCCreateBRTDfun   Create detailed glazing model (BRTDfunc) for 
+C                      a CFC glazing description. -- dummy --
 
 
 C ********************************************************************
@@ -57,6 +66,8 @@ C
 C Call parameters
 C   init       toggle for first call init=1 and subsequent 
 C              calls (slat angle control) init=0
+C <<   file handling? For init, assume file(s) open, for subsequent
+C      calls open / close, here? >>
 C   icomp      zone 
 C   isurf      surface
 C   ExplicitVB toggle - if true, then explicit (genblinds) model is
@@ -67,7 +78,8 @@ C              false, then standard "glass" material is used for
 C              glazing
 C
 C Return values
-C   None (?)   >> writes Radiance definitions to file 'icfcfil'
+C   None (?)   >> writes Radiance definitions for CFC constructions
+C                 to files 'imatfil' and 'icfcfil'
 C
 C ********************************************************************
       subroutine CFC2rad(init,icomp,isurf,ExplicitVB,BRTDfunc)
@@ -84,39 +96,25 @@ C Parameters
       logical ExplicitVB,BRTDfunc
 
 C Commons
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
+      
+      COMMON/CFCtemp/firstzone,lastzone,lasttype
+      integer firstzone,lastzone,lasttype
 
 C Local variables
       real r,PI,incang,srefl
-      real sw,sp,phi,crown,wr,sth,tilt
-      real x0,y0,z0,cfc_width,cfc_height
-      real dy,vb_width,vb_height
       real VTDIR,VTDIF,VTRAN,gvt1,gvt
 
-      integer ne,i,itype,nslats,icfctp,icn,vb_lay
+      integer ne,i,iz,im,itype,icfctp,icn,vb_lay
+c      integer ne,iz,im,itype,nslats,icfctp,icn,vb_lay
+      logical firstzisset
 
-      character matname*72,cmdstr*144,transfstr*144,glaznam*72
+      character matname*72
 
-C *** from solar.F ***
-C Local variables for CFCs
-      real proang
-      real CFCabs
-      real TRANSBB_SYSV,TRANSD_SYSV,REFL_SYSV,CFCabsV
-      real TRANSD_SYS_BD,TRANSD_SYS_SKY,TRANSD_SYS_GRD
-      real dummy1,dummy2
-      real tmpIBM,tmpIDF,EXDIR,EXDIF,EXDIFSKY,EXDIFGRD
-      real AbsSolDir,AbsSolDifGrd,AbsSolDifSky,AbsVis
-
-      character ctmp*2
-
-      integer iSolVis ! switch for CFC solar / visual data calculation
-      integer i_direct ! switch for calling solar_multilayer
-
-      DIMENSION AbsSolDir(me),AbsSolDifGrd(me)
-      DIMENSION AbsSolDifSky(me),AbsVis(me)
-
-C ********************
+      integer store_blind_setting
 
 C Function declarations
       integer lnblnk
@@ -131,98 +129,207 @@ C Check if combination of logical parameters is valid
         endif
       endif
 
-cx      write(*,*)' ** CFC2rad ** '
-C Misc preliminary calcs
-      PI = 4.0 * ATAN(1.0)
-      r=PI/180.
+C     Search through model to get first and last CFC ...
+      if (init.eq.1) then
+        firstzisset=.false.
+        do 5 iz=1,ncomp
+          do 10 im=1,nzsur(iz)
+            icfctp=icfcfl(iz,im)
+            if (icfctp.eq.1) then
+              if (.not.firstzisset) then
+                firstzone=iz
+                firstzisset=.true.
+              endif
+              lastzone=iz
+            endif
+            if (icfctp.eq.ncfc(iz)) then
+              lasttype=icfctp
+            endif
+ 10       continue
+  5     continue
+      endif
 
       icfctp=icfcfl(icomp,isurf) ! get type
+
       if (icfctp.ge.1) then ! we have a CFC
 cx        write(*,*)'CFC type ',icfctp
 
         if (BRTDfunc) then !
+          call CFCCreateBRTDfun(init,icomp,isurf)
 
-          ne=ncfc_el(icomp,icfctp) ! number of cfc layers for this type
-
-C         Loop through CFC layers and generate ... 
-
-          do 100 i=1,ne
-            itype=icfcltp(icomp,icfctp,i)
- 
-            if (itype.eq.1) then  ! glass layer
-              if (init.eq.1) then ! initialization, build model
-                write(*,*)' ** not implemented! **'
-                return
-C               ----------------------------------------------------------
-C               Create BRTDfunc from glazing layer properties ...
-C               ----------------------------------------------------------
-
-C               ... the BRTD-generation requires
-C               knowledge of the individual glass layers 
-C               - set up to use IGDB index?
-C               - or "file" name (product / coating name)?
-
-C               Step 1:
-c                 call glaze with layer buildup acc. to CFC description
-c                 (without (!) blind)
-
-C             Step 2:
-c               append output of glaze to materials file from e2r
-
-C             Step 3:
-c               ??
-
-C############################################
-C# Glazing produced by Radiance glaze script
-C# Fri Aug  7 16:14:41 WEDT 2009
-C# Material surface normal points to interior
-C# Number of panes in system: 2
-C# Exterior surface s1 type: clear glass
-C# Inner surface s2 type: SYP YRE0146
-C# Inner surface s3 type: clear glass
-C# Interior surface s4 type: clear glass
-C# Exterior normal hemispherical reflectance: 0.331951826
-C# Interior normal hemispherical reflectance: 0.130844771
-C# Normal hemispherical transmittance: 0.40798918
-C#
-C void BRTDfunc SYP_YRE0146
-C 10
-C if(Rdot,cr(fr(0.074),ft(0.862),fr(0.087)),cr(fr(0.291),ft(0.419),fr(0.074)))
-C if(Rdot,cr(fr(0.077),ft(0.890),fr(0.057)),cr(fr(0.320),ft(0.480),fr(0.077)))
-C if(Rdot,cr(fr(0.079),ft(0.886),fr(0.135)),cr(fr(0.371),ft(0.458),fr(0.079)))
-C ft(0.862)*ft(0.419)
-C ft(0.890)*ft(0.480)
-C ft(0.886)*ft(0.458)
-C        0 0 0
-C        glaze2.cal
-C 0
-C 9
-C        0 0 0
-C        0 0 0
-C        0 0 0
-
-C      e2rform.F, line 596 ff.:
-c      WRITE(iglzfil,'(a)') 'void  glass  unknown_glz'
-c      WRITE(iglzfil,'(a)') '0 '
-c      WRITE(iglzfil,'(a)') '0 '
-c      WRITE(iglzfil,'(a)') '3    0.87    0.87    0.87'
-c      WRITE(iglzfil,'(a)') '  '
-
-
-C void alias ADIC_CFC SYP_YRE0146
-
-              else ! not init
-                ! ??? what here? 
-                ! Actually, for "not BRTDfunc", the above material would need to be
-                ! replaced / updated if blind setting has changed ...
-              endif ! init for itype glass
-            endif ! itype
-100       continue ! CFC layer loop
-
-        else ! use 'glass', not BRTDfunc
+        else ! use 'glass'
           if (ExplicitVB) then
+            store_blind_setting=i_shd(icomp,icfctp)
             i_shd(icomp,icfctp)=0 ! glazing data is w/o blind
           endif
+
+C         Write glazing materials file for CFC construction
+          call CFCGlazing(icomp,isurf)
+
+          if (ExplicitVB) then
+C           Restore blind position
+            i_shd(icomp,icfctp)=store_blind_setting
+          endif
+
+        endif ! BRTDfunc ?
+
+C Glass data is set and Radiance data written. Now the blind
+C is generated, if "Explicit".
+
+        if (ExplicitVB) then
+
+C         get layer number in CFC 
+          ne=ncfc_el(icomp,icfctp) ! number of cfc layers for this type
+          do 110 i=1,ne
+            itype=icfcltp(icomp,icfctp,i)
+            if (itype.eq.2) vb_lay=i
+  110     continue
+
+          if (vb_lay.ne.1) then
+C           If it is not "1", then it is an
+C           intermediate blind ... do what? "Not possible"? (!!)
+            call usrmsg(
+     &            ' Invalid blind position for Radiance coupling ',
+     &            ' in explicit VB mode! Aborting!','W')
+            return
+          endif
+
+          if (init.eq.1) then    
+            ! Generate slat material description and append to 
+            ! materials file imatfil (which is assumed open!)
+
+            icn=IZSTOCN(icomp,isurf)
+            WRITE(matname,'(5a,I1)') 'vb_',
+     &                    SSMLCN(icn)(1:lnblnk(SSMLCN(icn))),'_',
+     &                    SSNAME(icn)(1:lnblnk(SSNAME(icn))),'_',
+     &                    icomp
+
+C           Check for transmission of slat material, if > zero,
+C           use "trans" material. Otherwise "plastic"
+            if (visT(icomp,icfctp,vb_lay).gt.0.0) then
+            ! material 'trans'
+              WRITE(imatfil,'(2a)') 
+     &             'void trans ',matname(1:lnblnk(matname))
+              WRITE(imatfil,'(a)') '0 '
+              WRITE(imatfil,'(a)') '0 '
+              srefl=visRf(icomp,icfctp,vb_lay)
+C t_red t_green t_blue specularity roughness transmissivity transmitted_specular
+              WRITE(imatfil,'(a,3F5.2,a,F5.2,a)')
+     &              '7 ',srefl,srefl,srefl,' 0.01 0.10 ',
+     &              visT(icomp,icfctp,vb_lay),'  0.97'
+              WRITE(imatfil,'(a)') '  '
+
+            else ! material 'plastic'
+              WRITE(imatfil,'(2a)') 
+     &             'void plastic ',matname(1:lnblnk(matname))
+              WRITE(imatfil,'(a)') '0 '
+              WRITE(imatfil,'(a)') '0 '
+C 'back' vs. 'front' concept in Radiance for blind??
+              srefl=visRf(icomp,icfctp,vb_lay)
+C t_red t_green t_blue specularity roughness
+              WRITE(imatfil,'(a,3F5.2,a)')
+     &              '5 ',srefl,srefl,srefl,' 0 0 '
+              WRITE(imatfil,'(a)') '  '
+            endif ! slat transmissivity?
+
+C==??? ... also automatically generate blind casing obstruction for
+C          explicit blind ???
+
+          endif ! blind init, i.e. write materials file
+
+C         Generate detailed blind description and write to
+C         file icfcfil
+          call CFCDetailedBlind(icomp,isurf)
+
+        endif ! ExplicitVB
+
+      endif ! CFC type >= 1 (i.e. it is actually a CFC)
+
+      return
+      end
+
+
+C ********************************************************************
+C                         -- CFCGlazing --
+C
+C Create Radiance glazing material definition for CFC surfaces.
+C 
+C Created by: Achim Geissler
+C Initial Creation: June 2012
+C 
+C Call parameters
+C   icomp      zone 
+C   isurf      surface
+C
+C Return values
+C   None (?)   >> writes Radiance definitions to file 'icfcfil'
+C
+C ********************************************************************
+      subroutine CFCGlazing(icomp,isurf)
+
+      IMPLICIT NONE
+#include "building.h"
+#include "geometry.h"
+#include "CFC_common.h"
+#include "e2r_common.h"
+
+C Parameters
+      integer icomp,isurf
+
+C Commons
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
+
+      COMMON/CFCtemp/firstzone,lastzone,lasttype
+      integer firstzone,lastzone,lasttype
+
+C Local variables for CFCs
+      integer icfctp,icn,ISTAT
+
+      real incang
+      real VTDIR,VTDIF,VTRAN,gvt1,gvt
+
+      real proang,CFCabs
+      real TRANSBB_SYSV,TRANSD_SYSV,REFL_SYSV,CFCabsV
+      real TRANSD_SYS_BD,TRANSD_SYS_SKY,TRANSD_SYS_GRD
+      real dummy1,dummy2
+      real tmpIBM,tmpIDF,EXDIR,EXDIF,EXDIFSKY,EXDIFGRD
+      real AbsSolDir,AbsSolDifGrd,AbsSolDifSky,AbsVis
+
+      character glaznam*72,cfcfile*72
+
+      integer iSolVis ! switch for CFC solar / visual data calculation
+      integer i_direct ! switch for calling solar_multilayer
+
+      DIMENSION AbsSolDir(me),AbsSolDifGrd(me)
+      DIMENSION AbsSolDifSky(me),AbsVis(me)
+
+C Function declarations
+      integer lnblnk
+
+
+      icfctp=icfcfl(icomp,isurf) ! get type
+
+C     Write header only once!
+C     File is closed in CFCDetailedBlind() !
+      if (icomp.eq.firstzone .and. icfctp.eq.1) then
+        CALL ERPFREE(icfcfil,ISTAT) ! icfcfil is in e2r commons and is set in e2r main
+
+        write(cfcfile,'(a,a)')
+     &           runpath(1:lnrp),cfcfil(1:lnblnk(cfcfil))
+        call FPOPEN(icfcfil,ISTAT,1,3,cfcfile)
+
+        IF(ISTAT.LT.0)THEN
+          call usrmsg(' Problem detected while opening:',cfcfil,'W')
+c          IER=1
+          return
+        ENDIF
+
+        WRITE(icfcfil,'(a)')'# Radiance CFC glazing definitions'
+        WRITE(icfcfil,'(a)')
+     &               '# (first line of file must not be edited)'
+        WRITE(icfcfil,'(a)')'  '
+      endif
 
 cx          write(*,*)'CFC type ',icfctp,', vb on/off: ',
 cx     &              i_shd(icomp,icfctp),', vb angle: ',
@@ -236,6 +343,9 @@ C non-conflation type calls ("visualization" calls).
           tmpIBM=0.0   ! interior beam source
           i_direct=0   ! toggle for ... ?
 
+C /sky1/ common holds 'irdoy' - day of year and 'rtime' - time of day
+C appropriate values for the below could be derived from this ...
+
           EXDIR=10.    ! does this matter for calculated values?
           EXDIF=10.    ! A better approach would be to use 
           EXDIFSKY=5.  ! some kind of realistic values based on
@@ -244,17 +354,16 @@ C non-conflation type calls ("visualization" calls).
           incang=55. ! this should be calculated acc. to actual
                      ! situation ...
 
-          iSolVis=1  ! calculate visual properties
+          iSolVis=1  ! calculate visual properties, only
 
-          ! Determine values corresponding to current incidence 
-          ! angle (??) on surface, values include (optional) blinds 
-          ! at current blind angle
+          ! values include (optional) blinds 
+          ! at current blind angle!
           call profile_angle(icomp,isurf,icfctp,proang)
 
           call cfc_eff_opt_prop(icomp,isurf,icfctp,incang,proang,
      &                                                     iSolVis)
 
-C            Check whether sky and ground diffuse calc. is requested
+C         Check whether sky and ground diffuse calc. is requested
           if (i_ground_sky_diff_calc.eq.1) then
 
 C           Calculate CFC system visual BEAM transmitted
@@ -327,6 +436,7 @@ C ******************************************************************
             gvt1=0.02
             gvt=0.02
           endif
+
 C         Write glazing material to file. Use construction name
 C         extended with surface name and zone number (the same 
 C         construction can be used by different CFC layer setups 
@@ -343,72 +453,60 @@ C         / blind settings(!) spread over more than one zone
           WRITE(icfcfil,'(a,3F6.2)') '3  ',gvt,gvt,gvt
           WRITE(icfcfil,'(a)') '  '
 
-        endif ! BRTDfunc ?
+      return
+      end
 
-C Glass data is set and Radiance data written. Now the blind
-C is generated, if "Explicit".
 
-        if (ExplicitVB) then
-          write(*,*)' ** not implemented (2)! **'
+C ********************************************************************
+C                         -- CFCDetailedBlind --
+C
+C Create Radiance definition for explicit blind model (ExplicitVB
+C true) 
+C 
+C Created by: Achim Geissler
+C Initial Creation: June 2012
+C 
+C Call parameters
+C   icomp      zone 
+C   isurf      surface
+C
+C Return values
+C   None (?)   >> writes Radiance definitions to file 'icfcfil'
+C
+C ********************************************************************
+      subroutine CFCDetailedBlind(icomp,isurf)
 
-C       get layer number in CFC 
-          ne=ncfc_el(icomp,icfctp) ! number of cfc layers for this type
-          do 110 i=1,ne
-            itype=icfcltp(icomp,icfctp,i)
-            if (itype.eq.2) vb_lay=i
-  110     continue
+      IMPLICIT NONE
+#include "building.h"
+#include "geometry.h"
+#include "CFC_common.h"
+#include "e2r_common.h"
 
-          if (vb_lay.ne.1) then
-C           If it is not "1", then it is an
-C           intermediate blind ... do what? "Not possible"? (!!)
-            call usrmsg(
-     &            ' Invalid blind position for Radiance coupling ',
-     &            ' in explicit VB mode! Aborting!','W')
-            return
-          endif
+C Parameters
+      integer icomp,isurf
 
-C----------------------------------------------------------------
-C         Initialization?
-C----------------------------------------------------------------
-          if (init.eq.1) then    ! initialization, once-off steps
-            ! Generate slat material description and append to 
-            ! materials file 
+C Commons
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
 
-C           Check for transmission of slat material, if > zero,
-C           use "trans" material. Otherwise "plastic"
-            icn=IZSTOCN(icomp,isurf)
-            WRITE(matname,'(5a,I1)') 'vb_',
-     &                    SSMLCN(icn)(1:lnblnk(SSMLCN(icn))),'_',
-     &                    SSNAME(icn)(1:lnblnk(SSNAME(icn))),'_',
-     &                    icomp
+      COMMON/CFCtemp/firstzone,lastzone,lasttype
+      integer firstzone,lastzone,lasttype
 
-            if (visT(icomp,icfctp,vb_lay).gt.0.0) then
-            ! material 'trans'
-              WRITE(imatfil,'(2a)') 
-     &             'void trans ',matname(1:lnblnk(matname))
-              WRITE(imatfil,'(a)') '0 '
-              WRITE(imatfil,'(a)') '0 '
-              srefl=visRf(icomp,icfctp,vb_lay)
-C t_red t_green t_blue specularity roughness transmissivity transmitted_specular
-              WRITE(imatfil,'(a,3F5.2,a,F5.2,a)')
-     &              '7 ',srefl,srefl,srefl,' 0.01 0.10 ',
-     &              visT(icomp,icfctp,vb_lay),'  0.97'
-              WRITE(imatfil,'(a)') '  '
+C Local variables
+      integer icfctp,icn,nslats,ISTAT
 
-            else ! material 'plastic'
-              WRITE(imatfil,'(2a)') 
-     &             'void plastic ',matname(1:lnblnk(matname))
-              WRITE(imatfil,'(a)') '0 '
-              WRITE(imatfil,'(a)') '0 '
-C 'back' vs. 'front' concept in Radiance for blind??
-              srefl=visRf(icomp,icfctp,vb_lay)
-C t_red t_green t_blue specularity roughness
-              WRITE(imatfil,'(a,3F5.2,a)')
-     &              '5 ',srefl,srefl,srefl,' 0 0 '
-              WRITE(imatfil,'(a)') '  '
-            endif ! slat transmissivity?
+      real sw,sp,phi,crown,wr,sth,tilt
+      real x0,y0,z0,cfc_width,cfc_height
+      real dy,vb_width,vb_height
 
-          endif ! init for blind
+      character matname*72,cmdstr*144,transfstr*144
+
+C Function declarations
+      integer lnblnk
+
+
+C Actual tasks
+      icfctp=icfcfl(icomp,isurf) ! get type
 
 C -------------------------------------------------------------------
 C     Get lower left corner of CFC surface and surface width
@@ -416,7 +514,38 @@ C     The Venetian type blind will be created wider by 2 x dy, so that
 C     it overlaps the glazing area. Typically such an overlap will be
 C     in the range of 30 to 50 millimeters either side.
 C -------------------------------------------------------------------
+
+
+cx====
           dy=0.05 ! set fixed value, for now
+
+CCC e2rform.F, line 1406 ff.
+C Shift surface inwards by 3mm (only if extern=true).
+c            N=NVER(isf)
+C            if (extern) then
+c              vdis = -0.003
+
+C Find transformation matrices that normalise face.
+c              call PLEQN(XX,YY,ZZ,N,VP,EQN,IERR)
+c              IF (IERR .NE. 0)then
+c                write(outs,'(a,a)') ' PLEQN problem with ',zsn(isf)
+c                call edisp(itru,outs)
+c              endif
+c              DO 352 K = 1,3
+c                TRNS(k)=EQN(k)*vdis
+c  352         continue
+C            else
+C              TRNS(1)= 0.00
+C              TRNS(2)= 0.00
+C              TRNS(3)= 0.00
+C            endif
+c            do 353 k=1,N
+c              XT(k)=XX(k)+TRNS(1)
+c              YT(k)=YY(k)+TRNS(2)
+c              ZT(k)=ZZ(k)+TRNS(3)
+c  353       continue
+
+cx=====
           
           x0=0.08  ! use lower left corner (?)
           y0=0.    ! use lower left corner (?)
@@ -477,6 +606,12 @@ C   Open/close file?
             vb_width=vb_width/sw
             vb_height=vb_height/sw
 
+            icn=IZSTOCN(icomp,isurf)
+            WRITE(matname,'(5a,I1)') 'vb_',
+     &                    SSMLCN(icn)(1:lnblnk(SSMLCN(icn))),'_',
+     &                    SSNAME(icn)(1:lnblnk(SSNAME(icn))),'_',
+     &                    icomp
+
             WRITE(cmdstr,
      &             '(3a,I1,a,I1,a,F7.2,a,F6.2,a,I3,a,F5.1,a,F5.3)') 
      &             '!genblinds ',matname(1:lnblnk(matname)),
@@ -496,9 +631,128 @@ C   Open/close file?
      &                            transfstr(1:lnblnk(transfstr))
             WRITE(icfcfil,'(a)') '  '
 
-        endif ! ExplicitVB
-      endif ! CFC type >= 1 (i.e. it is actually a CFC)
+C     File is opened in subroutine CFCGlazing()!
+C     Free file handle after last CFC is written
+      if (icomp.eq.lastzone .and. icfctp.eq.lasttype) then
+        CALL ERPFREE(icfcfil,ISTAT)
+      endif
 
       return
       end
 
+
+C ********************************************************************
+C                         -- CFCCreateBRTDfun --
+C
+C Create detailed glazing model (BRTDfunc) for a CFC glazing
+C description.
+C
+C Created by: Achim Geissler
+C Initial Creation: June 2012
+C 
+C Call parameters
+C   init       toggle for first call init=1 and subsequent 
+C              calls (slat angle control) init=0
+C   icomp      zone 
+C   isurf      surface
+C
+C Return values
+C   None (?)   >> writes Radiance definitions to file 'icfcfil'
+C
+C ********************************************************************
+      subroutine CFCCreateBRTDfun(init,icomp,isurf)
+
+      IMPLICIT NONE
+#include "building.h"
+#include "geometry.h"
+#include "CFC_common.h"
+#include "e2r_common.h"
+
+C Parameters
+      integer init,icomp,isurf
+
+C Local variables
+      integer i,ne,icfctp,itype
+
+      write(*,*)' ** not implemented! **'
+      return
+
+      if (init.eq.1) then ! initialization, build model
+
+        icfctp=icfcfl(icomp,isurf) ! get type
+
+        ne=ncfc_el(icomp,icfctp) ! number of cfc layers for this type
+
+C       Loop through CFC layers and generate ... 
+
+        do 100 i=1,ne
+          itype=icfcltp(icomp,icfctp,i)
+ 
+          if (itype.eq.1) then  ! glass layer
+C         ----------------------------------------------------------
+C         Create BRTDfunc from glazing layer properties ...
+C         ----------------------------------------------------------
+
+C         ... the BRTD-generation requires
+C         knowledge of the individual glass layers 
+C         - set up to use IGDB index?
+C         - or "file" name (product / coating name)?
+
+C         Step 1:
+c           call glaze with layer buildup acc. to CFC description
+c           (without (!) blind)
+
+C         Step 2:
+c           append output of glaze to materials file from e2r
+
+C         Step 3:
+c           ??
+
+C############################################
+C# Glazing produced by Radiance glaze script
+C# Fri Aug  7 16:14:41 WEDT 2009
+C# Material surface normal points to interior
+C# Number of panes in system: 2
+C# Exterior surface s1 type: clear glass
+C# Inner surface s2 type: SYP YRE0146
+C# Inner surface s3 type: clear glass
+C# Interior surface s4 type: clear glass
+C# Exterior normal hemispherical reflectance: 0.331951826
+C# Interior normal hemispherical reflectance: 0.130844771
+C# Normal hemispherical transmittance: 0.40798918
+C#
+C void BRTDfunc SYP_YRE0146
+C 10
+C if(Rdot,cr(fr(0.074),ft(0.862),fr(0.087)),cr(fr(0.291),ft(0.419),fr(0.074)))
+C if(Rdot,cr(fr(0.077),ft(0.890),fr(0.057)),cr(fr(0.320),ft(0.480),fr(0.077)))
+C if(Rdot,cr(fr(0.079),ft(0.886),fr(0.135)),cr(fr(0.371),ft(0.458),fr(0.079)))
+C ft(0.862)*ft(0.419)
+C ft(0.890)*ft(0.480)
+C ft(0.886)*ft(0.458)
+C        0 0 0
+C        glaze2.cal
+C 0
+C 9
+C        0 0 0
+C        0 0 0
+C        0 0 0
+
+C      e2rform.F, line 596 ff.:
+c      WRITE(iglzfil,'(a)') 'void  glass  unknown_glz'
+c      WRITE(iglzfil,'(a)') '0 '
+c      WRITE(iglzfil,'(a)') '0 '
+c      WRITE(iglzfil,'(a)') '3    0.87    0.87    0.87'
+c      WRITE(iglzfil,'(a)') '  '
+
+
+C void alias ADIC_CFC SYP_YRE0146
+
+          endif ! itype
+100     continue ! CFC layer loop
+
+      else ! not init
+        ! ??? what here? 
+      endif ! init
+
+      return
+      end

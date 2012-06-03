@@ -724,6 +724,9 @@ C Attempt to read in file, note it is assumed to be one line.
         elseif(OUTSTR(1:11).eq. '# sky patch')then
           write(rskyfil,'(a)') cmdname(1:lnblnk(cmdname))
           skydone=.true.
+        elseif(OUTSTR(1:34).eq.'# Radiance CFC glazing definitions')then
+c          write(rofil,'(a)') cmdname(1:lnblnk(cmdname))
+c          outdone=.true.
         else
 
 C << needs to be fixed to hold additional (say 10) scene files >>
