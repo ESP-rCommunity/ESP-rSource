@@ -1796,7 +1796,7 @@ C building results library file ***(in work)***
       iRootLen=lnblnk(LocalWords(IW))
       iRootLen=iRootLen-4
 
-      write(cOutputRoot,'(A)'),LocalWords(IW)(1:iRootLen)
+      write(cOutputRoot,'(A)')LocalWords(IW)(1:iRootLen)
 c      CALL GenerateOutput
       CALL GenerateOutput(cOutputRoot(1:iRootLen))
 c      CALL REP_XML_SUMMARY(cOutputRoot(1:iRootLen))

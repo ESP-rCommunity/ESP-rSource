@@ -1697,6 +1697,7 @@ C To generate coefficients for mass balance equations
         Cas=PCDATF(IPCOMP,2)
         Cpam=PCDATF(IPCOMP,6)
         Cd=PCDATF(IPCOMP,7)
+        CdP=Cd ! ? Forcheck complains about missing CdP, however, Cd is also used further down ...
         Ga1=PCDATF(IPCOMP,10)
         Ts3=CSVF(INOD2,1)
 

@@ -72,6 +72,7 @@ c      USE Building
 #include "control.h"
 #include "CFC_common.h"
 #include "blc25_open_windows.h"
+#include "tdf2.h"
 C.....Passed variable
       integer iZone            ! Zone number
 
@@ -158,18 +159,6 @@ C .... should be climate data:
 C.....Surface orientation flags
       common/SurfInfo/iSurfOrient(MCOM,MS)
       integer iSurfOrient
-
-C Temporal db commons.
-      COMMON/TDFFLG2/IALLCLM,ICASUAL(MCOM),IZIVENT(MCOM),IRAIRVL(MCOM),
-     &       ISETPTT(MCOM),ICTLSTA(MCOM),ISKYLUX,IDBTEXT,IWINDVL,
-     &       IWINDDR,IRELHUM,IDIFHSL,IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,
-     &       ISKYTMP,IGLOVRT,ICASUAL3(MCOM),IACTIV(MCOM),
-     &       IBIDIRS(MCOM,MS),IVERSOL(MCOM,MS),IHTCLSETP(MCOM),
-     &       IDBTZNM(MCOM)
-      integer IALLCLM,ICASUAL,IZIVENT,IRAIRVL,ISETPTT,ICTLSTA
-      integer ISKYLUX,IDBTEXT,IWINDVL,IWINDDR,IRELHUM,IDIFHSL
-      integer IDIRSOL,IGLOHSL,IOBJVEL,IOBJDIR,ISKYTMP,IGLOVRT
-      integer ICASUAL3,IACTIV,IBIDIRS,IVERSOL,IHTCLSETP,IDBTZNM
 
 C Common for occupant/lighting/equipment sensible convective, sensible
 C radiant and latent W for future and present in each zone.
