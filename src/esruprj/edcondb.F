@@ -1482,8 +1482,12 @@ C If a long list include page facility text.
       ENDIF
       MLCITM(M+2)='# view g-value'
       MLCITM(M+3)='1 add/delete/copy/invert    '
-      MLCITM(M+4)='! list database contents    '
-      MLCITM(M+5)='> save database             '
+      MLCITM(M+4)='! list contents    '
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        MLCITM(M+5)='> save data                 '
+      else
+        MLCITM(M+5)='> save common data          '
+      endif
       MLCITM(M+6)='? help                      '
       MLCITM(M+7)='- exit this menu            '
       INO=-4
