@@ -2258,6 +2258,9 @@ C moddb is from version manager
 C APP is 4 character file name modifier (from version facility)
 C     if blank then no file name change implied.
 
+C If we are pointing to a file in the common folder then we should
+C warn the user when attempting to update that file.
+
       SUBROUTINE EDDBMLCON(moddb,modcon,APP)
 #include "building.h"
 #include "model.h"
@@ -2285,6 +2288,7 @@ C      CHARACTER outs248*248
       LOGICAL OK,XST,DOK
       character cfgroot*24,LCFGF*72
       character dinstpath*60,path*72,dirpath*72
+      character sfile*72,snpfile*72
 
 C Local strings for user selections dependent on graphic library.
       character opte*28,optf*28,optg*28
@@ -2360,13 +2364,9 @@ C text or X11 option e edits the string while for GTK there are two
 C options to browse for files in ../dbs or the esp-r distribution.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       if(iglib.eq.1.or.iglib.eq.3)then
-        opte='e select from model ../dbs'
-        optf='   '
-        optg='   '
+        optf='f not applicable   '
       elseif(iglib.eq.2)then
-        opte='e select from model ../dbs'
-        optf='f browse esp-r distribution'
-        optg='g make copy of another file'
+        optf='f make copy of another file'
       endif
 
       IF(.NOT.XST)THEN
@@ -2376,10 +2376,13 @@ C If db does not exist locally offer limited choices.
         isw=0
         call MENUATOL('  ','Constructions',
      &    ' ','b select from list',
-     &    'c create new constructions','d copy standard constructions',
-     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
+     &    'c select from model ../dbs',
+     &    'd copy default constructions',
+     &    'e copy constructions from common',optf,
+     &    'g create new constructions',' ',' ',' ',' ',' ',
+     &    isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
-        if(isw.eq.7)copydef=.false.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       elseif(longtfile(1:ldirpath).eq.dirpath(1:ldirpath))then
 
 C If standard file then offer the following choices (incl /):
@@ -2387,8 +2390,11 @@ C If standard file then offer the following choices (incl /):
         isw=0
         call MENUATOL('  ','Constructions',
      &    'a browse/edit','b select from list',
-     &    'c create new constructions','d copy standard constructions',
-     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
+     &    'c select from model ../dbs',
+     &    'd copy default constructions',
+     &    'e copy constructions from common',optf,
+     &    'g create new constructions',' ',' ',' ',' ',' ',
+     &    isw,idno,nbhelp)
         copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
@@ -2397,8 +2403,11 @@ C If standard file then offer the following choices (without /):
         isw=0
         call MENUATOL('  ','Constructions <std>',
      &    'a browse/edit','b select from list',
-     &    'c create new constructions','d copy it to model',
-     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
+     &    'c select from model ../dbs',
+     &    'd copy default constructions',
+     &    'e copy constructions from common',optf,
+     &    'g create new constructions',' ',' ',' ',' ',' ',
+     &    isw,idno,nbhelp)
         copydef=.false.
       else
 
@@ -2407,19 +2416,26 @@ C default file or the current file.
         idno=1
         isw=0
         call MENUATOL('  ','Constructions <mod>',
-     &    'a browse/edit db','b select from list',
-     &    'c create new constructions','d copy standard constructions',
-     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
+     &    'a browse/edit','b select from list',
+     &    'c select from model ../dbs',
+     &    'd copy default constructions',
+     &    'e copy constructions from common',optf,
+     &    'g create new constructions',' ',' ',' ',' ',' ',
+     &    isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
-        if(isw.eq.7)copydef=.false.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       endif
 
 C Act on the users choice. If no choice, return to calling menu.
+
+C << note the order in the menu changed but the blocks of code
+C << have not yet been re-arranged to reflect this only the 
+C << elseif isw index has been changed.
+
       if(isw.eq.0)then
-        return
+        return   ! user requested to exit
       elseif(isw.eq.1)then
 
-C << to here >>
 C If file exists read it and enter editing facility after
 C check to see if it is local or standard or absolute path.
         if(XST)then
@@ -2433,10 +2449,19 @@ C check to see if it is local or standard or absolute path.
         endif
       elseif(isw.eq.2)then
 
-C There is no select by list for constructions.
-        call edisp(iuout,'No list select for constructions.')
-        goto 60
-      elseif(isw.eq.3)then
+C Allow user to select from the distribution databases folder for an
+C constructions file. If moddb was set to true then proceed to edit
+C the constructions.
+        numhelp=nbhelp
+        lltmp='  '
+        call usecommondbsfile('mlc',numhelp,lltmp,istat,moddb)
+        if(istat.eq.0.and.moddb)then
+          goto 44
+        else
+          goto 60
+        endif
+
+      elseif(isw.eq.7)then
 
 C No MLC db found so set-up minimal common block, create
 C a new db, populate it and present editing facility. Use the
@@ -2495,13 +2520,12 @@ C Scan the new file and use the editing facility.
           goto 44
         endif
 
-      elseif(isw.eq.4.or.isw.eq.7)then
+      elseif(isw.eq.4.or.isw.eq.6)then
 
-C Copy a file to project dbs folder. If iws is 4 then the
-C user has asked for the default file. If isw is 7 then the
-C user wishes to browse for the source file. Suggest a local
-C file name based on the project root name.  Update common to
-C reflect it is local.
+C Copy the default common file to model dbs folder. If iws is 4 then the
+C user has asked for the default file. If isw is 6 add user dialog for
+C which file. Suggest a local file name based on the project root name. 
+C Update common to reflect it is local.
         allowbrowse=.false.
         numhelp=nbhelp
         lltmp='  '
@@ -2515,7 +2539,7 @@ C reflect it is local.
           goto 44
         endif
 
-      elseif(isw.eq.5)then
+      elseif(isw.eq.3)then
 
 C Allow user to select from the model ../dbs folder for an
 C constructions file. If moddb was set to true then proceed to edit
@@ -2529,7 +2553,7 @@ C the constructions.
           goto 60
         endif
 
-      elseif(isw.eq.6)then
+      elseif(isw.eq.5)then
 
 C Browse distribution database folder. Setup LCOPY to point to
 C the database folder (but no particular file). Use easkf to
@@ -2553,8 +2577,25 @@ C common block will be updated with call to findwhichdbpath.
           moddb=.true.
           goto 44
         else
-          call usrmsg('Browse feature not available.',' ','W')
-          goto 60
+
+C Create a menu list of files in the distribution databases folder.
+          sfile=' '
+          snpfile=' '
+          call browsefilelist('p','dbm','fil',sfile,snpfile,nfile,iier)
+          call usrmsg('List of files in databases folder.',' ','W')
+
+          copydef=.false.
+          allowbrowse=.true.
+          numhelp=nbhelp
+          lltmp='  '
+          call copycommonfile('mlc',copydef,allowbrowse,
+     &      numhelp,lltmp,istat,moddb)
+          if(istat.eq.1)then
+            LFMUL=lprev
+            goto 60  ! cancel detected, restore name and redisplay menu.
+          elseif(istat.eq.0)then
+            goto 44
+          endif
         endif
       endif
 
@@ -2596,10 +2637,10 @@ C the ascii version and if it exists, offer to convert it.
         MLDBOK=.false.
         goto 60
       endif
-      moddb=modmlc
+      moddb=modmlc   ! remember if changes made
       modcon=modmlc
+      goto 60        ! re-display the constructions menu
 
-      return
       end
 
 C ********** EDDBOPT
@@ -4802,6 +4843,7 @@ C Local variables:
       
 C Local strings for user selections dependent on graphic library.
       character lpath*72,fname*72 ! for use with fdroot
+      character sfile*72,snpfile*72
 
       integer lndbp   ! for length of standard database path
       integer ier
@@ -4917,8 +4959,39 @@ C Create a general fall-back file name.
         sourcefile = defaultfile
       else
         call edisp(iuout,'  ')  ! echo blank line
-        CALL EASKXORGTKF(lguess,sourcemsg,'Confirm:',
-     &    defaultfile,lltmp,'sourcefile name',IER,numhelp)
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+
+C Use the standard ESP-r folder browse facility.
+          sfile=' '
+          snpfile=' '
+          call edisp(iuout,' ')
+          call browsefilelist('?','dbm','fil',sfile,snpfile,nfile,iier)
+          if(nfile.gt.0)then
+            sfile=' '
+            snpfile=' '
+            call browsefilelist('b','dbm','fil',sfile,snpfile,nfile,
+     &        iier)
+            if(snpfile(1:2).ne.'  ')then
+              lndbp=lnblnk(standarddbpath)
+              write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &          snpfile(1:lnblnk(snpfile))
+C Debug.
+              if(unixok) write(6,*) lltmp
+            else
+
+C User did not select a file. Take them back to the question.
+              call usrmsg('You did not select any existing file.',
+     &          'Canceling the action.','W')
+              moddb=.false.
+              istat=1
+              return  ! cancel detected, restore name and redisplay menu.
+            endif
+          endif
+        elseif(iglib.eq.2)then
+          CALL EASKXORGTKF(lguess,sourcemsg,'Confirm:',
+     &      defaultfile,lltmp,'sourcefile name',IER,numhelp)
+        endif
         sourcefile = lltmp   ! remember this
 
 C If user request jump back and re-display the menu.
@@ -5234,7 +5307,7 @@ C Use the standard ESP-r folder browse facility.
      &      snpfile(1:lnblnk(snpfile))
 
 C Debug.
-          if(unixok) write(6,*) fname
+C          if(unixok) write(6,*) fname
           write(lltmp,'(a)') fname(1:lnblnk(fname))
 
         else
@@ -5279,6 +5352,207 @@ C User did not select a file. Take them back to the question.
       elseif(topic(1:3).eq.'pro')then
         ipathprodb=1  ! signal that it is a local file.
         write(LPRFDB,'(a)') fname(1:lnblnk(fname))
+      else
+
+      endif
+
+C By definition of the filebrowse facility the selected file
+C will exist.
+      istat=0   ! after return use the new file
+      return
+      
+      end
+      
+
+C ******** usecommondbsfile
+C usemodeldbsfile is a general facility to browse files in the
+C distribution databases folder. All files in this folder will 
+C be added to a menu list for selection. Selected file becomes
+C the current common file type and is returned via lltmp.
+      subroutine usecommondbsfile(topic,numhelp,lltmp,istat,moddb)
+#include "building.h"
+#include "model.h"
+#include "esprdbfile.h"
+
+      common/OUTIN/IUOUT,IUIN
+      
+      integer lnblnk  ! function definition
+      
+C Passed parameters:
+      character topic*3   ! which type of file e.g. mat = materials
+                          ! mlc = constructions  opt = optics
+                          ! pdb = plant components  prs = pressure coef
+                          ! msc = active components  mld = mould isopleths
+                          ! pro = event profiles
+      integer numhelp     ! number of help lines from calling code
+      character lltmp*144 ! the returned file name
+      integer istat       ! return status index for calling code
+      logical moddb       ! set true if file name change
+      integer nfile       ! nb of files in dbs folder
+
+C Local variables:
+      character sourcemsg*48     ! dialog for source dialog
+      character sfile*72,snpfile*72,fname*96
+
+      character lguess*144
+      character fs*1
+
+      CHARACTER outs248*248
+      
+C Local strings for user selections dependent on graphic library.
+
+      integer lndbp   ! for length of standard database path
+      integer ier
+      logical unixok  ! to check for database path file separators
+
+C Clear string buffers.
+      lltmp='  '
+      lguess='  '
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Remember current file for the current topic, set message to
+C users and the guess for file name.
+      lndbp=lnblnk(standarddbpath)
+      if(topic(1:3).eq.'mat')then
+        sourcemsg='material properties file (in ../dbs).'   ! dialog
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          write(lguess,'(a)') LFMAT(1:lnblnk(LFMAT)) ! suggested name
+        elseif(ipathmat.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LFMAT(1:lnblnk(LFMAT))
+        endif
+      elseif(topic(1:3).eq.'mlc')then
+        sourcemsg='constructions file (in ../dbs).'
+        if(ipathmul.eq.0.or.ipathmul.eq.1)then
+          lguess=LFMUL  ! use as is
+        elseif(ipathmul.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lfmul(1:lnblnk(lfmul))  ! prepend db folder path
+        endif
+      elseif(topic(1:3).eq.'opt')then
+        sourcemsg='optical properties file (in ../dbs).'
+        if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
+          lguess=LOPTDB  ! use as is
+        elseif(ipathoptdb.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LOPTDB(1:lnblnk(LOPTDB))  ! prepend db folder path
+        endif
+      elseif(topic(1:3).eq.'pdb')then
+        sourcemsg='plant components file (in ../dbs).'
+        if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+          lguess=LPCDB
+        elseif(ipathpcdb.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lpcdb(1:lnblnk(lpcdb))
+        endif
+      elseif(topic(1:3).eq.'prs')then
+        sourcemsg='pressure coefficients file (in ../dbs).'
+        if(ipathapres.eq.0.or.ipathapres.eq.1)then
+          lguess=LPCDB
+        elseif(ipathapres.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lapres(1:lnblnk(lapres))
+        endif
+      elseif(topic(1:3).eq.'msc')then
+        sourcemsg='active components file (in ../dbs).'
+        if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
+          lguess=MCMPDBFL
+        elseif(ipathmsc.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      MCMPDBFL(1:lnblnk(MCMPDBFL))
+        endif
+      elseif(topic(1:3).eq.'mld')then
+        sourcemsg='mould isopleths file (in ../dbs).'
+        if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
+          lguess=lfmould
+        elseif(ipathmsc.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lfmould(1:lnblnk(lfmould))
+        endif
+      elseif(topic(1:3).eq.'pro')then
+        sourcemsg='event profile file (in ../dbs).'
+        if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+          lguess=LPRFDB
+        elseif(ipathprodb.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LPRFDB(1:lnblnk(LPRFDB))
+        endif
+      endif
+
+C Remind user the current common data file.
+      write(outs248,'(4a)') 'Currently using:',
+     &  lguess(1:lnblnk(lguess)),' please identify a ',
+     &  sourcemsg(1:lnblnk(sourcemsg))
+      call edisp248(iuout,outs248,90)
+
+C Use the standard ESP-r folder browse facility.
+      sfile=' '
+      snpfile=' '
+      call edisp(iuout,' ')
+      call browsefilelist('?','dbm','fil',sfile,snpfile,nfile,iier)
+      if(nfile.gt.0)then
+        sfile=' '
+        snpfile=' '
+        call browsefilelist('b','dbm','fil',sfile,snpfile,nfile,iier)
+        if(snpfile(1:2).ne.'  ')then
+          lndbp=lnblnk(standarddbpath)
+          write(fname,'(3a)')standarddbpath(1:lndbp),fs,
+     &      snpfile(1:lnblnk(snpfile))
+
+C Debug.
+C          if(unixok) write(6,*) 'snpfile ',snpfile
+C          if(unixok) write(6,*) 'fname ',fname
+          write(lltmp,'(a)') snpfile(1:lnblnk(snpfile))
+
+        else
+
+C User did not select a file. Take them back to the question.
+          call usrmsg('You did not select any existing file.',
+     &      'Canceling the action.','W')
+          istat=1
+          moddb=.false.
+          return  ! cancel detected, restore name and redisplay menu.
+        endif
+      else
+        call usrmsg('You did not select any existing file.',
+     &    'Canceling the action.','W')
+        istat=1
+        moddb=.false.
+        return  ! cancel detected, restore name and redisplay menu.
+      endif
+
+      moddb=.true.
+      if(topic(1:3).eq.'mat')then
+        ipathmat=2  ! signal that it is a common file.
+        write(LFMAT,'(a)') snpfile(1:lnblnk(snpfile))
+      elseif(topic(1:3).eq.'mlc')then
+        ipathmul=2  ! signal that it will be a common file.
+        write(LFMUL,'(a)') snpfile(1:lnblnk(snpfile))
+      elseif(topic(1:3).eq.'opt')then
+        ipathoptdb=2  ! signal that it will be a common file.
+        write(LOPTDB,'(a)') snpfile(1:lnblnk(snpfile))
+      elseif(topic(1:3).eq.'pdb')then
+        ipathpcdb=2  ! signal that it will be a common file.
+        write(LPCDB,'(a)') snpfile(1:lnblnk(snpfile))
+      elseif(topic(1:3).eq.'prs')then
+        ipathapres=2  ! signal that it is a common file.
+        write(lapres,'(a)') snpfile(1:lnblnk(snpfile))
+      elseif(topic(1:3).eq.'msc')then
+        ipathmsc=2  ! signal that it will be a common file.
+        write(MCMPDBFL,'(a)') snpfile(1:lnblnk(snpfile))
+      elseif(topic(1:3).eq.'mld')then
+        ipathmould=2  ! signal that it will be a common file.
+        write(lfmould,'(a)') snpfile(1:lnblnk(snpfile))
+      elseif(topic(1:3).eq.'pro')then
+        ipathprodb=2  ! signal that it is a common file.
+        write(LPRFDB,'(a)') snpfile(1:lnblnk(snpfile))
       else
 
       endif
