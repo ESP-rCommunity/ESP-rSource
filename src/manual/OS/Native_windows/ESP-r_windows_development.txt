@@ -144,7 +144,6 @@ more than the run-time environment. An alternative method
 based on installing the GIMP package for windows (that is 
 not discussed here).
 
-
 Pkg-config is used by the compiler to denote where 
 the GTK libraries and include files are located on 
 your machine. You will need to add an environment 
@@ -303,6 +302,13 @@ d) copy the esp-r.bat file into the C:\Esru\Models folder and if you
 want to create a new model first go to the C:\Esru\Models folder and 
 use the esp-r.bat file
 
+Working with INNO Setup
+
+If your goal is to create an installer for your Native Windows
+ESP-r distribution there are a number of steps involved. <<this
+section still to be completed>>.
+
+
 Hints
  
 Decide how many users you want for your computer.  If the same user 
@@ -362,9 +368,13 @@ g) ESP-r has few 'undo' options. So for your own protection
    this often.  If possible give the compressed archive a name 
    that helps you remember which version of the model is held 
    in the archive.
-	•	
-	•	If you want to transfer a model to a different computer or a computer with a different operating system then you may need to use one of the scripts found in the source code distribution bin folder.
-	•	
-	•	Join the ESP-r community and send your questions to esp-r@lists.strath.ac.uk!
+
+h) If you want to transfer a model to a different computer or 
+   a computer with a different operating system then you may 
+   need to use one of the scripts found in the source code 
+   distribution bin folder.
+
+i) Join the ESP-r community and send your questions 
+   to esp-r@lists.strath.ac.uk!
 
  

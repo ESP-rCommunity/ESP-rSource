@@ -12,7 +12,7 @@
 
 \b \cf0 Notes on compiling ESP-r for Windows
 \b0 \
-27 April  2012\
+28 April  2012\
 Jon W. Hand, ESRU, Glasgow, Scotland\
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
 \cf0 \
@@ -73,11 +73,11 @@ When you start up the command window you are actually working in C:\\MinGW\\msys
 \
 Remember that in the MSYS command terminal you should use Linux command syntax.  Applications you start from within the MSYS command syntax are generally restricted to the executables within the C:MinGW\\msys\\1.0\\bin folder. \
 \
+
+\b Extensions to Msys\
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
 
-\b \cf0 Extensions to Msys\
-
-\b0 \
+\b0 \cf0 \
 The initial command window is for text commands and applications a better looking terminal which can be re-sized and is also capable of starting a graphic version of ESP-r (for debug purposes) is on the sourceforge.net site MSYS/Extension/rxvt. Look for a file ending with -bin.tar.lzma. Files in the .lzma format can be unpacked using the free 7-Zip tool for Windows <www.7-zip.org>.  Inside the .lzma file are msys-W11.dll and rxvt.exe which need to be placed in the C:\\MinGW\\msys\\1.0\\bin folder.\
 \
 Additional windows ports of applications and libraries can be found at <http://gnuwin32.sourceforge.net> \
@@ -94,10 +94,12 @@ this will tell you what it has unpacked from the lama file.  Additional windows 
 Pkg-config is used by the compiler to denote where the GTK libraries and include files are located on your machine. You will need to add an environment variable to your Windows setup: \
 PKG_CONFIG_PATH   C:/GTK/lib/pkgconfig \
 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
 
-\b Using mingw-get\
+\b \cf0 Using mingw-get\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
 
-\b0 \
+\b0 \cf0 \
 The in-built package manager that comes with MinGW can be used to access libraries required by ESP-r. In the Msys command window give the following commands:\
 \
   mingw-get install msys-gmp\
@@ -109,8 +111,9 @@ The in-built package manager that comes with MinGW can be used to access librari
 Although you can get libxml2 via mingw-get the libxslt used by ESP-r is not generally available so say no to the XML\
 option unless you are willing to compile libxslt.\
 \
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
 
-\b Setting environment variables
+\b \cf0 Setting environment variables
 \b0 \
  \
 You will need to prepend to the Path environment  variable ;C:\\Esru\\esp-r\\bin;C:\\GTK\\bin;C:\\MinGW\\bin \
@@ -189,9 +192,8 @@ If select MinGW.\
 \
 When you are finished using MSYS type 'exit' in the MSYS command window. If you are working in an rxvt window exit from it first.\
 \
-\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
 
-\b \cf0 Using ESP-r
+\b Using ESP-r
 \b0 \
 \
 Assuming your Install task worked you will now have an ESP-r distribution on your computer.  The native windows version of ESP-r is a graphic application which should be invoked from within Windows rather than from within MSYS.  The exception would if you wanted to use the GNU debugger gdb and this should be run from within MSYS and from the folder with the source code and executable.\
@@ -205,6 +207,13 @@ b) Create an association between model configuration files (*.cfg) and the esp-r
 c) Make a habit of opening up existing models by using Window Explorer to go into the cfg folder of the model and clicking on the model cfg file.   The will ensure that all of your work is 'local' to the model.\
 \
 d) copy the esp-r.bat file into the C:\\Esru\\Models folder and if you want to create a new model first go to the C:\\Esru\\Models folder and use the esp-r.bat file\
+\
+\pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
+
+\b \cf0 Working with INNO Setup
+\b0 \
+\
+If your goal is to create an installer for your Native Windows ESP-r distribution there are a number of steps involved. <<this section still to be completed>>.\
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
 
 \b \cf0 \
