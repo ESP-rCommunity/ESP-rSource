@@ -920,9 +920,17 @@ C check to see if it is local or standard or absolute path.
 
       elseif(isw.eq.2)then
 
-C There is no select by list for materials.
-        call edisp(iuout,'No list select for materials.')
-        goto 60
+C Allow user to select from the distribution databases folder for an
+C materials file. If moddb was set to true then proceed to edit
+C the materials.
+        numhelp=nbhelp
+        lltmp='  '
+        call usecommondbsfile('mat',numhelp,lltmp,istat,moddb)
+        if(istat.eq.0.and.moddb)then
+          goto 44
+        else
+          goto 60
+        endif
 
       elseif(isw.eq.3)then
 
@@ -1434,7 +1442,7 @@ C     if blank then no file name change implied.
       common/deflt4/dinstpath
 
       CHARACTER DFILE*72,LLASCI*144
-      character LTMP*72,lltmp*144,lprev*144
+      character LTMP*72,lltmp*144,lprev*144,lltmp2*144
       character longtfile*144,longtafile*144,longtmp*144
       CHARACTER DOIT*300,fs*1,LCOPY*144
       CHARACTER OUTS*124,APP*4
@@ -1604,9 +1612,24 @@ C check to see if it is local or standard or absolute path.
 
       elseif(isw.eq.2)then
 
-C There is no select by list for plant template file.
-        call edisp(iuout,'No list select for plant templates.')
-        goto 60
+C Allow user to select from the distribution databases folder for a
+C plant template. If moddb was set to true then proceed to edit
+C the plant templates. Note: lltmp2 will be returned without the
+C path so pre-pend this so that the call to efopran will work.
+C This pattern is only required because the plant template file
+C is binary (other select from list uses do not seem to require
+C this pre-pend).
+        numhelp=nbhelp
+        lltmp2='  '
+        call usecommondbsfile('pdb',numhelp,lltmp2,istat,moddb)
+        if(istat.eq.0.and.moddb)then
+          ipathpcdb=2  ! remember that it is a common file
+          write(lltmp,'(5a)') dinstpath(1:lnblnk(dinstpath)),
+     &      fs,'databases',fs,lltmp2(1:lnblnk(lltmp2))
+          goto 44
+        else
+          goto 60
+        endif
 
       elseif(isw.eq.3)then
 
@@ -1671,7 +1694,7 @@ C reflect it is local.
         numhelp=nbhelp
         lltmp='  '
         call copycommonfile('pdb',copydef,allowbrowse,
-     &  numhelp,lltmp,istat,moddb)
+     &    numhelp,lltmp,istat,moddb)
      
         if(istat.eq.1)then
           LPCDB=lprev
@@ -2075,9 +2098,17 @@ C check to see if it is local or standard or absolute path.
 
       elseif(isw.eq.2)then
 
-C There is no select by list for event profiles.
-        call edisp(iuout,'No list select for event profiles.')
-        goto 60
+C Allow user to select from the distribution databases folder for an
+C events profiles file. If moddb was set to true then proceed to edit
+C the profiles.
+        numhelp=nbhelp
+        lltmp='  '
+        call usecommondbsfile('pro',numhelp,lltmp,istat,moddb)
+        if(istat.eq.0.and.moddb)then
+          goto 44
+        else
+          goto 60
+        endif
 
       elseif(isw.eq.3)then
 
@@ -2220,8 +2251,6 @@ C      write(outs248,'(2a)') 'Accessing event profile: ',
 C     &  LPRFDB(1:lnblnk(LPRFDB))
 C      call edisp248(iuout,outs248,100)
       IER=0
-
-C << switch to assumption that file is ASCII first >>
 
 C Scan ASCII file (with full path) to fill common blocks.
       lndbp=lnblnk(standarddbpath)
@@ -2814,10 +2843,18 @@ C check to see if it is local or standard or absolute path.
         endif
       elseif(isw.eq.2)then
 
-C There is no select by list for optical properties.
-        call edisp(iuout,
-     &    'No list select for optical properties.')
-        goto 60
+C Allow user to select from the distribution databases folder for an
+C optics file. If moddb was set to true then proceed to edit
+C the optics.
+        numhelp=nbhelp
+        lltmp='  '
+        call usecommondbsfile('opt',numhelp,lltmp,istat,moddb)
+        if(istat.eq.0.and.moddb)then
+          goto 44
+        else
+          goto 60
+        endif
+
       elseif(isw.eq.3)then
 
 C No optics db found so set-up minimal common block, create
@@ -3161,9 +3198,18 @@ C check to see if it is local or standard or absolute path.
       elseif(isw.eq.2)then
 
 C There is no select by list for pressure coefficients.
-        call edisp(iuout,
-     &    'No list select for pressure coefficients.')
-        goto 60
+C Allow user to select from the distribution databases folder for a
+C pressure coefficients file. If moddb was set to true then proceed
+C to edit the coefficients.
+        numhelp=nbhelp
+        lltmp='  '
+        call usecommondbsfile('prs',numhelp,lltmp,istat,moddb)
+        if(istat.eq.0.and.moddb)then
+          goto 44
+        else
+          goto 60
+        endif
+
       elseif(isw.eq.3)then
 
 C No pressure db found so set-up minimal common block, create
@@ -4332,9 +4378,18 @@ C check to see if it is local or standard or absolute path.
         endif
       elseif(isw.eq.2)then
 
-C There is no select by list for active components.
-        call edisp(iuout,'No list select for active components.')
-        goto 60
+C Allow user to select from the distribution databases folder for a
+C active components file. If moddb was set to true then proceed
+C to edit the components.
+        numhelp=nbhelp
+        lltmp='  '
+        call usecommondbsfile('msc',numhelp,lltmp,istat,moddb)
+        if(istat.eq.0.and.moddb)then
+          goto 44
+        else
+          goto 60
+        endif
+
       elseif(isw.eq.3)then
 
 C There is no create new option for active components.
@@ -4642,11 +4697,21 @@ C check to see if it is local or standard or absolute path.
           lfmould=lprev
           goto 60
         endif
+
       elseif(isw.eq.2)then
 
-C There is no select by list for mould isopleths.
-        call edisp(iuout,'No list select for mould isopleths.')
-        goto 60
+C Allow user to select from the distribution databases folder for a
+C mould isopleths file. If moddb was set to true then proceed
+C to edit it.
+        numhelp=nbhelp
+        lltmp='  '
+        call usecommondbsfile('mld',numhelp,lltmp,istat,moddb)
+        if(istat.eq.0.and.moddb)then
+          goto 44
+        else
+          goto 60
+        endif
+
       elseif(isw.eq.3)then
 
 C There is no create new mould isopleths.
