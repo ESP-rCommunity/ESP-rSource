@@ -351,7 +351,14 @@ C Remember the array index that goes with the menu position (m).
         PDBM(NC+1)=  '  __________________________     '
         if(ACTION.eq.'M'.or.ACTION.eq.'m')then
           PDBM(NC+2)='* add/ delete/ copy material     '
-          PDBM(NC+3)='! save materials file            '
+
+C Remind user whether they are working with a model file or
+C a common data file.
+          if(ipathmat.eq.0.or.ipathmat.eq.1)then
+            PDBM(NC+3)='! save materials file            '
+          else
+            PDBM(NC+3)='! save common materials file     '
+          endif
         elseif(ACTION.eq.'-')then
           PDBM(NC+2)='                                 '
           PDBM(NC+3)='                                 '

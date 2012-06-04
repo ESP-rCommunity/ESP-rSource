@@ -3022,7 +3022,8 @@ C EDDBPRES Changes the wind pressure coefficients current cfg file references.
 C moddb is from version manager
 C APP is 4 character file name modifier (from version facility)
 C     if blank then no file name change implied.
-C This facility offers browsing for GTK version.
+C This facility offers browsing for GTK version and list select
+C for all interfaces.
       SUBROUTINE EDDBPRES(moddb,APP)
 #include "building.h"
 #include "model.h"
