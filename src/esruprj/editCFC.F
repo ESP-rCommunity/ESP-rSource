@@ -545,6 +545,27 @@ C       Write layer IGDB index
           ipos=itrunc+1
         end do
 
+C     Write Radiance coupling settings 'ExplicitVB' and 'BRTDfunc' to 
+C     version 2 CFC files. Default values are "false"
+        write(outs,'(a,i2)')
+     &      '# Radiance coupling settings for cfc type: ',it
+        WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
+        itrunc=1
+        ipos=1
+
+        do 253 ij=1,icfc_rad
+          write(cval(ij),'(a)')'F'
+ 253    continue
+
+        do while (itrunc.ne.0)
+          call aslist(ipos,icfc_rad,cval,me,'C',louts,loutlen,itrunc)
+          write(ifu,'(a)',ERR=98) louts(1:loutlen)
+          ipos=itrunc+1
+        end do
+
+        ExplicitVB(icomp,it)=.false.
+        BRTDfunc(icomp,it)=.false.
+
       endif ! version 2 file
 C------------------------------------------------------------
         
@@ -1297,6 +1318,28 @@ c        write(*,*)
         do 92 j=1,ncfc_el(icomp,i)
              rim_IGDBindex(icomp,i,j)=IVA(j)
    92   continue
+
+C     Read Radiance coupling settings
+        CALL STRIPC(IUA,OUTSTR,99,ND,1,
+     &              'CFC Radiance coupling settings line',IER)
+        IF(IER.NE.0)GOTO 1001
+
+        kk=0 ! read from position
+        CALL EGETAGWSA(OUTSTR,kk,IUA,icfc_rad,SVA,me,'W',
+     &                          'CFC Radiance coupling settings',IER)
+        IF(IER.NE.0)GOTO 1001
+
+        if (SVA(1)(1:lnblnk(SVA(1))).eq.'T') then
+          ExplicitVB(icomp,i)=.true.
+        else
+          ExplicitVB(icomp,i)=.false.
+        endif
+
+        if (SVA(2)(1:lnblnk(SVA(2))).eq.'T') then
+          BRTDfunc(icomp,i)=.true.
+        else
+          BRTDfunc(icomp,i)=.false.
+        endif
 
       endif ! version 2 file
 C-----------------------------------------------------------

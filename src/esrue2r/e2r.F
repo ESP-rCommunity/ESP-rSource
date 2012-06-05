@@ -136,7 +136,7 @@ C Initialize global common data.
       helpinsub='e2r'  ! set for MAIN
       IUIN = 5
       IUOUT = 6
-      IFIL = 10
+      IFIL = 10    ! same as in bps.F, so IFIL >should< be climate file
       NSIGFIG=3
       matver=0.0   ! initial assumption of binary materials database
 
@@ -152,7 +152,7 @@ C Scene configuration file IRCFG = IFIL+17.
       imatfil = IFIL+11
       iglzfil = IFIL+16
       IRCFG = IFIL+17
-      icfcfil = IFIL+19 ! ? 
+      icfcfil = IFIL+26 ! ? see list in bps.F ...
 
 C Primitives on IFIL+13, mlc on IFIL+14, optics on IFIL+15,
 C check for root journal file on iuj.

@@ -287,6 +287,8 @@ C For help messages
       ier=0
 C      GTGEOM = 'UNKNOWN'
 
+      write(*,*)'* using e2rform, act=',ACT_1
+
 C Open the materials, mlc & optics db.
       call module_opendb(ier)
 
@@ -512,7 +514,7 @@ C For obstruction blocks of type "obsp":
       integer init  ! for CFC2rad, toggle for initialization
       integer icfctp
 
-      LOGICAL OK,DOK,fict,extern,XST,similar,BRTDfunc,ExplicitVB
+      LOGICAL OK,DOK,fict,extern,XST,similar
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -549,7 +551,6 @@ C to treat as 'mkillum'.
       call edisp(iuout,' Creating glazing file. ')
       CALL ERPFREE(iglzfil,ISTAT) ! iglzfil is in e2r commons and is set in e2r main
       CALL ERPFREE(ita2,ISTAT)
-cx      CALL ERPFREE(icfcfil,ISTAT) ! icfcfil is in e2r commons and is set in e2r main
       if(ACT_1.eq.'i')then
  10     ltmp72=glzfil ! glzfil is in e2r commons
         dtmp72=glzfil
@@ -590,9 +591,6 @@ C            type of model is to be used?
      &      72,dtmp72,'CFC data file name',IER,nbhelp)
           if(ltmp72(1:2).eq.'  ') goto 14
           cfcfil=ltmp72
-cx          write(cfcfile,'(a,a)')
-cx     &           runpath(1:lnrp),cfcfil(1:lnblnk(cfcfil))
-cx          call FPOPEN(icfcfil,ISTAT,1,4,cfcfile)
         endif
 
       else ! silent mode ... actually, a loop through NBSRIF() would be necessary, here, no?
@@ -605,13 +603,6 @@ C       Open alternative glazing data set file (TMC) if control is active
      &                         aglzfil(1:lnblnk(aglzfil))
           call FPOPEN(ita2,ISTAT,1,3,atfile)
         endif
-C       Open cfc file if model has CFC construction
-cx        if (cfcxst) then
-cx          write(cfcfile,'(a,a)')runpath(1:lnrp),
-cx     &                         cfcfil(1:lnblnk(cfcfil))
-cx          call FPOPEN(icfcfil,ISTAT,1,3,cfcfile)
-cx        endif
-
       endif ! silent?
 
 C     << this error message should give the actual file that posed a problem!
@@ -644,14 +635,6 @@ C << a loop through more than one "alternative" sets should be here, no?
         WRITE(ita2,'(a)') '3    0.87    0.87    0.87'
         WRITE(ita2,'(a)') '  '
       endif
-
-C CFC glazing file
-cx      if (cfcxst) then
-cx        WRITE(icfcfil,'(a)') '# Radiance CFC glazing definitions'
-cx        WRITE(icfcfil,'(a)') 
-cx     &            '# (first line of file must not be edited)'
-cx        WRITE(icfcfil,'(a)') '  '
-cx      endif
 
 C Create an opaque materials file. Take all of the materials in
 C the existing mlc db and create a set of properties.
@@ -821,8 +804,6 @@ C Check for blind shutter control.
 C       =================== C F C ====================
         elseif (OTF(1:4).eq.'CFC ') then
           init=1 ! create materials descriptions (check for "first loop"?)
-          BRTDfunc=.false.
-          ExplicitVB=.true.
           do iZone=1,ncomp
             do iSurf=1,NZSUR(iZone)
               icn=IZSTOCN(iZone,iSurf)
@@ -832,7 +813,7 @@ C             Check if surface is a cfc and compare names ...
 C               Create a glass material (BRTDfunc) entry for this CFC
 C               construction. << how to avoid repeated output of 
 C                             << identical constructions?? 
-                call CFC2rad(init,iZone,iSurf,ExplicitVB,BRTDfunc)
+                call CFC2rad(init,iZone,iSurf)
 c              else ! something wrong!
 c                write(outs,'(a,I2,a,I2)')'material in zone ',iZone,
 c     &                  ' surface ',iSurf

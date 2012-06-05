@@ -82,7 +82,7 @@ C   None (?)   >> writes Radiance definitions for CFC constructions
 C                 to files 'imatfil' and 'icfcfil'
 C
 C ********************************************************************
-      subroutine CFC2rad(init,icomp,isurf,ExplicitVB,BRTDfunc)
+      subroutine CFC2rad(init,icomp,isurf)
 c      USE h3kmodule ! ? necessary??
 
       IMPLICIT NONE
@@ -92,8 +92,7 @@ c      USE h3kmodule ! ? necessary??
 #include "e2r_common.h"
 
 C Parameters
-      integer iua,init,icomp,isurf
-      logical ExplicitVB,BRTDfunc
+      integer init,icomp,isurf
 
 C Commons
       integer ncomp,ncon
@@ -119,16 +118,6 @@ c      integer ne,iz,im,itype,nslats,icfctp,icn,vb_lay
 C Function declarations
       integer lnblnk
 
-C Check if combination of logical parameters is valid
-      if (BRTDfunc) then
-        if (.not.ExplicitVB) then
-        ! not possible!
-          call usrmsg(' BRTDfunc must use explicit blind!',
-     &                ' Aborting!','W')
-          return
-        endif
-      endif
-
 C     Search through model to get first and last CFC ...
       if (init.eq.1) then
         firstzisset=.false.
@@ -149,16 +138,32 @@ C     Search through model to get first and last CFC ...
   5     continue
       endif
 
-      icfctp=icfcfl(icomp,isurf) ! get type
+C Now conditionally creat model ...
+      icfctp=icfcfl(icomp,isurf) ! set type to current
+
+C DEBUG:
+c      write(*,*)'ExplicitVB=',ExplicitVB(icomp,icfctp),
+c     &         ' BRTDFunc=',BRTDFunc(icomp,icfctp)
+
+C Check if combination of logical parameters is valid
+      if (BRTDfunc(icomp,icfctp)) then
+        if (.not.ExplicitVB(icomp,icfctp)) then
+        ! not possible!
+          call usrmsg(' BRTDfunc must use explicit blind!',
+     &                ' Aborting!','W')
+          return
+        endif
+      endif
+
 
       if (icfctp.ge.1) then ! we have a CFC
 cx        write(*,*)'CFC type ',icfctp
 
-        if (BRTDfunc) then !
+        if (BRTDfunc(icomp,icfctp)) then !
           call CFCCreateBRTDfun(init,icomp,isurf)
 
         else ! use 'glass'
-          if (ExplicitVB) then
+          if (ExplicitVB(icomp,icfctp)) then
             store_blind_setting=i_shd(icomp,icfctp)
             i_shd(icomp,icfctp)=0 ! glazing data is w/o blind
           endif
@@ -166,7 +171,7 @@ cx        write(*,*)'CFC type ',icfctp
 C         Write glazing materials file for CFC construction
           call CFCGlazing(icomp,isurf)
 
-          if (ExplicitVB) then
+          if (ExplicitVB(icomp,icfctp)) then
 C           Restore blind position
             i_shd(icomp,icfctp)=store_blind_setting
           endif
@@ -176,7 +181,7 @@ C           Restore blind position
 C Glass data is set and Radiance data written. Now the blind
 C is generated, if "Explicit".
 
-        if (ExplicitVB) then
+        if (ExplicitVB(icomp,icfctp)) then
 
 C         get layer number in CFC 
           ne=ncfc_el(icomp,icfctp) ! number of cfc layers for this type
@@ -269,6 +274,8 @@ C ********************************************************************
 
       IMPLICIT NONE
 #include "building.h"
+#include "esprdbfile.h"
+#include "site.h"
 #include "geometry.h"
 #include "CFC_common.h"
 #include "e2r_common.h"
@@ -277,32 +284,52 @@ C Parameters
       integer icomp,isurf
 
 C Commons
+      integer ifil
+      COMMON/FILEP/IFIL
+
+      COMMON/OUTIN/IUOUT,IUIN
+      integer IUOUT,IUIN
+
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
+
+      COMMON/SUNPOS/SAZI,SALT,ISUNUP
+      real SAZI,SALT
+      integer ISUNUP
 
       COMMON/CFCtemp/firstzone,lastzone,lasttype
       integer firstzone,lastzone,lasttype
 
-C Local variables for CFCs
-      integer icfctp,icn,ISTAT
+C     Climate data (present and future time rows)
+      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+      real QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+      
+      COMMON/CLMDAT/NDAY,CDIF(MT),CTMP(MT),CDNR(MT),CVEL(MT),
+     &              CDIR(MT),CHUM(MT)
+      integer NDAY
+      real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
 
-      real incang
+C Local variables 
+      integer icfctp,icn,ISTAT,itsys,IER
+
+      real incang,dummy1,dummy2,CAI
       real VTDIR,VTDIF,VTRAN,gvt1,gvt
 
       real proang,CFCabs
       real TRANSBB_SYSV,TRANSD_SYSV,REFL_SYSV,CFCabsV
       real TRANSD_SYS_BD,TRANSD_SYS_SKY,TRANSD_SYS_GRD
-      real dummy1,dummy2
       real tmpIBM,tmpIDF,EXDIR,EXDIF,EXDIFSKY,EXDIFGRD
       real AbsSolDir,AbsSolDifGrd,AbsSolDifSky,AbsVis
 
-      character glaznam*72,cfcfile*72
+      character glaznam*72,cfcfile*72,outs*124
 
       integer iSolVis ! switch for CFC solar / visual data calculation
       integer i_direct ! switch for calling solar_multilayer
 
       DIMENSION AbsSolDir(me),AbsSolDifGrd(me)
       DIMENSION AbsSolDifSky(me),AbsVis(me)
+
+      DIMENSION salt(24),sazi(24)
 
 C Function declarations
       integer lnblnk
@@ -335,26 +362,95 @@ cx          write(*,*)'CFC type ',icfctp,', vb on/off: ',
 cx     &              i_shd(icomp,icfctp),', vb angle: ',
 cx     &              vb_phiNew(icomp,icfctp)
 
-C ******************* from solar.F ********************************
-C The following code should probably be put in a designated subroutine.
 C Values for radiation and solar angle should only be set for
 C non-conflation type calls ("visualization" calls).
-          tmpIDF=0.0   ! interior diffuse source
-          tmpIBM=0.0   ! interior beam source
-          i_direct=0   ! toggle for ... ?
+        tmpIDF=0.0   ! interior diffuse source
+        tmpIBM=0.0   ! interior beam source
+        i_direct=0   ! toggle for ... ?
 
+        if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
+     &          SCENEPURP(ISCENE)(1:8).eq.'Internal'.or.
+     &          SCENEPURP(ISCENE)(1:5).eq.'Glare') then
+C ... from bps.F, line 984
+          call EFOPRAN(ifil,lclim(1:lnblnk(lclim)),144,0,IER)
+
+          if (IER.ne.0) then
+c            WRITE(outs,'(a)')PERST2
+c            call edisp(itru,outs)
+            write(*,*)'IER=',IER
+          endif
+C         Set data to values according to chosen day/season
 C /sky1/ common holds 'irdoy' - day of year and 'rtime' - time of day
-C appropriate values for the below could be derived from this ...
+C         irdoy & rtime are set in "settime()", called in 'autorad'
+C         Recover one day's data from climate file into common 
+C         block for use.
+          call CLMGET(irdoy)
+          EXDIR=CDIR(int(rtime))
+          EXDIF=CDIF(int(rtime))
+          EXDIFSKY=EXDIF*(1.-rgrfl)
+          EXDIFGRD=EXDIF*rgrfl
 
-          EXDIR=10.    ! does this matter for calculated values?
-          EXDIF=10.    ! A better approach would be to use 
-          EXDIFSKY=5.  ! some kind of realistic values based on
-          EXDIFGRD=5.  ! type of simulation. For conflation, the
-                       ! current actual values, of course.
-          incang=55. ! this should be calculated acc. to actual
-                     ! situation ...
+          itsys=1 ! local mean time (2 would be local apparent time)
+          call AZALT(irdoy,itsys,sitelongdif,sitelat,salt,sazi)
 
+C== solar.F ===
+C Calculate the angle of incidence between the sun and surface ISRF,
+C ANGI; COS of ANGI, CAI; and the window indices IND1 & IND2 for
+C this external construction.
+          CALL CFCMZSCAI(icomp,isurf,CAI,incang)
+          IF(incang.LT.0..OR.incang.GT.90.)THEN
+            write(outs,1000)incang
+ 1000       format(' MZSLGN CFC error: incidence angle = ',F10.3,'.')
+            call edisp(iuout,outs)
+            goto 9999
+          ENDIF
+C== ... do we really need all the above ?? ===
+
+          if (ExplicitVB(icomp,icfctp)) then
+            incang=0. ! "normal to surface"
+c          else
+c            incang=salt(int(rtime)) ! for now ...
+          endif
+
+        elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
+C         Set data to day factor typical values
+          write(*,*)'* Day_fact not implemented with CFC'
+          return
+
+        elseif (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
+C         Set data to current values
+cx          if (init) then ! necessary?
+
+c            else
+               EXDIR=QFP
+               EXDIF=QDP
+               EXDIFSKY=EXDIF*(1.-rgrfl)
+               EXDIFGRD=EXDIF*rgrfl
+c            endif
+
+          if (ExplicitVB(icomp,icfctp)) then
+            incang=0. ! "normal to surface"
+          else
+            incang=55. ! for now ...
+          endif
+
+
+        elseif (SCENEPURP(ISCENE)(1:7).eq.'Sun_pos') then
+C         Pick start and end time ???
+          write(*,*)'* Sun_Pos not implemented with CFC'
+          return
+        endif
+
+C ******************* from solar.F ********************************
+C The following code should probably be put in a designated subroutine.
           iSolVis=1  ! calculate visual properties, only
+
+C DEBUG:
+c          write(*,*)'** Blind position=',i_shd(icomp,icfctp)
+c          write(*,*)'** Blind angle   =',vb_phiNew(icomp,icfctp)
+          write(*,*)'EXDIR=',EXDIR,' EXDIF=',EXDIF,
+     &              'EXDIFSKY=',EXDIFSKY,'EXDIFGRD=',EXDIFGRD,
+     &              'incang=',incang
 
           ! values include (optional) blinds 
           ! at current blind angle!
@@ -452,6 +548,8 @@ C         / blind settings(!) spread over more than one zone
           WRITE(icfcfil,'(a)') '0 '
           WRITE(icfcfil,'(a,3F6.2)') '3  ',gvt,gvt,gvt
           WRITE(icfcfil,'(a)') '  '
+
+9999  continue
 
       return
       end
@@ -756,3 +854,59 @@ C void alias ADIC_CFC SYP_YRE0146
 
       return
       end
+
+
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C ******************** MZSCAI ********************
+C MZSCAI computes the cosine of the solar angle of incidence.
+      SUBROUTINE CFCMZSCAI(ICOMP,II,CAI,ANGI)
+      implicit none
+#include "building.h"
+
+C Parameters
+      integer ICOMP,II
+      real CAI,ANGI
+
+      COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
+      real PAZI,PELV
+
+      COMMON/SUNPOS/SAZI,SALT,ISUNUP
+      real SAZI,SALT
+      integer ISUNUP
+
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      
+      real PI,R,PSAZI
+
+      PI = 4.0 * ATAN(1.0)
+      R=PI/180.
+
+C Surface-solar azimuth angle for this external construction.
+      PSAZI=ABS(PAZI(ICOMP,II)-SAZI)
+
+C Angle of incidence and its cosine (Iain Macdonald Feb 2006).
+      CAI=COS(SALT*R)*SIN((90.-PELV(ICOMP,II))*R)*COS(PSAZI*R)+
+     &    SIN(SALT*R)*COS((90.-PELV(ICOMP,II))*R)
+
+      IF(CAI.LT.0.) CAI=0.
+
+      ANGI=ACOS(CAI)/R
+C Establish angle of incidence index (IND1) for
+C glazing property interpolation purposes; where
+
+
+C Test if standard optical data or bidirectional data.
+c      IF(NSTMCFL(IZSTOCN(ICOMP,II)).EQ.0) THEN
+        IF(ANGI.GT.-0.01.AND.ANGI.LT.0.0)ANGI=0.0
+        IF(ANGI.GT.90.0.AND.ANGI.LT.90.01)ANGI=90.0
+        IF(ANGI.LT.0..OR.ANGI.GT.90.)goto 9999
+c      ELSE
+
+c      ENDIF
+
+ 9999 RETURN
+      END
+
+

@@ -92,6 +92,23 @@ C IGDB index for layer (glazing, only)
 
 
 C---------------------------------------------------------------------------------
+C Toggle switches for Radiance coupling. CFCs can be coupled as follows:
+C - standard glass material, blind included
+C - standard glass material, detailed VB model (genblinds)
+C - BRTDfunc glass, detailed VB model (genblinds)
+C 
+C The coupling mode is selectable separately for each CFC. Default
+C is standard glass with blind included (F,F)
+
+      COMMON/CFCtoRad/ExplicitVB(mcom,mcfc),BRTDfunc(mcom,mcfc)
+
+      logical ExplicitVB,BRTDfunc
+
+      integer icfc_rad
+      parameter ( icfc_rad = 2 )
+
+
+C---------------------------------------------------------------------------------
 C Normal Solar Optical properties for each layer of CFC imported from *.GSL files.
 
       COMMON/impCFCsol/rim_SolRf(mcom,mcfc,me),

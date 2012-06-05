@@ -66,6 +66,8 @@ C For help messages
       ITA2=IFIL+7
       ITA3=IFIL+10
 
+      write(*,*)'* using autorad, cmdact=',cmdact(1:6)
+
 C Create a default scene based on current information - ask 
 C for additional info if necessary.
       if (cmdact(1:6).ne.'Create') then
@@ -111,15 +113,16 @@ C Generate sky command use a sun for all skys except for daylight factors.
      &          SCENEPURP(ISCENE)(1:8).eq.'Internal'.or.
      &          SCENEPURP(ISCENE)(1:5).eq.'Glare') then
           call settime(IRM,IRD,XRT)
-          write(outs,'(a,2i3,f6.2,a,f5.2,2(a,f7.1),a)')'gensky',IRM,IRD,
-     &      XRT,' +s -g ',rgrfl,' -a ',sitelat,' -o ',-sitelongdif,
+          write(outs,'(a,2i3,f6.2,a,f5.2,2(a,f7.1),a)')
+     &     'gensky',IRM,IRD,XRT,
+     &      ' +s -g ',rgrfl,' -a ',sitelat,' -o ',-sitelongdif,
      &      ' -m 0.0'
         elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
           write(outs,'(a,f5.2,2(a,f7.1),a)') 'gensky 6 20 12.0 -c -g ',
      &      rgrfl,' -a ',sitelat,' -o ',-sitelongdif,' -m 0.0'
         elseif (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
 
-C gendaylit -ang 60 0 -L QDIRILL QDIFILL
+C gendaylit -ang 60 0 -L QDIRILL QDIFILL -g ground-reflection
           write(outs,'(a,f5.2)')
      &                     'gendaylit -ang 60 0 -L 805 100 -g ',rgrfl
 
