@@ -2319,7 +2319,7 @@ C      CHARACTER outs248*248
       character dinstpath*60,path*72,dirpath*72
 
 C Local strings for user selections dependent on graphic library.
-      character opte*28,optf*28,optg*28
+      character optf*28
       integer lndbp   ! for length of standard path
       logical unixok  ! to check for path file separators
       logical allowbrowse ! future option
@@ -2584,44 +2584,18 @@ C the constructions.
 
       elseif(isw.eq.5)then
 
-C Browse distribution database folder.  If Native Windows the in-built
-C file browsing does not yet work so do it via easkf and just point
-C to the common file.
-        if(.NOT.unixok)then
-          call usrmsg(
-     &      'In Native Windows the copy from common does not yet',
-     &      'work. Currently pointing to the common file.','W')
-          write(LCOPY,'(4a)') dinstpath(1:lnblnk(dinstpath)),
-     &      fs,'databases',fs
-          CALL EASKF(LCOPY,
-     &      'Constructions file (one or more layers of materials) ',
-     &      'Confirm:',144,DFMUL,'MLC database',IER,nbhelp)
-          if(ier.eq.-3)then
-            LFMUL=lprev
-            goto 60  ! cancel detected, restore name and redisplay menu.
-          endif
-
-C This is yet another place where we need to check what the user might
-C have edited to be sure of setting the correct location value. The
-C common block will be updated with call to findwhichdbpath.
-          call findwhichdbpath('mul',LCOPY,ier)
-          moddb=.true.
-          goto 44
-        else
-
 C Create a menu list of files in the distribution databases folder.
-          copydef=.false.
-          allowbrowse=.true.
-          numhelp=nbhelp
-          lltmp='  '
-          call copycommonfile('mlc',copydef,allowbrowse,
-     &      numhelp,lltmp,istat,moddb)
-          if(istat.eq.1)then
-            LFMUL=lprev
-            goto 60  ! cancel detected, restore name and redisplay menu.
-          elseif(istat.eq.0)then
-            goto 44
-          endif
+        copydef=.false.
+        allowbrowse=.true.
+        numhelp=nbhelp
+        lltmp='  '
+        call copycommonfile('mlc',copydef,allowbrowse,
+     &    numhelp,lltmp,istat,moddb)
+        if(istat.eq.1)then
+          LFMUL=lprev
+          goto 60  ! cancel detected, restore name and redisplay menu.
+        elseif(istat.eq.0)then
+          goto 44
         endif
       endif
 
@@ -2698,7 +2672,7 @@ C      CHARACTER outs248*248
       character dinstpath*60,path*72,dirpath*72
 
 C Local strings for user selections dependent on graphic library.
-      character opte*28,optf*28,optg*28
+      character optf*28
       integer lndbp   ! for length of standard path
       logical unixok  ! to check for path file separators
       logical allowbrowse  ! future facility
@@ -2970,46 +2944,22 @@ C the optics.
 
       elseif(isw.eq.5)then
 
-C Browse distribution database folder. If Native Windows the in-built
-C file browsing does not yet work so do it via easkf and just point
-C to the common file.
-        if(.NOT.unixok)then
-          call usrmsg(
-     &      'In Native Windows the copy from common does not yet',
-     &      'work. Currently pointing to the common file.','W')
-          write(LCOPY,'(4a)') dinstpath(1:lnblnk(dinstpath)),
-     &      fs,'databases',fs
-          CALL EASKF(LCOPY,'Optical properties','Confirm:',
-     &      144,DOPTDB,'optical properties database',IER,nbhelp)
-          if(ier.eq.-3)then
-            LOPTDB=lprev
-            goto 60  ! cancel detected, restore name and redisplay menu.
-          endif
-
-C This is yet another place where we need to check what the user might
-C have edited to be sure of setting the correct location value. The
-C common block will be updated with call to findwhichdbpath.
-          call findwhichdbpath('opt',LCOPY,ier)
-          moddb=.true.
-          goto 44
-        else
-
 C Create a menu list of files in the distribution databases folder
 C If user requests, copy one of those files to the model folder.
-          copydef=.false.
-          allowbrowse=.true.
-          numhelp=nbhelp
-          lltmp='  '
-          call copycommonfile('opt',copydef,allowbrowse,
-     &      numhelp,lltmp,istat,moddb)
-          if(istat.eq.1)then
-            LOPTDB=lprev
-            goto 60  ! cancel detected, restore name and redisplay menu.
-          elseif(istat.eq.0)then
-            goto 44
-          endif
+        copydef=.false.
+        allowbrowse=.true.
+        numhelp=nbhelp
+        lltmp='  '
+        call copycommonfile('opt',copydef,allowbrowse,
+     &    numhelp,lltmp,istat,moddb)
+        if(istat.eq.1)then
+          LOPTDB=lprev
+          goto 60  ! cancel detected, restore name and redisplay menu.
+        elseif(istat.eq.0)then
+          goto 44
         endif
       endif
+
 
 C Test the selected or copied file. If a problem loop back
 C otherwise edit the contents.
@@ -4924,7 +4874,7 @@ C Local variables:
       character LTMP*92,lguess*144
       character fs*1,message*48
       character doit*300,LCOPY*144
-      integer iglib  ! for detecting GTK or X11
+C      integer iglib  ! for detecting GTK or X11
       integer lr     ! length of model root
 
       CHARACTER outs248*248
@@ -5052,8 +5002,11 @@ C Create a general fall-back file name.
         sourcefile = defaultfile
       else
         call edisp(iuout,'  ')  ! echo blank line
-        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        if(iglib.eq.1.or.iglib.eq.3)then
+C        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+
+C Assumes that browsefilelist works on all platforms. If a problem
+C then uncomment the iglib lines
+C        if(iglib.eq.1.or.iglib.eq.3)then
 
 C Use the standard ESP-r folder browse facility.
           sfile=' '
@@ -5081,18 +5034,21 @@ C User did not select a file. Take them back to the question.
               return  ! cancel detected, restore name and redisplay menu.
             endif
           endif
-        elseif(iglib.eq.2)then
-          CALL EASKXORGTKF(lguess,sourcemsg,'Confirm:',
-     &      defaultfile,lltmp,'sourcefile name',IER,numhelp)
-        endif
-        sourcefile = lltmp   ! remember this
+
+C Assumes that browsefilelist works on all platforms. If a problem
+C then uncomment the iglib lines
+C        elseif(iglib.eq.2)then
+C          CALL EASKXORGTKF(lguess,sourcemsg,'Confirm:',
+C     &      defaultfile,lltmp,'sourcefile name',IER,numhelp)
+C        endif
 
 C If user request jump back and re-display the menu.
-        if(ier.eq.-3)then
-          moddb=.false.
-          istat=1
-          return  ! cancel detected, restore name and redisplay menu.
-        endif
+C        if(ier.eq.-3)then
+C          moddb=.false.
+C          istat=1
+C          return  ! cancel detected, restore name and redisplay menu.
+C        endif
+        sourcefile = lltmp   ! remember this
 
         if(topic(1:3).eq.'mat')then
           ipathmat=1  ! signal that it is a local file.
@@ -5485,7 +5441,8 @@ C Passed parameters:
 
 C Local variables:
       character sourcemsg*48     ! dialog for source dialog
-      character sfile*72,snpfile*72,fname*96
+      character sfile*72,snpfile*72
+C     character fname*96
 
       character lguess*144
       character fs*1
@@ -5596,8 +5553,8 @@ C Use the standard ESP-r folder browse facility.
         call browsefilelist('b','dbm','fil',sfile,snpfile,nfile,iier)
         if(snpfile(1:2).ne.'  ')then
           lndbp=lnblnk(standarddbpath)
-          write(fname,'(3a)')standarddbpath(1:lndbp),fs,
-     &      snpfile(1:lnblnk(snpfile))
+C          write(fname,'(3a)')standarddbpath(1:lndbp),fs,
+C     &      snpfile(1:lnblnk(snpfile))
 
 C Debug.
 C          if(unixok) write(6,*) 'snpfile ',snpfile
