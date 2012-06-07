@@ -2317,7 +2317,6 @@ C      CHARACTER outs248*248
       LOGICAL OK,XST,DOK
       character cfgroot*24,LCFGF*72
       character dinstpath*60,path*72,dirpath*72
-      character sfile*72,snpfile*72
 
 C Local strings for user selections dependent on graphic library.
       character opte*28,optf*28,optg*28
@@ -2388,9 +2387,10 @@ C data file then set longtfile equal to LLTMP.
       INQUIRE (FILE=longtfile(1:ltf),EXIST=xst)
 
 C Make up additional options depending on graphics lib. The second
-C option (list select) is not available for mLC database. If using
-C text or X11 option e edits the string while for GTK there are two
-C options to browse for files in ../dbs or the esp-r distribution.
+C option (list select) shows files in the distribution databases
+C folder. If using text or X11 option e edits the string while 
+C for GTK there are options to browse for files in ../dbs or the
+C esp-r distribution.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       if(iglib.eq.1.or.iglib.eq.3)then
         optf='f not applicable   '
@@ -2404,10 +2404,10 @@ C If db does not exist locally offer limited choices.
         idno=2
         isw=0
         call MENUATOL('  ','Constructions',
-     &    ' ','b select from list',
+     &    ' ','b select file from list',
      &    'c select from model ../dbs',
-     &    'd copy default constructions',
-     &    'e copy constructions from common',optf,
+     &    'd copy default file to model',
+     &    'e copy file from common to model',optf,
      &    'g create new constructions',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
@@ -2418,10 +2418,10 @@ C If standard file then offer the following choices (incl /):
         idno=1
         isw=0
         call MENUATOL('  ','Constructions',
-     &    'a browse/edit','b select from list',
+     &    'a browse/edit','b select file from list',
      &    'c select from model ../dbs',
-     &    'd copy default constructions',
-     &    'e copy constructions from common',optf,
+     &    'd copy default file to model',
+     &    'e copy file from common to model',optf,
      &    'g create new constructions',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
         copydef=.false.
@@ -2431,10 +2431,10 @@ C If standard file then offer the following choices (without /):
         idno=1
         isw=0
         call MENUATOL('  ','Constructions <std>',
-     &    'a browse/edit','b select from list',
+     &    'a browse/edit','b select file from list',
      &    'c select from model ../dbs',
-     &    'd copy default constructions',
-     &    'e copy constructions from common',optf,
+     &    'd copy default file to model',
+     &    'e copy file from common to model',optf,
      &    'g create new constructions',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
         copydef=.false.
@@ -2445,10 +2445,10 @@ C default file or the current file.
         idno=1
         isw=0
         call MENUATOL('  ','Constructions <mod>',
-     &    'a browse/edit','b select from list',
+     &    'a browse/edit','b select file from list',
      &    'c select from model ../dbs',
-     &    'd copy default constructions',
-     &    'e copy constructions from common',optf,
+     &    'd copy default file to model',
+     &    'e copy file from common to model',optf,
      &    'g create new constructions',' ',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
@@ -2457,9 +2457,9 @@ C default file or the current file.
 
 C Act on the users choice. If no choice, return to calling menu.
 
-C << note the order in the menu changed but the blocks of code
-C << have not yet been re-arranged to reflect this only the 
-C << elseif isw index has been changed.
+C Note the order in the menu changed but the blocks of code
+C have not yet been re-arranged to reflect this only the 
+C elseif isw index has been changed.
 
       if(isw.eq.0)then
         return   ! user requested to exit
@@ -2584,11 +2584,13 @@ C the constructions.
 
       elseif(isw.eq.5)then
 
-C Browse distribution database folder. Setup LCOPY to point to
-C the database folder (but no particular file). Use easkf to
-C return a file (which might be from somewhere else if the user
-C decides to do some browsing).
-        if(iglib.eq.2)then
+C Browse distribution database folder.  If Native Windows the in-built
+C file browsing does not yet work so do it via easkf and just point
+C to the common file.
+        if(.NOT.unixok)then
+          call usrmsg(
+     &      'In Native Windows the copy from common does not yet',
+     &      'work. Currently pointing to the common file.','W')
           write(LCOPY,'(4a)') dinstpath(1:lnblnk(dinstpath)),
      &      fs,'databases',fs
           CALL EASKF(LCOPY,
@@ -2608,11 +2610,6 @@ C common block will be updated with call to findwhichdbpath.
         else
 
 C Create a menu list of files in the distribution databases folder.
-          sfile=' '
-          snpfile=' '
-          call browsefilelist('p','dbm','fil',sfile,snpfile,nfile,iier)
-          call usrmsg('List of files in databases folder.',' ','W')
-
           copydef=.false.
           allowbrowse=.true.
           numhelp=nbhelp
@@ -2766,18 +2763,13 @@ C data file then set longtfile equal to LLTMP.
       INQUIRE (FILE=longtfile(1:ltf),EXIST=xst)
 
 C Make up additional options depending on graphics lib. The second
-C option (list select) is not available for optics properties. If using
-C text or X11 option e edits the string while for GTK there are two
-C options to browse for files in ../dbs or the esp-r distribution.
+C option (list select) shows files in the distribution databases
+C folder. Another option allows browsing of the model ../dbs folder.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       if(iglib.eq.1.or.iglib.eq.3)then
-        opte='e select from model ../dbs'
-        optf='   '
-        optg='   '
+        optf='f not applicable   '
       elseif(iglib.eq.2)then
-        opte='e select from model ../dbs'
-        optf='f browse esp-r distribution'
-        optg='g make copy of another file'
+        optf='f make copy of another file'
       endif
 
       IF(.NOT.XST)THEN
@@ -2786,20 +2778,26 @@ C If db does not exist locally offer limited choices.
         idno=2
         isw=0
         call MENUATOL('  ','Optical properties',
-     &    ' ','b select from list',
-     &    'c create new optics','d copy standard optics',
-     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
+     &    ' ','b select file from list',
+     &    'c select from model ../dbs',
+     &    'd copy default file to model',
+     &    'e copy file from common to model',optf,
+     &    'g create new optics',' ',' ',' ',' ',' ',
+     &    isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
-        if(isw.eq.7)copydef=.false.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       elseif(longtfile(1:ldirpath).eq.dirpath(1:ldirpath))then
 
 C If standard file then offer the following choices (incl /):
         idno=1
         isw=0
         call MENUATOL('  ','Optical properties',
-     &    'a browse/edit','b select from list',
-     &    'c create new optics','d copy standard optics',
-     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
+     &    'a browse/edit','b select file from list',
+     &    'c select from model ../dbs',
+     &    'd copy default file to model',
+     &    'e copy file from common to model',optf,
+     &    'g create new optics',' ',' ',' ',' ',' ',
+     &    isw,idno,nbhelp)
         copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
@@ -2807,9 +2805,12 @@ C If standard file then offer the following choices (without /):
         idno=1
         isw=0
         call MENUATOL('  ','Optical properties <std>',
-     &    'a browse/edit','b select from list',
-     &    'c create new optics','d copy it to model',
-     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
+     &    'a browse/edit','b select file from list',
+     &    'c select from model ../dbs',
+     &    'd copy default file to model',
+     &    'e copy file from common to model',optf,
+     &    'g create new optics',' ',' ',' ',' ',' ',
+     &    isw,idno,nbhelp)
         copydef=.false.
       else
 
@@ -2818,16 +2819,23 @@ C default file or the current file.
         idno=1
         isw=0
         call MENUATOL('  ','Optical properties <mod>',
-     &    'a browse/edit','b select from list',
-     &    'c create new optics','d copy standard optics',
-     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
+     &    'a browse/edit','b select file from list',
+     &    'c select from model ../dbs',
+     &    'd copy default file to model',
+     &    'e copy file from common to model',optf,
+     &    'g create new optics',' ',' ',' ',' ',' ',
+     &    isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
-        if(isw.eq.7)copydef=.false.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       endif
 
 C Act on the users choice. If no choice, return to calling menu.
+
+C Note the order in the menu changed but the blocks of code
+C have not yet been re-arranged to reflect this only the 
+C elseif isw index has been changed.
       if(isw.eq.0)then
-        return
+        return   ! user requested to exit
       elseif(isw.eq.1)then
 
 C If file exists read it and enter editing facility after
@@ -2855,7 +2863,7 @@ C the optics.
           goto 60
         endif
 
-      elseif(isw.eq.3)then
+      elseif(isw.eq.7)then
 
 C No optics db found so set-up minimal common block, create
 C a new db, populate it and present editing facility. Use the
@@ -2926,10 +2934,10 @@ C Scan the new file and use the editing facility.
           goto 44
         endif
 
-      elseif(isw.eq.4.or.isw.eq.7)then
+      elseif(isw.eq.4.or.isw.eq.6)then
 
-C Copy a file to project dbs folder. If iws is 4 then the
-C user has asked for the default file. If isw is 7 then the
+C Copy the default common file to model dbs folder. If iws is 4 then the
+C user has asked for the default file. If isw is 6 then the
 C user wishes to browse for the source file. Suggest a local
 C file name based on the project root name.  Update common to
 C reflect it is local.
@@ -2946,7 +2954,7 @@ C reflect it is local.
           goto 44
         endif
 
-      elseif(isw.eq.5)then
+      elseif(isw.eq.3)then
 
 C Allow user to select from the model ../dbs folder for an
 C optics file. If moddb was set to true then proceed to edit
@@ -2960,14 +2968,15 @@ C the optics.
           goto 60
         endif
 
-      elseif(isw.eq.6)then
+      elseif(isw.eq.5)then
 
-C Browse distribution database folder. Setup LCOPY to point to
-C the database folder (but no particular file). Use easkf to
-C return a file (which might be from somewhere else if the user
-C decides to do some browsing). Test this suggested file via
-C call to eroptdb and if this is not successful reset LOPTDB.
-        if(iglib.eq.2)then
+C Browse distribution database folder. If Native Windows the in-built
+C file browsing does not yet work so do it via easkf and just point
+C to the common file.
+        if(.NOT.unixok)then
+          call usrmsg(
+     &      'In Native Windows the copy from common does not yet',
+     &      'work. Currently pointing to the common file.','W')
           write(LCOPY,'(4a)') dinstpath(1:lnblnk(dinstpath)),
      &      fs,'databases',fs
           CALL EASKF(LCOPY,'Optical properties','Confirm:',
@@ -2984,8 +2993,21 @@ C common block will be updated with call to findwhichdbpath.
           moddb=.true.
           goto 44
         else
-          call usrmsg('Browse feature not available.',' ','W')
-          goto 60
+
+C Create a menu list of files in the distribution databases folder
+C If user requests, copy one of those files to the model folder.
+          copydef=.false.
+          allowbrowse=.true.
+          numhelp=nbhelp
+          lltmp='  '
+          call copycommonfile('opt',copydef,allowbrowse,
+     &      numhelp,lltmp,istat,moddb)
+          if(istat.eq.1)then
+            LOPTDB=lprev
+            goto 60  ! cancel detected, restore name and redisplay menu.
+          elseif(istat.eq.0)then
+            goto 44
+          endif
         endif
       endif
 
@@ -3012,8 +3034,8 @@ C      call edisp248(iuout,outs248,100)
         OPTKOK=.TRUE.
         call EDOPT(IIER)
       endif
+      goto 60        ! re-display the optics menu
 
-      return
       end
 
 
@@ -4861,6 +4883,11 @@ C If the default is to be copied confirm local name. Use LTMP for
 C the file name as known to esp-r and LCOPY for the system cp call.
 C Remember the file to be copied as sourcefile so that subsequent
 C code is general rather than specific (for later consolidation).
+
+C << NOTE: currently the in-built file browsing does not work
+C << for Native Windows for folders beginning with C:\ so we
+C << need a work-around...
+
       subroutine copycommonfile(topic,copydef,allowbrowse,
      &  numhelp,lltmp,istat,moddb)
 #include "building.h"
