@@ -2875,26 +2875,12 @@ C Set the value of ipathoptdb to signal local file.
         GTYPE='SC_fictit'
         GDESCR='Fictitious 99/99'
         NTL=1
-        VTRN=0.99
-        SRF=0.01
-        SAB=0.01
-        UVAL=9.0
-        DG(1)=0.998
-        DG(2)=0.987
-        DG(3)=0.986
-        DG(4)=0.985
-        DG(5)=0.984
-        HG(1)=0.980
-        HG(2)=0.970
-        HG(3)=0.960
-        HG(4)=0.950
-        HG(5)=0.940
+        VTRN=0.99; SRF=0.01; SAB=0.01; UVAL=9.0
+        DG(1)=0.998; DG(2)=0.987; DG(3)=0.986; DG(4)=0.985; DG(5)=0.984
+        HG(1)=0.980; HG(2)=0.970; HG(3)=0.960; HG(4)=0.950; HG(5)=0.940
         RF(1)=1.52
-        AB(1,1)=0.001
-        AB(1,2)=0.001
-        AB(1,3)=0.001
-        AB(1,4)=0.001
-        AB(1,5)=0.001
+        AB(1,1)=0.001; AB(1,2)=0.001; AB(1,3)=0.001
+        AB(1,4)=0.001; AB(1,5)=0.001
         CALL EMKOPTD(IOPTDB,GTYPE,GDESCR,IER)
         CALL ERPFREE(IOPTDB,ISTAT)
         OPTKOK=.TRUE.
@@ -3014,7 +3000,7 @@ C for all interfaces.
       common/MFLDOC/DEPRE(MPRD)
 
       CHARACTER LTMP*72,lltmp*144,lprev*144
-      character longtfile*144,LCOPY*144
+      character longtfile*144
       CHARACTER fs*1,APP*4
 C      CHARACTER outs248*248
 
@@ -3025,7 +3011,7 @@ C      CHARACTER outs248*248
       character t144*144        ! for passing to erprcdb
 
 C Local strings for user selections dependent on graphic library.
-      character opte*28,optf*28,optg*28
+      character optf*28
       character lworking*144   ! file name in std folder
       integer lndbp   ! for length of standard path
       logical unixok  ! to check for path file separators
@@ -3092,18 +3078,15 @@ C data file then set longtfile equal to LLTMP.
       INQUIRE (FILE=longtfile(1:ltf),EXIST=xst)
 
 C Make up additional options depending on graphics lib. The second
-C option (list select) is not available for pressure coefficients. If using
-C text or X11 option e edits the string while for GTK there are two
-C options to browse for files in ../dbs or the esp-r distribution.
+C option (list select) shows files in the distribution databases
+C folder. If using text or X11 option e edits the string while 
+C for GTK there are options to browse for files in ../dbs or the
+C esp-r distribution.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       if(iglib.eq.1.or.iglib.eq.3)then
-        opte='e select from model ../dbs'
-        optf='   '
-        optg='   '
+        optf='f not applicable   '
       elseif(iglib.eq.2)then
-        opte='e select from model ../dbs'
-        optf='f browse esp-r distribution'
-        optg='g make copy of another file'
+        optf='f make copy of another file'
       endif
 
       IF(.NOT.XST)THEN
@@ -3112,20 +3095,26 @@ C If db does not exist locally offer limited choices.
         idno=2
         isw=0
         call MENUATOL('  ','Pressure coefficients',
-     &    ' ','b select from list',
-     &    'c create new coefficients','d copy standard coefficients',
-     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
+     &    ' ','b select file from list',
+     &    'c select from model ../dbs',
+     &    'd copy default file to model',
+     &    'e copy file from common to model',optf,
+     &    'g create new coefficients',' ',' ',' ',' ',' ',
+     &    isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
-        if(isw.eq.7)copydef=.false.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       elseif(longtfile(1:ldirpath).eq.dirpath(1:ldirpath))then
 
 C If standard file then offer the following choices (incl /):
         idno=1
         isw=0
         call MENUATOL('  ','Pressure coefficients',
-     &    'a browse/edit','b select from list',
-     &    'c create new coefficients','d copy standard coefficients',
-     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
+     &    'a browse/edit','b select file from list',
+     &    'c select from model ../dbs',
+     &    'd copy default file to model',
+     &    'e copy file from common to model',optf,
+     &    'g create new coefficients',' ',' ',' ',' ',' ',
+     &    isw,idno,nbhelp)
         copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
@@ -3133,9 +3122,12 @@ C If standard file then offer the following choices (without /):
         idno=1
         isw=0
         call MENUATOL('  ','Pressure coefficients <std>',
-     &    'a browse/edit','b select from list',
-     &    'c create new coefficients','d copy it to model',
-     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
+     &    'a browse/edit','b select file from list',
+     &    'c select from model ../dbs',
+     &    'd copy default file to model',
+     &    'e copy file from common to model',optf,
+     &    'g create new coefficients',' ',' ',' ',' ',' ',
+     &    isw,idno,nbhelp)
         copydef=.false.
       else
 
@@ -3144,11 +3136,14 @@ C default file or the current file.
         idno=1
         isw=0
         call MENUATOL('  ','Pressure coefficients <mod>',
-     &    'a browse/edit','b select from list',
-     &    'c create new coefficients','d copy standard coefficients',
-     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
+     &    'a browse/edit','b select file from list',
+     &    'c select from model ../dbs',
+     &    'd copy default file to model',
+     &    'e copy file from common to model',optf,
+     &    'g create new coefficients',' ',' ',' ',' ',' ',
+     &    isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
-        if(isw.eq.7)copydef=.false.
+        if(isw.eq.5.or.isw.eq.6)copydef=.false.
       endif
 
 C Act on the users choice. If no choice, return to calling menu.
@@ -3169,7 +3164,6 @@ C check to see if it is local or standard or absolute path.
         endif
       elseif(isw.eq.2)then
 
-C There is no select by list for pressure coefficients.
 C Allow user to select from the distribution databases folder for a
 C pressure coefficients file. If moddb was set to true then proceed
 C to edit the coefficients.
@@ -3182,7 +3176,7 @@ C to edit the coefficients.
           goto 60
         endif
 
-      elseif(isw.eq.3)then
+      elseif(isw.eq.7)then
 
 C No pressure db found so set-up minimal common block, create
 C a new db, populate it and present editing facility. Use the
@@ -3231,10 +3225,10 @@ C Scan the new file and use the editing facility.
           goto 44
         endif
 
-      elseif(isw.eq.4.or.isw.eq.7)then
+      elseif(isw.eq.4.or.isw.eq.6)then
 
 C Copy a standard file to project dbs folder. If iws is 4 then the
-C user has asked for the default file. If isw is 7 then the
+C user has asked for the default file. If isw is 6 then the
 C user wishes to browse for the source file. Suggest a local
 C file name based on the project root name. Update common to
 C reflect it is local.
@@ -3251,7 +3245,7 @@ C reflect it is local.
           goto 44
         endif
 
-      elseif(isw.eq.5)then
+      elseif(isw.eq.3)then
 
 C Allow user to select from the model ../dbs folder for an
 C pressure coefficients file. If moddb was set to true then proceed
@@ -3265,33 +3259,24 @@ C to edit the coefficients.
           goto 60
         endif
 
-      elseif(isw.eq.6)then
+      elseif(isw.eq.5)then
 
-C Browse distribution database folder. Setup LCOPY to point to
-C the database folder (but no particular file). Use easkf to
-C return a file (which might be from somewhere else if the user
-C decides to do some browsing). Test this suggested file and if
-C this is not successful reset lapres.
-        if(iglib.eq.2)then
-          write(LCOPY,'(4a)') dinstpath(1:lnblnk(dinstpath)),
-     &      fs,'databases',fs
-          CALL EASKF(LCOPY,'Pressure coefficients file','Confirm:',
-     &      144,dapres,'pressure coefficients',IER,nbhelp)
-          if(ier.eq.-3)then
-            lapres=lprev
-            goto 60  ! cancel detected, restore name and redisplay menu.
-          endif
-
-C This is yet another place where we need to check what the user might
-C have edited to be sure of setting the correct location value. The
-C common block will be updated with call to findwhichdbpath.
-          call findwhichdbpath('prs',LCOPY,ier)
-          moddb=.true.
+C Create a menu list of files in the distribution databases folder
+C and copy that file into the model.
+        copydef=.false.
+        allowbrowse=.true.
+        numhelp=nbhelp
+        lltmp='  '
+        call copycommonfile('prs',copydef,allowbrowse,
+     &  numhelp,lltmp,istat,moddb)
+     
+        if(istat.eq.1)then
+          lapres=lprev
+          goto 60  ! cancel detected, restore name and redisplay menu.
+        elseif(istat.eq.0)then
           goto 44
-        else
-          call usrmsg('Browse feature not available.',' ','W')
-          goto 60
         endif
+
       endif
 
 C Test the selected or copied file. If a problem loop back
