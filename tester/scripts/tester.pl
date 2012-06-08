@@ -74,6 +74,8 @@ sub create_historical_archive();
 sub process_historical_archive($); 
 sub create_report();
 sub compare_results($$);
+sub CollectSummaryResults($$); 
+sub CompareNumericalResults($$$); 
 
 #----------------------------------------------------------------------#
 #  FUNCTION:  hashValueAscendingNum                                    #
@@ -113,7 +115,7 @@ my %gRef_Sys_params;       # Refence system parameters
 my %gTest_paths;           # paths associated with testing
 my %gTestable_files;
 my %gTest_Results;
-my %gXML_Failures;
+my %gNum_Failures;
 my %gTest_ext;             # Testable exentions
 
 my $gRefXML;               # Object containing reference XML file
@@ -122,7 +124,7 @@ my $gTestXML;              # Object containing reference XML file
 my @gCurrent_path;         # Stacks used to traverse XML file
 my %gElements;             #   quickly
 
-my %gXML_Compare_Vars;     # Variables suitable for numerical
+my %gNum_Compare_Vars;     # Variables suitable for numerical
                            #   comparison in xml output .
 
 my %gCallGrindResults;     # Results from call-grind comparisons
@@ -137,7 +139,7 @@ my @gDumped_parameters;    # Array containing list of test parameters
                            #    to be included in archive configuration
                            #    file
 
-my $gXML_Report_needed=0;  # Flag indicating differences were found
+my $gNum_Report_needed=0;  # Flag indicating differences were found
                            #    in the xml, and a report should be
                            #    created.
 
@@ -531,7 +533,7 @@ $gTest_params{'configuration_file'} = "configuration_file.txt";
                                                       #    configuration file name 
 
 $gTest_params{'test_efficiency'} = 1;          # Flag indicating efficiency should be
-                                               # tested.
+                                               # tessted.
 
 $gTest_params{'test_eff_arch_version'} = "1.1"; # Earliest historical archive
                                                 # version supporting efficiency
@@ -558,7 +560,7 @@ $gTest_params{"third_party_diff_cmd"} = "diff -iw";  # Command to dump out diff
                       );
 
 # List of variables in the XML output that can be compared.                          
-%gXML_Compare_Vars     = ( "min"             => 1,
+%gNum_Compare_Vars     = ( "min"             => 1,
                            "max"             => 1,
                            "active_average"  => 1,
                            "active_steps"    => 1,
@@ -566,10 +568,11 @@ $gTest_params{"third_party_diff_cmd"} = "diff -iw";  # Command to dump out diff
                            "content"         => 1 ) ;
 
 # List of extentions associated with testable output files
-%gTest_ext = (    "xml" => 1,
+%gTest_ext = (    "xml" => 0,
                   "csv" => 1,
-                  "h3k" => 1,
-                  "data" => 1,
+				  "summary" => 1,
+                  "h3k" => 0,
+                  "data" => 0,
                   "fcts" => 0,
                   "callgrind" => 0
              );
@@ -588,7 +591,9 @@ $gSmall = 1E-10;
                    "A"       => 1.0E-03,
                    "kg/s"    => 1.0E-03,
                    "degrees" => 1.0,
-                   "m/s"     => 1.0E-03  );
+                   "m/s"     => 1.0E-03,
+				   "W/m2"    => 0.1 );
+				   
                    
 
 # Aliases for other plausable units
@@ -610,7 +615,7 @@ $gTolerance{"relative"}        = $gTolerance{"%"};
 # Process arguements
 #-------------------------------------------------------------------
 
-# dump text, if no arguement given
+# dump text and quit, if no arguement given
 if (!@ARGV){
   print $Help_msg;
   die;
@@ -623,7 +628,7 @@ foreach $arg (@ARGV){
   $cmd_arguements .= " $arg ";
 }
 
-# Compress white space, and convert to ';'
+# Compress white space to a single ' ', and convert to ';'
 $cmd_arguements =~ s/\s+/ /g;
 $cmd_arguements =~ s/\s+/;/g;
 
@@ -636,11 +641,12 @@ $cmd_arguements =~ s/-v;/--verbose;/g;
 $cmd_arguements =~ s/-vv;/--very_verbose;/g;
 $cmd_arguements =~ s/-d;/--databases;/g;
 
-# Aliases:
+# Aliases: 'ref_res' means the same as 'ref_loc'...
 $cmd_arguements =~ s/--ref_res;/--ref_loc;/g;
 $cmd_arguements =~ s/--test_res;/--test_loc;/g;
 
-# Collate options expecting arguements
+# Collate options expecting arguements, and link option with 
+# arguement by turning trailing ';' to ':' 
 $cmd_arguements =~ s/--databases;/--databases:/g;
 $cmd_arguements =~ s/--adj_tol;/--adj_tol:/g;
 $cmd_arguements =~ s/--path;/--path:/g;
@@ -650,18 +656,20 @@ $cmd_arguements =~ s/--create_historical_archive;/--create_historical_archive:/g
 $cmd_arguements =~ s/--ref_loc;/--ref_loc:/g;
 $cmd_arguements =~ s/--test_loc;/--test_loc:/g;
 $cmd_arguements =~ s/--diff_tool;/--diff_tool:/g;
+
 # If any options expecting arguements are followed by other
-# options, insert empty arguement:
+# options (ie. the arguement is missing), insert empty arguement:
 $cmd_arguements =~ s/:-/:;-/;
 
-# remove leading and trailing ;'s
+# remove leading and trailing ;'s (if any)
 $cmd_arguements =~ s/^;//g;
 $cmd_arguements =~ s/;$//g;
 
-# split processed arguements back into array
+# split processed arguements back into array that we can handle one-by-one
 @processed_args = split /;/, $cmd_arguements;
 
-# Intrepret arguements
+# Intrepret arguements: each element in @processed_args is now a separate 
+# arguement, including its associated parameters (if any)
 foreach $arg (@processed_args){
   SWITCH:
   {
@@ -683,7 +691,9 @@ foreach $arg (@processed_args){
     }
 
     if( $arg =~ /^--case:/){
-      # Path to single test case (ie .cfg file)
+      # Path to single test case (ie .cfg file).
+	  # This option is really reduntant; it does exactly the same thing that --path
+	  # does when you specify # --path /path/to/model/cfg/file.cfg
       $gTest_params{"single_case"} = 1;
       $gTest_paths{"single_case"} = $arg;
       $gTest_paths{"single_case"} =~ s/--case://g;
@@ -746,6 +756,7 @@ foreach $arg (@processed_args){
       last SWITCH;
     }
 
+	# Switch flag on for valgrind analysis (and measure code efficiency)
     if ( $arg =~ /--run_callgrind/ ){
       $gTest_params{'run_callgrind'} = 1;
       $gTest_ext{'callgrind'} = 1;
@@ -753,7 +764,8 @@ foreach $arg (@processed_args){
     }
     
     if ( $arg =~ /--adj_tol:/ ){
-      # Multiply all comparison tolerances by specified value.
+      # Multiply all comparison tolerances by specified value. 
+	  # ( --adj_tol 0 forces exact agreement between results )
       $arg =~ s/--adj_tol://g;
       # Check that provided adjustment is actually numeric 
       if ( $arg !~ /^[0-9]+\.*[0-9]*$/ && $arg !~ /^\.[0-9]+$/ ){
@@ -766,6 +778,7 @@ foreach $arg (@processed_args){
       last SWITCH;
     }
     
+	# Disable specific file comparisons for --no_XXXX arguements
     if ( $arg =~ /--no_xml/ ){
       $gTest_ext{"xml"} = 0;
       last SWITCH;
@@ -786,12 +799,19 @@ foreach $arg (@processed_args){
       $gTest_ext{"h3k"} = 0;
       last SWITCH;
     }
-
+	if ( $arg =~ /--no_summary/ ){
+	  $gTest_ext{"summary"} = 0;
+      last SWITCH;
+    }
+	
+	
+	# Optionally format test report in .csv form for spreadsheet analysis
     if ( $arg =~/--csv_output/ ){
       $gTest_params{"report_format"} = "csv";
       last SWITCH;
     }
       
+	  
     if ( $arg =~ /^--save_results/ ){
       # Save output for comparison purposes
       $gTest_params{"save_output"} = 1;
@@ -868,7 +888,8 @@ foreach $arg (@processed_args){
 
 
 #--------------------------------------------------------------------
-# Initialize
+# Initialize. This next block of code establishes paths to 
+# test suite files, input/output, and ESP-r binaries. 
 #--------------------------------------------------------------------
 stream_out("\n tester.pl $gSys_params{'date'} $gSys_params{'time'}\n\n");
 
@@ -885,7 +906,7 @@ $gTest_paths{"results"}      = resolve_path ( $gTest_paths{"results"} );
 
 #-------------------------------------------------------------------
 # Check to see that the specified binary (or binaries) exists and
-# is execuitable.
+# is executable.
 #-------------------------------------------------------------------
 my ($binary, $bin_count, $bin_list, $found, $bin_1, $bin_2, $path);
 $bin_count = 0;
@@ -965,23 +986,23 @@ if ( ! $gTest_params{"compare_two_archives"} ){
   foreach my $line (@version_info){
     SWITCH:
     {
-      if ( $line =~ /- SVN Source:/ ){
-        $line =~ s/^\s*- SVN Source:\s*//g;
+      if ( $line =~ /SVN source -/ ){
+        $line =~ s/^\s*SVN source -\s*//g;
         $gTest_params{"test_bin_svn_src"} = $line;
         last SWITCH;
       }
-      if ( $line =~ /- Compilers:/ ){
-        $line =~ s/^\s*- Compilers:\s*//g;
+      if ( $line =~ /Compilers -/ ){
+        $line =~ s/^\s*Compilers -\s*//g;
         $gTest_params{"test_bin_compilers"} = $line;
         last SWITCH;
       }
-      if ( $line =~ /- Graphics Library:/ ){
-        $line =~ s/^\s*- Graphics Library:\s*//g;
+      if ( $line =~ /Graphics library -/ ){
+        $line =~ s/^\s*Graphics library -\s*//g;
         $gTest_params{"test_bin_graphics_lib"} = $line;
         last SWITCH;
       }
-      if ( $line =~ /- XML output:/ ){
-        $line =~ s/^\s*- XML output:\s*//g;
+      if ( $line =~ /XML output -/ ){
+        $line =~ s/^\s*XML output -\s*//g;
         $gTest_params{"test_bin_xml_support"} = $line;
         last SWITCH;
       }
@@ -1014,48 +1035,28 @@ if ( $gRef_Test_params{"test_binary"} && $gTest_params{"compare_versions"} ){
   foreach my $line (@version_info){
     SWITCH:
     {
-      if ( $line =~ /- SVN Source:/ ){
-        $line =~ s/^\s*- SVN Source:\s*//g;
+      if ( $line =~ /SVN source -/ ){
+        $line =~ s/^\s*SVN source -\s*//g;
         $gRef_Test_params{"test_bin_svn_src"} = $line;
         last SWITCH;
       }
-      if ( $line =~ /- Compilers:/ ){
-        $line =~ s/^\s*- Compilers:\s*//g;
+      if ( $line =~ /Compilers -/ ){
+        $line =~ s/^\s*Compilers -\s*//g;
         $gRef_Test_params{"test_bin_compilers"} = $line;
         last SWITCH;
       }
-      if ( $line =~ /- Graphics Library:/ ){
-        $line =~ s/^\s*- Graphics Library:\s*//g;
+      if ( $line =~ /Graphics library -/ ){
+        $line =~ s/^\s*Graphics library -\s*//g;
         $gRef_Test_params{"test_bin_graphics_lib"} = $line;
         last SWITCH;
       }
-      if ( $line =~ /- XML output:/ ){
-        $line =~ s/^\s*- XML output:\s*//g;
+      if ( $line =~ /XML output -/ ){
+        $line =~ s/^\s*XML output -\s*//g;
         $gRef_Test_params{"test_bin_xml_support"} = $line;
         last SWITCH;
       }
     }
   }
-}
-
-#-----------------------------------------------------------------------
-# Look for ESRU's ANALYSE script
-#-----------------------------------------------------------------------
-$gTest_params{"analyse_found"} = 0;
-foreach my $path ( split /;/, $gTest_paths{"helper_apps"} ){
-
-  $path = resolve_path ( $path );
-
-  if ( -r "$path/ANALYSE" &&
-       -x "$path/ANALYSE"  &&
-        ! $gTest_params{"analyse_found"} ){
-
-    # Analyse was found!        
-    $gTest_params{"analyse_found"} = 1;
-    $gTest_paths{"analyse_location"} = "$path/ANALYSE";
-
-  }
-
 }
 
 #-----------------------------------------------------------------------
@@ -1246,9 +1247,11 @@ if ($gTest_ext{"data"}) {
   push @gSave_levels, 4;
 }
 
-if ($gTest_ext{"h3k"} ||
-    $gTest_ext{"xml"} ||
-    $gTest_ext{"fcts"} ){
+if ($gTest_ext{"h3k"}     ||
+    $gTest_ext{"xml"}     ||
+	$gTest_ext{"csv"}     ||
+	$gTest_ext{"summary"} ||
+    $gTest_ext{"fcts"}       ){
   push @gSave_levels, 5;
 }
 
@@ -1271,7 +1274,7 @@ if ( $gSys_params{"sys_type"} =~ /CYGWIN/ ){
 # strip trailing lines from white space parameters,
 # and convert '~' to ' '. Remember, ~ is used to
 # demarcate spaces in space-separated configuration.txt
-# file.
+# file in historical tester.pl archives.
 foreach my $key ( keys %gTest_params ){
   $gTest_params{$key} =~ s/\n//g;
   $gTest_params{$key} =~ s/~/ /g;
@@ -1318,8 +1321,7 @@ if ( ! $gTest_params{"compare_two_archives"} ){
 }
 
 
-
-# Scope varaibles needed for archives
+# Scope varaibles needed for historical archive file names
 my ($gTmp_Test_archive, $gTmp_Ref_archive);
 
 # if archive is to be created, check to see if tar file exists
@@ -1399,12 +1401,16 @@ if ( $gTest_params{"create_archive"}){
 }
 
 #-----------------------------------------------------------------------
-# Process test cases
+# All preparation work is done. Start running tests! 
+# This next loop searches for .cfg files in the specified test path 
+# (or at ../test_suite if no path specified), and invokes routine 
+# process_case when it finds one. 
 #-----------------------------------------------------------------------
 if ( ! $gTest_params{"compare_two_archives"} ){
   if ( $gTest_params{"single_case"} ){
     # process specified file
     process_case($gTest_paths{"single_case"});
+  
   }else{
     # recursively search through test-case path for cfg files.
     find( sub{
@@ -1415,11 +1421,15 @@ if ( ! $gTest_params{"compare_two_archives"} ){
           return unless -r;
           return if $File::Find::name =~ m/CVS./;
           return unless $File::Find::name =~ m/\.cfg$/;
+		  # file is a .cfg file. Run the case!
           process_case($File::Find::name);
         },  $gTest_paths{"test_suite"} );
   }
-}else{
 
+}else{
+  # we're comparing two historical archives. There is no need to search for 
+  # cfg files or run any tests. Collect a list of files we can compare, 
+  # and call function compare_results()
   foreach my $key ( keys %gTestable_files ){
 
     my ($folder, $model) = split /\//, $key;
@@ -1475,6 +1485,8 @@ if ( $gTest_params{"compare_to_archive"} && $gTest_paths{"old_archive"} ) {
 # delete local files folder
 execute ("rm -fr $gTest_paths{\"local_models\"}");
 
+
+# That's it!
 
 
 ####################################################################
@@ -1594,18 +1606,19 @@ sub create_report(){
                   ."^^^^^^^^^^^^^^^^^^^^"
                   ."^^^^^^^^^^^^";
   push @output, $current_rule;
-  push @output, sprintf (" %\-".$folder_length."s<>  %-".$model_length."s<> .xml <> .data<> .csv <> .h3k <> overall<> dt-CPU(%%)", "Folder", "Model");
+  push @output, sprintf (" %\-".$folder_length."s<>  %-".$model_length."s<> .summary <> .xml<> .csv <> overall<> dt-CPU(%%)", "Folder", "Model");
   push @output, $current_rule;
 
   # Loop throug results, and report to buffer
   foreach my $test ( sort keys %gTest_Results ){
     my ($folder,$model) = split /\//, $test;
-    my $xml_pass  = result_to_string($test,"xml");
-    my $csv_pass  = result_to_string($test,"csv");
-    my $h3k_pass  = result_to_string($test,"h3k");
-    my $data_pass = result_to_string($test,"data");
-    my $overall_pass = result_to_string($test,"overall");
-    my $cpu_change = $gRun_Times{"$folder/$model"}{"chg"};
+    my $xml_pass      = result_to_string($test,"xml");
+	my $summary_pass  = result_to_string($test,"summary");
+    my $csv_pass      = result_to_string($test,"csv");
+    my $h3k_pass      = result_to_string($test,"h3k");
+    my $data_pass     = result_to_string($test,"data");
+    my $overall_pass  = result_to_string($test,"overall");
+    my $cpu_change    = $gRun_Times{"$folder/$model"}{"chg"};
     # add extra space to align +ive and -ive CPU runtime changes
     my $spacer = "";
     if ( $gTest_params{"test_efficiency"} && $cpu_change !~ /N\/A/){
@@ -1615,7 +1628,7 @@ sub create_report(){
       $cpu_change = "N/A";
     }
     
-    push @output, sprintf (" %\-".$folder_length."s<>  %-".$model_length."s<>   %1s  <>   %1s  <>   %1s  <>   %1s  <>    %1s    <> ".$spacer."%-10s  ", $folder, $model, $xml_pass, $data_pass, $csv_pass, $h3k_pass, $overall_pass, $cpu_change);
+    push @output, sprintf (" %\-".$folder_length."s<>  %-".$model_length."s<>     %1s   <>    %1s  <>  %1s   <>   %1s    <> ".$spacer."%-10s  ", $folder, $model,  $summary_pass,$xml_pass, $csv_pass, $overall_pass, $cpu_change);
   }
   push @output, $current_rule;
   push @output, "  ";
@@ -1633,19 +1646,20 @@ sub create_report(){
     push @output, " Efficiency testing disabled.";
   }
   push @output, "  ";
-  push @output, " =========== Comparison of XML results ================= ";
+  push @output, " =========== Comparison of Numerical results ================= ";
   # Detailed report of XML output comparison
-  if ( $gTest_ext{"xml"} && ! $gXML_Report_needed ){
+  if ( ( $gTest_ext{"xml"} || $gTest_ext{"summary"} ) 
+       && ! $gNum_Report_needed ){
     push @output, " ";
-    push @output, " No differences were found in XML output. Detailed report unnecessary. ";
+    push @output, " No differences were found in numerical output. Detailed report unnecessary. ";
     push @output, " ";
-  }elsif ( $gTest_ext{"xml"} ){
+  }elsif ( $gTest_ext{"xml"} || $gTest_ext{"summary"}  ){
 
     my $current_folder = "";
     my $current_model  = "";
 
     
-    push @output, " XML output: Detailed report ";
+    push @output, " Numerical output: Detailed report ";
     push @output, " Maximum observed error:";
     foreach my $unit ( @gReportUnitComp ){
       if ( defined ( $gMax_difference{"global"}{"$unit"} ) ){
@@ -1685,7 +1699,7 @@ sub create_report(){
          $current_rule .= "^";
     }
    
-    foreach my $failure ( sort keys %gXML_Failures ){
+    foreach my $failure ( sort keys %gNum_Failures ){
       my ($folder,$model,$element_path,$attribute) = split /;/, $failure;
 
       # Add header row, if this is a new model or folder.
@@ -1729,20 +1743,20 @@ sub create_report(){
         push @output, $current_rule;
       }
 
-      $current_line  = sprintf (" %\-80s<>%\-20s[]", "$element_path ($attribute)", $gXML_Failures{$failure}{"units"});
+      $current_line  = sprintf (" %\-80s<>%\-20s[]", "$element_path ($attribute)", $gNum_Failures{$failure}{"units"});
 
       $current_line .= sprintf ("%15s%5s<>%15s%5s<>%15s%5s<>%15s%5s[]",
                                 format_my_number(
-                                        $gXML_Failures{$failure}{"difference"}{"relative"},15,"%10.5g"),
+                                        $gNum_Failures{$failure}{"difference"}{"relative"},15,"%10.5g"),
                                 "",
                                 format_my_number(
-                                        $gXML_Failures{$failure}{"difference"}{"absolute"},15,"%10.5g"),
+                                        $gNum_Failures{$failure}{"difference"}{"absolute"},15,"%10.5g"),
                                 "",
                                 format_my_number(
-                                        $gXML_Failures{$failure}{"difference"}{"reference_value"},15,"%10.5g"),
+                                        $gNum_Failures{$failure}{"difference"}{"reference_value"},15,"%10.5g"),
                                 "",
                                 format_my_number(
-                                        $gXML_Failures{$failure}{"difference"}{"test_value"},15,"%10.5g"),
+                                        $gNum_Failures{$failure}{"difference"}{"test_value"},15,"%10.5g"),
                                 ""
                                 );
 
@@ -2177,7 +2191,14 @@ sub process_historical_archive($){
 
 #-------------------------------------------------------------------
 # Read the cfg file, build temporary files for relevant save-levels,
-# and call invoke_tests() to exercise bps
+# and call invoke_tests() to exercise bps. This block of code 
+# is the primary supervisory routine for:
+#   -pre-processing test cases (including invoking shading analysis 
+#    if needed)
+#   -invoking reference and test versions of bps 
+#   -handling output files 
+#   -comparing results 
+#
 #-------------------------------------------------------------------
 sub process_case($){
 
@@ -2185,9 +2206,19 @@ sub process_case($){
   my $start_path = getcwd();
   chdir $gTest_paths{"master"};
 
+  #-------------------------------------------------------------------
+  # Prepare to run tests. 
+  #   - Make local copy of model
+  #   - impose custom database paths
+  #   - identify zones requiring shading analysis 
+  #-------------------------------------------------------------------
+  
+  
+  # Make foldet to store local copy of the model
   execute("mkdir $gTest_paths{\"local_models\"}");
   
-  # collect test case path
+  # collect test case path. We assume that the test case lies in 
+  # ESP-r's standard modelname/cfg/modelname.cfg path.
   my ($test_model) = @_;
   $test_model = resolve_path($test_model);
 
@@ -2201,11 +2232,17 @@ sub process_case($){
   my $model_folder_path = get_model_folder($test_model);
   my $local_cfg_file = "$gTest_paths{\"local_models\"}/$model_root_name/cfg/$model_name.cfg";
   
+  # Report on progress
   stream_out(" > TESTING: $model_name (in folder $model_root_name) \n");
+  
+  # Actually copy files. 
   execute("cp -fr $model_folder_path $gTest_paths{\"local_models\"}");
 
-  # If user has specified local databases, replace default
-  # database path with specified paths
+  # If user has specified local databases (e.g. /home/user/esp-r/databases...),
+  # replace default database path (usr/esru) with specified path. 
+  # Obviously this only works if test cases have standard /usr/esru  database 
+  # paths. Anything else will break tester.
+  
   if ( $gTest_params{"user_databases"} ){
     
     find( sub{
@@ -2259,9 +2296,8 @@ sub process_case($){
   my %zone_names;
 
   #-----------------------------------------------------------------------
-  # read cfg file into @cfg_lines buffer,
-  # identify simulation presets, and rename
-  # res libraries for consistency
+  # read cfg file into @cfg_lines buffer,identify simulation presets, and rename
+  # res libraries for consistency. Flag zones that require shading analysis.
   #-----------------------------------------------------------------------
   open(CFG_FILE, $local_cfg_file) or fatalerror("Could not open $local_cfg_file!");
   while ( my $line = <CFG_FILE> ) {
@@ -2319,9 +2355,10 @@ sub process_case($){
       # Check to see if line describes save level, and adjust to reflect loop.
       my $line_copy = $line;
       if ($line =~/^\*sps/ ){
-         # set save level
+         # set save level: Substitute specified save level instead of one in file.
          $line_copy =~ s/(\*sps[\s]*[0-9]*[\s]*[0-9]*[\s]*[0-9]*[\s]*[0-9]*[\s]*)[0-9]*/$1 $save_level/g;
       }
+	  # Impose abbriviated (one-day) simulaitons, if requested.
       if (  $line =~/^\s*[0-9]+\s+[0-9]+\s+[0-9]+\s+[0-9]+\s+$gTest_params{"period_name"}/ && $gTest_params{"abbreviated_runs"} ){
         $line_copy =~ s/^\s*[0-9]+\s+[0-9]+\s+[0-9]+\s+[0-9]+\s+$gTest_params{"period_name"}/$gTest_params{"abbreviated_run_period"} $gTest_params{"period_name"}/g;
       }
@@ -2481,8 +2518,8 @@ sub create_historical_archive(){
 }
 
 #-------------------------------------------------------------------
-# Run bps from the current directory, move results to
-# archive folder, and post-process as required.
+# Run bps on a specified model from the current directory, 
+# move results to archive folder, and post-process as required.
 #-------------------------------------------------------------------
 
 sub invoke_tests($$$$$){
@@ -2509,15 +2546,15 @@ sub invoke_tests($$$$$){
     delete_old_files();
 
     # Loop through zone shading status flag, and regenerate
-    # shading for any 'shaded zones' using ish
+    # shading for any 'shaded zones' using ish. 
     while ( my($zone,$regen) = each ( %$zone_shading_status ) ){
       if ( $regen ) {
         stream_out("   Regenerating shading files for zone $zone using $bps_locations{\"$version\"}/ish ...");
-        $time_start = (times)[2];
+        $time_start = (times)[2];   # Sim start time 
         $cmd = "$bps_locations{\"$version\"}/ish -mode text -file $test_case -zone $zone -act update_silent";
         execute($cmd);
-        $time_end = (times)[2];
-        $user_time = $time_end-$time_start;
+        $time_end = (times)[2];   # Sim end time 
+        $user_time = $time_end-$time_start; # lapsed simulaiton time
         stream_out("   Done. ($user_time seconds on CPU)\n");
       }
     }
@@ -2559,7 +2596,7 @@ sub invoke_tests($$$$$){
   
     }
   
-    # Save run-time data
+    # Save lapsed run-time data
     $user_time = $time_end-$time_start;
     $gRun_Times{"$folder/$model"}{$save_level}{"$version"} = $user_time;
 
@@ -2632,6 +2669,7 @@ sub move_simulation_results($$$$$){
     execute ("cp -f $path/out.callgrind $Destination/$folder/$model/SL5\_$version.callgrind");
     execute ("cp -f $path/out.csv $Destination/$folder/$model/SL5\_$version.csv");
     execute ("cp -f $path/out.xml $Destination/$folder/$model/SL5\_$version.xml");
+	execute ("cp -f $path/out.summary $Destination/$folder/$model/SL5\_$version.summary");
     execute ("cp -f $path/*.h3k   $Destination/$folder/$model/SL5\_$version.h3k");
     execute ("cp -f $path/callgrind.out* $Destination/$folder/$model/SL5\_$version.raw-callgrind-output");
     execute ("cp -f $path/*.fcts1 $Destination/$folder/$model/SL5\_$version.fcts1");
@@ -2665,7 +2703,7 @@ sub move_simulation_results($$$$$){
   }
   
   # delete all remaining results files.
-  execute("rm -fr $path/.callgrind $path/*.bres $path/*.pres $path/*.eres $path/*.ires $path/*.h3k $path/out.xml $path/*.fcts* $path/*.data");
+  execute("rm -fr $path/.callgrind $path/*.bres $path/*.pres $path/*.eres $path/*.ires $path/*.h3k $path/out.xml $path/out.summary $path/out.csv $path/*.fcts* $path/*.data");
   
   # move back to starting path.
   chdir $start_path;
@@ -2753,10 +2791,9 @@ sub compare_results($$){
            $gTest_Results{"$folder/$model"}{"overall"} = "fail";
            $gRun_Times{"$folder/$model"}{"chg"} = "N/A";
            
-        }elsif ( $extention =~ /xml/ ){
-          # perform xml-specific analysis (Should check if
-          # XML::Simple is available...)
-
+        }elsif ( $extention =~ /xml/ ||  $extention =~ /summary/ ){
+          
+		    
 
           # First, check if files differ.
           if ( ! compare( $reference_file, $test_file ) ){
@@ -2764,26 +2801,41 @@ sub compare_results($$){
             # xml-comparison.
             $gTest_Results{"$folder/$model"}{$extention} = "pass";
           }else{
-            # Files differ - delve into xml 
-
-            # Create new objects to hold document tree
-            $gRefXML  = new XML::Simple();
-            $gTestXML = new XML::Simple();
-      
-            # Parse Document trees
-            $gRefXML  = XML::Simple::XMLin($reference_file);
-            $gTestXML = XML::Simple::XMLin($test_file);
-      
-            # Compare reference and test xml: This function will parse the contents
-            # of $gRefXML and $gTestXML, and return a hash containing comparable
-            # values.
-            my %results = CollectXMLResults();
-      
-            # This function will compare the values in the % results hash.
-            my $case_failed = CompareXMLResults($folder,$model,\%results);
-      
+		  
+		   		  
+		    # Files differ - delve into contents:
+			
+			my %results = (); 
+			
+			if ( $extention =~ /xml/ ) {
+		  
+				# Handle XML first
+		  
+				# Create new objects to hold document tree
+				$gRefXML  = new XML::Simple();
+				$gTestXML = new XML::Simple();
+		  
+				# Parse Document trees
+				$gRefXML  = XML::Simple::XMLin($reference_file);
+				$gTestXML = XML::Simple::XMLin($test_file);
+		  
+				# Compare reference and test xml: This function will parse the contents
+				# of $gRefXML and $gTestXML, and return a hash containing comparable
+				# values.
+				%results = CollectXMLResults();
+		  
+			}else{
+			
+				# Analysis of summary.out: Provides simpler treatment?
+				%results = CollectSummaryResults($reference_file, $test_file); 
+			
+			}
+			
+			# This function will compare the values in the % results hash.
+			my $case_failed = CompareNumericalResults($folder,$model,\%results);
+		  
             if ( $case_failed ){
-              $gXML_Report_needed = 1;
+              $gNum_Report_needed = 1;
               $gTest_Results{"$folder/$model"}{$extention} = "fail";
               $gTest_Results{"$folder/$model"}{"overall"} = "fail";
             }else{
@@ -2908,6 +2960,85 @@ sub compare_results($$){
   
 }
 
+#-------------------------------------------------------------------
+# Parse summary.out files and store in common hash. 
+#-------------------------------------------------------------------
+sub CollectSummaryResults($$){
+
+	my %SummaryResults; 
+
+	my ($reference_file, $test_file) = @_; 
+	
+	open (INPUT, $reference_file ) or fatalerror("\n\nCould not open $reference_file!\n"); 
+	
+	while ( my $line = <INPUT> ){
+		
+		my ($path,$remainder) = split /::/, $line; 
+	    my ($attribute,$value,$units) = split / /, $remainder; 
+		# Units will contain a trailing space and '(', ')'. delete these. 
+		$units =~ s/\s//g; 
+		$units =~ s/(\(|\))//g; 
+		
+		
+		# Add values to hash. 
+		
+		if ( ! defined ($SummaryResults{$path}{"units"} ) )
+		{
+			$SummaryResults{$path}{"units"}  = $units; 
+		}
+		$SummaryResults{$path}{$attribute} = "$value/"; 
+		
+				
+	}
+	
+	close (INPUT); 
+
+	
+	open (INPUT, $test_file ) or fatalerror("\n\nCould not open $test_file!\n"); 
+		
+	while ( my $line = <INPUT> ){	
+
+		my ($path,$remainder) = split /::/, $line; 
+	    my ($attribute,$value,$units) = split / /, $remainder; 
+		# Units will contain a trailing space and '(', ')'. delete these. 
+		$units =~ s/\s//g; 
+		$units =~ s/(\(|\))//g; 
+				
+		# Add values to hash. 
+		
+		if ( ! defined ($SummaryResults{$path}{"units"} ) )
+		{
+			$SummaryResults{$path}{"units"}  = $units; 
+		}
+				
+				
+		my $slash_value = defined ( $SummaryResults{$path}{$attribute} ) ? $SummaryResults{$path}{$attribute}."$value" : "/$value"; 
+		
+		$SummaryResults{$path}{$attribute} = $slash_value; 
+		
+	
+	}
+	close (INPUT) ; 
+ 
+	return %SummaryResults; 
+ 
+	# Debugging code. 
+	#
+	# foreach my $path ( sort keys %SummaryResults ){
+	# 	
+	# 	stream_out (">$path\n");
+	# 	
+	# 	my %attributes = %{ $SummaryResults{$path} }; 
+	# 	
+	# 	foreach my $attribute ( sort keys  %attributes ){
+	# 	
+	# 		stream_out (" -> $attribute = ".$SummaryResults{$path}{$attribute}."\n") ; 
+	# 	
+	# 	}
+	# 
+	# }
+	
+}
 
 #-------------------------------------------------------------------
 # Traverse XML trees for reference and test document, and store
@@ -3016,7 +3147,7 @@ sub CollectXMLResults(){
       my ($RefVal, $TestVal );
 
       # Loop through comparable attributes, and collect from XML
-      foreach my $attribute ( keys %gXML_Compare_Vars ){
+      foreach my $attribute ( keys %gNum_Compare_Vars ){
 
         # Check that attribute is actually defined in both reference
         # and test hashes. If so, collect values
@@ -3060,7 +3191,7 @@ sub CollectXMLResults(){
 # the XML files, and perform context-aware comparisons on them.
 # Note: the results hash is passed by reference into the routine
 #------------------------------------------------------------------
-sub CompareXMLResults($){
+sub CompareNumericalResults($$$){
 
   my ($folder, $model, $results) = @_;
   my $global_fail = 0;
@@ -3083,6 +3214,7 @@ sub CompareXMLResults($){
         # Check that tolerance has been defined for given units
         if ( defined( $gTolerance{$units} ) ){
           # Call number_cruncher to compare values
+			
           my %difference = number_cruncher ($ref_val, $test_val, $units);
 
           # check if file passes, and set pass/fail flag. If case fails,
@@ -3110,8 +3242,8 @@ sub CompareXMLResults($){
                   $gMax_difference{"$folder;$model"}{"$units"}{"attribute"} = "$attribute";
             }                                       
 
-            %{$gXML_Failures{"$folder;$model;$element_path;$attribute"}{"difference"}} = %difference;
-            $gXML_Failures{"$folder;$model;$element_path;$attribute"}{"units"} = $units;
+            %{$gNum_Failures{"$folder;$model;$element_path;$attribute"}{"difference"}} = %difference;
+            $gNum_Failures{"$folder;$model;$element_path;$attribute"}{"units"} = $units;
 
             
 
