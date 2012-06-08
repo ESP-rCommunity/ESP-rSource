@@ -1444,7 +1444,7 @@ C     if blank then no file name change implied.
       CHARACTER DFILE*72,LLASCI*144
       character LTMP*72,lltmp*144,lprev*144,lltmp2*144
       character longtfile*144,longtafile*144,longtmp*144
-      CHARACTER DOIT*300,fs*1,LCOPY*144
+      CHARACTER DOIT*300,fs*1
       CHARACTER OUTS*124,APP*4
 C      CHARACTER outs248*248
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
@@ -1453,7 +1453,6 @@ C      CHARACTER outs248*248
       character dirpath*72
 
 C Local strings for user selections dependent on graphic library.
-      character optg*28,opth*28,opti*28
       CHARACTER ZPDESC*25
       integer lndbp   ! for length of standard path
       integer ier
@@ -1530,42 +1529,35 @@ C file then set longtfile equal to LLTMP.
       ltf=max(1,LNBLNK(longtfile))
       INQUIRE (FILE=longtfile(1:ltf),EXIST=xst)
 
-C Make up additional options depending on graphics lib. The second
-C option (list select) is not available for plant templates. If using
-C text or X11 option e edits the string while for GTK there are two
-C options to browse for files in ../dbs or the esp-r distribution.
-      if(iglib.eq.1.or.iglib.eq.3)then
-        optg='g select from model ../dbs'
-        opth='   '
-        opti='   '
-      elseif(iglib.eq.2)then
-        optg='g select from model ../dbs'
-        opth='h browse esp-r distribution'
-        opti='i make copy of another file'
-      endif
-
+C Make up options depending on where the file is.
       IF(.NOT.XST)THEN
 
 C If db does not exist locally offer limited choices.
         idno=2
         isw=0
         call MENUATOL('  ','Plant components',
-     &    ' ','b select from list','c create new components',
-     &    'd copy standard components',
-     &    'e components >> ascii export','f ascii >> components',
-     &    optg,opth,opti,' ',' ',' ',isw,idno,nbhelp)
+     &    ' ','b select file from list',
+     &    'c select from model ../dbs',
+     &    'd copy default file to model',
+     &    'e copy file from common to model',
+     &    'f components >> ascii export','g ascii >> components',
+     &    'h create new plant components',' ',' ',' ',' ',
+     &    isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
-        if(isw.eq.9)copydef=.false.
+        if(isw.eq.5)copydef=.false.
       elseif(longtfile(1:ldirpath).eq.dirpath(1:ldirpath))then
 
 C If standard file then offer the following choices (incl /):
         idno=1
         isw=0
         call MENUATOL('  ','Plant components',
-     &    'a browse/edit','b select from list',
-     &    'c create new components','d copy standard components',
-     &    'e components >> ascii export','f ascii >> components',
-     &    optg,opth,opti,' ',' ',' ',isw,idno,nbhelp)
+     &    'a browse/edit','b select file from list',
+     &    'c select from model ../dbs',
+     &    'd copy default file to model',
+     &    'e copy file from common to model',
+     &    'f components >> ascii export','g ascii >> components',
+     &    'h create new plant components',' ',' ',' ',' ',
+     &    isw,idno,nbhelp)
         copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
@@ -1573,10 +1565,13 @@ C If standard file then offer the following choices (without /):
         idno=1
         isw=0
         call MENUATOL('  ','Plant components <std>',
-     &    'a browse/edit','b select from list',
-     &    'c create new components','d copy it to model',
-     &    'e components >> ascii export','f ascii >> components',
-     &    optg,opth,opti,' ',' ',' ',isw,idno,nbhelp)
+     &    'a browse/edit','b select file from list',
+     &    'c select from model ../dbs',
+     &    'd copy default file to model',
+     &    'e copy file from common to model',
+     &    'f components >> ascii export','g ascii >> components',
+     &    'h create new plant components',' ',' ',' ',' ',
+     &    isw,idno,nbhelp)
         copydef=.false.
       else
 
@@ -1585,13 +1580,23 @@ C default file or the current file.
         idno=1
         isw=0
         call MENUATOL('  ','Plant components <mod>',
-     &    'a browse/edit','b select from list',
-     &    'c create new components','d copy standard components',
-     &    'e components >> ascii export','f ascii >> components',
-     &    optg,opth,opti,' ',' ',' ',isw,idno,nbhelp)
+     &    'a browse/edit','b select file from list',
+     &    'c select from model ../dbs',
+     &    'd copy default file to model',
+     &    'e copy file from common to model',
+     &    'f components >> ascii export','g ascii >> components',
+     &    'h create new plant components',' ',' ',' ',' ',
+     &    isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
-        if(isw.eq.9)copydef=.false.
+        if(isw.eq.5)copydef=.false.
       endif
+
+C << Original menu structure.
+C        call MENUATOL('  ','Plant components <mod>',
+C     &    'a browse/edit','b select file from list',
+C     &    'c create new components','d copy standard components',
+C     &    'e components >> ascii export','f ascii >> components',
+C     &    optg,opth,opti,' ',' ',' ',isw,idno,nbhelp)
 
 C Act on the user's choice. If no choice return to calling menu.
       if(isw.eq.0)then
@@ -1631,7 +1636,7 @@ C this pre-pend).
           goto 60
         endif
 
-      elseif(isw.eq.3)then
+      elseif(isw.eq.8)then
 
 C No plant component db found so set-up minimal common block, create
 C a new db, populate it and present editing facility. Use the
@@ -1682,11 +1687,9 @@ C use the editing facility.
           goto 44
         endif
 
-      elseif(isw.eq.4.or.isw.eq.9)then
+      elseif(isw.eq.4)then
 
-C Copy a file to project folder. If iws is 4 then the
-C user has asked for the default database. If isw is 9 then the
-C user wishes to browse for the source file. Suggest a local
+C Copy default file to project folder. Suggest a local
 C file name based on the project root name.  Suggest a local
 C file name based on the project root name. Update common to
 C reflect it is local.   
@@ -1703,7 +1706,7 @@ C reflect it is local.
           goto 44
         endif
        
-      elseif(isw.eq.5)then
+      elseif(isw.eq.6)then
 
 C Components >> ASCII. If current components are
 C in standard folder start ASCII name in users home folder.
@@ -1758,7 +1761,7 @@ C        write(6,*) doit
         call edisp(iuout,longtafile)
         goto 60  ! jump to redisplay menu.
        
-      elseif(isw.eq.6)then
+      elseif(isw.eq.7)then
 
 C Components: ASCII >> BINARY
 C Confirm suggested name and then write out binary file.
@@ -1819,7 +1822,7 @@ C        write(6,*) doit
         call edisp(iuout,longtfile)
         goto 60  ! jump to re-display the menu.
        
-      elseif(isw.eq.7)then
+      elseif(isw.eq.3)then
 
 C Allow user to select from the model ../dbs folder for an
 C plant template file. If moddb was set to true then proceed 
@@ -1833,33 +1836,24 @@ C to pdb
           goto 60
         endif
 
-      elseif(isw.eq.8)then
+      elseif(isw.eq.5)then
 
-C Browse distribution database folder. Setup LCOPY to point to
-C the database folder (but no particular file). Use easkf to
-C return a file (which might be from somewhere else if the user
-C decides to do some browsing). Test this suggested file via
-C call to eroptdb and if this is not successful reset LOPTDB.
-        if(iglib.eq.2)then
-          write(LCOPY,'(4a)') dinstpath(1:lnblnk(dinstpath)),
-     &      fs,'databases',fs
-          CALL EASKF(LCOPY,'Plant component templates file.',
-     &      'Confirm:',144,DPCDB,'plant templates',IER,nbhelp)
-          if(ier.eq.-3)then
-            LPCDB=lprev
-            goto 60  ! cancel detected, restore name and redisplay menu.
-          endif
-
-C This is yet another place where we need to check what the user might
-C have edited to be sure of setting the correct location value. The
-C common block lpcdb will have been updated by call to findwhichdbpath.
-          call findwhichdbpath('pdb',lcopy,ier)
-          moddb=.true.
+C Create a menu list of files in the distribution databases folder
+C If user requests, copy one of those files to the model folder.
+        copydef=.false.
+        allowbrowse=.true.
+        numhelp=nbhelp
+        lltmp='  '
+        call copycommonfile('pdb',copydef,allowbrowse,
+     &    numhelp,lltmp,istat,moddb)
+     
+        if(istat.eq.1)then
+          LPCDB=lprev
+          goto 60  ! cancel detected, restore name and redisplay menu.
+        elseif(istat.eq.0)then
           goto 44
-        else
-          call usrmsg('Browse feature not available.',' ','W')
-          goto 60
         endif
+
       endif
 
 C Test the selected or copied file. If a problem loop back
