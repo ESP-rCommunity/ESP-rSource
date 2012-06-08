@@ -4494,7 +4494,7 @@ C is via a text editor.
       common/deflt4/dinstpath
 
       CHARACTER lltmp*144,lprev*144
-      character longtfile*144,longtfiledos*144,LCOPY*144
+      character longtfile*144,longtfiledos*144
       CHARACTER DOIT*300,fs*1,APP*4
       CHARACTER outs248*248
       LOGICAL OK,COPYDEF,MODDB,XST,DOK,concat
@@ -4503,11 +4503,9 @@ C is via a text editor.
       character tmode*8
 
 C Local strings for user selections dependent on graphic library.
-      character opte*28,optf*28,optg*28
       integer lndbp   ! for length of standard path
       logical allowbrowse  ! future feature
       logical unixok  ! to check for path file separators
-      integer iglib  ! for detecting GTK or X11
 #ifdef OSI
       integer ICPMOD     ! passed from tchild
 #else
@@ -4574,43 +4572,33 @@ C data file then set longtfile equal to LLTMP.
       ltf=max(1,LNBLNK(longtfile))
       INQUIRE (FILE=longtfile(1:ltf),EXIST=xst)
 
-C Make up additional options depending on graphics lib. The second
-C option (list select) is not available for moulds. If using
-C text or X11 option e edits the string while for GTK there are two
-C options to browse for files in ../dbs or the esp-r distribution.
-      iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-      if(iglib.eq.1.or.iglib.eq.3)then
-        opte='f select from model ../dbs'
-        optf='   '
-        optg='   '
-      elseif(iglib.eq.2)then
-        opte='f select from model ../dbs'
-        optf='g browse esp-r distribution'
-        optg='h make copy of another file'
-      endif
-
+C Make up options depending on where the current file lives.
       IF(.NOT.XST)THEN
 
 C If db does not exist locally offer limited choices.
         idno=2
         isw=0
         call MENUATOL('  ','Mould isopleths',
-     &    ' ','b select from list',
-     &    'c create new isopleths','d copy standard isopleths',
-     &    'e invoke mould utility',opte,optf,optg,
-     &    ' ',' ',' ',' ',isw,idno,nbhelp)
-        if(isw.eq.5)copydef=.true.
-        if(isw.eq.8)copydef=.false.
+     &    ' ','b select file from list',
+     &    'c select from model ../dbs',
+     &    'd copy default file to model',
+     &    'e copy file from common to model','f invoke mould utility',
+     &    'g create new isopleths',' ',' ',' ',' ',' ',
+     &    isw,idno,nbhelp)
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5)copydef=.false.
       elseif(longtfile(1:ldirpath).eq.dirpath(1:ldirpath))then
 
 C If standard file then offer the following choices (incl /):
         idno=1
         isw=0
         call MENUATOL('  ','Mould isopleths',
-     &    'a browse/edit','b select from list',
-     &    'c create new isopleths','d copy standard isopleths',
-     &    'e invoke mould utility',opte,optf,optg,
-     &    ' ',' ',' ',' ',isw,idno,nbhelp)
+     &    'a browse/edit','b select file from list',
+     &    'c select from model ../dbs',
+     &    'd copy default file to model',
+     &    'e copy file from common to model','f invoke mould utility',
+     &    'g create new isopleths',' ',' ',' ',' ',' ',
+     &    isw,idno,nbhelp)
         copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
@@ -4618,10 +4606,12 @@ C If standard file then offer the following choices (without /):
         idno=1
         isw=0
         call MENUATOL('  ','Mould isopleths <std>',
-     &    'a browse/edit','b select from list',
-     &    'c create new isopleths','d copy it to model',
-     &    'e invoke mould utility',opte,optf,optg,
-     &    ' ',' ',' ',' ',isw,idno,nbhelp)
+     &    'a browse/edit','b select file from list',
+     &    'c select from model ../dbs',
+     &    'd copy default file to model',
+     &    'e copy file from common to model','f invoke mould utility',
+     &    'g create new isopleths',' ',' ',' ',' ',' ',
+     &    isw,idno,nbhelp)
         copydef=.false.
       else
 
@@ -4630,13 +4620,24 @@ C default file or the current file.
         idno=1
         isw=0
         call MENUATOL('  ','Mould isopleths <mod>',
-     &    'a browse/edit db','b select from list',
-     &    'c create new isopleths','d copy standard isopleths',
-     &    'e invoke mould utility',opte,optf,optg,
-     &    ' ',' ',' ',' ',isw,idno,nbhelp)
-        if(isw.eq.5)copydef=.true.
-        if(isw.eq.8)copydef=.false.
+     &    'a browse/edit db','b select file from list',
+     &    'c select from model ../dbs',
+     &    'd copy default file to model',
+     &    'e copy file from common to model','f invoke mould utility',
+     &    'g create new isopleths',' ',' ',' ',' ',' ',
+     &    isw,idno,nbhelp)
+        if(isw.eq.4)copydef=.true.
+        if(isw.eq.5)copydef=.false.
       endif
+
+C The earlier layout of menu.
+C        call MENUATOL('  ','Mould isopleths <mod>',
+C     &    'a browse/edit db','b select file from list',
+C     &    'c create new isopleths','d copy standard isopleths',
+C     &    'e invoke mould utility',opte,optf,optg,
+C     &    ' ',' ',' ',' ',isw,idno,nbhelp)
+C        if(isw.eq.5)copydef=.true.
+C        if(isw.eq.8)copydef=.false.
 
 C Act on the users choice. If no choice, return to calling menu.
       if(isw.eq.0)then
@@ -4669,17 +4670,15 @@ C to edit it.
           goto 60
         endif
 
-      elseif(isw.eq.3)then
+      elseif(isw.eq.7)then
 
 C There is no create new mould isopleths.
         call edisp(iuout,'No create new for mould isopleths.')
         goto 60
 
-      elseif(isw.eq.4.or.isw.eq.8)then
+      elseif(isw.eq.4)then
 
-C Copy a common data file to project dbs folder. If iws is 4 then the
-C user has asked for the default file. If isw is 7 then the
-C user wishes to browse for the source file. Suggest a local
+C Copy a common data file to project dbs folder. Suggest a local
 C file name based on the project root name. Update common to
 C reflect it is local.
         allowbrowse=.false.
@@ -4695,7 +4694,7 @@ C reflect it is local.
           goto 44
         endif
 
-      elseif(isw.eq.5)then
+      elseif(isw.eq.6)then
 
 C Start the mould utility.
         doit = ' '
@@ -4713,7 +4712,7 @@ C Start the mould utility.
         call runit(doit,tmode)
         goto 60  ! redisplay menu.
 
-      elseif(isw.eq.6)then
+      elseif(isw.eq.3)then
 
 C Allow user to select from the model ../dbs folder for an
 C mould file. If moddb was set to true then proceed to edit
@@ -4727,32 +4726,22 @@ C the isopleths.
           goto 60
         endif
 
-      elseif(isw.eq.7)then
+      elseif(isw.eq.5)then
 
-C Browse distribution database folder. Setup LCOPY to point to
-C the database folder (but no particular file). Use easkf to
-C return a file (which might be from somewhere else if the user
-C decides to do some browsing). Test this suggested file via
-C call to eroptdb and if this is not successful reset LOPTDB.
-        if(iglib.eq.2)then
-          write(LCOPY,'(4a)') dinstpath(1:lnblnk(dinstpath)),
-     &      fs,'databases',fs
-          CALL EASKF(LCOPY,'Mould isopleths file.','Confirm:',
-     &      144,dmdbnam,'mould isopleths',IER,nbhelp)
-          if(ier.eq.-3)then
-            lfmould=lprev
-            goto 60  ! cancel detected, restore name and redisplay menu.
-          endif
-
-C This is yet another place where we need to check what the user might
-C have edited to be sure of setting the correct location value. The
-C common block will be updated with call to findwhichdbpath.
-          call findwhichdbpath('mld',LCOPY,ier)
-          moddb=.true.
+C Create a menu list of files in the distribution databases folder
+C If user requests, copy one of those files to the model folder.
+        copydef=.false.
+        allowbrowse=.true.
+        numhelp=nbhelp
+        lltmp='  '
+        call copycommonfile('mld',copydef,allowbrowse,
+     &    numhelp,lltmp,istat,moddb)
+     
+        if(istat.eq.1)then
+          lfmould=lprev
+          goto 60  ! cancel detected, restore name and redisplay menu.
+        elseif(istat.eq.0)then
           goto 44
-        else
-          call usrmsg('Browse feature not available.',' ','W')
-          goto 60
         endif
 
       endif
