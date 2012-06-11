@@ -1268,34 +1268,6 @@ C Logical flags for indicating which air flow model is in use.
 C  Initialise.
       IF(NSINC.EQ.1)X3(ICOMP)=0.0
 
-C Determine day, time parameters needed to access scheduled infiltration 
-C parameters from the OPR file. This code will be used if infiltration or
-C ventilation parameters are sourced from the .opr file. Note that this 
-C code sequence cannot be embedded in the air-flow schedule specific 
-C blocks (bOPR=TRUE) ; it is also required if the AIM-2 network is 
-C active and the opr file is used to impose scheduled ventilaton. 
-      IDAY1=IDYP
-      IF(IT2.EQ.1) then
-        IDAY2=IDYP+1
-      ELSE
-        IDAY2 = IDYP
-      ENDIF
-      IF(IDAY2.GT.365)IDAY2=IDAY2-365
-      ID1=ICALENDER(IDAY1)
-      ID2=ICALENDER(IDAY2)
-      DtypeLt3: IF(NBDAYTYPE.LE.3)THEN
-        ID1=1
-        ID2=1
-        IF(IDWP.EQ.6)ID1=2
-        IF(IDWP.EQ.7)ID1=3
-        IF(IT2.EQ.1)then
-          IF(IDWF.EQ.6)ID2=2
-          IF(IDWF.EQ.7)ID2=3
-        else
-          IF(IDWP.EQ.6)ID2=2
-          IF(IDWP.EQ.7)ID2=3
-        endif
-      ENDIF DtypeLt3
 
 
 C Now compute the present time-row values of CVIP, CVVP
@@ -1333,6 +1305,37 @@ C Set 'pre-TIME' and 'post-TIME' on-the-hour values.
 
       TRAT=TIME-T1
       IF(T1.GT.TIME)TRAT=TIME-(T1-24.0)
+
+
+
+C Determine day, time parameters needed to access scheduled infiltration 
+C parameters from the OPR file. This code will be used if infiltration or
+C ventilation parameters are sourced from the .opr file. Note that this 
+C code sequence cannot be embedded in the air-flow schedule specific 
+C blocks (bOPR=TRUE) ; it is also required if the AIM-2 network is 
+C active and the opr file is used to impose scheduled ventilaton. 
+      IDAY1=IDYP
+      IF(IT2.EQ.1) then
+        IDAY2=IDYP+1
+      ELSE
+        IDAY2 = IDYP
+      ENDIF
+      IF(IDAY2.GT.365)IDAY2=IDAY2-365
+      ID1=ICALENDER(IDAY1)
+      ID2=ICALENDER(IDAY2)
+      DtypeLt3: IF(NBDAYTYPE.LE.3)THEN
+        ID1=1
+        ID2=1
+        IF(IDWP.EQ.6)ID1=2
+        IF(IDWP.EQ.7)ID1=3
+        IF(IT2.EQ.1)then
+          IF(IDWF.EQ.6)ID2=2
+          IF(IDWF.EQ.7)ID2=3
+        else
+          IF(IDWP.EQ.6)ID2=2
+          IF(IDWP.EQ.7)ID2=3
+        endif
+      ENDIF DtypeLt3
 
       ! This legacy line appears to be part of a convoluted method 
       ! of transporting data from the flow network into the scheduled
@@ -1776,9 +1779,6 @@ C Collect data from air flow module.
 
 C Impose computed conductance for scheduled ventilation for .opr or 
 C .aim2 case. 
-
-          ID1 = 0
-          ID2 = 0
 
           CV1=CVVN(ID1,ICOMP,IT1)*xmod
           CV2=CVVN(ID2,ICOMP,IT2)*xmod
