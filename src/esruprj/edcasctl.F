@@ -211,6 +211,7 @@ C (need to test blind/ shutter control flags).
       if(ITW(ICOMP).eq.1) then
         CALL ERTWIN(0,IUOUT,IUF,LTWIN(ICOMP),ICOMP,IER)
       elseif (icfc(icomp).eq.1) then
+c         write(*,*)' rescan CFC?'
          ! do what?
       else
         write(outs,'(A,I3,A)') ' WARNING: No TMC file for zone ',ICOMP,

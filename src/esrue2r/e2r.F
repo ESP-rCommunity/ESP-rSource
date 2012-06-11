@@ -674,6 +674,7 @@ C Use askabout to instanciate the initial help messages (2nd parameter is one).
   20  call askabout('e2r ',1)
 
 C Present the main menu.
+cx ... there should be a "silent" switch for coupling mode, possibly ...
       CALL EMENU('Radiance desktop',ITEM,NITEMS,INO)
 
       IF(INO.EQ.NITEMS)THEN

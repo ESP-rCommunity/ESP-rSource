@@ -3271,9 +3271,11 @@ C ********************************************************************
       IMPLICIT NONE
 #include "building.h"
 #include "CFC_common.h"
+
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
       real sazi,salt
       integer isunup
+
       COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
       real pazi,pelv
 
@@ -3473,9 +3475,11 @@ C ********************************************************************
       integer nnds,nndz,nndc,nndl
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       integer ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
+
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
       real sazi,salt
       integer isunup
+
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       real qfp,qff,tp,tf,qdp,qdf,vp,vf,dp,df,hp,hf
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)

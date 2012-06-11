@@ -4712,7 +4712,6 @@ C Determine appropriate temperature parameter to use
               endif
             endif
 
-C Perform actual control of shade ON/OFF and slat angle here
             if(temp.gt.shdONsetpoint)then
               if(iact1.eq.0)then                              ! actuate shade ON/OFF
                 vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
@@ -4732,6 +4731,14 @@ C Perform actual control of shade ON/OFF and slat angle here
             endif
         
           ELSEIF(ictype.eq.3.or.ictype.eq.4)then             ! senses solar radiation
+
+C Perform actual control of shade ON/OFF and slat angle here
+C ag@06062012: Allow for IBLIND / i_shd() to have *many* values in CFC_Control? Basically,
+C              this could work - each angle setting gets an own number ... even
+C              "cut off" seems to be controlled in defined angle steps in real-life
+C              controllers (function CutOffAngle could be extended, accordingly
+C              ... for Radiance coupling ... where else is i_shd()
+C              used? (see casual.F, line 1380 ff.
 
             if(solrad.gt.shdONsetpoint)then
               if(iact1.eq.0)then
@@ -4770,7 +4777,10 @@ C             cut-off angle control
               endif
             
             else ! solrad is in interval between off and on set points
-              if(iact1.eq.1.or.iact1.eq.5)then
+              if(iact1.eq.0)then
+                vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle
+                i_shd(iact2,iact3)     = 1                    ! shade state ON
+              elseif(iact1.eq.1.or.iact1.eq.5)then
                 vb_phiNew(iact2,iact3) = shdOFFslatPOSITION   ! set "off" slag angle, usually 0 deg
                 i_shd(iact2,iact3)     = 1                    ! shade state ON     
 C             on-off with intermediate angle control

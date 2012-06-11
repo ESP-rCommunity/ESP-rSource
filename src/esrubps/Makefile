@@ -2,6 +2,7 @@ SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
 DFSdir = $(SRCdir)/esrudfs
+E2Rdir = $(SRCdir)/esrue2r
 MFSdir = $(SRCdir)/esrumfs
 MRTdir = $(SRCdir)/esrumrt
 PFSdir = $(SRCdir)/esrupfs
@@ -31,8 +32,9 @@ MODULE_OBJECTS = h3kmodule.o startup.o aim2_module.o aim2_timestep.o
 BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o \
 	  bcfunc.o bctlf.o blibsv.o bmatsu.o bmatsv.o basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
 	  bndarybl.o bndaryl.o bndaryt.o bsim2cfd.o btherm.o c2fdum.o casual.o cfcalc.o \
-	  cfconv.o cfdat.o cfdrw.o cfgrid.o cfmgerb.o cfutil.o chkconvg.o chtmst.o \
-	  climi.o cntmnt.o conc.o convect1.o convect2.o ctread.o dayfac.o drylink.o ecasctl.o \
+	  cfconv.o cfc2rad.o cfdat.o cfdrw.o cfgrid.o cfmgerb.o cfutil.o chkconvg.o chtmst.o \
+	  climi.o cntmnt.o commonclm.o conc.o convect1.o convect2.o ctread.o dayfac.o drylink.o \
+	  e2rtools.o ecasctl.o \
 	  econstr.o econtrol.o edatabase.o egeometry.o egrid.o emfnetw.o emoist.o \
 	  enetbound.o enetmath.o enetmisc.o enetpost.o enetrewr.o enetsetu.o \
 	  enetsolv.o eroper.o esgrid.o esru_misc.o esystem.o filelist.o g3dfac.o \
@@ -135,6 +137,9 @@ cfcalc.F:
 cfconv.F:
 	rm -f cfconv.F
 	ln -s $(DFSdir)/cfconv.F .
+cfc2rad.F:
+	rm -f cfc2rad.F
+	ln -s $(E2Rdir)/cfc2rad.F .
 cfdat.F:
 	rm -f cfdat.F
 	ln -s $(DFSdir)/cfdat.F .
@@ -162,6 +167,9 @@ climi.F:
 cntmnt.F:
 	rm -f cntmnt.F
 	ln -s $(MFSdir)/cntmnt.F .
+commonclm.F:
+	rm -f commonclm.F
+	ln -s $(COMdir)/commonclm.F .
 conc.F:
 	rm -f conc.F
 	ln -s $(DFSdir)/conc.F .
@@ -706,9 +714,9 @@ clean:
 	blibsv.F bmatsu.F bndaryl.F bndarybl.F bndaryt.F bscoeff.F bscoeff_extended.F \
 	bsim2cfd.F btherm.F c2fdum.F casual.F CentralVentSys.F \
 	CETC_BATTERY.F cetc_cogen.F compressed_cylinder.F ConfigureH3kReports.F \
-	ConfigureH3kReports.o cfcalc.F cfconv.F cfdat.F cfdrw.F cfgrid.F cfmgerb.F \
+	ConfigureH3kReports.o cfcalc.F cfconv.F cfc2rad.F cfdat.F cfdrw.F cfgrid.F cfmgerb.F \
 	cfutil.F chemical_properties.F \
-	chkconvg.F chtmst.F climi.F cntmnt.F conc.F convect1.F convect2.F ctread.F dayfac.F \
+	chkconvg.F chtmst.F climi.F cntmnt.F commonclm.F conc.F convect1.F convect2.F ctread.F dayfac.F \
 	drylink.F ecasctl.F econstr.F econtrol.F edatabase.F egeometry.F \
 	egrid.F emfnetw.F emoist.F enetbound.F enetmath.F enetmisc.F enetpost.F \
 	enetrewr.F enetsetu.F enetsolv.F enet_state_variable_manipulate.F eroper.F esgrid.F \
@@ -721,8 +729,8 @@ clean:
 	mfutil.F mitzero.F moistr.F monitor.F montrb.F mstmsc.F MultiYear_climate.F mzmrx5.F \
 	mzout6.F mzoutp.F ncm_overheating.F nwkrewr.F pcloop.F pcomp1.F pcomp2.F pcomp3.F \
 	pcomp4.F pcomps1.F pcomps.F plibsv.F plot.F pltcfg.F plt_bc_components.F \
-	plt_zone_gain_coupling.F pmatrx.F pplib.F ppsub.F precal.F \
-	psychro.F rnor.F rwipv.F rwroam.F rwsbem.F shocc_dummy.c senrwl.F sensit.F sentim.F solar.F sort.F \
+	plt_zone_gain_coupling.F pmatrx.F pplib.F ppsub.F precal.F psychro.F \
+	rnor.F rwipv.F rwroam.F rwsbem.F shocc_dummy.c senrwl.F sensit.F sentim.F solar.F sort.F \
 	Annex42_fuel_cell.F spmatl.F stofunc.F \
 	spmisc.F startup.F Annex42_combustion_CHP.F subsys.F tdfile.F temps.F trstyp.F tscon.F \
 	TWildCards.cpp utilf.F Vnt_data.mod wind_turbine_profile_model.F \

@@ -52,6 +52,7 @@ C QLAT   - latent load for present (1) and future (2) time step.
 #include "tdf2.h"
 #include "sbem.h"
 #include "power.h"
+#include "e2r_common.h"
 
       common/tc/itc,icnt
       common/trc/itrc
@@ -188,6 +189,11 @@ C It excludes start-up timesteps
      &       iMonthOperTimestep(12,MCOM)      
       integer iOperTimestep,iMonthOperTimestep      
 
+
+C Common for CFC - Radiance coupling initialisation control
+      common/CFCRadInit/cfcinit
+      logical cfcinit
+
       REAL QCASLT  ! to hold the summation of pres + future latent
 
       DIMENSION QLATN(2),VAL(MBITS+2)
@@ -253,6 +259,17 @@ C Update present and zero the future zone power values.
             QP(ICOMP,2,ICAS,IPHS)=0.
   5       CONTINUE
   4     CONTINUE
+      endif
+
+C Check if we have casual gain control via Radiance coupling.
+C Is simcon.F a better place for something basic like this prior
+C to call of MZNUMA ... ?
+      if (NSINC.eq.1) then ! do this only once !?
+        if (IDFST(ICOMP,1).eq.4) then 
+        ! first lighting zone of cur zone is coupled
+          call ReadRCF(icomp)
+          cfcinit=.true.
+        endif
       endif
 
 C Zero zone power loads and update present control fractions.
@@ -1044,6 +1061,10 @@ C Average illuminance in lighting zone (for h3k output)
       real AveLtzIllum
       integer NLITZ2
 
+C Common for CFC - Radiance coupling initialisation control
+      common/CFCRadInit/cfcinit
+      logical cfcinit
+
       DIMENSION selum(MLCOM,MDF),alt(8),SENTMP(MLCOM,MDF)
       DIMENSION QDFTMP(MLCOM,MDF),QDRTMP(MLCOM,MDF),Yb(MLCOM,MDF)
       DIMENSION Aa(MLCOM,MDF),Ab(MLCOM,MDF),Ac(MLCOM,MDF),Ya(MLCOM,MDF)
@@ -1060,6 +1081,8 @@ C Average illuminance in lighting zone (for h3k output)
       logical nog,close,closea,closeb,closec,closed,closee,closef
       logical closeg,closeh,closei,instart,neglum,XST
       logical bInStartup
+
+      integer init ! switch for CFC2Rad()
 
 C Definition of sun altitude for daylight coefficient method:
       data alt/6.,18.,30.,42.,54.,66.,78.,90./
@@ -1318,6 +1341,9 @@ C sensor in lighting zone):
 C Transport lighting zone average illumination to h3k output via common ...
         AveLtzIllum(ICOMP,N)=zelum(N)
 
+C            =============================
+C ========== RADIANCE coupling starts here ===========================
+C            =============================
 C Time varying illuminances calculated by Radiance. Test if there
 C is any diffuse irradiation and if solar altitude is positive
 C number. Do not carry out lighting simulation if not, and if 
@@ -1373,12 +1399,24 @@ C If IBOFOT()=1, then blind/shutter is ON.
               ENDIF
               ! Is this surface / construction a CFC?
               IF(ICFCFL(ICOMP,I).GT.0)THEN
+C ** put cfc2rad here to update Radiance model?
+                if (cfcinit) then
+                  init=1
+                  cfcinit=.false. ! should happen only once ...
+                else
+                  init=0
+                endif
+                call CFC2rad(init,icomp,i)
                 ! Keep track of the blind setting. This value is transported to radiance via the temporary file.
                 ! As Radiance uses "IBLIND=0" as default setting, we have to make sure we use IBLIND=0 as basis.
                 ! To date, only one IBLIND value is possible (DBILLA). So, if there is more than one CFC type in 
                 ! current zone, use highest blind setting - high means "more closed". This is a conservative approach
                 ! in regard to lighting heat gains (the heat gains will be estimated high)
-                IBLIND = max(IBLIND,i_shd(ICOMP,icfcfl(icomp,I))-1)                  
+                IBLIND = max(IBLIND,i_shd(ICOMP,icfcfl(icomp,I))-1)
+C ag@06062012: Allow for IBLIND to have *many* values in CFC_Control? Basically,
+C              this could work - each angle setting gets an own number ... even
+C              "cut off" seems to be controlled in defined angle steps in real-life
+C              controllers ...
                 RATIO = 1.0 ! whats this?? it is used in a different block below ... ???
               ENDIF
 31          CONTINUE
@@ -1542,8 +1580,11 @@ C to e2r) and  LTMPFLA is the absolute path/ file name.
               call esppid(ipid)
               write(LTMPFLA,'(a,i7,a)') '.',ipid,'.dat'
               call st2file(LTMPFLA,LTMPFL)
-              write (LTMPFLA,'(a,a,a)')runpath(1:lnblnk(runpath)),'/',
-     &          LTMPFL(1:lnblnk(LTMPFL))
+c        write(*,*)'* INTLUM, runpath=',runpath(1:lnblnk(runpath)),
+c     &             ', LTMPFL=',LTMPFL(1:lnblnk(LTMPFL))
+              write (LTMPFLA,'(2a)')runpath(1:lnblnk(runpath)),
+     &                                     LTMPFL(1:lnblnk(LTMPFL))
+c        write(*,*)'* INTLUM, LTMPFLA=',LTMPFLA,' istat=',istat
               INQUIRE (FILE=LTMPFLA(1:lnblnk(LTMPFLA)),EXIST=XST)
               if(XST)then
                 call edisp(iuout,'Removing existing transfer file. ')

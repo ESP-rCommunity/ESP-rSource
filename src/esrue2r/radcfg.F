@@ -126,7 +126,7 @@ C Read lines from file, header first.
 
       CALL STRIPC(IRCFG,OUTSTR,99,ND,1,'date',IER)
       write (outs,'(a,a)') 'Scenes last modified on ',
-     &                                         OUTSTR(1:lnblnk(OUTSTR))
+     &                                       OUTSTR(1:lnblnk(OUTSTR))
       call edisp (iuout,outs)
 
 C Now read number of scenes contained.
@@ -153,7 +153,7 @@ C Entry for .rif file found:
             CALL EGETW(OUTSTR,K,tmp_rifname,'W','rif name',IFLAG)
             ! evaluate for which zone this rif file (and thus the scene) is used !! ((18.09.09 TODO !!))
             !! ***
-			      ! ifocz is set in RRIF:
+            ! ifocz is set in RRIF:
             call RRIF(ITA2,ITA3,tmp_rifname,'s',IER)
 			      ifocz_tmp(irif)=ifocz ! store current value of ifocz
             if (irif .gt. 1) then
@@ -164,12 +164,14 @@ C Entry for .rif file found:
 			        endif
 			      endif
             write(RIFNAME(ifocz,I,irif),'(a)')tmp_rifname
-			      ! if subsequent scenes have same zone and same purpose => fatal error! ((how???))
+            ! if subsequent scenes have same zone and same purpose => fatal error! ((how???))
             !! ***
 C First rif name corresponds to default blind state, subsquent rifs within 
 C this scene represent alternate blind states (when no control is defined in .tmc file, NABS=0).
             if (irif.gt.(NABS+1)) then
              call usrmsg('Scene has too many rif files.','  ','W')
+            elseif (irif.lt.(NABS+1)) then
+             call usrmsg('Scene does not have enough files.','  ','W')
             endif
 c End of .rif file logic
           elseif (WORD(1:4).eq.'*srt') then
@@ -783,6 +785,7 @@ C Additional details for specific purposes.
 C Set up daylight factor calc points for focus zone.
 c        call setdfgrid(MODE,izone,ier)
         call setdfgrid(MODE,ifocz,ier)
+
       elseif (IRP.eq.5.or.IRP.eq.6) then 
 
 C Get sensor information from cgc file.
@@ -792,7 +795,8 @@ C Get sensor information from cgc file.
 C Clear command line variables.
       zone='NONE'
       aim='NONE'
-      cmdact='NONE'
+c      cmdact='NONE' ! this turns off call of autorad 
+c                      when called from e2r, line 552 or 585
 
 C If not in silent mode then confirm names with user.
       if (MODE.eq.'-') then
@@ -1375,7 +1379,8 @@ C If daylight coefficients and act=create and model exists then issue warning.
             endif
           endif
  10     continue
-      else
+
+      else ! file doesn't exist
 
 C Create a new rcf file.
         write (LRADCF,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.rcf'

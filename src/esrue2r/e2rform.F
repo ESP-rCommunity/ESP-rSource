@@ -583,8 +583,7 @@ C Ask for alternative glazing file.
 C Ask for CFC file name
         if (cfcxst) then
 C         << in interactive mode, this may be a good place to
-C            ask if "standard" ('glass') or "enhanced" (BRTDfunc)
-C            type of model is to be used?
+C            edit settings of "ExplicitVB" and "BRTDfunc"?
  14       ltmp72=cfcfil ! cfcfil is in e2r commons
           dtmp72=cfcfil
           CALL EASKS(ltmp72,' CFC data file name ?',' ',

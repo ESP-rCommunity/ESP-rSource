@@ -138,6 +138,9 @@ C     Search through model to get first and last CFC ...
   5     continue
       endif
 
+C DEBUG:
+c      write(*,*)'CFC2Rad; init=',init,' icomp=',icomp,' isurf',
+c     &    isurf,' firstzone=',firstzone,' lasttype=',lasttype
 C Now conditionally creat model ...
       icfctp=icfcfl(icomp,isurf) ! set type to current
 
@@ -293,9 +296,9 @@ C Commons
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/SUNPOS/SAZI,SALT,ISUNUP
-      real SAZI,SALT
-      integer ISUNUP
+c      COMMON/SUNPOS/SAZI,SALT,ISUNUP
+c      real SAZI,SALT
+c      integer ISUNUP
 
       COMMON/CFCtemp/firstzone,lastzone,lasttype
       integer firstzone,lastzone,lasttype
@@ -312,7 +315,7 @@ C     Climate data (present and future time rows)
 C Local variables 
       integer icfctp,icn,ISTAT,itsys,IER
 
-      real incang,dummy1,dummy2,CAI
+      real incang,dummy1,dummy2,CAI,psazi,psalt
       real VTDIR,VTDIF,VTRAN,gvt1,gvt
 
       real proang,CFCabs
@@ -329,11 +332,10 @@ C Local variables
       DIMENSION AbsSolDir(me),AbsSolDifGrd(me)
       DIMENSION AbsSolDifSky(me),AbsVis(me)
 
-      DIMENSION salt(24),sazi(24)
+      DIMENSION psalt(24),psazi(24)
 
 C Function declarations
       integer lnblnk
-
 
       icfctp=icfcfl(icomp,isurf) ! get type
 
@@ -341,13 +343,23 @@ C     Write header only once!
 C     File is closed in CFCDetailedBlind() !
       if (icomp.eq.firstzone .and. icfctp.eq.1) then
         CALL ERPFREE(icfcfil,ISTAT) ! icfcfil is in e2r commons and is set in e2r main
+        IF(ISTAT.LT.0)THEN
+          call usrmsg(' CFCGlazing: Problem detected in ERPFREE / ',
+     &                 cfcfil,'W')
+c          IER=1
+          return
+        ENDIF
 
-        write(cfcfile,'(a,a)')
-     &           runpath(1:lnrp),cfcfil(1:lnblnk(cfcfil))
+c        write(*,*)'* CFCGlazing, runpath=',runpath(1:lnblnk(runpath)),
+c     &             ', cfcfil=',cfcfil(1:lnblnk(cfcfile))
+
+        write(cfcfile,'(2a)')runpath(1:lnrp),cfcfil(1:lnblnk(cfcfil))
+c        write(*,*)'* CFCGlazing, cfcfile=',cfcfile(1:lnblnk(cfcfile))
         call FPOPEN(icfcfil,ISTAT,1,3,cfcfile)
 
         IF(ISTAT.LT.0)THEN
-          call usrmsg(' Problem detected while opening:',cfcfil,'W')
+          call usrmsg(' CFCGlazing: Problem detected while opening:',
+     &                   cfcfil,'W')
 c          IER=1
           return
         ENDIF
@@ -358,6 +370,7 @@ c          IER=1
         WRITE(icfcfil,'(a)')'  '
       endif
 
+C DEBUG:
 cx          write(*,*)'CFC type ',icfctp,', vb on/off: ',
 cx     &              i_shd(icomp,icfctp),', vb angle: ',
 cx     &              vb_phiNew(icomp,icfctp)
@@ -371,75 +384,84 @@ C non-conflation type calls ("visualization" calls).
         if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
      &          SCENEPURP(ISCENE)(1:8).eq.'Internal'.or.
      &          SCENEPURP(ISCENE)(1:5).eq.'Glare') then
-C ... from bps.F, line 984
+C         == from bps.F, line 984 ===
           call EFOPRAN(ifil,lclim(1:lnblnk(lclim)),144,0,IER)
 
           if (IER.ne.0) then
-c            WRITE(outs,'(a)')PERST2
-c            call edisp(itru,outs)
-            write(*,*)'IER=',IER
+            write(outs,1000)lclim(1:lnblnk(lclim))
+ 1000       format(' ** CFC error: EFOPRAN file open: ','(A)','.')
+            call edisp(iuout,outs)
+            goto 9999
           endif
+
 C         Set data to values according to chosen day/season
 C /sky1/ common holds 'irdoy' - day of year and 'rtime' - time of day
 C         irdoy & rtime are set in "settime()", called in 'autorad'
 C         Recover one day's data from climate file into common 
 C         block for use.
-          call CLMGET(irdoy)
+          call CLMGET(irdoy) ! stores to commons CDIR() etc.
           EXDIR=CDIR(int(rtime))
           EXDIF=CDIF(int(rtime))
+C ... rather call MZSRAD()??
           EXDIFSKY=EXDIF*(1.-rgrfl)
           EXDIFGRD=EXDIF*rgrfl
 
           itsys=1 ! local mean time (2 would be local apparent time)
-          call AZALT(irdoy,itsys,sitelongdif,sitelat,salt,sazi)
+          call AZALT(irdoy,itsys,sitelongdif,sitelat,psalt,psazi)
 
-C== solar.F ===
-C Calculate the angle of incidence between the sun and surface ISRF,
-C ANGI; COS of ANGI, CAI; and the window indices IND1 & IND2 for
-C this external construction.
+C         == from solar.F ===
+C         Calculate the angle of incidence between the sun and 
+C         surface ISRF, ANGI; COS of ANGI, CAI;
           CALL CFCMZSCAI(icomp,isurf,CAI,incang)
-          IF(incang.LT.0..OR.incang.GT.90.)THEN
-            write(outs,1000)incang
- 1000       format(' MZSLGN CFC error: incidence angle = ',F10.3,'.')
-            call edisp(iuout,outs)
-            goto 9999
-          ENDIF
-C== ... do we really need all the above ?? ===
 
           if (ExplicitVB(icomp,icfctp)) then
             incang=0. ! "normal to surface"
-c          else
-c            incang=salt(int(rtime)) ! for now ...
           endif
 
         elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
-C         Set data to day factor typical values
-          write(*,*)'* Day_fact not implemented with CFC'
-          return
+C         Set data to daylight factor (DF) typical values
+C         "10 klux" diffuse sky => corresp. EXDIF?; EXDIR=0.
+C == casual.F, line 1177 == ... use this?
+C Calculate reference horizontal illuminance:
+C          call REFILL(QDIF,QDIR,SALT,SAZI,IDYP,refell)
+
+          EXDIR=0.
+          EXDIF=10000./179. !??
+          EXDIFSKY=EXDIF*(1.-groundrefl)
+          EXDIFGRD=EXDIF*groundrefl
+          incang=0.
+          write(*,*)'* Day_fact with CFC EXPERIMENTAL ( ;o) )'
+cx          return
 
         elseif (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
 C         Set data to current values
-cx          if (init) then ! necessary?
-
+cx          if (init) then ! necessary? I.e., are QFP etc. filled at first call?
 c            else
-               EXDIR=QFP
-               EXDIF=QDP
-               EXDIFSKY=EXDIF*(1.-rgrfl)
-               EXDIFGRD=EXDIF*rgrfl
+          EXDIR=QFP
+          EXDIF=QDP
+          EXDIFSKY=EXDIF*(1.-groundrefl)
+          EXDIFGRD=EXDIF*groundrefl
 c            endif
+          CALL CFCMZSCAI(icomp,isurf,CAI,incang)
 
           if (ExplicitVB(icomp,icfctp)) then
             incang=0. ! "normal to surface"
-          else
-            incang=55. ! for now ...
           endif
-
 
         elseif (SCENEPURP(ISCENE)(1:7).eq.'Sun_pos') then
 C         Pick start and end time ???
           write(*,*)'* Sun_Pos not implemented with CFC'
           return
         endif
+
+C       Check error state
+        IF(incang.LT.0..OR.incang.GT.90.)THEN
+          write(outs,1010)incang
+ 1010     format(' ** CFC error: MZSLGN incidence angle = ',
+     &                                               F10.3,'.')
+          call edisp(iuout,outs)
+          goto 9999
+        ENDIF
 
 C ******************* from solar.F ********************************
 C The following code should probably be put in a designated subroutine.
@@ -448,9 +470,9 @@ C The following code should probably be put in a designated subroutine.
 C DEBUG:
 c          write(*,*)'** Blind position=',i_shd(icomp,icfctp)
 c          write(*,*)'** Blind angle   =',vb_phiNew(icomp,icfctp)
-          write(*,*)'EXDIR=',EXDIR,' EXDIF=',EXDIF,
-     &              'EXDIFSKY=',EXDIFSKY,'EXDIFGRD=',EXDIFGRD,
-     &              'incang=',incang
+c          write(*,*)'EXDIR=',EXDIR,' EXDIF=',EXDIF,
+c     &              'EXDIFSKY=',EXDIFSKY,'EXDIFGRD=',EXDIFGRD,
+c     &              'incang=',incang
 
           ! values include (optional) blinds 
           ! at current blind angle!
@@ -498,26 +520,26 @@ C visual data, normalise to radiation available for output/storing of
 C fraction. These fractions are used in "casual.F/DWINVT()" as light 
 C transmittance values (direct/diffuse) - the fraction is based on 
 C solar radiation with visual properties for CFC layers. 
-            if (EXDIR.gt.0.) then
-              transBB_V(icomp,isurf)=TRANSBB_SYSV/EXDIR
-            else
-              transBB_V(icomp,isurf)=0.
-            endif
-            if (i_ground_sky_diff_calc.eq.1) then
-              if ((EXDIR+EXDIFSKY+EXDIFGRD).gt.0.) then
-                transD_V(icomp,isurf)=TRANSD_SYSV/(EXDIR+EXDIFSKY
+          if (EXDIR.gt.0.) then
+            transBB_V(icomp,isurf)=TRANSBB_SYSV/EXDIR
+          else
+            transBB_V(icomp,isurf)=0.
+          endif
+          if (i_ground_sky_diff_calc.eq.1) then
+            if ((EXDIR+EXDIFSKY+EXDIFGRD).gt.0.) then
+              transD_V(icomp,isurf)=TRANSD_SYSV/(EXDIR+EXDIFSKY
      &                                     +EXDIFGRD)
-              else
-                 transD_V(icomp,isurf)=0.
-              endif
-            else ! legacy
-              if ((EXDIR+EXDIF).gt.0.) then
-                 transD_V(icomp,isurf)=TRANSD_SYSV/(EXDIR+EXDIF)
-              else
-                 transD_V(icomp,isurf)=0.
-              endif
-             
+            else
+               transD_V(icomp,isurf)=0.
             endif
+          else ! legacy
+            if ((EXDIR+EXDIF).gt.0.) then
+               transD_V(icomp,isurf)=TRANSD_SYSV/(EXDIR+EXDIF)
+            else
+               transD_V(icomp,isurf)=0.
+            endif
+           
+          endif
 
 
 C ******************************************************************
@@ -858,7 +880,7 @@ C void alias ADIC_CFC SYP_YRE0146
 
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
 CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
-C ******************** MZSCAI ********************
+C ******************** Copy of MZSCAI ********************
 C MZSCAI computes the cosine of the solar angle of incidence.
       SUBROUTINE CFCMZSCAI(ICOMP,II,CAI,ANGI)
       implicit none
@@ -872,8 +894,8 @@ C Parameters
       real PAZI,PELV
 
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
-      real SAZI,SALT
-      integer ISUNUP
+      real sazi,salt
+      integer isunup
 
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)

@@ -66,7 +66,7 @@ C For help messages
       ITA2=IFIL+7
       ITA3=IFIL+10
 
-      write(*,*)'* using autorad, cmdact=',cmdact(1:6)
+c      write(*,*)'* using autorad, cmdact=',cmdact(1:12)
 
 C Create a default scene based on current information - ask 
 C for additional info if necessary.
@@ -117,9 +117,11 @@ C Generate sky command use a sun for all skys except for daylight factors.
      &     'gensky',IRM,IRD,XRT,
      &      ' +s -g ',rgrfl,' -a ',sitelat,' -o ',-sitelongdif,
      &      ' -m 0.0'
+
         elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
           write(outs,'(a,f5.2,2(a,f7.1),a)') 'gensky 6 20 12.0 -c -g ',
      &      rgrfl,' -a ',sitelat,' -o ',-sitelongdif,' -m 0.0'
+
         elseif (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
 
 C gendaylit -ang 60 0 -L QDIRILL QDIFILL -g ground-reflection
@@ -219,7 +221,7 @@ C simscene simulates daylight coefficients and coupling (called from bps)
       COMMON/FILEP/IFIL
 
       character outs*124,doit*124,doitl*256,tfile*72
-      character QT*1
+      character QT*1,fs*1
       character*72 LTMPFL,LTMPFA,rn
 
 C There are 8 patch zones in the sky dome.
@@ -239,12 +241,18 @@ C There are 8 patch zones in the sky dome.
       ITA2=IFIL+7
       ITA3=IFIL+10
       call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Simulate scene as defined by aim argument.
       if (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
 
 C Read from transfer file defined as the argument for -act from
 C the users home folder.
+        write(doit,'(a)')' '
         if(unixok)then
 c          write(doit,'(6a)') 'cp ',upath(1:lnblnk(upath)),'/',
 c     &               cmdact(1:lnblnk(cmdact)),'  ',runpath(1:lnrp)
@@ -254,8 +262,13 @@ c     &               cmdact(1:lnblnk(cmdact)),'  ',runpath(1:lnrp)
         endif
         call runit(doit,'-')
         ier=0
-        write (LTMPFL,'(2a)') runpath(1:lnrp),cmdact(1:lnblnk(cmdact))
-        call FPOPEN(ITA1,ISTAT,1,1,LTMPFL)
+
+        call st2file(cmdact,LTMPFA) ! seems necessary for .PID file ...
+
+        write (LTMPFL,'(2a)',iostat=istat)
+     &         runpath(1:lnrp),LTMPFA(1:lnblnk(LTMPFA))
+c        write(*,*)'LTMPFL=',LTMPFL,' istat=',istat
+        call FPOPEN(ITA1,IER,1,1,LTMPFL)
         if (ier.ne.0) then 
           call usrmsg('Cannot open transfer file:',cmdact,'F')
           return
@@ -321,6 +334,7 @@ C Run rtrace. << ?? what about pathtype?? >>
         call runit(doitl,'-')
 
 C Copy transfer file back to users homedir (bps is expecting it to be there).
+        write(doit,'(a)')' '
         call isunix(unixok)
         if(unixok)then
 c          write(doit,'(5a)') 'cp ',runpath(1:lnrp),
