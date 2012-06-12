@@ -2245,11 +2245,11 @@ C........->Report data
      &      cSurf_Chars)
 
 C........Internal surface convective coefficient model index
-c         call add_to_xml_reporting (
-c     &      real(ICORI(iZone,iSurface)),
-c     &      H3K_rep_NAME(1:iH3K_NameLen)//'/ICORI',
-c     &      'units', '(-)',
-c     &      'Internal side convective model' )
+         call AddToReport (
+     &      rvICORI%Identifier,
+     &      real(ICORI(iZone,iSurface)),
+     &      zname(iZone)(1:lnzname(iZone)),
+     &      cSurf_Chars)
 
 C........External surface convective coefficient.
 C........->Report data
@@ -2260,11 +2260,11 @@ C........->Report data
      &      cSurf_Chars)
 
 C........External surface convective coefficient model index
-c         call add_to_xml_reporting (
-c     &      real(ICORE(iZone,iSurface)),
-c     &      H3K_rep_NAME(1:iH3K_NameLen)//'/ICORE',
-c     &      'units', '(-)',
-c     &      'External side convective model' )
+         call AddToReport (
+     &      rvICORE%Identifier,
+     &      real(ICORE(iZone,iSurface)),
+     &      zname(iZone)(1:lnzname(iZone)),
+     &      cSurf_Chars)
 
 C......MEAN RADIANT TEMPERATURE OF SURROUNDINGS
 C calc plane radiant temp. for each internal surface (w/o and w emissivity)
@@ -4151,7 +4151,14 @@ C.........output node data
 
 
 c	! contaminant concentration from flow network *******************************
-c       do jj=1,NCONTM
+       do jj=1,NCONTM
+               call AddToReport(
+     &            rvMfnContamCon%Identifier,
+     &            CCONC(ii,jj),
+     &            fluid(1:fluid_len),
+     &            NDNAM(ii)(1:NDNAM_len),
+     &            CONTMNAM(jj)(1:LNBLNK(CONTMNAM(jj))))
+
 c         write(H3K_rep_NAME,'(A,A,A)')
 c     &              Node_Name(1:lnNodeName),
 c     &              '/conc/',
@@ -4162,7 +4169,7 @@ c     &              CCONC(ii,jj),
 c     &              H3K_rep_NAME,
 c     &              'units', 'kg/kg',
 c     &              'mfn node contaminant concentration' )
-c       enddo
+       enddo
 
 C........Only use positive side of connections
 
@@ -4194,10 +4201,16 @@ C........Loop through all interconnections of the current node 'ii'
      &            Connect_Name(1:connect_len))
 
         ! connection control setting ****************************************
+               call AddToReport(
+     &            rvMfnConnectCTLpos%Identifier,
+     &            ctlpos(jj),
+     &            fluid(1:fluid_len),
+     &            Connect_Name(1:connect_len))
+
 c               write(H3K_rep_NAME,'(A,A)')
 c     &             Connect_Name(1:lnConnName),
 c     &             '/ctlpos'
-
+c
 c               call add_to_xml_reporting (
 c     &             ctlpos(jj),
 c     &             H3K_rep_NAME,

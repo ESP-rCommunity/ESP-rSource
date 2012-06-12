@@ -114,7 +114,7 @@ MODULE h3kmodule
          rvBuildingAllZonesThermalLoadsCoolingTotal, rvBuildingAllZonesThermalLoadsNet, &
          rvBuildingAllZonesInternalGainsTotal, rvBuildingAllZonesInternalGainsUseful, &
          rvBuildingAllZonesInternalGainsAdverse, rvBuildingAllZonesEnergyBalanceNet, rvTemperature, &
-         rvExtSurfTemperature, rvPlantContainmentFlux, rvHCi, rvHCe, rvPRT, rvHRi, rvAmbRT, &
+         rvExtSurfTemperature, rvPlantContainmentFlux, rvHCi, rvICORI, rvHCe, rvICORE, rvPRT, rvHRi, rvAmbRT, &
          rvExtSurfTotRad,rvExtSurfRadIncAng,rvExtSurfSolAzi,rvExtSurfSolElev, &
          rvClimateSolarDiffuseHorizontalRadiation, rvClimateSolarDirectNormalRadiation, &
          rvClimateDryBulbTemperature, rvClimateRelativeHumidity, rvClimateWindVelocity, &
@@ -140,7 +140,7 @@ MODULE h3kmodule
          rvElecNetHybridComponentFlux, rvElecNetPowerOnlyComponents, &
          rvMfnTotalNodeFlowRate,rvMfnTotalNodeVolFlowRate,rvMfnTotalNodeTemp, &
          rvMfnConnectPressureDrop, rvMfnConnectFlowRate,rvMfnConnectVeloc, &
-         rvMfnContamCon
+         rvMfnContamCon,rvMfnConnectCTLpos
 
    !Used by ComplexFenestration.F
    Type(ReportVariable) :: rvCFCUvalueISO,rvCFCUvalueActual,rvCFCRgap, &
@@ -944,11 +944,23 @@ CONTAINS
       rvHCi%Description = 'Internal side convective coefficient'
       Call AddVariable(rvHCi)
 
+      rvICORI%VariableName = 'bui/*/s*/ICORI'
+      rvICORI%MetaType = 'units'
+      rvICORI%VariableType = '(-)'
+      rvICORI%Description = 'Internal side convection model'
+      Call AddVariable(rvICORI)
+
       rvHCe%VariableName = 'bui/*/s*/HCe'
       rvHCe%MetaType = 'units'
       rvHCe%VariableType = '(W/(m2 K))'
       rvHCe%Description = 'External side convective coefficient'
       Call AddVariable(rvHCe)
+
+      rvICORE%VariableName = 'bui/*/s*/ICORE'
+      rvICORE%MetaType = 'units'
+      rvICORE%VariableType = '(-)'
+      rvICORE%Description = 'External side convection model'
+      Call AddVariable(rvICORE)
 
       rvPRT%VariableName = 'bui/*/s*/PRT'
       rvPRT%MetaType = 'units'
@@ -1346,11 +1358,17 @@ CONTAINS
       rvMfnConnectVeloc%Description = 'mfn connection flow velocity'
       Call AddVariable(rvMfnConnectVeloc)
 
-      rvMfnContamCon%VariableName = 'mfn/*/*/*'
+      rvMfnContamCon%VariableName = 'mfn/*/*/conc/*'
       rvMfnContamCon%MetaType = 'units'
       rvMfnContamCon%VariableType = '(kg/kg)'
       rvMfnContamCon%Description = 'mfn contaminant concentration'
       Call AddVariable(rvMfnContamCon)
+
+      rvMfnConnectCTLpos%VariableName = 'mfn/*/*/ctlpos'
+      rvMfnConnectCTLpos%MetaType = 'units'
+      rvMfnConnectCTLpos%VariableType = '(-)'
+      rvMfnConnectCTLpos%Description = 'mfn connection control position'
+      Call AddVariable(rvMfnConnectCTLpos)
 
       !Used by ComplexFenestration.F
       rvCFCUvalueISO%VariableName = 'bui/*/s*/CFC_Unom_*'
