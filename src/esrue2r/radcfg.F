@@ -718,7 +718,7 @@ C Daylight factor calculation selected.
 C Coupling calculation selected. (thermal/lighting simulation)
         SCENEPURP(ISCENE)='Coupling'
         intext = 1
-        imgqua = 'High'
+        imgqua = 'Medium'
         detlvl = 'Medium'
         llvar  = 'High'
         indrcb = 2
