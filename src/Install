@@ -11,7 +11,7 @@
 #=====================================================================
 clim_convert()  # converts climate dbs from iwec.a to binary formats
 #=====================================================================
-# Arg_1 = target file 
+# Arg_1 = target file
 # Arg_2 = source file
 {
 
@@ -72,6 +72,7 @@ mode="interactive"         # Interactive/silent installation
                            # (silent mode isn't yet supported)
 SRCdir=`pwd`               # Source Directory
 DESTdir=/usr/esru          # Target Directory
+COSIMdir=" "			   # Harmonizer install directory
 xml_support=prompt         # support for XML output
 SQLite_support="no"        # support for SQLite output
 debugging="no"             # include debugging symbols
@@ -90,6 +91,7 @@ make_msg_file=".make_msg"  # Dump make messages?
 compiler_version="none"    # append string to compilers?
 xLibs="X11"                # Default x-library
 enableFPE="no"             # FPE-exception handling?
+enable_cosim="no"          # Co-simulation with TRNSYS
 extendedDebug="no"         # Enable agressive debugging / warnings /FPE?
 use_intel="no"             # Use intel compilers?
 skip_ish_calcs="no"        # Skip update of exemplar shading files?
@@ -101,6 +103,7 @@ reuse_ish_calcs="no"       # if yes limit re-calculation of exemplar shading fil
 
 # Buildable targets:
 programs="aco b2e bps dbm dfs c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res stats vew"
+# (bld plt, net are not currently built)
 # (net, run, stats are not currently built)
 
 # Add leading and trailing spaces for regexp matching
@@ -117,7 +120,7 @@ machine=`uname -m`           # CPU  e.g. i386 x86_64  sun4u
 
 #-----------------------------------------------------------
 # Is Stat available? assume stat will be in /bin or /usr/bin,
-# since which might also not be available. 
+# since which might also not be available.
 #-----------------------------------------------------------
 
 if [ -x /usr/bin/stat ]; then
@@ -149,6 +152,7 @@ if [ $# -ne 0 ]; then
         --silent)       mode="silent";             shift;;
         --xml)          xml_support=yes;           shift;;
         --SQLite)       SQLite_support="yes";      shift;;
+        --co-sim) shift; COSIMdir=$1; input="yes";  enable_cosim="yes";  shift;;
         --gcc4)         gnu_version="gcc4";        shift;;
         --intel)        use_intel="yes";           shift;;
         --X11)          xLibs="X11";               shift;;
@@ -163,16 +167,16 @@ if [ $# -ne 0 ]; then
         *)
               # check if target is "buildable",
               match="no"
-              position=`expr match " $programs " ".* ${i} .*"` 
+              position=`expr match " $programs " ".* ${i} .*"`
               if  [ "${position}" != 0 ]; then
                  targets="${targets} ${i}"
                  shift
               else
-                 # Trap unsupported arguements.
-                 echo " " 
-                 echo " Error: arguement $i is not supported. "
+                 # Trap unsupported arguments.
+                 echo " "
+                 echo " Error: argument $i is not supported. "
                  echo " Run ./Install --help for more information."
-                 echo " " 
+                 echo " "
                  exit
               fi
            ;;
@@ -187,6 +191,10 @@ if [ "${targets}" = " " ]; then
 else
   # Add a trailing space for regexp search
   targets="${targets} "
+fi
+
+if [ "$enable_cosim" == "yes" ]; then
+  targets="harmonizer harmonizerdll bpsdll"
 fi
 
 
@@ -221,8 +229,8 @@ if [ $help -eq 1 ]; then
   echo " desired program(s), eg:"
   echo " "
   echo "   $ ./Install bps "
-  echo " " 
-  echo " or to install a module in a specific location" 
+  echo " "
+  echo " or to install a module in a specific location"
   echo " "
   echo "   $ ./Install -d ~/esru bps "
   echo " "
@@ -231,7 +239,7 @@ if [ $help -eq 1 ]; then
   echo " command line argument. Any of the command-line "
   echo " arguments specified below can be used in "
   echo " combination with the '--silent' option."
-  echo " " 
+  echo " "
   echo " ARGUMENTS: "
   echo " "
   echo "    <NAME> to install one or more named modules (e.g."
@@ -245,7 +253,7 @@ if [ $help -eq 1 ]; then
   echo "    -d <PATH>,  --destination <PATH>: Install ESP-r in"
   echo "        <PATH>/esp-r directory. The default path is:"
   echo "        ${DESTdir}."
-  echo " " 
+  echo " "
   echo "    --debug: Include debugging symbols in ESP-r binaries:"
   echo "        (the default is no debugging symbols). This option also"
   echo "        preserves the object files, allowing ESP-r to be"
@@ -300,6 +308,12 @@ if [ $help -eq 1 ]; then
   echo "        in an SQLite database. Requires the libsqlite3.so library."
   echo "        **EXPERIMENTAL**"
   echo " "
+  echo "    --co-sim <PATH>: Compile Harmonizer.exe, Harmonizer.dll and bps.dll"
+  echo "        for co-simulation with TRNSYS. Harmonizer.exe and Harmonizer.dll"
+  echo "        will be installed in <PATH> directory, and bps.dll will be" 
+  echo "        installed in the same directory as the rest of ESP-r."
+  echo "        Only works under MinGW."
+  echo " "
   echo "    -v, --verbose: Print compilation messages to screen."
   echo " "
   echo " Notes:"
@@ -315,11 +329,12 @@ if [ $help -eq 1 ]; then
   exit
 fi
 
+
 # check that xml support is available
 if [ "$xml_support" = "yes" ] || [ "$xml_support" = "prompt" ]; then
    # check for libxml2 headers on system
    if [ ! -d /usr/include/libxml2 ] && [ ! -d /usr/local/include/libxml2 ]; then
-      # Libraries not found. Disable XML support 
+      # Libraries not found. Disable XML support
       xml_support="no"
       xml_libs_found="no"
       # If runnning silently, warn user.
@@ -327,7 +342,7 @@ if [ "$xml_support" = "yes" ] || [ "$xml_support" = "prompt" ]; then
          echo " "
          echo " Warning: Library libxml2 could not be found"
          echo " in /usr/include or /usr/local/include "
-         echo " " 
+         echo " "
          echo " XML support disabled."
       fi
    else
@@ -356,7 +371,7 @@ if [ "$SQLite_support" = "yes" ]; then
    ld_output=`ld -lsqlite3`
    case $ld_output in 
      "" ) SQLite_libs_found="yes";
-          if [ "$xml_support" = "no"]; then
+          if [ "$xml_support" = "no" ]; then
              # XML not installed, Disable SQLite support
              SQLite_support="no"
              # If running silently, warn user.
@@ -415,7 +430,7 @@ if [ "$platform" = "auto-detect" ]; then
          echo " "
          exit
        fi
-         
+
    fi
 fi
 
@@ -449,7 +464,7 @@ if [ "$mode" = "interactive" ]; then
          fi
          read YN
       done
-      
+
       if [ "$YN" = "n" ]; then
          # user must be prompted for platform
          platform="prompt"
@@ -458,7 +473,7 @@ if [ "$mode" = "interactive" ]; then
 
    #Platform auto-detection disabled, or user wants to overide
    if [ "${platform}" = "prompt" ]; then
-      A=none;   
+      A=none;
       while [ $A != "1" ] &&
             [ $A != "2" ] &&
             [ $A != "3" ] &&
@@ -493,7 +508,7 @@ if [ "$mode" = "interactive" ]; then
                exit;;
           esac
          fi
-         
+
       done
       case "$A" in
          1) platform=sun;;
@@ -503,7 +518,7 @@ if [ "$mode" = "interactive" ]; then
          5) platform=mac;;
       esac
    fi
-fi 
+fi
 
 #-----------------------------------------------------------
 # If auto-detection is active, interpret architecture
@@ -522,7 +537,7 @@ fi
 
 #-----------------------------------------------------------
 #  Architcture is now known. If architecture is sun, prompt
-#  for compiler. Otherwise, use GNU set. 
+#  for compiler. Otherwise, use GNU set.
 #-----------------------------------------------------------
 if [ "$mode" = "interactive" ]; then
   if [ "$platform" = "sun" ] || [ "$platform" = "linux" ]; then
@@ -586,7 +601,7 @@ if [ "$mode" = "interactive" ]; then
       if [ "${xml_libs_found}" = "no" ]; then
 
          #LIBXML2 libraries not available.
-         echo " " 
+         echo " "
          echo " The libxml2 library does not appear to be installed"
          echo " on this system. The library could not be found in"
          echo " /usr/include or /usr/local/include. Support for  "
@@ -601,19 +616,19 @@ if [ "$mode" = "interactive" ]; then
                echo ""
                echo "Please answer yes or no (y/n)."
             fi
-            echo " "  
+            echo " "
             echo " Install with experimental XML output support? This may "
             case "${xml_support}" in
               yes) echo " significantly increase simulation run-time. (y/n) [y]";;
               *)   echo " significantly increase simulation run-time. (y/n) [n]";;
             esac
-              
+
             read B
             if [ "$B" = "" ]; then
               case "${xml_support}" in
                 yes) B="y";;
                 *)   B="n";;
-              esac 
+              esac
             fi
          done
          if [ "$B" = "y" ]; then
@@ -660,10 +675,10 @@ if [ "$mode" = "interactive" ]; then
             fi
          else
             # Disable XML
-            xml_support="no"            
+            xml_support="no"
             echo " XML output excluded from bps"
          fi
-      fi 
+      fi
    else
       # XML not available on platform.
       echo " "
@@ -675,7 +690,7 @@ else
   # Silent mode: Disable XML by default
   if [ "$xml_support" = "prompt" ]; then
     xml_support="no"
-  fi 
+  fi
 fi
 
 
@@ -691,7 +706,7 @@ if [ "$mode" = "interactive" ]; then
   X11_prompt="2"
   noX_prompt="3"
   default="$X11_prompt"
-  
+
   # Iif [ "$compiler" = "sunF90" ];  then
   # I  # Is GTK really incompatable with f90 on sun?
   # I  GTK_prompt="-"
@@ -738,20 +753,20 @@ if [ "$mode" = "interactive" ]; then
   esac
 else
   # Assume X11 is available on all systems, except mingw
-  # Xll is defaulted to 
+  # Xll is defaulted to
   if [ "$platform" = "mingw" ]; then
     xLibs=noX
-    echo " "  
+    echo " "
     echo " A text-only application will be compiled."
   else
-    echo " "  
+    echo " "
     echo " The $xLibs libraries will be used."
-  fi 
+  fi
 fi
 
 #---------------------------------------------------------
 # Prepend approprate grapics library to target list
-#---------------------------------------------------------- 
+#----------------------------------------------------------
 
 case $xLibs in
   X11) targets=" libX11 $targets";;
@@ -760,7 +775,7 @@ case $xLibs in
 esac
 
 #---------------------------------------------------------
-# Query about debugging, installation of training and 
+# Query about debugging, installation of training and
 # database files
 #---------------------------------------------------------
 
@@ -771,26 +786,26 @@ if [ "$mode" = "interactive" ]; then
   do
     if [ "$B" != "none" ]; then
         echo ""
-        echo " Please answer yes or no (y/n)."  
+        echo " Please answer yes or no (y/n)."
     else
       echo " "
       echo " ESP-r can optionally retain debugging symbols and "
       echo " object files for use with a debugging program such"
       echo " as GDB."
-      echo " " 
+      echo " "
     fi
 
     case "${debugging}" in
       yes) echo " Retain debugging symbols? (y/n) [y]";;
       *)   echo " Retain debugging symbols? (y/n) [n]";;
     esac
-      
+
     read B
     if [ "$B" = "" ]; then
       case "${debugging}" in
         yes) B="y";;
         *)   B="n";;
-      esac 
+      esac
     fi
   done
   if [ "$B" = "y" ] || [ "$B" = "Y" ]; then
@@ -798,9 +813,9 @@ if [ "$mode" = "interactive" ]; then
   else
     debugging="no"
   fi
-  
-  
-  # System databases 
+
+
+  # System databases
   B="none"
   while [ "$B" != "y" ] && [ "$B" != "n" ] && [ "$B" != "Y" ] && [ "$B" != "N" ]
   do
@@ -812,13 +827,13 @@ if [ "$mode" = "interactive" ]; then
       yes) echo " Install ESP-r database files? (y/n) [y]";;
       *)   echo " Install ESP-r database files? (y/n) [n]";;
     esac
-      
+
     read B
     if [ "$B" = "" ]; then
       case "${install_dbs}" in
         yes) B="y";;
         *)   B="n";;
-      esac 
+      esac
     fi
   done
   if [ "$B" = "y" ] || [ "$B" = "Y" ]; then
@@ -826,7 +841,7 @@ if [ "$mode" = "interactive" ]; then
   else
     install_dbs="no"
   fi
-  
+
   # Training files
   B="none"
   while [ "$B" != "y" ] && [ "$B" != "n" ] && [ "$B" != "Y" ] && [ "$B" != "N" ]
@@ -839,13 +854,13 @@ if [ "$mode" = "interactive" ]; then
       yes) echo " Install training files? (y/n) [y]";;
       *)   echo " Install training files? (y/n) [n]";;
     esac
-      
+
     read B
     if [ "$B" = "" ]; then
       case "${install_training}" in
         yes) B="y";;
         *)   B="n";;
-      esac 
+      esac
     fi
   done
   if [ "$B" = "y" ] || [ "$B" = "Y" ]; then
@@ -883,7 +898,7 @@ case $platform in
    mac)      MCTYPE=osx ;;
    mingw)    MCTYPE=mingw ;;
 # Custom hosts follow:
-   nrn7)     MCTYPE=sun;;   
+   nrn7)     MCTYPE=sun;;
 esac
 
 
@@ -908,7 +923,7 @@ case $xLibs in
             # locations:
 
             XDEFDIR="/usr/X11R6 or /usr"
-            
+
             # Try /usr/X11R6 - legacy location on monolithic X locations
             case $machine in
               x86_64)
@@ -939,14 +954,14 @@ case $xLibs in
 
        # if X11 still hasn't been found, ask user where it's
        # installed.
-         
+
        if [ "$X11_found" = "no" ] && [ "$mode" = "interactive" ]; then
          echo " The X11 libraries could not be found in the defualt"
          echo " location ($XDEFDIR)."
 
          try_agian="y"
          while [ "$try_agian" == "y" ] || [ "$try_agian" == "Y" ]
-         do 
+         do
            echo " Do you wish to search for the X11 libraries at"
            echo " an alternate location?"
            read try_again
@@ -979,7 +994,7 @@ case $xLibs in
        fi
 
        # Now check if the appropriate include files are installed
-       # on the system. 
+       # on the system.
        if [ -r $XINSTALLDIR/include/X11/X.h ]; then
          X11INCLUDEDIR=$XINSTALLDIR/include
        else
@@ -998,12 +1013,12 @@ case $xLibs in
            echo " package (usually called xfree86-devel, xorg-X11-devel,"
            echo " or libX11-devel.)"
            exit
-         fi       
+         fi
        fi
      ;;
   noX) XINSTALLDIR="";;
 esac
-    
+
 
 
 #--------------- CC, CPL, FC -----------------------
@@ -1086,6 +1101,10 @@ if [ "$platform" = "mingw" ] && [ "$xLibs" = "GTK" ]; then
    FFLAGS="$FFLAGS -mwindows -mms-bitfields"
 fi
 
+if [ "$enable_cosim" == "yes" ] && [ "$platform" == "mingw" ]; then
+   FFLAGS="$FFLAGS -fcray-pointer -mrtd"
+fi
+
 #-------------- CFLAGS ---------------------
 # set up paths to c/c++ include files --- append X11 include
 # path for X11 builds
@@ -1143,7 +1162,7 @@ case $platform in
    linux)    ULIBS="-L${SRCdir}/lib ";;
    cygwin)   ULIBS="-L${SRCdir}/lib ";;
    mac)      ULIBS="-L${SRCdir}/lib ";;
-   mingw)    ULIBS="-L${SRCdir}/lib -L/usr/local/lib -L/local/lib";;
+   mingw)    ULIBS="-L${SRCdir}/lib -L/usr/local/lib -L/local/lib -L/usr/lib";;
 esac
 
 # Append versioning information library
@@ -1230,6 +1249,9 @@ case $platform in
    mingw)    LD_FLAGS="-DMINGW";;
    *)        LD_FLAGS="";;
 esac
+    if [ "$enable_cosim" == "yes" ] ; then
+       LD_FLAGS="-DMINGW -shared";
+    fi
 
 #-------------- EXE ------------------------
 # Set exe file extention
@@ -1242,6 +1264,10 @@ case $platform in
 #Custom housts follow
    nrn7)     EXE="" ;;
 esac
+if [ "$enable_cosim" == "yes" ] && [ "$platform" == "mingw" ]; then
+   EXE=".dll"
+fi
+
 
 #-------------- FPE ------------------------
 # Possibly enable compiler-specific exception handling
@@ -1342,6 +1368,89 @@ if [ ! -w $DESTdir ] || [ ! -d $DESTdir ]; then
   echo " Installation aborted."
   echo " "
   exit
+fi
+if [ "$enable_cosim" == "yes" ]; then
+	#---------------------------------------------------------
+	# Check if Harmonizer installation directory has been specified
+	# if not set it to esp-r installation directory
+	#---------------------------------------------------------
+	if [ $COSIMdir == " " ]; then
+	    ${COSIMdir} = ${DESTdir}/esp-r/bin 
+	    echo " co-sim dir = (${DESTdir})"
+	fi
+	#---------------------------------------------------------
+	# Check if Harmonizer installation directories exist, and create
+	# if necessary
+	#---------------------------------------------------------
+	create_harmonizer_dir="no"
+	# Does top-level installation directory exist?
+	if [ ! -d $COSIMdir ]; then
+	  # NO! Is script running interactively, or has user specified a 'force?'
+	  if [ $mode = "interactive" ] ; then
+	    # Does user want to create it?
+	    echo " "
+	    echo " The Harmonizer installation directory does not exist. "
+	    echo " (${COSIMdir})"
+	    A=none
+	    while [ "$A" != "y" ] && [ "$A" != "n" ]
+	    do
+	      echo " "
+	      echo " Do you wish to create this directory? (y/n) [y]"
+	      echo " "
+	      read A
+	      if [ "$A" = "" ]; then
+	        A="y"
+	      fi
+	    done
+	    if [ "$A" = "n" ]; then
+	      create_harmonizer_dir="no"
+	    else
+	      create_harmonizer_dir="yes"
+	      preserve_harmonizer_dir="no"
+	    fi
+	  else
+	    create_espr_dir="yes"
+	    preserve_espr_dir="no"
+	  fi
+	
+	  if [ "$create_harmonizer_dir" = "yes" ]; then
+	
+	    # Attempt to create directory
+	    mkdir ${COSIMdir}
+	    # Was directory successfully created?
+	    if [ ! -d ${COSIMdir} ]; then
+	      # No! User may not have write permissions on installation dir.
+	      # warn, and exit.
+	      echo " "
+	      echo " Installation error: Destination directory (${COSIMdir})"
+	      echo " could not be created. Installation aborted."
+	      echo " "
+	      exit
+	    fi
+	    # This flag will be used later when the script checks
+	    # if the directory tree is correct.
+	
+	  else
+	  # User doesn't want to create directory, but it doesn't exist.
+	  # Issue warning and quit.
+	    echo " "
+	    echo " Installation error: Destination directory (${COSIMdir})"
+	    echo " does not exist. Installation aborted"
+	    echo " "
+	    exit
+	  fi
+	fi
+	
+	# Determine if master path is writable.
+	if [ ! -w $COSIMdir ] || [ ! -d $COSIMdir ]; then
+	  # Warn user and quit.
+	  echo " "
+	  echo " Installation error: Cannot write to installation directory:"
+	  echo " $COSIMdir"
+	  echo " Installation aborted."
+	  echo " "
+	  exit
+	fi
 fi
 
 #-----------------------------------------------------------
@@ -1740,6 +1849,9 @@ do
      disableGccFPE | enableGccFPE) result="${SRCdir}/lib/libfpe.a" ;;
      ecnv)   result="${SRCdir}/esrucnv/ecnv${EXE}"      ;;
      vew)    result="${SRCdir}/esruvew/viewer${EXE}"      ;;
+     bpsdll) result="${SRCdir}/esrubps/bps.dll"   ;;
+     harmonizer) result="${SRCdir}/harmonizer/harmonizer.exe"   ;;
+     harmonizerdll) result="${SRCdir}/harmonizer/harmonizer.dll"   ;;
      *)      result="${SRCdir}/esru${target}/$target${EXE}"   ;;
    esac
 
@@ -1748,11 +1860,15 @@ do
        echo " Deleting $result " >> $make_msg_file
        rm $result >> $make_msg_file 2>&1
      else
-       echo " Deleting $result "
+       echo -n " Deleting $result "
        rm $result
      fi
    fi
    
+   # harmonizer.exe doesn't fit the pattern for the normal make proceedure...
+   if [ "$result" == "${SRCdir}/harmonizer/harmonizer.exe" ]; then
+		gfortran ${SRCdir}/harmonizer/win32_interface.f95 ${SRCdir}/harmonizer/launch_dll.f95 -fcray-pointer -o ${SRCdir}/harmonizer/harmonizer.exe
+	else
    # execute make with redirection, if make_msg_file specified. Otherwise
    # display messages in buffer.
    if [ "${make_msg_file}" != "" ]; then
@@ -1768,7 +1884,7 @@ do
 
       make MCTYPE=${MCTYPE} MCC=${CC} MCPL=${CPL} MFC=${FC} DESTdir="${DESTdir}" ESPdir="${ESPdir}" WWLINK="${WWLINK}" EXE="${EXE}" XINSTALLDIR="${XINSTALLDIR}" CFLAGS="${CFLAGS}" FFLAGS="${FFLAGS}" LD_FLAGS="${LD_FLAGS}" ULIBS="${ULIBS}" xml_status="${xml_status}" SQLite_status="${SQLite_status}" -f Makefile  ${target}
    fi
-
+   fi
    # was target built successfully?
    if [  ! -r $result ]; then
       #ignore if a clean command was invoked.
@@ -1777,6 +1893,7 @@ do
         # Warn user and quit.
         echo " "
         echo " ERROR: could not build executable ${target}! "
+        echo " ERROR: result $result! "
 
         # If redirection in use, dump messages.
         if [ "${make_msg_file}" != "" ]; then
@@ -2254,9 +2371,9 @@ cd ${SRCdir}
 echo " "
 echo -n " Installing executables..."
 if [ "$debugging" = "no" ]; then
-  make ESPdir=${ESPdir} EXE=${EXE} strip  >/dev/null 2>&1
+  make ESPdir=${ESPdir} EXE=${EXE} COSIMDir=${COSIMdir} strip  >/dev/null 2>&1
 fi
-make ESPBinDir=${ESPbin} EXE=${EXE} InstBins  >/dev/null 2>&1
+make ESPBinDir=${ESPbin} EXE=${EXE} COSIMDir=${COSIMdir} InstBins  >/dev/null 2>&1
 if [ "$debugging" = "no" ]; then
   make EXE=${EXE} clean  >/dev/null 2>&1
 fi

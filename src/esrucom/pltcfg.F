@@ -808,7 +808,7 @@ C Error handling
       CALL USRMSG(' ',' Plant component database file error.','W')
       GOTO 900
 
- 1001 CALL USRMSG(' Converstion error in',OUTSTR,'W')
+ 1001 CALL USRMSG(' Conversion error in',OUTSTR,'W')
       IER=1
       GOTO 6
 

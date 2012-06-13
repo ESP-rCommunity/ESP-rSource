@@ -27,6 +27,7 @@ C The main controller for the numerical simulation.
 
       subroutine mznuma
       use h3kmodule
+      USE TCC, ONLY:TCC_communication, COSIM
 
 
 C Include files req'd for deleting temporary files after the simulation is complete.
@@ -282,9 +283,15 @@ C water
       character llclmdb*144  ! to expand weather file
       integer lndbp          ! length of weather folder path
 
+C Path to model 
+      common/rpath/path
+      character path*72
+      CHARACTER(len=255) :: cwd
+      
 C SUN F90 has spotty support for cpu_time intrinsic
 #ifdef F90
 #else
+
 C Store start time for reporting simulationd duration
       call cpu_time(sec_a)
 #endif
@@ -305,6 +312,12 @@ C Set the H3k reporting on/off
          call SetReportEnable(.false.)
       ENDIF
 
+C During a co-simulation with TRNSYS the path changes to where the TRNSYS deck file is
+C located. This needs to be reset to the directory containing the cfg file to ensure
+C the input.xml can be read.
+C file before generating output.
+      CALL chdir(path)
+      write(*,*)'chdir'
       IF(isH3KEnabled()) THEN
 C Send the simulation information to the h3k report
          Call UpdateH3kSimInfo(isd1,ism2,isd2,ism2,isds,isdf,ntstep)
@@ -1441,14 +1454,23 @@ C `plant_elec_converged' remains false.
               plant_elec_converged = .FALSE.
 
 C Call subroutine XXX_TimeRow_Manipulate to store present time-row
-C data, permitting the simulation to be re-wound to to the state at
-C which plant iteration is ajourned, if inter-domain iteration is active.
+C data.  This permits the the plant and electrical domains to be rewound
+C in time, which is necessary if there is iteration within the time-step
+C between these modelling domains.  Rewinding is also necessary in the case
+C of co-simulatino with TRNSYS when ESP-r's plant (and eventually electrical)
+C domain is invoked multiple times per time-step by the harmonizer.
+C The flag 'iSaving' tells XXX_TimeRow_Manipulate to store the present
+C time-row data.
 
 C Use flag 'iSaving' to tell XXX_TimeRow_Manipulate to store data
               if ( itsct.eq.7 ) then
                 call Plt_TimeRow_Manipulate(iSaving)
                 call Pfs_TimeRow_Manipulate(iSaving)
               endif
+              IF ( COSIM ) THEN
+                call Plt_TimeRow_Manipulate(iSaving)
+                call Pfs_TimeRow_Manipulate(iSaving)
+              END IF
 
 C Initalize the loop conter at the beginning of each plant time step
               plt_elec_loop_counter = 1
@@ -1459,13 +1481,26 @@ C the plant and electrical domains. Thus, if either domain is called
 C outside the context of bps ( and specifically, this iteration loop )
 C the state-variables will be handled normally.
 
-              DO WHILE( .not. ( plant_elec_converged ) )
+              plant_elec_loop: DO WHILE( .not. ( plant_elec_converged))
 
 C Set up and solve the plant matrix.
-C Subroutine MZPMRX (esruplt/pmatrx.F) controls iteration to converge the plant domain.
-C It also calls the controlling routine that executes each coefficient generator
-C within each iteration through the plant domain.
                 call mzpmrx(itera)
+
+C If co-simulation with TRNSYS is active, then pass data to and receive data from
+C TRNSYS via the Harmonizer. This is accomplished via the call to function TCC_communication.
+C The returned value from TCC_communication determines whether the Harmonizer is satisfied
+C with convergence between ESP-r and TRNSYS.  If the Harmonizer imposes another invocation
+C of ESP-r's plant domain, then: increment the counter tracking the number of invocations
+C per time-step; rewind the plant domain's present time-row variables to the state they were
+C in at the first invocation this time-step; and then invoke the plant domain again.
+                IF (COSIM) THEN
+                  IF (TCC_communication()== 0) THEN
+                    plt_elec_loop_counter = plt_elec_loop_counter + 1
+                    call Plt_TimeRow_Manipulate(iRewinding)
+                    CYCLE plant_elec_loop
+                  END IF
+                END IF
+
 
 C If necessary, iterate. *** NOT YET ACTIVE.
 C The variable `ITERA' is currently hard-code to zero. Its intention is to force
@@ -1505,7 +1540,7 @@ C be restored.
                   call Pfs_TimeRow_Manipulate(iRewinding)
                   plt_elec_loop_counter = plt_elec_loop_counter + 1
                 endif
-              ENDDO
+              ENDDO plant_elec_loop
 
 C Store plant results.
               iday=idyp
