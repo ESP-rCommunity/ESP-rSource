@@ -1719,7 +1719,12 @@ sub process_case($){
     # disable h3kreports for save-level-4.
     if ( $save_level =~ /4/ ){
       execute ( "mv input.xml input_bak.xml" );
+    }else{
+      if ( $gTest_ext{"summary"} ){  
+        ActivateSummaryOutput("input.xml"); 
+      }
     }
+    
     # Run tests!
     invoke_tests($model_name,
                  $model_root_name,
@@ -2209,11 +2214,11 @@ sub DelTempFiles(){
     my $uncompressed_archive_root = $gTest_paths{"old_archive"};
     $uncompressed_archive_root =~ s/\.tar\.gz$//g;
     execute ("rm -fr $gTest_params{\"configuration_file\"} $uncompressed_archive_root");
-    
+   
   }
 
   # delete local files folder
-  execute ("rm -fr $gTest_paths{\"local_models\"}");
+  #execute ("rm -fr $gTest_paths{\"local_models\"}");
 }
 
 
@@ -3838,6 +3843,115 @@ Configuration:
   return $echo_msg;
 }
 
+#-------------------------------------------------------------------
+# Activate Summary output. This file ensures that summary output is 
+# activated for a model if the out.summary file is to be compared. 
+# this functionality is required because support for testing summary 
+# files was added long after the test suite was created, and most 
+# test cases are not configured to produce out.summary files by 
+# default. 
+#
+# A typical input.xml file looks like this: 
+#
+#     <?xml version="1.0" encoding="UTF-8"?>
+#     <configuration>
+#     
+#       <dump_all_data>true</dump_all_data>
+#       <enable_xml_wildcards>false</enable_xml_wildcards>
+#       <hierarchy>tree</hierarchy>
+#       <report_startup_period_data>false</report_startup_period_data>
+#       <time_step_averaging>false</time_step_averaging>
+#     
+#     </configuration>
+#
+# We need to parse this file and ensure that: 
+#   - <enable_xml_wildcards> is set to true,
+#   - some form of tag <summary_variable> appears in the file 
+#     ( use <summary_variable>*</summary_variable> ) if the model does not 
+#     specificy relevant summary data. 
+#
+#-------------------------------------------------------------------
+
+sub ActivateSummaryOutput($){
+
+  my ($inXMLfile) = @_; 
+  
+  open (ReadInXML, $inXMLfile) 
+    or fatalerror ( "Could not open $inXMLfile to activate summary output! \n" );
+    
+  my $InputXMLContents = "";   
+    
+  my $XMLWildcardsFound = 0; 
+  my $SummaryTagFound = 0; 
+  my $FileEnd=0;  
+  while ( my  $line = <ReadInXML> ){ 
+  
+          # If we haven't reached the end of the file (denoted by "</configuration>")
+    # push on to the array. 
+    if ( ! $FileEnd ){ 
+
+      # Does line match <enable_xml_wildcards>?
+      if ( $line =~ /<enable_xml_wildcards>/ ){
+        $XMLWildcardsFound = 1; 
+        $line =~ s/false/true/g; 
+      }
+      
+      # Does line match <summary_data>?
+      if ( $line =~ /<summary_variable>/ ){
+        $SummaryTagFound = 1; 
+      }  
+      
+      if ( $line =~ /<\/configuration>/ ) { 
+        # This is the last line in the file. 
+        
+        $FileEnd = 1; 
+        
+        # If we've reached the end without encountering the enable-xml-wildcards
+        # and summary_data tags, we need to add them.
+        
+        if ( ! $XMLWildcardsFound ) {
+        
+          $InputXMLContents .= "  <enable_xml_wildcards>true</enable_xml_wildcards>\n"; 
+                    
+        }
+        
+        if ( ! $SummaryTagFound ) {
+        
+          $InputXMLContents .= "  <summary_variable>*</summary_variable>\n"; 
+        
+        }
+        
+      }
+              
+      $InputXMLContents .=  $line; 
+        
+    }
+  }
+  
+  close ( ReadInXML ); 
+  
+
+  
+  # Delete the original input.xml file (remember we're operating in our local version 
+  # of the test case model folder, and not in the master test suite!) 
+  execute ("rm $inXMLfile"); 
+  
+  # Create a new input.xml file using our contents 
+
+  open ( WriteOutXML, ">$inXMLfile") or fatalerror ("Could not open $inXMLfile for writing!"); 
+  
+  print WriteOutXML $InputXMLContents; 
+  
+  close ( WriteOutXML ); 
+  
+  
+  
+}
+
+
+
+
+
 ####################################################################
 ####################################################################
 ##############                                     #################
@@ -4136,6 +4250,7 @@ sub format_my_number($$$){
   
   return $value;
 }
+
 #-------------------------------------------------------------
 # This procedure turns a long int into a readable number. EG:
 #  1225333647 -> +1,225,333,647
