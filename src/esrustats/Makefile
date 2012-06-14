@@ -1,12 +1,15 @@
 SRCdir = `pwd`/..
 LIBdir = $(SRCdir)/lib
+COMdir = $(SRCdir)/esrucom
+PRJdir = $(SRCdir)/esruprj
 PROG = stats$(EXE)
 
 .SUFFIXES: .o .F
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = esru_ask.o esru_blk.o esru_fc.o esru_lib.o esru_libNonGTK.o csv_stats.o 
+OBJECTS = esru_ask.o esru_blk.o esru_fc.o esru_lib.o esru_libNonGTK.o csv_stats.o \
+	rwsbem.o 
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS)
@@ -26,6 +29,9 @@ esru_libNonGTK.F:
 esru_ask.F:
 	rm -f esru_ask.F
 	ln -s $(LIBdir)/esru_ask.F .
+rwsbem.F:
+	rm -f rwsbem.F
+	ln -s $(COMdir)/rwsbem.F .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
