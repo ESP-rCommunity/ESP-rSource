@@ -4006,6 +4006,7 @@ sub is_true_false($){
 #-----------------------------------------------------------------------
 # Delete simulation files
 #-----------------------------------------------------------------------
+  
 sub delete_old_files(){
   execute("rm -fr _.xml out.csv out.xml *.h3k *.fcts* *.res *.bres *.eres *.pres libb libp libe callgrind.out.* ");
   return;
