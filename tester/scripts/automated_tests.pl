@@ -598,9 +598,10 @@ if ( $test_forcheck || $test_builds || $test_regression ){
       if ( ! -d $src_dirs{$key} ){
   
         execute("svn co $Test_base_URL/$branch $rev $src_dirs{$key}");
+       
       }
       stream_out("Done\n");
-
+      
     } elsif ( $revision_types{$key} =~ /local/ ) {
       # Local sand-box
 
@@ -640,9 +641,8 @@ if ( $test_forcheck ){
     stream_out("Building $key ($revision) version of ESP-r for use with Forcheck.");
 
     # Build X11 debugging version.
-    if ( ! $debug_forcheck ) {
-      buildESPr("default", $build_args{"$key"},"default","debug","onebyone");
-    }
+    buildESPr("default", $build_args{"$key"},"default","debug","onebyone");
+
     stream_out(" Done\n");
     
   }
@@ -689,6 +689,7 @@ if ( $test_forcheck ){
 
       if ( ! $debug_forcheck || ! -r "$TestFolder/$src_dirs{$key}/src/$folder/forcheck_$bin.out" ){
         my $module_files = "";
+        my $module_uses_module_files = ""; 
         my $non_module_files = "";
  
         # Search through the contents of this directory for Fortan 
@@ -718,12 +719,16 @@ if ( $test_forcheck ){
 
           # Loop through array and search each line 
           # for a module statement
-          my $match = 0;
+          my $ModMatch = 0;
+          my $ModUseMatch =0; 
           MATCH: foreach my $line (@lines){
 
             if ( $line =~ /^\s+MODULE/i ){
-              $match = 1; 
-              last MATCH;
+              $ModMatch = 1; 
+            }
+
+            if ( $line =~ /^\s+USE/i ){
+              $ModUseMatch = 1; 
             }
 
           }
@@ -736,7 +741,8 @@ if ( $test_forcheck ){
           my $listfile = ( $src_file =~ /\.f90$/ ) ? 
                         " -ff $src_file " : " -nff $src_file " ; 
 
-          if ( $match ) { $module_files .= $listfile; }
+          if ( $ModUseMatch ) { $module_uses_module_files .= $listfile; }
+          elsif ( $ModMatch ) { $module_files .= $listfile; }
           else { $non_module_files .= $listfile; }
 
         }, "$TestFolder/$src_dirs{$key}/src/$folder");
@@ -744,10 +750,10 @@ if ( $test_forcheck ){
         # Debugging
         #print (">>>MODULE FILES  $module_files \n\n\n");
         #print (">>>NON MODULE FILES  $non_module_files \n\n\n");
-        #print  ">Command: forchk -I ../include $module_files $non_module_files../lib/esru_blk.F ../lib/esru_libX11.F ../lib/esru_ask.F  > forcheck_$bin.out 2>&1 <\n\n"
+        #print  ">Command: forchk -I ../include $module_files $module_uses_module_files $non_module_files../lib/esru_blk.F ../lib/esru_libX11.F ../lib/esru_ask.F  > forcheck_$bin.out 2>&1 <\n\n";
 	  
         # Invoke forecheck (list module files first) 
-        system ("forchk -I ../include $module_files $non_module_files -nff ../lib/esru_blk.F -nff ../lib/esru_libX11.F -nff ../lib/esru_ask.F  > forcheck_$bin.out 2>&1 " );
+        execute ("forchk -I ../include $module_files $module_uses_module_files $non_module_files -nff ../lib/esru_blk.F -nff ../lib/esru_libX11.F -nff ../lib/esru_ask.F  > forcheck_$bin.out 2>&1 " );
       }
 
 
@@ -1288,8 +1294,8 @@ if ( scalar(@addresses) > 0 ){
 
   $subject .=  "($revisions{\"test\"}) ";
 
-  $subject =~ s/branches\///g;
-  #push @addresses, "aferguso\@nrcan.gc.ca", "blomanow\@nrcan.gc.ca";
+  $subject =~ s/branches\///g; 
+  push @addresses, "aferguso\@nrcan.gc.ca"; 
   foreach my $address (@addresses){
     stream_out(" -> $address \n");
     mail_message($smtp_server,$address,$mail_from,$subject,$output);
