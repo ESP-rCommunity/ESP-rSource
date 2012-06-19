@@ -72,7 +72,8 @@ $(PROG): $(MODULE_OBJECTS) $(BPS_OBJECTS)
 PREBPSDLL_OBJECTS = ESPrTrnsysData.o harmonizer.o
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod aim2_timestep.mod \
-	parse_command_line.mod start_up.mod win32interface.mod dll_functions.mod tcc.mod cosimdatatypes.mod
+	parse_command_line.mod start_up.mod win32interface.mod dll_functions.mod tcc.mod cosimdatatypes.mod \
+	h3kmodule.mod
 
 theEXE:  $(PREBPS_OBJECTS) $(MODULE_OBJECTS) $(BPS_OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(PREBPS_OBJECTS) $(MODULE_OBJECTS) $(BPS_OBJECTS) $(ULIBS) $(F_to_C_flags)
@@ -717,9 +718,6 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 	@if [ -f $(DLL) ]; then cp $(DLL) $(ESPBinDir); fi
 
-clean_dll:
-	rm -f bmatsv.o ESPrTrnsysData.o TCC.o harmonizer.o pcomps.o pmatrix.o \
-	ESPrTrnsysData.F TCC.F harmonizer.F pcomps.F pmatrx.F
 clean:
 	rm -f core $(PROG) $(PROG).exe $(DLL) $(PROG).dll $(PREBPS_OBJECTS) $(PREBPSDLL_OBJECTS) $(MODULE_OBJECTS) $(BPS_OBJECTS) $(MODULES) \
 	adaptconf1.F adaptconf2.F adjb.F adjp.F aim2_module.F aim2_timestep.F \

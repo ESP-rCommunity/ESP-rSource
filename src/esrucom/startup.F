@@ -24,7 +24,6 @@ C*******************************************************************************
 C************************************************************************************
 C   MODULE PARSE_COMMAND_LINE written to extract the communality in all the modules for
 C   setting up environemt and parsing command lines.
-C	Francesca Macdonald 4/5/2011
 C************************************************************************************
       MODULE PARSE_COMMAND_LINE
       IMPLICIT NONE
@@ -42,10 +41,14 @@ C Constants used to differentiate between modules
       integer, parameter :: CONST_PARTFA = 10
       integer, parameter :: CONST_PARSE2R = 11
       integer, parameter :: CONST_PARSFACT = 12
+C Constant to define string lengths
+      integer, parameter :: ARG_LENGTH = 144
+      integer, parameter :: CL_LENGTH = 300
+
 
       SAVE !ensures values do not change between sucessive invocations
 C Declare parameters 
-      character(300)  :: PassedCommandLine !The command line passed in when bps is called by the harmonizer in co-simulation with TRNSYS
+      character(CL_LENGTH)  :: PassedCommandLine !The command line passed in when bps is called by the harmonizer in co-simulation with TRNSYS
       integer :: CommandLineArguments      !The number of comman line arguments
       logical :: UsePassedCommandLine      !A Flag that tells bps if it is to use the actual comman line or one that is passed in.
       
@@ -59,7 +62,7 @@ C*******************************************************************************
       SUBROUTINE SetPassedCommandLine(argc, argv)
       IMPLICIT NONE
 C Declare  calling parameter types
-      character(300), intent(in)  :: argc !commandline string
+      character(CL_LENGTH), intent(in)  :: argc !commandline string
       integer, intent(in) :: argv !number of commandline parameters
 
       PassedCommandLine = argc
@@ -75,9 +78,9 @@ C*******************************************************************************
       IMPLICIT NONE
 ! Declare  calling parameter types
       integer, intent(in)  ::  i  				!index of command line argument 
-      character(144), intent(out)  :: argument	!return string
+      character(ARG_LENGTH), intent(out)  :: argument	!return string
 ! Variable declaration      
-      character(144)  :: tempstring
+      character(CL_LENGTH)  :: tempstring
       integer :: j  !loop index
       integer :: n	!index of space
       integer :: startstring  !index of start of return string
@@ -91,7 +94,7 @@ C*******************************************************************************
         n = index(tempstring, ' ')
         if (j.lt.i) then 
           startstring = startstring+n 
-          tempstring = tempstring(n+1:144) !remove arguments from tempstring
+          tempstring = tempstring(n+1:ARG_LENGTH) !remove arguments from tempstring
         end if
       END DO
       endstring = startstring+n-1
@@ -106,7 +109,7 @@ C ******************************************************************************
       IMPLICIT NONE
 ! Declare  calling parameter types
       integer, intent(inout)  ::  i  				!index of command line argument 
-      character(144), intent(out)  :: argument	    !return string (command line argument)
+      character(ARG_LENGTH), intent(out)  :: argument	    !return string (command line argument)
 
       i=i+1
       if (UsePassedCommandLine) then 
@@ -137,16 +140,16 @@ C Declare  calling parameter types
       integer, intent(out)  ::  termtype,iappw,iappx,iappy,iverb
       integer, intent(in)  ::  module
       real, intent(out)     ::  data1,data2,data3
-      character(144), intent(out)  :: inf, inf2,zone,act,actf,ascif
-      character(144), intent(out)  :: aut,aim,browse,sps
+      character(ARG_LENGTH), intent(out)  :: inf, inf2,zone,act,actf
+      character(ARG_LENGTH), intent(out)  :: aut,aim,browse,sps,ascif
 
 C Variable declaration
       character(8)  :: ModuleName
       character(12)  :: cAppName
-      character(144)  :: argument,sTimeout,prog
+      character(ARG_LENGTH)  :: argument,sTimeout,prog
       character(8)   :: mode
       character(24)  :: appn
-      character(248) :: outs
+      character(348) :: outs !If this is only 248 clm crashes on install if pathnames are long
       integer 	:: m, i, IOS, IUOUT,IUIN, iXavail
       integer   :: iTimeoutFlag
       logical :: unixok
@@ -162,7 +165,6 @@ C Variable initialisation
       iappx = 0
       iappy = 0
       aut  = 'interactive'
-      argument = ' '
       IOS=0  ! initial value
       act = 'NONE'
       aim = 'NONE'
@@ -503,12 +505,12 @@ C*******************************************************************************
       IMPLICIT NONE
 C Declare  calling parameter types
       integer, intent(inout)  ::  termtype,iappw,iappx,iappy
-      character(144), intent(inout)  :: inf
+      character(ARG_LENGTH), intent(inout)  :: inf
 
 C Local variables for GetCommandLineArguments.
       integer :: module, iverb
       real ::  data1,data2,data3
-      character(144) :: inf2,zone,act,actf,ascif,aut,aim,browse,sps
+      character(ARG_LENGTH)::inf2,zone,act,actf,ascif,aut,aim,browse,sps
       
       module = CONST_PARPSF
       call GetCommandLineArguments(module,termtype,iappw,iappx,
@@ -525,12 +527,12 @@ C*******************************************************************************
       IMPLICIT NONE
 C Declare  calling parameter types
       integer, intent(inout)  ::  termtype,iappw,iappx,iappy
-      character(144), intent(inout)  :: infa, infb
+      character(ARG_LENGTH), intent(inout)  :: infa, infb
 
 C Local variables for GetCommandLineArguments.
       integer :: module, iverb
       real ::  data1,data2,data3
-      character(144) :: zone,act,actf,ascif,aut,aim,browse,sps
+      character(ARG_LENGTH) :: zone,act,actf,ascif,aut,aim,browse,sps
       
       module = CONST_PARPSFF
       call GetCommandLineArguments(module,termtype,iappw,iappx,
@@ -548,11 +550,11 @@ C*******************************************************************************
       IMPLICIT NONE
 C Declare  calling parameter types
       integer, intent(inout)  ::  termtype,iappw,iappx,iappy
-      character(144), intent(inout)  :: inf,actf,aut,act
+      character(ARG_LENGTH), intent(inout)  :: inf,actf,aut,act
       
       integer :: module, iverb
       real ::  data1,data2,data3
-      character(144) :: inf2,zone,ascif,aim,browse,sps
+      character(ARG_LENGTH) :: inf2,zone,ascif,aim,browse,sps
      
       module = CONST_PARRES
       call GetCommandLineArguments(module,termtype,iappw,iappx,
@@ -568,11 +570,11 @@ C*******************************************************************************
       IMPLICIT NONE
 C Declare  calling parameter types
       integer, intent(inout)  ::  termtype,iappw,iappx,iappy
-      character(144), intent(inout)  :: inf, act, aut, ascif
+      character(ARG_LENGTH), intent(inout)  :: inf, act, aut, ascif
       
       integer :: module, iverb
       real ::  data1,data2,data3
-      character(144) :: inf2,zone,actf,aim,browse,sps
+      character(ARG_LENGTH) :: inf2,zone,actf,aim,browse,sps
       
       module = CONST_PARCLM
       call GetCommandLineArguments(module,termtype,iappw,iappx,
@@ -591,11 +593,11 @@ C*******************************************************************************
       IMPLICIT NONE
 C Declare  calling parameter types
       integer, intent(inout)  ::  termtype,iappw,iappx,iappy
-      character(144), intent(inout)  :: inf,act,zone,ascif
+      character(ARG_LENGTH), intent(inout)  :: inf,act,zone,ascif
       
       integer :: module, iverb
       real ::  data1,data2,data3
-      character(144) :: inf2,actf,aim,aut,browse,sps
+      character(ARG_LENGTH) :: inf2,actf,aim,aut,browse,sps
       
       module = CONST_PARSISH
       call GetCommandLineArguments(module,termtype,iappw,iappx,
@@ -615,10 +617,10 @@ C*******************************************************************************
 C Declare  calling parameter types
       real, intent(inout)     ::  data1,data2,data3
       integer, intent(inout)  ::  termtype,iappw,iappx,iappy,iverb
-      character(144), intent(inout)  :: inf,act,zone
+      character(ARG_LENGTH), intent(inout)  :: inf,act,zone
       
       integer :: module
-      character(144) :: inf2,actf,ascif,aim,aut,browse,sps
+      character(ARG_LENGTH) :: inf2,actf,ascif,aim,aut,browse,sps
       
       module = CONST_PARSPRJ
       call GetCommandLineArguments(module,termtype,iappw,iappx,
@@ -635,11 +637,11 @@ C to be passed to the program from the invocation line.
       IMPLICIT NONE
 C Declare  calling parameter types
       integer, intent(inout)  ::  termtype,iappw,iappx,iappy
-      character(144), intent(inout)  :: inf,zone
+      character(ARG_LENGTH), intent(inout)  :: inf,zone
       
       integer :: module, iverb
       real ::  data1,data2,data3
-      character(144) :: inf2,act,actf,ascif,aut,aim,browse,sps
+      character(ARG_LENGTH) :: inf2,act,actf,ascif,aut,aim,browse,sps
       
       module = CONST_PARSFZ
       call GetCommandLineArguments(module,termtype,iappw,iappx,
@@ -658,12 +660,12 @@ C*******************************************************************************
       IMPLICIT NONE
 C Declare  calling parameter types
       integer, intent(inout)  ::  termtype
-      character(144), intent(inout)  :: inf
+      character(ARG_LENGTH), intent(inout)  :: inf
 
 C Local variables for GetCommandLineArguments.
       integer :: module, iverb,iappw,iappx,iappy
       real ::  data1,data2,data3
-      character(144) :: inf2,zone,act,actf,ascif,aut,aim,browse,sps
+      character(ARG_LENGTH)::inf2,zone,act,actf,ascif,aut,aim,browse,sps
       
       module = CONST_PARTF
       call GetCommandLineArguments(module,termtype,iappw,iappx,
@@ -681,11 +683,11 @@ C*******************************************************************************
       IMPLICIT NONE
 C Declare  calling parameter types
       integer, intent(inout)  ::  termtype
-      character(144), intent(inout)  :: inf,act
+      character(ARG_LENGTH), intent(inout)  :: inf,act
       
       integer :: module, iverb,iappw,iappx,iappy
       real ::  data1,data2,data3
-      character(144) :: inf2,zone,actf,ascif,aut,aim,browse,sps
+      character(ARG_LENGTH) :: inf2,zone,actf,ascif,aut,aim,browse,sps
       
       module = CONST_PARTFA
       call GetCommandLineArguments(module,termtype,iappw,iappx,
@@ -703,11 +705,11 @@ C*******************************************************************************
       IMPLICIT NONE
 C Declare  calling parameter types
       integer, intent(inout)  ::  termtype,iappw,iappx,iappy
-      character(144), intent(inout)  :: inf,zone,act,aim,browse
+      character(ARG_LENGTH), intent(inout)  :: inf,zone,act,aim,browse
       
       integer :: module, iverb
       real ::  data1,data2,data3
-      character(144) :: inf2,actf,ascif,aut,sps
+      character(ARG_LENGTH) :: inf2,actf,ascif,aut,sps
       
       module = CONST_PARSE2R
       call GetCommandLineArguments(module,termtype,iappw,iappx,
@@ -725,11 +727,11 @@ C*******************************************************************************
       IMPLICIT NONE
 C Declare  calling parameter types
       integer, intent(inout)  ::  iverb, termtype,iappw,iappx,iappy
-      character(144), intent(inout)  :: inf,actf,aut,browse,sps
+      character(ARG_LENGTH), intent(inout)  :: inf,actf,aut,browse,sps
       
       integer :: module
       real ::  data1,data2,data3
-      character(144) :: inf2,zone,act,ascif,aim
+      character(ARG_LENGTH) :: inf2,zone,act,ascif,aim
      
       module = CONST_PARSIM
       call GetCommandLineArguments(module,termtype,iappw,iappx,
@@ -749,11 +751,11 @@ C*******************************************************************************
       IMPLICIT NONE
 C Declare  calling parameter types
       integer, intent(inout)  ::  termtype,iappw,iappx,iappy
-      character(144), intent(inout)  :: inf,act,actf
+      character(ARG_LENGTH), intent(inout)  :: inf,act,actf
       
       integer :: module, iverb
       real ::  data1,data2,data3
-      character(144) :: inf2,zone,ascif,aut,aim,browse,sps
+      character(ARG_LENGTH) :: inf2,zone,ascif,aut,aim,browse,sps
       
       module = CONST_PARSFACT
       call GetCommandLineArguments(module,termtype,iappw,iappx,

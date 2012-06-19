@@ -160,8 +160,7 @@ strip:
 InstBins:
 	cd $(SRCdir)/esruaco; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrub2e; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
-	cd $(SRCdir)/esrubps; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${DLL} install; $(MAKE) clean_dll	
-	cd $(SRCdir)/esrubps; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install; $(MAKE) clean_dll	
+	cd $(SRCdir)/esrubps; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrudbm; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esrudfs; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
 	cd $(SRCdir)/esruc2e; $(MAKE) ESPBinDir=${ESPBinDir} EXE=${EXE} install
