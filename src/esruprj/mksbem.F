@@ -1854,8 +1854,11 @@ C  act = 'l' lighting information
 
       character act*1,outs*124,outs248*248
       character TMPSTR*64
-      integer lnb,lnbb  ! actual lengths of strings
+      integer lnb,lnbb,lnact  ! actual lengths of strings
       integer itu       ! unit to write to
+      real nbpeople     ! number of people in the zone
+      real freshairhr   ! make-up air in m3/hr
+      real freshairchanges  ! make-up ach
 
 C Re-establish glazing fractions based on UK NCM guidelines
       if(ibusertyp.ne.0)then
@@ -2158,16 +2161,25 @@ C DHW reporting.
  104    CONTINUE
       elseif(act.eq.'a'.or.act.eq.'o')then
 
-C Occupancy links.
-        write(outs,'(A)')'Zone to activity linkages'
+C Occupancy links. Also derive and report on ocupant density, makeup air
+C in M3/hr for the zone. 
+        write(outs,'(A)')'Zone to activity linkages & occupants & air'
         call edisp(itu,outs)
         DO 105 IZ=1,NCOMP
           lnb=lnzname(IZ)
           ireadactivityindex=theactivityindex(IZ)
           if(ireadactivityindex.gt.0)then
-            write(outs,'(3A,I4,I6,1X,A)') 'Zone ',zname(iz)(1:lnb),
-     &        ' is linked to ',IACTYTYP(IZ),ireadactivityindex,
-     &        roomactname(ireadactivityindex)
+            nbpeople=occupant_dens(ireadactivityindex)*ZBASEA(IZ)
+            freshairhr=nbpeople*fresh_air(ireadactivityindex) *
+     &                 (3600./1000.)
+            freshairchanges=freshairhr/vol(iz)
+            lnact=lnblnk(roomactname(ireadactivityindex))
+            write(outs,'(3A,I3,I4,1X,2A,f5.1,a,f6.1,a,f5.2,a)') 
+     &        'Zone ',zname(iz)(1:lnb),' is linked to ',IACTYTYP(IZ),
+     &        ireadactivityindex,
+     &        roomactname(ireadactivityindex)(1:lnact),' with ',
+     &        nbpeople,' people ',freshairhr,' m^3/hr make-up ',
+     &        freshairchanges,' ach.'
           else
             write(outs,'(6A)') 'Zone ',zname(iz)(1:lnb),
      &        ' is linked to ',' 0',' 0',
