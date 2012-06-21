@@ -987,6 +987,7 @@ C Ask if older or newer file format.
             call MKOREANCLM(LASCI,IUNIT,'old',IER)
           elseif(ICT.eq.2)then
             call MKOREANCLM(LASCI,IUNIT,'new',IER)
+          endif
 
         elseif(IICT.eq.4)then
 

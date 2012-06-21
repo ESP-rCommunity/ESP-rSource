@@ -39,7 +39,7 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o \
 	  e2rtools.o ecasctl.o \
 	  econstr.o econtrol.o edatabase.o egeometry.o egrid.o emfnetw.o emoist.o \
 	  enetbound.o enetmath.o enetmisc.o enetpost.o enetrewr.o enetsetu.o \
-	  enetsolv.o eroper.o esgrid.o esru_misc.o esystem.o filelist.o g3dfac.o \
+	  enetsolv.o eroper.o esgrid.o esru_misc.o esystem.o fanger.o filelist.o g3dfac.o \
 	  g3dfnc.o g3dmtx.o gcfunc.o gsdmtx.o inital.o initalc.o initalp.o \
 	  input.o item.o lisolv.o locmage.o matsv.o mfbndr.o mfcdat.o mfcntl.o \
 	  mfmach.o mfmode.o mfsbld.o mfsbps.o mfsplt.o mfutil.o mitzero.o \
@@ -47,7 +47,7 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o \
 	  pcloop.o pcomp1.o pcomp2.o pcomp3.o pcomp4.o pcomps.o pcomps1.o \
 	  plibsv.o plot.o pltcfg.o pmatrx.o pplib.o ppsub.o precal.o psychro.o \
 	  reslib.o rnor.o rwipv.o rwroam.o rwsbem.o senrwl.o sensit.o sentim.o simcon.o solar.o sort.o \
-	  spmatl.o spmisc.o stofunc.o subsys.o tdfile.o tdrecbps.o temps.o trstyp.o \
+	  spmatl.o spmisc.o stofunc.o subsys.o tdfile.o tdrecbps.o temper.o temps.o trstyp.o \
 	  tscon.o utilf.o MechVentIN.o CentralVentSys.o \
 	  hvacinput.o hvacsim.o furnace.o init_hvac_var.o fan.o ashp.o \
 	  ashp_cooling.o baseboard.o hvac_output.o h3koutput.o h3kstore.o \
