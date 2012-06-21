@@ -378,7 +378,6 @@ C fluid heat capacity rate(s) C (W/K), ie. SUM(mass flow * specific heat)
          C1=PCONDR(ICON1)*CONVAR(ICON1,2)*SHTFLD(3,CONVAR(ICON1,1))
 C Inter-node fluid heat capacity rate (W/K)
          PCDATF(IPCOMP,1)=CSVF(INOD1,2)*SHTFLD(3,CSVF(INOD1,1))
-
 C Determine if there's fluid flow in the raditor
          call eclose  ( PCONDR(ICON1)*CONVAR(ICON1,2),
      &                  0.0, 1.0E-05, bNoFlow )
@@ -458,17 +457,21 @@ C Set default values (just to be on the safe side)
         fQ_node1_frac = 0.0 
         fQ_node2_frac = 1.0 
 
+C Set default values (just to be on the safe side)
+        fQ_node1_frac = 0.0
+        fQ_node2_frac = 1.0
+
         if ( bNoFlow ) then
 
           fQ_node1_frac = (TS-TE) / ( TS + TX - 2.0 * TE)
-          !check for the case where TS=TE=TX 
-          call eclose(TS,TE,0.001,closea) 
-          IF(closea) fQ_node1_frac = 0. 
+          !check for the case where TS=TE=TX
+          call eclose(TS,TE,0.001,closea)
+          IF(closea) fQ_node1_frac = 0.
 
           fQ_node2_frac = (TX-TE) / ( TS + TX - 2.0 * TE)
-          !check for the case where TS=TE=TX 
-          call eclose(TX,TE,0.001,closea) 
-          IF(closea) fQ_node2_frac = 0. 
+          !check for the case where TS=TE=TX
+          call eclose(TX,TE,0.001,closea)
+          IF(closea) fQ_node2_frac = 0.
 
 C Make sure Resulting heat transfer does not cool nodes below environment
 C temperature

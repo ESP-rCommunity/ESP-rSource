@@ -1233,7 +1233,7 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
 
       character act*1  ! action requested.
       character simact*6 ! action for creating assessments.
-      character*72 odir    ! where are folders
+      character*84 odir    ! where are folders
 
 C At the head of the file is a title and a description
 C modeltitle (char 72) and modeldocblock (char 248) from model.h which can be
@@ -2609,7 +2609,8 @@ C Obstruction blocks via geometry.h.
 C common zndata (VCOORD,NZNVER,NZJVN) via geometry.h
 
       common/rpath/path
-      character*72 path,odir    ! where path and odir are folders
+      character path*72    ! where path folders
+      character odir*84    ! where current working folder
 
       common/dllerr/dllsubr,dllmesg
       character dllsubr*12,dllmesg*124  ! messages if errors in dll

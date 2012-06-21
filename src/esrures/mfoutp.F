@@ -113,6 +113,8 @@ C Simulator parameters.
       integer YAXSET,ADDLIN,horaxisdiv
       integer iglib
       integer lnb,lsn1
+      integer k,k4,ke,ke4,ke4t  ! used for string positions
+      integer lke,lket28        ! length of label and packed label
 
       logical colok,ok,dok
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
@@ -568,18 +570,20 @@ C don't do this if printing to file.
 
           K=6   ! initial value for 248 buffer
           K4=6  ! initial value for 800 buffer
-          KE=0
-          KE4=0
+          KE=0  ! end of string value for 248 buffer
+          KE4=0 ! end of string value for 800 buffer
 
 C For those dumping to a spreadsheet file write out labels on a single line.
           do 20 IL=1,NMFGET
             lke=LNGLMFLABEL(IL)  ! longer lable length
+            call SDELIM(GLMFLABEL(IL),t28,'N',IW)
+            lket28=lnblnk(t28)   ! length of packed label
             if(ILFLAG.eq.0)then
               KE=K+11   ! short label
               KE4=K4+11   ! short label
             else
-              KE=K+lke+1
-              KE4=K4+lke+1
+              KE=K+lke+1       ! set new end to reflect label
+              KE4=K4+lket28+1  ! set new end to reflect packed label
             endif
             if(KE.le.248)then
               if(ILFLAG.eq.0)then
@@ -637,12 +641,23 @@ C Also use the current delimiter.
               endif
             endif
 
-C For writing to file also fill the 800 char buffer, removing spaces.
+C For writing to file also fill the 800 char buffer, remove spaces.
+C If short labels write up to 10 characters, otherwise write the
+C packed string.
             if(KE4.le.800)then
               if (ixopen.eq.1) then
-                call SDELIM(GLMFLABEL(IL),t28,'N',IW)
-                write(outs800(K4:KE4),'(2a)') ' ',t28(1:lnblnk(t28))
-                K4=K4+lnblnk(t28)+1
+                if(ILFLAG.eq.0)then
+                  if(lket28.gt.10)then
+                    write(outs800(K4:KE4),'(2a)') ' ',t28(1:10)
+                    K4=K4+11        ! next start point
+                  else
+                    write(outs800(K4:KE4),'(2a)') ' ',t28(1:lket28)
+                    K4=K4+lket28+1  ! next start point
+                  endif
+                else
+                  write(outs800(K4:KE4),'(2a)') ' ',t28(1:lket28)
+                  K4=K4+lket28+1    ! next start point
+                endif
               endif
             endif
  20       continue
@@ -676,7 +691,8 @@ C demarcations are omitted.
             endif
           endif
 
-C If multi-line labels then write out the 2nd line.
+C If multi-line labels then write out the 2nd line. Do not bother if
+C writing to a file and using short labels.
           if(ILFLAG.eq.0)then
             if (IDHFLG.eq.1) then
               outs248='#    '
@@ -702,9 +718,9 @@ C If multi-line labels then write out the 2nd line.
               endif
  225        continue
             if (IDAY.eq.IODS)then
-              call edisp(itru,outs248)
+              if(irows.eq.2) call edisp(itru,outs248) ! 2nd row requested
             else
-              if (IDHFLG.eq.1)call edisp(itru,outs248)
+              if (IDHFLG.eq.1.and.irows.eq.2) call edisp(itru,outs248)
             endif
           endif
 

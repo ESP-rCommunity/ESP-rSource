@@ -278,6 +278,7 @@ C Do not check for UK NCM models.
       TFOUND=.FALSE.
       DO 60 IS=1,NZSUR(icomp)
         icn1=izstocn(icomp,is)
+
 C Debug.
 C        write(6,*) icn1,SSOTF(icn1),ITMCFL(ICOMP,IS),inoti
 
@@ -1198,6 +1199,7 @@ C with ier=1.
         if(ioc.eq.0)then
           goto 244  ! An unknown surface in the master list. << what to do? >>
         endif
+
 C Take the composite name associated with this surface and find the
 C equivalent composite db.  If composite name is UNKN then must ask
 C the user to select one.

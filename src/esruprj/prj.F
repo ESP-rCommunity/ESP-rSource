@@ -471,14 +471,19 @@ C Generate the version report.
 C Find the user's home folder then get user's custom settings
 C if defined. If there is no .esprc file in the users home folder
 C then the esp-r install folders will be checked by scesprc and
-C esprc may be updated if the alternate version is found.
+C esprc may be updated if the alternate version is found. Echo
+C in the feedback area if the trace level is non-zero.
       call usrhome(upath)
       if(unixok)then
         write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'.esprc'
       else
         write(esprc,'(3a)') upath(1:lnblnk(upath)),fs,'esprc'
       endif
-      call scesprc(esprc,IFIL+5,0,IIER)
+      if(ITRC.eq.0)then
+        call scesprc(esprc,IFIL+5,0,IIER)
+      else
+        call scesprc(esprc,IFIL+5,1,IIER)
+      endif
 
 C Debug.
 C      write(6,*) 'upath',upath

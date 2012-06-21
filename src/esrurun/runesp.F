@@ -393,7 +393,7 @@ C Simulation parameter presets.
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
               
-      character*72 odir    ! where are folders
+      character*84 odir    ! where are folders
       CHARACTER OUTSTR*248,WORD*32,outs*124,outs2*124,outs248*248
 
       character LFILE*144,thefile*72,theresult*72

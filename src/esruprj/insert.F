@@ -294,7 +294,7 @@ C update IE1 for surfaces > IWHICH otherwise just compact IC1 & IE1.
 C << this could be a useful place to manage the zonedata arrays >>
 
   235   CONTINUE
-        NCON=NCON-1
+        NCON=NCON-1  ! decrement number of connections in the model
 
 C Re-establish link between zone/surfaces and connections.
         do 335 iccc = 1, NCON
@@ -3188,18 +3188,24 @@ C ****************** addedsurf
 C addedsurf takes the current G1 & G5 common block values and copies them
 C to the G6 common block. This block of code had been replicated in
 C many locations and this consolidates this function.
-C icomp is the index of the zone
-C icon is the index of the new connection (from parent code).
       subroutine addedsurf(icomp,icon,itrc,ier)
 #include "building.h"
 #include "geometry.h"
+
+C Parameters
+      integer icomp ! is the index of the zone
+      integer icon  ! is the index of the new connection (from parent code)
+      integer itrc  ! verbosity
+      integer ier   ! is non-zero if the surface could not be added
       
+      COMMON/OUTIN/IUOUT,IUIN
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       integer IX,ival1,ival2
+      character outs*124
 
 C Update the connection list. Move all others up and then insert with
 C default values.
@@ -3216,6 +3222,10 @@ C Update common blocks G6 & G7
         IC2(ICON)=0
         IE2(ICON)=0
         IZSTOCN(icomp,nsur)=icon
+
+C Debug.
+C        write(6,*) 'addedsurf icomp icon nsur izs',icomp,icon,nsur,
+C     &    IZSTOCN(icomp,nsur)
         SSNAME(ICON)=SNAME(ICOMP,NSUR)
         SSOTF(ICON)=SOTF(NSUR)
         SSMLCN(ICON)=SMLCN(NSUR)
@@ -3265,6 +3275,12 @@ C the connections file is correct.
 
 C Now update the G7 common block to reflect additional surface.
         call zgupdate(itrc,icomp,ier)
-      ENDIF
+      else
+        write(outs,'(a,i4,a,i4,a,i2,a,i3)') 
+     &    'addedsurf: skip adding connect ',
+     &    NCON,' > ',MCON,' for zone',icomp,' connection',icon
+        call edisp(iuout,outs)
+        ier=1  ! pass back error state
+      endif
       return
       end

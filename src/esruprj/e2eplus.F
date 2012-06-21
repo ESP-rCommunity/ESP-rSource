@@ -1637,19 +1637,20 @@ C See if this surface happens to be a child in the strict sense.
  778      continue
 
 C Debug.
-          write(6,*) 'self truechild is ',truechild(icc)
+C          write(6,*) 'self truechild is ',truechild(icc)
  166    continue
 
         DO 64 IS=1,NSUR
           icc=izstocn(mz,is)
+
 C Info about children of this surface.
 C Debug.
-          write(6,'(3a,i2,a,i3,a,i2,a,i3)')  ' for surface named ',
-     &      SSNAME(icc),' nb children ',nbchild(icc),
-     &      ' cnn is ',ichild(icc,1),' nb gc ',nbgchild(icc),
-     &      ' cnn is ',igchild(icc,1)
+C          write(6,'(3a,i2,a,i3,a,i2,a,i3)')  ' for surface named ',
+C     &      SSNAME(icc),' nb children ',nbchild(icc),
+C     &      ' cnn is ',ichild(icc,1),' nb gc ',nbgchild(icc),
+C     &      ' cnn is ',igchild(icc,1)
           if(ichild(icc,1).gt.0) then
-            write(6,*) ' child named ',SSNAME(ichild(icc,1))
+C            write(6,*) ' child named ',SSNAME(ichild(icc,1))
           else
             usethisone(icc)=.true.  ! no children so use
           endif

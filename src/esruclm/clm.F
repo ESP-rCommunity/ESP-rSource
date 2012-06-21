@@ -85,13 +85,13 @@ C Name of current application
       common/APPNAME/cAppName
       
       character cAppName*12
-
+      character(144)  :: inf,pact,aut,ascif
       dimension ITEM(22)
       character CLMLOC*30
       character ITEM*26,LASCI*72,outs*124,outs248*248
       character PERST1*14,PERST2*40,PERST3*40,LCMDFL*144
-      character inf*144,ascif*72,pascif*72,llasci*144
-      character pact*16,aut*12,paction*16
+      character pascif*72,llasci*144
+      character paction*16
       character path*72,xfile*144,tg*1,delim*1
       character tab*1,fs*1,OUTSTR*124
       character journcmd*20,jfile*72,uname*24,cjfile*72
@@ -794,9 +794,12 @@ C Confirm the period to transfer.
 C Check whether it is an esp-r weather file or an EPW file.
         helptopic='clm_esp_or_epw'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        CALL EASKABCD(' Weather import options:',' ',
+C        CALL EASKABCD('Weather import options:',' ',
+C     &   'EPW weather file','ASCII esp-r file','Korean MET',
+C     &   'continue',IICT,nbhelp)
+        CALL EASKATOG('Weather import options:',' ',
      &   'EPW weather file','ASCII esp-r file','Korean MET',
-     &   'continue',IICT,nbhelp)
+     &   'ASCII column data','continue',' ',' ',IICT,nbhelp)
         if(IICT.eq.1)then
           NTSPH=1
           LASCI=' '
@@ -984,8 +987,73 @@ C Ask if older or newer file format.
             call MKOREANCLM(LASCI,IUNIT,'old',IER)
           elseif(ICT.eq.2)then
             call MKOREANCLM(LASCI,IUNIT,'new',IER)
+
+        elseif(IICT.eq.4)then
+
+C Import weather data from column ASCII file asking user whether
+C to overwrite site information. Confirm the period to transfer.
+          NTSPH=1
+          CALL PERSTR(IYEAR,IDS,IT1,IDF,IT2,NTSPH,
+     &            IFDAY,IFTIME,PERST1,PERST2,PERST3,IER)
+
+          write(outs,'(2A)') PERST3(1:lnblnk(PERST3)),' ?'
+          dok=.true.
+          helptopic='clm_import_inclusive'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL ASKOK('Import column data inclusive of',outs,OK,dok,
+     &      nbhelp)
+          IF(.NOT.OK)THEN
+            CALL selper(ier)
+          ENDIF
+
+          LASCI=' '
+          LLASCI=' '
+          IUNIT=IFIL+1
+          helptopic='clm_import_ascii_esp'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+
+C Call EASKF depending on the current file name length.
+C The X11 version will be returning only the name of the
+C file, while the GTK version will be returning the
+C name with the full path.
+  294     llt=lnblnk(LLASCI)
+          iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+          if(iglib.eq.1.or.iglib.eq.3)then
+            if(llt.lt.96)then
+              CALL EASKF(LLASCI,'Column ASCII file:',
+     &          ' ',96,DCLIM,'ASCII weather file name',IER,nbhelp)
+            elseif(llt.ge.96.and.llt.lt.124)then
+              CALL EASKF(LLASCI,'Column ASCII file:',
+     &          ' ',124,DCLIM,'ASCII weather file name',IER,nbhelp)
+            elseif(llt.ge.124.and.llt.le.144)then
+              CALL EASKF(LLASCI,'Column ASCII file:',
+     &          ' ',144,DCLIM,'ASCII weather file name',IER,nbhelp)
+            endif
+          elseif(iglib.eq.2)then
+            CALL EASKF(LLASCI,'Weather ASCII file:',
+     &        ' ',144,DCLIM,'ASCII weather file name',IER,nbhelp)
+          else
+            CALL EASKF(LLASCI,'Weather ASCII file:',
+     &        ' ',96,DCLIM,'ASCII weather file name',IER,nbhelp)
+          endif
+
+C If user canceled loop show menu again.
+          if(ier.eq.-3) goto 3
+
+          IF(LLASCI(1:2).EQ.'  '.or.LLASCI(1:4).eq.'UNKN')GOTO 294
+
+C Cast back to 72 char name and do the conversion.
+          llt=MIN0(lnblnk(llasci),72)
+          write(LASCI,'(a)') LLASCI(1:llt)
+
+          WRITE(outs248,'(2A)')'Writing data to ',LCLIM(1:lnblnk(LCLIM))
+          CALL EDISP248(IUOUT,outs248,100)
+          CALL COLTOBCLM(iuout,LASCI,IUNIT,IDS,IDF,IER)
+          call tstamp('>','CLM: import column data')
+          CALL EDISP(IUOUT,'Modified weather file saved')
+          CALL EDISP(IUOUT,blank)
         endif
-        endif
+
       ELSEIF(INO.EQ.15)THEN
 
 C Manage weather list.

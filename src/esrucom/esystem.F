@@ -582,6 +582,7 @@ C Flags & storage for parsing *sim-toggle tags
       character*248 cLnWords(124)
 C Function references used to parse *sim-toggle tags.      
       real fCtoR_err 
+      integer iCtoI_err
       logical bStringsMatch
      
       newgeo=.false.  ! assume older format geometry.
@@ -603,6 +604,9 @@ C Set folder separator (fs) to \ or / as required.
 C Initalizing starting point for parsing simulation presets (*sps)
       iSet_start = 1
 
+C Initialize values for plant convergence criteria
+      call InitPltSolnParams() 
+      
 C Initialize flag for boundary condition data 
       bBC_data_defined = .false.
 
@@ -627,6 +631,8 @@ C Clear the model common blocks.
 C Initialize simulation toggle flags 
       bUserGAM = .false.       
       bUserSolar = .false. 
+      bUserPltSolvConfig = .false. 
+      
       
       LUALF='UNKNOWN'
       bidirfile='UNKNOWN'
@@ -1733,8 +1739,8 @@ C Non-linear thermophysical properties configuration file.
 C Simulation presets: Optionally parameters normally hidden in the password-
 C protected simulation toggles directory.
       elseif ( loutstr(1:11).eq. '*sim-toggle' ) then
-        
-C Count number of words on this line. Should be three:
+ 
+C Count number of words on this line. Should be three:         
 C         *sim-toggle KEYWORD VALUE    
         iWordCount = iEGetArrW ( loutstr, cLnWords )
         
@@ -1757,10 +1763,97 @@ C Token describes flag for solar processing
      &       bStringsMatch(cLnWords(2),'bld-solar-processing')) then 
      
              bUserSolar = .true. 
+             iUserSolar = -1 
              
-             if ( bStringsMatch(cLnWords(3),'enabled' )) iUserSolar = 0
-             if ( bStringsMatch(cLnWords(3),'disabled')) iUserSolar = 1
-                          
+             ParseSolarTag: 
+     &       if ( bStringsMatch(cLnWords(3),'enabled' )) then 
+     
+               iUserSolar = 0
+
+             elseif ( bStringsMatch(cLnWords(3),'disabled')) then
+             
+               iUserSolar = 1
+               
+             else 
+               
+               bError = .true.
+               
+             endif ParseSolarTag
+             
+          elseif ( 
+     &       bStringsMatch(cLnWords(2),'plt-max-iterations')) then 
+          
+             bUserPltSolvConfig = .true. 
+             
+             iUserMAXITP = iCtoI_err( cLnWords(3),
+     &                           'Max plant iterations',
+     &                           bError ) 
+             if ( iUserMAXITP  < 0. ) bError = .true. 
+      
+             
+             
+          elseif ( 
+     &       bStringsMatch(cLnWords(2),'plt-clt-max-iterations')) then 
+          
+             bUserPltSolvConfig = .true.    
+             
+             iUserITRCLP = iCtoI_err( cLnWords(3),
+     &                                'Max plant control iterations',
+     &                                bError ) 
+             if ( iUserITRCLP  < 0. ) bError = .true. 
+                   
+
+          elseif ( 
+     &       bStringsMatch(cLnWords(2),'plt-max-error-relative')) then 
+          
+             bUserPltSolvConfig = .true.               
+             
+             fUserPERREL = fCtoR_err( cLnWords(3),
+     &                           'Plant soln max relative error (-) ',
+     &                           bError ) 
+             if ( fUserPERREL  < 0. ) bError = .true.              
+             
+          elseif ( 
+     &       bStringsMatch(cLnWords(2),'plt-max-error-temp')) then 
+          
+             bUserPltSolvConfig = .true.             
+             
+             fUserPERTMP = fCtoR_err( cLnWords(3),
+     &                         'Plant soln max temperature error (oC) ',
+     &                           bError ) 
+             if ( fUserPERTMP < 0. ) bError = .true. 
+
+          elseif ( 
+     &       bStringsMatch(cLnWords(2),'plt-max-error-flux')) then 
+
+             bUserPltSolvConfig = .true. 
+
+             fUserPERFLX = fCtoR_err( cLnWords(3),
+     &                         'Plant soln max heat flux error (W) ',
+     &                           bError ) 
+             if ( fUserPERFLX < 0. ) bError = .true.              
+     
+          elseif ( 
+     &       bStringsMatch(cLnWords(2),'plt-max-error-flow')) then 
+
+             bUserPltSolvConfig = .true.  
+
+             fUserPERMFL = fCtoR_err( cLnWords(3),
+     &                         'Plant soln max mass flow error (kg/s) ',
+     &                         bError ) 
+             if ( fUserPERTMP < 0. ) bError = .true.              
+     
+          elseif ( 
+     &       bStringsMatch(cLnWords(2),'plt-max-error-H2-flow')) then  
+     
+             bUserPltSolvConfig = .true.             
+          
+             fUserH2iterTol= fCtoR_err( cLnWords(3),
+     &                     'Plant soln max H2 mass flow error (kg/s) ',
+     &                         bError ) 
+             if ( fUserH2iterTol < 0. ) bError = .true.
+                        
+                       
           endif MatchKeywords
         
         endif RightWordCount
@@ -3760,3 +3853,45 @@ C      endif
 
       return
       end
+
+
+C Rotine that merely intializes plant solution convergence criteria 
+      subroutine InitPltSolnParams()
+      implicit none 
+      include "plant.h" 
+      include "UserSimulationToggles.h"
+      
+      
+C Plant matrix solver convergence criteria.      
+      COMMON/PITER/MAXITP,PERREL,PERTMP,PERFLX,PERMFL,itrclp,
+     &             ICSV(MPNODE,MPVAR),CSVI(MPNODE,MPVAR)
+
+      integer MAXITP, itrclp, ICSV
+      real PERREL, PERTMP, PERFLX, PERMFL, CSVI
+     
+C Tolerance for iteration of hydrogen flow matrix
+      common/PITER_H2/fH2_iteration_tolerance
+      real fH2_iteration_tolerance
+      
+C Initialise plant side iteration parameters
+      MAXITP=100
+      PERREL=.01
+      PERTMP=1.
+      PERFLX=10.
+      PERMFL=.0005  
+      itrclp=maxitp
+
+C Hydrogen flow iteration tolerance
+      fH2_iteration_tolerance = PERMFL * 1.0E-03 
+      
+      
+      iUserMAXITP    = MAXITP 
+      iUserITRCLP    = itrclp
+      fUserPERREL    = PERREL 
+      fUserPERTMP    = PERTMP 
+      fUserPERFLX    = PERFLX 
+      fUserPERMFL    = PERMFL       
+      fUserH2iterTol = fH2_iteration_tolerance    
+      
+      return 
+      end 

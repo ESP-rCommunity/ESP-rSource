@@ -43,6 +43,9 @@ use Cwd;
 use Cwd 'chdir';
 use File::Find;
 use Math::Trig;
+
+require 'co-sim.pl'; #subroutines used in testing co-simulations
+  
 # Load Simple package --- needed to parse xml output.
 # Simple.pm is not part of the standard perl distribution,
 # and must be shipped with tester.pl. It can be
@@ -207,6 +210,18 @@ my $Help_msg = "
          are provided, tester.pl will compare the output from both
          and save the output from the new bps (ie. the second one
          in the command arguments) in an archive.
+    
+    --co-sim: tester.pl will attempt to run co-simulations using '.har'
+         files. 
+
+    --create_co-sim_archive <FILE>: Create a historical archive
+         named <FILE>. tester.pl will save simulation output in
+         the folder named <FILE>. 
+
+    -h, --har_files <PATH>: Search for HarmonizerInput files (.har) in <PATH>.
+         tester.pl will attempt to run a co-simulation using the '.har'
+         files found within the provided path.  Default: ../test_suite/co-simulation
+         Paths to the required dlls are provided by the .har file.
 
     --ref_loc <PATH>: Use the res and ish applications found at <PATH>
          when running the reference version of bps.
@@ -475,6 +490,8 @@ $gTest_paths{'master'} = getcwd();
 $gTest_paths{'local_models'} = "./local_models";         # path to local models
 $gTest_paths{'results'}      = "./results_output";       # path to results folder
 $gTest_paths{'test_suite'}   = "../test_suite/";         # path to test suite
+$gTest_paths{'cosim'}        = "../additional_tests/ESP-r_TRNSYS_co-simulation/";         # path to test suite
+$gTest_paths{'cosim_archive'}        = "";         # path to co-sim test suite results
 $gTest_paths{'single_case'}  = "";                       # Path to an individual test case
 $gTest_paths{'esp-r'}        = "/usr/esru/esp-r/bin";    # path to standard esp-r
 $gTest_paths{'helper_apps'}  = ".;../../validation/QA/benchmark_model/cfg";
@@ -543,6 +560,7 @@ $gTest_params{"diff_data_files"} = 0;        # Optionally perform a diff of
                                              # data files 
                                              
 $gTest_params{"third_party_diff_cmd"} = "diff -iw";  # Command to dump out diff
+$gTest_params{'cosim'}        = 0; # Do not run tester on co-simulations.
 
                                                       
 # list of parameters that should be dumped into the configuration file
@@ -635,6 +653,7 @@ $cmd_arguements =~ s/-a;/--historical_archive;/g;
 $cmd_arguements =~ s/-v;/--verbose;/g;
 $cmd_arguements =~ s/-vv;/--very_verbose;/g;
 $cmd_arguements =~ s/-d;/--databases;/g;
+$cmd_arguements =~ s/-h;/--har_files;/g;
 
 # Aliases:
 $cmd_arguements =~ s/--ref_res;/--ref_loc;/g;
@@ -647,9 +666,11 @@ $cmd_arguements =~ s/--path;/--path:/g;
 $cmd_arguements =~ s/--case;/--case:/g;
 $cmd_arguements =~ s/--historical_archive;/--historical_archive:/g;
 $cmd_arguements =~ s/--create_historical_archive;/--create_historical_archive:/g;
+$cmd_arguements =~ s/--create_co-sim_archive;/--create_co-sim_archive:/g;
 $cmd_arguements =~ s/--ref_loc;/--ref_loc:/g;
 $cmd_arguements =~ s/--test_loc;/--test_loc:/g;
 $cmd_arguements =~ s/--diff_tool;/--diff_tool:/g;
+$cmd_arguements =~ s/--har_files;/--har_files:/g;
 # If any options expecting arguements are followed by other
 # options, insert empty arguement:
 $cmd_arguements =~ s/:-/:;-/;
@@ -731,6 +752,39 @@ foreach $arg (@processed_args){
         fatalerror("Path to historical archive must be specified with ".
                   "--create_historical_archive option!");
       }
+      last SWITCH;
+    }
+    if( $arg =~ /^--create_co-sim_archive/ ){
+      # results to be saved as a historical archive for future use
+      $gTest_params{"create_cosim_archive"} = 1;
+      $gTest_paths{"new_cosim_archive"} = $arg;
+      $gTest_paths{"new_cosim_archive"} =~ s/--create_co-sim_archive://g;
+      print ("in --create_co-sim_archive: $gTest_paths{'new_cosim_archive'}\n");
+      if ( ! $gTest_paths{"new_cosim_archive"} ){
+        fatalerror("Path to historical co-simulation archive must be specified with ".
+                  "--create_co-sim_archive option!");
+      }
+      last SWITCH;
+    }
+
+    if( $arg =~ /^--har_files/ ){
+      # Path to folder containing co-sim test case(s)
+      $gTest_paths{"cosim"} = $arg;
+      $gTest_paths{"cosim"} =~ s/--path://g;
+      if ( ! $gTest_paths{"cosim"} ){
+        fatalerror("Path to co-simulation test suite must be specified with --har_files option!");
+      }
+      last SWITCH;
+    }
+    if( $arg =~ /^--co-sim/ ){
+      # Path to folder containing co-sim test case(s)
+      $gTest_params{"cosim"} = 1;
+      $gTest_params{"compare_versions"} = 0;
+      $gTest_params{'echo_config'}        = 0; # Report configuration to buffer
+	  $gTest_params{'single_case'}        = 0; # Test a single case (.cfg file)
+	  $gTest_params{'compare_to_archive'} = 0; # compare results to historical archive
+	  $gTest_params{'compare_two_archives'} = 0; # compare two historical archives
+	  $gTest_params{'verbosity'}          = "verbose"; # How loud should the tester be?
       last SWITCH;
     }
 
@@ -876,12 +930,41 @@ stream_out("\n tester.pl $gSys_params{'date'} $gSys_params{'time'}\n\n");
 # convert relative paths to absolute using resolve_path function.
 $gTest_paths{"local_models"} = resolve_path ( $gTest_paths{"local_models"} );
 $gTest_paths{"test_suite"}   = resolve_path ( $gTest_paths{"test_suite"} );
+$gTest_paths{"cosim"}        = resolve_path ( $gTest_paths{"cosim"} );
+$gTest_paths{"new_cosim_archive"} = resolve_path ( $gTest_paths{"new_cosim_archive"} );
 $gTest_paths{"single_case"}  = resolve_path ( $gTest_paths{"single_case"} );
 $gTest_paths{"new_archive"}  = resolve_path ( $gTest_paths{"new_archive"} );
 $gTest_paths{"old_archive"}  = resolve_path ( $gTest_paths{"old_archive"} );
 $gTest_paths{"esp-r"}        = resolve_path ( $gTest_paths{"esp-r"} );
 $gTest_paths{"master"}       = resolve_path ( $gTest_paths{"master"} );
 $gTest_paths{"results"}      = resolve_path ( $gTest_paths{"results"} );
+
+
+if ( $gTest_params{"cosim"}){ 
+    # recursively search through test-case path for har files.
+    my $parentpath = getcwd();
+	#replace "/scripts" with "/additional_tests/ESP-r_TRNSYS_co-simulation"
+	$parentpath =~ s/\/scripts/\/additional_tests\/ESP-r_TRNSYS_co-simulation/gi;
+    my $datestring = "Testing commenced on $gSys_params{\"date\"} at $gSys_params{\"time\"}\n";
+    find( sub{
+          # move on to next file if 
+          return if -d; #(1) file is a directory,
+          return unless -r; # (2) file is not readable
+          return if $File::Find::name =~ m/CVS./; 
+          return unless $File::Find::name =~ m/\.har$/; #(3) file is not .har file
+          my $now_path = getcwd();
+          process_cosim_test($File::Find::name,$gTest_paths{'new_cosim_archive'});
+          chdir($now_path);
+        },  $gTest_paths{"cosim"} );
+        #write summary file
+        write_summary_file($parentpath, $gTest_paths{'new_cosim_archive'}, $datestring );
+        #tar and zip the results files.
+        if ($gTest_params{'create_cosim_archive'} == 1){
+        print ("create archive\n");
+        #create_historical_cosim_archive(!$gTest_paths{'new_cosim_archive'},$gSys_params{\'tar_command\'}, $gTest_params{\'configuration_file\'});
+   }
+ die;
+}
 
 #-------------------------------------------------------------------
 # Check to see that the specified binary (or binaries) exists and
@@ -1448,6 +1531,13 @@ if ( $gTest_params{"create_report"} &&
 #-----------------------------------------------------------------------
 if ( $gTest_params{"create_archive"} ){
   create_historical_archive();
+}
+#-----------------------------------------------------------------------
+# If a historical co-simulation archive is to be created, copy results
+# files to archive, and tar & gzip output files
+#-----------------------------------------------------------------------
+if ( $gTest_params{"create_cosim_archive"} ){
+  create_historical_cosim_archive();
 }
 
 #-----------------------------------------------------------------------
@@ -3977,4 +4067,9 @@ sub IsLowLevel($){
   return $result;
   
 }
+
+
+
+
+
 

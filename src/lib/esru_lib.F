@@ -1625,25 +1625,35 @@ C concatenate path with sfile.
 C If path is '  ' or './' do not concatenate
 C This version includes cross-platform logic.
       SUBROUTINE addpath(SFILE,tfile,concat)
+      IMPLICIT NONE
+      
+C Declare calling parameters
+      CHARACTER*(*), INTENT(OUT) :: sfile,tfile
+      LOGICAL, INTENT(OUT) :: concat
+C Declare local variables
+      LOGICAL :: unixok
+      CHARACTER :: fs,bs,a1
+      CHARACTER(72) :: path
+	  CHARACTER(12) :: tp, tp1
+	  CHARACTER(124):: outs
+	  INTEGER :: LN,LNS,I,LT,ios,iuin,iuout,pos
+C Common blocks
       COMMON/OUTIN/IUOUT,IUIN
       common/rpath/path
-      LOGICAL concat,unixok
-      CHARACTER*(*) sfile,tfile
-      CHARACTER path*72,fs*1,fs1*1,tp*12,tp1*12,outs*124,a1*1
-C      character a2*1
-
+      
 C Define path and file name lengths and check operating system.
       LN=max(1,lnblnk(path))
       LNS=max(1,lnblnk(sfile))
       call isunix(unixok)
-
+	
 C Set folder separator (fs) to \ or / and the folders to ignore as required.
       fs = char(47)
-      fs1 = char(92)
+      bs = char(92)
       write(tp,'(2a)') '.',fs
-      write(tp1,'(2a)') '.',fs1
+      write(tp1,'(2a)') '.',bs
       write(a1,'(a)') sfile(1:1)
-C      write(a2,'(a)') sfile(2:2)
+C Debug.
+C      write(*,*)'tp',tp,'tp1',tp1,'a1',a1
 
 C Assume that we will add the path to the file name.
       concat = .true.
@@ -1671,7 +1681,7 @@ C and change all \ to /.
           LT=max(1,lnblnk(tfile))
           sfile=tfile
           do 10 I=1,LT
-            if (tfile(I:I).eq.fs1) then
+            if (tfile(I:I).eq.bs) then
               write (sfile(I:I),'(a2)') fs
             endif
  10       continue
@@ -1690,6 +1700,15 @@ C been defined - do not add path.
      &        sfile(2:2).eq.':') then
           concat = .false.
         elseif (a1.eq.'/') then
+C make sure all \ (bs) are replaced with / (fs)
+         do
+           pos=SCAN(sfile,bs)
+           if (pos.ne.0) then
+             sfile(pos:pos)=fs
+           else 
+             EXIT
+           end if
+         end do      
 
 C Special case: unix absolute path being used on windows - substitute c: for initial /
 C Limit feedback text length to fit within outs text buffer.
@@ -1699,11 +1718,12 @@ C Limit feedback text length to fit within outs text buffer.
           write(outs,*)
      &      'addpath: warning found unix path changing to windows.'
           call edisp(iuout,outs)
-	  LNS=lnblnk(sfile)
-	  if(LNS.gt.112) LNS=112
+	      LNS=lnblnk(sfile)
+	      if(LNS.gt.112) LNS=112
           write(outs,*) 'addpath: ',sfile(1:LNS)
           call edisp(iuout,outs)
         endif
+        
       endif
 
       if(concat)then
@@ -4963,7 +4983,7 @@ C comma is found.
      &      ' past end of line for ',MSG(1:LNM),' (phrase) in...'
         else
           WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
-     &      'FAILUREW: Past end of line for ',
+     &      'FAILURE: Past end of line for ',
      &      MSG(1:LNM),' (phrase) in...'
         endif
       endif
@@ -6090,11 +6110,31 @@ C usrdir: Find current folder.
       subroutine usrdir(upwd)
       common/OUTIN/IUOUT,IUIN
       character*(*) upwd
-      integer getcwd
+      character local*96   ! getcwd needs a fixed char array
+      integer i,jlen,kblnk
 
-      i= getcwd(upwd)
+C Older definition used function call.
+C      integer getcwd
+C      i= getcwd(upwd)
+
+C Modern compilers GCC F90 provide subroutine
+      call getcwd(local,i)
+      jlen= LEN(upwd)        ! defined length of upwd
+      kblnk= lnblnk(local)   ! actual length of local
+
+C Debug.
+C      write(6,*) 'getcwd ',i,jlen,kblnk,local
+
+C Ensure that string buffer does not overflow.
+      if(kblnk.lt.jlen)then
+        write(upwd,'(a)') local(1:kblnk)
+      else
+        write(upwd,'(a)') local(1:jlen)
+      endif
+
+C Normal return value is zero, otherwise provide warning
       if(i.ne.0)then
-        call edisp(iuout,'problem recovering current folder')
+        call edisp(iuout,'usrdir: problem recovering current folder')
       endif
       return
       end
