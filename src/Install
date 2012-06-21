@@ -50,14 +50,7 @@ TargetFolder=$3
 printf "\r                                                                            "
 printf "\r   - Creating binary plant databases [${TargetName}]..."
 
-$PDB -mode text >/dev/null 2>&1 <<zzz
-$TargetName
-c
-a
-${SourceName}
-e
--
-zzz
+$PDB -mode text -file $TargetName -act asci2bin ${SourceName}
 mv $TargetName $TargetFolder
 
 }
@@ -1018,8 +1011,8 @@ esac
 case $compiler in
    sunF90)   CC=cc;  CPL=CC;  FC=f90  ;;
    GNU) case $gnu_version in
-           gcc4)     CC=gcc-mp-4.6;   CPL=g++-mp-4.6;    FC=gfortran-mp-4.6  ;;
-#           gcc4)     CC=gcc;   CPL=g++;    FC=gfortran  ;;
+#           gcc4)     CC=gcc-mp-4.6;   CPL=g++-mp-4.6;    FC=gfortran-mp-4.6  ;;
+           gcc4)     CC=gcc;   CPL=g++;    FC=gfortran  ;;
         esac;;
    intel)    CC=icc;  CPL=icpc;  FC=ifort ;;
 esac
@@ -2213,31 +2206,7 @@ echo " Installing standard databases. This may take some time."
   cp ${SRCdir}/databases/profiles.db2.a ${DESTdir}/esp-r/databases/profiles.db2.a
   echo " Done."
 
-     cd ${SRCdir}/databases
-
-     echo -n "   - Creating binary event profiles databases ..."
-     $PRJ -mode text >/dev/null 2>/dev/null <<zzz
-b
-g
-f
-profiles.db1.a
-${DESTdir}/esp-r/databases/profiles.db1
-y
--
--
-zzz
-
-     $PRJ -mode text >/dev/null 2>/dev/null <<zzz
-b
-g
-f
-profiles.db2.a
-${DESTdir}/esp-r/databases/profiles.db2
-y
--
--
-zzz
-   echo " Done."
+   cd ${SRCdir}/databases
 
    echo -n "   - Creating binary plant components databases..."
 

@@ -961,12 +961,14 @@ C Grid commons
       integer iupdown,isym    ! passed to etplot
       integer iicol
       integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iix1,iix2,iix3,iix4,iiy1,iiy2,iiy3,iiy4
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
       integer*8 iicol
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iix1,iix2,iix3,iix4,iiy1,iiy2,iiy3,iiy4
 #endif
 
 C Clear the screen
@@ -1052,10 +1054,12 @@ C Store the scaling parameters used in drawing the axes.
 C Draw the upper and right extents.
       call u2pixel(XMAX,YMIN,ix1,iy1)
       call u2pixel(XMAX,YMAX,ix2,iy2)
-      call eswline(ix1,iy1,ix2,iy2)
+      iix1=ix1; iiy1=iy1; iix2=ix2; iiy2=iy2
+      call eswline(iix1,iiy1,iix2,iiy2)
       call u2pixel(XMIN,YMAX,ix3,iy3)
       call u2pixel(XMAX,YMAX,ix4,iy4)
-      call eswline(ix3,iy3,ix4,iy4)
+      iix3=ix3; iiy3=iy3; iix4=ix4; iiy4=iy4
+      call eswline(iix3,iiy3,iix4,iiy4)
 
 C Check that the grid is ON GRSPC(*)<>0.0
       IF(GON)THEN
@@ -2097,11 +2101,17 @@ C      REAL MATRIX_A,MATRIX_B
 #ifdef OSI
       integer iupdown,isym    ! passed to etplot
       integer iix1,iiy1,iix2,iiy2  ! passed to edline
+      integer iiix,iiiy,iijx,iijy,iixp,iiyp,iiax,iiay
+      integer iiux,iiuy
       integer iicol
+      integer iiw4
 #else
       integer*8 iupdown,isym    ! passed to etplot
       integer*8 iix1,iiy1,iix2,iiy2 ! passed to edline
+      integer*8 iiix,iiiy,iijx,iijy,iixp,iiyp,iiax,iiay
+      integer*8 iiux,iiuy
       integer*8 iicol
+      integer*8 iiw4
 #endif
 
       X=XYZICON(ICN,1)
@@ -2158,22 +2168,22 @@ C Move to the first point and plot the icon in highlighted mode.
 C IVEICN(n,n,5) line type (1=solid, 2=dotted, 3=dashed, 4=double)
 C If select draw double thickness, otherwise use the line style of the icon.
             if(ISEL(ICN))then
-              call edwline(ix1,iy1,ix2,iy2)
+              iix1=IX1; iiy1=IY1; iix2=IX2; iiy2=IY2
+              call edwline(iix1,iiy1,iix2,iiy2)
             else
+              iix1=IX1; iiy1=IY1; iix2=IX2; iiy2=IY2
               if(IVEICN(ICN,I,5).eq.0)then
-                call eswline(ix1,iy1,ix2,iy2)
+                call eswline(iix1,iiy1,iix2,iiy2)
               elseif(IVEICN(ICN,I,5).eq.1)then
-                call eswline(ix1,iy1,ix2,iy2)
+                call eswline(iix1,iiy1,iix2,iiy2)
               elseif(IVEICN(ICN,I,5).eq.2)then
-                iix1=IX1
-                iiy1=IY1
-                iix2=IX2
-                iiy2=IY2
-                call edline(iix1,iiy1,iix2,iiy2,3)
+                iiw4=3
+                call edline(iix1,iiy1,iix2,iiy2,iiw4)
               elseif(IVEICN(ICN,I,5).eq.3)then
-                call edash(ix1,iy1,ix2,iy2,3)
+                iiw4=3
+                call edash(iix1,iiy1,iix2,iiy2,iiw4)
               elseif(IVEICN(ICN,I,5).eq.4)then
-                call edwline(ix1,iy1,ix2,iy2)
+                call edwline(iix1,iiy1,iix2,iiy2)
               endif
             endif
             iicol=0
@@ -2402,9 +2412,13 @@ C Logical
 
       REAL PI
 #ifdef OSI
-      integer iicol
+      integer iicol,iixp,iiyp,iix,iiy
+      integer iisx1,iisy1,iisx2,iisy2,iisx3,iisy3,iisx4,iisy4
+      integer iijx,iijy,iiix,iiiy,iiax,iiay,iiux,iiuy
 #else
-      integer*8 iicol
+      integer*8 iicol,iixp,iiyp,iix,iiy
+      integer*8 iisx1,iisy1,iisx2,iisy2,iisx3,iisy3,iisx4,iisy4
+      integer*8 iijx,iijy,iiix,iiiy,iiax,iiay,iiux,iiuy
 #endif
 C Draw the connection, with a square at each intermediate point.
 
@@ -2504,10 +2518,11 @@ C record the pixel values of the way point.
 
 C If within the view limits then draw a line from the last point 
 C to the current point.
+           iixp=ixp; iiyp=iyp;iix=ix; iiy=iy
            if(csel(icon))then
-             call edwline(ixp,iyp,ix,iy)
+             call edwline(iixp,iiyp,iix,iiy)
            else
-             call eswline(ixp,iyp,ix,iy)
+             call eswline(iixp,iiyp,iix,iiy)
            endif
 
 C Get the pixel values of the square around the connection point. 
@@ -2515,18 +2530,20 @@ C Get the pixel values of the square around the connection point.
            call u2pixel(MP(1)+XYSIZCP/2.,MP(2)+XYSIZCP/2.,isx2,isy2)
            call u2pixel(MP(1)-XYSIZCP/2.,MP(2)+XYSIZCP/2.,isx3,isy3)
            call u2pixel(MP(1)-XYSIZCP/2.,MP(2)-XYSIZCP/2.,isx4,isy4)
+
 C Draw a square around the connection intermediate point.
-           
+           iisx1=isx1; iisy1=isy1; iisx2=isx2; iisy2=isy2           
+           iisx3=isx3; iisy3=isy3; iisx4=isx4; iisy4=isy4           
            IF(CSEL(ICON))THEN
-             CALL EDWLINE(isx1,isy1,isx2,isy2)
-             CALL EDWLINE(isx2,isy2,isx3,isy3)
-             CALL EDWLINE(isx3,isy3,isx4,isy4)
-             CALL EDWLINE(isx4,isy4,isx1,isy1)
+             CALL EDWLINE(iisx1,iisy1,iisx2,iisy2)
+             CALL EDWLINE(iisx2,iisy2,iisx3,iisy3)
+             CALL EDWLINE(iisx3,iisy3,iisx4,iisy4)
+             CALL EDWLINE(iisx4,iisy4,iisx1,iisy1)
            ELSE
-             CALL ESWLINE(isx1,isy1,isx2,isy2)
-             CALL ESWLINE(isx2,isy2,isx3,isy3)
-             CALL ESWLINE(isx3,isy3,isx4,isy4)
-             CALL ESWLINE(isx4,isy4,isx1,isy1)
+             CALL ESWLINE(iisx1,iisy1,iisx2,iisy2)
+             CALL ESWLINE(iisx2,iisy2,iisx3,iisy3)
+             CALL ESWLINE(iisx3,iisy3,iisx4,iisy4)
+             CALL ESWLINE(iisx4,iisy4,iisx1,iisy1)
            ENDIF
 
           CLOSEP=.TRUE.
@@ -2542,14 +2559,15 @@ C intersection and draw the connection.
           CP(1)=MP(1)
           CP(2)=MP(2)
           CALL CINTSCT(CP,PP,MIN1,MAX1,MIN2,MAX2,XI,YI,FOUND)
-          call u2pixel(xi,yi,iix,iiy)
+          call u2pixel(xi,yi,iax,iay)
 
 C Draw a square around the connection intermediate point.
 c          if(found)then
+            iiix=iax; iiiy=iay;iijx=ix; iijy=iy
             if(csel(icon))then 
-              call edwline(iix,iiy,ix,iy)
+              call edwline(iiix,iiiy,iijx,iijy)
             else
-              call eswline(iix,iiy,ix,iy)
+              call eswline(iiix,iiiy,iijx,iijy)
             endif
 c          endif
 C Get the pixel values of the square around the connection point. 
@@ -2557,18 +2575,21 @@ C Get the pixel values of the square around the connection point.
            call u2pixel(MP(1)+XYSIZCP/2.,MP(2)+XYSIZCP/2.,isx2,isy2)
            call u2pixel(MP(1)-XYSIZCP/2.,MP(2)+XYSIZCP/2.,isx3,isy3)
            call u2pixel(MP(1)-XYSIZCP/2.,MP(2)-XYSIZCP/2.,isx4,isy4)
+
 C Draw a square around the connection intermediate point.
+           iisx1=isx1; iisy1=isy1; iisx2=isx2; iisy2=isy2           
+           iisx3=isx3; iisy3=isy3; iisx4=isx4; iisy4=isy4           
            
            IF(CSEL(ICON))THEN
-             CALL EDWLINE(isx1,isy1,isx2,isy2)
-             CALL EDWLINE(isx2,isy2,isx3,isy3)
-             CALL EDWLINE(isx3,isy3,isx4,isy4)
-             CALL EDWLINE(isx4,isy4,isx1,isy1)
+             CALL EDWLINE(iisx1,iisy1,iisx2,iisy2)
+             CALL EDWLINE(iisx2,iisy2,iisx3,iisy3)
+             CALL EDWLINE(iisx3,iisy3,iisx4,iisy4)
+             CALL EDWLINE(iisx4,iisy4,iisx1,iisy1)
            ELSE
-             CALL ESWLINE(isx1,isy1,isx2,isy2)
-             CALL ESWLINE(isx2,isy2,isx3,isy3)
-             CALL ESWLINE(isx3,isy3,isx4,isy4)
-             CALL ESWLINE(isx4,isy4,isx1,isy1)
+             CALL ESWLINE(iisx1,iisy1,iisx2,iisy2)
+             CALL ESWLINE(iisx2,iisy2,iisx3,iisy3)
+             CALL ESWLINE(iisx3,iisy3,iisx4,iisy4)
+             CALL ESWLINE(iisx4,iisy4,iisx1,iisy1)
            ENDIF
 
            CLOSEP=.TRUE.
@@ -2580,12 +2601,13 @@ C previous point.
           CP(1)=MP(1)
           CP(2)=MP(2)
           CALL CINTSCT(CP,PP,MIN1,MAX1,MIN2,MAX2,XI,YI,FOUND)
-          call u2pixel(xi,yi,iix,iiy)
+          call u2pixel(xi,yi,iax,iay)
 c          if(found)then
+            iiix=iax; iiiy=iay;iixp=ixp; iiyp=iyp
             if(csel(icon))then 
-              call edwline(iix,iiy,ixp,iyp)
+              call edwline(iiix,iiiy,iixp,iiyp)
             else
-              call eswline(iix,iiy,ixp,iyp)
+              call eswline(iiix,iiiy,iixp,iiyp)
             endif  
 c          endif        
           CLOSEP=.FALSE.
@@ -2629,10 +2651,11 @@ C        CALL ECLOSE(EP(3),VIEWCEN(3),0.01,CLOSEE)
 
       IF(IX.GT.IGL.AND.IX.LT.IGR.AND.IY.GT.IGT
      &.AND.IY.LT.IGB.AND.CLOSEE.AND.CLOSEP)THEN
+        iiix=ix; iiiy=iy;iixp=ixp; iiyp=iyp
         if(csel(icon))then 
-          call edwline(ix,iy,ixp,iyp)
+          call edwline(iiix,iiiy,iixp,iiyp)
         else
-          call eswline(ix,iy,ixp,iyp)
+          call eswline(iiix,iiiy,iixp,iiyp)
         endif 
         
         IF(NCONWP(ICON).GT.0)THEN
@@ -2711,23 +2734,26 @@ C Lower right.
 C Draw the arrow.
         call u2pixel(AL(1),AL(2),iax,iay)
         call u2pixel(AU(1),AU(2),iux,iuy)
+        iiax=iax; iiay=iay;iiix=ix; iiiy=iy
+        iiux=iux; iiuy=iuy
         if(csel(icon))then 
-          call edwline(iax,iay,ix,iy)
-          call edwline(iux,iuy,ix,iy)
+          call edwline(iiax,iiay,iiix,iiiy)
+          call edwline(iiux,iiuy,iiix,iiiy)
         else
-          call eswline(iax,iay,ix,iy)
-          call eswline(iux,iuy,ix,iy)
+          call eswline(iiax,iiay,iiix,iiiy)
+          call eswline(iiux,iiuy,iiix,iiiy)
         endif
       ELSEIF(IX.GT.IGL.AND.IX.LT.IGR.AND.IY.GT.IGT
      &.AND.IY.LT.IGB.AND.CLOSEE.AND..NOT.CLOSEP)THEN
         CP(1)=EP(1)
         CP(2)=EP(2)
         CALL CINTSCT(CP,PP,MIN1,MAX1,MIN2,MAX2,XI,YI,FOUND)
-        call u2pixel(xi,yi,iix,iiy)
+        call u2pixel(xi,yi,iax,iay)
+        iiax=iax; iiay=iay;iiix=ix; iiiy=iy
         if(csel(icon))then 
-          call edwline(iix,iiy,ix,iy)
+          call edwline(iiax,iiay,iiix,iiiy)
         else
-          call eswline(iix,iiy,ix,iy)
+          call eswline(iiax,iiay,iiix,iiiy)
         endif
 
         IF(NCONWP(ICON).GT.0)THEN
@@ -2805,23 +2831,26 @@ C Lower right.
 C Draw the arrow.
         call u2pixel(AL(1),AL(2),iax,iay)
         call u2pixel(AU(1),AU(2),iux,iuy)
+        iiax=iax; iiay=iay;iiix=ix; iiiy=iy
+        iiux=iux; iiuy=iuy
         if(csel(icon))then 
-          call edwline(iax,iay,ix,iy)
-          call edwline(iux,iuy,ix,iy)
+          call edwline(iiax,iiay,iiix,iiiy)
+          call edwline(iiux,iiuy,iiix,iiiy)
         else
-          call eswline(iax,iay,ix,iy)
-          call eswline(iux,iuy,ix,iy)
+          call eswline(iiax,iiay,iiix,iiiy)
+          call eswline(iiux,iiuy,iiix,iiiy)
         endif
              
       ELSEIF(CLOSEE.AND.CLOSEP)THEN
         CP(1)=EP(1)
         CP(2)=EP(2)
         CALL CINTSCT(CP,PP,MIN1,MAX1,MIN2,MAX2,XI,YI,FOUND)
-        call u2pixel(xi,yi,iix,iiy)
+        call u2pixel(xi,yi,iax,iay)
+        iiix=iax; iiiy=iay;iixp=ixp; iiyp=iyp
         if(csel(icon))then 
-          call edwline(iix,iiy,ixp,iyp)
+          call edwline(iiix,iiiy,iixp,iiyp)
         else
-          call eswline(iix,iiy,ixp,iyp)
+          call eswline(iiix,iiiy,iixp,iiyp)
         endif
       ELSE
         continue

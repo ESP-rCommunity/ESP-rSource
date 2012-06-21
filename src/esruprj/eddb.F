@@ -1,7 +1,7 @@
 C This file is part of the ESP-r system.
 C Copyright Energy Systems Research Unit, University of
 C Strathclyde, Glasgow Scotland, 2001-2007.
-
+    
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
@@ -583,7 +583,7 @@ C the ascii version and if it exists, offer to convert it or use it.
           IAF=IFIL+1
           LASCI=' '
           if(ipathmat.eq.0.or.ipathmat.eq.1)then
-          write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
+            write(LASCI,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
           elseif(ipathmat.eq.2)then
             lndbp=lnblnk(standarddbpath)
             write(LASCI,'(4a)') standarddbpath(1:lndbp),fs,
@@ -674,7 +674,7 @@ C Search again for lworking.
 C Ask user for ascii Materials file to convert.
             IAF=IFIL+1
             DFILE=' '
-            CALL EASKS(LASCI,' ','Materials file (ASCII)?',
+            CALL EASKS(LASCI,'Materials file (ASCII)','Confirm:',
      &        144,DFILE,'materials db (ascii)',IER,nbhelp)
             goto 155
           endif
@@ -772,7 +772,6 @@ C      CHARACTER outs248*248
 
 C Local strings for user selections dependent on graphic library.
       character opte*28,optf*28,optg*28
-      character lpath*72,fname*72 ! for use with fdroot
 
       integer lndbp   ! for length of standard path
       integer ier
@@ -844,11 +843,11 @@ C text or X11 option g edits the string while for GTK there are two
 C options to browse for files in ../dbs or the esp-r distribution.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       if(iglib.eq.1.or.iglib.eq.3)then
-        opte='g edit file name'
+        opte='g select from model ../dbs'
         optf='   '
         optg='   '
       elseif(iglib.eq.2)then
-        opte='g browse model ../dbs'
+        opte='g select from model ../dbs'
         optf='h browse esp-r distribution'
         optg='i make copy of another file'
       endif
@@ -858,9 +857,9 @@ C options to browse for files in ../dbs or the esp-r distribution.
 C If db does not exist locally offer limited choices.
         idno=2
         isw=0
-        call MENUATOL('  ','Materials db',
+        call MENUATOL('  ','Material properties',
      &    ' ','b select from list',
-     &    'c create a new db','d copy standard db',
+     &    'c create new materials','d copy standard materials',
      &    'e binary >> ascii convert','f ascii >> binary convert',
      &    opte,optf,optg,' ',' ',' ',isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
@@ -870,20 +869,20 @@ C If db does not exist locally offer limited choices.
 C If standard file then offer the following choices (incl /):
         idno=1
         isw=0
-        call MENUATOL('  ','Materials db',
-     &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard db',
+        call MENUATOL('  ','Material properties <std>',
+     &    'a browse/edit','b select from list',
+     &    'c create new materials','d copy it to model',
      &    'e binary >> ascii convert','f ascii >> binary convert',
      &    opte,optf,optg,' ',' ',' ',isw,idno,nbhelp)
-          copydef=.false.
+        copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
 C If standard file then offer the following choices (without /):
         idno=1
         isw=0
-        call MENUATOL('  ','Materials db',
-     &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard db',
+        call MENUATOL('  ','Material properties <std>',
+     &    'a browse/edit','b select from list',
+     &    'c create new materials','d copy it to model',
      &    'e binary >> ascii convert','f ascii >> binary convert',
      &    opte,optf,optg,' ',' ',' ',isw,idno,nbhelp)
         copydef=.false.
@@ -893,9 +892,9 @@ C If db exists locally toggle whether the user is asked to copy the
 C default file or the current database.
         idno=1
         isw=0
-        call MENUATOL('  ','Materials db',
-     &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard db',
+        call MENUATOL('  ','Material properties <mod>',
+     &    'a browse/edit','b select from list',
+     &    'c create new materials','d copy standard materials',
      &    'e binary >> ascii convert','f ascii >> binary convert',
      &    opte,optf,optg,' ',' ',' ',isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
@@ -912,12 +911,12 @@ C check to see if it is local or standard or absolute path.
         if(XST)then
           call findwhichdbpath('mat',lltmp,ier)
           goto 44
-          else
+        else
           call edisp(iuout,
      &    'No file to browse/edit. Please use another option.')
           LFMAT=lprev
           goto 60
-          endif
+        endif
 
       elseif(isw.eq.2)then
 
@@ -927,7 +926,7 @@ C There is no select by list for materials.
 
       elseif(isw.eq.3)then
 
-C User requested the creation of a new materials db. Set up minimal
+C User requested the creation of a new materials file. Set up minimal
 C set of categories and items, write this to a scratch file and
 C then scan that into material arrays and create a new db and offer editing.
         lr=lnblnk(cfgroot)
@@ -941,8 +940,8 @@ C then scan that into material arrays and create a new db and offer editing.
         endif
         clkok=.false.
  62     clkok=.false.
-        CALL EASKSCNCL(ltmp,' ','New materials db?',
-     &    'cancel',clkok,92,DFCON,'new materials db',
+        CALL EASKSCNCL(ltmp,'Name for new material properties file',
+     &    'Confirm:','cancel',clkok,92,DFCON,'new materials',
      &    IER,nbhelp)
         if(clkok)then
           LFMAT=lprev  ! user canceled, restore initial name
@@ -1121,9 +1120,9 @@ C user has asked for the default file. If isw is 9 then the
 C user wishes to browse for the source file. Suggest a local
 C file name based on the project root name. Update common to
 C reflect it is local.
-	allowbrowse=.false.
-	numhelp=nbhelp
-	lltmp='  '
+        allowbrowse=.false.
+        numhelp=nbhelp
+        lltmp='  '
         call copycommonfile('mat',copydef,allowbrowse,
      &  numhelp,lltmp,istat,moddb)
      
@@ -1132,8 +1131,7 @@ C reflect it is local.
           goto 60  ! cancel detected, restore name and redisplay menu.
         elseif(istat.eq.0)then
           goto 44
-            endif
-
+        endif
       elseif(isw.eq.5)then
 
 C Materials db: BINARY > ASCII. Open the ascii file on IAF=IFIL+1.
@@ -1148,8 +1146,9 @@ C << what about value of ipathmat? >>
         lsn2=MIN0(lnblnk(LLTMP),92)
         LTMP=' '
         write(LTMP,'(a)') LLTMP(1:lsn2)
-        CALL EASKSCNCL(LTMP,'Materials db (binary)?',' ',
-     &    'cancel',clkok,92,DFILE,'materials (binary)',IER,nbhelp)
+        CALL EASKSCNCL(LTMP,'Material properties (binary)?',
+     &    'Confirm:','cancel',clkok,92,DFILE,'materials (binary)',
+     &    IER,nbhelp)
         if(clkok) return
 
 C Open binary Materials db based on value of ipathmat.
@@ -1159,7 +1158,7 @@ C << cast back from shorter buffer >>
         IER=0
         if(ipathmat.eq.0.or.ipathmat.eq.1)then
           ier=0
-        call EFOPRAN(IFMAT,LFMAT,40,1,IER)
+          call EFOPRAN(IFMAT,LFMAT,40,1,IER)
         elseif(ipathmat.eq.2)then
           ier=0
           lndbp=lnblnk(standarddbpath)
@@ -1191,9 +1190,9 @@ C << temporary shorter string until EASKXORGTKF >>
         lsn2=MIN0(lnblnk(LLASCI),92)
         LTMP=' '
         write(LTMP,'(a)') LLASCI(1:lsn2)
-        CALL EASKSCNCL(LTMP,'Materials db (ascii)?',' ',
-     &    'cancel',clkok,92,DFILE,'materials file (ascii)',
-     &    IER,nbhelp)
+        CALL EASKSCNCL(LTMP,'Materials properties file (ascii).',
+     &    'Confirm:','cancel',clkok,92,DFILE,
+     &    'materials file (ascii)',IER,nbhelp)
         if(clkok)then
           write(LFMAT,'(a)') LLTMP(1:lnblnk(LLTMP))  ! restore previous
           call edisp(iuout,'Restoring the previous materials db')
@@ -1238,8 +1237,9 @@ C << temporary shorter string until EASKXORGTKF >>
         lsn2=MIN0(lnblnk(LLASCI),92)
         LTMP=' '
         write(LTMP,'(a)') LLASCI(1:lsn2)
-        CALL EASKSCNCL(LTMP,'Materials db (legacy ascii)?',' ',
-     &    'cancel',clkok,92,DFILE,'materials db (ascii)',IER,nbhelp)
+        CALL EASKSCNCL(LTMP,'Materials file (ascii) source.',
+     &    'Confirm:','cancel',clkok,92,DFILE,'materials (ascii)',
+     &    IER,nbhelp)
         if(clkok) return
         write(LLASCI,'(a)') LTMP(1:lnblnk(LTMP))
 
@@ -1248,8 +1248,9 @@ C << temporary shorter string until EASKXORGTKF >>
         lltmp=' '; ltmp=' '
         write(lltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
         write(ltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
- 143    CALL EASKSCNCL(ltmp,'Materials db (legacy binary)?',' ',
-     &    'cancel',clkok,92,DFILE,'Materials db (binary)',IER,nbhelp)
+ 143    CALL EASKSCNCL(ltmp,'Materials properties (binary)?',
+     &    'Confirm:','cancel',clkok,92,DFILE,'Materials (binary)',
+     &    IER,nbhelp)
         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
           write(LFMAT,'(a)') ltmp(1:lnblnk(ltmp))
         else
@@ -1273,44 +1274,17 @@ C << temporary shorter string until EASKXORGTKF >>
 
       elseif(isw.eq.7)then
 
-C Make up browse to the model ../dbs folder suggest the name LCOPY
-C and return file name in lltmp.
-        lltmp=' '
-        call edisp(iuout,'  ')  ! echo blank line
-        write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
-        CALL EASKXORGTKF(LCOPY,'Materials db?',' ',
-     &    DFCON,lltmp,'materials db',IER,nbhelp)
-
-C If user request jump back and re-display the menu.
-        if(ier.eq.-3)then
-          goto 60  ! redisplay menu.
-        endif
-
-        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
-
-C Ask user whether file is in ../dbs and if so use fdroot if GTK.
-          if(iglib.eq.2)then
-            dok=.true.
-            CALL ASKOK('Is this file in the model ../dbs folder?',
-     &        ' ',OK,dok,3)
-            if(OK)then
-              call fdroot(lltmp,lpath,fname)
-              write(LFMAT,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &          fname(1:lnblnk(fname))
-              ipathmat=1  ! signal that it is a local file.
-              moddb=.true.
-              goto 44
-            endif
-          endif
-
-C Check what the user might have edited to be sure of setting the
-C correct location value via call to findwhichdbpath.
-          call findwhichdbpath('mat',lltmp,ier)
-          moddb=.true.
+C Allow user to select from the model ../dbs folder for an
+C materials file. If moddb was set to true then proceed to edit
+C the materials.
+        numhelp=nbhelp
+        lltmp='  '
+        call usemodeldbsfile('mat',numhelp,lltmp,istat,moddb)
+        if(istat.eq.0.and.moddb)then
           goto 44
-      else
+        else
           goto 60
-      endif
+        endif
 
       elseif(isw.eq.8)then
 
@@ -1321,12 +1295,12 @@ C decides to do some browsing).
         if(iglib.eq.2)then
           write(LCOPY,'(4a)') dinstpath(1:lnblnk(dinstpath)),
      &      fs,'databases',fs
-          CALL EASKF(LCOPY,' ','Materials db?',
+          CALL EASKF(LCOPY,'Standard materials file','Confirm:',
      &      144,DFCON,'materials database',IER,nbhelp)
           if(ier.eq.-3)then
             LFMAT=lprev
             goto 60  ! cancel detected, restore name and redisplay menu.
-      endif
+          endif
 
 C This is yet another place where we need to check what the user might
 C have edited to be sure of setting the correct location value. The
@@ -1338,7 +1312,7 @@ C common block will have been updated by call to findwhichdbpath.
           call usrmsg('Browse feature not available.',' ','W')
           goto 60
         endif
-        endif
+      endif
 
 C Test the selected or copied file. If a problem loop back
 C otherwise edit its contents.
@@ -1359,13 +1333,13 @@ C If original was binary origmatwasbin will be .true.
         call usrmsg('Readable materials file was not found',
      &              'or file was corrupt','W')
         MATDBOK=.FALSE.
-        else
+      else
         call eclose(matver,1.1,0.001,closemat1)
         call eclose(matver,1.2,0.001,closemat2)
         MATDBOK=.TRUE.
-        endif
+      endif
 
-        moddb=.true.
+      moddb=.true.
       modcon=.true.
       chgdb=.false.
 
@@ -1381,13 +1355,14 @@ C was binary then go ahead and set chgdb .true. to force save.
         if(origmatwasbin)then
           chgdb=.true.
         endif
-        else
+      else
 
 C If the materials arrays were not filled warn the user.
         call usrmsg('Materials arrays were not filled',
      &              'properly or file was corrupt','W')
         goto 60
-          endif
+
+      endif
 
 C Having returned from editing/browsing the materials, offer to
 C make a backup copy if the initial file was binary.
@@ -1405,15 +1380,15 @@ C Create LLASCI based on value of ipathmat.
           lndbp=lnblnk(standarddbpath)
           write(LLASCI,'(3a)') standarddbpath(1:lndbp),fs,
      &      LFMAT(1:lnblnk(LFMAT))
-          endif
+	 
+        endif
 
 C Work with a shorter string until we can switch to EASKXORGTKF
         lsn2=MIN0(lnblnk(LLASCI),92)
         LTMP=' '
         write(LTMP,'(a)') LLASCI(1:lsn2)
-        CALL EASKSCNCL(LTMP,
-     &    'Materials (ASCII backup)?',
-     &    ' ','cancel',clkok,92,DFILE,'materials db (ascii)',
+        CALL EASKSCNCL(LTMP,'Materials (automatic ASCII backup).',
+     &    'Confirm:','cancel',clkok,92,DFILE,'materials db (ascii)',
      &    IER,nbhelp)
         if(clkok)then
           continue
@@ -1459,8 +1434,9 @@ C     if blank then no file name change implied.
       common/rpath/path
       common/deflt4/dinstpath
 
-      CHARACTER LTMP*72,lltmp*144,lprev*144
-      character longtfile*144
+      CHARACTER DFILE*72,LLASCI*144
+      character LTMP*72,lltmp*144,lprev*144
+      character longtfile*144,longtafile*144,longtmp*144
       CHARACTER DOIT*300,fs*1,LCOPY*144
       CHARACTER OUTS*124,APP*4
 C      CHARACTER outs248*248
@@ -1470,8 +1446,7 @@ C      CHARACTER outs248*248
       character dirpath*72
 
 C Local strings for user selections dependent on graphic library.
-      character opte*28,optf*28,optg*28
-      character lpath*72,fname*72 ! for use with fdroot
+      character optg*28,opth*28,opti*28
       CHARACTER ZPDESC*25
       integer lndbp   ! for length of standard path
       integer ier
@@ -1553,13 +1528,13 @@ C option (list select) is not available for plant templates. If using
 C text or X11 option e edits the string while for GTK there are two
 C options to browse for files in ../dbs or the esp-r distribution.
       if(iglib.eq.1.or.iglib.eq.3)then
-        opte='e edit file name'
-        optf='   '
-        optg='   '
+        optg='g select from model ../dbs'
+        opth='   '
+        opti='   '
       elseif(iglib.eq.2)then
-        opte='e browse model ../dbs'
-        optf='f browse esp-r distribution'
-        optg='g make copy of another file'
+        optg='g select from model ../dbs'
+        opth='h browse esp-r distribution'
+        opti='i make copy of another file'
       endif
 
       IF(.NOT.XST)THEN
@@ -1567,31 +1542,34 @@ C options to browse for files in ../dbs or the esp-r distribution.
 C If db does not exist locally offer limited choices.
         idno=2
         isw=0
-        call MENUATOL('  ','Plant Components db',
-     &    ' ','b select from list',
-     &    'c create a new db','d copy standard db',
-     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
+        call MENUATOL('  ','Plant components',
+     &    ' ','b select from list','c create new components',
+     &    'd copy standard components',
+     &    'e components >> ascii export','f ascii >> components',
+     &    optg,opth,opti,' ',' ',' ',isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
-        if(isw.eq.7)copydef=.false.
+        if(isw.eq.9)copydef=.false.
       elseif(longtfile(1:ldirpath).eq.dirpath(1:ldirpath))then
 
 C If standard file then offer the following choices (incl /):
         idno=1
         isw=0
-        call MENUATOL('  ','Plant Components db',
-     &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard db',
-     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
+        call MENUATOL('  ','Plant components',
+     &    'a browse/edit','b select from list',
+     &    'c create new components','d copy standard components',
+     &    'e components >> ascii export','f ascii >> components',
+     &    optg,opth,opti,' ',' ',' ',isw,idno,nbhelp)
         copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
 C If standard file then offer the following choices (without /):
         idno=1
         isw=0
-        call MENUATOL('  ','Plant components db',
-     &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard db',
-     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
+        call MENUATOL('  ','Plant components <std>',
+     &    'a browse/edit','b select from list',
+     &    'c create new components','d copy it to model',
+     &    'e components >> ascii export','f ascii >> components',
+     &    optg,opth,opti,' ',' ',' ',isw,idno,nbhelp)
         copydef=.false.
       else
 
@@ -1599,12 +1577,13 @@ C If db exists locally toggle whether the user is asked to copy the
 C default file or the current file.
         idno=1
         isw=0
-        call MENUATOL('  ','Plant Components db',
-     &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy the standard db',
-     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
+        call MENUATOL('  ','Plant components <mod>',
+     &    'a browse/edit','b select from list',
+     &    'c create new components','d copy standard components',
+     &    'e components >> ascii export','f ascii >> components',
+     &    optg,opth,opti,' ',' ',' ',isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
-        if(isw.eq.7)copydef=.false.
+        if(isw.eq.9)copydef=.false.
       endif
 
 C Act on the user's choice. If no choice return to calling menu.
@@ -1644,8 +1623,8 @@ C be explored).
      &      cfgroot(1:lr),'.plantdb'
         endif
  62     clkok=.false.
-        CALL EASKSCNCL(ltmp,' ','Plant Components db?',
-     &    'cancel',clkok,72,DPCDB,'plant components db',
+        CALL EASKSCNCL(ltmp,'New plant component templates file.',
+     &    'Confirm:','cancel',clkok,72,DPCDB,'plant components',
      &    IER,nbhelp)
         if(clkok)then
           LPCDB=lprev  ! user canceled, restore initial name
@@ -1681,17 +1660,17 @@ C use the editing facility.
           goto 44
         endif
 
-      elseif(isw.eq.4.or.isw.eq.7)then
+      elseif(isw.eq.4.or.isw.eq.9)then
 
 C Copy a file to project folder. If iws is 4 then the
-C user has asked for the default database. If isw is 7 then the
+C user has asked for the default database. If isw is 9 then the
 C user wishes to browse for the source file. Suggest a local
 C file name based on the project root name.  Suggest a local
 C file name based on the project root name. Update common to
 C reflect it is local.   
-	allowbrowse=.false.
-	numhelp=nbhelp
-	lltmp='  '
+        allowbrowse=.false.
+        numhelp=nbhelp
+        lltmp='  '
         call copycommonfile('pdb',copydef,allowbrowse,
      &  numhelp,lltmp,istat,moddb)
      
@@ -1704,48 +1683,136 @@ C reflect it is local.
        
       elseif(isw.eq.5)then
 
-C Make up browse to the model ../dbs folder suggest the name LCOPY
-C and return file name in lltmp.
-        lltmp=' '
-        call edisp(iuout,'  ')  ! echo blank line
-        write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
+C Components >> ASCII. If current components are
+C in standard folder start ASCII name in users home folder.
+C Confirm suggested name and then write out asci file.
+        DFILE='./plant_templates.a'
+        if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+          write(LLASCI,'(2a)') LPCDB(1:lnblnk(LPCDB)),'.a'
+        elseif(ipathpcdb.eq.2)then
+          write(LLASCI,'(4a)') path(1:lnblnk(path)),fs,
+     &      LPCDB(1:lnblnk(LPCDB)),'.a'
+        endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          CALL EASKF(LLASCI,'Export ASCII components file','Confirm:',
+     &      96,DFILE,'asci plant comp file name',IER,nbhelp)
+        elseif(iglib.eq.2)then
+          CALL EASKF(LLASCI,'Export ASCII components file','Confirm:',
+     &      144,DFILE,'asci plant comp file name',IER,nbhelp)
+        else
+          CALL EASKF(LLASCI,'Export ASCII components file','Confirm:',
+     &      96,DFILE,'asci plant comp file name',IER,nbhelp)
+        endif
+        if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
 
-        CALL EASKXORGTKF(LCOPY,'Plant templates db?',' ',
-     &    DPCDB,lltmp,'plant templates',IER,nbhelp)
+C Convert both current binary and asci file names into full paths prior
+C to asking pdb to do the conversion.
+        if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+          lltmp=LPCDB  ! use as is
+        elseif(ipathpcdb.eq.2)then
+          write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lpcdb(1:lnblnk(lpcdb))  ! prepend db folder path
+        endif
+        if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+          call addpath(lltmp,longtfile,concat)
+        elseif(ipathpcdb.eq.2)then
+          longtfile=lltmp
+        endif
+        call addpath(LLASCI,longtafile,concat)
 
-C If user request jump back and re-display the menu.
-          if(ier.eq.-3)then
-          goto 60  ! redisplay menu.
-          endif
+C Setup the command line for pdb.
+        doit = ' '
+        write(doit,'(4a)') 'pdb -mode text -file ',
+     &    longtfile(1:lnblnk(longtfile)),' -act bin2asci ',
+     &    longtafile(1:lnblnk(longtafile))
 
-        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
+C Debug.
+C        write(6,*) doit
+        call runit(doit,tmode)
 
-C Ask user whether file is in ../dbs and if so use fdroot if GTK.
-          if(iglib.eq.2)then
-            dok=.true.
-            CALL ASKOK('Is this file in the model ../dbs folder?',
-     &        ' ',OK,dok,nbhelp)
-            if(OK)then
-              call fdroot(lltmp,lpath,fname)
-            write(LPCDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        fname(1:lnblnk(fname))
-              ipathpcdb=1  ! signal that it is a local file.
-              lltmp=LPCDB  ! reset lltmp for use at 44
-          moddb=.true.
-          goto 44
-          endif
-          endif
-
-C Check what the user might have edited to be sure of setting the
-C correct location value via call to findwhichdbpath.
-            call findwhichdbpath('pdb',lltmp,ier)
-            moddb=.true.
-            goto 44
-          else
-            goto 60
-          endif
-
+        call edisp(iuout,'  ')
+        call edisp(iuout,'The conversion resulted in a new file:')
+        call edisp(iuout,longtafile)
+        goto 60  ! jump to redisplay menu.
+       
       elseif(isw.eq.6)then
+
+C Components: ASCII >> BINARY
+C Confirm suggested name and then write out binary file.
+        if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+          write(LLASCI,'(2a)') LPCDB(1:lnblnk(LPCDB)),'.a'
+        elseif(ipathpcdb.eq.2)then
+          write(LLASCI,'(4a)') path(1:lnblnk(path)),fs,
+     &      LPCDB(1:lnblnk(LPCDB)),'.a'
+
+        endif
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          CALL EASKF(LLASCI,'ASCII (source) file','Confirm:',
+     &      96,DFILE,'asci plant comp file name',IER,nbhelp)
+        elseif(iglib.eq.2)then
+          CALL EASKF(LLASCI,'ASCII (source) file','Confirm:',
+     &      144,DFILE,'asci plant comp file name',IER,nbhelp)
+        else
+          CALL EASKF(LLASCI,'ASCII (source) file','Confirm:',
+     &      96,DFILE,'asci plant comp file name',IER,nbhelp)
+        endif
+        if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
+
+        longtmp=LPCDB
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        if(iglib.eq.1.or.iglib.eq.3)then
+          CALL EASKF(longtmp,'New plant templates file','Confirm:',
+     &      96,DPCDB,'plant file name',IER,nbhelp)
+        elseif(iglib.eq.2)then
+          CALL EASKF(longtmp,'New plant templates file','Confirm:',
+     &      144,DPCDB,'plant file name',IER,nbhelp)
+        else
+          CALL EASKF(longtmp,'New plant templates file','Confirm:',
+     &      96,DPCDB,'plant file name',IER,nbhelp)
+        endif
+        if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
+
+C Convert both binary and asci file names into full paths prior
+C to asking pdb to do the conversion.
+        if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+          call addpath(longtmp,longtfile,concat)
+        elseif(ipathpcdb.eq.2)then
+          longtfile=longtmp
+        endif
+        call addpath(LLASCI,longtafile,concat)
+
+C Setup the command line for pdb.
+        doit = ' '
+        write(doit,'(4a)') 'pdb -mode text -file ',
+     &    longtfile(1:lnblnk(longtfile)),' -act asci2bin ',
+     &    longtafile(1:lnblnk(longtafile))
+
+C Debug.
+C        write(6,*) doit
+        call runit(doit,tmode)
+
+        call edisp(iuout,'  ')
+        call edisp(iuout,'The conversion resulted in a new file:')
+        call edisp(iuout,longtfile)
+        goto 60  ! jump to re-display the menu.
+       
+      elseif(isw.eq.7)then
+
+C Allow user to select from the model ../dbs folder for an
+C plant template file. If moddb was set to true then proceed 
+C to pdb
+        numhelp=nbhelp
+        lltmp='  '
+        call usemodeldbsfile('pdb',numhelp,lltmp,istat,moddb)
+        if(istat.eq.0.and.moddb)then
+          goto 44
+        else
+          goto 60
+        endif
+
+      elseif(isw.eq.8)then
 
 C Browse distribution database folder. Setup LCOPY to point to
 C the database folder (but no particular file). Use easkf to
@@ -1755,8 +1822,8 @@ C call to eroptdb and if this is not successful reset LOPTDB.
         if(iglib.eq.2)then
           write(LCOPY,'(4a)') dinstpath(1:lnblnk(dinstpath)),
      &      fs,'databases',fs
-          CALL EASKF(LCOPY,' ','Plant templates db?',
-     &      144,DPCDB,'plant templates database',IER,nbhelp)
+          CALL EASKF(LCOPY,'Plant component templates file.',
+     &      'Confirm:',144,DPCDB,'plant templates',IER,nbhelp)
           if(ier.eq.-3)then
             LPCDB=lprev
             goto 60  ! cancel detected, restore name and redisplay menu.
@@ -1783,9 +1850,6 @@ C otherwise edit the data. Pay attention to the implied path.
       elseif(ipathpcdb.eq.2)then
         longtfile=lltmp
       endif
-
-C Debug.
-C      write(6,*) 'longtfile plant b ',longtfile(1:lnblnk(longtfile))
 
       ier=0
       call EFOPRAN(ipcdb,longtfile,IRECLN,1,IER)
@@ -1820,10 +1884,11 @@ C Get logical name of child process terminal type and create a string to drive p
      &      ' &'
         endif
         call runit(doit,tmode)
+        goto 60  ! re-display menu
       else
-        call usrmsg('Error opening db. Please use one',
+        call usrmsg('Error opening plant templates. Please use one',
      &              'of the other options.','W')
-        goto 60
+        goto 60  ! re-display menu
       endif
 
       return
@@ -1859,18 +1924,17 @@ C << introduce concept of types of profiles
       common/deflt4/dinstpath
 
       CHARACTER LTMP*72,lltmp*144,lprev*144
-      character LLASCI*144,lbin*144,llbin*144
+      character LLASCI*144
       character longtfile*144,LCOPY*144
       CHARACTER fs*1,APP*4
       CHARACTER OUTS*124
-C      CHARACTER OUTS248*248
+      CHARACTER OUTS248*248
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
       character cfgroot*24,LCFGF*72
       character dinstpath*60,path*72,dirpath*72
 
 C Local strings for user selections dependent on graphic library.
-      character opte*28,optf*28,optg*28,opth*28,opti*28
-      character lpath*72,fname*72 ! for use with fdroot
+      character opte*28,optf*28,optg*28
       logical unixok  ! to check for path file separators
       integer iglib  ! for detecting GTK or X11
       logical allowbrowse  ! future facility
@@ -1906,8 +1970,8 @@ C Remember the initial file name in case user choice fails.
       endif
 
 C Debug.
-C      write(outs248,*) 'Current profiles ',lprev(1:lnblnk(lprev))
-C      call edisp248(iuout,outs248,100)
+      write(outs248,*) 'Current profiles ',lprev(1:lnblnk(lprev))
+      call edisp248(iuout,outs248,100)
 
   60  continue
 
@@ -1918,7 +1982,6 @@ C Generate file name lltmp taking into account ipathprodb for use later.
         write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
      &    LPRFDB(1:lnblnk(LPRFDB))  ! prepend db folder path
       endif
-      llt=lnblnk(lltmp)
 
       helptopic='events_db_manage'
       call gethelptext(helpinsub,helptopic,nbhelp)
@@ -1941,17 +2004,13 @@ C text or X11 option e edits the string while for GTK there are two
 C options to browse for files in ../dbs or the esp-r distribution.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       if(iglib.eq.1.or.iglib.eq.3)then
-        opte='e binary > ascii'
-        optf='f ascii > binary'
-        optg='g edit file name'
-        opth=' '
-        opti=' '
+        opte='e select from model ../dbs'
+        optf=' '
+        optg=' '
       elseif(iglib.eq.2)then
-        opte='e binary > ascii'
-        optf='f ascii > binary'
-        optg='g browse model ../dbs'
-        opth='h browse esp-r distribution'
-        opti='i make copy of another file'
+        opte='e select from model ../dbs'
+        optf='f browse esp-r distribution'
+        optg='g make copy of another file'
       endif
 
       IF(.NOT.XST)THEN
@@ -1959,31 +2018,31 @@ C options to browse for files in ../dbs or the esp-r distribution.
 C If db does not exist locally offer limited choices:
         idno=2
         isw=0
-        call MENUATOL('  ','Event Profiles db',
+        call MENUATOL('  ','Event profiles',
      &    ' ','b select from list',
-     &    'c create a new db','d copy standard db',
-     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,nbhelp)
+     &    'c create new events','d copy standard events',
+     &    opte,optf,optg,'  ',' ',' ',' ',' ',isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
-        if(isw.eq.9)copydef=.false.
+        if(isw.eq.7)copydef=.false.
       elseif(longtfile(1:ldirpath).eq.dirpath(1:ldirpath))then
 
 C If standard file then offer the following choices (incl /):
         idno=1
         isw=0
-        call MENUATOL('  ','Event Profiles db',
-     &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard db',
-     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,nbhelp)
+        call MENUATOL('  ','Event profiles',
+     &    'a browse/edit','b select from list',
+     &    'c create new events','d copy standard events',
+     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
         copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
 
 C If standard file then offer the following choices (without /):
         idno=1
         isw=0
-        call MENUATOL('  ','Event Profiles db',
-     &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard db',
-     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,nbhelp)
+        call MENUATOL('  ','Event profiles <std>',
+     &    'a browse/edit','b select from list',
+     &    'c create new events','d copy it to model',
+     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
         copydef=.false.
       else
 
@@ -1991,12 +2050,12 @@ C If db exists locally toggle whether the user is asked to copy the
 C default file or the current database.
         idno=1
         isw=0
-        call MENUATOL('  ','Event Profiles db',
-     &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard db',
-     &    opte,optf,optg,opth,opti,' ',' ',' ',isw,idno,nbhelp)
+        call MENUATOL('  ','Event profiles <mod>',
+     &    'a browse/edit','b select from list',
+     &    'c create new events','d copy standard events',
+     &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
-        if(isw.eq.9)copydef=.false.
+        if(isw.eq.7)copydef=.false.
       endif
 
 C Act on the users choice. If nothing selected return to main menu.
@@ -2035,9 +2094,10 @@ C a new ascii db, populate it and present editing facility.
         endif
  62     clkok=.false.
 
-C DPRFDB might point to binary or ascii.
-        CALL EASKSCNCL(ltmp,' ','Event Profiles db? (ASCII)',
-     &    'cancel',clkok,72,DPRFDB,'event profiles db',
+C DPRFDB assumed to point to ascii.
+        CALL EASKSCNCL(ltmp,
+     &    'New event profiles hold % of sensible & latent gains',
+     &    'Confirm:','cancel',clkok,72,DPRFDB,'event profiles',
      &    IER,nbhelp)
         if(clkok)then
           LPRFDB=lprev  ! user canceled, restore initial name
@@ -2061,7 +2121,7 @@ C The name of the ascii file includes an .a at the end.
         CGS1(1,1)=100.0
         CGL1(1,1)=100.0
 
-C The model file is now an ASCII version.
+C The events file is ASCII version.
         if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
         LLASCI=LPRFDB
         elseif(ipathprodb.eq.2)then
@@ -2074,10 +2134,10 @@ C The model file is now an ASCII version.
 C If file exists and user wants to browse then scan the file and
 C use the editing facility.
         if(lnblnk(LPRFDB).lt.100)then
-          write(outs,'(3a)') 'Events db ',LPRFDB(1:lnblnk(LPRFDB)),
+          write(outs,'(3a)') 'Event profiles ',LPRFDB(1:lnblnk(LPRFDB)),
      &     ' created.'
         else
-          write(outs,'(3a)') 'Events db ',LPRFDB(1:100),
+          write(outs,'(3a)') 'Event profiles ',LPRFDB(1:100),
      &     '... created.'
         endif
         dok=.true.
@@ -2087,18 +2147,18 @@ C use the editing facility.
           goto 44
         endif
 
-      elseif(isw.eq.4.or.isw.eq.9)then
+      elseif(isw.eq.4.or.isw.eq.7)then
 
 C Copy a standard file to project dbs folder. If iws is 4 then the
-C user has asked for the default file. If isw is 9 then the
+C user has asked for the default file. If isw is 7 then the
 C user wishes to browse for the source file.  Suggest a local
 C file name based on the project root name. Update common to
 C reflect it is local.   
-	allowbrowse=.false.
-	numhelp=nbhelp
-	lltmp='  '
+        allowbrowse=.false.
+        numhelp=nbhelp
+        lltmp='  '
         call copycommonfile('pro',copydef,allowbrowse,
-     &  numhelp,lltmp,istat,moddb)
+     &    numhelp,lltmp,istat,moddb)
      
         if(istat.eq.1)then
           LPRFDB=lprev
@@ -2109,173 +2169,19 @@ C reflect it is local.
 
       elseif(isw.eq.5)then
 
-C Event profile db: BINARY > ASCII. 
-
-C Users selects a binary file (initial guess is LPRFDB and
-C the file name is returned in lltmp.
-        IAF=IFIL+1
+C Allow user to select from the model ../dbs folder for an
+C profiles file. If moddb was set to true then proceed to edit
+C the profiles.
+        numhelp=nbhelp
         lltmp='  '
-
-C << lguess logic to be added later >>
-        call edisp(iuout,'  ')  ! echo blank line
-        CALL EASKXORGTKF(LPRFDB,'Event Profiles db (source)?',' ',
-     &    DPRFDB,lltmp,'source events db',IER,nbhelp)
-
-C If user request jump back and re-display the menu.
-        if(ier.eq.-3)then
-	  goto 60  ! restore name and redisplay menu.
-        endif
-
-        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
-          continue
+        call usemodeldbsfile('pro',numhelp,lltmp,istat,moddb)
+        if(istat.eq.0.and.moddb)then
+          goto 44
         else
-          goto 60
-        endif
-
-C Create the ASCII version as variant of lltmp. If it does not 
-C end in .a then update LLASACI
-        llt=lnblnk(lltmp)
-        if(lltmp(llt-1:llt).eq.'.a')then
-          LLASCI=lltmp
-        else
-          if(llt.le.141)then 
-            write(LLASCI,'(2a)') lltmp(1:llt),'.a'
-          else
-            write(LLASCI,'(2a)') lltmp(1:141),'.a'
-          endif
-        endif
-
-C Read binary file lltmp into common blocks.
-        call TRIPROBIN(IPRODB,lltmp,IER)
-
-C Write commons to ASCII and then redisplay the menu.
-        if(ier.eq.0)then
-          ier=0  ! reset prior to call to troprocom
-        call TROPROCOM(IAF,LLASCI,IER)
-          if(ier.eq.0)then
-            call edisp(iuout,'Binary -> ASCII conversion done.')
-          else
-            call edisp(iuout,'Binary -> ASCII conversion problems.')
-          endif
-        call tstamp('>','PRO: convert binary to ascii')
-        goto 60
-        else
-          call edisp(iuout,
-     &      'Source file was probably not a binary events file.')
           goto 60
         endif
 
       elseif(isw.eq.6)then
-
-C Profile db: ASCII > BINARY.
-C Ask for the ASCII file name and then confirm the binary db name.
-C Guess ASCII name based on current LPRFDB.
-        IAF=IFIL+1
-
-C Check the last two characters of the file name. Append a '.a'
-C to the current LPRFDB as an initial guess for the name.
-        llt=lnblnk(LPRFDB)
-	if(LPRFDB(llt-1:llt).eq.'.a')then
-          if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
-            write(LLASCI,'(a)') LPRFDB(1:llt)
-          elseif(ipathprodb.eq.2)then
-            lndbp=lnblnk(standarddbpath)
-            write(LLASCI,'(3a)') standarddbpath(1:lndbp),fs,
-     &        LPRFDB(1:llt)
-          endif
-        else
-          if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
-            write(LLASCI,'(2a)') LPRFDB(1:llt),'.a'
-          elseif(ipathprodb.eq.2)then
-            lndbp=lnblnk(standarddbpath)
-            write(LLASCI,'(4a)') standarddbpath(1:lndbp),fs,
-     &        LPRFDB(1:llt),'.a'
-          endif
-        endif
-
-C Return the selected file in lltmp based on initial guess LLASCI.
-        call edisp(iuout,'  ')  ! echo blank line
-        CALL EASKXORGTKF(LLASCI,
-     &    'Event Profiles db (ASCII source)?',' ',
-     &    DPRFDB,lltmp,'ascii events db',IER,nbhelp)
-
-
-C If lltmp ends with .a then make up a temporary file name
-C lbin for the binary that has the .a stripped off. Return
-C llbin for use in tripro.
-        llt=lnblnk(lltmp)
-        llbin=' '
-        lbin=' '
-        if(lltmp(llt-1:llt).eq.'.a')then
-          write(lbin,'(a)') lltmp(1:llt-2)
-        else
-          write(lbin,'(a)') lltmp(1:llt)
-        endif
-        CALL EASKXORGTKF(lbin,'Event Profiles db (binary)?',' ',
-     &    DPRFDB,llbin,'binary events db',IER,nbhelp)
-
-C If user request jump back and re-display the menu.
-        if(ier.eq.-3)then
-          goto 60  ! redisplay menu.
-        endif
-
-        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
-
-C Convert data in lltmp to binary form in llbin (this does not alter
-c the current event profiles.
-          CALL TRIPRO(IAF,IPRODB,lltmp,llbin,IER)
-          if(ier.eq.0)then
-            call edisp(iuout,'ASCII -> Binary conversion done.')
-        else
-            call edisp(iuout,'ASCII -> Binary conversion problems.')
-        endif
-          goto 60  ! re-display the menu
-        else
-          goto 60  ! re-display the menu
-        endif
-
-      elseif(isw.eq.7)then
-
-C Make up browse to the model ../dbs folder suggest the name LCOPY
-C and return file name in lltmp.
-        lltmp=' '
-        call edisp(iuout,'  ')  ! echo blank line
-        write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
-        CALL EASKXORGTKF(LCOPY,'Event Profiles db?',' ',
-     &    DPRFDB,lltmp,'ascii events db',IER,nbhelp)
-
-C If user request jump back and re-display the menu.
-          if(ier.eq.-3)then
-          goto 60  ! redisplay menu.
-          endif
-
-        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
-
-C Ask user whether file is in ../dbs and if so use fdroot if GTK.
-          if(iglib.eq.2)then
-            dok=.true.
-            CALL ASKOK('Is this file in the model ../dbs folder?',
-     &        ' ',OK,dok,nbhelp)
-            if(OK)then
-              call fdroot(lltmp,lpath,fname)
-              write(LPRFDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &          fname(1:lnblnk(fname))
-              ipathprodb=1  ! signal that it is a local file.
-          moddb=.true.
-          goto 44
-          endif
-          endif
-
-C Check what the user might have edited to be sure of setting the
-C correct location value via call to findwhichdbpath.
-          call findwhichdbpath('evn',lltmp,ier)
-            moddb=.true.
-            goto 44
-          else
-            goto 60
-          endif
-
-      elseif(isw.eq.8)then
 
 C Browse distribution database folder. Setup LCOPY to point to
 C the database folder (but no particular file). Use easkf to
@@ -2285,8 +2191,10 @@ C call to eroptdb and if this is not successful reset LPRFDB.
         if(iglib.eq.2)then
           write(LCOPY,'(4a)') dinstpath(1:lnblnk(dinstpath)),
      &      fs,'databases',fs
-          CALL EASKF(LCOPY,' ','Event Profiles db?',
-     &      144,DPRFDB,'Event profiles database',IER,nbhelp)
+          CALL EASKF(LCOPY,
+     &      'Event profiles hold % of sensible & latent gains ',
+     &      'Confirm:',144,DPRFDB,'Event profiles database',IER,
+     &      nbhelp)
           if(ier.eq.-3)then
             LPRFDB=lprev
 	    goto 60  ! cancel was detected, restore name and redisplay menu.
@@ -2310,14 +2218,14 @@ C data.
    44 continue
 
 C Debug.
-C      write(outs248,'(2a)') 'Accessing event profile db: ',
+C      write(outs248,'(2a)') 'Accessing event profile: ',
 C     &  LPRFDB(1:lnblnk(LPRFDB))
 C      call edisp248(iuout,outs248,100)
       IER=0
 
-C Scan file (with full path) as a binary event profiles database. 
-C If an error state is returned as -2 then it might be an ASCII
-C file. Either way commons are filled.
+C << switch to assumption that file is ASCII first >>
+
+C Scan ASCII file (with full path) to fill common blocks.
       lndbp=lnblnk(standarddbpath)
       if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
         lltmp=LPRFDB  ! use as is
@@ -2325,35 +2233,21 @@ C file. Either way commons are filled.
         write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
      &    LPRFDB(1:lnblnk(LPRFDB))  ! prepend db folder path
       endif
-      call TRIPROBIN(IPRODB,lltmp,IER)
-      if(ier.eq.-2)then
+      CALL ERPFREE(IPRODB,ISTAT)
+      CALL USRMSG('opened profiles db...',' ','-')
+      ier=0   ! reset ier before TRIPROCOM call
+      call TRIPROCOM(IPRODB,lltmp,IER)
+      if(ier.ne.0)then
+        call usrmsg('Error opening the profiles db. Please use one',
+     &              'of the other options.','W')
+        LPRFDB=lprev
+        goto 60
+      else
         CALL ERPFREE(IPRODB,ISTAT)
-        CALL USRMSG('opened profiles db...',' ','-')
-        ier=0   ! reset ier after triprobin call
-        call TRIPROCOM(IPRODB,lltmp,IER)
-        if(ier.ne.0)then
-          call usrmsg('Error opening the profiles db. Please use one',
-     &                'of the other options.','W')
-          LPRFDB=lprev
-          goto 60
-        else
-          CALL ERPFREE(IPRODB,ISTAT)
-          CALL USRMSG('opened profiles db...ok',' ','-')
-
-C Call casfmk for the editing/browsing interface.
-          call casfmk(ier)
-          return
-        endif
-      elseif(ier.eq.0)then
         CALL USRMSG('opened profiles db...ok',' ','-')
 
 C Call casfmk for the editing/browsing interface.
         call casfmk(ier)
-        return
-      else
-        call usrmsg('Error opening the profiles db. Please use one',
-     &              'of the other options.','W')
-        LPRFDB=lprev
         goto 60
       endif
       return
@@ -2396,7 +2290,6 @@ C      CHARACTER outs248*248
 
 C Local strings for user selections dependent on graphic library.
       character opte*28,optf*28,optg*28
-      character lpath*72,fname*72 ! for use with fdroot
       integer lndbp   ! for length of standard path
       logical unixok  ! to check for path file separators
       logical allowbrowse ! future option
@@ -2469,11 +2362,11 @@ C text or X11 option e edits the string while for GTK there are two
 C options to browse for files in ../dbs or the esp-r distribution.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       if(iglib.eq.1.or.iglib.eq.3)then
-        opte='e edit file name'
+        opte='e select from model ../dbs'
         optf='   '
         optg='   '
       elseif(iglib.eq.2)then
-        opte='e browse model ../dbs'
+        opte='e select from model ../dbs'
         optf='f browse esp-r distribution'
         optg='g make copy of another file'
       endif
@@ -2483,9 +2376,9 @@ C options to browse for files in ../dbs or the esp-r distribution.
 C If db does not exist locally offer limited choices.
         idno=2
         isw=0
-        call MENUATOL('  ','Constructions db',
+        call MENUATOL('  ','Constructions',
      &    ' ','b select from list',
-     &    'c create a new db','d copy standard db',
+     &    'c create new constructions','d copy standard constructions',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
         if(isw.eq.7)copydef=.false.
@@ -2494,9 +2387,9 @@ C If db does not exist locally offer limited choices.
 C If standard file then offer the following choices (incl /):
         idno=1
         isw=0
-        call MENUATOL('  ','Constructions db',
-     &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard db',
+        call MENUATOL('  ','Constructions',
+     &    'a browse/edit','b select from list',
+     &    'c create new constructions','d copy standard constructions',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
         copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
@@ -2504,9 +2397,9 @@ C If standard file then offer the following choices (incl /):
 C If standard file then offer the following choices (without /):
         idno=1
         isw=0
-        call MENUATOL('  ','Constructions db',
-     &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard db',
+        call MENUATOL('  ','Constructions <std>',
+     &    'a browse/edit','b select from list',
+     &    'c create new constructions','d copy it to model',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
         copydef=.false.
       else
@@ -2515,9 +2408,9 @@ C If db exists locally toggle whether the user is asked to copy the
 C default file or the current file.
         idno=1
         isw=0
-        call MENUATOL('  ','Constructions db',
+        call MENUATOL('  ','Constructions <mod>',
      &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard db',
+     &    'c create new constructions','d copy standard constructions',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
         if(isw.eq.7)copydef=.false.
@@ -2559,9 +2452,10 @@ C be explored).
      &      cfgroot(1:lr),'.constrdb'
         endif
   62    clkok=.false.
-        CALL EASKSCNCL(ltmp,'Constructions file?',
-     &    ' ','cancel',clkok,72,'construction.db','constructions',
-     &    IER,nbhelp)
+        CALL EASKSCNCL(ltmp,
+     &    'New constructions file (with minimal contents).',
+     &    'Confirm:','cancel',clkok,72,'construction.db',
+     &    'constructions',IER,nbhelp)
         if(clkok)then
           LFMUL=lprev
           return
@@ -2610,9 +2504,9 @@ C user has asked for the default file. If isw is 7 then the
 C user wishes to browse for the source file. Suggest a local
 C file name based on the project root name.  Update common to
 C reflect it is local.
-	allowbrowse=.false.
-	numhelp=nbhelp
-	lltmp='  '
+        allowbrowse=.false.
+        numhelp=nbhelp
+        lltmp='  '
         call copycommonfile('mlc',copydef,allowbrowse,
      &  numhelp,lltmp,istat,moddb)
      
@@ -2625,40 +2519,13 @@ C reflect it is local.
 
       elseif(isw.eq.5)then
 
-C Make up browse to the model ../dbs folder suggest the name LCOPY
-C and return file name in lltmp.
-        lltmp=' '
-        call edisp(iuout,'  ')  ! echo blank line
-        write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
-        CALL EASKXORGTKF(LCOPY,'Constructions db?',' ',
-     &    DFMUL,lltmp,'MLC db in ../dbs',IER,nbhelp)
-
-C If user request jump back and re-display the menu.
-        if(ier.eq.-3)then
-          goto 60  ! redisplay menu.
-        endif
-
-        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
-
-C Ask user whether file is in ../dbs and if so use fdroot if GTK.
-          if(iglib.eq.2)then
-            dok=.true.
-            CALL ASKOK('Is this file in the model ../dbs folder?',
-     &        ' ',OK,dok,nbhelp)
-            if(OK)then
-              call fdroot(lltmp,lpath,fname)
-              write(LFMUL,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &          fname(1:lnblnk(fname))
-              ipathmul=1  ! signal that it is a local file.
-              moddb=.true.
-              goto 44
-            endif
-          endif
-
-C Check what the user might have edited to be sure of setting the
-C correct location value via call to findwhichdbpath.
-          call findwhichdbpath('mul',lltmp,ier)
-          moddb=.true.
+C Allow user to select from the model ../dbs folder for an
+C constructions file. If moddb was set to true then proceed to edit
+C the constructions.
+        numhelp=nbhelp
+        lltmp='  '
+        call usemodeldbsfile('mlc',numhelp,lltmp,istat,moddb)
+        if(istat.eq.0.and.moddb)then
           goto 44
         else
           goto 60
@@ -2673,8 +2540,9 @@ C decides to do some browsing).
         if(iglib.eq.2)then
           write(LCOPY,'(4a)') dinstpath(1:lnblnk(dinstpath)),
      &      fs,'databases',fs
-          CALL EASKF(LCOPY,' ','Constructions db?',
-     &      144,DFMUL,'MLC database',IER,nbhelp)
+          CALL EASKF(LCOPY,
+     &      'Constructions file (one or more layers of materials) ',
+     &      'Confirm:',144,DFMUL,'MLC database',IER,nbhelp)
           if(ier.eq.-3)then
             LFMUL=lprev
             goto 60  ! cancel detected, restore name and redisplay menu.
@@ -2766,7 +2634,6 @@ C      CHARACTER outs248*248
 
 C Local strings for user selections dependent on graphic library.
       character opte*28,optf*28,optg*28
-      character lpath*72,fname*72 ! for use with fdroot
       integer lndbp   ! for length of standard path
       logical unixok  ! to check for path file separators
       logical allowbrowse  ! future facility
@@ -2836,11 +2703,11 @@ C text or X11 option e edits the string while for GTK there are two
 C options to browse for files in ../dbs or the esp-r distribution.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       if(iglib.eq.1.or.iglib.eq.3)then
-        opte='e edit file name'
+        opte='e select from model ../dbs'
         optf='   '
         optg='   '
       elseif(iglib.eq.2)then
-        opte='e browse model ../dbs'
+        opte='e select from model ../dbs'
         optf='f browse esp-r distribution'
         optg='g make copy of another file'
       endif
@@ -2850,9 +2717,9 @@ C options to browse for files in ../dbs or the esp-r distribution.
 C If db does not exist locally offer limited choices.
         idno=2
         isw=0
-        call MENUATOL('  ','Optical Properties db',
+        call MENUATOL('  ','Optical properties',
      &    ' ','b select from list',
-     &    'c create a new db','d copy standard db',
+     &    'c create new optics','d copy standard optics',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
         if(isw.eq.7)copydef=.false.
@@ -2861,9 +2728,9 @@ C If db does not exist locally offer limited choices.
 C If standard file then offer the following choices (incl /):
         idno=1
         isw=0
-        call MENUATOL('  ','Optical Properties db',
-     &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard db',
+        call MENUATOL('  ','Optical properties',
+     &    'a browse/edit','b select from list',
+     &    'c create new optics','d copy standard optics',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
         copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
@@ -2871,9 +2738,9 @@ C If standard file then offer the following choices (incl /):
 C If standard file then offer the following choices (without /):
         idno=1
         isw=0
-        call MENUATOL('  ','Optical Properties db',
-     &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard db',
+        call MENUATOL('  ','Optical properties <std>',
+     &    'a browse/edit','b select from list',
+     &    'c create new optics','d copy it to model',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
         copydef=.false.
       else
@@ -2882,9 +2749,9 @@ C If db exists locally toggle whether the user is asked to copy the
 C default file or the current file.
         idno=1
         isw=0
-        call MENUATOL('  ','Optical Properties db',
-     &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard db',
+        call MENUATOL('  ','Optical properties <mod>',
+     &    'a browse/edit','b select from list',
+     &    'c create new optics','d copy standard optics',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
         if(isw.eq.7)copydef=.false.
@@ -2926,8 +2793,8 @@ C be explored).
      &      cfgroot(1:lr),'.opticsdb'
         endif
   62    clkok=.false.
-        CALL EASKSCNCL(ltmp,' Optical properties?',
-     &    ' ','cancel',clkok,72,'optics.db','optics file',
+        CALL EASKSCNCL(ltmp,'New Optical properties file.',
+     &    'Confirm:','cancel',clkok,72,'optics.db','optics file',
      &    IER,nbhelp)
         if(clkok)then
           LOPTDB=lprev
@@ -2990,9 +2857,9 @@ C user has asked for the default file. If isw is 7 then the
 C user wishes to browse for the source file. Suggest a local
 C file name based on the project root name.  Update common to
 C reflect it is local.
-	allowbrowse=.false.
-	numhelp=nbhelp
-	lltmp='  '
+        allowbrowse=.false.
+        numhelp=nbhelp
+        lltmp='  '
         call copycommonfile('opt',copydef,allowbrowse,
      &  numhelp,lltmp,istat,moddb)
      
@@ -3005,44 +2872,17 @@ C reflect it is local.
 
       elseif(isw.eq.5)then
 
-C Make up browse to the model ../dbs folder suggest the name LCOPY
-C and return file name in lltmp.
-        lltmp=' '
-        call edisp(iuout,'  ')  ! echo blank line
-        write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
-        CALL EASKXORGTKF(LCOPY,'Optical Properties db?',' ',
-     &    DOPTDB,lltmp,'optical properties db',IER,nbhelp)
-
-C If user request jump back and re-display the menu.
-          if(ier.eq.-3)then
-          goto 60  ! redisplay menu.
-          endif
-
-        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
-
-C Ask user whether file is in ../dbs and if so use fdroot if GTK.
-          if(iglib.eq.2)then
-            dok=.true.
-            CALL ASKOK('Is this file in the model ../dbs folder?',
-     &        ' ',OK,dok,nbhelp)
-            if(OK)then
-              call fdroot(lltmp,lpath,fname)
-            write(LOPTDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        fname(1:lnblnk(fname))
-              ipathoptdb=1  ! signal that it is a local file.
-          moddb=.true.
+C Allow user to select from the model ../dbs folder for an
+C optics file. If moddb was set to true then proceed to edit
+C the optics.
+        numhelp=nbhelp
+        lltmp='  '
+        call usemodeldbsfile('opt',numhelp,lltmp,istat,moddb)
+        if(istat.eq.0.and.moddb)then
           goto 44
-          endif
-          endif
-
-C Check what the user might have edited to be sure of setting the
-C correct location value via call to findwhichdbpath.
-            call findwhichdbpath('opt',lltmp,ier)
-            moddb=.true.
-            goto 44
-          else
-            goto 60
-          endif
+        else
+          goto 60
+        endif
 
       elseif(isw.eq.6)then
 
@@ -3054,7 +2894,7 @@ C call to eroptdb and if this is not successful reset LOPTDB.
         if(iglib.eq.2)then
           write(LCOPY,'(4a)') dinstpath(1:lnblnk(dinstpath)),
      &      fs,'databases',fs
-          CALL EASKF(LCOPY,' ','Optical Properties db?',
+          CALL EASKF(LCOPY,'Optical properties','Confirm:',
      &      144,DOPTDB,'optical properties database',IER,nbhelp)
           if(ier.eq.-3)then
             LOPTDB=lprev
@@ -3138,7 +2978,6 @@ C      CHARACTER outs248*248
 
 C Local strings for user selections dependent on graphic library.
       character opte*28,optf*28,optg*28
-      character lpath*72,fname*72 ! for use with fdroot
       character lworking*144   ! file name in std folder
       integer lndbp   ! for length of standard path
       logical unixok  ! to check for path file separators
@@ -3210,11 +3049,11 @@ C text or X11 option e edits the string while for GTK there are two
 C options to browse for files in ../dbs or the esp-r distribution.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       if(iglib.eq.1.or.iglib.eq.3)then
-        opte='e edit file name'
+        opte='e select from model ../dbs'
         optf='   '
         optg='   '
       elseif(iglib.eq.2)then
-        opte='e browse model ../dbs'
+        opte='e select from model ../dbs'
         optf='f browse esp-r distribution'
         optg='g make copy of another file'
       endif
@@ -3224,9 +3063,9 @@ C options to browse for files in ../dbs or the esp-r distribution.
 C If db does not exist locally offer limited choices.
         idno=2
         isw=0
-        call MENUATOL('  ','Pressure Distributions db',
+        call MENUATOL('  ','Pressure coefficients',
      &    ' ','b select from list',
-     &    'c create a new db','d copy standard db',
+     &    'c create new coefficients','d copy standard coefficients',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
         if(isw.eq.7)copydef=.false.
@@ -3235,9 +3074,9 @@ C If db does not exist locally offer limited choices.
 C If standard file then offer the following choices (incl /):
         idno=1
         isw=0
-        call MENUATOL('  ','Pressure Distributions db',
-     &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard db',
+        call MENUATOL('  ','Pressure coefficients',
+     &    'a browse/edit','b select from list',
+     &    'c create new coefficients','d copy standard coefficients',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
         copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
@@ -3245,9 +3084,9 @@ C If standard file then offer the following choices (incl /):
 C If standard file then offer the following choices (without /):
         idno=1
         isw=0
-        call MENUATOL('  ','Pressure Distributions db',
-     &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard db',
+        call MENUATOL('  ','Pressure coefficients <std>',
+     &    'a browse/edit','b select from list',
+     &    'c create new coefficients','d copy it to model',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
         copydef=.false.
       else
@@ -3256,9 +3095,9 @@ C If db exists locally toggle whether the user is asked to copy the
 C default file or the current file.
         idno=1
         isw=0
-        call MENUATOL('  ','Pressure Distributions db',
-     &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard db',
+        call MENUATOL('  ','Pressure coefficients <mod>',
+     &    'a browse/edit','b select from list',
+     &    'c create new coefficients','d copy standard coefficients',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
         if(isw.eq.7)copydef=.false.
@@ -3300,9 +3139,10 @@ C be explored).
      &      cfgroot(1:lr),'.pressuredb'
         endif
         clkok=.false.
-  62    CALL EASKSCNCL(ltmp,' New pressure coefficients?',
-     &      ' ','cancel',clkok,72,DAPRES,
-     &      'pressure coefficients',IER,nbhelp)
+  62    CALL EASKSCNCL(ltmp,
+     &    'New pressure coefficients sets file',
+     &    'Confirm:','cancel',clkok,72,DAPRES,
+     &    'pressure coefficients',IER,nbhelp)
         if(clkok) return    ! abandon this task
         if(ltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
           write(lapres,'(a)') ltmp(1:lnblnk(ltmp))
@@ -3341,9 +3181,9 @@ C user has asked for the default file. If isw is 7 then the
 C user wishes to browse for the source file. Suggest a local
 C file name based on the project root name. Update common to
 C reflect it is local.
-	allowbrowse=.false.
-	numhelp=nbhelp
-	lltmp='  '
+        allowbrowse=.false.
+        numhelp=nbhelp
+        lltmp='  '
         call copycommonfile('prs',copydef,allowbrowse,
      &  numhelp,lltmp,istat,moddb)
      
@@ -3356,45 +3196,17 @@ C reflect it is local.
 
       elseif(isw.eq.5)then
 
-C Make up browse to the model ../dbs folder suggest the name LCOPY
-C and return file name in lltmp.
-        lltmp=' '
-        call edisp(iuout,'  ')  ! echo blank line
-        write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
-
-        CALL EASKXORGTKF(LCOPY,'Pressure coefficients?',' ',
-     &    dapres,lltmp,'pressure coefficients',IER,nbhelp)
-
-C If user request jump back and re-display the menu.
-          if(ier.eq.-3)then
-          goto 60  ! redisplay menu.
-          endif
-
-        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
-
-C Ask user whether file is in ../dbs and if so use fdroot if GTK.
-          if(iglib.eq.2)then
-            dok=.true.
-            CALL ASKOK('Is this file in the model ../dbs folder?',
-     &        ' ',OK,dok,nbhelp)
-            if(OK)then
-              call fdroot(lltmp,lpath,fname)
-            write(lapres,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &        fname(1:lnblnk(fname))
-              ipathapres=1  ! signal that it is a local file.
-          moddb=.true.
+C Allow user to select from the model ../dbs folder for an
+C pressure coefficients file. If moddb was set to true then proceed
+C to edit the coefficients.
+        numhelp=nbhelp
+        lltmp='  '
+        call usemodeldbsfile('prs',numhelp,lltmp,istat,moddb)
+        if(istat.eq.0.and.moddb)then
           goto 44
-          endif
-          endif
-
-C Check what the user might have edited to be sure of setting the
-C correct location value via call to findwhichdbpath.
-            call findwhichdbpath('prs',lltmp,ier)
-            moddb=.true.
-            goto 44
-          else
-            goto 60
-          endif
+        else
+          goto 60
+        endif
 
       elseif(isw.eq.6)then
 
@@ -3406,8 +3218,8 @@ C this is not successful reset lapres.
         if(iglib.eq.2)then
           write(LCOPY,'(4a)') dinstpath(1:lnblnk(dinstpath)),
      &      fs,'databases',fs
-          CALL EASKF(LCOPY,' ','Pressure coefficients db?',
-     &      144,dapres,'pressure coef database',IER,nbhelp)
+          CALL EASKF(LCOPY,'Pressure coefficients file','Confirm:',
+     &      144,dapres,'pressure coefficients',IER,nbhelp)
           if(ier.eq.-3)then
             lapres=lprev
 	    goto 60  ! cancel detected, restore name and redisplay menu.
@@ -3513,10 +3325,9 @@ C Calendar.
       CHARACTER DOIT*248,fs*1,TMODE*8,CLMLOC*30,LCOPY*72
       CHARACTER OUTS*124,APP*6,ext*4,llclmdb*144
       LOGICAL OK,concat,COPYDEF,MODDB,XST,DOK,UNIXOK
-      character cfgroot*24,LCFGF*72,linstd*60
+      character cfgroot*24,LCFGF*72
       character dinstpath*60,path*72
       character dirpath*72
-      CHARACTER lltmp*144,lguess*144
       CHARACTER*72 NNAME
       dimension ICLM(24,6)
       integer llt  ! length of string buffer
@@ -3556,8 +3367,6 @@ C Take into account whether weather file is in standard folder.
 C If so llclmdb will be expanded to the full path.
       moddb=.false.
  552  llt=lnblnk(LCLIM)
-      lltmp='  '
-      lguess='  '
       lndbp=lnblnk(standardclmpath)
       if(ipathclim.eq.0.or.ipathclim.eq.1)then
         llclmdb=LCLIM
@@ -3591,7 +3400,7 @@ C If corportate weather then offer the following choices:
         idno=1
         isw=0
         call MENUATOL('  ','Weather <std>',
-     &    'a browse/edit weather','b select another from list',
+     &    'a browse/edit','b select another from list',
      &    'c create new weather','d copy it to model',
      &    'e weather >> ascii export','f ascii >> weather import',
      &    'g EPW >> weather import',' ',' ',' ',' ',' ',
@@ -3602,8 +3411,8 @@ C If corportate weather then offer the following choices:
 C If db exists locally offer the following choices:
         idno=1
         isw=0
-        call MENUATOL('  ','Weather <model>',
-     &    'a browse/edit weather','b select another from list',
+        call MENUATOL('  ','Weather <mod>',
+     &    'a browse/edit','b select another from list',
      &    'c create new weather','d copy standard weather',
      &    'e weather >> ascii export','f ascii >> weather import',
      &    'g EPW >> weather import',' ',' ',' ',' ',' ',
@@ -3678,20 +3487,20 @@ C << todo suggest name within the model dbs folder >>
               if(iglib.eq.1.or.iglib.eq.3)then
                 if(llt.lt.96)then
                   CALL EASKF(llclmdb,'Weather file:',
-     &              ' ',96,DCLIM,'climate file name',IER,nbhelp)
+     &              'Confirm:',96,DCLIM,'climate file name',IER,nbhelp)
                 elseif(llt.ge.96.and.llt.lt.124)then
                   CALL EASKF(llclmdb,'Weather file:',
-     &              ' ',124,DCLIM,'climate file name',IER,nbhelp)
+     &              'Confirm:',124,DCLIM,'climate file name',IER,nbhelp)
                 elseif(llt.ge.124.and.llt.le.144)then
                   CALL EASKF(llclmdb,'Weather file:',
-     &              ' ',144,DCLIM,'climate file name',IER,nbhelp)
+     &              'Confirm:',144,DCLIM,'climate file name',IER,nbhelp)
                 endif
               elseif(iglib.eq.2)then
                 CALL EASKF(llclmdb,'Weather file:',
-     &            ' ',144,DCLIM,'climate file name',IER,nbhelp)
+     &            'Confirm:',144,DCLIM,'climate file name',IER,nbhelp)
               else
                 CALL EASKF(llclmdb,'Weather file:',
-     &            ' ',96,DCLIM,'climate file name',IER,nbhelp)
+     &            'Confirm:',96,DCLIM,'climate file name',IER,nbhelp)
               endif
               IF(llclmdb(1:2).EQ.'  ')GOTO 291
               IER=0
@@ -3776,16 +3585,16 @@ C it with zeros and present editing facility.
 
 C If using X11 assume that the full path is less than 96 chars
 C but if using GTK then we need the full length to avoid truncation.
- 553    iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
+        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(longtmp,' ','Weather file:',
-     &      96,DCLIM,'climate file name',IER,nbhelp)
+          CALL EASKF(longtmp,'New weather file (full of zeros)',
+     &      'Confirm:',96,DCLIM,'climate file name',IER,nbhelp)
         elseif(iglib.eq.2)then
-          CALL EASKF(longtmp,' ','Weather file:',
-     &      144,DCLIM,'climate file name',IER,nbhelp)
+          CALL EASKF(longtmp,'New weather file (full of zeros)',
+     &      'Confirm:',144,DCLIM,'climate file name',IER,nbhelp)
         else
-          CALL EASKF(longtmp,' ','Weather file:',
-     &      96,DCLIM,'climate file name',IER,nbhelp)
+          CALL EASKF(longtmp,'New weather file (full of zeros)',
+     &      'Confirm:',96,DCLIM,'climate file name',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
 
@@ -3911,13 +3720,13 @@ C If using X11 assume that the full path is less than 96 chars
 C but if using GTK then we need the full length to avoid truncation.
  554    iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(longtmp,' ','Weather file:',
+          CALL EASKF(longtmp,'Weather file (in model)','Confirm:',
      &      96,DCLIM,'climate file name',IER,nbhelp)
         elseif(iglib.eq.2)then
-          CALL EASKF(longtmp,' ','Weather file:',
+          CALL EASKF(longtmp,'Weather file (in model)','Confirm:',
      &      144,DCLIM,'climate file name',IER,nbhelp)
         else
-          CALL EASKF(longtmp,' ','Weather file:',
+          CALL EASKF(longtmp,'Weather file (in model)','Confirm:',
      &      96,DCLIM,'climate file name',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
@@ -4013,13 +3822,13 @@ C Confirm suggested name and then write out asci file.
         endif
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(LLASCI,' ','Export ASCII file:',
+          CALL EASKF(LLASCI,'Export ASCII weather file','Confirm:',
      &      96,DFILE,'climate file name',IER,nbhelp)
         elseif(iglib.eq.2)then
-          CALL EASKF(LLASCI,' ','Export ASCII file:',
+          CALL EASKF(LLASCI,'Export ASCII weather file','Confirm:',
      &      144,DFILE,'climate file name',IER,nbhelp)
         else
-          CALL EASKF(LLASCI,' ','Export ASCII file:',
+          CALL EASKF(LLASCI,'Export ASCII weather file','Confirm:',
      &      96,DFILE,'climate file name',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
@@ -4034,7 +3843,7 @@ C to asking clm to do the conversion.
         call addpath(LLASCI,longtafile,concat)
         call tstamp('>','PRJ: start clm for conversion')
         doit = ' '
-        write(doit,'(5a)') 'clm -mode text -file ',
+        write(doit,'(4a)') 'clm -mode text -file ',
      &    longtfile(1:lnblnk(longtfile)),' -act bin2asci silent ',
      &    longtafile(1:lnblnk(longtafile))
         call runit(doit,tmode)
@@ -4053,13 +3862,13 @@ C Confirm suggested name and then write out binary file.
         endif
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(LLASCI,' ','ASCII file:',
+          CALL EASKF(LLASCI,'ASCII (source) weather file','Confirm:',
      &      96,DFILE,'climate file name',IER,nbhelp)
         elseif(iglib.eq.2)then
-          CALL EASKF(LLASCI,' ','ASCII file:',
+          CALL EASKF(LLASCI,'ASCII (source) weather file','Confirm:',
      &      144,DFILE,'climate file name',IER,nbhelp)
         else
-          CALL EASKF(LLASCI,' ','ASCII file:',
+          CALL EASKF(LLASCI,'ASCII (source) weather file','Confirm:',
      &      96,DFILE,'climate file name',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
@@ -4067,14 +3876,14 @@ C Confirm suggested name and then write out binary file.
         longtmp=LCLIM
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(longtmp,' ','Weather file:',
-     &      96,DCLIM,'climate file name',IER,nbhelp)
+          CALL EASKF(longtmp,'New weather file','Confirm:',
+     &      96,DCLIM,'new weather file name',IER,nbhelp)
         elseif(iglib.eq.2)then
-          CALL EASKF(longtmp,' ','Weather file:',
-     &      144,DCLIM,'climate file name',IER,nbhelp)
+          CALL EASKF(longtmp,'New weather file','Confirm:',
+     &      144,DCLIM,'new weather file name',IER,nbhelp)
         else
-          CALL EASKF(longtmp,' ','Weather file:',
-     &      96,DCLIM,'climate file name',IER,nbhelp)
+          CALL EASKF(longtmp,'New weather file','Confirm:',
+     &      96,DCLIM,'new weather file name',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
 
@@ -4118,13 +3927,13 @@ C Confirm suggested name and then write out binary file.
         endif
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(LLASCI,' ','EPW file:',
+          CALL EASKF(LLASCI,'EPW (source) file','Confirm:',
      &      96,DFILE,'climate file name',IER,nbhelp)
         elseif(iglib.eq.2)then
-          CALL EASKF(LLASCI,' ','EPW file:',
+          CALL EASKF(LLASCI,'EPW (source) file','Confirm:',
      &      144,DFILE,'climate file name',IER,nbhelp)
         else
-          CALL EASKF(LLASCI,' ','EPW file:',
+          CALL EASKF(LLASCI,'EPW (source) file','Confirm:',
      &      96,DFILE,'climate file name',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
@@ -4132,14 +3941,14 @@ C Confirm suggested name and then write out binary file.
         longtmp=LCLIM
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(longtmp,' ','Weather file:',
-     &      96,DCLIM,'climate file name',IER,nbhelp)
+          CALL EASKF(longtmp,'New weather file','Confirm:',
+     &      96,DCLIM,'new weather file name',IER,nbhelp)
         elseif(iglib.eq.2)then
-          CALL EASKF(longtmp,' ','Weather file:',
-     &      144,DCLIM,'climate file name',IER,nbhelp)
+          CALL EASKF(longtmp,'New weather file','Confirm:',
+     &      144,DCLIM,'new weather file name',IER,nbhelp)
         else
-          CALL EASKF(longtmp,' ','Weather file:',
-     &      96,DCLIM,'climate file name',IER,nbhelp)
+          CALL EASKF(longtmp,'New weather file','Confirm:',
+     &      96,DCLIM,'new weather file name',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
 
@@ -4344,7 +4153,6 @@ C      CHARACTER outs248*248
 
 C Local strings for user selections dependent on graphic library.
       character opte*28,optf*28,optg*28
-      character lpath*72,fname*72 ! for use with fdroot
       integer lndbp   ! for length of standard path
       logical unixok  ! to check for path file separators
       logical allowbrowse  ! future facility
@@ -4416,11 +4224,11 @@ C text or X11 option e edits the string while for GTK there are two
 C options to browse for files in ../dbs or the esp-r distribution.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       if(iglib.eq.1.or.iglib.eq.3)then
-        opte='e edit file name'
+        opte='e select from model ../dbs'
         optf='   '
         optg='   '
       elseif(iglib.eq.2)then
-        opte='e browse model ../dbs'
+        opte='e select from model ../dbs'
         optf='f browse esp-r distribution'
         optg='g make copy of another file'
       endif
@@ -4430,9 +4238,9 @@ C options to browse for files in ../dbs or the esp-r distribution.
 C If db does not exist locally offer limited choices.
         idno=2
         isw=0
-        call MENUATOL('  ','Miscellaneous components db',
+        call MENUATOL('  ','Active components',
      &    ' ','b select from list',
-     &    'c create a new db','d copy standard db',
+     &    'c create new components','d copy standard components',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
         if(isw.eq.7)copydef=.false.
@@ -4442,8 +4250,8 @@ C If standard file then offer the following choices (incl /):
         idno=1
         isw=0
         call MENUATOL('  ','Active components',
-     &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard',
+     &    'a browse/edit','b select from list',
+     &    'c create new components','d copy standard components',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
         copydef=.false.
       elseif(longtfile(1:ldirpath-1).eq.dirpath(1:ldirpath-1))then
@@ -4451,9 +4259,9 @@ C If standard file then offer the following choices (incl /):
 C If standard file then offer the following choices (without /):
         idno=1
         isw=0
-        call MENUATOL('  ','Active components',
-     &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard db',
+        call MENUATOL('  ','Active components <std>',
+     &    'a browse/edit','b select from list',
+     &    'c create new components','d copy it to model',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
         copydef=.false.
       else
@@ -4462,9 +4270,9 @@ C If db exists locally toggle whether the user is asked to copy the
 C default file or the current file.
         idno=1
         isw=0
-        call MENUATOL('  ','Active components',
-     &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard db',
+        call MENUATOL('  ','Active components <mod>',
+     &    'a browse/edit','b select from list',
+     &    'c create new components','d copy standard components',
      &    opte,optf,optg,' ',' ',' ',' ',' ',isw,idno,nbhelp)
         if(isw.eq.4)copydef=.true.
         if(isw.eq.7)copydef=.false.
@@ -4493,7 +4301,7 @@ C There is no select by list for active components.
         goto 60
       elseif(isw.eq.3)then
 
-C There is no select by list for active components.
+C There is no create new option for active components.
         call edisp(iuout,'No create new for active components.')
         goto 60
 
@@ -4504,9 +4312,9 @@ C user has asked for the default file. If isw is 7 then the
 C user wishes to browse for the source file. Suggest a local
 C file name based on the project root name. Update common to
 C reflect it is local.
-	allowbrowse=.false.
-	numhelp=nbhelp
-	lltmp='  '
+        allowbrowse=.false.
+        numhelp=nbhelp
+        lltmp='  '
         call copycommonfile('msc',copydef,allowbrowse,
      &  numhelp,lltmp,istat,moddb)
      
@@ -4519,40 +4327,13 @@ C reflect it is local.
 
       elseif(isw.eq.5)then
 
-C Make up browse to the model ../dbs folder suggest the name LCOPY
-C and return file name in lltmp.
-        lltmp=' '
-        call edisp(iuout,'  ')  ! echo blank line
-        write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
-        CALL EASKXORGTKF(LCOPY,'Miscellaneous comp db?',' ',
-     &    DMCMPDBFL,lltmp,'misc comp db',IER,nbhelp)
-
-C If user request jump back and re-display the menu.
-        if(ier.eq.-3)then
-          goto 60  ! redisplay menu.
-        endif
-
-        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
-
-C Ask user whether file is in ../dbs and if so use fdroot if GTK.
-          if(iglib.eq.2)then
-            dok=.true.
-            CALL ASKOK('Is this file in the model ../dbs folder?',
-     &        ' ',OK,dok,nbhelp)
-            if(OK)then
-              call fdroot(lltmp,lpath,fname)
-              write(MCMPDBFL,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &          fname(1:lnblnk(fname))
-              ipathmsc=1  ! signal that it is a local file.
-              moddb=.true.
-              goto 44
-            endif
-          endif
-
-C Check what the user might have edited to be sure of setting the
-C correct location value via call to findwhichdbpath.
-          call findwhichdbpath('msc',lltmp,ier)
-          moddb=.true.
+C Allow user to select from the model ../dbs folder for an
+C actove components file. If moddb was set to true then proceed to edit
+C the components.
+        numhelp=nbhelp
+        lltmp='  '
+        call usemodeldbsfile('msc',numhelp,lltmp,istat,moddb)
+        if(istat.eq.0.and.moddb)then
           goto 44
         else
           goto 60
@@ -4568,8 +4349,8 @@ C call to eroptdb and if this is not successful reset LOPTDB.
         if(iglib.eq.2)then
           write(LCOPY,'(4a)') dinstpath(1:lnblnk(dinstpath)),
      &      fs,'databases',fs
-          CALL EASKF(LCOPY,' ','Miscellaneous components db?',
-     &      144,DMCMPDBFL,'misc comp database',IER,nbhelp)
+          CALL EASKF(LCOPY,'Active components file.','Confirm:',
+     &      144,DMCMPDBFL,'active components file',IER,nbhelp)
           if(ier.eq.-3)then
             MCMPDBFL=lprev
             goto 60  ! cancel detected, restore name and redisplay menu.
@@ -4675,7 +4456,6 @@ C is via a text editor.
 
 C Local strings for user selections dependent on graphic library.
       character opte*28,optf*28,optg*28
-      character lpath*72,fname*72 ! for use with fdroot
       integer lndbp   ! for length of standard path
       logical allowbrowse  ! future feature
       logical unixok  ! to check for path file separators
@@ -4752,11 +4532,11 @@ C text or X11 option e edits the string while for GTK there are two
 C options to browse for files in ../dbs or the esp-r distribution.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       if(iglib.eq.1.or.iglib.eq.3)then
-        opte='f edit file name'
+        opte='f select from model ../dbs'
         optf='   '
         optg='   '
       elseif(iglib.eq.2)then
-        opte='f browse model ../dbs'
+        opte='f select from model ../dbs'
         optf='g browse esp-r distribution'
         optg='h make copy of another file'
       endif
@@ -4768,7 +4548,7 @@ C If db does not exist locally offer limited choices.
         isw=0
         call MENUATOL('  ','Mould isopleths',
      &    ' ','b select from list',
-     &    'c create a new db','d copy standard db',
+     &    'c create new isopleths','d copy standard isopleths',
      &    'e invoke mould utility',opte,optf,optg,
      &    ' ',' ',' ',' ',isw,idno,nbhelp)
         if(isw.eq.5)copydef=.true.
@@ -4779,8 +4559,8 @@ C If standard file then offer the following choices (incl /):
         idno=1
         isw=0
         call MENUATOL('  ','Mould isopleths',
-     &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard db',
+     &    'a browse/edit','b select from list',
+     &    'c create new isopleths','d copy standard isopleths',
      &    'e invoke mould utility',opte,optf,optg,
      &    ' ',' ',' ',' ',isw,idno,nbhelp)
         copydef=.false.
@@ -4789,9 +4569,9 @@ C If standard file then offer the following choices (incl /):
 C If standard file then offer the following choices (without /):
         idno=1
         isw=0
-        call MENUATOL('  ','Mould isopleths',
-     &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard db',
+        call MENUATOL('  ','Mould isopleths <std>',
+     &    'a browse/edit','b select from list',
+     &    'c create new isopleths','d copy it to model',
      &    'e invoke mould utility',opte,optf,optg,
      &    ' ',' ',' ',' ',isw,idno,nbhelp)
         copydef=.false.
@@ -4801,9 +4581,9 @@ C If db exists locally toggle whether the user is asked to copy the
 C default file or the current file.
         idno=1
         isw=0
-        call MENUATOL('  ','Mould isopleths',
+        call MENUATOL('  ','Mould isopleths <mod>',
      &    'a browse/edit db','b select from list',
-     &    'c create a new db','d copy standard db',
+     &    'c create new isopleths','d copy standard isopleths',
      &    'e invoke mould utility',opte,optf,optg,
      &    ' ',' ',' ',' ',isw,idno,nbhelp)
         if(isw.eq.5)copydef=.true.
@@ -4833,7 +4613,7 @@ C There is no select by list for mould isopleths.
         goto 60
       elseif(isw.eq.3)then
 
-C There is no select by list for mould isopleths.
+C There is no create new mould isopleths.
         call edisp(iuout,'No create new for mould isopleths.')
         goto 60
 
@@ -4844,11 +4624,11 @@ C user has asked for the default file. If isw is 7 then the
 C user wishes to browse for the source file. Suggest a local
 C file name based on the project root name. Update common to
 C reflect it is local.
-	allowbrowse=.false.
-	numhelp=nbhelp
-	lltmp='  '
+        allowbrowse=.false.
+        numhelp=nbhelp
+        lltmp='  '
         call copycommonfile('mld',copydef,allowbrowse,
-     &  numhelp,lltmp,istat,moddb)
+     &    numhelp,lltmp,istat,moddb)
      
         if(istat.eq.1)then
           lfmould=lprev
@@ -4877,40 +4657,13 @@ C Start the mould utility.
 
       elseif(isw.eq.6)then
 
-C Make up browse to the model ../dbs folder suggest the name LCOPY
-C and return file name in lltmp.
-        lltmp=' '
-        call edisp(iuout,'  ')  ! echo blank line
-        write(LCOPY,'(2a)') dbspth(1:lnblnk(dbspth)),fs
-        CALL EASKXORGTKF(LCOPY,'Mould isopleths?',' ',
-     &    dmdbnam,lltmp,'mould isopleths',IER,nbhelp)
-
-C If user request jump back and re-display the menu.
-        if(ier.eq.-3)then
-          goto 60  ! redisplay menu.
-        endif
-
-        if(lltmp(1:2).ne.'  '.and.lltmp(1:4).ne.'UNKN')then
-
-C Ask user whether file is in ../dbs and if so use fdroot if GTK.
-          if(iglib.eq.2)then
-            dok=.true.
-            CALL ASKOK('Is this file in the model ../dbs folder?',
-     &        ' ',OK,dok,nbhelp)
-            if(OK)then
-              call fdroot(lltmp,lpath,fname)
-              write(lfmould,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
-     &          fname(1:lnblnk(fname))
-              ipathmould=1  ! signal that it is a local file.
-              moddb=.true.
-              goto 44
-            endif
-          endif
-
-C Check what the user might have edited to be sure of setting the
-C correct location value via call to findwhichdbpath.
-          call findwhichdbpath('mld',lltmp,ier)
-          moddb=.true.
+C Allow user to select from the model ../dbs folder for an
+C mould file. If moddb was set to true then proceed to edit
+C the isopleths.
+        numhelp=nbhelp
+        lltmp='  '
+        call usemodeldbsfile('mld',numhelp,lltmp,istat,moddb)
+        if(istat.eq.0.and.moddb)then
           goto 44
         else
           goto 60
@@ -4926,7 +4679,7 @@ C call to eroptdb and if this is not successful reset LOPTDB.
         if(iglib.eq.2)then
           write(LCOPY,'(4a)') dinstpath(1:lnblnk(dinstpath)),
      &      fs,'databases',fs
-          CALL EASKF(LCOPY,' ','Mould isopleths file?',
+          CALL EASKF(LCOPY,'Mould isopleths file.','Confirm:',
      &      144,dmdbnam,'mould isopleths',IER,nbhelp)
           if(ier.eq.-3)then
             lfmould=lprev
@@ -5077,7 +4830,7 @@ C Setup assumptions based on topic.
       lndbp=lnblnk(standarddbpath)
       if(topic(1:3).eq.'mat')then
         defaultfile=dfcon     ! default standard file
-        sourcemsg='Materials file name (in source folder).'   ! dialog
+        sourcemsg='Material properties file (in source folder).'   ! dialog
         ending='.materialdb'  ! file ending
         if(ipathmat.eq.0.or.ipathmat.eq.1)then
           write(lguess,'(a)') LFMAT(1:lnblnk(LFMAT)) ! suggested name
@@ -5087,7 +4840,7 @@ C Setup assumptions based on topic.
         endif
       elseif(topic(1:3).eq.'mlc')then
         defaultfile=dfmul
-        sourcemsg='Constructions file name (in source folder).'
+        sourcemsg='Constructions file (in source folder).'
         ending='.constrdb'
         if(ipathmul.eq.0.or.ipathmul.eq.1)then
           lguess=LFMUL  ! use as is
@@ -5097,7 +4850,7 @@ C Setup assumptions based on topic.
         endif
       elseif(topic(1:3).eq.'opt')then
         defaultfile=doptdb
-        sourcemsg='Optics file name (in source folder).'
+        sourcemsg='Optical properties file (in source folder).'
         ending='.opticdb'
         if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
           lguess=LOPTDB  ! use as is
@@ -5107,7 +4860,7 @@ C Setup assumptions based on topic.
         endif
       elseif(topic(1:3).eq.'pdb')then
         defaultfile=DPCDB
-        sourcemsg='Plant components file name (in source folder).'
+        sourcemsg='Plant components file (in source folder).'
         ending='.plantdb'
         if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
           lguess=LPCDB
@@ -5340,6 +5093,205 @@ C Signal that file is a local to model.
       else
         goto 66  ! ask for the file name again
       endif
+      
+      end
+      
+
+C ******** usemodeldbsfile
+C usemodeldbsfile is a general facility to browse files in the
+C model ../dbs folder. All files in the ../dbs folder will 
+C be added to a menu list for selection. Selected file becomes
+C the current common file type and is returned via lltmp.
+      subroutine usemodeldbsfile(topic,numhelp,lltmp,istat,moddb)
+#include "building.h"
+#include "model.h"
+#include "esprdbfile.h"
+
+      common/OUTIN/IUOUT,IUIN
+      
+      integer lnblnk  ! function definition
+      
+C Passed parameters:
+      character topic*3   ! which type of file e.g. mat = materials
+                          ! mlc = constructions  opt = optics
+                          ! pdb = plant components  prs = pressure coef
+                          ! msc = active components  mld = mould isopleths
+                          ! pro = event profiles
+      integer numhelp     ! number of help lines from calling code
+      character lltmp*144 ! the returned file name
+      integer istat       ! return status index for calling code
+      logical moddb       ! set true if file name change
+      integer nfile       ! nb of files in dbs folder
+
+C Local variables:
+      character sourcemsg*48     ! dialog for source dialog
+      character sfile*72,snpfile*72,fname*96
+
+      character lguess*144
+      character fs*1
+
+      CHARACTER outs248*248
+      
+C Local strings for user selections dependent on graphic library.
+
+      integer lndbp   ! for length of standard database path
+      integer ier
+      logical unixok  ! to check for database path file separators
+
+C Clear string buffers.
+      lltmp='  '
+      lguess='  '
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+
+C Remember current file for the current topic, set message to
+C users and the guess for file name.
+      lndbp=lnblnk(standarddbpath)
+      if(topic(1:3).eq.'mat')then
+        sourcemsg='material properties file (in ../dbs).'   ! dialog
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          write(lguess,'(a)') LFMAT(1:lnblnk(LFMAT)) ! suggested name
+        elseif(ipathmat.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LFMAT(1:lnblnk(LFMAT))
+        endif
+      elseif(topic(1:3).eq.'mlc')then
+        sourcemsg='constructions file (in ../dbs).'
+        if(ipathmul.eq.0.or.ipathmul.eq.1)then
+          lguess=LFMUL  ! use as is
+        elseif(ipathmul.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lfmul(1:lnblnk(lfmul))  ! prepend db folder path
+        endif
+      elseif(topic(1:3).eq.'opt')then
+        sourcemsg='optical properties file (in ../dbs).'
+        if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
+          lguess=LOPTDB  ! use as is
+        elseif(ipathoptdb.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LOPTDB(1:lnblnk(LOPTDB))  ! prepend db folder path
+        endif
+      elseif(topic(1:3).eq.'pdb')then
+        sourcemsg='plant components file (in ../dbs).'
+        if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
+          lguess=LPCDB
+        elseif(ipathpcdb.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lpcdb(1:lnblnk(lpcdb))
+        endif
+      elseif(topic(1:3).eq.'prs')then
+        sourcemsg='pressure coefficients file (in ../dbs).'
+        if(ipathapres.eq.0.or.ipathapres.eq.1)then
+          lguess=LPCDB
+        elseif(ipathapres.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lapres(1:lnblnk(lapres))
+        endif
+      elseif(topic(1:3).eq.'msc')then
+        sourcemsg='active components file (in ../dbs).'
+        if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
+          lguess=MCMPDBFL
+        elseif(ipathmsc.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      MCMPDBFL(1:lnblnk(MCMPDBFL))
+        endif
+      elseif(topic(1:3).eq.'mld')then
+        sourcemsg='mould isopleths file (in ../dbs).'
+        if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
+          lguess=lfmould
+        elseif(ipathmsc.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      lfmould(1:lnblnk(lfmould))
+        endif
+      elseif(topic(1:3).eq.'pro')then
+        sourcemsg='event profile file (in ../dbs).'
+        if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+          lguess=LPRFDB
+        elseif(ipathprodb.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LPRFDB(1:lnblnk(LPRFDB))
+        endif
+      endif
+
+C Remind user the current common data file.
+      write(outs248,'(4a)') 'Currently using:',
+     &  lguess(1:lnblnk(lguess)),' please identify a ',
+     &  sourcemsg(1:lnblnk(sourcemsg))
+      call edisp248(iuout,outs248,90)
+
+C Use the standard ESP-r folder browse facility.
+      sfile=' '
+      snpfile=' '
+      call edisp(iuout,' ')
+      call browsefilelist('?','dbs','fil',sfile,snpfile,nfile,iier)
+      if(nfile.gt.0)then
+        sfile=' '
+        snpfile=' '
+        call browsefilelist('b','dbs','fil',sfile,snpfile,nfile,iier)
+        if(snpfile(1:2).ne.'  ')then
+          write(fname,'(3a)')dbspth(1:lnblnk(dbspth)),fs,
+     &      snpfile(1:lnblnk(snpfile))
+
+C Debug.
+          if(unixok) write(6,*) fname
+          write(lltmp,'(a)') fname(1:lnblnk(fname))
+
+        else
+
+C User did not select a file. Take them back to the question.
+          call usrmsg('You did not select any existing file.',
+     &      'Canceling the action.','W')
+          istat=1
+          moddb=.false.
+          return  ! cancel detected, restore name and redisplay menu.
+        endif
+      else
+        call usrmsg('You did not select any existing file.',
+     &    'Canceling the action.','W')
+        istat=1
+        moddb=.false.
+        return  ! cancel detected, restore name and redisplay menu.
+      endif
+
+      moddb=.true.
+      if(topic(1:3).eq.'mat')then
+        ipathmat=1  ! signal that it is a local file.
+        write(LFMAT,'(a)') fname(1:lnblnk(fname))
+      elseif(topic(1:3).eq.'mlc')then
+        ipathmul=1  ! signal that it will be a local file.
+        write(LFMUL,'(a)') fname(1:lnblnk(fname))
+      elseif(topic(1:3).eq.'opt')then
+        ipathoptdb=1  ! signal that it will be a local file.
+        write(LOPTDB,'(a)') fname(1:lnblnk(fname))
+      elseif(topic(1:3).eq.'pdb')then
+        ipathpcdb=1  ! signal that it will be a local file.
+        write(LPCDB,'(a)') fname(1:lnblnk(fname))
+      elseif(topic(1:3).eq.'prs')then
+        ipathapres=1  ! signal that it is a local file.
+        write(lapres,'(a)') fname(1:lnblnk(fname))
+      elseif(topic(1:3).eq.'msc')then
+        ipathmsc=1  ! signal that it will be a local file.
+        write(MCMPDBFL,'(a)') fname(1:lnblnk(fname))
+      elseif(topic(1:3).eq.'mld')then
+        ipathmould=1  ! signal that it will be a local file.
+        write(lfmould,'(a)') fname(1:lnblnk(fname))
+      elseif(topic(1:3).eq.'pro')then
+        ipathprodb=1  ! signal that it is a local file.
+        write(LPRFDB,'(a)') fname(1:lnblnk(fname))
+      else
+
+      endif
+
+C By definition of the filebrowse facility the selected file
+C will exist.
+      istat=0   ! after return use the new file
+      return
       
       end
       

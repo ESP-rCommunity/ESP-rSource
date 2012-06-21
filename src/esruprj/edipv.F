@@ -80,7 +80,7 @@ C Check if IPV file known and fill common blocks before reading command data.
           call usrmsg('IPV UNKNOWN. Cannot process command.',' ','W')
           goto 223
         else
-	  ipvaction='ipv'
+          ipvaction='ipv'
           call ripvdat(IFCFG,lipvdatf,ipvaction,ier)
         endif
       else
@@ -326,12 +326,26 @@ C ITMM is menu for metric sets.
       logical MODSIT,XST,OK
       integer nitms,INO,nitmms,INOM,nitmget,INOG,nitmes,INOE ! max items and current menu item
 
+C Variables for handling climate file.
+      character llclmdb*144
+      integer llt,lndbp
+      logical unixok
+      character fs*1
+
 C For help messages
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
 
       helpinsub='ipvdat'  ! set for subroutine
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C If act = 'i' then initialise variables. Initial assumption
 C is for an annual assessment.
@@ -345,10 +359,20 @@ C in the list. If not instanciate season and typical start and end dates.
       if(ihaveseason.gt.0)then
         continue
       else
+
+C Setup string buffer with distribution weather folder name.
+        llt=lnblnk(LCLIM)
+        lndbp=lnblnk(standardclmpath)
+        if(ipathclim.eq.0.or.ipathclim.eq.1)then
+          llclmdb=LCLIM
+        elseif(ipathclim.eq.2)then
+          write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &      LCLIM(1:lnblnk(LCLIM))
+      endif
         INQUIRE (FILE=cdblfil,EXIST=XST)
         if(XST)then
           IUF=IFIL+2
-          call scancdblist(IUF,LCLIM,ok,ier)
+          call scancdblist(IUF,llclmdb,ok,ier)
           if(ok)then
             continue
           else
@@ -594,7 +618,7 @@ C Also update or create matched simulation parameter sets.
             if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN') lipvdatf=ltmp
 
 C Write out the current IPV definitions.
-	    ipvaction='ipv'
+            ipvaction='ipv'
             call mkipvdat(ifil+1,lipvdatf,ipvaction)
 
             if(nipvassmt.eq.1.or.nipvassmt.eq.3.or.nipvassmt.eq.5)then
@@ -1017,11 +1041,21 @@ C Domestic hot water day ratio.
      &    'scan for day/DD ratios','continue',IW,nbhelp)
         if(IW.eq.1.or.IW.eq.2)then
 
+C Expand climate file name in case of standard location.
+          llt=lnblnk(LCLIM)
+          lndbp=lnblnk(standardclmpath)
+          if(ipathclim.eq.0.or.ipathclim.eq.1)then
+            llclmdb=LCLIM
+          elseif(ipathclim.eq.2)then
+            write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &        LCLIM(1:lnblnk(LCLIM))
+          endif
+
 C Rescan climate to acquire ratios from the climatelist file.
           INQUIRE (FILE=cdblfil,EXIST=XST)
           if(XST)then
             IUF=IFIL+2
-            call scancdblist(IUF,LCLIM,ok,ier)
+            call scancdblist(IUF,llclmdb,ok,ier)
           endif
         endif
         if(IW.eq.1)then
@@ -2064,7 +2098,10 @@ C << periods for assessment e.g. a fortnight?
 
       SUBROUTINE getmultip
 #include "building.h"
+#include "model.h"
+#include "site.h"
 #include "esprdbfile.h"
+#include "espriou.h"
 #include "seasons.h"
 C seasons.h provides typper and typsea
 #include "ipvdata.h"
@@ -2081,7 +2118,12 @@ C Redirected text/graphics parameters.
 C dm* variables are from ipvdata.h.
 C sea* variables are from season.h
 
+C Variables for handling climate file.
       character outs*124
+      character llclmdb*144
+      integer llt,lndbp
+      logical unixok
+      character fs*1
 
       real HBT,CBT   ! local base temperatures for heating and cooling DD calcs
 
@@ -2097,6 +2139,14 @@ C For help messages
       integer nbhelp     ! number of help lines found
 
       helpinsub='getmultip'  ! set for subroutine
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
       if(is1wins.eq.0.or.is2wins.eq.0.or.is1sprs.eq.0)then
         call usrmsg('No winter|transition|summer season definitions',
@@ -2115,11 +2165,20 @@ C Set delimiter in reports to standard/literal format.
 C First check if climate datase exists: if so open.
       CALL ERPFREE(ICLIM,ISTAT)
 
-C << todo take into account location >>
-      CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
+C Setup string buffer with distribution weather folder name.
+      llt=lnblnk(LCLIM)
+      lndbp=lnblnk(standardclmpath)
+      if(ipathclim.eq.0.or.ipathclim.eq.1)then
+        llclmdb=LCLIM
+      elseif(ipathclim.eq.2)then
+        write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &    LCLIM(1:lnblnk(LCLIM))
+      endif
+
+      call EFOPRAN(ICLIM,llclmdb,144,0,IER)
       if(ISTAT.ge.0)then
         CALL ERPFREE(ICLIM,ISTAT)
-        CALL FPRAND(ICLIM,ISTAT,144,1,LCLIM)
+        call EFOPRAN(ICLIM,llclmdb,144,1,IER)
         call edisp(iuout,' opened climate file')
       endif
 

@@ -1753,6 +1753,7 @@ C will be truncated at the width ISTRW.
      &                ISTRW,NSTALT,STALT,ERMSG,IER,NHELP)
 #include "epara.h"
 
+      CHARACTER H*72
       common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
@@ -1762,7 +1763,7 @@ C will be truncated at the width ISTRW.
       dimension lista(35),listb(35)
       character lista*74,listb*74,KEY*1,outs*124
       CHARACTER*(*) PROMP1,PROMP2,ERMSG,STALT(*)
-      CHARACTER H*72,SEL*40
+      CHARACTER SEL*54     ! string for heading
       integer MVERT,IVERT  ! max items and current menu item
 
 #ifdef OSI
@@ -1800,7 +1801,7 @@ C Clear IVALS and INPICK.
 C Initial menu entry setup.
    92 IVERT=-3
 
-C Generate text for title.
+C Generate text for title (SEL).
     3 lne=max(1,LNBLNK(ERMSG))
       IF(lne.GT.ISTRW)WRITE(SEL,'(1X,A)')ERMSG(1:ISTRW)
       IF(lne.LE.ISTRW)WRITE(SEL,'(1X,A)')ERMSG(1:lne)

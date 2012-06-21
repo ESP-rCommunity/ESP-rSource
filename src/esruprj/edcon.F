@@ -166,7 +166,11 @@ C geometry facility first.
       ig=0
       DO 11 I=1,NZSUR(icomp)
         icn1=izstocn(icomp,i)
-        if(SSMLCN(icn1)(1:4).EQ.'UNKN')ig=ig+1
+        if(icn1.eq.0)then
+          ig=ig+1
+        else
+          if(SSMLCN(icn1)(1:4).EQ.'UNKN')ig=ig+1
+        endif
   11  CONTINUE
       if(ig.gt.3)then
         helptopic='many_not_attributed'
@@ -270,25 +274,31 @@ C If in quiet mode: the file should exist => error if we are here.
 
 C Having done so check to see if there are any transparent surfaces.
 C If surface attribute other than OPAQUE reset ITMCFL otherwise reconcile mismatches!
-C Do not check for UK NCM notional model
+C Do not check for UK NCM models.
       TFOUND=.FALSE.
       DO 60 IS=1,NZSUR(icomp)
         icn1=izstocn(icomp,is)
-        IF((SSOTF(icn1)(1:4).EQ.'OPAQ').AND.ITMCFL(ICOMP,IS).ne.0.
-     &    and.inoti.ne.1)then
-          write(outs,'(A,A)')SSNAME(icn1),' is opaque.'
-          dok=.true.
-          helptopic='confirm_surf_opaque'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-          CALL ASKOK(outs,'Confirm surface is opaque?',
-     &      OK,DOK,nbhelp)
-          if(OK)then
-            ITMCFL(ICOMP,IS)=0
-            SSOTF(icn1)='OPAQUE'
+C Debug.
+C        write(6,*) icn1,SSOTF(icn1),ITMCFL(ICOMP,IS),inoti
+
+        IF((SSOTF(icn1)(1:4).EQ.'OPAQ').AND.ITMCFL(ICOMP,IS).ne.0)then
+          if(inoti.eq.0)then
+            write(outs,'(A,A)')SSNAME(icn1),' is opaque.'
+            dok=.true.
+            helptopic='confirm_surf_opaque'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL ASKOK(outs,'Confirm surface is opaque?',
+     &        OK,DOK,nbhelp)
+            if(OK)then
+              ITMCFL(ICOMP,IS)=0
+              SSOTF(icn1)='OPAQUE'
+            endif
+          else
+            continue
           endif
         endif
         IF(SSOTF(icn1)(1:4).NE.'OPAQ'.AND.
-     &            SSOTF(icn1)(1:4).NE.'CFC ')TFOUND=.TRUE.
+     &     SSOTF(icn1)(1:4).NE.'CFC ')TFOUND=.TRUE.
         IF(ITMCFL(ICOMP,IS).GT.0)TFOUND=.TRUE.
   60  CONTINUE
       IF(.NOT.TFOUND)THEN
@@ -816,10 +826,10 @@ C Multilayer construction has not been defined.
  346      FORMAT(A1,I4,' --',F6.3,3F8.2)
         ELSE
           IF(IPR(ICF,IE).NE.0)THEN
-              matarrayindex=IPRMAT(ICF,IE)   ! which legacy index
-              if(matarrayindex.ge.0)then
-	        if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &             matopaq(matarrayindex)(1:1).eq.'h')then
+            matarrayindex=IPRMAT(ICF,IE)   ! which legacy index
+            if(matarrayindex.ge.0)then
+              if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &           matopaq(matarrayindex)(1:1).eq.'h')then
 
 C Find air gap resistance for this layer.
                   DO 148 IGG=1,NAIRG(ISUR)
@@ -954,37 +964,37 @@ C gaps in preparation of scan.
 
 C Gather information about each layer. Read in the materials db info.
         DO 223, IL=1,LAYERS(IC)
-            matarrayindex=IPRMAT(IC,IL)   ! which legacy index
-            if(matarrayindex.ge.0)then
+          matarrayindex=IPRMAT(IC,IL)   ! which legacy index
+          if(matarrayindex.ge.0)then
 
 C And if matarrayindex is zero then resetn dbcon dbden dbsht.
-              if(matarrayindex.eq.0)then
+            if(matarrayindex.eq.0)then
               DBCON=0.0; DBDEN=0.0; DBSHT=0.0
               E=0.99; A=0.99
               NAM='AIR'
-              else
-                DBCON=matdbcon(matarrayindex)
-                DBDEN=matdbden(matarrayindex)
-                DBSHT=matdbsht(matarrayindex)
-                E=matdbine(matarrayindex)
-                A=matdbina(matarrayindex)
-                write(NAM,'(a)') matname(matarrayindex)(1:32)
-              endif
+            else
+              DBCON=matdbcon(matarrayindex)
+              DBDEN=matdbden(matarrayindex)
+              DBSHT=matdbsht(matarrayindex)
+              E=matdbine(matarrayindex)
+              A=matdbina(matarrayindex)
+              write(NAM,'(a)') matname(matarrayindex)(1:32)
+            endif
 
 C If g or h air gap and version 1.2 then assign DRAIR
-	      if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &           matopaq(matarrayindex)(1:1).eq.'h')then
-                if(closemat2)then
-                  DRAIR(IC,IL,1)=matgapares(matarrayindex,1)
-                  DRAIR(IC,IL,2)=matgapares(matarrayindex,2)
-                  DRAIR(IC,IL,3)=matgapares(matarrayindex,3)
-                endif
+            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &         matopaq(matarrayindex)(1:1).eq.'h')then
+              if(closemat2)then
+                DRAIR(IC,IL,1)=matgapares(matarrayindex,1)
+                DRAIR(IC,IL,2)=matgapares(matarrayindex,2)
+                DRAIR(IC,IL,3)=matgapares(matarrayindex,3)
               endif
-            else
-              call edisp(iuout,
-     &          'One layer material ref is confused or duplicate name.')
-              goto 12
             endif
+          else
+            call edisp(iuout,
+     &        'One layer material ref is confused or duplicate name.')
+            goto 12
+          endif
           IF(IER.EQ.1)RETURN
 
           CON(ISUR,IL)=DBCON
@@ -1019,13 +1029,14 @@ C assign an appropriate U value to each air gap encountered.
               ENDIF
             endif
           ELSE
-              matarrayindex=IPRMAT(IC,IL)   ! which legacy index
-	      if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &           matopaq(matarrayindex)(1:1).eq.'h')then
-                if(NAIRG(ISUR)+1.gt.MGP)then
-                  call usrmsg(
+            matarrayindex=IPRMAT(IC,IL)   ! which legacy index
+            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &         matopaq(matarrayindex)(1:1).eq.'h')then
+              if(NAIRG(ISUR)+1.gt.MGP)then
+                call usrmsg(
      &           'As defined, this composite contains more air gaps',
      &           ' then allowed - please change your description','W')
+	 
                 else
                   NAIRG(ISUR)=NAIRG(ISUR)+1
                   IPAIRG(ISUR,NAIRG(ISUR))=IL
@@ -1034,8 +1045,11 @@ C assign an appropriate U value to each air gap encountered.
                   ELSEIF(SSVFC(icn1)(1:4).EQ.'FLOR'.OR.
      &                   SSVFC(icn1)(1:4).EQ.'CEIL')THEN
                     RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,2)
+					
                   ELSE
                     RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,3)
+					
+					
                   ENDIF
                 endif
               endif
@@ -1181,7 +1195,9 @@ C with ier=1.
 
  244  DO 10 IS=1,NZSUR(icomp)
         ioc=IZSTOCN(ICOMP,is)
-
+        if(ioc.eq.0)then
+          goto 244  ! An unknown surface in the master list. << what to do? >>
+        endif
 C Take the composite name associated with this surface and find the
 C equivalent composite db.  If composite name is UNKN then must ask
 C the user to select one.
@@ -1253,7 +1269,7 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht.
 C If g or h air gap and version 1.2 then assign DRAIR
             if(matarrayindex.eq.0)then
               continue
-	    elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
+            elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &             matopaq(matarrayindex)(1:1).eq.'h')then
               if(closemat2)then
                 DRAIR(IC,IL,1)=matgapares(matarrayindex,1)
@@ -1296,7 +1312,7 @@ C assign an appropriate U value to each air gap encountered.
             endif
           ELSE
             matarrayindex=IPRMAT(IC,IL)   ! which legacy index
-	    if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &         matopaq(matarrayindex)(1:1).eq.'h')then
               if(NAIRG(IS)+1.gt.MGP)then
                 call usrmsg(

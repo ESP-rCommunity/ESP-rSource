@@ -11,7 +11,7 @@
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\qc\pardirnatural
 
 \b \cf0 Installing Ubuntu 10.04 & 11.04 for use with ESP-r\
-14 Dec 2011\
+16 January 2012\
 Jon W. Hand, ESRU, Glasgow, Scotland
 \b0 \
 \pard\tx566\tx1133\tx1700\tx2267\tx2834\tx3401\tx3968\tx4535\tx5102\tx5669\tx6236\tx6803\ql\qnatural\pardirnatural
@@ -33,7 +33,7 @@ Have the following information available before you start:\
 \
 a) the disk space available and RAM  - Ubuntu can take as little as 5GB of disk space and will run with about 1GB of RAM. If you can give it more memory then this will increase the speed of your assessments and results recovery tasks.  10GB of disk space is a ok for general use in a virtual machine or computer with limited disk space.  Some installs will need more space e.g. for larger models, testing purposes, or to support multiple users.  If you are likely to be working with larger models or models which will generate larger results files then more RAM is recommended. \
 \
-b) the layout of the disk(s) and partition(s) on the machine - you may be wanting to dual-boot or to use a virtual drive so locate where space is available.  If you are dual booting with Windows install Linux after windows.\
+b) the layout of the disk(s) and partition(s) on the machine - you may be wanting to dual-boot or to use a virtual drive so locate where space is available.  If you are dual booting with Windows install Linux after Windows.\
 \
 c) the IP address, machine name/domain, router etc.\
 \
@@ -45,13 +45,13 @@ d) finish reading this document\
 \
 Ubuntu is available either as a live CD/DVD with the option to install or as an install direct from CD/DVD.  There are also alternative install CDs that support a text based install which sometimes works on machines with limited memory or with problematic monitors.\
 \
-The live variant will load into memory and after booting offers an 'Install' button.  After clicking on the Install button the process is identical for both.  If you have trouble with the Live or graphic mode install you should also try the alternative install CD which can be run in text mode.  If you are installing within a virtual machine and have digested the last sections this is where you will re-join the install process.\
+The live variant will load into memory and after booting offers an 'Install' button.  After clicking on the Install button the process is identical for both.  If you have trouble with the Live or graphic mode install you should also try the alternative install CD which can be run in text mode.  If you are installing within a virtual machine and have read the notes at the end this is where you will re-join the install process.\
 \
-During the install process you will need to confirm your language, location, time and keyboard. Typically Ubuntu detects most computer hardware. If there are issues with hardware you may have to go to an earlier release of Ubuntu or, if possible find a slightly older PC.  Ubuntu tends to use of the newest applications.  This has a potential drawback for developers of ESP-r.  The development community may not yet have tested the newest GCC compilers and libraries and some users may prefer to use slightly older versions for stability.\
+During the install process you will need to confirm your language, location, time and keyboard. Typically Ubuntu detects most computer hardware. If there are issues with hardware you may have to go to an earlier release of Ubuntu or, if possible find a slightly older PC.  Ubuntu tends to use of the newest applications.  This has a potential drawback - the ESP-r development community may not yet have tested the newest GCC compilers and libraries and thus we are recommending Ubuntu 11.04 rather than 11.10.\
 \
-If the machine is to be dual book and the disk has unpartitioned space then select the option 'largest contiguous free space' in the Ubuntu installer. You also have the option in recent versions of Ubuntu to use the whole disk or to manually edit the partition table. The latter is an option for experts.\
+If the machine is to be dual book and the disk has unpartitioned space then select the option 'largest contiguous free space' in the Ubuntu installer. You also have the option in recent versions of Ubuntu to use the whole disk or to manually edit the partition table. The latter is an option for experts.  \
 \
-If there is no free space Ubuntu will offer to resize the current Windows partition to free up space.  Some users might prefer to use something like PartitionMagic on the Windows side first rather than the Ubuntu tool.  It is useful to defragment the disk prior to a resize.  \
+If there is no free space Ubuntu will offer to resize the current Windows partition to free up space.  Some users might prefer to use something like PartitionMagic on the Windows side first or the free Gpartd Live CD rather than the Ubuntu tool.  It is useful to defragment the disk prior to a resize.  \
 \
 In guided partitioning a "/' partition will be created as well as a Linux swap partition.  Tip: if you have more memory to put in your machine,  do this before the install so that the swap space is appropriate.\
 \
@@ -75,7 +75,13 @@ Your next task is to setup the software sources via the system -> administration
 \b Software needed to work with ESP-r
 \b0 \
 \
-The base install of Ubuntu has much of what you need. One of the features of Ubuntu is the general ease of installing new software packages.  Lets begin with the minimal requirements to run either the X11 or GTK version of ESP-r.\
+The base install of Ubuntu has much of what you need. One of the features of Ubuntu is the general ease of installing new software packages.  The graphic package manager on Ubuntu is Synaptic (found in System -> Administration). In the search dialog type in some or all of the package name you are looking for and a list of possible choices will be displayed. If the package has dependencies it will also install these.  You can also use the command line apt-get to install packages.  For example, to install the helper tool xfig the syntax would be:\
+\
+  apt-get install xfig\
+\
+which will also list dependencies needed for the software to run.  \
+\
+Lets begin with the minimal requirements to run either the X11 or GTK version of ESP-r.\
 \
 The only required packages for running ESP-r are libgfortran and ImageMagick.  You can search for them in a package manager (Synaptic or Ubuntu Software Center or apt-get) and once it is in place you should be able to use the standard self-extracting installer for ESP-r on Linux.\
 \
@@ -89,14 +95,22 @@ ESP-r can also export its wire-frame images into the Xfig format as well as VRML
 \
 If you are going to compile ESP-r you are going to need a number of tools and if you want to develop ESP-r there are more tools and libraries that are required via one of the package managers.  The package manager will list current and available packages in various formats.  You can also search for specific packages by name  e.g. ddd (a debugger) and groff (to convert some ESP-r documents into PS files).  In the list below are packages which you will need, they may already be included in your Linux distribution or be listed under a slightly different name.\
 \
+Again, use either the Synaptic package manager in Ubuntu or occasionally in the newest Ubuntu the 'Ubuntu One' package manager or apt-get to install the packages listed below.  An example might be:\
+  sudo apt-get install build-essential\
+  sudo apt-get install console-tools-dev\
+  sudo apt-get install expect-dev\
+  . . .\
+\
+Apt-get or the other package managers will tell you what dependencies are being installed in addition to the package that you requested.  In some cases the package manager will tell you that the current version of a package is already installed on your machine.\
+\
 As the ESP-r community considers the GCC 4.3 compiler as the reference compiler you should consider which version of the GCC compilers to work with.  It is possible to have multiple compilers as long as you specify which compiler version to use in the Install command line (e.g. --compiler_version -4.3) but some users prefer stick with a single compiler suite.\
 \
-Development:  build-essential, console-tools-dev, expect-dev, g++, gcc, gfortran, gdb,gettext, libtool, linux-headers, linux-source, subversion, subversion-tools, valgrind, libxml2, libxml2-dev, libxml2-utils libxslt\
+Development:  build-essential, console-tools-dev, expect-dev, g++, gcc, gfortran, gdb,gettext, libtool, linux-headers, linux-source, subversion, subversion-tools, valgrind, libxml2, libxml2-dev, libxml2-utils libxslt1-dev libxslt1-dbg\
 \
 Gnome desktop: dia-gnome (a useful helper application)\
 \
 Graphics, netpbm (convert between graphics formats) imagemagick (screen grab & display) \
-   gimp gimp-data gim-debug (optional)\
+   gimp gimp-data\
 \
 Libraries: libx11-6-dbg, libx11-dev, \
 \
@@ -109,7 +123,7 @@ Shells: csh\
 \
 Word processing: enscript, psutils nedit nedit-dbg\
 \
-For GTK development selecting the libgtk+2 or libgtk+3 package will identify most of the dependencies you are likely to need. To assist with debugging also ask for the -dbg versions of the libraries such as:\
+For GTK development selecting the libgtk2.0-dev package will identify most of the dependencies you are likely to need. To assist with debugging also ask for the -dbg versions of the libraries such as:\
 libfontconfig1-dbg, libcairo2-dbg, libpixman-1-0-dbg, libxslt1-dbg, libgtk2.0-0-dbg\
 \
 Note that Ubuntu if you upgrade from 10.04 to 10.10 or 11.04 the fonts required by ESP-r will tend to be\
@@ -181,7 +195,7 @@ ls -l /usr/bin/g++*\
 mkdir Src\
 mkdir Src/cvsdude\
 cd Src/cvsdude\
-svn checkout https://esp-r.net/espr/esp-r/branches/development_branch\
+svn checkout https://espr.svn.cvsdude.com/esp-r/branches/development_branch\
 cd development_branch/src\
 ./Install -d /usr/esru --gcc4 --reuse_ish_calcs
 \b0 \
@@ -194,7 +208,7 @@ Lets say you have your own source code branch.  The process is similar:\
 cd\
 mkdir esru_my_branch\
 cd Src/cvsdude\
-svn checkout https://esp-r.net/espr/esp-r/branches/my_branch\
+svn checkout https://espr.svn.cvsdude.com/esp-r/branches/my_branch\
 cd my_branch/src\
 ./Install -d /home/my_login_name/esru_my_branch --gcc4 --reuse_ish_calcs
 \b0 \

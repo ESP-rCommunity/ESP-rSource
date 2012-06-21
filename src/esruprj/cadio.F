@@ -1615,6 +1615,7 @@ C Can user write at the curdir folder?
         call ckaccess(ifold,iaccess,icerr,curdir)
         if(iaccess.eq.1)then
           call isunix(unixok)
+          if(unixok)write(6,*) 'iaccess is ',iaccess,icerr,ifold,curdir
           if(unixok)write(6,*) 'cannot write at',curdir(1:lcd)
         endif
 

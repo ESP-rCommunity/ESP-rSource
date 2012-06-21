@@ -477,10 +477,24 @@
       CALL EASKABCD('A scene is created for a specific day and time.',
 *subroutine genimage
 *item genimage single_time_or_sequence
-'Rendering can only be for one instant in time or'
-'at intervals during a period of a day.  You can '
-'adjust the parameters needed to create a set of'
-'images which can be combined to form an amimation.'
+'Rendering can be for one instant in time or at intervals'
+'e.g. every 10 or 15 or 20 minutes during a period of a day.'
+'You can adjust the parameters needed to create a set of'
+'images (gif) which can be combined to form an amimation.'
+' '
+'If you specify a period from 8h00 to 9h00 at a 20 minute'
+'interval on the 69th day of the year there will be four files'
+'created (.hdr) and converted to gif files via the Radiance'
+'utility ra_gif.  You can then use a tool such as gimp or'
+'gifsicle to combine the separate gif files into an animation.'
+' '
+'For example: '
+'  gifsicle -l1 -d100 69*.gif >animation.gif'
+'will take all of the gif files that start with 69 and com-'
+'bine them into a file animation.gif with a 100ms delay between'
+'frames. This can be viewed in a web browser or via a utility'
+'named animate (part of the Imagemagick tool set).'
+
 *enditem
         CALL EASKAB(' ',' Image(s):','single time instance',
 *item genimage render_to_screen_or_file

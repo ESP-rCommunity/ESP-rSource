@@ -29,7 +29,7 @@ Databases associated with the model:
  materials              : /usr/esru/esp-r/databases/material.db3.a
  constructions          : ../dbs/office_operations_constr.db2
  plant components       : /usr/esru/esp-r/databases/plantc.db1
- event profiles         : /usr/esru/esp-r/databases/profiles.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
  optical properties     : /usr/esru/esp-r/databases/optics.db2
  
  ____________________________________________________________

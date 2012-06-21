@@ -32,7 +32,7 @@ C to the file and the section of the help text blocks.
 C parameters for browsing files (e.g. as used in esrucom/filelist.F)
 C MFFOLD - (integer) number of files remembered in a folder. Changes
 C to this parameter should also be reflected in the size of the
-C buffers and loop limits in lib/esru_util.c function getfilelist_.
+C buffers and loop limits in lib/esru_util.c function getfileslist_.
       integer MFFOLD
       parameter (MFFOLD=400)
 

@@ -19,8 +19,8 @@ C Type declarations.
       integer MCFC,MILDB,MNSCN
 
 C Geometry.
-      PARAMETER (MCOM=82)	!- Zones.
-      PARAMETER (MS=80)		!- Surfaces/zone (set MNSBZ in cfd.h to at least 2*MS).
+      PARAMETER (MCOM=62)	!- Zones.
+      PARAMETER (MS=60)		!- Surfaces/zone (set MNSBZ in cfd.h to at least 2*MS).
       PARAMETER (MCON=2300)	!- Surfaces in model.
       PARAMETER (MTV=300)	!- Vertices/zone.
       PARAMETER (MV=42)		!- Vertices/surface.

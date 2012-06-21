@@ -1297,14 +1297,13 @@ C Create a matching ascii version of the generic db.
               endif
             elseif(idp.eq.11)then
 
-C Convert binary events profiles database into the ASCII version
-C filling the common blocks. 
+C Scan events profiles database into common blocks. 
               write(LPRFDB,'(a)') gendbfn(idp)
               IPRODB=IFIL+2
-              CALL TROPRO(IAFIL,afil,IER)
+              call TRIPROCOM(IPRODB,afil,IER)
               if(ier.eq.0)then
                 lenf=lnblnk(afil)
-                write(outs,*) 'Legacy asci profiles ',afil(1:lenf),
+                write(outs,*) 'Legacy event profiles ',afil(1:lenf),
      &            ' created...'
                 call edisp(iuout,outs)
                 call IMPROFL(IAFIL,afil,IBFIL,LBGENDB,idp,IER)
@@ -1565,7 +1564,7 @@ C Event profiles.
 C << move to using common blocks version of events >>
             write(LPRFDB,'(a)') gendbfn(idp)
             IPRODB=IFIL+2
-            CALL TROPRO(IAFIL,afil,IER)
+            call TRIPROCOM(IPRODB,afil,IER)
             if(ier.eq.0)then
               lenf=lnblnk(afil)
               write(outs,*) 'Legacy asci profiles ',afil(1:lenf),
@@ -2294,7 +2293,7 @@ C Event profiles database.
 C << need to move to common block version of data >>
             write(LPRFDB,'(a)')  gendbfn(idbhash)
             IPRODB=IFIL+2
-            CALL TROPRO(IAFIL,afil,IER)
+            call TRIPROCOM(IPRODB,afil,IER)
             if(ier.eq.0)then
               lenf=lnblnk(afil)
               write(outs,*) 'Legacy asci profiles ',afil(1:lenf),

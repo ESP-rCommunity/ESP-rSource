@@ -135,10 +135,12 @@ C into binary, and set default terminal type as necessary
             call parpsfh(appn)
             stop
           elseif(argument(1:8) .eq. '-version' ) then
+
 C Display version information and then quit
             CALL ESPrVersion("summary",cAppName,IUOUT)
             stop
           elseif( argument(1:10) .eq. '-buildinfo' ) then
+
 C Display detailed build information and then quit
             CALL ESPrVersion("details",cAppName,IUOUT)
             stop
@@ -188,8 +190,9 @@ C Display detailed build information and then quit
             end if
           ! It is important to check for -actf before checking for -act.
           elseif(argument(1:5).eq.'-actf')then
-            if ((module.eq.CONST_PARSFACT).or.(module.eq.CONST_PARRES)
-     &           .or.(module.eq.CONST_PARSIM)) then
+            if ((module.eq.CONST_PARSFACT).or.
+     &          (module.eq.CONST_PARRES).or.
+     &          (module.eq.CONST_PARSIM)) then
               i=i+1
               call getarg(i,actf)
             end if
@@ -198,6 +201,12 @@ C Display detailed build information and then quit
      &          (module.eq.CONST_PARSFACT)) then
               i=i+1
               call getarg(i,act)
+
+C If act is asci2bin or bin2asci read ascii file name
+              if(act(1:8).eq.'asci2bin'.or.act(1:8).eq.'bin2asci')then
+                i=i+1
+                call getarg(i,actf)
+              end if
             else if (module.eq.CONST_PARSE2R) then
               i=i+1
               call getarg(i,act)
@@ -288,68 +297,70 @@ C Assume argument is an input file without the -file token.
 
 
 C Only give feedback if non-DOS.
-        call isunix(unixok)
-        if(unixok)then
-          if  (module.eq.CONST_PARTFA) then
-            write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
+      call isunix(unixok)
+      if(unixok)then
+        if  (module.eq.CONST_PARTFA) then
+          write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
      &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &      inf(1:lnblnk(inf)),' with action ',act(1:lnblnk(act))
-          else if (module.eq.CONST_PARSFZ) then
-            write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
+        else if (module.eq.CONST_PARSFZ) then
+          write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
      &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &      inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
-          else if (module.eq.CONST_PARSFACT) then
-            write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
+        else if (module.eq.CONST_PARSFACT) then
+          write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
      &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &      inf(1:lnblnk(inf)),' with action ',act(1:lnblnk(act)),
      &      ' applied to ',actf(1:lnblnk(actf))
-          else if (module.eq.CONST_PARRES) then
-            outs=' '
-            write(outs,'(11a)') 'Starting ',appn(1:lnblnk(appn)),
-     &        ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &        inf(1:lnblnk(inf)),' and action ',act(1:lnblnk(act)),
+        else if (module.eq.CONST_PARRES) then
+          outs=' '
+          write(outs,'(11a)') 'Starting ',appn(1:lnblnk(appn)),
+     &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &      inf(1:lnblnk(inf)),' and action ',act(1:lnblnk(act)),
      &       ' in ',aut,' mode.'
-          else if (module.eq.CONST_PARSISH) then
-            write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
+        else if (module.eq.CONST_PARSISH) then
+          write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
      &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &      inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
      &      ,' with action ',act(1:lnblnk(act))
-          else if (module.eq.CONST_PARCLM) then
-            outs=' '
-            write(outs,'(5a)') 'and action ',act(1:lnblnk(act)),
-     &       ' in ',aut,' mode.'
-            write(outs,'(2a)') 'using/making file ',
-     &        ascif(1:lnblnk(ascif))
-          else if (module.eq.CONST_PARSE2R) then
-            write(outs,'(12a)') 'Starting ',appn(1:lnblnk(appn)),
+        else if (module.eq.CONST_PARCLM) then
+          outs=' '
+          write(outs,'(6a)') 'and action ',act(1:lnblnk(act)),
+     &      ' in ',aut,' mode using/making file ',
+     &      ascif(1:lnblnk(ascif))
+        else if (module.eq.CONST_PARSE2R) then
+          write(outs,'(12a)') 'Starting ',appn(1:lnblnk(appn)),
      &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &      inf(1:lnblnk(inf)),' for focus zone ',zone(1:lnblnk(zone)),
      &      ' with scene purpose ',aim(1:lnblnk(aim)),
      &      ' with action ',act(1:lnblnk(act))
-          else if (module.eq.CONST_PARSIM) then
+        else if (module.eq.CONST_PARSIM) then
+          outs=' '
+          if ( iVerb == 2 ) then
+            write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
+     &        ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &        inf(1:lnblnk(inf))
+            if(unixok)call edisp248(iuout,outs,90)
             outs=' '
-            if ( iVerb == 2 ) then
-              write(outs,'(6a)') 'Starting ',appn(1:lnblnk(appn)),
-     &          ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &          inf(1:lnblnk(inf))
-              if(unixok)call edisp(iuout,outs)
-              outs=' '
-              write(outs,'(7a)') 'and parameters ',sps(1:lnblnk(sps)),
-     &         ' in ',aut,' mode and ',browse,' browsing.'
-              if(unixok)call edisp(iuout,outs)
-          else if (module.eq.CONST_PARSPRJ) then
-            write(outs,'(11a,3f6.1)') 'Starting ',appn(1:lnblnk(appn)),
+            write(outs,'(7a)') 'and parameters ',sps(1:lnblnk(sps)),
+     &        ' in ',aut,' mode and ',browse,' browsing.'
+            if(unixok)call edisp248(iuout,outs,90)
+          endif
+        else if (module.eq.CONST_PARSPRJ) then
+          write(outs,'(11a,3f6.1)') 'Starting ',appn(1:lnblnk(appn)),
      &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &      inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
      &      ,' with action ',act(1:lnblnk(act)),' and data ',data1,
      &      data2,data3
-          else
-           write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
-     &     ' in mode ',mode(1:lnblnk(mode)),' with file ',
+        else
+          write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
+     &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &      inf(1:lnblnk(inf))
 C         call edisp248(iuout,outs,90)
-          end if
         end if
+
+C Uncomment this line to see feedback.
+C       call edisp248(iuout,outs,90)
         return
       endif
 
@@ -1415,10 +1426,12 @@ C << make a pass sorting out these default file names >>
         write(DAFRES,'(2a)') di(1:min(ln,51)),'/databases/test.mfr'
         write(DCLIM,'(2a)') di(1:min(ln,51)),'/climate/clm67'
         write(DAPRES,'(2a)') di(1:min(ln,51)),'/databases/pressc.db1'
-        write(DFCON,'(2a)') di(1:min(ln,51)),'/databases/constr.db2'
-        write(DFMUL,'(2a)') di(1:min(ln,51)),'/databases/multicon.db2'
+        write(DFCON,'(2a)') di(1:min(ln,51)),
+     &    '/databases/material.db3.a'
+        write(DFMUL,'(2a)') di(1:min(ln,51)),'/databases/multicon.db3'
         write(DOPTDB,'(2a)') di(1:min(ln,51)),'/databases/optics.db2'
-        write(DPRFDB,'(2a)') di(1:min(ln,51)),'/databases/profiles.db1'
+        write(DPRFDB,'(2a)') di(1:min(ln,51)),
+     &    '/databases/profiles.db1.a'
         write(DPCDB,'(2a)') di(1:min(ln,51)),'/databases/plantc.db1'
         write(DECMPDBFL,'(2a)') di(1:min(ln,51)),'/databases/elcomp.db1'
         write(DMCMPDBFL,'(2a)') di(1:min(ln,51)),'/databases/mscomp.db1'
@@ -1444,10 +1457,12 @@ C        dinstpath = 'c:/esru/esp-r'
         write(DAFRES,'(2a)') di(1:min(ln,51)),'/databases/test.mfr'
         write(DCLIM,'(2a)') di(1:min(ln,51)),'/climate/clm67'
         write(DAPRES,'(2a)') di(1:min(ln,51)),'/databases/pressc.db1'
-        write(DFCON,'(2a)') di(1:min(ln,51)),'/databases/constr.db2'
-        write(DFMUL,'(2a)') di(1:min(ln,51)),'/databases/multicon.db2'
+        write(DFCON,'(2a)') di(1:min(ln,51)),
+     &    '/databases/material.db3.a'
+        write(DFMUL,'(2a)') di(1:min(ln,51)),'/databases/multicon.db3'
         write(DOPTDB,'(2a)') di(1:min(ln,51)),'/databases/optics.db2'
-        write(DPRFDB,'(2a)') di(1:min(ln,51)),'/databases/profiles.db1'
+        write(DPRFDB,'(2a)') di(1:min(ln,51)),
+     &    '/databases/profiles.db1.a'
         write(DPCDB,'(2a)') di(1:min(ln,51)),'/databases/plantc.db1'
         write(DECMPDBFL,'(2a)') di(1:min(ln,51)),'/databases/elcomp.db1'
         write(DMCMPDBFL,'(2a)') di(1:min(ln,51)),'/databases/mscomp.db1'
@@ -1743,7 +1758,11 @@ C parpsfh: Help message for several of the command line parsers.
       elseif(appn(1:3).eq.'pdb')then
         call edisp(iuout,'The plant components database manager. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
-        call edisp(iuout,'       [-file <plant db>]')
+        call edisp(iuout,'       [-file <plant template file>]')
+        call edisp(iuout,'   [-act <action> <file>]')
+        call edisp(iuout,'  (where action {asci2bin|bin2asci})')
+        call edisp(iuout,'  (where file is asci input or output file)')
+        call edisp(iuout,'   [-s < width, offset left & top>]')
       elseif(appn(1:3).eq.'pdf')then
         call edisp(iuout,'The plant network definitions. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')

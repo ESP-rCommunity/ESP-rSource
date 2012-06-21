@@ -3727,8 +3727,7 @@ C << revise for more loads >>
       IPPFT=0
       IPPF=0
 
-C Scan the event profiles database. If an error state is
-C returned then it might be an ASCII file, try and scan that.
+C Scan the event profiles file into common blocks.
       lndbp=lnblnk(standarddbpath)
       if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
         lltmp=LPRFDB  ! use as is
@@ -3736,22 +3735,15 @@ C returned then it might be an ASCII file, try and scan that.
         write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
      &    LPRFDB(1:lnblnk(LPRFDB))  ! prepend db folder path
       endif
-      call TRIPROBIN(IPRODB,lltmp,IER)
+      ier=0   ! reset prior to call to triprocom
+      CALL ERPFREE(IPRODB,ISTAT)
+      call TRIPROCOM(IPRODB,lltmp,IER)
       if(ier.ne.0)then
-        CALL ERPFREE(IPRODB,ISTAT)
-        CALL USRMSG(' opened profiles db...',' ','-')
-        ier=0   ! reset prior to call to triprocom
-        call TRIPROCOM(IPRODB,lltmp,IER)
-        if(ier.ne.0)then
-          call usrmsg('Error opening the db. Please use one',
-     &                'of the other options.','W')
-          return
-        else
-          CALL ERPFREE(IPRODB,ISTAT)
-          CALL USRMSG(' opened profiles db...ok',' ','-')
-        endif
+        call usrmsg('Error opening the db. Please use one',
+     &              'of the other options.','W')
+        return
       else
-        CALL USRMSG(' opened profiles db...ok',' ','-')
+        CALL ERPFREE(IPRODB,ISTAT)
       endif
       
 C Copy the string list of event profiles to local string variable.

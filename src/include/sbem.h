@@ -22,7 +22,7 @@ C one each for the last two
       PARAMETER (MWS=6)     ! max. fuel types for DHW generators
       
 C WARNING: MNS should be at least as big as MCOM in building.h.
-      PARAMETER (MNS=72)    ! max. HVAC and DHW systems allowed in model
+      PARAMETER (MNS=82)    ! max. HVAC and DHW systems allowed in model
                             ! max. activities allowed in the model
                             ! This is kept equal to max zones normally allowed
       PARAMETER (MAC=65)    ! max. activity types 

@@ -3280,16 +3280,15 @@ C Defaults.
       logical MODIFY,MODLEN,MODBND,browse
       logical confirm,ckpath,itisanexemplar
       logical unixok,prob
-#ifdef OSI
-      integer nwlistf
-      dimension nwlistf(MFFOLD)
-#else
-      integer*8 nwlistf
-      dimension nwlistf(MFFOLD)
-#endif
+      
+      integer nboflistf  ! how many folders or file names passed
+      integer listfoldertype   ! zero if unused one if folder two if file
+      integer lenlistfolder    ! width of each string
+      character*72 listfolder  ! array of folder or file names
+      common/listfold/nboflistf,listfoldertype(MFFOLD),
+     &                lenlistfolder(MFFOLD),listfolder(MFFOLD)
 
       dimension ivlist(MFFOLD)
-      character*72 listf(MFFOLD),listfc(MFFOLD)
       character*70 listfc70(MFFOLD)
       character*32 WORDS(12)
 
@@ -3424,7 +3423,6 @@ C and so we treat that model as if browsing.
             call edisp(iuout,'Folder permission prevents modificaton!')
           else
             browse=.false.
-C            call edisp(iuout,'User can modify this model.')
           endif
 
           iglib = igraphiclib()  ! find out if GTK.
@@ -3482,7 +3480,6 @@ C          write(6,*) 'b iaccess is ',iaccess,icerr,ifold,path
             call edisp(iuout,'Folder permission prevents modificaton.')
           else
             browse=.false.
-C            call edisp(iuout,'User can modify this model.')
           endif
         endif
       endif
@@ -3515,6 +3512,8 @@ C configuration files.
         write(t144,'(3a)')LCMDFL(1:lnblnk(LCMDFL)),fs,'cfg'
         ifold=-1
         call ckaccess(ifold,iaccess,icerr,t144)
+C Debug.
+C        write(6,*) 'd iaccess is ',iaccess,icerr,ifold,t144
         if(ifold.eq.1.and.icerr.eq.0)then
           lex=MIN0(lnblnk(LCMDFL),24)
           write(cfgroot,'(a)',IOSTAT=ios,ERR=13) LCMDFL(1:lex)
@@ -3559,37 +3558,40 @@ C works. If path begins C:/ or D:/ or E:/ or F:/ no need to prepend odir.
 #endif
           write(outs,*,IOSTAT=ios,ERR=16) 'models in folder ',subpath
           call edisp(iuout,outs)
-          call clearfilelist(listf,MFFOLD)
 
-C Re-establish action and file separator prior to call to getfilelist.
+C Re-establish action and file separator prior to call to getfileslist.
           action='cfg'
           if(unixok)then
             fs = char(47)
           else
             fs = char(92)
           endif
-          call getfilelist(subpath,action,listf,nwlistf,nlistf)
-          call copyfilelist(listf,nwlistf,listfc,MFFOLD,maxw)
-          call printfilelist(outs,'p',listfc,MFFOLD,nlistf)
+          call getfileslist(subpath,action,nlistf)
+          call printfileslist(outs,'p')
 
 C Try to use information gathered from file scan.
           if(nlistf.gt.0)then
             ix=1
             do 76 ij=1,nlistf
               listfc70(ij)=' '
-              lex=MIN0(nwlistf(ij),70)  ! trap file names longer than 70
-              write(listfc70(ij),'(a)',IOSTAT=ios,ERR=13) 
-     &          listfc(ij)(1:lex)
+              lex=lenlistfolder(ij)
+              if(lex.gt.70) lex=70
+              if(lex.le.1)then
+                write(listfc70(ij),'(a)') '  '
+              else
+                write(listfc70(ij),'(a)') listfolder(ij)(1:lex)
+              endif
+              if(lex.gt.maxw) maxw=lex  ! ensure widest string can be displayed
   76        continue
             if(maxw.gt.70) maxw=70  ! ensure list fits
             CALL EPICKS(IX,ivlist,outs,' ',
-     &        maxw,nlistf,listfc70,'Available files',IER,nbhelp)
+     &        maxw,nboflistf,listfc70,'Available files',IER,nbhelp)
             if(ix.eq.1)then
               write(t144,'(3a)',IOSTAT=ios,ERR=17)
      &          LCMDFL(1:lnblnk(LCMDFL)),fs,'cfg'
               write(sfile,'(3a)',IOSTAT=ios,ERR=17) 
      &          t144(1:lnblnk(t144)),fs,
-     &          listfc(ivlist(ix))(1:nwlistf(ivlist(ix)))
+     &          listfolder(ivlist(ix))(1:lenlistfolder(ivlist(ix)))
 
 C Debug.
 C              write(6,*) 'sfile is ',sfile

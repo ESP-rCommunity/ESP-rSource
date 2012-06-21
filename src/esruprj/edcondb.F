@@ -1349,6 +1349,8 @@ C id string.
 
       SUBROUTINE EDMLDB(ITRC,chgdb,IER,ISEL)
 #include "building.h"
+#include "model.h"
+#include "geometry.h"
 #include "epara.h"
 #include "esprdbfile.h"
 #include "material.h"
@@ -1359,6 +1361,12 @@ C MPN is max number of tranparent glazings per multilayer construction
 C If this parameter is changed also change it in subroutine GVALUE
       PARAMETER (MPN=3)
       COMMON/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
+      
+      integer ncomp,ncon
+      common/C1/NCOMP,NCON
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
       
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
@@ -1383,6 +1391,7 @@ C If this parameter is changed also change it in subroutine GVALUE
       REAL TRNT(MPN),REF(MPN),OREF(MPN),OEMS(MPN)
       integer IW   ! for radio button
       integer NITMS,INO ! max items and current menu item
+      integer icn1,ii  ! for current connection
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -1628,6 +1637,31 @@ C Compact the list by moving all the items in common MLC up one.
           ILEN=NMLC
           IPACT=CREATE
           CALL EKPAGE(IPACT)
+
+C At this point update the construction file and then if there are
+C zones in the model update the pointers to ssmlcindex.
+          CALL EMKAMLD(iuout,IER)
+          chgdb=.true.
+          moddb=.false.
+
+C Scan for matching MLC for surfaces.
+          if(NCOMP.gt.0)then
+            do 30 ICOMP=1,NCOMP
+              call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,iuout,ier)
+
+C Find the index of the MLC which matches each surface.
+              DO 9994 I=1,NZSUR(icomp)
+                icn1=izstocn(icomp,i)
+                ssmlcindex(icn1)=0  ! assume no matching MLC          
+                do 5 ii=1,nmlc
+                  if(SSMLCN(icn1)(1:12).eq.DESC(ii)(1:12)) then
+                    ssmlcindex(icn1)=ii   ! remember MLC index     
+                  endif
+  5             continue
+ 9994         continue
+ 30         continue
+          endif
+
         ELSEIF(IW.EQ.3)THEN
 
 C Copy an existing construction to a new one at end of list.

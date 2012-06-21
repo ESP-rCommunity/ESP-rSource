@@ -82,18 +82,15 @@ C Passed in parameters.
       character action*8,root*24,mpath*72,menu*72
       character fs*1           ! file separator
       character weather*32     ! file name for the location (no path)
-      character weathergr*36   ! file name for weather related ground temps (no path)
-      character groundfile*72  ! file name for weather related gorund temps (with path)
       character subpath*72
       character simact*6 ! action for creating assessments.
 
       character outs*124,OUTSTR*124
       logical unixok,XST,ok
       logical haveground ! set true if ground temp file has been found
-      integer lnw   ! length of weather string.
-      integer lnwg   ! length of weather ground string.
-      integer igrfile ! unit number of ground file
       character inpxmlfl*144 !to write out the input.xml file
+      character llclmdb*144
+      integer llt,lndbp
 
       IER=0
 
@@ -117,9 +114,11 @@ C Debug
         write(6,*)  'menu ',modeltitle
         write(6,*)  'mpath ',mpath
         write(6,*)  'weather ',weather
+        write(6,*)  'clm ',lclim
         write(6,*)  'assessments ',simact
       endif
 
+      call edisp(iuout,'  ')
       if(action(1:3).eq.'new')then
         write(menu,'(a)') modeltitle(1:lnblnk(modeltitle))
         call pregist('sn',root,mpath,menu,ier)
@@ -133,7 +132,7 @@ C Assume the model folders exist when calling pregist.
 C If there is a line with the root name of a climate file look
 C for a match in the current climate location and if there is
 C one set the name of that file, scan it and find its site. If
-C there is no weather file then at least set the default seasons.
+C there is no weather file then set the default seasons.
       if(weather(1:4).eq.'none')then
 
 C Set default early winter, spring, summer, autumn, late winter periods.
@@ -161,119 +160,76 @@ C Default season definitions.
         CALL EDAY(31,8,is1sumf)
       else
 
-C First check if the climate file exists in the subpath. Also
-C make up a variant of the weather file name in case there
-C might be a small 12 item file for ground temperatures which
-C has a matching name.gnd.
+C Assume that weather is in the standard location, expand the file
+C name and check if it exists via the usual pattern. If not
+C check if the climate file exists via findwhichdbpath.
         if(ICLIM.eq.0)then
           ICLIM=IFIL
         endif
-        igrfile=IFIL+2  ! hopefully not used
-        lnw=lnblnk(weather)
-	write(weathergr,'(2a)') weather(1:lnw),'.gnd'
-        lnwg=lnblnk(weathergr)
-
-C << todo take into account location >>
-        write(subpath,'(4a)')
-     &    dinstpath(1:lnblnk(dinstpath)),fs,'climate',fs
-        write(LCLIM,'(2a)') subpath(1:lnblnk(subpath)),
-     &    weather(1:lnw)
-        write(groundfile,'(2a)') subpath(1:lnblnk(subpath)),
-     &    weathergr(1:lnwg)
-        write(currentfile,'(a)') LCLIM(1:lnblnk(LCLIM))
-        CALL ERPFREE(ICLIM,ISTAT)
-        CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
+        llt=lnblnk(weather)
+        lndbp=lnblnk(standardclmpath)
+        write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &      weather(1:llt)
+        call EFOPRAN(ICLIM,llclmdb,144,0,ISTAT)
         if(ISTAT.ge.0)then
-          CALL ERPFREE(ICLIM,ISTAT)
 
-C Also check to see if a ground temperature file exists
-          write(currentfile,'(a)') groundfile(1:lnblnk(groundfile))
-          call FPOPEN(igrfile,ISTAT,1,0,groundfile)
-          if(ISTAT.ge.0)then
-            haveground=.true.
-            CALL ERPFREE(igrfile,ISTAT)
-          endif
-          goto 75
+C Read site and year.
+          IREC=366
+          READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)ICYEAR,ICDNGH
+          IREC=368
+          READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG
+          CALL ERPFREE(ICLIM,ISTAT)
+          ipathclim=2
+          write(LCLIM,'(a)') weather(1:llt) ! set LCLIM
         else
 
-C Also look in the folder where the model is being created.
-          write(LCLIM,'(3a)') mpath(1:lnblnk(mpath)),fs,
-     &      weather(1:lnw)
-          write(currentfile,'(a)') LCLIM(1:lnblnk(LCLIM))
-          write(groundfile,'(3a)') mpath(1:lnblnk(mpath)),fs,
-     &      weathergr(1:lnwg)
-
-C << todo take into account location >>
-
+C Use findwhichdbpath and then expand weather file path for checking.
+          call findwhichdbpath('clm',weather,ier)
+          llt=lnblnk(LCLIM)
+          lndbp=lnblnk(standardclmpath)
+          if(ipathclim.eq.0.or.ipathclim.eq.1)then
+            llclmdb=LCLIM
+          elseif(ipathclim.eq.2)then
+            write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &        LCLIM(1:lnblnk(LCLIM))
+          endif
           CALL ERPFREE(ICLIM,ISTAT)
-          CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
+          call EFOPRAN(ICLIM,llclmdb,144,0,ISTAT)
+          write(currentfile,'(a)') llclmdb(1:lnblnk(llclmdb))
           if(ISTAT.ge.0)then
-            CALL ERPFREE(ICLIM,ISTAT)
 
-C Also check to see if a ground temperature file exists
-            write(currentfile,'(a)') groundfile(1:lnblnk(groundfile))
-            call FPOPEN(igrfile,ISTAT,1,0,groundfile)
-            if(ISTAT.ge.0)then
-              haveground=.true.
-              CALL ERPFREE(igrfile,ISTAT)
-            endif
-            goto 75
+C Read site and year.
+            IREC=366
+            READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)ICYEAR,ICDNGH
+            IREC=368
+            READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG
+            CALL ERPFREE(ICLIM,ISTAT)
           else
 
-C Also look in the model dbs folder.
-            write(LCLIM,'(5a)') mpath(1:lnblnk(mpath)),fs,
-     &        dbspth(1:lnblnk(dbspth)),fs,weather(1:lnw)
-            write(currentfile,'(a)') LCLIM(1:lnblnk(LCLIM))
-            write(groundfile,'(5a)') mpath(1:lnblnk(mpath)),fs,
-     &        dbspth(1:lnblnk(dbspth)),fs,weathergr(1:lnwg)
-
+C Not found, use the default weather file as a backstop.
+            write(currentfile,'(a)') DCLIM(1:lnblnk(DCLIM))
             CALL ERPFREE(ICLIM,ISTAT)
-            CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
+            CALL FPRAND(ICLIM,ISTAT,144,0,DCLIM)
             if(ISTAT.ge.0)then
+              IREC=366
+              READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)ICYEAR,ICDNGH
+              IREC=368
+              READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG
               CALL ERPFREE(ICLIM,ISTAT)
-
-C Also check to see if a ground temperature file exists
-              write(currentfile,'(a)') groundfile(1:lnblnk(groundfile))
-              call FPOPEN(igrfile,ISTAT,1,0,groundfile)
-              if(ISTAT.ge.0)then
-                haveground=.true.
-                CALL ERPFREE(igrfile,ISTAT)
-              endif
-              goto 75
-            else
-              write(currentfile,'(a)') DCLIM(1:lnblnk(DCLIM))
-              CALL ERPFREE(ICLIM,ISTAT)
-              CALL FPRAND(ICLIM,ISTAT,144,0,DCLIM)
-              if(ISTAT.ge.0)then
-                CALL ERPFREE(ICLIM,ISTAT)
-                LCLIM=DCLIM
-                goto 75
-              else
-
-C Fell through, no change in climate and location.
-                call edisp(iuout,'No climate data located.')
-                goto 74
-              endif
+              LCLIM=DCLIM
+              ipathclim=2  ! assume default weather is in standard folder
             endif
           endif
         endif
 
 C Impose climate site data on the model.
 C << but we might want to use what was already in the META file >>
-  75    continue
-        CALL ERPFREE(ICLIM,ISTAT)
-        CALL FPRAND(ICLIM,ISTAT,144,1,LCLIM)
-        IREC=366
-        READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)ICYEAR,ICDNGH
-        IREC=368
-        READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG
-        CALL ERPFREE(ICLIM,ISTAT)
         sitelat=CLAT
         sitelongdif=CLONG
         IYEAR=ICYEAR
-        write(outs,'(A,F7.3,A,F7.3,a,i4,i5,a,2F7.3,a)')
-     &    'The climate lat is ',clat,' & long diff is ',
-     &    clong,' & Year DN flag ',IYEAR,ICDNGH,
+        write(outs,'(A,F6.1,A,F5.1,a,i4,a,2F7.3,a)')
+     &    'The weather lat is ',clat,' long diff is ',
+     &    clong,' Year is ',IYEAR,
      &    '. Previously used ',sitelat,sitelongdif,'.'
         call edisp(iuout,outs)
 
@@ -286,7 +242,7 @@ C list. If not instanciate season and typical start and end dates.
           INQUIRE (FILE=cdblfil,EXIST=XST)
           if(XST)then
             IUF=IFIL+2
-            call scancdblist(IUF,LCLIM,ok,ier)
+            call scancdblist(IUF,llclmdb,ok,ier)
             if(ok)then
               continue
             else
@@ -363,43 +319,21 @@ C << later include calendar and day types within the META file >>
         do 542 ijd=1,365
 
 C For julian day ijd find month and day of month and day of week.
-          call edayr(ijd,idayn,imthn)
-          call eweekd(idayn,imthn,iyear,idwk)
-          if(idwk.ge.1.and.idwk.le.5)then
-            icalender(ijd)=1
-            nbcaldays(1)=nbcaldays(1)+1
-          elseif(idwk.eq.6)then
-            icalender(ijd)=2
-            nbcaldays(2)=nbcaldays(2)+1
-          elseif(idwk.eq.7)then
-            icalender(ijd)=3
-            nbcaldays(3)=nbcaldays(3)+1
-          endif
-  542   continue                    	
-  
-C If there is ground temperature information scan that file and
-C put the data in UGRDTP.
-        if(haveground)then
-          write(currentfile,'(a)') groundfile(1:lnblnk(groundfile))
-          call FPOPEN(igrfile,ISTAT,1,0,groundfile)
-          NGRDP=1
-          CALL STRIPC(igrfile,OUTSTR,0,ND,1,'ground data',IER)
-
-          DO 29 J=1,12
-            CALL EGETWR(OUTSTR,K,valy,0.,0.,'-','ground temp',IER)
-            UGRDTP(J,NGRDP)=valy
-   29     CONTINUE
-
-C Debug.
-          CALL EDISP(iuout,' From file Ground temp profile Jan-Dec:')
-          WRITE(OUTS,'(12F6.1)')(UGRDTP(J,1),J=1,12)
-          CALL EDISP(iuout,OUTS)
-
-          CALL ERPFREE(igrfile,ISTAT)
-        else
-          NGRDP=0    ! no user defined ground temperature profiles.
+        call edayr(ijd,idayn,imthn)
+        call eweekd(idayn,imthn,iyear,idwk)
+        if(idwk.ge.1.and.idwk.le.5)then
+          icalender(ijd)=1
+          nbcaldays(1)=nbcaldays(1)+1
+        elseif(idwk.eq.6)then
+          icalender(ijd)=2
+          nbcaldays(2)=nbcaldays(2)+1
+        elseif(idwk.eq.7)then
+          icalender(ijd)=3
+          nbcaldays(3)=nbcaldays(3)+1
         endif
-        CALL EMKCFG('-',IER)
+  542 continue
+  
+      CALL EMKCFG('-',IER)
 
 C Also write the xml input file if there is a metric defined in the flat file
         if(inumXMLmetrics.gt.0)then
@@ -1868,7 +1802,7 @@ C   `five_season` followed by `typical_week` `forthnight` `user` or `season`
 
 C Feedback. simact is passed to silentmodel.
         write(outs,*) 'the value of simact is ',simact
-	call edisp(iuout,outs)
+        call edisp(iuout,outs)
 
         goto 43
       elseif(WORD(1:8).eq.'*cooling')then
@@ -2824,15 +2758,24 @@ C Currently set the block of text to the model title.
       write(modeldocblock,'(a)')  modeltitle(1:lnblnk(modeltitle))
 
 C Site data.
-C Remove the path from the climate file and set the file name
+C If standard or local set weather to lclim otherwise remove the
+C path from the climate file and set the file name
 C only (the first 32 char) into weather.
-C << later introduce local/distribution logic for file name >>
-      call fdroot(LCLIM,cpath,cfile)
-      lnc=lnblnk(cfile)
-      if(lnc.lt.32)then
-        write(weather,'(a)') cfile(1:lnc)
+      if(ipathclim.eq.1.or.ipathclim.eq.2)then  ! standard or ../dbs
+        lnc=lnblnk(lclim)
+        if(lnc.lt.32)then
+          write(weather,'(a)') lclim(1:lnc)
+        else
+          write(weather,'(a)') lclim(1:31)
+        endif
       else
-        write(weather,'(a)') cfile(1:31)
+        call fdroot(LCLIM,cpath,cfile)
+        lnc=lnblnk(cfile)
+        if(lnc.lt.32)then
+          write(weather,'(a)') cfile(1:lnc)
+        else
+          write(weather,'(a)') cfile(1:31)
+        endif
       endif
       hoursGTM=0.0
 
@@ -2964,7 +2907,7 @@ C extracting to a set of standard ESP-r files.
      &  '  # path to local databases'
 
       write(ifilg,'(4a)',IOSTAT=IOS,ERR=13)'*weather_station',tab,
-     &  weather(1:lnblnk(weather)),'  # climate file'
+     &  weather(1:lnblnk(weather)),'  # weather file'
 
 C Depending on site exposure write two lines.
       if(siteexposureindex.eq.8)then

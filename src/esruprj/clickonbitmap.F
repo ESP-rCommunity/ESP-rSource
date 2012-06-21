@@ -753,7 +753,7 @@ C User did not select a file. Take them back to the question.
             goto 142 ! ask for choice again
           endif
         endif
-	longtfile=' '    ! reset return string
+        longtfile=' '    ! reset return string
         CALL EASKXORGTKF(fname,'X11 bitmap file name?',' ',
      &    'xxx.xbm',longtfile,'bitmap file',IER,nbhelp)
         write(fname,'(a)') longtfile(1:lnblnk(longtfile))
@@ -3147,7 +3147,7 @@ C If north known and within the displayed area then draw it.
             call esymbol(iid1,iid2,11,1)
             iid1=ixtn2; iid2=iytn2;
             call esymbol(iid1,iid2,18,1)
-	    iixtn1=ixtn1; iiytn1=iytn1; iixtn2=ixtn2; iiytn2=iytn2;
+            iixtn1=ixtn1; iiytn1=iytn1; iixtn2=ixtn2; iiytn2=iytn2;
             call edwline(iixtn1,iiytn1,iixtn2,iiytn2)
             write(temp6,'(A)')'North'
             iid1=ixtn2+5; iid2=iytn2-5;
