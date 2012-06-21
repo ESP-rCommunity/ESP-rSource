@@ -259,7 +259,7 @@ static unsigned int dispDEEP;
 /* indicies used for various colours */
 static unsigned long fg, bg, bd, bw, white, black, infofg, infobg;
 static unsigned long gmenuhl, gpopfr, gfeedfr, ginvert, gmodbg, grey50, grey43;
-static unsigned long cscale[49], zscale[83], gscale[85];
+static unsigned long cscale[49], zscale[100], gscale[85];
 
 char *getenv ();
 
@@ -433,16 +433,17 @@ static char font_0[60], font_1[60], font_2[60], font_3[60], font_4[60], font_5[6
 /* info about root Xwindow */
 static int xrt_width, xrt_height;  /* same as xsh.width and xsh.height */
 static char *bgstr,  *whitestr, *blackstr; /* init default colors */
-static char *zscalestr[] = { /* 84 colour names from rgb.txt to represent zone colours */
-  "red","MidnightBlue","peru","ForestGreen","khaki","grey35","turquoise","magenta","firebrick",
-  "DarkCyan","khaki3","RoyalBlue","tomato","OliveDrab","PaleGreen","orange","grey40",
-  "coral2","grey60","maroon4","gold3","brown3","PowderBlue","grey32","sienna","azure4","grey20",
-  "grey50","NavyBlue","DarkGreen","gold","grey80","chartreuse","grey65","CadetBlue","SeaGreen",
-  "RosyBrown","sienna","grey42","orange3","maroon","bisque4","aquamarine3","khaki1","sienna3","pink2",
-  "plum3","gray25","salmon3","PowderBlue","goldenrod","grey45","wheat4","firebrick2","burlywood2",
-  "moccasin","DarkTurquoise","grey75","SeaGreen","RosyBrown","coral","grey46","honeydew3","grey55",
-  "peru","ForestGreen","khaki4","gold","grey80","chartreuse","grey65","CadetBlue","SeaGreen",
-  "gold4","khaki3","goldenrod2","gray28","sienna3","yellow4","brown2","orange2","pink3","plum4","grey42" };
+static char *zscalestr[] = { /* 100 colour names from rgb.txt to represent zone colours */
+    "red","MidnightBlue","peru","ForestGreen","khaki","grey14","turquoise","magenta","gold4","firebrick",
+    "DarkCyan","khaki3","grey25","RoyalBlue","tomato","grey34","OliveDrab","PaleGreen","orange","grey40",
+    "coral2","tan4","SeaGreen","grey60","maroon4","gold3","grey46","PowderBlue","sienna","azure4","grey20","burlywood2",
+    "grey50","khaki2","NavyBlue","sienna3","DarkGreen","gold","magenta3","grey80","turquoise2","gold1","tomato3",
+    "grey70","orange3","grey37","maroon1","grey19","tan2","green3",
+    "red","MidnightBlue","peru","ForestGreen","khaki","grey14","turquoise","magenta","gold4","firebrick",
+    "DarkCyan","khaki3","grey25","RoyalBlue","tomato","grey34","OliveDrab","PaleGreen","orange","grey40",
+    "coral2","tan4","SeaGreen","grey60","maroon4","gold3","grey46","PowderBlue","sienna","azure4","grey20","burlywood2",
+    "grey50","khaki2","NavyBlue","sienna3","DarkGreen","gold","magenta3","grey80","turquoise2","gold1","tomato3",
+    "grey70","orange3","grey37","maroon1","grey19","tan2","green3" };
 static char *cscalestr[] = { /* colour scale RGB HEX values (to represent 49 steps of temperature) */
   "#FF0000","#FF1500","#FF2B00","#FF4000","#FF5500","#FF6A00","#FF8000","#FF9500","#FFAA00","#FFBF00",
   "#FFD500","#FFEA00","#FFFF00","#EAFF00","#D5FF00","#BFFF00","#AAFF00","#95FF00","#80FF00","#6AFF00",
@@ -928,7 +929,7 @@ void setzscale_() {
   int ic;
   XColor ecdef, sdef;
 /* assign colours (zscale names) for zone graphing. */
-  for (ic=0; ic<83; ic++) {
+  for (ic=0; ic<99; ic++) {
     if (XLookupColor(theDisp,theCmap,zscalestr[ic],&ecdef,&sdef) && XAllocColor(theDisp,theCmap,&ecdef)) {
       zscale[ic] = ecdef.pixel;
       izc = izc + 1;
