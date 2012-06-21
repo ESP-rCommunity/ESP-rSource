@@ -841,6 +841,7 @@ C Common blocks for day patterns collected.
       integer loutlen,itrunc  ! for printing calendar list
       integer lnb,lnd         ! for length of file name
       integer iwhichhis ! last known activity index
+      real sqmperper    ! square metres per person
           
 C Call the routines which read and process the data sent in the interaction file.
 
@@ -1281,12 +1282,20 @@ C many were unknown.  Try it twice.
           call edisp(IUF,outs)
 
 C Write occupant related data to outs and then outsd and append comment.
-          write(outs,'(a,f6.3,i4,i4)') '*occupant',
-     &      occupant_dens(index),metabolic_rate(index),
+C If occupant_dens is non-zero then also report m2/person. If zero then
+C report 100m2/person.
+          call ECLOSE(occupant_dens(index),0.00,0.001,CLOSE)
+          if(close)then
+           sqmperper=100.
+          else
+           sqmperper=1.0/occupant_dens(index)
+          endif
+          write(outs,'(a,2f8.3,i4,i4)') '*occupant',
+     &      occupant_dens(index),sqmperper,metabolic_rate(index),
      &      latent_ocup_percent(index)
           call SDELIM(outs,outsd,'C',IW)
           write(outs,'(2a)') outsd(1:lnblnk(outsd)),
-     &      ' # density/m2 metablolic rate W latent %'
+     &      ' # density/m2 m2/person metablolic rate W latent %'
           call edisp(IUF,outs)
 
           write(outs,'(a,f7.3,i3)') '*equipment',equip_gain(index),
@@ -1302,7 +1311,7 @@ C Write occupant related data to outs and then outsd and append comment.
      &      ' # lux typical W/m2 display W/m2'
           call edisp(IUF,outs)
 
-          write(outs,'(a,f8.3)') '*dhw_litres',dhw_litres(index)
+          write(outs,'(a,f8.1)') '*dhw_litres',dhw_litres(index)
           call SDELIM(outs,outsd,'C',IW)
           write(outs,'(2a)') outsd(1:lnblnk(outsd)),' # litres/year'
           call edisp(IUF,outs)
