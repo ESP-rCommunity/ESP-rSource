@@ -481,6 +481,10 @@ C Round YMIN to a sensible value.
 
 C Set-up frequency of labels (DT), number of decimal places (NDEC) and 
 C draw vertical axis.
+          if(colok)then
+            iicol=0
+            call winscl('-',iicol)  ! ensure axis drawn in black
+          endif
           call dinterval(TSTART-1.0,TFINSH,DT,NDEC,1)
           igwid=igw
           igheight=igwh
