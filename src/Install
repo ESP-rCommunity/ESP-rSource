@@ -915,6 +915,11 @@ case $xLibs in
                 if [ -d /usr/X11R6/lib64/X11 ] ; then
                   X11_found="yes"
                   XINSTALLDIR="/usr/X11R6"
+                else
+                  if [ -d /usr/lib64/X11 ] ; then
+                    X11_found="yes"
+                    XINSTALLDIR="/usr/lib64"
+                  fi
                 fi;;
               sun4u)
                 if [ -d /usr/X11R6/lib/64 ] ; then
@@ -932,6 +937,10 @@ case $xLibs in
             if [ -d /usr/lib/X11 ] && [ "$X11_found" = "no" ]; then
               X11_found="yes"
               XINSTALLDIR="/usr"
+            fi
+            if [ -d /usr/lib64/X11 ] && [ "$X11_found" = "no" ]; then
+              X11_found="yes"
+              XINSTALLDIR="/usr/lib64"
             fi
 
          ;;
