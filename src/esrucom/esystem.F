@@ -2108,26 +2108,25 @@ C automatically and should not be modified through project manager
       IF(INOTI.EQ.1.AND.ITRC.NE.4)THEN
         IWARN=1
         OUTS=
-     &  'This is a UK NCM notional model and should not be modified'
+     &  'This is a UK NCM notional model and should not be modified.'
       ELSEIF(INOTI.EQ.2.AND.ITRC.NE.4)THEN
         IWARN=1
         OUTS=
-     &  'This is a UK NCM reference model and should not be modified'
+     &  'This is a UK NCM reference model and should not be modified.'
       ELSEIF(INOTI.EQ.3.AND.ITRC.NE.4)THEN
         IWARN=1
         OUTS=
-     &  'This is a UK NCM typical model and should not be modified'
+     &  'This is a UK NCM typical model and should not be modified.'
       ELSEIF(INOTI.EQ.4.AND.ITRC.NE.4)THEN
         IWARN=1
         OUTS=
-     &  'This is a UK NCM stripped model and should not be modified'
+     &  'This is a UK NCM stripped model and should not be modified.'
       ELSEIF(ISBEM.EQ.2.AND.INOTI.EQ.0.AND.ITRC.NE.4)THEN
         continue  ! this model is original which includes NCM file.
       ENDIF
       IF(IWARN.EQ.1.AND..NOT.AUTOOK)THEN
          call askok(OUTS,
-     &   'using project manager are you sure you want to continue',
-     &   OK,dok,10)
+     &   'Aare you sure you want to continue?',OK,dok,10)
          IF(.NOT.OK)STOP
       ENDIF
 
