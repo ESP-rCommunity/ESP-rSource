@@ -1852,13 +1852,15 @@ C  act = 'l' lighting information
       integer ncomp,ncon
       common/c1/ncomp,ncon
 
-      character act*1,outs*124,outs248*248
+      character act*1,outs*144,outs248*248
       character TMPSTR*64
       integer lnb,lnbb,lnact  ! actual lengths of strings
       integer itu       ! unit to write to
       real nbpeople     ! number of people in the zone
       real freshairhr   ! make-up air in m3/hr
       real freshairchanges  ! make-up ach
+      real latentfrac   ! fraction of metabolic that is latent
+      real totocup,ocupsens,ocuplat ! sensible and latent
 
 C Re-establish glazing fractions based on UK NCM guidelines
       if(ibusertyp.ne.0)then
@@ -2163,7 +2165,8 @@ C DHW reporting.
 
 C Occupancy links. Also derive and report on ocupant density, makeup air
 C in M3/hr for the zone. 
-        write(outs,'(A)')'Zone to activity linkages & occupants & air'
+        write(outs,'(A)')
+     &  'Zone to activity occupants makeup air sensible latent casual'
         call edisp(itu,outs)
         DO 105 IZ=1,NCOMP
           lnb=lnzname(IZ)
@@ -2173,13 +2176,20 @@ C in M3/hr for the zone.
             freshairhr=nbpeople*fresh_air(ireadactivityindex) *
      &                 (3600./1000.)
             freshairchanges=freshairhr/vol(iz)
+            totocup=nbpeople*metabolic_rate(ireadactivityindex)
+            latentfrac=latent_ocup_percent(ireadactivityindex)/100.0
+            ocupsens=totocup-(totocup*latentfrac)
+            ocuplat=totocup*latentfrac
             lnact=lnblnk(roomactname(ireadactivityindex))
-            write(outs,'(3A,I3,I4,1X,2A,f5.1,a,f6.1,a,f5.2,a)') 
-     &        'Zone ',zname(iz)(1:lnb),' is linked to ',IACTYTYP(IZ),
-     &        ireadactivityindex,
-     &        roomactname(ireadactivityindex)(1:lnact),' with ',
-     &        nbpeople,' people ',freshairhr,' m^3/hr make-up ',
-     &        freshairchanges,' ach.'
+            if(lnact.gt.32) lnact=32
+            write(outs,'(2A,I3,1X,2A,f5.1,a,f6.1,a,f5.2,a,
+     &        f6.0,a,f5.2,a,f5.0,a,f5.2,a)') 
+     &        zname(iz)(1:lnb),' uses ',ireadactivityindex,
+     &        roomactname(ireadactivityindex)(1:lnact),' : ',
+     &        nbpeople,' occ & makeup ',freshairhr,' m3/h ',
+     &        freshairchanges,' ach & occ sen ',ocupsens,'W ',
+     &        ocupsens/ZBASEA(IZ),'W/m2 lat ',ocuplat,'W ',
+     &        ocuplat/ZBASEA(IZ),'W/m2.'
           else
             write(outs,'(6A)') 'Zone ',zname(iz)(1:lnb),
      &        ' is linked to ',' 0',' 0',
