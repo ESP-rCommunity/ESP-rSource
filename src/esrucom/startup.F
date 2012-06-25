@@ -22,13 +22,14 @@ C ******************************************************************************
 C************************************************************************************
 C************************************************************************************
 C************************************************************************************
-C   MODULE PARSE_COMMAND_LINE written to extract the communality in all the modules for
+C   MODULE PARSE_COMMAND_LINE written to extract the communality in all the modules for 
 C   setting up environemt and parsing command lines.
+
 C************************************************************************************
       MODULE PARSE_COMMAND_LINE
       IMPLICIT NONE
-
-C Constants used to differentiate between modules
+      
+C Constants used to differentiate between modules      
       integer, parameter :: CONST_PARPSF = 1
       integer, parameter :: CONST_PARPSFF = 2
       integer, parameter :: CONST_PARSIM = 3
@@ -41,16 +42,12 @@ C Constants used to differentiate between modules
       integer, parameter :: CONST_PARTFA = 10
       integer, parameter :: CONST_PARSE2R = 11
       integer, parameter :: CONST_PARSFACT = 12
-C Constant to define string lengths
-      integer, parameter :: ARG_LENGTH = 144
-      integer, parameter :: CL_LENGTH = 300
-
 
       SAVE !ensures values do not change between sucessive invocations
 C Declare parameters 
-      character(CL_LENGTH)  :: PassedCommandLine !The command line passed in when bps is called by the harmonizer in co-simulation with TRNSYS
-      integer :: CommandLineArguments      !The number of comman line arguments
-      logical :: UsePassedCommandLine      !A Flag that tells bps if it is to use the actual comman line or one that is passed in.
+      character(144)  :: PassedCommandLine
+      integer :: CommandLineArguments
+      logical :: UsePassedCommandLine
       
 C Add Proceedures
       CONTAINS
@@ -62,7 +59,7 @@ C*******************************************************************************
       SUBROUTINE SetPassedCommandLine(argc, argv)
       IMPLICIT NONE
 C Declare  calling parameter types
-      character(CL_LENGTH), intent(in)  :: argc !commandline string
+      character(144), intent(in)  :: argc !commandline string
       integer, intent(in) :: argv !number of commandline parameters
 
       PassedCommandLine = argc
@@ -71,66 +68,15 @@ C Declare  calling parameter types
       
       END SUBROUTINE SetPassedCommandLine
 C************************************************************************************
-C GetCommandLineArg basically does what getarg() does.
-C Retrieves the i-th argument stored in the string PassedCommandLine 
-C************************************************************************************
-      SUBROUTINE GetCommandLineArg(i,argument)
-      IMPLICIT NONE
-! Declare  calling parameter types
-      integer, intent(in)  ::  i  				!index of command line argument 
-      character(ARG_LENGTH), intent(out)  :: argument	!return string
-! Variable declaration      
-      character(CL_LENGTH)  :: tempstring
-      integer :: j  !loop index
-      integer :: n	!index of space
-      integer :: startstring  !index of start of return string
-      integer :: endstring 	  !index of end of return string
-
-      startstring = 1
-      ! Copy the command line into a temporary string 
-      tempstring = PassedCommandLine
-      DO j=1,i  !For every space up to the ith
-        ! Find the index of the first space in tempstring
-        n = index(tempstring, ' ')
-        if (j.lt.i) then 
-          startstring = startstring+n 
-          tempstring = tempstring(n+1:ARG_LENGTH) !remove arguments from tempstring
-        end if
-      END DO
-      endstring = startstring+n-1
-      !write the desired argument into the return string.
-      write(argument,'(a)') PassedCommandLine(startstring:endstring)
-      END SUBROUTINE GetCommandLineArg
-C *******************************************************************************
-C ParseNextCLArgument () Parses the next argument in the command line, whether
-C it is the actual command line or a string that is passed in.
-C *******************************************************************************
-      SUBROUTINE ParseNextCLArgument(i, argument)
-      IMPLICIT NONE
-! Declare  calling parameter types
-      integer, intent(inout)  ::  i  				!index of command line argument 
-      character(ARG_LENGTH), intent(out)  :: argument	    !return string (command line argument)
-
-      i=i+1
-      if (UsePassedCommandLine) then 
-        call GetCommandLineArg(i, argument)
-      else 
-        call getarg(i,argument)
-      end if
-      END SUBROUTINE ParseNextCLArgument
-C *******************************************************************************
 C GetCommandLineArguments () Parses the command line
+C If the command line is passed in (for co-simulation with TRNSYS) 
+C UsePassedCommandLine is true and the subroutine EGTW (lib/esru_lib.F)
+C is used to parse the "command line" string.          
 C *******************************************************************************
-
-C Parse command lines.
       SUBROUTINE GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &             iverb,sps,data1,data2,data3)
       IMPLICIT NONE
-
-      integer lnblnk  ! function definition
-      integer iargc   ! needed for F90
-
 C Common blocks
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/APPNAME/cAppName
@@ -140,19 +86,28 @@ C Declare  calling parameter types
       integer, intent(out)  ::  termtype,iappw,iappx,iappy,iverb
       integer, intent(in)  ::  module
       real, intent(out)     ::  data1,data2,data3
-      character(ARG_LENGTH), intent(out)  :: inf, inf2,zone,act,actf
-      character(ARG_LENGTH), intent(out)  :: aut,aim,browse,sps,ascif
+      character(144), intent(out)  :: inf, inf2
+      character(16), intent(out)   :: zone,act
+      character(72), intent(out)   :: actf,ascif
+      character(12), intent(out)	  :: aut,aim
+      character(4), intent(out)	  :: browse
+      character(8), intent(out)	  :: sps
 
 C Variable declaration
       character(8)  :: ModuleName
       character(12)  :: cAppName
-      character(ARG_LENGTH)  :: argument,sTimeout,prog
+      character(72)  :: argument,sTimeout,prog
       character(8)   :: mode
       character(24)  :: appn
-      character(348) :: outs !If this is only 248 clm crashes on install if pathnames are long
-      integer 	:: m, i, IOS, IUOUT,IUIN, iXavail
-      integer   :: iTimeoutFlag
+      character(248) :: outs !If this is only 248 clm crashes on install if pathnames are long
+      integer :: m, i, IOS, IUOUT,IUIN, iXavail, pos
+      integer :: iTimeoutFlag
+      integer :: err
       logical :: unixok
+
+C Function definitions      
+      integer :: lnblnk
+      integer :: iargc
 
 C Variable initialisation
       argument = ' '
@@ -160,11 +115,13 @@ C Variable initialisation
       data2=0.0
       data3=0.0
       iverb =0
-      i = -1
+      pos = 0
+      i = 0
       iappw = 0
       iappx = 0
       iappy = 0
       aut  = 'interactive'
+      argument = ' '
       IOS=0  ! initial value
       act = 'NONE'
       aim = 'NONE'
@@ -177,6 +134,7 @@ C Variable initialisation
       ascif  = 'UNKNOWN'
       if (module.eq.CONST_PARRES)	act = 'UNKNOWN'
       if (module.eq.CONST_PARSIM) aut  = 'default'
+
 
       if (UsePassedCommandLine) then 
         m = CommandLineArguments
@@ -192,26 +150,37 @@ C into binary, and set default terminal type as necessary
         termtype = -1
         mode = 'text'
       end if
-      
-      call ParseNextCLArgument(i,prog)
+      if (UsePassedCommandLine) then 
+        call EGETW(PassedCommandLine,pos,prog,'-','program',err)
+      else 
+        call getarg(i,prog)
+      end if
+C      write(*,*)'prog: ',prog
       call findapp(prog,appn)
+C      write(*,*)'using app: ',appn
 
       if(m.eq.0)then
         return
       elseif(m.ge.1)then
         Parseloop: DO
-          call ParseNextCLArgument(i,argument)
+          i=i+1 
+          if (UsePassedCommandLine) then 
+            call EGETW(PassedCommandLine,pos,argument,'-',
+     &                  'argument',err)
+          else
+            call getarg(i,argument)
+          end if
+C          write(*,*)'i: ',i,'  m: ',m
+C          write(*,*)'argument: ',argument
           if(i.gt.m)EXIT Parseloop
           if(argument(1:5).eq.'-help')then
             call parpsfh(appn)
             stop
           elseif(argument(1:8) .eq. '-version' ) then
-
 C Display version information and then quit
             CALL ESPrVersion("summary",cAppName,IUOUT)
             stop
           elseif( argument(1:10) .eq. '-buildinfo' ) then
-
 C Display detailed build information and then quit
             CALL ESPrVersion("details",cAppName,IUOUT)
             stop
@@ -221,7 +190,14 @@ C Display detailed build information and then quit
             iverb = 1   ! tell application to run with debug moderate
                         ! Note: this option MUST follow -version for both to be supported
           elseif(argument(1:5).eq.'-mode')then
-            call ParseNextCLArgument(i,argument)
+
+            i=i+1
+            if (UsePassedCommandLine) then 
+              call EGETW(PassedCommandLine,pos,argument,
+     &                   '-','argument',err)
+            else 
+              call getarg(i,argument)
+            end if
             if(argument(1:4).eq.'text')then
               termtype = -1
               mode = 'text'
@@ -238,67 +214,210 @@ C Display detailed build information and then quit
           elseif(argument(1:2).eq.'-s')then
             if ((module.ne.CONST_PARTF).or.
      &          (module.ne.CONST_PARTFA)) then
-              call ParseNextCLArgument(i,argument)
+              i=i+1
+              if (UsePassedCommandLine) then 
+               call EGETW(PassedCommandLine,pos,argument,'-',
+     &                   'argument',err)
+              else 
+                call getarg(i,argument)
+              end if
               read(argument,*,IOSTAT=IOS,ERR=2)iappw
-              call ParseNextCLArgument(i,argument)
+              i=i+1
+              if (UsePassedCommandLine) then 
+               call EGETW(PassedCommandLine,pos,argument,'-',
+     &                   'argument',err)
+              else 
+                call getarg(i,argument)
+              end if
               read(argument,*,IOSTAT=IOS,ERR=2)iappx
-              call ParseNextCLArgument(i,argument)
+              i=i+1
+              if (UsePassedCommandLine) then 
+               call EGETW(PassedCommandLine,pos,argument,'-',
+     &                   'argument',err)
+              else 
+                call getarg(i,argument)
+              end if
               read(argument,*,IOSTAT=IOS,ERR=2)iappy
             end if
           elseif(argument(1:5).eq.'-file')then
             if (module.eq.CONST_PARPSFF) then
-              call ParseNextCLArgument(i,inf)
-              call ParseNextCLArgument(i,inf2)
+              i=i+1
+              if (UsePassedCommandLine) then 
+                call EGETW(PassedCommandLine,pos,inf,'-',
+     &                   'argument',err)
+              else 
+                call getarg(i,inf)
+              end if
+              i=i+1
+              if (UsePassedCommandLine) then 
+               call EGETW(PassedCommandLine,pos,inf2,'-',
+     &                   'argument',err)
+              else 
+                call getarg(i,inf2)
+              end if
             else
-              call ParseNextCLArgument(i,inf)
+              i=i+1
+              if (UsePassedCommandLine) then 
+                call EGETW(PassedCommandLine,pos,inf,'-',
+     &                   'argument',err)
+              else 
+                call getarg(i,inf)
+              end if
             end if
           ! It is important to check for -actf before checking for -act.
           elseif(argument(1:5).eq.'-actf')then
-            if ((module.eq.CONST_PARSFACT).or.
-     &          (module.eq.CONST_PARRES).or.
-     &          (module.eq.CONST_PARSIM)) then
-              call ParseNextCLArgument(i,actf)
+             if ((module.eq.CONST_PARSFACT).or.(module.eq.CONST_PARRES)
+     &           .or.(module.eq.CONST_PARSIM)) then
+              i=i+1
+              if (UsePassedCommandLine) then 
+                call EGETW(PassedCommandLine,pos,actf,'-',
+     &                   'argument',err)
+              else 
+                call getarg(i,actf)
+              end if
             end if
           elseif(argument(1:4).eq.'-act')then
             if ((module.eq.CONST_PARTFA).or.
      &          (module.eq.CONST_PARSFACT)) then
-              call ParseNextCLArgument(i,act)
-
+              i=i+1
+              if (UsePassedCommandLine) then 
+                call EGETW(PassedCommandLine,pos,act,'-',
+     &                   'argument',err)
+              else 
+                call getarg(i,act)
+              end if
+C If act is asci2bin or bin2asci read ascii file name
+              if(act(1:8).eq.'asci2bin'.or.act(1:8).eq.'bin2asci')then
+C                write(*,*)'asci2bin'
+                i=i+1
+                if (UsePassedCommandLine) then 
+                  call EGETW(PassedCommandLine,pos,actf,'-',
+     &                   'argument',err)
+                else 
+                  call getarg(i,actf)
+                end if
+              end if
+            else if (module.eq.CONST_PARSE2R) then
+              i=i+1
+              if (UsePassedCommandLine) then 
+                call EGETW(PassedCommandLine,pos,act,'-',
+     &                   'argument',err)
+              else 
+                call getarg(i,act)
+              end if
+            else if (module.eq.CONST_PARRES) then
+              i=i+1
+              if (UsePassedCommandLine) then 
+                call EGETW(PassedCommandLine,pos,act,'-',
+     &                   'argument',err)
+              else 
+                call getarg(i,act)
+              end if
+              i=i+1
+              if (UsePassedCommandLine) then 
+                call EGETW(PassedCommandLine,pos,aut,'-',
+     &                   'argument',err)
+              else 
+                call getarg(i,aut)
+              end if
+            else if (module.eq.CONST_PARCLM) then
+C              write(*,*)'in parclm'
+              i=i+1
+              if (UsePassedCommandLine) then 
+                call EGETW(PassedCommandLine,pos,act,'-',
+     &                   'argument',err)
+              else 
+                call getarg(i,act)
+              end if
+              i=i+1
+              if (UsePassedCommandLine) then 
+                call EGETW(PassedCommandLine,pos,aut,'-',
+     &                   'argument',err)
+              else 
+                call getarg(i,aut)
+              end if
+              i=i+1
+              if (UsePassedCommandLine) then 
+                call EGETW(PassedCommandLine,pos,ascif,'-',
+     &                   'argument',err)
+              else 
+                call getarg(i,ascif)
+              end if
+            else if (module.eq.CONST_PARSISH) then
+              i=i+1
+              if (UsePassedCommandLine) then 
+               call EGETW(PassedCommandLine,pos,act,'-',
+     &                   'argument',err)
+              else 
+                call getarg(i,act)
+              end if
 C If act is asci2bin or bin2asci read ascii file name
               if(act(1:8).eq.'asci2bin'.or.act(1:8).eq.'bin2asci')then
                 i=i+1
-                call getarg(i,actf)
-              end if
-            else if (module.eq.CONST_PARSE2R) then
-              call ParseNextCLArgument(i,act)
-            else if (module.eq.CONST_PARRES) then
-              call ParseNextCLArgument(i,act)
-              call ParseNextCLArgument(i,aut)
-            else if (module.eq.CONST_PARCLM) then
-              call ParseNextCLArgument(i,act)
-              call ParseNextCLArgument(i,aut)
-              call ParseNextCLArgument(i,ascif)
-            else if (module.eq.CONST_PARSISH) then
-              call ParseNextCLArgument(i,act)
-C If act is asci2bin or bin2asci read ascii file name
-              if(act(1:8).eq.'asci2bin'.or.act(1:8).eq.'bin2asci')then
-              call ParseNextCLArgument(i,ascif)
+                if (UsePassedCommandLine) then 
+                  call EGETW(PassedCommandLine,pos,ascif,'-',
+     &                   'argument',err)
+                else 
+                  call getarg(i,ascif)
+                end if
               end if
             else if(module.eq.CONST_PARSPRJ)then
-              call ParseNextCLArgument(i,act)
+              i=i+1
+              if (UsePassedCommandLine) then 
+                call EGETW(PassedCommandLine,pos,act,'-',
+     &                   'argument',err)
+              else 
+                call getarg(i,act)
+              end if
               if(act(1:6).eq.'rotate')then
-                call ParseNextCLArgument(i,argument)
+                i=i+1
+                if (UsePassedCommandLine) then 
+                  call EGETW(PassedCommandLine,pos,argument,'-',
+     &                   'argument',err)
+                else 
+                  call getarg(i,argument)
+                end if
                 read(argument,*,IOSTAT=IOS,ERR=2)data1
-                call ParseNextCLArgument(i,argument)
+                i=i+1
+                if (UsePassedCommandLine) then 
+                  call EGETW(PassedCommandLine,pos,argument,'-',
+     &                   'argument',err)
+                else 
+                  call getarg(i,argument)
+                end if
                 read(argument,*,IOSTAT=IOS,ERR=2)data2
-                call ParseNextCLArgument(i,argument)
+                i=i+1
+                if (UsePassedCommandLine) then 
+                  call EGETW(PassedCommandLine,pos,argument,'-',
+     &                   'argument',err)
+                else 
+                  call getarg(i,argument)
+                end if
                 read(argument,*,IOSTAT=IOS,ERR=2)data3
               elseif(act(1:9).eq.'transform')then
-                call ParseNextCLArgument(i,argument)
+                i=i+1
+                if (UsePassedCommandLine) then 
+                  call EGETW(PassedCommandLine,pos,argument,'-',
+     &                   'argument',err)
+                else 
+                  call getarg(i,argument)
+                end if
                 read(argument,*,IOSTAT=IOS,ERR=2)data1
-                call ParseNextCLArgument(i,argument)
+                i=i+1
+                if (UsePassedCommandLine) then 
+                  call EGETW(PassedCommandLine,pos,argument,'-',
+     &                   'argument',err)
+                else 
+                  call getarg(i,argument)
+                end if
                 read(argument,*,IOSTAT=IOS,ERR=2)data2
-                call ParseNextCLArgument(i,argument)
+                i=i+1
+                if (UsePassedCommandLine) then 
+                  call EGETW(PassedCommandLine,pos,argument,'-',
+     &                   'argument',err)
+                else 
+                  call getarg(i,argument)
+                end if
                 read(argument,*,IOSTAT=IOS,ERR=2)data3
               end if
             end if
@@ -306,25 +425,62 @@ C If act is asci2bin or bin2asci read ascii file name
             if ((module.eq.CONST_PARSFZ).or.(module.eq.CONST_PARSISH)
      &         .or.(module.eq.CONST_PARSE2R).or.
      &         (module.eq.CONST_PARSPRJ))then
-              call ParseNextCLArgument(i,zone)
+              i=i+1
+              if (UsePassedCommandLine) then 
+                call EGETW(PassedCommandLine,pos,zone,'-',
+     &                   'argument',err)
+              else 
+                call getarg(i,zone)
+              end if
             end if
           elseif(argument(1:8).eq.'-purpose')then
             if (module.eq.CONST_PARSE2R) then
-              call ParseNextCLArgument(i,aim)
-            end if
+              i=i+1
+              if (UsePassedCommandLine) then 
+                call EGETW(PassedCommandLine,pos,aim,'-',
+     &                   'argument',err)
+              else 
+                call getarg(i,aim)
+              end if
+            end if            
           elseif(argument(1:2).eq.'-b')then
             if ((module.eq.CONST_PARSE2R).or.
      &          (module.eq.CONST_PARSIM)) then
-              call ParseNextCLArgument(i,browse)
+              i=i+1
+              if (UsePassedCommandLine) then 
+                call EGETW(PassedCommandLine,pos,browse,'-',
+     &                   'argument',err)
+              else 
+                call getarg(i,browse)
+              end if
             end if
           elseif(argument(1:2).eq.'-p')then
             if (module.eq.CONST_PARSIM) then
-              call ParseNextCLArgument(i,sps)
-              call ParseNextCLArgument(i,aut)
+              i=i+1
+              if (UsePassedCommandLine) then 
+                call EGETW(PassedCommandLine,pos,sps,'-',
+     &                   'argument',err)
+              else 
+                call getarg(i,sps)
+              end if
+              i=i+1
+              if (UsePassedCommandLine) then 
+                 call EGETW(PassedCommandLine,pos,aut,'-',
+     &                   'argument',err)
+              else 
+                call getarg(i,aut)
+              end if
             end if
           elseif(argument(1:8).eq.'-timeout')then
             if (module.eq.CONST_PARSIM) then
-              call ParseNextCLArgument(i,sTimeout)
+              i=i+1
+              if (UsePassedCommandLine) then 
+                call EGETW(PassedCommandLine,pos,sTimeout,'-',
+     &                   'argument',err)
+              else 
+                call getarg(i,sTimeout)
+              end if
+
               iTimeoutFlag = 1
             end if
           else
@@ -338,37 +494,41 @@ C Assume argument is an input file without the -file token.
 
 
 C Only give feedback if non-DOS.
-      call isunix(unixok)
-      if(unixok)then
-        if  (module.eq.CONST_PARTFA) then
-          write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
+        call isunix(unixok)
+        if(unixok)then
+          if  (module.eq.CONST_PARTFA) then
+            write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
      &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &      inf(1:lnblnk(inf)),' with action ',act(1:lnblnk(act))
-        else if (module.eq.CONST_PARSFZ) then
-          write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
+          else if (module.eq.CONST_PARSFZ) then
+            write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
      &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &      inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
-        else if (module.eq.CONST_PARSFACT) then
-          write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
+          else if (module.eq.CONST_PARSFACT) then
+            write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
      &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &      inf(1:lnblnk(inf)),' with action ',act(1:lnblnk(act)),
      &      ' applied to ',actf(1:lnblnk(actf))
-        else if (module.eq.CONST_PARRES) then
-          outs=' '
-          write(outs,'(11a)') 'Starting ',appn(1:lnblnk(appn)),
-     &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &      inf(1:lnblnk(inf)),' and action ',act(1:lnblnk(act)),
+          else if (module.eq.CONST_PARRES) then
+            outs=' '
+            write(outs,'(11a)') 'Starting ',appn(1:lnblnk(appn)),
+     &        ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &        inf(1:lnblnk(inf)),' and action ',act(1:lnblnk(act)),
      &       ' in ',aut,' mode.'
-        else if (module.eq.CONST_PARSISH) then
-          write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
+          else if (module.eq.CONST_PARSISH) then
+            write(outs,'(10a)') 'Starting ',appn(1:lnblnk(appn)),
      &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
      &      inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
      &      ,' with action ',act(1:lnblnk(act))
         else if (module.eq.CONST_PARCLM) then
           outs=' '
-          write(outs,'(6a)') 'and action ',act(1:lnblnk(act)),
-     &      ' in ',aut,' mode using/making file ',
-     &      ascif(1:lnblnk(ascif))
+C          write(*,*)act
+C          write(*,*)aut
+C          write(*,*)ascif
+!          write(outs,'(6a)') 'and action ',act(1:lnblnk(act)),
+!     &      ' in ',aut,' mode using/making file ',
+!     &      ascif(1:lnblnk(ascif))
+!          write(*,*)outs
         else if (module.eq.CONST_PARSE2R) then
           write(outs,'(12a)') 'Starting ',appn(1:lnblnk(appn)),
      &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
@@ -393,10 +553,10 @@ C Only give feedback if non-DOS.
      &      inf(1:lnblnk(inf)),' focused on zone ',zone(1:lnblnk(zone))
      &      ,' with action ',act(1:lnblnk(act)),' and data ',data1,
      &      data2,data3
-        else
-          write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
-     &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
-     &      inf(1:lnblnk(inf))
+          else
+            write(outs,'(8a)') 'Starting ',appn(1:lnblnk(appn)),
+     &        ' in mode ',mode(1:lnblnk(mode)),' with file ',
+     &        inf(1:lnblnk(inf))
 C         call edisp248(iuout,outs,90)
         end if
 
@@ -505,18 +665,22 @@ C*******************************************************************************
       IMPLICIT NONE
 C Declare  calling parameter types
       integer, intent(inout)  ::  termtype,iappw,iappx,iappy
-      character(ARG_LENGTH), intent(inout)  :: inf
-
-C Local variables for GetCommandLineArguments.
+      character(144), intent(inout)  :: inf
+      
       integer :: module, iverb
       real ::  data1,data2,data3
-      character(ARG_LENGTH)::inf2,zone,act,actf,ascif,aut,aim,browse,sps
-      
+      character(144) :: inf2
+      character(16) :: zone,act
+      character(72) :: actf,ascif
+      character(12) :: aut,aim
+      character(4) :: browse
+      character(8) :: sps
+
       module = CONST_PARPSF
       call GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
      &			   iverb,sps,data1,data2,data3)
-
+      
       end subroutine parpsf
 C***********************************************************************************************************************
 C ********* parpsff
@@ -527,18 +691,21 @@ C*******************************************************************************
       IMPLICIT NONE
 C Declare  calling parameter types
       integer, intent(inout)  ::  termtype,iappw,iappx,iappy
-      character(ARG_LENGTH), intent(inout)  :: infa, infb
-
-C Local variables for GetCommandLineArguments.
+      character(144), intent(inout)  :: infa, infb
+      
       integer :: module, iverb
       real ::  data1,data2,data3
-      character(ARG_LENGTH) :: zone,act,actf,ascif,aut,aim,browse,sps
-      
+      character(16) :: zone,act
+      character(72) :: actf,ascif
+      character(12) :: aut,aim
+      character(4) :: browse
+      character(8) :: sps
+
       module = CONST_PARPSFF
       call GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,infa,infb,zone,act,actf,aut,ascif,aim,browse,
      &			   iverb,sps,data1,data2,data3)
-
+      
       end subroutine parpsff
 C***********************************************************************************************************************
 C ********* parres
@@ -546,16 +713,24 @@ C parres allows terminal, size, results file, action and silent arguments
 C  to be passed to res from the invocation line.  
 C***********************************************************************************************************************
       subroutine parres(termtype,iappw,iappx,iappy,inf,act,aut,actf)
-
       IMPLICIT NONE
 C Declare  calling parameter types
       integer, intent(inout)  ::  termtype,iappw,iappx,iappy
-      character(ARG_LENGTH), intent(inout)  :: inf,actf,aut,act
-      
+      character(144), intent(inout)  :: inf
+      character(72), intent(inout) :: actf
+      character(12), intent(inout) :: aut
+      character(16), intent(inout) :: act
+
+C Local variables for GetCommandLineArguments.
       integer :: module, iverb
       real ::  data1,data2,data3
-      character(ARG_LENGTH) :: inf2,zone,ascif,aim,browse,sps
-     
+      character(144) :: inf2
+      character(16) :: zone
+      character(72) :: ascif
+      character(12) :: aim
+      character(4) :: browse
+      character(8) :: sps
+
       module = CONST_PARRES
       call GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
@@ -570,17 +745,26 @@ C*******************************************************************************
       IMPLICIT NONE
 C Declare  calling parameter types
       integer, intent(inout)  ::  termtype,iappw,iappx,iappy
-      character(ARG_LENGTH), intent(inout)  :: inf, act, aut, ascif
-      
+      character(144), intent(inout)  :: inf
+      character(16), intent(inout) :: act
+      character(12), intent(inout) :: aut
+      character(72), intent(inout) :: ascif
+
+C Local variables for GetCommandLineArguments.
       integer :: module, iverb
       real ::  data1,data2,data3
-      character(ARG_LENGTH) :: inf2,zone,actf,aim,browse,sps
-      
+      character(144) :: inf2
+      character(16) :: zone
+      character(72) :: actf
+      character(12) :: aim
+      character(4) :: browse
+      character(8) :: sps
+
       module = CONST_PARCLM
       call GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
      &			   iverb,sps,data1,data2,data3)
-
+      
       end subroutine parclm
 C***********************************************************************************************************************
 C ********* parsish
@@ -589,21 +773,28 @@ C zone focus and actions arguments from the invocation line.
 C***********************************************************************************************************************
       subroutine parsish(termtype,iappw,iappx,iappy,inf,zone,act,
      &  ascif)
-
+      
       IMPLICIT NONE
 C Declare  calling parameter types
       integer, intent(inout)  ::  termtype,iappw,iappx,iappy
-      character(ARG_LENGTH), intent(inout)  :: inf,act,zone,ascif
-      
+      character(144), intent(inout)  :: inf
+      character(16), intent(inout) :: act, zone
+      character(72), intent(inout) :: ascif
+
+C Local variables for GetCommandLineArguments.
       integer :: module, iverb
       real ::  data1,data2,data3
-      character(ARG_LENGTH) :: inf2,actf,aim,aut,browse,sps
-      
+      character(144) :: inf2
+      character(72) :: actf
+      character(12) :: aim, aut
+      character(4) :: browse
+      character(8) :: sps
+
       module = CONST_PARSISH
       call GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
      &			   iverb,sps,data1,data2,data3)
-
+      
       end subroutine parsish
 C***********************************************************************************************************************
 C ********* parsprj 
@@ -617,11 +808,17 @@ C*******************************************************************************
 C Declare  calling parameter types
       real, intent(inout)     ::  data1,data2,data3
       integer, intent(inout)  ::  termtype,iappw,iappx,iappy,iverb
-      character(ARG_LENGTH), intent(inout)  :: inf,act,zone
-      
+      character(144), intent(inout)  :: inf
+      character(16), intent(inout) :: act, zone
+
+C Local variables for GetCommandLineArguments.
       integer :: module
-      character(ARG_LENGTH) :: inf2,actf,ascif,aim,aut,browse,sps
-      
+      character(144) :: inf2
+      character(72) :: actf,ascif
+      character(12) :: aim, aut
+      character(4) :: browse
+      character(8) :: sps
+
       module = CONST_PARSPRJ
       call GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
@@ -630,19 +827,26 @@ C Declare  calling parameter types
 
 C ********* parsfz (equivalent to startsfz.c)
 C parsfz allows terminal, size, config file, zone focus arguments
-C to be passed to the program from the invocation line.
+C to be passed to the program from the invocation line.  
 
       subroutine parsfz(termtype,iappw,iappx,iappy,inf,zone)
-
+      
       IMPLICIT NONE
 C Declare  calling parameter types
       integer, intent(inout)  ::  termtype,iappw,iappx,iappy
-      character(ARG_LENGTH), intent(inout)  :: inf,zone
-      
+      character(144), intent(inout)  :: inf
+      character(16), intent(inout)  :: zone
+
+C Local variables for GetCommandLineArguments.
       integer :: module, iverb
       real ::  data1,data2,data3
-      character(ARG_LENGTH) :: inf2,act,actf,ascif,aut,aim,browse,sps
-      
+      character(144) :: inf2
+      character(16) :: act
+      character(72) :: actf,ascif
+      character(12) :: aut,aim
+      character(4) :: browse
+      character(8) :: sps
+
       module = CONST_PARSFZ
       call GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
@@ -656,17 +860,22 @@ C partf allows terminal and config file arguments
 C to be passed to the program from the invocation line.  
 C***********************************************************************************************************************
       subroutine partf(termtype,inf)
-
+      
       IMPLICIT NONE
 C Declare  calling parameter types
       integer, intent(inout)  ::  termtype
-      character(ARG_LENGTH), intent(inout)  :: inf
+      character(144), intent(inout)  :: inf
 
 C Local variables for GetCommandLineArguments.
       integer :: module, iverb,iappw,iappx,iappy
       real ::  data1,data2,data3
-      character(ARG_LENGTH)::inf2,zone,act,actf,ascif,aut,aim,browse,sps
-      
+      character(144) :: inf2
+      character(16) :: zone,act
+      character(72) :: actf,ascif
+      character(12) :: aut,aim
+      character(4) :: browse
+      character(8) :: sps
+
       module = CONST_PARTF
       call GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
@@ -675,7 +884,7 @@ C Local variables for GetCommandLineArguments.
 C***********************************************************************************************************************
 C ********* partfa (equivalent to partf with an action parameter)
 C partfa allows terminal, file and action arguments
-C  to be passed to the program from the invocation line.
+C  to be passed to the program from the invocation line.  
 C  Logic allows for the -file token to be optional.
 C***********************************************************************************************************************
       subroutine partfa(termtype,inf,act)
@@ -683,12 +892,19 @@ C*******************************************************************************
       IMPLICIT NONE
 C Declare  calling parameter types
       integer, intent(inout)  ::  termtype
-      character(ARG_LENGTH), intent(inout)  :: inf,act
-      
+      character(144), intent(inout)  :: inf
+      character(16), intent(inout)  :: act
+
+C Local variables for GetCommandLineArguments.
       integer :: module, iverb,iappw,iappx,iappy
       real ::  data1,data2,data3
-      character(ARG_LENGTH) :: inf2,zone,actf,ascif,aut,aim,browse,sps
-      
+      character(144) :: inf2
+      character(16) :: zone
+      character(72) :: actf,ascif
+      character(12) :: aut,aim
+      character(4) :: browse
+      character(8) :: sps
+
       module = CONST_PARTFA
       call GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
@@ -701,16 +917,23 @@ C  to be passed to e2r from the invocation line.
 C***********************************************************************************************************************
       subroutine parse2r(termtype,iappw,iappx,iappy,inf,zone,aim,act,
      &  browse)
-
+      
       IMPLICIT NONE
 C Declare  calling parameter types
       integer, intent(inout)  ::  termtype,iappw,iappx,iappy
-      character(ARG_LENGTH), intent(inout)  :: inf,zone,act,aim,browse
-      
+      character(144), intent(inout)  :: inf
+      character(16), intent(inout) :: zone,act
+      character(12), intent(inout) :: aim
+      character(4), intent(inout) :: browse
+
+C Local variables for GetCommandLineArguments.
       integer :: module, iverb
       real ::  data1,data2,data3
-      character(ARG_LENGTH) :: inf2,actf,ascif,aut,sps
-      
+      character(144) :: inf2
+      character(72) :: actf,ascif
+      character(12) :: aut
+      character(8) :: sps
+
       module = CONST_PARSE2R
       call GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
@@ -727,17 +950,25 @@ C*******************************************************************************
       IMPLICIT NONE
 C Declare  calling parameter types
       integer, intent(inout)  ::  iverb, termtype,iappw,iappx,iappy
-      character(ARG_LENGTH), intent(inout)  :: inf,actf,aut,browse,sps
-      
+      character(144), intent(inout)  :: inf
+      character(72), intent(inout) :: actf
+      character(12), intent(inout) :: aut
+      character(4), intent(inout) :: browse
+      character(8), intent(inout) :: sps
+
+C Local variables for GetCommandLineArguments.
       integer :: module
       real ::  data1,data2,data3
-      character(ARG_LENGTH) :: inf2,zone,act,ascif,aim
-     
+      character(144) :: inf2
+      character(16) :: zone,act
+      character(72) :: ascif
+      character(12) :: aim
+
       module = CONST_PARSIM
       call GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
      &			   iverb,sps,data1,data2,data3)
-
+      
       end subroutine parsim
 
 C***********************************************************************************************************************
@@ -747,16 +978,24 @@ C  to be passed to the program from the invocation line.
 C***********************************************************************************************************************
 
       subroutine parsfact(termtype,iappw,iappx,iappy,inf,act,actf)
-
+      
       IMPLICIT NONE
 C Declare  calling parameter types
       integer, intent(inout)  ::  termtype,iappw,iappx,iappy
-      character(ARG_LENGTH), intent(inout)  :: inf,act,actf
-      
+      character(144), intent(inout)  :: inf
+      character(16), intent(inout) :: act
+      character(72), intent(inout) :: actf
+
+C Local variables for GetCommandLineArguments.
       integer :: module, iverb
       real ::  data1,data2,data3
-      character(ARG_LENGTH) :: inf2,zone,ascif,aut,aim,browse,sps
-      
+      character(144) :: inf2
+      character(16) :: zone
+      character(72) :: ascif
+      character(12) :: aut,aim
+      character(4) :: browse
+      character(8) :: sps
+
       module = CONST_PARSFACT
       call GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
@@ -774,7 +1013,7 @@ C*******************************************************************************
 C parcnv parse command line paramters for ecnv.
       subroutine parcnv(iverb,conv,iobs,ichop,itmprm,iform,oform,
      &                   inf,ouf,ucfg)
-
+      
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -783,7 +1022,7 @@ C parcnv parse command line paramters for ecnv.
       integer termtype
       integer i,iverb,itmprm,iobs,ichop
       real conv
-      character argument*72,prog*72,inf*144,outs*248,appn*24
+      character argument*72,prog*48,inf*144,outs*248,appn*24
       character iform*24,oform*24,ouf*144,ucfg*72,mode*8
 
       inf  = 'UNKNOWN'
@@ -837,7 +1076,7 @@ C If one parameter.
       call edisp(iuout,'  esp-r         dxf, viewer, vrml')
       call edisp(iuout,'  dxf           esp-r, viewer')
       call edisp(iuout,' ')
-      call edisp(iuout,'If converting to esp-r then an additional')
+      call edisp(iuout,'If converting to esp-r then an additional') 
       call edisp(iuout,'parameter is allowed:')
       call edisp(iuout,' -u [upgrade] when updating a model from ')
       call edisp(iuout,'    registration stage.')
@@ -890,7 +1129,7 @@ C If one parameter.
 C ******* FINDAPP
 C FINDAPP given a file name (string) see if it contains one of the esp-r module names.
       SUBROUTINE findapp(string,appn)
-
+      
       integer lnblnk  ! function definition
 
       CHARACTER*(*) string,appn
@@ -931,8 +1170,7 @@ C If islash > 0 then root and file name
 
       RETURN
       END
-
-C ******************** scesprc
+C ******************** scesprc 
 C scesprc scans the ESP-r dot file which should be located in the
 C users home folder or in the esp-r distribution.  If not found
 C then some defaults are set.
