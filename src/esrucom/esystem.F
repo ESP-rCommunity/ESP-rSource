@@ -2126,7 +2126,7 @@ C automatically and should not be modified through project manager
       ENDIF
       IF(IWARN.EQ.1.AND..NOT.AUTOOK)THEN
          call askok(OUTS,
-     &   'Aare you sure you want to continue?',OK,dok,10)
+     &   'Are you sure you want to continue?',OK,dok,10)
          IF(.NOT.OK)STOP
       ENDIF
 
