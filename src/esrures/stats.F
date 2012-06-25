@@ -2004,7 +2004,7 @@ C Calcalate the sums and statistics to display during relevant period.
         else
           write(outs,68)THE,tzhtime,TCE,tzctime,TLHE,tzlhtime,TLCE,
      &      tzlctime
-   68     format(1X,'   All',9X,4(F11.2,F7.1))
+   68     format(1X,'   All',9X,4(F11.1,F7.1))
         endif
         call edisp(itru,' ')
         call eddisp(itru,outs)
