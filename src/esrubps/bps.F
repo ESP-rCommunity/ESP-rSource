@@ -117,6 +117,7 @@ C  commons
 #include "BlockData.h"
 
       program bps
+      USE START_UP, ONLY: UsePassedCommandLine
 
 C======hot3000========================start
 C
@@ -132,9 +133,39 @@ C==========================================
       logical dll
 
       dll = .false.
+      ! This ensures the command line is used and not a string passed in
+      UsePassedCommandLine = .false.
       call SubBps
 
-      end
+      end program
+c*******************************************************************************
+c*******************************************************************************
+c*******************************************************************************
+      subroutine PassInCommandLine(nParameters, CommandLineString,
+     &            length)
+      USE START_UP
+      USE DLL_Functions
+      IMPLICIT NONE
+
+C Declare  calling parameter types
+      character(300), intent(in)  :: CommandLineString
+      integer, intent(in) :: length
+      integer, intent(in) :: nParameters
+      character(300)  :: Buffer
+      Buffer = ''
+      Buffer(1:length) = CommandLineString(1:length)
+C      write(*,*)'In PassInCommandLine'
+C      write(*,*)'CommandLineString = ',CommandLineString
+C      write(*,*)'length = ',length
+C      write(*,*)'nParameters= ',nParameters
+      call SetPassedCommandLine(Buffer, nParameters)
+C Since this subroutine is called by the harmonizer to initialize ESP-r,
+C this is a good place to load in the harmonizer dll.
+      call LoadDll
+      end subroutine PassInCommandLine
+c*******************************************************************************
+c*******************************************************************************
+c*******************************************************************************
 
 C======SubBps=========================
 C SubBps can be used where bps needs to be called as
@@ -142,6 +173,7 @@ C a subroutine rather than as an application.
       subroutine SubBps
       USE START_UP
       use h3kmodule
+      use TCC, ONLY:COSIM
 #include "building.h"
 #include "model.h"
 #include "plant.h"
@@ -335,6 +367,11 @@ C Active domain.  Assume not active, check if running in dll mode
 C and clear dll subroutine name and error details.
       CFDOK=.false.
 
+C Co-simulation between ESP-r and TRNSYS is possible.  By default assume
+C there is no co-simulation.  This flag will be set to true if a TRNSYS
+C coupling component is detected by the plant domain.
+      COSIM = .false.
+      
 C mark in log file, start of simulation
       if( dll ) then
 #ifdef F90
@@ -705,6 +742,7 @@ C Default setting of IREP, reporting and range checking on.
 C If an input file has been specified then load it and then
 C return to the main menu.
       XST=.false.
+C      write(*,*)'LCMDFL: ',LCMDFL
       if(LCMDFL(1:2).ne.'  '.and.LCMDFL(1:4).ne.'UNKN')then
         INQUIRE (FILE=LCMDFL,EXIST=XST)
         IF(XST)THEN
@@ -714,6 +752,7 @@ C info in after reading the .cfg file.
           if(sps(1:2).ne.'  '.and.sps(1:4).ne.'UNKN')then
             write(spsname,'(a8)')sps(1:8)
             if(aut(1:6).eq.'silent')then
+              write(*,*)'Silent-running mode.'
               autook=.true.
               call edisp(iuout,'Silent-running mode.')
               call tstamp('>','SIM: Silent-running mode')
@@ -1213,9 +1252,9 @@ C Close moisture result library.
         if( dll ) return
 
 C Clear allocatable arrays
-	CALL DeallocateAllArrays
+        CALL DeallocateAllArrays
         call epagend
-        STOP
+        return
       else
 
 C Trap unused menu picks.
@@ -1248,7 +1287,7 @@ C Error.
  901  call edisp(iuout,'Error opening journal file, continuing.')
       goto 902
 
-      end
+      end subroutine SubBps
 
 C Dummy routines (needed for call back from c).
       subroutine imgdisp(iforce,focus,ier)

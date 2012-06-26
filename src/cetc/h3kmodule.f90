@@ -338,6 +338,14 @@ MODULE h3kmodule
          rvpltFCellFuelHHV,rvpltFCellElecEffBOP,rvpltFCellCogenEff,rvpltFCellFuelFlw
 
    Type(ReportVariable) :: rvBldInfAirInf,rvBldInfAirChg
+   
+   !Used by TCC.F
+   Type(ReportVariable) :: rvpltCosimInvocations, rvpltCosimEsprIter,rvpltCosimTrnsysIter,rvpltHCCTempToTrnsys, &
+      rvpltHCCFlowToTrnsys, rvpltACCTempToTrnsys, rvpltACCFlowToTrnsys, rvpltACCMoistFlowToTrnsys, &
+      rvpltHCCTempToEspr, rvpltHCCFlowToEspr, rvpltACCTempToEspr, rvpltACCFlowToEspr, &
+      rvpltACCMoistFlowToEspr, rvpltCosimAirPointTemperatures, rvpltCosimAirPointHumidities, &
+      rvpltCosimAirPointCasualGains
+   
 CONTAINS
    ! ********************************************************************
    ! Subroutine: UpdateH3kReport
@@ -3887,7 +3895,105 @@ CONTAINS
       rvBldInfAirChg%VariableType = '(ACH)'
       rvBldInfAirChg%Description = ''
       Call AddVariable(rvBldInfAirChg)
-   End Subroutine UpdateH3kReport
+
+      !Used by TCC.F
+      rvpltCosimInvocations%VariableName = 'plant/co-sim/Invocaions'
+      rvpltCosimInvocations%MetaType = 'units'
+      rvpltCosimInvocations%VariableType = '-'
+      rvpltCosimInvocations%Description = ''
+      Call AddVariable(rvpltCosimInvocations)
+
+      rvpltCosimEsprIter%VariableName = 'plant/co-sim/Total_Esp-r_Iterations'
+      rvpltCosimEsprIter%MetaType = 'units'
+      rvpltCosimEsprIter%VariableType = '-'
+      rvpltCosimEsprIter%Description = ''
+      Call AddVariable(rvpltCosimEsprIter)
+
+      rvpltCosimTrnsysIter%VariableName = 'plant/co-sim/Total_Trnsys_Iterations'
+      rvpltCosimTrnsysIter%MetaType = 'units'
+      rvpltCosimTrnsysIter%VariableType = '-'
+      rvpltCosimTrnsysIter%Description = ''
+      Call AddVariable(rvpltCosimTrnsysIter)
+
+      rvpltHCCTempToTrnsys%VariableName ='plant/co-sim/HCC_*/HCC_Temp_to_Trnsys'
+      rvpltHCCTempToTrnsys%MetaType = 'units'
+      rvpltHCCTempToTrnsys%VariableType = '(oC)'
+      rvpltHCCTempToTrnsys%Description = ''
+      Call AddVariable(rvpltHCCTempToTrnsys)
+
+      rvpltHCCFlowToTrnsys%VariableName = 'plant/co-sim/HCC_*/HCC_Flow_To_Trnsys'
+      rvpltHCCFlowToTrnsys%MetaType = 'units'
+      rvpltHCCFlowToTrnsys%VariableType = 'kg/s'
+      rvpltHCCFlowToTrnsys%Description = ''
+      Call AddVariable(rvpltHCCFlowToTrnsys)
+            
+      rvpltACCTempToTrnsys%VariableName = 'plant/co-sim/ACC_*/ACC_Temp_to_Trnsys'
+      rvpltACCTempToTrnsys%MetaType = 'units'
+      rvpltACCTempToTrnsys%VariableType = '(oC)'
+      rvpltACCTempToTrnsys%Description = ''
+      Call AddVariable(rvpltACCTempToTrnsys)
+
+      rvpltACCFlowToTrnsys%VariableName = 'plant/co-sim/ACC_*/ACC_Flow_To_Trnsys'
+      rvpltACCFlowToTrnsys%MetaType = 'units'
+      rvpltACCFlowToTrnsys%VariableType = 'kg/s'
+      rvpltACCFlowToTrnsys%Description = ''
+      Call AddVariable(rvpltACCFlowToTrnsys)
+
+      rvpltACCMoistFlowToTrnsys%VariableName = 'plant/co-sim/ACC_*/ACC_MoistFlow_To_Trnsys'
+      rvpltACCMoistFlowToTrnsys%MetaType = 'units'
+      rvpltACCMoistFlowToTrnsys%VariableType = 'kg/s'
+      rvpltACCMoistFlowToTrnsys%Description = ''
+      Call AddVariable(rvpltACCMoistFlowToTrnsys)
+            
+      rvpltHCCTempToEspr%VariableName = 'plant/co-sim/HCC_*/HCC_Temp_to_Espr'
+      rvpltHCCTempToEspr%MetaType = 'units'
+      rvpltHCCTempToEspr%VariableType = '(oC)'
+      rvpltHCCTempToEspr%Description = ''
+      Call AddVariable(rvpltHCCTempToEspr)
+
+      rvpltHCCFlowToEspr%VariableName = 'plant/co-sim/HCC_*/HCC_Flow_To_Espr'
+      rvpltHCCFlowToEspr%MetaType = 'units'
+      rvpltHCCFlowToEspr%VariableType = 'kg/s'
+      rvpltHCCFlowToEspr%Description = ''
+      Call AddVariable(rvpltHCCFlowToEspr)
+            
+      rvpltACCTempToEspr%VariableName = 'plant/co-sim/ACC_*/ACC_Temp_to_Espr'
+      rvpltACCTempToEspr%MetaType = 'units'
+      rvpltACCTempToEspr%VariableType = '(oC)'
+      rvpltACCTempToEspr%Description = ''
+      Call AddVariable(rvpltACCTempToEspr)
+
+      rvpltACCFlowToEspr%VariableName = 'plant/co-sim/ACC_*/ACC_Flow_To_Espr'
+      rvpltACCFlowToEspr%MetaType = 'units'
+      rvpltACCFlowToEspr%VariableType = 'kg/s'
+      rvpltACCFlowToEspr%Description = ''
+      Call AddVariable(rvpltACCFlowToEspr)
+
+      rvpltACCMoistFlowToEspr%VariableName = 'plant/co-sim/ACC_*/ACC_MoistFlow_To_Espr'
+      rvpltACCMoistFlowToEspr%MetaType = 'units'
+      rvpltACCMoistFlowToEspr%VariableType = 'kg/s'
+      rvpltACCMoistFlowToEspr%Description = ''
+      Call AddVariable(rvpltACCMoistFlowToEspr)
+
+      rvpltCosimAirPointTemperatures%VariableName = 'plant/co-sim/zone_*/air_point_temperature'
+      rvpltCosimAirPointTemperatures%MetaType = 'units'
+      rvpltCosimAirPointTemperatures%VariableType = '(oC)'
+      rvpltCosimAirPointTemperatures%Description = ''
+      Call AddVariable(rvpltCosimAirPointTemperatures)
+
+      rvpltCosimAirPointHumidities%VariableName = 'plant/co-sim/zone_*/air_point_relative_humidity'
+      rvpltCosimAirPointHumidities%MetaType = 'units'
+      rvpltCosimAirPointHumidities%VariableType = '(%)'
+      rvpltCosimAirPointHumidities%Description = ''
+      Call AddVariable(rvpltCosimAirPointHumidities)
+
+      rvpltCosimAirPointCasualGains%VariableName = 'plant/co-sim/zone_*/casual_gains'
+      rvpltCosimAirPointCasualGains%MetaType = 'units'
+      rvpltCosimAirPointCasualGains%VariableType = 'W'
+      rvpltCosimAirPointCasualGains%Description = ''
+      Call AddVariable(rvpltCosimAirPointCasualGains)
+
+End Subroutine UpdateH3kReport
 
 
    ! ********************************************************************

@@ -42,13 +42,14 @@ C called the required number of times, saving results after each simulation.
       IMPLICIT NONE
 
 C      USE H3KSTORE_FC_DATA,ONLY: iCurrent_FCT_OUTPUT_FILE
-#include "building.h"
-#include "uncertainty.h"
-#include "hvac_parameters.h"
-#include "h3kstore_parameters.h"
-#include "h3kstore_common.h"
-#include "SOFC.h"
-#include "UserSimulationToggles.h"
+      include "building.h"
+      include "uncertainty.h"
+      include "hvac_parameters.h"
+      include "h3kstore_parameters.h"
+      include "h3kstore_common.h"
+      include "SOFC.h"
+      include "UserSimulationToggles.h"
+      include "plant.h"
 
       common/filep/ifil
       INTEGER :: ifil
@@ -66,6 +67,20 @@ C      USE H3KSTORE_FC_DATA,ONLY: iCurrent_FCT_OUTPUT_FILE
       
       COMMON/GR1D04/GAM,RGAM
       REAL GAM, RGAM
+
+C Plant matrix solver convergence criteria.      
+      COMMON/PITER/MAXITP,PERREL,PERTMP,PERFLX,PERMFL,itrclp,
+     &             ICSV(MPNODE,MPVAR),CSVI(MPNODE,MPVAR)
+
+      integer MAXITP, itrclp, ICSV
+      real PERREL, PERTMP, PERFLX, PERMFL, CSVI
+     
+C Tolerance for iteration of hydrogen flow matrix
+      common/PITER_H2/fH2_iteration_tolerance
+      real fH2_iteration_tolerance
+      
+      
+      
       
       COMMON/SAVE/ISAVE
       INTEGER :: isave
@@ -144,6 +159,21 @@ C Are uncertainties defined?
 C Reimpose any user-specified simulation toggles as needed 
       if ( bUserGAM ) GAM = fUserGAM        ! User-specified-implicitness.
       if ( bUserSolar ) ISOLAR = iUserSolar ! User-specified-solar-processing 
+      
+      
+      if ( bUserPltSolvConfig ) then 
+      
+        MAXITP                   = iUserMAXITP    
+        itrclp                   = iUserITRCLP    
+        PERREL                   = fUserPERREL    
+        PERTMP                   = fUserPERTMP    
+        PERFLX                   = fUserPERFLX    
+        PERMFL                   = fUserPERMFL    
+        fH2_iteration_tolerance  = fUserH2iterTol 
+      
+      endif 
+      
+      
 C Run the necessary number of simulations.
       do 100, I=1,NRSIM 
         ISIM=I
@@ -306,6 +336,7 @@ C and information on the saved result set.
 #include "net_flow.h"
 #include "monitor.h"
 #include "cfd.h"
+#include "UserSimulationToggles.h"
 
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -406,16 +437,31 @@ C every plant time-step <<check with essam on this!!!>>.
 C Initialise plant side matrix solver. By default, the Gaussian approach
       IPMSLV=1
 
-C Initialise plant side iteration parameters
-      MAXITP=100
-      PERREL=.01
-      PERTMP=1.
-      PERFLX=10.
-      PERMFL=.0005
-      itrclp=maxitp
-C Hydrogen flow iteration tolerance
-      fH2_iteration_tolerance = PERMFL * 1.0E-03 
 
+     
+C Initialize user defined plant side convergence params to default values   
+
+
+      UsrPltConfig: if ( bUserPltSolvConfig ) then 
+      
+        ! Use specified plant solution parameters 
+        
+        MAXITP  = iUserMAXITP   
+        ITRCLP  = iUserITRCLP   
+        PERREL  = fUserPERREL   
+        PERTMP  = fUserPERTMP   
+        PERFLX  = fUserPERFLX   
+        PERMFL  = fUserPERMFL   
+        fH2_iteration_tolerance = fUserH2iterTol
+      
+      else 
+      
+        ! save comptued values to report to user. 
+      
+        
+      endif UsrPltConfig
+   
+     
 
 C Initialise all zones to air-filled
       do 114 iwz=1,mcom
@@ -925,7 +971,7 @@ C Plant components state-space equation types.
         call edisp(iuout,'   steady state                      (4)')
         call edisp(iuout,' ')
 
-        CALL EASKI(IMPEXP,' ','Plant equation type: (see help)',
+        CALL EASKI(IMPEXP,' ','Plant equation type: (1-4, see help)',
      &         1,'F',4,'F',3,'plant equation type iq 15',IER,nbhelp)
         IF(IER.NE.0)GOTO 131
         call tstamp('>','SIM: edit plant equation type')
@@ -1037,31 +1083,44 @@ C Plant solution technique.
         CALL EASKI(IPMSLV,' ',' Plant solver type (see help)?',
      &    1,'F',3,'F',2,'solver type',IER,nbhelp)
         IF(IER.NE.0) GOTO 308
+        
+        bUserPltSolvConfig = .true. 
 
   309   CALL EASKI(MAXITP,' Maximum number of iterations',' : ',
      &    1,'F',0,'-',1,'no iter',IER,nbhelp)
 
-        CALL EASKI(itrclp,' No. of iterations for control loops',' : ',
+        CALL EASKI(fUserITRCLP,
+     &    ' No. of iterations for control loops',' : ',
      &    1,'F',0,'-',1,'no iter',IER,nbhelp)
 
-        CALL EASKR(PERREL,' Relative error (-) ',' : ',
+        CALL EASKR(fUserPERREL,' Relative error (-) ',' : ',
      &    0.0001,'F',0.,'-',1.,'rel err',IER,nbhelp)
 
-        CALL EASKR(PERTMP,' Absolute error temperature (K) ',' : ',
+        CALL EASKR(fUserPERTMP,' Absolute error temperature (K) ',' : ',
      &    0.0001,'F',0.,'-',1.,'abs err temp',IER,nbhelp)
 
-        CALL EASKR(PERFLX,' Absolute error heat flux (W) ',' : ',
+        CALL EASKR(fUserPERFLX,' Absolute error heat flux (W) ',' : ',
      &    0.0001,'F',0.,'-',1.,'abs err flux',IER,nbhelp)
 
-        CALL EASKR(PERMFL,' Absolute error mass flow (kg/s) ',' : ',
+        CALL EASKR(fUserPERMFL,
+     &    ' Absolute error mass flow (kg/s) ',' : ',
      &    0.0001,'F',0.,'-',1.,'abs err flux',IER,nbhelp)
 
-        CALL EASKR(fH2_iteration_tolerance,
+        CALL EASKR(fUserH2iterTol,
      &    ' Absolute error (H2 mass flow) flow (kg/s) ',' : ',
      &    5.0E-6,'F',0.,'-',1.,'abs err flux',IER,nbhelp)
 
         IF(IER.NE.0) GOTO 309
 
+C Update parameters         
+        MAXITP                  = iUserMAXITP    
+        itrclp                  = iUserITRCLP    
+        PERREL                  = fUserPERREL    
+        PERTMP                  = fUserPERTMP    
+        PERFLX                  = fUserPERFLX    
+        PERMFL                  = fUserPERMFL    
+        fH2_iteration_tolerance = fUserH2iterTol          
+        
 C Perhaps plant solution iteration parameters are altered, so always
 C synchronize corresponding mass flow solver iteration parameters
 C except for MAXITP / MAXITF
@@ -1771,7 +1830,7 @@ C prior to each simulation commencing.
 #include "model.h"
 #include "esprdbfile.h"
 #include "control.h"
-      
+#include "UserSimulationToggles.h"       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -2022,8 +2081,9 @@ C If appropriate, output special features invoked.
       IF(GRND3D)IMESS=1
       IF(MSTROK)IMESS=1
       IF(IndxSt.GT.0)IMESS=1
-
+      IF(bUserPltSolvConfig) IMESS = 1
       IF(IMESS.EQ.1)THEN
+        call edisp(icout,'')
         call edisp(icout,' Special features invoked:')
         call edisp(icout,' =========================')
       ENDIF
@@ -2073,6 +2133,38 @@ C or mixed, based on time-step evaluation.
         endif
       ENDIF
 
+       UserPltConfigSettings: if ( bUserPltSolvConfig ) then 
+        
+        WRITE(OUTS,'(A,I5)')
+     &  ' Plant - max iterations: ',iUserMAXITP
+        CALL EDISP(IUOUT,OUTS)
+        
+        WRITE(OUTS,'(A,I5)')
+     &  '         max cotrol iterations: ', iUserITRCLP
+        CALL EDISP(IUOUT,OUTS)
+
+        WRITE(OUTS,'(A,F5.2)')
+     &  '         max relative error: ',fUserPERREL
+        CALL EDISP(IUOUT,OUTS)  
+        
+        WRITE(OUTS,'(A,F5.2)')
+     &  '         max temperature error (oC): ',fUserPERTMP
+        CALL EDISP(IUOUT,OUTS)  
+
+        WRITE(OUTS,'(A,F5.2)')
+     &  '         max mass flow error (kg/s): ',fUserPERMFL
+        CALL EDISP(IUOUT,OUTS)          
+
+        WRITE(OUTS,'(A,F5.2)')
+     &  '         max heat flux error (W): ',fUserPERFLX
+        CALL EDISP(IUOUT,OUTS)          
+        
+        WRITE(OUTS,'(A,E12.6)')
+     &  '         max H2 flow error (kg/s): ',fUserH2iterTol
+        CALL EDISP(IUOUT,OUTS)   
+        
+      endif UserPltConfigSettings
+      
 C Default solar treatment, solar ON.
       IF(ISOLAR.NE.0)call edisp(icout,' Solar processing OFF.')
 
@@ -2542,3 +2634,4 @@ c added Save level 5 information
 
    12 return
       end
+ 

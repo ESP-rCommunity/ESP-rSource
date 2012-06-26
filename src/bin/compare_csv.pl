@@ -285,7 +285,6 @@ while ($all_values{$ref_file}{$headers[0]}[$row_count]){
 $output .= "\n\n --- RESULTS ------------------ \n";
 $output .= "Data rows in refernce file:  $ref_file_row_count   \n\n";
 $output .= "Maximum normalized error in test files: \n";
-$output .= " -> Observed in variable: $header \n"; 
 for $file ( keys %global_abs_head ){
   $header = $global_abs_head{$file};
   prep_output("summary");
@@ -338,7 +337,7 @@ sub prep_output(&$){
     $missing_txt = "";
   }
 
-  $output .= " -> file: $file $ref_txt $missing_txt \n"; 
+  $output .= " -> file: $file $ref_txt $missing_txt \n";
   if(! $missing_txt ){
     if ($mode !~ /summary/  ){
       $output .= "    Average value:            $average{$file}{$header} $units{$header}\n";

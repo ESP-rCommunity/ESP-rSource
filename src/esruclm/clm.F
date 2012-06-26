@@ -85,13 +85,13 @@ C Name of current application
       common/APPNAME/cAppName
       
       character cAppName*12
-
+      character(144)  :: inf,pact,aut,ascif
       dimension ITEM(22)
       character CLMLOC*30
       character ITEM*26,LASCI*72,outs*124,outs248*248
       character PERST1*14,PERST2*40,PERST3*40,LCMDFL*144
-      character inf*144,ascif*72,pascif*72,llasci*144
-      character pact*16,aut*12,paction*16
+      character pascif*72,llasci*144
+      character paction*16
       character path*72,xfile*144,tg*1,delim*1
       character tab*1,fs*1,OUTSTR*124
       character journcmd*20,jfile*72,uname*24,cjfile*72
