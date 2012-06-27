@@ -95,6 +95,8 @@ extendedDebug="no"         # Enable agressive debugging / warnings /FPE?
 use_intel="no"             # Use intel compilers?
 skip_ish_calcs="no"        # Skip update of exemplar shading files?
 reuse_ish_calcs="no"       # if yes limit re-calculation of exemplar shading files?
+clean="yes"                # Clean object files?
+
 
 #-----------------------------------------------------------
 # List of targets understood by bps
@@ -140,7 +142,7 @@ if [ $# -ne 0 ]; then
       else
         case "$i" in
         -h | --help)    help=1;                    shift;;
-        --debug)        debugging=yes;             shift;;
+        --debug)        debugging=yes; clean=no    shift;;
         -d) shift;      DESTdir=$1; input="yes";   shift;;
         --force)        preserve_espr_dir="no";    shift;;
         --no_training)  install_training="no";     shift;;
@@ -162,6 +164,7 @@ if [ $# -ne 0 ]; then
         -v | --verbose) make_msg_file="";          shift;;
         --skip_ish_calcs) skip_ish_calcs="yes";    shift;;
         --reuse_ish_calcs) reuse_ish_calcs="yes";    shift;;
+        --quick_rebuild) clean="no";               shift;;
         clean)          targets="${targets} clean" shift;;
         *)
               # check if target is "buildable",
@@ -2347,7 +2350,7 @@ if [ "$debugging" = "no" ]; then
   make ESPdir=${ESPdir} EXE=${EXE} COSIMDir=${COSIMdir} strip  >/dev/null 2>&1
 fi
 make ESPBinDir=${ESPbin} EXE=${EXE} COSIMDir=${COSIMdir} InstBins  >/dev/null 2>&1
-if [ "$debugging" = "no" ]; then
+if [ "$clean" = "yes" ]; then
   make EXE=${EXE} clean  >/dev/null 2>&1
 fi
 echo "Done."
