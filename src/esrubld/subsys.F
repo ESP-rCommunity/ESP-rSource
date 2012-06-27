@@ -1421,14 +1421,32 @@ C Multiply: outdoor air value from tdf (based on fresh air requirements
 C in l/s/pers)*Occupants density (pers/m2)*zone area
 C Removed the occcupant fraction val(isd) from the calculation of ACI 
 C because the default ncm calculation assumes that there is no "demand-ventilation".
+
+C << Note: 2010 NCM doc implies that there can be demand-ventilation.
+C << what, if any attributes are needed to implement demand-ventilation?
+
+C << This is a place where MVHR logic could be added.  If we assume an
+C << MVHR bypass if it is warmer outside then we could reduce ACI by
+C << 1.0 - MVHR efficiency when it is cooler outside. Probably need to
+C << take into account whether a plant system has been associated with
+C << the zone.
+
           ACI=TMAR(itdi,IATDF(itdi,9))*TMAR(itdi,IATDF(itdi,1))
      &       *ZBASEA(ICOMP)
+
+C Patch by JWH to represent MVHR of 70% efficiency if the ambient
+C temperature is below the zone temperature, otherwise assume a
+C bypass of MVHR. Not to be committed. Comment out after use.
+          if(TF.lt.TFA(ICOMP))then
+            write(6,*) 'MVHR applied in ',icomp,' to ACI',ACI,ACI*0.3
+            ACI=ACI*0.3
+          endif
         else
-          ACI=0.0
+          ACI=0.0  ! there are no occupants so assume no makeup air
         endif
 
-C <<<Check what would happen if there was also a ventilation value in the>>>>
-C <<<original model - variables ACC1 & ACC2>>>>
+C << Check what would happen if there was also a ventilation value in the>>>>
+C << original model - variables ACC1 & ACC2>>>>
 
 C Convert l/s to ach
         ACI=ACI*(3600.0/1000.)/VOL(ICOMP)
