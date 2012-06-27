@@ -96,7 +96,7 @@ use_intel="no"             # Use intel compilers?
 skip_ish_calcs="no"        # Skip update of exemplar shading files?
 reuse_ish_calcs="no"       # if yes limit re-calculation of exemplar shading files?
 clean="yes"                # Clean object files?
-
+unversioned="no"           # Check svn for versioning info?
 
 #-----------------------------------------------------------
 # List of targets understood by bps
@@ -164,6 +164,7 @@ if [ $# -ne 0 ]; then
         -v | --verbose) make_msg_file="";          shift;;
         --skip_ish_calcs) skip_ish_calcs="yes";    shift;;
         --reuse_ish_calcs) reuse_ish_calcs="yes";    shift;;
+        --unversioned)    unversioned="yes";       shift;;
         --quick_rebuild) clean="no";               shift;;
         clean)          targets="${targets} clean" shift;;
         *)
@@ -1598,7 +1599,7 @@ echo " Installing ESP-r system. This may take some time."
  # Digest version information in Version text file
  release=`cat ${SRCdir}/Version | grep "ESP-r release " | sed "s/ESP-r release //g"`
 
-
+ 
  # Try to collect svn information
  svn_info_command="svn info"
  svn_status_command="svn status"
@@ -1607,17 +1608,18 @@ echo " Installing ESP-r system. This may take some time."
  # svn_info_command="cat ~/svn_info.txt"
  # svn_status_command="cat ~svn_status.txt"
 
+ if [ "$unversioned" == "no" ]; then
  svnrevision=`$svn_info_command 2>&1 | grep "^Revision:"`
  svnnotfound=`$svn_info_command 2>&1 | grep "command not found"`
  notworkingcopy=`$svn_info_command 2>&1 | grep "is not a working copy"`
-
- # Attempt to collect URL from svn info
- URL=`$svn_info_command 2>&1 | grep "^URL" | sed "s/URL: //g"`
+ URLcvsdude=` echo $URL | grep "https*://espr.svn[0-9]*.cvsdude.com/esp-r/"`
+ URLesprcentral=` echo $URL | grep "https*://[a-zA-Z0-9]*@*esp-r.net/esp-r/"`
+ else
+   svnnotfound="yes"
+ fi
 
  # Ensure that the URL is from ESP-r central. Code built from
  # other repositories is to be designated 'unversioned'
- URLcvsdude=` echo $URL | grep "https*://espr.svn[0-9]*.cvsdude.com/esp-r/"`
- URLesprcentral=` echo $URL | grep "https*://[a-zA-Z0-9]*@*esp-r.net/esp-r/"`
 
  if [ "$svnnotfound" != "" ]    ||
     [ "$notworkingcopy" != "" ] ||
