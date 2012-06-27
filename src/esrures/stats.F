@@ -1918,15 +1918,15 @@ C Energy requirements.
      &' Zone total sensible and latent plant used (kWhrs)')
         write(outs,'(2A)')
      &'    Zone             Sensible heating  Sensible cooling',
-     &'  Humidification   Dehumidification'
+     &'   Humidification     Dehumidification'
         call edisp(itru,outs)
         write(outs,'(2A)')
      &' id name             Energy   No. of   Energy   No. of ',
-     &'  Energy   No. of  Energy   No. of'
+     &'   Energy   No. of    Energy   No. of'
         call edisp(itru,outs)
         write(outs,'(2A)')
      &'                     (kWhrs)  Hr rqd   (kWhrs)  Hr rqd ',
-     &'  (kWhrs)  Hr rqd  (kWhrs)  Hr rqd'
+     &'   (kWhrs)  Hr rqd    (kWhrs)  Hr rqd'
         call edisp(itru,outs)
       endif
 
@@ -1992,7 +1992,7 @@ C Calcalate the sums and statistics to display during relevant period.
         if(act(1:1).ne.'i') then
           write(outs,66)IZ,zname(IZ),ZHE,ZHTIME,ZCE,Zctime,ZLHE,
      &      ZLHTIME,ZLCE,zlctime
-   66     format(I3,1X,A12,4(F11.2,F7.1))
+   66     format(I3,1X,A12,4(F11.2,F8.1))
           call eddisp(itru,outs)
         endif
    65 CONTINUE
@@ -2000,11 +2000,11 @@ C Calcalate the sums and statistics to display during relevant period.
         if(THE.gt.99999.0.or.TCE.lt.-99999.0)then
           write(outs,67)THE,tzhtime,TCE,tzctime,TLHE,tzlhtime,TLCE,
      &      tzlctime
-   67     format(1X,'   All',8X,4(F11.1,F7.0))
+   67     format(1X,'   All',8X,4(F11.1,F8.0))
         else
           write(outs,68)THE,tzhtime,TCE,tzctime,TLHE,tzlhtime,TLCE,
      &      tzlctime
-   68     format(1X,'   All',9X,4(F11.1,F7.1))
+   68     format(1X,'   All',9X,4(F11.1,F8.1))
         endif
         call edisp(itru,' ')
         call eddisp(itru,outs)

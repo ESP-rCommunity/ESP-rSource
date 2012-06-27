@@ -1002,8 +1002,8 @@ C Dump 'all-zone' statistics if more than one zone.
 
 C Dump the annual totals if run was for more than one month.
 
-C << find if any of the annual totals is large enough to require 10 digits
-C << otherwise write with 9 digits.
+C Find if any of the annual totals is large enough to require 10 digits
+C otherwise write with 8 or 9 digits.
 
       if (IOM2.GT.IOM1) then
         if(biggest.gt.999999.0)then
