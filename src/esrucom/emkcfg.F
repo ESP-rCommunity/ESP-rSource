@@ -285,6 +285,18 @@ C When iexcludediff_flag is 1, diffuse shading is excluded.
 C If 0 then the calculation includes diffuse shading.      
       integer iexcludediff_flag
       common/excludediff/iexcludediff_flag
+C iQuick_run = 0: no; iQuick_run = 1: yes. 
+      common/TS_ctl/iQuick_run, iFirst_day_num, iLast_day_num,
+     &	            bSimThisDay	  	  
+      integer iQuick_run
+      integer iFirst_day_num      !- day number corresponding to the start of the continuous bps run
+      integer iLast_day_num       !- day number corresponding to the end of the continuous bps run 	 
+      logical bSimThisDay(750)    !- array indicating whether simulation should run on current day
+	  
+	  
+      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,DSBEM
+      CHARACTER*72 LBSIMP,LAIM2,hvacfile,LFClds
+
 
       CHARACTER*72 LBSIMP,hvacfile,LFClds
 
@@ -723,6 +735,15 @@ C Diffuse shading flag.
      &    iexcludediff_flag,'  # diffuse shading is excluded'
       endif      
       
+C Flag for quick run method	  
+      if(iQuick_run.eq.0)then
+C        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*quick_run  ',
+C     &    iQuick_run,'  # no'
+      else
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*quick_run  ',
+     &    iQuick_run,'  # yes'
+      endif	  
+	  
 C SHOCC: library file.
       IF ( bSHOCCed ) then
          WRITE(IFCFG,'(3A)',IOSTAT=IOS,ERR=2) '*shl  ',

@@ -34,7 +34,7 @@ OBJECTS = runesp.o arrow.o ascii_mat.o \
 	MultiYear_climate.o net2pdf.o newnet.o nwkrewr.o \
 	pltcfg.o pltnet.o prescoef.o prjdmds.o prjfmk.o prjqa.o \
 	psychro.o rcdblist.o readTrnsys.o rwipv.o rwroam.o rwsbem.o sort.o \
-	 tdfedit.o tdfile.o tdgraph.o
+	 tdfedit.o tdfile.o tdgraph.o azalt.o qrun.o
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod \
 	parse_command_line.mod h3kmodule.mod
@@ -309,6 +309,13 @@ editCFC.F:
 h3kmodule.f90:
 	rm -f h3kmodule.f90
 	ln -s $(CETCdir)/h3kmodule.f90 .
+azalt.F:
+	rm -f azalt.F
+	ln -s $(COMdir)/azalt.F .
+qrun.F:
+	rm -f qrun.F
+	ln -s $(COMdir)/qrun.F .  
+
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
 
@@ -329,6 +336,5 @@ clean:
 	mfnmsc.F mfrlst.F mksbem.F MultiYear_climate.F net2pdf.F newnet.F nwkrewr.F \
 	pltcfg.F pltnet.F prescoef.F prjdmds.F prjfmk.F prjqa.F psychro.F rcdblist.F \
 	rwipv.F rwroam.F rwsbem.F readTrnsys.F sort.F startup.F tdfedit.F tdfile.F tdgraph.F \
-	editCFC.F 
-
+	editCFC.F azalt.F qrun.F
 

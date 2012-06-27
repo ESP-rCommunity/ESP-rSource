@@ -17,13 +17,13 @@ PROG= aco$(EXE)
 
 MODULE_OBJECTS = h3kmodule.o startup.o aim2_module.o
 
-OBJECTS = aco.o acocalc.o acoesp.o arrow.o ascii_mat.o \
+OBJECTS = aco.o acocalc.o acoesp.o arrow.o ascii_mat.o azalt.o \
 	basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
  c2fdum.o common3dv.o  \
 	cread3dv.o ctlexp.o ctread.o dossupport.o e3dviews.o econstr.o edatabase.o \
 	edcondb.o egeometry.o emfnetw.o enetmisc.o eroper.o esru_misc.o \
 	esystem.o filelist.o item.o mfcdat.o nwkrewr.o pltcfg.o readaco.o \
-	readBCF.o readTrnsys.o rwipv.o rwsbem.o sort.o  tdfile.o
+	readBCF.o readTrnsys.o rwipv.o rwsbem.o sort.o  tdfile.o qrun.o 
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod \
 	parse_command_line.mod h3kmodule.mod
@@ -52,6 +52,9 @@ bscoeff.F:
 bscoeff_extended.F:
 	rm -f bscoeff_extended.F
 	ln -s $(CETCdir)/bscoeff_extended.F .
+azalt.F:
+	rm -f azalt.F
+	ln -s $(COMdir)/azalt.F .
 c2fdum.F:
 	rm -f c2fdum.F
 	ln -s $(COMdir)/c2fdum.F .
@@ -118,6 +121,9 @@ nwkrewr.F:
 pltcfg.F:
 	rm -f pltcfg.F
 	ln -s $(COMdir)/pltcfg.F .
+qrun.F:
+	rm -f qrun.F
+	ln -s $(COMdir)/qrun.F
 rwsbem.F:
 	rm -f rwsbem.F
 	ln -s $(COMdir)/rwsbem.F .
@@ -154,4 +160,4 @@ clean:
 	e3dviews.F ecasctl.F econstr.F edcon.F edcondb.F edatabase.F egeometry.F egtgeom.F \
 	emfnetw.F enetmisc.F enetrewr.F emkcfg.F eroper.F esru_misc.F esystem.F filelist.F \
 	inside.F item.F mfcdat.F nwkrewr.F pltcfg.F readTrnsys.F rwipv.F rwsbem.F \
-	sort.F startup.F tdfile.F h3kmodule.f90
+	sort.F startup.F tdfile.F h3kmodule.f90 qrun.F azalt.F

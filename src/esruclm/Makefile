@@ -11,7 +11,7 @@ MODULE_OBJECTS = startup.o
 OBJECTS = clm.o c2fdum.o cfiles.o cfrqdis.o chead.o clmgrf.o clmint.o \
           clmpsychart.o clmmmm.o clmper.o clmseq.o clmsyn.o \
 	  clmxmn.o clpred.o commonclm.o ctlexp.o dossupport.o psychro.o rcdblist.o \
-	  rrite.o
+	  rrite.o startup.o azalt.o
 
 MODULES = start_up.mod parse_command_line.mod
 
@@ -39,7 +39,10 @@ rcdblist.F:
 startup.F:
 	rm -f startup.F
 	ln -s $(COMdir)/startup.F .
-
+azalt.F:
+	rm -f azalt.F
+	ln -s $(COMdir)/azalt.F .
+    
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
 
@@ -48,4 +51,4 @@ install:
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
-	c2fdum.F commonclm.F ctlexp.F dossupport.F psychro.F rcdblist.F startup.F
+	c2fdum.F commonclm.F ctlexp.F dossupport.F psychro.F rcdblist.F startup.F azalt.F
