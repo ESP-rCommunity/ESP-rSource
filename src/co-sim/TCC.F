@@ -280,11 +280,6 @@ C Trace output.
       COMMON/TRACE/ITCF,ITRACE,IZNTRC,ITU
       INTEGER ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
 
-C Additional res output from plant domain.
-      COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
-      REAL QDATA, PCAOUT
-      INTEGER napdat
-
 C Simulation time step data.
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       INTEGER IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
@@ -566,11 +561,6 @@ C plant iteration number
       COMMON/ITERINDEX/ITERNU
       INTEGER ITERNU
 
-C Unit numbers for providing feedback to user during simulation.
-      COMMON/OUTIN/IUOUT,IUIN
-      INTEGER IUOUT,IUIN
-
-
 C Trace output.
       COMMON/TC/ITC,ICNT
       INTEGER ITC,ICNT
@@ -585,20 +575,6 @@ C Simulation time step data.
 C Plant simulation time step data.
       common/pstctr/nsincp,nsncpr
       INTEGER nsincp,nsncpr
-
-
-C Plant component pointer.
-      COMMON/C12PS/NPCDAT,IPOFS1,IPOFS2
-      INTEGER NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
-
-C Number of components in plant network and control actuation signals.
-      COMMON/C9/NPCOMP,NCI,CDATA
-      INTEGER NPCOMP,NCI(MPCOM)
-      REAL CDATA(MPCOM,MMISCD)
-
-C Plant component names
-      common/pcnam/pcname(mpcom)
-      character*15, pcname
 
 C `Additional' plant component data.
       common/pcdat/PCDATF(MPCOM,MPCDAT),PCDATP(MPCOM,MPCDAT)
@@ -652,12 +628,12 @@ C the current time-step, as well as the total number of invocations of ESP-r's
 C plant domain for the current time-step.
 C---------------------------------------------------------------------------------
       if (COSIM_DATA%ESPrTimestep.EQ.nsincp) then  ! Same time-step as last invocation.
-    	COSIM_DATA%TotalESPrIterations = COSIM_DATA%TotalESPrIterations
-     &  	                             + ITERNU
-    	COSIM_DATA%Invocations = COSIM_DATA%Invocations + 1
+         COSIM_DATA%TotalESPrIterations = COSIM_DATA%TotalESPrIterations
+     &                                  + ITERNU
+         COSIM_DATA%Invocations = COSIM_DATA%Invocations + 1
       else                                         ! New time-step.
-    	COSIM_DATA%TotalESPrIterations = ITERNU
-    	COSIM_DATA%Invocations = 1
+        COSIM_DATA%TotalESPrIterations = ITERNU
+        COSIM_DATA%Invocations = 1
       end if
 
       COSIM_DATA%ESPrTimestep = nsincp         ! Iteration number of plant domain solver.
@@ -703,7 +679,7 @@ C Harmonizer to H3K reports to make it available in .csv and .xml output.
 C---------------------------------------------------------------------------------
 	  call H3K_Report_TCC
 
-	  
+
       END FUNCTION TCC_communication
 
 
@@ -726,21 +702,20 @@ C-------------------------------------------------------------------------------
 C Declare local variables.
 C---------------------------------------------------------------------------------
 C.....Local Variables
-      integer iNameLen              ! Length of a plant component name
       INTEGER :: i					!loop index
       INTEGER :: TCCindex			!Trnsys coupling component index
       CHARACTER*2 cTCCIndex, cZoneIndex
       REAL :: TotalEsprIterations, TotalTrnsysIterations
-	  REAL :: Invocations
+      REAL :: Invocations
 
 C---------------------------------------------------------------------------------
 C Type variables to real.
 C---------------------------------------------------------------------------------
       TotalEsprIterations   = COSIM_DATA_SAVED%TotalESPrIterations 
       TotalTrnsysIterations = COSIM_DATA%TotalTrnsysIterations
-	  Invocations           = COSIM_DATA_SAVED%Invocations
+      Invocations           = COSIM_DATA_SAVED%Invocations
 
-	  
+
 C----------------------------------------------------------------------------------
 C Add variables to H3K Reports.
 C----------------------------------------------------------------------------------
@@ -757,21 +732,21 @@ C Number of invocations for time-step.
 
 C Temperature and water flow for all HCC sending components.
       do i = 1, nHCC_S
-	    TCCindex = iTCC%iHCCtoT(i)
+        TCCindex = iTCC%iHCCtoT(i)
 C-----Prepare component name
         if ( TCCindex .ge. 10 ) write(cTCCindex, '(I2)') TCCindex
         if ( TCCindex .lt. 10 ) write(cTCCindex, '(A,I1)') '0',TCCindex
         Call AddToReport(rvpltHCCTempToTrnsys%Identifier,
-     &      	COSIM_DATA_SAVED%HCC_to_TRNSYS(TCCindex)%Temperature,
-     &      	cTCCIndex)
+     &         COSIM_DATA_SAVED%HCC_to_TRNSYS(TCCindex)%Temperature,
+     &         cTCCIndex)
         Call AddToReport(rvpltHCCFlowToTrnsys%Identifier,
      &         COSIM_DATA_SAVED%HCC_to_TRNSYS(TCCindex)%Flowrate,
-     &			cTCCIndex)
+     &         cTCCIndex)
       end do
 
 C Temperature and water flow for all HCC receiving components.
       do i = 1, nHCC_R
-	    TCCindex = iTCC%iHCCtoE(i)
+         TCCindex = iTCC%iHCCtoE(i)
 C-----Prepare component name
         if ( TCCindex .ge. 10 ) write(cTCCindex, '(I2)') TCCindex
         if ( TCCindex .lt. 10 ) write(cTCCindex, '(A,I1)') '0',TCCindex
@@ -783,34 +758,34 @@ C-----Prepare component name
 
 C Temperature, air flow, and moisture flow for all ACC sending components.
       do i = 1, nACC_S
-	    TCCindex = iTCC%iACCtoT(i)
+        TCCindex = iTCC%iACCtoT(i)
 C-----Prepare component name
         if ( TCCindex .ge. 10 ) write(cTCCindex, '(I2)') TCCindex
         if ( TCCindex .lt. 10 ) write(cTCCindex, '(A,I1)') '0',TCCindex
         Call AddToReport(rvpltACCTempToTrnsys%Identifier,
-     &       	COSIM_DATA_SAVED%ACC_to_TRNSYS(TCCindex)%Temperature,
-     &			cTCCIndex)
+     &           COSIM_DATA_SAVED%ACC_to_TRNSYS(TCCindex)%Temperature,
+     &           cTCCIndex)
         Call AddToReport(rvpltACCFlowToTrnsys%Identifier,
-     &       	COSIM_DATA_SAVED%ACC_to_TRNSYS(TCCindex)%Flowrate,
-     &			cTCCIndex)
+     &           COSIM_DATA_SAVED%ACC_to_TRNSYS(TCCindex)%Flowrate,
+     &           cTCCIndex)
         Call AddToReport(rvpltACCMoistFlowToTrnsys%Identifier,
      &       COSIM_DATA_SAVED%ACC_to_TRNSYS(TCCindex)%Moisture_flowrate,
-     &		 cTCCIndex)
+     &       cTCCIndex)
       end do
 
 C Temperature, air flow, and moisture flow for all ACC receiving components.
       do i = 1, nACC_S
-	    TCCindex = iTCC%iACCtoE(i)
+        TCCindex = iTCC%iACCtoE(i)
 C-----Prepare component name
         if ( TCCindex .ge. 10 ) write(cTCCindex, '(I2)') TCCindex
         if ( TCCindex .lt. 10 ) write(cTCCindex, '(A,I1)') '0',TCCindex
         Call AddToReport(rvpltACCTempToEspr%Identifier,
-     &       	COSIM_DATA%ACC_to_ESPr(TCCindex)%Temperature,cTCCIndex)
+     &          COSIM_DATA%ACC_to_ESPr(TCCindex)%Temperature,cTCCIndex)
         Call AddToReport(rvpltACCFlowToEspr%Identifier,
-     &       	COSIM_DATA%ACC_to_ESPr(TCCindex)%Flowrate,cTCCIndex)
+     &          COSIM_DATA%ACC_to_ESPr(TCCindex)%Flowrate,cTCCIndex)
         Call AddToReport(rvpltACCMoistFlowToEspr%Identifier,
-     &       	COSIM_DATA%ACC_to_ESPr(TCCindex)%Moisture_flowrate,
-     &		 	cTCCIndex)
+     &          COSIM_DATA%ACC_to_ESPr(TCCindex)%Moisture_flowrate,
+     &          cTCCIndex)
       end do
       
 C  Air point temperatures and humidities sent to TRNSYS and casual gains received from TRNSYS.

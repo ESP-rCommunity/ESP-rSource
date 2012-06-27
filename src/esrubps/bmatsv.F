@@ -286,7 +286,6 @@ C water
 C Path to model 
       common/rpath/path
       character path*72
-      CHARACTER(len=255) :: cwd
       
 C SUN F90 has spotty support for cpu_time intrinsic
 #ifdef F90
