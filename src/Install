@@ -1627,21 +1627,24 @@ echo " Installing ESP-r system. This may take some time."
  # svn_status_command="cat ~svn_status.txt"
 
  if [ "$unversioned" == "no" ]; then
- svnrevision=`$svn_info_command 2>&1 | grep "^Revision:"`
- svnnotfound=`$svn_info_command 2>&1 | grep "command not found"`
- notworkingcopy=`$svn_info_command 2>&1 | grep "is not a working copy"`
- URLcvsdude=` echo $URL | grep "https*://espr.svn[0-9]*.cvsdude.com/esp-r/"`
- URLesprcentral=` echo $URL | grep "https*://[a-zA-Z0-9]*@*esp-r.net/esp-r/"`
+   svnrevision=`$svn_info_command 2>&1 | grep "^Revision:"`
+   svnnotfound=`$svn_info_command 2>&1 | grep "command not found"`
+   notworkingcopy=`$svn_info_command 2>&1 | grep "is not a working copy"`
+   URL=`$svn_info_command 2>&1 | grep "^URL" | sed "s/URL: //g"`
+   URLcvsdude=` echo $URL | grep "https*://espr.svn[0-9]*.cvsdude.com/esp-r/"`
+   URLesprcentral=` echo $URL | grep "https*://[a-zA-Z0-9]*@*esp-r.net/esp-r/"`
  else
    svnnotfound="yes"
  fi
 
+ 
  # Ensure that the URL is from ESP-r central. Code built from
  # other repositories is to be designated 'unversioned'
 
- if [ "$svnnotfound" != "" ]    ||
+ if [ "$unversioned"    == "yes" ]
+    [ "$svnnotfound"    != "" ]    ||
     [ "$notworkingcopy" != "" ] ||
-    [ "$svnrevision"    =  "" ] ;   then
+    [ "$svnrevision"    ==  "" ] ;   then
    versioned_repository="no";
  else
    if [ "$URLcvsdude" != "" ] || [ "$URLesprcentral"  != "" ]; then
@@ -1650,6 +1653,7 @@ echo " Installing ESP-r system. This may take some time."
      versioned_repository="no"
    fi
  fi
+ 
 
  # If svn is available and repository is under versioning,
  # get misc svn information
