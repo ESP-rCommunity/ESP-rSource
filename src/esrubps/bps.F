@@ -364,10 +364,6 @@ C For help messages
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
 
-C (possibly) Enable floating point exception error handling on
-C gnu 3.X compilers
-      call trapfpe()
-
 C Active domain.  Assume not active, check if running in dll mode
 C and clear dll subroutine name and error details.
       CFDOK=.false.

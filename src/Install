@@ -90,7 +90,6 @@ gnu_version="gcc4"         # flag indicating which version of gcc is in use
 make_msg_file=".make_msg"  # Dump make messages?
 compiler_version="none"    # append string to compilers?
 xLibs="X11"                # Default x-library
-enableFPE="no"             # FPE-exception handling?
 enable_cosim="no"          # Co-simulation with TRNSYS
 extendedDebug="no"         # Enable agressive debugging / warnings /FPE?
 use_intel="no"             # Use intel compilers?
@@ -1168,10 +1167,6 @@ esac
 # Append versioning information library
 ULIBS="$ULIBS -lversion"
 
-# Append exception-handling library (which may contain a dummy
-# function if FPE handling is disabled)
-ULIBS="$ULIBS -lfpe"
-
 # Append X11 library paths to ULIBS as required
 case $xLibs in
   X11) case $machine in
@@ -1268,27 +1263,6 @@ if [ "$enable_cosim" == "yes" ] && [ "$platform" == "mingw" ]; then
    EXE=".dll"
 fi
 
-
-#-------------- FPE ------------------------
-# Possibly enable compiler-specific exception handling
-
-# Target for primitive gcc3 exception handling
-gcc3_fpe_target="disableGccFPE"
-
-if [ "$enableFPE" == "yes" ]; then
-
-  case $compiler in
-    sunF90)   ;;
-    GNU) case $gnu_version in
-            gcc4)     gcc3_fpe_target="disableGccFPE"  ;;
-          esac;;
-  esac
-
-fi
-
-# Append GCC3 fpe target to targets list
-
-targets="$gcc3_fpe_target $targets"
 
 #===========================================
 ##### End Computer Architecture
@@ -1846,7 +1820,6 @@ do
      libnoX) result="${SRCdir}/lib/libnoxesru.a"  ;;
      enableXML | disableXML ) result="${SRCdir}/lib/libXML.a"  ;;
      enableSQLite | disableSQLite ) result="${SRCdir}/lib/libSQLite.a"  ;;
-     disableGccFPE | enableGccFPE) result="${SRCdir}/lib/libfpe.a" ;;
      ecnv)   result="${SRCdir}/esrucnv/ecnv${EXE}"      ;;
      vew)    result="${SRCdir}/esruvew/viewer${EXE}"      ;;
      bpsdll) result="${SRCdir}/esrubps/bps.dll"   ;;
