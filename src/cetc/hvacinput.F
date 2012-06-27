@@ -948,14 +948,14 @@ c Read number associated with heat pump in heating mode
           CALL EGETWI(OUTSTR,K,ival,0,100,'F',
      &    'hvac input: isys_num_heating',IER)
           isys_num_heating(i) = ival
-          if ( isys_num_heating(i) /= 0 .and.
-     &         ihvac_type(i) == ihvac_type(isys_num_heating(i))
-     &        ) then
+          if ( isys_num_heating(i) /= 0 ) then
+            if (ihvac_type(i) == ihvac_type(isys_num_heating(i))) then
               iLinkedSystem(i)       = iVal
               iLinkedSystem(iVal)    = i
               bSuppressThisSystem(i) = .true.
               bLinked(i)             = .true.
               bTwoModes (iVal)       = .true.
+            endif
           endif
 
 c Read control function type associated with cooling system: 
