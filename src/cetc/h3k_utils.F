@@ -1114,19 +1114,4 @@ C by zero. In this case ensure that localntstpp is 1.
 
       return
       end
-      
-C-----------------------------------------------------------------------
-C     Function bH3KExtentionsActive: Returns value of 
-C     h3k_extentions flag 
-C-----------------------------------------------------------------------
-      logical function bH3KExtentionsActive()
-      implicit none 
-      
-      common/H3KCustom/bEnableH3kExtensions
-      logical bEnableH3kExtensions     
-      
-      bH3KExtentionsActive = bEnableH3kExtensions
-      
-      return 
-      
-      end function bH3KExtentionsActive
+

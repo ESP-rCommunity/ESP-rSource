@@ -2030,3 +2030,21 @@ C parpsfh: Help message for several of the command line parsers.
       call edisp(iuout,' -buildinfo: display build details and quit.')
       return
       end
+
+            
+C-----------------------------------------------------------------------
+C     Function bH3KExtentionsActive: Returns value of 
+C     h3k_extentions flag 
+C-----------------------------------------------------------------------
+      logical function bH3KExtentionsActive()
+      implicit none 
+      
+      common/H3KCustom/bEnableH3kExtensions
+      logical bEnableH3kExtensions     
+      
+      bH3KExtentionsActive = bEnableH3kExtensions
+      
+      return 
+      
+      end function bH3KExtentionsActive
+      
