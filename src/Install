@@ -142,13 +142,13 @@ if [ $# -ne 0 ]; then
       else
         case "$i" in
         -h | --help)    help=1;                    shift;;
-        --debug)        debugging=yes; clean=no    shift;;
+        --debug)        debugging=yes; clean=no;   shift;;
         -d) shift;      DESTdir=$1; input="yes";   shift;;
         --force)        preserve_espr_dir="no";    shift;;
         --no_training)  install_training="no";     shift;;
         --no_dbs)       install_dbs="no";          shift;;
         --no_exes)      install_exes="no";         shift;;
-        --extra-debug)  debugging="yes";
+        --extra-debug)  debugging="yes"; clean=no;
                         extendedDebugging="yes";   shift;;
         --silent)       mode="silent";             shift;;
         --xml)          xml_support=yes;           shift;;
@@ -2345,7 +2345,7 @@ fi
 ##### Install and  Clean up
 cd ${SRCdir}
 echo " "
-echo -n " Installing executables..."
+echo -n " Installing executables... " 
 if [ "$debugging" = "no" ]; then
   make ESPdir=${ESPdir} EXE=${EXE} COSIMDir=${COSIMdir} strip  >/dev/null 2>&1
 fi
