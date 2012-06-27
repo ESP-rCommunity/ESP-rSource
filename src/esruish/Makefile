@@ -24,7 +24,7 @@ OBJECTS = ish.o arrow.o ascii_mat.o \
 	  esru_misc.o esystem.o sifile.o eroper.o filelist.o graph.o inscon.o \
 	  item.o mfcdat.o miscel.o nwkrewr.o plelevvc.o pltcfg.o \
 	  readTrnsys.o rwipv.o rwsbem.o shdcon.o sifops.o sort.o \
-	   synop.o trnfile.o trnsfs.o trnsfi.o ashrae.o azalt.o qrun.o 
+	   synop.o trnfile.o trnsfs.o trnsfi.o ashrae.o
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod \
 	parse_command_line.mod h3kmodule.mod
@@ -140,13 +140,7 @@ tdfile.F:
 h3kmodule.f90:
 	rm -f h3kmodule.f90
 	ln -s $(CETCdir)/h3kmodule.f90 .
-azalt.F:
-	rm -f azalt.F
-	ln -s $(COMdir)/azalt.F .
-qrun.F:
-	rm -f qrun.F
-	ln -s $(COMdir)/qrun.F .
-  
+
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
 
@@ -160,4 +154,4 @@ clean:
 	ctread.F dossupport.F e3dviews.F econstr.F edcondb.F edatabase.F \
 	egeometry.F emfnetw.F enetmisc.F enetrewr.F esru_misc.F esystem.F \
 	eroper.F filelist.F item.F mfcdat.F nwkrewr.F plelevvc.F readTrnsys.F rwipv.F \
-	rwsbem.F sort.F startup.F tdfile.F pltcfg.F h3kmodule.f90 azalt.F qrun.F
+	rwsbem.F sort.F startup.F tdfile.F pltcfg.F h3kmodule.f90

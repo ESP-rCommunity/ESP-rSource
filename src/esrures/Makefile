@@ -28,7 +28,7 @@ OBJECTS = res.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o bscoeff.o \
 	  pltcfg.o psychart.o psychro.o readTrnsys.o recover.o replsim.o resdef.o \
 	  resutil.o rlibget.o rwipv.o rwsbem.o setres.o sort.o spmatl.o spmisc.o \
 	  stats.o table.o tdfile.o tdrecres.o temps.o tgraph.o utils.o \
-	  vgraph.o visgrd.o visual.o visvec.o qrun.o azalt.o
+	  vgraph.o visgrd.o visual.o visvec.o
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod \
 	parse_command_line.mod h3kmodule.mod
@@ -180,12 +180,6 @@ visvec.F:
 h3kmodule.f90:
 	rm -f h3kmodule.f90
 	ln -s $(CETCdir)/h3kmodule.f90 .
-azalt.F:
-	rm -f azalt.F
-	ln -s $(COMdir)/azalt.F .
-qrun.F:
-	rm -f qrun.F
-	ln -s $(COMdir)/qrun.F .
 
 
 strip:
@@ -203,4 +197,4 @@ clean:
 	egeometry.F emfnetw.F enetmisc.F enetrewr.F eroper.F esru_misc.F \
 	esystem.F filelist.F fanger.F initalc.F item.F mfcdat.F mfutil.F nwkrewr.F pltcfg.F \
 	psychro.F readTrnsys.F rwipv.F rwsbem.F sort.F spmatl.F spmisc.F startup.F tdfile.F \
-	visgrd.F visual.F visvec.F h3kmodule.f90 azalt.F qrun.F
+	visgrd.F visual.F visvec.F h3kmodule.f90

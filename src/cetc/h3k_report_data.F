@@ -65,15 +65,11 @@ C*******************************************************************************
       USE AIM2_CalcData, ONLY:AIM2_infil_to_zones
 
       IMPLICIT NONE
-      include "building.h"
-      include "model.h"
-      include "geometry.h"
-      include "aim2_common.h"
-      include "control.h"
-      include "h3k_report_data.h"
-      
-      include "blc25_open_windows.h"
-      
+#include "building.h"
+#include "model.h"
+#include "geometry.h"
+#include "control.h"
+#include "blc25_open_windows.h"
 C.....Passed variable
       integer iZone            ! Zone number
 
@@ -1494,44 +1490,11 @@ C.......Total heating
       call AddToReport(
      &         rvBuildingAllZonesSuppliedEnergyHeating%Identifier,
      &         fSUMHeatInjection)
-C Obsolete calls for quick-run method need to be updated. 
-C        ! Set flag allowing h3kreports to scale this data fro seasonal 
-C        ! reporting purposes.
-C        if ( bFirst_call_bld  ) 
-C     &    call rep_set_meta ( 
-C     &         'building/all_zones/supplied_energy/heating',
-C     &         'scale_htg', 
-C     &         'true' )
-C        
-C
-C        call add_to_xml_reporting (
-C     &   fSUMHeatInjection,
-C     &   'building/all_zones/supplied_energy/heating',
-C     &   'units', '(W)',
-C     &   'Total amount of heat supplied to the building (all zones).'
-C     &   )
-
 
 C.......Total cooling
       call AddToReport(
      &         rvBuildingAllZonesSuppliedEnergyCooling%Identifier,
      &         fSUMHeatExtraction)
-
-C Obsolete calls for quick-run method need to be updated.
-C     =======
-C        if ( bFirst_call_bld  ) 
-C     &    call rep_set_meta ( 
-C     &         'building/all_zones/supplied_energy/cooling',
-C     &         'scale_clg', 
-C     &         'true' )
-C
-C        call add_to_xml_reporting (
-C     &   fSUMHeatExtraction,
-C     &   'building/all_zones/supplied_energy/cooling',
-C     &   'units', '(W)',
-C     &   'Total amount of cooling supplied to the building (all zones).'
-C     &   )
-
 
 C.......Net flux for building
       call AddToReport(
@@ -1702,8 +1665,6 @@ C.....Net energy balance
      &      + fSUMNetFlux
      &      - fSUMNetLoad)
 
-     
-        bFirst_call_bld  = .false.
       endif report_whole_building
 
 C---------------------------------------------------------------------
@@ -1820,9 +1781,9 @@ C........->Report data
 
 C calc mean surrounding temp of external surfaces
          if (IE(iZone,iSurface) .eq. 0) THEN ! the surfaces faces external
-            trsum = B1(iZone,iSurface)*TSKY**4.0 +
-     &                  C1(iZone,iSurface)*(GTF(1)+273.15)**4.0 +
-     &                    A1(iZone,iSurface)*TBAVE**4.0
+            trsum = B1(iZone,iSurface)*TSKY**4 +
+     &                  C1(iZone,iSurface)*(GTF(1)+273.15)**4 +
+     &                    A1(iZone,iSurface)*TBAVE**4
             trsum = trsum**0.25 - 273.15
 
 C........->Report data
@@ -1862,6 +1823,7 @@ C......Include only if h3k reports on building/zone_*/surf_*/node_* variables
       enddo ! <- end iSurface 1,N of iZone
 
       endif ! <- end lIncl_Surf
+
       RETURN
       END
 
@@ -2005,9 +1967,8 @@ C*******************************************************************************
       use h3kmodule
       IMPLICIT NONE
 
-      include "building.h"
-      include "MultiYear_simulations.h"
-      include "qrun.h"
+#include "building.h"
+#include "MultiYear_simulations.h"
 
 C.....Declare passed variables
       real     btimep, btimef   ! building present & future time (0.0->23.999..)
@@ -2126,18 +2087,6 @@ C.....Building simulation timestep
      &    real(nsinc))
 
 C.....H3Kreports.(time).end.................
-
-C.....Season: Obsolete call for quick-run --- needs to be updated. 
-C.....-> set name
-C      if ( iQuick_Run == 1 ) then
-C        WRITE(H3K_rep_NAME,'(A)')'building/season'
-C        call add_to_xml_reporting (
-C     &         real(iThisSeason),
-C     &         H3K_rep_NAME,
-C     &         'units', '(-)',
-C     &         'Current season in simulation (Quick-run mode)' )
-C      endif 
-
       return
       end
 
@@ -3660,7 +3609,7 @@ C.........Loop through all interconnections in a flow network
                if (b_noveloc .eqv. .false.) THEN
         ! Now get density of "sending" node. If flw1(jj) is negative, use density of
         ! node "i_neg". Densit() returns density in kg/m3
-                  if (FLW1(jj) .lt. 0.0) THEN
+                  if (FLW1(jj) .lt. 0) THEN
                     rhon=DENSIT(NDFLD(i_neg),TNOD(i_neg))
                   Else
                     rhon=DENSIT(NDFLD(ii),TNOD(ii))

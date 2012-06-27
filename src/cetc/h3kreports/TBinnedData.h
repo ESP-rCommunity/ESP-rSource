@@ -39,11 +39,11 @@ public:
 	double ActiveAverage();
 	double TotalAverage(long lBinStepCount);
 protected:
-  int m_activeTimesteps;
-  double m_sum;
-  double m_maxValue;
-  double m_minValue;
-  double m_activeAverage;
+    int m_activeTimesteps;
+    double m_sum;
+    double m_maxValue;
+    double m_minValue;
+    double m_activeAverage;
 
 	 double m_lastValue;
 	 bool m_isInit;

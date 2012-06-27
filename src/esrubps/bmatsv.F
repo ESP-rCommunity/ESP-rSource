@@ -51,8 +51,6 @@ C HOT3000: Fuel cell.
 #include "lookup_data.h"
 #include "control.h"
 #include "roam.h"
-#include "qrun.h"
-#include "h3k_report_data.h"
 
 C CWEC Degree Day and ground temperature parameters
 #include "ground_temp_mains_common.h"
@@ -101,7 +99,6 @@ C Time-step controller data.
       common/ts4/itsitr(msch),itrpas
       COMMON/TS6/idysv,ihrsv,irwcou,tsclaw,rewnd,nsncv1,nsncv2,pasone
 
-      
 C itsplt if set then transfer of mass flow
 C results is required.
       common/outflg/itsplt
@@ -269,10 +266,6 @@ C BASESIMP.
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
       character LBSIMP*72
 
-C Quick-run info
-      integer iOldSeasonIndex     !- Flags for tracking changes between seasons.
-      save iOldSeasonIndex
-      
 C Flag for whether there is basesimp file
       logical bsm_flag
 
@@ -348,7 +341,7 @@ C modify coefficients computed in MZCOE1.
       IF(NTSTEP.GT.1)THEN
         TSTEP=1./FLOAT(NTSTEP)
       ELSE
-        TSTEP = 1.0
+        TSTEP = 1
       ENDIF
 
 C Scale MZCOE1 coefficients as necessary
@@ -455,24 +448,11 @@ C of the assumed starting conditions.
       inhs=0
       inhsi=0
 
-C If quick run method is requested, set the start date and end date of the 
-C simulation to span all periods of interest (all of the best weeks).
-        if ( iQuick_run .eq. 1 ) then
-          iOldSeasonIndex = 0       
-          iss = iFirst_day_num - itcnst
-          isf = iLast_day_num
-          nhs = ( iLast_day_num - iFirst_day_num + 1 + itcnst )*24
-          
-        endif  
-    
 C Has the start day been converted from a post-new year
 C day to a pre-new year day.
-        IF(ISS.LT.1)THEN
-          iss=365-itcnst+isds       
-        if ( iQuick_run .eq. 1 ) then 
-          iss = 365 - itcnst + iFirst_day_num
-        endif  
-        isf=isf+365    
+      IF(ISS.LT.1)THEN
+        iss=365-itcnst+isds
+        isf=isf+365
         issny=1
 
 C Adjust multi-year simulation start year to account for pre-new-year
@@ -496,14 +476,6 @@ C End year: (this data is not used at present)
 
       endif
 
-C Set the variable bSimThisDay (introduced for quick run method)
-C if a quick run is not requested. 
-      if ( iQuick_run .ne. 1 ) then
-        quickrun_markdays_loop: do iCount = iss, isf
-             bSimThisDay(iCount) = .true.
-        enddo quickrun_markdays_loop
-      endif            
-    
 C H3Kreporting object - save the frequency of
 C building timesteps. Note: simulations with
 C different timesteps for multiple domains are
@@ -512,9 +484,6 @@ C.....H3Kreports.(timesteps).start.................
 C.....Minutes per timetep (building domain)
 C.....-> set name
       if ( isH3KEnabled() )  then
-
-C.....->Set flags indicating if h3kreports should (re)initialize      
-        bFirst_call_bld = .true.
         WRITE(H3K_rep_NAME,'(A)')'minutes_per_step'
         WRITE(H3K_rep_VALUE,'(f7.3)') 60./real(ntstep)
 C.....-> update meta-data
@@ -768,44 +737,11 @@ C Initialize ground temperature profile parameters
 C Start simulation day-loop.
 C (i =curr day, iss = sim start day, isf = finish day)
       do 10 i=iss,isf
-          
-        write(*,*) ' DAY: ', i, bSimThisDay(i), iSeasonIndex(i)
-   
-        seasonal_run_test: if ( bSimThisDay(i) ) then    
 
-        
-        
-C Get seasonal info
-        quick_run_init: if ( iQuick_run == 1 ) then        
-
-          iThisSeason = iSeasonIndex(i)  
-          print*, 'iSeasonIndex -> ', iSeasonIndex(i), "Old val:", 
-     &          iOldSeasonIndex
-          
-          if ( iOldSeasonIndex /= iThisSeason .and.
-     &         iThisSeason /= 0 ) then
-
-            write(*,*) '>> CALL: ', iThisSeason, 
-     &               fHtgMultiplier(iThisSeason), 
-     &               fClgMultiplier(iThisSeason)
-
-            call rep_new_season( iThisSeason, 
-     &                           fHtgMultiplier(iThisSeason), 
-     &                           fClgMultiplier(iThisSeason),
-     &                           fGenMultiplier(iThisSeason)  )
-
-    
-            iOldSeasonIndex = iThisSeason
-
-          
-          endif        
-        endif quick_run_init
-
-   
 C For multi-year simulaitons, determine the current
 C and future time row years, and the incidies of these
 C years with respect to the multi-year climate databases
-        MY_sim_initialize: if ( bMY_sim_enabled ) then
+        if ( bMY_sim_enabled ) then
 C Years
           iMY_current_year = iMY_Start_year + int(float(i-1)/365.0)
           iMY_future_year = iMY_Start_year + int(float(i)/365.0)
@@ -834,7 +770,7 @@ C indicies to the first/last records in the database.
         else
           iYear_p = iYear
           iYear_f = iYear
-        endif MY_sim_initialize
+        endif
 
 C For type 6 time-step controller, loop until saved day,
         if(irew.and.i.lt.idysv)goto 10
@@ -1707,6 +1643,7 @@ C.....Update reports.
 
 C << NOTE: dummy call REP_UPDATE only has 3 parameters >>
             call ReportNextTimeStep(nsinc,btimep,myday,bInStartup())
+!            call REP_UPDATE(nsinc,btimep,myday, iStartupFlag) ! <- store logged data
 
    30     continue
 
@@ -1811,9 +1748,7 @@ C GSHP system is defined.
        if(igshp.eq.1) then
          call GSHPSIM
        endif
-     
-       endif seasonal_run_test
-       
+
 C Day loop now complete.
    10 continue
 
