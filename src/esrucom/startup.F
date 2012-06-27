@@ -82,6 +82,9 @@ C Common blocks
       COMMON/APPNAME/cAppName
 C Timeout information
       COMMON/TIMEOUT/sTimeout,iTimeoutFlag
+C Flag for H3K customizations 
+      common/H3KCustom/bEnableH3kExtensions
+      logical bEnableH3kExtensions
 C Declare  calling parameter types
       integer, intent(out)  ::  termtype,iappw,iappx,iappy,iverb
       integer, intent(in)  ::  module
@@ -155,9 +158,9 @@ C into binary, and set default terminal type as necessary
       else 
         call getarg(i,prog)
       end if
-      write(*,*)'prog: ',prog
+      !write(*,*)'prog: ',prog
       call findapp(prog,appn)
-      write(*,*)'using app: ',appn
+      !write(*,*)'using app: ',appn
 
       if(m.eq.0)then
         return
@@ -170,8 +173,8 @@ C into binary, and set default terminal type as necessary
           else
             call getarg(i,argument)
           end if
-          write(*,*)'i: ',i,'  m: ',m
-          write(*,*)'argument: ',argument
+          !write(*,*)'i: ',i,'  m: ',m
+          !write(*,*)'argument: ',argument
           if(i.gt.m)EXIT Parseloop
           if(argument(1:5).eq.'-help')then
             call parpsfh(appn)
@@ -184,6 +187,10 @@ C Display version information and then quit
 C Display detailed build information and then quit
             CALL ESPrVersion("details",cAppName,IUOUT)
             stop
+C Enable h3k-specific customizations that may disrupt general esp-r functionality
+C (disabled by default!)            
+          elseif(argument(1:4).eq.'-h3k') then 
+            bEnableH3kExtensions = .true. 
           elseif(argument(1:3).eq.'-vv')then
             iverb = 2   ! tell application to run with debug verbose
           elseif(argument(1:2).eq.'-v')then
