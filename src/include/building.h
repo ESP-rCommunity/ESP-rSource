@@ -24,7 +24,7 @@ C Geometry.
       PARAMETER (MS=80)		!- Surfaces/zone (set MNSBZ in cfd.h to at least 2*MS).
       PARAMETER (MCON=3300)	!- Surfaces in model.
       PARAMETER (MTV=300)	!- Vertices/zone.
-      PARAMETER (MV=42)		!- Vertices/surface.
+      PARAMETER (MV=48)		!- Vertices/surface --- increased from 42 to 48 to support HOT3000 (Alex.F)
       PARAMETER (MST=MS)	!- Used with view factors.
       PARAMETER (MSM=MS+6)	!- Used with view factors.
 
@@ -40,8 +40,8 @@ C Construction.
       PARAMETER (MHCV=MN+ME)	!- Control volumes per construction.
 
 C Glazing.
-      PARAMETER (MGT=MS)	!- Insolated glazings in zone
-      PARAMETER (MTMC=7)	!- Glazing systems/zone,
+      PARAMETER (MGT=MS)	!- Insolated glazings in zone  
+      PARAMETER (MTMC=12)	!- Glazing systems/zone --- increased from 7 to 12 to support HOT3000 (Alex.F)
       PARAMETER (MGAL=2)	!- Optical sets per optics db item.
       PARAMETER (MANG=9)	!- Angles at which optical data is held.
       PARAMETER (MGOPT=150)	!- Set size in optics database.
@@ -165,4 +165,4 @@ C Miscellaneous.
       PARAMETER (MPICK=30)
       PARAMETER (MVAR=5)
       PARAMETER (MIMG=10)	!- Images associated with model.
-      PARAMETER (MCFC=7)	! Maximum number of different CFC types within a zone.
+      PARAMETER (MCFC=12)	! Maximum number of different CFC types within a zone. --- increased to 12 to match windows.
