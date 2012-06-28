@@ -72,12 +72,11 @@ struct stMapKey{
 //Used by the m_VariableInfoMap to store details about
 //each variable sent from Fortran
 struct stVariableInfo{
-   bool Enabled;
    const char* VarName;
    const char* MetaType;
    const char* MetaValue;
    const char* Description;
-   unsigned char OutputType;
+   
 };
 
 //Used by the TimeStepVecto to store details about each timestep
