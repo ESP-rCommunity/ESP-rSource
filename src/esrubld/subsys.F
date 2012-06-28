@@ -1268,7 +1268,9 @@ C Logical flags for indicating which air flow model is in use.
 C  Initialise.
       IF(NSINC.EQ.1)X3(ICOMP)=0.0
 
-C First compute the present time-row values of CVIP, CVVP
+
+
+C Now compute the present time-row values of CVIP, CVVP
 C & QVNP by equating the current simulation time-step
 C present values to the future values computed at the
 C previous time-step.
@@ -1303,6 +1305,37 @@ C Set 'pre-TIME' and 'post-TIME' on-the-hour values.
 
       TRAT=TIME-T1
       IF(T1.GT.TIME)TRAT=TIME-(T1-24.0)
+
+
+
+C Determine day, time parameters needed to access scheduled infiltration 
+C parameters from the OPR file. This code will be used if infiltration or
+C ventilation parameters are sourced from the .opr file. Note that this 
+C code sequence cannot be embedded in the air-flow schedule specific 
+C blocks (bOPR=TRUE) ; it is also required if the AIM-2 network is 
+C active and the opr file is used to impose scheduled ventilaton. 
+      IDAY1=IDYP
+      IF(IT2.EQ.1) then
+        IDAY2=IDYP+1
+      ELSE
+        IDAY2 = IDYP
+      ENDIF
+      IF(IDAY2.GT.365)IDAY2=IDAY2-365
+      ID1=ICALENDER(IDAY1)
+      ID2=ICALENDER(IDAY2)
+      DtypeLt3: IF(NBDAYTYPE.LE.3)THEN
+        ID1=1
+        ID2=1
+        IF(IDWP.EQ.6)ID1=2
+        IF(IDWP.EQ.7)ID1=3
+        IF(IT2.EQ.1)then
+          IF(IDWF.EQ.6)ID2=2
+          IF(IDWF.EQ.7)ID2=3
+        else
+          IF(IDWP.EQ.6)ID2=2
+          IF(IDWP.EQ.7)ID2=3
+        endif
+      ENDIF DtypeLt3
 
       ! This legacy line appears to be part of a convoluted method 
       ! of transporting data from the flow network into the scheduled
@@ -1597,8 +1630,10 @@ C   1            active           inactive          inactive     OPR
 C   2            active           active            inactive     AFN
 C   3            active           active            active       AIM-2
 C   -------------------------------------------------------------------
-C   (note that ESP-r currently won't run without an opr file, making 
-C    case 0 moot). 
+C   Notes: 
+C     - bps currently won't run without an opr file, making case 0 moot. 
+C     - ventilation is applied separately; scheduled ventilation from 
+C       the opr file will still be applied if the AIM-2 file is active. 
 
 C It's possible that the controls or user error have specified a model
 C that is not configured, or is not computing infiltration for a 
@@ -1652,30 +1687,6 @@ C User has not specified any air flow (Can't really happen!)
 C========================================================================         
         elseif (  bOPR ) then
 C User has provided scheduled air flows.     
-C Determine day, time parameters needed to access scheduled infiltration 
-C parameters from the OPR file. 
-        IDAY1=IDYP
-        IF(IT2.EQ.1) then
-          IDAY2=IDYP+1
-        ELSE
-          IDAY2 = IDYP
-        ENDIF
-        IF(IDAY2.GT.365)IDAY2=IDAY2-365
-        ID1=ICALENDER(IDAY1)
-        ID2=ICALENDER(IDAY2)
-        DtypeLt3: IF(NBDAYTYPE.LE.3)THEN
-          ID1=1
-          ID2=1
-          IF(IDWP.EQ.6)ID1=2
-          IF(IDWP.EQ.7)ID1=3
-          IF(IT2.EQ.1)then
-            IF(IDWF.EQ.6)ID2=2
-            IF(IDWF.EQ.7)ID2=3
-          else
-            IF(IDWP.EQ.6)ID2=2
-            IF(IDWP.EQ.7)ID2=3
-          endif
-        ENDIF DtypeLt3
 C Gather infiltration values from schedule.
         CV1=CVIN(ID1,ICOMP,IT1)
         CV2=CVIN(ID2,ICOMP,IT2)
@@ -1735,6 +1746,7 @@ C========================================================================
           ! Assign this to ESP-r's standard infiltration conductance variable `CVIF' so that these
           ! loads are reflected in ESP-r's zonal energy balances.      
            CVIF = ZONE_infil_cond 
+        
         endif AssignInfil
         
 C If the mechanical ventilation model is active
@@ -1785,14 +1797,17 @@ C Collect data from air flow module.
 
 C Impose computed conductance for scheduled ventilation for .opr or 
 C .aim2 case. 
+
           CV1=CVVN(ID1,ICOMP,IT1)*xmod
           CV2=CVVN(ID2,ICOMP,IT2)*xmod
           IC2=ICCN(ID2,ICOMP,IT2)
           TA1=TIAN(ID1,ICOMP,IT1)
           TA2=TIAN(ID2,ICOMP,IT2)
-        CF=CV1+(TRAT*(CV2-CV1))
-        ICF=IC2
-        TAF=TA2
+
+          CF=CV1+(TRAT*(CV2-CV1))
+          ICF=IC2
+          TAF=TA2
+
           ! This is a piece of legacy code that is superfluous here
           ! (and possibly superfluous all together as TRAT is 
           ! set to 1 when the air flow network is active [IARN=1]). 
@@ -1802,7 +1817,7 @@ C .aim2 case.
           ! .opr file schedules.
           ! 
           ! IF(IAIRN.ge.1)TAF=TA1+(TRAT*(TA2-TA1))
-        CVVF=CF
+          CVVF=CF
  
 C Check if zone is thermostatically controlled, and optionally 
 C overwrite the computed ventilation conductance by that determined 
@@ -2351,7 +2366,7 @@ C ADDMOIST will be positive for humidification.
 
 C At the maximum humidification, so undertake moisture mass balance with this quantity of moisture added.
               GFA(ICOMP)=(RHHC(ICOMP)*3600./real(NTSTEP)+RHS)/
-     &                 (ZMDAF(ICOMP)+VCLF(ICOMP)*3600./real(2.*NTSTEP))
+     &                 (ZMDAF(ICOMP)+VCLF(ICOMP)*3600./real(2*NTSTEP))
               ADDMOIST=RHHC(ICOMP)*3600./real(NTSTEP)
             ENDIF
 C Enthalpy for final moisture content (J/kg) 
@@ -2361,7 +2376,7 @@ C Enthalpy if  humidification had not been applied
      &             -ADDMOIST/ZMDAF(ICOMP))*1000.
 C Calculate the latent addition/extraction (W)
             ZLLDF(ICOMP)=(ENTHCT-ENTHUC)*ZMDAF(ICOMP)
-     &                                  /(3600/real(NTSTEP))
+     &                                  /(3600./real(NTSTEP))
           ENDIF
         ELSE
           ZLLDF(ICOMP)=0.0

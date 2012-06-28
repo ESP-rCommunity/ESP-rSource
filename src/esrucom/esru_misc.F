@@ -4216,9 +4216,7 @@ C Trap for I/O errors.
 
 C ******************** DeallocateAllArrays ****************************
 C *********************************************************************
-C Created by: Francesca Macdonald
-C Date: 23/07/2010
-C 
+
 C DeallocateAllArrays deallocates all the memory asociated with
 C allocatable arrays.
 C *********************************************************************

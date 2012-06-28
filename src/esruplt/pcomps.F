@@ -119,11 +119,32 @@ C connected nodes are of a type as expected by the corresponding
 C CMP??C coefficient generator routine
 
       SUBROUTINE MZSDAT
+      USE TCC, ONLY:TCC_static, HCC, ACC, InitializeCosimDataTypes
+      USE DLL_Functions, ONLY:SetArraySizes
 #include "plant.h"
+
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
       COMMON/C12PS/NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
+
+C Number of building zones and constructions.
+      integer ncomp,ncon
+      common/c1/ncomp,ncon
+
+C Declare local variables to track the number of coupling components to TRNSYS
+C that are utilized in the user's model.
+      INTEGER :: HCC_S, HCC_R, ACC_S, ACC_R
+      INTEGER, DIMENSION(5) :: Sizes
+      HCC_S = 1
+      HCC_R = 1
+      ACC_S = 1
+      ACC_R = 1
+      
+C Initialize the variables that are used in communication with TRNSYS when
+C co-simulation is active.      
+      call InitializeCosimDataTypes
+
 
 C Component by component, call routine to deal with relevant type
       DO 10 IPCOMP=1,NPCOMP
@@ -345,13 +366,37 @@ C 2-node stratified storage tank model with 1 immersed heat exchanger
 C 3-node stratified storage tank model with 2 immersed heat exchangers
       ELSE IF(ITYPE.EQ.127) THEN
          CALL stratified_tank_2HX_static(IPCOMP)
-
+C Hydronic sending coupling component (HCC-S) for co-simulation with TRNSYS.
+      ELSE IF (ITYPE .EQ. 130) THEN
+         CALL TCC_static(IPCOMP, HCC_S, HCC, .true.)
+         HCC_S = HCC_S+1
+C Hydronic receiving coupling component (HCC-R) for co-simulation with TRNSYS.
+      ELSE IF (ITYPE .EQ. 131) THEN
+         CALL TCC_static(IPCOMP, HCC_R, HCC, .false.)
+         HCC_R = HCC_R+1
+C Air-based sending coupling component (HCC-S) for co-simulation with TRNSYS.
+      ELSE IF (ITYPE .EQ. 132) THEN
+         CALL TCC_static(IPCOMP, ACC_S, ACC, .true.)
+         ACC_S = ACC_S+1
+C Air-based receiving coupling component (HCC-R) for co-simulation with TRNSYS.
+      ELSE IF (ITYPE .EQ. 133) THEN
+         CALL TCC_static(IPCOMP, ACC_R, ACC, .false.)
+         ACC_R = ACC_R+1
       ELSE
-
-        WRITE(IUOUT,*) ' No static template for component ',IPCOMP
+        WRITE(IUOUT,*) ' No static template for component ',IPCOMP,ITYPE
         STOP ' MZSDAT: unresolvable error on component type'
       END IF
    10 CONTINUE
+
+C When co-simulation with TRNSYS is active, the Harmonizer needs to know how many of
+C each type of coupling there is with TRNSYS. It also needs to know the number of building
+C zones in the model.
+      Sizes(1) = HCC_S-1
+      Sizes(2) = HCC_R-1
+      Sizes(3) = ACC_S-1
+      Sizes(4) = ACC_R-1
+      Sizes(5) = nComp
+      call SetArraySizes(Sizes)
 
       RETURN
       END
@@ -1283,7 +1328,7 @@ C Error handling
   990 WRITE(IUOUT,*) ' CMP13S: connection error for component ',IPCOMP
       WRITE(IUOUT,*) '         should be ',NCONS,' connection(s)'
       WRITE(IUOUT,*) '         ie ',NCONPN,' per node, and both to air'
-      STOP ' CMP13S: unresolvable error'
+      STOP ' CMP13S: unresolvable erro r'
       END
 
 C ******************** CMP14S ********************

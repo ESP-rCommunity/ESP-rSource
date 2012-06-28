@@ -856,55 +856,56 @@ C Initialize and/or adjust the plant solution process iteration count
 
 C set flag for plant iteration - initialize to true
       bPltCon = .true.
-   10 ITERP=ITERP+1
+      PlantIterationLoop: DO
+        ITERP=ITERP+1
 C Store the iteration number for reference by plant routines.
-      ITERNU=ITERP
+        ITERNU=ITERP
 C
 C Loop over all three ISTATS balances
 C Note that first phase mass balance will be handled first
-      DO 20 IMRX=1,MPVAR
-      ISTATS=IMRX+1
-      IF(ISTATS.GT.MPVAR) ISTATS=ISTATS-MPVAR
+        IStatsLoop: DO IMRX=1,MPVAR
+          ISTATS=IMRX+1
+          IF(ISTATS.GT.MPVAR) ISTATS=ISTATS-MPVAR
 C First check if it is necessary to solve this balance
-      IF(ISTATS.GT.NPMTYP) GOTO 20
+          IF(ISTATS.GT.NPMTYP) CYCLE IStatsLoop
 
 C Reset mass diversion ratios to 1 for istats=1 or 2
 C if mfs is active.
-      if((istats.eq.1.or.istats.eq.2).and.iflwn.eq.1) then
-         do 272 icon=1,npcon
-            pcondr(icon)=1.0
-  272    continue
+            if((istats.eq.1.or.istats.eq.2).and.iflwn.eq.1) then
+              do icon=1,npcon
+                pcondr(icon)=1.0
+              end do
 
 C For istats=3 and if mfs active, calculate mass
 C diversion ratios for connection type 3 only.
-      elseif(istats.eq.3.and.iflwn.eq.1) then
-         do 373 icon=1,npcon
-            ict=ipct(icon)
-            inod=npcdat(ipc2(icon),9)+ipn2(icon)-1
-            if(ict.eq.3) then
-               if(csvf(inod,2).ne.0.0) then
-                  pcondr(icon)=convar(icon,2)/csvf(inod,2)
-               else
-                  pcondr(icon)=0.0
-               endif
+            elseif(istats.eq.3.and.iflwn.eq.1) then
+              do icon=1,npcon
+                ict=ipct(icon)
+                inod=npcdat(ipc2(icon),9)+ipn2(icon)-1
+                if(ict.eq.3) then
+                  if(csvf(inod,2).ne.0.0) then
+                    pcondr(icon)=convar(icon,2)/csvf(inod,2)
+                  else
+                    pcondr(icon)=0.0
+                  endif
+                endif
+                if(pcondr(icon).gt.1.0) pcondr(icon)=1.0
+              end do
             endif
-            if(pcondr(icon).gt.1.0) pcondr(icon)=1.0
-  373    continue
-      endif
 
 C Set up connections data based on most recent temperatures and flows
-      CALL MZPADJ(ISTATS)
+          CALL MZPADJ(ISTATS)
 C If appropriate, invoke mass flow solver. In that case control of
 C fluid mass flow is also handled by the fluid flow solver
-      IF(ISTATS.EQ.2.AND.IFLWN.EQ.1) THEN
-         CALL MFLWCA(2,PTIMEF)
+          IF(ISTATS.EQ.2.AND.IFLWN.EQ.1) THEN
+            CALL MFLWCA(2,PTIMEF)
 
 C else CONTRL determines control status based on most recent results
 C (by invoking any defined pcl?? control laws to establish CDATA for
 C current time-step).
-      ELSE
-         if(iterp.le.itrclp) CALL CONTRL(iterp)
-      END IF
+          ELSE
+            if(iterp.le.itrclp) CALL CONTRL(iterp)
+          END IF
 C Note that in both cases control status is determined prior to
 C generating the balance equations. This means that control data is
 C one time-step behind matrix solution and so acts only to formulate
@@ -914,69 +915,70 @@ C influence the simultaneous solution. This is very problematic in
 C the case of non-linear control
 C
 C Establish and solve plant matrix, and assign results to CSVF array
-      CALL MZPMSU(ISTATS)
-      CALL MZPMSV(ISTATS)
-   20 CONTINUE
+          CALL MZPMSU(ISTATS)
+          CALL MZPMSV(ISTATS)
+        END DO IStatsLoop
 
 C set flag for iteration - set as active
-      bpltcon = .false.
+        bpltcon = .false.
+
 
 
 C Exact plant solutions may require iteration. Set iteration flag to false
-      bIteration_Required = .false.
+        bIteration_Required = .false.
 
 C Check for each node & each state variable if iteration marker set
-      DO 32 IPNOD=1,NPNOD
-        DO 30 ISTATS=1,MPVAR
-          bIterationForNodeStates(IPNOD,ISTATS) = .false.
+        NodeLoop: DO IPNOD=1,NPNOD
+          StateVarLoop: DO ISTATS=1,MPVAR
+            bIterationForNodeStates(IPNOD,ISTATS) = .false.
 C Check if iteration is requested for this node
-          IF(ICSV(IPNOD,ISTATS).NE.0) THEN
+            IF(ICSV(IPNOD,ISTATS).NE.0) THEN
 C If so, reset marker
-            ICSV(IPNOD,ISTATS)=0
+              ICSV(IPNOD,ISTATS)=0
 C establish initial CIN and future value CSV for state variable
-            CIN=CSVI(IPNOD,ISTATS)
-            CSV=CSVF(IPNOD,ISTATS)
+              CIN=CSVI(IPNOD,ISTATS)
+              CSV=CSVF(IPNOD,ISTATS)
 C Now see if difference less then maximum allowable relative error
-            IF (ABS((CSV-CIN)/AMAX1(SMALL,CIN)).LE.PERREL) THEN
+              IF (ABS((CSV-CIN)/AMAX1(SMALL,CIN)).LE.PERREL) THEN
                ! Assume solution is converged.
-            ELSE
+              ELSE
 C Then check absolute error temperature or mass flow rate, respectively
-              IF((ISTATS.EQ.1.AND.ABS(CSV-CIN).GT.PERTMP).OR.
-     &           (ISTATS.EQ.2.AND.ABS(CSV-CIN).GT.PERMFL).OR.
-     &           (ISTATS.EQ.3.AND.ABS(CSV-CIN).GT.PERMFL).OR.
-     &           (ISTATS.EQ.4.AND.ABS(CSV-CIN).GT.
+                IF((ISTATS.EQ.1.AND.ABS(CSV-CIN).GT.PERTMP).OR.
+     &             (ISTATS.EQ.2.AND.ABS(CSV-CIN).GT.PERMFL).OR.
+     &             (ISTATS.EQ.3.AND.ABS(CSV-CIN).GT.PERMFL).OR.
+     &             (ISTATS.EQ.4.AND.ABS(CSV-CIN).GT.
      &                                 fH2_iteration_tolerance)) THEN
 C State variable is outside absolute bound! Set flags for iteration!
-                bIteration_Required = .true.
-                bIterationForNodeStates(IPNOD,ISTATS) = .true.
+                    bIteration_Required = .true.
+                    bIterationForNodeStates(IPNOD,ISTATS) = .true.
 
 C Trace output
-                IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &            ITRACE(38).NE.0)
-     &            WRITE(ITU,*) ' MZPMRX: iteration caused by ',
-     &                         ' node ',IPNOD,' ISTATS ',ISTATS,
-     &                         '   CIN = ',CIN,'   CSV = ',CSV
+                    IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &                ITRACE(38).NE.0)
+     &                WRITE(ITU,*) ' MZPMRX: iteration caused by ',
+     &                             ' node ',IPNOD,' ISTATS ',ISTATS,
+     &                             '   CIN = ',CIN,'   CSV = ',CSV
 
-              ENDIF ! <- matches IF ((ISTATS.EQ. ...
-            ENDIF   ! <- matches IF (ABS((CSV-CIN)...
-          ENDIF     ! <- matches IF(ICSV(IPNOD...
+                ENDIF ! <- matches IF ((ISTATS.EQ. ...
+              ENDIF   ! <- matches IF (ABS((CSV-CIN)...
+            ENDIF     ! <- matches IF(ICSV(IPNOD...
 
-   30   CONTINUE
-   32 CONTINUE
+          END DO StateVarLoop
+        END DO NodeLoop
 
 C Now check if convergence has been stipulated for plant component
 C additional data arrays (PCdatf), and set call for iteration
 C if outside tolerance
-      IF ( .not. bIteration_Required ) THEN
+        IF ( .not. bIteration_Required ) THEN
 C Loop through components
 
-        DO ii = 1, NPCOMP
+          iiLoop: DO ii = 1, NPCOMP
 C Loop through additional data items (there is no variable that
 C holds the number of additional data items specified for each plant
 C component.  The addition of such a variable could reduce excessive
 C looping in the following DO block, although a limited test on
 C this showed that there is little to be gained in run time).
-            DO jj=1,MPCDAT
+            jjLoop: DO jj=1,MPCDAT
 C Has iteration for this plant additional output been requested?
               IF ( iPlt_Output_Iter_Flag(ii,jj) .ne. 1 ) THEN
                 ! this data not flagged for iteration
@@ -1006,37 +1008,39 @@ C Traceout
 
 C This statement is a substitute for the F90 'exit' command. Should save
 C some resources on large plant networks.
-              IF ( bIteration_Required ) GOTO 34
+              IF ( bIteration_Required ) EXIT iiLoop
 
-            ENDDO     ! <- matches DO jj = 1, ...
-        ENDDO         ! <- matches DO ii = 1,
-      ENDIF           ! <- matches IF ( .not. bIterationRequired ...
+            ENDDO jjLoop     ! <- matches DO jj = 1, ...
+          ENDDO iiLoop         ! <- matches DO ii = 1,
+        ENDIF           ! <- matches IF ( .not. bIterationRequired ...
 
 C     Is iteration required?
-   34 IF ( bIteration_Required ) THEN
+        IF ( bIteration_Required ) THEN
 C Use successive substitution method with relaxation factor = 0.5
 C to establish "new" initial value for nodes exhibiting instability.
 C refrain from iteration if maximum number of iterations exceeded.
-        IF(ITERP.LT.MAXITP) THEN
-          relaxation_loop: DO IPNOD=1,NPNOD
-            DO ISTATS=1,MPVAR
-              if ( bIterationForNodeStates(IPNOD,ISTATS) ) then
-                CSVF(IPNOD,ISTATS)= CSVI(IPNOD,ISTATS)
-     &               + ( CSVF(IPNOD,ISTATS)-CSVI(IPNOD,ISTATS) )/2.
-              endif
-            ENDDO
-          ENDDO relaxation_loop
-
-          GOTO 10
-        ELSE
-          CALL DAYCLK(IDYP,PTIMEF,ICOUT)
-          write(outs,1111) maxitp
- 1111     format(' MZPMRX: warning maximum number of plant',
+          IF(ITERP.LT.MAXITP) THEN
+            relaxation_loop: DO IPNOD=1,NPNOD
+              DO ISTATS=1,MPVAR
+                if ( bIterationForNodeStates(IPNOD,ISTATS) ) then
+                  CSVF(IPNOD,ISTATS)= CSVI(IPNOD,ISTATS)
+     &                 + ( CSVF(IPNOD,ISTATS)-CSVI(IPNOD,ISTATS) )/2.
+                endif
+              ENDDO
+            ENDDO relaxation_loop
+            CYCLE PlantIterationLoop
+          ELSE
+            CALL DAYCLK(IDYP,PTIMEF,ICOUT)
+            write(outs,1111) maxitp
+ 1111       format(' MZPMRX: warning maximum number of plant',
      &                  ' iterations (',i5,') exceeded')
-          call edisp(iuout,outs)
-          GOTO 40
-        END IF
-      ENDIF
+            call edisp(iuout,outs)
+            EXIT PlantIterationLoop
+          END IF
+        ELSE
+          EXIT PlantIterationLoop
+        ENDIF
+      END DO PlantIterationLoop
 
 C HOT3000:begin
 C Save state variables in h3kreports library for later use
@@ -1072,8 +1076,11 @@ C generated equation coefficients are for energy balance (1), or
 C first phase mass balance (2), or second phase mass balance (3)
 C
       SUBROUTINE MZPMSU(ISTATS)
-#include "plant.h"
+      USE TCC, ONLY:TCC_coeff_gen, HCC, ACC, nHCC_S, nHCC_R,
+     &              nACC_S, nACC_R
+
 #include "building.h"
+#include "plant.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/TC/ITC,ICNT
@@ -1099,6 +1106,14 @@ C hydrogen matrix
 C Storage for plant time (last time-row)
       REAL LastTSTP
       REAL OUT(MPCOE)
+
+C Variables to count the number of hydronic and air coupling components with TRNSYS.
+C These are only used when co-simulation with TRNSYS is active.
+      nHCC_S = 0
+      nHCC_R = 0
+      nACC_S = 0
+      nACC_R = 0
+
 C
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -1468,7 +1483,22 @@ C 2-node stratified storage tank model with 1 immersed heat exchanger
         ELSE IF (ITYPE .EQ. 127) THEN
 C 3-node stratified storage tank model with 2 immersed heat exchangers
            CALL stratified_tank_2HX_coeff_gen(IPCOMP,OUT,ISTATS)
-
+        ELSE IF (ITYPE .EQ. 130) THEN
+C SENDING hydronic coupling component (HCC) for co-simulation with TRNSYS.
+           nHCC_S = nHCC_S+1
+           CALL TCC_coeff_gen(IPCOMP,OUT,ISTATS,nHCC_S,HCC,.true.)
+        ELSE IF (ITYPE .EQ. 131) THEN
+C RECEIVING hydronic coupling component (HCC) for co-simulation with TRNSYS.
+           nHCC_R = nHCC_R+1
+           CALL TCC_coeff_gen(IPCOMP,OUT,ISTATS,nHCC_R,HCC,.false.)
+        ELSE IF (ITYPE .EQ. 132) THEN
+C SENDING air-based coupling component (ACC) for co-simulation with TRNSYS.
+           nACC_S = nACC_S+1
+           CALL TCC_coeff_gen(IPCOMP,OUT,ISTATS,nACC_S,ACC,.true.)
+        ELSE IF (ITYPE .EQ. 133) THEN
+C RECEIVING air-based coupling component (ACC) for co-simulation with TRNSYS.
+           nACC_R = nACC_R+1
+           CALL TCC_coeff_gen(IPCOMP,OUT,ISTATS,nACC_R,ACC,.false.)
 C New component equation generators inserted here
 
          ELSE

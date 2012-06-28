@@ -45,6 +45,7 @@ C QP     - reactive power for present (1) and future (2) time step.
 C QLAT   - latent load for present (1) and future (2) time step.
 
       subroutine mzcasi(icomp)
+      USE TCC, ONLY:COSIM, COSIM_DATA
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
@@ -190,7 +191,7 @@ C It excludes start-up timesteps
       character*10 wkd1, wkd2
       logical traceok,closea
       REAL PEZON,QEZON
-
+      
 C Declation of heat gain from h3k models
 c      REAL H3K_HeatGainsFromModels(ICOMP)
       REAL H3KGains
@@ -858,6 +859,21 @@ C
       QCASR(2)= QCASR(2) + Total_elec_RAD_gain
      &                   + fPltZone_Radiant_Gain(iComp,iFuture)    !(W)
 
+C When co-simulation with TRNSYS is active, parasitic thermal losses from TRNSYS
+C components (i.e. types) can be injected as casual gains into ESP-r's building
+C zone.  This is accomplished when the TRNSYS user connects a type's output
+C representing the thermal loss to a Type 130 input.  Within Type 130 this
+C heat loss is then associated with an ESP-r building zone.  If any such thermal
+C losses have been represented then append them here.
+C In the current implementation, it is assumed that all such thermal losses
+C from TRNSYS appear as convective gains within ESP-r's building zone.  This
+C facility could be extended in the future to allow these heat gains to be
+C injected as a weighted mix of convection and radiation.
+      IF ( COSIM ) THEN
+        QCASC(2) = QCASC(2) +
+     &              COSIM_DATA%ESPrZonesData(icomp)%AirPointCasualGains
+      END IF
+      
 C STORE future row casual and radiant gains
       Cas_Con_dat(icomp) = QCASC(2)  ! W
       Cas_Rad_dat(icomp) = QCASR(2)  ! W
