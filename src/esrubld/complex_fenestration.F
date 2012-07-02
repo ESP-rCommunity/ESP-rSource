@@ -4756,7 +4756,7 @@ C             cut-off angle control
                 vb_phiNew(iact2,iact3) = funCutOffAngle(1,
      &                                  iact2,isen3,iact3,
      &                                  solrad_dir,psazi,pselv)
-                i_shd(iact2,iact3)     = 1                    ! shade state ON (careful: not Radiance-coupling-friendly!!)
+cx                i_shd(iact2,iact3)     = 1                  ! is set in funCutOffAngle()
               endif
             
             elseif(solrad.lt.shdOFFsetpoint)then
@@ -4792,7 +4792,7 @@ C             cut-off angle control
                 vb_phiNew(iact2,iact3) = funCutOffAngle(1,
      &                                  iact2,isen3,iact3,
      &                                  solrad_dir,psazi,pselv)
-                i_shd(iact2,iact3)     = 1                    ! shade state ON (careful: not Radiance-coupling-friendly!!)
+cx                i_shd(iact2,iact3)     = 1                  ! is set in funCutOffAngle()
               endif
             endif
 
@@ -4928,6 +4928,16 @@ C Function parameters
 
 C Local variables
       real cutoff,PI,R,solar_elev
+      integer curang
+
+C     Discrete setting angles, based on example control xxx.
+      integer mbang
+      parameter (mbang=16) ! define here, for now
+      real AngList(mbang)
+
+      data AngList/0.0,5.0,10.0,15.0,20.0,25.0,30.0,35.0,40.0,
+     &                     45.0,50.0,55.0,60.0,65.0,70.0,75.0/
+
 
       PI = 4.0 * ATAN(1.0)
       R=PI/180.
@@ -4946,7 +4956,26 @@ C       determine if horizontal or vertical and calc cut-off angle
 C                                       pselv = salt - pelv!
 C         Allow control to horizontal, not negativ (??)
 C         blind restrictions should be part of the blind description in .cfc IMO !!
-          if (cutoff.lt.0.0) cutoff=0.0
+
+          if (cutoff.lt.0.0) then
+            i_shd(iZone,icfctp) = 1 ! shade down and slats horizontal
+            cutoff=0.0
+          elseif (cutoff.gt.75.0) then
+            i_shd(iZone,icfctp) = mang
+            cutoff=75.0
+          else
+C           Now set angle to discrete settings allowed for by control
+C           system:
+            angloop: do curang=2,mbang
+              if ((cutoff-AngList(curang).lt.0)) then
+C               We have found the next larger Anglist value. Set
+C               the blind setting to the appropriate index and the
+C               slat angle to this next larger (more closed) angle.
+                i_shd(iZone,icfctp) = curang
+                cutoff=AngList(curang)
+              endif
+            enddo angloop
+          endif
 C         check if this facade actually gets direct radiation. If not,
 C         set blind to a "daylight friendly" angle ... (? 11.07.2011)
 C   ... commented out, typical sensors will not allow such a control?

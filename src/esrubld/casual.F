@@ -1428,11 +1428,8 @@ C ** put cfc2rad here to update Radiance model?
                 ! To date, only one IBLIND value is possible (DBILLA). So, if there is more than one CFC type in 
                 ! current zone, use highest blind setting - high means "more closed". This is a conservative approach
                 ! in regard to lighting heat gains (the heat gains will be estimated high)
-                IBLIND = max(IBLIND,i_shd(ICOMP,icfcfl(icomp,I))-1)
-C ag@06062012: Allow for IBLIND to have *many* values in CFC_Control? Basically,
-C              this could work - each angle setting gets an own number ... even
-C              "cut off" seems to be controlled in defined angle steps in real-life
-C              controllers ...
+                IBLIND = max(IBLIND,i_shd(ICOMP,icfcfl(icomp,I)))
+
                 RATIO = 1.0 ! whats this?? it is used in a different block below ... ???
               ENDIF
 31          CONTINUE
@@ -1443,7 +1440,7 @@ C Check if sensor values already in illuminance database and set accuracies.
             ALTACC=5.
             QDRACC=5.
 
-            write (66,*) ' ***  Solar data for this timestep *** '
+            write (66,*) ' ***  Solar data for timestep ',its,' *** '
             write (66,'(4f9.1,i3)') SALT,RSAZI,QDIR,QDIF,IBLIND
 
 C Calculate differences.  Blind state MUST match.

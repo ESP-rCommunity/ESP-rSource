@@ -125,6 +125,7 @@ C     Search through model to get first and last CFC ...
           do 10 im=1,nzsur(iz)
             icfctp=icfcfl(iz,im)
             if (icfctp.eq.1) then
+              CFCCoupling(iz)=.true. ! this zone uses CFCs ...
               if (.not.firstzisset) then
                 firstzone=iz
                 firstzisset=.true.
@@ -137,6 +138,7 @@ C     Search through model to get first and last CFC ...
  10       continue
   5     continue
       endif
+
 
 C DEBUG:
 c      write(*,*)'CFC2Rad; init=',init,' icomp=',icomp,' isurf',
