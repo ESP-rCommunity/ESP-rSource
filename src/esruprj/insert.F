@@ -2569,7 +2569,7 @@ C (otherwise there will be two surfaces point to the same other surface).
 C If in silent mode assign construction otherwise select. 
       if(act(1:2).eq.'sw'.or.act(1:2).eq.'sd'.or.act(1:2).eq.'sp')then
         WRITE(SMLCN(NSUR),'(A)') rsmlcn(1:12)
-        WRITE(SOTF(NSUR),'(A)')  rsotf(1:lnblnk(rsotf))
+        WRITE(SOTF(NSUR),'(A)')  rsotf(1:12)  ! only 1st 12 char
       else
         CALL EPMENSV
         CALL EPKMLC(ISEL,'Select one of the constructions for the',

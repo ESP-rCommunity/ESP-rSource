@@ -1972,7 +1972,7 @@ C << todo: consider how to react to a cancel request within eoptks
 
 
 C Error messages.
-  98  CALL USRMSG('A problem was encountered reading the Ooptical',
+  98  CALL USRMSG('A problem was encountered reading the Optical',
      &   'Properties db, or a property set was not located.','W')
       IER=1
       GOTO 200
