@@ -159,6 +159,7 @@ C     NBSRIF is the number of RIF files defined for the corresponding scene
 
       common/radabs/NABS,CFCCoupling(MCOM)
       integer NABS
+      logical CFCCoupling
 C     NABS is the number of alternative blind states (use IBCMT instead?)
 C     CFCCoupling is a logical value, defines coupling type on zone basis
 

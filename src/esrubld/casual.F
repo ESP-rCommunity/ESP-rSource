@@ -1415,7 +1415,6 @@ C If IBOFOT()=1, then blind/shutter is ON.
               ENDIF
               ! Is this surface / construction a CFC?
               IF(ICFCFL(ICOMP,I).GT.0)THEN
-C ** put cfc2rad here to update Radiance model?
                 if (cfcinit) then
                   init=1
                   cfcinit=.false. ! should happen only once ...
@@ -1428,7 +1427,7 @@ C ** put cfc2rad here to update Radiance model?
                 ! To date, only one IBLIND value is possible (DBILLA). So, if there is more than one CFC type in 
                 ! current zone, use highest blind setting - high means "more closed". This is a conservative approach
                 ! in regard to lighting heat gains (the heat gains will be estimated high)
-                IBLIND = max(IBLIND,i_shd(ICOMP,icfcfl(icomp,I)))
+                IBLIND = 0 ! max(IBLIND,i_shd(ICOMP,icfcfl(icomp,I)))
 
                 RATIO = 1.0 ! whats this?? it is used in a different block below ... ???
               ENDIF
