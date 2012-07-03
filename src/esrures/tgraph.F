@@ -633,11 +633,14 @@ C look sensible.
             endif
 
 C If plotting colours for different zones then recall which
-C zone we are dealing with.
+C zone we are dealing with.  If zone not set then use black.
             if(colok)then
               if(IGETNO(IX,2).gt.0)then
                 iicol=IGETNO(IX,2)
                 call winscl('z',iicol)
+              else
+                iicol=0
+                call winscl('-',iicol)
               endif
             endif
 

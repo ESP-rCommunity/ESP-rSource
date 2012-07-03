@@ -486,7 +486,7 @@ C Note: 60 is the maximum number of items associated with an anchor point.
       integer ITLEN      ! length of ZSDES
       integer lastireportunit  ! to detect change in unit
 
-      logical SLIST,NLIST,MRTLIST,OKL,dok,ok
+      logical SLIST,NLIST,MRTLIST,AGRLIST,OKL,dok,ok
 #ifdef OSI
       integer iid1,iid2
 #else
@@ -505,6 +505,7 @@ C information about the choice of metric if necessary. NLIST=.true. implies
 C SLIST=.true. which are asked for all active zones (listed in NZNO).
       SLIST=.FALSE.   ! do we need to ask about surfaces
       NLIST=.FALSE.
+      AGRLIST=.FALSE. ! assume heating & cooling loads separately drawn
 
 C MNGET is the maximum number of metrics allowed to be chosen from the menu.
       if (MENUTYPE.eq.1) then
@@ -2202,7 +2203,8 @@ C Report flux/m^2.
      &    'a Sensible heating load','b Sensible cooling load',
      &    'c Dehumidification load','d Humidification load',
      &    'e All sensible loads','f All latent loads',
-     &    'g All Sensible + latent load','  ',
+     &    'g All Sensible + latent load',
+     &    'h Aggregate heating load',
      &    '  ','  ','  ','  ',inoc,idnoc,nbhelp)
         if(inoc.eq.0)goto 1
         call usrmsg('  ','  ','-')
@@ -2212,9 +2214,9 @@ C Report flux/m^2.
         if(inoc.eq.1)then
 
 C IGET = 8   Zone-side sensible heating load.
-          IGETNO(NGET,1)=8
+          IGETNO(NGET,1)=8; IGETNO(NGET,4)=1 ! signal individual
           IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
-          SUFFIX=' HeatInj'
+          SUFFIX=' HeatInj'; AGRLIST=.FALSE.   ! draw separately
           if(IROC.eq.0)then
             if(ireportunit.eq.0.or.ireportunit.eq.2)then
               SLABEL(NGET)='Sensible heating load (kW)'
@@ -2243,9 +2245,9 @@ C IGET = 8   Zone-side sensible heating load.
         elseif(inoc.eq.2)then
 
 C IGET = 9 Zone-side sensible cooling load.
-          IGETNO(NGET,1)=9
+          IGETNO(NGET,1)=9; IGETNO(NGET,4)=1 ! signal individual
           IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
-          SUFFIX=' CoolInj'
+          SUFFIX=' CoolInj'; AGRLIST=.FALSE.   ! draw separately
           if(IROC.eq.0)then
             SLABEL(NGET)='Sensible cooling load (kW)'
             LNSLABEL(NGET)=26
@@ -2259,9 +2261,9 @@ C IGET = 9 Zone-side sensible cooling load.
         elseif(inoc.eq.3)then
 
 C IGET = 30   Dehumidification load.
-          IGETNO(NGET,1)=30
+          IGETNO(NGET,1)=30; IGETNO(NGET,4)=1 ! signal individual
           IGETNO(NGET,6)=-4; IGETNO(NGET,7)=6
-          SUFFIX=' LatExt'
+          SUFFIX=' LatExt';  AGRLIST=.FALSE.   ! draw separately
           if(IROC.eq.0)then
             SLABEL(NGET)='Latent dehumidification (kW)'
             LNSLABEL(NGET)=28
@@ -2275,9 +2277,9 @@ C IGET = 30   Dehumidification load.
         elseif(inoc.eq.4)then
 
 C IGET = 31   Humidification load.
-          IGETNO(NGET,1)=31
+          IGETNO(NGET,1)=31; IGETNO(NGET,4)=1 ! signal individual
           IGETNO(NGET,6)=-4; IGETNO(NGET,7)=6
-          SUFFIX=' LatInj'
+          SUFFIX=' LatInj';  AGRLIST=.FALSE.   ! draw separately
           if(IROC.eq.0)then
             SLABEL(NGET)='Latent humidification (kW)'
             LNSLABEL(NGET)=26
@@ -2291,9 +2293,9 @@ C IGET = 31   Humidification load.
         elseif(inoc.eq.5)then
 
 C IGET = 10  Total sensible zone loads. 
-          IGETNO(NGET,1)=10
+          IGETNO(NGET,1)=10; IGETNO(NGET,4)=1 ! signal individual
           IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
-          SUFFIX=' TotSens'
+          SUFFIX=' TotSens'; AGRLIST=.FALSE.   ! draw separately
           if(IROC.eq.0)then
             SLABEL(NGET)='Zone sensible load (kW)'
             LNSLABEL(NGET)=23
@@ -2307,9 +2309,9 @@ C IGET = 10  Total sensible zone loads.
         elseif(inoc.eq.6)then
 
 C IGET = 32  All latent zone loads.
-          IGETNO(NGET,1)=32
+          IGETNO(NGET,1)=32; IGETNO(NGET,4)=1 ! signal individual
           IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
-          SUFFIX=' TotLat'
+          SUFFIX=' TotLat';  AGRLIST=.FALSE.   ! draw separately
           if(IROC.eq.0)then
             SLABEL(NGET)='Zone latent load (kW)'; LNSLABEL(NGET)=21
           elseif(IROC.eq.1)then
@@ -2321,9 +2323,9 @@ C IGET = 32  All latent zone loads.
         elseif(inoc.eq.7)then
 
 C IGET = 33  All sensible+latent zone loads.
-          IGETNO(NGET,1)=33
+          IGETNO(NGET,1)=33; IGETNO(NGET,4)=1 ! signal individual
           IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
-          SUFFIX=' TotSenL'
+          SUFFIX=' TotSenL'; AGRLIST=.FALSE.   ! draw separately
           if(IROC.eq.0)then
             SLABEL(NGET)='Zone sensible + latent load (kW)'
             LNSLABEL(NGET)=32
@@ -2334,7 +2336,30 @@ C IGET = 33  All sensible+latent zone loads.
             SLABEL(NGET)='Zn sens+latent load (kWhr)'
             LNSLABEL(NGET)=26
           endif
-        endif
+        elseif(inoc.eq.8)then
+
+C IGET = 8  Aggregate sensible heating load for all currently selected zones.
+          IGETNO(NGET,1)=8; IGETNO(NGET,4)=2 ! signal aggregate
+          IGETNO(NGET,6)=-302; IGETNO(NGET,7)=6
+          SUFFIX=' AgrHeat'; AGRLIST=.TRUE.   ! draw aggregate
+          if(IROC.eq.0)then
+            if(ireportunit.eq.0.or.ireportunit.eq.2)then
+              SLABEL(NGET)='Agr Sensible heating (kW)'
+              LNSLABEL(NGET)=25
+            else
+              SLABEL(NGET)='Agr Sensible heating (W)'
+              LNSLABEL(NGET)=24
+            endif
+          elseif(IROC.eq.-1)then
+            if(ireportunit.eq.0.or.ireportunit.eq.2)then
+              SLABEL(NGET)='Agr Sensible heating (kWhr)'
+              LNSLABEL(NGET)=27
+            else
+              SLABEL(NGET)='Agr Sensible heating (Whr)'
+              LNSLABEL(NGET)=26
+            endif
+          endif
+         endif
 
       elseif(INO.EQ.13)then
 
@@ -3467,6 +3492,16 @@ C Need to ask for specific surface and node.
 C Need to ask for MRT sensors.
           call PIKMRTS(IZNSEL,ISFSEL,NSEL,IER)
           call usrmsg('  ','  ','-')
+        elseif (AGRLIST) then
+
+C If we have asked for an aggregate of heating set the label.
+          IGETNO(NGET,2)=0    ! no specific zone associated with aggregate
+          ISLEN=lnblnk(SUFFIX)
+          write (GLABEL(NGET),'(a)') SUFFIX(1:ISLEN)
+          LNGLABEL(NGET)=ISLEN
+          write (TABLABEL(NGET),'(a)') SUFFIX(1:ISLEN)
+          LNTABLABEL(NGET)=ISLEN
+          NSEL=NSEL+1  ! increment because it will be decremented later
         else
 
 C Copy current zone selection.
@@ -3645,7 +3680,9 @@ C specific information.
  650      continue
         else
 
-C No data to copy therefore cancel request.
+C No data to copy therefore cancel request.  Note: if aggregate then it will
+C already have had nget incremented one extra so that this subtraction will
+C have no impact.
           NGET=NGET-1
         endif
       endif
@@ -3654,6 +3691,7 @@ C Reset logical variables.
       SLIST=.false.
       NLIST=.false.
       MRTLIST=.false.
+      AGRLIST=.false.
 
 C Check for duplicate information.
  901  if (NGET.gt.1) then 
@@ -3828,6 +3866,7 @@ C This recovers one day.
       common/PREC18/ZTRANA(MCOM)
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
       COMMON/CCTL/ICASCF(MCOM)
+      COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
@@ -3841,7 +3880,7 @@ C =2 with more than 3 day types
       common/repunit/ireportunit
       
       character outs*124,CSTR*25
-      dimension CQ(MTS),GC(MTS)
+      dimension CQ(MTS),GC(MTS),AGR(MTS)
 
       real QCASR,QCASC,QCASL  ! total radiant/convective/latent
       real FRAC ! controlled fraction.
@@ -3891,15 +3930,39 @@ C IGETNO(KGET,1) =  7 Node temperature (MLC)
       elseif(IGETNO(KGET,1).eq.8)then
 
 C IGETNO(KGET,1) =  8 Sensible heating load and convert to KW
-C taking into account ireportunit.
-        CALL GZQMH(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
-        N=24*NTS
-        if(ireportunit.eq.0.or.ireportunit.eq.2)then
-          do 300 I=1,N
-            GVAL(I)=GVAL(I)/1000. ! selective conversion
- 300      continue
+C taking into account ireportunit. If individual items use the
+C following logic.
+        if(IGETNO(KGET,4).eq.0.or.IGETNO(KGET,4).eq.1)then
+          CALL GZQMH(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
+          N=24*NTS
+          if(ireportunit.eq.0.or.ireportunit.eq.2)then
+            do 300 I=1,N
+              GVAL(I)=GVAL(I)/1000. ! selective conversion
+ 300        continue
+          endif
+          CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+        else
+
+C For each of the currently selected zones call GZQMH and add to
+C the aggregate figure.
+          N=24*NTS
+          do 63 i=1,N
+            AGR(i)=0.0  ! clear the AGR array
+  63      continue
+          do 60 izz=1,NZ
+            CALL GZQMH(IDAY,NZNO(izz),IGETNO(KGET,5))
+            if(ireportunit.eq.0.or.ireportunit.eq.2)then
+              do 61 I=1,N
+                AGR(I)=AGR(I)+(GVAL(I)/1000.0) ! selective conversion and sum
+ 61           continue
+            else
+              do 62 I=1,N
+                AGR(I)=AGR(I)+GVAL(I) ! sum to AGR
+ 62           continue
+            endif
+  60      continue
+          CALL XTVAL1(AGR,ISTART,IEND,KGET)
         endif
-        CALL XTVAL1(GVAL,ISTART,IEND,KGET)
 
       elseif(IGETNO(KGET,1).eq.9)then
 
