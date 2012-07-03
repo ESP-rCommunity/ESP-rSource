@@ -2205,7 +2205,7 @@ C Report flux/m^2.
      &    'e All sensible loads','f All latent loads',
      &    'g All Sensible + latent load',
      &    'h Aggregate heating load',
-     &    '  ','  ','  ','  ',inoc,idnoc,nbhelp)
+     &    'i Aggregate cooling load','  ','  ','  ',inoc,idnoc,nbhelp)
         if(inoc.eq.0)goto 1
         call usrmsg('  ','  ','-')
         NGET=NGET+1
@@ -2359,7 +2359,20 @@ C IGET = 8  Aggregate sensible heating load for all currently selected zones.
               LNSLABEL(NGET)=26
             endif
           endif
-         endif
+        elseif(inoc.eq.9)then
+
+C IGET = 9 Aggregate sensible cooling load for all currently selected zones.
+          IGETNO(NGET,1)=9; IGETNO(NGET,4)=2 ! signal aggregate
+          IGETNO(NGET,6)=-302; IGETNO(NGET,7)=6
+          SUFFIX=' AgrCool'; AGRLIST=.TRUE.   ! draw separately
+          if(IROC.eq.0)then
+            SLABEL(NGET)='Agr Sensible cooling (kW)'
+            LNSLABEL(NGET)=25
+          elseif(IROC.eq.-1)then
+            SLABEL(NGET)='Agr Sensible cooling (kWhr)'
+            LNSLABEL(NGET)=27
+          endif
+        endif
 
       elseif(INO.EQ.13)then
 
@@ -3494,7 +3507,7 @@ C Need to ask for MRT sensors.
           call usrmsg('  ','  ','-')
         elseif (AGRLIST) then
 
-C If we have asked for an aggregate of heating set the label.
+C If we have asked for an aggregate of heating or cooling set the label.
           IGETNO(NGET,2)=0    ! no specific zone associated with aggregate
           ISLEN=lnblnk(SUFFIX)
           write (GLABEL(NGET),'(a)') SUFFIX(1:ISLEN)
@@ -3967,15 +3980,40 @@ C the aggregate figure.
       elseif(IGETNO(KGET,1).eq.9)then
 
 C IGETNO(KGET,1) =  9 Sensible cooling load and convert to KW
-C taking into account ireportunit.
-        CALL GZQMC(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
-        N=24*NTS
-        if(ireportunit.eq.0.or.ireportunit.eq.2)then
-          do 301 I=1,N
-            GVAL(I)=GVAL(I)/1000. ! selective conversion
- 301      continue
+C taking into account ireportunit. If individual items use the
+C following logic.
+        if(IGETNO(KGET,4).eq.0.or.IGETNO(KGET,4).eq.1)then
+          CALL GZQMC(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
+          N=24*NTS
+          if(ireportunit.eq.0.or.ireportunit.eq.2)then
+            do 301 I=1,N
+              GVAL(I)=GVAL(I)/1000. ! selective conversion
+ 301        continue
+          endif
+          CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+        else
+
+C For each of the currently selected zones call GZQMC and add to
+C the aggregate figure.
+          N=24*NTS
+          do 64 i=1,N
+            AGR(i)=0.0  ! clear the AGR array
+  64      continue
+          do 65 izz=1,NZ
+            CALL GZQMC(IDAY,NZNO(izz),IGETNO(KGET,5))
+            if(ireportunit.eq.0.or.ireportunit.eq.2)then
+              do 66 I=1,N
+                AGR(I)=AGR(I)+(GVAL(I)/1000.0) ! selective conversion and sum
+  66          continue
+            else
+              do 67 I=1,N
+                AGR(I)=AGR(I)+GVAL(I) ! sum to AGR
+  67          continue
+            endif
+  65      continue
+          CALL XTVAL1(AGR,ISTART,IEND,KGET)
         endif
-        CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+
       elseif(IGETNO(KGET,1).eq.10)then
 
 C IGETNO(KGET,1) = 10 Total plant flux and convert to KW
