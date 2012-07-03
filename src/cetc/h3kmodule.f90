@@ -60,6 +60,7 @@ MODULE h3kmodule
       end function is_variable_enabled
    END INTERFACE
 
+
    !ReportVariable construct,
    !note that the C++ code will manipulate them for two reasons:
    !  1. autogenerate the id (sequencial)
@@ -74,6 +75,7 @@ MODULE h3kmodule
       logical*1      :: Enabled !Variable requested or not, populated by c++
    End Type ReportVariable
 
+ SAVE
    !Used by h3kstore.F
    Type(ReportVariable) :: rvPlantPumpElec
 

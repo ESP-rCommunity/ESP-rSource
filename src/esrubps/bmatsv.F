@@ -297,7 +297,6 @@ C water
 C Path to model 
       common/rpath/path
       character path*72
-      CHARACTER(len=255) :: cwd
       
 C Root file name for xml output
       character*24 cOutputRoot
