@@ -242,6 +242,7 @@ C There are 8 patch zones in the sky dome.
       LOGICAL XST,unixok
       integer irif ! loop variable for more than one rif per scene
       integer iblnds ! local variable for current blind setting
+      integer icfcflag ! local for cfc flag 0=no cfc, 1=cfc
 
       data npz/30,60,84,108,126,138,144,145/
       data pzalt/6.,18.,30.,42.,54.,66.,78.,90./
@@ -296,6 +297,7 @@ c        write(*,*)'LTMPFL=',LTMPFL,' istat=',istat
         call EGETWR(OUTS,K,QDIR,0.,1250.,'W','Dir solar',IER)
         call EGETWR(OUTS,K,QDIF,0.,1250.,'W','Diff solar',IER)
         call EGETWI(OUTS,K,iblnds,0,MBP,'W','Blinds state',IER)
+        call EGETWI(OUTS,K,icfcflag,0,1,'W','CFC flag',IER)
 
 C Check solar position and radiation.
         QDIRH=QDIR*esind(RSALT/57.296)
@@ -319,7 +321,7 @@ C Recreate octree, setting rtrace options, and run rtrace.
 C Check type of blinds/coupling ... if CFC, blind setting is 
 C created "on the fly", only one
 C rif file is necessary ... ??? (2/7/2012)
-        if (CFCCoupling(ifocz)) then
+        if (icfcflag.eq.1) then
           rn=rifname(ifocz,ISCENE,1)
         else
           if ( (iblnds.ne.0 .and.NBSRIF(ifocz,ISCENE).eq.1) .or. 

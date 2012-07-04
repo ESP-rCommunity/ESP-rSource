@@ -1401,6 +1401,7 @@ C shuter control status.
 C If IBOFOT()=1, then blind/shutter is ON.
             NC=NCONST(ICOMP) ! number of constructions in current zone
             IBLIND = 0
+            ICFCFLAG = 0
             RATIO = 0.0
             DO 31 I=1,NC
               IF(ITMCFL(ICOMP,I).GT.0)THEN
@@ -1427,8 +1428,8 @@ C If IBOFOT()=1, then blind/shutter is ON.
                 ! To date, only one IBLIND value is possible (DBILLA). So, if there is more than one CFC type in 
                 ! current zone, use highest blind setting - high means "more closed". This is a conservative approach
                 ! in regard to lighting heat gains (the heat gains will be estimated high)
-                IBLIND = 0 ! max(IBLIND,i_shd(ICOMP,icfcfl(icomp,I)))
-
+                IBLIND = max(IBLIND,i_shd(ICOMP,icfcfl(icomp,I)))
+                ICFCFLAG=1  ! current zone uses CFC ...
                 RATIO = 1.0 ! whats this?? it is used in a different block below ... ???
               ENDIF
 31          CONTINUE
@@ -1558,8 +1559,12 @@ C Calculate regression coefficients GRADQR and GRADQF and then selum()
                     if (Aa(ILZ,IDF).gt.0.0) then
                       GRADQF= Ya(ILZ,IDF)*(Ab(ILZ,IDF)/Aa(ILZ,IDF))
                       GRADQF= GRADQF - Yb(ILZ,IDF)
+c                      GRADQF= GRADQF / 
+c     &                  (( (Ab(ILZ,IDF)**2) /
                       GRADQF= GRADQF / 
-     &                  (((Ab(ILZ,IDF)**2)/Aa(ILZ,IDF))-Ac(ILZ,IDF))
+     &                   ((exp(2.*log(Ab(ILZ,IDF)))/
+     &                      Aa(ILZ,IDF))-Ac(ILZ,IDF))
+
                       GRADQR= Ya(ILZ,IDF) - (Ab(ILZ,IDF) * GRADQF)
                       GRADQR= GRADQR / Aa(ILZ,IDF)
                       selum(ILZ,IDF)=(GRADQR*QDIR) + (GRADQF*QDIF)
@@ -1604,7 +1609,8 @@ c        write(*,*)'* INTLUM, LTMPFLA=',LTMPFLA,' istat=',istat
                 call EFDELET(IUNIT,ISTAT)
               endif
               call FPOPEN(IUNIT,ISTAT,1,2,LTMPFLA)
-              write (OUTCMD,'(4f9.1,i3)') SALT,RSAZI,QDIR,QDIF,IBLIND
+              write (OUTCMD,'(4f9.1,2i3)')
+     &                 SALT,RSAZI,QDIR,QDIF,IBLIND,ICFCFLAG
 C          write (77,'(4f9.1,i3)') SALT,RSAZI,QDIR,QDIF,IBLIND
               write (IUNIT,'(a)') OUTCMD
               call ERPFREE(IUNIT,ISTAT)
@@ -1616,10 +1622,10 @@ C Debug.
 C              write(*,'(3a,i3,3a)')'e2r -file ',
 C     &          LCFGF(:lnblnk(LCFGF)),' -purpose Coupling -zone ',
 C     &          ICOMP,' -act ',LTMPFL(:lnblnk(LTMPFL)),' -mode text'
-              write(outs,'(a,i2,a,i2,a,i3)') 
-     &         'Lighting simulation for zone ',ICOMP,
-     &         ' has now commenced for hour ',IHRP,
-     &         ' of day ',IDYP
+              write(outs,'(a,i2,a,f4.1,a,i3)') 
+     &        'Lighting simulation for zone ',ICOMP,
+     &        ' has now commenced for hour ',real(IHRP)+real(its)/10.,
+     &        ' of day ',IDYP
               call edisp(iuout,outs)
               write(outs,*)' '
 c              call edisp(icout,'Lighting simulation has now commenced.')
