@@ -2202,10 +2202,11 @@ C Report flux/m^2.
         call MENUATOL('Select an HVAC load metric',' Load choices:',
      &    'a Sensible heating load','b Sensible cooling load',
      &    'c Dehumidification load','d Humidification load',
-     &    'e All sensible loads','f All latent loads',
+     &    'e Sensible H+C loads','f Latent H+C loads',
      &    'g All Sensible + latent load',
-     &    'h Aggregate heating load',
-     &    'i Aggregate cooling load','  ','  ','  ',inoc,idnoc,nbhelp)
+     &    'h Aggregate heating load','i Aggregate cooling load',
+     &    'j Aggregate dehumidification','k Aggregate humidification',
+     &    '  ',inoc,idnoc,nbhelp)
         if(inoc.eq.0)goto 1
         call usrmsg('  ','  ','-')
         NGET=NGET+1
@@ -2364,13 +2365,39 @@ C IGET = 8  Aggregate sensible heating load for all currently selected zones.
 C IGET = 9 Aggregate sensible cooling load for all currently selected zones.
           IGETNO(NGET,1)=9; IGETNO(NGET,4)=2 ! signal aggregate
           IGETNO(NGET,6)=-302; IGETNO(NGET,7)=6
-          SUFFIX=' AgrCool'; AGRLIST=.TRUE.   ! draw separately
+          SUFFIX=' AgrCool'; AGRLIST=.TRUE.   ! draw aggregate
           if(IROC.eq.0)then
             SLABEL(NGET)='Agr Sensible cooling (kW)'
             LNSLABEL(NGET)=25
           elseif(IROC.eq.-1)then
             SLABEL(NGET)='Agr Sensible cooling (kWhr)'
             LNSLABEL(NGET)=27
+          endif
+        elseif(inoc.eq.10)then
+
+C IGET = 30  Aggregate Dehumidification load.
+          IGETNO(NGET,1)=30; IGETNO(NGET,4)=2 ! signal aggregate
+          IGETNO(NGET,6)=-304; IGETNO(NGET,7)=6
+          SUFFIX=' AgrLtDH';  AGRLIST=.TRUE.   ! draw aggregate
+          if(IROC.eq.0)then
+            SLABEL(NGET)='Agr Latent dehumid (kW)'
+            LNSLABEL(NGET)=23
+          elseif(IROC.eq.-1)then
+            SLABEL(NGET)='Agr Latent dehumid (kWhr)'
+            LNSLABEL(NGET)=25
+          endif
+        elseif(inoc.eq.11)then
+
+C IGET = 31 Aggregate  Humidification load.
+          IGETNO(NGET,1)=31; IGETNO(NGET,4)=2 ! signal aggregate
+          IGETNO(NGET,6)=-304; IGETNO(NGET,7)=6
+          SUFFIX=' AgrLatH';  AGRLIST=.TRUE.   ! draw aggregate
+          if(IROC.eq.0)then
+            SLABEL(NGET)='Agr Latent humidif (kW)'
+            LNSLABEL(NGET)=23
+          elseif(IROC.eq.-1)then
+            SLABEL(NGET)='Agr Latent humidif (kWhr)'
+            LNSLABEL(NGET)=25
           endif
         endif
 
@@ -4510,27 +4537,77 @@ C IGETNO(KGET,1) = 29 Delta T zone - ambient.
       elseif(IGETNO(KGET,1).eq.30)then
 
 C IGETNO(KGET,1) = 30 Latent load (dehumidification) and convert to KW
-C taking into account ireportunit.
-        CALL GZLLC(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
-        N=24*NTS
-        if(ireportunit.eq.0.or.ireportunit.eq.2)then
-          do I=1,N
-            GVAL(I)=GVAL(I)/1000. ! selective conversion
+C taking into account ireportunit. If individual items use the
+C following logic.
+        if(IGETNO(KGET,4).eq.0.or.IGETNO(KGET,4).eq.1)then
+          CALL GZLLC(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
+          N=24*NTS
+          if(ireportunit.eq.0.or.ireportunit.eq.2)then
+            do I=1,N
+              GVAL(I)=GVAL(I)/1000. ! selective conversion
+            end do
+          endif
+          CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+        else
+
+C For each of the currently selected zones call GZLLC and add to
+C the aggregate figure.
+          N=24*NTS
+          do i=1,N
+            AGR(i)=0.0  ! clear the AGR array
           end do
+          do 66 izz=1,NZ
+            CALL GZLLC(IDAY,NZNO(izz),IGETNO(KGET,5))
+            if(ireportunit.eq.0.or.ireportunit.eq.2)then
+              do I=1,N
+                AGR(I)=AGR(I)+(GVAL(I)/1000.0) ! selective conversion and sum
+              end do
+            else
+              do I=1,N
+                AGR(I)=AGR(I)+GVAL(I) ! sum to AGR
+              end do
+            endif
+  66      continue
+          CALL XTVAL1(AGR,ISTART,IEND,KGET)
         endif
-        CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+
       elseif(IGETNO(KGET,1).eq.31)then
 
 C IGETNO(KGET,1) = 31 Latent load (humidification) and convert to KW
-C taking into account ireportunit.
-        CALL GZLLH(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
-        N=34*NTS
-        if(ireportunit.eq.0.or.ireportunit.eq.2)then
-          do I=1,N
-            GVAL(I)=GVAL(I)/1000. ! selective conversion
+C taking into account ireportunit. If individual items use the
+C following logic.
+        if(IGETNO(KGET,4).eq.0.or.IGETNO(KGET,4).eq.1)then
+          CALL GZLLH(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
+          N=34*NTS
+          if(ireportunit.eq.0.or.ireportunit.eq.2)then
+            do I=1,N
+              GVAL(I)=GVAL(I)/1000. ! selective conversion
+            end do
+          endif
+          CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+        else
+
+C For each of the currently selected zones call GZLLH and add to
+C the aggregate figure.
+          N=24*NTS
+          do i=1,N
+            AGR(i)=0.0  ! clear the AGR array
           end do
+          do 67 izz=1,NZ
+          CALL GZLLH(IDAY,NZNO(izz),IGETNO(KGET,5))
+            if(ireportunit.eq.0.or.ireportunit.eq.2)then
+              do I=1,N
+                AGR(I)=AGR(I)+(GVAL(I)/1000.0) ! selective conversion and sum
+              end do
+            else
+              do I=1,N
+                AGR(I)=AGR(I)+GVAL(I) ! sum to AGR
+              end do
+            endif
+  67      continue
+          CALL XTVAL1(AGR,ISTART,IEND,KGET)
         endif
-        CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+
       elseif(IGETNO(KGET,1).eq.32)then
 
 C IGETNO(KGET,1) = 32 All latent load and convert to KW
