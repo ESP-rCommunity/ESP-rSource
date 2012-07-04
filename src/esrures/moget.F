@@ -205,11 +205,11 @@ C Set default values for IGETNO array and associated plotting/ labeling arrays.
 
 C Reset axis max and min values to 1.0 and 0.0 resp.
 C YAXSET: Axis max min set =1 automatically scalled, 2= user set.
-      do 8 I=1,5
+      do I=1,5
         YMAX(I)=1.0
         YMIN(I)=0.0
         YAXSET(I)=0
- 8    continue
+      end do
 
 C Set add profile label ADDLIN=0 i.e. no add
       ADDLIN=0
@@ -267,16 +267,16 @@ C For help messages
       helpinsub='EDGOGET'  ! set for subroutine
 
 C Sort ORDER of IGETNO array for display purposes.
-      do 100 I=1,NGET
+      do I=1,NGET
         ORDER(I)=I
         OGET(I)=IGETNO(I,1)*10000 + IGETNO(I,2)*100 + IGETNO(I,3)
- 100  continue
+      end do
       call SORTI(OGET,ORDER,NGET,2)
 
 C Set all values of incget to 1
-      do 5 I=1,NGET
+      do I=1,NGET
         INCGET(I)=1
- 5    continue
+      end do
 
 C Initialise menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -3429,10 +3429,10 @@ C Check at least one zone selected.
       endif
 
 C Reset local zone and surface selections, NSEL is total number selected.
-      do 5 loop=1,MCON
+      do loop=1,MCON
         IZNSEL(loop)=0
         ISFSEL(loop)=0
- 5    continue
+      end do
       NSEL=0
 
 C Copy data for multi zones, surfaces and nodes. In the
@@ -3518,10 +3518,10 @@ C If we have asked for an aggregate of heating or cooling set the label.
         else
 
 C Copy current zone selection.
-          do 620 I=1,NZ
+          do I=1,NZ
             NSEL=NSEL+1
             IZNSEL(NSEL)=NZNO(I)
- 620      continue
+          end do
         endif
 
 C Copy new data into IGETNO array if a selection has been made.
@@ -3824,9 +3824,9 @@ C Recover a days data.
 C All recovered data is placed in array GVAL initially (COMMON/GET2/)
 C ** For some unknown reason the climate data is also placed in VAL3 ! **
 C Loop through the chosen metrics.
-      do 200 KGET=1,NGET
+      do KGET=1,NGET
         call GOGETIT(KGET,IDAY,ISTART,IEND)
- 200  continue
+      end do
 
 C Average and copy the contents of VAL1 into VAL2.
 C If IROC=1 the calc rate of change (xx per hour).
@@ -3949,9 +3949,9 @@ C following logic.
           CALL GZQMH(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
           N=24*NTS
           if(ireportunit.eq.0.or.ireportunit.eq.2)then
-            do 300 I=1,N
+            do I=1,N
               GVAL(I)=GVAL(I)/1000. ! selective conversion
- 300        continue
+            end do
           endif
           CALL XTVAL1(GVAL,ISTART,IEND,KGET)
         else
@@ -3959,19 +3959,19 @@ C following logic.
 C For each of the currently selected zones call GZQMH and add to
 C the aggregate figure.
           N=24*NTS
-          do 63 i=1,N
+          do i=1,N
             AGR(i)=0.0  ! clear the AGR array
-  63      continue
+          end do
           do 60 izz=1,NZ
             CALL GZQMH(IDAY,NZNO(izz),IGETNO(KGET,5))
             if(ireportunit.eq.0.or.ireportunit.eq.2)then
-              do 61 I=1,N
+              do I=1,N
                 AGR(I)=AGR(I)+(GVAL(I)/1000.0) ! selective conversion and sum
- 61           continue
+              end do
             else
-              do 62 I=1,N
+              do I=1,N
                 AGR(I)=AGR(I)+GVAL(I) ! sum to AGR
- 62           continue
+              end do
             endif
   60      continue
           CALL XTVAL1(AGR,ISTART,IEND,KGET)
@@ -3986,9 +3986,9 @@ C following logic.
           CALL GZQMC(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
           N=24*NTS
           if(ireportunit.eq.0.or.ireportunit.eq.2)then
-            do 301 I=1,N
+            do I=1,N
               GVAL(I)=GVAL(I)/1000. ! selective conversion
- 301        continue
+            end do
           endif
           CALL XTVAL1(GVAL,ISTART,IEND,KGET)
         else
@@ -3996,19 +3996,19 @@ C following logic.
 C For each of the currently selected zones call GZQMC and add to
 C the aggregate figure.
           N=24*NTS
-          do 64 i=1,N
+          do i=1,N
             AGR(i)=0.0  ! clear the AGR array
-  64      continue
+          end do
           do 65 izz=1,NZ
             CALL GZQMC(IDAY,NZNO(izz),IGETNO(KGET,5))
             if(ireportunit.eq.0.or.ireportunit.eq.2)then
-              do 66 I=1,N
+              do I=1,N
                 AGR(I)=AGR(I)+(GVAL(I)/1000.0) ! selective conversion and sum
-  66          continue
+              end do
             else
-              do 67 I=1,N
+              do I=1,N
                 AGR(I)=AGR(I)+GVAL(I) ! sum to AGR
-  67          continue
+              end do
             endif
   65      continue
           CALL XTVAL1(AGR,ISTART,IEND,KGET)
@@ -4021,9 +4021,9 @@ C taking into account ireportunit.
         CALL GZQM(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
         N=24*NTS
         if(ireportunit.eq.0.or.ireportunit.eq.2)then
-          do 302 I=1,N
+          do I=1,N
             GVAL(I)=GVAL(I)/1000. ! selective conversion
- 302      continue
+          end do
         endif
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
 
@@ -4149,9 +4149,9 @@ C If izver >= 4 the read the data directly.
 
 C Combined radiant and convective. If the
 C operation file is old, sort the periods via processoldcas.
-            DO  204 J2=ISTART,IEND
+            DO J2=ISTART,IEND
               GC(J2)=0.0
-  204       CONTINUE
+            END DO
             IUNIT=IFIL+1
             CALL EROPER(0,iuout,iunit,IGETNO(KGET,2),IER) ! for older results files.
             if(ip3ver(IGETNO(KGET,2)).eq.0)then
@@ -4166,15 +4166,15 @@ C operation file is old, sort the periods via processoldcas.
      &            IGETNO(KGET,2),ier)
             endif
             CALL ZCASC(IGETNO(KGET,2),IDAY)
-            DO 51, JC2=ISTART,IEND
+            DO JC2=ISTART,IEND
               GC(JC2)=VAL3(15,JC2)+VAL3(16,JC2)+VAL3(17,JC2)+
      &                VAL3(18,JC2)+VAL3(19,JC2)+VAL3(20,JC2)
-  51        continue
+            END DO
             CALL CASRT(IGETNO(KGET,2),IDAY)
-            DO 54, JC2=ISTART,IEND
+            DO JC2=ISTART,IEND
               GC(JC2)=GC(JC2)+VAL3(15,JC2)+VAL3(16,JC2)+VAL3(17,JC2)+
      &                VAL3(18,JC2)+VAL3(19,JC2)+VAL3(20,JC2)
-  54        continue
+            END DO
             CALL XTVAL1(GC,ISTART,IEND,KGET)
           elseif(IICRCG.eq.2)then
             CALL GCASC(IDAY,IGETNO(KGET,2),IGETNO(KGET,5)) ! for older versions.
@@ -4187,9 +4187,9 @@ C operation file is old, sort the periods via processoldcas.
 C Casual by type. Use GC to hold sum at each timestep. First read the
 C zone operation file and possible casual gain control file. If the
 C operation file is old, sort the periods.
-            DO  203 J2=ISTART,IEND
+            DO J2=ISTART,IEND
               GC(J2)=0.0
-  203       CONTINUE
+            END DO
             IUNIT=IFIL+1
             CALL EROPER(0,iuout,iunit,IGETNO(KGET,2),IER) ! for older results files.
             if(ip3ver(IGETNO(KGET,2)).eq.0)then
@@ -4257,9 +4257,9 @@ C External surface convection.
             call usrmsg('Current save level does not support the ',
      &       'recovery of convection at surfaces. Use save level 4.',
      &       '-')
-            do 900 JTS=ISTART,IEND
+            do JTS=ISTART,IEND
               CQ(JTS)=0.0
-  900       continue
+            end do
           endif
           CALL XTVAL1(CQ,ISTART,IEND,KGET)
         elseif(IGETNO(KGET,4).eq.3)then
@@ -4381,9 +4381,9 @@ C Set default surface absorbtivity.
 
 C Radiant plant is area AND emissivity weighted.
         emarea=0.0
-        do 80 kk=1,NZSUR(iz)
+        do kk=1,NZSUR(iz)
           emarea=emarea+sna(iz,kk)*EMISI(kk)
-  80    continue
+        end do
         if(IPK.GE.5.AND.IPK.LE.8)then
 
 C Get inside casual radiant for this surface and store
@@ -4405,9 +4405,9 @@ C << is there a way to use data from GSURFB for this ?? >>
 
 C Get the plant injection at each time step, return in GVAL.
           CALL GZQM(IDAY,IZ,IGETNO(KGET,5))
-          DO 201 JTS=ISTART,IEND
+          DO JTS=ISTART,IEND
             GVAL(JTS)=GVAL(JTS)/SAREA
-  201     CONTINUE
+          END DO
 
 C Determine the radiant portion of the plant via checking IBAN.
 C Radiant only to one surface node, mixed plant injection, or
@@ -4419,21 +4419,21 @@ C no radiant plant component.
               CALL XTVAL1(GVAL,ISTART,IEND,KGET)
             ELSEIF(IBAN(ICF,1).EQ.-2.AND.IBAN(ICF,2).EQ.IZ)then
               xfac=sna(IZ,IS)*EMISI(IS)/emarea
-              DO 136 I2=ISTART,IEND
+              DO I2=ISTART,IEND
                  XDUM(I2)=(xfac)*GVAL(I2)
      &                    *(1.-(FLOAT(IBAN(ICF,3))*0.01))
-  136         CONTINUE
+              END DO
               CALL XTVAL1(XDUM,ISTART,IEND,KGET)
             ELSE
-              DO 37 I2=ISTART,IEND
+              DO I2=ISTART,IEND
                 XDUM(I2)=0.
-   37         CONTINUE
+              END DO
               CALL XTVAL1(XDUM,ISTART,IEND,KGET)
             ENDIF
           ELSE
-            DO 137 I2=ISTART,IEND
+            DO I2=ISTART,IEND
               XDUM(I2)=0.
-  137       CONTINUE
+            END DO
             CALL XTVAL1(XDUM,ISTART,IEND,KGET)
           ENDIF
         else
@@ -4503,9 +4503,9 @@ C IGETNO(KGET,1) = 28 Reactive electrical power consumption.
 C IGETNO(KGET,1) = 29 Delta T zone - ambient.
         CALL MOCLIM (IDAY,2)
         CALL GZAIRT(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
-        DO  1203 J2=ISTART,IEND
+        DO J2=ISTART,IEND
           GC(J2)=GVAL(J2)-VAL3(2,J2)
- 1203   CONTINUE
+        END DO
         CALL XTVAL1(GC,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.30)then
 
@@ -4514,9 +4514,9 @@ C taking into account ireportunit.
         CALL GZLLC(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
         N=24*NTS
         if(ireportunit.eq.0.or.ireportunit.eq.2)then
-          do 303 I=1,N
+          do I=1,N
             GVAL(I)=GVAL(I)/1000. ! selective conversion
- 303      continue
+          end do
         endif
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.31)then
@@ -4526,9 +4526,9 @@ C taking into account ireportunit.
         CALL GZLLH(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
         N=34*NTS
         if(ireportunit.eq.0.or.ireportunit.eq.2)then
-          do 304 I=1,N
+          do I=1,N
             GVAL(I)=GVAL(I)/1000. ! selective conversion
- 304      continue
+          end do
         endif
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.32)then
@@ -4538,9 +4538,9 @@ C taking into account ireportunit.
         CALL GZLL(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
         N=35*NTS
         if(ireportunit.eq.0.or.ireportunit.eq.2)then
-          do 305 I=1,N
+          do I=1,N
             GVAL(I)=GVAL(I)/1000. ! selective conversion
- 305      continue
+          end do
         endif
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.33)then
@@ -4550,9 +4550,9 @@ C taking into account ireportunit.
         CALL GZQSL(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
         N=36*NTS
         if(ireportunit.eq.0.or.ireportunit.eq.2)then
-          do 306 I=1,N
+          do I=1,N
             GVAL(I)=GVAL(I)/1000. ! selective conversion
- 306      continue
+          end do
         endif
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.34)then
@@ -4564,39 +4564,39 @@ C IGETNO(KGET,1) = 34 Wind direction (climate parameter)
 
 C IGETNO(KGET,1) = 35 Delta T surf (use CQ) - dewpoint.
         CALL GTMS(IDAY,IGETNO(KGET,2),IGETNO(KGET,3),IGETNO(KGET,5))
-        DO  1204 J2=ISTART,IEND
+        DO J2=ISTART,IEND
           CQ(J2)=GVAL(J2)
- 1204   CONTINUE
+        END DO
         CALL GZDP(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
-        DO  1205 J2=ISTART,IEND
+        DO J2=ISTART,IEND
           GC(J2)=CQ(J2)-GVAL(J2)
- 1205   CONTINUE
+        END DO
         CALL XTVAL1(GC,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.36)then
 
 C IGET = 36 Total conv @ interior/similar/adiab/constant surfaces.
 C Add opaque and transparent at each timestep.
         CALL GOPQIN(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
-        DO  1206 J2=ISTART,IEND
+        DO J2=ISTART,IEND
           CQ(J2)=GVAL(J2)
- 1206   CONTINUE
+        END DO
         CALL GTRNIN(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
-        DO  1207 J2=ISTART,IEND
+        DO J2=ISTART,IEND
           CQ(J2)=CQ(J2)+GVAL(J2)
- 1207   CONTINUE
+        END DO
         CALL XTVAL1(CQ,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.37)then
 
 C IGET = 37 Total conv @ outside connected surfaces. Add opaque and
 C transparent at each timestep.
         CALL GOUTOPQ(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
-        DO  1208 J2=ISTART,IEND
+        DO J2=ISTART,IEND
           CQ(J2)=GVAL(J2)
- 1208   CONTINUE
+        END DO
         CALL GOUTTRN(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
-        DO  1209 J2=ISTART,IEND
+        DO J2=ISTART,IEND
           CQ(J2)=CQ(J2)+GVAL(J2)
- 1209   CONTINUE
+        END DO
         CALL XTVAL1(CQ,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.38)then
 
@@ -4619,9 +4619,9 @@ C Transparent exterior area.
           SAREA=1.
         endif
         call GSOLX(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
-        DO 1250 JTS=ISTART,IEND
+        DO JTS=ISTART,IEND
           GVAL(JTS)=GVAL(JTS)/SAREA
- 1250   CONTINUE
+        END DO
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.39)then
 
@@ -4637,13 +4637,13 @@ C IGET = 40 Solar absorbed in zone (W)
 
 C IGET = 41 db T - another zone db T.
         CALL GZAIRT(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
-        DO  1304 J2=ISTART,IEND
+        DO J2=ISTART,IEND
           CQ(J2)=GVAL(J2)
- 1304   CONTINUE
+        END DO
         CALL GZAIRT(IDAY,IGETNO(KGET,3),IGETNO(KGET,5))
-        DO  1305 J2=ISTART,IEND
+        DO J2=ISTART,IEND
           GC(J2)=CQ(J2)-GVAL(J2)
- 1305   CONTINUE
+        END DO
         CALL XTVAL1(GC,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.42)then
 
@@ -4680,13 +4680,13 @@ C IGET = 47 Renewables/advanced materials secondary output.
 C IGETNO(KGET,1) = 50 Local PPD: delta T head/ feet.
         call edisp(iuout,
      &    'Missing information on local air T, setting dT to zero.')
-        DO  1406 J2=ISTART,IEND
+        DO J2=ISTART,IEND
           iflag=1
           dT=0.
           call DISCOMF(iflag,dT,PPD)
           if (iflag.eq.-1) PPD=101.
           GC(J2)=PPD
- 1406   CONTINUE
+        END DO
         CALL XTVAL1(GC,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.51)then
 
