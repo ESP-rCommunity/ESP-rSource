@@ -25,7 +25,7 @@ C rif file to be used and its intended purpose.
 C RADCFGIN:  reads the contents of the radiance configuration file.
 C RADCFGOUT: writes the contents of the radiance configuration file.
 C whichrif:  presents a list of existing rif files.
-C newscene:  asks default questions for new rif file or 
+C newscene:  asks default questions for new rif file.
 C ADDSCENE:  allows the creation of a default translation from ESP-r to radiance.
 C setdfgrid: allows the creation of the daylight factor grid points.
 C DFGRIDLBL: writes out an index of daylight grid point (act = g|G) or
@@ -181,9 +181,11 @@ c End of .rif file logic
           elseif (WORD(1:4).eq.'*rpu') then
             CALL EGETW(OUTSTR,K,SCENEPURP(I),'W','scene purp',IFLAG)
           elseif (WORD(1:4).eq.'*rgd') then
-            CALL EGETW(OUTSTR,K,LDFGRID,'W','grid data',IFLAG)
+
+C Note: there is one grid or sensor data file name per scene.
+            CALL EGETW(OUTSTR,K,LDFGRID(I),'W','grid data',IFLAG)
           elseif (WORD(1:4).eq.'*slc') then
-            CALL EGETW(OUTSTR,K,LDFGRID,'W','sensor data',IFLAG)
+            CALL EGETW(OUTSTR,K,LDFGRID(I),'W','sensor data',IFLAG)
           else
             call usrmsg(' Unrecognised data prefix.',' ','W')
           endif
@@ -289,11 +291,14 @@ C 3), 4) and 5)
         write(IRCFG,'(a,a,a)')'*rpu ',OUTS(1:IML),' # Intended use'
 
         if (SCENEPURP(I)(1:8).eq.'Day_fact') then
-          OUTS=LDFGRID
+          OUTS=LDFGRID(I)
           write(IRCFG,'(a,a,a)')'*rgd ',OUTS(1:IML),' # DF grid data'
-
+        elseif (SCENEPURP(I)(1:7).eq.'Day_lux'.or.
+     &          SCENEPURP(I)(1:5).eq.'Illum') then
+          OUTS=LDFGRID(I)
+          write(IRCFG,'(a,a,a)')'*rgd ',OUTS(1:IML),' # lux grid data'
         elseif (SCENEPURP(I)(1:8).eq.'Coupling') then
-          OUTS=LDFGRID
+          OUTS=LDFGRID(I)
           write(IRCFG,'(a,a,a)')'*slc ',OUTS(1:IML),
      &                                          ' # Sensor locations'
         endif
@@ -316,7 +321,7 @@ C If MODE is 's' then create a static list, 'm' then allow modification.
 
       COMMON/FILEP/IFIL
 
-      character MODE*1, VERT*24, KEY*1
+      character MODE*1, VERT*30, KEY*1
 
       dimension VERT(35)
 
@@ -365,7 +370,7 @@ C current menu line index. Build up text strings for the menu.
           M=M+1
           CALL EMKEY(L,KEY,IER)
           WRITE(VERT(M),14)KEY,SCENE(L)
-   14     FORMAT(A1,1X,A12)
+   14     FORMAT(A1,1X,A)
         ENDIF
    10 CONTINUE
 
@@ -374,7 +379,7 @@ C Number of actual items displayed.
 
 C If a long list include page facility text and info on portion seen.      
       IF(IPFLG.EQ.0)THEN
-        VERT(M+1)=  '  ------------------'
+        VERT(M+1)=  '  ----------------------'
       ELSE
         WRITE(VERT(M+1),15)IPM,MPM 
    15   FORMAT ('0 page part: ',I1,' -- of:',I1)
@@ -384,12 +389,12 @@ C If MODE has been passed as a M then add an item at the end allowing
 C list to be modified otherwise blank choice.  If user is browsing
 C no need to show additional options.
       IF(MODE.EQ.'M'.OR.MODE.EQ.'m')THEN
-        VERT(M+2)='* add/delete/copy  '
-        VERT(M+3)  ='? help           '
-        VERT(M+4)  ='- exit this menu '
+        VERT(M+2)='* add/delete/copy scene '
+        VERT(M+3)  ='? help                '
+        VERT(M+4)  ='- exit this menu      '
       ELSE
-        VERT(M+2)  ='? help           '
-        VERT(M+3)  ='- exit this menu '
+        VERT(M+2)  ='? help                '
+        VERT(M+3)  ='- exit this menu      '
       ENDIF
 
 C Display the menu.
@@ -419,7 +424,7 @@ C be deleted or copied, respectively.
         CALL KEYIND(MVERT,IVERT,IFOC,IO)
         SELECT=.TRUE.
         ISCENE=IFOC
-        if(delzone)then
+        if(delzone)then   ! act on prior request to delete
           do 1110 I=IFOC,NSCENE
             if (I.eq.NSCENE) then
               SCENE(I)='UNDEFINED'
@@ -442,7 +447,7 @@ C be deleted or copied, respectively.
           NSCENE=NSCENE-1
           ISCENE=1
           modscene=.true.
-        elseif(cpyzone)then
+        elseif(cpyzone)then  ! act on previous request to copy scene
           NSCENE=NSCENE+1
           SCENE(NSCENE)=SCENE(IFOC)
           do 68 irif= 1,NBSRIF(ifocz,IFOC)
@@ -454,9 +459,11 @@ C be deleted or copied, respectively.
           ISCENE=NSCENE
 
 C Check new scenes data by calling newscene.  As newscene adds one to NSCENE 
-C subtract one just now, no other data will be effected.
+C subtract one just now, no other data will be effected. It assumes that
+C the user will provide appropriate alternative names.
           NSCENE=NSCENE-1
-          call usrmsg(' Edit copied scene.',' ','W')
+          call usrmsg('Edit copied scene (alter name & data).',
+     &      ' ','W')
           call newscene('-')
           modscene=.true.
         endif
@@ -488,17 +495,19 @@ C Allow a scene to be added or deleted.
           CALL EASKATOG(' ','Action: ','add scene','delete scene',
      &      'copy scene','cancel',' ',' ',' ',IW,nbhelp)
           if(IW.EQ.1)then
+
+C Add a new scene (new rif file etc).
             delzone = .false.
             CALL EASKABC(' ','Create scene:','silently',
      &        'interactively','cancel',IWDV,nbhelp)
             if (IWDV.eq.1) then
-              call newscene('c')
+              call newscene('c')   ! silent creation
               cmdact='Create'
               call autorad
               ICHK=4
               call radcfgout(ICHK)
-            elseif (IWDV.eq.1) then
-              call newscene('-')
+            elseif (IWDV.eq.2) then
+              call newscene('-')   ! interactive creation
               cmdact='Create'
               call autorad
               ICHK=4
@@ -506,17 +515,19 @@ C Allow a scene to be added or deleted.
             else
               goto 92
             endif
-            ICHK=4
-            call RADCFGOUT(ICHK)
             RETURN
           elseif(IW.EQ.2)then
+
+C Delete a scene.
             delzone = .true.
-            call usrmsg(' ','Select scene to delete. ','-')
+            call usrmsg(' ','Select scene to delete from list.','-')
             IVERT=-2
             goto 3
           elseif(IW.EQ.3)then
+
+C Copy a scene
             cpyzone = .true.
-            call usrmsg(' ','Select scene to copy. ','-')
+            call usrmsg(' ','Select scene to copy from list.','-')
             IVERT=-2
             goto 3
           endif
@@ -546,7 +557,8 @@ C ********************* newscene *********************
 C newscene asks default questions for new rif file or 
 C sets values if MODE='s' (silent) from command line or
 C if MODE='a' (aim) will ask for aim and name files automatically or
-C if MODE='c' (create) then allow all purposes and auto name files.
+C if MODE='c' (create) then allow all purposes and auto name files or
+C if MODE='-' is similar to 'a' but does not use word default in dialog.
       SUBROUTINE newscene(MODE)
 #include "building.h"
 #include "geometry.h"
@@ -597,8 +609,14 @@ c          izone=-1 ! does not seem necessary
         elseif (aim(1:8).eq.'Day_coef') then
           IRP=6
           call zindex(zone,izone)
-        elseif (aim(1:7).eq.'Sun_pos') then
+        elseif (aim(1:7).eq.'Day_lux') then
           IRP=7
+          call zindex(zone,izone)
+        elseif (aim(1:5).eq.'Illum') then
+          IRP=8
+          call zindex(zone,izone)
+        elseif (aim(1:7).eq.'Sun_pos') then
+          IRP=9
 c          izone=-1 ! does not seem necessary
         endif
       elseif (MODE.eq.'a') then
@@ -608,10 +626,13 @@ c          izone=-1 ! does not seem necessary
         idno=1
         call MENUATOL('Select a default scene.',' Default scene',
      &    'a External images','b Internal images','c Glare sources',
-     &    'd Daylight factors',' ',' ',
-     &    ' ',' ',' ',' ',' ',' ',ino,idno,nbhelp)
+     &    'd Daylight factors','e not applicable','f not applicable',
+     &    'g Daylight lux @points','h Illuminance @points',' ',' ',
+     &    ' ',' ',ino,idno,nbhelp)
         IRP=INO
       else
+
+C Mode is not c or a.
         helptopic='purpose_of_rif_scene'
         call gethelptext(helpinsub,helptopic,nbhelp)
         ino=0
@@ -619,7 +640,8 @@ c          izone=-1 ! does not seem necessary
         call MENUATOL('Select a scene purpose.',' Scene purpose',
      &    'a External images','b Internal images','c Glare sources',
      &    'd Daylight factors','e Coupling','f Daylight coefficients',
-     &    ' ',' ',' ',' ',' ',' ',ino,idno,nbhelp)
+     &    'g Daylight lux @points','h Illuminance @points',' ',' ',
+     &    ' ',' ',ino,idno,nbhelp)
         IRP=INO
       endif
 
@@ -646,8 +668,8 @@ C Reset the number of chosen zones (nzg) to NCOMP and re-initialize nznog() .. f
  3    continue
 
 C Now ask for zone for internal and glare purposes.
-      if (IRP.eq.2 .or.IRP.eq.3 .or.IRP.eq.4 .or.
-     &                  IRP.eq.5 .or.IRP.eq.6) then
+      if (IRP.eq.2.or.IRP.eq.3.or.IRP.eq.4.or.IRP.eq.5.or.
+     &    IRP.eq.6.or.IRP.eq.7.or.IRP.eq.8) then
         if (IZONE.le.0) then
           helptopic='pick_zone_for_int_view'
           call gethelptext(helpinsub,helptopic,nbhelp)
@@ -660,11 +682,12 @@ C Now ask for zone for internal and glare purposes.
           ifocz=IZONE
         endif
       endif
+      
 C Set assumptions for each scene purpose and gather any additional 
 C information.
       if (IRP.eq.1) then 
         SCENEPURP(ISCENE)='External'
-        intext = 0
+        intext = 0   ! external view
         imgqua = 'Medium'
         detlvl = 'Medium'
         llvar  = 'High'
@@ -678,7 +701,7 @@ C information.
 
 C Internal image selected.
         SCENEPURP(ISCENE)='Internal'
-        intext = 1
+        intext = 1  ! internal view
         imgqua = 'Medium'
         detlvl = 'Medium'
         llvar  = 'High'
@@ -705,7 +728,7 @@ C Glare image selected.
 C Daylight factor calculation selected.
         SCENEPURP(ISCENE)='Day_fact'
         intext = 1
-        imgqua = 'High'
+        imgqua = 'Medium'
         detlvl = 'Medium'
         llvar  = 'High'
         indrcb = 2
@@ -741,6 +764,32 @@ C Daylight coefficient calculation selected. (thermal/lighting simulation)
         coconv = '  '
       elseif (IRP.eq.7) then 
 
+C Daylight lux (illuminance at grid points with CIE sky) calculation selected.
+        SCENEPURP(ISCENE)='Day_lux'
+        intext = 1
+        imgqua = 'Medium'
+        detlvl = 'Medium'
+        llvar  = 'High'
+        indrcb = 2
+        ipicx  = 258
+        penumb = 'True'
+        crenrp = '-av 0 0 0 -ab 1'
+        coconv = '  '
+      elseif (IRP.eq.8) then 
+
+C Illuminance at grid points with std sky calculation selected.
+        SCENEPURP(ISCENE)='Illum'
+        intext = 1
+        imgqua = 'Hedium'
+        detlvl = 'Medium'
+        llvar  = 'High'
+        indrcb = 2
+        ipicx  = 258
+        penumb = 'True'
+        crenrp = '-av 0 0 0 -ab 1'
+        coconv = '  '
+      elseif (IRP.eq.9) then 
+
 C Sun positions.
         SCENEPURP(ISCENE)='Sun_pos'
         intext = 0
@@ -756,8 +805,8 @@ c        ifocz = -1
       endif
 
 C Set default names based on above.
-      if (IRP.eq.2 .or.IRP.eq.3 .or.IRP.eq.4 .or.
-     &                  IRP.eq.5 .or.IRP.eq.6) then
+      if (IRP.eq.2.or.IRP.eq.3.or.IRP.eq.4.or.IRP.eq.5.or.
+     &    IRP.eq.6.or.IRP.eq.7.or.IRP.eq.8) then
         write (outs,'(3a)') zname(ifocz)(1:lnzname(ifocz)),
      &     '_',SCENEPURP(ISCENE)(1:6)
         write (SCENEDESC(ISCENE),'(5a)') 'Scene of ',
@@ -780,11 +829,12 @@ C Set default names based on above.
  66   continue
 
 C Additional details for specific purposes.
-      if (IRP.eq.4) then
+      if (IRP.eq.4.or.IRP.eq.7.or.IRP.eq.8) then
 
 C Set up daylight factor calc points for focus zone.
 c        call setdfgrid(MODE,izone,ier)
         call setdfgrid(MODE,ifocz,ier)
+
 
       elseif (IRP.eq.5.or.IRP.eq.6) then 
 
@@ -877,7 +927,7 @@ C Check for command line information.
         endif
       elseif(IWDV.eq.2)then
 
-C Create new scene file.
+C Create new scene file asking the user what the purpose is.
         call tstamp('>','E2R: controlling default scene')
         write (pfile,'(a,a)') runpath(1:lnrp),LRADCF(1:lnblnk(LRADCF))
         call ERPFREE(IRCFG,ISTAT)
@@ -893,7 +943,8 @@ C Create new scene file.
       END
 
 C ********************** setdfgrid **********************
-C setdfgrid allows the creation of the daylight factor grid points.
+C setdfgrid allows the creation of the daylight factor grid points or
+C illuminance grid points.
 C if MODE is not - then sensor points file name confirmation required.
       subroutine setdfgrid(MODE,izone,ier)
 #include "building.h"
@@ -922,6 +973,8 @@ C if MODE is not - then sensor points file name confirmation required.
       character DESCRC*25
       character outs*124,tfile*72
       character ITEM(MV)*15, t12*12, MODE*1
+      character ldfg*72   ! local file name
+      logical dok,keep
 
       dimension IVALS(MCOM), PEQN(4), ITEMV(MV)
 
@@ -944,7 +997,7 @@ C Ask for zone (if not defined), surface and working plane height.
         call gethelptext(helpinsub,helptopic,nbhelp)
  32     INPIC=1
         CALL EPICKS(INPIC,IVALS,
-     &    'Generate daylight factors for which zone. ',
+     &    'Generate DF or illuminance for which zone. ',
      &    '(You will then be asked to grid a surface.) ',
      &    12,NCOMP,zname,'Select zone',IER,nbhelp)
         if (INPIC.eq.0) goto 32
@@ -1044,16 +1097,18 @@ C Calculate grid points.
       call ERPFREE(ITA1,ISTAT)
 
 C Get file name for grid points.
-      write (LDFGRID,'(a,a4)') 
+      write (ldfg,'(a,a4)') 
      &  SCENERT(NSCENE)(1:lnblnk(SCENERT(NSCENE))),'.grd'
       if (MODE.eq.'-') then
- 55     CALL EASKS(LDFGRID,'Daylight factor grid points file name?',
+ 55     CALL EASKS(LDFG,'DF or illuminance grid points file name?',
      &    ' ',72,'points.grd','df points file name',IER,nbhelp)
-        IF(LDFGRID.EQ.' ') GOTO 55
+        IF(LDFG.EQ.' ') GOTO 55
+        LDFGRID(NSCENE)=LDFG
       endif
 
 C Open df points file in working directory.
-      write (tfile,'(a,a)') runpath(1:lnrp),LDFGRID(1:lnblnk(LDFGRID))
+      write (tfile,'(a,a)') runpath(1:lnrp),
+     &  LDFGRID(NSCENE)(1:lnblnk(LDFGRID(NSCENE)))
       call FPOPEN(ITA1,ISTAT,1,3,tfile)
       do 552 IC=1,3
         PEQN(IC)=PEQN(IC)*dirf
@@ -1072,10 +1127,8 @@ C Write points and sensor direction (plane normal).
 C Display grid on the zone... (if in graphic mode)
       if (MMOD.EQ.8) then
         call edisp(iuout,'  ')
-        write (outs,'(a,a)') 'The proposed daylight factor calculation',
-     &                  ' points are shown as'
-        call edisp(iuout,outs)
-        call edisp(iuout,'dots in the graphic feedback.')
+        call edisp(iuout,'The proposed calculation points are shown')
+        call edisp(iuout,'as dots in the graphic feedback.')
         MODIFY=.TRUE.
         ITZNM=1
         ITSNM=1
@@ -1084,12 +1137,23 @@ C Display grid on the zone... (if in graphic mode)
         CALL DFGRIDLBL('g')
       endif
 
+C Ask user if focus should remain on this zone or whole model
+      dok=.false.
+      helptopic='df_stay_focused'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL ASKOK('Keep graphic feedback focused on this zone?',
+     &  '(see help)',KEEP,dok,nbhelp)
+      if(KEEP)then
+        continue
+      else
+
 C Reset the number of chosen zones (nzg) to NCOMP.
-      nzg=NCOMP
-      izgfoc=0
-      do 300 I=1,NCOMP
-        nznog(I)=I
- 300  continue
+        nzg=NCOMP
+        izgfoc=0
+        do 300 I=1,NCOMP
+          nznog(I)=I
+ 300    continue
+      endif
 
 C Reset display options.
       call RCDSOPT
@@ -1099,13 +1163,16 @@ C Reset display options.
 
 C ********************** DFGRIDLBL **********************
 C DFGRIDLBL writes out an index of daylight grid point (act = g|G) or
-C the daylight factor (act = d|D).
+C the daylight factor (act = d|D) or lux (act = l|L).
       SUBROUTINE DFGRIDLBL(act_1)
 #include "building.h"
 #include "prj3dv.h"
 #include "e2r_common.h"
       
       integer lnblnk  ! function definition
+
+C Parameters
+      character act*1  ! action
 
 C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -1121,7 +1188,7 @@ C      COMMON/OUTIN/IUOUT,IUIN
 
       DIMENSION COG1(3),COG2(3),COG3(3)
 
-      CHARACTER VT*5,act_1*1
+      CHARACTER VT*6,act_1*1
       character OUTSTR*124,tfile*72
 
 #ifdef OSI
@@ -1140,14 +1207,14 @@ C there is a *.df file or a *.df- file that can be scanned again.
 
         call ERPFREE(ITA1,ISTAT)
         write(tfile,'(a,a)')runpath(1:lnrp),
-     &                      LDFGRID(1:lnblnk(LDFGRID))
+     &    LDFGRID(ISCENE)(1:lnblnk(LDFGRID(ISCENE)))
         call FPOPEN(ITA1,ISTAT,1,1,tfile)
         if(ISTAT.eq.0)then
           continue
         else
           call ERPFREE(ITA1,ISTAT)
           write(tfile,'(3a)')runpath(1:lnrp),
-     &                      LDFGRID(1:lnblnk(LDFGRID)),'-'
+     &      LDFGRID(ISCENE)(1:lnblnk(LDFGRID(ISCENE))),'-'
           call FPOPEN(ITA1,ISTAT,1,1,tfile)
           if(ISTAT.eq.0)then
             continue
@@ -1208,11 +1275,17 @@ C Loop through grid points.
           ELSEIF(I.gt.99)THEN
             WRITE(VT,'(i3)') I
           ENDIF
-        else
+        elseif(act.eq.'d'.or.act.eq.'D')then
           IF(DFVALS(I).lt.10.0)THEN
             WRITE(VT,'(f4.2)') DFVALS(I)
           ELSEIF(DFVALS(I).ge.10.0)THEN
             WRITE(VT,'(f4.1)') DFVALS(I)
+          ENDIF
+        elseif(act.eq.'l'.or.act.eq.'L')then
+          IF(DFVALS(I).lt.1000.0)THEN
+            WRITE(VT,'(f5.0)') DFVALS(I)
+          ELSEIF(DFVALS(I).ge.1000.0)THEN
+            WRITE(VT,'(f6.0)') DFVALS(I)
           ENDIF
         endif
         iid1=iix+1; iid2=iiy-1;
@@ -1279,12 +1352,12 @@ C Set local file name.
       call ercgcf(itrc,itru,LCGCINT,ICOMP,ier)
 
 C Open sensor info file (do not add path as radiance is run locally).
-      write(LDFGRID,'(a,a)')
+      write(LDFGRID(ISCENE),'(a,a)')
      &  SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'.slc'
 
 C Check for file (add working dir path)
       write (outs,'(a,a)') runpath(1:lnblnk(runpath)),
-     &  LDFGRID(1:lnblnk(LDFGRID))
+     &  LDFGRID(ISCENE)(1:lnblnk(LDFGRID(ISCENE)))
       call FINDFIL(outs,XST)
       if(XST)then
         call FPOPEN(ITA1,ISTAT,1,0,outs)

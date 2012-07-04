@@ -1,6 +1,11 @@
 *silent_input
-*weather_station,dublin
-*start_zone,metal_box6
+*menu,Creates extruded model in extrude
+*doc,Model of a triangular room within distributed folders to be created in extrude and use uk_oban climate file.
+*action,new,extrude,extrude
+*weather_station,uk_oban
+*site,45.320,0.000,0.0,6 # latitude, long diff, time zone, exposure index (and sky/ground/building exposure)
+*ground_refl_annual,0.20
+*start_zone,metal_form
 *shape,extrude
 *nbwalls,3
 *cord,0.0,0.0

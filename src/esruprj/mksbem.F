@@ -1598,12 +1598,12 @@ C Add/edit renewable systems
             NREN=NREN+1
             RENNAME(INDEX)=' '
             D24=' '
-            CALL EASKS(RENNAME(INDEX),'Name of renewable energy system',
+            CALL EASKS(RENNAME(INDEX),'Renewable energy system name',
      &        '(<24 characters)',24,D24,'RENNAME',IER,nbhelp)
           ELSEIF(IED.GT.0)THEN
             INDEX=IED
             D24=RENNAME(INDEX)
-            CALL EASKS(RENNAME(INDEX),'Name of renewable energy system',
+            CALL EASKS(RENNAME(INDEX),'Renewable energy system name',
      &        '(<24 characters)',24,D24,'RENNAME',IER,nbhelp)
           ENDIF
           IDNO=0 ; IB=0
@@ -1652,9 +1652,9 @@ C Solar PV collectors
             NRENTYPE(INDEX)=2
             IE=0 ; IENO=0
             call MENUATOL('Choose PV type','Choose PV type',
-     &        'a mono-crystalline silicon','b poly-crystalline silicon',
-     &        'c amorphous silicon','d other thin films',' ',' ',
-     &        ' ',' ',' ',' ',' ',' ',IE,ieno,nbhelp)
+     &       'a mono-crystalline silicon','b poly-crystalline silicon',
+     &       'c amorphous silicon','d other thin films',' ',' ',
+     &       ' ',' ',' ',' ',' ',' ',IE,ieno,nbhelp)
 
 C Hold PV efficiency from table 26, page 80, SBEM technical manual
 C version 1 of 10-dec-07
@@ -1684,11 +1684,11 @@ C Wind turbines
             NRENTYPE(INDEX)=3
             CALL EDISP(IUOUT,'SBEM terrain types for wind turbines:')
             CALL EDISP(IUOUT,'Type 1 is open flat country')
-            CALL EDISP(IUOUT,'Type 2 is farm land with boundary hedges')
-            CALL EDISP(IUOUT,' occasional small farm structures, ')
-            CALL EDISP(IUOUT,' houses or trees')
-            CALL EDISP(IUOUT,'Type 3 is suburban, industrial areas and')
-            CALL EDISP(IUOUT,' permanent forests')
+            CALL EDISP(IUOUT,'Type 2 is farm land with boundary')
+            CALL EDISP(IUOUT,' hedges occasional small farm ')
+            CALL EDISP(IUOUT,' structures, houses or trees')
+            CALL EDISP(IUOUT,'Type 3 is suburban, industrial areas')
+            CALL EDISP(IUOUT,' and permanent forests')
             CALL EDISP(IUOUT,'Type 4 is urban areas in which at least')
             CALL EDISP(IUOUT,' 15% of surface is covered by buildings')
             CALL EDISP(IUOUT,' of average height exceeding 15m')
@@ -3137,7 +3137,7 @@ C EDSBMREGS edits the building regs definition within the UK NCM file.
       CHARACTER*46 CIBSESTR2(4) ! concatenation of no. floors and area
       DIMENSION JSTR(8)
       dimension IVALSS(29)       ! array to get epicks answer from
-      dimension iedit(MCOM) !to use for menu and saving of air leakage (ach per zone)
+      dimension iedit(MCOM) !to use for menu & saving of air leakage (ach per zone)
       integer iedit
       integer nitms,INO ! max items and current menu item
       logical NEAR
@@ -3242,7 +3242,8 @@ c     &  'yes','no','Do not know',IW,nbhelp)
      &      ICIBSESTOR(ICIBSE1,IBT),' storeys '
           ELSE
             WRITE(CIBSESTR2(IBT),'(1I4,A,1I6)')
-     &      ICIBSESTOR(ICIBSE1,IBT),' storeys & area per floor(m2) of ',
+     &      ICIBSESTOR(ICIBSE1,IBT),
+     &      ' storeys & area per floor(m2) of ',
      &      ICIBSEAREA(ICIBSE1,IBT)
           ENDIF
  134    CONTINUE
@@ -3436,8 +3437,8 @@ C Need to write TDF info in the cfg file. Use next common(s) for this.
       real psi,lngth,losspercent,totheatloss,thbrpercent
       real uavtotal
       common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
-     &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
-     &               thbrpercent,uavtotal(MCOM)
+     &       ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
+     &       thbrpercent,uavtotal(MCOM)
 
       CHARACTER DFILE*72
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
@@ -3825,7 +3826,8 @@ C write 5 columns per unique activity entry
           WRITE(iafil,'(a,i2,a,i5,a,i3)',IOSTAT=ios,ERR=101)
      &    '   20   ',icountnotequal,'    1',itdyear,'    1  365',
      &    icolumns
-          WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '# NEXTRC,NEXTCL,NDBSTP'
+          WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) 
+     &      '# NEXTRC,NEXTCL,NDBSTP'
           inxt_column=icolumns+1
           WRITE(iafil,'(a,i3,a)',IOSTAT=ios,ERR=101) '      1   ',
      &         inxt_column,' 8760'
@@ -3833,8 +3835,10 @@ C write 5 columns per unique activity entry
           icolumns=5
           WRITE(iafil,'(a,i5,a)',IOSTAT=ios,ERR=101)
      &    '   20    1    1',itdyear,'    1  365    5'
-          WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '# NEXTRC,NEXTCL,NDBSTP'
-          WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '      1      1   8760'
+          WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) 
+     &      '# NEXTRC,NEXTCL,NDBSTP'
+          WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) 
+     &      '      1      1   8760'
         endif
         WRITE(iafil,'(a)',IOSTAT=ios,ERR=101)
      &    '*tdaid1,Set set of UK NCM occupancy patterns'
@@ -3867,19 +3871,19 @@ C NTBITS and NTSTAT are hardwired here to 5 and 11 respectively
           WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '*other,  11  5'
           WRITE(iafil,'(2a)',IOSTAT=ios,ERR=101) '*fields,16'
           WRITE(iafil,'(a,F4.3,2a)',IOSTAT=ios,ERR=101)
-     &      'REAL  1  0   ',occupant_dens(iforuseintdfentry(i)),
+     &      'REAL  1  0  ',occupant_dens(iforuseintdfentry(i)),
      &      ' 0.000    100.000  ','Occupant density (pers/m2):'
           WRITE(iafil,'(a,I3,2a)',IOSTAT=ios,ERR=101)
-     &      'INTG  2  0   ',metabolic_rate(iforuseintdfentry(i)),
+     &      'INTG  2  0  ',metabolic_rate(iforuseintdfentry(i)),
      &      ' 0       999  ','Metabolic rate (W/pers):'
           WRITE(iafil,'(a,I3,2a)',IOSTAT=ios,ERR=101)
-     &      'INTG  3  0   ',latent_ocup_percent(iforuseintdfentry(i)),
+     &      'INTG  3  0  ',latent_ocup_percent(iforuseintdfentry(i)),
      &      ' 0       100  ','Occup. Latent gain % (0-100):'
           WRITE(iafil,'(a,F6.3,2a)',IOSTAT=ios,ERR=101)
-     &      'REAL  4  0    ',equip_gain(iforuseintdfentry(i)),
+     &      'REAL  4  0   ',equip_gain(iforuseintdfentry(i)),
      &      ' 0.000    400.000  ','Equipment (W/m2):'
           WRITE(iafil,'(1a,I3,2a)',IOSTAT=ios,ERR=101)
-     &      'INTG  5  0    ',latent_equip_percent(iforuseintdfentry(i)),
+     &      'INTG  5  0   ',latent_equip_percent(iforuseintdfentry(i)),
      &      ' 0       100  ','Equip. Latent gain % (0-100):'
           WRITE(iafil,'(a,I3,2a)',IOSTAT=ios,ERR=101)
      &      'INTG  6  0    ',lighting_lux(iforuseintdfentry(i)),
@@ -4161,6 +4165,7 @@ C This routine assumes newer geometry files are being used.
       CHARACTER OUTS*124,ADF*124,SNM*12,USE*8,USE2*8
       character SN*12,msg*42
       CHARACTER*12 XJCCU,XKCCU
+      character DOIT*248
 
 C ivalsg keeps track of whether a geometry file has alread been copied.
 C irmw keeps track of up to 90 surfaces in each zone which can be deleted
@@ -4184,6 +4189,7 @@ C      logical closeelv ! true if surface is close to vertical
       integer LOOPMAX  ! loop iterator for shifting surface list
       integer ISCURRENT ! the current connection to be deleted
       logical ok,dok
+      logical unixok
 
 C Test whether required constructions exist.
       logical haveopDoor,haveVehicle,haveNot_D,haveNot_G,haveframe
@@ -4397,13 +4403,35 @@ C Make a copy of constructions file and tmc file if applicable.
         LTHRM(ICOMP)=NNAME
         CALL EMKCON(LTHRM(ICOMP),IUNIT,ICOMP,QUIET,IER)
         call FINDFIL(LTWIN(ICOMP),XST)
-        IF(.NOT.XST)GOTO 500
-        IFU=13
-        CALL ERTWIN(ITRC,ITRU,IFU,LTWIN(ICOMP),ICOMP,IER)
-        EXT='.tmc'
-        CALL FNCNGR(LTWIN(ICOMP),APE,EXT,NNAME)
-        LTWIN(ICOMP)=NNAME
-        CALL MKTWIN(IFU,ICOMP,QUIET,IER)
+        IF(XST)then
+          IFU=13
+          CALL ERTWIN(ITRC,ITRU,IFU,LTWIN(ICOMP),ICOMP,IER)
+          EXT='.tmc'
+          CALL FNCNGR(LTWIN(ICOMP),APE,EXT,NNAME)
+          LTWIN(ICOMP)=NNAME
+          CALL MKTWIN(IFU,ICOMP,QUIET,IER)
+        ENDIF
+
+C Make copy of zone shading file if applicable.
+        call isunix(unixok)
+        if(ISI(icomp).eq.1)then
+          EXT='.shd'
+          CALL FNCNGR(LSHAD(ICOMP),APE,EXT,NNAME)
+          if(unixok)then
+            WRITE(doit,'(4A)')'cp ',
+     &        LSHAD(ICOMP)(1:LNBLNK(LSHAD(ICOMP))),' ',
+     &        NNAME(1:LNBLNK(NNAME))
+          else
+            WRITE(doit,'(4A)')'copy /y ',
+     &        LSHAD(ICOMP)(1:LNBLNK(LSHAD(ICOMP))),' ',
+     &        NNAME(1:LNBLNK(NNAME))
+          endif
+          CALL USRMSG('Copying shading file via:',doit,'-')
+          CALL RUNIT(doit,'-')
+          LSHAD(ICOMP)=NNAME
+        endif
+
+C If there was an error.
         if(ier.ne.0)then
           helptopic='ncm_file_copy_issue'
           call gethelptext(helpinsub,helptopic,nbhelp)
@@ -4414,7 +4442,7 @@ C Make a copy of constructions file and tmc file if applicable.
 
 C Remember this geometry file has been done so that a later selection
 C of constructions does not re-do it.
- 500    ivalsg(icomp)=icomp
+        ivalsg(icomp)=icomp
 
 C Ask if zone is occupied and environmentally controlled.
         DOK=.true.
@@ -4587,7 +4615,7 @@ C into which compliant glass and frames can be added subsequently.
                 if(iparent(icc).eq.0)then
 
 C Debug.
-                  write(6,*) 'found external glazed parent surface',icc
+                  write(6,*) 'found external glazed parent surf',icc
                   write(6,*) 'it has ',nbchild(icc),' child surfaces'
 
                   DO 554 ICHL=1,NBCHILD(ICC)
@@ -4728,7 +4756,7 @@ C In the current zone we need to delete NRMV surfaces.
 
 C Debug.
           write(6,*) ' x conn surf ',IRMV(ICOMP,IR),' ',
-     &      ssname(IRMV(ICOMP,IR)),' ',ie1(IRMV(ICOMP,IR)),' for ir ',ir
+     &     ssname(IRMV(ICOMP,IR)),' ',ie1(IRMV(ICOMP,IR)),' for ir ',ir
 
 C Pack the list of TARSURF etc from the current connection data
 C to one less than the end of the number of connections in the
@@ -4855,7 +4883,7 @@ C << need to trap error state in georead >>
           is=isur
           ICON=IZSTOCN(icomp,nzsur(ICOMP))  ! the last surface in the zone
           if(icon.eq.0)then
-            write(6,*) '580 georead zn last sur icon',icomp,nzsur(ICOMP)
+            write(6,*)'580 georead zn last sur icon',icomp,nzsur(ICOMP)
             goto 580   ! jump because we detected no connection
           endif
           IELF=0
@@ -5541,6 +5569,8 @@ C The setup part of creating notional model.
 
       integer lnblnk  ! function definition
 
+      integer ifil
+      common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -5548,11 +5578,15 @@ C The setup part of creating notional model.
 
       character EXT*4    ! up to 4 characters in file extension
       character APE*6    ! up to 6 characters in variant name
+      CHARACTER ACT*1
       CHARACTER CFGROOT*24
       CHARACTER LCFGF*72,NNAME*72
       CHARACTER OUTS*124
       character msg*42
       logical ok,dok
+      character DOIT*248
+      logical newgeo  ! to use for testing if new/old geometry file
+      logical quiet
 
 C Test whether required constructions exist.
       logical haveopDoor,haveVehicle,haveNot_D,haveNot_G,haveframe
@@ -5580,6 +5614,14 @@ C mlcindex for each of these required constructions.
      &  mlciSol_gr_typ
      
       integer nbdbstries  ! how many iterations looking for req constr
+      logical unixok,xst
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EMKSBM2'  ! set for subroutine
 
 C Check if Notional Model Flag has been set (NCM data has been defined)
 C If not then advise user and send him/her back
@@ -5741,11 +5783,84 @@ C parent child relationships.
           call EMKSBMZN(iz,ier)
         else
 
-C If not notionalizing is there anything we need to do?
-C Making the alternative named zone files for non-notionalized
-C zones might be useful to ensure that the original model files
-C do not get mangled.
-C << to be done >>
+C If not notionalizing it is still useful to create alternative zone file
+C names because partitions might be changed in adjacent zones. This also
+C ensures that the original model files are not corrupted.
+          APE='_not  '
+          newgeo=.true.  ! assume newer format geometry.
+
+C Loop through this zone and first scan geometry, next use surrel to
+C update parent/child information and write out the zone.
+          IUF=IFIL+2
+          EXT='.geo'
+          call eclose(gversion(iz),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(IUF,LGEOM(IZ),IZ,1,iuout,IER)
+          else
+            call usrmsg('Older geometry file cannot be used.',
+     &        LGEOM(IZ),'W')
+            ier = 2
+          endif
+          if(ier.ne.0)then
+            helptopic='ncm_geom_scan_issue'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL PHELPD('NCM details undefined!',nbhelp,'-',0,0,IER)
+            ier=3  ! signal geometry issue
+C            return
+          endif
+
+          CALL FNCNGR(LGEOM_O(IZ),APE,EXT,NNAME)
+          LGEOM(IZ)=NNAME
+          ACT='s'
+          CALL SURREL(ACT,IZ,IER)
+          call geowrite(IUF,LGEOM(IZ),IZ,ITRU,3,IER)
+
+C Make a copy of constructions file and tmc file if applicable.
+          IUNIT=12
+          QUIET=.FALSE.
+          call FINDFIL(LTHRM(IZ),XST)
+          ITRC=0
+          ITRU=6
+          CALL ECONST(LTHRM(IZ),IUNIT,IZ,ITRC,ITRU,IER)
+          EXT='.con'
+          CALL FNCNGR(LTHRM(IZ),APE,EXT,NNAME)
+          LTHRM(IZ)=NNAME
+          CALL EMKCON(LTHRM(IZ),IUNIT,IZ,QUIET,IER)
+          call FINDFIL(LTWIN(IZ),XST)
+          IF(XST)then
+            IFU=13
+            CALL ERTWIN(ITRC,ITRU,IFU,LTWIN(IZ),IZ,IER)
+            EXT='.tmc'
+            CALL FNCNGR(LTWIN(IZ),APE,EXT,NNAME)
+            LTWIN(IZ)=NNAME
+            CALL MKTWIN(IFU,IZ,QUIET,IER)
+          endif
+          if(ier.ne.0)then
+            helptopic='ncm_file_copy_issue'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL PHELPD('NCM details undefined!',nbhelp,'-',0,0,IER)
+            ier=4  ! signal geometry issue
+C           return
+          endif
+
+C If there is an existing shading file copy it to the new name.
+          call isunix(unixok)
+          if(ISI(iz).eq.1)then
+            EXT='.shd'
+            CALL FNCNGR(LSHAD(IZ),APE,EXT,NNAME)
+            if(unixok)then
+              WRITE(doit,'(4A)')'cp ',
+     &          LSHAD(IZ)(1:LNBLNK(LSHAD(IZ))),' ',
+     &          NNAME(1:LNBLNK(NNAME))
+            else
+              WRITE(doit,'(4A)')'copy /y ',
+     &          LSHAD(IZ)(1:LNBLNK(LSHAD(IZ))),' ',
+     &          NNAME(1:LNBLNK(NNAME))
+            endif
+            CALL USRMSG('Copying shading file via:',doit,'-')
+            CALL RUNIT(doit,'-')
+            LSHAD(IZ)=NNAME
+          endif
 
         endif
  559  CONTINUE
@@ -5798,6 +5913,7 @@ C << assumes that the cfg and cnn have already been setup. >>
       CHARACTER OUTS*124,ADF*124,SNM*12,USE*8,USE2*8
       character SN*12,SPN*12,msg*42
       CHARACTER*12 XJCCU,XKCCU
+      character DOIT*248
 
 C ivalsg keeps track of whether a geometry file has alread been copied.
 C irmw keeps track of up to 90 surfaces in each zone which can be deleted
@@ -5821,6 +5937,7 @@ C      logical closeelv ! true if surface is close to vertical
       integer LOOPMAX  ! loop iterator for shifting surface list
       integer ISCURRENT ! the current connection to be deleted
       logical ok,dok
+      logical unixok
 
 C Test whether required constructions exist.
       logical haveopDoor,haveVehicle,haveNot_D,haveNot_G,haveframe
@@ -5938,13 +6055,35 @@ C Make a copy of constructions file and tmc file if applicable.
       LTHRM(ICOMP)=NNAME
       CALL EMKCON(LTHRM(ICOMP),IUNIT,ICOMP,QUIET,IER)
       call FINDFIL(LTWIN(ICOMP),XST)
-      IF(.NOT.XST)GOTO 500
-      IFU=13
-      CALL ERTWIN(ITRC,ITRU,IFU,LTWIN(ICOMP),ICOMP,IER)
-      EXT='.tmc'
-      CALL FNCNGR(LTWIN(ICOMP),APE,EXT,NNAME)
-      LTWIN(ICOMP)=NNAME
-      CALL MKTWIN(IFU,ICOMP,QUIET,IER)
+      IF(XST)then
+        IFU=13
+        CALL ERTWIN(ITRC,ITRU,IFU,LTWIN(ICOMP),ICOMP,IER)
+        EXT='.tmc'
+        CALL FNCNGR(LTWIN(ICOMP),APE,EXT,NNAME)
+        LTWIN(ICOMP)=NNAME
+        CALL MKTWIN(IFU,ICOMP,QUIET,IER)
+      endif
+
+C Make copy of zone shading file if applicable.
+      call isunix(unixok)
+      if(ISI(icomp).eq.1)then
+        EXT='.shd'
+        CALL FNCNGR(LSHAD(ICOMP),APE,EXT,NNAME)
+        if(unixok)then
+          WRITE(doit,'(4A)')'cp ',
+     &      LSHAD(ICOMP)(1:LNBLNK(LSHAD(ICOMP))),' ',
+     &      NNAME(1:LNBLNK(NNAME))
+        else
+          WRITE(doit,'(4A)')'copy /y ',
+     &      LSHAD(ICOMP)(1:LNBLNK(LSHAD(ICOMP))),' ',
+     &      NNAME(1:LNBLNK(NNAME))
+        endif
+        CALL USRMSG('Copying shading file via:',doit,'-')
+        CALL RUNIT(doit,'-')
+        LSHAD(ICOMP)=NNAME
+      endif
+
+C If there was an error.
       if(ier.ne.0)then
         helptopic='ncm_file_copy_issue'
         call gethelptext(helpinsub,helptopic,nbhelp)
@@ -5953,11 +6092,9 @@ C Make a copy of constructions file and tmc file if applicable.
         return
       endif
 
-C << make copy of zone shading file if applicable >>
-
 C Remember this geometry file has been done so that a later selection
 C of constructions does not re-do it.
- 500  ivalsg(icomp)=icomp
+      ivalsg(icomp)=icomp
 
 C Ask if zone is occupied and environmentally controlled.
       DOK=.true.
@@ -6433,9 +6570,7 @@ C If likely new surface complexity is within limits add door.
 
 C Update the connection list. Move all others up and then insert with
 C default values.
-            write(6,*) 'before adddedsurf a ',icon,NZSUR(icomp)
             call addedsurf(icomp,icon,itrc,ier)
-            write(6,*) 'after adddedsurf a ',icon,NZSUR(icomp),ier
 
 C Add surfaces attribution parameters
             ICT(ICON)=0
@@ -8324,11 +8459,12 @@ C      write(6,*) 'AER is ',AER
 
 C Write summary Latex input text
         IF(IMODE.EQ.1)THEN
-          write(91,*)"\\multicolumn{8}{|c|}{Actual model (annual results
-     &)} \\\\"
+          write(91,*)
+     &    "\\multicolumn{8}{|c|}{Actual model (annual results)} \\\\"
           write(91,*)"\\hline"
-          write(91,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
-     &ts & Gas & Electricity \\\\"
+          write(91,*)
+     &    "Total & Heating & Cooling & DHW & Auxiliary & Lights &",
+     &    " Gas & Electricity \\\\"
           write(91,*)"\\hline"
           write(91,'(f6.2,7(a,f6.2),a)')BER,
      &" & ",A," & ",B," & ",C," & ",D," & ",E," & ",F," & ",G," \\\\"
@@ -8338,14 +8474,16 @@ C Write summary Latex input text
         ELSEIF(IMODE.EQ.2)THEN
           write(91,*)""
           write(91,*)"\\hline"
-          write(91,*)"CO2 $kg/m^{2}$ & \\multicolumn{7}{|c|}{Energy $kWh
-     &/m^{2}$} \\\\"
+          write(91,*)
+     &    "CO2 $kg/m^{2}$ & \\multicolumn{7}{|c|}{Energy $kWh",
+     &    "/m^{2}$} \\\\"
           write(91,*)"\\hline"
-          write(91,*)"\\multicolumn{8}{|c|}{Notional model (annual resul
-     &ts)} \\\\"
+          write(91,*)
+     &    "\\multicolumn{8}{|c|}{Notional model (annual results)} \\\\"
           write(91,*)"\\hline"
-          write(91,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
-     &ts & Gas & Electricity \\\\"
+          write(91,*)
+     &    "Total & Heating & Cooling & DHW & Auxiliary & Lights &",
+     &    " Gas & Electricity \\\\"
           write(91,*)"\\hline"
           write(91,'(f6.2,7(a,f6.2),a)')AER,
      &" & ",A," & ",B," & ",C," & ",D," & ",E," & ",F," & ",G," \\\\"
@@ -8354,11 +8492,12 @@ C Write summary Latex input text
           write(91,*)"\\hline"
           write(91,*)""
         ELSEIF(IMODE.EQ.3)THEN
-          write(91,*)"\\multicolumn{8}{|c|}{Reference model (annual resu
-     &lts)} \\\\"
+          write(91,*)
+     &   "\\multicolumn{8}{|c|}{Reference model (annual results)} \\\\"
           write(91,*)"\\hline"
-          write(91,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
-     &ts & Gas & Electricity \\\\"
+          write(91,*)
+     &    "Total & Heating & Cooling & DHW & Auxiliary & Lights &",
+     &    " Gas & Electricity \\\\"
           write(91,*)"\\hline"
           write(91,'(f6.2,7(a,f6.2),a)')RER,
      &" & ",A," & ",B," & ",C," & ",D," & ",E," & ",F," & ",G," \\\\"
@@ -8368,11 +8507,12 @@ C Write summary Latex input text
 C Write detailed Latex input file
         IF(IMODE.EQ.1)THEN
           write(92,*)"\\hline"
-          write(92,*)"\\multicolumn{8}{|c|}{Actual model Energy $kWh/m^{
-     &2}$} \\\\"
+          write(92,*)
+     &    "\\multicolumn{8}{|c|}{Actual model Energy $kWh/m^{2}$} \\\\"
           write(92,*)"\\hline"
-          write(92,*)"Month & Heating & Cooling & DHW & Auxiliary & Ligh
-     &ts & Gas & Electricity \\\\"
+          write(92,*)
+     &    "Month & Heating & Cooling & DHW & Auxiliary & Lights &",
+     &    "Gas & Electricity \\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Jan & ",T(1)," & ",U(1)," & ",V(1)," & ",W(1),
@@ -8423,11 +8563,12 @@ C Write detailed Latex input file
      &" & ",XX(12)," & ",YY(12)," & ",ZZ(12),"\\\\"
           write(92,*)"\\hline"
         ELSEIF(IMODE.EQ.2)THEN
-          write(92,*)"\\multicolumn{8}{|c|}{Notional model Energy $kWh/m
-     &^{2}$} \\\\"
+          write(92,*)
+     & "\\multicolumn{8}{|c|}{Notional model Energy $kWh/m^{2}$} \\\\"
           write(92,*)"\\hline"
-          write(92,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
-     &ts & Gas & Electricity \\\\"
+          write(92,*)
+     &  "Total & Heating & Cooling & DHW & Auxiliary & Lights &",
+     &  " Gas & Electricity \\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Jan & ",T(1)," & ",U(1)," & ",V(1)," & ",W(1),
@@ -8478,11 +8619,12 @@ C Write detailed Latex input file
      &" & ",XX(12)," & ",YY(12)," & ",ZZ(12),"\\\\"
           write(92,*)"\\hline"
         ELSEIF(IMODE.EQ.3)THEN
-          write(92,*)"\\multicolumn{8}{|c|}{Reference model Energy $kWh/
-     &m^{2}$} \\\\"
+          write(92,*)
+     & "\\multicolumn{8}{|c|}{Reference model Energy $kWh/m^{2}$} \\\\"
           write(92,*)"\\hline"
-          write(92,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
-     &ts & Gas & Electricity \\\\"
+          write(92,*)
+     &    "Total & Heating & Cooling & DHW & Auxiliary & Lights &",
+     &    " Gas & Electricity \\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Jan & ",T(1)," & ",U(1)," & ",V(1)," & ",W(1),
@@ -8901,7 +9043,8 @@ C We are taking DHW from the heating system.
             ENDIF
           ENDIF
           BER_DHW=BER_DHW+BERDHW_afterefficiency(ICOMP)
-          BER_DHWCO2=BER_DHWCO2+BERDHW_afterefficiency(ICOMP)*DHWCO2RATE
+          BER_DHWCO2=BER_DHWCO2+BERDHW_afterefficiency(ICOMP)*
+     &      DHWCO2RATE
 
 C For both lighting and auxiliary energy assume these are supplied by
 C the electrical grid (Fuel type 10 from SBEM.db1)
@@ -8962,7 +9105,8 @@ C the stripped model
 
 C Now work out notional heating fuel NHF based on paragraph 38 NCM
 C Modelling Guide ver4d of March 2008
-      IF(MHF.EQ.1.OR.MHF.EQ.3.OR.MHF.EQ.9.OR.MHF.EQ.11.OR.MHF.EQ.12)THEN
+      IF(MHF.EQ.1.OR.MHF.EQ.3.OR.MHF.EQ.9.OR.MHF.EQ.11.OR.
+     &   MHF.EQ.12)THEN
         NHF=1 ! Natural gas
       ELSE
         NHF=4 ! Oil
@@ -9043,7 +9187,8 @@ C HVAC system
             AERF(NHF)=AERF(NHF)+AERDHW_afterefficiency(ICOMP)
           ENDIF
           AER_DHW=AER_DHW+AERDHW_afterefficiency(ICOMP)
-          AER_DHWCO2=AER_DHWCO2+AERDHW_afterefficiency(ICOMP)*DHWCO2RATE
+          AER_DHWCO2=AER_DHWCO2+AERDHW_afterefficiency(ICOMP)*
+     &      DHWCO2RATE
 
 C For both lighting and auxiliary energy assume these are supplied by
 C the electrical grid (Fuel type 10 from SBEM.db1)
@@ -9166,7 +9311,8 @@ C Heating and hot water are always supplied by Natural Gas for reference buildin
             RERF(1)=RERF(1)+RERDHW_afterefficiency(ICOMP)
           ENDIF
           RER_DHW=RER_DHW+RERDHW_afterefficiency(ICOMP)
-          RER_DHWCO2=RER_DHWCO2+RERDHW_afterefficiency(ICOMP)*DHWCO2RATE
+          RER_DHWCO2=RER_DHWCO2+RERDHW_afterefficiency(ICOMP)*
+     &      DHWCO2RATE
 
 C Cooling energy is always supplied by electricity type (10).
           RERCOOL(ICOMP)=ABS(RERCOOL(ICOMP))
@@ -9385,8 +9531,8 @@ C It finally generate BRUKL input document and other SBEM reports.
       real psi,lngth,losspercent,totheatloss,thbrpercent
       real uavtotal
       common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
-     &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
-     &               thbrpercent,uavtotal(MCOM)
+     &       ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
+     &       thbrpercent,uavtotal(MCOM)
       common/rpath/path
       character DOIT*248
       character limgpth*24,ldocpth*24,lcfgroot*24,lpath*72
@@ -9395,9 +9541,9 @@ C It finally generate BRUKL input document and other SBEM reports.
       character BATCHFL*72
 
 C Build variable (These should eventually be placed in build_info.h)
-      logical bBuild_Info            ! Flag indicating if build info should
-                                     !   be dumped.
-C      character cURL*256             ! Repository URL commented out in build_info.h
+      logical bBuild_Info       ! Flag indicating if build info should
+                                !   be dumped.
+C      character cURL*256       ! Repository URL commented out in build_info.h
 
       CHARACTER BRUKFL*72
       CHARACTER CFGROOT*24,LCFGF*72,MODE*4
@@ -9832,15 +9978,15 @@ C write out information for high usage doors
       endif
 
 C Following is no longer in use
-      WRITE(IUF,'(a)',iostat=ios)       '  S-VENT-U-AVE       =  0'
-      WRITE(IUF,'(a)',iostat=ios)       '  S-VENT-U-MAX       =  0'
-      WRITE(IUF,'(2a)',iostat=ios)      '  S-VENT-MAX         = ',
+      WRITE(IUF,'(a)',iostat=ios)      '  S-VENT-U-AVE       =  0'
+      WRITE(IUF,'(a)',iostat=ios)      '  S-VENT-U-MAX       =  0'
+      WRITE(IUF,'(2a)',iostat=ios)     '  S-VENT-MAX         = ',
      &  '"No Roof ventilators in project"'
 
 C Write infiltration and permeability information
-      WRITE(IUF,'(a,F5.2)',iostat=ios)  '  Q50-INF            = ',BINF50
-      WRITE(IUF,'(2a)',iostat=ios)      '  Q50-INF-CHECK      = ',APCHK
-      WRITE(IUF,'(a)',iostat=ios)       '  ..'
+      WRITE(IUF,'(a,F5.2)',iostat=ios) '  Q50-INF            = ',BINF50
+      WRITE(IUF,'(2a)',iostat=ios)     '  Q50-INF-CHECK      = ',APCHK
+      WRITE(IUF,'(a)',iostat=ios)      '  ..'
 
 C DHW checks
       DO 40 IDHWSYS=1,NDHWSYS
@@ -10038,17 +10184,17 @@ C?? To enter total casual gains/m2 here
      &  '  KWH/M2-WASTEHEAT          = ',BERF(12)
 
 C?? To enter the following bits of information
-      WRITE(IUF,'(a,F9.2)',iostat=ios) '  KWH/M2-DISTRICT-HEATING   = ',
+      WRITE(IUF,'(a,F9.2)',iostat=ios)'  KWH/M2-DISTRICT-HEATING   = ',
      &  0.0
-      WRITE(IUF,'(a,F9.2)',iostat=ios) '  KWH/M2-DISP               = ',
+      WRITE(IUF,'(a,F9.2)',iostat=ios)'  KWH/M2-DISP               = ',
      &  0.0
-      WRITE(IUF,'(a,F9.2)',iostat=ios) '  KWH/M2-PVS                = ',
+      WRITE(IUF,'(a,F9.2)',iostat=ios)'  KWH/M2-PVS                = ',
      &  0.0
-      WRITE(IUF,'(a,F9.2)',iostat=ios) '  KWH/M2-WIND               = ',
+      WRITE(IUF,'(a,F9.2)',iostat=ios)'  KWH/M2-WIND               = ',
      &  0.0
-      WRITE(IUF,'(a,F9.2)',iostat=ios) '  KWH/M2-CHP                = ',
+      WRITE(IUF,'(a,F9.2)',iostat=ios)'  KWH/M2-CHP                = ',
      &  0.0
-      WRITE(IUF,'(a,F9.2)',iostat=ios) '  KWH/M2-SES                = ',
+      WRITE(IUF,'(a,F9.2)',iostat=ios)'  KWH/M2-SES                = ',
      &  0.0
 
 C Activity number and area per zone
@@ -10073,7 +10219,7 @@ C number of activities
 C here we write each activity and the related floor area. SBEM seems to sum up the
 C floor areas and writes the activity once if it covers many zones.
 C BRUKL v3.2 seems to accept either ways.
-        WRITE(IUF,'(4a)',iostat=ios)   '  ACT-AREA                  = ',
+        WRITE(IUF,'(4a)',iostat=ios)  '  ACT-AREA                  = ',
      &   '{ ',louts(1:loutln),' }'
         ipos=itrunc+1
       end do
@@ -10886,7 +11032,8 @@ C << TO BE DONE -hardwired to Heating and Natural Ventilation >>
 C The object "EPC-REC-PROJECT" does not seem to be compulsory
 C for detailed simulation programs but without it there is no
 C way to generate the recommendations report
-      WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)'"EPC-REC-PROJECT" = REC-PROJECT'
+      WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
+     &  '"EPC-REC-PROJECT" = REC-PROJECT'
       dhwxst=.false.
       heatingxst=.false.
       do 99 ICOMP=1,NCOMP
@@ -12436,8 +12583,8 @@ C If fan coil reduce cooling energy by 4%
                   bersc(icmsys)=0.96*bersc(icmsys)
 
 C If chilled ceiling, chilled beam reduce cooling energy by 1%
-                elseif(incmsys(icmsys).eq.22.or.incmsys(icmsys).eq.23)
-     &            then
+                elseif(incmsys(icmsys).eq.22.or.
+     &                 incmsys(icmsys).eq.23)then
                   bersc(icmsys)=0.99*bersc(icmsys)
 
 C If VAV, CAV, multizone, terminal reheat, dual duct reduce cooling

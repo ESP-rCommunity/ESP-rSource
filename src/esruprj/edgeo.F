@@ -6795,8 +6795,8 @@ C Not one of the legal menu choices.
 
 C ************* EDVLIST 
 C Edit surface-vertex list attributes in common block G1 via a paging
-C menu. ITRU = unit number for user output, IER=0 OK, IER=1 problem.
-C Make use of VERINFO to display the current vertex surface connections.
+C menu. Make use of VERINFO to display the current vertex surface 
+C connections.
       SUBROUTINE EDVLIST(ITRC,ITRU,ICOMP,IER)
 #include "building.h"
 #include "model.h"
@@ -6805,6 +6805,12 @@ C Make use of VERINFO to display the current vertex surface connections.
 #include "prj3dv.h"
 #include "esprdbfile.h"
 #include "material.h"
+
+C Parameters
+      integer itrc  ! verbosity level
+      integer itru  ! freeback unit
+      integer icomp ! zone index
+      integer ier   ! error state zero ok one is problem
       
       integer lnblnk  ! function definition
       integer iCountWords
@@ -6857,6 +6863,7 @@ C Strings for surface attributes to pass to insrec.
       integer icmpall  ! to signal request to compare all names
       integer ibopt    ! to specify which mass origin option
       integer mnulen,iwhich2   ! multi column lines
+      integer itrul  ! local trace
       logical greyok,odd   ! for display of vertex info
       
 #ifdef OSI
@@ -7304,7 +7311,8 @@ C Delete a surface. If number of surfaces changed then update cfg.
         IF(IS.EQ.0)goto 92
         LASTS=NSUR
         iopt=0    ! offer editing box with mouse click.
-        CALL ADDSUR(ITRC,ICOMP,IS,'D','V',iopt,IER)
+        itrcl=0
+        CALL ADDSUR(itrcl,ICOMP,IS,'D','V',iopt,IER)
         if(LASTS.ne.NSUR)then
           CALL EMKCFG('-',IER)
           call eclose(gversion(icomp),1.1,0.01,newgeo)
@@ -7377,13 +7385,13 @@ C the mouse click option.
         if(IRT.eq.1)then
           call tstamp('>','PRJ: insert surface via vertex')
           iopt=0     ! offer editing box and mouse click option.
-          iadds=0
-          CALL ADDSUR(ITRC,ICOMP,iadds,'A','V',iopt,IER)
+          iadds=0; itrcl=0
+          CALL ADDSUR(ITRCL,ICOMP,iadds,'A','V',iopt,IER)
         elseif(IRT.eq.2)then
           call tstamp('>','PRJ: insert surface via vertex')
           iopt=1     ! offer mouse click directly
-          iadds=0
-          CALL ADDSUR(ITRC,ICOMP,iadds,'A','V',iopt,IER)
+          iadds=0; itrcl=0
+          CALL ADDSUR(ITRCL,ICOMP,iadds,'A','V',iopt,IER)
         elseif(IRT.eq.3)then
           CALL EPMENSV
           call tstamp('>','PRJ: insert surface into another')
@@ -7412,13 +7420,13 @@ C << ?? make use of rsname etc in interactive use?? >>
         elseif(IRT.eq.4)then
           call tstamp('>','PRJ: copy local surfaces')
           iopt=2      ! offer copy of local surfaces
-          iadds=0
-          CALL ADDSUR(ITRC,ICOMP,iadds,'C','V',iopt,IER)
+          iadds=0; itrcl=0
+          CALL ADDSUR(ITRCL,ICOMP,iadds,'C','V',iopt,IER)
         elseif(IRT.eq.5)then
           call tstamp('>','PRJ: copy another zone surfaces')
           iopt=1      ! offer mouse click directly ??
-          iadds=0
-          CALL ADDSUR(ITRC,ICOMP,iadds,'C','V',iopt,IER)
+          iadds=0; itrcl=0
+          CALL ADDSUR(ITRCL,ICOMP,iadds,'C','V',iopt,IER)
         elseif(IRT.eq.6.or.IRT.eq.9)then
 
 C Get vertical rectangular surface orgin.

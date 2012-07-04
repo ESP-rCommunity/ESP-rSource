@@ -861,9 +861,10 @@ c-- ag end
       integer LayNo,icfctp
       logical closemat1,closemat2
       logical bCloseToZero,XST
+      integer lnlist
 
       DIMENSION PNAM(ME)
-      CHARACTER OUTSTR*124,NAM*72,PNAM*72
+      CHARACTER OUTSTR*148,PNAM*124
       CHARACTER MLCN*12,OTF*4,OPT*12,SOPT*12,GDESCR*36
       character MLCSYM*12
 
@@ -885,9 +886,16 @@ C Pick up general description of the composite.
      &      'Details of complex fenestration construction: ',MLCN
           CALL EDISP(ITRU,OUTSTR)
         ELSE
-          WRITE(OUTSTR,'(3a,f6.3)')
+          if(isymindex.eq.0)then
+            WRITE(OUTSTR,'(3a,f6.3)')
      &      ' Details of opaque construction: ',MLCN(1:lnblnk(MLCN)),
      &      ' and overall thickness ',THKMLC(ifoc)
+          else
+            WRITE(OUTSTR,'(5a,f6.3)')
+     &      ' Details of opaque construction: ',MLCN(1:lnblnk(MLCN)),
+     &      ' linked to ',DESC(isymindex)(1:12),
+     &      ' & with overall thickness ',THKMLC(ifoc)
+          endif
           CALL EDISP(ITRU,OUTSTR)
         ENDIF
       ENDIF
@@ -905,11 +913,11 @@ C Reporting based on report level.
       IF(ITRC.GT.1)THEN
         CALL EDISP(ITRU,' ')
         write(OUTSTR,'(2a)')
-     &' Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu|',
-     &' R    |Descr'
+     &' Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu|',
+     &' R    |Description'
         CALL EDISP(ITRU,OUTSTR)
         write(OUTSTR,'(2a)')
-     &'      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|',
+     &'      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|',
      &'m^2K/W'
         CALL EDISP(ITRU,OUTSTR)
       ELSEIF(ITRC.EQ.1)THEN
@@ -931,7 +939,6 @@ C And if matarrayindex is zero then reset dbcon dbden dbsht.
             if(matarrayindex.eq.0)then
               DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
               E=0.99; A=0.99; DRV=1.0
-            NAM='AIR'
             else
               DBCON=matdbcon(matarrayindex)
               DBDEN=matdbden(matarrayindex)
@@ -940,12 +947,12 @@ C And if matarrayindex is zero then reset dbcon dbden dbsht.
               A=matdbina(matarrayindex)
               DRV=matdbdrv(matarrayindex)
 
-C Make up NAM as combination of matnam and matdoc.
-              lnam=lnblnk(matname(matarrayindex))
-              lfordoc = 72 - (lnam +4)    ! space left for doc
-              write(NAM,'(3a)') matname(matarrayindex)(1:lnam),' : ',
-     &          matdoc(matarrayindex)(1:lfordoc)
-            endif
+C Make up PNAM as combination of matnam and matdoc.
+            lnam=lnblnk(matname(matarrayindex))
+            lfordoc = 124 - (lnam +4)    ! space left for doc
+            write(PNAM(IL),'(3a)') matname(matarrayindex)(1:lnam),
+     &        ' : ',matdoc(matarrayindex)(1:lfordoc)
+          endif
 
 C Also check if it is a gap. If version 1.2 materials then we will
 C have access to pre-defined air gap resistances.
@@ -964,14 +971,14 @@ C have access to pre-defined air gap resistances.
           else
 
 C Referenced item was not in the materials hash list. Write zeros.
-            DBCON=0.0
-            DBDEN=0.0
-            DBSHT=0.0
-            E=0.0
-            A=0.0
-            DRV=0.0
-            write(NAM,'(a)') 'unknown : unknown '
-          endif
+          DBCON=0.0
+          DBDEN=0.0
+          DBSHT=0.0
+          E=0.0
+          A=0.0
+          DRV=0.0
+          write(PNAM(IL),'(a)') 'unknown : unknown '
+        endif
 
 C << this logic could be updated to use something other than IPR >>
         IF(IPR(IFOC,IL).EQ.0)THEN
@@ -979,9 +986,7 @@ C << this logic could be updated to use something other than IPR >>
           RT=RT+DRAIR(IFOC,IL,1)
           RSI=DRAIR(IFOC,IL,1)
         ELSEIF(IPR(IFOC,IL).EQ.-99)THEN
-
-C RT and RSI Values should have been established above.
-          WRITE(PNAM(IL),'(A)') NAM(1:72)
+          continue
         ELSE
 
 C Also report on thermal resistance (m^2K/W) of the layer. If dbcon
@@ -992,7 +997,6 @@ C is zero then avoid divide by zero.
           else
             RSI=1.0
           endif
-          PNAM(IL)=NAM
           if(.not. bCloseToZero)then
             RT=RT+DTHK(IFOC,IL)/DBCON
           else
@@ -1002,18 +1006,19 @@ C is zero then avoid divide by zero.
 
 C Reporting.
         IF(ITRC.GT.1)THEN
+          lnlist = MIN0(LNBLNK(PNAM(IL)),82)    ! space left for doc
           if(LAYERS(IFOC).eq.1)then 
             WRITE(OUTSTR,24)IL,IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
-     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:44)
+     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:lnlist)
           elseif(LAYERS(IFOC).ge.2.and.IL.eq.1)then 
             WRITE(OUTSTR,25)' Ext ',IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
-     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:44)
+     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:lnlist)
           elseif(LAYERS(IFOC).ge.2.and.IL.eq.LAYERS(IFOC))then 
             WRITE(OUTSTR,25)' Int ',IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
-     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:44)
+     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:lnlist)
           else 
             WRITE(OUTSTR,24)IL,IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
-     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:44)
+     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:lnlist)
           endif
   24      FORMAT(I5,I5,F7.1,F10.3,F7.0,F7.0,F5.2,F5.2,F7.0,F6.2,1X,A)
   25      FORMAT(A5,I5,F7.1,F10.3,F7.0,F7.0,F5.2,F5.2,F7.0,F6.2,1X,A)
@@ -1575,7 +1580,8 @@ C Make up NAM as combination of matnam and matdoc.
 
         WRITE(IFMUL,32)LAYERS(I),DESC(I)(1:48)
    32   FORMAT('# layers  description   optics name   symmetry tag',/,
-     &    I5,4X,A48,/,'# mat ref thickness (m) mat descr & air gap R')
+     &    I5,4X,A48,/,
+     &    '# material ref thickness (m) description & air gap R')
 
         DO 115, IL=1,LAYERS(I)
           WRITE(IFMUL,'(I5,F10.4,2X,A)')IPR(I,IL),DTHK(I,IL),

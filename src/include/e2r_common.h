@@ -87,17 +87,6 @@ C     grcy  ground disk center y coordinate (?)
       integer iglzty
 C     iglzty
 
-
-      common/sky1/rgrfl,isky,irdoy,rtime,iryear
-      integer isky,irdoy,iryear
-      real rgrfl,rtime
-C     rgrfl
-C     isky
-C     irdoy
-C     rtime
-C     iryear
-
-
       common/radif/irofil,irzfil,imatfil,iglzfil,icfcfil
       integer irofil,irzfil,imatfil,iglzfil,icfcfil
 C     irofil
@@ -179,9 +168,17 @@ C     cmdact is the transfer file, typically ".<ESP-r PID>.dat"
       common/expathl/lnrp
 
 
-      common/radgrid/LDFGRID
-      character LDFGRID*72
-C     LDFGRID is ...
+C Sky definitions
+      real rgrfl     ! ground reflection (equiv to groundrefl)
+      integer isky   ! 1 is -c 2 is -s 3 is +s 4 is +c
+      integer irdoy  ! julian day of year for computing sky values
+      real rtime     ! time (0-24) for use in computing sky values
+      integer iryear ! year for use in computing sky values
+      common/sky1/rgrfl,isky,irdoy,rtime,iryear
+
+C Daylight factors
+      character LDFGRID*72  ! file containing df grid points (one per scene)
+      common/radgrid/LDFGRID(MCOM+1)
 
 C     radgrpts: Daylight factor sensor common
       common/radgrpts/NDFP,DFPTS(500,3),DFDIR(3),DFVALS(500)
