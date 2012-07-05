@@ -296,8 +296,12 @@ c        write(*,*)'LTMPFL=',LTMPFL,' istat=',istat
         call EGETWR(OUTS,K,RSAZI,-180.,180.,'W','Sol azi',IER)
         call EGETWR(OUTS,K,QDIR,0.,1250.,'W','Dir solar',IER)
         call EGETWR(OUTS,K,QDIF,0.,1250.,'W','Diff solar',IER)
-        call EGETWI(OUTS,K,iblnds,0,MBP,'W','Blinds state',IER)
         call EGETWI(OUTS,K,icfcflag,0,1,'W','CFC flag',IER)
+        if (icfcflag.eq.1) then
+          call EGETWI(OUTS,K,iblnds,0,16,'W','CFC Blinds state',IER)
+        else
+          call EGETWI(OUTS,K,iblnds,0,MBP,'W','Blinds state',IER)
+        endif
 
 C Check solar position and radiation.
         QDIRH=QDIR*esind(RSALT/57.296)

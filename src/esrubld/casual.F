@@ -1440,7 +1440,9 @@ C Check if sensor values already in illuminance database and set accuracies.
             ALTACC=5.
             QDRACC=5.
 
-            write (66,*) ' ***  Solar data for timestep ',its,' *** '
+            write (66,*) ' ***  Solar data for timestep ',
+     &                           real(IHRP)+real(its)/10.,
+     &                         ' of day ',IDYP,' *** '
             write (66,'(4f9.1,i3)') SALT,RSAZI,QDIR,QDIF,IBLIND
 
 C Calculate differences.  Blind state MUST match.
@@ -1561,9 +1563,16 @@ C Calculate regression coefficients GRADQR and GRADQF and then selum()
                       GRADQF= GRADQF - Yb(ILZ,IDF)
 c                      GRADQF= GRADQF / 
 c     &                  (( (Ab(ILZ,IDF)**2) /
-                      GRADQF= GRADQF / 
-     &                   ((exp(2.*log(Ab(ILZ,IDF)))/
-     &                      Aa(ILZ,IDF))-Ac(ILZ,IDF))
+                      XX1=log(real(Ab(ILZ,IDF)))
+                      XX2=exp(2.*XX1)
+                      XX3=XX2/real(Aa(ILZ,IDF))
+                      XX4=XX3-real(Ac(ILZ,IDF))
+                      if (XX4.ne.0.) then
+                        GRADQF= GRADQF / XX4
+                      else
+                        GRADQF= GRADQF / 0.0000001
+                      endif
+c     & ( ( exp(2.*log(real(Ab(ILZ,IDF)))) / Aa(ILZ,IDF) ) - Ac(ILZ,IDF) )
 
                       GRADQR= Ya(ILZ,IDF) - (Ab(ILZ,IDF) * GRADQF)
                       GRADQR= GRADQR / Aa(ILZ,IDF)
@@ -1610,7 +1619,7 @@ c        write(*,*)'* INTLUM, LTMPFLA=',LTMPFLA,' istat=',istat
               endif
               call FPOPEN(IUNIT,ISTAT,1,2,LTMPFLA)
               write (OUTCMD,'(4f9.1,2i3)')
-     &                 SALT,RSAZI,QDIR,QDIF,IBLIND,ICFCFLAG
+     &                 SALT,RSAZI,QDIR,QDIF,ICFCFLAG,IBLIND
 C          write (77,'(4f9.1,i3)') SALT,RSAZI,QDIR,QDIF,IBLIND
               write (IUNIT,'(a)') OUTCMD
               call ERPFREE(IUNIT,ISTAT)
