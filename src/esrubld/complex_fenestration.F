@@ -4961,7 +4961,7 @@ C         blind restrictions should be part of the blind description in .cfc IMO
             i_shd(iZone,icfctp) = 1 ! shade down and slats horizontal
             cutoff=0.0
           elseif (cutoff.gt.75.0) then
-            i_shd(iZone,icfctp) = mang
+            i_shd(iZone,icfctp) = mbang
             cutoff=75.0
           else
 C           Now set angle to discrete settings allowed for by control
