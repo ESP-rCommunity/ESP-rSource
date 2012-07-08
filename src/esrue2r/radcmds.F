@@ -602,7 +602,7 @@ C Remove octree to force rebuild as radiance sometimes gets this wrong.
 C Run rad in 'touch up' mode.
       write(doit,'(4a)') 'cd ',runpath(1:lnrp),
      &                   '; rad -t -w ',RIFFILE(1:lnblnk(RIFFILE))
-      call edisp(iuout,'Radiance feedback is displayed in xterm.')
+cag      call edisp(iuout,'Radiance feedback is displayed in xterm.')
       call runit(doit,'-')
       
       return

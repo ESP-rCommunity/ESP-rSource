@@ -125,9 +125,9 @@ C Read lines from file, header first.
       endif
 
       CALL STRIPC(IRCFG,OUTSTR,99,ND,1,'date',IER)
-      write (outs,'(a,a)') 'Scenes last modified on ',
-     &                                       OUTSTR(1:lnblnk(OUTSTR))
-      call edisp (iuout,outs)
+cag      write (outs,'(a,a)') 'Scenes last modified on ',
+cag     &                                       OUTSTR(1:lnblnk(OUTSTR))
+cag      call edisp (iuout,outs)
 
 C Now read number of scenes contained.
       CALL STRIPC(IRCFG,OUTSTR,99,ND,1,'scene number line',IER)

@@ -4444,7 +4444,7 @@ C ********************************************************************
 #include "control.h" 
 #include "CFC_common.h" 
 C  for NABS, the number of alternative blind states:
-#include "e2r_common.h"
+cx #include "e2r_common.h"
       COMMON/OUTIN/IUOUT,IUIN
       integer iuout,iuin
 
@@ -4636,7 +4636,7 @@ C Actuator controls slat angle of slat-type shade layer between 3 choices
         shdONslatPOSITION = CFCmiscdata(ictlfun,idaytype,iperiod,4)
         shdINTslatPOSITION = CFCmiscdata(ictlfun,idaytype,iperiod,5) 
         shdOFFslatPOSITION = CFCmiscdata(ictlfun,idaytype,iperiod,6)
-        NABS=2 ! we have two alternative blind states here (for Radiance coupling) ...  !!HACK!!
+cx        NABS=2 ! we have two alternative blind states here (for Radiance coupling) ...  !!HACK!!
       elseif (iact1.eq.4) then
 C       Set points with which "blind down" or not is decided
         shdONsetpoint = CFCmiscdata(ictlfun,idaytype,iperiod,2)
@@ -4733,13 +4733,6 @@ C Determine appropriate temperature parameter to use
           ELSEIF(ictype.eq.3.or.ictype.eq.4)then             ! senses solar radiation
 
 C Perform actual control of shade ON/OFF and slat angle here
-C ag@06062012: Allow for IBLIND / i_shd() to have *many* values in CFC_Control? Basically,
-C              this could work - each angle setting gets an own number ... even
-C              "cut off" seems to be controlled in defined angle steps in real-life
-C              controllers (function CutOffAngle could be extended, accordingly
-C              ... for Radiance coupling ... where else is i_shd()
-C              used? (see casual.F, line 1380 ff.
-
             if(solrad.gt.shdONsetpoint)then
               if(iact1.eq.0)then
                 vb_phiNew(iact2,iact3) = vb_phi(iact2,iact3)  ! default slat angle

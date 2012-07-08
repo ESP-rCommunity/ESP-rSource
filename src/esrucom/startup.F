@@ -1402,8 +1402,8 @@ C      write(6,*) 'lfdef is ',lfdef
         else
           localdot=.false.
           esprc=altdot  ! assign the install folder file as the esprc file.
-          if(itrc.ge.0) call edisp(iuout,
-     &      '  Preferences (esprc) file - standard version.')
+cag          if(itrc.ge.0) call edisp(iuout,
+cag     &      '  Preferences (esprc) file - standard version.')
           write(currentfile,'(a)') esprc(1:lnblnk(esprc))
         endif
       else

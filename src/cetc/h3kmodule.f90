@@ -116,6 +116,7 @@ MODULE h3kmodule
          rvBuildingAllZonesThermalLoadsCoolingTotal, rvBuildingAllZonesThermalLoadsNet, &
          rvBuildingAllZonesInternalGainsTotal, rvBuildingAllZonesInternalGainsUseful, &
          rvBuildingAllZonesInternalGainsAdverse, rvBuildingAllZonesEnergyBalanceNet, rvTemperature, &
+         rvBuildingZoneLightFrac, rvBuildingZoneLightingzoneIllum, &
          rvExtSurfTemperature, rvPlantContainmentFlux, rvHCi, rvICORI, rvHCe, rvICORE, rvPRT, rvHRi, rvAmbRT, &
          rvExtSurfTotRad,rvExtSurfRadIncAng,rvExtSurfSolAzi,rvExtSurfSolElev, &
          rvClimateSolarDiffuseHorizontalRadiation, rvClimateSolarDirectNormalRadiation, &
@@ -905,6 +906,18 @@ CONTAINS
       rvBuildingAllZonesEnergyBalanceNet%VariableType = '(W)'
       rvBuildingAllZonesEnergyBalanceNet%Description = 'Energy balance in building (Gains + Plant interaction - Loads; all zones).'
       Call AddVariable(rvBuildingAllZonesEnergyBalanceNet)
+
+      rvBuildingZoneLightFrac%VariableName = 'bui/*/lighting/frac'
+      rvBuildingZoneLightFrac%MetaType = 'units'
+      rvBuildingZoneLightFrac%VariableType = '(-)'
+      rvBuildingZoneLightFrac%Description = 'Zone lighting gain fraction (controlled) FRAC'
+      Call AddVariable(rvBuildingZoneLightFrac)
+
+      rvBuildingZoneLightingzoneIllum%VariableName = 'bui/*/lightingzone*/illum'
+      rvBuildingZoneLightingzoneIllum%MetaType = 'units'
+      rvBuildingZoneLightingzoneIllum%VariableType = '(lux)'
+      rvBuildingZoneLightingzoneIllum%Description = 'Lighting zone average illuminance'
+      Call AddVariable(rvBuildingZoneLightingzoneIllum)
 
       rvTemperature%VariableName = 'bui/*/s*/temp_inside'
       rvTemperature%MetaType = 'units'

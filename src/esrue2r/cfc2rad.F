@@ -223,6 +223,9 @@ C           use "trans" material. Otherwise "plastic"
               WRITE(imatfil,'(a)') '0 '
               WRITE(imatfil,'(a)') '0 '
               srefl=visRf(icomp,icfctp,vb_lay)
+C             *** need to transform these "visual" values in correct
+C                 values for Radiance materials ??!!!
+
 C t_red t_green t_blue specularity roughness transmissivity transmitted_specular
               WRITE(imatfil,'(a,3F5.2,a,F5.2,a)')
      &              '7 ',srefl,srefl,srefl,' 0.01 0.10 ',
@@ -617,18 +620,27 @@ C Commons
 C Local variables
       integer icfctp,icn,nslats,ISTAT
 
-      real sw,sp,phi,crown,wr,sth,tilt
+      real sw,sp,sr,phi,crown,wr,sth,tilt
       real x0,y0,z0,cfc_width,cfc_height
       real dy,vb_width,vb_height
 
       character matname*72,cmdstr*144,transfstr*144
+      character curvature*4
 
 C Function declarations
       integer lnblnk
 
 
-C Actual tasks
-      icfctp=icfcfl(icomp,isurf) ! get type
+C Body
+      if (i_shd(icomp,icfcfl(icomp,isurf)).eq.0) then
+      
+C     ... actually, do nothing!
+        write(*,'(a,i1,a,i1,a)')'** CFCDetailedBlind(): i_shd(',
+     &      icomp,',',icfcfl(icomp,isurf),') = 0, i.e. blind is up!'
+
+      else ! blind is down, so create it ...
+
+        icfctp=icfcfl(icomp,isurf) ! get type
 
 C -------------------------------------------------------------------
 C     Get lower left corner of CFC surface and surface width
@@ -639,7 +651,7 @@ C -------------------------------------------------------------------
 
 
 cx====
-          dy=0.05 ! set fixed value, for now
+        dy=0.05 ! set fixed value, for now
 
 CCC e2rform.F, line 1406 ff.
 C Shift surface inwards by 3mm (only if extern=true).
@@ -669,35 +681,44 @@ c  353       continue
 
 cx=====
           
-          x0=0.08  ! use lower left corner (?)
-          y0=0.    ! use lower left corner (?)
- 
-          cfc_width=2.84 ! x0=0.08, x1=2.92
-          
-          if (icfctp.eq.1) then
-            cfc_height=2.04 ! "win_bot"
-            z0=0.38
-          else
-            cfc_height=0.8 ! "win_top"
-            z0=2.42
-          endif
+        x0=0.08  ! use lower left corner (?)
+        y0=0.    ! use lower left corner (?)
 
-          vb_width=cfc_width+2.*dy
-          vb_height=cfc_height
+        cfc_width=2.84 ! x0=0.08, x1=2.92
+      
+        if (icfctp.eq.1) then
+          cfc_height=2.04 ! "win_bot"
+          z0=0.38
+        else
+          cfc_height=0.8 ! "win_top"
+          z0=2.42
+        endif
 
-          x0=x0-dy
+        vb_width=cfc_width+2.*dy
+        vb_height=cfc_height
+
+        x0=x0-dy
 
 C -------------------------------------------------------------------
 C         Get venetian type blind data (if any)
 C -------------------------------------------------------------------
 C         Assign slat blind descriptors to local variables
-          sw=vb_w(icomp,icfctp)/1000.    ! slat width in [m]
-          sp=vb_s(icomp,icfctp)/1000.    ! slat pitch
-          phi=vb_phiNew(icomp,icfctp)    ! blind slat angle
-          crown=vb_crown(icomp,icfctp)   ! crown height [mm]
-c           wr=vb_wr(icomp,icfctp)         ! width/curvature ratio
-c           sth=vb_t(icomp,icfctp)         ! max slat thickness
-cx           tilt=PELV(icomp,isurf)         ! tilt of cfc surface
+        sw=vb_w(icomp,icfctp)/1000.        ! slat width in [m]
+        sp=vb_s(icomp,icfctp)/1000.        ! slat pitch in [m]
+        phi=vb_phiNew(icomp,icfctp)        ! blind slat angle
+C DEBUG
+cx        write(*,*)'** slat angle=',phi
+
+        crown=vb_crown(icomp,icfctp)/1000. ! crown height [m]
+cx        wr=vb_wr(icomp,icfctp)             ! width/curvature ratio
+cx        sth=vb_t(icomp,icfctp)             ! max slat thickness
+c        tilt=PELV(icomp,isurf)            ! tilt of cfc surface
+
+c       if (??) then ! ?? is there a CFC-setting for this??
+          write(curvature,'(a)')' -r '       ! slats curved downward (standard)
+c       else
+c          write(curvature,'(a)')' -r '      ! slats curved upward
+c       endif
 
 C -------------------------------------------------------------------
 C         Create Venetian type blind description (genblinds) with 
@@ -707,8 +728,6 @@ C -------------------------------------------------------------------
 C the "scale" used in genblind is the slat width (parameter 
 C "depth" in call to genblinds). All other numbers given
 C for the dimension should be calculated accordingly.
-C genblinds mat      name depth width height nslats angle [ -r|+r rcurv ]
-C!genblinds <matname> blind 1    32.165  44     49 -<<phi>> +r <<crown>> | 
 
 C lower inside left corner (viewed from outside) is 0,0,0 (?!) 
 C       -s is the scale, enter slat width in [m] here!
@@ -721,43 +740,54 @@ C - x and y seem to be switched in Radiance ... (needs checking!)
 C - file handling for non-init calls, i.e. when called on time step basis??
 C   Open/close file? 
 
-            ! calculate number of slats necessary to cover height
-            nslats=ceiling(vb_height/sp) !+1
-            ! rescale Venetian blind width and height to multiples of
-            ! slat width
-            vb_width=vb_width/sw
-            vb_height=vb_height/sw
+        ! calculate number of slats necessary to cover height
+        nslats=ceiling(vb_height/sp) !+1
 
-            icn=IZSTOCN(icomp,isurf)
-            WRITE(matname,'(5a,I1)') 'vb_',
+        ! rescale Venetian blind width and height to multiples of
+        ! slat width
+        vb_width=vb_width/sw
+        vb_height=vb_height/sw
+
+        ! calculate slat curvature radius sr (this is the value genblinds 
+        ! expects) from given crown height and then rescale to multiple 
+        ! of slat width ...
+        sr=(crown*crown+sw*sw/4.)/(2.*crown)/sw
+
+        icn=IZSTOCN(icomp,isurf)
+        WRITE(matname,'(5a,I1)') 'vb_',
      &                    SSMLCN(icn)(1:lnblnk(SSMLCN(icn))),'_',
      &                    SSNAME(icn)(1:lnblnk(SSNAME(icn))),'_',
      &                    icomp
 
-            WRITE(cmdstr,
-     &             '(3a,I1,a,I1,a,F7.2,a,F6.2,a,I3,a,F5.1,a,F5.3)') 
-     &             '!genblinds ',matname(1:lnblnk(matname)),
-     &             ' blind_',icfctp,' ',1,' ',
-     &             vb_width,' ',vb_height,' ',nslats,' ',phi,
-     &             ' +r ',crown
+C     genblinds mat       name  depth width  height nslats angle [ -r|+r rcurv ]
+C    !genblinds <matname> blind  1    32.165   44     49  <<-phi>>  <<-r sr>>
+        WRITE(cmdstr,
+     &        '(3a,I1,a,I1,a,I1,a,F7.2,a,F6.2,a,I3,a,F5.1,a,F5.3)') 
+     &        '!genblinds ',matname(1:lnblnk(matname)),
+     &        ' blind_z',icomp,'_',icfctp,' ',1,' ',
+     &        vb_width,' ',vb_height,' ',nslats,' ',phi,
+     &        curvature,sr
+cx     &        ' -r ',crown
 
-            WRITE(transfstr,
+        WRITE(transfstr,
      &             '(a,F7.4,a,3(F6.3,1x))')
      &             'xform -s ',sw,' -rz 90 -t ',
      &             cfc_width+2.*dy,-(sw+0.04),z0 !+sp/2.
-               ! use esp_y for lower right corner, here ("x")?
+          ! use esp_y for lower right corner, here ("x")?
 
-            WRITE(icfcfil,'(a)') ' '
-            WRITE(icfcfil,'(a)') '# generate blinds and transfer:'
-            WRITE(icfcfil,'(3a)') cmdstr(1:lnblnk(cmdstr)),' | ',
+        WRITE(icfcfil,'(a)') ' '
+        WRITE(icfcfil,'(a)') '# generate blinds and transfer:'
+        WRITE(icfcfil,'(3a)') cmdstr(1:lnblnk(cmdstr)),' | ',
      &                            transfstr(1:lnblnk(transfstr))
-            WRITE(icfcfil,'(a)') '  '
+        WRITE(icfcfil,'(a)') '  '
 
-C     File is opened in subroutine CFCGlazing()!
-C     Free file handle after last CFC is written
-      if (icomp.eq.lastzone .and. icfctp.eq.lasttype) then
-        CALL ERPFREE(icfcfil,ISTAT)
-      endif
+C       File is opened in subroutine CFCGlazing()!
+C       Free file handle after last CFC is written
+        if (icomp.eq.lastzone .and. icfctp.eq.lasttype) then
+          CALL ERPFREE(icfcfil,ISTAT)
+        endif
+
+      endif ! blind not up
 
       return
       end

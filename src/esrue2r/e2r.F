@@ -1324,9 +1324,9 @@ C need to create a folder.
           write(runpath,'(2a)') radpth(1:lnblnk(radpth)),fs
           lnrp=lnblnk(runpath)  ! remember this
         endif
-        write(outs,'(2a)') 'The place where rad will be invoked is ',
-     &     runpath(1:lnrp)
-        call edisp(iuout,outs)
+cag        write(outs,'(2a)') 'The place where rad will be invoked is ',
+cag     &     runpath(1:lnrp)
+cag        call edisp(iuout,outs)
       endif
 
       return

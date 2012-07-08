@@ -436,6 +436,7 @@ C .... used wherever h3k output is defined.
       character*1 cNodeRootName ! root name for "node"
       character*1 cSep ! The separator
       character*1 cOne ! generic 1-character string
+      character*2 cTwo ! generic 2-character string
 
 C new lamarche stuff:
       Logical lIncl_Zone, lIncl_Surf, lIncl_Node
@@ -1534,11 +1535,10 @@ c     & )
 C.....ARTIFICIAL LIGHTING GAIN FRACTION
 
       if (ICGCTL(iZone).gt.0) then
-c        call add_to_xml_reporting (
-c     &         CGCTL(iZone,2,ICGCTL(iZone)),
-c     &         H3K_rep_Name(1:iH3K_NameLen)// '/lighting/frac',
-c     &         'units', '(-)',
-c     &         'Zone lighting gain fraction (controlled) FRAC' )
+        call AddToReport (
+     &         rvBuildingZoneLightFrac%Identifier,
+     &         CGCTL(iZone,2,ICGCTL(iZone)),
+     &         zname(iZone)(1:lnzname(iZone)))
       endif
 
 C ================= MRT / PMV / PPD ===========================
@@ -1620,12 +1620,12 @@ C-------------------------------*****----------------------------------
 C.....Lighting zone illuminance
       if (nlitz2(iZone).gt.0) then
         lightingzone_loop: do iLtz = 1, nlitz2(iZone)
-          write(cOne,'(I1)')iLtz
-c          call add_to_xml_reporting (
-c     &         AveLtzIllum(iZone,iLtz),
-c     &         H3K_rep_Name(1:iH3K_NameLen)// '/ill_ltz' // cOne,
-c     &         'units', '(lux)',
-c     &         'Lighting zone average illuminance' )
+        write(cTwo,'(a,I1)')'0',iLtz
+        call AddToReport (
+     &         rvBuildingZoneLightingzoneIllum%Identifier,
+     &         AveLtzIllum(iZone,iLtz),
+     &         zname(iZone)(1:lnzname(iZone)),
+     &         cTwo)
         enddo lightingzone_loop
       endif
 

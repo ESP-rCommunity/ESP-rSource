@@ -223,12 +223,12 @@ C wrtsky calls radiance and writes sky info to file.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
-      character skycmd*124,doit*124,tfile*72
+      character skycmd*124,doit*199,tfile*72
 
       LOGICAL XST
 
       ITA3=IFIL+10
-      call edisp(iuout,' creating sky description file.')
+cag      call edisp(iuout,' creating sky description file.')
       write(tfile,'(a,a)')runpath(1:lnrp),rskyfil(1:lnblnk(rskyfil))
       INQUIRE (FILE=tfile,EXIST=XST)
       if(XST)then
@@ -809,22 +809,12 @@ C       =================== C F C ====================
 C             Check if surface is a cfc and compare names ...
               if(ICFCFL(iZone,iSurf).gt.0.AND.
      &            SSMLCN(icn)(1:12).eq.MLCN(1:12)) then
-C               Create a glass material (BRTDfunc) entry for this CFC
-C               construction. << how to avoid repeated output of 
-C                             << identical constructions?? 
+
                 call CFC2rad(init,iZone,iSurf)
-c              else ! something wrong!
-c                write(outs,'(a,I2,a,I2)')'material in zone ',iZone,
-c     &                  ' surface ',iSurf
-c                call usrmsg(' Problem detected while writing CFC ',
-c     &                 outs,'W')
-c                return
+
               endif
-            enddo
-          enddo
-          ! For CFC, it is of no concern if blind control is active or not, as
-          ! visual transmittance values for the system include time step blind setting!
-          ! Which value to take here???
+            enddo ! surface in zone loop
+          enddo ! zone loop
 C       -----------------------------------------------
 
         else ! Not a TMC or CFC ...
