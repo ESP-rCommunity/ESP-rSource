@@ -49,7 +49,7 @@ C ********************************************************************
 C                         -- CFC2rad --
 C
 C Create Radiance definitions for CFC surfaces. This routine is
-C designed to be called in e2r. There are three different cases
+C called in e2r and bps (casual.F / intlum). There are three different cases
 C possible:
 C  1) Use overall model for glass and blinds (ExplicitVB false
 C     and BRTDfunc false)
@@ -58,7 +58,8 @@ C     true and BRTDfunc false) and
 C  3) Use detailed glazing model (BRTDfunc) and explicit blind 
 C     model (ExplicitVB true and BRTDfunc true).
 C
-C May 13: Called from mkriofil(), line 833.
+C May 13: Called from esrue2r/e2rform.F subroutine mkriofil(), line 833.
+C Jun 16: Called from esrubld/casual.F subroutine intlum(), line 1425.
 C 
 C Created by: Achim Geissler
 C Initial Creation: May 2012
@@ -183,8 +184,8 @@ C           Restore blind position
 
         endif ! BRTDfunc ?
 
-C Glass data is set and Radiance data written. Now the blind
-C is generated, if "Explicit".
+C       Glass data is set and Radiance data written. Now the blind
+C       is generated, if "Explicit".
 
         if (ExplicitVB(icomp,icfctp)) then
 
@@ -223,13 +224,22 @@ C           use "trans" material. Otherwise "plastic"
               WRITE(imatfil,'(a)') '0 '
               WRITE(imatfil,'(a)') '0 '
               srefl=visRf(icomp,icfctp,vb_lay)
-C             *** need to transform these "visual" values in correct
-C                 values for Radiance materials ??!!!
+
+C             Convert visible transmission to transmissivity 
+C             (as per Ward 1/12/94 Radiance 2.4 paper).
+              VTRAN=visT(icomp,icfctp,vb_lay)
+              if((VTRAN).gt.0.01)then
+                gvt1=sqrt(0.8402528435+(0.007252224*VTRAN*VTRAN))
+                gvt=(gvt1-0.9166530661)/0.0036261119/VTRAN
+              else
+                gvt=0.01
+              endif
 
 C t_red t_green t_blue specularity roughness transmissivity transmitted_specular
               WRITE(imatfil,'(a,3F5.2,a,F5.2,a)')
-     &              '7 ',srefl,srefl,srefl,' 0.01 0.10 ',
-     &              visT(icomp,icfctp,vb_lay),'  0.97'
+     &              '7 ',srefl,srefl,srefl,' 0.01 0.10 ',gvt,'  0.97'
+cx     &              visT(icomp,icfctp,vb_lay),'  0.97'
+Cx                    *** need to transform visT() to "Radiance transmissivity"??!!
               WRITE(imatfil,'(a)') '  '
 
             else ! material 'plastic'
@@ -400,14 +410,14 @@ C         == from bps.F, line 984 ===
           endif
 
 C         Set data to values according to chosen day/season
-C /sky1/ common holds 'irdoy' - day of year and 'rtime' - time of day
+C         /sky1/ common holds 'irdoy' - day of year and 'rtime' - time of day
 C         irdoy & rtime are set in "settime()", called in 'autorad'
 C         Recover one day's data from climate file into common 
 C         block for use.
           call CLMGET(irdoy) ! stores to commons CDIR() etc.
           EXDIR=CDIR(int(rtime))
           EXDIF=CDIF(int(rtime))
-C ... rather call MZSRAD()??
+C         ... rather call MZSRAD()??
           EXDIFSKY=EXDIF*(1.-rgrfl)
           EXDIFGRD=EXDIF*rgrfl
 
@@ -440,13 +450,11 @@ cx          return
 
         elseif (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
 C         Set data to current values
-cx          if (init) then ! necessary? I.e., are QFP etc. filled at first call?
-c            else
           EXDIR=QFP
           EXDIF=QDP
           EXDIFSKY=EXDIF*(1.-groundrefl)
           EXDIFGRD=EXDIF*groundrefl
-c            endif
+
           CALL CFCMZSCAI(icomp,isurf,CAI,incang)
 
           if (ExplicitVB(icomp,icfctp)) then
@@ -468,9 +476,9 @@ C       Check error state
           goto 9999
         ENDIF
 
-C ******************* from solar.F ********************************
+C ******************* from solar.F / line 1748 ff. *********************
 C The following code should probably be put in a designated subroutine.
-          iSolVis=1  ! calculate visual properties, only
+        iSolVis=1  ! calculate visual properties, only
 
 C DEBUG:
 c          write(*,*)'** Blind position=',i_shd(icomp,icfctp)
@@ -479,102 +487,113 @@ c          write(*,*)'EXDIR=',EXDIR,' EXDIF=',EXDIF,
 c     &              'EXDIFSKY=',EXDIFSKY,'EXDIFGRD=',EXDIFGRD,
 c     &              'incang=',incang
 
-          ! values include (optional) blinds 
-          ! at current blind angle!
-          call profile_angle(icomp,isurf,icfctp,proang)
+        ! values include (optional) blinds 
+        ! at current blind angle!
+        call profile_angle(icomp,isurf,icfctp,proang)
 
-          call cfc_eff_opt_prop(icomp,isurf,icfctp,incang,proang,
+        call cfc_eff_opt_prop(icomp,isurf,icfctp,incang,proang,
      &                                                     iSolVis)
 
-C         Check whether sky and ground diffuse calc. is requested
-          if (i_ground_sky_diff_calc.eq.1) then
+C       Check whether sky and ground diffuse calc. is requested
+        if (i_ground_sky_diff_calc.eq.1) then
 
-C           Calculate CFC system visual BEAM transmitted
-            call solar_multilayer(i_direct,icomp,isurf,icfctp,
+C         Calculate CFC system visual BEAM transmitted
+          call solar_multilayer(i_direct,icomp,isurf,icfctp,
      &                EXDIR,tmpIDF,
      &                tmpIBM,tmpIDF,iSolVis,
      &                TRANSBB_SYSV,TRANSD_SYS_BD,dummy1,AbsSolDir)
 
-C           Calculate CFC system solar SKY diffuse transmitted
-            call solar_multilayer(i_sky,icomp,isurf,icfctp,
+C         Calculate CFC system solar SKY diffuse transmitted
+          call solar_multilayer(i_sky,icomp,isurf,icfctp,
      &                tmpIBM,EXDIFSKY,
      &                tmpIBM,tmpIDF,iSolVis,
      &                dummy1,TRANSD_SYS_SKY,dummy2,AbsSolDifSky)
 
-C           Calculate CFC system solar GROUND diffuse transmitted
-            call solar_multilayer(i_ground,icomp,isurf,icfctp,
+C         Calculate CFC system solar GROUND diffuse transmitted
+          call solar_multilayer(i_ground,icomp,isurf,icfctp,
      &                tmpIBM,EXDIFGRD,
      &                tmpIBM,tmpIDF,iSolVis,
      &                dummy1,TRANSD_SYS_GRD,dummy2,AbsSolDifGrd)
 
-C           Sum up diffuse transmitted contributions (sky + ground)
-            TRANSD_SYSV = TRANSD_SYS_BD +
+C         Sum up diffuse transmitted contributions (sky + ground)
+          TRANSD_SYSV = TRANSD_SYS_BD +
      &                    TRANSD_SYS_SKY + TRANSD_SYS_GRD 
-C           Absorbed visual is of no interest
+C         Absorbed visual is of no interest
 
-          else 
-C          Legacy model.
-C          Calculate CFC system visual beam transmitted, diffuse transmitted.
-           call solar_multilayer(i_direct,icomp,isurf,icfctp,
+        else 
+C         Legacy model.
+C         Calculate CFC system visual beam transmitted, diffuse transmitted.
+          call solar_multilayer(i_direct,icomp,isurf,icfctp,
      &        EXDIR,EXDIF,
      &        tmpIBM,tmpIDF,iSolVis,TRANSBB_SYSV,TRANSD_SYSV,
      &        REFL_SYSV,AbsVis)
-          endif
+        endif
 
-C visual data, normalise to radiation available for output/storing of 
-C fraction. These fractions are used in "casual.F/DWINVT()" as light 
-C transmittance values (direct/diffuse) - the fraction is based on 
-C solar radiation with visual properties for CFC layers. 
-          if (EXDIR.gt.0.) then
-            transBB_V(icomp,isurf)=TRANSBB_SYSV/EXDIR
+C       Normalise visual data to radiation available for output/storing of 
+C       fraction. These fractions are used in "casual.F/DWINVT()" as light 
+C       transmittance values (direct/diffuse) - the fraction is based on 
+C       solar radiation with visual properties for CFC layers. 
+        if (EXDIR.gt.0.) then
+          transBB_V(icomp,isurf)=TRANSBB_SYSV !/EXDIR
+        else
+          transBB_V(icomp,isurf)=0.
+        endif
+        if (i_ground_sky_diff_calc.eq.1) then
+          if ((EXDIR+EXDIFSKY+EXDIFGRD).gt.0.) then
+            transD_V(icomp,isurf)=TRANSD_SYSV ! /(EXDIR+EXDIFSKY
+!     &                                     +EXDIFGRD)
+C           transBB_V is W/m2 transmitted 'beam-beam', transD_V is W/m2
+C           transmitted 'beam-diffuse' + 'diffuse-diffuse'. Average "overall"
+C           transmission fraction is thus:
+            VTRAN=(transBB_V(icomp,isurf)+transD_V(icomp,isurf))/
+     &                                      (EXDIR+EXDIFSKY+EXDIFGRD)
           else
-            transBB_V(icomp,isurf)=0.
+             transD_V(icomp,isurf)=0.
+             VTRAN=0.
           endif
-          if (i_ground_sky_diff_calc.eq.1) then
-            if ((EXDIR+EXDIFSKY+EXDIFGRD).gt.0.) then
-              transD_V(icomp,isurf)=TRANSD_SYSV/(EXDIR+EXDIFSKY
-     &                                     +EXDIFGRD)
-            else
-               transD_V(icomp,isurf)=0.
-            endif
-          else ! legacy
-            if ((EXDIR+EXDIF).gt.0.) then
-               transD_V(icomp,isurf)=TRANSD_SYSV/(EXDIR+EXDIF)
-            else
-               transD_V(icomp,isurf)=0.
-            endif
-           
+        else ! legacy
+          if ((EXDIR+EXDIF).gt.0.) then
+            transD_V(icomp,isurf)=TRANSD_SYSV ! /(EXDIR+EXDIF)
+C           See above for description.
+            VTRAN=(transBB_V(icomp,isurf)+transD_V(icomp,isurf))/
+     &                                                  (EXDIR+EXDIF)
+          else
+             transD_V(icomp,isurf)=0.
+             VTRAN=0.
           endif
-
+         
+        endif
 
 C ******************************************************************
 
-          VTDIR=transBB_V(icomp,isurf) 
-          VTDIF=transD_V(icomp,isurf)
-          VTRAN=VTDIR+VTDIF ! not really good ...
-          if((VTRAN).gt.0.02)then
-            gvt1=sqrt(0.8402528435+(0.007252224*VTRAN*VTRAN))
-            gvt=(gvt1-0.9166530661)/0.0036261119/VTRAN
-          else
-            gvt1=0.02
-            gvt=0.02
-          endif
+cx          VTDIR=transBB_V(icomp,isurf) 
+cx          VTDIF=transD_V(icomp,isurf)
+cx          VTRAN=VTDIR+VTDIF ! not really good ...
 
-C         Write glazing material to file. Use construction name
-C         extended with surface name and zone number (the same 
-C         construction can be used by different CFC layer setups 
-C         / blind settings(!) spread over more than one zone
-          icn=IZSTOCN(icomp,isurf)
-          write(glaznam,'(4a,I1)')
-     &                    SSMLCN(icn)(1:lnblnk(SSMLCN(icn))),'_',
-     &                    SSNAME(icn)(1:lnblnk(SSNAME(icn))),'_',
-     &                    icomp
-          WRITE(icfcfil,'(a,a)') 'void glass ',
-     &                 glaznam(1:lnblnk(glaznam))
-          WRITE(icfcfil,'(a)') '0 '
-          WRITE(icfcfil,'(a)') '0 '
-          WRITE(icfcfil,'(a,3F6.2)') '3  ',gvt,gvt,gvt
-          WRITE(icfcfil,'(a)') '  '
+C       Convert visible transmission to transmissivity 
+C       (as per Ward 1/12/94 Radiance 2.4 paper).
+        if((VTRAN).gt.0.01)then
+          gvt1=sqrt(0.8402528435+(0.007252224*VTRAN*VTRAN))
+          gvt=(gvt1-0.9166530661)/0.0036261119/VTRAN
+        else
+          gvt=0.01
+        endif
+
+C       Write glazing material to file. Use construction name
+C       extended with surface name and zone number (the same 
+C       construction can be used by different CFC layer setups 
+C       / blind settings(!) spread over more than one zone
+        icn=IZSTOCN(icomp,isurf)
+        write(glaznam,'(4a,I1)')
+     &                  SSMLCN(icn)(1:lnblnk(SSMLCN(icn))),'_',
+     &                  SSNAME(icn)(1:lnblnk(SSNAME(icn))),'_',
+     &                  icomp
+        WRITE(icfcfil,'(a,a)') 'void glass ',
+     &               glaznam(1:lnblnk(glaznam))
+        WRITE(icfcfil,'(a)') '0 '
+        WRITE(icfcfil,'(a)') '0 '
+        WRITE(icfcfil,'(a,3F6.2)') '3  ',gvt,gvt,gvt
+        WRITE(icfcfil,'(a)') '  '
 
 9999  continue
 
