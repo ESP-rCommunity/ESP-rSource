@@ -1090,6 +1090,8 @@ C          Read construction file
               LayNo=ncfc_el(iZone,icfctp) ! number of layers of current type
 C           Write for current zone / surface
               imlcnlength=lnblnk(SSMLCN(izstocn(iZone,iSurf)))
+              write(outstr,'(a)') ' '
+              call edisp(itru,outstr)
               write(OUTSTR,'(5a,F7.3,a)')
      &        'In zone: ',zname(iZone)(1:lnzname(iZone)),
      &        ', for surface: ',
@@ -1144,6 +1146,18 @@ C             Write out non-gas layer data (sequence order should be as in LBNL 
                   
                 endif ! not gas layer
   19          continue
+              write(outstr,'(a)') ' '
+              call edisp(itru,outstr)
+
+C             Report on Radiance coupling settings
+C             << translation of "T" / "F" in "explicit" / "simple"
+C                etc. would be preferable ...
+              write(outstr,'(2a,L2,a,L2)')
+     &             'Radiance coupling flags are ',
+     &             'blind: ',ExplicitVB(iZone,icfctp),', glass: ',
+     &             BRTDfunc(iZone,icfctp)
+              call edisp(itru,outstr)
+
               write(outstr,'(a)') ' '
               call edisp(itru,outstr)
           endif ! icfcfl.gt.0
