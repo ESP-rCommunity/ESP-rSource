@@ -742,6 +742,7 @@ C Default setting of IREP, reporting and range checking on.
 C If an input file has been specified then load it and then
 C return to the main menu.
       XST=.false.
+C Debug.
 C      write(*,*)'LCMDFL: ',LCMDFL
       if(LCMDFL(1:2).ne.'  '.and.LCMDFL(1:4).ne.'UNKN')then
         INQUIRE (FILE=LCMDFL,EXIST=XST)
@@ -752,7 +753,8 @@ C info in after reading the .cfg file.
           if(sps(1:2).ne.'  '.and.sps(1:4).ne.'UNKN')then
             write(spsname,'(a8)')sps(1:8)
             if(aut(1:6).eq.'silent')then
-              write(*,*)'Silent-running mode.'
+C Debug.
+C              write(*,*)'Silent-running mode.'
               autook=.true.
               call edisp(iuout,'Silent-running mode.')
               call tstamp('>','SIM: Silent-running mode')
