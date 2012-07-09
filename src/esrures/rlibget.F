@@ -1857,9 +1857,9 @@ C Need to loop through the number of output timesteps and average if
 C required.
       do 100 IZONE=1,NCOMP
 
-C NZI - number of zome data items = MZRL - MS + NSUR. Note use NZI3
+C NZI - number of zome data items = NSUR +12. Note use NZI3
 C for 3rd record in each set (two fewer data items to scan).
-        NZI = MZRL - MS + NZSUR(IZONE)
+        NZI = NZSUR(IZONE)+12
         NZI3 = NZI - 2
         NITMS=0
         NFITMS=0

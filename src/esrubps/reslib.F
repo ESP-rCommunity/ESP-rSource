@@ -44,6 +44,7 @@ C results library as well.
       SUBROUTINE MZLIBF
 #include "building.h"
 #include "model.h"
+#include "geometry.h"
 #include "cfd.h"
 #include "plant.h"
 #include "power.h"
@@ -170,6 +171,31 @@ C the user will be asked to confirm the results file name (and path)
           IF(LTMP(1:2).EQ.'  ')GOTO 4
         ENDIF
       ENDIF
+
+C Note: the initial assumption of the record width of the zone results 
+C file is based on nzrl equal to MZRL (defined in building.h as MCOM+12
+C if MCOM>MS with a minimum width of 40 to allow for file names to be
+C held and air gap data to be written). Some records are written with 
+C values for all current zones, some are for all surfaces in the zone 
+C plus up to 12 other values. One set of records in MZLS1 is 5*MGP width 
+C which is currently 40.
+      iminwid=40
+      iswid=0
+      DO 150 I = 1,NCOMP
+        if(NZSUR(I).gt.iswid) iswid=NZSUR(I)
+ 150  continue
+      if(ncomp.gt.iminwid)iminwid=ncomp
+      if(iswid+12.gt.iminwid)iminwid=iswid+12
+
+C Debug.
+C      write(6,*)'nzrl iswid ncomp iswid+12 minwid ',nzrl,iswid,ncomp,
+C     &  iswid+12,iminwid
+      if(iminwid.ne.nzrl)then
+        write(outs,*)'Resetting results file record width to ',iminwid
+        call edisp(iuout,outs)
+        nzrl=iminwid
+        call pauses(1)   ! pause
+      endif
 
 C If remote path then use EFOPRAN otherwise FPRAND.
       RFILE=LTMP

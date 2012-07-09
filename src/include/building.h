@@ -4,6 +4,7 @@ C 72 zone 62 surface version 12.08 updated
 C 82 zone 62 surface version 08.2011 updated
 C 82 zone 80 surface version 10.2011 updated
 C 3300 surfaces for MCON 3.2012 updated
+C 8 air gaps MGP and 16 layers ME 7.2012 updated
 
 C Type declarations.
       integer MCOM,MCON,MTV,MV,ME,MGP,MN,MP,MDY,MT,MA,MC,MBP,MTMS
@@ -33,9 +34,9 @@ C Ground topology.
       PARAMETER (MGTV=500)     !- Vertices.
 
 C Construction.
-      PARAMETER (ME=20)        !- Elements/construction. - Increased from 8 to 20 to support CFCs - (Bart Lomanowski)
+      PARAMETER (ME=16)        !- Elements/construction. - Increased from 8 to 16 to support CFCs - (Bart Lomanowski)
       PARAMETER (MN=50)        !- Nodes/construction.    - Increased from 35 to 50 to support CFCs - (Bart Lomanowski)
-      PARAMETER (MGP=10)       !- Air gaps/construction. - Increased from 3 to 10 to support CFCs - (Bart Lomanowski)
+      PARAMETER (MGP=8)       !- Air gaps/construction. - Increased from 3 to 8 to support CFCs - (Bart Lomanowski)
       PARAMETER (MMLC=200)     !- Multilayered constructions in model.
       PARAMETER (MHCV=MN+ME)   !- Control volumes per construction.
 
@@ -112,9 +113,9 @@ C Results analysis.
       PARAMETER (MIPVA=MSPS)    !- IPV assessments.
       PARAMETER (MIPVM=12)      !- IPV metrics.
       PARAMETER (MZS=90)        !- Number of items to report in res.
-      PARAMETER (MZRL=MCOM+12)  !- Fields in a zone results library record
-                                !  (minimum value is 36; if MCOM>MS use MCOM
-                                !  in formula).
+      PARAMETER (MZRL=MCOM+12)  !- Fields in a zone results library record. It should
+                                !  be largest of (36 for file names or MCON for zones
+                                !  or MS + 12 or MGP * 5). See reslib.F for logic.
 C Mathematical model.
       PARAMETER (MEQ=MS+1)      !- Equations.
       PARAMETER (MTR=MS+4)      !- Equation terms.
