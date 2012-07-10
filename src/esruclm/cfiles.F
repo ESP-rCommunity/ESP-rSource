@@ -69,6 +69,7 @@ C silent is a logical toggle, if .true. then do not interact with user.
 
       CHARACTER CLMLOC*30
       CHARACTER LASCI*72,outs*124,OUTSTR*124
+      integer IREAD  ! set to 1 if day demarcation lines
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -91,6 +92,7 @@ C Open the ASCII file for reading.
         return
       endif
 
+      IREAD=0  ! assume no day demarcation lines
       if(silent)then
         IREAD=1
       else
@@ -269,6 +271,7 @@ C read in.
       DIMENSION IMPT(24),IMSTC(7),ITUNITS(7)
       character word*32  ! for skipped column data
       integer iwidest    ! the last column to look in
+      integer IREAD  ! set to 1 if day demarcation lines
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -297,7 +300,7 @@ C Clear column association.
         ITUNITS(I)=0
    27 CONTINUE
       IMSTL=1
-      IDS=1; IDF=365; iwidest=0
+      IDS=1; IDF=365; iwidest=0; IREAD=0
 
 C Display the initial lines of the file for the user.
 
@@ -407,7 +410,7 @@ C Help text for this menu.
       call gethelptext(helpinsub,helptopic,nbhelp)
  
       INODA=-2
-   13 CALL EMENU('  Import specs',IMPT,IMPTL,INODA)
+      CALL EMENU('  Import specs',IMPT,IMPTL,INODA)
 
       IF(INODA.EQ.IMPTL)THEN
         RETURN
@@ -956,8 +959,6 @@ C 123-125 ground temps at 1m 3m 5m (real)  (DEG.C)
 C Each data line is | or , separated and values are a mix of reals and integers.
 C Assume that the weather file has already been opened elsewhere. Note some
 C files may have first line STN_ID if this is found skip and try next.
-
-C silent is a logical toggle, if .true. then do not interact with user.
       SUBROUTINE MKOREANCLM(LASCI,IUNIT,ACT,IER)
 #include "esprdbfile.h"
 
@@ -1361,6 +1362,7 @@ C or passed into clm module).
 
       CHARACTER CLMLOC*30,outs*124,tab*1,outs248*248
       character LCMDFL*144,clmdb*144,L144*144,lltmp*144
+      character fs*1
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -1369,6 +1371,14 @@ C For help messages
 
       helpinsub='CFILIN'  ! set for cfiles
       tab = CHAR(9)
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Get help message set.
       helptopic='clm_file_contents'
