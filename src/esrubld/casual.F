@@ -1489,7 +1489,7 @@ C cancels if y=mx assumption holds.
  322            continue
 
                 write (66,*) ' Found a diffuse match: '
-                write (66,*) 'Dir: ',DBILLA(ICOMP,IDB_MATCH,3),
+                write (66,*) 'Dif: ',DBILLA(ICOMP,IDB_MATCH,4),
      &                       ' Blind: ',DBILLA(ICOMP,IDB_MATCH,5)
                 write (66,*) 'Estimated illuminances:'
                 do 432 ILZ=1,NLITZ(ICOMP)
@@ -1746,7 +1746,7 @@ C Take values from database:
 			        ! calculate zelum(N) from database info ??
               do 435 ILZ=1,NLITZ(ICOMP)
 			        suma=0.
-			          do 436 IDF=1,NDF(ICOMP,ILZ)
+                do 436 IDF=1,NDF(ICOMP,ILZ)
                   suma=suma+selum(ILZ,IDF)
  436            continue
                 zelum(ILZ)=suma/float(NDF(ICOMP,ILZ))

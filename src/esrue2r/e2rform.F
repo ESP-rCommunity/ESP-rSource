@@ -802,7 +802,7 @@ C Check for blind shutter control.
 
 C       =================== C F C ====================
         elseif (OTF(1:4).eq.'CFC ') then
-          init=1 ! create materials descriptions (check for "first loop"?)
+          init=2 ! create materials descriptions (check for "first loop"?)
           do iZone=1,ncomp
             do iSurf=1,NZSUR(iZone)
               icn=IZSTOCN(iZone,iSurf)

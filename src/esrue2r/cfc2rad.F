@@ -58,15 +58,16 @@ C     true and BRTDfunc false) and
 C  3) Use detailed glazing model (BRTDfunc) and explicit blind 
 C     model (ExplicitVB true and BRTDfunc true).
 C
-C May 13: Called from esrue2r/e2rform.F subroutine mkriofil(), line 833.
+C May 13: Called from esrue2r/e2rform.F subroutine mkriofil(), line 813.
 C Jun 16: Called from esrubld/casual.F subroutine intlum(), line 1425.
 C 
 C Created by: Achim Geissler
 C Initial Creation: May 2012
 C 
 C Call parameters
-C   init       toggle for first call init=1 and subsequent 
-C              calls (slat angle control) init=0
+C   init       toggle for first call in mkriofil() init=2, first
+C              call in intlum() init=1 and subsequent 
+C              calls in intlum() init=0
 C <<   file handling? For init, assume file(s) open, for subsequent
 C      calls open / close, here? >>
 C   icomp      zone 
@@ -120,7 +121,7 @@ C Function declarations
       integer lnblnk
 
 C     Search through model to get first and last CFC ...
-      if (init.eq.1) then
+      if (init.ge.1) then
         firstzisset=.false.
         do 5 iz=1,ncomp
           do 10 im=1,nzsur(iz)
@@ -205,7 +206,7 @@ C           intermediate blind ... do what? "Not possible"? (!!)
             return
           endif
 
-          if (init.eq.1) then    
+          if (init.eq.2) then    
             ! Generate slat material description and append to 
             ! materials file imatfil (which is assumed open!)
 
@@ -822,8 +823,9 @@ C Created by: Achim Geissler
 C Initial Creation: June 2012
 C 
 C Call parameters
-C   init       toggle for first call init=1 and subsequent 
-C              calls (slat angle control) init=0
+C   init       toggle for first call in mkriofil() init=2, first
+C              call in intlum() init=1 and subsequent 
+C              calls in intlum() init=0
 C   icomp      zone 
 C   isurf      surface
 C
