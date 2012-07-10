@@ -329,10 +329,10 @@ C     Climate data (present and future time rows)
       real CDIF,CTMP,CDNR,CVEL,CDIR,CHUM
 
 C Local variables 
-      integer icfctp,icn,ISTAT,itsys,IER
+      integer icfctp,icn,ISTAT,itsys,IER,IANS
 
       real incang,dummy1,dummy2,CAI,psazi,psalt
-      real VTDIR,VTDIF,VTRAN,gvt1,gvt
+      real VTDIR,VTDIF,VTRAN,gvt1,gvt,extDIR0,extDIF0
 
       real proang,CFCabs
       real TRANSBB_SYSV,TRANSD_SYSV,REFL_SYSV,CFCabsV
@@ -395,6 +395,8 @@ C Values for radiation and solar angle should only be set for
 C non-conflation type calls ("visualization" calls).
         tmpIDF=0.0   ! interior diffuse source
         tmpIBM=0.0   ! interior beam source
+        extDIR0=1.0E-3 ! ?? is there a problem with "0"?  10.07.2012 ... 
+        extDIF0=1.0E-3 !
         i_direct=0   ! toggle for ... ?
 
         if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
@@ -451,8 +453,8 @@ cx          return
 
         elseif (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
 C         Set data to current values
-          EXDIR=QFP
-          EXDIF=QDP
+          EXDIR=QDP
+          EXDIF=QFP
           EXDIFSKY=EXDIF*(1.-groundrefl)
           EXDIFGRD=EXDIF*groundrefl
 
@@ -479,40 +481,55 @@ C       Check error state
 
 C ******************* from solar.F / line 1748 ff. *********************
 C The following code should probably be put in a designated subroutine.
+
+C Is surface facing away from the sun so that it can only
+C receive diffuse component. IANS=1; yes, self-shaded.
+        IANS=0
+        CALL CFCMZSFSH(icomp,isurf,IANS)
+cx ... necessary? (line 579 ff. solar.F)
+
         iSolVis=1  ! calculate visual properties, only
 
-C DEBUG:
-c          write(*,*)'** Blind position=',i_shd(icomp,icfctp)
-c          write(*,*)'** Blind angle   =',vb_phiNew(icomp,icfctp)
-c          write(*,*)'EXDIR=',EXDIR,' EXDIF=',EXDIF,
-c     &              'EXDIFSKY=',EXDIFSKY,'EXDIFGRD=',EXDIFGRD,
-c     &              'incang=',incang
+        if (IANS.eq.1) then
+C       surface is self-shaded
+             incang=0.
+             proang=0.
+C            Save profile angle for CFC output, -1 indicates self shaded
+             proang_s(icomp,icfctp,isurf)=-1. 
+        else ! not self shaded
+          call profile_angle(icomp,isurf,icfctp,proang)
+        endif
 
         ! values include (optional) blinds 
         ! at current blind angle!
-        call profile_angle(icomp,isurf,icfctp,proang)
-
         call cfc_eff_opt_prop(icomp,isurf,icfctp,incang,proang,
      &                                                     iSolVis)
+
+C DEBUG:
+c          write(*,*)'** Blind posn=',i_shd(icomp,icfctp),
+c     &          ' Blind angle=',vb_phiNew(icomp,icfctp),
+c     &          ' EXDIR=',EXDIR,' EXDIF=',EXDIF,
+c     &          ' EXDIFSKY=',EXDIFSKY,' EXDIFGRD=',EXDIFGRD,
+c     &          ' incang=',incang,' proang=',proang
 
 C       Check whether sky and ground diffuse calc. is requested
         if (i_ground_sky_diff_calc.eq.1) then
 
 C         Calculate CFC system visual BEAM transmitted
           call solar_multilayer(i_direct,icomp,isurf,icfctp,
-     &                EXDIR,tmpIDF,
+     &                EXDIR,extDIF0,
      &                tmpIBM,tmpIDF,iSolVis,
      &                TRANSBB_SYSV,TRANSD_SYS_BD,dummy1,AbsSolDir)
 
 C         Calculate CFC system solar SKY diffuse transmitted
           call solar_multilayer(i_sky,icomp,isurf,icfctp,
-     &                tmpIBM,EXDIFSKY,
+     &                extDIR0,EXDIFSKY,
      &                tmpIBM,tmpIDF,iSolVis,
      &                dummy1,TRANSD_SYS_SKY,dummy2,AbsSolDifSky)
 
 C         Calculate CFC system solar GROUND diffuse transmitted
           call solar_multilayer(i_ground,icomp,isurf,icfctp,
-     &                tmpIBM,EXDIFGRD,
+     &                extDIR0,EXDIFGRD,
      &                tmpIBM,tmpIDF,iSolVis,
      &                dummy1,TRANSD_SYS_GRD,dummy2,AbsSolDifGrd)
 
@@ -982,6 +999,50 @@ c      ELSE
 c      ENDIF
 
  9999 RETURN
+      END
+
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC
+C ***************** Copy of MZSFSH ********************
+C MZSFSH determines if an external surface faces 'away' from
+C the sun so causing self-shading.
+
+C IANS=0 ; no self-shading
+C IANS=1 ; self-shading occurs
+
+      SUBROUTINE CFCMZSFSH(ICOMP,IS,IANS)
+      implicit none
+#include "building.h"
+      integer icomp,is,ians
+
+      COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
+      real PAZI,PELV
+      
+      COMMON/SUNPOS/SAZI,SALT,ISUNUP
+      real sazi,salt
+      integer isunup
+
+      real PI,R,X1,X2,X3,X4,X5,CAI,PSAZI
+
+      PI = 4.0 * ATAN(1.0)
+      R=PI/180.
+
+C Determine the surface-solar azimuth angle.
+      PSAZI=ABS(PAZI(ICOMP,IS)-SAZI)
+
+C Cosine of angle of incidence.
+      X1=COS(SALT*R)
+      X2=SIN((90.-PELV(ICOMP,IS))*R)
+      X3=COS(PSAZI*R)
+      X4=SIN(SALT*R)
+      X5=COS((90.-PELV(ICOMP,IS))*R)
+      CAI=X1*X2*X3+X4*X5
+
+C Surface is self-shaded if CAI is less than or
+C equal to zero.
+      IANS=0
+      IF(CAI.LE.0.)IANS=1
+      RETURN
       END
 
 

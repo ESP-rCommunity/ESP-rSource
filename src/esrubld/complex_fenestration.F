@@ -3971,7 +3971,13 @@ C ********************************************************************
             beta(i)=(aw(i)*beta(i-1)+bp(i))/(ap(i)-alpha(i-1)*aw(i))
       ENDDO
       solx(m)=beta(m)
+cx      write(*,*)'        ***** '
       DO i=m-1,1,-1
+cx            write(*,*)'alpha(',i,')=',alpha(i),
+cx     &                ' | solx(',i+1,')=',solx(i+1),
+cx     &                ' | beta(',i,')=',beta(i),
+cx     &                ' | solx(',i,')=',alpha(i)*solx(i+1)+beta(i)
+
             solx(i)=alpha(i)*solx(i+1)+beta(i)
       ENDDO
 

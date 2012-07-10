@@ -1489,7 +1489,7 @@ C cancels if y=mx assumption holds.
  322            continue
 
                 write (66,*) ' Found a diffuse match: '
-                write (66,*) 'Dif: ',DBILLA(ICOMP,IDB_MATCH,4),
+                write (66,*) 'Dir: ',DBILLA(ICOMP,IDB_MATCH,3),
      &                       ' Blind: ',DBILLA(ICOMP,IDB_MATCH,5)
                 write (66,*) 'Estimated illuminances:'
                 do 432 ILZ=1,NLITZ(ICOMP)
