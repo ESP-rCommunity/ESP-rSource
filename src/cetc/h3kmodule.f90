@@ -149,7 +149,8 @@ MODULE h3kmodule
    Type(ReportVariable) :: rvCFCUvalueISO,rvCFCUvalueActual,rvCFCRgap, &
          rvCFCvbAngle,rvCFCvbOnOff,rvCFCTransBB,rvCFCTransBBvis, &
          rvCFCTransD,rvCFCTransDvis, &
-         rvCFCRadTot,rvCFCRadDifSky,rvCFCRadDifGrd,rvCFCIncAng
+         rvCFCRadTot,rvCFCRadDifSky,rvCFCRadDifGrd, &
+         rvCFCRadianceGlazing
 
    !Used by SiteUtilities.F
    Type(ReportVariable) :: rvTFuelAllEndEnergyContent, rvTFuelAllEndQty, &
@@ -1465,6 +1466,12 @@ CONTAINS
       rvCFCRadDifSky%VariableType = '(W/m2)'
       rvCFCRadDifSky%Description = 'CFC diffuse radiation from sky'
       Call AddVariable(rvCFCRadDifSky)
+
+      rvCFCRadianceGlazing%VariableName = 'bui/*/s*/CFCRadGlazTran'
+      rvCFCRadianceGlazing%MetaType = 'units'
+      rvCFCRadianceGlazing%VariableType = '(-)'
+      rvCFCRadianceGlazing%Description = 'CFC Radiance coupling glass transmissivity'
+      Call AddVariable(rvCFCRadianceGlazing)
 
       !Used by SiteUtilities.F
       rvTFuelAllEndEnergyContent%VariableName = 'total_fuel_use/*/all_end_uses/energy_content'

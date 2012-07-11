@@ -290,6 +290,7 @@ C   None (?)   >> writes Radiance definitions to file 'icfcfil'
 C
 C ********************************************************************
       subroutine CFCGlazing(icomp,isurf)
+      USE h3kmodule ! possibly remove after testing phase ...
 
       IMPLICIT NONE
 #include "building.h"
@@ -340,7 +341,7 @@ C Local variables
       real tmpIBM,tmpIDF,EXDIR,EXDIF,EXDIFSKY,EXDIFGRD
       real AbsSolDir,AbsSolDifGrd,AbsSolDifSky,AbsVis
 
-      character glaznam*72,cfcfile*72,outs*124
+      character glaznam*72,cfcfile*72,outs*124,cSurf_Chars*2
 
       integer iSolVis ! switch for CFC solar / visual data calculation
       integer i_direct ! switch for calling solar_multilayer
@@ -584,10 +585,6 @@ C           See above for description.
 
 C ******************************************************************
 
-cx          VTDIR=transBB_V(icomp,isurf) 
-cx          VTDIF=transD_V(icomp,isurf)
-cx          VTRAN=VTDIR+VTDIF ! not really good ...
-
 C       Convert visible transmission to transmissivity 
 C       (as per Ward 1/12/94 Radiance 2.4 paper).
         if((VTRAN).gt.0.01)then
@@ -612,6 +609,19 @@ C       / blind settings(!) spread over more than one zone
         WRITE(icfcfil,'(a)') '0 '
         WRITE(icfcfil,'(a,3F6.2)') '3  ',gvt,gvt,gvt
         WRITE(icfcfil,'(a)') '  '
+
+C       Write gvt to xml output
+         if ( isurf .gt. 9 ) then
+            write(cSurf_Chars, '(I2)') isurf
+         else
+            write(cSurf_Chars, '(A,I1)') '0', isurf
+         endif
+
+         call AddToReport (
+     &      rvCFCRadianceGlazing%Identifier,
+     &      gvt,
+     &      zname(icomp)(1:lnzname(icomp)),
+     &      cSurf_Chars)
 
 9999  continue
 
@@ -726,9 +736,11 @@ cx=====
         if (icfctp.eq.1) then
           cfc_height=2.04 ! "win_bot"
           z0=0.38
+          write(curvature,'(a)')' -r '       ! slats curved downward (standard)
         else
           cfc_height=0.8 ! "win_top"
           z0=2.42
+          write(curvature,'(a)')' +r '       ! slats curved upward
         endif
 
         vb_width=cfc_width+2.*dy
@@ -752,9 +764,9 @@ cx        sth=vb_t(icomp,icfctp)             ! max slat thickness
 c        tilt=PELV(icomp,isurf)            ! tilt of cfc surface
 
 c       if (??) then ! ?? is there a CFC-setting for this??
-          write(curvature,'(a)')' -r '       ! slats curved downward (standard)
+c          write(curvature,'(a)')' -r '       ! slats curved downward (standard)
 c       else
-c          write(curvature,'(a)')' -r '      ! slats curved upward
+c          write(curvature,'(a)')' +r '      ! slats curved upward
 c       endif
 
 C -------------------------------------------------------------------
