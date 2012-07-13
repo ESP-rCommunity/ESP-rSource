@@ -665,14 +665,17 @@ C Commons
       integer firstzone,lastzone,lasttype
 
 C Local variables
-      integer icfctp,icn,nslats,ISTAT
+      integer icfctp,icn,nslats,ISTAT,N,iv
 
       real sw,sp,sr,phi,crown,wr,sth,tilt
       real x0,y0,z0,cfc_width,cfc_height
       real dy,vb_width,vb_height
+      real XX,YY,ZZ
 
       character matname*72,cmdstr*144,transfstr*144
       character curvature*4
+
+      DIMENSION XX(MV),YY(MV),ZZ(MV)
 
 C Function declarations
       integer lnblnk
@@ -682,71 +685,54 @@ C Body
       if (i_shd(icomp,icfcfl(icomp,isurf)).eq.0) then
       
 C     ... actually, do nothing!
-        write(*,'(a,i1,a,i1,a)')'** CFCDetailedBlind(): i_shd(',
-     &      icomp,',',icfcfl(icomp,isurf),') = 0, i.e. blind is up!'
+c        write(*,'(a,i1,a,i1,a)')'** CFCDetailedBlind(): i_shd(',
+c     &      icomp,',',icfcfl(icomp,isurf),') = 0, i.e. blind is up!'
 
       else ! blind is down, so create it ...
 
         icfctp=icfcfl(icomp,isurf) ! get type
 
 C -------------------------------------------------------------------
-C     Get lower left corner of CFC surface and surface width
-C     The Venetian type blind will be created wider by 2 x dy, so that 
-C     it overlaps the glazing area. Typically such an overlap will be
-C     in the range of 30 to 50 millimeters either side.
+C       Get lower left corner of CFC surface and surface width
+C       The Venetian type blind will be created wider by 2 x dy, so that 
+C       it overlaps the glazing area. Typically, such an overlap will be
+C       in the range of 30 to 50 millimeters either side.
 C -------------------------------------------------------------------
-
 
 cx====
         dy=0.05 ! set fixed value, for now
 
-CCC e2rform.F, line 1406 ff.
-C Shift surface inwards by 3mm (only if extern=true).
-c            N=NVER(isf)
-C            if (extern) then
-c              vdis = -0.003
+C       Establish z0, cfc_width and cfc_height
+        call cfcwihi(isurf,z0,cfc_width,cfc_height)
 
-C Find transformation matrices that normalise face.
-c              call PLEQN(XX,YY,ZZ,N,VP,EQN,IERR)
-c              IF (IERR .NE. 0)then
-c                write(outs,'(a,a)') ' PLEQN problem with ',zsn(isf)
-c                call edisp(itru,outs)
-c              endif
-c              DO 352 K = 1,3
-c                TRNS(k)=EQN(k)*vdis
-c  352         continue
-C            else
-C              TRNS(1)= 0.00
-C              TRNS(2)= 0.00
-C              TRNS(3)= 0.00
-C            endif
-c            do 353 k=1,N
-c              XT(k)=XX(k)+TRNS(1)
-c              YT(k)=YY(k)+TRNS(2)
-c              ZT(k)=ZZ(k)+TRNS(3)
-c  353       continue
+C DEBUG:
+c        write(*,*)'z0=',z0,' | cfc_width=',cfc_width,
+c     &            ' | cfc_height=',cfc_height
+
+C       Establish lower left corner x0,y0
+
+
+        x0=0.08  ! use lower left corner (?)
+        x0=x0-dy ! correct for wider blind !
+
+        y0=0.    ! use lower left corner (?)
 
 cx=====
           
-        x0=0.08  ! use lower left corner (?)
-        y0=0.    ! use lower left corner (?)
-
-        cfc_width=2.84 ! x0=0.08, x1=2.92
+c        cfc_width=2.84 ! x0=0.08, x1=2.92
       
         if (icfctp.eq.1) then
-          cfc_height=2.04 ! "win_bot"
-          z0=0.38
-          write(curvature,'(a)')' -r '       ! slats curved downward (standard)
+c          cfc_height=2.04 ! "win_bot"
+c          z0=0.38
+          write(curvature,'(a)')' +r '  ! slats curved downward (standard)
         else
-          cfc_height=0.8 ! "win_top"
-          z0=2.42
-          write(curvature,'(a)')' +r '       ! slats curved upward
+c          cfc_height=0.8 ! "win_top"
+c          z0=2.42
+          write(curvature,'(a)')' -r '  ! slats curved upward
         endif
 
-        vb_width=cfc_width+2.*dy
+        vb_width=cfc_width+2.*dy ! the blind is wider than the glazing!
         vb_height=cfc_height
-
-        x0=x0-dy
 
 C -------------------------------------------------------------------
 C         Get venetian type blind data (if any)
@@ -1055,6 +1041,81 @@ C equal to zero.
       IANS=0
       IF(CAI.LE.0.)IANS=1
       RETURN
+      END
+
+C************ Copy of insert.F surlehi *******************************
+C SURLEHI Determines the overall length and height of a
+C surface (bounding box) and passes the vaules back as XYMAX and ZMAX.
+C Uses a temporary transform into 2D to get this data so
+C it work on surface of most orientations.
+      SUBROUTINE CFCWIHI(IS,ZMIN,XYMAX,ZMAX)
+#include "building.h"
+#include "geometry.h"
+
+      DIMENSION  XX(MV),YY(MV),ZZ(MV)
+      DIMENSION  VP(3),EP(3),EQN(4)
+      DIMENSION  TMAT(4,4),RMAT(4,4)
+
+      real XYMAX,ZMAX,ZMIN
+      real XMIN,YMIN,XMAX,YMAX
+
+C Set maximum values to zero.
+      ZMIN= 0
+      XYMAX = 0
+      ZMAX = 0
+
+C Transform surface into into site coordinates in the
+C surface of the plane. Make up XX,YY,ZZ to pass across to the
+C transform routine.
+      N = NVER(IS)
+      DO 150 J = 1,N
+        XX(J) = X(JVN(IS,J))
+        YY(J) = Y(JVN(IS,J))
+        ZZ(J) = Z(JVN(IS,J))
+  150 CONTINUE
+
+C Establish ZMIN
+      ZMIN=MINVAL(ZZ(1:N)) ! explicit array length necessary!!
+
+C Find transformation matrices that normalise face.
+      call PLEQN(XX,YY,ZZ,N,VP,EQN,IERR)
+      IF (IERR .LT. 0) return
+      DO 250 J = 1,3
+        EP(J) = VP(J) + EQN(J)
+  250 CONTINUE
+      CALL  EYEMAT(EP,VP,1.0,TMAT,RMAT)
+
+C Transform all points in surface and find lower left corner
+C and the upper right corner.
+      XMIN=100.0
+      YMIN=100.0
+      XMAX=0.0
+      YMAX=0.0
+      DO 300 I=1,N
+        CALL ORTTRN(XX(I),YY(I),ZZ(I),TMAT,X1,Y1,ZZZ,IERR)
+        IF(X1.LT.XMIN)XMIN=X1
+        IF(Y1.LT.YMIN)YMIN=Y1
+        IF(X1.GT.XMAX)XMAX=X1
+        IF(Y1.GT.YMAX)YMAX=Y1
+  300 CONTINUE
+
+C Determine the height difference between the vertices. If the height
+C difference is greater than the previous values then define as new
+C maximum.
+      ZVAL = ABS(YMAX - YMIN)
+      If (ZVAL.gt.ZMAX) ZMAX = ZVAL
+
+C Determine the distance between the vertices on the x plane. If the
+C distance is greater than the previous values then define as new
+C maximum.
+      XYVAL= ABS(XMAX - XMIN)
+      if (XYVAL.gt.XYMAX) XYMAX = XYVAL
+
+C Debug.
+c      write(6,*) 'x and y ',XMIN,XMAX,YMIN,YMAX
+c      write(6,*) ZMIN,ZMAX,XYMAX
+
+      return
       END
 
 
