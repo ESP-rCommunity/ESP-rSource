@@ -23,7 +23,7 @@ OBJECTS = e2r.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o bscoeff.o \
 	  edatabase.o edcondb.o egeometry.o egtgeom.o emfnetw.o enetmisc.o \
 	  eroper.o esru_misc.o esystem.o filelist.o grid.o initalc.o inside.o item.o mfcdat.o \
 	  msurf.o nwkrewr.o plelevvc.o pltcfg.o radcfg.o radcmds.o \
-	  radctl.o readTrnsys.o rifform.o rwipv.o rwsbem.o sort.o tdfile.o editCFC.o
+	  radctl.o precal.o readTrnsys.o rifform.o rwipv.o rwsbem.o sort.o tdfile.o editCFC.o
 
 MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod \
 	parse_command_line.mod h3kmodule.mod
@@ -136,6 +136,11 @@ plelevvc.F:
 pltcfg.F:
 	rm -f pltcfg.F
 	ln -s $(COMdir)/pltcfg.F .
+	
+precal.F:
+	rm -f precal.F
+	ln -s $(BLDdir)/precal.F .
+	
 readTrnsys.F:
 	rm -f readTrnsys.F
 	ln -s $(COMdir)/readTrnsys.F .
@@ -174,5 +179,5 @@ clean:
 	c2fdum.F common3dv.F commonclm.F cread3dv.F ctlexp.F ctread.F e3dviews.F \
 	dossupport.F ecasctl.F econstr.F econtrol.F edcondb.F edatabase.F egeometry.F egtgeom.F \
 	emfnetw.F enetmisc.F eroper.F esru_misc.F esystem.F filelist.F initalc.F inside.F item.F mfcdat.F \
-	nwkrewr.F plelevvc.F pltcfg.F readTrnsys.F rwipv.F rwsbem.F sort.F startup.F tdfile.F \
+	nwkrewr.F plelevvc.F pltcfg.F precal.F readTrnsys.F rwipv.F rwsbem.F sort.F startup.F tdfile.F \
     editCFC.F h3kmodule.f90

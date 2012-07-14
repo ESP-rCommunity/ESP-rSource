@@ -661,21 +661,23 @@ C Commons
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
+      COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
+      real PAZI,PELV
+      
       COMMON/CFCtemp/firstzone,lastzone,lasttype
       integer firstzone,lastzone,lasttype
 
 C Local variables
       integer icfctp,icn,nslats,ISTAT,N,iv
 
-      real sw,sp,sr,phi,crown,wr,sth,tilt
-      real x0,y0,z0,cfc_width,cfc_height
-      real dy,vb_width,vb_height
-      real XX,YY,ZZ
+      real sw,sp,sr,phi,crown,tilt
+      real cfc_width,cfc_height,sd
+      real dy,vb_width,vb_height,llc
 
       character matname*72,cmdstr*144,transfstr*144
       character curvature*4
 
-      DIMENSION XX(MV),YY(MV),ZZ(MV)
+      DIMENSION llc(3)
 
 C Function declarations
       integer lnblnk
@@ -690,49 +692,12 @@ c     &      icomp,',',icfcfl(icomp,isurf),') = 0, i.e. blind is up!'
 
       else ! blind is down, so create it ...
 
+C Calculate time invariant zone data (geometry values necessary for
+C explicit blind modelling with CFCs).
+        CALL MZAREA(icomp)
+        call mzpazi(icomp)
+
         icfctp=icfcfl(icomp,isurf) ! get type
-
-C -------------------------------------------------------------------
-C       Get lower left corner of CFC surface and surface width
-C       The Venetian type blind will be created wider by 2 x dy, so that 
-C       it overlaps the glazing area. Typically, such an overlap will be
-C       in the range of 30 to 50 millimeters either side.
-C -------------------------------------------------------------------
-
-cx====
-        dy=0.05 ! set fixed value, for now
-
-C       Establish z0, cfc_width and cfc_height
-        call cfcwihi(isurf,z0,cfc_width,cfc_height)
-
-C DEBUG:
-c        write(*,*)'z0=',z0,' | cfc_width=',cfc_width,
-c     &            ' | cfc_height=',cfc_height
-
-C       Establish lower left corner x0,y0
-
-
-        x0=0.08  ! use lower left corner (?)
-        x0=x0-dy ! correct for wider blind !
-
-        y0=0.    ! use lower left corner (?)
-
-cx=====
-          
-c        cfc_width=2.84 ! x0=0.08, x1=2.92
-      
-        if (icfctp.eq.1) then
-c          cfc_height=2.04 ! "win_bot"
-c          z0=0.38
-          write(curvature,'(a)')' +r '  ! slats curved downward (standard)
-        else
-c          cfc_height=0.8 ! "win_top"
-c          z0=2.42
-          write(curvature,'(a)')' -r '  ! slats curved upward
-        endif
-
-        vb_width=cfc_width+2.*dy ! the blind is wider than the glazing!
-        vb_height=cfc_height
 
 C -------------------------------------------------------------------
 C         Get venetian type blind data (if any)
@@ -745,36 +710,36 @@ C DEBUG
 cx        write(*,*)'** slat angle=',phi
 
         crown=vb_crown(icomp,icfctp)/1000. ! crown height [m]
-cx        wr=vb_wr(icomp,icfctp)             ! width/curvature ratio
-cx        sth=vb_t(icomp,icfctp)             ! max slat thickness
 c        tilt=PELV(icomp,isurf)            ! tilt of cfc surface
 
+C -------------------------------------------------------------------
+C       The Venetian type blind will be created wider by 2 x dy, so that 
+C       it overlaps the glazing area. Typically, such an overlap will be
+C       in the range of 30 to 50 millimeters either side.
+C -------------------------------------------------------------------
+
+        dy=0.05   ! [m] slat overstand; set fixed value, for now
+        sd=1.2*sw ! [m] slat distance from CFC
+
+C       Establish cfc_width, cfc_height and transform (x0,y0,z0 for blind)
+        call cfcwihi(isurf,sd,dy,cfc_width,cfc_height,llc)
+
+        if (icfctp.eq.1) then
+          write(curvature,'(a)')' +r '  ! slats curved downward (standard)
+        else
+          write(curvature,'(a)')' -r '  ! slats curved upward
+        endif
+
+        vb_width=cfc_width+2.*dy ! the blind is wider than the glazing!
+        vb_height=cfc_height
+
 c       if (??) then ! ?? is there a CFC-setting for this??
-c          write(curvature,'(a)')' -r '       ! slats curved downward (standard)
+c          write(curvature,'(a)')' -r ' ! slats curved downward (standard)
 c       else
-c          write(curvature,'(a)')' +r '      ! slats curved upward
+c          write(curvature,'(a)')' +r ' ! slats curved upward
 c       endif
 
-C -------------------------------------------------------------------
-C         Create Venetian type blind description (genblinds) with 
-C         current slat angle
-C -------------------------------------------------------------------
-
-C the "scale" used in genblind is the slat width (parameter 
-C "depth" in call to genblinds). All other numbers given
-C for the dimension should be calculated accordingly.
-
-C lower inside left corner (viewed from outside) is 0,0,0 (?!) 
-C       -s is the scale, enter slat width in [m] here!
-C               -rotation z, always necessary
-C                       -rotation z should be actual surface azimuth (psazi?)
-C                                  -translation to lower left coordinate of CFC surface
-C xform -s 0.08 -rz -90 -rz  4.118 -t  0.000  -16.408  0.06
 C
-C - x and y seem to be switched in Radiance ... (needs checking!)
-C - file handling for non-init calls, i.e. when called on time step basis??
-C   Open/close file? 
-
         ! calculate number of slats necessary to cover height
         nslats=ceiling(vb_height/sp) !+1
 
@@ -794,21 +759,32 @@ C   Open/close file?
      &                    SSNAME(icn)(1:lnblnk(SSNAME(icn))),'_',
      &                    icomp
 
+
+C -------------------------------------------------------------------
+C         Create Venetian type blind description (genblinds) with 
+C         current slat angle
+C -------------------------------------------------------------------
+
+C     The "scale" used in genblind is the slat width (parameter 
+C     "depth" in call to genblinds). All other numbers given
+C     for the dimension should be scaled accordingly.
+C
 C     genblinds mat       name  depth width  height nslats angle [ -r|+r rcurv ]
 C    !genblinds <matname> blind  1    32.165   44     49  <<-phi>>  <<-r sr>>
         WRITE(cmdstr,
      &        '(3a,I1,a,I1,a,I1,a,F7.2,a,F6.2,a,I3,a,F5.1,a,F5.3)') 
      &        '!genblinds ',matname(1:lnblnk(matname)),
      &        ' blind_z',icomp,'_',icfctp,' ',1,' ',
-     &        vb_width,' ',vb_height,' ',nslats,' ',phi,
+     &        vb_width,' ',vb_height,' ',nslats,' ',-1.*phi,
      &        curvature,sr
-cx     &        ' -r ',crown
 
         WRITE(transfstr,
-     &             '(a,F7.4,a,3(F6.3,1x))')
-     &             'xform -s ',sw,' -rz 90 -t ',
-     &             cfc_width+2.*dy,-(sw+0.04),z0 !+sp/2.
-          ! use esp_y for lower right corner, here ("x")?
+     &             '(a,F7.4,a,F6.1,a,3(F6.3,1x))')
+     &             'xform -s ',sw,' -rz ',-1.*(PAZI(icomp,isurf)-90.),
+     &             ' -t ',llc(1),llc(2),llc(3)
+
+C DEBUG
+        write(*,*)'** PAZI(',icomp,',',isurf,')=',PAZI(icomp,isurf)
 
         WRITE(icfcfil,'(a)') ' '
         WRITE(icfcfil,'(a)') '# generate blinds and transfer:'
@@ -1043,30 +1019,31 @@ C equal to zero.
       RETURN
       END
 
-C************ Copy of insert.F surlehi *******************************
+C************ Based on insert.F surlehi *******************************
 C SURLEHI Determines the overall length and height of a
-C surface (bounding box) and passes the vaules back as XYMAX and ZMAX.
+C surface (bounding box) and passes the values back as XYMAX and ZMAX.
 C Uses a temporary transform into 2D to get this data so
-C it work on surface of most orientations.
-      SUBROUTINE CFCWIHI(IS,ZMIN,XYMAX,ZMAX)
+C it works on surfaces of most orientations.
+      SUBROUTINE CFCWIHI(IS,dN,dY,XYMAX,ZMAX,LL)
 #include "building.h"
 #include "geometry.h"
 
       DIMENSION  XX(MV),YY(MV),ZZ(MV)
-      DIMENSION  VP(3),EP(3),EQN(4)
+      DIMENSION  VP(3),EP(3),EQN(4),TRNS(3)
       DIMENSION  TMAT(4,4),RMAT(4,4)
+      DIMENSION  LL(3) ! lower left x,y,z
 
-      real XYMAX,ZMAX,ZMIN
+      real XYMAX,ZMAX,ZMIN,LL,TRNS
       real XMIN,YMIN,XMAX,YMAX
+      
+      character outs*124
 
 C Set maximum values to zero.
       ZMIN= 0
       XYMAX = 0
       ZMAX = 0
 
-C Transform surface into into site coordinates in the
-C surface of the plane. Make up XX,YY,ZZ to pass across to the
-C transform routine.
+C Make up XX,YY,ZZ to pass across to the transform routine.
       N = NVER(IS)
       DO 150 J = 1,N
         XX(J) = X(JVN(IS,J))
@@ -1074,8 +1051,11 @@ C transform routine.
         ZZ(J) = Z(JVN(IS,J))
   150 CONTINUE
 
-C Establish ZMIN
+C Establish ZMIN (F95 intrinsic!)
       ZMIN=MINVAL(ZZ(1:N)) ! explicit array length necessary!!
+
+C Transform surface into site coordinates in the
+C surface of the plane. 
 
 C Find transformation matrices that normalise face.
       call PLEQN(XX,YY,ZZ,N,VP,EQN,IERR)
@@ -1086,15 +1066,22 @@ C Find transformation matrices that normalise face.
       CALL  EYEMAT(EP,VP,1.0,TMAT,RMAT)
 
 C Transform all points in surface and find lower left corner
-C and the upper right corner.
+C and the upper right corner. Store index of lower left corner
+C for further use.
       XMIN=100.0
       YMIN=100.0
       XMAX=0.0
       YMAX=0.0
       DO 300 I=1,N
         CALL ORTTRN(XX(I),YY(I),ZZ(I),TMAT,X1,Y1,ZZZ,IERR)
-        IF(X1.LT.XMIN)XMIN=X1
-        IF(Y1.LT.YMIN)YMIN=Y1
+        IF(X1.LT.XMIN) then
+          XMIN=X1
+          llx=I
+        endif
+        IF(Y1.LT.YMIN) then
+          YMIN=Y1
+          lly=I
+        endif
         IF(X1.GT.XMAX)XMAX=X1
         IF(Y1.GT.YMAX)YMAX=Y1
   300 CONTINUE
@@ -1111,7 +1098,32 @@ C maximum.
       XYVAL= ABS(XMAX - XMIN)
       if (XYVAL.gt.XYMAX) XYMAX = XYVAL
 
+      if (llx.ne.lly) then
+        write(outs,'(a,a)') ' CFCwihi problem with surface ',IS
+        call edisp(itru,outs)
+      endif
+
+C Calculated lower left of blind, this is dY to the left of the 
+C lower left ...
+
+      XMIN=XMIN-DY ! esru_misc.F, line 1958
+      ZZZ=0.       ! don't change z
+
+C Transform back to global coordinates
+      CALL  ORTTRN(XMIN,YMIN,ZZZ,RMAT,LL(1),LL(2),LL(3),IERR)
+
+C ... and move by dN away from the surface
+C (direction of the normal; e2rform.F, lines 1387 ff.)
+      DO 352 K = 1,3
+        TRNS(k)=EQN(k)*dN
+  352 continue
+
+      LL(1)=LL(1)+TRNS(1)
+      LL(2)=YY(llx)+TRNS(2) ! not quite clear why this works ...
+      LL(3)=LL(3)+TRNS(3)
+
 C Debug.
+c      write(*,*)'2. ll=',LL(1),' ',LL(2),' ',LL(3)
 c      write(6,*) 'x and y ',XMIN,XMAX,YMIN,YMAX
 c      write(6,*) ZMIN,ZMAX,XYMAX
 
