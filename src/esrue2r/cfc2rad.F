@@ -784,7 +784,8 @@ C    !genblinds <matname> blind  1    32.165   44     49  <<-phi>>  <<-r sr>>
      &             ' -t ',llc(1),llc(2),llc(3)
 
 C DEBUG
-        write(*,*)'** PAZI(',icomp,',',isurf,')=',PAZI(icomp,isurf)
+cx        write(*,'(i1,i1,f6.1)')'** PAZI(',icomp,',',isurf,')=',
+cx     &                                         PAZI(icomp,isurf)
 
         WRITE(icfcfil,'(a)') ' '
         WRITE(icfcfil,'(a)') '# generate blinds and transfer:'
@@ -1024,7 +1025,7 @@ C SURLEHI Determines the overall length and height of a
 C surface (bounding box) and passes the values back as XYMAX and ZMAX.
 C Uses a temporary transform into 2D to get this data so
 C it works on surfaces of most orientations.
-      SUBROUTINE CFCWIHI(IS,dN,dY,XYMAX,ZMAX,LL)
+      SUBROUTINE CFCWIHI(IS,dN,dX,XYMAX,ZMAX,LL)
 #include "building.h"
 #include "geometry.h"
 
@@ -1035,13 +1036,14 @@ C it works on surfaces of most orientations.
 
       real XYMAX,ZMAX,ZMIN,LL,TRNS
       real XMIN,YMIN,XMAX,YMAX
+      real XXX,YYY,ZZZ
       
       character outs*124
 
 C Set maximum values to zero.
-      ZMIN= 0
-      XYMAX = 0
-      ZMAX = 0
+      ZMIN  = 0.
+      XYMAX = 0.
+      ZMAX  = 0.
 
 C Make up XX,YY,ZZ to pass across to the transform routine.
       N = NVER(IS)
@@ -1065,9 +1067,10 @@ C Find transformation matrices that normalise face.
   250 CONTINUE
       CALL  EYEMAT(EP,VP,1.0,TMAT,RMAT)
 
-C Transform all points in surface and find lower left corner
-C and the upper right corner. Store index of lower left corner
-C for further use.
+C Transform all points in surface into 2D working points XN & YN.
+C Also find lower left corner in 2D (the 2D coordinates will be
+C relative to the COG of the surface). Store index of lower left
+C corner for further use.
       XMIN=100.0
       YMIN=100.0
       XMAX=0.0
@@ -1103,14 +1106,15 @@ C maximum.
         call edisp(itru,outs)
       endif
 
-C Calculated lower left of blind, this is dY to the left of the 
-C lower left ...
+C Calculate lower left of blind, this is dX to the left of the 
+C lower left of the CFC surface ...
 
-      XMIN=XMIN-DY ! esru_misc.F, line 1958
-      ZZZ=0.       ! don't change z
+      XMIN=XMIN-DX ! esru_misc.F, line 1958
 
-C Transform back to global coordinates
-      CALL  ORTTRN(XMIN,YMIN,ZZZ,RMAT,LL(1),LL(2),LL(3),IERR)
+c      write(*,*)'1. ll=',XMIN,' ',YMIN,' (2D)'
+
+C Transform new coordinates for blind origin back to global coordinates
+      CALL  ORTTRN(XMIN,YMIN,ZZZ,RMAT,XXX,YYY,ZZZ,IERR)
 
 C ... and move by dN away from the surface
 C (direction of the normal; e2rform.F, lines 1387 ff.)
@@ -1118,12 +1122,12 @@ C (direction of the normal; e2rform.F, lines 1387 ff.)
         TRNS(k)=EQN(k)*dN
   352 continue
 
-      LL(1)=LL(1)+TRNS(1)
-      LL(2)=YY(llx)+TRNS(2) ! not quite clear why this works ...
-      LL(3)=LL(3)+TRNS(3)
+      LL(1)=XXX+TRNS(1)
+      LL(2)=YYY+TRNS(2)
+      LL(3)=ZZZ+TRNS(3)
 
 C Debug.
-c      write(*,*)'2. ll=',LL(1),' ',LL(2),' ',LL(3)
+c      write(*,*)'2. ll=',LL(1),' ',LL(2),' ',LL(3),' (global)'
 c      write(6,*) 'x and y ',XMIN,XMAX,YMIN,YMAX
 c      write(6,*) ZMIN,ZMAX,XYMAX
 
