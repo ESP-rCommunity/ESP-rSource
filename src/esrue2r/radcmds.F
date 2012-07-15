@@ -308,23 +308,22 @@ C Check solar position and radiation.
 
 C Create sky command and sky.
         if (RSALT.gt.5.0) then
-          write(outs,'(a,2f7.1,a,2f7.1,a,f5.2)')'gendaylit -ang ',RSALT,
-     &                         RSAZI,' -W ',QDIR,QDIF,' -g ',rgrfl
+          write(outs,'(a,2f7.1,a,2f7.1,a,f5.2)')'gendaylit -ang ',
+     &            RSALT,RSAZI,' -W ',   QDIR,QDIF,        ' -g ',rgrfl
         else
           if (QDIR.gt.0.0) then
             write(outs,'(a,2f7.1,2(a,f7.1),a,f5.2)')'gensky -ang ',
-     &                RSALT,RSAZI,' -B ',QDIF,' -R ',QDIRH,' -g ',rgrfl
+     &            RSALT,RSAZI,' -B ',   QDIF,' -R ',QDIRH,' -g ',rgrfl
           else
-            write(outs,'(a,2f7.1,a,f7.1,a,f5.2)')'gensky -ang ',RSALT,
-     &                                RSAZI,' -c -B ',QDIF,' -g ',rgrfl
+            write(outs,'(a,2f7.1,a,f7.1,a,f5.2)')   'gensky -ang ',
+     &            RSALT,RSAZI,' -c -B ',QDIF,             ' -g ',rgrfl
           endif
         endif
         call wrtsky(outs)
 
 C Recreate octree, setting rtrace options, and run rtrace.
 C Check type of blinds/coupling ... if CFC, blind setting is 
-C created "on the fly", only one
-C rif file is necessary ... ??? (2/7/2012)
+C created "on the fly", only one rif file is necessary!
         if (icfcflag.eq.1) then
           rn=rifname(ifocz,ISCENE,1)
         else
@@ -356,6 +355,47 @@ C Run rtrace. << ?? what about pathtype?? >>
      &       '$1=179*(0.265*$1+0.670*$2+0.065*$3)',QT,' >> ',
      &      cmdact(1:lnblnk(cmdact))
         call runit(doitl,'-')
+
+C                 =========================
+C                 G L A R E   C O N T R O L
+C                 =========================
+c      if (GlareControl) then
+C        Run rpict / evalglare for glare analysis during coupling mode
+C << is here a good place?
+C << most likely, this will need to be called from CFC control (!?)
+C << own function? For a first 'proof of concept' type of phase,
+C << code "reporting" of glare, only ... (!!)
+
+C        Viewpoint: Use MRT sensor?
+C << no direct common variable exchange between bps and e2r!!
+C
+C        Viewdirection: ???
+cx       1. Create picture (name: zone, scene, time stamp?)
+c # create .hdr
+c       write(doitl,'(4a,1x,9a)') 'cd ',runpath(1:lnrp),
+c     '; rpict -t 0 -vta ',
+
+c      -vp 1.5 2.5 1.500 
+C      ' -vd -0.0000 -1.0000 -0.0000 -vu 0 0 1 -vh 180.0 -vv 180.0',
+c      -x 1024 -y 1024 
+c      optnfil(1:lnblnk(optnfil)),octfil(1:lnblnk(octfil))
+c      > TheSpace_Glare.hdr_1.unf
+
+c # ???
+c	pfilt -r .6 -x /2 -y /2 TheSpace_Glare.hdr_1.unf > TheSpace_Glare.hdr_1.hdr
+
+c # clean up ...
+c	rm -f TheSpace_Glare.hdr_1.unf
+
+
+cx  2. Run Evalglare, pipe output to cmdact file?? Or own file? Or 
+cx     variables (how?) for further use, i.e. goal is to use as 
+cx     control variable ... ??
+c      'evalglare -c ',<<glare-file>>,' ',TheSpace_Glare.hdr_1.hdr
+cx  3. Remove picture (conditional? If glare "no issue"?)
+
+c      endif ! GlareControl true
+C                 =========================
 
 C Copy transfer file back to users homedir (bps is expecting it to be there).
         write(doit,'(a)')' '

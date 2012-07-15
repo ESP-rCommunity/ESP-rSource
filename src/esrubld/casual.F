@@ -1602,7 +1602,8 @@ C If no reuse possible, call e2r to calculate illuminances.
 C          write (77,'(a)') "  ---  "
 
 C Create transfer file (format: .PID.tmp) LTMPFL is the file name (passed
-C to e2r) and  LTMPFLA is the absolute path/ file name.
+C to e2r via "act" command line option) and LTMPFLA is the absolute 
+C path/ file name.
               call esppid(ipid)
               write(LTMPFLA,'(a,i7,a)') '.',ipid,'.dat'
               call st2file(LTMPFLA,LTMPFL)
@@ -1637,7 +1638,6 @@ C     &          ICOMP,' -act ',LTMPFL(:lnblnk(LTMPFL)),' -mode text'
      &        ' of day ',IDYP
               call edisp(iuout,outs)
               write(outs,*)' '
-c              call edisp(icout,'Lighting simulation has now commenced.')
 
               call runit(doit,'-')
 
