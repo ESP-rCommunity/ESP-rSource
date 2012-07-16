@@ -87,7 +87,6 @@ C Uncertainty.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
       common/idstb/nidst
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
       character imgfmt*4  ! GIF XBMP TIF JPG
       character imgfoc*4  ! FZON FNET FCTL FDFS
       character limgfil*72  ! file name (extend to 144 char)
@@ -106,7 +105,6 @@ C Uncertainty.
       character fs*1
       character act*16
       character LUALF*72,LCNG*15,LLOC*15
-      character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character GTGEOM*72,lipvdatf*72
       character*10 wkd1, wkd2
       character*72 LCFGF

@@ -375,10 +375,7 @@ C Uncertainty analysis common.
 C IPV data is from ipvdata.h.
       common/IPVF/lipvdatf
 
-C Anchor data.
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
-      common/anchorb/IALOC(20),lstanchr(20,60)
-      INTEGER :: ialoc,lstanchr,naloc
+C Anchor data in model.h.
 
 C Contaminant flow model commons
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
@@ -529,7 +526,7 @@ C Simulation parameters
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
       character*10 wkday(7)
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
-      CHARACTER NDNAM*12,ALOC*12,ALOCLBL*12,ALOCTYP*4
+      CHARACTER NDNAM*12
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character hvacfile*72,LBSIMP*72,LFClds*72
       character gshpfile*72
@@ -566,7 +563,7 @@ C Simulation parameters
 #endif
       
       REAL :: gva
-      DIMENSION GVA(12),IVA(60),namez(mcom),namen(mcom)
+      DIMENSION GVA(12),IVA(99),namez(mcom),namen(mcom)
       INTEGER, dimension(mcon) :: IRVC
       INTEGER, dimension(365) :: IRCC
       data wkday/'Monday', 'Tuesday','Wednesday', 'Thursday',
@@ -2944,11 +2941,11 @@ C it is probably the index indicating flow.
           else
             write(ALOCTYP(ia),'(a4)') 'UNKN'
           endif
-          CALL EGETWI(OUTSTR,K,IALOC(ia),0,60,'F','anc link',IER)
+          CALL EGETWI(OUTSTR,K,IALOC(ia),0,99,'F','anchor link',IER)
           IRVA=IALOC(ia)
 
 C Scan next line for links.
-          CALL EGETWIA(IUC,IVA,IRVA,0,0,'-','assoc links',IER)
+          CALL EGETWIA(IUC,IVA,IRVA,0,0,'-','anchor assoc links',IER)
           DO 345 LC=1,IALOC(ia)
             lstanchr(ia,LC)=IVA(LC)
  345      continue
@@ -3518,11 +3515,10 @@ C **************** conninanchor
 C conninanchor returns true if a connection is included within
 C a particular anchor list and matches a valid anchor use.
       subroutine conninanchor(icnn,ianc,type,ok,ier)
+#include "building.h"
+#include "model.h"
 
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
-      common/anchorb/IALOC(20),lstanchr(20,60)
-
-      character ALOC*12,ALOCLBL*12,ALOCTYP*4,outs*124,type*4,msgl2*48
+      character outs*124,type*4,msgl2*48
       logical found,ok
 
 C Check if ianc is a known anchor and then if there is a list.
