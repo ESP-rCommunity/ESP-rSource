@@ -26,6 +26,11 @@ C GOMENU :  The main menu type used for: interogation, misc data
 C           listings, graphs, frequency distributions.
 C GOGET :   The main menu type used for: interogation, misc data 
 C           listings, graphs, frequency distributions.
+C GOGETIT:  Retrieves data for one day from the result library according
+C           to array IGETNO and KGET. It sues GET1 & GET2 commons.
+C GETSTATS: Efficient routine to scan the zone results records for save
+C           levels 2-4 finding the stats for a single topic.
+C MMACAL:   Calculates stats for topics via calls to gogetit, valiav etc.
 
 C MENUTYPE's are:
 C MENUTYPE 1: not used
@@ -485,6 +490,10 @@ C Note: 60 is the maximum number of items associated with an anchor point.
       integer ISLEN      ! length of SUFFIX
       integer ITLEN      ! length of ZSDES
       integer lastireportunit  ! to detect change in unit
+      integer iloop      ! to clear data
+      integer NSEL       ! nb of items selected
+      integer IZONE      ! user selected zone
+      integer ISFN       ! user selected surface
 
       logical SLIST,NLIST,MRTLIST,AGRLIST,OKL,dok,ok
 #ifdef OSI
@@ -505,7 +514,9 @@ C information about the choice of metric if necessary. NLIST=.true. implies
 C SLIST=.true. which are asked for all active zones (listed in NZNO).
       SLIST=.FALSE.   ! do we need to ask about surfaces
       NLIST=.FALSE.
+      MRTLIST=.FALSE.
       AGRLIST=.FALSE. ! assume heating & cooling loads separately drawn
+      IAC=0; NSEL=0; IZONE=0; ISFN=0  ! initial values
 
 C MNGET is the maximum number of metrics allowed to be chosen from the menu.
       if (MENUTYPE.eq.1) then
@@ -3150,23 +3161,11 @@ C << revise for additional casual gain types >>
               iocupf=1
               iocut=IOT-1
               call scnocup(iier)
-              if (iocut.ne.IFILT)then
-                call usrmsg('Rescanning database... ',' ','-')
-                call MMAPER
-                call usrmsg('Rescanning database...done.',' ','P')
-                call usrmsg('  ','  ','-')
-              endif
               IFILT=iocut
             elseif(IOT.eq.5)then
               iocupf=1
               iocut=-1
               call scnocup(iier)
-              if (iocut.ne.IFILT)then
-                call usrmsg('Rescanning database... ',' ','-')
-                call MMAPER
-                call usrmsg('Rescanning database...done.',' ','P')
-                call usrmsg('  ','  ','-')
-              endif
               IFILT=iocut
             elseif(IOT.eq.1)then
               iocupf=0
@@ -3929,6 +3928,7 @@ C =2 with more than 3 day types
       real perequipc,perequipr,perequipl ! average equipment to write out
       real otherc,otherr,otherl ! average other (future expansion) to write out
       integer theonectld  ! if non-zero the casual gain type that is controlled.
+      integer iset    ! IGETNO(*,5)
 
       if(IGETNO(KGET,1).eq.1)then
 
@@ -4835,368 +4835,330 @@ C IGETNO(KGET,1) = 81 Surface measured db temperature
       RETURN
       END
 
+C ******************** GETSTATS ********************
+C GETSTATS is an efficient routine to scan the zone results records for save
+C levels 2, 3 and 4 finding the max, min and average values and times of 
+C max and min occurances as offsets from the output period start day in 
+C hours for one topic (defined by KGET). It uses a combination of logic
+C from MMAPER (the genereal scan to memory), and the row and column
+C offsets from the low level subroutines in rlibget.F such as GTMS
+C calls to GFIXED. It is a more efficient implementation (less overhead
+C less passing of information) which recovers statistical data on
+C a given topic. Getstats is called by tgraph.F frqdis.F and stats.F.
+C If the stats can be generated for a topic HAVEIT is set to true. If
+C GETSTATS cannot deal with a topic HAVEIT is set to false and MMACAL
+C will be called.
 
-C ******************** MMACHK ********************
-C MMACHK returns the maximum, minimum, and average value of the 
-C requested metric.  The time of occurance of the maximum and minimum 
-C values is also returned.
-C In the case of integrated values (IROC=-1) DAVE is the total value.hours,
-C e.g. for a flux (W) the energy for the given period (Wh).
-C For IROC=0 or 1 the value DAVE is the average value for the period.
-C Memory is referenced if the data is held there otherwise MMACAL is 
-C called to calculate the values.
-C An exception is igetno 10, 32 are returned in kW. 
-
-      subroutine MMACHK(KGET,DMAX,DMIN,DAVE,DTOT,TMAX,TMIN)
+      SUBROUTINE GETSTATS(KGET,HAVEIT,DMAX,DMIN,DAVE,DTOT,TMAX,TMIN)
 #include "building.h"
 #include "geometry.h"
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
 
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
 
-      common/MMADAT/RDMAX(MCOM,3,MZRL),RDMIN(MCOM,3,MZRL),
-     &       RDAVE(MCOM,3,MZRL),RDTMAX(MCOM,3,MZRL),RDTMIN(MCOM,3,MZRL)
-      common/MMAFDAT/IFILT,RDFMAX(MCOM,3,MZRL),RDFMIN(MCOM,3,MZRL),
-     &    RDFAVE(MCOM,3,MZRL),RDTFMAX(MCOM,3,MZRL),RDTFMIN(MCOM,3,MZRL)
+      COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
+      COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
+      COMMON/HASH/IHASHT(MTS),IHASHZ(MCOM),IHASHD(365),IHASHS(MNRS)
 
-C If calculating a rate of change or integrating then always scan db.
-      if (IROC.ne.0) then
-        call MMACAL(KGET,DMAX,DMIN,DAVE,DTOT,TMAX,TMIN)
+      dimension DATA(MZRL),XD(MZRL)
+      character outs*124
+      integer metric ! based on IGETNO(KGET,1)
+      integer izone  ! based on IGETNO(KGET,2)
+      integer isurf  ! based on IGETNO(KGET,3)
+      integer inode  ! based on IGETNO(KGET,5)
+      integer iaggr  ! based on IGETNO(KGET,4)
+      logical haveit ! set true if we can do it
+
+C Set unit number.
+      IUNIT=IFIL
+
+C Clear returned values.
+      DMAX=-1.E+10; DMIN=1.E+10; DAVE=0.; DTOT=0.
+      TMAX=0.; TMIN=0.
+      IRJUMP = -1; ICJUMP = -1  ! offset state until specifically set
+
+C TSTART and TFINISH - start and finish times in hours from 0000 on the 
+C first day of output.
+      TSTART=FLOAT(IOH1)
+      TFINSH=FLOAT(((IODF)*24+IOH2)-(IODS)*24)
+
+C NDTS - the number of timesteps in a day.
+      NDTS=24*NTS
+
+C In general only save 2 3 4 handled here.
+      if(ISAVE.GT.1.AND.ISAVE.LE.4)then
+        continue
+      else
+        haveit=.false.
         return
       endif
 
-C Check to see if data held in memory if not then call calculation routine.
-      if (IGETNO(KGET,1).eq.1) then
-
-C IGETNO(KGET,1) =  1 Zone temperature
-        IZ=IGETNO(KGET,2)
-        if (IOCUPF.eq.1) then
-          DMAX=RDFMAX(IZ,1,1)
-          DMIN=RDFMIN(IZ,1,1)
-          DAVE=RDFAVE(IZ,1,1)
-          TMAX=RDTFMAX(IZ,1,1)
-          TMIN=RDTFMIN(IZ,1,1)
-        else
-          DMAX=RDMAX(IZ,1,1)
-          DMIN=RDMIN(IZ,1,1)
-          DAVE=RDAVE(IZ,1,1)
-          TMAX=RDTMAX(IZ,1,1)
-          TMIN=RDTMIN(IZ,1,1)
-        endif
-      elseif(IGETNO(KGET,1).eq.3)then
-
-C IGETNO(KGET,1) =  3 Control point temperature
-        IZ=IGETNO(KGET,2)
-        IC = NZSUR(IGETNO(KGET,2))+5
-        if (IOCUPF.eq.1) then
-          DMAX=RDFMAX(IZ,1,IC)
-          DMIN=RDFMIN(IZ,1,IC)
-          DAVE=RDFAVE(IZ,1,IC)
-          TMAX=RDTFMAX(IZ,1,IC)
-          TMIN=RDTFMIN(IZ,1,IC)
-        else
-          DMAX=RDMAX(IZ,1,IC)
-          DMIN=RDMIN(IZ,1,IC)
-          DAVE=RDAVE(IZ,1,IC)
-          TMAX=RDTMAX(IZ,1,IC)
-          TMIN=RDTMIN(IZ,1,IC)
-        endif
-      elseif(IGETNO(KGET,1).eq.4)then
-
-C IGETNO(KGET,1) =  4 Internal surface temperature
-        IZ=IGETNO(KGET,2)
-        IC = IGETNO(KGET,3)+2
-        if (IOCUPF.eq.1) then
-          DMAX=RDFMAX(IZ,1,IC)
-          DMIN=RDFMIN(IZ,1,IC)
-          DAVE=RDFAVE(IZ,1,IC)
-          TMAX=RDTFMAX(IZ,1,IC)
-          TMIN=RDTFMIN(IZ,1,IC)
-        else
-          DMAX=RDMAX(IZ,1,IC)
-          DMIN=RDMIN(IZ,1,IC)
-          DAVE=RDAVE(IZ,1,IC)
-          TMAX=RDTMAX(IZ,1,IC)
-          TMIN=RDTMIN(IZ,1,IC)
-        endif
-      elseif(IGETNO(KGET,1).eq.10)then
-
-C IGETNO(KGET,1) = 10 Total plant flux
-C Reporting of all plant fluxes in kW but data stored as W
-        IZ=IGETNO(KGET,2)
-        if (IOCUPF.eq.1) then
-          DMAX=RDFMAX(IZ,1,2)/1000.
-          DMIN=RDFMIN(IZ,1,2)/1000.
-          DAVE=RDFAVE(IZ,1,2)/1000.
-          TMAX=RDTFMAX(IZ,1,2)
-          TMIN=RDTFMIN(IZ,1,2)
-        else
-          DMAX=RDMAX(IZ,1,2)/1000.
-          DMIN=RDMIN(IZ,1,2)/1000.
-          DAVE=RDAVE(IZ,1,2)/1000.
-          TMAX=RDTMAX(IZ,1,2)
-          TMIN=RDTMIN(IZ,1,2)
-        endif
-      elseif(IGETNO(KGET,1).eq.11)then
-
-C IGETNO(KGET,1) = 11 Infiltration
-        IZ=IGETNO(KGET,2)
-        IC = NZSUR(IGETNO(KGET,2))+3
-        if (IOCUPF.eq.1) then
-          DMAX=RDFMAX(IZ,1,IC)
-          DMIN=RDFMIN(IZ,1,IC)
-          DAVE=RDFAVE(IZ,1,IC)
-          TMAX=RDTFMAX(IZ,1,IC)
-          TMIN=RDTFMIN(IZ,1,IC)
-        else
-          DMAX=RDMAX(IZ,1,IC)
-          DMIN=RDMIN(IZ,1,IC)
-          DAVE=RDAVE(IZ,1,IC)
-          TMAX=RDTMAX(IZ,1,IC)
-          TMIN=RDTMIN(IZ,1,IC)
-        endif
-      elseif(IGETNO(KGET,1).eq.12)then
-
-C IGETNO(KGET,1) = 12 Ventilation
-        IZ=IGETNO(KGET,2)
-        IC = NZSUR(IGETNO(KGET,2))+4
-        if (IOCUPF.eq.1) then
-          DMAX=RDFMAX(IZ,1,IC)
-          DMIN=RDFMIN(IZ,1,IC)
-          DAVE=RDFAVE(IZ,1,IC)
-          TMAX=RDTFMAX(IZ,1,IC)
-          TMIN=RDTFMIN(IZ,1,IC)
-        else
-          DMAX=RDMAX(IZ,1,IC)
-          DMIN=RDMIN(IZ,1,IC)
-          DAVE=RDAVE(IZ,1,IC)
-          TMAX=RDTMAX(IZ,1,IC)
-          TMIN=RDTMIN(IZ,1,IC)
-        endif
-      elseif(IGETNO(KGET,1).eq.13)then
-
-C IGETNO(KGET,1) = 13 Zone RH (%)
-        IZ=IGETNO(KGET,2)
-        IC = NZSUR(IGETNO(KGET,2))+3
-        if (IOCUPF.eq.1) then
-          DMAX=RDFMAX(IZ,3,IC)
-          DMIN=RDFMIN(IZ,3,IC)
-          DAVE=RDFAVE(IZ,3,IC)
-          TMAX=RDTFMAX(IZ,3,IC)
-          TMIN=RDTFMIN(IZ,3,IC)
-        else
-          DMAX=RDMAX(IZ,3,IC)
-          DMIN=RDMIN(IZ,3,IC)
-          DAVE=RDAVE(IZ,3,IC)
-          TMAX=RDTMAX(IZ,3,IC)
-          TMIN=RDTMIN(IZ,3,IC)
-        endif
-      elseif(IGETNO(KGET,1).eq.15)then
-
-C IGETNO(KGET,1) = 15 Casual gains. Total, convective, radiant or by
-C type.
-        iicrcg=IGETNO(KGET,3)
-        IZ=IGETNO(KGET,2)
-        if(iicrcg.eq.2)then       ! Total casual gain convective (W)
-          IC = NZSUR(IGETNO(KGET,2))+2
-          if (IOCUPF.eq.1) then
-            DMAX=RDFMAX(IZ,3,IC)
-            DMIN=RDFMIN(IZ,3,IC)
-            DAVE=RDFAVE(IZ,3,IC)
-            TMAX=RDTFMAX(IZ,3,IC)
-            TMIN=RDTFMIN(IZ,3,IC)
-          else
-            DMAX=RDMAX(IZ,3,IC)
-            DMIN=RDMIN(IZ,3,IC)
-            DAVE=RDAVE(IZ,3,IC)
-            TMAX=RDTMAX(IZ,3,IC)
-            TMIN=RDTMIN(IZ,3,IC)
-          endif
-        elseif(iicrcg.eq.3)then       ! Total casual gain radiant (W)
-          IC = NZSUR(IGETNO(KGET,2))+1
-          if (IOCUPF.eq.1) then
-            DMAX=RDFMAX(IZ,3,IC)
-            DMIN=RDFMIN(IZ,3,IC)
-            DAVE=RDFAVE(IZ,3,IC)
-            TMAX=RDTFMAX(IZ,3,IC)
-            TMIN=RDTFMIN(IZ,3,IC)
-          else
-            DMAX=RDMAX(IZ,3,IC)
-            DMIN=RDMIN(IZ,3,IC)
-            DAVE=RDAVE(IZ,3,IC)
-            TMAX=RDTMAX(IZ,3,IC)
-            TMIN=RDTMIN(IZ,3,IC)
-          endif
-        elseif(iicrcg.eq.8)then    ! Frac of ctld casual gain (%)
-          IC = NZSUR(IGETNO(KGET,2))+5
-          if (IOCUPF.eq.1) then
-            DMAX=RDFMAX(IZ,3,IC)*100.
-            DMIN=RDFMIN(IZ,3,IC)*100.
-            DAVE=RDFAVE(IZ,3,IC)*100.
-            TMAX=RDTFMAX(IZ,3,IC)
-            TMIN=RDTFMIN(IZ,3,IC)
-          else
-            DMAX=RDMAX(IZ,3,IC)*100.
-            DMIN=RDMIN(IZ,3,IC)*100.
-            DAVE=RDAVE(IZ,3,IC)*100.
-            TMAX=RDTMAX(IZ,3,IC)
-            TMIN=RDTMIN(IZ,3,IC)
-          endif
-        else
-          call MMACAL(KGET,DMAX,DMIN,DAVE,DTOT,TMAX,TMIN)
-        endif
-      elseif(IGETNO(KGET,1).eq.17)then
-
-C IGETNO(KGET,1) = 17 Solar absorbed on external surfaces
-        IZ=IGETNO(KGET,2)
-        IC = IGETNO(KGET,3)
-        if (IOCUPF.eq.1) then
-          DMAX=RDFMAX(IZ,3,IC)
-          DMIN=RDFMIN(IZ,3,IC)
-          DAVE=RDFAVE(IZ,3,IC)
-          TMAX=RDTFMAX(IZ,3,IC)
-          TMIN=RDTFMIN(IZ,3,IC)
-        else
-          DMAX=RDMAX(IZ,3,IC)
-          DMIN=RDMIN(IZ,3,IC)
-          DAVE=RDAVE(IZ,3,IC)
-          TMAX=RDTMAX(IZ,3,IC)
-          TMIN=RDTMIN(IZ,3,IC)
-        endif
-      elseif(IGETNO(KGET,1).eq.18)then
-
-C IGETNO(KGET,1) = 18 Solar absorbed on internal surfaces
-        IZ=IGETNO(KGET,2)
-        IC = IGETNO(KGET,3)+5
-        if (IOCUPF.eq.1) then
-          DMAX=RDFMAX(IZ,2,IC)
-          DMIN=RDFMIN(IZ,2,IC)
-          DAVE=RDFAVE(IZ,2,IC)
-          TMAX=RDTFMAX(IZ,2,IC)
-          TMIN=RDTFMIN(IZ,2,IC)
-        else
-          DMAX=RDMAX(IZ,2,IC)
-          DMIN=RDMIN(IZ,2,IC)
-          DAVE=RDAVE(IZ,2,IC)
-          TMAX=RDTMAX(IZ,2,IC)
-          TMIN=RDTMIN(IZ,2,IC)
-        endif
-      elseif(IGETNO(KGET,1).eq.27)then
-
-C IGETNO(KGET,1) = 27 Real electrical power consumption.
-        IZ=IGETNO(KGET,2)
-        IC = 3
-        if (IOCUPF.eq.1) then
-          DMAX=RDFMAX(IZ,2,IC)
-          DMIN=RDFMIN(IZ,2,IC)
-          DAVE=RDFAVE(IZ,2,IC)
-          TMAX=RDTFMAX(IZ,2,IC)
-          TMIN=RDTFMIN(IZ,2,IC)
-        else
-          DMAX=RDMAX(IZ,2,IC)
-          DMIN=RDMIN(IZ,2,IC)
-          DAVE=RDAVE(IZ,2,IC)
-          TMAX=RDTMAX(IZ,2,IC)
-          TMIN=RDTMIN(IZ,2,IC)
-        endif
-      elseif(IGETNO(KGET,1).eq.28)then
-
-C IGETNO(KGET,1) = 28 Reactive electrical power consumption.
-        IZ=IGETNO(KGET,2)
-        IC = 4
-        if (IOCUPF.eq.1) then
-          DMAX=RDFMAX(IZ,2,IC)
-          DMIN=RDFMIN(IZ,2,IC)
-          DAVE=RDFAVE(IZ,2,IC)
-          TMAX=RDTFMAX(IZ,2,IC)
-          TMIN=RDTFMIN(IZ,2,IC)
-        else
-          DMAX=RDMAX(IZ,2,IC)
-          DMIN=RDMIN(IZ,2,IC)
-          DAVE=RDAVE(IZ,2,IC)
-          TMAX=RDTMAX(IZ,2,IC)
-          TMIN=RDTMIN(IZ,2,IC)
-        endif
-      elseif(IGETNO(KGET,1).eq.32)then
-
-C IGETNO(KGET,1) = 32 All latent load 
-C Reporting of all plant fluxes in kW but data stored as W
-        IZ=IGETNO(KGET,2)
-        IC = NZSUR(IGETNO(KGET,2))+4
-        if (IOCUPF.eq.1) then
-          DMAX=RDFMAX(IZ,3,IC)/1000.
-          DMIN=RDFMIN(IZ,3,IC)/1000.
-          DAVE=RDFAVE(IZ,3,IC)/1000.
-          TMAX=RDTFMAX(IZ,3,IC)
-          TMIN=RDTFMIN(IZ,3,IC)
-        else
-          DMAX=RDMAX(IZ,3,IC)/1000.
-          DMIN=RDMIN(IZ,3,IC)/1000.
-          DAVE=RDAVE(IZ,3,IC)/1000.
-          TMAX=RDTMAX(IZ,3,IC)
-          TMIN=RDTMIN(IZ,3,IC)
-        endif
-      elseif(IGETNO(KGET,1).eq.38)then
-
-C IGET = 38 Solar entering zone from outside (W)
-        IZ=IGETNO(KGET,2)
-        if (IOCUPF.eq.1) then
-          DMAX=RDFMAX(IZ,2,1)
-          DMIN=RDFMIN(IZ,2,1)
-          DAVE=RDFAVE(IZ,2,1)
-          TMAX=RDTFMAX(IZ,2,1)
-          TMIN=RDTFMIN(IZ,2,1)
-        else
-          DMAX=RDMAX(IZ,2,1)
-          DMIN=RDMIN(IZ,2,1)
-          DAVE=RDAVE(IZ,2,1)
-          TMAX=RDTMAX(IZ,2,1)
-          TMIN=RDTMIN(IZ,2,1)
-        endif
-      elseif(IGETNO(KGET,1).eq.39)then
-
-C IGET = 39 Solar entering zone from adj zones (W)
-        IZ=IGETNO(KGET,2)
-        if (IOCUPF.eq.1) then
-          DMAX=RDFMAX(IZ,2,2)
-          DMIN=RDFMIN(IZ,2,2)
-          DAVE=RDFAVE(IZ,2,2)
-          TMAX=RDTFMAX(IZ,2,2)
-          TMIN=RDTFMIN(IZ,2,2)
-        else
-          DMAX=RDMAX(IZ,2,2)
-          DMIN=RDMIN(IZ,2,2)
-          DAVE=RDAVE(IZ,2,2)
-          TMAX=RDTMAX(IZ,2,2)
-          TMIN=RDTMIN(IZ,2,2)
-        endif
-      elseif(IGETNO(KGET,1).eq.40)then
-
-C IGET = 40 Solar absorbed in zone (W)
-        IZ=IGETNO(KGET,2)
-        if (IOCUPF.eq.1) then
-          DMAX=RDFMAX(IZ,2,5)
-          DMIN=RDFMIN(IZ,2,5)
-          DAVE=RDFAVE(IZ,2,5)
-          TMAX=RDTFMAX(IZ,2,5)
-          TMIN=RDTFMIN(IZ,2,5)
-        else
-          DMAX=RDMAX(IZ,2,5)
-          DMIN=RDMIN(IZ,2,5)
-          DAVE=RDAVE(IZ,2,5)
-          TMAX=RDTMAX(IZ,2,5)
-          TMIN=RDTMIN(IZ,2,5)
-        endif
-
-C If not included above must calculate.
-      else
-        call MMACAL(KGET,DMAX,DMIN,DAVE,DTOT,TMAX,TMIN)
+C If calculating a rate of change or integrating then use MMACAL.
+      if (IROC.ne.0) then
+        haveit=.false.
+        return
       endif
+
+
+C Depending on the metric set the column and row offsets for the
+C read.  If we can no deal with it continue and trap return if
+C ICJUMP is still -1.
+C << It may be possible to extend the logic to deal with more
+C << topics in the future.
+      metric=IGETNO(KGET,1)  ! remember the topic
+      izone =IGETNO(KGET,2)  ! remember the zone
+      isurf =IGETNO(KGET,3)  ! remember the surface (if applicable)
+      iaggr =IGETNO(KGET,4)  ! remember is separate one or aggregate two
+      inode =IGETNO(KGET,5)  ! remember the node (if applicable)
+      if(metric.eq.1)then
+        IRJUMP = 0; ICJUMP = 1  ! zone db temperature
+      elseif(metric.eq.2)then
+        continue                ! ambient temperature
+      elseif(metric.eq.3)then
+        IRJUMP = 0              ! Control point temperature GTMCON
+        if(ISAVE.GE.2.AND.ISAVE.LE.4) ICJUMP=NZSUR(IZONE)+5
+      elseif(metric.eq.4)then 
+        if(ISAVE.EQ.3.OR.ISAVE.EQ.4)then
+          IRJUMP = 0; ICJUMP = isurf+2 ! internal surface temperature
+        endif
+      elseif(metric.eq.5)then
+        if(ISAVE.EQ.3.OR.ISAVE.EQ.4)then  ! other side surface temp
+          IRJUMP = 3+(isurf-1); ICJUMP = 1
+        endif
+      elseif(metric.eq.6)then
+        continue              !  resultant temperature
+      elseif(metric.eq.7)then
+        if(ISAVE.EQ.3)then    !  node temperature (MLC)
+          IRJUMP = 3+(isurf-1); ICJUMP = inode
+        endif
+      elseif(metric.eq.8)then
+        if(iaggr.eq.1)then
+          IRJUMP = 0; ICJUMP=2  ! sensible heating load (non aggregate)
+        endif
+      elseif(metric.eq.9)then
+        if(iaggr.eq.1)then
+          IRJUMP = 0; ICJUMP=2  ! sensible cooling load (non aggregate)
+        endif
+      elseif(metric.eq.10)then
+        IRJUMP = 0; ICJUMP=2  ! total plant flux
+      elseif(metric.eq.11)then
+        IRJUMP = 0; ICJUMP = NZSUR(IZONE)+3 ! infiltration
+      elseif(metric.eq.12)then
+        IRJUMP = 0; ICJUMP = NZSUR(IZONE)+4 ! ventilation
+      elseif(metric.eq.13)then
+        IRJUMP = 2; ICJUMP = NZSUR(IZONE)+3 ! zone RH (%)
+      elseif(metric.eq.14)then
+        continue                ! zone dew point
+      elseif(metric.eq.15)then
+        continue                ! casual gains
+      elseif(metric.eq.16)then
+        continue                ! surface convection
+      elseif(metric.eq.17)then
+        IRJUMP = 2;  ICJUMP=isurf   ! solar absorbed on external surfaces
+      elseif(metric.eq.18)then
+        IRJUMP = 1; ICJUMP = isurf+5 ! solar absorbed on internal surfaces
+      elseif(metric.eq.19.or.metric.eq.20.or.metric.eq.21.or.
+     &       metric.eq.22)then
+        continue   ! direct solar diffuse solar window speed ambient rh 
+      elseif(metric.eq.23)then
+        continue   ! comfort
+      elseif(metric.eq.24)then
+        continue   ! mean radiant temperature
+      elseif(metric.eq.25)then
+        continue   ! surface flux 
+      elseif(metric.eq.26)then
+        continue   ! external lux level
+      elseif(metric.eq.27)then
+        IRJUMP = 1; ICJUMP = 3  ! real electrical power consumption
+      elseif(metric.eq.28)then
+        IRJUMP = 1; ICJUMP = 4  ! reactive electrical power consumption
+      elseif(metric.eq.29)then
+        continue  ! delta T zone - ambient
+      elseif(metric.eq.30)then  ! latent load (non aggregage dehumidification)
+        if(iaggr.eq.1)then
+          IRJUMP = 2; ICJUMP = NZSUR(IZONE)+4
+        endif
+      elseif(metric.eq.31)then  ! latent load (non aggregate humidification)
+        if(iaggr.eq.1)then
+          IRJUMP = 2; ICJUMP = NZSUR(IZONE)+4
+        endif
+      elseif(metric.eq.32)then  ! all latent load and convert to KW
+        IRJUMP = 2; ICJUMP = NZSUR(IZONE)+4
+      elseif(metric.eq.33)then
+        continue  ! sensible plus latent load
+      elseif(metric.eq.34)then
+        continue  ! wind direction
+      elseif(metric.eq.35)then
+        continue  ! delta T surf - dewpoint
+      elseif(metric.eq.36)then
+        continue  ! total conv @ non-exterior surface
+      elseif(metric.eq.37)then
+        continue  ! total conv @ outside
+      elseif(metric.eq.38)then
+        continue  ! solar entering zone from outside 
+      elseif(metric.eq.39)then
+        continue  ! solar entering zone from adj zones
+      elseif(metric.eq.40)then
+        continue  ! solar absorbed in zone
+      elseif(metric.eq.41)then
+        continue  ! db T - another zone db T
+      elseif(metric.eq.42.or.metric.eq.43.or.metric.eq.44.or.
+     &       metric.eq.45)then
+        continue  ! zone balance 
+      elseif(metric.eq.46)then
+        continue  ! renewables/advanced materials primary output
+      elseif(metric.eq.47)then
+        continue  ! renewables/advanced materials secondary output.
+      elseif(metric.eq.48)then
+        continue
+      elseif(metric.eq.49)then
+        continue
+      elseif(metric.eq.50)then
+        continue  ! local PPD: delta T head/ feet
+      elseif(metric.eq.51)then
+        continue  ! local PPD: floor T
+      elseif(metric.eq.52)then
+        continue  ! local PD: ceiling T
+      elseif(metric.eq.53)then
+        continue  ! local PD: assymetric dTrad
+      elseif(metric.eq.80)then
+        continue  ! zone measured db temperature
+      elseif(metric.eq.81)then
+        continue  ! surface measured db temperature
+      else
+      endif
+
+      if(ICJUMP.eq.-1.or.ICJUMP.eq.0)then
+        haveit=.false.
+        return  ! we can not deal with it here
+      else
+        haveit=.true.
+      endif
+      
+C For current zone loop days then minutes and average if required.
+C ICJUMP - number of zone data to read in the record to get to the
+C item we want.
+      NZI = NZSUR(IZONE)+12  ! width of actual data in 1st 3 records
+      NITMS=0
+      do 200 IDAY=IODS,IODF
+        do 300 ITS=1,NDTS,NOUT
+
+C Compute current time.
+C IHRD - number of days since start of plotting period in hours.
+C TIME - time in hours since start of first day plotted.
+C Add half a timestep to TIME if data averaged.
+          IHRD=(IDAY-IODS)*24
+          call DATIME(ITS,ATIME)
+          TIME=float(IHRD)+ATIME
+
+C Within requested output period.
+          IF(TIME.LT.(TSTART-1.0).or.TIME.GT.TFINSH)goto 300
+
+C Depending on the requested data type read the relevant data
+C fields (the minimum required).
+C Read first record and set values, make up potential error messages.
+          IREC=IHASHD(IDAY)+IHASHT(ITS)+IHASHZ(IZONE)+IHASHS(ISIM)+
+     &         IRJUMP
+          if(irec.eq.0) goto 999
+
+          READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=99)(DATA(K),K=1,ICJUMP)
+
+C Average over required time steps. E.g if there are 2 tsph then read
+C the subsequent records for the hour into XD and sum into DATA.
+          if (NOUT.gt.1) then
+            do 400 IV=2,NOUT
+              J=ITS+IV-1
+              IREC=IHASHD(IDAY)+IHASHT(J)+IHASHZ(IZONE)+IHASHS(ISIM)+
+     &             IRJUMP
+              if(irec.eq.0) goto 999
+
+C Read up to ICJUMP and sum data at icjumpet determined.
+              READ(IUNIT,REC=IREC,IOSTAT=IOS,ERR=98)(XD(K),K=1,ICJUMP)
+              DATA(ICJUMP)=DATA(ICJUMP)+XD(ICJUMP)
+ 400        CONTINUE
+          endif
+
+C If this is an item that needs to be filtered for positive values do it here.
+          if(metric.eq.8.or.metric.eq.31)then
+            if(DATA(ICJUMP).lt.0.) DATA(ICJUMP)=0.0
+          endif
+
+C If this item need to be filtered for negative values do it here.
+          if(metric.eq.9.or.metric.eq.30)then
+            if(DATA(ICJUMP).gt.0.) DATA(ICJUMP)=0.0
+          endif
+
+C Average filtered and non filtered data and compare to current
+C max/min values. If there is no occupancy filter is there any
+C nneed to call getocup??
+          ih=int(ATIME+1.)
+          ioc=1
+          if(iocupf.eq.1) call getocup(IZONE,IDAY,ih,ioc,ier)
+          if (NOUT.gt.1) DATA(ICJUMP)=DATA(ICJUMP)/float(NOUT)
+          if(ioc.ne.0) then
+            if (DATA(ICJUMP).gt.DMAX) then
+              DMAX=DATA(ICJUMP)
+              TMAX=TIME
+            endif
+            if (DATA(ICJUMP).lt.DMIN) then
+              DMIN=DATA(ICJUMP)
+              TMIN=TIME
+            endif
+            DAVE=DAVE+DATA(ICJUMP)
+            NITMS=NITMS+1    ! number of timesteps
+          endif
+ 300    CONTINUE
+ 200  CONTINUE
+ 
+C Remember totals.
+      DTOT=DAVE
+
+C Calculate average for period.
+      xNITMS=float(NITMS)
+      DAVE=DAVE/xNITMS
+ 
+C If items needs to be converted into KW do this here.
+      if(metric.eq.8.or.metric.eq.9.or.metric.eq.10.or.metric.eq.32)then
+        DMAX=DMAX/1000.; DMIN=DMIN/1000.; DAVE=DAVE/1000.
+        DTOT=DTOT/1000.
+      endif
+
+      return
+
+  99  if(IOS.eq.2)then
+        write(outs,'(a,4i6)') 
+     &    'getstats: no permission to scan data @ rec ',
+     &    IREC,NZI,IZONE,ISIM
+      else
+        write(outs,'(a,4i6)') 'getstats: scanning data @ rec ',
+     &    IREC,NZI,IZONE,ISIM
+      endif
+      call usrmsg(outs,' cannot continue results recovery.','F')
+      return
+
+  98  if(IOS.eq.2)then
+        write(outs,'(a,4i6)') 
+     &    'getstats: no permission to scan xd @ rec ',
+     &    IREC,NZI,IZONE,ISIM
+      else
+        write(outs,'(a,4i6)') 'getstats: scanning xd @ rec ',
+     &    IREC,NZI,IZONE,ISIM
+      endif
+      call usrmsg(outs,' cannot continue results recovery.','F')
+      return
+
+ 999  write(outs,'(a,4i6)') 
+     & 'getstats: record out of range (day? zone?) scanning xd @ rec ',
+     &  IREC,IDAY,IZONE,ISIM
+      call usrmsg(outs,' cannot continue results recovery.','W')
       return
       end
 
 C ******************** MMACAL ********************
-C MMACAL calculates the data not directly available in MMACHK.
+C MMACAL calculates the data for topics not processed via GETSTATS.
 C In the case of integrated values (IROC=-1) DTOT is the total value.hours,
 C e.g. for a flux (W) the energy for the given period (Wh).
 C For IROC=0 or 1 the value DAVE is the average value for the period.
@@ -5232,6 +5194,9 @@ C NDTS - the number of timesteps in a day.
       NDTS=24*NTS
       NITMS=0
       IZONE=IGETNO(KGET,2)
+
+C For each day in the period recover data to topic kget
+C and then for each timestep recover data in array XVAL.
       do 10 IDAY=IODS,IODF
         call GOGETIT(KGET,IDAY,1,NDTS)
         DO 421 J = 1,NDTS,NOUT
@@ -5242,7 +5207,8 @@ C Check for invalid use of comfort algorithms.
             if (XVAL(KGET).gt.100.0) goto 421
           endif
 
-C Calculate rate of change if flag set.
+C Calculate rate of change if IROC flag set to +1 and if
+C IROC is -1 then integrate the data.
           if (IROC.eq.1) then
             if (J.eq.1) then
 

@@ -777,7 +777,7 @@ C act='p' iget parameters already set.
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER PDESCR*60,SDESCR*44,t12*12
 
-      logical LARGE
+      logical LARGE,HAVEIT
 
 C If output to file alter the edisp unit number. Skip if in IPV mode.
       prompt = '  '
@@ -851,8 +851,19 @@ C starting Y are zone based.
       call usrmsg(prompt,' ','-')
 
 C First recover bounds of selected data and calculate distributed max, min.
+C If we can recover it efficiently use GETSTATS otherwise use MMACAL.
       do 40 IX=1,NGET
-        call MMACHK(IX,DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN)
+        call GETSTATS(IX,HAVEIT,DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN)
+        if(HAVEIT)then
+
+C Debug.
+C          write(6,*) 'get stats ',DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN
+        else
+          call MMACAL(IX,DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN)
+
+C Debug.
+C          write(6,*) 'get MMACAL ',DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN
+        endif
         YMAX(IX)=DMAX
         YMIN(IX)=DMIN
         YAVE(IX)=DAVE

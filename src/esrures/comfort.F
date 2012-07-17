@@ -169,7 +169,6 @@ C << revise for additional casual gain types >>
         endif
         iocuset=1
         call scnocup(iier)
-        if (iocut.ne.IFILT) call MMAPER
         IFILT=iocut
         return
       endif
@@ -321,7 +320,6 @@ C << revise for additional casual gain types >>
         endif
         call usrmsg(' ',' ','-')
         call scnocup(iier)
-        if (iocut.ne.IFILT) call MMAPER
         IFILT=iocut
       elseif(ino.eq.10)then
         goto 78

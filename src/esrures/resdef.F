@@ -640,7 +640,8 @@ C ******************** MOOPER
 C MOOPER allows user-definition of the output recovery
 C period, the output time-step increment and whether or
 C not the results should be averaged across the output
-C interval.
+C interval. It also decides whether a pre-scan of the
+C records to gather statistics is warranted.
 
 C Common block variables are:
 C IOD1, IOM1  - start day, month and hour numbers.
@@ -663,6 +664,9 @@ C               the output interval if NOUT > 1 (IAV=1 yes; IAV=0 no)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/DEFLT/IDEFLT
       COMMON/C6/INDCFG
+      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
@@ -673,8 +677,12 @@ C               the output interval if NOUT > 1 (IAV=1 yes; IAV=0 no)
       common/MMAFDAT/IFILT,RDFMAX(MCOM,3,MZRL),RDFMIN(MCOM,3,MZRL),
      &    RDFAVE(MCOM,3,MZRL),RDTFMAX(MCOM,3,MZRL),RDTFMIN(MCOM,3,MZRL)
 
+C Signal that pre-scan has been used.
+      logical didprescan
+      common/MMAPRE/didprescan
+
       character outs*124,PDESCR*60
-      logical ok,dok
+      logical ok,dok,doprescan
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -705,20 +713,23 @@ C casual gains (usually occupancy).
 C Only pre-scan library if there is a zone library involved.
         if(indcfg.eq.1.or.indcfg.eq.3)then
 
-C Calculate max, mins and averages of main results parameters.
-C Assume that occupancy filter will be set to cas type 1 for res lib scan.
-          iocut=1
-          IFILT=1
-          call usrmsg('Pre-scanning database... ','  ','-')
-          call scnocup(iier)
-          call MMAPER
+C This version disables the prescan.
+          didprescan=.false.  ! no pre-scan done
+          doprescan=.false.  ! in text mode skip prescan
 
-C Reset occupancy filter.
-          iocut=0
-          call scnocup(iier)
-          call usrmsg('Pre-scanning database...done. ','  ','P')
-          call usrmsg('  ','  ','-')
-          return
+          if(.NOT.doprescan)then
+            iocut=1  ! signal always occupied
+            IFILT=1
+            call usrmsg('Pre-scanning occupancy... ','  ','-')
+            call scnocup(iier)
+            iocut=0  ! signal not always occupied
+            call scnocup(iier)
+            call usrmsg('Pre-scanning occupancy...done. ','  ','P')
+            didprescan=.false.  ! no pre-scan done
+            return
+          endif
+        else
+          didprescan=.false.  ! no pre-scan done
         endif
       endif
 
@@ -757,13 +768,19 @@ C Output time-step increment ?
         endif
       endif
 
-C Calculate max, mins and averages of main results parameters if
-C there is a zone library.
+C Prescan occupancy patterns.
       if(indcfg.eq.1.or.indcfg.eq.3)then
-        call usrmsg('Rescanning database... ',' ','-')
-        call MMAPER
-        call usrmsg('Rescanning database...done.',' ','P')
-        call usrmsg('  ','  ','-')
+        if(MMOD.ne.8)then
+          iocut=1  ! signal always occupied
+          IFILT=1
+          call usrmsg('Pre-scanning occupancy... ','  ','-')
+          call scnocup(iier)
+          iocut=0  ! signal not always occupied
+          call scnocup(iier)
+          call usrmsg('Pre-scanning occupancy...done. ','  ','P')
+          didprescan=.false.  ! no pre-scan done
+          return
+        endif
       endif
 
       RETURN

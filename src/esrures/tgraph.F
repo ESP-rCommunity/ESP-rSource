@@ -194,6 +194,7 @@ C act='p' iget parameters already set.
       common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
+      logical HAVEIT   ! to signal data access via GETSTATS
 
       integer ireportunit ! zero is default one is W two is kW three Joules
       common/repunit/ireportunit
@@ -311,12 +312,21 @@ C The YMAX,MIN variables are for axis 1 through 5 max and min values.
  6    continue
       call usrmsg(prompt,'Scanning data for range of values...','-')
 
-C First recover bounds of selected data. MMACHK returns kW for DMAX and
+C First recover bounds of selected data. MMACAL returns kW for DMAX and
 C DMIN for the specific cases of IGETNO(IX,1) = 10 or 32.
       do 40 IX=1,NGET
         if (YAXSET(IGETNO(IX,8)).lt.2) then
-          call MMACHK(IX,DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN)
-C Debug          write(6,*) 'aft mmachk ',dmax,dmin,ymax(2),ymin(2)
+          call GETSTATS(IX,HAVEIT,DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN)
+          if(HAVEIT)then
+
+C Debug.
+C            write(6,*) 'get stats ',DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN
+          else
+            call MMACAL(IX,DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN)
+
+C Debug.
+C            write(6,*) 'get MMACAL ',DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN
+          endif
           YAXSET(IGETNO(IX,8))=1
 
 C Check for plant flux in kW, if so convert fluxes from W to kW
@@ -339,7 +349,7 @@ C based on value of ireportunit.
           endif
           YMAX(IGETNO(IX,8))=MAX(DMAX,YMAX(IGETNO(IX,8)))
           YMIN(IGETNO(IX,8))=MIN(DMIN,YMIN(IGETNO(IX,8)))
-C Debug          write(6,*) 'aft mmachk+ ',dmax,dmin,ymax(2),ymin(2)
+C Debug          write(6,*) 'aft mmacal+ ',dmax,dmin,ymax(2),ymin(2)
         endif
  40   continue
       call usrmsg(prompt,'Scanning data for range of values...done.',
