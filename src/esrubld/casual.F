@@ -319,7 +319,7 @@ C new day control period:
           IPOINT=0
           if (IT.GT.ICGCS(ICOMP).AND.IT.LE.ICGCF(ICOMP)) IPOINT=1
           if (IPOINT.NE.0) then
-            call INTLUM(ICOMP,FRAC)
+            call INTLUM(ICOMP,FRAC)  ! get the fraction of control
             CGCTL(ICOMP,2,ICGCTL(ICOMP))=FRAC
           endif
         endif
@@ -330,7 +330,7 @@ C Update SHOCC-calculated equipment loads.
 
 C Use data from one of three sources.
 C NB tdf and time step file should have electrical data added to the 
-C   definition.
+C definition.
       if(ICASUAL(icomp).ne.0)then
 
 C Data in temporal database (1 column of gains). Also
@@ -1101,19 +1101,20 @@ C sensor aloved in methods 1 and 2:
 
 C Calculate external horizontal unobstructed diffuse and direct
 C illuminance:
-        call LUMEFF(QDIF,QDIR,SALT,IDYP,skyeff,suneff)
-        esun=dir*suneff
-        esky=QDIF*skyeff
+      call LUMEFF(QDIF,QDIR,SALT,IDYP,skyeff,suneff)
+      esun=dir*suneff
+      esky=QDIF*skyeff
 
 C Loop through all lighting zones
       FRAC=0.
       DO 9 N=1,NLITZ(ICOMP)
-      ZFRAC(N)=0.
+        ZFRAC(N)=0.
+
+      IF(IDFST(ICOMP,N).EQ.3)THEN
 
 C If external sensor & surface (overload CGX) is exterior
 C calculate lux.  If CGY (overloaded)=1. then calculate
 C vertical unobstructed illum otherwise use horizontal illum.
-      IF(IDFST(ICOMP,N).EQ.3)THEN
         J=INT(CGX(ICOMP,N,1))
         IF(J.EQ.0)J=1
         CALL SURADJ(ICOMP,J,IES,T,IZC,ISC,ICN,CSTR)
@@ -1144,11 +1145,12 @@ C vertical unobstructed illum otherwise use horizontal illum.
           IF(IFT.EQ.1)call edisp(itu,
      &      '  not external surface, sensor not allowed!')
         ENDIF
+        
+      ELSEIF(IDFST(ICOMP,N).EQ.5)THEN
 
 C Daylight coefficient method. Test if there is any diffuse 
 C irradiation and if solar altitude is positive
 C number. If not set photo-cell values to zero:
-      ELSEIF(IDFST(ICOMP,N).EQ.5)THEN
         call eclose(QDIF,0.00,0.01,closea)
         if(SALT.LT.0.) closea=.true.
         if(closea) then
@@ -1306,11 +1308,12 @@ C Average illumination for this light zone (in case of more than one
 C sensor in lighting zone):
         zelum(N)=suma/float(NDF(ICOMP,N))
 
+      ELSEIF(IDFST(ICOMP,N).EQ.4)THEN
+
 C Time varying illuminances calculated by Radiance. Test if there
 C is any diffuse irradiation and if solar altitude is positive
 C number. Do not carry out lighting simulation if not, and if 
 C in pre-calculation period (via call to bInStartup):
-      ELSEIF(IDFST(ICOMP,N).EQ.4)THEN
         call eclose(QDIF,0.00,0.01,closea)
         instart=.false.
         if (bInStartup())then
@@ -1602,8 +1605,10 @@ C Close transfer file.
 
 C Average illumination for this light zone:
         zelum(N)=suma/float(NDF(ICOMP,N))
+
       ELSE
 
+C IDST is somthing other than 3/4/5.
 C Loop through each sensor point, calculate the illumination due
 C to each external window and summate.  Each window will
 C have a different solar contribution depending on whether or
@@ -1691,10 +1696,11 @@ C includes the maintinence factor.
      &                     F8.1,F7.1,F6.0)
                       call edisp(itu,outs)
                     endif
+                    
+                  ELSEIF((IES.EQ.3).AND.(IDFST(ICOMP,N).EQ.2 ))THEN
 
 C If user specified DF for internal window then calculate the
 C same way as for external, but do not check for sun dir illuminance:
-                  ELSEIF((IES.EQ.3).AND.(IDFST(ICOMP,N).EQ.2 ))THEN
                     suncon=0.
                     CALL DWINVT(ICOMP,J,V,RATIO)
                     skycon=esky*DFDAT(ICOMP,N,J,I)*V
@@ -2422,11 +2428,11 @@ C if ACTIVE=0. then no matching casual gain/occupants.
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
 
+      INTEGER NCAS,ICGS,ICGF,ICGT
+      REAL CMGS,CMGL,RADC,CONC
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
       COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT
-      REAL CMGS,CMGL,RADC,CONC
       COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
      & CGX(MCOM,MLCOM,MDF),CGY(MCOM,MLCOM,MDF),CGH(MCOM,MLCOM,MDF),
      & UX(MCOM,MLCOM,MDF),UY(MCOM,MLCOM,MDF),UH(MCOM,MLCOM,MDF),
