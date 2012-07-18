@@ -570,11 +570,17 @@ C System configuration file on channel IFIL+5.
       LCFGF='UNKNOWN'
       modeltitle='UNKNOWN'
 
-C Mass flow network, profiles, optical SBEM dbs on channel IFIL+6. 
+C Optical and rarely used common files on channel IFIL+6. 
       IOPTDB=IFIL+6
-      write(LOPTDB,'(a)') DOPTDB(1:lnblnk(DOPTDB))
-
       IPRODB=IFIL+6
+
+C Set optical, mould event profiles etc. to default file names.
+      write(LOPTDB,'(a)') DOPTDB(1:lnblnk(DOPTDB))
+      write(lfmould,'(a)') dmdbnam(1:lnblnk(dmdbnam))
+      write(LPRFDB,'(a)') DPRFDB(1:lnblnk(DPRFDB))
+      write(LPCDB,'(a)') DPCDB(1:lnblnk(DPCDB))
+      write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
+      write(LSBEM,'(a)')  DSBEM(1:lnblnk(DSBEM))  ! assign default SBEM db
 
 C Temporal information on channel IFIL+7.
       IUTDF=IFIL+7
@@ -582,15 +588,6 @@ C Temporal information on channel IFIL+7.
       write(LTDF,'(a)') 'UNKNOWN'
       write(LTDFA,'(a)') 'UNKNOWN'
       ITDFLG=0
-
-      write(LPRFDB,'(a)') DPRFDB(1:lnblnk(DPRFDB))
-
-      write(LPCDB,'(a)') DPCDB(1:lnblnk(DPCDB))
-
-C Special materials/miscel component database.
-      write(MCMPDBFL,'(a)') DMCMPDBFL(1:lnblnk(DMCMPDBFL))
-
-      write(LSBEM,'(a)')  DSBEM(1:lnblnk(DSBEM))  ! assign default SBEM db
 
 C Text/graphic feedback redirection on channel ifil +9 
       ixunit = ifil + 9
