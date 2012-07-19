@@ -2272,12 +2272,12 @@ C Search for matching constructions (similar to logic in serchrpl).
 
 C Remind user of surface attributes.
               WRITE(outs,93)
-   93         FORMAT('           Sur|  Area  |Azim|Elev| surface    |',
-     &               'geometry| multilayer  |environment')
+   93         FORMAT('          Surface|  Area  |Azim|Elev|geometry',
+     &               '| multilayer  |environment')
               call edisp(iuout,outs)
               WRITE(outs,94)
-   94         FORMAT('              |  m^2   |deg |deg | name       |',
-     &               'type|loc| constr name |other side ')
+   94         FORMAT('                 |  m^2   |deg |deg |type|loc',
+     &               '| constr name |other side ')
               call edisp(iuout,outs)
 
 C Loop through surfaces in the zone and report on which ones match.
@@ -2285,10 +2285,10 @@ C Loop through surfaces in the zone and report on which ones match.
                 icc=izstocn(ivals(iz),i)
                 if(SSMLCN(icc)(1:12).eq.DESC(ISEL)(1:12))then
                   write(sn,'(a)') SSNAME(icc)
-                  WRITE(outs,'(a7,I3,1X,F7.2,F5.0,F5.0,1X,A12,1X,A4,
-     &              1X,A4,1X,A12,1X,A13)')'Match: ',I,SSNA(icc),
-     &              SSPAZI(icc),SSPELV(icc),SN,SSOTF(icc)(1:4),
-     &              SSVFC(icc),SSMLCN(icc)(1:12),SSOTHER(icc,1)(1:13)
+                  WRITE(outs,'(2a,F7.2,F5.0,F5.0,1X,A,
+     &              1X,A,1X,A,1X,A)') 'Match: ',sn,SSNA(icc),
+     &              SSPAZI(icc),SSPELV(icc),SSOTF(icc)(1:4),
+     &              SSVFC(icc),SSMLCN(icc)(1:12),SSOTHER(icc,1)
                   call edisp(iuout,outs)
                   if(inpic+1.lt.99)then
                     write(outs,'(5a)') ' Include in anchor list ',
@@ -2939,18 +2939,21 @@ C Search and replace by finding matching constructions.
               LTMP=LGEOM(IVALS(IZ))
               call georead(IUF,LTMP,IVALS(IZ),1,iuout,IER)
 
+C Remind user of surface attributes.
               WRITE(outs,93)
               call edisp(iuout,outs)
               WRITE(outs,94)
               call edisp(iuout,outs)
+
+C Loop through surfaces in the zone and report on which ones match.
               do 91 i=1,nsur
                 icc=izstocn(ivals(iz),i)
                 if(SSMLCN(icc)(1:12).eq.DESC(ISEL)(1:12))then
                   write(sn,'(a)') SSNAME(icc)
-                  WRITE(outs,'(a7,I3,1X,F7.2,F5.0,F5.0,1X,A12,1X,A4,
-     &              1X,A4,1X,A12,1X,A13)')'Match: ',I,SSNA(icc),
-     &              SSPAZI(icc),SSPELV(icc),SN,SSOTF(icc)(1:4),
-     &              SSVFC(icc),SSMLCN(icc)(1:12),SSOTHER(icc,1)(1:13)
+                  WRITE(outs,'(2a,F7.2,F5.0,F5.0,1X,A,1X,A,
+     &              1X,A,1X,A)')'Match: ',sn,SSNA(icc),
+     &              SSPAZI(icc),SSPELV(icc),SSOTF(icc)(1:4),
+     &              SSVFC(icc),SSMLCN(icc)(1:12),SSOTHER(icc,1)
                   call edisp(iuout,outs)
                   write(outs,'(5a)') ' Apply construction to ',
      &              zn(1:lnblnk(zn)),':',sn(1:lnblnk(sn)),'?'
@@ -3123,12 +3126,12 @@ C << this is a place to update ssmlcindex >>
             call georead(IUF,LTMP,IVALS(IZ),1,iuout,IER)
 
             WRITE(outs,93)
-   93     FORMAT('           Sur|  Area  |Azim|Elev| surface    |',
-     &        'geometry| multilayer  |environment')
+   93       FORMAT('          Surface|  Area  |Azim|Elev|geometry',
+     &             '| multilayer  |environment')
             call edisp(iuout,outs)
             WRITE(outs,94)
-   94     FORMAT('              |  m^2   |deg |deg | name       |',
-     &        'type|loc| constr name |other side ')
+   94       FORMAT('                 |  m^2   |deg |deg |type|loc',
+     &             '| constr name |other side ')
             call edisp(iuout,outs)
             do 11 i=1,nsur
               icc=izstocn(ivals(iz),i)
