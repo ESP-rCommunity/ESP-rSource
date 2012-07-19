@@ -75,7 +75,6 @@ C default file names for databases
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/OUTPCH/ICOUT
       COMMON/DEFLT/IDEFLT
       COMMON/PSY1/PATMOS,IOPT
@@ -158,12 +157,12 @@ C IEEE callback (Solaris)
       logical     unixok,there
 
       CHARACTER ITEM(19)*23
-      CHARACTER*72 LCFGF,actf,Lflpar
+      CHARACTER*72 actf,Lflpar
       character inf*144,LCMDFL*144,outs248*248,xfile*144
       character outs*124,MODE*4,tg*1,delim*1
       character*72 LFCFG
       character path*72,spsname*8,paction*16
-      character cfgroot*24,fs*1,act*16,aut*12
+      character fs*1,act*16,aut*12
       character journcmd*20,jfile*72,uname*24,cjfile*72,OUTSTR*124
       character bact*4,pifltog*4,lpifl*72
       character graftitle*64,grlbl*24

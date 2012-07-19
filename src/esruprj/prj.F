@@ -82,7 +82,6 @@ C IEEE callback (Solaris)
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C6/INDCFG
-      common/C21/IFCFG,cfgroot,LCFGF
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/cctlnm/ctldoc,lctlf
@@ -153,12 +152,11 @@ C Name of current application
 
       character dstmp*24,uname*24
       character LUALF*72,LCNG*15,LLOC*15
-      character*72 LCFGF
       character LTMP*72
       character inf*144,inz*16,inzone*16,act*16,inact*16,LCMDFL*144
       character outs*124,outstr*124
 C      character outs248*248
-      character path*72,cfgroot*24,exemplar*144
+      character path*72,exemplar*144
       character LAPROB*72
       character ITEMS(27)*34
       character ltcmdfl*144
@@ -1453,7 +1451,6 @@ C to include the path and create a string to drive the modules.
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/appw/iappw,iappx,iappy
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/PREC7/ITCNST
       COMMON/C6/INDCFG
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
@@ -1491,8 +1488,8 @@ C level).
       character doit*248,tmode*8,ITEMS*34,key*1
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spflnam*72,longtfile*144,longtfiledos*144
-      CHARACTER*72 LAPROB,LCFGF,ENTFLNAM,lipvdatf
-      character cfgroot*24,cr*24,spfdescr*8,ipvaction*3
+      CHARACTER*72 LAPROB,ENTFLNAM,lipvdatf
+      character cr*24,spfdescr*8,ipvaction*3
 
 C dd is character array for selecting simulation parameter sets.
       character dd(MSPS+3)*33,de*8,aut*12
@@ -2357,7 +2354,6 @@ C to include the path and create a string to drive the modules.
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/appw/iappw,iappx,iappy
-      common/C21/IFCFG,cfgroot,LCFGF
       common/IPVF/lipvdatf
       common/exporttg/xfile,tg,delim
       
@@ -2377,8 +2373,8 @@ C level), isavgh = 0 save every timestep = 1 save hourly zone data.
       character doit*248,tmode*8,tfile*72
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,longtfile*144,longtfiledos*144
-      CHARACTER LCFGF*72,lipvdatf*72
-      character cfgroot*24,aut*12
+      CHARACTER lipvdatf*72
+      character aut*12
 
       dimension assmttag(MSPS),runtag(MSPS)
       character assmttag*8,runtag*16,brw*8
@@ -3923,12 +3919,11 @@ C << the latest version prior to running this facility.
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/user/browse
-      common/C21/IFCFG,cfgroot,LCFGF
 
       dimension items2(33)
-      CHARACTER*72 H,LCFGF
+      CHARACTER*72 H
       CHARACTER ITEMS2*36,APP*6
-      CHARACTER NBSTR*6,CFGROOT*24,OUTS*124
+      CHARACTER NBSTR*6,OUTS*124
       LOGICAL BROWSE,clkok
       integer MITEMS2,KNO ! max items and current menu item
 
@@ -4257,7 +4252,6 @@ C Path to model and command line file (if any).
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
       common/FILEP/IFIL
       common/IPVF/lipvdatf
       common/pophelp/h(60)
@@ -4280,10 +4274,9 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
 
       character*72 sblres,sflres,splres,smstres,sipvres,selres
       character CNTMFIL*72
-      CHARACTER*72 LIPVDATF,NNAME,H,LCFGF,msg1,MSG2,LCFD
+      CHARACTER*72 LIPVDATF,NNAME,H,msg1,MSG2,LCFD
       character ctldoc*248,lctlf*72
       CHARACTER*72 LAPROB
-      CHARACTER*24 cfgroot
       CHARACTER OUTSTR*124
       CHARACTER APE*6,EXT*4,OUTS*124,doit*248,tmode*8
       CHARACTER SALT*31,CNTMDESC*124

@@ -48,7 +48,6 @@ c AND THE CURRENTLY ASSIGNED CLIMATE FILE NAME ARE ALSO SAVED.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/HCFIX2/NHCFP(MCOM),HCFPST(MCOM,MBP),HCFPFT(MCOM,MBP),
      &HCFVI(MCOM,MS,MBP),HCFVE(MCOM,MS,MBP)
       COMMON/LIBREC/IRECPL
@@ -64,12 +63,11 @@ c AND THE CURRENTLY ASSIGNED CLIMATE FILE NAME ARE ALSO SAVED.
       COMMON/HCTHRY/IHCT,ICOREXHCT
 
       dimension izdum(MZS)
-      CHARACTER*72 LCFGF
       CHARACTER ZNPAD*15,outs248*248
 C      character doit*248
       character llclmdb*144  ! for expanded climate file name
       CHARACTER*6 NAME
-      character outs*124,tfile*72,cfgroot*24,longtfile*144
+      character outs*124,tfile*72,longtfile*144
       character fs*1
       logical concat,unixok
       integer lndbp  ! length of weather folder path
@@ -388,6 +386,7 @@ c save set.
 
       SUBROUTINE MZLS2
 #include "building.h"
+#include "model.h"
 #include "uncertainty.h"
       
       integer lnblnk  ! function definition
@@ -397,7 +396,6 @@ c save set.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
 
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       common/prec7/itcnst
@@ -456,7 +454,6 @@ C Simulator parameters.
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
       character LUALF*72,LCNG*15,LLOC*15
-      character LCFGF*72,cfgroot*24
 
 C scname is the first 12 characters of the overall control name.
       CHARACTER CTLDOC*248,LCTLF*72,RSNAME*40,outs*124,scname*12

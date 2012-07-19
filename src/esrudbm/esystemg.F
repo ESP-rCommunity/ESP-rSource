@@ -190,13 +190,6 @@ C buildingview viewfactor from external surfaces to other buildings & obstructio
 C NZSUR is the number of surfaces in each zone (from geometry.h).
 C NZTV is the number of vertices in each zone (from geometry.h).
 
-C IFCFG is the file unit for the model configuration file.
-C cfgroot (24 char) root name for the model (used when generating
-C   system files.
-C LCFGF (72 char) model configuration file name.
-      INTEGER :: IFCFG
-      common/C21/IFCFG,cfgroot,LCFGF
-
 C IFPNF is the unit for the plant network file.
 C LPNF (72 char) plant network file name.
       INTEGER :: IFPNF
@@ -470,7 +463,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       character GTGEOM*72,GTNAME*15
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
       character*10 wkday(7)
-      character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
+      character LUALF*72,LCNG*15,LLOC*15
       CHARACTER NDNAM*12
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8

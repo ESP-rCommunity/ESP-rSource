@@ -99,8 +99,6 @@ C Defaults and paths
       common/rpath/path
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
-      COMMON/C21/IFCFG,cfgroot,LCFGF
-
 C For exporting to file
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
@@ -133,7 +131,7 @@ C Name of current application
       DIMENSION ITEM(26) 
 
       CHARACTER BCFName*72,DBCFNam*72
-      CHARACTER ACOName*72,DACONam*72,LCFGF*72,cfgroot*24
+      CHARACTER ACOName*72,DACONam*72
       CHARACTER outs*210,ITEM*35,MODE*4
       CHARACTER inf*144,LCMDFL*144
       CHARACTER*72 path

@@ -1221,8 +1221,6 @@ C IPV description via ipvdata.h.
       common/cctl/icascf(mcom)
       integer icascf
 
-      common/C21/IFCFG,cfgroot,LCFGF
-
 C XMLMETRICS are the metrics that could be included in the input.xml
 C in case the flag: <dump_all_data> is false
       common/XMLDATA/XMLMETRICS(200),inumXMLmetrics
@@ -1240,11 +1238,9 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       integer inumXMLmetrics !counts for the number of xml metrics defined
-      character cfgroot*24
-      integer IFCFG
 
       CHARACTER OUTSTR*248,WORD*32,outs*124,outs2*124
-      character dstmp*24,LCFGF*72
+      character dstmp*24
       character word248*248
 
       character act*1  ! action requested.
@@ -2644,7 +2640,6 @@ C IPV description via ipvdata.h.
       integer icascf
       common/cctl/icascf(mcom)
 
-      common/C21/IFCFG,cfgroot,LCFGF
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -2662,10 +2657,8 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
      &       nsurfinso(MCOM),isurfinso(MCOM,MS)
 
       integer inumXMLmetrics !counts for the number of xml metrics defined
-      character cfgroot*24
-      integer IFCFG
 
-      CHARACTER outs*124,outsd*124,LCFGF*72
+      CHARACTER outs*124,outsd*124
       character dstmp*24
 
       character act*1      ! action requested.

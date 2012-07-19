@@ -72,7 +72,6 @@ C Path to model.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
 
 C Radiance based commons are explained in e2r_common.h.
 
@@ -90,9 +89,9 @@ C Name of current application
       character cAppName*12      
 
       CHARACTER outs*124,ITEM*30
-      CHARACTER inf*144,LCMDFL*144,LCFGF*72,L144*144
+      CHARACTER inf*144,LCMDFL*144,L144*144
       character tfile*72
-      character path*72,cfgroot*24
+      character path*72
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
       character OUTSTR*124
       character ltmp72*72,dtmp72*72,ltmp*72,dtmp96*96
@@ -1161,7 +1160,6 @@ C Path to model.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/GTFIL/GTGEOM
 
       LOGICAL MODIFY,MODLEN,MODBND
@@ -1172,8 +1170,8 @@ C Path to model.
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
-      character path*72,cfgroot*24,GTGEOM*72
-      CHARACTER LCMDFL*144,LCFGF*72
+      character path*72,GTGEOM*72
+      CHARACTER LCMDFL*144
       character outs*124,fs*1,tldir*72,MODE*4
 
       LOGICAL unixok

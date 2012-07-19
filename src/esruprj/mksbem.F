@@ -90,10 +90,6 @@ C MMGFUN controls all UK NCM related tasks
       CHARACTER*72 HVACFILE
       COMMON/HVACINFO/IHVACFLAG,HVACFILE
 
-      INTEGER IFCFG
-      CHARACTER CFGROOT*24,LCFGF*72
-      COMMON/C21/IFCFG,CFGROOT,LCFGF
-
       COMMON/SPFLDAT/NSSET,ISSET,ISSTUP,ISBNSTEP,ISPNSTEP,ISSAVE,ISAVGH
       COMMON/SPFLPER/ISSTDAY(MSPS),ISSTMON(MSPS),ISFNDAY(MSPS),
      &               ISFNMON(MSPS)
@@ -572,14 +568,13 @@ C #include "espriou.h"
       common/OUTIN/IUOUT,IUIN
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
 
       character D24*24
 
       DIMENSION ITEMS(33),ITEMX(15),KSYS(MHT),ITEMH(MCOM+4)
       DIMENSION KSTR(10),HSYSNM(MCOM+1),JSTR(8),LSYS(10)
       DIMENSION ITEMZ(MREN+5),LSTR(10)
-      character cfgroot*24,LCFGF*72,NNAME*72
+      character NNAME*72
       character outs*124,messg*42
       character ITEMS*50,D64*64,ITEMX*50,ITEMH*70
       CHARACTER HSYSNM*70,TMPSTR*64
@@ -3434,8 +3429,6 @@ C required models ') which returned iuact=1.
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C21/IFCFG,cfgroot,LCFGF
-      INTEGER :: IFCFG
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -3474,7 +3467,7 @@ C Where ESP-r was installed (as recorded when it was compiled).
       CHARACTER OUTSTR*124
 
       CHARACTER ACT*1,ADF*124
-      character cfgroot*24,LCFGF*72,NNAME*72
+      character NNAME*72
       character fs*1,msgl2*48,tab*1
       character outs*124,GUESS*24
 
@@ -4168,8 +4161,6 @@ C to a zone changes (but nothing else does).
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C21/IFCFG,cfgroot,LCFGF
-      INTEGER :: IFCFG
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -4208,7 +4199,7 @@ C Where ESP-r was installed (as recorded when it was compiled).
       CHARACTER OUTSTR*124
 
       CHARACTER ACT*1,ADF*124
-      character cfgroot*24,LCFGF*72,NNAME*72
+      character NNAME*72
       character fs*1,msgl2*48,tab*1
       character outs*124,GUESS*24
 
@@ -4783,7 +4774,6 @@ C This routine assumes newer geometry files are being used.
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
-      common/C21/IFCFG,cfgroot,LCFGF
       INTEGER :: IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -4792,8 +4782,7 @@ C This routine assumes newer geometry files are being used.
       CHARACTER*1 ACT
       character EXT*4    ! up to 4 characters in file extension
       character APE*6    ! up to 6 characters in variant name
-      CHARACTER CFGROOT*24
-      CHARACTER LCFGF*72,NNAME*72
+      CHARACTER NNAME*72
       CHARACTER OUTS*124,ADF*124,SNM*12,USE*8,USE2*8
       character SN*12,msg*42
       CHARACTER*12 XJCCU,XKCCU
@@ -6206,13 +6195,11 @@ C The setup part of creating notional model.
       common/OUTIN/IUOUT,IUIN
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
 
       character EXT*4    ! up to 4 characters in file extension
       character APE*6    ! up to 6 characters in variant name
       CHARACTER ACT*1
-      CHARACTER CFGROOT*24
-      CHARACTER LCFGF*72,NNAME*72
+      CHARACTER NNAME*72
       CHARACTER OUTS*124
       character msg*42
       logical ok,dok
@@ -6531,7 +6518,6 @@ C << assumes that the cfg and cnn have already been setup. >>
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
-      common/C21/IFCFG,cfgroot,LCFGF
       INTEGER :: IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -6540,8 +6526,7 @@ C << assumes that the cfg and cnn have already been setup. >>
       CHARACTER*1 ACT
       character EXT*4    ! up to 4 characters in file extension
       character APE*6    ! up to 6 characters in variant name
-      CHARACTER CFGROOT*24
-      CHARACTER LCFGF*72,NNAME*72
+      CHARACTER NNAME*72
       CHARACTER OUTS*124,ADF*124,SNM*12,USE*8,USE2*8
       character SN*12,SPN*12,msg*42
       CHARACTER*12 XJCCU,XKCCU
@@ -7820,9 +7805,7 @@ C makes a new model representative of the reference building.
 #include "sbem.h"
 #include "model.h"
 
-      common/C21/IFCFG,cfgroot,LCFGF
-      CHARACTER CFGROOT*24,LCFGF*72
-      INTEGER IFCFG,IER,LNBLNK,lns
+      INTEGER IER,LNBLNK,lns
 
 C Initialise
       IER=0
@@ -7861,10 +7844,6 @@ C Changes to the model are then made.
 
       common/FILEP/IFIL
       integer ifil
-
-      common/C21/IFCFG,cfgroot,LCFGF
-      CHARACTER CFGROOT*24,LCFGF*72
-      INTEGER IFCFG
 
       integer ncomp,ncon
       common/C1/NCOMP,NCON
@@ -8031,10 +8010,7 @@ C building as described in SBEM - EPBD documents
       IMPLICIT NONE
 #include "sbem.h"
 #include "building.h"
-      COMMON/C21/IFCFG,CFGROOT,LCFGF
-      INTEGER IFCFG
-      CHARACTER CFGROOT*24,LCFGF*72
-
+#include "model.h"
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
 
@@ -8144,6 +8120,7 @@ C IMODE = 4 -> Typical model
       IMPLICIT NONE
 #include "sbem.h"
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "espriou.h"
       integer lnblnk  ! function definition
@@ -8156,10 +8133,6 @@ C IMODE = 4 -> Typical model
 
       INTEGER NCOMP,NCON
       common/C1/NCOMP,NCON
-
-      COMMON/C21/IFCFG,CFGROOT,LCFGF
-      INTEGER IFCFG
-      CHARACTER CFGROOT*24,LCFGF*72
 
       INTEGER IUR,ND,ISTAT,K,LTW2,ICDHW,IER,IMODE,
      & ICHT,ICCL,ICLT,ICAUX,LZNL,IM,Istart,Ifinish,INDX,icomp
@@ -10154,7 +10127,6 @@ C It finally generate BRUKL input document and other SBEM reports.
 
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -10178,7 +10150,7 @@ C Build variable (These should eventually be placed in build_info.h)
 C      character cURL*256       ! Repository URL commented out in build_info.h
 
       CHARACTER BRUKFL*72
-      CHARACTER CFGROOT*24,LCFGF*72,MODE*4
+      CHARACTER MODE*4
       CHARACTER TMPSTR*24,TMPSTR2*70
       character delim*1,louts*248,outs*124,TEMP1*42
       LOGICAL CONTEXT,BNDRY,ISNEAR,ISNEAR2,ISNEAR3
@@ -11297,10 +11269,6 @@ C Subroutine EPCCAL generates the UK Energy Performance input file.
       integer ncomp,ncon
       common/C1/NCOMP,NCON
 
-      CHARACTER CFGROOT*24,LCFGF*72,MODE*4
-      integer ifcfg
-      common/C21/IFCFG,cfgroot,LCFGF
-
       common/rpath/path
       character DOIT*248
       character limgpth*24,ldocpth*24,lcfgroot*24,lpath*72
@@ -11311,7 +11279,7 @@ C Subroutine EPCCAL generates the UK Energy Performance input file.
       LOGICAL UNIXOK
 
       CHARACTER EPCFL*72
-      CHARACTER TMPSTR2*70
+      CHARACTER TMPSTR2*70,MODE*4
       character delim*1,louts*248
       LOGICAL ISNEAR,ISNEAR2,ISNEAR3
       integer iactFlarea

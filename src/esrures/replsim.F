@@ -46,15 +46,14 @@ C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
       common/rpath/path
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/CCTLNM/CTLDOC,LCTLF
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       common/recver/izver,ipver,iever
 
-      CHARACTER*72 LCFGF,path
+      CHARACTER*72 path
       character longtmp*144
       CHARACTER MODE*4,OUTSTR*124,LCTLF*72,CTLDOC*248
-      character cfgroot*24,outs*124
+      character outs*124
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST,ok,dok
 
 C For help messages

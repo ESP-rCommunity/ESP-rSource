@@ -79,8 +79,6 @@ C Function definition
       common/C1/NCOMP,NCON
       INTEGER :: indcfg
       common/C6/INDCFG
-      INTEGER :: ifcfg
-      common/C21/IFCFG,cfgroot,LCFGF
       INTEGER :: IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -147,17 +145,17 @@ C Uncertainty.
       integer iglib   ! to test for X11 interface
 
       dimension ITEMS(30)
-      character LUALF*72,LCNG*15,LLOC*15,cfgroot*24
+      character LUALF*72,LCNG*15,LLOC*15
       character*72 LAPROB,DFILE,LPNF,tfile
       character longtfile*144,longtfiledos*144
-      character LCFGF*72,ITEMS*34,ETEXT*82
+      character ITEMS*34,ETEXT*82
       character NDNAM*12,LFIL*72
       character*72 DCNN,ltmp
       character tmode*8,doit*248
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,entflnam*72
       character DEPRE*40,dstmp*24,tab*1,outsn*124,outsd*124
-      character CXITM*43,outs*124,fs*1
+      character CXITM*48,outs*124,fs*1
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM,ICONDBFL
       character ATRTAG*12,ATRMENU*32,ATRICN*12,NWKTYPSTR*12
       character ddtagatr*12,ddmenuatr*32,ddatrib*12
@@ -1247,7 +1245,6 @@ C output, IER=0 indicates no error.
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C21/IFCFG,cfgroot,LCFGF
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -1305,11 +1302,11 @@ C Flag noting whether casual gain periods are currently sorted.
 
       character*72 CFILE,DFILE,LTMP,LCFD
       character*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST
-      character LCFGF*72,SFIL*72
+      character SFIL*72
       CHARACTER jsmlcn*32,jsvfc*4,jsotf*32,jsother*24,jsname*12
       character jsparent*12,jsuse*8
       character doit*248,tmode*8,DSFIL*72,ZN*12
-      character outs*124,outs248*248,cfgroot*24
+      character outs*124,outs248*248
       character ctldoc*248,LCTLF*72,lctmp*72,longtfile*144
       character HOLD*32,zd*64
       character lworking*144
@@ -3290,7 +3287,6 @@ C espriou.h for parameter MFFOLD
      
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/rpath/path
@@ -3320,7 +3316,7 @@ C Defaults.
       character*32 WORDS(12)
 
       character path*72,LCMDFL*144,LTMP*144,GTGEOM*72
-      character MODE*4,LCFGF*72,cfgroot*24,fs*1,outs*124
+      character MODE*4,fs*1,outs*124
       character OUTSTR*124,ctldoc*248,LCTLF*72,t96*96,t144*144,ETEXT*82
       character sfile*144,odir*84,subpath*84
       character action*3,GTNAME*15
@@ -4058,14 +4054,13 @@ C << it would be clearer if all model I/O happened there >>
 
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
-      common/C21/IFCFG,cfgroot,LCFGF
       common/appw/iappw,iappx,iappy
       common/user/browse
       character path*72
       common/rpath/path
       logical concat,OK,DOK,browse,XST,deref,unixok
-      character dradcf*72,LCFGF*72,OUTSTR*124,outs*124,outs248*248
-      character dvfil*72,cfgroot*24,ltmp*72
+      character dradcf*72,OUTSTR*124,outs*124,outs248*248
+      character dvfil*72,ltmp*72
       character doit*144,tmode*8,act*1
       character fs*1
       character longtfile*144,longtfiledos*144,L144*144,lltmp*144

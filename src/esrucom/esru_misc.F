@@ -125,8 +125,6 @@ C HOT3000: BASESIMP.
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
-      common/C21/IFCFG,cfgroot,LCFGF
-      INTEGER :: ifcfg
       COMMON/C23/IFPNF,LPNF
       INTEGER :: ifpnf
       common/cctl/icascf(mcom)
@@ -266,7 +264,6 @@ C door width and height.
       character*10 wkd1, wkd2
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
-      character cfgroot*24,LCFGF*72
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
      

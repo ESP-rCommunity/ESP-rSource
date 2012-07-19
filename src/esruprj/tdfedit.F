@@ -48,9 +48,6 @@ C CREATE,PREV,NEXT,EDIT,LIST,NONE
       common/tdaid/tdaide(2)
       COMMON/GDPER/igbdoy,igedoy
 
-      character cfgroot*24,LCFGF*72
-      common/C21/IFCFG,cfgroot,LCFGF
-
 C Related to inport and export files.
       CHARACTER LIMP*96,LEXP*96
       COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP

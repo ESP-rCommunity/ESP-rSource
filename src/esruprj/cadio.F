@@ -37,7 +37,6 @@ C exportcad: controls model export facilities.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
 
-      common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/appw/iappw,iappx,iappy
       common/user/browse
@@ -52,9 +51,9 @@ C exportcad: controls model export facilities.
 
       DIMENSION ITEMS1(10)
 
-      character LFIL*72,path*72,LCFGF*72
+      character LFIL*72,path*72
       character ITEMS1*34,doit*248,outs*124,outs248*248
-      character cfgroot*24,tmode*12
+      character tmode*12
       character xfile*144,tg*1,delim*1,ffile*72,dvfil*72
       character ETEXT*82
       character longtfile*144,longtfiledos*144,L144*144,lltmp*144
@@ -525,6 +524,8 @@ C CADIN drives the conversion of CAD input into data model.
 C used by the Project Manager.
 C Parameter ichoice is currently not used.
       subroutine cadin(itrc,ichoice,ier)
+#include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
@@ -535,8 +536,6 @@ C Parameter ichoice is currently not used.
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
-      INTEGER :: IFCFG
       common/rcmd/LCMDFL
 
 C Indicator of possible focus zone.
@@ -548,8 +547,8 @@ C External cad package.
       LOGICAL     OK,DOK,concat,browse,typez,confirm,ckpath,unixok
       logical itisanexemplar  ! passed to newprb to ensure correct browse mode.
 
-      character LCFGF*72,LFIL*72,LCMDFL*144
-      character outs*124,OUTSTR*124,cfgroot*24,doit*248
+      character LFIL*72,LCMDFL*144
+      character outs*124,OUTSTR*124,doit*248
       character cadlbl*20,cadexe*20,cadfmt*4
       character longtfile*144,longtfiledos*144
 
@@ -1481,8 +1480,6 @@ C ICLIM,LCLIM (for climate file)
       COMMON/C1/NCOMP,NCON
       COMMON/C6/INDCFG
       INTEGER :: INDCFG
-      common/C21/IFCFG,cfgroot,LCFGF
-      INTEGER :: ifcfg
       COMMON/C23/IFPNF,LPNF
       INTEGER :: IFPNF
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
@@ -1528,14 +1525,14 @@ C ICLIM,LCLIM (for climate file)
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
       INTEGER :: ibsimp
 
-      character LUALF*72,LCNG*15,LLOC*15,LCFGF*72
+      character LUALF*72,LCNG*15,LLOC*15
       character LPNF*72,LMOIST*72
       character*72 LCFD
       character LCMDFL*144,LFIL*72
       
 C The string buffer doit and option used for tar command.
       character doit*248,option*4
-      character path*72,cfgroot*24
+      character path*72
       character curdir*84
       character LAPROB*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP

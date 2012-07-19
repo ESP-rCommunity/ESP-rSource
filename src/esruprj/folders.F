@@ -51,7 +51,6 @@ C espriou.h provides currentfile and MFFOLD.
       common/C1/NCOMP,NCON
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/C6/INDCFG
-      common/C21/IFCFG,cfgroot,LCFGF
       common/PREC8/SLAT,SLON
       common/rpath/path
       common/rcmd/LCMDFL
@@ -88,7 +87,6 @@ C Passed in parameters.
       character*72 LTMP
       character path*72,LCMDFL*144,LPNF*72
       character odir*84,pwd*84
-      character LCFGF*72,cfgroot*24
       character doit*248,longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20
       character uname*24,tmode*8
@@ -782,7 +780,6 @@ C geometry.h provides commons G0 and G2.
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       
-      common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
 
 C External text editor.
@@ -795,7 +792,6 @@ C External text editor.
       logical concat,unixok,changedit,browse
 
       character*72 path,LFIL,odir
-      character LCFGF*72,cfgroot*24
       character doit*248,sfile*72,snpfile*72
       character longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20

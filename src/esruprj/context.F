@@ -56,7 +56,6 @@ C ITRU unit number for user output, IER=0 indicates no error.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/PREC8/SLAT,SLON
 
-      common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
 
 C IPV description via ipvdata.h. If within cfg file then the file
@@ -102,7 +101,6 @@ C ITEMS is menu for site/context items.
       character*35 ITEMS(29)
       character*72 GTGEOM
       character lipvdatf*72,outs*124,ltmp*72
-      character cfgroot*24,LCFGF*72
       character act*1,GTNAME*15
       character ipvact*3  ! to denote whether in cfd file or external
 
@@ -777,15 +775,15 @@ C Roaming manages data associated with rotating a model as a
 C function of time. Important variables are defined in roam.h
       SUBROUTINE ROAMING
 #include "building.h"
+#include "model.h"
 #include "roam.h"
       
       integer lnblnk  ! function definition
 
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/OUTIN/IUOUT,IUIN
 
-      CHARACTER*72 DFLTNAME,LCFGF,OUTS
-      CHARACTER CFGROOT*24,TEMPSTR*30
+      CHARACTER*72 DFLTNAME,OUTS
+      CHARACTER TEMPSTR*30
       INTEGER IOK
       LOGICAL OK,DOK
 
@@ -1117,7 +1115,6 @@ C temporal data to be associated with a model.
 
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
-      common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
      
 C TDF related.
@@ -1130,7 +1127,6 @@ C TDF related.
       logical FOUND,XST
 
       character outs*124,ltmp*72,hold*40
-      character cfgroot*24,LCFGF*72
       character fs*1,msgl2*48
       character*72 DLTDF
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
@@ -3347,14 +3343,12 @@ C EDDSHD Sets up shading and insolation files
 #include "model.h"
 #include "geometry.h"
 
-      common/C21/IFCFG,cfgroot,LCFGF
       common/OUTIN/IUOUT,IUIN
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      character LCFGF*72
-      character outs*248,CFGROOT*24
+      character outs*248
       logical XST,OK,DOK,unixok
 
 C For help messages

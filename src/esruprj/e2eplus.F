@@ -53,7 +53,6 @@ C ICLIM,LCLIM (for climate file)
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
 
-      common/C21/IFCFG,cfgroot,LCFGF
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
@@ -108,8 +107,7 @@ C Simulation parameter presets.
 
       character GDESCR*36
       CHARACTER NAM*72,outs*124
-      character CLMLOC*30,LCFGF*72
-      character cfgroot*24
+      character CLMLOC*30
       character ctldoc*248,LCTLF*72
       character ZSDES*28,ZSDESC*20,ZSDESS*16,mlcname*12
       character dstmp*24

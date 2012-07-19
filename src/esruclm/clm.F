@@ -53,7 +53,6 @@ C seasons.h provides typper and typsea
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RADTYP/IDNGH
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/DAYSF/KDS,KDF
 
@@ -95,7 +94,6 @@ C Name of current application
       character path*72,xfile*144,tg*1,delim*1
       character tab*1,fs*1,OUTSTR*124
       character journcmd*20,jfile*72,uname*24,cjfile*72
-      character cfgroot*24,LCFGF*72
       character blank*2   ! string for edisp of blank line
 
       character cVnum*16      ! returned from ESPrVersionNum

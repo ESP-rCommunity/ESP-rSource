@@ -55,7 +55,6 @@ C LPRFDB,IPRODB (for event profile database)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW3/NDFLD(MNOD),NDTYP(MNOD),HNOD(MNOD),SUPNOD(MNOD,MNDS)
@@ -68,9 +67,8 @@ C LPRFDB,IPRODB (for event profile database)
      &  smstres(MSPS),selres(MSPS),sipvres
 
       CHARACTER*33 ITEM1(24)
-      CHARACTER LAPROB*72,LCFGF*72
+      CHARACTER LAPROB*72
       CHARACTER LTMP*72,outs*124,outstr*124
-      character cfgroot*24
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,NDNAM*12,fs*1
       LOGICAL OK,dok,found,XST,clkok,browse,unixok

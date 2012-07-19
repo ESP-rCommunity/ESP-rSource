@@ -32,6 +32,7 @@ C             the model.
 C ***************** UNCERTA *********************
       subroutine UNCERTA(LUALF)
 #include "building.h"
+#include "model.h"
 #include "uncertainty.h"
       
       integer lnblnk  ! function definition
@@ -39,7 +40,6 @@ C ***************** UNCERTA *********************
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
 
-      common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
 
       COMMON/UA2/NILOC,NZG(MNIL),NZNOG(MNIL,MCOM),NSG(MNIL,MCOM),
@@ -50,7 +50,6 @@ C ***************** UNCERTA *********************
       CHARACTER*33 ITEM(11)
       character path*72,LUALF*72
       CHARACTER LTEMP*72,DTEMP*72,outs*124
-      character cfgroot*24,LCFGF*72
       integer NITMS,INO ! max items and current menu item
 
       LOGICAL LIBXST

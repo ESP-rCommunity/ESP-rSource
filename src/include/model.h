@@ -11,6 +11,11 @@ C Configuration file information.
                      ! version 4 current version from May 2008
       common/CFGV/icfgv
 
+      integer ifcfg         ! file unit for model configuration file
+      character cfgroot*24  ! root name of the model used to generate file names
+      character LCFGF*72    ! model configuration file
+      COMMON/C21/IFCFG,cfgroot,LCFGF
+
 C The title and summary of the model
       character modeltitle*72  ! title of the model (to replace LSNAM)
       character modeldocblock*248   ! text block of documentation for model

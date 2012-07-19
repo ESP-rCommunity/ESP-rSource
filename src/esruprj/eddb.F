@@ -58,9 +58,6 @@ C default file names for standard files
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      character cfgroot*24,LCFGF*72
-      common/C21/IFCFG,cfgroot,LCFGF
-
       common/rpath/path
       common/user/browse
 
@@ -742,7 +739,6 @@ C     if blank then no file name change implied.
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
 
-      common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
 
 C Default ESP-r distribution path.
@@ -765,7 +761,6 @@ C Default ESP-r distribution path.
       CHARACTER APP*4
 C      CHARACTER outs248*248
       LOGICAL OK,XST,DOK,concat
-      character cfgroot*24,LCFGF*72
       character dinstpath*60,path*72
 
 C Local strings for user selections dependent on graphic library.
@@ -1432,7 +1427,6 @@ C     if blank then no file name change implied.
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      common/C21/IFCFG,cfgroot,LCFGF
       common/appw/iappw,iappx,iappy
       common/rpath/path
       common/deflt4/dinstpath
@@ -1444,7 +1438,6 @@ C     if blank then no file name change implied.
       CHARACTER OUTS*124,APP*4
 C      CHARACTER outs248*248
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
-      character cfgroot*24,LCFGF*72
       character dinstpath*60,path*72,tmode*8
       character dirpath*72
 
@@ -1930,7 +1923,6 @@ C << introduce concept of types of profiles
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
-      common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/deflt4/dinstpath
 
@@ -1941,7 +1933,6 @@ C << introduce concept of types of profiles
       CHARACTER OUTS*124
       CHARACTER OUTS248*248
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
-      character cfgroot*24,LCFGF*72
       character dinstpath*60,path*72,dirpath*72
 
 C Local strings for user selections dependent on graphic library.
@@ -2287,7 +2278,6 @@ C warn the user when attempting to update that file.
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
 
 C Default esp-r distribution path.
@@ -2303,7 +2293,6 @@ C Default esp-r distribution path.
       CHARACTER fs*1,APP*4
 C      CHARACTER outs248*248
       LOGICAL OK,XST,DOK
-      character cfgroot*24,LCFGF*72
       character dinstpath*60,path*72,dirpath*72
 
 C Local strings for user selections dependent on graphic library.
@@ -2643,7 +2632,6 @@ C This facility offers browsing for GTK version.
 #include "model.h"
 #include "esprdbfile.h"
       common/OUTIN/IUOUT,IUIN
-      common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/deflt4/dinstpath
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
@@ -2657,7 +2645,6 @@ C      CHARACTER outs248*248
       character GTYPE*12,GDESCR*36,SOPT*12
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,concat
-      character cfgroot*24,LCFGF*72
       character dinstpath*60,path*72,dirpath*72
 
 C Local strings for user selections dependent on graphic library.
@@ -2981,7 +2968,6 @@ C for all interfaces.
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
-      common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/deflt4/dinstpath
 
@@ -2995,7 +2981,6 @@ C for all interfaces.
 C      CHARACTER outs248*248
 
       LOGICAL CLKOK,OK,COPYDEF,MODDB,XST,DOK,concat
-      character cfgroot*24,LCFGF*72
       character dinstpath*60,path*72,dirpath*72
       character OUTSTR*124      ! string buffer for data read
       character t144*144        ! for passing to erprcdb
@@ -3335,8 +3320,6 @@ C espriou.h provides currentfile.
 
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
-
-      common/C21/IFCFG,cfgroot,LCFGF
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -3357,7 +3340,6 @@ C Calendar.
       CHARACTER DOIT*248,fs*1,TMODE*8,CLMLOC*30,LCOPY*72
       CHARACTER OUTS*124,APP*6,ext*4,llclmdb*144
       LOGICAL OK,concat,COPYDEF,MODDB,XST,DOK,UNIXOK
-      character cfgroot*24,LCFGF*72
       character dinstpath*60,path*72
       character dirpath*72
       CHARACTER*72 NNAME
@@ -4167,7 +4149,6 @@ C is via a text editor.
       common/texted/tedlbl,teditor
       character tedlbl*20,teditor*20
 
-      common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/deflt4/dinstpath
 
@@ -4176,7 +4157,6 @@ C is via a text editor.
       CHARACTER DOIT*300,fs*1,APP*4
 C      CHARACTER outs248*248
       LOGICAL OK,COPYDEF,MODDB,XST,DOK,concat
-      character cfgroot*24,LCFGF*72
       character dinstpath*60,path*72,dirpath*72
       character tmode*8
 
@@ -4479,7 +4459,6 @@ C is via a text editor.
       common/texted/tedlbl,teditor
       character tedlbl*20,teditor*20
 
-      common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       common/deflt4/dinstpath
 
@@ -4488,7 +4467,6 @@ C is via a text editor.
       CHARACTER DOIT*300,fs*1,APP*4
       CHARACTER outs248*248
       LOGICAL OK,COPYDEF,MODDB,XST,DOK,concat
-      character cfgroot*24,LCFGF*72
       character dinstpath*60,path*72,dirpath*72
       character tmode*8
 
@@ -4807,7 +4785,6 @@ C code is general rather than specific (for later consolidation).
 
       common/OUTIN/IUOUT,IUIN
 
-      common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
       
       integer lnblnk  ! function definition
@@ -4840,7 +4817,6 @@ C      integer iglib  ! for detecting GTK or X11
 
       CHARACTER outs248*248
       LOGICAL XST
-      character cfgroot*24,LCFGF*72
       character path*72
       character sourcefile*144  ! the file to copy
       character longtfile*144,longtfiledos*144

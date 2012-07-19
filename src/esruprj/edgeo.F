@@ -2352,7 +2352,6 @@ C Get common blocks g0/g2/g4/g6/precz from geometry.h
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
-      common/C21/IFCFG,cfgroot,LCFGF
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -2371,7 +2370,6 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       CHARACTER IALT*36
       CHARACTER isd*33,SFIL*72,DSFIL*72
       character ZN*12
-      character LCFGF*72,cfgroot*24
       LOGICAL comold,tmcold,vwfold,ishold,cfcold
       logical changed,newgeo
       logical unixok
