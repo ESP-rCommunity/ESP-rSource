@@ -2848,7 +2848,6 @@ C Setup and pass in parameters to win3d.
       iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
       CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &  iigl,iigr,iigt,iigb,iigw,iigwh)
-C      CALL win3d(menuchw,10,10,8,3,igl,igr,igt,igb,igw,igwh)
       igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
       igw=int(iigw); igwh=int(iigwh)
       igheight=igwh
@@ -3018,17 +3017,21 @@ C Title and labels.
       call wstxpt(iid1,iid2,'Infiltration')
       iid1=igr-100; iid2=igt-65;
       call wstxpt(iid1,iid2,'Ventilation')
-      call pixel2u(igl+120,igt-69,gx,gy)
+      iid1=igl+100; iid2=igt-69;
+      call pixel2u(iid1,iid2,gx,gy)
       iupdown=0
       isym=0
       CALL etplot(gx,gy,iupdown,isym)
-      call pixel2u(igl+180,igt-69,gx,gy)
+      iid1=igl+180; iid2=igt-69;
+      call pixel2u(iid1,iid2,gx,gy)
       iupdown=1
       CALL etplot(gx,gy,iupdown,isym)
-      call pixel2u(igr-120,igt-69,gx,gy)
+      iid1=igr-120; iid2=igt-69;
+      call pixel2u(iid1,iid2,gx,gy)
       iupdown=0
       CALL etplot(gx,gy,iupdown,isym)
-      call pixel2u(igr-180,igt-69,gx,gy)
+      iid1=igr-180; iid2=igt-69;
+      call pixel2u(iid1,iid2,gx,gy)
       iupdown=-4
       CALL etplot(gx,gy,iupdown,isym)
 
@@ -4842,11 +4845,10 @@ C Clear and setup plot area.
       CALL startbuffer()
 
 C Setup and pass in parameters to win3d.
-      iiw1=10; iiw2=10; iiw3=3; iiw4=3; iimenu=menuchw
+      iiw1=10; iiw2=10; iiw3=8; iiw4=3; iimenu=menuchw
       iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
       CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &  iigl,iigr,iigt,iigb,iigw,iigwh)
-C      CALL win3d(menuchw,10,10,8,3,igl,igr,igt,igb,igw,igwh)
       igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
       igw=int(iigw); igwh=int(iigwh)
       igheight=igwh
@@ -5144,51 +5146,58 @@ C Title and labels.
       isize=1
       ifont=1
       call viewtext(outs,iside,isize,ifont)
-      iid1=igl+20; iid2=igt-65;
+      iid1=igl+20; iid2=iigt-65;
       call wstxpt(iid1,iid2,' Total sensible')
-      iid1=igr-100; iid2=igt-65;
+      iid1=igr-100; iid2=iigt-65;
       call wstxpt(iid1,iid2,'Total latent')
-      iid1=igl+120; iid2=igt-69;
-      call pixel2u(igl+120,igt-69,gx,gy)
+      iid1=igl+120; iid2=iigt-69;
+      call pixel2u(iid1,iid2,gx,gy)
       iupdown=0
       isym=0
       CALL etplot(gx,gy,iupdown,isym)
-      call pixel2u(igl+180,igt-69,gx,gy)
+      iid1=igl+180; iid2=iigt-69;
+      call pixel2u(iid1,iid2,gx,gy)
       iupdown=1
       CALL etplot(gx,gy,iupdown,isym)
-      call pixel2u(igr-120,igt-69,gx,gy)
+      iid1=igr-120; iid2=iigt-69;
+      call pixel2u(iid1,iid2,gx,gy)
       iupdown=0
       CALL etplot(gx,gy,iupdown,isym)
-      call pixel2u(igr-180,igt-69,gx,gy)
+      iid1=igr-180; iid2=iigt-69;
+      call pixel2u(iid1,iid2,gx,gy)
       iupdown=-4
       CALL etplot(gx,gy,iupdown,isym)
 
 C << Hard coded casual gain types revise >>
       do 300 I=1,3
         write(outs,'(2a)')
-     &        lodlabel(ICOMP,I)(1:lnblnk(lodlabel(ICOMP,I))),' sensible'
+     &    lodlabel(ICOMP,I)(1:lnblnk(lodlabel(ICOMP,I))),' sensible'
         IY=igt-(12*I)-18
         iid1=igl+20; iid2=IY;
         call wstxpt(iid1,iid2,outs)
         write(outs,'(2a)')
-     &          lodlabel(ICOMP,I)(1:lnblnk(lodlabel(ICOMP,I))),' latent'
+     &    lodlabel(ICOMP,I)(1:lnblnk(lodlabel(ICOMP,I))),' latent'
         iid1=igr-100; iid2=IY;
         call wstxpt(iid1,iid2,outs)
         if (COLOK)then
           iicol=i
           call winscl('z',iicol)
         endif
-        call pixel2u(igl+120,IY-4,gx,gy)
+        iid1=igl+120; iid2=IY-4;
+        call pixel2u(iid1,iid2,gx,gy)
         iupdown=0
         isym=0
         CALL etplot(gx,gy,iupdown,isym)
-        call pixel2u(igl+180,IY-4,gx,gy)
+        iid1=igl+180; iid2=IY-4;
+        call pixel2u(iid1,iid2,gx,gy)
         iupdown=1
         CALL etplot(gx,gy,iupdown,isym)
-        call pixel2u(igr-120,IY-4,gx,gy)
+        iid1=igr-120; iid2=IY-4;
+        call pixel2u(iid1,iid2,gx,gy)
         iupdown=0
         CALL etplot(gx,gy,iupdown,isym)
-        call pixel2u(igr-180,IY-4,gx,gy)
+        iid1=igr-180; iid2=IY-4;
+        call pixel2u(iid1,iid2,gx,gy)
         iupdown=-4
         CALL etplot(gx,gy,iupdown,isym)
         if (COLOK)then
@@ -5198,11 +5207,11 @@ C << Hard coded casual gain types revise >>
  300  continue
 
       ioff=(int(ipltwd)/3)
-      iid1=igl+ioff; iid2=igt-10;
+      iid1=igl+ioff; iid2=iigt-10;
       call wstxpt(iid1,iid2,CALENTAG(IDAY))
-      iid1=iglsat+ioff; iid2=igt-10;
+      iid1=iglsat+ioff; iid2=iigt-10;
       call wstxpt(iid1,iid2,CALENTAG(JDAY))
-      iid1=iglsun+ioff; iid2=igt-10;
+      iid1=iglsun+ioff; iid2=iigt-10;
       call wstxpt(iid1,iid2,CALENTAG(KDAY))
       call forceflush()
 
