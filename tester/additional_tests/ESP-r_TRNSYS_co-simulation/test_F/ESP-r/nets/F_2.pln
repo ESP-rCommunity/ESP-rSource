@@ -1,0 +1,65 @@
+ESP-r plant file version 2 written on: Thu Jun 21 12:31:29 2012
+# Project title:
+                                                                        
+# Total no. of specified components and simulation type
+    6    3
+#->   1, The hydronic coupling component from ESP-r to TRNSYS(HCC-to-T) is used f
+  HCC-S-1          106
+    0        # Component has   0 control variable(s).
+    1
+       1.0000     #   1 Index of TRNSYS coupling                                        
+#->   2, The hydronic coupling component from TRNSYS to ESP-r(HCC-to-E) is used f
+  HCC-R-1          107
+    0        # Component has   0 control variable(s).
+    1
+       1.0000     #   1 Index of TRNSYS output type                                     
+#->   3, The hydronic coupling component from TRNSYS to ESP-r(HCC-to-E) is used f
+  HCC-R-2          107
+    0        # Component has   0 control variable(s).
+    1
+       2.0000     #   1 Index of TRNSYS output type                                     
+#->   4, variable speed domestic WCH pump; 1 node model                          
+  pump              15
+    1        # Component has   1 control variable(s).
+  3.33000004E-04
+    6
+       5.0000     #   1 Component total mass (kg)                                       
+       2250.0     #   2 Mass weighted average specific heat (J/kgK)                     
+      0.20000     #   3 UA modulus from wall to environment (W/K)                       
+       50.000     #   4 Rated total absorbed power (W)                                  
+      0.30000E-03 #   5 Rated volume flow rate (m^3/s)                                  
+      0.70000     #   6 Overall efficiency (-)                                          
+#->   5, WCH pipe; 1 node model                                                  
+  pipe-R-1          13
+    0        # Component has   0 control variable(s).
+    6
+       2.0000     #   1 Component total mass (kg)                                       
+       2250.0     #   2 Mass weighted average specific heat (J/kgK)                     
+       2.0000     #   3 UA modulus from wall to environment (W/K)                       
+      0.15000E-01 #   4 Hydraulic diameter of pipe (m)                                  
+       5.0000     #   5 Length of pipe section (m)                                      
+      0.17670E-03 #   6 Cross sectional face area (m^2)                                 
+#->   6, WCH pipe; 1 node model                                                  
+  pipe-R-2          13
+    0        # Component has   0 control variable(s).
+    6
+       2.0000     #   1 Component total mass (kg)                                       
+       2250.0     #   2 Mass weighted average specific heat (J/kgK)                     
+       2.0000     #   3 UA modulus from wall to environment (W/K)                       
+      0.15000E-01 #   4 Hydraulic diameter of pipe (m)                                  
+       5.0000     #   5 Length of pipe section (m)                                      
+      0.17670E-03 #   6 Cross sectional face area (m^2)                                 
+# The following is a list of component connections.
+  6          # Total number of connections
+# receiving       node  conncn sending          node  diversion  suppl1   suppl2
+# component              type  component                ratio
+  pump              1     2     pump              1    1.000    30.00   0.00 #  1
+  HCC-S-1           1     3     pump              1    1.000                 #  2
+  HCC-R-1           1     3     HCC-S-1           1    0.500                 #  3
+  pipe-R-1          1     3     HCC-R-1           1    1.000                 #  4
+  pipe-R-2          1     3     HCC-R-2           1    1.000                 #  5
+  HCC-R-2           1     3     HCC-S-1           1    0.500                 #  6
+# No containment temperatures defined
+  0
+# No mass flow network defined.
+    0

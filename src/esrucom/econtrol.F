@@ -3785,7 +3785,7 @@ C Parameters
 
       character outs*124,SSTR*96,TMP*96,LTMP*248
       CHARACTER PERST1*14,PERST2*44,PERST3*44
-      character outsa*84,outsb*84,outsc*84
+      character outsa*84,outs400*400
 
 C List data for function II and day type JJ.
       if(icfoc.eq.0)then
@@ -3847,7 +3847,7 @@ C List data for function II and day type JJ.
       call edisp(itru,outs)
 
       call edisp(itru,
-     &' Per|Start|Sensing  |Actuating  | Control law       | Data')
+     &' Per|Start|Sensing  |Actuating  | Control law description')
       DO 30 K=1,LL
         CALL EVCNTRL(icfoc,II,JJ,K,'T',SSTR)
         CALL EVCNTRLAW(icfoc,II,JJ,K,TMP,LTMP)
@@ -3873,48 +3873,17 @@ C List data for function II and day type JJ.
         endif
   83    FORMAT(I4,F6.2,' ',a,' ',a)
 
-C Print out first 9 miscellaneous data if applicable.
-        outsb=' '
-        outsc=' '
-        if(NITEMS.GT.0)then
-          if(NITEMS.LE.9)then
-            if(icfoc.eq.0)then
-              write(outsb,84)(BMISCD(II,JJ,K,L),L=2,NITEMS+1)
-            elseif(icfoc.eq.1)then
-              write(outsb,84)(PMISCD(II,JJ,K,L),L=2,NITEMS+1)
-            elseif(icfoc.eq.2)then
-              write(outsb,84)(FMISCD(II,JJ,K,L),L=2,NITEMS+1)
-            elseif(icfoc.eq.3)then
-              write(outsb,84)(GMISCD(II,JJ,K,L),L=2,NITEMS+1)
-            elseif(icfoc.eq.5)then
-              write(outsb,84)(OMISCD(II,JJ,K,L),L=2,NITEMS+1)
-            elseif(icfoc.eq.6)then
-              write(outsb,84)(CFCmiscdata(II,JJ,K,L),L=2,NITEMS+1)
-            endif
-          else
-            if(icfoc.eq.0)then
-              write(outsb,84)(BMISCD(II,JJ,K,L),L=2,10)
-            elseif(icfoc.eq.1)then
-              write(outsb,84)(PMISCD(II,JJ,K,L),L=2,10)
-            elseif(icfoc.eq.2)then
-              write(outsb,84)(FMISCD(II,JJ,K,L),L=2,10)
-            elseif(icfoc.eq.3)then
-              write(outsb,84)(GMISCD(II,JJ,K,L),L=2,10)
-            elseif(icfoc.eq.5)then
-              write(outsb,84)(OMISCD(II,JJ,K,L),L=2,10)
-            elseif(icfoc.eq.6)then
-              write(outsb,84)(CFCmiscdata(II,JJ,K,L),L=2,10)
-            endif
-          endif
-  84      format(9F9.1)
-          call SDELIM(outsb,outsc,'S',IW)
-          write(outs,'(a,1x,a)',IOSTAT=IOS,ERR=3) outsa(1:52),
-     &        outsc(1:lnblnk(outsc))
-          CALL EDISP(ITRU,outs)
+         if(NITEMS.GT.0)then
 
-C For zone, plant, flow and global controls list out the verbose decoding of the misc items.
+C Write the initial part of the control followed by description.
+          write(outs400,'(a,1x,a)',IOSTAT=IOS,ERR=3) outsa(1:32),
+     &        ltmp(1:lnblnk(ltmp))
+
+C For zone, plant, flow and global controls list out the verbose 
+C decoding of the control law attributes.  Note that edisp248 is
+C able to work with strings longer than 248 characters.
           if(icfoc.eq.0.or.icfoc.eq.1.or.icfoc.eq.2.or.icfoc.eq.3)then
-            call edisp248(itru,ltmp,90)
+            call edisp248(itru,outs400,90)
           endif
         elseif(NITEMS.eq.0)then
           write(outs,'(a)',IOSTAT=IOS,ERR=3) outsa(1:52)

@@ -1746,23 +1746,26 @@ C Display ctlstr for day and period << convert to multi days >>.
 
  1225 CONTINUE
 
+C Write header for scheduled air flow.
+      call edisp(itru,' ')
+      call edisp(itru,'Scheduled air infiltration and ventilation: ')
+      WRITE(outs,'(2A)')
+     &'Daytype    Period     Infiltration     Ventilation     ',
+     &'From Source'
+      call edisp(itru,outs)
+      WRITE(outs,'(2A)')
+     &'           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  ',
+     &'Zone DegC'
+      call edisp(itru,outs)
+
       DO 400 IDTY=1,NBDAYTYPE
-        WRITE(OUTS,'(3A,1I4)')
-     &  'Number of air change periods for daytype ',
-     &  calentag(idty),' : ',NAC(IDTY)
-        call edisp(itru,' ')
-        call edisp(itru,outs)
         IF(NAC(IDTY).EQ.0)GOTO 400
-        call edisp(itru,
-     &'  Period   Infiltration   Ventilation     From Source')
-        call edisp(itru,
-     &'  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.')
         DO 1230 I=1,NAC(IDTY)
           acim = (VOL(ICOMP)*ACI(IDTY,I))/3600.0
           acvm = (VOL(ICOMP)*ACV(IDTY,I))/3600.0
-          WRITE(outs,'(2i3,a,i2,F9.2,F8.4,F8.2,F8.4,I4,F9.2)')
-     &    I,IACS(IDTY,I),' - ',IACF(IDTY,I),ACI(IDTY,I),acim,
-     &    ACV(IDTY,I),acvm,IPT(IDTY,I),TA(IDTY,I)
+          WRITE(outs,'(a,i2,i2,a,i2,F9.2,F8.4,F8.2,F8.4,I4,F9.2)')
+     &      calentag(idty)(1:10),I,IACS(IDTY,I),' - ',IACF(IDTY,I),
+     &      ACI(IDTY,I),acim,ACV(IDTY,I),acvm,IPT(IDTY,I),TA(IDTY,I)
           call edisp(itru,outs)
 1230    CONTINUE
  400  CONTINUE
@@ -1808,31 +1811,24 @@ C Descriptive label for a zone load or casual gain types.
       call edisp(itru,' ')
       call edisp(itru,'Notes: ')
       call edisp248(itru,oprdesc(icomp),72)
-      DO 600 IDTY=1,NBDAYTYPE
-        IF(IELF(ICOMP).EQ.1) THEN
-          WRITE(OUTS,'(3A,1I3)')'Number of ',CALENTAG(IDTY),
-     &    ' loads=',NCAS(IDTY)
-        ELSE
-          WRITE(OUTS,'(3A,1I3)')'Number of ',CALENTAG(IDTY),
-     &    ' casual gains=',NCAS(IDTY)
-        ENDIF
+      call edisp(itru,' ')
+      if(IELF(ICOMP).EQ.1)then
+        write(outs,'(a,a)')'Daytype   Gain Type    Period Sensible ',
+     &    ' Latent  Radiant  Convec p.f +/-  Power Voltage Phase'
         call edisp(itru,outs)
-        if(NCAS(IDTY).eq.0)return
-        if(IELF(ICOMP).EQ.1)then
-          write(outs,'(a,a)')'Day Gain Type   Period Sensible  ',
-     &    'Latent  Radiant  Convec p.f +/-  Power Voltage Phase'
-          call edisp(itru,outs)
-          write(outs,'(a,a)')'    No.  label   Hours  Magn.(W)  ',
-     &    'Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)'
-          call edisp(itru,outs)
-        else  
-          write(outs,'(a,a)')'Day Gain Type     Period Sensible  ',
-     &    'Latent     Radiant    Convec'
-          call edisp(itru,outs)
-          write(outs,'(a,a)')'    No.  label     Hours  Magn.(W)  ',
-     &    'Magn. (W)  Frac       Frac'
-          call edisp(itru,outs)
-        endif
+        write(outs,'(a,a)')'          No.  label   Hours  Magn.(W) ',
+     &    ' Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)'
+        call edisp(itru,outs)
+      else  
+        write(outs,'(a,a)')'Daytype   Gain Type    Period Sensible ',
+     &    ' Latent     Radiant    Convec'
+        call edisp(itru,outs)
+        write(outs,'(a,a)')'          No.  label   Hours  Magn.(W) ',
+     &    ' Magn.(W)   Fraction   Fraction'
+        call edisp(itru,outs)
+      endif
+      DO 600 IDTY=1,NBDAYTYPE
+        if(NCAS(IDTY).eq.0) goto 600
       IF(NCAS(IDTY).GT.0)THEN
         IF(IELF(ICOMP).EQ.1) THEN
           DO 1269 I=1,NCAS(IDTY)
@@ -1845,7 +1841,7 @@ C Descriptive label for a zone load or casual gain types.
                 write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),
      &            'Wm2'
             endif
-              WRITE(outs,5361) calentag(idty)(1:5),I,llbl,ICGS(IDTY,I),
+              WRITE(outs,5361)calentag(idty)(1:10),I,llbl,ICGS(IDTY,I),
      &        '-',ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
      &      CONC(IDTY,I),PF(IDTY,I),
      &      IPF(IDTY,I),PWR(IDTY,I),BVOLT(IDTY,I),IPHAS(IDTY,I)
@@ -1864,12 +1860,13 @@ C Descriptive label for a zone load or casual gain types.
                 write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),
      &            'Wm2'
             endif
-              WRITE(outs,5362) calentag(idty)(1:5),I,llbl,ICGS(IDTY,I),
+              WRITE(outs,5362)calentag(idty)(1:10),I,llbl,ICGS(IDTY,I),
      &        '-',ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
      &      CONC(IDTY,I)
 5362          FORMAT(a,I3,1x,A9,I3,a,I2,F9.1,F9.1,F11.2,F11.2)
             call edisp(itru,outs)
 1270      CONTINUE
+          if(NBDAYTYPE.gt.3) call edisp(itru,' ')  ! if long list
         ENDIF
       ENDIF
  600  CONTINUE

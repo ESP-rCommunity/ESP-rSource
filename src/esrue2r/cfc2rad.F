@@ -230,8 +230,10 @@ C             Convert visible transmission to transmissivity
 C             (as per Ward 1/12/94 Radiance 2.4 paper).
               VTRAN=visT(icomp,icfctp,vb_lay)
               if((VTRAN).gt.0.01)then
-                gvt1=sqrt(0.8402528435+(0.007252224*VTRAN*VTRAN))
-                gvt=(gvt1-0.9166530661)/0.0036261119/VTRAN
+cx                gvt1=sqrt(0.8402528435+(0.007252224*VTRAN*VTRAN))
+cx                gvt=(gvt1-0.9166530661)/0.0036261119/VTRAN
+C               Axel Jacobs, Radiance Cookbook, Jan. 2012, page 21
+                gvt=1.0895*VTRAN
               else
                 gvt=0.01
               endif
@@ -588,8 +590,10 @@ C ******************************************************************
 C       Convert visible transmission to transmissivity 
 C       (as per Ward 1/12/94 Radiance 2.4 paper).
         if((VTRAN).gt.0.01)then
-          gvt1=sqrt(0.8402528435+(0.007252224*VTRAN*VTRAN))
-          gvt=(gvt1-0.9166530661)/0.0036261119/VTRAN
+cx          gvt1=sqrt(0.8402528435+(0.007252224*VTRAN*VTRAN))
+cx          gvt=(gvt1-0.9166530661)/0.0036261119/VTRAN
+C           Axel Jacobs, Radiance Cookbook, Jan. 2012, page 21
+            gvt=1.0895*VTRAN
         else
           gvt=0.01
         endif

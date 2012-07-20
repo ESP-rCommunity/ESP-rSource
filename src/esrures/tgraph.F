@@ -673,6 +673,7 @@ C to graphical result display.
 
       SUBROUTINE MOGHED
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
@@ -686,7 +687,6 @@ C to graphical result display.
       COMMON/SIMPKA/NSIM
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
       common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
 
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
@@ -703,7 +703,6 @@ C To extend logic to maximize plotting area.
       CHARACTER ETEXT*124, RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER PDESCR*60,SDESCR*44,outsd*80,outsd1*81
-      character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character graftitle*64,grlbl*24,t64*64
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext

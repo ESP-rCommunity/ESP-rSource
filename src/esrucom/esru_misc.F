@@ -149,10 +149,7 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
 C IPV description.
       common/IPVF/lipvdatf
 
-C Anchor data.
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
-      common/anchorb/IALOC(20),lstanchr(20,60)
-      INTEGER :: naloc,ialoc,lstanchr
+C Anchor data in model.h.
 
 C Non-linear thermophysical properties.
       COMMON/VTHP18/LNLTHP
@@ -272,7 +269,6 @@ C door width and height.
       character*10 wkd1, wkd2
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
-      character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character cfgroot*24,LCFGF*72
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
@@ -381,11 +377,10 @@ C Clear IPV strings and number of assessmments.
 C Clear anchors.
       NALOC=0
       do 40 i=1,20
-        ALOC(i)='undefined'
         ALOCLBL(i)='undefined'
         ALOCTYP(i)='unkn'
         IALOC(i)=0
-        do 400 j=1,60
+        do 400 j=1,99
           lstanchr(i,j)=0
   400   continue
   40  continue

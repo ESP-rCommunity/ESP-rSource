@@ -194,10 +194,7 @@ C Numbers associated with one climatelist item.
 C Uncertainty analysis common.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
 
-C Anchor data.
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
-      common/anchorb/IALOC(20),lstanchr(20,60)
-      INTEGER :: naloc,ialoc,lstanchr
+C Anchor data in model.h.
 
 C Simulation parameter presets.
       common/spfldes/spfdescr(MSPS)
@@ -321,13 +318,12 @@ C An array of mass flow nodes for writing.
       character ipvaction*3  ! to instruct mkipv to do it within cfg file
       character tab*1  ! a literal tab character
 
-      dimension iav(60)
+      dimension iav(99)
 
       logical dogrnd
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
       character dstmp*24
-      character ALOC*12,ALOCLBL*12,ALOCTYP*4
 
 C Control for writing out multi-climate sim presets
       logical bMY_set_open 
@@ -1397,7 +1393,7 @@ C Re-build zone:surface to connection hash array.
 
 C If there is more than one anchor concept write them out.
       if(NALOC.gt.0)then
-        WRITE(IFCFG,'(A,i3)',IOSTAT=IOS,ERR=3) '*Anchor ',NALOC
+        WRITE(IFCFG,'(A,i2)',IOSTAT=IOS,ERR=3) '*Anchor ',NALOC
         do 44 ia=1,NALOC
           WRITE(IFCFG,'(3A,i3)',IOSTAT=IOS,ERR=3) ALOCLBL(ia),' ',
      &       ALOCTYP(ia),IALOC(ia)
@@ -1409,7 +1405,7 @@ C Write packed string of the items associated with each anchor.
           itrunc=1
           ipos=1
           do while (itrunc.ne.0)
-            call ailist(ipos,IALOC(ia),iav,60,'S',outs,loutlen,itrunc)
+            call ailist(ipos,IALOC(ia),iav,99,'S',outs,loutlen,itrunc)
             write(IFCFG,'(1x,a)',IOSTAT=ios,ERR=3) outs(1:loutlen)
             ipos=itrunc+1
           end do

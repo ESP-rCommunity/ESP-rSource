@@ -406,6 +406,7 @@ C above.
 
       SUBROUTINE GOMENU
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "tdf2.h"
       
@@ -456,7 +457,6 @@ C Pre calculated data (filtered).
 
 C Comfort parameters and hash table.
       common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
 
       CHARACTER ITEM(35)*24, MTITLE*22, values*20
       CHARACTER ITEMS(18)*23
@@ -465,7 +465,6 @@ C Comfort parameters and hash table.
       character SUFFIX*8
       character ll1*8,ll2*8,ll3*8
       CHARACTER outs*124,pifltog*4,lpifl*72
-      character ALOC*12,ALOCLBL*12,ALOCTYP*4
       CHARACTER ZSDES*28,ZSDESC*20,ZSDESS*16
       character graftitle*64,grlbl*24,t64*64,t24*24
 

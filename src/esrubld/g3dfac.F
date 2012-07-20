@@ -118,7 +118,7 @@ C Create the nodes distribution file.
         MAXNOD=0
         IC=0
    20   IC=IC+1
-        READ(ICVS,REC=IC,IOSTAT=ISTAT,ERR=6)ND1,VOLM1,DMM,IS1,IL1
+        READ(ICVS,REC=IC,IOSTAT=ISTAT,ERR=5)ND1,VOLM1,DMM,IS1,IL1
 
 C End of file reached.
         IF(ISTAT.LT.0)THEN
@@ -386,24 +386,48 @@ C Open the temperature and energy file and check the number of records.
       ENDIF
       CALL USRMSG(' ',' ','-')
       RETURN
-    6 WRITE(MSG,'(A,I6)')' Error occured at record number ',IC
+
+    5 WRITE(MSG,'(A,I6)')
+     & 'Error reading ND1 VOLM1 DMM IS1 or IL1 at record ',IC
       CALL USRMSG(MSG,' in the control volumes file.','W')
+      call epagend
       STOP
-    7 WRITE(MSG,'(A,I6)')' Error occured at record number ',IC
+
+    6 WRITE(MSG,'(A,I6)')'Error occured at record number ',IC
+      CALL USRMSG(MSG,' in the control volumes file.','W')
+      call epagend
+      STOP
+    7 WRITE(MSG,'(A,I6)')
+     &  'Error reading ND1 DMM ARA DMM ITP IP1 or IP2 at record ',IC
       CALL USRMSG(MSG,' in the connections file.','W')
+      call epagend
       STOP
-    8 CALL USRMSG(MSG,
-     &           ' Error occured in the nodes distribution file.','W')
+    8 WRITE(MSG,'(A,I6)')
+     & 'Error reading ND1 IS1 IL1 or VOLM1 at record ',IR
+      CALL USRMSG(MSG,
+     &  ' in the nodes distribution file.','W')
+      call epagend
       STOP
-    9 CALL USRMSG(MSG,' Error occured in the NODES file.','W')
+    9 WRITE(MSG,'(A,2I6)')
+     & 'Error reading IP2 ND1 ARA or IS2 ND2 AR2 at record ',I2,INS
+      CALL USRMSG(MSG,' in the NODES file.','W')
+      call epagend
       STOP
-   11 CALL USRMSG(' ',
-     &            ' Error occured  in the longwave file (1).','W')
+   11 WRITE(MSG,'(A,2I6)')
+     & 'Error reading IP2 ND1 ARA or IS2 ND2 AR2 at record ',IRC1,IRC2
+      CALL USRMSG(MSG,
+     &  ' in the longwave file (1).','W')
+      call epagend
       STOP
    12 WRITE(MSG,'(A,I6)')' Error occured at record number ',NTND2(ICOMP)
       CALL USRMSG(MSG,' in the longwave file (2).','W')
+      call epagend
       STOP
-   15 STOP ' Error occured in the temperature and heat file.'
+      
+   15 WRITE(MSG,'(A,I6)')
+     & 'Error reading DMM or DMM at record ',NNODT
+      CALL USRMSG(MSG,' in the temperature and heat file.','W')
+      STOP ' Error occured in the temperature and heat file.'
       END
 
 C **************************    FLORDR    *****************************
@@ -423,6 +447,7 @@ C *********************************************************************
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,L3DTMP
       logical unixok
       integer ier
+      character msg*90
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -445,6 +470,7 @@ C Re-order the nodes (reduce the fill ins).
       LNODE=0
       IC=0
    20 IC=IC+1
+      msg='icnc reading ND1 DST ARC CND ITP IP1 IP2'
       READ(ICNC,REC=IC,IOSTAT=ISTAT,ERR=1)ND1,DST,ARC,CND,ITP,IP1,IP2
       IF(ISTAT.LT.0)THEN
         GOTO 30
@@ -516,6 +542,7 @@ C Re-order the connections file.
       CALL EFOPRAN(ITF3,L3DTMP,7,1,IER)
       IC=0
   100 IC=IC+1
+      msg='ift3 reading ND1 DST ARC CND ITP IP1 IP2'
       READ(ITF3,REC=IC,IOSTAT=ISTAT,ERR=1)ND1,DST,ARC,CND,ITP,IP1,IP2
       IF(ISTAT.LT.0)THEN
         CALL EFDELET(ITF3,ISTAT)
@@ -535,14 +562,17 @@ C Re-order the connections file.
         IC=0
         GOTO 110
       ELSEIF(ITP.EQ.11.AND.IP1.EQ.IZ)THEN
+        msg='icnc writing NXT DST ARC CND ITP IP1 NXT'
         WRITE(ICNC,REC=IC,ERR=1)NXT(ND1),DST,ARC,CND,ITP,IP1,NXT(IP2)
       ELSE
+        msg='icnc writing NXT DST ARC CND ITP IP1 IP2'
         WRITE(ICNC,REC=IC,ERR=1)NXT(ND1),DST,ARC,CND,ITP,IP1,IP2
       ENDIF
       GOTO 100
 
 C Re-order the control volumes file.
   110 IC=IC+1
+      msg='ift3 reading ND VOLM DNHC ISF IL'
       READ(ITF3,REC=IC,IOSTAT=ISTAT,ERR=1)ND,VOLM,DNHC,ISF,IL
       IF(ISTAT.LT.0)THEN
         CALL EFDELET(ITF3,ISTAT)
@@ -562,12 +592,14 @@ C Re-order the control volumes file.
         IC=0
         GOTO 130
       ELSE
+        msg='icvs write NXT(ND) VOLM DNHC ISF IL'
         WRITE(ICVS,REC=IC,ERR=1)NXT(ND),VOLM,DNHC,ISF,IL
       ENDIF
       GOTO 110
 
 C Re-order the nodes file.
   130 IC=IC+1
+      msg='ift3 reading XND YND ZND'
       READ(ITF3,REC=IC,IOSTAT=ISTAT,ERR=1)XND,YND,ZND
       IF(ISTAT.LT.0)THEN
         NODTOT=IC-1
@@ -583,12 +615,14 @@ C Re-order the nodes file.
         GOTO 150
       ELSE
         IND=NXT(IC)
+        msg='incd writing XND YND ZND'
         WRITE(INDC,REC=IND,ERR=1)XND,YND,ZND
       ENDIF
       GOTO 130
 
 C Re-order the nodes file.
   150 IC=IC+1
+      msg='ift3 reading T3P T3F'
       READ(ITF3,REC=IC,IOSTAT=ISTAT,ERR=1)T3P,T3F
       IF(ISTAT.LT.0)THEN
         CALL EFDELET(ITF3,ISTAT)
@@ -600,11 +634,14 @@ C Re-order the nodes file.
         ELSE
           IND=IC
         ENDIF
+        msg='itaq reading T3P T3F'
         WRITE(ITAQ,REC=IND,ERR=1)T3P,T3F
       ENDIF
       GOTO 150
-    1 CALL USRMSG(' ',
-     &          ' Error detected while reading/writing to a file.','W')
+
+C Error traps.
+    1 CALL USRMSG(msg,
+     &  ' Error detected while reading/writing to a 3D file.','W')
       END
 
 C *************************     UPNODA     ****************************

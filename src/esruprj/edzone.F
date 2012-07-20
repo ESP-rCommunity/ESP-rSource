@@ -992,10 +992,6 @@ C espriou.h provides currentfile.
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
 
-C Anchor data.
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
-      common/anchorb/IALOC(20),lstanchr(20,60)
-
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
       common/user/browse
@@ -1012,7 +1008,6 @@ C Anchor data.
       CHARACTER cfgroot*24
       CHARACTER ctldoc*248,LCTLF*72,outs*124
       character ltmp*72,NDNAM*12
-      character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character OUTSTR*124
 
 C For help messages

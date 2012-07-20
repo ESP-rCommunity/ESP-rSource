@@ -83,3 +83,15 @@ C Temporal file units and file types
 C Radiance rcf scene file associated with the model.
       character LRADCF*72
       common/radcfg/LRADCF
+
+C Anchor - named and typed concept with associated list of surfaces.
+      integer naloc        ! number of anchors
+      character ALOCLBL*12 ! user name for the anchor
+      character ALOCTYP*4  ! type of anchor SURF (general surface)
+                           ! CLDR OPDR CLWN OPWN (open or closed windows doors
+                           ! CLGR OPGR (open or closed grills)
+                           ! DUCT FANP (duct or pipe, fan or pump)
+      common/anchora/NALOC,ALOCLBL(20),ALOCTYP(20)
+      integer ialoc     ! number of links for each anchor
+      integer lstanchr  ! connection index for each anchor link
+      common/anchorb/IALOC(20),lstanchr(20,99)

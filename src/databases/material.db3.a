@@ -245,7 +245,7 @@ Category ( 7) Screeds are products typically used horizontally and renders are u
 *item,mat_132,132, 7,Rendering (8% mc) (copy of mat_127) (UK code)
 0.790,1329.000,1000.000,0.910,0.910,0.500,0.500,19.000,50.0,-
 # class index |nb items|description (32 char)
-*class, 8,17,Tiles
+*class, 8,18,Tiles
 Category ( 8) Tiles includes both floor tiles, ceiling tiles and roof tile. Based on data traditionally distributed with ESP-r.
 *item,clay tile,141, 8,Clay tile
 0.850,1900.000,837.000,0.900,0.900,0.600,0.600,52.000,6.0,-
@@ -281,8 +281,10 @@ Category ( 8) Tiles includes both floor tiles, ceiling tiles and roof tile. Base
 1.500,2100.000,1000.000,0.900,0.900,0.700,0.700,1000.000,10.0,o
 *item,EDPM rubber,157, 8,Rubber EDPM from IBO PassivHaus
 0.250,1200.000,1000.000,0.940,0.940,0.820,0.820,19200.000,6.0,-
+*item,EDPM for facades,158, 8,EDPM used in facade framing data from IEBAU Muttenz CH
+0.250,1050.000,1470.000,0.940,0.940,0.920,0.920,19200.000,3.0,-
 # class index |nb items|description (32 char)
-*class, 9,13,Asphalt and bitumen
+*class, 9,14,Asphalt and bitumen
 Category ( 9) Asphalt and bitumen also includes materials which use bitumen and asphalt like compositions. Based on data traditionally distributed with ESP-r.
 *item,bitumen felt,161, 9,Bitumen felt
 0.500,1700.000,1000.000,0.900,0.900,0.900,0.900,1000.000,6.0,-
@@ -310,6 +312,8 @@ Category ( 9) Asphalt and bitumen also includes materials which use bitumen and 
 0.250,1020.000,1400.000,0.900,0.900,0.800,0.800,19200.000,6.0,-
 *item,mat_173,173, 9,wool felt underlay (UK assumptions)
 0.040,160.000,1360.000,0.900,0.900,0.900,0.900,15.000,6.0,-
+*item,EDPM membrane,174, 9,EDPM membrane roofing or foundations data from Aquaflex aqua-flex.com
+0.170,1180.000,1470.000,0.900,0.900,0.920,0.920,19200.000,2.0,-
 # class index |nb items|description (32 char)
 *class,10, 4,Asbestos
 Category (10) Asbestos is included for historic reasons, but some regions still use asbestos in building products. Based on data traditionally distributed with ESP-r.
@@ -330,12 +334,12 @@ Category (11) Insulation materials (1) is an initial tranche of loose, batt and 
 0.100,500.000,1000.000,0.900,0.900,0.500,0.500,5.000,100.0,-
 *item,UF foam,203,11,UF foam
 0.030,30.000,1764.000,0.900,0.900,0.500,0.500,5.000,100.0,-
-*item,Thermalite,204,11,Thermalite
-0.190,753.000,837.000,0.900,0.900,0.700,0.700,10.000,100.0,-
+*item,Thermalite,204,11,Thermalite high strength block heidelbergcement.com
+0.190,730.000,1050.000,0.900,0.900,0.700,0.700,10.000,100.0,-
 *item,Polyurethane foam bd,205,11,Polyurethane foam board
 0.030,30.000,837.000,0.900,0.900,0.500,0.500,90.000,100.0,-
-*item,Siporex,206,11,Siporex
-0.120,550.000,1004.000,0.900,0.900,0.400,0.400,60.000,100.0,-
+*item,Siporex,206,11,Siporex block (autoclaved aerated concrete) lccsiporex.com
+0.144,550.000,1004.000,0.900,0.900,0.400,0.400,60.000,100.0,-
 *item,PVC,207,11,PVC
 0.160,1379.000,1004.000,0.900,0.900,0.600,0.600,70.000,10.0,-
 *item,hard rubber,208,11,Hard rubber
@@ -360,8 +364,8 @@ Category (11) Insulation materials (1) is an initial tranche of loose, batt and 
 0.040,105.000,1800.000,0.900,0.900,0.600,0.600,15.000,100.0,-
 *item,straw thatch,218,11,Straw thatch
 0.070,240.000,180.000,0.900,0.900,0.500,0.500,3.000,100.0,-
-*item,Thermalite,219,11,Thermalite turbo blk
-0.110,480.000,1050.000,0.900,0.900,0.650,0.650,10.000,100.0,-
+*item,Thermalite,219,11,Thermalite turbo block heidelbergcement.com
+0.110,470.000,1050.000,0.900,0.900,0.650,0.650,10.000,100.0,-
 *item,XPS CO2 foamed,220,11,XPS extruded polystyrene foamed with Co2 from IBO PassivHaus
 0.040,38.000,1450.000,0.900,0.900,0.300,0.300,350.000,100.0,-
 *item,celulose fiber flakes,233,11,cellulose fibre insulation flakes from IBO PassivHaus

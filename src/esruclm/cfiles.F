@@ -140,7 +140,7 @@ C Define the year if not already done.
           helptopic='confirm_year'
           call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKI(IYEAR,' ',' What is the year ? ',
-     &             1900,'W',2005,'W',2003,'year',IER,nbhelp)
+     &             1900,'W',2015,'W',2001,'year',IER,nbhelp)
 
           CLMLOC=' '
           helptopic='confirm_site_name'
@@ -568,7 +568,8 @@ C next column.
             do 6 N1=1,iwidest   ! loop through the possible columns
               if(N1.eq.IMSTC(1))then
                 if(ITUNITS(1).eq.0)then
-                  CALL EGETWR(OUTSTR,K,DIF,0,0,'-','dif w/m2 reak',IER)
+                  CALL EGETWR(OUTSTR,K,DIF,0.0,0.0,'-',
+     &              'dif w/m2 reak',IER)
                   ICLM(J,1)= NINT(DIF)
                 elseif(ITUNITS(1).eq.1)then
                   CALL EGETWI(OUTSTR,K,IDIF,0,0,'-','dif w/m2 int',IER)
@@ -579,7 +580,8 @@ C next column.
                 endif
               elseif(N1.eq.IMSTC(2))then
                 if(ITUNITS(2).eq.0)then
-                  CALL EGETWR(OUTSTR,K,TMP,0,0,'-','deg C real',IER)
+                  CALL EGETWR(OUTSTR,K,TMP,0.0,0.0,'-',
+     &              'deg C real',IER)
                   ICLM(J,2)= NINT(TMP*10.0)
                 elseif(ITUNITS(2).eq.1)then
                   CALL EGETWI(OUTSTR,K,ITMP,0,0,'-','deg C int',IER)
@@ -590,7 +592,8 @@ C next column.
                 endif
               elseif(N1.eq.IMSTC(3))then
                 if(ITUNITS(3).eq.0)then
-                  CALL EGETWR(OUTSTR,K,DNR,0,0,'-','dir w/m2 real',IER)
+                  CALL EGETWR(OUTSTR,K,DNR,0.0,0.0,'-',
+     &              'dir w/m2 real',IER)
                   ICLM(J,3)= NINT(DNR)
                 elseif(ITUNITS(3).eq.1)then
                   CALL EGETWI(OUTSTR,K,IDNR,0,0,'-','dir w/m2 int',IER)
@@ -601,7 +604,8 @@ C next column.
                 endif
               elseif(N1.eq.IMSTC(4))then
                 if(ITUNITS(4).eq.0)then
-                  CALL EGETWR(OUTSTR,K,GLO,0,0,'-','glo w/m2 real',IER)
+                  CALL EGETWR(OUTSTR,K,GLO,0.0,0.0,'-',
+     &              'glo w/m2 real',IER)
                   ICLM(J,3)= NINT(GLO)
                 elseif(ITUNITS(4).eq.1)then
                   CALL EGETWI(OUTSTR,K,IGLO,0,0,'-','glo w/m2 int',IER)
@@ -612,7 +616,8 @@ C next column.
                 endif
               elseif(N1.eq.IMSTC(5))then
                 if(ITUNITS(5).eq.0)then
-                  CALL EGETWR(OUTSTR,K,VEL,0,0,'-','vel m/s real',IER)
+                  CALL EGETWR(OUTSTR,K,VEL,0.0,0.0,'-',
+     &              'vel m/s real',IER)
                   ICLM(J,4)= NINT(VEL*10.0)
                 elseif(ITUNITS(5).eq.1)then
                   CALL EGETWI(OUTSTR,K,IVEL,0,0,'-','vel m/s int',IER)
@@ -623,10 +628,11 @@ C next column.
                 endif
               elseif(N1.eq.IMSTC(6))then
                 if(ITUNITS(6).eq.0)then
-                  CALL EGETWR(OUTSTR,K,DIR,0,0,'-','w dir real',IER)
+                  CALL EGETWR(OUTSTR,K,DIR,0.0,0.0,'-',
+     &              'w dir real',IER)
                   ICLM(J,5)= NINT(DIR)
                 elseif(ITUNITS(6).eq.1)then
-                  CALL EGETWI(OUTSTR,K,IDIR,0,0,'-','w dire int',IER)
+                  CALL EGETWI(OUTSTR,K,IDIR,0,0,'-','w dir int',IER)
                   ICLM(J,5)=IVEL
                 elseif(ITUNITS(6).eq.2)then
                  CALL EGETWI(OUTSTR,K,IDIR,0,0,'-','tenths dir dg',IER)
@@ -634,13 +640,13 @@ C next column.
                 endif
               elseif(N1.eq.IMSTC(7))then
                 if(ITUNITS(7).eq.0)then
-                  CALL EGETWR(OUTSTR,K,HUM,0,0,'-','RH % real',IER)
+                  CALL EGETWR(OUTSTR,K,HUM,0.0,0.0,'-','RH % real',IER)
                   ICLM(J,6)= NINT(HUM)
                 elseif(ITUNITS(7).eq.1)then
                   CALL EGETWI(OUTSTR,K,IHUM,0,0,'-','RH % int',IER)
                   ICLM(J,6)=IHUM
                 elseif(ITUNITS(7).eq.2)then
-                  CALL EGETWR(OUTSTR,K,HUM,0,0,'-','RH 0.-1.',IER)
+                  CALL EGETWR(OUTSTR,K,HUM,0.0,0.0,'-','RH 0.-1.',IER)
                   ICLM(J,6)=NINT(HUM*100.0)
                 endif
               else

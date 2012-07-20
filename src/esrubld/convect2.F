@@ -503,7 +503,7 @@ C Halcrow, time invariant low.
 C Halcrow, time invariant high.
         HC=6.0
         if(dotrace) then
-          write(outs,'(A,F9.3)')' Halcrow high (vert): HC',HC
+          write(outs,'(A,F9.3)')' Halcrow high (horiz): HC',HC
           call edisp(itu,outs)
         endif
       ELSEIF(ICOR.EQ.53)then
