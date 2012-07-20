@@ -12,7 +12,7 @@ C Configuration file information.
       common/CFGV/icfgv
 
       integer ifcfg         ! file unit for model configuration file
-      character cfgroot*24  ! root name of the model used to generate file names
+      character cfgroot*32  ! root name of the model used to generate file names
       character LCFGF*72    ! model configuration file
       COMMON/C21/IFCFG,cfgroot,LCFGF
 

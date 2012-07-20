@@ -349,7 +349,7 @@ static int m_width = 0;		/* current menu max line length */
 static int m_lines = 0;		/* current number of active menu lines */
 
 static char cappl[5];	/* f77 application name */
-/* static char cfgroot[25];	f77 project root name    */
+/* static char cfgroot[33];	f77 project root name    */
 /* static char path[73];	f77 project path    */
 /* static char upath[73];	f77 users path    */
 /* static char imgpth[25];	f77 relative path to images    */

@@ -370,21 +370,21 @@ C If filename > 4 char it might have a .cfg attached.
           lcfgl=lcfgr-3
           if(lcfgr.gt.4)then
             if(LCFGF(lcfgl:lcfgr).eq.'.cfg')then
-              if(lcfgl.gt.24)then
-                write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:24)
+              if(lcfgl.gt.32)then
+                write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:32)
               else
                 write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:lcfgl-1)
               endif
             else
-              if(lcfgr.gt.24)then
-                write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:24)
+              if(lcfgr.gt.32)then
+                write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:32)
               else
                 write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:lcfgr)
               endif
             endif
           else
-            if(lcfgr.gt.24)then
-              write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:24)
+            if(lcfgr.gt.32)then
+              write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:32)
             else
               write(cfgroot,'(a)') LCFGF(1:lcfgr)
             endif

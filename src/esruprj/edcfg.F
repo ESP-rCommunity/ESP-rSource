@@ -3339,7 +3339,7 @@ C Passed parameters for cfgtogg
 #endif
 
 C Passed parameters for pregist.
-      character root*24,mpath*72,menu*72
+      character root*32,mpath*72,menu*72
 
       integer igraphiclib  ! external definition
 #ifdef OSI
@@ -3539,7 +3539,7 @@ C configuration files.
 C Debug.
 C        write(6,*) 'd iaccess is ',iaccess,icerr,ifold,t144
         if(ifold.eq.1.and.icerr.eq.0)then
-          lex=MIN0(lnblnk(LCMDFL),24)
+          lex=MIN0(lnblnk(LCMDFL),32)
           write(cfgroot,'(a)',IOSTAT=ios,ERR=13) LCMDFL(1:lex)
           subpath=' '
           call usrdir(odir)
@@ -3646,10 +3646,10 @@ C LCFGF into tokens and check the last token for .cfg.
         lwcfgl=lwcfgr-3
         if(lwcfgr.gt.4)then
           if(WORDS(IW)(lwcfgl:lwcfgr).eq.'.cfg')then
-            lex=MIN0((lwcfgl-1),24)  ! ensure cfgroot within length
+            lex=MIN0((lwcfgl-1),32)  ! ensure cfgroot within length
             write(cfgroot,'(a)',IOSTAT=ios,ERR=13)WORDS(IW)(1:lwcfgl-1)
           else
-            lex=MIN0(lwcfgr,24)  ! ensure cfgroot within length
+            lex=MIN0(lwcfgr,32)  ! ensure cfgroot within length
             write(cfgroot,'(a)',IOSTAT=ios,ERR=13) WORDS(IW)(1:lwcfgr)
             write(LTMP,'(a,a)',IOSTAT=ios,ERR=19) LTMP(1:lcfgr),'.cfg'
           endif

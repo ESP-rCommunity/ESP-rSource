@@ -1362,7 +1362,7 @@ C seasons.h provides typper and typsea
 C Simulation parameter sets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
-      character act*6,cr*24
+      character act*6,cr*32
 
 C Set root name string and length.
       cr=cfgroot
@@ -1685,7 +1685,7 @@ C Simulation parameter sets.
      &  smstres(MSPS),selres(MSPS),sipvres
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
 
-      character act*6,lipvdatf*72,cr*24,tag*3
+      character act*6,lipvdatf*72,cr*32,tag*3
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
       CHARACTER LAPROB*72,ENTFLNAM*72

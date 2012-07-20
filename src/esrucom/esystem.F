@@ -526,7 +526,7 @@ C Simulation parameters
       character gshpfile*72
       character gcepfile*72
       character dllsubr*12,dllmesg*124
-      character limgpth*24,ldocpth*24,lcfgroot*24,lpath*72
+      character limgpth*24,ldocpth*24,lcfgroot*32,lpath*72
       character path*72,lupath*72
       character namez*12,namen*12
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM
@@ -727,21 +727,21 @@ C If FILE > 4 char it might have a .cfg attached, otherwise add.
       lcfgl=lcfgr-3
       if(lcfgr.gt.4)then
         if(FILE(lcfgl:lcfgr).eq.'.cfg')then
-          if(lcfgl.gt.24)then
-            write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:24)
+          if(lcfgl.gt.32)then
+            write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:32)
           else
             write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:lcfgl-1)
           endif
         else
-          if(lcfgr.gt.24)then
-            write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:24)
+          if(lcfgr.gt.32)then
+            write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:32)
           else
             write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:lcfgr)
           endif
         endif
       else
-        if(lcfgr.gt.24)then
-          write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:24)
+        if(lcfgr.gt.32)then
+          write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:32)
         else
           write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:lcfgr)
         endif

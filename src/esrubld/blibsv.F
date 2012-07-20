@@ -594,7 +594,7 @@ c hold in memory for subsequent simulation result entry to library.
 C Ask for result-set information phrase.
 C Ignore if in autoexec mode - used the default.
 C Generate automatically if an uncertainty analysis.
-      write(RSNAME,'(2a)') 'Results for ',cfgroot(1:lnblnk(cfgroot))
+      write(RSNAME,'(2a)') 'For ',cfgroot(1:lnblnk(cfgroot))
       if (NRSIM.gt.1) then
         if (ISIM.eq.1) then
           RSNAME='Base case'

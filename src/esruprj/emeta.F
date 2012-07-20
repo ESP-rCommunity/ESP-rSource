@@ -34,7 +34,7 @@ C action (8 char) as follows:
 C    'new' creates model folders based on information
 C       in root and mpath parameters.
 C    'within' assumes that the current folder will be used.
-C root   (24 char) the root name of the model
+C root   (32 char) the root name of the model
 C mpath  (72 char) the path to the folder with cfg file.
 C weather (32 char) the weather file name (no path included)
 C simact (6 char) assessments to be carried out '------' if
@@ -79,7 +79,7 @@ C Simulation parameter sets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
 C Passed in parameters.
-      character action*8,root*24,mpath*72,menu*72
+      character action*8,root*32,mpath*72,menu*72
       character fs*1           ! file separator
       character weather*32     ! file name for the location (no path)
       character subpath*72
@@ -1255,7 +1255,7 @@ C used by scanning code to identify the contents of a silent file.
       character fs*1           ! file separator
 
 C For passing to silentmodel.
-      character actions*8,root*24,mpath*72
+      character actions*8,root*32,mpath*72
 
 C Same as local variable actions which is passed back to calling code.
       character silentreturndirec*8
@@ -2674,7 +2674,7 @@ C the contents of the file via model.h.
       character fs*1           ! file separator
 
 C For passing to silentmodel.
-      character actions*8,root*24,mpath*72
+      character actions*8,root*32,mpath*72
 
       logical dll,unixok
 

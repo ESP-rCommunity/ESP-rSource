@@ -25,7 +25,7 @@ These routines are called from ESP-r fortran code. The routines are :-
 extern clearfolderlist_();     /* in lib/esrui_lib.F */
 extern addfolderlist_();
 
-char cfgroot[25];	/* f77 project root name    */
+char cfgroot[32];	/* f77 project root name    */
 char path[73];	/* f77 project path    */
 char upath[73];	/* f77 users path    */
 char imgpth[25];	/* f77 relative path to images    */
@@ -601,7 +601,7 @@ void curproject_(fcfgroot,fpath,fupath,fimgpth,fdocpth,ibrowse,
 
   l_root = l_fpath = l_fupath = l_fimgpth = l_fdocpth =0;
   browse = (int) *ibrowse;
-  strncpy(cfgroot,"                        ",24);
+  strncpy(cfgroot,"                                ",32);
   f_to_c_l(fcfgroot,&len_root,&l_root); strncpy(cfgroot,fcfgroot,(unsigned int)l_root);	/* copy to static */
   cfgroot[l_root] = '\0';
   strncpy(imgpth, "                        ",24);

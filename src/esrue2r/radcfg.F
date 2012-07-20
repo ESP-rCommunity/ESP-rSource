@@ -760,7 +760,7 @@ C Set default names based on above.
       else
         IL=min(lnblnk(cfgroot),21)
         write (outs,'(3a)') cfgroot(1:IL),'_',SCENEPURP(ISCENE)(1:6)
-        write (SCENEDESC(ISCENE),'(a,a,a,a,a)') 'Scene of ',
+        write (SCENEDESC(ISCENE),'(5a)') 'Scene of ',
      &     cfgroot(1:lnblnk(cfgroot)),' for ',
      &     SCENEPURP(ISCENE)(1:lnblnk(SCENEPURP(ISCENE))),' analysis.'
       endif

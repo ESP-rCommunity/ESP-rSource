@@ -216,9 +216,9 @@ C Initialise
       OK=.TRUE.
       DOK=.TRUE.
 
-C Change cfgroot to have only 20 characters instead of the usual 24 (to
+C Change cfgroot to have only 28 characters instead of the usual 32 (to
 C assist in addition of standard appendages _str, _not, _ref and _typ)
-      IF(LNBLNK(CFGROOT).GT.20)WRITE(CFGROOT,'(2a)')CFGROOT(1:20),
+      IF(LNBLNK(CFGROOT).GT.28)WRITE(CFGROOT,'(2a)')CFGROOT(1:28),
      &'    '
 
 C Remember original model name, configuration and connection files
@@ -236,31 +236,31 @@ C configuration file names.
       APE='_str  '
       CALL FNCNGR(LCFGF,APE,EXT,LCFGF_S)
       IROOTLEN=LNBLNK(CFGROOT)
-      if(irootlen.le.19)then
+      if(irootlen.le.27)then
         write(cfgroot_s,'(2a)')cfgroot(1:irootlen),ape(1:4)
       else
-        write(cfgroot_s,'(2a)')cfgroot(1:19),ape(1:4)
+        write(cfgroot_s,'(2a)')cfgroot(1:27),ape(1:4)
       endif
       APE='_not  '
       CALL FNCNGR(LCFGF,APE,EXT,LCFGF_N)
-      if(irootlen.le.19)then
+      if(irootlen.le.27)then
         write(cfgroot_n,'(2a)')cfgroot(1:irootlen),ape(1:4)
       else
-        write(cfgroot_n,'(2a)')cfgroot(1:19),ape(1:4)
+        write(cfgroot_n,'(2a)')cfgroot(1:27),ape(1:4)
       endif
       APE='_ref  '
       CALL FNCNGR(LCFGF,APE,EXT,LCFGF_R)
-      if(irootlen.le.19)then
+      if(irootlen.le.27)then
         write(cfgroot_r,'(2a)')cfgroot(1:irootlen),ape(1:4)
       else
-        write(cfgroot_r,'(2a)')cfgroot(1:19),ape(1:4)
+        write(cfgroot_r,'(2a)')cfgroot(1:27),ape(1:4)
       endif
       APE='_typ  '
       CALL FNCNGR(LCFGF,APE,EXT,LCFGF_T)
-      if(irootlen.le.19)then
+      if(irootlen.le.27)then
         write(cfgroot_t,'(2a)')cfgroot(1:irootlen),ape(1:4)
       else
-        write(cfgroot_t,'(2a)')cfgroot(1:19),ape(1:4)
+        write(cfgroot_t,'(2a)')cfgroot(1:27),ape(1:4)
       endif
 
 C Remember zone specific files
@@ -613,9 +613,9 @@ C For help messages
       helpinsub='sbmedit'  ! set for subroutine
       CLOSER=.TRUE.
 
-C Change cfgroot to have only 20 characters instead of the usual 24 (to
+C Change cfgroot to have only 28 characters instead of the usual 32 (to
 C assist in addition of standard appendages _str, _not, _ref and _typ)
-      IF(LNBLNK(CFGROOT).GT.20)WRITE(CFGROOT,'(2a)')CFGROOT(1:20),
+      IF(LNBLNK(CFGROOT).GT.28)WRITE(CFGROOT,'(2a)')CFGROOT(1:28),
      &'    '
 
 C Remember original model name, configuration and model title.
@@ -661,14 +661,14 @@ C Check if *.ncm file exists if it does then read.
       APE='_str  '
       EXT='.ncm'
 
-C Check length of cfgroot string. If less than 20 char then
-C add on the _str, otherwise write initial 19 char of cfgroof
+C Check length of cfgroot string. If less than 28 char then
+C add on the _str, otherwise write initial 27 char of cfgroof
 C and then add in the _str.
       IROOTLEN=LNBLNK(CFGROOT)
-      if(irootlen.le.19)then
+      if(irootlen.le.27)then
         write(cfgroot,'(2a)')cfgroot(1:irootlen),ape(1:4)
       else
-        write(cfgroot,'(2a)')cfgroot(1:19),ape(1:4)
+        write(cfgroot,'(2a)')cfgroot(1:27),ape(1:4)
       endif
 
       CALL FNCNGR(LCFGF,APE,EXT,NNAME)
@@ -10139,7 +10139,7 @@ C It finally generate BRUKL input document and other SBEM reports.
      &       thbrpercent,uavtotal(MCOM)
       common/rpath/path
       character DOIT*248
-      character limgpth*24,ldocpth*24,lcfgroot*24,lpath*72
+      character limgpth*24,ldocpth*24,lcfgroot*32,lpath*72
       character path*72,lupath*72
       character fs*1, col*1
       character BATCHFL*72
@@ -11271,7 +11271,7 @@ C Subroutine EPCCAL generates the UK Energy Performance input file.
 
       common/rpath/path
       character DOIT*248
-      character limgpth*24,ldocpth*24,lcfgroot*24,lpath*72
+      character limgpth*24,ldocpth*24,lcfgroot*32,lpath*72
       character path*72,lupath*72
       character fs*1, col*1, quote*1
       CHARACTER EPCBATFL*72,EPCINIFL*72

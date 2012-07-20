@@ -167,14 +167,15 @@ C      character outs248*248
       character CMDCFG*72,CMDCLM*72,CMDCLMN*72,CMDNOTE*64,CMDRES*72
       character CMDLBL*12,CMDLNAM*80
       CHARACTER cpth*48,cmdn*48,topt*72
-      character t24*24,DFILE*72,DCNN*72,bidirfile*72,bidirname*12
+      character t32*32,DFILE*72,DCNN*72
+      character bidirfile*72,bidirname*12
       CHARACTER dinstpath*60,dirpath*72
       character useraction*8  ! returned from exemplar access call.
       character menu*72       ! blank model title for pregist call
       character fs*1
 
 C Passed parameters for pregist.
-      character root*24,mpath*72
+      character root*32,mpath*72
 
 C Returned parameters from silentread.
       character theprimedirective*8
@@ -1268,10 +1269,10 @@ C Root name of the model.
         if(CFGOK)then
           helptopic='model_root_name'
           call gethelptext(helpinsub,helptopic,nbhelp)
-          t24=cfgroot
-          CALL EASKS(t24,' ','Project root name (<24 chars)?',
-     &                24,'project','root name',IER,nbhelp)
-          if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')cfgroot=t24
+          t32=cfgroot
+          CALL EASKS(t32,' ','Project root name (<32 chars)?',
+     &      32,'project','root name',IER,nbhelp)
+          if(t32(1:2).ne.'  '.and.t32(1:4).ne.'UNKN')cfgroot=t32
           changedit=.true.
         endif
       ELSEIF(INO.EQ.11)THEN
@@ -1352,11 +1353,11 @@ C Ask for file name.
 C Also give user option to alter the root name.
           helptopic='model_root_name'
           call gethelptext(helpinsub,helptopic,nbhelp)
-          t24=cfgroot
-          CALL EASKS(t24,' Root name for the project? (see help',
-     &     'about whether to modify)',24,'project','root name',
-     &     IER,nbhelp)
-          if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')cfgroot=t24
+          t32=cfgroot
+          CALL EASKS(t32,' Root name for the project? (see help',
+     &      'about whether to modify)',32,'project','root name',
+     &      IER,nbhelp)
+          if(t32(1:2).ne.'  '.and.t32(1:4).ne.'UNKN')cfgroot=t32
         endif
 
 C If configuration file format is version 3 then check to see if there
@@ -1489,7 +1490,7 @@ C level).
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spflnam*72,longtfile*144,longtfiledos*144
       CHARACTER*72 LAPROB,ENTFLNAM,lipvdatf
-      character cr*24,spfdescr*8,ipvaction*3
+      character cr*32,spfdescr*8,ipvaction*3
 
 C dd is character array for selecting simulation parameter sets.
       character dd(MSPS+3)*33,de*8,aut*12
@@ -5491,8 +5492,8 @@ C whole of ape in the root name, even if this requires removing
 C some characters from the middle of the string buffer.
         irootlen=LNBLNK(CFGROOT)
 	iapelin=lnblnk(ape)
-        IF(irootlen.GT.(24-iapelin))THEN
-          irootlen=24-iapelin
+        IF(irootlen.GT.(32-iapelin))THEN
+          irootlen=32-iapelin
         ENDIF
         write(cfgroot,'(2a)')cfgroot(1:irootlen),ape(1:iapelin)
 
