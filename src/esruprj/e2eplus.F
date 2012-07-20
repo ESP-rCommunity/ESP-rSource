@@ -1090,8 +1090,12 @@ C Start with a comment about zone schedule documentation.
         WRITE(ioout,'(2a)',iostat=ios,err=7) 
      &    '! ',oprdesc(mz)(1:lnblnk(oprdesc(mz)))
 
-C Scan each days gains and calculate maximum gain.
+C Scan each days gains and calculate maximum gain for each
+C calendar day type.
 C First clear loadcasp, looping for each gain type.
+
+C << why < 7 there can be more than 7 calendar day types?
+
         do 9 I=1,NBDAYTYPE
           if(I.le.7)loadcasp(mz,i,1)=0.0
           if(I.le.7)loadradfrac(mz,i)=0.0

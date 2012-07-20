@@ -14,12 +14,21 @@ the 2nd level is subdivided by orientation and the upper level
 is again, lower resolution. Ceiling voids are treated explicitly
 as is the roof space.
 
-Variant 4lev_office_ves.cfg includes a vestibule to reduce heat
-exchange between the entrance and ground level core.
-
 There are two zones representing mixing boxes but they are
 place holders for variants which use flow networks to represent
 a slightly temperated fresh air supply.
+
+Variant office_4l_ves.cfg includes a vestibule to reduce heat
+exchange between the entrance and ground level core.
+
+Variant office_4l_cgc.cfg imposes lighting casual gain control
+on the open plan offices and top level offices base on Daylight
+Factor calculations done in Radiance.
+
+Variant office_4l_fin.cfg includes a number of shading fins on
+the facade in order to limit summer overheating.
+
+Variant office_4l_bc does not include the shading or the vestibule.
 
 There are several scripts included in the model cfg folder. These
 were created in an earlier project and are not yet operational. They

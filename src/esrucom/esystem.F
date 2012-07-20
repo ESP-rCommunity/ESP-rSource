@@ -693,6 +693,10 @@ C Set day types to default of 3 (weekday/saturday/sunday) and calendar
 C day type tags to default as well. These 3 day types cannot be deleted
 C and more day types if defined will be stored in CALENTAG(4) onwards.
 C this can be modified later. [The IF clause may not be necessary]
+
+C << In order to move to a default calendar that includes a holiday
+C << need to relax this logic. Why this test here?
+
       IF(NBDAYTYPE.LT.3)THEN
         nbdaytype=3
       ENDIF
@@ -1396,6 +1400,10 @@ C There is a calendar of day types defined read its name.
           goto 443
         elseif(WORD(1:5).eq.'*list')then
           K=6
+
+C << how about allowing 1 day type - that would be the case
+C << for a hosptal that was used 365 days a year.
+
           CALL EGETWI(OUTSTR,K,NBDAYTYPE,3,MDTY,'W','day types',IER)
           CALL EGETWIA(IUC,IRCC,365,0,10,'W','calendar day types',IER)
           DO 118 KV=1,365

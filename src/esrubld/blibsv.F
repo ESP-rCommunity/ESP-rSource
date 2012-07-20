@@ -815,7 +815,7 @@ C radiant and latent W for future and present in each zone.
 
 C Local variables for casual gains.
       integer icurrentday  ! julian day
-      integer iweekdayweekend ! indicates weekday saturday sunday
+      integer iweekdayweekend ! indicates current day type when looping in operations file
       integer iperocup,iperlight,iperequip ! which period of day
       real perocupc,perocupr,perocupl  ! convective/radiant/latent for occupants
       real perlightc,perlightr,perlightl  ! convective/radiant/latent for lights
@@ -891,7 +891,8 @@ C weekday saturday or sunday.
         iweekdayweekend=1
       endif
 
-C If more calendar day types are defined choose from ICALENDAR day types
+C If non-traditional calendar day types are defined choose from ICALENDAR 
+C day types when setting iweekdayweekend.
       IF(NBDAYTYPE.gt.3)THEN !
         IDAY=IDYP
         IF(IHRF.EQ.1)IDAY=IDYP+1

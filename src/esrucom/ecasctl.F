@@ -121,6 +121,10 @@ C Clear daylight factor array.
     2 continue
 
 c Read type of casual gain to be controlled during each day type.
+
+C << This potentially overwrites the common block value of
+C << NBDAYTYPE - should use a local variable instead!
+
       CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'cgc line 1',IER)
       if(IER.NE.0)return
       if(OUTSTR(1:16).eq.'*Casual_gain_ctl')then

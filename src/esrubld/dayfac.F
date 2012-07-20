@@ -73,6 +73,10 @@ c Trace output ? Use same slot as zone casual gains.
         WRITE(ITU,9996)ICNT,ICOMP,zname(icomp)
  9996   FORMAT(' Subroutine DAYFAC  Trace output',I4,' Zone',I3,1x,A /)
         ICNT=ICNT+1
+
+C << This report assumes there are only 3 day types. Revise to use
+C << the labels from calendars.
+ 
         WRITE(ITU,9989)(NCGTC(ICOMP,I),I=1,NBDAYTYPE)
  9989   FORMAT(' Casual gain type to control during Weekdays  = ',I3,/,
      &   29X,'during Saturdays = ',I3,/,29X,'during Sundays   = ',I3,/)

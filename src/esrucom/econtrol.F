@@ -589,7 +589,7 @@ C Reporting:
  78       CONTINUE
         ENDIF
 
-        nn=nbcdt(ii)
+        nn=nbcdt(ii)  ! a zero says use all day types
         if(nn.eq.0)nn=NBDAYTYPE
         do 20 j=1,nn
           jj=j
@@ -858,7 +858,7 @@ C Reporting:
  378       CONTINUE
         ENDIF
 
-        nn=npcdt(ii)
+        nn=npcdt(ii)  ! a zero says use all day types
         if(nn.eq.0)nn=nbdaytype
         do 50 j=1,nn
           jj=j
@@ -1092,7 +1092,7 @@ C Reporting:
  788       CONTINUE
         ENDIF
 
-        nn=nfcdt(ii)
+        nn=nfcdt(ii)  ! a zero says use all day types
         if(nn.eq.0)nn=nbdaytype
         do 71 j=1,nn
           jj=j
@@ -1342,7 +1342,7 @@ C Reporting:
  578      CONTINUE
         ENDIF
 
-        nn=necdt(ii)
+        nn=necdt(ii)  ! a zero says use all day types
         if(nn.eq.0)nn=nbdaytype
         do 57 j=1,nn
           jj=j
@@ -1510,7 +1510,7 @@ C Reporting:
  478      CONTINUE
         ENDIF
 
-        nn=ngcdt(ii)
+        nn=ngcdt(ii)  ! a zero says use all day types
         if(nn.eq.0)nn=nbdaytype
         do 89 j=1,nn
           jj=j
@@ -1677,7 +1677,7 @@ C Reporting:
  678      CONTINUE
         ENDIF
 
-        nn=nocdt(ii)
+        nn=nocdt(ii)  ! a zero says use all day types
         if(nn.eq.0)nn=nbdaytype
         do 200 j=1,nn
           jj=j

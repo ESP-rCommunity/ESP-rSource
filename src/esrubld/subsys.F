@@ -1314,6 +1314,7 @@ C ventilation parameters are sourced from the .opr file. Note that this
 C code sequence cannot be embedded in the air-flow schedule specific 
 C blocks (bOPR=TRUE) ; it is also required if the AIM-2 network is 
 C active and the opr file is used to impose scheduled ventilaton. 
+C Logic assumes 3 day types is standard.
       IDAY1=IDYP
       IF(IT2.EQ.1) then
         IDAY2=IDYP+1

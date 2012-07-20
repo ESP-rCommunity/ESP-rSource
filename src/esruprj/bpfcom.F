@@ -363,7 +363,7 @@ C if that is selected decrement ncf and return.
               IDOV=1
 	    endif
           endif
-          NN=NBCDT(ncf)
+          NN=NBCDT(ncf)  ! assume zero means all calendar day types
           IF(NN.EQ.0)NN=NBDAYTYPE
           do 87 ik=1,NN
             IF(IDOV.EQ.1)THEN
@@ -446,7 +446,7 @@ C Initial setup of day types.
               IDOV=1
 	    endif
           endif
-          NN=NPCDT(ncl)
+          NN=NPCDT(ncl)  ! assume zero means all calendar day types
           IF(NN.EQ.0)NN=NBDAYTYPE
           do 187 ik=1,NN
             IF(IDOV.EQ.1)THEN
@@ -534,7 +534,7 @@ C Initial setup of day types.
               IDOV=1
 	    endif
           endif
-          NN=nfcdt(ncc)
+          NN=nfcdt(ncc)  ! assume zero means all calendar day types
           IF(NN.EQ.0) NN=NBDAYTYPE
           do 587 ik=1,NN
             IF(IDOV.EQ.1)THEN
@@ -609,7 +609,7 @@ C Initial setup of day types.
           elseif(iv.eq.2)then
             NGCDT(ncc)=1
           endif
-          NN=NGCDT(ngf)
+          NN=NGCDT(ngf)  ! assume zero means all calendar day types
           IF(NN.EQ.0)NN=NBDAYTYPE
           do 687 ik=1,NN
             igcdv(ngf,ik,1)=1
@@ -654,7 +654,7 @@ C if that is selected decrement ncf and return.
               IDOV=1
 	    endif
           endif
-          NN=NOCDT(nof)
+          NN=NOCDT(nof)  ! assume zero means all calendar day types
           IF(NN.EQ.0)NN=NBDAYTYPE
           do 5 ik=1,NN
             IF(IDOV.EQ.1)THEN
@@ -735,7 +735,7 @@ C if that is selected decrement nCFCctlloops and return.
               nCFCctldaytypes(nCFCctlloops)=IV
             endif
           endif
-          NN=nCFCctldaytypes(nCFCctlloops)
+          NN=nCFCctldaytypes(nCFCctlloops)  ! assume zero means all calendar day types
           IF(NN.EQ.0)NN=3
           do 6687 ik=1,NN
             IP=1

@@ -616,6 +616,10 @@ C Set day types to default of 3 (weekday/saturday/sunday) and calendar
 C day type tags to default as well. These 3 day types cannot be deleted
 C and more day types if defined will be stored in CALENTAG(4) onwards.
 C this can be modified later. [The IF clause may not be necessary]
+
+C << review this logic. Why can't there be one day type i.e. a hospital
+C << that is used 365 days a year?
+
       IF(NBDAYTYPE.LT.3)THEN
         nbdaytype=3
       ENDIF

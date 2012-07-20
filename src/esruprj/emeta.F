@@ -291,7 +291,8 @@ C data into the simulation parameter set data structure.
 
 C Write calendar information (just the default one for the moment)
 
-C << later include calendar and day types within the META file >>
+C << include calendar and day types within the META file >>
+C << review assumption of 3 day types
      
       calename='standard weekday Sat & Sun'
       nbdaytype=3

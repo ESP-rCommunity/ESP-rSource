@@ -3334,6 +3334,7 @@ C espriou.h provides currentfile.
 
 C Calendar.
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER :: icalender,nbcaldays,nbdaytype
 
       CHARACTER DFILE*72,LLASCI*144
       character longtfile*144,longtafile*144,message*48,longtmp*144
@@ -4034,6 +4035,9 @@ C Check if weather site and model site differ.
       ENDIF
 
 C Update year.
+
+C << review logic for default number of day types
+
       if(icyear.eq.iyear)then
         continue
       else 

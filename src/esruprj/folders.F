@@ -185,7 +185,7 @@ C Current default version is v4.
       noimg=0
       LPNF='UNKNOWN'
       lmodellog='UNKNOWN'
-      nbdaytype=0
+      nbdaytype=0   ! reset to zero day types
       call st2file(LCFTMP,LCMDFL)  ! remove unprintable characters
 
 C Derive the model root name from this.

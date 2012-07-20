@@ -234,7 +234,10 @@ C are later used in precal.F as indexing arrays.
 C Read lines from file, discarding comments. Look for header on
 C newer files. Older files will begin with a description. To allow for
 C description with spaces copy directly from OUTSTR rather than parsing
-C it into words.  
+C it into words.
+
+C << Why reset ip3ver if there are more than 3 day types?
+ 
       CALL STRIPC(IUO,OUTSTR,0,ND,1,'oper name or header',IER)
       IF(IER.NE.0) goto 1002
       if(outstr(1:11).eq.'*Operations')then

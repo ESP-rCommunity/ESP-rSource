@@ -479,6 +479,10 @@ C then re-initialize the calendar.
         if(ieri.eq.-3) goto 3
         iyear=iyeart
         MODSIT=.true.
+
+C << assumption that 3 day types is a default. Revisit this logic
+C << to see if nbdaytype can legally be 1 or 2.
+
         if(nbdaytype.eq.0)then
           call calenmanage('i',ier)
         elseif(nbdaytype.eq.3)then
@@ -2353,6 +2357,9 @@ C For help messages
       usecalendar=.false. 
 
 C If user requested initial calendar.
+
+C << consider if we can default to 4 day types (wk sat sun holiday)
+
       if(act.eq.'i'.and.(.NOT.browse))then
         if(nbdaytype.le.3)then
           calename='standard weekday Sat & Sun'
@@ -2411,6 +2418,9 @@ C Initial menu entry setup.
    92 IER=0
       ILEN=365
       IVERT=-3
+
+C << ?? relax this assumption of 3 day types
+
       if(nbdaytype.ge.3) usecalendar=.true. 
 
 C Loop through the items until the page to be displayed. M is the 
@@ -2496,6 +2506,10 @@ C Help.
         elseif(icvert.eq.mcvert-2)then
 
 C Add or delete a day type.
+
+C << can we relax logic to allow there not to be a weekday saturday sunday
+C << day type e.g. as in a hospital use scenario?
+
           if(nbdaytype.ge.3.and.nbdaytype.le.MDTY)then
             CALL EASKABC(' Options:',' ',
      &        'add','delete (not available)','continue',IRT,nbhelp)
