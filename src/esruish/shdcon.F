@@ -625,25 +625,25 @@ C Output calculation progress report.
                if(indcom.eq.4)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' complete','P')
+                  call usrmsg(outs,' complete','-')
                endif
             elseif(calcom.ge.0.75)then
                if(indcom.eq.3)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' 75% complete','P')
+                  call usrmsg(outs,' 75% complete','-')
                endif
             elseif(calcom.ge.0.50)then
                if(indcom.eq.2)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' 50% complete','P')
+                  call usrmsg(outs,' 50% complete','-')
                endif
             elseif(calcom.ge.0.25)then
                if(indcom.eq.1)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' 25% complete','P')
+                  call usrmsg(outs,' 25% complete','-')
                endif
             endif
 
