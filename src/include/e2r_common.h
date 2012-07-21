@@ -189,7 +189,6 @@ C   DFPTS: location to calculate DF at.
 C   DFDIR: direction that sensor is looking.
 C   DFVALS: Daylight factors.
 
-
       common/e2rv/vewcmds(20),rvewsh(20),indxvew,ipckvew
       character vewcmds*124,rvewsh*10
       integer indxvew,ipckvew
@@ -197,3 +196,14 @@ C     vewcmds
 C     rvewsh
 C     indxvew
 C     ipckvew
+
+C Glare metrics (output from "evalglare")
+      common/radglare/dgp(mcom,mcub),dgi(mcom,mcub),ugr(mcom,mcub),
+     &                vcp(mcom,mcub),cgi(mcom,mcub),Lveil(mcom,mcub)
+      real dgp,dgi,ugr,vcp,cgi,Lveil
+C     dgp    daylight glare probability (J. Wienold)
+C     dgi    ??
+C     ugr    unified glare ratio (EN 13xxx)
+C     vcp    ??
+C     cgi    ??
+C     Lveil  ??

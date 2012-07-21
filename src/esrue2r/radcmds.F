@@ -235,11 +235,12 @@ C simscene simulates daylight coefficients and coupling (called from bps)
       character outs*124,doit*124,doitl*256,tfile*72
       character QT*1,fs*1
       character*72 LTMPFL,LTMPFA,rn
+      character glrfil*72,hdrfil*72,hdrfil2*72
 
 C There are 8 patch zones in the sky dome.
       dimension npz(8),pzalt(8),pzazim(8),solid(8)
 
-      LOGICAL XST,unixok
+      LOGICAL XST,unixok,GlareControl
       integer irif ! loop variable for more than one rif per scene
       integer iblnds ! local variable for current blind setting
       integer icfcflag ! local for cfc flag 0=no cfc, 1=cfc
@@ -248,6 +249,8 @@ C There are 8 patch zones in the sky dome.
       data pzalt/6.,18.,30.,42.,54.,66.,78.,90./
       data pzazim/12.,12.,15.,15.,20.,30.,60.,0./
       data solid/13.39,13.39,13.39,13.39,13.39,13.39,13.39,13.39/
+
+      GlareControl=.true.
 
       QT=CHAR(39)
       ITA1=IFIL+6
@@ -302,6 +305,10 @@ c        write(*,*)'LTMPFL=',LTMPFL,' istat=',istat
         else
           call EGETWI(OUTS,K,iblnds,0,MBP,'W','Blinds state',IER)
         endif
+C       ... and retrieve current day,hour,hour-fraction
+        call EGETWI(OUTS,K,IDYP,0,365,'W','Day of year',IER)
+        call EGETWI(OUTS,K,IHRP,0,24,'W','Hour of day',IER)
+        call EGETWI(OUTS,K,its,0,100,'W','Hour fraction',IER)
 
 C Check solar position and radiation.
         QDIRH=QDIR*esind(RSALT/57.296)
@@ -354,47 +361,114 @@ C Run rtrace. << ?? what about pathtype?? >>
      &       ' | rcalc -e ',QT,
      &       '$1=179*(0.265*$1+0.670*$2+0.065*$3)',QT,' >> ',
      &      cmdact(1:lnblnk(cmdact))
+
         call runit(doitl,'-')
 
 C                 =========================
 C                 G L A R E   C O N T R O L
 C                 =========================
-c      if (GlareControl) then
-C        Run rpict / evalglare for glare analysis during coupling mode
+        if (GlareControl) then
+C          Run rpict / evalglare for glare analysis during coupling mode
 C << is here a good place?
 C << most likely, this will need to be called from CFC control (!?)
 C << own function? For a first 'proof of concept' type of phase,
 C << code "reporting" of glare, only ... (!!)
+           write(hdrfil,'(2a)')octfil(1:lnblnk(octfil)-4),'.hdr'
+           write(glrfil,'(2a)')octfil(1:lnblnk(octfil)-4),'_glr.hdr'
 
-C        Viewpoint: Use MRT sensor?
+C          Viewpoint: Use MRT sensor?
 C << no direct common variable exchange between bps and e2r!!
 C
-C        Viewdirection: ???
-cx       1. Create picture (name: zone, scene, time stamp?)
-c # create .hdr
-c       write(doitl,'(4a,1x,9a)') 'cd ',runpath(1:lnrp),
-c     '; rpict -t 0 -vta ',
+C          Viewdirection: ???
+cx         1. Create picture (name: zone, scene, time stamp?)
+C # create .hdr
+          write(doitl,'(12a)') 'cd ',runpath(1:lnrp),
+     &       '; rpict -t 0 -vta',
+     &       ' -vp 1.8 1.8 1.350',
+     &       ' -vd  1.0000 -0.0000 -0.0000',
+     &       ' -vu 0 0 1 -vh 180.0 -vv 180.0',
+     &       ' -x 512 -y 512',
+     &       ' @',optnfil(1:lnblnk(optnfil)),
+     &       ' ',octfil(1:lnblnk(octfil)),
+     &       ' > tmpfile.unf'
 
-c      -vp 1.5 2.5 1.500 
-C      ' -vd -0.0000 -1.0000 -0.0000 -vu 0 0 1 -vh 180.0 -vv 180.0',
-c      -x 1024 -y 1024 
-c      optnfil(1:lnblnk(optnfil)),octfil(1:lnblnk(octfil))
-c      > TheSpace_Glare.hdr_1.unf
+          call runit(doitl,'-')
 
-c # ???
-c	pfilt -r .6 -x /2 -y /2 TheSpace_Glare.hdr_1.unf > TheSpace_Glare.hdr_1.hdr
+C # filter .hdr
+          write(doitl,'(6a)') 'cd ',runpath(1:lnrp),
+     &      '; pfilt -r .6 -x /2 -y /2',
+     &      ' tmpfile.unf >',
+     &      ' ',hdrfil(1:lnblnk(hdrfil))
 
-c # clean up ...
-c	rm -f TheSpace_Glare.hdr_1.unf
+          call runit(doitl,'-')
 
+C # clean up ...
+          write(doitl,'(3a)') 'cd ',runpath(1:lnrp),
+     &      '; rm -f tmpfile.unf'
 
-cx  2. Run Evalglare, pipe output to cmdact file?? Or own file? Or 
-cx     variables (how?) for further use, i.e. goal is to use as 
-cx     control variable ... ??
-c      'evalglare -c ',<<glare-file>>,' ',TheSpace_Glare.hdr_1.hdr
-cx  3. Remove picture (conditional? If glare "no issue"?)
+          call runit(doitl,'-')
 
-c      endif ! GlareControl true
+C # create glare file
+cx          2. Run Evalglare, pipe output to cmdact file?? Or own file? Or 
+cx             variables (how?) for further use, i.e. goal is to use as 
+cx             control variable ... ??
+          write(doitl,'(7a)') 'cd ',runpath(1:lnrp),
+     &      '; evalglare -c ',
+     &      glrfil(1:lnblnk(glrfil)),
+     &      ' ',hdrfil(1:lnblnk(hdrfil)),
+     &      ' > tmpfile.glr'
+
+          call runit(doitl,'-')
+
+C # Get glare metric values from tempfile
+          write (LTMPFL,'(2a)',iostat=istat)
+     &         runpath(1:lnrp),'tmpfile.glr'
+          call FPOPEN(ITA1,IER,1,1,LTMPFL)
+          if (ier.ne.0) then 
+            call usrmsg('Cannot open file:','tmpfile.glr','F')
+            return
+          endif
+          CALL STRIPC(ITA1,OUTS,0,ND,0,'glare tmp file',IER)
+          if (ier.ne.0) then 
+            call usrmsg('Cannot read file:','tmpfile.glr','F')
+            return
+          endif
+          K=26
+
+C dgp,dgi,ugr,vcp,cgi,Lveil: 0.027721 7.743993 11.812450 82.694305 13.414015 3.675666
+          call EGETWR(OUTS,K,dgp(ifocz,1),0.,1.,'F','DGP',IER)
+          call EGETWR(OUTS,K,dgi(ifocz,1),0.,100.,'W','DGI',IER)
+          call EGETWR(OUTS,K,ugr(ifocz,1),0.,100.,'W','UGR',IER)
+          call EGETWR(OUTS,K,vcp(ifocz,1),0.,100.,'W','VCP',IER)
+          call EGETWR(OUTS,K,cgi(ifocz,1),0.,100.,'W','CGI',IER)
+          call EGETWR(OUTS,K,Lveil(ifocz,1),0.,100.,
+     &                                          'W','Lveil',IER)
+
+          call ERPFREE(ITA1,ISTAT)
+
+          if (UGR(ifocz,1).lt.18.) then
+C         Remove picture (glare "no issue")
+            write(doitl,'(4a)') 'cd ',runpath(1:lnrp),
+     &        '; rm -f ',glrfil(1:lnblnk(glrfil))
+
+            write(*,*)'glrfil= ',glrfil(1:lnblnk(glrfil))
+
+            call runit(doitl,'-')
+
+          else ! keep picture file
+            write (outs,'(i3,a,f4.1,2a)') IDYP,'_',
+     &                             (real(IHRP)+real(its)/10.),
+     &                             '_',glrfil(1:lnblnk(glrfil))
+            call st2file(outs,hdrfil2) ! remove spaces!
+            write(doitl,'(6a)') 'cd ',runpath(1:lnrp),
+     &        '; mv ',glrfil(1:lnblnk(glrfil)),
+     &        ' ../images/',hdrfil2(1:lnblnk(hdrfil2))
+
+            call runit(doitl,'-')
+
+          endif ! UGR < 18
+
+        endif ! GlareControl true
 C                 =========================
 
 C Copy transfer file back to users homedir (bps is expecting it to be there).

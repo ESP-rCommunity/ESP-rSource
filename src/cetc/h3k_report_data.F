@@ -71,6 +71,7 @@ c      USE Building
 #include "geometry.h"
 #include "control.h"
 #include "CFC_common.h"
+#include "e2r_common.h"
 #include "blc25_open_windows.h"
 #include "tdf2.h"
 C.....Passed variable
@@ -1540,6 +1541,21 @@ C.....ARTIFICIAL LIGHTING GAIN FRACTION
      &         CGCTL(iZone,2,ICGCTL(iZone)),
      &         zname(iZone)(1:lnzname(iZone)))
       endif
+
+C ..... G L A R E .....
+      if (ICGCTL(iZone).gt.0) then
+        call AddToReport (
+     &         rvBuildingZoneDGP%Identifier,
+     &         dgp(iZone,1),
+     &         zname(iZone)(1:lnzname(iZone)))
+     
+        call AddToReport (
+     &         rvBuildingZoneUGR%Identifier,
+     &         ugr(iZone,1),
+     &         zname(iZone)(1:lnzname(iZone)))
+
+      endif
+
 
 C ================= MRT / PMV / PPD ===========================
       IF(IVF(iZone).EQ.1)THEN

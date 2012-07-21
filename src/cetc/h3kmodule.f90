@@ -117,6 +117,7 @@ MODULE h3kmodule
          rvBuildingAllZonesInternalGainsTotal, rvBuildingAllZonesInternalGainsUseful, &
          rvBuildingAllZonesInternalGainsAdverse, rvBuildingAllZonesEnergyBalanceNet, rvTemperature, &
          rvBuildingZoneLightFrac, rvBuildingZoneLightingzoneIllum, &
+         rvBuildingZoneDGP, rvBuildingZoneUGR, &
          rvExtSurfTemperature, rvPlantContainmentFlux, rvHCi, rvICORI, rvHCe, rvICORE, rvPRT, rvHRi, rvAmbRT, &
          rvExtSurfTotRad,rvExtSurfRadIncAng,rvExtSurfSolAzi,rvExtSurfSolElev, &
          rvClimateSolarDiffuseHorizontalRadiation, rvClimateSolarDirectNormalRadiation, &
@@ -919,6 +920,18 @@ CONTAINS
       rvBuildingZoneLightingzoneIllum%VariableType = '(lux)'
       rvBuildingZoneLightingzoneIllum%Description = 'Lighting zone average illuminance'
       Call AddVariable(rvBuildingZoneLightingzoneIllum)
+
+      rvBuildingZoneDGP%VariableName = 'bui/*/sens1/dgp'
+      rvBuildingZoneDGP%MetaType = 'units'
+      rvBuildingZoneDGP%VariableType = '(-)'
+      rvBuildingZoneDGP%Description = 'Zone sensor daylight glare probability'
+      Call AddVariable(rvBuildingZoneDGP)
+
+      rvBuildingZoneUGR%VariableName = 'bui/*/sens1/ugr'
+      rvBuildingZoneUGR%MetaType = 'units'
+      rvBuildingZoneUGR%VariableType = '(-)'
+      rvBuildingZoneUGR%Description = 'Zone sensor unified glare ratio'
+      Call AddVariable(rvBuildingZoneUGR)
 
       rvTemperature%VariableName = 'bui/*/s*/temp_inside'
       rvTemperature%MetaType = 'units'

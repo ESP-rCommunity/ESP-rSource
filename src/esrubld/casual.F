@@ -341,6 +341,9 @@ C new day control period:
           endif
           IPOINT=0
           if (IT.GT.ICGCS(ICOMP).AND.IT.LE.ICGCF(ICOMP)) IPOINT=1
+C         Set glare metrics to zero (21.07.12)
+          dgp(icomp,1)=0.0
+          ugr(icomp,1)=0.0
           if (IPOINT.NE.0) then
             call INTLUM(ICOMP,FRAC)  ! get the fraction of control
             CGCTL(ICOMP,2,ICGCTL(ICOMP))=FRAC
@@ -1010,12 +1013,13 @@ C  FRAC : fraction of casual gain (returned value)
 C geometry.h provides commons G0/G1/G2/precz.
 #include "geometry.h"
 #include "CFC_common.h"
+#include "e2r_common.h"
 
       integer lnblnk  ! function definition
 
       COMMON/BTIME/BTIMEP,BTIMEF
 
-      common/expath/runpath,pathtype
+c      common/expath/runpath,pathtype
       common/filep/ifil
       COMMON/TC/ITC,ICNT
       common/trc/itrc
@@ -1090,9 +1094,9 @@ C Common for CFC - Radiance coupling initialisation control
       CHARACTER*25 CSTR
       character outs*124,doit*124,outstr*124,cfgroot*24
 
-      character*72 LCFGF,LTMPFL,LTMPFLA,OUTCMD
-      character*72 runpath
-      character*24 pathtype
+      character*72 LCFGF,LTMPFL,LTMPFLA,OUTCMD,LTMPGLR
+c      character*72 runpath
+c      character*24 pathtype
 
       logical nog,close,closea,closeb,closec,closed,closee,closef
       logical closeg,closeh,closei,instart,neglum,XST
@@ -1104,6 +1108,7 @@ C Definition of sun altitude for daylight coefficient method:
       data alt/6.,18.,30.,42.,54.,66.,78.,90./
 
       iunit=ifil+1
+      ITA1=IFIL+6
 
 C Copy number of lighting zones for this zone (for h3k output ... avoid huge common-copy ...)
       Nlitz2(ICOMP)=NLITZ(ICOMP)
@@ -1603,7 +1608,7 @@ C If no reuse possible, call e2r to calculate illuminances.
             if (ILLDBM.eq.0) then
 C          write (77,'(a)') "  ---  "
 
-C Create transfer file (format: .PID.tmp) LTMPFL is the file name (passed
+C Create transfer file (format: .PID.dat) LTMPFL is the file name (passed
 C to e2r via "act" command line option) and LTMPFLA is the absolute 
 C path/ file name.
               call esppid(ipid)
@@ -1621,8 +1626,11 @@ c        write(*,*)'* INTLUM, LTMPFLA=',LTMPFLA,' istat=',istat
                 call EFDELET(IUNIT,ISTAT)
               endif
               call FPOPEN(IUNIT,ISTAT,1,2,LTMPFLA)
-              write (OUTCMD,'(4f9.1,2i3)')
-     &                 SALT,RSAZI,QDIR,QDIF,ICFCFLAG,IBLIND
+c              write (OUTCMD,'(4f9.1,2i3)')
+c     &                 SALT,RSAZI,QDIR,QDIF,ICFCFLAG,IBLIND
+              write (OUTCMD,'(4f9.1,2i3,i4,2i3)')
+     &            SALT,RSAZI,QDIR,QDIF,ICFCFLAG,IBLIND,IDYP,IHRP,its
+
 C          write (77,'(4f9.1,i3)') SALT,RSAZI,QDIR,QDIF,IBLIND
               write (IUNIT,'(a)') OUTCMD
               call ERPFREE(IUNIT,ISTAT)
@@ -1742,7 +1750,47 @@ C Close transfer file.
                 write(66,'(9(f7.1,1x))') 
      &               (selum(ILZ,IDFT),IDFT=1,NDF(ICOMP,ILZ))
  434          continue
-            else
+
+C %%%%%%%%%%%%%
+C Extract glare metrics from 'tmpfile.glr'
+C Open file.
+              write (LTMPGLR,'(2a)')runpath(1:lnblnk(runpath)),
+     &                                     'tmpfile.glr'
+cx              call st2file(LTMPFL,LTMPGLR)
+              CALL FPOPEN(ITA1,ISTAT,1,1,LTMPGLR)
+              if(ISTAT.lt.0)then
+                IER=1
+                write(outs,8) zname(icomp),N
+    8           format(' Zone ',A,
+     &                 'light zone ',I1,' glare file error')
+                call edisp(iuout,outs)
+                CALL EPWAIT
+                CALL EPAGEND
+                stop
+              endif
+
+              CALL STRIPC(ITA1,OUTS,0,ND,0,'glare tmp file',IER)
+              if (ier.ne.0) then 
+                call usrmsg('(Casual.F) Cannot read file:',
+     &                      'tmpfile.glr','F')
+                return
+              endif
+              K=26
+
+C dgp,dgi,ugr,vcp,cgi,Lveil: 0.027721 7.743993 11.812450 82.694305 13.414015 3.675666
+              call EGETWR(OUTS,K,dgp(icomp,1),0.,100.,'F','DGP',IER)
+              call EGETWR(OUTS,K,dgi(icomp,1),0.,100.,'W','DGI',IER)
+              call EGETWR(OUTS,K,ugr(icomp,1),0.,100.,'W','UGR',IER)
+              call EGETWR(OUTS,K,vcp(icomp,1),0.,100.,'W','VCP',IER)
+              call EGETWR(OUTS,K,cgi(icomp,1),0.,100.,'W','CGI',IER)
+              call EGETWR(OUTS,K,Lveil(icomp,1),0.,100.,
+     &                                              'W','Lveil',IER)
+
+              call ERPFREE(ITA1,ISTAT)
+
+C %%%%%%%%%%%%%
+
+            else ! ILLDBM <> 0
 C Take values from database:
               call edisp(iuout,'Using information from illum database.')
 			        ! calculate zelum(N) from database info ??
