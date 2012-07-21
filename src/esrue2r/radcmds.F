@@ -436,7 +436,7 @@ C # Get glare metric values from tempfile
           K=26
 
 C dgp,dgi,ugr,vcp,cgi,Lveil: 0.027721 7.743993 11.812450 82.694305 13.414015 3.675666
-          call EGETWR(OUTS,K,dgp(ifocz,1),0.,1.,'F','DGP',IER)
+          call EGETWR(OUTS,K,dgp(ifocz,1),0.,1.,'W','DGP',IER)
           call EGETWR(OUTS,K,dgi(ifocz,1),0.,100.,'W','DGI',IER)
           call EGETWR(OUTS,K,ugr(ifocz,1),0.,100.,'W','UGR',IER)
           call EGETWR(OUTS,K,vcp(ifocz,1),0.,100.,'W','VCP',IER)
@@ -450,8 +450,6 @@ C dgp,dgi,ugr,vcp,cgi,Lveil: 0.027721 7.743993 11.812450 82.694305 13.414015 3.6
 C         Remove picture (glare "no issue")
             write(doitl,'(4a)') 'cd ',runpath(1:lnrp),
      &        '; rm -f ',glrfil(1:lnblnk(glrfil))
-
-            write(*,*)'glrfil= ',glrfil(1:lnblnk(glrfil))
 
             call runit(doitl,'-')
 

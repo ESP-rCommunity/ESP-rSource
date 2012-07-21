@@ -1071,10 +1071,10 @@ C Switch off delay time memory common block
       COMMON/SOFDT/IDTM(MCOM,MLCOM)
       common/sus/issny
 
-C Illuminance database.
+C Illuminance and glare database.
       common/ILDB/NDBENT(MCOM),DBILLA(MCOM,MILDB,5),
-     &                   DBILLS(MCOM,MILDB,MLCOM,MDF)
-
+     &                   DBILLS(MCOM,MILDB,MLCOM,MDF),
+     &                   DBGLR(MCOM,MILDB,MCUB,6)
 
 C Average illuminance in lighting zone (for h3k output)
       common/CFCLighting/AveLtzIllum(mcom,mlcom),NLITZ2(MCOM)
@@ -1158,7 +1158,7 @@ C illuminance:
       esun=dir*suneff
       esky=QDIF*skyeff
 
-C Loop through all lighting zones (loop closes approx. at line 2144!)
+C Loop through all lighting zones (loop closes approx. at line 2550!)
       FRAC=0.
       DO 9 N=1,NLITZ(ICOMP)
         ZFRAC(N)=0.
@@ -1445,7 +1445,7 @@ C Check if sensor values already in illuminance database and set accuracies.
             ILLDBM=0
             AZIACC=5.
             ALTACC=5.
-            QDRACC=5.
+            QDRACC=10.
 
             write (66,*) ' ***  Solar data for timestep ',
      &                           real(IHRP)+real(its)/10.,
@@ -1478,7 +1478,7 @@ C Check for no direct solar (effectively use dayfactor).
  321              continue
                 endif
  310          continue
-              if (NMATCH.gt.1) then
+              if (NMATCH.gt.3) then ! original value = .gt.1
                 ILLDBM=1
                 do 322 ILZ=1,NLITZ(ICOMP) !MLCOM
                   do 3221 IDF=1,NDF(ICOMP,ILZ) !MDF
@@ -1504,7 +1504,7 @@ C cancels if y=mx assumption holds.
      &               (selum(ILZ,IDFT),IDFT=1,NDF(ICOMP,ILZ))
  432            continue
               endif
-            else ! direct radiation is larger than 5 W/m2
+            else ! direct radiation is larger than QDRACC
 
 C Check for similar sun position.
               NMATCH=0
@@ -1558,8 +1558,9 @@ C Generate coefficients of least squares arrays and ad up for each match
  4211               continue
  421              continue
                 endif
- 320          continue
-              if (NMATCH.gt.2) then
+ 320          continue ! loop through databases
+ 
+              if (NMATCH.gt.4) then ! original value .gt.2
                 ILLDBM=1
                 do 422 ILZ=1,NLITZ(ICOMP) !MLCOM
                   do 4221 IDF=1,NDF(ICOMP,ILZ) !MDF
@@ -1756,7 +1757,7 @@ C Extract glare metrics from 'tmpfile.glr'
 C Open file.
               write (LTMPGLR,'(2a)')runpath(1:lnblnk(runpath)),
      &                                     'tmpfile.glr'
-cx              call st2file(LTMPFL,LTMPGLR)
+
               CALL FPOPEN(ITA1,ISTAT,1,1,LTMPGLR)
               if(ISTAT.lt.0)then
                 IER=1
@@ -1778,7 +1779,7 @@ cx              call st2file(LTMPFL,LTMPGLR)
               K=26
 
 C dgp,dgi,ugr,vcp,cgi,Lveil: 0.027721 7.743993 11.812450 82.694305 13.414015 3.675666
-              call EGETWR(OUTS,K,dgp(icomp,1),0.,100.,'F','DGP',IER)
+              call EGETWR(OUTS,K,dgp(icomp,1),0.,100.,'W','DGP',IER)
               call EGETWR(OUTS,K,dgi(icomp,1),0.,100.,'W','DGI',IER)
               call EGETWR(OUTS,K,ugr(icomp,1),0.,100.,'W','UGR',IER)
               call EGETWR(OUTS,K,vcp(icomp,1),0.,100.,'W','VCP',IER)
@@ -1786,6 +1787,23 @@ C dgp,dgi,ugr,vcp,cgi,Lveil: 0.027721 7.743993 11.812450 82.694305 13.414015 3.6
               call EGETWR(OUTS,K,Lveil(icomp,1),0.,100.,
      &                                              'W','Lveil',IER)
 
+C             Check for values < 0
+              dgp(icomp,1)=max(dgp(icomp,1),0.)
+              dgi(icomp,1)=max(dgi(icomp,1),0.)
+              ugr(icomp,1)=max(ugr(icomp,1),0.)
+              vcp(icomp,1)=max(vcp(icomp,1),0.)
+              cgi(icomp,1)=max(cgi(icomp,1),0.)
+              Lveil(icomp,1)=max(Lveil(icomp,1),0.)
+
+C Copy new information to glare DB.
+              DBGLR(ICOMP,NDBENT(ICOMP),1,1)=dgp(icomp,1)
+              DBGLR(ICOMP,NDBENT(ICOMP),1,2)=dgi(icomp,1)
+              DBGLR(ICOMP,NDBENT(ICOMP),1,3)=ugr(icomp,1)
+              DBGLR(ICOMP,NDBENT(ICOMP),1,4)=vcp(icomp,1)
+              DBGLR(ICOMP,NDBENT(ICOMP),1,5)=cgi(icomp,1)
+              DBGLR(ICOMP,NDBENT(ICOMP),1,6)=Lveil(icomp,1)
+
+C Close glare metrics transfer file.
               call ERPFREE(ITA1,ISTAT)
 
 C %%%%%%%%%%%%%
@@ -1802,12 +1820,19 @@ C Take values from database:
                 zelum(ILZ)=suma/float(NDF(ICOMP,ILZ))
                 AveLtzIllum(ICOMP,ILZ)=zelum(ILZ)
  435          continue
-			  
+
+C Copy glare DB information to glare variables.
+              dgp(icomp,1)  =DBGLR(ICOMP,NDBENT(ICOMP),1,1)
+              dgi(icomp,1)  =DBGLR(ICOMP,NDBENT(ICOMP),1,2)
+              ugr(icomp,1)  =DBGLR(ICOMP,NDBENT(ICOMP),1,3)
+              vcp(icomp,1)  =DBGLR(ICOMP,NDBENT(ICOMP),1,4)
+              cgi(icomp,1)  =DBGLR(ICOMP,NDBENT(ICOMP),1,5)
+              Lveil(icomp,1)=DBGLR(ICOMP,NDBENT(ICOMP),1,6)
+
             endif ! ILLDBM .eq. 0 ?
           ENDIF ! (N.EQ.1) then
         endif ! sun is up, not startup, not "no radiation" ...
 C === END of Radiance coupling
-
 
       ELSE ! IDFST(ICOMP,N) not = 3, 4 or 5 ... i.e. IDFST(ICOMP,N) = 1 or 2
 
@@ -2518,9 +2543,11 @@ C Occupants arriving, calculate probability and save FIRSTL.
 C Update corresponding SHOCC lighting (if existing).
         call updatelighting(icomp,n,zelum(n),btimep,btimef)
 
-      ENDIF
+      ENDIF ! control type check
+
       FRAC=FRAC+ZFRAC(N)
-    9 CONTINUE
+
+    9 CONTINUE ! loop through all lighting zones (starts approx. line 1163
 
 C Remove transfer file.
       call EFDELET(IUNIT,ISTAT)

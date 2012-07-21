@@ -289,8 +289,12 @@ C Uncertainty.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
 
 C Illuminance database.
-      common/ILDB/NDBENT(mcom),DBILLA(MCOM,MILDB,5),
-     &                   DBILLS(MCOM,MILDB,MLCOM,MDF)
+cx      common/ILDB/NDBENT(mcom),DBILLA(MCOM,MILDB,5),
+cx     &                   DBILLS(MCOM,MILDB,MLCOM,MDF)
+C Illuminance and glare database.
+      common/ILDB/NDBENT(MCOM),DBILLA(MCOM,MILDB,5),
+     &                   DBILLS(MCOM,MILDB,MLCOM,MDF),
+     &                   DBGLR(MCOM,MILDB,MCUB,6)
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
