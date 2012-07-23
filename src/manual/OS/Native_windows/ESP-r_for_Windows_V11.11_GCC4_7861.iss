@@ -1,16 +1,17 @@
+
 [Setup]
 OutputDir=C:\Installer_for_ESP-r\Installer
 SourceDir=C:\Installer_for_ESP-r\Source
-OutputBaseFilename=ESP-r_setup_native_windows_gtk_txt_v11_10_dev6394
-VersionInfoVersion=11.10.6394
+OutputBaseFilename=ESP-r_setup_native_windows_gtk_txt_v11_11_jwh7861
+VersionInfoVersion=11.11.7861
 VersionInfoCompany=ESRU and others
-VersionInfoDescription=version 11.10.6394 GCC4 XML GTK text for native windows
-VersionInfoCopyright=ESRU and others 2001-2010
+VersionInfoDescription=version 11.11.7861 GCC4 XML GTK text for native windows
+VersionInfoCopyright=ESRU and others 2001-2012
 Compression=zip
 MinVersion=0,5.0.2195
-AppCopyright=Copywrite ESRU and Natural Resources Canada 2001-2010
+AppCopyright=Copywrite ESRU and Natural Resources Canada 2001-2012
 AppName=ESP-r for Windows
-AppVerName=ESP-r for Windows V11.10.6394
+AppVerName=ESP-r for Windows V11.11.7861
 InfoAfterFile=C:\Installer_for_ESP-r\Source\Esru\README_ESP-r_after_installer.txt
 InfoBeforeFile=C:\Installer_for_ESP-r\Source\Esru\README_ESP-r_before_installer.txt
 LicenseFile=C:\Installer_for_ESP-r\Source\Esru\GPL.txt
@@ -27,7 +28,7 @@ ShowLanguageDialog=no
 UsePreviousGroup=false
 AppPublisher=Energy System Research Unit, Glasgow (and others)
 AppPublisherURL=http://www.esru.strath.ac.uk
-AppVersion=ESP-r Version 11.10.6394
+AppVersion=ESP-r Version 11.11.7861
 UninstallDisplayName=ESP-r
 MergeDuplicateFiles=false
 DisableDirPage=true
@@ -54,6 +55,10 @@ Name: {app}\esp-r\electric_loads
 Name: {app}\esp-r\manual
 Name: {app}\esp-r\etc
 Name: {app}\esp-r\lib
+Name: {app}\esp-r\lib\gettext
+Name: {app}\esp-r\lib\glib-2.0
+Name: {app}\esp-r\lib\gtk-2.0
+Name: {app}\esp-r\lib\pkgconfig
 Name: {app}\esp-r\training
 Name: {app}\esp-r\validation
 Name: {app}\esp-r\xsl

@@ -142,8 +142,8 @@ C columns listed above.
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       common/getmenu/menutype,igetind(65),igetflux(65)
 
-C Optional title for graph and up to 5 other labels and their positions.
-      common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
+C Optional title for graph and up to 10 other labels and their positions.
+      common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
 
 C Comfort parameters and hash table.
       common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
@@ -925,11 +925,9 @@ C Add or clear labels within a graph.
      &        'edit/add labels','contine',igopt,nbhelp)
             if(igopt.eq.1)then
               igrl=0
-              grlbl(1)=' '
-              grlbl(2)=' '
-              grlbl(3)=' '
-              grlbl(4)=' '
-              grlbl(5)=' '
+              grlbl(1)=' '; grlbl(2)=' '; grlbl(3)=' '; grlbl(4)=' '
+              grlbl(5)=' '; grlbl(6)=' '; grlbl(7)=' '; grlbl(8)=' '
+              grlbl(9)=' '; grlbl(10)=' '
             elseif(igopt.eq.2)then
               goto 1
             endif
@@ -942,25 +940,23 @@ C Add or clear labels within a graph.
             if(igopt.eq.1)then
               ngrlbl=0
               igrl=0
-              grlbl(1)=' '
-              grlbl(2)=' '
-              grlbl(3)=' '
-              grlbl(4)=' '
-              grlbl(5)=' '
+              grlbl(1)=' '; grlbl(2)=' '; grlbl(3)=' '; grlbl(4)=' '
+              grlbl(5)=' '; grlbl(6)=' '; grlbl(7)=' '; grlbl(8)=' '
+              grlbl(9)=' '; grlbl(10)=' '
               goto 1
             elseif(igopt.eq.2)then
-              igrl=0
+              igrl=0   ! reset which one we start editing at
             elseif(igopt.eq.3)then
               goto 1
             endif
           endif
  291      continue
 
-C If there are no labels or some label start at first, if more than 5 exit.
+C If there are no labels or some label start at first, if more than 9 exit.
           if(ngrlbl.eq.0)then
             ngrlbl=1
             igrl=1
-          elseif(ngrlbl.gt.5)then
+          elseif(ngrlbl.gt.9)then
             call usrmsg('Array of labels is full.',' ','W')
             goto 1
           else

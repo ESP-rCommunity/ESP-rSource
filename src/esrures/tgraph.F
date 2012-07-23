@@ -191,7 +191,7 @@ C act='p' iget parameters already set.
 
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
-      common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
+      common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
@@ -687,7 +687,7 @@ C to graphical result display.
       COMMON/SIMPKA/NSIM
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
-      common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
+      common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
 
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE

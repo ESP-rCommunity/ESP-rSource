@@ -4095,7 +4095,7 @@ C *********************************************************************
 C **************** ZSID
 C ZSID returns compact descriptions of the zone:surface.
 C ZSDES has no truncation, ZSDESC compacts to 20 char with minimum
-C of truncation.
+C of truncation, ZSDESS has maximum risk of truncation.
 C << check if calling code knows that current geometry file read is >>
 C << not required for this. >>
       SUBROUTINE ZSID(IZ,IS,ZSDES,ZSDESC,ZSDESS)

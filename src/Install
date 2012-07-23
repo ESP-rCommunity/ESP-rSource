@@ -930,6 +930,11 @@ case $xLibs in
                 if [ -d /usr/X11R6/lib64/X11 ] ; then
                   X11_found="yes"
                   XINSTALLDIR="/usr/X11R6"
+                else
+                  if [ -d /usr/lib64/X11 ] ; then
+                    X11_found="yes"
+                    XINSTALLDIR="/usr/lib64"
+                  fi
                 fi;;
               sun4u)
                 if [ -d /usr/X11R6/lib/64 ] ; then
@@ -947,6 +952,10 @@ case $xLibs in
             if [ -d /usr/lib/X11 ] && [ "$X11_found" = "no" ]; then
               X11_found="yes"
               XINSTALLDIR="/usr"
+            fi
+            if [ -d /usr/lib64/X11 ] && [ "$X11_found" = "no" ]; then
+              X11_found="yes"
+              XINSTALLDIR="/usr/lib64"
             fi
 
          ;;
@@ -1026,8 +1035,8 @@ esac
 case $compiler in
    sunF90)   CC=cc;  CPL=CC;  FC=f90  ;;
    GNU) case $gnu_version in
-           gcc4)     CC=gcc-mp-4.6;   CPL=g++-mp-4.6;    FC=gfortran-mp-4.6  ;;
-#           gcc4)     CC=gcc;   CPL=g++;    FC=gfortran  ;;
+#           gcc4)     CC=gcc-mp-4.6;   CPL=g++-mp-4.6;    FC=gfortran-mp-4.6  ;;
+           gcc4)     CC=gcc;   CPL=g++;    FC=gfortran  ;;
         esac;;
    intel)    CC=icc;  CPL=icpc;  FC=ifort ;;
 esac
