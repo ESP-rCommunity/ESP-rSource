@@ -16614,6 +16614,10 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 ' desktop computer radiant = 14 convective = 86'
 ' monitor (type not defined) radiant = 35 conv = 65'
 ' laser printer  radiant 33 convective 67'
+' '
+'CIBSE Guide A Section 6.3 states that occupant radiant'
+'fraction can be between 20 & 60 % depending on clothing'
+'and activity.'
 *enditem
       CALL EPICKS(IX,IPRVAL,' ','Profiles in events db: ',
       CALL EASKABC(' ','Type of casual gain: ',ll1,ll2,ll3,ICGTX,6)
@@ -16692,6 +16696,9 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'Heavy factory work 440     220 220    190 250     135 305'
 '       avg mix     440     220 220    190 250     135 305'
 ' '
+'CIBSE Guide A Section 6.3 states that occupant radiant'
+'fraction can be between 20 & 60 % depending on clothing'
+'and activity.'
 *enditem
       CALL EASKS(hold,outs,' ',24,' 0 24 ','cas st-fn hr',IER,1)
       CALL EASKABCD('Gain to be specified as: (see help)',' ','Watts',
@@ -16732,6 +16739,10 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 ' monitor (type not defined) radiant = 35 conv = 65'
 ' laser printer  radiant 33 convective 67'
 '   '
+'CIBSE Guide A Section 6.3 states that occupant radiant'
+'fraction can be between 20 & 60 % depending on clothing'
+'and activity.'
+'  '
 'Electrical data (e.g. power factor, leading/lagging loads, real power,'
 'phase) might be used by electrical engineers and in models where other'
 'power components are being defined. If not just say no. '
@@ -16742,7 +16753,6 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 'a lagging current, most loads take a lagging current.'
 ' '
 'You are also asked about the following: '
-'  '
 '  What is the real power consumption in watts? This might be the same'
 '  as the sensible load for some devices (please check). '
 '  '
