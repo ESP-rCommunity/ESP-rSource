@@ -484,6 +484,7 @@ C Note: 60 is the maximum number of items associated with an anchor point.
       integer IZLEN      ! length of ZSDESS
       integer ISLEN      ! length of SUFFIX
       integer ITLEN      ! length of ZSDES
+      integer lastireportunit  ! to detect change in unit
 
       logical SLIST,NLIST,MRTLIST,OKL,dok,ok
 #ifdef OSI
@@ -682,6 +683,7 @@ C Setup menu items.
       elseif(IROC.eq.-1)then
         ITEM(24)='& Data: integrated      '
       endif
+
       if (MENUTYPE.eq.3) then
         ITEM(25)='/ Clear all selections  '
       else
@@ -691,6 +693,7 @@ C Setup menu items.
           ITEM(25)='+ Filter >> occup only'
         endif
       endif
+
       if (MENUTYPE.eq.3) then
         ITEM(26)='= Set axis scale'
       else
@@ -702,9 +705,17 @@ C Setup menu items.
 
 C << place ILFLAG here to define tabular labels >>
       endif
+
+C Make up text for 27th and 28th menu slots.
       if (MENUTYPE.eq.3) then
         ITEM(27)='+ Add another profile'
-        ITEM(28)='                     '
+        if(ireportunit.eq.0)then
+          ITEM(28)='" Units >> normal '
+        elseif(ireportunit.eq.1)then
+          ITEM(28)='" Units >> W or Whr'
+        elseif(ireportunit.eq.2)then
+          ITEM(28)='" Units >> kW or kWhr'
+        endif
       else
 
 C Set delimiter, and for tabular lists allow unit choice.
@@ -731,6 +742,7 @@ C Set delimiter, and for tabular lists allow unit choice.
           ITEM(28)='                     '
         endif
       endif
+
       if(MENUTYPE.eq.3) then
         ITEM(29)='! Draw graph    '
         ITEM(30)='* Labels        '
@@ -2204,14 +2216,29 @@ C IGET = 8   Zone-side sensible heating load.
           IGETNO(NGET,6)=-3; IGETNO(NGET,7)=6
           SUFFIX=' HeatInj'
           if(IROC.eq.0)then
-            SLABEL(NGET)='Sensible heating load (kW)'
-            LNSLABEL(NGET)=26
+            if(ireportunit.eq.0.or.ireportunit.eq.2)then
+              SLABEL(NGET)='Sensible heating load (kW)'
+              LNSLABEL(NGET)=26
+            else
+              SLABEL(NGET)='Sensible heating load (W)'
+              LNSLABEL(NGET)=25
+            endif
           elseif(IROC.eq.1)then
-            SLABEL(NGET)='Sensible heating load ch (kW/hr)'
-            LNSLABEL(NGET)=32
+            if(ireportunit.eq.0.or.ireportunit.eq.2)then
+              SLABEL(NGET)='Sensible heating load ch (kW/hr)'
+              LNSLABEL(NGET)=32
+            else
+              SLABEL(NGET)='Sensible heating load ch (W/hr)'
+              LNSLABEL(NGET)=31
+            endif
           elseif(IROC.eq.-1)then
-            SLABEL(NGET)='Sensible heating load (kWhr)'
-            LNSLABEL(NGET)=28
+            if(ireportunit.eq.0.or.ireportunit.eq.2)then
+              SLABEL(NGET)='Sensible heating load (kWhr)'
+              LNSLABEL(NGET)=28
+            else
+              SLABEL(NGET)='Sensible heating load (Whr)'
+              LNSLABEL(NGET)=27
+            endif
           endif
         elseif(inoc.eq.2)then
 
@@ -3184,27 +3211,50 @@ C Toggle delimeter.
 
       elseif(INO.EQ.28)then
 
-        if(MENUTYPE.ne.4) then
-          continue
-        else
+C Toggle flux units for all menu types.
 
-C Toggle units.
-          helptopic='tabular_delimiter_choice'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-          IWM=0
-          CALL EASKATOG('Units to use when reporting flux:',' ',
-     &      'normal unit','W or Whr ','kW or kWhr','continue',' ',
-     &      ' ',' ',IWM,nbhelp)
-          if(iwm.eq.1)then
-            ireportunit = 0
-          elseif(iwm.eq.2)then
-            ireportunit = 1
-          elseif(iwm.eq.3)then
-            ireportunit = 2
-          endif
+C << if there is something already in the graph then we need
+C << to modify the range in axis 2 (flux).
+
+        helptopic='tabular_delimiter_choice'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        IWM=0
+        lastireportunit=ireportunit
+        CALL EASKATOG('Units to use when reporting flux:',' ',
+     &    'normal unit','W or Whr ','kW or kWhr','continue',' ',
+     &    ' ',' ',IWM,nbhelp)
+        if(iwm.eq.1)then
+          ireportunit = 0
+        elseif(iwm.eq.2)then
+          ireportunit = 1
+        elseif(iwm.eq.3)then
+          ireportunit = 2
         endif
-C        write(6,*) 'ireportunit ',ireportunit
+C Debug.
+C        write(6,*) 'ireportunit ',ireportunit,lastireportunit,
+C     &    YMAX(2),YMIN(2)
 
+C If something drawn AND it included loads axis and the value
+C of ireportunit changed then reset YMIN(2) and YMAX(2) units
+C as well.
+        if(ireportunit.ne.lastireportunit)then
+          if (NGET.gt.0) then
+            if (YAXSET(2).gt.0) then
+              if((ireportunit.eq.0.or.ireportunit.eq.2).and.
+     &            lastireportunit.eq.1)then
+                YMAX(2)=YMAX(2)/1000.  ! W to kW
+                YMIN(2)=YMIN(2)/1000.
+              elseif((lastireportunit.eq.0.or.
+     &                lastireportunit.eq.2).and.ireportunit.eq.1)then
+                YMAX(2)=YMAX(2)*1000.  ! kW to W
+                YMIN(2)=YMIN(2)*1000.
+              endif
+            endif
+          endif
+C Debug.
+C          write(6,*) 'new ireportunit ',ireportunit,lastireportunit,
+C     &      YMAX(2),YMIN(2)
+        endif
       elseif(INO.eq.29.and.nl.ne.0) then
 
 C Debug...
@@ -3840,57 +3890,39 @@ C IGETNO(KGET,1) =  7 Node temperature (MLC)
 
       elseif(IGETNO(KGET,1).eq.8)then
 
-C IGETNO(KGET,1) =  8 Sensible heating load and convert to KW.
-C However if menu type 4 take into account ireportunit.
+C IGETNO(KGET,1) =  8 Sensible heating load and convert to KW
+C taking into account ireportunit.
         CALL GZQMH(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
         N=24*NTS
-        if(menutype.ne.4)then
-          do 30 I=1,N
-            GVAL(I)=GVAL(I)/1000.  ! do normal conversion to kWhr
- 30       continue
-        else
-          if(ireportunit.eq.0.or.ireportunit.eq.2)then
-            do 300 I=1,N
-              GVAL(I)=GVAL(I)/1000. ! selective conversion
- 300        continue
-          endif
+        if(ireportunit.eq.0.or.ireportunit.eq.2)then
+          do 300 I=1,N
+            GVAL(I)=GVAL(I)/1000. ! selective conversion
+ 300      continue
         endif
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
 
       elseif(IGETNO(KGET,1).eq.9)then
 
-C IGETNO(KGET,1) =  9 Sensible cooling load and convert to KW.
-C However if menu type 4 take into account ireportunit.
+C IGETNO(KGET,1) =  9 Sensible cooling load and convert to KW
+C taking into account ireportunit.
         CALL GZQMC(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
         N=24*NTS
-        if(menutype.ne.4)then
-          do 31 I=1,N
-            GVAL(I)=GVAL(I)/1000.  ! do normal conversion to kWhr
- 31       continue
-        else
-          if(ireportunit.eq.0.or.ireportunit.eq.2)then
-            do 301 I=1,N
-              GVAL(I)=GVAL(I)/1000. ! selective conversion
- 301        continue
-          endif
+        if(ireportunit.eq.0.or.ireportunit.eq.2)then
+          do 301 I=1,N
+            GVAL(I)=GVAL(I)/1000. ! selective conversion
+ 301      continue
         endif
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.10)then
 
-C IGETNO(KGET,1) = 10 Total plant flux and convert to KW.
-C However if menu type 4 take into account ireportunit.
+C IGETNO(KGET,1) = 10 Total plant flux and convert to KW
+C taking into account ireportunit.
         CALL GZQM(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
         N=24*NTS
-        if(menutype.ne.4)then
-          do 32 I=1,N
-            GVAL(I)=GVAL(I)/1000.  ! do normal conversion to kW
- 32       continue
-        else
-          if(ireportunit.eq.0.or.ireportunit.eq.2)then
-            do 302 I=1,N
-              GVAL(I)=GVAL(I)/1000. ! selective conversion
- 302        continue
-          endif
+        if(ireportunit.eq.0.or.ireportunit.eq.2)then
+          do 302 I=1,N
+            GVAL(I)=GVAL(I)/1000. ! selective conversion
+ 302      continue
         endif
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
 
@@ -4376,74 +4408,50 @@ C IGETNO(KGET,1) = 29 Delta T zone - ambient.
         CALL XTVAL1(GC,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.30)then
 
-C IGETNO(KGET,1) = 30 Latent load (dehumidification) and convert to KW.
-C However if menu type 4 take into account ireportunit.
+C IGETNO(KGET,1) = 30 Latent load (dehumidification) and convert to KW
+C taking into account ireportunit.
         CALL GZLLC(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
         N=24*NTS
-        if(menutype.ne.4)then
-          do 33 I=1,N
-            GVAL(I)=GVAL(I)/1000.  ! do normal conversion to kW
- 33       continue
-        else
-          if(ireportunit.eq.0.or.ireportunit.eq.2)then
-            do 303 I=1,N
-              GVAL(I)=GVAL(I)/1000. ! selective conversion
- 303        continue
-          endif
+        if(ireportunit.eq.0.or.ireportunit.eq.2)then
+          do 303 I=1,N
+            GVAL(I)=GVAL(I)/1000. ! selective conversion
+ 303      continue
         endif
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.31)then
 
-C IGETNO(KGET,1) = 31 Latent load (humidification) and convert to KW.
-C However if menu type 4 take into account ireportunit.
+C IGETNO(KGET,1) = 31 Latent load (humidification) and convert to KW
+C taking into account ireportunit.
         CALL GZLLH(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
         N=34*NTS
-        if(menutype.ne.4)then
-          do 34 I=1,N
-            GVAL(I)=GVAL(I)/1000.  ! do normal conversion to kW
- 34       continue
-        else
-          if(ireportunit.eq.0.or.ireportunit.eq.2)then
-            do 304 I=1,N
-              GVAL(I)=GVAL(I)/1000. ! selective conversion
- 304        continue
-          endif
+        if(ireportunit.eq.0.or.ireportunit.eq.2)then
+          do 304 I=1,N
+            GVAL(I)=GVAL(I)/1000. ! selective conversion
+ 304      continue
         endif
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.32)then
 
-C IGETNO(KGET,1) = 32 All latent load and convert to KW.
-C However if menu type 4 take into account ireportunit.
+C IGETNO(KGET,1) = 32 All latent load and convert to KW
+C taking into account ireportunit.
         CALL GZLL(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
         N=35*NTS
-        if(menutype.ne.4)then
-          do 35 I=1,N
-            GVAL(I)=GVAL(I)/1000.  ! do normal conversion to kW
- 35       continue
-        else
-          if(ireportunit.eq.0.or.ireportunit.eq.2)then
-            do 305 I=1,N
-              GVAL(I)=GVAL(I)/1000. ! selective conversion
- 305        continue
-          endif
+        if(ireportunit.eq.0.or.ireportunit.eq.2)then
+          do 305 I=1,N
+            GVAL(I)=GVAL(I)/1000. ! selective conversion
+ 305      continue
         endif
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.33)then
 
-C IGETNO(KGET,1) = 33 Sensible plus latent load and convert to KW. 
-C However if menu type 4 take into account ireportunit.
+C IGETNO(KGET,1) = 33 Sensible plus latent load and convert to KW 
+C taking into account ireportunit.
         CALL GZQSL(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
         N=36*NTS
-        if(menutype.ne.4)then
-          do 36 I=1,N
-            GVAL(I)=GVAL(I)/1000.  ! do normal conversion to kW
- 36       continue
-        else
-          if(ireportunit.eq.0.or.ireportunit.eq.2)then
-            do 306 I=1,N
-              GVAL(I)=GVAL(I)/1000. ! selective conversion
- 306        continue
-          endif
+        if(ireportunit.eq.0.or.ireportunit.eq.2)then
+          do 306 I=1,N
+            GVAL(I)=GVAL(I)/1000. ! selective conversion
+ 306      continue
         endif
         CALL XTVAL1(GVAL,ISTART,IEND,KGET)
       elseif(IGETNO(KGET,1).eq.34)then
@@ -4659,6 +4667,7 @@ C e.g. for a flux (W) the energy for the given period (Wh).
 C For IROC=0 or 1 the value DAVE is the average value for the period.
 C Memory is referenced if the data is held there otherwise MMACAL is 
 C called to calculate the values.
+C An exception is igetno 10, 32 are returned in kW. 
 
       subroutine MMACHK(KGET,DMAX,DMIN,DAVE,DTOT,TMAX,TMIN)
 #include "building.h"

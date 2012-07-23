@@ -995,6 +995,13 @@ C        CALL EASKABC('Data display options:',outs,
 '  comma separator (for excel)'
 '  tab separator (for excel)'
 '  tagged - marked up data'
+'  '
+'Also you can alter the reporting units for heating and cooling'
+'sensible and latent from kW or kWhr to W or Whr to reflect the'
+'range of values presented.  The Units choice is available for'
+'both tabular listings and graphs.'
+'Note: that surface energy balance values are always reported in 
+'W or Whr (even if the toggle is set to kW or kWhr.'
 *enditem
           CALL EASKATOG('Delimeter to use between columns of data:',' ',
 *item GOMENU res_graph_title_edit

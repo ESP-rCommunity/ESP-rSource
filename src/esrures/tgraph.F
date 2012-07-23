@@ -195,6 +195,9 @@ C act='p' iget parameters already set.
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
+      integer ireportunit ! zero is default one is W two is kW three Joules
+      common/repunit/ireportunit
+
       dimension Yold(MZS), TIMEold(MZS)
       dimension YSC(5), Yadd(5), igx(5), ilr(5)
       character prompt*124
@@ -275,7 +278,8 @@ C then just draw the new profiles using the existing axis and scaling
 C factors.
       if (YAXSET(IGETNO(NGET,8)).ne.0.and.ADDLIN.eq.1) goto 99
 
-C Check if heating/cooling plant information requested.
+C Check if heating/cooling plant information requested. If user has
+C asked for normal units (kW) then set kwatts TRUE.
       do 3 I=1,NGET
         if (IGETNO(I,8).eq.2) then
           if (IGETNO(I,1).eq.8.or.IGETNO(I,1).eq.9.or.
@@ -283,7 +287,11 @@ C Check if heating/cooling plant information requested.
      &        IGETNO(I,1).eq.31.or.IGETNO(I,1).eq.32.or.
      &        IGETNO(I,1).eq.33) then
             if (YAXSET(2).lt.2) YAXSET(2)=0
-            kwatts=.TRUE.
+            if(ireportunit.eq.0.or.ireportunit.eq.2)then
+              kwatts=.TRUE.
+            else
+              kwatts=.FALSE.
+            endif
           endif
         endif
  3    continue
@@ -303,24 +311,35 @@ C The YMAX,MIN variables are for axis 1 through 5 max and min values.
  6    continue
       call usrmsg(prompt,'Scanning data for range of values...','-')
 
-C First recover bounds of selected data.
+C First recover bounds of selected data. MMACHK returns kW for DMAX and
+C DMIN for the specific cases of IGETNO(IX,1) = 10 or 32.
       do 40 IX=1,NGET
         if (YAXSET(IGETNO(IX,8)).lt.2) then
           call MMACHK(IX,DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN)
+C Debug          write(6,*) 'aft mmachk ',dmax,dmin,ymax(2),ymin(2)
           YAXSET(IGETNO(IX,8))=1
 
 C Check for plant flux in kW, if so convert fluxes from W to kW
-          if (IGETNO(IX,8).eq.2.and.kwatts) then
+C based on value of ireportunit.
+          if (kwatts.and.IGETNO(IX,8).eq.2) then
             if (IGETNO(IX,1).ne.8.and.IGETNO(IX,1).ne.9.and.
      &          IGETNO(IX,1).ne.10.and.IGETNO(IX,1).ne.30.and.
      &          IGETNO(IX,1).ne.31.and.IGETNO(IX,1).ne.32.and.
      &          IGETNO(IX,1).ne.33) then
-              DMAX=DMAX/1000.
-              DMIN=DMIN/1000.
+              if(ireportunit.eq.0.or.ireportunit.eq.2)then
+                DMAX=DMAX/1000.
+                DMIN=DMIN/1000.
+              endif
+            endif
+          elseif (.NOT.kwatts.and.IGETNO(IX,8).eq.2) then
+            if (IGETNO(IX,1).eq.10.or.IGETNO(IX,1).eq.32) then
+              DMAX=DMAX*1000.
+              DMIN=DMIN*1000.
             endif
           endif
           YMAX(IGETNO(IX,8))=MAX(DMAX,YMAX(IGETNO(IX,8)))
           YMIN(IGETNO(IX,8))=MIN(DMIN,YMIN(IGETNO(IX,8)))
+C Debug          write(6,*) 'aft mmachk+ ',dmax,dmin,ymax(2),ymin(2)
         endif
  40   continue
       call usrmsg(prompt,'Scanning data for range of values...done.',
@@ -506,6 +525,7 @@ C default.
         call horaxishdw(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
      &    3,168,iods,'Time (weeks)')
       endif
+      
 C Recover and plot data.
  99   do 10 IDAY=IODS,IODF
         call GOGET(IDAY)
@@ -540,9 +560,12 @@ C Convert watts to kW if necessary.
      &            IGETNO(IX,1).ne.31.and.IGETNO(IX,1).ne.32.and.
      &            IGETNO(IX,1).ne.33) then
 
-C The data is a load and not related to plant.  By default these loads 
-C are in Watts but plant is being displayed so convert to kW.
-                Yold(IX)=Yold(IX)/1000.
+C The data is a load and not related to plant. By default these loads 
+C are in Watts but plant is being displayed so convert to kW if directed
+C to by ireportunit.
+                if(ireportunit.eq.0.or.ireportunit.eq.2)then
+                  Yold(IX)=Yold(IX)/1000.
+                endif
               endif
             endif
           endif
@@ -569,8 +592,11 @@ C Convert watts to kW if necessary.
      &            IGETNO(IX,1).ne.33) then
 
 C The data is a load and not related to plant.  By default these loads 
-C are in Watts but plant is being displayed so convert to kW.
-                VAL2(IX,J)=VAL2(IX,J)/1000.
+C are in Watts but plant is being displayed so convert to kW if directed
+C to by ireportunit.
+                if(ireportunit.eq.0.or.ireportunit.eq.2)then
+                  VAL2(IX,J)=VAL2(IX,J)/1000.
+                endif
               endif
             endif
             if (ioldpos.eq.1)then
