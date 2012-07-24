@@ -98,7 +98,7 @@ C << be implemented. Try for an initial default of wk sat sun holiday.
       if(nbdaytype.eq.0)then
         h(1)='Each model has a master calendar which indicates the'
         h(2)='day type for each Julian day (initially based on the'
-        h(3)='year and a basic Weekday Saturday Sunday scheme. '
+        h(3)='year & a basic Weekday Saturday Sunday Holiday scheme.'
         h(4)=' '
         h(5)='No calendar has been defined so if you want the basic '
         h(6)='Weekday Saturday Sunday scheme it will be created. If '

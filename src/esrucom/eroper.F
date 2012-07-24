@@ -2629,7 +2629,7 @@ C Initialise local variables
       IER=0
       ISTAT=0
       XST=.FALSE.
-      NBDAYTYPEHOLD=NBDAYTYPE
+      NBDAYTYPEHOLD=NBDAYTYPE  ! remember NBDAYTYPE
 
        H(1)='Zone operations files that have been defined in this '
        H(2)='model need to be updated in order to reflect the new'
@@ -2699,6 +2699,6 @@ C Write operations file
           CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
         ENDIF
  100  CONTINUE
-      NBDAYTYPE=NBDAYTYPEHOLD
+      NBDAYTYPE=NBDAYTYPEHOLD  ! restore the origianl nb of day types
       RETURN
       END

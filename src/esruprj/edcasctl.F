@@ -423,7 +423,7 @@ C <<  Perhaps this could be joined together? >>
         call edisp(iuout,outs)
         DO 401 IDTY=1,NBDAYTYPE
           write(outs,9989)CALENTAG(IDTY),NCGTC(ICOMP,IDTY)
- 9989     format(' Casual gain type for control during ',1A,' = ',1I3)
+ 9989     format(' Casual gain type for control during ',A,' = ',I3)
           call edisp(itru,outs)
  401    CONTINUE
         DO 117 NLZ=1,NLITZ(ICOMP)

@@ -2275,7 +2275,7 @@ C Help text for this menu.
 
 C ********** calenmanage **************
 C Calenmanage sets up and manages a calendar for ESP-r. Currently
-C up to 10 day types can be defined and one may be assigned to
+C up to 10 day types (MDTY) can be defined and one may be assigned to
 C each of the 365 days of the year.
 C calename (char*32) is the overall name of this calendar (e.g. `UK standard`)
 C calentag (char*12) is a tag for each day type (e.g. `autumn_wkd`)
@@ -2362,8 +2362,8 @@ C << consider if we can default to 4 day types (wk sat sun holiday)
 
       if(act.eq.'i'.and.(.NOT.browse))then
         if(nbdaytype.le.3)then
-          calename='standard weekday Sat & Sun'
-          nbdaytype=3
+          calename='standard weekday Sat Sun hol'
+          nbdaytype=4
           nbcaldays(1)=0
           calentag(1)='weekdays'
           calendayname(1)='weekdays (all year)'
@@ -2373,32 +2373,48 @@ C << consider if we can default to 4 day types (wk sat sun holiday)
           nbcaldays(3)=0
           calentag(3)='sunday'
           calendayname(3)='Sundays (all year)'
-          calentag(4)='-'
+          calentag(4)='holiday'
+          calendayname(4)='holiday'
+          nbcaldays(4)=0
           calentag(5)='-'
-          calentag(6)='-'
-          calentag(7)='-'
-          calentag(8)='-'
-          calentag(9)='-'
-          calendayname(4)='-'
           calendayname(5)='-'
+          nbcaldays(5)=0
+          calentag(6)='-'
           calendayname(6)='-'
+          nbcaldays(6)=0
+          calentag(7)='-'
           calendayname(7)='-'
+          nbcaldays(7)=0
           calendayname(8)='-'
+          calentag(8)='-'
+          nbcaldays(8)=0
+          calentag(9)='-'
           calendayname(9)='-'
+          nbcaldays(9)=0
+          calentag(10)='-'
+          calendayname(10)='-'
+          nbcaldays(10)=0
           do 42 ijd=1,365
 
-C for julian day ijd find month and day of month and day of week.
-            call edayr(ijd,idayn,imthn)
-            call eweekd(idayn,imthn,iyear,idwk)
-            if(idwk.ge.1.and.idwk.le.5)then
-              icalender(ijd)=1
-              nbcaldays(1)=nbcaldays(1)+1
-            elseif(idwk.eq.6)then
-              icalender(ijd)=2
-              nbcaldays(2)=nbcaldays(2)+1
-            elseif(idwk.eq.7)then
-              icalender(ijd)=3
-              nbcaldays(3)=nbcaldays(3)+1
+C Assume 1 Jan is a holiday (users can change this later).
+            if(ijd.eq.1)then
+              icalender(ijd)=4
+              nbcaldays(4)=nbcaldays(4)+1
+            else
+
+C For julian day ijd find month and day of month and day of week.
+              call edayr(ijd,idayn,imthn)
+              call eweekd(idayn,imthn,iyear,idwk)
+              if(idwk.ge.1.and.idwk.le.5)then
+                icalender(ijd)=1
+                nbcaldays(1)=nbcaldays(1)+1
+              elseif(idwk.eq.6)then
+                icalender(ijd)=2
+                nbcaldays(2)=nbcaldays(2)+1
+              elseif(idwk.eq.7)then
+                icalender(ijd)=3
+                nbcaldays(3)=nbcaldays(3)+1
+              endif
             endif
   42      continue
           return
@@ -2479,7 +2495,7 @@ C Edit calendar name
 
 C Manage day types.
         CALL EPMENSV
-  73    write(citem(1),'(2a)') '  calendar: ',calename(1:20)
+  73    write(citem(1),'(2a)') '  calendar: ',calename(1:32)
         write(citem(2),'(a)')  ' __tag________description______________'
         mj=2
         do 77 ij=1,nbdaytype
@@ -2509,6 +2525,8 @@ C Add or delete a day type.
 
 C << can we relax logic to allow there not to be a weekday saturday sunday
 C << day type e.g. as in a hospital use scenario?
+
+C << how about an option here to add in seasonal day types?
 
           if(nbdaytype.ge.3.and.nbdaytype.le.MDTY)then
             CALL EASKABC(' Options:',' ',
@@ -2670,7 +2688,7 @@ C Update calendar day types
             NBCALDAYS(ICALENDER(IB))=NBCALDAYS(ICALENDER(IB))+1
  22       CONTINUE
 
-C update the model if not browsing 
+C Update the model. 
           CALL EMKCFG('-',IER)
         endif
         RETURN
@@ -2729,6 +2747,9 @@ C user can select one or more.
         CALL EPICKS(IX,IDVALS,' ',' Available day types:',
      &    52,nbdaytype,citem,'available day types',IER,nbhelp)
        if(ix.ne.0)then
+
+C << potential place to support seasonal day type allocations >>
+
           IHDT=0
           CALL EASKABC('How to add day types (see help)?',' ',
      &    'One by one','Follow pattern','cancel',IHDT,nbhelp)
@@ -2757,6 +2778,8 @@ C user can select one or more.
               modify=.true.
             endif
           ELSEIF(IHDT.EQ.2)THEN
+
+C Pattern addition of day types.
             ISDS=1
             ISDF=365
             IFRQ=1

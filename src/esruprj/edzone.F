@@ -1353,7 +1353,7 @@ C Disconnect high range alternative ventilation if pointing to focus.
           ACVH(IX)=0.0
         endif
 
-C Air flows
+C Air flows for each day type.
         DO 400 IDTY=1,NBDAYTYPE
           IF(NAC(IDTY).GT.0)THEN
             DO 10 I=1,NAC(IDTY)

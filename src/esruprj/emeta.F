@@ -290,12 +290,8 @@ C data into the simulation parameter set data structure.
       endif
 
 C Write calendar information (just the default one for the moment)
-
-C << include calendar and day types within the META file >>
-C << review assumption of 3 day types
-     
-      calename='standard weekday Sat & Sun'
-      nbdaytype=3
+      calename='standard weekday Sat Sun hol'
+      nbdaytype=4
       nbcaldays(1)=0
       calentag(1)='weekdays'
       calendayname(1)='weekdays (all year)'
@@ -305,32 +301,49 @@ C << review assumption of 3 day types
       nbcaldays(3)=0
       calentag(3)='sunday'
       calendayname(3)='Sundays (all year)'
-      calentag(4)='-'
+      calentag(4)='holiday'
+      calendayname(4)='holiday'
+      nbcaldays(4)=0
       calentag(5)='-'
-      calentag(6)='-'
-      calentag(7)='-'
-      calentag(8)='-'
-      calentag(9)='-'
-      calendayname(4)='-'
       calendayname(5)='-'
+      nbcaldays(5)=0
+      calentag(6)='-'
       calendayname(6)='-'
+      nbcaldays(6)=0
+      calentag(7)='-'
       calendayname(7)='-'
+      nbcaldays(7)=0
       calendayname(8)='-'
+      calentag(8)='-'
+      nbcaldays(8)=0
+      calentag(9)='-'
       calendayname(9)='-'
+      nbcaldays(9)=0
+      calentag(10)='-'
+      calendayname(10)='-'
+      nbcaldays(10)=0
+     
       do 542 ijd=1,365
 
+C Assume 1 Jan is a holiday (users can change this later).
+        if(ijd.eq.1)then
+          icalender(ijd)=4
+          nbcaldays(4)=nbcaldays(4)+1
+        else
+
 C For julian day ijd find month and day of month and day of week.
-        call edayr(ijd,idayn,imthn)
-        call eweekd(idayn,imthn,iyear,idwk)
-        if(idwk.ge.1.and.idwk.le.5)then
-          icalender(ijd)=1
-          nbcaldays(1)=nbcaldays(1)+1
-        elseif(idwk.eq.6)then
-          icalender(ijd)=2
-          nbcaldays(2)=nbcaldays(2)+1
-        elseif(idwk.eq.7)then
-          icalender(ijd)=3
-          nbcaldays(3)=nbcaldays(3)+1
+          call edayr(ijd,idayn,imthn)
+          call eweekd(idayn,imthn,iyear,idwk)
+          if(idwk.ge.1.and.idwk.le.5)then
+            icalender(ijd)=1
+            nbcaldays(1)=nbcaldays(1)+1
+          elseif(idwk.eq.6)then
+            icalender(ijd)=2
+            nbcaldays(2)=nbcaldays(2)+1
+          elseif(idwk.eq.7)then
+            icalender(ijd)=3
+            nbcaldays(3)=nbcaldays(3)+1
+          endif
         endif
   542 continue
   

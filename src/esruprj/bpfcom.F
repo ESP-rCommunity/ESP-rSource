@@ -341,11 +341,9 @@ C Complex fenestration.
 C Initial setup of day types. Offer the user a cancel option and
 C if that is selected decrement ncf and return.
           IV=NBCDT(ncf)
-          write(outs,'(a,i2,a)')
-     &      ' Number of zone control day types (currently',IV,') :'
-          CALL EASKABC(outs,'(see help)',
-     &      'Follow calendar day types','Just one day type',
-     &      'Dates of validity',IV,nbhelp)
+          CALL EASKABC('Day types for ideal zone controls (see help)',
+     &      'select:','Follow calendar day types','Just one day type',
+     &      'Dates of validity (legacy)',IV,nbhelp)
           if(iv.eq.1)then
             NBCDT(ncf)=0
           elseif(iv.eq.2)then
@@ -428,7 +426,7 @@ C Initial setup of day types.
      &     ' Number of plant control day types (currently',IV,') :'
           CALL EASKABC(outs,'(see help)',
      &      'Follow calendar day types','Just one day type',
-     &      'Dates of validity',IV,nbhelp)
+     &      'Dates of validity (legacy)',IV,nbhelp)
           if(iv.eq.1)then
             NPCDT(ncl)=0
           elseif(iv.eq.2)then
@@ -516,7 +514,7 @@ C Initial setup of day types.
      &      ' No. vent/hydronic control day types (currently',IV,') :'
           CALL EASKABC(outs,'(see help)',
      &      'Follow calendar day types','Just one day type',
-     &      'Dates of validity',IV,nbhelp)
+     &      'Dates of validity (legacy)',IV,nbhelp)
           if(iv.eq.1)then
             NFCDT(ncc)=0
           elseif(iv.eq.2)then
@@ -636,7 +634,7 @@ C if that is selected decrement ncf and return.
      &      ' Number of optical control day types (currently',IV,') :'
           CALL EASKABC(outs,'(see help)',
      &      'Follow calendar day types','Just one day type',
-     &      'Dates of validity',IV,nbhelp)
+     &      'Dates of validity (legacy)',IV,nbhelp)
           if(iv.eq.1)then
             NOCDT(nof)=0
           elseif(iv.eq.2)then
@@ -718,7 +716,7 @@ C Initial setup of day types. Offer the user a cancel option and
 C if that is selected decrement nCFCctlloops and return.
           IV=nCFCctldaytypes(nCFCctlloops)
           write(outs,'(a,i2,a)')
-     &      ' Number of zone control day types (currently',IV,') :'
+     &      'Day types for fenistration control (currently',IV,') :'
           CALL EASKABC(outs,' ',
      &      'weekday/Saturday/Sunday','one','other',IV,nbhelp)
           if(iv.eq.1)then
@@ -1687,21 +1685,10 @@ C List function details.
 
 C NN is overloaded - zero can mean weekday/sat/sun if there are 3 calendar
 C day types, otherwise this signals the use of the current calendar day types.
-      IF(nn.EQ.0)THEN
-        IF(nbdaytype.GT.3)THEN
-          call edisp(itru,' The following day types are defined:')
-          DO 30 ID=1,NBDAYTYPE
-            call edisp(itru,calentag(id))
- 30       CONTINUE
-        ELSE
-          call edisp(itru,
-     &     ' The function day types are Weekdays, Saturdays & Sundays')
-        ENDIF
-      ELSE
-        WRITE(outs,78)nn
-  78    FORMAT(' There have been ',I2,' day types defined.')
-        call edisp(itru,outs)
-      ENDIF
+      call edisp(itru,' The following day types are defined:')
+      DO 30 ID=1,NBDAYTYPE
+        call edisp(itru,calentag(id))
+ 30   CONTINUE
       if(nn.eq.0)nn=nbdaytype
       do 20 j=1,nn
         JJ=J

@@ -1092,16 +1092,14 @@ C Start with a comment about zone schedule documentation.
 
 C Scan each days gains and calculate maximum gain for each
 C calendar day type.
-C First clear loadcasp, looping for each gain type.
-
-C << why < 7 there can be more than 7 calendar day types?
-
+C First clear loadcasp, looping for each gain type (7 or less)
+C and loadonday for day type and gain type.
         do 9 I=1,NBDAYTYPE
           if(I.le.7)loadcasp(mz,i,1)=0.0
+          if(I.le.7)loadcasp(mz,i,2)=0.0
           if(I.le.7)loadradfrac(mz,i)=0.0
-          loadcasp(mz,i,2)=0.0
           do 8 JD=1,7
-            loadonday(mz,jd,i)=.false.
+            loadonday(mz,i,jd)=.false.
   8       continue
   9     continue
 

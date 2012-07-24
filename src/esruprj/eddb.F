@@ -4034,10 +4034,7 @@ C Check if weather site and model site differ.
         endif
       ENDIF
 
-C Update year.
-
-C << review logic for default number of day types
-
+C Update year.  This is similarlogic as is used in esystem.F ~line 1569
       if(icyear.eq.iyear)then
         continue
       else 
@@ -4059,7 +4056,7 @@ C << review logic for default number of day types
 
 C Perform check that calendar day types correspond with simulation year.
 C The logic below assumes that the first three day types are still weekday
-C saturday sunday. It loops through each Julian day and if the model
+C Saturday Sunday. It loops through each Julian day and if the model
 C calendar day type is one of the standard 3 it checks that the model weekday
 C is the same as a Julian weekday. Any calendar day types beyond 3 are 
 C retained. If no calendar was defined in the model then it should do the

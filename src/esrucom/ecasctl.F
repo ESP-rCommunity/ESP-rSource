@@ -98,6 +98,7 @@ C Daylight coefficient common block data definition:
       character outs*124,OUTSTR*124,cgcdesc*64,info*18
 
       dimension DV(MDCFV)
+      integer ndayt  ! local value for nbdaytype
 
       ier=0
 
@@ -121,10 +122,8 @@ C Clear daylight factor array.
     2 continue
 
 c Read type of casual gain to be controlled during each day type.
-
-C << This potentially overwrites the common block value of
-C << NBDAYTYPE - should use a local variable instead!
-
+C Warn if cgc line 3 has a different number of day types than
+C in the model cfg file.
       CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'cgc line 1',IER)
       if(IER.NE.0)return
       if(OUTSTR(1:16).eq.'*Casual_gain_ctl')then
@@ -133,11 +132,15 @@ C << NBDAYTYPE - should use a local variable instead!
         if(OUTSTR(1:5).eq.'*desc')then
           k=6
           CALL EGETRM(OUTSTR,K,cgcdesc(icomp),'W','descr',IER)
-          CALL STRIPC(IUNIT,OUTSTR,NBDAYTYPE,ND,1,'cgc line 3',IER)
+          CALL STRIPC(IUNIT,OUTSTR,ndayt,ND,1,'cgc line 3',IER)
+          if(ndayt.ne.NBDAYTYPE)then
+            call edisp(iuout,
+     & 'Model day types differ from cgc day file value! Please check!')
+          endif
         endif
       endif
       K=0
-      DO 400 IDTY=1,NBDAYTYPE
+      DO 400 IDTY=1,ndayt
         CALL EGETWI(OUTSTR,K,N1,0,MCT,'F',' gain type',IER)
         NCGTC(ICOMP,IDTY)=N1
  400  CONTINUE
