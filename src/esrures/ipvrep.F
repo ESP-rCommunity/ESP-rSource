@@ -141,16 +141,20 @@ C Make up a single quote for IPV
       endif
 
 
-C Read in the existing IPV description.
+C Read in the existing IPV description if it is separate from cfg file.
       if(.NOT.autook)then
         if(icfgv.lt.4)then
-          helptopic='res_IPV_report_file_name'
-          call gethelptext(helpinsub,helptopic,nbhelp)
-          ltmp=lipvdatf
-          CALL EASKS(ltmp,'IPV description file ?',
-     &      ' ',72,'xxx.ipv','IPV file',IER,nbhelp)
-          if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
-            lipvdatf=ltmp
+          if(lipvdatf(1:8).eq.'internal')then
+            continue   ! IPV description is within model cfg file
+          else
+            helptopic='res_IPV_report_file_name'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            ltmp=lipvdatf
+            CALL EASKS(ltmp,'IPV description file ?',
+     &        ' ',72,'xxx.ipv','IPV file',IER,nbhelp)
+            if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
+              lipvdatf=ltmp
+            endif
           endif
         endif
       endif
@@ -164,6 +168,8 @@ C if verbose print periods, seasons and ratios as well.
         elseif(lipvdatf(1:7).eq.'UNKNOWN')then
           call usrmsg('UNKNOWN IPV description: ',lipvdatf,'W')
           return
+        elseif(lipvdatf(1:8).eq.'internal')then
+          continue   ! IPV description is within model cfg file
         else
           call FINDFIL(lipvdatf,XST)
           IF(XST)then
@@ -198,7 +204,7 @@ C not know about idmdinc() so this needs to be applied.
       endif
 
 C If a command line action passed, set local parameters, if simulation
-C parameter sets known then check for seasonal ipv report file name.
+C parameter sets known then check for an ipv report file name (sipvres).
       ioutvrb = 1
       delim = 'C'
       tab=','

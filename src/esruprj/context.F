@@ -59,7 +59,8 @@ C ITRU unit number for user output, IER=0 indicates no error.
       common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
 
-C IPV description via ipvdata.h.
+C IPV description via ipvdata.h. If within cfg file then the file
+C name is replaced with 'internal'.
       common/IPVF/lipvdatf
 
 C CPCALC description
@@ -673,13 +674,30 @@ C Dispersed fan/pump/lift/DHW demands.
 
       ELSEIF(INO.EQ.19)THEN
 
-C IPV data.
+C IPV data in the case of a legacy model cfg file (depreciate).
         if(icfgv.lt.4)then
           lr=lnblnk(cfgroot)
           if(lnblnk(lipvdatf).eq.0)then
             write(ltmp,'(2a)') cfgroot(1:lr),'.ipv'
           elseif(lipvdatf(1:7).eq.'UNKNOWN')then
             write(ltmp,'(2a)') cfgroot(1:lr),'.ipv'
+          elseif(lipvdatf(1:8).eq.'internal')then
+
+C << really we should just recommend that user updates cfg version >>
+
+C Legacy cfg with internl IPV description. If nipvassmt is still zero then
+C nothing has been created yet so initialise and save to the
+C configuration file. If there is data call ipvdat and the update the
+C configuration file when exiting.
+            if(nipvassmt.eq.0)then
+              call ipvdat('i')     ! fill with defaults
+              CALL EMKCFG('-',IER) ! remember this
+              call ipvdat('-')     ! edit data
+              CALL EMKCFG('-',IER) ! remember this
+            else
+              call ipvdat('-')
+              CALL EMKCFG('-',IER)
+            endif
           else
             ltmp=lipvdatf
           endif

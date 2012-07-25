@@ -372,7 +372,8 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
 C Uncertainty analysis common.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
 
-C IPV data is from ipvdata.h.
+C IPV data is from ipvdata.h. If within cfg file then the file
+C name is replaced with 'internal'.
       common/IPVF/lipvdatf
 
 C Anchor data in model.h.
@@ -1665,9 +1666,11 @@ C for the rest of the data.
           else
             ipvsimu='------'
           endif
-	  ipvact='cfg'
-          call ripvdat(iuc,FILE,ipvact,ier)	
-	endif
+          lipvdatf='internal'  ! reset file name to the keyword internal
+          ipvact='cfg'
+          call ripvdat(iuc,FILE,ipvact,ier)
+        endif
+
       elseif(WORD(1:5).eq.'*dmds')then
 
 C Building fans/pumps/DHW demands file.

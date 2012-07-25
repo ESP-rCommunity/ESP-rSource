@@ -280,7 +280,7 @@ C Items to clear in any case.
 C Clear commons with blanking.
       if(act.eq.'b')then
         ipvsynop=' '
-        ipvsimu=' '
+C        ipvsimu=' '
         nms=0
         do 65 ij=1,MIPVM
           imetget(ij)=0
@@ -349,6 +349,12 @@ C on the parameter act (3 char) ='ipv' or ='cfg'.
       integer list
       dimension list(72)  ! zone lists currently limited to 72 max.
                           ! edit if MCOM changes
+      character tipvadesc*40
+
+C Comments about common blocks are in ripvdat.
+      common/C21/IFCFG,cfgroot,LCFGF
+      character cfgroot*24
+      character LCFGF*72
 
 C Open any existing file by this name.
       if(act(1:3).eq.'ipv')then
@@ -454,10 +460,22 @@ C at its value by looking at the number of assessments.
           endif
         endif
       elseif(WORD(1:7).eq.'*period')then
+
+C If the initial portion of ipvadesc is the same as the model root
+C name then discard the initial portion.
         iper=iper+1
         CALL EGETWI(OUTSTR,K,ipvastjd(iper),1,365,'W','assmt st',IER)
         CALL EGETWI(OUTSTR,K,ipvafnjd(iper),1,365,'W','assmt fn',IER)
-        CALL EGETRM(OUTSTR,K,ipvadesc(iper),'W','assmt descr',IER)
+        tipvadesc=' '
+        CALL EGETRM(OUTSTR,K,tipvadesc,'W','assmt descr',IER)
+        lncf=lnblnk(cfgroot)
+        lnipva=lnblnk(tipvadesc)
+        if(tipvadesc(1:lncf).eq.cfgroot(1:lncf))then
+          write(ipvadesc(iper),'(a)') tipvadesc(lncf+1:lnipva)
+        else
+          write(ipvadesc(iper),'(a)') tipvadesc(1:lnipva)
+        endif
+
       elseif(WORD(1:13).eq.'*display_days')then
         CALL EGETWI(OUTSTR,K,nipvdispjd,1,10,'W','displays',IER)
         do 343 ij=1,nipvdispjd
