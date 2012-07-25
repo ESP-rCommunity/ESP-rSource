@@ -718,7 +718,9 @@ C Ask for site position.
         IF(IER.EQ.0)sitelongdif=SLON
 
 C Ask for year, initialise and then print out the calendar if the
-C user does not cancel the operation.
+C user does not cancel the operation. Because there have been no
+C day types created use a call to calenmanage to instanciate an
+C initial set of days.
         helptopic='cfg_model_year'
         call gethelptext(helpinsub,helptopic,nbhelp)
         iyeart=iyear

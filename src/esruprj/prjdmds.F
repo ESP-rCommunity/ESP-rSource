@@ -117,6 +117,8 @@ C << be implemented. Try for an initial default of wk sat sun holiday.
             call calenprint(iuout,'t',iyear,loopst,loop)
           endif
         elseif(IW.eq.2)then
+
+C Advise the user what to do.
           call usrmsg('Go to the Model context -> calendar option',
      &      'and when the calendar is defined return here.','W')
           return

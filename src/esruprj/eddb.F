@@ -4049,15 +4049,15 @@ C Update year.  This is similarlogic as is used in esystem.F ~line 1569
           CALL EDISP(IUOUT,OUTS)
           CALL EDISP(IUOUT,' ')
           if(nbdaytype.eq.0)then
+
+C If no day types found instanciate initial day types. 
             call calenmanage('i',ier)
-          elseif(nbdaytype.eq.3)then
-            call calenmanage('i',ier)
-          elseif(nbdaytype.gt.3)then
+          elseif(nbdaytype.ge.3)then
 
 C Perform check that calendar day types correspond with simulation year.
-C The logic below assumes that the first three day types are still weekday
+C The logic below assumes that the first three day types are weekday
 C Saturday Sunday. It loops through each Julian day and if the model
-C calendar day type is one of the standard 3 it checks that the model weekday
+C calendar day type is one of the initial 3 it checks that the model weekday
 C is the same as a Julian weekday. Any calendar day types beyond 3 are 
 C retained. If no calendar was defined in the model then it should do the
 C work silently. (Same logic as in esystem.F) 
