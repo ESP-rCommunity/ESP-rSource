@@ -351,7 +351,14 @@ C Remember the array index that goes with the menu position (m).
         PDBM(NC+1)=  '  __________________________     '
         if(ACTION.eq.'M'.or.ACTION.eq.'m')then
           PDBM(NC+2)='* add/ delete/ copy material     '
-          PDBM(NC+3)='! save materials file            '
+
+C Remind user whether they are working with a model file or
+C a common data file.
+          if(ipathmat.eq.0.or.ipathmat.eq.1)then
+            PDBM(NC+3)='! save materials file            '
+          else
+            PDBM(NC+3)='! save common materials file     '
+          endif
         elseif(ACTION.eq.'-')then
           PDBM(NC+2)='                                 '
           PDBM(NC+3)='                                 '
@@ -1482,8 +1489,12 @@ C If a long list include page facility text.
       ENDIF
       MLCITM(M+2)='# view g-value'
       MLCITM(M+3)='1 add/delete/copy/invert    '
-      MLCITM(M+4)='! list database contents    '
-      MLCITM(M+5)='> save database             '
+      MLCITM(M+4)='! list contents    '
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        MLCITM(M+5)='> save data                 '
+      else
+        MLCITM(M+5)='> save common data          '
+      endif
       MLCITM(M+6)='? help                      '
       MLCITM(M+7)='- exit this menu            '
       INO=-4
