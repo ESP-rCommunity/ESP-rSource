@@ -338,6 +338,7 @@ C Parameters
       logical QUIET        ! true acts silently
       integer IER          ! IER=0 OK, IER=1 problem
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
       COMMON/VTHP02/IVKON(MCOM,MS,ME)
@@ -490,6 +491,7 @@ C on common blocks. If isur=0 then all, otherwise for one surface.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/T2/CON(MS,ME),DEN(MS,ME),SHT(MS,ME),THK(MS,ME)
@@ -537,6 +539,8 @@ C Reporting.
 C Jump if not all requied and not the focus surface.
         if(isur.ne.0.and.isur.ne.i)goto 9994
         sn=SSNAME(icn1)
+
+C << possible place to use ssmlcindex >>
         imatch(i)=0
         RT(I)=0.
         do 5 ii=1,nmlc
@@ -749,6 +753,7 @@ c         (not used in the current implementation),
 
       COMMON/OUTIN/IUOUT,IUIN
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
@@ -1227,7 +1232,7 @@ C Parameters
       character LUA*72  ! optical data file name
       integer ier   ! error state to return zero is ok
 
-      COMMON/BIDIR/IFLAGBI(MSTMC),INTVALBI,NSTMCFL(MCON)
+      COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
 
 C NGNTL number of layers in each TMC type.
@@ -1331,8 +1336,7 @@ C Initiate all parameters needed for simulation to 0
   
 C Read header.
       CALL STRIPC(IUA,OUTSTR,99,ND,1,'bi-optic header',IER)
-      if(outstr(1:14).eq.'*BIDIRECTIONAL'.or.
-     &  outstr(1:16).eq.'*v2BIDIRECTIONAL')then
+      if(outstr(1:14).eq.'*BIDIRECTIONAL')then
         ibitype=0
       else
         write(outs,'(2a)') 'The file ',LUA(1:lnblnk(LUA))
@@ -1353,11 +1357,11 @@ C Read header.
       K=0
       CALL EGETW(OUTSTR,K,WORD,'W','bi-optic tags',IFLAG)
       if(WORD(1:6).eq.'*types')then
-        CALL EGETWI(OUTSTR,K,IFLAGBI(MSTMC),1,MSTMC,'W','bi-type',IER)
-        ibitype=IFLAGBI(MSTMC)
+        CALL EGETWI(OUTSTR,K,IFLAGBI,1,MSTMC,'W','bi-type',IER)
         goto 42
       elseif(WORD(1:5).eq.'*item')then
-        CALL EGETW(OUTSTR,K,WORD,'W','bi-type name',IFLAG) 
+        CALL EGETW(OUTSTR,K,WORD,'W','bi-type name',IFLAG)
+        ibitype=ibitype+1
         ibset=0
         bidirname(ibitype)=WORD(1:12)
         goto 42

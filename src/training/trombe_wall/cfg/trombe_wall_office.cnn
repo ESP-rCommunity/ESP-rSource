@@ -1,0 +1,46 @@
+*connections for trombe_wall_office
+*Date Thu Jul 28 04:25:32 2011
+     43   # number of connections
+   1   1   0   0   0  #    1 front in trombe_low is External
+   1   2   1   0   0  #    2 right in trombe_low >|< Identical environment
+   1   3   3   6   1  #    3 trombe_face in trombe_low >|< wall_tlow in office
+   1   4   3   5   6  #    4 fict_left in trombe_low >|< fict_low in bypass
+   1   5   3   2   6  #    5 fict_up in trombe_low >|< fict_base in trombe_mid
+   1   6   4   1   0  #    6 base in trombe_low >|< ground profile 1
+   2   1   0   0   0  #    7 front in trombe_mid is External
+   2   2   1   0   0  #    8 right in trombe_mid >|< Identical environment
+   2   3   3   6   8  #    9 trombe_face in trombe_mid >|< wall_tmid in office
+   2   4   3   5   7  #   10 fict_left in trombe_mid >|< fict_mid in bypass
+   2   5   3   3   6  #   11 fict_up in trombe_mid >|< fict_base in trombe_mid2
+   2   6   3   1   5  #   12 fict_base in trombe_mid >|< fict_up in trombe_low
+   3   1   0   0   0  #   13 front in trombe_mid2 is External
+   3   2   1   0   0  #   14 right in trombe_mid2 >|< Identical environment
+   3   3   3   6   9  #   15 trombe_face in trombe_mid2 >|< wall_tup in office
+   3   4   3   5   8  #   16 fict_left in trombe_mid2 >|< fict_mid2 in bypass
+   3   5   3   4   6  #   17 fict_up in trombe_mid2 >|< fict_base in trombe_up
+   3   6   3   2   5  #   18 fict_base in trombe_mid2 >|< fict_up in trombe_mid
+   4   1   0   0   0  #   19 front in trombe_up is External
+   4   2   1   0   0  #   20 right in trombe_up >|< Identical environment
+   4   3   3   6   7  #   21 frame_open in trombe_up >|< open_frame in office
+   4   4   3   5   9  #   22 fict_left in trombe_up >|< fict_up in bypass
+   4   5   0   0   0  #   23 top in trombe_up is External
+   4   6   3   3   5  #   24 fict_base in trombe_up >|< fict_up in trombe_mid2
+   5   1   0   0   0  #   25 front in bypass is External
+   5   2   5   0   0  #   26 back in bypass is adiabatic
+   5   3   5   0   0  #   27 left in bypass is adiabatic
+   5   4   5   0   0  #   28 top in bypass is adiabatic
+   5   5   5   0   0  #   29 base in bypass is adiabatic
+   5   6   3   1   4  #   30 fict_low in bypass >|< fict_left in trombe_low
+   5   7   3   2   4  #   31 fict_mid in bypass >|< fict_left in trombe_mid
+   5   8   3   3   4  #   32 fict_mid2 in bypass >|< fict_left in trombe_mid2
+   5   9   3   4   4  #   33 fict_up in bypass >|< fict_left in trombe_up
+   6   1   3   1   3  #   34 wall_tlow in office >|< trombe_face in trombe_low
+   6   2   1   0   0  #   35 right_ptn in office >|< Identical environment
+   6   3   1   0   0  #   36 back_ptn in office >|< Identical environment
+   6   4   1   0   0  #   37 left_ptn in office >|< Identical environment
+   6   5   1   0   0  #   38 ceiling in office >|< Identical environment
+   6   6   4   1   0  #   39 floor in office >|< ground profile 1
+   6   7   3   4   3  #   40 open_frame in office >|< frame_open in trombe_up
+   6   8   3   2   3  #   41 wall_tmid in office >|< trombe_face in trombe_mid
+   6   9   3   3   3  #   42 wall_tup in office >|< trombe_face in trombe_mid2
+   6  10   1   0   0  #   43 top_of_tw in office >|< Identical environment

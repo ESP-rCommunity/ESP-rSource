@@ -45,7 +45,11 @@ C READPIF - read performance information file and gather data.
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
 
       common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
       
@@ -65,7 +69,7 @@ C       by calling eddisp (as opposed to edisp).
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
       character xfile*144,tg*1,delim*1,outs*124
-      character SLABEL*32,GLABEL*20,outfile*72
+      character outfile*72
       character TSLABEL*32,TLLABEL*64,TGLABEL*20
       character pifltog*4,lpifl*72,OUTSTR*124,lname*24,ldisc*64,key*8
 
@@ -323,7 +327,9 @@ C Labels read into temp variables then copy below.
 
 C Copy label names to common area.
         SLABEL(NGET)=TSLABEL
+        LNSLABEL(NGET)=lnblnk(TSLABEL)
         GLABEL(NGET)=TGLABEL
+        LNGLABEL(NGET)=lnblnk(TGLABEL)
         goto 100
       else
         goto 200
@@ -509,12 +515,15 @@ C current menu (moget) selections.
 
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
 
       common/exporttg/xfile,tg,delim
 
       character xfile*144,tg*1,delim*1
-      character SLABEL*32,GLABEL*20
       character lpifl*72,pifltog*4,lname*24,ldisc*64
 
       logical XST
@@ -555,8 +564,8 @@ C Open file for appending.
       write(IUNIT,'(a)') '*metlist'
       do 10 I=1,NGET
         write (IUNIT,'(a,8i5)') '*data ',(IGETNO(I,J),J=1,9)
-        write (IUNIT,'(2a)') '*slab ',SLABEL(I)
-        write (IUNIT,'(2a)') '*glab ',GLABEL(I)
+        write (IUNIT,'(2a)') '*slab ',SLABEL(I)(1:LNSLABEL(I))
+        write (IUNIT,'(2a)') '*glab ',GLABEL(I)(1:LNGLABEL(I))
  10   continue
       write (IUNIT,'(a)') '*end '
       write (IUNIT,'(a)') '# --------------------------------- '

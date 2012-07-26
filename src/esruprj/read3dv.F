@@ -48,9 +48,7 @@ C Passed parameter.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
-      common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
-     &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCON,MV)
-
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -61,6 +59,7 @@ C Passed parameter.
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL  ISTOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical greyok,found
+      integer ier1,ier2,ier3,ier4,ier5,ier6,ier7  ! traps
 
       DIMENSION  AX(MPL),AY(MPL),AZ(MPL),IANXT(MPL)
       DIMENSION  BX(MPL),BY(MPL),BZ(MPL),IBNXT(MPL)
@@ -74,10 +73,16 @@ C Passed parameter.
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2,iid3,iid4
+      integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2,iid3,iid4
+      integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C If not in graphic mode return.
@@ -94,13 +99,19 @@ C Set font for displaying surface names etc.
 
 C The right offset for the graphic box is the character width of the
 C menu. Also allow 2 text lines at the bottom for future dialogue.
-      IER=0
+      IER=0; ier1=0; ier2=0; ier3=0; ier4=0; ier5=0; ier6=0; ier7=0; 
 
 C Clear current viewing box and re-establish image bounds.
       CALL startbuffer()
-      CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
-      igw=igr-igl
-      igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+      iiw1=4; iiw2=1; iiw3=1; iiw4=3; iimenu=menuchw
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &  iigl,iigr,iigt,iigb,iigw,iigwh)
+C      CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
       igwid=igw
       igheight=igwh
 
@@ -109,22 +120,38 @@ C assume 1000 -1000 etc, if optimum then use SXMX,SYMX + 10% etc.
       IF(ITBND.EQ.0)THEN
         call axiscale(igwid,igheight,-1000.,1000.,-1000.,1000.,xsc,ysc,
      &                sca,Xadd,Yadd)
-        call linescale(igl,Xadd,sca,igb,Yadd,sca)
+        call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
       ELSEIF(ITBND.EQ.1)THEN
 
 C Determine the 2D coords of the site extremes.
-        CALL SITE2D(SXMX,SXMN,SYMX,SYMN,ier)
+        CALL SITE2D(SXMX,SXMN,SYMX,SYMN,ier1)
+        if(ier1.ne.0)then
+          call edisp(iuout,'Error in finding site extents.')
+          ier=-1
+        endif
         call axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
      &                Xadd,Yadd)
-        call linescale(igl,Xadd,sca,igb,Yadd,sca)
+        call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
       ENDIF
 
 C Refresh the dialogue box if terminal type 8.
       IF(MMOD.EQ.8)CALL USRMSG(' ',' ','-')
 
 C If site grid or ground is asked for draw now.
-      IF(ITGRD.EQ.0)CALL DSGRID(0.0,GRDIS,5,IER)
-      IF(ITDSP.EQ.5.or.ITDSP.EQ.6)call EGRNDR(IER)
+      if(ITGRD.EQ.0)then
+        CALL DSGRID(0.0,GRDIS,5,IER2)
+        if(ier2.ne.0)then
+          call edisp(iuout,'Error in drawing grid.')
+          ier=-2
+        endif
+      endif
+      if(ITDSP.EQ.5.or.ITDSP.EQ.6)then
+        call EGRNDR(IER3)
+        if(ier3.ne.0)then
+          call edisp(iuout,'Error in drawing ground.')
+          ier=-3
+        endif
+      endif
       IF(ITDSP.EQ.6)return
 
 C Remind user of which project.
@@ -158,9 +185,19 @@ C saved common rather than from the zone file.
 C If obstructions are to be drawn read the obstruction file, transform
 C the obstruction description into a gen body and plot them out
 C before going on to the surfaces in the zone itself.
-      IF(ITDSP.EQ.0.or.ITDSP.eq.5)CALL DRAWOBS(nznog(IZ),ier)
-      IF(nznog(IZ).NE.izgfoc)THEN
-        call georead(IFIL+1,LGEOM(nznog(IZ)),nznog(IZ),1,IUOUT,IER)
+      if(ITDSP.EQ.0.or.ITDSP.eq.5)then
+        CALL DRAWOBS(nznog(IZ),ier4)
+        if(ier4.ne.0)then
+          call edisp(iuout,'Error in drawing obstructions.')
+          ier=-4
+        endif
+      endif
+      if(nznog(IZ).NE.izgfoc)then
+        call georead(IFIL+1,LGEOM(nznog(IZ)),nznog(IZ),1,IUOUT,IER5)
+        if(ier5.ne.0)then
+          call edisp(iuout,'Error in recovering zone geometry.')
+          ier=-5
+        endif
       ELSEIF(nznog(IZ).EQ.izgfoc)THEN
         CALL ERCZONE(nznog(IZ))
       ENDIF
@@ -174,15 +211,21 @@ C Note: temp character t13 is 1 char wider than zname().
         COG1(1)=ZCOG(nznog(IZ),1)
         COG1(2)=ZCOG(nznog(IZ),2)
         COG1(3)=ZCOG(nznog(IZ),3)
-        CALL VECTRN(COG1,TEMAT,COG2,IER)
-        CALL VECTRN(COG2,ETSMAT,COG3,IER)
+        CALL VECTRN(COG1,TEMAT,COG2,IER6)
+        CALL VECTRN(COG2,ETSMAT,COG3,IER7)
+        if(ier6.ne.0.or.ier7.ne.0)then
+          call edisp(iuout,'Error doing name coord transforms.')
+          ier=-6
+        endif
         call u2pixel(COG3(1),COG3(2),iix,iiy)
         write(t13,'(A)')zname(nznog(IZ))
         call textpixwidth(t13,ipixw)
         iid4 = iix - (ipixw/2)
         CALL wstxpt(iid4,iiy,t13)
       ENDIF
-      IF(ier.NE.0)RETURN
+
+C << how to treat errors? >>
+C      IF(ier.NE.0)RETURN
       call forceflush()
 
 C If there are no surfaces yet defined then draw the vertices with 
@@ -370,10 +413,12 @@ C ETSMAT = Eye to Screen Matrix.  First move to the beginning.
           CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,iix,iiy)
 
-C If vertex are to be labeled do it in the smallest font, then
-C move cursor to vertex and remember position.
+C If vertex are to be labeled do it in the smallest font, also place
+C a 2pixel square dot at the vertex so if it is embedded in a line
+C it can be seen. Then move cursor to vertex and remember position.
           IF(ITVNO.EQ.0.AND.NAP.EQ.NBP)THEN
             IV=JVN(I,IP)
+            call esymbol(iix,iiy,8,1)
             CALL VERTLBL(iix,iiy,IV,ier)
           ENDIF
           iixlast=iix   ! cast for edline call
@@ -420,9 +465,15 @@ C unless duplicate line has already been drawn.
               if(imatshr(icc,iedge).eq.0)then
                 if(.NOT.found)call eswline(iixlast,iiylast,iix,iiy)
               else
-                if(greyok)call winscl('i',nifgrey-3)
+                if(greyok)then
+                  iicol=nifgrey-3
+                  call winscl('i',iicol)
+                endif
                 call eswline(iixlast,iiylast,iix,iiy)
-                if(greyok)call winscl('-',0)
+                if(greyok)then
+                  iicol=0
+                  call winscl('-',iicol)
+                endif
               endif
             endif
           elseif(IPEN.eq.-305)then
@@ -436,6 +487,7 @@ C If vertex are to be labeled do it in the smallest font and
 C move cursor back to vertex and remember position.
           IF(ITVNO.EQ.0.AND.NAP.EQ.NBP)THEN
             IV=JVN(I,IP1)
+            call esymbol(iix,iiy,8,1)
             CALL VERTLBL(iix,iiy,IV,ier)
             iixlast=iix   ! cast for edline call
             iiylast=iiy
@@ -481,9 +533,15 @@ C unless duplicate line has already been drawn.
               if(imatshr(icc,iedge).eq.0)then
                 if(.NOT.found)call eswline(iixlast,iiylast,iix,iiy)
               else
-                if(greyok)call winscl('i',nifgrey-3)
+                if(greyok)then
+                  iicol=nifgrey-3
+                  call winscl('i',iicol)
+                endif
                 call eswline(iixlast,iiylast,iix,iiy)
-                if(greyok)call winscl('-',0)
+                if(greyok)then
+                  iicol=0
+                  call winscl('-',iicol)
+                endif
               endif
             endif
           elseif(IPEN.eq.-305)then

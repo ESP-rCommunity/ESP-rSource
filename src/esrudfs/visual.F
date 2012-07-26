@@ -42,7 +42,6 @@ C VISOUT - define the parameters for the visualization of results.
       integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
 
@@ -54,10 +53,17 @@ C VISOUT - define the parameters for the visualization of results.
      &              HLSCvw(MCOM,6),HTSCvw(MCOM,6),IFRQvw(MCOM,6)
       common/flvcol/ISOPT(6),IBGOPT(6),SCmin,SCmax
 
-      CHARACTER H*72,KEY*1,ITEM(35)*26,outs*124
+      CHARACTER KEY*1,ITEM(35)*26,outs*124
       character LBITrt*12,t12*12,t24*24,Lflpar*72
       integer IWM,IWE   ! for radio buttons
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='VISOUT'  ! set for subroutine
 
 C Check for visualidsation data.
       if (Lflpar(ICOMP)(1:7).ne.'UNKNOWN') call rdFVP(ICOMP,ier)
@@ -108,21 +114,9 @@ C Number of actual items displayed.
       ITEM(M+7)='- exit this menu  '
       INO=-4
 
-C Instanciate h() strings for the menu.
- 80   h(1) ='This facility is used to generate images of the'
-      h(2) ='flow distribution predicted by the CFD calculations.'
-      h(3) ='The flow at any 2-dimensional slice of the zone can'
-      h(4) ='be viewed.'
-      h(5) =' '
-      h(6) ='Images are generated in various formats and can be'
-      h(7) ='viewed and post-processed with 3rd-party tools such'
-      h(8) ='as xv.'
-      h(9) =' '
-      h(10)='You must specify the name of the file to hold the'
-      h(11)='image data and you must select a view prior to'
-      h(12)='generating the image. The other items are for'
-      h(13)='altering default settings, and their use is'
-      h(14)='optional.'
+C Instanciate help strings for the menu.
+ 80   helptopic='dfs_2D_slice_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('Flow visualization',ITEM,NITMS,INO)
       if (INO.EQ.0)THEN
@@ -133,7 +127,9 @@ C Try again.
       elseif (INO.EQ.(NITMS))THEN
         return
       elseif (INO.EQ.(NITMS-1))THEN
-        CALL PHELPD('flow vis facility',14,'-',0,0,IER)
+        helptopic='dfs_2D_slice_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('flow vis facility',nbhelp,'-',0,0,IER)
       elseif (INO.EQ.(NITMS-2)) THEN
 
 C Generate images.
@@ -203,37 +199,29 @@ C Image frequency (dynamic flow viualisation only).
       elseif (INO.EQ.(NITMS-5)) THEN
 
 C Add/ delete image definition.
-        h(1) ='Define a new view, or delete a current view.'
         call EASKABC(' ','View definitions:',
-     &                   'add another','delete one','continue',IW,1)
+     &    'add another','delete one','continue',IW,nbhelp)
         if (IW.eq.1) then
 
 C Add new image definition.
           Nview(ICOMP)=Nview(ICOMP)+1
           NV=Nview(ICOMP)
- 101      h(1)='Please supply a root name for the image.  '
-          h(2)='In the case of a dynamic viualisation the frame number'
-          h(3)='will be appended to this name.'
-          h(4)='Depending on the image format a .??? will be added to'
-          h(5)='the name also e.g. for a GIF image .gif would be added.'
-          t12=' new_view'
+ 101      helptopic='2D_slice_view_name'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKS(t12,' ',' Name for image ? ',
-     &                                12,'flowvis','image name',IER,5)
+     &      12,'flowvis','image name',IER,nbhelp)
           if (t12(1:2).eq.'  ') goto 101
           LBITrt(ICOMP,NV)=t12
-          h(1)='Please supply the direction from which the view is'
-          h(2)='made e.g. Chose North if you wist a view from the North'
-          h(3)='looking South.'
           IWM=1
           CALL EASKATOG('View direction:',' ','South','East',
-     &                    'North','West','Top','Bottom','  ',IWM,3)
+     &                  'North','West','Top','Bottom','  ',IWM,nbhelp)
           ISURvw(ICOMP,NV)=IWM
  102      IER=0
           IF(IWM.EQ.1)THEN
 
 C View from north.
             CALL EASKI(ilayer,'  ',' Which Y layer ',
-     &        1,'F',NJM2,'F',1,' Slice number',IER,4)
+     &        1,'F',NJM2,'F',1,' Slice number',IER,nbhelp)
             IF(IER.NE.0) GOTO 102
             CALL EDISP(IUOUT,' Axis orientation in image:')
             CALL EDISP(IUOUT,'   X-axis displayed horizontally;')
@@ -242,7 +230,7 @@ C View from north.
 
 C View from east.
             CALL EASKI(ilayer,'  ',' Which X layer ',
-     &        1,'F',NIM2,'F',1,' Slice number',IER,4)
+     &        1,'F',NIM2,'F',1,' Slice number',IER,nbhelp)
             IF(IER.NE.0) GOTO 102
             CALL EDISP(IUOUT,' Axis orientation in image:')
             CALL EDISP(IUOUT,'   Y-axis displayed horizontally;')
@@ -251,7 +239,7 @@ C View from east.
 
 C View from south.
             CALL EASKI(ilayer,'  ',' Which Y layer ',
-     &        1,'F',NJM2,'F',1,' Slice number',IER,4)
+     &        1,'F',NJM2,'F',1,' Slice number',IER,nbhelp)
             IF(IER.NE.0) GOTO 102
             CALL EDISP(IUOUT,' Axis orientation in image:')
             CALL EDISP(IUOUT,'   X-axis displayed horizontally;')
@@ -260,7 +248,7 @@ C View from south.
 
 C View from west.
             CALL EASKI(ilayer,'  ',' Which X layer ',
-     &        1,'F',NIM2,'F',1,' Slice number',IER,4)
+     &        1,'F',NIM2,'F',1,' Slice number',IER,nbhelp)
             IF(IER.NE.0) GOTO 102
             CALL EDISP(IUOUT,' Axis orientation in image:')
             CALL EDISP(IUOUT,'   Y-axis displayed horizontally;')
@@ -269,7 +257,7 @@ C View from west.
 
 C View from top.
             CALL EASKI(ilayer,'  ',' Which Z layer ',
-     &        1,'F',NKM2,'F',1,' Slice number',IER,4)
+     &        1,'F',NKM2,'F',1,' Slice number',IER,nbhelp)
             IF(IER.NE.0) GOTO 102
             CALL EDISP(IUOUT,' Axis orientation in image:')
             CALL EDISP(IUOUT,'   X-axis displayed horizontally;')
@@ -278,7 +266,7 @@ C View from top.
 
 C View from bottom.
             CALL EASKI(ilayer,'  ',' Which Z layer ',
-     &        1,'F',NKM2,'F',1,' Slice number',IER,4)
+     &        1,'F',NKM2,'F',1,' Slice number',IER,nbhelp)
             IF(IER.NE.0) GOTO 102
             CALL EDISP(IUOUT,' Axis orientation in image:')
             CALL EDISP(IUOUT,'   X-axis displayed horizontally;')
@@ -287,12 +275,10 @@ C View from bottom.
           ILAYvw(ICOMP,NV) = ilayer + 1
 
 C Image resolution.
-          H(1)='Higher resolution requires greater processing time'
-          H(2)='and disk space. `Low` quality images are often'
-          H(3)='sufficient, although `medium` and `high` quality'
-          H(4)='may be desirable for inclusion in publications.'
+          helptopic='2D_slice_resolution'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           call EASKABC(' ','Image resolution?','Low','Medium','High',
-     &                                             IWR,4)
+     &      IWR,nbhelp)
           IRESvw(ICOMP,NV)=IWR
 
 C Set defaults for customisation and frequency variables.
@@ -322,39 +308,35 @@ C Decode from the potentially long list to the zone number via KEYIND.
 C If delete or copy scene previously selected then new selection should 
 C be deleted or copied, respectively.
         NV=INO-MHEAD
- 200    write (outs,'(a,a,a)') 'For image definition ',
-     &        LBITrt(ICOMP,NV)(1:lnblnk(LBITrt(ICOMP,NV))),' edit:'
+ 200    write (outs,'(3a)') 'For image definition ',
+     &    LBITrt(ICOMP,NV)(1:lnblnk(LBITrt(ICOMP,NV))),' edit:'
         IWE=1
+
+C Set up common help text for the following user actions.
+        helptopic='2D_slice_multi_edit'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call EASKATOG(outs,' ','Name','View dir & layer','Resolution',
-     &           'Customise arrows','Frequency','Continue','  ',IWE,3)
+     &    'Customise arrows','Frequency','Continue','  ',IWE,3)
         if (IWE.eq.1) then
 
 C Image root name.
- 201      h(1)='Please supply a root name for the image.  '
-          h(2)='In the case of a dynamic viualisation the frame number'
-          h(3)='will be appended to this name.'
-          h(4)='Depending on the image format a .??? will be added to'
-          h(5)='the name also e.g. for a GIF image .gif will be added.'
-          CALL EASKS(t12,' ',' Name for image ? ',
-     &                                12,'flowvis','image name',IER,5)
+ 201      CALL EASKS(t12,' ',' Name for image ? ',
+     &      12,'flowvis','image name',IER,nbhelp)
           if (t12(1:2).eq.'  ') goto 201
           LBITrt(ICOMP,NV)=t12
         elseif (IWE.eq.2) then
 
 C View direction and layer.
-          h(1)='Please supply the direction from which the view is'
-          h(2)='made e.g. Chose North if you wist a view from the North'
-          h(3)='looking South.'
           IWM=1
           CALL EASKATOG('View direction:',' ','South','East',
-     &                    'North','West','Top','Bottom','  ',IWM,3)
+     &                  'North','West','Top','Bottom','  ',IWM,nbhelp)
           ISURvw(ICOMP,NV)=IWM
  202      IER=0
           IF(IWM.EQ.1)THEN
 
 C View from north.
             CALL EASKI(ilayer,'  ',' Which Y layer ',
-     &        1,'F',NJM2,'F',1,' Slice number',IER,4)
+     &        1,'F',NJM2,'F',1,' Slice number',IER,nbhelp)
             IF(IER.NE.0) GOTO 202
             CALL EDISP(IUOUT,' Axis orientation in image:')
             CALL EDISP(IUOUT,'   X-axis displayed horizontally;')
@@ -363,7 +345,7 @@ C View from north.
 
 C View from east.
             CALL EASKI(ilayer,'  ',' Which X layer ',
-     &        1,'F',NIM2,'F',1,' Slice number',IER,4)
+     &        1,'F',NIM2,'F',1,' Slice number',IER,nbhelp)
             IF(IER.NE.0) GOTO 202
             CALL EDISP(IUOUT,' Axis orientation in image:')
             CALL EDISP(IUOUT,'   Y-axis displayed horizontally;')
@@ -372,7 +354,7 @@ C View from east.
 
 C View from south.
             CALL EASKI(ilayer,'  ',' Which Y layer ',
-     &        1,'F',NJM2,'F',1,' Slice number',IER,4)
+     &        1,'F',NJM2,'F',1,' Slice number',IER,nbhelp)
             IF(IER.NE.0) GOTO 202
             CALL EDISP(IUOUT,' Axis orientation in image:')
             CALL EDISP(IUOUT,'   X-axis displayed horizontally;')
@@ -381,7 +363,7 @@ C View from south.
 
 C View from west.
             CALL EASKI(ilayer,'  ',' Which X layer ',
-     &        1,'F',NIM2,'F',1,' Slice number',IER,4)
+     &        1,'F',NIM2,'F',1,' Slice number',IER,nbhelp)
             IF(IER.NE.0) GOTO 202
             CALL EDISP(IUOUT,' Axis orientation in image:')
             CALL EDISP(IUOUT,'   Y-axis displayed horizontally;')
@@ -390,7 +372,7 @@ C View from west.
 
 C View from top.
             CALL EASKI(ilayer,'  ',' Which Z layer ',
-     &        1,'F',NKM2,'F',1,' Slice number',IER,4)
+     &        1,'F',NKM2,'F',1,' Slice number',IER,nbhelp)
             IF(IER.NE.0) GOTO 202
             CALL EDISP(IUOUT,' Axis orientation in image:')
             CALL EDISP(IUOUT,'   X-axis displayed horizontally;')
@@ -399,7 +381,7 @@ C View from top.
 
 C View from bottom.
             CALL EASKI(ilayer,'  ',' Which Z layer ',
-     &        1,'F',NKM2,'F',1,' Slice number',IER,4)
+     &        1,'F',NKM2,'F',1,' Slice number',IER,nbhelp)
             IF(IER.NE.0) GOTO 202
             CALL EDISP(IUOUT,' Axis orientation in image:')
             CALL EDISP(IUOUT,'   X-axis displayed horizontally;')
@@ -409,23 +391,19 @@ C View from bottom.
 
 C Image resolution.
         elseif (IWE.eq.3) then
-          H(1)='Higher resolution requires greater processing time'
-          H(2)='and disk space. `Low` quality images are often'
-          H(3)='sufficient, although `medium` and `high` quality'
-          H(4)='may be desirable for inclusion in publications.'
           call EASKABC(' ','Image resolution?','Low','Medium','High',
-     &                                             IWR,4)
+     &      IWR,nbhelp)
           IRESvw(ICOMP,NV)=IWR
         elseif (IWE.eq.4) then
 
 C Customise arrows.
  203      write (t24,'(6f6.1)') VLSCvw(ICOMP,NV),VTSCvw(ICOMP,NV),
      &                          HLSCvw(ICOMP,NV),HTSCvw(ICOMP,NV)
-          H(1)='By altering these settings, you can control'
-          H(2)='the appearance of the flow vectors.'
+          helptopic='2D_slice_arrows'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           call EASKS(t24,
      &      'Scale factors: Shaft len; Shaft thK; Head len; Head thk',
-     &                  '  ',24,' 1.0 1.0 1.0 1.0','scale factrs',IER,2)
+     &      '  ',24,' 1.0 1.0 1.0 1.0','scale factrs',IER,nbhelp)
           ISC = iCountWords(t24)
           if (ISC.ne.4) goto 203
           K=0
@@ -440,10 +418,10 @@ C Customise arrows.
         elseif (IWE.eq.5) then
 
 C Frequency of images.
-          H(1)='For a conflated simulation images can be created at'
-          H(2)='the required frequency.'
+          helptopic='2D_slice_frequency'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKI(IFR,' ',' Number of timesteps between images?',
-     &      1,'F',1,'-',4,'image freq',IER,2)
+     &      1,'F',1,'-',4,'image freq',IER,nbhelp)
           IFRQvw(ICOMP,NV)=IFR
         elseif (IWE.eq.6) then
           goto 3
@@ -458,13 +436,20 @@ C ********************* VISMAK *********************
 C VISMAK - create images for specified views and frames in an animation,
 C  IFRAME=-1 if cfd stand alone.
 
+C imgtyp determines the format of the generated image:
+C  imgtyp = 0 : 2d slice drawn on screen.
+C  imgtyp = 1 : 2d slice in Xbitmap format to file.
+C  imgtyp = 2 : 2d slice in Xpixmap format to file.
+C  imgtyp = 3 : 3d image drawn on screen.
+C  imgtyp = 4 : TECplot data file.
+C  imgtyp = 5 : ParaView data file.
+
       subroutine VISMAK(ICOMP,IFRAME)
 #include "building.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/VISSET/imgqua,NOX,NOZ,tscal,hLscal,hWscal,vLscal
       common/flvimg/imgtyp,IMOPTS
       common/flvnam/LBITrt(MCOM,6)
@@ -474,8 +459,15 @@ C  IFRAME=-1 if cfd stand alone.
      &              HLSCvw(MCOM,6),HTSCvw(MCOM,6),IFRQvw(MCOM,6)
 
       character LBITrt*12,outs*124,TLBIT*16
-      character name*12,h*72,t12*12,LBIT*72,LVEC*72
+      character name*12,t12*12,LBIT*72,LVEC*72
       logical dok,GENVEW
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='VISMAK'  ! set for subroutine
 
 C Any views.
       if (Nview(ICOMP).eq.0) then
@@ -486,24 +478,22 @@ C Any views.
 C For each view generate image.
       do 10 IM=1,Nview(ICOMP)
         GENVEW=.true.
+        helptopic='2D_animation_select'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if (imgtyp.eq.0.and.Nview(ICOMP).gt.1) then
           write (outs,'(3a,i1,a)') 'View image ',
      &        LBITrt(ICOMP,IM)(1:lnblnk(LBITrt(ICOMP,IM))),' (',IM,') ?'
           dok=.true.
-          h(1)='You have more than one view defined. '
-          h(2)='Do you want to view this one? '
-          call ASKOK('  ',outs,GENVEW,dok,2)
+          call ASKOK('  ',outs,GENVEW,dok,nbhelp)
         elseif (imgtyp.eq.3.and.Nview(ICOMP).gt.1) then
           write (outs,'(a,f5.2,a,a,a,i1,a)') 
-     &        'Use vector length scale factor (',
-     &          VLSCvw(ICOMP,IM),') from view ',
-     &        LBITrt(ICOMP,IM)(1:lnblnk(LBITrt(ICOMP,IM))),' (',IM,') ?'
+     &      'Use vector length scale factor (',
+     &       VLSCvw(ICOMP,IM),') from view ',
+     &       LBITrt(ICOMP,IM)(1:lnblnk(LBITrt(ICOMP,IM))),' (',IM,') ?'
           dok=.true.
-          h(1)='You have more than one view defined. Do you '
-          h(2)='want to use the scale parameters from this one? '
           call ASKOK(
      &    'The 3d image uses the scale factors from the listed views.',
-     &     outs,GENVEW,dok,1)
+     &     outs,GENVEW,dok,nbhelp)
         endif
 
 C Generate name of image depending on type and allow 3 digits for
@@ -518,7 +508,11 @@ C the frame number.
             write (TLBIT,'(a,a4)') name(1:lnblnk(name)),'.xpm'
             write (outs,'(2a)') 'Creating xpm image ',TLBIT(1:16)
           endif
-          call edisp(iuout,outs)
+          if(imgtyp.eq.0.or.imgtyp.eq.3)then
+            continue  ! drawing on screen no need to provide feedback
+          else
+            call edisp(iuout,outs)
+          endif
           write(LBIT,'(a)') TLBIT(1:16)
 
 C Set common data (and parameters passed directly).
@@ -553,17 +547,23 @@ C imgtyp  Output image type.
       integer iCountWords
 
       COMMON/ICFNOD/ICFD,ICP
-      common/pophelp/h(60)
       common/flvnam/LBITrt(MCOM,6)
       common/flvimg/imgtyp,IMOPTS
       common/flvcol/ISOPT(6),IBGOPT(6),SCmin,SCmax
       common/EQTION3/CALLMA(MNZ),CALPOL(MCTM,MNZ),POLNAM(MCTM,MNZ),NCTM,
      &      JHUMINDX
       LOGICAL CALPOL,CALLMA
-      character name*12,BITITL*5,LBITrt*12,H*72,outs*124,t24*24
+      character name*12,BITITL*5,LBITrt*12,outs*124,t24*24
       CHARACTER POLNAM*12,ITEM(MCTM+2)*18
       integer ISCALAR  ! for radio button
       integer NITMS,INO  ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='FTV'  ! set for subroutine
 
 C Set the geometry for the CFD domain in terms of ESP-r's standard
 C geometry model.
@@ -588,6 +588,7 @@ C Default to screen.
         call MAKS2d(ISUR,ilayer,name)
 
       elseif (imgtyp.eq.1.or.imgtyp.eq.2) then 
+
 C Grid based image types: XBM and XPM
 C Superimipose a mesh on the viewing surface.  This will be used for point
 C containment tests on the flow vectors.
@@ -600,19 +601,21 @@ C Ask for scalar to asign to colour.
         ISCALAR=-1
         if (imgtyp.eq.2) then
           if (ISOPT(IM).eq.-1) then
-            H(1)='The colour of the vector will depend on the chosen'
-            H(2)='metric (variable).'
+
+C Define help messages for the next few dialogs.
+            helptopic='vector_colour_choice'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             write (outs,'(4a,i1,a)') 'Vector colour represents which ',
      &         'metric for view ',
      &         LBITrt(ICOMP,IM)(1:lnblnk(LBITrt(ICOMP,IM))),' (',IM,')?'
             CALL EASKATOG(outs,' ','Air speed','Temperature',
      &        'Local mean age of air','Concentration',
-     &        ' ',' ',' ',ISCALAR,2)
+     &        ' ',' ',' ',ISCALAR,nbhelp)
 
 C Write title for pixmap scale.
             ISCALAR=ISCALAR-1
             call EASKAB('  ','Apply colour to:','Vector','Background',
-     &                 IBR,0)
+     &        IBR,nbhelp)
 
 C Ask which contaminant to plot
             IF(ISCALAR.eq.3)THEN
@@ -627,8 +630,8 @@ C Ask which contaminant to plot
               INO=-1
 
 C Help text for the menu.
- 331          h(1)='The contaminant selection menu does not yet have'
-              h(2)='any help associated with it. '
+ 331          helptopic='contaminant_select_list'
+              call gethelptext(helpinsub,helptopic,nbhelp)
               CALL EMENU('Choose Contaminant',ITEM,NITMS,INO)
               IF(INO.EQ.NITMS)RETURN
               IF(INO.GT.NITMS.OR.INO.LT.1.OR.INO.EQ.(NCTM+1))GOTO 331
@@ -640,8 +643,10 @@ C Remember selections (used by res for animations).
             
 C Set scale (should scan res lib in future)
             t24='30.0 0.0'
- 203        call EASKS(t24,'  ',
-     &         'max and min values:',24,'30.0 0.0','scale',IER,0)
+ 203        helptopic='contaminant_scale_req'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            call EASKS(t24,'  ',
+     &         'max and min values:',24,'30.0 0.0','scale',IER,nbhelp)
             ISC = iCountWords(t24)
             if (ISC.ne.2) goto 203
             K=0
@@ -839,11 +844,20 @@ C  results in format for use in the flow visualization routines.
 
       character vecfil*72,OUTSTR*124,t24*24
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='GETVECLIB'  ! set for subroutine
+
 C Ask for temperature scale max and min
         t24='  25.0  15.0'
+        helptopic='range_for_colour_scale'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKS(t24,
-     &          'Maximum and minium temperature for colour scale?',
-     &                    '  ',24,'25.0  15.0 ','temp max/min',IER,0)
+     &    'Maximum and minium temperature for colour scale?',
+     &    '  ',24,'25.0  15.0 ','temp max/min',IER,nbhelp)
         K=0
         CALL EGETWR(t24,K,VAL,0.,0.,'-','Max T',IER)
         Tmax = VAL
@@ -1169,12 +1183,21 @@ C   which contains specifications on bitmap images to generate.
 
       character Lflpar*72,t72*72,LBITrt*12,outs*124
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='wrFVP'  ! set for subroutine
+
 C Check that we have a file name.
       if (Lflpar(ICOMP)(1:7).eq.'UNKNOWN'.or.
      &    Lflpar(ICOMP)(1:2).eq.' ') then
         t72='CFDvis.par'
+        helptopic='flow_vis_parameter_file'
+        call gethelptext(helpinsub,helptopic,nbhelp)
  1      call EASKS(t72,'File name for flow visualization parameters ?',
-     &                  '  ',72,' CFDvis.par','vis par file',IER,0)
+     &    '  ',72,' CFDvis.par','vis par file',IER,nbhelp)
         if (IER.ne.0) goto 1
         Lflpar(ICOMP)=t72
       endif
@@ -1190,7 +1213,7 @@ C Open flowvis parameters file.
 
 C Write the number of views for which images will be generated.
       write (IUNIT,'(2I3,a)') Nview(icomp),imgtyp,
-     &                               ' # No of views and image format'
+     &  ' # No of views and image format'
 
 C Documentation.
       write (IUNIT,'(a,a)') '#Image root|View|Layer|Res|',

@@ -123,6 +123,10 @@ C  CHARCH: Routine to check a string for a specific number of data items.
 C  NOYES:  INTEGER FUNCTION to read the answer Y,y,1,N,n,0 to a question.
 C  IFIRST: Function returning ASCII value for 1st char in a string ISTR.
 
+C  EASKPER: Provides interface to specification of a period of days.
+C eAskPerYear: Provides interface to specification of a multiyear period of days.
+C easkPerGen: Handles specification of both single-year and multi-year
+C           simulation periods.
 C  EDAY:   Returns the year day number when passed the day of month & month.
 C  EDAYR: returns the day and month numbers from the day-of-year.
 C  EWEEKD: returns the day of the week given the day of month, month
@@ -856,9 +860,10 @@ C Parameters
       COMMON/OUTIN/IUOUT,IUIN
 
       CHARACTER outs248*248
-      character llitem*144   ! local string buffer
+      character llitem*144     ! local string buffer
+      character LTMP72*72      ! local string buffer
       character LTMP96*96      ! local string buffer
-      character LTMP124*124      ! local string buffer
+      character LTMP124*124    ! local string buffer
       integer iglib      ! for detecting GTK or X11
       INTEGER llt,lfn    ! length of the local string buffer
 
@@ -866,6 +871,11 @@ C Depending on whether it is X11 or GTK or text setup dialogs. The
 C X11 and text will work with 96 or 124 char string.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       lfn=lnblnk(FILEN)
+      if(lfn.lt.72)then
+        write(LTMP72,'(a)') FILEN(1:lfn)   ! for X11 and text editing
+      else
+        write(LTMP72,'(a)') FILEN(1:72)    ! for X11 and text editing
+      endif
       if(lfn.lt.96)then
         write(LTMP96,'(a)') FILEN(1:lfn)   ! for X11 and text editing
       else
@@ -877,13 +887,22 @@ C X11 and text will work with 96 or 124 char string.
         write(LTMP124,'(a)') FILEN(1:124)  ! for X11 and text editing
       endif
       write(llitem,'(a)') FILEN(1:lfn)     ! for GTK dialog
+
+C If in text or GTK mode echo FILEN.
       llt=lnblnk(llitem)
-      write(outs248,'(2a)') 'The current file is:',llitem(1:llt)
-      call edisp248(iuout,outs248,100)
+      if(iglib.eq.2.or.iglib.eq.3)then
+        call edisp(iuout,'  ')
+        write(outs248,'(2a)') 'Current file or folder:',llitem(1:llt)
+        call edisp248(iuout,outs248,100)
+      endif
       if(iglib.eq.1.or.iglib.eq.3)then
 
-C Adjust dialog depending on initial length of file name.
-        if(llt.lt.96)then
+C Adjust dialog depending on initial length of file name. If shorter
+C than 32 char the use shortest width.
+        if(llt.lt.42)then
+          CALL EASKF(LTMP72,PROMP1,PROMP2,72,DFILE,ERMSG,IER,NHELP)
+          write(llitem,'(a)') LTMP72(1:lnblnk(LTMP72))
+        elseif(llt.lt.96)then
           CALL EASKF(LTMP96,PROMP1,PROMP2,96,DFILE,ERMSG,IER,NHELP)
           write(llitem,'(a)') LTMP96(1:lnblnk(LTMP96))
         elseif(llt.ge.96.and.llt.lt.124)then
@@ -1606,25 +1625,35 @@ C concatenate path with sfile.
 C If path is '  ' or './' do not concatenate
 C This version includes cross-platform logic.
       SUBROUTINE addpath(SFILE,tfile,concat)
+      IMPLICIT NONE
+      
+C Declare calling parameters
+      CHARACTER*(*), INTENT(OUT) :: sfile,tfile
+      LOGICAL, INTENT(OUT) :: concat
+C Declare local variables
+      LOGICAL :: unixok
+      CHARACTER :: fs,bs,a1
+      CHARACTER(72) :: path
+	  CHARACTER(12) :: tp, tp1
+	  CHARACTER(124):: outs
+	  INTEGER :: LN,LNS,I,LT,ios,iuin,iuout,pos
+C Common blocks
       COMMON/OUTIN/IUOUT,IUIN
       common/rpath/path
-      LOGICAL concat,unixok
-      CHARACTER*(*) sfile,tfile
-      CHARACTER path*72,fs*1,fs1*1,tp*12,tp1*12,outs*124,a1*1
-C      character a2*1
-
+      
 C Define path and file name lengths and check operating system.
       LN=max(1,lnblnk(path))
       LNS=max(1,lnblnk(sfile))
       call isunix(unixok)
-
+	
 C Set folder separator (fs) to \ or / and the folders to ignore as required.
       fs = char(47)
-      fs1 = char(92)
+      bs = char(92)
       write(tp,'(2a)') '.',fs
-      write(tp1,'(2a)') '.',fs1
+      write(tp1,'(2a)') '.',bs
       write(a1,'(a)') sfile(1:1)
-C      write(a2,'(a)') sfile(2:2)
+C Debug.
+C      write(*,*)'tp',tp,'tp1',tp1,'a1',a1
 
 C Assume that we will add the path to the file name.
       concat = .true.
@@ -1652,7 +1681,7 @@ C and change all \ to /.
           LT=max(1,lnblnk(tfile))
           sfile=tfile
           do 10 I=1,LT
-            if (tfile(I:I).eq.fs1) then
+            if (tfile(I:I).eq.bs) then
               write (sfile(I:I),'(a2)') fs
             endif
  10       continue
@@ -1671,6 +1700,15 @@ C been defined - do not add path.
      &        sfile(2:2).eq.':') then
           concat = .false.
         elseif (a1.eq.'/') then
+C make sure all \ (bs) are replaced with / (fs)
+         do
+           pos=SCAN(sfile,bs)
+           if (pos.ne.0) then
+             sfile(pos:pos)=fs
+           else 
+             EXIT
+           end if
+         end do      
 
 C Special case: unix absolute path being used on windows - substitute c: for initial /
 C Limit feedback text length to fit within outs text buffer.
@@ -1680,11 +1718,12 @@ C Limit feedback text length to fit within outs text buffer.
           write(outs,*)
      &      'addpath: warning found unix path changing to windows.'
           call edisp(iuout,outs)
-	  LNS=lnblnk(sfile)
-	  if(LNS.gt.112) LNS=112
+	      LNS=lnblnk(sfile)
+	      if(LNS.gt.112) LNS=112
           write(outs,*) 'addpath: ',sfile(1:LNS)
           call edisp(iuout,outs)
         endif
+        
       endif
 
       if(concat)then
@@ -1821,11 +1860,13 @@ C ******* termode
 C termode: given an index `mode` return a terminal text string.
       SUBROUTINE termode(mode,tmode)
       CHARACTER*(*) tmode
+
 #ifdef OSI
       integer mode          ! passed from tchild
 #else
       integer*8 mode          ! passed from tchild
 #endif
+
       tmode = ' '
       if(mode.eq.-1)then
         tmode = 'text'
@@ -1874,20 +1915,59 @@ C otherwise ask what to do.
           else
             IX=2
           endif
-        else
-          H(1)='In order to manage long lists of selections or data'
-          H(2)='a number of viewports may be necessary.'
-          CALL EASKABC(' ',' Menu-page options:','previous','next',
-     &                 'goto page',IW,2)
-          IF(IW.EQ.3)then
-            H(1)='If page greater than length then last page assumed.'
-            CALL EASKI(IGTP,' ',' Which page ? ',1,'F',1,'-',1,
-     &        'menu page',IER,1)
-            IX=3
-          elseif(IW.EQ.2)then
+        elseif (MPM.eq.3) then
+
+C If three pages and on 1st jump to middle, if at end jump to middle
+C and if in middle ask user what to do.
+          if (IPM.eq.1) then
             IX=5
-          elseif(IW.EQ.1)then
+          elseif (IPM.eq.3) then
             IX=2
+          else
+            H(1)='In order to manage long lists of selections or data'
+            H(2)='a number of viewports may be necessary.'
+            CALL EASKABC(' ',' Menu-page options:','previous','next',
+     &                 'goto page',IW,2)
+            IF(IW.EQ.3)then
+              H(1)='If page greater than length then last page assumed.'
+              CALL EASKI(IGTP,' ',' Which page ? ',1,'F',1,'-',1,
+     &          'menu page',IER,1)
+              IX=3
+            elseif(IW.EQ.2)then
+              IX=5
+            elseif(IW.EQ.1)then
+              IX=2
+            endif
+            CALL USRMSG(' ',' ','-')
+          endif
+        else
+
+C If lots of pages track the 1st and last page otherwise ask user.
+          if (IPM.eq.1) then
+            IX=5
+          elseif (IPM.eq.MPM) then
+            IX=2
+          else
+            H(1)='In order to manage long lists of selections or data'
+            H(2)='a number of viewports may be necessary.'
+            CALL EASKATOG(' ',' Menu-page options:','first page',
+     &        'previous','next','goto page','last page','  ','  ',IW,2)
+            if(IW.eq.5)then
+              IGTP=MPM   ! set it to last page
+              IX=3
+            elseif(IW.EQ.4)then
+              H(1)='If page greater than length then last page assumed.'
+              CALL EASKI(IGTP,' ',' Which page ? ',1,'F',1,'-',1,
+     &          'menu page',IER,1)
+              IX=3
+            elseif(IW.EQ.3)then
+              IX=5
+            elseif(IW.EQ.2)then
+              IX=2
+            elseif(IW.EQ.1)then
+              IGTP=1   ! set it to first page
+              IX=3
+            endif
           endif
           CALL USRMSG(' ',' ','-')
         endif
@@ -3685,16 +3765,18 @@ C single character then ixl is ix.
         else
           length=ix
           itrunc = i-1
-          goto 1
+          goto 1  ! cannot write more to the packed string
         endif
   43  continue
       length=ixl
       return
 
    1  continue
-      write(outs,*) 'ASFLIST: truncation writing array at item: ',
-     &  itrunc,' & pos ',length
-      call edisp(iuout,outs)
+
+C Debug.
+C      write(outs,*) 'ASFLIST: truncation writing array at item: ',
+C     &  itrunc,' & pos ',length
+C      call edisp(iuout,outs)
       return
       END
 
@@ -4223,6 +4305,269 @@ C a string ISTR.
       RETURN
       END
 
+
+C ************* EASKPER
+C EASKPER: Provides legacy interface to the more general eAskPerGen below.
+      SUBROUTINE eAskPer(PROMP1,IBDOY,IEDOY,IFDAY,IER)
+      CHARACTER*(*) PROMP1
+      integer ibdoy,iedoy,ifday,iBYr,iEYr,ier
+
+      logical bMY_enabled
+      parameter ( bMY_enabled = .false. )
+
+C Note: initialize iBYr and iEYr even though the are not 
+C returned. They're not referenced when multiyear simulations are disabled
+      iBYr=2000
+      iEYr=2000
+      call eAskPerGen(PROMP1,IBDOY,IEDOY,
+     &                 iBYr,iEYr,IFDAY,bMY_enabled,IER)
+
+      return
+      end
+
+
+C ************* EAskPerYear
+C EASKPER: Provides multi-year capable interface to the more general
+C eAskPerGen below.
+      SUBROUTINE eAskPerYear(PROMP1,ibdoy,iedoy,iBYr,iEYr,ifday,ier)
+      CHARACTER*(*) PROMP1
+      integer ibdoy,iedoy,iBYr,iEYr,ifday,ier
+
+      logical bMY_enabled
+      parameter ( bMY_enabled = .true. )
+
+C initial values of iBYr iEYr are not need for single-year simulation
+      call eAskPerGen(PROMP1,ibdoy,iedoy,iBYr,iEYr,ifday,bMY_enabled,
+     &                IER)
+
+      return
+      end
+
+
+C ************* eAskPerGen
+C eAskPerGen: Provides interface to specification of a multiyear period of days. It
+C returns IBDOY and IEDOY based on the current settings of IFDAY.
+C iBYr,iEYr are the begining year and ending year of the period.
+C Promp1 gives the context of the request for a period.
+      SUBROUTINE eAskPerGen(PROMP1,ibdoy,iedoy,iBYr,iEYr,ifday,
+     &                      bMY_enabled,IER)
+      integer ibdoy,iedoy,iBYr,iEYr,ifday,ier
+      common/pophelp/h(60)
+      CHARACTER*(*) PROMP1
+      CHARACTER h*72
+      character HOLD*16
+
+C Error flag
+      logical bDateOK
+
+C Flag indicating if multi-year simulations are in use
+      logical bMY_enabled
+
+      IER=0
+
+      bDateOk = .false.
+
+      do while ( .not. bDateOK )
+
+C Initialize success flag, and character buffer index.
+        bDateOK = .true.
+        k=0
+
+C IFDAY describes how the date will be formatted:
+C   IFDAY = 0 -> DDD (1->365)
+C   IFDAY = 1 -> DD MM (1->31,1->12)
+
+        IF(ifday.EQ.0)THEN
+C Day of year to be provided
+
+          if ( .not. bMY_enabled ) then
+C Single year version
+            H(1)='Period  must be within a calendar year.'
+
+C Get start & end day
+            write(HOLD,'(I4,I4)')ibdoy,iedoy
+            CALL EASKS(HOLD,PROMP1,' Start and end day of year?',16,
+     &      ' 1  1 ','start & end day of year',IER,1)
+
+            CALL EGETWI(HOLD,K,ibdoy,1,365,'F','start doy',IER)
+            if ( ier .ne. 0 ) bDateOK = .false.
+
+            CALL EGETWI(HOLD,K,iedoy,1,365,'F','end doy',IER)
+            if ( ier .ne. 0 ) bDateOK = .false.
+
+
+          else
+C Multi-year version
+            H(1)='Provide day-of-year and year for start'
+            H(2)='and end dates.'
+
+C Get start day and year
+            write(HOLD,'(I4,I5)') ibdoy,iBYr
+            CALL EASKS(HOLD,PROMP1,' Start day and year?',16,
+     &      ' 1  2000 ','start day and year',IER,2)
+
+            CALL EGETWI(HOLD,K,ibdoy,1,365,'F','start doy',IER)
+            if  ( ier .ne. 0 ) BDateok = .false.
+
+            CALL EGETWI(HOLD,K,iBYr,1900,2100,'F','start year',IER)
+            if  ( ier .ne. 0 ) BDateok = .false.
+
+C Reset string index K
+            K=0
+
+C Get end day and year
+            write(HOLD,'(I4,I5)') iedoy,iEYr
+            CALL EASKS(HOLD,PROMP1,' End day and year?',16,
+     &      ' 365 2000 ','end day and year',IER,2)
+
+            CALL EGETWI(HOLD,K,iedoy,1,365,'F','end doy',IER)
+            if  ( ier .ne. 0 ) BDateok = .false.
+
+            CALL EGETWI(HOLD,K,iEYr,1900,2100,'F','end year',IER)
+            if  ( ier .ne. 0 ) BDateok = .false.
+
+          endif !<- matches if ( .not. bMY_enabled )...
+
+        ELSEIF ( ifday .eq. 1 .or. ifday .eq. 2 ) THEN
+
+C Day & month or day, month & year to be provided
+C Start date: Convert to dd mm format:
+
+          CALL EDAYR(ibdoy,IBD,IBM)
+
+          if ( .not. bMY_enabled ) then
+C Get day & month
+            write(HOLD,'(I2,A,I2)') IBD,' ',IBM
+            H(1)='Period must be within a calendar year.'
+            H(2)='( `1 1` to `31 12` )'
+            CALL EASKS(HOLD,PROMP1,' Start day & month (DD MM)?',
+     &        16,' 1  1 ','start day and month',ier,2)
+
+          else
+C Get day, month & year
+C Append year to string
+            write (HOLD, '(I2,A,I2,A,I4)') IBD,' ',IBM,' ',iBYr
+
+            H(1)='Specify simulation start day, month and year'
+            H(2)='in `DD MM YYYY` format. Note: Leap years are'
+            H(3)='not presently supported.'
+            CALL EASKS(HOLD,PROMP1,
+     &        ' Start day, month & year (DD MM YYYY)?',
+     &        16,' 1 1 2000','start day, month and year',IER,3)
+          endif
+
+C Error handling.
+          if ( ier .ne. 0 ) bDateOK = .false.
+
+
+C Convert stings to integers and flag errors
+          K=0
+          CALL EGETWI(HOLD,K,IBD,1,31,'F','start dom',ier)
+          if ( ier .ne. 0 ) bDateOK = .false.
+
+          CALL EGETWI(HOLD,K,IBM,1,12,'F','start month',ier)
+          if ( ier .ne. 0 ) bDateOK = .false.
+
+C Convert year string, if necessary
+          if ( bMY_enabled ) then
+
+            CALL EGETWI ( HOLD, K, iBYr, 1900, 2100, 'F',
+     &        'start year', ier)
+
+            if ( ier .ne. 0 ) bDateOK = .false.
+
+          endif
+
+C Check range, then convert to ibdoy.
+          if ( bDateOK ) CALL EDAYCH(IBD,IBM,ier)
+
+          if ( ier .eq. 1 ) bDateOK = .false.
+
+          if ( bDateOK ) CALL EDAY(IBD,IBM,ibdoy)
+
+C Only ask for end date if start-date successfully defined
+          if ( bDateOK ) then
+
+C End date, set at least equal to the beginning day.
+            if ( .not. bMY_enabled .and. iedoy.le.ibdoy ) then
+              iedoy = ibdoy + 1
+            elseif ( bMY_enabled ) then
+
+C Convert end-date into EDAYR friendly format and
+C check that end date is not before start-date.
+              iedoy = iedoy - ( iEYr - iBYr ) * 365
+              if ( ( iEYr .eq. iBYr .and. iedoy .le. ibdoy ) .or.
+     &             ( iEYr .lt. iBYr ) ) then
+                iedoy=ibdoy+1
+                iEyr=iBYr
+                if (iedoy .gt. 365 ) then
+                  iedoy = 1
+                  iEYr = iEyr + 1
+                endif
+              endif
+            endif ! <- matches ' elseif (bMY_enabled)...
+
+C Convert end-day to day-month format
+            CALL EDAYR(iedoy,IED,IEM)
+
+            if ( .not. bMY_enabled ) then
+              write(HOLD,'(I2,A,I2)') IED,' ',IEM
+              H(1)='Period  must be within a calendar year.'
+              H(2)='( `1 1` to `31 12` )'
+              CALL EASKS(HOLD,PROMP1,' End day & month (DD MM)?',
+     &          16,' 1  1 ','start day and month',ier,2)
+
+            else
+
+C Get day, month & year  and append year to string.
+              write (HOLD, '(I2,A,I2,A,I4)') IED,' ',IEM,' ',iEYr
+              H(1)='Specify simulation start day, month and year'
+              H(2)='in `DD MM YYYY` format. Note: Leap years are'
+              H(3)='not presently supported.'
+
+              CALL EASKS(HOLD,PROMP1,
+     &          ' End day, month & year (DD MM YYYY)?',
+     &          16,' 31 12 2000','end day, month and year',IER,3)
+
+            endif
+
+            if ( ier .ne. 0 ) bDateOK = .false.
+
+C Convert strings to integers and errortrap
+            K=0
+            CALL EGETWI(HOLD,K,IED,1,31,'F','end dom',IER)
+            if ( ier .ne. 0 ) bDateOK = .false.
+
+            CALL EGETWI(HOLD,K,IEM,1,12,'F','end month',IER)
+            if ( ier .ne. 0 ) bDateOK = .false.
+
+C Convert year string, if necessary
+            if ( bMY_enabled ) then
+
+              CALL EGETWI ( HOLD, K, iEYr, 1900, 2100, 'F',
+     &          'end year', ier)
+
+              if ( ier .ne. 0 ) bDateOK = .false.
+
+            endif
+
+C Check range, then convert to iedoy.
+            if ( bDateOK )  CALL EDAYCH(IED,IEM, ier )
+
+            if ( ier .ne. 0 ) bDateOK = .false.
+
+            if ( bDateOK ) CALL EDAY(IED,IEM,iedoy)
+
+C For multi-year simulations, convert iedoy:
+            iedoy = iedoy + ( iEYr - iBYr ) * 365
+
+          endif
+        endif
+      enddo
+
+      RETURN
+      END
+
 c ******************** EDAY
 C EDAY Returns year day number IYDN when passed the day of the month
 C IDAYN and the month number IMTHN. 1st Jan= 1, 31st Dec=365, no leap
@@ -4677,7 +5022,7 @@ C comma is found.
      &      ' past end of line for ',MSG(1:LNM),' (phrase) in...'
         else
           WRITE(loutstr,'(3a)',IOSTAT=IOS,ERR=1)
-     &      'FAILUREW: Past end of line for ',
+     &      'FAILURE: Past end of line for ',
      &      MSG(1:LNM),' (phrase) in...'
         endif
       endif
@@ -4745,7 +5090,7 @@ C Copy PHRASE from STRING, character by character until
 C a double quote or single quote is found (a quoted phrase 
 C could include a comma, but not a tab)
    20 L=L+1
-      IF(L.GT.LW) GOTO 100
+      IF(L.GE.LW) GOTO 100   ! at end of available phrase chars
       PHRASE(L:L)=A
       K=K+1
       IF(K.GT.LS) GOTO 999
@@ -5768,10 +6113,10 @@ C Find if Unix or NT.
         call getenv('HOME',upath)
       else
         call getenv ('HOMEDRIVE',homedrive)
-        write(outs,*) 'homedrive is ',homedrive
+        write(outs,*) '  Homedrive - ',homedrive
         call edisp(IUOUT,outs)
         call getenv ('HOMEPATH',homepath)
-        write(outs,*) 'homepath is ',homepath
+        write(outs,*) '  Homepath - ',homepath
         call edisp(IUOUT,outs)
         if(homedrive(1:1).ne.' '.and.homepath(1:1).ne.' ')then
           write(upath,'(2a)') homedrive(1:lnblnk(homedrive)),
@@ -5804,11 +6149,98 @@ C usrdir: Find current folder.
       subroutine usrdir(upwd)
       common/OUTIN/IUOUT,IUIN
       character*(*) upwd
-      integer getcwd
+      character local*96   ! getcwd needs a fixed char array
+      integer i,jlen,kblnk
 
-      i= getcwd(upwd)
+C Older definition used function call.
+C      integer getcwd
+C      i= getcwd(upwd)
+
+C Modern compilers GCC F90 provide subroutine
+      call getcwd(local,i)
+      jlen= LEN(upwd)        ! defined length of upwd
+      kblnk= lnblnk(local)   ! actual length of local
+
+C Debug.
+C      write(6,*) 'getcwd ',i,jlen,kblnk,local
+
+C Ensure that string buffer does not overflow.
+      if(kblnk.lt.jlen)then
+        write(upwd,'(a)') local(1:kblnk)
+      else
+        write(upwd,'(a)') local(1:jlen)
+      endif
+
+C Normal return value is zero, otherwise provide warning
       if(i.ne.0)then
-        call edisp(iuout,'problem recovering current folder')
+        call edisp(iuout,'usrdir: problem recovering current folder')
+      endif
+      return
+      end
+
+C ************ clearfolderlist
+C Called from getfileslist_() in esru_util.c to clear the listfold
+C common block.
+      subroutine clearfolderlist()
+#include "espriou.h"
+C espriou.h for parameter MFFOLD
+      integer nboflistf  ! how many folders or file names passed
+      integer listfoldertype   ! zero if unused one if folder two if file
+      integer lenlistfolder    ! width of each string
+      character*72 listfolder  ! array of folder or file names
+      common/listfold/nboflistf,listfoldertype(MFFOLD),
+     &                lenlistfolder(MFFOLD),listfolder(MFFOLD)
+
+C Clear the list.
+      nboflistf=0
+      do 42 ilist=1,MFFOLD
+        listfoldertype(ilist)=0
+        listfolder(ilist)='  '
+        lenlistfolder(ilist)=0
+  42  continue
+      return
+      end
+
+C ************ addfolderlist
+C Called from getfileslist_() in esru_util.c to pass back a
+C file or folder name in the string folderf into a fortran
+C data structure for other code to use.
+      subroutine addfolderlist(type,folderf)
+#include "espriou.h"
+C espriou.h for parameter MFFOLD
+
+      integer lnblnk  ! function definition
+      
+      integer nboflistf  ! how many folders or file names passed
+      integer listfoldertype   ! zero if unused one if folder two if file
+      integer lenlistfolder    ! width of each string
+      character*72 listfolder  ! array of folder or file names
+      common/listfold/nboflistf,listfoldertype(MFFOLD),
+     &                lenlistfolder(MFFOLD),listfolder(MFFOLD)
+
+C Passed variables.
+      character folderf*(*)   ! file name null terminated within calling code
+      character type*(*)      ! type is D for directory and L for file
+
+C Local variables
+      CHARACTER WORD*96
+      integer iln
+      
+C Add to the list.
+      nboflistf=nboflistf+1
+      call c2fstr(folderf,WORD)
+      iln=lnblnk(WORD)
+C Debug.
+C      write(6,*) 'addfolderlist ',word(1:iln),' ',iln,nboflistf,type
+
+      listfolder(nboflistf)=WORD(1:iln)
+      lenlistfolder(nboflistf)=iln
+      if(type(1:1).eq.'D')then
+        listfoldertype(nboflistf)= 1
+      elseif(type(1:1).eq.'L')then
+        listfoldertype(nboflistf)= 2
+      else
+        listfoldertype(nboflistf)= 0
       endif
       return
       end
@@ -6909,12 +7341,12 @@ C Trap phrases longer than the outs buffer.
 C ********************* clrtextbuf
 C clrtextbuf clears the text buffer common blocks.
       subroutine clrtextbuf()
-      common/textbuf/dispbuf(360)
-      common/textbufl/indexbuf,lnbuf(360)
+      common/textbuf/dispbuf(500)
+      common/textbufl/indexbuf,lnbuf(500)
       character dispbuf*124
 
       indexbuf=0
-      do 42 i=1,360
+      do 42 i=1,500
         dispbuf(i)='  '
         lnbuf(i)=1
   42  continue
@@ -6954,9 +7386,9 @@ C Set MODIFY=true to force any wire-frame images to be redrawn.
       end
 
 C ********* WIREPK
-C WIREPK is called from C code in esru_x.c or esp-r.c  with current
+C WIREPK is called from C code in esru_x.c with current
 C number of zones which have been selected for display.
-C Compilation of X11 or GTK version assumes this will be available in
+C Compilation of X11 assumes this will be available in
 C each modules code somewhere.  If not needed then provide a dummy.
       subroutine wirepk(inpk)
 #include "building.h"
@@ -7033,3 +7465,193 @@ C.........was blank, comma or tab, increment word coumt
       return
       end function iCountWords
 
+C ********************* CHITMS, LCHITMS, CHITMS400
+C These are legacy interfaces to iCountWords. They return
+C the number of words (IW) for a string A.
+
+      subroutine CHITMS(a,iw)
+      implicit none
+      integer iw
+      character*(*) a
+      integer iCountWords
+
+      iw = iCountWords(a)
+
+      return
+      end subroutine CHITMS
+
+      subroutine LCHITMS(a,iw)
+      implicit none
+      integer iw
+      character*(*) a
+      integer iCountWords
+
+      iw = iCountWords(a)
+
+      return
+      end subroutine LCHITMS
+
+      subroutine CHITMS400(a,iw)
+      implicit none
+      integer iw
+      character*(*) a
+      integer iCountWords
+
+      iw = iCountWords(a)
+
+      return
+      end subroutine CHITMS400
+      
+C ********************* bStringsMatch
+C This is a very simple function that checks if 
+C the non-blank portions of two strings of arbitrary
+C length match. 
+      logical function bStringsMatch(cStringA, cStringB)
+      implicit none 
+      character*(*) cStringA
+      character*(*) cStringB
+      
+      integer lnblnk
+      integer iLengthA, iLengthB
+      
+      iLengthA = lnblnk(cStringA)
+      iLengthB = lnblnk(cStringB)
+
+      if ( iLengthA /= iLengthB ) then 
+        bStringsMatch = .false. 
+      elseif ( cStringA(1:iLengthA) /= cStringB(1:iLengthB) ) then 
+        bStringsMatch = .false.
+      else
+        bStringsMatch = .true. 
+      endif  
+
+      return 
+      end function bStringsMatch
+
+C-------------- integer function iCtoI ---------------------------------
+C
+C     Coax a string into an integer.
+C
+C-----------------------------------------------------------------------       
+      integer function  iCtoI ( cBuffer, bError )
+      implicit none 
+      character*(*) cBuffer
+      logical bError 
+      integer iMiscError
+
+      read (cBuffer,*, IOSTAT=iMiscError) iCtoI
+      if ( iMiscError /= 0 ) then
+        bError = .true. 
+      else
+        bError = .false. 
+      endif 
+      return 
+      end 
+C-------------- integer iunction fCtoI_err --------------------------------
+C
+C     Interface to iCtoI with a built-in warning message
+C
+C-----------------------------------------------------------------------     
+      integer function iCtoI_err ( cBuffer, cContext, bError )
+      implicit none
+C----------------------------------------------------------------------
+C     ESP-r variables
+C----------------------------------------------------------------------
+      common/outin/iuout,iuin
+      integer iuout, iuin      ! channels for writing messages to screen      
+      integer lnblnk
+C----------------------------------------------------------------------
+C     Local variables 
+C----------------------------------------------------------------------            
+      character*(*) cBuffer, cContext
+      character*124 cMsg
+      character*80 cTemp
+      logical bError 
+
+      integer iCtoI
+      
+C.....Convert string       
+      iCtoI_err = iCtoI ( cBuffer, bError )
+
+C.....upon error, report to user.       
+      if ( bError ) then
+      
+        write (cTemp, '(A)' ) cContext(1:min( 80, lnblnk( cContext ) ) )
+        
+        write (cMsg,'(A,A,A,A,A)')
+     &       ' Error converting ',
+     &       cTemp(1:lnblnk(cTemp)),
+     &       ' (',
+     &       cBuffer(1:lnblnk(cBuffer)),
+     &       ') to integer.'
+
+        call edisp248(iUout, cMsg,80)
+
+      endif
+      return
+      end 
+      
+C-------------- real function fCtoR ------------------------------------
+C
+C     Attempt to coax a string into a float.
+C
+C-----------------------------------------------------------------------       
+      real function  fCtoR ( cBuffer, bError )
+      implicit none 
+      character*(*) cBuffer
+      logical bError 
+      integer iMiscError 
+      
+      read (cBuffer,*, IOSTAT=iMiscError) fCtoR
+      
+      if ( iMiscError /= 0 ) then
+        bError = .true. 
+      else
+        bError = .false. 
+      endif 
+      return 
+      end
+C-------------- real function fCtoR_err --------------------------------
+C
+C     Interface to fCtoR with a built-in warning message
+C
+C-----------------------------------------------------------------------     
+      real function fCtoR_err ( cBuffer, cContext, bError )
+      implicit none
+C----------------------------------------------------------------------
+C     ESP-r variables
+C----------------------------------------------------------------------
+      common/outin/iuout,iuin
+      integer iUout, iuin      ! channels for writing messages to screen
+      integer lnblnk
+C----------------------------------------------------------------------
+C     Local variables 
+C----------------------------------------------------------------------            
+      character*(*) cBuffer, cContext
+      character*248 cMsg
+      character*80 cTemp
+      logical bError 
+
+      real fCtoR
+      
+C.....Convert string       
+      fCtoR_err = fCtoR ( cBuffer, bError )
+
+C.....upon error, report to user.       
+      if ( bError ) then
+      
+        write (cTemp, '(A)' ) cContext(1:min( 80, lnblnk( cContext ) ) )
+        
+        write (cMsg,'(A,A,A,A,A)')
+     &       ' Error converting ',
+     &       cTemp(1:lnblnk(cTemp)),
+     &       ' (',
+     &       cBuffer(1:lnblnk(cBuffer)),
+     &       ') to real.'
+
+        call edisp248(iUout, cMsg,80)
+
+      endif
+      return
+      end
+      

@@ -47,7 +47,7 @@ C Indicator of possible focus zone.
 C      common/user/browse
 
       character*25 item(8)
-      character h*72,VlDirR*72,VlDirL*72
+      character h*72,VlDirR*96,VlDirL*72
       integer MITEM,INO ! max items and current menu item
 
 C      VlDirR='/usr/esru/esp-r/validation'

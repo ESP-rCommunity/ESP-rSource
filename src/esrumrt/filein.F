@@ -22,7 +22,7 @@ c  FILEIN: Processes zone geometry data from user file.
 
 C+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 c FILEIN: Takes information in common G1 and preprocesses it.
-C Common G1M is used to hold expanded surface list data.
+C Common G1M is used to hold expanded surface list (MSM=MS+6) data.
 
       SUBROUTINE  FILEIN(ITRC,ITRU,IER)
 

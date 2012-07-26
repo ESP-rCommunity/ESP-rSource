@@ -163,7 +163,6 @@ C espriou.h provides currentfile and defdbfl.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       INTEGER :: mmod,limit,limtty
-      COMMON/POPHELP/H(60)
 
 C IFIL base file unit number (set in MAIN of each application).
       COMMON/FILEP/IFIL
@@ -173,8 +172,8 @@ C IFIL base file unit number (set in MAIN of each application).
       COMMON/ER1/IER1
       INTEGER :: ier1
       
-      COMMON/C1/NCOMP,NCON
       integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
@@ -185,8 +184,8 @@ C IFIL base file unit number (set in MAIN of each application).
 C skyview viewfactor from external surfaces to the sky (site.h)
 C groundview viewfactor from external surfaces to the ground
 C buildingview viewfactor from external surfaces to other buildings & obstructions
-      COMMON/C6/INDCFG
       INTEGER :: INDCFG
+      COMMON/C6/INDCFG
 
 C NZSUR is the number of surfaces in each zone (from geometry.h).
 C NZTV is the number of vertices in each zone (from geometry.h).
@@ -195,22 +194,22 @@ C IFCFG is the file unit for the model configuration file.
 C cfgroot (24 char) root name for the model (used when generating
 C   system files.
 C LCFGF (72 char) model configuration file name.
-      common/C21/IFCFG,cfgroot,LCFGF
       INTEGER :: IFCFG
+      common/C21/IFCFG,cfgroot,LCFGF
 
 C IFPNF is the unit for the plant network file.
 C LPNF (72 char) plant network file name.
-      COMMON/C23/IFPNF,LPNF
       INTEGER :: IFPNF
+      COMMON/C23/IFPNF,LPNF
 
 C IZSTOCN - for each zone:surface a pointer to connection index.
-      COMMON/C24/IZSTOCN(MCOM,MS)
       INTEGER :: IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PREC8/SLAT,SLON
       REAL :: SLAT,SLON
 
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       INTEGER :: iairn,icaas
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       INTEGER :: NNOD,NCMP,NCNN
@@ -230,9 +229,6 @@ C ctldoc (248 char) - Overall control notes. If equal to 'none'
 C                   then no control is imposed.
 C lctlf (72 char) - model control file name.
       common/cctlnm/ctldoc,lctlf
-
-C LPRJLG (72 char) model log file.
-      COMMON/LLOG/LPRJLG
 
 C Images in the model.
 C  imgfmt (4 char) gives the format of each image associated with
@@ -331,11 +327,7 @@ C Uncertainty analysis common.
 C IPV description come from ipvdata.h.
       common/IPVF/lipvdatf
 
-C Anchor data.
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
-      INTEGER :: NALOC
-      common/anchorb/IALOC(20),lstanchr(20,60)
-      INTEGER :: ialoc,lstanchr
+C Anchor data in model.h.
 
 C Contaminant flow model commons
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
@@ -399,7 +391,7 @@ C igcepflag=1 indicates GCEP models are active; 0 indicates no GCEP models.
       common/gcepfile/gcepfile
 
 C Bidirectional raw optical data file.
-      COMMON/BIDIR/IFLAGBI(MSTMC),INTVALBI,NSTMCFL(MCON)
+      COMMON/BIDIR/IFLAGBI,INTVALBI,NSTMCFL(MCON)
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
       INTEGER :: IFLAGBI,INTVALBI,NSTMCFL
 
@@ -465,10 +457,9 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       LOGICAL XST,OK,DOK,IGDCVS,IGDCNC,IGDNDC,IGDTAQ,cnnok
       LOGICAL OK3DCVS,OK3DCNC,OK3DNDC,OK3DTAQ
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
-      CHARACTER loutstr*248,OUTSTR*124,OUTS*124,text*124,t117*117,h*72
+      CHARACTER loutstr*248,OUTSTR*124,OUTS*124,text*124,t117*117
       CHARACTER*72 FILE,LCFD
       CHARACTER*72 LAPROB,LPNF
-      character LPRJLG*72
       character lworking*144
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
       CHARACTER WORD*20,NODID*12,MODE*4,CXSTR*78,ZN*12
@@ -480,14 +471,14 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
       character*10 wkday(7)
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
-      CHARACTER NDNAM*12,ALOC*12,ALOCLBL*12,ALOCTYP*4
+      CHARACTER NDNAM*12
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
       character hvacfile*72,LBSIMP*72,LFClds*72
       character gshpfile*72
       character gcepfile*72
       character dllsubr*12,dllmesg*124
-      character limgpth*24,ldocpth*24,ltmppth*24,lcfgroot*24,lpath*72
+      character limgpth*24,ldocpth*24,lcfgroot*24,lpath*72
       character path*72,lupath*72
       character namez*12,namen*12
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM
@@ -502,7 +493,7 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       integer ier
       logical unixok  ! to check for database path file separators
 
-      DIMENSION GVA(12),IVA(60),namez(mcom),namen(mcom)
+      DIMENSION GVA(12),IVA(99),namez(mcom),namen(mcom)
       dimension IRVC(mcon),IRCC(365)
       data wkday/'Monday', 'Tuesday','Wednesday', 'Thursday',
      &           'Friday','Saturday', 'Sunday'/
@@ -512,6 +503,19 @@ C iSlr_half_hr_flg value = 0 :hour-centered; =1 : half-hour centered.
       INTEGER :: itwpr,itrunc,items,istat,iss,iset_start,nd,louts
       INTEGER :: is,irvc,irva,irec,ircc,ipos,ios,inod,j,k,iuc,iuf
       INTEGER :: itvc,iunit1,iv,iva,kv,lc,lcfgl,lcfgr,itrc,iunit,m,ncn
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+#ifdef OSI
+      integer iincomp,iincon  ! to pass nb zones connections to c code
+#else
+      integer*8 iincomp,iincon  ! to pass nb zones connections to c code
+#endif
+
+      helpinsub='ERSYSG'  ! set for subroutine
       
       
 C Check if running in dll mode.
@@ -714,9 +718,7 @@ C via tags.
           CALL EGETRM(OUTSTR,K,imgpth,'W','path to img',IER)
           IF(IER.NE.0)goto 1
           goto 34
-        elseif(WORD(1:7).eq.'*tmppth')then
-          CALL EGETRM(OUTSTR,K,tmppth,'W','path to scratch',IER)
-          IF(IER.NE.0)goto 1
+        elseif(WORD(1:7).eq.'*tmppth')then  ! do not bother with this folder name
           goto 34
         elseif(WORD(1:7).eq.'*docpth')then
           CALL EGETRM(OUTSTR,K,docpth,'W','path to documents',IER)
@@ -728,6 +730,14 @@ C via tags.
           goto 34
         elseif(WORD(1:7).eq.'*dbspth')then
           CALL EGETRM(OUTSTR,K,dbspth,'W','path to loc databases',IER)
+          IF(IER.NE.0)goto 1
+          goto 34
+        elseif(WORD(1:8).eq.'*hvacpth')then
+          CALL EGETRM(OUTSTR,K,hvacpth,'W','path to hvac',IER)
+          IF(IER.NE.0)goto 1
+          goto 34
+        elseif(WORD(1:7).eq.'*bsmpth')then
+          CALL EGETRM(OUTSTR,K,bsmpth,'W','path to BASESIMP',IER)
           IF(IER.NE.0)goto 1
           goto 34
         elseif(WORD(1:5).eq.'*indx')then
@@ -873,6 +883,8 @@ C << add in ipathmsc >>
         CALL EGETRM(OUTSTR,K,LCLIM,'W','climate db',IER)
       elseif(WORD(1:4).eq.'*ctl')then
         CALL EGETRM(OUTSTR,K,LCTLF,'W','config control',IER)
+      elseif(WORD(1:9).eq.'*contents')then
+        CALL EGETRM(LOUTSTR,K,lmodelqa,'W','model contents',IER)
       elseif(WORD(1:5).eq.'*hvac')then
 
 C hvac file, test and see if it exists.
@@ -1419,18 +1431,16 @@ C Annual IPV report depreciated in favour of sipvres.
 
 C Project log file, read and then go on to fabric/plant description.
         CALL STRIPC(IUC,OUTSTR,0,ND,1,'project log file',IER)
-        LPRJLG=OUTSTR(1:LNBLNK(OUTSTR))
+        lmodellog=OUTSTR(1:LNBLNK(OUTSTR))
         goto 45
+
       else
         call usrmsg(' Unknown entry format... ',outstr,'W')
         dok=.true.
-        h(1)='An unknown tag or line was found in the configuration'
-        h(2)='file. The file might be corrupt or for a different'
-        h(3)='version of ESP-r. '
-        h(4)=' '
-        h(5)='Depending on the error, it might be possible to read'
-        h(6)='the rest of the file - exercise caution! '
-        CALL ASKOK('  ','Continue reading configuration?',OK,dok,6)
+        helptopic='sys_file_unknown_tag'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL ASKOK('  ','Continue reading configuration?',
+     &    OK,dok,nbhelp)
         if(.NOT.ok)then
           ier=1
           return
@@ -2155,11 +2165,11 @@ C of links and then the links.
           else
             write(ALOCTYP(ia),'(a4)') 'UNKN'
           endif
-          CALL EGETWI(OUTSTR,K,IALOC(ia),0,60,'F','anc link',IER)
+          CALL EGETWI(OUTSTR,K,IALOC(ia),0,99,'F','anchor link',IER)
           IRVA=IALOC(ia)
 
 C Scan next line for links.
-          CALL EGETWIA(IUC,IVA,IRVA,0,0,'-','assoc links',IER)
+          CALL EGETWIA(IUC,IVA,IRVA,0,0,'-','anchor assoc links',IER)
           DO 345 LC=1,IALOC(ia)
             lstanchr(ia,LC)=IVA(LC)
  345      continue
@@ -2281,12 +2291,11 @@ C older file. Try reading another line or two to get to list.
             return
           else
             dok=.true.
-            h(1)='The section of the configuration file that defines'
-            h(2)='links between zones and flow network nodes gave a '
-            h(3)='problem. The file might be corrupted or truncated. '
+            helptopic='sys_file_truncation'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             call askok('There appears to be a problem with flow node-',
      &        'zone links in the configuration file. Continue?',
-     &        OK,dok,3)
+     &        OK,dok,nbhelp)
             if(.NOT.OK)RETURN
             ier=0
           endif
@@ -2450,15 +2459,16 @@ C Pass information about the current model to the C interface.
       lupath=upath
       limgpth=imgpth
       ldocpth=docpth
-      ltmppth=tmppth
+      iincomp=ncomp
+      iincon=ncon
       if(browse)then
         ibrowse=1
-        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,ltmppth,
-     &    ibrowse)
+        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,
+     &    ibrowse,iincomp,iincon)
       else
         ibrowse=0
-        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,ltmppth,
-     &    ibrowse)
+        call curproject(lcfgroot,lpath,lupath,limgpth,ldocpth,
+     &    ibrowse,iincomp,iincon)
       endif
       RETURN
 
@@ -2676,6 +2686,7 @@ C array IZSTOCN(MCOM,MS) which holds the connection index.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       do 42 icc = 1, NCON
@@ -2688,11 +2699,11 @@ C **************** conninanchor
 C conninanchor returns true if a connection is included within
 C a particular anchor list and matches a valid anchor use.
       subroutine conninanchor(icnn,ianc,type,ok,ier)
+#include "building.h"
+#include "model.h"
       COMMON/OUTIN/IUOUT,IUIN
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
-      common/anchorb/IALOC(20),lstanchr(20,60)
 
-      character ALOC*12,ALOCLBL*12,ALOCTYP*4,outs*124,type*4,msgl2*48
+      character outs*124,type*4,msgl2*48
       logical found,ok
 
 C Check if ianc is a known anchor and then if there is a list.

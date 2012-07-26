@@ -27,7 +27,7 @@ C----------------------------------------------------------------------
 C----------------------------------------------------------------------      
 C     Name of boundary condition definition file
 C----------------------------------------------------------------------
-      character*72 cBC_data_file_name
+      character*144 cBC_data_file_name
 
 C----------------------------------------------------------------------
 C     Unit number for temporary 
@@ -79,9 +79,9 @@ C----------------------------------------------------------------------
 C----------------------------------------------------------------------
 C     Named constant for temp file name 
 C----------------------------------------------------------------------     
-      character*72 cBC_TmpFile_name
+      character*144 cBC_TmpFile_name
       data cBC_TmpFile_name /'BCD.tmp'/
-      character*72 cTmpFile
+      character*144 cTmpFile
       data cTmpFile /'BCD_int.tmp'/
 C----------------------------------------------------------------------
 C     Named constants for interpolation methods

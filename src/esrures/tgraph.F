@@ -37,7 +37,6 @@ C user's manual.
       SUBROUTINE MOGRAF
 #include "building.h"
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
@@ -47,8 +46,15 @@ C user's manual.
       common/getmenu/menutype,igetind(65),igetflux(65)
 
       CHARACTER*23 ITEM(13)
-      character outs*124,h*72,LAPROB*72
+      character outs*124,LAPROB*72
       integer NITMS,INO ! max items and current menu item 
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MOGRAF'  ! set for subroutine
 
 C Setup menu text.
       ITEM(1) ='2 Select result set   '
@@ -69,15 +75,9 @@ C Graphical display possible.
     2 NITMS=13
       INO=-2
 
-C Instanciate h() strings for the menu.
-      H(1)='Graphing facilities for performance data include: '
-      H(2)=' '
-      H(3)=' Time:var graph -> performance data vs time.'
-      H(4)=' Intra-fabric   -> condensation, temps in wall etc.'
-      H(5)=' 3D profile     -> data plotted as time-of-day vs day.'
-      H(6)=' Frequency histogram -> data as bar graphs.'
-      H(7)=' Var:Var graph  -> performance data vs data.'
-      H(8)=' Network flow   -> flow data vs time.'
+C Instanciate help strings for the menu.
+      helptopic='res_graphs_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
     5 CALL EMENU('Graph facilities',ITEM,NITMS,INO)
 
@@ -147,7 +147,9 @@ C Network flow graphic output. Find and open the network flow description.
         MENUTYPE=3
         call MFOUTP('-')
       ELSEIF(INO.EQ.12)THEN
-        CALL PHELPD('graphing',8,'-',0,0,IER)
+        helptopic='res_graphs_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('graphing',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.13)THEN
         RETURN
       ENDIF
@@ -164,8 +166,6 @@ C act='p' iget parameters already set.
 
       SUBROUTINE MOWLIN(act)
 #include "building.h"
-      
-      integer lnblnk  ! function definition
 
       COMMON/OUTPCH/ICOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -175,41 +175,55 @@ C act='p' iget parameters already set.
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
 
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
-      common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
+      common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
+      integer ireportunit ! zero is default one is W two is kW three Joules
+      common/repunit/ireportunit
+
       dimension Yold(MZS), TIMEold(MZS)
       dimension YSC(5), Yadd(5), igx(5), ilr(5)
-      character SLABEL*32,prompt*124
-      character GLABEL*20,ALABEL(5)*12,t20*20,act*1
+      character prompt*124
+      character ALABEL(5)*12,t20*20,act*1
       character graftitle*64,grlbl*24,t24*24
 
-      integer YAXSET, ADDLIN
+      integer YAXSET,ADDLIN,horaxisdiv
       integer iglib   ! if iglib is 2 then using GTK library otherwise X11
+      integer overalldays ! number of days to graph (to set axis)
       integer oneonright  ! if only one axis on right.
       integer twoonrighta ! nearest if two axis on right
       integer twoonrightb ! farthest if two axis on right
       integer threerighta ! nearest if miscel plus two axis on right
       integer threerightb ! farthest if miscel plus two axis on right
 #ifdef OSI
+      integer igx  ! see array above
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym,iid1,iid2   ! passed to etplot
+      integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
+      integer*8 igx  ! see array above
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iupdown,isym,iid1,iid2   ! passed to etplot
+      integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
       logical kwatts,colok
@@ -220,14 +234,16 @@ C Define prompt
 C Check if can draw in colour.
       colok=.false.
       if(nzonec.ge.NCOMP)colok=.true.
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
       
 C If output to file alter the edisp unit number.
       itru = icout
       if(ixopen.eq.1)then
         itru = ixunit
         if(NGET.ge.1)then
-          write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+          write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
         else
           write(prompt,'(a)')' Output being directed to file. ' 
         endif
@@ -262,7 +278,8 @@ C then just draw the new profiles using the existing axis and scaling
 C factors.
       if (YAXSET(IGETNO(NGET,8)).ne.0.and.ADDLIN.eq.1) goto 99
 
-C Check if heating/cooling plant information requested.
+C Check if heating/cooling plant information requested. If user has
+C asked for normal units (kW) then set kwatts TRUE.
       do 3 I=1,NGET
         if (IGETNO(I,8).eq.2) then
           if (IGETNO(I,1).eq.8.or.IGETNO(I,1).eq.9.or.
@@ -270,7 +287,11 @@ C Check if heating/cooling plant information requested.
      &        IGETNO(I,1).eq.31.or.IGETNO(I,1).eq.32.or.
      &        IGETNO(I,1).eq.33) then
             if (YAXSET(2).lt.2) YAXSET(2)=0
-            kwatts=.TRUE.
+            if(ireportunit.eq.0.or.ireportunit.eq.2)then
+              kwatts=.TRUE.
+            else
+              kwatts=.FALSE.
+            endif
           endif
         endif
  3    continue
@@ -290,24 +311,35 @@ C The YMAX,MIN variables are for axis 1 through 5 max and min values.
  6    continue
       call usrmsg(prompt,'Scanning data for range of values...','-')
 
-C First recover bounds of selected data.
+C First recover bounds of selected data. MMACHK returns kW for DMAX and
+C DMIN for the specific cases of IGETNO(IX,1) = 10 or 32.
       do 40 IX=1,NGET
         if (YAXSET(IGETNO(IX,8)).lt.2) then
           call MMACHK(IX,DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN)
+C Debug          write(6,*) 'aft mmachk ',dmax,dmin,ymax(2),ymin(2)
           YAXSET(IGETNO(IX,8))=1
 
 C Check for plant flux in kW, if so convert fluxes from W to kW
-          if (IGETNO(IX,8).eq.2.and.kwatts) then
+C based on value of ireportunit.
+          if (kwatts.and.IGETNO(IX,8).eq.2) then
             if (IGETNO(IX,1).ne.8.and.IGETNO(IX,1).ne.9.and.
      &          IGETNO(IX,1).ne.10.and.IGETNO(IX,1).ne.30.and.
      &          IGETNO(IX,1).ne.31.and.IGETNO(IX,1).ne.32.and.
      &          IGETNO(IX,1).ne.33) then
-              DMAX=DMAX/1000.
-              DMIN=DMIN/1000.
+              if(ireportunit.eq.0.or.ireportunit.eq.2)then
+                DMAX=DMAX/1000.
+                DMIN=DMIN/1000.
+              endif
+            endif
+          elseif (.NOT.kwatts.and.IGETNO(IX,8).eq.2) then
+            if (IGETNO(IX,1).eq.10.or.IGETNO(IX,1).eq.32) then
+              DMAX=DMAX*1000.
+              DMIN=DMIN*1000.
             endif
           endif
           YMAX(IGETNO(IX,8))=MAX(DMAX,YMAX(IGETNO(IX,8)))
           YMIN(IGETNO(IX,8))=MIN(DMIN,YMIN(IGETNO(IX,8)))
+C Debug          write(6,*) 'aft mmachk+ ',dmax,dmin,ymax(2),ymin(2)
         endif
  40   continue
       call usrmsg(prompt,'Scanning data for range of values...done.',
@@ -455,10 +487,10 @@ C draw vertical axis.
           call axiscale(igwid,igheight,TSTART-1.0,TFINSH,YMIN(I),
      &                  YMAX(I),TSC,YSC(I),sca,Xadd,Yadd(I))
           if (ILR(I).eq.0) then
-            call vrtaxis(YMIN(I),YMAX(I),igx(I),igb,igt,Yadd(I),
+            call vrtaxis(YMIN(I),YMAX(I),igx(I),iigb,iigt,Yadd(I),
      &                             YSC(I),0,ilr(I),ALABEL(I))
           else
-            call vrtaxis(YMIN(I),YMAX(I),igx(I),igb,igt,Yadd(I),
+            call vrtaxis(YMIN(I),YMAX(I),igx(I),iigb,iigt,Yadd(I),
      &                             YSC(I),0,ilr(I),'  ')
             iid1=igx(I); iid2=igt-5;
             call wstxpt(iid1,iid2,ALABEL(I))
@@ -468,8 +500,32 @@ C draw vertical axis.
 
 C Draw horizontal (time) axis. But if there is no right axis then
 C there should be logic to maximize the width of the plot.  << to be done >>
-      call horaxis(TSTART-1.0,TFINSH,igl,igr,igb,Xadd,TSC,1,'Time Hrs')
-
+C Determine how many days to graph. If less than 2 months default to hourly,
+C if 2-4 months default to days, if longer than 4 months use weeks as the
+C default.
+      if(horaxisdiv.eq.0.or.horaxisdiv.eq.1)then
+        overalldays=IODF-IODS
+        if(overalldays.le.60)then
+          call horaxis(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
+     &      'Time Hrs')
+        elseif(overalldays.gt.60.and.overalldays.le.120)then
+          call horaxishdw(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
+     &      2,24,iods,'Time (days)')
+        else
+          call horaxishdw(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
+     &      3,168,iods,'Time (weeks)')
+        endif
+      elseif(horaxisdiv.eq.2)then
+        call horaxis(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
+     &    'Time Hrs')
+      elseif(horaxisdiv.eq.3)then
+        call horaxishdw(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
+     &    2,24,iods,'Time (days)')
+      elseif(horaxisdiv.eq.4)then
+        call horaxishdw(TSTART-1.0,TFINSH,iigl,iigr,iigb,Xadd,TSC,1,
+     &    3,168,iods,'Time (weeks)')
+      endif
+      
 C Recover and plot data.
  99   do 10 IDAY=IODS,IODF
         call GOGET(IDAY)
@@ -479,7 +535,7 @@ C Add values in VAL2 to there correct bins. Loop through selected zones.
 
 C Reset scaling factor for appropriate axis.
           Iax=IGETNO(IX,8)
-          call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
+          call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))
 
 C Loop through a day's worth of data for the current metric (IX) stepping 
 C at defined output interval.
@@ -504,9 +560,12 @@ C Convert watts to kW if necessary.
      &            IGETNO(IX,1).ne.31.and.IGETNO(IX,1).ne.32.and.
      &            IGETNO(IX,1).ne.33) then
 
-C The data is a load and not related to plant.  By default these loads 
-C are in Watts but plant is being displayed so convert to kW.
-                Yold(IX)=Yold(IX)/1000.
+C The data is a load and not related to plant. By default these loads 
+C are in Watts but plant is being displayed so convert to kW if directed
+C to by ireportunit.
+                if(ireportunit.eq.0.or.ireportunit.eq.2)then
+                  Yold(IX)=Yold(IX)/1000.
+                endif
               endif
             endif
           endif
@@ -533,8 +592,11 @@ C Convert watts to kW if necessary.
      &            IGETNO(IX,1).ne.33) then
 
 C The data is a load and not related to plant.  By default these loads 
-C are in Watts but plant is being displayed so convert to kW.
-                VAL2(IX,J)=VAL2(IX,J)/1000.
+C are in Watts but plant is being displayed so convert to kW if directed
+C to by ireportunit.
+                if(ireportunit.eq.0.or.ireportunit.eq.2)then
+                  VAL2(IX,J)=VAL2(IX,J)/1000.
+                endif
               endif
             endif
             if (ioldpos.eq.1)then
@@ -569,7 +631,10 @@ C look sensible.
 C If plotting colours for different zones then recall which
 C zone we are dealing with.
             if(colok)then
-              if(IGETNO(IX,2).gt.0)call winscl('z',IGETNO(IX,2))
+              if(IGETNO(IX,2).gt.0)then
+                iicol=IGETNO(IX,2)
+                call winscl('z',iicol)
+              endif
             endif
 
 C Plot the current value - this has already been copied to Yold and
@@ -577,7 +642,10 @@ C then reset to forground colour.
             iupdown=IPEN
             isym=MARK
             call etplot(TIME,Yold(IX),iupdown,isym)
-            if(colok)call winscl('-',0)
+            if(colok)then
+              iicol=0
+              call winscl('-',iicol)
+            endif
             call forceflush()
  421      CONTINUE
  400    CONTINUE
@@ -593,14 +661,20 @@ C If IMFS is > zero then use IMFS-1 for line label.
       endif
       do 200 I=1,NGET
         Iax=IGETNO(I,8)
-        call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
+        call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))
         t20=GLABEL(I)
         if(colok)then
-          if(IGETNO(I,2).gt.0)call winscl('z',IGETNO(I,2))
+          if(IGETNO(I,2).gt.0)then
+            iicol=IGETNO(I,2)
+            call winscl('z',iicol)
+          endif
         endif
         call u2pixel(TIMEold(I),Yold(I),iid1,iid2)
         call wstxpt(iid1,iid2,t20)
-        if(colok)call winscl('-',0)
+        if(colok)then
+          iicol=0
+          call winscl('-',iicol)
+        endif
         call forceflush()
  200  continue
       if(IMFS.gt.0.and.IMFS.lt.4)then
@@ -625,6 +699,7 @@ C to graphical result display.
 
       SUBROUTINE MOGHED
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
@@ -638,16 +713,15 @@ C to graphical result display.
       COMMON/SIMPKA/NSIM
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
-      common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
+      common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
 
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
 
 C To extend logic to maximize plotting area.
-      integer YAXSET, ADDLIN
+      integer YAXSET,ADDLIN,horaxisdiv
       integer iglib   ! if iglib is 2 then using GTK library otherwise X11
       integer onright  ! number of axis on right
       integer onleft   ! whether there is an axis on the left
@@ -655,12 +729,15 @@ C To extend logic to maximize plotting area.
       CHARACTER ETEXT*124, RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER PDESCR*60,SDESCR*44,outsd*80,outsd1*81
-      character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character graftitle*64,grlbl*24,t64*64
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C If GTK library then there are additional options << work in progress >>.
@@ -725,25 +802,51 @@ C Set standard fornt width so that space around graph is correct.
         call winfnt(imfs)
         if(onright.eq.0)then
           if(onleft.eq.0)then
-            call win3d(menuchw,3,16,5,3,igl,igr,igt,igb,igw,igwh)
+
+C Setup and pass in parameters to win3d.
+            iiw1=3; iiw2=16; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            call win3d(menuchw,3,16,5,3,igl,igr,igt,igb,igw,igwh)
           else
-            call win3d(menuchw,9,16,5,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=9; iiw2=16; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            call win3d(menuchw,9,16,5,3,igl,igr,igt,igb,igw,igwh)
           endif
         elseif(onright.eq.1)then
           if(onleft.eq.0)then
-            call win3d(menuchw,3,26,5,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=3; iiw2=26; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            call win3d(menuchw,3,26,5,3,igl,igr,igt,igb,igw,igwh)
           else
-            call win3d(menuchw,9,26,5,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=9; iiw2=26; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            call win3d(menuchw,9,26,5,3,igl,igr,igt,igb,igw,igwh)
           endif
         elseif(onright.eq.2)then
           if(onleft.eq.0)then
-            call win3d(menuchw,3,31,5,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=3; iiw2=31; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            call win3d(menuchw,3,31,5,3,igl,igr,igt,igb,igw,igwh)
           else
-            call win3d(menuchw,9,31,5,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=9; iiw2=31; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            call win3d(menuchw,9,31,5,3,igl,igr,igt,igb,igw,igwh)
           endif
         endif
-        igw=igr-igl
-        igwh=igb-igt
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         call startbuffer()
       ENDIF
 
@@ -821,35 +924,37 @@ C ****************************************************
               SUBROUTINE MOCOPT
               
       COMMON/OUTIN/IUOUT,IUIN              
-      common/pophelp/h(60)
       COMMON/CGHOPT/ERPLOT,TRPLOT,SPPLOT,NCTLGH,ICTLGH,ISP,ITHR
       COMMON/CTLDAT/SPH,SPC,TRH,TRC,ICF,IDTYP,IPER,IBLW,PLTCTL,ILOOP
       LOGICAL ERPLOT,TRPLOT,SPPLOT,ITHR,ISP,PLTCTL,OK,dok
-      character h*72
-      
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MOCOPT'  ! set for subroutine
+ 
 C Debug.
 C      write(6,*) ' Entering MOCOPT'
 
       CALL EDISP(IUOUT,' ') 
-      h(1)='One or more of the following control parameters'     
-      h(2)='may plotted with the control point temperature:'     
-      h(3)='  - Error '     
-      h(4)='  - Set-point'     
-      h(5)='  - Throttling range.'     
+      helptopic='res_control_point_t'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       dok=.false.
-      CALL ASKOK(' ',' Plot control error?',OK,dok,5)
+      CALL ASKOK(' ','Plot control error?',OK,dok,nbhelp)
       IF(OK)ERPLOT=.TRUE.
       dok=.false.
-      CALL ASKOK(' ',' Plot control set-point?',OK,dok,5)
+      CALL ASKOK(' ','Plot control set-point?',OK,dok,nbhelp)
       IF(OK)SPPLOT=.TRUE. 
       dok=.false.
-      CALL ASKOK(' ',' Plot throttling range?',OK,dok,5)
+      CALL ASKOK(' ','Plot throttling range?',OK,dok,nbhelp)
       IF(OK)TRPLOT=.TRUE.
       dok=.true.
-      CALL ASKOK(' ',' Plot plant loop(s)? ',OK,dok,5)
+      CALL ASKOK(' ','Plot plant loop(s)? ',OK,dok,nbhelp)
       IF(OK)THEN
-10      CALL EASKI(iloop,' ',' Which plant control loop? ',
-     &             1,'F',20,'F',1,'plant loop',IER,0)
+10      CALL EASKI(iloop,' ','Which plant control loop? ',
+     &    1,'F',20,'F',1,'plant loop',IER,nbhelp)
         IF(IER.NE.0)goto 10
       ENDIF
 

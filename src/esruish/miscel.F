@@ -37,6 +37,7 @@ C points are later excluded.
       common/g1t/xft(mv),zft(mv)
       common/grid3/ogrida(ms)
       common/grid11/xop(mox,moz),zop(mox,moz)
+      integer izstocn
       common/c24/izstocn(mcom,ms)
 
 C Get the current connection and number of surfaces in zone.
@@ -86,12 +87,12 @@ C no selection.  'iva' is the array of selections.
       subroutine pickssur(izone,np,act,iva,ier)
 #include "building.h"
 #include "geometry.h"
-
-      common/pophelp/h(60)
       
       integer ncomp,ncon
       common/c1/ncomp,ncon
+      integer izstocn
       common/c24/izstocn(mcom,ms)
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
 
 C iaplic(1) toggle for shading; iaplic(2) toggle for insolation;
@@ -104,11 +105,18 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
      &       nsurfinso(mcom),isurfinso(mcom,ms)
 
       dimension stmp(ms),iva(ms),ivals(ms)
-      character h*72,stmp*33,act*1
+      character stmp*33,act*1
 
       integer ichoice ! temporary local variable for a call to easkab
       integer iexcludediff_flag
       common/excludediff/iexcludediff_flag
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='pickssur'  ! set for subroutine
 
       ier=0
       if(izone.gt.ncomp.or.izone.eq.0)then
@@ -116,15 +124,12 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
          ier=1
          return
       endif
-      h(1) ='In some cases (for example in specific validation tests'
-      h(2) ='or when comparing shading results with more simplified'
-      h(3) ='approaches) it may be necessary to exclude the effect'
-      h(4) ='of diffuse shading. In most cases, diffuse shading '
-      h(5) ='should be included.'      
+      helptopic='diffuse_shading_request'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       iexcludediff_flag=0     
       call easkab(' ','Diffuse shading options:',
-     &       'Exclude diffuse shading',
-     &       'Include diffuse shading (default)',ichoice,5)
+     &  'Exclude diffuse shading',
+     &  'Include diffuse shading (default)',ichoice,nbhelp)
       if(ichoice.eq.1)then
 
 C Exclude diffuse shading
@@ -133,28 +138,19 @@ C Exclude diffuse shading
          iexcludediff_flag=0      
       endif
 
- 43   h(1) ='A shading analysis computes the temporal patterns of'
-      h(2) ='shading on exterior surfaces, while an insolation'
-      h(3) ='analysis tracks the direct solar radiation entering'
-      h(4) ='a zone to determine the distribution between internal'
-      h(5) ='surfaces. When selecting the surfaces to include, note'
-      h(6) ='that:'
-      h(7) ='  + for the case of shading, the surface must be external'
-      h(8) ='    and belong to a zone that has an associated Zone'
-      h(9) ='    Obstructions file; and'
-      h(10)='  + for the case of insolation, the surface must be'
-      h(11)='    transparent. If it is an internal surface it will'
-      h(12)='    be processed as if external.'
+C Generate help text for the sequence of dialogs.
+ 43   helptopic='surface_selection_notes'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       if(act.eq.'s'.or.act.eq.'S')then
          call easkabc(' ','Shading options:',
-     &          'all applicable surfaces','select surface(s)',
-     &          'cancel',iic,12)
+     &     'all applicable surfaces','select surface(s)',
+     &     'cancel',iic,nbhelp)
          if(iic.eq.1)iaplic(izone,1)=1
          if(iic.eq.2)iaplic(izone,1)=0
       elseif(act.eq.'i'.or.act.eq.'I')then
          call easkabc(' ','Insolation options:',
-     &          'all applicable sources','select source(s)',
-     &          'cancel',iic,12)
+     &     'all applicable sources','select source(s)',
+     &     'cancel',iic,nbhelp)
          if(iic.eq.1)iaplic(izone,2)=1
          if(iic.eq.2)iaplic(izone,2)=0
       elseif(act.eq.'l'.or.act.eq.'L')then
@@ -228,10 +224,8 @@ C Process initial selection.
             iva(i)=0
    11    continue
 
-         h(1)='Pick one, several or all surfaces for inclusion'
-         h(2)='in analysis.'
          call epicks(inpic,ivals,' ','Surface(s) to include',
-     &        33,nzsur(izone),stmp,'Surface(s) to include?',ier,2)
+     &     33,nzsur(izone),stmp,'Surface(s) to include?',ier,nbhelp)
          if(inpic.eq.0)then
             return
          else
@@ -254,9 +248,8 @@ C Process initial selection.
             iva(i)=0
    21    continue
          inpic=1
-         h(1)='Only surfaces that have been assessed are listed.'
          call epicks(inpic,ivals,' ','Surface to View',
-     &           33,nzsur(izone),stmp,'Surface(s) to view?',ier,1)
+     &     33,nzsur(izone),stmp,'Surface(s) to view?',ier,nbhelp)
          if(inpic.eq.0)then
             return
          else
@@ -275,25 +268,30 @@ C 0 = Julian day, 1 or 2 = day of month.
       subroutine askday(ifday,imo,ido,ijday,ier)
 
       common/outin/iuout,iuin
-      common/pophelp/h(60)
 
-      character h*72
       dimension id(12)
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
       data id/31,28,31,30,31,30,31,31,30,31,30,31/
 
+      helpinsub='askday'  ! set for subroutine
       ier=0
-      h(1)='The date is either specified as a day and month number or'
-      h(2)='as a year day in Julian notation (Jan 1 = 1, Dec 31 = 365).'
+      helptopic='specify_day_of_year'
+      call gethelptext(helpinsub,helptopic,nbhelp)
     1 if(ifday.eq.0)then
          call easki(ijday,' ','Year day?',
-     &              1,'F',365,'F',1,'start day',ier,2)
+     &     1,'F',365,'F',1,'start day',ier,nbhelp)
          call edayr(ijday,ido,imo)
          if(ier.ne.0)goto 1
       else
          call easki(imo,' ', 'Month number?',
-     &              1,'F',12,'F',1,'end day',ier,2)
+     &     1,'F',12,'F',1,'end day',ier,nbhelp)
          call easki(ido,' ', 'Day of the month?',
-     &              1,'F',31,'F',1,'start day',ier,2)
+     &     1,'F',31,'F',1,'start day',ier,nbhelp)
          call eday(ido,imo,ijday)
       endif
 
@@ -315,6 +313,7 @@ C target surface.
 #include "geometry.h"
 
       common/g1t/xft(mv),zft(mv)
+      integer izstocn
       common/c24/izstocn(mcom,ms)
 
       dimension c(2*mv+2)

@@ -70,22 +70,34 @@ C << this should become part of model cfg file >>
       common/mdbase/mdbnam
       common/iopnmld/iopmld
 
-      common/pophelp/h(60)
       COMMON/FILEP/IFIL
       COMMON/DEFLT3/DFCFD,DECMPDBFL,DICONDBFL
 
       dimension item(mould+5)
       real maxrh,minrh,maxt,mint
       character outs*124, head*32, item*42, mdbnam*72, outstr*124
-      character mldnam*48,h*72,grow*1,str*1,KEY*1
+      character mldnam*48,grow*1,str*1,KEY*1
       character*72 DFCFD,DECMPDBFL,DICONDBFL
       integer nitem,ino  ! max items and current menu item
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+
+      helpinsub='mycorecv'  ! set for subroutine
+
 C Open the mould database.
       if(iopmld.eq.0) then
-        mdbnam=dmdbnam
-        call easks(mdbnam,'Mould database filename ?',' ',72,dmdbnam,
-     &  'mould dbnam',IER,0)
+        lnmdb=lnblnk(mdbnam)
+        if(mdbnam(1:4).eq.'UNKN'.or.mdbnam(1:2).eq.'  ')then
+          write(mdbnam,'(a)') dmdbnam(1:lnblnk(dmdbnam))
+        endif
+        helptopic='mould_database_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        call easks(mdbnam,'Mould isopleth filename ?',' ',72,dmdbnam,
+     &    'mould isopleths',IER,nbhelp)
       endif
       imfil=ifil+1
       call efopseq(imfil,mdbnam,1,IER)
@@ -129,8 +141,8 @@ C Display menu of mould names ....
         ino=-1
 
 C Help text for this menu.
-        h(1)='Choose the mould species you wish to plot and/or'
-        h(2)='analyse from the list shown.'
+        helptopic='mould_species_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
 
         call emenu(head,item,nitem,ino)
         if(ino.ge.1.and.ino.lt.nitem-4) then
@@ -141,7 +153,7 @@ C Help text for this menu.
         elseif(ino.eq.nitem) then
           return
         elseif(ino.eq.nitem-1) then
-          CALL PHELPD('Mould species selection',2,'-',0,0,IER)
+          CALL PHELPD('Mould species selection',nbhelp,'-',0,0,IER)
           goto 2
         elseif(ino.eq.nitem-3) then
           do 66 imno=1,mould
@@ -252,7 +264,6 @@ C ****************** mycograph *****************************
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       common/moupk/ispp(mould),a(4,mould),mldnam(mould)
       common/ppoint/npoint,ixt(24),iyr(24),tpt(24),rpt(24)
@@ -265,7 +276,7 @@ C ****************** mycograph *****************************
      &imdn(mould)
 
       CHARACTER*29 ITEM(6)
-      CHARACTER H*72,mldnam*48
+      CHARACTER mldnam*48
       logical greyok
       integer NITMS,INO ! max items and current menu item
 
@@ -273,14 +284,29 @@ C ****************** mycograph *****************************
       integer igwid,igheight  ! for use with axiscale
       integer ipos,isize      ! for use with etlabel
       integer iupdown,isym    ! passed to etplot
+      integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 ipos,isize      ! for use with etlabel
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+
+      helpinsub='mycograph'  ! set for subroutine
 
 C Check in graphics mode.
       IF(MMOD.ne.8) return
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C If libraries and monitor support greyscale then reset forground
 C to 50% grey when drawing dots.
@@ -303,11 +329,11 @@ C Scale the axes of the chart (initial values)
       CALL startbuffer()
 
 C Draw the axes of the chart.
-      CALL horaxis(Xmin,Xmax,igl,igr,igb,xadd,XSC,0,'Db Temp C')
-      CALL vrtaxis(Ymin,Ymax,igl,igb,igt,yadd,YSC,0,0,'RH %')
+      CALL horaxis(Xmin,Xmax,iigl,iigr,iigb,xadd,XSC,0,'Db Temp C')
+      CALL vrtaxis(Ymin,Ymax,iigl,iigb,iigt,yadd,YSC,0,0,'RH %')
 
 C Store the scaling parameters used in drawing the axes
-      CALL linescale(igl,xadd,XSC,igb,yadd,YSC)
+      CALL linescale(iigl,xadd,XSC,iigb,yadd,YSC)
 
 C Label graph
       ipos=0
@@ -336,33 +362,47 @@ C Set the intervals for the chart.
 C If horizontal line is not the bottom or top draw as grey.
       TD=xmin
   20  if(greyok.and.(TD.gt.xmin.and.TD.lt.xmax))then
-        call winscl('i',nifgrey-3)
+        iicol=nifgrey-3
+        call winscl('i',iicol)
       endif
       iupdown=1
       isym=0
       CALL etplot(TD,ymax,iupdown,isym)
-      if(greyok)call winscl('-',0)
+      if(greyok)then
+        iicol=0
+        call winscl('-',iicol)
+      endif
       TD=TD+TDINT
       iupdown=0
       CALL etplot(TD,ymin,iupdown,isym)
       IF(TD.LE.xmax) goto 20
-      if(greyok)call winscl('-',0)
+      if(greyok)then
+        iicol=0
+        call winscl('-',iicol)
+      endif
 
 C Draw the relative humidity lines
       iupdown=0
       CALL etplot(xmin,ymin,iupdown,isym)
       RH=ymin
   30  if(greyok.and.(RH.gt.ymin.and.RH.lt.ymax))then
-        call winscl('i',nifgrey-3)
+        iicol=nifgrey-3
+        call winscl('i',iicol)
       endif
       iupdown=1
       CALL etplot(xmax,RH,iupdown,isym)
-      if(greyok)call winscl('-',0)
+      if(greyok)then
+        iicol=0
+        call winscl('-',iicol)
+      endif
       RH=RH+RHINT
       iupdown=0
       CALL etplot(xmin,RH,iupdown,isym)
       IF(RH.LE.ymax) goto 30 
-      if(greyok)call winscl('-',0)
+      if(greyok)then
+        iicol=0
+        call winscl('-',iicol)
+      endif
 
 C Draw on mould growth curves curves.
       do 90 imld=1,mould
@@ -391,20 +431,15 @@ C Display menu.
  5    continue
 
 C Help text for this menu.
-      H(1)='This plotting facility allows simulation or'
-      H(2)='experimental data to be drawn on a T vs RH '
-      H(3)='chart. The minimum growth condition curves for various'
-      H(4)='for various mould species can also be plotted and'
-      H(5)='superimposed upon the plotted data. The chart can be'
-      H(6)='re-scaled using the rescale option and cleared using '
-      H(7)='the re-draw option. '
+      helptopic='mould_prediction_plots'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('Results',ITEM,NITMS,INO)
       IF(INO.EQ.1)THEN
-        h(1)='A results file is generated by the simulator and usually'
-        h(2)='has a .msr extension. '
+        helptopic='mould_results_file_read'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call easkab('Read from results file or user input'
-     &,' ','Result file','User',IW,2)
+     &,' ','Result file','User',IW,nbhelp)
        if(IW.eq.1) then
          call vread
          if(imstat.gt.0) then
@@ -415,10 +450,12 @@ C Help text for this menu.
            call edisp(iuout,'Max no. of points plotted ') 
            goto 2
          endif
+         helptopic='temp_rh_at_point'
+         call gethelptext(helpinsub,helptopic,nbhelp)
          call easkr(tval,'Temp C','for point ? ',xmin,'F',xmax,'-',
-     &     20.0,'max temp',IER,0)
+     &     20.0,'max temp',IER,nbhelp)
          call easkr(rval,'RH %','for point ? ',ymin,'F',ymax,'-',
-     &     80.0,'max temp',IER,0)
+     &     80.0,'max temp',IER,nbhelp)
          call u2pixel(tval,rval,ix,iy)
          npoint=npoint+1
          tpt(npoint)=tval
@@ -429,13 +466,17 @@ C Help text for this menu.
        endif
       ELSEIF(INO.EQ.2)THEN
         val = Xmax
+        helptopic='temp_max_for_graph'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call easkr(val,'Max temp C','for chart ',0.0,'F',60.,'-',
-     &  35.0,'max temp',IER,0)
+     &  35.0,'max temp',IER,nbhelp)
         Xmax=val
         val = Xmin
         call easkr(val,'Min temp C','for chart ',0.0,'F',60.,'-',
-     &  5.0,'max temp',IER,0)
+     &  5.0,'max temp',IER,nbhelp)
         Xmin=val
+        helptopic='rh_max_for_graph'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         val = Ymax
         call easkr(val,'Max RH %','for chart ',0.0,'F',
      &  100.,'-',100.0,'max temp',IER,0)
@@ -449,7 +490,9 @@ C Help text for this menu.
         CALL startbuffer()
         GOTO 10       
       ELSEIF(INO.EQ.5)THEN
-        CALL PHELPD('Mould growth chart',7,'-',0,0,IER)
+        helptopic='mould_prediction_plots'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('Mould growth chart',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.6)THEN
         CALL startbuffer()
 

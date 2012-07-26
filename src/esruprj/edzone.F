@@ -46,7 +46,6 @@ C Use geometry for common g0/g1/g2/g4/g5/g6/g7/prec16/precz/c20.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       Logical MODIFY,MODLEN,MODBND
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -55,6 +54,7 @@ C Use geometry for common g0/g1/g2/g4/g5/g6/g7/prec16/precz/c20.
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/user/browse
       common/cctlnm/ctldoc,lctlf
@@ -63,15 +63,23 @@ C Use geometry for common g0/g1/g2/g4/g5/g6/g7/prec16/precz/c20.
       DIMENSION XX(MS),YY(MS)
       CHARACTER HOLD*32
       character MODE*4,fs*1,LCFGF*72
-      CHARACTER OUTSTR*124,H*72,ZN*12,outs*124
+      CHARACTER OUTSTR*124,ZN*12,outs*124
       character ctldoc*248,LCTLF*72,zd*64,DFILE*72,CFILE*72,OFILE*72
       character cfgroot*24
       LOGICAL OK,dok,browse,OKC,XST,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
       real DX1,DY1,DZ1  ! to avoid name clash with geometry.h
       real XO1,YO1,ZO1
+      real ANGR,ANGE    ! rotation angles
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SCRZONE'  ! set for subroutine
 
 C << Consider how a more robust cancel facility can
 C << be established. Possibly one that deletes the new zone
@@ -111,11 +119,10 @@ C Creation of a new zone, first ask its name, trapping out
 C illegal characters.
       call tstamp('>','PRJ: new zone')
       ZN=' '
- 42   H(1)='The zone description is used for descriptive and'
-      H(2)='book-keeping purposes. It should be unique, be less'
-      H(3)='than 12 characters and contain no spaces.'
+ 42   helptopic='zone_name'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKS(ZN,'New zone description?','(<12 chars, no spaces)',
-     &           12,'New zone','zone name',IER,3)
+     &  12,'New zone','zone name',IER,nbhelp)
       IF(ZN.eq.' '.or.ier.ne.0)goto 42
       call st2name(ZN,zname(ICOMP))
       lnzname(icomp)=lnblnk(zname(ICOMP))  ! update this string length.
@@ -137,42 +144,20 @@ C << Unix vs NT needs to be updated >>
       LTHRM(ICOMP)=CFILE
       LPROJ(ICOMP)=OFILE
 
-      H(1)='The zone description allows further information about'
-      H(2)='zone form and composition to be recorded.'
       write(zd,'(2a)') zname(ICOMP)(1:lnzname(ICOMP)),' describes a'
  43   CALL EASKS(zd,'What does it represent?','(<64 characters)',
-     &            64,'no description entered','zone descr',IER,2)
+     &  64,'no description entered','zone descr',IER,nbhelp)
       IF(zd.eq.' '.or.ier.ne.0)goto 43
       zdesc(ICOMP)=zd
       lnzdesc(ICOMP)=lnblnk(zd)  ! update the length of this string.
 
 C Allow user choices of beginning as a simple shape (with image feedback). 
       IER=0
-      H(1)='You have the option to describe zone geometry as an'
-      H(2)='extruded rectangle, a floor plan extrusion or a general'
-      H(3)='polyhedra. Keeping the geometry as simple as possible'
-      H(4)='will simplify the constructional attribution and result'
-      H(5)='interpretation tasks.'
-      H(6)=' '
-      H(7)='Points from a bitmap:                  '
-      H(8)=' Zone geometry can be defined by taking points from a'
-      H(9)=' scanned image of a site plan or floor plan.         '
-      H(10)='                  '
-      H(11)=' To do this you need to scan the relevant source and'
-      H(12)=' then convert it to an XBM (X11 monochrome bitmap) file,'
-      H(13)=' which should be placed in the project `cfg` folder.'
-      H(14)=' '
-      h(15)=' Please ensure that the bitmap is large enough to'
-      h(16)=' allow for accurate positioning of the mouse. The bitmap'
-      h(17)=' can be larger than the graphic display area, and where'
-      H(18)=' it is you can pan left/right and up/down.'
-      H(19)='                  '
-      H(20)=' The source image should have indications on it of an'
-      H(21)=' origin (typically X=0.0 Y=0.0), the North direction'
-      H(22)=' and a line of known length (to get scaling from).'
+      helptopic='zone_initial_shapes'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKABCD(' ','Base zone geometry on:',
-     &    'rectangular plan','polygon plan','general 3D',
-     &    'bitmap',ishape,22)
+     &  'rectangular plan','polygon plan','general 3D',
+     &  'bitmap',ishape,nbhelp)
  144  IF(ishape.eq.1)THEN
         XO1=0.
         YO1=0.
@@ -180,18 +165,12 @@ C Allow user choices of beginning as a simple shape (with image feedback).
         DX1=5.0
         DY1=3.0
         DZ1=2.7
-        H(1)='The specification of a rectangular extrusion requires'
-        H(2)='the specification of an origin (relative to the site'
-        H(3)='coordinate system, and a length, depthand height.'
-        H(4)='Assuming there is no rotation, the length dimension'
-        H(5)='is along the X axis, the depth dimension is along the'
-        H(6)='Y axis and the height dimension is along the Z axis.'
-        H(7)='The rectangle may then be rotated by an angle measured'
-        H(8)='from the X axis, anticlockwise positive.'
+        helptopic='zone_initial_rect'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         HOLD=' '
         WRITE(HOLD,'(1x,3f8.3)')XO1,YO1,ZO1
         CALL EASKS(HOLD,' ','Origin X,Y,Z?',
-     &           32,' 0. 0. 0. ','origin coord',IER,8)
+     &    32,' 0. 0. 0. ','origin coord',IER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,XO1,-999.9,999.9,'W','X origin',IER)
         CALL EGETWR(HOLD,K,YO1,-999.9,999.9,'W','Y origin',IER)
@@ -199,13 +178,10 @@ C Allow user choices of beginning as a simple shape (with image feedback).
 	write(outs,'(a,3f9.4)') 'Origin is ',XO1,YO1,ZO1
 	call edisp(iuout,outs)
 
- 242    H(1)='The length (with no rotation) is along the X axis.'
-        H(2)='The width (with no rotation) is along the Y axis.'
-        H(3)='The height is along the Z axis.'
-        HOLD=' '
+ 242    HOLD=' '
         WRITE(HOLD,'(1x,3f8.3)')DX1,DY1,DZ1
         CALL EASKS(HOLD,' ','Rectangle length, width and height?',
-     &             32,' 2.5 3.5 2.7 ','rectangle size',IER,3)
+     &    32,' 2.5 3.5 2.7 ','rectangle size',IER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,DX1,0.001,99.9,'W','box width',IER)
         CALL EGETWR(HOLD,K,DY1,0.001,99.9,'W','box depth',IER)
@@ -214,23 +190,17 @@ C Allow user choices of beginning as a simple shape (with image feedback).
 	write(outs,'(a,3f9.4)') 'Width depth height is ',DX1,DY1,DZ1
 	call edisp(iuout,outs)
 
-        H(1)='Orientation is the angle between the length (DX) side'
-        H(2)='of the rectangle and the X-axis, anticlockwise +ve.'
-        ANG=0.
-        CALL EASKR(ANG,' ','Rectangle orientation?',
-     &       -359.0,'W',359.0,'W',0.0,'box orientation',IER,2)
+        ANGR=0.
+        CALL EASKR(ANGR,' ','Rectangle orientation?',
+     &    -359.0,'W',359.0,'W',0.0,'box orientation',IER,nbhelp)
 
-        H(1)='Elevation is the angle between the length (DX) side'
-        H(2)='of the rectangle and the horizon, +ve is an upwards'
-        H(3)='incline and -ve is a downwards incline. Zero results'
-        H(4)='in a standard horizontal base.'
         ANGE=0.
         CALL EASKR(ANGE,' ','Rectangle elevation (see help)?',
-     &       -359.0,'W',359.0,'W',0.0,'box elevation',IER,4)
+     &    -359.0,'W',359.0,'W',0.0,'box elevation',IER,nbhelp)
 
 C Convert box into a gen description using two rotation angles.
 C Pass in critical dimensions and expect the data back via common G1.
-        CALL ERECC3A(XO1,YO1,ZO1,DX1,DY1,DZ1,ANG,ANGE,0.0)
+        CALL ERECC3A(XO1,YO1,ZO1,DX1,DY1,DZ1,ANGR,ANGE,0.0)
         NSUR=6
         IUZBASEA(icomp)=0
         IBASES(ICOMP,1)=6
@@ -244,28 +214,22 @@ C User begins with an extruded shape.
         Z1=0.
         Z2=2.4
         NW=4
-        H(1)='The base surface (probably floor) height relative to'
-        H(1)='the site coordinate system.'
+        helptopic='zone_initial_extrude'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKR(Z1,' ','Z value of the base surface?',
-     &       0.000,'W',99.9,'W',0.0,'elevation of base',IER,2)
-        H(1)='The top surface (probably ceiling) height relative to'
-        H(2)='the site coordinate system. Note that this is not'
-        H(3)='necessarily the same as the base-top distance!'
+     &    0.000,'W',99.9,'W',0.0,'elevation of base',IER,nbhelp)
         CALL EASKR(Z2,' ','Z value of the top surface?',
-     &       0.000,'W',99.9,'W',2.7,'elevation of top',IER,3)
-        H(1)='The number of walls excluding the base and'
-        H(2)='the top.'
+     &    0.000,'W',99.9,'W',2.7,'elevation of top',IER,nbhelp)
         CALL EASKI(NW,' ','Number of walls?',
-     &           3,'F',MS-2,'F',4,'no of walls',IERI,2)
+     &    3,'F',MS-2,'F',4,'no of walls',IERI,nbhelp)
         if(ieri.eq.-3) goto 42
 
         DO 45 IW=1,NW
           WRITE(OUTSTR,'(A,I2,A)')' For base vertex',IW,'  X & Y:'
           HOLD=' '
           WRITE(HOLD,'(1x,2f8.3)')XX(IW),YY(IW)
-          H(1)='The coordinates should be entered in anti-clockwise'
-          H(2)='order when viewed from the top.'
-          CALL EASKS(HOLD,OUTSTR,'  ',32,' 0.  0.  ','floor xy',IER,2)
+          CALL EASKS(HOLD,OUTSTR,'  ',32,' 0.  0.  ','floor xy',
+     &      IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,XX(IW),-999.,999.,'W','flr X',IER)
           CALL EGETWR(HOLD,K,YY(IW),-999.,999.,'W','flr Y',IER)
@@ -276,21 +240,15 @@ C User begins with an extruded shape.
 
 C Allow user to have a 2nd chance to input the vertices.
         dok=.true.
-        h(1)='If you have any doubt as to whether you entered the'
-        h(2)='correct vertex coordinates you can save time by'
-        h(3)='respecifying them now. Usually this takes less time'
-        h(4)='than trying to correct problems later.'
-        CALL ASKOK(' ','Accept base vertices?',OK,dok,4)
+        CALL ASKOK(' ','Accept base vertices?',OK,dok,nbhelp)
         if(.NOT.ok)then
           ishape=2
           goto 144
         endif
 
-        H(1)='Rotation is the angle between the site y-axis and'
-        H(2)='north, anticlockwise positive.'
         AR=0.
         CALL EASKR(AR,' ','Rotation angle?',
-     &       -359.0,'W',359.0,'W',0.0,'extrusion rotation',IER,2)
+     &    -359.0,'W',359.0,'W',0.0,'extrusion rotation',IER,nbhelp)
 
 C Convert into a gen body and rotate if required. Pass in critical dimensions
 C and expect the data back via common G1. And ESCROT also acts on G1.
@@ -342,30 +300,16 @@ C Update the connection list and hash.
       if(ishape.eq.3)then
 
 C User will begin with a minimal GEN body.
-        H(1)='A general polyhedra is appropriate for complex'
-        H(2)='shapes. A set of vertices is defined and then'
-        H(3)='linked together to form surfaces that bound the'
-        H(4)='zone. Vertices are linked anti-clockwise when'
-        H(5)='viewed from outside the zone. It is convention'
-        H(6)='to start at the lower left vertex.'
-        H(7)=' '
-        H(8)='After you supply the zone origin, a 2m x 2m'
-        H(9)='initial (floor) surface will be placed there.'
-        H(10)='These vertices may then be modified and new'
-        H(11)='ones added/linked to create the enclosed zone.'
-        H(12)='Initial warning messages may be ignored. These'
-        H(13)='will cease after you have defined a bounded zone.'
-        H(14)='The initial surface may be deleted if no longer'
-        H(15)='needed.'
-        CALL PHELPD('gen start popup',15,'-',0,0,IER)
+        helptopic='zone_initial_polyhedra'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('gen start popup',nbhelp,'-',0,0,IER)
         NTV=4
         NSUR=1
         AR=0.0
-        H(1)='The zone origin is located at the first surface.'
         HOLD=' '
         WRITE(HOLD,'(1x,3f8.3)')X(1),Y(1),Z(1)
         CALL EASKS(HOLD,' ','Origin X Y Z?',
-     &      32,' 0. 0. 0. ','origin coord',IER,1)
+     &    32,' 0. 0. 0. ','origin coord',IER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,X0,0.,0.,'-','X origin',IER)
         CALL EGETWR(HOLD,K,Y0,0.,0.,'-','Y origin',IER)
@@ -389,7 +333,7 @@ C User will begin with a minimal GEN body.
         JVN(1,4)=4
         NZTV(icomp)=NTV
         SNAME(ICOMP,1)='first'
-        SOTF(1)='OPAQ'
+        SOTF(1)='OPAQUE'
         SMLCN(1)='UNKN'
         SVFC(1)='FLOR'
         SOTHER(1,1)='UNKNOWN'
@@ -406,7 +350,7 @@ C Update the connection list and hash for initial surface.
         ICCC=ICCC+1
         IC1(ICCC)=ICOMP
         IE1(ICCC)=1
-        ICT(ICCC)=0
+        ICT(ICCC)=-1  ! mark as unknown
         IC2(ICCC)=0
         IE2(ICCC)=0
         SSNAME(iccc)=SNAME(ICOMP,1)
@@ -438,6 +382,7 @@ C in the new geometry files is established.
               itrc=0
               MODE='ALL '
               IAPROB=IPRODB
+              call edisp(iuout,'  ')  ! echo blank line in case of warnings
               CALL ERSYS(LCFGF,IFCFG,IAPROB,MODE,itrc,IER)
             endif
             return
@@ -489,13 +434,23 @@ C Find co-planer surfaces and edges of similar materials.
 
 C Update the global coordinates for this zones surfaces so that
 C the subsequent wireframe image can be drawn and the bounds of
-C the zone can be calculated.
+C the zone can be calculated. Also instanciate nznver and nzjvn
+C for the new zone (as is done in subroutine zdata).
       DO 40 J=1,NZTV(ICOMP)
         VCOORD(ICOMP,J,1)=X(J)
         VCOORD(ICOMP,J,2)=Y(J)
         VCOORD(ICOMP,J,3)=Z(J)
    40 CONTINUE
- 
+      DO 50 J=1,nzsur(ICOMP)
+        icc=IZSTOCN(icomp,j)
+        if(icc.ne.0)then
+          NZNVER(icc)=NVER(J)
+          N = NVER(J)
+          DO 60 K=1,N
+            NZJVN(icc,K)=JVN(J,K)
+   60     CONTINUE
+        endif
+   50 continue
 C Save this to file before passing into the geometry editing facility.
       call eclose(gversion(icomp),1.1,0.01,newgeo)
       if(igupgrade.eq.2.and.(.NOT.newgeo))then
@@ -509,12 +464,10 @@ C Save this to file before passing into the geometry editing facility.
       endif
       IF(IER.EQ.1)THEN
         dok=.true.
-        h(1)='When attempting to write the geometry a problem was'
-        h(2)='encountered. Check that you have permission to write'
-        h(3)='this type of file and that you have sufficient disk'
-        h(4)='space.'
+        helptopic='zone_initial_write'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK('Problem creating geometry file.','Try again?',
-     &               OK,dok,4)
+     &              OK,dok,nbhelp)
         IF(OK)GOTO 42
       ENDIF
 
@@ -536,6 +489,7 @@ C Read in control file if defined.
         call CTLWRT(ICTLF,IER)
         call usrmsg(' ',' ','-')
       endif
+
       CALL EMKCFG('-',IER)
 
       RETURN
@@ -548,27 +502,37 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
 #include "model.h"
 #include "geometry.h"
 #include "prj3dv.h"
+#include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
 
       CHARACTER*72 LTMP,DFILE
-      CHARACTER OUTSTR*124,H*72,ctldoc*248,LCTLF*72
+      CHARACTER OUTSTR*124,ctldoc*248,LCTLF*72
       character sfile*72,snpfile*72,fs*1,outs*124
 
       LOGICAL OK,DOK,XST,OKC,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
       logical altered ! to signal change in boundary conditions of added existing zone.
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+      integer ianother   ! flag for jumping to a different zone
+
+      helpinsub='NEWZONE'  ! set for subroutine
 
 C Set folder separator (fs) to \ or / as required.
       newgeo=.false.  ! assume older format geometry.
@@ -579,34 +543,25 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
 
- 293  H(1)='You may read in an existing ESP-r zone geometry file,'
-      H(2)='convert a cflow3/IES zip file into one or more zones'
-      H(3)='(i.e whole model conversion) or create a zone by inputing'
-      H(4)='data related to primitive shapes. '
-      h(5)=' '
-      h(6)='NOTE: a cflow3/IES zip file is NOT a DXF file. If you'
-      h(7)='want to import DXF use the Model Management -> import CAD'
-      h(8)='file facility. '
-      h(9)=' '
-      h(10)='NOTE: it is assumed that you the zone geometry file'
-      h(11)='that you specify is not that is NOT already used in'
-      h(12)='your model! Otherwise the Project Manager may get '
-      h(13)='confused because two zones point to the same fie! '
-      h(14)=' '
-      h(15)='Check the zone name after you have loaded the existing'
-      h(16)='zone geometry file to make sure it is unique. '
+ 293  helptopic='zone_source_files'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKABCD(' ','New zone options:','input dimensions',
      &  'load existing (ESP-r)','load existing (cflow3 zip)',
-     &  'cancel',INZOPT,16)
+     &  'cancel',INZOPT,nbhelp)
 
 C Input dimensions.
       if(INZOPT.eq.1)then
 
 C Provide scratch description and the default assumptions for
 C other zone files. If the cfg file is version 4 or newer then
-C set to create version 1.1 zone geometry files.
+C set to create version 1.1 zone geometry files. Do not bother
+C to react to user request for jump to prior or next zone.
         CALL SCRZONE(IC,IER)
-        CALL EDZONE(ITRC,IC,IER)
+        CALL EDZONE(ITRC,IC,ianother,IER)
+        if(ianother.ne.0)then
+          call usrmsg('Ignoring request to jump to different zone',
+     &      '  ','-')
+        endif
         iZBFLG(IC)=0
         return
 
@@ -644,24 +599,16 @@ C User did not select a file. Take them back to the question.
         endif
 
 C Existing ESP-r geom file.
-        h(1)='If there was no existing geometry file found in the'
-        h(2)='../zones folder then you must supply a file name.'
-        h(3)='It should be relative to the cfg folder.'
-        h(4)=' '
-        h(5)='NOTE: it is assumed that you the zone geometry file'
-        h(6)='that you specify is not that is NOT already used in'
-        h(7)='your model! Otherwise the Project Manager may get '
-        h(8)='confused because two zones point to the same fie! '
         DFILE=' '
         WRITE(OUTSTR,'(a,i2,a)')' For zone ',IC,
      &   ' the geometry is defined in:'
-        CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'geom file',IER,8)
+        CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'geom file',IER,nbhelp)
         IF(LTMP(1:2).EQ.'  ')GOTO 293
         call FINDFIL(LTMP,XST)
         IF(.NOT.XST)THEN
           dok=.true.
           CALL ASKOK(' ','Geometry file not found, try again?',OK,
-     &      dok,3)
+     &      dok,nbhelp)
           if(OK)then
             GOTO 293 ! as for choice again
           else
@@ -676,11 +623,9 @@ C Try reading in the geometry to fill in the data below.
         call georead(IFIL+1,LGEOM(IC),IC,1,iuout,IER)
         IF(IER.NE.0)THEN
           dok=.true.
-          h(1)='While scanning the geometry file a problem was'
-          h(2)='encountered. Check that the file is of the correct'
-          h(3)='type and that it has not been corrupted. '
           CALL ASKOK(OUTSTR,
-     &      'Problem scanning geometry file...try again?',OK,dok,3)
+     &      'Problem scanning geometry file...try again?',
+     &      OK,dok,nbhelp)
           if(OK)then
             GOTO 293
           else
@@ -710,7 +655,7 @@ C Update the connection list and then the model configuration.
           icascf(NCOMP)=0
           call CTLWRT(ICTLF,IER)
         endif
-        ICCC=NCON
+        ICCC=NCON   ! connection number of the newest surface
 
 C If surface attributes are adaibetic or similar then use these in
 C the connections list, then remind user to double check topology.
@@ -720,14 +665,16 @@ C the connections list, then remind user to double check topology.
           IC1(ICCC)=IC
           IE1(ICCC)=ICC
           if(SOTHER(icc,1)(1:8).eq.'EXTERIOR')then
+            write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
+     &        ' is a EXTERIOR connection which will be used.'
+            call edisp(iuout,outs)
             ICT(ICCC)=0
             IC2(ICCC)=0
             IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:7).eq.'SIMILAR')then
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
-     &        ' is a SIMILAR connection. Use the'
-            call usrmsg(outs,
-     &       'surface attribute facility to confirm its details.','W')
+     &        ' is a SIMILAR connection which will be used.'
+            call edisp(iuout,outs)
             ICT(ICCC)=1
             IC2(ICCC)=0
             IE2(ICCC)=0
@@ -737,25 +684,24 @@ C the connections list, then remind user to double check topology.
             IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:8).eq.'CONSTANT')then
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
-     &        ' is a CONSTANT connection. Use the'
-            call usrmsg(outs,
-     &       'surface attribute facility to confirm its details.','W')
-            ICT(ICCC)=0
+     &    ' was a CONSTANT connection. Confirm its surface attributes.'
+            call edisp(iuout,outs)
+            SOTHER(icc,1)='UNKNOWN'
+            ICT(ICCC)=-1
             IC2(ICCC)=0
             IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:6).eq.'GROUND')then
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
-     &        ' is a GROUND connection. Use the'
-            call usrmsg(outs,
-     &       'surface attribute facility to confirm its details.','W')
-            ICT(ICCC)=0
+     &      ' was a GROUND connection. Confirm its surface attributes.'
+            call edisp(iuout,outs)
+            SOTHER(icc,1)='UNKNOWN'
+            ICT(ICCC)=-1
             IC2(ICCC)=0
             IE2(ICCC)=0
           elseif(SOTHER(icc,1)(1:7).eq.'UNKNOWN')then
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
-     &        ' has an undefined boundary. Confirm its'
-            call usrmsg(outs,
-     &        'surface attributes or use topology tool.','W')
+     &    ' has an undefined boundary. Confirm its surface attributes.'
+            call edisp(iuout,outs)
             ICT(ICCC)=-1
             IC2(ICCC)=0
             IE2(ICCC)=0
@@ -763,9 +709,8 @@ C the connections list, then remind user to double check topology.
 
 C Existing partitions in an imported zone are reset to UNKNOWN.
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
-     &        ' is a partition. Confirm its'
-            call usrmsg(outs,
-     &        'surface attributes or use topology tool.','W')
+     &        ' was a partition. Confirm its surface attributes.'
+            call edisp(iuout,outs)
             SOTHER(icc,1)='UNKNOWN'
             ICT(ICCC)=-1
             IC2(ICCC)=0
@@ -775,9 +720,8 @@ C Existing partitions in an imported zone are reset to UNKNOWN.
 
 C Existing partitions in an imported zone are reset to UNKNOWN.
             write(outs,'(3a)') 'Note: ',SNAME(NCOMP,icc),
-     &        ' might be a partition. Confirm its'
-            call usrmsg(outs,
-     &        'surface attributes or use topology tool.','W')
+     &        ' might be a partition. Confirm its surface attributes.'
+            call edisp(iuout,outs)
             SOTHER(icc,1)='UNKNOWN'
             ICT(ICCC)=-1
             IC2(ICCC)=0
@@ -797,6 +741,14 @@ C Update the connection based data structures.
           SSUSE(iccc,2)=SUSE(icc,2)
           SSPARENT(iccc)=SPARENT(icc)
           IZSTOCN(ncomp,icc)=iccc
+
+C Find the index of the MLC which matches this surface.
+          ssmlcindex(iccc)=0  ! assume no matching MLC          
+          do 5 ii=1,nmlc
+            if(SSMLCN(iccc)(1:12).eq.DESC(ii)(1:12)) then
+              ssmlcindex(iccc)=ii   ! remember MLC index     
+            endif
+  5       continue
   132   CONTINUE
         NCON=ICCC
 
@@ -835,10 +787,10 @@ C with this new zone.
      &      zname(IC)(1:lnzname(IC)),'.opr'
         endif
         dok=.false.
-        h(1)='If you are extending a model via the use of existing'
-        h(2)='zone geometry files you might also have existing zone'
-        h(3)='schedules to reference. You can do that here. '
-        CALL ASKOK(' ','Also use an existing operation file?',OK,dok,3)
+        helptopic='zone_also_schedules'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL ASKOK(' ','Also use an existing operation file?',
+     &    OK,dok,nbhelp)
         if(OK)then
           if(LPROJ(IC)(1:4).eq.'UNKN'.or.LPROJ(IC)(1:2).eq.'  ')then
 
@@ -869,18 +821,15 @@ C                write(6,*) ltmp
           else
             LTMP=LPROJ(IC)
           endif
-          h(1)='If there was not existing operations file found in the'
-          h(2)='../zones folder then you must supply a file name. '
-          h(3)='It should be relative to the cfg folder. '
           WRITE(OUTSTR,'(a,i2,a)')' For zone ',IC,
      &      ' the operations are defined in:'
- 295      CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'opr file',IER,3)
+ 295      CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'opr file',IER,nbhelp)
           IF(LTMP(1:2).EQ.'  ')GOTO 295
           call FINDFIL(LTMP,XST)
           IF(.NOT.XST)THEN
             dok=.true.
             CALL ASKOK(' ','Operations file not found, try again?',
-     &        OK,dok,3)
+     &        OK,dok,nbhelp)
             IF(OK)GOTO 295
           endif
           LPROJ(IC)=LTMP
@@ -889,11 +838,10 @@ C                write(6,*) ltmp
         endif
 
         dok=.false.
-        h(1)='If you are extending a model via the use of existing'
-        h(2)='zone geometry files you might also have existing zone'
-        h(3)='constructions to reference. You can do that here. '
+        helptopic='zone_also_constructions'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK(' ','Also use an existing constructions file? ',
-     &    OK,dok,3)
+     &    OK,dok,nbhelp)
         if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
           WRITE(DFILE,'(A,A4)')zname(IC)(1:lnzname(IC)),'.con'
         else
@@ -930,18 +878,15 @@ C                write(6,*) ltmp
           else
             LTMP=LTHRM(IC)
           endif
-          h(1)='If there was not existing constructions file found in '
-          h(2)='the ../zones folder then you must supply a file name.'
-          h(3)='It should be relative to the cfg folder. '
           WRITE(OUTSTR,'(a,i2,a)')' For zone ',IC,
      &      ' the constructions are defined in:'
- 297      CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'constr file',IER,3)
+ 297      CALL EASKS(LTMP,OUTSTR,' ',72,DFILE,'constr file',IER,nbhelp)
           IF(LTMP(1:2).EQ.'  ')GOTO 297
           call FINDFIL(LTMP,XST)
           IF(.NOT.XST)THEN
             dok=.true.
             CALL ASKOK(' ','Constructions file not found, try again?',
-     &        OK,dok,3)
+     &        OK,dok,nbhelp)
             IF(OK)GOTO 297
           endif
           LTHRM(IC)=LTMP
@@ -980,19 +925,18 @@ C            write(6,*) ltmp
         endif
 
 C Existing zip geom file.
-        h(1)='If there is no existing geometry file found in the'
-        h(2)='../zones folder then you must supply a file name'
-        h(3)='including a path relative to the cfg folder.'
+        helptopic='zone_also_zip_source'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         DFILE=' '
         WRITE(OUTSTR,'(a,i2,a)')'For zone ',IC,
      &    ' the geometry is to be scanned from:'
- 396    CALL EASKS(LTMP,' ',OUTSTR,72,DFILE,'zip file',IER,3)
+ 396    CALL EASKS(LTMP,' ',OUTSTR,72,DFILE,'zip file',IER,nbhelp)
         IF(LTMP(1:2).EQ.'  ')GOTO 293
         call FINDFIL(LTMP,XST)
         IF(.NOT.XST)THEN
           dok=.true.
           CALL ASKOK('Zip file not found!','Try again?',OK,
-     &      dok,3)
+     &      dok,nbhelp)
           IF(OK)GOTO 396
         ENDIF
 
@@ -1000,11 +944,8 @@ C Scan zip file and update control and connections.
         CALL EZIPIN(IFIL+1,ltmp,IC,1,ITRC,iuout,IER)
         IF(IER.NE.0)THEN
           dok=.true.
-          h(1)='While scanning the geometry file a problem was'
-          h(2)='encountered. Check that the file is of the correct'
-          h(3)='type and that it has not been corrupted.'
           CALL ASKOK('Problem scanning CAD file!',
-     &                    'Try again?',OK,dok,3)
+     &               'Try again?',OK,dok,nbhelp)
           IF(OK)GOTO 396
         ENDIF
 
@@ -1032,12 +973,12 @@ C espriou.h provides currentfile.
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       common/C21/IFCFG,cfgroot,LCFGF
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
@@ -1050,10 +991,6 @@ C espriou.h provides currentfile.
      &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
-
-C Anchor data.
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
-      common/anchorb/IALOC(20),lstanchr(20,60)
 
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
@@ -1069,10 +1006,16 @@ C Anchor data.
 
       CHARACTER LAPROB*72,LCFGF*72
       CHARACTER cfgroot*24
-      CHARACTER H*72,ctldoc*248,LCTLF*72,outs*124
+      CHARACTER ctldoc*248,LCTLF*72,outs*124
       character ltmp*72,NDNAM*12
-      character ALOC*12,ALOCLBL*12,ALOCTYP*4
       character OUTSTR*124
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='DELZONE'  ! set for subroutine
 
       if(browse)then
         call usrmsg('Cannot remove a zone while in browse ',
@@ -1084,19 +1027,11 @@ C Anchor data.
       newgeo=.false.  ! assume older format geometry.
 
 C General warning.
-      H(1)='             - W A R N I N G - '
-      H(2)='Because of the many inter-connections within a model, the '
-      H(3)='removal of a zone requires a number of steps and you will'
-      H(4)='be asked to confirm some actions. '
-      H(5)=' '
-      H(6)='Upon completion, carefully review the model to ensure that'
-      H(7)='the new inter-connections are appropriate. '
-      H(8)=' '
-      H(9)='If in doubt ARCHIVE of the model before embarking on a'
-      H(10)='major restructuring - there is no `undo` command! '
+      helptopic='zone_delete_warning'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       write(outs,'(3a)')' Continue with deletion of ',zname(IW),'?'
       dok=.false.
-      CALL ASKOK(outs,'(see help)',OK,dok,10)
+      CALL ASKOK(outs,'(see help)',OK,dok,nbhelp)
       if(.NOT.OK)return
 
 C Read in mass flow network if defined and see if there is a node which
@@ -1149,16 +1084,10 @@ C If a node is linked to zone to be deleted then check with user.
      &          ' is linked to ventilation network node: ',
      &          NDNAM(ICAAS(IW))
               DOK=.true.
-              h(1)='A linked network ventilation node will take the'
-              h(2)='current zone temperature during assessments. If,'
-              h(3)='after deleting a zone, the link points to a non-'
-              h(4)='existant zone then flows may not be correctly'
-              h(5)='predicted. Unlinking will result in the node using'
-              h(6)='a fixed temperature during assessments.'
-              h(7)='Because a node may have several connections within'
-              h(8)='the network you must edit the network to remove'
-              h(9)='such links before it can be removed. '
-              CALL ASKOK(outs,'Remove this link? (see help)',OK,DOK,9)
+              helptopic='zone_delete_net_node'
+              call gethelptext(helpinsub,helptopic,nbhelp)
+              CALL ASKOK(outs,'Remove this link? (see help)',
+     &          OK,DOK,nbhelp)
               if(OK)then
                 ICAAS(IW)=0
               endif
@@ -1175,25 +1104,22 @@ C Any node-zone links to subsequent zones need to be decremented.
       endif
 
 C Read in control file if defined. Use IW2 index from this point.
-      h(1)='The removal of a zone may result in zone or ventilation'
-      h(2)='control loops which specifically sense the removed zone'
-      h(3)='causing incorrect assessments. Also references to sub- '
-      h(4)='sequent zones in control loops need to be adjusted. '
+      helptopic='zone_delete_control'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       if(LCTLF(1:2).eq.'  '.or.LCTLF(1:4).eq.'UNKN')then
         DOK=.false.
         CALL ASKOK(' System zone-based controls should also be',
-     &   ' updated. Is one associated with the model ?',OKC,DOK,4)
+     &   ' updated. Is one associated with the model ?',
+     &   OKC,DOK,nbhelp)
       else
         DOK=.true.
         CALL ASKOK(' System zone-based controls should also be',
-     &    ' updated. Do this ?',OKC,DOK,4)
+     &    ' updated. Do this ?',OKC,DOK,nbhelp)
       endif
       if(OKC)then
-        H(1)='The system control file holds the definition of all of'
-        H(2)='the building/plant controls.  This file is optional.'
         ltmp=LCTLF
         CALL EASKS(ltmp,' Control file ? ',
-     &   ' ',72,'std.ctl','Control file',IER,1)
+     &   ' ',72,'std.ctl','Control file',IER,nbhelp)
         if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
           lctlf=ltmp
           ICTLF=IFIL+1
@@ -1211,9 +1137,8 @@ C the user and ask if it should be deleted.
                   write(outs,'(a,i2,a,a)') 'Control loop ',ik,
      &              ' is specific to ',zname(IW2)
                   DOK=.true.
-                  h(1)='The control sensor or actuator references this'
-                  h(2)='specific zone. '
-                  CALL ASKOK(outs,' Remove this control loop?',OK,DOK,2)
+                  CALL ASKOK(outs,' Remove this control loop?',
+     &              OK,DOK,nbhelp)
                   if(ok)then
 
 C User requests deletion of control loop. Do this and then decrement all
@@ -1252,14 +1177,15 @@ C Shift sensor/actuator zone references > IW2 down one.
 C If one of the ventilation control loops references the zone to be deleted warn
 C the user and ask if it should be deleted.
               do 79 ik=1,ncc
+                helptopic='zone_delete_net_control'
+                call gethelptext(helpinsub,helptopic,nbhelp)
                 if(ifsn(ik,1).eq.IW2.or.ifan(ik,1).eq.IW2)then
                   call LSTCNTL(itru,2,ik)
                   write(outs,'(a,i2,a,a)') 'Ventilation control loop ',
      &              ik,' is specific to ',zname(IW2)
                   DOK=.true.
-                  h(1)='The vnetilation control sensor or actuator '
-                  h(2)='references this specific zone. '
-                  CALL ASKOK(outs,' Remove this control loop?',OK,DOK,2)
+                  CALL ASKOK(outs,' Remove this control loop?',
+     &              OK,DOK,nbhelp)
                   if(ok)then
                     icfoc=2
                     call ADDCNTL(icfoc,'D')
@@ -1290,6 +1216,8 @@ C If one of the control loops references the zone to be deleted warn
 C the user and ask if it should be deleted.
               ik = 1
               do while(ik.le.nCFCctlloops)
+                helptopic='zone_delete_cfc_control'
+                call gethelptext(helpinsub,helptopic,nbhelp)
                 if(iCFCsensor(ik,1).eq.IW2.or.                          ! senses zone temp. 
      &          (iCFCsensor(ik,1).eq.-2.and.iCFCsensor(ik,2).eq.IW2)    ! senses mix dbT and MRT
      &          .or.
@@ -1299,9 +1227,8 @@ C the user and ask if it should be deleted.
                   write(outs,'(a,i2,a,a)') 'Control loop ',ik,
      &              ' is specific to ',zname(IW2)
                   DOK=.true.
-                  h(1)='The control sensor or actuator references this'
-                  h(2)='specific zone. '
-                  CALL ASKOK(outs,' Remove this control loop?',OK,DOK,2)
+                  CALL ASKOK(outs,' Remove this control loop?',
+     &              OK,DOK,nbhelp)
                   if(ok)then
 
 C User requests deletion of control loop. Do this and then decrement all
@@ -1508,11 +1435,11 @@ C Re-establish link between zone/surfaces and connections.
 
 C Ask if user wishes to remove all files related to the zone.
       dok=.false.
-      h(1)='You can de-reference a zone in the current model, and'
-      h(2)='you have the option to also remove the files. If you'
-      h(3)='might have a use for the files later keep them. '
+      helptopic='zone_delete_files'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL ASKOK(' In addition to de-referencing this zone do you',
-     & ' also wish to delete the descriptive files ?',OK,dok,3)
+     &  ' also wish to delete the descriptive files ?',
+     &  OK,dok,nbhelp)
       if(OK)then
         IUO=IFIL+1
         CALL ERPFREE(IUO,ISTAT)
@@ -1671,30 +1598,25 @@ C commons via reading in related files.
 
 C Warn user about updating the mass flow.
       if(IAIRN.ge.1.and.OKM)then
-        H(1)='             - W A R N I N G - '
-        H(2)='Ventilation network nodes linked to the deleted zone'
-        H(3)='have been unlinked (i.e. they are assumed to be at a'
-        H(4)='static temperature).'
-        H(5)='If connections related to this node need to be revised '
-        H(6)='use the ventilation network facility.'
-        CALL PHELPD('mfs update popup',6,'-',0,0,IER)
+        helptopic='zone_net_delete_warning'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('mfs update popup',nbhelp,'-',0,0,IER)
       endif
 
 C Write out control file to update control/zone list.
       if(OKC)then
-        H(1)='             - W A R N I N G - '
-        H(2)='Links to the deleted zone by zone and/or ventilation'
-        H(3)='control loops have been adjusted and are being saved.'
-        CALL PHELPD('control update popup',3,'-',0,0,IER)
+        helptopic='zone_ctl_delete_warning'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('control update popup',nbhelp,'-',0,0,IER)
         ICTLF=IFIL+1
         CALL CTLWRT(ICTLF,IER)
       endif
 
-      H(1)='The current model description will be placed'
-      H(2)='into this file.'
+      helptopic='zone_delete_update_cfg'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       ltmp=LCFGF
  49   CALL EASKS(ltmp,' Updated configuration file? ',
-     &   ' ',72,'revised.cfg','updated config file',IER,2)
+     &   ' ',72,'revised.cfg','updated config file',IER,nbhelp)
       if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
         LCFGF=ltmp
       else
@@ -1721,7 +1643,6 @@ C IER=0 OK.
 #include "building.h"
 #include "model.h"
 #include "CFC_common.h"
-      COMMON/OUTIN/IUOUT,IUIN
       common/pmchange/comold,tmcold,vwfold,ishold,cfcold
 
       CHARACTER act*3
@@ -1729,7 +1650,7 @@ C IER=0 OK.
       LOGICAL XST,comold,tmcold,vwfold,ishold,cfcold
 
       if(act(1:3).eq.'sf-'.or.act(1:3).eq.'sf+'.or.
-     &act(1:3).eq.'sat')then
+     &   act(1:3).eq.'sat')then
         call FINDFIL(LTHRM(ICOMP),XST)
         if(XST)then
           comold = .true.
@@ -1741,7 +1662,7 @@ C IER=0 OK.
 C Check for implications of surface addition or removal or attribution change.
 C << refine testing for setting tmcold >>
       if(act(1:3).eq.'sf-'.or.act(1:3).eq.'sf+'.or.
-     &act(1:3).eq.'sat')then
+     &   act(1:3).eq.'sat')then
         if(ITW(ICOMP).eq.1)then
           call FINDFIL(LTWIN(ICOMP),XST)
           if(XST)then
@@ -1752,14 +1673,14 @@ C << refine testing for setting tmcold >>
         endif
       endif
       if(act(1:3).eq.'sf-'.or.act(1:3).eq.'sf+'.or.
-     &act(1:3).eq.'sat')then
+     &   act(1:3).eq.'sat')then
         if(icfc(ICOMP).eq.1)then
           call FINDFIL(lcfcin(ICOMP),XST)
           if(XST)cfcold = .true.
         endif
       endif
       if(act(1:3).eq.'sf-'.or.act(1:3).eq.'sf+'.or.
-     &act(1:3).eq.'str')then
+     &   act(1:3).eq.'str')then
         if(IVF(ICOMP).eq.1)then
           call FINDFIL(LVIEW(ICOMP),XST)
           if(XST)then
@@ -1770,7 +1691,7 @@ C << refine testing for setting tmcold >>
         endif
       endif
       if(act(1:3).eq.'sf-'.or.act(1:3).eq.'sf+'.or.
-     &act(1:3).eq.'str')then
+     &   act(1:3).eq.'str')then
         if(ISI(ICOMP).eq.1)then
           call FINDFIL(LSHAD(ICOMP),XST)
           if(XST)then
@@ -1800,6 +1721,10 @@ C Indications are collected from previous calls to WARNMOD. SUMRCHG
 C should be called with act = 'i' (initialise) when entering a zone and
 C with act = 'r' (report) when leaving the zone.
 C IER=0 OK. 
+
+C Note: this subroutine uses explicit pophelp common block because
+C the help message will be built up dynamically based on the current
+C contents of the model.
       SUBROUTINE SUMRCHG(ICOMP,act,silent)
 #include "building.h"
 #include "model.h"
@@ -1808,16 +1733,25 @@ C IER=0 OK.
       
       integer lnblnk  ! function definition
 
+C Passed parameters
+      integer icomp   ! index of the current zone
+      character act*1 ! i is initialise r is report on leaving
+      logical silent  ! if true then use silent recalc
+
       COMMON/OUTIN/IUOUT,IUIN
+      character h*72
       common/pophelp/h(60)
       common/pmchange/comold,tmcold,vwfold,ishold,cfcold
-      common/C21/IFCFG,cfgroot,LCFGF
 
-      CHARACTER H*72,act*1
-      character cfgroot*24,LCFGF*72
       logical comold,tmcold,vwfold,ishold,ok,dok,QUIET
       logical unixok,cfcold
-      logical silent  ! if true then use silent recalc
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SUMRCHG'  ! set for subroutine
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -1845,15 +1779,11 @@ C Check if Unix-based or DOS based.
           nh=nh+1
           write(h(nh),'(3a)')' the TMC file ',
      &          LTWIN(ICOMP)(1:lnblnk(LTWIN(ICOMP))),' out of date.'
-          nh=nh+1
-          h(nh)=' (rebuild via construction facility) '
         endif
         if(cfcold)then
           nh=nh+1
           write(h(nh),'(3a)')' the CFC file ',
      &          lcfcin(ICOMP)(1:lnblnk(lcfcin(ICOMP))),' out of date.'
-          nh=nh+1
-          h(nh)=' (rebuild via construction facility) '
         endif
         if(vwfold)then
           nh=nh+1
@@ -1878,12 +1808,11 @@ C Check if Unix-based or DOS based.
 	  IRT=1
 	else
           DOK=.true.
-          h(1)='Shading should be recalculated if the changes you'
-          h(2)='made affect isolation distribution. When in doubt'
-          h(3)='it is best to recalculate.'
+          helptopic='change_for_shading'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABC(' Reflect zone change in shading options:',' ',
      &   'recalculate (silent)','recalculate (interactive)','continue',
-     &    IRT,3)
+     &    IRT,nbhelp)
         endif
         if(IRT.eq.1.or.IRT.eq.2)then
           if(IRT.eq.1) call edisp(iuout,
@@ -1905,12 +1834,12 @@ C If existing db out of date the perform recalculation.
 	  ok= .true.
 	else
           DOK=.true.
-          h(1)='Zone construction files should be rebuilt after '
-          h(2)='surface attributes change or surfaces are added or'
-          h(3)='deleted. '
-        CALL ASKOK('Update the zone construction and/ or TMC and/ or',
-     &    ' CFC files to reflect the changes that you have made?',
-     &      OK,DOK,3)
+          helptopic='change_for_constructions'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL ASKOK(
+     &    'Update the zone construction and/ or TMC and/ or ',
+     &    'CFC files to reflect the changes that you have made?',
+     &     OK,DOK,nbhelp)
         endif
         if(OK)then
           QUIET=.true.
@@ -1993,6 +1922,9 @@ C and change any / to \.
 
       if(act(1:3).eq.'sr ')then
 
+C Silent recalculate (try not to ask the user anything if there
+C is an existing shading file but if there is no exisitng file
+C set ier=3 and return to calling code.
         if(XST)then
           write(doit,'(5a)') 'ish -mode text -file ',
      &      longtfile(1:lnblnk(longtfile)),' -zone ',
@@ -2012,6 +1944,8 @@ C rather than starting up a new xterm.
 
       elseif(act(1:3).eq.'sra')then
 
+C Silent recalculate whether or not there is an existing shading
+C file.
         write(doit,'(5a)') 'ish -mode text -file ',
      &    longtfile(1:lnblnk(longtfile)),' -zone ',
      &    ZN(1:lnz),' -act update_silent'
@@ -2026,8 +1960,9 @@ C rather than starting up a new xterm.
 
       elseif(act(1:3).eq.'ir ')then
 
-C If prj initial size is a % of default pass this on to child with
-C an offset from prj start position.
+C Interactive recalculate of zone shading if there is an existing
+C shading file. If prj initial size is a % of default pass this\
+C on to child with an offset from prj start position.
         if(XST)then
           if(iappw.gt.0.and.iappw.le.200)then
             write(doit,'(3a,3i4,5a)') 'ish -mode ',
@@ -2050,8 +1985,9 @@ C an offset from prj start position.
         endif
       elseif(act(1:3).eq.'ira')then
 
-C If prj initial size is a % of default pass this on to child with
-C an offset from prj start position.
+C Interactive recalculate of zone shading without checking if
+C a shading file exists. If prj initial size is a % of default
+C pass this on to child with an offset from prj start position.
         if(iappw.gt.0.and.iappw.le.200)then
           write(doit,'(3a,3i4,5a)') 'ish -mode ',
      &        tmode,' -s ',iappw,iappx+15,iappy+50,' -file ',
@@ -2070,6 +2006,7 @@ C an offset from prj start position.
 
       elseif(act(1:3).eq.'in ')then
 
+C Interactive shading calculation for a new shading database.
         if(iappw.gt.0.and.iappw.le.200)then
           write(doit,'(3a,3i4,4a)') 'ish -mode ',tmode,
      &      ' -s ',iappw,iappx+15,iappy+50,' -file ',
@@ -2140,14 +2077,19 @@ C Report length of line. Use method of Ward/Radiance in fvect.c
           return
         endif
       endif
-      d2l=(vdis1-(vdis+vdis1-vdis2)*
-     &    (vdis+vdis1-vdis2)/vdis/4.0)
-      if(abs(d2l).lt.0.003)then
-        offset=d2l
+      if(vdis.ne.0.0)then
+        d2l=(vdis1-(vdis+vdis1-vdis2)*
+     &      (vdis+vdis1-vdis2)/vdis/4.0)
+        if(abs(d2l).lt.0.003)then
+          offset=d2l
+        else
+          offset=SQRT(d2l)
+        endif
+        match=.true.
       else
-        offset=SQRT(d2l)
+        offset=0.0   ! vdis was zero so assume a match
+        match=.true.
       endif
-      match=.true.
       return
       end
 

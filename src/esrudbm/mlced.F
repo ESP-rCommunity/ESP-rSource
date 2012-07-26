@@ -35,7 +35,6 @@ C providing paramaters MGDB,MGCL,MGIT
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
 
 C Generic db commons:
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
@@ -63,7 +62,7 @@ C Backup of documentation (for editing).
       dimension thrmtg(ME),gaptg(ME),mattag(ME),DT(ME)
       dimension IP(ME),DRA(ME,3),laydesc(ME)
 
-      CHARACTER OUTSTR*124,PELM*38,h*72,ACT*1,key*1,dstmp*24
+      CHARACTER OUTSTR*124,PELM*38,ACT*1,key*1,dstmp*24
       character dbtag*12,db*12,dbmenu*32,dbdate*24,dbdoc*248,catdoc*248
       character cattag*12,cattype*8,catmenu*32,catdate*24,ctype*8
       character ittag*12,itmenu*32,itdate*24,itdoc*248
@@ -84,6 +83,13 @@ C Backup of documentation (for editing).
       real misc1,misc2
       integer IWM   ! for radio button
       integer MPLEM,IW,IWR ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='edmlc'  ! set for subroutine
 
 C Scan the data from the common blocks.
     9 primod=.false.
@@ -240,9 +246,8 @@ C After parsing menus recover the header of the current db.
       write(head,'(2a)') '  Item in ',dbmenu(idbh)(1:27)
 
 C Help text for this menu.
-   2  h(1)='Editing of constructions database entities...'
-      h(2)=' ...'
-      h(3)=' ...'
+   2  helptopic='dbm_constr_entries'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU(head,PELM,MPLEM,IW)
 
@@ -251,6 +256,8 @@ C Help text for this menu.
       ELSEIF(IW.EQ.MPLEM-1)THEN
 
 C Help.
+        helptopic='dbm_constr_entries'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('constructions item edit help',3,'-',0,0,IER)
       ELSEIF(IW.EQ.2.or.IW.eq.3.or.IW.eq.5.or.IW.eq.6)THEN
         iract=0
@@ -260,13 +267,8 @@ C Help.
       ELSEIF(IW.EQ.MPLEM-2.and.ACT(1:1).eq.'M')THEN
 
 C Add or delete a layer.
-        h(1)='You can delete an existing layer, append a new layer '
-        h(2)='at the `inside face` of the surface (remember the '
-        h(3)='order is other-side to zone-side), or insert a layer'
-        h(4)='(you will be asked to select a point of insertion and'
-        h(5)='existing inner layers will be shifted).'
         CALL EASKABCD(' Layer options: ',' ',' Delete ',
-     &    ' Append @ inside face',' Insert ','contine',IWA,5)
+     &    ' Append @ inside face',' Insert ','contine',IWA,nbhelp)
         if(IWA.eq.4)goto 3
         if(IWA.EQ.1)then
 
@@ -277,8 +279,8 @@ C IWHICH into the next lower one.
           IWHICH=IWR-15
           write(outs,'(A,A)')' Remove ',laydesc(IWHICH)(1:18)
           dok=.false.
-          h(1)='Pause in case you made a mistake... '
-          CALL ASKOK(outs,' Are you sure? ',OK,dok,1)
+          CALL ASKOK(outs,'Are you sure you want to remove layer?',
+     &      OK,dok,nbhelp)
           IF(.NOT.OK)GOTO 2
           DO 791 IVV=IWHICH,nlay-1
             thrmtg(IVV)=thrmtg(IVV+1)
@@ -571,55 +573,26 @@ C layer or an LCA-only layer.
         dmodit=.false.
         if(thrmtg(il).eq.'t'.and.gaptg(il).eq.'g')then
           write(outs,'(a,i1,a)') 'Layer ',il,' is a thermal air gap'
-          h(1)='You can change this to a solid thermal layer or a'
-          h(2)='LCIA-only layer (spacer/fixing/frame)'
           CALL ASKOK(outs,'Change this?',modit,dmodit,2)
         elseif(thrmtg(il).eq.'t'.and.gaptg(il).eq.'s')then
           write(outs,'(a,i1,a)') 'Layer ',il,' is a thermal solid'
-          h(1)='You can change this to a thermal air gap or a'
-          h(2)='LCIA-only layer (spacer/fixing/frame)'
           CALL ASKOK(outs,'Change this?',modit,dmodit,2)
         elseif(thrmtg(il).eq.'n'.and.gaptg(il).eq.'f')then
           write(outs,'(a,i1,a)') 'Layer ',il,' is an LCIA frame'
-          h(1)='You can change this to a thermal air gap or a'
-          h(2)='LCIA-only layer (spacer/fixing)'
           CALL ASKOK(outs,'Change this?',modit,dmodit,2)
         elseif(thrmtg(il).eq.'n'.and.gaptg(il).eq.'c')then
           write(outs,'(a,i1,a)') 'Layer ',il,' is an LCIA spacer'
-          h(1)='You can change this to a thermal layer or a'
-          h(2)='LCIA-only layer (frame/fixing)'
           CALL ASKOK(outs,'Change this?',modit,dmodit,2)
         elseif(thrmtg(il).eq.'n'.and.gaptg(il).eq.'s')then
           write(outs,'(a,i1,a)') 'Layer ',il,' is an LCIA fixing device'
-          h(1)='You can change this to a thermal layer or a'
-          h(2)='LCIA-only layer (frame/spacer)'
           CALL ASKOK(outs,'Change this?',modit,dmodit,2)
         endif
 
 C Present options.
-        h(1)='Thermal layers may be solids or gasses (the latter will '
-        h(2)='have a thermal resistance across the gap).'
-        h(3)=' '
-        h(4)='LCIA frame: layers can represent a frame around the '
-        h(5)='perimeter of a surface with a constant cross section. '
-        h(6)='You will be asked for a frame type. Impacts are by '
-        h(7)='linear meter. '
-        h(8)=' '
-        h(9)='LCIA spacer: layers can represent a spacer (typically '
-        h(10)='within a glazing unit). You will be asked for a spacer '
-        h(11)='type and the total gap thickness for the spacer. '
-        h(12)='Depending on the type of spacer the impact will be '
-        h(13)='expressed per linear meter and by meter of width. '
-        h(14)=' '
-        h(15)='LCIA other: can represent any other surface related '
-        h(16)='object. For a glue or coating or membrane use the real'
-        h(17)='thickness. For nails or structural supports give the'
-        h(18)='`equivalent` thickness that will have the same mass as '
-        h(19)='object. Impacts are expressed per unit of mass.'
         IWM=1
         CALL EASKATOG('Options:',' ','thermal solid','thermal gas',
      &    'LCIA frame','LCIA spacer','LICA other','continue',
-     &    ' ',IWM,19)
+     &    ' ',IWM,nbhelp)
         if(IWM.eq.1)then
           thrmtg(il)='t'
           gaptg(il)='s'
@@ -680,36 +653,31 @@ C If other than an LCIA frame ask for thickness.
           if(thrmtg(il).eq.'n'.and.gaptg(il).eq.'f')then
             continue
           else
-            H(1)='The thickness of the layer is nominally between'
-            H(2)='0.0001 metres and 0.500 metres.'
             VAL=DT(il)
             CALL EASKR(VAL,' ',' Layer thickness (metres): ',
-     &        0.0001,'W',0.5,'W',0.25,'layer thickness',IER,2)
+     &        0.0001,'W',0.5,'W',0.25,'layer thickness',IER,nbhelp)
             DT(il)=VAL
           endif
 
 C If an air layer then ask for gap resistance.
           IF(IP(il).EQ.0)THEN
-            H(1)='A set of default assumptions on the R value of'
-            H(2)='an air gap is requested, in case the '
-            H(3)='construction is used in different orientations.'
-            H(4)='This information allows for the automatic'
-            H(5)='creation of zone construction files.'
+            helptopic='dbm_air_gap_assumpt'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             WRITE(outs,'(2a)')'Default R value for air gap in ',
      &        item(1:lnblnk(item))
 
             VAL=0.17
             CALL EASKR(VAL,outs,
      &        ' if the construction orientation is vertical: ',
-     &        0.01,'W',99.9,'W',0.17,'def air gap R',IER,5)
+     &        0.01,'W',99.9,'W',0.17,'def air gap R',IER,nbhelp)
             DRA(il,1)=VAL
             CALL EASKR(VAL,outs,
      &        ' if the construction is a floor or ceiling  : ',
-     &        0.01,'W',99.9,'W',0.17,'def air gap R',IER,6)
+     &        0.01,'W',99.9,'W',0.17,'def air gap R',IER,nbhelp)
             DRA(il,2)=VAL
             CALL EASKR(VAL,outs,
      &        ' if the construction is sloped or UNKNOWN   : ',
-     &        0.01,'W',99.9,'W',0.17,'def air gap R',IER,6)
+     &        0.01,'W',99.9,'W',0.17,'def air gap R',IER,nbhelp)
             DRA(il,3)=VAL
           ELSE
             DRA(il,1)=0.0
@@ -726,9 +694,9 @@ C current optical and acoustic attributes for MLC.
      &          acoutag(1:lnblnk(acoutag)),' rather than ',
      &          othacou(1:lnblnk(othacou)),'?'
               dok=.true.
-              h(1)='An inconsistency was found in the database. '
-              h(2)='The acoustic attributes are different. '
-              call askok(outs,' ',ok,dok,2)
+              helptopic='dbm_optic_is_different'
+              call gethelptext(helpinsub,helptopic,nbhelp)
+              call askok(outs,' ',ok,dok,nbhelp)
               if(ok)then
                 othacou=acoutag
               endif
@@ -739,9 +707,9 @@ C current optical and acoustic attributes for MLC.
      &          colormtag(1:lnblnk(colormtag)),' rather than ',
      &          othcolr(1:lnblnk(othcolr)),'?'
               dok=.true.
-              h(1)='An inconsistency was found in the database. '
-              h(2)='The colour attributes are different. '
-              call askok(outs,' ',ok,dok,2)
+              helptopic='dbm_optic_is_different'
+              call gethelptext(helpinsub,helptopic,nbhelp)
+              call askok(outs,' ',ok,dok,nbhelp)
               if(ok)then
                 othcolr=colormtag
               endif
@@ -753,9 +721,9 @@ C current optical and acoustic attributes for MLC.
      &          acoutag(1:lnblnk(acoutag)),' rather than ',
      &          inacou(1:lnblnk(inacou)),'?'
               dok=.true.
-              h(1)='An inconsistency was found in the database. '
-              h(2)='The acoustic attributes are different. '
-              call askok(outs,' ',ok,dok,2)
+              helptopic='dbm_optic_is_different'
+              call gethelptext(helpinsub,helptopic,nbhelp)
+              call askok(outs,' ',ok,dok,nbhelp)
               if(ok)then
                 inacou=acoutag
               endif
@@ -766,8 +734,8 @@ C current optical and acoustic attributes for MLC.
      &          colormtag(1:lnblnk(colormtag)),' rather than ',
      &          incolr(1:lnblnk(incolr)),'?'
               dok=.true.
-              h(1)='An inconsistency was found in the database. '
-              h(2)='The colour attributes are different. '
+              helptopic='dbm_optic_is_different'
+              call gethelptext(helpinsub,helptopic,nbhelp)
               call askok(outs,' ',ok,dok,2)
               if(ok)then
                 incolr=colormtag

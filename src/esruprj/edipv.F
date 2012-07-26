@@ -19,7 +19,6 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C Subroutine included:
-C IPVCMD: act on command line IPV directives.
 C IPVDAT: define information used in generating IPV.
 C ipvseasons: presents a list of typical seasons/assessments and
 C             returns a string which sumarizes the choice.
@@ -29,252 +28,6 @@ C             simulation parameter sets.
 C getmultip: looks for typical week in each season based on closest
 C            degree days and radiation patterns.
 
-C ************* IPVCMD
-C IPVCMD acts on command line IPV directives. Allows model to be
-C altered based on information held in IPV definition.
-      subroutine IPVCMD(act,inf)
-#include "building.h"
-#include "model.h"
-#include "uncertainty.h"
-#include "espriou.h"
-#include "control.h"
-#include "ipvdata.h"
-      
-      integer lnblnk  ! function definition
-
-      common/OUTIN/IUOUT,IUIN
-      common/FILEP/IFIL
-      common/C21/IFCFG,cfgroot,LCFGF
-
-C Path to model and command line file (if any). Browse
-C is a logical flag, .true. restricts update/save options
-      common/rcmd/LCMDFL
-
-C IPV description via ipvdata.h.
-      common/IPVF/lipvdatf
-
-C IDST tool commands
-      common/idsta/CMDCFG,CMDCLM,CMDCLMN,CMDNOTE,CMDRES,CMDLBL(10),
-     &             CMDLNAM(10)
-      common/idstb/nidst
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
-
-      character*(*) inf
-      character LCFGF*72
-      character LCMDFL*144,outs*124,outstr*124,cfgroot*24
-      character lipvdatf*72
-      character CMDCFG*72,CMDCLM*72,CMDCLMN*72,CMDNOTE*64,CMDRES*72
-      character ALOC*12,ALOCLBL*12,ALOCTYP*4,CMDLBL*12,CMDLNAM*80
-      CHARACTER word*24
-      character cpth*48,cmdn*48,runmode*12,keepres*4,donegdst*72
-      character ipvaction*3  ! to signal external ipv file
-      character act*1
-
-C Check if IPV file known and fill common blocks before reading command data.
-      if(icfgv.lt.4)then
-        if(lnblnk(lipvdatf).eq.0)then
-          call usrmsg('IPV not defined. Cannot process command.',
-     &      ' ','W')
-          goto 223
-        elseif(lipvdatf(1:7).eq.'UNKNOWN')then
-          call usrmsg('IPV UNKNOWN. Cannot process command.',' ','W')
-          goto 223
-        else
-	  ipvaction='ipv'
-          call ripvdat(IFCFG,lipvdatf,ipvaction,ier)
-        endif
-      else
-        if(nipvassmt.eq.0)then ! there was nothing in the cfg file.
-          call usrmsg('IPV not defined. Cannot process command.',
-     &      ' ','W')
-          goto 223
-        endif
-      endif
-      
-      runmode='interactive'
-      keepres='yes'
-      LCMDFL=inf
-      donegdst=' '
-      write(donegdst,'(a,a5)')inf(1:lnblnk(inf)),'.done'
-      nidst=0
-      CALL ERPFREE(IFCFG,ISTAT)
-      call FPOPEN(IFCFG,ISTAT,1,1,LCMDFL)
-      CALL STRIPC(IFCFG,OUTSTR,0,ND,1,'IDST header',IER)
-      if(OUTSTR(1:14).eq.'*IDST COMMANDS')then
-222     CALL STRIPC(IFCFG,OUTSTR,0,ND,0,'tags',IIER)
-        if(iier.ne.0)then
-
-C Debug.
-C          write(6,*)'idst ',nidst
-
-          goto 223
-        endif
-        if(OUTSTR(1:5).eq.'*note')then
-          k=6
-          CALL EGETRM(OUTSTR,K,CMDNOTE,'W','idst cmd note',IER)
-        elseif(OUTSTR(1:9).eq.'*run_mode')then
-          k=10
-          CALL EGETW(OUTSTR,K,runmode,'W','idst runmod',IER)
-        elseif(OUTSTR(1:13).eq.'*keep_results')then
-          k=14
-          CALL EGETW(OUTSTR,K,keepres,'W','idst keep',IER)
-        elseif(OUTSTR(1:9).eq.'*abs_path')then
-          k=10
-          CALL EGETRM(OUTSTR,K,cpth,'W','idst cfg path',IER)
-        elseif(OUTSTR(1:8).eq.'*win_cfg')then
-          k=8
-          CALL EGETRM(OUTSTR,K,CMDCFG,'W','idst winter model cfg',IER)
-          if(cpth(1:2).ne.'  ')then
-            write(CMDCFG,'(a,a)') cpth(1:lnblnk(cpth)),
-     &        cmdn(1:lnblnk(cmdn))
-          else
-            write(CMDCFG,'(a)') cmdn(1:lnblnk(cmdn))
-          endif
-          LCMDFL=CMDCFG
-        elseif(OUTSTR(1:8).eq.'*tra_cfg')then
-          k=8
-          CALL EGETRM(OUTSTR,K,CMDCFG,'W','idst trans model cfg',IER)
-          if(cpth(1:2).ne.'  ')then
-            write(CMDCFG,'(a,a)') cpth(1:lnblnk(cpth)),
-     &        cmdn(1:lnblnk(cmdn))
-          else
-            write(CMDCFG,'(a)') cmdn(1:lnblnk(cmdn))
-          endif
-          LCMDFL=CMDCFG
-        elseif(OUTSTR(1:8).eq.'*sum_cfg')then
-          k=8
-          CALL EGETRM(OUTSTR,K,CMDCFG,'W','idst summer model cfg',IER)
-          if(cpth(1:2).ne.'  ')then
-            write(CMDCFG,'(a,a)') cpth(1:lnblnk(cpth)),
-     &        cmdn(1:lnblnk(cmdn))
-          else
-            write(CMDCFG,'(a)') cmdn(1:lnblnk(cmdn))
-          endif
-          LCMDFL=CMDCFG
-        elseif(OUTSTR(1:13).eq.'*name_climate')then
-          k=14
-          CALL EGETRM(OUTSTR,K,CMDCLMN,'W','idst climate alias',IER)
-        elseif(OUTSTR(1:8).eq.'*climate')then
-          k=9
-          CALL EGETRM(OUTSTR,K,CMDCLM,'W','idst climate file',IER)
-        elseif(OUTSTR(1:16).eq.'*name_ext_window')then
-          k=17
-          CALL EGETRM(OUTSTR,K,CMDLNAM(nidst),'W',
-     &      'idst ext window long name',IER)
-        elseif(OUTSTR(1:11).eq.'*ext_window')then
-
-C Work with temporary string and strip of .prn or .wis at end of the name. 
-          nidst=nidst+1
-          k=12
-          CALL EGETRM(OUTSTR,K,word,'W','idst anchor loc',IER)
-          lw=lnblnk(word)
-          if(word(lw-3:lw).eq.'.prn')then
-            write(ALOC(nidst),'(a)') word(1:lw-4)
-          elseif(word(lw-3:lw).eq.'.wis')then
-            write(ALOC(nidst),'(a)') word(1:lw-4)
-          else
-            write(ALOC(nidst),'(a)') word(1:lnblnk(word))
-          endif
-          CMDLBL(nidst)='ext_window'
-
-C Debug.
-C          write(6,*) word
-C          write(6,*) nidst,ALOC(nidst)
-
-        elseif(OUTSTR(1:16).eq.'*name_int_window')then
-          k=17
-          CALL EGETRM(OUTSTR,K,CMDLNAM(nidst),'W',
-     &      'idst int window long name',IER)
-        elseif(OUTSTR(1:11).eq.'*int_window')then
-
-C Work with temporary string and strip of .prn or .wis at end of the name. 
-          nidst=nidst+1
-          k=12
-          CALL EGETRM(OUTSTR,K,word,'W','ist anchor loc',IER)
-          lw=lnblnk(word)
-          if(word(lw-3:lw).eq.'.prn')then
-            write(ALOC(nidst),'(a)') word(1:lw-4)
-          elseif(word(lw-3:lw).eq.'.wis')then
-            write(ALOC(nidst),'(a)') word(1:lw-4)
-          else
-            write(ALOC(nidst),'(a)') word(1:lnblnk(word))
-          endif
-          CMDLBL(nidst)='int_window'
-
-C Debug.
-C          write(6,*) word
-C          write(6,*) nidst,ALOC(nidst)
-
-        elseif(OUTSTR(1:16).eq.'*name_atr_window')then
-          k=17
-          CALL EGETRM(OUTSTR,K,CMDLNAM(nidst),'W',
-     &      'idst atr window long name',IER)
-        elseif(OUTSTR(1:11).eq.'*atr_window')then
-
-C Work with temporary string and strip of .prn or .wis at end of the name. 
-          nidst=nidst+1
-          k=12
-          CALL EGETRM(OUTSTR,K,word,'W','anchor loc',IER)
-          lw=lnblnk(word)
-          if(word(lw-3:lw).eq.'.prn')then
-            write(ALOC(nidst),'(a)') word(1:lw-4)
-          elseif(word(lw-3:lw).eq.'.wis')then
-            write(ALOC(nidst),'(a)') word(1:lw-4)
-          else
-            write(ALOC(nidst),'(a)') word(1:lnblnk(word))
-          endif
-          CMDLBL(nidst)='atr_window'
-
-C Debug.
-C          write(6,*) word
-C          write(6,*) nidst,ALOC(nidst)
-
-        elseif(OUTSTR(1:4).eq.'*res')then
-          k=4
-          CALL EGETRM(OUTSTR,K,CMDRES,'W','idst report',IER)
-        elseif(OUTSTR(1:18).eq.'*update_ctl_period')then
-
-C Update control timing (for use with BEMS software). Data is:
-C bld control loop index, period number, (new) start time.
-          K=19
-          CALL EGETWI(OUTSTR,K,ibcli,1,ncf,'W',
-     &      'idst ctl loop to adjust index',IER)
-          CALL EGETWI(OUTSTR,K,ibcldt,1,nbcdt(ibcli),
-     &      'W','idst ctl to adjust day type',IER)
-          CALL EGETWI(OUTSTR,K,ibclp,1,
-     &       nbcdp(ibcli,ibcldt),'-','idst ctl period',IER)
-          CALL EGETWR(OUTSTR,K,bclst,0.,24.,'W','new time',IER)
-          write(outs,'(a)') 'Updating control as follows:'
-          call edisp(iuout,outs)
-          write(outs,'(a,i2,a,i2,a,i2)') ' Loop ',ibcli,
-     &      ' day type ',ibcldt,' period ',ibclp
-          call edisp(iuout,outs)
-          write(outs,'(a)') 'New start time is:',bclst
-          call edisp(iuout,outs)
-          tbcps(ibcli,ibcldt,ibclp)=bclst
-        endif
-        ICTLF=IFIL+1
-        CALL CTLWRT(ICTLF,IER)
-        goto 222
-      endif
-      
- 223  CALL ERPFREE(IFCFG,ISTAT)
-      if(NALOC.gt.0.and.nidst.gt.0)then
-
-C Update the IPV file for changes in periods etc.
-        if(icfgv.lt.4)then
-          ipvaction='ipv'
-          call mkipvdat(ifcfg,lipvdatf,ipvaction)
-          CALL EMKCFG('-',IER)
-          call procgdst(itrc,runmode,keepres,donegdst,ier)
-        else
-          CALL EMKCFG('-',IER)
-          call procgdst(itrc,runmode,keepres,donegdst,ier)
-        endif
-      endif
-
-      return
-      end
 
 C ************* IPVDAT
 C Define information used in generating IPV.
@@ -296,7 +49,6 @@ C seasons.h provides typper and typsea
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -314,7 +66,7 @@ C ITMGET is menu for selecting metric types.
 C ITME is menu for energy deman sets.
 C ITMM is menu for metric sets.
       DIMENSION ITMGET(15),ITM(31),ITMM(13),ITME(14),IVALS(MCOM)
-      character ITM*48,ITMM*41,ITME*33,ITMGET*33,H*72,hold*40,hold5*50
+      character ITM*48,ITMM*41,ITME*33,ITMGET*33,hold*40,hold5*50
       character act*1
       character lipvdatf*72,outs*124
       CHARACTER DS*7,DS1*10
@@ -326,6 +78,27 @@ C ITMM is menu for metric sets.
       character simact*6,ipvaction*3
       logical MODSIT,XST,OK
       integer nitms,INO,nitmms,INOM,nitmget,INOG,nitmes,INOE ! max items and current menu item
+
+C Variables for handling climate file.
+      character llclmdb*144
+      integer llt,lndbp
+      logical unixok
+      character fs*1
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ipvdat'  ! set for subroutine
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C If act = 'i' then initialise variables. Initial assumption
 C is for an annual assessment.
@@ -339,37 +112,37 @@ C in the list. If not instanciate season and typical start and end dates.
       if(ihaveseason.gt.0)then
         continue
       else
+
+C Setup string buffer with distribution weather folder name.
+        llt=lnblnk(LCLIM)
+        lndbp=lnblnk(standardclmpath)
+        if(ipathclim.eq.0.or.ipathclim.eq.1)then
+          llclmdb=LCLIM
+        elseif(ipathclim.eq.2)then
+          write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &      LCLIM(1:lnblnk(LCLIM))
+      endif
         INQUIRE (FILE=cdblfil,EXIST=XST)
         if(XST)then
           IUF=IFIL+2
-          call scancdblist(IUF,LCLIM,ok,ier)
+          call scancdblist(IUF,llclmdb,ok,ier)
           if(ok)then
             continue
           else
 
 C Set default early winter, spring, summer, autumn, late winter periods.
-            CALL EDAY(9,1,ia1wins)
-            CALL EDAY(15,1,ia1winf)
-            CALL EDAY(6,3,ia1sprs)
-            CALL EDAY(12,3,ia1sprf)
-            CALL EDAY(11,7,iasums)
-            CALL EDAY(17,7,iasumf)
-            CALL EDAY(2,10,ia2sprs)
-            CALL EDAY(8,10,ia2sprf)
-            CALL EDAY(20,11,ia2wins)
-            CALL EDAY(26,11,ia2winf)
+            CALL EDAY(9,1,ia1wins); CALL EDAY(15,1,ia1winf)
+            CALL EDAY(6,3,ia1sprs); CALL EDAY(12,3,ia1sprf)
+            CALL EDAY(11,7,iasums); CALL EDAY(17,7,iasumf)
+            CALL EDAY(2,10,ia2sprs); CALL EDAY(8,10,ia2sprf)
+            CALL EDAY(20,11,ia2wins); CALL EDAY(26,11,ia2winf)
 
 C Default season definitions.
-            CALL EDAY(1,1,is1wins)
-            CALL EDAY(28,2,is1winf)
-            CALL EDAY(1,11,is2wins)
-            CALL EDAY(31,12,is2winf)
-            CALL EDAY(1,3,is1sprs)
-            CALL EDAY(30,4,is1sprf)
-            CALL EDAY(1,9,is2sprs)
-            CALL EDAY(31,10,is2sprf)
-            CALL EDAY(1,5,is1sums)
-            CALL EDAY(31,8,is1sumf)
+            CALL EDAY(1,1,is1wins); CALL EDAY(28,2,is1winf)
+            CALL EDAY(1,11,is2wins); CALL EDAY(31,12,is2winf)
+            CALL EDAY(1,3,is1sprs); CALL EDAY(30,4,is1sprf)
+            CALL EDAY(1,9,is2sprs); CALL EDAY(31,10,is2sprf)
+            CALL EDAY(1,5,is1sums); CALL EDAY(31,8,is1sumf)
           endif
         endif
       endif
@@ -414,8 +187,8 @@ C Scan any demands file.
       endif
       WRITE(ITM(6),'(a,i2,a)') '1 performance metrics (',nms,') '
       WRITE(ITM(7),'(a,i2,a)') '2 demand sets (',neds,') '
-      WRITE(ITM(8),'(a,i2,a)') '3___simulations (',nipvassmt,
-     &  ')____________days descrip___'
+      WRITE(ITM(8),'(a,i2,3a)') '3___simulations (',nipvassmt,' ',
+     &  ipvsimu,') ____________days'
       
       if(nipvassmt.eq.0)then
         m=9
@@ -425,72 +198,52 @@ C Scan any demands file.
         call stdate(iyear,ipvastjd(1),descr,descrst)
         call stdate(iyear,ipvafnjd(1),descr,descrfn)
         jjd1=(ipvafnjd(1)-ipvastjd(1))+1
-        if(simact(1:6).eq.'------')then
-          WRITE(ITM(9),'(4a,i4,2a)') 'j  annual ',descrst,' ',descrfn,
-     &    jjd1,' ',ipvadesc(1)(1:10)
-        elseif(simact(1:5).eq.'icwin')then
-          WRITE(ITM(9),'(4a,i4,2a)') 'j  winter ',descrst,' ',descrfn,
-     &    jjd1,' ',ipvadesc(1)(1:10)
-        elseif(simact(1:5).eq.'icspr')then
-          WRITE(ITM(9),'(4a,i4,2a)') 'j  spring ',descrst,' ',descrfn,
-     &    jjd1,' ',ipvadesc(1)(1:10)
-        elseif(simact(1:5).eq.'icsum')then
-          WRITE(ITM(9),'(4a,i4,2a)') 'j  summer ',descrst,' ',descrfn,
-     &    jjd1,' ',ipvadesc(1)(1:10)
-        elseif(simact(1:5).eq.'icaut')then
-          WRITE(ITM(9),'(4a,i4,2a)') 'j  autumn ',descrst,' ',descrfn,
-     &    jjd1,' ',ipvadesc(1)(1:10)
-        elseif(simact(1:3).eq.'ias')then
-          WRITE(ITM(9),'(4a,i4,2a)') 'j  annual ',descrst,' ',descrfn,
-     &    jjd1,' ',ipvadesc(1)(1:10)
-        elseif(simact(1:3).eq.'i1d')then
-          WRITE(ITM(9),'(4a,i4,2a)') 'j  single ',descrst,' ',descrfn,
-     &    jjd1,' ',ipvadesc(1)(1:10)
-        endif
+        WRITE(ITM(9),'(6a,i4)') 'j ',ipvadesc(1)(1:15),' ',descrst,
+     &    ' ',descrfn,jjd1
       elseif(nipvassmt.eq.3)then
         m=11
         call stdate(iyear,ipvastjd(1),descr,descrst)
         call stdate(iyear,ipvafnjd(1),descr,descrfn)
         jjd1=(ipvafnjd(1)-ipvastjd(1))+1
-        WRITE(ITM(9),'(4a,i4,2a)') 'j  winter ',descrst,' ',descrfn,
-     &    jjd1,' ',ipvadesc(1)(1:10)
+        WRITE(ITM(9),'(6a,i4)') 'j ',ipvadesc(1)(1:15),' ',descrst,
+     &    ' ',descrfn,jjd1
         call stdate(iyear,ipvastjd(2),descr,descrst)
         call stdate(iyear,ipvafnjd(2),descr,descrfn)
         jjd2=(ipvafnjd(2)-ipvastjd(2))+1
-        WRITE(ITM(10),'(4a,i4,2a)') 'k  trans  ',descrst,' ',descrfn,
-     &    jjd2,' ',ipvadesc(2)(1:10)
+        WRITE(ITM(10),'(6a,i4)') 'k ',ipvadesc(2)(1:15),' ',descrst,
+     &    ' ',descrfn,jjd2
         call stdate(iyear,ipvastjd(3),descr,descrst)
         call stdate(iyear,ipvafnjd(3),descr,descrfn)
         jjd3=(ipvafnjd(3)-ipvastjd(3))+1
-        WRITE(ITM(11),'(4a,i4,2a)')  'l  summer ',descrst,' ',descrfn,
-     &    jjd3,' ',ipvadesc(3)(1:10)
+        WRITE(ITM(11),'(6a,i4)') 'l ',ipvadesc(3)(1:15),' ',descrst,
+     &    ' ',descrfn,jjd3
       elseif(nipvassmt.eq.5)then
         m=13
         call stdate(iyear,ipvastjd(1),descr,descrst)
         call stdate(iyear,ipvafnjd(1),descr,descrfn)
         jjd1=(ipvafnjd(1)-ipvastjd(1))+1
-        WRITE(ITM(9),'(4a,i4,2a)')  'j  1st win ',descrst,' ',descrfn,
-     &    jjd1,' ',ipvadesc(1)(1:10)
+        WRITE(ITM(9),'(6a,i4)') 'j ',ipvadesc(1)(1:15),' ',descrst,
+     &    ' ',descrfn,jjd1
         call stdate(iyear,ipvastjd(2),descr,descrst)
         call stdate(iyear,ipvafnjd(2),descr,descrfn)
         jjd2=(ipvafnjd(2)-ipvastjd(2))+1
-        WRITE(ITM(10),'(4a,i4,2a)')  'k  spring  ',descrst,' ',descrfn,
-     &    jjd2,' ',ipvadesc(2)(1:10)
+        WRITE(ITM(10),'(6a,i4)') 'k ',ipvadesc(2)(1:15),' ',descrst,
+     &    ' ',descrfn,jjd2
         call stdate(iyear,ipvastjd(3),descr,descrst)
         call stdate(iyear,ipvafnjd(3),descr,descrfn)
         jjd3=(ipvafnjd(3)-ipvastjd(3))+1
-        WRITE(ITM(11),'(4a,i4,2a)')  'l  summer  ',descrst,' ',descrfn,
-     &    jjd3,' ',ipvadesc(3)(1:10)
+        WRITE(ITM(11),'(6a,i4)') 'l ',ipvadesc(3)(1:15),' ',descrst,
+     &    ' ',descrfn,jjd3
         call stdate(iyear,ipvastjd(4),descr,descrst)
         call stdate(iyear,ipvafnjd(4),descr,descrfn)
         jjd4=(ipvafnjd(4)-ipvastjd(4))+1
-        WRITE(ITM(12),'(4a,i4,2a)')  'm  autumn  ',descrst,' ',descrfn,
-     &    jjd4,' ',ipvadesc(4)(1:10)
+        WRITE(ITM(12),'(6a,i4)') 'm ',ipvadesc(4)(1:15),' ',descrst,
+     &    ' ',descrfn,jjd4
         call stdate(iyear,ipvastjd(5),descr,descrst)
         call stdate(iyear,ipvafnjd(5),descr,descrfn)
         jjd5=(ipvafnjd(5)-ipvastjd(5))+1
-        WRITE(ITM(13),'(4a,i4,2a)')  'n  2nd win ',descrst,' ',descrfn,
-     &    jjd5,' ',ipvadesc(5)(1:10)
+        WRITE(ITM(13),'(6a,i4)') 'n ',ipvadesc(5)(1:15),' ',descrst,
+     &    ' ',descrfn,jjd5
       endif
       WRITE(ITM(m+1),'(a,i2,a)') '4  display days (',nipvdispjd,') '
       ITM(m+2)=      ' ___seasons (from climate list)________________ '
@@ -560,55 +313,8 @@ C Scan any demands file.
       nitms=m+17
 
 C Help text for this menu.
-  4   h(1)='Definition of an Integrated Performance View (IPV) '
-      h(2)=' '
-      h(3)='It includes descriptive information: title, version'
-      h(4)='and synopsis and one or more images. These can be'
-      h(5)='edited directly.'
-      h(6)=' '
-      h(7)='Performance metrics (comfort, zone dry bulb temp, etc.)'
-      h(8)='are associated with a set of thermal zones and have'
-      h(9)='weighting factors (to assist in ranking performance).'
-      h(10)=' '
-      h(11)='Demand sets are sets of zones for which heating, cooling'
-      h(12)='lighting, small power and DHW are reported. Each set'
-      h(13)='has a scaling factor so that, for example 2 offices'
-      h(14)='zones can be scaled to represent 15 offices.'
-      h(15)=' '
-      h(16)='Annual performance is scaled from an annual run, three'
-      h(17)='seasonal runs: winter/transition/summer, or five runs:'
-      h(18)='1st winter/spring/summer/autumn/2nd winter. Each run '
-      h(19)='has date and heating and cooling degree day ratio '
-      h(20)='attributes. Periods can be setup based on a best-fit'
-      h(21)='scan of climate data (see option 5).'
-      h(22)=' '
-      h(23)='Display days: are specific days (up to 10) for which'
-      h(24)='timestep data is recorded.'
-      h(25)=' '
-      h(26)='Seasons are based on information in the `climatelist`'
-      h(27)='file. This information is included to clarify the'
-      h(28)='relationship between each season and the 1/3/5 sim-'
-      h(29)='ulations being run. '
-      h(30)=' '
-      h(31)='Ratios: are typically ratios between the number of'
-      h(32)='days (or heating/cooling degree days) of the season'
-      h(33)='and the assessment period. For an annual simulation'
-      h(34)='the ratios are 1.00.'
-      h(35)=' '
-      h(36)='Option 5 `re-scan climate` is a two step process;'
-      h(37)='the first to scan the `climatelist` file for the '
-      h(38)='days in each season; the second being scanning the'
-      h(39)='climate data to find the best fit week in each'
-      h(40)='season. '
-      h(41)=' '
-      h(42)='Setting up an integrated performance view: '
-      h(43)='a) edit the title version and synopsis, '
-      h(44)='b) select relevant performance metrics for the project,'
-      h(45)='c) select the number of simulations,'
-      h(46)='d) re-scan the climate file for seasons,'
-      h(47)='e) re-scan the climate for ratios,'
-      h(48)='f) select display days (within the simulations).'
-      h(49)=' '
+  4   helptopic='ipv_menu_overview'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       if(mmod.eq.8)then
         CALL EMENU('Integrated Performance View data',ITM,nitms,INO)
@@ -618,27 +324,52 @@ C Help text for this menu.
 
       if(INO.EQ.nitms)then
 
-C If data updated, write to IPV definition file and update link in cfg.
-C Also update or create matched simulation parameter sets.
+C If data updated, write to separate IPV definition file if legacy model cfg
+C file and update link in cfg. Also update or create matched simulation 
+C parameter sets.
         if(MODSIT)then
           if(icfgv.lt.4)then
-            h(1)='This file holds a description of an Integrated'
-            h(2)='Performance View of this model, including periods,'
-            h(3)='climatic degree day information & associated zones.'
             lr=lnblnk(cfgroot)
             if(lnblnk(lipvdatf).eq.0)then
               write(ltmp,'(2a)') cfgroot(1:lr),'.ipv'
             elseif(lipvdatf(1:7).eq.'UNKNOWN')then
               write(ltmp,'(2a)') cfgroot(1:lr),'.ipv'
+            elseif(lipvdatf(1:8).eq.'internal')then
+
+C Switch from external to internal to cfg file and return.
+              if(nipvassmt.eq.1.or.nipvassmt.eq.3.or.
+     &           nipvassmt.eq.5)then
+                call ipv2simpar(ipvsimu)
+              endif
+              ipvaction='cfg'
+              CALL EMKCFG('-',IER)
+              return
             else
               ltmp=lipvdatf
             endif
-            CALL EASKS(ltmp,'IPV description file ?',
-     &        ' ',72,'xxx.ipv','IPV file',IER,3)
+            CALL EASKS2CMD(ltmp,'IPV description file? (see help)',
+     &        ' ','cancel','merge into cfg',iclkok,72,' ','IPV file',
+     &        IER,nbhelp)
+            if(iclkok.eq.1)then
+              return  ! do not update IPV and return
+            elseif(iclkok.eq.2)then
+              lipvdatf='internal'
+              if(nipvassmt.eq.1.or.nipvassmt.eq.3.or.
+     &           nipvassmt.eq.5)then
+                call ipv2simpar(ipvsimu)
+              endif
+              ipvaction='cfg'
+              CALL EMKCFG('-',IER)
+              return
+            endif
+            call usrmsg(' ',' ','-')   ! clear after EASKS2CMD
+
+C            CALL EASKS(ltmp,'IPV description file ?',
+C     &        ' ',72,'xxx.ipv','IPV file',IER,nbhelp)
             if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN') lipvdatf=ltmp
 
 C Write out the current IPV definitions.
-	    ipvaction='ipv'
+            ipvaction='ipv'
             call mkipvdat(ifil+1,lipvdatf,ipvaction)
 
             if(nipvassmt.eq.1.or.nipvassmt.eq.3.or.nipvassmt.eq.5)then
@@ -661,40 +392,36 @@ C model confituration file.
         endif
         return
       elseif(INO.EQ.nitms-1)then
-        CALL PHELPD('IPV setup',10,'-',0,0,IER)
+        helptopic='ipv_menu_overview'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('IPV setup',nbhelp,'-',0,0,IER)
       elseif(INO.EQ.1)then
-        H(1)='The main IPV title (<=40 char). '
         t40=ipvtitl
-        CALL EASKS(t40,'IPV tile?',' ',40,'TITLE','IPV Tile',IER,1)
+        CALL EASKS(t40,'IPV tile?',' ',40,'TITLE','IPV Tile',
+     &    IER,nbhelp)
         if(t40(1:2).ne.'  ')ipvtitl=t40
         MODSIT=.true.
       elseif(INO.EQ.2)then
-        H(1)='The version of the project or IPV (<=40 char). As in'
-        h(2)='base case or reference 1 etc. '
         t40=ipvvers
-        CALL EASKS(t40,'version ?',' ',40,'base','version',IER,2)
+        CALL EASKS(t40,'version ?',' ',40,'base','version',
+     &    IER,nbhelp)
         if(t40(1:2).ne.'  ')ipvvers=t40
         MODSIT=.true.
       elseif(INO.EQ.3)then
         call edisp(iuout,'Current synopsis...')
-        h(1)='The synopsis is up to 248 characters of text to describe'
-        h(2)='the model and intent of the ipv. You will be presented'
-        h(3)='with the synopsis in sections for purposes of editing.'
-        h(4)='(you can skip to the left and right within the block'
-        h(5)='as required). '
         t248=ipvsynop
         CALL EASKS248(t248,'Synopsis',' ',72,
-     &    'No sysnopsis provided for this model.','synopsis',IER,5)
+     &    'No sysnopsis provided for this model.','synopsis',
+     &    IER,nbhelp)
         if(t248(1:2).ne.'  ')ipvsynop=t248
         MODSIT=.true.
       elseif(INO.EQ.4)then
 
 C Images associated with the IPV.
-        H(1)='Images (GIF) can be included in an IPV.'
         write(outs,'(a,i2,a)') 'There are currently ',nipvimg,
      &    ' images associated with this IPV.'
         CALL EASKABCD(outs,'Choices: ','list',
-     &      'edit','add','cancel',IW,1)
+     &      'edit','add','cancel',IW,nbhelp)
         if(IW.eq.1)then
           if(nipvimg.gt.0)then
             do 52 i=1,nipvimg
@@ -702,19 +429,15 @@ C Images associated with the IPV.
    52       continue
           endif
         elseif(IW.eq.2)then
-          H(1)='Images (GIF) can be included in an IPV.'
-          H(2)=' '
-          H(3)='A cancel results in no change in your model. '
           CALL EASKI(IFOC,'Which image (give index) ? ',' ',
-     &        1,'F',nipvimg,'F',1,'ipv image',IERI,3)
+     &        1,'F',nipvimg,'F',1,'ipv image',IERI,nbhelp)
           if(ieri.eq.-3) then
             INO=-1
             goto 3
           endif
-          h(1)='This image file will be associated with the IPV. '
           t72=lipvimg(IFOC)
           CALL EASKS(t72,'Image file name:',' ',72,'xxx','image file',
-     &      IER,1)
+     &      IER,nbhelp)
           if(t72(1:2).ne.'  ')lipvimg(IFOC)=t72
         elseif(IW.eq.3)then
           nipvimg=nipvimg+1
@@ -722,7 +445,7 @@ C Images associated with the IPV.
             lipvimg(nipvimg)=' '
             t72=lipvimg(nipvimg)
             CALL EASKS(t72,'Image file name:',' ',72,'xx','image file',
-     &        IER,1)
+     &        IER,nbhelp)
             if(t72(1:2).ne.'  ')lipvimg(nipvimg)=t72
           else
             nipvimg=4
@@ -736,6 +459,7 @@ C Images associated with the IPV.
 C Toggle between reporting formats.
         ipvform=ipvform+1
         if(ipvform.gt.3) ipvform = 0
+        MODSIT=.true.
         goto 3
       elseif(INO.EQ.6)then
 
@@ -780,28 +504,27 @@ C Present pop-up of the current period(s) and then allow editing
 C in terms of day and month which is then converted to a julian
 C day for storage.
    91   hold = ' '
-        H(1)='Simulation start day & month and finish day and month. '
-        H(2)=' '
         CALL STDATE(IYEAR,ipvastjd(1),DS,DS1)
-        write(h(3),'(a,i4,2x,a)') ' Start : ',ipvastjd(1),DS1
+        write(outs,'(a,i4,2x,a)') ' Start : ',ipvastjd(1),DS1
+        call edisp(iuout,outs)
         CALL STDATE(IYEAR,ipvafnjd(1),DS,DS1)
-        write(h(4),'(a,i4,2x,a)') ' Finish: ',ipvafnjd(1),DS1
-        CALL PHELPD('periods',4,'-',0,0,IER)
+        write(outs,'(a,i4,2x,a)') ' Finish: ',ipvafnjd(1),DS1
+        call edisp(iuout,outs)
         call edayr(ipvastjd(1),id1,im1)
         call edayr(ipvafnjd(1),id2,im2)
         WRITE(HOLD,'(4I4)')id1,im1,id2,im2
         if(nipvassmt.eq.1)then
           CALL EASKS(HOLD,'Simulation period: start (day & month) and',
      &      'finish (day & month):',40,' 9 1 15 1','single sim period',
-     &      IIER,4)
+     &      IIER,nbhelp)
         elseif(nipvassmt.eq.3)then
           CALL EASKS(HOLD,'Winter period: start (day & month) and',
      &      'finish (day & month):',40,' 9 1 15 1','winter sim period',
-     &      IIER,4)
+     &      IIER,nbhelp)
         elseif(nipvassmt.eq.5)then
           CALL EASKS(HOLD,'1st winter period: start (day & month) and',
      &      'finish (day & month):',40,' 9 1 15 1','winter sim period',
-     &      IIER,4)
+     &      IIER,nbhelp)
         endif
         K=0
         CALL EGETWI(HOLD,K,id1,1,31,'W','sim st day',IIER)
@@ -814,24 +537,23 @@ C day for storage.
         MODSIT=.true.
       elseif(INO.EQ.10.and.(nipvassmt.eq.3.or.nipvassmt.eq.5))then
    92   hold = ' '
-        H(1)='Simulation start day & month and finish day and month. '
-        H(2)=' '
         CALL STDATE(IYEAR,ipvastjd(2),DS,DS1)
-        write(h(3),'(a,i4,2x,a)') ' Start : ',ipvastjd(2),DS1
+        write(outs,'(a,i4,2x,a)') ' Start : ',ipvastjd(2),DS1
+        call edisp(iuout,outs)
         CALL STDATE(IYEAR,ipvafnjd(2),DS,DS1)
-        write(h(4),'(a,i4,2x,a)') ' Finish: ',ipvafnjd(2),DS1
-        CALL PHELPD('periods',4,'-',0,0,IER)
+        write(outs,'(a,i4,2x,a)') ' Finish: ',ipvafnjd(2),DS1
+        call edisp(iuout,outs)
         call edayr(ipvastjd(2),id1,im1)
         call edayr(ipvafnjd(2),id2,im2)
         WRITE(HOLD,'(4I4)')id1,im1,id2,im2
         if(nipvassmt.eq.3)then
           CALL EASKS(HOLD,'Transition period: start (day & month) and',
      &      'finish (day & month):',40,' 9 1 15 1','trns sim period',
-     &      IIER,4)
+     &      IIER,nbhelp)
         elseif(nipvassmt.eq.5)then
           CALL EASKS(HOLD,'Spring period: start (day & month) and',
      &      'finish (day & month):',40,' 9 1 15 1','spring sim period',
-     &      IIER,4)
+     &      IIER,nbhelp)
         endif
         K=0
         CALL EGETWI(HOLD,K,id1,1,31,'W','sim st day',IIER)
@@ -844,19 +566,18 @@ C day for storage.
         MODSIT=.true.
       elseif(INO.EQ.11.and.(nipvassmt.eq.3.or.nipvassmt.eq.5))then
    93   hold = ' '
-        H(1)='Simulation start day & month and finish day and month. '
-        H(2)=' '
         CALL STDATE(IYEAR,ipvastjd(3),DS,DS1)
-        write(h(3),'(a,i4,2x,a)') ' Start : ',ipvastjd(3),DS1
+        write(outs,'(a,i4,2x,a)') ' Start : ',ipvastjd(3),DS1
+        call edisp(iuout,outs)
         CALL STDATE(IYEAR,ipvafnjd(3),DS,DS1)
-        write(h(4),'(a,i4,2x,a)') ' Finish: ',ipvafnjd(3),DS1
-        CALL PHELPD('periods',4,'-',0,0,IER)
+        write(outs,'(a,i4,2x,a)') ' Finish: ',ipvafnjd(3),DS1
+        call edisp(iuout,outs)
         call edayr(ipvastjd(3),id1,im1)
         call edayr(ipvafnjd(3),id2,im2)
         WRITE(HOLD,'(4I4)')id1,im1,id2,im2
         CALL EASKS(HOLD,'Summer period: start (day & month) and',
      &    'finish (day & month):',40,' 9 1 15 1','summer sim period',
-     &    IIER,4)
+     &    IIER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,id1,1,31,'W','sim st day',IIER)
         CALL EGETWI(HOLD,K,im1,1,12,'W','sim st month',IIER)
@@ -868,13 +589,12 @@ C day for storage.
         MODSIT=.true.
       elseif(INO.EQ.12.and.nipvassmt.eq.5)then
    94   hold = ' '
-        H(1)='Simulation start day & month and finish day and month. '
-        H(2)=' '
         CALL STDATE(IYEAR,ipvastjd(4),DS,DS1)
-        write(h(3),'(a,i4,2x,a)') ' Autumn start : ',ipvastjd(4),DS1
+        write(outs,'(a,i4,2x,a)') ' Autumn start : ',ipvastjd(4),DS1
+        call edisp(iuout,outs)
         CALL STDATE(IYEAR,ipvafnjd(4),DS,DS1)
-        write(h(4),'(a,i4,2x,a)') ' Autumn finish: ',ipvafnjd(4),DS1
-        CALL PHELPD('periods',4,'-',0,0,IER)
+        write(outs,'(a,i4,2x,a)') ' Autumn finish: ',ipvafnjd(4),DS1
+        call edisp(iuout,outs)
         call edayr(ipvastjd(4),id1,im1)
         call edayr(ipvafnjd(4),id2,im2)
         WRITE(HOLD,'(4I4)')id1,im1,id2,im2
@@ -892,19 +612,18 @@ C day for storage.
         MODSIT=.true.
       elseif(INO.EQ.13.and.nipvassmt.eq.5)then
    95   hold = ' '
-        H(1)='Simulation start day & month and finish day and month. '
-        H(2)=' '
         CALL STDATE(IYEAR,ipvastjd(5),DS,DS1)
-        write(h(3),'(a,i4,2x,a)') ' 2nd winter start : ',ipvastjd(4),DS1
+        write(outs,'(a,i4,2x,a)')' 2nd winter start : ',ipvastjd(4),DS1
+        call edisp(iuout,outs)
         CALL STDATE(IYEAR,ipvafnjd(5),DS,DS1)
-        write(h(4),'(a,i4,2x,a)') ' 2nd winter finish: ',ipvafnjd(4),DS1
-        CALL PHELPD('periods',4,'-',0,0,IER)
+        write(outs,'(a,i4,2x,a)')' 2nd winter finish: ',ipvafnjd(4),DS1
+        call edisp(iuout,outs)
         call edayr(ipvastjd(5),id1,im1)
         call edayr(ipvafnjd(5),id2,im2)
         WRITE(HOLD,'(4I4)')id1,im1,id2,im2
         CALL EASKS(HOLD,'2nd winter period: start (day & month) and',
      &    'finish (day & month):',40,' 9 1 15 1','2nd win sim period',
-     &    IIER,4)
+     &    IIER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,id1,1,31,'W','sim st day',IIER)
         CALL EGETWI(HOLD,K,im1,1,12,'W','sim st month',IIER)
@@ -917,23 +636,20 @@ C day for storage.
       elseif(INO.EQ.m+1)then
 
 C Display days.
-C << initial values should be defined when the number of assessments
-C << and the assessment periods were setup (e.g. the 2nd day of each
-C << assessment.
+C Initial values should be defined when the number of assessments
+C and the assessment periods were setup (e.g. the 2nd day of each
+C assessment.
         if(nipvdispjd.gt.0)then
           do 195 ij=1,nipvdispjd
   194       hold = ' '
-            H(1)='Display day & month. This is a day (one of up to 10)'
-            H(2)='where detailed hourly data will be recovered.'
             CALL STDATE(IYEAR,ipvdispjd(ij),DS,DS1)
-            write(h(3),'(a,i4,2x,a)') ' Display day: ',ipvdispjd(ij),DS1
             write(outs,'(a,i4,2x,a)') ' Display day: ',ipvdispjd(ij),DS1
             call edisp(iuout,outs)
             call edayr(ipvdispjd(ij),id1,im1)
             WRITE(HOLD,'(2I4)')id1,im1
             CALL EASKS(HOLD,'Display day & month: (should be',
      &        '(within a simulation period):',40,' 9 1','disp day',
-     &        IIER,3)
+     &        IIER,nbhelp)
             K=0
             CALL EGETWI(HOLD,K,id1,1,31,'W','sim st day',IIER)
             CALL EGETWI(HOLD,K,im1,1,12,'W','sim st month',IIER)
@@ -942,14 +658,15 @@ C << assessment.
             MODSIT=.true.
   195     continue
         endif
-        CALL EASKAB('Options: ',' ','add another day','continue',IW,1)
+        CALL EASKAB('Options: ',' ','add another day','continue',
+     &    IW,nbhelp)
         if(IW.eq.1)then
           nipvdispjd=nipvdispjd+1
           ij=nipvdispjd
   196     HOLD='  12   12 '
           CALL EASKS(HOLD,'Display day & month: (should be',
      &      '(within a simulation period):',40,' 9 1','disp day',
-     &      IIER,2)
+     &      IIER,nbhelp)
           K=0
           CALL EGETWI(HOLD,K,id1,1,31,'W','display day',IIER)
           CALL EGETWI(HOLD,K,im1,1,12,'W','display month',IIER)
@@ -966,20 +683,10 @@ C Heating degree day multiplier or day ratio.
    96   hold5 = ' '
         WRITE(HOLD5,'(5F7.3)') ddmheat(1),ddmheat(2),ddmheat(3),
      &    ddmheat(4),ddmheat(5)
-        H(1)='These multipliers allow for scaling of predictions'
-        H(2)='from a simulation period to a season.  If the'
-        h(3)='simulation period equals the season then use 1.0 or'
-        h(4)='use either a heating degree day ratio or a day ratio'
-        h(5)=' '
-        h(6)='If single simulation only edit first number. '
-        h(7)='If three simulations only edit first three numbers.'
-        h(8)='If five simulations edit all numbers.'
-        h(9)=' '
-        h(10)='Note: the `rescan climate` function can be used to'
-        h(11)='find these ratios if the simulation period is a '
-        h(12)='week.'
+        helptopic='ipv_season_multip'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKS(HOLD5,'Seasonal multiplier for heating:',
-     &    ' ',50,' 17. 17. 17. 17.  17.','heating dd',IIER,12)
+     &    ' ',50,' 17. 17. 17. 17.  17.','heating dd',IIER,nbhelp)
         K=0
         CALL EGETWR(HOLD5,K,ddmheat(1),1.,999.,'W','win ht',IIER)
         CALL EGETWR(HOLD5,K,ddmheat(2),1.,999.,'W','spr ht',IIER)
@@ -994,20 +701,10 @@ C Cooling degree day multiplier or day ratio.
    97   hold5 = ' '
         WRITE(HOLD5,'(5F7.3)') ddmcool(1),ddmcool(2),ddmcool(3),
      &    ddmcool(4),ddmcool(5)
-        H(1)='These multipliers allow for scaling of predictions'
-        H(2)='from a simulation period to a season.  If the'
-        h(3)='simulation period equals the season then use 1.0 or'
-        h(4)='use either a cooling degree day ratio or a day ratio'
-        h(5)=' '
-        h(6)='If single simulation only edit first number. '
-        h(7)='If three simulations only edit first three numbers.'
-        h(8)='If five simulations edit all numbers.'
-        h(9)=' '
-        h(10)='Note: the `rescan climate` function can be used to'
-        h(11)='find these ratios if the simulation period is a '
-        h(12)='week.'
+        helptopic='ipv_season_multip'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKS(HOLD5,'Seasonal multiplier for cooling:',
-     &    ' ',50,' 17. 17. 17. 17.  17.','cooling dd',IIER,12)
+     &    ' ',50,' 17. 17. 17. 17.  17.','cooling dd',IIER,nbhelp)
         K=0
         CALL EGETWR(HOLD5,K,ddmcool(1),1.,999.,'W','win cl',IIER)
         CALL EGETWR(HOLD5,K,ddmcool(2),1.,999.,'W','spr cl',IIER)
@@ -1022,18 +719,8 @@ C Lighting day ratio.
    98   hold5 = ' '
         WRITE(HOLD5,'(5F7.3)') ddmlight(1),ddmlight(2),ddmlight(3),
      &    ddmlight(4),ddmlight(5)
-        H(1)='These multipliers allow for scaling of predictions'
-        H(2)='from a simulation period to a season.  If the'
-        h(3)='simulation period equals the season then use 1.0 or'
-        h(4)='use either a daylighting ratio or a day ratio'
-        h(5)=' '
-        h(6)='If single simulation only edit first number. '
-        h(7)='If three simulations only edit first three numbers.'
-        h(8)='If five simulations edit all numbers.'
-        h(9)=' '
-        h(10)='Note: the `rescan climate` function can be used to'
-        h(11)='find these ratios if the simulation period is a '
-        h(12)='week.'
+        helptopic='ipv_season_multip'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKS(HOLD5,'Seasonal multiplier for lighting:',
      &    ' ',50,' 17. 17. 17. 17.  17.','lighting dd',IIER,12)
         K=0
@@ -1050,20 +737,10 @@ C Small power day ratio.
    99   hold5 = ' '
         WRITE(HOLD5,'(5F7.3)') ddmsmlpw(1),ddmsmlpw(2),ddmsmlpw(3),
      &    ddmsmlpw(4),ddmsmlpw(5)
-        H(1)='These multipliers allow for scaling of predictions'
-        H(2)='from a simulation period to a season.  If the'
-        h(3)='simulation period equals the season then use 1.0 or'
-        h(4)='use a day ratio (simulation period -> season)'
-        h(5)=' '
-        h(6)='If single simulation only edit first number. '
-        h(7)='If three simulations only edit first three numbers.'
-        h(8)='If five simulations edit all numbers.'
-        h(9)=' '
-        h(10)='Note: the `rescan climate` function can be used to'
-        h(11)='find these ratios if the simulation period is a '
-        h(12)='week.'
+        helptopic='ipv_season_multip'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKS(HOLD5,'Seasonal multiplier for small power:',
-     &    ' ',50,' 17. 17. 17. 17.  17.','small pwr dd',IIER,12)
+     &    ' ',50,' 17. 17. 17. 17.  17.','small pwr dd',IIER,nbhelp)
         K=0
         CALL EGETWR(HOLD5,K,ddmsmlpw(1),1.,999.,'W','win spw',IIER)
         CALL EGETWR(HOLD5,K,ddmsmlpw(2),1.,999.,'W','spr spw',IIER)
@@ -1078,20 +755,10 @@ C Fans and pumps day ratio.
   100   hold5 = ' '
         WRITE(HOLD5,'(5F7.3)') ddmfan(1),ddmfan(2),ddmfan(3),
      &    ddmfan(4),ddmfan(5)
-        H(1)='These multipliers allow for scaling of predictions'
-        H(2)='from a simulation period to a season.  If the'
-        h(3)='simulation period equals the season then use 1.0 or'
-        h(4)='use a day ratio (simulation period -> season)'
-        h(5)=' '
-        h(6)='If single simulation only edit first number. '
-        h(7)='If three simulations only edit first three numbers.'
-        h(8)='If five simulations edit all numbers.'
-        h(9)=' '
-        h(10)='Note: the `rescan climate` function can be used to'
-        h(11)='find these ratios if the simulation period is a '
-        h(12)='week.'
+        helptopic='ipv_season_multip'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKS(HOLD5,'Seasonal multiplier for fans & pumps:',
-     &    ' ',50,' 17. 17. 17. 17.  17.','fan dd',IIER,12)
+     &    ' ',50,' 17. 17. 17. 17.  17.','fan dd',IIER,nbhelp)
         K=0
         CALL EGETWR(HOLD5,K,ddmfan(1),1.,999.,'W','win fan',IIER)
         CALL EGETWR(HOLD5,K,ddmfan(2),1.,999.,'W','spr fan',IIER)
@@ -1106,20 +773,10 @@ C Domestic hot water day ratio.
   101   hold5 = ' '
         WRITE(HOLD5,'(5F7.3)') ddmdhw(1),ddmdhw(2),ddmdhw(3),
      &    ddmdhw(4),ddmdhw(5)
-        H(1)='These multipliers allow for scaling of predictions'
-        H(2)='from a simulation period to a season.  If the'
-        h(3)='simulation period equals the season then use 1.0 or'
-        h(4)='use a day ratio (simulation period -> season).'
-        h(5)=' '
-        h(6)='If single simulation only edit first number. '
-        h(7)='If three simulations only edit first three numbers.'
-        h(8)='If five simulations edit all numbers.'
-        h(9)=' '
-        h(10)='Note: the `rescan climate` function can be used to'
-        h(11)='find these ratios if the simulation period is a '
-        h(12)='week.'
+        helptopic='ipv_season_multip'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKS(HOLD5,'Seasonal multipliers for domestic hot water:',
-     &    ' ',50,' 17. 17. 17. 17.  17.','DHW dd',IIER,12)
+     &    ' ',50,' 17. 17. 17. 17.  17.','DHW dd',IIER,nbhelp)
         K=0
         CALL EGETWR(HOLD5,K,ddmdhw(1),1.,999.,'W','win DHW',IIER)
         CALL EGETWR(HOLD5,K,ddmdhw(2),1.,999.,'W','spr DHW',IIER)
@@ -1129,40 +786,38 @@ C Domestic hot water day ratio.
         if(iier.ne.0)goto 101
         MODSIT=.true.
       elseif(INO.EQ.m+14)then
-        h(1)='Each climate data set may have different seasons and'
-        h(2)='different typical assessment periods. Choosing this '
-        h(3)='will rescan a `climatelist` file and update display.'
-        h(4)=' '
-        h(5)='Both the climate tool and the project manager can scan'
-        h(6)='the current climate file to locate the best fit week '
-        h(7)='in each season and return the ratios of days or degree'
-        h(8)='days (for heating and cooling) for use in scaling short'
-        h(9)='simulations to whole seasons.'
+        helptopic='ipv_season_scan'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABC('Options: ',' ',
      &    'scan climatelist for seasons & periods',
-     &    'scan for day/DD ratios','continue',IW,9)
+     &    'scan for day/DD ratios','continue',IW,nbhelp)
         if(IW.eq.1.or.IW.eq.2)then
+
+C Expand climate file name in case of standard location.
+          llt=lnblnk(LCLIM)
+          lndbp=lnblnk(standardclmpath)
+          if(ipathclim.eq.0.or.ipathclim.eq.1)then
+            llclmdb=LCLIM
+          elseif(ipathclim.eq.2)then
+            write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &        LCLIM(1:lnblnk(LCLIM))
+          endif
 
 C Rescan climate to acquire ratios from the climatelist file.
           INQUIRE (FILE=cdblfil,EXIST=XST)
           if(XST)then
             IUF=IFIL+2
-            call scancdblist(IUF,LCLIM,ok,ier)
+            call scancdblist(IUF,llclmdb,ok,ier)
           endif
         endif
         if(IW.eq.1)then
 
 C Re-scan climate seasons and periods.
-          ipvastjd(1)=ia1wins
-          ipvafnjd(1)=ia1winf
-          ipvastjd(2)=ia1sprs
-          ipvafnjd(2)=ia1sprf
-          ipvastjd(3)=iasums
-          ipvafnjd(3)=iasumf
-          ipvastjd(4)=ia2sprs
-          ipvafnjd(4)=ia2sprf
-          ipvastjd(5)=ia2wins
-          ipvafnjd(5)=ia2winf
+          ipvastjd(1)=ia1wins; ipvafnjd(1)=ia1winf
+          ipvastjd(2)=ia1sprs; ipvafnjd(2)=ia1sprf
+          ipvastjd(3)=iasums; ipvafnjd(3)=iasumf
+          ipvastjd(4)=ia2sprs; ipvafnjd(4)=ia2sprf
+          ipvastjd(5)=ia2wins; ipvafnjd(5)=ia2winf
           MODSIT=.true.
         elseif(IW.eq.2)then
 
@@ -1214,14 +869,8 @@ C Deal with metrics (and then return to appropriate point in main menue).
       nitmms=M+4
 
 C Help text for this menu.
- 43   h(1)='Definition of an Integrated Performance View (IPV)'
-      h(2)='includes one or more performance metrics. These are'
-      h(3)='a subset of the metrics which can be found in the'
-      h(4)='results analysis module. '
-      h(5)=' '
-      h(6)='Each selected metric has an associated list of zones,'
-      h(7)='and a weighting factor (to give priority in multi-'
-      h(8)='criteria assessments.'
+ 43   helptopic='ipv_menu_overview'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('IPV metric sets',ITMM,nitmms,INOM)
       if(INOM.GE.2.and.INOM.le.nitmms-4)then
@@ -1230,9 +879,8 @@ C Help text for this menu.
       elseif(INOM.EQ.nitmms-3)then
 
 C Add delete copy metric set.
-        h(1)='You can add another metric set or delete an existing set'
         CALL EASKABC('Metric set options:',' ','add','delete',
-     &    'do nothing',IRT,1)
+     &    'do nothing',IRT,nbhelp)
         if(IRT.eq.1)then
           if(nms.lt.MIPVM)then
             nms=nms+1
@@ -1240,11 +888,9 @@ C Add delete copy metric set.
             goto 44
           endif
         elseif(IRT.eq.2)then
-          h(1)='You can delete an existing set. If you request a'
-          h(2)='rather than supplying an index then the model is '
-          h(3)='not changed. '
           CALL EASKI(IFOC,'Which metric set (give index) ? ',
-     &      '(zero to skip)',0,'F',nms,'F',1,'demand set index',IERI,3)
+     &      '(zero to skip)',0,'F',nms,'F',1,'demand set index',
+     &      IERI,nbhelp)
           if(ieri.eq.-3)then
             continue
           elseif(ifoc.eq.0)then
@@ -1276,7 +922,9 @@ C Add delete copy metric set.
 C List current metrics.
         call listipvdat(iuout,'m',ier)
       elseif(INOM.EQ.nitmms-1)then
-        CALL PHELPD('IPV metrics',8,'-',0,0,IER)
+        helptopic='ipv_menu_overview'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('IPV metrics',nbhelp,'-',0,0,IER)
       elseif(INOM.EQ.nitmms)then
         INO=-4
         GOTO 3
@@ -1314,19 +962,16 @@ C IGET = 74 IPV conv+radiant & latent zone injection
       nitmget=15
 
 C Help text for this menu.
-      h(1)='This is a sub-set of the metrics that can be selected'
-      h(2)='in the results analysis module. '
-      h(3)=' '
-      h(4)='For each metric the IPV will include statistics,'
-      h(5)='frequency reporting and timestep data for display days.'
-      h(6)=' '
-      h(7)='If you need to cancel select the NO CHOICE option. '
+      helptopic='ipv_metric_overview'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('Metric options',ITMGET,nitmget,INOG)
       if(INOG.eq.nitmget)then
         goto 43
       elseif(INOG.eq.nitmget-1)then
-        CALL PHELPD('metric options',7,'-',0,0,IER)
+        helptopic='ipv_metric_overview'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('metric options',nbhelp,'-',0,0,IER)
         goto 777
       elseif(INOG.eq.nitmget-2)then
         goto 43
@@ -1419,14 +1064,12 @@ C Help text for this menu.
       INPIC=NCOMP
       CALL EPICKS(INPIC,IVALS,' ',
      &  ' Which zones to associate with this metric: ',
-     &  12,NCOMP,zname,' zone list',IER,1)
+     &  12,NCOMP,zname,' zone list',IER,nbhelp)
 
-      h(1)='Give a short (12 char or less) unique identifier for the'
-      h(2)='group of zones associated with this metric. '
       t12=metgroup(ijj)
       CALL EASKS(t12,
      &  'Unique identifier for group of zones associated with metric?',
-     &  ' ',12,'offices','metric group name',IER,2)
+     &  ' ',12,'offices','metric group name',IER,nbhelp)
 
 C Find base area of each of the zones.
       TFLA=0.
@@ -1434,19 +1077,13 @@ C Find base area of each of the zones.
         izmg(ijj,mz)=IVALS(mz)
         TFLA=TFLA+ZBASEA(ivals(mz))
   24  continue
-      H(1)='Floor area for zones associated with this metric.'
       CALL EASKR(TFLA,' ',' Associated floor area (m^2)? ',
-     &  0.0,'F',9999.0,'W',0.,'associated floor m2',IERR,1)
+     &  0.0,'F',9999.0,'W',0.,'associated floor m2',IERR,nbhelp)
 
-      h(1)='If metric is to be assessed only during occupied '
-      h(2)='periods then supply the casual gain type assiciated '
-      h(3)='with occupancy. A zero means full time occupancy. '
-      h(4)=' '
-      h(5)='If you cancel then no changes are made to the metric.'
       icgv=imetmsc(ijj,1)
       CALL EASKI(icgv,'Casual gain type associated with occupancy',
      &  '(0 = full time): ',
-     &  0,'F',3,'F',1,'casual type for comfort',IERI,5)
+     &  0,'F',3,'F',1,'casual type for comfort',IERI,nbhelp)
       if(ieri.eq.-3) then
         goto 43
       else
@@ -1488,10 +1125,8 @@ C Deal with energy sets (and then return to appropriate point in main menue).
       nitmes=M+5
 
 C Help text for this menu.
- 143  h(1)='Definition of an Integrated Performance View (IPV)'
-      h(2)='include one or more energy demand sets. These are groups'
-      h(3)='of zones which can be combined and/or scaled for'
-      h(4)='reporting and/or analysis purposes.'
+ 143  helptopic='ipv_demand_overview'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('IPV energy demand sets',ITME,nitmes,INOE)
       if(INOE.GE.2.and.INOE.le.nitmes-5)then
@@ -1500,9 +1135,8 @@ C Help text for this menu.
       elseif(INOE.EQ.nitmes-4)then
 
 C Add delete copy demand set.
-        h(1)='You can add another demand set or delete an existing set'
         CALL EASKABC('Demand set options:',' ','add','delete',
-     &    'do nothing',IRT,1)
+     &    'do nothing',IRT,nbhelp)
         if(IRT.eq.1)then
           if(neds.lt.MIPVM)then
             neds=neds+1
@@ -1510,10 +1144,9 @@ C Add delete copy demand set.
             goto 144
           endif
         elseif(IRT.eq.2)then
-          h(1)='You can add delete an existing set and if you choose'
-          h(2)='to cancel then no changes are made to the demand sets.'
           CALL EASKI(IFOC,'Which demand set (give index) ? ',
-     &    '(zero to skip)',0,'F',neds,'F',1,'demand set index',IERI,2)
+     &      '(zero to skip)',0,'F',neds,'F',1,'demand set index',
+     &      IERI,nbhelp)
           if(ieri.eq.-3) then
             continue
           elseif(ifoc.eq.0)then
@@ -1551,7 +1184,9 @@ C Add delete copy demand set.
 C List current demand sets..
         call listipvdat(iuout,'d',ier)
       elseif(INOE.EQ.nitmes-1)then
-        CALL PHELPD('IPV demand sets',4,'-',0,0,IER)
+        helptopic='ipv_demand_overview'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('IPV demand sets',nbhelp,'-',0,0,IER)
       elseif(INOE.EQ.nitmes)then
         INO=-4
         GOTO 3
@@ -1564,22 +1199,15 @@ C List current demand sets..
 
 C Editing or creation of a deman set.
   144 continue
-      h(1)='Give a short (12 char or less) identifier for this '
-      h(2)='energy demand set to help you remember why you'
-      h(3)='created this set.'
       t12=zedsdoc(iset)
       CALL EASKS(t12,'Identifier for this demand set ?',
-     &  ' ',12,'offices','demand set name',IER,3)
+     &  ' ',12,'offices','demand set name',IER,nbhelp)
       if(t12(1:2).ne.'  '.and.t12(1:4).ne.'UNKN')zedsdoc(iset)=t12
 
-      h(1)='Pick one, several or all zones for inclusion. You can'
-      h(2)='have one or two sets of zones which can be scaled up '
-      h(3)='to represent a whole building. One set might'
-      h(4)='represent offices and the other support zones.'
       INPIC=NCOMP
       CALL EPICKS(INPIC,IVALS,' ',
      &  ' Which zones to include in this energy demand set: ',
-     &  12,NCOMP,zname,'zone list',IER,4)
+     &  12,NCOMP,zname,'zone list',IER,nbhelp)
       nzedg(iset)=INPIC
       TFLA=0.
       do 26 mz=1,nzedg(iset)
@@ -1587,13 +1215,10 @@ C Editing or creation of a deman set.
         TFLA=TFLA+ZBASEA(ivals(mz))
   26  continue
       edgflr(iset)=TFLA
-      h(1)='Floor area for this energy related set of zones.'
       CALL EASKR(edgflr(iset),' ','Energy set floor area (m^2)? ',
-     &  0.0,'F',9999.0,'W',1.,'energy set m2',IER,1)
-      h(1)='Multiplier from this set to building. Example: if'
-      h(2)='set results needed to be multiplied by 4.2 '
+     &  0.0,'F',9999.0,'W',1.,'energy set m2',IER,nbhelp)
       CALL EASKR(edgsca(iset),' ','Multiplier for energy set? ',
-     &  0.0,'F',9999.0,'W',1.,'1st set mult',IER,1)
+     &  0.0,'F',9999.0,'W',1.,'1st set mult',IER,nbhelp)
       MODSIT=.true.
       goto 142
 
@@ -1604,12 +1229,18 @@ C ipvseasons presents a list of typical seasons/assessments and
 C returns a string which sumarizes the choice (see list of values
 C in subroutine ipvdatinit.
       subroutine ipvseasons(simact)
-      character h*72
-      common/pophelp/h(60)
+
       DIMENSION ITM(22)
       character ITM*33
       character simact*6
       integer nitms,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ipvseasons'  ! set for subroutine
 
       simact='ias   '   ! assume annual assessment
 
@@ -1638,30 +1269,16 @@ C in subroutine ipvdatinit.
       ITM(22)='- exit this menu                 '
       nitms=22
 
-      h(1)='Select an assessment regime from the list provided.'
-      h(2)='The `winter/spring/summer/autumn` options are based on'
-      h(3)='information in the `climatelist` file for the current'
-      h(4)='climate file. For example if you ask for the summer season'
-      h(5)='the period from the `climatelist` file will be used. '
-      h(6)=' '
-      h(7)='The annual assessment will do one simulation for the whole'
-      h(8)='year (this may generate a large results file). '
-      h(9)=' '
-      h(10)='The three season option does winter transition and summer'
-      h(11)='runs for a typcial week each season (as determined by'
-      h(12)='an analysis of heating and cooling degree days and solar'
-      h(13)='radiation) a fortnight in each season or all days in the'
-      h(14)='season. '
-      h(15)=' '
-      h(16)='The five season option does winter (jan..) spring summer'
-      h(17)='autumn and winter (dec..) for a typical week or fortnight'
-      h(18)='or every day in each season. '
+      helptopic='ipv_assessment_regime'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EMENU('Options for assessments',ITM,nitms,INO)
 
       if(INO.EQ.nitms)then
         return
       elseif(INO.EQ.nitms-1)then
-        CALL PHELPD('IPV seasons',18,'-',0,0,IER)
+        helptopic='ipv_assessment_regime'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('IPV seasons',nbhelp,'-',0,0,IER)
         goto 3
       elseif(INO.eq.1)then 
         simact='icwint'
@@ -1761,7 +1378,7 @@ C same for number of assessments, otherwise set to one annual.
           nipvassmt=1
           CALL EDAY(1,1,ipvastjd(1))
           CALL EDAY(31,12,ipvafnjd(1))
-          write(ipvadesc(1),'(2A)')cr(1:lr),' annual run'
+          write(ipvadesc(1),'(A)') 'annual run'
           nipvdispjd=5
           ipvdispjd(1)=ia1wins+1
           ipvdispjd(2)=ia1sprs+1
@@ -1780,9 +1397,9 @@ C same for number of assessments, otherwise set to one annual.
           ipvdispjd(1)=ia1wins+1
           ipvdispjd(2)=ia1sprs+1
           ipvdispjd(3)=iasums+1
-          write(ipvadesc(1),'(2A)')cr(1:lr),' winter run'
-          write(ipvadesc(2),'(2A)')cr(1:lr),' transition run'
-          write(ipvadesc(3),'(2A)')cr(1:lr),' summer run'
+          write(ipvadesc(1),'(A)') 'winter run'
+          write(ipvadesc(2),'(A)') 'transition run'
+          write(ipvadesc(3),'(A)') 'summer run'
         elseif(nsset.eq.5)then
           nipvassmt=5
           ipvastjd(1)=ia1wins
@@ -1801,11 +1418,11 @@ C same for number of assessments, otherwise set to one annual.
           ipvdispjd(3)=iasums+1
           ipvdispjd(4)=ia2sprs+1
           ipvdispjd(5)=ia2wins+1
-          write(ipvadesc(1),'(2A)')cr(1:lr),' 1st winter run'
-          write(ipvadesc(2),'(2A)')cr(1:lr),' spring run'
-          write(ipvadesc(3),'(2A)')cr(1:lr),' summer run'
-          write(ipvadesc(4),'(2A)')cr(1:lr),' autumn run'
-          write(ipvadesc(5),'(2A)')cr(1:lr),' 2nd winter run'
+          write(ipvadesc(1),'(A)') '1st winter run'
+          write(ipvadesc(2),'(A)') 'spring run'
+          write(ipvadesc(3),'(A)') 'summer run'
+          write(ipvadesc(4),'(A)') 'autumn run'
+          write(ipvadesc(5),'(A)') '2nd winter run'
         else
 
 C Something other than 1/3/5
@@ -1818,7 +1435,7 @@ C Something other than 1/3/5
           ipvdispjd(3)=iasums+1
           ipvdispjd(4)=ia2sprs+1
           ipvdispjd(5)=ia2wins+1
-          write(ipvadesc(1),'(2A)')cr(1:lr),' annual run'
+          write(ipvadesc(1),'(A)') 'annual run'
         endif
       elseif(act(1:6).eq.'icwint'.or.act(1:6).eq.'Icwint')then
         nipvassmt=1    ! winter typical week
@@ -1826,7 +1443,7 @@ C Something other than 1/3/5
         ipvafnjd(1)=ia1winf
         nipvdispjd=1
         ipvdispjd(1)=ia1wins+1
-        write(ipvadesc(1),'(2A)')cr(1:lr),' winter typ'
+        write(ipvadesc(1),'(A)') 'winter typ'
       elseif(act(1:6).eq.'icwinf'.or.act(1:6).eq.'Icwinf')then
         nipvassmt=1    ! winter typical fortnight
         if(ia1wins.gt.3)then
@@ -1838,77 +1455,77 @@ C Something other than 1/3/5
         endif
         nipvdispjd=1
         ipvdispjd(1)=ia1wins+1
-        write(ipvadesc(1),'(2A)')cr(1:lr),' winter ftn'
+        write(ipvadesc(1),'(A)') 'winter ftn'
       elseif(act(1:6).eq.'icwins'.or.act(1:6).eq.'Icwins')then
         nipvassmt=1    ! winter full season
         ipvastjd(1)=is1wins
         ipvafnjd(1)=is1winf
         nipvdispjd=1
         ipvdispjd(1)=ia1wins+1
-        write(ipvadesc(1),'(2A)')cr(1:lr),' winter sea'
+        write(ipvadesc(1),'(A)') 'winter sea'
       elseif(act(1:6).eq.'icsprt'.or.act(1:6).eq.'Icsprt')then
         nipvassmt=1    ! spring typical week
         ipvastjd(1)=ia1sprs
         ipvafnjd(1)=ia1sprf
         nipvdispjd=1
         ipvdispjd(1)=ia1sprs+1
-        write(ipvadesc(1),'(2A)')cr(1:lr),' spring typ'
+        write(ipvadesc(1),'(A)') 'spring typ'
       elseif(act(1:6).eq.'icsprf'.or.act(1:6).eq.'Icsprf')then
         nipvassmt=1    ! spring typical fortnight
         ipvastjd(1)=ia1sprs-3
         ipvafnjd(1)=ia1sprf+4
         nipvdispjd=1
         ipvdispjd(1)=ia1sprs+1
-        write(ipvadesc(1),'(2A)')cr(1:lr),' spring ftn'
+        write(ipvadesc(1),'(A)') 'spring ftn'
       elseif(act(1:6).eq.'icsprs'.or.act(1:6).eq.'Icsprs')then
         nipvassmt=1    ! spring full season
         ipvastjd(1)=is1sprs
         ipvafnjd(1)=is1sprf
         nipvdispjd=1
         ipvdispjd(1)=ia1sprs+1
-        write(ipvadesc(1),'(2A)')cr(1:lr),' spring sea'
+        write(ipvadesc(1),'(A)') 'spring sea'
       elseif(act(1:6).eq.'icsumt'.or.act(1:6).eq.'Icsumt')then
         nipvassmt=1    ! summer typical week
         ipvastjd(1)=iasums
         ipvafnjd(1)=iasumf
         nipvdispjd=1
         ipvdispjd(1)=iasums+1
-        write(ipvadesc(1),'(2A)')cr(1:lr),' summer typ'
+        write(ipvadesc(1),'(A)') 'summer typ'
       elseif(act(1:6).eq.'icsumf'.or.act(1:6).eq.'Icsumf')then
         nipvassmt=1   ! summer typical fortnight
         ipvastjd(1)=iasums-3
         ipvafnjd(1)=iasumf+4
         nipvdispjd=1
         ipvdispjd(1)=iasums+1
-        write(ipvadesc(1),'(2A)')cr(1:lr),' summer ftn'
+        write(ipvadesc(1),'(A)') 'summer ftn'
       elseif(act(1:6).eq.'icsums'.or.act(1:6).eq.'Icsums')then
         nipvassmt=1    ! summer full season
         ipvastjd(1)=is1sums
         ipvafnjd(1)=is1sumf
         nipvdispjd=1
         ipvdispjd(1)=iasums+1
-        write(ipvadesc(1),'(2A)')cr(1:lr),' summer sea'
+        write(ipvadesc(1),'(A)') 'summer sea'
       elseif(act(1:6).eq.'icautt'.or.act(1:6).eq.'Icautt')then
         nipvassmt=1    ! autumn typical week
         ipvastjd(1)=ia2sprs
         ipvafnjd(1)=ia2sprf
         nipvdispjd=1
         ipvdispjd(1)=ia2sprs+1
-        write(ipvadesc(1),'(2A)')cr(1:lr),' autumn typ'
+        write(ipvadesc(1),'(A)') 'autumn typ'
       elseif(act(1:6).eq.'icautf'.or.act(1:6).eq.'Icautf')then
         nipvassmt=1   ! autumn typical fortnight
         ipvastjd(1)=ia2sprs-3
         ipvafnjd(1)=ia2sprf+4
         nipvdispjd=1
         ipvdispjd(1)=ia2sprs+1
-        write(ipvadesc(1),'(2A)')cr(1:lr),' autumn ftn'
+        write(ipvadesc(1),'(A)') 'autumn ftn'
       elseif(act(1:6).eq.'icauts'.or.act(1:6).eq.'Icauts')then
         nipvassmt=1    ! autumn full season
         ipvastjd(1)=is2sprs
         ipvafnjd(1)=is2sprf
         nipvdispjd=1
         ipvdispjd(1)=ia2sprs+1
-        write(ipvadesc(1),'(2A)')cr(1:lr),' autumn sea'
+        write(ipvadesc(1),'(A)') 'autumn sea'
       elseif(act(1:3).eq.'ias'.or.act(1:3).eq.'Ias')then
         nipvassmt=1    ! annual (full year)
         CALL EDAY(1,1,ipvastjd(1))
@@ -1919,14 +1536,14 @@ C Something other than 1/3/5
         ipvdispjd(3)=iasums+1
         ipvdispjd(4)=ia2sprs+1
         ipvdispjd(5)=ia2wins+1
-        write(ipvadesc(1),'(2A)')cr(1:lr),' annual run'
+        write(ipvadesc(1),'(A)') 'annual run'
       elseif(act(1:3).eq.'i1d'.or.act(1:3).eq.'I1d')then
         nipvassmt=1   ! single default period 
         ipvastjd(1)=ia1wins
         ipvafnjd(1)=ia1winf
         nipvdispjd=1
         ipvdispjd(1)=ia1wins+1
-        write(ipvadesc(1),'(2A)')cr(1:lr),' single def'
+        write(ipvadesc(1),'(A)') 'single def'
       elseif(act(1:3).eq.'i3s'.or.act(1:3).eq.'I3s')then
         nipvassmt=3    ! three seasons (all days in each)
         ipvastjd(1)=is1wins
@@ -1939,9 +1556,9 @@ C Something other than 1/3/5
         ipvdispjd(1)=ia1wins+1
         ipvdispjd(2)=ia1sprs+1
         ipvdispjd(3)=iasums+1
-        write(ipvadesc(1),'(2A)')cr(1:lr),' winter sea'
-        write(ipvadesc(2),'(2A)')cr(1:lr),' transition sea'
-        write(ipvadesc(3),'(2A)')cr(1:lr),' summer sea'
+        write(ipvadesc(1),'(A)') 'winter sea'
+        write(ipvadesc(2),'(A)') 'transition sea'
+        write(ipvadesc(3),'(A)') 'summer sea'
       elseif(act(1:3).eq.'i3t'.or.act(1:3).eq.'I3t')then
         nipvassmt=3    ! three seasons (one week in each)
         ipvastjd(1)=ia1wins
@@ -1954,9 +1571,9 @@ C Something other than 1/3/5
         ipvdispjd(1)=ia1wins+1
         ipvdispjd(2)=ia1sprs+1
         ipvdispjd(3)=iasums+1
-        write(ipvadesc(1),'(2A)')cr(1:lr),' winter run'
-        write(ipvadesc(2),'(2A)')cr(1:lr),' transition run'
-        write(ipvadesc(3),'(2A)')cr(1:lr),' summer run'
+        write(ipvadesc(1),'(A)') 'winter run'
+        write(ipvadesc(2),'(A)') 'transition run'
+        write(ipvadesc(3),'(A)') 'summer run'
       elseif(act(1:3).eq.'i5s'.or.act(1:3).eq.'I5s')then
         nipvassmt=5    ! five seasons (all days in each)
         ipvastjd(1)=is1wins
@@ -1975,11 +1592,11 @@ C Something other than 1/3/5
         ipvdispjd(3)=is1sums+1
         ipvdispjd(4)=is2sprs+1
         ipvdispjd(5)=is2wins+1
-        write(ipvadesc(1),'(2A)')cr(1:lr),' 1st winter sea'
-        write(ipvadesc(2),'(2A)')cr(1:lr),' spring sea'
-        write(ipvadesc(3),'(2A)')cr(1:lr),' summer sea'
-        write(ipvadesc(4),'(2A)')cr(1:lr),' autumn sea'
-        write(ipvadesc(5),'(2A)')cr(1:lr),' 2nd winter sea'
+        write(ipvadesc(1),'(A)') '1st winter sea'
+        write(ipvadesc(2),'(A)') 'spring sea'
+        write(ipvadesc(3),'(A)') 'summer sea'
+        write(ipvadesc(4),'(A)') 'autumn sea'
+        write(ipvadesc(5),'(A)') '2nd winter sea'
       elseif(act(1:3).eq.'i5t'.or.act(1:3).eq.'I5t')then
         nipvassmt=5    ! five seasons (one week in each)
         ipvastjd(1)=ia1wins
@@ -1998,11 +1615,11 @@ C Something other than 1/3/5
         ipvdispjd(3)=iasums+1
         ipvdispjd(4)=ia2sprs+1
         ipvdispjd(5)=ia2wins+1
-        write(ipvadesc(1),'(2A)')cr(1:lr),' 1st winter run'
-        write(ipvadesc(2),'(2A)')cr(1:lr),' spring run'
-        write(ipvadesc(3),'(2A)')cr(1:lr),' summer run'
-        write(ipvadesc(4),'(2A)')cr(1:lr),' autumn run'
-        write(ipvadesc(5),'(2A)')cr(1:lr),' 2nd winter run'
+        write(ipvadesc(1),'(A)') '1st winter run'
+        write(ipvadesc(2),'(A)') 'spring run'
+        write(ipvadesc(3),'(A)') 'summer run'
+        write(ipvadesc(4),'(A)') 'autumn run'
+        write(ipvadesc(5),'(A)') '2nd winter run'
       endif
 
 C Reset ddm* data structures for assessments that span a
@@ -2228,13 +1845,15 @@ C << periods for assessment e.g. a fortnight?
 
       SUBROUTINE getmultip
 #include "building.h"
+#include "model.h"
+#include "site.h"
 #include "esprdbfile.h"
+#include "espriou.h"
 #include "seasons.h"
 C seasons.h provides typper and typsea
 #include "ipvdata.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
 
@@ -2246,7 +1865,12 @@ C Redirected text/graphics parameters.
 C dm* variables are from ipvdata.h.
 C sea* variables are from season.h
 
-      character H*72,outs*124
+C Variables for handling climate file.
+      character outs*124
+      character llclmdb*144
+      integer llt,lndbp
+      logical unixok
+      character fs*1
 
       real HBT,CBT   ! local base temperatures for heating and cooling DD calcs
 
@@ -2255,6 +1879,21 @@ C  cddratio is the season / assessment ratio for cooling
 C  hddratio is the season / assessment ratio for heating
       dimension cddratio(MIPVA)
       dimension hddratio(MIPVA)
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='getmultip'  ! set for subroutine
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
       if(is1wins.eq.0.or.is2wins.eq.0.or.is1sprs.eq.0)then
         call usrmsg('No winter|transition|summer season definitions',
@@ -2272,10 +1911,21 @@ C Set delimiter in reports to standard/literal format.
 
 C First check if climate datase exists: if so open.
       CALL ERPFREE(ICLIM,ISTAT)
-      CALL FPRAND(ICLIM,ISTAT,144,0,LCLIM)
+
+C Setup string buffer with distribution weather folder name.
+      llt=lnblnk(LCLIM)
+      lndbp=lnblnk(standardclmpath)
+      if(ipathclim.eq.0.or.ipathclim.eq.1)then
+        llclmdb=LCLIM
+      elseif(ipathclim.eq.2)then
+        write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &    LCLIM(1:lnblnk(LCLIM))
+      endif
+
+      call EFOPRAN(ICLIM,llclmdb,144,0,IER)
       if(ISTAT.ge.0)then
         CALL ERPFREE(ICLIM,ISTAT)
-        CALL FPRAND(ICLIM,ISTAT,144,1,LCLIM)
+        call EFOPRAN(ICLIM,llclmdb,144,1,IER)
         call edisp(iuout,' opened climate file')
       endif
 
@@ -2286,14 +1936,16 @@ C Scan the climate file for CLAT and CLONG details.
       IREC=368
       READ(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG
 
-      H(1)='Degree day calculations are derived from a specific '
-      H(2)='base temperature (deg C). '
+C Help text for the dialogs
+      helptopic='seasonal_climate_scan'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
       if(hddbaset.lt.0.1)then
         hddbaset=17.0
       endif
       HBT=hddbaset
       CALL EASKR(HBT,' ',' Heating base temperature ? ',
-     &           -10.,'W',40.,'W',17.0,'DD heating base temp',IER,2)
+     &  -10.,'W',40.,'W',17.0,'DD heating base temp',IER,nbhelp)
       hddbaset=HBT
 
       if(cddbaset.lt.0.1)then
@@ -2301,7 +1953,7 @@ C Scan the climate file for CLAT and CLONG details.
       endif
       CBT=cddbaset
       CALL EASKR(CBT,' ',' Cooling base temperature ? ',
-     &           -10.,'W',40.,'W',21.0,'DD cooling base temp',IER,2)
+     &  -10.,'W',40.,'W',21.0,'DD cooling base temp',IER,nbhelp)
       cddbaset=CBT
 
 C If output to file alter the edisp unit number.
@@ -2361,13 +2013,10 @@ C days and the best first winter assessment week degree days.
         endif
         write(outs,'(a,F5.2,a,F5.2,a,F5.2,a)')'is ',dayratio,' days & ',
      &    hddratio(1),' HDD & ',cddratio(1),' CDD.'
-        h(1)='There is one winter assessment to represent the first and'
-        h(2)='second winter seasons. The ratios is of the winter'
-        h(3)='assessment period to all winter days and/or degree days.'
         call easkab(
      &    'The ratio of the winter assessment to all winter seasons',
      &    outs,'accept','continue',
-     &    iok,3)
+     &    iok,nbhelp)
         if(iok.eq.1)then
           dmheat(1)=hddratio(1)
           dmcool(1)=cddratio(1)
@@ -2404,13 +2053,10 @@ C Do the transitional seasons.
         endif
         write(outs,'(a,F5.2,a,F5.2,a,F5.2,a)')'is ',dayratio,' days & ',
      &    hddratio(2),' HDD & ',cddratio(2),' CDD.'
-        h(1)='There is one transition assessment to represent spring'
-        h(2)='and autumn seasons. The ratios is of the transition'
-        h(3)='assessment period to all transition days and/or DD.'
         call easkab(
      &    'The ratio of the trans assessment to all trans seasons',
      &    outs,'accept','continue',
-     &    iok,2)
+     &    iok,nbhelp)
         if(iok.eq.1)then
           dmheat(2)=hddratio(2)
           dmcool(2)=cddratio(2)

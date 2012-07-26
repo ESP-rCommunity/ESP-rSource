@@ -57,10 +57,16 @@ c               3: zone temperature and plant flux.
       common/c1/ncomp,ncon
       common /bmontr/mnzn,mzone(mcom),montrb,yminb(2),ymaxb(2),
      &               ibplot,irecpb(MDPH),mbstv
-      common/pophelp/h(60)
 
       dimension IVALS(MCOM)
-      character H*72,hold*24
+      character hold*24
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='minptb'  ! set for subroutine
 
 c Initialize array.
       do 5 i=1,MDPH
@@ -77,12 +83,10 @@ c Get number of zones.
          mnzn=1
       else
    10   mnzn=NCOMP
-        H(1)='The monitor facility tracks selected zone temperature'
-        H(2)='and plant state variables within the graphic display'
-        H(3)='as the simulation proceeds. You may select any number'
-        H(4)='of zones in any order or all zones. '
+        helptopic='monitor_facility_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EPICKS(mnzn,IVALS,' ',' Which zones to include: ',
-     &    12,NCOMP,zname,'monitor list',IER,4)
+     &    12,NCOMP,zname,'monitor list',IER,nbhelp)
          if(ier.ne.0) goto 10
          if(mnzn.eq.0)return
 
@@ -93,9 +97,8 @@ c Get number of each zone.
       endif
 
 c Get desired state variable.
-      H(1)='Display can get cluttered if to many items are plotted.'
       CALL EASKABCD( 'State variables:',' ','temperature (C)',
-     &  'plant flux (W)','both','cancel',mbstv,1)
+     &  'plant flux (W)','both','cancel',mbstv,nbhelp)
       if(mbstv.eq.4)then
         mbstv=0
         mnzn=0
@@ -106,9 +109,8 @@ c Get expected minimum and maximum values for state variable.
 c For option 1 and 2, read min and max data.
       if(mbstv.eq.1.or.mbstv.eq.2) then
    30   WRITE(hold,'(2F9.2)')yminb(1),ymaxb(1)
-        H(1)='Range for temperatures (C) or plant (W).'
         CALL EASKS(hold,' Minimum and maximum values:',' ',24,' ',
-     &      'min & max values',IER,1)
+     &      'min & max values',IER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,yminb(1),0.,0.,'-','mntr min',IER)
         CALL EGETWR(HOLD,K,ymaxb(1),0.,0.,'-','mntr max',IER)
@@ -118,18 +120,16 @@ c For option 3, read min and max data for temperature
 c and plant flux.
       elseif(mbstv.eq.3) then
    33   WRITE(hold,'(2F9.2)')yminb(1),ymaxb(1)
-        H(1)='Range for temperatures (C).'
         CALL EASKS(hold,' Minimum and maximum temperature:',' ',24,' ',
-     &      'min & max values',IER,1)
+     &      'min & max values',IER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,yminb(1),0.,0.,'-','mntr min',IER)
         CALL EGETWR(HOLD,K,ymaxb(1),0.,0.,'-','mntr max',IER)
         if(ier.ne.0) goto 33
 
    36   WRITE(hold,'(2F9.1)')yminb(2),ymaxb(2)
-        H(1)='Range for plant (W).'
         CALL EASKS(hold,' Minimum and maximum plant (W):',' ',24,' ',
-     &      'min & max values',IER,1)
+     &      'min & max values',IER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,yminb(2),0.,0.,'-','mntr min',IER)
         CALL EGETWR(HOLD,K,ymaxb(2),0.,0.,'-','mntr max',IER)
@@ -204,10 +204,14 @@ C since not all compilers use the same default.
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iix,iiy,iix2,iix5,iix35,iiy2  ! passed to edline
+      integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iix,iiy,iix2,iix5,iix35,iiy2  ! passed to edline
+      integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
 C Test save option selected.
@@ -221,6 +225,9 @@ C do an internal write placing an end marker which C can understand.
 C Check if can draw in colour.
       colok=.false.
       if(nzonec.ge.NCOMP)colok=.true.
+
+C Cast values for horaxis.
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
 
       goto (1000,2000) mode
 
@@ -277,10 +284,10 @@ c Determine scaling ratios for other y axis.
      &      xsc,ysc1,sca1,xadd,yadd1)
 
 c Draw a scale horizontal axis, move to beginning point.
-      call horaxis(xmin,xmax,igl,igr,igb,xadd,xsc,1,'Time (h)')
+      call horaxis(xmin,xmax,iigl,iigr,iigb,xadd,xsc,1,'Time (h)')
 
 c Draw a scale vertical axis.
-      call vrtaxis(yminb(1),ymaxb(1),igl,igb,igt,yadd,ysc,1,0,':')
+      call vrtaxis(yminb(1),ymaxb(1),iigl,iigb,iigt,yadd,ysc,1,0,':')
       if(mbstv.eq.1.or.mbstv.eq.3) then
          call wstxpt(igl-5,igt-17,'Temp')
          call wstxpt(igl-5,igt-5,'deg.C')
@@ -293,7 +300,7 @@ c Draw a scale vertical axis.
 
       if(mbstv.eq.3) then
          call vrtaxis(yminb(2),
-     &      ymaxb(2),igr,igb,igt,yadd1,ysc1,1,1,':')
+     &      ymaxb(2),iigr,iigb,iigt,yadd1,ysc1,1,1,':')
           call wstxpt(igr,igt-17,'Plant')
           call wstxpt(igr,igt-5,'  KW')
           yminb(2)=yminb(2)*1000.
@@ -380,7 +387,10 @@ c If first point then store its coordinates and identify
 c each curve as 'Z??' where 'Z' stands for zone.
             if(icount.eq.0) then
                if(colok)then
-                 if(mzone(i).gt.0)call winscl('z',mzone(i))
+                 if(mzone(i).gt.0)then
+                   iicol=mzone(i)
+                   call winscl('z',iicol)
+                 endif
                endif
                clabel='                    '
 C               write(clabel,'(a1,i2,a1)')'Z',mzone(i),nterm
@@ -406,13 +416,19 @@ C               write(clabel,'(a1,i2,a1)')'Z',mzone(i),nterm
                call wstxpt(ix,iy,clabel)
                call eswline(ix+5,iy+2,ix+35,iy+2)
                call esymbol(ix+20,iy+2,i,0)
-               if(colok)call winscl('-',0)
+               if(colok)then
+                 iicol=0
+                 call winscl('-',iicol)
+               endif
                call forceflush
 
 c else start plotting.
             else
                if(colok)then
-                 if(mzone(i).gt.0)call winscl('z',mzone(i))
+                 if(mzone(i).gt.0)then
+                   iicol=mzone(i)
+                   call winscl('z',iicol)
+                 endif
                endif
                ti=float(icount)/float(instep)
                ncoord(i,2,1)=igl+int((ti+xadd)*xsc)
@@ -437,7 +453,10 @@ c else start plotting.
                   ncoord1(i,1,1)=ncoord1(i,2,1)
                   ncoord1(i,1,2)=ncoord1(i,2,2)
                endif
-               if(colok)call winscl('-',0)
+               if(colok)then
+                 iicol=0
+                 call winscl('-',iicol)
+               endif
                call forceflush
             endif
    10    continue

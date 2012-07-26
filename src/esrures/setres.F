@@ -30,7 +30,6 @@ C SETUP provides the menus and control logic for the res preference menu.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      common/pophelp/h(60)
       common/recov01/pifltog,lpifl
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -39,8 +38,15 @@ C SETUP provides the menus and control logic for the res preference menu.
 
       DIMENSION SETUPM(10)
       CHARACTER PERST1*14,PERST2*44,PERST3*44
-      CHARACTER SETUPM*50,H*72,pifltog*4,lpifl*72,ltmp*72
+      CHARACTER SETUPM*50,pifltog*4,lpifl*72,ltmp*72
       integer NITMS,ISETUP ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SETUP'  ! set for subroutine
 
 C Present the preferences menu, ISETUP is the menu index returned. Generate
 C the menu text from current common block into via UPSET.
@@ -87,13 +93,8 @@ C Menu-pick (performance information requested) data.
       SETUPM(9)=  '- Exit to main menu                             '
 
 C Instanciate h() array for the menu.
-      H(1)='The preference menu allows the format of the `res` '
-      H(2)='environment to be modified. '
-      H(3)=' '
-      H(4)='For ease of viewing, several font sizes are available.'
-      H(5)='Remember that the size of the window may be resized '
-      H(6)='via the Environment button so that complex images '
-      H(7)='may be viewed in greater detail.'
+      helptopic='res_preferences_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       NITMS=9
       CALL EMENU('res preferences',SETUPM,NITMS,ISETUP)
 
@@ -112,11 +113,8 @@ C allow decimal day representation if day format is DOY.
       ELSEIF(ISETUP.EQ.5)THEN
         continue
       ELSEIF(ISETUP.EQ.6)THEN
-        h(1)='You can record a sequence of menu selections for use in'
-        h(2)='driving res to automatically recover the same performance'
-        h(3)='information. '
         CALL EASKABC(' Choices for recording menu selections:',' ',
-     &     'OFF (default)','ON','continue',IRT,3)
+     &    'OFF (default)','ON','continue',IRT,nbhelp)
         if(IRT.eq.1)then
           pifltog='OFF '
           lpifl='UNKNOWN'
@@ -124,14 +122,16 @@ C allow decimal day representation if day format is DOY.
           ltmp=' '
           ltmp=lpifl
            call easks(ltmp,'File to hold sequence of selections:',
-     &    ' ',72,'/tmp/res.rdf','file for selections',IER,3)
+     &      ' ',72,'/tmp/res.rdf','file for selections',IER,nbhelp)
           lpifl=ltmp
           pifltog='ON  '
         endif
       ELSEIF(ISETUP.EQ.8)THEN
 
 C Produce help text for the menu.
-        CALL PHELPD('res preferences',7,'-',0,0,IER)
+        helptopic='res_preferences_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('res preferences',nbhelp,'-',0,0,IER)
       ELSEIF(ISETUP.EQ.9)THEN
 
 C Return to main menu.

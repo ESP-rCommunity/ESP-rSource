@@ -1,11 +1,9 @@
 SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
-CTLdir = $(SRCdir)/esructl
 DFSdir = $(SRCdir)/esrudfs
 MFSdir = $(SRCdir)/esrumfs
 PRJdir = $(SRCdir)/esruprj
-TDFdir = $(SRCdir)/esrutdf
 BLDdir = $(SRCdir)/esrubld
 CETCdir = $(SRCdir)/cetc
 PROG = res$(EXE)
@@ -14,8 +12,12 @@ REPdir = $(SRCdir)/cetc/h3kreports
 .SUFFIXES: .o .F
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
+%.o : %.f90
+	$(MCC) $(FFLAGS) -c $<
 
-OBJECTS = res.o aim2_module.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o bscoeff.o \
+MODULE_OBJECTS = h3kmodule.o startup.o aim2_module.o
+
+OBJECTS = res.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o bscoeff.o \
    bscoeff_extended.o c2fdum.o castyp.o cfdat.o cfgrid.o cfutil.o cgd.o \
 	  comfort.o convect2.o ctread.o design.o dmdrep.o dossupport.o e3dviews.o ecasctl.o \
 	  econstr.o econtrol.o edatabase.o egeometry.o emfnetw.o enerbs.o \
@@ -24,21 +26,22 @@ OBJECTS = res.o aim2_module.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o b
 	  item.o ipvrep.o librec.o mfcdat.o mfget.o mfoutp.o mfres.o mfutil.o \
 	  mocfd.o moclim.o moget.o moplnt.o mosensa.o nwkrewr.o plot3d.o \
 	  pltcfg.o psychart.o psychro.o readTrnsys.o recover.o replsim.o resdef.o \
-	  resutil.o rlibget.o rwipv.o rwsbem.o setres.o sort.o spmatl.o spmisc.o startup.o \
+	  resutil.o rlibget.o rwipv.o rwsbem.o setres.o sort.o spmatl.o spmisc.o \
 	  stats.o table.o tdfile.o tdrecres.o temps.o tgraph.o utils.o \
 	  vgraph.o visgrd.o visual.o visvec.o
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod	
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod \
+	parse_command_line.mod h3kmodule.mod
 
-$(PROG): $(OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) 
+$(PROG): $(MODULE_OBJECTS) $(OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS)
 
 aim2_module.F:
 	rm -f aim2_module.F
 	ln -s $(BLDdir)/aim2_module.F .
 arrow.F:
 	rm -f arrow.F
-	ln -s $(PRJdir)/arrow.F .
+	ln -s $(COMdir)/arrow.F .
 ascii_mat.F:
 	rm -f ascii_mat.F
 	ln -s $(COMdir)/ascii_mat.F .
@@ -122,7 +125,7 @@ filelist.F:
 	ln -s $(COMdir)/filelist.F .
 initalc.F:
 	rm -f initalc.F
-	ln -s $(CTLdir)/initalc.F .
+	ln -s $(COMdir)/initalc.F .
 item.F:
 	rm -f item.F
 	ln -s $(COMdir)/item.F .
@@ -174,6 +177,10 @@ visual.F:
 visvec.F:
 	rm -f visvec.F
 	ln -s $(DFSdir)/visvec.F .
+h3kmodule.f90:
+	rm -f h3kmodule.f90
+	ln -s $(CETCdir)/h3kmodule.f90 .
+
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -182,7 +189,7 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
+	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
 	aim2_module.F arrow.F ascii_mat.F basesimp.F basesimp_inputs.F \
 	bscoeff.F bscoeff_extended.F c2fdum.F cfdat.F cfgrid.F cfutil.F cgd.F \
 	convect2.F ctread.F \
@@ -190,4 +197,4 @@ clean:
 	egeometry.F emfnetw.F enetmisc.F enetrewr.F eroper.F esru_misc.F \
 	esystem.F filelist.F fanger.F initalc.F item.F mfcdat.F mfutil.F nwkrewr.F pltcfg.F \
 	psychro.F readTrnsys.F rwipv.F rwsbem.F sort.F spmatl.F spmisc.F startup.F tdfile.F \
-	visgrd.F visual.F visvec.F
+	visgrd.F visual.F visvec.F h3kmodule.f90

@@ -39,11 +39,17 @@ C MENUTYPE 9: Psychrometric chart
 
       SUBROUTINE MOSTYLE
 
-      common/pophelp/h(60)
       common/getmenu/menutype,igetind(65),igetflux(65)
 
-      CHARACTER ITEM(15)*21,h*72
+      CHARACTER ITEM(15)*21
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MOSTYLE'  ! set for subroutine
 
 C Create menu.
       ITEM(1) ='   Graphs:           '
@@ -65,9 +71,9 @@ C Create menu.
       NITMS=15
       INO=-2
 
-C Instanciate h() strings for the menu.
-      H(1)='Select the style of output required.  This will not '
-      H(2)='effect current selections. '
+C Instanciate help strings for the menu.
+      helptopic='res_style_selection_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
  1    CALL EMENU('Output styles',ITEM,NITMS,INO)
 
@@ -87,7 +93,9 @@ C Set MENUTYPE depending on choice made.
       elseif (INO.eq.12) then
         MENUTYPE=4
       elseif (INO.eq.(NITMS-1)) then
-        CALL PHELPD('Output styles',2,'-',0,0,IER)
+        helptopic='res_style_selection_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('Output styles',nbhelp,'-',0,0,IER)
         goto 1
       elseif (INO.eq.NITMS) then
         return
@@ -105,10 +113,10 @@ C    1=std building information.
 C    2=mass flow network.
 C    3=plant systems
       SUBROUTINE AXISINT(IGRTP,ALABEL)
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
 
-      integer YAXSET, ADDLIN
+      integer YAXSET,ADDLIN,horaxisdiv
 
       character ALABEL(5)*12
 
@@ -170,10 +178,16 @@ C AXISPOS - set positions of axes for all graph drawing routines.
 
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
       COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
 
-      integer YAXSET, ADDLIN
+      integer YAXSET,ADDLIN,horaxisdiv
+
+#ifdef OSI
+      integer igx
+#else
+      integer*8 igx
+#endif
 
 C Set default positions.
       igx(1)=igl
@@ -239,19 +253,25 @@ C AXISDRW - draw and label axes.
       COMMON/PPERS/IPSD1,IPSM1,IPSD2,IPSM2,IPSDS,IPSDF,NPTS,ipsav
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
       COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
       real TST,TFI,TSCR  ! for hourly version
 
       character ALABEL(5)*12,act*1
 
-      integer YAXSET, ADDLIN
+      integer YAXSET,ADDLIN,horaxisdiv
 #ifdef OSI
+      integer igx  ! see common graf2
       integer igwid,igheight,iid1,iid2  ! for use with axiscale
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
+      integer*8 igx  ! see common graf2
       integer*8 igwid,igheight,iid1,iid2  ! for use with axiscale
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
+C Cast values for horaxis.
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
 
 C Debug.
 C      write(6,*) 'AXISDRW',(YAXSET(I),I=1,5)
@@ -306,11 +326,11 @@ C draw vertical axis.
           call axiscale(igwid,igheight,TSTART,TFINISH,YMIN(I),YMAX(I),
      &                             TSC,YSC(I),sca,Xadd,Yadd(I))
           if (ILR(I).eq.0) then
-            call vrtaxis(YMIN(I),YMAX(I),igx(I),igb,igt,Yadd(I),
-     &                             YSC(I),0,ilr(I),ALABEL(I))
+            call vrtaxis(YMIN(I),YMAX(I),igx(I),iigb,iigt,Yadd(I),
+     &        YSC(I),0,ilr(I),ALABEL(I))
           else
-            call vrtaxis(YMIN(I),YMAX(I),igx(I),igb,igt,Yadd(I),
-     &                             YSC(I),0,ilr(I),'  ')
+            call vrtaxis(YMIN(I),YMAX(I),igx(I),iigb,iigt,Yadd(I),
+     &        YSC(I),0,ilr(I),'  ')
             iid1=igx(I); iid2=igt-5;
             call wstxpt(iid1,iid2,ALABEL(I))
           endif
@@ -319,15 +339,30 @@ C draw vertical axis.
 
 C Draw horizontal (time) axis.
       if(act.eq.'P')then
-        call horaxis(TSTART,TFINISH,igl,igr,igb,Xadd,TSC,1,'Timesteps')
+        call horaxis(TSTART,TFINISH,iigl,iigr,iigb,Xadd,TSC,1,
+     &    'Timesteps')
       else
+
 C- Hardwired to display hours instead of timesteps on x-axis
 C- To revert back to original remove npts from following statement
         if(npts.eq.0) npts=1
         TST=TSTART/real(npts)
         TFI=TFINISH/real(npts)
 	TSCR=TSC*real(npts)
-        call horaxis(TST,TFI,igl,igr,igb,Xadd,TSCR,1,'Time Hrs')
+C        call horaxis(TST,TFI,iigl,iigr,iigb,Xadd,TSCR,1,'Time Hrs')
+        if(horaxisdiv.eq.0.or.horaxisdiv.eq.1)then
+
+C Default is the same as AXISDRW always provided.
+          call horaxis(TST,TFI,iigl,iigr,iigb,Xadd,TSCR,1,'Time Hrs')
+        elseif(horaxisdiv.eq.2)then
+          call horaxis(TST,TFI,iigl,iigr,iigb,Xadd,TSCR,1,'Time Hrs')
+        elseif(horaxisdiv.eq.3)then
+          call horaxishdw(TST,TFI,iigl,iigr,iigb,Xadd,TSCR,1,
+     &      2,24,iods,'Time (days)')
+        elseif(horaxisdiv.eq.4)then
+          call horaxishdw(TST,TFI,iigl,iigr,iigb,Xadd,TSCR,1,
+     &      3,168,iods,'Time (weeks)')
+        endif
       endif
       RETURN
       END

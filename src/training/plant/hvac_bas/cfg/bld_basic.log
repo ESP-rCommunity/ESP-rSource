@@ -1,18 +1,24 @@
-Notes on basic 3 zone building:
+Notes on basic 3 zone building used with basic hvac networks:
 
 This set of files is an example of a basic multi-zone
 building  representation.  There are several variant
 configurations in this directory which add in additional
-assessment details.
+assessments using plant components.
 
 The problem comprises the following files.
 
     file                       description
 ____________________________________________________________
+cfg/bld_basic.cfg-onoff  model with on-off control implemented
+cfg/bld_basic.cfg-pid    model with PID control implemented
+cfg/bld_recirc.cfg-pid   model with a recirculation fan
 cfg/bld_basic.cfg        problem configuration file defining a basic
                          3 zone model.
 ctl/bld_basic.ctl        configuration control file defining convective
                          heating and ideal control for zones 1 & 2.
+ctl/bld_basic.ctl-onoff  using on-off control with plant components
+ctl/bld_basic.ctl-pid    using PID control with plant components
+ctl/bld_basic_recirc.ctl recirculation control of plant components
 
 zones/reception.opr      zone schedules.
 zones/office.opr
@@ -29,7 +35,24 @@ zones/roof_space.con
 zones/reception.tmc      zone TMC files.
 zones/office.tmc        
 
+The ctl folder includes a number of control variants.
+
+The bld_recirc variant includes a flow network with supply
+and extract fans and mixing boxes.
+
+The bld_basic_onoff variant includes a flow network but
+for the rooms only.
 _________
-IPV reports which are generated from
-basic.ipv are included in winter.txt, spring.txt and summer.txt.
+IPV reports included in winter.txt, spring.txt and summer.txt.
+ 
+Databases associated with the model:
+ standard pressure distr: pressc.db1
+ standard materials     : material.db3.a
+ standard constructions : multicon.db2
+ standard plant comp    : plantc.db1
+ standard event profiles: profiles.db1.a
+ standard optical prop  : optics.db2
+ standard UK NCM data   : SBEM.db1
+ 
+ ____________________________________________________________
  

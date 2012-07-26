@@ -4,7 +4,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 
 C ESP-r is free software. You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (Version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -51,13 +51,13 @@ C SPMCMP56 - phase change material model 4 (with sub-cooling).
 
 C N.B. All parameters comply with the Fortran implicit naming convention
 C except where explicitly redefined.
-      common/spmfxst/ispmxist,spflnam 
+      common/spmfxst/ispmxist,spflnam
       common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
-     &              nnodat(mspmnod),spmdat(mspmnod,mspmdat) 
+     &              nnodat(mspmnod),spmdat(mspmnod,mspmdat)
 
       character spflnam*72
 
-C For each node with a special material, identify the type as held 
+C For each node with a special material, identify the type as held
 C in ispmtyp(mspmnod,1). If the affected zone matches the current
 C zone then call the relevant subroutine.
       if(ispmxist.gt.0)then
@@ -93,7 +93,7 @@ C zone then call the relevant subroutine.
       endif
       return
       end
- 
+
 C ***************** SPMCMP1 *****************
 C A crystalline silicon solar cell model (after Nick Kelly) with
 C efficiency determined as a function of cell temperature. Defining
@@ -122,10 +122,10 @@ C              power output;
 C          3 - direct radiation power loss, the incident flux is set
 C              to the diffuse component only (the power output of all
 C              cells falls to that of the shaded cells).
-C   14 - miscellaneous loss factor, which acts to derates the power 
+C   14 - miscellaneous loss factor, which acts to derates the power
 C        produced by the panel. Such losses may be attributed to
 C        uncertainty in the manufacturer's rating, panel ageing,
-C        maintenance, snow cover, blocked diodes and wiring etc. 
+C        maintenance, snow cover, blocked diodes and wiring etc.
 
 C Reference:
 C Kelly N (1998), 'Towards a Design Environment for Building-Integrated
@@ -148,7 +148,7 @@ C except where explicitly redefined.
       common/zonspmf/zspmf1(mcom),zspmf2(mcom)
       common/spmfxst/ispmxist,spflnam
       common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
-     &              nnodat(mspmnod),spmdat(mspmnod,mspmdat) 
+     &              nnodat(mspmnod),spmdat(mspmnod,mspmdat)
       common/spmatlbl/spmlabel(mspmnod)
       common/fvalc/tfc(mcom,ms,mn),qfc(mcom)
       common/coe32/qsoli(ms,2),qsole(ms,2)
@@ -157,9 +157,9 @@ C except where explicitly redefined.
       common/prec1/sna(mcom,ms)
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       common/adjc/ie(mcom,ms),atp(mcom,ms),atf(mcom,ms),
-     &            arp(mcom,ms),arf(mcom,ms)  
+     &            arp(mcom,ms),arf(mcom,ms)
       common/solext/exrad(ms),exdir(ms),exdif(ms),exshad(ms),
-     &              exshadf(ms)      
+     &              exshadf(ms)
 
       real isc,imp,k,io,il,imod,iiter
       character spmlabel*16,outs*124,spflnam*72,strspm*16,unitspm*16,
@@ -212,11 +212,11 @@ C Fixed voltage or resistance as appropriate.
 C Shading treatment.
       ishad=nint(spmdat(ispmnod,13))
 
-C Miscellaneous loss factor, which acts to derates the power 
+C Miscellaneous loss factor, which acts to derates the power
 C produced by the PV panel. Such losses may be attributed to
 C uncertainty in the manufacturer's rating, panel ageing,
-C maintenance issues, snow covering, blocked diodes and wiring, etc. 
-      fMiscLossFactor=spmdat(ispmnod,14) 
+C maintenance issues, snow covering, blocked diodes and wiring, etc.
+      fMiscLossFactor=spmdat(ispmnod,14)
 
 C Physical constants: electrical charge and Boltzman constant.
       e=1.60E-19
@@ -225,22 +225,23 @@ C Physical constants: electrical charge and Boltzman constant.
 C Panel temperature assigned from the associated construction node
 C temperature.
       tpnl=tfc(ispmloc(ispmnod,1),ispmloc(ispmnod,2),
-     &                                      ispmloc(ispmnod,3))+273.0  
+     &                                      ispmloc(ispmnod,3))+273.0
 
 C Determine the total solar flux, qpnl, incident on the panel as a
-C function of the requested treatment of shading as defined by ishad. 
+C function of the requested treatment of shading as defined by ishad.
 
 C No shading case.
       qpnl=exrad(ispmloc(ispmnod,2))
 
 C Shading case.
-      if(exshad(ispmloc(ispmnod,2)).gt.1E-6)then
+      if((exshad(ispmloc(ispmnod,2)).gt.0.0).or.
+     &   (exshadf(ispmloc(ispmnod,2)).gt.0.0))then
          if(ishad.eq.0.or.ishad.eq.1)then
-            qpnl=exrad(ispmloc(ispmnod,2)) 
+            qpnl=exrad(ispmloc(ispmnod,2))
          elseif(ishad.eq.2)then
             qpnl=0.0
          elseif(ishad.eq.3)then
-            qpnl=exdif(ispmloc(ispmnod,2)) 
+            qpnl=exdif(ispmloc(ispmnod,2))
          endif
       endif
 
@@ -253,7 +254,7 @@ C Diffusion current.
       io=(isc/pbrch)/(exp(((e*voc/scell)/(k*df*tref)))-1.)*
      &                                        (2**((tpnl-tref)/empv))
 
-C Light generated current. 
+C Light generated current.
       if(qpnl.lt.0.0)qpnl=1E-10
       il=(qpnl/qref)*(isc/pbrch)
 
@@ -272,7 +273,7 @@ C output voltage, vmpmod.
             viter=abs(vmpmod)
             goto 2
          elseif(iter.ge.101)then
-            call edisp(iuout,' ') 
+            call edisp(iuout,' ')
             write(outs,*)
      &           'SPMCMP1 fatal error: panel voltage solution failed!'
             call edisp(iuout,outs)
@@ -287,7 +288,7 @@ C Panel power output.
             pvpwr=0.0
          else
             pvpwr=-pvpwr
-         endif 
+         endif
          vpv=vmpmod*scell	!- panel voltage
 
 C Fixed resistance load, use iteration to calculate panel current.
@@ -304,16 +305,16 @@ C Fixed resistance load, use iteration to calculate panel current.
             if(iter.gt.50)then
                iiter=iiter+(imod-iiter)*0.25
             else
-               iiter=(imod+iiter)/2.  
-            endif 
+               iiter=(imod+iiter)/2.
+            endif
             goto 3
-         elseif(iter.ge.101)then     
-           call edisp(iuout,' ') 
+         elseif(iter.ge.101)then
+           call edisp(iuout,' ')
            write(outs,*)
      &           'SPMCMP1 fatal error: panel current solution failed!'
-           call edisp(iuout,outs) 
+           call edisp(iuout,outs)
            stop
-         endif  
+         endif
 
 C Check that iteration has converged.
          a1=io*(exp((e*imod*valf)/(k*tpnl*df))-1.)
@@ -323,34 +324,34 @@ C Check the magnitudes of the diode and light generated currents; if
 C id > il set the power output to zero.
          pvpwr=(a1-a2)**2*valf*scelL*pbrch*npnnls*(1.- fMiscLossFactor)
          if(a1.gt.a2)then
-            pvpwr=0.0  
+            pvpwr=0.0
          else
             pvpwr=pvpwr
-         endif 
+         endif
          vpv=(pvpwr*valf)**0.5
 
-C Fixed voltage type load (e.g. a battery), calculate panel power.       
+C Fixed voltage type load (e.g. a battery), calculate panel power.
       elseif(ilodt.eq.2)then
-         valf=valf/scell 
+         valf=valf/scell
          pvpwr=valf*(io*(exp(e*valf/(k*tpnl*df))-1.)-il)
          a1=io*(exp(e*valf/(k*tpnl*df))-1.)
          a2=il
-         pvpwr=pvpwr*scell*pbrch*npnnls*(1.- fMiscLossFactor)    
+         pvpwr=pvpwr*scell*pbrch*npnnls*(1.- fMiscLossFactor)
          if(pvpwr.gt.0.0)then
-            pvpwr=0.0  
+            pvpwr=0.0
          else
             pvpwr=-pvpwr
-         endif  
-         vpv=valf*scell		!- panel voltage               
+         endif
+         vpv=valf*scell		!- panel voltage
       endif
 
-C Results output. 
-      sar=sna(ispmloc(ispmnod,1),ispmloc(ispmnod,2)) 
-      ndatspm(ispmnod)=2        
+C Results output.
+      sar=sna(ispmloc(ispmnod,1),ispmloc(ispmnod,2))
+      ndatspm(ispmnod)=2
       dataspm(ispmnod,1)=pvpwr
       strspm(ispmnod,1)='Power (W)'
       call eclose(qpnl,0.,fSmall,bNumsAreClose)
-      if(bNumsAreClose)then 
+      if(bNumsAreClose)then
          dataspm(ispmnod,2)=0.
       else
          dataspm(ispmnod,2)=((pvpwr/sar)/qpnl)*100.
@@ -372,7 +373,7 @@ C panel.)
       qspm(ispmnod)=0.0
 
 C Convert panel power output from W to W/m^2.
-      pvpwrsq=pvpwr/sna(ispmloc(ispmnod,1),ispmloc(ispmnod,2)) 
+      pvpwrsq=pvpwr/sna(ispmloc(ispmnod,1),ispmloc(ispmnod,2))
 
 C Save original nodal solar absorptions for trace output.
       qsole1=qsole(ispmloc(ispmnod,2),2)
@@ -399,7 +400,7 @@ C node and the two boundary nodes.
          qtmca(ispmloc(ispmnod,2),ispmloc(ispmnod,3)+1,2)=
      &    qtmca(ispmloc(ispmnod,2),ispmloc(ispmnod,3)+1,2)-(pvpwrsq/4.)
          qtmca(ispmloc(ispmnod,2),ispmloc(ispmnod,3)-1,2)=
-     &    qtmca(ispmloc(ispmnod,2),ispmloc(ispmnod,3)-1,2)-(pvpwrsq/4.)     
+     &    qtmca(ispmloc(ispmnod,2),ispmloc(ispmnod,3)-1,2)-(pvpwrsq/4.)
       endif
 
 C Trace output.
@@ -422,14 +423,14 @@ C Trace output.
      &                                    qsole(ispmloc(ispmnod,2),2)
          call edisp(itu,outs)
       else
-         write(outs,'(a,1x,f10.2)') 'Original flux absorption: ',qtmca1 
+         write(outs,'(a,1x,f10.2)') 'Original flux absorption: ',qtmca1
          call edisp(itu,outs)
          write(outs,'(a,1x,f10.2)') 'Modified flux absorption: ',
      &                 qtmca(ispmloc(ispmnod,2),ispmloc(ispmnod,3),2)
          call edisp(itu,outs)
       endif
       write(outs,'(a,1x,f10.2)') 'Panel power output: ', pvpwr
-      call edisp(itu,outs) 
+      call edisp(itu,outs)
       write(outs,'(a,1x,f10.2)') 'Panel temperature: ',tpnl
       call edisp(itu,outs)
   999 return
@@ -456,14 +457,14 @@ C except where explicitly redefined.
       common/zonspmf/zspmf1(mcom),zspmf2(mcom)
       common/spmfxst/ispmxist,spflnam
       common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
-     &nnodat(mspmnod),spmdat(mspmnod,mspmdat) 
+     &nnodat(mspmnod),spmdat(mspmnod,mspmdat)
       common/spmatlbl/spmlabel(mspmnod)
       common/fvalc/tfc(mcom,ms,mn),qfc(mcom)
       common/coe32j/qtmca(ms,mn,2)
       common/coe32/qsoli(ms,2),qsole(ms,2)
       common/pvpnl/tpnl,qpnl,pvpwr
       common/adjc/ie(mcom,ms),atp(mcom,ms),atf(mcom,ms),
-     &arp(mcom,ms),arf(mcom,ms)  
+     &arp(mcom,ms),arf(mcom,ms)
       common/prec1/sna(mcom,ms)
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       common/solext/exrad(ms),exdir(ms),exdif(ms),exshad(ms),
@@ -473,18 +474,18 @@ C except where explicitly redefined.
       complex vspm
       character spmlabel*16, outs*124,spflnam*72,strspm*16,unitspm*16,
      &          txtspm*72
-      
+
 C Nominal efficiency.
       neff=spmdat(ispmnod,1)/100.
 
-C Solar radiation absorbed by panel. 
-      qpnl=exrad(ispmloc(ispmnod,2)) 
+C Solar radiation absorbed by panel.
+      qpnl=exrad(ispmloc(ispmnod,2))
 
 C Power generated by panel.
       pvpwr=qpnl*neff*sna(ispmloc(ispmnod,1),ispmloc(ispmnod,2))
 
-C Results output.   
-      ndatspm(ispmnod)=2    
+C Results output.
+      ndatspm(ispmnod)=2
       dataspm(ispmnod,1)=pvpwr
       strspm(ispmnod,1)='Power (W)'
       dataspm(ispmnod,2)=(pvpwr/qpnl)*100.
@@ -505,7 +506,7 @@ C panel.)
       qspm(ispmnod)=0.0
 
 C Convert the panel power output from W to W/m^2.
-       pvpwrsq=pvpwr/sna(ispmloc(ispmnod,1),ispmloc(ispmnod,2)) 
+       pvpwrsq=pvpwr/sna(ispmloc(ispmnod,1),ispmloc(ispmnod,2))
 
 C Save original nodal absorptions for trace output.
       qsole1=qsole(ispmloc(ispmnod,2),2)
@@ -532,7 +533,7 @@ C node and the two boundary nodes.
          qtmca(ispmloc(ispmnod,2),ispmloc(ispmnod,3)+1,2)=
      &    qtmca(ispmloc(ispmnod,2),ispmloc(ispmnod,3)+1,2)-(pvpwrsq/4.)
          qtmca(ispmloc(ispmnod,2),ispmloc(ispmnod,3)-1,2)=
-     &    qtmca(ispmloc(ispmnod,2),ispmloc(ispmnod,3)-1,2)-(pvpwrsq/4.)     
+     &    qtmca(ispmloc(ispmnod,2),ispmloc(ispmnod,3)-1,2)-(pvpwrsq/4.)
       endif
 
 C Trace output.
@@ -555,14 +556,14 @@ C      write(outs,'(a,i3)') 'Number of panels in surface: ',npnnls
      &                                    qsole(ispmloc(ispmnod,2),2)
          call edisp(itu,outs)
       else
-         write(outs,'(a,1x,f10.2)') 'Original flux absorption: ',qtmca1 
+         write(outs,'(a,1x,f10.2)') 'Original flux absorption: ',qtmca1
          call edisp(itu,outs)
          write(outs,'(a,1x,f10.2)') 'Modified flux absorption: ',
      &                 qtmca(ispmloc(ispmnod,2),ispmloc(ispmnod,3),2)
          call edisp(itu,outs)
       endif
       write(outs,'(a,1x,f10.2)') 'Panel power output: ', pvpwr
-      call edisp(itu,outs) 
+      call edisp(itu,outs)
       write(outs,'(a,1x,f10.2)') 'Panel temperature: ',tpnl
       call edisp(itu,outs)
   999 return
@@ -610,7 +611,7 @@ C convention except where explicitly redefined.
       common/zonspmf/zspmf1(mcom),zspmf2(mcom)
       common/spmfxst/ispmxist,spflnam
       common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
-     &              nnodat(mspmnod),spmdat(mspmnod,mspmdat) 
+     &              nnodat(mspmnod),spmdat(mspmnod,mspmdat)
       common/spmatlbl/spmlabel(mspmnod)
       common/ffn/iflwn,icffs(mpcon)
       common/mflwpr/npre,fpre(mpos,mprd)
@@ -661,7 +662,7 @@ C Current weather data.
       wispd=vf
       if(wispd.lt.1E-3)wispd=1E-3
 
-C If no mass flow file exists then open wind pressure coefficients 
+C If no mass flow file exists then open wind pressure coefficients
 C database, read coefficient sets and close.
       if(iairn.eq.0.and.iflwn.eq.0.and.nsinc.lt.2)then
          iunit=ifil+1
@@ -710,7 +711,7 @@ C Rural location
          endif
 
 C Set the new wind speed and turbulent intensity from profiles. If
-C height is zero, set to a small value to avoid numerical problems. 
+C height is zero, set to a small value to avoid numerical problems.
          if(hdwti.lt.1E-6)hdwti=1E-6
          if(refh.lt.1E-6)refh=1E-6
          wispd=wispd*(hdwti/refh)**pwr
@@ -744,7 +745,7 @@ C Set up trace probability counters.
          tpru=0
          tprc=0
 
-C Loop to generate power output. 
+C Loop to generate power output.
          do 66 i=1,10
 
 C Current U velocity component probability density.
@@ -755,7 +756,7 @@ C Current U velocity component probability density.
 
 C Set starting value of V velocity component.
             valv=minv
- 
+
             do 77 j=1,10
 
 C Current V velocity component probability density.
@@ -810,7 +811,7 @@ C to zero for zero power output.
                else
                   wispdm=0.
                endif
-    
+
 C Calculate the differential pressure coefficient and set the wind
 C direction index (1-16 corresponds to intervals with mid-points
 C at 0, 22.5, ..., 337.5 degrees relative to the surface azimuth,
@@ -828,7 +829,7 @@ C P = 0 and height = 0.
                cd2=fpre(iwdr2,iosurft)
                delta=cd1-cd2
 
-C Power output from P={Cv/[3.3^(1/2)]}.rho.A.d^(2/3).V^3 
+C Power output from P={Cv/[3.3^(1/2)]}.rho.A.d^(2/3).V^3
                ro=densit(1,drybt)
                pwr=(dvcoeff/(3*3**(0.5)))*ro*tarea*
      &                             (delta**(0.667))*(wispdm**3)*nturb
@@ -842,12 +843,12 @@ C Power output from P={Cv/[3.3^(1/2)]}.rho.A.d^(2/3).V^3
 C Write results for probability-based power output.
          pspm(ispmnod)=pwrtot/tsl
 
-      else       
+      else
          if(wispd.ge.ciwspd)then
 
 C Check that the component of the wind speed incident on the turbine
 C is greater than the cut-in wind speed. If not, set to zero for
-C zero power output. 
+C zero power output.
             angi=widir-aziin
             if(abs(angi).ge.180.)angi=360.-abs(angi)
             if(abs(angi).ge.90.)then
@@ -863,12 +864,12 @@ C zero power output.
             endif
          else
             wispd=0.
-         endif      
+         endif
 
 C Calculate the differential pressure coefficient and set the wind
 C direction index (1-16 corresponds to intervals with mid-points
 C at 0, 22.5, ..., 337.5 degrees relative to the surface azimuth
-C (i.e. index 1 = wind normal to surface)       
+C (i.e. index 1 = wind normal to surface)
          iwdr1=nint((widir-aziin)/22.5)+1
          if(iwdr1.lt.1)iwdr1=iwdr1+16
          if(iwdr1.gt.16)iwdr1=iwdr1-16
@@ -882,14 +883,14 @@ C P = 0 for height=0.
          cd2=fpre(iwdr2,iosurft)
          delta=cd1-cd2
 
-C Power output from P={Cv/[3.3^(1/2)]}.rho.A.d^(2/3).V^3 
+C Power output from P={Cv/[3.3^(1/2)]}.rho.A.d^(2/3).V^3
          ro=densit(1,drybt)
          pspm(ispmnod)=(dvcoeff/(3*3**(0.5)))*ro*tarea*
      &                              (delta**(0.667))*(wispd**3)*nturb
       endif
 
-C Results output. 
-      ndatspm(ispmnod)=1      
+C Results output.
+      ndatspm(ispmnod)=1
       dataspm(ispmnod,1)=pspm(ispmnod)
       strspm(ispmnod,1)='Power (W)'
 
@@ -906,13 +907,13 @@ C Trace output.
      &                                              spmlabel(ispmnod)
       call edisp(itu,outs)
       write(outs,'(a,1x,f10.2)') 'Pressure at inlet: ',cd1
-      call edisp(itu,outs) 
+      call edisp(itu,outs)
       write(outs,'(a,1x,f10.2)') 'Pressure at outlet: ',cd2
-      call edisp(itu,outs) 
+      call edisp(itu,outs)
       write(outs,'(a,1x,f10.2)') 'Pressure difference: ',delta
-      call edisp(itu,outs) 
+      call edisp(itu,outs)
       write(outs,'(a,1x,f10.2)') 'Power output: ',pspm(ispmnod)
-      call edisp(itu,outs) 
+      call edisp(itu,outs)
   999 return
       end
 
@@ -942,17 +943,17 @@ C except where explicitly redefined.
       common/spvst/spmvstr(mspmnod,5)
       common/spmfxst/ispmxist,spflnam
       common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
-     &              nnodat(mspmnod),spmdat(mspmnod,mspmdat) 
+     &              nnodat(mspmnod),spmdat(mspmnod,mspmdat)
       common/spmatlbl/spmlabel(mspmnod)
       common/adjc/ie(mcom,ms),atp(mcom,ms),atf(mcom,ms),arp(mcom,ms),
-     &            arf(mcom,ms)  
+     &            arf(mcom,ms)
       common/fvalc/tfc(mcom,ms,mn),qfc(mcom)
       common/coe32/qsoli(ms,2),qsole(ms,2)
       common/coe32j/qtmca(ms,mn,2)
       common/pvpnl/tpnl,qpnl,pvpwr
       common/prec1/sna(mcom,ms)
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
-      
+
       real mu
       character spmlabel*16, outs*124,spflnam*72,strspm*16,unitspm*16,
      &          txtspm*72
@@ -1013,11 +1014,11 @@ C Viscosity.
       visc=0.17444E-02-.15885E-03*tave**0.50
 
 C Conductivity.
-      cond=((1.12*tave)+569.)/1000. 
+      cond=((1.12*tave)+569.)/1000.
 
 C Specific heat capacity.
       sht=4244.-(22.65*sqrt(tave))+(1.95*tave)
- 
+
 C Reynold's Number.
       reyno=den*vel*tdia/visc
 
@@ -1025,15 +1026,15 @@ C Prandtl Number.
       prandt=visc*sht/cond
 
 C Heat transfer coefficient for either laminar or fully developed
-C turbulent flow. 
+C turbulent flow.
        if(reyno.gt.2200.)then
           ffr=(0.79*alog(reyno)-1.64)**(-2.)
           fr=ffr/8.
           hin=(cond/tdia)*(fr*reyno*prandt)/
-     &                    (1.07+12.7*(fr**0.5)*((prandt**0.667)-1.0))  
+     &                    (1.07+12.7*(fr**0.5)*((prandt**0.667)-1.0))
        else
           hin=cond*4.4/tdia
-       endif 
+       endif
 
        rt=(den*vfr*sht)/hin*area
        touti=2.*(tcol-rt*(tout-tin))-tin
@@ -1050,11 +1051,11 @@ C turbulent flow.
              stop
           endif
        endif
-       
+
 C Save the outlet temperature.
        spmvstr(ispmnod,1)=tout
-       
-C Heat flux. 
+
+C Heat flux.
        qtherm=vfr*den*sht*(touti-tin)
        if(qtherm.lt.1E-6)qtherm=0.0
 
@@ -1077,7 +1078,7 @@ C Save original nodal absorptions for trace output.
        qtmca1=qtmca(ispmloc(ispmnod,2),ispmloc(ispmnod,3),2)
 
 C Convert the panel power output from W to W/m^2.
-       qthermqf=qtherm/sna(ispmloc(ispmnod,1),ispmloc(ispmnod,2)) 
+       qthermqf=qtherm/sna(ispmloc(ispmnod,1),ispmloc(ispmnod,2))
        qthermqp=spmvstr(ispmnod,2)
 
 C Save the power output.
@@ -1087,7 +1088,7 @@ C Modify thermal output to be an average of future and present values.
        qthermq=(qthermqf+qthermqp)*0.5
 
 C Alter the nodal absorption according to whether node is an external
-C (ie=1) or internal (ie=0) surface, and opaque (1) or transparent (0). 
+C (ie=1) or internal (ie=0) surface, and opaque (1) or transparent (0).
        if(ispmtyp(ispmnod,2).gt.0)then
           if(ie(ispmloc(ispmnod,1),ispmloc(ispmnod,2)).eq.0)then
              qsole(ispmloc(ispmnod,2),2)=qsole(ispmloc(ispmnod,2),2)
@@ -1131,14 +1132,14 @@ C Trace output.
      &                                    qsoli(ispmloc(ispmnod,2),2)
          call edisp(itu,outs)
       else
-         write(outs,'(a,1x,f10.2)') 'Original flux absorption: ',qtmca1 
+         write(outs,'(a,1x,f10.2)') 'Original flux absorption: ',qtmca1
          call edisp(itu,outs)
          write(outs,'(a,1x,f10.2)') 'Modified flux absorption: ',
      &                 qtmca(ispmloc(ispmnod,2),ispmloc(ispmnod,3),2)
          call edisp(itu,outs)
       endif
       write(outs,'(a,1x,f10.2)') 'Thermal output: ',qtherm
-      call edisp(itu,outs) 
+      call edisp(itu,outs)
       write(outs,'(a,1x,f10.2)') 'Nodal temperature: ',tcol
       call edisp(itu,outs)
   999 return
@@ -1147,12 +1148,12 @@ C Trace output.
 C ***************** SPMCMP5 *****************
 C A one diode PV model (after Maria Mottillo). The SPMCMP1 model
 C is modified to match the Watsun-PV model following recommendations
-C by Thevenard. The modifications relate to the method used to 
+C by Thevenard. The modifications relate to the method used to
 C calculate the output power. Unlike the SPMCMP1 model, this model
 C does not cater for PV modules with a fixed resistive load.
 
 C References:
-C Thevenard D (2004), 'Literature and Source Code Review of ESP-r's 
+C Thevenard D (2004), 'Literature and Source Code Review of ESP-r's
 C Exisiting Photovoltaic Models', NRCan Internal Report 23229-049028/001/SQ.
 
 C Thevenard D (2005), 'Review and Recommendations for Improving the
@@ -1190,14 +1191,15 @@ C              to the diffuse component only (the power output of all
 C              cells falls to that of the shaded cells).
 C   16 - miscellaneous loss factor used to derates the panel power
 C        to account for uncertainty in the manufacturer's rating,
-C        ageing, soiling, snow cover,blocking diodes and wiring. 
+C        ageing, soiling, snow cover,blocking diodes and wiring.
 
       subroutine spmcmp5(icomp,ispmnod)
+      use h3kmodule
       implicit none
 
 #include "building.h"
 
-      integer icomp		!- zone number       
+      integer icomp		!- zone number
       integer ispmnod		!- special material node index
       integer lnblnk		!- implicit function returning length of a string
 
@@ -1229,7 +1231,7 @@ C Special materials.
       character spflnam*72
 
       common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
-     &              nnodat(mspmnod),spmdat(mspmnod,mspmdat) 
+     &              nnodat(mspmnod),spmdat(mspmnod,mspmdat)
       integer nspmnod,ispmloc,ispmtyp,nnodat
       real    spmdat
 
@@ -1259,7 +1261,7 @@ C Special materials.
 
       common/fvalc/tfc(mcom,ms,mn),qfc(mcom)
       real    tfc		!- construction node temperature at future time-row
-      real    qfc		!- energy injected at construction node at future time-row 
+      real    qfc		!- energy injected at construction node at future time-row
 
       common/coe32j/qtmca(ms,mn,2)
       real    qtmca		!- shortwave absorption at each node of a transparent mlc
@@ -1268,7 +1270,7 @@ C Special materials.
       real    qsoli		!- solar energy absorbed by each internal opaque
 				!  surface after adjustments by window shading and
 				!  taking into account the directional property of
-				!  the direct beam and multiple diffuse reflections 
+				!  the direct beam and multiple diffuse reflections
       real    qsole		!- solar energy absorbed by each external opaque
 				!  surface after adjustment by surface shading
 				!  and taking into account solar/building geometry
@@ -1280,7 +1282,7 @@ C Special materials.
       real    sna		!- surface area
 
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
-      integer isd1		!- start day number 
+      integer isd1		!- start day number
       integer ism1		!- start month number
       integer isd2		!- finish day number
       integer ism2		!- finish month number
@@ -1289,7 +1291,7 @@ C Special materials.
       integer ntstep		!- number of building time steps within each hour
 
       common/adjc/ie(mcom,ms),atp(mcom,ms),atf(mcom,ms),
-     &arp(mcom,ms),arf(mcom,ms)  
+     &arp(mcom,ms),arf(mcom,ms)
       integer ie		!- surface defining index
       real    atp		!- present time adjacent temperature
       real    atf		!- future time adjacent temperature
@@ -1303,8 +1305,7 @@ C Special materials.
       real    exdir		!- direct solar radiation incident on surface
 				!  per unit area (includes shading effects)
       real    exdif		!- diffuse solar radiation incident on surface
-				!  per unit area (shading effect does not
-				!  apply on diffuse component)
+				!  per unit area (included shading effects)
       real    exshad		!- direct shaded portion expressed as a factor
 				!  b/w 0 and 1 of surface
       real    exshadf		!- diffuse shaded portion expressed as a factor
@@ -1317,7 +1318,7 @@ C Special materials.
 				!  angles for TMC system
       real    tmca		!- absorptances for each glazing element of
 				!  TMC system at 5 representative angles
-      real    tmcref		!- reflectance of TMC system (at 55 degrees) 
+      real    tmcref		!- reflectance of TMC system (at 55 degrees)
       real    tvtr		!- visible transmittance for the TMC (for daylighting)
 
       common/prec9/nconst(mcom),nelts(mcom,ms),ngaps(mcom,ms),
@@ -1331,7 +1332,7 @@ C Special materials.
       real fInc_angle		!- angle of incidence for surface
 
 C Local variables.
-      real    fVocRef		!- open circuit voltage at reference condition 
+      real    fVocRef		!- open circuit voltage at reference condition
       real    fIscRef		!- short circuit current at reference condition
       real    fVoc		!- open circuit voltage for cell
       real    fIsc		!- short circuit current for cell
@@ -1486,7 +1487,7 @@ C Shading treatment.
       iShad=nint(spmdat(ispmnod,15))
 
 C Miscellaneous loss factor.
-      fMiscLossFactor=spmdat(ispmnod,16) 
+      fMiscLossFactor=spmdat(ispmnod,16)
 
 C fTPNL is the temperature of the PV panel, assigned from the
 C prevailing nodal temperature.
@@ -1505,7 +1506,7 @@ C Obtain transparent surface index related to PV module location.
 C Check that surface associated with the PV module is transparent;
 C if not, issue an error message.
        if(iTMC_index.eq.0)then
-          call edisp(iuout,' ') 
+          call edisp(iuout,' ')
           write(outs,*)'SMCMP5 fatal error: PV surface must be a TMC!'
           call edisp(iuout,outs)
           stop
@@ -1537,7 +1538,7 @@ C Linearly interpolate to find absorptance at 60 degrees.
      &             (60.0-55.0)*
      &             (fTrans_Ads(4)-fTrans_Ads(3))/
      &             (70.0-55.0)
- 
+
 C Linearly interpolate to find transmittance at angle of incidence.
         if(fIncidence_angle.ge.0.0.and.
      &           fIncidence_angle.lt.40.0)then
@@ -1580,14 +1581,14 @@ C Assume equal to incidence angle at 80degC.
 C Obtain module irradiance without taking into account reflectance
 C of front cover. This variable is used for reporting and debugging
 C purposes only.
-       fQInc=exrad(ispmloc(ispmnod,2)) 
+       fQInc=exrad(ispmloc(ispmnod,2))
 
-C Obtain effective irradiance reaching module (unlike the spmcmp1 
+C Obtain effective irradiance reaching module (unlike the spmcmp1
 C model, this variable takes into account the reflectance of the
 C module's front cover).
        fQPnl=(exdir(ispmloc(ispmnod,2))*fTrans_IncAng+
      &           exdif(ispmloc(ispmnod,2))*fTrans_60)/
-     &           fTrans_0 
+     &           fTrans_0
 
 C Impose specified shading treatment.
        if(exshad(ispmloc(ispmnod,2)).gt.1E-6)then
@@ -1596,7 +1597,7 @@ C External shading case.
          if(iShad.eq.iIgnore.or.iShad.eq.iProportion)then
             fQPnl=(exdir(ispmloc(ispmnod,2))*fTrans_IncAng+
      &               exdif(ispmloc(ispmnod,2))*fTrans_60)/
-     &               fTrans_0  
+     &               fTrans_0
          elseif(iShad.eq.iTotalPLoss)then
             fQPnl=0.0
          else
@@ -1608,7 +1609,7 @@ C External shading case.
 C No external shading case.
          fQPnl=(exdir(ispmloc(ispmnod,2))*fTrans_IncAng+
      &              exdif(ispmloc(ispmnod,2))*fTrans_60)/
-     &              fTrans_0 
+     &              fTrans_0
        endif
 
 C Calculate cell short circuit current.
@@ -1638,20 +1639,20 @@ C Calculate the maximum module power.
           fPVPower=fImpRef*fVmpRef*fIsc*fVoc/
      &               (fIscRef*fVocRef)*
      &               iNPBrch*iSCell*iNPnnls
-              
+
 C Calculate the module voltage.
           fPVVoltage=fVmp*iSCell
 
        elseif(iLodT.eq.iFixedVolt)then
 
-C Panel output with a fixed voltage type load, e.g. a battery.        
+C Panel output with a fixed voltage type load, e.g. a battery.
 
 C Empirical coefficient used in the calculation of current.
-          fLambda=1./fVoc*log(1./fRatioIoIsc) 
+          fLambda=1./fVoc*log(1./fRatioIoIsc)
 
 C Current at maximum power point. Note that the Watsun-PV
-C model assumes that the maximum power point current has the same 
-C dependancy on cell temperature and incident irradiance as the 
+C model assumes that the maximum power point current has the same
+C dependancy on cell temperature and incident irradiance as the
 C short circuit current.
           fImp=fImpRef/iNPBrch*(fQPnl/fQref)*		!- cell value
      &              (1.+fAlpha*(fTPnl-fTref))
@@ -1662,12 +1663,12 @@ C Calculate voltage at maximum power point.
      &              max(0.,(1.+fBeta*log(fQPnl/fQref)))
 
 C Calculate the internal series resistance.
-          fRseries=(1./fLambda*log(1./fRatioIoIsc* 
-     &              (1.-fImp/fIsc))-fVmp)/fImp          
+          fRseries=(1./fLambda*log(1./fRatioIoIsc*
+     &              (1.-fImp/fIsc))-fVmp)/fImp
 
 C Determine the cell voltage. fValf = fixed voltage value provided
 C as model input.
-          fVcell=fValf/iScell                
+          fVcell=fValf/iScell
 
 C Calculate the cell current. This is done iteratively using the
 C bisection method. The cell current will be between 0 and the
@@ -1679,9 +1680,9 @@ C short-circuit current, therefore these are the bounds for iteration.
           F=fIBound1-fIsc*(1.-fRatioIoIsc*exp(fLambda*
      &                              (fVcell+fIBound1*fRseries)))
 
-          if(FMID.eq.0.)then 
+          if(FMID.eq.0.)then
              fIcell=fIBound2
-          elseif(F.eq.0.)then        
+          elseif(F.eq.0.)then
              fIcell=fIBound1
           endif
 
@@ -1698,7 +1699,7 @@ C short-circuit current, therefore these are the bounds for iteration.
 
           bfound=.false.
           iter=0
-          do while (.not.bfound) 
+          do while (.not.bfound)
 
 C Check that the maximum number of iterations is not exceeded.
              if(iter.gt.maxit)then
@@ -1723,16 +1724,16 @@ C Current of entire module.
           fPVcurrent=fIcell*iNPBrch
 
 C PV module voltage.
-          fPVVoltage=fValf                       
+          fPVVoltage=fValf
 
 C Power output.
           fPVPower=fPVVoltage*fPVCurrent*iNPnnls*
      &               (1.-fMiscLossFactor)
        endif
 
-C Results output. 
+C Results output.
        fSurfArea=sna(ispmloc(ispmnod,1),ispmloc(ispmnod,2))
-       ndatspm(ispmnod)=2        
+       ndatspm(ispmnod)=2
        dataspm(ispmnod,1)=fPVPower
        strspm(ispmnod,1)='Power (W)'
        if(fQPnl.ne.0.)then
@@ -1757,7 +1758,7 @@ C panel.)
        qspm(ispmnod)=0.0
 
 C Convert the panel power output from W to W/m^2.
-       fPVPwrPerArea = fPVPower/fSurfArea 
+       fPVPwrPerArea = fPVPower/fSurfArea
 
 C Save original nodal absorptions for trace output.
        qsole1=qsole(ispmloc(ispmnod,2),2)
@@ -1785,79 +1786,49 @@ C and the two boundary nodes.
      &          (fPVPwrPerArea/4.)
         qtmca(ispmloc(ispmnod,2),ispmloc(ispmnod,3)-1,2)=
      &          qtmca(ispmloc(ispmnod,2),ispmloc(ispmnod,3)-1,2)-
-     &          (fPVPwrPerArea/4.)        
+     &          (fPVPwrPerArea/4.)
        endif
 
 C XML output.
-       call add_to_xml_reporting(fQPnl,
-     &  'building/spmatl/' // cName(ispmnod)(1:iNameLen(ispmnod)) //
-     &     '/misc_data/eff_irradiance/unit_area',
-     &  'units',
-     &  'W/m^2',
-     &  'Effective irradiance of PV module (/m^2)')
+       Call AddToReport(rvBldSPMatlEffIrr%Identifier,
+     &         fQPnl,
+     &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       call add_to_xml_reporting(fIncidence_angle,
-     &  'building/spmatl/' // cName(ispmnod)(1:iNameLen(ispmnod)) //
-     &     '/misc_data/incidence_angle',
-     &  'units',
-     &  '-',
-     &  'Angle of incidence')
+       Call AddToReport(rvBldSPMatlIncAngl%Identifier,
+     &         fIncidence_angle,
+     &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       call add_to_xml_reporting(fTrans_IncAng,
-     &  'building/spmatl/' // cName(ispmnod)(1:iNameLen(ispmnod)) //
-     &     '/misc_data/transmittance_inc_angle',
-     &  'units',
-     &  '-',
-     &  'Transmittance at angle of incidence')
+       Call AddToReport(rvBldSPMatlTrnsAngl%Identifier,
+     &         fTrans_IncAng,
+     &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       call add_to_xml_reporting(fTrans_0,
-     &  'building/spmatl/' // cName(ispmnod)(1:iNameLen(ispmnod)) //
-     &     '/misc_data/transmittance_0',
-     &  'units',
-     &  '-',
-     &  'Transmittance at 0 degrees')
+       Call AddToReport(rvBldSPMatlTrns0%Identifier,
+     &         fTrans_0,
+     &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       call add_to_xml_reporting(fTrans_60,
-     &  'building/spmatl/' // cName(ispmnod)(1:iNameLen(ispmnod)) //
-     &     '/misc_data/transmittance_60',
-     &  'units',
-     &  '(-)',
-     &  'Transmittance at 60 degrees')
+       Call AddToReport(rvBldSPMatlTrns60%Identifier,
+     &         fTrans_60,
+     &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       call add_to_xml_reporting(fQInc,
-     &  'building/spmatl/' // cName(ispmnod)(1:iNameLen(ispmnod)) //
-     &     '/misc_data/total_incident_irradiance/unit_area',
-     &  'units',
-     &  '(W/m^2)',
-     &  'Total irradiance of PV module (/m^2')
+       Call AddToReport(rvBldSPMatlTtlIncAr%Identifier,
+     &         fQInc,
+     &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       call add_to_xml_reporting(fQInc * fSurfArea,
-     &  'building/spmatl/' // cName(ispmnod)(1:iNameLen(ispmnod)) //
-     &     '/misc_data/total_incident_irradiance/total',
-     &  'units',
-     &  '(W)',
-     &  'Total irradiance of PV module')
+       Call AddToReport(rvBldSPMatlTtlIncTtl%Identifier,
+     &         fQInc * fSurfArea,
+     &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       call add_to_xml_reporting(exdir(ispmloc(ispmnod,2)),
-     &  'building/spmatl/' // cName(ispmnod)(1:iNameLen(ispmnod)) //
-     &     '/misc_data/direct_incident_irradiance/unit_area',
-     &  'units',
-     &  '(W/m^2)',
-     &  'Direct irradiance of PV module (/m^2)')
+       Call AddToReport(rvBldSPMatlDrtIncAr%Identifier,
+     &         exdir(ispmloc(ispmnod,2)),
+     &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       call add_to_xml_reporting(exdif(ispmloc(ispmnod,2)),
-     &  'building/spmatl/' // cName(ispmnod)(1:iNameLen(ispmnod)) //
-     &     '/misc_data/diffuse_incident_irradiance/unit_area',
-     &  'units',
-     &  '(W/m^2)',
-     &  'Diffuse irradiance of PV module (/m^2)')
+       Call AddToReport(rvBldSPMatlDffIncAr%Identifier,
+     &         exdif(ispmloc(ispmnod,2)),
+     &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
-       call add_to_xml_reporting(fPVPower,
-     &  'building/spmatl/' // cName(ispmnod)(1:iNameLen(ispmnod)) //
-     &     '/misc_data/pv_power',
-     &  'units',
-     &  '(W)',
-     &  'Power produced by PV module')
+       Call AddToReport(rvBldSPMatlPVPow%Identifier,
+     &         fPVPower,
+     &         cName(ispmnod)(1:iNameLen(ispmnod)))
 
 C Trace output.
       if(itc.le.0.or.nsinc.lt.itc.or.ispmxist.eq.0)goto 999
@@ -1879,14 +1850,14 @@ C Trace output.
      &                                    qsole(ispmloc(ispmnod,2),2)
          call edisp(itu,outs)
       else
-         write(outs,'(a,1x,f10.2)') 'Original flux absorption: ',qtmca1 
+         write(outs,'(a,1x,f10.2)') 'Original flux absorption: ',qtmca1
          call edisp(itu,outs)
          write(outs,'(a,1x,f10.2)') 'Modified flux absorption: ',
      &                 qtmca(ispmloc(ispmnod,2),ispmloc(ispmnod,3),2)
          call edisp(itu,outs)
       endif
       write(outs,'(a,1x,f10.2)') 'Power output: ', fPVPower
-      call edisp(itu,outs) 
+      call edisp(itu,outs)
       write(outs,'(a,1x,f10.2)') 'Panel temperature: ', fTPnl
       call edisp(itu,outs)
   999 return
@@ -1919,7 +1890,7 @@ C except where explicitly redefined.
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       common/spmfxst/ispmxist,spflnam
       common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
-     &              nnodat(mspmnod),spmdat(mspmnod,mspmdat) 
+     &              nnodat(mspmnod),spmdat(mspmnod,mspmdat)
       common/spmatlbl/spmlabel(mspmnod)
       common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
      &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
@@ -1967,7 +1938,7 @@ C Number of layers in the TMC.
 
 C Node location and temperature.
       isur=ispmloc(ispmnod,2)
-      inod=ispmloc(ispmnod,3)     
+      inod=ispmloc(ispmnod,3)
       tnod=tfc(icomp,isur,inod)
 
 C Store the original clear state optical properties for the affected
@@ -1975,7 +1946,7 @@ C layer(s).
       if(istore.eq.0)then
 
 C Sytem transmission.
-         do iang0=1,5 
+         do iang0=1,5
             tran0(ispmnod,iang0)=tmct(icomp,itmcfl(icomp,isur),iang0)
          enddo
 
@@ -1989,7 +1960,7 @@ C Layer absorption.
          istore=1
       endif
 
-C System is unaltered. 
+C System is unaltered.
       if(tnod.lt.tmaxt)then
         tint=1.0
 
@@ -2001,13 +1972,13 @@ C Calculate transmission percentage at current nodal temperature.
          if(diff.le.small)then
 
 C User has set tmint=tmaxt.
-            tint=(100.+perc)/200. 
+            tint=(100.+perc)/200.
             goto 33
-         endif          
+         endif
 
          tint=((tnod-tmint)/(tmaxt-tmint))*(100.-perc)+perc
          tint=tint/100.
-   33    continue   
+   33    continue
 
 C > tmint.
       elseif(tnod.ge.tmint)then
@@ -2042,13 +2013,13 @@ C Reduce relative absorption for all layers after the tinted layer.
                tmca(icomp,itmcfl(icomp,isur),layer2,iang3)=
      &                                abs0(ispmnod,layer2,iang3)*tint
             enddo
-         enddo 
-      endif        
-       
+         enddo
+      endif
+
 C Trace output.
       if(itc.le.0.or.nsinc.lt.itc.or.ispmxist.eq.0)goto 999
       if(itrace(19).eq.0.or.nsinc.gt.itcf.or.
-     &   izntrc(icomp).ne.1) goto 999 
+     &   izntrc(icomp).ne.1) goto 999
       write(outs,'(a,a)') 'Trace output from SPMCMP51 for ',
      &                                              spmlabel(ispmnod)
       call edisp(itu,outs)
@@ -2065,7 +2036,7 @@ C Trace output.
       call edisp(itu,outs)
       write(outs,'(5(2x,f7.4))') (abs0(ispmnod,ilyr,idat),idat=1,5)
       call edisp(itu,outs)
-      call edisp(itu,' ')       
+      call edisp(itu,' ')
       write(outs,'(a)') 'Altered transmissions:'
       call edisp(itu,outs)
       write(outs,'(5(2x,F7.4))') (tmct(icomp,itmcfl(icomp,isur),idat),
@@ -2081,7 +2052,7 @@ C Trace output.
 
 C ***************** SPMCMP52 *****************
 C A model of saturated surface evaporation and heat loss. The
-C evaporation (kg/s) is calculated from the Lewis relationship: 
+C evaporation (kg/s) is calculated from the Lewis relationship:
 C        Ev=hc.Asurf.(Wsurf-Wzone)/Cp (kg/s)
 C where,
 C       hc = convective heat transfer coefficient (W/m^2.degC)
@@ -2101,8 +2072,8 @@ C except where explicitly redefined.
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       common/spmfxst/ispmxist,spflnam
       common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
-     &              nnodat(mspmnod),spmdat(mspmnod,mspmdat) 
-      common/spmatlbl/spmlabel(mspmnod)   
+     &              nnodat(mspmnod),spmdat(mspmnod,mspmdat)
+      common/spmatlbl/spmlabel(mspmnod)
       common/resspm/ndatspm(mspmnod),dataspm(mspmnod,8),
      &         strspm(mspmnod,8),unitspm(mspmnod,8),txtspm(mspmnod,8)
       common/zonspmf/zspmf1(mcom),zspmf2(mcom)
@@ -2149,7 +2120,7 @@ C to the current value of vapsur(icomp).
       ev=alpha*asurf*(wsurf-wzone)/cp
       vapsur(icomp)=vapsur(icomp)+ev
 
-C Determine the heat drawn from the surface during evaporation. 
+C Determine the heat drawn from the surface during evaporation.
 
 C Enthalpy of water vapour at tsurf (approximate value is 2550E+03).
       hvap=cndwat1(tsurf)
@@ -2157,7 +2128,7 @@ C Enthalpy of water vapour at tsurf (approximate value is 2550E+03).
 C Enthalpy of saturation at tsurf.
       hsurf=shth2O(tsurf)*1000.
 
-C Surface evaporative loss (W/m^2).      
+C Surface evaporative loss (W/m^2).
       genflxf(icomp,isurf,inode)=-ev*(hvap-hsurf)/sna(icomp,isurf)
 
 C Results output.
@@ -2165,18 +2136,18 @@ C Results output.
       dataspm(ispmnod,1)=genflxf(icomp,isurf,inode)*sna(icomp,isurf)
       strspm(ispmnod,1)='Evaporation (W)'
       dataspm(ispmnod,2)=ev*1000.
-      strspm(ispmnod,2)='Evaporation(g/s)'    
+      strspm(ispmnod,2)='Evaporation(g/s)'
 
 C As a temporary measure, use zone-related variables, zspmf1 and zspmf2,
 C for results library storage. Output is limited to one special material
 C per zone.
       zspmf1(ispmloc(ispmnod,1))=dataspm(ispmnod,1)
-      zspmf2(ispmloc(ispmnod,1))=dataspm(ispmnod,2)   
+      zspmf2(ispmloc(ispmnod,1))=dataspm(ispmnod,2)
 
 C Trace output.
       if(itc.le.0.or.nsinc.lt.itc.or.ispmxist.eq.0)goto 999
       if(itrace(19).eq.0.or.nsinc.gt.itcf.or.
-     &   izntrc(icomp).ne.1) goto 999     
+     &   izntrc(icomp).ne.1) goto 999
       write(outs,'(a,a)') 'Trace output from SPMCMP52 for ',
      &                                              spmlabel(ispmnod)
       call edisp(itu,outs)
@@ -2189,14 +2160,14 @@ C Trace output.
       call edisp(itu,outs)
       write(outs,'(f7.4)') ev
       call edisp(itu,outs)
-      write(outs,'(a)') 'Evaporative heat loss from surface (W/m^2):' 
-      call edisp(itu,outs) 
+      write(outs,'(a)') 'Evaporative heat loss from surface (W/m^2):'
+      call edisp(itu,outs)
       write(outs,'(F10.4)') genflxf(icomp,isurf,inode)
-      call edisp(itu,outs)   
-      write(outs,'(a)') 'Evaporative heat loss from surface (W):' 
-      call edisp(itu,outs) 
+      call edisp(itu,outs)
+      write(outs,'(a)') 'Evaporative heat loss from surface (W):'
+      call edisp(itu,outs)
       write(outs,'(F10.4)')genflxf(icomp,isurf,inode)*sna(icomp,isurf)
-      call edisp(itu,outs)   
+      call edisp(itu,outs)
   999 return
       end
 
@@ -2252,7 +2223,7 @@ C thrmli(icomp,isurf,ielem,4) = thickness
 C Special materials.
       common/spmfxst/ispmxist,spflnam
       common/spmatl/nspmnod,ispmloc(mspmnod,3),ispmtyp(mspmnod,2),
-     &              nnodat(mspmnod),spmdat(mspmnod,mspmdat) 
+     &              nnodat(mspmnod),spmdat(mspmnod,mspmdat)
       common/spmatlbl/spmlabel(mspmnod)
 
 C Phase change material.
@@ -2262,7 +2233,7 @@ C Phase change material.
       character spmlabel*16,spflnam*72,outs*124,strspm*16,unitspm*16,
      &          txtspm*72
       logical close
-      
+
 C PCM layer pointers.
       if(icomp.ne.ispmloc(ispmnod,1))then
          write(outs,*)'SPMAT53 fatal error: incorrect zone assignment!'
@@ -2318,13 +2289,13 @@ C is intra-construction and tfs if located at the internal surface.
 
 C If phase change is underway, calculate the new value of
 C conductivity (W/m.degC):
-C  appcon = consol          for tfcm < tmelt (solid phase);  
-C         = conliq          for tfcm > tsoli (liquid phase); 
+C  appcon = consol          for tfcm < tmelt (solid phase);
+C         = conliq          for tfcm > tsoli (liquid phase);
 C         = consol+conliq/2 for tmelt < tfcm < tsoli (mixed phase);
 C ... and apparent heat capacity (J/kg.degC):
 c  appsht = shtsol + lht
-C   where lht = 0                      for tsoli < tfcm < tmelt (solid or liquid phase); 
-C             = shtliqa*tfcm + shtliqb for tmelt < tfcm < tsoli (mixed phase). 
+C   where lht = 0                      for tsoli < tfcm < tmelt (solid or liquid phase);
+C             = shtliqa*tfcm + shtliqb for tmelt < tfcm < tsoli (mixed phase).
          if(tfcm.lt.tmelt)then
             appcon=consol
             appsht=shtsol
@@ -2398,7 +2369,7 @@ C thermal capacity.
                iouter=ielem+1
             endif
 
-C Original averaged capacity before adjustment.       
+C Original averaged capacity before adjustment.
             capouter=thrmli(icomp,isurf,iouter,2)*
      &                               thrmli(icomp,isurf,iouter,3)*
      &                               (thrmli(icomp,isurf,iouter,4)/2.)
@@ -2518,7 +2489,7 @@ C Save node-related heat stored.
 C Save total PCM heat stored.
       spcmtf=spcm(icomp,isurf,inode-1)+spcm(icomp,isurf,inode)+
      &                                      spcm(icomp,isurf,inode+1)
-       
+
 C Results output.
       ndatspm(ispmnod)=4
       if(nsinc.le.1)then
@@ -2543,7 +2514,7 @@ C Results output.
       if(THKsum.gt.0)dataspm(ispmnod,2)=sumSHTTHK
       dataspm(ispmnod,3)=(spcmtp+spcmtf)/2.0
       spcmtp=spcmtf
-      dataspm(ispmnod,4)=pcmfac(icomp,isurf,inode)      
+      dataspm(ispmnod,4)=pcmfac(icomp,isurf,inode)
 
 C As a temporary measure, use zone-related variable, zspmf1, for
 C for results library storage. Output is limited to one special
@@ -2638,7 +2609,7 @@ C Phase change material.
 
       character spflnam*72,spmlabel*16,outs*124,strspm*16,unitspm*16,
      &          txtspm*72
-      
+
 C PCM layer pointers.
       if(icomp.ne.ispmloc(ispmnod,1))then
          write(outs,*)'SPMAT54 fatal error: incorrect zone assignment!'
@@ -2703,15 +2674,15 @@ C is intra-construction and tfs if located at the internal surface.
 
 C If phase change is underway, calculate the new value of
 C conductivity (W/m.degC):
-C  appcon = consol          for tfcm < tmelt (solid phase);  
-C         = conliq          for tfcm > tsoli (liquid phase); 
+C  appcon = consol          for tfcm < tmelt (solid phase);
+C         = conliq          for tfcm > tsoli (liquid phase);
 C         = (spcmc/shtliq)*conliq+[(shtliq-spcmc)/shtliq]*consol
 C           where spcmc=[(c1/shtb)*exp(shtb*tfcm)-(c1/shtb)*exp(shtb*tmelt)]/1000
 C                shtliq=(c1/shtb)*[exp(shtb*tsoli)-exp(shtb*tmelt)]/1000
 C                           for tmelt < tfcm < tsoli (mixed phase);
 C ... and apparent heat capacity (J/kg.degC):
-C  appsht = shtsol          for tfcm < tmelt (solid phase); 
-C         = sht2            for tfcm > tsoli (liquid phase); 
+C  appsht = shtsol          for tfcm < tmelt (solid phase);
+C         = sht2            for tfcm > tsoli (liquid phase);
 C         = c1*exp(shtb*tfcm)+shtsol
 C                           for tmelt < tfcm < tsoli (mixed phase).
          if(tfcm.lt.tmelt)then
@@ -2786,7 +2757,7 @@ C thermal capacity.
                iouter=ielem+1
             endif
 
-C Original averaged capacity before adjustment.       
+C Original averaged capacity before adjustment.
             capouter=thrmli(icomp,isurf,iouter,2)*
      &                               thrmli(icomp,isurf,iouter,3)*
      &                               (thrmli(icomp,isurf,iouter,4)/2.)
@@ -2911,11 +2882,11 @@ C Results output.
          txtspm(ispmnod,4)='PCMFAC of middle node'
       endif
 
-      if(Rtot.gt.0)dataspm(ispmnod,1)=THKsum/Rtot      
+      if(Rtot.gt.0)dataspm(ispmnod,1)=THKsum/Rtot
       if(THKsum.gt.0)dataspm(ispmnod,2)=sumSHTTHK
       dataspm(ispmnod,3)=((spcmtp+spcmtf)/2.0)
       spcmtp=spcmtf
-      dataspm(ispmnod,4)=pcmfac(icomp,isurf,inode)      
+      dataspm(ispmnod,4)=pcmfac(icomp,isurf,inode)
 
 C As a temporary measure, use zone-related variable, zspmf1, for
 C results library storage. Output is limited to one special material
@@ -3006,7 +2977,7 @@ C Phase change material.
 
       character spflnam*72,spmlabel*16,outs*124,strspm*16,unitspm*16,
      &          txtspm*72
-      
+
 C PCM layer pointers.
       if(icomp.ne.ispmloc(ispmnod,1))then
          write(outs,*)'SPMAT55 fatal error: incorrect zone assignment!'
@@ -3161,7 +3132,7 @@ C thermal capacity.
                iouter=ielem+1
             endif
 
-C Original averaged capacity before adjustment.       
+C Original averaged capacity before adjustment.
             capouter=thrmli(icomp,isurf,iouter,2)*
      &                               thrmli(icomp,isurf,iouter,3)*
      &                               (thrmli(icomp,isurf,iouter,4)/2.)
@@ -3290,11 +3261,11 @@ C Results output.
          txtspm(ispmnod,4)='PCMFAC of middle node'
       endif
 
-      if(Rtot.gt.0)dataspm(ispmnod,1)=THKsum/Rtot  
+      if(Rtot.gt.0)dataspm(ispmnod,1)=THKsum/Rtot
       if(THKsum.gt.0)dataspm(ispmnod,2)=sumSHTTHK
       dataspm(ispmnod,3)=(spcmtp+spcmtf)/2.0
       spcmtp=spcmtf
-      dataspm(ispmnod,4)=pcmfac(icomp,isurf,inode)      
+      dataspm(ispmnod,4)=pcmfac(icomp,isurf,inode)
 
 C As a temporary measure, use zone-related variables, zspmf1, for
 C results library storage. Output is limited to one special material
@@ -3351,7 +3322,7 @@ C Phase change material model: extended approach allowing sub-cooling.
 C Created by Achim Geissler, July 30 2008. Parameters are defined in
 C file databases/mscomp.db1. Calls:
 C    LatentHeat(k,T1,T2) - calculate integral of latent heat between
-C                          T1 and T2 for k=1 'standard' range and 
+C                          T1 and T2 for k=1 'standard' range and
 C                          k=0 sub-cooled PCM;
 C    PCMStore()          - calculate change in stored latent heat,
 C                          apparent conduction and apparent specific
@@ -3402,7 +3373,7 @@ C Local variables.
       real LayFrac(3)
       integer presk
       integer db(3)	!- Debug variable, stores 'case' of PCM heating/cooling.
-      
+
 C Data.
       data LayFrac /0.25, 0.5, 0.25/	!- PCM split into 3 layers.
 
@@ -3438,7 +3409,7 @@ C Total latent heat capacity of PCM (J/kg).
 
       if(spmdat(ispmnod,9).eq.0)then
          LHSimple=.true.
-      else 
+      else
          LHSimple=.false.
       endif
 
@@ -3498,7 +3469,7 @@ C specific heat from previous time step.
          presk=pk(icomp,isurf,nloc)
 
 C Calculated change in stored latent heat, apparent conduction and
-C apparent specific heat capacity based on present and future 
+C apparent specific heat capacity based on present and future
 C temperatures and state, 'k', of PCM.
          call PCMStore(tpcm,tfcm,presk,storedLH,appcon,appshc,
      &                                                     db(iphnl))
@@ -3566,7 +3537,7 @@ C thermal capacity.
                iouter=ielem+1
             endif
 
-C Original averaged capacity before adjustment.       
+C Original averaged capacity before adjustment.
             capouter=thrmli(icomp,isurf,iouter,2)*
      &                               thrmli(icomp,isurf,iouter,3)*
      &                               (thrmli(icomp,isurf,iouter,4)/2.)
@@ -3700,7 +3671,7 @@ C Results output.
       endif
 
       if(Rtot.gt.0)dataspm(ispmnod,1)=thrmli(icomp,isurf,ielem,4)/Rtot
-      dataspm(ispmnod,2)=sumStoredLH 
+      dataspm(ispmnod,2)=sumStoredLH
       dataspm(ispmnod,3)=sumStoredLH*thrmli(icomp,isurf,ielem,2)*
      &                                    thrmli(icomp,isurf,ielem,4)
       dataspm(ispmnod,4)=pcmfac(icomp,isurf,inode)
@@ -3772,13 +3743,13 @@ C T1, and end temperature, T2:
 C          k = normal (1) or sub-cooled (0) range;
 C          LHSimple = simple (.true.) or extended function (.false.).
 
-C The returned value is LH, the stored/released latent heat (J/kg); 
+C The returned value is LH, the stored/released latent heat (J/kg);
 C thereby, an energy balance is formulated from the viewpoint of the
 C surrounding zone:
 C            > 0 when T1 > T2, i.e. heat released;
 C            < 0 when T1 < T2, i.e. heat stored.
 
-C The base equations are taken from the PhD thesis of Sabine Hoffmann, 
+C The base equations are taken from the PhD thesis of Sabine Hoffmann,
 C University of Weimar, September 2006 ('Advanced' function extended
 C by factor T^f).
 
@@ -3797,38 +3768,38 @@ C Phase change material parameters.
       real Lges			!- total latent heat capacity of PCM (J/kg)
       real consol,conliq	!- conductivity of solid and liquid phase (W/(m.K))
       real shcsol,shcliq	!- specific heat of solid and liquid phase (J/(kg.K)
-      real a1,b1,c1,d1,e1,f1	!- equation parameters for non-subcooling (a1-f1) 
+      real a1,b1,c1,d1,e1,f1	!- equation parameters for non-subcooling (a1-f1)
       real a2,b2,c2,d2,e2,f2	!  and subcooling (a2-f2) states
       logical LHSimple		!- .true. is simple model, .false. is extended model
- 
+
 C Local variables.
       real aa,bb,ff,LH_T1,LH_T2,v_func
 
 C Which function?
-      if(k.eq.0)then 
+      if(k.eq.0)then
          if(LHSimple)then	!- simple function
             aa=a2
             bb=b2
-         else			!- extended function                 
+         else			!- extended function
             ff=f2		!- aa to ee are set in function v_func()
-         endif    
+         endif
       else			!- function defaults to 'normal' mode
          if(LHSimple)then	!- simple function
             aa=a1
             bb=b1
          else			!- extended function
-            ff=f1		!- aa to ee are set in function v_func()	
+            ff=f1		!- aa to ee are set in function v_func()
          endif
       endif
 
       if(LHSimple)then		!- simple function
          LatentHeat=exp(aa)/bb*(exp(bb*T1)-exp(bb*T2))
-      else    
+      else
 
 C Calculate functions to build LatentHeat.
          LH_T1=T1**ff*v_func(k,T1)-ff*T1**(ff-1)*v_func(k,T1)  ! integral approximation
          LH_T2=T2**ff*v_func(k,T2)-ff*T2**(ff-1)*v_func(k,T2)
-         LatentHeat=(LH_T1-LH_T2)*1000.0   !- change upper and lower boundary 
+         LatentHeat=(LH_T1-LH_T2)*1000.0   !- change upper and lower boundary
                                            !  of array to comply with sign
                                            !  definition for LatentHeat and
                                            !  adapt unit from J/g to J/kg
@@ -3845,10 +3816,10 @@ C Functions for extended latent heat integral.
 
       real function v_func(k,T)
       implicit none
-      
+
       integer k
       real T
-      
+
 C Phase change material parameters.
       common/pcmparm/tsoli,tmelt,sub,Lges,consol,conliq,shcsol,shcliq,
      &                    a1,b1,c1,d1,e1,f1,a2,b2,c2,d2,e2,f2,LHSimple
@@ -3879,7 +3850,7 @@ C Coefficients for extended function.
          dd=d1
          ee=e1
       endif
-      
+
 C Calculate coefficients.
       CC1=2.0*aa*(dd**2.0)+(bb**2.0)*ee-bb*cc*dd-2.0*dd*ee
       CC2=2.0*dd/SQRT((-(bb**2.0)+4.0*dd))
@@ -3949,7 +3920,7 @@ C The following cases are checked/differentiated:
 C      heating - cases 1, 2, 3, 4, 5, 6 and 7;
 C      cooling - cases 1, 2, 3, 5, 6, 7 and 8.
 
-C          
+C
 C         ^ C (J/(kg.K)
 C         |                       _____
 C         |                      /     \
@@ -3958,14 +3929,14 @@ C         |                    /    7    \
 C         |                   /           \
 C         |                  /             \ 6   5   tsoli   (5)
 C         |      (1)      8 /      tmelt    \---<-->---/----<-->- C_liq
-C   C_sol |-----<-->-------/----------\   tsoli2      / 4   
+C   C_sol |-----<-->-------/----------\   tsoli2      / 4
 C         |             tmelt2   1   2 \             /
 C         |                             \           /
-C         |                              \         /  
+C         |                              \         /
 C         |                               \   3   /
 C         |                                \     /
 C         |                                 \___/
-C         |-------------------------------------------------> T (degC)      
+C         |-------------------------------------------------> T (degC)
 C *****************
 
       if(TnS.lt.TnS1)then
@@ -4059,7 +4030,7 @@ C PCM is solid (case 1), StoredLH = 0.
                Debug=1
             elseif(TnS.gt.tmelt.and.TnS1.le.tmelt)then
 
-C PCM non-subcooled solidification is completed (case 2).              
+C PCM non-subcooled solidification is completed (case 2).
                AppCon=(1.0E0-storedLH/Lges)*consol+storedLH/Lges*conliq
                AppSHC=SHCLIQ+storedLH/(TnS-tmelt)
                storedLH=0.0E0		!- now all PCM is solid
@@ -4098,8 +4069,8 @@ C PCM begins to solidify in sub-cooled mode (k=0, case 6).
 C PCM is subcooled partial liquid and not completely
 C solidified (k=0, case 7).
                storeThisTS=LatentHeat(0,TnS,TnS1)
-               storedLH=storedLH-storeThisTS 
-               if(storedLH.lt.0.0E+0)storedLH=0.0E+0	!- storedLH >= 0 
+               storedLH=storedLH-storeThisTS
+               if(storedLH.lt.0.0E+0)storedLH=0.0E+0	!- storedLH >= 0
                AppCon=(1.0E0-storedLH/Lges)*consol+storedLH/Lges*conliq
                AppSHC=shcsol+storeThisTS/(TnS-TnS1)	!- to be verified
                Debug=7
@@ -4131,6 +4102,7 @@ C This routine transfers PCM domain data to the H3K reporting
 C facilities. Created by Achim Geissler, June 17 2008.
 
       subroutine PCM_to_h3k(iZone,iNode,iSurf,ispmnod)
+      use h3kmodule
       implicit none
 
 #include "building.h"
@@ -4177,15 +4149,22 @@ C Pad index to 'XX'.
 
 C Output available PCM layer data.
       do idat=1,ndat
-         call add_to_xml_reporting(
-     &     dataspm(ispmnod,idat),
-     &     'bui/spm/'//spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod)))//
-     &     '/z' // cZone_Chars // '/s' // cSurf_Chars //
-     &     '/nd' // cNode_Chars // 
-     &     strspm(ispmnod,idat)(1:lnblnk(strspm(ispmnod,idat))),
-     &     'units',
-     &     unitspm(ispmnod,idat)(1:lnblnk(unitspm(ispmnod,idat))),
-     &     txtspm(ispmnod,idat)(1:lnblnk(txtspm(ispmnod,idat))))
+         Call AddToReport(rvBuiSpm%Identifier,
+     &      dataspm(ispmnod,idat),
+     &      spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod))),
+     &      '/z' // cZone_Chars // '/s' // cSurf_Chars
+     &   // '/nd' // cNode_Chars,
+     &      strspm(ispmnod,idat)(1:lnblnk(strspm(ispmnod,idat))))
+
+         Call AddToReportDetails(rvBuiSpm%Identifier,
+     &      spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod))),
+     &      '/z' // cZone_Chars // '/s' // cSurf_Chars
+     &   // '/nd' // cNode_Chars,
+     &      strspm(ispmnod,idat)(1:lnblnk(strspm(ispmnod,idat))),
+     &      'units',
+     &      unitspm(ispmnod,idat)(1:lnblnk(unitspm(ispmnod,idat))),
+     &      txtspm(ispmnod,idat)(1:lnblnk(txtspm(ispmnod,idat))))
+
       enddo
 
       return

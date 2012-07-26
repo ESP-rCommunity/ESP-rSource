@@ -39,7 +39,7 @@ C     IFIL +  4 : mass flow results library
 C     IFIL +  5 : climate file
 C     IFIL +  6 : output data file
 C     IFIL +  7 : TDF file
-C     IFIL +  8 : unused
+C     IFIL +  8 : for external help text
 C     IFIL +  9 : MLC database
 C     IFIL + 10 : plant results library
 C     IFIL + 11 : plant component database
@@ -53,6 +53,7 @@ C           - Principle use is for function button facility on workstations.
 
 C For operational details refer to the ESP-r program user's manual.
       program res
+      USE START_UP
 #include "building.h"
 #include "model.h"
 #include "esprdbfile.h"
@@ -76,7 +77,6 @@ C default file names for databases
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/C21/IFCFG,cfgroot,LCFGF
       COMMON/OUTPCH/ICOUT
-      common/pophelp/h(60)
       COMMON/DEFLT/IDEFLT
       COMMON/PSY1/PATMOS,IOPT
       common/trc/itrc
@@ -87,6 +87,7 @@ C Flags identifying if results libries are available. =0 no lib, =1 lib exists.
       COMMON/LIBOK/IBLIB,IFLIB,ICLIB,IELIB,IPLIB
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Simulation period and save option.
@@ -109,6 +110,9 @@ C Comfort parameters and hash table.
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
+      integer ireportunit ! zero is default one is W two is kW three Joules
+      common/repunit/ireportunit
+
 C CFD commons.
       common/flvimg/imgtyp,IMOPTS
       common/flvpar/Lflpar(MCOM)
@@ -116,8 +120,8 @@ C CFD commons.
 C Flags for generic data retrieval routines:
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
 
-C Optional title for graph and up to 5 other labels and their positions.
-      common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
+C Optional title for graph and up to 10 other labels and their positions.
+      common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
@@ -135,6 +139,16 @@ C IEEE callback (Solaris)
       integer SIGFPE_bps      
 #endif
 #endif
+
+#ifdef OSI
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iicapture   ! to pass to updcapt
+#else
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iicapture   ! to pass to updcapt
+#endif
       
       character cAppName*12      
       
@@ -144,10 +158,10 @@ C IEEE callback (Solaris)
       logical     unixok,there
 
       CHARACTER ITEM(19)*23
-      CHARACTER*72 H,LCFGF,actf,Lflpar
+      CHARACTER*72 LCFGF,actf,Lflpar
       character inf*144,LCMDFL*144,outs248*248,xfile*144
       character outs*124,MODE*4,tg*1,delim*1
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF,LFCFG
+      character*72 LFCFG
       character path*72,spsname*8,paction*16
       character cfgroot*24,fs*1,act*16,aut*12
       character journcmd*20,jfile*72,uname*24,cjfile*72,OUTSTR*124
@@ -156,13 +170,24 @@ C IEEE callback (Solaris)
       character firstbit*72,secondbit*72
       character longtmp*144
 
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
+
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
 
 C Initialize global common data.
       call ezero
       call curmodule('res ')
       cAppName = 'res'
+      helpinapp='res'  ! set once for the application
+      helpinsub='res'  ! set for MAIN
       IUOUT=6
       IUIN=5
       ICOUT=0
@@ -180,6 +205,7 @@ C     NSIGFIG=3
       IUTDF=IFIL+7
       IUTDFA=IFIL+8
       matver=0.0   ! initial assumption of binary materials database
+      ireportunit=0 ! assume normal units for tabular listings
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -226,11 +252,9 @@ C have not been read in.
       IOPT=2
       graftitle=' '
       ngrlbl=0
-      grlbl(1)=' '
-      grlbl(2)=' '
-      grlbl(3)=' '
-      grlbl(4)=' '
-      grlbl(5)=' '
+      grlbl(1)=' '; grlbl(2)=' '; grlbl(3)=' '; grlbl(4)=' '
+      grlbl(5)=' '; grlbl(6)=' '; grlbl(7)=' '; grlbl(8)=' '
+      grlbl(9)=' '; grlbl(10)=' '
 
 C Set CFD visualization parameter files to UNKNOWN
       do 8 I=1,MCOM
@@ -306,8 +330,15 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=16
         LIMIT =16
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r Results Analysis ',
+     &  cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r Results Analysis: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
+
       IF(MMOD.EQ.-6)then
         ICOUT=0
       else
@@ -318,16 +349,25 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
-          call win3d(menuchw,15,15,5,3,igl,igr,igt,igb,igw,igwh)
-          igw=igr-igl
-          igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+          iiw1=15; iiw2=15; iiw3=5; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
           call opencpw
           call opensetup
-          call updcapt(1)
+          iicapture=1
+          call updcapt(iicapture)
         elseif(iglib.eq.2)then
-          CALL win3d(menuchw,9,20,5,3,igl,igr,igt,igb,igw,igwh)
-          igw=igr-igl
-          igwh=igb-igt
+          iiw1=9; iiw2=20; iiw3=5; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
         endif
         call setzscale()
         call setgscale()
@@ -343,11 +383,6 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
       ITRC=1
       IF(MMOD.NE.-6)ICOUT=IUOUT
       CALL ESPrVersion("summary",cAppName,IUOUT)
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow, Scotland.'
-      call edisp(IUOUT,outs)
-      call edisp(IUOUT,' ')
 
 C Find the users home folder then get users custom settings.
 C Make temporary use of file unit ixunit.
@@ -395,9 +430,9 @@ C Scan the defaults file for default configuration.
 C Take command line file name as initial results file name.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
         LCMDFL=inf
-        write(outs248,'(a,a)')' the input file is: ',LCMDFL
-        call edisp248(iuout,outs,80)
-        call tstamp('>',outs)
+        call edisp(iuout,'  ')  ! echo blank line
+        write(outs248,'(a,a)')'The input file is: ',LCMDFL
+        call edisp248(iuout,outs248,90)
       else
         LCMDFL='UNKNOWN'
       endif
@@ -405,9 +440,9 @@ C Take command line file name as initial results file name.
 C Check for command line actions.
       if(act(1:2).ne.'  '.and.act(1:4).ne.'UNKN')then
          paction=act
-         write(outs,'(a,a)')' the action is: ',paction
+         write(outs,'(2a)') 'The action is: ',paction
          call edisp(iuout,outs)
-         write(outs,'(a,a)')'RES: the input action is: ',paction
+         write(outs,'(2a)') 'RES: the input action is: ',paction
          call tstamp('>',outs)
          if(aut(1:6).eq.'silent')then
            autook=.true.
@@ -444,27 +479,23 @@ C Initialise results library.
 C Get the name of the configuration file name 
 C Read the plant configuration file.
         if(IPLIB.eq.0.or.IPLIB.eq.1)then
-          h(1)='In order to read the plant results'
-          h(2)='you must supply the prj `plant only`'
-          h(3)='model configuration file name. Note  '
-          h(4)='that res CANNOT read the PLANT configuration '
-          h(5)='file unless it has first read the model '
-          h(6)='configuration file.'
+          helptopic='res_dialog_for_cfg_file'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           write(longtmp,'(a)') LCFGF(1:lnblnk(LCFGF))
 
           iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
           if(iglib.eq.1.or.iglib.eq.3)then
             CALL EASKF(longtmp,' ',
-     &      ' Corresponding system configuration file name ? ',
-     &      96,' ','configuration file',IER,4)
+     &        ' Corresponding system configuration file name ?',
+     &        96,' ','configuration file',IER,nbhelp)
           elseif(iglib.eq.2)then
             CALL EASKF(longtmp,' ',
-     &      ' Corresponding system configuration file name ? ',
-     &      144,' ','configuration file',IER,4)
+     &        ' Corresponding system configuration file name ?',
+     &        144,' ','configuration file',IER,nbhelp)
           else
             CALL EASKF(longtmp,' ',
-     &      ' Corresponding system configuration file name ? ',
-     &      96,' ','configuration file',IER,4)
+     &        ' Corresponding system configuration file name ?',
+     &        96,' ','configuration file',IER,nbhelp)
           endif
           if(ier.eq.-3) goto 902  ! cancel detected pass back -3 in ier.
 
@@ -736,7 +767,6 @@ C external tool.
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
 C A set of possible image formats which can be accepted within
 C a model configuration file. These definitions are held in the
@@ -773,10 +803,17 @@ C  limgfil (72 char) name of the image file << ?? longer string >>
       character ilist*200,dolist*254
       character fmttag*4,fmtexe*20,tfile*72,focus*4
       character longtfile*144,longtfiledos*144
-      character topic*248,head*136,act*1,h*72
+      character topic*248,head*136,act*1
       integer iglib  ! if one then X11 if 2 then GTK if 3 text only.
 
       logical concat,show,unixok
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='imgdisp'  ! set for cfiles
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -864,17 +901,9 @@ C If GTK version then use GTK calls to display images in popup.
         if((iton.eq.0.or.iforce.eq.1))then
 
 C Setup help text for the popup.
-          h(1)='Images can be associated with a model for various'
-          h(2)='purposes: '
-          h(3)=' * document conditions at the physical site'
-          h(4)=' * document assumptions in the model'
-          h(5)=' * indicate what performance is expected'
-          h(6)='   '
-          h(7)='Images are added to a model via the context->images'
-          h(8)='menu item. There can be up to 10 images associate with'
-          h(9)='a model. '
-          h(10)='Images of type GIF and XBM and ?? are supported.'
-          CALL PHELPW(10,IHW,IER)
+          helptopic='images_associated_with'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPW(nbhelp,IHW,IER)
 
           do 99 img=1,noimg
             if(imgfmt(img)(1:3).eq.'GIF'.or.
@@ -937,6 +966,46 @@ C Dummy routines from common3dv.F
       end
 
       subroutine chgelev(icelev)
+      return
+      end
+
+      subroutine chgsun(isunhour)
+      return
+      end
+
+      subroutine chgeye(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,
+     &   JITOBS,JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,JITHLZ,
+     &   JITPPSW)
+
+C Passed paramters.
+      real EVX,EVY,EVZ,VX,VY,VZ,EAN,DIS
+
+C Depending on computer type set integer size of passed parameters.
+#ifdef OSI
+      integer JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
+      integer JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+#else
+      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
+      integer*8 JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+#endif     
+      return
+      end
+
+      subroutine chgzonpik(jizgfoc,jnzg)
+#ifdef OSI
+      integer jizgfoc,jnzg  ! for use with viewtext
+#else
+      integer*8 jizgfoc,jnzg  ! for use with viewtext
+#endif
+      return
+      end
+
+      subroutine chgzonpikarray(jnznog,jnznogv)
+#ifdef OSI
+      integer jnznog,jnznogv
+#else
+      integer*8 jnznog,jnznogv
+#endif
       return
       end
 

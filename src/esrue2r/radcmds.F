@@ -30,6 +30,7 @@ C  genimage  - generates image(s) to screen or file.
 C  dispimage - displays an image file to screen.
 C  getglr    - recovers view information and runs glare calculation.
 C  getdf     - runs daylight factor calculation.
+C  getlux    - runs grid of illuminance calculation.
 
 C Useful block of code:
 C          if(pathtype(1:9).eq.'radinhome')then
@@ -50,11 +51,17 @@ C  else simulate the scene by calling simscene
       integer lnblnk  ! function definition
 
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
 
-      character outs*124,tfile*72,h*72
+      character outs*124,tfile*72
 
       LOGICAL fict,XST,OK,DOK
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='autorad'  ! set for subroutine
 
       ITA2=IFIL+7
       ITA3=IFIL+10
@@ -100,14 +107,20 @@ C Search for existing 'sky' file. (If found delete)
       else
 
 C Generate sky command use a sun for all skys except for daylight factors.
+C Day_lux is similar to Day_fact except it returns lux values rather than
+C daylight factors for a CIE sky. Purpose Illum uses the current sky.
         if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
-     &          SCENEPURP(ISCENE)(1:8).eq.'Internal'.or.
-     &          SCENEPURP(ISCENE)(1:5).eq.'Glare') then
+     &      SCENEPURP(ISCENE)(1:8).eq.'Internal'.or.
+     &      SCENEPURP(ISCENE)(1:5).eq.'Glare'.or.
+     &      SCENEPURP(ISCENE)(1:5).eq.'Illum') then
           call settime(IRM,IRD,XRT)
           write(outs,'(a,2i3,f6.2,a,f5.2,2(a,f7.1),a)')'gensky',IRM,IRD,
      &      XRT,' +s -g ',rgrfl,' -a ',sitelat,' -o ',-sitelongdif,
      &      ' -m 0.0'
         elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
+          write(outs,'(a,f5.2,2(a,f7.1),a)') 'gensky 6 20 12.0 -c -g ',
+     &      rgrfl,' -a ',sitelat,' -o ',-sitelongdif,' -m 0.0'
+        elseif (SCENEPURP(ISCENE)(1:7).eq.'Day_lux') then
           write(outs,'(a,f5.2,2(a,f7.1),a)') 'gensky 6 20 12.0 -c -g ',
      &      rgrfl,' -a ',sitelat,' -o ',-sitelongdif,' -m 0.0'
         elseif (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
@@ -153,7 +166,7 @@ C Generate new octree.
         call touchrif(LBSRIF(ISCENE))
       endif
 
-C If scene purpose is coupling or daylight coefficients then return.
+C If scene purpose is coupling, daylight coefficients then return.
       if (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
         return
       elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_coef') then
@@ -162,12 +175,10 @@ C If scene purpose is coupling or daylight coefficients then return.
 
 C Continue and run radiance simulation?
       dok=.true.
-      h(1)='You can start the visual simulation at this point by'
-      h(2)='answering yes. If you say no you can start the simulation'
-      h(3)='later. Note the simulation can take several minutes, if '
-      h(4)='hours to complete. '
+      helptopic='e2r_proceed_with_sim'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       call ASKOK('Scene description is now complete.',
-     &           'Proceed with simulation?',OK,dok,4)
+     &           'Proceed with simulation?',OK,dok,nbhelp)
       if (OK) then
         if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
      &      SCENEPURP(ISCENE)(1:8).eq.'Internal') then
@@ -187,6 +198,12 @@ C Generate <<? default view information ?>> and then the image.
 C Calculate the daylight factors and then diplay them via dfgridlbl.
           call getdf
           call DFGRIDLBL('d')
+        elseif (SCENEPURP(ISCENE)(1:7).eq.'Day_lux'.or.
+     &          SCENEPURP(ISCENE)(1:5).eq.'Illum') then
+
+C Calculate the illuminance at grid points and then diplay via dfgridlbl.
+          call getlux
+          call DFGRIDLBL('l')
         endif
       endif
 
@@ -295,7 +312,8 @@ C Run rtrace. << ?? what about pathtype?? >>
         write(doitl,'(4a,1x,9a)') 'cd ',runpath(1:lnrp),
      &      '; rtrace -ov -I -h @',
      &      optnfil(1:lnblnk(optnfil)),octfil(1:lnblnk(octfil)),
-     &       ' < ',LDFGRID(1:lnblnk(LDFGRID)),' | rcalc -e ',QT,
+     &       ' < ',LDFGRID(ISCENE)(1:lnblnk(LDFGRID(ISCENE))),
+     &       ' | rcalc -e ',QT,
      &       '$1=179*(0.265*$1+0.670*$2+0.065*$3)',QT,' >> ',
      &      cmdact(1:lnblnk(cmdact))
         call runit(doitl,'-')
@@ -412,8 +430,9 @@ C Run rtrace.
           write(doitl,'(4a,1x,9a)') 'cd ',runpath(1:lnrp),
      &      '; rtrace -ov -I -h @',
      &      optnfil(1:lnblnk(optnfil)),octfil(1:lnblnk(octfil)),
-     &       ' < ',LDFGRID(1:lnblnk(LDFGRID)),' | rcalc -e ',QT,
-     &       '$1=(0.265*$1+0.670*$2+0.065*$3)/(1000000*2*PI/145.)',
+     &      ' < ',LDFGRID(ISCENE)(1:lnblnk(LDFGRID(ISCENE))),
+     &      ' | rcalc -e ',QT,
+     &      '$1=(0.265*$1+0.670*$2+0.065*$3)/(1000000*2*PI/145.)',
      &                               QT,' >>',LTMPFA(1:lnblnk(LTMPFA))
           call runit(doitl,'-')
 
@@ -462,26 +481,52 @@ C settime - user choice of standard times for sky generation
 #include "building.h"
 #include "e2r_common.h"
 
-      common/pophelp/h(60)
-      character H*72
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='settime'  ! set for subroutine
 
 C Ask winter am/pm spring am/pm summer am/pm
-      H(1)='Pick a season/ time for the sky. ' 
-      CALL EASKABCD('A scene is created for a specific day and time.',
-     &   'Select one from these defaults:','winter AM','winter PM',
-     &        'summer AM','summer PM',IWDT,1)
+      helptopic='standard_times_of_day'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      ino=0
+      idno=1
+      call MENUATOL('Select day & time for scene.',
+     &    'Select one from list:',
+     &    'a winter morning','b winter noon','c winter afternoon',
+     &    'd spring morning','e spring noon','f spring afternoon',
+     &    'g summer morning','h summer noon','i summer afternoon',' ',
+     &    ' ',' ',ino,idno,nbhelp)
+      IWDT=INO
       if(IWDT.eq.1)then
         irdoy=15
         rtime=10.0
       elseif(IWDT.eq.2)then
         irdoy=15
-        rtime=15.0
+        rtime=12.0
       elseif(IWDT.eq.3)then
+        irdoy=15
+        rtime=15.0
+      elseif(IWDT.eq.4)then
+        irdoy=74
+        rtime=9.5
+      elseif(IWDT.eq.5)then
+        irdoy=74
+        rtime=12.0
+      elseif(IWDT.eq.6)then
+        irdoy=74
+        rtime=15.5
+      elseif(IWDT.eq.7)then
         irdoy=160
         rtime=9.0
-      elseif(IWDT.eq.4)then
+      elseif(IWDT.eq.8)then
         irdoy=160
-        rtime=15.0
+        rtime=12.0
+      elseif(IWDT.eq.9)then
+        irdoy=160
+        rtime=16.0
       endif
       CALL EDAYR(irdoy,IRD,IRM)
       XRT=rtime
@@ -548,6 +593,7 @@ C defview generates a new default view.
 
 C External view point.
       if (SCENEPURP(ISCENE)(1:8).eq.'External') then
+
 C Create a default view, set file name, set bounds for slightly
 C smaller than the ground disk. Save off zone bounds before
 C adding in the ground disk.
@@ -627,43 +673,43 @@ C ITP =1 - image only; =2 - glare info to display on image.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
 
       character tpic*72,tpicd*72,tgif*72,tgifd*72
-      character pf*72,h*72,outs*124,ltmp*72
+      character pf*72,outs*124,ltmp*72
       character doit*256
       integer IWT,IWP   ! for radio buttons
 
       logical XST,anim,unixok
       CHARACTER*3 NMTHNM(12)
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
       DATA NMTHNM/'Jan','Feb','Mar','Apr','May','Jun','Jul',
      &'Aug','Sep','Oct','Nov','Dec'/
 
+      helpinsub='genimage'  ! set for subroutine
       ITA2=IFIL+7
       anim=.false.
 
       if (ITP.eq.1) then
 
 C Ask if an animation required.
-        H(1)='Rendering can only be for one instant in time or'
-        H(2)='at intervals during a period of a day.  You can '
-        H(3)='adjust the parameters needed to create a set of'
-        H(4)='images which can be combined to form an amimation.'
+        helptopic='single_time_or_sequence'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKAB(' ',' Image(s):','single time instance',
-     &     'sequence',IWDA,4)
+     &    'sequence',IWDA,nbhelp)
         if(iwda.eq.2)then
           anim = .true.
           IWDQ=2
         else
           if(mono.gt.0)then
-            H(1)='Rendering can only be directed to screen on colour'
-            H(2)='monitors.  You can adjust the visualisation '
-            H(3)='parameters interactively and a summary of commands'
-            H(4)='which Radiance understands is provided. '
-            H(5)='  '
-            H(6)='If running on Windows you should choose file option.'
+            helptopic='render_to_screen_or_file'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL EASKAB(' ','Image rendering to:','screen','file',
-     &        IWDQ,6)
+     &        IWDQ,nbhelp)
           else
             IWDQ=2
           endif
@@ -746,19 +792,17 @@ C ITST is the start time (int).
           CALL ASKTIM(2,1,IAMO,IADO,iardoy,ATIMEST,ITST,IER)
 
 C Ask for end time of the animation.
-          H(1)='The end of the animation is assumed to be on the same'
-          H(2)='day and must be less than 24.0'
+          helptopic='end_time_of_animation'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           ATIMEFN = ATIMEST + 1.0
           CALL EASKR(ATIMEFN,' ',' End time of the animation? ',
-     &      ATIMEST,'W',24.0,'W',0.2,'end time of anim',IER,2)
+     &      ATIMEST,'W',24.0,'W',0.2,'end time of anim',IER,nbhelp)
 
 C Figure out the increment.
-          H(1)='The increment is usually set as a compromise between'
-          H(2)='the visual jump between views and computation time. '
           IWT=1
           CALL EASKATOG('Interval between views:',' ','one min',
      &      'five min','ten min','15 min','20 min','30 min','cancel',
-     &      IWT,2)
+     &      IWT,nbhelp)
           if(IWT.EQ.1)then
             DT=0.016666
           elseif(IWT.EQ.2)then
@@ -779,11 +823,9 @@ C Up the image quality if low.
           if(imgqua(1:3).eq.'Low')imgqua = 'Medium'
 
 C Size of the images (set IFP to double so can filter).
-          H(1)='The image frame size is a compromise between the'
-          H(2)='visual detail and and computation time. '
           IWP=1
           CALL EASKATOG('Image frame size (pixels):',' ','240',
-     &      '320','400','500','600','700','cancel',IWP,2)
+     &      '320','400','500','600','700','cancel',IWP,nbhelp)
           if(IWP.EQ.1)then
             ipicx=240
           elseif(IWP.EQ.2)then
@@ -809,25 +851,25 @@ C Loop from start and increment until at or past the finish time.
      &        -sitelongdif,' -m 0.0'
             CALL wrtsky(outs)
 
-C We will need pic & gif file for this time. Write out and then use
+C We will need hdr & gif file for this time. Write out and then use
 C sdelim with a N to remove spaces.
             write(tpic,'(a,2i3,f6.3,a)') runpath(1:lnrp),
-     &        IAMO,IADO,CURT,'.pic'
+     &        IAMO,IADO,CURT,'.hdr'
             call sdelim(tpic,tpicd,'N',IW)
             write(tgif,'(a,2i3,f6.3,a)') runpath(1:lnrp),
      &        IAMO,IADO,CURT,'.gif'
             call sdelim(tgif,tgifd,'N',IW)
 
-C If animation use a standard name for pic file (which is going to
-C be converted into a timestamp named gif file. Any existing pic
+C If animation use a standard name for hdr file (which is going to
+C be converted into a timestamp named gif file. Any existing hdr
 C file should be removed.
             if (ipckvew.gt.0) then
               write(pf,'(5a)') runpath(1:lnrp),
      &          picfil(1:lnblnk(picfil)),'_',
-     &          rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.pic'
+     &          rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.hdr'
             else
               write(pf,'(3a)') runpath(1:lnrp),
-     &          picfil(1:lnblnk(picfil)),'_X.pic'
+     &          picfil(1:lnblnk(picfil)),'_X.hdr'
             endif
             CALL ERPFREE(ITA2,ISTAT)
             INQUIRE (FILE=pf,EXIST=XST)
@@ -858,7 +900,7 @@ C call rad to create image(s) based on current setting of ipckvew.
             endif
 
 C Debug.
-C            write(6,*) doit
+            write(6,*) doit
 
             write(outs,'(2a,i3,F6.2)') 'Currently working on...',
      &        NMTHNM(IAMO),IADO,CURT
@@ -871,7 +913,7 @@ C Generate a label and put into tpic.
      &        tpicd(1:lnblnk(tpicd))
 
 C Debug.
-C            write(6,*) doit
+            write(6,*) doit
 
             call runit(doit,'-')
 
@@ -880,7 +922,7 @@ C Generate command to convert to a gif.
      &        tgifd(1:lnblnk(tgifd))
 
 C Debug.
-C            write(6,*) doit
+            write(6,*) doit
 
             call runit(doit,'-')
 
@@ -890,32 +932,31 @@ C Increment the current time.
           end do
         else
 
-C See if there is an existing pic file by this name.
+C See if there is an existing hdr file by this name.
           if (ipckvew.gt.0) then
             write(pf,'(5a)') runpath(1:lnrp),
      &        picfil(1:lnblnk(picfil)),'_',
-     &        rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.pic'
+     &        rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.hdr'
           else
             write(pf,'(3a)') runpath(1:lnrp),
-     &        picfil(1:lnblnk(picfil)),'_X.pic'
+     &        picfil(1:lnblnk(picfil)),'_X.hdr'
           endif
           CALL ERPFREE(ITA2,ISTAT)
           INQUIRE (FILE=pf,EXIST=XST)
           if(XST)then
-            H(1)='The image processing tends to `hang` when '
-            H(2)='trying to overwrite an existing image. '
+            helptopic='overwrite_existing_pic'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             write(outs,'(a,a)') 'There is an existing picture file ',
      &        pf(1:lnblnk(pf))
             CALL EASKABC(outs,'Do you want to: ','overwrite',
-     &        'choose another name','cancel',IWR,2)
+     &        'choose another name','cancel',IWR,nbhelp)
             if(IWR.eq.3)then
               return
             elseif(IWR.eq.2)then
-              H(1)='Root name for pictures created with `rad`'
  1111         ltmp = picfil
               CALL EASKS(ltmp,
-     &          ' Picture root name (modify slightly) ? ',
-     &          ' ',72,'xx','picture root file name',IER,1)
+     &          ' Picture root name (modify slightly) ?',
+     &          ' ',72,'xx','picture root file name',IER,nbhelp)
               if(ltmp(1:2).ne.'  ') then
                 picfil = ltmp
               else
@@ -948,7 +989,7 @@ C Set file name including path and open.
         endif
 
 C Debug.
-C        write(6,*) doit
+        write(6,*) doit
 
         call edisp(iuout,'Look in the text window for progress.')
         call runit(doit,'-')
@@ -982,22 +1023,26 @@ C Assumes that the path to the image is given.
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iix1,iiy1,iix2,iiy2
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iix1,iiy1,iix2,iiy2
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
       
       logical XST,unixok
 
 C Generate picture and glare file names.
       if (ipckvew.gt.0) then
-        write(pf,'(a,a,a,a)') picfil(1:lnblnk(picfil)),'_',
-     &                rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.pic'
-        write(gf,'(a,a,a,a)') picfil(1:lnblnk(picfil)),'_',
+        write(pf,'(4a)') picfil(1:lnblnk(picfil)),'_',
+     &                rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.hdr'
+        write(gf,'(4a)') picfil(1:lnblnk(picfil)),'_',
      &                rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.glr'
       else
-        write(pf,'(a,a)') picfil(1:lnblnk(picfil)),'_X.pic'
-        write(gf,'(a,a)') picfil(1:lnblnk(picfil)),'_X.glr'
+        write(pf,'(2a)') picfil(1:lnblnk(picfil)),'_X.hdr'
+        write(gf,'(2a)') picfil(1:lnblnk(picfil)),'_X.glr'
       endif
 
       if (ITP.eq.1) then
@@ -1069,18 +1114,24 @@ C Check for daylight factor results.
           call edisp (iuout,'Note: -ive angle to left of view center.')
           if (MMOD.eq.8) then
             CALL startbuffer()
-            call win3d(menuchw,8,8,5,3,igl,igr,igt,igb,igw,igwh)
-            igw=igr-igl
-            igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+            iiw1=8; iiw2=8; iiw3=5; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            call win3d(menuchw,8,8,5,3,igl,igr,igt,igb,igw,igwh)
+            igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+            igw=int(iigw); igwh=int(iigwh)
             igwid=igw
             igheight=igwh
             call axiscale(igwid,igheight,XMIN,XMAX,YMIN,YMAX,xsc,ysc,
      &                  sca,Xadd,Yadd)
 
 C Stuff into static variables for later access and draw axis.
-            call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
-            call vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,'UGR')
-            call horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,0,
+            call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
+            call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,'UGR')
+            call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,
      &        'Degrees from view center')
 
 C Draw values as a circle.
@@ -1249,20 +1300,20 @@ C        write(6,*) ' -dj',xval
 C Run findglare to identify glare sources.
       if (ipckvew.gt.0) then
         write(pf,'(a,a,a,a)') picfil(1:lnblnk(picfil)),'_',
-     &                rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.pic'
+     &                rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.hdr'
         write(gf,'(a,a,a,a)') picfil(1:lnblnk(picfil)),'_',
      &                rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.glr'
       else
-        write(pf,'(a,a)') picfil(1:lnblnk(picfil)),'_X.pic'
+        write(pf,'(a,a)') picfil(1:lnblnk(picfil)),'_X.hdr'
         write(gf,'(a,a)') picfil(1:lnblnk(picfil)),'_X.glr'
       endif
       write(doit,'(12a)') 'cd ',runpath(1:lnblnk(runpath)),
-     &            '; findglare -ga 5-',glst(1:lnblnk(glst)),':5 -p ',
-     &             pf(1:lnblnk(pf)),' ',rendopt(1:lnblnk(rendopt)),' ',
-     &             octfil(1:lnblnk(octfil)),' > ',gf(1:lnblnk(gf))
+     &  '; findglare -ga 5-',glst(1:lnblnk(glst)),':5 -p ',
+     &   pf(1:lnblnk(pf)),' ',rendopt(1:lnblnk(rendopt)),' ',
+     &   octfil(1:lnblnk(octfil)),' > ',gf(1:lnblnk(gf))
 
 C Debug.
-C      write(6,*) doit
+      write(6,*) doit
 
       call runit(doit,'-')
 
@@ -1280,14 +1331,19 @@ C getdf runs daylight factor calculation and then displays them.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
 
       CHARACTER df*72,outs*124,ltmp*72,doit*256
       character QT*1,OUTSTR*124
       character tfile*72,outsl*160
-      character h*72
 
       logical XST,RECALC
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='getdf'  ! set for subroutine
 
       ITA1 = IFIL+6
       ITA2 = IFIL+7
@@ -1297,7 +1353,7 @@ C Check for daylight factor points - if none then try and read grid file.
       if (NDFP.eq.0) then
         call ERPFREE(ITA1,ISTAT)
         write(tfile,'(a,a)')runpath(1:lnrp),
-     &                      LDFGRID(1:lnblnk(LDFGRID))
+     &    LDFGRID(ISCENE)(1:lnblnk(LDFGRID(ISCENE)))
         call FPOPEN(ITA1,ISTAT,1,1,tfile)
         if(ISTAT.eq.0)then
   42      CALL STRIPC(ITA1,OUTSTR,0,ND,0,'grid points',IFER)
@@ -1327,17 +1383,11 @@ C Check for daylight factor points - if none then try and read grid file.
 
 C Ask for convergence limit.
       CONV=0.25
-      h(1)='The calculations will strart with one ambient bounce and'
-      h(2)='gradually increase the number of bounces until the change'
-      h(3)='is less than a value (convergence criteria). The smaller'
-      h(4)='the value the longer the calculations will take. '
-      h(5)=' '
-      h(6)='If the display freezes it may be because the underlying'
-      h(7)='rtrace calculations are hung. You may have to kill that'
-      h(8)='process. '
+      helptopic='e2r_df_convergence'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKR(CONV,'Daylight factor convergence criteria',
-     &     '(Max total diff between iterations) ',0.00,
-     &     'F',5.0,'W',0.25,'df convergence criteria',IER,8)
+     &  'Max total diff between iterations) ',0.00,
+     &  'F',5.0,'W',0.25,'df convergence criteria',IER,nbhelp)
 
 C Reset DFVALS to 0.0
       do 5 I=1,500
@@ -1354,11 +1404,11 @@ C Ask if the parameters should be reset.
       XAB=-1.
       call RADPAR('ab',XAB)
       if (XAB.gt.1.5) then
-        h(1)='Sometimes Radiance gets confused. This is one place'
-        h(2)='where starting again can correct this. '
+        helptopic='e2r_df_confusion'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKAB('The rendering parameters would appear to be set',
      &    'from a previous simulation.  Do you want to: ','use them',
-     &                     'start from beginning (recommended)',IWR,2)
+     &    'start from beginning (recommended)',IWR,nbhelp)
         if (IWR.eq.2) then
           write (outsl,'(2a)') crenrp(1:lnblnk(crenrp)),
      &                         ' -ab 1 -ad 1024 -as 512 -av 0 0 0'
@@ -1370,21 +1420,21 @@ C Ask if the parameters should be reset.
       endif
 
 C Daylight factors output file.
-      write (df,'(2a)') SCENERT(NSCENE)(1:lnblnk(SCENERT(NSCENE))),'.df'
+      write (df,'(2a)') SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),'.df'
       call ERPFREE(ITA1,ISTAT)
  1111 write (ltmp,'(2a)') runpath(1:lnrp),df(1:lnblnk(df))
       call FINDFIL(ltmp,XST)
+      helptopic='e2r_df_file_overwrite'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       if(XST)then
         write(outs,'(2a)')'There is an existing file ',df(1:lnblnk(df))
         CALL EASKAB(outs,'Do you want to: ','overwrite',
      &                            'choose another name',IWR,0)
         if (IWR.eq.2) then
           ltmp = df
-          h(1)='You have a chance to save the past by giving a'
-          h(2)='slightly different file name for the calculatons.'
  1221     CALL EASKS(ltmp,
-     &       'Daylight factors results file name (modify slightly) ?',
-     &                      ' ',72,'xx.df','df resfile name',IER,2)
+     &      'Daylight factors results file name (modify slightly) ?',
+     &      ' ',72,'xx.df','df resfile name',IER,nbhelp)
           if(ltmp.ne.'  '.and.ltmp.ne.df) then
             df = ltmp
           else
@@ -1404,11 +1454,12 @@ C Open sky file and read ground ambient level.
 C Call rtrace and calculate daylight factors. This is the point where
 C the logic jumps back to if additional resolution is required.
  99   write(doit,'(4a,1x,6a,f5.2,4a)') 'cd ',runpath(1:lnrp),
-     &        '; rtrace -opv -I -h @',optnfil(1:lnblnk(optnfil)),
-     &      octfil(1:lnblnk(octfil)),
-     &     ' < ',LDFGRID(1:lnblnk(LDFGRID)),' | rcalc -e ',QT,
-     &   '$1=$1;$2=$2;$3=$3;$4=((0.265*$4+0.670*$5+0.065*$6)*100)/(PI*',
-     &        ga,')',QT,' > ',df(1:lnblnk(df))
+     &  '; rtrace -opv -I -h @',optnfil(1:lnblnk(optnfil)),
+     &  octfil(1:lnblnk(octfil)),
+     &  ' < ',LDFGRID(ISCENE)(1:lnblnk(LDFGRID(ISCENE))),
+     &  ' | rcalc -e ',QT,
+     &  '$1=$1;$2=$2;$3=$3;$4=((0.265*$4+0.670*$5+0.065*$6)*100)/(PI*',
+     &  ga,')',QT,' > ',df(1:lnblnk(df))
       call runit(doit,'-')
 
 C Now need to read in daylight factors and store in memory.
@@ -1550,6 +1601,301 @@ C Save RIF file and update options file.
 
 C Move results file and recalculate DFs. Note this move creates
 C a catch-22 for viewing the DF later on.
+        call ERPFREE(ITA1,ISTAT)
+        write(doit,'(7a)') 'cd ',runpath(1:lnrp),'; mv ',
+     &        df(1:lnblnk(df)),' ',df(1:lnblnk(df)),'-'
+        call runit(doit,'-')
+        goto 99
+      endif
+      call ERPFREE(ITA1,ISTAT)
+
+      return
+      end
+
+
+C ********************** getlux **********************
+C getlux runs illuminance calculation and then displays them
+C using logic similar to getdf.
+
+      SUBROUTINE getlux
+#include "building.h"
+#include "e2r_common.h"
+      
+      integer lnblnk  ! function definition
+
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
+
+      CHARACTER df*72,outs*124,ltmp*72,doit*256
+      character QT*1,OUTSTR*124
+      character tfile*72,outsl*160
+
+      logical XST,RECALC
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='getlux'  ! set for subroutine
+
+      ITA1 = IFIL+6
+      ITA2 = IFIL+7
+      QT=CHAR(39)
+
+C Check for illuminance points - if none then try and read grid file.
+      if (NDFP.eq.0) then
+        call ERPFREE(ITA1,ISTAT)
+        write(tfile,'(a,a)')runpath(1:lnrp),
+     &    LDFGRID(ISCENE)(1:lnblnk(LDFGRID(ISCENE)))
+        call FPOPEN(ITA1,ISTAT,1,1,tfile)
+        if(ISTAT.eq.0)then
+  42      CALL STRIPC(ITA1,OUTSTR,0,ND,0,'grid points',IFER)
+          if (IFER.eq.0) then
+            NDFP=NDFP+1
+            K=0
+            CALL EGETWR(OUTSTR,K,XTMP,0.,0.,'-','grid x',IER)
+            DFPTS(NDFP,1)=XTMP
+            CALL EGETWR(OUTSTR,K,XTMP,0.,0.,'-','grid y',IER)
+            DFPTS(NDFP,2)=XTMP
+            CALL EGETWR(OUTSTR,K,XTMP,0.,0.,'-','grid z',IER)
+            DFPTS(NDFP,3)=XTMP
+            CALL EGETWR(OUTSTR,K,DFDIR(1),0.,0.,'-','vec x',IER)
+            CALL EGETWR(OUTSTR,K,DFDIR(2),0.,0.,'-','vec y',IER)
+            CALL EGETWR(OUTSTR,K,DFDIR(3),0.,0.,'-','vec z',IER)
+            goto 42
+          endif
+          CALL DFGRIDLBL('g')
+        endif
+        call ERPFREE(ITA1,ISTAT)
+      endif
+      if (NDFP.eq.0) then
+        CALL USRMSG('Could not read grid points file.',
+     &     'Cannot simulate without this information.  Returning.','W')
+        return
+      endif
+
+C Ask for convergence limit.
+      CONV=0.25
+      helptopic='e2r_lux_convergence'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL EASKR(CONV,'illuminance convergence criteria',
+     &  'Max total diff between iterations) ',1.00,
+     &  'F',100.0,'W',10.0,'lux convergence criteria',IER,nbhelp)
+
+C Reset DFVALS (holding lux values) to 0.0
+      do 5 I=1,500
+        DFVALS(I)=0.0
+ 5    continue
+      ICONV=0
+
+C Check octree up to date.
+      call touchrif(RIFNAME(ISCENE))
+      
+C Check rendering parameters.  If the number of ambient bounces is 
+C greater than 1 then the simulation has probably been run before. 
+C Ask if the parameters should be reset.
+      XAB=-1.
+      call RADPAR('ab',XAB)
+      if (XAB.gt.1.5) then
+        helptopic='e2r_lux_confusion'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL EASKAB('The rendering parameters would appear to be set',
+     &    'from a previous simulation.  Do you want to: ','use them',
+     &    'start from beginning (recommended)',IWR,nbhelp)
+        if (IWR.eq.2) then
+          write (outsl,'(2a)') crenrp(1:lnblnk(crenrp)),
+     &                         ' -ab 1 -ad 1024 -as 512 -av 0 0 0'
+          write (crenrp,'(a)') outsl
+          IFC=3
+          call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+          call touchrif(RIFNAME(ISCENE))
+        endif
+      endif
+
+C Illuminance output file.
+      write (df,'(2a)') SCENERT(ISCENE)(1:lnblnk(SCENERT(ISCENE))),
+     &  '.lux'
+      call ERPFREE(ITA1,ISTAT)
+ 1111 write (ltmp,'(2a)') runpath(1:lnrp),df(1:lnblnk(df))
+      call FINDFIL(ltmp,XST)
+      helptopic='e2r_lux_file_overwrite'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      if(XST)then
+        write(outs,'(2a)')'There is an existing file ',df(1:lnblnk(df))
+        CALL EASKAB(outs,'Do you want to: ','overwrite',
+     &                   'choose another name',IWR,0)
+        if (IWR.eq.2) then
+          ltmp = df
+ 1221     CALL EASKS(ltmp,
+     &      'Illuminance results file name (modify slightly) ?',
+     &      ' ',72,'xx.lux','lux resfile name',IER,nbhelp)
+          if(ltmp.ne.'  '.and.ltmp.ne.df) then
+            df = ltmp
+          else
+            goto 1221
+          endif
+          goto 1111
+        else
+          write(ltmp,'(2a)')runpath(1:lnrp),df(1:lnblnk(df))
+          call FPOPEN(ITA1,ISTAT,1,1,ltmp)
+          CALL EFDELET(ITA1,ISTAT)
+        endif
+      endif
+
+C Open sky file and read ground ambient level.
+      call RRSKY(ITA1,ga,IER)
+
+C Call rtrace and calculate illuminance. This is the point where
+C the logic jumps back to if additional resolution is required.
+ 99   write(doit,'(4a,1x,9a)') 'cd ',runpath(1:lnrp),
+     &  '; rtrace -opv -I -h @',optnfil(1:lnblnk(optnfil)),
+     &  octfil(1:lnblnk(octfil)),
+     &  ' < ',LDFGRID(ISCENE)(1:lnblnk(LDFGRID(ISCENE))),
+     &  ' | rcalc -e ',QT,
+     &  '$1=$1;$2=$2;$3=$3;$4=179*(0.265*$4+0.670*$5+0.065*$6)',
+     &  QT,' > ',df(1:lnblnk(df))
+      call runit(doit,'-')
+
+C Now need to read in lux and store in memory.
+      DFmaxdiff=0.
+      write (ltmp,'(2a)') runpath(1:lnrp),df(1:lnblnk(df))
+      call FPOPEN(ITA1,ISTAT,1,1,ltmp)
+      do 10 I=1,NDFP
+        call STRIPC(ITA1,OUTSTR,4,ND,0,'lux results',IER)
+        K=0
+        call EGETWR(OUTSTR,K,X,0.0,0.0,'-','X coord',IER)
+        call EGETWR(OUTSTR,K,Y,0.0,0.0,'-','Y coord',IER)
+        call EGETWR(OUTSTR,K,Z,0.0,0.0,'-','Z coord',IER)
+        call EGETWR(OUTSTR,K,DFval,0.0,20000.0,'W','lux',IER)
+        do 20 J=1,NDFP
+          if (abs(DFPTS(J,1)-X).lt.0.001) then
+            if (abs(DFPTS(J,2)-Y).lt.0.001) then
+              if (abs(DFPTS(J,3)-Z).lt.0.001) then
+
+C Found the DF for the current sensor.
+                if (abs(DFVALS(J)-DFval).gt.DFmaxdiff) then
+                  DFmaxdiff=abs(DFVALS(J)-DFval)
+                endif
+                DFVALS(J)=DFval
+              endif
+            endif
+          endif
+ 20     continue
+ 10   continue
+
+C Debug.
+C      write(6,*) DFmaxdiff
+
+C Display current results and ambient rendering parameters.
+      call DFGRIDLBL('l')
+      XAB=-1.
+      XAD=-1.
+      XAS=-1.
+      call RADPAR('ab',XAB)
+      call RADPAR('ad',XAD)
+      call RADPAR('as',XAS)
+      write (outs,'(a,i2,2(a,i4))') 'Ambient parameter settings: -ab ',
+     &              nint(XAB),' -ad ',nint(XAD),' -as ',nint(XAS)
+      call edisp(iuout,outs)
+
+C Check for convergance.
+      RECALC=.false.
+
+C Check value of ad.
+      if (ICONV.eq.0) then
+        YAD=-1.0
+        call RADPAR('ad',YAD)
+        if (DFmaxdiff.gt.CONV) then
+
+C Increase value and recalculate.
+          if (YAD.lt.4000.0) then
+            YAD=YAD*2.
+            call RADPAR('ad',YAD)
+            RECALC=.true.
+          else
+            DFmaxdiff=9999.9
+            ICONV=1
+          endif
+        else
+
+C Decrease value (last change had no effect) and increase as.
+          if (YAD.gt.1025.0) then
+            YAD=YAD/2.
+            call RADPAR('ad',YAD)
+            DFmaxdiff=9999.9
+            ICONV=1
+          endif
+        endif
+      endif
+
+C Check value of as.
+      if (ICONV.eq.1) then
+        YAS=-1.0
+        call RADPAR('as',YAS)
+        if (DFmaxdiff.gt.CONV) then
+
+C Increase value and recalculate.
+          if (YAS.lt.((YAD/2.0)-1.0)) then
+            YAS=YAS*2.
+            call RADPAR('as',YAS)
+            RECALC=.true.
+          else
+            DFmaxdiff=9999.9
+            ICONV=2
+          endif
+        else
+
+C Decrease value (last change had no effect) and increase ab.
+          if (YAS.gt.513.0) then
+            YAS=YAS/2.
+            call RADPAR('as',YAS)
+            DFmaxdiff=9999.9
+            ICONV=2
+          endif
+        endif
+      endif
+
+C Check value of ab.
+      if (ICONV.eq.2) then
+        YAB=-1.0
+        call RADPAR('ab',YAB)
+        if (DFmaxdiff.gt.CONV) then
+
+C Increase value and recalculate.
+          if (YAB.lt.5.0) then
+            YAB=YAB+1.0
+            call RADPAR('ab',YAB)
+            RECALC=.true.
+          else
+            DFmaxdiff=9999.9
+            ICONV=3
+          endif
+        else
+
+C Decrease value (last change had no effect) and increase ??.
+          if (YAB.gt.2.0) then
+            YAB=YAB-1.0
+            call RADPAR('ab',YAB)
+            DFmaxdiff=9999.9
+            ICONV=3
+          endif
+        endif
+      endif
+
+C Save RIF file and update options file.
+      if (RECALC) then
+        call edisp(iuout,'Recalculating with different resolution...')
+        IFC=3
+        call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
+        call touchrif(RIFNAME(ISCENE))
+        if (NBSRIF(ISCENE).eq.1) then
+          call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
+          call touchrif(LBSRIF(ISCENE))
+        endif
+
+C Move results file and recalculate lux. Note this move creates
+C a catch-22 for viewing the lux later on.
         call ERPFREE(ITA1,ISTAT)
         write(doit,'(7a)') 'cd ',runpath(1:lnrp),'; mv ',
      &        df(1:lnblnk(df)),' ',df(1:lnblnk(df)),'-'

@@ -46,10 +46,14 @@ C Parameters for eline calls.
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iid1,iid2,iilastx,iilasty,iix,iiy
+      integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iid1,iid2,iilastx,iilasty,iix,iiy
+      integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
 C Start drawing; first header
@@ -63,6 +67,9 @@ C Start drawing; first header
 C Check if can draw in colour.
       colok=.false.
       if(nzonec.ge.6)colok=.true.
+
+C Cast values for horaxis.
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
 
 C Title strings.
       WRITE(etext,'(A,A)')  ' TDF file: ',LTDF(1:50)
@@ -97,7 +104,10 @@ C Must generalise this for various numbers of period fields.
         temp3=temp(1:9)
 
 C If plotting colours for different lines set this.
-        if(colok)call winscl('z',M)
+        if(colok)then
+          iicol=M
+          call winscl('z',iicol)
+        endif
         IF(M.EQ.1)THEN
           iid1=50; iid2=igt-15;
           if(use14)then
@@ -227,7 +237,10 @@ C If plotting colours for different lines set this.
         ENDIF
 
 C Reset colour to black.
-        if(colok)call winscl('-',0)
+        if(colok)then
+          iicol=0
+          call winscl('-',iicol)
+        endif
         call forceflush()
    60 CONTINUE
 
@@ -384,10 +397,10 @@ C Try axis of hours.
       iind=1
       intsph=ntsph
       iigbdoy=igbdoy
-      CALL horaxishdw(XMIN,XMAX,igl,igr,igb,Xadd,xsc,1,iind,intsph,
+      CALL horaxishdw(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,1,iind,intsph,
      &  iigbdoy,LABEL2)
-C      CALL horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,1,LABEL2)
-      CALL vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,LABEL1)
+C      CALL horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,1,LABEL2)
+      CALL vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,LABEL1)
 
       IEFLDS=NTBITS(IFOC)+NTSTAT(IFOC)
       ISFLDS=IEFLDS-NTBITS(IFOC)+1
@@ -395,7 +408,10 @@ C      CALL horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,1,LABEL2)
       DO 66 J=ISFLDS,IEFLDS
         M=M+1
 C If plotting colours for different lines set this.
-        if(colok)call winscl('z',M)
+        if(colok)then
+          iicol=M
+          call winscl('z',iicol)
+        endif
 
 C Scan TAB columns. Depending on which field use different symbol.
         IF(ITDFTR(IFOC,J).NE.2)THEN
@@ -433,7 +449,10 @@ C Scan TAB columns. Depending on which field use different symbol.
             endif
    55     CONTINUE
         ENDIF
-        if(colok)call winscl('-',0)
+        if(colok)then
+          iicol=0
+          call winscl('-',iicol)
+        endif
         call forceflush()
    66 CONTINUE
 

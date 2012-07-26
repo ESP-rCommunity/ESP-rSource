@@ -34,6 +34,7 @@ C << calling routine could focus - 1D/3D ground etc. so the necessary
 C << file names can be in place.
 
       program grd
+      USE START_UP
 #include "building.h"
 #include "model.h"
 #include "esprdbfile.h"
@@ -49,7 +50,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       integer menuchw,igl,igr,igt,igb,igw,igwh
@@ -86,20 +86,40 @@ C Name of current application
 
       LOGICAL MODIFY,MODBND,MODLEN,XST,GRDOK
 
-      DIMENSION ITEM(12)
-      CHARACTER H*72,LFILE*72,LCFGF*72
+      DIMENSION ITEM(11)
+      CHARACTER LFILE*72,LCFGF*72
       CHARACTER OUTSTR*124,ITEM*24,path*72,inf*144,LCMDFL*144
       character cfgroot*24,outs248*248,L144*144
       character inz*16,inzone*16,outs*124,MODE*4
 
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*44 ! for banner title via epages call
+
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSI
       integer numberofzones ! to pass to updwire rather than ncomp
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iicapture,iiazi    ! to pass to updcapt updazi
+#else
+      integer*8 numberofzones
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iicapture,iiazi    ! to pass to updcapt updazi
+#endif
       integer MITEM,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
 
 C Initialize global common data.
       call ezero
       call curmodule('grd ')
       cAppName = 'grd'
+      helpinapp='grd'  ! set once for the application
+      helpinsub='grd'  ! set for MAIN
       ITRC=0
       IUOUT=6
       IUIN=5
@@ -199,22 +219,34 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=16
         LIMIT =16
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r Construction Gridding ',
+     &  cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r Construction Gridding: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
 
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
-        CALL win3d(menuchw,3,2,2,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=3; iiw2=2; iiw3=2; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
           call opensetup
           numberofzones=0
           call updwire(numberofzones)  ! pass local integer
-          call updcapt(1)
-          call updazi(1)
+          iicapture=1; iiazi=1
+          call updcapt(iicapture)
+          call updazi(iiazi)
         endif
         call setzscale()
         mdispl=0
@@ -241,7 +273,8 @@ C after scan of .esprc file.
 C Take command line file name as initial configuration file.
       if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
         LCMDFL=inf
-        write(outs248,'(a,a)')' the input file is: ',LCMDFL
+        call edisp(iuout,'  ')  ! echo blank line
+        write(outs248,'(a,a)')'The input file is: ',LCMDFL
         call edisp248(iuout,outs248,80)
       else
         LCMDFL='  '
@@ -251,7 +284,8 @@ C Take command line zone name and
 C determine if focus should be to a single zone.
       if(inz(1:1).ne.' ')then
         inzone=inz
-        write(outstr,'(a,a)')' the input zone is: ',inzone
+        call edisp(iuout,'  ')  ! echo blank line
+        write(outstr,'(a,a)')'The input zone is: ',inzone
         call edisp(iuout,outstr)
       else
         inzone='ALL'
@@ -321,10 +355,9 @@ C Set flag so that bounds are checked.
       ELSEIF(ITRC.EQ.2)THEN
         ITEM(9)='r reporting >> verbose '
       ENDIF
-      ITEM(10)='* image control         '
-      ITEM(11)='? help                  '
-      ITEM(12)='- Exit gridding module  '
-      MITEM=12
+      ITEM(10)='? help                  '
+      ITEM(11)='- Exit gridding module  '
+      MITEM=11
 
 C If user has defined problem and perhaps resized the display then
 C redraw the problem image.
@@ -348,11 +381,8 @@ C Check if the problem is defined.
       ELSEIF(INO.EQ.1)THEN
 
 C Define the problem.
-        H(1)='The system configuration file holds the definition of'
-        H(2)='the building/plant to be simulated, including the'
-        H(3)='names of all of the files required. If the name given'
-        H(4)='matches an existing file it will be read in.'
-        H(5)=' '
+        helptopic='grd_model_cfg_file'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         L144=LCMDFL
 
 C Call EASKF depending on the current file name length.
@@ -364,20 +394,20 @@ C name with the full path.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
             CALL EASKF(L144,' Model configuration file?',' ',96,' ',
-     &        'config file name',IER,5)
+     &        'config file name',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
             CALL EASKF(L144,' Model configuration file?',' ',124,' ',
-     &        'config file name',IER,5)
+     &        'config file name',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
             CALL EASKF(L144,' Model configuration file?',' ',144,' ',
-     &        'config file name',IER,5)
+     &        'config file name',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
           CALL EASKF(L144,' Model configuration file?',' ',144,' ',
-     &      'config file name',IER,5)
+     &      'config file name',IER,nbhelp)
         else
           CALL EASKF(L144,' Model configuration file?',' ',96,' ',
-     &      'config file name',IER,5)
+     &      'config file name',IER,nbhelp)
         endif
 
         IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 289
@@ -435,7 +465,7 @@ C Display the ground modelling menu.
 
 C Display the moisture 1D gridding menu.
         CALL MENU1M(IDRW1,IDRW2,ITRC)
-      ELSEIF(INO.EQ.MITEM-4)THEN
+      ELSEIF(INO.EQ.MITEM-3)THEN
 
 C List out an ASCII file.
         CALL EASKS(LFILE,' File to look at ? ',
@@ -455,24 +485,11 @@ C End of file encountered, close the file and return to menu.
         ELSE
           CALL USRMSG(' ','Problem opening file... ','W')
         ENDIF
-      ELSEIF(INO.EQ.MITEM-3)THEN
+      ELSEIF(INO.EQ.MITEM-2)THEN
 
 C Toggle trace level.
         ITRC=ITRC+1
         IF(ITRC.GT.2)ITRC=0
-      ELSEIF(INO.EQ.MITEM-2)THEN
-
-C Image control.
-C Setting izgfoc=0 denotes that not in single zone edit mode.
-        nzg=NCOMP
-        DO 60 I=1,nzg
-          nznog(I)=I
-  60    CONTINUE
-
-C (Re)Set all surfaces to std line width.
-        CALL INLNST(1)
-        izgfoc=0
-        CALL EVSET('-',IER)
       ELSEIF(INO.EQ.MITEM-1)THEN
 
 C Help via the askabout facility in esru_ask.F The zero requests display

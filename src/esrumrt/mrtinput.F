@@ -30,7 +30,6 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       COMMON/OUTIN/IUOUT,IUIN
 
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
 
       COMMON/G1M/XM(MTV),YM(MTV),ZM(MTV),NSURM,JVNM(MSM,MV),
      &           NVERM(MSM),NTVM
@@ -48,9 +47,17 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 
       DIMENSION VERT(35),radtemp(MCUB)
       LOGICAL GEOLOAD,MRTLOAD,tmrt,temperr
-      CHARACTER VERT*29,H*72,CUBN*6
+      CHARACTER VERT*29,CUBN*6
       character outs*124
       integer MVERT,IVERT ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+
+      helpinsub='EDMRTC'  ! set for subroutine
 
 C Initialise zone vertex menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -89,17 +96,8 @@ C current menu line index. Build up text strings for the menu.
       MVERT=14
 
 C Help text for the menu.
-      H(1) ='This menu allows position dependent Mean Radiant '
-      H(2) ='Temperature analysis to be carried out base on one'
-      H(3) ='or more `sensors` placed within a zone. '
-      H(4) =' '
-      H(5) ='The size and placement of MRT sensors is defined via'
-      H(6) ='the zone viewfactor file which may be created and'
-      H(7) ='edited within PRJ. '
-      H(8) =' '
-      H(9) ='The function of MRT is to calculate inter-surface'
-      H(10)='viewfactors as well as viewfactors to MRT sensors '
-      H(11)='and to update the viewfactor file. '
+      helptopic='position_dep_mrt_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Now display the menu.
     3 CALL EMENU('  MRT sensor calculations',VERT,MVERT,IVERT)
@@ -203,7 +201,7 @@ C overwrite existing info in any existing file.
       ELSEIF(IVERT.EQ.13)THEN
 
 C Produce help text for the  menu.
-        CALL PHELPD('mrt control menu',11,'-',0,0,IER)
+        CALL PHELPD('mrt control menu',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.14)THEN
 
 C Exit to main routine but do a bit of processing if the definition
@@ -228,18 +226,25 @@ C IER=0 OK, IER=1 problem.
 #include "epara.h"
       COMMON/OUTIN/IUOUT,IUIN
 
-      common/pophelp/h(60)
-
       COMMON/MRT2/GEOLOAD,MRTLOAD
       COMMON /SURPNT/ ISPNT(6,MSM), GAREA(MSM), EMISI(MS)
       COMMON /TOTAL/ nsurmf, NGRID, NTRPOL
       common/tmrt2/temp(ms),tempmrt
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
-      CHARACTER H*72,STMENU*30,KEY*1
+      CHARACTER STMENU*30,KEY*1
 
       DIMENSION STMENU(30)
       LOGICAL GEOLOAD,MRTLOAD
       integer MVERT,IVERT ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+
+      helpinsub='EDSURT'  ! set for subroutine
 
 C Initial menu entry setup return if no file has been read in.
       IF(.NOT.GEOLOAD)RETURN
@@ -277,10 +282,8 @@ C If a long list include page facility text.
       IVERT=-3
 
 C Help text for menu.
-      H(1)='This menu allows the zone surface temperatures to be'
-      H(2)='displayed and edited.'
-      H(3)='Note that the surface emissivities are NOT currently'
-      H(4)='used.'
+      helptopic='surf_temp_mrt_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Now display the menu.
       CALL EMENU('  Surface temps',STMENU,MVERT,IVERT)
@@ -294,7 +297,7 @@ C Within the header so skip request.
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
 C Produce help text for the  menu.
-        CALL PHELPD('temp menu',4,'-',0,0,IER)
+        CALL PHELPD('temp menu',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 C If there are enough items allow paging control via EKPAGE.
         IF(IPFLG.EQ.1)THEN
@@ -305,16 +308,15 @@ C If there are enough items allow paging control via EKPAGE.
 
 C Edit item identified.
         CALL KEYIND(MVERT,IVERT,IFOC,IO)
-        H(1)='Emissivities can be read from zone construction'
-        H(2)='file or from measurements. Range 0.01 to 0.99.'
-        H(3)='NOTE: not used in the current version!'
+        helptopic='new_emissivity_dialog'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKR(EMISI(IFOC),' ',' New emisivity  ? ',
-     &             0.01,'W',0.99,'W',0.9,'surface emis',IER,3)
+     &    0.01,'W',0.99,'W',0.9,'surface emis',IER,nbhelp)
 
-        H(1)='Temperatures can be from simulation results or'
-        H(2)='from measurements.'
+        helptopic='new_temperature_dialog'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKR(temp(IFOC),' ',' New temperature (degC) ? ',
-     &             -50.,'W',80.,'W',20.,'surface temp',IER,2)
+     &    -50.,'W',80.,'W',20.,'surface temp',IER,nbhelp)
       ELSE
 C Not one of the legal menu choices.
         IVERT=-1
@@ -640,6 +642,7 @@ C as in filein.f.
          RETURN
        endif
 
+C For surface I derive values for NA NAP IAPNT APOL.
        CALL  ENCPOL(I,NA,NAP,IAPNT,APOL)
 
 C Not used...

@@ -70,11 +70,11 @@ C *********************************************************************
       integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       COMMON/PREC8/SLAT,SLON
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
@@ -84,10 +84,16 @@ C *********************************************************************
       LOGICAL SRFOK,MODIFY,MODBND,MODLEN
 
       DIMENSION ITEM(12),IVALS(MS)
-      CHARACTER*72 H
       CHARACTER SSRF*12,ITEMS(MS)*17,CORDNT*24
       CHARACTER ITEM*28,SZN*12,STTS*5
       integer MITEM,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='GRDSRF'  ! set for subroutine
 
       SZN=zname(IZ)
       SSRF=' '
@@ -117,22 +123,8 @@ C *********************************************************************
       MITEM=12
 
 C Help text for this menu.
-      H(1)='   This menu controls the surface gridding. In order'
-      H(2)='to activate this menu the surface should be selected'
-      H(3)='first via option (1). Option (5) toggles the selected'
-      H(4)='surface status (lumped/discretized). The minimum'
-      H(5)='gridding lines are issued for a discretized surface.'
-      H(6)=' '
-      H(7)=' Additional horrizontal and vertical gridding lines'
-      H(8)=' can be produced via options (2) and (3), '
-      H(9)=' respectivily. The last created gridding line can'
-      H(10)=' be cancled by option (4). However, only the '
-      H(11)='additional gridding lines can be cleared. To clear'
-      H(12)='the default gridding lines change the status to '
-      H(13)='lumped. Only the discretized surfaces are allowed'
-      H(14)='to be connected to other components via connection'
-      H(15)='surfaces and the lumped surfaces will be modeled'
-      H(16)='as 1D.'
+      helptopic='grd_surf_grid_ctl'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C If user has defined problem and perhaps resized the display then
 C redraw the problem image.
@@ -163,12 +155,9 @@ C Show the surface selection menu.
           icon=IZSTOCN(iz,iss)
           WRITE(ITEMS(ISS),'(A12,A5)')SSNAME(icon),STTS
    50   CONTINUE
-        H(1)='     Select the surface whose multi-D gridding details'
-        H(2)=' are to be edited or modified.'
-        H(3)=' '
         INPICK=1
    60   CALL EPICKS(INPICK,IVALS,' ',' ',17,
-     &              NSUR,ITEMS,'SELECT SRF.',IER,3)
+     &    NSUR,ITEMS,'SELECT SRF.',IER,nbhelp)
         IS=IVALS(1)
         IF(IS.EQ.0)THEN
           SSRF=' '
@@ -195,13 +184,9 @@ C Draw the elevation view for the selected surface.
       ELSEIF(INO.EQ.6)THEN
 
 C Add horrizontal gridding line.
-        H(1)=' Define the local x- and z-coordinates for '
-        H(2)=' a point through which the gridding line is'
-        H(3)=' required to be generated.'
-        H(4)=' '
         WRITE(CORDNT,'(1X,2F9.2)')XVALU,ZVALU
         CALL EASKS(CORDNT,' ','Define the x- and z- coordinates:',
-     &                            24,' ',' coordinates ',IER,4)
+     &    24,' ',' coordinates ',IER,nbhelp)
         NCRD = iCountWords(CORDNT)
         IF(NCRD.EQ.2)THEN
           K=0
@@ -220,7 +205,7 @@ C Add horrizontal gridding line.
 C  Add vertical gridding line.
         WRITE(CORDNT,'(1X,2F9.2)')XVALU,ZVALU
         CALL EASKS(CORDNT,' ','Define the x- and z- coordinates:',
-     &                            24,' ',' coordinates ',IER,0)
+     &    24,' ',' coordinates ',IER,nbhelp)
         NCRD = iCountWords(CORDNT)
         IF(NCRD.EQ.2)THEN
           K=0
@@ -268,7 +253,9 @@ C Draw the elevation view for the selected surface.
       ELSEIF(INO.EQ.MITEM-1)THEN
 
 C Help.
-        CALL PHELPD('surf grid',16,'-',0,0,IER)
+        helptopic='grd_surf_grid_ctl'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('surf grid',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.MITEM)THEN
 
 C Exit program.
@@ -295,10 +282,14 @@ C *********************************************************************
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym,iix,iiy    ! passed to etplot u2pixel
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym,iix,iiy    ! passed to etplot u2pixel
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C Define the  MAX & MIN surface coordinates.
@@ -311,9 +302,15 @@ C Clear the vieweing box, draw its border and return the offsets
 C which define it.  The win3d parameters match those in FACDRW
 C and SITPLN.
       call startbuffer()
-      CALL win3d(29,7,4,3,3,igl,igr,igt,igb,igw,igwh)
-      igw=igr-igl
-      igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+      iiw1=29; iiw2=7; iiw3=4; iiw4=3; iimenu=29
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &  iigl,iigr,iigt,iigb,iigw,iigwh)
+C      CALL win3d(29,7,4,3,3,igl,igr,igt,igb,igw,igwh)
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
       igwid=igw
       igheight=igwh
 
@@ -325,7 +322,7 @@ C Determine scaling ratios for the drawing and axis.
      &              Xadd,Zadd)
 
 C Place scaling in static C variables for use by line drawing routines.
-      call linescale(igl,Xadd,sca,igb,Zadd,sca)
+      call linescale(iigl,Xadd,sca,iigb,Zadd,sca)
 
 C Display header information.
       iside=1
@@ -334,10 +331,10 @@ C Display header information.
       call viewtext('Elevation View',iside,isize,ifont)
 
 C Draw a scale horizontal axis, move to beginning point.
-      CALL horaxis(XMIN,XMAX,igl,igr,igb,Xadd,sca,0,'X axis ->')
+      CALL horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,sca,0,'X axis ->')
 
 C Draw a scale vertical axis.
-      CALL vrtaxis(ZMIN,ZMAX,igl,igb,igt,Zadd,sca,0,0,'^ Z axis')
+      CALL vrtaxis(ZMIN,ZMAX,iigl,iigb,iigt,Zadd,sca,0,0,'^ Z axis')
       DO 20 IL=1,NLINB(IS)
         IV1=ILINE(IS,IL,1)
         IV2=ILINE(IS,IL,2)
@@ -943,8 +940,8 @@ C *********************************************************************
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      common/pophelp/h(60)
       COMMON/PREC8/SLAT,SLON
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GR3D21/NUMEDG,INDXE(MEZ),DCOSE(MEZ,3,3)
@@ -954,11 +951,18 @@ C *********************************************************************
       LOGICAL EDGOK,MODIFY,MODLEN,MODBND
 
       DIMENSION ITEM(17),IVALS(MEZ)
-      CHARACTER*72 H,LINDSC,DISCR
+      CHARACTER*72 LINDSC,DISCR
       CHARACTER SRF(2)*12,ITEMS(MEZ)*27
-      CHARACTER ITEM*30,SZN*12,STTS*9,STATS*15,MSG*124
+      CHARACTER ITEM*30,SZN*12,STTS*9,STATS*15,MSG*124,outs*124
       real DZX   ! To avoid variable name clash with DX from geometry.h
       integer MITEM,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='GRDEDG'  ! set for subroutine
 
       SZN=zname(IZ)
       SRF(1)=' '
@@ -994,18 +998,8 @@ C *********************************************************************
       MITEM=17
 
 C Help text for this menu.
-      H(1)='   This menu controls the edge gridding. In order'
-      H(2)=' to activate this menu the edge should be selected'
-      H(3)=' first via option (1). Option (2) allows the '
-      H(4)=' the definition of the gridding the z-direction.'
-      H(5)=' The construction details menu can be activated via'
-      H(6)=' option (3). Option (4) toggles the selected edge'
-      H(7)=' status (not defined/lumped/descritized). The status'
-      H(8)=' for all edges can be set to not defined, lupmed, or'
-      H(9)=' descritized via options (5), (6), or (7), '
-      H(10)=' respectivily. Both lumped and descritized edges '
-      H(11)=' can be connected to other components via connection'
-      H(12)=' surfaces.'
+      helptopic='grd_edge_gridding'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Draw the appropriate graph.
       IF(MODIFY)CALL GRAAPH(IDRW1,IDRW2)
@@ -1036,12 +1030,9 @@ C Show the edge selection menu.
           WRITE(ITEMS(IG),'(2(A,I2),A2,A9)')'edge at (',IVXEDG(IG,1),
      &                                ' - ',IVXEDG(IG,2),') ',STTS
    20   CONTINUE
-        H(1)='     Select the edge whose multi-D gridding details'
-        H(2)=' are to be edited or modified.'
-        H(3)=' '
    30   INPICK=1
         CALL EPICKS(INPICK,IVALS,' ',' ',27,
-     &              NUMEDG,ITEMS,'  SELECT  EDGE',IER,0)
+     &              NUMEDG,ITEMS,'  SELECT  EDGE',IER,nbhelp)
         IEG=IVALS(1)
         IF(IEG.GT.0.AND.IEG.LE.NUMEDG)THEN
 
@@ -1069,16 +1060,16 @@ C Define edge gridding in the local z-direction.
         ILNE=IVXEDG(IEG,2)
         THK3=SQRT((X(ILNE)-X(ILNS))**2+(Y(ILNE)-Y(ILNS))**2+
      &             (Z(ILNE)-Z(ILNS))**2)
-        H(1)='   The total z-length for the edge should not exceed'
-        WRITE(H(2),'(A,F12.5,A)')' The actual length which is (',
-     &                               THK3,') meters.'
+        WRITE(outs,'(A,F12.5,A)')' The actual length which is (',
+     &    THK3,') meters.'
+        call edisp(iuout,outs)
         WRITE(LINDSC,'(A,2(I2,A))')
      &        'Define the gridding intervals (m) from vertex (',
      &        ILNS,') to (',ILNE,')'
    40   NDZ=NDZE(IEG)
         WRITE(DISCR,'(1X,10F7.3)')(DZE(IEG,J),J=1,NDZ)
         CALL EASKS(DISCR,LINDSC,' ',72,' ',
-     &             ' gridding intervals ',IER,2)
+     &    ' gridding intervals ',IER,nbhelp)
         NDZ = iCountWords(DISCR)
         K=0
         TDZ=0.
@@ -1109,9 +1100,9 @@ C Draw the intervals.
 
 C Display the construction details menu.
         CALL CONEDG(IZ,IEG)
-         IDRW1=4
-         IDRW2=IEG
-         CALL GRAAPH(IDRW1,IDRW2)
+        IDRW1=4
+        IDRW2=IEG
+        CALL GRAAPH(IDRW1,IDRW2)
       ELSEIF(INO.EQ.9)THEN
 
 C Toggle the edge status.
@@ -1143,7 +1134,6 @@ C Set all the edges status to descretised.
       ELSEIF(INO.EQ.MITEM-2)THEN
 
 C List edge informations.
-C        CALL EPAGE
         CALL EDISP(IUOUT,
      &    ' No.  IV1   IV2   surface-1      surface-2      status')
         CALL EDISP(IUOUT,
@@ -1167,6 +1157,8 @@ C        CALL EPAGE
       ELSEIF(INO.EQ.MITEM-1)THEN
 
 C Display the help message.
+        helptopic='grd_edge_gridding'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD(' edges gridding ',12,'-',0,0,IER)
       ELSEIF(INO.EQ.MITEM)THEN
 
@@ -1198,9 +1190,13 @@ C *********************************************************************
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym,iix,iiy    ! passed to etplot u2pixel
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iupdown,isym,iix,iiy    ! passed to etplot u2pixel
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       IVRT1=IVXEDG(IEG,1)
@@ -1254,15 +1250,19 @@ C Find 2D extremes coordinates.
       XMX2=AMAX1(XS(1),XS(2),XS(3),XS(4),XS(5),XS(6),XS(7),XS(8))
       YMX2=AMAX1(YS(1),YS(2),YS(3),YS(4),YS(5),YS(6),YS(7),YS(8))
 
-C Clear the graphical feedback window.
-      CALL win3d(29,20,4,3,3,igl,igr,igt,igb,igw,igwh)
-      igw=igr-igl
-      igwh=igb-igt
+C Setup and pass in parameters to win3d.
+      iiw1=20; iiw2=4; iiw3=3; iiw4=3; iimenu=29
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &  iigl,iigr,iigt,iigb,iigw,iigwh)
+C      CALL win3d(29,20,4,3,3,igl,igr,igt,igb,igw,igwh)
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
       igwid=igw
       igheight=igwh
       CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,
      &              SCA,XADD,YADD)
-      CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
+      CALL LINESCALE(iigl,XADD,SCA,iigb,YADD,SCA)
 
 C Locate and label the two extreme vertices.
       CALL U2PIXEL(XS(1),YS(1),iix,iiy)
@@ -1346,7 +1346,7 @@ C *********************************************************************
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      common/pophelp/h(60)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PREC8/SLAT,SLON
 
@@ -1360,11 +1360,18 @@ C *********************************************************************
 
       DIMENSION ITEM(14),IUDLR(5)
 
-      CHARACTER*72 H,PROPS
+      CHARACTER*72 PROPS
       CHARACTER ITEM*30,SZN*12,SRF(2)*12,LMTS*32,DISCR*94
-      CHARACTER TEXT*124,BAR*1
+      CHARACTER TEXT*124,BAR*1,outs*124
       real DXX,DYX   ! To avoid variable name clash with DX from geometry.h
       integer MITEM,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CONEDG'  ! set for subroutine
 
 C Define the two surfaces.
       IS1=ISFEDG(IEG,1)
@@ -1396,6 +1403,8 @@ C Define the two surfaces.
       MITEM=14
 
 C Help for this menu.
+      helptopic='grd_display_edges'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Draw the appropriate graph.
       IF(MODIFY)CALL GRAAPH(IDRW1,IDRW2)
@@ -1418,13 +1427,13 @@ C Define X - gridding.
         DO 20 I=1,NDXE(IEG)
           THK1=THK1+DXE(IEG,I)
    20   CONTINUE
-        H(1)='   The total x-length for the edge should not exceed'
-        WRITE(H(2),'(A,F12.5,A)')' The actual length which is (',
-     &                               THK1,') meters.'
+        WRITE(outs,'(A,F12.5,A)')' The actual length which is (',
+     &    THK1,') meters.'
+        call edisp(iuout,outs)
         NDX=NDXE(IEG)
         WRITE(DISCR,'(1X,10F9.3)')(DXE(IEG,J),J=1,NDX)
         CALL EASKS(DISCR,'Define the X - gridding intervals (m).',
-     &             ' ',72,' ',' gridding intervals ',IER,2)
+     &    ' ',72,' ',' gridding intervals ',IER,nbhelp)
         NDX = iCountWords(DISCR)
         IF(NDX.GT.MZE)THEN
           CALL USRMSG(' ',' maximum allowable divisions exceeded.','W')
@@ -1460,13 +1469,13 @@ C Define Y - gridding.
         DO 40 I=1,NDYE(IEG)
           THK2=THK2+DYE(IEG,I)
    40   CONTINUE
-        H(1)='   The total y-length for the edge should not exceed'
-        WRITE(H(2),'(A,F12.5,A)')' The actual length which is (',
-     &                               THK2,') meters.'
+        WRITE(outs,'(A,F12.5,A)')' The actual length which is (',
+     &    THK2,') meters.'
+        call edisp(iuout,outs)
         NDY=NDYE(IEG)
         WRITE(DISCR,'(1X,10F9.3)')(DYE(IEG,J),J=1,NDY)
         CALL EASKS(DISCR,'Define the Y - gridding intervals (m).',
-     &             ' ',72,' ',' gridding intervals ',IER,2)
+     &    ' ',72,' ',' gridding intervals ',IER,nbhelp)
         NDY = iCountWords(DISCR)
         IF(NDY.GT.MZE)THEN
           CALL USRMSG(' ',
@@ -1504,18 +1513,15 @@ C Create a material rectangle.
 
 C Ask if user wishes to browse through materials to find suitable
 C reference. Use elistmat to select via materials array.
-        h(1)='If you want to keep the current material answer NO'
-        h(2)='otherwise you can find one by browsing the database.'
         CALL ASKOK('Browse the materials db for a new material',
-     &    '(NO exits the process)?',OK,dok,2)
+     &    '(NO exits the process)?',OK,dok,nbhelp)
         IF(OK)then
           iwhich = 0
           CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
           if(iwhich.eq.0)then
-            H(1)='If air is correct then accept, otherwise'
-            H(2)='reselect from the list or abort the task.'
             CALL EASKABC('Your selection is `0` i.e. air. Options:',
-     &        ' ','accept','reselect material','abort',iwair,2)
+     &        ' ','accept','reselect material','abort',
+     &        iwair,nbhelp)
             if(iwair.eq.2)then
               CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
             elseif(iwair.eq.3)then
@@ -1531,13 +1537,9 @@ C reference. Use elistmat to select via materials array.
         IUDLR(1)=IWHICH
         WRITE(LMTS,'(4(1X,I2))')(IUDLR(K),K=2,5)
         WRITE(PROPS,'(2A)')'enter the material rectangle borders',
-     &                      ' (left, down, right, and up)'
-        H(1)='   Enter the x- and y-coordinates for the lower left,'
-        H(2)=' then upper right corners, assuming that the vertex'
-        H(3)=' location is the origin, the horizontal axis'
-        H(4)=' is the x-axis, and each gridding line is one unit.'
-        H(5)=' '
-        CALL EASKS(LMTS,PROPS,' ',32,' ',' rectangle limits ',IER,5)
+     &                     ' (left, down, right, and up)'
+        CALL EASKS(LMTS,PROPS,' ',32,' ',' rectangle limits ',
+     &    IER,nbhelp)
         NDZ = iCountWords(LMTS)
         K=0
         DO 60 L=2,5
@@ -1555,11 +1557,8 @@ C reference. Use elistmat to select via materials array.
 
 C Copy the construction data of existing edge level.
       ELSEIF(INO.EQ.10)THEN
-        H(1)=' The source level should be within the current edge.'
-        H(2)=' and the recieving (modified) level is the current'
-        H(3)=' active level.'
-        CALL EASKI(IWCH,' ',' Copy form which level:',1,'F',NDZE(IEG),
-     &             'F',1,'level number',IER,3)
+        CALL EASKI(IWCH,' ','Copy form which level:',1,'F',NDZE(IEG),
+     &    'F',1,'level number',IER,nbhelp)
         DO 90 IY=1,NDYE(IEG)
         DO 90 IX=1,NDXE(IEG)
           ITPEDG(IEG,IX,IY,IL)=ITPEDG(IEG,IX,IY,IWCH)
@@ -1570,7 +1569,6 @@ C Copy the construction data of existing edge level.
 C List construction details.
       ELSEIF(INO.EQ.(MITEM-2))THEN
         BAR='I'
-C        CALL EPAGE
         icon=IZSTOCN(iz,is2)
         WRITE(TEXT,'(A12,4X,A1,10A)')SSNAME(icon),
      &        '-',('--------',IX=1,NDXE(IEG))
@@ -1593,14 +1591,9 @@ C        CALL EPAGE
 
 C Display help statements.
       ELSEIF(INO.EQ.(MITEM-1))THEN
-        H(1)='   The edge construction menu allows modefying the'
-        H(2)='x- and y- gridding details via options (2) and (3),'
-        H(3)='respectivily. Option (1) activates the required'
-        H(4)='level (z- direction). Therefore, all the changes'
-        H(5)='will be applied only to the activated level. The'
-        H(6)='definition for the material types can be performed'
-        H(7)='by selecting option (4) which allows defining the'
-        H(8)='material number in the associated data base file.'
+
+        helptopic='grd_display_edges'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD(' edges construction ',8,'-',0,0,IER)
 
 C Exit.
@@ -1620,6 +1613,7 @@ C *********************************************************************
 
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -1634,10 +1628,14 @@ C *********************************************************************
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
       integer iix,iiy,iix1,iiy1,iix2,iiy2
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont,ipos    ! passed to viewtext etlabel
       integer*8 iix,iiy,iix1,iiy1,iix2,iiy2
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C Define the two surfaces.
@@ -1649,14 +1647,20 @@ C Define the two surfaces.
       XMX2=FLOAT(NDXE(IEG))
       YMX2=FLOAT(NDYE(IEG))
       XYMX=AMAX1(XMX2,YMX2)
-      CALL WIN3D(29,30,10,5,5,igl,igr,igt,igb,igw,igwh)
-      igw=igr-igl
-      igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+      iiw1=30; iiw2=10; iiw3=5; iiw4=3; iimenu=29
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &  iigl,iigr,iigt,iigb,iigw,iigwh)
+C      CALL WIN3D(29,30,10,5,5,igl,igr,igt,igb,igw,igwh)
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
       igwid=igw
       igheight=igwh
       CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &               XADD,YADD)
-      CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
+      CALL LINESCALE(iigl,XADD,SCA,iigb,YADD,SCA)
       CALL U2PIXEL(XMN2,YMN2,iix,iiy)
       CALL ELINE(iix,iiy,1)
       CALL ECIRC(iix,iiy,3,1)
@@ -1796,7 +1800,7 @@ C *********************************************************************
 
       DO 10 IEG=1,NUMEDG
         IS1=ISFEDG(IEG,1)
-        ISE1=ISEFNE(IEG,IS1)
+        ISE1=ISEFNE(IEG,IS1) ! find index srf-edge connection surface
         DELTX=Y1S(IS1)
         IF(DELTX.LT.1.E-6)THEN
           I=0
@@ -1815,7 +1819,7 @@ C *********************************************************************
         ENDIF
         NDXE(IEG)=I
         IS2=ISFEDG(IEG,2)
-        ISE2=ISEFNE(IEG,IS2)
+        ISE2=ISEFNE(IEG,IS2) ! find index srf-edge connection surface
         DELTY=Y1S(IS2)
         IF(DELTY.LT.1.E-6)THEN
           I=0
@@ -1949,7 +1953,7 @@ C *********************************************************************
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PREC8/SLAT,SLON
 
@@ -1960,11 +1964,19 @@ C *********************************************************************
       LOGICAL CRNOK,MODIFY,MODLEN,MODBND
 
       DIMENSION IVALS(MCZ)
-      CHARACTER*72 H,DISCR
+      CHARACTER*72 DISCR
       CHARACTER SRF(3)*12,ITEMS(MCZ)*25
-      CHARACTER ITEM(18)*30,SZN*12,STTS*9,STATS*15,MSG*124
+      CHARACTER ITEM(18)*30,SZN*12,STTS*9,STATS*15
+      character MSG*124,outs*124
       real DZX   ! To avoid variable name clash with DX from geometry.h
       integer MITEM,INO  ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='GRDCRN'  ! set for subroutine
 
       SZN=zname(IZ)
       SRF(1)=' '
@@ -2002,19 +2014,8 @@ C *********************************************************************
       MITEM=18
 
 C Help text for this menu.
-      H(1)='   This menu controls the corner gridding. In order'
-      H(2)='to activate this menu the corner should be selected'
-      H(3)='first via option (1). Option (2) allows the '
-      H(4)='the definition of the gridding the z-direction.'
-      H(5)=' '
-      H(6)='The construction details menu can be activated via'
-      H(7)='option (3). Option (4) toggles the selected corner'
-      H(8)='status (not defined/lumped/descritized). The status'
-      H(9)='for all corner can be set to not defined, lupmed, '
-      H(10)='or descritized via options (5), (6), or (7), '
-      H(11)='respectivily. Both lumped and descritized corners '
-      H(12)='can be connected to other components via connection'
-      H(13)='surfaces.'
+      helptopic='grd_corner_grdding'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Draw the appropriate graph.
       IF(MODIFY)CALL GRAAPH(IDRW1,IDRW2)
@@ -2045,12 +2046,9 @@ C Show the surface selection menu.
           IV1=IVXCRN(ICRN)
           WRITE(ITEMS(ICRN),'(A,I2,2A)')'corner at (',IV1,') ',STTS
    20   CONTINUE
-        H(1)='     Select the corner whose multi-D gridding details'
-        H(2)=' are to be edited or modified.'
-        H(3)=' '
         INPICK=1
    30   CALL EPICKS(INPICK,IVALS,' ',' ',25,
-     &              NUMCRN,ITEMS,'   SELECT CORNER',IER,0)
+     &              NUMCRN,ITEMS,'   SELECT CORNER',IER,nbhelp)
         ICR=IVALS(1)
         IF(ICR.GT.0.AND.ICR.LE.NUMCRN)THEN
 
@@ -2081,12 +2079,12 @@ C Define edge gridding in the local z-direction.
         DO 100 IDZ=1,NDZ
           THK3=THK3+DZC(ICR,IDZ)
   100   CONTINUE
-        H(1)='   The total z-length for the corner should not exceed'
-        WRITE(H(2),'(A,F12.5,A)')' The actual length which is (',
-     &                               THK3,') meters.'
+        WRITE(outs,'(A,F12.5,A)')' The actual length which is (',
+     &    THK3,') meters.'
+        call edisp(iuout,outs)
         WRITE(DISCR,'(1X,10F7.3)')(DZC(ICR,J),J=1,NDZ)
         CALL EASKS(DISCR,'Define the Z - gridding intervals (m).',
-     &             ' ',72,' ',' gridding intervals ',IER,2)
+     &    ' ',72,' ',' gridding intervals ',IER,nbehlp)
         CALL USRMSG(' ',' ','-')
         NDZ = iCountWords(DISCR)
         IF(NDZ.GT.MZE)THEN
@@ -2156,7 +2154,6 @@ C Set all corners status to descretised.
       ELSEIF(INO.EQ.MITEM-2)THEN
 
 C List the corners informations.
-C        CALL EPAGE
         WRITE(MSG,'(2A)')' No.  vrtx  surface-1      surface-2',
      &         '      surface-3      status'
         CALL EDISP(IUOUT,MSG)
@@ -2185,7 +2182,9 @@ C        CALL EPAGE
       ELSEIF(INO.EQ.MITEM-1)THEN
 
 C Display the help message.
-        CALL PHELPD(' corners gridding ',13,'-',0,0,IER)
+        helptopic='grd_corner_grdding'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD(' corners gridding ',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.MITEM)THEN
 
 C Eixt.
@@ -2217,9 +2216,13 @@ C *********************************************************************
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym,iix,iiy    ! passed to etplot
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale u2pixel
       integer*8 iupdown,isym,iix,iiy    ! passed to etplot u2pixel
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       IVRX=IVXCRN(ICR)
@@ -2270,15 +2273,19 @@ C Find 2D extremes coordinates.
       XMX2=AMAX1(XS(1),XS(2),XS(3),XS(4),XS(5),XS(6),XS(7),XS(8))
       YMX2=AMAX1(YS(1),YS(2),YS(3),YS(4),YS(5),YS(6),YS(7),YS(8))
 
-C Clear the graphical feedback window.
-      CALL WIN3D(29,20,4,3,3,igl,igr,igt,igb,igw,igwh)
-      igw=igr-igl
-      igwh=igb-igt
+C Setup and pass in parameters to win3d.
+      iiw1=20; iiw2=4; iiw3=3; iiw4=3; iimenu=29
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &  iigl,iigr,iigt,iigb,iigw,iigwh)
+C      CALL WIN3D(29,20,4,3,3,igl,igr,igt,igb,igw,igwh)
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
       igwid=igw
       igheight=igwh
       CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &              XADD,YADD)
-      CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
+      CALL LINESCALE(iigl,XADD,SCA,iigb,YADD,SCA)
 
 C Locate and label the vertex.
       CALL U2PIXEL(XS(1),YS(1),iix,iiy)
@@ -2359,7 +2366,7 @@ C *********************************************************************
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/RAY3/MODIFY,MODLEN,MODBND
-      common/pophelp/h(60)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/PREC8/SLAT,SLON
 
@@ -2373,11 +2380,18 @@ C *********************************************************************
 
       DIMENSION ITEM(15),IUDLR(5)
 
-      CHARACTER*72 H,PROPS,DISCR
+      CHARACTER*72 PROPS,DISCR
       CHARACTER ITEM*30,SZN*12,SRF(3)*12,LMTS*32
-      CHARACTER TEXT*124,BAR*1
+      CHARACTER TEXT*124,BAR*1,outs*124
       real DXX,DYX   ! To avoid variable name clash with DX from geometry.h
       integer MITEM,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CONCRN'  ! set for subroutine
 
 C Define the three surfaces.
       IS1=ISFCRN(ICR,1)
@@ -2411,15 +2425,9 @@ C Define the three surfaces.
       ITEM(15)='- exit                      '
       MITEM=15
 
-C Help text for this menu.
-      H(1)='   The corner construction menu allows modefying the'
-      H(2)='x- and y- gridding details via options (2) and (3),'
-      H(3)='respectivily. Option (1) activates the required'
-      H(4)='level (z- direction). Therefore, all the changes'
-      H(5)='will be applied only to the activated level. The'
-      H(6)='definition for the material types can be performed'
-      H(7)='by selecting option (4) which allows defining the'
-      H(8)='material number in the associated data base file.'
+C Help text for this menu.  << to here >>
+      helptopic='grd_corner_constr'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Draw the appropriate graph.
       IF(MODIFY)CALL GRAAPH(IDRW1,IDRW2)
@@ -2438,13 +2446,13 @@ C Define X - gridding.
         DO 20 I=1,NDXC(ICR)
           THK1=THK1+DXC(ICR,I)
    20   CONTINUE
-        H(1)='   The total x-length for the corner should not exceed'
-        WRITE(H(2),'(A,F12.5,A)')' The actual length which is (',
-     &                               THK1,') meters.'
+        WRITE(outs,'(A,F12.5,A)')' The actual length which is (',
+     &                           THK1,') meters.'
+        call edisp(iuout,outs)
         NDX=NDXC(ICR)
         WRITE(DISCR,'(1X,10F9.3)')(DXC(ICR,J),J=1,NDX)
         CALL EASKS(DISCR,'Define the X - gridding intervals (m).',
-     &             ' ',72,' ',' gridding intervals ',IER,2)
+     &    ' ',72,' ',' gridding intervals ',IER,nbhelp)
         CALL USRMSG(' ',' ','-')
         NDX = iCountWords(DISCR)
         IF(NDX.GT.MZE)THEN
@@ -2483,13 +2491,13 @@ C Define Y - gridding.
         DO 40 I=1,NDYC(ICR)
           THK2=THK2+DYC(ICR,I)
    40   CONTINUE
-        H(1)='   The total y-length for the corner should not exceed'
-        WRITE(H(2),'(A,F12.5,A)')' The actual length which is (',
-     &                               THK2,') meters.'
+        WRITE(outs,'(A,F12.5,A)')' The actual length which is (',
+     &    THK2,') meters.'
+        call edisp(iuout,outs)
         NDY=NDYC(ICR)
         WRITE(DISCR,'(1X,10F9.3)')(DYC(ICR,J),J=1,NDY)
         CALL EASKS(DISCR,'Define the X - gridding intervals (m).',
-     &             ' ',72,' ',' gridding intervals ',IER,2)
+     &    ' ',72,' ',' gridding intervals ',IER,nbhelp)
         CALL USRMSG(' ',' ','-')
         NDY = iCountWords(DISCR)
         IF(NDY.GT.MZE)THEN
@@ -2528,18 +2536,14 @@ C Create a material rectangle.
 
 C Ask if user wishes to browse through materials to find suitable
 C reference. Use elistmat to select via materials array.
-        h(1)='If you want to keep the current material answer NO'
-        h(2)='otherwise you can find one by browsing the database.'
         CALL ASKOK('Browse the materials db for a new material',
-     &    '(NO exits the process)?',OK,dok,2)
+     &    '(NO exits the process)?',OK,dok,nbhelp)
         IF(OK)then
           iwhich = 0
           CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
           if(iwhich.eq.0)then
-            H(1)='If air is correct then accept, otherwise'
-            H(2)='reselect from the list or abort the task.'
             CALL EASKABC('Your selection is `0` i.e. air. Options:',
-     &        ' ','accept','reselect material','abort',iwair,2)
+     &        ' ','accept','reselect material','abort',iwair,nbhelp)
             if(iwair.eq.2)then
               CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
             elseif(iwair.eq.3)then
@@ -2556,12 +2560,8 @@ C reference. Use elistmat to select via materials array.
         WRITE(LMTS,'(4(1X,I2))')(IUDLR(K),K=2,5)
         WRITE(PROPS,'(2A)')'enter the material rectangle borders',
      &                      ' (left, down, right, and up)'
-        H(1)='   Enter the x- and y-coordinates for the lower left,'
-        H(2)=' then upper right corners, assuming that the vertex'
-        H(3)=' location is the origin, the horizontal axis'
-        H(4)=' is the x-axis, and each gridding line is one unit.'
-        H(5)=' '
-        CALL EASKS(LMTS,PROPS,' ',32,' ',' rectangle limits ',IER,5)
+        CALL EASKS(LMTS,PROPS,' ',32,' ',' rectangle limits ',
+     &    IER,nbhelp)
         CALL USRMSG(' ',' ','-')
         NDZ = iCountWords(LMTS)
         K=0
@@ -2579,11 +2579,8 @@ C reference. Use elistmat to select via materials array.
       ELSEIF(INO.EQ.11)THEN
 
 C Copy the construction data of existing corner level.
-        H(1)=' The source level should be within the current corner.'
-        H(2)=' and the recieving (modified) level is the current'
-        H(3)=' active level.'
         CALL EASKI(IWCH,' ',' Copy form which level:',1,'F',NDZC(ICR),
-     &             'F',1,'level number',IER,3)
+     &    'F',1,'level number',IER,nbhelp)
         DO 90 IY=1,NDYC(ICR)
         DO 90 IX=1,NDXC(ICR)
           ITPCRN(ICR,IX,IY,IL)=ITPCRN(ICR,IX,IY,IWCH)
@@ -2615,6 +2612,8 @@ C List construction details.
       ELSEIF(INO.EQ.(MITEM-1))THEN
 
 C Display help statements.
+        helptopic='grd_corner_constr'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD(' corner construction ',8,'-',0,0,IER)
       ELSEIF(INO.EQ.MITEM)THEN
 
@@ -2635,6 +2634,7 @@ C *********************************************************************
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -2649,10 +2649,14 @@ C *********************************************************************
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont,ipos     ! passed to viewtext etlabel
       integer iix,iiy,iix1,iiy1,iix2,iiy2
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont,ipos     ! passed to viewtext etlabel
       integer*8 iix,iiy,iix1,iiy1,iix2,iiy2
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C Return if not in graghical mode.
@@ -2668,14 +2672,20 @@ C Define the two surfaces.
       YMX2=FLOAT(NDYC(ICR))
       XYMX=AMAX1(XMX2,YMX2)
       call startbuffer()
-      CALL WIN3D(29,30,10,5,5,igl,igr,igt,igb,igw,igwh)
-      igw=igr-igl
-      igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+      iiw1=30; iiw2=10; iiw3=5; iiw4=5; iimenu=29
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &  iigl,iigr,iigt,iigb,iigw,iigwh)
+C      CALL WIN3D(29,30,10,5,5,igl,igr,igt,igb,igw,igwh)
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
       igwid=igw
       igheight=igwh
       CALL AXISCALE(igwid,igheight,XMN2,XMX2,YMN2,YMX2,XSC,YSC,SCA,
      &               XADD,YADD)
-      CALL LINESCALE(IGL,XADD,SCA,IGB,YADD,SCA)
+      CALL LINESCALE(iigl,XADD,SCA,iigb,YADD,SCA)
       CALL U2PIXEL(XMN2,YMN2,iix,iiy)
       CALL ELINE(iix,iiy,1)
       CALL ECIRC(iix,iiy,3,1)

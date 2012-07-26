@@ -19,6 +19,7 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
       program mld
+      USE START_UP
 #include "building.h"
 #include "model.h"
 #include "mould.h"
@@ -34,13 +35,14 @@ C Boston, MA 02111-1307 USA.
      &,imdur0(mould),i1max(mould),i0max(mould),imup(mould),
      &imdn(mould)
       common/iopnmld/iopmld
+      common/mdbase/mdbnam
+      character mdbnam*72
 
       common/OUTIN/IUOUT,IUIN
       common/SHOUT/ICOUT
       common/FILEP/IFIL
       common/SPAD/MMOD,LIMIT,LIMTTY
       common/appw/iappw,iappx,iappy
-      common/pophelp/h(60)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       integer ifs,itfs,imfs
@@ -53,6 +55,7 @@ C Path to problem and command line file (if any).
       common/rcmd/LCMDFL
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       common/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Name of current application
@@ -60,12 +63,23 @@ C Name of current application
       
       character cAppName*12
 
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character*29 ITEM(10)
-      character LCMDFL*144,inf*144,H*72,mldnam*48
+      character LCMDFL*144,inf*144,mldnam*48
       character path*72
       character species*64, grow*1, head*29,fs*1
+
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
+
       logical unixok
+
+#ifdef OSI
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+#else
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+#endif
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer nitem,ino ! max items and current menu item
@@ -74,6 +88,7 @@ C Initialize global common data.
       call ezero
       call curmodule('mld ')
       cAppName = 'mld'
+      helpinapp='mld'  ! set once for the application
       IUOUT=6
       IUIN=5
       IFIL=10
@@ -139,14 +154,25 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=16
         LIMIT =16
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r Mould Analysis ',
+     &  cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r Mould Analysis: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
 
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
-        CALL win3d(menuchw,12,12,4,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=12; iiw2=12; iiw3=4; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
@@ -160,6 +186,15 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
         call startbuffer()
       ENDIF
+
+C Take `c' command line file name, convert to fortran string LCMDFL.
+      if(inf(1:2).ne.'  '.and.inf(1:4).ne.'UNKN')then
+        LCMDFL=inf
+        write(mdbnam,'(a)') inf(1:lnblnk(inf))
+      else
+        LCMDFL='UNKNOWN'
+        mdbnam='UNKNOWN'
+      endif
 
 C Set additional output units to stdout. Then redirect warning
 C messages to stderr in case of rule script program control.
@@ -249,6 +284,46 @@ C calls in esru_lib.F
       end
 
       subroutine chgelev(icelev)
+      return
+      end
+
+      subroutine chgsun(isunhour)
+      return
+      end
+
+      subroutine chgeye(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,
+     &   JITOBS,JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,JITHLZ,
+     &   JITPPSW)
+
+C Passed paramters.
+      real EVX,EVY,EVZ,VX,VY,VZ,EAN,DIS
+
+C Depending on computer type set integer size of passed parameters.
+#ifdef OSI
+      integer JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
+      integer JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+#else
+      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
+      integer*8 JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+#endif     
+      return
+      end
+
+      subroutine chgzonpik(jizgfoc,jnzg)
+#ifdef OSI
+      integer jizgfoc,jnzg  ! for use with viewtext
+#else
+      integer*8 jizgfoc,jnzg  ! for use with viewtext
+#endif
+      return
+      end
+
+      subroutine chgzonpikarray(jnznog,jnznogv)
+#ifdef OSI
+      integer jnznog,jnznogv
+#else
+      integer*8 jnznog,jnznogv
+#endif
       return
       end
 

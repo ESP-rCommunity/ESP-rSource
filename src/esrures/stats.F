@@ -42,11 +42,14 @@ C results. Available at present:
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
-      common/pophelp/h(60)
       COMMON/DEFLT/IDEFLT
 
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       common/getmenu/menutype,igetind(65),igetflux(65)
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -67,8 +70,7 @@ C SNAPSH is a logical flag to request variation in header.
       logical SNAPSH,close
       DIMENSION ATI(8),RTI(8),TATI(8),TRTI(8),NDYMTH(12)
       dimension ITEM(24)
-      CHARACTER ITEM*23,H*72,tg*1,delim*1,xfile*144
-      character SLABEL*32,GLABEL*20
+      CHARACTER ITEM*23,tg*1,delim*1,xfile*144
       CHARACTER PDESCR*60,SDESCR*44
       character prompt*124,outs*124
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
@@ -76,6 +78,13 @@ C SNAPSH is a logical flag to request variation in header.
       CHARACTER*3 NMTHNM(12)
       integer IWM,ihd  ! for radio buttons
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MOSTAT'  ! set for subroutine
 
       DATA NDYMTH/31,59,90,120,151,181,212,243,273,304,334,365/
       DATA NMTHNM/'Jan','Feb','Mar','Apr','May','Jun','Jul',
@@ -128,61 +137,9 @@ C      ITEM(10)='e CEN statistics     '
  2    NITMS=24
       INO=-3
 
-C Instanciate h() strings for the menu.
-      H(1)= 'Statistics on performace data can be presented in a'
-      H(2)= 'several formats: '
-      H(3)= ' '
-      H(4)= ' * summary stats - maximum, minimum, mean, std deviation'
-      H(5)= ' '
-      H(6)= ' * frequency bins in tabular form (equivalent graphs are'
-      H(6)= '   available elsewhere the the results analysis)'
-      H(7)= ' '
-      H(8)= ' * occurrences above or below a particular value'
-      H(9)= ' '
-      H(10)=' * zone sensible (convective + radiant) demands over'
-      H(11)='   time with hours of use.'
-      H(12)=' '
-      H(13)='For the zone air the gains/losses are related to: '
-      H(14)=' Infiltration = air flow from outside via natural and'
-      H(15)='   forced flow and via scheduled or flow networks.'
-      H(16)=' Ventilation  = air flow from other zones via natural'
-      H(17)='   or forced flow  and via scheduled or flow networks.'
-      H(18)=' Casual gains are separated by type - typically these are'
-      H(19)='   Occupants/Lights/Equipment but the labels used will'
-      H(20)='   reflect what was defined by the user. If any of the'
-      H(21)='   casual gains have been controlled then additional'
-      H(22)='   entries will be included. Some users report rubbish'
-      H(23)='   values for controlled gains so take caution here.'
-      H(24)=' Convection exhange with surfaces is separated into'
-      H(25)='   opaque & transparent constructions as well as by'
-      H(26)='   boundary conditions - e.g. those facing ambient'
-      H(27)='   are marked as (ext) and all other boundary conditions'
-      H(28)='   are marked (int).'
-      H(29)=' Plant injections/extraction is the convective part'
-      H(30)='   only, any radiant flux is accounted for in the'
-      H(31)='   surface energy balance.'
-      H(32)=' '
-      H(33)='For surface energy balances the gains/losses are: '
-      H(34)=' Conductive flux at half thickness of the inner and'
-      H(35)='   outer nodes of the construction e.g. just below'
-      H(36)='   the suface.'
-      H(37)=' Convective flux at the inner and outer faces of the'
-      H(38)='   surface taking into account the current convective'
-      H(39)='   regime of the zone in question.'
-      H(40)=' Longwave radiation between the internal face and all'
-      H(41)='   other surfaces in the zone.'
-      H(42)=' Longwave radiation between the outer face (if connected'
-      H(43)='   to ambient) to other buildings, the sky and ground.'
-      H(44)=' Shortwave radiation absorbed at the inner and outer'
-      H(45)='   face of the surface.'
-      H(46)=' Radiant portion of casual gains (by type) @ inside face.'
-      H(47)=' Heat stored at each face for half thickness as in the'
-      H(48)='   conductive flux value above.'
-      H(49)=' Radiant portion of environmental systems flux.'
-      H(50)=' '
-      H(51)='Interstitial condensation searches for occurances of'
-      H(52)='condensation within constructions used in a zone or'
-      H(53)='zones during the assessment period.'
+C Instanciate help strings for the menu.
+      helptopic='res_statistics_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('Enquire about',ITEM,NITMS,INO)
 
@@ -219,7 +176,7 @@ C Comparison to CEN statistics (if implemented)
 
 C Call the menu of choices (this also sets some default options).
 C The logical variable totals controls the displaying of cumulative 
-C data for all the zones chosen.  
+C data for all the zones chosen.
         NGET=9
         do 11 I=1,9
           IGETNO(I,1)=6
@@ -228,6 +185,7 @@ C data for all the zones chosen.
           IGETNO(I,4)=0
           IGETNO(I,5)=ISIM
           SLABEL(I)='Resultant temperature (degC)'
+          LNSLABEL(I)=28
  11     continue
         CALL MOSMSDCEN('s')
       elseif(INO.EQ.11)then
@@ -239,10 +197,8 @@ C data for all the zones chosen.
 
 C Setup for zone balance. Confirm if snapshot or integrated report.
 C If output to file alter the edisp unit number.
-        h(1)='Energy balances can be generated for a specific time '
-        h(2)='(a snapshot) or integrated over the assessment period. '
         call EASKABC('Energy balance options: ',' ',
-     &  'snapshot','integrated over time','cancel',isnapsh,2)
+     &    'snapshot','integrated over time','cancel',isnapsh,nbhelp)
         if(isnapsh.eq.1)then
           SNAPSH=.TRUE.
           IMO=IOM1
@@ -271,13 +227,10 @@ C Snapshot done via using the time requested
 C to temporarily overwrite the IOH1 IOH2 and the
 C standard energy balance.  After finished then reset
 C the period to previous settings.
-        h(1)='The energy balance at the zone air point can be '
-        h(2)='displayed in two forms: '
-        h(3)=' *) flux paths separated into times when the plant was'
-        h(4)='    active and inactive,'
-        h(5)=' *) flux paths separated into gains and losses,'
+        helptopic='res_air_point_forms'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call EASKABC('Zone energy balance: ','(grouped by)',
-     &  'plant status','gain/loss','cancel',IWHICH,5)
+     &    'plant status','gain/loss','cancel',IWHICH,nbhelp)
         if(IWHICH.eq.3)goto 1
 
         itru = icout
@@ -293,15 +246,14 @@ C Call the menu of choices (this also sets some default options).
         if(ixopen.eq.1)then
           itru = ixunit
           if(NGET.ge.1)then
-            write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+            write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
           else
             write(prompt,'(a)')' Output being directed to file. ' 
           endif
           call usrmsg(prompt,'Scanning for range of values...','-')
         else
           write(prompt,'(3a)') 'Scanning for ',
-     &      SLABEL(1)(1:lnblnk(SLABEL(1))),'...'
+     &      SLABEL(1)(1:LNSLABEL(1)),'...'
           itru = icout
           call usrmsg(prompt,'  ','-')
         endif
@@ -366,10 +318,10 @@ C If output to file alter the edisp unit number.
      &                ' allow surface energy balances.','W')
           goto 1
         endif
-        h(1)='Energy balances can be generated for a specific time '
-        h(2)='(a snapshot) or integrated over the assessment period. '
+        helptopic='res_surf_point_forms'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call EASKABC('Energy balance options: ',' ',
-     &  'snapshot','integrated over time','cancel',isnapsh,2)
+     &    'snapshot','integrated over time','cancel',isnapsh,nbhelp)
         if(isnapsh.eq.1)then
           SNAPSH=.TRUE.
           IMO=IOM1
@@ -393,13 +345,10 @@ C If output to file alter the edisp unit number.
           goto 1
         endif
 
-        h(1)='The energy balance at a surface can be '
-        h(2)='displayed in three forms: '
-        h(3)=' *) flux paths separated into times when the plant was'
-        h(4)='    active and inactive,'
-        h(5)=' *) flux paths separated into gains and losses,'
+        helptopic='res_surf_point_forms'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call EASKABC('Surface energy balance: ','(grouped by)',
-     &    'plant status','gain/ loss','cancel',IWHICH,5)
+     &    'plant status','gain/ loss','cancel',IWHICH,nbhelp)
         if(IWHICH.eq.3)goto 1
         IWHICH=IWHICH+3
         itru = icout
@@ -415,15 +364,14 @@ C Call the menu of choices (this also sets some default options).
         if(ixopen.eq.1)then
           itru = ixunit
           if(NGET.ge.1)then
-            write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+            write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
           else
             write(prompt,'(a)')' Output being directed to file. ' 
           endif
           call usrmsg(prompt,'Scanning for range of values...','-')
         else
           write(prompt,'(3a)') 'Scanning for ',
-     &      SLABEL(1)(1:lnblnk(SLABEL(1))),'...'
+     &      SLABEL(1)(1:LNSLABEL(1)),'...'
           itru = icout
           call usrmsg(prompt,'  ','-')
         endif
@@ -484,15 +432,14 @@ C scanning data. Call MOSURC for each selected zone in turn.
         if(ixopen.eq.1)then
           itru = ixunit
           if(NGET.ge.1)then
-            write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+            write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
           else
             write(prompt,'(a)')' Output being directed to file. ' 
           endif
           call usrmsg(prompt,'Scanning for range of values...','-')
         else
           write(prompt,'(3a)') 'Scanning for ',
-     &      SLABEL(1)(1:lnblnk(SLABEL(1))),'...'
+     &      SLABEL(1)(1:LNSLABEL(1)),'...'
           itru = icout
           call usrmsg(prompt,'  ','-')
         endif
@@ -708,17 +655,12 @@ C Dump annual statistics.
       elseif(INO.EQ.(NITMS-2)) then
 
 C Toggle delimeter.
-        H(1) ='Tabular data can be sent to file with various '
-        H(2) ='delimiters: '
-        H(3) ='  spaces (format using spaces to lineup columns)'
-        H(4) ='  single space between columns'
-        H(5) ='  comma separator (for excel)'
-        H(6) ='  tab separator (for excel)'
-        H(7) ='  tagged - marked up data'
+        helptopic='res_stats_delimiter'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IWM=1
         CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &    'normal spaces','single space','tab','comma','tagged',
-     &    'continue',' ',IWM,7)
+     &    'continue',' ',IWM,nbhelp)
         if(iwm.eq.1)then
           delim = '-'
         elseif(iwm.eq.2)then
@@ -735,190 +677,42 @@ C Toggle delimeter.
 C Display help messages.
 
 C Menu help text.
-        H(1)='Information on each report is provided.'
+        helptopic='res_help_choices'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         ihd=1
         call easkatog(' ','Help options:','overview','summary stats',
      &   'frequency table','energy balances','detailed stats',
-     &   'monthly gain loss','cancel',ihd,1)
+     &   'monthly gain loss','cancel',ihd,nbhelp)
         if(ihd.eq.1)then
-          CALL PHELPD('Enquire about',53,'-',0,0,IER)
+          helptopic='res_statistics_menu'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('Enquire about',nbhelp,'-',0,0,IER)
         elseif(ihd.eq.2)then
-          H(1)= 'Performance data can be presented in the form of a'
-          H(2)= 'statistical report. For example if you wanted'
-          H(3)= 'to find out the peak value of temperatures in a'
-          H(4)= 'room over the period of the simulation and when'
-          H(5)= 'it happened along with the minimum value and its'
-          H(6)= 'time of occurrance and the mean and standard '
-          H(7)= 'deviation this report will provide such information.'
-          H(8)= ' '
-          H(9)= 'Essentially anything that you can graph can be part'
-          H(10)='of a summary statistics report. You have access to'
-          H(11)='climate data, zone temperatures, comfort data such'
-          H(12)='as PMV and PPD, zone energy balance data, surface'
-          H(13)='eneergy balance data, heating, cooling, casual gains'
-          H(14)='(many different breakdowns) etc.'
-          H(15)=' '
-          H(16)='You can display these reports in the text feedback'
-          H(17)='window or export them to a text file. '
-          H(18)=' '
-          CALL PHELPD('Enquire summary stats',18,'-',0,0,IER)
+          helptopic='res_help_sum_stats'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('Enquire summary stats',nbhelp,'-',0,0,IER)
 
         elseif(ihd.eq.3)then
-          H(1)= 'Performance data can be presented in the form of a'
-          H(2)= 'frequency table or graph. For example if you wanted'
-          H(3)= 'to find out the distribution of temperatures in a'
-          H(4)= 'room over the period of the simulation a frequency'
-          H(5)= 'table or graph is a great way to see what temperature'
-          H(6)= 'ranges happen most often and which happen rarely. '
-          H(7)= ' '
-          H(8)= 'The report is made up of a number of binns (e.g. '
-          H(9)= '3-5C 6-8C 9-11C... and at each timestep the current'
-          H(10)='performance varible is checked to see if which binn'
-          H(11)='it matches. The count for that binn is incremented by'
-          H(12)='one to account for this HIT and the next timestep is'
-          H(13)='assessed. '
-          H(14)=' '
-          H(15)='The report includes how many HITS were counted for'
-          H(16)='each bin as well as the percentage associated.'
-          H(17)=' '
-          H(18)='Anything that you can graph can be the subject of a '
-          H(19)='frequency report. '
-         CALL PHELPD('Enquire frequency',19,'-',0,0,IER)
+          helptopic='res_help_freq_table'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+         CALL PHELPD('Enquire frequency',nbhelp,'-',0,0,IER)
 
         elseif(ihd.eq.4)then
-
-         H(1)='A zone energy balance reports the flux gains and losses'
-         H(2)='for infiltration, ventilation, occupant/lighting/small'
-         H(3)='power and controlled casual gains as well as convection'
-         H(4)='at the inside face of surfaces which have an outside'
-         H(5)='exposure and convection at the inside face of surfaces'
-         H(6)='which are connected to other zones or the ground. It'
-         H(7)='also includes the convection portion of environmental'
-         H(8)='control systems associated with the zone. '
-         H(9) =' '
-         H(10)='There is a TOTAL line which reports the sum of all'
-         H(11)='gains and the sum of all losses and these should'
-         H(12)='balance each other closely if the model is correct.'
-         H(13)=' '
-         H(14)='An energy balance (from the point of view of the zone'
-         H(15)='air node) of all of the flux entering & leaving the'
-         H(16)='air node should balance at each timestep of the sim-'
-         H(17)='ulation. The report is an integration of each of the'
-         H(18)='above types of flux over the period of the assessment.'
-         H(19)=' '
-         H(20)='A flux is positive if it adds heat to the air node of'
-         H(21)='the zone and is negative if it removes heat from the'
-         H(22)='air node of the zone.  For example, if exterior'
-         H(23)='surfaces which are opaque are always colder than the'
-         H(24)='air temperature then the report will include losses.'
-         H(25)=' '
-         H(26)='A surface energy balance reports flux gains & losses'
-         H(27)='at the inside and `other-side` face of the surface:'
-         H(28)=' '
-         H(29)=' conduction (just below the surface),'
-         H(30)=' convection at the face,'
-         H(31)=' longwave radiation inside to other surfaces'
-         H(32)=' longwave radiation outside to buildings/ground/sky.'
-         H(33)=' radiant portion of occupants/lighting/small power,'
-         H(34)=' heat stored in the construction'
-         H(35)=' radiant portion of any systems associated with zone'
-         H(36)=' '
-         H(37)='There is a TOTAL line which reports the sum of all '
-         H(38)='gains and the sum of all losses and these should '
-         H(39)='balance each other closely if the model is correct.'
-         H(40)=' '
-         H(41)='An energy balance from the point of view of a surface'
-         H(42)='of all of the flux entering and leaving at each face'
-         H(43)='should balance at each timestep of the simulation.'
-         H(44)='The report is an integration of each of the above'
-         H(45)='types of flux over the period of the assessment.'
-         H(46)=' '
-         H(47)='A flux is positive if it adds heat to surface and is'
-         H(48)='negative if it removes heat from the surface.'
-         H(49)='For example, if exterior surfaces which are opaque'
-         H(50)='are always colder than the air temp the the surface'
-         H(51)='energy balance report will indicate gains at the inside'
-         H(52)='face.'
-         CALL PHELPD('Enquire energy bal',52,'-',0,0,IER)
+          helptopic='res_help_zone_bal'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('Enquire energy bal',nbhelp,'-',0,0,IER)
 
         elseif(ihd.eq.5)then
 
-          H(1)= 'There are several reports which focus on a specific'
-          H(2)= 'topic and these are: '
-          H(3)= ' '
-          H(4)= ' energy delivered - for each zone the delivered kWhrs'
-          H(5)= '   of sensible heating, sensible cooling, humid-'
-          H(6)= '   ification, dehumidification are reported as well'
-          H(7)= '   as the number of hours each was active during the'
-          H(8)= '   reporting period.'
-          H(9)= ' '
-          H(10)=' casual gains distribution -  for each zone the'
-          H(11)='   breakdown of casual gains over the period of the'
-          H(12)='   report is given.  For each gain type the report'
-          H(13)='   includes the total (radiant + convenctive) kWhrs,'
-          H(14)='   the convective portion, the radiant portion to'
-          H(15)='   all surfaces as well as surfaces with particular'
-          H(16)='   boundary conditions. In addition the number of'
-          H(17)='   hours when each type of casual gain was non-zero'
-          H(18)='   is reported.'
-          H(19)=' '
-          H(20)=' surface condensation - ESP-r assumes condensation'
-          H(21)='   will happen if the inside surface temperature is'
-          H(22)='   less than the room dew point temperature. There'
-          H(23)='   is a choice of a summary or timestep reports.'
-          H(24)=' '
-          H(25)=' interstitial condensation - if a simulation was run'
-          H(26)='   with save level 3 then the nodal temperatures'
-          H(27)='   within surfaces is recorded and can be plotted'
-          H(28)='   in several forms.'
-          CALL PHELPD('Enquire detailed',28,'-',0,0,IER)
+          helptopic='res_help_specific_topic'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('Enquire detailed',nbhelp,'-',0,0,IER)
 
         elseif(ihd.eq.6)then
 
-          H(1)= 'The monthly gains and losses report is a collection'
-          H(2)= 'of performance metrics which can provide an overview'
-          H(3)= 'of different zones over longer periods of time.'
-          H(4)= ' '
-          H(5)= 'The gain loss report is NOT AN ENERGY BALANCE ( it'
-          H(6)= 'does not include all of the flux paths). It includes:'
-          H(7)= ' '
-          H(8)= ' 1st column: transparent surfaces that face outside'
-          H(9)= '   the gain or loss via convection at the inside face'
-          H(10)=' '
-          H(11)=' 2nd column: transparent surface facing something'
-          H(12)='   other than the outside (e.g. ground, another room)'
-          H(13)='   the gain or loss via convection at the inside face'
-          H(14)=' '
-          H(15)=' 3rd column: opaque surfaces that face the outside'
-          H(16)='   the gain or loss via convection at the inside face'
-          H(17)=' '
-          H(18)=' 4th column: opaque surfaces that face something'
-          H(19)='   other than the outside (e.g. ground, another room)'
-          H(20)='   the gain or loss via convection at the inside face'
-          H(21)=' '
-          H(22)=' 5th column: casual gains (all types) convective gain'
-          H(23)='   to the room'
-          H(24)=' '
-          H(25)=' 6th column: casual gains (all types) radiant gains'
-          H(26)='   to the room'
-          H(27)=' '
-          H(28)=' 7th column: the energy impact of infiltration '
-          H(29)='   (air exchange with the outside)'
-          H(30)=' '
-          H(31)=' 8th column: the energy impact of ventilation'
-          H(32)='   (air exchanges with other rooms)'
-          H(33)=' '
-          H(34)=' 9th column: heating delivered (convective portion)'
-          H(35)=' '
-          H(36)=' 10th column: cooling delivered (convective portion)'
-          H(37)=' '
-          H(38)=' 11th column: solar absorbed at the inside face of'
-          H(39)='   surfaces in the room (opaque and transparent)'
-          H(40)=' '
-          H(41)=' 12th column: solar radiation entering the room from'
-          H(42)='   the outside (does not count radiation from'
-          H(43)='   adjacent rooms)'
-          CALL PHELPD('Enquire montly',43,'-',0,0,IER)
+          helptopic='res_help_monthly_gl'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('Enquire montly',nbhelp,'-',0,0,IER)
         elseif(ihd.eq.7)then
           continue
         endif
@@ -959,7 +753,11 @@ C act='p' iget parameters already set.
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
@@ -973,7 +771,6 @@ C act='p' iget parameters already set.
       dimension TMAX(MZS), TMIN(MZS)
       character xfile*144,tg*1,delim*1
       character outs*124,act*1
-      character SLABEL*32,GLABEL*20
       character prompt*124,prompte*124
       CHARACTER DESCR*7,DESCR1*10,DESCRH*5,DESCRD*5,NT*14,XT*14
       CHARACTER RSNAME*40
@@ -1011,7 +808,7 @@ C data for all the zones chosen.
         if(ixopen.eq.1)then
           if(NGET.ge.1)then
             write(prompt,'(3a)') 'Scanning ',
-     &        SLABEL(1)(1:lnblnk(SLABEL(1))),' >> file...'
+     &        SLABEL(1)(1:LNSLABEL(1)),' >> file...'
           else
             write(prompt,'(a)') ' Scanning data >> file...' 
           endif
@@ -1019,7 +816,7 @@ C data for all the zones chosen.
         else
           if(NGET.ge.1)then
             write(prompt,'(3a)') 'Scanning ',
-     &        SLABEL(1)(1:lnblnk(SLABEL(1))),'...'
+     &        SLABEL(1)(1:LNSLABEL(1)),'...'
           else
             write(prompt,'(a)') 'Scanning...' 
           endif
@@ -1029,7 +826,7 @@ C data for all the zones chosen.
       else
         if(NGET.ge.1)then
           write(prompt,'(3a)') 'Scanning ',
-     &        SLABEL(1)(1:lnblnk(SLABEL(1))),'...'
+     &      SLABEL(1)(1:LNSLABEL(1)),'...'
         else
           write(prompt,'(a)') 'Scanning...' 
         endif
@@ -1288,14 +1085,14 @@ C Generate and display column headings.
           call eddisp(itru,outs)
         else
           if (IROC.eq.-1) then
-            write(outs,'(2a)')' Description          Maximum         ',
+            write(outs,'(2a)')' Description           Maximum         ',
      & '          Minimum                 Mean         Standard   Total'
           else
-            write(outs,'(2a)')' Description          Maximum         ',
+            write(outs,'(2a)')' Description           Maximum         ',
      & '          Minimum                 Mean         Standard'
           endif
           call eddisp(itru,outs)
-          write(outs,'(2a)')  '                    value   occurrence',
+          write(outs,'(2a)')  '                     value   occurrence',
      & '        value   occurrence        value        deviation'
           call eddisp(itru,outs)
         endif
@@ -1307,8 +1104,8 @@ C Write tag line if tagged output requested.
             call eddisp(itru,outs)
           endif
           if (NY(I).eq.0) then
-            write (outs,'(a20,a)') GLABEL(I),
-     &           'No data: probably due to filtering.'
+            write (outs,'(a,a)') GLABEL(I)(1:LNGLABEL(I)),
+     &           ' No data: probably due to filtering.'
           else
 
 C Create string description for time of maximum occurrance.
@@ -1326,27 +1123,21 @@ C Create string description for time of minimum occurrance.
             write (NT,'(3a)')DESCR(1:6),'@',DESCRH
 
 C Build up string for displaying.
-            if(IGETNO(NGET,9).ge.15)then
-              write (outs,'(a)') GLABEL(I)(1:20)
-            elseif(IGETNO(NGET,9).le.12)then
-              write (outs,'(a,8x)') GLABEL(I)(1:12)
-            else
-              write (outs,'(a,5x)') GLABEL(I)(1:15)
-            endif
+            write (outs,'(a)') GLABEL(I)(1:20)
             
-C Write out results to 5 significant figures.
+C Write out results to 5 significant figures starting at col 22.
             NSIG=5
             call sigfig(YMAX(I),NSIG,RNO,t12,LSTR)
-            write (outs(21:46),'(a,1x,a,1x)') t12(1:LSTR),XT
+            write (outs(22:47),'(a,1x,a,1x)') t12(1:LSTR),XT
             call sigfig(YMIN(I),NSIG,RNO,t12,LSTR)
-            write (outs(47:72),'(a,1x,a,1x)') t12(1:LSTR),NT
+            write (outs(48:73),'(a,1x,a,1x)') t12(1:LSTR),NT
             call sigfig(YAVE(I),NSIG,RNO,t12,LSTR)
-            write (outs(73:85),'(a,1x)') t12
+            write (outs(74:86),'(a,1x)') t12
             call sigfig(YSTD(I),NSIG,RNO,t12,LSTR)
-            write (outs(86:98),'(a,1x)') t12
+            write (outs(87:99),'(a,1x)') t12
             if (IROC.eq.-1) then
               call sigfig(YTOT(I),NSIG,RNO,t12,LSTR)
-              write (outs(99:111),'(a)') t12
+              write (outs(100:112),'(a)') t12
             endif
           endif
           call eddisp(itru,outs)
@@ -1406,19 +1197,19 @@ C Write out results to 5 significant figures.
           else
           
 C Build up string for displaying.
-            write (outs,'(3x,a,14x)') 'All'
+            write (outs,'(3x,a,15x)') 'All'
             
 C Write out results to 5 significant figures.
             NSIG=5
             call sigfig(XMAX,NSIG,RNO,t12,LSTR)
-            write (outs(21:46),'(a,1x,a,1x)') t12(1:LSTR),'     -- '
+            write (outs(22:47),'(a,1x,a,1x)') t12(1:LSTR),'     -- '
             call sigfig(XMIN,NSIG,RNO,t12,LSTR)
-            write (outs(47:72),'(a,1x,a,1x)') t12(1:LSTR),'     -- '
+            write (outs(48:73),'(a,1x,a,1x)') t12(1:LSTR),'     -- '
             call sigfig(XAVE,NSIG,RNO,t12,LSTR)
-            write (outs(73:98),'(a,1x,a)') t12,'     -- '
+            write (outs(74:99),'(a,1x,a)') t12,'     -- '
             if (IROC.eq.-1) then
               call sigfig(XTOT,NSIG,RNO,t12,LSTR)
-              write (outs(99:111),'(a)') t12
+              write (outs(100:112),'(a)') t12
             endif
           endif
         endif
@@ -1453,8 +1244,6 @@ C standard.
 C Get common precz from geometry.h
 #include "geometry.h"
       
-      integer lnblnk  ! function definition
-
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
@@ -1469,7 +1258,11 @@ C Get common precz from geometry.h
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
@@ -1479,7 +1272,7 @@ C Get common precz from geometry.h
       dimension CENMAX(9), CENMIN(9), CENAVE(9)
 
       character outs*124,act*1
-      character SLABEL*32,GLABEL*20,prompt*124
+      character prompt*124
       CHARACTER PDESCR*60,SDESCR*44,RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       logical display
@@ -1489,8 +1282,7 @@ C If output to file alter the edisp unit number.
       if(ixopen.eq.1)then
         itru = ixunit
         if(NGET.ge.1)then
-          write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+          write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
         else
           write(prompt,'(a)')' Output being directed to file. ' 
         endif
@@ -1652,11 +1444,8 @@ C act='p' iget parameters already set.
       SUBROUTINE MOSQHR(act,iabove,tval)
 #include "building.h"
       
-      integer lnblnk  ! function definition
-
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
-      common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
@@ -1667,23 +1456,33 @@ C act='p' iget parameters already set.
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
 
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
-      character SLABEL*32,GLABEL*20
       character prompt*124,outs*124
       CHARACTER DESCR*7,DESCR1*10,DESCRH*5,DESCRD*5,NT*14,XT*14
       CHARACTER RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      CHARACTER PDESCR*60,SDESCR*44,H*72,act*1
+      CHARACTER PDESCR*60,SDESCR*44,act*1
 
       dimension YMAX(MZS), YMIN(MZS), YTOT(MZS)
       dimension YAVE(MZS), NY(MZS),NYABOVE(MZS),NYBELOW(MZS)
       dimension TMAX(MZS), TMIN(MZS)
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MOSQHR'  ! set for subroutine
 
 C If output to file alter the edisp unit number.
       itru = icout
@@ -1704,8 +1503,7 @@ C Call the menu of choices (this also sets some default options).
         if(ixopen.eq.1)then
           itru = ixunit
           if(NGET.ge.1)then
-            write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+            write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
           else
             write(prompt,'(a)')' Output being directed to file. ' 
           endif
@@ -1719,10 +1517,11 @@ C Ask for set point value.
       if (act(1:1).eq.'p') then
         XQUERY=tval
       else
-        H(1)='The ..'
+        helptopic='res_above_below_pt'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         XQUERY=0.0
         CALL EASKR(XQUERY,' ','  Test point value ? ',
-     &             0.0,'-',0.0,'-',20.0,'query value',IER,1)
+     &    0.0,'-',0.0,'-',20.0,'query value',IER,nbhelp)
       endif
 
 C Setup parameters and call GOGET for each output day to get required data.
@@ -1923,8 +1722,8 @@ C Generate and display column headings.
         endif
         do 30 I=1,NGET
           if (NY(I).eq.0) then
-            write (outs,1000) GLABEL(I)
- 1000       format (a20,'No data: probably due to filtering.')
+            write (outs,'(2a)') GLABEL(I)(1:LNGLABEL(I)),
+     &       ' No data: probably due to filtering.'
           else
 
 C Create string description for time of maximum occurrance.
@@ -2017,7 +1816,6 @@ C Also called by recovert if act = 'p' << needs checking >>
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
-      common/pophelp/h(60)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -2025,7 +1823,11 @@ C Also called by recovert if act = 'p' << needs checking >>
 
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
@@ -2034,10 +1836,10 @@ C Also called by recovert if act = 'p' << needs checking >>
 
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
-      character SLABEL*32,GLABEL*20,prompt*124,outs*124,prompte*124
+      character prompt*124,outs*124,prompte*124
       CHARACTER RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      CHARACTER PDESCR*60,SDESCR*44,H*72,act*1
+      CHARACTER PDESCR*60,SDESCR*44,act*1
       DIMENSION YDUM(MTS)
 
 C If output to file alter the edisp unit number.
@@ -2075,8 +1877,7 @@ C Call the menu of choices (this also sets some default options).
         if(ixopen.eq.1)then
           itru = ixunit
           if(NGET.ge.1)then
-            write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+            write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
           else
             write(prompt,'(a)')' Output being directed to file. ' 
           endif
@@ -2087,7 +1888,7 @@ C Call the menu of choices (this also sets some default options).
       else
         if(NGET.ge.1)then
           write(prompt,'(3a)') 'Scanning ',
-     &        SLABEL(1)(1:lnblnk(SLABEL(1))),'...'
+     &      SLABEL(1)(1:LNSLABEL(1)),'...'
         else
           write(prompt,'(a)') 'Scanning...' 
         endif
@@ -2196,9 +1997,15 @@ C Calcalate the sums and statistics to display during relevant period.
         endif
    65 CONTINUE
       if(act(1:1).ne.'i') then
-        write(outs,67)THE,tzhtime,TCE,tzctime,TLHE,tzlhtime,TLCE,
-     &    tzlctime
-   67   format(1X,'   All',9X,4(F11.2,F7.1))
+        if(THE.gt.99999.0.or.TCE.lt.-99999.0)then
+          write(outs,67)THE,tzhtime,TCE,tzctime,TLHE,tzlhtime,TLCE,
+     &      tzlctime
+   67     format(1X,'   All',8X,4(F11.1,F7.0))
+        else
+          write(outs,68)THE,tzhtime,TCE,tzctime,TLHE,tzlhtime,TLCE,
+     &      tzlctime
+   68     format(1X,'   All',9X,4(F11.2,F7.1))
+        endif
         call edisp(itru,' ')
         call eddisp(itru,outs)
         call edisp(itru,' ')
@@ -2237,7 +2044,11 @@ C << file does not need to be scanned to get the surface emissivity.
 
       character lodlabel*6
       common/loadlabel/lodlabel(mcom,MGTY)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
@@ -2256,7 +2067,7 @@ C =2 with more than 3 day types
       CHARACTER*13 LABELS(13)
       CHARACTER*5 LABSurf(2)
       character outs*124,act*1,prompt*124
-      CHARACTER RSNAME*40,SLABEL*32,GLABEL*20
+      CHARACTER RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       DIMENSION XVAL1(MZS)
       DIMENSION ST(6,10)
@@ -2285,8 +2096,7 @@ C Call the menu of choices (this also sets some default options).
         if(ixopen.eq.1)then
           itru = ixunit
           if(NGET.ge.1)then
-            write(prompt,'(a,a)') SLABEL(1)(1:lnblnk(SLABEL(1))),
-     &      ' >> file.'
+            write(prompt,'(a,a)') SLABEL(1)(1:LNSLABEL(1)),' >> file.'
           else
             write(prompt,'(a)')' Output being directed to file. ' 
           endif

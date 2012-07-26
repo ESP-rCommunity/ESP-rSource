@@ -29,7 +29,7 @@ C IMPROFL: Imports from legacy ascii profile file (AFIL) to a generic
 C    profile db file (BFIL)
 C MKAPRC: Creates an ascii materials db based on the
 C    current contents of binary file.
-C TROPRO creates an ASCII profiles db from the binary profiles db.
+C TRIPROCOM fills event profile commons from an ASCII profiles.
 C ERPCDB reads one element from a binary materials database
 C    returning them via parameter list.
 C parsemlcdesc: Parse the DESC string from common block returning text for
@@ -200,7 +200,7 @@ C to include information on optical properties).
         DESC=RSTR(1:LNBLNK(RSTR))
 
 C Parse the DESC string into string tokens.
-        call parsemlcdesc(DESC,MLCN,OTF,OPT,MLCSYM)
+        call parsemlcdesc(DESC,MLCN,OTF,OPT,MLCSYM,isymindex)
 
         symname=MLCSYM
         othcolr='grey50'
@@ -1243,101 +1243,72 @@ C File errors.
 
       END
 
-C **************** TROPRO (copied from esruprj/edpro.F)
-C TROPRO creates an ASCII profiles db from the binary profiles db.
-C NOTE LASCI is 72 char. This is called only by esrudbm.
-      SUBROUTINE TROPRO(IFA,LASCI,IER)
+C **************** TRIPROCOM (copied from esruprj/edpro.F)
+C TRIPROCOM reads data supplied from an ASCII profiles db into common.
+      SUBROUTINE TRIPROCOM(IFA,LLASCI,IER)
 #include "esprdbfile.h"
+C esprdbfile.h supplies the following:
+C LPRFDB,IPRODB (for event profile database)
+
 #include "espriou.h"
+C espriou.h provides currentfile.
 #include "profile.h"
+
+C << the ASCII file should have a header with a version number as well
+C << as a date stamp a block of documentation and categories
       
       integer lnblnk  ! function definition
 
-      COMMON/OUTIN/IUOUT,IUIN
-      CHARACTER LASCI*72
+      CHARACTER OUTSTR*124,LLASCI*144
       character ermsg*48   ! for read error messages
-      character outs*124   ! string buffer for messages
-      integer ier
 
-      IER =0
+C Free file unit
+      CALL ERPFREE(IFA,ISTAT)
+      write(currentfile,'(a)') LLASCI(1:lnblnk(LLASCI))
 
-C Because it is a binary file we are expecting a non-zero ier
-C does not require that we attempt to scan an ascii version of
-C the event profiles db.
-      CALL ERPFREE(IPRODB,ISTAT)
-      call EFOPRAN(IPRODB,LPRFDB,10,1,IER)
-      if(ier.ne.0)return
-
-      ermsg='reading record one number of profiles '
-      IREC=1
-      READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)NPDBITEMS
-      IF(NPDBITEMS.LE.0)THEN
-        CALL USRMSG(' ',' Events profiles db is empty !','W') 
-        RETURN
-      ENDIF
-
-C Open or overwrite the ASCII file.
-      CALL EFOPSEQ(IFA,LASCI,4,IER)
+C Open the ASCII file for reading.
+      CALL EFOPSEQ(IFA,LLASCI,1,IER)
       IF(IER.NE.0)THEN
-        CALL USRMSG(' Could not open ASCII file!',LASCI,'W')
+        CALL USRMSG(' ',' ASCII file does not exist!','W')
         IER=1
         RETURN
       ENDIF
-      write(currentfile,'(a)') LASCI(1:lnblnk(LASCI))
-      
-C Write out a file header.
-      WRITE(IFA,30)LASCI(1:lnblnk(LASCI))
-  30  FORMAT('# events profiles db defined in ',A)
 
-C Proceed
-      ermsg='reading record one number of profiles '
-      IREC=1
-      READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NPDBITEMS
+C Proceed.
+      CALL STRIPC(IFA,OUTSTR,0,ND,1,'no items',IER)
+      IF(IER.NE.0)RETURN
+      K=0
+      CALL EGETWI(OUTSTR,K,NPDBITEMS,1,MGIT,'W',
+     &  'number of event profiles',IER)
 
-      WRITE(IFA,21,IOSTAT=ISTAT,ERR=1000)NPDBITEMS
-   21 FORMAT(I5,'    # Number of profiles')
-
+C Get number of events and description of profile (EGETRM gets the
+C remainder of the line after the first word (NCG).
       DO 10 I = 1,NPDBITEMS
-        write(ermsg,'(a,i2)') 'reading number events in profile ',I
-        IREC = IREC + 1
-        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  NCG(I)
-        write(ermsg,'(a,i2)') 'reading description of profile ',I
-        IREC = IREC + 1
-        READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)  PDBDESC(I)
-
-        WRITE(IFA,22)NCG(I),PDBDESC(I)
-   22   FORMAT(I5,3X,A40,'  # No periods & description',/,
-     &                   '# start finish data data')
-
-C For each period.
+        CALL STRIPC(IFA,OUTSTR,0,ND,1,'NCG,PDBDESC',IER)
+        IF(IER.NE.0)RETURN
+        K=0
+        CALL EGETWI(OUTSTR,K,NCG(I),1,MPRFDBPER,'W',
+     &    'Number of periods in an event item',IER)
+        CALL EGETRM(OUTSTR,K,PDBDESC(I),'W','profile descr',IER)
         DO 20 J = 1,NCG(I)
-          write(ermsg,'(a,i3,a,i2)') 'reading data of profile ',I,
-     &      ' at period ',J
-          IREC = IREC + 1
-          READ(IPRODB,REC=IREC,IOSTAT=ISTAT,ERR=1001)IS,IF,A,B
+          CALL STRIPC(IFA,OUTSTR,0,ND,1,'IS,IF,A,B',IER)
+          IF(IER.NE.0)RETURN
+          K=0
+          CALL EGETWI(OUTSTR,K,IS,0,0,'-','Start',IER)
+          CALL EGETWI(OUTSTR,K,IF,0,0,'-','Finish',IER)
+          CALL EGETWR(OUTSTR,K,A,0.,0.,'-','VAL 1',IER)
+          CALL EGETWR(OUTSTR,K,B,0.,0.,'-','VAL 2',IER)
           ICGS1(I,J)=IS
           ICGF1(I,J)=IF
           CGS1(I,J)=A
           CGL1(I,J)=B
-          WRITE(IFA,23,IOSTAT=ISTAT,ERR=1000)IS,IF,A,B
-   23     FORMAT(I4,',',I4,',',F8.3,',',F8.3)
    20   CONTINUE
    10 CONTINUE
 
-  99  CALL ERPFREE(IPRODB,ISTAT)
       CALL ERPFREE(IFA,ISTAT)
       RETURN
 
- 1000 CALL USRMSG(' ',' ASCII file write error in ','W')
-      goto 99
-
- 1001 write(outs,'(3a,i4)') 'In profile db: error ',
-     &  ermsg(1:lnblnk(ermsg)),' at record ',irec
-      call edisp(iuout,outs)
-      goto 99
-
       END
-
 
 C *************** ERPCDB (copied from esrucom/edatabase.F)
 C ERPCDB reads one element from a binary materials database
@@ -1407,36 +1378,50 @@ C Air layer encountered so put in zeroes.
       END
 
 C ******* parsemlcdesc (copy from edatabase.F)
-C parsemlcdesc: Parse the DESC string from common block returning text for
-C MLCN (its name) ,OTF (whether OPAQ/TAN) ,OPT (optical name) ,MLCSYM
+C Parse the DESC string from the MLC common block returning text for
+C MLCN (its name) ,OTF (whether OPAQ/TRAN/CFC) ,OPT (optical name) ,MLCSYM
 C tag for symmetry. Where values are missing or unknown setup defaults.
-      subroutine parsemlcdesc(DES,MLCN,OTF,OPT,MLCSYM)
+C If isymindex is non-zero it is index of MLC for symmetric MLC.
+      subroutine parsemlcdesc(DES,MLCN,OTF,OPT,MLCSYM,isymindex)
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
       character DES*48,MLCN*12,OTF*4,OPT*12,MLCSYM*12
 
 C Clear parameters to be returned and then copy from DES.
-      MLCN=' '
-      OTF=' '
       OPT=' '
       MLCSYM=' '
       WRITE(MLCN,'(A)')DES(1:12)
       WRITE(OTF,'(A)') DES(15:18)
-      IF(OTF.EQ.' ')OTF='OPAQ'
-      IF(OTF.EQ.'TRAN')THEN
+      IF(OTF(1:2).EQ.'  ')OTF='OPAQ'
+      IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
         WRITE(OPT,'(A)') DES(21:32)
         IF(OPT.EQ.' ')OPT='UNKNOWN'
+      ELSEIF(OTF(1:4).EQ.'CFC ')THEN
+        OPT='USE GSLedit'
       ELSE
         OPT='OPAQUE'
       ENDIF
 
 C Read tag for name of inverted version or symmetry if the length of the
-C DESC string could hold the tag, otherwise set MLCSYM to a blank.
+C DESC string could hold the tag, otherwise set MLCSYM to a blank. Also
+C check the MLC index of MLCSYM so that can be returned.
       if(lnblnk(DES).gt.35)then
         WRITE(MLCSYM,'(A)') DES(35:46)
+
+C Look for index for MLCSYM in the current MLC database.
+        isymindex=0  ! assume no matching MLC          
+        do 5 ii=1,nmlc
+          if(MLCSYM(1:12).eq.DESC(ii)(1:12)) then
+            isymindex=ii   ! remember MLC index     
+          endif
+  5     continue
       else
         MLCSYM='  '
+        isymindex=0   ! signal not applicable     
       endif
       return
       end

@@ -50,7 +50,6 @@ C espriou.h provides currentfile.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
-      common/pophelp/h(60)
       COMMON/DISPL/IDAYF,IDAYL,IFDAY,IFTIME
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -75,7 +74,7 @@ C Currently only one node plotted.
       DIMENSION        FLWSIN(MPTS),FLWSUT(MPTS)
       CHARACTER LABEL1*10,LABEL2*10
       CHARACTER ETEXT*72,temp*28,WORD*20,OUTSTR*124
-      character H*72,outs*124,nterm*1,NDNAM*12
+      character outs*124,nterm*1,NDNAM*12
       character PERST1*14,PERST2*44,PERST3*44
       character LAPROB*72
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
@@ -87,10 +86,21 @@ C Currently only one node plotted.
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='MFPLOT' ! set for subroutine
 
 C In order to pass strings across to C it is necessary to first
 C do an internal write placing an end marker which C can understand.
@@ -150,14 +160,8 @@ C Let the user pick a menu item.
       NITMS=9
 
 C Help for this menu.
-   12 H(1)=' This module allows you to define or create a plot of'
-      H(2)=' of node coupled fluid mass flow results.'
-      H(3)=' The `1 nodes` must be used to define the node for '
-      H(4)=' output. `p Period` may be used to restrict the'
-      H(5)=' output period, and `u Units` to change expression '
-      H(6)=' of flow rate results.'
-      H(7)=' The graph is plotted through the `d Draw` command, '
-      H(8)=' and may be re-defined after it has been `c Cleared`.'
+   12 helptopic='mfs_graph_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('graph',ITEM,NITMS,INO)
 
@@ -180,8 +184,9 @@ C Display format for date is Fri 10 Jan.
         call edisp(iuout,outs)
 
         dok=.false.
-        h(1)='Option to specify a different period to display. '
-        CALL ASKOK(PERST3,' Different output period?',OK,dok,1)
+        helptopic='mfs_graph_period_change'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL ASKOK(PERST3,' Different output period?',OK,dok,nbhelp)
         if(OK)then
           CALL EASKPER('Output period:',IDAYF,IDAYL,IFDAY,IER)
           IF(IER.NE.0) GOTO 60
@@ -190,10 +195,10 @@ C Display format for date is Fri 10 Jan.
       ELSEIF(INO.EQ.2)then
 
 C Get flow results output dimension and set the Y-axis label.
-   40   H(1)='Note that volume flow rates use the volumes associated'
-        H(2)='with each node. '
+   40   helptopic='mfs_express_flow_results'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABC(' Express flow results as: ',' ',
-     &   'kg/s','volume as m^3/hr','volume as ac/h',IDIM,2)
+     &   'kg/s','volume as m^3/hr','volume as ac/h',IDIM,nbhelp)
         IF(IER.NE.0) GOTO 40
         IF(IDIM.EQ.1) LABEL1='10^-3.kg/s'
         IF(IDIM.EQ.2) LABEL1='m^3/hr    '
@@ -205,22 +210,24 @@ C Set number and name of node for output.
         IF(NDONUM.EQ.0)GOTO 10
         NLINES=1
         IF(IDIM.EQ.3) THEN
-          H(1)='This should be the same as that of the associated'
-          H(2)='zone in the bps simulation. '
+          helptopic='mfs_volume_same_as'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           VOLUME=SUPNOD(NDONUM,2)
           write(outs,'(A,A12,A,F8.2,A)')' The current volume of ',
      &                 NDNAM(NDONUM),' is ',VOLUME,'m^3'
           CALL EASKR(VOLUME,' ',
      &     ' Volume (m^3) in evaluating fluid change rates/hour? ',
-     &     0.0,'F',0.,'-',1.,'volume per hour',IER,2)
+     &     0.0,'F',0.,'-',1.,'volume per hour',IER,nbhelp)
           VOL(NLINES)=VOLUME
         ELSE
           VOL(NLINES)=1.0
         END IF
 
 C Set number and name of coupled node.
-   25   CALL EASKAB(' ',' Display flow via:',
-     &            'all associated nodes','between one node',IW,0)
+   25   helptopic='mfs_display_all_one'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL EASKAB(' ',' Display flow via:',
+     &    'all associated nodes','between one node',IW,nbhelp)
         if(IW.eq.1)then
           NDCNUM=0
           GOTO 10
@@ -238,7 +245,9 @@ C Set number and name of coupled node.
       ELSEIF(INO.EQ.8)then
 
 C Explain option.
-        CALL PHELPD('mfs plotting',8,'-',0,0,IER)
+        helptopic='mfs_graph_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('mfs plotting',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.9)then
         GOTO 100
       ELSE
@@ -264,9 +273,15 @@ C Refresh the drawing area.
           CALL feedbox(menuchw,2,igfw,igfh)
           CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         endif
-        CALL win3d(menuchw,12,8,7,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=12; iiw2=8; iiw3=7; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        CALL win3d(menuchw,12,8,7,3,igl,igr,igt,igb,igw,igwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
       ENDIF
 
       ICOUNT=0
@@ -399,9 +414,9 @@ C Scale and draw axes.
       igheight=igwh
       call axiscale(igwid,igheight,XMIN,XMAX,YMIN,YMAX,xsc,ysc,sca,
      &  Xadd,Yadd)
-      CALL horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,1,LABEL2)
-      CALL vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,LABEL1)
-      call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
+      CALL horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,1,LABEL2)
+      CALL vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,LABEL1)
+      call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
 
 C Establish step size (in hour) in X-direction.
       STPX=1./FLOAT(NTSPH)

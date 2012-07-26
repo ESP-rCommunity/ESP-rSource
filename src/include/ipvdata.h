@@ -97,7 +97,7 @@ C profiles are included in a third 24 hour set of profiles.  No scaling
 C is done with data, assumes that the associated areas translate directly
 C to the fully scaled project.
       integer  idmdinc !  0 (exclude) or 1 (include) toggle for each type
-      common/IPVDMD/idmdinc(7)
+      common/IPVDMD/idmdinc(MGTY)
 
 C Image files associate with IPV.
       integer nipvimg       ! number of image files associate with IPV

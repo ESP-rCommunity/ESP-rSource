@@ -34,7 +34,6 @@ C Display Zones list and wait for INIPIC item selected
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       
       integer ncomp,ncon
@@ -45,8 +44,14 @@ C Display Zones list and wait for INIPIC item selected
 
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       DIMENSION IVALZ(MCOM)
-      CHARACTER H*72
-      
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='Zoneslist'  ! set for subroutine
+
       do 5 i=1,MCOM
         NbSurSel(i) = 0
   5   continue
@@ -71,15 +76,11 @@ C Otherwise select the zones from a list of zone names.
         call edisp(iuout,' Zone selection... ')
         call edisp(iuout,'  ')
 
- 7      H(1)='Pick one, several or All zones that must be included in'
-        H(2)='the reverberation time calculation. The calculation will'
-        H(3)='evaluated the performance over all the selected zones '
-        H(4)='as it was corresponding to a single space. This allow to'
-        H(5)='calculate the reverberation time of a space that is '
-        H(6)='represented by several thermal zones (ex. atrium) '
+ 7      helptopic='aco_zones_to_inclue'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         INPIC = NCOMP 
-        CALL EPICKS(INPIC,IVALZ,' ',' Which zones to include: ',
-     &    12,NCOMP,ZNAME,'Zone(s) list',IDerr,6)
+        CALL EPICKS(INPIC,IVALZ,' ',' Which zones to include:',
+     &    12,NCOMP,ZNAME,'Zone(s) list',IDerr,nbhelp)
 
 C Check for errors (if => exit sub).
         if (IDerr.ne.0) goto 666
@@ -177,6 +178,7 @@ C geometry.h provides commons G0/G1/G2/G4/prec2/precz/prec17.
       COMMON/OUTIN/IUOUT,IUIN
       common/gzonpik/izgfoc,nzg,nznog(mcom)
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
@@ -250,7 +252,6 @@ C HeightCo (Real) : Height [m] of the constructions, for LCA calculation.
 #include "material.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/pophelp/h(60)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/ERRHAND/IDerr
       COMMON/CompPik/IComfoc,NComPik,LstComp(MMLC)
@@ -259,7 +260,12 @@ C HeightCo (Real) : Height [m] of the constructions, for LCA calculation.
 
       DIMENSION IVALZ(MCOM)
 
-      CHARACTER H*72
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CompoList'  ! set for subroutine
 
 C Read database if not already done.
       if (.not.MLDBOK) then 
@@ -277,15 +283,15 @@ C Read database if not already done.
         LstComp(II)=0
  6    continue
       NComPik=0
-C Otherwise select the zones from a list of zone names.
+
+C Otherwise select the constructions from a list of names.
       call edisp(iuout,' Composite(s) selection... ')
       call edisp(iuout,'  ')
- 7    H(1)='Pick one, several or All zones for inclusion in a'
-      H(2)='xx from the list provided. '
-      H(3)='You may choose them in any order. '
+ 7    helptopic='aco_constr_to_include'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       INPIC=NMLC
-      CALL EPICKS(INPIC,IVALZ,' ',' Which constructions to include:',
-     &  20,NMLC,Desc,' Composite(s) list',IDerr,3)
+      CALL EPICKS(INPIC,IVALZ,' ','Which constructions to include:',
+     &  20,NMLC,Desc,' Composite(s) list',IDerr,nbhelp)
 
 C Check for errors (if => exit sub).
       if (IDerr.ne.0) RETURN
@@ -354,6 +360,7 @@ C          1 = textual feedback or 2 = File
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/SDATA/SNA(MS),GSA(MS),GWA(MS),PAZI(MS),PELV(MS)
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -1067,10 +1074,14 @@ C RESMN      - Minimum reverberation time
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C Initialisation
@@ -1082,9 +1093,15 @@ C Initialisation
 C Setup the graph dimension according to the max and min RT
       IF ((MAll.EQ.4).AND.(MethodCalc.GT.1)) THEN
       ELSE
-        Call win3d(menuchw,15,15,5,5,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=15; iiw2=15; iiw3=5; iiw4=5; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        Call win3d(menuchw,15,15,5,5,igl,igr,igt,igb,igw,igwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         do 20 I=1,MNbAbs
           if (TReverb(I).gt.RESMX) then
             RESMX=TReverb(I)
@@ -1104,15 +1121,16 @@ C Calculate plotting box locations.
         igheight=igwh
         call axiscale(igwid,igheight,plxmin,plxmax,Ymin,Ymax,                 
      &                            xsc,ysc,sca,xadd,yadd)
-        CALL linescale(igl,xadd,xsc,igb,yadd,ysc)
+        CALL linescale(iigl,xadd,xsc,iigb,yadd,ysc)
 
 C Scale and draw monitoring plot.
-        Call horaxis(plxmin,plxmax,igl,igr,igb,xadd,XSC,0,'Frequ.[Hz]')
-        call vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,'RT  s')
+        Call horaxis(plxmin,plxmax,iigl,iigr,iigb,xadd,XSC,0,
+     &    'Frequ.[Hz]')
+        call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,'RT  s')
 
 C Print title. IPS is used to keep track of number of title lines.
         IPS=1
-        write(title,'(20x,2a)') 'Reverberation time for space: ',TxtZone
+        write(title,'(20x,2a)')'Reverberation time for space: ',TxtZone
         iside=IPS
         isize=0
         ifont=0

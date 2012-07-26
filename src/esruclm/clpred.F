@@ -20,7 +20,7 @@ C Boston, MA 02111-1307 USA.
 
 C clpred.F includes the following subroutines:
 C   CLPRED allows the user to predict/transform climatic data.
-C   POLYTR transforms climate data for a given period according to some
+C   POLYTR transforms weather data for a given period according to some
 C          polynomial function.
 C   PDRAW will draw the predicted climatic data for any period.
 C   PSOLRD uses method J.K. Page (Sheffield), to predict the direct
@@ -45,7 +45,6 @@ C IST = 3 the user is interested in curve fitting.
 
       PARAMETER (MT=24,MD=365,MAAS=9)
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
 C PRADB is direct normal radiation, PRADD is diffuse radiation
 C PTEMP is ambient dry bulb, PWV is wind velocity
@@ -65,12 +64,18 @@ C PRH is relative hunidity, PLAST is previous value of current focus.
       COMMON/PERPER/PERST2
 
       CHARACTER*27 ITEM(14)
-      character h*72,PRML*48,PRM*24,CLMLOC*30,PERST2*44,str*60
+      character PRML*48,PRM*24,CLMLOC*30,PERST2*44,str*60
       character outs*124
       DIMENSION ICLM(24,6),ICK(6),WVEL(24),NANG(MAAS),WRDF(MAAS)
       logical OK,dok,FOUND
       integer NITEMS,INO  ! max items and current menu item
 
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CLPRED'  ! set for this subroutine
    1  ISAVE=1
       if(ist.eq.1)then
         CALL EDISP(IUOUT,'Select period')
@@ -101,43 +106,14 @@ C PRH is relative hunidity, PLAST is previous value of current focus.
    55 CONTINUE
 
       WRITE(STR,'(2A)')'Modified ',CLMLOC(1:21)
-      CALL EASKS(STR,'On changing climate data it is usual to change'
+      CALL EASKS(STR,'On changing weather data it is usual to change'
      &   ,'synopsis ',30,'synopsis. ','new synopsis',IER,0)
       ICV=0
       DO 10 I=1,4
         ICK(I)=0
    10 CONTINUE
-   11 H(1) ='This menu allows climate data to be changed. In order to '
-      H(2) ='make a change choose one of the climate parameters (direct'
-      H(3) ='/diffuse radiation, temperature etc.)'
-      H(4) = ' '
-      H(5) ='For curve fitting the time at which maximum'
-      H(6) ='occurs, the maximum and minimum value is required'
-      H(7) = ' '
-      H(8) ='Transforms can change the parameter to a fixed value,'
-      H(9) ='increase or decrease by a fixed value, make fractional'
-      H(10)='change or by a user specified polynomial function.'
-      H(11)=' '
-      H(12)='In addition to this; radiation can also be predicted from'
-      H(13)='knowledge of latitude, longitude, elevation, atmospheric '
-      H(14)='turbidity (for which additional help is also provided in '
-      H(15)='the relevant section) and precipitation (optional). This '
-      H(16)='option to predict both direct and diffuse radiation is '
-      H(17)='available for curve fitting only.'
-      H(18)=' '
-      H(19)='Wind speed from specific directions can be transformed'
-      H(20)='to account for wind speed reductions from wind-'
-      H(21)='breaks or other site obstructions on one, two, or three'
-      H(22)='sides of a building. For example if wind from 15-85 deg'
-      H(23)='is 0.6 times normal wind velocty.'
-      H(24)=' '
-      H(25)='Wind speed transforms are defined as follows:'
-      H(26)='a) subdivide wind directions into segments (beginning at'
-      H(27)='0 deg (north) and continuing anti-clockwise to 360 deg)'
-      H(28)='and for each segment supply a factor. Up to 10 segments'
-      H(29)='can be specified. Each hour in the data is checked and '
-      H(30)='modified depending on which wind direction segment it '
-      H(31)='falls into.'
+   11 helptopic='curve_fitting_overview'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       if(ist.eq.1)then
         ITEM(1)='p Change period           '
@@ -163,7 +139,7 @@ C PRH is relative hunidity, PLAST is previous value of current focus.
       elseif(ist.eq.3)then
         ITEM(10)='! Draw curve-fit data    '
       endif
-      ITEM(11)='s Save climate data        '
+      ITEM(11)='s Save weather data        '
       ITEM(12)='  ------------------------ '
       ITEM(13)='? Help                     '
       ITEM(14)='- Exit                     '
@@ -171,11 +147,11 @@ C PRH is relative hunidity, PLAST is previous value of current focus.
 
       INO=-2
       if(ist.eq.1)then
-        CALL EMENU(' Climate prediction',ITEM,NITEMS,INO)
+        CALL EMENU(' Weather prediction',ITEM,NITEMS,INO)
       elseif(ist.eq.2)then
-        CALL EMENU(' Climate transforms',ITEM,NITEMS,INO)
+        CALL EMENU(' Weather transforms',ITEM,NITEMS,INO)
       elseif(ist.eq.3)then
-        CALL EMENU(' Climate curve-fits',ITEM,NITEMS,INO)
+        CALL EMENU(' Weather curve-fits',ITEM,NITEMS,INO)
       endif
       if(ino.eq.nitems)then
 
@@ -191,13 +167,12 @@ C When exiting, return to the whole year period.
           IDF=365
           RETURN
         ELSE
-          h(1)='Any changes you might have made will only be '
-          h(2)='written to THE CURRENT file if you agree. '
-          h(3)=' '
-          h(4)='If you have not made any changes then just say no.'
+          helptopic='reminder_on_saving'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           dok=.false.
           CALL ASKOK('Changes have not yet been saved to file. Save',
-     &      'data (to the current file) before exiting ?',OK,dok,4)
+     &      'data (to the current file) before exiting ?',
+     &      OK,dok,nbhelp)
           if(.NOT.OK)then
             ID1=1
             IM1=1
@@ -210,7 +185,7 @@ C When exiting, return to the whole year period.
             RETURN
           endif
 
-C Update climate binary file for the period the user had selected
+C Update weather binary file for the period the user had selected
 C as well as writing out the tail of the file.
           DO 256 IDAY=IYDS,IYDF
             IDI=IDAY-IYDS+1
@@ -232,7 +207,7 @@ C as well as writing out the tail of the file.
           IREC=368
           WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG
           ISAVE=1
-          call edisp(iuout,'Climate data saved for...')
+          call edisp(iuout,'Weather data saved for...')
           call edisp(iuout,PERST2)
           ID1=1
           IM1=1
@@ -245,7 +220,9 @@ C as well as writing out the tail of the file.
           return
         ENDIF
       ELSEIF(INO.EQ.NITEMS-1)THEN
-        CALL PHELPD('climate prediction',31,'clm_predict',0,0,IER)
+        helptopic='curve_fitting_overview'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('weather prediction',nbhelp,'clm_predict',0,0,IER)
       elseif(ino.eq.1)then
         goto 1
       ELSEIF(INO.GE.3.AND.INO.LE.9)THEN
@@ -310,10 +287,9 @@ C Save the current values of the item of interest into PLAST.
         CALL PDRAW(ICV,-1,IYDS,IYDF)
 
         IF(INO.EQ.6)THEN
-          H(1)='Temperature and RH are interdependant and some'
-          H(2)='unrealistic combination may cause problems at'
-          H(3)='simulation time. No checks are currently made.'
-          CALL PHELPD('RH prediction',3,'RH changing',0,0,IER)
+          helptopic='interdependant_rh_temp'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('RH prediction',nbhelp,'RH changing',0,0,IER)
         ELSEIF(INO.EQ.8)THEN
 
 C To activate wind direction prediction change ino.eq.88 to ino.eq.8 in
@@ -348,12 +324,10 @@ C Prediction of solar radiation as function of turbidity and
 C precipitable water content
         IF(IST.EQ.3)THEN
           IF(INO.EQ.9)THEN
-            H(1)='This model is based on the work of J K Page'
-            H(2)='(Sheffield). It is used to predict the direct normal'
-            H(3)='and the horizontal diffuse solar irradiance for any'
-            H(4)='site at any time of day for particular values of '
-            H(5)='atmospheric turbidity and precipitable water content'
-            CALL PHELPD('rad prediction',5,'rad prediction',0,0,IER)
+            helptopic='jk_page_direct_normal'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL PHELPD('rad prediction',nbhelp,'rad prediction',
+     &         0,0,IER)
             ICV=1
             ICK(1)=1
             ICK(2)=1
@@ -362,10 +336,10 @@ C precipitable water content
             GOTO 11
           ENDIF
           WRITE(PRML,'(2A)')PRM(1:LNBLNK(PRM)),' occur ?'
-          H(1)='You are asked for the hour at maximum as well as the'
-          H(2)='maximum value and the minimum value for the day. '
+          helptopic='hour_max_min'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKR(HOUR,'At which hour does the maximum ',PRML
-     &    ,0.,'F',24.,'F',1.,'max hour',IER,2)
+     &    ,0.,'F',24.,'F',1.,'max hour',IER,nbhelp)
           IF(IER.NE.0)GOTO 999
           CALL EASKR(VALMAX,'Maximum ',PRM,
      &    V_MIN,'F',V_MAX,'-',1.,'max value',IER,2)
@@ -400,14 +374,16 @@ C segments MAAS)
         NSEG=3   ! initial value
         IF(IST.EQ.2)THEN
           IF(INO.EQ.9)THEN
+            helptopic='interdependant_rh_temp'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL EASKI(NSEG,' How many angular segments to divide into?'
-     &      ,'(see help)',1,'F',MAAS,'F',3,'constant dir',IER,31)
+     &      ,'(see help)',1,'F',MAAS,'F',3,'constant dir',IER,nbhelp)
             IANGS=0
             DO 7485 ISEG=1,NSEG
               IF(ISEG.EQ.NSEG)GOTO 5155
               WRITE(STR,'(A,I2)')'Finishing angle for segment no. ',ISEG
-              CALL EASKI(IANGF,STR,
-     &          '(see help)',1,'F',360,'F',360,'constant dir',IER,31)
+              CALL EASKI(IANGF,STR,'(see help)',
+     &          1,'F',360,'F',360,'constant dir',IER,nbhelp)
               GOTO 5156
  5155         IANGS=IANGF
               IANGF=360
@@ -416,7 +392,8 @@ C segments MAAS)
      &        'What is the wind speed reduction factor ',IANGS,' to '
      &        ,IANGF
               CALL EASKR(REDF,STR,'i.e. fraction of original speed?',
-     &          0.,'-',0.,'-',1.,'wind break speed reduction',IER,31)
+     &          0.,'-',0.,'-',1.,'wind break speed reduction',
+     &          IER,nbhelp)
               IANGS=IANGF
               WRDF(ISEG)=REDF
  7485       CONTINUE
@@ -451,16 +428,15 @@ C Draw variables.
         DO 20 I=1,4
           IF(ICK(I).NE.1)THEN
             dok=.true.
-            h(1)='You did not specify all of the variables that '
-            h(2)='are allowed. Say yes to include the remaining '
-            h(3)='variables. '
+            helptopic='specify_more_variables'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL ASKOK(' Do you want to make any more changes before',
-     &        ' saving the climate data?',OK,dok,3)
+     &        ' saving the weather data?',OK,dok,nbhelp)
             IF(OK)THEN
               goto 11
             else
 
-C Update climate binary file for each altered day as well as the tail.
+C Update weather binary file for each altered day as well as the tail.
               DO 156 IDAY=IYDS,IYDF
                 IDI=IDAY-IYDS+1
                 DO 157 IT=1,MT 
@@ -481,7 +457,7 @@ C Update climate binary file for each altered day as well as the tail.
               IREC=368
               WRITE(ICLIM,REC=IREC,IOSTAT=ISTAT,ERR=1000)CLAT,CLONG
               ISAVE=1
-              call edisp(iuout,'Climate data saved for...')
+              call edisp(iuout,'Weather data saved for...')
               call edisp(iuout,PERST2)
               GOTO 11
             ENDIF
@@ -493,31 +469,36 @@ C Update climate binary file for each altered day as well as the tail.
       GOTO 11
 
 C Error handling
-  999 H(1) = 'A data i/o error has occured in the program'
-      H(2) = 'and it is probably best not to go on. '
-      H(3) = 'Program is taking one step back.'
-      CALL PHELPD('data i/o error',3,'i/o exception handler',0,0,IER)
+  999 helptopic='io_error_message'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL PHELPD('data i/o error',nbhelp,'i/o exception handler',
+     &  0,0,IER)
       RETURN
 
-1000  write(outs,'(A,I4)')' Problem writing climate data on rec ',IREC
+1000  write(outs,'(A,I4)')' Problem writing weather data on rec ',IREC
       call usrmsg(outs,' returning....','W')
       goto 999
 
       END
 
-C POLYTR transforms climate data for a given period according to some
+C POLYTR transforms weather data for a given period according to some
 C polynomial function
       SUBROUTINE POLYTR(ICLMT,IYDS,IYDF)
       PARAMETER (MT=24,MD=365)
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/PCLIM/PRADB(MD,MT),PRADD(MD,MT),PTEMP(MD,MT),
      &             PWV(MD,MT),PWD(MD,MT),PRH(MD,MT),PLAST(MD,MT)
       DIMENSION A(10)
-      character H*72,COEFFS*72,STR*72
+      character COEFFS*72,STR*72
       integer ILC  ! for radio button
 
-C Setup limits for climate parameters
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+C Setup limits for weather parameters
+      helpinsub='POLYTR'  ! set for this subroutine
       IF(ICLMT.EQ.1)THEN
         CLMIN=0.
         CLMAX=1400.
@@ -539,61 +520,45 @@ C Setup limits for climate parameters
       ENDIF
 
       IDS=IYDS
-      H(1)='A climate parameter can either be set to a constant value'
-      H(2)='for the chosen period of time. Or it can be increased or'
-      H(3)='decreased by a constant value (e.g. to increase all temp-'
-      H(4)='-eratures by 2.5deg). Or a climate parameter can be '
-      H(5)='changed to a fraction of its original value (e.g. to make'
-      H(6)='all wind speeds three times'
-      H(7)='You may want a polynomial fit (useful in transforms e.g. '
-      H(8)='increasing the temperature by two degrees or making the '
-      H(9)='humdity 75% etc.) '
-      H(10)='The polynomial fit asks for the degree of polynomial e.g.'
-      H(11)='     Y = a0                    has degree 0 and can be '
-      H(12)='used to set the climate parameter to a constant value'
-      H(13)='     Y = a1*X + a0             has degree 1 and can be'
-      H(14)='used to increase/decrease by a factor of a1'
-      H(15)='     Y = a2*X^2 + a1*X + a0    has degree 2 and can be '
-      H(16)='used in more complex transforms.'
-      H(17)='Relevant number of coefficients a0, a1 etc. are also'
-      H(18)='required as input'
+      helptopic='polynomial_fit_overview'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       COEFFS=' '
       ILC=1
-      CALL EASKATOG('Change original climate value ','(see help)'
+      CALL EASKATOG('Change original weather value','(see help)'
      & ,'set to constant','change by constant','fraction of original'
-     &    ,'polynomial transform ','continue',' ',' ',ILC,18)
+     &    ,'polynomial transform ','continue',' ',' ',ILC,nbhelp)
       IF(ILC.EQ.5)RETURN
       K=0
       IF(ILC.EQ.1)THEN
         NORD=0
         CALL EASKS(COEFFS,'What is the constant value','(see help)',
-     &   5,' ','constant climate parameter',IER,18)
+     &   5,' ','constant weather parameter',IER,nbhelp)
         CALL EGETWR(COEFFS,K,A(1),CLMIN,CLMAX,'-','coefficients',IER)
         IF(IER.NE.0)GOTO 999
       ELSEIF(ILC.EQ.2)THEN
         NORD=1
         CALL EASKS(COEFFS,'Change by what constant value','(see help)',
-     &   5,' ','constant climate parameter',IER,18)
+     &   5,' ','constant weather parameter',IER,nbhelp)
         CALL EGETWR(COEFFS,K,A(2),CLMIN,CLMAX,'-','coefficients',IER)
         IF(IER.NE.0)GOTO 999
         A(1)=1.
       ELSEIF(ILC.EQ.3)THEN
         NORD=1
         CALL EASKS(COEFFS,'Change by what fraction','(see help)',
-     &   5,' ','constant climate parameter',IER,18)
+     &   5,' ','constant weather parameter',IER,nbhelp)
         CALL EGETWR(COEFFS,K,A(1),CLMIN,CLMAX,'-','coefficients',IER)
         IF(IER.NE.0)GOTO 999
         A(2)=0.
       ELSEIF(ILC.EQ.4)THEN
         if(NORD.eq.0) NORD=1
         CALL EASKI(NORD,' What is the order of polynomial?','(see help)'
-     &    ,0,'W',3,'W',0,'constant dir',IER,18)
+     &    ,0,'W',3,'W',0,'constant dir',IER,nbhelp)
         IF(IER.NE.0)GOTO 999
-        H(1) = 'For the polynomial a1X + a0 enter a1 and a0 '
-        H(2) = 'in that order and separated by a space'
+        helptopic='polynomial_coef'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         write(STR,'(A,I1,A)')'Enter ',NORD+1,
      &  ' coefficients (maximum powers first)'
-        CALL EASKS(COEFFS,STR,' ',72,' ','polynom coeff',IER,2)
+        CALL EASKS(COEFFS,STR,' ',72,' ','polynom coeff',IER,nbhelp)
         IF(IER.NE.0)GOTO 999
         K=0
         DO 101 II=1,NORD+1
@@ -658,10 +623,10 @@ C Range checking of parameters should be moved to above if-else ladder
       RETURN
 
 C Error trap
-  999 H(1) = 'A data i/o error has occured in the program'
-      H(2) = 'and it is probably best not to go on. '
-      H(3) = 'Program is taking one step back.'
-      CALL PHELPD('data i/o error',3,'i/o exception handler',0,0,IER)
+  999 helptopic='polyr_io_error_message'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL PHELPD('data i/o error',nbhelp,'i/o exception handler',
+     &  0,0,IER)
       RETURN
       END
 
@@ -743,47 +708,46 @@ C solar irradiance for any site at any time of day for particular
 C values of atmospheric turbidity and precipitable water content.
       SUBROUTINE PSOLRD(IYDS,IYDF)
       PARAMETER (MT=24,MD=365)
-      common/pophelp/h(60)
       COMMON/PCLIM/PRADB(MD,MT),PRADD(MD,MT),PTEMP(MD,MT),
      &             PWV(MD,MT),PWD(MD,MT),PRH(MD,MT),PLAST(MD,MT)
       DIMENSION SOLALT(24),SOLAZI(24)
       DIMENSION B(4,3)
-      character outs*124,H*72
+      character outs*124
       logical ok,dok
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
 
       DATA PI/3.14159265/,ISC/1353/
       DATA B/-0.129641,-6.42111E-2,-0.46883E-2,0.0844097E-2,
      &        0.412828E-2,-0.801046E-2,0.220414E-2,-0.0191442E-2,
      &       -1.12096E-4,1.53069E-4,-0.429818E-4,0.0374176E-4 /
 
+      helpinsub='PSOLRD'  ! set for this subroutine
       RLATIT=0.
-      H(1)='North is positive, South is negative.'
-      CALL EASKR(RLATIT,' Latitude (North +ve: South -ve) ',
-     &  ' for the site under analysis ? ',
-     &    -90.,'F',90.,'-',32.,'latitude',IER,1)
+      helptopic='north_is_positive'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL EASKR(RLATIT,'Latitude (North +ve: South -ve)',
+     &  'for the site under analysis ? ',
+     &    -90.,'F',90.,'-',32.,'latitude',IER,nbhelp)
 
       RLONGT=0.
-      H(1)='East is positive, West is negative. '
-      CALL EASKR(RLONGT,' Longitude (East +ve: West -ve) ',
-     &  ' for the site under analysis ? ',
-     &    -180.,'F',180.,'-',0.,'longitude',IER,1)
+      CALL EASKR(RLONGT,'Longitude (East +ve: West -ve)',
+     &  'for the site under analysis ? ',
+     &    -180.,'F',180.,'-',0.,'longitude',IER,nbhelp)
 
       HTSITE=0.
-      H(1)='Used in determining air mass and turbidity. '
       CALL EASKR(HTSITE,
-     &  ' What is the elevation of the site above',' sea level (M) ? ',
-     &    0.,'-',0.,'-',10.,'elevation',IER,1)
+     &  'What is the elevation of the site above',' sea level (M)?',
+     &    0.,'-',0.,'-',10.,'elevation',IER,nbhelp)
 
-      H(1)='     Recommended Turbidity Values:'
-      H(2)=' '
-      H(3)=' Clear weather in winter            0.09'
-      H(4)=' Clear summer weather in country    0.19'
-      H(5)=' Clear summer weather in town       0.28'
-      H(6)=' Hazy weather                       0.37'
-      H(7)=' Heavy warm hazy weather            0.45'
+      helptopic='recommended_turbidity'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       ATTURB=0.0
       CALL EASKR(ATTURB,'Value of atmospheric turbidity?','(see help)',
-     &    0.,'F',1.,'W',0.19,'turbidity',IER,7)
+     &    0.,'F',1.,'W',0.19,'turbidity',IER,nbhelp)
 
       IDX=0
       IF(IYDS.GT.IYDF)IDX=365
@@ -805,15 +769,15 @@ C Estimate the precipitable water content.
     8 FORMAT(' The mean precipitable daily water content is',F6.2,
      &' (mm)')
       dok=.true.
-      h(1)='You have been presented with a derived value. Plese '
-      h(2)='review the value to see if it correct. If you say'
-      h(3)='no you will be asked for precipitable water content. '
-      CALL ASKOK(outs,'Is this value satisfactory?',OK,dok,3)
+      helptopic='review_derived_value'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL ASKOK(outs,'Is this value satisfactory?',OK,dok,nbhelp)
       if(ok)goto 32
-      H(1)='Water content is in mm. '
+      helptopic='precip_water_content'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKR(PRECWC,' Average precipitable water content',
      &  ' for the period under analysis ? ',
-     &    0.,'-',0.,'-',0.,'prec water',IER,1)
+     &    0.,'-',0.,'-',0.,'prec water',IER,nbhelp)
       GOTO 19
    32 PRECWC=-1.0
    19 ITS=1
@@ -950,12 +914,12 @@ C Parameters:
       integer iday    ! the current day of the month
       integer ihr     ! the current hour of the day
       integer IGLOBH  ! global horizontal value (in w/m2)
-      real LONGITUDE  ! the climate longitude (west: positive)
+      real LONGITUDE  ! the weather site longitude (west: positive)
       real DIFFGRNWCH ! local time difference from Greenwich. Assumes
                       ! that west is positive (e.g. use -2 for Greece)
       real DRAD       ! diffuse value to be returned Muneer or Maxwell (in w/m2)
 
-C RADTYP Common might be needed in order to specify that climate
+C RADTYP Common might be needed in order to specify that weather
 C is based on global horizontal and not direct normal. At the moment
 C this is specified in MKOREANCLM when this is subroutine is used
 C      COMMON/RADTYP/IDNGH

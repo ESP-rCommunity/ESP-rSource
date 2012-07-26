@@ -41,8 +41,6 @@ C ******************************************************************************
       COMMON/FILEP/IFIL
       COMMON/ELRFIL/ELRFLNAM
 
-      COMMON/POPHELP/H(60)
-
       COMMON/TRC/ITRC
 
 C Electrical network results library details.
@@ -54,20 +52,29 @@ C Electrical network results library details.
       INTEGER IELFIL,IELIBHL,IELIBW,IELSTREC,NETS,NTSREC,NHREC,
      &NPREC,IFOCUS
 
-      CHARACTER H*72,LTMP*72,ELRFLNAM*72,DFILE*72,ITEM*42,MMODE*1
+      CHARACTER LTMP*72,ELRFLNAM*72,DFILE*72,ITEM*25,MMODE*1
       LOGICAL OK,dok
       integer NITMS,INO ! max items and current menu item
 
-C Open the electrical results library if necessary
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ENETRES'  ! set for cfiles
+
+C Open the electrical results library if necessary. Suggest a file
+C name based on the naming scheme for the zone and flow results.
+C << to be done >>
       IER=0
     1 CALL EDISP(IUOUT,' ')
       LTMP=' '
       ELRFLNAM=' '
       DFILE='libe'
-      H(1)='Give the name of the electrical results library you wish to'
-      H(2)='analyse.'
+      helptopic='res_electrical_res_lib'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKS(LTMP,' Electrical results library name ? ',
-     &      ' ',72,DFILE,'library file',IER,7)
+     &      ' ',72,DFILE,'library file',IER,nbhelp)
       WRITE(ELRFLNAM,'(A72)') LTMP
       CALL USRMSG(' ',' ','-')
       IER=0 
@@ -81,12 +88,10 @@ C Open the electrical simulation results file
        CALL EFOPRAN(IELFIL,ELRFLNAM,IELIBW,1,IER)
        IF(IER.LT.0) then
         dok=.false.
-        h(1)='The electrical results library is created during the'
-        h(2)='simulation. There was an error reported when opening'
-        h(3)='this file. Check that it exists in the folder you '
-        h(4)='specified and with the name you gave. '
+        helptopic='res_electrical_res_lib'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK(' Error opening the electrical library.',
-     &    'Do you want to try again ?',OK,dok,4)
+     &    'Do you want to try again ?',OK,dok,nbhelp)
         IF(OK)THEN
           GOTO 2
         ELSE
@@ -98,13 +103,10 @@ C Compare the file with library header, warn if inconsistent
       CALL ENETRCHK(IER)
       IF(IER.LT.0)THEN
         dok=.false.
-        H(1)='WARNING: the data in the results file is not consistent'
-        H(2)='the electrical network file associated with this model '
-        H(3)='you can still examine the results, but component labels '
-        H(4)='will not be correct. You are advised to read in a results'
-        H(5)='results library associated with this model.'
+        helptopic='res_electrical_lib_warn'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK('Continue with electrical results analysis?',' ',
-     &    OK,dok,5)
+     &    OK,dok,nbhelp)
         IF(.NOT.OK) RETURN
       ENDIF
 
@@ -116,53 +118,42 @@ C Set the focus for results analysis an initial parameters
       IFOCUS=1
 
 C Setup for menu text.
-    2 ITEM(1)   ='1 Select result db                       '
-      ITEM(2)   ='2 Select result set <N/A>                '
-      ITEM(3)   ='3 Define output period                   '
-      ITEM(4)   ='  ------------------------------------   '
-      ITEM(5)   ='a Graphs                                 '
-      ITEM(6)   ='b Tabular report                         '
-      ITEM(7)   ='c Statistics                             '
-      ITEM(8)   ='d Performance indicators                 '
-      ITEM(9)   ='e IPV <N/A>                              '
-      ITEM(10)  ='  -------------------                    '
+    2 ITEM(1)   ='1 Select result db      '
+      ITEM(2)   ='  <Not applicable>      '
+      ITEM(3)   ='3 Define output period  '
+      ITEM(4)   ='  --------------------- '
+      ITEM(5)   ='a Graphs                '
+      ITEM(6)   ='b Tabular report        '
+      ITEM(7)   ='c Statistics            '
+      ITEM(8)   ='d Performance indicators'
+      ITEM(9)   ='e IPV <N/A>             '
+      ITEM(10)  ='  --------------------- '
       IF(ITRC.EQ.0)THEN
-        ITEM(11)='r Report >> ON                           '
+        ITEM(11)='r Report >> ON          '
       ELSE
-        ITEM(11)='r Report >> OFF                          '
+        ITEM(11)='r Report >> OFF         '
       ENDIF
-      ITEM(12)=  '                                         '
-      ITEM(13)=  '? Help                                   '
-      ITEM(14)=  '- Exit                                   '
+      ITEM(12)=  '                        '
+      ITEM(13)=  '? Help                  '
+      ITEM(14)=  '- Exit                  '
 
 C Help text for this menu.
-      H(1)='This is the section of results recovery which display '
-      H(2)='the data from an ESP-r integrated electrical simulation.'
-      H(3)='Data from such a simulation can be graphed, written to'
-      H(4)='a file, analysed statistically. '
-      H(5)='Additionally the performance of the electrical system '
-      H(6)='can be analysed, based on standard performannce criteria.'
-      H(7)=' '
-      H(8)='You can focus on which element of the electrical system'
-      H(9)='to look at:'
-      H(10)=' '
-      H(11)=' - the electrical nodes;'
-      H(12)=' - the connections between nodes;'
-      H(13)=' - the connected power only components; '
-      H(14)=' - the connected HVAC/PV/lighting/etc. components; '
-      H(15)=' - the whole network. '
+      helptopic='res_electrical_lib_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       NITMS=14
       INO=-2
       if(mmod.eq.8)then
-        CALL EMENU('electrical results analysis',ITEM,NITMS,INO)
+        CALL EMENU('electrical analysis',ITEM,NITMS,INO)
       else
         CALL EMENU('electrical',ITEM,NITMS,INO)
       endif
       IF(INO.EQ.NITMS)THEN
         RETURN
       ELSEIF(INO.EQ.NITMS-1)THEN
-        CALL PHELPD('eresults help',15,'-',0,0,IER)        
+        helptopic='res_electrical_lib_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('eresults help',nbhelp,'-',0,0,IER)        
       ELSEIF(INO.EQ.NITMS-3)THEN
         IF(ITRC.EQ.1)THEN
           ITRC=0
@@ -426,13 +417,11 @@ C **********************************************************************
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      COMMON/POPHELP/H(60)
-
 C Export parameters. 
       COMMON/EXPORTI/IXOPEN,IXUNIT,IXPUNIT
       COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
       COMMON/EXPORTTG/XFILE,TG,DELIM
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
 
 C Data filters
       COMMON/ENFILT/EFILT(MERAWD)
@@ -472,7 +461,7 @@ C Type casting (all varaiables and arrays cast explicitly)
      &HYCOMTYP,HYCOMPHTYP,HYCONEN,HYLOC,NHYBDAT,NPOWCOM,POWCOMNO,
      &POWCOMID,POWCOMPHTYP,POWCONEN,NPOWCDAT,NPOWCDATS,NECON,
      &ECONO,CONPH,CONPHTYP,CCNO,SENOD,EENOD,IEGET,IEGETNO,IUOUT,
-     &IUIN,YAXSET,ADDLIN,EFILT
+     &IUIN,YAXSET,ADDLIN,horaxisdiv,EFILT
 
       DIMENSION IND(MENOD),ICN(MECON),IHY(MHYCOM),IPW(MPOWCOM)
      
@@ -480,10 +469,17 @@ C Type casting (all varaiables and arrays cast explicitly)
 
       CHARACTER MODE*1
 
-      CHARACTER ITEM*24,IELLAB*64,IESLAB*16,IEULAB*4,DELIM*1,
-     &TG*1,XFILE*144,H*72,HEADER*32,VALUES*20
+      CHARACTER ITEM*25,IELLAB*64,IESLAB*16,IEULAB*4,DELIM*1,
+     &TG*1,XFILE*144,HEADER*32,VALUES*20
       integer IWM  ! for radio button
       integer NITEMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ERSMENU'  ! set for subroutine
 
 C Firstly clear all existing selections and initialise variables.
       CALL EDISP (IUOUT,' ')
@@ -518,180 +514,162 @@ C Set all data displays to ON
 16    CONTINUE
 
       INO=-4
-C Make up the menu based on the focus.
+C Make up the menu based on the focus. Where 1=nodes, 2=cables,
+C 3=components, 4=CHP, otherwise whole network.
       IF(IFOC.EQ.1)THEN
-        ITEM(1)   =' Focus >> Nodes  '
-        ITEM(2)   =' -----------------------'
-        ITEM(3)   =' Voltage ...            '
-        ITEM(4)   ='a Phasor voltage        '
-        ITEM(5)   =' -----------------------'
-        ITEM(6)   =' Power flow ...         '
-        ITEM(7)   ='b Loading               '
-        ITEM(8)   ='c Generation            '
-        ITEM(9)   ='d Transmission          '
-        ITEM(10)  ='d Grid import           '
-        ITEM(11)  =' -----------------------'
-        ITEM(12)  =' Power factor (p.f.) .. '
-        ITEM(13)  ='e Load p.f.             '
-        ITEM(14)  ='f Generation p.f.       '
-        ITEM(15)  ='g Import power p.f.     '
-        ITEM(16)  =' -----------------------'
+        ITEM(1)   =' Focus >> Nodes          '
+        ITEM(2)   =' ----------------------- '
+        ITEM(3)   =' Voltage ...             '
+        ITEM(4)   ='a Phasor voltage         '
+        ITEM(5)   =' ----------------------- '
+        ITEM(6)   =' Power flow ...          '
+        ITEM(7)   ='b Loading                '
+        ITEM(8)   ='c Generation             '
+        ITEM(9)   ='d Transmission           '
+        ITEM(10)  ='d Grid import            '
+        ITEM(11)  =' ----------------------- '
+        ITEM(12)  =' Power factor (p.f.) ..  '
+        ITEM(13)  ='e Load p.f.              '
+        ITEM(14)  ='f Generation p.f.        '
+        ITEM(15)  ='g Import power p.f.      '
+        ITEM(16)  =' ----------------------- '
 
         WRITE(ITEM(17),'(A,I3,A)')
      &             ' Selected ... (',IEGET,')'
-        ITEM(18)  =' -----------------------'
+        ITEM(18)  =' ----------------------- '
         NBITM=18
       ELSEIF(IFOC.EQ.2)THEN
-        ITEM(1)   =' Focus >> Lines/cables..'
-        ITEM(2)   =' -----------------------'
-        ITEM(3)   =' Current ...            '
-        ITEM(4)   ='a Phasor current        '
-        ITEM(5)   =' -----------------------'
-        ITEM(6)   =' Power flow ...         '
-        ITEM(7)   ='b Transmitted power     '
-        ITEM(8)   ='c Power loss            '
-        ITEM(9)   =' ---------------------- '
-        ITEM(10)  =' Power factor (p.f.) .. '
-        ITEM(11)  ='d Transmission p.f.     '
-        ITEM(12)  =' -----------------------'
+        ITEM(1)   =' Focus >> Lines/cables.. '
+        ITEM(2)   =' ----------------------- '
+        ITEM(3)   =' Current ...             '
+        ITEM(4)   ='a Phasor current         '
+        ITEM(5)   =' ----------------------- '
+        ITEM(6)   =' Power flow ...          '
+        ITEM(7)   ='b Transmitted power      '
+        ITEM(8)   ='c Power loss             '
+        ITEM(9)   =' ----------------------  '
+        ITEM(10)  =' Power factor (p.f.) ..  '
+        ITEM(11)  ='d Transmission p.f.      '
+        ITEM(12)  =' ----------------------- '
         WRITE(ITEM(13),'(A,I3,A)')
      &             ' Selected ... (',IEGET,')'
-        ITEM(14)  =' -----------------------'
+        ITEM(14)  =' ----------------------- '
         NBITM=14
       ELSEIF(IFOC.EQ.3)THEN
-        ITEM(1)   =' Focus >> Power comps.  '
-        ITEM(2)   =' -----------------------'
-        ITEM(3)   =' Power flow ...         '
-        ITEM(4)   ='a Component power flow  '
-        ITEM(5)   =' -----------------------'
-        ITEM(6)   =' Miscellaneous ...      '
-        ITEM(7)   ='b Additional output N/A '
-        ITEM(8)   =' -----------------------'
+        ITEM(1)   =' Focus >> Power comps.   '
+        ITEM(2)   =' ----------------------- '
+        ITEM(3)   =' Power flow ...          '
+        ITEM(4)   ='a Component power flow   '
+        ITEM(5)   =' ----------------------- '
+        ITEM(6)   =' Miscellaneous ...       '
+        ITEM(7)   ='b Additional output N/A  '
+        ITEM(8)   =' ----------------------- '
         WRITE(ITEM(9),'(A,I3,A)')
-     &              ' Selected ...(',IEGET,')'
-        ITEM(10)   =' -----------------------'
+     &             ' Selected ...(',IEGET,') '
+        ITEM(10)  =' ----------------------- '
         NBITM=10
       ELSEIF(IFOC.EQ.4)THEN
-        ITEM(1)   =' Focus >> HVAC/PV/CHP.. '
-        ITEM(2)   =' -----------------------'
-        ITEM(3)   =' Power flow ...         '
-        ITEM(4)   ='a Component power flow  '
-        ITEM(5)   =' -----------------------'
-        ITEM(6)   =' Miscellaneous ...      '
-        ITEM(7)   ='b Additional output  N/A'
-        ITEM(8)   =' -----------------------'
+        ITEM(1)   =' Focus >> HVAC/PV/CHP..  '
+        ITEM(2)   =' ----------------------- '
+        ITEM(3)   =' Power flow ...          '
+        ITEM(4)   ='a Component power flow   '
+        ITEM(5)   =' ----------------------- '
+        ITEM(6)   =' Miscellaneous ...       '
+        ITEM(7)   ='b Additional output  N/A '
+        ITEM(8)   =' ----------------------- '
         WRITE(ITEM(9),'(A,I3,A)')
      &             ' Selected ...  (',IEGET,')'
-        ITEM(10)   =' -----------------------'
+        ITEM(10)  =' ----------------------- '
         NBITM=10
       ELSE
-        ITEM(1)   =' Focus >> Whole network '
-        ITEM(2)   =' -----------------------'
-        ITEM(3)   =' Power flow ...         '
-        ITEM(4)   ='a Total loading         '
-        ITEM(5)   ='b Total generation      '
-        ITEM(6)   ='c Total grid import     '
-        ITEM(7)   ='d Total losses          '
-        ITEM(8)   =' -----------------------'
-        ITEM(9)   =' Power factor (p.f.) .. '
-        ITEM(10)  ='e Loading p.f.          '      
-        ITEM(11)  ='f Generation p.f.'
-        ITEM(12)  ='g Import power p.f.     '
-        ITEM(13)  =' -----------------------'
-        ITEM(14)  =' Miscellaneous ...      '
-        ITEM(15)  ='h Loading by phase      '
-        ITEM(16)  ='i Generation by phase   '
-        ITEM(17)  ='j Import by phase       '
-        ITEM(18)  =' -----------------------'
+        ITEM(1)   =' Focus >> Whole network  '
+        ITEM(2)   =' ----------------------- '
+        ITEM(3)   =' Power flow ...          '
+        ITEM(4)   ='a Total loading          '
+        ITEM(5)   ='b Total generation       '
+        ITEM(6)   ='c Total grid import      '
+        ITEM(7)   ='d Total losses           '
+        ITEM(8)   =' ----------------------- '
+        ITEM(9)   =' Power factor (p.f.) ..  '
+        ITEM(10)  ='e Loading p.f.           '      
+        ITEM(11)  ='f Generation p.f.        '
+        ITEM(12)  ='g Import power p.f.      '
+        ITEM(13)  =' ----------------------- '
+        ITEM(14)  =' Miscellaneous ...       '
+        ITEM(15)  ='h Loading by phase       '
+        ITEM(16)  ='i Generation by phase    '
+        ITEM(17)  ='j Import by phase        '
+        ITEM(18)  =' ----------------------- '
         WRITE(ITEM(19),'(A,I3,A)')
      &             ' Selected ...  (',IEGET,')'
-        ITEM(20)  =' -----------------------'
+        ITEM(20)  =' ----------------------- '
         NBITM=20
       ENDIF
 
 C Write out the the menu tail.     
       IF(MODE.EQ.'G')THEN
         HEADER='Graphical output '
-        ITEM(NBITM+1)   ='/ Clear all selections  '
-        ITEM(NBITM+2)   ='@ Set axis scale        '
-        ITEM(NBITM+3)   ='+ Add another profile   '
-        ITEM(NBITM+4)   ='^ Change to tab/stats   '
-        ITEM(NBITM+5)   ='# Hide/show output      '
-        ITEM(NBITM+6)   ='! Draw graph            '
-        ITEM(NBITM+7)   ='                        '
-        ITEM(NBITM+8)   ='? Help                  '
-        ITEM(NBITM+9)   ='- Exit                  ' 
+        ITEM(NBITM+1)   ='/ Clear all selections   '
+        ITEM(NBITM+2)   ='@ Set axis scale         '
+        ITEM(NBITM+3)   ='+ Add another profile    '
+        ITEM(NBITM+4)   ='^ Change to tabular/stats'
+        ITEM(NBITM+5)   ='# Hide/show output       '
+        ITEM(NBITM+6)   ='! Draw graph             '
+        ITEM(NBITM+7)   ='                         '
+        ITEM(NBITM+8)   ='? Help                   '
+        ITEM(NBITM+9)   ='- Exit                   ' 
         NITEMS=NBITM+9
       ELSEIF(MODE.EQ.'T')THEN
         HEADER='Tabular output '
-        ITEM(NBITM+1)   ='/ Clear all selections  '
+        ITEM(NBITM+1)   ='/ Clear all selections   '
         IF(IXOPEN.EQ.1)then
-          ITEM(NBITM+2)='> Display to >> file  '
+          ITEM(NBITM+2) ='> Display to >> file     '
         ELSEIF(IXOPEN.EQ.0)then
-          ITEM(NBITM+2)='> Display to >> screen'
+          ITEM(NBITM+2) ='> Display to >> screen   '
         ENDIF
         IF(IHFLAG.EQ.0)THEN  
-          ITEM(NBITM+3)  ='* Time >> 10h30m11s    '
+          ITEM(NBITM+3)  ='* Time >> 10h30m11s     '
         ELSEIF(IHFLAG.EQ.1)THEN
-          ITEM(NBITM+3)  ='* Time >> 0.4375       '
+          ITEM(NBITM+3)  ='* Time >> 0.4375        '
         ENDIF
         IF(DELIM.EQ.'-'.OR.DELIM.EQ.'N')then
-          ITEM(NBITM+4) ='^ Delim >> normal       '
+          ITEM(NBITM+4) ='^ Delim >> normal        '
         ELSEIF(DELIM.EQ.'T')then             
-          ITEM(NBITM+4) ='^ Delim >> tab          '
+          ITEM(NBITM+4) ='^ Delim >> tab           '
         ELSEIF(DELIM.EQ.'C')then
-          ITEM(NBITM+4) ='^ Delim >> comma        '
+          ITEM(NBITM+4) ='^ Delim >> comma         '
         ELSEIF(DELIM.EQ.'S')then
-          ITEM(NBITM+4) ='^ Delim >> space        '
+          ITEM(NBITM+4) ='^ Delim >> space         '
         elseif(delim.eq.'X')then
-          ITEM(NBITM+4)='^ delim >> tagged      '
+          ITEM(NBITM+4) ='^ delim >> tagged        '
         ENDIF
-        ITEM(NBITM+5)   ='+ Change to grph/stat   '
-        ITEM(NBITM+6)   ='# Hide/show output      '
-        ITEM(NBITM+7)   ='! List output           '
-        ITEM(NBITM+8)   ='                        '
-        ITEM(NBITM+9)   ='? Help                  '
-        ITEM(NBITM+10)   ='- Exit                  ' 
+        ITEM(NBITM+5)   ='+ Change to graph/stats  '
+        ITEM(NBITM+6)   ='# Hide/show output       '
+        ITEM(NBITM+7)   ='! List output            '
+        ITEM(NBITM+8)   ='                         '
+        ITEM(NBITM+9)   ='? Help                   '
+        ITEM(NBITM+10)  ='- Exit                   ' 
         NITEMS=NBITM+10
       ELSEIF(MODE.EQ.'S')THEN
         HEADER='Statistical output '
-        ITEM(NBITM+1)   ='/ Clear all selections  '
+        ITEM(NBITM+1)   ='/ Clear all selections   '
         IF(IXOPEN.EQ.1)then
-          ITEM(NBITM+2)='> Display to >> file  '
+          ITEM(NBITM+2) ='> Display to >> file     '
         ELSEIF(IXOPEN.EQ.0)then
-          ITEM(NBITM+2)='> Display to >> screen'
+          ITEM(NBITM+2) ='> Display to >> screen   '
         ENDIF
-        ITEM(NBITM+3)   ='+ Change to graph/tab   '
-        ITEM(NBITM+4)   ='# Hide/show output      '
-        ITEM(NBITM+5)   ='! List output           '
-        ITEM(NBITM+6)   ='                        '
-        ITEM(NBITM+7)   ='? Help                  '
-        ITEM(NBITM+8)   ='- Exit                  ' 
+        ITEM(NBITM+3)   ='+ Change to graph/tabular'
+        ITEM(NBITM+4)   ='# Hide/show output       '
+        ITEM(NBITM+5)   ='! List output            '
+        ITEM(NBITM+6)   ='                         '
+        ITEM(NBITM+7)   ='? Help                   '
+        ITEM(NBITM+8)   ='- Exit                   ' 
         NITEMS=NBITM+8
       ENDIF
 
 C Help text for the menu.
-      H(1)='This is the results recovery menu for the electrical'
-      H(2)='network. Various functions are available to the user.'
-      H(3)=' '
-      H(4)='You can focus on which element of the electrical system'
-      H(5)='to look at:'
-      H(6)=' - the electrical nodes;'
-      H(7)=' - the connections between nodes;'
-      H(8)=' - the connected power only components; '
-      H(9)=' - the connected HVAC/PV/lighting/etc. components; '
-      H(10)=' - the whole network. '
-      H(11)=' '
-      H(12)=' - The user can also focus how the data they pick is '
-      H(13)=' - displayed/operated upon: '
-      H(14)=' - Graphing the data; '
-      H(15)=' - Listing the data to screen or file; '
-      H(16)=' - Statistical operations on the data.'
-      H(17)=' '
-      H(18)='Various statistical functons are available including:'
-      H(19)='frequency histograms, min/max, averaging etc.        '
-      H(20)=' '
-      H(21)='Select <<Exit>> to leave this menu.'
+      helptopic='res_electrical_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Set up the menu.
       INO=-2
@@ -755,6 +733,8 @@ C Display the output
         ENDIF
         GOTO 20
       ELSEIF(INO.EQ.NITEMS-1)THEN
+        helptopic='res_electrical_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD(HEADER,21,'-',0,0,IER)
         GOTO 20
       ELSEIF(INO.EQ.NITEMS)THEN
@@ -768,22 +748,23 @@ C Graphics control menu pics
           IF(INO.EQ.NBITM+2)THEN
 
 C Set the axis scale
-            H(1)='Enter the minimum and maximum value for the y-axis.'
+            helptopic='res_electrical_y_axis'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             DO 555 IAXIS=1,4
               IF (YAXSET(IAXIS).GT.0) THEN
  501            WRITE (VALUES,'(2(f9.2,1x))') YMIN(IAXIS),YMAX(IAXIS)
                 IF (IAXIS.EQ.1) THEN
                   CALL EASKS(VALUES,'  ','Min &max for voltage axis?',
-     &                                 20,' 0. 9999.','temp axis',IER,1)
+     &              20,' 0. 9999.','temp axis',IER,nbhelp)
                 ELSEIF (IAXIS.EQ.2) THEN
                   CALL EASKS(VALUES,'  ','Min & max for current axis?',
-     &                               20,' 0. 9999. ','temp axis',IER,1)
+     &              20,' 0. 9999. ','temp axis',IER,nbhelp)
                 ELSEIF (IAXIS.EQ.3) THEN
                   CALL EASKS(VALUES,'  ','Min & max for power axis?',
-     &                                 20,'0. 1000.','temp axis',IER,1)
+     &              20,'0. 1000.','temp axis',IER,nbhelp)
                 ELSEIF (IAXIS.EQ.4) THEN
                   CALL EASKS(VALUES,'  ','Min & max for misc axis?',
-     &                                 20,' 0. 1. ','temp axis',IER,1)
+     &              20,' 0. 1. ','temp axis',IER,nbhelp)
                 ENDIF
                 CALL USRMSG(' ',' ','-')
                 K=0
@@ -826,26 +807,22 @@ C Toggle time format and day separators.
               CALL EDISP(IUOUT,
      &'3rd party graphing time=day fraction set')
             ENDIF
-            H(1)='Places a # separator between days of tabular data.'
+            helptopic='res_electrical_separator'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL EASKAB('Include mark between days when ',
-     &                'displaying or writing data :','no','yes',IDH,1)
+     &        'displaying or writing data :','no','yes',IDH,nbhelp)
             IDHFLG=IDH-1
 
           ELSEIF(INO.EQ.NBITM+4)THEN
 
 C Change the delimiter type. 
 C Toggle delimeter.
-            H(1) ='Tabular data can be sent to file with various '
-            H(2) ='delimiters: '
-            H(3) ='  spaces (format using spaces to lineup columns)'
-            H(4) ='  single space between columns'
-            H(5) ='  comma separator (for excel)'
-            H(6) ='  tab separator (for excel)'
-            H(7) ='  tagged - marked up data'
+            helptopic='res_electrical_delimiter'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             IWM=1
             CALL EASKATOG('Delimeter to use between columns of data:',
      &        ' ','normal spaces','single space','tab','comma','tagged',
-     &        'continue',' ',IWM,7)
+     &        'continue',' ',IWM,nbhelp)
             if(iwm.eq.1)then
               delim = '-'
             elseif(iwm.eq.2)then
@@ -1244,6 +1221,8 @@ C The connection power factor
           ENDIF
   70    CONTINUE
       ELSEIF(IFOC.EQ.3) THEN
+
+C Focus is on components.
         IF(INO.EQ.4)THEN
           CALL USRMSG('Select one or more components: ',' ','-')
           CALL ELPOWMLS(NPW,IPW)
@@ -1625,6 +1604,7 @@ C Network phase import
       GOTO 20
         
       END
+
 C ***********************************************************************
 C Subroutine ENETHASH calculates the relative position of a data item 
 C within the electrical results library. The routine returns the record

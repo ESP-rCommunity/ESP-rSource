@@ -52,6 +52,7 @@ C     ICOUT  - write unit for (non-fatal) warning messages.
 C     MMOD   - determines the device type attached to the current job.
 
       program mfs
+      USE START_UP
 #include "building.h"
 #include "model.h"
 #include "net_flow.h"
@@ -64,7 +65,6 @@ C     MMOD   - determines the device type attached to the current job.
       COMMON/MFTRA/IMFTU
       COMMON/SHOUT/ICOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appw/iappw,iappx,iappy
@@ -88,6 +88,7 @@ C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Activation of connections
@@ -108,19 +109,39 @@ C Name of current application
 
       LOGICAL LAST,OK,DOK,unixok,there,ACTCNN
       CHARACTER*24 ITEM(18)
-      CHARACTER H*72,OUTSTR*124,inf*144,outs*124
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
+      CHARACTER OUTSTR*124,inf*144,outs*124
       character path*72
       character tg*1,delim*1,xfile*144
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
+
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*48 ! for banner title via epages call
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer IWM     ! for radio button
       integer NITMS,INO ! max items and current menu item
 
+#ifdef OSI
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+      integer iicapture   ! to pass to updcapt
+#else
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+      integer*8 iicapture   ! to pass to updcapt
+#endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+
 C Initialize global common data.
       call ezero
       call curmodule('mfs ')
+      helpinapp='mfs'  ! set once for the application
+      helpinsub='mfs'  ! set for MAIN
       IUOUT=6
       IUIN=5
       IFS=1
@@ -233,19 +254,31 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=16
         LIMIT =16
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r Network Flow Simulator ',
+     &  cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r Network Flow Simulator: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
 
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
-        CALL win3d(menuchw,8,8,7,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=8; iiw2=8; iiw3=7; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
           call opensetup
-          call updcapt(1)
+          iicapture=1
+          call updcapt(iicapture)
         endif
         mdispl=0
         nifgrey=0
@@ -401,11 +434,10 @@ C Tabular output of results; first read problem description file.
           GOTO 10
         ENDIF
 
-        H(1)='Pretty print is restricted to prescribed forms while'
-        H(2)='raw mode is more versatile and is often used for'
-        H(3)='export to third party graphing utilities.'
+        helptopic='tabular_format_options'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKAB(' ','Do you want tabular output to be:',
-     &              'pretty print','raw & versatile',IW,3)
+     &              'pretty print','raw & versatile',IW,nbhelp)
         IF(IW.EQ.1) THEN
           call tstamp('>','MFS: enter pretty print reporting')
           CALL MFTABL(itrc,IFRES,ier)
@@ -469,10 +501,9 @@ C Alter trace flag
 
 C Enable/disable non-fatal warning message printing.
         dok=.false.
-        h(1)='Some models have parameters which, although not errors'
-        h(2)='might be of concern. If you would like to view warnings'
-        h(3)='answer yes. '
-        CALL ASKOK(OUTSTR,' Print warning messages?',OK,dok,3)
+        helptopic='mfs_review_warnings'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL ASKOK(OUTSTR,' Print warning messages?',OK,dok,nbhelp)
         IF(OK)THEN
           ICOUT=IUOUT
         ELSE
@@ -497,23 +528,20 @@ C Toggle time format and day separators.
           call edisp(iuout,' ')
           call edisp(iuout,'3rd party graphing time = day fraction set')
         endif
-        H(1)='Places an # separator between days of tabular data.'
+        helptopic='mfs_include_day_marker'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKAB('Include mark between days when ',
-     &              'displaying or writing data :','no','yes',IDH,1)
+     &    'displaying or writing data :','no','yes',IDH,nbhelp)
         IDHFLG=IDH-1
       ELSEIF(INO.EQ.15)THEN
 
 C Toggle delimeter.
-        H(1) ='Tabular data can be sent to file with various '
-        H(2) ='delimiters: '
-        H(3) ='  spaces (format using spaces to lineup columns)'
-        H(4) ='  single space between columns'
-        H(5) ='  comma separator (for excel)'
-        H(6) ='  tab separator (for excel)'
+        helptopic='mfs_tabular_delimeters'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IWM=1
         CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &    'normal spaces','single space','tab','comma','continue',' ',
-     &    ' ',IWM,6)
+     &    ' ',IWM,nbhelp)
         if(iwm.eq.1)then
           delim = '-'
         elseif(iwm.eq.2)then
@@ -729,11 +757,17 @@ C SETUP provides the menu's and control logic for the mfs SETUP menu.
       SUBROUTINE SETUP(itrc,ITRU,IER)
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/DISPL/IDAYF,IDAYL,IFDAY,IFTIME
       DIMENSION SETUPM(5)
-      CHARACTER SETUPM*36,H*72
+      CHARACTER SETUPM*36
       integer NITMS,ISETUP ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='SETUP'  ! set for setup
 
 C Present the setup menu, ISETUP is the menu index returned. Generate
 C the menu text from current common block into via UPSET.
@@ -761,13 +795,8 @@ C Display of time of day.
       SETUPM(5)=  '- Exit to main menu                 '
 
 C Help text for this menu.
-      H(1)='The preferences menu allows the fonts and display'
-      H(2)='sizes within mfs to be modified by the user. '
-      H(3)=' '
-      H(4)='For ease of viewing several font sizes are available.'
-      H(5)='Remember that the size of the window may be resized '
-      H(6)='so that complex images may be viewed in greater '
-      H(7)='detail.'
+      helptopic='mfs_setup_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       NITMS=5
       CALL EMENU('  Mfs preferences',SETUPM,NITMS,ISETUP)
@@ -786,7 +815,9 @@ C allow decimal day representation if day format is DOY
       ELSEIF(ISETUP.EQ.4)THEN
 
 C Present help text for the menu.
-        CALL PHELPD('preference section',7,'-',0,0,IER)
+        helptopic='mfs_setup_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('preference section',nbhelp,'-',0,0,IER)
       ELSEIF(ISETUP.EQ.5)THEN
 
 C Return to main menu.
@@ -821,6 +852,46 @@ C calls in esru_lib.F
       end
 
       subroutine chgelev(icelev)
+      return
+      end
+
+      subroutine chgsun(isunhour)
+      return
+      end
+
+      subroutine chgeye(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,
+     &   JITOBS,JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,JITHLZ,
+     &   JITPPSW)
+
+C Passed paramters.
+      real EVX,EVY,EVZ,VX,VY,VZ,EAN,DIS
+
+C Depending on computer type set integer size of passed parameters.
+#ifdef OSI
+      integer JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
+      integer JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+#else
+      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
+      integer*8 JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+#endif     
+      return
+      end
+
+      subroutine chgzonpik(jizgfoc,jnzg)
+#ifdef OSI
+      integer jizgfoc,jnzg  ! for use with viewtext
+#else
+      integer*8 jizgfoc,jnzg  ! for use with viewtext
+#endif
+      return
+      end
+
+      subroutine chgzonpikarray(jnznog,jnznogv)
+#ifdef OSI
+      integer jnznog,jnznogv
+#else
+      integer*8 jnznog,jnznogv
+#endif
       return
       end
 

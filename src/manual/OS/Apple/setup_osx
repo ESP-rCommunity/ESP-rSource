@@ -17,9 +17,9 @@ echo "The installation will be to a standard location, which"
 echo "is /opt/esru and a link will be created to this from "
 echo "/usr/esru if it does not already exist."
 echo " "
-echo "Note: this installer will also attempt to install a version"
-echo "of Radiance for OSX. This may clobber any existing Radiance"
-echo "on your computer."
+echo "Note: if you want to install Radiance R3.9 on OSX you will"
+echo "need to do this separately. Typically it is installed into"
+echo "/usr/local/bin and /usr/local/lib/ray."
 
 DSP1=" \n
  You should have administrative access or the installer might not work.\n"
@@ -32,10 +32,10 @@ DSP3=" \n
 DSP4=" \n
  The PATH environment variable is being updated. The .cshrc\n
  file the path= line should include the following...\n
- /opt/esru/bin /opt/esru/esp-r/bin /usr/local/bin /usr/local/bin/ray /sw/bin\n
+ /opt/esru/bin /opt/esru/esp-r/bin /usr/local/bin /sw/bin\n
  \n
  and the Radiance RAYPATH environment variable has also\n
- been set.\n
+ been set to /usr/local/lib/ray.\n
  \n
  Once you have completed the install logout and then\n
  login as a normal user and start up an X terminal and\n
@@ -175,10 +175,6 @@ chmod a+r /opt/esru/esp-r
 chmod a+r /opt/esru/esp-r/bin
 
 cd /
-echo " Extracting Radiance distribution ..."
-sudo zcat $ISD/radiance_precomp_osx.tar.gz | tar xf -
-echo " Extracting Radiance distribution ... done."
-
 echo "copy .cshrc...to /tmp"
 sudo cp $ISD/cshrc /tmp/.cshrc
 echo "  "

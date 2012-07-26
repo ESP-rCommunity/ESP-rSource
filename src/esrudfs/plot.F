@@ -4,7 +4,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 orlater).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -22,9 +22,9 @@ C Contains:
 C  PLOT - monitors itteration process.
 
 C ********************* PLOT *********************
-C PLOT - This routine traces the iteration processes by 
+C PLOT - This routine traces the iteration processes by
 C  ploting residuals of the equation and monitoring values.
-C Up to 4 variables can be displayed MFRP iteration values are plotted. 
+C Up to 4 variables can be displayed MFRP iteration values are plotted.
 C IPLT   - Index for the current value to be plotted.
 C NPLT   - Number of iterations between plotting.
 C ITM    - Time-step index.
@@ -55,20 +55,26 @@ C Stores all MFRP monitoring values, maximum and minimum values.
       integer ipltwd,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
+      integer iigl,iigr,iigt,iigb,iigw,iigwh,iglmon
 #else
       integer*8 ipltwd,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh,iglmon
 #endif
 
       LOGICAL RDR
 
       DATA LINE/'-----','- - -','.....','-.-.-'/
       DATA ILINE/100,-3,-204,-105/
-     
-      RDR=.FALSE.
 
-C Increment plot counter.  Check if negative (indicates max iterations 
+      RDR=.FALSE.
+      RDR=.TRUE.
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+
+C Increment plot counter.  Check if negative (indicates max iterations
 C have been increased, therefore force redraw).
       if (iplt.lt.0) then
         iplt=iplt*(-1)
@@ -156,9 +162,9 @@ C Calculate plotting box locations.
      &                xsc,ysc,sca,xadd,yadd)
 
 C Scale and draw residuals plot.
-        CALL horaxis(plxmin,plxmax,igl,igr,igb,xadd,XSC,0,
-     &                                        'Number of Iterations')
-        CALL linescale(igl,xadd,xsc,igb,yadd,ysc)
+        CALL horaxis(plxmin,plxmax,iigl,iigr,iigb,xadd,XSC,0,
+     &    'Number of Iterations')
+        CALL linescale(iigl,xadd,xsc,iigb,yadd,ysc)
         iupdown=0
         isym=0
         CALL etplot(plxmin,YMIN,iupdown,isym)
@@ -168,8 +174,8 @@ C Scale and draw residuals plot.
         CALL etplot(plxmax,YMIN,iupdown,isym)
 
 C Scale and draw monitoring plot.
-        CALL horaxis(plxmin,plxmax,iglmon,igr,igb,xadd,XSC,0,' ')
-        CALL linescale(iglmon,xadd,xsc,igb,yadd,ysc)
+        CALL horaxis(plxmin,plxmax,iglmon,iigr,iigb,xadd,XSC,0,' ')
+        CALL linescale(iglmon,xadd,xsc,iigb,yadd,ysc)
         iupdown=0
         isym=0
         CALL etplot(plxmin,YMIN,iupdown,isym)
@@ -184,7 +190,7 @@ C Print title. IPS is used to keep track of number of title lines.
       IPS=1
       write(title,'(12x,a,36x,a)') 'RESIDUALS','MONITORING VALUES'
       iside=IPS
-      isize=0
+      isize=1
       ifont=0
       call viewtext(title,iside,isize,ifont)
 
@@ -198,7 +204,7 @@ C Rescale axis for first curve.
           igheight=igwh
           CALL axiscale(ipltwd,igheight,Xmin,Xmax,Ymin,Ymax,
      &                  xsc,ysc,sca,xadd,yadd)
-          CALL linescale(igl,xadd,xsc,igb,yadd,ysc)
+          CALL linescale(iigl,xadd,xsc,iigb,yadd,ysc)
         endif
 
 C If graph was re-scaled re-draw all residuals.
@@ -239,7 +245,7 @@ C Rescale axis for each curve.
         igheight=igwh
         CALL axiscale(ipltwd,igheight,Xmin,Xmax,Ymin,Ymax,
      &                  xsc,ysc,sca,xadd,yadd)
-        CALL linescale(iglmon,xadd,xsc,igb,yadd,ysc)
+        CALL linescale(iglmon,xadd,xsc,iigb,yadd,ysc)
 
 C If graph was re-scaled re-draw all residuals.
         IF(RDR)THEN
@@ -268,10 +274,10 @@ C Else just plot current iteration value.
 C Label curves.
       do 50 I=1,NCRV
         IPS=IPS+1
-        write(title,'(2(2(a,1x),a,1PE11.3,1x))') 
+        write(title,'(2(2(a,1x),a,1PE11.3,1x))')
      &          LINE(I),LRES(I),'=',CRES(I),LINE(I),LMON(I),'=',CMON(I)
         iside=IPS
-        isize=0
+        isize=1
         ifont=0
         call viewtext(title,iside,isize,ifont)
  50   continue

@@ -45,7 +45,6 @@ C can proceed.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/DEFLT/IDEFLT
 
       integer ncomp,ncon
@@ -54,8 +53,15 @@ C can proceed.
       COMMON/SETPIK/NS,NSNO(MNRS),ISETON(MNRS),IMET,IFAFLG(MNRS,MNFA)
       COMMON/ZONPIK/NZ,NZNO(MCOM)
 
-      CHARACTER ITEM(10)*25,H*72,outs*124
+      CHARACTER ITEM(10)*25,outs*124
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MOSA'  ! set for subroutine
 
 C Check that the result library contains the results from a 
 C uncertainty analysis.
@@ -81,16 +87,9 @@ C Setup for menu.
  2    NITMS=10
       INO=-2
 
-C Instanciate h() strings for this menu.
-      H(1)='Intra set statistics.'
-      H(2)='  Calculate summary statistics for individual sets.'
-      H(3)=' '
-      H(4)='Inter set statistics'
-      H(5)='  Calculate differences between sets due to'
-      H(6)='  uncertainties.'
-      H(7)=' '
-      H(8)='Parameter uncertainties'
-      H(9)=' '
+C Instanciate help strings for this menu.
+      helptopic='res_param_uncertainty'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('Uncertainty analysis',ITEM,NITMS,INO)
 
@@ -101,6 +100,8 @@ C Instanciate h() strings for this menu.
         CALL MOOPER
       elseif(INO.EQ.3)then
         NZ=1
+        helptopic='res_param_zone_list'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EPICKS(NZ,NZNO,' ',' Which zone to include: ',
      &    12,NCOMP,zname,' zone list',IER,1)
       elseif(INO.EQ.5)then
@@ -110,6 +111,8 @@ C Instanciate h() strings for this menu.
       elseif(INO.EQ.7) then
         CALL SAPARSEN
       elseif(INO.EQ.(NITMS-1)) then
+        helptopic='res_param_uncertainty'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('Uncertainty analysis',9,'-',0,0,IER)
       elseif(INO.EQ.NITMS) then
         RETURN
@@ -127,7 +130,6 @@ C SAINTRA calculates summary statistics within result sets.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/OUTPCH/ICOUT
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -139,17 +141,28 @@ C SAINTRA calculates summary statistics within result sets.
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
       dimension YMAX(MZS), YMIN(MZS), YTOT(MZS), YTOTSD(MZS)
       dimension YAVE(MZS), YSTD(MZS), NY(MZS)
-      character outs*124,RSNAME*40,H*72
-      character SLABEL*32,GLABEL*20, HEAD1*108, HEAD2*108
+      character outs*124,RSNAME*40
+      character HEAD1*108, HEAD2*108
 
       logical display, TOTALS
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SAINTRA'  ! set for subroutine
 
 C Call the menu of choices (this also sets some default options).
 C The logical variable totals controls the displaying of cumulative 
@@ -171,11 +184,10 @@ C Ask for set selection.
 
 C Ask if a summary or tabular listing is required.
  2    IFMT=0
-      H(1)='The choice is between summary statistics describing'
-      H(2)='each set individually, or a tabular listing of each'
-      H(3)='sets data.'
+      helptopic='res_summary_stats'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKAB(' ','Output format:',
-     &    'Summary table','Tabular list',IFMT,3)
+     &    'Summary table','Tabular list',IFMT,nbhelp)
       if(IFMT.eq.0) goto 2
 
 C Copy current sub-set of sets into IGETNO array.
@@ -188,6 +200,7 @@ C Copy current sub-set of sets into IGETNO array.
           IGETNO(NGET,4)=IGETNO((NGET-1),4)
           IGETNO(NGET,5)=NSNO(ISET)
           SLABEL(NGET)=SLABEL(NGET-1)
+          LNSLABEL(NGET)=LNSLABEL(NGET-1)
         else
           IGETNO(NGET,5)=ISET
         endif
@@ -217,7 +230,7 @@ C starting Y are set based.
 
 C Write header information.
       call edisp(itru,'  ')
-      write (outs,'(a)') SLABEL(1)
+      write (outs,'(a)') SLABEL(1)(1:LNSLABEL(1))
       call edisp(itru,outs)
       write (outs,'(a,a)') 'For zone: ',zname(IGETNO(1,2))
       call edisp(itru,outs)
@@ -410,12 +423,11 @@ C SAINTER calculates summary statistics within result sets.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/OUTPCH/ICOUT
 
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
       COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -425,24 +437,41 @@ C SAINTER calculates summary statistics within result sets.
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
       dimension VAL(4,MTS), NVAL(MTS),VALHIGH(MTS), VALLOW(MTS)
       logical graphit
-      integer YAXSET, ADDLIN
+      integer YAXSET,ADDLIN,horaxisdiv
 #ifdef OSI
+      integer IGX  ! see common graf2
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym    ! passed to etplot
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
+      integer*8 IGX  ! see common graf2
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
-      character outs*124,H*72
-      character SLABEL*32,GLABEL*20
+      character outs*124
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SAINTER'  ! set for subroutine
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C Call the menu of choices (this also sets some default options).
 C The logical variable totals controls the displaying of cumulative 
@@ -462,12 +491,10 @@ C Ask for set selection.
 
 C Ask if a summary or tabular listing is required.
  2    IFMT=0
-      H(1)='The choice is between summary statistics describing'
-      H(2)='the range of output values, or a tabular listing of'
-      H(3)='the base case, maximum and minimum values from the'
-      H(4)='active results sets'
+      helptopic='res_summary_stats_vs'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKABC('Output format:',' ','Summary table',
-     &    'Tabular list','Time series plot',IFMT,4)
+     &    'Tabular list','Time series plot',IFMT,nbhelp)
       if(IFMT.eq.0) goto 2
       if (NS.eq.0) goto 1
 
@@ -524,6 +551,7 @@ C Copy current sub-set of sets into IGETNO array.
           IGETNO(NGET,4)=IGETNO((NGET-1),4)
           IGETNO(NGET,5)=NSNO(ISET)
           SLABEL(NGET)=SLABEL(NGET-1)
+          LNSLABEL(NGET)=LNSLABEL(NGET-1)
         else
           IGETNO(NGET,5)=NSNO(ISET)
         endif
@@ -835,11 +863,12 @@ C Calculate overall standard deviation and display depending on IFMT.
         igwid=igw
         igheight=igwh
         call axiscale(igwid,igheight,TMIN,TMAX+1.,YMIN(1),YMAX(1),TSC,
-     &              YSC(1),sca,Xadd,Yadd(1))
-        call vrtaxis(YMIN(1),YMAX(1),igl,igb,igt,Yadd(1),YSC(1),0,0,
-     &               'Output')
-        call horaxis(TMIN,TMAX+1.,igl,igr,igb,Xadd,TSC,1,'Time Hours')
-        call linescale(igl,Xadd,TSC,igb,Yadd(1),YSC(1))
+     &    YSC(1),sca,Xadd,Yadd(1))
+        call vrtaxis(YMIN(1),YMAX(1),iigl,iigb,iigt,Yadd(1),YSC(1),0,0,
+     &    'Output')
+        call horaxis(TMIN,TMAX+1.,iigl,iigr,iigb,Xadd,TSC,1,
+     &    'Time Hours')
+        call linescale(iigl,Xadd,TSC,iigb,Yadd(1),YSC(1))
         graphit=.true.
         goto 4
       endif
@@ -868,7 +897,11 @@ C SAPARSEN calculates individual parameter uncertainties.
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
@@ -877,7 +910,13 @@ C SAPARSEN calculates individual parameter uncertainties.
       dimension IUNC(MNFA), IPT(MNRS,MNFA)
       
       character outs*124,RSNAME*40
-      character SLABEL*32,GLABEL*20
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SAPARSEN'  ! set for subroutine
       
 C Call the menu of choices (this also sets some default options).
  1    MENUTYPE=6
@@ -890,8 +929,10 @@ C Set output unit number (assume default initially).
       if (IXOPEN.eq.1) ITRU=IXUNIT
 
 C Ask if data should be integrated or averaged.
+      helptopic='res_sensitivity_aver'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       call EASKAB('Should data be:',' ','integrated','averaged',
-     &            INTAVE,0)
+     &            INTAVE,nbhelp)
 
 C Ask for set selection if DSA or MCA.
       if (IMET.eq.1.or.IMET.eq.3) then
@@ -907,7 +948,7 @@ C Ask for set selection if DSA or MCA.
         ISETON(1)=0
         NFA=nint(log10(real(NSIM-1))/log10(real(2)))
         call EASKABCD('Effect:',' ','average','main',
-     &         '2-way interactions','3-way interactions',IEFF,0)
+     &    '2-way interactions','3-way interactions',IEFF,nbhelp)
         IEFF=IEFF-1
         NLOOP=FACTORIAL(NFA)/(FACTORIAL(IEFF)*FACTORIAL(NFA-IEFF))
         if (IEFF.gt.1) call INTERACT(NFA,IEFF,NLOOP,IPT)
@@ -1241,7 +1282,6 @@ C WHSET displays currently chosen sets and lets user toggle selections.
 #include "epara.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       COMMON/SIMPKA/NSIM
 
@@ -1251,9 +1291,16 @@ C WHSET displays currently chosen sets and lets user toggle selections.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
-      CHARACTER VERT(35)*65, H*72, RSNAME*40, KEY*1
+      CHARACTER VERT(35)*65, RSNAME*40, KEY*1
       LOGICAL SELECT
       integer MVERT,IVERT ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='WHSET'  ! set for subroutine
 
 C Display all sets in a menu
 C Initialise surface menu variables based on window size. 
@@ -1314,8 +1361,9 @@ C If a long list include page facility text.
       VERT(M+5)  ='? help              '
       VERT(M+6)  ='- exit              '
 
-C Instanciate h() strings for this menu.
-      H(1)='Chose a set to activate/ deactivate.'
+C Instanciate help strings for this menu.
+      helptopic='res_set_activation'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display the menu.
       CALL EMENU('Result set activation',VERT,MVERT,IVERT)
@@ -1337,7 +1385,9 @@ C copy new set selection into NSNO().
           RETURN
         endif
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
-        CALL PHELPD('Result set activation',1,'-',0,0,IER)
+        helptopic='res_set_activation'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('Result set activation',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-3))THEN
 
 C Clear all selections.

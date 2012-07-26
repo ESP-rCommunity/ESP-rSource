@@ -431,11 +431,18 @@ C Use a method described in an NCM HVAC document. This is summarised as:
 C (control adjustment: CtlAdj is assumed 1 for the moment)
 C Aux. Energy in kWh/m2 = (hrs of Operation/3255)*tAEnergy*CtlAdj*
 C (tASFPa*SFP+tASFPb)*((tADLa*(duct_tDLd+AHU_tDLd))+tADLb)
-            m2kWhZAuxil(I)=(fZoneHoursOperation(I)/3255.)*
+
+C NOTE: if IHLZ(I) is zero e.g. the zone is not linked to
+C a system assume zero for m2kWhZAuxil.
+            if(IHLZ(I).eq.0)then
+              m2kWhZAuxil(I)= 0.0
+            else
+              m2kWhZAuxil(I)=(fZoneHoursOperation(I)/3255.)*
      &          tAEnergy(IHLZ(I))*(tASFPa(IHLZ(I))*SFPHS(IHLZ(I))+
      &          tASFPb(IHLZ(I)))*((tADLa(IHLZ(I))*(duct_tDLd(IHLZ(I))+
      &          AHU_tDLd(IHLZ(I))))+tADLb(IHLZ(I)))
-C             m2_AuxResNcm_kWh=m2_AuxResNcm_kWh+m2kWhZAuxil(I)       
+C             m2_AuxResNcm_kWh=m2_AuxResNcm_kWh+m2kWhZAuxil(I)
+            endif       
             AuxResNcm_kWh=AuxResNcm_kWh+(m2kWhZAuxil(I)*ZBASEA(I))
 
 C Now doing the same as above for every month. The calculation is based on
@@ -444,11 +451,15 @@ C The value below will be reported in kWh, so there will be a *ZBASEA(I)
 C plus a division of 3255 (reference operation hours) with 12 (approximation)
 C Another division with 12 makes coverts it to monthly values
             do 444 im=1,12
-              fReportMonthlyAuxil(im,I)=
-     &          (((fZoneMonthlyHoursOperation(im,I)/(3255./12.))*
-     &          tAEnergy(IHLZ(I))*(tASFPa(IHLZ(I))*SFPHS(IHLZ(I))+
-     &          tASFPb(IHLZ(I)))*((tADLa(IHLZ(I))*(duct_tDLd(IHLZ(I))+
-     &          AHU_tDLd(IHLZ(I))))+tADLb(IHLZ(I))))*ZBASEA(I))/12
+              if(IHLZ(I).eq.0)then
+                fReportMonthlyAuxil(im,I)= 0.0
+              else
+                fReportMonthlyAuxil(im,I)=
+     &           (((fZoneMonthlyHoursOperation(im,I)/(3255./12.))*
+     &           tAEnergy(IHLZ(I))*(tASFPa(IHLZ(I))*SFPHS(IHLZ(I))+
+     &           tASFPb(IHLZ(I)))*((tADLa(IHLZ(I))*(duct_tDLd(IHLZ(I))+
+     &           AHU_tDLd(IHLZ(I))))+tADLb(IHLZ(I))))*ZBASEA(I))/12
+              endif
 
 C Write Monthly Auxiliary here to avoid looping again over months
               if(im.lt.10)then
@@ -707,8 +718,8 @@ C contributions from renewable energy resources
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
 
-      COMMON/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
+      COMMON/C1/NCOMP,NCON
 
       INTEGER IDHWSYS,I,iactvalue,IREN,ICOMP,IM,IHROP
       CHARACTER min*420

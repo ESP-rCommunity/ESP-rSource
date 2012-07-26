@@ -34,7 +34,7 @@ C        lklist
 C        kcheck
 
 C ******************************  LKMENU  *****************************
-C LKMENU is called by INITPF (bld.F or bps.F). It displays the main 
+C LKMENU is called by INITPF (bps.F). It displays the main 
 C thermal conductivity menu and according to user selections it 
 C calls other subroutines or returns back to INITPF (bld.F or bps.F).
 C ********************************************************************
@@ -43,17 +43,23 @@ C ********************************************************************
 #include "geometry.h"
 
       COMMON/HELP/IHELPM
-      common/pophelp/h(60)
       COMMON/OUTIN/IUOUT,IUIN
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       COMMON/VTHP02/IVKON(MCOM,MS,ME) 
 
       CHARACTER ITEM(9)*29,DPNDC*20
-      CHARACTER H*72,TEXT*50,MSGSET*70
+      CHARACTER TEXT*50,MSGSET*70
       integer NITEM,INO ! max items and current menu item
+      LOGICAL OK,DOK
 
-      LOGICAL     OK,DOK
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='LKMENU'  ! set for subroutine
 
   10  INO=-3
       ITEM(1)='a constant                  '
@@ -68,23 +74,8 @@ C ********************************************************************
       NITEM=9
 
 C Helpl text for this menu.
-      H(1)='The menu options allow the definition of construction'
-      H(2)='layers whose thermal conductivity is of the nominated'
-      H(3)='type.  By default the thermal conductivity of all'
-      H(4)='construction layers is type CONSTANT.'
-      H(5)='  '
-      H(6)='The menu options are:'
-      H(7)=' a constant thermal conductivity'
-      H(8)=' b thermal conductivity determined as a funtion of'
-      H(9)='   layer temperature'
-      H(10)=' c thermal conductivity determined as a funtion of'
-      H(11)='   layer moisture content'
-      H(12)=' d thermal conductivity determined as a funtion of'
-      H(13)='   layer temperature and moisture content'
-      H(14)=' < thermal conductivity of all layers set to constant'
-      H(15)=' ! list conductivity of construction layers'
-      H(16)=' ? display this help message'
-      H(17)=' - return to calling menu.'
+      helptopic='adjustable_thermal_cond'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('Thermal Conductivity',ITEM,NITEM,INO)
 
@@ -191,18 +182,16 @@ C List the thermal conductivity of the layers.
 C Help.
       ELSEIF(INO.EQ.(NITEM-1))THEN
         IHELPM=1
-        CALL PHELPD('Thermal Conductivity',17,'-',0,0,IER)
+        CALL PHELPD('Thermal Conductivity',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.NITEM)THEN
 
 C Exit.  Check the legality of the thermal configuration statements.
         KERR=0
         CALL KCHECK(ICOMP,KERR)
         IF(KERR.NE.0)THEN
-          h(1)='Warning messages are given when problems might be '
-          h(2)='caused in the simulation. Best if corrected now.'
           DOK=.false.
           CALL ASKOK(' WARNING messages were detected',
-     &               ' Are you sure you want to exit?',OK,DOK,2)
+     &               ' Are you sure you want to exit?',OK,DOK,nbhelp)
           IF(.NOT.OK)GOTO 10
         ENDIF
         RETURN
@@ -221,11 +210,18 @@ C *******************************************************************
       SUBROUTINE DFNMNU(TEXT,INO)
 
       COMMON/HELP/IHELPM
-      common/pophelp/h(60)
+      COMMON/OUTIN/IUOUT,IUIN
 
       CHARACTER*25 ITEM(6)
-      CHARACTER TEXT*50,H*72
+      CHARACTER TEXT*50
       integer NITEM,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='DFNMNU'  ! set for subroutine
 
    10 ITEM(1)='a select zone            '
       ITEM(2)='b select constructions   '
@@ -236,15 +232,17 @@ C *******************************************************************
       NITEM=6
 
 C Help text for this menu
-      H(1)=' Define the focus for which thermal conductivity is:'
-      H(2)=TEXT
+      call edisp(iuout,'The focus for which thermal conductivity')
+      call edisp(iuout,TEXT)
+      helptopic='focus_of_thermal_cond'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('Layer Focus',ITEM,NITEM,INO)
       IF(INO.GE.1.OR.INO.LE.4)THEN
         RETURN
       ELSEIF(INO.EQ.(NITEM-1))THEN
         IHELPM=1
-        CALL PHELPD('conductivity focus',2,'-',0,0,IER)
+        CALL PHELPD('conductivity focus',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.NITEM)THEN
         INO=0
         RETURN
@@ -318,21 +316,31 @@ C ******************************************************************
 #include "building.h"
 #include "geometry.h"
 
-      common/pophelp/h(60)
+      COMMON/OUTIN/IUOUT,IUIN
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       DIMENSION IVALS(MS)
 
       CHARACTER*20 ITEM(MS)
-      CHARACTER TEXT*50,H*72
+      CHARACTER TEXT*50
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SURFMN'  ! set for subroutine
 
       DO 10 I=1,NZSUR(icomp)
         ioc=IZSTOCN(icomp,i)
         WRITE(ITEM(I),'(A)')SSNAME(ioc)
    10 CONTINUE
-      H(1)=' Select the surfaces for which the conductivity is'
-      H(2)=TEXT
+      call edisp(iuout,'Select surfaces for which the conductivity is')
+      call edisp(iuout,TEXT)
+      helptopic='focus_of_surf_cond'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EPICKS(INPICK,IVALS,' ',' ',20,NZSUR(icomp),ITEM,
-     &  'Surfaces',IER,2)
+     &  'Surfaces',IER,nbhelp)
       RETURN
       END
 
@@ -438,11 +446,18 @@ C *******************************************************************
       SUBROUTINE LAYRMN(I,TEXT,INPICK,IVALL)
 #include "building.h"
 
-      common/pophelp/h(60)
+      COMMON/OUTIN/IUOUT,IUIN
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
       DIMENSION IVALL(ME)
       CHARACTER*20 ITEM(ME)
-      CHARACTER TEXT*50,H*72
+      CHARACTER TEXT*50
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='LAYRMN'  ! set for subroutine
 
       NGP=NAIRG(I)
       M=1
@@ -459,9 +474,12 @@ C *******************************************************************
           WRITE(ITEM(J),'(A,1X,I2,1X,A)')'Layer (',J,')'
         ENDIF
    10 CONTINUE
-      H(1)=' Select the layers for which the thermal conductivity is'
-      H(2)=TEXT
-      CALL EPICKS(INPICK,IVALL,' ',' ',20,NE(I), ITEM,'Layers',IER,2)
+      call edisp(iuout,'Select layers for which the conductivity is')
+      call edisp(iuout,TEXT)
+      helptopic='focus_of_layer_cond'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL EPICKS(INPICK,IVALL,' ',' ',20,NE(I), ITEM,'Layers',
+     &   IER,nbhelp)
       RETURN
       END
 
@@ -475,6 +493,7 @@ C *********************************************************************
       
       integer lnblnk  ! function definition
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       CHARACTER NAMELYR*124
@@ -494,28 +513,32 @@ C TRMMSG controls the appearance of the termination message.
 C *********************************************************************
       SUBROUTINE TRMMSG(ICNTM)
 
-      common/pophelp/h(60)
-      CHARACTER H*72
+      COMMON/OUTIN/IUOUT,IUIN
       LOGICAL OK,dok
-      integer icntmt  ! local variable for editing.
+      integer icntmt  ! local variable for editing
+      character msg*72
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='TRMMSG'  ! set for subroutine
 
       dok=.true.
-      h(1)='This message was presented because of prior warnings '
-      h(2)='or confusion about the model. If you do not want to '
-      h(3)='proceed agree to terminate. '
+      helptopic='surf_cond_warning'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL ASKOK('There might be a problem...',
-     &           'Terminate last command?',OK,dok,3)
+     &           'Terminate last command?',OK,dok,nbhelp)
       IF(OK)THEN
         ICNTM=-1
       ELSE
-        H(1)=' Enter the required number of warning messages after'
-        H(2)=' which the termination option will be available.'
-        WRITE(H(3),'(A,I2)')' The current number is',ICNTM
-        H(4)='If you cancel the value will not be altered. '
+        WRITE(msg,'(A,I2)')' The current number is',ICNTM
+        call edisp(iuout,msg)
         icntmt=ICNTM
         CALL EASKI(ICNTMT,'After how many re_defining warning messages',
      &    'do you want the TERMINATION  message to appear ?',
-     &    1,'F',20,'W',3,'termination message?',IERI,4)
+     &    1,'F',20,'W',3,'termination message?',IERI,nbhelp)
         if(ieri.eq.-3)then
           return
         else
@@ -532,11 +555,16 @@ C location, and lets him to decide which type he wants to select,
 C the old type or the new type.
 C *******************************************************************
       SUBROUTINE KCHKMN(KCHK,INDX,INDX2)
-      common/pophelp/h(60)
-      CHARACTER H*72
 
       CHARACTER*80 MSG1,MSG2
       LOGICAL     OK,dok
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='KCHKMN'  ! set for subroutine
 
       IF(KCHK.EQ.1)THEN
         MSG2='Temperature dependent,... do you want to CHANGE it?'
@@ -548,9 +576,9 @@ C *******************************************************************
       ENDIF
       MSG1='The conductivity of this layer is ALREADY defined to be'
       dok=.false.
-      h(1)='Changing this will remove the temperature or moisture'
-      h(2)='dependency.'
-      CALL ASKOK(MSG1,MSG2,OK,dok,2)
+      helptopic='message_for_surf_cond'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL ASKOK(MSG1,MSG2,OK,dok,nbhelp)
       IF(OK)THEN
         INDX2=INDX
       ELSE

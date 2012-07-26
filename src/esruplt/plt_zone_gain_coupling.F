@@ -116,9 +116,8 @@ C.....Simulation type
       integer indcfg
       
 C.....Building data 
+      integer ncomp,ncon      ! # of zones and connections
       common/c1/ncomp,ncon
-      integer ncomp                  ! # of zones
-      integer ncon                   ! ? (not used)
 
       common/prec9/nConst(mcom),nELts(mcom,ms),ngaps(mcom,ms),
      &             npgap(mcom,ms,mgp)
@@ -635,6 +634,7 @@ C----------------------------------------------------------------------
 #include "plant.h"           
 C----------------------------------------------------------------------
 C     Local variables 
+      character*124 cContext
 C----------------------------------------------------------------------
 C.....Dummy arguments
       integer iDummy1,iDummy2, iDummy3, iDummy5, iDummy6
@@ -650,13 +650,14 @@ C.....Actions
 C-------------------------------------------------------------------
 C     Pass gain data to inventory
 C-------------------------------------------------------------------
+      cContext='Initializing plant heat gain inventory.'
       call plt_zone_gain_inventory(
      &             iZero,
      &             iDummy1, iDummy2, iDummy3,
      &             fDummy4,
      &             iDummy5,
      &             iDummy6,
-     &             'Initializing plant heat gain inventory.'   )
+     &             cContext   )
 
 
 
@@ -684,6 +685,7 @@ C----------------------------------------------------------------------
 #include "plant.h"           
 C----------------------------------------------------------------------
 C     Local variables 
+      character*124 cContext
 C----------------------------------------------------------------------
 C.....Dummy arguments
       integer iDummy1,iDummy2, iDummy3, iDummy5, iDummy6
@@ -699,14 +701,14 @@ C.....Actions
 C-------------------------------------------------------------------
 C     Pass gain data to inventory
 C-------------------------------------------------------------------
+      cContext='Calculating containment gains from plant components.'
       call plt_zone_gain_inventory(
      &             iCalculate,
      &             iDummy1, iDummy2, iDummy3,
      &             fDummy4,
      &             iDummy5,
      &             iDummy6,
-     &             'Calculating containment gains from'
-     &             // ' plant components.'   )
+     &             cContext   )
 
 
 

@@ -54,7 +54,7 @@ C file unit for the demands file. IER=0 is OK.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C Floor area (optionally) associated with each demand type in an IPV.
-      COMMON/BL2/dmdfla(7)
+      COMMON/BLM2/dmdfla(MGTY)
 
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -132,10 +132,17 @@ C List out the initial months of the calendar.
         endif
       endif
         
-C Clear all of the possible day types.
-      do 12 idt = 1,10
+C Clear all of the possible day types and gain types.
+      do 12 idt = 1,MDTY
         NBCAS(idt)=0
   12  continue
+
+C Initial IPV demand inclusion for each type set to zero.
+      do 343 ij=1,MGTY
+        blodlabel(ij)='     '
+        dmdfla(ij)= 1.0
+        idmdinc(ij)=0
+ 343  continue
 
       iwss=1     ! assume weekdays initially
       dmdsdesc='no dispersed demands notes (yet)'
@@ -156,11 +163,6 @@ C Set the default demand type labels
       dmdfla(6)= 1.0
       blodlabel(7)='DHW   '      
       dmdfla(7)= 1.0
-
-C Initial IPV demand inclusion for each type set to zero.
-      do 343 ij=1,7
-        idmdinc(ij)=0
- 343  continue
 
 C Read file for editing or listing. If there is no file then begin with
 C default data.
@@ -879,8 +881,7 @@ C Labels for loads.
      &  LPRFDB(1:llt)
       call edisp248(iuout,outs248,100)
 
-C Scan the event profiles database. If an error state is
-C returned then it might be an ASCII file, try and scan that.
+C Scan the event profiles into common blocks.
       lndbp=lnblnk(standarddbpath)
       if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
         lltmp=LPRFDB  ! use as is
@@ -888,22 +889,15 @@ C returned then it might be an ASCII file, try and scan that.
         write(lltmp,'(3a)') standarddbpath(1:lndbp),fs,
      &    LPRFDB(1:lnblnk(LPRFDB))  ! prepend db folder path
       endif
-      call TRIPROBIN(IPRODB,lltmp,IER)
+      CALL ERPFREE(IPRODB,ISTAT)
+      ier=0   ! reset prior to calling triprocom
+      call TRIPROCOM(IPRODB,lltmp,IER)
       if(ier.ne.0)then
-        CALL ERPFREE(IPRODB,ISTAT)
-        CALL USRMSG(' opened profiles db...',' ','-')
-        ier=0   ! reset prior to calling triprocom
-        call TRIPROCOM(IPRODB,lltmp,IER)
-        if(ier.ne.0)then
-          call usrmsg('Error opening the db. Please use one',
-     &                'of the other options.','W')
-          return
-        else
-          CALL ERPFREE(IPRODB,ISTAT)
-          CALL USRMSG(' opened profiles db...ok',' ','-')
-        endif
+        call usrmsg('Error opening the db. Please use one',
+     &              'of the other options.','W')
+        return
       else
-        CALL USRMSG(' opened profiles db...ok',' ','-')
+        CALL ERPFREE(IPRODB,ISTAT)
       endif
 
 C Copy the string list of event profiles to local string variable.
@@ -996,7 +990,7 @@ C espriou.h provides currentfile.
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      COMMON/BL2/dmdfla(7)
+      COMMON/BLM2/dmdfla(MGTY)
 
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -1152,6 +1146,7 @@ C Check to see if demand labels have been added to the end of the file
       ENDIF      
 
 C Check for areas associated with each demand label.
+C << revise for different than 7 demands >>
       CALL STRIPC(IUO,OUTSTR,99,ND,1,'Type areas',IERV)
       IF(ND.NE.7.OR.IERV.ne.0) THEN
         goto 1001
@@ -1217,7 +1212,7 @@ C ITRC unit number for user output, IER=0 OK IER=1 problem.
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      COMMON/BL2/dmdfla(7)
+      COMMON/BLM2/dmdfla(MGTY)
 
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -1276,6 +1271,8 @@ C the calendar day types.
 1160      CONTINUE
         ENDIF
   30  continue
+
+C << logic needs changing to acommodate more than 7 gain types >>
 
 5460  FORMAT(1X,3(I4,','),F11.3,',',F11.3,',',F6.3,',',F6.3)
 C Write out the type labels and associated areas.
@@ -1479,7 +1476,7 @@ C Check how many distributed demands there are for each type on each day type.
       call dmdcheckcascount(ier)
 
 C How many for each type?
-      do 42 igt=1,7
+      do 42 igt=1,MGTY
         n1=dmdloadcount(igt,idaytype)
 
 C See if first period is 0hr or 1hr and last period is 24.

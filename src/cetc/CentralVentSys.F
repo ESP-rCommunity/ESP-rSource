@@ -26,9 +26,9 @@ c Copyright 2001: NRCan Buildings Group
 c Created October 4, 2001
 c Edited: BB Oct 4, 15, Nov 2
 c ---
-     
-c 
-      
+
+c
+
       Implicit None
 #include "Ventilation_Data.h"
       Integer iComp
@@ -42,7 +42,8 @@ c ---
 c
 c In HOT2000, the specific heat of air has been 1005 J/Kg Deg C, and the air density
 c has been 1.177 Kg/m3.  These values are also used here.
-      MCP = FlowRate * 1005. * 1.177
+!     Changed value of air Cp to 1006 to reflect AIM
+      MCP = FlowRate * 1006. * 1.177
 c
       If ( iCVSType .eq. 2 ) Then ! HRV
 c
@@ -68,7 +69,7 @@ c Created August  15, 2001
 c Edited: BB Aug 15, 16, 17, Oct 4, 10, 12, 23, 25, Nov 1, 2
 c ---
 
-     
+
 c ---
       USE AIM2_InputData, ONLY:AIM2_ref_zone,AIM2_CrawlSpace_zone,
      &            AIM2_attic_zone,AIM2_num_zones_infil,AIM2_zone_infil
@@ -77,6 +78,7 @@ c ---
 #include "building.h"
 #include "geometry.h"
 #include "Ventilation_Data.h"
+
       COMMON/C1/NCOMP,NCON
       INTEGER NCOMP,NCON
 
@@ -101,15 +103,15 @@ c     Implicit None
       real fTempTol
       parameter ( fTempTol = 0.5 )
 
-     
+
       save J, iFun, i, iCycle
       save T, HLR, DeltaT, ZoneFraction
       save Msg
       save ExitNOW
-     
+
       Data iCycle / 9990 /
 
-     
+
       If ( iCycle .lt. 1 ) Then
          Write (Msg,'(a,6f8.2)') 'MECH_VENT_CONTROL - ZF',
      & ( VOL(i), i = 1, 6 )
@@ -139,7 +141,8 @@ c
 c
          T = TF ! "future" outdoor air temp
 
-c ---
+c If a CVS exists,call the appropriate subroutine to
+C determine temperatures and flowrates
          If ( iCVSType .eq. 2 ) Then ! HRV
 c
             i = Max ( 1, IntDD(1,1) ) ! Zone in which supply duct is located
@@ -157,7 +160,8 @@ c ---
          Endif
 c
       Endif ! End of Zone 1 calculations
-c ---
+c If the zone is connected to the CVS then distribute the air flow based on volume
+C Otherwise follow the final else which sets it to zero
       If ( iComp .ne.  AIM2_CrawlSpace_zone .and.
      &     iComp .ne.  AIM2_attic_zone      ) Then
 c
@@ -180,11 +184,16 @@ C Check to ensure memory has been allocated
 c
 c --- Air heat loss rate for zone
 c
-
          HLR = MCP * ( TFA(iComp) - CVSSupplyTemp ) * ZoneFraction
 
 c
 c --- Convert air heat loss rate into an equivalent conductance (to outdoors)
+C For the zone called, assign the zone's calculated CVS infiltration conductance
+C to ESP-r's standard infiltration variable, CVIF. CVIF is incorporated into the
+C zone's energy balance by ESP-r's normal approach, so no further
+C interactions with the zone matrix processor and solver are required.
+C Note that both AIM (natural) [/cetc/aim2_timestep.F] and CVS (forced) [/cetc/CentralVentSys.F]
+C infiltration exist and as such the values are summed in /esrubld/subsys.F.
 c
          DeltaT = TFA(iComp) - T
 
@@ -262,6 +271,7 @@ C This is used by the fuel cell controller to determine the house's total
 C electrical demand during each time-step in the plant domain.
 
 c
+      use h3kmodule
       Implicit None
 #include "Ventilation_Data.h"
 #include "SOFC.h"
@@ -296,7 +306,7 @@ c ---
 C Used in the xml reporting structure
 C      real fH3KSumEnergyUseElec(iNumUses)        ! Energy consumption assoc. w/ electricuty (W)
 
-     
+
 c
       If ( iFun .eq. 0 ) Then ! HRV INITIALIZATION
 c
@@ -476,25 +486,8 @@ c
             TotalPower = 0.
          Endif
 
-         call add_to_xml_reporting(
-     &
-     &       TotalPower,
-     &
-     &      'plant/ideal_hvac_models/HRV/elec_load',
-     &
-     &      'units',
-     &
-     &       '(W)',
-     &
-     &      'Idealized HVAC models: '
-     &      // 'Amount of '
-     &      // ' electricity '
-     &      // ' used by '
-     &      // ' Ventilation/HRV '
-     &      // ' system'
-     &
-     &      )
-
+         Call AddToReport(rvPltHvacHRVElecLd%Identifier,
+     &       TotalPower)
 
 C Store aggregate electricity use for reporting in Site Utility facilitity.
       fSUFuelEnergyUse( iElectricity,iUseHRV )
@@ -606,10 +599,10 @@ c
       Integer i, j, Duct
       Real HLcoef(3,4)
 c ---
-     
+
       Save Fleak, Diam, L, HTC, AvVel, CnstDD,  j, Duct
       Save HLcoef
-     
+
 c ---
 c  Flexible                           * V    const    * R    Cl
       Data (HLcoef(1,j), j = 1, 4) / 0.095,  1.000,  0.950,  3. /
@@ -728,11 +721,11 @@ c This IF ensures start-up is over.
 
 c Sum up monthly energies
 
-     
+
          fHRV_Elec_Energy(imonth) =
      &     fHRV_Elec_Energy(imonth) + TotalPower * 3600./REAL(NTSTEP) !(Watts)
 
 
          return
       ENDIF
-      END 
+      END

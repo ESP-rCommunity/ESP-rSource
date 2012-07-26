@@ -349,6 +349,7 @@ C should calculate pressure coefficients.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
@@ -1501,8 +1502,14 @@ C If a long list include page facility text.
  15   FORMAT   ('0 ---Page: ',I2,' of ',I2,' ---')
       ENDIF
       PCITM(M+2)='1 add/delete/copy pres coef-set '
-      PCITM(M+3)='! list db                '
-      PCITM(M+4)='> update db              '
+      PCITM(M+3)='! list contents                '
+
+C Adapt save dialog if a common data file.
+      if(ipathapres.eq.0.or.ipathapres.eq.1)then
+        PCITM(M+4)='> save to file           '
+      else
+        PCITM(M+4)='> save to common file    '
+      endif
       PCITM(M+5)='? help                   '
       PCITM(M+6)='- exit this menu         '
       IVERT=-1

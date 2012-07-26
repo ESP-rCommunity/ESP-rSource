@@ -381,10 +381,12 @@ C Save number of nodes associated with each component.
 
 C Check to see if required number of items is specified.
             if(npi(ipcomp).ne.nmisc) then
-              write(OUTS,'(a,i3,a,i2,a,i2,a)')
-     &          'Invalid no of parameters for component',
-     &          ipcomp,' found ',npi(ipcomp),' expecting ',nmisc,
-     &          ' please check plant component.'
+              lo=lnblnk(pcname(ipcomp))
+              write(OUTS,'(a,i3,3a,i2,a,i2,a)')
+     &          'Invalid parameters for component',
+     &          ipcomp,' ',pcname(ipcomp)(1:lo),' found ',
+     &          npi(ipcomp),' expecting ',nmisc,
+     &          ' please check the component.'
               call edisp(iuout,OUTS)
               call epwait
               stop
@@ -806,7 +808,7 @@ C Error handling
       CALL USRMSG(' ',' Plant component database file error.','W')
       GOTO 900
 
- 1001 CALL USRMSG(' Converstion error in',OUTSTR,'W')
+ 1001 CALL USRMSG(' Conversion error in',OUTSTR,'W')
       IER=1
       GOTO 6
 

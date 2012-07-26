@@ -44,14 +44,13 @@ C act='p' iget parameters already set.
       COMMON/OUTPCH/ICOUT
       COMMON/FILEP/IFIL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
 
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
       COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
-      common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
+      common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
@@ -65,8 +64,8 @@ C act='p' iget parameters already set.
       COMMON/ABSRESLIB/RFILEABS,PFILEABS,MSTRFILEABS,LAFRESABS
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
 C ihflag = 0 write 13h30, ihflag = 1 write 0.5625
 C idhflg = 0 no day demarcations, idhflg = 1 write demarcation
@@ -81,7 +80,12 @@ C Occupancy filter info.
       common/mfocup/iocpzone
 
       COMMON/MFPICK/NMFGET,IMFGETNO(MFRS,7)
+
+      character SMFLABEL*32,GMFLABEL*20,GLMFLABEL*32
       COMMON/MFLABEL/SMFLABEL(MFRS),GMFLABEL(MFRS),GLMFLABEL(MFRS)
+      integer  LNSMFLABEL,LNGMFLABEL,LNGLMFLABEL ! length of label strings
+      COMMON/LNMFLABEL/LNSMFLABEL(MFRS),LNGMFLABEL(MFRS),
+     &                 LNGLMFLABEL(MFRS)
       COMMON/MFGET/FLOWVALS(MFRS),MFRECVR(MCNN+2+MCONTM)
 
 C Simulator parameters.
@@ -90,10 +94,11 @@ C Simulator parameters.
       COMMON/FREQS1/ICBIN(MF),ITOTAL
 
       dimension Yold(MZS), TIMEold(MZS)
-      character outs*124,louts*248,TLABEL*60,trange*20,tranged*20
-      character ALABEL(5)*12,t20*20,act*1,H*72
+      character TLABEL*60,trange*20,tranged*20,t28*28,t10*10,dg*1
+      character outs*124,outs248*248
+      character outs800*800,outs800d*800  ! really long string buffers
+      character ALABEL(5)*12,t20*20,act*1
       CHARACTER PDESCR*60,SDESCR*44,DESCR*7,DESCR1*10
-      character SMFLABEL*32,GMFLABEL*20,GLMFLABEL*32
       character lltmpc*144
       CHARACTER DESCRH*5,DESCRD*5,NT*14,XT*14
       character graftitle*64,grlbl*24,t24*24,LTIME*5
@@ -105,18 +110,35 @@ C Simulator parameters.
       dimension FAVE(MFRS), FSTD(MFRS), NF(MFRS)
       dimension TMAX(MFRS), TMIN(MFRS), IQHRS(MFRS)
 
-      integer YAXSET, ADDLIN
+      integer YAXSET,ADDLIN,horaxisdiv
       integer iglib
+      integer lnb,lsn1
+      integer k,k4,ke,ke4,ke4t  ! used for string positions
+      integer lke,lket28        ! length of label and packed label
 
       logical colok,ok,dok
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
 #ifdef OSI
+      integer IGX  ! see common graf2
       integer iupdown,isym    ! passed to etplot
-      integer iid1,iid2
+      integer iid1,iid2,iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
+      integer*8 IGX  ! see common graf2
       integer*8 iupdown,isym    ! passed to etplot
-      integer*8 iid1,iid2
+      integer*8 iid1,iid2,iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MFOUTP'  ! set for cfiles
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C If the network flow file has not yet been opened request information.
       if(iflib.eq.1)then
@@ -138,31 +160,26 @@ C specify it here as well.
 C Use ifdefs because the X11 version will be returning only the
 C name of the file, while the GTK version will be returning the
 C name with the full path.
-   22   H(1)='A flow results library is created by the simulator. It'
-        H(2)='will contain the time series results for flow'
-        H(3)='simulations. '
-        H(4)='On computers running UNIX, the file: '
-        write(H(5),'(5x,a60)') DAFRES(1:60)
-        H(6)='usually exists. This is a link to an example results'
-        H(7)='library set up when ESP was first installed.'
+   22   helptopic='res_flow_res_default'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
             CALL EASKF(lltmpc,'Flow Library name ? ',' ',96,DAFRES,
-     &      'flow library file',IER,7)
+     &        'flow library file',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
             CALL EASKF(lltmpc,'Flow Library name ? ',' ',124,DAFRES,
-     &      'flow library file',IER,7)
+     &        'flow library file',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
             CALL EASKF(lltmpc,'Flow Library name ? ',' ',144,DAFRES,
-     &      'flow library file',IER,7)
+     &        'flow library file',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
           CALL EASKF(lltmpc,'Flow Library name ? ',' ',144,DAFRES,
-     &      'flow library file',IER,7)
+     &      'flow library file',IER,nbhelp)
         else
           CALL EASKF(lltmpc,'Flow Library name ? ',' ',96,DAFRES,
-     &    'flow library file',IER,7)
+     &      'flow library file',IER,nbhelp)
         endif
 
 C If user cancel.
@@ -182,14 +199,13 @@ C name to report in header of graphs and scan its header.
             LAFRES=LLTMPC(1:72)   ! remember some of the file name
             call MFREADH(IFRES,ITRC)
           else
-            h(1)='There was a problem opening the flow results'
-            h(2)='file. Check the name given and also check the'
-            h(3)='folder to see if the file exists.'
-            write(louts,'(3a)') 'Problem encountered opening ',
+            helptopic='res_flow_res_problem'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            write(outs248,'(3a)') 'Problem encountered opening ',
      &        lltmpc(1:lnblnk(lltmpc)),'!'
-            call edisp248(iuout,louts,100)
+            call edisp248(iuout,outs248,100)
             call easkab(' ','Options:','respecify','cancel',
-     &        ii,3)
+     &        ii,nbhelp)
             if(ii.eq.1)goto 22
             return
           endif
@@ -210,7 +226,7 @@ C If output to file alter the edisp unit number.
       if(ixopen.eq.1)then
         itru = ixunit
         if(NMFGET.ge.1)then
-          write(outs,'(2a)')GLMFLABEL(1)(1:lnblnk(GLMFLABEL(1))),
+          write(outs,'(2a)')GLMFLABEL(1)(1:LNGLMFLABEL(1)),
      &      '>> file.'
         else
           write(outs,'(a)')' Output being directed to file.' 
@@ -243,9 +259,10 @@ C Ask for set point value.
         if (act(1:1).eq.'p') then
           continue
         else
-          H(1)='The ..'
+          helptopic='res_flow_test_point'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKR(XQUERY,' ','  Test point value ? ',
-     &             0.0,'-',0.0,'-',20.0,'query value',IER,1)
+     &      0.0,'-',0.0,'-',20.0,'query value',IER,nbhelp)
         endif
       endif
 
@@ -281,17 +298,26 @@ C The YMAX,MIN variables are for axis 1 through 5 max and min values.
       elseif (MENUTYPE.eq.4) then
 
 C For timestep listings generate initial lines.
-        lsn1=MIN0(lnblnk(LAFRES),22)
-        if (IHFLAG.eq.1) then
+        lsn1=MIN0(lnblnk(LAFRES),42)
+        if (IHFLAG.eq.1.and.ixopen.eq.1) then
           call edisp(itru,'# Timestep performance metrics.')
-          WRITE(outs,'(4A)')'# Lib: ',LAFRES(1:lsn1),
+          WRITE(outs248,'(4A)')'# Lib: ',LAFRES(1:lsn1),
      &      ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
-          call edisp(itru,outs)
         else
           call edisp(itru,'Timestep performance metrics.')
-          WRITE(outs,'(4A)')'Lib: ',LAFRES(1:lsn1),
+          WRITE(outs248,'(4A)')'Lib: ',LAFRES(1:lsn1),
      &      ': ',RSNAME(ISIM)(1:lnblnk(RSNAME(ISIM)))
-          call edisp(itru,outs)
+        endif
+        if(ixopen.eq.1)then
+          lnb=lnblnk(outs248)   ! write directly to file
+          write(itru,'(A)',iostat=ios,err=1)outs248(1:lnb)
+        else
+          lnb=MIN0(lnblnk(outs248),124)
+          if(lnb.lt.124)then
+            call edisp(itru,outs248(1:lnb))
+          else
+            call edisp248(itru,outs248,124)
+          endif
         endif
       endif
       call usrmsg('Scanning data for range of values...','  ','-')
@@ -374,7 +400,7 @@ C Calculate average.
 
 C Inform user of the histo range and reset nb of bins and typcial bin size.
         write(outs,'(a,a,a,f9.2,a,f10.2)')'The ',
-     &    GLMFLABEL(1)(1:lnblnk(GLMFLABEL(1))),' data range is',
+     &    GLMFLABEL(1)(1:LNGLMFLABEL(1)),' data range is',
      &    XMIN,' to',XMAX
         call edisp(itru,outs)
         if(iocupf.eq.1.and.iocpzone.ne.0)then
@@ -388,10 +414,9 @@ C If in pif mode use default bin setup.
           ok=.TRUE.
         else
           dok=.true.
-          h(1)='If you need to customize the frequency reporting'
-          h(2)='say no, otherwise the default set-up will probably '
-          h(3)='work for initial interactive views. '
-          call askok('  ','Use default bin set-up?',OK,dok,3)
+          helptopic='res_flow_freq_custom'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          call askok('  ','Use default bin set-up?',OK,dok,nbhelp)
         endif
         if(ok)then
 
@@ -443,21 +468,20 @@ C Bin sized from data max & min.
             NB=MF-1
           endif
           NBINS=NB+1
-          XDIFF=((NBINS*DXBIN)-(XBINN-XBIN1))/2.0
+          XDIFF=((real(NBINS)*DXBIN)-(XBINN-XBIN1))/2.0
           XBIN1=XBIN1-XDIFF
           XBINN=XBINN+XDIFF
         else
           XBIN1=XMIN
           XBINN=XMAX
-          H(1)='Give minimum bin value for the current parameter.'
+          helptopic='res_flow_freq_bin_param'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           call easkr(XBIN1,' ',' Minimum parameter value for bin ?',
-     &                     0.,'-',0.,'-',0.,'min bin parameter',IER,1)
-          H(1)='Give maximum bin value for the current parameter.'
+     &      0.,'-',0.,'-',0.,'min bin parameter',IER,nbhelp)
           call easkr(XBINN,' ',' Maximum parameter value for bin ?',
-     &                  XBIN1,'F',0.,'-',0.,'max bin parameter',IER,1)
-          H(1)='The number of frequency bins is required.'
+     &      XBIN1,'F',0.,'-',0.,'max bin parameter',IER,nhelp)
           call easki(NBINS,' ',' Number of bins required ? ',
-     &                               1,'F',MF,'F',0,'no of bins',IER,0)
+     &      1,'F',MF,'F',0,'no of bins',IER,nbhelp)
           DXBIN=(XBINN-XBIN1)/NBINS
         endif
         call usrmsg(' ',' ','-')
@@ -488,103 +512,195 @@ C Write graph head and set up axis positions and draw.
 
 C Recover and plot data. If listing to file or text feedback then
 C write out labels for each column.
+
+C << place to add logic to also detect ixopen as in table.F:381 >>
+
       do 10 IDAY=IODS,IODF
         if (MENUTYPE.eq.4) then
           CALL STDATE(IYEAR,IDAY,DESCR,DESCR1)
-          if (IDHFLG.eq.1) then
+          if (IDHFLG.eq.1.and.ixopen.eq.1) then
             outs='# '
             call edisp(itru,outs)
             write(outs,'(3A)')'# ',DESCR1,' timestep listing'
             call edisp(itru,outs)
             outs='# '
             call edisp(itru,outs)
+          elseif (IDHFLG.eq.0.and.ixopen.eq.1) then
+            continue
+          elseif (IDHFLG.eq.0.and.ixopen.eq.0) then
+            continue
+          elseif (IDHFLG.eq.1.and.ixopen.eq.0) then
+            outs='  '
+            call edisp(itru,outs)
+            write(outs,'(3A)')' ',DESCR1,' timestep listing'
+            call edisp(itru,outs)
           else
-            louts='  '
+            outs='  '
+            call edisp(itru,outs)
           endif
-          if (IHFLAG.eq.1) then
-            louts='#Time'
-          else
-            louts='Time '
-          endif
-          K=6
 
-C For those dumping to a spreadsheet file this would be a good
-C place to write out longer label on a single line.
-          do 20 IL=1,NMFGET
-            if(ILFLAG.eq.0)then
-              KE=K+11
+          if (IHFLAG.eq.1.and.ixopen.eq.1) then
+            if (delim.eq.'X') then
+              outs248='*time'
+              outs800='*time'
             else
-              lke=lnblnk(GLMFLABEL(IL))
-              KE=K+lke+1
+              outs248='#Time'
+              outs800='#Time'
+            endif
+          elseif (IHFLAG.eq.1.and.ixopen.eq.0) then
+            if (delim.eq.'X') then
+              outs248='*time'
+              outs800='*time'
+            else
+              outs248='Time'
+              outs800='Time'
+            endif
+          else
+            outs248='Time '
+            outs800='Time '
+          endif
+
+C If printing to screen then split column headings over two rows 
+C don't do this if printing to file.
+          irows=2
+          if (ixopen.eq.1) irows=1
+
+          K=6   ! initial value for 248 buffer
+          K4=6  ! initial value for 800 buffer
+          KE=0  ! end of string value for 248 buffer
+          KE4=0 ! end of string value for 800 buffer
+
+C For those dumping to a spreadsheet file write out labels on a single line.
+          do 20 IL=1,NMFGET
+            lke=LNGLMFLABEL(IL)  ! longer lable length
+            call SDELIM(GLMFLABEL(IL),t28,'N',IW)
+            lket28=lnblnk(t28)   ! length of packed label
+            if(ILFLAG.eq.0)then
+              KE=K+11   ! short label
+              KE4=K4+11   ! short label
+            else
+              KE=K+lke+1       ! set new end to reflect label
+              KE4=K4+lket28+1  ! set new end to reflect packed label
             endif
             if(KE.le.248)then
               if(ILFLAG.eq.0)then
-                write (louts(K:KE),'(a,a)') '|',GMFLABEL(IL)(1:10)
+                write (outs248(K:KE),'(a,a)') '|',GMFLABEL(IL)(1:10)
                 K=K+11
               else
 
-C Also use the current delimiter.
+C For longer labels use the current delimiter.
                 if(delim.eq.'-')then
-                  write (louts(K:KE),'(a,a)') '|',GLMFLABEL(IL)(1:lke)
+                  write (outs248(K:KE),'(a,a)') '|',
+     &              GLMFLABEL(IL)(1:lke)
                 elseif(delim.eq.'T')then
                   tab=CHAR(9)
-                  write (louts(K:KE),'(a,a)') tab,GLMFLABEL(IL)(1:lke)
+                  write (outs248(K:KE),'(a,a)') tab,
+     &              GLMFLABEL(IL)(1:lke)
                 elseif(delim.eq.'C')then
-                  write (louts(K:KE),'(a,a)') ',',GLMFLABEL(IL)(1:lke)
+                  write (outs248(K:KE),'(a,a)') ',',
+     &              GLMFLABEL(IL)(1:lke)
                 elseif(delim.eq.'S')then
-                  write (louts(K:KE),'(a,a)') ' ',GLMFLABEL(IL)(1:lke)
+                  write (outs248(K:KE),'(a,a)') ' ',
+     &              GLMFLABEL(IL)(1:lke)
                 elseif(delim.eq.'X')then
-                  write (louts(K:KE),'(a,a)') ',',GLMFLABEL(IL)(1:lke)
+                  write (outs248(K:KE),'(a,a)') ',',
+     &              GLMFLABEL(IL)(1:lke)
                 endif
                 K=K+lke+1
+              endif
+            endif
+
+C For writing to file also fill the 800 char buffer, remove spaces.
+C If short labels write up to 10 characters, otherwise write the
+C packed string.
+            if(KE4.le.800)then
+              if (ixopen.eq.1) then
+                if(ILFLAG.eq.0)then
+                  if(lket28.gt.10)then
+                    write(outs800(K4:KE4),'(2a)') ' ',t28(1:10)
+                    K4=K4+11        ! next start point
+                  else
+                    write(outs800(K4:KE4),'(2a)') ' ',t28(1:lket28)
+                    K4=K4+lket28+1  ! next start point
+                  endif
+                else
+                  write(outs800(K4:KE4),'(2a)') ' ',t28(1:lket28)
+                  K4=K4+lket28+1    ! next start point
+                endif
               endif
             endif
  20       continue
 
 C Print titles on first day and only on subsequent ones if day
 C demarcations are omitted.
+          lnb=lnblnk(outs248)+1   ! ensure we do not warp line
           if (IDAY.eq.IODS)then
-            call edisp(itru,louts)
+            if(ixopen.eq.1)then
+              lnb=lnblnk(outs800)   ! write directly to file
+              write(itru,'(A)',iostat=ios,err=1)outs800(1:lnb)
+            else
+              if(lnb.lt.124)then
+                call edisp(itru,outs248(1:lnb))
+              else
+                call edisp248(itru,outs248,144)  ! as wide as possible
+              endif
+            endif
           else
-            if (IDHFLG.eq.1)call edisp(itru,louts)
+            if (IDHFLG.eq.1.and.ixopen.eq.1)then
+              lnb=lnblnk(outs800)   ! write directly to file
+              write(itru,'(A)',iostat=ios,err=1)outs800(1:lnb)
+            elseif (IDHFLG.eq.1.and.ixopen.eq.0)then
+              if(lnb.lt.124)then
+                call edisp(itru,outs248(1:lnb))
+              else
+                call edisp248(itru,outs248,144)  ! as wide as possible
+              endif
+            else
+              continue
+            endif
           endif
 
-C If multi-line labels then write out the 2nd line.
+C If multi-line labels then write out the 2nd line. Do not bother if
+C writing to a file and using short labels.
           if(ILFLAG.eq.0)then
             if (IDHFLG.eq.1) then
-              louts='#    '
+              outs248='#    '
             else
-              louts='     '
+              outs248='     '
             endif
-            if (IHFLAG.eq.1) then
-              louts='#    '
+            if (IHFLAG.eq.1.and.ixopen.eq.1) then
+              outs248='#    '
             else
-              louts='     '
+              outs248='     '
             endif
             K=6
             do 225 IL=1,NMFGET
               KE=K+11
               if(KE.le.248)then
-                write (louts(K:KE),'(a,a)') '|',GMFLABEL(IL)(11:20)
+                write (outs248(K:KE),'(a,a)') '|',GMFLABEL(IL)(11:20)
                 K=K+11
               endif
  225        continue
             if (IDAY.eq.IODS)then
-              call edisp(itru,louts)
+              if(irows.eq.2) call edisp(itru,outs248) ! 2nd row requested
             else
-              if (IDHFLG.eq.1)call edisp(itru,louts)
+              if (IDHFLG.eq.1.and.irows.eq.2) call edisp(itru,outs248)
             endif
           endif
 
           if (IDHFLG.eq.1) then
-            louts='#    '
+            outs248='#    '
+            outs800='#    '
           else
-            louts='     '
+            outs248='     '
+            outs800='     '
           endif
           if (IHFLAG.eq.1) then
-            louts='#    '
+            outs248='#    '
+            outs800='#    '
           else
-            louts='     '
+            outs248='     '
+            outs800='     '
           endif
         endif
 
@@ -616,18 +732,24 @@ C If there is occupancy filter and occupancy then use pattern
 C from zone iocpzone. Start with assumption of full occupancy.
               call DATIME(JJ,ATIME)
               TIME=float(IHRD)+ATIME
-              louts='  '
+              outs248='  '
+              outs800='  '
               if (IHFLAG.eq.0) then 
 
 C Split flow time into hours and minutes, repeating every 24 hours.
                 call STIME(JJ,LTIME)
-                write (louts,'(a5)') LTIME
+                write (outs248,'(a5)') LTIME
+                write (outs800,'(a5)') LTIME
                 K=6
               else
                 RDOTY=FLOAT(IDAY)+(ATIME/24.)
-                write (louts,'(f10.4)') RDOTY
+                write (outs248,'(f10.4)') RDOTY
+                write (outs800,'(f10.4)') RDOTY
                 K=11
               endif
+
+C First write data to the 248 char string buffer.
+              klast=k
               do 410 IXY=1,NMFGET
                 KE=K+11
                 if(KE.le.248)then
@@ -640,14 +762,63 @@ C Assume fully occupied.
                     call getocup(iocpzone,IDAY,ih,ioc,iier)
                   endif
                   if(ioc.ne.0) then
-                    write (louts(K:KE),'(f11.4)') FLOWVALS(IXY)
+                    write (outs248(K:KE),'(f11.4)') FLOWVALS(IXY)
                   else
-                    write (louts(K:KE),'(a)') '  not occ  '
+                    write (outs248(K:KE),'(a)') '  not occ  '
                   endif
                   K=K+11
                 endif
  410          continue
-              call eddisp(itru,louts)
+
+C If writing to file then write data to the 800 char string buffer.
+              if(ixopen.eq.1)then
+                k=klast   ! re-establish k position value
+                do 411 IXY=1,NMFGET
+                  KE=K+11
+                  if(KE.le.800)then
+
+C If there is occupancy filter and occupancy then include in check.
+C Assume fully occupied.
+                    ih=int(ATIME+1.)
+                    ioc=1
+                    if(iocupf.eq.1.and.iocpzone.ne.0)then
+                      call getocup(iocpzone,IDAY,ih,ioc,iier)
+                    endif
+                    if(ioc.ne.0) then
+                      write (outs800(K:KE),'(f11.4)') FLOWVALS(IXY)
+                    else
+                      write (outs800(K:KE),'(a)') '  not occ  '
+                    endif
+                    K=K+11
+                  endif
+ 411            continue
+              endif
+
+              if(ixopen.eq.1)then
+                lnb=lnblnk(outs800)   ! write directly to file
+
+                if(delim.eq.'-')then
+                  write(itru,'(A)',iostat=ios,err=1)outs800(1:lnb)
+                else
+
+C If delimiter set to alternative then process text before writing.
+C If using X delimeter (tagged data) then set the delimeter to a comma.
+                  dg=delim
+                  if (delim.eq.'X') dg='C'
+                  call SDELIM(outs800,outs800d,dg,IW)
+                  lnb=lnblnk(outs800d)   ! write directly to file
+                  write(itru,'(A)',iostat=ios,err=1) outs800d(1:lnb)
+                endif
+              else
+
+C Writing to screen so use shorter file buffer.
+                lnb=MIN0(lnblnk(outs248),124)
+                if(lnb.lt.124)then
+                  call eddisp(itru,outs248(1:lnb))
+                else
+                  call eddisp248(itru,outs248,124)
+                endif
+              endif
 
 C Debug.
 C             write(6,*)TIME,(FLOWVALS(IXY),IXY=1,NMFGET)
@@ -659,9 +830,9 @@ C Do the other menu types. If graph reset scaling factor for appropriate axis.
             do 400 IX=1,NMFGET
               if (MENUTYPE.eq.3) then
                 Iax=IMFGETNO(IX,7)
-                call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
+                call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))
                 if (TIMEold(IX).lt.0.0.or.ADDLIN.eq.1) then
-                  TIMEold(IX)=0
+                  TIMEold(IX)=0.0
                   Yold(IX)=FLOWVALS(IX)
                 endif
                 ioldpos=1
@@ -725,7 +896,8 @@ C than that of the number of colours re-use an earlier colour.
                     ICM=IMFGETNO(IX,2)
                     if(ICM.gt.nzonec) ICM=IMFGETNO(IX,2)-nzonec
                     if(ICM.gt.nzonec) ICM=IMFGETNO(IX,2)-nzonec
-                    call winscl('z',ICM)
+                    iicol=ICM
+                    call winscl('z',iicol)
                     call forceflush()
                   endif
                 endif
@@ -735,7 +907,10 @@ C then reset to forground colour.
                 iupdown=IPEN
                 isym=MARK
                 call etplot(TIME,Yold(IX),iupdown,isym)
-                if(colok)call winscl('-',0)
+                if(colok)then
+                  iicol=0
+                  call winscl('-',iicol)
+                endif
                 call forceflush()
               elseif (MENUTYPE.eq.5) then
 
@@ -818,14 +993,15 @@ C Calculate cumulative frequency.
   710   CONTINUE
 
 C Ask user how data should be presented.
-        H(1)='Frequency distribution choices. '
+        helptopic='res_mass_freq_choices'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IDG=1
         IG=1
         CALL MENUATOL('Frequency choices','Frequency reports:',
      &    'a frequency distribution','b cumulative freq. dist.',
      &    'c summary table ','d frequency dist. + table',
      &    'e cumulative dist. + table','f none of the above',
-     &    ' ',' ',' ',' ',' ',' ',IG,IDG,1)
+     &    ' ',' ',' ',' ',' ',' ',IG,IDG,nbhelp)
         if(IG.eq.6) goto 1
         IF(IG.EQ.1.OR.IG.EQ.2.OR.IG.EQ.4.OR.IG.EQ.5)then
 
@@ -839,21 +1015,21 @@ C indicate that several flow items (e.g. nodes) are included.
             if(NMFGET.eq.1)then
               if(iocupf.eq.1.and.iocpzone.ne.0)then
                 write (TLABEL,'(2a,f6.2,a)')
-     &            GLMFLABEL(1)(1:lnblnk(GLMFLABEL(1))),', Bin width =',
+     &            GLMFLABEL(1)(1:LNGLMFLABEL(1)),', Bin width =',
      &            DXBIN,' (filtered)'
               else
                 write (TLABEL,'(2a,f6.2)')
-     &            GLMFLABEL(1)(1:lnblnk(GLMFLABEL(1))),', Bin width =',
+     &            GLMFLABEL(1)(1:LNGLMFLABEL(1)),', Bin width =',
      &            DXBIN
               endif
             else
               if(iocupf.eq.1.and.iocpzone.ne.0)then
                 write (TLABEL,'(2a,f6.2,a)')
-     &            GLMFLABEL(1)(1:lnblnk(GLMFLABEL(1))),
+     &            GLMFLABEL(1)(1:LNGLMFLABEL(1)),
      &            ' (...), Bin width =',DXBIN,' (filtered)'
               else
                 write (TLABEL,'(2a,f6.2)')
-     &            GLMFLABEL(1)(1:lnblnk(GLMFLABEL(1))),
+     &            GLMFLABEL(1)(1:LNGLMFLABEL(1)),
      &            ' (...), Bin width =',DXBIN
               endif
             endif
@@ -914,19 +1090,23 @@ C histogram metric is selected it will be the first one.
 C Finally label lines, matching zone line colour if used.
         do 200 I=1,NMFGET
           Iax=IMFGETNO(I,7)
-          call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
+          call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))
           t20=GMFLABEL(I)
           if(colok)then
             if(IMFGETNO(I,2).gt.0)then
               ICM=IMFGETNO(I,2)
               if(ICM.gt.nzonec) ICM=IMFGETNO(I,2)-nzonec
               if(ICM.gt.nzonec) ICM=IMFGETNO(I,2)-nzonec
-              call winscl('z',ICM)
+              iicol=ICM
+              call winscl('z',iicol)
             endif
           endif
           call u2pixel(TIMEold(I),Yold(I),iid1,iid2)
           call wstxpt(iid1,iid2,t20)
-          if(colok)call winscl('-',0)
+          if(colok)then
+            iicol=0
+            call winscl('-',iicol)
+          endif
           call forceflush()
  200    continue
 
@@ -1129,7 +1309,6 @@ C (absolute value of INODE).
 #include "net_flow.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
       COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
@@ -1138,10 +1317,17 @@ C (absolute value of INODE).
 
       DIMENSION IPK(MCNN),ICPK(MCNN),ICID(MCNN)
 
-      CHARACTER H*72,VRT(MCNN)*43
+      CHARACTER VRT(MCNN)*43
       CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12
       character outs*124
       logical unixok
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ASKMFCON'  ! set for subroutine
 
 C Set up array of menu strings.
       NITMS=0
@@ -1170,8 +1356,10 @@ C List all connections.
 
       if (INODE.ge.0) then
         if (NITMS.lt.NNPK) NNPK=NITMS
+        helptopic='mass_connection_select'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call EPICKS(NNPK,IPK,'xx','yy',
-     &                     43,NITMS,VRT,'Connection selection',IER,0)
+     &    43,NITMS,VRT,'Connection selection',IER,0)
 
 C Decode menu picks to connections.
         do 20 I=1,NNPK
@@ -1220,7 +1408,7 @@ C to graphical result display of network flows.
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
-      common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
+      common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
@@ -1233,8 +1421,12 @@ C to graphical result display of network flows.
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C Generate a descriptive string for the time period to be displayed
@@ -1249,9 +1441,15 @@ C pixel references for calls to viewtext.
           call feedbox(menuchw,2,igfw,igfh)
           call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         endif
-        call win3d(menuchw,9,30,4,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=9; iiw2=30; iiw3=4; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        call win3d(menuchw,9,30,4,3,igl,igr,igt,igb,igw,igwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         call startbuffer()
       ENDIF
 

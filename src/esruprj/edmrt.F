@@ -38,9 +38,8 @@ C will have been defined prior to calling edmrt.
       COMMON/OUTIN/IUOUT,IUIN
       common/user/browse
 
-      common/pophelp/h(60)
-
       common/C21/IFCFG,cfgroot,LCFGF
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -54,7 +53,7 @@ C will have been defined prior to calling edmrt.
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
       LOGICAL MODIFY,MODLEN,MODBND,concat,cfgmod,browse,clkok,XST
       logical silent,unixok
-      CHARACTER VERT*46,H*72,CUBN*6,LTMP*72,cfgroot*24
+      CHARACTER VERT*46,CUBN*6,LTMP*72,cfgroot*24
       CHARACTER LCFGF*72
       character VFILE*72,head*32,outs*124,KEY*1,ETEXT*82
       character doit*248,tmode*8,tfile*72,ZN*12
@@ -63,6 +62,22 @@ C will have been defined prior to calling edmrt.
       integer icni,icnj  ! connection numbers for pair of surfaces.
       integer MVERT,IVERT ! max items and current menu item
 
+C Passed parameters for cfgtogg
+#ifdef OSI
+      integer icfg_type  ! model cfg type
+      integer icfgz      ! if non-zero then there are zones
+      integer icfgn      ! if non-zero then there are networks
+      integer icfgc      ! if non-zero then cfg file known
+      integer icfgdfn    ! if non-zero then cdf domain exists
+      integer iicfgz     ! there are zone related images
+      integer iicfgn     ! there are network related images
+      integer iicfgc     ! there are control related images
+      integer iicfgdfn   ! there are cfd related images
+#else
+      integer*8 icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz
+      integer*8 iicfgn,iicfgc,iicfgdfn
+#endif
+
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer ICPMOD                ! passed from tchild
@@ -70,6 +85,13 @@ C will have been defined prior to calling edmrt.
       integer*8 iside,isize,ifont   ! passed to viewtext
       integer*8 ICPMOD              ! passed from tchild
 #endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDMRT'  ! set for subroutine
 
       cfgmod=.false.
 
@@ -201,17 +223,13 @@ C Check and see if a viewfactor file exists.
 C Viewfactor file exists, offer option to dereference it. Otherwise
 C read it or create one with default (area weighted) viewfactors
 C and no MRT sensors.
+      helptopic='mrt_menu_overview'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       if(IVF(ICOMP).eq.1)then
-        H(1)='The zone viewfactor file contains data from the'
-        H(2)='ESRU espvwf program which allows a more robust treatment'
-        H(3)='of longwave radiation within a zone.'
-        H(4)=' '
-        H(5)='If you want to ignore the existing viewfactors for this'
-        H(6)='zone click on dereference. '
         LTMP=LVIEW(ICOMP)
         clkok=.false.
    46   CALL EASKSCMD(LTMP,'Zone viewfactor file? ',' ',
-     &    'dereference',clkok,72,VFILE,'viewfactor file',IER,6)
+     &    'dereference',clkok,72,VFILE,'viewfactor file',IER,nbhelp)
         if(clkok)then
           LVIEW(ICOMP)='UNKNOWN'
           IVF(ICOMP)=0
@@ -235,16 +253,10 @@ C and no MRT sensors.
 
 C No mrt file referenced so offer default name as well as an option
 C to back out of the facility.
-        H(1)='The zone viewfactor file contains data from the'
-        H(2)='ESRU vwf program which allows a more robust treatment'
-        H(3)='of longwave radiation within a zone.'
-        H(4)=' '
-        H(5)='If you want to ignore the existing viewfactors for this'
-        H(6)='zone click on dereference. '
         LTMP=VFILE
         clkok=.false.
    47   CALL EASKSCMD(LTMP,'Zone viewfactor file? ',' ',
-     &    'dereference',clkok,72,VFILE,'viewfactor file',IER,6)
+     &    'dereference',clkok,72,VFILE,'viewfactor file',IER,nbhelp)
         if(clkok)then
           return
         else
@@ -379,24 +391,8 @@ C the zone, obstructions and sensors.
       CALL ERCZONE(ICOMP)
 
 C Help text for this menu.
-      H(1) ='This menu allows zone viewfactors or MRT sensors to'
-      H(2) ='be viewed and edited.  These are then passed to the '
-      H(3) ='program `espvwf` for further processing if a robust '
-      H(4) ='evaluation of view factors or position dependent '
-      H(5) ='mean radiant temperatures is required. '
-      H(6) =' '
-      H(7) ='View factors may also be created from scratch in'
-      H(8) ='this section of prj.  Note that the default treatment'
-      H(9) ='is to have area weighted viewfactors which do not'
-      H(10) ='require the creation of a view factor file.'
-      H(11) =' '
-      H(12) ='MRT sensors are rectangular bodies similar to those'
-      H(13) ='used for zone obstructions. The default size is a'
-      H(14) ='100mm cube.  They are placed within a zone to find '
-      H(15) ='the view-factor weighted mean radiant temperature. '
-      H(16) =' '
-      H(17)='If you wish you may alter the dimension of the sensor'
-      H(18)='to approximate an occupant or other object. '
+      helptopic='mrt_menu_overview'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Now display the menu.
       CALL EMENU(head,VERT,MVERT,IVERT)
@@ -407,7 +403,9 @@ C Exit to main routine.
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
 C List help text for the  menu.
-        CALL PHELPD('mrt sensor',18,'-',0,0,IER)
+        helptopic='mrt_menu_overview'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('mrt sensor',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C List viewfactor contents.
@@ -428,12 +426,9 @@ C List viewfactor contents.
       ELSEIF(IVERT.EQ.(MVERT-3))THEN
 
 C Save viewfactor & sensor file...
-        H(1)='The zone viewfactor file contains data from the'
-        H(2)='ESRU vwf program which allows a more robust treatment'
-        H(3)='of longwave radiation within a zone.'
         LTMP=LVIEW(ICOMP)
    48   CALL EASKS(LTMP,' Zone viewfactor file? ',
-     &    ' ',72,VFILE,'viewfactor file',IER,3)
+     &    ' ',72,VFILE,'viewfactor file',IER,nbhelp)
         IF(IER.NE.0)GOTO 48
         IF(LTMP(1:2).NE.'  ')THEN
           LVIEW(ICOMP)=LTMP
@@ -486,7 +481,7 @@ C offer the user a chance to re-edit if not close to one.
      &        SSNAME(ICNJ)
             V=VEWF(IS,MM)
             CALL EASKR(V,outs,' view factor: ',
-     &        0.,'F',0.999,'F',0.,'viewfactors',IER,1)
+     &        0.,'F',0.999,'F',0.,'viewfactors',IER,nbhelp)
             VEWF(IS,MM)=V
           else
             VEWF(IS,IS)=0.
@@ -498,9 +493,7 @@ C offer the user a chance to re-edit if not close to one.
         IF(ABS(A).LT.0.9.OR.ABS(A).GT.1.002)then
           write(outs,'(A,F8.5,A)')' currently the total is ',A,
      &      ' and should be close to zero...please re-edit...'
-          h(1)='If the total is not close to one then we suggest'
-          h(2)='that you re-edit the values.'
-          call easkab(outs,' ','re-edit','continue',IW,2)
+          call easkab(outs,' ','re-edit','continue',IW,nbhelp)
           if(iw.eq.1)then
             A=0.0  ! clear the accumulator
             goto 31
@@ -512,10 +505,9 @@ C offer the user a chance to re-edit if not close to one.
 C View factor calculations - offer choice of default viewfactors or
 C call to ESPVWF. Recover information on areas in the current zone for
 C use in area weighted computation.
-        h(1)='The ray-tracing calcs will start a calculation module.'
         call easkabc(' Zone viewfactor calculations can be either',
      &    ':','Area weighted','Based on ray-tracing calcs','continue',
-     &    IW,1)
+     &    IW,nbhelp)
         if(IW.eq.1)then
 
 C << Rewrite logic to use G7 common blocks rather than call zinfo. >>
@@ -567,14 +559,12 @@ C an offset from prj start position.
           call usrmsg('starting espvwf module via',doit,'-')
           call runit(doit,tmode)
 
-          H(1)='When the computation is completed you will be '
-          H(2)='asked whether you want to make use of this data.'
-          H(3)='The computation may take some time... do not '
-          H(4)='attempt to use the data until it is finished. '
-          CALL PHELPD('espvwf running',4,'-',0,0,IER)
-          h(1)='The previous pop-up message applies.'
+          helptopic='pause_for_calcs'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('espvwf running',nbhelp,'-',0,0,IER)
           CALL EASKABC(' Post calculation choices :',' ',
-     &      'use new data','revert (no viewfactors)','continue',irt,1)
+     &      'use new data','revert (no viewfactors)','continue',
+     &      irt,nbhelp)
           if(irt.eq.1)then
             call edisp(iuout,' Reading viewfactor file....')
             CALL ERMRT(ITRC,ITRU,IUF,LVIEW(ICOMP),ICOMP,IER)
@@ -618,7 +608,6 @@ C EDMRTS: Edit details of a MRT sensor block.
       integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
 
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
@@ -627,15 +616,38 @@ C EDMRTS: Edit details of a MRT sensor block.
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       DIMENSION VERT(15)
       CHARACTER VERT*28,MSG*72,S6*6,CUBN*6,head*30
-      character H*72,ETEXT*82
+      character ETEXT*82
       LOGICAL MODIFY,MODLEN,MODBND
       integer NITMS,IVERT ! max items and current menu item
+
+C Passed parameters for cfgtogg
+#ifdef OSI
+      integer icfg_type  ! model cfg type
+      integer icfgz      ! if non-zero then there are zones
+      integer icfgn      ! if non-zero then there are networks
+      integer icfgc      ! if non-zero then cfg file known
+      integer icfgdfn    ! if non-zero then cdf domain exists
+      integer iicfgz     ! there are zone related images
+      integer iicfgn     ! there are network related images
+      integer iicfgc     ! there are control related images
+      integer iicfgdfn   ! there are cfd related images
+#else
+      integer*8 icfg_type,icfgz,icfgn,icfgc,icfgdfn,iicfgz
+      integer*8 iicfgn,iicfgc,iicfgdfn
+#endif
 
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDMRTS'  ! set for subroutine
 
 C Initial menu entry setup.
       write(head,'(A,A)')'  MRT details: ',zname(ICOMP)
@@ -681,76 +693,64 @@ C draw the sensor cubes.  Set all surface lines to standard width.
       CALL ERCZONE(ICOMP)
 
 C Help text for this menu.
-      H(1)='The specification of MRT sensors is currently based'
-      H(2)='on a sensor being a prism.  Assuming there is no'
-      H(3)='rotation the width of the sensor is its distance'
-      H(4)='along the X axis, the depth is along the Y axis, and'
-      H(5)='the height is along the Z axis.  The sensor may then'
-      H(6)='be rotated with the angle being measured anticlockwise'
-      H(7)='from the X axis.'
+      helptopic='mrt_sensor_dimensions'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Now display the menu.
       NITMS=11
       CALL EMENU(head,VERT,NITMS,IVERT)
       IF(IVERT.EQ.1)THEN
-        H(1)='The origin of the sensor is in site coords. '
         WRITE(MSG,'(a,I3)')'For sensor ',ICUB
         CALL EASKR(XOC(ICUB),MSG,'Origin X coordinate?',
-     &       -999.9,'W',999.9,'W',1.0,'origin X coord',IER,1)
+     &       -999.9,'W',999.9,'W',1.0,'origin X coord',IER,nbhelp)
         IVFOK(icub)=0
         MODIFY=.TRUE.
         MODLEN=.TRUE.
       ELSEIF(IVERT.EQ.2)THEN
-        H(1)='The origin of the sensor is in site coords. '
         CALL EASKR(YOC(ICUB),MSG,' Origin Y coordinate?',
-     &       -999.9,'W',999.9,'W',1.0,'origin X coord',IER,1)
+     &       -999.9,'W',999.9,'W',1.0,'origin X coord',IER,nbhelp)
         IVFOK(icub)=0
         MODIFY=.TRUE.
         MODLEN=.TRUE.
       ELSEIF(IVERT.EQ.3)THEN
-        H(1)='The origin of the sensor is in site coords. '
         CALL EASKR(ZOC(ICUB),MSG,'Origin Z coordinate?',
-     &       -999.9,'W',999.9,'W',1.0,'origin X coord',IER,1)
+     &       -999.9,'W',999.9,'W',1.0,'origin X coord',IER,nbhelp)
         MODIFY=.TRUE.
         MODLEN=.TRUE.
       ELSEIF(IVERT.EQ.4)THEN
-        H(1)='The width (with no rotation) is along the X axis.'
         CALL EASKR(DXC(ICUB),MSG,' Sensor width? ',
-     &       0.001,'W',99.9,'W',1.0,'sensor X dimension',IER,1)
+     &       0.001,'W',99.9,'W',1.0,'sensor X dimension',IER,nbhelp)
         IVFOK(icub)=0
         MODIFY=.TRUE.
         MODLEN=.TRUE.
       ELSEIF(IVERT.EQ.5)THEN
-        H(1)='The depth (with no rotation) is along the Y axis.'
         CALL EASKR(DYC(ICUB),MSG,' Sensor depth? ',
-     &       0.001,'W',99.9,'W',1.0,'sensor Y dimension',IER,1)
+     &       0.001,'W',99.9,'W',1.0,'sensor Y dimension',IER,nbhelp)
         IVFOK(icub)=0
         MODIFY=.TRUE.
         MODLEN=.TRUE.
       ELSEIF(IVERT.EQ.6)THEN
-        H(1)='The height (with no rotation) is along the Z axis.'
         CALL EASKR(DZC(ICUB),MSG,' Sensor height? ',
-     &       0.001,'W',99.9,'W',1.0,'sensor Z dimension',IER,1)
+     &       0.001,'W',99.9,'W',1.0,'sensor Z dimension',IER,nbhelp)
         IVFOK(icub)=0
         MODIFY=.TRUE.
         MODLEN=.TRUE.
       ELSEIF(IVERT.EQ.7)THEN
-        H(1)='Rotation is anticlockwise degrees between the '
-        H(2)='length side of the sensor and the X axis.'
         CALL EASKR(CANG(ICUB),MSG,' Sensor rotation? ',
-     &       -359.0,'W',359.0,'W',0.0,'sensor rotation',IER,2)
+     &       -359.0,'W',359.0,'W',0.0,'sensor rotation',IER,nbhelp)
         IVFOK(icub)=0
         MODIFY=.TRUE.
         MODLEN=.TRUE.
       ELSEIF(IVERT.EQ.8)THEN
-        H(1)='A descriptive name (up to 6 char) is recommended.'
         S6=' '
         CALL EASKS(S6,' ',' Name of MRT sensor ? ',
-     &    6,'sensor','sensor name',IER,1)
+     &    6,'sensor','sensor name',IER,nbhelp)
         IF(S6.NE.' ')CUBN(ICUB)=S6
         MODIFY=.TRUE.
       ELSEIF(IVERT.EQ.10)THEN
-        CALL PHELPD('sensor menu',7,'-',0,0,IER)
+        helptopic='mrt_sensor_dimensions'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('sensor menu',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.11)THEN
         return
       ENDIF

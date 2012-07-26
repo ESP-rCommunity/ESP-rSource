@@ -1298,7 +1298,7 @@ C Loop back again for next air flow BC.
       ELSE
 
 C Read number of contaminants defined and which one is water (humidity)
-        CALL EGETWI(OUTSTR,K,NCTM,0,MCTM,'w','# of cntmnts',IER)
+        CALL EGETWI(OUTSTR,K,NCTM,0,MCTM,'w','# of contaminants',IER)
         CALL EGETW(OUTSTR,K,WORD,'W','string in *sources line',IER)
         IF(VER.GT.2.15.AND.VER.LT.2.25)K=63
         IF(VER.GT.2.05.AND.VER.LT.2.15)K=57
@@ -1357,6 +1357,9 @@ C Read line containing contaminant name information
       ENDIF
 
 C Read line until reach *blockages line.
+C Expecting the source tag (should match a volume name followed by
+C the source heat values, casual gain index in the zone and the
+c fraction of that gain which is treated as a heat source.
  108  CALL STRIPC(IFL,OUTSTR,0,ND,1,'sources data',IER)
  706  K=0
       CALL EGETW(OUTSTR,K,WORD,'W','sources tag',IER)
@@ -2597,9 +2600,9 @@ C Warn user if cell number starts/stops wrongly
         ENDIF
  1    CONTINUE
 
-C Debug if itrc is other than zero and NON DOS.
+C Debug if itrc is greather than one and NON DOS.
       call isunix(unixok)
-      IF(ITRC.GT.0.and.unixok)THEN
+      IF(ITRC.GT.1.and.unixok)THEN
         do 900 iz=1,ntcz
           write(6,*)'ixzst ',(ixzst(ix,iz),ix=1,ntcx)
  900    continue

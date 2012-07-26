@@ -9,26 +9,31 @@ PROG = dfs$(EXE)
 .SUFFIXES: .o .F
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
+%.o : %.f90
+	$(MCC) $(FFLAGS) -c $<
 
-OBJECTS = dfs.o aim2_module.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o \
-   bndarybl.o bndaryl.o bndaryt.o bscoeff.o bscoeff_extended.o c2fdum.o cfcalc.o cfdat.o \
+MODULE_OBJECTS = startup.o h3kmodule.o aim2_module.o 
+
+OBJECTS = dfs.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o \
+     bndarybl.o bndaryl.o bndaryt.o bscoeff.o bscoeff_extended.o c2fdum.o cfcalc.o cfdat.o \
 	  cfconv.o cfdrw.o cfdumb.o cfdumm.o cfgrid.o cfmatl.o cfmgerc.o cftext.o \
 	  cfutil.o cgd.o chkconvg.o common3dv.o conc.o e3dviews.o edatabase.o egeometry.o \
 	  eroper.o esru_misc.o filelist.o \
 	  lisolv.o locmage.o mitzero.o plot.o psychro.o \
-	  read3dv.o sort.o startup.o visgrd.o visual.o visvec.o wvapour.o
+	  read3dv.o sort.o visgrd.o visual.o visvec.o wvapour.o 
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod	
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod \
+     h3kmodule.mod
 
-$(PROG): $(OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) 
+$(PROG): $(MODULE_OBJECTS) $(OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS)
 
 aim2_module.F:
 	rm -f aim2_module.F
 	ln -s $(BLDdir)/aim2_module.F .
 arrow.F:
 	rm -f arrow.F
-	ln -s $(PRJdir)/arrow.F .
+	ln -s $(COMdir)/arrow.F .
 ascii_mat.F:
 	rm -f ascii_mat.F
 	ln -s $(COMdir)/ascii_mat.F .
@@ -87,6 +92,9 @@ sort.F:
 startup.F:
 	rm -f startup.F
 	ln -s $(COMdir)/startup.F .
+h3kmodule.f90:
+	rm -f h3kmodule.f90
+	ln -s $(CETCdir)/h3kmodule.f90 .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -95,8 +103,9 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
+	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
 	aim2_module.F arrow.F ascii_mat.F \
 	basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
 	c2fdum.F cfdrw.F cfgrid.F common3dv.F e3dviews.F edatabase.F egeometry.F \
-	eroper.F esru_misc.F filelist.F psychro.F read3dv.F sort.F startup.F 
+	eroper.F esru_misc.F filelist.F psychro.F read3dv.F sort.F startup.F \
+	h3kmodule.f90

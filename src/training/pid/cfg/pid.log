@@ -11,3 +11,33 @@ heating, the other for cooling.
 There are also configuration and control
 files for 'steady-state' conditions.
 *************
+
+The PID model is pid.cfg
+
+The steady state model is pid.ss.cfg
+
+The following are common definitions:
+ 
+The model is located at latitude   51.70 with a longitude difference of  -0.50
+from the local time meridian. The year used in simulations is 1967 and
+weekends occur on Saturday and Sunday.
+The site exposure is typical urban site and the ground reflectance is 0.20.
+ 
+Databases associated with the model:
+ pressure distributions : pressc.db1
+ materials              : /usr/esru/esp-r/databases/material.db3.a
+ constructions          : /usr/esru/esp-r/databases/multicon.db3
+ plant components       : plantc.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
+ optical properties     : optics.db2
+ 
+The model includes a plant network. The plant network contains 12 components from plantc.db1
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 reception     144.0  14   182.0    10.0    48.0  reception describes a...
+ 2 office         48.0   8    77.5     2.5    16.0  office describes a...
+ 3 roof_space     49.5   7   180.3     0.0    81.0  roof_space describes a...
+   all           242.   29    440.     13.    145.
+

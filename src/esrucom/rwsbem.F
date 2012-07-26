@@ -76,7 +76,11 @@ C to the logic used for the optics database which is also ASCII.
         write(lworking,'(a)') DSBEM(1:lnblnk(DSBEM))
         call findwhichdbpath('sbm',lworking,ier)
       endif
-      IUF=IFIL+1
+
+C In most ESP-r modules IFIL+6 is used for optical databases and
+C air flow networks etc. so it is likely to be free for temporary
+C use in scanning the SBEM database.
+      IUF=IFIL+6
       if(ipathsbem.eq.0.or.ipathsbem.eq.1)then
         CALL EFOPSEQ(IUF,LSBEM,1,IER)
         if(IER.ne.0)then
@@ -1031,6 +1035,8 @@ C line contains one item of interest beginning after column 44.
      &    'Zone to systems linkage data line',IER)
         K=44
         CALL EGETWI(OUTSTR,K,IHLZ(IZ),0,0,'-','zone-system links',IER)
+C Debug
+C        write(6,*) 'ihlz iz ',ihlz(iz),iz
  201  CONTINUE
 
 C This section begines with *DHW generators. In the case of zero
@@ -1335,7 +1341,7 @@ C Insurance section.
 
 C For every current zone in the model write permeability.
       DO 205 IZ=1,NCOMP
-        WRITE(IUF,'(2A,F6.4,A)',IOSTAT=IOS,ERR=3)
+        WRITE(IUF,'(2A,F7.4,A)',IOSTAT=IOS,ERR=3)
      &    'Zone_permeability ',zname(iz),ACH(IZ),' # ach'
  205  CONTINUE
 
@@ -1481,7 +1487,7 @@ C Write building zone to DHW system linkage information
         ELSEIF(IDHWLZ(IZ).LT.0)THEN
           WRITE(TMPSTR,'(2A)')' (HVAC system) ',HVACNAME(-IDHWLZ(IZ))
         ENDIF
-        WRITE(IUF,'(A,4X,F5.2,6X,I3,1X,A)',IOSTAT=IOS,ERR=3)
+        WRITE(IUF,'(A,3X,F6.2,6X,I3,1X,A)',IOSTAT=IOS,ERR=3)
      &    ZNAME(IZ),DEADLEG(IZ),IDHWLZ(IZ),
      &    TMPSTR(1:lnblnk(TMPSTR))
  104  CONTINUE
@@ -1501,7 +1507,7 @@ c zone yet.
      &      ' # is linked to activity number '    
         else
           WRITE(IUF,'(5A)') 'Zone ',zname(iz),' 0',' 0',
-     &      '# is linked to activity number 0 (undefined activity)'
+     &      ' # is linked to activity number 0 (undefined activity)'
         endif
  105  CONTINUE
 
@@ -1535,7 +1541,7 @@ C Also include lighting control information
      &  '# Light control type, daylight sensor, photoelectric control',
      &  ' occupancy sensing, PEsensor & occupancy sensor parasitic ',
      &  'power, approximate daylight factors for front and rear'
-        write(iuf,'(4I4,4F5.2)')
+        write(iuf,'(4I4,4F7.2)')
      &  Ilightcontrol(IZ),Idaylightzoning(IZ),Ipe_control(IZ),
      &  IOcc_sensing(IZ),PE_sensor_PP(IZ),Occ_sensor_PP(IZ),
      &  DFFront(IZ),DFRear(IZ)

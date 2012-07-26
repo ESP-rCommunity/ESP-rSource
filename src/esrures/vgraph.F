@@ -38,7 +38,6 @@ C time-dependent variables to be plotted for one or more zones.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
@@ -52,8 +51,15 @@ C time-dependent variables to be plotted for one or more zones.
       LOGICAL MODIFY,MODLEN,MODBND
 
       CHARACTER*24 ITEM(42)
-      character VITEM*24,HITEM*24,xfile*144,tg*1,delim*1,h*72
+      character VITEM*24,HITEM*24,xfile*144,tg*1,delim*1
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='VWLIN'  ! set for subroutine
 
       MODIFY=.FALSE.
       VITEM=' '
@@ -127,9 +133,10 @@ C the image before presenting the command menu.
         MODIFY=.FALSE.
       endif
 
-C Instanciate h() string arrays for this menu.
-      h(1)='The var vs var menu does not yet have'
-      h(2)='any help associated with it. '
+C Instanciate help string arrays for this menu.
+      helptopic='res_var_var_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL PHELPD('var var chart',nbhelp,'-',0,0,IER)
 
       CALL EMENU(' Var.vs.Var',ITEM,NITMS,INO)
 
@@ -251,7 +258,7 @@ C Load/intensity output can be WATTS or KILOWATTS.
         goto 51
       endif
       CALL EASKAB(' ','Load/intensity variable in:',
-     &            'Watts','Kilowatts',IANS,0)
+     &            'Watts','Kilowatts',IANS,nbhelp)
       CONVER=1.
       IF(IANS.EQ.2)CONVER=1000.
       goto 51
@@ -284,6 +291,13 @@ C at the time of graph construction.
 
       DIMENSION XVAL1(MS)
       character outs*124
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='VGMXN'  ! set for subroutine
 
 C For each zone selected.
       DO 999 IZ=1,NZ
@@ -320,22 +334,28 @@ C Ask for node number.
       goto 1
 
 C Dew point temperature: what % saturation ?
-    6 WRITE(outs,'(A,I2,A)')' Zone ',II,': inside % saturation :'
+    6 helptopic='res_inside_saturation'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      WRITE(outs,'(A,I2,A)')' Zone ',II,': inside % saturation :'
       CALL EASKR(V,outs,' ?',0.,'F',100.,'F',50.,
-     &    '% saturation',IER,0)
+     &    '% saturation',IER,nbhelp)
       VPSAT(IZ)=V
       goto 1
 
 C Inside or outside ?
-    7 CALL EASKAB(' ','Which side :',
-     &  'external (other side)','internal',IANS,0)
+    7 helptopic='res_inside_face'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL EASKAB(' ','Which side :',
+     &  'external (other side)','internal',IANS,nbhelp)
       IF(JPICK.EQ.23)IVELT(IZ)=IANS
       IF(JPICK.NE.23)IVCON(IZ)=IANS
       goto 1
 
 C Radiant or convective casual gain ?
-    8 CALL EASKAB(' ','Casual gains :',
-     &            'radiant','convective',IANS,0)
+    8 helptopic='res_gains_rad_conv'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL EASKAB(' ','Casual gains :',
+     &            'radiant','convective',IANS,nbhelp)
       IVCON(IZ)=IANS
       goto 1
 
@@ -884,9 +904,14 @@ C VAXIS draws the graphical axes relating only to the requested profiles.
       character VITEM*24,HITEM*24,VIT*24,HIT*24
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C Interval on vertical axis.
       A=YMAXV-YMINV
@@ -908,16 +933,16 @@ C memory for access by plotting code.
       igheight=igwh
       call axiscale(igwid,igheight,YMINH,YMAXH,YMINV,YMAXV,xsc,ysc,sca,
      &              Xadd,Yadd)
-      call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
+      call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
 
 C Copy axis labels into local variable and then display the 
 C horizontal and vertical axis.
       HIT=' '
       HIT=HITEM
-      call horaxis(YMINH,YMAXH,igl,igr,igb,Xadd,xsc,0,HIT)
+      call horaxis(YMINH,YMAXH,iigl,iigr,iigb,Xadd,xsc,0,HIT)
       VIT=' '
       VIT=VITEM
-      call vrtaxis(YMINV,YMAXV,igl,igb,igt,Yadd,ysc,0,0,VIT)
+      call vrtaxis(YMINV,YMAXV,iigl,iigb,iigt,Yadd,ysc,0,0,VIT)
 
       RETURN
 
@@ -949,8 +974,12 @@ C to graphical result display.
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C Generate a descriptive string for the time period to be displayed.
@@ -964,9 +993,15 @@ C and the simulation and output timesteps.
           call feedbox(menuchw,2,igfw,igfh)
           call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         endif
-        call win3d(menuchw,10,8,5,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=10; iiw2=8; iiw3=5; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        call win3d(menuchw,10,8,5,3,igl,igr,igt,igb,igw,igwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         call startbuffer()
       ENDIF
 

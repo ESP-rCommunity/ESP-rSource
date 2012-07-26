@@ -8,25 +8,106 @@
 #include <string>
 #include <vector>
 #include <map>
-//#include <ext/hash_map>
+#include <set>
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <algorithm>
+#include <cstdio>
+#include <cstring>
+
+#include "sys/stat.h"
+
 #include "TWildCards.h"
-#include "TVariableData.h"
-#define iParam_MAX  50
-#define iChar_Len   29
+#include "TXMLAdapter.h"
+#include "TReportData.h"
+#include "log.h"
+
+//Optional SQLite support
+#ifdef SQLITE
+   #include "DBManager.h"
+#else
+   #include "DBManager_stub.cpp"
+#endif
+
+//ReportVariable.OutputType bitwise format
+#define OUT_ALL     0x01  // 0000 0001
+#define OUT_SUMMARY 0x02  // 0000 0010
+#define OUT_LOG     0x04  // 0000 0100
+#define OUT_STEP    0x08  // 0000 1000
+
+//Used for the save_to_disk option to manage memory footprint
+#define SAVE_TO_DISK_MIN 100
+#define SAVE_TO_DISK_MAX 100000
+#define SAVE_TO_DISK_DEFAULT 1000
+#define SAVE_TO_DISK_TRIGGER 100000 //This should cap around 750MB max
+
+
 
 using namespace std;
 
-typedef map<std::string,TVariableData> VariableDataMap;
+//Use as the key for the ReportDataMap object
+struct stMapKey{
+   int identifier;
+   string delimiters;
 
+   stMapKey(const int n, const string vn)
+         : identifier(n), delimiters(vn){}
 
-
-struct TTimeDataRange
-{
-  TTimeData begin;
-  TTimeData end;
+   //Used by the map object for sorting
+   //if the int identifiers are the same check the delimiters
+   bool operator<(const stMapKey & v) const{
+      if (identifier < v.identifier)
+         return true;
+      else if (identifier == v.identifier)
+         if (delimiters < v.delimiters)
+            return true;
+         else
+            return false;
+      else
+         return false;
+   }
 };
 
-bool TimeDataInRange(const TTimeData& data, const TTimeDataRange& range);
+//Used by the m_VariableInfoMap to store details about
+//each variable sent from Fortran
+struct stVariableInfo{
+   const char* VarName;
+   const char* MetaType;
+   const char* MetaValue;
+   const char* Description;
+   
+};
+
+//Used by the TimeStepVecto to store details about each timestep
+struct stTimeStep{
+   int Step;
+   int Hour;
+   int Day;
+   bool Startup;
+};
+
+//Structure only used to output data in sorted order
+struct stSortedMapKeyRef{
+   const char* cString;
+   const stMapKey* mapKey;
+};
+
+//Used by the qsort prior to generating the output
+int cmp_by_string(const void *a, const void *b)
+{
+    struct stSortedMapKeyRef *ia = (struct stSortedMapKeyRef *)a;
+    struct stSortedMapKeyRef *ib = (struct stSortedMapKeyRef *)b;
+    return strcmp(ia->cString, ib->cString);
+}
+
+typedef map<int,stVariableInfo> VariableInfoMap;
+typedef map<stMapKey,TReportData> ReportDataMap;
+typedef vector<stTimeStep> TimeStepVector;
+
+
+//const int kMonthlyTimesteps[] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+const int kMonthlyTimesteps[] = {31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334, 365};
 
 
 
@@ -38,269 +119,196 @@ bool TimeDataInRange(const TTimeData& data, const TTimeDataRange& range);
 
 class TReportsManager
 {
-	
-  /** Public methods: */
- public:
-  /**
-   * Return a pointer to the singleton.
-   */
+   public:
+      // Return a pointer to the singleton.
+      static TReportsManager* Instance();
 
-  static TReportsManager* Instance(  );
-  void AddUserDefinedTimeRange(TTimeDataRange range);
-  void SetReportParameter(const std::string& param, const std::string& value);
-  /**
-   * Update will iterate through each item in the VariableDataList container and..  1.
-   * Record the current timestep data in the SingleDayTimestepData vector.   2. If a
-   * new day has started bin the SingleDayTimestepData inforamtion into the Daily
-   * Vector. Stream timestep information data to a on-going file if requested.
-   * (UpdateDaily())  3. If a new month has started bin the days of that month into
-   * the appropriate monthly array (Update Monthly()).  4. If the year is over,  bin
-   * the months of the year values   into the appropriate Annual object.
-   * (UpdateAnnually())  
-   */
-  bool Update( long step, float hour, long day, int iStartup );
-	
-  /**
-   * 
-   * @param sPassedName
-   *        This is the name of the variable set assigned by the coder. It is important that
-   *        it is unique. 
-   * @param sPassedUnits
-   *        This string contains the units of the variable set.
-   */
-  void AddReports( const std::string& sPassedName, const std::string& sPassedUnits );
-	
-  /**
-   * 
-   * @param sPassedName
-   *        
-   * @param sPassedValue
-   *        This is the current value for the timestep, this will be stored until it is
-   *        either overwritten by another call to report, or it will be stored and binned if
-   *        the Update() method is called.
-   */
-  void Report( const std::string& sPassedName, const double& sPassedValue );
-  void SetMeta(const std::string& sName, const std::string& sMetaName, const std::string& sMetaValue);
-  /**
-   *   Summary in .txt file? 
-   */
-  bool OutputSummary( const std::string& outFilePath );
-  bool OutputSummary();
-  void Log();
-	
-  /**
-   *   Summary in XML format 
-   */
-  void OutputXMLSummary( const std::string& outFilePath );
-  void OutputXMLSummary();
-	
+      //Method that Returns the requested output from the input.xml
+      unsigned char GetOutputType(const char* search_text);
 
-  /**
-   *   Output CSV data directly
-   */
-  bool OutputCSVData( const std::string& outFilePath );
-  bool OutputCSVData();
-  
+      //Method that add a variable information to the list
+      void AddToVariableInfoList(int id, const char* sVarName, const char* sMetaType,
+                                 const char* sMetaValue, const char* sDescription);
 
-  /**
-   *   Output token-value summary directly
-   */
-  bool OutputTXTsummary( const std::string& outFilePath );
-  bool OutputTXTsummary();
+      //Method to add the time step information to the list.
+      void AddToTimeStepList(bool bStartup, int iStep, int iDay, int iHour);
 
-  /**
-   *   Output a listing of all valid tags 
-   */
-  bool OutputDictionary( const std::string& outFilePath );
-  bool OutputDictionary();
+      //Method to add variable data to the list
+      void AddToReportDataList(int id, const char* sDelimiter, float fValue);
 
-  /**
-   *  Parse an XML input file
-   */
-  void ParseConfigFile( const std::string& filePath );
+      //Method to add dynamic variable description ** avoid its use when possible **
+      void AddToReportDetails(int id,const char*, const string& sUnit,const string& sType,const string& sDescription);
+
+      //True/false if the report variable is enabled
+      bool IsVariableEnable(int id);
+      bool IsVariableEnable(const char* cPattern);//match by pattern (contains)
+
+      //True/false if the report variable is set with a wild description (normally false)
+      bool IsReportDetailWildSet(int id, const char* sDelimiter);
 
 
-  /**
-   * Describe the current h3k reports configuration
-   */
-   void DescribeConfig ( char* cOptions[iParam_MAX*iChar_Len],
-                         bool* bValues[iParam_MAX],
-                         int* iCount);
-   
-  
-  /**
-   * Return the current status of h3k reports output (enabled/disabled)
-   */
-   bool ReportsEnabled();
-   
-  /**
-   * Change the status of h3kreports output (enabled/disabled)
-   */
-   void EnableReports(bool& ReportsStatus);
+      //Setter method for the simulation information
+      void SetSimulationInfo(int iStartDay,int iEndDay,int iTimeStep);
+
+      //Public method, trigger to generate all the reports
+      void GenerateOutput();
+
+      //Public method to set report parameters
+      void SetReportParameter(const std::string& param, const std::string& value);
+
+     //void AddUserDefinedTimeRange(TTimeDataRange range);
+
+      /**
+      *  Parse an XML input file
+      */
+      void ParseConfigFile( const std::string& filePath );
 
 
-   /**
-    * Return the value of a requested configuration parameter
-    * 
-    */
-   void ReportConfig ( std::string cParam, std::string &cValue );
+      /**
+      * Return the current status of h3k reports output (enabled/disabled)
+      */
+      bool ReportsEnabled();
+
+      /**
+      * Change the status of h3kreports output (enabled/disabled)
+      */
+      void EnableReports(bool& ReportsStatus);
 
 
-   /**
-    * Report if a parameter value is in a vector
-    */
-   
-   bool ReportList (std::string cType, std::string cValue);
-   
-   /**
-    * Update the value of a parameter
-    */
-    void UpdateConfig (std::string cParam,
-                       std::string cValue );
-
-  /**
-   * Toggle an on-off configuration parameter
-   */
-     bool ToggleConfig(std::string cParam);
-
-  /**
-   * Update configuration file with new options
-   */
-     void UpdateConfigFile();
-     
-  /**
-   * Clean-up files
-   */ 
-     void Cleanup();
-     
-  /**
-   * Increment vector count, and return new value.
-   */
-  int Increment_set_vector_count();
-  
-  /**
-   * Read and write data from/to storage data base.
-   */  
-  bool Write_to_db_file(int var_index, double val, long step);
-  double Read_from_db_file(int var_index, long step);
-     
-  /** Private methods: */
- private:
-  /**
-   * The constructor is private because we're a Singleton
-   */
-  TReportsManager(  );
-
-  /**
-   * 
-   */
-  void OutputTimestepData(  );
-	
-  /**
-   * 
-   */
-  TTimeData GetTimeInfo(  );
-
-  // search a vector for a string
-  bool testForMatch( const std::vector<std::string>& txtlist, 
-		     const std::string& search_text );
+      /**
+       * Return the value of a requested configuration parameter
+       *
+       */
+      string ReportConfig(std::string cParam);
 
 
-  /**
-   * Update the module's simulation flags
-   *
-   */
-  void SetFlags(  );
+      /**
+       * Report if a parameter value is in a vector
+       */
 
-  // Interfaces to testForMatch that save the status of 
-  // successful matches, and reduce the mumber of redundant
-  // searches
+      bool ReportList (std::string cType, std::string cValue);
 
-  bool SearchVars( const std::vector<std::string>& txtlist, 
-		   const std::string& search_text,
-		   TVariableData& Variable, 
-		   int mode );
+      /**
+       * Update the value of a parameter
+       */
+       void UpdateConfig (std::string cParam,
+                          std::string cValue );
 
-  bool SearchAllVars( const std::vector<std::string>& txtlist1,
-		      const std::vector<std::string>& txtlist2, 
-		      const std::vector<std::string>& txtlist3, 
-		      const std::string& search_text,
-		      TVariableData& Variable);
-		
+      /**
+      * Toggle an on-off configuration parameter
+      */
+      bool ToggleConfig(std::string cParam);
 
-  /**
-   * This is a pointer to it's sole instance. 
-   */    
-  static TReportsManager* ptr_Instance;	
- 
- protected:
-  /**
-   * This is the container that will store all the requested variables. This container
-   * is populated by the AddReports() 
-   */
-		
-  VariableDataMap m_variableDataList;
+      /**
+      * Update configuration file with new options
+      */
+      void UpdateConfigFile();
 
-    /**
-   * The total number of timestep in the simulation
-   */
 
-  unsigned int m_step_count; 
-  int m_currentMonth;
-  TTimeData m_currentTime;
-  TTimeData m_rolloverTime;
-  std::vector<TTimeDataRange> m_userDefinedTime;
-	 
-  std::string m_inputFilePath;
-  std::map<std::string, std::string> m_params;
-  // list of nodes to appear in out.xml
-  std::vector<std::string> m_nodes;
-  // list of columns to appear in out.csv
-  std::vector<std::string> m_step_nodes;
-  // list of token-value output to appear in out.summary
-  std::vector<std::string> m_summary_nodes;
-  // list of xsl styles sheet to be applied..in order.. 
-  std::vector<std::string> m_stylesheet_list;
+      // Clean-up files
+      void Cleanup();
 
-  // Stylesheets and transform files:
-  map<std::string,std::string> m_StyleSheets;
+   private:
+      //contains all variables found in h3kmodule.f90
+      VariableInfoMap m_VariableInfoList;
 
-  // list of transform targets.
-  std::vector<std::string> m_xsl_targets;
+      //contains all the TimeStep data send from  h3kmodule.f90::ReportNextTimeStep()
+      TimeStepVector m_TimeStepList;
 
-  // vector indicating which timesteps contain monthly bins
-  std::vector<int> m_month_bin_ts;
-  
-  /**
-   * Flags for results post-processing options
-   */
-  bool bSaveToDisk;
-  bool bFirstWrite;
-  bool bReports_Enabled;
-   
-  bool bReportStartup; 
-  bool bDumpEverything;
-  bool bWildCardsEnabled;
-  bool bTS_averaging;
-  bool bDumpDictionary;
-	 
-  bool bStyleSheetGood;
-  bool bLinkStyleSheet;
-  bool bTransformXMLRequested;
-  
-  long m_datasize;
-  long m_ts_count;
-  long m_first_step;
-  
-  void Open_db_file();
-  void Close_db_file();
-    
-  int m_vector_count;
-  
-   /**
-   * File object for I/O
-   */    
-   fstream diskDB;
+      //Contains all the data collected during a simulation
+      ReportDataMap m_ReportDataList;
+
+
+
+      //The constructor / destructure is private because we're a Singleton
+      TReportsManager();
+      ~TReportsManager();
+
+
+      void GetVariableName(const char* sVarName, const char* sDelimiter, char *Destination);
+
+      int GetMonthIndex(int iDay);
+
+      //Methods used for generating outputs
+      void OutputCSVData(const char* sFileName, stSortedMapKeyRef sortedRef[]);
+      void InjectVariableToCSV(const char *sFileName, const char *sVarName, int iPosition);
+      void OutputXMLData(const char* sFileName,stSortedMapKeyRef sortedRef[]);
+      void OutputTXTsummary( const char* sFileName, stSortedMapKeyRef sortedRef[]);
+      void OutputDictionary( const char* sFileName, stSortedMapKeyRef sortedRef[] );
+      void OutputSQLiteData(DBManager *objDBManager);
+      void OutputSQLiteStepData(DBManager *objDBManager);
+      void GenerateStepOutput(unsigned long lStepCount);
+
+
+      unsigned long m_lCurrentStep; //current step counter
+      unsigned long m_lActiveSteps;//active step counter
+      bool m_bStartUp;//If in current step in startup mode or not
+      unsigned int m_iExpectedTimeSteps; //Number of expected steps for a simulation
+      int m_iStartDay; //Simulation start day
+      int m_iActualStartDay; //Simulation start day (when not reporting startup)
+      int m_iEndDay; //Simulation end day
+      int m_iStartMonthIndex; //Store the simulation start month index
+      int m_iCurrentMonthIndex; //Store the current month index;
+      int m_iTimeStepPerHour; //Store the number of timesteps in an hour (from cfg)
+      int m_iYearCount; //Counts the current years number
+      float m_fMinutePerTimeStep; //# of ts per min
+      vector<long> m_BinStepCount; //Contains to total steps for each bin
+      long m_AnnualBinStepCount; //Contains the total step count for annual bin... for now total step count
+
+      //Since step output can be incremental during a simluation we need to variable
+      //to store how many steps were outputed so far.
+      unsigned long m_lOutputStepCount;
+
+
+      // Update the module's simulation flags
+      void SetFlags(  );
+
+      //This is a pointer to it's sole instance.
+      static TReportsManager* ptr_Instance;
+   protected:
+      std::string m_inputFilePath;
+      std::map<std::string, std::string> m_params;
+
+      // list of nodes to appear in out.xml <log_variable>
+      std::set<std::string> m_nodes;
+      // list of columns to appear in out.csv <step_variable>
+      std::set<std::string> m_step_nodes;
+      // list of token-value output to appear in out.summary <summary_variable>
+      std::set<std::string> m_summary_nodes;
+      // list of xsl styles sheet to be applied..in order..
+      std::vector<std::string> m_stylesheet_list;
+
+      // Stylesheets and transform files:
+      map<std::string,std::string> m_StyleSheets;
+
+      // list of transform targets.
+      std::vector<std::string> m_xsl_targets;
+
+      /**
+      * Flags for results post-processing options
+      */
+      bool bSaveToDisk;
+
+      bool bOutLogDB;
+      bool bOutLogXML;
+      bool bOutStepDB;
+      bool bOutStepCSV;
+
+      bool bReports_Enabled;
+
+      bool bReportStartup;
+      bool bDumpEverything;
+      bool bWildCardsEnabled;
+      bool bTS_averaging;
+      bool bDumpDictionary;
+      bool bSortOutput;
+      bool bIndexDatabase;
+
+      bool bStyleSheetGood;
+      bool bLinkStyleSheet;
+      bool bTransformXMLRequested;
+
+      long m_lSaveToDisk;
 
 };
 

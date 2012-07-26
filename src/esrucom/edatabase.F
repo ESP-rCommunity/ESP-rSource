@@ -22,6 +22,7 @@ C The file edatabase.f is a collection of support facilities for
 C reading and reporting ESP-r databases and contains the following:
 
 C  ERMLDB:  Read an ASCII composite db and return data via block MLC.
+C  parsemlcdesc: Parse the DESC string from the MLC common block
 C  ETMLDB:  Provides reporting on current description of a composite.
 C  ETMLDBU returns U value of construction based on contents of common MLC.
 C  EPKMLC:  Select a composite construction with display of details.
@@ -212,9 +213,17 @@ C the number of layers & construction name.
         RETURN
       ENDIF
 
+C Loop to get all of the declaired constructions. Note if there
+C are fewer items then an EOF error state might give a clue. EOF
+C is 2 and set ier=3.
       DO 10 I = 1,NMLC
-        CALL STRIPC(IFMUL,OUTSTR,0,ND,1,'mlc descr',IER)
-        IF(IER.NE.0)RETURN
+        CALL STRIPC(IFMUL,OUTSTR,0,ND,1,'mlc descr',IIER)
+        IF(IIER.NE.0)then
+          write(outs,*) 'EOF premature in constructions ',nmlc,iier
+          call edisp(iuout,outs)
+          ier=3    ! set error state for premature EOF.
+          RETURN
+        ENDIF
 
 C Set MLC thickness to zero.
         THKMLC(I) =0.0
@@ -230,7 +239,7 @@ C of a MLC with inverted layers or the keywords SYMMETRIC or NONSYMMERTIC).
         IF(IER.NE.0)GOTO 99
 
 C Parse the DESC string into string tokens.
-        call parsemlcdesc(DESC(I),MLCN,OTF,OPT,MLCSYM)
+        call parsemlcdesc(DESC(I),MLCN,OTF,OPT,MLCSYM,isymindex)
 
         IF(LAYERS(I).LE.0)GOTO 10
 
@@ -508,7 +517,11 @@ C ******* parsemlcdesc
 C Parse the DESC string from the MLC common block returning text for
 C MLCN (its name) ,OTF (whether OPAQ/TRAN/CFC) ,OPT (optical name) ,MLCSYM
 C tag for symmetry. Where values are missing or unknown setup defaults.
-      subroutine parsemlcdesc(DES,MLCN,OTF,OPT,MLCSYM)
+C If isymindex is non-zero it is index of MLC for symmetric MLC.
+      subroutine parsemlcdesc(DES,MLCN,OTF,OPT,MLCSYM,isymindex)
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
       
       integer lnblnk  ! function definition
 
@@ -530,12 +543,51 @@ C Clear parameters to be returned and then copy from DES.
       ENDIF
 
 C Read tag for name of inverted version or symmetry if the length of the
-C DESC string could hold the tag, otherwise set MLCSYM to a blank.
+C DESC string could hold the tag, otherwise set MLCSYM to a blank. Also
+C check the MLC index of MLCSYM so that can be returned.
       if(lnblnk(DES).gt.35)then
         WRITE(MLCSYM,'(A)') DES(35:46)
+
+C Look for index for MLCSYM in the current MLC database.
+        isymindex=0  ! assume no matching MLC          
+        do 5 ii=1,nmlc
+          if(MLCSYM(1:12).eq.DESC(ii)(1:12)) then
+            isymindex=ii   ! remember MLC index     
+          endif
+  5     continue
       else
         MLCSYM='  '
+        isymindex=0   ! signal not applicable     
       endif
+      return
+      end
+
+C ******* matchmlcdesc
+C matchmlcdesc parse string (DES) and see if first 12 char matches a MLC
+C item - if so return its MLC index. DES might be from SMLCN or some 
+C other source.
+      subroutine matchmlcdesc(DES,imlcindex)
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
+
+C Passed parameters
+      character*(*) DES
+      integer imlcindex
+
+C Local variable.
+      character MLCN*12
+      integer ii
+
+C Look for index for MLCN in the current MLC database.
+      imlcindex=0  ! assume no matching MLC          
+      WRITE(MLCN,'(A)')DES(1:12)
+      if(MLCN(1:4).eq.'UNKN') return
+      do 5 ii=1,nmlc
+        if(MLCN(1:12).eq.DESC(ii)(1:12)) then
+          imlcindex=ii   ! remember MLC index     
+        endif
+  5   continue
       return
       end
 
@@ -707,13 +759,17 @@ C the matname and if that fails against matdoc
 
 C Find a matching matname.
         do 44 imt=1,matdbitems
-          if(PNAM(1:lnam).eq.matname(imt)(1:lnam))then
+C check first the lenght of strings, if the stringsa re not equal the
+C material is different
+          if(lnblnk(matname(imt)).eq.lnam) then        
+             if(PNAM(1:lnam).eq.matname(imt)(1:lnam))then
 
 C Debug.
 C            write(6,*) imt,' name x: match ',PNAM(1:lnam),' ',
 C     &        matname(imt)(1:lnblnk(matname(imt)))
-            matarrayindex=imt
-            return
+               matarrayindex=imt
+               return
+             endif
           endif
   44    continue
 
@@ -785,9 +841,10 @@ C construction based on contents of common MLC.
       integer lfordoc ! length available for material documentation
       logical closemat1,closemat2
       logical bCloseToZero
+      integer lnlist
 
       DIMENSION PNAM(ME)
-      CHARACTER OUTSTR*124,NAM*72,PNAM*72
+      CHARACTER OUTSTR*148,PNAM*124
       CHARACTER MLCN*12,OTF*4,OPT*12,SOPT*12,GDESCR*36
       character MLCSYM*12
 
@@ -795,7 +852,7 @@ C construction based on contents of common MLC.
       
 C Pick up general description of the composite.
       ier=0
-      call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM)
+      call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
       IF(ITRC.GE.1)THEN
         CALL EDISP(ITRU,' ')
         IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
@@ -809,9 +866,16 @@ C Pick up general description of the composite.
      &      'Details of complex fenestration construction: ',MLCN
           CALL EDISP(ITRU,OUTSTR)
         ELSE
-          WRITE(OUTSTR,'(3a,f6.3)')
+          if(isymindex.eq.0)then
+            WRITE(OUTSTR,'(3a,f6.3)')
      &      ' Details of opaque construction: ',MLCN(1:lnblnk(MLCN)),
      &      ' and overall thickness ',THKMLC(ifoc)
+          else
+            WRITE(OUTSTR,'(5a,f6.3)')
+     &      ' Details of opaque construction: ',MLCN(1:lnblnk(MLCN)),
+     &      ' linked to ',DESC(isymindex)(1:12),
+     &      ' & with overall thickness ',THKMLC(ifoc)
+          endif
           CALL EDISP(ITRU,OUTSTR)
         ENDIF
       ENDIF
@@ -829,11 +893,11 @@ C Reporting based on report level.
       IF(ITRC.GT.1)THEN
         CALL EDISP(ITRU,' ')
         write(OUTSTR,'(2a)')
-     &' Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu|',
-     &' R    |Descr'
+     &' Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu|',
+     &' R    |Description'
         CALL EDISP(ITRU,OUTSTR)
         write(OUTSTR,'(2a)')
-     &'      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|',
+     &'      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|',
      &'m^2K/W'
         CALL EDISP(ITRU,OUTSTR)
       ELSEIF(ITRC.EQ.1)THEN
@@ -855,7 +919,6 @@ C And if matarrayindex is zero then reset dbcon dbden dbsht.
           if(matarrayindex.eq.0)then
             DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
             E=0.99; A=0.99; DRV=1.0
-            NAM='AIR'
           else
             DBCON=matdbcon(matarrayindex)
             DBDEN=matdbden(matarrayindex)
@@ -864,11 +927,11 @@ C And if matarrayindex is zero then reset dbcon dbden dbsht.
             A=matdbina(matarrayindex)
             DRV=matdbdrv(matarrayindex)
 
-C Make up NAM as combination of matnam and matdoc.
+C Make up PNAM as combination of matnam and matdoc.
             lnam=lnblnk(matname(matarrayindex))
-            lfordoc = 72 - (lnam +4)    ! space left for doc
-            write(NAM,'(3a)') matname(matarrayindex)(1:lnam),' : ',
-     &        matdoc(matarrayindex)(1:lfordoc)
+            lfordoc = 124 - (lnam +4)    ! space left for doc
+            write(PNAM(IL),'(3a)') matname(matarrayindex)(1:lnam),
+     &        ' : ',matdoc(matarrayindex)(1:lfordoc)
           endif
 
 C Also check if it is a gap. If version 1.2 materials then we will
@@ -894,7 +957,7 @@ C Referenced item was not in the materials hash list. Write zeros.
           E=0.0
           A=0.0
           DRV=0.0
-          write(NAM,'(a)') 'unknown : unknown '
+          write(PNAM(IL),'(a)') 'unknown : unknown '
         endif
 
 C << this logic could be updated to use something other than IPR >>
@@ -903,9 +966,7 @@ C << this logic could be updated to use something other than IPR >>
           RT=RT+DRAIR(IFOC,IL,1)
           RSI=DRAIR(IFOC,IL,1)
         ELSEIF(IPR(IFOC,IL).EQ.-99)THEN
-
-C RT and RSI Values should have been established above.
-          WRITE(PNAM(IL),'(A)') NAM(1:72)
+          continue
         ELSE
 
 C Also report on thermal resistance (m^2K/W) of the layer. If dbcon
@@ -916,7 +977,6 @@ C is zero then avoid divide by zero.
           else
             RSI=1.0
           endif
-          PNAM(IL)=NAM
           if(.not. bCloseToZero)then
             RT=RT+DTHK(IFOC,IL)/DBCON
           else
@@ -926,18 +986,19 @@ C is zero then avoid divide by zero.
 
 C Reporting.
         IF(ITRC.GT.1)THEN
+          lnlist = MIN0(LNBLNK(PNAM(IL)),82)    ! space left for doc
           if(LAYERS(IFOC).eq.1)then 
             WRITE(OUTSTR,24)IL,IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
-     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:44)
+     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:lnlist)
           elseif(LAYERS(IFOC).ge.2.and.IL.eq.1)then 
             WRITE(OUTSTR,25)' Ext ',IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
-     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:44)
+     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:lnlist)
           elseif(LAYERS(IFOC).ge.2.and.IL.eq.LAYERS(IFOC))then 
             WRITE(OUTSTR,25)' Int ',IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
-     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:44)
+     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:lnlist)
           else 
             WRITE(OUTSTR,24)IL,IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
-     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:44)
+     &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:lnlist)
           endif
   24      FORMAT(I5,I5,F7.1,F10.3,F7.0,F7.0,F5.2,F5.2,F7.0,F6.2,1X,A)
   25      FORMAT(A5,I5,F7.1,F10.3,F7.0,F7.0,F5.2,F5.2,F7.0,F6.2,1X,A)
@@ -1021,7 +1082,7 @@ C Material properties.
       real RTG  ! sum of surface coef at foundation
 
 C Pick up general description of the composite.
-      call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM)
+      call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
 
 C Check version of material database.
       call eclose(matver,1.1,0.01,closemat1)
@@ -1410,7 +1471,8 @@ C Make up NAM as combination of matnam and matdoc.
 
         WRITE(IFMUL,32)LAYERS(I),DESC(I)(1:48)
    32   FORMAT('# layers  description   optics name   symmetry tag',/,
-     &    I5,4X,A48,/,'# mat ref thickness (m) mat descr & air gap R')
+     &    I5,4X,A48,/,
+     &    '# material ref thickness (m) description & air gap R')
 
         DO 115, IL=1,LAYERS(I)
           WRITE(IFMUL,'(I5,F10.4,2X,A)')IPR(I,IL),DTHK(I,IL),

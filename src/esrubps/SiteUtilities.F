@@ -39,7 +39,7 @@ C ABSTRACT:
 C
 C SiteUtilities invokes the various subroutines needed to characterize
 C purchased energy. Support for green-house-gas emissions may be
-C added in the future. 
+C added in the future.
 C
 C=======================================================================
       subroutine SiteUtilities()
@@ -56,7 +56,7 @@ C.....Compute site-wide energy consumption
 C.....Convert purchased energy to fuel quantity
       call ConvertEnergyToFuel()
 
-C.....Report fuel use data 
+C.....Report fuel use data
       call H3KReportsFuelUse()
 
 C.....Reset storage array for next time step.
@@ -71,7 +71,7 @@ C
 C ABSTRACT:
 C
 C TotalPurchasedEnergy computes the total amount of energy use reported from all
-C parts of the simulator. 
+C parts of the simulator.
 C
 C=======================================================================
       subroutine TotalEnergyConsumption()
@@ -85,7 +85,7 @@ C     Loop through all components, end uses; and sum fuel consumption.
 C-----------------------------------------------------------------------
       fuel_loop: do iFuel = 1, iNumFuel
 
-C.......Zero total enery use (by fuel) array slot 
+C.......Zero total enery use (by fuel) array slot
         fTotalEnergyUse( iFuel ) = 0.0
 
         use_loop: do iEndUse = 1, iNumUses
@@ -160,12 +160,14 @@ C H3KReportsFuelUse reports transport data on fuel usage to the H3Kreports facil
 C
 C=======================================================================
       subroutine H3KReportsFuelUse
+      use h3kmodule
       implicit none
 #include "plant.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "OffsiteUtilitiesPrivate.h"
 
       logical bCloseToZero
+      integer iRVId; !Report Variable Identifier
 
 C.....Fuel loop:
       fuel_loop: do iFuel = 1, iNumFuel
@@ -178,40 +180,60 @@ C-----------------------------------------------------------------------
         call eclose ( fTotalEnergyUse(iFuel), 0.0, 0.01, bCloseToZero)
 
         if ( .not. bCloseToZero ) then
-          call add_to_xml_reporting(
-     &
-     &       fTotalEnergyUse(iFuel),
-     &
-     &       'total_fuel_use/'
-     &         // cFuelName(iFuel)(1:iFuelNameLen(iFuel))
-     &         // '/all_end_uses/energy_content',
-     &
-     &       'units', '(W)',
-     &
-     &       'Energy content of all '
-     &        // cFuelDesc(iFuel)(1:iFuelDescLen(iFuel))
-     &        // ' used on site.'
-     &
-     &       )
+           SELECT CASE (iFuel)
+            CASE (iElectricity)
+              iRVId = rvTFuelAllEndEnergyContElec%Identifier
+            CASE (iNaturalGas)
+              iRVId = rvTFuelAllEndEnergyContNatGas%Identifier
+            CASE (iOil)
+              iRVId = rvTFuelAllEndEnergyContOil%Identifier
+            CASE (iPropane)
+              iRVId = rvTFuelAllEndEnergyContPropane%Identifier
+            CASE (iMixedWood)
+              iRVId = rvTFuelAllEndEnergyContMixWood%Identifier
+            CASE (iHardWood)
+              iRVId = rvTFuelAllEndEnergyContHardWood%Identifier
+            CASE (iSoftWood)
+              iRVId = rvTFuelAllEndEnergyContSoftWood%Identifier
+            CASE (iWoodPellets)
+              iRVId = rvTFuelAllEndEnergyContPellets%Identifier
+            CASE DEFAULT
+               !Should never execute, but just in case
+               iRVId = rvTFuelAllEndEnergyContent%Identifier
+          END SELECT
+
+          call AddToReport(
+     &         iRVID,
+     &         fTotalEnergyUse(iFuel))
 
         endif
 
+       SELECT CASE (iFuel)
+         CASE (iElectricity)
+            iRVId = rvTFuelAllEndQtyElectricity%Identifier
+         CASE (iNaturalGas)
+            iRVId = rvTFuelAllEndQtyNaturalGas%Identifier
+         CASE (iOil)
+            iRVId = rvTFuelAllEndQtyOil%Identifier
+         CASE (iPropane)
+            iRVId = rvTFuelAllEndQtyPropane%Identifier
+         CASE (iMixedWood)
+            iRVId = rvTFuelAllEndQtyMixedWood%Identifier
+         CASE (iHardWood)
+            iRVId = rvTFuelAllEndQtyHardWood%Identifier
+         CASE (iSoftWood)
+            iRVId = rvTFuelAllEndQtySoftWood%Identifier
+         CASE (iWoodPellets)
+            iRVId = rvTFuelAllEndQtyWoodPellet%Identifier
+         CASE DEFAULT
+            !Should never execute, but just in case
+            iRVId = rvTFuelAllEndQty%Identifier
+       END SELECT
 
-        call add_to_xml_reporting(
-     &
-     &     fTotalFuelUse(iFuel),
-     &
-     &     'total_fuel_use/'
-     &       // cFuelName(iFuel)(1:iFuelNameLen(iFuel))
-     &       // '/all_end_uses/quantity',
-     &
-     &     'units', cFuelUnit(iFuel)(1:iFuelUnitLen(iFuel)),
-     &
-     &     'Total amount of '
-     &      // cFuelDesc(iFuel)(1:iFuelDescLen(iFuel))
-     &      // ' used on site.'
-     &
-     &     )
+
+         call AddToReport(
+     &         iRVId,
+     &         fTotalFuelUse(iFuel))
 
 C-----------------------------------------------------------------------
 C         Consumption by fuel, end-use; suppress
@@ -224,25 +246,35 @@ C.......end-use loop:
      &                0.0, 0.01, bCloseToZero)
 
         if ( .not. bCloseToZero ) then
-        call add_to_xml_reporting(
-     &
-     &     fEndUseFuelUse(iFuel,iEndUse),
-     &
-     &     'total_fuel_use/'
-     &       // cFuelName(iFuel)(1:iFuelNameLen(iFuel))
-     &       // '/'
-     &       // cUseName(iEndUse)(1:iUseNameLen(iEndUse))
-     &       // '/quantity',
-     &
-     &     'units', cFuelUnit(iFuel)(1:iFuelUnitLen(iFuel)),
-     &
-     &     'Total amount of '
-     &      // cFuelDesc(iFuel)(1:iFuelDescLen(iFuel))
-     &      // ' used for '
-     &      // cUseDesc(iEndUse)(1:iUseDescLen(iEndUse))
-     &      // '.'
-     &
-     &     )
+
+         SELECT CASE (iFuel)
+         CASE (iElectricity)
+            iRVId = rvTFuelQtyElec%Identifier
+         CASE (iNaturalGas)
+            iRVId = rvTFuelQtyNatGas%Identifier
+         CASE (iOil)
+            iRVId = rvTFuelQtyOil%Identifier
+         CASE (iPropane)
+            iRVId = rvTFuelQtyProp%Identifier
+         CASE (iMixedWood)
+            iRVId = rvTFuelQtyMixWood%Identifier
+         CASE (iHardWood)
+            iRVId = rvTFuelQtyHardWood%Identifier
+         CASE (iSoftWood)
+            iRVId = rvTFuelQtySoftWood%Identifier
+         CASE (iWoodPellets)
+            iRVId = rvTFuelQtyPellets%Identifier
+         CASE DEFAULT
+            !Should never execute, but just in case
+            iRVId = rvTFuelQty%Identifier
+         END SELECT
+
+
+        !Removed the dynamic description, if needed it can be re-enable
+        call AddToReport(
+     &         iRVId,
+     &         fEndUseFuelUse(iFuel,iEndUse),
+     &         cUseName(iEndUse)(1:iUseNameLen(iEndUse)))
         endif
         enddo use_loop
 
@@ -303,7 +335,7 @@ C.....ESP commons
       real CData                         ! not used
 
       common/report_loads/fReportDHWLoad(mpcom)
-      real fReportDHWLoad                ! DHW load computed by a plant 
+      real fReportDHWLoad                ! DHW load computed by a plant
                                          ! component (W)
 
 C-----------------------------------------------------------------------
@@ -352,7 +384,7 @@ C=======================================================================
 #include "OffsiteUtilitiesPrivate.h"
 
 C-----------------------------------------------------------------------
-C     Loop through fuels, end-uses and stuff fuel consumption in 
+C     Loop through fuels, end-uses and stuff fuel consumption in
 C     protected fSiteEnergyUse array
 C-----------------------------------------------------------------------
       fuel_loop: do iFuel = 1, iNumFuel
@@ -367,7 +399,7 @@ C-----------------------------------------------------------------------
       enddo fuel_loop
 
       return
-      end 
+      end
 
 C=StorePltCompEnergyUse=================================================
 C
@@ -427,7 +459,7 @@ C...........Mark uncatagorized end-uses for reapportionment
       enddo fuel_loop
 
       return
-      end 
+      end
 
 C=AggregatePltCompEnergyUse=============================================
 C
@@ -456,7 +488,7 @@ C.....ESP commons
       real CData                         ! not used
 
 C-----------------------------------------------------------------------
-C     Loop through fuels, end-uses and sum fuel consumption 
+C     Loop through fuels, end-uses and sum fuel consumption
 C-----------------------------------------------------------------------
 
       fuel_loop: do iFuel = 1, iNumFuel
@@ -481,7 +513,7 @@ C.........Sum fuel/end-use consumtion for all components
 
 
       return
-      end 
+      end
 
 C=AttributePltPfsEnergyUse==============================================
 C
@@ -520,17 +552,17 @@ C.....ESP commons
       real pconsd                        ! Supplemental data array.
 
       common/report_loads/fReportDHWLoad(mpcom)
-      real fReportDHWLoad                ! DHW load computed by a plant 
+      real fReportDHWLoad                ! DHW load computed by a plant
                                          ! component (W)
 
 C.....Time
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       integer isd1              ! not used in current context
       integer ism1              ! not used in current context
-      integer isd2              ! not used in current context           
+      integer isd2              ! not used in current context
       integer ism2              ! not used in current context
       integer isds              ! not used in current context
-      integer isdf              ! not used in current context 
+      integer isdf              ! not used in current context
       integer ntstep            ! number of building steps/hour
 
       common/pctstp/ntstpp
@@ -597,7 +629,7 @@ C.....Plant network topology
       integer iCompSupply, iCompReturn ! Indicies of supply & return components
       integer iNodeSupply, iNodeReturn ! Indicies of supply & return nodes
       integer iCompType                ! Plant component type
-C.....Plant solution data 
+C.....Plant solution data
       real fTempSupply, fTempReturn    ! Temperature at zone supply, return (oC)
       real fHeatCapacity               ! Heat capacity of air stream (J/oC)
       real fSpaceLoad                  ! Computed space load
@@ -633,7 +665,7 @@ C-----------------------------------------------------------------------
 
 C-----------------------------------------------------------------------
 C     Loop through connections, and establish heating/cooling loads
-C     associated with connections to zones. 
+C     associated with connections to zones.
 C-----------------------------------------------------------------------
       do_connections_exist: if ( nPCon > 0 ) then
       connection_loop: do iConnect = 1, nPCon
@@ -684,8 +716,8 @@ C.........Compute load
       enddo connection_loop
       endif do_connections_exist
 C-----------------------------------------------------------------------
-C     Loop through plant components, and collect DHW loads from known 
-C     (this loop might one-day be expanded to collect space loads from 
+C     Loop through plant components, and collect DHW loads from known
+C     (this loop might one-day be expanded to collect space loads from
 C     radiant systems as well.)
 C-----------------------------------------------------------------------
       do_plt_comp_exist: if (nPComp > 0 ) then
@@ -696,7 +728,7 @@ C.......Collect component type:
 
         Plant_type: select case ( iCompType )
 
-C.........Hot water tanks with DHW loads 
+C.........Hot water tanks with DHW loads
           case (81,82)
 
             fLoadWHCur = fLoadWHCur + fReportDHWLoad ( iComponent )
@@ -714,13 +746,13 @@ C     Shift data in load buffers.
 C-----------------------------------------------------------------------
 
 C.....If current buffer location is less than length, increment buffer
-C.....location, 
+C.....location,
       buffer_length: if ( iBufferCount < iBufferLength ) then
 
         iBufferCount = iBufferCount + 1
 
 C.....Otherwise, shift data in buffers, dropping off oldest data
-C.....and creating space at the end 
+C.....and creating space at the end
       else
 
         shift_buffers: do iBufferLoc = 1, iBufferCount -1
@@ -748,7 +780,7 @@ C-----------------------------------------------------------------------
 
 C-----------------------------------------------------------------------
 C     Compute total thermal load
-C----------------------------------------------------------------------- 
+C-----------------------------------------------------------------------
       fLoadTotalAvg = fLoadSHAvg + fLoadWHAvg
 
       call eclose ( fLoadTotalAvg, 0.0, 0.01, bNumsAreClose )
@@ -767,7 +799,7 @@ C-----------------------------------------------------------------------
 
 C-----------------------------------------------------------------------
 C     Now loop through plant components, and reassign 'uncatagorized'
-C     energy end-use based on computed load ratios 
+C     energy end-use based on computed load ratios
 C-----------------------------------------------------------------------
 
       component_loop_2: do iComponent = 1, nPComp
@@ -830,5 +862,5 @@ C.....Arguements
      &                             * fFuelConversionFactor(iFuelIndex)
 
       return
-      end 
+      end
 

@@ -3,7 +3,6 @@ BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
 MFSdir = $(SRCdir)/esrumfs
 PRJdir = $(SRCdir)/esruprj
-TDFdir = $(SRCdir)/esrutdf
 CETCdir = $(SRCdir)/cetc
 BLDdir = $(SRCdir)/esrubld
 PROG = ish$(EXE)
@@ -12,7 +11,12 @@ PROG = ish$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = ish.o aim2_module.o arrow.o ascii_mat.o \
+%.o : %.f90
+	$(MCC) $(FFLAGS) -c $<
+
+MODULE_OBJECTS = h3kmodule.o startup.o aim2_module.o
+
+OBJECTS = ish.o arrow.o ascii_mat.o \
 	  basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
    c2fdum.o common3dv.o cread3dv.o \
 	  ctlexp.o ctread.o dossupport.o e3dviews.o econstr.o \
@@ -20,19 +24,20 @@ OBJECTS = ish.o aim2_module.o arrow.o ascii_mat.o \
 	  esru_misc.o esystem.o sifile.o eroper.o filelist.o graph.o inscon.o \
 	  item.o mfcdat.o miscel.o nwkrewr.o plelevvc.o pltcfg.o \
 	  readTrnsys.o rwipv.o rwsbem.o shdcon.o sifops.o sort.o \
-	  startup.o synop.o trnfile.o trnsfs.o trnsfi.o ashrae.o
+	   synop.o trnfile.o trnsfs.o trnsfi.o ashrae.o
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod	
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod \
+	parse_command_line.mod h3kmodule.mod
 
-$(PROG): $(OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) 
+$(PROG): $(MODULE_OBJECTS) $(OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS)
 
 aim2_module.F:
 	rm -f aim2_module.F
 	ln -s $(BLDdir)/aim2_module.F .
 arrow.F:
 	rm -f arrow.F
-	ln -s $(PRJdir)/arrow.F .
+	ln -s $(COMdir)/arrow.F .
 ascii_mat.F:
 	rm -f ascii_mat.F
 	ln -s $(COMdir)/ascii_mat.F .
@@ -132,6 +137,9 @@ startup.F:
 tdfile.F:
 	rm -f tdfile.F
 	ln -s $(COMdir)/tdfile.F .
+h3kmodule.f90:
+	rm -f h3kmodule.f90
+	ln -s $(CETCdir)/h3kmodule.f90 .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -140,10 +148,10 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
+	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
 	aim2_module.F arrow.F ascii_mat.F basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
 	c2fdum.F common3dv.F cread3dv.F ctlexp.F \
 	ctread.F dossupport.F e3dviews.F econstr.F edcondb.F edatabase.F \
 	egeometry.F emfnetw.F enetmisc.F enetrewr.F esru_misc.F esystem.F \
 	eroper.F filelist.F item.F mfcdat.F nwkrewr.F plelevvc.F readTrnsys.F rwipv.F \
-	rwsbem.F sort.F startup.F tdfile.F pltcfg.F
+	rwsbem.F sort.F startup.F tdfile.F pltcfg.F h3kmodule.f90

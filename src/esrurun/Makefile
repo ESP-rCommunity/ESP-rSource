@@ -1,12 +1,10 @@
 SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
-CTLdir = $(SRCdir)/esructl
 DFSdir = $(SRCdir)/esrudfs
 MFSdir = $(SRCdir)/esrumfs
 PDFdir = $(SRCdir)/esrupdf
 PRJdir = $(SRCdir)/esruprj
-TDFdir = $(SRCdir)/esrutdf
 BLDdir = $(SRCdir)/esrubld
 CETCdir = $(SRCdir)/cetc
 PROG = run$(EXE)
@@ -16,7 +14,12 @@ PROG2 = runesp$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = runesp.o aim2_module.o arrow.o ascii_mat.o \
+%.o : %.f90
+	$(MCC) $(FFLAGS) -c $<
+
+MODULE_OBJECTS = h3kmodule.o startup.o aim2_module.o
+
+OBJECTS = runesp.o arrow.o ascii_mat.o \
 	basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
 	blcond.o bnlthp.o bpfcom.o bsimsel.o \
 	c2fdum.o cfdat.o cfdrw.o cfg3dv.o cfgmsc.o cfgrid.o cgd.o \
@@ -31,16 +34,17 @@ OBJECTS = runesp.o aim2_module.o arrow.o ascii_mat.o \
 	MultiYear_climate.o net2pdf.o newnet.o nwkrewr.o \
 	pltcfg.o pltnet.o prescoef.o prjdmds.o prjfmk.o prjqa.o \
 	psychro.o rcdblist.o readTrnsys.o rwipv.o rwroam.o rwsbem.o sort.o \
-	startup.o tdfedit.o tdfile.o tdgraph.o
+	 tdfedit.o tdfile.o tdgraph.o
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod	
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod \
+	parse_command_line.mod h3kmodule.mod
 
-$(PROG): $(OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS)
+$(PROG): $(MODULE_OBJECTS) $(OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS)
 
 arrow.F:
 	rm -f arrow.F
-	ln -s $(PRJdir)/arrow.F .
+	ln -s $(COMdir)/arrow.F .
 ascii_mat.F:
 	rm -f ascii_mat.F
 	ln -s $(COMdir)/ascii_mat.F .
@@ -202,7 +206,7 @@ hcfmk.F:
 	ln -s $(PRJdir)/hcfmk.F .
 initalc.F:
 	rm -f initalc.F
-	ln -s $(CTLdir)/initalc.F .
+	ln -s $(COMdir)/initalc.F .
 insert.F:
 	rm -f insert.F
 	ln -s $(PRJdir)/insert.F .
@@ -302,6 +306,9 @@ aim2_module.F:
 editCFC.F:
 	rm -f editCFC.F
 	ln -s $(PRJdir)/editCFC.F .
+h3kmodule.f90:
+	rm -f h3kmodule.f90
+	ln -s $(CETCdir)/h3kmodule.f90 .
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
 
@@ -309,8 +316,8 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir)/$(PROG2); fi
 
 clean:
-	rm -f core $(PROG) $(PROG2) $(PROG).exe $(PROG2).exe $(OBJECTS) $(MODULES) \
-	aim2_module.F arrow.F ascii_mat.F \
+	rm -f core $(PROG) $(PROG2) $(PROG).exe $(PROG2).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
+	h3kmodule.f90 aim2_module.F arrow.F ascii_mat.F \
 	basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
 	blcond.F bnlthp.F bpfcom.F bsimsel.F \
 	c2fdum.F cfdat.F cfdrw.F cfg3dv.F cfgmsc.F cfgrid.F cgd.F clickonbitmap.F commonclm.F \
@@ -322,6 +329,6 @@ clean:
 	mfnmsc.F mfrlst.F mksbem.F MultiYear_climate.F net2pdf.F newnet.F nwkrewr.F \
 	pltcfg.F pltnet.F prescoef.F prjdmds.F prjfmk.F prjqa.F psychro.F rcdblist.F \
 	rwipv.F rwroam.F rwsbem.F readTrnsys.F sort.F startup.F tdfedit.F tdfile.F tdgraph.F \
-	editCFC.F
+	editCFC.F 
 
 

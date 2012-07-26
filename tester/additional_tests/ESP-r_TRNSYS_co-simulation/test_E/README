@@ -1,0 +1,20 @@
+This directory contains test cases that exercise the co-simulator's
+ability to represent fragmented plant networks in which both ESP-r
+and TRNSYS resolve portions of the overall network.
+
+There are four co-simulation variants, all of which consider a SOFC
+micro-cogeneration convective heating system with thermal storage in a
+water tank.  In addition, there is an ESP-r-only model that represents
+the entire system in ESP-r's plant domain.
+
+The four co-simulation variants are:
+    E_1   The pump that circulates hot water from the storage tank to
+          the fan-coil that conditions the building zone has been moved
+          from ESP-r to TRNSYS.
+    E_2   As E_1 but now the pump that circulates water between the
+          storage tank and the SOFC has been moved from ESP-r to TRNSYS.
+    E_3   As E_2 but now the water-air heat exchanger of the fan-coil
+          has been moved from ESP-r to TRNSYS.
+    E_4   As E_1 but now the parasitic heat loss from the TRNSYS pump
+          is injected as a casual gain to one of the zones in the ESP-r
+          building model.

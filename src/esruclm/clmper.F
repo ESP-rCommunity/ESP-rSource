@@ -34,10 +34,15 @@ C CLMDAY: defines a restricted period during a day for analysis
 C puropses. 
       SUBROUTINE CLMDAY(IER)
       COMMON/DAYSF/KDS,KDF
-      common/pophelp/h(60)
-      CHARACTER h*72,hold*24
+      CHARACTER hold*24
 
-      H(1)='The period must be at leas an hour long. '
+C For help messages
+      character helpinsub*24,helptopic*24 ! strings for help
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CLMDAY'  ! set for cfiles
+      helptopic='period_at_least'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       write(HOLD,'(I6,I4)') KDS,KDF
  10   CALL EASKS(HOLD,' ',' Start and end hour: ',
      &     24,' 1  24 ','start and end hour',IER,1)
@@ -57,21 +62,26 @@ C ************* ONEDAY
 C ONEDAY: Provides interface to specification of one day. It
 C returns ID based on the current settings of IFDAY. 
       SUBROUTINE ONEDAY(IFDAY,IDAY,ID,IM,IER)
-      common/pophelp/h(60)
-      CHARACTER H*72,hold*24
+      CHARACTER hold*24
+
+C For help messages
+      character helpinsub*24,helptopic*24 ! strings for help
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ONEDAY'  ! set for cfiles
 
       IER=0
+      helptopic='period_within_calendar'
+      call gethelptext(helpinsub,helptopic,nbhelp)
   281 IF(IFDAY.EQ.0)THEN
-        H(1)='Period  must be within a calander year'
         CALL EASKI(IDAY,' ',' d-o-y ? ',
-     &             1,'F',365,'F',1,'start day',IER,1)
+     &             1,'F',365,'F',1,'start day',IER,nbhelp)
         CALL EDAYR(IDAY,ID,IM)
       ELSE
         CALL EDAYR(IDAY,ID,IM)
-        H(1)='Period  must be within a calander year'
         write(HOLD,'(I6,I4)') ID,IM
  283    CALL EASKS(HOLD,' ',' Day-of-month & month: ',
-     &     24,' 1  1 ','doy, month',IER,1)
+     &     24,' 1  1 ','doy, month',IER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,ID,1,31,'F','day of month',IER)
         CALL EGETWI(HOLD,K,IM,1,12,'F','month',IER)
@@ -102,16 +112,21 @@ C seasons.h provides typper and typsea
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/PERC/ID1,IM1,IT1,ID2,IM2,IT2,IDS,IDF,INEW
       COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
-      common/pophelp/h(60)
       COMMON/PERPER/PERST2
       dimension pmenu(29)
-      CHARACTER h*72,pmenu*24
+      CHARACTER pmenu*24
       character PERST1*14,PERST2*44,PERST3*44
       integer NITEM,INO  ! max items and current menu item
 
+C For help messages
+      character helpinsub*24,helptopic*24 ! strings for help
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SELPER'  ! set for cfiles
+
 C Assume whole day requested.
       ier=0
-   3  IT1=1
+      IT1=1
       IT2=24
       pmenu(1) ='a User defined          '
       pmenu(2) ='b January               '
@@ -166,65 +181,41 @@ C Adjust display if in southern hemisphere.
         call clmper(IFDAY,ier)
         return
       elseif(INO.EQ.2)then
-        ID1=1
-        IM1=1
-        ID2=31
-        IM2=1
+        ID1=1; IM1=1
+        ID2=31; IM2=1
       elseif(INO.EQ.3)then
-        ID1=1
-        IM1=2
-        ID2=28
-        IM2=2
+        ID1=1; IM1=2
+        ID2=28; IM2=2
       elseif(INO.EQ.4)then
-        ID1=1
-        IM1=3
-        ID2=31
-        IM2=3
+        ID1=1; IM1=3
+        ID2=31; IM2=3
       elseif(INO.EQ.5)then
-        ID1=1
-        IM1=4
-        ID2=30
-        IM2=4
+        ID1=1; IM1=4
+        ID2=30; IM2=4
       elseif(INO.EQ.6)then
-        ID1=1
-        IM1=5
-        ID2=31
-        IM2=5
+        ID1=1; IM1=5
+        ID2=31; IM2=5
       elseif(INO.EQ.7)then
-        ID1=1
-        IM1=6
-        ID2=30
-        IM2=6
+        ID1=1; IM1=6
+        ID2=30; IM2=6
       elseif(INO.EQ.8)then
-        ID1=1
-        IM1=7
-        ID2=31
-        IM2=7
+        ID1=1; IM1=7
+        ID2=31; IM2=7
       elseif(INO.EQ.9)then
-        ID1=1
-        IM1=8
-        ID2=31
-        IM2=8
+        ID1=1; IM1=8
+        ID2=31; IM2=8
       elseif(INO.EQ.10)then
-        ID1=1
-        IM1=9
-        ID2=30
-        IM2=9
+        ID1=1; IM1=9
+        ID2=30; IM2=9
       elseif(INO.EQ.11)then
-        ID1=1
-        IM1=10
-        ID2=31
-        IM2=10
+        ID1=1; IM1=10
+        ID2=31; IM2=10
       elseif(INO.EQ.12)then
-        ID1=1
-        IM1=11
-        ID2=30
-        IM2=11
+        ID1=1; IM1=11
+        ID2=30; IM2=11
       elseif(INO.EQ.13)then
-        ID1=1
-        IM1=12
-        ID2=31
-        IM2=12
+        ID1=1; IM1=12
+        ID2=31; IM2=12
       elseif(INO.EQ.15)then
         CALL EDAYR(ia1wins,ID1,IM1)
         CALL EDAYR(ia1winf,ID2,IM2)
@@ -256,30 +247,21 @@ C Adjust display if in southern hemisphere.
         CALL EDAYR(is2wins,ID1,IM1)
         CALL EDAYR(is2winf,ID2,IM2)
       elseif(INO.EQ.26)then
-        ID1=1
-        IM1=1
-        ID2=31
-        IM2=12
+        ID1=1; IM1=1
+        ID2=31; IM2=12
       elseif(INO.EQ.28)then
 
 C Help.
-        H(1)='Clm periods can be user defined, months or typical'
-        H(2)='periods or seasons associated with a climate db (and'
-        H(3)='specified in the /usr/esru/esp-r/climate/climatelist'
-        H(4)='file).'
-        H(5)='The year associated with a climate file can be used '
-        H(6)='as the date within a problem configuration, but this '
-        H(7)='is not the default. '
-        CALL PHELPD('clm periods',7,'-',0,0,IER)
+        helptopic='period_user_defined'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('clm periods',nbhelp,'-',0,0,IER)
         ino=-1
         goto 4
       elseif(INO.EQ.29)then
 
 C If no option is selected, select whole year
-        ID1=1
-        IM1=1
-        ID2=31
-        IM2=12
+        ID1=1; IM1=1
+        ID2=31; IM2=12
       else
         ino=-1
         goto 4
@@ -310,18 +292,20 @@ C returns IDS and IDF based on the current settings of IFDAY.
       integer ier  ! for error state
       integer ifday  ! indicates the format for days.
 
+C For help messages
+      character helpinsub*24,helptopic*24 ! strings for help
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CLMPER'  ! set for cfiles
+
       IER=0
-      H(1)='The output time defines the day, month and '
-      H(2)='hour at which the output is requested. '
-      H(3)='This must be no earlier than 0 hours or later '
-      H(4)='than 24 hours. '
-      H(5)=' '
+      helptopic='period_output_time'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
   281 IF(IFDAY.EQ.0)THEN
-        H(6)='Example:  6th March at 9h00 am is given as 64  9 '
         write(HOLD,'(I6,I4)') IDS,IT1
         CALL EASKS(HOLD,' ',' Start Day-of-year & time: ',
-     &     24,' 1  1 ','start doy and time',IER,6)
+     &     24,' 1  1 ','start doy and time',IER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,IDS,1,365,'F','start day of year',IER)
         CALL EGETWI(HOLD,K,IT1,0,24,'F','hour',IER)
@@ -330,7 +314,7 @@ C returns IDS and IDF based on the current settings of IFDAY.
 
         write(HOLD,'(I6,I4)') IDF,IT2
         CALL EASKS(HOLD,' ',' End Day-of-year & time: ',
-     &     24,' 364  24 ','end doy and time',IER,6)
+     &     24,' 364  24 ','end doy and time',IER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,IDF,1,365,'F','start day of year',IER)
         CALL EGETWI(HOLD,K,IT2,0, 24,'F','hour',IER)
@@ -341,7 +325,7 @@ C returns IDS and IDF based on the current settings of IFDAY.
         write(HOLD,'(I6,I4,I4)') ID1,IM1,IT1
         H(6)='Example:  6th March at 9h00 am is given as 6 3 9 '
  283    CALL EASKS(HOLD,' ',' Start Day-of-month, month & time: ',
-     &     24,' 1  1  7.0 ','doy, month time',IER,6)
+     &     24,' 1  1  7.0 ','doy, month time',IER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,ID1,1,31,'F','start day of month',IER)
         CALL EGETWI(HOLD,K,IM1,1,12,'F','start month',IER)
@@ -354,7 +338,7 @@ C returns IDS and IDF based on the current settings of IFDAY.
         CALL EDAYR(IDF,ID2,IM2)
         write(HOLD,'(I6,I4,I4)') ID2,IM2,IT2
  284    CALL EASKS(HOLD,' ',' End Day-of-month, month & time: ',
-     &     24,' 31  12  24 ','end doy, month time',IER,6)
+     &     24,' 31  12  24 ','end doy, month time',IER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,ID2,1,31,'F','end day of month',IER)
         CALL EGETWI(HOLD,K,IM2,1,12,'F','end month',IER)
@@ -391,7 +375,6 @@ C seasons.h provides typper and typsea
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       integer menuchw,igl,igr,igt,igb,igw,igwh
@@ -418,7 +401,7 @@ C ITM is main item editing menu.
       character ITM(25)*38
       character NMTHNM(12)*3,DAYNAM(7)*3
       character descr*7,descrst*10,descrfn*10,descrstn*10
-      character descrstp*10,h*72
+      character descrstp*10
       character DFILE*72,outs*124,louts*248
       character DESCRX*7,DESCR1X*10,DESCR1*10,hold*40
       CHARACTER CLMLOC*30,t32*32,d32*32,t72*72,d72*72
@@ -432,12 +415,26 @@ C ITM is main item editing menu.
       integer onleft  ! number of left axis
       integer onright ! number of right axis
       integer nitms,INO  ! max items and current menu item
+
+#ifdef OSI
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+#else
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+#endif
+
+C For help messages
+      character helpinsub*24,helptopic*24 ! strings for help
+      integer nbhelp     ! number of help lines found
+
      
       DATA NMTHNM/'Jan','Feb','Mar','Apr','May','Jun','Jul',
      &'Aug','Sep','Oct','Nov','Dec'/
       DATA DAYNAM/'Mon','Tue','Wed','Thu','Fri','Sat','Sun'/
 
 C Check if Unix-based or DOS based.
+      helpinsub='editemclimatelist'  ! set for clmper
       call isunix(unixok)
       havedrawn = .false.
       altered = .false.
@@ -445,10 +442,8 @@ C Check if Unix-based or DOS based.
 C Graphic analysis. Enlarge graphics area slightly and reset graphic
 C display period to the whole year.
       if(MMOD.EQ.8)then
-        ID1=1
-        IM1=1
-        ID2=31
-        IM2=12
+        ID1=1; IM1=1
+        ID2=31; IM2=12
         CALL EDAY(ID1,IM1,IIDS)
         CALL EDAY(ID2,IM2,IIDF)
         IDS=IIDS
@@ -528,7 +523,7 @@ C If clmlnam and clmlaid are not set fill them with default information.
       call stdate(iyear,ia2winf,descr,descrfn)
       jjd5=(ia2winf-ia2wins)+1
       WRITE(ITM(16),'(4a,i4)') 'n  2nd win ',descrst,' ',descrfn,jjd5
-      WRITE(ITM(17),'(A)')     '< scan climate for best-fit weeks'
+      WRITE(ITM(17),'(A)')     '< scan weather for best-fit weeks'
       WRITE(ITM(18),'(A,i2,a)')' ----documentation (',nbclmlhelp,
      &  ')----------'
       WRITE(ITM(19),'(A)')     'o list/generate/edit documentation'
@@ -547,18 +542,20 @@ C If clmlnam and clmlaid are not set fill them with default information.
 C If use already aksed for graph and date has change draw again.
       if(MMOD.EQ.8)then
         if(altered.and.havedrawn)then
-          IPICK(1)=0
-          IPICK(2)=1
-          IPICK(3)=0
-          IPICK(4)=0
-          IPICK(5)=0
-          IPICK(6)=0
+          IPICK(1)=0; IPICK(2)=1; IPICK(3)=0
+          IPICK(4)=0; IPICK(5)=0; IPICK(6)=0
           onleft=1
           onright=0
           if(IFS.ne.IMFS)call winfnt(IMFS)
-          CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
-          igw=igr-igl
-          igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+          iiw1=6; iiw2=12; iiw3=6; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+C          CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
           if(IFS.ne.IMFS)call winfnt(IFS)
           call startbuffer()
 
@@ -573,42 +570,10 @@ C     &      igl,igr,igt,igb,igw,igwh
       endif
 
 C Context help
-      h(1)='How to use the climate list facility: '
-      h(2)=' '
-      h(3)='Climate data resides in individual files and ESP includes'
-      h(4)='a `climatelist` file which holds high level information'
-      h(5)='about where climate these files are located as well as'
-      h(6)='summary information on seasons and typical periods.'
-      h(7)=' '
-      h(8)='This menu allows you to set the definition of seasons'
-      h(9)='during a year - winter @ start of year, spring, summer'
-      h(10)='autumn, winter @ end of year (or summer @ start of year'
-      h(11)='etc. at negative latitudes). One way to do this is to'
-      h(12)='use your own criteria when scanning the heating and'
-      h(13)='cooling degree day weekly reports, ambient temperature'
-      h(13)='reports or graphs etc in this climate module. Then'
-      h(14)='record the start and ending dates of each season.'
-      h(15)=' '
-      h(16)='This menu also allows you to specify typical assessment'
-      h(17)='periods (one per season). The clm module includes an'
-      h(18)='automaitc search for weeks which are closest to the'
-      h(19)='seasonal values of (use weighted) heating and cooling'
-      h(20)='degree days & solar radiation. If you use that facility' 
-      h(21)='a typical week in each season will be found and can be'
-      h(22)='saved into the `climatelist` file. '
-      h(23)=' '
-      h(24)='If you have a text editor defined you can edit the text'
-      h(25)='created by the list/generate menu selection. You can'
-      h(26)='also edit the climatelist file. BE CAREFUL if you'
-      h(27)='corrupt the file then you may get an incomplete list.'
-      h(28)=' '
-      h(29)='If you want to see the context of the seasons use the'
-      h(30)='option to graph ambient temperatures. This will also'
-      h(31)='show you symbols along the top indicating the duration'
-      h(32)='of each season as well as the typcial weeks in each'
-      h(33)='season (drawn slightly below). '
+      helptopic='climate_list_facility'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
-      CALL EMENU('Climate list item',ITM,nitms,INO)
+      CALL EMENU('Weather list item',ITM,nitms,INO)
       if(INO.EQ.nitms)then
 
 C Reset the graphic context prior to leaving. Currently commented out
@@ -628,7 +593,8 @@ C        endif
       elseif(INO.eq.1)then
 
 C String for the selection menu.
-        H(1)='Text for the selection list menu (<=32 char). '
+        helptopic='climate_list_menu_txt'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         t32=clmlnam
         if(t32(1:15).eq.'not yet entered')write(t32,'(2a)') CLMLOC,'  '
         write(d32,'(2a)') CLMLOC,'  '
@@ -638,7 +604,8 @@ C String for the selection menu.
       elseif(INO.eq.2)then
 
 C Aide memorie for the menu.
-        H(1)='Aide Memorie for the selection list menu (<=72 char). '
+        helptopic='climate_list_menu_aide'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         t72=clmlaid
         if(t72(1:15).eq.'not yet entered')then
           write(t72,'(2a)') CLMLOC(1:lnblnk(CLMLOC)),
@@ -651,9 +618,9 @@ C Aide memorie for the menu.
         if(t72(1:2).ne.'  ')clmlaid=t72
       elseif(INO.eq.3)then
 
-C Installed location of climate file. If GTK then use file browser.
-        H(1)='This is the `installed` location of the climate file.'
-        h(2)='(remember to copy new climate files to this folder)'
+C Installed location of weather file. If GTK then use file browser.
+        helptopic='climate_list_loc'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         write(llasci,'(a)') lclim(1:lnblnk(lclim))
 
 C Debug.
@@ -663,21 +630,21 @@ C        write(6,*) llasci
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
-            CALL EASKF(LLASCI,' Climate file installed location?',
-     &        ' ',96,DCLIM,'climate file location',IER,3)
+            CALL EASKF(LLASCI,'Weather file installed location:',
+     &        ' ',96,DCLIM,'weather file location',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
-            CALL EASKF(LLASCI,' Climate file installed location?',
-     &        ' ',124,DCLIM,'climate file location',IER,3)
+            CALL EASKF(LLASCI,'Weather file installed location:',
+     &        ' ',124,DCLIM,'weather file location',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
-            CALL EASKF(LLASCI,' Climate file installed location?',
-     &        ' ',144,DCLIM,'climate file location',IER,3)
+            CALL EASKF(LLASCI,'Weather file installed location:',
+     &        ' ',144,DCLIM,'weather file location',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
-          CALL EASKF(LLASCI,' Climate file installed location?',
-     &      ' ',144,DCLIM,'climate file location',IER,3)
+          CALL EASKF(LLASCI,'Weather file installed location:',
+     &      ' ',144,DCLIM,'weather file location',IER,nbhelp)
         else
-          CALL EASKF(LLASCI,' Climate file installed location?',
-     &      ' ',96,DCLIM,'climate file location',IER,3)
+          CALL EASKF(LLASCI,'Weather file installed location:',
+     &      ' ',96,DCLIM,'weather file location',IER,nbhelp)
         endif
         IF(LLASCI(1:2).EQ.'  '.or.LLASCI(1:4).eq.'UNKN')GOTO 290
 
@@ -696,9 +663,10 @@ C Toggle for available
      &      'so check it prior to marking it as ONLINE','P')
         endif
 
-        h(1)='Set to OFFLINE if climate files tend to be kept as'
-        h(2)='compressed files or are held in a secure location. '
-        call easkabc('Choices:',' ','online','offline','continue',IW,2)
+        helptopic='climate_item_offline'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        call easkabc('Choices:',' ','online','offline','continue',IW,
+     &    nbhelp)
         if(iw.eq.1) clmlavail = 'ONLINE'
         if(iw.eq.2) clmlavail = 'OFFLINE'
       elseif(INO.eq.6)then
@@ -707,7 +675,8 @@ C 1st winter season
 C Edit the current period in terms of day and month. Also check to
 C see if next period overlaps and correct.
    91   hold = ' '
-        H(1)='Season start day & month and finish day and month. '
+        helptopic='climate_winter_season'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call stdate(iyear,is1wins,descr,descrst)
         call stdate(iyear,is1winf,descr,descrfn)
         WRITE(outs,'(4a)')  ' 1st winter ',descrst,' - ',descrfn
@@ -724,7 +693,7 @@ C If first season is not 1 Jan then warn user.
         CALL EWEEKD(id1,im1,IYEAR,jjd1t)
         WRITE(HOLD,'(4I4)')id1,im1,id2,im2
         CALL EASKS(HOLD,'Season: start (day & month) and',
-     &    'finish (day & month):',40,' 1 1 28 2','season',IIER,1)
+     &    'finish (day & month):',40,' 1 1 28 2','season',IIER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,id1,1,31,'W','season st day',IIER)
         CALL EGETWI(HOLD,K,im1,1,12,'W','season st month',IIER)
@@ -744,7 +713,8 @@ C If first season is not 1 Jan then warn user.
 C Spring season.
 C Edit the current period in terms of day and month.
    92   hold = ' '
-        H(1)='Season start day & month and finish day and month. '
+        helptopic='climate_spring_season'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call stdate(iyear,is1sprs,descr,descrst)
         call stdate(iyear,is1sprf,descr,descrfn)
         WRITE(outs,'(4a)')  ' Spring ',descrst,' - ',descrfn
@@ -772,7 +742,7 @@ C Edit the current period in terms of day and month.
         endif
         WRITE(HOLD,'(4I4)')id1,im1,id2,im2
         CALL EASKS(HOLD,'Season: start (day & month) and',
-     &    'finish (day & month):',40,' 1 3 30 4','season',IIER,1)
+     &    'finish (day & month):',40,' 1 3 30 4','season',IIER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,id1,1,31,'W','season st day',IIER)
         CALL EGETWI(HOLD,K,im1,1,12,'W','season st month',IIER)
@@ -797,7 +767,8 @@ C Edit the current period in terms of day and month.
 C Summer season.
 C Edit the current period in terms of day and month.
    93   hold = ' '
-        H(1)='Season start day & month and finish day and month. '
+        helptopic='climate_summer_season'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call stdate(iyear,is1sums,descr,descrst)
         call stdate(iyear,is1sumf,descr,descrfn)
         WRITE(outs,'(4a)')  ' Summer ',descrst,' - ',descrfn
@@ -825,7 +796,7 @@ C Edit the current period in terms of day and month.
         endif
         WRITE(HOLD,'(4I4)')id1,im1,id2,im2
         CALL EASKS(HOLD,'Season: start (day & month) and',
-     &    'finish (day & month):',40,' 1 5 31 8','season',IIER,1)
+     &    'finish (day & month):',40,' 1 5 31 8','season',IIER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,id1,1,31,'W','season st day',IIER)
         CALL EGETWI(HOLD,K,im1,1,12,'W','season st month',IIER)
@@ -850,7 +821,8 @@ C Edit the current period in terms of day and month.
 C Autumn season.
 C Edit the current period in terms of day and month.
    94   hold = ' '
-        H(1)='Season start day & month and finish day and month. '
+        helptopic='climate_autumn_season'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call stdate(iyear,is2sprs,descr,descrst)
         call stdate(iyear,is2sprf,descr,descrfn)
         WRITE(outs,'(4a)')  ' Autumn ',descrst,' - ',descrfn
@@ -878,7 +850,7 @@ C Edit the current period in terms of day and month.
         endif
         WRITE(HOLD,'(4I4)')id1,im1,id2,im2
         CALL EASKS(HOLD,'Season: start (day & month) and',
-     &    'finish (day & month):',40,' 1 9 31 10','season',IIER,1)
+     &    'finish (day & month):',40,' 1 9 31 10','season',IIER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,id1,1,31,'W','season st day',IIER)
         CALL EGETWI(HOLD,K,im1,1,12,'W','season st month',IIER)
@@ -903,7 +875,8 @@ C Edit the current period in terms of day and month.
 C 2nd winter season.
 C Edit the current period in terms of day and month.
    95   hold = ' '
-        H(1)='Season start day & month and finish day and month. '
+        helptopic='climate_winter2_season'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call stdate(iyear,is2wins,descr,descrst)
         call stdate(iyear,is2winf,descr,descrfn)
         WRITE(outs,'(4a)')  ' 2nd winter ',descrst,' - ',descrfn
@@ -931,7 +904,7 @@ C Edit the current period in terms of day and month.
         endif
         WRITE(HOLD,'(4I4)')id1,im1,id2,im2
         CALL EASKS(HOLD,'Season: start (day & month) and',
-     &    'finish (day & month):',40,' 1 11 31 12','season',IIER,1)
+     &    'finish (day & month):',40,' 1 11 31 12','season',IIER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,id1,1,31,'W','season st day',IIER)
         CALL EGETWI(HOLD,K,im1,1,12,'W','season st month',IIER)
@@ -951,7 +924,8 @@ C Edit the current period in terms of day and month.
 C 1st winter period
 C Edit the current period in terms of day and month.
    96   hold = ' '
-        H(1)='Period start day & month and finish day and month. '
+        helptopic='climate_winter1_season'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call stdate(iyear,ia1wins,descr,descrst)
         call stdate(iyear,ia1winf,descr,descrfn)
         WRITE(outs,'(4a)')  ' 1st winter typical ',descrst,' - ',
@@ -961,7 +935,7 @@ C Edit the current period in terms of day and month.
         call edayr(ia1winf,id2,im2)
         WRITE(HOLD,'(4I4)')id1,im1,id2,im2
         CALL EASKS(HOLD,'Typical: start (day & month) and',
-     &    'finish (day & month):',40,' 9 1 15 1','typical',IIER,1)
+     &    'finish (day & month):',40,' 9 1 15 1','typical',IIER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,id1,1,31,'W','typical st day',IIER)
         CALL EGETWI(HOLD,K,im1,1,12,'W','typical st month',IIER)
@@ -975,7 +949,8 @@ C Edit the current period in terms of day and month.
 C Spring period.
 C Edit the current period in terms of day and month.
    97   hold = ' '
-        H(1)='Period start day & month and finish day and month. '
+        helptopic='climate_spring_season'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call stdate(iyear,ia1sprs,descr,descrst)
         call stdate(iyear,ia1sprf,descr,descrfn)
         WRITE(outs,'(4a)')  ' Spring typical ',descrst,' - ',
@@ -985,7 +960,7 @@ C Edit the current period in terms of day and month.
         call edayr(ia1sprf,id2,im2)
         WRITE(HOLD,'(4I4)')id1,im1,id2,im2
         CALL EASKS(HOLD,'Typical: start (day & month) and',
-     &    'finish (day & month):',40,' 6 3 12 3','typical',IIER,1)
+     &    'finish (day & month):',40,' 6 3 12 3','typical',IIER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,id1,1,31,'W','typical st day',IIER)
         CALL EGETWI(HOLD,K,im1,1,12,'W','typical st month',IIER)
@@ -999,7 +974,8 @@ C Edit the current period in terms of day and month.
 C Summer period.
 C Edit the current period in terms of day and month.
    98   hold = ' '
-        H(1)='Period start day & month and finish day and month. '
+        helptopic='climate_summer_season'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call stdate(iyear,iasums,descr,descrst)
         call stdate(iyear,iasumf,descr,descrfn)
         WRITE(outs,'(4a)')  ' Summer typical ',descrst,' - ',
@@ -1009,7 +985,7 @@ C Edit the current period in terms of day and month.
         call edayr(iasumf,id2,im2)
         WRITE(HOLD,'(4I4)')id1,im1,id2,im2
         CALL EASKS(HOLD,'Typical: start (day & month) and',
-     &    'finish (day & month):',40,' 11 7 17 7','typical',IIER,1)
+     &    'finish (day & month):',40,' 11 7 17 7','typical',IIER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,id1,1,31,'W','typical st day',IIER)
         CALL EGETWI(HOLD,K,im1,1,12,'W','typical st month',IIER)
@@ -1023,7 +999,8 @@ C Edit the current period in terms of day and month.
 C Autumn period.
 C Edit the current period in terms of day and month.
    99   hold = ' '
-        H(1)='Period start day & month and finish day and month. '
+        helptopic='climate_autumn_season'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call stdate(iyear,ia2sprs,descr,descrst)
         call stdate(iyear,ia2sprf,descr,descrfn)
         WRITE(outs,'(4a)')  ' Autumn typical ',descrst,' - ',
@@ -1033,7 +1010,7 @@ C Edit the current period in terms of day and month.
         call edayr(ia2sprf,id2,im2)
         WRITE(HOLD,'(4I4)')id1,im1,id2,im2
         CALL EASKS(HOLD,'Typical: start (day & month) and',
-     &    'finish (day & month):',40,' 2 10 8 10','typical',IIER,1)
+     &    'finish (day & month):',40,' 2 10 8 10','typical',IIER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,id1,1,31,'W','typical st day',IIER)
         CALL EGETWI(HOLD,K,im1,1,12,'W','typical st month',IIER)
@@ -1047,7 +1024,8 @@ C Edit the current period in terms of day and month.
 C 2nd winter period.
 C Edit the current period in terms of day and month.
   100   hold = ' '
-        H(1)='Period start day & month and finish day and month. '
+        helptopic='climate_winter2_season'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call stdate(iyear,ia2wins,descr,descrst)
         call stdate(iyear,ia2winf,descr,descrfn)
         WRITE(outs,'(4a)')  ' 2nd winter typical ',descrst,' - ',
@@ -1057,7 +1035,8 @@ C Edit the current period in terms of day and month.
         call edayr(ia2winf,id2,im2)
         WRITE(HOLD,'(4I4)')id1,im1,id2,im2
         CALL EASKS(HOLD,'Typical: start (day & month) and',
-     &    'finish (day & month):',40,' 20 11 26 11','typical',IIER,1)
+     &    'finish (day & month):',40,' 20 11 26 11','typical',
+     &    IIER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,id1,1,31,'W','typical st day',IIER)
         CALL EGETWI(HOLD,K,im1,1,12,'W','typical st month',IIER)
@@ -1068,17 +1047,15 @@ C Edit the current period in terms of day and month.
         if(iier.ne.0)goto 100
       elseif(INO.eq.17)then
 
-C Scan climate for best-fit weeks.
+C Scan weather data for best-fit weeks.
           call DDRADSUM('?')
       elseif(INO.eq.19)then
 
 C Documentations text option.
-        h(1)='The list option displays each of the lines of '
-        h(2)='documentation. The initialise option creates a '
-        h(3)='standard summary of the climate data. The Edit '
-        h(4)='option is not yet enabled (save and use a text editor).'
+        helptopic='climate_list_doc'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call easkabcd('Documentation options:',' ','List','Initialise',
-     &    'Edit','Continue',idw,4)
+     &    'Edit','Continue',idw,nbhelp)
         if(idw.eq.1)then
           if(nbclmlhelp.ge.0)then
             call edisp(iuout,' ')
@@ -1089,7 +1066,7 @@ C Documentations text option.
             call edisp(iuout,'There is no documentation.')
           endif
         elseif(idw.eq.2)then
-          write(clmlhelp(1),'(2a)') 'Climate is ',clmloc 
+          write(clmlhelp(1),'(2a)') 'Weather is ',clmloc 
           ACLAT=ABS(CLAT)
           ACLONG=ABS(CLONG)
           IF(CLONG.LT.0.0.AND.CLAT.GE.0.0)then
@@ -1111,32 +1088,20 @@ C Use variant of code in clmmmm.F to generate text.
      &    ' Month    Minimum  Time          Maximum  Time         Mean'
 
 C Initialise parameters for whole year.
-          ID1=1
-          IM1=1
-          IT1=1
-          ID2=31
-          IM2=12
-          IT2=24
-          IDS=1
-          IDF=365
-          KDS=1
-          KDF=24
-          XMAXI=-1E+10
-          XMINI=1E+10
-          XMEANI=0
-          HRTOT=0.
+          ID1=1;  IM1=1;  IT1=1
+          ID2=31; IM2=12; IT2=24
+          IDS=1;  IDF=365
+          KDS=1;  KDF=24
+          XMAXI=-1E+10; XMINI=1E+10
+          XMEANI=0.; HRTOT=0.
 
 C INITIALISE PARAMETERS FOR MONTHLY TOTALS.
-          MTH1=IM1
-          XMAXM=-1E10
-          XMINM=1E10
-          XMEANM=0.
-          HRM=0.
+          MTH1=IM1; XMAXM=-1E10; XMINM=1E10; XMEANM=0.; HRM=0.
 
 C Find day of week for start of the period.
           CALL EDAYR(IDS,IDAYN,IMTHN)
       
-C Loop for each day, reading data from climate file.
+C Loop for each day, reading data from weather file.
           DO 10 I=IDS,IDF
             IDD=I
             CALL CLMGET(IDD)
@@ -1327,28 +1292,27 @@ C Save climatelist text block to file, confirm file name and open,
 C call mkitemclimatelist and then close file.
         write(llitem,'(2a)') lclim(1:lnblnk(lclim)),'.block'
         write(DFILE,'(2a)') lclim(1:lnblnk(lclim)),'.block'
-        h(1)='Information on the current climate file (seasons etc.)'
-        h(2)='will be written to a small ASCII file which can be'
-        h(3)='copied into /usr/esru/esp-r/climatelist file. '
+        helptopic='climate_current_info'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         llt=lnblnk(llitem)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
             CALL EASKF(llitem,' Climatelist entry text block?',
-     &        ' ',96,DFILE,'climatelist entry file',IER,3)
+     &        ' ',96,DFILE,'climatelist entry file',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
             CALL EASKF(llitem,' Climatelist entry text block?',
-     &        ' ',124,DFILE,'climatelist entry file',IER,3)
+     &        ' ',124,DFILE,'climatelist entry file',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
             CALL EASKF(llitem,' Climatelist entry text block?',
-     &        ' ',144,DFILE,'climatelist entry file',IER,3)
+     &        ' ',144,DFILE,'climatelist entry file',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
           CALL EASKF(llitem,' Climatelist entry text block?',
-     &      ' ',144,DFILE,'climatelist entry file',IER,3)
+     &      ' ',144,DFILE,'climatelist entry file',IER,nbhelp)
         else
           CALL EASKF(llitem,' Climatelist entry text block?',
-     &      ' ',96,DFILE,'climatelist entry file',IER,3)
+     &      ' ',96,DFILE,'climatelist entry file',IER,nbhelp)
         endif
         iuf=ifil+1
         CALL EFOPSEQ(iuf,llitem,4,IER)
@@ -1390,18 +1354,20 @@ C Control graphics.
 C Pre-define the period and the line type to draw and which
 C axis are required and then directly call CLMDRW
         if(MMOD.EQ.8)then
-          IPICK(1)=0
-          IPICK(2)=1
-          IPICK(3)=0
-          IPICK(4)=0
-          IPICK(5)=0
-          IPICK(6)=0
+          IPICK(1)=0; IPICK(2)=1; IPICK(3)=0
+          IPICK(4)=0; IPICK(5)=0; IPICK(6)=0
           onleft=1
           onright=0
           if(IFS.ne.IMFS)call winfnt(IMFS)
-          CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
-          igw=igr-igl
-          igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+          iiw1=6; iiw2=12; iiw3=6; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+C          CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
           if(IFS.ne.IMFS)call winfnt(IFS)
           call startbuffer()
 
@@ -1414,7 +1380,9 @@ C     &      igl,igr,igt,igb,igw,igwh
           havedrawn = .true.
         endif
       elseif(INO.eq.24)then
-        CALL PHELPD('clm list mgt',33,'-',0,0,IER)
+        helptopic='climate_list_facility'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('clm list mgt',nbhelp,'-',0,0,IER)
       else
         INO=-4
         goto 3
@@ -1552,19 +1520,23 @@ C climatelist.  It calls clmddscan to do most of the work.
 C seasons.h provides typper, typsea, sea* variables
 
       COMMON/OUTPCH/ICOUT
-      common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/exporttgi/ixopen,ixloc,ixunit
 
-
-      character H*72,outs*124
+      character outs*124
       character act*1
 
       real HBT,CBT   ! local base temperatures for heating and cooling DD calcs
 
+C For help messages
+      character helpinsub*24,helptopic*24 ! strings for help
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='DDRADSUM'  ! set for cfiles
+
       if(is1wins.eq.0.or.is2wins.eq.0.or.is1sprs.eq.0)then
         call usrmsg('No winter|transition|summer season definitions',
-     &    'found in the climate database. Skipping.','W')
+     &    'found in the weather database. Skipping.','W')
         return
       endif
 
@@ -1573,14 +1545,14 @@ C Initial weightings for heating dd, cooling dd, solar radiation (from seasons.h
       cddw=1.0
       radw=1.0
 
-      H(1)='Degree day calculations are derived from a specific '
-      H(2)='base temperature (deg C). '
+      helptopic='dd_base_temp'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       if(hddbaset.lt.0.1)then
         hddbaset=17.0
       endif
       HBT=hddbaset
       CALL EASKR(HBT,' ',' Heating base temperature ? ',
-     &           -10.,'W',40.,'W',17.0,'DD heating base temp',IER,2)
+     &  -10.,'W',40.,'W',17.0,'DD heating base temp',IER,nbhelp)
       hddbaset=HBT
 
       if(cddbaset.lt.0.1)then
@@ -1588,7 +1560,7 @@ C Initial weightings for heating dd, cooling dd, solar radiation (from seasons.h
       endif
       CBT=cddbaset
       CALL EASKR(CBT,' ',' Cooling base temperature ? ',
-     &           -10.,'W',40.,'W',21.0,'DD cooling base temp',IER,2)
+     &  -10.,'W',40.,'W',21.0,'DD cooling base temp',IER,nbhelp)
       cddbaset=CBT
 
 C If output to file alter the edisp unit number.
@@ -1606,7 +1578,7 @@ C Reset text feedback and write out beginning of report.
       call edisp(itru,outs)
       call edisp(itru,'  ')
       
-C Loop through the climate file and calculate data.
+C Loop through the weather file and calculate data.
       itrc=2
       call clmddscan(itrc,itru,'?','c',5,iyear)
 

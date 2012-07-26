@@ -41,7 +41,6 @@ C index is the goget index.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/OUTPCH/ICOUT
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -51,7 +50,11 @@ C index is the goget index.
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
       common/getmenu/menutype,igetind(65),igetflux(65)
-      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS)
+
+      character SLABEL*32,GLABEL*20,TABLABEL*36
+      COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
+      integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
+      COMMON/LNGETLABEL/LNSLABEL(MZS),LNGLABEL(MZS),LNTABLABEL(MZS)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
       COMMON/FREQS/NBINS,XBIN1,XBINN,DXBIN,IFREQ,IHITS,IMISS,INBIN(MF)
@@ -65,14 +68,22 @@ C Simulator parameters.
 C Selection menu for graphs and/or tables.
       dimension item(8)
       character item*24
-      character outs*124,outsn*124,outsd*124,H*72,xfile*144,tg*1
+      character outs*124,outsn*124,outsd*124,xfile*144,tg*1
       character delim*1,act*1,tranged*20,sq*1,trangf*12,trangefd*12
-      character SLABEL*32,GLABEL*20,TLABEL*60,trange*20,tab*1
+      character TLABEL*60,trange*20,tab*1
       character prompt*124,prompte*124
 
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical zlist,ok,dok
       integer NITMS,IG ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MODGRF'  ! set for subroutine
+      XDIFF=0.0           ! set initial value
 
 C If output to file alter the edisp unit number.
       itru = icout
@@ -80,14 +91,14 @@ C If output to file alter the edisp unit number.
         itru = ixunit
         if(NGET.ge.1)then
           write(prompt,'(3a)') 'Scanning ',
-     &      SLABEL(1)(1:lnblnk(SLABEL(1))),' >> file...'
+     &      SLABEL(1)(1:LNSLABEL(1)),' >> file...'
         else
           write(prompt,'(a)') ' Scanning data >> file...' 
         endif
       elseif(ixopen.eq.0)then
         if(NGET.ge.1)then
           write(prompt,'(3a)') 'Scanning ',
-     &      SLABEL(1)(1:lnblnk(SLABEL(1))),'...'
+     &      SLABEL(1)(1:LNSLABEL(1)),'...'
         else
           write(prompt,'(a)') 'Scanning...' 
         endif
@@ -120,7 +131,7 @@ C First recover bounds of selected data.
         XMIN=MIN(XMIN,DMIN)
  40   continue
       write(outs,'(a,a,a,f11.2,a,f11.2)')'The ',
-     &  SLABEL(NGET)(1:lnblnk(SLABEL(NGET))),' data range is',
+     &  SLABEL(NGET)(1:LNSLABEL(NGET)),' data range is',
      &  XMIN,' to',XMAX
       call edisp(iuout,outs)
 
@@ -316,10 +327,9 @@ C If in pif mode use default bin setup.
           ok=.TRUE.
         else
           dok=.true.
-          h(1)='The default bins will tend to work for quick inital'
-          h(2)='views of frequency bins. To customise the reports '
-          h(3)='you should say no. '
-          call askok('  ','Use default bin set-up?',OK,dok,3)
+          helptopic='res_freq_default_bins'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          call askok('  ','Use default bin set-up?',OK,dok,nbhelp)
         endif
         if(ok)then
 
@@ -381,15 +391,14 @@ C Bin sized from data max & min.
         else
           XBIN1=XMIN
           XBINN=XMAX
-          H(1)='Give minimum bin value for the current parameter.'
-          call easkr(XBIN1,' ',' Minimum parameter value for bin ?',
-     &                     0.,'-',0.,'-',0.,'min bin parameter',IER,1)
-          H(1)='Give maximum bin value for the current parameter.'
-          call easkr(XBINN,' ',' Maximum parameter value for bin ?',
-     &                  XBIN1,'F',0.,'-',0.,'max bin parameter',IER,1)
-          H(1)='The number of frequency bins is required.'
-          call easki(NBINS,' ',' Number of bins required ? ',
-     &                               1,'F',MF,'F',0,'no of bins',IER,0)
+          helptopic='res_frequency_bin_ranges'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          call easkr(XBIN1,' ','Minimum parameter value for bin ?',
+     &      0.,'-',0.,'-',0.,'min bin parameter',IER,nbhelp)
+          call easkr(XBINN,' ','Maximum parameter value for bin ?',
+     &      XBIN1,'F',0.,'-',0.,'max bin parameter',IER,nbhelp)
+          call easki(NBINS,' ','Number of bins required ?',
+     &      1,'F',MF,'F',0,'no of bins',IER,nbhelp)
           DXBIN=(XBINN-XBIN1)/NBINS
         endif
       endif
@@ -494,9 +503,8 @@ C We now have the data in bins therefore ask how it should be displayed.
 C << convert this block of code to use a standard menu
 C << call so users can just exit and not have to click
 C << on 'none of the above'.
-    5   H(1)='Frequency distribution opions allow you to look at '
-        H(2)='graphs or tables or both. When you want to do something'
-        H(3)='select the exit choice.'
+    5   helptopic='res_freq_menu_options'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         item(1)='a frequency graph       '
         item(2)='b cumulative graph      '
         item(3)='c summary table         '
@@ -512,7 +520,9 @@ C << on 'none of the above'.
         elseif(IG.eq.7)then
 
 C Help.
-          CALL PHELPD('frequency help',3,'-',0,0,IER)
+          helptopic='res_freq_menu_options'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('frequency help',nbhelp,'-',0,0,IER)
         elseif(IG.eq.6)then
           goto 5
         endif
@@ -525,7 +535,7 @@ C after image and advise user.
           CALL MODHED('g',zlist,iocupf,ialstused)
           TLABEL='  '
           write (TLABEL,'(a,a13,f5.1)')
-     &       SLABEL(NGET)(1:lnblnk(SLABEL(NGET))),', Bin width =',DXBIN
+     &       SLABEL(NGET)(1:LNSLABEL(NGET)),', Bin width =',DXBIN
           if(IG.eq.1.or.IG.eq.4)CALL MODDRW(1,TLABEL)
           if(IG.eq.2.or.IG.eq.5)CALL MODDRW(2,TLABEL)
         else
@@ -764,6 +774,7 @@ C corresponding to graphical result display.
 
       SUBROUTINE MODHED(act,zlist,iocupf,ialstused)
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
@@ -776,7 +787,6 @@ C corresponding to graphical result display.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
 
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
@@ -785,14 +795,17 @@ C corresponding to graphical result display.
       CHARACTER ETEXT*94,GTEXT*94,PDESCR*60,SDESCR*44,act*1
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character outsd*80,outsd1*81,RSNAME*40
-      character ALOC*12,ALOCLBL*12,ALOCTYP*4
       logical zlist
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C Generate a descriptive string for the time period to be displayed
@@ -810,9 +823,13 @@ C text dialogue box that would normally be displayed.
 
 C Reduce the white space on the right so the label percent is not
 C so separated from the axis.
-          call win3d(menuchw,12,12,5,3,igl,igr,igt,igb,igw,igwh)
-          igw=igr-igl
-          igwh=igb-igt
+          iiw1=12; iiw2=12; iiw3=5; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+C          call win3d(menuchw,12,12,5,3,igl,igr,igt,igb,igw,igwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
           call startbuffer()
         endif
       ENDIF
@@ -930,8 +947,10 @@ C MODDRW draws a histogram of the frequency distribution.
       character alabel*60
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
       YMAX = IFREQ
@@ -940,7 +959,8 @@ C MODDRW draws a histogram of the frequency distribution.
       XMAX = XBINN
       XMIN = XBIN1
 
-C Reset graphing area.
+C Reset graphing area and cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C Compute scales and offsets.
       igwid=igw
@@ -949,19 +969,20 @@ C Compute scales and offsets.
      &              Xadd,Yadd)
 
 C Stuff into static variables for later access.
-      call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
+      call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
 
 C Left axis.
-      call vrtaxis(YMIN,YMAX,igl,igb,igt,Yadd,ysc,0,0,'Distribution')
+      call vrtaxis(YMIN,YMAX,iigl,iigb,iigt,Yadd,ysc,0,0,
+     &  'Distribution')
 
 C Horizontal axis, label depending on data type.
 C If moderate data range use mode 1, otherwise try 0.
       if((XMAX-XMIN).lt.5.0)then
-        call horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,0,alabel)
+        call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,alabel)
       elseif((XMAX-XMIN).ge.5.0.and.(XMAX-XMIN).lt.1000.)then
-        call horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,1,alabel)
+        call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,1,alabel)
       else
-        call horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,0,alabel)
+        call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,alabel)
       endif
 
 C Right axis.
@@ -971,7 +992,7 @@ C Right axis.
       igheight=igwh
       call axiscale(igwid,igheight,XMIN,XMAX,PMIN,PMAX,xsc,psc,sca,
      &              Xadd,Padd)
-      call vrtaxis(PMIN,PMAX,igr,igb,igt,Padd,psc,0,1,'Percent')
+      call vrtaxis(PMIN,PMAX,iigr,iigb,iigt,Padd,psc,0,1,'Percent')
 
 C Plot histogram, draw grey box if YBIN > 0.
       XBIN = XMIN

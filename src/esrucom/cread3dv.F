@@ -50,9 +50,8 @@ C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/GFONT/IFS,ITFS,IMFS
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      common/G8/nbedgdup(MCON),iedgdup(MCON,MV),nbedgshr(MCON),
-     &          iedgshr(MCON,MV),imatshr(MCON,MV),ibridgeshr(MCON,MV)
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -80,9 +79,15 @@ C Local variables to pass to edline and axiscale.
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2,iid3,iid4
+      integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iix,iiy,iixlast,iiylast,iixc,iiyc,iid1,iid2,iid3,iid4
+      integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C If not in graphic mode return.
@@ -104,25 +109,34 @@ C menu. Also allow 2 text lines at the bottom for future dialogue.
 
 C Clear current viewing box and re-establish image bounds.
       CALL startbuffer()
-      CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
-      igw=igr-igl
-      igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+      iiw1=4; iiw2=1; iiw3=1; iiw4=3; iimenu=menuchw
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &  iigl,iigr,iigt,iigb,iigw,iigwh)
+C      CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
       igwid=igw
       igheight=igwh
 
 C Determine scaling ratios for the drawing and axis.  If static
 C assume 1000 -1000 etc, if optimum then use SXMX,SYMX + 10% etc.
+
+C << why the difference? in static and optimum scaling ?? >>
+
       IF(ITBND.EQ.0)THEN
         CALL axiscale(igwid,igheight,-1000.,1000.,-1000.,1000.,xsc,ysc,
      &                sca,Xadd,Yadd)
-        call linescale(igl,Xadd,sca,igb,Yadd,sca)
+        call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
       ELSEIF(ITBND.EQ.1)THEN
 
 C Determine the 2D coords of the site extremes.
         CALL SITE2D(SXMX,SXMN,SYMX,SYMN,ier)
         CALL axiscale(igwid,igheight,SXMN,SXMX,SYMN,SYMX,xsc,ysc,sca,
      &                Xadd,Yadd)
-        call linescale(igl,Xadd,sca,igb,Yadd,sca)
+        call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
       ENDIF
 
 C Refresh the dialogue box if terminal type 8.
@@ -398,9 +412,15 @@ C unless duplicate line has already been drawn.
               if(imatshr(icc,iedge).eq.0)then
                 if(.NOT.found)call eswline(iixlast,iiylast,iix,iiy)
               else
-                if(greyok) call winscl('i',nifgrey-3)
+                if(greyok)then
+                  iicol=nifgrey-3 
+                  call winscl('i',iicol)
+                endif
                 call eswline(iixlast,iiylast,iix,iiy)
-                if(greyok)call winscl('-',0)
+                if(greyok)then
+                  iicol=0
+                  call winscl('-',iicol)
+                endif
               endif
             endif
           elseif(IPEN.eq.-305)then
@@ -459,9 +479,15 @@ C unless duplicate line has already been drawn.
               if(imatshr(icc,iedge).eq.0)then
                 if(.NOT.found)call eswline(iixlast,iiylast,iix,iiy)
               else
-                if(greyok)call winscl('i',nifgrey-3)
+                if(greyok)then
+                  iicol=nifgrey-3
+                  call winscl('i',iicol)
+                endif
                 call eswline(iixlast,iiylast,iix,iiy)
-                if(greyok)call winscl('-',0)
+                if(greyok)then
+                  iicol=0
+                  call winscl('-',iicol)
+                endif
               endif
             endif
           elseif(IPEN.eq.-305)then

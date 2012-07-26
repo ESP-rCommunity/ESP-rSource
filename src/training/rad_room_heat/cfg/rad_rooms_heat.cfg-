@@ -19,7 +19,7 @@
 *mlc  ../dbs/rad_room.constrdb
 *stdopt  optics.db2
 *stdprs  pressc.db1
-*stdevn  profiles.db1
+*stdevn  profiles.db1.a
 *clm  /usr/esru/esp-r/climate/uk_birmingham_iwec
 *mscldb  /usr/esru/esp-r/databases/mscomp.db1
 *stdpdb  plantc.db1

@@ -640,7 +640,7 @@ C-------------------------------------------------------------------------------
 C-------Temperature deviations from standard conditions.
         TAC_Tdelta_gen  = T_con1 - TAC_Tgenref             ! Generator.
         TAC_Tdelta_evap = T_con2 - TAC_Tevapref            ! Evaporator.
-        TAC_Tdelta_cond = T_cond_air_in - TAC_Tdelta_cond  ! Condenser.
+        TAC_Tdelta_cond = T_cond_air_in - TAC_Tcondref     ! Condenser.
 C-------COP.
         TAC_COP = TAC_a
      &          + TAC_b1 * TAC_Tdelta_gen

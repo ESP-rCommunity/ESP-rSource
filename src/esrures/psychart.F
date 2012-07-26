@@ -30,7 +30,6 @@ C component status, act = 'u' for user supplied points.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       COMMON/PPERS/IPSD1,IPSM1,IPSD2,IPSM2,IPSDS,IPSDF,NPTS,ipsav
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
@@ -51,7 +50,7 @@ C component status, act = 'u' for user supplied points.
 
       dimension UTD(20),URH(20)     
       CHARACTER*23 ITEM(12)
-      CHARACTER H*72,HOLD*24,act*1,pcname*15,pcnam1*15,head*124
+      CHARACTER HOLD*24,act*1,pcname*15,pcnam1*15,head*124
       CHARACTER DESCRH*5,outs*124,DESCR*7,DESCR1*10
       CHARACTER ETEXT*124,PDESCR*60,SDESCR*44
       logical ok,dok,ask,unixok
@@ -62,6 +61,13 @@ C component status, act = 'u' for user supplied points.
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
 #endif
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='PSYCHART'  ! set for subroutine
 
       SMALL=1E-20
       PATMOS=1013.25
@@ -144,16 +150,9 @@ C Display menu.
  2    NITMS=12
       INO=-2
 
-C Instanciate h() strings for the menu.
-      H(1)='This psychrometric plotting facility allows'
-      H(2)='the psycrometric state of an AC plant component'
-      H(3)='or network to be plotted on a psychrometric   '
-      H(4)='chart. The user can select which plant nodes'
-      H(5)='should be plotted on the chart. Any component'
-      H(6)='linkages will be detected and drawn by the '
-      H(7)='program. The user must select the timestep from '
-      H(8)='which the results are taken.'
-      H(9)='     - Click to return to program-         '
+C Instanciate help strings for the menu and sub-dialogs.
+      helptopic='res_psychromtric_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
  5    CALL EMENU('Psychrometric chart',ITEM,NITMS,INO)
       IF(INO.EQ.1)THEN
@@ -175,11 +174,8 @@ C zone nodes << to be done >>
           goto 2
         elseif(act.eq.'u')then
           if(IUP.ne.0)then
-            h(1)='System components performance can be plotted on the'
-            h(2)='chart or the user can supply temperature and humidity'
-            h(3)='data to be plotted. '
             dok=.true.
-            call askok('Re-plot previous points?',' ',ok,dok,3)
+            call askok('Re-plot previous points?',' ',ok,dok,nbhelp)
             if(ok)then
               ask=.false.
             else
@@ -189,9 +185,8 @@ C zone nodes << to be done >>
             ask=.true.
           endif
           if(ask)then
-            h(1)='You can supply up to 20 sets of DbT and RH. '
             CALL EASKI(IUP,'How many points to plot?',' ',
-     &             1,'F',20,'W',2,'points to plot',IER,1)
+     &        1,'F',20,'W',2,'points to plot',IER,nbhelp)
             do 196 i=1,IUP
               write(hold,'(2F7.3)') UTD(i),URH(i)
               CALL EASKS(HOLD,' ',' dbT and RH : ',
@@ -245,10 +240,10 @@ C Toggle labels.
 
 C Change scale.
         call easkr(val,'Max temp C','for chart ',0.0,'F',60.,'-',
-     &  60.0,'max temp',IER,0)
+     &    60.0,'max temp',IER,nbhelp)
         Xmax=val
-        call easkr(val,'Max moisture content g/kg','for chart '
-     &  ,0.0,'F',30.,'-',30.0,'max mcnt',IER,0)
+        call easkr(val,'Max moisture content g/kg','for chart ',
+     &    0.0,'F',30.,'-',30.0,'max mcnt',IER,nbhelp)
         Ymax=val
 
 C Calculate the maximum enthalpy for the chart
@@ -298,9 +293,8 @@ C Make up a string describing this time.
         write(outs,'(a,i4,4a)') 'The current timestep (',itstep,') is ',
      &    descrh,' on ',DESCR1
         call edisp(iuout,outs)
-        h(1)='Choose the simulation timestep to use.'
         CALL EASKI(itstep,'Which timestep number? ',' ',
-     &    1,'-',10000,'-',1,'Timestep Number',IER,1)
+     &    1,'-',10000,'-',1,'Timestep Number',IER,nbhelp)
         IPSYTS=ITSTEP
   77    idift=itstep-itstepstart
         ctime=ctime+(enterval*idift)*float(nout)
@@ -392,9 +386,8 @@ C Ignore nodes with an incompatible ISV number.
         endif
 
 C Ask whether user wants to step forwards, backwards or return.
-        h(1) ='Step forwards or backwards or continue.'
         call EASKABC(' ','Options:',
-     &    'previous ts','next ts','continue',IW,1)
+     &    'previous ts','next ts','continue',IW,nbhelp)
         if(iw.eq.1)then
           if(itstep.gt.2)then
             itstep=itstep-1
@@ -533,7 +526,9 @@ C to label 10 and redraw the background lines.
  998    CONTINUE
         GOTO 10       
       elseif(ino.eq.11)then
-        CALL PHELPD('Psychrometric chart',9,'-',0,0,IER)
+        helptopic='res_psychromtric_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('Psychrometric chart',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.12)THEN
 
 C When exiting, clear and then reset the plot records and re-establish
@@ -576,8 +571,10 @@ C#include "building.h"
       logical colok
 #ifdef OSI
       integer iupdown,isym,iid1,iid2,ixs,iys,iix,iiy    ! passed to etplot
+      integer iicol
 #else
       integer*8 iupdown,isym,iid1,iid2,ixs,iys,iix,iiy    ! passed to etplot
+      integer*8 iicol
 #endif
 
       colok=.false.
@@ -597,40 +594,48 @@ C#include "building.h"
         CALL ETPLOT(X,Y,iupdown,isym)
         IF(ICPLOT.EQ.1) THEN
           IF(IPCOMP.GT.100) THEN
-            WRITE(PUTS,*) IPCOMP-100
+            WRITE(PUTS,'(i6)') IPCOMP-100
             call u2pixel(x,y,ixs,iys)
             if(colok)then
               icm=IPCOMP-100
               if(ICM.gt.nzonec) ICM=(IPCOMP-100)-nzonec
-              call winscl('z',ICM)
+              iicol=ICM
+              call winscl('z',iicol)
             endif
             iid1=ixs+4; iid2=iys-4;
             call wstxpt(iid1,iid2,puts)
-            if(colok)call winscl('-',0)
+            if(colok)then
+              iicol=0
+              call winscl('-',iicol)
+            endif
             call forceflush()
           ELSEIF(IPCOMP.GT.0.AND.IPCOMP.LE.100) THEN 
 
 C Keep track of components plotted
             IPLOTREC(IPCOMP,NOD)=1 
-            WRITE(PUTS,*) IPCOMP
+            WRITE(PUTS,'(i4)') IPCOMP
             call u2pixel(x,y,ixs,iys)
             if(colok)then
               icm=IPCOMP
               if(ICM.gt.nzonec) ICM=IPCOMP-nzonec
-              call winscl('z',ICM)
+              iicol=ICM
+              call winscl('z',iicol)
             endif
             iid1=ixs+4; iid2=iys-4;
             call wstxpt(iid1,iid2,puts)
-            if(colok)call winscl('-',0)
+            if(colok)then
+              iicol=0
+              call winscl('-',iicol)
+            endif
             call forceflush()
           ELSEIF(IPCOMP.EQ.0) THEN
-            WRITE(PUTS,*) 'Ext db'
+            WRITE(PUTS,'(a)') 'Ext db'
             call u2pixel(x,y,ixs,iys)
             icm=0
             iid1=ixs+4; iid2=iys-4;
             call wstxpt(iid1,iid2,puts)
           ELSEIF(IPCOMP.LT.0) THEN
-            WRITE(PUTS,*) 'Zone',-IPCOMP
+            WRITE(PUTS,'(a,i3)') 'Zone',-IPCOMP
             call u2pixel(x,y,ixs,iys)
             icm=0
             iid1=ixs+4; iid2=iys-4; 
@@ -638,9 +643,15 @@ C Keep track of components plotted
           ENDIF
         ENDIF 
         call u2pixel(x,y,iix,iiy)
-        if(colok.and.icm.ne.0)call winscl('z',ICM)
+        if(colok.and.icm.ne.0)then
+          iicol=ICM
+          call winscl('z',iicol)
+        endif
         call ecirc(iix,iiy,3,1)
-        if(colok)call winscl('-',0)
+        if(colok)then
+          iicol=0
+          call winscl('-',iicol)
+        endif
         IF(IPCOMP.GT.0.AND.IPCOMP.LE.100) IPLOTREC(IPCOMP,NOD)=1
         call forceflush()
       ENDIF
@@ -698,7 +709,6 @@ C interaction is begun.
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/PSY3/PCNAM1(MPCOM)
       COMMON/PSY2/IPSYTS,ICPLOT
       COMMON/ZONPIK/NZ,NZNO(MCOM)
@@ -706,9 +716,16 @@ C interaction is begun.
       DIMENSION SVERT(50),TMS(MS),TMSO(MS)
       CHARACTER PCNAM1*15
       character*124 head
-      CHARACTER H*72,SVERT*23,KEY*1
+      CHARACTER SVERT*23,KEY*1
       LOGICAL SELECT
       integer MSVERT,ISVERT ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ASKPSYCMP'  ! set for subroutine
 
       PATMOS=1013.25
 
@@ -755,19 +772,9 @@ C If a long list include page facility text.
       SVERT(M+5)  ='? help             '
       SVERT(M+6)  ='- exit             '
 
-C Instanciate h() strings for the menu.
-      H(1)='The list shows the (currently) available components '
-      H(2)='defined in the plant network which can be plotted on '
-      H(3)='the chart. Each selected component is drawn as a  '
-      H(4)='diamond on the chart, linkages between components are'
-      H(5)='drawn as a thick black line. Note that ambient and   '
-      H(6)='zone conditions will only be displayed if a building'
-      H(7)='results library is available for the simulation.'
-      H(8)='If a component is selected and no mark appears on the'
-      H(9)='chart then either the timestep selected is outwith  '
-      H(10)='the simulation period or the component has the same '
-      H(11)='psychrometric state as one already displayed.'
-      H(12)='  '
+C Instanciate help strings for the menu and sub-dialogs.
+      helptopic='plant_psychart_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display the menu.
       CALL EMENU(head,SVERT,MSVERT,ISVERT)
@@ -780,7 +787,9 @@ C If no selection has been made before exit then return with 0.
         IF(.NOT.SELECT)IS=0
         RETURN
       ELSEIF(ISVERT.EQ.(MSVERT-1))THEN
-        CALL PHELPD('node connection selection',12,'-',0,0,IER)
+        helptopic='plant_psychart_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('node connection selection',nbhelp,'-',0,0,IER)
         GOTO 3
       ELSEIF(ISVERT.EQ.(MSVERT-2))THEN
 
@@ -788,7 +797,7 @@ C Script directed input if not in graphic mode.
         if(MMOD.EQ.8)goto 3
         IV=1
   96    CALL EASKI(IV,' ',' Index of component ? ',
-     &         1,'F',NPCOMP,'F',1,'script comp',IER,0)
+     &         1,'F',NPCOMP,'F',1,'script comp',IER,nbhelp)
         if(IER.NE.0)goto 96
         IS=IV
         RETURN
@@ -829,8 +838,8 @@ C Get extenal climate parameters.
         Y=1000.*HUMRT1(X,Z,PATMOS,IOPT)
         CALL PSYPLOT(X,Y,0,0)
       ELSEIF(ISVERT.EQ.(MSVERT-4))THEN
-               IS=99
-               RETURN     
+        IS=99
+        RETURN     
       ELSEIF(ISVERT.EQ.(MSVERT-5))THEN
 
 C If there are enough items allow paging control via EKPAGE.
@@ -879,11 +888,17 @@ C enthmaxy enthalpy y axis maximum
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer ipos,isize      ! for use with etlabel
-      integer iupdown,isym    ! passed to etplot
+      integer iupdown,isym    ! passed to etplot 
+      integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 ipos,isize      ! for use with etlabel
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       PATMOS=1013.25
@@ -907,9 +922,15 @@ C Store original text screen size
           call feedbox(menuchw,2,igfw,igfh)      
           call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
         endif
-        call win3d(menuchw,15,15,5,5,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=15; iiw2=15; iiw3=5; iiw4=5; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        call win3d(menuchw,15,15,5,5,igl,igr,igt,igb,igw,igwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         igwid=igw
         igheight=igwh
       ENDIF
@@ -920,12 +941,14 @@ C Store original text screen size
       CALL startbuffer
 
 C Draw the axes of the chart.
-      CALL horaxis(Xmin,Xmax,igl,igr,igb,xadd,XSC,0,'db Temp C')
-      CALL vrtaxis(0.0,0.01,igl,igb,igt,yadd,YSC,0,0,'Enthalpy kJ/kg')
-      CALL vrtaxis(Ymin,Ymax,igr,igb,igt,yadd,YSC,0,1,'Moisture g/kg')
+      CALL horaxis(Xmin,Xmax,iigl,iigr,iigb,xadd,XSC,0,'db Temp C')
+      CALL vrtaxis(0.0,0.01,iigl,iigb,iigt,yadd,YSC,0,0,
+     &  'Enthalpy kJ/kg')
+      CALL vrtaxis(Ymin,Ymax,iigr,iigb,iigt,yadd,YSC,0,1,
+     &  'Moisture g/kg')
 
 C Store the scaling parameters used in drawing the axes
-      CALL linescale(igl,xadd,XSC,igb,yadd,YSC)
+      CALL linescale(iigl,xadd,XSC,iigb,yadd,YSC)
 C Draw the dry-bulb temperature lines
       iupdown=0
       isym=0
@@ -968,7 +991,10 @@ C      if(colok)call winscl('z',15)
       isym=0
       CALL etplot(0.,GS,iupdown,isym)
       IF(GS.LE.ymax) goto 30 
-      if(colok)call winscl('-',0)
+      if(colok)then
+        iicol=0
+        call winscl('-',iicol)
+      endif
 
 C Draw on the RH curves.
       DO 40 IRH=100,10,-10
@@ -983,7 +1009,10 @@ C Draw on the RH curves.
             CALL etplot(TD,GS,iupdown,isym)
           ELSE
             IF(GS.GT.0..AND.GS.LT.ymax.AND.IPFLAG.EQ.0) THEN
-              if(colok)call winscl('z',17)
+              if(colok)then
+                iicol=17
+                call winscl('z',iicol)
+              endif
               iupdown=-102
               isym=0
               CALL etplot(TD,GS,iupdown,isym)
@@ -994,7 +1023,10 @@ C Case where TD<60 and GS>30
   60          TD=TD-0.05
               GS=1000.*(HUMRT1(TD,RH,PATMOS,IOPT))
               IF(GS.GT.ymax) GOTO 60
-              if(colok)call winscl('z',17)
+              if(colok)then
+                iicol=17
+                call winscl('z',iicol)
+              endif
               iupdown=-102
               isym=0
               CALL etplot(TD,GS,iupdown,isym)
@@ -1004,20 +1036,26 @@ C Case where TD<60 and GS>30
           ENDIF
 
 C Debug.
-C          write(6,*) TD,xmax,xmax/2.
+C          write(6,*) TD,xmax,xmax/2.,RH
 
           call eclose(TD,real(int(xmax/2.)),0.001,close)
 C          IF(TD.EQ.int(xmax/2.)) THEN
           IF(close) THEN
-            write(puts,*) INT(RH),'%'
+            write(puts,'(i4,a)') INT(RH),'%'
             if(GS.LE.ymax)then
-              if(colok)call winscl('z',17)
+              if(colok)then
+                iicol=17
+                call winscl('z',iicol)
+              endif
               ipos=0
               isize=0
               CALL etlabel(puts,TD,GS,ipos,isize)
             endif
           ENDIF
-          if(colok)call winscl('-',0)
+          if(colok)then
+            iicol=0
+            call winscl('-',iicol)
+          endif
           call forceflush()
   50    CONTINUE
   40  CONTINUE
@@ -1037,13 +1075,19 @@ C Draw on the lines of constant enthalpy.
   110       GS=GS+0.05
             TD=TDB(ENTH,(GS/1000.))
             IF(TD.GT.xmax) GOTO 110
-            if(colok)call winscl('z',24)
+            if(colok)then
+              iicol=24
+              call winscl('z',iicol)
+            endif
             iupdown=0
             isym=0
             CALL etplot(TD,GS,iupdown,isym)
           ELSE
             IF(TD.GT.0..AND.TD.LT.xmax.AND.IPFLAG.EQ.0) THEN
-              if(colok)call winscl('z',24)
+              if(colok)then
+                iicol=24
+                call winscl('z',iicol)
+              endif
               iupdown=-102
               isym=0
               CALL etplot(TD,GS,iupdown,isym)
@@ -1054,7 +1098,10 @@ C Case where TD<60 and GS>30
   90          GS=GS+0.05
               TD=TDB(ENTH,(GS/1000.))
               IF(TD.GT.xmax) GOTO 90
-              if(colok)call winscl('z',24)
+              if(colok)then
+                iicol=24
+                call winscl('z',iicol)
+              endif
               iupdown=1
               isym=0
               CALL etplot(TD,GS,iupdown,isym) 
@@ -1063,26 +1110,35 @@ C Case where TD<60 and GS>30
  100          GS=GS-0.05
               TD=TDB(ENTH,(GS/1000.))
               IF(TD.LT.0) GOTO 100
-              if(colok)call winscl('z',24)
+              if(colok)then
+                iicol=24
+                call winscl('z',iicol)
+              endif
               iupdown=-102
               isym=0
               CALL etplot(TD,GS,iupdown,isym)
               IPFLAG=1
             ENDIF                                       
           ENDIF
-          if(colok)call winscl('-',0)
+          if(colok)then
+            iicol=0
+            call winscl('-',iicol)
+          endif
           call forceflush()
   80     CONTINUE
   70   CONTINUE
 
 C Draw on the enthalpy scales
-      if(colok)call winscl('-',0)
+      if(colok)then
+        iicol=0
+        call winscl('-',iicol)
+      endif
       DO 200 IENTH=0,int(ENTHMAXY),10
         ENTH=FLOAT(IENTH)
         IF (ENTH.GT.ENTHMINY.AND.ENTH.LE.ENTHMAXY) THEN
           TD=Xmin
           GS=((ENTH-TD)/(1.82*TD+2500.))*1000.
-          write(puts,*) IENTH
+          write(puts,'(i6)') IENTH
           ipos=0
           isize=0
           CALL etlabel(puts,Xmin-Xmax/XSC,GS,ipos,isize)
@@ -1094,7 +1150,7 @@ C Draw on the enthalpy scales
         ENTH=FLOAT(IENTH)
         IF (ENTH.GT.ENTHMINX.AND.ENTH.LE.ENTHMAX) THEN
           TD=TDB(ENTH,(YMAX)/1000.)
-          write(puts,*) IENTH
+          write(puts,'(i6)') IENTH
           ipos=0
           isize=0
           CALL etlabel(puts,TD,YMAX+YMAX/YSC,ipos,isize)

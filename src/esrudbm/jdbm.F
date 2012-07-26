@@ -46,7 +46,6 @@ C espriou.h provides currentfile and defdbfl.
       COMMON/FILEP/IFIL
       COMMON/MOD/MODEL
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       integer menuchw,igl,igr,igt,igb,igw,igwh
@@ -104,24 +103,38 @@ C Name of current application
       character item*54,db*12,fs*1,inf*144,LCMDFL*144,dfile*72
       character tfile*72
       character outs248*248,LTMP*144
-      character path*72,pass*12,H*72,outs*124
+      character path*72,pass*12,outs*124
       character xfile*144,tg*1,delim*1,cfgroot*24
       character dba*12,act*1,action*12
 C      character curfile*72
+
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer ier
       integer mitm,INO  ! max items and current menu item
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
 #ifdef OSI
       integer impx,impy,iw
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 impx,impy,iw
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       call ezero
       call curmodule('dbm ')
       cAppName = 'dbm'
+      helpinapp='dbm'  ! set once for the application
+      helpinsub='dbm'  ! set for MAIN
       IUOUT=6
       IUIN=5
       IFIL=11
@@ -193,14 +206,26 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=18
         LIMIT =18
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'ESP-r db manager ',
+     &  cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'ESP-r db manager: enquiries to esru@strath.ac.uk')
+     &  pagestitle)
 
 C Open the text display box equal to LIMTTY if MODEL = 8.
       IF(MODEL.EQ.8)THEN
-        CALL win3d(menuchw,8,20,3,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=8; iiw2=20; iiw3=3; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        CALL win3d(menuchw,8,20,3,3,igl,igr,igt,igb,igw,igwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
@@ -295,11 +320,8 @@ C Take command line file name to LCMDF and use as initial climate file.
 
 C Confirm problem name.
 C << see about something other than /usr/esru >>
-      H(1)='The system configuration file holds the definition of'
-      H(2)='the building/plant to be simulated, including the'
-      H(3)='names of all of the files required. If the name given'
-      H(4)='matches an existing file it will be read in and the'
-      H(5)='data will be available for editing.'
+      helptopic='dbm_main_cfg_file'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       DFILE='/usr/esru/esp-r/defaults/defcfg' 
       LTMP=LCMDFL
 
@@ -312,20 +334,20 @@ C name with the full path.
       if(iglib.eq.1.or.iglib.eq.3)then
         if(llt.lt.96)then
           CALL EASKF(LTMP,' Model name ? ',' ',96,DFILE,
-     &      'config file name',IER,5)
+     &      'config file name',IER,nbhelp)
         elseif(llt.ge.96.and.llt.lt.124)then
           CALL EASKF(LTMP,' Model name ? ',' ',124,DFILE,
-     &      'config file name',IER,5)
+     &      'config file name',IER,nbhelp)
         elseif(llt.ge.124.and.llt.le.144)then
           CALL EASKF(LTMP,' Model name ? ',' ',144,DFILE,
-     &      'config file name',IER,5)
+     &      'config file name',IER,nbhelp)
         endif
       elseif(iglib.eq.2)then
         CALL EASKF(LTMP,' Model name ? ',' ',144,DFILE,
-     &    'config file name',IER,5)
+     &    'config file name',IER,nbhelp)
       else
         CALL EASKF(LTMP,' Model name ? ',' ',96,DFILE,
-     &    'config file name',IER,5)
+     &    'config file name',IER,nbhelp)
       endif
 
       IF(LTMP(1:2).EQ.'  ')GOTO 29
@@ -500,12 +522,11 @@ C Use askabout to instanciate the initial help messages (2nd parameter is one).
 C Before exiting, update the cfg file if database files have changed.
         if(cfgok.and.moddb)then
           dok=.true.
-          h(1)='ESP-r detected recent changes which may not have been'
-          h(2)='saved to the configuration file. Just to be sure you '
-          h(3)='should answer yes. '
+          helptopic='dbm_detect_changes'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK(
      &      ' A possible change in database(s) detected.  Update the',
-     &      ' model configuration file?',OK,dok,3)
+     &      ' model configuration file?',OK,dok,nbhelp)
           if(OK)CALL EMKCFGG('-',IER)
         endif
         call erpfree(IBFIL,ISTAT)
@@ -517,10 +538,10 @@ C Before exiting, update the cfg file if database files have changed.
       elseif(INO.EQ.mitm-1)THEN
 
 C Help, if a db loaded then offer user a choice to view its documentation.
-        h(1)='You can access a description of the db manager or the'
-        h(2)='documentation associated with the current database. '
+        helptopic='option_to_view_docs'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABC(' Options:',' ','dbm module help',
-     &    'database documentation','continue',irpt,2)
+     &    'database documentation','continue',irpt,nbhelp)
         if(irpt.eq.1)then
 
 C Help via the askabout facility in esru_ask.F The zero requests display
@@ -547,12 +568,11 @@ C Display word-warped blocks of documentaton.
 C Update the cfg file if database files have changed.
         if(cfgok)then
           dok=.true.
-          h(1)='ESP-r detected recent changes which may not have been'
-          h(2)='saved to the configuration file. Just to be sure you '
-          h(3)='should answer yes. '
+          helptopic='dbm_detect_changes'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL ASKOK(
      &      ' Update the model configuration file to reference the',
-     &      ' current database file names?',OK,dok,3)
+     &      ' current database file names?',OK,dok,nbhelp)
           if(OK)then
             CALL EMKCFGG('-',IER)
             moddb=.false.
@@ -562,10 +582,11 @@ C Update the cfg file if database files have changed.
 
 C Switch from browse mode.
         if(browse)then
-          h(1)='A password is required for modification of databases'
+          helptopic='dbm_password_request'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           pass=' '
           CALL EASKS(pass,' password ',' ',12,'0000',
-     &        'password',IER,1)
+     &        'password',IER,nbhelp)
           if(pass(1:3).eq.'101')then
             browse=.FALSE.
           else
@@ -585,9 +606,8 @@ C Create new database (minimal).
           IBFIL=igendbf(idbhash)
           write(db,'(a)') seldb
         endif
-  31    H(1) ='To create a new database, you are asked for the type of'
-        H(2) ='data and a base name for the database (both an ascii &'
-        H(3) ='a binary version will be created).'
+  31    helptopic='dbm_create_new_db'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         dba(1)='multicon_db'
         dba(2)='material'
         dba(3)='optical'
@@ -610,7 +630,8 @@ C Create new database (minimal).
         endif
         write(outs,'(3a)') ' Root name of new ',dba(idbhash)(1:lenfn),
      &    ' database file?'
-        CALL EASKS(tfile,outs,' ',72,'xx_db','root file name',IER,3)
+        CALL EASKS(tfile,outs,' ',72,'xx_db','root file name',
+     &    IER,nbhelp)
         IF(tfile(1:2).EQ.'  '.or.ier.NE.0)GOTO 31
         write(LAGENDB,'(a,a)')tfile(1:lnblnk(tfile)),'.gdba'
         write(LGENDB,'(a,a)')tfile(1:lnblnk(tfile)),'.gdb'
@@ -645,8 +666,10 @@ C Test writing out a bcf file...
 C << make a variant which writes out only those constructions which >>
 C << are referenced in the current model >>
   38    tfile='test.bcf'
+        helptopic='BCF_file_name_list'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKS(tfile,' BCF file name ? ',' ',72,
-     &        'xxx','bcf file name',IER,0)
+     &        'xxx','bcf file name',IER,nbhelp)
         IF(tfile(1:2).EQ.'  '.or.ier.NE.0)GOTO 38
 
 C Select some of the constructions for writing. First, scan the
@@ -662,7 +685,7 @@ C constructions db header to get list of constructions.
         INPIC=nbitem(idbhc)
         CALL EPICKS(INPIC,icnsel,' ',
      &   ' Select constructions to include',
-     &   12,nbitem(idbhc),cnsel,'BCF contents:',IER,3)
+     &   12,nbitem(idbhc),cnsel,'BCF contents:',IER,nbhelp)
         call bcfwrite(iafil,tfile,'p',inpic,cnsel,ier)
 
       elseif(INO.EQ.mitm-6)THEN
@@ -672,11 +695,8 @@ C Nothing associated with this option.
       ELSEIF(INO.EQ.1)THEN
 
 C Change problem name.
-        H(1)='The system configuration file holds the definition of'
-        H(2)='the building/plant to be simulated, including the'
-        H(3)='names of all of the files required. If the name given'
-        H(4)='matches an existing file it will be read in and the'
-        H(5)='data will be available for editing.'
+        helptopic='dbm_main_cfg_file'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         DFILE='/usr/esru/esp-r/defaults/defcfg' 
         LTMP=LCMDFL
 
@@ -686,20 +706,20 @@ C Call EASKF depending on the current file name length.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
             CALL EASKF(LTMP,' Model name ? ',' ',96,DFILE,
-     &        'config file name',IER,5)
+     &        'config file name',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
             CALL EASKF(LTMP,' Model name ? ',' ',124,DFILE,
-     &        'config file name',IER,5)
+     &        'config file name',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
             CALL EASKF(LTMP,' Model name ? ',' ',144,DFILE,
-     &        'config file name',IER,5)
+     &        'config file name',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
           CALL EASKF(LTMP,' Model name ? ',' ',144,DFILE,
-     &      'config file name',IER,5)
+     &      'config file name',IER,nbhelp)
         else
           CALL EASKF(LTMP,' Model name ? ',' ',96,DFILE,
-     &      'config file name',IER,5)
+     &      'config file name',IER,nbhelp)
         endif
 
         IF(LTMP.EQ.' ')GOTO 289
@@ -822,6 +842,46 @@ C ***** dummy routines for c code active descriptions buttons.
       return
       end
 
+      subroutine chgsun(isunhour)
+      return
+      end
+
+      subroutine chgeye(EVX,EVY,EVZ,VX,VY,VZ,EAN,JITZNM,JITSNM,JITVNO,
+     &   JITOBS,JITSNR,JITGRD,JITORG,DIS,JITBND,JITDSP,JITHLS,JITHLZ,
+     &   JITPPSW)
+
+C Passed paramters.
+      real EVX,EVY,EVZ,VX,VY,VZ,EAN,DIS
+
+C Depending on computer type set integer size of passed parameters.
+#ifdef OSI
+      integer JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
+      integer JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+#else
+      integer*8 JITZNM,JITSNM,JITVNO,JITOBS,JITSNR,JITGRD,JITORG
+      integer*8 JITBND,JITDSP,JITHLS,JITHLZ,JITPPSW
+#endif     
+      return
+      end
+
+      subroutine chgzonpik(jizgfoc,jnzg)
+#ifdef OSI
+      integer jizgfoc,jnzg  ! for use with viewtext
+#else
+      integer*8 jizgfoc,jnzg  ! for use with viewtext
+#endif
+      return
+      end
+
+      subroutine chgzonpikarray(jnznog,jnznogv)
+#ifdef OSI
+      integer jnznog,jnznogv
+#else
+      integer*8 jnznog,jnznogv
+#endif
+      return
+      end
+
 C **** kact returns a single character for use as a key in a menu based
 C on browse or modify act character.
       character*1 function kact(act,key)
@@ -874,7 +934,6 @@ C position.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       common/gendb2/dbtag(MGDB),dbmenu(MGDB),dbdate(MGDB),dbnote(MGDB),
      &              dbdoc(10)
 
@@ -882,7 +941,16 @@ C position.
       dimension lenn(MGDB),dba(MGDB)
       logical status,statarray
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,dba*12
-      character dbnote*72,dblist*36,h*72,seldb*12,dbsel*12
+      character dbnote*72,dblist*36,seldb*12,dbsel*12
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='pkavailgbd'  ! set for subroutine
+      helptopic='dbm_select_available_db'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       idbhash=0
       status=.FALSE.
@@ -930,9 +998,8 @@ C Loop through list of databases creating strings.
         endif
   37  continue
       INPIC=1
-      h(1)='You may select one database to focus on.'
       CALL EPICKS(INPIC,idbsel,' ',' Which database:',
-     &        36,MGDB,dblist,'databases',IER,1)
+     &        36,MGDB,dblist,'databases',IER,nbhelp)
       IF(INPIC.EQ.0)then
         seldb='none'
         status=.false.
@@ -979,7 +1046,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/FILEP/IFIL
 
       common/gendb1/idbwidth(MGDB),lastr(MGDB),nbdbdoc(MGDB),
@@ -991,11 +1057,18 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       dimension idpendord(MGDB),dba(MGDB)
 
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,dbnote*72
-      character H*72,outs*124
+      character outs*124
       character tfile*72,act*12,dba*12,db*12,fs*1
       character LAGENDB*72,LTMP*72,afil*72,LBGENDB*72
       logical unixok
       integer ier
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='dealwithgdb'  ! set for subroutine
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1095,10 +1168,11 @@ C            write(6,*) 'asci generic asci needing conversion'
             else
               write(LTMP,'(a,a)') LTMP(1:lcfgr),'.gdb'
             endif
-            h(1)='This will be the binary version of the database.'
+            helptopic='deal_with_binary'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             LBGENDB=LTMP
   40        CALL EASKS(LBGENDB,' Generic (destination) binary name ? ',
-     &        ' ',72,'xxx','generic binary file name',IER,1)
+     &        ' ',72,'xxx','generic binary file name',IER,nbhelp)
             IF(LBGENDB(1:2).EQ.'  '.or.ier.NE.0)GOTO 40
             call ERAGDB(0,IAFIL,LAGENDB,IBFIL,LBGENDB,idp,IER)
             if(ier.eq.0)then
@@ -1129,11 +1203,10 @@ C Legacy file detected, import it if possible.
               write(tfile,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
      &          dba(i)(1:lnblnk(dba(i)))
             endif
-            h(1)='An older format database detected. This will'
-            h(2)='be converted into generic asci and binary format.'
-            h(3)='Please supply a root name for the new files.'
+            helptopic='deal_with_older_format'
+            call gethelptext(helpinsub,helptopic,nbhelp)
   49        CALL EASKS(tfile,'Root name of converted database?',
-     &        ' ',72,'xx_db','root file name',IER,3)
+     &        ' ',72,'xx_db','root file name',IER,nbhelp)
             IF(tfile(1:2).EQ.'  '.or.ier.NE.0)GOTO 49
             write(LAGENDB,'(a,a)')tfile(1:lnblnk(tfile)),'.gdba'
             write(LBGENDB,'(a,a)')tfile(1:lnblnk(tfile)),'.gdb'
@@ -1187,11 +1260,10 @@ C binary to legacy ASCII and then import that to generic format.
               write(tfile,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
      &          dba(i)(1:lnblnk(dba(i)))
             endif
-            h(1)='An older format database detected. This will'
-            h(2)='be converted into generic asci and binary format.'
-            h(3)='Please supply a root name for the new files.'
+            helptopic='deal_with_older_format'
+            call gethelptext(helpinsub,helptopic,nbhelp)
  149        CALL EASKS(tfile,'Root name of converted database?',
-     &        ' ',72,'xx_db','root file name',IER,3)
+     &        ' ',72,'xx_db','root file name',IER,nbhelp)
             IF(tfile(1:2).EQ.'  '.or.ier.NE.0)GOTO 149
             write(afil,'(2a)')   tfile(1:lnblnk(tfile)),'.la'
             write(LAGENDB,'(2a)')tfile(1:lnblnk(tfile)),'.gdba'
@@ -1225,14 +1297,13 @@ C Create a matching ascii version of the generic db.
               endif
             elseif(idp.eq.11)then
 
-C Convert binary events profiles database into the ASCII version
-C filling the common blocks. 
+C Scan events profiles database into common blocks. 
               write(LPRFDB,'(a)') gendbfn(idp)
               IPRODB=IFIL+2
-              CALL TROPRO(IAFIL,afil,IER)
+              call TRIPROCOM(IPRODB,afil,IER)
               if(ier.eq.0)then
                 lenf=lnblnk(afil)
-                write(outs,*) 'Legacy asci profiles ',afil(1:lenf),
+                write(outs,*) 'Legacy event profiles ',afil(1:lenf),
      &            ' created...'
                 call edisp(iuout,outs)
                 call IMPROFL(IAFIL,afil,IBFIL,LBGENDB,idp,IER)
@@ -1360,10 +1431,11 @@ C scan the ASCII file.
           else
             write(LTMP,'(a,a)') LTMP(1:lcfgr),'.gdb'
           endif
-          h(1)='This will be the binary version of the database.'
+          helptopic='deal_with_binary'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           LBGENDB=LTMP
   50      CALL EASKS(LBGENDB,' Generic (destination) binary name ? ',
-     &      ' ',72,'xxx','generic binary file name',IER,1)
+     &      ' ',72,'xxx','generic binary file name',IER,nbhelp)
           IF(LBGENDB(1:2).EQ.'  '.or.ier.NE.0)GOTO 50
           call ERAGDB(0,IAFIL,LAGENDB,IBFIL,LBGENDB,idp,IER)
           if(ier.eq.0)then
@@ -1394,11 +1466,10 @@ C Legacy file detected, import it if possible.
             write(tfile,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
      &        dba(i)(1:lnblnk(dba(i)))
           endif
-          h(1)='An older format database detected. This will'
-          h(2)='be converted into generic asci and binary format.'
-          h(3)='Please supply a root name for the new files.'
+          helptopic='deal_with_older_format'
+          call gethelptext(helpinsub,helptopic,nbhelp)
   59      CALL EASKS(tfile,'Root name of converted database?',
-     &      ' ',72,'xx_db','root file name',IER,3)
+     &      ' ',72,'xx_db','root file name',IER,nbhelp)
           IF(tfile(1:2).EQ.'  '.or.ier.NE.0)GOTO 59
           write(LAGENDB,'(a,a)')tfile(1:lnblnk(tfile)),'.gdba'
           write(LBGENDB,'(a,a)')tfile(1:lnblnk(tfile)),'.gdb'
@@ -1452,11 +1523,10 @@ C binary to legacy ASCII and then import that to generic format.
             write(tfile,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
      &        dba(i)(1:lnblnk(dba(i)))
           endif
-          h(1)='An older format database detected. This will'
-          h(2)='be converted into generic asci and binary format.'
-          h(3)='Please supply a root name for the new files.'
+          helptopic='deal_with_older_format'
+          call gethelptext(helpinsub,helptopic,nbhelp)
  159      CALL EASKS(tfile,'Root name of converted database?',
-     &      ' ',72,'xx_db','root file name',IER,3)
+     &      ' ',72,'xx_db','root file name',IER,nbhelp)
           IF(tfile(1:2).EQ.'  '.or.ier.NE.0)GOTO 159
           write(afil,'(2a)')   tfile(1:lnblnk(tfile)),'.la'
           write(LAGENDB,'(2a)')tfile(1:lnblnk(tfile)),'.gdba'
@@ -1494,7 +1564,7 @@ C Event profiles.
 C << move to using common blocks version of events >>
             write(LPRFDB,'(a)') gendbfn(idp)
             IPRODB=IFIL+2
-            CALL TROPRO(IAFIL,afil,IER)
+            call TRIPROCOM(IPRODB,afil,IER)
             if(ier.eq.0)then
               lenf=lnblnk(afil)
               write(outs,*) 'Legacy asci profiles ',afil(1:lenf),
@@ -1540,7 +1610,6 @@ C external tool.
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
 C A set of possible image formats which can be accepted within
 C a model configuration file. These definitions are held in the
@@ -1577,10 +1646,17 @@ C  limgfil (72 char) name of the image file << ?? longer string >>
       character ilist*200,dolist*254
       character fmttag*4,fmtexe*20,tfile*72,focus*4
       character longtfile*144,longtfiledos*144
-      character topic*248,head*136,act*1,h*72
+      character topic*248,head*136,act*1
       integer iglib  ! if one then X11 if 2 then GTK if 3 text only.
 
       logical concat,show,unixok
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='imgdisp'  ! set for subroutine
 
 C Check if Unix-based or DOS based.
       call isunix(unixok)
@@ -1668,17 +1744,9 @@ C If GTK version then use GTK calls to display images in popup.
         if((iton.eq.0.or.iforce.eq.1))then
 
 C Setup help text for the popup.
-          h(1)='Images can be associated with a model for various'
-          h(2)='purposes: '
-          h(3)=' * document conditions at the physical site'
-          h(4)=' * document assumptions in the model'
-          h(5)=' * indicate what performance is expected'
-          h(6)='   '
-          h(7)='Images are added to a model via the context->images'
-          h(8)='menu item. There can be up to 10 images associate with'
-          h(9)='a model. '
-          h(10)='Images of type GIF and XBM and ?? are supported.'
-          CALL PHELPW(10,IHW,IER)
+          helptopic='dbm_image_display'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPW(nbhelp,IHW,IER)
 
           do 99 img=1,noimg
             if(imgfmt(img)(1:3).eq.'GIF'.or.
@@ -1744,7 +1812,6 @@ C if database names have changed.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/FILEP/IFIL
       common/rpath/path
       common/deflt4/dinstpath
@@ -1758,13 +1825,20 @@ C      common/gendb/LGENDB
 
       dimension dba(MGDB)
 
-      character H*72,outs*124,LTMP*72,afil*72,LEXP*72
+      character outs*124,LTMP*72,afil*72,LEXP*72
       character tfile*72,act*1,dba*12,db*12,dbask*12,fs*1,doit*248
       character LAGENDB*72,LGENDB*72
-      character dinstpath*48,path*72,dirpath*48
+      character dinstpath*60,path*72,dirpath*72
       logical unixok,browse,moddb,copydef,XST,newfile
       logical legacy,asciifound
       integer ier
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='modifygdb'  ! set for subroutine
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1803,59 +1877,41 @@ C Setup root names for any new files that might be made.
       dba(13)='component_db'
 
 C Confirm name of database.
+      helptopic='dbm_confirm_db_name'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       tfile=gendbfn(jdbhash)
  129  if(jdbhash.eq.1)then
-        h(1)='This file holds information on constructions (multi-'
-        h(2)='layer (highest level abstraction).'
         CALL EASKS(tfile,' Constructions db file name ? ',' ',72,
-     &    dgendbfn(jdbhash),'MLC db file name',IER,2)
+     &    dgendbfn(jdbhash),'MLC db file name',IER,nbhelp)
       elseif(jdbhash.eq.2)then
-        h(1)='This file holds the attributes of each material.'
         CALL EASKS(tfile,' Material db file name ? ',' ',72,
-     &    dgendbfn(jdbhash),'Mat db file name',IER,1)
+     &    dgendbfn(jdbhash),'Mat db file name',IER,nbhelp)
       elseif(jdbhash.eq.4)then
         call edisp(iuout,'hash of 4 currently not used.')
       elseif(jdbhash.eq.5)then
-        h(1)='The room acoustic db holds the absorption coefficients of'
-        h(2)='materials and systems in order to perform the calculation'
-        h(3)='of the reverberation time in a zone.' 
         CALL EASKS(tfile,' Acoustic db file name ? ',' ',72,
-     &        dgendbfn(jdbhash),'acoustic db file name',IER,3)
+     &    dgendbfn(jdbhash),'acoustic db file name',IER,nbhelp)
       elseif(jdbhash.eq.6)then
-        h(1)='This file holds RGB data pointed to by'
-        h(2)='material database entries. '
         CALL EASKS(tfile,' Colour db file name ? ',' ',72,
-     &        dgendbfn(jdbhash),'colour db file name',IER,2)
+     &    dgendbfn(jdbhash),'colour db file name',IER,nbhelp)
       elseif(jdbhash.eq.7)then
-        h(1)='This file holds growth data for mixotoxins and does not'
-        h(2)='reference any other database.'
         CALL EASKS(tfile,' Micotoxin db file name ? ',' ',72,
-     &        dgendbfn(jdbhash),'micotoxin db file name',IER,2)
+     &    dgendbfn(jdbhash),'micotoxin db file name',IER,nbhelp)
       elseif(jdbhash.eq.8)then
-        h(1)='The environmental impacts db holds the environmental'
-        h(2)='information in order to perform the calculation'
-        h(3)='of the Life Cycle Impact Assessment (LCIA) of' 
-        h(4)='a material, a construction or the whole project.' 
         CALL EASKS(tfile,' Environmental impacts db file name ? ',' ',
-     &        72,dgendbfn(jdbhash),'LCA impacts db file',IER,4)
+     &    72,dgendbfn(jdbhash),'LCA impacts db file',IER,nbhelp)
       elseif(jdbhash.eq.9)then
-        H(1)='The transport db holds the environmental impacts'
-        H(2)='of various mean of transport, which are used'
-        H(3)='during the project life span.'
         CALL EASKS(tfile,' Transport db file name ? ',' ',
-     &        72,dgendbfn(jdbhash),'transport db file name',IER,3)
+     &    72,dgendbfn(jdbhash),'transport db file name',IER,nbhelp)
       elseif(jdbhash.eq.10)then
-        h(1)='This file holds sets of wind pressure coefficients.'
         CALL EASKS(tfile,' Pressure db file name ? ',' ',72,
-     &        dgendbfn(jdbhash),'pressure db file name',IER,1)
+     &    dgendbfn(jdbhash),'pressure db file name',IER,nbhelp)
       elseif(jdbhash.eq.11)then
-        h(1)='This file holds profiles for use by casual gains.'
         CALL EASKS(tfile,' Event profiles db file name ? ',' ',72,
-     &        dgendbfn(jdbhash),'event profiles db file name',IER,1)
+     &    dgendbfn(jdbhash),'event profiles db file name',IER,nbhelp)
       elseif(jdbhash.eq.12)then
-        h(1)='This file holds templates for plant components.'
         CALL EASKS(tfile,' Plant component db file name ? ',' ',72,
-     &        dgendbfn(jdbhash),'plant component db file name',IER,1)
+     &    dgendbfn(jdbhash),'plant component db file name',IER,nbhelp)
       elseif(jdbhash.eq.13)then
         call usrmsg(' ',' Component db not yet available...','W')
         return
@@ -1924,21 +1980,8 @@ C Note in the code below "isw" is an index returned based on the
 C users response to what they want done. The variable "iter" is
 C returned from the call to ckgdbtype based on the format of the
 C file (current or legacy & text or binary).
- 130  H(1)='The following options can be selected:'
-      H(2)=' '
-      H(3)='a) If the file exists than you can browse the database '
-      H(4)='   and if you have permission to update the file you'
-      H(5)='   can edit the entities in the database.'
-      H(6)=' '
-      H(7)='b) select another file: you will asked for a file'
-      H(8)='   name and if it is found you can browse or edit it.'
-      H(9)=' '
-      H(10)='c) make a new database: a new (minimal) database will'
-      H(11)='   be created based on the file name you supply.'
-      H(12)=' '
-      H(13)='d) copy default database: a project copy of the default'
-      H(14)='  database will be made and you will be offered a '
-      H(15)='  chance to rename it.'
+ 130  helptopic='dbm_db_management'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       if(.NOT.XST)then
 
 C If db does not exist offer the following choices:
@@ -1949,7 +1992,7 @@ C If db does not exist offer the following choices:
      &    'a browse/edit (NOT APPLICABLE)','b select another database',
      &    'c make a new database','d make project copy of database',
      &    ' ',' ',' ',' ',
-     &    ' ',' ',' ',' ',isw,idno,15)
+     &    ' ',' ',' ',' ',isw,idno,nbhelp)
         copydef=.true.
         newfile=.true.
         idbhash=jdbhash
@@ -1970,28 +2013,28 @@ C If corporate database then offer the following choices:
      &       'b select another database','c make a new database',
      &       'd make project copy of database',
      &       'e binary >> ascii export','f ascii >> binary import',
-     &       'g legacy conversion',' ',' ',' ',' ',' ',isw,idno,15)
+     &       'g legacy conversion',' ',' ',' ',' ',' ',isw,idno,nbhelp)
           elseif(asciifound.and.(.NOT.legacy))then
             call MENUATOL(outs,'Database options:',
      &       'a browse or edit this database',
      &       'b select another database','c make a new database',
      &       'd make project copy of database',
      &       'e binary >> ascii export','f ascii >> binary import',
-     &       ' ',' ',' ',' ',' ',' ',isw,idno,15)
+     &       ' ',' ',' ',' ',' ',' ',isw,idno,nbhelp)
           elseif((.NOT.asciifound).and.legacy)then
             call MENUATOL(outs,'Database options:',
      &       'a browse or edit this database',
      &       'b select another database','c make a new database',
      &       'd make project copy of database',
      &       'e binary >> ascii export','f N/A',
-     &       'g legacy conversion',' ',' ',' ',' ',' ',isw,idno,15)
+     &       'g legacy conversion',' ',' ',' ',' ',' ',isw,idno,nbhelp)
           else
             call MENUATOL(outs,'Database options:',
      &       'a browse or edit this database',
      &       'b select another database','c make a new database',
      &       'd make project copy of database',
      &       'e binary >> ascii export',' ',' ',
-     &       ' ',' ',' ',' ',' ',isw,idno,15)
+     &       ' ',' ',' ',' ',' ',isw,idno,nbhelp)
           endif
           copydef=.false.
           if(isw.eq.3)then
@@ -2012,28 +2055,28 @@ C If db exists locally offer the following choices:
      &       'b select another database','c make a new database',
      &       'd make copy of database',
      &       'e binary >> ascii export','f ascii >> binary import',
-     &       'g legacy conversion',' ',' ',' ',' ',' ',isw,idno,15)
+     &       'g legacy conversion',' ',' ',' ',' ',' ',isw,idno,nbhelp)
           elseif(asciifound.and.(.NOT.legacy))then
             call MENUATOL(outs,'Database options:',
      &       'a browse or edit this database',
      &       'b select another database','c make a new database',
      &       'd make copy of database',
      &       'e binary >> ascii export','f ascii >> binary import',
-     &       ' ',' ',' ',' ',' ',' ',isw,idno,15)
+     &       ' ',' ',' ',' ',' ',' ',isw,idno,nbhelp)
           elseif((.NOT.asciifound).and.legacy)then
             call MENUATOL(outs,'Database options:',
      &       'a browse or edit this database',
      &       'b select another database','c make a new database',
      &       'd make copy of database',
      &       'e binary >> ascii export','f N/A',
-     &       'g legacy conversion',' ',' ',' ',' ',' ',isw,idno,15)
+     &       'g legacy conversion',' ',' ',' ',' ',' ',isw,idno,nbhelp)
           else
             call MENUATOL(outs,'Database options:',
      &       'a browse or edit this database',
      &       'b select another database','c make a new database',
      &       'd make copy of database',
      &       'e binary >> ascii export',' ',' ',
-     &       '  ',' ',' ',' ',' ',isw,idno,15)
+     &       '  ',' ',' ',' ',' ',isw,idno,nbhelp)
           endif
           copydef=.true.
           if(isw.eq.3)then
@@ -2127,11 +2170,10 @@ C A legacy db found. Convert it to generic ascii and binary.
             write(tfile,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
      &        dba(idbhash)(1:lnblnk(dba(idbhash)))
           endif
-          h(1)='An older format database detected. This will'
-          h(2)='be converted into generic asci and binary format.'
-          h(3)='Please supply a root name for the new files.'
+          helptopic='deal_with_older_format'
+          call gethelptext(helpinsub,helptopic,nbhelp)
   49      CALL EASKS(tfile,'Root name of converted database?',
-     &      ' ',72,'xx_db','root file name',IER,3)
+     &      ' ',72,'xx_db','root file name',IER,nbhelp)
           IF(tfile(1:2).EQ.'  '.or.ier.NE.0)GOTO 49
 
 C In this case gendbfn() is the legacy file and LGENDB is the generic file.
@@ -2166,9 +2208,8 @@ C Depending on the type of database call various conversion functions.
 C << next lines ask if user want to use this database >>
 C << and if not to back out to the earlier database name >>
 C              dok=.true.
-C              h(1)='<< text to be added >> '
 C              write(outs,'(3a)') 'Use ',LGENDB(1:lnblnk(LGENDB)),'?'
-C              call askok(' ',outs,OK,dok,1)
+C              call askok(' ',outs,OK,dok,nbhelp)
 C              if(OK)then
 C                ...
 C              else
@@ -2202,11 +2243,10 @@ C generic format ASCII (LAGENDB) and binary (LGENDB).
             write(tfile,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
      &        dba(idbhash)(1:lnblnk(dba(idbhash)))
           endif
-          h(1)='An older format database detected. This will'
-          h(2)='be converted into generic asci and binary format.'
-          h(3)='Please supply a root name for the new files.'
+          helptopic='deal_with_older_format'
+          call gethelptext(helpinsub,helptopic,nbhelp)
  149      CALL EASKS(tfile,'Root name of converted database?',
-     &      ' ',72,'xx_db','root file name',IER,3)
+     &      ' ',72,'xx_db','root file name',IER,nbhelp)
           IF(tfile(1:2).EQ.'  '.or.ier.NE.0)GOTO 149
           write(afil,'(2a)')   tfile(1:lnblnk(tfile)),'.la'
           write(LAGENDB,'(2a)')tfile(1:lnblnk(tfile)),'.gdba'
@@ -2253,7 +2293,7 @@ C Event profiles database.
 C << need to move to common block version of data >>
             write(LPRFDB,'(a)')  gendbfn(idbhash)
             IPRODB=IFIL+2
-            CALL TROPRO(IAFIL,afil,IER)
+            call TRIPROCOM(IPRODB,afil,IER)
             if(ier.eq.0)then
               lenf=lnblnk(afil)
               write(outs,*) 'Legacy asci profiles ',afil(1:lenf),
@@ -2327,9 +2367,10 @@ C the file name as known to esp-r and LCOPY for the system cp call.
           write(tfile,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
      &      dba(idbhash)(1:lnblnk(dba(idbhash))),'.gdb'
         endif
-        h(1)='This is the name of the local copy of the database.'
+        helptopic='deal_with_local_copy'
+        call gethelptext(helpinsub,helptopic,nbhelp)
  549    CALL EASKS(tfile,'Name of local database?',
-     &    ' ',72,'xx_db','local file name',IER,3)
+     &    ' ',72,'xx_db','local file name',IER,nbhelp)
         IF(tfile(1:2).EQ.'  '.or.ier.NE.0)GOTO 549
         write(LTMP,'(3a)') path(1:lnblnk(path)),fs,
      &    tfile(1:lnblnk(tfile))
@@ -2377,9 +2418,10 @@ C to file options.
         IAFIL=IFIL+1
         IBFIL=igendbf(idbhash)
         LGENDB=gendbfn(idbhash)
-  41    h(1)='This must be the text version of a generic database.'
+  41    helptopic='deal_with_text_version'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKS(LEXP,' Export ascii name ? ',' ',72,
-     &    'xx','generic ascii file name',IER,1)
+     &    'xx','generic ascii file name',IER,nbhelp)
         IF(LEXP(1:2).EQ.'  '.or.LEXP(1:4).eq.'UNKN')GOTO 41
         call MKAGDB(IAFIL,LEXP,IBFIL,LGENDB,idbhash,IER)
         if(ier.eq.0)then
@@ -2441,6 +2483,7 @@ C calls in esru_lib.F
       ier=0
       return
       end
+
 
       SUBROUTINE EMKVIEW(IUO,CFGOK,IER)
       logical cfgok

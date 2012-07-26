@@ -24,7 +24,6 @@ C USER-SPECIFIED PERIOD.
 
       SUBROUTINE CLMGRF
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/MXMNC/YMAX(6),YMIN(6),TMAX,TMIN,DT
       COMMON/RADTYP/IDNGH
@@ -35,7 +34,7 @@ C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       CHARACTER*26 ITEM(16)
-      character hold*72,h*72
+      character hold*72
       DIMENSION IPICK(6)
       LOGICAL mxmn
       integer onleft  ! number of left axis
@@ -44,9 +43,20 @@ C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CLMGRF'  ! set for cfiles
 
       onleft = 0      ! initial assumption of no axis
       onright = 0
@@ -160,44 +170,94 @@ C Take into account which axis needs to be drawn as in esrures/tgraph.F.
           if(IFS.ne.IMFS)call winfnt(IMFS)
           if(onright.eq.3)then
             if(onleft.eq.2)then
-              CALL win3d(menuchw,10,20,6,3,igl,igr,igt,igb,igw,igwh)
+
+C Setup and pass in parameters to win3d.
+              iiw1=10; iiw2=20; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,10,20,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.1)then
-              CALL win3d(menuchw,6,20,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=6; iiw2=20; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,6,20,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.0)then
-              CALL win3d(menuchw,3,20,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=3; iiw2=20; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,3,20,6,3,igl,igr,igt,igb,igw,igwh)
             endif
-            igw=igr-igl
-            igwh=igb-igt
+            igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+            igw=int(iigw); igwh=int(iigwh)
           elseif(onright.eq.2)then
             if(onleft.eq.2)then
-              CALL win3d(menuchw,10,16,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=10; iiw2=16; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,10,16,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.1)then
-              CALL win3d(menuchw,6,16,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=6; iiw2=16; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,6,16,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.0)then
-              CALL win3d(menuchw,3,16,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=3; iiw2=16; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,3,16,6,3,igl,igr,igt,igb,igw,igwh)
             endif
-            igw=igr-igl
-            igwh=igb-igt
+            igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+            igw=int(iigw); igwh=int(iigwh)
           elseif(onright.eq.1)then
             if(onleft.eq.2)then
-              CALL win3d(menuchw,10,12,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=10; iiw2=12; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,10,12,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.1)then
-              CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=6; iiw2=12; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.0)then
-              CALL win3d(menuchw,3,12,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=3; iiw2=12; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,3,12,6,3,igl,igr,igt,igb,igw,igwh)
             endif
-            igw=igr-igl
-            igwh=igb-igt
+            igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+            igw=int(iigw); igwh=int(iigwh)
           elseif(onright.eq.0)then
             if(onleft.eq.2)then
-              CALL win3d(menuchw,10,6,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=10; iiw2=6; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,10,6,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.1)then
-              CALL win3d(menuchw,6,6,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=6; iiw2=6; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,6,6,6,3,igl,igr,igt,igb,igw,igwh)
             elseif(onleft.eq.0)then
-              CALL win3d(menuchw,3,6,6,3,igl,igr,igt,igb,igw,igwh)
+              iiw1=3; iiw2=6; iiw3=6; iiw4=3; iimenu=menuchw
+              iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              CALL win3d(menuchw,3,6,6,3,igl,igr,igt,igb,igw,igwh)
             endif
-            igw=igr-igl
-            igwh=igb-igt
+            igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+            igw=int(iigw); igwh=int(iigwh)
           endif
           if(IFS.ne.IMFS)call winfnt(IFS)
           call startbuffer()
@@ -225,9 +285,10 @@ C    6= rh (at igr+100 farthest at right)
 
 C Present vertex coords for editing then parse data from HOLD.
         WRITE(HOLD,'(1x,4f7.1)')YMAX(1),YMIN(1),YMAX(2),YMIN(2)
-        H(1)='Both direct and diffuse solar share an axis. '
+        helptopic='clm_solar_graph'
+        call gethelptext(helpinsub,helptopic,nbhelp)
   42    CALL EASKS(HOLD,' Max & Min for solar radiation & db temp:',
-     &     ' : ',72,' 800. 0. 40. 0. ','1st axis mx mn',IER,1)
+     &     ' : ',72,' 800. 0. 40. 0. ','1st axis mx mn',IER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,YMAX(1),0.,0.,'-','dif sol mx',IER)
         CALL EGETWR(HOLD,K,YMIN(1),0.,0.,'-','dif sol mn',IER)
@@ -240,9 +301,10 @@ C Present vertex coords for editing then parse data from HOLD.
 C Second set of axis.
         WRITE(HOLD,'(1x,6f7.1)')YMAX(4),YMIN(4),YMAX(5),YMIN(5),
      &    YMAX(6),YMIN(6)
-        H(1)='Wind is in m/sec, direction in degrees. '
+        helptopic='clm_wind_graph'
+        call gethelptext(helpinsub,helptopic,nbhelp)
   43    CALL EASKS(HOLD,' Max & Min for wind speed, wind dir, rh:',' :',
-     &     72,' 10. 0. 360. 0. 100. 0.','2nd axis mx mn',IER,1)
+     &     72,' 10. 0. 360. 0. 100. 0.','2nd axis mx mn',IER,nbhelp)
         K=0
         CALL EGETWR(HOLD,K,YMAX(4),0.,0.,'-','wind spd mx',IER)
         CALL EGETWR(HOLD,K,YMIN(4),0.,0.,'-','wind spd mn',IER)
@@ -302,44 +364,92 @@ C Take into account which axis needed to be drawn as in esrures/tgraph.F
         if(IFS.ne.IMFS)call winfnt(IMFS)
         if(onright.eq.3)then
           if(onleft.eq.2)then
-            CALL win3d(menuchw,10,20,6,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=10; iiw2=20; iiw3=6; iiw4=3; iimenu=menuchw
+            iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,10,20,6,3,igl,igr,igt,igb,igw,igwh)
           elseif(onleft.eq.1)then
-            CALL win3d(menuchw,6,20,6,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=6; iiw2=20; iiw3=6; iiw4=3; iimenu=menuchw
+            iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,6,20,6,3,igl,igr,igt,igb,igw,igwh)
           elseif(onleft.eq.0)then
-            CALL win3d(menuchw,3,20,6,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=3; iiw2=20; iiw3=6; iiw4=3; iimenu=menuchw
+            iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,3,20,6,3,igl,igr,igt,igb,igw,igwh)
           endif
-          igw=igr-igl
-          igwh=igb-igt
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
         elseif(onright.eq.2)then
           if(onleft.eq.2)then
-            CALL win3d(menuchw,10,16,6,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=10; iiw2=16; iiw3=6; iiw4=3; iimenu=menuchw
+            iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,10,16,6,3,igl,igr,igt,igb,igw,igwh)
           elseif(onleft.eq.1)then
-            CALL win3d(menuchw,6,16,6,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=6; iiw2=16; iiw3=6; iiw4=3; iimenu=menuchw
+            iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,6,16,6,3,igl,igr,igt,igb,igw,igwh)
           elseif(onleft.eq.0)then
-            CALL win3d(menuchw,3,16,6,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=3; iiw2=16; iiw3=6; iiw4=3; iimenu=menuchw
+            iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,3,16,6,3,igl,igr,igt,igb,igw,igwh)
           endif
-          igw=igr-igl
-          igwh=igb-igt
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
         elseif(onright.eq.1)then
           if(onleft.eq.2)then
-            CALL win3d(menuchw,10,12,6,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=10; iiw2=12; iiw3=6; iiw4=3; iimenu=menuchw
+            iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,10,12,6,3,igl,igr,igt,igb,igw,igwh)
           elseif(onleft.eq.1)then
-            CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=6; iiw2=12; iiw3=6; iiw4=3; iimenu=menuchw
+            iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,6,12,6,3,igl,igr,igt,igb,igw,igwh)
           elseif(onleft.eq.0)then
-            CALL win3d(menuchw,3,12,6,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=3; iiw2=12; iiw3=6; iiw4=3; iimenu=menuchw
+            iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,3,12,6,3,igl,igr,igt,igb,igw,igwh)
           endif
-          igw=igr-igl
-          igwh=igb-igt
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
         elseif(onright.eq.0)then
           if(onleft.eq.2)then
-            CALL win3d(menuchw,10,6,6,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=10; iiw2=6; iiw3=6; iiw4=3; iimenu=menuchw
+            iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,10,6,6,3,igl,igr,igt,igb,igw,igwh)
           elseif(onleft.eq.1)then
-            CALL win3d(menuchw,6,6,6,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=6; iiw2=6; iiw3=6; iiw4=3; iimenu=menuchw
+            iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,6,6,6,3,igl,igr,igt,igb,igw,igwh)
           elseif(onleft.eq.0)then
-            CALL win3d(menuchw,3,6,6,3,igl,igr,igt,igb,igw,igwh)
+            iiw1=3; iiw2=6; iiw3=6; iiw4=3; iimenu=menuchw
+            iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,3,6,6,3,igl,igr,igt,igb,igw,igwh)
           endif
-          igw=igr-igl
-          igwh=igb-igt
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
         endif
         if(IFS.ne.IMFS)call winfnt(IFS)
         call startbuffer()
@@ -362,20 +472,9 @@ C Clear selections.
         INEW=1
       elseif(ino.eq.15)then
 C Help.
-        H(1)='The graph facilities work by selecting items '
-        H(2)='(from 1-6) to draw and then the `! Draw` command.'
-        H(3)=' '
-        H(4)='You may alter the scaling of the various axis, to '
-        H(5)='clarify or separate lines by choosing the `a Axis` '
-        H(6)='command. '
-        H(7)=' '
-        H(8)='If you have changed the size of the graphic or text '
-        H(9)='feedback areas or the application window then use the'
-        H(10)=' `r Refresh` command '
-        H(11)=' '
-        H(12)='You must `c Clear` the selections to look at another'
-        H(13)='set of lines. '
-        CALL PHELPD('clm graphics',13,'-',0,0,IER)
+        helptopic='clm_graph_facilities'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('clm graphics',nbhelp,'-',0,0,IER)
       else
         ino=-1
         goto 6
@@ -386,7 +485,7 @@ C Help.
 
 
 C ************ CLMDRW
-C 'CLMDRW' displays the axis and draws the selected climate data
+C 'CLMDRW' displays the axis and draws the selected weather data
 C over the specified period. onleft and onright are passed in to
 C indicate how much space is available for the graph (i.e. what
 C axis that do not need to be drawn)
@@ -424,9 +523,11 @@ C IS USED TO SET THE SCALE FOR DRAWING THE CHOSEN DISTRIBUTIONS.
       integer onright ! number of right axis
       integer months
 #ifdef OSI
-      integer iupdown,isym    ! passed to etplot
+      integer iupdown,isym,iicol    ! passed to etplot
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
-      integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iupdown,isym,iicol   ! passed to etplot
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
 C The 6 dimensions are as follows:
@@ -440,6 +541,9 @@ C  4= wind speed, 5= wind direction, 6= rh
 C Check if can draw in colour.
       colok=.false.
       if(nzonec.ge.6)colok=.true.
+
+C Cast variables for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C HEADER INFORMATION
       imh=menuchw
@@ -472,13 +576,14 @@ C Process each of the axis where ipck is non-zero.
         DO 20 I=1,6
           IF(IPICK(I).EQ.0)GO TO 20
           if(colok)then
-            call winscl('z',I-1)
+            iicol=I-1
+            call winscl('z',iicol)
           endif
           JPEN=IPEN(I)
           MMK=MARK(I)
 
 C Reset the scale for each type of line.
-          call linescale(igl,Xadd,XSC,igb,Yadd(I),YSC(I))
+          call linescale(iigl,Xadd,XSC,iigb,Yadd(I),YSC(I))
           
 C DRAW ONE DAY FOR EACH DISTRIBUTION
           DO 40 K=KS,KF
@@ -528,97 +633,158 @@ C the top of the graph.
         if(season.eq.'s')then
           if(ID.ge.is1wins.and.ID.lt.is1winf)then
             if(IFS.ne.IMFS)call winfnt(IFS)
-            if(colok) call winscl('z',1) ! symbol using line colour
+            if(colok)then
+              iicol=1
+              call winscl('z',iicol) ! symbol using line colour
+            endif
             call u2pixel(TIME,0.0,ix,iy)
             if(ID.eq.is1wins+2)then
               call wstxpt(ix,igt-10,'Winter')
             endif
             call esymbol(ix,igt-5,8,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
-            if(colok) call winscl('-',0)
+            if(colok)then
+              iicol=0
+              call winscl('-',iicol)
+            endif
           elseif(ID.ge.is1sprs.and.ID.lt.is1sprf)then
             if(IFS.ne.IMFS)call winfnt(IFS)
-            if(colok) call winscl('z',2) ! symbol using line colour
+            if(colok)then
+              iicol=2
+              call winscl('z',iicol) ! symbol using line colour
+            endif
             call u2pixel(TIME,0.0,ix,iy)
             if(ID.eq.is1sprs+2)then
               call wstxpt(ix,igt-10,'Spring')
             endif
             call esymbol(ix,igt-5,3,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
-            if(colok) call winscl('-',0)
+            if(colok)then
+              iicol=0
+              call winscl('-',iicol)
+            endif
           elseif(ID.ge.is1sums.and.ID.lt.is1sumf)then
             if(IFS.ne.IMFS)call winfnt(IFS)
-            if(colok) call winscl('z',3) ! symbol using line colour
+            if(colok)then
+              iicol=3
+              call winscl('z',iicol) ! symbol using line colour
+            endif
             call u2pixel(TIME,0.0,ix,iy)
             if(ID.eq.is1sums+2)then
               call wstxpt(ix,igt-10,'Summer')
             endif
             call esymbol(ix,igt-5,32,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
-            if(colok) call winscl('-',0)
+            if(colok)then
+              iicol=0
+              call winscl('-',iicol)
+            endif
           elseif(ID.ge.is2sprs.and.ID.lt.is2sprf)then
             if(IFS.ne.IMFS)call winfnt(IFS)
-            if(colok) call winscl('z',4) ! symbol using line colour
+            if(colok)then
+              iicol=4
+              call winscl('z',iicol) ! symbol using line colour
+            endif
             call u2pixel(TIME,0.0,ix,iy)
             if(ID.eq.is2sprs+2)then
               call wstxpt(ix,igt-10,'Autumn')
             endif
             call esymbol(ix,igt-5,3,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
-            if(colok) call winscl('-',0)
+            if(colok)then
+              iicol=0
+              call winscl('-',iicol)
+            endif
           elseif(ID.ge.is2wins.and.ID.lt.is2winf)then
             if(IFS.ne.IMFS)call winfnt(IFS)
-            if(colok) call winscl('z',6) ! symbol using line colour
+            if(colok)then
+              iicol=6
+              call winscl('z',iicol) ! symbol using line colour
+            endif
             call u2pixel(TIME,0.0,ix,iy)
             if(ID.eq.is2wins+2)then
               call wstxpt(ix,igt-10,'Winter')
             endif
             call esymbol(ix,igt-5,17,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
-            if(colok) call winscl('-',0)
+            if(colok)then
+              iicol=0
+              call winscl('-',iicol)
+            endif
           endif
 
 C Typical week in each season.
           if(ID.ge.ia1wins.and.ID.lt.ia1winf)then
             if(IFS.ne.IMFS)call winfnt(IFS)
-            if(colok) call winscl('z',1) ! symbol using line colour
+            if(colok)then
+              iicol=1
+              call winscl('z',iicol) ! symbol using line colour
+            endif
             call u2pixel(TIME,0.0,ix,iy)
             call esymbol(ix,igt,8,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
-            if(colok) call winscl('-',0)
+            if(colok)then
+              iicol=0
+              call winscl('-',iicol)
+            endif
           elseif(ID.ge.ia1sprs.and.ID.lt.ia1sprf)then
             if(IFS.ne.IMFS)call winfnt(IFS)
-            if(colok) call winscl('z',2) ! symbol using line colour
+            if(colok)then
+              iicol=2
+              call winscl('z',iicol) ! symbol using line colour
+            endif
             call u2pixel(TIME,0.0,ix,iy)
             call esymbol(ix,igt,8,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
-            if(colok) call winscl('-',0)
+            if(colok)then
+              iicol=0
+              call winscl('-',iicol)
+            endif
           elseif(ID.ge.iasums.and.ID.lt.iasumf)then
             if(IFS.ne.IMFS)call winfnt(IFS)
-            if(colok) call winscl('z',3) ! symbol using line colour
+            if(colok)then
+              iicol=3
+              call winscl('z',iicol) ! symbol using line colour
+            endif
             call u2pixel(TIME,0.0,ix,iy)
             call esymbol(ix,igt,8,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
-            if(colok) call winscl('-',0)
+            if(colok)then
+              iicol=0
+              call winscl('-',iicol)
+            endif
           elseif(ID.ge.ia2sprs.and.ID.lt.ia2sprf)then
             if(IFS.ne.IMFS)call winfnt(IFS)
-            if(colok) call winscl('z',4) ! symbol using line colour
+            if(colok)then
+              iicol=4
+              call winscl('z',iicol) ! symbol using line colour
+            endif
             call u2pixel(TIME,0.0,ix,iy)
             call esymbol(ix,igt,8,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
-            if(colok) call winscl('-',0)
+            if(colok)then
+              iicol=0
+              call winscl('-',iicol)
+            endif
           elseif(ID.ge.ia2wins.and.ID.lt.ia2winf)then
             if(IFS.ne.IMFS)call winfnt(IFS)
-            if(colok) call winscl('z',6) ! symbol using line colour
+            if(colok)then
+              iicol=6
+              call winscl('z',iicol) ! symbol using line colour
+            endif
             call u2pixel(TIME,0.0,ix,iy)
             call esymbol(ix,igt,8,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
-            if(colok) call winscl('-',0)
+            if(colok)then
+              iicol=0
+              call winscl('-',iicol)
+            endif
           endif
         endif
    30 CONTINUE
       if(colok)then
-        call winscl('-',0)
+        iicol=0
+        call winscl('-',iicol)
       endif
       call forceflush()
 
@@ -626,7 +792,7 @@ C Typical week in each season.
       END
 
 C ************ CLMDRWD
-C 'CLMDRWD' Draws one days climate data (complements data editing).
+C 'CLMDRWD' Draws one days weather data (complements data editing).
 C onleft and onright passed in to indicate which axes to draw.
       SUBROUTINE CLMDRWD(IDAY,onleft,onright)
       PARAMETER (MT=24)
@@ -652,9 +818,11 @@ C IS USED TO SET THE SCALE FOR DRAWING THE CHOSEN DISTRIBUTIONS.
       integer onleft  ! number of left axis
       integer onright ! number of right axis
 #ifdef OSI
-      integer iupdown,isym    ! passed to etplot
+      integer iupdown,isym,iicol   ! passed to etplot
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
-      integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iupdown,isym,iicol    ! passed to etplot
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
       DATA IPEN/-5,1,-5,-105,-105,-205/
@@ -663,6 +831,9 @@ C IS USED TO SET THE SCALE FOR DRAWING THE CHOSEN DISTRIBUTIONS.
 C Check if can draw in colour.
       colok=.false.
       if(nzonec.ge.6)colok=.true.
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
 C HEADER INFORMATION
       INEW=1
@@ -699,13 +870,14 @@ C FOR EACH DISTRIBUTION
       DO 20 I=1,6
         IF(IPICK(I).EQ.0)GO TO 20
         if(colok)then
-          call winscl('z',I-1)
+          iicol=I-1
+          call winscl('z',iicol)
         endif
         JPEN=IPEN(I)
         MMK=MARK(I)
 
 C Reset the scale for each type of line.
-        call linescale(igl,Xadd,XSC,igb,Yadd(I),YSC(I))
+        call linescale(iigl,Xadd,XSC,iigb,Yadd(I),YSC(I))
           
 C DRAW ONE DAY FOR EACH DISTRIBUTION
         DO 40 K=KS,KF
@@ -750,7 +922,8 @@ C NOW PLOT DISRTIBUTION.
    40   CONTINUE
    20 CONTINUE
       if(colok)then
-        call winscl('-',0)
+        iicol=0
+        call winscl('-',iicol)
       endif
       call forceflush()
 
@@ -780,14 +953,23 @@ C acthor (1 char) '-' standard, 'd' day, 'w' week.
 
 C Local variables to pass to edline and axiscale.
 #ifdef OSI
-      integer iigr,iigr35,iigr50,iigr85,iigr100,iigr135,iigt40
+      integer iigr35,iigr50,iigr85,iigr100,iigr135,iigt40
+      integer iicol
+      integer iiw1,iiw2,iiw3,iiw4
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
-      integer*8 iigr,iigr35,iigr50,iigr85,iigr100,iigr135,iigt40
+      integer*8 iigr35,iigr50,iigr85,iigr100,iigr135,iigt40
+      integer*8 iicol
+      integer*8 iiw1,iiw2,iiw3,iiw4
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
 C Check if can draw in colour.
       colok=.false.
       if(nzonec.ge.6)colok=.true.
+
+C Cast values for horaxis.
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
 
 C DRAW TIME AXIS
 C Pick up the data increment for the horizontal axis.
@@ -798,15 +980,16 @@ C     &  igl,igr,igt,igb,igw,igwh,onleft,onright,' ',acthor
 
       call dinterval(TMIN,TMAX,DT,NDEC,1)
       if(acthor.eq.'-')then
-        call horaxis(TMIN,TMAX,igl,igr,igb,Xadd,XSC,1,'Time (hours)')
+        call horaxis(TMIN,TMAX,iigl,iigr,iigb,Xadd,XSC,1,
+     &    'Time (hours)')
       elseif(acthor.eq.'d')then
         CALL EDAY(id1,im1,isjday)
-        call horaxishdw(TMIN,TMAX,igl,igr,igb,Xadd,XSC,1,2,24,isjday,
-     &    'Time (days)')
+        call horaxishdw(TMIN,TMAX,iigl,iigr,iigb,Xadd,XSC,1,2,24,
+     &    isjday,'Time (days)')
       elseif(acthor.eq.'w')then
         CALL EDAY(id1,im1,isjday)
-        call horaxishdw(TMIN,TMAX,igl,igr,igb,Xadd,XSC,1,3,168,isjday,
-     &    'Time (weeks)')
+        call horaxishdw(TMIN,TMAX,iigl,iigr,iigb,Xadd,XSC,1,3,168,
+     &    isjday,'Time (weeks)')
       endif
       call forceflush()
 
@@ -832,127 +1015,185 @@ C are two axis on the left put the label at the top. Otherwise put
 C Label at the side vertically. Use pixel position 50 if there are
 C two axis on left, otherwise use igl.
           if(onleft.eq.2)then
-            call vrtaxis(YMIN(I),YMAX(I),50,igb,igt,Yadd(I),YSC(I),
-     &                 1,0,':')
+            iiw1=50
+            call vrtaxis(YMIN(I),YMAX(I),iiw1,iigb,iigt,Yadd(I),
+     &        YSC(I),1,0,':')
             if(IFS.ne.IMFS)call winfnt(IFS)
-            if(colok) call winscl('z',I-1) ! symbol using line colour
+            if(colok)then
+              iicol=I-1 
+              call winscl('z',iicol) ! symbol using line colour
+            endif
             call wstxpt(25,igt-22,'Temp')
             call wstxpt(25,igt-10,'deg.C')
             call eswline(25,igt-40,60,igt-40)
             call esymbol(46,igt-40,8,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
-            if(colok) call winscl('-',0)
+            if(colok)then
+              iicol=0
+              call winscl('-',iicol)
+            endif
             call forceflush()
           elseif(onleft.eq.1)then
-            call vrtaxis(YMIN(I),YMAX(I),igl,igb,igt,Yadd(I),YSC(I),
-     &                 1,0,'Temp degC')
+            call vrtaxis(YMIN(I),YMAX(I),iigl,iigb,iigt,Yadd(I),
+     &        YSC(I),1,0,'Temp degC')
             if(IFS.ne.IMFS)call winfnt(IFS)
-            if(colok) call winscl('z',I-1) ! symbol using line colour
+            if(colok)then
+              iicol=I-1 
+              call winscl('z',iicol) ! symbol using line colour
+            endif
             call wstxpt(25,igt-22,'Temp')
             call eswline(25,igt-40,60,igt-40)
             call esymbol(46,igt-40,8,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
-            if(colok) call winscl('-',0)
+            if(colok)then
+              iicol=0
+              call winscl('-',iicol)
+            endif
             call forceflush()
           endif
         elseif(I.eq.3)then
 
 C Solar radiation axis, include dashed line and symbol.
-          call vrtaxis(YMIN(I),YMAX(I),igr,igb,igt,Yadd(I),YSC(I),
-     &                 1,1,':')
+          call vrtaxis(YMIN(I),YMAX(I),iigr,iigb,iigt,Yadd(I),
+     &      YSC(I),1,1,':')
           if(IFS.ne.IMFS)call winfnt(IFS)
-          if(colok) call winscl('z',I-1) ! symbol using line colour
+          if(colok)then
+            iicol=I-1 
+            call winscl('z',iicol) ! symbol using line colour
+          endif
           call wstxpt(igr,igt-22,'S.Rad')
           call wstxpt(igr,igt-10,'W/m^2')
-          call edash(igr,igt-40,igr+35,igt-40,5)
+          iiw1=igt-40; iis2=igr+35; iiw3=igt-40;iiw4=5
+          call edash(iigr,iiw1,iiw2,iiw3,iiw4)
           call esymbol(igr+22,igt-40,9,0)
           if(IFS.ne.IMFS)call winfnt(IMFS)
-          if(colok) call winscl('-',0)
+          if(colok)then
+            iicol=0
+            call winscl('-',iicol)
+          endif
           call forceflush()
         elseif(I.eq.4)then
 
 C Wind speed axis, include chained line and symbol. If two axes on
 C left put label at top, otherwise put along the left.
           if(onleft.eq.2)then
-            call vrtaxis(YMIN(I),YMAX(I),igl,igb,igt,Yadd(I),YSC(I),
-     &                 1,0,':')
+            call vrtaxis(YMIN(I),YMAX(I),iigl,iigb,iigt,Yadd(I),
+     &        YSC(I),1,0,':')
             if(IFS.ne.IMFS)call winfnt(IFS)
-            if(colok) call winscl('z',I-1) ! symbol using line colour
+            if(colok)then
+              iicol=I-1 
+              call winscl('z',iicol) ! symbol using line colour
+            endif
             call wstxpt(igl,igt-22,'Wnd sp')
             call wstxpt(igl,igt-10,'m/s')
             call echain(igl,igt-40,igl+35,igt-40,5)
             call esymbol(igl+22,igt-40,0,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
-            if(colok) call winscl('-',0)
+            if(colok)then
+              iicol=0
+              call winscl('-',iicol)
+            endif
             call forceflush()
           elseif(onleft.eq.1)then
-            call vrtaxis(YMIN(I),YMAX(I),igl,igb,igt,Yadd(I),YSC(I),
-     &                 1,0,'Wind speed m/s')
+            call vrtaxis(YMIN(I),YMAX(I),iigl,iigb,iigt,Yadd(I),
+     &        YSC(I),1,0,'Wind speed m/s')
             if(IFS.ne.IMFS)call winfnt(IFS)
-            if(colok) call winscl('z',I-1) ! symbol using line colour
+            if(colok)then
+              iicol=I-1 
+              call winscl('z',iicol) ! symbol using line colour
+            endif
             call wstxpt(igl,igt-22,'Wnd sp')
             call echain(igl,igt-40,igl+35,igt-40,5)
             call esymbol(igl+22,igt-40,0,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
-            if(colok) call winscl('-',0)
+            if(colok)then
+              iicol=0
+              call winscl('-',iicol)
+            endif
             call forceflush()
           endif
         elseif(I.eq.5)then
 
 C Wind direction axis, include chained line and symbol.
           if(onright.eq.1)then
-            call vrtaxis(YMIN(I),YMAX(I),igr,igb,igt,Yadd(I),YSC(I),
-     &                 1,1,':')
+            call vrtaxis(YMIN(I),YMAX(I),iigr,iigb,iigt,Yadd(I),
+     &        YSC(I),1,1,':')
             if(IFS.ne.IMFS)call winfnt(IFS)
-            if(colok) call winscl('z',I-1) ! symbol using line colour
+            if(colok)then
+              iicol=I-1 
+              call winscl('z',iicol) ! symbol using line colour
+            endif
             call wstxpt(igr,igt-22,'W dir')
             call wstxpt(igr,igt-10,'deg ')
             call echain(igr,igt-40,igr+35,igt-40,5)
             call esymbol(igr+22,igt-40,1,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
-            if(colok) call winscl('-',0)
+            if(colok)then
+              iicol=0
+              call winscl('-',iicol)
+            endif
             call forceflush()
           elseif(onright.eq.2)then
             if(ipick(6).eq.1)then
 
 C If the other is RH then use igr for this one.
-              call vrtaxis(YMIN(I),YMAX(I),igr,igb,igt,Yadd(I),YSC(I),
-     &                 1,1,':')
+              call vrtaxis(YMIN(I),YMAX(I),iigr,iigb,iigt,Yadd(I),
+     &          YSC(I),1,1,':')
               if(IFS.ne.IMFS)call winfnt(IFS)
-              if(colok) call winscl('z',I-1) ! symbol using line colour
+              if(colok)then
+                iicol=I-1 
+                call winscl('z',iicol) ! symbol using line colour
+              endif
               call wstxpt(igr,igt-22,'W dir')
               call wstxpt(igr,igt-10,'deg ')
               call echain(igr,igt-40,igr+35,igt-40,5)
               call esymbol(igr+22,igt-40,1,0)
               if(IFS.ne.IMFS)call winfnt(IMFS)
-              if(colok) call winscl('-',0)
+              if(colok)then
+                iicol=0
+                call winscl('-',iicol)
+              endif
               call forceflush()
             elseif(ipick(1).eq.1.or.ipick(3).eq.1)then
 
 C If the other is solar then use igr_50 for this one.
-              call vrtaxis(YMIN(I),YMAX(I),igr+50,igb,igt,Yadd(I),
-     &                 YSC(I),1,1,':')
+              iiw1=iigr+50
+              call vrtaxis(YMIN(I),YMAX(I),iiw1,iigb,iigt,Yadd(I),
+     &          YSC(I),1,1,':')
               if(IFS.ne.IMFS)call winfnt(IFS)
-              if(colok) call winscl('z',I-1) ! symbol using line colour
+              if(colok)then
+                iicol=I-1 
+                call winscl('z',iicol) ! symbol using line colour
+              endif
               call wstxpt(igr+50,igt-22,'W dir')
               call wstxpt(igr+50,igt-10,'deg ')
               call echain(igr+50,igt-40,igr+85,igt-40,5)
               call esymbol(igr+72,igt-40,1,0)
               if(IFS.ne.IMFS)call winfnt(IMFS)
-              if(colok) call winscl('-',0)
+              if(colok)then
+                iicol=0
+                call winscl('-',iicol)
+              endif
               call forceflush()
             endif
           elseif(onright.eq.3)then
-            call vrtaxis(YMIN(I),YMAX(I),igr+50,igb,igt,Yadd(I),YSC(I),
-     &                 1,1,':')
+            iiw1=iigr+50
+            call vrtaxis(YMIN(I),YMAX(I),iiw1,iigb,iigt,Yadd(I),
+     &        YSC(I),1,1,':')
             if(IFS.ne.IMFS)call winfnt(IFS)
-            if(colok) call winscl('z',I-1) ! symbol using line colour
+            if(colok)then
+              iicol=I-1
+              call winscl('z',iicol) ! symbol using line colour
+            endif
             call wstxpt(igr+50,igt-22,'W dir')
             call wstxpt(igr+50,igt-10,'deg ')
             call echain(igr+50,igt-40,igr+85,igt-40,5)
             call esymbol(igr+72,igt-40,1,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
-            if(colok) call winscl('-',0)
+            if(colok)then
+              iicol=0
+              call winscl('-',iicol)
+            endif
             call forceflush()
           endif
         elseif(I.eq.6)then
@@ -961,10 +1202,14 @@ C RH axis, include dotted line and symbol. If there are 3 axis on the
 C right then place far to right (+100), if there is one on the right
 C use igr. If there are two axis then set right-most position.
           if(onright.eq.3)then 
-            call vrtaxis(YMIN(I),YMAX(I),igr+100,igb,igt,Yadd(I),YSC(I),
-     &                 1,1,':')
+            iiw1=iigr+100
+            call vrtaxis(YMIN(I),YMAX(I),iiw1,iigb,iigt,Yadd(I),
+     &        YSC(I),1,1,':')
             if(IFS.ne.IMFS)call winfnt(IFS)
-            if(colok) call winscl('z',I-1) ! symbol using line colour
+            if(colok)then
+              iicol=I-1 
+              call winscl('z',iicol) ! symbol using line colour
+            endif
             call wstxpt(igr+100,igt-22,'RH %')
             iigr100=igr+100
             iigr135=igr+135
@@ -972,15 +1217,22 @@ C use igr. If there are two axis then set right-most position.
             call edline(iigr100,iigt40,iigr135,iigt40,5)
             call esymbol(igr+120,igt-40,12,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
-            if(colok) call winscl('-',0)
+            if(colok)then
+              iicol=0
+              call winscl('-',iicol)
+            endif
             call forceflush()
           elseif(onright.eq.2)then
 
 C If solar or wind direction is the other then use the +50 slot.
-            call vrtaxis(YMIN(I),YMAX(I),igr+50,igb,igt,Yadd(I),
-     &               YSC(I),1,1,':')
+            iiw1=iigr+50
+            call vrtaxis(YMIN(I),YMAX(I),iiw1,iigb,iigt,Yadd(I),
+     &        YSC(I),1,1,':')
             if(IFS.ne.IMFS)call winfnt(IFS)
-            if(colok) call winscl('z',I-1) ! symbol using line colour
+            if(colok)then
+              iicol=I-1 
+              call winscl('z',iicol) ! symbol using line colour
+            endif
             call wstxpt(igr+50,igt-22,'RH %')
             iigr50=igr+50
             iigr85=igr+85
@@ -988,12 +1240,18 @@ C If solar or wind direction is the other then use the +50 slot.
             call edline(iigr50,iigt40,iigr85,iigt40,5)
             call esymbol(igr+70,igt-40,12,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
-            if(colok) call winscl('-',0)
+            if(colok)then
+              iicol=0
+              call winscl('-',iicol)
+            endif
             call forceflush()
           elseif(onright.eq.1)then
-            call vrtaxis(YMIN(I),YMAX(I),igr,igb,igt,Yadd(I),YSC(I),
-     &                 1,1,'RH %')
-            if(colok) call winscl('z',I-1) ! symbol using line colour
+            call vrtaxis(YMIN(I),YMAX(I),iigr,iigb,iigt,Yadd(I),
+     &        YSC(I),1,1,'RH %')
+            if(colok)then
+              iicol=I-1 
+              call winscl('z',iicol) ! symbol using line colour
+            endif
             call wstxpt(igr,igt-22,'RH ')
             iigr=igr
             iigt40=igt-40
@@ -1001,7 +1259,10 @@ C If solar or wind direction is the other then use the +50 slot.
             call edline(iigr,iigt40,iigr35,iigt40,5)
             call esymbol(igr+20,igt-40,12,0)
             if(IFS.ne.IMFS)call winfnt(IMFS)
-            if(colok) call winscl('-',0)
+            if(colok)then
+              iicol=0
+              call winscl('-',iicol)
+            endif
             call forceflush()
           endif
         endif
@@ -1028,9 +1289,13 @@ C   is negative draw only the past value.
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iupdown,isym    ! passed to etplot
+      integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iupdown,isym    ! passed to etplot
+      integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
       CHARACTER*10 CLMVAR(4),CVLAB
       logical close,colok
@@ -1040,6 +1305,9 @@ C   is negative draw only the past value.
 C Check if can draw in colour.
       colok=.false.
       if(nzonec.ge.6)colok=.true.
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
       ICVS = ICV
       CVLAB=CLMVAR(ICVS)
@@ -1063,19 +1331,20 @@ C Stuff this into static memory.
       igheight=igwh
       call axiscale(igwid,igheight,TMIN,TMAX,CMIN,CMAX,XSC,YSC,sca,
      &              Xaddd,Yaddd)
-      call linescale(igl,Xaddd,XSC,igb,Yaddd,YSC)
+      call linescale(iigl,Xaddd,XSC,iigb,Yaddd,YSC)
 
       call dinterval(TMIN,TMAX,DX,NDEC,1)
-      call horaxis(TMIN,TMAX,igl,igr,igb,Xaddd,XSC,0,'Time (hrs)')
+      call horaxis(TMIN,TMAX,iigl,iigr,iigb,Xaddd,XSC,0,'Time (hrs)')
 
 
 C Draw the vertical axis.
-      call vrtaxis(CMIN,CMAX,igl,igb,igt,Yaddd,YSC,0,0,CVLAB)
+      call vrtaxis(CMIN,CMAX,iigl,iigb,iigt,Yaddd,YSC,0,0,CVLAB)
 
 C If the previous data is to be drawn. Loop.
       if(icl.ne.0)then
         if(colok)then
-          call winscl('z',2)
+          iicol=2
+          call winscl('z',iicol)
         endif
         START=TMIN+1.0
         iupdown=0
@@ -1091,7 +1360,8 @@ C If the previous data is to be drawn. Loop.
   200     CONTINUE
   100   CONTINUE
         if(colok)then
-          call winscl('-',0)
+          iicol=0
+          call winscl('-',iicol)
         endif
         call forceflush()
         if(icl.lt.0)return

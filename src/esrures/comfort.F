@@ -41,13 +41,13 @@ C if act = 'E' return days PMV (effective temperature) in GVAL.
       SUBROUTINE MOCMFT(IDAY,IZONE,act)
 #include "building.h"
 #include "geometry.h"
+#include "espriou.h"
       
       integer lnblnk  ! function definition
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
-      common/pophelp/h(60)
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       common/C21/IFCFG,cfgroot,LCFGF
@@ -70,7 +70,7 @@ C Pre calculated data (filtered).
       character longtfile*144,longtfiledos*144
       character LCFGF*72,cfgroot*24
       CHARACTER*25 DESC(12)
-      character outs*124,TSTR*24,H*72,ZN*12
+      character outs*124,TSTR*24,ZN*12
       character xfile*144,ITEMS*25,tg*1,delim*1,act*1
       character*8 ll1,ll2,ll3
       logical ok,dok,concat,unixok
@@ -83,6 +83,11 @@ C Pre calculated data (filtered).
       integer*8 ICPMOD     ! passed from tchild
 #endif
 
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
       DATA DESC/'very cold, danger        ','cold, shivering          ',
      &          'cool, unpleasant         ','slightly cool, acceptable',
      &          'comfortable, pleasant    ','slightly warm, acceptable',
@@ -93,6 +98,7 @@ C Pre calculated data (filtered).
       DATA ID/31,28,31,30,31,30,31,31,30,31,30,31/
 
 C Check if Unix or Windows.
+      helpinsub='MOCMFT'  ! set for subroutine
       call isunix(unixok)
 
 C Initialise comfort variables.
@@ -104,75 +110,43 @@ C If initial settings and initial request ask parameters.
       if(act.eq.'I')then
         if(iocuset.eq.1)then
           dok=.true.
-          h(1)='If you want to alter the current comfort parameters'
-          h(2)='(clo value, metabolic rate, local air velocity) say '
-          h(3)='no. '
-          call askok(' ','Use existing comfort parameters?',ok,dok,3)
+          helptopic='res_alter_comfort_par'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          call askok(' ','Use existing comfort parameters?',ok,dok,
+     &      nbhelp)
           if(ok)return
         endif
 
 C Confirm parameters and then exit.
         call edisp(iuout,' ')
         call edisp(iuout,'Please confirm general comfort parameters.')
-        H(1) ='Clothing is specified in `clo` units between 0. & 3. '
-        H(2) ='The following items can be added together to make up '
-        H(3) ='a clo value (ISO7730). '
-        H(4) =' Shirts: light short sleve 0.14, heavy short sleve 0.25'
-        H(5) ='         light long sleve  0.22, heavy long sleve  0.29'
-        H(6) =' Sweater: light 0.20, heavy 0.37'
-        H(7) =' Jacket:  light 0.22, heavy 0.49'
-        H(8) =' Underware: 0.05'
-        H(9) =' Trowsers: light 0.26, medium 0.32, heavy 0.44'
-        H(10)=' Socks: light 0.03, heavy 0.04'
-        H(11)=' Shoes: slippers 0.02, shoes 0.04, boots 0.08'
-        H(12)=' '
-        H(13)='Add these up and multiple by 0.82 to get clo. '
+        helptopic='res_review_comfort_par'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call easkr(CLO,' ',' Clothing level ?',
-     &    0.0,'W',3.0,'W',1.0,'clothing level',IER,13)
+     &    0.0,'W',3.0,'W',1.0,'clothing level',IER,nbhelp)
 
-        H(1) ='Activity may be in MET units or W/m^2. '
-        H(2) ='Allowable range is 50 to 350 Watts.'
-        H(3) ='                or 0.859 to 6.013 MET.'
-        H(4) =' '
-        H(5) ='Typical activities:(ISO7730) '
-        H(6) ='                    Met    W/m2'
-        H(7) =' Sleeping           0.7    40'
-        H(8) =' Reclining          0.8    45'
-        H(9) =' Seated relaxed     1.0    60'
-        H(10)=' Standing relaxed   1.2    70'
-        H(11)=' Walking (slow)     2.0   115'
-        H(12)=' Walking (moderate) 2.6   150'
-        H(13)=' Walking (fast)     3.8   220'
-        H(14)=' Typing at computer 1.1    65'
-        H(15)=' Sedentary activity 1.2    70'
-        H(16)=' Standing activity  1.4    80'
-        H(17)=' Packing/carying    2.1   120'
-        H(18)=' Light machine work 2.0   115'
-        H(19)=' Heavy machine work 4.0   235'
-        H(20)=' Cooking            1.6    95'
-        H(21)=' Cleaning           2.0   115'
-        H(22)=' Exercise           4.0   235'
-        H(23)=' '
+        helptopic='res_review_activity_par'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKAB(' ','Activity level units (see help):',
-     &    'MET units','W/m^2 (body surface area)',IAU,23)
+     &    'MET units','W/m^2 (body surface area)',IAU,nbhelp)
         if(IAU.eq.1)then
 
 C When using MET units, convert back to W/M^2 for calculations.
 C Assume default MET is equiv to 85W/m^2.
           ACTL = ACTL/58.2
           ACTLDEF = 85.0/58.2
-          call easkr(ACTL,' ',' Activity level (MET)?',
-     &      0.859,'W',6.013,'W',ACTLDEF,'activity level MET',IER,23)
+          call easkr(ACTL,' ',' Activity level (MET)?',0.859,
+     &      'W',6.013,'W',ACTLDEF,'activity level MET',IER,nbhelp)
           ACTL = ACTL * 58.2
         elseif(IAU.eq.2)then
           call easkr(ACTL,' ',' Activity level (W/m2)?',
-     &      50.0,'F',350.0,'F',85.0,'activity level W/m2',IER,23)
+     &      50.0,'F',350.0,'F',85.0,'activity level W/m2',IER,nbhelp)
         endif
 
-        H(1)='Air velocity in a zone is specified in m/sec. '
-        H(2)='Allowable range is 0 to 5 m/sec.'
+        helptopic='res_comfort_air_velo'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call easkr(WVEL,' ',' Air velocity ?',
-     &    0.0,'W',5.0,'W',0.15,'air velocity',IER,2)
+     &    0.0,'W',5.0,'W',0.15,'air velocity',IER,nbhelp)
 
 C Set representative casual gain and then search all zones and build
 C up hash list of zone:time:occupancy.
@@ -181,27 +155,11 @@ C << revise for additional casual gain types >>
         write(ll1,'(1x,a6,1x)') lodlabel(IZONE,1)
         write(ll2,'(1x,a6,1x)') lodlabel(IZONE,2)
         write(ll3,'(1x,a6,1x)') lodlabel(IZONE,3)
-        H(1)='To identify when during the day that comfort should be'
-        H(2)='reported you have several options: '
-        H(3)=' Always occupied - assess comfort 24/7 i.e. independent'
-        H(4)='     of the occupant schedules with the zone operation'
-        H(5)='     file.'
-        H(6)=' Labels from the zone operations file - the 2nd - 4th'
-        H(7)='     options of the in the dialog reflect what has been'
-        H(8)='     defined in the zone operations file for casual gain'
-        H(9)='     types ( if you select one of these then comfort is'
-        H(10)='     reported for non-zero sensible gain periods.'
-        H(11)=' time - you specify a start time and an end time for'
-        H(12)='     a typical day and comfort is assessed during this'
-        H(13)='     period.'
-        H(14)=' '
-        H(15)='If you have not altered the labels for the casual gains'
-        H(16)='within the zone operations file the first Type is for'
-        H(17)='occupants the second Type is lights and the third Type'
-        H(18)='is Equipment (small power).'
+        helptopic='res_comfort_occupied'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IOT=1
         CALL EASKATOG('Which casual gain represents occupancy:',' ',
-     &      'Always occupied',ll1,ll2,ll3,'time',' ',' ',IOT,18)
+     &      'Always occupied',ll1,ll2,ll3,'time',' ',' ',IOT,nbhelp)
         if (IOT.gt.1.and.IOT.lt.5) then
           iocut=IOT-1
         elseif(IOT.eq.1)then
@@ -259,12 +217,8 @@ C Begin with high level menu if in verbose mode.
       endif
 
 C Help text for menu.
-      H(1) ='Comfort analysis is based on the work of Fanger '
-      H(2) ='and provides a listing of comfort conditions at each'
-      H(3) ='timestep of a specific day.  '
-      H(4) ='  '
-      H(5) ='You may alter any of the variables shown in the menu'
-      H(6) ='and recalculate comfort.  '
+      helptopic='res_comfort_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       INO=-2
       if(mmod.eq.8)then
@@ -278,7 +232,9 @@ C Help text for menu.
       elseif(ino.eq.NITMS-1)then
 
 C Help.
-        CALL PHELPD('comfort',6,'-',0,0,IER)
+        helptopic='res_comfort_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('comfort',nbhelp,'-',0,0,IER)
       elseif(ino.eq.NITMS-2)then
 
 C Alter redirect.
@@ -290,7 +246,8 @@ C Change zone.
       elseif(ino.eq.2)then
 
 C Find the day to analyse.
-        H(1)='Comfort is analysed for a single day at a time. '
+        helptopic='res_comfort_day'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         write(TSTR,'(3X,I3,I4)',IOSTAT=IOS,ERR=1)IDCO,IMCO
     8   CALL EASKS(TSTR,' ',' Day and month numbers ? ',
      &      24,'1 1 ','day & month no',IER,1)
@@ -315,64 +272,32 @@ C Find the day to analyse.
       elseif(ino.eq.5)then
 
 C Clothing level.
-        H(1)='Clothing is specified in `clo` units between 0. & 3. '
-        H(2) ='The following items can be added together to make up '
-        H(3) ='a clo value (ISO7730). '
-        H(4) =' Shirts: light short sleve 0.14, heavy short sleve 0.25'
-        H(5) ='         light long sleve  0.22, heavy long sleve  0.29'
-        H(6) =' Sweater: light 0.20, heavy 0.37'
-        H(7) =' Jacket:  light 0.22, heavy 0.49'
-        H(8) =' Underware: 0.05'
-        H(9) =' Trowsers: light 0.26, medium 0.32, heavy 0.44'
-        H(10)=' Socks: light 0.03, heavy 0.04'
-        H(11)=' Shoes: slippers 0.02, shoes 0.04, boots 0.08'
-        H(12)=' '
-        H(13)='Add these up and multiple by 0.82 to get clo. '
+        helptopic='res_clo_review'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call easkr(CLO,' ',' Clothing level ?',
-     &    0.0,'W',3.0,'W',1.0,'clothing level',IER,13)
+     &    0.0,'W',3.0,'W',1.0,'clothing level',IER,nbhelp)
       elseif(ino.eq.6)then
 
 C Activity level, may be entered in MET units or in W/m^2.
-        H(1)='Activity may be in MET units or W/m^2. '
-        H(2)='Allowable range is 50 to 350 Watts.'
-        H(3)='                or 0.859 to 6.013 MET.'
-        H(4) =' '
-        H(5) ='Typical activities:(ISO7730) '
-        H(6) ='                    Met    W/m2'
-        H(7) =' Sleeping           0.7    40'
-        H(8) =' Reclining          0.8    45'
-        H(9) =' Seated relaxed     1.0    60'
-        H(10)=' Standing relaxed   1.2    70'
-        H(11)=' Walking (slow)     2.0   115'
-        H(12)=' Walking (moderate) 2.6   150'
-        H(13)=' Walking (fast)     3.8   220'
-        H(14)=' Typing at computer 1.1    65'
-        H(15)=' Sedentary activity 1.2    70'
-        H(16)=' Standing activity  1.4    80'
-        H(17)=' Packing/carying    2.1   120'
-        H(18)=' Light machine work 2.0   115'
-        H(19)=' Heavy machine work 4.0   235'
-        H(20)=' Cooking            1.6    95'
-        H(21)=' Cleaning           2.0   115'
-        H(22)=' Exercise           4.0   235'
-        H(23)=' '
+        helptopic='res_MET_review'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKAB(' ','Activity level units:',
-     &    'MET units','W/m^2 (body surface area)',IAU,23)
+     &    'MET units','W/m^2 (body surface area)',IAU,nbhelp)
         if(IAU.eq.1)then
           call easkr(ACTL,' ',' Activity level ?',
-     &      0.859,'W',6.013,'W',50.0,'activity level MET',IER,23)
+     &      0.859,'W',6.013,'W',50.0,'activity level MET',IER,nbhelp)
           ACTL = ACTL * 58.2
         elseif(IAU.eq.2)then
           call easkr(ACTL,' ',' Activity level ?',
-     &      50.0,'F',350.0,'F',85.0,'activity level W/m2',IER,23)
+     &      50.0,'F',350.0,'F',85.0,'activity level W/m2',IER,nbhelp)
         endif
       elseif(ino.eq.7)then
 
 C Air speed.
-        H(1)='Air velocity in a zone is specified in m/sec. '
-        H(2)='Allowable range is 0 to 5 m/sec.'
+        helptopic='res_comfort_air_velo'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call easkr(WVEL,' ',' Air velocity ?',
-     &    0.0,'W',5.0,'W',0.15,'air velocity',IER,2)
+     &    0.0,'W',5.0,'W',0.15,'air velocity',IER,nbhelp)
       elseif(ino.eq.8)then
 
 C Casual gain type.  Ask user which constitutes occupancy.
@@ -382,14 +307,11 @@ C << revise for additional casual gain types >>
         write(ll1,'(1x,a6,1x)') lodlabel(IZONE,1)
         write(ll2,'(1x,a6,1x)') lodlabel(IZONE,2)
         write(ll3,'(1x,a6,1x)') lodlabel(IZONE,3)
-        H(1)='Select a casual gain type to base occupancy on.'
-        H(2)='Labels show are from the first zone in the current'
-        H(3)='list. Type 1 usually represents casual gains from '
-        H(4)='people,although any of the three casual gain types can '
-        H(5)='be used. '
+        helptopic='res_comfort_occupancy'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IOT=1
         CALL EASKATOG('Which casual gain represents occupancy:',' ',
-     &      'Always occupied',ll1,ll2,ll3,'time',' ',' ',IOT,5)
+     &      'Always occupied',ll1,ll2,ll3,'time',' ',' ',IOT,nbhelp)
         if (IOT.gt.1.and.IOT.lt.5) then
           iocut=IOT-1
         elseif(IOT.eq.1)then
@@ -407,10 +329,9 @@ C << revise for additional casual gain types >>
 
 C Start espvwf session.
         dok=.false.
-        h(1)='A `vwf analysis` assess comfort at a specific position'
-        h(2)='within a zone and makes use of viewfactors from a pre-'
-        h(3)='defined body to the surfaces in the zone. '
-        CALL ASKOK(' ',' Proceed with local vwf analysis?',OK,dok,3)
+        helptopic='res_comfort_local_vwf'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL ASKOK(' ','Proceed with local vwf analysis?',OK,dok,nbhelp)
         IF(OK)then
 
 C Get logical name of terminal type, expand problem name
@@ -539,8 +460,10 @@ C << is there a way to equate category if non-sedintary? >>
 
 C Finished with that, seewhat user wants to do next.
       if(act.eq.'V')then
+        helptopic='res_comfort_next_day'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKAB(' ','Comfort:',
-     &    'Continue with next day','Return to menu',IWW,0)
+     &    'Continue with next day','Return to menu',IWW,nbhelp)
         if(IWW.eq.1)then
 
 C Check to see of next day is acceptable, recover casual gains
@@ -585,8 +508,8 @@ C sundays ioucpz(izone,[49-72]), This hash table will need altering
 C if sub-hour casual gains definitions are implemented. 
       subroutine scnocup(ier)
 #include "building.h"
+#include "espriou.h"
 
-      common/pophelp/h(60)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       
@@ -603,7 +526,14 @@ C =2 with more than 3 day types
       common/p3ver/ip3ver(MCOM)
 
       logical close15,close16,close17
-      character hold*24,h*72,outs*124
+      character hold*24,outs*124
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='scnocup'  ! set for subroutine
 
 C Find weekday saturday and sunday dates so can extract casual gains
 C for each day type. This should be done for the first 7 days of the
@@ -635,26 +565,25 @@ C current simulation.
  142    continue
       endif
       if(iocut.eq.-1)then
-        h(1)='Weekday occupancy period (start and stop hours). '
+        helptopic='res_weekday_occup_period'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         write(HOLD,'(a)') '  0  24  '
         CALL EASKS(HOLD,' ',' Weekday occupancy period: ',
-     &     24,' 0  24 ','wkd occup period',IER,1)
+     &     24,' 0  24 ','wkd occup period',IER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,iwkdst,0,24,'W','iwkdst',IER)
         CALL EGETWI(HOLD,K,iwkdfn,iwkdst,24,'W','iwkdst',IER)
 
-        h(1)='First weekend day occupancy period (start & stop hours).'
         write(HOLD,'(a)') '  0  24  '
         CALL EASKS(HOLD,' ',' First weekend day occupancy period: ',
-     &     24,' 0  24 ','sat occup period',IER,1)
+     &     24,' 0  24 ','sat occup period',IER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,isatst,0,24,'W','isatst',IER)
         CALL EGETWI(HOLD,K,isatfn,isatst,24,'W','isatst',IER)
 
-        h(1)='2nd weekend day occupancy period (start & stop hours).'
         write(HOLD,'(a)') '  0  24  '
         CALL EASKS(HOLD,' ',' Second weekend day occupancy period: ',
-     &     24,' 0  24 ','sat occup period',IER,1)
+     &     24,' 0  24 ','sat occup period',IER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,isunst,0,24,'W','isunst',IER)
         CALL EGETWI(HOLD,K,isunfn,isunst,24,'W','isunst',IER)

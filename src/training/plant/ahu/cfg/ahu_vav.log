@@ -1,70 +1,36 @@
 
-             Multi zone air-conditioning system with VAV terminals
+   Multi zone air-conditioning system with VAV terminals
 
-               Another variant of the multi-zone reheat system  is  to
-          replace  the  reheaters  by  variable  air volume terminals,
-          known as VAV terminals. A system with  variable  air  volume
-          can cope with changes in local load conditions by adjustment
-          of the volume at constant temperature. Such systems  consist
-          of  a  main central plant, which provides conditioned air at
-          constant temperature  and  flow  rate,  and  an  appropriate
-          number  of VAV terminals to cater for the local load changes
-          of each zone. Control of the air flow is usually achieved by
-          means  of  a thermostat sensing the controlled zone air tem-
-          perature and a controller acts to modify the  flow  rate  in
-          the  VAV  terminals. A plant network of this type was set up
-          by replacing the reheaters in the previous example with  air
-          dampers and was coupled to the same zones (ie. reception and
-          office). In order to allow for air flow rate control in  the
-          dampers,  a  fluid flow network was also set up and included
-          two general flow corrector components (type 410).  The  con-
-          trol  on  the  dampers  allowed them to be fully open if the
-          zones temperature falls below 19C and 10% open if  the  tem-
-          perature  is  above  24C. This control strategy was selected
-          for winter conditions.
+     Another variant of the multi-zone reheat system  is  to
+replace  the  reheaters  by  variable  air volume terminals,
+known as VAV terminals. A system with  variable  air  volume
+can cope with changes in local load conditions by adjustment
+of the volume at constant temperature. Such systems  consist
+of  a  main central plant, which provides conditioned air at
+constant temperature  and  flow  rate,  and  an  appropriate
+number  of VAV terminals to cater for the local load changes
+of each zone. Control of the air flow is usually achieved by
+means  of  a thermostat sensing the controlled zone air tem-
+perature and a controller acts to modify the  flow  rate  in
+the  VAV  terminals. A plant network of this type was set up
+by replacing the reheaters in the previous example with  air
+dampers and was coupled to the same zones (ie. reception and
+office). In order to allow for air flow rate control in  the
+dampers,  a  fluid flow network was also set up and included
+two general flow corrector components (type 410).  The  con-
+trol  on  the  dampers  allowed them to be fully open if the
+zones temperature falls below 19C and 10% open if  the  tem-
+perature  is  above  24C. This control strategy was selected
+for winter conditions.
 
-               A winter simulation was carried out  for  the  combined
-          building/plant  model.  The simulation period considered was
-          for the 1st February using  ESP-r  test  climate  file.  The
-          simulation  was  conducted  for  a  building time-step of 10
-          minutes and a plant time-step of 2 minutes and the following
-          user input was specified for ESP-r simulator:
+     A winter simulation was carried out  for  the  combined
+building/plant  model.  The simulation period considered was
+for the 1st February using  ESP-r  test  climate  file.  The
+simulation  was  conducted  for  a  building time-step of 10
+minutes and a plant time-step of 2 minutes.
 
-                  1
-                  ahu_multizn_vav.bps
-                  n
-                  d
-                  y
-                  2
-                  b.res
-                  f.res
-                  p.res
-                  1 2
-                  2 2
-                  6
-                  5
-                  g
-                  101
-                  n
-                  1
-                  100
-                  1
-                  0.01
-                  1
-                  10
-                  0.0005
-                  -
-                  s
-                  y
-                  ahu_multizn_vav.ctl
-                  y
-                  y
-                  -
-                  f
-                  y
-
-          The results from this  simulation  show  that  the  building
-          zones  are  catered  for  by  the  appropriate  VAV terminal
-          according to the load requirements of that zone.
+The results from this  simulation  show  that  the  building
+zones  are  catered  for  by  the  appropriate  VAV terminal
+according to the load requirements of that zone.
 
 

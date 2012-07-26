@@ -1,12 +1,12 @@
 C This file is part of the ESP-r system.
-C Copyright CANMET Energy Technology Centre 
+C Copyright CANMET Energy Technology Centre
 C Natural Resources Canada, Government of Canada
-C 2004. Please Contact Ian Beausoliel-Morrison for details 
+C 2004. Please Contact Ian Beausoliel-Morrison for details
 C concerning licensing.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation 
+C License as published by the Free Software Foundation
 C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
@@ -23,13 +23,13 @@ C Boston, MA 02111-1307 USA.
 C This file contains the following routines related to the fuel cell
 C hot-water storage tank component models.
 
-C mains_temp_draw_profile_coeff_gen Coefficient generator for a water mains monthly temperature and 
+C mains_temp_draw_profile_coeff_gen Coefficient generator for a water mains monthly temperature and
 C                                   hourly daily profiles
 C mains_temp_draw_profile_static    Static matrix checker for temperature and draw profile component
 C
 C mains_draw_daily_profile_static   Static matrix checker for component to set hourly water draw profile
 C
-C mains_draw_daily_profile_coeff_gen 
+C mains_draw_daily_profile_coeff_gen
 C                                   Coefficient generator for component to set hourly water draw profile
 
 C *********************************************************************************************
@@ -49,12 +49,12 @@ C component will meaningfully compute the thermal load associated with
 C the domestic hot water service, no matter how many components actually
 C contribute to this service. The flow rate of the upstream connection
 C determines the flow rate through this component, while the temperature
-C of the connection is ignored. 
+C of the connection is ignored.
 C
 C INPUTS:
 C     IPCOMP     Component number within the user defined plant component network
 C     ISTATS     Flag indicating whether energy balance or water mass balance is sought
-C     ICONDX     ESP-r common variable holding number for plant network connections associated 
+C     ICONDX     ESP-r common variable holding number for plant network connections associated
 C                with component
 C     NPCDAT     ESP-r common variable holding node numbers for plant components within plant
 C                network
@@ -68,6 +68,7 @@ C OUTPUTS:
 C     COUT       List of matrix coefficients
 C -------------------------------------------------------------------------------------------
       SUBROUTINE mains_temp_draw_profile_coeff_gen(IPCOMP,COUT,ISTATS)
+      use h3kmodule
       IMPLICIT NONE
 #include "plant.h"
 #include "building.h"
@@ -79,7 +80,7 @@ C----------------------------------------------------------------------
       REAL COUT(MPCOE)      ! Array for matrix coefficients for component
       INTEGER ISTATS        ! Flag indicating type of coefficients to be
                             ! generated (=1: energy balance; =2 1st phase
-                            ! water mass blance; =3 2nd phase vapour mass 
+                            ! water mass blance; =3 2nd phase vapour mass
                             ! balance)
 
 C----------------------------------------------------------------------
@@ -115,7 +116,7 @@ C-----Plant component connection data
      &             ICONDX(MPCOM,MNODEC,MPCONC)
       REAL CONVAR    ! States variables for connections
       INTEGER ICONTP ! Type of each connection
-      INTEGER ICONDX ! Pointer to connections for each 
+      INTEGER ICONDX ! Pointer to connections for each
                      ! component node
 
 C.....Common containing plant componet mass diversion ratios
@@ -159,21 +160,21 @@ C----------------------------------------------------------------------
 C----------------------------------------------------------------------
 C     Local variables
 C----------------------------------------------------------------------
-      INTEGER mains_temp_flag     ! Mains water temperature calculationmethod 
+      INTEGER mains_temp_flag     ! Mains water temperature calculationmethod
                                   ! flag
                                   ! =1 Moore method
                                   ! =2 Use monthly temperature values entered by
-                                  ! user 
+                                  ! user
       INTEGER iday_present        ! Present simulation day of the month
       INTEGER imonth_present      ! Present simulation month of the year
       INTEGER mains_future_hour   ! Future hour for determining mains draw
-      LOGICAL close               ! Logical variable used to check how close a number is 
+      LOGICAL close               ! Logical variable used to check how close a number is
                                   ! to another number
       REAL mains_temp             ! Mains temperature for month
       INTEGER mains_node_conn     ! Mains component connection number in the plant network
       INTEGER mains_node_num      ! Mains component node number in the plant network
       INTEGER num_matrix_coeff    ! Total number of matrix coefficients for component
-      INTEGER IX1,I                 
+      INTEGER IX1,I
 
       real fConTemp               ! Upstream connection temperature (oC)
       real fConFlow               ! Upstream connection flow rate (kg/s)
@@ -181,12 +182,10 @@ C----------------------------------------------------------------------
                                   !   through unit (J/kg oC)
       real fDHWLoad               ! Water heater thermal load (W)
 
-      character*128 root_name     ! String for use in reporting
-      integer iNameLen            ! Length of a string
 
 C ----Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(37).NE.0) WRITE(ITU,*) 
+     &   ITRACE(37).NE.0) WRITE(ITU,*)
      &   ' Entering subroutine mains_temp_draw_profile_coeff_gen'
 
 C ----Initialize pointers to the 1 connections to the mains water
@@ -197,7 +196,7 @@ C-----and the mains water node.
 C-----Determine month of the year from day of the year
       CALL EDAYR(idyp,iday_present,imonth_present)
 
-C-----Mains water temperature is either set to user entered value or 
+C-----Mains water temperature is either set to user entered value or
 C-----set based on Moore's model from subroutine fDHW_ColdMainTemp
 
 C-----Flag for method used to find the mains monthly water temperature
@@ -217,10 +216,10 @@ C-----values
 
       ENDIF
 
-C-----Check whether future plant side time ptimef is 24. 
+C-----Check whether future plant side time ptimef is 24.
       CALL ECLOSE(ptimef,24.,0.0001,CLOSE)
 
-C-----If ptimef is not 24., then the future hour for determining 
+C-----If ptimef is not 24., then the future hour for determining
 C-----Mains draw is the integer part of ptimef + 1
       IF(.NOT.CLOSE) THEN
         mains_future_hour = int(ptimef) + 1
@@ -233,7 +232,7 @@ C-----draw is hour 1
       ENDIF
 
 C ----Generate coefficients for energy balance equation
-      IF(ISTATS.EQ.1) THEN       
+      IF(ISTATS.EQ.1) THEN
 
 C-------Self coupling coefficient
         COUT(1) = 1.
@@ -282,25 +281,15 @@ C-----     where X=1 -> air, X=2 -> vapor, X=3 -> liq. water
 C-----Calculate thermal load (W):
 C-----
 C-----   = ( flow tate ) * ( heat capacity )
-C-----                         * ( delivery temp - supply temp ) 
+C-----                         * ( delivery temp - supply temp )
 C-----
 
       fDHWLoad = fConFlow * fConCp * ( mains_temp - fConTemp )
 
 C-----Report thermal load: Format string as: 'plant/NAME/misc_data'
-
-      WRITE(root_name,'(A,A,A)')
-     &     'plant/',
-     &     pcname(iPComp)(1:iPltNameLen(iPComp)),
-     &     '/misc_data'
-
-      iNameLen = iPltNameLen(iPComp) + 16
-
-      call add_to_xml_reporting(
-     &     fDHWLoad,
-     &     root_name(1:iNameLen) // '/DHW_thermal_load',
-     &     'units', '(W)',
-     &     'Make-up water: thermal load associated with DHW service' )
+      call AddToReport(rvPltDHWTermalLoad%Identifier,
+     &      fDHWLoad,
+     &      pcname(iPComp)(1:iPltNameLen(iPComp)))
 
 C-----Trace.
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -334,12 +323,12 @@ C Initial Creation Date: February 21st, 2006
 C Copyright CETC 2006
 
 C This subroutine checks the number of controlled variables, connections, and fluid
-C type for the component for mains water temperature and draw 
+C type for the component for mains water temperature and draw
 
 C INPUTS:
 C     IPCOMP     Component number within the user defined plant component network
 C     NCI        ESP-r common variable for number of controlled variable for component
-C     ICONDX     ESP-r common variable holding number for plant network connections associated 
+C     ICONDX     ESP-r common variable holding number for plant network connections associated
 C                with component
 C     ICONTP     ESP-r common variable for type of fluid for connections
 C     NPCDAT     ESP-r common variable holding node numbers for plant components within plant
@@ -385,7 +374,7 @@ C-----Plant component connection data
      &             ICONDX(MPCOM,MNODEC,MPCONC)
       REAL CONVAR    ! States variables for connections
       INTEGER ICONTP ! Type of each connection
-      INTEGER ICONDX ! Pointer to connections for each 
+      INTEGER ICONDX ! Pointer to connections for each
                      ! component node
 
 C----------------------------------------------------------------------
@@ -396,7 +385,7 @@ C----------------------------------------------------------------------
       INTEGER NCONS  ! Number of connections
       INTEGER IPCON1 ! Incoming connecction number
       INTEGER IX1,IPCONC
- 
+
 C-----Trace output
       IF(ITC.GT.0.AND.ITRACE(35).NE.0) THEN
       WRITE(ITU,*) ' Component ',IPCOMP,' pre-simulation data for a:'
@@ -411,7 +400,7 @@ C-----Check user specified number of controlled variables
       NCITM = 0
       IF(NCI(IPCOMP).NE.NCITM)
      &   WRITE(ITU,*) ' mains_temp_draw_profile_static warning:',
-     &                ' user specified wrong number of controlled', 
+     &                ' user specified wrong number of controlled',
      &                ' variables'
 
 C-----Check component has 1st connection to water
@@ -465,12 +454,12 @@ C Initial Creation Date: November 23rd, 2006
 C Copyright CETC 2006
 
 C This subroutine checks the number of controlled variables, connections, and fluid
-C type for the component for water draw profile 
+C type for the component for water draw profile
 
 C INPUTS:
 C     IPCOMP     Component number within the user defined plant component network
 C     NCI        ESP-r common variable for number of controlled variable for component
-C     ICONDX     ESP-r common variable holding number for plant network connections associated 
+C     ICONDX     ESP-r common variable holding number for plant network connections associated
 C                with component
 C     ICONTP     ESP-r common variable for type of fluid for connections
 C     NPCDAT     ESP-r common variable holding node numbers for plant components within plant
@@ -511,7 +500,7 @@ C-----Plant component connection data
      &             ICONDX(MPCOM,MNODEC,MPCONC)
       REAL CONVAR    ! States variables for connections
       INTEGER ICONTP ! Type of each connection
-      INTEGER ICONDX ! Pointer to connections for each 
+      INTEGER ICONDX ! Pointer to connections for each
                      ! component node
 
 C----------------------------------------------------------------------
@@ -522,7 +511,7 @@ C----------------------------------------------------------------------
       INTEGER NCONS  ! Number of connections
       INTEGER IPCON1 ! Incoming connecction number
       INTEGER IX1,IPCONC
- 
+
 C-----Trace output
       IF(ITC.GT.0.AND.ITRACE(35).NE.0) THEN
       WRITE(ITU,*) ' Component ',IPCOMP,' pre-simulation data for a:'
@@ -536,7 +525,7 @@ C-----Trace output
 C-----Check user specified number of controlled variables
       NCITM = 0
       IF(NCI(IPCOMP).NE.NCITM)
-     &   WRITE(ITU,*) 
+     &   WRITE(ITU,*)
      &   ' mains_draw_daily_profile_static warning: user specified',
      &   ' wrong number of controlled variables'
 
@@ -590,14 +579,14 @@ C Created by: Kamel Haddad
 C Initial Creation Date: November 23rd, 2006
 C Copyright CETC 2006
 
-C This subroutine is the coefficient generator for a component used to set water draw mass fow rate 
-C based on a daily hourly profile. The component has one connection. The temperature at the exit 
-C of the component is unchanged equal to the temperature at the inlet.  
+C This subroutine is the coefficient generator for a component used to set water draw mass fow rate
+C based on a daily hourly profile. The component has one connection. The temperature at the exit
+C of the component is unchanged equal to the temperature at the inlet.
 
 C INPUTS:
 C     IPCOMP     Component number within the user defined plant component network
 C     ISTATS     Flag indicating whether energy balance or water mass balance is sought
-C     ICONDX     ESP-r common variable holding number for plant network connections associated 
+C     ICONDX     ESP-r common variable holding number for plant network connections associated
 C                with component
 C     NPCDAT     ESP-r common variable holding node numbers for plant components within plant
 C                network
@@ -619,7 +608,7 @@ C----------------------------------------------------------------------
       REAL COUT(MPCOE)      ! Array for matrix coefficients for component
       INTEGER ISTATS        ! Flag indicating type of coefficients to be
                             ! generated (=1: energy balance; =2 1st phase
-                            ! water mass blance; =3 2nd phase vapour mass 
+                            ! water mass blance; =3 2nd phase vapour mass
                             ! balance)
 
 C----------------------------------------------------------------------
@@ -651,7 +640,7 @@ C-----Plant component connection data
      &             ICONDX(MPCOM,MNODEC,MPCONC)
       REAL CONVAR    ! States variables for connections
       INTEGER ICONTP ! Type of each connection
-      INTEGER ICONDX ! Pointer to connections for each 
+      INTEGER ICONDX ! Pointer to connections for each
                      ! component node
 
 C-----Common containing ratio for flow rate diversions
@@ -679,17 +668,17 @@ C----------------------------------------------------------------------
       INTEGER iday_present        ! Present simulation day of the month
       INTEGER imonth_present      ! Present simulation month of the year
       INTEGER future_hour         ! Future hour for determining water draw
-      LOGICAL close               ! Logical variable used to check how close a number is 
+      LOGICAL close               ! Logical variable used to check how close a number is
                                   ! to another number
       REAL water_draw             ! Waters draw for future hour
       INTEGER comp_node_conn      ! Component connection number in the plant network
       INTEGER comp_node_num       ! Component node number in the plant network
       INTEGER num_matrix_coeff    ! Total number of matrix coefficients for component
-      INTEGER IX1,I                 
+      INTEGER IX1,I
 
 C ----Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
-     &   ITRACE(37).NE.0) WRITE(ITU,*) 
+     &   ITRACE(37).NE.0) WRITE(ITU,*)
      &   ' Entering subroutine mains_draw_daily_profile_coeff_gen'
 
 C ----Initialize pointers to the 1 connection to the component.
@@ -699,10 +688,10 @@ C ----Initialize pointers to the 1 connection to the component.
 C-----Determine month of the year from day of the year
       CALL EDAYR(idyp,iday_present,imonth_present)
 
-C-----Check whether future plant side time ptimef is 24. 
+C-----Check whether future plant side time ptimef is 24.
       CALL ECLOSE(ptimef,24.,0.0001,CLOSE)
 
-C-----If ptimef is not 24., then the future hour for determining 
+C-----If ptimef is not 24., then the future hour for determining
 C-----water draw is the integer part of ptimef + 1
       IF(.NOT.CLOSE) THEN
         future_hour = int(ptimef) + 1
@@ -720,7 +709,7 @@ C-----kg/s.
       water_draw = ADATA(IPCOMP,future_hour) / 3600.
 
 C ----Generate coefficients for energy balance equation
-      IF(ISTATS.EQ.1) THEN       
+      IF(ISTATS.EQ.1) THEN
 
 C-------Self coupling coefficient
         COUT(1) = 1.

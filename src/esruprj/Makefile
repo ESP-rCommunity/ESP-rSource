@@ -1,23 +1,25 @@
 SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
-CTLdir = $(SRCdir)/esructl
 DFSdir = $(SRCdir)/esrudfs
 MFSdir = $(SRCdir)/esrumfs
 PDFdir = $(SRCdir)/esrupdf
-TDFdir = $(SRCdir)/esrutdf
 VLDdir = $(SRCdir)/esruvld
 PLTdir = $(SRCdir)/esruplt
 CETCdir = $(SRCdir)/cetc
 INCLdir = $(SRCdir)/include
-PRJdir = $(SRCdir)/esruprj
 PROG = prj$(EXE)
 
 .SUFFIXES: .o .F
 .F.o:
 	$(MFC) $(FFLAGS)  $(BUILD_OPTIONS) -c $<
 
-OBJECTS = prj.o anlytc.o aim2_module.o aim2_inputs.o arrow.o ascii_mat.o basesimp.o \
+%.o : %.f90
+	$(MCC) $(FFLAGS) -c $<
+
+MODULE_OBJECTS = h3kmodule.o startup.o aim2_module.o aim2_inputs.o
+
+OBJECTS = prj.o anlytc.o arrow.o ascii_mat.o basesimp.o \
 	  basesimp_inputs.o blcond.o bnlthp.o bpfcom.o bpfcontrl.o bscoeff.o bscoeff_extended.o \
 	  bsimsel.o c2fdum.o cadio.o cfdat.o cfdrw.o cfg3dv.o cfgmsc.o cfgrid.o cgd.o \
 	  clickonbitmap.o common3dv.o commonclm.o context.o ctlexp.o ctlwrt.o ctprob.o \
@@ -33,27 +35,28 @@ OBJECTS = prj.o anlytc.o aim2_module.o aim2_inputs.o arrow.o ascii_mat.o basesim
 	  net2pdf.o newnet.o nwkrewr.o plelevvc.o pltcfg.o pltnet.o prescoef.o \
 	  prjdmds.o prjfmk.o prjqa.o psychro.o rcdblist.o read3dv.o readTrnsys.o \
 	  rwipv.o rwroam.o rwsbem.o sendd.o sendflt.o senrwl.o sensa.o \
-	  setup.o sort.o spmisc.o stndrds.o startup.o tdfedit.o tdfile.o tdgraph.o \
+	  setup.o sort.o spmisc.o stndrds.o tdfedit.o tdfile.o tdgraph.o \
 	  hvacinput.o \
 	  PltDummy.o
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod aim2_inputs.mod aim2_inputs_inputdata.mod	
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod aim2_inputs.mod \
+	  aim2_inputs_inputdata.mod start_up.mod parse_command_line.mod h3kmodule.mod
 
-$(PROG): $(OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) $(BUILD_OPTIONS) 
+$(PROG): $(MODULE_OBJECTS) $(OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS) $(BUILD_OPTIONS)
 
 anlytc.F:
 	rm -f anlytc.F
 	ln -s $(VLDdir)/anlytc.F .
+arrow.F:
+	rm -f arrow.F
+	ln -s $(COMdir)/arrow.F .
 ascii_mat.F:
 	rm -f ascii_mat.F
 	ln -s $(COMdir)/ascii_mat.F .
 basesimp.F:
 	rm -f basesimp.F
 	ln -s $(BLDdir)/basesimp.F .
-basesimp_inputs.F:
-	rm -f basesimp_inputs.F
-	ln -s $(PRJdir)/basesimp_inputs.F .
 bscoeff.F:
 	rm -f bscoeff.F
 	ln -s $(BLDdir)/bscoeff.F .
@@ -155,7 +158,7 @@ h3k_utils.F:
 	ln -s $(CETCdir)/h3k_utils.F .
 initalc.F:
 	rm -f initalc.F
-	ln -s $(CTLdir)/initalc.F .
+	ln -s $(COMdir)/initalc.F .
 item.F:
 	rm -f item.F
 	ln -s $(COMdir)/item.F .
@@ -250,6 +253,9 @@ PltDummy.F:
 readTrnsys.F:
 	rm -f readTrnsys.F
 	ln -s $(COMdir)/readTrnsys.F .
+h3kmodule.f90:
+	rm -f h3kmodule.f90
+	ln -s $(CETCdir)/h3kmodule.f90 .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -258,17 +264,17 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
-	anlytc.F aim2_module.F ascii_mat.F basesimp.F bscoeff.F bscoeff_extended.F \
+	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
+	anlytc.F aim2_module.F arrow.F ascii_mat.F basesimp.F bscoeff.F bscoeff_extended.F \
 	bsimsel.F c2fdum.F cfdat.F cfdrw.F cfgmsc.F \
 	cfgrid.F cgd.F common3dv.F commonclm.F ctlexp.F ctprob.F ctread.F DG_controller_menu.F \
 	DHW_module.F exlgrad.F dossupport.F e3dviews.F ecasctl.F econstr.F econtrol.F \
 	edatabase.F egeometry.F egrid.F egtgeom.F emfnetw.F emkcfg.F enetmisc.F enetrewr.F \
 	eroper.F esru_misc.F esystem.F filelist.F ground_temp_mains.F h3k_utils.F initalc.F \
-	item.F mcdbscn.F mfcdat.F mfelst.F mfnmsc.F mfrlst.F MultiYear_climate.F mvalid.F \
+	hvacinput.F item.F mcdbscn.F mfcdat.F mfelst.F mfnmsc.F mfrlst.F MultiYear_climate.F mvalid.F \
 	net2pdf.F newnet.F nwkrewr.F plelevvc.F pltcfg.F psychro.F rcdblist.F rwipv.F rwroam.F \
 	rwsbem.F senrwl.F sort.F spmisc.F stndrds.F startup.F tdfile.F  \
-	readTrnsys.F PltDummy.F
+	readTrnsys.F PltDummy.F h3kmodule.f90
 
 
 

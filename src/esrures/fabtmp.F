@@ -256,6 +256,7 @@ C VAL1(1+NN+2) inside air temperature.
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
@@ -349,9 +350,14 @@ C temperature graphical output.
       COMMON/FGRAF1/TMAX,TMIN,xsc,ysc,Xadd,Yadd
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
+
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
 
       CALL MOFHED(ICOMP,ISUR,'i')
       XMAX=THKMAX
@@ -363,9 +369,11 @@ C memory for access by plotting code.
       igheight=igwh
       call axiscale(igwid,igheight,XMIN,XMAX,TMIN,TMAX,xsc,ysc,sca,
      &              Xadd,Yadd)
-      call linescale(igl,Xadd,xsc,igb,Yadd,ysc)
-      call horaxis(XMIN,XMAX,igl,igr,igb,Xadd,xsc,0,'Thickness (mm)')
-      call vrtaxis(TMIN,TMAX,igl,igb,igt,Yadd,ysc,0,0,'Temp. Deg.C')
+      call linescale(iigl,Xadd,xsc,iigb,Yadd,ysc)
+      call horaxis(XMIN,XMAX,iigl,iigr,iigb,Xadd,xsc,0,
+     &  'Thickness (mm)')
+      call vrtaxis(TMIN,TMAX,iigl,iigb,iigt,Yadd,ysc,0,0,
+     &  'Temp. Deg.C')
       RETURN
       END
 
@@ -399,8 +407,12 @@ C If act = i then initial display, if act = s then single step display.
       integer lml   ! string length for construction name.
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C Generate a descriptive string for the time period to be displayed
@@ -411,14 +423,24 @@ C and the simulation and output timesteps.
       IF(MMOD.EQ.8)THEN
         if(act.eq.'i')then
           call startbuffer
-          call win3d(menuchw,9,24,8,3,igl,igr,igt,igb,igw,igwh)
-          igw=igr-igl
-          igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+          iiw1=9; iiw2=24; iiw3=8; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+C          call win3d(menuchw,9,24,8,3,igl,igr,igt,igb,igw,igwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
         elseif(act.eq.'s')then
           call startbuffer
-          call win3d(menuchw,9,24,8,3,igl,igr,igt,igb,igw,igwh)
-          igw=igr-igl
-          igwh=igb-igt
+          iiw1=9; iiw2=24; iiw3=8; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+C          call win3d(menuchw,9,24,8,3,igl,igr,igt,igb,igw,igwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
         endif
       ENDIF
 
@@ -496,9 +518,14 @@ C Print info on surface.
 C ******************** MOFDRW
 C MOFDRW displays the construction temperature profiles.
 
-      SUBROUTINE MOFDRW(ICOMP,ISUR,act)
+      SUBROUTINE MOFDRW(ICOMP,ISUR,act,ispeed)
 #include "building.h"
 #include "geometry.h"
+
+C Passed parameters
+      integer icomp  ! zone index
+      integer isur   ! surface index
+      integer ispeed ! 1 is 200ms 2 is 100ms 3 is 50ms
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -521,9 +548,11 @@ C IPRZ is material db ref for each layer.
 #ifdef OSI
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym,iid1,iid2    ! passed to etplot
+      integer iicol
 #else
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym,iid1,iid2    ! passed to etplot
+      integer*8 iicol
 #endif
 
 C Re-establish available colours.
@@ -599,7 +628,13 @@ C to allow for outside temp to be in VAL2(1,?)
 C If single-stepping pause, every 20 timesteps refresh the axis.
 C If there are limited interface colours then revert to refreshing at
 C each timestep. Pause 200msec at each timestep.
-            call pausems(200)
+            if(ispeed.eq.1)then
+              call pausems(200)
+            elseif(ispeed.eq.2)then
+              call pausems(100)
+            elseif(ispeed.eq.3)then
+              call pausems(50)
+            endif
             if(nifgrey.lt.4)then
               call MOFHED(ICOMP,ISUR,'s')
               call MOFAXS(ICOMP,ISUR)
@@ -620,7 +655,8 @@ C each timestep. Pause 200msec at each timestep.
 
 C If possible reset the foreground colour to white and redraw the line.
             if(nifgrey.gt.4)then
-              call winscl('i',nifgrey-1)
+              iicol=nifgrey-1
+              call winscl('i',iicol)
               XX=THKMIN
               iupdown=0
               isym=0
@@ -635,7 +671,8 @@ C If possible reset the foreground colour to white and redraw the line.
               iupdown=1
               call etplot(THKMAX,VAL2(NNT+2,J),iupdown,isym)
               call forceflush()
-              call winscl('-',0)
+              iicol=0
+              call winscl('-',iicol)
             endif
 
 C Re-Draw construction section.
@@ -655,8 +692,21 @@ C Re-Draw construction section.
   102       CONTINUE
             call forceflush
           else
+            call STIME(j,TDESCR)
+            call STDATE(IYEAR,ID,DS,DS1)
+            WRITE(ETEXT,'(4A)')' Time ',DS1,' at ',TDESCR
+            iside=5
+            isize=0
+            ifont=1
+            call viewtext(etext,iside,isize,ifont)
             call forceflush
-            call pausems(100)
+            if(ispeed.eq.1)then
+              call pausems(100)
+            elseif(ispeed.eq.2)then
+              call pausems(60)
+            elseif(ispeed.eq.3)then
+              call pausems(40)
+            endif
           endif
    20   CONTINUE
    10 CONTINUE

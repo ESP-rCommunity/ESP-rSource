@@ -37,7 +37,6 @@ C PLTTAB handles results view/setup requests for plant.
       PARAMETER (MSYSRS=20)
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/GRTOOL/IHFLAG,IDHFLG,ILFLAG
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
@@ -95,12 +94,19 @@ C this clash.
 
       dimension mcomp(mpcom), ipcndx(mpcom), ivals(15)
       CHARACTER ITEM(26)*23
-      character outs*124,xfile*144,tg*1,delim*1,MTITLE*22,h*72
+      character outs*124,xfile*144,tg*1,delim*1,MTITLE*22
       character pcname*15,pcnam1(mpcom)*15,adopdsc*30
       character aoutstr(15)*30
       character SPLABEL*32,GPLABEL*20,SUFFIX*6,PREFIX*14
       integer IWM  ! for radio button
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='plttab'  ! set for subroutine
 
 C Default value for GRTOOL file hourly flag = 0 (off).
       IHFLAG=0
@@ -236,34 +242,9 @@ C Display menu.
     2 INO=-2
     5 continue
 
-C Instanciate the h() strings for this menu.
-      h(1) ='The viewing of plant system component performance'
-      h(2) ='is controlled by this menu. '
-      h(3) =' '
-      h(4) =' 3 - set the display period and timestep. '
-      h(5) =' 5 - toggle output format between frequency bins,'
-      h(6) ='     timestep listings, time series graphs, statistics,'
-      h(7) ='     statistics, psychrometric chart.'
-      h(8) =' '
-      h(9) ='Node related metrics - selection presents a list of'
-      h(10)='components that include the metric. Repeat selections'
-      h(11)='as required. '
-      h(12)=' '
-      h(13)='Special metrics - components may include additional'
-      h(14)='performance data such and cooling or heating at a node.'
-      h(15)='You are expected to know what these data are (minimal '
-      h(16)='assistance is provided). '
-      h(17)=' '
-      H(18)=' > Display can be redirected to a file or the screen.'
-      H(19)='  '
-      H(20)=' * Time is displayed as hours and minutes (hh,mm) or'
-      H(21)='   as a decimal (Day of year.Fraction of day).'
-      H(22)='  '
-      H(23)=' ^ Delimiters in tabular output can be changed to tab'
-      H(24)='   or space or comma or tag or fixed format as required.'
-      H(25)=' ! produce graph or report or listing.'
-      H(26)='  '
-      H(27)='  / clear - reset previous seletions.'
+C Instanciate the help strings for this menu.
+      helptopic='res_plant_perf_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU(MTITLE,ITEM,NITMS,INO)
 
@@ -314,17 +295,12 @@ C Display hours.
       elseif(INO.EQ.22)then
 
 C Toggle delimeter.
-        H(1) ='Tabular data can be sent to file with various '
-        H(2) ='delimiters: '
-        H(3) ='  spaces (format using spaces to lineup columns)'
-        H(4) ='  single space between columns'
-        H(5) ='  comma separator (for excel)'
-        H(6) ='  tab separator (for excel)'
-        H(7) ='  tagged - marked up data'
+        helptopic='res_plant_delimeter'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IWM=1
         CALL EASKATOG('Delimeter to use between columns of data:',' ',
      &    'normal spaces','single space','tab','comma','tagged',
-     &    'continue',' ',IWM,7)
+     &    'continue',' ',IWM,nbhelp)
         if(iwm.eq.1)then
           delim = '-'
         elseif(iwm.eq.2)then
@@ -350,7 +326,9 @@ C Clear selections.
       ELSEIF(INO.EQ.25)THEN
 
 C Help.
-        CALL PHELPD('systems tabular data',27,'-',0,0,IER)
+        helptopic='res_plant_perf_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('systems tabular data',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.26)THEN
 
 C To exit without drawing anything set menutype to -1 and return.
@@ -684,10 +662,16 @@ C SELPC displays a selection list of plant components
 C for the user to select from.
       subroutine selpc(mnpc,mcomp,pcnam1,npc)
 #include "plant.h"
-      common/pophelp/h(60)
       dimension mcomp(mpcom)
 
-      character H*72, pcnam1(mpcom)*15
+      character pcnam1(mpcom)*15
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='selpc'  ! set for subroutine
 
 c Get number of components.
       if(npc.eq.1) then
@@ -696,11 +680,11 @@ c Get number of components.
       else
 
 c Get number of each component.
-   10   H(1)='You may select any number of components in'
-        H(2)='any order or all components. '
+   10   helptopic='res_plant_comp_list'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EPICKS(mnpc,mcomp,' ',
      &    ' Which component to include: ',15,npc,pcnam1,
-     &    ' Select comp',IER,2)
+     &    ' Select comp',IER,nbhelp)
          if(ier.ne.0) goto 10
          if(mnpc.eq.0)return
 
@@ -728,7 +712,6 @@ C default file names for databases
       integer igraphiclib  ! external definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/pres/iunitp
       COMMON/FILEP/IFIL
       COMMON/PPERS/IpSD1,IpSM1,IpSD2,IpSM2,IpSDS,IpSDF,NpTS,IpSav
@@ -756,16 +739,23 @@ C the best-guess of file names (but with full path).
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
 
 
       character DFILE*72,LTMP*144,outs*124,louts*248
-      character lctlf*72,ctldoc*248,scname*12,h*72,MODE*4
+      character lctlf*72,ctldoc*248,scname*12,MODE*4
       character firstbit*72,secondbit*72,path*72,LCFGF*72,cfgroot*24
       character longtmp*144
       logical XST,ok,dok
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='opnplt'  ! set for subroutine
 
       IUNITp=ifil+10
       DFILE='plant.plr'
@@ -791,10 +781,8 @@ C	  write(LTMP,'(2a)') LTMP(1:lrf4),'.plr'
 C	endif
 
         llt=lnblnk(ltmp)
-        h(1)='The predictions from solution of a plant/system '
-        h(2)='network are held in a binary results file which'
-        h(3)='is separate from zone and flow results. Please '
-        h(4)='supply the name (if the field is blank). '
+        helptopic='res_plant_res_file'
+        call gethelptext(helpinsub,helptopic,nbhelp)
 
 C The X11 version will be returning only the name of the
 C file, while the GTK version will be returning the
@@ -803,20 +791,20 @@ C name with the full path.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
             CALL EASKF(ltmp,'Plant library name ? ',' ',96,DFILE,
-     &        'plant library file',IER,4)
+     &        'plant library file',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
             CALL EASKF(ltmp,'Plant library name ? ',' ',124,DFILE,
-     &        'plant library file',IER,4)
+     &        'plant library file',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
             CALL EASKF(ltmp,'Plant library name ? ',' ',144,DFILE,
-     &        'plant library file',IER,4)
+     &        'plant library file',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
           CALL EASKF(ltmp,'Plant library name ? ',' ',144,DFILE,
-     &      'plant library file',IER,4)
+     &      'plant library file',IER,nbhelp)
         else
           CALL EASKF(ltmp,'Plant library name ? ',' ',96,DFILE,
-     &      'plant library file',IER,4)
+     &      'plant library file',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
 
@@ -839,11 +827,10 @@ C Set record length of library file.
 
 C Try again ?
         dok=.false.
-        h(1)='The plant results file was not found in the folder you'
-        h(2)='specified or the name you gave. Check folder and file '
-        h(3)='name and then retry. A no will return to main menu. '
+        helptopic='plant_res_file_not'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         write(outs,'(2a)') ' Could not find ',LTMP(1:lnblnk(LTMP))
-        CALL ASKOK(outs,' Do you want to try again?',OK,dok,3)
+        CALL ASKOK(outs,' Do you want to try again?',OK,dok,nbhelp)
         IF(.NOT.OK) return
         goto  6
       endif
@@ -863,8 +850,10 @@ C Read number of result-set.
      &     ' results sets'
          call edisp(iuout,outs)
   13     ipset=1
+         helptopic='res_plant_res_set'
+         call gethelptext(helpinsub,helptopic,nbhelp)
          CALL easki(ipset,' ',' Specify required set ? ',
-     &      1,'F',nsim,'F',1,'required set',IER,0)
+     &      1,'F',nsim,'F',1,'required set',IER,nbhelp)
          IF(IER.NE.0) GOTO 13
       else
          ipset=1
@@ -938,17 +927,10 @@ C Not found, might be in a remote folder.  Warn user first.
           call edisp(iuout,outs)
           WRITE(OUTS,'(A,A)')' in the folder ',path
           call edisp(iuout,outs)
-          H(1)='The model configuration file holds the definition of'
-          H(2)='the building/plant which was simulated.'
-          H(3)='This file was not found.  Please supply the model '
-          H(4)='which MATCHES that within the results library.'
-          H(5)='IF IT DOES NOT MATCH THEN RESULTS RECOVERY '
-          H(6)='WILL BE COMPROMISED! '
-          CALL PHELPD('no system file',6,'-',0,0,IER)
+          helptopic='res_plant_cfg_file'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('no system file',nbhelp,'-',0,0,IER)
 
-          H(1)='The model configuration file holds the definition '
-          H(2)='of the building/ plant to be simulated.  It should'
-          H(3)='match the contents held within the results library.'
           write(longtmp,'(a)') LCFGF(1:lnblnk(LCFGF))
 
 C If using X11 assume that the full path is less than 96 chars
@@ -956,13 +938,13 @@ C but if using GTK then we need the full length to avoid truncation.
           iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
           if(iglib.eq.1.or.iglib.eq.3)then
             CALL EASKF(longtmp,'Model configuration file ?',' ',96,
-     &        DFCFG,'config file name',IER,3)
+     &        DFCFG,'config file name',IER,nbhelp)
           elseif(iglib.eq.2)then
             CALL EASKF(longtmp,'Model configuration file ?',' ',144,
-     &        DFCFG,'config file name',IER,3)
+     &        DFCFG,'config file name',IER,nbhelp)
           else
             CALL EASKF(longtmp,'Model configuration file ?',' ',96,
-     &        DFCFG,'config file name',IER,3)
+     &        DFCFG,'config file name',IER,nbhelp)
           endif
           if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
 
@@ -1022,7 +1004,7 @@ C Read climate file name.
 	write(LCLIM,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
 
 C Debug.
-C        write(6,*) LCLIM
+C        write(6,*) 'plant lclim is ',LCLIM
 
       endif
 
@@ -1030,14 +1012,14 @@ C Check that this CLIMATE file can still be assigned. << convert >>
    44 IUNITC=IFIL+5
       CALL FPRAND(IUNITC,ISTAT,144,1,LCLIM)
       IF(ISTAT.LT.0)then
+
 C Climate file not found - ask user for name.
         write(louts,'(3A)') ' Referenced climate file ',
      &     LCLIM(1:lnblnk(LCLIM)), ' not found...'
         call edisp248(iuout,louts,100)
         call erpfree(IUNITC,istat)
-        H(1)=' A climate file defines the problem boundary'
-        H(2)=' condition. The one included in the results libary'
-        H(3)=' was not found, type in the correct name.'
+        helptopic='res_climate_file_ask'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         ltmp=LCLIM
 
 C If using X11 assume that the full path is less than 96 chars
@@ -1045,13 +1027,13 @@ C but if using GTK then we need the full length to avoid truncation.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           CALL EASKF(ltmp,' ',' Climate file name ? ',
-     &      96,DCLIM,'climate file name',IER,3)
+     &      96,DCLIM,'climate file name',IER,nbhelp)
         elseif(iglib.eq.2)then
           CALL EASKF(ltmp,' ',' Climate file name ? ',
-     &      144,DCLIM,'climate file name',IER,3)
+     &      144,DCLIM,'climate file name',IER,nbhelp)
         else
           CALL EASKF(ltmp,' ',' Climate file name ? ',
-     &      96,DCLIM,'climate file name',IER,3)
+     &      96,DCLIM,'climate file name',IER,nbhelp)
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
 
@@ -1188,15 +1170,21 @@ C naout (number of additional output data) is returned.
 #include "esprdbfile.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/FILEP/IFIL
       common/ntype/isv(mpcom,mnodec)
       common/adopdesc/adopdsc(mpcom,15)
       LOGICAL OK,dok,unixok
       CHARACTER PZDESC*25,cdate*16,buffer*80,adopdsc*30
-      character h*72,fs*1
+      character fs*1
       integer lndbp   ! for length of standard database path
       character lltmp*144  ! to re-create plant database file name with path
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='dbdat'  ! set for subroutine
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1224,22 +1212,20 @@ C Check for error on openening.
       if(ier.gt.0) then
          ok=.false.
          dok=.false.
-         h(1)='The plant component database associated with the model'
-         h(2)='could not be opened. Check the model and then the'
-         h(3)='folder and the file before trying again. '
+         helptopic='res_plant_db_not'
+         call gethelptext(helpinsub,helptopic,nbhelp)
          CALL ASKOK('Error occurred on opening data base file',
-     &              ' Try again?',OK,dok,3)
+     &              ' Try again?',OK,dok,nbhelp)
          if(ok) goto 100
       elseif(ier.lt.0) then
 
 C File doesn't exist.
          ok=.false.
          dok=.false.
-         h(1)='The plant component database associated with the model'
-         h(2)='could not be opened. Check the model and then the'
-         h(3)='folder and the file before trying again. '
+         helptopic='res_plant_db_not'
+         call gethelptext(helpinsub,helptopic,nbhelp)
          CALL ASKOK(' Plant component database does not exist.',
-     &                 ' Try again?',OK,dok,3)
+     &                 ' Try again?',OK,dok,nbhelp)
          CALL USRMSG(' ',' ','-')
          if(ok) goto 100
       endif
@@ -1250,11 +1236,10 @@ C Old file, so check header.
       IF (PZDESC .NE. ' PLANT COMPONENT DATABASE') then
          ok=.false.
          dok=.false.
-         h(1)='The plant component database associated with the model'
-         h(2)='could not be opened. Check the model and then the'
-         h(3)='folder and the file before trying again. '
+         helptopic='res_plant_db_not'
+         call gethelptext(helpinsub,helptopic,nbhelp)
          CALL ASKOK(' Not a plant database file.',
-     &               ' Try another file? ',OK,dok,3)
+     &               ' Try another file? ',OK,dok,nbhelp)
          CALL USRMSG(' ',' ','-')
          if(ok) goto 100
       endif
@@ -1361,11 +1346,11 @@ C MOSYSSU clears commons/ sets default values for systems plotting.
 
       COMMON/MSYSPICK/NPGET,IPGETNO(MSYSRS,8)
 
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
       COMMON/SYSLABEL/SPLABEL(MSYSRS),GPLABEL(MSYSRS)
 
-      integer YAXSET, ADDLIN
+      integer YAXSET,ADDLIN,horaxisdiv
       character SPLABEL*32,GPLABEL*20
 
 C Reset axis max and min values to 1.0 and 0.0 resp.
@@ -1423,14 +1408,13 @@ C act='p' iget parameters already set.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/OUTPCH/ICOUT
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
-      common/pophelp/h(60)
 
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN
+      COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
       COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
-      common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
+      common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
 
       COMMON/PPERS/IPSD1,IPSM1,IPSD2,IPSM2,IPSDS,IPSDF,NPTS,ipsav
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
@@ -1466,7 +1450,7 @@ C Flags identifying if results libries are available. =0 no lib, =1 lib exists.
 
       dimension Yold(65),TIMEold(65),val(MSYSRS)
       character outs*124,TLABEL*60,trange*20,tranged*20
-      character ALABEL(5)*12,t20*20,act*1,H*72
+      character ALABEL(5)*12,t20*20,act*1
       CHARACTER PDESCR*60,SDESCR*44,DESCR*7,DESCR1*10
       character SPLABEL*32,GPLABEL*20
       CHARACTER DESCRH*5,DESCRD*5,NT*14,XT*14
@@ -1476,19 +1460,34 @@ C Flags identifying if results libries are available. =0 no lib, =1 lib exists.
       dimension FAVE(MSYSRS), FSTD(MSYSRS), NF(MSYSRS)
       dimension TMAX(MSYSRS), TMIN(MSYSRS), IQHRS(MSYSRS)
 
-      integer YAXSET, ADDLIN
+      integer YAXSET,ADDLIN,horaxisdiv
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
 #ifdef OSI
+      integer IGX  ! see common graf2
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym,iid1,iid2    ! passed to etplot
+      integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
+      integer*8 IGX  ! see common graf2
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym,iid1,iid2    ! passed to etplot
+      integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
       logical colok,ok,dok,unixok
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SYSOUTP'  ! set for subroutine
 
 C Begin with the menu type=4 (performance metrics).
       menutype=4
@@ -1572,9 +1571,10 @@ C Ask for set point value.
         if (act(1:1).eq.'p') then
           continue
         else
-          H(1)='The ..'
+          helptopic='plant_test_point_val'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKR(XQUERY,' ','  Test point value ? ',
-     &             0.0,'-',0.0,'-',20.0,'query value',IER,1)
+     &      0.0,'-',0.0,'-',20.0,'query value',IER,nbhelp)
         endif
       endif
 
@@ -1958,10 +1958,9 @@ C If in pif mode use default bin setup.
           ok=.TRUE.
         else
           dok=.true.
-          h(1)='If you need to customize the frequency reporting'
-          h(2)='say no, otherwise the default set-up will probably '
-          h(3)='work for initial interactive views. '
-          call askok('  ','Use default bin set-up?',OK,dok,3)
+          helptopic='plant_freq_reporting'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          call askok('  ','Use default bin set-up?',OK,dok,nbhelp)
         endif
         if(ok)then
 
@@ -2019,15 +2018,14 @@ C Bin sized from data max & min.
         else
           XBIN1=XMIN
           XBINN=XMAX
-          H(1)='Give minimum bin value for the current parameter.'
+          helptopic='plant_freq_bin_data'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           call easkr(XBIN1,' ',' Minimum parameter value for bin ?',
-     &                     0.,'-',0.,'-',0.,'min bin parameter',IER,1)
-          H(1)='Give maximum bin value for the current parameter.'
+     &      0.,'-',0.,'-',0.,'min bin parameter',IER,nbhelp)
           call easkr(XBINN,' ',' Maximum parameter value for bin ?',
-     &                  XBIN1,'F',0.,'-',0.,'max bin parameter',IER,1)
-          H(1)='The number of frequency bins is required.'
+     &      XBIN1,'F',0.,'-',0.,'max bin parameter',IER,nbhelp)
           call easki(NBINS,' ',' Number of bins required ? ',
-     &                               1,'F',MF,'F',0,'no of bins',IER,0)
+     &      1,'F',MF,'F',0,'no of bins',IER,nbhelp)
           DXBIN=(XBINN-XBIN1)/NBINS
         endif
         call usrmsg(' ',' ','-')
@@ -2066,9 +2064,15 @@ C Write graph head and set up axis positions and draw.
             call feedbox(menuchw,2,igfw,igfh)
             call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
           endif
-          call win3d(menuchw,9,30,4,3,igl,igr,igt,igb,igw,igwh)
-          igw=igr-igl
-          igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+          iiw1=9; iiw2=30; iiw3=4; iiw4=3; iimenu=menuchw
+          iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+          CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &      iigl,iigr,iigt,iigb,iigw,iigwh)
+C          call win3d(menuchw,9,30,4,3,igl,igr,igt,igb,igw,igwh)
+          igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+          igw=int(iigw); igwh=int(iigwh)
           call startbuffer()
         ENDIF
 
@@ -2316,7 +2320,7 @@ C Do the other menu types. If graph reset scaling factor for appropriate axis.
             do 400 IX=1,NPGET
               if (MENUTYPE.eq.3) then
                 Iax=IPGETNO(IX,8)
-                call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
+                call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))
                 if (TIMEold(IX).lt.0.0.or.ADDLIN.eq.1) then
                   TIMEold(IX)=0
                   Yold(IX)=VAL(IX)
@@ -2366,7 +2370,8 @@ C than that of the number of colours re-use an earlier colour.
                     ICM=IPGETNO(IX,2)
                     if(ICM.gt.nzonec) ICM=IPGETNO(IX,2)-nzonec
                     if(ICM.gt.nzonec) ICM=IPGETNO(IX,2)-nzonec
-                    call winscl('z',ICM)
+                    iicol=ICM
+                    call winscl('z',iicol)
                   endif
                 endif
 
@@ -2375,7 +2380,10 @@ C then reset to forground colour.
                 iupdown=IPEN
                 isym=MARK
                 call etplot(GTIME,Yold(IX),iupdown,isym)
-                if(colok)call winscl('-',0)
+                if(colok)then
+                  iicol=0
+                  call winscl('-',iicol)
+                endif
                 call forceflush()
               elseif (MENUTYPE.eq.5) then
 
@@ -2563,7 +2571,8 @@ C Do the other menu types. If graph reset scaling factor for appropriate axis.
               do 401 IX=1,NPGET
                 if (MENUTYPE.eq.3) then
                   Iax=IPGETNO(IX,8)
-                  call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
+                  call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),
+     &              YSC(Iax))
                   if (TIMEold(IX).lt.0.0.or.ADDLIN.eq.1) then
                     TIMEold(IX)=0
                     Yold(IX)=VAL(IX)
@@ -2614,7 +2623,8 @@ C than that of the number of colours re-use an earlier colour.
                       ICM=IPGETNO(IX,2)
                       if(ICM.gt.nzonec) ICM=IPGETNO(IX,2)-nzonec
                       if(ICM.gt.nzonec) ICM=IPGETNO(IX,2)-nzonec
-                      call winscl('z',ICM)
+                      iicol=ICM
+                      call winscl('z',iicol)
                     endif
                   endif
 
@@ -2623,7 +2633,10 @@ C then reset to forground colour.
                   iupdown=IPEN
                   isym=MARK
                   call etplot(GTIME,Yold(IX),iupdown,isym)
-                  if(colok)call winscl('-',0)
+                  if(colok)then
+                    iicol=0
+                    call winscl('-',iicol)
+                  endif
                   call forceflush()
                 elseif (MENUTYPE.eq.5) then
 
@@ -2693,14 +2706,15 @@ C Calculate cumulative frequency.
   710   CONTINUE
 
 C Ask user how data should be presented.
-        H(1)='Frequency distribution choices. '
+        helptopic='res_freq_menu_options'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IDG=1
         IG=1
         CALL MENUATOL('Frequency choices','Frequency reports:',
      &    'a frequency distribution','b cumulative freq. dist.',
      &    'c summary table ','d frequency dist. + table',
      &    'e cumulative dist. + table','f none of the above',
-     &    ' ',' ',' ',' ',' ',' ',IG,IDG,1)
+     &    ' ',' ',' ',' ',' ',' ',IG,IDG,nbhelp)
         if(IG.eq.6) goto 1
         IF(IG.EQ.1.OR.IG.EQ.2.OR.IG.EQ.4.OR.IG.EQ.5)then
 
@@ -2717,9 +2731,15 @@ C Write graph head and set up axis positions and draw.
                 call feedbox(menuchw,2,igfw,igfh)
                 call opengdisp(menuchw,LIMTTY,2,igdw,igdh)
               endif
-              call win3d(menuchw,9,30,4,3,igl,igr,igt,igb,igw,igwh)
-              igw=igr-igl
-              igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+              iiw1=9; iiw2=30; iiw3=4; iiw4=3; iimenu=menuchw
+              iigl=igl; iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+              CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &          iigl,iigr,iigt,iigb,iigw,iigwh)
+C              call win3d(menuchw,9,30,4,3,igl,igr,igt,igb,igw,igwh)
+              igl=int(iigl); igr=int(iigr);igt=int(iigt);igb=int(iigb)
+              igw=int(iigw); igwh=int(iigwh)
               call startbuffer()
             ENDIF
 
@@ -2796,19 +2816,23 @@ C histogram metric is selected it will be the first one.
 C Finally label lines, matching zone line colour if used.
         do 202 I=1,NPGET
           Iax=IPGETNO(I,8)
-          call linescale(igl,Xadd,TSC,igb,Yadd(Iax),YSC(Iax))
+          call linescale(iigl,Xadd,TSC,iigb,Yadd(Iax),YSC(Iax))
           t20=GPLABEL(I)
           if(colok)then
             if(IPGETNO(I,2).gt.0)then
               ICM=IPGETNO(I,2)
               if(ICM.gt.nzonec) ICM=IPGETNO(I,2)-nzonec
               if(ICM.gt.nzonec) ICM=IPGETNO(I,2)-nzonec
-              call winscl('z',ICM)
+              iicol=ICM
+              call winscl('z',iicol)
             endif
           endif
           call u2pixel(TIMEold(I),Yold(I),iid1,iid2)
           call wstxpt(iid1,iid2,t20)
-          if(colok)call winscl('-',0)
+          if(colok)then
+            iicol=0
+            call winscl('-',iicol)
+          endif
           call forceflush()
  202    continue
 

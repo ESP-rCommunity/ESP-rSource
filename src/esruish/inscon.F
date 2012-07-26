@@ -51,28 +51,35 @@ C   itmc & isc:   toggles for each surface, if 1 then surface is an
 C                 insolation source. The latter is held
 C                 in common.
       common/outin/iuout,iuin
-      common/pophelp/h(60)
       common/filep/ifil
 
+      character ltrns*72
+      integer multic,mons,monf
       common/mtfile/ltrns,multic,mons,monf
       common/shdfil/ishadf
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/ract/paction
 
       dimension month(12),iavdec(12)
       character paction*16
-      character*72 h
-      character month*3,outs*124,tbase*72,ltrns*72,act*1
+      character month*3,outs*124,tbase*72,act*1
       logical ok,dok,xst
       logical newgeo  ! Used to test for new/old geometry file.
       integer nboftmc ! equivalent of ntmc returned from findtmc
       integer ier
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
 
 C Day of average solar declination in each month.
       data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
 
+      helpinsub='inscon'  ! set for subroutine
       newgeo=.false.  ! Assume older format geometry.
       iunit=ifil
       
@@ -91,6 +98,10 @@ C for warning if update_silent or useupdate_silent.
           return
         endif
       endif
+
+C Make up help text for following dialogs.
+      helptopic='inscon_actions'
+      call gethelptext(helpinsub,helptopic,nbhelp)
     
 C Check that at least one surface has been chosen or gleaned
 C from the zone geometry file.
@@ -109,11 +120,9 @@ C from the zone geometry file.
                call edisp(iuout,'No insolation sources - skipping!')
                return
             else
-               h(1)='Surfaces that are sources of sunlight must be'
-               h(2)='selected or the computations cannot be performed.'
                dok=.true.
                call askok('No surfaces specified!','Re-specify?',
-     &                       ok,dok,2)
+     &           ok,dok,nbhelp)
      
 C Use a 2nd call to findtmc to allow the user to select different surfaces.
                if(ok)goto 4
@@ -129,15 +138,13 @@ C Establish calculation period.
          monf=12
          mon=mons
       else
-         h(1)='An integer value between 1 and 12. For each month a'
-         h(2)='24 hour calculation of internal surface insolation'
-         h(3)='distribution will be undertaken for the day of average'
-         h(4)='solar declination.'
+         if(mons.gt.12) mons=1  ! if mons was clobbered reset
          call easki(mons,' ','Start month number?',
-     &              1,'F',12,'F',1,'start month',ier,0)
+     &     1,'F',12,'F',1,'start month',ier,nbhelp)
          if(ier.ne.0)return
+         if(monf.gt.12) monf=12  ! if monf was clobbered reset
          call easki(monf,' ','End month number?',
-     &              mons,'F',12,'F',1,'end month',ier,0)
+     &     mons,'F',12,'F',1,'end month',ier,nbhelp)
          if(ier.ne.0)return
          mon=mons
       endif
@@ -202,8 +209,10 @@ C                 insolation source. The latter is held
 C                 in common.
       common/outin/iuout,iuin
 
+      integer izstocn
       common/c24/izstocn(mcom,ms)
       common/shdfil/ishadf
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/tmc/itmc(ms),nwins
       common/ract/paction
@@ -396,12 +405,14 @@ C            in the misur list.
 #include "building.h"
 #include "geometry.h"
 
+      integer izstocn
       common/c24/izstocn(mcom,ms)
       common/sunhr/isunhr
       common/tshd/ioshd(mox,moz)
       common/grid11/xop(mox,moz),zop(mox,moz)
       common/shad1/isunup
       common/cai/caii(ms),caie(ms)
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/proji/xp,yp,zp
       common/inswin/igins(mox,moz)
@@ -596,25 +607,25 @@ C Store for each source and hour.
                if(indcom.eq.4)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' complete.','P')
+                  call usrmsg(outs,' complete.','-')
                endif
             elseif(calcom.ge.0.75)then
                if(indcom.eq.3)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' 75% complete.','P')
+                  call usrmsg(outs,' 75% complete.','-')
                endif
             elseif(calcom.ge.0.50)then
                if(indcom.eq.2)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' 50% complete.','P')
+                  call usrmsg(outs,' 50% complete.','-')
                endif
             elseif(calcom.ge.0.25)then
                if(indcom.eq.1)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' 25% complete.','P')
+                  call usrmsg(outs,' 25% complete.','-')
                endif
             endif
             goto 30
@@ -793,6 +804,7 @@ C at hour jj.
       common/inswin/igins(mox,moz)
       common/pinsol/ins(ms),pins(ms),pinw(ms),pcshad
       common/outin/iuout,iuin
+      integer izstocn
       common/c24/izstocn(mcom,ms)
 
       dimension icounts(ms+4),icountw(ms+4),icountt(ms+4)

@@ -51,6 +51,7 @@ C At present this data is cursory.
       SUBROUTINE  MZPLS1
 #include "building.h"
 #include "plant.h"
+#include "model.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
 C LPCDB/IPCDB (for plant template database)
@@ -67,14 +68,25 @@ C ICLIM,LCLIM (for climate file)
 
       character firstbit*72,secondbit*72
       character cfgroot*24,longtfile*144,LCFGF*72
-      logical concat
       integer ireccfg   ! where the cfg file name starts.
+      logical unixok,concat
+      character fs*1
+      character llclmdb*144  ! to expand weather file
+      integer lndbp          ! length of weather folder path
 
       IUNIT=IFIL+3
       firstbit=' '   ! to represent 1:72 of string
       secondbit=' '   ! to represent 73:144 of string
       longtfile=' '   ! make sure not a null string
       ireccfg=0       ! we do not yet know where cfg is written
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C -1 or -2 in record 32 tells res that the results
 C database is for the plant and not building. The -2
@@ -90,7 +102,7 @@ C We assume one "building zone", NPCOMP "surfaces" each representing
 C a plant component, ME "elements per surface" each element holding
 C resp. temperature, 1th and 2nd phase mass flow rate for a plant
 C component node, and one window, and one door.
-      NCOMP=1
+      NCOMP=1   ! consider renaming so no clash with common c1
       NSUR=NPCOMP
       NELT=ME
       NWIN=1
@@ -133,9 +145,21 @@ C << are going to be 144 characters the file needs to be
 C << EITHER opened at 36 records wide or we need two records
 C << to write each string
 
+C Take into account weather file location.
+      lndbp=lnblnk(standardclmpath)
+      if(ipathclim.eq.0.or.ipathclim.eq.1)then
+        call addpath(lclim,llclmdb,concat)
+      elseif(ipathclim.eq.2)then
+        write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &    LCLIM(1:lnblnk(LCLIM))
+      endif
+
+C Debug.
+C      write(6,*) 'plibsv expanded clm ',llclmdb
+
 C Store climate file name.
-      write(firstbit,'(a)')LCLIM(1:72)
-      write(secondbit,'(a)')LCLIM(73:144)
+      write(firstbit,'(a)')llclmdb(1:72)
+      write(secondbit,'(a)')llclmdb(73:144)
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999) firstbit
       IREC=IREC+1
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999) secondbit
@@ -187,8 +211,7 @@ C      write(6,*) ' start for current results set ',IRCPLP,ireccfg
   100 RETURN
 
 C Error handling.
-  999 call elinc(1)
-      WRITE(IUOUT,*) ' MZPLS1: plant results library error',
+  999 WRITE(IUOUT,*) ' MZPLS1: plant results library error',
      &               ' at record ',IREC
       call epwait
       GOTO 100
@@ -232,7 +255,6 @@ C Read number of simulation result sets currently stored in library.
 
 C If solution library full, open new library.
       IF(NSIM.EQ.30) THEN
-         call elinc(1)
          WRITE(IUOUT,1010)
  1010    FORMAT(' Results library full; please specify another')
          call epwait
@@ -542,8 +564,7 @@ C Trace output.
   500 RETURN
 
 C Error handling.
-  999 call elinc(1)
-      WRITE(IUOUT,*) ' MZPLS3: library error at record ',IREC
+  999 WRITE(IUOUT,*) ' MZPLS3: library error at record ',IREC
       GOTO 500
 
       END
@@ -573,7 +594,6 @@ C 'start address' record, unless library is already full.
 C Save start address of next result-set.
          WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=999) IRCPLP
       ELSE
-         call elinc(1)
          WRITE(IUOUT,*) ' MZPLS4: plant results library is full'
          call epwait
       END IF
@@ -581,8 +601,7 @@ C Save start address of next result-set.
    10 RETURN
 
 C Error handling.
-  999 call elinc(1)
-      WRITE(IUOUT,*) ' MZPLS4: library error at record ',IREC
+  999 WRITE(IUOUT,*) ' MZPLS4: library error at record ',IREC
       GOTO 10
 
       END

@@ -61,7 +61,6 @@ C #include "esprdbfile.h"
       integer lnblnk  ! function definition
 
       common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       common/gzonpik/izgfoc,nzg,nznog(mcom)
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -75,13 +74,20 @@ C #include "esprdbfile.h"
       logical origin,xgrid,ygrid,zgrid,zegrid,ortho
       logical OK,dok,MODIFY,MODLEN,MODBND,XST,CFDsave
 
-      character H*72,OUTSTR*124,WORD*124
+      character OUTSTR*124,WORD*124
       CHARACTER ITEM(11)*34
       character ltmp*72,dtmp*72,LCFD*72
       CHARACTER*72 TITLE,CFTRFL,LPHI
       character*72 DFCFD,DECMPDBFL,DICONDBFL
       integer IWO  ! for radio button
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CFDCOMP'  ! set for subroutine
 
 C Note: to make this more general, we need to have prj set the value of ICFD.
 C ICFD=1 for the first CFD domain in the building, 2 for the second CFD domain, etc.
@@ -121,6 +127,10 @@ C Draw the zone and display the vertex numbers.
       CALL INLNST(1)
       CALL ADJVIEW(IER)
 
+C Setup help text for main menu.
+      helptopic='cfd_opening_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
 C Get the name of the CFD input file.
       if(LCFD(izone)(1:2).eq.'  ')then
         if(netpth(1:2).eq.'  '.or.netpth(1:2).eq.'./')then
@@ -131,13 +141,9 @@ C Get the name of the CFD input file.
      &      zname(izone)(1:lnzname(izone)),'.dfd'
         endif
       endif
-      H(1)='A CFD input file holds the definition of the'
-      H(2)='geometry and gridding of the CFD domain,'
-      H(3)='information on how to conflate the CFD zone model'
-      H(4)='into the whole-building model, and data required'
-      H(5)='by the CFD solver.'
       ltmp=LCFD(izone)
-      CALL EASKS(ltmp,' CFD input file?','  ',72,DFCFD,'dfd file',IER,5)
+      CALL EASKS(ltmp,' CFD input file?','  ',72,DFCFD,'dfd file',
+     &  IER,nbhelp)
       if(ltmp(1:2).ne.'  ')LCFD(izone)=ltmp
 
 C If the CFD input file exists, read in its contents.
@@ -209,48 +215,8 @@ C Present menu of options for editing CFD input file.
       NITMS=11
 
 C Help text for this menu.
-  12  h(1)= 'Data on conflation, geometry, gridding, solution'
-      h(2)= 'variables, boundary conditions, solver parameters,'
-      h(3)= 'output files, etc. are required for the CFD model.'
-      h(4)= 'The majority of these data can be input through the'
-      h(5)= 'menues provided in this facility; however, you will have'
-      h(6)= 'to do some manual editing of the CFD input file (use the'
-      h(7)= 'menu item provided in this facility to invoke the'
-      h(8)= 'editor).'
-      h(9)= ' '
-      h(10)= 'Each of the menu items in this list should be selected'
-      h(11)= 'in turn to build-up the CFD input file.'
-      h(12)= ' '
-      h(13)= 'Some hints on working with CFD domains: '
-      h(14)= ' '
-      h(15)= ' a) this portion of ESP-r is full of jargon because'
-      h(16)= '    those who work in CFD have evolved expressions that'
-      h(17)= '    seem like english but have a particular meaning. For'
-      h(18)= '    example, the `south face` of the domain might not'
-      h(19)= '    actually be facing south.'
-      h(20)= ' '
-      h(21)= ' b) there are lots of parameter options, some of which'
-      h(22)= '    influcence computation time and some of which are'
-      h(23)= '    not as well documented as some users would expect.'
-      h(24)= ' '
-      h(25)= ' c) ESP-r is normally compiled for domains of limited'
-      h(26)= '    grid resolution, it can be recompiled to increase'
-      h(27)= '    the grid density and those who do this should '
-      h(28)= '    carefully check their models and predictions.'
-      h(29)= ' '
-      h(30)= ' d) it is recommended that you plan your cfd domains'
-      h(31)= '    first and there are some places where efficiency'
-      h(32)= '    is improved if you record critical dimensions'
-      h(33)= '    as you work - e.g. so that boundary surface and'
-      h(34)= '    cell groups can be more reliably associated.'
-      h(35)= ' '
-      H(36)='You should refer to Section 5.9 - Zone CFD Domain File'
-      H(37)='in: Data Model Summary ESP-r Version 9 Series,'
-      H(38)='ESRU Report TR96/2, which forms part of the ESP-r'
-      H(39)='distribution (/usr/esru/esp-r/manual/DATA_MODEL).'
-      H(40)=' '
-      H(41)='Note that CFD domains are currently restricted to'
-      H(42)='cuboidal zones.'
+  12  helptopic='cfd_opening_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
  
       CALL EMENU('Zone air movement description',ITEM,NITMS,INO)
 
@@ -268,45 +234,12 @@ C Wrong pick.
       ELSEIF(INO.EQ.4)THEN
 
 C Conflation options.
-        h(1)= 'The CFD model can either operate in stand-alone mode'
-        h(2)= '(CFD-only) or it can be `conflated` with the'
-        h(3)= 'whole-building simulation (BSim). The user must supply'
-        h(4)= 'all boundary conditions when CFD is operated in'
-        h(5)= 'stand-alone mode. When conflated, CFD and BSim operate'
-        h(6)= 'in tandem, exchanging information on a time-step'
-        h(7)= 'basis. Three different conflation mechanisms currently'
-        h(8)= 'exist to allow BSim and CFD to `handshake`:'
-        h(9)= ' '
-        h(10)='With type 1 thermal conflation, the surface convection'
-        h(11)='heat transfer coefficients are calculated from the'
-        h(12)='CFD-predicted flow and temperature fields.  There is'
-        h(13)='no interaction between the air-flow network and CFD.'
-        h(14)=' '
-        h(15)='With type 2 thermal conflation, the zone air-point'
-        h(16)='temperature and the surface convection heat transfer'
-        h(17)='are calculated from the CFD-predicted flow and'
-        h(18)='temperature fields. There is no interaction between'
-        h(19)='the air-flow network and CFD.'
-        h(20)=' '
-        h(21)='With air-flow conflation, the nodal air-flow network'
-        h(22)='and CFD are integrated. A single air flow network node'
-        h(23)='is replaced by a CFD domain, thus dropping the'
-        h(24)='assumption of well-mixed conditions for that zone.'
-        h(25)='There is no interaction on the thermal level.'
-        h(26)=' '
-        h(27)='Note: when changing from a stand-alone CFD definition'
-        h(28)='to a conflated CFD definition you will need to revise'
-        h(29)='the boundary definition of `solids` to `building surf`'
-        h(30)='so that the relevant solid-surface linkages are defined.'
-        h(31)=' '
-        h(32)='For further details, refer to:'
-        h(33)='Clarke J A and Beausoleil-Morrison I, The Integration'
-        h(34)='of Computational Fluid Dynamics into Building'
-        h(35)='Simulation, IBPSA News, V9, N2, Dec. 1997.'
+        helptopic='cfd_conflation_options'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IWO=0
         call EASKATOG('Conflation options:',' ','CFD only',
      &    'type 1 thermal','type 2 thermal','air-flow',
-     &    'cancel','  ','  ',IWO,35)
+     &    'cancel','  ','  ',IWO,nbhelp)
         if (IWO.ne.5) IFCFD(izone)=IWO-1
       ELSEIF(INO.EQ.5)THEN 
 
@@ -329,16 +262,16 @@ C Save Data to dfs input file.
 
 C Help.
       ELSEIF(INO.EQ.(NITMS-1))THEN
-        CALL PHELPD('CFD inputs',42,'-',0,0,IER)
+        helptopic='cfd_opening_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('CFD inputs',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.NITMS)THEN
 
 C Exit CFD editing menu.
         if(.not.CFDsave)then
           dok=.false.
-          h(1)='Recent changes to the CFD domain are held in memory '
-          h(2)='and might be lost if you exit without saving. '
-          CALL ASKOK(' Data not yet saved to CFD input file.',
-     &               ' Are you sure you want to exit? ',OK,dok,2)
+          CALL ASKOK('Data not yet saved to CFD input file.',
+     &               'Are you sure you want to exit? ',OK,dok,nbhelp)
           IF(.NOT.OK)GOTO 10
         endif
         return
@@ -368,7 +301,6 @@ C IER=0 indicates no error.
       common/OUTIN/IUOUT,IUIN
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      common/pophelp/h(60)
       common/gzonpik/izgfoc,nzg,nznog(mcom)
       common/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -399,12 +331,27 @@ C Arrays for sorting domains from (see code for comments).
       logical origin,xgrid,ygrid,zgrid,zegrid,ortho
       LOGICAL ZEROT,ZandKE,MITzero,vclose
 
-      character H*72,ITEM(13)*36
+      character ITEM(13)*36
       character outs*124
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer iorgt,ixendt,iyendt,izendt,izendet  ! for local editing
       integer NITMS,INO ! max items and current menu item
+
+#ifdef OSI
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+#else
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+#endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CFDGGRD'  ! set for subroutine
 
 C Assume axes defined and set initial values for general resolution
 C of the X Y Z axis.
@@ -415,25 +362,24 @@ C << low/medium/high resolution and/or the size of the zone.
       icelly=20
       icellz=20
 
+C Help text for this menu.
+      helptopic='cfd_gridding_setup'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
 C Check if we have vertex data.
       if (iorg.eq.0) then
         call usrmsg('You will have to define the CFD axis relationship',
      &              'to the zone geometry via vertex numbers.','W')
-        h(1)='Choose a vertex point.'
-        h(2)=' '
-        h(3)='A cancel request will return you to the main menu '
-        h(4)='without altering the model. '
         iorgt=iorg
         CALL EASKI(iorgt,' Specify vertex at origin of CFD domain. ',
-     &    ' Which `v`? ',1,'F',NTV,'F',1,'orig vertex',IERI,4)
+     &    ' Which `v`? ',1,'F',NTV,'F',1,'orig vertex',IERI,nbhelp)
         if(ieri.eq.-3) then
           origin=.false.
           return
         endif
-        h(1)='Choose a vertex point. Axes must be cartesian.'
         ixendt=ixend
         CALL EASKI(ixendt,' Specify vertex at end of X axis. ',
-     &    ' Which `v`? ',1,'F',NTV,'F',1,'x-axis vertex',IERI,4)
+     &    ' Which `v`? ',1,'F',NTV,'F',1,'x-axis vertex',IERI,nbhelp)
         if(ieri.eq.-3) then
           origin=.false.
           return
@@ -441,7 +387,7 @@ C Check if we have vertex data.
 
         iyendt=iyend
         CALL EASKI(iyendt,' Specify vertex at end of Y axis. ',
-     &    ' Which `v`? ',1,'F',NTV,'F',1,'y-axis vertex',IERI,4)
+     &    ' Which `v`? ',1,'F',NTV,'F',1,'y-axis vertex',IERI,nbhelp)
         if(ieri.eq.-3) then
           origin=.false.
           return
@@ -449,7 +395,7 @@ C Check if we have vertex data.
 
         izendt=izend
         CALL EASKI(izendt,' Specify vertex at end of Z axis. ',
-     &    ' Which `v`? ',1,'F',NTV,'F',1,'z-axis vertex',IERI,4)
+     &    ' Which `v`? ',1,'F',NTV,'F',1,'z-axis vertex',IERI,nbhelp)
         if(ieri.eq.-3) then
           origin=.false.
           return
@@ -545,17 +491,17 @@ C Create menu text.
       ITEM(4) =' ------------------------------ '
       ITEM(5) ='b Estimate regions from geometry'
       ITEM(6) =' Axis Regions Total cells'
-      write (ITEM(7),'(a,2i6)') 'b X  ',NREG(1,ICFD),NTCX
-      write (ITEM(8),'(a,2i6)') 'c Y  ',NREG(2,ICFD),NTCY
-      write (ITEM(9),'(a,2i6)') 'd Z  ',NREG(3,ICFD),NTCZ
+      write (ITEM(7),'(a,2i6)') 'c X  ',NREG(1,ICFD),NTCX
+      write (ITEM(8),'(a,2i6)') 'd Y  ',NREG(2,ICFD),NTCY
+      write (ITEM(9),'(a,2i6)') 'e Z  ',NREG(3,ICFD),NTCZ
       if (.NOT.ortho) then
-        write (ITEM(10),'(a,2i6)') 'e Ze ',NREG(4,ICFD),NTCZe
+        write (ITEM(10),'(a,2i6)') 'f Ze ',NREG(4,ICFD),NTCZe
         NCP=1
       endif
       if (griderr) then
         ITEM(10+NCP) =' Gridding incomplete! '
       else
-        ITEM(10+NCP) ='f Visualize gridding  '
+        ITEM(10+NCP) ='g Visualize gridding  '
       endif
       ITEM(11+NCP) =' ------------------------------ '
       ITEM(12+NCP) ='? help              '
@@ -563,42 +509,25 @@ C Create menu text.
       NITMS=13+NCP
 
 C Help text for this menu.
-      h(1)= 'First, define the geometry of the CFD domain by'
-      h(2)= 'establishing its origin and X,Y, and Z axes. This is'
-      h(3)= 'done by specifying vertex points for the origin and'
-      h(4)= 'the ends of each axis. CFD domains are currently'
-      h(5)= 'restricted to cuboidal zones. Axes must be cartesian.'
-      h(6)= '  '
-      h(7)= 'Second, subdivide the domain into cells by gridding'
-      h(8)= 'each axis. Each axis may be divided into regions,'
-      h(9)= 'enabling a fine mesh in some areas while a coarse mesh'
-      h(10)='in others. For 2-dimensional problems, specify only a'
-      h(11)='single grid in the redundant direction.'
-      h(12)='  '
-      h(13)='It is useful to visualize the grid to confirm your'
-      h(14)='input.'
+      helptopic='cfd_gridding_setup'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display menu.
       CALL EMENU('Geometry and gridding',ITEM,NITMS,INO)
  9    if(INO.EQ.1)then
 
 C Specify origin and axes of CFD domain.
-        h(1)='Choose a vertex point.'
-        h(2)=' '
-        h(3)='A cancel request will return you to the main menu '
-        h(4)='without altering the model. '
         iorgt=iorg
         CALL EASKI(iorgt,' Specify vertex at origin of CFD domain. ',
-     &    ' Which `v`? ',1,'F',NTV,'F',1,'orig vertex',IERI,4)
+     &    ' Which `v`? ',1,'F',NTV,'F',1,'orig vertex',IERI,nbhelp)
         if(ieri.eq.-3) then
           origin=.false.
           return
         endif
 
-        h(1)='Choose a vertex point. Axes must be cartesian.'
         ixendt=ixend
         CALL EASKI(ixendt,' Specify vertex at end of X axis. ',
-     &    ' Which `v`? ',1,'F',NTV,'F',1,'x-axis vertex',IERI,4)
+     &    ' Which `v`? ',1,'F',NTV,'F',1,'x-axis vertex',IERI,nbhelp)
         if(ieri.eq.-3) then
           origin=.false.
           return
@@ -606,7 +535,7 @@ C Specify origin and axes of CFD domain.
 
         iyendt=iyend
         CALL EASKI(iyendt,' Specify vertex at end of Y axis. ',
-     &    ' Which `v`? ',1,'F',NTV,'F',1,'y-axis vertex',IERI,4)
+     &    ' Which `v`? ',1,'F',NTV,'F',1,'y-axis vertex',IERI,nbhelp)
         if(ieri.eq.-3) then
           origin=.false.
           return
@@ -614,7 +543,7 @@ C Specify origin and axes of CFD domain.
 
         izendt=izend
         CALL EASKI(izendt,' Specify vertex at end of Z axis. ',
-     &    ' Which `v`? ',1,'F',NTV,'F',1,'z-axis vertex',IERI,4)
+     &    ' Which `v`? ',1,'F',NTV,'F',1,'z-axis vertex',IERI,nbhelp)
         if(ieri.eq.-3) then
           origin=.false.
           return
@@ -750,17 +679,11 @@ C debug       write(6,*) ilz,(ZSS(j),j=1,ilz)
         if(NREG(2,ICFD).eq.0)NREG(2,ICFD)=ily-1
         if(NREG(3,ICFD).eq.0)NREG(3,ICFD)=ilz-1
 
-        h(1)='This sets the general resolution along the axis '
-        h(2)='which is to be accommodaed by the regions in the axis.'
-        h(3)=' '
-        h(4)='A cancel request will return you to the main menu '
-        h(5)='but you will need to check the CFD domain because some'
-        h(6)='prior edits might cause inconsistencies. '
         write(outs,'(a,i3,a,f6.2,a)') 
      &    ' How many total cells along X axis (max is ',NTCELX,
      &    ' over ',xdis,'m) would you like to have?'
         CALL EASKI(icellx,outs,' ',1,'F',NTCELX,'F',10,
-     &    'requested total X cells',IERI,6)
+     &    'requested total X cells',IERI,nbhelp)
         if(ieri.eq.-3) then
           xgrid=.FALSE.
           return
@@ -781,17 +704,11 @@ C debug       write(6,*) ilz,(ZSS(j),j=1,ilz)
 C debug        write(6,*) xd,tolx,int(xd/tolx)
 C debug        write(6,*) 'ncellx ',NCELX
 
-        h(1)='This sets the general resolution along the axis '
-        h(2)='which is to be accommodaed by the regions in the axis.'
-        h(3)=' '
-        h(4)='A cancel request will return you to the main menu '
-        h(5)='but you will need to check the CFD domain because some'
-        h(6)='prior edits might cause inconsistencies. '
         write(outs,'(a,i3,a,f6.2,a)') 
      &    ' How many total cells along Y axis (max is ',NTCELY,
      &    ' over ',ydis,'m) would you like to have?'
         CALL EASKI(icelly,outs,' ',1,'F',NTCELY,'F',10,
-     &    'requested total Y cells',IERI,6)
+     &    'requested total Y cells',IERI,nbhelp)
         if(ieri.eq.-3) then
           xgrid=.FALSE.
           return
@@ -812,17 +729,11 @@ C debug        write(6,*) 'ncellx ',NCELX
 C debug        write(6,*) yd,toly,int(yd/toly)
 C debug        write(6,*) 'ncelly ',NCELY
 
-        h(1)='This sets the general resolution along the axis '
-        h(2)='which is to be accommodaed by the regions in the axis.'
-        h(3)=' '
-        h(4)='A cancel request will return you to the main menu '
-        h(5)='but you will need to check the CFD domain because some'
-        h(6)='prior edits might cause inconsistencies. '
         write(outs,'(a,i3,a,f6.2,a)') 
      &    ' How many total cells along Z axis (max is ',NTCELZ,
      &    ' over ',zdis,'m) would you like to have?'
         CALL EASKI(icellz,outs,' ',1,'F',NTCELZ,'F',10,
-     &    'requested total Z cells',IERI,6)
+     &    'requested total Z cells',IERI,nbhelp)
         if(ieri.eq.-3) then
           xgrid=.FALSE.
           return
@@ -870,10 +781,8 @@ C and cell distribution for each region. Additional questions asked
 C if curvilinear.
 
 C Ask whether Z is Orthogonal or curvilinear.
-        h(1)= 'Currently curvilinear is not yet operational.'
-        h(2)= ' ... '
         CALL EASKABC('Options for Z gridding:',' ','orthogonal',
-     &      'curvilinear','cancel',IWO,2)
+     &      'curvilinear','cancel',IWO,nbhelp)
         if(iwo.ne.3)then
           ortho=.TRUE.
 
@@ -892,22 +801,18 @@ C Additional Z axis must be gridded.
             call usrmsg(
      &        'A non-orthogonal grid requires a Z distribution',
      &        'of points on the East face of the domain. ','W')
-            h(1)='Look at the wireframe image of the zone to find this'
-            h(2)='out. '
-            h(3)=' '
-            h(4)='A cancel request will return you to the main menu'
-            h(5)='but you will need to check the CFD domain because'
-            h(6)='some prior edits might cause inconsistencies. '
             if(ieorg.eq.0) ieorg=1
             CALL EASKI(ieorg,'Specify vertex at start of east Z axis.',
-     &        'Which `v`? ',1,'F',NTV,'F',1,'ez axis vertex',IERI,6)
+     &        'Which `v`? ',1,'F',NTV,'F',1,'ez axis vertex',
+     &        IERI,nbhelp)
             if(ieri.eq.-3) then
               zegrid=.FALSE.
               return
             endif
             izendet=izende
             CALL EASKI(izendet,'Specify vertex at end of east Z axis.',
-     &        'Which `v`? ',1,'F',NTV,'F',1,'ez axis vertex',IERI,6)
+     &        'Which `v`? ',1,'F',NTV,'F',1,'ez axis vertex',
+     &        IERI,nbhelp)
             if(ieri.eq.-3) then
               zegrid=.FALSE.
               return
@@ -946,9 +851,15 @@ C Restore standard graphics window variables.
               CALL feedbox(menuchw,2,igfw,igfh)
               CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
             endif
-            CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
-            igw=igr-igl
-            igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+            iiw1=4; iiw2=1; iiw3=1; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+            igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+            igw=int(iigw); igwh=int(iigwh)
             call startbuffer()
 
 C Redraw zone and vertex points. Note, if user has returned
@@ -974,7 +885,9 @@ C to be refreshed.
      &         ' and grid axes first ','W')
         endif
       elseif(INO.EQ.NITMS-1)then
-        CALL PHELPD('gridding',14,'-',0,0,IER)
+        helptopic='cfd_gridding_setup'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('gridding',nbhelp,'-',0,0,IER)
       elseif(INO.EQ.NITMS)then
 
 C Return to higher level menu.
@@ -1014,7 +927,6 @@ C IER=0 indicates no error.
       SUBROUTINE CFDSVAR(IER)
 #include "cfd.h"
 
-      common/pophelp/h(60)
       COMMON/ICFNOD/ICFD,ICP
       common/grdmax/NTCX,NTCY,NTCZ
 
@@ -1028,11 +940,18 @@ C Equations solved.
 C Solution methods.
       common/METHDS/ITURB(MNZ),IBUOY(MNZ)
 
-      character H*72,ITEM(12+MCTM)*40, POLNAM*12
+      character ITEM(12+MCTM)*40, POLNAM*12
       LOGICAL CALLU,CALLV,CALLW,CALLT,CALLC,KEMDL,BUOY,BOUSSI
       LOGICAL ZEROT,ZandKE,MITzero
       LOGICAL CALPOL,CALLMA,OK,dok
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CFDSVAR'  ! set for subroutine
 
 C Check gridding to set velocity solution.
       if (NTCX.gt.1) then
@@ -1114,31 +1033,8 @@ C Now create menu.
       NITMS=12+NCTM
 
 C Help text for this menu.
-      h(1)= 'Specify the equations to be solved in the CFD analysis.'
-      h(2)= '  '
-      h(3)= 'Velocity must always be solved and is determined from'
-      h(4)= ' the grid definition. '
-      h(5)= '  '
-      h(6)= 'Temperature. choice of on or off '
-      h(7)= '  '
-      h(8)= 'Turbulence. five models available: '
-      h(9)= '   no turbulence (ie laminar flow conditions)'
-      h(10)='   k-e model (for recirculating flows)'
-      h(11)='   fixed eddy viscosity (for approximating turbulence)'
-      h(12)='   MIT zero-equation (for ...)'
-      h(13)='   fixed eddy -> k-e model (uses fixed eddy approx for N'
-      h(14)='      iterations then k-e as an aide to convegence)'
-      h(15)='  '
-      h(16)='Buoyancy.  three choices (temperature should be solved):'
-      h(17)='   none - buoyancy effects are ignored.'
-      h(18)='   ideal gas - density calculated by ideal gas equation.'
-      h(19)='   Boussinesq - Calculates buoyancy relative to buoyancy' 
-      h(20)='      at reference temperature. Best for small '
-      h(21)='      temperature variations in domain. '
-      h(22)='  '
-      h(23)='The expert user can edit the individual equations which'
-      h(24)='are to be solved and adjust initial values, relaxation'
-      h(25)='factors etc via the edit equation setup option.  '
+      helptopic='cfd_equations_to_solve'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display menu.
       CALL EMENU('Required solutions',ITEM,NITMS,INO)
@@ -1182,11 +1078,8 @@ C Mean age of air.
 
 C Reset defaults.
         dok=.false.
-        h(1)='If you have messed up the solution parameters you might'
-        h(2)='want to reset them to default values. Note that default'
-        h(3)='solution parameters might not be appropriate. '
         call askok('Resetting solution parameters to default values.',
-     &             'Are you sure? (see help)',OK,dok,3)
+     &             'Are you sure? (see help)',OK,dok,nbhelp)
         if (OK) call CFDDEFLT
       elseif(INO.EQ.9+NCTM)then
 
@@ -1196,7 +1089,9 @@ C Edit equation data.
       elseif(INO.eq.(NITMS-1)) then
 
 C Help.
-        CALL PHELPD('solution variables',25,'-',0,0,IER)
+        helptopic='cfd_equations_to_solve'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('solution variables',nbhelp,'-',0,0,IER)
       elseif(INO.eq.NITMS) then
         return
       endif
@@ -1212,7 +1107,6 @@ C #include "building.h"
 #include "cfd.h"
 
 C      common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/ICFNOD/ICFD,ICP
       common/grdmax/NTCX,NTCY,NTCZ
 
@@ -1242,13 +1136,20 @@ C Additional data needed for some models.
       COMMON/ZTURB/rMOOT,nZtoKE
       COMMON/BUOYAN/BUOYA,BOUSSA,TBAR
  
-      character H*72,ITEM(32)*40,ltmp*16,dtmp*16, POLNAM*12
+      character ITEM(32)*40,ltmp*16,dtmp*16, POLNAM*12
 
       LOGICAL CALLU,CALLV,CALLW,CALLT,CALLC,KEMDL,BUOY,BOUSSI
       LOGICAL ZEROT,ZandKE,MITzero
       LOGICAL BUOYA,BOUSSA
       LOGICAL CALPOL,CALLMA
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CFDEDAT'  ! set for subroutine
 
 C Check gridding to set velocity solution.
       if (NTCX.gt.1) then
@@ -1363,104 +1264,44 @@ C Now create menu.
       NITMS=28+NCTM
 
 C Help text for this menu.
-      h(1)= 'Specify the equations to be solved in the CFD analysis.'
-      h(2)= '  '
-      h(3)= 'Velocity must always be solved and is determined from'
-      h(4)= ' the grid definition. '
-      h(5)= '  '
-      h(6)= 'Temperature. choice of on or off '
-      h(7)= '  '
-      h(8)= 'Turbulence. five models available: '
-      h(9)= '   no turbulence (ie laminar flow conditions)'
-      h(10)='   k-e model (for recirculating flows)'
-      h(11)='   fixed eddy viscosity (for approximating turbulence)'
-      h(12)='   MIT zero-equation (for ...)'
-      h(13)='   fixed eddy -> k-e model (uses fixed eddy approx for N'
-      h(14)='      iterations then k-e as an aide to convegence)'
-      h(15)='  '
-      h(16)='Buoyancy.  three choices (temperature should be solved):'
-      h(17)='   none - buoyancy effects are ignored.'
-      h(18)='   ideal gas - density calculated by ideal gas equation.'
-      h(19)='   Boussinesq - Calculates buoyancy relative to buoyancy' 
-      h(20)='      at reference temperature. Best for small '
-      h(21)='      temperature variations in domain. '
-      h(22)='  '
-      h(23)='Most equations require the definition of initial values'
-      h(24)='and relaxation factors.  '
-      h(25)='  '
-      h(26)='Initial conditions can have a significant influence'
-      h(27)='  over convergence rates and potential.'
-      h(28)='  '
-      h(29)='Relaxation factors can also have a significant impact'
-      h(30)='  on convergence rates and potential. The optimal value'
-      h(31)='  depends upon the nature of the flow, gridding, and'
-      h(32)='  other factors.'
-      h(33)='  '
-      h(34)='Underrelaxation (values between 0 and 1) is'
-      h(35)='  typically employed to slow the solution to avoid'
-      h(36)='  divergence. Overrelaxation (values greater than 1),'
-      h(37)='  although not common, is permissible. Use smaller'
-      h(38)='  relaxation factors for highly non-linear problems.'
-      h(39)='  '
-      h(40)='  more on relaxation factors and convergence criteria...'
-      h(41)='Relaxation factors can be of two types.  The most common'
-      h(42)=' is linear although relaxation via fictitious time steps'
-      h(43)=' is also permissible.'
-      h(44)='  '
-      h(45)='If a solution diverges, consider reducing the'
-      h(46)='relaxation factors.'
-      h(47)='  '
-      h(48)='Convergence criteria are used by the solver to'
-      h(49)=' judge when a converged solution has been obtained.'
-      h(50)=' The solution will either terminate when the maximum'
-      h(51)=' number of iterations is reached, or if the sum of the'
-      h(52)=' residuals is less than the specified value.  Only the'
-      h(53)=' latter case represents a successful solution.'
+      helptopic='cfd_equations_to_edit'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display menu.
       CALL EMENU('Solutions required and data',ITEM,NITMS,INO)
 
 C Check for pick of empty box.
       if(INO.EQ.2)then
-        h(1)='Specify initial conditions which will apply to all grid'
-        h(2)='cells.  The relaxation factor will help the solution to'
-        h(3)='converge - if in doubt use the default value.'
 
 C Ask for initial value and relaxation factor in X dir.
         write (ltmp,'(f8.4,f6.2)') UINIT(ICFD),URFCU(ICFD)
         write (dtmp,'(a)') '  0.001  0.50 '
         call EASKS(ltmp,'Initial value and relaxation factor',
-     &              'for X velocity? ',16,dtmp,'U def and relx',IER,3)
+     &    'for X velocity? ',16,dtmp,'U def and relx',IER,nbhelp)
         K=0
         call EGETWR(ltmp,K,VAL,-99.0,99.0,'F','Uvel',IER)
         if (IER.eq.0) UINIT(ICFD)=VAL
         call EGETWR(ltmp,K,VAL,0.0,1.5,'F','Urlxf',IER)
         if (IER.eq.0) URFCU(ICFD)=VAL
       elseif(INO.EQ.3)then
-        h(1)='Specify initial conditions which will apply to all grid'
-        h(2)='cells.  The relaxation factor will help the solution to'
-        h(3)='converge - if in doubt use the default value.'
 
 C Ask for initial value and relaxation factor in Y dir.
         write (ltmp,'(f8.4,f6.2)') VINIT(ICFD),URFCW(ICFD)
         write (dtmp,'(a)') '  0.001  0.50 '
         call EASKS(ltmp,'Initial value and relaxation factor',
-     &              'for Y velocity? ',16,dtmp,'U def and relx',IER,3)
+     &    'for Y velocity? ',16,dtmp,'U def and relx',IER,nbhelp)
         K=0
         call EGETWR(ltmp,K,VAL,-99.0,99.0,'F','Vvel',IER)
         if (IER.eq.0) VINIT(ICFD)=VAL
         call EGETWR(ltmp,K,VAL,0.0,1.5,'F','Vrlxf',IER)
         if (IER.eq.0) URFCV(ICFD)=VAL
       elseif(INO.EQ.4)then
-        h(1)='Specify initial conditions which will apply to all grid'
-        h(2)='cells.  The relaxation factor will help the solution to'
-        h(3)='converge - if in doubt use the default value.'
 
 C Ask for initial value and relaxation factor in Z dir.
         write (ltmp,'(f8.4,f6.2)') WINIT(ICFD),URFCW(ICFD)
         write (dtmp,'(a)') '  0.001  0.50 '
         call EASKS(ltmp,'Initial value and relaxation factor',
-     &              'for W velocity? ',16,dtmp,'W def and relx',IER,3)
+     &    'for W velocity? ',16,dtmp,'W def and relx',IER,nbhelp)
         K=0
         call EGETWR(ltmp,K,VAL,-99.0,99.0,'F','Wvel',IER)
         if (IER.eq.0) WINIT(ICFD)=VAL
@@ -1475,15 +1316,12 @@ C (De)activate temperature solution.
           CALLT(ICFD)=.FALSE.
         endif
       elseif(INO.EQ.7)then
-        h(1)='Specify initial conditions which will apply to all grid'
-        h(2)='cells.  The relaxation factor will help the solution to'
-        h(3)='converge - if in doubt use the default value.'
 
 C Ask for initial value and relaxation factor for temperatures.
         write (ltmp,'(2f6.2)') TINIT(ICFD),URFCT(ICFD)
         write (dtmp,'(a)') '  20.00  0.90 '
         call EASKS(ltmp,'Initial value and relaxation factor',
-     &              'for temperature? ',16,dtmp,'W def and relx',IER,3)
+     &    'for temperature? ',16,dtmp,'W def and relx',IER,nbhelp)
         K=0
         call EGETWR(ltmp,K,VAL,-50.0,99.0,'F','Wvel',IER)
         if (IER.eq.0) TINIT(ICFD)=VAL
@@ -1498,45 +1336,36 @@ C Toggle through turbulence methods.
 
 C Edit turbulence data according to current method.
         if (ITURB(ICFD).eq.1) then
-          h(1)='Specify initial conditions which will apply to all grid'
-          h(2)='cells.  The relaxation factor will help the solution to'
-          h(3)='converge - if in doubt use the default value.'
 
 C Ask for initial value and relaxation factor for k.
           write (ltmp,'(f8.4,f6.2)') TEINIT(ICFD),URFCK(ICFD)
           write (dtmp,'(a)') ' 0.005  0.7'
           call EASKS(ltmp,'Initial value and relaxation factor',
-     &         'for turbulent energy? ',16,dtmp,'k def and relx',IER,3)
+     &      'for turbulent energy? ',16,dtmp,'k def and relx',
+     &      IER,nbhelp)
           K=0
           call EGETWR(ltmp,K,VAL,0.0,10.0,'F','k init',IER)
           if (IER.eq.0) TEINIT(ICFD)=VAL
           call EGETWR(ltmp,K,VAL,0.0,1.5,'F','k rlxf',IER)
           if (IER.eq.0) URFCK(ICFD)=VAL
         elseif (ITURB(ICFD).eq.2) then
-          h(1)='Specify the value of the eddy-viscosity.  This will'
-          h(2)='apply to all grid cells.  The value is specified in'
-          h(3)='terms of a multiple of the molecular viscosity.'
 
 C Ask for fixed eddy viscosity.
           write (ltmp,'(f6.2)') rMOOT
           write (dtmp,'(a)') '  90.00'
           call EASKS(ltmp,'Fixed value for eddy viscosity?',
-     &                    ' ',16,dtmp,'eddy viscosity',IER,3)
+     &               ' ',16,dtmp,'eddy viscosity',IER,nbhelp)
           K=0
           call EGETWR(ltmp,K,VAL,0.0,500.0,'F','eddy viscos',IER)
           if (IER.eq.0) rMOOT=VAL
         elseif(ITURB(ICFD).eq.4) then
-          h(1)='Specify the value of the eddy viscosity.  This will'
-          h(2)='apply to all grid cells.  The value is specified in'
-          h(3)='terms of a multiple of the molecular viscosity.'
-          h(4)='The number of iterations to apply this eddy viscosity'
-          h(5)='is also required. '
 
 C Ask for fixed eddy viscosity and number of iterations to apply this for.
           write (ltmp,'(f6.2,i6)') rMOOT,nZtoKE
           write (dtmp,'(a)') '  90.00  10 '
           call EASKS(ltmp,'Fixed value for eddy viscosity and number ',
-     &     'of iterations to apply for?',16,dtmp,'eddy viscosity',IER,5)
+     &      'of iterations to apply for?',16,dtmp,'eddy viscosity',
+     &      IER,nbhelp)
           K=0
           call EGETWR(ltmp,K,VAL,0.0,500.0,'F','eddy viscos',IER)
           if (IER.eq.0) rMOOT=VAL
@@ -1545,15 +1374,13 @@ C Ask for fixed eddy viscosity and number of iterations to apply this for.
         endif
       elseif(INO.EQ.11)then
         if (ITURB(ICFD).eq.1) then
-          h(1)='Specify initial conditions which will apply to all grid'
-          h(2)='cells.  The relaxation factor will help the solution to'
-          h(3)='converge - if in doubt use the default value.'
 
 C Ask for initial value and relaxation factor for epsilon.
           write (ltmp,'(f8.4,f6.2)') EDINIT(ICFD),URFCE(ICFD)
           write (dtmp,'(a)') ' 0.005  0.7'
           call EASKS(ltmp,'Initial value and relaxation factor',
-     &        'for energy dissipation? ',16,dtmp,'e def and relx',IER,3)
+     &      'for energy dissipation? ',16,dtmp,'e def and relx',
+     &      IER,nbhelp)
           K=0
           call EGETWR(ltmp,K,VAL,0.0,10.0,'F','e init',IER)
           if (IER.eq.0) EDINIT(ICFD)=VAL
@@ -1566,15 +1393,12 @@ C Buoyancy.
         IBUOY(ICFD)=IBUOY(ICFD)+1
         if (IBUOY(ICFD).gt.2) IBUOY(ICFD)=0
       elseif(INO.EQ.14)then
-        h(1)='Specify the value of the reference temperature.  This'
-        h(2)='should be approximately the average temperature in the'
-        h(3)='domain.  This will apply to all grid cells.  '
 
 C Ask for reference temperature.
         write (ltmp,'(f6.2)') TBAR
         write (dtmp,'(a)') ' 20.00'
         call EASKS(ltmp,'Reference temperature? ','  ',16,
-     &             dtmp,'ref temperature',IER,3)
+     &             dtmp,'ref temperature',IER,nbhelp)
         K=0
         call EGETWR(ltmp,K,VAL,-50.0,99.0,'F','ref temper',IER)
         if (IER.eq.0) TBAR=VAL
@@ -1597,57 +1421,30 @@ C Mean age of air.
       elseif (INO.eq.22+NCTM) then
 
 C Convergence criteria.
-        h(1)= 'An iterative solution procedure is employed.'
-        h(2)= 'Iterations continue until either:'
-        h(3)= '  1) the solution converges to a user-specified'
-        h(4)= '     tolerance; or'
-        h(5)= '  2) a user-specified number of iterations has been'
-        h(6)= '     performed.'
-        h(7)= ' '
-        h(8)= 'Specify the number of iterations, after which the'
-        h(9)= 'calculations will be halted.'
-        h(10)=' '
-        h(11)='A cancel results in no change to the model. '
+        helptopic='cfd_convergence_crit'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         ival=MAXITR(ICFD)
         CALL EASKI(ival,' ',' Maximum iterations to perform?',
-     &             0,'F',10000,'F',500,'iterations',IERI,11)
+     &    0,'F',10000,'F',500,'iterations',IERI,nbhelp)
         if(ieri.eq.-3)then
           continue
         else
           MAXITR(ICFD)=ival
         endif
       elseif (INO.eq.23+NCTM) then
-        h(1)= 'An iterative solution procedure is employed.'
-        h(2)= 'Iterations continue until either:'
-        h(3)= '  1) the solution converges to a user-specified'
-        h(4)= '     tolerance; or'
-        h(5)= '  2) a user-specified number of iterations has been'
-        h(6)= '     performed.'
-        h(7)= '  '
-        h(8)= 'Specify the maximum equation residual. When the'
-        h(9)= 'sum of the equation residues (for the mass and'
-        h(10)='momentum equations) over all cells in the domain'
-        h(11)='drops below this value, the solution is considered'
-        h(12)='converged. The residual is normalized by the flow'
-        h(13)='into the domain.'
-        h(14)='  '
-        h(15)='A value of 0.001 is considered well converged.'
-        h(16)='A reasonable prediction of the flow pattern can often'
-        h(17)='be achieved with a value of 0.02.'
+        helptopic='cfd_convergence_crit'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         VAL=SRMAX(ICFD)
         CALL EASKR(VAL,' ',' Maximum equation residual?',
-     &             0.,'F',1.,'F',0.02,'iterations',IER,17)
+     &    0.,'F',1.,'F',0.02,'iterations',IER,nbhelp)
         SRMAX(ICFD)=VAL
       elseif (INO.eq.25+NCTM) then
 
 C Monitoring cell.
-        h(1)='Specify the localtion of the monitoring cell.  This'
-        h(2)='will be the cell whos values are displayed during the'
-        h(3)='solution.  '
         write (ltmp,'(3i4)') IMONT(ICFD)-1,JMONT(ICFD)-1,KMONT(ICFD)-1
         write (dtmp,'(a)') ' 1  1  1'
         call EASKS(ltmp,'Monitoring cell (i,j,k)? ','  ',16,
-     &             dtmp,'monit cell',IER,3)
+     &             dtmp,'monit cell',IER,nbhelp)
         K=0
         call EGETWI(ltmp,K,IVAL,0,NTCELX,'W','I mon cell',IER)
         if (IER.eq.0) IMONT(ICFD)=IVAL+1
@@ -1658,7 +1455,9 @@ C Monitoring cell.
       elseif(INO.eq.(NITMS-1)) then
 
 C Help.
-        CALL PHELPD('solution variables',53,'-',0,0,IER)
+        helptopic='cfd_equations_to_edit'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('solution variables',nbhelp,'-',0,0,IER)
       elseif(INO.eq.NITMS) then
         return
       endif
@@ -1679,7 +1478,6 @@ C #include "geometry.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       common/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -1698,13 +1496,12 @@ C #include "geometry.h"
      &          VOLCO2(MNVLS,MNZ),VOLVel(MNVLS,MNZ),VOLDir(MNVLS,MNZ,2),
      &          VOLArea(MNVLS,MNZ),VOLPres(MNVLS,MNZ),
      &          VOLPol(MCTM,MNVLS,MNZ)
-      COMMON/CTDFAF/ICTDFAF,SRCE(MNVLS,MCTM,MNZ),ICCSRC
       common/GRIDEFN/origin,xgrid,ygrid,zgrid,zegrid,ortho
 
       dimension IDEL(MNVLS)
 
-      character H*72,ITEM(MNVLS+8)*40
-      character KEY*1,t24*24,SRCE*12
+      character ITEM(MNVLS+8)*40
+      character KEY*1,t24*24
       character VOLNAME*12,VCsurf*12,t12*12,NAMES(MNVLS)*12
       logical origin,xgrid,ygrid,zgrid,zegrid,ortho
       logical MODIFY,MODLEN,MODBND
@@ -1712,6 +1509,21 @@ C #include "geometry.h"
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer INB     ! for radio button
       integer NITMS,INO ! max items and current menu item
+
+#ifdef OSI
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+#else
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+#endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CFDBVAR'  ! set for subroutine
 
 C << Note: for more complex domains grow this menu needs
 C << to be one that can support multiple pages.
@@ -1763,17 +1575,8 @@ C Create menu text.
       NITMS=M+5
 
 C Help text for this menu.
-      h(1)='A summary of each boundary condition is presented.'
-      h(2)='By selecting one you can see all the data associated '
-      h(3)='with this boundary and edit it if necessary.'
-      h(4)='If source type bc are to be defined do not start the '
-      h(5)='name by "SRC_"'
-      IF(ICCSRC.EQ.1)THEN
-        H(6)='New source type boundary condition types have been '
-        H(7)='defined to accomodate contaminant entering and '
-        H(8)='leaving the CFD domain via airflow connections'
-        H(9)='These are named SRC_[contaminant #][airflow node #]'
-      ENDIF
+      helptopic='cfd_boundary_variables'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display menu.
       INO=-1
@@ -1787,11 +1590,9 @@ C Return
       elseif (INO.eq.(NITMS-1)) then
 
 C Help.
-        IF(ICCSRC.EQ.1)THEN
-          CALL PHELPD('boundary conditions',9,'-',0,0,IER)
-        ELSE
-          CALL PHELPD('boundary conditions',5,'-',0,0,IER)
-        ENDIF
+        helptopic='cfd_boundary_variables'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('boundary conditions',nbhelp,'-',0,0,IER)
       elseif (INO.eq.(NITMS-2)) then
 
 C View the current gridding.
@@ -1805,9 +1606,15 @@ C Restore standard graphics window variables.
               CALL feedbox(menuchw,2,igfw,igfh)
               CALL opengdisp(menuchw,LIMTTY,2,igdw,igdh)
             endif
-            CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
-            igw=igr-igl
-            igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+            iiw1=4; iiw2=1; iiw3=1; iiw4=3; iimenu=menuchw
+            iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
+            CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &        iigl,iigr,iigt,iigb,iigw,iigwh)
+C            CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
+            igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+            igw=int(iigw); igwh=int(iigwh)
             call startbuffer()
 
 C Redraw zone and vertex points. Note, if user has returned
@@ -1835,15 +1642,13 @@ C to be refreshed.
       elseif (INO.eq.(NITMS-3)) then
 
 C Add a new/ delete a boundary definition.
-        h(1)='No one has written a help message for this dialog.'
         call easkabc('Add/ delete a boundary condition?','  ','Add',
-     &               'Delete','Cancel',IAD,1)
+     &               'Delete','Cancel',IAD,nbhelp)
         if (IAD.eq.1) then
-          h(1)='Choose the type of new boundary condition.'
           INB=1
           call EASKATOG('Which type of boundary?','  ',
      &       'Air flow opening','Solid surface','Source',
-     &       'Blockage','Cancel',' ',' ',INB,1)
+     &       'Blockage','Cancel',' ',' ',INB,nbhelp)
 
 C Set up some defaults and call relavent editing routine.
           if (INB.eq.1) then
@@ -1908,10 +1713,9 @@ C Delete a boundary condition. First, ask which one.
             do 233 I=1,NVOL(ICFD)
               NAMES(I)=VOLNAME(I,ICFD)
  233        continue
-            h(1)='Select a key volume to delete.'
             INVOL=NVOL(ICFD)
             call EPICKS(INDEL,IDEL,' ',' ',12,INVOL,NAMES,
-     &        'Key volume name',IER,1)
+     &        'Key volume name',IER,nbhelp)
      
 C Move all definitions greater than selected volume up one slot.
             do 333 I=IDEL(1),NVOL(ICFD)
@@ -1989,7 +1793,6 @@ C IER=0 indicates no error.
 C#include "building.h"
 #include "cfd.h"
 
-      common/pophelp/h(60)
       COMMON/ICFNOD/ICFD,ICP
 
       common/cfdconf/ICFBLD(MNZ),ICFMFS(MNZ)
@@ -2002,11 +1805,18 @@ C#include "building.h"
      &          VOLArea(MNVLS,MNZ),VOLPres(MNVLS,MNZ),
      &          VOLPol(MCTM,MNVLS,MNZ)
 
-      character ITMSS(13)*50,H*72
+      character ITMSS(13)*50
       character face*6,ltmp*17,t12*12,d12*12
       character VOLNAME*12, VCsurf*12,t20*20
       integer IWO  ! for radio button
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDAIRO'  ! set for subroutine
 
 C Adjust each cell by -1 as dfs adds fictitious cells around the domain.
       Ii=IVCELLS(IAO,ICFD,1)-1
@@ -2103,7 +1913,8 @@ C Create a menu showing definitions for different conflation schemes.
       NITMS=13
 
 C Help text for this menu.
-      h(1)='There is no help for this menu (yet).'
+      helptopic='cfd_air_boundary'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display menu.
       INO=-1
@@ -2111,8 +1922,8 @@ C Display menu.
       if (INO.eq.1) then
         t12=VOLNAME(IAO,ICFD)
         d12='  '
-        h(1)= '  '
-        call EASKS(t12,'Opening name? ','  ',12,d12,'open name',IER,1)
+        call EASKS(t12,'Opening name? ','  ',12,d12,'open name',
+     &    IER,nbhelp)
         if (IER.eq.0) then
           call st2name(t12,d12)
           VOLNAME(IAO,ICFD)=d12
@@ -2120,24 +1931,10 @@ C Display menu.
       elseif (INO.eq.2) then
 
 C Choose an opening type.
-        h(1)= 'Boundary coundition if defined to be "from flow network"'
-        h(2)= 'will make ALL air flow opening conditions to be defined'
-        h(3)= 'from the airflow network and individual specification'
-        h(4)= 'of boundary conditions will be overridden.'
-        h(5)= 'If however CFD is run in standalone mode, boundary '
-        h(6)= 'conditions, if previosuly defined, will be maintained.'
-        h(7)= 'Only choose "from flow network" if an airflow network'
-        h(8)= 'has been defined and you wish to take up boundary '
-        h(9)= 'conditions from it i.e. conflate CFD and flow network.'
-        h(10)='If you choose to conflate then ALL air flow openings'
-        h(11)='will be taken from the flow network automatically'
-        h(12)='If you wish not to conflate CFD and flow network then'
-        h(13)='simply choose some other boundary condition and ALL'
-        h(14)='openings will be restored.'
         IWO=1
         CALL EASKATOG('Opening types: (see help)',' ','pressure',
      &    'velocity','zero gradient','from flow network',
-     &    'cancel','  ','  ',IWO,14)
+     &    'cancel','  ','  ',IWO,nbhelp)
         IF(IWO.EQ.4)THEN
           ICFMFS(ICFD)=1
           CALL MFCONF(ICFD)
@@ -2169,46 +1966,38 @@ C Reset location to whole of volume for non face choices.
         KVCELLS(IAO,ICFD,2)=Kf+1
       elseif (INO.eq.8) then
         if (IVTYPE(IAO,ICFD).eq.10) then
-          h(1)= 'This is the pressure at the opening.'
           VAL=VOLPres(IAO,ICFD)
           call EASKR(VAL,' ',' Pressure (Pa) of cells?',
-     &             0.,'W',10000.,'W',50.0,'pressure',IER,1)
+     &      0.,'W',10000.,'W',50.0,'pressure',IER,nbhelp)
           if (IER.eq.0) VOLPres(IAO,ICFD)=VAL
         elseif (IVTYPE(IAO,ICFD).eq.11) then
-          h(1)= 'This is the mass flow rate entering'
-          h(2)= 'or leaving the domain.  '
           VAL=VOLVel(IAO,ICFD)
           call EASKR(VAL,' ',
      &      'Mass flow rate (kg/s) at chosen face of cells?',
-     &       -50.,'W',50.,'W',0.5,'flow rate',IER,2)
+     &       -50.,'W',50.,'W',0.5,'flow rate',IER,nbhelp)
           if (IER.eq.0) VOLVel(IAO,ICFD)=VAL
         elseif (IVTYPE(IAO,ICFD).eq.13) then
-          h(1)= 'This is the mass flow rate entering'
-          h(2)= 'or leaving the domain.  '
           VAL=VOLVel(IAO,ICFD)
           call EASKR(VAL,' ','Mass flow rate (kg/s) entering cells?',
-     &                        -10.,'W',10.,'W',0.02,'mass flow',IER,2)
+     &      -10.,'W',10.,'W',0.02,'mass flow',IER,nbhelp)
           if (IER.eq.0) VOLVel(IAO,ICFD)=VAL
         endif
       elseif (INO.eq.9) then
-        h(1)= 'This is the temperature of air entering the domain.'
         VAL=VOLTemp(IAO,ICFD)
         call EASKR(VAL,' ','Temperature (degC) of air entering domian?',
-     &                      -50.,'W',50.,'W',20.,'temperature',IER,1)
+     &     -50.,'W',50.,'W',20.,'temperature',IER,nbhelp)
         if (IER.eq.0) VOLTemp(IAO,ICFD)=VAL
       elseif (INO.eq.9) then
-        h(1)= 'The real opening area may be less than the area covered'
-        h(2)= 'by the cells.  If this is the case then enter the true'
-        h(3)= 'area of the opening and the mass flow rate and momentum'
-        h(4)= 'of the incoming air will be preserved.'
         VAL=VOLArea(IAO,ICFD)
         call EASKR(VAL,' ','Real area (m^2) of opening?',
-     &                               -0.1,'W',50.,'W',0.,'area',IER,4)
+     &    -0.1,'W',50.,'W',0.,'area',IER,nbhelp)
         if (IER.eq.0) VOLArea(IAO,ICFD)=VAL
       elseif (INO.eq.(NITMS-1)) then
 
 C Help.
-        CALL PHELPD('boundary conditions',1,'-',0,0,IER)
+        helptopic='cfd_air_boundary'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('boundary conditions',nbhelp,'-',0,0,IER)
       elseif (INO.eq.NITMS) then
 
 C Return.
@@ -2239,16 +2028,24 @@ C MFCONF defines conflation of CFD and mfs
       character VOLNAME*12, VCsurf*12
       CHARACTER PROMPT1*72, PROMPT2*72
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MFCONF'  ! set for subroutine
+
 C Note: use verions of askmfnod and askmfcon defined in edcfd.F
 C rather than the ones defined in esrures/mfoutp.F
 
 C Select mfs node representative of CFD domain
+      helptopic='cfd_mass_flow_node'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       INOPT=0
       NNPK=1
       PROMPT1='Which node is represetative of CFD domain'
       PROMPT2='  '
-      NH=0
-      call ASKMFNOD(INOPT,NNPK,INPK,PROMPT1,PROMPT2,NH)
+      call ASKMFNOD(INOPT,NNPK,INPK,PROMPT1,PROMPT2,nbhelp)
       if (NNPK.gt.0.and.INPK(1).gt.0) then
         ICFDNOD(ICFD)=INPK(1)
       endif
@@ -2279,7 +2076,6 @@ C IER=0 indicates no error.
 #include "geometry.h"
 #include "cfd.h"
 
-      common/pophelp/h(60)
       COMMON/ICFNOD/ICFD,ICP
 
       common/METHDS/ITURB(MNZ),IBUOY(MNZ)
@@ -2292,12 +2088,19 @@ C IER=0 indicates no error.
      &          VOLArea(MNVLS,MNZ),VOLPres(MNVLS,MNZ),
      &          VOLPol(MCTM,MNVLS,MNZ)
 
-      character ITMSS(12)*50,H*72
+      character ITMSS(12)*50
       character face*6,ltmp*16,t12*12,d12*12
       character VOLNAME*12, VCsurf*12
       CHARACTER t20*20
       integer IWO  ! for radio button
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDSLDB'  ! set for subroutine
 
 C Adjust each cell by -1 as dfs adds fictitious cells around the domain.
       Ii=IVCELLS(ISB,ICFD,1)-1
@@ -2389,7 +2192,8 @@ C Create a menu showing definitions for different conflation schemes.
       NITMS=12
 
 C Help text for this menu.
-      h(1)='There is no help text for this menu yet.'
+      helptopic='cfd_solid_boundary_edit'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display menu.
       INO=-1
@@ -2399,8 +2203,8 @@ C Display menu.
 C Get boundary name.
         t12=VOLNAME(ISB,ICFD)
         d12='  '
-        h(1)= '  '
-        call EASKS(t12,'Boundary name? ','  ',12,d12,'bnd name',IER,1)
+        call EASKS(t12,'Boundary name? ','  ',12,d12,'bnd name',
+     &    IER,nbhelp)
         if (IER.eq.0) then
           call st2name(t12,d12)
           VOLNAME(ISB,ICFD)=d12
@@ -2408,11 +2212,10 @@ C Get boundary name.
       elseif (INO.eq.2) then
 
 C Choose an opening type.
-        h(1)= '  '
-        h(2)= ' ... '
         IWO=1
         CALL EASKATOG('Boundary types:',' ','temperature','heat flux',
-     &    'symmetrical','building surface','cancel','  ','  ',IWO,2)
+     &    'symmetrical','building surface','cancel','  ','  ',
+     &    IWO,nbhelp)
 
 C Try to remember non conflated option if building surface chosen.
         if (IWO.eq.4) then
@@ -2439,16 +2242,14 @@ C Try to remember non conflated option if building surface chosen.
         KVCELLS(ISB,ICFD,2)=Kf+1
       elseif (INO.eq.8) then
         if (IVTYPE(ISB,ICFD).eq.1) then
-          h(1)= '  '
           VAL=VOLTemp(ISB,ICFD)
           call EASKR(VAL,'temperature (degC) at chosen face of cells?',
-     &             ' ',-100.,'W',100.,'W',10.,'temperature',IER,1)
+     &      ' ',-100.,'W',100.,'W',10.,'temperature',IER,nbhelp)
           if (IER.eq.0) VOLTemp(ISB,ICFD)=VAL
         elseif (IVTYPE(ISB,ICFD).eq.2) then
-          h(1)= '  '
           VAL=VOLHeat(ISB,ICFD)
           call EASKR(VAL,'Heat flux (W) at chosen face of cells?',
-     &             ' ',-1000.,'W',1000.,'W',10.,'heat flux',IER,1)
+     &      ' ',-1000.,'W',1000.,'W',10.,'heat flux',IER,nbhelp)
           if (IER.eq.0) VOLHeat(ISB,ICFD)=VAL
         elseif (IVTYPE(ISB,ICFD).eq.4) then
           CALL EASKSUR(IZONE,IS,'-','Select a surface.',' ',IER)
@@ -2462,7 +2263,9 @@ C Try to remember non conflated option if building surface chosen.
       elseif (INO.eq.(NITMS-1)) then
 
 C Help.
-        CALL PHELPD('boundary conditions',1,'-',0,0,IER)
+        helptopic='cfd_solid_boundary_edit'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('boundary conditions',nbhelp,'-',0,0,IER)
       elseif (INO.eq.NITMS) then
 
 C Return.
@@ -2480,7 +2283,6 @@ C IER=0 indicates no error.
 #include "cfd.h"
 #include "net_flow.h"
 
-      common/pophelp/h(60)
       COMMON/ICFNOD/ICFD,ICP
       common/KEYVOLS/NVOL(MNZ),IVOLF(MNVLS,MNZ),IVCELLS(MNVLS,MNZ,2),
      &               JVCELLS(MNVLS,MNZ,2),KVCELLS(MNVLS,MNZ,2)
@@ -2504,14 +2306,22 @@ C IER=0 indicates no error.
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/CFDMFS1/ICFDNOD(MNZ),ICFDCNN(MNVLS,MNZ)
 
-      character ITMSS(14+MCTM)*60,H*72,ITUM(MCTM+1)*50,WORD*50
+      character ITMSS(14+MCTM)*60,ITUM(MCTM+1)*50,WORD*50
       character ltmp*26,t12*12,d12*12,t20*20,FACE*7,HOLD*32,WORD1*12
       character*12 VOLNAME,VCsurf,SRCNAM,POLNAM,CONTMNAM,SSNAME,SRCE
       CHARACTER CNAM*12,CNAME*3,NNAME*3,ITMSS1(14+MCTM)*60
       CHARACTER*60 ITMSS2(14+MCTM)*60,ITMSS3(14+MCTM)*60
+      character outs*124
       LOGICAL CALPOL,CALLMA,OK,DOK
       INTEGER SPMTYP,SSLINK1,SSLINK2
       integer NITMS,INO,NITMSS1,IIO,NITMSS2,IXO,NITUM,INUO,NITMSS3 ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDSRC'  ! set for subroutine
 
 C Initialise SRCE 
       IF(ICTDFAF.NE.1)THEN
@@ -2618,32 +2428,13 @@ C Create a menu showing definitions for different sources.
       NITMS=15+NCTM
 
 C Help text for this menu.
-  7   H(1) = 'This menu allows you to define contaminant source and'
-      H(2) = 'sink for this CFD boundary type.  It is also possible to'
-      H(3) = 'allow heat injection/extraction at these sources, to do '
-      H(4) = 'this you may specify a heat flux manually or as a casual '
-      H(5) = 'gain from the operations file in which case you have '
-      H(6) = 'to give the index of that casual gain and fraction '
-      H(7) = 'injected.'
-      H(8) = 'It is also possible to define contaminants automatically'
-      H(9) = 'from the contaminants definition file if you have created'
-      H(10)= 'one. It is essential that you have an airflow network'
-      H(11)= 'defined and/or coupled with CFD before contaminants can'
-      H(12)= 'be auto defined. You may couple flow network with CFD by'
-      H(13)= 'exiting from here are defining boundary condition of '
-      H(14)= 'opening type boundaries to be taken from the flow network'
-      H(15)= 'In standalone mode CFD will take static boundary'
-      H(16)= 'conditions defined here '
+  7   helptopic='cfd_source_boundary_edit'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display menu.
       INO=-1
       IF(VOLNAME(ISB,ICFD)(1:4).EQ.'SRC_')THEN
-        H(1) = 'This source type boundary condition has been set up'
-        H(2) = 'to allow contaminant mass injections / extractions'
-        H(3) = 'due to air flow as described from conflated mass flow'
-        H(4) = 'and CFD. Do not modify any paramter definition in '
-        H(5) = 'the menu to follow this message and exit from there!'
-        CALL PHELPD('Warning',5,'-',0,0,IER)
+        CALL PHELPD('Warning',nbhelp,'-',0,0,IER)
       ENDIF
       CALL EMENU('Sources edit',ITMSS,NITMS,INO)
       if (ITMSS(INO)(1:1).eq.' ') then
@@ -2653,8 +2444,8 @@ C Display menu.
 C Get boundary name.
         t12=VOLNAME(ISB,ICFD)
         d12='  '
-        h(1)= '  '
-        call EASKS(t12,'Source name? ','  ',12,d12,'src name',IER,1)
+        call EASKS(t12,'Source name? ','  ',12,d12,'src name',
+     &    IER,nbhelp)
         if (IER.eq.0) then
           call st2name(t12,d12)
           VOLNAME(ISB,ICFD)=d12
@@ -2662,40 +2453,19 @@ C Get boundary name.
 
 C Set coupling with contaminants network on/off
       elseif (INO.eq.2) then
-        H(1) = 'Choose from contaminants network only if'
-        H(2) = '1. This is not standalone CFD'
-        H(3) = '2. You have a mass flow network which is conflated'
-        H(4) = '   with the CFD domain or you intend to conflate it'
-        H(5) = '   before simulation'
-        H(6) = '3. You have a contaminants flow network defined'
         CALL EASKABC('How to specify coundary condition',' ','static',
-     &      'from contaminants network','cancel',IHOWL,6)
+     &    'from contaminants network','cancel',IHOWL,nbhelp)
         IF(IHOWL.EQ.1)THEN
           ICTDFAF=0
         ELSEIF(IHOWL.EQ.2)THEN
 
 C Take contaminant definitions from contaminant flow network
-          H(1) = 'You may link CFD with the contamiant network if you'
-          H(2) = 'have defined one. Once this is done source type'
-          H(3) = 'boundary conditions will take their strengths (kg/s)'
-          H(4) = 'from source/sink models that you have defined in the'
-          H(5) = 'contaminant network. If you have conflated a mass '
-          H(6) = 'flow network with CFD then new source type boundary'
-          H(7) = 'conditions which will accomodate any addition or '
-          H(8) = 'deletion of contaminant from CFD domain due to air'
-          H(9) = 'flow as computed from conflated CFD and mass flow nwk'
-          H(10)= 'If you have not conflated the mass flow network with '
-          H(11)= 'CFD you are advised to do so before linking CFD with'
-          H(12)= 'contaminant network'
           DOK=.TRUE.
           CALL ASKOK('Link CFD with contaminant network (see help) ?',
-     &      ' ',OK,dok,12)
+     &      ' ',OK,dok,nbhelp)
           IF(.NOT.OK)GOTO 144
           IF(ICFMFS(ICFD).NE.1)THEN
-            H(1) = 'You are not allowed to conflate CFD with '
-            H(2) = 'contaminants if CFD is not conflated with ' 
-            H(3) = 'mass flow network'
-            CALL PHELPD(' ',3,'-',0,0,IER)
+            CALL PHELPD(' ',nbhelp,'-',0,0,IER)
           ENDIF
           ICTDFAF=1
           NCTM=NCONTM
@@ -2770,17 +2540,14 @@ C Ask which contaminant (or none) is moisture
  2121     IIO=-1
 
 C Help text for this menu.
-          H(1)='Choose which contaminant is moisture'
-
           CALL EMENU('Moisture is ... ',ITMSS1,NITMSS1,IIO)
           IF(IIO.EQ.NCTM+6)THEN
             IF(JHUMINDX.EQ.0)THEN
-              H(1)='None of the contaminants is moisture'
-              CALL PHELPD(' ',1,'-',0,0,IER)
+              call edisp(iuout,'None of the contaminants is moisture')
               GOTO 2121
             ENDIF
           ELSEIF(IIO.EQ.NCTM+5)THEN
-            CALL PHELPD(' ',1,'-',0,0,IER)
+            call edisp(iuout,'Choose a moisture contaminant.')
             GOTO 2121
           ELSEIF(IIO.EQ.NCTM+3)THEN
             JHUMINDX=0
@@ -2795,22 +2562,18 @@ C Take contaminant name from contaminant network
             POLNAM(ICTM,ICFD)=CONTMNAM(ICTM)
 
 C Ask for information to calculate Schmidt number
-            H(1) = 'In order to calculate contaminant distribution'
-            H(2) = 'the turbulent Schmidt Number needs to be '
-            H(3) = 'calculated. To do this the following information'
-            H(4) = 'is required: molar mass, volume at critical point,'
-            H(5) = 'boiling point and critical temperature.'
-            H(6) = 'If this information is available press parameters'
-            H(7) = 'If not press manual to specify a value for the '
-            H(8) = 'turbulent Schmidt Number.  Click default to use a'
-            H(9) = 'default value of unity or 0.59 for moisture'
-            CALL EASKABC('How to specify turbulent Schmidt #(see help)?'
-     &       ,POLNAM(ICTM,ICFD),'parameters','manual','default',ISCHM,9)
+            helptopic='cfd_contam_distribution'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL EASKABC(
+     &        'How to specify turbulent Schmidt #(see help)?',
+     &        POLNAM(ICTM,ICFD),'parameters','manual','default',
+     &        ISCHM,nbhelp)
             IF(ISCHM.EQ.1)THEN
               ISCHMT(ICTM)=1
-              CALL EASKS(HOLD,'enter mol mass(g/mol),crit vol(cm^3/mol)'
-     &          ,'boiling pt (K) and crit pt (K)',32
-     &          ,' 44.0 94.0 217.0 304.0',' ',IER,9)
+              CALL EASKS(HOLD,
+     &          'enter mol mass(g/mol),crit vol(cm^3/mol)',
+     &          'boiling pt (K) and crit pt (K)',32,
+     &          ' 44.0 94.0 217.0 304.0',' ',IER,nbhelp)
               K=0
               CALL EGETWR(HOLD,K,VL1,1.,1000.,'W','molar mass',IER)
               CALL EGETWR(HOLD,K,VL2,1.,1000.,'W','crit vol',IER)
@@ -2823,7 +2586,8 @@ C Ask for information to calculate Schmidt number
             ELSEIF(ISCHM.EQ.2)THEN
               ISCHMT(ICTM)=0
               call EASKR(VAL,'What is Turbulent Schmidt Number for',
-     &          POLNAM(ICTM,ICFD),0.1,'W',2.5,'W',1.,'schmidt #',IER,1)
+     &          POLNAM(ICTM,ICFD),0.1,'W',2.5,'W',1.,'schmidt #',
+     &          IER,nbhelp)
               SCHMT(ICTM)=VAL
             ELSEIF(ISCHM.EQ.3)THEN
               ISCHMT(ICTM)=0
@@ -2831,15 +2595,11 @@ C Ask for information to calculate Schmidt number
               IF(JHUMINDX.EQ.ICTM)SCHMT(ICTM)=0.59
             ENDIF
  789      CONTINUE
-          H(1) = 'If sources and sinks are defined in the contaminant'
-          H(2) = 'network then these can be linked with this CFD source'
-          H(3) = 'boundary condition. For any one contaminant only one'
-          H(4) = 'source/sink can be linked to one source b.c. but '
-          H(5) = 'two or more source/sinks for as many contamiants can'
-          H(6) = 'be linked with the same CFD source b.c.'
+          helptopic='cfd_contam_sinks'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           DOK=.TRUE.
           CALL ASKOK('Link contaminant network source/sink with this',
-     &      'CFD source type boundary condition now ?',OK,dok,6)
+     &      'CFD source type boundary condition now ?',OK,dok,nbhelp)
           IF(OK)THEN
             DO 3040 ICTM=1,NCTM
               IX=2
@@ -2857,10 +2617,13 @@ C Ask for information to calculate Schmidt number
               ITMSS2(IX+3)= '? help'
               ITMSS2(IX+4)= '- exit'
               NITMSS2=IX+4
-              WRITE(H(1),'(2A)')  'Sources and sinks for contaminant ',
+              WRITE(outs,'(2A)')  'Sources and sinks for contaminant ',
      &                       CONTMNAM(ICTM)
-              H(2) = 'are displayed. Choose which one represents this'
-              H(3) = 'source type CFD boundary condition (if at all)'
+              call edisp(iuout,outs)
+              call edisp(iuout,
+     &          'are displayed. Choose which one represents this')
+              call edisp(iuout,
+     &          'source type CFD boundary condition (if at all)')
  3041         IXO=-1
               WRITE(WORD,'(2A)')'Choose source type for contaminant ',
      &                       CONTMNAM(ICTM)
@@ -2869,7 +2632,9 @@ C Ask for information to calculate Schmidt number
               IF(IXO.EQ.NITMSS2)THEN
                 CONTINUE
               ELSEIF(IXO.EQ.NITMSS2-1)THEN
-                CALL PHELPD('Choose source/sink',3,'-',0,0,IER)
+                helptopic='cfd_contam_sinks'
+                call gethelptext(helpinsub,helptopic,nbhelp)
+                CALL PHELPD('Choose source/sink',nbhelp,'-',0,0,IER)
                 GOTO 3041
               ELSEIF(IXO.EQ.NITMSS2-3)THEN
                 SRCE(ISB,ICTM,ICFD)=' '
@@ -2880,8 +2645,8 @@ C Ask for information to calculate Schmidt number
               ENDIF
  3040       CONTINUE
             GOTO 3044
- 3042       H(1) = 'No sources/sinks defined for this contaminant'
-            CALL PHELPD(' ',1,'-',0,0,IER)
+ 3042       call edisp(iuout,
+     &        'No sources/sinks defined for this contaminant')
  3044       continue
           ENDIF
         ENDIF
@@ -2889,6 +2654,8 @@ C Ask for information to calculate Schmidt number
 
 C Define CFD grid cells for source type boundary condition
       elseif (INO.eq.5) then
+        helptopic='cfd_source_boundary_edit'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         t20='Source definition'
         call PIKCELS(t20,VOLNAME(ISB,ICFD),Ii,If,Ji,Jf,Ki,Kf,
      &                                          IVOLF(ISB,ICFD),IER)
@@ -2899,74 +2666,67 @@ C Define CFD grid cells for source type boundary condition
         KVCELLS(ISB,ICFD,1)=Ki+1
         KVCELLS(ISB,ICFD,2)=Kf+1
       elseif (INO.eq.7) then
-        h(1)= '  '
+        helptopic='cfd_source_boundary_edit'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         VAL=VOLHeat(ISB,ICFD)
         call EASKR(VAL,'Heat flux (W) in source volume?',
-     &             ' ',-1000.,'W',1000.,'W',10.,'heat flux',IER,1)
+     &    ' ',-1000.,'W',1000.,'W',10.,'heat flux',IER,nbhelp)
         if (IER.eq.0) VOLHeat(ISB,ICFD)=VAL
       elseif (INO.eq.8) then
 
 C<< Should ideally popup a list of casual gain types from zone
 C operations file here with some regard for standalone running of dfs
-        h(1)= 'This is the index of the casual gain included in the'
-        h(2)= 'zone operation file.  '
-        h(3)= '  '
-        h(4)= 'A cancel results in no change in the model.  '
+        helptopic='cfd_source_boundary_edit'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IVAL=IDCasgn(ISB,ICFD)
         call EASKI(IVAL,'Which casual gain index represents heat ',
-     &  'generation?',0,'W',3,'W',1,'casgn index',IERI,4)
+     &  'generation?',0,'W',3,'W',1,'casgn index',IERI,nbhelp)
         if(ieri.eq.-3) goto 7
         if (IER.eq.0) IDCasgn(ISB,ICFD)=IVAL
       elseif (INO.eq.9) then
+        helptopic='cfd_source_boundary_edit'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         VAL=FCasgn(ISB,ICFD)
         call EASKR(VAL,'What fraction of casual gain is generated? ',
-     &  ' ',0.,'W',1.,'W',1.,'casgn fraction',IER,1)
+     &  ' ',0.,'W',1.,'W',1.,'casgn fraction',IER,nbhelp)
         if (IER.eq.0) FCasgn(ISB,ICFD)=VAL
       elseif (INO.eq.13+NCTM) then
-        H(1) = ' '
+        helptopic='cfd_contam_sinks'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABC('Add/Delete contaminant source',' ','add',
-     &      'delete','cancel',IOWL,1)
+     &      'delete','cancel',IOWL,nbhelp)
         IF(IOWL.EQ.1)THEN
           IF(ICTDFAF.EQ.1)THEN
-            H(1) = 'You cannot add / delete contaminants from '
-            H(2) = 'contaminants network here, go to contaminants '
-            H(3) = 'in Model Definition Menu'
-            H(4) = 'To dereference contaminants network and invoke '
-            H(5) = 'static definition (which you can edit here) change'
-            H(6) = 'source type to "static" from "From ctm network"'
-            CALL PHELPD('Not allowed',6,'-',0,0,IER)
+            helptopic='cfd_contam_delete_warn'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL PHELPD('Not allowed',nbhelp,'-',0,0,IER)
           ELSE
+            helptopic='cfd_contam_sinks'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             SRCNAM=' '
             d12='Contaminant'
             call EASKS(SRCNAM,'Contaminant name? ','  ',12,d12,
-     &      'cntmnt name',IER,1)
+     &      'cntmnt name',IER,nbhelp)
             NCTM=NCTM+1
             ICTM=NCTM
             POLNAM(NCTM,ICFD)=SRCNAM
             call EASKR(VAL,'What is source strength (kg/s) ',
-     &      ' ',0.,'W',10.,'W',1.,'src strenght',IER,1)
+     &      ' ',0.,'W',10.,'W',1.,'src strenght',IER,nbhelp)
             VOLPOL(NCTM,ISB,ICFD)=VAL
             CALPOL(NCTM,ICFD)=.TRUE.
             CALL ASKOK(' ','Is this contaminant water',OK,dok,0)
             IF(OK)JHUMINDX=ICTM
 
 C Ask for information to calculate Schmidt number
-            H(1) = 'In order to calculate contaminant distribution'
-            H(2) = 'the turbulent Schmidt Number needs to be '
-            H(3) = 'calculated. To do this the following information'
-            H(4) = 'is required: molar mass, volume at critical point,'
-            H(5) = 'boiling point and critical temperature.'
-            H(6) = 'If this information is available press parameters'
-            H(7) = 'If not press manual to specify a value for the '
-            H(8) = 'turbulent Schmidt Number.  Click default to use a'
-            H(9) = 'default value of unity or 0.59 for moisture'
+            helptopic='cfd_contam_schmidt_no'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL EASKABC('How to specify turbulent Schmidt #(see help)?'
-     &       ,' ','parameters','manual','default',ISCHM,9)
+     &       ,' ','parameters','manual','default',ISCHM,nbhelp)
             IF(ISCHM.EQ.1)THEN
               ISCHMT(ICTM)=1
               CALL EASKS(HOLD,'enter mol mass(g/mol),crit vol(cm^3/mol)'
      &        ,'boiling pt (K) and crit pt (K)',32
-     &        ,' 44.0 94.0 217.0 304.0',' ',IER,9)
+     &        ,' 44.0 94.0 217.0 304.0',' ',IER,nbhelp)
               K=0
               CALL EGETWR(HOLD,K,VL1,1.,1000.,'W','molar mass',IER)
               CALL EGETWR(HOLD,K,VL2,1.,1000.,'W','crit vol',IER)
@@ -2979,7 +2739,7 @@ C Ask for information to calculate Schmidt number
             ELSEIF(ISCHM.EQ.2)THEN
               ISCHMT(ICTM)=0
               call EASKR(VAL,'What is Turbulent Schmidt Number ',
-     &           ' ',0.1,'W',2.5,'W',1.,'schmidt #',IER,1)
+     &           ' ',0.1,'W',2.5,'W',1.,'schmidt #',IER,nbhelp)
               SCHMT(ICTM)=VAL
             ELSEIF(ISCHM.EQ.3)THEN
               ISCHMT(ICTM)=0
@@ -2991,13 +2751,9 @@ C Ask for information to calculate Schmidt number
 C Delete Contaminant
         ELSEIF(IOWL.EQ.2)THEN
           IF(ICTDFAF.EQ.1)THEN
-            H(1) = 'You cannot add / delete contaminants from '
-            H(2) = 'contaminants network here, go to contaminants '
-            H(3) = 'in Model Definition Menu'
-            H(4) = 'To dereference contaminants network and invoke '
-            H(5) = 'static definition (which you can edit here) change'
-            H(6) = 'source type to "static" from "contaminants network"'
-            CALL PHELPD('Not allowed',6,'-',0,0,IER)
+            helptopic='cfd_contam_delete_warn'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL PHELPD('Not allowed',nbhelp,'-',0,0,IER)
           ELSE
             WRITE(ITUM(1),'(a)')' Contaminant name: '
             DO 132 ICTM=1,NCTM
@@ -3043,30 +2799,25 @@ C Edit contaminants
       elseif (INO.gt.11.and.INO.lt.12+NCTM) then
         ICTM=INO-11
         IF(ICTDFAF.EQ.1)THEN
-          H(1) = 'You can link contaminant(ctm) source/sink models from'
-          H(2) = 'contaminants network here. '
-          H(3) = 'To dereference contaminants network and invoke '
-          H(4) = 'static definition (which you can edit here) change'
-          H(5) = 'source type to "static" from "From ctm network"'
-          H(6) = 'You can define which contaminant is moisture'
-          H(7) = 'and how to specify turbulent Schmidt number'
-          H(8) = 'You should also specify static source strengths '
-          H(9) = '(kg/s) these being the values that will be used '
-          H(10)= 'CFD standalone mode'
+          helptopic='cfd_link_contam_sink'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL PHELPD('Contaminants Edit',10,'-',0,0,IER)
         ELSE
+          helptopic='cfd_link_contam_sink'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           SRCNAM=POLNAM(ICTM,ICFD)
           d12='Contaminant'
           call EASKS(SRCNAM,'Contaminant name? ','  ',12,d12,
-     &    'cntmnt name',IER,1)
+     &    'cntmnt name',IER,nbhelp)
           POLNAM(ICTM,ICFD)=SRCNAM
         ENDIF
         
         VAL=VOLPOL(ICTM,ISB,ICFD)
         call EASKR(VAL,'What is source strength (kg/s) ',
-     &    ' ',0.,'W',10.,'W',1.,'src strenght',IER,1)
+     &    ' ',0.,'W',10.,'W',1.,'src strenght',IER,nbhelp)
         VOLPOL(ICTM,ISB,ICFD)=VAL
-        CALL ASKOK(' ','Is this contaminant water(humidity)',OK,dok,0)
+        CALL ASKOK(' ','Is this contaminant water(humidity)',
+     &    OK,dok,nbhelp)
         IF(OK)THEN
           JHUMINDX=ICTM
         ELSE
@@ -3074,22 +2825,15 @@ C Edit contaminants
         ENDIF
 
 C Ask for information to calculate Schmidt number
-        H(1) = 'In order to calculate contaminant distribution'
-        H(2) = 'the turbulent Schmidt Number needs to be '
-        H(3) = 'calculated. To do this the following information'
-        H(4) = 'is required: molar mass, volume at critical point,'
-        H(5) = 'boiling point and critical temperature.'
-        H(6) = 'If this information is available press parameters'
-        H(7) = 'If not press manual to specify a value for the '
-        H(8) = 'turbulent Schmidt Number.  Click default to use a'
-        H(9) = 'default value of unity or 0.59 for moisture'
+        helptopic='cfd_contam_schmidt_no'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABC('How to specify turbulent Schmidt # (see help) ?'
-     &     ,' ','parameters','manual','default',ISCHM,9)
+     &     ,' ','parameters','manual','default',ISCHM,nbhelp)
         IF(ISCHM.EQ.1)THEN
           ISCHMT(ICTM)=1
           CALL EASKS(HOLD,'enter mol mass (g/mol) crit vol (cm^3/mol)'
      &      ,'boiling pt (K) and crit pt (K)',32
-     &      ,' 44.0 94.0 217.0 304.0',' ',IER,9)
+     &      ,' 44.0 94.0 217.0 304.0',' ',IER,nbhelp)
           K=0
           CALL EGETWR(HOLD,K,VL1,1.,1000.,'W','molar mass',IER)
           CALL EGETWR(HOLD,K,VL2,1.,1000.,'W','crit vol',IER)
@@ -3102,7 +2846,7 @@ C Ask for information to calculate Schmidt number
         ELSEIF(ISCHM.EQ.2)THEN
           ISCHMT(ICTM)=0
           call EASKR(VAL,'What is Turbulent Schmidt Number ',
-     &         ' ',0.5,'W',1.5,'W',1.,'schmidt #',IER,1)
+     &         ' ',0.5,'W',1.5,'W',1.,'schmidt #',IER,nbhelp)
           SCHMT(ICTM)=VAL
         ELSEIF(ISCHM.EQ.3)THEN
           ISCHMT(ICTM)=0
@@ -3112,15 +2856,11 @@ C Ask for information to calculate Schmidt number
 
 C Now get source sink information from contaminants network
         IF(ICTDFAF.EQ.1)THEN
-          H(1) = 'If sources and sinks are defined in the contaminant'
-          H(2) = 'network then these can be linked with this CFD source'
-          H(3) = 'boundary condition. For any one contaminant only one'
-          H(4) = 'source/sink can be linked to one source b.c. but '
-          H(5) = 'two or more source/sinks for as many contamiants can'
-          H(6) = 'be linked with the same CFD source b.c.'
+          helptopic='cfd_link_contam_sink'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           DOK=.FALSE.
           CALL ASKOK('Link contaminant network source/sink with this',
-     &      'CFD source type boundary condition now ?',OK,dok,6)
+     &      'CFD source type boundary condition now ?',OK,dok,nbhelp)
           IF(OK)THEN
             IX=2
             ITMSS3(1)= ' Source / sink name:'
@@ -3137,10 +2877,13 @@ C Now get source sink information from contaminants network
             ITMSS3(IX+3)= '? help'
             ITMSS3(IX+4)= '- exit'
             NITMSS3=IX+4
-            WRITE(H(1),'(2A)')  'Sources and sinks for contaminant ',
-     &                     CONTMNAM(ICTM)
-            H(2) = 'are displayed. Choose which one represents this'
-            H(3) = 'source type CFD boundary condition (if at all)'
+            WRITE(outs,'(2A)')  'Sources and sinks for contaminant ',
+     &                       CONTMNAM(ICTM)
+            call edisp(iuout,outs)
+            call edisp(iuout,
+     &        'are displayed. Choose which one represents this')
+            call edisp(iuout,
+     &        'source type CFD boundary condition (if at all)')
  2041       IXO=-1
             WRITE(WORD,'(2A)')'Choose source type for contaminant ',
      &                     CONTMNAM(ICTM)
@@ -3149,7 +2892,9 @@ C Now get source sink information from contaminants network
             IF(IXO.EQ.NITMSS3)THEN
               CONTINUE
             ELSEIF(IXO.EQ.NITMSS3-1)THEN
-              CALL PHELPD('Choose source/sink',3,'-',0,0,IER)
+              helptopic='cfd_contam_sinks'
+              call gethelptext(helpinsub,helptopic,nbhelp)
+              CALL PHELPD('Choose source/sink',nbhelp,'-',0,0,IER)
               GOTO 2041
             ELSEIF(IXO.EQ.NITMSS3-3)THEN
                 SRCE(ISB,ICTM,ICFD)=' '
@@ -3160,14 +2905,16 @@ C Now get source sink information from contaminants network
             ENDIF
           ENDIF
           GOTO 3045
- 3043     H(1) = 'No sources/sinks defined for this contaminant'
-          CALL PHELPD(' ',1,'-',0,0,IER)
+ 3043     call edisp(iuout,
+     &      'No sources/sinks defined for this contaminant')
  3045     continue
         ENDIF
       elseif (INO.eq.(NITMS-1)) then
 
 C Create help for 'sources edit' menu
-        CALL PHELPD('sources edit help',16,'-',0,0,IER)
+        helptopic='cfd_source_boundary_edit'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('sources edit help',nbhelp,'-',0,0,IER)
       elseif (INO.eq.NITMS) then
 
 C Return.
@@ -3177,20 +2924,6 @@ C Return.
       endif
         goto 5
       end
-*        h(1)= 'According to Recknagel, Sprenger und Schrameck'
-*        h(2)= 'persons at light, sedentary activity release '
-*        h(3)= 'water vapour: '
-*        h(4)= '20C - 35g/h; 22C - 40g/h; 23C - 50g/h; 24 and 25C - 60/h'
-*        VAL=VOLHum(ISB,ICFD)
-*        call EASKR(VAL,'Moisture (g/hr) generated in source volume?',
-*     &             ' ',0.,'W',100.,'W',10.,'humidity',IER,4)
-*        if (IER.eq.0) VOLHum(ISB,ICFD)=VAL
-*      elseif (INO.eq.9) then
-*        h(1)= 'Assuming CO2 production of 0.0000153737kg/s/person  '
-*        VAL=VOLCO2(ISB,ICFD)
-*        call EASKR(VAL,'No of people breathing in source volume?',
-*     &             ' ',0.,'W',100.,'W',1.,'CO2',IER,1)
-*        if (IER.eq.0) VOLCO2(ISB,ICFD)=VAL*0.0000153737
 
 
 C ************************** EDBLK **************************
@@ -3200,7 +2933,6 @@ C IER=0 indicates no error.
       SUBROUTINE EDBLK(ISB,IER)
 #include "cfd.h"
 
-      common/pophelp/h(60)
       COMMON/ICFNOD/ICFD,ICP
 
       common/KEYVOLS/NVOL(MNZ),IVOLF(MNVLS,MNZ),IVCELLS(MNVLS,MNZ,2),
@@ -3212,12 +2944,21 @@ C IER=0 indicates no error.
      &          VOLArea(MNVLS,MNZ),VOLPres(MNVLS,MNZ),
      &          VOLPol(MCTM,MNVLS,MNZ)
 
-      character ITMSS(10)*50,H*72,FACE*6
+      character ITMSS(10)*50,FACE*6
       character ltmp*16,t12*12,d12*12,t20*20
       character VOLNAME*12, VCsurf*12
 
       logical ERROR
       integer NITMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDBLK'  ! set for subroutine
+      helptopic='cfd_blockage_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Adjust each cell by -1 as dfs adds fictitious cells around the domain.
       Ii=IVCELLS(ISB,ICFD,1)-1
@@ -3285,7 +3026,8 @@ C Create a menu showing definitions for different conflation schemes.
       NITMS=10
 
 C Help text for this menu.
-      h(1)='There is no help text for this menu (yet).'
+      helptopic='cfd_blockage_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Display menu.
       INO=-1
@@ -3295,8 +3037,8 @@ C Display menu.
 C Get boundary name.
         t12=VOLNAME(ISB,ICFD)
         d12=' '
-        h(1)= ' '
-        call EASKS(t12,'Blockage name? ','  ',12,d12,'blk name',IER,1)
+        call EASKS(t12,'Blockage name? ','  ',12,d12,'blk name',
+     &    IER,nbhelp)
         if (IER.eq.0) then
           call st2name(t12,d12)
           VOLNAME(ISB,ICFD)=d12
@@ -3331,15 +3073,16 @@ C Check for illegal volume (vol must be 2 cells thick in all directions).
         endif
         if (ERROR) goto 79
       elseif (INO.eq.7) then
-        h(1)= '  '
         VAL=VOLHeat(ISB,ICFD)
         call EASKR(VAL,'Heat flux (W/m^2) on blockage surfaces?',
-     &             ' ',-1000.,'W',1000.,'W',10.,'heat flux',IER,1)
+     &    ' ',-1000.,'W',1000.,'W',10.,'heat flux',IER,nbhelp)
         if (IER.eq.0) VOLHeat(ISB,ICFD)=VAL
       elseif (INO.eq.(NITMS-1)) then
 
 C Help.
-        CALL PHELPD('blocakage edit',1,'-',0,0,IER)
+        helptopic='cfd_blockage_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('blocakage edit',nbhelp,'-',0,0,IER)
       elseif (INO.eq.NITMS) then
 
 C Return.
@@ -3430,7 +3173,6 @@ C PIKCELS controls the editing of the cells defining a boundary region.
       integer iCountWords
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       common/grdmax/NTCX,NTCY,NTCZ
       COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
      1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),
@@ -3439,14 +3181,23 @@ C PIKCELS controls the editing of the cells defining a boundary region.
      4            XU(ntcelx),YV(ntcely),ZW(ntcelz)
       COMMON/ALL/NI,NJ,NK,NIM1,NJM1,NKM1,NIM2,NJM2,NKM2
 
-      character BTYPE*20,BNAME*12,s30*30,dflt*30,H*72,lface*7,t30*30
+      character BTYPE*20,BNAME*12,s30*30,dflt*30,lface*7,t30*30
       character outs*124
       integer IFACE   ! for radio button
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='PIKCELS'  ! set for subroutine
 
  5    IER=0
       t30='  '
       
 C Ask for face first if necessary.
+      helptopic='cfd_cell_selection'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       if (IFACE.eq.1) then
         lface='West'
       elseif (IFACE.eq.2) then
@@ -3463,15 +3214,10 @@ C Ask for face first if necessary.
         lface='UNKNOWN'
       endif
       if (IFACE.lt.7) then
-        h(1)= 'You will have to pick a face at which the'
-        h(2)= 'boundary condition will apply.'
-        h(3)= 'Based on the face you select, information about'
-        h(4)= 'the face X/Y or Z cell coordinates will be reported'
-        h(5)= 'in the text feedback area. '
         write (t30,'(2a)') 'Current face: ',lface
         IFACE=1
         CALL EASKATOG('Boundary face is on which side?',t30,'West',
-     &                'East','South','North','Low','High',' ',IFACE,5)
+     &    'East','South','North','Low','High',' ',IFACE,nbhelp)
       endif
       IONE=1
 
@@ -3594,13 +3340,8 @@ C Unknown face.
 C Ask for cells.
         write(s30,'(6i4)') Ii,If,Ji,Jf,Ki,Kf
       endif
- 10   h(1)='The boundary condition will apply to a volume (or face)'
-      h(2)='defined by the start and end control volume in the three'
-      h(3)='orthogonal directions i,j,k.'
-      h(4)=' '
-      h(5)='If in doubt, review the cell coordinates which listed'
-      h(6)='in the text feedback area.'
-      call EASKS(s30,'Boundary cells?',t30,30,dflt,'bndry cells',IER,6)
+ 10   call EASKS(s30,'Boundary cells?',t30,30,dflt,'bndry cells',
+     &  IER,nbhelp)
       NITMS = iCountWords(s30)
       if (NITMS.ne.6) goto 10
 
@@ -3651,10 +3392,16 @@ C PIKFACE controls the editing of the face of the boundary region.
 C Check which two start/ end locations are the same.  Keep count of 
 C number of matches so as confusion can be removed.
 
-      common/pophelp/h(60)
       common/grdmax/NTCX,NTCY,NTCZ
 
-      character BTYPE*20,BNAME*12,H*72
+      character BTYPE*20,BNAME*12
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='PIKFACE'  ! set for subroutine
 
  5    IER=0
 
@@ -3702,6 +3449,8 @@ C Top face.
           IFACE=6
         endif
       endif
+      helptopic='cfd_face_selection'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Check for conflicts.
       if (IMTCH.eq.0) then
@@ -3710,11 +3459,9 @@ C Check for conflicts.
       elseif (IMTCH.gt.1) then
         call usrmsg ('Cannot resolve boundary face.',
      &               'Please choose from the following list.','W')
-        h(1)= 'You will have to pick a face at which'
-        h(2)= 'the boundary condition will apply.'
         IFACE=1
         CALL EASKATOG('Boundary face is on which side?',' ','West',
-     &                'East','South','North','Low','High',' ',IFACE,2)
+     &    'East','South','North','Low','High',' ',IFACE,nbhelp)
       endif
 
 C Check for incompatable face/ cell definition
@@ -3751,7 +3498,6 @@ C gridding generation.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
@@ -3765,34 +3511,25 @@ C Curvilinear boundary vertex numbers.
 
       DIMENSION COG1(3),COG2(3),COG3(3),JJVN(MV)
 
-      CHARACTER act*1,H*72,HOLD*72,outs*124
+      CHARACTER act*1,HOLD*72,outs*124
 #ifdef OSI
       integer iix,iiy,ixd,iyd
 #else
       integer*8 iix,iiy,ixd,iyd
 #endif
 
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='TOPBOT'  ! set for subroutine
+
 C Tell the user the rules of selection.
       ier=0
-      H(1)='The curvilinear gridding routine requires the shape of the'
-      H(2)='high and low boundaries of the domain to be defined as '
-      H(3)='follows:  '
-      H(4)='For the high boundary start with the vertex at the '
-      H(5)='intersection of the west and high boundaries.  Select the'
-      H(6)='next vertex to the east in the same east-west, high-low'
-      H(7)='plane. '
-      H(8)='     4____ 5'
-      H(9)='     /     \\'
-      H(10)='  3/       | 6'
-      H(11)='   |       |'
-      H(12)='   |       |'
-      H(13)=' 1 -------- 9 '
-      H(14)=' view from south'
-      H(15)='In the example above HIGH is defined by the vertices  '
-      H(16)='3 4 5 6 and the LOW by 1 and 9. Note: order is from '
-      H(17)='the WEST to the EAST (i.e. left to right). '
-      H(18)='Repeat for the bottom boundary. '
-      CALL PHELPD('gen start popup',18,'-',0,0,IER)
+      helptopic='cfd_curvilinear_grid'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL PHELPD('gen start popup',nbhelp,'-',0,0,IER)
 
 C Redraw the zone with vertices.
       MODIFY=.TRUE.
@@ -3810,16 +3547,13 @@ C Allow user to type in the list of vertices as a string.  The
 C number of items is the number of vertices and then parse out
 C the individual vertex numbers from the list.
    41 HOLD=' '
-      H(1)='Type the list of vertices (west to east) OR '
-      h(2)='click mouse on existing vertices, ending with an '
-      h(3)='` e `. A match is assumed if within 5 pixels.'
-      h(4)='You will be given an oportunity to confirm the list. '
       if(MMOD.ne.8)then
         CALL EASKS(HOLD,' Give high vertices (west to east)','  ',
-     &    72,' ','associated vertices',IER,4)
+     &    72,' ','associated vertices',IER,nbhelp)
       else
         CALL EASKSCMD(HOLD,' Give high vertices (west to east)',
-     &   ' ','via mouse', clkok,72,' 1 2 3','assoc vert+mouse',IER,9)
+     &   ' ','via mouse', clkok,72,' 1 2 3','assoc vert+mouse',
+     &   IER,nbhelp)
         if(clkok)then
           ijvn=0
           call edisp(iuout,
@@ -3862,7 +3596,7 @@ C This write assumes not-very-complex zones and surfaces.
           HOLD=' '
           WRITE(HOLD,'(24I3)')(JJVN(J),J=1,ijvn)
           CALL EASKS(HOLD,' Associated high vertices (confirm):',
-     &      '  ',72,' ','associated vertices',IIER,8)
+     &      '  ',72,' ','associated vertices',IIER,nbhelp)
         endif
       endif
       NV = iCountWords(HOLD)
@@ -3875,16 +3609,13 @@ C This write assumes not-very-complex zones and surfaces.
 
 C Ask for and display the bottom defining vertices (west to east).
    51 HOLD=' '
-      H(1)='Type the list of vertices (west to east) OR '
-      h(2)='click mouse on existing vertices, ending with an '
-      h(3)='` e `. A match is assumed if within 5 pixels.'
-      h(4)='You will be given an oportunity to confirm the list. '
       if(MMOD.ne.8)then
         CALL EASKS(HOLD,' Give low vertices (west to east)','  ',
-     &    72,' ','associated vertices',IER,4)
+     &    72,' ','associated vertices',IER,nbhelp)
       else
         CALL EASKSCMD(HOLD,' Give low vertices (west to east)',
-     &   ' ','via mouse', clkok,72,' 1 2 3','assoc vert+mouse',IER,9)
+     &   ' ','via mouse', clkok,72,' 1 2 3','assoc vert+mouse',
+     &   IER,nbhelp)
         if(clkok)then
           ijvn=0
           call edisp(iuout,
@@ -3925,7 +3656,7 @@ C This write statement assumes not-very-complex zones and polygons.
           HOLD=' '
           WRITE(HOLD,'(24I3)')(JJVN(J),J=1,ijvn)
           CALL EASKS(HOLD,' Associated low vertices (confirm):',
-     &      '  ',72,' ','associated vertices',IIER,8)
+     &      '  ',72,' ','associated vertices',IIER,nbhelp)
         endif
       endif
       NV = iCountWords(HOLD)
@@ -3950,7 +3681,6 @@ C and cell distribution for each region.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/MFTRA/IMFTU
       COMMON/SHOUT/ICOUT
       integer menuchw,igl,igr,igt,igb,igw,igwh
@@ -3962,10 +3692,25 @@ C and cell distribution for each region.
 
       logical OK,DOK,GRMODE
 
-      character H*72,ITEM(MNREG+5)*44,KEY*1,HOLD*24,outs*124,TITLE*30
+      character ITEM(MNREG+5)*44,KEY*1,HOLD*24,outs*124,TITLE*30
 
       integer icellt    ! for local editing.
       integer MVERT,INO ! max items and current menu item
+
+#ifdef OSI
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+#else
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+#endif
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='GRIDDEF'  ! set for subroutine
 
 C Set additional output units to stdout. Then redirect warning 
 C messages to stderr in case of rule script program control.
@@ -3980,9 +3725,15 @@ C Reset the display bounds for grid display.
       GRMODE=.false.
       IF(MMOD.EQ.8)THEN
         call startbuffer()
-        CALL win3d(menuchw,6,6,2,4,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=6; iiw2=6; iiw3=2; iiw4=4; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        CALL win3d(menuchw,6,6,2,4,igl,igr,igt,igb,igw,igwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         GRMODE=.true.
       ENDIF
 
@@ -4063,27 +3814,8 @@ C Number of actual items displayed.
       MVERT=M+MCTL
 
 C Help text for this menu.
-      h(1) ='Number of cells - specifies how many computational' 
-      h(2) ='cells (control volumes, grid points) the current'
-      h(3) ='region contains. There is a limit for each axis due' 
-      h(4) ='to array dimensions (if you would like to change it,' 
-      h(5) ='please read file esrudfs/Info/help1.txt.' 
-      h(6) =' '
-      h(7) ='The length of the region is in meters.' 
-      h(8) =' '
-      h(9) ='The power law coefficient guides the distribution of'
-      h(10)='cells - a value of 1.0 will distribute cells evenly,' 
-      h(11)='for a value bigger/less than 1 - each next cell will' 
-      h(12)='increase/decrease in size.' 
-      h(13)=' '
-      h(14)='To have a grid of a good quality - the size/distance' 
-      h(15)='of two neighbor cells should not differ more than 20%'
-      h(16)='which can be controlled using --> vizualize gridding'
-      h(17)='--> list x,y,z plane points (aspect ratio) from the ' 
-      h(18)='upper menu.'
-      h(19)=' ' 
-      h(20)='Symmetrical gridding will set an axis of symmetry' 
-      h(21)='in the middle of the region.' 
+      helptopic='cfd_cells_in_region'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       if (IAX.eq.1) then
         CALL EMENU('x-axis gridding',ITEM,MVERT,INO)
@@ -4104,29 +3836,8 @@ C Edit a regions data.
         write(outs,'(2a)')'Please specify: number of cells; length of',
      &                    ' region; and power law coefficient.'
 
-        h(1) ='Number of cells - specifies how many computational' 
-        h(2) ='cells (control volumes, grid points) the current'
-        h(3) ='region contains. There is a limit for each axis due' 
-        h(4) ='to array dimensions (if you would like to change it,' 
-        h(5) ='please read file esrudfs/Info/help1.txt.' 
-        h(6) =' '
-        h(7) ='The length of the region is in meters.' 
-        h(8) =' '
-        h(9) ='The power law coefficient guides the distribution of'
-        h(10)='cells - a value of 1.0 will distribute cells evenly,' 
-        h(11)='for a value bigger/less than 1 - each next cell will' 
-        h(12)='increase/decrease in size.' 
-        h(13)=' '
-        h(14)='To have a grid of a good quality - the size/distance' 
-        h(15)='of two neighbor cells should not differ more than 20%'
-        h(16)='which can be controlled using --> vizualize gridding'
-        h(17)='--> list x,y,z plane points (aspect ratio) from the ' 
-        h(18)='upper menu.'
-        h(19)=' ' 
-        h(20)='Symmetrical gridding will set an axis of symmetry' 
-        h(21)='in the middle of the region.' 
-
-        call EASKS(HOLD,outs,' ',32,' 1 1.0 1.0 ','cell data',IER,21)
+        call EASKS(HOLD,outs,' ',32,' 1 1.0 1.0 ','cell data',
+     &    IER,nbhelp)
         K=0
         if (IAX.eq.1) then
           call EGETWI(HOLD,K,ic,1,NTCELX,'F','no of x cells',IIER)
@@ -4196,10 +3907,7 @@ C If more that one cell then ask if distribution is symmetrical.
           call EGETWR(HOLD,K,ci,-99.0,99.0,'F','pwr law coef',IIER)
           if (iier.eq.0) plaw(IFOC,ICFD)=ci
           dok=.true.
-          h(1)='Symmetrical gridding will set an axis of symmetry' 
-          h(2)='in the middle of the region. If this is what you' 
-          h(3)='want say ok. '
-          CALL ASKOK(' ',' Symmetrical gridding?',OK,dok,3)
+          CALL ASKOK(' ',' Symmetrical gridding?',OK,dok,nbhelp)
           if (OK) NCEL(IFOC,ICFD) = -1*NCEL(IFOC,ICFD)
         else
           plaw(IFOC,ICFD)=1.0
@@ -4211,10 +3919,8 @@ C Change page.
       elseif (INO.eq.(MVERT-2)) then
 
 C Add delete regions.
-        h(1)= 'Each axis is sub-divided into regions which are'
-        h(2)= 'gridded independently.'
-        call EASKABC('Region operations:','  ','add one','delete one',
-     &               'cancel',IRO,2)
+        call EASKABC('Region operations:','  ','add region',
+     &    'delete region','cancel',IRO,nbhelp)
         if (IRO.eq.1) then
           if (NRG(IAX,ICFD)+1.gt.MNREG) then
             call usrmsg ('Maximum number of regions exceeded',
@@ -4224,19 +3930,14 @@ C Add delete regions.
             IFOC=NRG(IAX,ICFD)
 
 C Ask for length of current region (supply TOTDIS-CTDIS as default)
-            h(1)= 'You can specify regions either by selecting'
-            h(2)= 'vertices or by giving dimensioned input (m).'
             CALL EASKABC('Specify region length:',' ','by vertices',
-     &                   'by size','cancel',IW,2)
+     &                   'by size','cancel',IW,nbhelp)
             if(iw.eq.1)then
 
 C Locate regions by vertices.
-              h(1)= 'This is the zone vertex index.'
-              h(2)= 'The distance parallel to the axis between these '
-              h(3)= 'vertices will be calculated.'
               HOLD='  1   2'
               call EASKS(HOLD,'Specify vertex at start & end of region',
-     &                   ' ',32,' 1 2 ','vertices',IER,3)
+     &                   ' ',32,' 1 2 ','vertices',IER,nbhelp)
               K=0
               call EGETWI(HOLD,K,is,1,NTV,'F','vertex',IIER)
               call EGETWI(HOLD,K,ie,1,NTV,'F','vertex',IIER)
@@ -4249,9 +3950,8 @@ C Locate regions by vertices.
               endif
             elseif(iw.eq.2)then
               VAL=TOTDIS-CTDIS
-              h(1)= 'Distance in metres.'
               CALL EASKR(VAL,' ','Length of current region (m) ? ',
-     &                   0.0,'F',TOTDIS,'W',1.,'reg length',IER,1)
+     &          0.0,'F',TOTDIS,'W',1.,'reg length',IER,nbhelp)
               REG(IFOC,ICFD) = VAL
             endif
 
@@ -4259,14 +3959,9 @@ C Got length of region now ask for no of cells and power law and symmetry.
 C Offer the user a cancel option.
             if (IW.ne.3) then
               icell=NCEL(IFOC,ICFD)
-              h(1)='A region can be subdivided into a number of cells.'
-              h(2)=' '
-              h(3)='A cancel takes you back to the grid definition'
-              h(4)='menu and you should check your model for incon-'
-              h(5)='sistencies.'
               icellt=icell
               CALL EASKI(icellt,' Specify number of cells in region',
-     &          ' ',1,'F',NTCELX,'F',10,'single region',IERI,5)
+     &          ' ',1,'F',NTCELX,'F',10,'single region',IERI,nbhelp)
               if(ieri.eq.-3) then
                 goto 5
               else
@@ -4277,28 +3972,12 @@ C Offer the user a cancel option.
 C If the number of cells is greater than 1 then ask for details, otherwise 
 C set default size and power law.
               if(NCEL(IFOC,ICFD).gt.1) then
-                h(1)= 'The cells faces are located according to a '
-                h(2)= 'power-law relation:'
-                h(3)= '            Xi = L*(i/n)**c'
-                h(4)= 'where `i` is cell number, `Xi` is position of '
-                h(5)= 'face of i`th cell, `L` is length of region, '
-                h(6)= '`n` is number of cells in region, and `c` is '
-                h(7)= 'power-law coeff. '
-                h(8)= '  '
-                h(9)= 'c > 1:      grid spacing grows along axis'
-                h(10)='0 < c < 1:  grid spacing decreases along axis'
-                h(11)='c = 1:      uniform grid'
-                h(12)='-1 < c < 0: grid spacing grows along axis'
-                h(13)='c < -1:     grid spacing decreases along axis'
                 VAL=1.0
                 CALL EASKR(VAL,'  ','Power-law coefficient?',
-     &              -4.0,'W',4.0,'W',1.0,'power coeff',IER,13)
+     &              -4.0,'W',4.0,'W',1.0,'power coeff',IER,nbhelp)
                 plaw(IFOC,ICFD)=VAL
                 dok=.true.
-          h(1)='Symmetrical gridding will set an axis of symmetry' 
-          h(2)='in the middle of the region. If this is what you' 
-          h(3)='want say ok. '
-                CALL ASKOK('  ','Symmetrical gridding?',OK,dok,3)
+                CALL ASKOK('  ','Symmetrical gridding?',OK,dok,nbhelp)
                 if(OK) NCEL(IFOC,ICFD) = -1*NCEL(IFOC,ICFD)
               else
                 plaw(IFOC,ICFD)=1.0
@@ -4307,11 +3986,8 @@ C set default size and power law.
           endif
         elseif (IRO.eq.2) then
           IDEL=NRG(IAX,ICFD)
-          h(1)= 'This is the region index.'
-          h(2)= 'A cancel returns you to the menu without changing'
-          h(3)= 'the model.'
           CALL EASKI(IDEL,' ','Which region to delete ? ',
-     &                    0,'F',NRG(IAX,ICFD),'F',1,'del reg',IERI,3)
+     &      0,'F',NRG(IAX,ICFD),'F',1,'del reg',IERI,nbhelp)
           if(ieri.eq.-3) goto 5
 
           if (IDEL.gt.0) then
@@ -4328,7 +4004,9 @@ C set default size and power law.
       elseif (INO.eq.(MVERT-1)) then
 
 C Help.
-        CALL PHELPD('CFD inputs',21,'-',0,0,IER)
+        helptopic='cfd_cells_in_region'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('CFD inputs',nbhelp,'-',0,0,IER)
       elseif (INO.eq.(MVERT)) then
         call startbuffer()
         return
@@ -4361,7 +4039,7 @@ C Set up array of menu strings.
         VERT(I)=NDNAM(I)
  10   continue
       call EPICKS(NNPK,INPK,PROMPT1,PROMPT2,
-     &                            12,NNOD,VERT,'Node select',IER,NH)
+     &  12,NNOD,VERT,'Node select',IER,NH)
 
       return
       end
@@ -4403,7 +4081,7 @@ C A node has been specified -> only list its connections.
             NITMS=NITMS+1
             ICID(NITMS)=I
             write(VRT(NITMS),'(5a)')
-     &                      NDNAM(IP),'->',NDNAM(IN),' via ',CMNAM(IC)
+     &        NDNAM(IP),'->',NDNAM(IN),' via ',CMNAM(IC)
           endif
         else
 
@@ -4411,14 +4089,14 @@ C List all connections.
           NITMS=NITMS+1
           ICID(NITMS)=I
           write(VRT(NITMS),'(5a)')
-     &                      NDNAM(IP),'->',NDNAM(IN),' via ',CMNAM(IC)
+     &      NDNAM(IP),'->',NDNAM(IN),' via ',CMNAM(IC)
         endif
  10   continue
 
       if (INODE.ge.0) then
         if (NITMS.lt.NNPK) NNPK=NITMS
         call EPICKS(NNPK,IPK,PROMPT1,PROMPT2,
-     &                     43,NITMS,VRT,'Connection selection',IER,0)
+     &    43,NITMS,VRT,'Connection selection',IER,0)
 
 C Decode menu picks to connections.
         do 20 I=1,NNPK

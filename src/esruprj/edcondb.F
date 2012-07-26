@@ -47,18 +47,17 @@ C Parameters
 
       common/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
       LOGICAL OK,DOK,MODDB
 
 C CLSDES (30 char) is an array for menu items listing each class.
 C CLSSEL (36 char) is an array for menu items for the selected class.
-      DIMENSION CLSDES(30),PDBM(35),CLSSEL(30),ICLSSEL(30)
+      DIMENSION CLSDES(30),PDBM(37),CLSSEL(30),ICLSSEL(30)
       integer iwhicharray   ! for each item in menu point back to array
       dimension iwhicharray(60)
-      character ACTION*1,CLSSEL*36,lltmp*144,CLSDES*32,H*72
-      CHARACTER KEY*1,PDBM*68,outs*124
+      character ACTION*1,CLSSEL*36,lltmp*144,CLSDES*32
+      CHARACTER KEY*1,PDBM*76,outs*124
       CHARACTER xfile*144,tg*1,delim*1,t32*32,t248*248
       character lworking*144,fs*1
       logical closemat1,closemat2
@@ -68,6 +67,13 @@ C CLSSEL (36 char) is an array for menu items for the selected class.
       integer iwhich2  ! 2nd material array index
       integer idb,idb2 ! the two legacy indices selected
       integer NCO,ICO,NITMS,INO,IW  ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ELISTMAT'  ! set for subroutine
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -129,28 +135,26 @@ C Gather the names of the various classes and present this list.
       ICO=-2
 
 C Help text for this menu.
-      H(1)='The classifications shown in the display include up to'
-      H(2)='18 materials. To get a listing of the items included'
-      H(3)='select one of the classifications.'
+      helptopic='cat_list_materials'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Now display the menu.
       CALL EMENU('Materials Classes',CLSDES,NCO,ICO)
       IF(ICO.EQ.NCO)THEN
         RETURN
       ELSEIF(ICO.EQ.(NCO-1))THEN
-        CALL PHELPD('materials menu',3,'-',0,0,IER)
+        helptopic='cat_list_materials'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('materials menu',nbhelp,'-',0,0,IER)
       ELSEIF(ICO.EQ.(NCO-2))THEN
 
 C List one or more classifications.
         INPIC=matcats
-        h(1)='You may select one or more classes to list. '
         CALL EPICKS(INPIC,ICLSSEL,' ',' Which classes to list:',
-     &        36,matcats,CLSSEL,'Material classes',IER,1)
+     &    36,matcats,CLSSEL,'Material classes',IER,nbhelp)
         IF(INPIC.EQ.0)GOTO 40
-        h(1)=' Summary reporting can be shown in the text feedback'
-        h(2)=' or a text file.'
         CALL EASKABC(' Reporting to:',' ',
-     &      'text feedback','summary file','cancel',irpt,2)
+     &    'text feedback','summary file','cancel',irpt,nbhelp)
         if(irpt.eq.1)then
           itu = iuout
         elseif(irpt.eq.2)then
@@ -180,20 +184,22 @@ C If user canceled the listing the reset unit to iuout and loop back.
             WRITE(outs,'(3a,i2,a)')' Classification: ',
      &        matcatname(IC)(1:lnblnk(matcatname(IC))),' (',IC,')'
             call edisp(itu,outs)
+            call edisp248(itu,matcatdoc(IC),100)
             call edisp(itu,' ')
             call edisp(itu,
-     &      'Index|Con-   |Den- |Specif|IR  |Solr|Vapour|Description')
+     &      'Index|Conduc-|Den- |Specif|IR  |Solar|Vapour|Description')
             call edisp(itu,
-     &      '     |duct.  |sity |heat  |emis|abs |resist|of material')
+     &      '     |tivity |sity |heat  |emis|abs  |resist|of material')
 
 C Loop through all of the items in the array and list out those that are
 C associated with this class.
             DO 47 J=1,matdbitems
               if(matcatindex(J).eq.IC)then
                 IDB=matlegindex(J)
+                lsn=MIN0(lnblnk(matname(J)),32)
                 WRITE(outs,46)IDB,matdbcon(J),matdbden(J),matdbsht(J),
      &            matdboute(J),matdbouta(J),matdbdrv(J),
-     &            matname(J)(1:lnblnk(matname(J)))
+     &            matname(J)(1:lsn)
    46           FORMAT(I4,F9.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,A)
                 call edisp(itu,outs)
               endif
@@ -203,8 +209,10 @@ C associated with this class.
           ENDIF
    42   continue
         call edisp(itu,' ')
-        call edisp(itu,' Units: Conduct W/(m deg.C), Density kg/m**3')
-        call edisp(itu,'        Specific Heat J/(kg deg.C) ')
+        write(outs,'(2a)')
+     &    ' Units: Conductivity W/(m deg.C), Density kg/m**3,',
+     &    ' Specific Heat J/(kg deg.C), Vapour (MNs g^-1m^-1)'
+        call edisp(itu,outs)
         if(irpt.eq.2)then
 
 C Call ctlexp a 2nd time to close the file.
@@ -215,10 +223,9 @@ C Call ctlexp a 2nd time to close the file.
 C Add another category to the database << not yet tested >>
         if(matcats.LT.30)then
           matcats=matcats+1
-          H(1)='This description may be up to 32 char. '
           t32=' '
           CALL EASKS(t32,' Classification name (<32 char)?',' ',
-     &      32,' ','class name',IER,1)
+     &      32,' ','class name',IER,nbhelp)
           write(matcatname(matcats),'(a)') t32
           write(matcatdoc(matcats),'(a,i2,3a)')
      &      'Category (',matcats,') named ',t32(1:lnblnk(t32)),
@@ -290,17 +297,17 @@ C Loop through data for this classification for manipulation.
         ENDIF
 
 C Display the materials of the classification in a menu.
-    3   PDBM(1)= '  Units:  Conductivity W/(m deg.C), Density kg/m**3'
-        PDBM(2)= '          Specific Heat J/(kg deg.C) '
-        WRITE(PDBM(3),33)matcatname(IC)(1:lnblnk(matcatname(IC))),IC
-   33   FORMAT    ('a Classification: ',A,' (',I2,')')
-        WRITE(PDBM(4),'(A,I3)')'  Number of materials:',matcatitems(IC)
-        PDBM(5)=   '  ___________________________________'
+    3   PDBM(1)= ' Units: Conductivity W/(m deg.C), Density kg/m**3'
+        PDBM(2)= ' Specific Heat J/(kg deg.C) Vapour (MNs g^-1m^-1)'
+        WRITE(PDBM(3),'(3a,i2,a,i2,a)') '1 Classification: ',
+     &    matcatname(IC)(1:lnblnk(matcatname(IC))),' (',IC,') with ',
+     &    matcatitems(IC),' entries.'
+        PDBM(4)=   '  ___________________________________'
+        PDBM(5)=
+     &' |Conduc-|Den- |Specif|IR  |Solar|Diffu|Description of material'
         PDBM(6)=
-     &  ' |Conduc-|Den- |Specif|IR  |Solr|Diffu|Description  '
-        PDBM(7)=
-     &  ' |tivity |sity |heat  |emis|abs |resis|of material  '
-        M=7
+     &' |tivity |sity |heat  |emis|abs  |resis| name   : documentation'
+        M=6
         DO 30 J=1,matdbitems
 
 C Loop through all of the items in the array and list out those that are
@@ -314,67 +321,57 @@ C Remember the array index that goes with the menu position (m).
             if(matopaq(J).eq.'o')then
               WRITE(PDBM(M),24)KEY,matdbcon(J),matdbden(J),
      &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
-     &          matname(J)(1:24)
+     &          matname(J)(1:31)
    24         FORMAT(A1,F8.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,A)
             elseif(matopaq(J).eq.'-')then
               WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
      &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
-     &          matname(J)(1:8),': ',matdoc(J)(1:17)
+     &          matname(J)(1:12),': ',matdoc(J)(1:21)
    25         FORMAT(A1,F8.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,3A)
             elseif(matopaq(J).eq.'t')then
               WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
      &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
-     &          matname(J)(1:8),': ',matdoc(J)(1:17)
+     &          matname(J)(1:12),': ',matdoc(J)(1:21)
             elseif(matopaq(J).eq.'g')then
               WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
      &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
-     &          matname(J)(1:8),': ',matdoc(J)(1:17)
+     &          matname(J)(1:12),': ',matdoc(J)(1:21)
             elseif(matopaq(J).eq.'h')then
               WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
      &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
-     &          matname(J)(1:8),': ',matdoc(J)(1:17)
+     &          matname(J)(1:12),': ',matdoc(J)(1:21)
             else
               WRITE(PDBM(M),24)KEY,matdbcon(J),matdbden(J),
      &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
-     &          matname(J)(1:24)
+     &          matname(J)(1:31)
             endif
           endif
    30   CONTINUE
         NC=M
         PDBM(NC+1)=  '  __________________________     '
         if(ACTION.eq.'M'.or.ACTION.eq.'m')then
-          PDBM(NC+2)='1 add/ delete material           '
-          PDBM(NC+3)='2 copy material                  '
-          PDBM(NC+4)='! save materials database        '
+          PDBM(NC+2)='* add/ delete/ copy material     '
+
+C Remind user whether they are working with a model file or
+C a common data file.
+          if(ipathmat.eq.0.or.ipathmat.eq.1)then
+            PDBM(NC+3)='! save materials file            '
+          else
+            PDBM(NC+3)='! save common materials file     '
+          endif
         elseif(ACTION.eq.'-')then
           PDBM(NC+2)='                                 '
           PDBM(NC+3)='                                 '
-          PDBM(NC+4)='                                 '
         endif
-        PDBM(NC+5)=  '? help                           '
-        PDBM(NC+6)=  '- exit this menu                 '
-        NITMS=NC+6
+        PDBM(NC+4)=  '? help                           '
+        PDBM(NC+5)=  '- exit this menu                 '
+        NITMS=NC+5
         INO=-4
 
 C Help text for this menu.
     2   continue
-        H(1)='The information in this display is based on data from'
-        H(2)='a materials database.  Databases of this'
-        H(3)='type are used to build a construction database.'
-        H(4)='Data in this db rarely changes. However, users may '
-        H(5)='wish to add additional materials or classifications to'
-        H(6)='conform to materials in their region.  '
-        H(7)='  '
-        H(8)='Adding or Deleting a material is supported. The'
-        H(9)='former creates a material at the end of the current'
-        H(10)='classification which may then be edited.  You have'
-        H(11)='the choice of manually supplying the data or to'
-        H(12)='select two materials and give each a weighting'
-        H(13)='(useful for approximating ISO 6946 non-homogeneous'
-        H(14)='layers in constructions).'
-        H(15)=' '
-        H(16)='You may copy an existing material into a new item at'
-        H(17)='the end of the list. BE SURE TO ALTER ITS NAME! '
+        helptopic='materials_db_overview'
+        call gethelptext(helpinsub,helptopic,nbhelp)
  
         CALL EMENU('Materials Database',PDBM,NITMS,INO)
 
@@ -386,10 +383,8 @@ C and write a new file based on current common blocks. If the original
 C file was binary then alter the name of the saved file to add a '.a'
 C at the end.
             dok=.true.
-            h(1)='Recent changes to the materials database are held'
-            h(2)='in memory and might be lost if not saved to file.'
-            CALL ASKOK('Changes have been made in database. ',
-     &        'Save the materials database changes?',OK,dok,2)
+            CALL ASKOK('Changes have been made in this file. ',
+     &        'Save the materials changes?',OK,dok,nbhelp)
             IF(.NOT.OK)GOTO 4
             chgdb=.true.   ! pass back signal to update
             CALL ERPFREE(IFMUL,ISTAT)  ! in case other unit is still open
@@ -440,11 +435,9 @@ C material database.
         ELSEIF(INO.eq.3)THEN
 
 C Edit classification name.
-          H(1)='A classification has a descriptive name (up to '
-          H(2)='32 char).'
           write(t32,'(a)')matcatname(IC)(1:lnblnk(matcatname(IC)))
           CALL EASKS(t32,' ',' Classification name (<32 char)?',
-     &      32,' ','class name',IER,2)
+     &      32,' ','class name',IER,nbhelp)
           if(t32(1:2).ne.'  ')then
             write(matcatname(IC),'(a)') t32(1:lnblnk(t32))
             chgdb=.true.
@@ -452,21 +445,20 @@ C Edit classification name.
           endif
 
 C Also edit classification documentation.
-          H(1)='Notes (<248 char) for this category of materials' 
-          H(2)='are useful for descriptions that apply to all'
-          H(3)='the materials.'
-          t248=matdoc(IC)(1:lnblnk(matdoc(IC)))
+          t248=matcatdoc(IC)(1:lnblnk(matcatdoc(IC)))
           CALL EASKS248(t248,'Category notes:',' ',
-     &      72,'this category...','category notes',IER,3)
+     &      72,'this category...','category notes',IER,nbhelp)
           if(t248(1:2).ne.'  ')then
-            write(matdoc(IC),'(a)') t248(1:lnblnk(t248))
+            write(matcatdoc(IC),'(a)') t248(1:lnblnk(t248))
             chgdb=.true.
             MODDB=.TRUE.
           endif
-        ELSEIF(INO.GE.4.AND.INO.LE.7)THEN
+        ELSEIF(INO.GE.4.AND.INO.LE.6)THEN
           GOTO 2
         ELSEIF(INO.EQ.NITMS-1)THEN
-          CALL PHELPD('materials database',17,'-',0,0,IER)
+          helptopic='materials_db_overview'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('materials database',nbhelp,'-',0,0,IER)
         ELSEIF(INO.EQ.NITMS-2)THEN
 
 C Save materials db with all materials. First delete the
@@ -512,104 +504,10 @@ C Reset flag to show db is current with local arrays.
           ENDIF
         ELSEIF(INO.EQ.NITMS-3)THEN
 
-C Copy an existing material to a new one at end of the array.
-C Use iwhicharray to go from the menu position to the array
-C end of the array.  
-          CALL USRMSG(' ',' Which item of list?','-')
-          CALL EMENU('Copy material',PDBM,NITMS,IW)
-          IWHICH=iwhicharray(IW)
-          ILNE=matdbitems+1
-
-C See if there is an available slot in the 0-600 list of legacy
-C indices. If so make up the initial name but allow the user to
-C edit it. If not then assign -99 and make up initial name based
-C on the original.
-          ip=matlegindex(IWHICH)
-          call getnextascislot(ip,inext)
-          if(inext.le.600)then 
-            write(matname(ILNE),'(a,i3.3)') 'mat_',inext
-            matlegindex(ILNE)=inext
-            mathash(inext)=ILNE
-          else
-            write(matname(ILNE),'(2a)') 
-     &        matname(IWHICH)(1:lnblnk(matname(IWHICH))),'c'
-            matlegindex(ILNE)=-99
-          endif
-
-C If there is room add a note about its origin.
-          ils=lnblnk(matdoc(IWHICH))
-          iln=lnblnk(matname(IWHICH))
-          if(ils.le.200)then
-            write(matdoc(ILNE),'(4a)') 
-     &        matdoc(IWHICH)(1:ils),' (copy of ',
-     &        matname(IWHICH)(1:iln),')'
-          else
-            matdoc(ILNE)=matdoc(IWHICH)
-          endif
-          matdbcon(ILNE)=matdbcon(IWHICH)
-          matdbden(ILNE)=matdbden(IWHICH)
-          matdbsht(ILNE)=matdbsht(IWHICH)
-          matdboute(ILNE)=matdboute(IWHICH)
-          matdbine(ILNE)=matdbine(IWHICH)
-          matdbouta(ILNE)=matdbouta(IWHICH)
-          matdbina(ILNE)=matdbina(IWHICH)
-          matdbdrv(ILNE)=matdbdrv(IWHICH)
-          matdbthick(ILNE)=matdbthick(IWHICH)
-          matcatindex(ILNE)=matcatindex(IWHICH)  ! keep in same category
-          matopaq(ILNE)=matopaq(IWHICH)
-          matirtran(ILNE)=matirtran(IWHICH)
-          matsoldrtrn(ILNE)=matsoldrtrn(IWHICH)
-          matsoldrotrfl(ILNE)=matsoldrotrfl(IWHICH)
-          matsoldrinrfl(ILNE)=matsoldrinrfl(IWHICH)
-          matvistran(ILNE)=matvistran(IWHICH)
-          matvisotrfl(ILNE)=matvisotrfl(IWHICH)
-          matvisinrfl(ILNE)=matvisinrfl(IWHICH)
-          matrender(ILNE)=matrender(IWHICH)
-
-          matgapcnd(ILNE,1)=matgapcnd(IWHICH,1)
-          matgapcnd(ILNE,2)=matgapcnd(IWHICH,2)
-          matgapcnd(ILNE,3)=matgapcnd(IWHICH,3)
-          matgapcnd(ILNE,4)=matgapcnd(IWHICH,4)
-          matvisco(ILNE,1)=matvisco(IWHICH,1)
-          matvisco(ILNE,2)=matvisco(IWHICH,2)
-          matvisco(ILNE,3)=matvisco(IWHICH,3)
-          matvisco(ILNE,4)=matvisco(IWHICH,4)
-          matgapden(ILNE,1)=matgapden(IWHICH,1)
-          matgapden(ILNE,2)=matgapden(IWHICH,2)
-          matgapden(ILNE,3)=matgapden(IWHICH,3)
-          matgapden(ILNE,4)=matgapden(IWHICH,4)
-          matprandtl(ILNE,1)=matprandtl(IWHICH,1)
-          matprandtl(ILNE,2)=matprandtl(IWHICH,2)
-          matgapsht(ILNE,1)=matgapsht(IWHICH,1)
-          matgapsht(ILNE,2)=matgapsht(IWHICH,2)
-          matdbitems=matdbitems+1
-          matcatitems(IC)=matcatitems(IC)+1
-          MODDB=.TRUE.
-          chgdb=.true.
-        ELSEIF(INO.EQ.NITMS-4)THEN
-
-C Add or delete and material from db.
-          h(1)='You cannot recover a deleted material. You can add a'
-          h(2)='homogeneous or non-homogeneous material (type in the'
-          h(3)='new thermophysical values or you can derive a new'
-          h(4)='non-homogeneous material (repeating thermal bridges)'
-          h(5)='based on percentages of two existing materials for '
-          h(6)='use with ISO 6946:2007 section 6.2.4 lower limit '
-          h(7)='calculations. '
-          h(8)=' '
-          h(9)='Note: currently the derivation only works with two'
-          h(10)='solid materials. If air is in the layer then its'
-          h(11)='air gap resistance needs to be converted into an'
-          h(12)='equivalent thermal conductivity. The 6946 spec'
-          h(13)='applies to pairs of materials which do not differ'
-          h(14)='greatly in conductivity and thus is not applicable'
-          h(15)='for metal & insulation combinations. '
-          h(16)=' '
-          h(17)='The conductivity, density, spedific heat and vapour'
-          h(18)='properties will be weighted from the two sources.'
-          CALL EASKABCD(' ','Options: ','Delete existing material',
+C Add delete or copy material from db.
+          CALL EASKATOG('Options: ',' ','Delete existing material',
      &      'Add material','Derive non-homogeneous material',
-     &      'continue',IW,18)
+     &      'copy existing material','cancel','  ','  ',IW,nbhelp)
           IF(IW.EQ.1)THEN
 
 C Ask the user which one to remove then loop through materials and
@@ -765,19 +663,16 @@ C Copy info from first existing material.
               GOTO 3
             endif
           
-            H(1)='Assuming there are two materials used in a layer of'
-            H(2)='a construction you will be asked for the percentage'
-            H(3)='(1-99%) for the first and second materials. '
             PER1=90.0
             CALL EASKR(PER1,' ','First material % in the layer: ',
-     &            0.1,'W',99.9,'W',1.,'1st material %',IER,3)
+     &            0.1,'W',99.9,'W',1.,'1st material %',IER,nbhelp)
             PER1=PER1*0.01
 
             call edisp(iuout,'First material: ')
             call edisp(iuout,
-     &      'Index|Con-   |Den- |Specif|IR  |Solr|Vapour|Description')
+     &      'Index|Conduc-|Den- |Specif|IR  |Solar|Vapour|Description')
             call edisp(iuout,
-     &      '     |duct.  |sity |heat  |emis|abs |resist|of material')
+     &      '     |tivity |sity |heat  |emis|abs  |resist|of material')
             IDB=matlegindex(IWHICH)
             WRITE(outs,46)IDB,matdbcon(IWHICH),matdbden(IWHICH),
      &        matdbsht(IWHICH),
@@ -794,12 +689,9 @@ C Copy info from first existing material.
               GOTO 3
             endif
           
-            H(1)='Assuming there are two materials used in a layer of'
-            H(2)='a construction you will be asked for the percentage'
-            H(3)='(1-99%) for the first and second materials. '
             PER2=10.0
             CALL EASKR(PER2,' ','Second material % in the layer: ',
-     &            0.1,'W',99.9,'W',1.,'2nd material %',IER,3)
+     &            0.1,'W',99.9,'W',1.,'2nd material %',IER,nbhelp)
             PER2=PER2*0.01
 
             call edisp(iuout,'Second material: ')
@@ -903,11 +795,88 @@ C The additional properties just use the 1st material (change this later).
               matcatindex(ILNE)=IC      ! keep in current category
             endif
           ELSEIF(IW.EQ.4)THEN
-            GOTO 3
+
+C Copy an existing material to a new one at end of the array.
+C Use iwhicharray to go from the menu position to the array
+C end of the array.  
+            CALL USRMSG(' ',' Which item of list?','-')
+            CALL EMENU('Copy material',PDBM,NITMS,IW)
+            IWHICH=iwhicharray(IW)
+            ILNE=matdbitems+1
+
+C See if there is an available slot in the 0-600 list of legacy
+C indices. If so make up the initial name but allow the user to
+C edit it. If not then assign -99 and make up initial name based
+C on the original.
+            ip=matlegindex(IWHICH)
+            call getnextascislot(ip,inext)
+            if(inext.le.600)then 
+              write(matname(ILNE),'(a,i3.3)') 'mat_',inext
+              matlegindex(ILNE)=inext
+              mathash(inext)=ILNE
+            else
+              write(matname(ILNE),'(2a)') 
+     &          matname(IWHICH)(1:lnblnk(matname(IWHICH))),'c'
+              matlegindex(ILNE)=-99
+            endif
+
+C If there is room add a note about its origin.
+            ils=lnblnk(matdoc(IWHICH))
+            iln=lnblnk(matname(IWHICH))
+            if(ils.le.200)then
+              write(matdoc(ILNE),'(4a)') 
+     &          matdoc(IWHICH)(1:ils),' (copy of ',
+     &          matname(IWHICH)(1:iln),')'
+            else
+              matdoc(ILNE)=matdoc(IWHICH)
+            endif
+            matdbcon(ILNE)=matdbcon(IWHICH)
+            matdbden(ILNE)=matdbden(IWHICH)
+            matdbsht(ILNE)=matdbsht(IWHICH)
+            matdboute(ILNE)=matdboute(IWHICH)
+            matdbine(ILNE)=matdbine(IWHICH)
+            matdbouta(ILNE)=matdbouta(IWHICH)
+            matdbina(ILNE)=matdbina(IWHICH)
+            matdbdrv(ILNE)=matdbdrv(IWHICH)
+            matdbthick(ILNE)=matdbthick(IWHICH)
+            matcatindex(ILNE)=matcatindex(IWHICH)  ! keep in same category
+            matopaq(ILNE)=matopaq(IWHICH)
+            matirtran(ILNE)=matirtran(IWHICH)
+            matsoldrtrn(ILNE)=matsoldrtrn(IWHICH)
+            matsoldrotrfl(ILNE)=matsoldrotrfl(IWHICH)
+            matsoldrinrfl(ILNE)=matsoldrinrfl(IWHICH)
+            matvistran(ILNE)=matvistran(IWHICH)
+            matvisotrfl(ILNE)=matvisotrfl(IWHICH)
+            matvisinrfl(ILNE)=matvisinrfl(IWHICH)
+            matrender(ILNE)=matrender(IWHICH)
+
+            matgapcnd(ILNE,1)=matgapcnd(IWHICH,1)
+            matgapcnd(ILNE,2)=matgapcnd(IWHICH,2)
+            matgapcnd(ILNE,3)=matgapcnd(IWHICH,3)
+            matgapcnd(ILNE,4)=matgapcnd(IWHICH,4)
+            matvisco(ILNE,1)=matvisco(IWHICH,1)
+            matvisco(ILNE,2)=matvisco(IWHICH,2)
+            matvisco(ILNE,3)=matvisco(IWHICH,3)
+            matvisco(ILNE,4)=matvisco(IWHICH,4)
+            matgapden(ILNE,1)=matgapden(IWHICH,1)
+            matgapden(ILNE,2)=matgapden(IWHICH,2)
+            matgapden(ILNE,3)=matgapden(IWHICH,3)
+            matgapden(ILNE,4)=matgapden(IWHICH,4)
+            matprandtl(ILNE,1)=matprandtl(IWHICH,1)
+            matprandtl(ILNE,2)=matprandtl(IWHICH,2)
+            matgapsht(ILNE,1)=matgapsht(IWHICH,1)
+            matgapsht(ILNE,2)=matgapsht(IWHICH,2)
+            matdbitems=matdbitems+1
+            matcatitems(IC)=matcatitems(IC)+1
+            MODDB=.TRUE.
+            chgdb=.true.
+
+          ELSEIF(IW.EQ.5)THEN
+            GOTO 3    ! user declined
           ENDIF
-        ELSEIF(INO.EQ.NITMS-5)THEN
+        ELSEIF(INO.EQ.NITMS-4)THEN
           GOTO 2
-        ELSEIF(INO.GT.7.AND.INO.LT.NITMS-5)THEN
+        ELSEIF(INO.GT.6.AND.INO.LT.NITMS-4)THEN
 
 C Identified one of the materials to edit or select.
           IFOC=iwhicharray(INO)
@@ -928,28 +897,27 @@ C and then resetn MODDB and chgdb if mod is true.
             endif
           elseif(ACTION.eq.'-')then
             call edisp(iuout,' ')
-            call edisp(iuout,
-     &        ' Units: Conduct W/(m deg.C), Density kg/m**3')
-            call edisp(iuout,
-     &        '        Specific Heat J/(kg deg.C) ')
+            write(outs,'(2a)')
+     &        ' Units: Conductivity W/(m deg.C), Density kg/m**3,',
+     &        ' Specific Heat J/(kg deg.C), Vapour (MNs g^-1m^-1)'
+            call edisp(iuout,outs)
             call edisp(iuout,' ')
             call edisp(iuout,
-     &    'Index|Con-    |Den-  |Specif|IR  |Solar|Vapour|Description')
+     &    'Index|Conduc- |Den-  |Specif|IR  |Solar|Vapour|Description')
             call edisp(iuout,
-     &    '     |duct.   |sity  |heat  |emis|abs  |resist|of material')
+     &    '     |tivity  |sity  |heat  |emis|abs  |resist|of material')
+            lsn=MIN0(lnblnk(matname(IFOC)),32)
             WRITE(outs,244)matlegindex(IFOC),matdbcon(IFOC),
      &        matdbden(IFOC),matdbsht(IFOC),matdboute(IFOC),
-     &        matdbouta(IFOC),matdbdrv(IFOC),matname(IFOC)(1:20)
+     &        matdbouta(IFOC),matdbdrv(IFOC),matname(IFOC)(1:lsn)
   244       FORMAT(I5,F9.3,F7.1,F7.0,F5.2,F6.2,F7.0,1X,A)
             CALL EDISP(iuout,outs)
-            CALL EDISP(iuout,' ')
+            CALL EDISP248(iuout,matdoc(IFOC),90)
             iwhich=matlegindex(ifoc)
-            lsn=MIN0(lnblnk(matname(IFOC)),32)
-            write(outs,'(a,i3,a,a)') ' Use material (',iwhich,') ',
-     &        matname(IFOC)(1:lsn)
+            write(outs,'(a,i3,4a)') 'Material (',iwhich,') ',
+     &        matname(IFOC)(1:lsn),' : ',matdoc(IFOC)(1:48)
             dok=.true.
-            h(1)='Last chance to abort the selection. '
-            CALL ASKOK(outs,'as your selection ?',OK,dok,1)
+            CALL ASKOK(outs,'Use it:',OK,dok,1)
             if(OK)then
               imatarrayindex=IFOC ! set to selected array index
               return
@@ -981,10 +949,8 @@ C Passed parameters.
       logical mod    ! set to true if modified
       integer ier    ! non-zero if there is an issue
 
-      common/pophelp/h(60)
-
       DIMENSION PELM(29)
-      CHARACTER H*72,PELM*40,tnam*32,tdoc*248,message*32
+      CHARACTER PELM*40,tnam*32,tdoc*248,message*32
       real DBCON,DBDEN,DBSHT,EOUT,EIN,AOUT,AIN,DBDRV,THICK
       real IRTRAN,SOLDRTRN,soldrotrfl,soldrinrfl,vistran
       real visotrfl,visinrfl,render
@@ -994,6 +960,13 @@ C Local variables for gas materials.
       real gapcnd,visco,gapden,prandtl,gapsht
       dimension gapcnd(4),visco(4),gapden(4),prandtl(2),gapsht(2)
       integer jsur   ! for radio button
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDONEMAT'  ! set for subroutine
 
 C If index is outwith range just return.
       if(index.gt.0.and.index.le.matdbitems)then
@@ -1132,15 +1105,9 @@ C or a gas (g), include additional items.
 
 C Help text for this menu.
    2  continue
-      h(1)='This display shows the attributes of this material.'
-      h(2)='The attributes vary depending on the source of the '
-      h(3)='material (legacy materials have fewer attributes). '
-      h(4)=' '
-      h(5)='Some attributes (e.g. single layer optics) will be '
-      h(6)='used in a future ESP-r version but are required for'
-      h(7)='expport to other assessment tools. '
-      h(8)=' '
-      h(9)='Edit by selecting an item. '
+      helptopic='material_db_edit_one'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
       CALL EMENU('Material details',PELM,NELM,IW)
       IF(IW.EQ.0.OR.IW.EQ.NELM)THEN
 
@@ -1148,10 +1115,8 @@ C If there has been a modification check with user prior to
 C updating the common blocks.
         if(modify)then
           dok=.true.
-          h(1)='Recent changed to materials are held in memory '
-          h(2)='and if you say no then edits will be discarded. '
           CALL ASKOK(' ','Accept changes in material (see help)?',
-     &      OK,dok,2)
+     &      OK,dok,nbhelp)
           if(OK)then
             write(matname(index),'(a)') tnam(1:lnblnk(tnam))
             write(matdoc(index),'(a)') tdoc(1:lnblnk(tdoc))
@@ -1196,133 +1161,90 @@ C updating the common blocks.
       ELSEIF(IW.EQ.NELM-2)THEN
         GOTO 3
       ELSEIF(IW.EQ.1)THEN
-        H(1)='A descriptive name (up to 32 char) is required.'
-        H(2)='This will appear in selection lists (but might be'
-        H(3)='be shown in a truncated form in some locations). '
         CALL EASKS(tnam,' ',' Description of material? ',
-     &    32,' ','material name',IER,3)
+     &    32,' ','material name',IER,nbhelp)
         if(tnam(1:2).ne.'  ')then
           modify=.true.
         endif
       ELSEIF(IW.EQ.2)THEN
-        H(1)='Documentation (up to 248 char) is a really good idea'
-        H(2)='and might include the source and test regime etc.'
         CALL EASKS248(tdoc,' ',' Documentation for material? ',
-     &    72,' ','material documentation',IER,2)
+     &    72,' ','material documentation',IER,nbhelp)
         if(tdoc(1:2).ne.'  ')then
           modify=.true.
         endif
       ELSEIF(IW.EQ.3)THEN
-        H(1)='Conductivity units are W/(m deg.C) '
         CALL EASKR(DBCON,' ',' Conductivity (W/(m deg.C): ',
-     &    0.001,'W',300.,'W',1.,'conductivity',IER,1)
+     &    0.001,'W',300.,'W',1.,'conductivity',IER,nbhelp)
         modify=.true.
       ELSEIF(IW.EQ.4)THEN
-        H(1)='Density units are  kg/m**3 '
         CALL EASKR(DBDEN,' ',' Density (kg/m**3): ',
-     &    1.0,'W',9000.,'W',100.,'density',IER,1)
+     &    1.0,'W',9000.,'W',100.,'density',IER,nbhelp)
         modify=.true.
       ELSEIF(IW.EQ.5)THEN
-        H(1)='Specific Heat units are J/(kg deg.C) '
         CALL EASKR(DBSHT,' ',' Specific heat (J/(kg deg.C): ',
-     &    1.0,'W',2000.,'W',100.,'specific heat',IER,1)
+     &    1.0,'W',2000.,'W',100.,'specific heat',IER,nbhelp)
         modify=.true.
       ELSEIF(IW.EQ.6)THEN
 
 C For legacy materials both faces should have the same value.
         if(matopaq(index).eq.'-')then
-          H(1)='Surface emissivity is based on infrared band. '
-          H(2)='It is specified as fraction 0.01 < x < 0.99 '
-          H(3)='This legacy material will have the same value '
-          H(4)='for the inside and outside face. '
           CALL EASKR(EOUT,' ',' Surface emissivity : ',
-     &      0.001,'W',0.999,'W',0.9,'out emissivity',IER,4)
+     &      0.001,'W',0.999,'W',0.9,'out emissivity',IER,nbhelp)
           EIN=EOUT
           modify=.true.
         else
-          H(1)='Surface emissivity is based on infrared band. '
-          H(2)='It is specified as fraction 0.01 < x < 0.99 '
-          H(3)='You may specify different values for each face '
-          H(4)='(but ESP-r does not yet use this). '
           CALL EASKR(EOUT,' ',' Outside face emissivity : ',
-     &      0.001,'W',0.999,'W',0.9,'out emissivity',IER,4)
+     &      0.001,'W',0.999,'W',0.9,'out emissivity',IER,nbhelp)
           modify=.true.
         endif
       ELSEIF(IW.EQ.7)THEN
 
 C For legacy materials both faces should have the same value.
         if(matopaq(index).eq.'-')then
-          H(1)='Surface emissivity is based on infrared band. '
-          H(2)='It is specified as fraction 0.01 < x < 0.99 '
-          H(3)='This legacy material will have the same value '
-          H(4)='for the inside and outside face. '
           CALL EASKR(EIN,' ',' Surface emissivity : ',
-     &      0.001,'W',0.999,'W',0.9,'out emissivity',IER,4)
+     &      0.001,'W',0.999,'W',0.9,'out emissivity',IER,nbhelp)
           EOUT=EIN
           modify=.true.
         else
-          H(1)='Surface emissivity is based on infrared band. '
-          H(2)='It is specified as fraction 0.01 < x < 0.99 '
-          H(3)='You may specify different values for each face '
-          H(4)='(but ESP-r does not yet use this). '
           CALL EASKR(EIN,' ',' Inside face emissivity : ',
-     &      0.001,'W',0.999,'W',0.9,'in emissivity',IER,4)
+     &      0.001,'W',0.999,'W',0.9,'in emissivity',IER,nbhelp)
           modify=.true.
         endif
       ELSEIF(IW.EQ.8)THEN
         if(matopaq(index).eq.'-')then
-          H(1)='Surface absorptance is based on solar band. '
-          H(2)='It is specified as fraction 0.01 < x < 0.99 '
-          H(3)='This legacy material will have the same value '
-          H(4)='for the inside and outside face. '
           CALL EASKR(AOUT,' ',' Surface absorptance: ',
-     &      0.001,'W',0.999,'W',0.9,'absorptance',IER,4)
+     &      0.001,'W',0.999,'W',0.9,'absorptance',IER,nbhelp)
           AIN=AOUT
           modify=.true.
         else
-          H(1)='Surface absorptance is based on solar band. '
-          H(2)='It is specified as fraction 0.01 < x < 0.99 '
-          H(3)='You may specify different values for each face '
-          H(4)='(but ESP-r does not yet use this). '
           CALL EASKR(AOUT,' ',' Outside face absorptance: ',
-     &      0.001,'W',0.999,'W',0.9,'out absorptance',IER,4)
+     &      0.001,'W',0.999,'W',0.9,'out absorptance',IER,nbhelp)
           modify=.true.
         endif
       ELSEIF(IW.EQ.9)THEN
         if(matopaq(index).eq.'-')then
-          H(1)='Surface absorptance is based on solar band. '
-          H(2)='It is specified as fraction 0.01 < x < 0.99 '
-          H(3)='This legacy material will have the same value '
-          H(4)='for the inside and outside face. '
           CALL EASKR(AIN,' ',' Surface absorptance : ',
-     &      0.001,'W',0.999,'W',0.9,'absorptance',IER,4)
+     &      0.001,'W',0.999,'W',0.9,'absorptance',IER,nbhelp)
           AOUT=AIN
           modify=.true.
         else
-          H(1)='Surface absorptance is based on solar band. '
-          H(2)='It is specified as fraction 0.01 < x < 0.99 '
-          H(3)='You may specify different values for each face '
-          H(4)='(but ESP-r does not yet use this). '
           CALL EASKR(AIN,' ',' Inside face absorptance: ',
-     &      0.001,'W',0.999,'W',0.9,'in absorptance',IER,4)
+     &      0.001,'W',0.999,'W',0.9,'in absorptance',IER,nbhelp)
           modify=.true.
         endif
       ELSEIF(IW.EQ.10)THEN
-        H(1)='Vapour resistvity for vapour transfer has units'
-        H(2)='of MNs g^-1m^-1. Used to support assessments of'
-        H(3)='condensation within constructions. '
         CALL EASKR(dbdrv,' ','Vapour resistvity (MNs g^-1m^-1): ',
-     &         1.0,'W',20000.,'W',1.,'vapour resistvity',IER,3)
+     &    1.0,'W',20000.,'W',1.,'vapour resistvity',IER,nbhelp)
         modify=.true.
       ELSEIF(IW.EQ.11)THEN
-        H(1)='Thickness (mm) is the typical/default thickness of this'
-        H(2)='material. '
         CALL EASKR(THICK,' ',' Default thickness (mm) : ',
-     &         1.0,'W',500.,'W',10.,'default thickness',IER,2)
+     &    1.0,'W',500.,'W',10.,'default thickness',IER,nbhelp)
         modify=.true.
       ELSEIF(IW.EQ.12)THEN
 
 C Offer to toggle between different types.
+        helptopic='material_db_edit_type'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if(matopaq(index).eq.'-')then
           message='(currently legacy opaque)'
         elseif(matopaq(index).eq.'o')then
@@ -1334,25 +1256,11 @@ C Offer to toggle between different types.
         elseif(matopaq(index).eq.'h')then
           message='(currently gas data @4 temp)'
         endif
-        h(1)='Legacy opaque was imported from an older materials'
-        h(2)='database and only contains essential data. '
-        h(3)=' '
-        h(4)='Opaque will have option of additional parameters. '
-        h(5)=' '
-        h(6)='Transparent includes single layer optics such as '
-        h(7)='used by WIS and Window5.1 etc. '
-        h(8)=' '
-        h(9)='There are two types of gas (work in progress): '
-        h(10)=' Data with T correction to match data model of'
-        h(11)=' the UK Energy Performance Directive'
-        h(12)=' '
-        h(13)=' Data (viscosity, conductivity, density, CP at'
-        h(14)=' 4 temperature points.'
         jsur=1
         CALL EASKATOG('Material options:',message,
      &    'legacy opaque','opaque','transparent',
-     &    'gas data+correction ','gas data @4 temps','leave un-changed',
-     &    ' ',jsur,14)
+     &    'gas data+correction ','gas data @4 temps',
+     &    'leave un-changed',' ',jsur,nbhelp)
         if(jsur.eq.1)then
           matopaq(index)='-'
           modify=.true.
@@ -1380,54 +1288,41 @@ C Offer to toggle between different types.
 
 C Single layer optical properties editing.
           if(IW.eq.13)then
-            H(1)='Longwave transmittance units (-) between 0.0 & 1.0'
             CALL EASKR(IRTRAN,' ','Longwave transmittance (-): ',
-     &        0.00,'W',1.00,'W',1.,'ir tran',IER,1)
+     &        0.00,'W',1.00,'W',1.,'ir tran',IER,nbhelp)
             modify=.true.
           elseif(IW.eq.14)then
-            H(1)='Solar transmittance units(-) between 0.0 & 1.0'
             CALL EASKR(SOLDRTRN,' ','Solar direct transmittance (-): ',
-     &        0.00,'W',1.00,'W',1.,'solar direct tran',IER,1)
+     &        0.00,'W',1.00,'W',1.,'solar direct tran',IER,nbhelp)
             modify=.true.
           elseif(IW.eq.15)then
-            H(1)='Solar reflectance units are (-) between 0.0 and 1.0'
-            H(2)='The outside face is farthest from zone air.'
             CALL EASKR(soldrotrfl,' ',
      &        'Solar reflectance outside face (-): ',
-     &        0.00,'W',1.00,'W',1.,'solar reflec outside',IER,2)
+     &        0.00,'W',1.00,'W',1.,'solar reflec outside',IER,nbhelp)
             modify=.true.
           elseif(IW.eq.16)then
-            H(1)='Solar reflectance units are (-) between 0.0 and 1.0'
-            H(2)='The inside face is nearest the zone air.'
             CALL EASKR(soldrinrfl,' ',
      &        'Solar reflectance inside face (-): ',
-     &        0.00,'W',1.00,'W',1.,'solar reflec inside',IER,2)
+     &        0.00,'W',1.00,'W',1.,'solar reflec inside',IER,nbhelp)
             modify=.true.
           elseif(IW.eq.17)then
-            H(1)='Visible transmittance units are (-) between 0.0 & 1.0'
             CALL EASKR(vistran,' ','Visible trans (-): ',
-     &        0.00,'W',1.00,'W',1.,'visible tran',IER,1)
+     &        0.00,'W',1.00,'W',1.,'visible tran',IER,nbhelp)
             modify=.true.
           elseif(IW.eq.18)then
-            H(1)='Visible reflectance units are (-) between 0.0 and 1.0'
-            H(2)='The outside face is farthest from zone air.'
             CALL EASKR(visotrfl,' ',
      &        'Visible reflectance outside face (-): ',
-     &        0.00,'W',1.00,'W',1.,'visible reflec outside',IER,2)
+     &        0.00,'W',1.00,'W',1.,'visible reflec outside',IER,nbhelp)
             modify=.true.
           elseif(IW.eq.19)then
-            H(1)='Visable reflectance units are (-) between 0.0 and 1.0'
-            H(2)='The inside face is nearest the zone air.'
             CALL EASKR(visinrfl,' ',
      &        'Visible reflectance inside face (-): ',
-     &        0.00,'W',1.00,'W',1.,'visible reflec inside',IER,2)
+     &        0.00,'W',1.00,'W',1.,'visible reflec inside',IER,nbhelp)
             modify=.true.
           elseif(IW.eq.20)then !render
-            H(1)='Colour rendering units are (?) between 0.0 & 100.0'
-            H(2)='<<more text to be added...>>'
             CALL EASKR(visinrfl,' ',
      &        'Colour rendering index (-): ',
-     &        0.00,'W',100.00,'W',1.,'colour rendering',IER,2)
+     &        0.00,'W',100.00,'W',1.,'colour rendering',IER,nbhelp)
             modify=.true.
           endif
           goto 3
@@ -1443,7 +1338,9 @@ C << Gas properties for data at 4 T to be added >>
           goto 3
         endif
       ELSEIF(IW.EQ.NELM-1)THEN
-        CALL PHELPD('material attributes',9,'-',0,0,IER)
+        helptopic='material_db_edit_one'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('material attributes',nbhelp,'-',0,0,IER)
       ELSE
         IW=-1
         GOTO 2
@@ -1462,6 +1359,8 @@ C id string.
 
       SUBROUTINE EDMLDB(ITRC,chgdb,IER,ISEL)
 #include "building.h"
+#include "model.h"
+#include "geometry.h"
 #include "epara.h"
 #include "esprdbfile.h"
 #include "material.h"
@@ -1472,8 +1371,12 @@ C MPN is max number of tranparent glazings per multilayer construction
 C If this parameter is changed also change it in subroutine GVALUE
       PARAMETER (MPN=3)
       COMMON/OUTIN/IUOUT,IUIN
-
-      common/pophelp/h(60)
+      COMMON/FILEP/IFIL
+      
+      integer ncomp,ncon
+      common/C1/NCOMP,NCON
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
       
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
@@ -1487,17 +1390,25 @@ C If this parameter is changed also change it in subroutine GVALUE
       logical moddb,chgdb,layermatch,closemat1,closemat2
       logical unixok
 
-      CHARACTER H*72,KEY*1,T12*12,T12OTH*12,T14*14,MLCSYM*12
+      CHARACTER KEY*1,T12*12,T12OTH*12,T14*14,MLCSYM*12
       CHARACTER MLCN*12,OTF*4,OPT*12,PROMP2*56,PROMP1*56,T72*72
       CHARACTER*29 MLCITM(36)
       CHARACTER xfile*144,tg*1,delim*1,outs*124
-      character NAM*72,NAM99*72,LAYD*124
+      character NAM*72,NAM99*72,LAYD*124  ! note NAM not actually used
       character lworking*144,fs*1
       CHARACTER STGLP(7)*56
       DIMENSION IVALS(7)
       REAL TRNT(MPN),REF(MPN),OREF(MPN),OEMS(MPN)
       integer IW   ! for radio button
       integer NITMS,INO ! max items and current menu item
+      integer icn1,ii  ! for current connection
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDMLDB'  ! set for subroutine
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1560,7 +1471,7 @@ C current menu line index. Build up text strings for the menu.
         IF(IM.GE.IST.AND.(IM.LE.(IST+MIFULL)))THEN
           M=M+1
           CALL EMKEY(M,KEY,IER)
-          call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM)
+          call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM,isymindex)
           WRITE(MLCITM(M),22)KEY,MLCN(1:12),' ',OPT
   22      FORMAT(A1,1X,A12,a,a)
         ENDIF
@@ -1578,33 +1489,20 @@ C If a long list include page facility text.
       ENDIF
       MLCITM(M+2)='# view g-value'
       MLCITM(M+3)='1 add/delete/copy/invert    '
-      MLCITM(M+4)='! list database contents    '
-      MLCITM(M+5)='> save database             '
+      MLCITM(M+4)='! list contents    '
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        MLCITM(M+5)='> save data                 '
+      else
+        MLCITM(M+5)='> save common data          '
+      endif
       MLCITM(M+6)='? help                      '
       MLCITM(M+7)='- exit this menu            '
       INO=-4
 
 C Help text for this menu.
     2 continue
-      H(1)='The information in this display is based on data from'
-      H(2)='both a materials database and a construction database.'
-      H(3)='It is used to build zone construction files'
-      H(4)='according to the construction name associated with'
-      H(5)='each surface.'
-      H(6)='  '
-      H(7) ='Note that the reporting level influences the detail '
-      H(8) ='in this display and you may wish to reset the'
-      H(9) ='reporting level to see additional information.'
-      H(10)='  '
-      H(11)='Adding or Deleting constructions is supported. The'
-      H(12)='former creates a single layer construction at the end'
-      H(13)='of the list which may then be edited. '
-      H(14)=' '
-      H(15)='You may copy an existing construction into a new item at'
-      H(16)='the end of the list. Be sure its name is unique! '
-      H(17)=' '
-      H(18)='To cope with non-symmetrical partitions you may wish'
-      H(19)='to use the copy & invert function.'
+      helptopic='constr_db_overview'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('Constuctions database',MLCITM,NITMS,INO)
 
@@ -1613,10 +1511,8 @@ C Help text for this menu.
 C Check for changes/ask user to save. << TODO >>
         if(moddb)then
           dok=.true.
-          h(1)='Recent changed to constructions are held in memory '
-          h(2)='and might be lost if not save to file. '
           CALL ASKOK(' ','Save recent changes to constructions db?',
-     &      OK,dok,2)
+     &      OK,dok,nbhelp)
           if(OK)then
             CALL EMKAMLD(iuout,IER)
             chgdb=.true.
@@ -1627,28 +1523,19 @@ C Check for changes/ask user to save. << TODO >>
       ELSEIF(INO.EQ.NITMS-1)THEN
 
 C List help text for the menu.
-        CALL PHELPD('construction db',19,'-',0,0,IER)
+        helptopic='constr_db_overview'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('construction db',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.NITMS-2)THEN
         CALL EMKAMLD(iuout,IER)
         moddb = .false.
         chgdb=.true.
-        H(1)='In order to reflect changes you have made in this db'
-        H(2)='in the current model you will have to rebuild the '
-        H(3)='zone construction and tmc files.   '
-        H(4)=' '
-        H(5)='This option will be presented to you when you exit'
-        H(6)='the database management session. '
-        CALL PHELPD('construction db save',6,'-',0,0,IER)
       ELSEIF(INO.EQ.NITMS-3)THEN
 
 C List database.
-        h(1)='The list of MLC database entries can be sent to a'
-        h(2)='text file or displayed.  Optical properties are'
-        h(3)='included in detailed files or if the reporting level'
-        h(4)='has been set to verbose. '
         CALL EASKABCD(' Reporting to:',' ',
      &    'summary text feedback','detailed text feedback',
-     &    'summary file','detailed file',irpt,4)
+     &    'summary file','detailed file',irpt,nbhelp)
         if(irpt.eq.1.or.irpt.eq.2)then
           itu = iuout
         elseif(irpt.eq.3.or.irpt.eq.4)then
@@ -1698,20 +1585,10 @@ C Call ctlexp a 2nd time to close the file.
       ELSEIF(INO.EQ.NITMS-4)THEN
 
 C Manage the list of constructions.
-        h(1)='Copies of exsiting constructions should have unique '
-        h(2)='names. Before deleting a construction check that no '
-        h(3)='surfaces use this attribute. '
-        h(4)=' '
-        h(5)='The copy and invert function is useful where nonsymmetric'
-        h(6)='constructions are used in partitions. For example, in'
-        h(7)='the case of a raised floor system from the point of view'
-        h(8)='of the room the carpet is on the inside face and from the'
-        h(9)='point of view of the floor void the carpet should be on '
-        h(10)='the outside face. '
         IW=1
         call easkatog('Constructions options:',' ',
      &    'add (at end of list)','delete','copy','copy & invert',
-     &    'continue',' ',' ',IW,10)
+     &    'continue',' ',' ',IW,nbhelp)
         if(IW.EQ.1)then
 
 C Add a construction. Update this to account for OPAQ/TRAN/CFC.
@@ -1726,12 +1603,9 @@ C Add a construction. Update this to account for OPAQ/TRAN/CFC.
           NMLC=NMLC+1
 
 C Ask for name of the new construction
-          h(1)='Although you only have 12 characters to work with'
-          h(2)='try and create a useful name for the construction'
-          h(3)='that is not a duplicate of an existing name. '
           T14='  '
           CALL EASKS(T14,' ',' Name of construction? ',
-     &      14,' ','Construction name',IER,3)
+     &      14,' ','Construction name',IER,mbhelp)
           write(T12,'(a)') T14(1:12)
           call st2name(T12,DESC(NMLC))
 
@@ -1740,13 +1614,15 @@ C Ask for name of the new construction
           IPRMAT(NMLC,1)=1
           DTHK(NMLC,1)=0.10
 
-C Bring up editing menu for new item.
+C Bring up editing menu for new item. Ignore jump requests.
           CALL EPMENSV
-          CALL EDWALL(ITRC,NMLC,moddb,IER)
+          CALL EDWALL(ITRC,NMLC,moddb,jump,IER)
           CALL EPMENRC
           ILEN=NMLC
           IPACT=CREATE
           CALL EKPAGE(IPACT)
+          if(jump.ne.0) call edisp(iuout,
+     &      'Sorry, no jump after new construction.')
         elseif(IW.EQ.2)then
 
 C Compact the list by moving all the items in common MLC up one.
@@ -1754,7 +1630,6 @@ C Compact the list by moving all the items in common MLC up one.
           call epkmlc(iwhich,'Delete which construction?',' ',ierr)
           CALL EPMENRC
           dok=.false.
-          h(1)='Last chance to abort removal of construction. '
           CALL ASKOK(' ',' Are you sure? ',OK,dok,1)
           IF(.NOT.OK)GOTO 2
           moddb = .true.
@@ -1776,6 +1651,31 @@ C Compact the list by moving all the items in common MLC up one.
           ILEN=NMLC
           IPACT=CREATE
           CALL EKPAGE(IPACT)
+
+C At this point update the construction file and then if there are
+C zones in the model update the pointers to ssmlcindex.
+          CALL EMKAMLD(iuout,IER)
+          chgdb=.true.
+          moddb=.false.
+
+C Scan for matching MLC for surfaces.
+          if(NCOMP.gt.0)then
+            do 30 ICOMP=1,NCOMP
+              call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,iuout,ier)
+
+C Find the index of the MLC which matches each surface.
+              DO 9994 I=1,NZSUR(icomp)
+                icn1=izstocn(icomp,i)
+                ssmlcindex(icn1)=0  ! assume no matching MLC          
+                do 5 ii=1,nmlc
+                  if(SSMLCN(icn1)(1:12).eq.DESC(ii)(1:12)) then
+                    ssmlcindex(icn1)=ii   ! remember MLC index     
+                  endif
+  5             continue
+ 9994         continue
+ 30         continue
+          endif
+
         ELSEIF(IW.EQ.3)THEN
 
 C Copy an existing construction to a new one at end of list.
@@ -1805,7 +1705,7 @@ C Copy an existing construction to a new one at end of list.
 
 C Clear the symmetric link so SYMMETRIC or NONSYMMETRIC can be re-established.
 C When editing the construction name use a slightly wider string buffer.
-          call parsemlcdesc(DESC(NMLC),MLCN,OTF,OPT,MLCSYM)
+          call parsemlcdesc(DESC(NMLC),MLCN,OTF,OPT,MLCSYM,isymindex)
           call ismlcsymmetric(nmlc,layermatch)
           if(layermatch)then
             MLCSYM='SYMMETRIC   '
@@ -1813,22 +1713,21 @@ C When editing the construction name use a slightly wider string buffer.
             MLCSYM='NONSYMMETRIC'
           endif
           write(T14,'(2a)') MLCN(1:12),'  '
-          h(1)='Each construction in the database should have a unique'
-          h(2)='name. Please edit the name (12 character or less) with'
-          h(3)='no spaces or unprintable characters. '
           CALL EASKS(T14,' ',' Name of new construction (<12 char)?',
-     &      14,' ','New construction name',IER,3)
+     &      14,' ','New construction name',IER,nbhelp)
           write(T12,'(a)') T14(1:12)
           call st2name(T12,MLCN)
           WRITE(DESC(NMLC),89)MLCN,OTF,OPT,MLCSYM
 
 C Bring up editing menu for new item.
           CALL EPMENSV
-          CALL EDWALL(ITRC,NMLC,moddb,IER)
+          CALL EDWALL(ITRC,NMLC,moddb,jump,IER)
           CALL EPMENRC
           ILEN=NMLC
           IPACT=CREATE
           CALL EKPAGE(IPACT)
+          if(jump.ne.0) call edisp(iuout,
+     &      'Sorry, no jump after copy construction.')
         ELSEIF(IW.EQ.4)THEN
 
 C Invert an existing construction. Ask user to select original and if
@@ -1849,7 +1748,7 @@ C there is room in the database copy data to a new item.
           DESC(NMLC)=DESC(IWHICH)
 
 C Extract construction name and check that mlc name has no illegal characters.
-          call parsemlcdesc(DESC(NMLC),T12,OTF,OPT,MLCSYM)
+          call parsemlcdesc(DESC(NMLC),T12,OTF,OPT,MLCSYM,isymindex)
           WRITE(T12OTH,'(A)')DESC(IWHICH)(1:12)
 
 C If there is space attach an "_i" to the end of the name to save the
@@ -1862,12 +1761,8 @@ C remove any wild card charaters.
           endif
           write(outs,'(3a)') '(original name ',
      &      T12OTH(1:lnblnk(T12OTH)),')'
-          h(1)='Typically the original and interted constructions have'
-          h(2)='similar names with one indicating its inverted state.'
-          h(3)='The name should be less than or equal to 12 characters'
-          h(4)='and not use spaces or unprintable characters. '
           CALL EASKS(T14,'Name of inverted construction (<12 char)?',
-     &      outs,14,' ','Inverted construction name',IER,4)
+     &      outs,14,' ','Inverted construction name',IER,nbhelp)
           write(T12,'(a)') T14(1:12)
           call st2name(T12,MLCN)
           if(T12.ne.MLCN)then
@@ -1881,7 +1776,7 @@ C Update DESC including the name of the original MLC.
    89     FORMAT(A12,2X,A4,2X,A12,2X,A12)
 
 C Update the original to point to the inverted item.
-          call parsemlcdesc(DESC(IWHICH),T12,OTF,OPT,MLCSYM)
+          call parsemlcdesc(DESC(IWHICH),T12,OTF,OPT,MLCSYM,isymindex)
           WRITE(DESC(IWHICH),89)T12,OTF,OPT,MLCN
 
 C Copy other data associated with the MLC.
@@ -1930,11 +1825,13 @@ C Finally copy temporary data into opposite layer.
 
 C Bring up detailed editing menu.
           CALL EPMENSV
-          CALL EDWALL(ITRC,NMLC,moddb,IER)
+          CALL EDWALL(ITRC,NMLC,moddb,jump,IER)
           CALL EPMENRC
           ILEN=NMLC
           IPACT=CREATE
           CALL EKPAGE(IPACT)
+          if(jump.ne.0) call edisp(iuout,
+     &      'Sorry, no jump after copy invert construction.')
         ENDIF
       ELSEIF(INO.EQ.NITMS-6)THEN
 
@@ -1947,24 +1844,16 @@ C If there are enough items allow paging control via EKPAGE.
 
 C Calculate g-value of transparent constructions
 C First check if mlc is transparent
-        H(1)= 'Although g-values for transparent glazings are not used'
-        H(2)= 'in ESP-r is is possible to report these in accordance '
-        H(3)= 'with Test G5 TM33:2006 CIBSE. '
-        H(4)= 'You will be required to provide for each pane its  '
-        H(5)= 'transmittance and reflectance (both in the direction of'
-        H(6)= 'incident radiation and against it)'
-        H(7)= 'Single/double and triple glazings are supported '
-        H(8)= 'G-value calculations are currently restricted to '
-        H(9)= 'air or gas filled triple glazings which are symmetric'
-        H(10)='in construction'
-        CALL PHELPD('G-value for tran construction',10,'-',0,0,IER)
+        helptopic='construction_db_g-value'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('G-value for tran construction',nbhelp,'-',0,0,IER)
         CALL EPMENSV
         call epkmlc(iwh,'g-value for which construction?',' ',ierr)
         CALL EPMENRC
         moddb = .true.
         chgdb=.true.
         THCON=CLAMDA(IWH)
-        call parsemlcdesc(DESC(IWH),MLCN,OTF,OPT,MLCSYM)
+        call parsemlcdesc(DESC(IWH),MLCN,OTF,OPT,MLCSYM,isymindex)
         IF(OPT(1:4).EQ.'OPAQ'.OR.OPT(1:4).EQ.'UNKN'.OR.
      &     OPT(1:4).EQ.'CFC ')THEN
           CALL EDISP(IUOUT,' ')
@@ -2008,21 +1897,6 @@ C Use the text within the MLC database to find the data.
             IPN=IPN+1
 
 C For each nonair layer ask for reflectance, tranmittance and emissivity
-            H(1) ='In order to calculate G-value ESP-r needs values for'
-            H(2) ='trnt   = transmittance of the pane,'
-            H(3) ='ref    = reflectance of this pane in direction of'
-            H(4) ='         incident radiation'
-            H(5) ='o-ref  = reflectance of this pane in direction '
-            H(6) ='         opposite incident radiation'
-            H(7) ='ems    = emissivity of this pane in direction of'
-            H(8) ='         incident radiation'
-            H(9) ='o-ems  = emissivity of this pane in direction '
-            H(10)='         opposite incident radiation'
-            H(11)=' '
-            H(12)='Choose CIBSE TM33:2006 prescribed values or   '
-            H(13)='define your own'
-            H(14)='Note that low emissivity glass has been inverted'
-            H(15)='because it is always the 2nd pane for TM33'
             INPICK=1
             PROMP1='Choose TM33:2006 values or manually define '
             WRITE(PROMP2,'(A,I2)')'properties for glazing layer no.',IPN
@@ -2035,7 +1909,7 @@ C For each nonair layer ask for reflectance, tranmittance and emissivity
 *            STGLP(5)='0.390 0.450 0.310 0.250 0.837 hi perf reflecting'
             STGLP(6)='manual / user defined'
             CALL EPICKS(INPICK,IVALS,PROMP1,PROMP2,
-     &                56,6,STGLP,' ',IER,15)
+     &                56,6,STGLP,' ',IER,nbhelp)
             IF(IER.NE.0)RETURN
             IPKD=IVALS(1)
             IF(IPKD.GE.2.AND.IPKD.LE.5)THEN
@@ -2046,7 +1920,7 @@ C Copy the numbers section of STGLP array item.
               T72='  '
               CALL EASKS(T72,
      &        'enter trnt, reft, op-reft, ems and op-ems (see help)',
-     &        ' ',72,' ','Optical data for g-value',IER,15)
+     &        ' ',72,' ','Optical data for g-value',IER,nbhelp)
             ELSE
               CALL EDISP(IUOUT,'No choice made ... returning')
               RETURN
@@ -2082,15 +1956,26 @@ C Call subroutine to calculate g-value and report
       ELSEIF(INO.GT.MHEAD.AND.INO.LT.(NITMS-MCTL+1))THEN
 
 C Edit block identified by KEYIND, remind user of details and then
-C bring up an editing facility.
+C bring up an editing facility. User may have indicated that they
+C would like to jump to a previous or subsequent construction.
+C << recode later to avoid goto statement >>
         CALL KEYIND(NITMS,INO,IFOC,IO)
-        CALL EDISP(iuout,' ')
+ 99     CALL EDISP(iuout,' ')
         call etmldb(2,iuout,IFOC,imerr)
         CALL EPMENSV
-        CALL EDWALL(ITRC,IFOC,moddb,IER)
+        CALL EDWALL(ITRC,IFOC,moddb,jump,IER)
         CALL EPMENRC
         ISEL=IFOC
         chgdb=moddb
+        if(jump.eq.0)then
+          continue
+        elseif(jump.eq.-1)then
+          ifoc=ifoc-1
+          goto 99
+        elseif(jump.eq.1)then
+          ifoc=ifoc+1
+          goto 99
+        endif
       else
         INO=-1
         GOTO 2
@@ -2120,7 +2005,7 @@ C Some of the items in the GAPS material category have a -99
 C index (no equivalent in legacy databases) and the current code
 C assumes that -99 entities may be gasses.
 
-      SUBROUTINE EDWALL(ITRC,IFOC,moddb,IER)
+      SUBROUTINE EDWALL(ITRC,IFOC,moddb,jump,IER)
 #include "building.h"
 #include "model.h"
 
@@ -2135,15 +2020,15 @@ C Paramters
       integer ITRC  ! if > 1 then be verbose
       integer IFOC  ! index in the construction (array)
       logical moddb ! set to true of construction altered
+      integer jump  ! zero no jump, 1 jump to next, -1 jump to previous
       integer IER   ! zero is ok, one is a problem
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
-
-      common/pophelp/h(60)
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -2160,15 +2045,26 @@ C Material properties.
       logical closemat1,closemat2
 
 C Note: size of MLED supports a dozen layers in a construction.
-      DIMENSION MLED(26),PNAM(ME),MMLAY(ME+2),imlay(ME+2)
+      DIMENSION MLED(29),PNAM(ME),MMLAY(ME+2),imlay(ME+2)
       character*72 LTMP
-      CHARACTER NAM*72,H*72,KEY*1,GDESCR*36
+      CHARACTER NAM*72,KEY*1,GDESCR*36
       CHARACTER MLCN*12,OTF*4,OPT*12,SOPT*12,LAYD*124
       character T12OTH*12,T12*12,T14*14
       CHARACTER outs*124,MLED*38,MMLAY*38,MLCSYM*12
       character PNAM*72
-      character ZN*12,SN*12
+      character ZN*12,SN*12,t32*32
       integer NLED,ILED  ! max items and current menu item
+      integer icontinue  ! to control while loop
+      real startm, finishm, currentm
+      real currentu, deltau, curdeltau ! values for adjust
+      real valx, valy, valz  ! for reading range and desired U value
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EDWALL'  ! set for subroutine
 
 C Check to see that optical properties are available.
       IF(.NOT.OPTKOK)THEN
@@ -2205,7 +2101,7 @@ C is true then we can continue (the common blocks are filled).
 
 C Extract construction name, opaque/transp, optical and symmetry properties.
 C Check that mlc name has no illegal characters.
-      call parsemlcdesc(DESC(IFOC),T12,OTF,OPT,MLCSYM)
+      call parsemlcdesc(DESC(IFOC),T12,OTF,OPT,MLCSYM,isymindex)
       call st2name(T12,MLCN)
       if(T12.ne.MLCN)then
         write(outs,'(a,a12,a,a12,a)')' WARNING: Corrected mlc ',
@@ -2328,14 +2224,31 @@ C 0.10 inside upward flow and 0.17 inside downward flow.
       UVALUEU=1.0/RTU
       RTD=RT+0.04+0.17
       UVALUED=1.0/RTD
-      RTI=RT+0.13+0.13
-      UVALUEI=1.0/RTI
       write(MLED(M),'(A,3F6.3)') ' ISO 6946 U h/u/d',
      &    UVALUEH,UVALUEU,UVALUED
+      currentu=UVALUEH  ! remember the initial U value
       M=M+1
       MLED(M)='  ____________________________   '
       M=M+1
       MLED(M)='! add or delete a layer          '
+      M=M+1
+      MLED(M)='* adjust layer to reach U-value  '
+      M=M+1
+
+C If possible to jump previous.
+      if(ifoc.eq.1)then
+        MLED(M)='<                              '
+      else
+        MLED(M)='< previous construction        '
+      endif
+      M=M+1
+
+C If possible to jump next.
+      if(ifoc.eq.NMLC)then
+        MLED(M)='>                              '
+      else
+        MLED(M)='> next construction            '
+      endif
       M=M+1
       MLED(M)='? help                           '
       M=M+1
@@ -2344,7 +2257,7 @@ C 0.10 inside upward flow and 0.17 inside downward flow.
       ILED=-4
 
 C Also compose a list of layers for additions/deletions.
-      MMLAY(1)=' Layer|Prim|Thick| Description   '
+      MMLAY(1)=' Layer|Matl|Thick| Description   '
       MMLAY(2)='      |db  |(mm) | of material   '
       DO 11, IL=1,LAYERS(IFOC)
         WRITE(MMLAY(IL+2),299)IL,IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
@@ -2354,45 +2267,11 @@ C Also compose a list of layers for additions/deletions.
 
 C Help text for this menu.
     3 continue
-      H(1)='A construction is composed of between one and eight'
-      H(2)='layers (three of which may be air gaps). Each layer'
-      H(3)='has a thickness and is composed of one material. '
-      H(4)='The thermophysical properties of each layer are based'
-      H(5)='on data in the current materials database.'
-      H(6)='  '
-      H(7)='Instances of the data for this construction will be'
-      H(8)='inserted in the zone construction file. To ensure'
-      H(9)='model quality, avoid further editing of the zone con-'
-      H(10)='struction files (create more constructions if you need'
-      H(11)='variant thermophysical properties).'
-      H(12)=' '
-      H(13)='Current options allow one layer at a time to be added'
-      H(14)='to the end of the list or inserted into the list. You'
-      H(15)='may also delete one layer at a time.  If you alter a'
-      H(16)='construction you will be asked (later) if you want to'
-      H(17)='update the zone construction files.'
-      H(18)='  '
-      H(19)='Note: layer 1 is considered the `outside`.'
-      H(20)='  '
-      H(21)='The terms SYMMETRIC and NONSYMMETRIC have the following'
-      H(22)='meaning: SYMMETRIC constructions can be referenced from'
-      H(23)='either zone associated with a partition; a NONSYMMETRIC'
-      H(24)='construction must have an `inverted` version in the'
-      H(25)='database in the case of surfaces which are partitions.'
-      H(26)=' '
-      H(27)='In ESP-r air gaps in constructions are represented as'
-      H(28)='a fixed resistance to heat flow (depending on the orien-'
-      H(29)='tation of the surface using the construction). The R'
-      H(30)='value supplied should account for the resistance across'
-      H(31)='the cavity (including the impact of low emissivity'
-      H(32)='at the adjacent solid layers).'
-      H(33)=' '
-      H(34)='Air gaps are assumed not to have air movement. If the'
-      H(35)='cavity is ventilated you might have to represent it as'
-      H(36)='a thermal zone and include it in an air flow network.'
+      helptopic='edit_wall_details'
+      call gethelptext(helpinsub,helptopic,nbhelp)
  
       CALL EMENU('Construction editing',MLED,NLED,ILED)
-      IF(ILED.EQ.NLED)THEN
+      IF(ILED.EQ.NLED.or.ILED.EQ.NLED-2.or.ILED.EQ.NLED-3)THEN
 
 C Check to see that mlc of a single air layer is not specified.
         if(LAYERS(IFOC).eq.1.and.IPR(IFOC,1).EQ.0)then
@@ -2431,11 +2310,8 @@ C Linked to another construction, check if it should be updated to match.
             write(outs,'(4a)') 'Construction ',MLCN(1:lnblnk(MLCN)),
      &        ' is linked to ',MLCSYM
             dok=.true.
-            h(1)='The current construction is linked to a reversed '
-            h(2)='version of itself. You will want to keep these in'
-            h(3)='sync with each other. '
             CALL ASKOK(outs,'Update the linked construction as well?',
-     &        OK,dok,3)
+     &        OK,dok,nbhelp)
             if(OK)then
 
 C Find matching MLC and copy data associated with the current MLC to
@@ -2496,34 +2372,307 @@ C Update DESC before returning.
           call edisp(iuout,
      &      'Please ensure that you save the database...')
         endif
+
+C Take into account whether the user as requested a jump.
+        if(ILED.EQ.NLED-2)then
+          jump=1
+        elseif(ILED.EQ.NLED-3)then
+          jump=-1
+        else
+          jump=0
+        endif
         RETURN
       ELSEIF(ILED.EQ.NLED-1)THEN
 
 C List the help.
-       CALL PHELPD('construction editing',36,'-',0,0,IER)
-      ELSEIF(ILED.EQ.NLED-2)THEN
+        helptopic='edit_wall_details'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('construction editing',nbhelp,'-',0,0,IER)
+      ELSEIF(ILED.EQ.NLED-4)THEN
+
+C Adjust layer.
+        CALL EASKABCD('Adjust options: ',' ','Alter (solid) thickness',
+     &    'Alter air gap R','Find alt material','Continue',IW,nbhelp)
+        IF(IW.EQ.1.or.IW.eq.2)THEN
+
+C Report the current U value.
+          write(outs,'(A,3F6.3)') ' ISO 6946 U h/u/d',
+     &      UVALUEH,UVALUEU,UVALUED
+          call edisp(iuout,outs)
+
+C Ask for which layer to adjust, make sure it is not a gap.
+          call edisp(iuout,' Select layer to adjust.')
+          IX=1
+          CALL EPMENSV
+          CALL EPICKS(IX,imlay,' ',' Layer to adjust: ',
+     &      38,LAYERS(IFOC)+2,MMLAY,'Layer to adjust',IER,nbhelp)
+          CALL EPMENRC
+        ENDIF
+        IF(IW.EQ.1)THEN
+
+C If adjust thickness and a layer picked start thickness equal to
+C what exists up to 250mm.
+          if(IX.eq.1.and.imlay(1).gt.2)then
+            IWHICH=imlay(1)-2
+            write(outs,'(3A,F7.4,A)')' Adjusting ',PNAM(IWHICH)(1:18),
+     &        '... which is currently ',DTHK(IFOC,IWHICH)*1000.0,
+     &        ' thick.'
+            call edisp(iuout,outs)
+            write(t32,'(f7.1,a)') DTHK(IFOC,IWHICH)*1000.0,
+     &        '  250   0.1  '
+            CALL EASKS(t32,
+     &        'Thickness (minimum & maximum mm) & desired U value',
+     &        ' ',32,' ','thickness and U',IER,nbhelp)
+            K=0
+            CALL EGETWR(t32,K,VALX,0.1,250.,'W','minimum mm',IER)
+            CALL EGETWR(t32,K,VALY,0.1,250.,'W','maximum mm',IER)
+            CALL EGETWR(t32,K,VALZ,0.001,10.,'W','desired U',IER)
+
+C Start at the VALX thickness and increment 1mm each time until
+C close to VALZ.
+            deltau=abs(currentu-valz)  ! remember difference
+            write(outs,'(a,f6.3,a)') 'Improvement of ',deltau,' needed.'
+            call edisp(iuout,outs)
+            icontinue=1
+            startm=VALX/1000.0
+            currentm=startm
+            finishm=VALY/1000.0
+            do while (icontinue.ne.0)
+              currentm=currentm+0.001  ! 1mm increment
+              if(currentm.gt.finishm)then
+                icontinue=0  ! signal no to loop again
+              endif
+              RT=0.
+              DO 123, IL=1,LAYERS(IFOC)
+                matarrayindex=IPRMAT(IFOC,IL)   ! which legacy index
+                if(matarrayindex.ge.0)then
+ 
+C And if matarrayindex is zero then reset dbcon.
+                  if(matarrayindex.eq.0)then
+                    DBCON=0.0
+                  else
+                    DBCON=matdbcon(matarrayindex)
+                  endif
+
+C If g or h air gap and version 1.2 then assign DRAIR
+                  if(matarrayindex.eq.0)then
+                    continue
+                  elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &              matopaq(matarrayindex)(1:1).eq.'h')then
+                    if(closemat2)then
+                      DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
+                      RT=RT+DRAIR(IFOC,IL,1)  ! while we are sure
+                    endif
+                  endif
+                else
+                  continue
+                endif
+
+C Calculate standard U value.
+                IF(IPR(IFOC,IL).EQ.0)THEN
+                  RT=RT+DRAIR(IFOC,IL,1)
+                ELSEIF(IPR(IFOC,IL).EQ.-99)THEN
+                  continue  ! use RT calc above
+                ELSE
+
+C If this is the layer we are adjusting then substitute the current
+C layer thickness into the equation.
+                  if(IL.eq.IWHICH)then
+                    RT=RT+currentm/DBCON
+                  else
+                    RT=RT+DTHK(IFOC,IL)/DBCON
+                  endif
+                ENDIF
+  123         CONTINUE
+
+C ISO 6946 hc assumptions are 0.04 external, 0.13 inside horizontal,
+C 0.10 inside upward flow and 0.17 inside downward flow.
+              RTH=RT+0.04+0.13
+              UVALUEH=1.0/RTH
+              RTU=RT+0.04+0.10
+              UVALUEU=1.0/RTU
+              RTD=RT+0.04+0.17
+              UVALUED=1.0/RTD
+              curdeltau=abs(UVALUEH-valz)  ! remember new difference
+
+C Is UVALUEH closer to what we want. If it is not then stop looking.
+C Report as we get close to desired U value.
+              if(curdeltau.lt.deltau)then
+                write(outs,'(A,3F6.3)') 'Test ISO 6946 U h/u/d',
+     &            UVALUEH,UVALUEU,UVALUED
+                if(curdeltau.lt.0.03)call edisp(iuout,outs)
+                write(outs,'(f6.3,a,f6.3,a,f6.1)') UVALUEH,
+     &            ' is getting closer to desired U',valz,
+     &            ' with a layer thickness of ',currentm*1000.0
+                if(curdeltau.lt.0.03)call edisp(iuout,outs)
+                deltau=curdeltau  ! update deltau
+                if(currentm.gt.finishm)then
+                  icontinue=0   ! exceeded the maximum thickness
+                  write(outs,'(2a,f6.3,a,f6.1)') PNAM(IWHICH)(1:18),
+     &              ' range limit reached at U',UVALUEH,
+     &              ' and thickness ',currentm*1000.0
+                  call edisp(iuout,outs)
+                endif
+              else
+
+C No longer getting closer so step back one and report.
+                icontinue=0
+                write(outs,'(A,3F6.3)') 'Test ISO 6946 U h/u/d',
+     &            UVALUEH,UVALUEU,UVALUED
+                call edisp(iuout,outs)
+                currentm=currentm-0.001
+                write(outs,'(2a,f6.3,a,f6.1)') PNAM(IWHICH)(1:18),
+     &            ' is close to desired U',valz,
+     &            ' with a thickness of ',currentm*1000.0
+                call edisp(iuout,outs)
+              endif
+            end do
+          endif
+        ELSEIF(IW.EQ.2)THEN
+          if(IX.eq.1.and.imlay(1).gt.2)then
+            IWHICH=imlay(1)-2
+            write(outs,'(3A,F7.4,A)')' Adjusting ',PNAM(IWHICH)(1:18),
+     &        '... which has current ',DRAIR(IFOC,IWHICH,1),
+     &        ' air gap resistance.'
+            call edisp(iuout,outs)
+            write(t32,'(f7.4,a)') DRAIR(IFOC,IWHICH,1),
+     &        '  0.60   1.4  '
+            CALL EASKS(t32,
+     &        'Air gap resistance (min & max) & desired U value',
+     &        ' ',32,' ','resistance and U',IER,nbhelp)
+            K=0
+            CALL EGETWR(t32,K,VALX,0.1,250.,'W','minimum r',IER)
+            CALL EGETWR(t32,K,VALY,0.1,250.,'W','maximum r',IER)
+            CALL EGETWR(t32,K,VALZ,0.001,10.,'W','desired U',IER)
+
+C Start at the VALX resistance and increment by .002 each time until
+C close to VALZ.
+            deltau=abs(currentu-valz)  ! remember difference
+            write(outs,'(a,f6.3,a)') 'Improvement of ',deltau,' needed.'
+            call edisp(iuout,outs)
+            icontinue=1
+            startm=VALX
+            currentm=startm
+            finishm=VALY
+            do while (icontinue.ne.0)
+              currentm=currentm+0.002  ! resistance increment
+              if(currentm.gt.finishm)then
+                icontinue=0  ! signal no to loop again
+              endif
+              RT=0.
+              DO 124, IL=1,LAYERS(IFOC)
+                matarrayindex=IPRMAT(IFOC,IL)   ! which legacy index
+                if(matarrayindex.ge.0)then
+ 
+C And if matarrayindex is zero then reset dbcon.
+                  if(matarrayindex.eq.0)then
+                    DBCON=0.0
+                  else
+                    DBCON=matdbcon(matarrayindex)
+                  endif
+
+C If g or h air gap and version 1.2 then assign DRAIR
+                  if(matarrayindex.eq.0)then
+                    continue
+                  elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &              matopaq(matarrayindex)(1:1).eq.'h')then
+                    if(closemat2)then
+
+C If this is the layer we are adjusting then substitute the current
+C gap R into the equation.
+                      if(IL.eq.IWHICH)then
+                        RT=RT+currentm  ! while we are sure
+                      else
+                        DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
+                        RT=RT+DRAIR(IFOC,IL,1)  ! while we are sure
+                      endif
+                    endif
+                  endif
+                else
+                  continue
+                endif
+
+C Calculate standard U value.
+                IF(IPR(IFOC,IL).EQ.0)THEN
+                  if(IL.eq.IWHICH)then
+                    RT=RT+currentm  ! use the current R
+                  else
+                    RT=RT+DRAIR(IFOC,IL,1)
+                  endif
+                ELSEIF(IPR(IFOC,IL).EQ.-99)THEN
+                  continue  ! use RT calc above
+                ELSE
+                  RT=RT+DTHK(IFOC,IL)/DBCON
+                ENDIF
+  124         CONTINUE
+
+C ISO 6946 hc assumptions are 0.04 external, 0.13 inside horizontal,
+C 0.10 inside upward flow and 0.17 inside downward flow.
+              RTH=RT+0.04+0.13
+              UVALUEH=1.0/RTH
+              RTU=RT+0.04+0.10
+              UVALUEU=1.0/RTU
+              RTD=RT+0.04+0.17
+              UVALUED=1.0/RTD
+              curdeltau=abs(UVALUEH-valz)  ! remember new difference
+
+C Is UVALUEH closer to what we want. If it is not then stop looking.
+C Report as we get close to desired U value.
+              if(curdeltau.lt.deltau)then
+                write(outs,'(A,3F6.3)') 'Test ISO 6946 U h/u/d',
+     &            UVALUEH,UVALUEU,UVALUED
+                if(curdeltau.lt.0.03)call edisp(iuout,outs)
+                write(outs,'(f6.3,a,f6.3,a,f7.4)') UVALUEH,
+     &            ' is getting closer to desired U',valz,
+     &            ' with a gap R of ',currentm
+                if(curdeltau.lt.0.03)call edisp(iuout,outs)
+                deltau=curdeltau  ! update deltau
+                if(currentm.gt.finishm)then
+                  icontinue=0   ! exceeded the maximum R
+                  write(outs,'(2a,f6.3,a,f7.4)') PNAM(IWHICH)(1:18),
+     &              ' range limit reached at U',UVALUEH,
+     &              ' and gap R of ',currentm
+                  call edisp(iuout,outs)
+                endif
+              else
+
+C No longer getting closer so step back one and report.
+                icontinue=0
+                write(outs,'(A,3F6.3)') 'Test ISO 6946 U h/u/d',
+     &            UVALUEH,UVALUEU,UVALUED
+                call edisp(iuout,outs)
+                currentm=currentm-0.002   ! decrement R
+                write(outs,'(2a,f6.3,a,f7.4)') PNAM(IWHICH)(1:18),
+     &            ' is close to desired U',valz,
+     &            ' with a gap R of ',currentm
+                call edisp(iuout,outs)
+              endif
+            end do
+          endif
+        ELSEIF(IW.EQ.3)THEN
+          call edisp(iuout,'this option not yet working')
+          goto 2  ! jump back to the menue.
+        ELSEIF(IW.EQ.4)THEN
+          goto 2  ! jump back to the menue.
+        ENDIF
+
+C Process the request.
+
+      ELSEIF(ILED.EQ.NLED-5)THEN
 
 C +- Layer.
-        h(1)='You can delete an existing layer, append a new layer '
-        h(2)='at the `inside face` of the surface (remember the '
-        h(3)='order is other-side to zone-side), or insert a layer'
-        h(4)='(you will be asked to select a point of insertion and'
-        h(5)='existing inner layers will be shifted).'
-        h(6)=' '
-        h(7)='If you cancel no changes will be made in the mode. '
         CALL EASKABCD(' Layer options: ',' ',' Delete',
-     &    ' Append @ inside face',' Insert','Continue',IW,7)
+     &    ' Append @ inside face',' Insert','Continue',IW,nbhelp)
         IF(IW.EQ.1)THEN
 
 C If no of layers is edited then ask the user which one to remove.
 C Now loop through the layers and copy the contents of layers >
 C IWHICH into the next lower one.
           call edisp(iuout,' Select layer to delete.')
-          H(1)='Any one of the layers may be selected.'
           IX=1
           CALL EPMENSV
           CALL EPICKS(IX,imlay,' ',' Layer to delete: ',
-     &         38,LAYERS(IFOC)+2,MMLAY,'Layer to delete',IER,1)
+     &      38,LAYERS(IFOC)+2,MMLAY,'Layer to delete',IER,nbhelp)
           CALL EPMENRC
           if(IX.eq.1.and.imlay(1).gt.2)then
             IWHICH=imlay(1)-2
@@ -2563,11 +2712,11 @@ C If inserting internal layer, shift inner layers before editing.
 C << todo: find a way to restore prior state if the user elects
 C << to cancel part way through the process.
 
-              H(1)='Any one of the layers may be selected.'
               IX=1
               CALL EPMENSV
               CALL EPICKS(IX,imlay,' ',' Point of insertion: ',
-     &          38,LAYERS(IFOC)+2,MMLAY,'Point of insertion',IER,1)
+     &          38,LAYERS(IFOC)+2,MMLAY,'Point of insertion',
+     &          IER,nbhelp)
               CALL EPMENRC
               if(IX.eq.1.and.imlay(1).gt.2)then
                 IWHICH=imlay(1)-2
@@ -2592,24 +2741,21 @@ C << to cancel part way through the process.
 C Ask if user wishes to browse through materials to find suitable
 C reference. Use elistmat to select via materials array.
             dok=.true.
-            h(1)='If you want to keep the current material answer NO'
-            h(2)='otherwise you can find one by browsing the database.'
             CALL ASKOK('Browse the materials db for a new material',
-     &        '(NO keeps the current material)?',OK,dok,2)
+     &        '(NO keeps the current material)?',OK,dok,nbhelp)
             IF(OK)then
               iwhich = 0
               CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
               if(iwhich.eq.0)then
-                H(1)='If air is correct then accept, otherwise'
-                H(2)='reselect from the list or abort the task.'
                 CALL EASKABC('Your selection is `0` i.e. air. Options:',
-     &            ' ','accept','reselect material','abort',iwair,2)
-                 if(iwair.eq.2)then
-                   CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
-                 elseif(iwair.eq.3)then
-                   ILED=-1
-                   GOTO 3
-                 endif
+     &            ' ','accept','reselect material','abort',
+     &            iwair,nbhelp)
+                if(iwair.eq.2)then
+                  CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
+                elseif(iwair.eq.3)then
+                  ILED=-1
+                  GOTO 3
+                endif
               elseif(iwhich.eq.-99)then
                 continue
               endif
@@ -2638,12 +2784,6 @@ C code can recover the details of a -99 item.
 
 C If a standard air layer then ask for gap resistance.
             IF(IPR(IFOC,ILN).EQ.0)THEN
-              H(1)='A set of default assumptions on the R value of'
-              H(2)='an air gap is requested, in case the construction '
-              H(3)='is used in different orientations.'
-              H(4)='This information will allow for the automatic'
-              H(5)='creation of zone construction files with sub-'
-              H(6)='stantially less user interaction.'
               WRITE(outs,117)DESC(IFOC)(1:LNBLNK(DESC(IFOC)))
   117         FORMAT('Default R value for air gap in ',a)
 
@@ -2654,7 +2794,7 @@ C If a standard air layer then ask for gap resistance.
               endif
               CALL EASKR(VAL,outs,
      &          ' if the construction orientation is vertical: ',
-     &          0.01,'W',99.9,'W',0.17,'def air gap R',IER,6)
+     &          0.01,'W',99.9,'W',0.17,'def air gap R',IER,nbhelp)
               DRAIR(IFOC,ILN,1)=VAL
               if(DRAIR(IFOC,ILN,2).lt.0.001)then
                  VAL=0.17
@@ -2663,7 +2803,7 @@ C If a standard air layer then ask for gap resistance.
               endif
               CALL EASKR(VAL,outs,
      &          ' if the construction is a floor or ceiling  : ',
-     &          0.01,'W',99.9,'W',0.17,'def air gap R',IER,6)
+     &          0.01,'W',99.9,'W',0.17,'def air gap R',IER,nbhelp)
               DRAIR(IFOC,ILN,2)=VAL
               if(DRAIR(IFOC,ILN,3).lt.0.001)then
                  VAL=0.17
@@ -2672,7 +2812,7 @@ C If a standard air layer then ask for gap resistance.
               endif
               CALL EASKR(VAL,outs,
      &          ' if the construction is sloped or UNKNOWN   : ',
-     &          0.01,'W',99.9,'W',0.17,'def air gap R',IER,6)
+     &          0.01,'W',99.9,'W',0.17,'def air gap R',IER,nbhelp)
               DRAIR(IFOC,ILN,3)=VAL
               guessthick=100.0
             ELSEIF(IPR(IFOC,ILN).EQ.-99)THEN
@@ -2701,11 +2841,10 @@ C Not an air gap so set DRAIR to something and set default thickness.
                 guessthick=matdbthick(matarrayindex)
               endif
             ENDIF
-            H(1)='The thickness of the layer is nominally between'
-            H(2)='1 mm and 300 mm. It is stored in the file as m.'
             VAL=guessthick
             CALL EASKR(VAL,' ',' Layer thickness (mm): ',
-     &        1.0,'W',300.0,'W',100.0,'layer thickness mm',IER,2)
+     &        1.0,'W',300.0,'W',100.0,'layer thickness mm',
+     &        IER,nbhelp)
             DTHK(IFOC,ILN)=VAL*0.001
           ELSE
             CALL USRMSG(' ',' Exceeds layer limit!','W')
@@ -2728,9 +2867,6 @@ C Check if layers no longer match.
 
 C Edit construction name, if it is linked to another MLC then the
 C linked MLC should point back to the edited name.
-        H(1)='A descriptive name (up to 12 characters) is required.'
-        H(2)='Because the name is short it is a good idea to also'
-        H(3)='separately document what this name really means. '
         T12=MLCN
 
 C If changing the name of construction then find out if
@@ -2763,7 +2899,7 @@ C If they do then warn the user.
         endif
         write(T14,'(2a)') T12(1:12),'  '
         CALL EASKS(T14,' ','Name of the construction?',
-     &      14,' ','Construction name',IER,3)
+     &      14,' ','Construction name',IER,nbhelp)
         write(T12,'(a)') T14(1:12)
         call st2name(T12,MLCN)
         if(MLCSYM(1:9).EQ.'SYMMETRIC')then
@@ -2778,26 +2914,23 @@ C for the current item.
           WRITE(DESC(IFOC),89)MLCN,OTF,OPT,MLCSYM
           do 795 k=1,NMLC
             if(DESC(k)(1:12).eq.MLCSYM(1:12))then
-              call parsemlcdesc(DESC(k),T12,OTF,OPT,MLCSYM)
+              call parsemlcdesc(DESC(k),T12,OTF,OPT,MLCSYM,isymindex)
               WRITE(T12OTH,'(A)')DESC(IFOC)(1:12)
               WRITE(DESC(k),89)T12,OTF,OPT,T12OTH
             endif
   795     continue
-          call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM)
+          call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
         endif
         moddb = .true.
       ELSEIF(ILED.EQ.2)THEN
 
 C Select Opaque or transparent or complex fenestration construction.
-        H(1)='In order to make cross checking easier the user is'
-        H(2)='asked to define the construction as either'
-        H(3)='OPAQUE or TRANSPARENT. A complex fenestration '
-        H(4)='construction, CFC, can also be chosen to model'
-        H(5)='windows with slat type operable blinds.' 
+        helptopic='construction_opaque_trn'
+        call gethelptext(helpinsub,helptopic,nbhelp)
 
         CALL EASKABC(' ','Please choose one type :',
      &    'Opaque construction','Transparent construction',
-     &    'Complex Fenestration Construction',IW,5)
+     &    'Complex Fenestration Construction',IW,nbhelp)
 
         IF(IW.EQ.1)THEN
           OTF='OPAQ' 
@@ -2807,27 +2940,7 @@ C Select Opaque or transparent or complex fenestration construction.
         ELSEIF(IW.EQ.3)THEN
           OTF='CFC '
           OPT='USE GSLedit'
-          H(1)='Complex Fenestration Construction (CFC)'
-          H(2)=''
-          H(3)='A CFC allows for a more accurate treatment of'
-          H(4)='modeling windows with or without shading devices.'
-          H(5)=''
-          H(6)='A CFC surface has the following attributes:'
-          H(7)=' '
-          H(8)='-Exterior, vertical surface (IE=0)'
-          H(9)='-Each glazing/shading layer is separated by gas gap'
-          H(10)='-Currently limited to one shading layer per CFC'
-          H(11)=' '
-          H(12)='For an example of usage of CFCs see'
-          H(13)='"Appendix F: CFC User Reference" from'
-          H(14)='http://uwspace.uwaterloo.ca'
-          H(15)='/bitstream/10012/4164/1/Lomanowski_Bartosz.pdf'
-          H(16)=''
-          H(17)='The Glazing Shading Layer editor (GSLedit) used for'
-          H(18)='importing CFC input properties can be downloaded from'
-          H(19)='here:'
-          H(20)='TBA'
-          CALL PHELPD('CFC instructions',20,'-',0,0,IER)
+          CALL PHELPD('CFC instructions',nbhelp,'-',0,0,IER)
 
         ENDIF
         moddb = .true.
@@ -2861,6 +2974,7 @@ C << geometry file before writing it out.
             WRITE(outs,94)
             call edisp(iuout,outs)
             modgeo=.false.
+
             do 91 i=1,nsur
               ioc=IZSTOCN(IZ,i)
               if(SSMLCN(ioc)(1:12).eq.DESC(IFOC)(1:12))then
@@ -2904,20 +3018,16 @@ C out of date zone construction files.
 
 C Edit optical properties. Also check to see that the number of layers
 C and reference for materials matches.
+        helptopic='construction_optics'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IF((OTF(1:4).NE.'OPAQ').AND.(OTF(1:4).NE.'CFC '))THEN
-          H(1)='In order to allow for the optical properties to be'
-          H(2)='used in the model description and to be acted on'
-          H(3)='by control laws the relevant optical property id  '
-          H(4)='(from the optical properties db) is required.'
-          CALL PHELPD('optical selection',4,'-',0,0,IER)
+          CALL PHELPD('optical selection',nbhelp,'-',0,0,IER)
 
    77     CALL EDWINO(SOPT,IER)
           CALL EROPTDB(ITRC,iuout,SOPT,GDESCR,IER)
           IF(IER.EQ.2)THEN
             dok=.true.
-            h(1)='Could not recover that particular optical property'
-            h(2)='set. You might want to select a different one. '
-            CALL ASKOK(' ',' Not found... try again? ',OK,dok,2)
+            CALL ASKOK(' ',' Not found... try again? ',OK,dok,nbhelp)
             IF(OK)GOTO 77
           ENDIF
           OPT=SOPT
@@ -2929,29 +3039,30 @@ C and reference for materials matches.
       ELSEIF(ILED.EQ.5)THEN
 
 C Allow linking to inverted construction.
+        helptopic='edit_wall_details'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if(MLCSYM(1:9).EQ.'SYMMETRIC')then
           call usrmsg(
      &      'There is no need to link to an `inverted` version of this',
      &      'construction. It is symmetric and ok for partitions.','W')
         elseif(MLCSYM(1:12).EQ.'NONSYMMETRIC')then
           dok=.true.
-          h(1)='This construction is not symmetrical and needs to '
-          h(2)='be linked to a reversed copy of itself if it is going'
-          h(3)='to be used as a partition between two zones. '
           CALL ASKOK('Would you like to link this construction to',
-     &               'another which has `inverted` layers?',OK,dok,3)
+     &      'another which has `inverted` layers?',OK,dok,nbhelp)
           if(OK)then
             call epkmlc(iwhich,
      &        'Link with which `inverted` construction?',' ',ierr)
             if(LAYERS(IFOC).eq.LAYERS(iwhich))then
 
 C Update the linked construction to point back to the current item.
-              call parsemlcdesc(DESC(IWHICH),T12,OTF,OPT,MLCSYM)
+              call parsemlcdesc(DESC(IWHICH),T12,OTF,OPT,MLCSYM,
+     &          isymindex)
               WRITE(T12OTH,'(A)')DESC(IFOC)(1:12)
               WRITE(DESC(IWHICH),89)T12,OTF,OPT,T12OTH
 
 C Extract strings from focus DESC prior to updating its SYM tag.
-              call parsemlcdesc(DESC(IFOC),T12,OTF,OPT,MLCSYM)
+              call parsemlcdesc(DESC(IFOC),T12,OTF,OPT,MLCSYM,
+     &          isymindex)
               WRITE(T12OTH,'(A)')DESC(IWHICH)(1:12)
               WRITE(MLCSYM,'(A)')DESC(IWHICH)(1:12)
               WRITE(DESC(IFOC),89)T12,OTF,OPT,T12OTH
@@ -2983,24 +3094,17 @@ C construction and reset showother.
 C Ask if user wishes to browse through materials to find suitable
 C reference.
         dok=.true.
-        h(1)='To change to a different material select it from the'
-        h(2)='the list within the current materials database.'
-        h(3)='If you need an air gap, choose one from the GAPS '
-        h(4)='category (you may be asked for the air gap resistance'
-        h(5)='values for various orientations of the construction.'
-        h(6)=' '
-        h(7)='If you want to keep the current material just say NO.'
-        CALL ASKOK('Change the materials db reference via browsing',
-     &             'the material db? (NO keeps the current material)',
-     &             OK,dok,7)
+        helptopic='edit_wall_details'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL ASKOK(
+     &    'Change the material reference via browsing available',
+     &    'materials? (NO keeps the current material)',OK,dok,nbhelp)
         if(OK)then
           iwhich=0
           CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
           if(iwhich.eq.0)then
-            H(1)='If air is correct then accept, otherwise'
-            H(2)='reselect from the list or abort the task.'
             CALL EASKABC('Your selection is `0` i.e. air. Options:',
-     &        ' ','accept','reselect material','abort',iwair,2)
+     &        ' ','accept','reselect material','abort',iwair,nbhelp)
             if(iwair.eq.2)then
               CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
             elseif(iwair.eq.3)then
@@ -3039,12 +3143,6 @@ C menu display.
 
 C If an air gap ask for the three R values.
         IF(IPR(IFOC,ILED-8).EQ.0)THEN
-          H(1)='A set of default assumptions on the R value of'
-          H(2)='an air gap is requested, in case the construction '
-          H(3)='is used in different orientations.'
-          H(4)='This information will allow for the automatic'
-          H(5)='creation of zone construction files with sub-'
-          H(6)='stantially less user interaction.'
           WRITE(outs,118)DESC(IFOC)(1:LNBLNK(DESC(IFOC)))  
   118     FORMAT('Default R value for air gap in ',a)
           if(DRAIR(IFOC,ILED-8,1).lt.0.001)then
@@ -3054,7 +3152,7 @@ C If an air gap ask for the three R values.
           endif
           CALL EASKR(VAL,outs,
      &         ' if the orientation is vertical          : ',
-     &         0.0,'W',99.9,'W',0.17,'def air gap R',IER,6)
+     &         0.0,'W',99.9,'W',0.17,'def air gap R',IER,nbhelp)
           DRAIR(IFOC,ILED-8,1)=VAL
           if(DRAIR(IFOC,ILED-8,2).lt.0.001)then
              VAL=0.17
@@ -3063,7 +3161,7 @@ C If an air gap ask for the three R values.
           endif
           CALL EASKR(VAL,outs,
      &         ' if the orientation is horizontal        : ',
-     &         0.0,'W',99.9,'W',0.17,'def air gap R',IER,5)
+     &         0.0,'W',99.9,'W',0.17,'def air gap R',IER,nbhelp)
           DRAIR(IFOC,ILED-8,2)=VAL
           if(DRAIR(IFOC,ILED-8,3).lt.0.001)then
              VAL=0.17
@@ -3072,7 +3170,7 @@ C If an air gap ask for the three R values.
           endif
           CALL EASKR(VAL,outs,
      &         ' if the orientation is sloped or UNKNOWN : ',
-     &         0.0,'W',99.9,'W',0.17,'def air gap R',IER,5)
+     &         0.0,'W',99.9,'W',0.17,'def air gap R',IER,nbhelp)
           DRAIR(IFOC,ILED-8,3)=VAL
         ELSEIF(IPR(IFOC,ILED-8).EQ.-99)THEN
 
@@ -3113,12 +3211,9 @@ C material is a [g] or [h] and might have air gap values.
           endif
         ENDIF
 
-        H(1)='The thickness of the layer is normally between'
-        H(2)='0.001 m and 0.500 mm. It is held in the file as'
-        H(3)='metres.'
         VAL=DTHK(IFOC,ILED-8)*1000.0
         CALL EASKR(VAL,' ',' Layer thickness (mm): ',
-     &    1.0,'W',300.0,'W',100.0,'layer thickness mm',IER,3)
+     &    1.0,'W',300.0,'W',100.0,'layer thickness mm',IER,nbhelp)
         DTHK(IFOC,ILED-8)=VAL*0.001
         moddb = .true.
         goto 2   ! re-establish the menu strings
@@ -3367,6 +3462,7 @@ C so that partitions are counted as half area).
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       character mlcname*12
@@ -3497,12 +3593,17 @@ C Parameters
       integer imatarrayindex ! is the index in matdatarray
 
 C      COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
-      character h*72
       DIMENSION VERT(35)
       CHARACTER VERT*68,KEY*1
 C      character outs*124
       integer MVERT,IVERT ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='allmat'  ! set for subroutine
 
 C Set to zero first.
       imatarrayindex=0
@@ -3576,8 +3677,8 @@ C If a long list include page facility text.
       VERT(M+3)  ='- exit this menu                 '
 
 C Help text for this menu.
-      H(1)='This menu allows existing materials to be viewed and'
-      H(2)='one of them selected.'
+      helptopic='select_from_materials'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Now display the menu.
       CALL EMENU(' Materials in all categories',VERT,MVERT,IVERT)
@@ -3591,7 +3692,9 @@ C Within the header so skip request.
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
 C List help text for the vertex menu.
-        CALL PHELPD('materials section',2,'-',0,0,IER)
+        helptopic='select_from_materials'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('materials section',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C If there are enough items allow paging control via EKPAGE.

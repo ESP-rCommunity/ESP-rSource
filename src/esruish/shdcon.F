@@ -44,30 +44,42 @@ C geometry.h provides commons G0 and G2.
       integer lnblnk  ! function definition
 
       common/filep/ifil
-      common/pophelp/h(60)
       common/outin/iuout,iuin
 
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
+      character ltrns*72
+      integer multic,mons,monf
       common/mtfile/ltrns,multic,mons,monf
       common/ract/paction
 
       dimension irecs(ms),iavdec(12)
-      character ltrns*72,tbase*72,outs*124
+      character tbase*72,outs*124
       character*3 month(12)
-      character act*1,paction*16,h*72
+      character act*1,paction*16
       logical ok,dok
       logical newgeo  ! Used to test for new/old geometry file.
       integer ier
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
 
 C Day of average solar declination in each month.
       data iavdec/17,15,16,15,15,11,17,16,16,16,15,11/
       data month/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
 
+      helpinsub='shdcon'  ! set for subroutine
       newgeo=.false.  ! Assume older format geometry.
       iunit=ifil
 
    35 call eclose(gversion(icomp),1.1,0.01,newgeo)
+
+C Make up help text for the following interactions.
+      helptopic='shdcon_actions'
+      call gethelptext(helpinsub,helptopic,nbhelp)
    
 C Recover the isc and associated arrays.
       call findisc(icomp,ier,act,icont)
@@ -84,11 +96,9 @@ C from the zone geometry file.
                call edisp(iuout,'No surfaces, shading skipped!')
                return
             else
-               h(1)='Surfaces that might be shaded need to be'
-               h(2)='selected or the computations cannot be performed.'
                dok=.true.
                call askok('No surfaces selected!','Re-specify?',
-     &                       ok,dok,2)
+     &           ok,dok,nbhelp)
                if(ok)goto 35
                call edisp(iuout,'Shading computation abandoned!')
                return
@@ -121,15 +131,13 @@ C Calculate shading for specified period.
          monf=12
          mon=mons
       else
-         h(1)='An integer value between 1 and 12. For each month a'
-         h(2)='24 hour calculation of direct and diffuse shading on'
-         h(3)='external surfaces will be undertaken for the day of'
-         h(4)='average solar declination.'
+         if(mons.gt.12) mons=1  ! if mons was clobbered reset
          call easki(mons,' ','Start month number?',
-     &              1,'F',12,'F',1,'start month',ier,4)
+     &     1,'F',12,'F',1,'start month',ier,nbhelp)
          if(ier.ne.0)return
+         if(monf.gt.12) monf=12  ! if monf was clobbered reset
          call easki(monf,' ','End month number?',
-     &              mons,'F',12,'F',1,'end month',ier,4)
+     &     mons,'F',12,'F',1,'end month',ier,nbhelp)
          if(ier.ne.0)return
          if(mons.eq.monf)multic=0
       endif
@@ -184,8 +192,10 @@ c   icont  - >0 if shaded surfaces were found
 #include "geometry.h"
 
       common/outin/iuout,iuin
+      integer izstocn
       common/c24/izstocn(mcom,ms)
 
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/ract/paction
 
@@ -321,8 +331,9 @@ C Calculates the direct and diffuse solar shading. Called from shdcon.
       common/prec8/slat,slon
       common/shad1/isunup
       common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa,ipexcl
-      common/shad4/oshd(mox,moz)
+      common/shad4/oshd(mox,moz),ihit(mox,moz)
       common/grid11/xop(mox,moz),zop(mox,moz)
+      integer mon,isc,iyd
       common/contr/mon,isc(ms),iyd
       common/ihtime/ihour
       common/sangl1/sazi1,salt1
@@ -460,8 +471,8 @@ C step. gssa, the overall shading on target surface, is initialised
 C here for use in shdtst.
             do 40 ip=1,146
 
-C Reset ioshd and oshd before each sun or sky patch loop, setting any
-C grid point not within target surface to -1.
+C Reset ioshd() and oshd() before each sun or sky patch loop, setting
+C ioshd() for any grid point not within target surface to -1.
               do 403 i=1,nox(icomp)
                  do 404 j=1,noz(icomp)
                     call point1(icomp,itsur,xop(i,j),zop(i,j),ians)
@@ -543,6 +554,11 @@ C from the sun or sky patch.
 C Complete projection transformation on an obstruction block (ibn)
 C and surface-by-surface (ibs) basis.
                do 50 ibn=1,nbobs(icomp)
+                 do 501 i=1,nox(icomp)
+                   do 502 j=1,noz(icomp)
+                    ihit(i,j)=0
+  502              continue
+  501            continue
 
 C Compute X, Y and Z coordinates of obstruction block corners 
 C relative to the original site coordinate system.
@@ -609,25 +625,25 @@ C Output calculation progress report.
                if(indcom.eq.4)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' complete','P')
+                  call usrmsg(outs,' complete','-')
                endif
             elseif(calcom.ge.0.75)then
                if(indcom.eq.3)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' 75% complete','P')
+                  call usrmsg(outs,' 75% complete','-')
                endif
             elseif(calcom.ge.0.50)then
                if(indcom.eq.2)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' 50% complete','P')
+                  call usrmsg(outs,' 50% complete','-')
                endif
             elseif(calcom.ge.0.25)then
                if(indcom.eq.1)goto 30
                indcom=indcom+1
                if(paction(1:13).ne.'update_silent')then
-                  call usrmsg(outs,' 25% complete','P')
+                  call usrmsg(outs,' 25% complete','-')
                endif
             endif
 
@@ -934,7 +950,8 @@ C establish if it is within the target surface and shadow polygon.
       common/shad2/ishd,npoint,xs(5),zs(5)
       common/grid11/xop(mox,moz),zop(mox,moz)
       common/shad3/ioshd(mox,moz),foshd(mox,moz),gssa,ipexcl
-      common/shad4/oshd(mox,moz)
+      common/shad4/oshd(mox,moz),ihit(mox,moz)
+      common/outin/iuout,iuin
 
       if(ishd.eq.0)return
 
@@ -950,13 +967,16 @@ C Do nothing if point is not within the shadow polygon as held in common/shad2/.
             call point2(xop(i,j),zop(i,j),ians)
             if(ians.eq.0)goto 20
 
-C Point obscured by current obstruction block.
-             ioshd(i,j)=1
+C Point obscured by current obstruction block face. Point shaded
+C if any face obscures so only increment oshd for first hit, ignoring
+C other hits.
+            ihit(i,j)=ihit(i,j)+1
+            ioshd(i,j)=1
 
-C Summate the related obstruction block opacity factors, op,
-C and constrain to a maximum of 1 (totally shaded).
-             oshd(i,j)=oshd(i,j)+op
-             if(oshd(i,j).gt.1.0)oshd(i,j)=1.0
+C If more than one obstruction block shaded then opacities need to be
+C compounded.
+            if(ihit(i,j).eq.1)oshd(i,j)=1.0-(1.0-oshd(i,j))*(1.0-op)
+            if(oshd(i,j).gt.1.0)oshd(i,j)=1.0
    20    continue
    10 continue
 

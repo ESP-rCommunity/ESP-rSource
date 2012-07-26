@@ -24,6 +24,7 @@ C File naming convention:  UNKNOWN - required but not yet defined,
 C blank or NONE not required and not yet defined.
 
       program e2r
+      USE START_UP      
 #include "building.h"
 #include "model.h"
 #include "esprdbfile.h"
@@ -44,7 +45,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       integer ifs,itfs,imfs
       COMMON/GFONT/IFS,ITFS,IMFS
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
@@ -60,6 +60,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 C Path to model.
@@ -88,16 +89,19 @@ C Name of current application
       
       character cAppName*12      
 
-      CHARACTER H*72,outs*124,ITEM*30
+      CHARACTER outs*124,ITEM*30
       CHARACTER inf*144,LCMDFL*144,LCFGF*72,L144*144
       character tfile*72
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       character path*72,cfgroot*24
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72
       character OUTSTR*124
-      character ltmp72*72,dtmp72*72,ltmp*72
+      character ltmp72*72,dtmp72*72,ltmp*72,dtmp96*96
       character pf*72,gf*72,df*72,VALT*28
       character brw*4   ! to signal whether browsing model
+
+      character cVnum*16      ! returned from ESPrVersionNum
+      character pagestitle*42 ! for banner title via epages call
+
       DIMENSION ITEM(24)
       DIMENSION IVALV(20),VALT(20),IPVALV(20)  ! for selecting view from list
 
@@ -107,13 +111,28 @@ C Name of current application
       logical browse  ! is true if parameter passed as yes
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
+#ifdef OSI
       integer numberofzones ! to pass to updwire rather than ncomp
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
+#else
+      integer*8 numberofzones
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
+#endif
       integer NITEMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
 
 C Initialize global common data.
       call ezero
       call curmodule('e2r ')
       cAppName = 'e2r'
+      helpinapp='e2r'  ! set once for the application
+      helpinsub='e2r'  ! set for MAIN
       IUIN = 5
       IUOUT = 6
       IFIL = 10
@@ -157,6 +176,7 @@ C Set folder separator (fs) to \ or / as required.
       endif
       write(path,'(a1,a1)')'.',fs
 
+C First steps in dealing with command line parameters.
 C Make case insensitive.
       if (aim(1:8).eq.'External') zone='  '
       if (aim(1:8).eq.'coupling') aim='Coupling'
@@ -174,6 +194,7 @@ C Make case insensitive.
         SCENEDESC(I)='UNKNOWN'
         SCENEPURP(I)='UNKNOWN'
         LBSRIF(I)='NONE'
+        LDFGRID(I)='NONE'
         NBSRIF(I)=-1
  9    continue
 
@@ -188,7 +209,6 @@ C Set defaults.
       MODLEN=.false.
       MODBND=.false.
       XST=.false.
-      LDFGRID='NONE'
       LRADCF='UNKNOWN'
       LCFGF='UNKNOWN'
       rofil='UNKNOWN'
@@ -316,14 +336,26 @@ C Set initial font sizes (IMFS is for graphs, IFS is for dialog & text feedback)
         LIMTTY=16
         LIMIT =16
       ENDIF
+
+C Find the current ESP-r version number and add it to application title.
+      call ESPrVersionNum(cVnum)
+      write(pagestitle,'(2a)') 'Radiance desktop ',
+     &  cVnum(1:lnblnk(cVnum))
+
       CALL EPAGES(MMOD,IUIN,IUOUT,iappwi,iapphi,iappx,iappy,menuchw,
-     &'Radiance desktop:  enquiries to esru@strath.ac.uk')
+     &  pagestitle)
 
 C Open the text display box equal to LIMTTY if MMOD = 8.
       IF(MMOD.EQ.8)THEN
-        CALL win3d(menuchw,2,2,2,3,igl,igr,igt,igb,igw,igwh)
-        igw=igr-igl
-        igwh=igb-igt
+
+C Setup and pass in parameters to win3d.
+        iiw1=2; iiw2=2; iiw3=2; iiw4=3; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+C        CALL win3d(menuchw,2,2,2,3,igl,igr,igt,igb,igw,igwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1)then
           call opencpw
@@ -343,13 +375,8 @@ C Open the text display box equal to LIMTTY if MMOD = 8.
         call startbuffer()
       ENDIF
 
+C Echo version number.
       CALL ESPrVersion("summary",cAppName,IUOUT)
-      
-      write(outs,'(2a)')
-     & ' Systems Research Unit, University of',
-     & ' Strathclyde, Glasgow Scotland.'
-      call edisp(IUOUT,outs)
-      call edisp(iuout,' ')
 
 C Find the user's home folder then get users custom settings.
       call usrhome(upath)
@@ -422,11 +449,10 @@ C and then present the main menu.
 C No command line configuration file supplied or cannot be found, 
 C therfore get one.
       if(.NOT.XST)then
-        H(1)='The model configuration file holds the definition '
-        H(2)='of the building/ plant to be simulated, including the'
-        H(3)='names of all of the files required.'
+        helptopic='e2r_cfg_file_not_found'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         l144=LCMDFL
-        dtmp72=DFCFG
+        dtmp96=DFCFG
  1289   llt=lnblnk(L144)
 
 C The X11 version will be returning only the name of the
@@ -435,21 +461,21 @@ C name with the full path.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
-            CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
-     &        'config file name',IER,3)
+            CALL EASKF(L144,' Model configuration file?',' ',96,dtmp96,
+     &        'config file name',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
             CALL EASKF(L144,' Model configuration file?',' ',124,
-     &        dtmp72,'config file name',IER,3)
+     &        dtmp96,'config file name',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
             CALL EASKF(L144,' Model configuration file?',' ',144,
-     &        dtmp72,'config file name',IER,3)
+     &        dtmp96,'config file name',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
-          CALL EASKF(L144,' Model configuration file?',' ',144,dtmp72,
-     &      'config file name',IER,3)
+          CALL EASKF(L144,' Model configuration file?',' ',144,dtmp96,
+     &      'config file name',IER,nbhelp)
         else
-          CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
-     &      'config file name',IER,3)
+          CALL EASKF(L144,' Model configuration file?',' ',96,dtmp96,
+     &      'config file name',IER,nbhelp)
         endif
 
         IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 1289
@@ -473,9 +499,10 @@ C line as 'Coupling' or 'Day_coef' or 'Day_fact'.
         elseif(nzonec.lt.20.and.ngset.gt.20)then
           mono=1   ! not many colours but some greys so set to greyscale
         else
-          H(1)='This is required for several of the display utilities.'
+          helptopic='confirm_monitor_type'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABC('Please confirm your monitor type:',' ',
-     &                        'monochrome','greyscale','colour',imon,1)
+     &      'monochrome','greyscale','colour',imon,nbhelp)
           mono=imon-1
         endif
       endif
@@ -514,16 +541,13 @@ C Create a default scene file name using the cfgroot.
             write (LRADCF,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.rcf'
 
 C File does not exist, ask for another/ new file.
- 2289       H(1)='A scene configuration file is required to aid'
-            H(2)='maintenance of the visualisation process.'
-            H(3)='This file contains details on where individual'
-            H(4)='RIF (Radiance Input Format) files are kept and'
-            H(5)='what there intended use is.'
+ 2289       helptopic='scene_config_file_name'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             ltmp72=LRADCF
             dtmp72='scene.rcf'
             CALL EASKS(ltmp72,
      &        'Scene configuration file? (suggested name)',
-     &        ' ',72,dtmp72,'scene file name',IER,5)
+     &        ' ',72,dtmp72,'scene file name',IER,nbhelp)
             IF(ltmp72(1:2).EQ.'  '.or.ltmp72(1:4).eq.'UNKN')GOTO 2289
             LRADCF=ltmp72
             XST=.FALSE.
@@ -572,7 +596,9 @@ C Check for command line information.
       ITEM(10)=               'd  sky type, location & time  '
       ITEM(11)=               'e  zone & outside composition '
       ITEM(12)=               'f  other (furniture&fittings) '
-      if (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
+      if (SCENEPURP(ISCENE)(1:8).eq.'Day_fact'.or.
+     &    SCENEPURP(ISCENE)(1:7).eq.'Day_lux'.or.
+     &    SCENEPURP(ISCENE)(1:5).eq.'Illum') then
         ITEM(13)=             'g  edit/display grid          '
       elseif (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
         ITEM(13)=             'g                             '
@@ -597,7 +623,11 @@ C Check for command line information.
       elseif (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
         ITEM(17)=             'j  view calculated illuminance'
       elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_coef') then
-        ITEM(17)=             'j  view daylight coeffs       '
+        ITEM(17)=             'j  view daylight coefficients '
+      elseif (SCENEPURP(ISCENE)(1:7).eq.'Day_lux') then
+        ITEM(17)=             'j  view daylight lux @ points '
+      elseif (SCENEPURP(ISCENE)(1:5).eq.'Illum') then
+        ITEM(17)=             'j  view illuminance @ points  '
       else
         ITEM(17)=             'j  view visualisation results '
       endif
@@ -645,19 +675,10 @@ C        lnrp=lnblnk(runpath)
         if(unixok)then
           if(browse)then
             dok=.false.
-            h(1)='The e2r module has been working with files in'
-            h(2)='a temporary folder. If you say `yes` then the'
-            h(3)='files will be copied back into the rad folder'
-            h(4)='of the ESP-r model.'
-            h(5)=' '
-            h(6)='If you say `no` the temporary folder will be'
-            h(7)='removed and your files deleted.'
-            h(8)=' '
-            h(9)='If you are planning to alter the geometry and/'
-            h(10)='or constructions in your model it is usually'
-            h(11)='best not to keep the files (i.e. select `no`).'
+            helptopic='e2r_temporary_folder'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL ASKOK('Do you wish to keep the Radiance scene files?',
-     &             '(see help)',KEEP,dok,11)
+     &        '(see help)',KEEP,dok,nbhelp)
           else
 	  
 C User owns the model. Only copy the lradcf file back to the cfg
@@ -702,30 +723,29 @@ C Help via the askabout facility in esru_ask.F The zero requests display
       elseif(INO.EQ.1)then
 
 C ESP-r configuration file.
-  289   H(1)='The model configuration file holds the definition '
-        H(2)='of the building/ plant to be simulated, including the'
-        H(3)='names of all of the files required.'
+  289   helptopic='model_config_file_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         l144=LCMDFL
-        dtmp72=DFCFG
+        dtmp96=DFCFG
         llt=lnblnk(L144)
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           if(llt.lt.96)then
-            CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
-     &        'config file name',IER,3)
+            CALL EASKF(L144,' Model configuration file?',' ',96,dtmp96,
+     &        'config file name',IER,nbhelp)
           elseif(llt.ge.96.and.llt.lt.124)then
             CALL EASKF(L144,' Model configuration file?',' ',124,
-     &        dtmp72,'config file name',IER,3)
+     &        dtmp96,'config file name',IER,nbhelp)
           elseif(llt.ge.124.and.llt.le.144)then
             CALL EASKF(L144,' Model configuration file?',' ',144,
-     &        dtmp72,'config file name',IER,3)
+     &        dtmp96,'config file name',IER,nbhelp)
           endif
         elseif(iglib.eq.2)then
-          CALL EASKF(L144,' Model configuration file?',' ',144,dtmp72,
-     &      'config file name',IER,3)
+          CALL EASKF(L144,' Model configuration file?',' ',144,dtmp96,
+     &      'config file name',IER,nbhelp)
         else
-          CALL EASKF(L144,' Model configuration file?',' ',96,dtmp72,
-     &      'config file name',IER,3)
+          CALL EASKF(L144,' Model configuration file?',' ',96,dtmp96,
+     &      'config file name',IER,nbhelp)
         endif
 
         IF(L144(1:2).EQ.'  '.or.L144(1:4).eq.'UNKN')GOTO 289
@@ -738,15 +758,12 @@ C ESP-r configuration file.
 
 C Define possibly different scene configuration file, process if existing 
 C or create a new one with reasonable defaults.
- 319    H(1)='A scene configuration file is required to aide'
-        H(2)='maintenance of the visualisation process.'
-        H(3)='This file contains details on where individual'
-        H(4)='RIF (Radiance Input Format) files are kept and'
-        H(5)='wheat there intended use is.'
+ 319    helptopic='scene_config_file_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         ltmp72=LRADCF
         dtmp72='scene.rcf'
         CALL EASKS(ltmp72,'Scene configuration file (suggested name)?',
-     &    '  ',72,dtmp72,'scene file name',IER,5)
+     &    '  ',72,dtmp72,'scene file name',IER,nbhelp)
         if(ltmp72.eq.'  ')goto 319 
         LRADCF=ltmp72
         call tstamp('>','E2R: change scene configuration')
@@ -782,19 +799,16 @@ C Zone and outside composition, updating rif file upon return.
       elseif(INO.EQ.12)then
 
 C Other descriptions.
-        H(1)='In order not to disturb files generated from a thermal'
-        H(2)='description it is sometimes useful to place miscel '
-        H(3)='furniture and fixtures in a separate file. '
+        helptopic='furniture_file_name'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         ltmp=rmfil
         CALL EASKS(ltmp,' Miscel (furniture & fittings file ?',
-     &    '  ',72,rmfil,'misc fixt file name',IER,3)
+     &    '  ',72,rmfil,'misc fixt file name',IER,nbhelp)
         INQUIRE (FILE=ltmp,EXIST=XST)
         if(XST)rmfil = ltmp
 
-        H(1)='Browsing lists contents in the text feedback'
-        H(2)='area, editing spawns an editor with the file name.'
         CALL EASKABC(' Miscel (furniture & fittings description:',' ',
-     &     'browse file','edit file','ignore',IW,2)
+     &     'browse file','edit file','ignore',IW,nbhelp)
         if(IW.eq.1)then
           call vifile(ITA1,rmfil,'b',ier)
         elseif(IW.eq.2)then
@@ -804,10 +818,12 @@ C Other descriptions.
       elseif(INO.EQ.13)then
 
 C Depending on value of SCENEPURP.
-        if (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
+        if (SCENEPURP(ISCENE)(1:8).eq.'Day_fact'.or.
+     &      SCENEPURP(ISCENE)(1:7).eq.'Day_lux'.or.
+     &      SCENEPURP(ISCENE)(1:5).eq.'Illum') then
           call ERPFREE(ITA1,ISTAT)
-          write(tfile,'(a,a)')runpath(1:lnrp),
-     &                        LDFGRID(1:lnblnk(LDFGRID))
+          lndf=lnblnk(LDFGRID(ISCENE))
+          write(tfile,'(2a)')runpath(1:lnrp),LDFGRID(ISCENE)(1:lndf)
           call FPOPEN(ITA1,ISTAT,1,1,tfile)
           if(ISTAT.eq.0)then
             NDFP=0
@@ -830,8 +846,9 @@ C Depending on value of SCENEPURP.
           endif
           call ERPFREE(ITA1,ISTAT)
           dok=.false.
-          h(1)='If you want to alter the grid points say yes.'
-          CALL ASKOK('Edit grid points?','  ',OK,dok,1)
+          helptopic='confirm_grid_point_edit'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL ASKOK('Edit grid points?','  ',OK,dok,nbhelp)
           izone=0
           if(OK)call setdfgrid('-',izone,ier)
         elseif (SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
@@ -887,21 +904,17 @@ C Scene parameter options.
 
 C Based on purpose calculate DF or sensor illum or daylight coeffs or render.
 
-C Generate image/ visualisation data/ daylight factors.
+C Generate image/ visualisation data/ daylight factors, illuminance.
 C Check and see if there is an existing octree file.  Probably best
 C to remove it before proceeding.
         CALL ERPFREE(ITA2,ISTAT)
         call FINDFIL(octfil,XST)
         if(XST)then
-          H(1)='The octree is a intermediate step between the '
-          H(2)='Radiance input files and the rendered image. '
-          H(3)='Radiance should be able to decide if the octree '
-          H(4)='needs recreated or not, although if you have a '
-          H(5)='new sky file then you must force Radiance to  '
-          H(6)='recreate the octree (ie choose option 1).'
+          helptopic='octree_force_update'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKABC(' The octree exists, do you want to',' ',
      &      'force update','let Radiance decide (default)','cancel',
-     &      IOCTFL,6)
+     &      IOCTFL,nbhelp)
           if (IOCTFL.eq.3) then
             goto 10
           endif
@@ -912,13 +925,12 @@ C Pull up a list of views and ask user for which one.
      &      SCENEPURP(ISCENE)(1:8).eq.'Internal'.or.
      &      SCENEPURP(ISCENE)(1:5).eq.'Glare') then
           if (indxvew.gt.0) then
-            H(1)='Please select one view.'
             IX=1
             do 333 iv=1,indxvew
               write(valt(iv),'(a)') rvewsh(iv)
   333       continue
             CALL EPICKS(IX,IVALV,' ',' Select a view: ',
-     &                  28,indxvew,VALT,'View options',IER,3)
+     &        28,indxvew,VALT,'View options',IER,nbhelp)
             if(IX.ne.0)then
               ipckvew=IVALV(1)
             endif
@@ -939,6 +951,11 @@ C Extra calculations for glare.
 
 C Daylight factors - calculate and display.
           call getdf
+        elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_lux'.or.
+     &          SCENEPURP(ISCENE)(1:5).eq.'Illum') then
+
+C Illuminance at grid points - calculate and display.
+          call getlux
         endif
 
       elseif(INO.eq.17)then
@@ -948,10 +965,12 @@ C Based on purpose view DF or illuminance or daylight coef or image.
      &      SCENEPURP(ISCENE)(1:8).eq.'Coupling') then
           call usrmsg('No results display for this option.','  ','W')
           goto 10
-        elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_fact') then
+        elseif (SCENEPURP(ISCENE)(1:8).eq.'Day_fact'.or.
+     &          SCENEPURP(ISCENE)(1:7).eq.'Day_lux'.or.
+     &          SCENEPURP(ISCENE)(1:5).eq.'Illum') then
         
-C Check for daylight factor results. Note: the results could have been
-C shifted to a *.df- file so check that as well.
+C Check for daylight factor or illuminance results. Note: the results
+C could have been shifted to a *.df- file so check that as well.
           ITA1 = IFIL+6
 C          lnrp=lnblnk(runpath)
           write(df,'(2a)')SCENERT(NSCENE)(1:lnblnk(SCENERT(NSCENE))),
@@ -979,16 +998,16 @@ C              write(6,*) 'found  ',ltmp
               continue
             else
               call edisp(iuout,
-     &          'Could not find the daylight factors file.')
+     &          'Could not find daylight factors or illuminance file.')
               call edisp(iuout,ltmp)
               goto 10
             endif
           endif
 
-C Read the DF data and calculate averages.  
+C Read the DF or illuminance data and calculate averages.  
           NDFP=0
           AVEDF=0.
-          DFMIN=10000.
+          DFMIN=100000.
           if(ISTAT.eq.0)then
   43        CALL STRIPC(ITA1,OUTSTR,0,ND,0,'DF results',IFER)
             if (IFER.eq.0) then
@@ -1008,12 +1027,24 @@ C Read the DF data and calculate averages.
             endif
             call ERPFREE(ITA1,ISTAT)
             AVEDF=AVEDF/real(NDFP)
-            write(outs,'(a,f5.2,a)')'Average daylight factor ',AVEDF,'%'
+            if (SCENEPURP(ISCENE)(1:8).eq.'Day_fact')then
+              write(outs,'(a,f5.2,a)')'Average daylight factor ',
+     &          AVEDF,'%'
+            elseif( SCENEPURP(ISCENE)(1:7).eq.'Day_lux'.or.
+     &              SCENEPURP(ISCENE)(1:5).eq.'Illum')then
+              write(outs,'(a,f5.2,a)')'Average illuminance ',
+     &          AVEDF,'%'
+            endif
             call edisp (iuout,outs)
             write(outs,'(a,f5.2)')'Uniformity ratio (min/ave) ',
      &                                  DFMIN/AVEDF
             call edisp (iuout,outs)
-            call DFGRIDLBL('d')
+            if (SCENEPURP(ISCENE)(1:8).eq.'Day_fact')then
+              call DFGRIDLBL('d')
+            elseif( SCENEPURP(ISCENE)(1:7).eq.'Day_lux'.or.
+     &              SCENEPURP(ISCENE)(1:5).eq.'Illum')then
+              call DFGRIDLBL('l')
+            endif
           endif
           goto 10
         endif
@@ -1025,7 +1056,7 @@ C Check for existing file names based on available view and picture info.
           XST=.false.
           write(pf,'(5a)') runpath(1:lnrp),
      &      picfil(1:lnblnk(picfil)),'_',
-     &      rvewsh(iv)(1:lnblnk(rvewsh(iv))),'.pic'
+     &      rvewsh(iv)(1:lnblnk(rvewsh(iv))),'.hdr'
           INQUIRE (FILE=pf,EXIST=XST)
           if (XST) then
             npics=npics+1
@@ -1041,15 +1072,14 @@ C Check for existing file names based on available view and picture info.
 C Now have list of possible images, ask which one to display.
 C If there are no images then re-display the menu.
         if (npics.gt.1) then
-          H(1)='Please select one view.'
           CALL EPICKS(IX,IVALV,' ',' Select a view point: ',
-     &                28,npics,VALT,'View options',IER,1)
+     &      28,npics,VALT,'View options',IER,nbhelp)
           if(IX.eq.0) goto 10
         else
           goto 10
         endif
         if (IVALV(1).eq.(npics+1)) then
-          write(pf,'(a)') 'UNKNOWN.pic'
+          write(pf,'(a)') 'UNKNOWN.hdr'
           write(gf,'(a)') 'UNKNOWN.glr'
         else
           ipckvew=IPVALV(IVALV(1))
@@ -1057,7 +1087,7 @@ C If there are no images then re-display the menu.
 C Generate default file names.
           write(pf,'(5a)') runpath(1:lnrp),
      &      picfil(1:lnblnk(picfil)),'_',
-     &      rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.pic'
+     &      rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.hdr'
           write(gf,'(5a)') runpath(1:lnrp),
      &      picfil(1:lnblnk(picfil)),'_',
      &      rvewsh(ipckvew)(1:lnblnk(rvewsh(ipckvew))),'.glr'
@@ -1149,7 +1179,11 @@ C Path to model.
       LOGICAL unixok
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical browse  ! as set in e2r command line.
+#ifdef OSI
       integer numberofzones ! to pass to updwire rather than ncomp
+#else
+      integer*8 numberofzones
+#endif
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -1305,7 +1339,7 @@ C lfile contains path as well as file name.
         tmode='graph'
         if(teditor(1:2).eq.'vi')tmode='text'
         write(doit,'(a,2x,a,a)') teditor(1:lnblnk(teditor)),
-     &                                      lfile(1:lnblnk(lfile)),' &'
+     &                           lfile(1:lnblnk(lfile)),' &'
         call runit(doit,tmode)
       endif
       return

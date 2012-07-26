@@ -73,13 +73,12 @@ extern char pmtype_list[MENU_LIST_LEN];	/* character array representing m_list a
 extern int pm_width;		/* current popup menu max line length */
 extern int pm_lines;		/* current number of active popup menu lines */
 
-extern char cappl[5];	/* f77 application name */
-extern char cfgroot[25];	/* f77 project root name    */
-extern char path[73];	/* f77 project path    */
-extern char upath[73];	/* f77 users path    */
-extern char imgpth[25];	/* f77 relative path to images    */
-extern char docpth[25];	/* f77 relative path to documents    */
-extern char tmppth[25];	/* f77 relative path to scratch folder    */
+extern char cappl[5];	/* fortran application name */
+extern char cfgroot[25];	/* fortran project root name    */
+extern char path[73];	/* fortran project path    */
+extern char upath[73];	/* fortran users path    */
+extern char imgpth[25];	/* fortran relative path to images    */
+extern char docpth[25];	/* fortran relative path to documents    */
 extern char capt_wf_exe[73];	/* command to execute for capture wire frame */
 extern char capt_tf_file[73];	/* file for text feedback buffer dump */
 extern char capt_all_exe[73];	/* command for capture all of display */
@@ -129,8 +128,14 @@ void	wwcsetstart_();
 void	wwcsetend_();
 void	ckaccess_(long int* folder,long int* laccess,long int* lerr,char* fname,int len);
 void	getfilelist_(char* folder,char* act,char* flist,long int nwflist[],long int* nflist,int lenfolder,int lenact,int lenflist);
-void	curproject_(char* fcfgroot,char* fpath,char* fupath,char* fimgpth,char* fdocpth,char* ftmppth,long int* ibrowse,
-        int len_root,int len_fpath,int len_fupath,int len_fimgpth,int len_fdocpth,int len_ftmppth);
+void	getfileslist_(char* folder,char* act,long int* nflist,int lenfolder,int lenact);
+void	curproject_(char* fcfgroot,char* fpath,char* fupath,char* fimgpth,char* fdocpth,long int* ibrowse,
+        long int* iincomp,long int* iincon,int len_root,int len_fpath,int len_fupath,int len_fimgpth,int len_fdocpth);
+void    curviews_(float* EVX,float* EVY,float* EVZ,float* VX,float* VY,float* VZ,float* EAN,long int* JITZNM,long int* JITSNM,
+        long int* JITVNO,long int* JITOBS,long int* JITSNR,long int* JITGRD,long int* JITORG,float* DIS,long int* JITBND,
+        long int* JITDSP,long int* JITHLS,long int* JITHLZ,long int* JITPPSW);
+void    pushgzonpik_(long int* jizgfoc,long int* jnzg);
+void    pushnznog_(long int* jnznog,long int* jnznogv);
 void	curmodule_(char* fcmodule,int len_fcmodule);
 void	capexgf_(char* cmd,int len_cmd);
 void	capextf_(char* cmd,int len_cmd);

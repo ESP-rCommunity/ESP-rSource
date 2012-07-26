@@ -193,9 +193,11 @@ C and calculation type:
       NDF(ICOMP,N)=nls
       IDFST(ICOMP,N)=idc
       SUMSYS=SUMSYS+SYSPER(ICOMP,N)
-      IF(SUMSYS.GT.1.0)then
-        call usrmsg('Individual lighting systems % are > 1.',' ','W')
-        goto 1000
+      IF(SUMSYS.GT.1.1)then
+
+C << is this strictly necessary? >>
+        call usrmsg('Individual lighting systems % are > 1.',
+     &    'Have a look at the controls.','W')
       endif
 
 C Read sensor location data x, y, z coordinates,
@@ -273,11 +275,11 @@ C SLOPEM - linear control slope used by control 32
        
   111 CONTINUE
 
-C Check that all of the gain has been controlled.
-      IF(SUMSYS.LT.1.0)then
+C Check that all of the gain has been controlled. 
+C << is this strictly necessary? >>
+      IF(SUMSYS.LT.0.97)then
         call usrmsg(' Sum of controled casual gains fraction  < 1.',
-     &             ' ','W')
-        goto 1000
+     &    'You might want to check the definitions. ','W')
       endif
       
 C Loop through all lighting zones and read daylight
@@ -338,7 +340,7 @@ c Trace output follows.
 
       DO 401 IDTY=1,NBDAYTYPE
         write(outs,9989)CALENTAG(IDTY),NCGTC(ICOMP,IDTY)
- 9989     format(' Casual gain type for control during ',1A,' = ',1I3)
+ 9989     format(' Casual gain type for control during ',A,' = ',I3)
         call edisp(itru,outs)
  401  CONTINUE
         DO 117 N=1,NLITZ(ICOMP)
@@ -353,7 +355,7 @@ c Trace output follows.
      &        ' user spec. daylight factor photocell types. '
             call edisp(itru,outs)
             write(outs,'(A,I2,A)') ' There are ',NUDWIN(ICOMP),
-     &        ' TMC (transparent) polygons defined. '
+     &        ' source surfaces for daylighting in the zone.'
             call edisp(itru,outs)
           elseif(IDFST(ICOMP,N).eq.3)then
             call edisp(itru,' External lighting sensor.')
@@ -378,8 +380,8 @@ c Trace output follows.
           call edisp(itru,outs)
 
           call edisp(itru,'  ')
-          call edisp(itru,' % of |No. of|Calcul| ')
-          call edisp(itru,' whole|sensor|type  | ')
+          call edisp(itru,' % of |No. of|Calculation| ')
+          call edisp(itru,' whole|sensor|type       | ')
           write(outs,9988)SYSPER(ICOMP,N),NDF(ICOMP,N),IDFST(ICOMP,N)
  9988     format(F6.2,I7,I7)
           call edisp(itru,outs)
@@ -425,15 +427,15 @@ c Trace output follows.
           DO 9985 J=1,NDF(ICOMP,N)
             if(IDFST(ICOMP,N).EQ.2)then
               call edisp(itru,' ')
-              call edisp(itru,' TMC | Daylight | ')
-              call edisp(itru,' no. | factor(%)| ')
+              call edisp(itru,' Source  | Daylight | ')
+              call edisp(itru,' surface | factor(%)| ')
               idd=0
               DO 814 IL=1,NZSUR(icomp)
                 if(idd.lt.NUDWIN(ICOMP))then
                   if(DFDAT(ICOMP,N,IL,J).gt.0.0)then
                     idd=idd+1
                     write(outs,9917)IL,DFDAT(ICOMP,N,IL,J)*100.
- 9917               format(I5,F10.2)
+ 9917               format(I5,F12.2)
                     call edisp(itru,outs)
                   endif
                 endif
@@ -481,6 +483,7 @@ C ACT - 's' do not ask the user for confirmation of file write.
 
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY

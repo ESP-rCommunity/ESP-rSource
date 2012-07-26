@@ -19,11 +19,10 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C ************ MFINIT 
-C Fills valid component type arrays
 C Sets default values for iteration parameters, Pstack calculation
-C model, matrix solver type and trace output flag
-C Assigns file units for the problem description (IFPRB),
-C climate (IFCLM) and results (IFRES) files
+C model, matrix solver type and trace output flag. Assigns unit
+C numbers for the flow network description (IFPRB), weather (IFCLM)
+C and results (IFRES) files.
 
       SUBROUTINE MFINIT(IFPRB,IFCLM,IFRES)
 
@@ -41,9 +40,9 @@ C default file names for databases
       COMMON/OUTIN/IUOUT,IUIN
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
-      common/pophelp/h(60)
 
 C Defaults.
+      character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLWPR/NPRE,FPRE(MPOS,MPRD)
@@ -51,9 +50,7 @@ C Defaults.
       COMMON/MFCALC/IPSMOD,MSLVTP
       COMMON/MFLITR/MAXITF,FERREL,FERMFL,PMAX,STEFFR,MFTRAC,ITER,IOK
 
-      character*72 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
-
-      CHARACTER H*72,DFILE*72,LTMP*72,lltmp*144
+      CHARACTER DFILE*72,LTMP*72,lltmp*144
       character LAPROB*72
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       CHARACTER OUTSTR*124,outs248*248
@@ -62,12 +59,18 @@ C Defaults.
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
       integer ier
 
-C Initiates filling of valid fluid flow component type arrays
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='MFINIT'  ! set for subroutine
+
+C Initiates filling of flow component data arrays.
       CALL MFCDAT
 
-C Set default values for:
-C iteration parameters, pressure stack difference calculation model,
-C matrix solver type, trace output option.
+C Set default values for iteration parameters, stack pressure difference
+C calculation model, matrix solver type and trace output flag.
       MAXITF=200
       FERREL=.01
       FERMFL=.0005
@@ -77,54 +80,46 @@ C matrix solver type, trace output option.
       MSLVTP=2
       MFTRAC=0
 
-C Assign problem description file.  If file not found confirm with
-C user that this is to be a new network description.  
-C Do a simple check on the file to see if it is a network file.
+C Assign flow network description file. If given file does not
+C exist, confirm with user that this is to hold a new description.
    20 IF(IFPRB.EQ.10) THEN
          CALL ERPFREE(IFPRB,ISTAT)
       ELSE
          IFPRB=10
       END IF
-      H(1)='A mass flow problem is defined as a number of nodes,  '
-      H(2)='components and connections which are held in a data file'
-      H(3)='(previously known as a leakage distribution file).'
-      H(4)='To begin a new problem provide a file name that does not'
-      H(5)='exist, otherwise an existing file name.'
-  289 CALL EASKS(LAPROB,' Mass flow network file name ? ',' ',
-     &     72,DAPROB,'mass flow network file',IER,5)
+      helptopic='mass_flow_overview'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+  289 CALL EASKS(LAPROB,'Flow network description file?',' ',
+     &     72,DAPROB,'mass flow network file',IER,nbhelp)
       IF(LAPROB.EQ.' ')GOTO 289
       CALL ERPFREE(IFPRB,ISTAT)
       call FINDFIL(LAPROB,XST)
       IF(.NOT.XST)THEN
-        CALL EASKAB(' ',' This was not found - ',
-     &  'use this as a new problem','specify another file',IW,0)
+        CALL EASKAB('File does not exist!',' ',
+     &              'Create?','Re-specify?',IW,nbhelp)
         IF(IW.EQ.2)GOTO 289
       ENDIF
       CALL EFOPSEQ(IFPRB,LAPROB,3,IER)
       IF(IER.NE.0) GOTO 20
       write(currentfile,'(a)') LAPROB(1:lnblnk(LAPROB))
 
-C Test for legal file type
-C For the time being, when the first record does not contain valid data
-C it is an illegal file type, and the file is regarded as being empty;
-C this might cause overwriting of an existing file !!
+C If the first record does not contain valid data then
+C file is regarded as being empty.
       CALL STRIPC(IFPRB,OUTSTR,0,ND,1,'mass file line 1',IER)
       IF(IER.NE.0)RETURN
       K=0
-      CALL EGETWI(OUTSTR,K,NNOD,0,MNOD,'F','no of nodes',IER)
-      CALL EGETWI(OUTSTR,K,NCMP,0,MCMP,'F','no of component',IER)
-      CALL EGETWI(OUTSTR,K,NCNN,0,MCNN,'F','no of connection',IER)
+      CALL EGETWI(OUTSTR,K,NNOD,0,MNOD,'F','number of nodes',IER)
+      CALL EGETWI(OUTSTR,K,NCMP,0,MCMP,'F','number of component',IER)
+      CALL EGETWI(OUTSTR,K,NCNN,0,MCNN,'F','number of connection',IER)
       IF(IER.EQ.1)GOTO 20
 
 C Assign wind pressure distribution file and read NPRE. If for some
 C reason IAPRES is still zero then set to 11.
    30 if(IAPRES.eq.0)IAPRES=11
-      H(1)='A wind pressure coefficients distribution file is a'
-      H(2)='database of pressure coefficients for surfaces in'
-      H(3)='typical positions and within several different exposure'
-      H(4)='categories. See the ESP manual for additional info.'
+      helptopic='pres_coef_file_overview'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
- 288  write(outs248,'(2a)') 'The current source file is:',
+ 288  write(outs248,'(2a)') 'Current pressure coefficients db is ',
      &  LAPRES(1:lnblnk(LAPRES))
       call edisp248(iuout,outs248,100)
       lltmp=LAPRES
@@ -132,21 +127,21 @@ C reason IAPRES is still zero then set to 11.
       iglib = igraphiclib()
       if(iglib.eq.1.or.iglib.eq.3)then
         if(llt.lt.96)then
-          CALL EASKF(lltmp,' ','Pressure coefficients database?',
-     &      96,DAPRES,'pressure coef database',IER,3)
+          CALL EASKF(lltmp,'Pressure coefficients database?',' ',
+     &      96,DAPRES,'pressure coefficients db',IER,nbhelp)
         elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(lltmp,' ','Pressure coefficients database?',
-     &      124,DAPRES,'pressure coef database',IER,3)
+          CALL EASKF(lltmp,'Pressure coefficients database?',' ',
+     &      124,DAPRES,'pressure coefficients db',IER,nbhelp)
         elseif(llt.ge.124.and.llt.le.144)then
-          CALL EASKF(lltmp,' ','Pressure coefficients database?',
-     &      144,DAPRES,'pressure coef database',IER,3)
+          CALL EASKF(lltmp,'Pressure coefficients database?',' ',
+     &      144,DAPRES,'pressure coefficients db',IER,nbhelp)
         endif
       elseif(iglib.eq.2)then
-        CALL EASKF(lltmp,' ','Pressure coefficients database?',
-     &    144,DAPRES,'pressure coef database',IER,3)
+        CALL EASKF(lltmp,'Pressure coefficients database?',' ',
+     &    144,DAPRES,'pressure coefficients db',IER,nbhelp)
       else
-        CALL EASKF(lltmp,' ','Pressure coefficients database?',
-     &    96,DAPRES,'pressure coef database',IER,3)
+        CALL EASKF(lltmp,'Pressure coefficients database?',' ',
+     &    96,DAPRES,'pressure coefficients db',IER,nbhelp)
       endif
 
       IF(LLTMP.EQ.' ')GOTO 288
@@ -155,46 +150,41 @@ C reason IAPRES is still zero then set to 11.
       IF(IER.NE.0) GOTO 30
       write(currentfile,'(a)') LAPRES(1:lnblnk(LAPRES))
 
-C Read in the pressure db to see if it is a proper one.
-      CALL STRIPC(IAPRES,OUTSTR,0,ND,1,'pressure db',IER)
+C Read in the pressure coefficients database and check contents.
+      CALL STRIPC(IAPRES,OUTSTR,0,ND,1,'Pressure coefficient db',IER)
       IF(IER.NE.0)RETURN
       K=0
-      CALL EGETWI(OUTSTR,K,NPRE,1,MPRD,'W','no pressure item',IER)
+      CALL EGETWI(OUTSTR,K,NPRE,1,MPRD,'W','Number of entries',IER)
       IF(NPRE.LT.1.OR.NPRE.GT.MPRD)THEN
-        CALL USRMSG(' The specified file appears to not be of',
-     &              ' the correct type, please try again','W')
+        CALL USRMSG('Database is not of the correct type!',
+     &              'Respecify.','W')
         GOTO 288
       ENDIF
 
-C Assign climate file and read year number.
+C Assign weather file and read year number.
    40 IFCLM=12
-      H(1)='A climate file holds hourly values for diffuse solar'
-      H(2)='intensity in W/m2, dry bulb temp in degrees C, direct'
-      H(3)='normal or global horizontal solar intensity in W/m2,'
-      H(4)='wind speed in tenths metre/second, wind direction deg'
-      H(5)='from north (clockwise), and relative humidity in '
-      H(6)='percent.  It also holds latitude, longitude difference'
-      H(7)='from the nearest time zone and the year represented.'
+      helptopic='climate_file_overview'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       lltmp=LCLIM
       llt=lnblnk(lltmp)
       iglib = igraphiclib()
       if(iglib.eq.1.or.iglib.eq.3)then
         if(llt.lt.96)then
-          CALL EASKF(lltmp,' ','Climate file?',
-     &      96,DCLIM,'climate file',IER,3)
+          CALL EASKF(lltmp,'Weather file?',' ',
+     &      96,DCLIM,'weather file',IER,nbhelp)
         elseif(llt.ge.96.and.llt.lt.124)then
-          CALL EASKF(lltmp,' ','Climate file?',
-     &      124,DCLIM,'climate file',IER,3)
+          CALL EASKF(lltmp,'Weather file?',' ',
+     &      124,DCLIM,'weather file',IER,nbhelp)
         elseif(llt.ge.124.and.llt.le.144)then
-          CALL EASKF(lltmp,' ','Climate file?',
-     &      144,DCLIM,'climate file',IER,3)
+          CALL EASKF(lltmp,'Weather file?',' ',
+     &      144,DCLIM,'weather file',IER,nbhelp)
         endif
       elseif(iglib.eq.2)then
-        CALL EASKF(lltmp,' ','Climate file?',
-     &    144,DCLIM,'climate file',IER,3)
+        CALL EASKF(lltmp,'Climate file?',' ',
+     &    144,DCLIM,'weather file',IER,nbhelp)
       else
-        CALL EASKF(lltmp,' ','Climate file?',
-     &    96,DCLIM,'climate file',IER,3)
+        CALL EASKF(lltmp,'Climate file?',' ',
+     &    96,DCLIM,'weather file',IER,nbhelp)
       endif
       CALL ERPFREE(IFCLM,ISTAT)
       ier=0
@@ -203,23 +193,21 @@ C Assign climate file and read year number.
         READ(IFCLM,REC=366,ERR=999) IRY
         LCLIM=lltmp
       ELSE
-        CALL LUSRMSG(' Could not find ',lltmp,'W')
+        CALL LUSRMSG('Could not find ',lltmp,'W')
         goto 40
       ENDIF
 
-C Assign results file; make sure this is not the problem file
+C Assign results file; make sure this is not the problem file.
    50 IFRES=13
-      H(1)='The results file holds the predictions generated by mfs'
-      H(2)='for a particular simulation.  The file is in an ASCII'
-      H(3)='format and the name is required even if you are not'
-      H(4)='planning to do a simulation during this session. '
+      helptopic='flow_res_file_overview'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       DFILE='new.mfr'
       LTMP=LAFRES
-      CALL EASKS(LTMP,' Mass flow simulation results file ? ',
-     &     ' ',72,DFILE,'mass flow results',IER,4)
+      CALL EASKS(LTMP,'Network flow simulation results file?',
+     &  ' ',72,DFILE,'flow results file',IER,nbhelp)
       IF(LTMP(1:lnblnk(LTMP)).EQ.LAPROB(1:lnblnk(LAPROB)))THEN
-        CALL USRMSG(' You have specified the same name as the problem',
-     &  ' description, please use another file name!','W')
+        CALL USRMSG('Same as the flow network description file!',
+     &  'Please enter another file name.','W')
         GOTO 50
       ENDIF
       LAFRES=LTMP
@@ -228,24 +216,21 @@ C Assign results file; make sure this is not the problem file
       write(currentfile,'(a)') LAFRES(1:lnblnk(LAFRES))
       RETURN
 
-C File error trap
+C File error trap.
   999 dok=.false.
-      h(1)='The record holding the year of the climate data could not'
-      h(2)='be read. This probably means the file is corrupt. Check'
-      h(3)='the file - it might be of zero bytes. '
-      h(4)=' '
-      h(5)='A no will close the application and delete the '
-      h(6)='mass flow description file if it is empty.'
-      CALL ASKOK(' ',' Error reading climate...continue?',OK,dok,6)
+      helptopic='mfs_file_error_trap'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL ASKOK('Error reading weather data!','Continue?',
+     &           OK,dok,nbhelp)
       IF(OK)THEN
         goto 40
       ELSE 
 
-C Quit, but first remove empty problem file if applicable
+C Quit after removing the flow network description file if empty.
         IF(NNOD.EQ.0.AND.NCMP.EQ.0.AND.NCNN.EQ.0) THEN
           CALL EFDELET(IFPRB,ISTAT)
         ENDIF
-        STOP ' MFINIT: exit from ESRUmfs'
+        STOP 'MFINIT: terminating mfs.'
       ENDIF
 
       END

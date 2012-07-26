@@ -41,7 +41,6 @@ C *********************************************************************
 #include "geometry.h"
 
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
      &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
       COMMON/RAY3/MODIFY,MODLEN,MODBND
@@ -59,10 +58,17 @@ C *********************************************************************
 
       LOGICAL ZONOK,MODIFY,MODBND,MODLEN,OK,DOK,BLDG3D,ZONE3D,XST
 
-      CHARACTER ITEM(15)*26,SZN*15,H*72
+      CHARACTER ITEM(15)*26,SZN*15
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ
       integer ier
       integer MITEM,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MENU3D'  ! set for subroutine
 
       SZN=' '
       IZ=0
@@ -108,52 +114,8 @@ C Display the menu.
       MITEM=15
 
 C Help text for this menu.
-      H(1)= 'This menu can be used to produce the required files'
-      H(2)= 'by the simulator for multi-D simulation. It deals'
-      H(3)= 'with a single zone at a time. The zone is divided'
-      H(4)= 'into components (surfaces, edges, and corners)'
-      H(5)= 'which are connected to each others via one or'
-      H(6)= 'more of connection surfaces (surface-to-surface,'
-      H(7)= 'surface-to-edge, edge-to-edge, and edge-to-corner).'
-      H(8)= '  '
-      H(9)= '    Each surface can be defined to be lumped or '
-      H(10)='discretized. However, only the discretized surfaces'
-      H(11)='can be connected to other components. Edges and'
-      H(12)='corners can be not defined lumped, or discretized as '
-      H(13)='they do not exist in the zone model). Both lumped'
-      H(13)='and discretized edges and corners can be connected'
-      H(14)='to other components.'
-      H(15)='     '
-      H(16)='    Connection surfaces can be activated (defined)'
-      H(17)='or ignored (not defined). An activated connection'
-      H(18)='surface should connect to components with the '
-      H(19)='proper status.'
-      H(20)='     '
-      H(21)='The multi-gridding menu is the main menu for'
-      H(22)='controlling the building constructions. In order to'
-      H(23)='activate this menu the zone should be defined first.'
-      H(24)='This will automaticaly produce a default 1D model '
-      H(25)='(but in 3D configuration) for the selected zone. '
-      H(26)='     '
-      H(27)='By selecting option (5) a default 3D model will be'
-      H(28)='produced for which all the gridding details of the'
-      H(29)='edges and corners are related to the surfaces they'
-      H(30)='are incontact with. To change the default 1D or 3D'
-      H(31)='gridding options (2) and (3) can be used.'
-      H(32)='     '
-      H(33)='Instead of generating a model manually, the multi-D'
-      H(34)='gridding details can be fed in via option (8).'
-      H(35)='On the other hand the existing model can be '
-      H(36)='saved for later use via option (7). Finally, the'
-      H(37)='multi-gridding files (i.e., nodes coordinates,'
-      H(38)='control volumes details, and connections '
-      H(39)='infomations) can be produced (to be used later'
-      H(40)='by BPS module) via option (6). Option (s) activates'
-      H(41)='the menu for converting the multi-D gridding file'
-      H(42)='from binary versions to ASCII and vice versa. This'
-      H(43)='allows the manually edited, via any text editor,'
-      H(44)='files to be used in producing the required multi-D'
-      H(45)='gridding files.'
+      helptopic='grd_3d_conduc_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Draw the appropriate graph.
       IF(MODIFY)CALL GRAAPH(IDRW1,IDRW2)
@@ -243,11 +205,11 @@ C Check if there are un-acceptable 3D configuration informations.
         IF(IERRR.LE.0)THEN
           IF(IWRNG.GT.0)THEN
             dok=.false.
-            h(1)='A check of the 3D description found no errors but'
-            h(2)='did find some issues that generated warnings. Please'
-            h(3)='review the warnings to see if you should continue.'
+            helptopic='grd_3d_conduc_warn'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL ASKOK(' Warning messages were given',
-     &        ' Are you sure you want to continue (see help)?',OK,dok,3)
+     &        ' Are you sure you want to continue (see help)?',
+     &        OK,dok,nbhelp)
             IF(OK)THEN
 
 C Define the intersection points for all types of lines in surfaces.
@@ -321,7 +283,9 @@ C Support facilities.
       ELSEIF(INO.EQ.MITEM-1)THEN
 
 C Help.
-        CALL PHELPD(' Multi-Gridding menu ',45,'-',0,0,IER)
+        helptopic='grd_3d_conduc_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD(' Multi-Gridding menu ',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.MITEM)THEN
 
 C Return to the main multi-gridding menu.
@@ -335,15 +299,21 @@ C DFNCMP displays the components definition menu.
 C *********************************************************************
       SUBROUTINE DFNCMP(IZ,SZN,IDRW1,IDRW2)
 
-      common/pophelp/h(60)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       LOGICAL     MODIFY,MODLEN,MODBND
 
       DIMENSION ITEM(8)
 
-      CHARACTER H*72,ITEM*26,SZN*15
+      CHARACTER ITEM*26,SZN*15
       integer MITEM,INO  ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='DFNCMP'  ! set for subroutine
 
    10 INO=-3
       WRITE(ITEM(1),'(A,A)')'  zone : ',SZN
@@ -362,11 +332,8 @@ C *********************************************************************
       ENDIF
 
 C Help text for this menu,.
-      H(1)=' The components menu allows the selection of the'
-      H(2)=' component type whose gridding details are to be'
-      H(3)=' modefied. Depending on your selection other menues'
-      H(4)=' will be activated.'
-      H(5)=' '
+      helptopic='grd_component_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU('   Components',ITEM,MITEM,INO)
       IF(INO.EQ.3)THEN
@@ -384,7 +351,9 @@ C Define corners.
       ELSEIF(INO.EQ.MITEM-1)THEN
 
 C Help.
-        CALL PHELPD('components definition',5,'-',0,0,IER)
+        helptopic='grd_component_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('components definition',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.MITEM)THEN
 
 C Return to the main multi-gridding menu.
@@ -398,12 +367,18 @@ C DFNCNC displays the connections definition menu.
 C *********************************************************************
       SUBROUTINE DFNCNC(ICOMP,SZN,IDRW1,IDRW2)
 
-      common/pophelp/h(60)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
       LOGICAL     MODIFY,MODLEN,MODBND
 
-      CHARACTER H*72,ITEM(9)*26,SZN*15
+      CHARACTER ITEM(9)*26,SZN*15
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='DFNCNC'  ! set for subroutine
 
    10 INO=-3
       WRITE(ITEM(1),'(A,A)')'  zone : ',SZN
@@ -423,12 +398,8 @@ C *********************************************************************
       ENDIF
 
 C Help text for this menu.
-      H(1)=' '
-      H(2)='    The connection surfaces menu allows the'
-      H(3)=' selection of the connection surface type '
-      H(4)=' whose gridding details are to be modified.'
-      H(5)=' Depending on your selection other menues'
-      H(6)=' will be activated.'
+      helptopic='grd_connect_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
  
       CALL USRMSG(' ',' ','-')
       CALL EMENU('   Connections',ITEM,MITEM,INO)
@@ -451,7 +422,9 @@ C Define edge-corner connections.
       ELSEIF(INO.EQ.MITEM-1)THEN
 
 C Help.
-       CALL PHELPD('connections definition',6,'-',0,0,IER)
+       helptopic='grd_connect_menu'
+       call gethelptext(helpinsub,helptopic,nbhelp)
+       CALL PHELPD('connections definition',nbhelp,'-',0,0,IER)
 
 C Return to the main multi-gridding menu.
       ELSEIF(INO.EQ.MITEM)THEN
@@ -467,12 +440,17 @@ C *********************************************************************
 #include "epara.h"
 #include "building.h"
 
-      common/pophelp/h(60)
-
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
       COMMON/GR3D51/NUMSS,IBDYSS(MSSZ,2),ILNBSS(MSSZ,2),IVRTSS(MSSZ,2)
 
-      CHARACTER VERT(35)*33,KEY*1,H*72,STTS*4
+      CHARACTER VERT(35)*33,KEY*1,STTS*4
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='DFNCSS'  ! set for subroutine
 
 C Initialise connection menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -501,7 +479,7 @@ C current menu line index. Build up text strings for the menu.
           IV1=IVRTSS(L,1)
           IV2=IVRTSS(L,2)
           WRITE(VERT(M),'(A1,1X,A8,I2,A12,I2,A2,A5)')KEY,
-     &              'vertex (',IV1,') : vertex (',IV2,') ',STTS
+     &      'vertex (',IV1,') : vertex (',IV2,') ',STTS
         ENDIF
    20 CONTINUE
 
@@ -520,10 +498,8 @@ C If a long list include page facility text.
       VERT(M+4)  ='- Exit                       '
 
 C Help for this menu.
-      H(1)=' The surface-to-surface connection surfaces menu'
-      H(2)=' allows altering the status of the surface-to-'
-      H(3)=' surface connection surfaces'
-      H(4)=' '
+      helptopic='surf_to_surf_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Now display the menu.
       CALL USRMSG(' ',' ','-')
@@ -548,7 +524,9 @@ C If there are enough items allow paging control via EKPAGE.
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
 C Display help messages.
-        CALL PHELPD('srf-srf connection surfaces',4,'-',0,0,IER)
+        helptopic='surf_to_surf_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('srf-srf connection surfaces',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.MVERT)THEN
 
 C Return to multi-gridding menu.
@@ -566,7 +544,7 @@ C *********************************************************************
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
@@ -574,8 +552,15 @@ C *********************************************************************
       COMMON/GR3D24/ISFEDG(MEZ,2),IVXEDG(MEZ,2)
       COMMON/GR3D56/NUMSE,IBDYSE(MSEZ,2),ILNBSE(MSEZ)
 
-      CHARACTER VERT(35)*35,KEY*1,H*72,STTS*4,ENAME*9,TEXT*72
+      CHARACTER VERT(35)*35,KEY*1,STTS*4,ENAME*9,TEXT*72
       CHARACTER STATS*16
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='DFNCSE'  ! set for subroutine
 
 C Initialise connection menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -624,9 +609,8 @@ C If a long list include page facility text.
       VERT(M+4)  ='- Exit                       '
 
 C Help text for this menu.
-      H(1)=' The surface-to-edge connection surfaces menu'
-      H(2)=' allows altering the status of the surface-to-'
-      H(3)=' edge connection surfaces'
+      helptopic='surf_to_edge_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Now display the menu.
       CALL USRMSG(' ',' ','-')
@@ -651,7 +635,6 @@ C If there are enough items allow paging control via EKPAGE.
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C List existing edges.
-C        CALL EPAGE
         CALL EDISP(IUOUT,
      &    ' No.  IV1   IV2   surface-1      surface-2      status')
         CALL EDISP(IUOUT,
@@ -675,7 +658,9 @@ C        CALL EPAGE
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
 C Display help messages.
-        CALL PHELPD('srf-edge connection surfaces',4,'-',0,0,IER)
+        helptopic='surf_to_edge_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('srf-edge connection surfaces',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.MVERT)THEN
 
 C Return to multi-gridding menu.
@@ -693,7 +678,7 @@ C *********************************************************************
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
@@ -702,7 +687,14 @@ C *********************************************************************
       COMMON/GR3D61/NUMEE,IBDYEE(MEEZ,2),IVRTEE(MEEZ)
 
       CHARACTER TEXT*72,STATS*16
-      CHARACTER VERT(35)*19,KEY*1,H*72,STTS*4
+      CHARACTER VERT(35)*19,KEY*1,STTS*4
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='DFNCEE'  ! set for subroutine
 
 C Initialise connection menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -747,9 +739,8 @@ C If a long list include page facility text.
       VERT(M+4)  ='- Exit            '
 
 C Help for this menu.
-      H(1)=' The edge-to-edge connection surfaces menu'
-      H(2)=' allows altering the status of the edge-to-'
-      H(3)=' edge connection surfaces'
+      helptopic='edge_to_edge_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Now display the menu.
       CALL EMENU(' edge-edge',VERT,MVERT,IVERT)
@@ -796,7 +787,9 @@ C        CALL EPAGE
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
 C Display help messages.
-        CALL PHELPD('edge-edge connection surfaces',3,'-',0,0,IER)
+        helptopic='edge_to_edge_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('edge-edge connection surfaces',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.MVERT)THEN
 
 C Return to multi-gridding menu.
@@ -814,7 +807,7 @@ C *********************************************************************
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
       COMMON/GR3D06/INDXSS(MSSZ),INDXSE(MSEZ),INDXEE(MEEZ),INDXEC(MECZ)
@@ -825,7 +818,14 @@ C *********************************************************************
       COMMON/GR3D66/NUMEC,IBDYEC(MECZ,2),IVRTEC(MECZ)
 
       CHARACTER TEXT*72,STATS*16
-      CHARACTER VERT(35)*33,KEY*1,H*72,STTS*4,ENAME*9,CNAME*11
+      CHARACTER VERT(35)*33,KEY*1,STTS*4,ENAME*9,CNAME*11
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='DFNCEC'  ! set for subroutine
 
 C Initialise connection menu size variables based on window size. 
 C IVERT is the menu position, MVERT the current number of menu lines.
@@ -874,14 +874,11 @@ C If a long list include page facility text.
       VERT(M+5)  ='- Exit                       '
 
 C Help text for this menu.
-      H(1)=' The edge-to-corner connection surfaces menu'
-      H(2)=' allows altering the status of the edge-to-'
-      H(3)=' corner connection surfaces'
+      helptopic='edge_to_corner_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Now display the menu.
-      CALL USRMSG(' ',' ','-')
-      CALL EMENU(' edge-corner connections',
-     &           VERT,MVERT,IVERT)
+      CALL EMENU(' edge-corner connections',VERT,MVERT,IVERT)
 
 C Edit item identified by KEYIND.
       IF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
@@ -901,7 +898,6 @@ C If there are enough items allow paging control via EKPAGE.
       ELSEIF(IVERT.EQ.(MVERT-3))THEN
 
 C List existing edges.
-C        CALL EPAGE
         CALL EDISP(IUOUT,
      &    ' No.  IV1   IV2   surface-1      surface-2      status')
         CALL EDISP(IUOUT,
@@ -925,7 +921,6 @@ C        CALL EPAGE
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C List existing corners.
-C        CALL EPAGE
         WRITE(TEXT,'(2A)')' No.  vrtx  surface-1      surface-2',
      &         '      surface-3      status'
         CALL EDISP(IUOUT,TEXT)
@@ -953,7 +948,10 @@ C        CALL EPAGE
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
 C Display help messages.
-        CALL PHELPD('edge-corner connection surfaces',4,'-',0,0,IER)
+        helptopic='edge_to_corner_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('edge-corner connection surfaces',nbhelp,'-',
+     &    0,0,IER)
       ELSEIF(IVERT.EQ.MVERT)THEN
 
 C Return to multi-gridding menu.
@@ -973,7 +971,6 @@ C geometry.h provides commons G0/G1 and G2.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/FILEP/IFIL
       
       integer ncomp,ncon
@@ -988,17 +985,23 @@ C geometry.h provides commons G0/G1 and G2.
 
       DIMENSION IVALZ(MCOM)
 
-      CHARACTER SZN*12,H*72
+      CHARACTER SZN*12
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SELZON'  ! set for subroutine
 
       IUNIT=IFIL+2
 
 C Show the zone selection menu.
-      H(1)='    Select the zone for which the multi-D gridding'
-      H(2)=' details are to be created/modified.'
-      H(3)=' '
+      helptopic='grd_sel_zone_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       INPICK=1
    20 CALL EPICKS(INPICK,IVALZ,' ',' ',12,
-     &            NCOMP,zname,' SELECT ZONE',IER,3)
+     &  NCOMP,zname,' SELECT ZONE',IER,nbhelp)
       IZ=IVALZ(1)
       IF(IZ.GT.0.AND.IZ.LE.NCOMP)THEN
         SZN=zname(IZ)
@@ -1078,14 +1081,13 @@ C Initialize the edges and corners gridding.
       END
 
 C ***************************     READ3D     **************************
-C READ3D reads 3D gridding cofiguration file.
+C READ3D reads 3D gridding configuration file.
 C *********************************************************************
       SUBROUTINE READ3D(IZ)
 #include "building.h"
 #include "geometry.h"
 
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
@@ -1111,7 +1113,14 @@ C *********************************************************************
       COMMON/GR3D66/NUMEC,IBDYEC(MECZ,2),IVRTEC(MECZ)
 
       CHARACTER STRG*124,FILE3D*72
-      CHARACTER H*72,WORD*124
+      CHARACTER WORD*124
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='READ3D'  ! set for subroutine
 
       IER=0
 
@@ -1119,11 +1128,10 @@ C *********************************************************************
       FILE3D=WORD(1:72)
 
 C Open the file.
-      H(1)='    Input the name for the zone file in which'
-      H(2)=' the multi-gridding configuration details exit.'
-      H(3)=' '
+      helptopic='grd_3d_read_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKS(FILE3D,' 3D gridding configuration file name ?',' ',
-     &       72,' ',' 3D gridding file ',IER,3)
+     &  72,' ',' 3D gridding file ',IER,nbhelp)
       IUNIT=IFIL+1
       CALL EFOPSEQ(IUNIT,FILE3D,1,IER)
       IF(IER.LT.0)RETURN
@@ -1421,7 +1429,6 @@ C *********************************************************************
 #include "geometry.h"
 
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
 
       COMMON/GR3D01/INDXS(MS),THKS(MS),DCOSS(MS,3,3)
       COMMON/GR3D02/XVRT(MS,MVS),ZVRT(MS,MVS)
@@ -1447,16 +1454,21 @@ C *********************************************************************
       COMMON/GR3D66/NUMEC,IBDYEC(MECZ,2),IVRTEC(MECZ)
 
       CHARACTER*72 FILE3D
-      CHARACTER H*72,WORD*124
+      CHARACTER WORD*124
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='SAVE3D'  ! set for subroutine
 
       WRITE(WORD,'(A,A4)')zname(IZ)(1:lnzname(IZ)),'.c3d'
       FILE3D=WORD(1:72)
-      H(1)='    Input the name for the zone file in which'
-      H(2)=' the multi-gridding configuration details are'
-      H(3)=' to be saved.'
-      H(4)=' '
+      helptopic='grd_3d_cfg_file'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL EASKS(FILE3D,' 3D gridding configuration file name ?',' ',
-     &       72,' ',' 3D gridding file ',IER,4)
+     &  72,' ',' 3D gridding file ',IER,nbhelp)
       IUNIT=IFIL+1
       CALL EFOPSEQ(IUNIT,FILE3D,4,IER)
       IF(IER.LT.0)RETURN

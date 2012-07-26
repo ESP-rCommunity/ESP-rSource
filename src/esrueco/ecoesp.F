@@ -44,7 +44,6 @@ C Parameters
       integer imatarrayindex  ! << needs to be added to parameter list above >>
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/pophelp/H(60)
       COMMON/exporttg/xfile,tg,delim
       COMMON/exporttgi/ixopen,ixloc,ixunit
 
@@ -55,10 +54,17 @@ C Parameters
       DIMENSION CLSDES(30),PDBM(35),CLSSEL(30),ICLSSEL(30)
       integer iwhicharray
       dimension iwhicharray(60)
-      CHARACTER ACTION*1,CLSSEL*36,lltmp*144,CLSDES*30,H*72
+      CHARACTER ACTION*1,CLSSEL*36,lltmp*144,CLSDES*30
       CHARACTER KEY*1,PDBM*64,outs*124
       CHARACTER xfile*144,tg*1,delim*1,t32*32,t248*248
       integer NCO,NITMS,ICO,INO,IW ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ELISTCMOD'  ! set for subroutine
 
 C Assume no changes to db amd user has not entered password.
       MODDB=.FALSE.
@@ -105,27 +111,27 @@ C Gather the names of the various classes and present this list.
       CLSDES(M+5)=  '- exit                        '
       NCO=M+5
 
+C Help for the menu.
+      helptopic='eco_material_classes'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
 C Now display the menu.
       CALL EMENU('Materials Classes',CLSDES,NCO,ICO)
       IF(ICO.EQ.NCO)THEN
         RETURN
       ELSEIF(ICO.EQ.(NCO-1))THEN
-        H(1)='The classifications shown in the display include up to'
-        H(2)='18 elements. To get a listing of the items included'
-        H(3)='select one of the classifications.'
-        CALL PHELPD('materials menu',3,'-',0,0,IER)
+        helptopic='eco_material_classes'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('materials menu',nbhelp,'-',0,0,IER)
       ELSEIF(ICO.EQ.(NCO-2))THEN
 
 C List one or more classifications.
         INPIC=matcats
-        h(1)='You may select one or more classes to list. '
-        CALL EPICKS(INPIC,ICLSSEL,' ',' Which classes to list:',
-     &        36,NCLASS,CLSSEL,'Primative classes',IER,1)
+        CALL EPICKS(INPIC,ICLSSEL,' ','Which classes to list:',
+     &        36,NCLASS,CLSSEL,'Primative classes',IER,nbhelp)
         IF(INPIC.EQ.0)GOTO 40
-        h(1)=' Summary reporting can be shown in the text feedback'
-        h(2)=' or a text file.'
         CALL EASKABC(' Reporting to:',' ',
-     &      'text feedback','summary file','cancel',irpt,2)
+     &    'text feedback','summary file','cancel',irpt,nbhelp)
         if(irpt.eq.1)then
           itu = iuout
         elseif(irpt.eq.2)then
@@ -176,10 +182,9 @@ C associated with this class.
 C Add another category to the database << not yet tested >>
         if(matcats.LT.30)then
           matcats=matcats+1
-          H(1)='This description may be up to 32 char. '
           t32=' '
           CALL EASKS(t32,' Classification name (<32 char)?',' ',
-     &      32,' ','class name',IER,1)
+     &      32,' ','class name',IER,nbhelp)
           write(matcatname(matcats),'(a)') t32
           write(matcatdoc(matcats),'(a,i2,3a)')
      &      'Category (',matcats,') named ',t32(1:lnblnk(t32)),
@@ -317,30 +322,18 @@ C Remember the array index that goes with the menu position (m).
         NITMS=NC+7
         INO=-4
 
+C Make up help text for the various dialogs.
     2   continue
-        H(1)='The information in this display is based on data from'
-        H(2)='a materials database.  Databases of this'
-        H(3)='type are used to build a construction database.'
-        H(4)='Data in this db rarely changes. However, users may '
-        H(5)='wish to add additional materials or classifications to'
-        H(6)='conform to materials in their region.  '
-        H(7)='  '
-        H(8)='Adding or Deleting a material is supported. The'
-        H(9)='former creates a material at the end of the current'
-        H(10)='classification which may then be edited. '
-        H(11)=' '
-        H(12)='You may copy an existing material into a new item at'
-        H(13)='the end of the list. BE SURE TO ALTER ITS NAME! '
+        helptopic='eco_material_prop'
+        call gethelptext(helpinsub,helptopic,nbhelp)
 
         CALL EMENU('Materials Database',PDBM,NITMS,INO)
 
         IF(INO.EQ.NITMS.OR.INO.EQ.0)THEN
           IF(MODDB.and.ACTION.eq.'M')THEN
             dok=.true.
-            h(1)='Recent changes are held in memory and might be '
-            h(2)='lost if you do not update the file. '
             CALL ASKOK('Changes have been made in db to save these ',
-     &        'update the db.  Update the db now ? ',OK,dok,2)
+     &        'update the db.  Update the db now ?',OK,dok,nbhelp)
             IF(.NOT.OK)GOTO 4
             chgdb=.true.
             CALL ERPFREE(IFMUL,ISTAT)  ! in case other unit is still open
@@ -361,11 +354,9 @@ C            call delfiledosorunix(lltmp,ider)
         ELSEIF(INO.eq.3)THEN
 
 C Edit classification name.
-          H(1)='A classification has a descriptive name (up to '
-          H(2)='32 char).'
           write(t32,'(a)')matcatname(IC)(1:lnblnk(matcatname(IC)))
-          CALL EASKS(t32,' ',' Classification name (<32 char)?',
-     &      32,' ','class name',IER,2)
+          CALL EASKS(t32,' ','Classification name (<32 char)?',
+     &      32,' ','class name',IER,nbhelp)
           if(t32(1:2).ne.'  ')then
             write(matcatname(IC),'(a)') t32(1:lnblnk(t32))
             chgdb=.true.
@@ -373,12 +364,9 @@ C Edit classification name.
           endif
 
 C Also edit classification documentation.
-          H(1)='Notes (<248 char) for this category of materials' 
-          H(2)='are useful for descriptions that apply to all'
-          H(3)='the materials.'
           t248=matdoc(IC)(1:lnblnk(matdoc(IC)))
           CALL EASKS248(t248,'Category notes:',' ',
-     &      72,'this category...','category notes',IER,3)
+     &      72,'this category...','category notes',IER,nbhelp)
           if(t248(1:2).ne.'  ')then
             write(matdoc(IC),'(a)') t248(1:lnblnk(t248))
             chgdb=.true.
@@ -397,7 +385,9 @@ C Change the display
         ELSEIF(INO.EQ.NITMS-1)THEN
 
 C Display HELP
-          CALL PHELPD('materials database',13,'-',0,0,IER)
+          helptopic='eco_material_prop'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('materials database',nbhelp,'-',0,0,IER)
 
         ELSEIF(INO.EQ.NITMS-2)THEN
 
@@ -498,10 +488,8 @@ C If there is room add a note about its origin.
         ELSEIF(INO.EQ.NITMS-4)THEN
 
 C Add or delete and material from db.
-          h(1)='You cannot recover a deleted material.  After you '
-          h(2)='copy it, be sure to give it a unique name. '
           CALL EASKABC(' ','Options: ',' Delete existing material',
-     &      ' Insert material','continue',IW,2)
+     &      ' Insert material','continue',IW,nbhelp)
           IF(IW.EQ.1)THEN
 
 C Ask the user which one to remove then loop through materials and
@@ -690,8 +678,7 @@ C and then resetn MODDB and chgdb if mod is true.
             write(outs,'(a,i3,a,a)') ' Use material (',iwhich,') ',
      &        matname(IFOC)(1:lsn)
             dok=.true.
-            h(1)='Last chance to abort the selection. '
-            CALL ASKOK(outs,'as your selection ?',OK,dok,1)
+            CALL ASKOK(outs,'as your selection ?',OK,dok,nbhelp)
             if(OK)then
               imatarrayindex=IFOC ! set to selected array index
               return
@@ -716,7 +703,6 @@ C the zone no are recorded in NZNOG
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       
       integer ncomp,ncon
@@ -729,10 +715,14 @@ C the zone no are recorded in NZNOG
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       DIMENSION IVALZ(MCOM)
-     
 
-      CHARACTER H*72
-      
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='Zoneslist'  ! set for subroutine
+
       do 5 i=1,MCOM
         NbSurSel(i) = 0
   5   continue
@@ -759,12 +749,11 @@ C Otherwise select the zones from a list of zone names.
         call edisp(iuout,' Zone selection... ')
         call edisp(iuout,'  ')
 
- 7      H(1)=' Pick one, several or All zones for inclusion '
-        H(2)=' from the list provided. '
-        H(3)=' You may choose them in any order. '
+ 7      helptopic='eco_pick_zones'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         INPIC=NCOMP
         CALL EPICKS(INPIC,IVALZ,' ',' Which zones to include: ',
-     &    12,NCOMP,ZNAME,' Zones list',IDerr,3)
+     &    12,NCOMP,ZNAME,' Zones list',IDerr,nbhelp)
 
 C Check for errors (if => exit sub).
         if (IDerr.ne.0) goto 666
@@ -861,8 +850,8 @@ C Iskip : If = 0, then skip the list of surfaces menu
 
       COMMON/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
@@ -873,12 +862,20 @@ C Iskip : If = 0, then skip the list of surfaces menu
 
       DIMENSION VERT(35)
 
-      CHARACTER H*72
       CHARACTER VERT*44,KEY*1,head*31,OutStr*124
 
       LOGICAL MODIFY,MODLEN,MODBND,zbzero,context,SelSurf
       logical changedit
       integer MVERT,IVERT ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ZoneDisp'  ! set for subroutine
+      helptopic='eco_surface_attribures'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
       zbzero=.FALSE.
       changedit=.false.
@@ -982,9 +979,7 @@ C IF EXIT
         return
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
 
-C << Help message required. >>
-        H(1)='The surface attributes of the zone geometry file,'
-        CALL PHELPD('zone geom file section',1,'-',0,0,IER)
+        CALL PHELPD('zone geom file section',nbhelp,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
 C IF * BROWSE 
@@ -1059,7 +1054,6 @@ C HeightCo (Real) : Height [m] of the composite, for LCA calculation.
 #include "material.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      COMMON/pophelp/h(60)
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/ERRHAND/IDerr
@@ -1069,7 +1063,13 @@ C HeightCo (Real) : Height [m] of the composite, for LCA calculation.
 
       DIMENSION IVALZ(MCOM)
 
-      CHARACTER H*72
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='CompoList'  ! set for subroutine
+
 
 C Read database if not already done.
       if (.not.MLDBOK) then 
@@ -1093,14 +1093,13 @@ C Otherwise select the zones from a list of zone names.
       call edisp(iuout,' Composite(s) selection... ')
       call edisp(iuout,'  ')
 
- 7    H(1)='Pick one, several or All zones for inclusion in a'
-      H(2)='xx from the list provided. '
-      H(3)='You may choose them in any order. '
+ 7    helptopic='eco_select_from_list'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C <<Jon : allowing *Select all surface allow only one pik for the moment (Max.: NMLC)
       INPIC=NMLC
       CALL EPICKS(INPIC,IVALZ,' ',' Which composites to include:',
-     &  48,NMLC,Desc,' Composite(s) list',IDerr,3)
+     &  48,NMLC,Desc,' Composite(s) list',IDerr,nbhelp)
 
 C Check for errors (if => exit sub).
       if (IDerr.ne.0) RETURN
@@ -1131,7 +1130,7 @@ C Two composites cannot have the same number.
           J2=LstComp(J)
           IF(J1.EQ.J2)then
             call edisp(iuout,
-     &            ' Two composites cannot have the same number!')
+     &        ' Two composites cannot have the same number!')
             goto 7
           endif
  30     continue
@@ -1443,11 +1442,11 @@ C
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      COMMON/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
@@ -1546,7 +1545,7 @@ C << Why is SDATA used? >>
       CHARACTER*12 CompoNam,LayerNam,MatNameco
       CHARACTER*72 MatDesc,MatCat,LayerDes
       CHARACTER UnitEner*5, UnitMass*4, UnitImp*8
-      CHARACTER H*72,outs*170,ITEM*36
+      CHARACTER outs*170,ITEM*36
       CHARACTER StepName*36,StepSName*12
       CHARACTER*110 LabelGen, GenUnt, Label, LabelUnt, LabelImp, ImpUnt
       CHARACTER*55 LabelB, LabelA, LabelC, LabelD
@@ -1560,6 +1559,13 @@ C << Why is SDATA used? >>
       REAL LCAValue(MIMP),LCAValuP(MIMP),LCAValuS(MIMP),StepImp
       REAL LayerTot(MIMP),CompoTot(MIMP),ZoneTot(MIMP),StageTot(MIMP),
      &     WholeTot(MIMP),ProjTot(MIMP)
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='LCAcalc'  ! set for subroutine
  
 
 C Initialisation
@@ -1635,23 +1641,8 @@ C Life cycle short name
 
 
 C Whih LCA display ; elementary step or major step ?
-      H(1)='Selection of the LCA results'
-      H(2)='----------------------------'
-      H(3)=' '
-      H(4)='LCA results can be display as :'
-      H(5)=' '
-      H(6)='1) Single step: In this case, the results correspond only '
-      H(7)='   to one LCA elementary step, such as material mass '
-      H(8)='   impacts or composite assembly. If this option is '
-      H(9)='   selected, you will have to select a step in a list.'
-      H(10)=' '
-      H(11)='2) Major phase: In this case, the results correspond to a'
-      H(12)='   group of elementary step define in 1). If this option '
-      H(13)='   is selected, you will have to select which major step.'
-      H(14)=' '
-      H(15)='3) Whole cycle: In this case, the results correspond to '
-      H(16)='   the impacts from cradle to grave.'
-
+      helptopic='eco_LCA_calculations'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 3     IWB=0
       IWBB=0
@@ -1661,13 +1652,13 @@ C Ask which step. Message slightly different in interactive mode and  when expor
 C the results to a file
       if (Ichanel.ne.iuout)then
         CALL EASKABCD(' ', 'Do you want to add in output file :',
-     &                  ' An elementary phase ',' A major phase ',
-     &                  ' Whole life cycle ',' Cancel ',IWB,16)
+     &                ' An elementary phase ',' A major phase ',
+     &                ' Whole life cycle ',' Cancel ',IWB,nbhelp)
         IF(IWB.EQ.4) GOTO 666 
       else
         CALL EASKABCD(' ', 'Do you want to analyse:',
-     &                  ' An elementary phase ',' A major phase ',
-     &                  ' Whole life cycle ',' Cancel ',IWB,16)
+     &                ' An elementary phase ',' A major phase ',
+     &                ' Whole life cycle ',' Cancel ',IWB,nbhelp)
       endif
       CALL edisp(Ichanel,' ')
 
@@ -1692,57 +1683,20 @@ C If no single step has been selected go back
 
 C if Help is required
         ELSEIF(INO.EQ.NITEMS-1)THEN
-          H(1)='ELEMENTARY LCA PHASE'
-          H(2)='--------------------'
-          H(3)=' '
-          H(4)='The LCA results display will correspond to your '
-          H(5)='selection. The LCA elementary phase correspond to :'
-          H(6)='  '
-          H(7)=' 1 Materials fabrication : Impacts due to materials'
-          H(8)='   fabrication. Include processes from the material '
-          H(9)='   extraction to the material producrion factory.'
-          H(10)=' 2 Transp. to construction site : Impacts due to '
-          H(11)='   materials transportation from material production'
-          H(12)='   factory site to the composite assembly site. This'
-          H(13)='   latest site is either the building site if the '
-          H(14)='   composite is build on the building site (such as'
-          H(15)='   a brick wall) or an other factory in'
-          H(16)='   the case of a prefabricated composite (such as'
-          H(17)='   window.'
-          H(18)=' 3 Composite assembly : Impacts due to the processes'
-          H(19)='   required to assemble the composite on the '
-          H(20)='   composite site.'
-          H(21)=' 4 Transport to building site : Impacts due to the'
-          H(22)='   composite transport. Only <> 0 for prefabricated'
-          H(23)='   composite.'
-          H(24)=' 5 Assembly on the building : Impacts due to the '
-          H(25)='   assembly of the composite on the building.'
-          H(26)=' 6 Building maintenance : Impacts due to the building'
-          H(27)='   maintenance over its lifetime.' 
-          H(28)=' 7 Dumped waste transport : Impacts due to the part '
-          H(29)='   of waste transported from the building site to the'
-          H(30)='   dump site.'
-          H(31)=' 8 Dumped waste treatment : Impacts due to the dumped'
-          H(32)='   waste treatment at the dump site.'
-          H(33)=' 9 Dumped waste mass : Mass of the dumped waste.'
-          H(34)=' 10 Incinarated waste transport : Impacts due to the '
-          H(35)='    part of waste transported from the building site '
-          H(36)='    to the incinaration site.'
-          H(37)=' 11 Incinarated waste treatment : Impacts due to the '
-          H(38)='    incinaration treatment at the incinaration site.'
-          H(39)=' 12 Incinarated waste mass : Mass of the incinarated '
-          H(40)='    waste.'
-          H(41)=' 13 Recycled waste : Mass of recycled waste '
-          CALL PHELPD('ELEMENTARY LCA PHASE menu',41,'-',0,0,IER)
+          helptopic='eco_LCA_elementary'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('ELEMENTARY LCA PHASE menu',nbhelp,'-',0,0,IER)
           GOTO 10
         ENDIF
 
 C If a Major stage was selected
       ELSEIF (IWB .EQ.2) THEN
 C ask which major stage to analyse
+        helptopic='eco_LCA_calculations'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         call EASKABCD('LCA impacts:',' Which major stage ? ',
      &     ' Building construction ',' Building utilisation ',
-     &     ' Building elimination ', ' CANCEL ',IW,20)
+     &     ' Building elimination ', ' CANCEL ',IW,nbhelp)
         if (IW.EQ.4) goto 666
 
 C Cancel LCA calculation if analyse type does not exist
@@ -2467,11 +2421,11 @@ C phylosophy as LCACalc
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      COMMON/pophelp/h(60)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/surfsel/isursel(MCON),NbSurSel(MCOM),ISelCon(MCON),
      &               ISelComp(MCON)
@@ -2576,7 +2530,7 @@ C phylosophy as LCACalc
 
       CHARACTER UnitEner*5, UnitMass*4, UnitImp*8
       CHARACTER*72 NAM
-      CHARACTER H*72,outs*160,ITEM*36, Tmpstring*72
+      CHARACTER outs*160,ITEM*36, Tmpstring*72
       CHARACTER StepName*36
       CHARACTER*110 LabelGen, GenUnt, Label, LabelUnt, LabelImp, ImpUnt
       LOGICAL Exist, dupedges, context
@@ -2589,6 +2543,13 @@ C phylosophy as LCACalc
      &     WholeTot(MIMP),ProjTot(MIMP)
       INTEGER NbEIALay, ICalType
       integer NITEMS,INO ! max items and current menu item
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='LCADet'  ! set for subroutine
  
 C Find version of materials database.
       call eclose(matver,1.1,0.01,closemat1)
@@ -2691,22 +2652,8 @@ C Disposal mass
 
 
 C Whih LCA display ; elementary step or major step ?
-      H(1)='Selection of the LCA results'
-      H(2)='----------------------------'
-      H(3)=' '
-      H(4)='LCA results can be display as :'
-      H(5)=' '
-      H(6)='1) Single step: In this case, the results correspond only '
-      H(7)='   to one LCA elementary step, such as material mass '
-      H(8)='   impacts or composite assembly. If this option is '
-      H(9)='   selected, you will have to select a step in a list.'
-      H(10)=' '
-      H(11)='2) Major phase: In this case, the results correspond to a'
-      H(12)='   group of elementary step define in 1). If this option '
-      H(13)='   is selected, you will have to select which major step.'
-      H(14)=' '
-      H(15)='3) Whole cycle: In this case, the results correspond to '
-      H(16)='   the impacts from cradle to grave.'
+      helptopic='eco_LCA_results'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 3     IWB=0
       IWBB=0
@@ -2716,8 +2663,8 @@ C ask which step only in the interactive mode and not when exporting
 C the results to a file
       if (Ichanel.ne.iuout)then
         CALL EASKABCD(' ', 'Do you want to add in output file :',
-     &                  ' An elementary phase ',' A major phase ',
-     &                  ' Whole life cycle ',' Cancel ',IWB,16)
+     &                ' An elementary phase ',' A major phase ',
+     &                ' Whole life cycle ',' Cancel ',IWB,nbhelp)
         IF(IWBB.EQ.4) then
           GOTO 666 
         ELSE
@@ -2725,8 +2672,8 @@ C the results to a file
         ENDIF
       else
         CALL EASKABCD(' ', 'Do you want to analyse:',
-     &                  ' An elementary phase ',' A major phase ',
-     &                  ' Whole life cycle ',' Cancel ',IWB,16)
+     &                ' An elementary phase ',' A major phase ',
+     &                ' Whole life cycle ',' Cancel ',IWB,nbhelp)
       endif
       CALL edisp(Ichanel,' ')
 
@@ -2774,56 +2721,19 @@ C step calculation
 C If no single step has been selected go back
            GOTO 666
         ELSEIF(INO.EQ.NITEMS-1)THEN
-          H(1)='ELEMENTARY LCA PHASE'
-          H(2)='--------------------'
-          H(3)=' '
-          H(4)='The LCA results display will correspond to your '
-          H(5)='selection. The LCA elementary phase correspond to :'
-          H(6)='  '
-          H(7)=' 1 Materials fabrication : Impacts due to materials'
-          H(8)='   fabrication. Include processes from the material '
-          H(9)='   extraction to the material producrion factory.'
-          H(10)=' 2 Transp. to construction site : Impacts due to '
-          H(11)='   materials transportation from material production'
-          H(12)='   factory site to the composite assembly site. This'
-          H(13)='   latest site is either the building site if the '
-          H(14)='   composite is build on the building site (such as'
-          H(15)='   a brick wall) or an other factory in'
-          H(16)='   the case of a prefabricated composite (such as'
-          H(17)='   window.'
-          H(18)=' 3 Composite assembly : Impacts due to the processes'
-          H(19)='   required to assemble the composite on the '
-          H(20)='   composite site.'
-          H(21)=' 4 Transport to building site : Impacts due to the'
-          H(22)='   composite transport. Only <> 0 for prefabricated'
-          H(23)='   composite.'
-          H(24)=' 5 Assembly on the building : Impacts due to the '
-          H(25)='   assembly of the composite on the building.'
-          H(26)=' 6 Building maintenance : Impacts due to the building'
-          H(27)='   maintenance over its lifetime.' 
-          H(28)=' 7 Dumped waste transport : Impacts due to the part '
-          H(29)='   of waste transported from the building site to the'
-          H(30)='   dump site.'
-          H(31)=' 8 Dumped waste treatment : Impacts due to the dumped'
-          H(32)='   waste treatment at the dump site.'
-          H(33)=' 9 Dumped waste mass : Mass of the dumped waste.'
-          H(34)=' 10 Incinarated waste transport : Impacts due to the '
-          H(35)='    part of waste transported from the building site '
-          H(36)='    to the incinaration site.'
-          H(37)=' 11 Incinarated waste treatment : Impacts due to the '
-          H(38)='    incinaration treatment at the incinaration site.'
-          H(39)=' 12 Incinarated waste mass : Mass of the incinarated '
-          H(40)='    waste.'
-          H(41)=' 13 Recycled waste : Mass of recycled waste '
-          CALL PHELPD('ELEMENTARY LCA PHASE menu',41,'-',0,0,IER)
+          helptopic='eco_res_elementary'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('ELEMENTARY LCA PHASE menu',nbhelp,'-',0,0,IER)
           GOTO 10
         ENDIF
 
 C If Selection of a Major stage, then ask for which one
       ELSEIF (IWB .EQ.2) THEN
+        helptopic='eco_LCA_results'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABCD('LCA impacts:',' Which major stage ? ',
      &     ' Building construction ',' Building maintenance ',
-     &     ' Building deconstruction ', ' CANCEL ',IW,20)
+     &     ' Building deconstruction ', ' CANCEL ',IW,nbhelp)
         IF (IW.EQ.4) GOTO 666
 
 C Cancel LCA calculation if analyse type does not exist

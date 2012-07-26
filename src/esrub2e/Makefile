@@ -1,10 +1,8 @@
 SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
 COMdir = $(SRCdir)/esrucom
-CTLdir = $(SRCdir)/esructl
 MFSdir = $(SRCdir)/esrumfs
 PRJdir = $(SRCdir)/esruprj
-TDFdir = $(SRCdir)/esrutdf
 BLDdir = $(SRCdir)/esrubld
 CETCdir = $(SRCdir)/cetc
 PROG = b2e$(EXE)
@@ -13,15 +11,21 @@ PROG = b2e$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = aim2_module.o basesimp.o basesimp_inputs.o b2e.o bscoeff.o bscoeff_extended.o \
+%.o : %.f90
+	$(MCC) $(FFLAGS) -c $<
+
+MODULE_OBJECTS = h3kmodule.o aim2_module.o startup.o
+
+OBJECTS = basesimp.o basesimp_inputs.o b2e.o bscoeff.o bscoeff_extended.o \
 	c2fdum.o clispline.o ctlwrt.o ctread.o daproc.o econtrol.o egeometry.o \
 	emfnetw.o emkcfg.o eroper.o esru_misc.o esystem.o filelist.o initalc.o item.o mfcdat.o \
-	nwkrewr.o pltcfg.o readTrnsys.o rwipv.o rwsbem.o simcomis.o sort.o startup.o tdfile.o
+	nwkrewr.o pltcfg.o readTrnsys.o rwipv.o rwsbem.o simcomis.o sort.o tdfile.o
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod	
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod \
+          parse_command_line.mod h3kmodule.mod
 
-$(PROG): $(OBJECTS)
-	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS) $(ULIBS) 
+$(PROG): $(MODULE_OBJECTS) $(OBJECTS)
+	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(MODULE_OBJECTS) $(OBJECTS) $(ULIBS)
 
 aim2_module.F:
 	rm -f aim2_module.F
@@ -73,7 +77,7 @@ filelist.F:
 	ln -s $(COMdir)/filelist.F .
 initalc.F:
 	rm -f initalc.F
-	ln -s $(CTLdir)/initalc.F .
+	ln -s $(COMdir)/initalc.F .
 item.F:
 	rm -f item.F
 	ln -s $(COMdir)/item.F .
@@ -104,6 +108,9 @@ startup.F:
 tdfile.F:
 	rm -f tdfile.F
 	ln -s $(COMdir)/tdfile.F .
+h3kmodule.f90:
+	rm -f h3kmodule.f90
+	ln -s $(CETCdir)/h3kmodule.f90 .
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -112,9 +119,9 @@ install:
 	@if [ -f $(PROG) ]; then cp $(PROG) $(ESPBinDir); fi
 
 clean:
-	rm -f core $(PROG) $(PROG).exe $(OBJECTS) $(MODULES) \
+	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
 	aim2_module.F basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
 	c2fdum.F ctlwrt.F ctread.F econtrol.F egeometry.F emfnetw.F emkcfg.F esru_misc.F \
 	eroper.F esystem.F filelist.F initalc.F item.F mfcdat.F nwkrewr.F pltcfg.F sort.F startup.F tdfile.F \
-	readTrnsys.F rwipv.F rwsbem.F 
+	readTrnsys.F rwipv.F rwsbem.F h3kmodule.f90
 

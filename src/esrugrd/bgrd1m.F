@@ -40,7 +40,6 @@ C geometry.h provides commons G0/G2/g6/c20/precz.
       integer iCountWords
 
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       COMMON/HELP/IHELPM
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/OUTIN/IUOUT,IUIN
@@ -49,6 +48,7 @@ C geometry.h provides commons G0/G2/g6/c20/precz.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/MOIST01/MSTROK,MSTRZN(MCOM)
       COMMON/MOIST02/LMOIST(MCOM)
@@ -58,10 +58,17 @@ C geometry.h provides commons G0/G2/g6/c20/precz.
       LOGICAL ZONOK,XST,MSTROK,MSTRZN
       CHARACTER ITEM(13)*34,ITEMC(MS)*20,FLTYP*25
       CHARACTER*12 ZONENM
-      CHARACTER*72 LMOIST,H,TXT,MSG1,LTMP
+      CHARACTER*72 LMOIST,TXT,MSG1,LTMP
       integer MITEM,INO ! max items and current menu item
 
       DIMENSION IVALZ(MCOM),IVALS(MS)
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MENU1M'  ! set for subroutine
 
       IUNIT=IFIL+1
       IZ=0
@@ -90,11 +97,8 @@ C geometry.h provides commons G0/G2/g6/c20/precz.
       MITEM=13
 
 C Help for this menu.
-      H(1)='  This menu can be used to define the hygric'
-      H(2)='  nodal distribution and properties.  The '
-      H(3)='  zone should be selected first.'
-      H(4)='  After defining the hygric data, it should '
-      H(5)='  be saved via (y) option'
+      helptopic='grd_hygric_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Draw the appropriate graph.
       IF(MODIFY)CALL GRAAPH(IDRW1,IDRW2)
@@ -121,12 +125,9 @@ C Show the complete building.
         ENDIF
 
 C Show the zone selection menu.
-        H(1)='    Select the zone for which the moisture '
-        H(2)=' details are to be created/modified.'
-        H(3)=' '
         INPICK=1
    20   CALL EPICKS(INPICK,IVALZ,' ',' ',12,
-     &    NCOMP,zname,' Select Zone',IER,3)
+     &    NCOMP,zname,' Select Zone',IER,nbhelp)
         IZ2=IVALZ(1)
         IF(IZ2.GE.1.AND.IZ2.LE.NCOMP)THEN
           IZ=IZ2
@@ -158,12 +159,8 @@ C Show the zone selection menu.
       ELSEIF(INO.EQ.3)THEN
 
 C Assign n-nodes for all layers in the zone.
-        H(1)=' The number of nodes per layer should be at '
-        H(2)=' least (2). On the other hand, the the total '
-        H(3)=' number of nodes per surface should not '
-        WRITE(H(4),'(A,I2,A)')' exceed (',MNM-1,').'
         CALL EASKI(NND,' ','Enter the required number of nodes',
-     &             2,'F',MNM-1,'F',2,' number of nodes ',IER,4)
+     &    2,'F',MNM-1,'F',2,' number of nodes ',IER,nbhelp)
         MNDZ(IZ)=0
         DO 40 IS=1,NC
           NE=NELTS(IZ,IS)
@@ -181,9 +178,8 @@ C Show the constructions menu.
           icc=izstocn(iz,isrf)
           ITEMC(ISRF)=SSNAME(icc)
    50   CONTINUE
-        H(1)=' Select the surface in which the required layers '
-        H(2)=' are located. '
-   60   CALL EPICKS(INPICK,IVALS,' ',' ',20,NC,ITEMC,' ',IER,2)
+   60   CALL EPICKS(INPICK,IVALS,' ',' ',20,NC,ITEMC,' ',
+     &    IER,nbhelp)
         IS2=IVALS(1)
         IF(IS2.GT.0.AND.IS2.LE.NC)THEN
           IS=IS2
@@ -192,7 +188,7 @@ C Show the constructions menu.
           WRITE(TXT,'(10(2X,I2))')(MNDL(IZ,IS,IL),IL=1,NE)
           WRITE(MSG1,'(A30,A28,A12))')" Enter the number of moisture ",
      &    "nodes/layer in the surface: ",SSNAME(icc)
-          CALL EASKS(TXT,MSG1,' ',72,' ',' data ',IER,0)
+          CALL EASKS(TXT,MSG1,' ',72,' ',' data ',IER,nbhelp)
           NCFF = iCountWords(TXT)
           IF(NCFF.NE.NE)THEN
             CALL USRMSG(' The number of data enetered should be',
@@ -266,6 +262,8 @@ C list the node distribution in the text feedback window.
       ELSEIF(INO.EQ.MITEM-1)THEN
 
 C Display the help statements.
+        helptopic='grd_hygric_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IHELPM=1
         CALL PHELPD('hygric nodal',5,'-',0,0,IER)
       ELSEIF(INO.EQ.MITEM)THEN
@@ -273,11 +271,9 @@ C Display the help statements.
 C Return to the main simulator menu.
         IF(SAVEOK)THEN
           dok=.true.
-          h(1)='Recent changes to the model should be recorded in the'
-          h(2)='configuration file. Before saying yes, make sure that'
-          h(3)='no other ESP-r module is accessing that file. '
           CALL ASKOK(' ',
-     &    'configuration should be updated. Ok to do this?',OK,dok,3)
+     &    'configuration should be updated. Ok to do this?',OK,
+     &    dok,nbhelp)
           IF(OK)CALL EMKCFG('-',IER)
         ENDIF
         RETURN
@@ -294,11 +290,11 @@ C *********************************************************************
 #include "geometry.h"
       integer iCountWords
 
-      common/pophelp/h(60)
       COMMON/HELP/IHELPM
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
+      integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/MOIST05/IPERM(MCOM,MS,ME),PERM(MCOM,MS,ME,3)
       COMMON/MOIST06/ISORP(MCOM,MS,ME),SORP(MCOM,MS,ME,3)
@@ -306,11 +302,17 @@ C *********************************************************************
 
       CHARACTER ITEM(10)*35,ITEMC(MS)*20
       CHARACTER SURFNM*12
-      CHARACTER H*72
       CHARACTER*72 MSG1,TXT,TEXT1,TEXT2
       integer MITEM,INO  ! max items and current menu item
 
       DIMENSION IVALS(MS),IVALL(ME)
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='HYGRIC'  ! set for subroutine
 
       IS=1
       IL=1
@@ -337,11 +339,10 @@ C *********************************************************************
       MITEM=10
 
 C Help text for this menu.
-      H(1)='  This menu can be used for defining the hygric'
-      H(2)='  properties of construction layers.  It deals'
-      H(3)='  with one layer at a time.'
+      helptopic='grd_hygric_detail_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
 
-      CALL EMENU('      Hygric Properties',ITEM,MITEM,INO)
+      CALL EMENU('   Hygric Properties',ITEM,MITEM,INO)
       IF(INO.EQ.1)THEN
 
 C Select the surface.
@@ -351,8 +352,8 @@ C Show the constructions menu.
           icc=izstocn(iz,is2)
           ITEMC(IS2)=SSNAME(icc)
    20   CONTINUE
-        H(1)=' Select the surface '
-   30   CALL EPICKS(INPICK,IVALS,' ',' ',20,NC,ITEMC,' ',IER,1)
+   30   CALL EPICKS(INPICK,IVALS,' ',' ',20,NC,ITEMC,' ',
+     &    IER,nbhelp)
         IS2=IVALS(1)
         IF(IS2.GE.1.AND.IS2.LE.NC)THEN
           IS=IS2
@@ -371,8 +372,8 @@ C Show the layers menu.
         DO 40 IL2=1,NE
           WRITE(ITEMC(IL2),'(A7,I2,A1)')'Layer (',IL2,')'
    40   CONTINUE
-        H(1)=' Select the layer '
-   50   CALL EPICKS(INPICK,IVALL,' ',' ',20,NE,ITEMC,' ',IER,1)
+   50   CALL EPICKS(INPICK,IVALL,' ',' ',20,NE,ITEMC,' ',
+     &    IER,nbhelp)
         IL2=IVALL(1)
         IF(IL2.GE.1.AND.IL2.LE.NE)THEN
           IL=IL2
@@ -388,7 +389,7 @@ C Enter moisture permeability.
  901    FORMAT(1X,I2,6(1X,F8.4))
         WRITE(MSG1,'(A))')
      &  " Enter the moisture permeability data for the selected layer"
-        CALL EASKS(TXT,MSG1,' ',72,' ',' data ',IER,0)
+        CALL EASKS(TXT,MSG1,' ',72,' ',' data ',IER,nbhelp)
         NCFF = iCountWords(TXT)
         IF(NCFF.NE.4)THEN
           CALL USRMSG(' ',
@@ -406,7 +407,7 @@ C Enter moisture capacity.
         WRITE(TXT,901)ISORP(IZ,IS,IL),(SORP(IZ,IS,IL,IT),IT=1,3)
         WRITE(MSG1,'(A))')
      &  " Enter the moisture capacity data for the selected layer"
-        CALL EASKS(TXT,MSG1,' ',72,' ',' data ',IER,0)
+        CALL EASKS(TXT,MSG1,' ',72,' ',' data ',IER,nbhelp)
         NCFF = iCountWords(TXT)
         IF(NCFF.NE.4)THEN
           CALL USRMSG(' ',
@@ -424,7 +425,7 @@ C Enter thermal vapour diffusion.
         WRITE(TXT,'(1X,I2,6(1X,F8.4))')ITVAPD(IZ,IS,IL),TVAPD(IZ,IS,IL)
         WRITE(MSG1,'(A))')
      &  " Enter the moisture capacity data for the selected layer"
-        CALL EASKS(TXT,MSG1,' ',72,' ',' data ',IER,0)
+        CALL EASKS(TXT,MSG1,' ',72,' ',' data ',IER,nbhelp)
         NCFF = iCountWords(TXT)
         IF(NCFF.NE.2)THEN
           CALL USRMSG(' ',
@@ -460,8 +461,10 @@ C List hygric properties.
       ELSEIF(INO.EQ.(MITEM-1))THEN
 
 C Help.
+        helptopic='grd_hygric_detail_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         IHELPM=1
-        CALL PHELPD('hygric props',3,'-',0,0,IER)
+        CALL PHELPD('hygric props',nbhelp,'-',0,0,IER)
       ELSEIF(INO.EQ.MITEM)THEN
 
 C Exit.

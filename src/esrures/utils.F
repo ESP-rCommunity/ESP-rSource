@@ -666,9 +666,9 @@ C a different colour for each name.
       logical unixok
       
 #ifdef OSI
-      integer iix,iiy
+      integer iix,iiy,iicol
 #else
-      integer*8 iix,iiy
+      integer*8 iix,iiy,iicol
 #endif
 
 C Figure out how much text there is to write out. isecond is the last
@@ -687,7 +687,8 @@ C Full name of zone can be written. Find position of "Zones"
 C Set ix to last character position before looping through zones.
         word='Zones:'
         call findviewtext(2,line,isize,ix,iy)
-        call winscl('-',0)
+        iicol=0
+        call winscl('-',iicol)
         iix=ix; iiy=iy;
         call wstxpt(iix,iiy,word)
         icx=9
@@ -701,7 +702,8 @@ C Then get index of colour for this zone, then plot text in that colour.
           call textatxy(ix,iy,word,'z',NZNO(i))
           icx=icx+lna+1
   43    continue
-        call winscl('-',0)
+        iicol=0
+        call winscl('-',iicol)
         call forceflush()
         return
       elseif(length.lt.140)then
@@ -710,7 +712,8 @@ C Try writing full name of zone on two lines. Find position of "Zones"
 C Set ix to last character position before looping through zones.
         word='Zones:'
         call findviewtext(2,line,isize,ix,iy)
-        call winscl('-',0)
+        iicol=0
+        call winscl('-',iicol)
         iix=ix; iiy=iy;
         call wstxpt(iix,iiy,word)
         icx=9
@@ -742,14 +745,16 @@ C Then get index of colour for this zone, then plot text in that colour.
             icx=icx+lna+1
  144      continue
         endif
-        call winscl('-',0)
+        iicol=0
+        call winscl('-',iicol)
         call forceflush()
         return
       else
         if(NZ.eq.1)then
           write(word,'(A,I2,A)',iostat=ios,err=1)' Zone (',NZNO(1),') '
           call findviewtext(2,line,isize,ix,iy)
-          call winscl('-',0)
+          iicol=0
+          call winscl('-',iicol)
           iix=ix; iiy=iy;
           call wstxpt(iix,iiy,word)
           icx=11
@@ -757,12 +762,14 @@ C Then get index of colour for this zone, then plot text in that colour.
           lna=lnzname(NZNO(1))
           write(word,'(a)',iostat=ios,err=1) zname(NZNO(1))(1:lna)
           call textatxy(ix,iy,word,'z',NZNO(1))
-          call winscl('-',0)
+          iicol=0
+          call winscl('-',iicol)
           call forceflush()
         elseif(NZ.gt.1.and.NZ.LE.20)THEN
           word='Zones:'
           call findviewtext(2,line,isize,ix,iy)
-          call winscl('-',0)
+          iicol=0
+          call winscl('-',iicol)
           iix=ix; iiy=iy;
           call wstxpt(iix,iiy,word)
           icx=9
@@ -773,13 +780,15 @@ C Then get index of colour for this zone, then plot text in that colour.
             call textatxy(ix,iy,word,'z',NZNO(i))
             icx=icx+lna+1
   44      continue
-          call winscl('-',0)
+          iicol=0
+          call winscl('-',iicol)
           call forceflush()
           return
         ELSEIF(NZ.GT.20.AND.NZ.LE.24)THEN
           word='Zones:'
           call findviewtext(2,line,isize,ix,iy)
-          call winscl('-',0)
+          iicol=0
+          call winscl('-',iicol)
           iix=ix; iiy=iy;
           call wstxpt(iix,iiy,word)
           icx=9
@@ -795,13 +804,15 @@ C Then get index of colour for this zone, then plot text in that colour.
             call textatxy(ix,iy,word,'z',NZNO(i))
             icx=icx+lna+1
   45      continue
-          call winscl('-',0)
+          iicol=0
+          call winscl('-',iicol)
           call forceflush()
           return
         ELSEIF(NZ.GT.24.AND.NZ.LE.28)THEN
           word='Zn:'
           call findviewtext(2,line,isize,ix,iy)
-          call winscl('-',0)
+          iicol=0
+          call winscl('-',iicol)
           iix=ix; iiy=iy;
           call wstxpt(iix,iiy,word)
           icx=5
@@ -817,7 +828,8 @@ C Then get index of colour for this zone, then plot text in that colour.
             call textatxy(ix,iy,word,'z',NZNO(i))
             icx=icx+lna+1
   46      continue
-          call winscl('-',0)
+          iicol=0
+          call winscl('-',iicol)
           call forceflush()
           return
         ELSEIF(NZ.GT.28)THEN
@@ -834,7 +846,8 @@ C Then get index of colour for this zone, then plot text in that colour.
             call textatxy(ix,iy,word,'z',NZNO(i))
             icx=icx+lna+1
   47      continue
-          call winscl('z',0)
+          iicol=0
+          call winscl('z',iicol)
           call forceflush()
           return
         ENDIF
@@ -981,14 +994,20 @@ C ASKZON: call to enquire which zone the user is interested in.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
       DIMENSION IVALS(MCOM),zn(MCON)
-      character H*72,zn*12
+      character zn*12
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ASKZON'  ! set for subroutine
 
 C If only one zone in problem then supply it.
       if(NZ.eq.1)then
@@ -1003,11 +1022,11 @@ C with local string).
   42    continue
       endif
 
-    7 H(1)='Pick one zone for inclusion in a graph or tabular'
-      H(2)='listing from the list provided.'
+    7 helptopic='res_zone_pick_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       INPIC=1
       CALL EPICKS(INPIC,IVALS,' ',' Which zone : ',
-     &  12,NCOMP,zn,' zone list',IER,2)
+     &  12,NCOMP,zn,' zone list',IER,nbhelp)
       if(INPIC.eq.0)then
         call edisp(iuout,' You must choose one of the zones! ')
         goto 7
@@ -1046,14 +1065,20 @@ C the user is interested in for stats/ graphs/ listings etc.
 #include "geometry.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
       DIMENSION IVA(MS),IVALS(MS)
-      character H*72,ST(MS)*12,CSTR*25
+      character ST(MS)*12,CSTR*25
       character outs*124
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='PICKSUR'  ! set for subroutine
 
 C Check for illegal zone number.
       IER=0
@@ -1073,9 +1098,11 @@ C Create list of surfaces in current zone (IZ) and reset call parameters.
    11 CONTINUE
 
 C Display menu of surfaces allow multiple selections.
-      H(1)='Pick one, several or all surfaces for inclusion.'
+      helptopic='res_surface_pick_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       write(outs,'(3a)')'Which surfaces in ',zname(IZ),' to include:'
-      CALL EPICKS(INPIC,IVALS,outs,' ',12,NZSUR(IZ),ST,zname(IZ),IER,1)
+      CALL EPICKS(INPIC,IVALS,outs,' ',12,NZSUR(IZ),ST,
+     &  zname(IZ),IER,nbhelp)
 
 C Check for selections and copy to call parameters for passing back.
       if (INPIC.gt.0) then
@@ -1091,30 +1118,27 @@ C Check for selections and copy to call parameters for passing back.
 C ******************** PICKANC ********************
 C PICKANC: call to enquire which anchor point the user wishes data to 
 C be recovered for.  Returns lists of zone and surface numbers for 
-C anchor type 'SURF'.
-C Anchor commons:
-C NALOC = nb of anchors,
-C ALOC = substitution attribute used with the the anchor (usually
-C   passed from a command to a function which manipulates the anchor.),
-C ALOCLBL = user's name for the anchor,
-C ALOCTYP = type (SURF|CTRL|LOAD) for the anchor,
-C IALOC = nb of links (surfaces, etc.) associated with the anchor,
-C lstanchr = links for each anchor
+C anchor type 'SURF'. Definitions in model.h.
 
       SUBROUTINE PICKANC(ATYPE,IZLST,ISLST,NSANC,IER)
 #include "building.h"
+#include "model.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
-      common/anchorb/IALOC(20),lstanchr(20,60)
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
 
       DIMENSION IV(20),IZLST(MCON),ISLST(MCON)
 
-      character ALOC*12,ALOCLBL*12,ALOCTYP*4,ATYPE*4
-      character H*72,ST(20)*12,outs*124
+      character ATYPE*4
+      character ST(20)*12,outs*124
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='PICKANC'  ! set for subroutine
 
       IER=0
 
@@ -1141,9 +1165,11 @@ C Check that there are anchor points of the desired type.
       endif
 
 C Display menu of anchor points allow only one selection.
-      H(1)='Pick one anchor point.'
+      helptopic='res_anchor_pick_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       write(outs,'(a)')'Which anchor point to use?'
-      CALL EPICKS(INPIC,IV,outs,' ',13,NAC,ST,'Anchor points',IER,1)
+      CALL EPICKS(INPIC,IV,outs,' ',13,NAC,ST,'Anchor points',
+     &  IER,nbhelp)
 
 C Check for selections.
       if (INPIC.gt.0) then
@@ -1171,7 +1197,6 @@ C Returns zone and sensor number via IZNSEL and ISFSEL respectively.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -1180,7 +1205,14 @@ C Returns zone and sensor number via IZNSEL and ISFSEL respectively.
 
       DIMENSION IV(60),IZLST(MCON),ISLST(MCON),ILZNO(MCON),ILSNO(MCON)
 
-      character H*72,ST(60)*22,outs*124,LMRT*72,CUBN*6
+      character ST(60)*22,outs*124,LMRT*72,CUBN*6
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='PIKMRTS'  ! set for subroutine
 
       IER=0
 
@@ -1212,10 +1244,12 @@ C Check that there are MRT sensors.
       endif
 
 C Display menu of anchor points allow only one selection.
-      H(1)='Pick one or many MRT sensors.'
+      helptopic='res_MRT_pick_menu'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       write(outs,'(a)')'Which MRT sensors to use?'
       IVLS=NTSEN
-      CALL EPICKS(NTSEN,IV,outs,'  ',22,IVLS,ST,'MRT sensors',IER,1)
+      CALL EPICKS(NTSEN,IV,outs,'  ',22,IVLS,ST,'MRT sensors',
+     &  IER,nbhelp)
 
 C Check for selections.
       if (NTSEN.gt.0) then
@@ -1239,24 +1273,30 @@ C the user is interested in.
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &             NPGAP(MCOM,MS,MGP)
 
-      character outs*124,H*72
+      character outs*124
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ASKICN'  ! set for subroutine
 
       IF(IZONE.GE.1.OR.IZONE.LE.NCOMP)THEN
         IF(ISFN.GE.1.OR.ISFN.LE.NCONST(IZONE))THEN
           NN=NELTS(IZONE,ISFN)*2
           write(outs,51)NN,ISFN
    51     FORMAT(' There are ',I3,' nodes in surface ',I3,',')
-          H(1)='Node numbering begins from the `outside` of the'
-          H(2)='surface.'
+          helptopic='res_constr_node_pick'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKI(INN,outs,' Which node is to be considered ?',
-     &      1,'F',NN,'F',1,'node number',IER,2)
+     &      1,'F',NN,'F',1,'node number',IER,nbhelp)
         ELSE
           call usrmsg(' ',' Surface out of range in ASKICN','W')
         ENDIF
@@ -1277,31 +1317,32 @@ C month.
       SUBROUTINE ASKRTIM(IFDAY,IMO,IDO,IJDAY,TIME,IT,IER)
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 
-      character H*72,HOLD*24
+      character HOLD*24
       DIMENSION ID(12)
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
       DATA ID/31,28,31,30,31,30,31,31,30,31,30,31/
 
+      helpinsub='ASKRTIM'  ! set for subroutine
       IER=0
-      H(1)='The output time defines the day, month and decimal '
-      H(2)='hour at which the output is requested. '
-      H(3)='This must be no earlier than 0.00 hours or later '
-      H(4)='than 24.00 hours. '
-      H(5)=' '
+      helptopic='res_output_time_pick'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       IF(IFDAY.EQ.0)THEN
         CALL EDAY(IDO,IMO,IJDAY)
         write(HOLD,'(I6,a)') IJDAY,'  7.0  '
-        H(6)='Example:  6th March at 9h30 am is given as 64  9.5 '
       else
         write(HOLD,'(I6,I4,a)') IDO,IMO,'  7.0  '
-        H(6)='Example:  6th March at 9h30 am is given as 6 3 9.5 '
       endif
 
   281 IF(IFDAY.EQ.0)THEN
         CALL EASKS(HOLD,' ',' Day-of-year & time: ',
-     &     24,' 1  7.0 ','doy and time',IER,6)
+     &     24,' 1  7.0 ','doy and time',IER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,IJDAY,1,365,'F','day of year',IER)
         CALL EGETWR(HOLD,K,TIME,0.0,24.0,'F','time',IER)
@@ -1309,7 +1350,7 @@ C month.
         CALL EDAYR(IJDAY,IDO,IMO)
       ELSE
  283    CALL EASKS(HOLD,' ',' Day-of-month, month & time: ',
-     &     24,' 1  1  7.0 ','doy, month time',IER,6)
+     &     24,' 1  1  7.0 ','doy, month time',IER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,IDO,1,31,'F','day of month',IER)
         CALL EGETWI(HOLD,K,IMO,1,12,'F','month',IER)
@@ -1403,16 +1444,21 @@ C ASKPER: Provides interface to specification of a period of days.
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
-      common/pophelp/h(60)
 
       DIMENSION MTHNAM(12)
 
-      CHARACTER H*72,HOLD*20,PDESCR*60,outs*124,MTHNAM*3
+      CHARACTER HOLD*20,PDESCR*60,outs*124,MTHNAM*3
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
 
       DATA MTHNAM/'Jan','Feb','Mar','Apr','May','Jun','Jul','Aug',
      &            'Sep','Oct','Nov','Dec'/
 
 C Write out simulation period.
+      helpinsub='ASKPER'  ! set for subroutine
       write (PDESCR,'(2(i3,a4,a))') ID1,MTHNAM(IM1),' to',
      &                                        ID2,MTHNAM(IM2),'.'
       write (outs,'(2a)')
@@ -1421,15 +1467,11 @@ C Write out simulation period.
 
       IER=0
   281 IF(IFDAY.EQ.0)THEN
-        H(1)='The output start time defines the day, month and '
-        H(2)='hour at which the results recovery will commence.'
-        H(3)='This hour must be within the simulation period. '
-        H(4)='Hour 1 is defined as the period 0h00 to 1h00, and'
-        H(5)='hour 2 is defined as the period 1h00 to 2h00 etc.'
-        H(6)='The period must be within a calendar year'
+        helptopic='res_output_period'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         write(HOLD,'(I6,I4)') IODS,IOH1
         CALL EASKS(HOLD,' ',' Start day-of-year & time: ',
-     &                            20,' 9  1 ','startdoy and time',IER,6)
+     &    20,' 9  1 ','startdoy and time',IER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,IODS,1,365,'F','start day of year',IER)
         CALL EGETWI(HOLD,K,IOH1,1,24,'F','start hour',IER)
@@ -1441,15 +1483,9 @@ C Write out simulation period.
           goto 281
         endif
 
-        H(1)='The output finish time defines the day, month and '
-        H(2)='hour at which the results recovery will terminate.'
-        H(3)='This hour must be within the simulation period. '
-        H(4)='Hour 1 is defined as the period 0h00 to 1h00, and'
-        H(5)='hour 2 is defined as the period 1h00 to 2h00 etc.'
-        H(6)='The period must be within a calendar year'
         write(HOLD,'(I6,I4)') IODF,IOH2
         CALL EASKS(HOLD,' ',' End day-of-year & time: ',
-     &     20,' 15  24 ','end doy and time',IER,6)
+     &    20,' 15  24 ','end doy and time',IER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,IODF,1,365,'F','end day of year',IER)
         CALL EGETWI(HOLD,K,IOH2,1,24,'F','end hour',IER)
@@ -1462,15 +1498,11 @@ C Write out simulation period.
         endif
       ELSE
         CALL EDAYR(IODS,IOD1,IOM1)
-        H(1)='The output start time defines the day, month and '
-        H(2)='hour at which the results recovery will commence.'
-        H(3)='This hour must be within the simulation period. '
-        H(4)='Hour 1 is defined as the period 0h00 to 1h00, and'
-        H(5)='hour 2 is defined as the period 1h00 to 2h00 etc.'
-        H(6)='The period must be within a calendar year'
+        helptopic='res_output_period'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         write(HOLD,'(I6,I4,I4)') IOD1,IOM1,IOH1
         CALL EASKS(HOLD,' ',' Start day-of-month, month & time: ',
-     &                   20,' 9  1 ','start dom, month and time',IER,6)
+     &    20,' 9  1 ','start dom, month and time',IER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,IOD1,1,31,'F','start day of month',IER)
         CALL EGETWI(HOLD,K,IOM1,1,12,'F','start month',IER)
@@ -1490,16 +1522,12 @@ C Check range, then convert to IODS.
         ENDIF
         CALL EDAY(IOD1,IOM1,IODS)
 
-        H(1)='The output finish time defines the day, month and '
-        H(2)='hour at which the results recovery will terminate.'
-        H(3)='This hour must be within the simulation period. '
-        H(4)='Hour 1 is defined as the period 0h00 to 1h00, and'
-        H(5)='hour 2 is defined as the period 1h00 to 2h00 etc.'
-        H(6)='The period must be within a calendar year'
+        helptopic='res_output_period'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EDAYR(IODF,IOD2,IOM2)
   282   write(HOLD,'(I6,I4,I4)') IOD2,IOM2,IOH2
         CALL EASKS(HOLD,' ',' End day-of-month, month & time: ',
-     &     20,' 9  1 ','end dom, month and time',IER,6)
+     &    20,' 9  1 ','end dom, month and time',IER,nbhelp)
         K=0
         CALL EGETWI(HOLD,K,IOD2,1,31,'F','end day of month',IER)
         CALL EGETWI(HOLD,K,IOM2,1,12,'F','end month',IER)
@@ -1536,7 +1564,6 @@ C ixunit is the file unit number for the export file.
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       common/rcmd/LCMDFL
       common/rpath/path
 
@@ -1546,12 +1573,19 @@ C   the file name.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
       character*(*) msg,xfile
-      character H*72,path*72,outs*124,tg*1,outs248*248
+      character path*72,outs*124,tg*1,outs248*248
       character ixpfile*144,ttext*42,LCMDFL*144
       character longtfile*144,longtfiledos*144
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical concat,remote,unixok
       integer lenxfile
+
+C For help messages
+      character helpinsub*24   ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='ctlexp'  ! set for subroutine
 
 C Initial name for export parameter file is xfile+par.
       lenxfile=lnblnk(xfile)
@@ -1595,47 +1629,43 @@ C Each call is a toggle.
         if(remote)then
           write(outs,'(A,A)') ' The current path is: ',path
           call edisp(iuout,outs)
-          h(1)='If using path then the export file will be placed in'
-          h(2)='the model folder. Otherwise nominate a folder and'
-          h(3)='file name for the export file (i.e. /tmp/junk.exp or'
-          h(4)='/home/ralph/reports/junk.exp) '
-          h(5)=' '
-          h(6)='If you selected this option in error click continue.'
+          helptopic='res_export_file_loc'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           if (autook) then
             IW=2
           else
             write(outs,'(A,A)') ' The model is in folder ',path
             CALL EASKABC(outs,' place export file:',
      &        'in the model folder','user defined folder','continue',
-     &        iw,6)
+     &        iw,nbhelp)
             if(iw.eq.3)then
               ixopen=0
               return    ! does ixopen need to be reset?
             endif
           endif
         endif
-        h(1)='This file is a text file which can be used in'
-        h(2)='reports or for third party tools. '
+        helptopic='res_export_file_3rd'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         if (.NOT.autook) then
           iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
           llt=lnblnk(xfile)
           if(iglib.eq.1.or.iglib.eq.3)then
             if(llt.lt.96)then
               CALL EASKF(xfile,' Export file name? ',
-     &          ' ',96,'export.txt','export file name',IER,2)
+     &          ' ',96,'export.txt','export file name',IER,nbhelp)
             elseif(llt.ge.96.and.llt.lt.124)then
               CALL EASKF(xfile,' Export file name? ',
-     &          ' ',124,'export.txt','export file name',IER,2)
+     &          ' ',124,'export.txt','export file name',IER,nbhelp)
             elseif(llt.ge.124.and.llt.le.144)then
               CALL EASKF(xfile,' Export file name? ',
-     &          ' ',144,'export.txt','export file name',IER,2)
+     &          ' ',144,'export.txt','export file name',IER,nbhelp)
             endif
           elseif(iglib.eq.2)then
             CALL EASKF(xfile,' Export file name? ',
-     &        ' ',144,'export.txt','export file name',IER,2)
+     &        ' ',144,'export.txt','export file name',IER,nbhelp)
           else
             CALL EASKF(xfile,' Export file name? ',
-     &        ' ',96,'export.txt','binary events db',IER,2)
+     &        ' ',96,'export.txt','binary events db',IER,nbhelp)
           endif
 
 C If user request cancel then return after resetting ixopen to zero.
@@ -1726,10 +1756,11 @@ C If tabular info then create the headder to the xvgr parameter file.
           write(ixpunit,'(a)') '  view ymin 0.15'
           write(ixpunit,'(a)') '  view ymax 0.85'
 
-          h(1)='3rd party graphing usually has a main title...'
+          helptopic='res_export_title_3rd'
+          call gethelptext(helpinsub,helptopic,nbhelp)
           ttext = 'Simulation Results'
           call easks(ttext,'Title for 3rd party graph: ',' ',42,
-     &      'Simulation Results ','3rd party title',IER,1)
+     &      'Simulation Results ','3rd party title',IER,nbhelp)
           write(ixpunit,'(a,a,a)') 'title "',
      &      ttext(1:lnblnk(ttext)),'"'
           write(ixpunit,'(a)') 'title font 4'

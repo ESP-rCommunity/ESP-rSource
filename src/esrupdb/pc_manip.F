@@ -19,9 +19,9 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C pc_manip hold routines which manipulate entities in
-C a plant component database.
+C a plant component templates.
 
-C The plant component database has a record width of IRECLN, and
+C The plant component templates has a record width of IRECLN, and
 C contains, per record IREC, the following:
 C
 C Record      Contents
@@ -86,6 +86,7 @@ C the data and the routine 'PCWRT' to
 C write it to the terminal.
       SUBROUTINE PCLIST
 #include "plantdb.h"
+#include "pdb_data.h"
       
       integer lnblnk  ! function definition
 
@@ -94,69 +95,70 @@ C write it to the terminal.
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
-
-      common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
-      common/pophelp/h(60)
-      COMMON /PL/ INDXPR(MAXPC)
-
+      character lcmdfl*144
+      common/rcmd/LCMDFL
 
       dimension ival(MAXPC)
       logical ok,dok
 
       EXTERNAL PCEXCH, COMPDS, COMPNO
       LOGICAL COMPDS, COMPNO
-      CHARACTER ZITEM(11)*24
-      character LTMP*72,buffer*120,H*72
-      CHARACTER ZGTYPE*40,ZCDATE*16,ZCDESC*80,dtdesc*68,adodsc*30
+      CHARACTER ZITEM(11)*30
+      character lltmp*144,L144*144
+      character buffer*120
       integer NITEMS,MNUPIK ! max items and current menu item
+      integer lastmmod      ! so can restore display
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='PCLIST'  ! set for MAIN
 
 C Check library is not empty.
-      CALL EPAGE
       IF (NPC .EQ. 0) THEN
         call usrmsg(' No components in library',' ','W')
         RETURN
       ENDIF
 
-C Initialize print list.
+      lastmmod=mmod   ! remember the display mode
+      IUCHAN = IUOUT  ! start with list to feedback
+
+C Initialize print list array INDXPR.
       DO 100 I = 1, NPC
         INDXPR(I) = I
   100 CONTINUE
 
 C Build menu list options.
-        zitem(1) ='a To file              '
-        zitem(2) ='  ---------------------'
-        zitem(3) ='b In numerical order   '
-        zitem(4) ='c In alphabetical order'
-        zitem(5) ='d User defined order   '
-        zitem(6) ='e Unordered (as in db) '
-        zitem(7) ='  ---------------------'
-        zitem(8) ='f Summary of entries   '
-        zitem(9) ='  ---------------------'
-        zitem(10)='? Help                 '
-        zitem(11)='- Return to main menu  '
+        if(IUCHAN.eq.IUOUT)then
+          zitem(1) ='a List >> feedback      '
+        else
+          zitem(1) ='a List >> file          '
+        endif
+        zitem(2) ='  ------------------------'
+        zitem(3) ='b In numerical order      '
+        zitem(4) ='c In alphabetical order   '
+        zitem(5) ='d In user defined order   '
+        zitem(6) ='e Unordered (as in file)  '
+        zitem(7) ='  ------------------------'
+        zitem(8) ='f Summary of entries      '
+        zitem(9) ='  ------------------------'
+        zitem(10)='? Help                    '
+        zitem(11)='- Exit                    '
 
 C Display menu and interpret pick.
-  110   IUCHAN = IUOUT
+  110   if(IUCHAN.ne.IUOUT)then
+          call edisp(iuout,'  ')
+          call edisp(iuout,'Component export request completed.')
+          IUCHAN = IUOUT  ! reset output channel
+        endif
   120   NITEMS = 11
         MNUPIK = -5
 
 C Help text for this menu.
-        h(1)= 'The plant components database can be listed: '
-        h(2)= ' Sequential      : by code number'
-        h(3)= ' Alphabetical    : by plant descriptions'
-        h(4)= ' Defined         : user supplied list'
-        h(5)= ' Unordered:      : as in the library'
-        h(6)= ' '
-        h(7)= 'To create an ASCII version of the current (binary)'
-        h(8)= 'plant component database: '
-        h(9)= '  Choose `a To file`, supply a file name then '
-        h(10)='  select the unordered listing option.'
+        helptopic='pdb_list_options_menu'
+        call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Clear dialogue box.
         call usrmsg(' ',' ','-')
@@ -164,85 +166,99 @@ C Clear dialogue box.
 
         if(mnupik.eq.1)then
 
-C Output to file.
-          CALL EPAGE
-          h(1)='The ACII file will hold plant component entries'
-          h(2)='when a sorted list option is selected from the menu.'
-          ltmp=' '
-  210     CALL EASKS(LTMP,' ASCII file name? ',' ',72,' ',
-     &      ' ASCII file',IER,2)
+C Output to file using standard file dialog.
+          helptopic='pdb_list_options_menu'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+  210     lltmp=' '  ! clear file name to be returned
+          call edisp(iuout,'  ')  ! echo blank line
+
+C Set initial guess for export file to command line file +a
+          write(L144,'(2a)') LCMDFL(1:lnblnk(LCMDFL)),'a'  
+          CALL EASKXORGTKF(L144,
+     &      'ASCII export file name (then select component order)',
+     &      'Confirm:','exported.dta',
+     &      lltmp,'export plant templates',IER,nbhelp)
+
+C If user cancel display the menu without loading file.
+          if(ier.eq.-3)then
+            goto 110  ! re-display menu.
+          endif
+
           IUCHAN = IFIL+1
-          CALL FPOPEN (IUCHAN,ISTAT,4,3,LTMP)
+          CALL FPOPEN (IUCHAN,ISTAT,4,3,LLTMP)
           IF (ISTAT .LT. 0)then
             dok=.false.
-            h(1)='It was not possible to write the ASCII file. Please'
-            h(2)='check whether you have permission to write in that '
-            h(3)='folder and whether you have sufficient disk space.'
+            helptopic='pdb_list_ascii_fail'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL ASKOK(' Unable to open ascii file. ',
-     &                 ' Try again?',OK,dok,3)
+     &                 ' Try again?',OK,dok,nbhelp)
             IF(OK)GOTO 210
             return
           endif
           IF (ISTAT .EQ. 0) THEN
             dok=.true.
-            h(1)='The current contents of the ASCII file will be '
-            h(2)='overwittten if you say yes.  '
+            helptopic='pdb_list_ascii_overwrite'
+            call gethelptext(helpinsub,helptopic,nbhelp)
             CALL ASKOK(' ASCII file exists...F',
-     &                 ' Do you want to overwrite it?',OK,dok,2)
+     &        ' Do you want to overwrite it?',OK,dok,nbhelp)
             IF(OK)GOTO 250
             GOTO 130
   250       REWIND IUCHAN
           ENDIF
 
 C Write to file
-          WRITE (IUCHAN,'(a)')' PLANT COMPONENT DATABASE Listing'
-          CALL USRMSG(' ',' Please select listing type from menu','-')
+          call edisp(iuchan,' PLANT COMPONENT DATABASE Listing')
+          CALL USRMSG(' ',' Please select listing type from menu','P')
           GOTO 120
         elseif(mnupik.eq.3)then
 
 C Output in numerical order
-          CALL EPAGE
           DO 108 I = 1, NPC
             INDXPR(I) = I
   108     CONTINUE
-         IF(NPC.GE.100) WRITE(IUOUT,'(a)')' PCLIST: sorting database...'
+          if(NPC.GE.100)then
+            call usrmsg(' PCLIST: sorting components...',' ','-')
+          endif
           CALL PSHELL (NPC,COMPNO,PCEXCH)
           DO 310 I = 1, NPC
             CALL PCGET (INDXPR(I))
             IF (INDXPC .EQ. INDXPR(I)) THEN
-              CALL EPAGE
               CALL PCWRT (IUCHAN)
               IF (IUCHAN .EQ. IUOUT)   then
                 dok=.true.
-                h(1)='A pause to look at the report... '
-                CALL ASKOK(' ',' Continue ?',OK,dok,1)
+                helptopic='pdb_ascii_write_pause'
+                call gethelptext(helpinsub,helptopic,nbhelp)
+                CALL ASKOK(' ',' Continue ?',OK,dok,nbhelp)
                 IF(.NOT.OK) goto 110
               endif
             ENDIF
   310     CONTINUE
+          if(iuchan.eq.(ifil+1)) mmod=lastmmod
           GOTO 110
         elseif(mnupik.eq.4)then
 
 C Output in alphabetical order.
-          CALL EPAGE
           DO 107 I = 1, NPC
             INDXPR(I) = I
   107     CONTINUE
-          IF(NPC.GE.100) WRITE(IUOUT,*) ' PCLIST: sorting database ...'
+          IF(NPC.GE.100)then
+            call usrmsg(' PCLIST: sorting components...',' ','-')
+          endif
           CALL PSHELL (NPC,COMPDS,PCEXCH)
           DO 410 I = 1, NPC
             CALL PCGET (INDXPR(I))
             IF (INDXPC .EQ. INDXPR(I)) THEN
-              CALL EPAGE
               CALL PCWRT (IUCHAN)
               IF (IUCHAN .EQ. IUOUT)  then
                 dok=.true.
-                h(1)='A pause to look at the report... '
-                CALL ASKOK(' ',' Continue ?',OK,dok,1)
+                helptopic='pdb_ascii_write_pause'
+                call gethelptext(helpinsub,helptopic,nbhelp)
+                CALL ASKOK(' ',' Continue ?',OK,dok,nbhelp)
                 IF(.NOT.OK) goto 110
               endif
             ENDIF
   410     CONTINUE
+          if(iuchan.eq.(ifil+1)) mmod=lastmmod
           GOTO 110
         elseif(mnupik.eq.5)then
 
@@ -255,41 +271,44 @@ C Dsiplay components lilst and get selection.
             do 510 i=1,ix
               call pcget(ival(i))
               if (indxpc.gt.0) then
-                CALL EPAGE
                 call pcwrt(iuchan)
                 if(iuchan.eq.iuout) then
                   dok=.true.
-                  h(1)='A pause to look at the report... '
-                  CALL ASKOK(' ',' Continue ?',OK,dok,1)
+                  helptopic='pdb_ascii_write_pause'
+                  call gethelptext(helpinsub,helptopic,nbhelp)
+                  CALL ASKOK(' ',' Continue ?',OK,dok,nbhelp)
                   IF(.NOT.OK) goto 110
                 endif
               endif
   510       continue
           endif
+          if(iuchan.eq.(ifil+1)) mmod=lastmmod
           GOTO 110
         elseif(mnupik.eq.6)then
 
 C Output unordered.
-          CALL EPAGE
           DO 810 I = 1, NPC
             CALL PCGET (I)
             IF (INDXPC .GT. 0) THEN
-              CALL EPAGE
               CALL PCWRT (IUCHAN)
               IF (IUCHAN .EQ. IUOUT)  then
                 dok=.true.
-                h(1)='A pause to look at the report... '
-                CALL ASKOK(' ',' Continue ?',OK,dok,1)
+                helptopic='pdb_ascii_write_pause'
+                call gethelptext(helpinsub,helptopic,nbhelp)
+                CALL ASKOK(' ',' Continue ?',OK,dok,nbhelp)
                 IF(.NOT.OK) goto 110
               endif
             ENDIF
   810     CONTINUE
+          if(iuchan.eq.(ifil+1)) mmod=lastmmod
           GOTO 110
         elseif(mnupik.eq.8)then
 
 C Output summary.
-          CALL EPAGE
-          if(iuchan.eq.(ifil+1)) mmod=-1
+          if(iuchan.eq.(ifil+1))then
+            lastmmod=mmod
+            mmod=-1
+          endif
           call edisp(IUCHAN,' Entry  Model Description')
           DO 910 I = 1,NPC
             CALL PCGET (I)
@@ -299,9 +318,12 @@ C Output summary.
               call edisp(iuchan,buffer)
             ENDIF
   910     CONTINUE
+          if(iuchan.eq.(ifil+1)) mmod=lastmmod
           GOTO 110
         elseif(mnupik.eq.10)then
-          CALL PHELPD('pdb lists',10,'-',0,0,IER)
+          helptopic='pdb_list_options_menu'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL PHELPD('pdb lists',nbhelp,'-',0,0,IER)
         elseif(mnupik.eq.11)then
 
 C Return from list.
@@ -320,20 +342,21 @@ C Given a component code, the library is searched for this
 C component and its data is returned.
       SUBROUTINE PCFIND (ICDE)
 #include "plantdb.h"
+#include "pdb_data.h"
+
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
-
-      character dtdesc*68,adodsc*30,h*72
       logical ok,dok
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+
+      helpinsub='PCFIND'  ! set for subroutine
 
       DO 100 I = 1,NPC
         IREC = ITMLOC(I,1)
@@ -352,10 +375,10 @@ C Component code not found.
 C Error handling.
   1   INDXPC = -1
       dok=.true.
-      h(1)= 'Pdb is confused. The component search failed. If you'
-      h(2)= 'want to try again say no to this question. '
+      helptopic='pdb_is_confused'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL ASKOK(' Error in pdb:pcfind component search. ',
-     &           ' Exit the application?',OK,dok,2)
+     &           ' Exit the application?',OK,dok,nbhelp)
       if(OK)then
         CALL EPAGEND
         STOP
@@ -369,26 +392,24 @@ C The user is asked to confirm the entry
 C selected before deletion.
       SUBROUTINE PCDELT
 #include "plantdb.h"  
+#include "pdb_data.h"
+  
       common/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCCTL/MPC, NXTREC
-      common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
-
-      CHARACTER ZGTYPE*40,ZCDATE*16,ZCDESC*80,dtdesc*68,adodsc*30
-      character h*72,buffer*120
+      character buffer*120
 
       dimension ival(MAXPC)
       logical ok,dok
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='PCDELT' ! set for subroutine
 
 C Check if library empty.
       IF (NPC .GT. 0)   GOTO 100
@@ -433,8 +454,9 @@ C << ncode not defined >>
 C Prompt user if ok delete component(s).
 C If prompt is yes then remove from dbase.
         dok=.false.
-        h(1)='Chance to no delete the component. '
-        CALL ASKOK(' ',' OK to delete?',OK,dok,1)
+        helptopic='pdb_ok_to_delete'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL ASKOK(' ',' OK to delete?',OK,dok,nbhelp)
         if(.not.ok) goto 100
 
 C First sort index numbers by ascending order.
@@ -471,10 +493,10 @@ C << ncode not defined >>
  9000 RETURN
 C Error handling.
   1   dok=.true.
-      h(1)='Pdb is confused. It could not finish writing the file'
-      h(2)='and this is an option to exit the application. '
+      helptopic='pdb_is_confused'
+      call gethelptext(helpinsub,helptopic,nbhelp)
       CALL ASKOK(' Error in pdb:pcdelt write of last record. ',
-     &           ' Exit from ESRUpdb?',OK,dok,2)
+     &           ' Exit from ESRUpdb?',OK,dok,nbhelp)
       if(OK)then
         CALL EPAGEND
         STOP
@@ -486,42 +508,20 @@ C ******** PCGET ************
 C PCGET of ESRUpdb
       SUBROUTINE PCGET (INDEX)
 #include "plantdb.h" 
-      common/pophelp/h(60)
+#include "pdb_data.h"
+
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
-
-      common/pcdatd/ictype,mncomp,mncon,micode(maxcmp),icndat(maxcon,5),
-     &              rcndat(maxcon,3)
-
-C Mass flow components data
-      common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
-     &              supcmp(maxcon,maxflw), mfsdsc(maxcon,maxflw),
-     &              ltpcmp(maxcon), isdifc(maxcon)
-
-C TRNSYS types data
-      common/trnsys/ntypes,ittype(MXTSYS),ntadat(MXTSYS),ntbdat(MXTSYS),
-     &              ntcdat(MXTSYS),ntapot(MXTSYS),ntmisc(MXTSYS),
-     &              tdtdsc(MXTSYS,maxmsc),tdatms(MXTSYS,maxmsc),
-     &              trange(MXTSYS,maxmsc,2),tadods(MXTSYS,mxaout),
-     &              ntaotp(MXTSYS,mxaout),ittpcm(MXTSYS,maxcon),
-     &              itsdcm(MXTSYS,maxcon),itsdcn(MXTSYS,maxcon),
-     &              tsupcm(MXTSYS,maxcon,maxflw),
-     &              tmfsds(MXTSYS,maxcon,maxflw),
-     &              tltpcm(MXTSYS,maxcon),itsdif(MXTSYS,maxcon)
-
-      CHARACTER ZGTYPE*40,ZCDATE*16,ZCDESC*80,h*72
-      character dtdesc*68,mfsdsc*68,tdtdsc*68,tmfsds*68
-      character adodsc*30,tadods*30,ltpcmp*60,tltpcm*60
       logical ok,dok
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='PCGET'  ! set for subroutine
 
 C Get current component description from
 C the required position in the library.
@@ -718,10 +718,10 @@ C Error handling
 
 C Error handling.
   1   dok=.true.
-      h(1)='Pdb is confused. It could not finish writing the file'
-      h(2)='and this is an option to exit the application. '
-      CALL ASKOK(' Error in pdb:pcget reading database. ',
-     &           ' Exit from ESRUpdb ?',OK,dok,2)
+      helptopic='pdb_is_confused'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL ASKOK(' Error in pdb:pcget reading components. ',
+     &           ' Exit from ESRUpdb ?',OK,dok,nbhelp)
       if(OK)then
         CALL EPAGEND
         STOP
@@ -734,44 +734,21 @@ C ******** PCPUT ***********
 C PCPUT of ESRUpdb
       SUBROUTINE PCPUT (NDX)
 #include "plantdb.h" 
-      common/pophelp/h(60)
+#include "pdb_data.h"
+ 
       COMMON/FILEP/IFIL
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCCTL/MPC, NXTREC
-      common/PCDATA/ZGTYPE, ZCDATE, ZCDESC
-      common/PCDATB/ICODE,INDXPC,IRC,NNODE,NMATX,NMISC,
-     &              nadata,nbdata,ncdata,napout,
-     &              NDCON(MAXNOD),ISV(MAXNOD),NCPOS(MAXMTX),
-     &              dtdesc(maxmsc),DATAMS(MAXMSC),range(maxmsc,2),
-     &              adodsc(mxaout),noutyp(mxaout)
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
-
-      common/pcdatd/ictype,mncomp,mncon,micode(maxcmp),icndat(maxcon,5),
-     &              rcndat(maxcon,3)
-
-C Mass flow components data
-      common/mfcomp/itpcmp(maxcon), isdcmp(maxcon), isdcnn(maxcon),
-     &              supcmp(maxcon,maxflw), mfsdsc(maxcon,maxflw),
-     &              ltpcmp(maxcon), isdifc(maxcon)
-
-C TRNSYS types data
-      common/trnsys/ntypes,ittype(MXTSYS),ntadat(MXTSYS),ntbdat(MXTSYS),
-     &              ntcdat(MXTSYS),ntapot(MXTSYS),ntmisc(MXTSYS),
-     &              tdtdsc(MXTSYS,maxmsc),tdatms(MXTSYS,maxmsc),
-     &              trange(MXTSYS,maxmsc,2),tadods(MXTSYS,mxaout),
-     &              ntaotp(MXTSYS,mxaout),ittpcm(MXTSYS,maxcon),
-     &              itsdcm(MXTSYS,maxcon),itsdcn(MXTSYS,maxcon),
-     &              tsupcm(MXTSYS,maxcon,maxflw),
-     &              tmfsds(MXTSYS,maxcon,maxflw),
-     &              tltpcm(MXTSYS,maxcon),itsdif(MXTSYS,maxcon)
-
-      CHARACTER ZGTYPE*40,ZCDATE*16,ZCDESC*80
-      character dtdesc*68,mfsdsc*68,tdtdsc*68,tmfsds*68
-      character adodsc*30,tadods*30,ltpcmp*60,tltpcm*60
-      character outs*124,h*72
+      character outs*124
       logical ok,dok
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='PCPUT'  ! set for subroutine
 
 C Put current component description into
 C the required position in the library.
@@ -831,8 +808,8 @@ C Remove old entry if too small.
 
 C Make space at end of library.
         NPC = NPC + 1
-        ITMLOC(NPC,1) = NXTREC
-        ITMLOC(NPC,2) = ICODE
+        ITMLOC(NPC,1) = NXTREC  ! assign the start record
+        ITMLOC(NPC,2) = ICODE   ! remember the component code
         NXTREC = NXTREC + ISZ
         CALL PCUPDT (1)
         IREC = ITMLOC(NPC,1)
@@ -1013,10 +990,10 @@ C Return
 
 C Error handling.
   1   dok=.true.
-      h(1)='Pdb is confused. It could not finish writing the file'
-      h(2)='and this is an option to exit the application. '
-      write(outs,'(a,i4)') 'Error pcput: database writing @ rec: ',irec
-      CALL ASKOK(outs,' Exit from ESRUpdb ?',OK,dok,2)
+      helptopic='pdb_is_confused'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      write(outs,'(a,i4)') 'Error pcput: component writing @ rec:',irec
+      CALL ASKOK(outs,' Exit from ESRUpdb ?',OK,dok,nbhelp)
       if(OK)then
         CALL EPAGEND
         stop
@@ -1027,18 +1004,23 @@ C Error handling.
 C ********* PCRMV ********
       SUBROUTINE PCRMV (NDX)
 #include "plantdb.h"
+#include "pdb_data.h"
+
       COMMON/FILEP/IFIL
-      common/pophelp/h(60)
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
-
-      common/PCCTL/MPC, NXTREC
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
 
 C Delete entry by compacting library
       INTEGER RECORD(IRECLN)
       logical ok,dok
-      character h*72,outs*124
+      character outs*124
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='PCRMV'  ! set for subroutine
 
 C Copy non null records down
       NNDX = NDX + 1
@@ -1076,10 +1058,10 @@ C Return
 
 C Error handling
   1   dok=.true.
-      h(1)='Pdb is confused. It could not compact the file'
-      h(2)='and this is an option to exit the application. '
-      write(outs,'(a,i4)') 'Error pcput: database writing @ rec: ',irec
-      CALL ASKOK('Error in pdb:pcrmv database compacting. ',
+      helptopic='pdb_is_confused'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      write(outs,'(a,i4)') 'Error pcput: component writing @ rec:',irec
+      CALL ASKOK('Error in pdb:pcrmv components file compacting. ',
      &  ' Exit from ESRUpdb ?',OK,dok,2)
       if(OK)then
         CALL EPAGEND
@@ -1093,15 +1075,21 @@ C Update header block after ITMLOC has changed. If IFLG = 0, then
 C zeroize header information
       SUBROUTINE PCUPDT (IFLG)
 #include "plantdb.h"
+#include "pdb_data.h"
+
       common/FILEP/IFIL
-      common/pophelp/h(60)
       COMMON/ERRS/ISTAT,IREC
       EQUIVALENCE (ERRFLG, ISTAT)
 
-      common/PCCTL/MPC, NXTREC
-      common/PCDATC/NPC,ITMLOC(MAXPC,2)
-      CHARACTER PZDESC*25,h*72
+      CHARACTER PZDESC*25
       logical ok,dok
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found (will be non-zero
+                         ! because default message will be created
+      helpinsub='PCUPDT' ! set for subroutine
 
 C Write header.
       IF (IFLG .EQ. 0) THEN
@@ -1136,10 +1124,10 @@ C Return
 
 C Error handling
   1   dok=.true.
-      h(1)='Pdb is confused. It could not update the file'
-      h(2)='and this is an option to exit the application. '
-      CALL ASKOK('Error in pdb:pcupdt database updating. ',
-     &  ' Exit from ESRUpdb ?',OK,dok,2)
+      helptopic='pdb_is_confused'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL ASKOK('Error in pdb:pcupdt components updating. ',
+     &  ' Exit from ESRUpdb ?',OK,dok,nbhelp)
       if(OK)then
         CALL EPAGEND
         stop

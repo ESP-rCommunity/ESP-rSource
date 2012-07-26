@@ -1,15 +1,24 @@
 Project notes for cellular_bounded.cfg
 Description: Two adjacent cellular offices bounded top and bottom
-In folder: /home/jon/training/ibpsa_course
+In folder: cellular_bound
 By: jon
 Date: Wed Apr 25 10:11:58 2007
 For: training
 Project reference: 
-Notes: 
+Notes:
+ 
 This is a variant of cellular_bc.cfg which implements
 a ceiling void above the occupied space, a ceiling
 void below the occupied space structure and an upper
 boundary zone representing the floor above.
+
+Often simulation projects focus on one level of a building.
+And the boundary conditions are not necessarily exactly
+the same as the occupied space. Where there are raised
+floors and/or suspended ceilings their temperatures may
+be substantially different. This model demonstrates how
+low resolution bounding zones and specific controls
+can be used to improve the assessments of focus levels.
 
 The lower ceiling void is controlled to be at the same
 temperature as the upper ceiling void so as to act as
@@ -22,4 +31,6 @@ rooms so as to act as an upper boundary condition.
 This model highlights the use of zone control law 11
 which implements temperature matching.
 _____________________________
+
+For more information on this look in the images folder.
 

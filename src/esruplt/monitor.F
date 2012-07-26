@@ -46,7 +46,6 @@ c ymax   : Expected maximum value of variable along the y axis.
 #include "plant.h"
 
       common/outin/iuout,iuin
-      common/pophelp/h(60)
       common/c9/npcomp,nci(mpcom),cdata(mpcom,mmiscd)
       common/c12ps/npcdat(mpcom,9),ipofs1(mcoefg),ipofs2(mcoefg,mpvar)
       common/c13ps/npmcoe,npnod,npmtyp
@@ -56,7 +55,14 @@ c ymax   : Expected maximum value of variable along the y axis.
       common/pcnam/pcname(mpcom)
 
       dimension IVALS(mpcom)
-      character H*72, pcname*15, outs*124
+      character pcname*15, outs*124
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='minput'  ! set for subroutine
 
 c Get number of components.
       if(npcomp.eq.1) then
@@ -70,12 +76,10 @@ C Initialise minimum and maximum y-axis values.
 
 c Get number of each component.
    10   mnpc=npcomp
-        H(1)='The monitor facility tracks selected nodes temperature'
-        H(2)='state variables within the graphic display'
-        H(3)='as the simulation proceeds. You may select any number'
-        H(4)='of components in any order or all components. '
+        helptopic='plt_graphic_monitor'
+        call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EPICKS(mnpc,IVALS,' ',' Which component to include: ',
-     &    15,npcomp,pcname,' monitor list',IER,4)
+     &    15,npcomp,pcname,' monitor list',IER,nbhelp)
      &    
          if(ier.ne.0) goto 10
          if(mnpc.eq.0)return
@@ -96,7 +100,7 @@ c If more than one node exists then get desired node.
         if(nnodes.gt.1) then
           write(outs,*) ' Node number for component',mcomp(i),'?'
           CALL EASKI(nnc,outs,' ',
-     &      1,'F',nnodes,'F',1,'node number',IER,1)
+     &      1,'F',nnodes,'F',1,'node number',IER,nbhelp)
           mcnod(i)=nnc
         endif
    60 continue
@@ -108,11 +112,11 @@ c type index.
       if(npmtyp.eq.3) then
         CALL EASKI(mstate,' State variable:',
      &    ' 1) temperature,  2) 1st phase or  3) 2nd phase ? ',
-     &    1,'F',3,'F',1,'state variable',IER,1)
+     &    1,'F',3,'F',1,'state variable',IER,nbhelp)
       elseif(npmtyp.eq.2) then
         CALL EASKI(mstate,' State variable:',
      &    ' 1) temperature,  2) 1st phase ? ',
-     &    1,'F',2,'F',1,'state variable',IER,1)
+     &    1,'F',2,'F',1,'state variable',IER,nbhelp)
       elseif(npmtyp.eq.1) then
          mstate=1
       endif
@@ -120,9 +124,9 @@ c type index.
 
 c Get expected minimum and maximum values for satate variable.
    30 CALL EASKR(ymin,' ',' Minimum value for state variable ?',
-     &  0.,'-',0.,'-',0.8,'min state var',IER,0)
+     &  0.,'-',0.,'-',0.8,'min state var',IER,nbhelp)
       CALL EASKR(ymax,' ',' Maximum value for state variable ?',
-     &  0.,'-',0.,'-',0.8,'max state var',IER,0)
+     &  0.,'-',0.,'-',0.8,'max state var',IER,nbhelp)
       if(ier.ne.0) goto 30
       return
 
@@ -178,15 +182,22 @@ C since not all compilers use the same default.
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iside,isize,ifont     ! passed to viewtext
+      integer iicol
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to etplot
+      integer*8 iicol
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
       tab=' '
 
 C This is string terminator for C.
       nulter=char(0)
+
+C Cast values for horaxis.
+      iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
 
 C Jump to required routine.
       goto (1000,2000) mode
@@ -249,10 +260,10 @@ c Determine scaling ratios for the drawing and axis.
      &      xadd,yadd)
 
 c Draw a scale horizontal axis, move to beginning point.
-      call horaxis(xmin,xmax,igl,igr,igb,xadd,xsc,1,'Time (hours)')
+      call horaxis(xmin,xmax,iigl,iigr,iigb,xadd,xsc,1,'Time (hours)')
 
 c Draw a scale vertical axis.
-      call vrtaxis(ymin,ymax,igl,igb,igt,yadd,ysc,1,0,label1)
+      call vrtaxis(ymin,ymax,iigl,iigb,iigt,yadd,ysc,1,0,label1)
 
 c Restore original values for next call.
       if(mstate.eq.2.or.mstate.eq.3) then
@@ -296,13 +307,22 @@ c and 'N' stands for node in this component.
           ncoord(i,1,2)=igb-int((value+yadd)*ysc)
           iy= ncoord(i,1,2)
           ix= ncoord(i,1,1)+3
-          if(colok)call winscl('z',i)
+          if(colok)then
+            iicol=i
+            call winscl('z',iicol)
+          endif
           call wstxpt(ix,iy,clabel)
-          if(colok)call winscl('-',0)
+          if(colok)then
+            iicol=0
+            call winscl('-',iicol)
+          endif
 
 c else start plotting.
         else
-          if(colok)call winscl('z',i)
+          if(colok)then
+            iicol=i
+            call winscl('z',iicol)
+          endif
           ti=float(icount)/float(instpp)
           ncoord(i,2,1)=igl+int((ti+xadd)*xsc)
           ncoord(i,2,2)=igb-int((value+yadd)*ysc)
@@ -310,7 +330,10 @@ c else start plotting.
           call eline (ncoord(i,2,1),ncoord(i,2,2), lndrab)
           ncoord(i,1,1)=ncoord(i,2,1)
           ncoord(i,1,2)=ncoord(i,2,2)
-          if(colok)call winscl('-',0)
+          if(colok)then
+            iicol=0
+            call winscl('-',iicol)
+          endif
           call forceflush
         endif
    10 continue

@@ -38,7 +38,6 @@ C MZHCFV reads the convection regime file.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/TC/ITC,ICNT
-      common/pophelp/h(60)
 
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
 
@@ -51,21 +50,21 @@ C MZHCFV reads the convection regime file.
       COMMON/HCCEN2/CENLOC(MCOM,MBP,14)
       COMMON/VERTC/IAORZ,CWIDTH,CHEIGHT
 
-      character outs*124,OUTSTR*124,h*72
+      character outs*124,OUTSTR*124
       logical OK,dok
 
       DIMENSION HIV(MS),HEV(MS)
 
 C NHCFP(ICOMP) is the number of control time intervals.
-C Variables used for `type 1' control:
+C Variables used for `type 1' fixed coefficients control:
 C    HCFVI(i,j,k): interior HTC for zone `i', surface `j', time interval `k'.
 C    HCFVE(i,j,k): exterior HTC for zone `i', surface `j', time interval `k'.
-C Variables used for `type 2' control:
+C Variables used for `type 2' fixed correlations control:
 C    IcIuse(i,j,k): correlation-equation index for interior of zone `i',
 C                   surface `j', time interval `k'.
 C    IcEuse(i,j,k): correlation-equation index for exterior of zone `i',
 C                   surface `j', time interval `k'.
-C Variables used for `type 3' control:
+C Variables used for `type 3' adaptive control:
 C    icnvKY(i,j,k): index for zone `i', surface `j', time interval `k'.
 C    II: counter used for the icnvKY() index array.
 C    CVdat(II,jj): data items (`jj') for index `II':
@@ -73,7 +72,7 @@ C       jj=1:   control law for interior surface
 C       jj=2-4: data items associated with control law for interior
 C       jj=5:   control law for exterior surface
 C       jj=6-8: data items associated with control law for exterior
-C Variables used for `type 4' control:
+C Variables used for `type 4' CEN coefficients control:
 C   CENLOC(i,k,jj) hc values for zone 'i', time interval 'k':
 C       jj=1 index of a floor surface
 C       jj=2 index of a ceiling surface
@@ -81,6 +80,13 @@ C       jj=3-5 floor upwd_inside, downwd_inside, external
 C       jj=6-8 ceiling upwd_inside, downwd_inside, external
 C       jj=9-11 sloped upwd_inside, downwd_inside, external
 C       jj=12-14 wall inside, partition, external
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MZHCFV'  ! set for subroutine
 
 C Initialize data.
       NHCFP(ICOMP)=0
@@ -288,8 +294,10 @@ C Trace output ?
 C Trace output follows.
     5 CONTINUE 
       dok=.false.
-      h(1)='This report is available if you say yes. '
-      CALL ASKOK(' ',' Convective coefficient file output?',OK,dok,1)
+      helptopic='hc_coef_trace_dialog'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL ASKOK(' ',' Convective coefficient file output?',
+     &  OK,dok,nbhelp)
       IF(.NOT.OK)goto 6
       write(outs,'(A,I4)')' Subroutine MZHCFV      Trace output',ICNT
       call edisp(itu,outs)
@@ -333,7 +341,6 @@ C MZHCFV2 reads the convection-regime file (version 2)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
       COMMON/TC/ITC,ICNT
-      common/pophelp/h(60)
 
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
 
@@ -347,7 +354,7 @@ C MZHCFV2 reads the convection-regime file (version 2)
       COMMON/VERTC/IAORZ,CWIDTH,CHEIGHT
       COMMON/HCCEN2/CENLOC(MCOM,MBP,14)
 
-      character outs*124,OUTSTR*124,word*24,h*72
+      character outs*124,OUTSTR*124,word*24
       character hcfpdescr*72
       logical OK,dok,newer
 
@@ -378,6 +385,13 @@ C       jj=3-5 floor upwd_inside, downwd_inside, external
 C       jj=6-8 ceiling upwd_inside, downwd_inside, external
 C       jj=9-11 sloped upwd_inside, downwd_inside, external
 C       jj=12-14 wall inside, partition, external
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MZHCFV2'  ! set for subroutine
 
 C Initialize data.
       NHCFP(ICOMP)=0
@@ -461,13 +475,13 @@ C If newer format then scan for hcfpdescr.
 
         if(Itype.eq.1) then
 
-C User specifies coefficients for each surface.
-C Convection coefficients - read one for each surface (inside face)
-C and then read one for each surface (other side face).Note that
-C the `use default value` indicator is -1 to allow that in range
-C checking. 
-          CALL EGETWRA(iunit,HCIA,NS,-1.,99.,'W','ins face hc',IER)
-          CALL EGETWRA(iunit,HCEA,NS,-1.,99.,'W','other face hc',IER)
+C User has specified surface convection coefficients for inside and/or
+C surface outermost zone surfaces. Note that a value of -1 for any
+C surface indicates that no user prescription is active and that the
+C defualt value should be used (hence -1 is included in the following
+C range check).
+          CALL EGETWRA(iunit,HCIA,NS,-1.,999.,'W','ins face hc',IER)
+          CALL EGETWRA(iunit,HCEA,NS,-1.,999.,'W','other face hc',IER)
           DO 114 KV=1,NS
             IF(ABS(HCEA(KV)).LT.0.00001.AND.EMISE(KV).GT.0.0)goto 1009
             HCFVI(ICOMP,KV,I)=HCIA(KV)
@@ -477,9 +491,9 @@ C checking.
 
 C User specifies the correlation to use for each surface.
 C Read in the correlation indices.
-          CALL EGETWIA(iunit,IHCIA,NS,0,90,'W',
+          CALL EGETWIA(iunit,IHCIA,NS,-1,99,'W',
      &      'inside face hc cor',IER)
-          CALL EGETWIA(iunit,IHCEA,NS,0,90,'W',
+          CALL EGETWIA(iunit,IHCEA,NS,-1,99,'W',
      &     'other face hc cor',IER)
           DO 115 KV=1,NS
             IcIuse(ICOMP,KV,I)=IHCIA(KV)
@@ -624,8 +638,10 @@ C Error messages.
 C Trace output follows.
     5 CONTINUE
       dok=.true.
-      h(1)='This report is available if you say yes. ' 
-      CALL ASKOK(' ',' Convective regime trace output?',OK,dok,1)
+      helptopic='hc_coef_trace_dialog'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+      CALL ASKOK(' ',' Convective regime trace output?',
+     &  OK,dok,nbhelp)
       IF(.NOT.OK)goto 6
       write(outs,'(A,I4,a,i2)')' Subroutine MZHCFV2  Trace output',
      &  ICNT,' for zone ',ICOMP
@@ -677,8 +693,44 @@ C Fatal error trap.
 
 c ******************** MZSHIN ********************
 
-c MZSHIN assigns the zone associated shading file for use
-c later within the simulation time-stepping.
+C MZSHIN assigns the zone associated shading file for use
+C later within the simulation time-stepping.
+
+C Format of a zone shading & insolation db:
+C Minimum width is 24 words, normal width is nzsur(icomp) words.
+C Record 1: first 12 words holds ishd(), the analysis type for
+C           each day-month (0 no data, 1 shading only, 2 insolation
+C           only, 3 shading and insolation), followed by isadd(),
+C           the record where the shading and/or insolation data for
+C           each day-month commences.
+C Record 2: first word is irecx (the last record written to + 1, i.e.
+C           the next record available for new data), second is nsurs
+C           (the number of surfaces in the zone at the time the db
+C           was created), third is msurs (the maximum number of
+C           insolated surfaces defined when the db was created). The
+C           second and third items are used as consistency checks.
+C Record 3: reserved for future use.
+C Record 4: itmc(), if 1, indicating that a surface is a TMC, i.e.
+C           and insolation source.
+C Record 5: beginning of shading and/or insolation data for first
+C           month considered.
+C Shading records:
+C   24 hour values of direct, pso(), and diffuse, psof(), shading
+C   factors are written in record pairs occupying 2*nsur records.
+C Insolation records:
+C   These start at record isadd(mon)+2*nsur. The first record of
+C   the block holds the ioffs array, which gives the record offset
+C   to the start of the data for each considered insolation source.
+C   These data correspond to each of the possible misur insolation
+C   sources and comprise 24 hour values of the insolated surface
+C   index, insst(), and the insolation factor, pinwst(), written
+C   in record pairs. Thus, igc() for a 6 surface zone might, for
+C   example, be 0,1,x,0,y,0 (where x and y have specific integer
+C   values) indicating that surfaces 2, 3 and 5 are insolation
+C   sources, that the data for surface 3 commences at the next
+C   record (i.e. with an offset of 1), the data for surface 3
+C   commences with an offset of x=2*misur and the data for surface 5
+C   commences with an offset of y=2*(2*misur).
 
       SUBROUTINE MZSHIN(ICOMP)
 #include "building.h"
@@ -689,17 +741,23 @@ c later within the simulation time-stepping.
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
 
       common/rsolmax/maxrec(mcom)
 
       CHARACTER LS*72
-      character outs*124,h*72
+      character outs*124
 
       DIMENSION ISUM1(12),ISUM2(12),PS(24),
      &          IGC(MS),ISADD(12),ISHD(12)
       logical OK,dok
       integer ier
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='MZSHIN'  ! set for subroutine
 
 c Initialise shading file (unit number = IFIL+1).
       JOUT=ITC
@@ -735,34 +793,49 @@ C at maxrec=24 for older files. Remember maxrec for use in solar.F.
         endif
       endif
           
-c Trace output ?
-    3 IF(JOUT.EQ.1)goto 1
-      IF(ITRACE(5).EQ.1.AND.IZNTRC(ICOMP).EQ.1)goto  1
-      goto 2
+C Trace output. MZSHIN is only called during input to no need
+C to put a simulation time limit on this trace option.
+    3 IF(ITRACE(5).EQ.1.AND.IZNTRC(ICOMP).EQ.1) goto 1
 
+C If this point reached there was no request for trace so
+C close the file.
+      CALL ERPFREE(IUNIT,ISTAT)
+      IF(IER.EQ.1)then
+        call epwait
+        call epagend
+        STOP
+      endif
+      RETURN
+ 
+
+C Errors that also attempt to write trace output prior to
+C quitting.
  1000 IER=1
       write(outs,'(2A)') zname(ICOMP),' shading file error in '
       call edisp(iuout,outs)
       call edisp(iuout,LS)
       CALL edisp(iuout,' Run being terminated.')
-      goto 3
+      goto 3  ! jump back to trace
+
  1001 CALL edisp(iuout,' Read error in shading file.')
-      goto 1000
+      goto 1000  ! write further error information
+
  1003 write(outs,'(a,i2,a,i2,a,i2)') 'Model nsur =',NSUR,' db ns =',
      &  ns,' inext=',INEXT
       call edisp(iuout,' Mismatch between model and shading file.')
       call edisp(iuout,outs)
-      goto 1000
+      goto 1000  ! write further error information
 
-c Trace output follows.
-C << code is similar to that used in ish - consider a common
-C << subroutine. Also look at a common common blocks between
-C << ish and the simulator.
+C Trace output follows. The binary file is scanned and the whole
+C years data for each of the selected zones is printed out. This
+C only works if the user first selects the shading & insolation
+C trace and then re-scanns in the model cfg file.
+
+C Code to read the file is out of date and differes from the
+C logic within solar.F so diffuse shading and insolation data
+C is not presented. Direct shading is presented only.
     1 CONTINUE 
       dok=.true.
-      h(1)='This report is available if you say yes. '
-      CALL ASKOK(' ',' SHADING/INSOLATION file output?',OK,dok,1)
-      IF(.NOT.OK)goto  2
       write(outs,'(A,I4)')' Subroutine MZSHIN     Trace output',ICNT
       call edisp(itu,outs)
       write(outs,'(23X,A,I7)')'Zone',ICOMP
@@ -794,7 +867,7 @@ c Shading only or shading/insolation case.
       IREC=ISADD(I)
       DO 9986 J=1,NSUR
         READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1008)(PS(K),K=1,24)
-        IREC=IREC+1
+        IREC=IREC+2   ! there is a 2nd record in solar.F
         IF(J.GT.1)goto 9985
         write(outs,9984)I,J,(PS(K),K=1,24)
  9984   format(I4,I7,F7.1,',',22(F3.1,','),F3.1)
@@ -862,13 +935,14 @@ c Output PI.
       goto 1008
  1008 JOUT=0
       goto 1000
-    2 CALL ERPFREE(IUNIT,ISTAT)
-      IF(IER.EQ.1)goto 4
-      RETURN
 
-    4 call epwait
-      call epagend
-      STOP
+    2 CALL ERPFREE(IUNIT,ISTAT)
+      IF(IER.EQ.1)then
+        call epwait
+        call epagend
+        STOP
+      endif
+      RETURN
 
       END
 
