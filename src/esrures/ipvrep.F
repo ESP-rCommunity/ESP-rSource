@@ -1172,7 +1172,6 @@ C Frequency binning for comfort, when finished, reset iocupf.
               iocupf=1
               iocut=imetmsc(ig,1)
               call scnocup(iier)
-              if (iocut.ne.IFILT) call MMAPER
             else
               iocupf=0
             endif

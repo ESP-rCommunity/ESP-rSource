@@ -738,6 +738,7 @@ C gains and losses.
 
       DIMENSION VAL(12),TVAL(12,12)
       DIMENSION NDYMTH(12), CQ(MTS), CQR(MTS),CQOUT(MTS)
+      real biggest  ! guage size of annual numbers
 
       DATA NDYMTH/31,59,90,120,151,181,212,243,273,304,334,365/
       DATA NMTHNM/'Jan','Feb','Mar','Apr','May','Jun','Jul',
@@ -992,14 +993,27 @@ C Dump 'all-zone' statistics if more than one zone.
             call eddisp(itru,outs)
           ENDIF
         endif
+        biggest=0.0
         DO 685 IJK=1,12
           VAL(IJK)=VAL(IJK)+TVAL(IJK,IMNTH)
+          if(VAL(IJK).gt.biggest) biggest=VAL(IJK)
   685   CONTINUE
   680 CONTINUE
 
 C Dump the annual totals if run was for more than one month.
+
+C Find if any of the annual totals is large enough to require 10 digits
+C otherwise write with 8 or 9 digits.
+
       if (IOM2.GT.IOM1) then
-        write(outsl,'(A,12(F10.0))') ' Annual   ',(VAL(IJK),IJK=1,12)
+        if(biggest.gt.999999.0)then
+          write(outsl,'(A,12(F10.0))') ' Annual   ',(VAL(IJK),IJK=1,12)
+        elseif(biggest.gt.99999.0.and.biggest.lt.999999.0)then
+          write(outsl,'(A,12(F9.0))')' Annual      ',(VAL(IJK),IJK=1,12)
+        else
+          write(outsl,'(A,12(F8.0))')' Annual           ',
+     &      (VAL(IJK),IJK=1,12)
+        endif
         call edisp(itru,' ')
         call eddisp(itru,outsl)
       endif

@@ -75,6 +75,7 @@ C Selection menu for graphs and/or tables.
 
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical zlist,ok,dok
+      logical HAVEIT
       integer NITMS,IG ! max items and current menu item
 
 C For help messages
@@ -122,11 +123,22 @@ C Call the menu of choices (this also sets some default options).
         if (MENUTYPE.eq.-1) return
       endif
 
-C First recover bounds of selected data.
+C First recover bounds of selected data. If it can be done via
+C getstats use that, otherwise call mmacal.
       XMAX=-1.E+10
       XMIN=1.E+10
       do 40 IX=1,NGET
-        call MMACHK(IX,DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN)
+        call GETSTATS(IX,HAVEIT,DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN)
+        if(HAVEIT)then
+
+C Debug.
+C          write(6,*) 'get stats ',DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN
+        else
+          call MMACAL(IX,DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN)
+
+C Debug.
+C          write(6,*) 'get MMACAL ',DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN
+        endif
         XMAX=MAX(XMAX,DMAX)
         XMIN=MIN(XMIN,DMIN)
  40   continue
