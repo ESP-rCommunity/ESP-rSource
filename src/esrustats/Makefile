@@ -6,7 +6,7 @@ PROG = stats$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = esru_ask.o esru_blk.o esru_fc.o esru_lib.o esru_libNonGTK.o csv_stats.o 
+OBJECTS = esru_ask.o esru_blk.o esru_fc.o esru_lib.o esru_libNonGTK.o csv_stats.o redir_console_output.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS)
@@ -26,6 +26,12 @@ esru_libNonGTK.F:
 esru_ask.F:
 	rm -f esru_ask.F
 	ln -s $(LIBdir)/esru_ask.F .
+redir_console_output.o:
+	rm -f redir_console_output.c
+	ln -s $(LIBdir)/redir_console_output.c 
+	$(MCC) $(LD_FLAGS) $(CFLAGS) $(GTKFLAGS) -c redir_console_output.c .
+
+
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -35,5 +41,5 @@ install:
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
-	esru_ask.F esru_blk.F esru_fc.F esru_lib.F esru_libNonGTK.F 
+	esru_ask.F esru_blk.F esru_fc.F esru_lib.F esru_libNonGTK.F redir_console_output.c 
 
