@@ -40,9 +40,10 @@ C Construction.
       PARAMETER (MHCV=MN+ME)	!- Control volumes per construction.
 
 C Glazing.
-      PARAMETER (MGT=MS)	!- Insolated glazings in zone  
-      PARAMETER (MTMC=12)	!- Glazing systems/zone --- increased from 7 to 12 to support HOT3000 (Alex.F)
-      PARAMETER (MGAL=2)	!- Optical sets per optics db item.
+
+      PARAMETER (MGT=MS)	!- Insolated glazings in zone
+      PARAMETER (MTMC=MS)	!- Glazing systems/zone,      ! 28-Feb-2011 BAL: increasing from 7 to MS
+      PARAMETER (MGAL=2)	!- Optical sets per optics db item. 
       PARAMETER (MANG=9)	!- Angles at which optical data is held.
       PARAMETER (MGOPT=150)	!- Set size in optics database.
 
