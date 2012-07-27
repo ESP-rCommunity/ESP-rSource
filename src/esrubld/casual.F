@@ -52,6 +52,7 @@ C QLAT   - latent load for present (1) and future (2) time step.
 #include "tdf2.h"
 #include "sbem.h"
 #include "power.h"
+#include "OffsiteUtilitiesPublic.h"
 
       common/tc/itc,icnt
       common/trc/itrc
@@ -122,6 +123,19 @@ C - Alex Feb. 20 2004
       COMMON/CasCou/iNumb_Gain_coupling(MCOM,MDTY),
      &     Coupling_gain_info(MCOM,MDTY,MC,6)
 
+C----------------------------------------------------------------------
+C Common for data associated with HOT3000 central and zonal base loads.
+C - Bart, Aug 28 2010
+      common / H3K_BL_data / iH3K_Base_Loads(MCOM),
+     &                       iBCD_column(MCOM,MDTY,MC),
+     &                       fBL_fraction(MCOM,MDTY,MC),
+     &                       nGain_types(MCOM,MDTY),
+     &                       iGain_type(MCOM,MDTY,MC)
+
+      integer iH3K_Base_Loads, iBCD_column, nGain_types, iGain_type
+      real fBL_fraction
+C----------------------------------------------------------------------
+
 C Common to store casual/radiative gain injections 
 C on a zone-by-zone basis. Note: the latent gain 
 C common variable has been created is a place-holder
@@ -149,8 +163,8 @@ C Variables used in trace.
       common/CASGNTRC/QP(MCOM,2,MC,MPHAS),RP(MCOM,2,MC,MPHAS)
 
 C Descriptive label for a zone load or casual gain types.
+      common/loadlabel/lodlabel(mcom,30)
       character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
 
 C Adaptive comfort commons
       COMMON/ADPCOM/PREVSTATWIN,PREVSTATFAN,PREVSTATLIGHT,TOTPWR(MCOM)
@@ -203,6 +217,24 @@ C     Flag indicating type of present day (weekday/saturday/sunday)
       INTEGER iDay_type
 C     HOT3000 storage arrays
       REAL Cas_Rad_dat, Cas_Con_dat, Cas_Lat_dat
+    
+      REAL Total_elec_CON_gain          ! Total electrical convective casual gain  (type 5)
+      REAL Total_elec_RAD_gain          ! Total electrical radiative casual gain  (type 5)
+
+C     HOT3000 Base Loads local variables
+      REAL W_BL_heat_gain                  ! Heat for the particular base load casual gain (type >20)
+      REAL Total_BL_Convective_gain        ! Total base loads convective casual gain  (type >20)
+      REAL Total_BL_Radiative_gain         ! Total base loads radiative casual gain  (type >20)
+      REAL Total_BL_electricity_Appliances ! Total electric load from base load appliances (type 20)      
+      REAL Total_BL_electricity_Lights     ! Total electric load from base load lights (type 21)
+      REAL Total_BL_electricity_Other      ! Total electric load from base load other (type 22)
+
+C     Variables for Access to the Boundary Condition Data
+      Real fConvert_current_TS_to_DAY ! returns day (float)
+      Real fGet_BC_data_by_col ! return the data for the timestep
+      Integer iInterp_method ! 1 = step-wise; 2 = linear
+      Character cContext*124 ! string to print on BCD failure
+      Character cBCD_col*248
 
 C     Flag indicating that function Elec_Net_Load_Calc(?) should 
 C     return the occupant-driven electrical load (excluding 
@@ -697,7 +729,127 @@ C First find total number of simulation period timesteps including start-up peri
      &      QTOTEQUIP,QEQUIPCASC,QEQUIPCASR,QEQUIPLATN
           call edisp(itu,outs)
         endif
+
       else
+
+
+       IF(iH3K_Base_Loads(icomp).eq.1)then
+
+         ! process HOT3000 base loads here
+
+         ! ** NOTE: latent gains 
+         ! are presently not supported. However, if they were to be implemented, 
+         ! code similar to below would have to be added to moistr.F, subsys.F and 
+         ! drylink.F in the esrubld directory, AND NOT IN THIS FILE!!!
+
+         ! TODO: implement latent gains as described in the note above. 
+
+         ! Initialize base load variables
+         Total_BL_Convective_gain        = 0. ! (W) 
+         Total_BL_Radiative_gain         = 0. ! (W)
+         Total_BL_electricity_Lights     = 0. ! (W)
+         Total_BL_electricity_Appliances = 0. ! (W)
+         Total_BL_electricity_Other      = 0. ! (W) 
+
+         do 100 IGN=1,nGain_types(icomp,iday)
+
+           W_BL_heat_gain          = 0.   ! Zero out heat gain power for this next gain loop
+ 
+         ! Casual gain types for use with HOT3000 central and zonal base loads:
+         !  20. BL-App (Appliances linked with BCD file)
+         !  21. BL-Lights (Lights linked with BCD file)
+         !  22. BL-OElec (Other Electrical linked with BCD file)
+         !  23. BL-Occ (Occupants linked with BCD file)
+
+           iColumn   = iBCD_column(icomp,iday,IGN)
+
+           ! assume valid time period for future time step
+           ! (time period is always 0 - 24 for HOT3000 base laods)
+
+           ! Set the BCD interpolation method
+           iInterp_method = 1 ! 1 = step-wise; 2 = linear
+
+           write (cContext,*) "Determining BL profile for gain type ",
+     &          iGain_Type(icomp,iday,IGN)
+
+           if(iGain_Type(icomp,iday,IGN).eq.20)then      ! BL-App
+             W_BL_heat_gain = fGet_BC_data_by_col( ! heat gain only
+     &        iColumn,
+     &        fConvert_current_TS_to_DAY(),
+     &        iInterp_method,
+     &        cContext)
+     &        * fBL_fraction(icomp,iday,IGN)  ! multiply by BL fraction (= 1 for zonal base loads, 0.0 < fBL_fraction < 1.0  for central base loads) 
+
+             Total_BL_electricity_Appliances = W_BL_heat_gain
+
+           elseif(iGain_Type(icomp,iday,IGN).eq.21)then  ! BL-Lights
+             W_BL_heat_gain = fGet_BC_data_by_col( ! heat gain only
+     &        iColumn,
+     &        fConvert_current_TS_to_DAY(),
+     &        iInterp_method,
+     &        cContext)
+     &        * fBL_fraction(icomp,iday,IGN)  ! multiply by BL fraction (= 1 for zonal base loads, 0.0 < fBL_fraction < 1.0  for central base loads) 
+
+             Total_BL_electricity_Lights = W_BL_heat_gain
+
+           elseif(iGain_Type(icomp,iday,IGN).eq.22)then  ! BL-OElec
+             W_BL_heat_gain = fGet_BC_data_by_col( ! heat gain only
+     &        iColumn,
+     &        fConvert_current_TS_to_DAY(),
+     &        iInterp_method,
+     &        cContext)
+     &        * fBL_fraction(icomp,iday,IGN)  ! multiply by BL fraction (= 1 for zonal base loads, 0.0 < fBL_fraction < 1.0  for central base loads) 
+
+             Total_BL_electricity_Other = W_BL_heat_gain
+
+           elseif(iGain_Type(icomp,iday,IGN).eq.23)then  ! BL-Occ
+             W_BL_heat_gain = fGet_BC_data_by_col( ! heat gain only
+     &        iColumn,
+     &        fConvert_current_TS_to_DAY(),
+     &        iInterp_method,
+     &        cContext)
+     &        * fBL_fraction(icomp,iday,IGN)  ! multiply by BL fraction (= 1 for zonal base loads, 0.0 < fBL_fraction < 1.0  for central base loads) 
+
+           end if
+
+          ! HOT3000 base loads Convective gains (W)
+           Total_BL_Convective_gain = Total_BL_Convective_gain 
+     &             + CGSENC(icomp,iday,iGain_Type(icomp,iday,IGN),1)    ! sensible load fraction * convective load fraction
+     &             * W_BL_heat_gain                    ! heat gain for this time step
+
+          ! HOT3000 base loads Radiative gains (W)
+           Total_BL_Radiative_gain = Total_BL_Radiative_gain 
+     &             + CGSENR(icomp,iday,iGain_Type(icomp,iday,IGN),1)    ! sensible load fraction * radiative load fraction
+     &             * W_BL_heat_gain                    ! heat gain for this time step
+
+  100    continue  ! number of casual gains loop
+
+        ! Add radiant and convective gains from HOT3000 base loads
+        ! to ESP-r common blocks QCASC and QCASR. These data are 
+        ! actually used to calculate the heat injection into 
+        ! the building. 
+         QCASC(2)=QCASC(2) + Total_BL_Convective_gain
+         QCASR(2)=QCASR(2) + Total_BL_Radiative_gain
+
+      ! Report electricity consumption for each type of casual gain
+      ! for the zone to SiteUtilities
+
+        ! Appliances
+        fSUFuelEnergyUse(iElectricity, iUseEquipment) = 
+     &          Total_BL_electricity_Appliances
+        call StoreH3KBaseLoadsEnergyUse(icomp, fSUFuelEnergyUse)
+
+        ! Lights
+        fSUFuelEnergyUse(iElectricity, iUseLights) = 
+     &          Total_BL_electricity_Lights
+        call StoreH3KBaseLoadsEnergyUse(icomp, fSUFuelEnergyUse)
+
+        ! Other
+        fSUFuelEnergyUse(iElectricity, iUseUncatagorized) = 
+     &          Total_BL_electricity_Other
+        call StoreH3KBaseLoadsEnergyUse(icomp, fSUFuelEnergyUse)
+
+       ELSE     ! proceed as usual with default ESP-r treatment
 
 C Data in operations file.
 C For each casual gain type set gain for current period.
@@ -773,8 +925,10 @@ C Keep track of electrical loads for trace.
               ENDIF 
             endif
           endif
- 10     continue
-      endif
+ 10     continue   ! end of gain type loop
+
+       ENDIF    ! HOT3000 Base Loads conditional block
+      endif     ! UK's NCM method conditional block
 
 C If adaptive comfort algorithm is active add sensible heat gains when on
       call eclose(PREVSTATFAN,1.00,0.01,closea)
@@ -843,7 +997,6 @@ C Radiative casual gains (W)
 
         endif          
       ENDDO
-
 
 C NOTE: add radiant & convective gains from occupant-driven
 C electric loads to ESP-r common blocks QCASR and QCASC.

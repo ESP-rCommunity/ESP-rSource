@@ -63,7 +63,7 @@ C Special materials.
       PARAMETER (MSPMDAT=21)	!- Defining data items.
 
 C Casual gains.
-      PARAMETER (MCT=7,MGTY=7)	!- Casual gain types.
+      PARAMETER (MCT=30,MGTY=30)	!- Casual gain types.
       PARAMETER (MDTY=10)	!- Day types.
       PARAMETER (MGPER=72)	!- Periods.
       PARAMETER (MC=24*MCT*MDTY)!- Total casual gains.
