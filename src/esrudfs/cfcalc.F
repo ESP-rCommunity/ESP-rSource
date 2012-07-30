@@ -639,7 +639,7 @@ C      write(6,*) 'LMA',CALLMA(ICFD),'  gopher',gophrun
       RETURN
       
 C Format statements.
- 312  FORMAT(1H ,I6,2X,1P7E10.3,/,9X,1P7E10.3)
+ 312  FORMAT(I6,2X,7E10.3,/,9X,7E10.3)
  410  FORMAT(/,' DFS - Monitoring of residuals & variables',/,/,
      &'   ITER',8X,'U',9X,'V',9X,'W',9X,'P', 9X,'T',9X,'K',7X,'Eps.',/)
  420  FORMAT(/,' DFS - Monitoring of renormalized residuals &',

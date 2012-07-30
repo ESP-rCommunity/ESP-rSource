@@ -366,7 +366,7 @@ C Plot values on screen.
 C Write residuals and monitoring values in a ASCII format file.
         WRITE(ICFMON,312)NITER,1.-AVELMA,RESORL,AVELMA,
      &                  AGEf(IMONT(ICFD),JMONT(ICFD),KMONT(ICFD))
- 312    FORMAT(1H ,I6,2X,1P2E10.3,/,9X,1P2E10.3)
+ 312    FORMAT(I6,2X,2E10.3,/,9X,2E10.3)
 
       IF(MMOD.eq.8)THEN
           NCRV=2
