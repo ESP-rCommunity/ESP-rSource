@@ -6,7 +6,8 @@ c Volumes are in Litres
 c Global DHW Variables
 
       COMMON /DHW_DATA/ iNTSTEP,
-     &  iNumberOfTanks,fNumOfOccupants,fWaterDraw,
+     &  iNumberOfTanks,fNumOfOccupants, iDHW_draw_BCD_col,
+     &  fWaterDraw,
      &  fCold_Main_Temp,fHotSupplyTemp,iDHW_Flag,
      &  fDHWVersionNumber,
      &  fWaterDrawCurveHourly,fWaterDrawCurveTotal,
@@ -17,11 +18,13 @@ C iDay    Contains the day of the year number.
 C iMonth  Contains the Month Number.
 C iNTSTEP Number of Timestep in one hour.
 C iNumberOfTanks Number Tanks in simulation.
+C iDHW_draw_BCD_col BCD column num for central DHW system annual draw schedule 
 C iDHW_ground_temp_cal_flag 
 C             Flag for method for obtaining ground 
 C             temperature parameters. Either user 
 C             supplied in the dhw or internally calculated
       INTEGER iDay,iMonth,iNTSTEP,iNumberOfTanks,
+     &        iDHW_draw_BCD_col,      
      &        iDHW_ground_temp_cal_flag
 
 C fNumOfOccupants   Number of Occupants.
