@@ -230,21 +230,9 @@ C apportioned to individual zones.
         CALL AIM2_split2zones(AIM2_total)
 
 C The above calculated the infiltration to the occupied portion of the house. Now determine
-C the infiltration to the attic zone(s) and crawl space zone (if they exist).
-
-
-C----------------------------------------------------------------------             
-C     08-Mar-2011 BAL: Adding support for multiple attics. 
-C
-C     NOTE: In the multi-zone configuration, infiltration for 
-C     crawlspace/garage/attic zones is set directly in the *.opr file
-C     instead of in the aim2 calcs. This allows for more flexibility in 
-C     setting infiltration rates from HOT3000. 
-C---------------------------------------------------------------------- 
-        IF ( .not. AIM2_multi_zone ) then
-          CALL AIM2_inf2attic
-          CALL AIM2_inf2crawl
-        END IF
+C the infiltration to the attic zone and crawl space zone (if they exist).
+        CALL AIM2_inf2attic
+        CALL AIM2_inf2crawl
 
 C End of AIM-2 calculations for first zone in model. By this point the infiltration
 C air flow to each zone of the model has been calculated for the current time-step.
@@ -1088,14 +1076,7 @@ C Declarations for variables passed in calling statement.
 
 C Declarations for local variables.
       INTEGER ICOMP
-      INTEGER i, icrawlspace, igarage, iattic
-      LOGICAL bExclude_Crawlspace
-      LOGICAL bExclude_Garage
-      LOGICAL bExclude_Attic       
-      
-      bExclude_Crawlspace = .false.
-      bExclude_Garage = .false.
-      bExclude_Attic = .false.       
+      INTEGER i
 
 C Apportion infiltration to each zone. For now just distribute the air flow
 C in proportion to each room's volume. The basement should be treated somewhat
@@ -1107,44 +1088,6 @@ C differently in the future.
         ZoneLoop: DO ICOMP=1,NCOMP               ! Examine each zone in the model.
           AIM2_infil_to_zones(ICOMP) = 0.        ! Initialize infil to zone.
           AIM2Zones: DO i=1,AIM2_num_zones_infil ! Check if there is infil to this zone.
-
-C----------------------------------------------------------------------             
-C         09-Mar-2011 BAL: Adding support for multiple crawlspace/
-C         garage/attic zones
-C----------------------------------------------------------------------           
-            MultizoneCheck: IF ( AIM2_multi_zone ) then
-          
-              do icrawlspace = 1, AIM2_num_cspace_zones
-                if ( ICOMP .eq. AIM2_cspace_zones(icrawlspace) ) then
-                     bExclude_Crawlspace = .true.
-                end if
-              end do
-            
-              do igarage = 1, AIM2_num_garage_zones
-                if ( ICOMP .eq. AIM2_garage_zones(igarage) ) then
-                     bExclude_Garage = .true.
-                end if
-              end do
-
-              do iattic = 1, AIM2_num_attic_zones
-                if ( ICOMP .eq. AIM2_attic_zones(iattic) ) then
-                     bExclude_Attic = .true.
-                end if
-              end do            
-          
-              if ( ( .not. bExclude_Crawlspace ) .and. 
-     &             ( .not. bExclude_Garage     ) .and.
-     &             ( .not. bExclude_Attic      )  )then
-     
-                    AIM2_infil_to_zones(ICOMP) =                ! There is infil to this zone:
-     &                   VOL(ICOMP)/AIM2_house_vol * AIM2_total ! calc air flow rate. 
-
-              end if
-            
-              exit
-          
-            ELSE 
-
 c Check to see if infiltration is spec'd for this zone, and that 
 C it's not a crawl-space
             rightzone: if( AIM2_zone_infil(i) .eq. ICOMP .and. 
@@ -1198,10 +1141,9 @@ C be used to examine free cooling and summer comfort.
                                                              ! Processing of this zone complete.
             exit
             endif rightzone
-          endif MultizoneCheck
+             
           end do AIM2Zones
         END DO ZoneLoop
-         
       ELSE
         CALL EDISP(IUOUT,' Warning: AIM2 arrays not allocated') 
       END IF ArraysAllocated
@@ -1299,32 +1241,27 @@ C Declarations for local variables.
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: IUOUT,IUIN
 
-C If user has specified that one or more of the zones in the model is an attic, then
-C set the infiltration rate for that attic. IF an attic has not been specified,
+C If user has specified that one of the zones in the model is an attic, then
+C set the infiltration rate for the attic. IF an attic has not been specified,
 C then `AIM2_attic_zone' will have defaulted to zero. In this case, no action
 C is taken here.
-
-      attic_ach = .5
-
-C Assume the attic receives 0.5 ac/h of infiltration from the
-C outdoors and no infiltration from the occupied portion of the
-C house. This is the approach used in the HOT2000 bin model. 
-C Sensitivity tests showed that this has only a minor impact
-C on the heating loads, although a significant impact on the
-C zone air temperature in the attic. A more refined treatment
-C should be used in the future.
       IF(AIM2_attic_zone.gt.0)THEN
-            
+
+C Assume the attic receives 0.5 ac/h of infiltration from the outdoors and no infiltration
+C from the occupied portion of the house. This is the approach used in the HOT2000 bin
+C model. Sensitivity tests showed that this has only a minor impact on the heating loads,
+C although a significant impact on the zone air temperature in the attic. A more refined
+C treatment should be used in the future.
+        attic_ach = 0.5
+      
         IF (ALLOCATED(AIM2_infil_to_zones)) THEN
-           AIM2_infil_to_zones(AIM2_attic_zone) =
+          AIM2_infil_to_zones(AIM2_attic_zone) =
      &             attic_ach * VOL(AIM2_attic_zone) / 3600.
         ELSE
            CALL EDISP(IUOUT,
-     &     ' Warning: AIM2_infil_to_zones array not allocated (c)')
+     &         ' Warning: AIM2_infil_to_zones array not allocated (c)')
         END IF
-      
       END IF
-      
 
       RETURN
       END SUBROUTINE AIM2_inf2attic

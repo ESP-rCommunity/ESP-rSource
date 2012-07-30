@@ -190,46 +190,11 @@ C Number of zone whose temperature is used as reference for infiltration calculc
 
 C Number of zones that receive infiltration.
       INTEGER :: AIM2_num_zones_infil
-      
-C Flag for multi-zone version which supports multiple basement/crawlspace/garage/attic zones. 
-      LOGICAL :: AIM2_multi_zone      
-      
-C Number of basement zones that receive infiltration (multi-zone version).
-      INTEGER :: AIM2_num_bsmt_zones  
-
-C Number of crawlspace zones that are excluded from the leakage distribution (multi-zone version).
-      INTEGER :: AIM2_num_cspace_zones
-
-C Number of garage zones that are excluded from the leakage distribution (multi-zone version).
-      INTEGER :: AIM2_num_garage_zones
-
-C Number of attic zones that are excluded from the leakage distribution (multi-zone version).
-      INTEGER :: AIM2_num_attic_zones
 
 C Matrix holding indices of zones that receive infiltration.
 C Dynamic memory allocation to set the size of the array, means
 C a maximum does not need to be decided at this point
       INTEGER, ALLOCATABLE, DIMENSION(:) :: AIM2_zone_infil
-      
-C Array holding indices of basement zones (multi-zone version).
-C Dynamic memory allocation to set the size of the array, means
-C a maximum does not need to be decided at this point
-      INTEGER, ALLOCATABLE, DIMENSION(:) :: AIM2_bsmt_zones
-
-C Array holding indices of crawlspace zones (multi-zone version).
-C Dynamic memory allocation to set the size of the array, means
-C a maximum does not need to be decided at this point
-      INTEGER, ALLOCATABLE, DIMENSION(:) :: AIM2_cspace_zones 
-
-C Array holding indices of garage zones (multi-zone version).
-C Dynamic memory allocation to set the size of the array, means
-C a maximum does not need to be decided at this point
-      INTEGER, ALLOCATABLE, DIMENSION(:) :: AIM2_garage_zones      
-
-C Array holding indices of attic zones (multi-zone version).
-C Dynamic memory allocation to set the size of the array, means
-C a maximum does not need to be decided at this point
-      INTEGER, ALLOCATABLE, DIMENSION(:) :: AIM2_attic_zones       
 
 C Zone number of basement (basements treated differently that living space in terms of
 C allocation of infiltration air flow).
@@ -459,16 +424,11 @@ C which parameters have been defined (for use in menu options).
       AIM2_DHW_flue2 = 0.
       AIM2_ref_zone = 0
       AIM2_num_zones_infil = 0
-      AIM2_num_bsmt_zones = 0   
-      AIM2_num_cspace_zones = 0
-      AIM2_num_garage_zones = 0
-      AIM2_num_attic_zones = 0      
       AIM2_basement_zone = 0
       AIM2_CrawlSpace_zone = 0
       AIM2_attic_zone = 0
       fAIM2VersionNumber = -1.
       AIM2_Initialized = .TRUE.
-      AIM2_multi_zone = .FALSE.
       
       END SUBROUTINE Initialize_AIM2_Params
 
@@ -635,15 +595,6 @@ C    AIM2_zone_infil(i) = Zone number of i'th zone that receives infiltration.
 C    AIM2_basement_zone = Zone number of basement.
 C    AIM2_CrawlSpace_zone = Zone number of crawlspace.
 C    AIM2_attic_zone = Zone number of attic.
-C
-C    AIM2_num_bsmt_zones = Number of basement zones that receive infiltration (multi-zone version).
-C    AIM2_num_cspace_zones = Number of crawlspace zones that are excluded from the leakage distribution (multi-zone version).
-C    AIM2_num_garage_zones = Number of garage zones that are excluded from the leakage distribution (multi-zone version).
-C    AIM2_num_attic_zones = Number of attic zones that are excluded from the leakage distribution (multi-zone version).
-C    AIM2_bsmt_zones(i) = Zone number of i'th basement zone (multi-zone version).
-C    AIM2_cspace_zones(i) = Zone number of i'th crawlspace zone (multi-zone version).
-C    AIM2_garage_zones(i) = Zone number of i'th garage zone (multi-zone version).
-C    AIM2_attic_zones(i) = Zone number of i'th attic zone (multi-zone version).
       
       SUBROUTINE AIM2_READIN
       IMPLICIT NONE
@@ -1028,277 +979,43 @@ C Check allocation was sucessful
         END IF
       END IF
 
+
 C Read zone number of basement (basements treated differently that living space
 C in terms of allocation of infiltration air flow).
-C IF VALUE IS -1, PROCEED WITH MULTI ZONE VERSION. 
       CALL STRIPC(IUNIT,OUTSTR,99,ND,1,' AIM-2 data',IER)
       IF(IER.NE.0)goto 1000
       K=0
-      CALL EGETWI(OUTSTR,K,IVAL,-1,30,'F',' basement zone',IER)
+      CALL EGETWI(OUTSTR,K,IVAL,0,10,'F',' basement zone',IER)
       if(IER.NE.0)then
         call edisp(IUOUT,' Cannot read basement zone.')
         goto 1000
       endif
-      
-C----------------------------------------------------------------------             
-C     08-Mar-2011 BAL: Adding support for zone configurations with
-C     multiple basement/crawlspace/garage/attic zones. 
-C----------------------------------------------------------------------       
-      Multizone Config: IF (IVAL .EQ. -1 ) THEN      
-
-C----------------------------------------------------------------------             
-C           Set multi zone flag to true
-C----------------------------------------------------------------------       
-            AIM2_multi_zone = .TRUE.      
-
-C----------------------------------------------------------------------  
-C           BASEMENT zones
-C   
-C           Read number of basement zones in model that will receive
-C           infiltration. Following this, read indices of the basement
-C           zones that do receive infiltration.
-C
-C         **NOTE: Currently, aim-2 does not treat basement zones any 
-C           differently than other infiltration zones. This is a 
-C           placeholder for any future modifications specific to 
-C           basement zones. 
-C---------------------------------------------------------------------- 
-            CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' AIM-2 data',IER)
-            IF(IER.NE.0)goto 1000
-            K=0
-            CALL EGETWI(OUTSTR,K,IVAL,0,30,'F',
-     &             ' num basement zones with infil',IER)
-            if(IER.NE.0)then
-              call edisp(IUOUT,
-     &             ' Cannot read num of basement zones with infil.')
-              goto 1000
-            endif
-            AIM2_num_bsmt_zones = IVAL               
-    
-            IF (AIM2_num_bsmt_zones.GT.0) THEN
-
-C----------------------------------------------------------------------               
-C             Allocate memory for AIM2_bsmt_zones
-C---------------------------------------------------------------------- 
-              ALLOCATE(AIM2_bsmt_zones(AIM2_num_bsmt_zones),
-     &             STAT=allocate_status)
-C----------------------------------------------------------------------               
-C             Check allocation was sucessful
-C----------------------------------------------------------------------             
-              IF (.NOT.ALLOCATED(AIM2_bsmt_zones)) THEN
-                CALL EDISP(IUOUT,
-     &                ' Warning: AIM2_bsmt_zones not allocated')
-              END IF
-              
-              IF (ALLOCATED(AIM2_bsmt_zones)) THEN
-                DO ICOMP=1,AIM2_num_bsmt_zones
-                  CALL EGETWI(OUTSTR,K,IVAL,1,30,'F',
-     &                ' basement zone receiving infil',IER)
-                  if(IER.NE.0)then
-                    call edisp(IUOUT,'basement zone receiving infil.')
-                    goto 1000
-                  endif
-                  AIM2_bsmt_zones(ICOMP) = IVAL
-                END DO
-              END IF
-            END IF
-            
-C----------------------------------------------------------------------  
-C           CRAWLSPACE zones
-C   
-C           Read number of crawlspace zones in model that will receive
-C           infiltration. Following this, read indices of the crawlspace
-C           zones that do receive infiltration.
-C
-C         **NOTE: Aim-2 will exclude crawlspaces from the leakage 
-C           distribution and house volume. Crawlspace infiltration
-C           is set in the *.opr file. 
-C---------------------------------------------------------------------- 
-            CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' AIM-2 data',IER)
-            IF(IER.NE.0)goto 1000
-            K=0
-            CALL EGETWI(OUTSTR,K,IVAL,0,30,'F',
-     &         ' num crawlspace zones excluded from leakage dist.',IER)
-            if(IER.NE.0)then
-              call edisp(IUOUT,
-     &             ' Cannot read num of crawlspace zones')
-              goto 1000
-            endif
-            AIM2_num_cspace_zones = IVAL               
-    
-            IF (AIM2_num_cspace_zones.GT.0) THEN
-
-C----------------------------------------------------------------------               
-C             Allocate memory for AIM2_cspace_zones
-C---------------------------------------------------------------------- 
-              ALLOCATE(AIM2_cspace_zones
-     &         (AIM2_num_cspace_zones),STAT=allocate_status)
-C----------------------------------------------------------------------               
-C             Check allocation was sucessful
-C----------------------------------------------------------------------             
-              IF (.NOT.ALLOCATED(AIM2_cspace_zones)) THEN
-                CALL EDISP(IUOUT,
-     &                ' Warning: AIM2_cspace_zones not allocated')
-              END IF
-              
-              IF (ALLOCATED(AIM2_cspace_zones)) THEN
-                DO ICOMP=1,AIM2_num_cspace_zones
-                  CALL EGETWI(OUTSTR,K,IVAL,1,30,'F',
-     &              ' crawlspace zone excluded from leakage dist.',IER)
-                  if(IER.NE.0)then
-                    call edisp(IUOUT,
-     &                ' crawlspace zone excluded from leakage infil.')
-                    goto 1000
-                  endif
-                  AIM2_cspace_zones(ICOMP) = IVAL
-                END DO
-              END IF
-            END IF         
-
-C----------------------------------------------------------------------
-C           GARAGE zones
-C
-C           Read number of garage zones in model that will be excluded
-C           from the leakage distribution. Following this, read indices
-C           of the garage zones to exclude.
-C
-C         **NOTE: Aim-2 will exclude garage zones from the leakage 
-C           distribution and house volume. Garage zone infiltration
-C           is set in the *.opr file. 
-C---------------------------------------------------------------------- 
-            CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' AIM-2 data',IER)
-            IF(IER.NE.0)goto 1000
-            K=0
-            CALL EGETWI(OUTSTR,K,IVAL,0,30,'F',
-     &             ' num garage zones excluded from leakage dist',IER)
-            if(IER.NE.0)then
-              call edisp(IUOUT,
-     &             ' Cannot read num of garage zones')
-              goto 1000
-            endif
-            AIM2_num_garage_zones = IVAL               
-    
-            IF (AIM2_num_garage_zones.GT.0) THEN
-
-C----------------------------------------------------------------------               
-C             Allocate memory for AIM2_garage_zones
-C---------------------------------------------------------------------- 
-              ALLOCATE(AIM2_garage_zones
-     &         (AIM2_num_garage_zones),STAT=allocate_status)
-C----------------------------------------------------------------------               
-C             Check allocation was sucessful
-C----------------------------------------------------------------------             
-              IF (.NOT.ALLOCATED(AIM2_garage_zones)) THEN
-                CALL EDISP(IUOUT,
-     &                ' Warning: AIM2_garage_zones not allocated')
-              END IF
-              
-              IF (ALLOCATED(AIM2_garage_zones)) THEN
-                DO ICOMP=1,AIM2_num_garage_zones
-                  CALL EGETWI(OUTSTR,K,IVAL,1,30,'F',
-     &                ' garage zone excluded from leakage dist.',IER)
-                  if(IER.NE.0)then
-                    call edisp(IUOUT,
-     &                ' garage zone excluded from leakage infil.')
-                    goto 1000
-                  endif
-                  AIM2_garage_zones(ICOMP) = IVAL
-                END DO
-              END IF
-            END IF  
-
-C----------------------------------------------------------------------
-C           ATTIC zones
-C
-C           Read number of attic zones in model that will be excluded
-C           from the leakage distribution. Following this, read indices
-C           of the attic zones to exclude.
-C
-C         **NOTE: Aim-2 will exclude attic zones from the leakage 
-C           distribution and house volume. Attic zone infiltration
-C           is set in the *.opr file when the multi-zone configuration
-C           is ON. 
-C---------------------------------------------------------------------- 
-            CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' AIM-2 data',IER)
-            IF(IER.NE.0)goto 1000
-            K=0
-            CALL EGETWI(OUTSTR,K,IVAL,0,30,'F',
-     &             ' num attic zones excluded from leakage dist',IER)
-            if(IER.NE.0)then
-              call edisp(IUOUT,
-     &             ' Cannot read num of attic zones')
-              goto 1000
-            endif
-            AIM2_num_attic_zones = IVAL               
-    
-            IF (AIM2_num_attic_zones.GT.0) THEN
-
-C----------------------------------------------------------------------               
-C             Allocate memory for AIM2_attic_zones
-C---------------------------------------------------------------------- 
-              ALLOCATE(AIM2_attic_zones
-     &         (AIM2_num_attic_zones),STAT=allocate_status)
-C----------------------------------------------------------------------               
-C             Check allocation was sucessful
-C----------------------------------------------------------------------             
-              IF (.NOT.ALLOCATED(AIM2_attic_zones)) THEN
-                CALL EDISP(IUOUT,
-     &                ' Warning: AIM2_attic_zones not allocated')
-              END IF
-              
-              IF (ALLOCATED(AIM2_attic_zones)) THEN
-                DO ICOMP=1,AIM2_num_attic_zones
-                  CALL EGETWI(OUTSTR,K,IVAL,1,30,'F',
-     &                ' attic zone excluded from leakage dist.',IER)
-                  if(IER.NE.0)then
-                    call edisp(IUOUT,
-     &                ' attic zone excluded from leakage infil.')
-                    goto 1000
-                  endif
-                  AIM2_attic_zones(ICOMP) = IVAL
-                END DO
-              END IF
-            END IF            
-
-      ELSE
-C----------------------------------------------------------------------               
-C           Default method which accepts one of each 
-C           basement/crawlspace/attic zones.
-C----------------------------------------------------------------------  
-      
-            AIM2_basement_zone = IVAL
-
+      AIM2_basement_zone = IVAL
 C Read zone number of crawlspace. If no data specified, then this was an old
 C version of the .aim file so assume no crawlspace (AIM2_CrawlSpace_zone=0).
-            If ( ND .lt. 2 ) Then ! No data, default to 'no zone'
-               IVAL = 0
-            Else ! Read it
-               CALL EGETWI(OUTSTR,K,IVAL,0,10,'F',
-     &           ' Crawl Space zone',IER)
-               if(IER.NE.0)then
-                 call edisp(IUOUT,' Cannot read Crawl Space zone.')
-                 goto 1000
-               endif
-            Endif
-            AIM2_CrawlSpace_zone = IVAL
-            
+      If ( ND .lt. 2 ) Then ! No data, default to 'no zone'
+         IVAL = 0
+      Else ! Read it
+         CALL EGETWI(OUTSTR,K,IVAL,0,10,'F',' Crawl Space zone',IER)
+         if(IER.NE.0)then
+           call edisp(IUOUT,' Cannot read Crawl Space zone.')
+           goto 1000
+         endif
+      Endif
+      AIM2_CrawlSpace_zone = IVAL
 C Read zone number of the attic. If no data specified, then this was an old
 C version of the .aim file so assume no attic (AIM2_attic_zone=0).
-
-            If ( ND .lt. 3 ) Then ! No data, default to 'no zone'
-               IVAL = 0
-            Else ! Read it
-               CALL EGETWI(OUTSTR,K,IVAL,0,10,'F',' attic zone',IER)
-               if(IER.NE.0)then
-                 call edisp(IUOUT,' Cannot read attic zone.')
-                 goto 1000
-               endif
-            Endif
-            AIM2_attic_zone = IVAL
-      
-      ENDIF Multizone Config
-      
-
+      If ( ND .lt. 3 ) Then ! No data, default to 'no zone'
+         IVAL = 0
+      Else ! Read it
+         CALL EGETWI(OUTSTR,K,IVAL,0,10,'F',' attic zone',IER)
+         
+         if(IER.NE.0)then
+           call edisp(IUOUT,' Cannot read attic zone.')
+           goto 1000
+         endif
+      Endif
+      AIM2_attic_zone = IVAL
       
       newversions: IF (fAIM2VersionNumber .ge. 3.0 ) THEN 
 
@@ -1393,7 +1110,6 @@ C     if the window control model is active get the setpoint and actuating zone.
 
         ENDIF
       ENDIF newversions
-
 
 C Close AIM-2 input data file.
       CALL ERPFREE(IUNIT,ISTAT)
@@ -1490,14 +1206,7 @@ C ------------------------------------------------------------------------------
 
 
 C Declarations for local variables.
-      INTEGER i, icrawlspace, igarage, iattic, ICOMP
-      LOGICAL bExclude_Crawlspace
-      LOGICAL bExclude_Garage
-      LOGICAL bExclude_Attic  
-
-      bExclude_Crawlspace = .false.
-      bExclude_Garage = .false.
-      bExclude_Attic = .false.      
+      INTEGER i,ICOMP
 
 C Sum the volumes of the zones that are aerodynamically part of the
 C house's living space. The zones to include in this summation are defined
@@ -1506,50 +1215,12 @@ C in the AIM-2 input file.
       IF (ALLOCATED(AIM2_zone_infil)) THEN
         DO i=1,AIM2_num_zones_infil
           ICOMP = AIM2_zone_infil(i)                    ! Get zone index number.
-
-C----------------------------------------------------------------------             
-C         09-Mar-2011 BAL: Adding support for multiple crawlspace/
-C         garage/attic zones
-C----------------------------------------------------------------------           
-          IF ( AIM2_multi_zone ) then
-          
-            do icrawlspace = 1, AIM2_num_cspace_zones
-              if ( ICOMP .eq. AIM2_cspace_zones(icrawlspace) ) then
-                   bExclude_Crawlspace = .true.
-              end if
-            end do
-            
-            do igarage = 1, AIM2_num_garage_zones
-              if ( ICOMP .eq. AIM2_garage_zones(igarage) ) then
-                   bExclude_Garage = .true.
-              end if
-            end do
-
-            do iattic = 1, AIM2_num_attic_zones
-              if ( ICOMP .eq. AIM2_attic_zones(iattic) ) then
-                   bExclude_Attic = .true.
-              end if
-            end do            
-          
-            if ( ( .not. bExclude_Crawlspace ) .and. 
-     &           ( .not. bExclude_Garage     ) .and.
-     &           ( .not. bExclude_Attic      )  )then
-     
-                  AIM2_house_vol = AIM2_house_vol + VOL(ICOMP) 
-
-            end if
-          
-          ELSE
-C----------------------------------------------------------------------           
-C           The crawl space and attic zone is not part of the living space
-C---------------------------------------------------------------------- 
-            If ( ICOMP .ne. AIM2_CrawlSpace_zone .and.
-     &            ICOMP .ne. AIM2_attic_zone) Then
-                  AIM2_house_vol = AIM2_house_vol + VOL(ICOMP)
-            Endif
-          
-          END IF
-          
+c       AIM2_house_vol = AIM2_house_vol + VOL(ICOMP)  ! Add volume of zone.
+c The crawl space zone is not part of the living space
+          If ( ICOMP .ne. AIM2_CrawlSpace_zone .and.
+     &        ICOMP .ne. AIM2_attic_zone) Then
+          AIM2_house_vol = AIM2_house_vol + VOL(ICOMP)
+          Endif
         END DO
         ELSE
           CALL EDISP(IUOUT,' Warning: AIM2 arrays not allocated')
@@ -2730,38 +2401,6 @@ C        WRITE(*,*)'AIM2_zone_infil',AIM2_zone_infil
      &       ' Problem with deallocation of AIM2_infil_to_zones array')
         END IF
       END IF
-      
-      IF (ALLOCATED(AIM2_bsmt_zones)) THEN   	
-        DEALLOCATE(AIM2_bsmt_zones, STAT=deallocatestatus)
-        IF (deallocatestatus.NE.0) THEN
-          CALL EDISP(IUOUT,
-     &       ' Problem with deallocation of AIM2_bsmt_zones array')
-        END IF
-      END IF 
-
-      IF (ALLOCATED(AIM2_cspace_zones)) THEN   	
-        DEALLOCATE(AIM2_cspace_zones, STAT=deallocatestatus)
-        IF (deallocatestatus.NE.0) THEN
-          CALL EDISP(IUOUT,
-     &       ' Problem with deallocation of AIM2_cspace_zones array')
-        END IF
-      END IF 
-
-      IF (ALLOCATED(AIM2_garage_zones)) THEN   	
-        DEALLOCATE(AIM2_garage_zones, STAT=deallocatestatus)
-        IF (deallocatestatus.NE.0) THEN
-          CALL EDISP(IUOUT,
-     &       ' Problem with deallocation of AIM2_garage_zones array')
-        END IF
-      END IF 
-
-      IF (ALLOCATED(AIM2_attic_zones)) THEN   	
-        DEALLOCATE(AIM2_attic_zones, STAT=deallocatestatus)
-        IF (deallocatestatus.NE.0) THEN
-          CALL EDISP(IUOUT,
-     &       ' Problem with deallocation of AIM2_attic_zones array')
-        END IF
-      END IF      
 
       END SUBROUTINE AIM2_Deallocate
        
