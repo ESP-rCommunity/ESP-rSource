@@ -373,19 +373,11 @@ C coupling component is detected by the plant domain.
       
 C mark in log file, start of simulation
       if( dll ) then
-#ifdef F90
         open(UNIT=iLogFile, FILE=cLogFile,position='APPEND' )
-#else
-        OPEN( UNIT=iLogFile, FILE=cLogFile, ACCESS='APPEND' )
-#endif
         write( iLogFile, * ) "subroutine: bps() - dll run"
         write( iLogFile, * ) "checking input"
         close( iLogFile )
-#ifdef F90
         open(UNIT=iLogFile, FILE=cLogFile,position='APPEND' )
-#else
-        OPEN(unit=iLogFile,FILE=cLogFile, ACCESS = 'APPEND')
-#endif
       endif
 
       dllsubr=' '
@@ -460,11 +452,7 @@ C all console write is rerouted to the log file
         itu = iLogFile
         iuout = iLogFile
         icout = iLogFile
-#ifdef F90
         open(UNIT=iLogFile, FILE=cLogFile,position='APPEND' )
-#else
-        OPEN(UNIT=iLogFile, FILE=cLogFile, ACCESS='APPEND' )
-#endif
         call SetDllParms(MODL,iappw,iappx,iappy,inf,sps,aut,actf)
         browsing='no'
       else
@@ -768,11 +756,7 @@ C              write(*,*)'Silent-running mode.'
 
 C If running dll note the failure mode.
           if(ier.eq.2.and.dll)then
-#ifdef F90
             open(UNIT=iLogFile, FILE=cLogFile,position='APPEND' )
-#else
-            OPEN( UNIT=iLogFile, FILE=cLogFile, ACCESS='APPEND' )
-#endif
             write(iLogFile,*) 'bps failed in ',dllsubr
             write(iLogFile,*) 'details: ',dllmesg
             return
@@ -924,11 +908,7 @@ C Enter configuration file
         call tstamp('>','SIM: enter read model')
         CALL MZINPT(IREP,ier)
         if(ier.eq.2.and.dll)then
-#ifdef F90
           open(UNIT=iLogFile, FILE=cLogFile,position='APPEND' )
-#else
-          OPEN(UNIT=iLogFile, FILE=cLogFile, ACCESS='APPEND' )
-#endif
           write(iLogFile,*) 'bps failed in ',dllsubr
           write(iLogFile,*) 'details: ',dllmesg
           ier=2
@@ -1113,18 +1093,10 @@ C For the multi-D model, check that the 1-D grid distribution is default.
             IF(OK3D)THEN
               if( dll ) then
                 close( iLogFile )
-#ifdef F90
                 open(UNIT=iLogFile,FILE=cLogFile,position='APPEND' )
-#else
-                OPEN(UNIT=iLogFile,FILE=cLogFile,ACCESS = 'APPEND')
-#endif
                 write( iLogFile, * ) "Simulation started"
                 close( iLogFile )
-#ifdef F90
                 open(UNIT=iLogFile,FILE=cLogFile,position='APPEND' )
-#else
-                OPEN(UNIT=iLogFile,FILE=cLogFile,ACCESS = 'APPEND')
-#endif
               endif
               CALL MZSIML
             ELSE
