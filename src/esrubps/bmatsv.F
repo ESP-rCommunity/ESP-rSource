@@ -316,7 +316,10 @@ C located. This needs to be reset to the directory containing the cfg file to en
 C the input.xml can be read.
 C file before generating output.
       CALL chdir(path)
-      write(*,*)'chdir'
+
+C Debug.
+C      write(*,*)'chdir'
+
       IF(isH3KEnabled()) THEN
 C Send the simulation information to the h3k report
          Call UpdateH3kSimInfo(isd1,ism2,isd2,ism2,isds,isdf,ntstep)

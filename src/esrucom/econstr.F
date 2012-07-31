@@ -173,8 +173,7 @@ C If reading an air gap allow 0.0 properties.
             if(J.eq.IPAIRG(I,1).or.J.eq.IPAIRG(I,2).or.
      &         J.eq.IPAIRG(I,3).or.J.eq.IPAIRG(I,4).or.
      &         J.EQ.IPAIRG(I,5).or.J.eq.IPAIRG(I,6).or.
-     &         J.EQ.IPAIRG(I,7).OR.J.EQ.IPAIRG(I,8).OR.
-     &         J.EQ.IPAIRG(I,9).OR.J.EQ.IPAIRG(I,10))then
+     &         J.EQ.IPAIRG(I,7).OR.J.EQ.IPAIRG(I,8))then
               CALL EGETWR(OUTSTR,K,CON(I,J),0.,CONCH,'W','conductivity',
      &          IER)
               CALL EGETWR(OUTSTR,K,DEN(I,J),0.0,DENCH,'W','density',IER)

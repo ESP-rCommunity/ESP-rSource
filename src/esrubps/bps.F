@@ -374,19 +374,11 @@ C coupling component is detected by the plant domain.
       
 C mark in log file, start of simulation
       if( dll ) then
-#ifdef F90
         open(UNIT=iLogFile, FILE=cLogFile,position='APPEND' )
-#else
-        OPEN( UNIT=iLogFile, FILE=cLogFile, ACCESS='APPEND' )
-#endif
         write( iLogFile, * ) "subroutine: bps() - dll run"
         write( iLogFile, * ) "checking input"
         close( iLogFile )
-#ifdef F90
         open(UNIT=iLogFile, FILE=cLogFile,position='APPEND' )
-#else
-        OPEN(unit=iLogFile,FILE=cLogFile, ACCESS = 'APPEND')
-#endif
       endif
 
       dllsubr=' '
@@ -461,11 +453,7 @@ C all console write is rerouted to the log file
         itu = iLogFile
         iuout = iLogFile
         icout = iLogFile
-#ifdef F90
         open(UNIT=iLogFile, FILE=cLogFile,position='APPEND' )
-#else
-        OPEN(UNIT=iLogFile, FILE=cLogFile, ACCESS='APPEND' )
-#endif
         call SetDllParms(MODL,iappw,iappx,iappy,inf,sps,aut,actf)
         browsing='no'
       else
@@ -742,6 +730,7 @@ C Default setting of IREP, reporting and range checking on.
 C If an input file has been specified then load it and then
 C return to the main menu.
       XST=.false.
+C Debug.
 C      write(*,*)'LCMDFL: ',LCMDFL
       if(LCMDFL(1:2).ne.'  '.and.LCMDFL(1:4).ne.'UNKN')then
         INQUIRE (FILE=LCMDFL,EXIST=XST)
@@ -752,7 +741,8 @@ C info in after reading the .cfg file.
           if(sps(1:2).ne.'  '.and.sps(1:4).ne.'UNKN')then
             write(spsname,'(a8)')sps(1:8)
             if(aut(1:6).eq.'silent')then
-              write(*,*)'Silent-running mode.'
+C Debug.
+C              write(*,*)'Silent-running mode.'
               autook=.true.
               call edisp(iuout,'Silent-running mode.')
               call tstamp('>','SIM: Silent-running mode')
@@ -767,11 +757,7 @@ C info in after reading the .cfg file.
 
 C If running dll note the failure mode.
           if(ier.eq.2.and.dll)then
-#ifdef F90
             open(UNIT=iLogFile, FILE=cLogFile,position='APPEND' )
-#else
-            OPEN( UNIT=iLogFile, FILE=cLogFile, ACCESS='APPEND' )
-#endif
             write(iLogFile,*) 'bps failed in ',dllsubr
             write(iLogFile,*) 'details: ',dllmesg
             return
@@ -923,11 +909,7 @@ C Enter configuration file
         call tstamp('>','SIM: enter read model')
         CALL MZINPT(IREP,ier)
         if(ier.eq.2.and.dll)then
-#ifdef F90
           open(UNIT=iLogFile, FILE=cLogFile,position='APPEND' )
-#else
-          OPEN(UNIT=iLogFile, FILE=cLogFile, ACCESS='APPEND' )
-#endif
           write(iLogFile,*) 'bps failed in ',dllsubr
           write(iLogFile,*) 'details: ',dllmesg
           ier=2
@@ -1112,18 +1094,10 @@ C For the multi-D model, check that the 1-D grid distribution is default.
             IF(OK3D)THEN
               if( dll ) then
                 close( iLogFile )
-#ifdef F90
                 open(UNIT=iLogFile,FILE=cLogFile,position='APPEND' )
-#else
-                OPEN(UNIT=iLogFile,FILE=cLogFile,ACCESS = 'APPEND')
-#endif
                 write( iLogFile, * ) "Simulation started"
                 close( iLogFile )
-#ifdef F90
                 open(UNIT=iLogFile,FILE=cLogFile,position='APPEND' )
-#else
-                OPEN(UNIT=iLogFile,FILE=cLogFile,ACCESS = 'APPEND')
-#endif
               endif
               CALL MZSIML
             ELSE
