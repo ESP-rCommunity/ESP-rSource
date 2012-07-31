@@ -837,16 +837,15 @@ C First find total number of simulation period timesteps including start-up peri
         ! Appliances
         fSUFuelEnergyUse(iElectricity, iUseEquipment) = 
      &          Total_BL_electricity_Appliances
-        call StoreH3KBaseLoadsEnergyUse(icomp, fSUFuelEnergyUse)
 
         ! Lights
         fSUFuelEnergyUse(iElectricity, iUseLights) = 
      &          Total_BL_electricity_Lights
-        call StoreH3KBaseLoadsEnergyUse(icomp, fSUFuelEnergyUse)
 
         ! Other
         fSUFuelEnergyUse(iElectricity, iUseOther) = 
      &          Total_BL_electricity_Other
+     
         call StoreH3KBaseLoadsEnergyUse(icomp, fSUFuelEnergyUse)
 
        ELSE     ! proceed as usual with default ESP-r treatment

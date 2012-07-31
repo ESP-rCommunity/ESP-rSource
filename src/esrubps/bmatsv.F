@@ -51,6 +51,8 @@ C HOT3000: Fuel cell.
 #include "lookup_data.h"
 #include "control.h"
 #include "roam.h"
+#include "OffsiteUtilitiesPublic.h"
+#include "OffsiteUtilitiesPrivate.h"
 
 C CWEC Degree Day and ground temperature parameters
 #include "ground_temp_mains_common.h"
@@ -416,7 +418,7 @@ C Initialize DHW
       call DHW_Initialize
 
 C Initialize zone<->plant casual gain coupling
-      call plt_zone_gain_zero()
+      call plt_zone_gain_zero()     
 
 C Write simulation control information to the solutions
 C library.
@@ -1064,6 +1066,12 @@ C H3Kreports: send simulation time to reporting object
      &          nsinc )
             endif
 
+C 25-Nov-2011 BAL: Added
+C H3K Fuel costs: reset monthly fuel consumption.            
+            if ( bIncFuelCostCalcs ) then
+                  call ResetSumFuelUseArray()      
+            end if 
+      
 C Output current simulation increment if trace on.
             if(itc.gt.0.and.nsinc.ge.itc.and.nsinc.le.itcf.and.
      &         itrace(33).ne.0)then

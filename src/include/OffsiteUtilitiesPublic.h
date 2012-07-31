@@ -24,10 +24,10 @@ C.....Named constants for fuel types
 
 C.....Supported end-uses
       integer iNumUses
-      parameter ( iNumUses = 8 )
+      parameter ( iNumUses = 9 )
       integer iUseSpaceHeat, iUseSpaceCool, iUseDHW,
      &        iUseLights, iUseEquipment, iUseUncatagorized,
-     &        iUseHRV, iUseOther
+     &        iUseHRV, iUseOther, iExtraBillingCharges
       parameter ( iUseSpaceHeat     = 1,
      &            iUseSpaceCool     = 2,
      &            iUseDHW           = 3,
@@ -35,7 +35,9 @@ C.....Supported end-uses
      &            iUseEquipment     = 5,
      &            iUseUncatagorized = 6,
      &            iUseHRV           = 7,
-     &            iUseOther         = 8 )
+     &            iUseOther         = 8,
+                  ! 25-Nov-2011 BAL: Added. Only used to store monthly minimum fuel cost charges. 
+     &            iExtraBillingCharges = 9 ) 
 
 C.....Number of "components" in ESP-r that report data to OffsiteUtilities
       integer iNumOffsiteUtilComp
@@ -247,4 +249,11 @@ C.....Other
       data iUseNameLen(iUseOther) /5/
 
       data cUseDesc(iUseOther) /'other'/
-      data iUseDescLen(iUseOther) /5/      
+      data iUseDescLen(iUseOther) /5/ 
+
+C.....Extra billing charges
+      data cUseName(iExtraBillingCharges) /'extra_billing_charges'/
+      data iUseNameLen(iExtraBillingCharges) /21/
+
+      data cUseDesc(iExtraBillingCharges) /'extra_billing_charges'/
+      data iUseDescLen(iExtraBillingCharges) /21/ 
