@@ -2309,6 +2309,8 @@ C Parameters passed
 
       integer iuout,iuin
       common/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
+      integer ifil
       integer iyear,ibdoy,iedoy,ifday,iftime
       common/set1/iyear,ibdoy,iedoy,ifday,iftime
       common/user/browse
@@ -2323,6 +2325,9 @@ C Parameters passed
       integer ifoc,ifrq,ihdt,m,mj,ij,mm,loopst,ix,io,isw,ipact,irt ! for position
       integer ictlf  ! for control domain and file unit
       integer ieri   ! for error states
+      integer ipatday1,ipatday2,ipatday3 ! remember what the new day types are
+      integer idol,idaynum,idtyy,idwknum,imthnum  ! for determining day of week
+      logical ok,dok
 
 C m1slots and m2slots are for the two possible months to be
 C displayed. 42 is 7 days over maximum of 6 periods e.g.
@@ -2355,6 +2360,7 @@ C For help messages
       helpinsub='calenmanage'  ! set for subroutine
       havectl=.false.          ! assume no control
       usecalendar=.false. 
+      ICTLF=IFIL+1
 
 C If user requested initial calendar. Setup initial 4 day types (wk sat sun holiday).
       if(act.eq.'i'.and.(.NOT.browse))then
@@ -2531,6 +2537,7 @@ C Dialog based on whether or not seasons have been found.
 
 C If there is a control file, scan it and then loop through each of the
 C existing control loops to add in what-will-become the new day type.
+C havectl is returned as true if there is a control file.
               call  updatectlfornewdaytype(havectl,usecalendar,ier)
 
 C Now increment nbdaytype and get its name and description.
@@ -2591,13 +2598,15 @@ C the calendar to match this.
                 if(nbdaytype+2.lt.MDTY)then
 
 C For the 1st retail day revise the controls and then the operations.
-                  call usrmsg('Processing 1st day...',' ','P')
+                  call edisp(iuout,' ')
+                  call edisp(iuout,' Processing retail_open day...')
                   call  updatectlfornewdaytype(havectl,usecalendar,ier)
 
 C Now increment nbdaytype and get its name and description. Update
 C the control file if it exists and then process zone operation files.
                   nbdaytype=nbdaytype+1
                   nbcaldays(nbdaytype)=0
+                  ipatday1 = nbdaytype  ! remember this
                   calentag(nbdaytype)='retail_open'
                   calendayname(nbdaytype)='retail open Mon-Sat'
                   if(havectl)then
@@ -2606,19 +2615,42 @@ C the control file if it exists and then process zone operation files.
                   CALL UPDOPR
 
 C For the 2nd retail day revise the controls and then the operations.
-                  call usrmsg('Processing 2nd day...',' ','P')
+                  call edisp(iuout,' Processing retail_closed day...')
                   call  updatectlfornewdaytype(havectl,usecalendar,ier)
 
 C Now increment nbdaytype and get its name and description. Update
 C the control file if it exists and then process zone operation files.
                   nbdaytype=nbdaytype+1
                   nbcaldays(nbdaytype)=0
+                  ipatday2 = nbdaytype  ! remember this
                   calentag(nbdaytype)='retail_closed'
                   calendayname(nbdaytype)='retail closed Sunday'
                   if(havectl)then
                     CALL CTLWRT(ICTLF,IER)
                   endif
                   CALL UPDOPR
+
+C If user agrees apply these two new day types to the current calendar.
+C Loop through all days, if one of the original 3 day types revise them
+C to use the new Mon-Sat & Sunday types.
+                  DOK=.true.
+                  CALL ASKOK('Apply these new day types to the current',
+     &              'calendar of the model?',OK,DOK,nbhelp)
+                  if(OK)then
+                    DO 123 IDOL=1,365
+                      IF(ICALENDER(IDOL).LE.3)THEN
+                        CALL EDAYR(IDOL,IDAYNUM,IMTHNUM)
+                        CALL EWEEKD(IDAYNUM,IMTHNUM,IYEAR,IDWKNUM)
+                        IF(IDWKNUM.LE.6)THEN
+                          IDTYY=ipatday1 ! WEEKDAY
+                        ELSEIF(IDWKNUM.EQ.7)THEN
+                          IDTYY=ipatday2 ! SUNDAY
+                        ENDIF
+                        ICALENDER(IDOL)=IDTYY  ! update the model calendar
+                      ENDIF
+ 123                CONTINUE
+                  endif
+
                   modify=.true.
                   goto 73
 
@@ -2868,9 +2900,9 @@ C Parameters passed
       logical XST
       integer IHDTP   ! for users preference to add or copy
 
-      havectl=.false.          ! assume no control
+      havectl=.false.          ! reset to assume no control
 
-      ICTLF=IFIL+1
+      ICTLF=IFIL+1; itrc=0     ! set to silent read
       CALL ERPFREE(ICTLF,ISTAT)
       call FINDFIL(LCTLF,XST)
       if(XST)then
@@ -2883,8 +2915,8 @@ C The treatment of day types within addctld is based on an assumption
 C that nbdaytpe is not incremented until after the addctld call.
         IDT=nbdaytype     ! set to the not-yet-incremented value
         IHDTP=1
-        CALL EASKABC('Pattern for new day type (see help)?',' ',
-     &    'One period free floating',
+        CALL EASKABC('Control pattern for new day type (see help)?',
+     &    ' ','One period free floating',
      &    'Use pattern of last day type','cancel',IHDTP,nbhelp)
         if(IHDTP.eq.1)then
           dayact='SA'       ! assume silent addition
