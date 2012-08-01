@@ -116,14 +116,12 @@ C---------Set air & surface temperatures and temperature difference.
           TS=TFS(ICOMP,ISUR)
           IF(NSINC.EQ.1)TS=0.0
           DT=ABS(TA-TS)
-
 C---------Calculate the HTC using one of the empirical correlations.
           ICOR = ICORI(ICOMP,ISUR)
           HGT = HEIGHT(ICOMP,ISUR)
           ARHY = APRAT(ICOMP,ISUR)
           CALL HTBUOY(HC,ICOR,ICOMP,ISUR,DT,HGT,ARHY)
           HCIF(ICOMP,ISUR)=HC
-
 C---------Decide whether to use the HTC calculated by the empirical correlation
 C---------or the HTC calculated by CFD.
           IF(mHCcfd.EQ.1) CALL ASSESS(ICOMP,ISUR)
@@ -132,33 +130,32 @@ C Calculate the HTC for `outside' surface of the mlc using empirical correlation
 C The `outside' surface of the mlc may face the exterior environment, the ground,
 C the air in an adjoining zone, or it may have an `internal/same',
 C `internal/specified constant', or `adiabatic' boundary condition.
-          IF( IE(ICOMP,ISUR).eq.0 ) THEN
 
 C `Outside' surface faces the exterior environment. If icorexhct is
 C one then use the standard correlation, if icorexhct is two then
 C use the MoWiTT correlation.
+          IF( IE(ICOMP,ISUR).eq.0 ) THEN
             icor = icorexhct
             CALL HTCEXT(icor,HC,ICOMP,ISUR)
             HCOF(ICOMP,ISUR)=HC
-          ELSEIF( IE(ICOMP,ISUR).EQ.-4 ) THEN
 
 C `Outside' surface is coupled to the ground.
+          ELSEIF( IE(ICOMP,ISUR).EQ.-4 ) THEN
             HCOF(ICOMP,ISUR)=1000.
-          ELSEIF( IE(ICOMP,ISUR).GT.0 ) THEN
 
 C `Outside' surface faces the air point of an adjacent zone.
 C No calculation is performed in this case: in OUTISIN the convection
 C coefficient calculated for the adjacent zone's `inside' surface will
 C be assigned to this `outside' surface.
-            continue
-          ELSEIF( IE(ICOMP,ISUR).eq.-6 ) THEN
+          ELSEIF( IE(ICOMP,ISUR).GT.0 ) THEN
 
 C `Outside' surface is a BASESIMP foundation.
+          ELSEIF( IE(ICOMP,ISUR).eq.-6 ) THEN
             call BSCONV(ICOMP,ISUR)
-          ELSE
 
 C `Outside' surface is `internal/same', `internal/specified constant',
 C or `adiabatic'.
+          ELSE
             TA=ATF(ICOMP,ISUR)
             TS=TFC(ICOMP,ISUR,1)
             IF(NSINC.EQ.1)TS=0.0
@@ -585,7 +582,6 @@ C---------`internal/specified constant', or `adiabatic'.
           endif
         endif
         IF(NSINC.EQ.1)TS=0.0
-
 C-------Select the correlation via subroutine SELCOR1 in convect2.F.
         call SELCOR1(ICOMP,ISUR,inRout,TA,TS,ICOR)
 

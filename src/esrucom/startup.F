@@ -25,7 +25,6 @@ C*******************************************************************************
 C   MODULE PARSE_COMMAND_LINE written to extract the communality in all the modules for 
 C   setting up environemt and parsing command lines.
 
-
 C************************************************************************************
       MODULE PARSE_COMMAND_LINE
       IMPLICIT NONE
