@@ -2552,7 +2552,6 @@ C in the list. If not instanciate season and typical start and end dates.
           else
 
 C Setup string buffer with distribution weather folder name.
-            llt=lnblnk(LCLIM)
             lndbp=lnblnk(standardclmpath)
             if(ipathclim.eq.0.or.ipathclim.eq.1)then
               llclmdb=LCLIM
