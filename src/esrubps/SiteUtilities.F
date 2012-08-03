@@ -56,20 +56,20 @@ C.....Aggregate energy use from all plant components
 
 C.....Aggregate energy from HOT3000 base loads
       call AggregateH3KBaseLoadsEnergyUse()
-      
-C.....10-Nov-2011 BAL: Added       
+
+C.....10-Nov-2011 BAL: Added
 C.....Aggregate fuel costs from HOT3000 base loads
-      if( bIncFuelCostCalcs ) then      
-            call AggregateH3KBaseLoadsFuelCost()      
+      if( bIncFuelCostCalcs ) then
+            call AggregateH3KBaseLoadsFuelCost()
       end if
-      
+
 C.....Compute site-wide energy consumption
       call TotalEnergyConsumption()
 
 C.....Convert purchased energy to fuel quantity
       call ConvertEnergyToFuel()
-      
-C.....10-Nov-2011 BAL: Added      
+
+C.....10-Nov-2011 BAL: Added
 C.....Compute site-wide fuel cost
       if( bIncFuelCostCalcs ) then
             call TotalFuelCost()
@@ -80,22 +80,22 @@ C.....Report fuel use data
 
 C.....Reset storage array for next time step.
       call ZeroFuelEnergyStorageArray()
-      
-C.....10-Nov-2011 BAL: Added      
-C.....Reset fuel cost storage array for next time step.  
-      if( bIncFuelCostCalcs ) then    
+
+C.....10-Nov-2011 BAL: Added
+C.....Reset fuel cost storage array for next time step.
+      if( bIncFuelCostCalcs ) then
             call ZeroFuelCostStorageArray()
       end if
-      
+
 C.....Reset HOT3000 Base Loads storage array for next time step.
       call ZeroH3KBaseLoadsEnergyStorageArray()
-      
-C.....10-Nov-2011 BAL: Added      
+
+C.....10-Nov-2011 BAL: Added
 C.....Reset HOT3000 Base Loads fuel cost storage array for next time step.
-      if( bIncFuelCostCalcs ) then     
-            call ZeroH3KBaseLoadsFuelCostStorageArray()      
-      end if 
-      
+      if( bIncFuelCostCalcs ) then
+            call ZeroH3KBaseLoadsFuelCostStorageArray()
+      end if
+
       return
       end
 
@@ -171,7 +171,7 @@ C-----------------------------------------------------------------------
 
 C.......Site-wide fuel consuption (by fuel)
         fTotalFuelUse( iFuel ) = fTotalEnergyUse( iFuel )
-     &            * fFuelConversionFactor( iFuel )     
+     &            * fFuelConversionFactor( iFuel )
 
 C.......Site-wide fuel consumption (by fuel, end-use)
         use_loop: do iEndUse = 1, iNumUses
@@ -204,11 +204,14 @@ C=======================================================================
 #include "OffsiteUtilitiesPrivate.h"
 
       logical bCloseToZero
-      integer iRVId; !Report Variable Identifier
+
+      integer iRVId;    !Report Variable Identifier
+      integer iRVIdCost !Report Variable Identifier for Cost
+
 
 C.....Fuel loop:
-      fuel_loop: do iFuel = 1, iNumFuel       
-      
+      fuel_loop: do iFuel = 1, iNumFuel
+
 C-----------------------------------------------------------------------
 C       Consumption by fuel, all end-uses; suppress
 C       energy flows < 0.01 W
@@ -248,46 +251,49 @@ C-----------------------------------------------------------------------
        SELECT CASE (iFuel)
          CASE (iElectricity)
             iRVId = rvTFuelAllEndQtyElectricity%Identifier
+            iRVIdCost = rvTFuelCstAllEndElectricity%Identifier
          CASE (iNaturalGas)
             iRVId = rvTFuelAllEndQtyNaturalGas%Identifier
+            iRVIdCost = rvTFuelCstAllEndNaturalGas%Identifier
          CASE (iOil)
             iRVId = rvTFuelAllEndQtyOil%Identifier
+            iRVIdCost = rvTFuelCstAllEndOil%Identifier
          CASE (iPropane)
             iRVId = rvTFuelAllEndQtyPropane%Identifier
+            iRVIdCost = rvTFuelCstAllEndPropane%Identifier
          CASE (iMixedWood)
             iRVId = rvTFuelAllEndQtyMixedWood%Identifier
+            iRVIdCost =rvTFuelCstAllEndMixedWood%Identifier
          CASE (iHardWood)
             iRVId = rvTFuelAllEndQtyHardWood%Identifier
+            iRVIdCost = rvTFuelCstAllEndHardWood%Identifier
          CASE (iSoftWood)
             iRVId = rvTFuelAllEndQtySoftWood%Identifier
+            iRVIdCost = rvTFuelCstAllEndSoftWood%Identifier
          CASE (iWoodPellets)
             iRVId = rvTFuelAllEndQtyWoodPellet%Identifier
+            iRVIdCost = rvTFuelCstAllEndWoodPellet%Identifier
          CASE DEFAULT
             !Should never execute, but just in case
             iRVId = rvTFuelAllEndQty%Identifier
+            iRVIdCost = rvTFuelCstAllEnd%Identifier
        END SELECT
 
-     
+
+       call AddToReport(
+     &         iRVId,
+     &         fTotalFuelUse(iFuel))
+
 C.......10-Nov-2011 BAL: Added total fuel cost reporting.
         if( bIncFuelCostCalcs ) then
-C            call add_to_xml_reporting(
-C     &
-C     &      fTotalFuelCost(iFuel),
-C     &
-C     &      'total_fuel_cost/'
-C     &      // cFuelName(iFuel)(1:iFuelNameLen(iFuel))
-C     &      // '/all_end_uses/quantity',
-C     &
-C     &      'units', '($/s)',
-C     &
-C     &      'Total cost of '
-C     &      // cFuelDesc(iFuel)(1:iFuelDescLen(iFuel))
-C     &      // ' used on site.'
-C     &
-C     &      ) 
+
+            call AddToReport(
+     &         iRVIdCost,
+     &         fTotalFuelCost(iFuel))
+
         end if
 
-         call AddToReport(
+        call AddToReport(
      &         iRVId,
      &         fTotalFuelUse(iFuel))
 
@@ -301,50 +307,70 @@ C.......end-use loop:
         call eclose ( fEndUseEnergyUse(iFuel,iEndUse),
      &                0.0, 0.01, bCloseToZero)
 
-        if ( .not. bCloseToZero ) then
 
          SELECT CASE (iFuel)
          CASE (iElectricity)
             iRVId = rvTFuelQtyElec%Identifier
+            iRVIdCost = rvTFuelCstElec%Identifier
          CASE (iNaturalGas)
             iRVId = rvTFuelQtyNatGas%Identifier
+            iRVIdCost = rvTFuelCstNatGas%Identifier
          CASE (iOil)
             iRVId = rvTFuelQtyOil%Identifier
+            iRVIdCost = rvTFuelCstOil%Identifier
          CASE (iPropane)
             iRVId = rvTFuelQtyProp%Identifier
+            iRVIdCost = rvTFuelCstProp%Identifier
          CASE (iMixedWood)
             iRVId = rvTFuelQtyMixWood%Identifier
+            iRVIdCost = rvTFuelCstMixWood%Identifier
          CASE (iHardWood)
             iRVId = rvTFuelQtyHardWood%Identifier
+            iRVIdCost = rvTFuelCstHardWood%Identifier
          CASE (iSoftWood)
             iRVId = rvTFuelQtySoftWood%Identifier
+            iRVIdCost = rvTFuelCstSoftWood%Identifier
          CASE (iWoodPellets)
             iRVId = rvTFuelQtyPellets%Identifier
+            iRVIdCost = rvTFuelCstPellets%Identifier
          CASE DEFAULT
             !Should never execute, but just in case
             iRVId = rvTFuelQty%Identifier
+            iRVIdCost = rvTFuelCst%Identifier
          END SELECT
 
+        if ( .not. bCloseToZero ) then
 
-        !Removed the dynamic description, if needed it can be re-enable
-        call AddToReport(
+         !Removed the dynamic description, if needed it can be re-enable
+          call AddToReport(
      &         iRVId,
      &         fEndUseFuelUse(iFuel,iEndUse),
      &         cUseName(iEndUse)(1:iUseNameLen(iEndUse)))
 
+
+          !10-Nov-2011 BAL: Added reporting of total fuel cost by end use.
+          if( bIncFuelCostCalcs ) then
+               call AddToReport(
+     &              IRVIdCost,
+     &              fEndUseFuelCost(iFuel,iEndUse),
+     &              cUseName(iEndUse)(1:iUseNameLen(iEndUse)))
+          end if
+
         endif
-        
+
 C.......10-Nov-2011 BAL: Added reporting of extra billing charges.
 C.......This is outside of the if block for suppressing small energy flows
-C.......because an energy flow doesn't exist for this end use category. 
+C.......because an energy flow doesn't exist for this end use category.
 C.......iExtraBillingCharges is only used to store the minimum monthly
-C.......fuel charges.  
+C.......fuel charges.
         if( bIncFuelCostCalcs .and.
-     &                iEndUse .eq. iExtraBillingCharges) then  
+     &                iEndUse .eq. iExtraBillingCharges) then
+            call AddToReport(
+     &               IRVIdCost,
+     &               fEndUseFuelCost(iFuel,iEndUse),
+     &               cUseName(iEndUse)(1:iUseNameLen(iEndUse)))
+        end if
 
-        end if        
-        
-        
         enddo use_loop
 
       enddo fuel_loop
@@ -450,7 +476,7 @@ C=======================================================================
       ! Zone information
       common/c1/ncomp,ncon
       integer ncomp          ! number of zones
-      integer ncon           ! not used 
+      integer ncon           ! not used
 
 C-----------------------------------------------------------------------
 C     Loop through all zones, and zero HOT3000 Base Loads energy use
@@ -459,7 +485,7 @@ C-----------------------------------------------------------------------
       fuel_loop: do iFuel = 1, iNumFuel
 
         use_loop: do iEndUse = 1, iNumUses
-        
+
           zone_loop: do iZone = 1, ncomp
 
            fH3KBaseLoadsEnergyUse(iZone, iFuel, iEndUse) = 0.0
@@ -491,7 +517,7 @@ C=======================================================================
       ! Zone information
       common/c1/ncomp,ncon
       integer ncomp          ! number of zones
-      integer ncon           ! not used 
+      integer ncon           ! not used
 
 C-----------------------------------------------------------------------
 C     Loop through all zones, and zero HOT3000 Base Loads energy use
@@ -500,7 +526,7 @@ C-----------------------------------------------------------------------
       fuel_loop: do iFuel = 1, iNumFuel
 
         use_loop: do iEndUse = 1, iNumUses
-        
+
           zone_loop: do iZone = 1, ncomp
 
            fH3KBaseLoadsFuelCost(iZone, iFuel, iEndUse) = 0.0
@@ -512,8 +538,8 @@ C-----------------------------------------------------------------------
       enddo fuel_loop
 
       return
-      end      
-      
+      end
+
 C=ZeroFuelCostStorageArray============================================
 C
 C ABSTRACT:
@@ -546,8 +572,8 @@ C-----------------------------------------------------------------------
       enddo fuel_loop
 
       return
-      end      
-      
+      end
+
 C=StoreSiteUtilityData==================================================
 C
 C ABSTRACT:
@@ -570,7 +596,7 @@ C=======================================================================
 #include "plant.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "OffsiteUtilitiesPrivate.h"
-      
+
       logical bInStartup
 
 C-----------------------------------------------------------------------
@@ -588,21 +614,21 @@ C-----------------------------------------------------------------------
 
       enddo fuel_loop
 
-C-----------------------------------------------------------------------      
-C     05-Nov-2011 BAL: Added call to fuel cost routines: 
+C-----------------------------------------------------------------------
+C     05-Nov-2011 BAL: Added call to fuel cost routines:
 C     AddToSumFuelUseArray adds fSUFuelEnergyUse to the fSumFuelUse
 C     array. StoreSiteFuelCosts fetches the appropriate fuel cost based
 C     on the total sum of fuel use so far, and stores the fuel cost
-C     in a private array. 
-C-----------------------------------------------------------------------  
+C     in a private array.
+C-----------------------------------------------------------------------
       if( bIncFuelCostCalcs.and. (.not. bInStartup() ) ) then
             call AddToSumFuelUseArray(fSUFuelEnergyUse)
-            call StoreSiteFuelCosts(iComponent, fSUFuelEnergyUse )      
+            call StoreSiteFuelCosts(iComponent, fSUFuelEnergyUse )
       end if
-      
+
       return
       end
-      
+
 C=StoreSiteFuelCosts====================================================
 C
 C 10-Nov-2011 BAL: Added
@@ -631,33 +657,33 @@ C=======================================================================
 
       real fuel_cost
       real fGetFuelCost
-      real fConvertEnergyToFuelAmount   
+      real fConvertEnergyToFuelAmount
 
 C-----------------------------------------------------------------------
-C     Loop through fuels, end uses, convert energy use to 
+C     Loop through fuels, end uses, convert energy use to
 C     fuel consumption and stuff into protected fuel costs array
 C-----------------------------------------------------------------------
       fuel_loop: do iFuel = 1, iNumFuel
 
-C.......Get the appropriate fuel cost based on the month and rate block. 
-        
+C.......Get the appropriate fuel cost based on the month and rate block.
+
         fuel_cost = fGetFuelCost(iFuel)
-      
-      
-        use_loop: do iEndUse = 1, iNumUses    
-     
+
+
+        use_loop: do iEndUse = 1, iNumUses
+
             fSiteFuelCost( iComponent, iFuel, iEndUse ) =
      &            fConvertEnergyToFuelAmount(
      &            fSUFuelEnergyUse( iFuel, iEndUse ),
-     &            iFuel ) * fuel_cost  
-           
+     &            iFuel ) * fuel_cost
+
         enddo use_loop
 
       enddo fuel_loop
-      
+
       return
-      end      
-      
+      end
+
 
 C=StorePltCompEnergyUse=================================================
 C
@@ -730,7 +756,7 @@ C loads for later access in the site utilities facility.
 C
 C Input parameters defined via include statements.
 C
-C   - iZone: Zone in which energy associated with base laods is consumed 
+C   - iZone: Zone in which energy associated with base laods is consumed
 C
 C   - fSUFuelEnergyUse: 2d array used to transport fuel consumption
 C     data into Site utilities facility. Array indicies correspond
@@ -747,10 +773,10 @@ C=======================================================================
       ! Zone information
       common/c1/ncomp,ncon
       integer ncomp          ! number of zones
-      integer ncon           ! not used 
-      
-      logical bInStartup      
-      
+      integer ncon           ! not used
+
+      logical bInStartup
+
 C-----------------------------------------------------------------------
 C     Loop through fuels, end uses and stuff HOT3000
 C     Base Loads fuel consumption into protected fSiteEnergyUse array
@@ -759,28 +785,28 @@ C-----------------------------------------------------------------------
       fuel_loop: do iFuel = 1, iNumFuel
 
         use_loop: do iEndUse = 1, iNumUses
-        
+
            fH3KBaseLoadsEnergyUse(iZone, iFuel, iEndUse) =
      &       fSUFuelEnergyUse( iFuel, iEndUse )
 
         enddo use_loop
 
       enddo fuel_loop
-     
-C-----------------------------------------------------------------------      
-C     05-Nov-2011 BAL: Added call to fuel cost routines: 
+
+C-----------------------------------------------------------------------
+C     05-Nov-2011 BAL: Added call to fuel cost routines:
 C     AddToSumFuelUseArray adds fSUFuelEnergyUse to the fSumFuelUse
 C     array. StoreSiteFuelCosts fetches the appropriate fuel cost based
 C     on the total sum of fuel use so far, and stores the fuel cost
-C     in a private array. 
-C-----------------------------------------------------------------------    
+C     in a private array.
+C-----------------------------------------------------------------------
       if( bIncFuelCostCalcs.and. (.not. bInStartup() ) ) then
             call AddToSumFuelUseArray(fSUFuelEnergyUse)
-            call StoreH3KBaseLoadsFuelCosts(iZone, fSUFuelEnergyUse )      
+            call StoreH3KBaseLoadsFuelCosts(iZone, fSUFuelEnergyUse )
       end if
-      
+
       return
-      end 
+      end
 
 C=StoreH3KBaseLoadsFuelCosts============================================
 C
@@ -791,7 +817,7 @@ C loads at each time step for later access in the site utilities facility.
 C
 C Input parameters defined via include statements.
 C
-C   - iZone: Zone in which energy associated with base laods is consumed 
+C   - iZone: Zone in which energy associated with base laods is consumed
 C
 C   - fSUFuelEnergyUse: 2d array used to convert fuel consumption
 C     data into fuel costs. Array indicies correspond
@@ -809,7 +835,7 @@ C=======================================================================
       real fuel_cost
       real fGetFuelCost
       real fConvertEnergyToFuelAmount
- 
+
 C-----------------------------------------------------------------------
 C     Loop through fuels, end uses, convert HOT3000 Base Loads energy use
 C     to fuel consumption and stuff into protected fuel costs array
@@ -818,22 +844,22 @@ C-----------------------------------------------------------------------
 
 C.......Get the appropriate fuel cost based on the month,  rate block, or
 C.......TOU rate (electricity only).
-        fuel_cost = fGetFuelCost(iFuel)      
-      
-        use_loop: do iEndUse = 1, iNumUses    
-     
-            fH3KBaseLoadsFuelCost( iZone, iFuel, iEndUse ) = 
+        fuel_cost = fGetFuelCost(iFuel)
+
+        use_loop: do iEndUse = 1, iNumUses
+
+            fH3KBaseLoadsFuelCost( iZone, iFuel, iEndUse ) =
      &            fConvertEnergyToFuelAmount(
      &            fSUFuelEnergyUse( iFuel, iEndUse ),
-     &            iFuel ) * fuel_cost  
-           
+     &            iFuel ) * fuel_cost
+
         enddo use_loop
 
       enddo fuel_loop
 
       return
-      end 
-      
+      end
+
 C=AggregatePltCompEnergyUse=============================================
 C
 C ABSTRACT
@@ -913,10 +939,10 @@ C=======================================================================
       ! Zone information
       common/c1/ncomp,ncon
       integer ncomp          ! number of zones
-      integer ncon           ! not used 
+      integer ncon           ! not used
 
 C-----------------------------------------------------------------------
-C     Loop through fuels, end-uses, zones and sum fuel consumption 
+C     Loop through fuels, end-uses, zones and sum fuel consumption
 C-----------------------------------------------------------------------
 
       fuel_loop: do iFuel = 1, iNumFuel
@@ -931,7 +957,7 @@ C.........Sum base loads fuel/end-use consumtion for all zones
 
             fSiteEnergyUse( iH3KBaseLoads, iFuel, iEndUse ) =
      &           fSiteEnergyUse( iH3KBaseLoads, iFuel, iEndUse )
-     &         + fH3KBaseLoadsEnergyUse(iZone, iFuel, iEndUse)  
+     &         + fH3KBaseLoadsEnergyUse(iZone, iFuel, iEndUse)
 
           enddo H3KBaseLoads_loop
 
@@ -941,7 +967,7 @@ C.........Sum base loads fuel/end-use consumtion for all zones
 
 
       return
-      end 
+      end
 
 C=AggregateH3KBaseLoadsFuelCost=======================================
 C
@@ -967,10 +993,10 @@ C=======================================================================
       ! Zone information
       common/c1/ncomp,ncon
       integer ncomp          ! number of zones
-      integer ncon           ! not used 
+      integer ncon           ! not used
 
 C-----------------------------------------------------------------------
-C     Loop through fuels, end-uses, zones and sum fuel consumption 
+C     Loop through fuels, end-uses, zones and sum fuel consumption
 C-----------------------------------------------------------------------
 
       fuel_loop: do iFuel = 1, iNumFuel
@@ -982,10 +1008,10 @@ C.........Initialize fuel/end-use combination to zero.
 
 C.........Sum base loads fuel/end-use fuel costfor all zones
           H3KBaseLoads_loop: do iZone =1 , ncomp
-       
+
             fSiteFuelCost( iH3KBaseLoads, iFuel, iEndUse ) =
      &           fSiteFuelCost( iH3KBaseLoads, iFuel, iEndUse )
-     &         + fH3KBaseLoadsFuelCost(iZone, iFuel, iEndUse)     
+     &         + fH3KBaseLoadsFuelCost(iZone, iFuel, iEndUse)
 
           enddo H3KBaseLoads_loop
 
@@ -995,14 +1021,14 @@ C.........Sum base loads fuel/end-use fuel costfor all zones
 
 
       return
-      end      
-      
+      end
+
 C=TotalFuelCost=========================================================
 C
 C ABSTRACT:
 C
 C TotalFuelCost computes the total fuel cost for each fuel and end use
-C in the current time-step. 
+C in the current time-step.
 C
 C=======================================================================
       subroutine TotalFuelCost()
@@ -1017,7 +1043,7 @@ C     Loop through all components, end uses; and sum fuel cost.
 C-----------------------------------------------------------------------
       fuel_loop: do iFuel = 1, iNumFuel
 
-C.......Zero total enery use (by fuel) array slot 
+C.......Zero total enery use (by fuel) array slot
         fTotalFuelCost( iFuel ) = 0.0
 
         use_loop: do iEndUse = 1, iNumUses
@@ -1034,7 +1060,7 @@ C.........Zero end-use energy use (by fuel) array slot
             fEndUseFuelCost ( iFuel, iEndUse ) =
      &              fEndUseFuelCost ( iFuel, iEndUse )
      &            + fSiteFuelCost( iComponent, iFuel, iEndUse )
-     
+
 C...........Add minimum monthly fuel charge to end use type iExtraBillingCharges
             call AddMonthlyMinFuelCharge( iEndUse, iFuel )
 
@@ -1045,8 +1071,8 @@ C...........Add minimum monthly fuel charge to end use type iExtraBillingCharges
       enddo fuel_loop
 
       return
-      end      
-      
+      end
+
 
 C=AttributePltPfsEnergyUse==============================================
 C
@@ -1404,7 +1430,7 @@ C
 C ABSTRACT:
 C
 C ResetSumFuelUseArray resets the fuel use summation array fSumFuelUse
-C at the beginning of each month. 
+C at the beginning of each month.
 C
 C=======================================================================
       subroutine ResetSumFuelUseArray()
@@ -1432,19 +1458,19 @@ C=======================================================================
       integer isds
       integer isdf
       integer ntstep         ! number of simulation time-steps / hour
-      
+
       integer idyp_adjust, iMonth
       real temp_day
       integer h3k_month
-      
+
 C.....initialize iCurrentMonth
       if ( nsinc .eq. 1) then
             iCurrentMonth = 0
       end if
-      
+
 C-----------------------------------------------------------------------
 C     Get current day and month.
-C-----------------------------------------------------------------------      
+C-----------------------------------------------------------------------
 C.....Building simulation day (present) ->real number
 
       if ( ihrp .eq. 24 .and. idyp .eq. 365) then
@@ -1452,29 +1478,29 @@ C.....Building simulation day (present) ->real number
       else
          idyp_adjust = idyp
       endif
-      
+
 C.....Calculate present 'real' day -> day number
       temp_day = real(idyp_adjust)
      &         +(real(ihrp)+real(its-1)/real(ntstep))/24.0
-     
+
       iMonth = h3k_month(temp_day)
 
 C-----------------------------------------------------------------------
 C     Loop through all fuels and set fSumFuelUse to 0, if change
-C     in month is detected. 
+C     in month is detected.
 C-----------------------------------------------------------------------
       if ( iMonth .ne. iCurrentMonth ) then
             fuel_loop: do iFuel = 1, iNumFuel
-                  bApplyMonthlyMinCharge( iFuel ) = .true.            
+                  bApplyMonthlyMinCharge( iFuel ) = .true.
                   fSumFuelUse( iFuel ) = 0.0
             enddo fuel_loop
       end if
 
-C.....save this timestep's month index     
+C.....save this timestep's month index
       iCurrentMonth = iMonth
-      
+
       return
-      end            
+      end
 
 C=AddToSumFuelUseArray=============================================
 C
@@ -1499,9 +1525,9 @@ C=======================================================================
       integer isds
       integer isdf
       integer ntstep         ! number of simulation time-steps / hour
-      
+
 C-----------------------------------------------------------------------
-C     Loop through all fuels and uses and add to fSumFuelUse array. 
+C     Loop through all fuels and uses and add to fSumFuelUse array.
 C     fFuelConversionFactor converts from W for the current time
 C     step to kWh/s (electricity), m3/s (gas), L/s(oil, propane), Tonne/s (wood)
 C     Need to convert to units of fuel consumption for this timestep so that we
@@ -1511,9 +1537,9 @@ C-----------------------------------------------------------------------
       fuel_loop: do iFuel = 1, iNumFuel
 
         use_loop: do iEndUse = 1, iNumUses
-        
-            fSumFuelUse( iFuel ) = 
-     &                  fSumFuelUse( iFuel ) + 
+
+            fSumFuelUse( iFuel ) =
+     &                  fSumFuelUse( iFuel ) +
      &                  fSUFuelEnergyUse( iFuel, iEndUse )
      &                  * fFuelConversionFactor( iFuel )
      &                  * 3600.0 / real(ntstep)
@@ -1523,8 +1549,8 @@ C-----------------------------------------------------------------------
       enddo fuel_loop
 
       return
-      end          
-    
+      end
+
 C=AddMonthlyMinFuelCharge===============================================
 C
 C ABSTRACT:
@@ -1558,14 +1584,14 @@ C=======================================================================
       integer isds
       integer isdf
       integer ntstep         ! number of simulation time-steps / hour
-      
+
       integer idyp_adjust, iMonth
       real temp_day
       integer h3k_month
-      
+
 C-----------------------------------------------------------------------
 C     Get current day and month.
-C-----------------------------------------------------------------------      
+C-----------------------------------------------------------------------
 C.....Building simulation day (present) ->real number
 
       if ( ihrp .eq. 24 .and. idyp .eq. 365) then
@@ -1573,33 +1599,33 @@ C.....Building simulation day (present) ->real number
       else
          idyp_adjust = idyp
       endif
-      
+
 C.....Calculate present 'real' day -> day number
       temp_day = real(idyp_adjust)
      &         +(real(ihrp)+real(its-1)/real(ntstep))/24.0
-     
+
       iMonth = h3k_month(temp_day)
 
 C-----------------------------------------------------------------------
 C     Apply the minimum cost and reset bApplyMonthlyMinCharge.
 C-----------------------------------------------------------------------
       if (iEndUse .eq. iExtraBillingCharges)then
-            
+
             if( bApplyMonthlyMinCharge(iFuel) )then
-                  
+
                   fEndUseFuelCost ( iFuel, iEndUse ) =
-     &                        fEndUseFuelCost ( iFuel, iEndUse )           
+     &                        fEndUseFuelCost ( iFuel, iEndUse )
      &                      + fFuelMinCharge( iFuel, iMonth )
-     
+
                   bApplyMonthlyMinCharge( iFuel ) = .false.
-                        
-            end if                  
-                  
-      end if 
-      
+
+            end if
+
+      end if
+
       return
-      end     
-    
+      end
+
 C=fGetFuelCost==========================================================
 C
 C ABSTRACT:
@@ -1627,7 +1653,7 @@ C=======================================================================
 C.....Arguements
       integer iFuelIndex
       integer h3k_month
-      
+
       common/simtim/ihrp,ihrf,idyp,idyf,idwp,idwf,nsinc,its
       integer ihrp           ! present hour
       integer ihrf           ! not used
@@ -1637,7 +1663,7 @@ C.....Arguements
       integer idwf           ! not used
       integer nsinc          ! not used
       integer its            ! index of timestep in current hour
-      
+
       common/pers/isd1,ism1,isd2,ism2,isds,isdf,ntstep
       integer isd1
       integer ism1
@@ -1646,31 +1672,31 @@ C.....Arguements
       integer isds
       integer isdf
       integer ntstep         ! number of simulation time-steps / hour
-      
+
       integer iMonth, idyp_adjust
       real temp_day
-      
+
 C.....Variables for Access to the Boundary Condition Data
       Real fConvert_current_TS_to_DAY     ! returns day (float)
       Real fGet_BC_data_by_col            ! return the data for the timestep
       Integer iInterp_method              ! 1 = step-wise; 2 = linear
-      Character cContext*124              ! string to print on BCD failure         
-      
+      Character cContext*124              ! string to print on BCD failure
+
       IF ( iFuelIndex.eq.iElectricity .and. bTOUelecRates ) THEN
-    
+
 C...........Set the BCD interpolation method
             iInterp_method = 1 ! 1 = step-wise; 2 = linear
- 
-            write (cContext,*) "Determining TOU fuel cost..."     
-     
+
+            write (cContext,*) "Determining TOU fuel cost..."
+
             fGetFuelCost = fGet_BC_data_by_col(
      &        iTOUcolumn,
      &        fConvert_current_TS_to_DAY(),
      &        iInterp_method,
-     &        cContext)       
+     &        cContext)
 
       ELSE
-        
+
 C...........Get current day and month
 
             if ( ihrp .eq. 24 .and. idyp .eq. 365) then
@@ -1678,49 +1704,49 @@ C...........Get current day and month
             else
                   idyp_adjust = idyp
             endif
-      
+
 C...........Calculate present 'real' day -> day number
             temp_day = real(idyp_adjust)
      &         +(real(ihrp)+real(its-1)/real(ntstep))/24.0
-     
+
             iMonth = h3k_month(temp_day)
-            
-            if ( fSumFuelUse( iFuelIndex ) .le. 
+
+            if ( fSumFuelUse( iFuelIndex ) .le.
      &           fFuelMinUnits(iFuelIndex, iMonth) )then
-                 
-                  fGetFuelCost = 0.0   
-     
-            else if ( fSumFuelUse( iFuelIndex ) .gt. 
+
+                  fGetFuelCost = 0.0
+
+            else if ( fSumFuelUse( iFuelIndex ) .gt.
      &                fFuelMinUnits(iFuelIndex, iMonth) .and.
-     &                fSumFuelUse( iFuelIndex ) .le. 
+     &                fSumFuelUse( iFuelIndex ) .le.
      &                fFuelBlockUnits(iFuelIndex, iMonth, 1) )then
-                 
-                  fGetFuelCost = fFuelBlockCost(iFuelIndex,iMonth,1)                  
-                  
-            else if ( fSumFuelUse( iFuelIndex ) .gt. 
+
+                  fGetFuelCost = fFuelBlockCost(iFuelIndex,iMonth,1)
+
+            else if ( fSumFuelUse( iFuelIndex ) .gt.
      &                fFuelBlockUnits(iFuelIndex, iMonth, 1) .and.
-     &                fSumFuelUse( iFuelIndex ) .le. 
-     &                fFuelBlockUnits(iFuelIndex, iMonth, 2) ) then 
+     &                fSumFuelUse( iFuelIndex ) .le.
+     &                fFuelBlockUnits(iFuelIndex, iMonth, 2) ) then
 
-                  fGetFuelCost = fFuelBlockCost(iFuelIndex,iMonth,2)     
-     
-            else if ( fSumFuelUse( iFuelIndex ) .gt. 
+                  fGetFuelCost = fFuelBlockCost(iFuelIndex,iMonth,2)
+
+            else if ( fSumFuelUse( iFuelIndex ) .gt.
      &                fFuelBlockUnits(iFuelIndex, iMonth, 2) .and.
-     &                fSumFuelUse( iFuelIndex ) .le. 
-     &                fFuelBlockUnits(iFuelIndex, iMonth, 3) ) then   
-
-                  fGetFuelCost = fFuelBlockCost(iFuelIndex,iMonth,3)            
-        
-            else if ( fSumFuelUse( iFuelIndex ) .gt. 
+     &                fSumFuelUse( iFuelIndex ) .le.
      &                fFuelBlockUnits(iFuelIndex, iMonth, 3) ) then
 
-                  fGetFuelCost = fFuelBlockCost(iFuelIndex,iMonth,4) 
+                  fGetFuelCost = fFuelBlockCost(iFuelIndex,iMonth,3)
+
+            else if ( fSumFuelUse( iFuelIndex ) .gt.
+     &                fFuelBlockUnits(iFuelIndex, iMonth, 3) ) then
+
+                  fGetFuelCost = fFuelBlockCost(iFuelIndex,iMonth,4)
 
             else
                   fGetFuelCost = 0.0
-            end if                    
-        
+            end if
+
         END IF
 
       return
-      end 
+      end
