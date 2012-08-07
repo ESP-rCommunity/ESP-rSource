@@ -24,6 +24,8 @@ C  EZCTLI:  Zeroes all control data in common BCTL, CCTL, and FCTL.
 C  EVCNTRL: Decodes & returns string describing control file sensors,
 C           actuators, control types.
 C  EVCNTRLAW: Decodes & returns string describing control file laws.
+C  LSTCNTLD: List one day type of a building/plant/flow/global/optical/
+C           complex fenestration control.
 C  Ezctlc:  Checks all building control functions, plant loops, and
 C           mass flow control functions for validity.
 C  tscdta:  Sets TSC6 variables in the case of TSC6 called from a
@@ -3793,12 +3795,11 @@ C If nnd is zero then omitt days of validity information, otherwise
 C include it in the documentation line.
       lncal=lnblnk(CALENTAG(JJ))
       if(nnd.eq.0)then
-        WRITE(outs,'(3A,I2,A)')' Day type ',CALENTAG(JJ)(1:lncal),
+        WRITE(outs,'(3A,I2,A)') ' Day type ',CALENTAG(JJ)(1:lncal),
      &    ' control has ',LL,' periods.'
       else
-        WRITE(outs,'(5A,I2,A)')' Day type ',CALENTAG(JJ)(1:lncal),
-     &    ' control is valid ',PERST3(9:lnblnk(PERST3)),' with ',LL,
-     &    ' periods.'
+        WRITE(outs,'(3A,I2,A)') ' Control is valid ',
+     &    PERST3(9:lnblnk(PERST3)),' with ',LL,' periods.'
       endif
       call edisp(itru,outs)
 
