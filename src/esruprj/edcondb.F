@@ -253,22 +253,6 @@ C Add another category to the database << not yet tested >>
           matvisinrfl(ILNE)=0.5
           matrender(ILNE)=0.0
 
-          matgapcnd(ILNE,1)=0.0
-          matgapcnd(ILNE,2)=0.0
-          matgapcnd(ILNE,3)=0.0
-          matgapcnd(ILNE,4)=0.0
-          matvisco(ILNE,1)=0.0
-          matvisco(ILNE,2)=0.0
-          matvisco(ILNE,3)=0.0
-          matvisco(ILNE,4)=0.0
-          matgapden(ILNE,1)=0.0
-          matgapden(ILNE,2)=0.0
-          matgapden(ILNE,3)=0.0
-          matgapden(ILNE,4)=0.0
-          matprandtl(ILNE,1)=0.0
-          matprandtl(ILNE,2)=0.0
-          matgapsht(ILNE,1)=0.0
-          matgapsht(ILNE,2)=0.0
           matcatitems(matcats)=matcatitems(matcats)+1 ! increment nb of cat items
           matcatindex(ILNE)=matcats  ! remember its category
           matdbitems=matdbitems+1    ! increment nb of db items
@@ -541,22 +525,6 @@ C copy the contents of material > IWHICH into the next lower one.
               matvisinrfl(IVV)=matvisinrfl(IVV+1)
               matrender(IVV)=matrender(IVV+1)
 
-              matgapcnd(IVV,1)=matgapcnd(IVV+1,1)
-              matgapcnd(IVV,2)=matgapcnd(IVV+1,2)
-              matgapcnd(IVV,3)=matgapcnd(IVV+1,3)
-              matgapcnd(IVV,4)=matgapcnd(IVV+1,4)
-              matvisco(IVV,1)=matvisco(IVV+1,1)
-              matvisco(IVV,2)=matvisco(IVV+1,2)
-              matvisco(IVV,3)=matvisco(IVV+1,3)
-              matvisco(IVV,4)=matvisco(IVV+1,4)
-              matgapden(IVV,1)=matgapden(IVV+1,1)
-              matgapden(IVV,2)=matgapden(IVV+1,2)
-              matgapden(IVV,3)=matgapden(IVV+1,3)
-              matgapden(IVV,4)=matgapden(IVV+1,4)
-              matprandtl(IVV,1)=matprandtl(IVV+1,1)
-              matprandtl(IVV,2)=matprandtl(IVV+1,2)
-              matgapsht(IVV,1)=matgapsht(IVV+1,1)
-              matgapsht(IVV,2)=matgapsht(IVV+1,2)
   791       CONTINUE
             matdbitems=matdbitems-1
             matcatitems(IC)=matcatitems(IC)-1
@@ -618,22 +586,6 @@ C If there is room add a note about its origin.
                 matvisinrfl(ILNE)=matvisinrfl(lastcatitem)
                 matrender(ILNE)=matrender(lastcatitem)
 
-                matgapcnd(ILNE,1)=matgapcnd(lastcatitem,1)
-                matgapcnd(ILNE,2)=matgapcnd(lastcatitem,2)
-                matgapcnd(ILNE,3)=matgapcnd(lastcatitem,3)
-                matgapcnd(ILNE,4)=matgapcnd(lastcatitem,4)
-                matvisco(ILNE,1)=matvisco(lastcatitem,1)
-                matvisco(ILNE,2)=matvisco(lastcatitem,2)
-                matvisco(ILNE,3)=matvisco(lastcatitem,3)
-                matvisco(ILNE,4)=matvisco(lastcatitem,4)
-                matgapden(ILNE,1)=matgapden(lastcatitem,1)
-                matgapden(ILNE,2)=matgapden(lastcatitem,2)
-                matgapden(ILNE,3)=matgapden(lastcatitem,3)
-                matgapden(ILNE,4)=matgapden(lastcatitem,4)
-                matprandtl(ILNE,1)=matprandtl(lastcatitem,1)
-                matprandtl(ILNE,2)=matprandtl(lastcatitem,2)
-                matgapsht(ILNE,1)=matgapsht(lastcatitem,1)
-                matgapsht(ILNE,2)=matgapsht(lastcatitem,2)
                 matdbitems=matdbitems+1
                 matcatitems(IC)=matcatitems(IC)+1
 
@@ -774,22 +726,6 @@ C The additional properties just use the 1st material (change this later).
               matvisinrfl(ILNE)=matvisinrfl(IWHICH)
               matrender(ILNE)=matrender(IWHICH)
 
-              matgapcnd(ILNE,1)=matgapcnd(IWHICH,1)
-              matgapcnd(ILNE,2)=matgapcnd(IWHICH,2)
-              matgapcnd(ILNE,3)=matgapcnd(IWHICH,3)
-              matgapcnd(ILNE,4)=matgapcnd(IWHICH,4)
-              matvisco(ILNE,1)=matvisco(IWHICH,1)
-              matvisco(ILNE,2)=matvisco(IWHICH,2)
-              matvisco(ILNE,3)=matvisco(IWHICH,3)
-              matvisco(ILNE,4)=matvisco(IWHICH,4)
-              matgapden(ILNE,1)=matgapden(IWHICH,1)
-              matgapden(ILNE,2)=matgapden(IWHICH,2)
-              matgapden(ILNE,3)=matgapden(IWHICH,3)
-              matgapden(ILNE,4)=matgapden(IWHICH,4)
-              matprandtl(ILNE,1)=matprandtl(IWHICH,1)
-              matprandtl(ILNE,2)=matprandtl(IWHICH,2)
-              matgapsht(ILNE,1)=matgapsht(IWHICH,1)
-              matgapsht(ILNE,2)=matgapsht(IWHICH,2)
               matdbitems=matdbitems+1   ! increment nb of db items
               matcatitems(IC)=matcatitems(IC)+1 ! increment nb of cat items
               matcatindex(ILNE)=IC      ! keep in current category
@@ -850,22 +786,6 @@ C If there is room add a note about its origin.
             matvisinrfl(ILNE)=matvisinrfl(IWHICH)
             matrender(ILNE)=matrender(IWHICH)
 
-            matgapcnd(ILNE,1)=matgapcnd(IWHICH,1)
-            matgapcnd(ILNE,2)=matgapcnd(IWHICH,2)
-            matgapcnd(ILNE,3)=matgapcnd(IWHICH,3)
-            matgapcnd(ILNE,4)=matgapcnd(IWHICH,4)
-            matvisco(ILNE,1)=matvisco(IWHICH,1)
-            matvisco(ILNE,2)=matvisco(IWHICH,2)
-            matvisco(ILNE,3)=matvisco(IWHICH,3)
-            matvisco(ILNE,4)=matvisco(IWHICH,4)
-            matgapden(ILNE,1)=matgapden(IWHICH,1)
-            matgapden(ILNE,2)=matgapden(IWHICH,2)
-            matgapden(ILNE,3)=matgapden(IWHICH,3)
-            matgapden(ILNE,4)=matgapden(IWHICH,4)
-            matprandtl(ILNE,1)=matprandtl(IWHICH,1)
-            matprandtl(ILNE,2)=matprandtl(IWHICH,2)
-            matgapsht(ILNE,1)=matgapsht(IWHICH,1)
-            matgapsht(ILNE,2)=matgapsht(IWHICH,2)
             matdbitems=matdbitems+1
             matcatitems(IC)=matcatitems(IC)+1
             MODDB=.TRUE.
@@ -957,8 +877,6 @@ C Passed parameters.
       logical modify,dok,ok
 
 C Local variables for gas materials.
-      real gapcnd,visco,gapden,prandtl,gapsht
-      dimension gapcnd(4),visco(4),gapden(4),prandtl(2),gapsht(2)
       integer jsur   ! for radio button
 
 C For help messages
@@ -996,22 +914,6 @@ C Work with local variables.
       visotrfl= matvisotrfl(index)
       visinrfl= matvisinrfl(index)
       render= matrender(index)
-      gapcnd(1)= matgapcnd(index,1)
-      gapcnd(2)= matgapcnd(index,2)
-      gapcnd(3)= matgapcnd(index,3)
-      gapcnd(4)= matgapcnd(index,4)
-      visco(1)= matvisco(index,1)
-      visco(2)= matvisco(index,2)
-      visco(3)= matvisco(index,3)
-      visco(4)= matvisco(index,4)
-      gapden(1)= matgapden(index,1)
-      gapden(2)= matgapden(index,2)
-      gapden(3)= matgapden(index,3)
-      gapden(4)= matgapden(index,4)
-      prandtl(1)= matprandtl(index,1)
-      prandtl(2)= matprandtl(index,2)
-      gapsht(1)= matgapsht(index,1)
-      gapsht(2)= matgapsht(index,2)
 
    3  IW=-4
       WRITE(PELM(1),'(A,1X,A)')    'a Name:',tnam(1:32)
@@ -1046,57 +948,14 @@ C or a gas (g), include additional items.
        WRITE(PELM(20),'(A,F7.2)')'t Colour rendering (-)   :',render
         m=20
       elseif(matopaq(index).eq.'g')then
-        WRITE(PELM(12),'(A)')  'l type >>gas (data+temp correction)'
-        WRITE(PELM(13),'(A,F8.5)') 'm gap conduct (W/(m-K)   :',
-     &    gapcnd(1)
-        WRITE(PELM(14),'(A,F9.6)') 'n gap conduct T deriv    :',
-     &    gapcnd(2)
-        WRITE(PELM(15),'(A,F11.8)')'o gap viscosity (kg/msK) :',visco(1)
-        WRITE(PELM(16),'(A,F11.8)')'p gap viscosity T deriv  :',visco(2)
-        WRITE(PELM(17),'(A,F8.4)') 'q gap density (kg/m**3)  :',
-     &    gapden(1)
-        WRITE(PELM(18),'(A,F10.6)')'r gap density T deriv    :',
-     &    gapden(2)
-        WRITE(PELM(19),'(A,F9.6)') 's gap Prandtl number     :',
-     &    prandtl(1)
-        WRITE(PELM(20),'(A,F9.6)') 't gap Prandtl T deriv    :',
-     &    prandtl(2)
-        WRITE(PELM(21),'(A,F9.3)') 'u gap Spec Ht (J/(kg-K)  :',
-     &    gapsht(1)
-        WRITE(PELM(22),'(A,F9.6)') 'v gap Spec Ht deriv      :',
-     &    gapsht(2)
-        m=22
-      elseif(matopaq(index).eq.'h')then
-        WRITE(PELM(12),'(A)')  'l type >>gas (data at 4 temps)'
-        WRITE(PELM(13),'(A,F9.5)') 'm gap cond @-10C (W/(m-K):',
-     &    gapcnd(1)
-        WRITE(PELM(14),'(A,F9.5)') 'n gap cond @  0C (W/(m-K):',
-     &    gapcnd(2)
-        WRITE(PELM(15),'(A,F9.5)') 'o gap cond @ 10C (W/(m-K):',
-     &    gapcnd(3)
-        WRITE(PELM(16),'(A,F9.5)') 'p gap cond @ 20C (W/(m-K):',
-     &    gapcnd(4)
-        WRITE(PELM(17),'(A,F11.8)') 'q gap visc @-10C (kg/msK):',
-     &    visco(1)
-        WRITE(PELM(18),'(A,F11.8)')'r gap visc @  0C (kg/msK):',
-     &    visco(2)
-        WRITE(PELM(19),'(A,F11.8)')'s gap visc @ 10C (kg/msK):',
-     &    visco(3)
-        WRITE(PELM(20),'(A,F11.8)')'t gap visc @ 20C (kg/msK):',
-     &    visco(4)
-        WRITE(PELM(21),'(A,F9.3)') 'u gap dens @-10C (kg/m^3):',
-     &    gapden(1)
-        WRITE(PELM(22),'(A,F9.3)') 'v gap dens @  0C (kg/m^3):',
-     &    gapden(2)
-        WRITE(PELM(23),'(A,F9.3)') 'w gap dens @ 10C (kg/m^3):',
-     &    gapden(3)
-        WRITE(PELM(24),'(A,F9.3)') 'x gap dens @ 20C (kg/m^3):',
-     &    gapden(4)
-        WRITE(PELM(25),'(A,F9.6)') 'y gap Prandtl number     :',
-     &    prandtl(1)
-        WRITE(PELM(26),'(A,F9.6)') 'z gap spec Ht (J/(kg-K)  :',
-     &    gapsht(1)
-        m=26
+        WRITE(PELM(12),'(A)')  'l type >>gas layer'
+        WRITE(PELM(13),'(A,F9.5)') 'm gap resistance wall:',
+     &    matgapares(index,1)
+        WRITE(PELM(14),'(A,F9.5)') 'n gap resistance horiz:',
+     &    matgapares(index,2)
+        WRITE(PELM(15),'(A,F9.5)') 'o gap resistance: other',
+     &    matgapares(index,3)
+        m=15
       endif
       PELM(m+1) =' _____________________ '
       PELM(m+2)='? Help                 '
@@ -1137,22 +996,6 @@ C updating the common blocks.
             matvisotrfl(index) = visotrfl
             matvisinrfl(index) = visinrfl
             matrender(index) = render
-            matgapcnd(index,1) = gapcnd(1)
-            matgapcnd(index,2) = gapcnd(2)
-            matgapcnd(index,3) = gapcnd(3)
-            matgapcnd(index,4) = gapcnd(4)
-            matvisco(index,1) = visco(1)
-            matvisco(index,2) = visco(2)
-            matvisco(index,3) = visco(3)
-            matvisco(index,4) = visco(4)
-            matgapden(index,1) = gapden(1)
-            matgapden(index,2) = gapden(2)
-            matgapden(index,3) = gapden(3)
-            matgapden(index,4) = gapden(4)
-            matprandtl(index,1) = prandtl(1)
-            matprandtl(index,2) = prandtl(2)
-            matgapsht(index,1) = gapsht(1)
-            matgapsht(index,2) = gapsht(2)
             modify=.false.
             mod=.true.   ! pass this back to calling code.
           endif
@@ -1997,10 +1840,7 @@ C flag an air gap (and the user would overload the MLC layer
 C with 3 air gap resistance values). An emerging technique
 C is to label materials (matopaq) as follows: 
 C matopaq (1 char) 'o' is opaque, 't' is transparent,
-C                  'g' is gas (data+temp correction),
-C                  'h' is gas (data at 4 temps),
-C                  'r' is gas (fixed resistances (not yet available)),
-C                  '-' imported from legacy
+C                  'g' is gas, '-' imported from legacy
 C Some of the items in the GAPS material category have a -99
 C index (no equivalent in legacy databases) and the current code
 C assumes that -99 entities may be gasses.
@@ -2172,8 +2012,7 @@ C And if matarrayindex is zero then reset dbcon and NAM.
 C If g or h air gap and version 1.2 then assign DRAIR
           if(matarrayindex.eq.0)then
             continue
-          elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &       matopaq(matarrayindex)(1:1).eq.'h')then
+          elseif(matopaq(matarrayindex)(1:1).eq.'g')then
             if(closemat2)then
               DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
               DRAIR(IFOC,IL,2)=matgapares(matarrayindex,2)
@@ -2454,11 +2293,10 @@ C And if matarrayindex is zero then reset dbcon.
                     DBCON=matdbcon(matarrayindex)
                   endif
 
-C If g or h air gap and version 1.2 then assign DRAIR
+C If g air gap and version 1.2 then assign DRAIR
                   if(matarrayindex.eq.0)then
                     continue
-                  elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &              matopaq(matarrayindex)(1:1).eq.'h')then
+                  elseif(matopaq(matarrayindex)(1:1).eq.'g')then
                     if(closemat2)then
                       DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
                       RT=RT+DRAIR(IFOC,IL,1)  ! while we are sure
@@ -2571,11 +2409,10 @@ C And if matarrayindex is zero then reset dbcon.
                     DBCON=matdbcon(matarrayindex)
                   endif
 
-C If g or h air gap and version 1.2 then assign DRAIR
+C If g air gap and version 1.2 then assign DRAIR
                   if(matarrayindex.eq.0)then
                     continue
-                  elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &              matopaq(matarrayindex)(1:1).eq.'h')then
+                  elseif(matopaq(matarrayindex)(1:1).eq.'g')then
                     if(closemat2)then
 
 C If this is the layer we are adjusting then substitute the current
@@ -2818,11 +2655,10 @@ C If a standard air layer then ask for gap resistance.
             ELSEIF(IPR(IFOC,ILN).EQ.-99)THEN
 
 C Recover the stipulated air gap resistance if we have a GAP
-C type of [g] or [h].
+C type of [g].
               if(matarrayindex.gt.0)then
                 guessthick=matdbthick(matarrayindex)
-                if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &             matopaq(matarrayindex)(1:1).eq.'h')then
+                if(matopaq(matarrayindex)(1:1).eq.'g')then
                   if(closemat2)then
                     DRAIR(IFOC,ILN,1)=matgapares(matarrayindex,1)
                     DRAIR(IFOC,ILN,2)=matgapares(matarrayindex,2)
@@ -3181,8 +3017,7 @@ C Find the typical thickness and if [g] or [h] gap resistance.
             write(outs,'(a,f6.1,a)') 
      &        'Material selected has a thickness of ',guessthick,'mm.'
             call edisp(iuout,outs)
-            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &         matopaq(matarrayindex)(1:1).eq.'h')then
+            if(matopaq(matarrayindex)(1:1).eq.'g')then
               if(closemat2)then
                 DRAIR(IFOC,ILED-8,1)=matgapares(matarrayindex,1)
                 DRAIR(IFOC,ILED-8,2)=matgapares(matarrayindex,2)
@@ -3201,8 +3036,7 @@ C material is a [g] or [h] and might have air gap values.
           write(outs,'(a,f6.1,a)') 
      &      'Material selected has a thickness of ',guessthick,'mm.'
           call edisp(iuout,outs)
-          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &       matopaq(matarrayindex)(1:1).eq.'h')then
+          if(matopaq(matarrayindex)(1:1).eq.'g')then
             if(closemat2)then
               DRAIR(IFOC,ILED-8,1)=matgapares(matarrayindex,1)
               DRAIR(IFOC,ILED-8,2)=matgapares(matarrayindex,2)

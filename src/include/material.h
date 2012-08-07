@@ -58,19 +58,10 @@ C assumptions for each face.
      &  matdbine(MGIT),matdbouta(MGIT),matdbina(MGIT),matdbdrv(MGIT),
      &  matdbthick(MGIT)
 
-C For air gaps WIS supplies some additional data.
-      real matgapcnd  !  gap conduction at -10C 0C 10C 20C
-      real matvisco   !  gap viscosity at -10C 0C 10C 20C
-      real matgapden  !  gap density at -10C 0C 10C 20C
-      real matprandtl ! prandtl number and extra field for T correct
-
-C UK EPBD method uses the matgapsht 1st array index for the value and
-C the 2nd array index for T derivitive.
-      real matgapsht  ! gap specific heat and T correct.
+C For air gaps WIS additional data (ignored if found).
+C If there are values after the tag then these might be air gap resistances.
       real matgapares ! air gap resistance (i.e. DRAIR) 1=vert 2=floor/ceil 3=other
-      common/matgaparray/matgapcnd(MGIT,4),matvisco(MGIT,4),
-     &  matgapden(MGIT,4),matprandtl(MGIT,2),matgapsht(MGIT,2),
-     &  matgapares(MGIT,3)
+      common/matgaparray/matgapares(MGIT,3)
 
 C So called 'G-value' calculations require the sorts of single layer optical
 C properties which ESP-r does not current hold. Also the lack of this data

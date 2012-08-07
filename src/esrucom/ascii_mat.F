@@ -104,14 +104,7 @@ C matvisotrfl (real)   outer visable reflectance
 C matvisinrfl (real)   inner visable reflectance
 C matrender (real)      colour rendering index
 
-C For air gaps WIS supplies some additional data.
-C matgapcnd (real) (4)  gap conduction at -10C 0C 10C 20C
-C matvisco (real)(4)    gap viscosity at -10C 0C 10C 20C
-C matgapden (real)(4)   gap density at -10C 0C 10C 20C
-C matprandtl (real)(2)  prandtl number and extra field for T correct
-C matgapsht (real)(2)   gap specific heat and T correct.
-C UK EPBD method uses the 1st array index for the value and
-C the 2nd array index for T derivitive.
+C For air gaps WIS supplies some additional data (but not used if found).
 C matgapares (real)(3)  air gap resistance (i.e. DRAIR) 1=vert 2=floor/ceil 3=other
 
 C mathash is a pointer to the array index in matdatarray for a
@@ -123,7 +116,7 @@ C << What further information differences are there with
 C << EnergyPlus and DOE-2?
 
 C << What further information differences are there with
-C << WIS and Window 5.1
+C << WIS and Window 6.1
 
 C Categories for materials implied by UK national calculation method.
 C   Air Layer
@@ -257,12 +250,10 @@ C matdbitems counter and creating a new name.
           CALL EGETRM(OUTSTR,K,IDESC,'W','mat description',IER)
 
 C The MLC database will expect to find the name of the material matching the
-C description NDESC initial characters. The logic that started all matnames
-C with mat_ does not help. Writ the initial 32 char of NDESC as the name.
+C description NDESC initial characters. Write the initial 32 char of NDESC 
+C as the material name.
           lex=MIN0(lnblnk(IDESC),32)
           write(matname(matdbitems),'(a)') IDESC(1:lex)
-C          write(matname(matdbitems),'(a,i3.3)') 'mat_',ncode
-
           write(matdoc(matdbitems),'(a)') IDESC(1:lnblnk(IDESC))
 
           CALL STRIPC(IFA,OUTSTR,0,ND,1,'the raw data line',IER)
@@ -307,7 +298,7 @@ C holder based on typcial classes (for databases with 15-17 classes)
               matdbthick(matdbitems)=5.0
             elseif(I.eq.13)then
 
-C Assume that this category is glass. ?? WIS data
+C Assume that category 13 is glass.
               write(matdoc(matdbitems),'(2a)') IDESC(1:lnblnk(IDESC)),
      &          ' with placeholder single layer optics'
               matdbthick(matdbitems)=6.0
@@ -336,7 +327,7 @@ C Assume that this category is glass. ?? WIS data
   10  CONTINUE
 
 C If there has been no air material read in then add in one more
-C category for air and fill it with tdefault information.
+C category for air and fill it with default information.
       if(mathash(0).eq.-1)then
         matcats=matcats+1
         matcatitems(matcats)=1
@@ -347,6 +338,9 @@ C category for air and fill it with tdefault information.
         matlegindex(matdbitems)=0
         matcatindex(matdbitems)=matcats
         mathash(0)=matdbitems  ! set up pointer from legacy index to array
+
+C << todo name it 'Air layer' rather than mat_000? >>
+C << ? include default air gap resistance values ? >>
         write(matname(matdbitems),'(a)') 'mat_000'
         write(matdoc(matdbitems),'(a)') 
      &    'Air layer with default properties'
@@ -403,7 +397,7 @@ C Parameters
 
       integer matcount,matcatcount  ! used to increment arrays
       integer lncat     ! for length of string
-      logical closemat1,closemat2
+      logical closemat1,closemat2,closer1,closer2,closer3
 
       tab=','       ! create tab separator.
       matcount=0    ! setup initial overall counter
@@ -440,12 +434,8 @@ C Set closemat for the version.
      &  ' visable reflec in (-) colour rendering (-)'
       write(IFA,'(A)') '#  '
       write(IFA,'(A)') '# Gas material attributes:'
-      write(IFA,'(A)') '#  (first 9 items the same) [g] or [h]'
+      write(IFA,'(A)') '#  (first 9 items the same) [g]'
       write(IFA,'(A)') '#  air gap resistance for vert horiz other'
-      write(IFA,'(A)') '#  [g] 2 conduction, 2 viscosity, 2 density'
-      write(IFA,'(A)') '#      2 prandtl, 2 specific heat'
-      write(IFA,'(A)') '#  [h] 4 conduction, 4 viscosity, 4 density'
-      write(IFA,'(A)') '#      prandtl, specific heat'
       write(IFA,'(A)') '#  '
 
 C Loop through each classification (index I) and write out contents.
@@ -498,52 +488,33 @@ C common block arrays so that future reads are more efficient.
      &          matsoldrinrfl(J),matvistran(J),matvisotrfl(J),
      &          matvisinrfl(J),matrender(J)
             elseif(matopaq(J)(1:1).eq.'g')then
+
+C If version 1.1 write out standard attributes, if version 2+ also
+C include the three air gap resistance values.
               if(closemat1)then
-                write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,
-     &            f8.5,f9.6,2f11.8,f8.4,f9.5,2f9.6,f9.3,f9.6)')
+                write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a)')
      &            matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
      &            matdbine(J),matdbouta(J),matdbina(J),matdbdrv(J),
-     &            matdbthick(J),' ',matopaq(J),
-     &            matgapcnd(J,1),matgapcnd(J,2),matvisco(J,1),
-     &            matvisco(J,2),matgapden(J,1),matgapden(J,2),
-     &            matprandtl(J,1),matprandtl(J,2),matgapsht(J,1),
-     &            matgapsht(J,2)
+     &            matdbthick(J),' ',matopaq(J)
               elseif(closemat2)then
-                write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,
-     &            3f7.4,f8.5,f9.6,2f11.8,f8.4,f9.5,2f9.6,f9.3,f9.6)')
+                write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,3f7.4)')
      &            matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
      &            matdbine(J),matdbouta(J),matdbina(J),matdbdrv(J),
      &            matdbthick(J),' ',matopaq(J),matgapares(J,1),
-     &            matgapares(J,2),matgapares(J,2),
-     &            matgapcnd(J,1),matgapcnd(J,2),matvisco(J,1),
-     &            matvisco(J,2),matgapden(J,1),matgapden(J,2),
-     &            matprandtl(J,1),matprandtl(J,2),matgapsht(J,1),
-     &            matgapsht(J,2)
+     &            matgapares(J,2),matgapares(J,2)
               endif
             elseif(matopaq(J)(1:1).eq.'h')then
               if(closemat1)then
-                write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,4f8.5,
-     &            4f11.8,4f9.6,f9.6,f9.3)')
+                write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a)')
      &            matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
      &            matdbine(J),matdbouta(J),matdbina(J),matdbdrv(J),
-     &            matdbthick(J),' ',matopaq(J),
-     &            matgapcnd(J,1),matgapcnd(J,2),matgapcnd(J,3),
-     &            matgapcnd(J,4),matvisco(J,1),matvisco(J,2),
-     &            matvisco(J,3),matvisco(J,4),matgapden(J,1),
-     &            matgapden(J,2),matgapden(J,3),matgapden(J,4),
-     &            matprandtl(J,1),matgapsht(J,1)
+     &            matdbthick(J),' ',matopaq(J)
               elseif(closemat2)then
-                write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,3f7.4,
-     &            4f8.5,4f11.8,4f9.6,f9.6,f9.3)')
+                write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,3f7.4)')
      &            matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
      &            matdbine(J),matdbouta(J),matdbina(J),matdbdrv(J),
      &            matdbthick(J),' ',matopaq(J),matgapares(J,1),
-     &            matgapares(J,2),matgapares(J,2),
-     &            matgapcnd(J,1),matgapcnd(J,2),matgapcnd(J,3),
-     &            matgapcnd(J,4),matvisco(J,1),matvisco(J,2),
-     &            matvisco(J,3),matvisco(J,4),matgapden(J,1),
-     &            matgapden(J,2),matgapden(J,3),matgapden(J,4),
-     &            matprandtl(J,1),matgapsht(J,1)
+     &            matgapares(J,2),matgapares(J,2)
               endif
             endif
             call SDELIM(outs,outsd,'C',IW)
@@ -672,6 +643,7 @@ C class index IC is used for subsequent items.
         CALL EGETWR(LOUTSTR,K,VAL(8),0.,0.,'-','db difusn',IER)
         CALL EGETWR(LOUTSTR,K,VAL(9),0.,0.,'-','db def thick',IER)
         CALL EGETW(LOUTSTR,K,WORD32,'-','tag for opaque transp',IER)
+        write(6,*) nd,' ',word32,closemat1,closemat2
         matdbcon(matdbitems)=VAL(1)
         matdbden(matdbitems)=VAL(2)
         matdbsht(matdbitems)=VAL(3)
@@ -687,7 +659,7 @@ C class index IC is used for subsequent items.
           matopaq(matdbitems)='-'
         elseif(WORD32(1:1).eq.'t')then
 
-C Read single layer optics if there are more than 
+C Read single layer optics if there are more than 10 items in line.
           matopaq(matdbitems)='t'
           if(ND.gt.10)then
             CALL EGETWR(LOUTSTR,K,VAL(1),0.,0.,'-','db ir tran',IER)
@@ -707,154 +679,44 @@ C Read single layer optics if there are more than
             matvisinrfl(matdbitems)=VAL(7)
             matrender(matdbitems)=VAL(8)
           endif
-        elseif(WORD32(1:1).eq.'g')then   ! gas (data+temp correction)
+        elseif(WORD32(1:1).eq.'g')then   ! gas
+
+C If marked with a 'g' and there are 13 ir more than 20 items on the
+C line  then read air gap resistance but otherwise skip the rest of the line.
           matopaq(matdbitems)='g'
-          if(closemat1)then
-            CALL EGETWR(LOUTSTR,K,VAL(1),0.,0.,'-','db gas cond',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(2),0.,0.,'-','db cond T deriv',
-     &        IER)
-            CALL EGETWR(LOUTSTR,K,VAL(3),0.,0.,'-','db gas visc',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(4),0.,0.,'-','db visc T deriv',
-     &        IER)
-            CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-','db gas density',
-     &        IER)
-            CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-','db dens T deriv',
-     &        IER)
-            CALL EGETWR(LOUTSTR,K,VAL(7),0.,0.,'-','db prandtl',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(8),0.,0.,'-','db prandtl der',
-     &        IER)
-            CALL EGETWR(LOUTSTR,K,VAL(9),0.,0.,'-','db spec ht',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(10),0.,0.,'-','db spec ht der',
-     &        IER)
-            matgapcnd(matdbitems,1)=VAL(1)
-            matgapcnd(matdbitems,2)=VAL(2)
-            matvisco(matdbitems,1)=VAL(3)
-            matvisco(matdbitems,2)=VAL(4)
-            matgapden(matdbitems,1)=VAL(5)
-            matgapden(matdbitems,2)=VAL(6)
-            matprandtl(matdbitems,1)=VAL(7)
-            matprandtl(matdbitems,2)=VAL(8)
-            matgapsht(matdbitems,1)=VAL(9)
-            matgapsht(matdbitems,2)=VAL(10)
-          elseif(closemat2)then
-
-C Check if there are more than 20 values on the line for g type
-C of layer (and thus has the air gap resistances).
-            if(ND.gt.20)then
+          if(closemat1.or.closemat2)then
+            if(ND.eq.13.or.ND.gt.20)then
               CALL EGETWR(LOUTSTR,K,VAL(1),0.,0.,'-',
      &          'db air res vert',IER)
               CALL EGETWR(LOUTSTR,K,VAL(2),0.,0.,'-',
      &          'db air res floor:ceil',IER)
               CALL EGETWR(LOUTSTR,K,VAL(3),0.,0.,'-',
      &          'db air res other',IER)
-            endif
-            CALL EGETWR(LOUTSTR,K,VAL(4),0.,0.,'-','db gas cond',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-','db cond T deriv',
-     &        IER)
-            CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-','db gas visc',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(7),0.,0.,'-','db visc T deriv',
-     &        IER)
-            CALL EGETWR(LOUTSTR,K,VAL(8),0.,0.,'-','db gas density',
-     &        IER)
-            CALL EGETWR(LOUTSTR,K,VAL(9),0.,0.,'-','db dens T deriv',
-     &        IER)
-            CALL EGETWR(LOUTSTR,K,VAL(10),0.,0.,'-','db prandtl',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(11),0.,0.,'-','db prandtl der',
-     &        IER)
-            CALL EGETWR(LOUTSTR,K,VAL(12),0.,0.,'-','db spec ht',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(13),0.,0.,'-','db spec ht der',
-     &        IER)
-            if(ND.gt.20)then
               matgapares(matdbitems,1)=VAL(1)
               matgapares(matdbitems,2)=VAL(2)
               matgapares(matdbitems,3)=VAL(3)
+              write(6,*) 'g closemat2 ',val(1),val(2),val(3)
             endif
-            matgapcnd(matdbitems,1)=VAL(4)
-            matgapcnd(matdbitems,2)=VAL(5)
-            matvisco(matdbitems,1)=VAL(6)
-            matvisco(matdbitems,2)=VAL(7)
-            matgapden(matdbitems,1)=VAL(8)
-            matgapden(matdbitems,2)=VAL(9)
-            matprandtl(matdbitems,1)=VAL(10)
-            matprandtl(matdbitems,2)=VAL(11)
-            matgapsht(matdbitems,1)=VAL(12)
-            matgapsht(matdbitems,2)=VAL(13)
           endif
-        elseif(WORD32(1:1).eq.'h')then   ! gas (data at 4 temps)
-          matopaq(matdbitems)='h'
-          if(closemat1)then
-            CALL EGETWR(LOUTSTR,K,VAL(1),0.,0.,'-','gas cond -10',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(2),0.,0.,'-','gas cond 0',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(3),0.,0.,'-','gas cond 10',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(4),0.,0.,'-','gas cond 20',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-','gas visc -10',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-','gas visc 0',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(7),0.,0.,'-','gas visc 10',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(8),0.,0.,'-','gas visc 20',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(9),0.,0.,'-','gas dens -10',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(10),0.,0.,'-','gas dens 0',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(11),0.,0.,'-','gas dens 10',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(12),0.,0.,'-','gas dens 20',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(13),0.,0.,'-','db prandtl',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(14),0.,0.,'-','db gas sp ht',IER)
-            matgapcnd(matdbitems,1)=VAL(1)
-            matgapcnd(matdbitems,2)=VAL(2)
-            matgapcnd(matdbitems,3)=VAL(3)
-            matgapcnd(matdbitems,4)=VAL(4)
-            matvisco(matdbitems,1)=VAL(5)
-            matvisco(matdbitems,2)=VAL(6)
-            matvisco(matdbitems,3)=VAL(7)
-            matvisco(matdbitems,4)=VAL(8)
-            matgapden(matdbitems,1)=VAL(9)
-            matgapden(matdbitems,2)=VAL(10)
-            matgapden(matdbitems,3)=VAL(11)
-            matgapden(matdbitems,4)=VAL(12)
-            matprandtl(matdbitems,1)=VAL(13)
-            matgapsht(matdbitems,1)=VAL(14)
-          elseif(closemat2)then
+        elseif(WORD32(1:1).eq.'h')then   ! gas
 
-C If there are more than 24 items then air gap resistance available.
-            if(ND.gt.24)then
+C If marked with a 'h' save matopaq as a 'g'. And if there are 13 or more 
+C than 20 items on the line  then read air gap resistance but otherwise skip
+C the rest of the line.
+          matopaq(matdbitems)='g'
+          if(closemat1.or.closemat2)then
+            if(ND.eq.13.or.ND.gt.20)then
               CALL EGETWR(LOUTSTR,K,VAL(1),0.,0.,'-',
      &          'db air res vert',IER)
               CALL EGETWR(LOUTSTR,K,VAL(2),0.,0.,'-',
      &          'db air res floor:ceil',IER)
               CALL EGETWR(LOUTSTR,K,VAL(3),0.,0.,'-',
      &          'db air res other',IER)
-            endif
-            CALL EGETWR(LOUTSTR,K,VAL(4),0.,0.,'-','gas cond -10',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(5),0.,0.,'-','gas cond 0',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(6),0.,0.,'-','gas cond 10',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(7),0.,0.,'-','gas cond 20',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(8),0.,0.,'-','gas visc -10',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(9),0.,0.,'-','gas visc 0',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(10),0.,0.,'-','gas visc 10',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(11),0.,0.,'-','gas visc 20',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(12),0.,0.,'-','gas dens -10',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(13),0.,0.,'-','gas dens 0',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(14),0.,0.,'-','gas dens 10',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(15),0.,0.,'-','gas dens 20',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(16),0.,0.,'-','db prandtl',IER)
-            CALL EGETWR(LOUTSTR,K,VAL(17),0.,0.,'-','db gas sp ht',IER)
-            if(ND.gt.24)then
               matgapares(matdbitems,1)=VAL(1)
               matgapares(matdbitems,2)=VAL(2)
               matgapares(matdbitems,3)=VAL(3)
+              write(6,*) 'h closemat2 ',val(1),val(2),val(3)
             endif
-            matgapcnd(matdbitems,1)=VAL(4)
-            matgapcnd(matdbitems,2)=VAL(5)
-            matgapcnd(matdbitems,3)=VAL(6)
-            matgapcnd(matdbitems,4)=VAL(7)
-            matvisco(matdbitems,1)=VAL(8)
-            matvisco(matdbitems,2)=VAL(9)
-            matvisco(matdbitems,3)=VAL(10)
-            matvisco(matdbitems,4)=VAL(11)
-            matgapden(matdbitems,1)=VAL(12)
-            matgapden(matdbitems,2)=VAL(13)
-            matgapden(matdbitems,3)=VAL(14)
-            matgapden(matdbitems,4)=VAL(15)
-            matprandtl(matdbitems,1)=VAL(16)
-            matgapsht(matdbitems,1)=VAL(17)
           endif
         endif
 
