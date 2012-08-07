@@ -26,7 +26,7 @@ C WARNING: MNS should be at least as big as MCOM in building.h.
                             ! max. activities allowed in the model
                             ! This is kept equal to max zones normally allowed
       PARAMETER (MAC=65)    ! max. activity types 
-      PARAMETER (MACL=530)  ! max. activity types (global list) 
+      PARAMETER (MACL=532)  ! max. activity types (global list) 
       PARAMETER (MILS=10)   ! max. lighting types
       PARAMETER (ITWOMNS=2*MNS) ! Two times the max. activities allowed
       PARAMETER (MREN=10)   ! max. renewable energy systems in model
