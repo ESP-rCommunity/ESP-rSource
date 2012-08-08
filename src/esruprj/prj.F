@@ -1441,9 +1441,9 @@ C simula commissions technical assessments and analysis.
       subroutine simula(ier)
 #include "building.h"
 #include "model.h"
-#include "esprdbfile.h"
 #include "sbem.h"
 #include "ipvdata.h"
+#include "net_flow.h"
 #include "tdf2.h"
 C Get logical name of terminal type, expand model name
 C to include the path and create a string to drive the modules.
@@ -1474,12 +1474,6 @@ C level).
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
       common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
      &  smstres(MSPS),selres(MSPS),sipvres
-      character imgfmt*4  ! GIF XBMP TIF JPG
-      character imgfoc*4  ! FZON FNET FCTL FDFS
-      character limgfil*72  ! file name (extend to 144 char)
-      character imgdoc*248  ! text associated with image
-      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
-
       integer noimg  ! number of images
       integer iton   ! zero if images not yet shown, one if yes
       common/imagfi/noimg,iton
@@ -1829,9 +1823,7 @@ C Debug.
           call runit(doit,tmode)
           return
         endif
-
       elseif(INO.EQ.MITEM-7)then
-
         helptopic='prj_simulation_menu'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKABC('Fluid flow analysis via:',' ','Nodal Network',
@@ -2073,7 +2065,6 @@ C Set parameter sets for current number of IPV assessments.
           endif
           modparms=.true.
         endif
-
       elseif(MITEM.eq.25.and.INO.EQ.1)then
 
 C Help text for this menu and all of the dialogs.
@@ -3122,9 +3113,8 @@ C to include the path and create a string to drive the modules.
       character CXSTR*78
       CHARACTER*72 LS
       character ZSDES*28,ZSDESC*20,ZSDESS*16
-      CHARACTER*72 LAPROB
 
-      logical XST,asked,dok,sorted,problem
+      logical XST,asked,dok,problem
       logical mlcok,bndryok,bndrysxc,confok,geofok,oprfok,prob,dup
       logical tmcok,shdok
       integer icple,iscple  ! coupled zone and surface for tmc check.
@@ -3500,10 +3490,8 @@ C Now look for unknown files.
 C Do cursory check to see if the file is sorted.
             problem=.false.
             call checksort(i,1,problem,ier)
-            if(problem) sorted=.false.
             problem=.false.
             call checksort(i,2,problem,ier)
-            if(problem) sorted=.false.
             problem=.false.
             call checksort(i,3,problem,ier)
             if(problem)then
@@ -3725,7 +3713,7 @@ C  limgfil (72 char) name of the image file << ?? longer string >>
       common/imagfi/noimg,iton
 
       character ilist*200,dolist*254
-      character fmttag*4,fmtexe*20,tfile*72,focus*4
+      character fmttag*4,fmtexe*20,focus*4
       character longtfile*144,longtfiledos*144
       character topic*248,head*136,act*1,h*72
       integer iglib  ! if one then X11 if 2 then GTK if 3 text only.
@@ -5070,7 +5058,6 @@ C Check if geometry file has already been updated.
 C Construction data file variant. Depending on location expand path to file.
 
 C << probably should only allow a variant if a local database >>
-
         if(ipathmul.eq.0.or.ipathmul.eq.1)then
           lworking=LFMUL
         elseif(ipathmul.eq.2)then

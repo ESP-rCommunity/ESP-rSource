@@ -58,18 +58,16 @@ c AND THE CURRENTLY ASSIGNED CLIMATE FILE NAME ARE ALSO SAVED.
       COMMON/PREC3I/CHARDM(MCOM,MS)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),
      &                NGAPS(MCOM,MS),NPGAP(MCOM,MS,MGP)
-      COMMON/PREC10/NWINS(MCOM,MS)
       common/PREC18/ZTRANA(MCOM)
 
       COMMON/HCTHRY/IHCT,ICOREXHCT
 
-      dimension izdum(MZS)
       CHARACTER*72 LCFGF
-      CHARACTER ZNPAD*15,outs248*248
+      CHARACTER ZNPAD*15
 C      character doit*248
       character llclmdb*144  ! for expanded climate file name
       CHARACTER*6 NAME
-      character outs*124,tfile*72,cfgroot*24,longtfile*144
+      character outs*124,cfgroot*24,longtfile*144
       character fs*1
       logical concat,unixok
       integer lndbp  ! length of weather folder path
@@ -96,9 +94,6 @@ C        call runit(doit,'-')
 C 10   continue
 
 C Clear dummy zones variable (in place of old NDOORS array).
-      do 42 jj=1,MCOM
-        izdum(jj)=0
-  42  continue
       IUNIT = IFIL + 2
       IREC = MNRS+2
 
@@ -656,6 +651,7 @@ C ndbph is number of data blocks/hr for monitor function.
 C#include "cfd.h"
 #include "monitor.h"
 #include "control.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
       COMMON/TC/ITC,ICNT
@@ -814,7 +810,7 @@ C radiant and latent W for future and present in each zone.
      &  ctlperlightl(MCOM,2),ctlperequipc(MCOM,2),ctlperequipr(MCOM,2),
      &  ctlperequipl(MCOM,2) 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
-      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
 C Local variables for casual gains.
       integer icurrentday  ! julian day
@@ -2451,8 +2447,6 @@ C Energy balance.
      &           qcri(MCOM,MS,2),qpltri(MCOM,MS,2),qstore(MCOM,MS,2),
      &           qconde(MCOM,MS,2),qconve(MCOM,MS,2),qlwrde(MCOM,MS,2),
      &           qlwrbd(MCOM,MS,2),qlwrsk(MCOM,MS,2),qswrde(MCOM,MS,2)
-
-      COMMON/BTIME/BTIMEP,BTIMEF
 
       LOGICAL IVTHPS,IVTHPZ
       real zoar  ! local for zonetotsurfacearea(MCOM)

@@ -416,6 +416,7 @@ C above.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "net_flow.h"
 #include "tdf2.h"
       
       integer lnblnk  ! function definition

@@ -52,6 +52,8 @@ C      BCL24:  adaptive human comfort model.
 C      BCL25_open_windows: switch between different 
 C             air flow computation methods.
 C      BCL26:  heat exchanger model controlling zone flux extraction.
+C      BCL27:  storage heater model controlling zone flux injection
+C      BCL28:  room heat injector complimentary to BCL27
 C      BCL99:  constructional thermo-physical property variation.
 C      MZRCPL: mixed temperature iteration.
 C      ZRHCTL: relative humidity controlling routine.
@@ -79,7 +81,7 @@ C The main building control function executive.
 C Check if running in dll mode.
       call isadll(dll)
 
-C 26 control functions active at present + thermo-physical
+C 28 control functions active at present + thermo-physical
 C property substitution (BCL99).  If control function index
 C negated then property substitution active within zone
 C associated with control function.
@@ -96,7 +98,6 @@ C For the special case of current zone, mixed node control only.
      &.AND.IBCLAW(ICF,IDTYP,IPER).NE.24) IFUNC=0
      
       CtlLaw: select case (IFUNC) 
-
       case (0) 
         call BCL00
 
@@ -227,7 +228,16 @@ C CL26 uses a heat exchanger model to determine the heat flux
 C to remove from the associated zone.
       case (26)
         call BCL26
-      
+
+C CL27 storage heater model controlling heater charging and heat input
+C to room
+      case (27)
+        call BCL27
+
+C CL28 storage heater model controlling zone flux injection
+      case (28)
+        call BCL28
+
 C New control laws should be inserted here.
       case default 
         write(outs,'(a,i3,a)')' Zone control function',IFUNC,
@@ -322,8 +332,6 @@ C  IMRTS   - identifies which surfaces are used in the MRT calculation
 
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
 
-      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
-
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,
      &QFUT,TFUT
       COMMON/CONTL/IMRTT(MCOM),ITSC(MCOM),NSAMRT(MCOM),IMRTS(MCOM,MS)
@@ -394,6 +402,7 @@ C with the sensor defined for the control function.
 
       SUBROUTINE CFVAR(TCTL,IER)
 #include "building.h"
+#include "net_flow.h"
 #include "tdf2.h"
 #include "control.h"
 
@@ -623,6 +632,7 @@ C Recover control point data.
       SUBROUTINE CFMVAR(ier)
 
 #include "building.h"
+#include "net_flow.h"
 #include "tdf2.h"
 #include "control.h"      
 
@@ -2097,7 +2107,6 @@ C QCMAX : maximum cooling flux allowed (W)
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
       COMMON/PCEMB/IPALLOC(MPCOM),TALLOC(MPCOM)
       COMMON/MBINFO/ZMBI(MCOM,4)
-      COMMON/PVALA/TPA(MCOM),QPA(MCOM)
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       COMMON/FVALS/TFS(MCOM,MS),QFS(MCOM)
       COMMON/FVALC/TFC(MCOM,MS,MN),QFC(MCOM)
@@ -5651,6 +5660,7 @@ C of control law 1 (basic heating and cooling). It can use two items in tdf:
 C IACTIV (ACTIVITY of space) and IHTCLSETP (only heating and cooling setpoints)
       SUBROUTINE BCL23
 #include "building.h"
+#include "net_flow.h"
 #include "tdf2.h"
 #include "control.h"
 #include "sbem.h"
@@ -6702,6 +6712,270 @@ C Trace output.
       STOP
       END
 
+C ******************** bcl27
+C storage heater model controlling zone flux injection, this controller
+C adds heat to a storage heater zone from tdf and loses heat from the same
+C zone based on a linear law. This linear law is a function of room set
+C point (room is the zone heated by the heater). The modes of operation
+C are ACTIVE (heater providing heat to the room) and PASSIVE (heater is
+C losing heat to the room i.e. standing losses).
+
+      SUBROUTINE bcl27
+      implicit none
+#include "building.h"
+#include "control.h"
+
+      COMMON/TC/ITC,ICNT
+      INTEGER ITC,ICNT
+
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      INTEGER ITCF,ITRACE,IZNTRC,itu
+
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      INTEGER IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+
+      COMMON/BTIME/BTIMEP,BTIMEF
+      REAL BTIMEP,BTIMEF
+
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER IUOUT,IUIN
+
+      COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
+      real BB1,BB2,BB3,TNP,QFUT,TFUT
+      integer ICF,IDTYP,IPER,IICOMP
+
+      COMMON/BC2728/heatLoss(mcom)
+      real heatLoss
+   
+      character outs*124
+      INTEGER IER,IZ,IS,IN
+      REAL T_heating_setpoint,T_max,T_min,heaterCapacity,fracHeatGain,
+     &T_changeover_charging,T_changeover_notcharging,gradChargeActive1,
+     &interceptChargeActive1,gradChargeActive2,interceptChargeActive2,
+     &gradChargePassive1,interceptChargePassive1,gradChargePassive2,
+     &interceptChargePassive2,gradNotChargeActive1,
+     &interceptNotChargeActive1,gradNotChargeActive2,
+     &interceptNotChargeActive2,gradNotChargePassive1,
+     &interceptNotChargePassive1,gradNotChargePassive2,
+     &interceptNotChargePassive2,
+     &T_core,T_air_point,heatGain,gradient,constant
+      logical charging,allowHeating
+
+      character*3 State
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(41).NE.0) then
+        call edisp(itu,' ')
+        call edisp(itu,' Entering subroutine bcl27')
+        CALL DAYCLK(IDYP,BTIMEF,ITU)
+      endif
+
+c Fatal error test
+      IF(NINT(BMISCD(ICF,IDTYP,IPER,1)).LT.23)GOTO 99
+
+C Init...
+      QFUT                       = 0.0
+      T_heating_setpoint	 = BMISCD(ICF,IDTYP,IPER,2)
+      T_max			 = BMISCD(ICF,IDTYP,IPER,3)
+      T_min			 = BMISCD(ICF,IDTYP,IPER,4)
+      heaterCapacity		 = BMISCD(ICF,IDTYP,IPER,5)
+      fracHeatGain		 = BMISCD(ICF,IDTYP,IPER,6)
+      T_changeover_charging	 = BMISCD(ICF,IDTYP,IPER,7)
+      T_changeover_notcharging   = BMISCD(ICF,IDTYP,IPER,8)
+      gradChargeActive1 	 = BMISCD(ICF,IDTYP,IPER,9)
+      interceptChargeActive1	 = BMISCD(ICF,IDTYP,IPER,10)
+      gradChargeActive2 	 = BMISCD(ICF,IDTYP,IPER,11)
+      interceptChargeActive2	 = BMISCD(ICF,IDTYP,IPER,12)
+      gradChargePassive1	 = BMISCD(ICF,IDTYP,IPER,13)
+      interceptChargePassive1	 = BMISCD(ICF,IDTYP,IPER,14)
+      gradChargePassive2	 = BMISCD(ICF,IDTYP,IPER,15)
+      interceptChargePassive2	 = BMISCD(ICF,IDTYP,IPER,16)
+      gradNotChargeActive1	 = BMISCD(ICF,IDTYP,IPER,17)
+      interceptNotChargeActive1  = BMISCD(ICF,IDTYP,IPER,18)
+      gradNotChargeActive2	 = BMISCD(ICF,IDTYP,IPER,19)
+      interceptNotChargeActive2  = BMISCD(ICF,IDTYP,IPER,20)
+      gradNotChargePassive1	 = BMISCD(ICF,IDTYP,IPER,21)
+      interceptNotChargePassive1 = BMISCD(ICF,IDTYP,IPER,22)
+      gradNotChargePassive2	 = BMISCD(ICF,IDTYP,IPER,23)
+      interceptNotChargePassive2 = BMISCD(ICF,IDTYP,IPER,24)
+
+C Determine room air point temperature
+      CALL CFVAR(T_air_point,IER)
+      if(ier.eq.2)return
+
+C To get heater zone core temperature change sensor information
+      IZ=IBSN(ICF,1)
+      IS=IBSN(ICF,2)
+      IN=IBSN(ICF,3)
+      IBSN(ICF,1)=IBAN(ICF,1)
+      IBSN(ICF,2)=IBAN(ICF,2)
+      IBSN(ICF,3)=IBAN(ICF,3)
+      CALL CFVAR(T_core,IER)
+      if(ier.eq.2)return
+
+C Reset sensor parameters
+      IBSN(ICF,1)=IZ
+      IBSN(ICF,2)=IS
+      IBSN(ICF,3)=IN
+
+C Determine heat gains from grid to heater
+      allowHeating=.TRUE.
+      if(T_core.LT.T_min)then
+        heatGain=heaterCapacity
+        charging=.TRUE.
+        allowHeating=.FALSE. ! Do not allow heater to be active
+      elseif(T_core.LT.T_max)then
+        heatGain=heaterCapacity*fracHeatGain
+        charging=.TRUE.
+      else
+        heatGain=0.0
+        charging=.FALSE.
+      endif
+
+C Determine heat loss from heater to room
+      if(T_air_point.LT.T_heating_setpoint.and.allowheating)then ! Active 
+        if(charging)then                        ! Charging
+          if(T_core.LT.T_changeover_charging)then
+            gradient=gradChargeActive1
+            constant=interceptChargeActive1
+            State='ACL'
+          else
+            gradient=gradChargeActive2
+            constant=interceptChargeActive2
+            State='ACH'
+          endif
+        else                                    ! Not Charging
+          if(T_core.LT.T_changeover_notcharging)then
+            gradient=gradNotChargeActive1
+            constant=interceptNotChargeActive1
+            State='ANL'
+          else
+            gradient=gradNotChargeActive2
+            constant=interceptNotChargeActive2
+            State='ANH'
+          endif
+        endif
+      else                                      ! Passive
+        if(charging)then                        ! Charging
+          if(T_core.LT.T_changeover_charging)then
+            gradient=gradChargePassive1
+            constant=interceptChargePassive1
+            State='PCL'
+          else
+            gradient=gradChargePassive2
+            constant=interceptChargePassive2
+            State='PCH'
+          endif
+        else                                    ! Not Charging
+          if(T_core.LT.T_changeover_notcharging)then
+            gradient=gradNotChargePassive1
+            constant=interceptNotChargePassive1
+            State='PNL'
+          else
+            gradient=gradNotChargePassive2
+            constant=interceptNotChargePassive2
+            State='PNH'
+          endif
+        endif
+      endif
+      heatLoss(IZ)=gradient*T_core+constant
+
+C If heater is at lower temperature than room, 
+C do not lose heat from heater
+      If(T_core.LT.T_air_point)then
+        heatLoss(IZ)=0.0
+        heatGain=0.0 ! Is positive but currently not implemented
+      endif
+
+C Determine QFUT 
+      QFUT=heatGain-heatLoss(IZ) ! Actuates storage heater zone
+      TFUT=(BB3-BB2*QFUT)/BB1
+
+C Debug ...
+C      write(96,*)nsinc,btimef,T_core,heatGain,heatLoss(6),qfut,state        
+
+C Trace output.
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(41).NE.0) THEN
+         write(outs,'(A,F10.3,A,F10.3)')
+     &     ' Qfuture= ',QFUT,' Tfuture= ',TFUT
+         call edisp(itu,outs)
+         call edisp(itu,' Leaving subroutine bcl27')
+      END IF
+
+      RETURN
+   99 call edisp(iuout,' bcl27: data incomplete.')
+      call epwait
+      call epagend
+      STOP
+      END
+      
+C ******************** bcl28
+C Room heater linked to the storage heater of BCL27. This controller
+C injects the heat lost from the storage heater to the room zone linked
+C to the heater
+      SUBROUTINE BCL28
+      implicit none
+#include "building.h"
+#include "control.h"
+
+      COMMON/TC/ITC,ICNT
+      INTEGER ITC,ICNT
+
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      INTEGER ITCF,ITRACE,IZNTRC,itu
+
+      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      INTEGER IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+
+      COMMON/BTIME/BTIMEP,BTIMEF
+      REAL BTIMEP,BTIMEF
+
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER IUOUT,IUIN
+
+      COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
+      real BB1,BB2,BB3,TNP,QFUT,TFUT
+      integer ICF,IDTYP,IPER,IICOMP
+
+      COMMON/BC2728/heatLoss(mcom)
+      real heatLoss
+   
+      character outs*124
+      INTEGER IZ
+
+C Trace output
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(41).NE.0) then
+        call edisp(itu,' ')
+        call edisp(itu,' Entering subroutine BCL28')
+        CALL DAYCLK(IDYP,BTIMEF,ITU)
+      endif
+
+c Fatal error test
+      IF(NINT(BMISCD(ICF,IDTYP,IPER,1)).GT.0)GOTO 99
+
+C Determine QFUT 
+      QFUT=heatLoss(IBAN(ICF,1))
+      TFUT=(BB3-BB2*QFUT)/BB1
+
+C Trace output.
+      IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
+     &   ITRACE(41).NE.0) THEN
+         write(outs,'(A,F10.3,A,F10.3)')
+     &     ' Qfuture= ',QFUT,' Tfuture= ',TFUT
+         call edisp(itu,outs)
+         call edisp(itu,' Leaving subroutine BCL28')
+      END IF
+
+      RETURN
+   99 call edisp(iuout,' BCL28: data incomplete.')
+      call epwait
+      call epagend
+      STOP
+      END
+      
 C ******************** BCL99
 C BCL99 modifies the thermo-physical properties of up to three 
 C multi-layered construction(s).
@@ -6724,7 +6998,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       common/outin/iuout,iuin
       common/filep/ifil
-      common/btime/btimep,btimef
 
       COMMON/VTHP14/THRMLI(MCOM,MS,ME,7)
       COMMON/GR1D02/IADP,IVAR,FMIN,FREF,FMAX,NSTP

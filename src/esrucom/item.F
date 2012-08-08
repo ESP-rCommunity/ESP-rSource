@@ -29,8 +29,8 @@ C IER=0 OK, IER=1 problem.
       character h*72
       common/pophelp/h(60)
       COMMON/TDFGH1/NITEMS
-      COMMON/TDFGH2/GTYPES(24),GMENUS(24)
-      DIMENSION ISGGT(27),IVAL(27)
+      COMMON/TDFGH2/GTYPES(25),GMENUS(25)
+      DIMENSION ISGGT(28),IVAL(28)
       LOGICAL FOUND
       CHARACTER GMENUS*16,GTYPES*8
       CHARACTER KEY*1,ISGGT*30,FOCUS*8
@@ -89,13 +89,14 @@ C FOCUS is the generic type string, IFOC is the instance array.
 C In the case of FOCUS='ALL' IFOC is not used. 
       SUBROUTINE GENDAT(FOCUS,IFOC,FOUND,IER)
 #include "building.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
 C Related to generic items. See __ for details.
 C  GTYPES(): 8 char generic type tag for type of processing and info.
 C  GMENUS(): 16 char descriptive text for use in selection menus.
       COMMON/TDFGH1/NITEMS
-      COMMON/TDFGH2/GTYPES(24),GMENUS(24)
+      COMMON/TDFGH2/GTYPES(25),GMENUS(25)
 
 C Related to generic ITEMS.
 C  GAIDE: 40 char description of the generic item.
@@ -127,7 +128,7 @@ C       GMH='2,1,0,0,1,0,-999.0'
       LOGICAL FOUND
 
 C Pick up the arrays used for displaying current generic items.
-      NITEMS=24
+      NITEMS=25
       GTYPES(1) ='ALLCLMT'
       GMENUS(1) ='Climate data:  '
       GTYPES(2) ='CASUALT'
@@ -176,6 +177,8 @@ C Pick up the arrays used for displaying current generic items.
       GMENUS(23)='Msr Dry Bulb T:'
       GTYPES(24)='SURTM'
       GMENUS(24)='Msr surface T: '
+      GTYPES(25)='NODPRESS'
+      GMENUS(25)='Node Press Pa: '
 
 C If not looking for a specific item then return.
       IF(FOCUS(1:7).EQ.'ALLCLMT')THEN
@@ -564,6 +567,20 @@ C Measured surface temperature: one data item.
         MGMA(1)='Meas surf temperature (C): '
         FOUND=.TRUE.
 
+      ELSEIF(FOCUS(1:8).EQ.'NODPRESS')THEN
+
+C Measured node pressure: one data item.
+        GAIDE   ='Measured flow node pressure Pa'
+        GHELP(1)='Fluid flow network node pressure (Pa)'
+        GHELP(2)='measured data'
+        GMH='2,1,0,0,1,0,-999.0'
+        GDHDRT(1)='   time  | measured node'
+        GDHDRT(2)='   of day| pressure '
+        GDHDRT(3)='Meas Node Pressure:'
+        GMF(1)='REAL,1,0.0,-50.0,50.0'
+        MGMA(1)='Measured node press(Pa): '
+        FOUND=.TRUE.
+
       ELSEIF(FOCUS(1:4).EQ.'ALL ')THEN
         RETURN
 
@@ -629,6 +646,7 @@ C ******* EXGMAT
 C Extract text alternatives from gmat in the string array salt.
       subroutine exgmat(ia,SALT,ier)
 #include "building.h"
+#include "net_flow.h"
 #include "tdf2.h"
       integer iCountWords
 

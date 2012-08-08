@@ -1653,6 +1653,11 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 '(minutes). This is the time for which the component / parameter'
 'actuated by this loop will be on after the control loop sensor'
 'goes off.'
+' '
+'If only one control loop is specified then this controller just '
+'follows that loop. If the controlling loop number is specified as a'
+'-ve number then this loop will actuate a control that is inverse'
+'of the controlling loop'
 *enditem
           CALL EASKI(NCLP,' ',' No. of control loops to sense ',
           CALL EASKI(ICLN,' ',' Select control loops number',
@@ -1735,6 +1740,46 @@ C          CALL EASKI(I3,' ','Which bidirectional set to use (1-40)?',
 *enditem
           CALL EASKS(HOLD,'alpha, beta, gamma',
           CALL EASKS(HOLD,'nominal1, nominal, max, min, BDATA',
+*item EPCNTRL ideal_optimal_start
+'This control delays the startup of a control. For example if a '
+'heating loop comes on at 5am with the intent that a space will be'
+'up to temperature for occupancy at 7am, then if it takes 1.5hours'
+'to come up to temperature this loop will delay the start up '
+'to 5:30am. The time delay between heating/cooling '
+'set on and the space reaching set point (1.5 in the example above)'
+'is the same as it took the space on the previous day. '
+' '
+'Inputs to the control are the loop number and period number'
+'that is to be optimised (ie control coming on will be'
+'delayed for this period) additionally the time at which '
+'set point temperature is to be reached is also an input.'
+'Currently no sanity checks are made so the time desired '
+'temperature is to be reached should be within the control'
+'period of the specified control loop'
+'Currently this loop can only work with: '
+'control type 3 - basic proportional controller control action 12-17'
+'control type 5 - basic proportional controller control action 18-23'
+'control type 8 - two position (on/off) controller'
+*enditem
+*item EPCNTRL ideal_optimal_stop
+'This control stops a control early based on a revision of the set '
+'point. For example for a heating control if the set point is 20degc'
+'and the space takes 30min to cool down to 19degC. Then if the set '
+'point revision is -1 the heating control will switch off 30minutes'
+'before the actual off time.'
+'This controller assumes that temperature will drop to the revised '
+'set point within the period this control is active. Otherwise optimal'
+'stop will not be activated'
+'Inputs to this control are control loop and period number and '
+'acceptable revision in set point (-1 in example above)'
+' '
+'The loop to be optimised should not be the last loop on any day'
+'Currently this loop can only work with: '
+'control type 3 - basic proportional controller control action 12-17'
+'control type 5 - basic proportional controller control action 18-23'
+'control type 8 - two position (on/off) controller'
+*enditem
+      asdf
 *subroutine EFCNTRL
 *item EFCNTRL flow_ctl_menu
 'ESP-r allows you to specify controls for components in a'

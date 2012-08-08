@@ -36,9 +36,9 @@ C common blocks into the file and unit specified in COMMON/C21.
 #include "model.h"
 #include "site.h"
 #include "geometry.h"
+#include "net_flow.h"
 #include "tdf2.h"
 #include "uncertainty.h"
-#include "net_flow.h"
 #include "MultiYear_simulations.h"
 #include "bc_data.h"
 #include "esprdbfile.h"
@@ -58,7 +58,7 @@ C ICLIM,LCLIM (for climate file)
 #include "UserSimulationToggles.h"
 #include "schedule.h"
 
-      INTEGER, PARAMETER :: MSTMC=20,MSGAL=40
+      INTEGER, PARAMETER :: MSTMC=20
       
       integer lnblnk  ! function definition
 
@@ -152,8 +152,6 @@ C Primary energy and emissions conversions.
       common/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
       INTEGER :: ipconv
       REAL :: pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
-      common/ECONV/ieconv
-      INTEGER :: ieconv
       common/CONVEM/phtco2,phtnox,phtsox,pclco2,pclnox,pclsox,
      &              pltco2,pltnox,pltsox,pfnco2,pfnnox,pfnsox,
      &              pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
@@ -323,6 +321,7 @@ C An array of mass flow nodes for writing.
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
       character dstmp*24
+      character ALOC*12
 
 C Control for writing out multi-climate sim presets
       logical bMY_set_open 
