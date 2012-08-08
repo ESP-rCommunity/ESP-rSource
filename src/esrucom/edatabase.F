@@ -33,6 +33,8 @@ C  EDWINO:  Allow user to select a glazing type by name.
 C  module_opendb: open materials constructions, multi-layer constructions and
 C           optical properties databases (for utility applications).
 
+C << todo - depreciate references to IPR array and use Material names only.>>
+
 C ************* ERMLDB
 C Given file name and unit number, read  an ASCII composite 
 C construction database and return data via common block MLC.
@@ -726,6 +728,8 @@ C the matname matches.
           foundcolon=.true.
           write(testname,'(a)') PNAM(1:ipos-1)
           ltnam=lnblnk(testname)
+
+C << todo - see if we can manage without using ileghope >>
 
 C Find a matching matname, if the legacy index associated with this item
 C matches ileghope then our search is complete.  If it does not match

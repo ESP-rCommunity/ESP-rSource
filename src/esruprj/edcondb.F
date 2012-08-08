@@ -1853,6 +1853,8 @@ C geometry.h provides commons G0/G1/G2/G7/precz.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
+
+C << todo - depreciate references to IPR array and use Material names only.>>
       
       integer lnblnk  ! function definition
 
@@ -2282,6 +2284,9 @@ C close to VALZ.
                 icontinue=0  ! signal no to loop again
               endif
               RT=0.
+
+C << find alternative method to detect air gap >>
+
               DO 123, IL=1,LAYERS(IFOC)
                 matarrayindex=IPRMAT(IFOC,IL)   ! which legacy index
                 if(matarrayindex.ge.0)then
@@ -2306,7 +2311,7 @@ C If g air gap and version 1.2 then assign DRAIR
                   continue
                 endif
 
-C Calculate standard U value.
+C Calculate standard U value.  << fine method that avoids IPR >>
                 IF(IPR(IFOC,IL).EQ.0)THEN
                   RT=RT+DRAIR(IFOC,IL,1)
                 ELSEIF(IPR(IFOC,IL).EQ.-99)THEN
@@ -2399,6 +2404,9 @@ C close to VALZ.
               endif
               RT=0.
               DO 124, IL=1,LAYERS(IFOC)
+
+C << find method that avoids IPR for determining air gap position >>
+
                 matarrayindex=IPRMAT(IFOC,IL)   ! which legacy index
                 if(matarrayindex.ge.0)then
  
@@ -2429,7 +2437,7 @@ C gap R into the equation.
                   continue
                 endif
 
-C Calculate standard U value.
+C Calculate standard U value.  << Find alternative method >>
                 IF(IPR(IFOC,IL).EQ.0)THEN
                   if(IL.eq.IWHICH)then
                     RT=RT+currentm  ! use the current R

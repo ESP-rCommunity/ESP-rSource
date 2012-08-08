@@ -40,83 +40,7 @@ C     new file
 C  e) scan of exemplar models changing references from the older
 C     materials databases to the new. 
 
-C Materials common blocks:
-C matver (real) version of the database
-C matcats (integer) number of categories
-C matdbitems (integer) number of items in database
-C matcatitems (integer) number of items in each category
-C matdbdate (24 char) date stamp for the database
-C matdbdoc (248 char) documentation for the materials database
-C matcatname (32 char) for menu selection of categories
-C matcatdoc (248 char) documentation for the category
-C      real matver
-C      integer matcats,matcatitems,matdbitems
-C      character matdbdate*24,matdbdoc*248,matcatname*32,matcatdoc*248
-C      common/matheader/matver,matcats,matdbitems,matcatitems(MGCL),
-C     &  matdbdate,matdbdoc,matcatname(MGCL),matcatdoc(MGCL)
-
-C The variable matopaq indicates whether the material
-C was opaque/transparent and/or a gas (various types). This
-C allows additional data to be scanned from the file:
-C matopaq (1 char) 'o' is opaque, 't' is transparent,
-C                  'g' is gas (data+temp correction),
-C                  'h' is gas (data at 4 temps),
-C                  'a' is air (fixed resistances (not yet available)),
-C                  '-' imported from legacy
-
-C matname (32 char) for leacy materials the name is a combination of
-C   the characters 'mat_' followed by the legacy index in i3.3 format.
-C matdoc (248? char) is initially filled with the 72 char from
-C   the older name of the material.
-C    character matname*32,matdoc*248,matopaq*1
-C    common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(MGIT)
-
-C matlegindex (integer) is the original material index
-C matcatindex (integer) is pointer to index of the material category
-C matdbcon (real) is the conductivity ()
-C matdbden (real) is the density ()
-C matdbsht (real) is the specific heat ()
-
-C Traditionally emissivity and solar abs have been assumed to be the same
-C on both faces of a material. Proposal to expand data structure to allow
-C for differing values on each face.  Initially, both would be set to the
-C same value. Later the source could be updated to support differing
-C assumptions for each face.
-C matdboute (real) is the outside face long wave emissivity (-)
-C matdbine (real) is the inside face long wave emissivity (-)
-C matdbouta (real) is the outside face short wave absorbtivity (-)
-C matdbina (real) is the inside face short wave absorbtivity (-)
-C matdbdrv (real) is the diffusion resistance (?)
-C matdbthick (real) default thickness (mm) for item
-
-C So called 'G-value' calculations require the sorts of single layer optical
-C properties which ESP-r does not current hold. Also the lack of this data
-C makes it difficult to work with optical tools such as WIS
-
-C Based on WIS single layer data the following data could be held based
-C on the assumtion that the default thickness was used by the construction:
-C matirtran (real)     IR transmittance
-C matsoldrtrn  (real)  solar direct transmittance
-C matsoldrotrfl (real) outer solar direct reflectance
-C matsoldrinrfl (real) inner solar direct reflectance
-C matvistran (real)    visable transmittance
-C matvisotrfl (real)   outer visable reflectance
-C matvisinrfl (real)   inner visable reflectance
-C matrender (real)      colour rendering index
-
-C For air gaps WIS supplies some additional data (but not used if found).
-C matgapares (real)(3)  air gap resistance (i.e. DRAIR) 1=vert 2=floor/ceil 3=other
-
-C mathash is a pointer to the array index in matdatarray for a
-C   given legacy index e.g array_index = mathash(legacy_index)
-C   if return is negative then there is no pointer. Index includes
-C   zero to accommodate the implied air material.
-
-C << What further information differences are there with
-C << EnergyPlus and DOE-2?
-
-C << What further information differences are there with
-C << WIS and Window 6.1
+C Materials common blocks see documentation withing material.h file.
 
 C Categories for materials implied by UK national calculation method.
 C   Air Layer
@@ -778,7 +702,10 @@ C MATFROMBIN: Fills materials common blocks via scan of binary materials
 C database.  It should be called after an initial scan of the binary
 C file establishes that the file is ok for scanning. Other code blocks
 C can check the value of natdbitems is non-zero. If the returned value
-C of IER is zero then 
+C of IER is zero then scan was ok.
+
+<< this could be part of a legacy file conversion facility >>
+
       SUBROUTINE MATFROMBIN(IER)
 #include "building.h"
 #include "esprdbfile.h"
@@ -895,11 +822,10 @@ C If the class has some entries loop.
             endif
 
 C The MLC database will expect to find the name of the material matching the
-C description NDESC initial characters. The logic that started all matnames
-C with mat_ does not help. Writ the initial 32 char of NDESC as the name.
+C description NDESC initial characters. Write the initial 32 char of NDESC 
+C as the name.
             lex=MIN0(lnblnk(NDESC),32)
             write(matname(matdbitems),'(a)') NDESC(1:lex)
-C            write(matname(matdbitems),'(a,i3.3)') 'mat_',ncode
             write(matdoc(matdbitems),'(a)') NDESC(1:lnblnk(NDESC))
             matdbcon(matdbitems)=VAL(1)
             matdbden(matdbitems)=VAL(2)
@@ -934,7 +860,7 @@ C holder based on typcial classes (for databases with 15-17 classes)
                 matdbthick(matdbitems)=5.0
               elseif(I.eq.13)then
 
-C Assume that this category is glass. ?? WIS data
+C Assume that category 13 is glass.
                 write(matdoc(matdbitems),'(2a)') IDESC(1:lnblnk(IDESC)),
      &          ' with placeholder single layer optics'
                 matdbthick(matdbitems)=6.0
