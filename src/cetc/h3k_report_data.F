@@ -1015,6 +1015,7 @@ C     &    'Right side of window e balance  ')
      &        + qlwrsk(iZone,iSurface,2)
      &        + qswrde(iZone,iSurface,2) ) * (-1.0)
 
+
           else
 
 
@@ -1104,7 +1105,9 @@ C     &    '/ebal/window/left' ,
 C     &    'units', '(W)',
 C    &    'Left side of window e balance  ')	 
         endif H3Kwindows
+
         endif check_for_window
+
         fZoneSurfaceFlux = fZoneSurfaceFlux + fSurface_balance_net
 
 C-----------------------------------------------------------------------
@@ -1345,7 +1348,7 @@ C-----------------------------------------------------------------------
 	  
       are_gains_useful:
      &if ( bZoneHeated(iZone)  .and.
-     &     TFA(iZone) < fFreeCoolTemp ) then
+     &     TFA(iZone) <= fFreeCoolTemp ) then
 
         fZoneUsefulSolarGains    = fZoneSolarGains
         fZoneUsefulInternalGains = fZoneInternalGains

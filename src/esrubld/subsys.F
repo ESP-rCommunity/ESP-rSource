@@ -1726,8 +1726,14 @@ C========================================================================
           CALL AIM2_CONTROL(ICOMP,ZONE_infil_cond)
         
           ! Assign this to ESP-r's standard infiltration conductance variable `CVIF' so that these
-          ! loads are reflected in ESP-r's zonal energy balances.      
-           CVIF = ZONE_infil_cond 
+          ! loads are reflected in ESP-r's zonal energy balances. 
+		  ! 14-Mar-2012 BAL: Added free cooling infiltration conductance as calculated in 
+		  ! BLC01_extended. BLC01_extended is a crude idealized window controller that attempts
+		  ! to maintain the cooling setpoint temperature by matching the calculated cooling 
+		  ! capacity with an equivalent infiltration conductance, provided that 
+		  ! the outdoor temp is below the room temp within a designated range.
+           CVIF = ZONE_infil_cond + fCondFreeCool(ICOMP)
+		   
         
         endif AssignInfil
         
@@ -1889,7 +1895,7 @@ C no node in the current zone.
          ZMBI(ICOMP,4)=0.0
 
 C Check infiltration.
-         IF(CVIF.GT.0.0) THEN
+         IF(CVIF.GT.0.0) THEN		 
            ZMBI(ICOMP,1)=CVIF/1006.
            ZMBI(ICOMP,4)=ZMBI(ICOMP,4)+ZMBI(ICOMP,1)
          END IF
