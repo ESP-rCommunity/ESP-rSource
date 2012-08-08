@@ -447,45 +447,52 @@ C Also edit classification documentation.
 
 C Save materials db with all materials. First delete the
 C existing file via delfiledosorunix and then write
-C a new file via mkascimat.
+C a new file via mkascimat. If it was an older file format
+C and the user has not made any changes confirm that the
+C file is to be updated.
           IF(.NOT.MODDB)THEN
-            CALL USRMSG(' ',' No changes in db...','-')
-          ELSE
-            chgdb=.true.
-            call erpfree(ifmat,istat)  ! in case it is still open
-            call erpfree(iaf,istat)  ! in case it is still open
-
-            lltmp=' '
-            if(ipathmat.eq.0.or.ipathmat.eq.1)then
-              if(origmatwasbin)then
-                write(lltmp,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
-              else
-                write(lltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
-              endif
-C              call delfiledosorunix(lltmp,ider)
-              CALL mkascimat(IAF,lltmp,IER)
-            elseif(ipathmat.eq.2)then
-              lndbp=lnblnk(standarddbpath)
-              write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
-     &          LFMAT(1:lnblnk(LFMAT))
-              CALL mkascimat(IAF,lworking,IER)
+            dok=.true.
+            CALL ASKOK('No changes in the materials file. Do you want',
+     &        'to update it anyway:',OK,dok,nbhelp)
+            if(.NOT.OK)then
+              goto 3  ! jump without doing anything
             endif
+          endif
+          chgdb=.true.
+          call erpfree(ifmat,istat)  ! in case it is still open
+          call erpfree(iaf,istat)  ! in case it is still open
+
+          lltmp=' '
+          if(ipathmat.eq.0.or.ipathmat.eq.1)then
+            if(origmatwasbin)then
+              write(lltmp,'(2a)') LFMAT(1:lnblnk(LFMAT)),'.a'
+            else
+              write(lltmp,'(a)') LFMAT(1:lnblnk(LFMAT))
+            endif
+C            call delfiledosorunix(lltmp,ider)
+            CALL mkascimat(IAF,lltmp,IER)
+          elseif(ipathmat.eq.2)then
+            lndbp=lnblnk(standarddbpath)
+            write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
+     &        LFMAT(1:lnblnk(LFMAT))
+            CALL mkascimat(IAF,lworking,IER)
+          endif
 
 C Having read in binary and saved to ASCII the latter is now the model
 C material database.
-            if(origmatwasbin)then
-              if(ipathmat.eq.0.or.ipathmat.eq.1)then
-                write(LFMAT,'(a)') lltmp(1:lnblnk(lltmp))
-              elseif(ipathmat.eq.2)then
-                write(LFMAT,'(a)') lworking(1:lnblnk(lworking))
-              endif
-              origmatwasbin=.false.
+          if(origmatwasbin)then
+            if(ipathmat.eq.0.or.ipathmat.eq.1)then
+              write(LFMAT,'(a)') lltmp(1:lnblnk(lltmp))
+            elseif(ipathmat.eq.2)then
+              write(LFMAT,'(a)') lworking(1:lnblnk(lworking))
             endif
+            origmatwasbin=.false.
+          endif
 
 C Reset flag to show db is current with local arrays.
-            MODDB=.FALSE.
-            CALL USRMSG(' ','Changes saved...','-')
-          ENDIF
+          MODDB=.FALSE.
+          CALL USRMSG(' ','Changes saved...','-')
+
         ELSEIF(INO.EQ.NITMS-3)THEN
 
 C Add delete or copy material from db.
@@ -949,11 +956,11 @@ C or a gas (g), include additional items.
         m=20
       elseif(matopaq(index).eq.'g')then
         WRITE(PELM(12),'(A)')  'l type >>gas layer'
-        WRITE(PELM(13),'(A,F9.5)') 'm gap resistance wall:',
+        WRITE(PELM(13),'(A,F9.5)') 'm gap resistance wall    :',
      &    matgapares(index,1)
-        WRITE(PELM(14),'(A,F9.5)') 'n gap resistance horiz:',
+        WRITE(PELM(14),'(A,F9.5)') 'n gap resistance flr/ceil:',
      &    matgapares(index,2)
-        WRITE(PELM(15),'(A,F9.5)') 'o gap resistance: other',
+        WRITE(PELM(15),'(A,F9.5)') 'o gap resistance other   :',
      &    matgapares(index,3)
         m=15
       endif

@@ -262,10 +262,7 @@ C category for air and fill it with default information.
         matlegindex(matdbitems)=0
         matcatindex(matdbitems)=matcats
         mathash(0)=matdbitems  ! set up pointer from legacy index to array
-
-C << todo name it 'Air layer' rather than mat_000? >>
-C << ? include default air gap resistance values ? >>
-        write(matname(matdbitems),'(a)') 'mat_000'
+        write(matname(matdbitems),'(a)') 'air'
         write(matdoc(matdbitems),'(a)') 
      &    'Air layer with default properties'
         matdbcon(matdbitems)=0.0
@@ -277,7 +274,7 @@ C << ? include default air gap resistance values ? >>
         matdbina(matdbitems)=0.99
         matdbdrv(matdbitems)=1.0
         matdbthick(matdbitems)=25.0
-        matopaq(matdbitems)='-'
+        matopaq(matdbitems)='g'  ! set as gap type
         matirtran(matdbitems)=0.0
         matsoldrtrn(matdbitems)=0.0
         matsoldrotrfl(matdbitems)=0.0
@@ -286,9 +283,12 @@ C << ? include default air gap resistance values ? >>
         matvisotrfl(matdbitems)=0.0
         matvisinrfl(matdbitems)=0.0
         matrender(matdbitems)=0.0
+        matgapares(matdbitems,1)=0.17
+        matgapares(matdbitems,2)=0.17
+        matgapares(matdbitems,3)=0.17
       endif
 
-      matver = 1.1   ! set version of database.
+      matver = 1.2   ! set version of database.
 
 C Debug.
 C      write(6,*) 'matdbitems ',matdbitems
@@ -347,18 +347,18 @@ C Set closemat for the version.
      &  ' specific heat (J/(kg-K)'
       write(IFA,'(2A)') '#  emissivity out (-) emissivity in (-)',
      &  '#   absorptivity out (-) absorptivity in (-)'
-      write(IFA,'(A)') '#  diffusion rest (?) default thickness (mm)'
+      write(IFA,'(A)') '#  diffusion resistance (MNs g^-1m^-1)'
+      write(IFA,'(A)') '#  default thickness (mm)'
       write(IFA,'(A)') '#  flag [-] legacy [o] opaque [t] transparent'
-      write(IFA,'(A)') '#       [g] gas data+T cor [h] gas data at 4T'
+      write(IFA,'(A)') '#       [g] gas or air gap'
       write(IFA,'(A)') '#  '
-      write(IFA,'(A)') '# Transparent material attributes:'
+      write(IFA,'(A)') '# Transparent material additonal attributes:'
       write(IFA,'(2A)')'#  longwave tran (-) solar direct tran (-)',
      &  ' solar reflec out (-) solar refled in (-)'
       write(IFA,'(2A)')'#  visable tran (-) visable reflec out (-)',
      &  ' visable reflec in (-) colour rendering (-)'
       write(IFA,'(A)') '#  '
-      write(IFA,'(A)') '# Gas material attributes:'
-      write(IFA,'(A)') '#  (first 9 items the same) [g]'
+      write(IFA,'(A)') '# Gas material additional attributes:'
       write(IFA,'(A)') '#  air gap resistance for vert horiz other'
       write(IFA,'(A)') '#  '
 
@@ -704,7 +704,7 @@ C file establishes that the file is ok for scanning. Other code blocks
 C can check the value of natdbitems is non-zero. If the returned value
 C of IER is zero then scan was ok.
 
-<< this could be part of a legacy file conversion facility >>
+C << this could be part of a legacy file conversion facility >>
 
       SUBROUTINE MATFROMBIN(IER)
 #include "building.h"
@@ -992,6 +992,8 @@ C Set folder separator (fs) to \ or / as required.
       else
         fs = char(92)
       endif
+
+C << revise initial assumption that materials file was binary >>
 
 C Scan the binary file data into materials commons and if this was
 C sucessful and matver was set to 1.1 in matformbin then we can
