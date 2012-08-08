@@ -676,11 +676,14 @@ C Instanciate the surface constructions.
         write(sname(icomp,icc),'(a)') hasname(icc)
         write(smlcn(icc),'(a)') hasconstr(icc)
 
-C Loop thru all of the constructions to find the matching construction
+C Loop thru all of the known constructions to find the matching construction.
+C Also set ssmlcindex for this surface.
         imatch=0
+        ssmlcindex(iccc)=0  ! assume no matching MLC          
         do 5 ii=1,nmlc
           if(SMLCN(icc)(1:12).eq.DESC(ii)(1:12)) then
             imatch=ii
+            ssmlcindex(iccc)=ii   ! remember MLC index     
           endif
   5     continue
 
@@ -747,10 +750,10 @@ C Reset to represent UNKNOWN
         write(SOTHER(icc,2),'(i2.2)') zboundarytype(icomp,icc,2)
         write(SOTHER(icc,3),'(i2.2)') zboundarytype(icomp,icc,3)
 
+C Set connection based variables.
         SSNAME(iccc)=SNAME(icomp,icc)
         SSOTF(iccc)=SOTF(icc)
         SSMLCN(iccc)=SMLCN(icc)
-        ssmlcindex(iccc)=ssmlcindex(icc)
         SSVFC(iccc)=SVFC(icc)
         SSOTHER(iccc,1)=SOTHER(icc,1)
         SSOTHER(iccc,2)=SOTHER(icc,2)
@@ -886,6 +889,11 @@ C Connection information needs to be updated.
             IC2(ibcs)=zboundarytype(icomp,newsurf,2)
             IE2(ibcs)=zboundarytype(icomp,newsurf,3)
 
+C If there was a matching MLC set ssmlcindex.
+            if(imatch.ne.0)then
+              ssmlcindex(ibcs)=imatch  ! remember MLC index     
+            endif
+
 C Use zboundarytype to instanciate sother & ssother << to be done >>
             IF(zboundarytype(icomp,newsurf,1).EQ.0)THEN
               SOTHER(newsurf,1)='EXTERIOR'
@@ -968,6 +976,11 @@ C Connection information needs to be updated.
             ICT(ibcs)=zboundarytype(icomp,newsurf,1)  ! use boundarytype
             IC2(ibcs)=zboundarytype(icomp,newsurf,2)
             IE2(ibcs)=zboundarytype(icomp,newsurf,3)
+
+C If there was a matching MLC set ssmlcindex.
+            if(imatch.ne.0)then
+              ssmlcindex(ibcs)=imatch   ! remember MLC index     
+            endif
 
 C Use zboundarytype to instanciate sother & ssother << to be done >>
             IF(zboundarytype(icomp,newsurf,1).EQ.0)THEN
@@ -1223,6 +1236,9 @@ C nsurfinso nb of insolation sources, isurfinso() list of insolation sources.
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &       nsurfinso(MCOM),isurfinso(MCOM,MS)
 
+      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+
       integer inumXMLmetrics !counts for the number of xml metrics defined
       character cfgroot*24
       integer IFCFG
@@ -1418,7 +1434,7 @@ C For each of the META specific arrays, clear values.
             szcoords(iz,isu,3)=0.0
   53      continue
           do 52 isu=1,MS
-            szhasconstr(iz,isu)=' '
+            szhasconstr(iz,isu)=' '  ! clear MLC name and optics name
             szhasoptic(iz,isu)=' '
   52      continue
   42    continue
@@ -1433,10 +1449,10 @@ C For each of the META specific arrays, clear values.
 C Check if running in dll mode.
       call isadll(dll)
 
-C Initialise geometry data file. and set currentfile.
+C Initialise meta file. and set currentfile.
       CALL EFOPSEQ(IUNIT,LFILE,1,IER)
       IF(IER.LT.0)THEN
-        write(outs,'(3a)') 'Silent file ',LFILE(1:lnblnk(LFILE)),
+        write(outs,'(3a)') 'Meta file ',LFILE(1:lnblnk(LFILE)),
      &      ' could not be opened.'
         if(dll)then
           dllsubr='SILENTREAD'
@@ -1545,7 +1561,8 @@ C Debug.
         CALL EGETRM(OUTSTR,K,bsmpth,'W','path to BASESIMP',IER)
         goto 43
 
-C Databases
+C Databases. There may or may not be tags for specific databases. If
+C none is supplied assume the default names apply.
       elseif(WORD(1:4).eq.'*prm')then
 
         CALL EGETRM(OUTSTR,K,lworking,'W','material db',IER)
