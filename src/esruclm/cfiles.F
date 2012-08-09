@@ -69,6 +69,7 @@ C silent is a logical toggle, if .true. then do not interact with user.
 
       CHARACTER CLMLOC*30
       CHARACTER LASCI*72,outs*124,OUTSTR*124
+      integer IREAD  ! set to 1 if day demarcation lines
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -91,6 +92,7 @@ C Open the ASCII file for reading.
         return
       endif
 
+      IREAD=0  ! assume no day demarcation lines
       if(silent)then
         IREAD=1
       else
@@ -140,7 +142,7 @@ C Define the year if not already done.
           helptopic='confirm_year'
           call gethelptext(helpinsub,helptopic,nbhelp)
           CALL EASKI(IYEAR,' ',' What is the year ? ',
-     &             1900,'W',2005,'W',2003,'year',IER,nbhelp)
+     &             1900,'W',2015,'W',2001,'year',IER,nbhelp)
 
           CLMLOC=' '
           helptopic='confirm_site_name'
@@ -269,6 +271,7 @@ C read in.
       DIMENSION IMPT(24),IMSTC(7),ITUNITS(7)
       character word*32  ! for skipped column data
       integer iwidest    ! the last column to look in
+      integer IREAD  ! set to 1 if day demarcation lines
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -297,7 +300,7 @@ C Clear column association.
         ITUNITS(I)=0
    27 CONTINUE
       IMSTL=1
-      IDS=1; IDF=365; iwidest=0
+      IDS=1; IDF=365; iwidest=0; IREAD=0
 
 C Display the initial lines of the file for the user.
 
@@ -407,7 +410,7 @@ C Help text for this menu.
       call gethelptext(helpinsub,helptopic,nbhelp)
  
       INODA=-2
-   13 CALL EMENU('  Import specs',IMPT,IMPTL,INODA)
+      CALL EMENU('  Import specs',IMPT,IMPTL,INODA)
 
       IF(INODA.EQ.IMPTL)THEN
         RETURN
@@ -568,7 +571,8 @@ C next column.
             do 6 N1=1,iwidest   ! loop through the possible columns
               if(N1.eq.IMSTC(1))then
                 if(ITUNITS(1).eq.0)then
-                  CALL EGETWR(OUTSTR,K,DIF,0,0,'-','dif w/m2 reak',IER)
+                  CALL EGETWR(OUTSTR,K,DIF,0.0,0.0,'-',
+     &              'dif w/m2 reak',IER)
                   ICLM(J,1)= NINT(DIF)
                 elseif(ITUNITS(1).eq.1)then
                   CALL EGETWI(OUTSTR,K,IDIF,0,0,'-','dif w/m2 int',IER)
@@ -579,7 +583,8 @@ C next column.
                 endif
               elseif(N1.eq.IMSTC(2))then
                 if(ITUNITS(2).eq.0)then
-                  CALL EGETWR(OUTSTR,K,TMP,0,0,'-','deg C real',IER)
+                  CALL EGETWR(OUTSTR,K,TMP,0.0,0.0,'-',
+     &              'deg C real',IER)
                   ICLM(J,2)= NINT(TMP*10.0)
                 elseif(ITUNITS(2).eq.1)then
                   CALL EGETWI(OUTSTR,K,ITMP,0,0,'-','deg C int',IER)
@@ -590,7 +595,8 @@ C next column.
                 endif
               elseif(N1.eq.IMSTC(3))then
                 if(ITUNITS(3).eq.0)then
-                  CALL EGETWR(OUTSTR,K,DNR,0,0,'-','dir w/m2 real',IER)
+                  CALL EGETWR(OUTSTR,K,DNR,0.0,0.0,'-',
+     &              'dir w/m2 real',IER)
                   ICLM(J,3)= NINT(DNR)
                 elseif(ITUNITS(3).eq.1)then
                   CALL EGETWI(OUTSTR,K,IDNR,0,0,'-','dir w/m2 int',IER)
@@ -601,7 +607,8 @@ C next column.
                 endif
               elseif(N1.eq.IMSTC(4))then
                 if(ITUNITS(4).eq.0)then
-                  CALL EGETWR(OUTSTR,K,GLO,0,0,'-','glo w/m2 real',IER)
+                  CALL EGETWR(OUTSTR,K,GLO,0.0,0.0,'-',
+     &              'glo w/m2 real',IER)
                   ICLM(J,3)= NINT(GLO)
                 elseif(ITUNITS(4).eq.1)then
                   CALL EGETWI(OUTSTR,K,IGLO,0,0,'-','glo w/m2 int',IER)
@@ -612,7 +619,8 @@ C next column.
                 endif
               elseif(N1.eq.IMSTC(5))then
                 if(ITUNITS(5).eq.0)then
-                  CALL EGETWR(OUTSTR,K,VEL,0,0,'-','vel m/s real',IER)
+                  CALL EGETWR(OUTSTR,K,VEL,0.0,0.0,'-',
+     &              'vel m/s real',IER)
                   ICLM(J,4)= NINT(VEL*10.0)
                 elseif(ITUNITS(5).eq.1)then
                   CALL EGETWI(OUTSTR,K,IVEL,0,0,'-','vel m/s int',IER)
@@ -623,10 +631,11 @@ C next column.
                 endif
               elseif(N1.eq.IMSTC(6))then
                 if(ITUNITS(6).eq.0)then
-                  CALL EGETWR(OUTSTR,K,DIR,0,0,'-','w dir real',IER)
+                  CALL EGETWR(OUTSTR,K,DIR,0.0,0.0,'-',
+     &              'w dir real',IER)
                   ICLM(J,5)= NINT(DIR)
                 elseif(ITUNITS(6).eq.1)then
-                  CALL EGETWI(OUTSTR,K,IDIR,0,0,'-','w dire int',IER)
+                  CALL EGETWI(OUTSTR,K,IDIR,0,0,'-','w dir int',IER)
                   ICLM(J,5)=IVEL
                 elseif(ITUNITS(6).eq.2)then
                  CALL EGETWI(OUTSTR,K,IDIR,0,0,'-','tenths dir dg',IER)
@@ -634,13 +643,13 @@ C next column.
                 endif
               elseif(N1.eq.IMSTC(7))then
                 if(ITUNITS(7).eq.0)then
-                  CALL EGETWR(OUTSTR,K,HUM,0,0,'-','RH % real',IER)
+                  CALL EGETWR(OUTSTR,K,HUM,0.0,0.0,'-','RH % real',IER)
                   ICLM(J,6)= NINT(HUM)
                 elseif(ITUNITS(7).eq.1)then
                   CALL EGETWI(OUTSTR,K,IHUM,0,0,'-','RH % int',IER)
                   ICLM(J,6)=IHUM
                 elseif(ITUNITS(7).eq.2)then
-                  CALL EGETWR(OUTSTR,K,HUM,0,0,'-','RH 0.-1.',IER)
+                  CALL EGETWR(OUTSTR,K,HUM,0.0,0.0,'-','RH 0.-1.',IER)
                   ICLM(J,6)=NINT(HUM*100.0)
                 endif
               else
@@ -950,8 +959,6 @@ C 123-125 ground temps at 1m 3m 5m (real)  (DEG.C)
 C Each data line is | or , separated and values are a mix of reals and integers.
 C Assume that the weather file has already been opened elsewhere. Note some
 C files may have first line STN_ID if this is found skip and try next.
-
-C silent is a logical toggle, if .true. then do not interact with user.
       SUBROUTINE MKOREANCLM(LASCI,IUNIT,ACT,IER)
 #include "esprdbfile.h"
 
@@ -1355,6 +1362,7 @@ C or passed into clm module).
 
       CHARACTER CLMLOC*30,outs*124,tab*1,outs248*248
       character LCMDFL*144,clmdb*144,L144*144,lltmp*144
+      character fs*1
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -1363,6 +1371,14 @@ C For help messages
 
       helpinsub='CFILIN'  ! set for cfiles
       tab = CHAR(9)
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
 
 C Get help message set.
       helptopic='clm_file_contents'

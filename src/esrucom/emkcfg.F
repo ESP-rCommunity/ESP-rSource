@@ -36,9 +36,9 @@ C common blocks into the file and unit specified in COMMON/C21.
 #include "model.h"
 #include "site.h"
 #include "geometry.h"
+#include "net_flow.h"
 #include "tdf2.h"
 #include "uncertainty.h"
-#include "net_flow.h"
 #include "MultiYear_simulations.h"
 #include "bc_data.h"
 #include "esprdbfile.h"
@@ -58,7 +58,7 @@ C ICLIM,LCLIM (for climate file)
 #include "UserSimulationToggles.h"
 #include "schedule.h"
 
-      INTEGER, PARAMETER :: MSTMC=20,MSGAL=40
+      INTEGER, PARAMETER :: MSTMC=20
       
       integer lnblnk  ! function definition
 
@@ -152,8 +152,6 @@ C Primary energy and emissions conversions.
       common/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
       INTEGER :: ipconv
       REAL :: pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
-      common/ECONV/ieconv
-      INTEGER :: ieconv
       common/CONVEM/phtco2,phtnox,phtsox,pclco2,pclnox,pclsox,
      &              pltco2,pltnox,pltsox,pfnco2,pfnnox,pfnsox,
      &              pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
@@ -161,7 +159,8 @@ C Primary energy and emissions conversions.
       REAL :: pltco2,pltnox,pltsox,pfnco2,pfnnox,pfnsox
       REAL :: pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
  
-C IPV description via ipvdata.h.
+C IPV description via ipvdata.h. If within cfg file then the file
+C name is replaced with 'internal'.
       common/IPVF/lipvdatf
 
 C CPCALC description
@@ -192,10 +191,7 @@ C Numbers associated with one climatelist item.
 C Uncertainty analysis common.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
 
-C Anchor data.
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
-      common/anchorb/IALOC(20),lstanchr(20,60)
-      INTEGER :: naloc,ialoc,lstanchr
+C Anchor data in model.h.
 
 C Simulation parameter presets.
       common/spfldes/spfdescr(MSPS)
@@ -319,13 +315,13 @@ C An array of mass flow nodes for writing.
       character ipvaction*3  ! to instruct mkipv to do it within cfg file
       character tab*1  ! a literal tab character
 
-      dimension iav(60)
+      dimension iav(99)
 
       logical dogrnd
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
       character dstmp*24
-      character ALOC*12,ALOCLBL*12,ALOCTYP*4
+      character ALOC*12
 
 C Control for writing out multi-climate sim presets
       logical bMY_set_open 
@@ -993,6 +989,19 @@ C name of the IPV file or write the data internal to the cfg file.
           continue
         elseif(lipvdatf(1:7).eq.'UNKNOWN')then
           continue
+        elseif(lipvdatf(1:8).eq.'internal')then
+
+C If the number of IPV metrics or demand sets is greater than
+C zero. If so take common block information and include
+C it in the configuration file.
+          if(nms.gt.0.or.neds.gt.0)then
+
+C Use call mkipvdat to write into the cfg file and then clear name of
+C the external IPV file (also notify the user they can remove it).
+            ipvaction='cfg'
+            if(ipvform.eq.0) ipvform=2  ! if format not defined set to tab separated
+            call mkipvdat(ifcfg,LCFGF,ipvaction)
+          endif
         else
           WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*ipv  ',
      &      lipvdatf(1:lnipv)
@@ -1011,13 +1020,7 @@ C the external IPV file (also notify the user they can remove it).
           ipvaction='cfg'
 	  if(ipvform.eq.0) ipvform=2  ! if format not defined set to tab separated
           call mkipvdat(ifcfg,LCFGF,ipvaction)
-          if(lnipv.eq.0)then
-            continue
-          elseif(lipvdatf(1:7).eq.'UNKNOWN')then
-            continue
-          else
-	    lipvdatf=' '  ! ensure old file name is no longer referenced
-          endif
+          lipvdatf='internal'  ! ensure old file name is no longer referenced
         endif
       endif
 
@@ -1395,7 +1398,7 @@ C Re-build zone:surface to connection hash array.
 
 C If there is more than one anchor concept write them out.
       if(NALOC.gt.0)then
-        WRITE(IFCFG,'(A,i3)',IOSTAT=IOS,ERR=3) '*Anchor ',NALOC
+        WRITE(IFCFG,'(A,i2)',IOSTAT=IOS,ERR=3) '*Anchor ',NALOC
         do 44 ia=1,NALOC
           WRITE(IFCFG,'(3A,i3)',IOSTAT=IOS,ERR=3) ALOCLBL(ia),' ',
      &       ALOCTYP(ia),IALOC(ia)
@@ -1407,7 +1410,7 @@ C Write packed string of the items associated with each anchor.
           itrunc=1
           ipos=1
           do while (itrunc.ne.0)
-            call ailist(ipos,IALOC(ia),iav,60,'S',outs,loutlen,itrunc)
+            call ailist(ipos,IALOC(ia),iav,99,'S',outs,loutlen,itrunc)
             write(IFCFG,'(1x,a)',IOSTAT=ios,ERR=3) outs(1:loutlen)
             ipos=itrunc+1
           end do

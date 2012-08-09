@@ -92,6 +92,14 @@ C select one and then edit/list details.  Setup for multi-page menu.
       IPACT=CREATE
       CALL EKPAGE(IPACT)
 
+C Remind the user if they are working with a common data file.
+      if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
+        continue
+      else
+        call usrmsg('You are currently working with a common optical',
+     &    'data file. Take care if you make changes!','W')
+      endif
+
 C Initial menu entry setup.
    3  ILEN=nopt
 C      INO=-3

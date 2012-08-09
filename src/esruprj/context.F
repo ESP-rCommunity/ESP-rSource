@@ -40,7 +40,7 @@ C ITRU unit number for user output, IER=0 indicates no error.
 #include "model.h"
 #include "site.h"
 #include "geometry.h"
-#include "tdf2.h"
+#include "net_flow.h"
 #include "sbem.h"
 #include "ipvdata.h"
 
@@ -59,7 +59,8 @@ C ITRU unit number for user output, IER=0 indicates no error.
       common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
 
-C IPV description via ipvdata.h.
+C IPV description via ipvdata.h. If within cfg file then the file
+C name is replaced with 'internal'.
       common/IPVF/lipvdatf
 
 C CPCALC description
@@ -69,13 +70,6 @@ C CPCALC description
 C Variables for weekdays, and weekends.
 C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
-
-C Images.
-      character imgfmt*4  ! GIF XBMP TIF JPG
-      character imgfoc*4  ! FZON FNET FCTL FDFS
-      character limgfil*72  ! file name (extend to 144 char)
-      character imgdoc*248  ! text associated with image
-      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
 
       integer noimg  ! number of images
       integer iton   ! zero if images not yet shown, one if yes
@@ -673,13 +667,30 @@ C Dispersed fan/pump/lift/DHW demands.
 
       ELSEIF(INO.EQ.19)THEN
 
-C IPV data.
+C IPV data in the case of a legacy model cfg file (depreciate).
         if(icfgv.lt.4)then
           lr=lnblnk(cfgroot)
           if(lnblnk(lipvdatf).eq.0)then
             write(ltmp,'(2a)') cfgroot(1:lr),'.ipv'
           elseif(lipvdatf(1:7).eq.'UNKNOWN')then
             write(ltmp,'(2a)') cfgroot(1:lr),'.ipv'
+          elseif(lipvdatf(1:8).eq.'internal')then
+
+C << really we should just recommend that user updates cfg version >>
+
+C Legacy cfg with internl IPV description. If nipvassmt is still zero then
+C nothing has been created yet so initialise and save to the
+C configuration file. If there is data call ipvdat and the update the
+C configuration file when exiting.
+            if(nipvassmt.eq.0)then
+              call ipvdat('i')     ! fill with defaults
+              CALL EMKCFG('-',IER) ! remember this
+              call ipvdat('-')     ! edit data
+              CALL EMKCFG('-',IER) ! remember this
+            else
+              call ipvdat('-')
+              CALL EMKCFG('-',IER)
+            endif
           else
             ltmp=lipvdatf
           endif
@@ -1092,6 +1103,7 @@ C temporal data to be associated with a model.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "net_flow.h"
 #include "tdf2.h"
 #include "control.h"
       
@@ -1107,6 +1119,11 @@ C TDF related.
 
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       common/cctl/icascf(mcom)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/MFLOW1/NNOD,NCMP,NCNN
+      COMMON/MFLOW2/NDNAM(0:MNOD)
+      character*12 ndnam
+      CHARACTER PROMPT1*72, PROMPT2*72
 
       logical MODSIT,browse,OK,dok,unixok
       logical FOUND,XST
@@ -2017,6 +2034,28 @@ C Measured surface T (associated with a zone and up to 6 surfaces).
      &        ' ',IER)
             IF(ISUR.EQ.0.OR.ISUR.EQ.-1)GOTO 355
             write(DBSN(ITE),'(a)') sname(IC,ISUR)(1:12) 
+          elseif(TTYPE(it)(1:8).eq.'NODPRESS')then
+
+C Exit if no flow network present or no nodes defined
+            if(iairn.ne.1)then
+              call usrmsg
+     &        ('Define flow network before linking node pressures'
+     &        ,' ','W')
+            elseif(nnod.le.0)then
+              call usrmsg
+     &        ('Define flow nodes before linking node pressures'
+     &        ,' ','W')
+            else
+
+C Ask for node name if flow network is present
+              INOPT=0
+              NNPK=1
+              PROMPT1='Which node to link to this pressure'
+              PROMPT2='  '
+              call ASKMFNOD(INOPT,NNPK,INPK,PROMPT1,PROMPT2,nbhelp)
+              write(DBZN(ITE),'(a)')ndnam(inpk)(1:12)
+              write(DBSN(ITE),'(a)')'No surf reqd'
+            endif
           else
             DBZN(ITE)='ALL'
             DBSN(ITE)='ALL'            
@@ -2297,7 +2336,7 @@ C Parameters passed
       character ctldoc*248,LCTLF*72
       integer MVERT,IVERT,mcvert,icvert ! max items and current menu item
       integer iloop,ib,ld,l,idayloop,loop ! index for looping
-      integer ijd,idayn,idayno,idwk,idt,idtt,imthn,ixd   ! for counting days
+      integer ijd,idayn,idwk,idt,idtt,imthn,ixd   ! for counting days
       integer idno,istjandwk,ISDS,ISDF   ! for counting days
       integer ifoc,ifrq,ihdt,m,mj,ij,mm,loopst,ix,io,isw,ipact,irt ! for position
       integer icfoc,ictlf  ! for control domain and file unit
@@ -3329,14 +3368,12 @@ C EDDSHD Sets up shading and insolation files
 #include "model.h"
 #include "geometry.h"
 
-      common/C21/IFCFG,cfgroot,LCFGF
       common/OUTIN/IUOUT,IUIN
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      character LCFGF*72
-      character outs*248,CFGROOT*24
+      character outs*248
       logical XST,OK,DOK,unixok
 
 C For help messages

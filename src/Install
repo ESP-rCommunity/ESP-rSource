@@ -90,13 +90,12 @@ gnu_version="gcc4"         # flag indicating which version of gcc is in use
 make_msg_file=".make_msg"  # Dump make messages?
 compiler_version="none"    # append string to compilers?
 xLibs="X11"                # Default x-library
+enableFPE="no"             # FPE-exception handling?
 enable_cosim="no"          # Co-simulation with TRNSYS
 extendedDebug="no"         # Enable agressive debugging / warnings /FPE?
 use_intel="no"             # Use intel compilers?
 skip_ish_calcs="no"        # Skip update of exemplar shading files?
 reuse_ish_calcs="no"       # if yes limit re-calculation of exemplar shading files?
-clean="yes"                # Clean object files?
-unversioned="no"           # Check svn for versioning info?
 
 #-----------------------------------------------------------
 # List of targets understood by bps
@@ -142,17 +141,13 @@ if [ $# -ne 0 ]; then
       else
         case "$i" in
         -h | --help)    help=1;                    shift;;
-        --debug)        debugging=yes; clean=no;   shift;;
+        --debug)        debugging=yes;             shift;;
         -d) shift;      DESTdir=$1; input="yes";   shift;;
         --force)        preserve_espr_dir="no";    shift;;
-        --no_training | --no-training)
-                        install_training="no";     shift;;
-        --no_dbs | --no-dbs )
-                        install_dbs="no";          shift;;
-        --no_exes | --no-exes )
-                        install_exes="no";         shift;;
-        --extra-debug | --extra_debug )
-                        debugging="yes"; clean=no;
+        --no_training)  install_training="no";     shift;;
+        --no_dbs)       install_dbs="no";          shift;;
+        --no_exes)      install_exes="no";         shift;;
+        --extra-debug)  debugging="yes";
                         extendedDebugging="yes";   shift;;
         --silent)       mode="silent";             shift;;
         --xml)          xml_support=yes;           shift;;
@@ -163,21 +158,11 @@ if [ $# -ne 0 ]; then
         --X11)          xLibs="X11";               shift;;
         --GTK)          xLibs="GTK";               shift;;
         --noX)          xLibs="noX";               shift;;
-        --compiler_version |--compiler-version)
-                        shift;
-                        input="yes";
+        --compiler_version) shift; input="yes";
                         compiler_version=$1;       shift;;
         -v | --verbose) make_msg_file="";          shift;;
         --skip_ish_calcs) skip_ish_calcs="yes";    shift;;
         --reuse_ish_calcs) reuse_ish_calcs="yes";    shift;;
-        --unversioned)    unversioned="yes";       shift;;
-        --quick_rebuild) clean="no";               shift;;
-        --skip_ish_calcs | --skip-ish-calcs )
-                        skip_ish_calcs="yes";      shift;;
-        --quick_rebuild |  --quick-rebuild )
-                        clean="no";                shift;;
-        --no-svn-query | no_svn_query)
-                        unversioned="yes";       shift;;
         clean)          targets="${targets} clean" shift;;
         *)
               # check if target is "buildable",
@@ -260,7 +245,7 @@ if [ $help -eq 1 ]; then
   echo "    <NAME> to install one or more named modules (e.g."
   echo "           'Install clm' for the module clm)"
   echo " "
-  echo "    --compiler-version <STRING>: Append <STRING> to the default"
+  echo "    --compiler_version <STRING>: Append <STRING> to the default"
   echo "        compiler binaries. For instance, to invoke the compiler"
   echo "        binaries gcc-4.3, g++-4.3, and gfortran-4.3, specify "
   echo "        '--compiler_version -4.3'."
@@ -289,20 +274,14 @@ if [ $help -eq 1 ]; then
   echo " "
   echo "    --intel: Use the intel compiler suite (icc,ifort,icpc)."
   echo " "
-  echo "    --no-dbs: Skip installation of database files."
+  echo "    --no_dbs: Skip installation of database files."
   echo " "
-  echo "    --no-exes: Do not copy executable files into the"
+  echo "    --no_exes: Do not copy executable files into the"
   echo "        installation directory."
   echo " "
-  echo "    --no-training: Skip installation of training models."
+  echo "    --no_training: Skip installation of training models."
   echo " "
-  echo "    --no-svn-query: Do not query svn for versioning"
-  echo "        information. If specified, ESP-r binaries will not"
-  echo "        report the svn source they are built from. This "
-  echo "        option may speed-up the installation procedure when"
-  echo "        the svn repository temporarly unavailable."
-  echo " "
-  echo "    --skip-ish-calcs: Skip recalculation of shading files "
+  echo "    --skip_ish_calcs: Skip recalculation of shading files "
   echo "        associated with training and validation exemplars."
   echo "        This option significantly shortens the time required"
   echo "        to install training and validation files, but shading"
@@ -319,7 +298,7 @@ if [ $help -eq 1 ]; then
   echo " "
   echo "    --X11, --GTK, --noX:"
   echo "        Build ESP-r using the specified graphics library (that",
-  echo "        is: X11, GTK or noX for a console-only application)."
+  echo "        is; X11, GTK or noX for a console-only application)."
   echo " "
   echo "    --xml: Compile bps with support for direct export of results"
   echo "        in xml and csv formats. Requires the GNU libxml2 and"
@@ -951,6 +930,11 @@ case $xLibs in
                 if [ -d /usr/X11R6/lib64/X11 ] ; then
                   X11_found="yes"
                   XINSTALLDIR="/usr/X11R6"
+                else
+                  if [ -d /usr/lib64/X11 ] ; then
+                    X11_found="yes"
+                    XINSTALLDIR="/usr/lib64"
+                  fi
                 fi;;
               sun4u)
                 if [ -d /usr/X11R6/lib/64 ] ; then
@@ -968,6 +952,10 @@ case $xLibs in
             if [ -d /usr/lib/X11 ] && [ "$X11_found" = "no" ]; then
               X11_found="yes"
               XINSTALLDIR="/usr"
+            fi
+            if [ -d /usr/lib64/X11 ] && [ "$X11_found" = "no" ]; then
+              X11_found="yes"
+              XINSTALLDIR="/usr/lib64"
             fi
 
          ;;
@@ -1189,6 +1177,10 @@ esac
 # Append versioning information library
 ULIBS="$ULIBS -lversion"
 
+# Append exception-handling library (which may contain a dummy
+# function if FPE handling is disabled)
+ULIBS="$ULIBS -lfpe"
+
 # Append X11 library paths to ULIBS as required
 case $xLibs in
   X11) case $machine in
@@ -1285,6 +1277,27 @@ if [ "$enable_cosim" == "yes" ] && [ "$platform" == "mingw" ]; then
    EXE=".dll"
 fi
 
+
+#-------------- FPE ------------------------
+# Possibly enable compiler-specific exception handling
+
+# Target for primitive gcc3 exception handling
+gcc3_fpe_target="disableGccFPE"
+
+if [ "$enableFPE" == "yes" ]; then
+
+  case $compiler in
+    sunF90)   ;;
+    GNU) case $gnu_version in
+            gcc4)     gcc3_fpe_target="disableGccFPE"  ;;
+          esac;;
+  esac
+
+fi
+
+# Append GCC3 fpe target to targets list
+
+targets="$gcc3_fpe_target $targets"
 
 #===========================================
 ##### End Computer Architecture
@@ -1617,7 +1630,7 @@ echo " Installing ESP-r system. This may take some time."
  # Digest version information in Version text file
  release=`cat ${SRCdir}/Version | grep "ESP-r release " | sed "s/ESP-r release //g"`
 
- 
+
  # Try to collect svn information
  svn_info_command="svn info"
  svn_status_command="svn status"
@@ -1626,25 +1639,21 @@ echo " Installing ESP-r system. This may take some time."
  # svn_info_command="cat ~/svn_info.txt"
  # svn_status_command="cat ~svn_status.txt"
 
- if [ "$unversioned" == "no" ]; then
-   svnrevision=`$svn_info_command 2>&1 | grep "^Revision:"`
-   svnnotfound=`$svn_info_command 2>&1 | grep "command not found"`
-   notworkingcopy=`$svn_info_command 2>&1 | grep "is not a working copy"`
-   URL=`$svn_info_command 2>&1 | grep "^URL" | sed "s/URL: //g"`
-   URLcvsdude=` echo $URL | grep "https*://espr.svn[0-9]*.cvsdude.com/esp-r/"`
-   URLesprcentral=` echo $URL | grep "https*://[a-zA-Z0-9]*@*esp-r.net/esp-r/"`
- else
-   svnnotfound="yes"
- fi
+ svnrevision=`$svn_info_command 2>&1 | grep "^Revision:"`
+ svnnotfound=`$svn_info_command 2>&1 | grep "command not found"`
+ notworkingcopy=`$svn_info_command 2>&1 | grep "is not a working copy"`
 
- 
+ # Attempt to collect URL from svn info
+ URL=`$svn_info_command 2>&1 | grep "^URL" | sed "s/URL: //g"`
+
  # Ensure that the URL is from ESP-r central. Code built from
  # other repositories is to be designated 'unversioned'
+ URLcvsdude=` echo $URL | grep "https*://espr.svn[0-9]*.cvsdude.com/esp-r/"`
+ URLesprcentral=` echo $URL | grep "https*://[a-zA-Z0-9]*@*esp-r.net/esp-r/"`
 
- if [ "$unversioned"    == "yes" ]
-    [ "$svnnotfound"    != "" ]    ||
+ if [ "$svnnotfound" != "" ]    ||
     [ "$notworkingcopy" != "" ] ||
-    [ "$svnrevision"    ==  "" ] ;   then
+    [ "$svnrevision"    =  "" ] ;   then
    versioned_repository="no";
  else
    if [ "$URLcvsdude" != "" ] || [ "$URLesprcentral"  != "" ]; then
@@ -1653,7 +1662,6 @@ echo " Installing ESP-r system. This may take some time."
      versioned_repository="no"
    fi
  fi
-
 
  # If svn is available and repository is under versioning,
  # get misc svn information
@@ -1786,7 +1794,7 @@ echo " Installing ESP-r system. This may take some time."
   fi
   echo "       cXlibrary         = \"$xLibs\" "                           >> ${SRCdir}/include/build_info.h
 
-
+ 
 #--------------------------------------------------------------
 # Now write a gnome desktop file so an icon can be used to start prj
 # other variants may be required for other display managers
@@ -1847,6 +1855,7 @@ do
      libnoX) result="${SRCdir}/lib/libnoxesru.a"  ;;
      enableXML | disableXML ) result="${SRCdir}/lib/libXML.a"  ;;
      enableSQLite | disableSQLite ) result="${SRCdir}/lib/libSQLite.a"  ;;
+     disableGccFPE | enableGccFPE) result="${SRCdir}/lib/libfpe.a" ;;
      ecnv)   result="${SRCdir}/esrucnv/ecnv${EXE}"      ;;
      vew)    result="${SRCdir}/esruvew/viewer${EXE}"      ;;
      bpsdll) result="${SRCdir}/esrubps/bps.dll"   ;;
@@ -1864,7 +1873,7 @@ do
        rm $result
      fi
    fi
-
+   
    # harmonizer.exe doesn't fit the pattern for the normal make proceedure...
    if [ "$result" == "${SRCdir}/harmonizer/harmonizer.exe" ]; then
 		gfortran ${SRCdir}/harmonizer/win32_interface.f95 ${SRCdir}/harmonizer/launch_dll.f95 -fcray-pointer -o ${SRCdir}/harmonizer/harmonizer.exe
@@ -2369,12 +2378,12 @@ fi
 ##### Install and  Clean up
 cd ${SRCdir}
 echo " "
-echo -n " Installing executables... " 
+echo -n " Installing executables..."
 if [ "$debugging" = "no" ]; then
   make ESPdir=${ESPdir} EXE=${EXE} COSIMDir=${COSIMdir} strip  >/dev/null 2>&1
 fi
 make ESPBinDir=${ESPbin} EXE=${EXE} COSIMDir=${COSIMdir} InstBins  >/dev/null 2>&1
-if [ "$clean" = "yes" ]; then
+if [ "$debugging" = "no" ]; then
   make EXE=${EXE} clean  >/dev/null 2>&1
 fi
 echo "Done."

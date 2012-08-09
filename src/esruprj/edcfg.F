@@ -1231,6 +1231,7 @@ C output, IER=0 indicates no error.
 #include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
+#include "material.h"
 #include "prj3dv.h"
       
       integer lnblnk  ! function definition
@@ -1324,6 +1325,7 @@ C Flag noting whether casual gain periods are currently sorted.
       integer IRT,irop  ! for radio buttons
       integer nitems,INO ! max items and current menu item
       integer ianother  ! flag for jumping to prior or next zone
+      integer icn1      ! connection index
 
 C Passed parameters for cfgtogg
 #ifdef OSI
@@ -1531,6 +1533,7 @@ C Implement the rotations for the selected zones.
 
         elseif(IRT.eq.3)then
 
+C Search and replace an attribute.
           call serchrpl('a',itrc,iier)
           if(iier.eq.0)then
             call usrmsg('Surface attribute update',
@@ -1540,7 +1543,10 @@ C Implement the rotations for the selected zones.
      &        'was possibly unsucessful..','W')
           endif
           goto 3
+
         elseif(IRT.eq.4)then
+
+C Search and replace a construction.
           call serchrpl('c',itrc,iier)
           if(iier.eq.0)then
             call usrmsg('Construction attribute search & replace',
@@ -1549,6 +1555,29 @@ C Implement the rotations for the selected zones.
             call usrmsg('Construction attribute search & replace',
      &        'was possibly unscuessful..','W')
           endif
+
+C Re-establish the ssmlcindex array for the model so that other-side
+C changes are known about when re-entering the zone geometry editing.
+
+C Scan for matching MLC for surfaces.
+          do 30 ICOMP=1,NCOMP
+            call georead(IFIL+1,LGEOM(ICOMP),ICOMP,1,iuout,ier)
+
+C Find the index of the MLC which matches each surface.
+            DO 9994 I=1,NZSUR(icomp)
+              icn1=izstocn(icomp,i)
+              ssmlcindex(icn1)=0  ! assume no matching MLC          
+              do 5 ii=1,nmlc
+                if(SSMLCN(icn1)(1:12).eq.DESC(ii)(1:12)) then
+                  ssmlcindex(icn1)=ii   ! remember MLC index     
+                endif
+  5           continue
+ 9994       continue
+ 30       continue
+          call usrmsg(
+     &    'Surface attributes have been updated. Next go to the Zone',
+     &    'Composition->construction materials & update all zones.',
+     &    'W')
           goto 3
         endif
 
@@ -2429,7 +2458,7 @@ C Obstructions are alread in common - no need to scan.
 
 C Present zone detail editing menu.
         ianother=0
- 4 43   CALL EDZONE(ITRC,IC,ianother,IER)
+ 443    CALL EDZONE(ITRC,IC,ianother,IER)
         MODIFY=.TRUE.
 
 C If user asked for next or prior zone reset IC and call again.
@@ -3583,6 +3612,7 @@ C Try to use information gathered from file scan.
               if(lex.gt.maxw) maxw=lex  ! ensure widest string can be displayed
   76        continue
             if(maxw.gt.70) maxw=70  ! ensure list fits
+            if(maxw.lt.15) maxw=15  ! ensure title can be seen
             CALL EPICKS(IX,ivlist,outs,' ',
      &        maxw,nboflistf,listfc70,'Available files',IER,nbhelp)
             if(ix.eq.1)then

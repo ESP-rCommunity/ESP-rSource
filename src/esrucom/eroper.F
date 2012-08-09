@@ -103,13 +103,6 @@ C                 4. User controllable gain (not fully utilised as yet)
 C                -1. Occupancy as floor area per person
 C                -2. Lights in w/m^2 per floor area
 C                -3. Equipment in w/m^2 per floor area
-C               Extra types for use with HOT3000 central and zonal base loads:
-C                20. BCD-App (Appliances - linked with BCD file)
-C                21. BCD-Lights (Lights linked with BCD file)
-C                22. BCD-OElec (Other Electrical linked with BCD file)
-C                23. BCD-Occ (Occupants linked with BCD file)
-
-
 
 C ICGS,ICGF    - start and finish hours of each of the above casual gain
 C                periods
@@ -136,7 +129,6 @@ C Maximum number of casual gains/day       MC=20
       include "model.h"
       include "espriou.h"
 
-#include "bc_data.h"
 C espriou.h provides currentfile.
       
       integer lnblnk  ! function definition
@@ -167,19 +159,6 @@ C espriou.h provides currentfile.
       COMMON/P3TYPEN/ICGT(MDTY,MC)
       INTEGER NCAS,ICGS,ICGF,ICGT
       REAL CMGS,CMGL,RADC,CONC
-
-C----------------------------------------------------------------------
-C Common for data associated with HOT3000 central and zonal Base Loads.
-C - Bart, Aug 28 2010
-      common / H3K_BL_data / iH3K_Base_Loads(MCOM),
-     &                       iBCD_column(MCOM,MDTY,MC),
-     &                       fBL_fraction(MCOM,MDTY,MC),
-     &                       nGain_types(MCOM,MDTY),
-     &                       iGain_type(MCOM,MDTY,MC)
-
-      integer iH3K_Base_Loads, iBCD_column, nGain_types, iGain_type
-      real fBL_fraction
-C----------------------------------------------------------------------
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types allowed and sorted
@@ -218,7 +197,6 @@ C Error subroutine and error details for dll mode.
       ijk=0
       ireader=0
       reader=0.0
-      iH3K_Base_Loads(icomp) = 0
 
 C Check if running in dll mode.
       call isadll(dll)
@@ -527,77 +505,28 @@ C Casual gains for different day types
         K=0
         CALL EGETWI(OUTSTR,K,IREADER,0,MC,'W','gain periods',IER)
         NCAS(IDTY)=IREADER
-        nGain_types(ICOMP, IDTY) = IREADER     ! used for HOT3000 base loads 
         IF(NCAS(IDTY).EQ.0)goto 600
         DO 40 I=1,NCAS(IDTY)
           CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period gain detl',IER)
           K=0
-          if(ND.eq.7.or.ND.eq.9.or.ND.eq.12)then
-            CALL EGETWI(OUTSTR,K,IREADER,-3,30,'W','gain type',IER)
+          if(ND.eq.7.or.ND.eq.12)then
+            CALL EGETWI(OUTSTR,K,IREADER,-3,5,'W','gain type',IER)
             ICGT(IDTY,I)=IREADER
-            iGain_type(ICOMP, IDTY,I) = IREADER ! used for HOT3000 base loads
           else
             ICGT(IDTY,I)=1
           endif
-
-        ! Added support of HOT3000 Base Loads BC data file linkage with
-        ! operations file. Bart, Aug 28 2010.
-          if(ND.eq.9)then ! two additional data are read in: BCD column
-                          ! index and Base Load fraction
-
-          ! Make sure that BCD file has been defined. If not, display
-          ! error message and stop.
-            if ( .not. bBC_data_defined ) then
-              ! Display error message and stop.
-              write(outs,'(a,I2, a)') 
-     &         ' Error: Operations file for zone ',
-     &         icomp, ' expects BC data file which does not exist.'
-              call edisp(iuout,outs)
-              stop 'Fatal Error'
-            endif
-
-          ! set flag for HOT3000 Base Loads
-            iH3K_Base_Loads(icomp) = 1
-
-            CALL EGETWI(OUTSTR,K,IREADER,1,100,'W','BCD column',IER)
-            iBCD_column(ICOMP,IDTY,I) = IREADER
-            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','BL fraction',IER)
-            fBL_fraction(ICOMP,IDTY,I)=READER
-            CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain st',IER)
-            ICGS(IDTY,I)=IREADER
-            CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain fn',IER)
-            ICGF(IDTY,I)=IREADER
-
-          ! When BCD data is used with the HOT3000 base loads facility,
-          ! set CMGS and CMGL to sensible and latent fractions to account
-          ! for any base load that does not translate 100% into a 
-          ! internal heat gain (e.g., dishwasher or dryer) 
-            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain sens',IER)
-            CMGS(IDTY,I)=READER
-            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain latent',IER)
-            CMGL(IDTY,I)=READER
-
-            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain rad fr',IER)
-            RADC(IDTY,I)=READER
-            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain conv fr',IER)
-            CONC(IDTY,I)=READER
-
-          else ! default read sequence
-
-            CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain st',IER)
-            ICGS(IDTY,I)=IREADER
-            CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain fn',IER)
-            ICGF(IDTY,I)=IREADER
-            CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','gain sens',IER)
-            CMGS(IDTY,I)=READER
-            CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','gain latent',IER)
-            CMGL(IDTY,I)=READER
-            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain rad fr',IER)
-            RADC(IDTY,I)=READER
-            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain conv fr',IER)
-            CONC(IDTY,I)=READER
-          end if
-
+          CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain st',IER)
+          ICGS(IDTY,I)=IREADER
+          CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain fn',IER)
+          ICGF(IDTY,I)=IREADER
+          CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','gain sens',IER)
+          CMGS(IDTY,I)=READER
+          CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','gain latent',IER)
+          CMGL(IDTY,I)=READER
+          CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain rad fr',IER)
+          RADC(IDTY,I)=READER
+          CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain conv fr',IER)
+          CONC(IDTY,I)=READER
           IF(ICGS(IDTY,I).GT.ICGF(IDTY,I))then
 
 C Found a period out of order, warn user and carry on.
@@ -1710,23 +1639,26 @@ C Display ctlstr for day and period << convert to multi days >>.
 
  1225 CONTINUE
 
+C Write header for scheduled air flow.
+      call edisp(itru,' ')
+      call edisp(itru,'Scheduled air infiltration and ventilation: ')
+      WRITE(outs,'(2A)')
+     &'Daytype    Period     Infiltration     Ventilation     ',
+     &'From Source'
+      call edisp(itru,outs)
+      WRITE(outs,'(2A)')
+     &'           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  ',
+     &'Zone DegC'
+      call edisp(itru,outs)
+
       DO 400 IDTY=1,NBDAYTYPE
-        WRITE(OUTS,'(3A,1I4)')
-     &  'Number of air change periods for daytype ',
-     &  calentag(idty),' : ',NAC(IDTY)
-        call edisp(itru,' ')
-        call edisp(itru,outs)
         IF(NAC(IDTY).EQ.0)GOTO 400
-        call edisp(itru,
-     &'  Period   Infiltration   Ventilation     From Source')
-        call edisp(itru,
-     &'  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.')
         DO 1230 I=1,NAC(IDTY)
           acim = (VOL(ICOMP)*ACI(IDTY,I))/3600.0
           acvm = (VOL(ICOMP)*ACV(IDTY,I))/3600.0
-          WRITE(outs,'(2i3,a,i2,F9.2,F8.4,F8.2,F8.4,I4,F9.2)')
-     &    I,IACS(IDTY,I),' - ',IACF(IDTY,I),ACI(IDTY,I),acim,
-     &    ACV(IDTY,I),acvm,IPT(IDTY,I),TA(IDTY,I)
+          WRITE(outs,'(a,i2,i3,a,i2,F8.2,F8.4,F8.2,F8.4,I4,F9.2)')
+     &      calentag(idty)(1:10),I,IACS(IDTY,I),' - ',IACF(IDTY,I),
+     &      ACI(IDTY,I),acim,ACV(IDTY,I),acvm,IPT(IDTY,I),TA(IDTY,I)
           call edisp(itru,outs)
 1230    CONTINUE
  400  CONTINUE
@@ -1772,31 +1704,24 @@ C Descriptive label for a zone load or casual gain types.
       call edisp(itru,' ')
       call edisp(itru,'Notes: ')
       call edisp248(itru,oprdesc(icomp),72)
-      DO 600 IDTY=1,NBDAYTYPE
-        IF(IELF(ICOMP).EQ.1) THEN
-          WRITE(OUTS,'(3A,1I3)')'Number of ',CALENTAG(IDTY),
-     &    ' loads=',NCAS(IDTY)
-        ELSE
-          WRITE(OUTS,'(3A,1I3)')'Number of ',CALENTAG(IDTY),
-     &    ' casual gains=',NCAS(IDTY)
-        ENDIF
+      call edisp(itru,' ')
+      if(IELF(ICOMP).EQ.1)then
+        write(outs,'(a,a)')'Daytype   Gain Type    Period Sensible ',
+     &    ' Latent  Radiant  Convec p.f +/-  Power Voltage Phase'
         call edisp(itru,outs)
-        if(NCAS(IDTY).eq.0)return
-        if(IELF(ICOMP).EQ.1)then
-          write(outs,'(a,a)')'Day Gain Type    Period Sensible  ',
-     &    'Latent  Radiant  Convec p.f +/-  Power Voltage Phase'
-          call edisp(itru,outs)
-          write(outs,'(a,a)')'    No.  label   Hours  Magn.(W)  ',
-     &    'Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)'
-          call edisp(itru,outs)
-        else  
-          write(outs,'(a,a)')'Day Gain Type      Period Sensible  ',
-     &    'Latent     Radiant    Convec'
-          call edisp(itru,outs)
-          write(outs,'(a,a)')'    No.  label     Hours  Magn.(W)  ',
-     &    'Magn. (W)  Frac       Frac'
-          call edisp(itru,outs)
-        endif
+        write(outs,'(a,a)')'          No.  label   Hours  Magn.(W) ',
+     &    ' Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)'
+        call edisp(itru,outs)
+      else  
+        write(outs,'(a,a)')'Daytype   Gain Type    Period Sensible ',
+     &    ' Latent     Radiant    Convec'
+        call edisp(itru,outs)
+        write(outs,'(a,a)')'          No.  label   Hours  Magn.(W) ',
+     &    ' Magn.(W)   Fraction   Fraction'
+        call edisp(itru,outs)
+      endif
+      DO 600 IDTY=1,NBDAYTYPE
+        if(NCAS(IDTY).eq.0) goto 600
 
         IF(NCAS(IDTY).GT.0)THEN
           IF(IELF(ICOMP).EQ.1) THEN
@@ -1810,7 +1735,7 @@ C Descriptive label for a zone load or casual gain types.
                 write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),
      &            'Wm2'
               endif
-              WRITE(outs,5361) calentag(idty)(1:5),I,llbl,ICGS(IDTY,I),
+              WRITE(outs,5361)calentag(idty)(1:10),I,llbl,ICGS(IDTY,I),
      &        '-',ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
      &        CONC(IDTY,I),PF(IDTY,I),
      &        IPF(IDTY,I),PWR(IDTY,I),BVOLT(IDTY,I),IPHAS(IDTY,I)
@@ -1829,13 +1754,14 @@ C Descriptive label for a zone load or casual gain types.
                 write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),
      &            'Wm2'
               endif
-              WRITE(outs,5362) calentag(idty)(1:5),I,llbl,ICGS(IDTY,I),
+              WRITE(outs,5362)calentag(idty)(1:10),I,llbl,ICGS(IDTY,I),
      &        '-',ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
      &        CONC(IDTY,I)
 5362          FORMAT(a,I3,1x,A9,I3,a,I2,F9.1,F9.1,F11.2,F11.2)
               call edisp(itru,outs)
 1270        CONTINUE
           ENDIF
+          if(NBDAYTYPE.gt.3) call edisp(itru,' ')  ! if long list
         ENDIF
  600  CONTINUE
       RETURN
@@ -2212,9 +2138,9 @@ C ICGTYP the casual gain type (remembering negative index).
 C PERSN keeps track of the original number of people/m2.
       real CMGSA,CMGLA,RADCA,CONCA,RADFAC,CONFAC,PERSN
       integer ICGTYP,LNCAS
-      dimension CMGSA(MC,MCT),CMGLA(MC,MCT),RADCA(MC,MCT)
-      dimension CONCA(MC,MCT),RADFAC(MC,MCT),CONFAC(MC,MCT)
-      dimension ICGTYP(MC,MCT),PERSN(MC,MCT),LNCAS(MDTY)
+      dimension CMGSA(MC,7),CMGLA(MC,7),RADCA(MC,7)
+      dimension CONCA(MC,7),RADFAC(MC,7),CONFAC(MC,7)
+      dimension ICGTYP(MC,7),PERSN(MC,7),LNCAS(MDTY)
 
 C Logical for testing whether there is any difference in casual gains.
       logical bCMGSA,bCMGLA,bRADCA,bCONCA,bRADFAC,bCONFAC
@@ -2224,8 +2150,8 @@ C pfA power factor, ipfA leading/lagging, pwrA real power W,
 C bvoltA voltage, iphasA phases assoc with electrical casual gain. 
 C aparva is apparent power component VA.
 C aparvar is reactive power component VAr.
-      dimension pfA(mc,MCT),ipfA(mc,MCT),pwrA(mc,MCT),bvoltA(mc,MCT)
-      dimension iphasA(mc,MCT),aparva(mc,MCT),aparvar(mc,MCT)
+      dimension pfA(mc,7),ipfA(mc,7),pwrA(mc,7),bvoltA(mc,7)
+      dimension iphasA(mc,7),aparva(mc,7),aparvar(mc,7)
 
 C Logical for testing whether there is any difference in electrical gains.
       logical bpfA,bpwrA,bbvoltA

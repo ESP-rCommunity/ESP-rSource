@@ -49,10 +49,10 @@ C QLAT   - latent load for present (1) and future (2) time step.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "net_flow.h"
 #include "tdf2.h"
 #include "sbem.h"
 #include "power.h"
-#include "OffsiteUtilitiesPublic.h"
 
       common/tc/itc,icnt
       common/trc/itrc
@@ -123,19 +123,6 @@ C - Alex Feb. 20 2004
       COMMON/CasCou/iNumb_Gain_coupling(MCOM,MDTY),
      &     Coupling_gain_info(MCOM,MDTY,MC,6)
 
-C----------------------------------------------------------------------
-C Common for data associated with HOT3000 central and zonal base loads.
-C - Bart, Aug 28 2010
-      common / H3K_BL_data / iH3K_Base_Loads(MCOM),
-     &                       iBCD_column(MCOM,MDTY,MC),
-     &                       fBL_fraction(MCOM,MDTY,MC),
-     &                       nGain_types(MCOM,MDTY),
-     &                       iGain_type(MCOM,MDTY,MC)
-
-      integer iH3K_Base_Loads, iBCD_column, nGain_types, iGain_type
-      real fBL_fraction
-C----------------------------------------------------------------------
-
 C Common to store casual/radiative gain injections 
 C on a zone-by-zone basis. Note: the latent gain 
 C common variable has been created is a place-holder
@@ -163,8 +150,8 @@ C Variables used in trace.
       common/CASGNTRC/QP(MCOM,2,MC,MPHAS),RP(MCOM,2,MC,MPHAS)
 
 C Descriptive label for a zone load or casual gain types.
-      common/loadlabel/lodlabel(mcom,30)
       character lodlabel*6
+      common/loadlabel/lodlabel(mcom,MGTY)
 
 C Adaptive comfort commons
       COMMON/ADPCOM/PREVSTATWIN,PREVSTATFAN,PREVSTATLIGHT,TOTPWR(MCOM)
@@ -207,34 +194,12 @@ C It excludes start-up timesteps
       REAL PEZON,QEZON
       
 C Declation of heat gain from h3k models
-c      REAL H3K_HeatGainsFromModels(ICOMP)
-      REAL H3KGains
 C     Number of electric-load->gain couplings per zone,
       INTEGER iNumb_Gain_coupling
 C     Data fro each coupling
       REAL Coupling_gain_info
-C     Flag indicating type of present day (weekday/saturday/sunday)
-      INTEGER iDay_type
 C     HOT3000 storage arrays
       REAL Cas_Rad_dat, Cas_Con_dat, Cas_Lat_dat
-    
-      REAL Total_elec_CON_gain          ! Total electrical convective casual gain  (type 5)
-      REAL Total_elec_RAD_gain          ! Total electrical radiative casual gain  (type 5)
-
-C     HOT3000 Base Loads local variables
-      REAL W_BL_heat_gain                  ! Heat for the particular base load casual gain (type >20)
-      REAL Total_BL_Convective_gain        ! Total base loads convective casual gain  (type >20)
-      REAL Total_BL_Radiative_gain         ! Total base loads radiative casual gain  (type >20)
-      REAL Total_BL_electricity_Appliances ! Total electric load from base load appliances (type 20)      
-      REAL Total_BL_electricity_Lights     ! Total electric load from base load lights (type 21)
-      REAL Total_BL_electricity_Other      ! Total electric load from base load other (type 22)
-
-C     Variables for Access to the Boundary Condition Data
-      Real fConvert_current_TS_to_DAY ! returns day (float)
-      Real fGet_BC_data_by_col ! return the data for the timestep
-      Integer iInterp_method ! 1 = step-wise; 2 = linear
-      Character cContext*124 ! string to print on BCD failure
-      Character cBCD_col*248
 
 C     Flag indicating that function Elec_Net_Load_Calc(?) should 
 C     return the occupant-driven electrical load (excluding 
@@ -243,13 +208,12 @@ C     HVAC equipment)
       PARAMETER (occupant_load = 3)
 
 C.....Named constants for timerows
-      integer iPresent, iFuture
-      parameter (iPresent=1, iFuture=2) 
+      integer iFuture
+      parameter (iFuture=2) 
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
       integer imonth !current month at simulation time (to accumulate monthly results)
       integer idayn  
       logical closer
-      doubleprecision checkNAN
 
 C Trace output ?
       traceok = .true.
@@ -351,7 +315,7 @@ C new day control period:
           IPOINT=0
           if (IT.GT.ICGCS(ICOMP).AND.IT.LE.ICGCF(ICOMP)) IPOINT=1
           if (IPOINT.NE.0) then
-            call INTLUM(ICOMP,FRAC)
+            call INTLUM(ICOMP,FRAC)  ! get the fraction of control
             CGCTL(ICOMP,2,ICGCTL(ICOMP))=FRAC
           endif
         endif
@@ -362,7 +326,7 @@ C Update SHOCC-calculated equipment loads.
 
 C Use data from one of three sources.
 C NB tdf and time step file should have electrical data added to the 
-C   definition.
+C definition.
       if(ICASUAL(icomp).ne.0)then
 
 C Data in temporal database (1 column of gains). Also
@@ -729,126 +693,7 @@ C First find total number of simulation period timesteps including start-up peri
      &      QTOTEQUIP,QEQUIPCASC,QEQUIPCASR,QEQUIPLATN
           call edisp(itu,outs)
         endif
-
       else
-
-
-       IF(iH3K_Base_Loads(icomp).eq.1)then
-
-         ! process HOT3000 base loads here
-
-         ! ** NOTE: latent gains 
-         ! are presently not supported. However, if they were to be implemented, 
-         ! code similar to below would have to be added to moistr.F, subsys.F and 
-         ! drylink.F in the esrubld directory, AND NOT IN THIS FILE!!!
-
-         ! TODO: implement latent gains as described in the note above. 
-
-         ! Initialize base load variables
-         Total_BL_Convective_gain        = 0. ! (W) 
-         Total_BL_Radiative_gain         = 0. ! (W)
-         Total_BL_electricity_Lights     = 0. ! (W)
-         Total_BL_electricity_Appliances = 0. ! (W)
-         Total_BL_electricity_Other      = 0. ! (W) 
-
-         do 100 IGN=1,nGain_types(icomp,iday)
-
-           W_BL_heat_gain          = 0.   ! Zero out heat gain power for this next gain loop
- 
-         ! Casual gain types for use with HOT3000 central and zonal base loads:
-         !  20. BL-App (Appliances linked with BCD file)
-         !  21. BL-Lights (Lights linked with BCD file)
-         !  22. BL-OElec (Other Electrical linked with BCD file)
-         !  23. BL-Occ (Occupants linked with BCD file)
-
-           iColumn   = iBCD_column(icomp,iday,IGN)
-
-           ! assume valid time period for future time step
-           ! (time period is always 0 - 24 for HOT3000 base laods)
-
-           ! Set the BCD interpolation method
-           iInterp_method = 1 ! 1 = step-wise; 2 = linear
-
-           write (cContext,*) "Determining BL profile for gain type ",
-     &          iGain_Type(icomp,iday,IGN)
-
-           if(iGain_Type(icomp,iday,IGN).eq.20)then      ! BL-App
-             W_BL_heat_gain = fGet_BC_data_by_col( ! heat gain only
-     &        iColumn,
-     &        fConvert_current_TS_to_DAY(),
-     &        iInterp_method,
-     &        cContext)
-     &        * fBL_fraction(icomp,iday,IGN)  ! multiply by BL fraction (= 1 for zonal base loads, 0.0 < fBL_fraction < 1.0  for central base loads) 
-
-             Total_BL_electricity_Appliances = W_BL_heat_gain
-
-           elseif(iGain_Type(icomp,iday,IGN).eq.21)then  ! BL-Lights
-             W_BL_heat_gain = fGet_BC_data_by_col( ! heat gain only
-     &        iColumn,
-     &        fConvert_current_TS_to_DAY(),
-     &        iInterp_method,
-     &        cContext)
-     &        * fBL_fraction(icomp,iday,IGN)  ! multiply by BL fraction (= 1 for zonal base loads, 0.0 < fBL_fraction < 1.0  for central base loads) 
-
-             Total_BL_electricity_Lights = W_BL_heat_gain
-
-           elseif(iGain_Type(icomp,iday,IGN).eq.22)then  ! BL-OElec
-             W_BL_heat_gain = fGet_BC_data_by_col( ! heat gain only
-     &        iColumn,
-     &        fConvert_current_TS_to_DAY(),
-     &        iInterp_method,
-     &        cContext)
-     &        * fBL_fraction(icomp,iday,IGN)  ! multiply by BL fraction (= 1 for zonal base loads, 0.0 < fBL_fraction < 1.0  for central base loads) 
-
-             Total_BL_electricity_Other = W_BL_heat_gain
-
-           elseif(iGain_Type(icomp,iday,IGN).eq.23)then  ! BL-Occ
-             W_BL_heat_gain = fGet_BC_data_by_col( ! heat gain only
-     &        iColumn,
-     &        fConvert_current_TS_to_DAY(),
-     &        iInterp_method,
-     &        cContext)
-     &        * fBL_fraction(icomp,iday,IGN)  ! multiply by BL fraction (= 1 for zonal base loads, 0.0 < fBL_fraction < 1.0  for central base loads) 
-     
-           end if
-
-          ! HOT3000 base loads Convective gains (W)
-           Total_BL_Convective_gain = Total_BL_Convective_gain 
-     &             + CGSENC(icomp,iday,iGain_Type(icomp,iday,IGN),1)    ! sensible load fraction * convective load fraction
-     &             * W_BL_heat_gain                    ! heat gain for this time step
-
-          ! HOT3000 base loads Radiative gains (W)
-           Total_BL_Radiative_gain = Total_BL_Radiative_gain 
-     &             + CGSENR(icomp,iday,iGain_Type(icomp,iday,IGN),1)    ! sensible load fraction * radiative load fraction
-     &             * W_BL_heat_gain                    ! heat gain for this time step
-
-  100    continue  ! number of casual gains loop
-
-        ! Add radiant and convective gains from HOT3000 base loads
-        ! to ESP-r common blocks QCASC and QCASR. These data are 
-        ! actually used to calculate the heat injection into 
-        ! the building. 
-         QCASC(2)=QCASC(2) + Total_BL_Convective_gain
-         QCASR(2)=QCASR(2) + Total_BL_Radiative_gain
-
-      ! Report electricity consumption for each type of casual gain
-      ! for the zone to SiteUtilities
-
-        ! Appliances
-        fSUFuelEnergyUse(iElectricity, iUseEquipment) = 
-     &          Total_BL_electricity_Appliances
-
-        ! Lights
-        fSUFuelEnergyUse(iElectricity, iUseLights) = 
-     &          Total_BL_electricity_Lights
-
-        ! Other
-        fSUFuelEnergyUse(iElectricity, iUseOther) = 
-     &          Total_BL_electricity_Other
-     
-        call StoreH3KBaseLoadsEnergyUse(icomp, fSUFuelEnergyUse)
-
-       ELSE     ! proceed as usual with default ESP-r treatment
 
 C Data in operations file.
 C For each casual gain type set gain for current period.
@@ -924,10 +769,8 @@ C Keep track of electrical loads for trace.
               ENDIF 
             endif
           endif
- 10     continue   ! end of gain type loop
-
-       ENDIF    ! HOT3000 Base Loads conditional block
-      endif     ! UK's NCM method conditional block
+ 10     continue
+      endif
 
 C If adaptive comfort algorithm is active add sensible heat gains when on
       call eclose(PREVSTATFAN,1.00,0.01,closea)
@@ -996,6 +839,7 @@ C Radiative casual gains (W)
 
         endif          
       ENDDO
+
 
 C NOTE: add radiant & convective gains from occupant-driven
 C electric loads to ESP-r common blocks QCASR and QCASC.
@@ -1102,9 +946,6 @@ C Output the electrical results for the zone
       endif
 
   999 RETURN
-
- 1000 call edisp(iuout,' MZCASI: casual gains file read error.')
-      goto 999
       END
 
 C ******************** INTLUM ********************
@@ -1140,7 +981,6 @@ C geometry.h provides commons G0/G1/G2/precz.
 
       common/filep/ifil
       COMMON/TC/ITC,ICNT
-      common/trc/itrc
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SHOUT/ICOUT
@@ -1193,7 +1033,7 @@ C Illuminance database.
       common/ILDB/NDBENT,DBILLA(200,5),DBILLS(200,MLCOM,MDF)
 
       DIMENSION selum(MLCOM,MDF),alt(8),SENTMP(MLCOM,MDF)
-      DIMENSION QDFTMP(MLCOM,MDF),QDRTMP(MLCOM,MDF),Yb(MLCOM,MDF)
+      DIMENSION QDFTMP(MLCOM,MDF),Yb(MLCOM,MDF)
       DIMENSION Aa(MLCOM,MDF),Ab(MLCOM,MDF),Ac(MLCOM,MDF),Ya(MLCOM,MDF)
       DIMENSION zelum(MLCOM)
       DIMENSION ZFRAC(MLCOM)
@@ -1253,19 +1093,20 @@ C sensor aloved in methods 1 and 2:
 
 C Calculate external horizontal unobstructed diffuse and direct
 C illuminance:
-        call LUMEFF(QDIF,QDIR,SALT,IDYP,skyeff,suneff)
-        esun=dir*suneff
-        esky=QDIF*skyeff
+      call LUMEFF(QDIF,QDIR,SALT,IDYP,skyeff,suneff)
+      esun=dir*suneff
+      esky=QDIF*skyeff
 
 C Loop through all lighting zones
       FRAC=0.
       DO 9 N=1,NLITZ(ICOMP)
-      ZFRAC(N)=0.
+        ZFRAC(N)=0.
+
+      IF(IDFST(ICOMP,N).EQ.3)THEN
 
 C If external sensor & surface (overload CGX) is exterior
 C calculate lux.  If CGY (overloaded)=1. then calculate
 C vertical unobstructed illum otherwise use horizontal illum.
-      IF(IDFST(ICOMP,N).EQ.3)THEN
         J=INT(CGX(ICOMP,N,1))
         IF(J.EQ.0)J=1
         CALL SURADJ(ICOMP,J,IES,T,IZC,ISC,ICN,CSTR)
@@ -1296,11 +1137,12 @@ C vertical unobstructed illum otherwise use horizontal illum.
           IF(IFT.EQ.1)call edisp(itu,
      &      '  not external surface, sensor not allowed!')
         ENDIF
+        
+      ELSEIF(IDFST(ICOMP,N).EQ.5)THEN
 
 C Daylight coefficient method. Test if there is any diffuse 
 C irradiation and if solar altitude is positive
 C number. If not set photo-cell values to zero:
-      ELSEIF(IDFST(ICOMP,N).EQ.5)THEN
         call eclose(QDIF,0.00,0.01,closea)
         if(SALT.LT.0.) closea=.true.
         if(closea) then
@@ -1458,11 +1300,12 @@ C Average illumination for this light zone (in case of more than one
 C sensor in lighting zone):
         zelum(N)=suma/float(NDF(ICOMP,N))
 
+      ELSEIF(IDFST(ICOMP,N).EQ.4)THEN
+
 C Time varying illuminances calculated by Radiance. Test if there
 C is any diffuse irradiation and if solar altitude is positive
 C number. Do not carry out lighting simulation if not, and if 
 C in pre-calculation period (via call to bInStartup):
-      ELSEIF(IDFST(ICOMP,N).EQ.4)THEN
         call eclose(QDIF,0.00,0.01,closea)
         instart=.false.
         if (bInStartup())then
@@ -1510,7 +1353,6 @@ C If IBOFOT()=1, then blind/shutter is ON.
 C Check if sensor values already in illuminance database and set accuracies.
             ILLDBM=0
             AZIACC=5.
-            ALTACC=5.
             QDRACC=5.
 
             write (66,*) ' ***  Solar data for this timestep *** '
@@ -1756,6 +1598,7 @@ C Average illumination for this light zone:
         zelum(N)=suma/float(NDF(ICOMP,N))
       ELSE
 
+C IDST is somthing other than 3/4/5.
 C Loop through each sensor point, calculate the illumination due
 C to each external window and summate.  Each window will
 C have a different solar contribution depending on whether or
@@ -1843,10 +1686,11 @@ C includes the maintinence factor.
      &                     F8.1,F7.1,F6.0)
                       call edisp(itu,outs)
                     endif
+                    
+                  ELSEIF((IES.EQ.3).AND.(IDFST(ICOMP,N).EQ.2 ))THEN
 
 C If user specified DF for internal window then calculate the
 C same way as for external, but do not check for sun dir illuminance:
-                  ELSEIF((IES.EQ.3).AND.(IDFST(ICOMP,N).EQ.2 ))THEN
                     suncon=0.
                     CALL DWINVT(ICOMP,J,V,RATIO)
                     skycon=esky*DFDAT(ICOMP,N,J,I)*V

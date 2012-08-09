@@ -329,15 +329,15 @@ C gain set to zeros with no infiltration and ventilation) and exit.
             NCAS(IDTY)=3
             ICGS(IDTY,1)=0; ICGF(IDTY,1)=24
             CMGS(IDTY,1)=0.0; CMGL(IDTY,1)=0.0
-            RADC(IDTY,1)=0.5; CONC(IDTY,1)=0.5
+            RADC(IDTY,1)=0.6; CONC(IDTY,1)=0.4  ! CIBSE Guide A 6.3
             ICGT(IDTY,1)=1
             ICGS(IDTY,2)=0; ICGF(IDTY,2)=24
             CMGS(IDTY,2)=0.0; CMGL(IDTY,2)=0.0
-            RADC(IDTY,2)=0.5; CONC(IDTY,2)=0.5
+            RADC(IDTY,2)=0.3; CONC(IDTY,2)=0.7 ! CIBSE Table A6.5
             ICGT(IDTY,2)=2
             ICGS(IDTY,3)=0; ICGF(IDTY,3)=24
             CMGS(IDTY,3)=0.0; CMGL(IDTY,3)=0.0
-            RADC(IDTY,3)=0.5; CONC(IDTY,3)=0.5
+            RADC(IDTY,3)=0.4; CONC(IDTY,3)=0.6
             ICGT(IDTY,3)=3
  399      CONTINUE
 
@@ -2848,7 +2848,6 @@ C Setup and pass in parameters to win3d.
       iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
       CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &  iigl,iigr,iigt,iigb,iigw,iigwh)
-C      CALL win3d(menuchw,10,10,8,3,igl,igr,igt,igb,igw,igwh)
       igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
       igw=int(iigw); igwh=int(iigwh)
       igheight=igwh
@@ -3018,17 +3017,21 @@ C Title and labels.
       call wstxpt(iid1,iid2,'Infiltration')
       iid1=igr-100; iid2=igt-65;
       call wstxpt(iid1,iid2,'Ventilation')
-      call pixel2u(igl+120,igt-69,gx,gy)
+      iid1=igl+100; iid2=igt-69;
+      call pixel2u(iid1,iid2,gx,gy)
       iupdown=0
       isym=0
       CALL etplot(gx,gy,iupdown,isym)
-      call pixel2u(igl+180,igt-69,gx,gy)
+      iid1=igl+180; iid2=igt-69;
+      call pixel2u(iid1,iid2,gx,gy)
       iupdown=1
       CALL etplot(gx,gy,iupdown,isym)
-      call pixel2u(igr-120,igt-69,gx,gy)
+      iid1=igr-120; iid2=igt-69;
+      call pixel2u(iid1,iid2,gx,gy)
       iupdown=0
       CALL etplot(gx,gy,iupdown,isym)
-      call pixel2u(igr-180,igt-69,gx,gy)
+      iid1=igr-180; iid2=igt-69;
+      call pixel2u(iid1,iid2,gx,gy)
       iupdown=-4
       CALL etplot(gx,gy,iupdown,isym)
 
@@ -4842,11 +4845,10 @@ C Clear and setup plot area.
       CALL startbuffer()
 
 C Setup and pass in parameters to win3d.
-      iiw1=10; iiw2=10; iiw3=3; iiw4=3; iimenu=menuchw
+      iiw1=10; iiw2=10; iiw3=8; iiw4=3; iimenu=menuchw
       iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
       CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &  iigl,iigr,iigt,iigb,iigw,iigwh)
-C      CALL win3d(menuchw,10,10,8,3,igl,igr,igt,igb,igw,igwh)
       igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
       igw=int(iigw); igwh=int(iigwh)
       igheight=igwh
@@ -5144,51 +5146,58 @@ C Title and labels.
       isize=1
       ifont=1
       call viewtext(outs,iside,isize,ifont)
-      iid1=igl+20; iid2=igt-65;
+      iid1=igl+20; iid2=iigt-65;
       call wstxpt(iid1,iid2,' Total sensible')
-      iid1=igr-100; iid2=igt-65;
+      iid1=igr-100; iid2=iigt-65;
       call wstxpt(iid1,iid2,'Total latent')
-      iid1=igl+120; iid2=igt-69;
-      call pixel2u(igl+120,igt-69,gx,gy)
+      iid1=igl+120; iid2=iigt-69;
+      call pixel2u(iid1,iid2,gx,gy)
       iupdown=0
       isym=0
       CALL etplot(gx,gy,iupdown,isym)
-      call pixel2u(igl+180,igt-69,gx,gy)
+      iid1=igl+180; iid2=iigt-69;
+      call pixel2u(iid1,iid2,gx,gy)
       iupdown=1
       CALL etplot(gx,gy,iupdown,isym)
-      call pixel2u(igr-120,igt-69,gx,gy)
+      iid1=igr-120; iid2=iigt-69;
+      call pixel2u(iid1,iid2,gx,gy)
       iupdown=0
       CALL etplot(gx,gy,iupdown,isym)
-      call pixel2u(igr-180,igt-69,gx,gy)
+      iid1=igr-180; iid2=iigt-69;
+      call pixel2u(iid1,iid2,gx,gy)
       iupdown=-4
       CALL etplot(gx,gy,iupdown,isym)
 
 C << Hard coded casual gain types revise >>
       do 300 I=1,3
         write(outs,'(2a)')
-     &        lodlabel(ICOMP,I)(1:lnblnk(lodlabel(ICOMP,I))),' sensible'
+     &    lodlabel(ICOMP,I)(1:lnblnk(lodlabel(ICOMP,I))),' sensible'
         IY=igt-(12*I)-18
         iid1=igl+20; iid2=IY;
         call wstxpt(iid1,iid2,outs)
         write(outs,'(2a)')
-     &          lodlabel(ICOMP,I)(1:lnblnk(lodlabel(ICOMP,I))),' latent'
+     &    lodlabel(ICOMP,I)(1:lnblnk(lodlabel(ICOMP,I))),' latent'
         iid1=igr-100; iid2=IY;
         call wstxpt(iid1,iid2,outs)
         if (COLOK)then
           iicol=i
           call winscl('z',iicol)
         endif
-        call pixel2u(igl+120,IY-4,gx,gy)
+        iid1=igl+120; iid2=IY-4;
+        call pixel2u(iid1,iid2,gx,gy)
         iupdown=0
         isym=0
         CALL etplot(gx,gy,iupdown,isym)
-        call pixel2u(igl+180,IY-4,gx,gy)
+        iid1=igl+180; iid2=IY-4;
+        call pixel2u(iid1,iid2,gx,gy)
         iupdown=1
         CALL etplot(gx,gy,iupdown,isym)
-        call pixel2u(igr-120,IY-4,gx,gy)
+        iid1=igr-120; iid2=IY-4;
+        call pixel2u(iid1,iid2,gx,gy)
         iupdown=0
         CALL etplot(gx,gy,iupdown,isym)
-        call pixel2u(igr-180,IY-4,gx,gy)
+        iid1=igr-180; iid2=IY-4;
+        call pixel2u(iid1,iid2,gx,gy)
         iupdown=-4
         CALL etplot(gx,gy,iupdown,isym)
         if (COLOK)then
@@ -5198,11 +5207,11 @@ C << Hard coded casual gain types revise >>
  300  continue
 
       ioff=(int(ipltwd)/3)
-      iid1=igl+ioff; iid2=igt-10;
+      iid1=igl+ioff; iid2=iigt-10;
       call wstxpt(iid1,iid2,CALENTAG(IDAY))
-      iid1=iglsat+ioff; iid2=igt-10;
+      iid1=iglsat+ioff; iid2=iigt-10;
       call wstxpt(iid1,iid2,CALENTAG(JDAY))
-      iid1=iglsun+ioff; iid2=igt-10;
+      iid1=iglsun+ioff; iid2=iigt-10;
       call wstxpt(iid1,iid2,CALENTAG(KDAY))
       call forceflush()
 
@@ -5341,8 +5350,8 @@ C Increment ipcount for each new period.
             ICGF(IDTY,ipcount) = iperf(ij)
             CMGS(IDTY,ipcount) = 0.0
             CMGL(IDTY,ipcount) = 0.0
-            RADC(IDTY,ipcount) = 0.5
-            CONC(IDTY,ipcount) = 0.5
+            RADC(IDTY,ipcount) = 0.6
+            CONC(IDTY,ipcount) = 0.4  ! CIBSE Guide A 6.3
             ICGT(IDTY,ipcount) = 1
   71      continue
         endif
@@ -5355,8 +5364,8 @@ C Increment ipcount for each new period.
             ICGF(IDTY,ipcount) = iperf(ij)
             CMGS(IDTY,ipcount) = 0.0
             CMGL(IDTY,ipcount) = 0.0
-            RADC(IDTY,ipcount) = 0.5
-            CONC(IDTY,ipcount) = 0.5
+            RADC(IDTY,ipcount) = 0.3
+            CONC(IDTY,ipcount) = 0.7 ! CIBSE Table A6.5
             ICGT(IDTY,ipcount) = 2
   72      continue
         endif

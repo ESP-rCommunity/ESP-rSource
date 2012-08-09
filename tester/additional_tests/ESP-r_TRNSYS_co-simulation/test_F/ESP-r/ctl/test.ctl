@@ -4,9 +4,9 @@ no zone control description supplied
    1  # No. of functions
 * Control function    1
 # senses dry bulb temperature in box.
-    1    0    0    0  # sensor data
+    0    0    0    0  # sensor data
 # actuates mixed convective/radiant flux in box.
-   -2    1   50  # actuator data
+    0    0   0  # actuator data
     1  # all daytypes
     1  365  # valid Fri-01-Jan - Fri-31-Dec
      1  # No. of periods in day: weekdays    

@@ -939,7 +939,7 @@ C of the zones that do receive infiltration.
       CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' AIM-2 data',IER)
       IF(IER.NE.0)goto 1000
       K=0
-      CALL EGETWI(OUTSTR,K,IVAL,1,30,'F',' num zones with infil',IER)   ! 24-Feb-2011 BAL: increased max number of zones receiving infil. to 30
+      CALL EGETWI(OUTSTR,K,IVAL,1,10,'F',' num zones with infil',IER)
       if(IER.NE.0)then
         call edisp(IUOUT,' Cannot read num of zones with infil.')
         goto 1000
@@ -967,7 +967,7 @@ C Check allocation was sucessful
  
         IF (ALLOCATED(AIM2_zone_infil)) THEN
           DO ICOMP=1,AIM2_num_zones_infil
-            CALL EGETWI(OUTSTR,K,IVAL,1,30,'F',       ! 24-Feb-2011 BAL: increased max number of zones receiving infil. to 30
+            CALL EGETWI(OUTSTR,K,IVAL,1,10,'F',
      &          ' zone receiving infil',IER)
             if(IER.NE.0)then
               call edisp(IUOUT,' zone receiving infil.')

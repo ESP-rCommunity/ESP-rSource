@@ -14,10 +14,9 @@
 #define MAX_INSERTSTATEMENT 10
 #define MAX_UPDATESTATEMENT 1
 
-//Hardcoded available bin type (annual/monthly/seasonal)
+//Hardcoded available bin type (annual/monthly)
 #define BIN_MONTH_TYPE     0
 #define BIN_ANNUAL_TYPE    1
-#define BIN_SEASONAL_TYPE  2
 
 /* ******************************************************************
 ** SQLite3 Return codes (http://www.sqlite.org/)

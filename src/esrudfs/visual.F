@@ -436,6 +436,14 @@ C ********************* VISMAK *********************
 C VISMAK - create images for specified views and frames in an animation,
 C  IFRAME=-1 if cfd stand alone.
 
+C imgtyp determines the format of the generated image:
+C  imgtyp = 0 : 2d slice drawn on screen.
+C  imgtyp = 1 : 2d slice in Xbitmap format to file.
+C  imgtyp = 2 : 2d slice in Xpixmap format to file.
+C  imgtyp = 3 : 3d image drawn on screen.
+C  imgtyp = 4 : TECplot data file.
+C  imgtyp = 5 : ParaView data file.
+
       subroutine VISMAK(ICOMP,IFRAME)
 #include "building.h"
       
@@ -500,7 +508,11 @@ C the frame number.
             write (TLBIT,'(a,a4)') name(1:lnblnk(name)),'.xpm'
             write (outs,'(2a)') 'Creating xpm image ',TLBIT(1:16)
           endif
-          call edisp(iuout,outs)
+          if(imgtyp.eq.0.or.imgtyp.eq.3)then
+            continue  ! drawing on screen no need to provide feedback
+          else
+            call edisp(iuout,outs)
+          endif
           write(LBIT,'(a)') TLBIT(1:16)
 
 C Set common data (and parameters passed directly).

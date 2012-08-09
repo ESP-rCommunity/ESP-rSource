@@ -120,8 +120,8 @@ C CFD commons.
 C Flags for generic data retrieval routines:
       COMMON/IGETFLG/IOCUPF,ialstused,IROC
 
-C Optional title for graph and up to 5 other labels and their positions.
-      common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
+C Optional title for graph and up to 10 other labels and their positions.
+      common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
@@ -252,11 +252,9 @@ C have not been read in.
       IOPT=2
       graftitle=' '
       ngrlbl=0
-      grlbl(1)=' '
-      grlbl(2)=' '
-      grlbl(3)=' '
-      grlbl(4)=' '
-      grlbl(5)=' '
+      grlbl(1)=' '; grlbl(2)=' '; grlbl(3)=' '; grlbl(4)=' '
+      grlbl(5)=' '; grlbl(6)=' '; grlbl(7)=' '; grlbl(8)=' '
+      grlbl(9)=' '; grlbl(10)=' '
 
 C Set CFD visualization parameter files to UNKNOWN
       do 8 I=1,MCOM
@@ -380,6 +378,9 @@ C Setup and pass in parameters to win3d.
         ngset=0
         nzonec=0
         call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
+
+c Debug
+C        write(6,*) 'colurs ',nifgrey,ncset,ngset,nzonec
         call startbuffer()
       ENDIF
       ITRC=1

@@ -58,18 +58,16 @@ c AND THE CURRENTLY ASSIGNED CLIMATE FILE NAME ARE ALSO SAVED.
       COMMON/PREC3I/CHARDM(MCOM,MS)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),
      &                NGAPS(MCOM,MS),NPGAP(MCOM,MS,MGP)
-      COMMON/PREC10/NWINS(MCOM,MS)
       common/PREC18/ZTRANA(MCOM)
 
       COMMON/HCTHRY/IHCT,ICOREXHCT
 
-      dimension izdum(MZS)
       CHARACTER*72 LCFGF
-      CHARACTER ZNPAD*15,outs248*248
+      CHARACTER ZNPAD*15
 C      character doit*248
       character llclmdb*144  ! for expanded climate file name
       CHARACTER*6 NAME
-      character outs*124,tfile*72,cfgroot*24,longtfile*144
+      character outs*124,cfgroot*24,longtfile*144
       character fs*1
       logical concat,unixok
       integer lndbp  ! length of weather folder path
@@ -96,9 +94,6 @@ C        call runit(doit,'-')
 C 10   continue
 
 C Clear dummy zones variable (in place of old NDOORS array).
-      do 42 jj=1,MCOM
-        izdum(jj)=0
-  42  continue
       IUNIT = IFIL + 2
       IREC = MNRS+2
 
@@ -137,81 +132,88 @@ C folder.
 
 C Write one operation file name per record.
       DO 20 I = 1,NCOMP
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LPROJ(I)
-      IREC = IREC + 1
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LPROJ(I)
+        IREC = IREC + 1
    20 CONTINUE
 
 C Write one geometry file name per record.
       DO 40 I = 1,NCOMP
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LGEOM(I)
-      IREC = IREC + 1
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LGEOM(I)
+        IREC = IREC + 1
    40 CONTINUE
 
 C Write one shading file name per record.
       DO 60 I = 1,NCOMP
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LSHAD(I)
-      IREC = IREC + 1
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LSHAD(I)
+        IREC = IREC + 1
    60 CONTINUE
 
 C Write one construction file name per record.
       DO 80 I = 1,NCOMP
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LTHRM(I)
-      IREC = IREC + 1
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)LTHRM(I)
+        IREC = IREC + 1
    80 CONTINUE
 
 C Record width is not sensitive to the number of surfaces in the model
 C extra records are used.
+
+C << give a minimum width of 36 the logic below could be revised to
+C << use multiples of 36 rather than 20.
       XW=FLOAT(NCON)/20.
       N=INT(XW)+1
       DO 100 I = 1,N
-      J1 = I*20-19
-      J2 = I*20
-      IF (I .EQ. N)  J2 = NCON
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (IC1(J),J=J1,J2)
-      IREC = IREC + 1
+        J1 = I*20-19
+        J2 = I*20
+        IF (I .EQ. N)  J2 = NCON
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (IC1(J),J=J1,J2)
+        IREC = IREC + 1
   100 CONTINUE
 
       DO 110 I = 1,N
-      J1 = I*20-19
-      J2 = I*20
-      IF (I .EQ. N)  J2 = NCON
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (IE1(J),J=J1,J2)
-      IREC = IREC + 1
+        J1 = I*20-19
+        J2 = I*20
+        IF (I .EQ. N)  J2 = NCON
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (IE1(J),J=J1,J2)
+        IREC = IREC + 1
   110 CONTINUE
 
       DO 120 I = 1,N
-      J1 = I*20-19
-      J2 = I*20
-      IF (I .EQ. N)  J2 = NCON
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (ICT(J),J=J1,J2)
-      IREC = IREC + 1
+        J1 = I*20-19
+        J2 = I*20
+        IF (I .EQ. N)  J2 = NCON
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (ICT(J),J=J1,J2)
+        IREC = IREC + 1
   120 CONTINUE
 
       DO 130 I = 1,N
-      J1 = I*20-19
-      J2 = I*20
-      IF (I .EQ. N)  J2 = NCON
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (IC2(J),J=J1,J2)
-      IREC = IREC + 1
+        J1 = I*20-19
+        J2 = I*20
+        IF (I .EQ. N)  J2 = NCON
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (IC2(J),J=J1,J2)
+        IREC = IREC + 1
   130 CONTINUE
 
       DO 140 I = 1,N
-      J1 = I*20-19
-      J2 = I*20
-      IF (I .EQ. N)  J2 = NCON
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (IE2(J),J=J1,J2)
-      IREC = IREC + 1
+        J1 = I*20-19
+        J2 = I*20
+        IF (I .EQ. N)  J2 = NCON
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (IE2(J),J=J1,J2)
+        IREC = IREC + 1
   140 CONTINUE
 
 C Write out 15 char string for zone name (so reading logic the same).
       DO 150 I = 1,NCOMP
         write(znpad,'(a,a)')zname(I),'   '
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)znpad
-      IREC = IREC + 1
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)znpad
+        IREC = IREC + 1
   150 CONTINUE
 
 C Record width is slightly sensitive to the number of zones. A second
 C record is used if more than 20 zones.
+
+C << Later on zone based arrays are written to a single record so this
+C << two line logic is not needed.
+
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)  (NCONST(I),I=1,NCP)
       IREC = IREC + 1
       IF(NCOMP.LE.20)goto  5
@@ -224,16 +226,18 @@ C record is used if more than 20 zones.
   160 CONTINUE
 
       DO 170 I = 1,NCOMP
-      NN = NCONST(I)
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000) (NGAPS(I,J),J=1,NN)
-      IREC = IREC + 1
+        NN = NCONST(I)
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000) (NGAPS(I,J),J=1,NN)
+        IREC = IREC + 1
   170 CONTINUE
 
       DO 180 I = 1,NCOMP
       NN = NCONST(I)
       DO 190 J = 1,NN,5
 
-C DUMP FOR ALL THREE POSSIBLE AIR GAPS
+C Dump for all MGP possible air gaps. Record width is sensitive to the
+C current value of MGP. Thus if MGP is 10 then minimum record width
+C is 10*5.
         if(J.LE.(NN-5))then
           WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)
      &     (NPGAP(I,J,K),K=1,MGP),(NPGAP(I,J+1,K),K=1,MGP),
@@ -283,7 +287,9 @@ C sensitive to the number of surfaces in the zone.
   230 CONTINUE
 
 C Write one data record per zone.
+
 C << more items could be written into this e.g. ZBASEA and ZTRANA >>
+
       DO 240 I=1,NCOMP
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)zonetotsurfacearea(I)
       IREC=IREC+1
@@ -567,6 +573,8 @@ c library.
       endif
       IREC=IREC+1
       IF(SCNAME(1:5).EQ.'NONE ')goto 5
+
+C << another section writing zone info to two records >>
       NCP=NCOMP
       IF(NCOMP.GT.20)NCP=20
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)(ICASCF(I),I=1,NCP)
@@ -643,6 +651,7 @@ C ndbph is number of data blocks/hr for monitor function.
 C#include "cfd.h"
 #include "monitor.h"
 #include "control.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
       COMMON/TC/ITC,ICNT
@@ -801,7 +810,7 @@ C radiant and latent W for future and present in each zone.
      &  ctlperlightl(MCOM,2),ctlperequipc(MCOM,2),ctlperequipr(MCOM,2),
      &  ctlperequipl(MCOM,2) 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
-      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
 C Local variables for casual gains.
       integer icurrentday  ! julian day
@@ -2438,8 +2447,6 @@ C Energy balance.
      &           qcri(MCOM,MS,2),qpltri(MCOM,MS,2),qstore(MCOM,MS,2),
      &           qconde(MCOM,MS,2),qconve(MCOM,MS,2),qlwrde(MCOM,MS,2),
      &           qlwrbd(MCOM,MS,2),qlwrsk(MCOM,MS,2),qswrde(MCOM,MS,2)
-
-      COMMON/BTIME/BTIMEP,BTIMEF
 
       LOGICAL IVTHPS,IVTHPZ
       real zoar  ! local for zonetotsurfacearea(MCOM)

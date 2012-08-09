@@ -67,6 +67,8 @@ C Declare  calling parameter types
       UsePassedCommandLine = .true.
       
       END SUBROUTINE SetPassedCommandLine
+
+
 C************************************************************************************
 C GetCommandLineArguments () Parses the command line
 C If the command line is passed in (for co-simulation with TRNSYS) 
@@ -82,9 +84,6 @@ C Common blocks
       COMMON/APPNAME/cAppName
 C Timeout information
       COMMON/TIMEOUT/sTimeout,iTimeoutFlag
-C Flag for H3K customizations 
-      common/H3KCustom/bEnableH3kExtensions
-      logical bEnableH3kExtensions
 C Declare  calling parameter types
       integer, intent(out)  ::  termtype,iappw,iappx,iappy,iverb
       integer, intent(in)  ::  module
@@ -92,17 +91,18 @@ C Declare  calling parameter types
       character(144), intent(out)  :: inf, inf2
       character(16), intent(out)   :: zone,act
       character(72), intent(out)   :: actf,ascif
-      character(12), intent(out)	  :: aut,aim
-      character(4), intent(out)	  :: browse
-      character(8), intent(out)	  :: sps
+      character(12), intent(out)   :: aut,aim
+      character(4), intent(out)    :: browse
+      character(8), intent(out)    :: sps
 
 C Variable declaration
-      character(8)  :: ModuleName
+      character(8)   :: ModuleName
       character(12)  :: cAppName
-      character(72)  :: argument,sTimeout,prog
+      character(72)  :: argument,sTimeout
+      character(48)  :: prog
       character(8)   :: mode
       character(24)  :: appn
-      character(248) :: outs !If this is only 248 clm crashes on install if pathnames are long
+      character(348) :: outs !If this is only 248 clm crashes on install if pathnames are long
       integer :: m, i, IOS, IUOUT,IUIN, iXavail, pos
       integer :: iTimeoutFlag
       integer :: err
@@ -124,7 +124,7 @@ C Variable initialisation
       iappx = 0
       iappy = 0
       aut  = 'interactive'
-      argument = ' '
+
       IOS=0  ! initial value
       act = 'NONE'
       aim = 'NONE'
@@ -135,7 +135,7 @@ C Variable initialisation
       inf2  = 'UNKNOWN'
       actf = 'UNKNOWN'
       ascif  = 'UNKNOWN'
-      if (module.eq.CONST_PARRES)	act = 'UNKNOWN'
+      if (module.eq.CONST_PARRES) act = 'UNKNOWN'
       if (module.eq.CONST_PARSIM) aut  = 'default'
 
 
@@ -158,9 +158,7 @@ C into binary, and set default terminal type as necessary
       else 
         call getarg(i,prog)
       end if
-      !write(*,*)'prog: ',prog
       call findapp(prog,appn)
-      !write(*,*)'using app: ',appn
 
       if(m.eq.0)then
         return
@@ -173,8 +171,6 @@ C into binary, and set default terminal type as necessary
           else
             call getarg(i,argument)
           end if
-          !write(*,*)'i: ',i,'  m: ',m
-          !write(*,*)'argument: ',argument
           if(i.gt.m)EXIT Parseloop
           if(argument(1:5).eq.'-help')then
             call parpsfh(appn)
@@ -187,10 +183,6 @@ C Display version information and then quit
 C Display detailed build information and then quit
             CALL ESPrVersion("details",cAppName,IUOUT)
             stop
-C Enable h3k-specific customizations that may disrupt general esp-r functionality
-C (disabled by default!)            
-          elseif(argument(1:4).eq.'-h3k') then 
-            bEnableH3kExtensions = .true. 
           elseif(argument(1:3).eq.'-vv')then
             iverb = 2   ! tell application to run with debug verbose
           elseif(argument(1:2).eq.'-v')then
@@ -295,10 +287,9 @@ C (disabled by default!)
               end if
 C If act is asci2bin or bin2asci read ascii file name
               if(act(1:8).eq.'asci2bin'.or.act(1:8).eq.'bin2asci')then
-                write(*,*)'asci2bin'
-                i=i+1
-                if (UsePassedCommandLine) then 
-                  call EGETW(PassedCommandLine,pos,actf,'-',
+              i=i+1
+              if (UsePassedCommandLine) then 
+                call EGETW(PassedCommandLine,pos,actf,'-',
      &                   'argument',err)
                 else 
                   call getarg(i,actf)
@@ -328,7 +319,6 @@ C If act is asci2bin or bin2asci read ascii file name
                 call getarg(i,aut)
               end if
             else if (module.eq.CONST_PARCLM) then
-              write(*,*)'in parclm'
               i=i+1
               if (UsePassedCommandLine) then 
                 call EGETW(PassedCommandLine,pos,act,'-',
@@ -529,13 +519,9 @@ C Only give feedback if non-DOS.
      &      ,' with action ',act(1:lnblnk(act))
         else if (module.eq.CONST_PARCLM) then
           outs=' '
-          write(*,*)act
-          write(*,*)aut
-          write(*,*)ascif
-!          write(outs,'(6a)') 'and action ',act(1:lnblnk(act)),
-!     &      ' in ',aut,' mode using/making file ',
-!     &      ascif(1:lnblnk(ascif))
-!          write(*,*)outs
+          write(outs,'(6a)') 'and action ',act(1:lnblnk(act)),
+     &      ' in ',aut,' mode using/making file ',
+     &      ascif(1:lnblnk(ascif))
         else if (module.eq.CONST_PARSE2R) then
           write(outs,'(12a)') 'Starting ',appn(1:lnblnk(appn)),
      &      ' in mode ',mode(1:lnblnk(mode)),' with file ',
@@ -610,6 +596,7 @@ C Errors.
       endif
       return
       END SUBROUTINE GetCommandLineArguments
+
 
 C************************************************************************************
       END MODULE PARSE_COMMAND_LINE
@@ -686,9 +673,11 @@ C Declare  calling parameter types
       module = CONST_PARPSF
       call GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &             iverb,sps,data1,data2,data3)
       
       end subroutine parpsf
+
+
 C***********************************************************************************************************************
 C ********* parpsff
 C parpsff supports terminal, size and two file arguments
@@ -711,11 +700,12 @@ C Declare  calling parameter types
       module = CONST_PARPSFF
       call GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,infa,infb,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &             iverb,sps,data1,data2,data3)
       
       end subroutine parpsff
+
+
 C***********************************************************************************************************************
-C ********* parres
 C parres allows terminal, size, results file, action and silent arguments
 C  to be passed to res from the invocation line.  
 C***********************************************************************************************************************
@@ -741,8 +731,10 @@ C Local variables for GetCommandLineArguments.
       module = CONST_PARRES
       call GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &             iverb,sps,data1,data2,data3)
       end subroutine parres
+
+
 C***********************************************************************************************************************
 C ********* parclm
 C parclm allows terminal, size, input file, action and silent arguments
@@ -770,9 +762,11 @@ C Local variables for GetCommandLineArguments.
       module = CONST_PARCLM
       call GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &             iverb,sps,data1,data2,data3)
       
       end subroutine parclm
+
+
 C***********************************************************************************************************************
 C ********* parsish
 C parsish allows the module ish to be passed a terminal, size, config file,
@@ -800,9 +794,11 @@ C Local variables for GetCommandLineArguments.
       module = CONST_PARSISH
       call GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &             iverb,sps,data1,data2,data3)
       
       end subroutine parsish
+
+
 C***********************************************************************************************************************
 C ********* parsprj 
 C parsprj allows terminal, size, config file, zone focus and actions arguments
@@ -829,8 +825,9 @@ C Local variables for GetCommandLineArguments.
       module = CONST_PARSPRJ
       call GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &             iverb,sps,data1,data2,data3)
       end subroutine parsprj
+
 
 C ********* parsfz (equivalent to startsfz.c)
 C parsfz allows terminal, size, config file, zone focus arguments
@@ -857,7 +854,7 @@ C Local variables for GetCommandLineArguments.
       module = CONST_PARSFZ
       call GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &             iverb,sps,data1,data2,data3)
       end subroutine parsfz
 
 
@@ -886,8 +883,10 @@ C Local variables for GetCommandLineArguments.
       module = CONST_PARTF
       call GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &             iverb,sps,data1,data2,data3)
       end subroutine partf
+
+
 C***********************************************************************************************************************
 C ********* partfa (equivalent to partf with an action parameter)
 C partfa allows terminal, file and action arguments
@@ -915,8 +914,10 @@ C Local variables for GetCommandLineArguments.
       module = CONST_PARTFA
       call GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &             iverb,sps,data1,data2,data3)
       end subroutine partfa
+
+
 C***********************************************************************************************************************
 C ********* parse2r 
 C parse2r allows terminal, size, config file, scene purpose and actions arguments
@@ -944,8 +945,10 @@ C Local variables for GetCommandLineArguments.
       module = CONST_PARSE2R
       call GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &             iverb,sps,data1,data2,data3)
       end subroutine parse2r
+
+
 C***********************************************************************************************************************
 C ********* parsim
 C parsim: allows terminal, size, config file, simulation parameter file arguments
@@ -974,9 +977,10 @@ C Local variables for GetCommandLineArguments.
       module = CONST_PARSIM
       call GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &             iverb,sps,data1,data2,data3)
       
       end subroutine parsim
+
 
 C***********************************************************************************************************************
 C ********* parsfact
@@ -1006,8 +1010,10 @@ C Local variables for GetCommandLineArguments.
       module = CONST_PARSFACT
       call GetCommandLineArguments(module,termtype,iappw,iappx,
      &             iappy,inf,inf2,zone,act,actf,aut,ascif,aim,browse,
-     &			   iverb,sps,data1,data2,data3)
+     &             iverb,sps,data1,data2,data3)
       end subroutine parsfact
+
+
 C***********************************************************************************************************************
 
       END MODULE START_UP
@@ -2030,21 +2036,3 @@ C parpsfh: Help message for several of the command line parsers.
       call edisp(iuout,' -buildinfo: display build details and quit.')
       return
       end
-
-            
-C-----------------------------------------------------------------------
-C     Function bH3KExtentionsActive: Returns value of 
-C     h3k_extentions flag 
-C-----------------------------------------------------------------------
-      logical function bH3KExtentionsActive()
-      implicit none 
-      
-      common/H3KCustom/bEnableH3kExtensions
-      logical bEnableH3kExtensions     
-      
-      bH3KExtentionsActive = bEnableH3kExtensions
-      
-      return 
-      
-      end function bH3KExtentionsActive
-      

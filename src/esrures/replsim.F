@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -31,6 +31,7 @@ C MZINPT code in espbps/input.f.
       SUBROUTINE MOGCFG
 #include "building.h"
 #include "model.h"
+#include "net_flow.h"
 C #include "geometry.h"
 #include "tdf2.h"
 #include "esprdbfile.h"

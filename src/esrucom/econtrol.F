@@ -650,8 +650,8 @@ C Reporting:
                 BMISCD(II,JJ,KK,ij)=RVA(ij-1)
   42          continue
               IF(IER.NE.0)GOTO 99
-            ENDIF	
-			
+            ENDIF
+
 C Set building-side function generator flag.
             if(ibsn(ii,1).eq.-6)then
                bfngn=.true.
@@ -3382,6 +3382,8 @@ C          call edisp248(6,message,80)
         IF(IPCLAW(II,JJ,KK).EQ.14) SSTR='Multi-sensor '
         IF(IPCLAW(II,JJ,KK).EQ.15) SSTR='PI Room Ctrl'
         IF(IPCLAW(II,JJ,KK).EQ.16) SSTR='Amb Temp Cmpnstn ctrl'
+        IF(IPCLAW(II,JJ,KK).EQ.17) SSTR='Ideal Optimal start ctrl'
+        IF(IPCLAW(II,JJ,KK).EQ.18) SSTR='Ideal Optimal stop ctrl'
         return
       ENDIF
 
@@ -3740,7 +3742,7 @@ C Parameters
 
       character outs*124,SSTR*96,TMP*96,LTMP*248
       CHARACTER PERST1*14,PERST2*44,PERST3*44
-      character outsa*84,outsb*84,outsc*84
+      character outsa*84,outs400*400
 
 C List data for function II and day type JJ.
       if(icfoc.eq.0)then
@@ -3828,48 +3830,17 @@ C List data for function II and day type JJ.
         endif
   83    FORMAT(I4,F6.2,' ',a,' ',a)
 
-C Print out first 9 miscellaneous data if applicable.
-        outsb=' '
-        outsc=' '
-        if(NITEMS.GT.0)then
-          if(NITEMS.LE.9)then
-            if(icfoc.eq.0)then
-              write(outsb,84)(BMISCD(II,JJ,K,L),L=2,NITEMS+1)
-            elseif(icfoc.eq.1)then
-              write(outsb,84)(PMISCD(II,JJ,K,L),L=2,NITEMS+1)
-            elseif(icfoc.eq.2)then
-              write(outsb,84)(FMISCD(II,JJ,K,L),L=2,NITEMS+1)
-            elseif(icfoc.eq.3)then
-              write(outsb,84)(GMISCD(II,JJ,K,L),L=2,NITEMS+1)
-            elseif(icfoc.eq.5)then
-              write(outsb,84)(OMISCD(II,JJ,K,L),L=2,NITEMS+1)
-            elseif(icfoc.eq.6)then
-              write(outsb,84)(CFCmiscdata(II,JJ,K,L),L=2,NITEMS+1)
-            endif
-          else
-            if(icfoc.eq.0)then
-              write(outsb,84)(BMISCD(II,JJ,K,L),L=2,10)
-            elseif(icfoc.eq.1)then
-              write(outsb,84)(PMISCD(II,JJ,K,L),L=2,10)
-            elseif(icfoc.eq.2)then
-              write(outsb,84)(FMISCD(II,JJ,K,L),L=2,10)
-            elseif(icfoc.eq.3)then
-              write(outsb,84)(GMISCD(II,JJ,K,L),L=2,10)
-            elseif(icfoc.eq.5)then
-              write(outsb,84)(OMISCD(II,JJ,K,L),L=2,10)
-            elseif(icfoc.eq.6)then
-              write(outsb,84)(CFCmiscdata(II,JJ,K,L),L=2,10)
-            endif
-          endif
-  84      format(9F9.1)
-          call SDELIM(outsb,outsc,'S',IW)
-          write(outs,'(a,1x,a)',IOSTAT=IOS,ERR=3) outsa(1:52),
-     &        outsc(1:lnblnk(outsc))
-          CALL EDISP(ITRU,outs)
+         if(NITEMS.GT.0)then
 
-C For zone, plant, flow and global controls list out the verbose decoding of the misc items.
+C Write the initial part of the control followed by description.
+          write(outs400,'(a,1x,a)',IOSTAT=IOS,ERR=3) outsa(1:32),
+     &        ltmp(1:lnblnk(ltmp))
+
+C For zone, plant, flow and global controls list out the verbose 
+C decoding of the control law attributes.  Note that edisp248 is
+C able to work with strings longer than 248 characters.
           if(icfoc.eq.0.or.icfoc.eq.1.or.icfoc.eq.2.or.icfoc.eq.3)then
-            call edisp248(itru,ltmp,90)
+            call edisp248(itru,outs400,90)
           endif
         elseif(NITEMS.eq.0)then
           write(outs,'(a)',IOSTAT=IOS,ERR=3) outsa(1:52)
@@ -3905,7 +3876,6 @@ C SSTRB is brief string (48 char) returned
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/pcnam/pcname(mpcom)
       COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
@@ -3914,7 +3884,7 @@ C SSTRB is brief string (48 char) returned
       dimension icsn(5)
       character sstr*96,sstrb*48
       CHARACTER ZN*12,NNAM*14,DESC*20
-      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,pcname*15,contmnam*12
+      CHARACTER NDNAM*12,pcname*15,contmnam*12
       CHARACTER sn*12
 
       sstr=' '
@@ -4386,13 +4356,11 @@ C control loops for legality.
       COMMON/MFLOW1/NNOD,NCMP,NCNN
 
       character outstr*124
-      
-      integer ii, jj, ll, kk
     
 C This code loops throug the building (m=1), plant (m=2) and flow (m=3)
 C control loops and tests them for validity. It's a mess of goto statements,
 C and is a good candidate for rewriting. 
-
+      
 C Loop through building/plant/flow/optical control loops       
       do 10 m=1,4
 
@@ -4421,24 +4389,8 @@ C 'i' appears to serve no purpose in this code.
       ii=i
       if(m.eq.2)goto 3
       if(m.eq.3)goto 22
-      if(m.eq.4)goto 32	  
-	  
-C 14-Mar-2012 BAL: Added check for minimum allowable free cooling delta T
-      do ii = 1, NCF
-        nn=nbcdt(ii)	  
-        do jj = 1, nn	
-          ll = nbcdp(ii,jj)
-          do kk = 1, ll	
-            if ( ibclaw(ii, jj, kk) .eq. 27) then
-                if( bmiscd(II,JJ,KK,8) .lt. 2.0 )then
-                    goto 1011
-                end if
-            end if 
-          end do
-        end do
-      end do
+      if(m.eq.4)goto 32
 
-	  
 C Set up data for building control function ii.
       isn1=ibsn(ii,1)
       isn2=ibsn(ii,2)
@@ -4502,7 +4454,7 @@ C Sensor references a function generator.
          if(isn2.gt.9)goto 1008
          goto 9
       endif
-      
+
 C Senses data from a temporal file, 2nd item will temporal item.
   33  if(isn2.lt.1.or.isn2.gt.24)goto 1022
       goto 9
@@ -4655,10 +4607,6 @@ C Error messages.
       goto 1000
  1010 write(outstr,'(A,I3,A)')' Sensor node: 5th item (',isn5,
      &  ') invalid.'
-      call edisp(iuout,outstr)
-      goto 1000
- 1011 write(outstr,'(A)')
-     &' Delta T for free cooling is below the minimum 2 deg C'
       call edisp(iuout,outstr)
       goto 1000
 

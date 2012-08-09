@@ -75,6 +75,7 @@ C Selection menu for graphs and/or tables.
 
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical zlist,ok,dok
+      logical HAVEIT
       integer NITMS,IG ! max items and current menu item
 
 C For help messages
@@ -122,11 +123,22 @@ C Call the menu of choices (this also sets some default options).
         if (MENUTYPE.eq.-1) return
       endif
 
-C First recover bounds of selected data.
+C First recover bounds of selected data. If it can be done via
+C getstats use that, otherwise call mmacal.
       XMAX=-1.E+10
       XMIN=1.E+10
       do 40 IX=1,NGET
-        call MMACHK(IX,DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN)
+        call GETSTATS(IX,HAVEIT,DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN)
+        if(HAVEIT)then
+
+C Debug.
+C          write(6,*) 'get stats ',DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN
+        else
+          call MMACAL(IX,DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN)
+
+C Debug.
+C          write(6,*) 'get MMACAL ',DMAX,DMIN,DAVE,DTOT,TXMAX,TXMIN
+        endif
         XMAX=MAX(XMAX,DMAX)
         XMIN=MIN(XMIN,DMIN)
  40   continue
@@ -774,6 +786,7 @@ C corresponding to graphical result display.
 
       SUBROUTINE MODHED(act,zlist,iocupf,ialstused)
 #include "building.h"
+#include "model.h"
       
       integer lnblnk  ! function definition
 
@@ -786,7 +799,6 @@ C corresponding to graphical result display.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
 
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
@@ -795,7 +807,6 @@ C corresponding to graphical result display.
       CHARACTER ETEXT*94,GTEXT*94,PDESCR*60,SDESCR*44,act*1
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
       character outsd*80,outsd1*81,RSNAME*40
-      character ALOC*12,ALOCLBL*12,ALOCTYP*4
       logical zlist
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.

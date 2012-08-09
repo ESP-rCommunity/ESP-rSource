@@ -34,7 +34,7 @@ GMainLoop *menu_loop;
 //GMainLoop *pmenu_loop;
 
 
-extern GdkColor cscale[49], zscale[100], gscale[49];
+extern GdkColor cscale[49], zscale[100], gscale[85];
 
 /* Information to pass back to fortran related to number of colours */
 extern long int ncscale;  /* number of assigned colours in colour scale */

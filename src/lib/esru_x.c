@@ -259,7 +259,7 @@ static unsigned int dispDEEP;
 /* indicies used for various colours */
 static unsigned long fg, bg, bd, bw, white, black, infofg, infobg;
 static unsigned long gmenuhl, gpopfr, gfeedfr, ginvert, gmodbg, grey50, grey43;
-static unsigned long cscale[49], zscale[29], gscale[29];
+static unsigned long cscale[49], zscale[100], gscale[85];
 
 char *getenv ();
 
@@ -433,11 +433,17 @@ static char font_0[60], font_1[60], font_2[60], font_3[60], font_4[60], font_5[6
 /* info about root Xwindow */
 static int xrt_width, xrt_height;  /* same as xsh.width and xsh.height */
 static char *bgstr,  *whitestr, *blackstr; /* init default colors */
-static char *zscalestr[] = { /* colour names from rgb.txt to represent zone colours */
-  "red","MidnightBlue","peru","ForestGreen","khaki","turquoise","magenta","firebrick",
-  "DarkCyan","khaki3","RoyalBlue","tomato","OliveDrab","PaleGreen","orange","grey40",
-  "coral2","grey60","maroon4","gold3","PowderBlue","sienna","azure4","grey20",
-  "grey50","NavyBlue","DarkGreen","gold","grey80" };
+static char *zscalestr[] = { /* 100 colour names from rgb.txt to represent zone colours */
+    "red","MidnightBlue","peru","ForestGreen","khaki","grey14","turquoise","magenta","gold4","firebrick",
+    "DarkCyan","khaki3","grey25","RoyalBlue","tomato","grey34","OliveDrab","PaleGreen","orange","grey40",
+    "coral2","tan4","SeaGreen","grey60","maroon4","gold3","grey46","PowderBlue","sienna","azure4","grey20","burlywood2",
+    "grey50","khaki2","NavyBlue","sienna3","DarkGreen","gold","magenta3","grey80","turquoise2","gold1","tomato3",
+    "grey70","orange3","grey37","maroon1","grey19","tan2","green3",
+    "red","MidnightBlue","peru","ForestGreen","khaki","grey14","turquoise","magenta","gold4","firebrick",
+    "DarkCyan","khaki3","grey25","RoyalBlue","tomato","grey34","OliveDrab","PaleGreen","orange","grey40",
+    "coral2","tan4","SeaGreen","grey60","maroon4","gold3","grey46","PowderBlue","sienna","azure4","grey20","burlywood2",
+    "grey50","khaki2","NavyBlue","sienna3","DarkGreen","gold","magenta3","grey80","turquoise2","gold1","tomato3",
+    "grey70","orange3","grey37","maroon1","grey19","tan2","green3" };
 static char *cscalestr[] = { /* colour scale RGB HEX values (to represent 49 steps of temperature) */
   "#FF0000","#FF1500","#FF2B00","#FF4000","#FF5500","#FF6A00","#FF8000","#FF9500","#FFAA00","#FFBF00",
   "#FFD500","#FFEA00","#FFFF00","#EAFF00","#D5FF00","#BFFF00","#AAFF00","#95FF00","#80FF00","#6AFF00",
@@ -448,10 +454,17 @@ static char *cscalestr[] = { /* colour scale RGB HEX values (to represent 49 ste
 static char *gintstr[] = {
   "grey96","grey94","grey92","grey86","grey64","grey50",
   "grey95","grey93","grey91","grey85","grey63","grey49","grey43" };
+/* 86 strings to set greay scale for zones if zscalestr allocation fails. */
 static char *gscalestr[] = {
-  "grey97","grey94","grey91","grey88","grey85","grey82","grey79","grey76","grey73","grey70",
-  "grey67","grey64","grey61","grey58","grey55","grey52","grey49","grey46","grey43","grey40",
-  "grey37","grey34","grey31","grey28","grey25","grey22","grey19","grey16","grey14" };
+  "grey97","grey96","grey95","grey94","grey93","grey92","grey91","grey90",
+  "grey89","grey88","grey87","grey86","grey85","grey84","grey83","grey82","grey81","grey80",
+  "grey79","grey78","grey77","grey76","grey75","grey74","grey73","grey72","grey71","grey70",
+  "grey69","grey68","grey67","grey66","grey65","grey64","grey63","grey62","grey61","grey60",
+  "grey59","grey58","grey57","grey56","grey55","grey54","grey53","grey52","grey51","grey50",
+  "grey49","grey48","grey47","grey46","grey45","grey44","grey43","grey42","grey41","grey40",
+  "grey39","grey38","grey37","grey36","grey35","grey34","grey33","grey32","grey31","grey30",
+  "grey29","grey28","grey27","grey26","grey25","grey24","grey23","grey22","grey21","grey20",
+  "grey19","grey18","grey17","grey16","grey15","grey14","grey13","grey12" };
 static long int ncscale = 0; /* number of assigned colours in colour scale */
 static long int ngscale = 0; /* number of assigned colours in grey scale */
 static long int ngr = 0; /* number of assigned interface colours */
@@ -864,12 +877,12 @@ void clrcscale_() {
   return;
 }
 
-/* ********* grey scale (29 or 12 steps) ******* */
+/* ********* grey scale (84 or 42 steps) ******* */
 void setgscale_() {
   int ic,ih;
   XColor ecdef;
 /* assign grey scale to gscale (hex) array. */
-  for (ic=0; ic<28; ic++) {
+  for (ic=0; ic<84; ic++) {
     if (XParseColor(theDisp,theCmap,gscalestr[ic],&ecdef) && XAllocColor(theDisp,theCmap,&ecdef)) {
         gscale[ic] = ecdef.pixel;
         ngscale=ngscale+1;
@@ -880,14 +893,14 @@ void setgscale_() {
   }
 /* Some colours not allocated attempt half of the colours. Begin by freeing initial allocated set. */
 /* debug fprintf(stderr,"Created greys %ld\n",ngscale); */
-  if ( ngscale <= 27 ) {
+  if ( ngscale <= 83 ) {
     for (ic=0; ic<ngscale; ic++) {
       if( gscale[ic] >= 1 ) XFreeColors(theDisp,theCmap,&gscale[ic],1,0L);
     }
     fprintf(stderr,"Trying reduced grey set\n");
     ngscale = 0;
     ih = -1;
-    for (ic=0; ic<12; ic++) {
+    for (ic=0; ic<40; ic++) {
       ih = ih + 2;
       if (XParseColor(theDisp,theCmap,gscalestr[ih],&ecdef) && XAllocColor(theDisp,theCmap,&ecdef)) {
          gscale[ic] = ecdef.pixel;
@@ -911,12 +924,12 @@ void clrgscale_() {
   return;
 }
 
-/* ********* zone colour scale (29 steps) ******* */
+/* ********* zone colour scale (81 steps) ******* */
 void setzscale_() {
   int ic;
   XColor ecdef, sdef;
 /* assign colours (zscale names) for zone graphing. */
-  for (ic=0; ic<28; ic++) {
+  for (ic=0; ic<99; ic++) {
     if (XLookupColor(theDisp,theCmap,zscalestr[ic],&ecdef,&sdef) && XAllocColor(theDisp,theCmap,&ecdef)) {
       zscale[ic] = ecdef.pixel;
       izc = izc + 1;

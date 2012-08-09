@@ -372,13 +372,11 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
 C Uncertainty analysis common.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
 
-C IPV data is from ipvdata.h.
+C IPV data is from ipvdata.h. If within cfg file then the file
+C name is replaced with 'internal'.
       common/IPVF/lipvdatf
 
-C Anchor data.
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
-      common/anchorb/IALOC(20),lstanchr(20,60)
-      INTEGER :: ialoc,lstanchr,naloc
+C Anchor data in model.h.
 
 C Contaminant flow model commons
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
@@ -529,7 +527,7 @@ C Simulation parameters
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
       character*10 wkday(7)
       character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
-      CHARACTER NDNAM*12,ALOC*12,ALOCLBL*12,ALOCTYP*4
+      CHARACTER NDNAM*12
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character hvacfile*72,LBSIMP*72,LFClds*72
       character gshpfile*72
@@ -566,7 +564,7 @@ C Simulation parameters
 #endif
       
       REAL :: gva
-      DIMENSION GVA(12),IVA(60),namez(mcom),namen(mcom)
+      DIMENSION GVA(12),IVA(99),namez(mcom),namen(mcom)
       INTEGER, dimension(mcon) :: IRVC
       INTEGER, dimension(365) :: IRCC
       data wkday/'Monday', 'Tuesday','Wednesday', 'Thursday',
@@ -1668,9 +1666,11 @@ C for the rest of the data.
           else
             ipvsimu='------'
           endif
-	  ipvact='cfg'
-          call ripvdat(iuc,FILE,ipvact,ier)	
-	endif
+          lipvdatf='internal'  ! reset file name to the keyword internal
+          ipvact='cfg'
+          call ripvdat(iuc,FILE,ipvact,ier)
+        endif
+
       elseif(WORD(1:5).eq.'*dmds')then
 
 C Building fans/pumps/DHW demands file.
@@ -2201,26 +2201,25 @@ C automatically and should not be modified through project manager
       IF(INOTI.EQ.1.AND.ITRC.NE.4)THEN
         IWARN=1
         OUTS=
-     &  'This is a UK NCM notional model and should not be modified'
+     &  'This is a UK NCM notional model and should not be modified.'
       ELSEIF(INOTI.EQ.2.AND.ITRC.NE.4)THEN
         IWARN=1
         OUTS=
-     &  'This is a UK NCM reference model and should not be modified'
+     &  'This is a UK NCM reference model and should not be modified.'
       ELSEIF(INOTI.EQ.3.AND.ITRC.NE.4)THEN
         IWARN=1
         OUTS=
-     &  'This is a UK NCM typical model and should not be modified'
+     &  'This is a UK NCM typical model and should not be modified.'
       ELSEIF(INOTI.EQ.4.AND.ITRC.NE.4)THEN
         IWARN=1
         OUTS=
-     &  'This is a UK NCM stripped model and should not be modified'
+     &  'This is a UK NCM stripped model and should not be modified.'
       ELSEIF(ISBEM.EQ.2.AND.INOTI.EQ.0.AND.ITRC.NE.4)THEN
         continue  ! this model is original which includes NCM file.
       ENDIF
       IF(IWARN.EQ.1.AND..NOT.AUTOOK)THEN
          call askok(OUTS,
-     &   'using project manager are you sure you want to continue',
-     &   OK,dok,10)
+     &   'Are you sure you want to continue?',OK,dok,10)
          IF(.NOT.OK)STOP
       ENDIF
 
@@ -2944,11 +2943,11 @@ C it is probably the index indicating flow.
           else
             write(ALOCTYP(ia),'(a4)') 'UNKN'
           endif
-          CALL EGETWI(OUTSTR,K,IALOC(ia),0,60,'F','anc link',IER)
+          CALL EGETWI(OUTSTR,K,IALOC(ia),0,99,'F','anchor link',IER)
           IRVA=IALOC(ia)
 
 C Scan next line for links.
-          CALL EGETWIA(IUC,IVA,IRVA,0,0,'-','assoc links',IER)
+          CALL EGETWIA(IUC,IVA,IRVA,0,0,'-','anchor assoc links',IER)
           DO 345 LC=1,IALOC(ia)
             lstanchr(ia,LC)=IVA(LC)
  345      continue
@@ -3518,11 +3517,10 @@ C **************** conninanchor
 C conninanchor returns true if a connection is included within
 C a particular anchor list and matches a valid anchor use.
       subroutine conninanchor(icnn,ianc,type,ok,ier)
+#include "building.h"
+#include "model.h"
 
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
-      common/anchorb/IALOC(20),lstanchr(20,60)
-
-      character ALOC*12,ALOCLBL*12,ALOCTYP*4,outs*124,type*4,msgl2*48
+      character outs*124,type*4,msgl2*48
       logical found,ok
 
 C Check if ianc is a known anchor and then if there is a list.

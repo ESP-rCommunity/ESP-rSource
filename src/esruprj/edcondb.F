@@ -57,7 +57,7 @@ C CLSSEL (36 char) is an array for menu items for the selected class.
       integer iwhicharray   ! for each item in menu point back to array
       dimension iwhicharray(60)
       character ACTION*1,CLSSEL*36,lltmp*144,CLSDES*32
-      CHARACTER KEY*1,PDBM*68,outs*124
+      CHARACTER KEY*1,PDBM*76,outs*124
       CHARACTER xfile*144,tg*1,delim*1,t32*32,t248*248
       character lworking*144,fs*1
       logical closemat1,closemat2
@@ -187,18 +187,19 @@ C If user canceled the listing the reset unit to iuout and loop back.
             call edisp248(itu,matcatdoc(IC),100)
             call edisp(itu,' ')
             call edisp(itu,
-     &      'Index|Con-   |Den- |Specif|IR  |Solr|Vapour|Description')
+     &      'Index|Conduc-|Den- |Specif|IR  |Solar|Vapour|Description')
             call edisp(itu,
-     &      '     |duct.  |sity |heat  |emis|abs |resist|of material')
+     &      '     |tivity |sity |heat  |emis|abs  |resist|of material')
 
 C Loop through all of the items in the array and list out those that are
 C associated with this class.
             DO 47 J=1,matdbitems
               if(matcatindex(J).eq.IC)then
                 IDB=matlegindex(J)
+                lsn=MIN0(lnblnk(matname(J)),32)
                 WRITE(outs,46)IDB,matdbcon(J),matdbden(J),matdbsht(J),
      &            matdboute(J),matdbouta(J),matdbdrv(J),
-     &            matname(J)(1:lnblnk(matname(J)))
+     &            matname(J)(1:lsn)
    46           FORMAT(I4,F9.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,A)
                 call edisp(itu,outs)
               endif
@@ -208,8 +209,10 @@ C associated with this class.
           ENDIF
    42   continue
         call edisp(itu,' ')
-        call edisp(itu,' Units: Conduct W/(m deg.C), Density kg/m**3')
-        call edisp(itu,'        Specific Heat J/(kg deg.C) ')
+        write(outs,'(2a)')
+     &    ' Units: Conductivity W/(m deg.C), Density kg/m**3,',
+     &    ' Specific Heat J/(kg deg.C), Vapour (MNs g^-1m^-1)'
+        call edisp(itu,outs)
         if(irpt.eq.2)then
 
 C Call ctlexp a 2nd time to close the file.
@@ -294,16 +297,16 @@ C Loop through data for this classification for manipulation.
         ENDIF
 
 C Display the materials of the classification in a menu.
-    3   PDBM(1)= '  Units:  Conductivity W/(m deg.C), Density kg/m**3'
-        PDBM(2)= '          Specific Heat J/(kg deg.C) '
+    3   PDBM(1)= ' Units: Conductivity W/(m deg.C), Density kg/m**3'
+        PDBM(2)= ' Specific Heat J/(kg deg.C) Vapour (MNs g^-1m^-1)'
         WRITE(PDBM(3),'(3a,i2,a,i2,a)') '1 Classification: ',
      &    matcatname(IC)(1:lnblnk(matcatname(IC))),' (',IC,') with ',
      &    matcatitems(IC),' entries.'
         PDBM(4)=   '  ___________________________________'
         PDBM(5)=
-     &  ' |Conduc-|Den- |Specif|IR  |Solr|Diffu|Description  '
+     &' |Conduc-|Den- |Specif|IR  |Solar|Diffu|Description of material'
         PDBM(6)=
-     &  ' |tivity |sity |heat  |emis|abs |resis|of material  '
+     &' |tivity |sity |heat  |emis|abs  |resis| name   : documentation'
         M=6
         DO 30 J=1,matdbitems
 
@@ -318,29 +321,29 @@ C Remember the array index that goes with the menu position (m).
             if(matopaq(J).eq.'o')then
               WRITE(PDBM(M),24)KEY,matdbcon(J),matdbden(J),
      &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
-     &          matname(J)(1:24)
+     &          matname(J)(1:31)
    24         FORMAT(A1,F8.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,A)
             elseif(matopaq(J).eq.'-')then
               WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
      &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
-     &          matname(J)(1:8),': ',matdoc(J)(1:17)
+     &          matname(J)(1:12),': ',matdoc(J)(1:21)
    25         FORMAT(A1,F8.3,F6.0,F7.0,F5.2,F5.2,F7.0,1X,3A)
             elseif(matopaq(J).eq.'t')then
               WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
      &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
-     &          matname(J)(1:8),': ',matdoc(J)(1:17)
+     &          matname(J)(1:12),': ',matdoc(J)(1:21)
             elseif(matopaq(J).eq.'g')then
               WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
      &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
-     &          matname(J)(1:8),': ',matdoc(J)(1:17)
+     &          matname(J)(1:12),': ',matdoc(J)(1:21)
             elseif(matopaq(J).eq.'h')then
               WRITE(PDBM(M),25)KEY,matdbcon(J),matdbden(J),
      &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
-     &          matname(J)(1:8),': ',matdoc(J)(1:17)
+     &          matname(J)(1:12),': ',matdoc(J)(1:21)
             else
               WRITE(PDBM(M),24)KEY,matdbcon(J),matdbden(J),
      &          matdbsht(J),matdboute(J),matdbouta(J),matdbdrv(J),
-     &          matname(J)(1:24)
+     &          matname(J)(1:31)
             endif
           endif
    30   CONTINUE
@@ -348,7 +351,14 @@ C Remember the array index that goes with the menu position (m).
         PDBM(NC+1)=  '  __________________________     '
         if(ACTION.eq.'M'.or.ACTION.eq.'m')then
           PDBM(NC+2)='* add/ delete/ copy material     '
-          PDBM(NC+3)='! save materials database        '
+
+C Remind user whether they are working with a model file or
+C a common data file.
+          if(ipathmat.eq.0.or.ipathmat.eq.1)then
+            PDBM(NC+3)='! save materials file            '
+          else
+            PDBM(NC+3)='! save common materials file     '
+          endif
         elseif(ACTION.eq.'-')then
           PDBM(NC+2)='                                 '
           PDBM(NC+3)='                                 '
@@ -373,8 +383,8 @@ C and write a new file based on current common blocks. If the original
 C file was binary then alter the name of the saved file to add a '.a'
 C at the end.
             dok=.true.
-            CALL ASKOK('Changes have been made in database. ',
-     &        'Save the materials database changes?',OK,dok,nbhelp)
+            CALL ASKOK('Changes have been made in this file. ',
+     &        'Save the materials changes?',OK,dok,nbhelp)
             IF(.NOT.OK)GOTO 4
             chgdb=.true.   ! pass back signal to update
             CALL ERPFREE(IFMUL,ISTAT)  ! in case other unit is still open
@@ -660,9 +670,9 @@ C Copy info from first existing material.
 
             call edisp(iuout,'First material: ')
             call edisp(iuout,
-     &      'Index|Con-   |Den- |Specif|IR  |Solr|Vapour|Description')
+     &      'Index|Conduc-|Den- |Specif|IR  |Solar|Vapour|Description')
             call edisp(iuout,
-     &      '     |duct.  |sity |heat  |emis|abs |resist|of material')
+     &      '     |tivity |sity |heat  |emis|abs  |resist|of material')
             IDB=matlegindex(IWHICH)
             WRITE(outs,46)IDB,matdbcon(IWHICH),matdbden(IWHICH),
      &        matdbsht(IWHICH),
@@ -887,27 +897,27 @@ C and then resetn MODDB and chgdb if mod is true.
             endif
           elseif(ACTION.eq.'-')then
             call edisp(iuout,' ')
-            call edisp(iuout,
-     &        ' Units: Conduct W/(m deg.C), Density kg/m**3')
-            call edisp(iuout,
-     &        '        Specific Heat J/(kg deg.C) ')
+            write(outs,'(2a)')
+     &        ' Units: Conductivity W/(m deg.C), Density kg/m**3,',
+     &        ' Specific Heat J/(kg deg.C), Vapour (MNs g^-1m^-1)'
+            call edisp(iuout,outs)
             call edisp(iuout,' ')
             call edisp(iuout,
-     &    'Index|Con-    |Den-  |Specif|IR  |Solar|Vapour|Description')
+     &    'Index|Conduc- |Den-  |Specif|IR  |Solar|Vapour|Description')
             call edisp(iuout,
-     &    '     |duct.   |sity  |heat  |emis|abs  |resist|of material')
+     &    '     |tivity  |sity  |heat  |emis|abs  |resist|of material')
+            lsn=MIN0(lnblnk(matname(IFOC)),32)
             WRITE(outs,244)matlegindex(IFOC),matdbcon(IFOC),
      &        matdbden(IFOC),matdbsht(IFOC),matdboute(IFOC),
-     &        matdbouta(IFOC),matdbdrv(IFOC),matname(IFOC)(1:20)
+     &        matdbouta(IFOC),matdbdrv(IFOC),matname(IFOC)(1:lsn)
   244       FORMAT(I5,F9.3,F7.1,F7.0,F5.2,F6.2,F7.0,1X,A)
             CALL EDISP(iuout,outs)
-            CALL EDISP(iuout,' ')
+            CALL EDISP248(iuout,matdoc(IFOC),90)
             iwhich=matlegindex(ifoc)
-            lsn=MIN0(lnblnk(matname(IFOC)),32)
-            write(outs,'(a,i3,a,a)') ' Use material (',iwhich,') ',
-     &        matname(IFOC)(1:lsn)
+            write(outs,'(a,i3,4a)') 'Material (',iwhich,') ',
+     &        matname(IFOC)(1:lsn),' : ',matdoc(IFOC)(1:48)
             dok=.true.
-            CALL ASKOK(outs,'as your selection ?',OK,dok,1)
+            CALL ASKOK(outs,'Use it:',OK,dok,1)
             if(OK)then
               imatarrayindex=IFOC ! set to selected array index
               return
@@ -1479,8 +1489,12 @@ C If a long list include page facility text.
       ENDIF
       MLCITM(M+2)='# view g-value'
       MLCITM(M+3)='1 add/delete/copy/invert    '
-      MLCITM(M+4)='! list database contents    '
-      MLCITM(M+5)='> save database             '
+      MLCITM(M+4)='! list contents    '
+      if(ipathmul.eq.0.or.ipathmul.eq.1)then
+        MLCITM(M+5)='> save data                 '
+      else
+        MLCITM(M+5)='> save common data          '
+      endif
       MLCITM(M+6)='? help                      '
       MLCITM(M+7)='- exit this menu            '
       INO=-4
@@ -3082,9 +3096,9 @@ C reference.
         dok=.true.
         helptopic='edit_wall_details'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        CALL ASKOK('Change the materials db reference via browsing',
-     &             'the material db? (NO keeps the current material)',
-     &             OK,dok,nbhelp)
+        CALL ASKOK(
+     &    'Change the material reference via browsing available',
+     &    'materials? (NO keeps the current material)',OK,dok,nbhelp)
         if(OK)then
           iwhich=0
           CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)

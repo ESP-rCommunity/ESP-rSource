@@ -29,9 +29,6 @@ C      character cURL*256             ! Repository URL commented out in build_in
       character cTemp_a*124, cTemp_b*124 ! Temporary strings
       integer iLen   ! for actual string lengths
       
-      logical bH3KExtentionsActive  ! Function returning status of h3k extentions. 
-      
-      
 C Arrays mapping binary names to longer descriptions
       
       integer iBinCount
@@ -252,17 +249,6 @@ C.........Compiliers ( eg: gcc/g++/g77)
         write (cTemp_a,'(2A)')   "  XML output -       ",
      &         cXML_support(1:lnblnk(cXML_support))
         call edisp(iuout,cTemp_a)
-          
-        if ( bH3KExtentionsActive() ) then  ! find whether H3k extentions are active
-
-          write (cTemp_a,'(2A)')   "  H3K extensions -  ",
-     &         "Active"
-          call edisp(iuout,cTemp_a)
-
-        endif 
-            
-          
-          
           
       endif
 

@@ -3196,10 +3196,6 @@ C otherwise redirect to user display.
 
 C Write this to standard text window.
         WRITE(ITRU,'(A)',iostat=ios,err=1)MSG(1:lnm)
-c.......write console output (ITRU=6) to file       
-        if(ITRU.eq.6)then
-            call redir_console_output_to_file(MSG(1:lnm)//CHAR(0))
-        endif
       ENDIF
 
       RETURN

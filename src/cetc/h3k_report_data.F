@@ -65,15 +65,11 @@ C*******************************************************************************
       USE AIM2_CalcData, ONLY:AIM2_infil_to_zones
 
       IMPLICIT NONE
-
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
 #include "control.h"
-#include "h3k_report_data.h"
 #include "blc25_open_windows.h"
-#include "CFC_common.h"
-
 C.....Passed variable
       integer iZone            ! Zone number
 
@@ -88,13 +84,7 @@ C.....Common variables
       integer nELts           ! # number of layers per surface (who knew?)
       integer ngaps           ! # number of air gaps witin surface (not used)
       integer npgap           ! Location of air gap. (not used)
-      
-      COMMON/PREC15/RGAPS(MCOM,MS,MGP)
-      real rgaps              ! air gap resistance (convective + radiative)
-      real fTotalAirGapR      ! local. used for backing out U-value window heat loss contribution
-      real fUvalue            ! local. used for backing out U-value window heat loss contribution
-      integer iGap            ! local. windwo gap counter
-      
+
 C TPA(MCOM),           ! - present zone air point temperature (oC)
 C QPA(MCOM)            ! - zone air point heat injection (W)
       COMMON/PVALA/TPA(MCOM),QPA(MCOM)
@@ -112,6 +102,7 @@ C QFA(MCOM)            ! - zone air point heat injection (W)
 C GFA(MCOM)            ! zone futue  relative humidity values
       common/FVALG/GFA(MCOM)
       real gfa
+
 
 C TPC(MCOM,MS,MN),     ! - present construction temperature (oC)
 C QPC(MCOM)            ! - construction heat injection (W)
@@ -164,10 +155,6 @@ C.....Surface orientation flags
      &     Cas_Con_dat(MCOM),   !  - Convective (W)
      &     Cas_Lat_dat(MCOM)    !  - Latent (W)
       real Cas_Rad_dat, Cas_Con_dat, Cas_Lat_dat
-
-      COMMON/CasPowerDat/Cas_Lights(MCOM),Cas_Equip(MCOM)
-      real Cas_Lights, Cas_Equip     ! Electrical power of lights and equipment (casual gain data), W
-
 
 C.....Window properties
       common/prectc/itmcfl(mcom,ms),tmct(mcom,mtmc,5),
@@ -317,21 +304,6 @@ C.....Sky temperature and cloud cover; ground temperature,
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: IUOUT,IUIN
 
-C.....Surface aszimuth (deg from north) and elevation angles (walls: 0 deg, ceilings: 90 deg, floors: -90 deg)      
-      COMMON/PREC3/PAZI(MCOM,MS),PELV(MCOM,MS)
-      real PAZI, PELV     
-
-C----------------------------------------------------------------------
-C     Variables for insulation layer search criteria
-C----------------------------------------------------------------------      
-      real max_therm_effusivity
-      real therm_effusivity
-      logical bInsLayer, close
-      integer iNode_sv
-      integer iLayer, iLayer_sv
-      real small
-      
-      
       REAL GTP,GTF,QGLP,QGLF,QGGP,QGGF,GC
       REAL TSKY,CLOUDC,CLOUD1,CLOUD2,CLOUD3,TBAVE,TBROOF,TBNRTH
       REAL TBSUTH,TBEAST,TBWEST
@@ -351,8 +323,6 @@ C.....Local variables
 
 C.....DECLARATIONS for H3Kreporting object
       CHARACTER*2   cZone_Chars, cSurf_Chars, cNode_Chars
-
-      CHARACTER*128 ZONE_LABEL
 
       Logical lIncl_Zone, lIncl_Surf, lIncl_Node
       save lIncl_Zone, lIncl_Surf, lIncl_Node
@@ -417,16 +387,10 @@ C                                           ! per m2 of floor area
       real fZoneHeatGainInfiltration
       real fZoneHeatGainVentilation
 
-C.....15-Mar-2012 BAL: Added convectie and longwave radiative portion of solar gain,
-C.....                 the so called inward flowing fraction (IFF).      
-      real fZoneSolarHeatGainWinIFF
-      real fSurSolarHeatGainIFF
-      
-
       real fSurface_balance_net           ! Net surface energy balance
 
-      real fSurLoss, fSurGain                   ! General loss, gain vars (W)      
-      
+      real fSurLoss, fSurGain                   ! General loss, gain vars (W)
+
       real fThickness                ! Thickness of a layer in a MLC
       real fConductivity             ! Conductivity of MLC layer.
 
@@ -480,7 +444,6 @@ C.....Loads
       real fSUMHeatGainFloor                 !
       real fSUMHeatGainInfiltration          !
       real fSUMHeatGainVentilation
-	  real fSUMFreeCooling					 ! Free cooling delivered
 
 C.....Gains (W)
       real fSUMInternalGains                 ! Internal sources
@@ -492,13 +455,7 @@ C.....Gains (W)
       real fSUMExternalSolarAbsorbtion       ! Total opaque absorbtion
       real fSUMPassiveSolarFraction          ! Passive solar heating
                                              !   fraction
-      real fSUMLightingPower                 ! Lighing power (from casual gains)
-      real fSUMEquipmentPower                ! Power draw of equipment (from casual gains)
 
-C.....15-Mar-2012 BAL: Added convective and longwave radiative portion of solar gain,
-C.....                 the so called inward flowing fraction (IFF).
-      real fSUMSolarGainsIFF
-      
 
 C.....Air loads (W)
       real fSUMVentilationLoad               ! Ventilation load (W)
@@ -515,10 +472,7 @@ C.....Air loads (W)
      &     fSUMHeatGainCeiling, fSUMHeatGainWindows, fSUMHeatGainWalls,
      &     fSUMHeatGainFloor, fSUMHeatLossVentilation,
      &     fSUMHeatGainVentilation, fSUMHeatLossInfiltration,
-     &     fSUMHeatGainInfiltration, fSUMFreeCooling,
-     &     fSUMLightingPower, fSUMEquipmentPower,
-     &     fSUMSolarGainsIFF
-
+     &     fSUMHeatGainInfiltration
 
 
 
@@ -526,13 +480,14 @@ C----------------------------------------------------------------------
 C     Criteria to determine if solar gains are useful, or not;
 C----------------------------------------------------------------------
 
-      !logical bPSwindowsOpen                    ! Are windows open? NOT USED
-      real fFreeCoolTemp                      ! Max permissible
-                                              !    temp. (oC)
+      logical bPSwindowsOpen                    ! Are windows open?
+      real fSwingTemperature                  ! Max permissible
+                                              !    swing temp. (oC)
       logical bBuildingHeated                 ! Is building heated?
       ! ( These need to be picked up from other parts of esp-r.
       !   Hard-coded for now. )
-      ! parameter ( bPSwindowsOpen      = .false. ) NOT USED
+      parameter ( bPSwindowsOpen      = .false. )
+      parameter ( fSwingTemperature = 5.0     )
 
 
 C----------------------------------------------------------------------
@@ -544,8 +499,7 @@ C----------------------------------------------------------------------
                                    ! humidity given zone temperature,
                                    ! moisture content and atm. pressure.
 
-      logical bH3KExtentionsActive ! Function indicating of h3k-specific 
-                                   ! functions are active. 
+
 
 C----------------------------------------------------------------------
 C.....Set Performance indicators on first pass.  This is used to jump
@@ -581,9 +535,6 @@ C.....subroutine
          return
       endif
 
-c Small real number to check for values close to 0.
-      small = 1.0e-6      
-      
 C----------------------------------------------------------------------
 C     Check zone index. If iZone=1, re-zero running totals for
 C     entire building.
@@ -622,14 +573,6 @@ C----------------------------------------------------------------------
         fSUMAdverseInternalGains          = 0.0
         fSUMAdverseSolarGains             = 0.0
         fSUMHeatGainVentilation           = 0.0
-        fSUMFreeCooling                   = 0.0
-        fSUMLightingPower                 = 0.0
-        fSUMEquipmentPower                = 0.0
-        
-C.......15-Mar-2012 BAL: Added convective and longwave radiative portion of solar gain,
-C.......                 the so called inward flowing fraction (IFF).
-        fSUMSolarGainsIFF                 = 0.0       
-
       endif reset_building_totals
 
 
@@ -691,20 +634,13 @@ C-----------------------------------------------------------------------
       if ( Q_ZONE .GT. 0.) then
 
          Q_Heat = Q_ZONE
-         Q_Cool = 0.0
+         Q_Cool = 0.
 
       else
 
-         Q_Heat = 0.0
-         
-C........08-Apr-2012 BAL: Only active cooling should be reported as 
-C........cooling load so subtract free cooling (due to crude window
-C........control).
-         if ( bH3KExtentionsActive() ) then  
-           Q_Cool = ABS(Q_ZONE) - fFreeCoolDelivered(iZone)
-         else 
-           Q_Cool = ABS(Q_ZONE)
-         endif 
+         Q_Heat = 0.
+         Q_Cool = ABS(Q_ZONE)
+
       endif
 
 C-----------------------------------------------------------------------
@@ -729,10 +665,6 @@ C-----------------------------------------------------------------------
       fZoneHeatGainVentilation     = 0.0
       fZoneHeatGainFloor           = 0.0
       fZoneInfiltrationACH         = 0.0
-      
-C.....15-Mar-2012 BAL: Added convective and longwave radiative portion of solar gain,
-C.....                 the so called inward flowing fraction (IFF).       
-      fZoneSolarHeatGainWinIFF     = 0.0      
 
 C-----------------------------------------------------------------------
 C     Compute ventilation and infiltration loads
@@ -820,14 +752,12 @@ C-----------------------------------------------------------------------
      &       cZone_Chars,
      &       cSurf_Chars)
 
-
 C-----------------------------------------------------------------------
 C       Estimate heat loss from surface by performing energy
 C       balance on exterior surface node. Equation depends on
 C       whether surface is transparent.
 C-----------------------------------------------------------------------
-        check_for_window: if ( itmcfl( iZone, iSurface ) == 0 .and.
-     &                         icfcfl( iZone, iSurface ) == 0 ) then
+        check_for_window: if ( itmcfl( iZone, iSurface ) == 0 ) then
 
 C-----------------------------------------------------------------------
 C       Opaque surface:
@@ -844,130 +774,32 @@ C      ( Positive values indicate heat loss. )
 C
 C-----------------------------------------------------------------------
 
-C.........For floors, take the outermost layer for heat loss estimation.
-C.........For walls and ceiling, take the innermost layer for heat loss
-C.........estimation. 
 
-C.........Elevation angle (PELV) of floor surfaces is -90
-          call eclose(PELV(iZone,iSurface),-90.0,small,close)  
+C.........Conductivity may be temperature dependent.
+          temp_dependent: if ( ivthpz( iSurface ) ) then
 
-          Floor: IF ( close .or. .not. bH3KExtentionsActive() ) THEN    ! surface is a floor
+            fConductivity = ( THCONf(iSurface,1) + THCONf(iSurface,2) )
+     &                        / 2.0
 
-C...........Conductivity may be temperature dependent.
-            temp_dependent_out: if ( ivthpz( iSurface ) ) then
+          else
 
-              fConductivity = 
-     &                      (THCONf(iSurface,1) + THCONf(iSurface,2))
-     &                      / 2.0
+            fConductivity = THrMlI(iZone,iSurface,1,1)
 
-            else
-
-              fConductivity = THrMlI(iZone,iSurface,1,1)
-
-            endif temp_dependent_out
+          endif temp_dependent
 
 
-C...........Compute thickness
-            fThickness = THrMlI( iZone, iSurface, 1, 4 )
+C.........Compute thickness
+          fThickness = THrMlI( iZone, iSurface, 1, 4 )
      &                   / float ( NNDL( iZone, iSurface, 1 ) )
 
-C...........Compute flux
-            fSurface_balance_net =   fConductivity
+C.........Compute flux
+          fSurface_balance_net =   fConductivity
      &                         / fThickness
      &                         * sna( iZone, iSurface )
      &                         * ( TFc( iZone ,iSurface, 2 ) -
      &                             TFc( iZone, iSurface, 1 )
      &                            )
-          ELSE ! surface is a wall or ceiling
-          
-C...........Loop through layer nodes and compare the thermal effusivity 
-C...........(thermal inertia) of each layer to the maximum thermal effusivity. 
-C...........Thermal effusivity is defined as:
-C...........
-C...........  e = (conductivity * density * specific heat cap. ) ^ 0.5
-C...........
-C...........The maximum thermal effusivity is based on a survey of the
-C...........HOT3000 materials dictionary. If none of the layers fall below
-C...........this value, estimate the heat loss at the outermost layer.
 
-            max_therm_effusivity = 125.0
-                  
-            bInsLayer = .false.
-
-            ins_layer_search: do iLayer = 1, nELts(iZone, iSurface)
-          
-              iNode = iLayer * 2      ! this is the middle node of the layer
-            
-              therm_effusivity = ( THrMlI(iZone,iSurface,iLayer,1) *      ! conductivity [W/mK]
-     &                             THrMlI(iZone,iSurface,iLayer,2) *      ! density [kg/m3]
-     &                             THrMlI(iZone,iSurface,iLayer,3) )      ! specific heat capacity [J/kgK]
-     &                             ** 0.5
-                            
-C.............If insulation layer found, save node and layer no., and continue
-C.............marching towards the inside layer until the innermost
-C.............insulation layer is found.                             
-                if ( therm_effusivity .lt. max_therm_effusivity 
-     &               .and. therm_effusivity .gt. 0.01) then ! skip air gap
-                    bInsLayer = .true.
-                    iNode_sv = iNode
-                    iLayer_sv = iLayer
-                end if
-
-            enddo ins_layer_search
-          
-C...........if insulation layer was not found, set default layer and node to 
-C...........inside
-            if ( .not. bInsLayer ) then
-              iLayer = nELts(iZone, iSurface)
-              iNode = iLayer * 2
-            else
-              iLayer = iLayer_sv            
-              iNode = iNode_sv
-            end if 
-
-c          write(*,*)iLayer, iNode
-          
-C...........Calculate conductive heat loss on innermost layer.      
-            temp_dependent_in: if ( ivthpz( iSurface ) ) then
-
-              fConductivity = 
-     &                     ( THCONf(iSurface,iNode)
-     &                     + THCONf(iSurface,iNode + 1) )
-     &                        / 2.0
-
-            else
-
-              fConductivity = 
-     &                THrMlI(iZone,iSurface,iLayer,1)
-
-            endif temp_dependent_in
-
-
-C...........Compute thickness
-            fThickness=THrMlI( iZone, iSurface, iLayer,4)
-     &         / float ( NNDL( iZone, iSurface, iLayer))
-
-C...........Compute flux
-            if ( iNode + 1 .eq. nndc(iZone, iSurface)) then
-            
-                fSurface_balance_net =   fConductivity
-     &                  / fThickness
-     &                  * sna( iZone, iSurface )
-     &                  * ( TFs( iZone ,iSurface ) -
-     &                  TFc( iZone, iSurface, iNode))   
-
-            else
-            
-                fSurface_balance_net =   fConductivity
-     &                  / fThickness
-     &                  * sna( iZone, iSurface )
-     &                  * ( TFc( iZone, iSurface, iNode + 1) -
-     &                  TFc( iZone, iSurface, iNode))    
-     
-            end if
-     
-          ENDIF Floor
-     
         else
 
 C-----------------------------------------------------------------------
@@ -987,28 +819,7 @@ C           conventions. Positive values of fSurface_balance_net
 C           indicate heat transfer from the building to the surroundings.
 C-----------------------------------------------------------------------
 
-c          fSurface_balance_net =
-c     &      ( qconve(iZone,iSurface,2)
-c     &        + qlwrde(iZone,iSurface,2)
-c     &        + qlwrbd(iZone,iSurface,2)
-c     &        + qlwrsk(iZone,iSurface,2)
-c     &        + qswrde(iZone,iSurface,2) ) * (-1.0)
-
-c          fSurface_balance_net =
-c     &       qconvi(iZone,iSurface,2) + qlwrdi(iZone,iSurface,2) +
-c     &       qswrdi(iZone,iSurface,2)
-     
-C.........window balance-right side
-C          call add_to_xml_reporting (
-C     &     qconvi(iZone,iSurface,2) + qlwrdi(iZone,iSurface,2) +
-C     &    qswrdi(iZone,iSurface,2),
-C     &    H3K_rep_NAME(1:27) // '/ebal/window/right' ,
-C     &    '/ebal/window/right' ,	 
-C     &    'units', '(W)',
-C     &    'Right side of window e balance  ')
-
-	        H3KWindows: if ( .not. bH3KExtentionsActive() ) THEN 
-            fSurface_balance_net =
+          fSurface_balance_net =
      &      ( qconve(iZone,iSurface,2)
      &        + qlwrde(iZone,iSurface,2)
      &        + qlwrbd(iZone,iSurface,2)
@@ -1016,98 +827,7 @@ C     &    'Right side of window e balance  ')
      &        + qswrde(iZone,iSurface,2) ) * (-1.0)
 
 
-          else
-
-
-C.........Heat gain/loss through a window must be determined at the inside
-C.........layer because there are multiple transparent nodes that absorb
-C.........solar radiation. The conductive flux between the inner surface node
-C.........and the adjacent glass node is equal to the sum of fluxes at the
-C.........inner surface node.
-
-C.........Conductivity may be temperature dependent.
-          if ( ivthpz( iSurface ) ) then
-
-            fConductivity = 
-     &             ( THCONf(iSurface, nndc(iZone, iSurface)-1) + 
-     &               THCONf(iSurface, nndc(iZone, iSurface) ) )
-     &               / 2.0
-
-          else
-
-            fConductivity = 
-     &                  THrMlI(iZone,iSurface,nELts(iZone,iSurface),1)
-
-          endif
-
-
-C.........Compute thickness
-          fThickness = THrMlI(iZone,iSurface,nELts(iZone,iSurface),4)
-     &     / float ( NNDL( iZone, iSurface, nELts(iZone, iSurface) ) )
-
-C.........Compute flux
-          fSurface_balance_net =   fConductivity
-     &             / fThickness
-     &             * sna( iZone, iSurface )
-     &             * ( TFs( iZone ,iSurface ) -
-     &                 TFc( iZone, iSurface, nndc(iZone, iSurface) - 1 )
-     &               )
-
-C.........Now extract the U-value and SHGC contributions of the net conductive heat 
-C.........loss calculated at the innermost glass pane. The solar heat gain contribution
-C.........of the net heat flow is is attributed to the inward flowing fraction (IFF) of
-C.........absorbed solar energy at the innermost pane.
-C.........
-C.........Solar gain = Transmission + IFF of solar absorbed fluxes
-C.........
-C.........Estimate the U-value of the transparent surface. Use approximate values
-C.........for indoor/outdoor heat transfer coefficients, taken from H2K.
-C.........Outdoor HTC: 34.5 W/m^2.K
-C.........Indoor HTC: 7.5 W/m^2.K
-C.........
-C.........U-value = 1 / ( Sum of Rairgap + 1/34.5 + 1/7.5 ) (neglecting glass resistance)
-C.........Note: air gap resistances take into account both convective and radiative heat transfer,
-C.........which includes any fill gas and coating effects. 
-          
-          fTotalAirGapR = 0.0
-          do iGap = 1, ngaps(iZone, iSurface)
-            fTotalAirGapR = fTotalAirGapR + rgaps(iZone, iSurface, iGap)
-          enddo 
-          
-          fUvalue = 1.0 / ( fTotalAirGapR + (1.0/34.5) + (1.0/7.5) )
-          
-          fSurSolarHeatGainIFF = -1.0 * ( fSurface_balance_net - 
-     &                           ( fUvalue * sna( iZone, iSurface ) *
-     &                           (TFA(iZone)-TF) ) ) 
-	 
-C.........Since U-value is estimated, it's possible that the IFF will be slightly
-C.........negative. If this is the case, set to 0.0. 
-c		  if ( fSurSolarHeatGainIFF .lt. 0.0) fSurSolarHeatGainIFF = 0.0
-     
-c          write(91,*)'right',
-c     &       qconvi(iZone,iSurface,2) + qlwrdi(iZone,iSurface,2) +
-c     &       qswrdi(iZone,iSurface,2), (fConductivity / fThickness)
-c     &             * sna( iZone, iSurface )
-c     &             * ( TFs( iZone ,iSurface ) -
-c     &                 TFc( iZone, iSurface, nndc(iZone, iSurface) - 1 )
-c     &               )	
-	 
-C.........window balance-left side
-C          call add_to_xml_reporting (
-C     &    fConductivity
-C     &         / fThickness
-C     &         * sna( iZone, iSurface )
-C     &         * ( TFs( iZone ,iSurface ) -
-C     &             TFc( iZone, iSurface, nndc(iZone, iSurface) - 1 )
-C     &           ),
-C     &    H3K_rep_NAME(1:27) // '/ebal/window/left' ,
-C     &    '/ebal/window/left' ,	 
-C     &    'units', '(W)',
-C    &    'Left side of window e balance  ')	 
-        endif H3Kwindows
-
         endif check_for_window
-
         fZoneSurfaceFlux = fZoneSurfaceFlux + fSurface_balance_net
 
 C-----------------------------------------------------------------------
@@ -1117,6 +837,9 @@ C-----------------------------------------------------------------------
         surf_BCs: select case ( IE (iZone, iSurface ) )
 
           case ( iBCExternal )
+
+
+
 
 C...........Above-grade heat loss
             call AddToReport(
@@ -1207,9 +930,9 @@ C-----------------------------------------------------------------------
           endif is_flux_positive
 
         elseif ( bZoneHeated(iZone) ) then
-		
-				fSurLoss = fSurface_balance_net
-				fSurGain = 0.0
+
+          fSurLoss = fSurface_balance_net
+          fSurGain = 0.0
 
         elseif ( bZoneCooled(iZone) ) then
 
@@ -1248,14 +971,7 @@ C-----------------------------------------------------------------------
             fZoneHeatGainWindows = fZoneHeatGainWindows + fSurGain
             fSUMHeatLossWindows  = fSUMHeatLossWindows  + fSurLoss
             fSUMHeatGainWindows  = fSUMHeatGainWindows  + fSurGain
-            
-C...........15-Mar-2012 BAL: Added convective and longwave radiative
-C...........portion of solar gain, the so called inward flowing fraction (IFF).            
-            fZoneSolarHeatGainWinIFF = fZoneSolarHeatGainWinIFF + 
-     &                                 fSurSolarHeatGainIFF 
-            fSUMSolarGainsIFF        = fSUMSolarGainsIFF +
-     &                                 fSurSolarHeatGainIFF
-     
+
           case ( iSurfWall )
 
             fZoneHeatLossWalls = fZoneHeatLossWalls + fSurLoss
@@ -1312,11 +1028,8 @@ C.....Zone solar gains:   solar entering from outside (q1outs)
 C                       - solar escaping back to outside (q2lost)
 C                       + solar from other zones (q1adjz)
 C                       - solar to other zones  (q2adjz)
-C.....15-Mar-2012 BAL: Adding convective and longwave radiative solar
-C.....                 gain components
       fZoneSolarGains =   q1outs(iFuture) - q2lost(iFuture)
      &                  + q1adjz(iFuture) - q2adjz(iFuture)
-     &                  + fZoneSolarHeatGainWinIFF
 
 C.....Internal gains: sum of convective and radiative gains
       fZoneInternalGains = Cas_Rad_dat(iZone) + Cas_Con_dat(iZone)
@@ -1333,22 +1046,10 @@ C     (above which Sandars and Barakat assume the building will be
 C     ventilated).
 C-----------------------------------------------------------------------
 
-	  ! 14-Mar-2012 BAL: If the zone is being heated, and temperature
-	  ! is below the free cooling threshold fFreeCoolTemp, then 
-	  ! count internal and solar gains as useful. fFreeCoolTemp
-	  ! is equal to the cooling stepoint used for the free cooling
-	  ! controller, type 27 (BLC01_extended). If type 27 controller 
-	  ! detected, use the coolign setpoint, otherwise, use default
-	  ! of heating setpoint + 5 deg C. 
-	  if ( bFreeCoolCtl(iZone) ) then
-		fFreeCoolTemp = fCoolSetpoint(iZone)
-	  else
-		fFreeCoolTemp = fHeatSetpoint(iZone) + 5.0
-	  end if
-	  
       are_gains_useful:
-     &if ( bZoneHeated(iZone)  .and.
-     &     TFA(iZone) <= fFreeCoolTemp ) then
+     &if ( .not. bPSwindowsOpen .and.
+     &           bZoneHeated(iZone)  .and.
+     &     TFA(iZone) <= fHeatSetpoint(iZone) + fSwingTemperature ) then
 
         fZoneUsefulSolarGains    = fZoneSolarGains
         fZoneUsefulInternalGains = fZoneInternalGains
@@ -1418,8 +1119,6 @@ C.....Thermal loads
       fSUMNetLoad  = fSUMNetLoad  + fZoneHeatLoad - fZoneCoolLoad
       fSUMHeatLoss = fSUMHeatLoss + fZoneHeatLoad
       fSUMHeatGain = fSUMHeatGain + fZoneCoolLoad
-	  
-	  fSUMFreeCooling = fSUMFreeCooling + fFreeCoolDelivered(iZone)
 
 
 C.....Air load
@@ -1443,9 +1142,6 @@ C.....Internal gains
 
       fSUMAdverseInternalGains =   fSUMAdverseInternalGains
      &                           + fZoneAdverseInternalGains
-
-      fSUMLightingPower = fSUMLightingPower + Cas_Lights(iZone)
-      fSUMEquipmentPower = fSUMEquipmentPower + Cas_Equip(iZone)
 C
 C C Calculate loads per m2
 C       fm2ZoneHeatLoad=fZoneHeatLoad/zbasea(iZone)
@@ -1477,14 +1173,6 @@ C.....the H3Kreports demarcaration comments
 C.....Set format depending on number of zones
 
 !      H3K_rep_NAME = 'building/zone_' // cZone_Chars
-      ZONE_LABEL = zoneLabel(iZone)
-
-C.....ZONE LABEL (use dummy value of -1) (27-Jan-2011 Bart L)
-      call AddToReport(
-     &      rvZoneLabel%Identifier,
-     &      -1.0,
-     &      cZone_Chars,
-     &      ZONE_LABEL(1:LEN_TRIM(ZONE_LABEL)))
 
 C.....AIR POINT TEMPERATURE
       call AddToReport (
@@ -1531,27 +1219,6 @@ C.....ZONE HEAT INJECTION / EXTRACTION
      &         rvSuppliedEnergyCooling%Identifier,
      &         Q_cool,
      &         cZone_Chars)
-	 
-C....Cooling delivered by free-cooling means
-      call AddToReport (
-     &         rvFreeCoolingDelivered%Identifier,
-     &         fFreeCoolDelivered(iZone),
-     &         cZone_Chars)
-
-C....Free cooling control flag
-	  if(bFreeCoolCtl(iZone))then
-		call AddToReport (
-     &         rvFreeCoolCtlFlag%Identifier,
-     &         1.0,
-     &         cZone_Chars)
-	  else
-		call AddToReport (
-     &         rvFreeCoolCtlFlag%Identifier,
-     &         0.0,
-     &         cZone_Chars)	  
-	  endif
-	 
-	 
 
 C Convert heat injection/extraction metrics to "per m2 of floor area"
       Qm2_ZONE=Q_ZONE/zbasea(iZone)
@@ -1650,10 +1317,11 @@ C.....Zone air change rate (AIM2)
      &         fZoneHeatLossInfiltration,
      &         cZone_Chars)
 
-      call AddToReport (
-     &         rvEnvInfLoad%Identifier,
-     &         fZoneInfiltrationLoad,
-     &         cZone_Chars)
+      !C.L. for testing of h3kmodule.f90 remove corrected variable
+!      call AddToReport (
+!     &         rvEnvInfLoad%Identifier,
+!     &         fZoneInfiltrationLoad,
+!     &         cZone_Chars)
 
       call AddToReport (
      &         rvEnvInfBalanceAir%Identifier,
@@ -1811,35 +1479,6 @@ C.....Adverse internal gains
      &         fZoneAdverseInternalGains,
      &         cZone_Chars)
 
-C Lighting power (from casual gains)
-C    Set flag allowing h3kreports to scale this data fro seasonal
-C    reporting purposes. 3 = scale_gen
-        if ( bFirst_call_bld  )
-     &     call SetAdditionalValues(
-     &      rvBldZnLightPow%Identifier,
-     &      3,
-     &      .true.)
-
-       call AddToReport(
-     &     rvBldZnLightPow%Identifier,
-     &     Cas_Lights(iZone),
-     &     cZone_Chars)
-
-
-C Equipment power (from casual gains)
-C.......Set for Quickrun 3 = scale_gen
-        if ( bFirst_call_bld  )
-     &     call SetAdditionalValues(
-     &      rvBldZnEquipPow%Identifier,
-     &      3,
-     &      .true.)
-
-       call AddToReport(
-     &         rvBldZnEquipPow%Identifier,
-     &         Cas_Equip(iZone),
-     &         cZone_Chars)
-
-
 C-----------------------------------------------------------------------
 C     Check zone number: if this is the last zone, dump out aggregated
 C     building parameters.
@@ -1862,11 +1501,6 @@ C.......Net flux for building
      &         rvBuildingAllZonesSuppliedEnergyNetFlux%Identifier,
      &         fSUMNetFlux)
 
-C.......Free cooling
-      call AddToReport(
-     &         rvBuildingAllZonesFreeCooling%Identifier,
-     &         fSUMFreeCooling)	 
-	 
 C.......Total solar gains
       call AddToReport(
      &         rvBuildingAllZonesInsolationTotal%Identifier,
@@ -2023,28 +1657,6 @@ C.....Internal gains
      &      rvBuildingAllZonesInternalGainsAdverse%Identifier,
      &      fSUMAdverseInternalGains)
 
-C.....Set for quickrun 3 = scale_gen
-      if ( bFirst_call_bld  )
-     &    call SetAdditionalValues(
-     &      rvBldAllZonesLightPowTtl%Identifier,
-     &      3,
-     &      .true.)
-
-      call AddToReport(
-     &      rvBldAllZonesLightPowTtl%Identifier,
-     &      fSUMLightingPower)
-
-C.....Set for quickrun 3 = scale_gen
-      if ( bFirst_call_bld  )
-     &    call SetAdditionalValues(
-     &      rvBldAllZonesEquipPowTtl%Identifier,
-     &      3,
-     &      .true.)
-
-      call AddToReport(
-     &      rvBldAllZonesEquipPowTtl%Identifier,
-     &      fSUMEquipmentPower)
-
 C.....Net energy balance
       call AddToReport(
      &      rvBuildingAllZonesEnergyBalanceNet%Identifier,
@@ -2053,8 +1665,6 @@ C.....Net energy balance
      &      + fSUMNetFlux
      &      - fSUMNetLoad)
 
-
-        bFirst_call_bld  = .false.
       endif report_whole_building
 
 C---------------------------------------------------------------------
@@ -2171,9 +1781,9 @@ C........->Report data
 
 C calc mean surrounding temp of external surfaces
          if (IE(iZone,iSurface) .eq. 0) THEN ! the surfaces faces external
-            trsum = B1(iZone,iSurface)*TSKY**4.0 +
-     &                  C1(iZone,iSurface)*(GTF(1)+273.15)**4.0 +
-     &                    A1(iZone,iSurface)*TBAVE**4.0
+            trsum = B1(iZone,iSurface)*TSKY**4 +
+     &                  C1(iZone,iSurface)*(GTF(1)+273.15)**4 +
+     &                    A1(iZone,iSurface)*TBAVE**4
             trsum = trsum**0.25 - 273.15
 
 C........->Report data
@@ -2357,9 +1967,8 @@ C*******************************************************************************
       use h3kmodule
       IMPLICIT NONE
 
-      include "building.h"
-      include "MultiYear_simulations.h"
-      include "qrun.h"
+#include "building.h"
+#include "MultiYear_simulations.h"
 
 C.....Declare passed variables
       real     btimep, btimef   ! building present & future time (0.0->23.999..)
@@ -2478,14 +2087,6 @@ C.....Building simulation timestep
      &    real(nsinc))
 
 C.....H3Kreports.(time).end.................
-
-C.....Season
-C.....-> set name
-      if ( iQuick_Run == 1 ) then
-        call AddToReport(rvBldSeason%Identifier,
-     &      real(iThisSeason))
-      endif
-
       return
       end
 
@@ -2635,6 +2236,7 @@ C...........Transport State variables
      &            )
             endif
 
+
            !Mass flow (2nd phase)
             if( iState .eq. 1 ) then
                !C.L. for testing of h3kmodule.f90 removed the corrected variable and reinserted error
@@ -2687,7 +2289,7 @@ C.................Connection #
                      write(Connect_Num,'(I2)') kk ! nodes 10 to 99
                   else
                      iConnNumLen = 3
-                     write(Connect_num, '(I3)') kk ! nodes 100 to 999 (max 999)
+                     write(Connect_num,'(I3)') kk ! nodes 100 to 999 (max 999)
                   endif
 
 C.................Get connection properties using H3k_connect_property
@@ -4007,7 +3609,7 @@ C.........Loop through all interconnections in a flow network
                if (b_noveloc .eqv. .false.) THEN
         ! Now get density of "sending" node. If flw1(jj) is negative, use density of
         ! node "i_neg". Densit() returns density in kg/m3
-                  if (FLW1(jj) .lt. 0.0) THEN
+                  if (FLW1(jj) .lt. 0) THEN
                     rhon=DENSIT(NDFLD(i_neg),TNOD(i_neg))
                   Else
                     rhon=DENSIT(NDFLD(ii),TNOD(ii))

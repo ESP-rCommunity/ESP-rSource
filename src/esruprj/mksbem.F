@@ -194,10 +194,6 @@ C MMGFUN controls all UK NCM related tasks
       INTEGER iExtLgRadFlag
       REAL eGrdTp
 
-      common/anchora/NALOC,ALOC(20),ALOCLBL(20),ALOCTYP(20)
-      INTEGER NALOC
-      CHARACTER ALOC*12,ALOCLBL*12,ALOCTYP*4
-
       COMMON/C6/INDCFG
       INTEGER INDCFG
 
@@ -566,8 +562,6 @@ C ier is returned as non-zero if there was a problem.
 #include "geometry.h"
 #include "sbem.h"
 #include "model.h"
-C #include "tdf2.h"
-C #include "espriou.h"
 
       integer lnblnk  ! function definition
 
@@ -607,7 +601,7 @@ C For tdf to call arlist:
       integer IANSWER !Used for a call to EASKAB (1:yes, 2: no)
       integer iavailsyst !Temporary integer used for looping through the defined HVAC systems
       integer IPASS !to ask for a password
-      integer ier,itrc,IAPROB,ISTAT,iw
+      integer ier,iw
       integer iuact  ! return state from sbmedit call
       integer NITEMH,IDO,nitms,INN,INND ! max items and current menu item
       integer ivalue ! for editing integers
@@ -772,11 +766,11 @@ C Make high level menu asking for different parts of UK NCM
       ITEMX(11)= 'HVAC controls for EPC recommendations (optional)'
       ITEMX(12)= 'Advanced (only for DSM testing)'
       ITEMX(13)= 'Display current NCM information '
-C      ITEMX(14)= 'Proceed with setting up required models '
+      ITEMX(14)= 'Refresh temporal file based on NCM '
 C      ITEMX(15)= 'Run required assessments '
       IX=1
       CALL EPICKS(IX,KSTR,' ','Define UK NCM data',
-     &  50,13,ITEMX,'Define UK NCM data',IER,nbhelp)
+     &  50,14,ITEMX,'Define UK NCM data',IER,nbhelp)
       IF(KSTR(1).EQ.0)THEN
 
 C User did not pick anything. Save any changes in the NCM
@@ -1598,12 +1592,12 @@ C Add/edit renewable systems
             NREN=NREN+1
             RENNAME(INDEX)=' '
             D24=' '
-            CALL EASKS(RENNAME(INDEX),'Name of renewable energy system',
+            CALL EASKS(RENNAME(INDEX),'Renewable energy system name',
      &        '(<24 characters)',24,D24,'RENNAME',IER,nbhelp)
           ELSEIF(IED.GT.0)THEN
             INDEX=IED
             D24=RENNAME(INDEX)
-            CALL EASKS(RENNAME(INDEX),'Name of renewable energy system',
+            CALL EASKS(RENNAME(INDEX),'Renewable energy system name',
      &        '(<24 characters)',24,D24,'RENNAME',IER,nbhelp)
           ENDIF
           IDNO=0 ; IB=0
@@ -1652,9 +1646,9 @@ C Solar PV collectors
             NRENTYPE(INDEX)=2
             IE=0 ; IENO=0
             call MENUATOL('Choose PV type','Choose PV type',
-     &        'a mono-crystalline silicon','b poly-crystalline silicon',
-     &        'c amorphous silicon','d other thin films',' ',' ',
-     &        ' ',' ',' ',' ',' ',' ',IE,ieno,nbhelp)
+     &       'a mono-crystalline silicon','b poly-crystalline silicon',
+     &       'c amorphous silicon','d other thin films',' ',' ',
+     &       ' ',' ',' ',' ',' ',' ',IE,ieno,nbhelp)
 
 C Hold PV efficiency from table 26, page 80, SBEM technical manual
 C version 1 of 10-dec-07
@@ -1684,11 +1678,11 @@ C Wind turbines
             NRENTYPE(INDEX)=3
             CALL EDISP(IUOUT,'SBEM terrain types for wind turbines:')
             CALL EDISP(IUOUT,'Type 1 is open flat country')
-            CALL EDISP(IUOUT,'Type 2 is farm land with boundary hedges')
-            CALL EDISP(IUOUT,' occasional small farm structures, ')
-            CALL EDISP(IUOUT,' houses or trees')
-            CALL EDISP(IUOUT,'Type 3 is suburban, industrial areas and')
-            CALL EDISP(IUOUT,' permanent forests')
+            CALL EDISP(IUOUT,'Type 2 is farm land with boundary')
+            CALL EDISP(IUOUT,' hedges occasional small farm ')
+            CALL EDISP(IUOUT,' structures, houses or trees')
+            CALL EDISP(IUOUT,'Type 3 is suburban, industrial areas')
+            CALL EDISP(IUOUT,' and permanent forests')
             CALL EDISP(IUOUT,'Type 4 is urban areas in which at least')
             CALL EDISP(IUOUT,' 15% of surface is covered by buildings')
             CALL EDISP(IUOUT,' of average height exceeding 15m')
@@ -1830,6 +1824,12 @@ C Display information
         call edisp(iuout,'  ')
         goto 222  ! see what the user wants to do next
 
+      ELSEIF(KSTR(1).EQ.14)THEN
+
+C Refresh the temporal file.
+        call refreshtemporal()
+        goto 222  ! see what the user wants to do next
+
       ENDIF
       return
 
@@ -1856,10 +1856,15 @@ C  act = 'l' lighting information
       integer ncomp,ncon
       common/c1/ncomp,ncon
 
-      character act*1,outs*124,outs248*248
+      character act*1,outs*144,outs248*248
       character TMPSTR*64
-      integer lnb,lnbb  ! actual lengths of strings
+      integer lnb,lnbb,lnact  ! actual lengths of strings
       integer itu       ! unit to write to
+      real nbpeople     ! number of people in the zone
+      real freshairhr   ! make-up air in m3/hr
+      real freshairchanges  ! make-up ach
+      real latentfrac   ! fraction of metabolic that is latent
+      real totocup,ocupsens,ocuplat ! sensible and latent
 
 C Re-establish glazing fractions based on UK NCM guidelines
       if(ibusertyp.ne.0)then
@@ -2162,16 +2167,33 @@ C DHW reporting.
  104    CONTINUE
       elseif(act.eq.'a'.or.act.eq.'o')then
 
-C Occupancy links.
-        write(outs,'(A)')'Zone to activity linkages'
+C Occupancy links. Also derive and report on ocupant density, makeup air
+C in M3/hr for the zone. 
+        write(outs,'(A)')
+     &  'Zone to activity occupants makeup air sensible latent casual'
         call edisp(itu,outs)
         DO 105 IZ=1,NCOMP
           lnb=lnzname(IZ)
           ireadactivityindex=theactivityindex(IZ)
           if(ireadactivityindex.gt.0)then
-            write(outs,'(3A,I4,I6,1X,A)') 'Zone ',zname(iz)(1:lnb),
-     &        ' is linked to ',IACTYTYP(IZ),ireadactivityindex,
-     &        roomactname(ireadactivityindex)
+            nbpeople=occupant_dens(ireadactivityindex)*ZBASEA(IZ)
+            freshairhr=nbpeople*fresh_air(ireadactivityindex) *
+     &                 (3600./1000.)
+            freshairchanges=freshairhr/vol(iz)
+            totocup=nbpeople*metabolic_rate(ireadactivityindex)
+            latentfrac=latent_ocup_percent(ireadactivityindex)/100.0
+            ocupsens=totocup-(totocup*latentfrac)
+            ocuplat=totocup*latentfrac
+            lnact=lnblnk(roomactname(ireadactivityindex))
+            if(lnact.gt.32) lnact=32
+            write(outs,'(2A,I3,1X,2A,f5.1,a,f6.1,a,f5.2,a,
+     &        f6.0,a,f5.2,a,f5.0,a,f5.2,a)') 
+     &        zname(iz)(1:lnb),' uses ',ireadactivityindex,
+     &        roomactname(ireadactivityindex)(1:lnact),' : ',
+     &        nbpeople,' occ & makeup ',freshairhr,' m3/h ',
+     &        freshairchanges,' ach & occ sen ',ocupsens,'W ',
+     &        ocupsens/ZBASEA(IZ),'W/m2 lat ',ocuplat,'W ',
+     &        ocuplat/ZBASEA(IZ),'W/m2.'
           else
             write(outs,'(6A)') 'Zone ',zname(iz)(1:lnb),
      &        ' is linked to ',' 0',' 0',
@@ -3137,7 +3159,7 @@ C EDSBMREGS edits the building regs definition within the UK NCM file.
       CHARACTER*46 CIBSESTR2(4) ! concatenation of no. floors and area
       DIMENSION JSTR(8)
       dimension IVALSS(29)       ! array to get epicks answer from
-      dimension iedit(MCOM) !to use for menu and saving of air leakage (ach per zone)
+      dimension iedit(MCOM) !to use for menu & saving of air leakage (ach per zone)
       integer iedit
       integer nitms,INO ! max items and current menu item
       logical NEAR
@@ -3242,7 +3264,8 @@ c     &  'yes','no','Do not know',IW,nbhelp)
      &      ICIBSESTOR(ICIBSE1,IBT),' storeys '
           ELSE
             WRITE(CIBSESTR2(IBT),'(1I4,A,1I6)')
-     &      ICIBSESTOR(ICIBSE1,IBT),' storeys & area per floor(m2) of ',
+     &      ICIBSESTOR(ICIBSE1,IBT),
+     &      ' storeys & area per floor(m2) of ',
      &      ICIBSEAREA(ICIBSE1,IBT)
           ENDIF
  134    CONTINUE
@@ -3395,6 +3418,7 @@ C required models ') which returned iuact=1.
 #include "building.h"
 #include "geometry.h"
 #include "sbem.h"
+#include "net_flow.h"
 #include "tdf2.h"
 #include "control.h"
 #include "model.h"
@@ -3436,8 +3460,8 @@ C Need to write TDF info in the cfg file. Use next common(s) for this.
       real psi,lngth,losspercent,totheatloss,thbrpercent
       real uavtotal
       common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
-     &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
-     &               thbrpercent,uavtotal(MCOM)
+     &       ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
+     &       thbrpercent,uavtotal(MCOM)
 
       CHARACTER DFILE*72
       character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
@@ -3825,7 +3849,8 @@ C write 5 columns per unique activity entry
           WRITE(iafil,'(a,i2,a,i5,a,i3)',IOSTAT=ios,ERR=101)
      &    '   20   ',icountnotequal,'    1',itdyear,'    1  365',
      &    icolumns
-          WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '# NEXTRC,NEXTCL,NDBSTP'
+          WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) 
+     &      '# NEXTRC,NEXTCL,NDBSTP'
           inxt_column=icolumns+1
           WRITE(iafil,'(a,i3,a)',IOSTAT=ios,ERR=101) '      1   ',
      &         inxt_column,' 8760'
@@ -3833,8 +3858,10 @@ C write 5 columns per unique activity entry
           icolumns=5
           WRITE(iafil,'(a,i5,a)',IOSTAT=ios,ERR=101)
      &    '   20    1    1',itdyear,'    1  365    5'
-          WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '# NEXTRC,NEXTCL,NDBSTP'
-          WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '      1      1   8760'
+          WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) 
+     &      '# NEXTRC,NEXTCL,NDBSTP'
+          WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) 
+     &      '      1      1   8760'
         endif
         WRITE(iafil,'(a)',IOSTAT=ios,ERR=101)
      &    '*tdaid1,Set set of UK NCM occupancy patterns'
@@ -3867,19 +3894,19 @@ C NTBITS and NTSTAT are hardwired here to 5 and 11 respectively
           WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '*other,  11  5'
           WRITE(iafil,'(2a)',IOSTAT=ios,ERR=101) '*fields,16'
           WRITE(iafil,'(a,F4.3,2a)',IOSTAT=ios,ERR=101)
-     &      'REAL  1  0   ',occupant_dens(iforuseintdfentry(i)),
+     &      'REAL  1  0  ',occupant_dens(iforuseintdfentry(i)),
      &      ' 0.000    100.000  ','Occupant density (pers/m2):'
           WRITE(iafil,'(a,I3,2a)',IOSTAT=ios,ERR=101)
-     &      'INTG  2  0   ',metabolic_rate(iforuseintdfentry(i)),
+     &      'INTG  2  0  ',metabolic_rate(iforuseintdfentry(i)),
      &      ' 0       999  ','Metabolic rate (W/pers):'
           WRITE(iafil,'(a,I3,2a)',IOSTAT=ios,ERR=101)
-     &      'INTG  3  0   ',latent_ocup_percent(iforuseintdfentry(i)),
+     &      'INTG  3  0  ',latent_ocup_percent(iforuseintdfentry(i)),
      &      ' 0       100  ','Occup. Latent gain % (0-100):'
           WRITE(iafil,'(a,F6.3,2a)',IOSTAT=ios,ERR=101)
-     &      'REAL  4  0    ',equip_gain(iforuseintdfentry(i)),
+     &      'REAL  4  0   ',equip_gain(iforuseintdfentry(i)),
      &      ' 0.000    400.000  ','Equipment (W/m2):'
           WRITE(iafil,'(1a,I3,2a)',IOSTAT=ios,ERR=101)
-     &      'INTG  5  0    ',latent_equip_percent(iforuseintdfentry(i)),
+     &      'INTG  5  0   ',latent_equip_percent(iforuseintdfentry(i)),
      &      ' 0       100  ','Equip. Latent gain % (0-100):'
           WRITE(iafil,'(a,I3,2a)',IOSTAT=ios,ERR=101)
      &      'INTG  6  0    ',lighting_lux(iforuseintdfentry(i)),
@@ -4118,6 +4145,615 @@ C Keep writing now the items needed for cfg file
       return
       end
 
+C ********************* refreshtemporal
+C refreshtemporal takes the current NCM description and rebuilds
+C the hourly temporal database. Used if the occupancy assigned
+C to a zone changes (but nothing else does).
+      subroutine refreshtemporal()
+#include "building.h"
+#include "geometry.h"
+#include "sbem.h"
+#include "net_flow.h"
+#include "tdf2.h"
+#include "control.h"
+#include "model.h"
+#include "espriou.h"
+
+      integer lnblnk  ! function definition
+
+      common/FILEP/IFIL
+      INTEGER :: ifil
+      COMMON/OUTIN/IUOUT,IUIN
+      INTEGER :: iuout,iuin
+      integer ncomp,ncon
+      common/C1/NCOMP,NCON
+      COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
+      common/C21/IFCFG,cfgroot,LCFGF
+      INTEGER :: IFCFG
+      integer IZSTOCN
+      COMMON/C24/IZSTOCN(MCOM,MS)
+      COMMON/RAY3/MODIFY,MODLEN,MODBND
+      COMMON/RAY6/LINSTY(MCON)
+      COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
+      COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+
+C TDF related.
+      CHARACTER LIMP*96,LEXP*96
+      COMMON/TDFIO/LIMP,IUIMP,ITIMP,LEXP,IUEXP,ITEXP
+      COMMON/TDAT/TABU(MTABC),TABT(MTABC),TABUMN(MTABC),TABUMX(MTABC)
+
+C Need to write TDF info in the cfg file. Use next common(s) for this.
+      COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
+      COMMON/HDAT/IHREC(MIT)
+
+      common/sctl/tcps,ictyp,iclaw,cm(misc)
+      common/cctl/icascf(mcom)
+      common/cctlnm/ctldoc,lctlf
+      character ctldoc*248,LCTLF*72
+
+      integer nbrdg, ibrdg
+      real psi,lngth,losspercent,totheatloss,thbrpercent
+      real uavtotal
+      common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
+     &       ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
+     &       thbrpercent,uavtotal(MCOM)
+
+      CHARACTER DFILE*72
+      character DBTAG*12,DBTASK*12,DBZN*15,DBSN*15
+
+C Where ESP-r was installed (as recorded when it was compiled).
+      common/deflt4/dinstpath
+      character dinstpath*60
+      character subpath*72
+      CHARACTER OUTSTR*124
+
+      CHARACTER ACT*1,ADF*124
+      character cfgroot*24,LCFGF*72,NNAME*72
+      character fs*1,msgl2*48,tab*1
+      character outs*124,GUESS*24
+
+      LOGICAL NEWGEO,MODIFY,MODLEN,MODBND
+      logical unixok,XST
+      logical ctl_Zonelink_match !This si to allow the sorted activity indices to be matched with
+                                 !the original ones. The zone numbers can then be used to link the
+                                 !controls to zones.
+      character APE*6,EXT*4
+      character delim*1
+      character louts*1000        ! buffer of 1k char to support larger models
+      real CDAY,RDOTY            ! reals for timestamp calculations
+      integer itime,ip           ! integers for timestamp calculations
+      integer iafil              ! file unit for writing temporal header
+      integer icolumns           ! number of colums for tdf file depending on the unique non-zero activities
+
+      integer inxt_column !the next available column in the tdf file
+      DIMENSION iactiv_tdf_item(MCOM)
+      DIMENSION iforuseintdfentry(MCOM)
+      DIMENSION iactiv_tdf_items(MCOM)
+      integer iactiv_tdf_item
+      integer iforuseintdfentry
+      integer icountnotequal  ! the final unique and non-zero number of activities that represent the number of entries
+                              ! in the tdf file.
+      integer iactiv_tdf_items
+      integer iarraycount !used to fill in the arrays and call arlist
+      integer iskipandmatch ! counter to skip common unsorted activities. See comments in the code for additional info.
+      integer i2skipandmatch !second counter in case iactiv_tdf_item(IZ).eq.theactivityindex(iCTLlink)
+      logical isnotequal     ! to avoid range error on logic test
+
+C For tdf to call arlist:
+      DIMENSION COLUMNTDF(MTABC,8760)
+      REAL COLUMNTDF
+      DIMENSION COLUMNWRITE(MTABC)
+      REAL COLUMNWRITE
+      integer iloc1,iloc2,iloc3,iloc4,iloc5  !for writing tdf location data in the file
+      REAL val_converted
+      real ZD  ! depth for ground temp calc
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EMKSTRIPPED'  ! set for subroutine
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
+      tab=','
+
+      icountnotequal=0
+      DO 623 IZ=1,NCOMP
+        iactiv_tdf_item(IZ)=0
+        iactiv_tdf_items(IZ)=0
+        iforuseintdfentry(IZ)=0
+        iactiv_tdf_item(IZ)=theactivityindex(IZ)
+  623 CONTINUE
+
+C Set entries in ascending order.
+C There is more than one zone so sort the activities so that
+C controls can be created.
+      KFLAG=2
+      call SORTI(iactiv_tdf_item,iactiv_tdf_items,NCOMP,KFLAG)
+      iskipandmatch=1
+      DO 622 IZ=1,NCOMP
+        isnotequal=.false.
+        ctl_Zonelink_match=.false.
+        if(IZ.eq.1)then
+          isnotequal=.true.
+        elseif(IZ.gt.1)then
+          if(iactiv_tdf_item(IZ).ne.iactiv_tdf_item(IZ-1))then
+            isnotequal=.true.
+
+C Debug.
+C              if(unixok)then
+C                write(6,*)'iz: ',iactiv_tdf_item(IZ),'iz-1: ',
+C     &                 iactiv_tdf_item(IZ-1)
+C              endif
+          endif
+        endif
+        if(isnotequal)then
+
+C Reset the counter iskipandmatch to use for the opposite case (i.e.
+C where iactiv_tdf_item(IZ).eq.iactiv_tdf_item(IZ-1)
+C See comments at the place where iskipandmatch is used for more details
+C about this counter
+          iskipandmatch=1
+          icountnotequal=icountnotequal+1
+          iforuseintdfentry(icountnotequal)=iactiv_tdf_item(IZ)
+C Debug.
+C          write(6,*)'a:', icountnotequal
+
+C Control items
+C Need a counter here to skip common non-sorted activities and match the right one
+C Example: A building with sorted activity indices of: 92,92,92,155,196
+C in needed to identify the zone number where this activities belong to in order
+C to connect the control loops. Let's say: 2,4,5,3,1 respectively for this example.
+C Unsorted this activities would have been: 155,92,196,92,92 and the zone numbers
+C would obviously be 1,2,3,4,5 respectively.
+          iCTLlink=1
+          do while(.not.ctl_Zonelink_match.and.iCTLlink.le.ncomp)
+            if(iactiv_tdf_item(IZ).eq.
+     &          theactivityindex(iCTLlink))then
+              ctl_Zonelink_match=.true.
+            else
+              iCTLlink=iCTLlink+1
+            endif
+          end do
+
+C For an ACTIVITY type of item the heating setpoint will
+C always be the 5th column and the cooling setpoint will
+C always be the 6th colum so set cm(2) and cm(3) with
+C fixed values. Later when the temporal data is scanned
+C the returned array of values for the current ACTIVITY item
+C will have the heating and cooling at this offset.
+          ibsn(icountnotequal,1)=-2 !0
+          ibsn(icountnotequal,2)=0
+          ibsn(icountnotequal,3)=50 !0
+          ibsn(icountnotequal,4)=0
+          val_converted=REAL(icountnotequal)
+          cm(2)=5.0*val_converted
+          cm(3)=5.0*val_converted+1.
+          iban(icountnotequal,1)=0
+          iban(icountnotequal,2)=0
+          iban(icountnotequal,3)=0
+          nbcdt(icountnotequal)=1
+          ibcdv(icountnotequal,1,1)=1
+          ibcdv(icountnotequal,1,2)=365
+          nbcdp(icountnotequal,1)=1
+          tbcps(icountnotequal,1,1)=0.0
+          ibctyp(icountnotequal,1,1)=0
+          ibclaw(icountnotequal,1,1)=23
+          cm(1)=2.0
+
+C Update the control period data.
+          bmiscd(icountnotequal,1,1,1)=cm(1)
+          bmiscd(icountnotequal,1,1,2)=cm(2)
+          bmiscd(icountnotequal,1,1,3)=cm(3)
+
+C Update the control file and link the control loop to the correct zone.
+          icascf(iCTLlink)=icountnotequal
+        elseif(iactiv_tdf_item(IZ).eq.iactiv_tdf_item(IZ-1))then
+          iskipandmatch=iskipandmatch+1
+
+C Debug.
+C          write(6,*)'iz_b: ',iactiv_tdf_item(IZ),'iz_b-1: ',
+C     &               iactiv_tdf_item(IZ-1)
+C          write(6,*)'b:', icountnotequal
+          i2skipandmatch=0
+          iCTLlink=1
+          do while(.not.ctl_Zonelink_match.and.iCTLlink.le.ncomp)
+            if(iactiv_tdf_item(IZ).eq.
+     &         theactivityindex(iCTLlink))then
+
+C Need a counter here to skip common non-sorted activities and match the right one
+C Example: A building with sorted activity indices of: 92,92,92,155,196
+C in needed to identify the zone number where this activities belong to in order
+C to connect the control loops. Let's say: 2,4,5,3,1 respectively for this example.
+C Unsorted this activities would have been: 155,92,196,92,92 and the zone numbers
+C would obviously be 1,2,3,4,5 respectively. The first loop (IZ here) goes through the
+C sorted indices and then the second loop (iCTLlink here) goes through the unsorted.
+C In this second case here where iactiv_tdf_item(IZ).eq.iactiv_tdf_item(IZ-1)
+C for example 92,92... the logic for the loop through the unsorted activities needs to
+C know if the activity has already been scanned and skip it in order to take the right
+C zone number and use for the control loops. This is why the counter iskipandmatch is
+C used here.
+C i2skipandmatch will be used as a second counter in case
+C iactiv_tdf_item(IZ).eq.theactivityindex(iCTLlink)
+C This whole thing is done to determine which control function links to which zone
+              i2skipandmatch=i2skipandmatch+1
+              if(iskipandmatch.eq.i2skipandmatch)then
+                ctl_Zonelink_match=.true.
+              else
+                ctl_Zonelink_match=.false.
+              endif
+              iCTLlink=iCTLlink+1
+            else
+              iCTLlink=iCTLlink+1
+            endif
+          end do
+
+C Update the control file and link the control loop to the correct zone.
+C Using iCTLlink-1 because 1 has been added to iCTLlink when
+C the do while loop finished.
+          icascf(iCTLlink-1)=icountnotequal
+        endif
+  622 CONTINUE
+      call edisp(iuout,'Generating zone controls.')
+      iloc1=0
+      iloc2=0
+      iloc3=0
+      iloc4=0
+      iloc5=0
+      znctldoc='Specific controls for UK NCM activities '
+      ncf=icountnotequal
+
+C Save control file.
+      if(LCTLF(1:2).eq.'  '.or.LCTLF(1:4).eq.'UNKN')then
+        LN=max(1,LNBLNK(cfgroot))
+        if(ctlpth(1:2).eq.'  '.or.ctlpth(1:2).eq.'./')then
+          WRITE(LCTLF,'(2a)')cfgroot(1:ln),'.ctl'
+        else
+          WRITE(LCTLF,'(4a)') ctlpth(1:lnblnk(ctlpth)),fs,
+     &         cfgroot(1:ln),'.ctl'
+        endif
+      endif
+      ICTLF=IFIL+1
+      call usrmsg('Updating model control for temporal link...',
+     &  ' ','-')
+
+C Write control file (filename.ctl is saved to filename_str.ctl)
+      APE='_str  '
+      EXT='.ctl'
+      CALL FNCNGR(LCTLF,APE,EXT,NNAME)
+      LCTLF=NNAME
+      XST=.FALSE.
+      call FINDFIL(LCTLF,XST)  ! using model path
+      CALL CTLWRT(ICTLF,IER)
+
+C Write out the temporal header as well as hourly data for the
+C first temporal item.
+      XST=.FALSE.
+      call findfil(LTDFA,XST)
+      IF(XST)THEN
+        helptopic='ncm_str_ctl_warn'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+        CALL PHELPD('File exists',nbhelp,'-',0,0,IER)
+      ENDIF
+      iafil=IUTDFA
+      ITDFLG=3
+      itdyear=iyear
+      CALL ERPFREE(iafil,ISTAT)
+      CALL EFOPSEQ(iafil,LTDFA,4,IER)
+      if(ier.eq.0)THEN
+        write(currentfile,'(a)') LTDFA(1:lnblnk(LTDFA))
+      ELSE ! WARNING MESSAGE HERE
+      ENDIF
+      call edisp(iuout,'Generating hourly room use data.')
+      WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) 'ASCIITDF3'
+      WRITE(iafil,'(a)',IOSTAT=ios,ERR=101)
+     &  '# NWPR NITDF NTSPH itdyear,itdbdoy,itdedoy,columns'
+      if(icountnotequal.gt.1)then
+
+C write 5 columns per unique activity entry
+        icolumns=5*icountnotequal
+        WRITE(iafil,'(a,i2,a,i5,a,i3)',IOSTAT=ios,ERR=101)
+     &    '   20   ',icountnotequal,'    1',itdyear,'    1  365',
+     &  icolumns
+        WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) 
+     &    '# NEXTRC,NEXTCL,NDBSTP'
+        inxt_column=icolumns+1
+        WRITE(iafil,'(a,i3,a)',IOSTAT=ios,ERR=101) '      1   ',
+     &       inxt_column,' 8760'
+      else
+        icolumns=5
+        WRITE(iafil,'(a,i5,a)',IOSTAT=ios,ERR=101)
+     &    '   20    1    1',itdyear,'    1  365    5'
+        WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) 
+     &    '# NEXTRC,NEXTCL,NDBSTP'
+        WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) 
+     &    '      1      1   8760'
+      endif
+      WRITE(iafil,'(a)',IOSTAT=ios,ERR=101)
+     &  '*tdaid1,Set set of UK NCM occupancy patterns'
+      WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '*tdaid2,-'
+      DO 1 i=1,icountnotequal
+
+C Get first the location of the columns to use the right data during simulation.
+C Instanciate ITCOL for use later on in the subroutine.
+        iloc1=5*(i-1)+1
+        ITCOL(i,12)=iloc1
+        iloc2=5*(i-1)+2
+        ITCOL(i,13)=iloc2
+        iloc3=5*(i-1)+3
+        ITCOL(i,14)=iloc3
+        iloc4=5*(i-1)+4
+        ITCOL(i,15)=iloc4
+        iloc5=5*(i-1)+5
+        ITCOL(i,16)=iloc5
+
+C Write the header of the ASCII tdf file.
+        WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '*items'
+        WRITE(iafil,'(2a,i4)',IOSTAT=ios,ERR=101) '*tag',tab,
+     &        iforuseintdfentry(i)
+        WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '*type,ACTIVITY'
+        WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '*menu,Activity Type:'
+        WRITE(iafil,'(a)',IOSTAT=ios,ERR=101)
+     &    '*aide,Activity db (DOE/SBEM)'
+
+C NTBITS and NTSTAT are hardwired here to 5 and 11 respectively
+        WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '*other,  11  5'
+        WRITE(iafil,'(2a)',IOSTAT=ios,ERR=101) '*fields,16'
+        WRITE(iafil,'(a,F4.3,2a)',IOSTAT=ios,ERR=101)
+     &    'REAL  1  0  ',occupant_dens(iforuseintdfentry(i)),
+     &    ' 0.000    100.000  ','Occupant density (pers/m2):'
+        WRITE(iafil,'(a,I3,2a)',IOSTAT=ios,ERR=101)
+     &    'INTG  2  0  ',metabolic_rate(iforuseintdfentry(i)),
+     &    ' 0       999  ','Metabolic rate (W/pers):'
+        WRITE(iafil,'(a,I3,2a)',IOSTAT=ios,ERR=101)
+     &    'INTG  3  0  ',latent_ocup_percent(iforuseintdfentry(i)),
+     &    ' 0       100  ','Occup. Latent gain % (0-100):'
+        WRITE(iafil,'(a,F6.3,2a)',IOSTAT=ios,ERR=101)
+     &    'REAL  4  0   ',equip_gain(iforuseintdfentry(i)),
+     &    ' 0.000    400.000  ','Equipment (W/m2):'
+        WRITE(iafil,'(1a,I3,2a)',IOSTAT=ios,ERR=101)
+     &    'INTG  5  0   ',latent_equip_percent(iforuseintdfentry(i)),
+     &    ' 0       100  ','Equip. Latent gain % (0-100):'
+        WRITE(iafil,'(a,I3,2a)',IOSTAT=ios,ERR=101)
+     &    'INTG  6  0    ',lighting_lux(iforuseintdfentry(i)),
+     &    ' 0       999  ','Number of luxes (lux):'
+        WRITE(iafil,'(a,F6.3,2a)',IOSTAT=ios,ERR=101)
+     &    'REAL  7  0    ',display_lighting(iforuseintdfentry(i)),
+     &    ' 0.000    400.000  ','Display Lighting (W/m2):'
+        WRITE(iafil,'(a,F7.2,2a)',IOSTAT=ios,ERR=101)
+     &    'REAL  8  0   ',dhw_litres(iforuseintdfentry(i)),
+     &    ' 0.000    400.000  ','Dom. Hot Water (l/d/m2):'
+        WRITE(iafil,'(a,F6.3,2a)',IOSTAT=ios,ERR=101)
+     &    'REAL  9  0    ',fresh_air(iforuseintdfentry(i)),
+     &    ' 0.000    400.000  ','Outdoor air (l/s/pers.):'
+        WRITE(iafil,'(2a)',IOSTAT=ios,ERR=101)
+     &    'INTG 10  0         0         0       100  ',
+     &    'Min Humidity levels (%): '
+        WRITE(iafil,'(2a)',IOSTAT=ios,ERR=101)
+     &    'INTG 11  0         0         0       100  ',
+     &    'Max Humidity levels (%): '
+        WRITE(iafil,'(a,i3,2a)',IOSTAT=ios,ERR=101)
+     &    'REAL 12 ',iloc1,'   0.000      0.000      1.000  ',
+     &    'Occupant fraction:'
+        WRITE(iafil,'(a,i3,2a)',IOSTAT=ios,ERR=101)
+     &    'REAL 13 ',iloc2,'   0.000      0.000      1.000  ',
+     &    'Lights fraction:'
+        WRITE(iafil,'(a,i3,2a)',IOSTAT=ios,ERR=101)
+     &    'REAL 14 ',iloc3,'   0.000      0.000      1.000  ',
+     &    'Equipment fraction:'
+        WRITE(iafil,'(a,i3,F7.2,2a)',IOSTAT=ios,ERR=101)
+     &    'REAL 15 ',iloc4,Hmainsetpoint(iforuseintdfentry(i)),
+     &    '   -101.000    101.000  ','Heating setpoint (C):'
+        WRITE(iafil,'(a,i3,F7.2,2a)',IOSTAT=ios,ERR=101)
+     &    'REAL 16 ',iloc5,Cmainsetpoint(iforuseintdfentry(i)),
+     &    '   -101.000    101.000  ','Cooling setpoint (C):'
+        WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '*end_item'
+ 1    CONTINUE
+      WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '*pointers'
+
+C Need to predict the next value of ihrec. Do this by setting irec
+C to the next position after the last item header. If the first
+C item then the position will be 5.
+      if(icountnotequal.gt.1)then
+
+C It will always be NTBITS=5 here and NTSTAT=11 for NCM activities
+        do 852 ibits_and_stats=1,icountnotequal
+          NTBITS(ibits_and_stats)=5
+          NTSTAT(ibits_and_stats)=11
+  852   continue
+        ihrec(1)=5
+        do 963 iwrpoint=2,icountnotequal
+          ihrec(iwrpoint)=ihrec(iwrpoint-1)+
+     &          NTBITS(iwrpoint-1)+NTSTAT(iwrpoint-1)+1
+  963   continue
+        itrunc=1
+        ipos=1
+        delim='C'
+        do while (itrunc.ne.0)
+          call ailist(ipos,icountnotequal,IHREC,MIT,delim,louts,
+     &         loutln,itrunc)
+          WRITE(iafil,'(1x,a)',IOSTAT=ios,ERR=101) louts(1:loutln)
+          ipos=itrunc+1
+        end do
+      else
+        ihrec(1)=5
+        WRITE(iafil,'(1x,i3)',IOSTAT=ios,ERR=101) ihrec(1)
+      endif
+      WRITE(iafil,'(a)',IOSTAT=ios,ERR=101) '*tabular_data'
+      WRITE(iafil,'(2a)',IOSTAT=ios,ERR=101)
+     &  '# Time Col 1 Col 2 Col 3 Col 4 Col 5 Col 6 Col 7 Col 8...'
+      iarraycount=0
+      DO 2 iimport=1,icountnotequal
+        if(iforuseintdfentry(iimport).ge.1.and.
+     &     iforuseintdfentry(iimport).lt.10)then
+          write(subpath,'(6a,I1,a)',iostat=ios,err=212)
+     &       dinstpath(1:lnblnk(dinstpath)),fs,'databases',fs,
+     &      'UK_NCM',fs,iforuseintdfentry(iimport),'.csv'
+        elseif(iforuseintdfentry(iimport).ge.10.and.
+     &         iforuseintdfentry(iimport).lt.100)then
+          write(subpath,'(6a,I2,a)',iostat=ios,err=212)
+     &       dinstpath(1:lnblnk(dinstpath)),fs,'databases',fs,
+     &      'UK_NCM',fs,iforuseintdfentry(iimport),'.csv'
+        elseif(iforuseintdfentry(iimport).ge.100.and.
+     &         iforuseintdfentry(iimport).lt.1000)then
+          write(subpath,'(6a,I3,a)',iostat=ios,err=212)
+     &       dinstpath(1:lnblnk(dinstpath)),fs,'databases',fs,
+     &      'UK_NCM',fs,iforuseintdfentry(iimport),'.csv'
+        endif
+        write(DFILE,'(a)')subpath(1:lnblnk(subpath))
+
+C << Improve this part in the future >>
+        LIMP=DFILE
+        IF(ITIMP.EQ.1)THEN
+          CALL ERPFREE(IUIMP,ISTAT)
+          call findfil(LIMP,XST)
+          IF(.NOT.XST)THEN
+            msgl2='  '
+            CALL USRMSG(
+     &        'The csv activity file is not in databases/UK_NCM.',
+     &        msgl2,'W')
+          ENDIF
+        ENDIF
+
+C Import data - open the import file and read them.
+        IUNIT=IFIL+4
+        CALL EFOPSEQ(IUNIT,LIMP,1,IER)
+        if(ier.eq.0)THEN
+          write(currentfile,'(a)') LIMP(1:lnblnk(LIMP))
+        ELSE
+          msgl2='Is the name correct?'
+          CALL USRMSG('Could not open import file.',msgl2,'W')
+
+C << Return may not needed.. test >>
+          RETURN
+        endif
+
+C STRIP the specific line of the specific timestep
+        DO 4 istrip=1,8760
+          CALL STRIPC(IUNIT,OUTSTR,0,ND,1,'import raw data',IER)
+          IF(IER.NE.0)GOTO 103
+
+C Read value, associate with proper column and check if it changes
+C the minimum/maximum of that column.
+          K=0
+          VAL=0.
+          CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
+          CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
+          TABU(ITCOL(iimport,12)) = VAL
+          if(TABU(ITCOL(iimport,12)).lt.TABUMN(ITCOL(iimport,12)))
+     &       TABUMN(ITCOL(iimport,12))=TABU(ITCOL(iimport,12))
+          if(TABU(ITCOL(iimport,12)).gt.TABUMX(ITCOL(iimport,12)))
+     &       TABUMX(ITCOL(iimport,12))=TABU(ITCOL(iimport,12))
+          iarraycount=1+((iimport-1)*5)
+          COLUMNTDF(iarraycount,istrip)=TABU(ITCOL(iimport,12))
+
+          CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
+          TABU(ITCOL(iimport,13)) = VAL
+          if(TABU(ITCOL(iimport,13)).lt.TABUMN(ITCOL(iimport,13)))
+     &       TABUMN(ITCOL(iimport,13))=TABU(ITCOL(iimport,13))
+          if(TABU(ITCOL(iimport,13)).gt.TABUMX(ITCOL(iimport,13)))
+     &       TABUMX(ITCOL(iimport,13))=TABU(ITCOL(iimport,13))
+          iarraycount=2+((iimport-1)*5)
+          COLUMNTDF(iarraycount,istrip)=TABU(ITCOL(iimport,13))
+
+          CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
+          TABU(ITCOL(iimport,14)) = VAL
+          if(TABU(ITCOL(iimport,14)).lt.TABUMN(ITCOL(iimport,14)))
+     &       TABUMN(ITCOL(iimport,14))=TABU(ITCOL(iimport,14))
+          if(TABU(ITCOL(iimport,14)).gt.TABUMX(ITCOL(iimport,14)))
+     &       TABUMX(ITCOL(iimport,14))=TABU(ITCOL(iimport,14))
+          iarraycount=3+((iimport-1)*5)
+          COLUMNTDF(iarraycount,istrip)=TABU(ITCOL(iimport,14))
+
+          CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
+          TABU(ITCOL(iimport,15))= VAL
+          if(TABU(ITCOL(iimport,15)).lt.TABUMN(ITCOL(iimport,15)))
+     &       TABUMN(ITCOL(iimport,15))=TABU(ITCOL(iimport,15))
+          if(TABU(ITCOL(iimport,15)).gt.TABUMX(ITCOL(iimport,15)))
+     &       TABUMX(ITCOL(iimport,15))=TABU(ITCOL(iimport,15))
+          iarraycount=4+((iimport-1)*5)
+          COLUMNTDF(iarraycount,istrip)=TABU(ITCOL(iimport,15))
+
+          CALL EGETWR(OUTSTR,K,VAL,0.,0.,'-','imp data',IER)
+          TABU(ITCOL(iimport,16))= VAL
+          if(TABU(ITCOL(iimport,16)).lt.TABUMN(ITCOL(iimport,16)))
+     &       TABUMN(ITCOL(iimport,16))=TABU(ITCOL(iimport,16))
+          if(TABU(ITCOL(iimport,16)).gt.TABUMX(ITCOL(iimport,16)))
+     &       TABUMX(ITCOL(iimport,16))=TABU(ITCOL(iimport,16))
+          iarraycount=5+((iimport-1)*5)
+          COLUMNTDF(iarraycount,istrip)=TABU(ITCOL(iimport,16))
+ 4      CONTINUE
+
+C End of file encountered, close the file and return to menu.
+  103   msgl2=' End of import file reached'
+        CALL USRMSG(' ',msgl2,'-')
+        CALL ERPFREE(IUNIT,ISTAT)
+        continue
+
+C << Change this in the future >>
+C << Need to add "errors when creating string buffers." ?? >>
+  212   continue
+  2     continue
+      NTSPH=1
+      itdbdoy=1
+      DO 46 IP=1,8760
+C          ITREC=IP+49
+        CDAY=AINT(FLOAT(IP)/FLOAT(NTSPH*24))
+        ITIME=IP-(INT(CDAY)*NTSPH*24)
+        RDOTY=REAL(itdbdoy)+CDAY+(REAL(ITIME)/(REAL(NTSPH)*24.))
+        itrunc=1
+        ipos=1
+        delim='C'
+        do while (itrunc.ne.0)
+          do 5 iwrite=1,iarraycount
+            COLUMNWRITE(iwrite)=COLUMNTDF(iwrite,IP)
+  5       continue
+          call aelist(ipos,icolumns,COLUMNWRITE,
+     &      iarraycount,delim,louts,loutln,itrunc)
+          if(ipos.eq.1) then
+            WRITE(iafil,'(F8.4,2a)',IOSTAT=ios,ERR=101) RDOTY,',',
+     &        louts(1:loutln)
+          else
+            WRITE(iafil,'(1x,a)',
+     &        IOSTAT=ios,ERR=101) louts(1:loutln)
+          endif
+          ipos=itrunc+1
+        end do
+   46 CONTINUE
+      WRITE(iafil,'(2a)',IOSTAT=ios,ERR=101) '*end_tabular_data'
+      CALL ERPFREE(iafil,ISTAT)
+
+      ITEMSTD=0
+      DO 555 IZ=1,NCOMP
+
+C If there is an activity associated to the zone then assign
+C DBZN to use later on in the cfg file
+        if(theactivityindex(IZ).gt.0)then
+          ITEMSTD=ITEMSTD+1
+
+C Keep writing now the items needed for cfg file
+          write(DBTAG(ITEMSTD),'(i4)')theactivityindex(IZ)
+          write(DBZN(ITEMSTD),'(a)') zname(IZ)(1:12)
+          DBSN(ITEMSTD)='ALL'
+          DBTASK(ITEMSTD)='ACTIVITY'
+        endif
+ 555  CONTINUE
+      call emkcfg('-',IER)
+      return
+
+ 101  msgl2='  '
+      CALL USRMSG('Could not write TDF header',msgl2,'W')
+      IER=1
+      return
+
+      end
 
 C ********************* EMKSBM
 C EMKSBM creates a model variant based on the SBEM methodology. Details
@@ -4161,6 +4797,7 @@ C This routine assumes newer geometry files are being used.
       CHARACTER OUTS*124,ADF*124,SNM*12,USE*8,USE2*8
       character SN*12,msg*42
       CHARACTER*12 XJCCU,XKCCU
+      character DOIT*248
 
 C ivalsg keeps track of whether a geometry file has alread been copied.
 C irmw keeps track of up to 90 surfaces in each zone which can be deleted
@@ -4184,6 +4821,7 @@ C      logical closeelv ! true if surface is close to vertical
       integer LOOPMAX  ! loop iterator for shifting surface list
       integer ISCURRENT ! the current connection to be deleted
       logical ok,dok
+      logical unixok
 
 C Test whether required constructions exist.
       logical haveopDoor,haveVehicle,haveNot_D,haveNot_G,haveframe
@@ -4397,13 +5035,35 @@ C Make a copy of constructions file and tmc file if applicable.
         LTHRM(ICOMP)=NNAME
         CALL EMKCON(LTHRM(ICOMP),IUNIT,ICOMP,QUIET,IER)
         call FINDFIL(LTWIN(ICOMP),XST)
-        IF(.NOT.XST)GOTO 500
-        IFU=13
-        CALL ERTWIN(ITRC,ITRU,IFU,LTWIN(ICOMP),ICOMP,IER)
-        EXT='.tmc'
-        CALL FNCNGR(LTWIN(ICOMP),APE,EXT,NNAME)
-        LTWIN(ICOMP)=NNAME
-        CALL MKTWIN(IFU,ICOMP,QUIET,IER)
+        IF(XST)then
+          IFU=13
+          CALL ERTWIN(ITRC,ITRU,IFU,LTWIN(ICOMP),ICOMP,IER)
+          EXT='.tmc'
+          CALL FNCNGR(LTWIN(ICOMP),APE,EXT,NNAME)
+          LTWIN(ICOMP)=NNAME
+          CALL MKTWIN(IFU,ICOMP,QUIET,IER)
+        ENDIF
+
+C Make copy of zone shading file if applicable.
+        call isunix(unixok)
+        if(ISI(icomp).eq.1)then
+          EXT='.shd'
+          CALL FNCNGR(LSHAD(ICOMP),APE,EXT,NNAME)
+          if(unixok)then
+            WRITE(doit,'(4A)')'cp ',
+     &        LSHAD(ICOMP)(1:LNBLNK(LSHAD(ICOMP))),' ',
+     &        NNAME(1:LNBLNK(NNAME))
+          else
+            WRITE(doit,'(4A)')'copy /y ',
+     &        LSHAD(ICOMP)(1:LNBLNK(LSHAD(ICOMP))),' ',
+     &        NNAME(1:LNBLNK(NNAME))
+          endif
+          CALL USRMSG('Copying shading file via:',doit,'-')
+          CALL RUNIT(doit,'-')
+          LSHAD(ICOMP)=NNAME
+        endif
+
+C If there was an error.
         if(ier.ne.0)then
           helptopic='ncm_file_copy_issue'
           call gethelptext(helpinsub,helptopic,nbhelp)
@@ -4414,7 +5074,7 @@ C Make a copy of constructions file and tmc file if applicable.
 
 C Remember this geometry file has been done so that a later selection
 C of constructions does not re-do it.
- 500    ivalsg(icomp)=icomp
+        ivalsg(icomp)=icomp
 
 C Ask if zone is occupied and environmentally controlled.
         DOK=.true.
@@ -4587,7 +5247,7 @@ C into which compliant glass and frames can be added subsequently.
                 if(iparent(icc).eq.0)then
 
 C Debug.
-                  write(6,*) 'found external glazed parent surface',icc
+                  write(6,*) 'found external glazed parent surf',icc
                   write(6,*) 'it has ',nbchild(icc),' child surfaces'
 
                   DO 554 ICHL=1,NBCHILD(ICC)
@@ -4728,7 +5388,7 @@ C In the current zone we need to delete NRMV surfaces.
 
 C Debug.
           write(6,*) ' x conn surf ',IRMV(ICOMP,IR),' ',
-     &      ssname(IRMV(ICOMP,IR)),' ',ie1(IRMV(ICOMP,IR)),' for ir ',ir
+     &     ssname(IRMV(ICOMP,IR)),' ',ie1(IRMV(ICOMP,IR)),' for ir ',ir
 
 C Pack the list of TARSURF etc from the current connection data
 C to one less than the end of the number of connections in the
@@ -4855,7 +5515,7 @@ C << need to trap error state in georead >>
           is=isur
           ICON=IZSTOCN(icomp,nzsur(ICOMP))  ! the last surface in the zone
           if(icon.eq.0)then
-            write(6,*) '580 georead zn last sur icon',icomp,nzsur(ICOMP)
+            write(6,*)'580 georead zn last sur icon',icomp,nzsur(ICOMP)
             goto 580   ! jump because we detected no connection
           endif
           IELF=0
@@ -5541,6 +6201,8 @@ C The setup part of creating notional model.
 
       integer lnblnk  ! function definition
 
+      integer ifil
+      common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -5548,11 +6210,15 @@ C The setup part of creating notional model.
 
       character EXT*4    ! up to 4 characters in file extension
       character APE*6    ! up to 6 characters in variant name
+      CHARACTER ACT*1
       CHARACTER CFGROOT*24
       CHARACTER LCFGF*72,NNAME*72
       CHARACTER OUTS*124
       character msg*42
       logical ok,dok
+      character DOIT*248
+      logical newgeo  ! to use for testing if new/old geometry file
+      logical quiet
 
 C Test whether required constructions exist.
       logical haveopDoor,haveVehicle,haveNot_D,haveNot_G,haveframe
@@ -5565,7 +6231,6 @@ C Test whether required constructions exist.
      &  haveEW_notP,haveSol_gr,havepa_fl,haveinv_pa_f,haveparty_w,
      &  haveint_g,haveWall_NI,haveexWall_ty,haveFl_rty,havewin_Typ_G,
      &  haveSol_gr_typ
-      logical changeuse   ! to signal change of use of surface
 
 C mlcindex for each of these required constructions.
       integer mlciopDoor,mlciVehicle,mlciNot_D,mlciNot_G,mlciframe
@@ -5580,6 +6245,14 @@ C mlcindex for each of these required constructions.
      &  mlciSol_gr_typ
      
       integer nbdbstries  ! how many iterations looking for req constr
+      logical unixok,xst
+
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='EMKSBM2'  ! set for subroutine
 
 C Check if Notional Model Flag has been set (NCM data has been defined)
 C If not then advise user and send him/her back
@@ -5741,11 +6414,84 @@ C parent child relationships.
           call EMKSBMZN(iz,ier)
         else
 
-C If not notionalizing is there anything we need to do?
-C Making the alternative named zone files for non-notionalized
-C zones might be useful to ensure that the original model files
-C do not get mangled.
-C << to be done >>
+C If not notionalizing it is still useful to create alternative zone file
+C names because partitions might be changed in adjacent zones. This also
+C ensures that the original model files are not corrupted.
+          APE='_not  '
+          newgeo=.true.  ! assume newer format geometry.
+
+C Loop through this zone and first scan geometry, next use surrel to
+C update parent/child information and write out the zone.
+          IUF=IFIL+2
+          EXT='.geo'
+          call eclose(gversion(iz),1.1,0.01,newgeo)
+          if(newgeo)then
+            call georead(IUF,LGEOM(IZ),IZ,1,iuout,IER)
+          else
+            call usrmsg('Older geometry file cannot be used.',
+     &        LGEOM(IZ),'W')
+            ier = 2
+          endif
+          if(ier.ne.0)then
+            helptopic='ncm_geom_scan_issue'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL PHELPD('NCM details undefined!',nbhelp,'-',0,0,IER)
+            ier=3  ! signal geometry issue
+C            return
+          endif
+
+          CALL FNCNGR(LGEOM_O(IZ),APE,EXT,NNAME)
+          LGEOM(IZ)=NNAME
+          ACT='s'
+          CALL SURREL(ACT,IZ,IER)
+          call geowrite(IUF,LGEOM(IZ),IZ,ITRU,3,IER)
+
+C Make a copy of constructions file and tmc file if applicable.
+          IUNIT=12
+          QUIET=.FALSE.
+          call FINDFIL(LTHRM(IZ),XST)
+          ITRC=0
+          ITRU=6
+          CALL ECONST(LTHRM(IZ),IUNIT,IZ,ITRC,ITRU,IER)
+          EXT='.con'
+          CALL FNCNGR(LTHRM(IZ),APE,EXT,NNAME)
+          LTHRM(IZ)=NNAME
+          CALL EMKCON(LTHRM(IZ),IUNIT,IZ,QUIET,IER)
+          call FINDFIL(LTWIN(IZ),XST)
+          IF(XST)then
+            IFU=13
+            CALL ERTWIN(ITRC,ITRU,IFU,LTWIN(IZ),IZ,IER)
+            EXT='.tmc'
+            CALL FNCNGR(LTWIN(IZ),APE,EXT,NNAME)
+            LTWIN(IZ)=NNAME
+            CALL MKTWIN(IFU,IZ,QUIET,IER)
+          endif
+          if(ier.ne.0)then
+            helptopic='ncm_file_copy_issue'
+            call gethelptext(helpinsub,helptopic,nbhelp)
+            CALL PHELPD('NCM details undefined!',nbhelp,'-',0,0,IER)
+            ier=4  ! signal geometry issue
+C           return
+          endif
+
+C If there is an existing shading file copy it to the new name.
+          call isunix(unixok)
+          if(ISI(iz).eq.1)then
+            EXT='.shd'
+            CALL FNCNGR(LSHAD(IZ),APE,EXT,NNAME)
+            if(unixok)then
+              WRITE(doit,'(4A)')'cp ',
+     &          LSHAD(IZ)(1:LNBLNK(LSHAD(IZ))),' ',
+     &          NNAME(1:LNBLNK(NNAME))
+            else
+              WRITE(doit,'(4A)')'copy /y ',
+     &          LSHAD(IZ)(1:LNBLNK(LSHAD(IZ))),' ',
+     &          NNAME(1:LNBLNK(NNAME))
+            endif
+            CALL USRMSG('Copying shading file via:',doit,'-')
+            CALL RUNIT(doit,'-')
+            LSHAD(IZ)=NNAME
+          endif
 
         endif
  559  CONTINUE
@@ -5784,7 +6530,7 @@ C << assumes that the cfg and cnn have already been setup. >>
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
-      common/C21/IFCFG,cfgroot,LCFGF
+
       INTEGER :: IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -5793,11 +6539,11 @@ C << assumes that the cfg and cnn have already been setup. >>
       CHARACTER*1 ACT
       character EXT*4    ! up to 4 characters in file extension
       character APE*6    ! up to 6 characters in variant name
-      CHARACTER CFGROOT*24
-      CHARACTER LCFGF*72,NNAME*72
+      CHARACTER NNAME*72
       CHARACTER OUTS*124,ADF*124,SNM*12,USE*8,USE2*8
       character SN*12,SPN*12,msg*42
       CHARACTER*12 XJCCU,XKCCU
+      character DOIT*248
 
 C ivalsg keeps track of whether a geometry file has alread been copied.
 C irmw keeps track of up to 90 surfaces in each zone which can be deleted
@@ -5821,6 +6567,7 @@ C      logical closeelv ! true if surface is close to vertical
       integer LOOPMAX  ! loop iterator for shifting surface list
       integer ISCURRENT ! the current connection to be deleted
       logical ok,dok
+      logical unixok
 
 C Test whether required constructions exist.
       logical haveopDoor,haveVehicle,haveNot_D,haveNot_G,haveframe
@@ -5938,13 +6685,35 @@ C Make a copy of constructions file and tmc file if applicable.
       LTHRM(ICOMP)=NNAME
       CALL EMKCON(LTHRM(ICOMP),IUNIT,ICOMP,QUIET,IER)
       call FINDFIL(LTWIN(ICOMP),XST)
-      IF(.NOT.XST)GOTO 500
-      IFU=13
-      CALL ERTWIN(ITRC,ITRU,IFU,LTWIN(ICOMP),ICOMP,IER)
-      EXT='.tmc'
-      CALL FNCNGR(LTWIN(ICOMP),APE,EXT,NNAME)
-      LTWIN(ICOMP)=NNAME
-      CALL MKTWIN(IFU,ICOMP,QUIET,IER)
+      IF(XST)then
+        IFU=13
+        CALL ERTWIN(ITRC,ITRU,IFU,LTWIN(ICOMP),ICOMP,IER)
+        EXT='.tmc'
+        CALL FNCNGR(LTWIN(ICOMP),APE,EXT,NNAME)
+        LTWIN(ICOMP)=NNAME
+        CALL MKTWIN(IFU,ICOMP,QUIET,IER)
+      endif
+
+C Make copy of zone shading file if applicable.
+      call isunix(unixok)
+      if(ISI(icomp).eq.1)then
+        EXT='.shd'
+        CALL FNCNGR(LSHAD(ICOMP),APE,EXT,NNAME)
+        if(unixok)then
+          WRITE(doit,'(4A)')'cp ',
+     &      LSHAD(ICOMP)(1:LNBLNK(LSHAD(ICOMP))),' ',
+     &      NNAME(1:LNBLNK(NNAME))
+        else
+          WRITE(doit,'(4A)')'copy /y ',
+     &      LSHAD(ICOMP)(1:LNBLNK(LSHAD(ICOMP))),' ',
+     &      NNAME(1:LNBLNK(NNAME))
+        endif
+        CALL USRMSG('Copying shading file via:',doit,'-')
+        CALL RUNIT(doit,'-')
+        LSHAD(ICOMP)=NNAME
+      endif
+
+C If there was an error.
       if(ier.ne.0)then
         helptopic='ncm_file_copy_issue'
         call gethelptext(helpinsub,helptopic,nbhelp)
@@ -5953,11 +6722,9 @@ C Make a copy of constructions file and tmc file if applicable.
         return
       endif
 
-C << make copy of zone shading file if applicable >>
-
 C Remember this geometry file has been done so that a later selection
 C of constructions does not re-do it.
- 500  ivalsg(icomp)=icomp
+      ivalsg(icomp)=icomp
 
 C Ask if zone is occupied and environmentally controlled.
       DOK=.true.
@@ -6433,9 +7200,7 @@ C If likely new surface complexity is within limits add door.
 
 C Update the connection list. Move all others up and then insert with
 C default values.
-            write(6,*) 'before adddedsurf a ',icon,NZSUR(icomp)
             call addedsurf(icomp,icon,itrc,ier)
-            write(6,*) 'after adddedsurf a ',icon,NZSUR(icomp),ier
 
 C Add surfaces attribution parameters
             ICT(ICON)=0
@@ -7121,7 +7886,6 @@ C Test whether required constructions exist.
      &  haveEW_notP,haveSol_gr,havepa_fl,haveinv_pa_f,haveparty_w,
      &  haveint_g,haveWall_NI,haveexWall_ty,haveFl_rty,havewin_Typ_G,
      &  haveSol_gr_typ
-      logical changeuse   ! to signal change of use of surface
 
 C mlcindex for each of these required constructions.
       integer mlciopDoor,mlciVehicle,mlciNot_D,mlciNot_G,mlciframe
@@ -7270,9 +8034,6 @@ C building as described in SBEM - EPBD documents
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
-
-      COMMON/APPW/IAPPW,IAPPX,IAPPY
-      INTEGER IAPPW,IAPPX,IAPPY
 
       INTEGER IER,LNBLNK,IMODE
       CHARACTER AUT*12,DOIT*248,LONGTFILE*144,LONGTFILEDOS*144
@@ -8324,11 +9085,12 @@ C      write(6,*) 'AER is ',AER
 
 C Write summary Latex input text
         IF(IMODE.EQ.1)THEN
-          write(91,*)"\\multicolumn{8}{|c|}{Actual model (annual results
-     &)} \\\\"
+          write(91,*)
+     &    "\\multicolumn{8}{|c|}{Actual model (annual results)} \\\\"
           write(91,*)"\\hline"
-          write(91,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
-     &ts & Gas & Electricity \\\\"
+          write(91,*)
+     &    "Total & Heating & Cooling & DHW & Auxiliary & Lights &",
+     &    " Gas & Electricity \\\\"
           write(91,*)"\\hline"
           write(91,'(f6.2,7(a,f6.2),a)')BER,
      &" & ",A," & ",B," & ",C," & ",D," & ",E," & ",F," & ",G," \\\\"
@@ -8338,14 +9100,16 @@ C Write summary Latex input text
         ELSEIF(IMODE.EQ.2)THEN
           write(91,*)""
           write(91,*)"\\hline"
-          write(91,*)"CO2 $kg/m^{2}$ & \\multicolumn{7}{|c|}{Energy $kWh
-     &/m^{2}$} \\\\"
+          write(91,*)
+     &    "CO2 $kg/m^{2}$ & \\multicolumn{7}{|c|}{Energy $kWh",
+     &    "/m^{2}$} \\\\"
           write(91,*)"\\hline"
-          write(91,*)"\\multicolumn{8}{|c|}{Notional model (annual resul
-     &ts)} \\\\"
+          write(91,*)
+     &    "\\multicolumn{8}{|c|}{Notional model (annual results)} \\\\"
           write(91,*)"\\hline"
-          write(91,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
-     &ts & Gas & Electricity \\\\"
+          write(91,*)
+     &    "Total & Heating & Cooling & DHW & Auxiliary & Lights &",
+     &    " Gas & Electricity \\\\"
           write(91,*)"\\hline"
           write(91,'(f6.2,7(a,f6.2),a)')AER,
      &" & ",A," & ",B," & ",C," & ",D," & ",E," & ",F," & ",G," \\\\"
@@ -8354,11 +9118,12 @@ C Write summary Latex input text
           write(91,*)"\\hline"
           write(91,*)""
         ELSEIF(IMODE.EQ.3)THEN
-          write(91,*)"\\multicolumn{8}{|c|}{Reference model (annual resu
-     &lts)} \\\\"
+          write(91,*)
+     &   "\\multicolumn{8}{|c|}{Reference model (annual results)} \\\\"
           write(91,*)"\\hline"
-          write(91,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
-     &ts & Gas & Electricity \\\\"
+          write(91,*)
+     &    "Total & Heating & Cooling & DHW & Auxiliary & Lights &",
+     &    " Gas & Electricity \\\\"
           write(91,*)"\\hline"
           write(91,'(f6.2,7(a,f6.2),a)')RER,
      &" & ",A," & ",B," & ",C," & ",D," & ",E," & ",F," & ",G," \\\\"
@@ -8368,11 +9133,12 @@ C Write summary Latex input text
 C Write detailed Latex input file
         IF(IMODE.EQ.1)THEN
           write(92,*)"\\hline"
-          write(92,*)"\\multicolumn{8}{|c|}{Actual model Energy $kWh/m^{
-     &2}$} \\\\"
+          write(92,*)
+     &    "\\multicolumn{8}{|c|}{Actual model Energy $kWh/m^{2}$} \\\\"
           write(92,*)"\\hline"
-          write(92,*)"Month & Heating & Cooling & DHW & Auxiliary & Ligh
-     &ts & Gas & Electricity \\\\"
+          write(92,*)
+     &    "Month & Heating & Cooling & DHW & Auxiliary & Lights &",
+     &    "Gas & Electricity \\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Jan & ",T(1)," & ",U(1)," & ",V(1)," & ",W(1),
@@ -8423,11 +9189,12 @@ C Write detailed Latex input file
      &" & ",XX(12)," & ",YY(12)," & ",ZZ(12),"\\\\"
           write(92,*)"\\hline"
         ELSEIF(IMODE.EQ.2)THEN
-          write(92,*)"\\multicolumn{8}{|c|}{Notional model Energy $kWh/m
-     &^{2}$} \\\\"
+          write(92,*)
+     & "\\multicolumn{8}{|c|}{Notional model Energy $kWh/m^{2}$} \\\\"
           write(92,*)"\\hline"
-          write(92,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
-     &ts & Gas & Electricity \\\\"
+          write(92,*)
+     &  "Total & Heating & Cooling & DHW & Auxiliary & Lights &",
+     &  " Gas & Electricity \\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Jan & ",T(1)," & ",U(1)," & ",V(1)," & ",W(1),
@@ -8478,11 +9245,12 @@ C Write detailed Latex input file
      &" & ",XX(12)," & ",YY(12)," & ",ZZ(12),"\\\\"
           write(92,*)"\\hline"
         ELSEIF(IMODE.EQ.3)THEN
-          write(92,*)"\\multicolumn{8}{|c|}{Reference model Energy $kWh/
-     &m^{2}$} \\\\"
+          write(92,*)
+     & "\\multicolumn{8}{|c|}{Reference model Energy $kWh/m^{2}$} \\\\"
           write(92,*)"\\hline"
-          write(92,*)"Total & Heating & Cooling & DHW & Auxiliary & Ligh
-     &ts & Gas & Electricity \\\\"
+          write(92,*)
+     &    "Total & Heating & Cooling & DHW & Auxiliary & Lights &",
+     &    " Gas & Electricity \\\\"
           write(92,*)"\\hline"
           write(92,'(7(a,f6.2),a)')
      &"Jan & ",T(1)," & ",U(1)," & ",V(1)," & ",W(1),
@@ -8901,7 +9669,8 @@ C We are taking DHW from the heating system.
             ENDIF
           ENDIF
           BER_DHW=BER_DHW+BERDHW_afterefficiency(ICOMP)
-          BER_DHWCO2=BER_DHWCO2+BERDHW_afterefficiency(ICOMP)*DHWCO2RATE
+          BER_DHWCO2=BER_DHWCO2+BERDHW_afterefficiency(ICOMP)*
+     &      DHWCO2RATE
 
 C For both lighting and auxiliary energy assume these are supplied by
 C the electrical grid (Fuel type 10 from SBEM.db1)
@@ -8962,7 +9731,8 @@ C the stripped model
 
 C Now work out notional heating fuel NHF based on paragraph 38 NCM
 C Modelling Guide ver4d of March 2008
-      IF(MHF.EQ.1.OR.MHF.EQ.3.OR.MHF.EQ.9.OR.MHF.EQ.11.OR.MHF.EQ.12)THEN
+      IF(MHF.EQ.1.OR.MHF.EQ.3.OR.MHF.EQ.9.OR.MHF.EQ.11.OR.
+     &   MHF.EQ.12)THEN
         NHF=1 ! Natural gas
       ELSE
         NHF=4 ! Oil
@@ -9043,7 +9813,8 @@ C HVAC system
             AERF(NHF)=AERF(NHF)+AERDHW_afterefficiency(ICOMP)
           ENDIF
           AER_DHW=AER_DHW+AERDHW_afterefficiency(ICOMP)
-          AER_DHWCO2=AER_DHWCO2+AERDHW_afterefficiency(ICOMP)*DHWCO2RATE
+          AER_DHWCO2=AER_DHWCO2+AERDHW_afterefficiency(ICOMP)*
+     &      DHWCO2RATE
 
 C For both lighting and auxiliary energy assume these are supplied by
 C the electrical grid (Fuel type 10 from SBEM.db1)
@@ -9166,7 +9937,8 @@ C Heating and hot water are always supplied by Natural Gas for reference buildin
             RERF(1)=RERF(1)+RERDHW_afterefficiency(ICOMP)
           ENDIF
           RER_DHW=RER_DHW+RERDHW_afterefficiency(ICOMP)
-          RER_DHWCO2=RER_DHWCO2+RERDHW_afterefficiency(ICOMP)*DHWCO2RATE
+          RER_DHWCO2=RER_DHWCO2+RERDHW_afterefficiency(ICOMP)*
+     &      DHWCO2RATE
 
 C Cooling energy is always supplied by electricity type (10).
           RERCOOL(ICOMP)=ABS(RERCOOL(ICOMP))
@@ -9385,8 +10157,8 @@ C It finally generate BRUKL input document and other SBEM reports.
       real psi,lngth,losspercent,totheatloss,thbrpercent
       real uavtotal
       common/THRBRDG/nbrdg(MCOM),psi(MCOM,16),lngth(MCOM,16),
-     &               ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
-     &               thbrpercent,uavtotal(MCOM)
+     &       ibrdg(MCOM,16),losspercent(MCOM),totheatloss(MCOM),
+     &       thbrpercent,uavtotal(MCOM)
       common/rpath/path
       character DOIT*248
       character limgpth*24,ldocpth*24,lcfgroot*24,lpath*72
@@ -9395,15 +10167,13 @@ C It finally generate BRUKL input document and other SBEM reports.
       character BATCHFL*72
 
 C Build variable (These should eventually be placed in build_info.h)
-      logical bBuild_Info            ! Flag indicating if build info should
-                                     !   be dumped.
-C      character cURL*256             ! Repository URL commented out in build_info.h
+C      character cURL*256       ! Repository URL commented out in build_info.h
 
       CHARACTER BRUKFL*72
       CHARACTER CFGROOT*24,LCFGF*72,MODE*4
       CHARACTER TMPSTR*24,TMPSTR2*70
       character delim*1,louts*248,outs*124,TEMP1*42
-      LOGICAL CONTEXT,BNDRY,ISNEAR,ISNEAR2,ISNEAR3
+      LOGICAL ISNEAR,ISNEAR2,ISNEAR3
       LOGICAL UNIXOK
       REAL TMPREAL
       integer iactFlarea
@@ -9832,15 +10602,15 @@ C write out information for high usage doors
       endif
 
 C Following is no longer in use
-      WRITE(IUF,'(a)',iostat=ios)       '  S-VENT-U-AVE       =  0'
-      WRITE(IUF,'(a)',iostat=ios)       '  S-VENT-U-MAX       =  0'
-      WRITE(IUF,'(2a)',iostat=ios)      '  S-VENT-MAX         = ',
+      WRITE(IUF,'(a)',iostat=ios)      '  S-VENT-U-AVE       =  0'
+      WRITE(IUF,'(a)',iostat=ios)      '  S-VENT-U-MAX       =  0'
+      WRITE(IUF,'(2a)',iostat=ios)     '  S-VENT-MAX         = ',
      &  '"No Roof ventilators in project"'
 
 C Write infiltration and permeability information
-      WRITE(IUF,'(a,F5.2)',iostat=ios)  '  Q50-INF            = ',BINF50
-      WRITE(IUF,'(2a)',iostat=ios)      '  Q50-INF-CHECK      = ',APCHK
-      WRITE(IUF,'(a)',iostat=ios)       '  ..'
+      WRITE(IUF,'(a,F5.2)',iostat=ios) '  Q50-INF            = ',BINF50
+      WRITE(IUF,'(2a)',iostat=ios)     '  Q50-INF-CHECK      = ',APCHK
+      WRITE(IUF,'(a)',iostat=ios)      '  ..'
 
 C DHW checks
       DO 40 IDHWSYS=1,NDHWSYS
@@ -10038,17 +10808,17 @@ C?? To enter total casual gains/m2 here
      &  '  KWH/M2-WASTEHEAT          = ',BERF(12)
 
 C?? To enter the following bits of information
-      WRITE(IUF,'(a,F9.2)',iostat=ios) '  KWH/M2-DISTRICT-HEATING   = ',
+      WRITE(IUF,'(a,F9.2)',iostat=ios)'  KWH/M2-DISTRICT-HEATING   = ',
      &  0.0
-      WRITE(IUF,'(a,F9.2)',iostat=ios) '  KWH/M2-DISP               = ',
+      WRITE(IUF,'(a,F9.2)',iostat=ios)'  KWH/M2-DISP               = ',
      &  0.0
-      WRITE(IUF,'(a,F9.2)',iostat=ios) '  KWH/M2-PVS                = ',
+      WRITE(IUF,'(a,F9.2)',iostat=ios)'  KWH/M2-PVS                = ',
      &  0.0
-      WRITE(IUF,'(a,F9.2)',iostat=ios) '  KWH/M2-WIND               = ',
+      WRITE(IUF,'(a,F9.2)',iostat=ios)'  KWH/M2-WIND               = ',
      &  0.0
-      WRITE(IUF,'(a,F9.2)',iostat=ios) '  KWH/M2-CHP                = ',
+      WRITE(IUF,'(a,F9.2)',iostat=ios)'  KWH/M2-CHP                = ',
      &  0.0
-      WRITE(IUF,'(a,F9.2)',iostat=ios) '  KWH/M2-SES                = ',
+      WRITE(IUF,'(a,F9.2)',iostat=ios)'  KWH/M2-SES                = ',
      &  0.0
 
 C Activity number and area per zone
@@ -10073,7 +10843,7 @@ C number of activities
 C here we write each activity and the related floor area. SBEM seems to sum up the
 C floor areas and writes the activity once if it covers many zones.
 C BRUKL v3.2 seems to accept either ways.
-        WRITE(IUF,'(4a)',iostat=ios)   '  ACT-AREA                  = ',
+        WRITE(IUF,'(4a)',iostat=ios)  '  ACT-AREA                  = ',
      &   '{ ',louts(1:loutln),' }'
         ipos=itrunc+1
       end do
@@ -10529,7 +11299,7 @@ C Subroutine EPCCAL generates the UK Energy Performance input file.
       character path*72,lupath*72
       character fs*1, col*1, quote*1
       CHARACTER EPCBATFL*72,EPCINIFL*72
-      integer mpof, ibrowse
+      integer ibrowse
       LOGICAL UNIXOK
 
       CHARACTER EPCFL*72
@@ -10565,8 +11335,8 @@ C      logical   bVersioned           ! Flag indicating if repository
 C                                     !   is versioned
 C      logical bRelease               ! Logical indicating if this is
 C                                     !   a release version.
-      logical bBuild_Info            ! Flag indicating if build info should
-                                     !   be dumped.
+C      logical bBuild_Info            ! Flag indicating if build info should
+C                                     !   be dumped.
 C      logical bModified              ! Flag indicating local copy contains
 C                                     !   modifications
 C      character cRelease_Num*8       ! Release version
@@ -10616,7 +11386,6 @@ C      character cXlibrary*32         !
       integer itrunc,ipos,loutln
       integer istat
       integer ios
-      real vexposed,fexposed,rexposed
       integer IAPROB
       integer itrc
       logical ExistLightType
@@ -10636,7 +11405,7 @@ C      character cXlibrary*32         !
       character cNameMainFuel*42 !string to define the name of the main fuel type
       integer IHF !index for fuel number (as used in previous routines.
       integer ifueloriginal !to hold temporarily the fuel type index number
-      INTEGER IMODE
+c      INTEGER IMODE
 
 #ifdef OSI
       integer iincomp,iincon  ! to pass nb zones connections to c code
@@ -10647,7 +11416,7 @@ C      character cXlibrary*32         !
 #include "build_info.h"
 
 C Initialise IMODE
-      IMODE=2
+c      IMODE=2
 
 C Read cfg file for the stripped model
       ifcfg=ifil+3
@@ -10886,7 +11655,8 @@ C << TO BE DONE -hardwired to Heating and Natural Ventilation >>
 C The object "EPC-REC-PROJECT" does not seem to be compulsory
 C for detailed simulation programs but without it there is no
 C way to generate the recommendations report
-      WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)'"EPC-REC-PROJECT" = REC-PROJECT'
+      WRITE(IUF,'(A)',IOSTAT=IOS,ERR=3)
+     &  '"EPC-REC-PROJECT" = REC-PROJECT'
       dhwxst=.false.
       heatingxst=.false.
       do 99 ICOMP=1,NCOMP
@@ -12436,8 +13206,8 @@ C If fan coil reduce cooling energy by 4%
                   bersc(icmsys)=0.96*bersc(icmsys)
 
 C If chilled ceiling, chilled beam reduce cooling energy by 1%
-                elseif(incmsys(icmsys).eq.22.or.incmsys(icmsys).eq.23)
-     &            then
+                elseif(incmsys(icmsys).eq.22.or.
+     &                 incmsys(icmsys).eq.23)then
                   bersc(icmsys)=0.99*bersc(icmsys)
 
 C If VAV, CAV, multizone, terminal reheat, dual duct reduce cooling
@@ -15235,7 +16005,6 @@ C Create a batch file to run the EPCgen input file for Windows only
 C Check if the machine is UNIX, If UNIX, do nothing
       call isunix(unixok)
       if(unixok)then
-        mpof=1
         call edisp(iuout,'Copy UK NCM input files (BRUKL.inp and')
         call edisp(iuout,'EPCGen.inp) to a windows platform and ')
         call edisp(iuout,'run BRUKL and EPCGen in order to generate')
@@ -15623,10 +16392,8 @@ C    NBS Journal of Research, Vol. 71C, Jan-Mar. 1967, pp 43-50.
       subroutine GTCALC(ZD,act,IER)
       implicit none
 #include "building.h"
-#include "model.h"
 #include "site.h"
 #include "esprdbfile.h"
-#include "espriou.h"
 
       integer lnblnk  ! function definition
 

@@ -151,14 +151,16 @@ C ******* Default views formation.
       LOGICAL MODIFY,MODLEN,MODBND
       COMMON/RAY3/MODIFY,MODLEN,MODBND
 
-      LOGICAL XST,OK,DOK,addview
+      LOGICAL XST,OK,DOK
+      logical addview   ! mark we are working a new view
       logical redraw
 
       DIMENSION ITEM(19),IVALS(MCOM),VALT(20),IVALV(20)
 
       character item*30,hold*28,VALT*28,OUTSTR*124,WORD*20
       character outs*124
-      character doit*124,ltmp*72,trvewsh*10
+      character doit*124,ltmp*72,lview*124
+      character trvewsh*10,mrvewsh*30
       integer NITEMS,INO  ! max items and current menu item
 
 #ifdef OSI
@@ -183,7 +185,6 @@ C Cast values for linescale.
 
 C Addview = true then save editing as a new view, if false
 C then it is an update to an existing view.
-      IUF=IFIL+1
       ITA2 = IFIL+7
       vewdone=.false.
       redraw =.true.
@@ -256,23 +257,23 @@ C Pull up a list of views and ask user for which one.
      &  28,indxvew+1,VALT,'View options',IER,nbhelp)
       if(IX.eq.0)then
         CALL EASKAB(' One of the options must be selected:',' ',
-     &    'select an option','exit facility',IW,nbhelp)
+     &    'select an option','exit view point facility',IW,nbhelp)
         if(iw.eq.1)goto 334
         if(iw.eq.2)return
       endif
-      ipckvew=IVALV(1)
+      ipckvew=IVALV(1)  ! remember the current view
       if(ipckvew.eq.indxvew+1)then
 
-C Ask for name of new viewpoint file and set eye point at centre.
+C Ask for name of new viewpoint or vp file and set eye point at centre.
         addview = .true.
         if(intext.eq.0)then
           rvpx=XMN
           rvpy=YMN
           rvpz=ZMX
         else
-          rvpx=XMN+0.1
+          rvpx=XMN+0.1  ! slightly inside room
           rvpy=YMN+0.1
-          rvpz=VIEWM(3)
+          rvpz=VIEWM(3) ! at room centre
         endif
 
 C Given view point and viewed point return and update common values
@@ -283,8 +284,9 @@ C of the azimuth and elevation.
      &    'short view tag',IER,nbhelp)
         call edisp(iuout,'Please define the new view point now.')
 
-C If the default view.
       elseif(ipckvew.eq.1)then
+
+C If the default view for exterior (intext zero) or interior view.
         if(intext.eq.0)then
           rvpx=-100.0
           rvpy=-100.0
@@ -306,9 +308,10 @@ C of the azimuth and elevation.
         call ln2az(rvpx,rvpy,rvpz,VIEWM(1),VIEWM(2),VIEWM(3),
      &    azimuth,elevtn)
         call AZ2UV(azimuth,elevtn,vdx,vdy,vdz)
+
       else
 
-C Perhaps a referenced file.
+C An exiting view. Perhaps a referenced file.
         write(OUTSTR,'(a)')vewcmds(ipckvew)(1:lnblnk(vewcmds(ipckvew)))
         K=0
         CALL EGETW(OUTSTR,K,WORD,'W','view command',IFLAG)
@@ -316,15 +319,19 @@ C Perhaps a referenced file.
           CALL EGETRM(OUTSTR,K,ltmp,'W','view file',IER)
           call edisp(iuout,' Recovered view file name.')
           if(ltmp.ne.' ')then
+
+C Check for file (add working dir path)
+            write (lview,'(a,a)') runpath(1:lnblnk(runpath)),
+     &       ltmp(1:lnblnk(ltmp))
             CALL ERPFREE(ITA2,ISTAT)
-            call FINDFIL(ltmp,XST)
+            call FINDFIL(lview,XST)
             IF(XST)THEN
               trvewsh = rvewsh(ipckvew)
               addview = .false.
 
 C Read a radiance view point file and make sure that the
 C view point is within the bounds of the image.
-              call RRVEW(ITA2,ltmp,IER)
+              call RRVEW(ITA2,lview,IER)
               call UV2AZ(vdx,vdy,vdz,azimuth,elevtn)
               XMN=AMIN1(XMN,rvpx)
               YMN=AMIN1(YMN,rvpy)
@@ -336,6 +343,8 @@ C view point is within the bounds of the image.
               EYEM(2)=rvpy
               EYEM(3)=rvpz
               if(intext.eq.0)then
+
+C External view.
                 ITPPSW=3
                 call ang3vtx(OXMN,OYMN,OZMN,EYEM(1),EYEM(2),EYEM(3),
      &             OXMX,OYMX,OZMX,eang)
@@ -349,14 +358,14 @@ C view point is within the bounds of the image.
                 MODIFY=.TRUE.
                 MODLEN=.TRUE.
               else
+
+C Internal view.
                 ITPPSW=0
                 call edisp(iuout,' ')
                 call edisp(iuout,'Use plan or elevation views.')
-                angv=90.0
-                angh=90.0
               endif
             else
-              call edisp(iuout,'File not found, returning.')
+              call edisp(iuout,'View file not found, returning.')
               return
             endif
           else
@@ -364,21 +373,82 @@ C view point is within the bounds of the image.
             call edisp(iuout,vewcmds(ipckvew))
             return
           endif
+
+        elseif(word(1:4).eq.'-vtv')then
+
+C An in-line view command within the rif file.
+  42      CALL EGETW(OUTSTR,K,WORD,'-','command',IFLAG)
+
+C Debug.
+C          write(6,*) outstr
+          IF(IFLAG.ne.0)goto 43
+          if(word(1:3).eq.'-vp')then
+            CALL EGETWR(OUTSTR,K,rvpx,0.,0.,'-','X view pt',IER)
+            CALL EGETWR(OUTSTR,K,rvpy,0.,0.,'-','Y view pt',IER)
+            CALL EGETWR(OUTSTR,K,rvpz,0.,0.,'-','Z view pt',IER)
+            IF(IER.ne.0)goto 43
+          elseif(word(1:3).eq.'-vd')then
+            CALL EGETWR(OUTSTR,K,vdx,0.,0.,'-','X view vec',IER)
+            CALL EGETWR(OUTSTR,K,vdy,0.,0.,'-','Y view vec',IER)
+            CALL EGETWR(OUTSTR,K,vdz,0.,0.,'-','Z view vec',IER)
+            IF(IER.ne.0)goto 43
+          elseif(word(1:3).eq.'-vu')then
+            CALL EGETWR(OUTSTR,K,vu,0.,0.,'-','skip vu',IER)
+            CALL EGETWR(OUTSTR,K,vu,0.,0.,'-','skip vu',IER)
+            CALL EGETWR(OUTSTR,K,vu,0.,0.,'-','skip vu',IER)
+            IF(IFLAG.ne.0)goto 43
+          elseif(word(1:3).eq.'-vh')then
+            CALL EGETWR(OUTSTR,K,angh,0.,0.,'-','horiz ang',IER)
+            IF(IER.ne.0)goto 43
+          elseif(word(1:3).eq.'-vv')then
+            CALL EGETWR(OUTSTR,K,angv,0.,0.,'-','vert ang',IER)
+            IF(IER.ne.0)goto 43
+          elseif(word(1:3).eq.'-vs')then
+            CALL EGETWR(OUTSTR,K,vs,0.,0.,'-','skip vl',IER)
+            IF(IER.ne.0)goto 43
+          elseif(word(1:3).eq.'-vl')then
+            CALL EGETWR(OUTSTR,K,vl,0.,0.,'-','skip vl',IER)
+            IF(IER.ne.0)goto 43
+          else
+            goto 43
+          endif
+          goto 42
+
+C Got all of the viewing data.
+  43      continue
+          call UV2AZ(vdx,vdy,vdz,azimuth,elevtn)  ! re-establish
+          XMN=AMIN1(XMN,rvpx)
+          YMN=AMIN1(YMN,rvpy)
+          ZMN=AMIN1(ZMN,rvpz)
+          XMX=AMAX1(XMX,rvpx)
+          YMX=AMAX1(YMX,rvpy)
+          ZMX=AMAX1(ZMX,rvpz)
+          EYEM(1)=rvpx
+          EYEM(2)=rvpy
+          EYEM(3)=rvpz
+          if(intext.eq.0)then
+
+C External view.
+            ITPPSW=3
+            ANG=angh
+            HANG=ANG/2.0
+            ITBND=0
+            call edisp(iuout,' ')
+            call edisp(iuout,'Switching to static viewing angles.')
+            MODIFY=.TRUE.
+            MODLEN=.TRUE.
+          else
+            ITPPSW=0
+            call edisp(iuout,' ')
+            call edisp(iuout,'Use plan or elevation views.')
+          endif
         endif
       endif
 
 C Reflect eyepoint in the perspective view.
-      EYEM(1)=rvpx
-      EYEM(2)=rvpy
-      EYEM(3)=rvpz
-      call AZ2UV(azimuth,elevtn,vdx,vdy,vdz)
       if(intext.eq.0)then
         ITPPSW=3
-        call ang3vtx(OXMN,OYMN,OZMN,EYEM(1),EYEM(2),EYEM(3),OXMX,
-     &             OYMX,OZMX,eang)
-        angv=eang*1.25
-        angh=eang*1.25
-        ANG=angh
+        ANG=angh*1.1
         HANG=ANG/2.0
         ITBND=0
         call edisp(iuout,' ')
@@ -389,13 +459,11 @@ C Reflect eyepoint in the perspective view.
         ITPPSW=0
         call edisp(iuout,' ')
         call edisp(iuout,'Use plan or elevation views for interiors...')
-        angv=90.0
-        angh=90.0
       endif
+
 10    INO = -4
 
-C Reconstitute the viewing vector and eye angle.
-      call AZ2UV(azimuth,elevtn,vdx,vdy,vdz)
+C Reconstitute the viewing eye angle.
       call ang3vtx(OXMN,OYMN,OZMN,EYEM(1),EYEM(2),EYEM(3),OXMX,
      &             OYMX,OZMX,eang)
 
@@ -418,28 +486,37 @@ C Reconstitute the viewing vector and eye angle.
         write(ITEM(8),'(A,F5.1,a,F5.1,a)')
      &                            'h view angle: ',angh,' (',eang,')'
       else
-        write(ITEM(8),'(A,F5.1)') 'h view angle: ',angh
+        write(ITEM(8),'(A,F5.1)') 'h hor view angle: ',angh
       endif
-      ITEM(9) =                   '  __________________________  '
+      write(ITEM(9),'(A,F5.1)')   'i vert view angle: ',angv
+      ITEM(10) =                   '  __________________________  '
       if(ITPPSW.eq.0)then
-        write(ITEM(10),'(A,2F6.1)') 'l east min~max : ',XMN,XMX
-        write(ITEM(11),'(A,2F6.1)') 'm north min~max: ',YMN,YMX
+
+C Plan view.
+        write(ITEM(11),'(A,2F6.1)') 'l east min~max : ',XMN,XMX
+        write(ITEM(12),'(A,2F6.1)') 'm north min~max: ',YMN,YMX
       elseif(ITPPSW.eq.1)then
-        write(ITEM(10),'(A,2F6.1)') 'l south min~max: ',XMN,XMX
-        write(ITEM(11),'(A,2F6.1)') 'm up    min~max: ',ZMN,ZMX
+
+C South elevation view.
+        write(ITEM(11),'(A,2F6.1)') 'l south min~max: ',XMN,XMX
+        write(ITEM(12),'(A,2F6.1)') 'm up    min~max: ',ZMN,ZMX
       elseif(ITPPSW.eq.2)then
-        write(ITEM(10),'(A,2F6.1)') 'l east min~max : ',YMN,YMX
-        write(ITEM(11),'(A,2F6.1)') 'm up    min~max: ',ZMN,ZMX
+
+C East elevation view.
+        write(ITEM(11),'(A,2F6.1)') 'l east min~max : ',YMN,YMX
+        write(ITEM(12),'(A,2F6.1)') 'm up    min~max: ',ZMN,ZMX
       elseif(ITPPSW.eq.3)then
-        write(ITEM(10),'(A,2F6.1)') 'l east min~max : ',XMN,XMX
-        write(ITEM(11),'(A,2F6.1)') 'm north min~max: ',YMN,YMX
+
+C Perspective view.
+        write(ITEM(11),'(A,2F6.1)') 'l east min~max : ',XMN,XMX
+        write(ITEM(12),'(A,2F6.1)') 'm north min~max: ',YMN,YMX
       endif
-      ITEM(12) =                  '  __________________________  '
-      ITEM(13) =                  '> save view info              '
-      ITEM(14) =                  '  __________________________  '
-      ITEM(15) =                  '? help                        '
-      ITEM(16) =                  '- exit                        '
-      NITEMS = 16
+      ITEM(13) =                  '  __________________________  '
+      ITEM(14) =                  '> save view info              '
+      ITEM(15) =                  '  __________________________  '
+      ITEM(16) =                  '? help                        '
+      ITEM(17) =                  '- exit                        '
+      NITEMS = 17
       if(redraw)then
 
 C Draw the problem in plan/elevation with viewcone.
@@ -465,7 +542,13 @@ C Help text for main menu.
       helptopic='view_definition_menu'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
-      CALL EMENU(' Viewpoint definition',ITEM,NITEMS,INO)
+C Adapt title to reflect the current view name.
+      if(addview)then
+        write(mrvewsh,'(2a)') 'Viewpoint: ',trvewsh
+      else
+        write(mrvewsh,'(2a)') 'Viewpoint: ',rvewsh(ipckvew)
+      endif
+      CALL EMENU(mrvewsh,ITEM,NITEMS,INO)
       if(INO.EQ.1)then
 
 C Present list of views.
@@ -474,7 +557,9 @@ C Present list of views.
         MODLEN=.true.
         MODIFY=.TRUE.
         goto 142
+
       elseif(INO.EQ.2)then
+
         INPIC=NCOMP
         CALL EPICKS(INPIC,IVALS,
      &    'More than one zone may be seen in the view',
@@ -494,6 +579,7 @@ C Present list of views.
      &    'south elevation','east elevation','perspective?',IW,nbhelp)
         if(IW-1.ne.ITPPSW)redraw =.true.
         ITPPSW=IW-1
+
       elseif(INO.EQ.5)THEN
 
 C Eye Point...(assume begins at centre of zone).
@@ -552,6 +638,9 @@ C Transform back from mouse position to actual coordinate.
               rvpz=EYEM(3)
               call ln2az(EYEM(1),EYEM(2),EYEM(3),VIEWM(1),VIEWM(2),
      &          VIEWM(3),az,el)
+              call AZ2UV(az,el,vdx,vdy,vdz)
+              call ang3vtx(OXMN,OYMN,OZMN,EYEM(1),EYEM(2),EYEM(3),OXMX,
+     &             OYMX,OZMX,eang)
               azimuth=az
               elevtn=el
               vewdone=.false.
@@ -607,6 +696,7 @@ C Transform back from mouse position to actual coordinate.
             endif
           endif
         endif
+
       elseif(INO.EQ.6)then
 
 C Directional vector. Input as azimuth and elevation and then
@@ -631,6 +721,8 @@ C Update the viewing azimuth and elevation.
               azimuth=az
               elevtn=el
               call  AZ2UV(azimuth,elevtn,vdx,vdy,vdz)
+              call ang3vtx(OXMN,OYMN,OZMN,EYEM(1),EYEM(2),EYEM(3),OXMX,
+     &             OYMX,OZMX,eang)
               vewdone=.false.
               redraw =.true.
               MODLEN=.TRUE.
@@ -653,19 +745,25 @@ C Update the viewing azimuth and elevation.
           CALL EASKR(elevtn,' ',' View elevation (deg) ? ',
      &      -89.,'W',89.,'W',0.,'view elevation',IER,nbhelp)
           call AZ2UV(azimuth,elevtn,vdx,vdy,vdz)
+          call ang3vtx(OXMN,OYMN,OZMN,EYEM(1),EYEM(2),EYEM(3),OXMX,
+     &             OYMX,OZMX,eang)
           vewdone=.false.
           redraw =.true.
         endif
-      elseif(INO.EQ.8)then
 
-C View angle...
+      elseif(INO.EQ.8.or.INO.EQ.9)then
+
+C View angle horizontal and vertical.
         helptopic='view_angle_edit'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        write(outs,'(a,f6.1,a,f6.1)') ' View angle=',angh,
+        write(outs,'(a,f6.1,a,f6.1)') 'View angle (hor)=',angh,
      &    ' deg. View angle @ bounds=',eang
-        CALL EASKR(angh,outs,' View angle (deg) ? ',
+        CALL EASKR(angh,outs,'View angle (hor deg) ? ',
+     &    0.01,'W',180.,'W',60.,'hor view angle',IER,nbhelp)
+        write(outs,'(a,f6.1,a)') 'View angle (vert)=',angv,
+     &    ' deg.'
+        CALL EASKR(angv,outs,' View angle (vert deg) ? ',
      &    0.01,'W',180.,'W',60.,'view angle',IER,nbhelp)
-        angv=angh
         if(ITPPSW.eq.3)then
           dok=.false.
           helptopic='reflect_rad_view_in_per'
@@ -682,7 +780,8 @@ C View angle...
         endif
         vewdone=.false.
         redraw =.true.
-      elseif(INO.EQ.10)then
+
+      elseif(INO.EQ.11)then
 
 C horiz axis...
         helptopic='e2r_east_axis'
@@ -730,7 +829,8 @@ C horiz axis...
         endif
         vewdone=.false.
         redraw =.true.
-      elseif(INO.EQ.11)then
+
+      elseif(INO.EQ.12)then
 
 C vertical axis...
         helptopic='e2r_north_axis'
@@ -778,24 +878,31 @@ C vertical axis...
         endif
         vewdone=.false.
         redraw =.true.
-      elseif(INO.EQ.13)then
+
+      elseif(INO.EQ.14)then
 
 C If an existing view then just update, if a new view then
-C extend the list.
+C extend the list and the view command.
         if(addview)then
           indxvew = indxvew +1
+          addview=.false.  ! turn off the toggle
+          rvewsh(indxvew) = trvewsh  ! remember new name
         endif
-        rvewsh(indxvew) = trvewsh
         write(doit,'(a,3F9.3,a,3F8.4,a,F6.1,a,F6.1,a)') 
      &     '-vtv -vp ',rvpx,rvpy,rvpz,' -vd ',vdx,vdy,vdz,
      &     ' -vu 0 0 1 -vh ',angh,' -vv ',angv,' -vs 0 -vl 0 '
-        WRITE(vewcmds(indxvew),'(a)') doit
+        if(addview)then
+          WRITE(vewcmds(indxvew),'(a)') doit  ! new cmd
+        else
+          WRITE(vewcmds(ipckvew),'(a)') doit  ! current cmd
+        endif
         IFC=3
         call MKRIF(ITA2,RIFNAME(ISCENE),IFC,0,IER)
         if (NBSRIF(ISCENE).eq.1) then
           call mkrif(ita2,LBSRIF(ISCENE),IFC,1,ier)
         endif
         vewdone=.true.
+
       elseif(INO.EQ.(NITEMS-1))then
 
 c Explains main menu.

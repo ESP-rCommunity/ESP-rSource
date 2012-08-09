@@ -99,6 +99,7 @@ C      character guesstype*24  ! for context of surface addition
       character message*48    ! for vertex dialog
       integer IRT  ! for radio button
       integer icmpall  ! to signal request to compare all names
+      integer ltrace   ! local trace
 
 #ifdef OSI
       integer iix,iiy,ixd,iyd,iicol
@@ -1203,7 +1204,8 @@ C        guesstype='any_type'
 
 C Update the connection list. Move all others up and then insert with
 C default values. (allow verbose trace (3rd parameter in addedsurf).
-        call addedsurf(icomp,icon,2,ier)
+        ltrace=1
+        call addedsurf(icomp,icon,ltrace,ier)
         MODIFY=.TRUE.
       endif
 
@@ -2567,7 +2569,7 @@ C (otherwise there will be two surfaces point to the same other surface).
 C If in silent mode assign construction otherwise select. 
       if(act(1:2).eq.'sw'.or.act(1:2).eq.'sd'.or.act(1:2).eq.'sp')then
         WRITE(SMLCN(NSUR),'(A)') rsmlcn(1:12)
-        WRITE(SOTF(NSUR),'(A)')  rsotf(1:lnblnk(rsotf))
+        WRITE(SOTF(NSUR),'(A)')  rsotf(1:12)  ! only 1st 12 char
       else
         CALL EPMENSV
         CALL EPKMLC(ISEL,'Select one of the constructions for the',

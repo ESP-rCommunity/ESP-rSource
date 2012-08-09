@@ -52,7 +52,6 @@ C    and returns 1 if first date is more current, 0 if the same, otherwise -1.
 C  getsecs: Get computer clock seconds.
 
 C  iEGetArrW: integer function that breaks a string into an array.
-C  iEGetArrW_2500: Same as iEGetArrW but for strings 2500 ch long. 
 
 C  DAYCLK:  Print day, month, day no. and time based on the julian day & time.
 C  FDROOT:  Given a file name see if it contains a path.
@@ -120,7 +119,6 @@ C  STRIPC: Strips comments from a ASCII file str (124 char) & returns data.
 C  LSTRIPC: Strips comments from a ASCII file str (248 char) & returns data.
 C  STRIPC400 strips comments from a ASCII file (400 char long) string and returns the data.
 C  STRIPC1K strips comments from a ASCII file (1000 char long) string and returns the data.
-C  STRIPC2500 strips comments from a ASCII file (2500 char long) string and returns the data.
 C  CHARCH: Routine to check a string for a specific number of data items.
 C  NOYES:  INTEGER FUNCTION to read the answer Y,y,1,N,n,0 to a question.
 C  IFIRST: Function returning ASCII value for 1st char in a string ISTR.
@@ -4225,123 +4223,6 @@ C Find out the number of separate words/string groupings.
 
       END
 
-C ******************** STRIPC2500
-C STRIPC2500 strips comments from a ASCII file (2500 char long) string and returns the data.
-C It assumes that if a string begins with a '#' then the whole line is
-C a comment an the next line is read.  If a ' #' is discovered within
-C a line the rest of the line is removed.
-C IER=0 if ok. MSG is a text string used in error messages. If
-C IR=0 then acts silently, otherwise notes when EOF found.
-C IEXP is the number of expected items in the line:
-C   IEXP = 0 means don't care or already know no. items - don't check
-C   IEXP >0  means a specific number of items expected (error if not)
-C   IEXP = 99 check number of items and return in ITEMS
-
-      SUBROUTINE STRIPC2500(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
-#include "espriou.h"
-
-      integer iCountWords
-
-      COMMON/OUTIN/IUOUT,IUIN
-      CHARACTER*2500 OUTSTR,STRING,TMP
-      CHARACTER loutstr*248,outs*124
-      character truncstr*248   ! truncate outsr for reporting.
-      CHARACTER*(*) MSG
-      logical unixok
-
-C Read a line of the file, strip off any trailing blanks, if the first
-C character is a # then read the next line from the file.
-      IER=0
-    8 READ(INPCH,10,IOSTAT=ISTAT,ERR=101,END=102)STRING
-   10 FORMAT(A)
-      tmp=STRING(1:LNBLNK(STRING))
-
-C Take the string and check for a #, discarding any text which follows.
-      iloc = INDEX(tmp,'#')
-      if(iloc.eq.1)then
-        goto 8
-      elseif(iloc.eq.0)then
-        OUTSTR=tmp
-      elseif(iloc.gt.1)then
-        OUTSTR=tmp(1:ILOC-1)
-      endif
-
-C For messages we need to remember the initial part of the long string.
-      lastcc = MIN0(LNBLNK(OUTSTR),247)
-      write(truncstr,'(a)') OUTSTR(1:lastcc)
-
-C Find out the number of separate words/string groupings.
-      if(IEXP.eq.99)then
-        ITEMS = iCountWords(OUTSTR)
-      elseif(IEXP.eq.0)then
-        ITEMS=0
-      elseif(IEXP.gt.0)then
-        ITEMS = iCountWords(OUTSTR)
-        if(IEXP.ne.ITEMS)then
-          LN=max(1,lnblnk(currentfile))
-          LNM=max(1,lnblnk(MSG))
-          if(currentfile(1:2).ne.'  ')then
-            WRITE(loutstr,'(3A,I3,3A)')' In ',currentfile(1:LN),
-     &        ' expecting',IEXP,' items (',MSG(1:LNM),') in...'
-            CALL LUSRMSG(loutstr,truncstr,'F')
-          else
-            WRITE(loutstr,'(A,I3,3A)')' Expecting',IEXP,' items (',
-     &         MSG(1:LNM),') in...'
-            CALL LUSRMSG(loutstr,truncstr,'F')
-          endif
-        endif
-      endif
-
-    4 RETURN
-
-  101 IER=1
-      IF(IR.EQ.1)THEN
-        LN=max(1,lnblnk(currentfile))
-        LNM=max(1,lnblnk(MSG))
-        if(currentfile(1:2).ne.'  ')then
-          WRITE(loutstr,'(5A)')' In ',currentfile(1:LN),
-     &      ' error reading (',MSG(1:LNM),') in...'
-        else
-          WRITE(loutstr,'(A,A)',IOSTAT=IOS,ERR=1)' Error reading: ',
-     &      MSG(1:LNM),') in...'
-        endif
-        lastcc = MIN0(LNBLNK(STRING),247)
-        write(truncstr,'(a)') STRING(1:lastcc)
-        CALL LUSRMSG(loutstr,truncstr,'W')
-      ENDIF
-      goto 4
-
-  102 IER=2
-      IF(IR.EQ.1)THEN
-        LN=max(1,lnblnk(currentfile))
-        LNM=max(1,lnblnk(MSG))
-        if(currentfile(1:2).ne.'  ')then
-          WRITE(loutstr,'(5A)')' In ',currentfile(1:LN),
-     &      ' error reading (',MSG(1:LNM),') EOF sensed.'
-        else
-          WRITE(loutstr,'(3A)',IOSTAT=IOS,ERR=1)' Error reading ',
-     &      MSG(1:LNM),' EOF sensed.'
-        endif
-        CALL LUSRMSG(' ',loutstr,'-')
-      ENDIF
-      goto 4
-
-   1  call isunix(unixok)
-      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
-      if(IOS.eq.2)then
-        write(outs,*) 
-     &  'STRIPC2500: permission error writing warning re: '
-        call edisp(iuout,outs)
-	call edisp(iuout,outstr(1:72))
-      else
-        write(outs,*) 'STRIPC2500: error writing warning re: '
-        call edisp(iuout,outs)
-	call edisp(iuout,outstr(1:72))
-      endif
-      return
-
-      END
-
 
 C ******************* CHARCH
 C CHARCH: Older routine to check a string for a number of data items.
@@ -6719,65 +6600,6 @@ C Copy current character into word buffer
       enddo
 
       iEGetArrW = iWordCount
-
-      return
-      end
-
-C ***************** iEGetArrW_2500
-C iEGetArrW_2500 reads all of the words in a 2500 character string, and populates a character
-C array with each word. Words are separated by blanks, commas, or tab: WORD,WORD,WORD
-C or WORD WORD WORD or WORD, WORD, WORD  are all valid.
-      integer function iEGetArrW_2500(cString,cWORDS)
-      implicit none
-
-      character*2500 cString 
-      character*248  cWords(124)
-      character*1 cChar
-      logical bWord
-      integer iStrLoc, iWordLoc, iEnd, iWordCount, iEr
-      parameter (iEnd=2500)
-
-C Empty word array
-      do iWordCount = 1, 124
-        cWords(iWordCount) = ' '
-      enddo
-
-C Reset word counter
-      iWordCount = 0
-
-C Loop through string
-      do iStrLoc = 1, iEnd
-
-C Get current character
-        cChar = cString(iStrLoc:iStrLoc)
-
-C If string is a word separation character, move on
-        if ( cChar .eq. ' ' .or.
-     &       cChar .eq. ',' .or.
-     &       iChar(cChar) .eq. 9 ) then
-
-           bWord = .false.
-        else
-
-C is this a new word?
-          if ( .not. bWord ) then
-
-            bWord = .true.
-            iWordCount = iWordCount + 1
-            iWordLoc = 1
-
-          endif
-
-C Copy current character into word buffer
-          cWords(iWordCount)(iWordLoc:iWordLoc) = cChar
-
-          iWordLoc = iWordLoc + 1
-
-        endif
-
-      enddo
-
-      iEGetArrW_2500 = iWordCount
 
       return
       end

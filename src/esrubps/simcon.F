@@ -937,7 +937,7 @@ C Make up strings for the current set of toggles.
       NITMS=34
 
 C Help text for this menu.
-  91  helptopic='sim_toggles_menu'
+      helptopic='sim_toggles_menu'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
       CALL EMENU(' toggles',ITEMG,NITMS,INO)
@@ -1089,7 +1089,7 @@ C Plant solution technique.
   309   CALL EASKI(MAXITP,' Maximum number of iterations',' : ',
      &    1,'F',0,'-',1,'no iter',IER,nbhelp)
 
-        CALL EASKI(fUserITRCLP,
+        CALL EASKI(iUserITRCLP,
      &    ' No. of iterations for control loops',' : ',
      &    1,'F',0,'-',1,'no iter',IER,nbhelp)
 

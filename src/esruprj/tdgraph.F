@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -21,6 +21,7 @@ C Boston, MA 02111-1307 USA.
       SUBROUTINE TMPLOT(ITRC,IFOC,IER)
 #include "building.h"
 #include "model.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
 C Parameters for eline calls.

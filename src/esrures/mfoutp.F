@@ -50,7 +50,7 @@ C act='p' iget parameters already set.
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
       COMMON/GRAF2/YSC(5),Yadd(5),TSC,Xadd,IGX(5),ILR(5),DT
-      common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
+      common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
@@ -94,7 +94,7 @@ C Simulator parameters.
       COMMON/FREQS1/ICBIN(MF),ITOTAL
 
       dimension Yold(MZS), TIMEold(MZS)
-      character TLABEL*60,trange*20,tranged*20,t28*28,t10*10,dg*1
+      character TLABEL*60,trange*20,tranged*20,t28*28,dg*1
       character outs*124,outs248*248
       character outs800*800,outs800d*800  ! really long string buffers
       character ALABEL(5)*12,t20*20,act*1
@@ -113,7 +113,7 @@ C Simulator parameters.
       integer YAXSET,ADDLIN,horaxisdiv
       integer iglib
       integer lnb,lsn1
-      integer k,k4,ke,ke4,ke4t  ! used for string positions
+      integer k,k4,ke,ke4  ! used for string positions
       integer lke,lket28        ! length of label and packed label
 
       logical colok,ok,dok
@@ -1404,11 +1404,10 @@ C to graphical result display of network flows.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
-      common/grextras/graftitle,grlbl(5),ngrlbl,lblpx(5),lblpy(5)
+      common/grextras/graftitle,grlbl(10),ngrlbl,lblpx(10),lblpy(10)
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
 

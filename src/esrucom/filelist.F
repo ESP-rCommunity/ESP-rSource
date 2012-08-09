@@ -67,7 +67,7 @@ C   `rad` (looks in ../rad), `doc` (looks in ../doc),
 C   `usr` (looks in users home folder).
 C   `pat` (looks in {where esp-r installed}/training/pattern).
 C   `clm` (looks in {where esp-r installed}/climate).
-C   `dba` (looks in {where esp-r installed}/databases).
+C   `dbm` (looks in {where esp-r installed}/databases).
 C   `hva`(looks in ../hvac), `bsm` (looks in ../bsm).
 
 C what can be: `dir` list of folders, `fil` any files in the folders,
@@ -389,6 +389,7 @@ C            write(6,*) lex,listfolder(ij)
               write(listfc70(ij),'(a)') listfolder(ij)(1:lex)
             endif
             if(lex.gt.maxw) maxw=lex  ! ensure widest string can be displayed
+            if(maxw.lt.15) maxw=15    ! ensure title can be read
   76      continue
           CALL EPICKS(IX,ivlist,outs,' ',
      &      maxw,nboflistf,listfc70,'Available files',IER,3)

@@ -1,6 +1,0 @@
-*silent_input
-*menu,Creates empty model in /tmp/boxer2
-*doc,Initial model boxer2 with distributed folders to be created in /tmp/boxer2 and then set site to use data from irl_dublin_iwec climate file.
-*action,new,boxer2,distributed,/tmp/boxer2
-*weather_station,irl_dublin_iwec
-*end

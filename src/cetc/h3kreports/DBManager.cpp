@@ -494,15 +494,6 @@ void DBManager::addBinTypes()
    sqlite3_reset(insertStatements[5]);
    m_iInsertCount++;
 
-   //Insert Seasonal
-   sqlite3_bind_int(insertStatements[5],1,BIN_SEASONAL_TYPE);
-   sqlite3_bind_text(insertStatements[5], 2, "Seasonal",-1,NULL);
-   sqlite3_step(insertStatements[5]);
-   sqlite3_clear_bindings(insertStatements[5]);
-   sqlite3_reset(insertStatements[5]);
-   m_iInsertCount++;
-
-
    //Insert Annual
    sqlite3_bind_int(insertStatements[5],1,BIN_ANNUAL_TYPE);
    sqlite3_bind_text(insertStatements[5], 2, "Annual",-1,NULL);
