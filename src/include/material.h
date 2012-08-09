@@ -50,7 +50,7 @@ C assumptions for each face.
       real matdbine       ! is the inside face long wave emissivity (-)
       real matdbouta      ! is the outside face short wave absorbtivity (-)
       real matdbina       ! is the inside face short wave absorbtivity (-)
-      real matdbdrv       ! is the diffusion resistance (?)
+      real matdbdrv       ! is the diffusion resistance (MNs g^-1m^-1)'
       real matdbthick     ! default thickness (mm) for item (useful where
                            ! there are standard thickness of products
       common/matdatarray/matlegindex(MGIT),matcatindex(MGIT),
@@ -63,11 +63,8 @@ C If there are values after the tag then these might be air gap resistances.
       real matgapares ! air gap resistance (i.e. DRAIR) 1=vert 2=floor/ceil 3=other
       common/matgaparray/matgapares(MGIT,3)
 
-C So called 'G-value' calculations require the sorts of single layer optical
-C properties which ESP-r does not current hold. Also the lack of this data
-C makes it difficult to work with optical tools such as WIS
-C Based on WIS single layer data the following data could be held based
-C on the assumtion that the default thickness was used by the construction:
+C 'G-value' calculations require single layer optical properties
+C (dependant on thickness vis-a-vis matdbthick). 
       real matirtran     ! IR transmittance
       real matsoldrtrn   ! solar direct transmittance
       real matsoldrotrfl ! outer solar direct reflectance
