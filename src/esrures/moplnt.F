@@ -744,12 +744,14 @@ C Defaults.
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
 
-      character DFILE*72,LTMP*144,outs*124,louts*248
+      character DFILE*72,LTMP*144
+      character outs*124,louts*248
       character lctlf*72,ctldoc*248,scname*12,MODE*4
       character firstbit*72,secondbit*72,path*72
       character longtmp*144
       logical XST,ok,dok
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      integer nsim  ! number of simulations
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -771,15 +773,6 @@ C For help messages
         else
           ltmp=' '
         endif
-
-C Assume default plants results name (*.plr) taken from zone results
-C name (*.res). Use the same style as in MFOUTP.
-C	lrf=lnblnk(LTMP)
-C	lrf3=lrf-3
-C	lrf4=lrf-4
-C	if(LTMP(lrf3:lrf).eq.'.res')then
-C	  write(LTMP,'(2a)') LTMP(1:lrf4),'.plr'
-C	endif
 
         llt=lnblnk(ltmp)
         helptopic='res_plant_res_file'
@@ -815,22 +808,27 @@ C name with the full path.
       endif
       IER=0
 
-      INQUIRE (FILE=LTMP,EXIST=XST)
+      INQUIRE (FILE=ltmp,EXIST=XST)
       IF(XST)THEN
 
 C Set record length of library file.
+        CALL ERPFREE(iunitp,ISTAT)
         nprl = nprecl
-        OPEN (iunitp,FILE=LTMP(1:lnblnk(LTMP)),ACCESS='DIRECT',
-     &    RECL=nprl*4,FORM='UNFORMATTED',STATUS='OLD',IOSTAT=ISTAT)
-          write(outs,'(A,I3)')' Opening file with record length',nprl
+        call EFOPRAN(iunitp,ltmp,nprl,1,IER)
+        if(ier.eq.0) then
+          write(outs,'(A,I3)')
+     &     ' Opened plant results with record length',nprl
           call edisp(iuout,outs)
+        else
+          call edisp(iuout,'Unable to open plant results')
+        endif
       ELSE
 
 C Try again ?
         dok=.false.
         helptopic='plant_res_file_not'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        write(outs,'(2a)') ' Could not find ',LTMP(1:lnblnk(LTMP))
+        write(outs,'(2a)') ' Could not find ',LTMP(1:72)
         CALL ASKOK(outs,' Do you want to try again?',OK,dok,nbhelp)
         IF(.NOT.OK) return
         goto  6

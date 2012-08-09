@@ -124,7 +124,7 @@ C Optional title for graph and up to 10 other labels and their positions.
       
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
-      COMMON/pres/iunitp
+      COMMON/pres/iunitp  ! file unit for plant
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       
@@ -203,6 +203,7 @@ C     NSIGFIG=3
       IOPTDB=IFIL+6
       IUTDF=IFIL+7
       IUTDFA=IFIL+8
+      iunitp=IFIL+10
       matver=0.0   ! initial assumption of binary materials database
       ireportunit=0 ! assume normal units for tabular listings
 
