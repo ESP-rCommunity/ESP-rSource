@@ -59,8 +59,10 @@ C.....Aggregate energy from HOT3000 base loads
 
 C.....10-Nov-2011 BAL: Added
 C.....Aggregate fuel costs from HOT3000 base loads
+C.....18-Apr-2012 BAL: Added AggregatePltFuelCost
       if( bIncFuelCostCalcs ) then
             call AggregateH3KBaseLoadsFuelCost()
+            call AggregatePltFuelCost()            
       end if
 
 C.....Compute site-wide energy consumption
@@ -609,7 +611,7 @@ C-----------------------------------------------------------------------
 
           fSiteEnergyUse( iComponent, iFuel, iEndUse ) =
      &       fSUFuelEnergyUse ( iFuel, iEndUse )
-
+	 
         enddo use_loop
 
       enddo fuel_loop
@@ -675,7 +677,7 @@ C.......Get the appropriate fuel cost based on the month and rate block.
             fSiteFuelCost( iComponent, iFuel, iEndUse ) =
      &            fConvertEnergyToFuelAmount(
      &            fSUFuelEnergyUse( iFuel, iEndUse ),
-     &            iFuel ) * fuel_cost
+     &            iFuel ) * fuel_cost	 
 
         enddo use_loop
 
@@ -709,6 +711,7 @@ C=======================================================================
 #include "OffsiteUtilitiesPrivate.h"
 
       logical bNumsAreClose
+      logical bInStartup	  
 
 C-----------------------------------------------------------------------
 C     Loop through fuels, end-uses and stuff fuel consumption into
@@ -720,7 +723,7 @@ C-----------------------------------------------------------------------
 
           fPltEnergyUse( iComponent, iFuel, iEndUse ) =
      &       fSUFuelEnergyUse( iFuel, iEndUse )
-
+	 
 C...........Mark uncatagorized end-uses for reapportionment
             if ( iEndUse == iUseUncatagorized ) then
 
@@ -741,8 +744,20 @@ C...........Mark uncatagorized end-uses for reapportionment
 
         enddo use_loop
 
-      enddo fuel_loop
-
+      enddo fuel_loop	  
+	  
+C-----------------------------------------------------------------------
+C     18-Apr-2012 BAL: Added call to fuel cost routines:
+C     AddToSumFuelUseArray adds fSUFuelEnergyUse to the fSumFuelUse
+C     array. StorePltFuelCosts fetches the appropriate fuel cost based
+C     on the total sum of fuel use so far, and stores the fuel cost
+C     in a private array.
+C-----------------------------------------------------------------------
+      if( bIncFuelCostCalcs.and. (.not. bInStartup() ) ) then
+            call AddToSumFuelUseArray(fSUFuelEnergyUse)
+            call StorePltFuelCosts(iComponent, fSUFuelEnergyUse )
+      end if      
+      
       return
       end
 
@@ -796,7 +811,7 @@ C-----------------------------------------------------------------------
 C-----------------------------------------------------------------------
 C     05-Nov-2011 BAL: Added call to fuel cost routines:
 C     AddToSumFuelUseArray adds fSUFuelEnergyUse to the fSumFuelUse
-C     array. StoreSiteFuelCosts fetches the appropriate fuel cost based
+C     array. StoreH3KBaseLoadsFuelCosts fetches the appropriate fuel cost based
 C     on the total sum of fuel use so far, and stores the fuel cost
 C     in a private array.
 C-----------------------------------------------------------------------
@@ -860,6 +875,58 @@ C.......TOU rate (electricity only).
       return
       end
 
+C=StorePltFuelCosts=====================================================
+C
+C ABSTRACT
+C
+C StorePltFuelCosts stores fuel costs associated with plant component
+C loads at each time step for later access in the site utilities facility.
+C
+C Input parameters defined via include statements.
+C
+C   - iComponent: Plant component index
+C
+C   - fSUFuelEnergyUse: 2d array used to convert fuel consumption
+C     data into fuel costs. Array indicies correspond
+C     to fuel, end-use.
+C
+C=======================================================================
+      subroutine StorePltFuelCosts(iComponent, fSUFuelEnergyUse )
+      implicit none
+#include "building.h"
+#include "MultiYear_simulations.h"
+#include "plant.h"
+#include "OffsiteUtilitiesPublic.h"
+#include "OffsiteUtilitiesPrivate.h"
+
+      real fuel_cost
+      real fGetFuelCost
+      real fConvertEnergyToFuelAmount
+
+C-----------------------------------------------------------------------
+C     Loop through fuels, end uses, convert HOT3000 Base Loads energy use
+C     to fuel consumption and stuff into protected fuel costs array
+C-----------------------------------------------------------------------
+      fuel_loop: do iFuel = 1, iNumFuel
+
+C.......Get the appropriate fuel cost based on the month,  rate block, or
+C.......TOU rate (electricity only).
+        fuel_cost = fGetFuelCost(iFuel)
+
+        use_loop: do iEndUse = 1, iNumUses
+
+            fPltFuelCost( iComponent, iFuel, iEndUse ) =
+     &            fConvertEnergyToFuelAmount(
+     &            fSUFuelEnergyUse( iFuel, iEndUse ),
+     &            iFuel ) * fuel_cost
+
+        enddo use_loop
+
+      enddo fuel_loop
+
+      return
+      end	  
+	  
 C=AggregatePltCompEnergyUse=============================================
 C
 C ABSTRACT
@@ -904,7 +971,7 @@ C.........Sum fuel/end-use consumtion for all components
             fSiteEnergyUse( iPltComponents, iFuel, iEndUse ) =
      &           fSiteEnergyUse( iPltComponents, iFuel, iEndUse )
      &         + fPltEnergyUse( iComponent, iFuel, iEndUse )
-
+	  
           enddo plt_component_loop
 
         enddo use_loop
@@ -1023,6 +1090,65 @@ C.........Sum base loads fuel/end-use fuel costfor all zones
       return
       end
 
+C=AggregatePltFuelCost==================================================
+C
+C ABSTRACT
+C
+C AggregatePltFuelCost aggregates fuel costs specific
+C to plant components, and appends it to the site-wide fuel
+C cost array.
+C
+C Inputs:
+C
+C   - None.
+C
+C=======================================================================
+      subroutine AggregatePltFuelCost()
+
+      implicit none
+#include "building.h"
+#include "plant.h"
+#include "OffsiteUtilitiesPublic.h"
+#include "OffsiteUtilitiesPrivate.h"
+
+      ! Zone information
+      common/c1/ncomp,ncon
+      integer ncomp          ! number of zones
+      integer ncon           ! not used
+
+      common/c9/nPComp,NCI(mpcom),CData(mpcom,mmiscd)
+      integer nPComp                     ! # of plant component models
+      integer nci                        ! not used
+      real CData                         ! not used
+
+C-----------------------------------------------------------------------
+C     Loop through fuels, end-uses and sum fuel consumption
+C-----------------------------------------------------------------------
+
+      fuel_loop: do iFuel = 1, iNumFuel
+
+        use_loop: do iEndUse = 1, iNumUses
+
+C.........Initialize fuel/end-use combination to zero.
+          fSiteFuelCost ( iPltComponents, iFuel, iEndUse ) = 0.
+
+C.........Sum base loads fuel/end-use fuel costfor all zones
+          plt_component_loop: do iComponent =1 , nPComp
+
+            fSiteFuelCost( iPltComponents, iFuel, iEndUse ) =
+     &           fSiteFuelCost( iPltComponents, iFuel, iEndUse )
+     &         + fPltFuelCost(iComponent, iFuel, iEndUse)
+
+          enddo plt_component_loop
+
+        enddo use_loop
+
+      enddo fuel_loop
+
+
+      return
+      end      
+      
 C=TotalFuelCost=========================================================
 C
 C ABSTRACT:
@@ -1059,8 +1185,8 @@ C.........Zero end-use energy use (by fuel) array slot
 
             fEndUseFuelCost ( iFuel, iEndUse ) =
      &              fEndUseFuelCost ( iFuel, iEndUse )
-     &            + fSiteFuelCost( iComponent, iFuel, iEndUse )
-
+     &            + fSiteFuelCost( iComponent, iFuel, iEndUse ) 
+	 
 C...........Add minimum monthly fuel charge to end use type iExtraBillingCharges
             call AddMonthlyMinFuelCharge( iEndUse, iFuel )
 
