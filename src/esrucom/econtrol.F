@@ -3806,7 +3806,7 @@ C include it in the documentation line.
       call edisp(itru,outs)
 
       call edisp(itru,
-     &' Per|Start|Sensing  |Actuating  | Control law       | Data')
+     &' Per|Start|Sensing  |Actuating  | Control law description')
       DO 30 K=1,LL
         CALL EVCNTRL(icfoc,II,JJ,K,'T',SSTR)
         CALL EVCNTRLAW(icfoc,II,JJ,K,TMP,LTMP)
