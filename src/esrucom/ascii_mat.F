@@ -394,17 +394,17 @@ C common block arrays so that future reads are more efficient.
      &        matname(J)(1:lnna),tab,matlegindex(J),
      &        tab,matcatindex(J),tab,matdoc(J)(1:lndo)
             if(matopaq(J)(1:1).eq.'-')then
-              write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a)')
+              write(outs,'(f13.3,2F10.3,4f6.3,f10.3,F6.1,2a)')
      &          matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
      &          matdbine(J),matdbouta(J),matdbina(J),matdbdrv(J),
      &          matdbthick(J),' ',matopaq(J)
             elseif(matopaq(J)(1:1).eq.'o')then
-              write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a)')
+              write(outs,'(f13.3,2F10.3,4f6.3,f10.3,F6.1,2a)')
      &          matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
      &          matdbine(J),matdbouta(J),matdbina(J),matdbdrv(J),
      &          matdbthick(J),' ',matopaq(J)
             elseif(matopaq(J)(1:1).eq.'t')then
-              write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,8F6.3)')
+              write(outs,'(f13.3,2F10.3,4f6.3,f10.3,F6.1,2a,8F6.3)')
      &          matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
      &          matdbine(J),matdbouta(J),matdbina(J),matdbdrv(J),
      &          matdbthick(J),' ',matopaq(J),
@@ -567,7 +567,6 @@ C class index IC is used for subsequent items.
         CALL EGETWR(LOUTSTR,K,VAL(8),0.,0.,'-','db difusn',IER)
         CALL EGETWR(LOUTSTR,K,VAL(9),0.,0.,'-','db def thick',IER)
         CALL EGETW(LOUTSTR,K,WORD32,'-','tag for opaque transp',IER)
-        write(6,*) nd,' ',word32,closemat1,closemat2
         matdbcon(matdbitems)=VAL(1)
         matdbden(matdbitems)=VAL(2)
         matdbsht(matdbitems)=VAL(3)
@@ -619,7 +618,6 @@ C line  then read air gap resistance but otherwise skip the rest of the line.
               matgapares(matdbitems,1)=VAL(1)
               matgapares(matdbitems,2)=VAL(2)
               matgapares(matdbitems,3)=VAL(3)
-              write(6,*) 'g closemat2 ',val(1),val(2),val(3)
             endif
           endif
         elseif(WORD32(1:1).eq.'h')then   ! gas
@@ -639,7 +637,6 @@ C the rest of the line.
               matgapares(matdbitems,1)=VAL(1)
               matgapares(matdbitems,2)=VAL(2)
               matgapares(matdbitems,3)=VAL(3)
-              write(6,*) 'h closemat2 ',val(1),val(2),val(3)
             endif
           endif
         endif

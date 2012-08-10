@@ -103,7 +103,7 @@ Category ( 3) was initially named Metal. No other documentation (yet).
 *item,Thermobrite, 48, 3,Thermobrite
 210.000,2700.000,880.000,0.050,0.050,0.050,0.050,19200.000,5.0,-
 *item,Lead as per CIBSE data, 49, 3,Lead as per CIBSE data
-35.00011340.000,130.000,0.120,0.120,0.200,0.200,19200.000,5.0,-
+35.000,11340.000,130.000,0.120,0.120,0.200,0.200,19200.000,5.0,-
 *item,Steel sheed SBEM, 50, 3,Steel sheed SBEM
 60.000,7800.000,502.000,0.120,0.120,0.200,0.200,19200.000,5.0,-
 # class index |nb items|description (32 char)
