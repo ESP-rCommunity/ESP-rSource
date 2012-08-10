@@ -5,7 +5,6 @@ LIBGTK = libgtkesru.a
 LIBX11 = libxesru.a
 LIBnoX = libnoxesru.a
 LIBver = libversion.a
-LIBfpe = libfpe.a
 LIBxml = libXML.a
 LIBsqlite = libSQLite.a
 # .SUFFIXES: .o .F
@@ -24,8 +23,6 @@ OBJECTSGTK = esru_ask.o esru_blk.o esru_lib.o esru_libGTK.o esru_nox.o esru.o es
 OBJECTSnoX = esru_ask.o esru_blk.o esru_lib.o esru_libNonGTK.o esru_fc.o esru_util.o
 GTK_OBJ = esp-r.o esp_menu.o esp_text.o esp_ask.o esp_draw.o esp_file.o
 OBJECTSVersion = version.o
-OBJECTS_FPE_enable = fpe_enable.o
-OBJECTS_FPE_disable = fpe_disable.o
 
 
 # Additional C and Fortran objectives needed for H3Kreports
@@ -73,18 +70,6 @@ the_libVer: $(OBJECTSVersion)
 	then ranlib $(LIBver) ; \
 	fi
 
-the_libFPE: $(OBJECTS_FPE_enable) 
-	ar ruv $(LIBfpe) $(OBJECTS_FPE_enable)
-	if test -s /usr/bin/ranlib ; \
-	then ranlib $(LIBfpe) ; \
-	fi
-
-the_libNoFPE: $(OBJECTS_FPE_disable) 
-	ar ruv $(LIBfpe) $(OBJECTS_FPE_disable)
-	if test -s /usr/bin/ranlib ; \
-	then ranlib $(LIBfpe) ; \
-	fi
-
 # Target to build bps with SQLite
 the_libSQLite: $(SQLite_FOBJECTS) $(SQLite_COBJECTS)
 	ar ruv $(LIBsqlite) $(SQLite_FOBJECTS) $(SQLite_COBJECTS)
@@ -114,9 +99,9 @@ the_libNoH3KReports: $(NO_XML_C_STUBS) $(NO_XML_F_STUBS)
 	fi
 
 clean:
-	rm -f core $(LIBX11) $(LIBnoX) $(LIBGTK) $(LIBver) $(LIBfpe) $(LIBxml) $(LIBsqlite)\
+	rm -f core $(LIBX11) $(LIBnoX) $(LIBGTK) $(LIBver) $(LIBxml) $(LIBsqlite)\
 	           $(OBJECTSX11) $(OBJECTSnoX) $(OBJECTSGTK) $(GTK_OBJ) \
-	           $(OBJECTSVersion) $(OBJECTS_FPE_enable) $(OBJECTS_FPE_disable) \
+	           $(OBJECTSVersion) \
 	           $(XML_COBJECTS) $(XML_FOBJECTS) $(NO_XML_C_STUBS) $(NO_XML_F_STUBS) \
 		   $(SQLite_COBJECTS) $(SQLite_FOBJECTS) $(NO_SQLite_C_STUBS) $(NO_SQLite_F_STUBS) \
 	           TReports_dummy.F ConfigureH3kReports.F TReportsManager.cpp \
@@ -144,10 +129,6 @@ esru_libNonGTK.o:
 	$(MFC) $(LD_FLAGS) $(FFLAGS) -c esru_libNonGTK.F	
 esru_nox.o:
 	$(MCC) $(LD_FLAGS) $(CFLAGS) -c esru_nox.c
-fpe_enable.o:
-	$(MCC) $(LD_FLAGS) $(CFLAGS) -c fpe_enable.c
-fpe_disable.o:
-	$(MCC) $(LD_FLAGS) $(CFLAGS) -c fpe_disable.c
 esru.o:
 	$(MCC) $(LD_FLAGS) $(CFLAGS) $(GTKFLAGS) -c esru.c
 esru_blk.o:

@@ -84,6 +84,9 @@ C Common blocks
       COMMON/APPNAME/cAppName
 C Timeout information
       COMMON/TIMEOUT/sTimeout,iTimeoutFlag
+C Flag for H3K customizations 
+      common/H3KCustom/bEnableH3kExtensions
+      logical bEnableH3kExtensions
 C Declare  calling parameter types
       integer, intent(out)  ::  termtype,iappw,iappx,iappy,iverb
       integer, intent(in)  ::  module
@@ -183,6 +186,10 @@ C Display version information and then quit
 C Display detailed build information and then quit
             CALL ESPrVersion("details",cAppName,IUOUT)
             stop
+C Enable h3k-specific customizations that may disrupt general esp-r functionality
+C (disabled by default!)            
+          elseif(argument(1:4).eq.'-h3k') then 
+            bEnableH3kExtensions = .true. 
           elseif(argument(1:3).eq.'-vv')then
             iverb = 2   ! tell application to run with debug verbose
           elseif(argument(1:2).eq.'-v')then
@@ -2036,3 +2043,21 @@ C parpsfh: Help message for several of the command line parsers.
       call edisp(iuout,' -buildinfo: display build details and quit.')
       return
       end
+
+            
+C-----------------------------------------------------------------------
+C     Function bH3KExtentionsActive: Returns value of 
+C     h3k_extentions flag 
+C-----------------------------------------------------------------------
+      logical function bH3KExtentionsActive()
+      implicit none 
+      
+      common/H3KCustom/bEnableH3kExtensions
+      logical bEnableH3kExtensions     
+      
+      bH3KExtentionsActive = bEnableH3kExtensions
+      
+      return 
+      
+      end function bH3KExtentionsActive
+      

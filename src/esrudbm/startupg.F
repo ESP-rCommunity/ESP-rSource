@@ -2167,3 +2167,20 @@ C If islash > 0 then root and file name
 
       RETURN
       END
+      
+
+            
+C-----------------------------------------------------------------------
+C     Function bH3KExtentionsActive: Returns value of 
+C     h3k_extentions flag 
+C-----------------------------------------------------------------------
+      logical function bH3KExtentionsActive()
+      implicit none 
+      
+
+      bH3KExtentionsActive = .false. 
+      
+      return 
+      
+      end function bH3KExtentionsActive      
+      
