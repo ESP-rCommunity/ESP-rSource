@@ -285,7 +285,7 @@ C Dump CONVAR array
         ELSE
           WRITE(ITU,*) ' There are no plant connections'
         END IF
-10910   FORMAT(I5,3G11.4)
+10910   FORMAT(I5,4G11.4)
 
 C Dump PCNTMF array
         IF(ICONT.GT.0) THEN
