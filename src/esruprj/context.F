@@ -40,7 +40,7 @@ C ITRU unit number for user output, IER=0 indicates no error.
 #include "model.h"
 #include "site.h"
 #include "geometry.h"
-#include "tdf2.h"
+#include "net_flow.h"
 #include "sbem.h"
 #include "ipvdata.h"
 
@@ -69,13 +69,6 @@ C CPCALC description
 C Variables for weekdays, and weekends.
 C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
-
-C Images.
-      character imgfmt*4  ! GIF XBMP TIF JPG
-      character imgfoc*4  ! FZON FNET FCTL FDFS
-      character limgfil*72  ! file name (extend to 144 char)
-      character imgdoc*248  ! text associated with image
-      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
 
       integer noimg  ! number of images
       integer iton   ! zero if images not yet shown, one if yes
@@ -1115,6 +1108,7 @@ C temporal data to be associated with a model.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "net_flow.h"
 #include "tdf2.h"
 #include "control.h"
       
@@ -1129,6 +1123,11 @@ C TDF related.
 
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       common/cctl/icascf(mcom)
+      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
+      COMMON/MFLOW1/NNOD,NCMP,NCNN
+      COMMON/MFLOW2/NDNAM(0:MNOD)
+      character*12 ndnam
+      CHARACTER PROMPT1*72, PROMPT2*72
 
       logical MODSIT,browse,OK,dok,unixok
       logical FOUND,XST
@@ -2039,6 +2038,28 @@ C Measured surface T (associated with a zone and up to 6 surfaces).
      &        ' ',IER)
             IF(ISUR.EQ.0.OR.ISUR.EQ.-1)GOTO 355
             write(DBSN(ITE),'(a)') sname(IC,ISUR)(1:12) 
+          elseif(TTYPE(it)(1:8).eq.'NODPRESS')then
+
+C Exit if no flow network present or no nodes defined
+            if(iairn.ne.1)then
+              call usrmsg
+     &        ('Define flow network before linking node pressures'
+     &        ,' ','W')
+            elseif(nnod.le.0)then
+              call usrmsg
+     &        ('Define flow nodes before linking node pressures'
+     &        ,' ','W')
+            else
+
+C Ask for node name if flow network is present
+              INOPT=0
+              NNPK=1
+              PROMPT1='Which node to link to this pressure'
+              PROMPT2='  '
+              call ASKMFNOD(INOPT,NNPK,INPK,PROMPT1,PROMPT2,nbhelp)
+              write(DBZN(ITE),'(a)')ndnam(inpk)(1:12)
+              write(DBSN(ITE),'(a)')'No surf reqd'
+            endif
           else
             DBZN(ITE)='ALL'
             DBSN(ITE)='ALL'            
@@ -2322,7 +2343,7 @@ C Parameters passed
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       integer nbdaytype,nbcaldays,icalender
       integer MVERT,IVERT,mcvert,icvert ! max items and current menu item
-      integer ib,ld,l,idayloop,loop ! index for looping
+      integer iloop,ib,ld,l,idayloop,loop ! index for looping
       integer ijd,idayn,idwk,idt,idtt,imthn,ixd   ! for counting days
       integer idno,istjandwk,ISDS,ISDF   ! for counting days
       integer ifoc,ifrq,ihdt,m,mj,ij,mm,loopst,ix,io,isw,ipact,irt ! for position

@@ -67,8 +67,10 @@ C      CMP43S   2 node (ISV=20) AC  cooling coil fed
 C                                   by WCH system
 C      CMP44S   2 node (ISV=20) WCH exponent model radiator
 C      CMP45S   1 node (ISV=20) WCH air source heat pump
+C      CMP46S   2 node (ISV=20) WCH advanced modulating boiler model
 C      CMP50S   1 node (ISV=29) WCH thermostatic valve
 C      CMP51S   1 node (ISV=29)     mechanical room thermostat
+C      CMP52S   1 node (ISV=29) WCH thermostatic valve (sensor only)
 C PP-based components
 C      CMP53S   4 node (ISV>19) AC  heat transfer tube with transport delay at water side
 C      CMP54S   1 node (ISV=20) Water/steam flow multiplier
@@ -231,10 +233,14 @@ C Component by component, call routine to deal with relevant type
          CALL CMP44S(IPCOMP)
       ELSE IF(ITYPE.EQ.45) THEN
          CALL CMP45S(IPCOMP)
+      ELSE IF(ITYPE.EQ.46) THEN
+         CALL CMP46S(IPCOMP)
       ELSE IF(ITYPE.EQ.50) THEN
          CALL CMP50S(IPCOMP)
       ELSE IF(ITYPE.EQ.51) THEN
          CALL CMP51S(IPCOMP)
+      ELSE IF(ITYPE.EQ.52) THEN
+         CALL CMP52S(IPCOMP)
       ELSE IF(ITYPE.EQ.53) THEN
          CALL CMP53S(IPCOMP)
       ELSE IF(ITYPE.EQ.54) THEN
@@ -2549,7 +2555,6 @@ C Check user specified number of controlled variables
      &                ' of controlled variables'
 
 C Check component has at least two connections.
-      NCONS=2
       NCONPN=1
       DO 20 IPCONC=1,MPCONC
         IPCON1=ICONDX(IPCOMP,1,IPCONC)
@@ -3656,6 +3661,110 @@ C Error handling
 C
       END
 
+C ******************** CMP46S ********************
+
+C CMP46S establishes for a plant component with plant db code 420 ie.
+C C 2 node (ISV=20) modulating WCH boiler with on/off control
+C data derivable from the static manufacturers data already read from
+C the database and saves it in the static data common block, and also
+C whether the specified number of controlled variables is OK, and also
+C whether the number of connections to this component is correct
+C and whether the connected nodes are of a type as expected by the
+C corresponding coefficient generator routine
+C
+      SUBROUTINE CMP46S(IPCOMP)
+#include "plant.h"
+#include "building.h"
+C
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+      COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
+      COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
+      COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
+     &             ICONDX(MPCOM,MNODEC,MPCONC)
+C
+C Establish static data derivable from the data read from database
+      BDATA(IPCOMP,1)=ADATA(IPCOMP,3)
+      BDATA(IPCOMP,2)=ADATA(IPCOMP,4)
+      BDATA(IPCOMP,3)=ADATA(IPCOMP,5)
+      BDATA(IPCOMP,4)=ADATA(IPCOMP,6)
+      BDATA(IPCOMP,5)=ADATA(IPCOMP,7)
+      BDATA(IPCOMP,6)=ADATA(IPCOMP,8)
+      BDATA(IPCOMP,7)=ADATA(IPCOMP,9)
+      BDATA(IPCOMP,8)=ADATA(IPCOMP,10)
+      BDATA(IPCOMP,9)=ADATA(IPCOMP,11)
+      BDATA(IPCOMP,10)=ADATA(IPCOMP,12)
+      BDATA(IPCOMP,11)=ADATA(IPCOMP,13)
+      BDATA(IPCOMP,12)=ADATA(IPCOMP,14)
+      BDATA(IPCOMP,13)=ADATA(IPCOMP,15)
+      BDATA(IPCOMP,14)=ADATA(IPCOMP,16)
+      BDATA(IPCOMP,15)=ADATA(IPCOMP,17)
+      BDATA(IPCOMP,16)=ADATA(IPCOMP,18)
+      BDATA(IPCOMP,17)=ADATA(IPCOMP,19)
+      BDATA(IPCOMP,18)=ADATA(IPCOMP,20)
+      BDATA(IPCOMP,19)=ADATA(IPCOMP,21)
+      BDATA(IPCOMP,20)=ADATA(IPCOMP,22)
+      BDATA(IPCOMP,21)=ADATA(IPCOMP,23)
+      BDATA(IPCOMP,22)=ADATA(IPCOMP,24)
+      BDATA(IPCOMP,23)=ADATA(IPCOMP,25)
+      BDATA(IPCOMP,24)=ADATA(IPCOMP,26)
+      BDATA(IPCOMP,25)=ADATA(IPCOMP,27)
+      BDATA(IPCOMP,26)=ADATA(IPCOMP,28)
+      BDATA(IPCOMP,27)=ADATA(IPCOMP,29)
+      BDATA(IPCOMP,28)=ADATA(IPCOMP,30)
+      BDATA(IPCOMP,29)=ADATA(IPCOMP,31)
+      BDATA(IPCOMP,30)=ADATA(IPCOMP,32)
+
+C Trace output
+      IF(ITC.GT.0.AND.ITRACE(35).NE.0) THEN
+         WRITE(ITU,*) ' Component ',IPCOMP,' pre-simulation data for a:'
+         WRITE(ITU,*) ' 2 node (ISV=20) advanced modulating WCH boiler '
+         WRITE(ITU,*) ' model with on/off control '
+         NITMS=2
+         WRITE(ITU,*) ' ADATA ',(ADATA(IPCOMP,J),J=1,NITMS)
+         NITMS=10
+         WRITE(ITU,*) ' BDATA ',(ADATA(IPCOMP,J),J=1,NITMS)
+         NITMS=1
+         WRITE(ITU,*) ' CDATA ',(CDATA(IPCOMP,J),J=1,NITMS)
+         IF(ITU.EQ.IUOUT) THEN
+            IX1=(IPCOMP/5)*5
+            IF(IX1.EQ.IPCOMP.OR.IPCOMP.EQ.NPCOMP) call epagew
+         END IF
+      END IF
+C
+C Check user specified number of controlled variables
+      NCITM=1
+      IF(NCI(IPCOMP).NE.NCITM)
+     &   WRITE(ITU,*) ' CMP46S warning: user specified wrong number',
+     &                ' of controlled variables'
+C
+C Check component has 1 connection only, to water
+      NCONS=1
+      DO 10 IPCONC=1,MPCONC
+      IPCON=ICONDX(IPCOMP,1,IPCONC)
+      IF(IPCONC.LE.NCONS) THEN
+         IF(IPCON.EQ.0) THEN
+            GOTO 990
+         ELSE IF(ICONTP(IPCON).NE.20) THEN
+            GOTO 990
+         END IF
+      ELSE IF(IPCON.NE.0) THEN
+         GOTO 990
+      END IF
+   10 CONTINUE
+C
+C
+      RETURN
+C
+C Error handling
+  990 WRITE(IUOUT,*) ' CMP46S: connection error for component ',IPCOMP
+      WRITE(IUOUT,*) '         should be ',NCONS,' water connection(s)'
+      STOP ' CMP46S: unresolvable error'
+C
+      END
+C
+      
 C ******************** CMP50S ********************
 C
 C CMP50S establishes for a plant component with plant db code 500 ie.
@@ -3804,6 +3913,80 @@ C Error handling
 C
       END
 
+C ******************** CMP52S ********************
+C
+C CMP52S establishes for a plant component with plant db code 520 ie.
+C 1 node (ISV=29) WCH thermostatic valve (sensor only i.e. 0 connections)
+C whether the specified number of controlled variables is OK, and also
+C whether the number of connections to this component is correct
+C and whether the connected nodes are of a type as expected by the
+C corresponding coefficient generator routine
+C
+      SUBROUTINE CMP52S(IPCOMP)
+#include "plant.h"
+#include "building.h"
+C
+      COMMON/OUTIN/IUOUT,IUIN
+      COMMON/TC/ITC,ICNT
+      COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
+C
+      COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
+      COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
+      COMMON/PCOND/CONVAR(MPCON,MCONVR),ICONTP(MPCON),
+     &             ICONDX(MPCOM,MNODEC,MPCONC)
+C
+C Establish static data derivable from the data read from database
+      BDATA(IPCOMP,1)=ADATA(IPCOMP,3)
+      BDATA(IPCOMP,2)=ADATA(IPCOMP,4)
+      BDATA(IPCOMP,3)=ADATA(IPCOMP,5)
+      BDATA(IPCOMP,4)=ADATA(IPCOMP,6)
+      BDATA(IPCOMP,5)=ADATA(IPCOMP,7)
+      BDATA(IPCOMP,6)=ADATA(IPCOMP,8)
+      BDATA(IPCOMP,7)=ADATA(IPCOMP,9)
+C
+C Trace output
+      IF(ITC.GT.0.AND.ITRACE(35).NE.0) THEN
+         WRITE(ITU,*) ' Component ',IPCOMP,' pre-simulation data for a:'
+         WRITE(ITU,*) ' 1 node (ISV=29) WCH thermostatic valve'
+         NITMS=2
+         WRITE(ITU,*) ' ADATA ',(ADATA(IPCOMP,J),J=1,NITMS)
+         NITMS=6
+         WRITE(ITU,*) ' BDATA ',(BDATA(IPCOMP,J),J=1,NITMS)
+         IF(ITU.EQ.IUOUT) THEN
+            IX1=(IPCOMP/5)*5
+            IF(IX1.EQ.IPCOMP.OR.IPCOMP.EQ.NPCOMP) call epagew
+         END IF
+      END IF
+C
+C Check user specified number of controlled variables
+      NCITM=0
+      IF(NCI(IPCOMP).NE.NCITM)
+     &   WRITE(ITU,*) ' CMP52S warning: user specified wrong number',
+     &                ' of controlled variables'
+C
+C Check component has 0 connections
+      NCONS=0
+      DO 10 IPCONC=1,MPCONC
+      IPCON=ICONDX(IPCOMP,1,IPCONC)
+      IF(IPCONC.LE.NCONS) THEN
+         IF(IPCON.EQ.0) THEN
+            GOTO 990
+         END IF
+      ELSE IF(IPCON.NE.0) THEN
+         GOTO 990
+      END IF
+   10 CONTINUE
+C
+C
+      RETURN
+C
+C Error handling
+  990 WRITE(IUOUT,*) ' CMP52S: connection error for component ',IPCOMP
+      WRITE(IUOUT,*) '         should be ',NCONS,' connection(s)'
+      STOP ' CMP52S: unresolvable error'
+C
+      END
+C
 C ******************** CMP67S ********************
 C
 C CMP67S establishes for a plant component with plant db code 670 ie.

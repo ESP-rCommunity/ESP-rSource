@@ -45,6 +45,7 @@ C VAL3(20,?) holds controlled convective casual type 3.
       SUBROUTINE ZCASC(IZONE,IDAY)
 #include "building.h"
 #include "geometry.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
 C      COMMON/OUTIN/IUOUT,IUIN
@@ -413,6 +414,7 @@ C VAL3(20,?) holds controlled radiant casual type 3.
       SUBROUTINE ZCASR(IZONE,ISFN,IDAY)
 #include "building.h"
 #include "geometry.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
 C      COMMON/OUTIN/IUOUT,IUIN
@@ -795,6 +797,7 @@ C VAL3(20,?) holds controlled casual type 3.
       SUBROUTINE CASRT(IZONE,IDAY)
 #include "building.h"
 #include "geometry.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
       common/recver/izver,ipver,iever
@@ -1414,9 +1417,10 @@ C VAL3(20,?) holds controlled casual type 3.
       SUBROUTINE ZCASCF(IZONE,IDAY,IJDAY)
 #include "building.h"
 #include "geometry.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
       common/recver/izver,ipver,iever
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE

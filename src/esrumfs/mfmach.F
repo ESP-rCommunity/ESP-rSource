@@ -101,7 +101,8 @@ C     RESRMX - maximum relative residual (relative to SAFLW for NDWREL)
 
 #include "building.h"
 #include "net_flow.h"
-#include "cfd.h"
+#include "tdf2.h"
+      common/trc/itrc
       COMMON/MFTRA/IMFTU
       COMMON/MFLOW2/NDNAM(0:MNOD)
 
@@ -120,10 +121,12 @@ C     RESRMX - maximum relative residual (relative to SAFLW for NDWREL)
       COMMON/MFLITR/MAXITF,FERREL,FERMFL,PMAX,STEFFR,MFTRAC,ITER,IOK
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
       COMMON/mfctl/ctlpos(MCNN)
+      common/btime/btimep,btimef
 
       PARAMETER       (SMALL=1.0E-15)
       PARAMETER       (RLARG=1.0E+15)
       DIMENSION        INDX(MNOD)
+      DIMENSION VAL(MBITS+2)
       DOUBLE PRECISION FLW1,FLW2,HDP,HDV,HFL,PRES,PSTACK,RESID,SAFLW
       DOUBLE PRECISION DFDDP,DP,FLW1old(MCNN),FLW2old(MCNN)
       DOUBLE PRECISION FLWA,HPJMTX(MNOD,MNOD),HPRC(MNOD)
@@ -166,6 +169,15 @@ C set diagonal elements of the Jacobian matrix for known pressure nodes
             PJMTX(INOD,JNOD)=DBLE(0.0)
           END IF
    22   CONTINUE
+
+C Set up pressures for nodes from temporal data
+        IF(IMFNTDFF.EQ.1)THEN
+          if(IMFNTDFP(inod).gt.0)then ! not every node may have tdf data
+            IFOC=IMFNTDFP(inod)
+            CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
+            PRES(INOD)=VAL(ISD)
+          endif
+        ENDIF
    24 CONTINUE
 
 C Start of connections fluid mass flow calculations

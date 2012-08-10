@@ -781,6 +781,7 @@ C ITRC is the trace level, IER=0 OK, IER=1 problem.
       SUBROUTINE tdfupd(ITRC,AFIL,IAFIL,IER)
 #include "building.h"
 #include "model.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN

@@ -187,7 +187,7 @@ C default file names for databases
 
 #include "material.h"
 #include "plant.h"
-#include "tdf2.h"
+#include "net_flow.h"
 #include "dhw_common.h"
 #include "MultiYear_simulations.h"
 #include "UserSimulationToggles.h"
@@ -305,16 +305,12 @@ C Common holding flag indicating presence of gshp data input file:
 C igshp = 1 there is a gshp file; igshp = 0 no gshp file.
       common/gshpinfo/igshp
       INTEGER :: igshp
-      common/gshpfile/gshpfile
-      character gshpfile*72
 
 C GCEP
 C Common holding flag indicating presence of gcep data input file:
 C igcep = 1 there is a gcep file; igcep = 0 no gcep file.
       common/gcepinfo/igcep
       INTEGER :: igcep
-      common/gcepfile/gcepfile
-      character gcepfile*72
 
 C Flag to enable inter-domain iteration 
       common / Plt_Elec_Net / bInter_domain_iteration
@@ -916,7 +912,7 @@ C Error.
         STOP
       endif
 
- 1001 write(outs,'(A,I3)') ' mzinpt: climate file error @ rec ',irec
+      write(outs,'(A,I3)') ' mzinpt: climate file error @ rec ',irec
       call edisp(iuout,outs)
       call epwait
       return
@@ -994,16 +990,10 @@ C Dll mode error subroutine and error details.
 
 C Simulator parameters.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
-      common/SPFLN/spsname
-      common/spfldes/spfdescr(MSPS)
-      common/spflres/sblres(MSPS),sflres(MSPS),splres(MSPS),
-     &  smstres(MSPS),selres(MSPS),sipvres
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
       CHARACTER*72 LMOIST,LMSTR
       character outs*124,CXSTR*78,spflnam*72
-      character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
-      character selres*72,spsname*8,spfdescr*8
       character dllsubr*12,dllmesg*124
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
       LOGICAL ILTHPS,ILTHPZ,CLOSE
@@ -1419,7 +1409,6 @@ C      write(6,*) igumax,igumaxindex,iguarray
 
 C Nothing specified as a connection so use UK monthly mean
 C ground temperatures at 1.2m depth as given by Lacy.
-        igtype=0
         GTMP(1)=7.28
         GTMP(2)=6.5
         GTMP(3)=6.56
@@ -1466,30 +1455,24 @@ C MZUTIL reads additional zone descriptions if active.
 #include "building.h"
 #include "model.h"
 #include "cfd.h"
-#include "espriou.h"
 #include "CFC_common.h"
 C espriou.h provides currentfile.
 
       common/trc/itrc
       common/trace/itcf,itrace(mtrace),izntrc(mcom),itu
       COMMON/FILEP/IFIL
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/ER1/IER1
       INTEGER :: ier1
 
       COMMON/ICFNOD/ICFD,ICP
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       common/ndcfd/NCFDND,ICFDND(MNZ),NCONF
-      COMMON/CHANNL/NOCHAN
-      common/flvpar/Lflpar(MCOM)
-      common/CFDres/photon,flwvis
       common/bsmtdef/iBSIMP(MCOM),LBSIMP(MCOM)
       COMMON/cfcall/icfcal(MNZ)
       COMMON/ACCrec/IACC
 
 C Active domain common.
       common/ACTDOM/CFDOK
-      common/dllerr/dllsubr,dllmesg
 
 C Experimental Hydrogen controller. use with caution
 C Residential hydrogen cogen: control file
@@ -1499,13 +1482,13 @@ C Residential hydrogen cogen: control file
       character*72 resh2flnam   !- name of file containing residential hydrogen cogen
                                 !- controller inputs
 
-      CHARACTER NAME*5,OUTSTR*124
-      CHARACTER*72 LCFD,Lflpar
+      CHARACTER OUTSTR*124
+      CHARACTER*72 LCFD
       CHARACTER*72 lfil
       CHARACTER*72 LBSIMP
-      character dllsubr*12,dllmesg*124,outs*124
+c      character dllsubr*12,dllmesg*124
 
-      logical CFDOK,photon,flwvis,dll
+      logical CFDOK,dll
 
 C Reset warning flag and check and see if running in dll mode.
       IER1=0
@@ -1616,31 +1599,32 @@ C will be incremented each time CFD is called for this zone.
 
       RETURN
 
- 1002 outs='Problem reading *air or *cas!'
-      CALL USRMSG(outs,' ','W')
-      goto 1000
- 1004 outs='Could not open timestep air file!'
-      CALL USRMSG(outs,' ','W')
-      goto 1000
- 1005 outs='Not a zone timestep air flow file!'
-      CALL USRMSG(outs,' ','W')
-      goto 1000
- 1007 outs='Could not open timestep casual file!'
-      CALL USRMSG(outs,' ','W')
-      goto 1000
- 1008 outs='Not a zone timestep casual gain file!'
-      CALL USRMSG(outs,' ','W')
+C No path to following code (commented)
+c      outs='Problem reading *air or *cas!'
+c      CALL USRMSG(outs,' ','W')
+c      goto 1000
+c      outs='Could not open timestep air file!'
+c      CALL USRMSG(outs,' ','W')
+c      goto 1000
+c      outs='Not a zone timestep air flow file!'
+c      CALL USRMSG(outs,' ','W')
+c      goto 1000
+c      outs='Could not open timestep casual file!'
+c      CALL USRMSG(outs,' ','W')
+c      goto 1000
+c      outs='Not a zone timestep casual gain file!'
+c      CALL USRMSG(outs,' ','W')
 
 C Record errors if running in dll mode or simply return.
- 1000 if(dll)then
-        dllsubr='MZUTIL'
-        dllmesg=outs
-        ier=2
-        return
-      else
-        IER1=1
-        RETURN
-      endif
+c 1000 if(dll)then
+c        dllsubr='MZUTIL'
+c        dllmesg=outs
+c        ier=2
+c        return
+c      else
+c        IER1=1
+c        RETURN
+c      endif
       END
 
 C Routines for passing presimulation data in configuration file to
@@ -1684,7 +1668,6 @@ C Once per hour storage of results, averaged over that hour.
 
 C lafres  - fluid flow network results file
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
-      COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/ENETRES/ERESLIB
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
       common/dllerr/dllsubr,dllmesg
@@ -1696,7 +1679,7 @@ C lafres  - fluid flow network results file
       logical dll,match
 
       character RFILE*72,PFILE*72,MSTRFILE*72,LAFRES*72
-      character*72 LAPROB,ENTFLNAM,ERESLIB
+      character*72 ENTFLNAM,ERESLIB
       character outs*124, outs2*124
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8,name*8
@@ -1707,7 +1690,6 @@ C Check if running in dll mode.
       IER=0
 
 C Assign data.
-      IPARS=0
       if(isstup.ne.0)then
         ITCNST=isstup
         startupok=.true.

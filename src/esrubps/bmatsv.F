@@ -39,11 +39,10 @@ C HOT3000: Fuel cell.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "plant.h"
+#include "net_flow.h"
 #include "tdf2.h"
 #include "monitor.h"
-#include "cfd.h"
 #include "uncertainty.h"
-#include "dhw_parameters.h"
 #include "dhw_common.h"
 #include "CETC_definitions.h"
 #include "MultiYear_simulations.h"
@@ -51,9 +50,6 @@ C HOT3000: Fuel cell.
 #include "lookup_data.h"
 #include "control.h"
 #include "roam.h"
-
-C CWEC Degree Day and ground temperature parameters
-#include "ground_temp_mains_common.h"
 
       integer lnblnk  ! function definition
 
@@ -122,10 +118,6 @@ C CFD
       COMMON/cfdfil/LCFD(MCOM),IFCFD(MCOM)
       COMMON/CFSEUP/CFTIMS,CFTIMF,ICFDYS,ICFDYF,ICFAUX(MCOM)
 
-C Power simulation flag.
-      COMMON/PWRFLG/IPWRSIM
-      common/pnsolm/ipsolm
-
 C Simulation start day required by cmp70c.
       common/simsdy/iss,isf
 
@@ -174,15 +166,11 @@ C ihvacflag=1 there is hvac file; ihvacflag=0 no hvac file.
 C Common holding flag indicating presence of gshp data input file:
 C igshp = 1 there is a gshp file; igshp = 0 no gshp file.
       common/gshpinfo/igshp
-      common/gshpfile/gshpfile
-      character gshpfile*72
 
 C GCEP (begin)
 C Common holding flag indicating presence of gcep data input file:
 C igcep = 1 there is a gcep file; igcep = 0 no gcep file.
       common/gcepinfo/igcep
-      common/gcepfile/gcepfile
-      character gcepfile*72
 C NumUNIT is the unit number of the binary files to be erased
       INTEGER NumUNIT
 C counter to go through the unit numbers
@@ -197,8 +185,6 @@ C Active domain common.
 
 C Common for electrical file.
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
-      COMMON/rcmd/LCMDFL
-      CHARACTER LCMDFL*144
 
 C Additional commons for SHOCC.
 
@@ -223,8 +209,7 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       logical bSHOCCed,bZoneSHOCCed
       character SHOCCshlFile*72,SHOCCshzFile*72
 
-      character outs*124,STYPE*8
-      CHARACTER DBTAG*12,DBTASK*12,DBZN*15
+      character outs*124
       character*72 LCFD,ENTFLNAM
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,L3DNDD,L3DTLW,L3DLWV
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ
@@ -232,14 +217,12 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       CHARACTER*72 hvacfile
 
       dimension VAL(MBITS+2)
-      logical ok,itpmod,WDARDO,MSTROK,MSTRZN
+      logical itpmod,WDARDO,MSTROK,MSTRZN
       logical rewnd,irew,tsclaw,pasone
       LOGICAL BLDG3D,ZONE3D,GRND3D,GRNDSP
       logical global,glbrwd,close
       logical CFDOK
-
-C foundshoc will become true if any zones have SHOCC descriptions.
-      logical context,foundshoc
+      logical context
 
 C H3Kreporting object
       CHARACTER*128 H3K_rep_NAME, H3K_rep_value
@@ -546,7 +529,7 @@ C Initialize file unit number. This number should correspond
 C to the climate file number. However, the climate file name
 C and number saved in common C22 is used to handle the
 C climate file.
-      iunit=ifil
+C      iunit=ifil
 
 C Simulation year from configuration, if old way uncomment next 3 lines.
 C Determine simulation year from climate file.
@@ -1553,7 +1536,7 @@ C displayed....
 
 C  don't write plant libraries if save-levels 0 or 5 are active
               if ( ISAVE .ne. 5 .and. ISAVE .ne. 0) then
-                if(amod(float(L),float(mtsc)).eq.0.0.and.
+                if(NINT(amod(float(L),float(mtsc))).eq.0.and.
      &            (itrflg.eq.0.or.itrflg.eq.2)) then
                   call mzpls3(iday,imonitor)
                   itsplt=1

@@ -3384,6 +3384,8 @@ C          call edisp248(6,message,80)
         IF(IPCLAW(II,JJ,KK).EQ.14) SSTR='Multi-sensor '
         IF(IPCLAW(II,JJ,KK).EQ.15) SSTR='PI Room Ctrl'
         IF(IPCLAW(II,JJ,KK).EQ.16) SSTR='Amb Temp Cmpnstn ctrl'
+        IF(IPCLAW(II,JJ,KK).EQ.17) SSTR='Ideal Optimal start ctrl'
+        IF(IPCLAW(II,JJ,KK).EQ.18) SSTR='Ideal Optimal stop ctrl'
         return
       ENDIF
 
@@ -3804,7 +3806,7 @@ C include it in the documentation line.
       call edisp(itru,outs)
 
       call edisp(itru,
-     &' Per|Start|Sensing  |Actuating  | Control law description')
+     &' Per|Start|Sensing  |Actuating  | Control law       | Data')
       DO 30 K=1,LL
         CALL EVCNTRL(icfoc,II,JJ,K,'T',SSTR)
         CALL EVCNTRLAW(icfoc,II,JJ,K,TMP,LTMP)
@@ -3876,7 +3878,6 @@ C SSTRB is brief string (48 char) returned
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/pcnam/pcname(mpcom)
       COMMON/MFLOW2/NDNAM(0:MNOD)
-      COMMON/MFLOW8/CMNAM(MCMP),LTPCMP(MCMP)
       COMMON/MFLW10/NODPS(MCNN),HGTPS(MCNN),NODNE(MCNN),HGTNE(MCNN),
      &              ITPCON(MCNN),NDSCNN(MCNN,MCNS)
       COMMON/CONTM0/NCONTM,NOCNTM,CONTMNAM(MCONTM)
@@ -3885,7 +3886,7 @@ C SSTRB is brief string (48 char) returned
       dimension icsn(5)
       character sstr*96,sstrb*48
       CHARACTER ZN*12,NNAM*14,DESC*20
-      CHARACTER LTPCMP*60,CMNAM*12,NDNAM*12,pcname*15,contmnam*12
+      CHARACTER NDNAM*12,pcname*15,contmnam*12
       CHARACTER sn*12
 
       sstr=' '
