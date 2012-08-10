@@ -27,6 +27,7 @@ C-----------------------------------------------------------------------
 
       subroutine StoreSiteEnergyUse(iComponent, fSUFuelEnergyUse )
       implicit none
+#include "building.h"
 #include "plant.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "OffsiteUtilitiesPrivate.h"

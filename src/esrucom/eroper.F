@@ -2209,9 +2209,9 @@ C ICGTYP the casual gain type (remembering negative index).
 C PERSN keeps track of the original number of people/m2.
       real CMGSA,CMGLA,RADCA,CONCA,RADFAC,CONFAC,PERSN
       integer ICGTYP,LNCAS
-      dimension CMGSA(MC,7),CMGLA(MC,7),RADCA(MC,7)
-      dimension CONCA(MC,7),RADFAC(MC,7),CONFAC(MC,7)
-      dimension ICGTYP(MC,7),PERSN(MC,7),LNCAS(MDTY)
+      dimension CMGSA(MC,MCT),CMGLA(MC,MCT),RADCA(MC,MCT)
+      dimension CONCA(MC,MCT),RADFAC(MC,MCT),CONFAC(MC,MCT)
+      dimension ICGTYP(MC,MCT),PERSN(MC,MCT),LNCAS(MDTY)
 
 C Logical for testing whether there is any difference in casual gains.
       logical bCMGSA,bCMGLA,bRADCA,bCONCA,bRADFAC,bCONFAC
@@ -2221,8 +2221,8 @@ C pfA power factor, ipfA leading/lagging, pwrA real power W,
 C bvoltA voltage, iphasA phases assoc with electrical casual gain. 
 C aparva is apparent power component VA.
 C aparvar is reactive power component VAr.
-      dimension pfA(mc,7),ipfA(mc,7),pwrA(mc,7),bvoltA(mc,7)
-      dimension iphasA(mc,7),aparva(mc,7),aparvar(mc,7)
+      dimension pfA(mc,MCT),ipfA(mc,MCT),pwrA(mc,MCT),bvoltA(mc,MCT)
+      dimension iphasA(mc,MCT),aparva(mc,MCT),aparvar(mc,MCT)
 
 C Logical for testing whether there is any difference in electrical gains.
       logical bpfA,bpwrA,bbvoltA
