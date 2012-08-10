@@ -160,6 +160,16 @@ c-----m and width between 5 and 12 m. However, type '999' follows
 c-----the dimensions for BASECALC (max 20 by 20 m - with a minimum of 2 m).
 c-----Maximum and minimum values for parameters to be read in are set
 c-----for BASESIMP vs BASECALC ('999') types.
+c
+c-----26-Jan-2011 Bart L:
+c-----Imposing new limits. A number of HOT2000 cases were tested  
+c-----given a floor area range of 1 to 100 m2. The resulting heat loss
+c-----vs floor area curve aligned well with the area/volume ratio curve
+c-----suggesting that results with floor dimensions below the established
+c-----5m minimum are reasonable. 
+c-----   New limits are:
+c-----   width:  min = 1 m, max = 20 m
+c-----   length: min = 1 m, max = 100m
       IF(CLOSE99) THEN     ! set parameter windows on BASECALC dimensions (type 999)
         fMinFoundLength = 2.0   ! meter
         fMaxFoundLength = 20.0  ! meter
@@ -173,10 +183,10 @@ c-----for BASESIMP vs BASECALC ('999') types.
         fMaxWaterTable = 20.0   ! meter
 
       ELSE                 ! set parameter windows on BASESIMP dimensions
-        fMinFoundLength = 5.0   ! meter
+        fMinFoundLength = 1.0   ! meter
         fMaxFoundLength = 100.0 ! meter
-        fMinFoundWidth = 1.5    ! meter   ! updated May 6,08 based on testing by Brian Bradley.
-        fMaxFoundWidth = 20.0   ! meter   ! updated May 6,08 based on testing by Brian Bradley.
+        fMinFoundWidth = 1.0    ! meter
+        fMaxFoundWidth = 20.0   ! meter 
         fMinInsulRSI = 0.0      ! m2K/W
         fMaxInsulRSI = 9.0      ! m2K/W
         fMinSoilCond = 0.85     ! W/mK
