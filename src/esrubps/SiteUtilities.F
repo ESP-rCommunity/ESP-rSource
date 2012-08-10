@@ -50,6 +50,9 @@ C.....Attribute uncatagorized energy use in elec, plant domains.
 C.....Aggregate energy use from all plant components
       call AggregatePltCompEnergyUse()
 
+C.....Aggregate energy from HOT3000 base loads
+      call AggregateH3KBaseLoadsEnergyUse()
+
 C.....Compute site-wide energy consumption
       call TotalEnergyConsumption()
 
@@ -61,6 +64,9 @@ C.....Report fuel use data
 
 C.....Reset storage array for next time step.
       call ZeroFuelEnergyStorageArray()
+
+C.....Reset HOT3000 Base Loads storage array for next time step.
+      call ZeroH3KBaseLoadsEnergyStorageArray()
 
       return
       end
@@ -76,6 +82,7 @@ C
 C=======================================================================
       subroutine TotalEnergyConsumption()
       implicit none
+#include "building.h"
 #include "plant.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "OffsiteUtilitiesPrivate.h"
@@ -123,6 +130,7 @@ C
 C=======================================================================
       subroutine ConvertEnergyToFuel()
       implicit none
+#include "building.h"
 #include "plant.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "OffsiteUtilitiesPrivate.h"
@@ -162,6 +170,7 @@ C=======================================================================
       subroutine H3KReportsFuelUse
       use h3kmodule
       implicit none
+#include "building.h"
 #include "plant.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "OffsiteUtilitiesPrivate.h"
@@ -291,6 +300,7 @@ C
 C=======================================================================
       subroutine ZeroFuelEnergyStorageArray()
       implicit none
+#include "building.h"
 #include "plant.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "OffsiteUtilitiesPrivate.h"
@@ -324,6 +334,7 @@ C
 C=======================================================================
       subroutine ZeroPltEnergyStorageArray()
       implicit none
+#include "building.h"
 #include "plant.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "OffsiteUtilitiesPrivate.h"
@@ -361,6 +372,47 @@ C.......Zero per-component load arrays
       return
       end
 
+C=ZeroH3KBaseLoadsEnergyStorageArray======================================
+C
+C ABSTRACT:
+C
+C ZeroH3KBaseLoadsEnergyStorageArray zeros the site energy usage storage
+C array specific to HOT3000 Base Loads.
+C
+C=======================================================================
+      subroutine ZeroH3KBaseLoadsEnergyStorageArray()
+      implicit none
+#include "building.h"
+#include "plant.h"
+#include "OffsiteUtilitiesPublic.h"
+#include "OffsiteUtilitiesPrivate.h"
+
+      ! Zone information
+      common/c1/ncomp,ncon
+      integer ncomp          ! number of zones
+      integer ncon           ! not used 
+
+C-----------------------------------------------------------------------
+C     Loop through all zones, and zero HOT3000 Base Loads energy use
+C-----------------------------------------------------------------------
+
+      fuel_loop: do iFuel = 1, iNumFuel
+
+        use_loop: do iEndUse = 1, iNumUses
+        
+          zone_loop: do iZone = 1, ncomp
+
+           fH3KBaseLoadsEnergyUse(iZone, iFuel, iEndUse) = 0.0
+
+          enddo zone_loop
+
+        enddo use_loop
+
+      enddo fuel_loop
+
+      return
+      end
+
 C=StoreSiteUtilityData==================================================
 C
 C ABSTRACT:
@@ -379,6 +431,7 @@ C
 C=======================================================================
       subroutine StoreSiteEnergyUse(iComponent, fSUFuelEnergyUse )
       implicit none
+#include "building.h"
 #include "plant.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "OffsiteUtilitiesPrivate.h"
@@ -419,6 +472,7 @@ C
 C=======================================================================
       subroutine StorePltCompEnergyUse(iComponent, fSUFuelEnergyUse )
       implicit none
+#include "building.h"
 #include "plant.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "OffsiteUtilitiesPrivate.h"
@@ -461,6 +515,54 @@ C...........Mark uncatagorized end-uses for reapportionment
       return
       end
 
+
+C=StoreH3KBaseLoadsEnergyUse=================================================
+C
+C ABSTRACT
+C
+C StoreH3KBaseLoadsEnergyUse stores fuel energy used for HOT3000 base
+C loads for later access in the site utilities facility.
+C
+C Input parameters defined via include statements.
+C
+C   - iZone: Zone in which energy associated with base laods is consumed 
+C
+C   - fSUFuelEnergyUse: 2d array used to transport fuel consumption
+C     data into Site utilities facility. Array indicies correspond
+C     to fuel, end-use.
+C
+C=======================================================================
+      subroutine StoreH3KBaseLoadsEnergyUse(iZone, fSUFuelEnergyUse )
+      implicit none
+#include "building.h"
+#include "plant.h"
+#include "OffsiteUtilitiesPublic.h"
+#include "OffsiteUtilitiesPrivate.h"
+
+      ! Zone information
+      common/c1/ncomp,ncon
+      integer ncomp          ! number of zones
+      integer ncon           ! not used 
+
+C-----------------------------------------------------------------------
+C     Loop through fuels, end uses and stuff HOT3000
+C     Base Loads fuel consumption into protected fSiteEnergyUse array
+C-----------------------------------------------------------------------
+
+      fuel_loop: do iFuel = 1, iNumFuel
+
+        use_loop: do iEndUse = 1, iNumUses
+        
+           fH3KBaseLoadsEnergyUse(iZone, iFuel, iEndUse) =
+     &       fSUFuelEnergyUse( iFuel, iEndUse )
+
+        enddo use_loop
+
+      enddo fuel_loop
+
+      return
+      end 
+
 C=AggregatePltCompEnergyUse=============================================
 C
 C ABSTRACT
@@ -477,6 +579,7 @@ C=======================================================================
       subroutine AggregatePltCompEnergyUse()
 
       implicit none
+#include "building.h"
 #include "plant.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "OffsiteUtilitiesPrivate.h"
@@ -515,6 +618,61 @@ C.........Sum fuel/end-use consumtion for all components
       return
       end
 
+C=AggregateH3KBaseLoadsEnergyUse=======================================
+C
+C ABSTRACT
+C
+C AggregateH3KBaseLoadsEnergyUse aggregates energy consumption specific
+C to HOT3000 Base Loads, and appends it to the site-wide energy
+C consumption array.
+C
+C Inputs:
+C
+C   - None.
+C
+C=======================================================================
+      subroutine AggregateH3KBaseLoadsEnergyUse()
+
+      implicit none
+#include "building.h"
+#include "plant.h"
+#include "OffsiteUtilitiesPublic.h"
+#include "OffsiteUtilitiesPrivate.h"
+
+      ! Zone information
+      common/c1/ncomp,ncon
+      integer ncomp          ! number of zones
+      integer ncon           ! not used 
+
+C-----------------------------------------------------------------------
+C     Loop through fuels, end-uses, zones and sum fuel consumption 
+C-----------------------------------------------------------------------
+
+      fuel_loop: do iFuel = 1, iNumFuel
+
+        use_loop: do iEndUse = 1, iNumUses
+
+C.........Initialize fuel/end-use combination to zero.
+          fSiteEnergyUse( iH3KBaseLoads, iFuel, iEndUse ) = 0.
+
+C.........Sum base loads fuel/end-use consumtion for all zones
+          H3KBaseLoads_loop: do iZone =1 , ncomp
+
+            fSiteEnergyUse( iH3KBaseLoads, iFuel, iEndUse ) =
+     &           fSiteEnergyUse( iH3KBaseLoads, iFuel, iEndUse )
+     &         + fH3KBaseLoadsEnergyUse(iZone, iFuel, iEndUse)
+
+          enddo H3KBaseLoads_loop
+
+        enddo use_loop
+
+      enddo fuel_loop
+
+
+      return
+      end 
+
+
 C=AttributePltPfsEnergyUse==============================================
 C
 C ABSTRACT:
@@ -529,6 +687,7 @@ CC=======================================================================
       subroutine AttributePltPfsEnergyUse()
 
       implicit none
+#include "building.h"
 #include "plant.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "OffsiteUtilitiesPrivate.h"
@@ -850,6 +1009,7 @@ C
 C=======================================================================
       real function fConvertEnergyToFuelAmount(fEnergy,iFuelIndex)
       implicit none
+#include "building.h"
 #include "plant.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "OffsiteUtilitiesPrivate.h"

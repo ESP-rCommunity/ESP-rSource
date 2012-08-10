@@ -6,9 +6,10 @@ C     the offsite utilities facility.
 C-----------------------------------------------------------------------
 
 C.....Counters
-      integer iComponent, iFuel, iEndUse
+      integer iComponent, iFuel, iEndUse, iZone
 
-      common/EnergyUse/fSiteEnergyUse, fPltEnergyUse
+      common/EnergyUse/fSiteEnergyUse, fPltEnergyUse,
+     &                 fH3KBaseLoadsEnergyUse
 
 C.....Common storing site-wide energy use
       real fSiteEnergyUse(iNumOffsiteUtilComp, iNumFuel, iNumUses)
@@ -16,6 +17,9 @@ C.....Common storing site-wide energy use
 C.....Common storing energy use specific to plant components
 C.....(MPCom is the maximum number of plant components.)
       real fPltEnergyUse(MPCom, iNumFuel, iNumUses)
+C.....Common storing energy use specific to HOT3000 Base Loads
+C       MCOM (maximum number of zones) is provided by building.h
+      real fH3KBaseLoadsEnergyUse(MCOM, iNumFuel, iNumUses)
 
 C.....Array indicating if energy used by plt components is catagorized, or not.
       logical bPltUseCatagorized(MPCom, iNumFuel)

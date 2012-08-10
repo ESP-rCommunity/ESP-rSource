@@ -108,6 +108,7 @@ C----------------------------------------------------------------------
 
 
       character*248 cLnBuffer     ! Line buffer
+      character*2500 cLnBuffer2500   ! Line buffer (2500 characters) 
       character*248 cLnWords(124) ! words on the line
       integer iWordCount          ! # of words in a string
       integer iDummy
@@ -192,6 +193,8 @@ C     References
 C----------------------------------------------------------------------
       integer iEGetArrW        ! returns an array containing the
                                ! words found in a string.
+      integer iEGetArrW_2500   ! returns an array containing the
+                               ! words found in a string 2500 ch long.      
       real fRecover_lds_from_bin_file ! Recovers values from the
                                       ! binary profile file.
 C---------------------------------------------------------------------
@@ -370,14 +373,15 @@ C----------------------------------------------------------------------
             do while ( iFile_read_err  .eq. 0 .and.
      &                 iFile_write_err .eq. 0         )
 C..............Empty buffer
-               cLnBuffer = ' '
+               cLnBuffer2500 = ' '
 C..............Get line & strip comments
-               call LStripc (iASCII_num, cLnBuffer, 0, iDummy, 0,
+               call STRIPC2500 (iASCII_num, cLnBuffer2500, 0, iDummy, 0,
      &                 'BC data file',
      &                 iFile_read_err)
 
 C..............Split words
-               iWordCount = iEGetArrW ( cLnBuffer, cLnWords )
+               iWordCount = 
+     &           iEGetArrW_2500 ( cLnBuffer2500, cLnWords )
 C----------------------------------------------------------------------
 C              Determine which record type line describes
 C----------------------------------------------------------------------

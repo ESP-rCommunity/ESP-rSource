@@ -67,6 +67,11 @@ C Casual gains.
       PARAMETER (MCT=7,MGTY=7) !- Casual gain types.
       PARAMETER (MDTY=10)      !- Day types.
       PARAMETER (MGPER=72)     !- Periods.
+C Parameters used for HOT3000
+C     PARAMETER (MCT=30,MGTY=30)	!- Casual gain types.
+C     PARAMETER (MDTY=10)	!- Day types.
+C     PARAMETER (MGPER=72)	!- Periods.
+
       PARAMETER (MC=24*MCT*MDTY)!- Total casual gains.
 
 C Mean radiant temperature.

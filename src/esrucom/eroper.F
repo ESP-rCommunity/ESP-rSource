@@ -103,6 +103,13 @@ C                 4. User controllable gain (not fully utilised as yet)
 C                -1. Occupancy as floor area per person
 C                -2. Lights in w/m^2 per floor area
 C                -3. Equipment in w/m^2 per floor area
+C               Extra types for use with HOT3000 central and zonal base loads:
+C                20. BCD-App (Appliances - linked with BCD file)
+C                21. BCD-Lights (Lights linked with BCD file)
+C                22. BCD-OElec (Other Electrical linked with BCD file)
+C                23. BCD-Occ (Occupants linked with BCD file)
+
+
 
 C ICGS,ICGF    - start and finish hours of each of the above casual gain
 C                periods
@@ -129,6 +136,7 @@ C Maximum number of casual gains/day       MC=20
       include "model.h"
       include "espriou.h"
 
+#include "bc_data.h"
 C espriou.h provides currentfile.
       
       integer lnblnk  ! function definition
@@ -159,6 +167,19 @@ C espriou.h provides currentfile.
       COMMON/P3TYPEN/ICGT(MDTY,MC)
       INTEGER NCAS,ICGS,ICGF,ICGT
       REAL CMGS,CMGL,RADC,CONC
+
+C----------------------------------------------------------------------
+C Common for data associated with HOT3000 central and zonal Base Loads.
+C - Bart, Aug 28 2010
+      common / H3K_BL_data / iH3K_Base_Loads(MCOM),
+     &                       iBCD_column(MCOM,MDTY,MC),
+     &                       fBL_fraction(MCOM,MDTY,MC),
+     &                       nGain_types(MCOM,MDTY),
+     &                       iGain_type(MCOM,MDTY,MC)
+
+      integer iH3K_Base_Loads, iBCD_column, nGain_types, iGain_type
+      real fBL_fraction
+C----------------------------------------------------------------------
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types allowed and sorted
@@ -197,6 +218,7 @@ C Error subroutine and error details for dll mode.
       ijk=0
       ireader=0
       reader=0.0
+      iH3K_Base_Loads(icomp) = 0
 
 C Check if running in dll mode.
       call isadll(dll)
@@ -505,28 +527,77 @@ C Casual gains for different day types
         K=0
         CALL EGETWI(OUTSTR,K,IREADER,0,MC,'W','gain periods',IER)
         NCAS(IDTY)=IREADER
+        nGain_types(ICOMP, IDTY) = IREADER     ! used for HOT3000 base loads 
         IF(NCAS(IDTY).EQ.0)goto 600
         DO 40 I=1,NCAS(IDTY)
           CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period gain detl',IER)
           K=0
-          if(ND.eq.7.or.ND.eq.12)then
-            CALL EGETWI(OUTSTR,K,IREADER,-3,5,'W','gain type',IER)
+          if(ND.eq.7.or.ND.eq.9.or.ND.eq.12)then
+            CALL EGETWI(OUTSTR,K,IREADER,-3,30,'W','gain type',IER)
             ICGT(IDTY,I)=IREADER
+            iGain_type(ICOMP, IDTY,I) = IREADER ! used for HOT3000 base loads
           else
             ICGT(IDTY,I)=1
           endif
-          CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain st',IER)
-          ICGS(IDTY,I)=IREADER
-          CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain fn',IER)
-          ICGF(IDTY,I)=IREADER
-          CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','gain sens',IER)
-          CMGS(IDTY,I)=READER
-          CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','gain latent',IER)
-          CMGL(IDTY,I)=READER
-          CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain rad fr',IER)
-          RADC(IDTY,I)=READER
-          CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain conv fr',IER)
-          CONC(IDTY,I)=READER
+
+        ! Added support of HOT3000 Base Loads BC data file linkage with
+        ! operations file. Bart, Aug 28 2010.
+          if(ND.eq.9)then ! two additional data are read in: BCD column
+                          ! index and Base Load fraction
+
+          ! Make sure that BCD file has been defined. If not, display
+          ! error message and stop.
+            if ( .not. bBC_data_defined ) then
+              ! Display error message and stop.
+              write(outs,'(a,I2, a)') 
+     &         ' Error: Operations file for zone ',
+     &         icomp, ' expects BC data file which does not exist.'
+              call edisp(iuout,outs)
+              stop 'Fatal Error'
+            endif
+
+          ! set flag for HOT3000 Base Loads
+            iH3K_Base_Loads(icomp) = 1
+
+            CALL EGETWI(OUTSTR,K,IREADER,1,100,'W','BCD column',IER)
+            iBCD_column(ICOMP,IDTY,I) = IREADER
+            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','BL fraction',IER)
+            fBL_fraction(ICOMP,IDTY,I)=READER
+            CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain st',IER)
+            ICGS(IDTY,I)=IREADER
+            CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain fn',IER)
+            ICGF(IDTY,I)=IREADER
+
+          ! When BCD data is used with the HOT3000 base loads facility,
+          ! set CMGS and CMGL to sensible and latent fractions to account
+          ! for any base load that does not translate 100% into a 
+          ! internal heat gain (e.g., dishwasher or dryer) 
+            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain sens',IER)
+            CMGS(IDTY,I)=READER
+            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain latent',IER)
+            CMGL(IDTY,I)=READER
+
+            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain rad fr',IER)
+            RADC(IDTY,I)=READER
+            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain conv fr',IER)
+            CONC(IDTY,I)=READER
+
+          else ! default read sequence
+
+            CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain st',IER)
+            ICGS(IDTY,I)=IREADER
+            CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain fn',IER)
+            ICGF(IDTY,I)=IREADER
+            CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','gain sens',IER)
+            CMGS(IDTY,I)=READER
+            CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','gain latent',IER)
+            CMGL(IDTY,I)=READER
+            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain rad fr',IER)
+            RADC(IDTY,I)=READER
+            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain conv fr',IER)
+            CONC(IDTY,I)=READER
+          end if
+
           IF(ICGS(IDTY,I).GT.ICGF(IDTY,I))then
 
 C Found a period out of order, warn user and carry on.

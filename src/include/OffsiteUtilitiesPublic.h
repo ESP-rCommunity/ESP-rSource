@@ -27,7 +27,7 @@ C.....Supported end-uses
       parameter ( iNumUses = 7 )
       integer iUseSpaceHeat, iUseSpaceCool, iUseDHW,
      &        iUseLights, iUseEquipment, iUseUncatagorized,
-     &        iUseHRV 
+     &        iUseHRV
       parameter ( iUseSpaceHeat     = 1,
      &            iUseSpaceCool     = 2,
      &            iUseDHW           = 3,
@@ -38,7 +38,7 @@ C.....Supported end-uses
 
 C.....Number of "components" in ESP-r that report data to OffsiteUtilities
       integer iNumOffsiteUtilComp
-      parameter ( iNumOffsiteUtilComp = 4 )
+      parameter ( iNumOffsiteUtilComp = 5 )
 
 C.....Named constants for components that report data
 
@@ -53,6 +53,9 @@ C.....Named constants for components that report data
 
       integer iIdealVent
       parameter ( iIdealVent = 4 )       ! Ideal Ventilation/HRV model (CentralVentSys.F)
+
+      integer iH3KBaseLoads
+      parameter ( iH3KBaseLoads = 5 )    ! HOT3000 Base Loads linked with BCD file (casual.F)
 
 C-----------------------------------------------------------------------
 C     Named constants used to describe plt/pfs loads and
