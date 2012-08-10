@@ -102,7 +102,7 @@ C espriou.h provides current file.
 #include "espriou.h"
       
       integer lnblnk  ! function definition
-
+      integer ISN
       COMMON/OUTIN/IUOUT,IUIN
 
 C Include ishdirc common in legacy file read so that some inference
@@ -148,8 +148,21 @@ C Error subroutine and error details for dll mode.
       integer lsn   ! length of currentfile
       integer iflag ! for read errors
 
+
+      
+C Variables used in parsing of space-separated geo files      
+      character*248 cLnWords(124)! Array containing contents of a line
+      integer iEGetArrW          ! Returns space-separated contents of 
+                                 !   a line as an array
+      integer iWordCount         ! Number of words on a line.
+      
+      integer iCtoI_err          ! Function parsing a string and returning an integer
+      logical bParseError
+      logical bH3KExtentionsActive
+ 
       IER=0    ! initial values of read state
       iflag=0
+     
       ZN=' '
       phrase=' '
       checkbase=.false.
@@ -560,29 +573,100 @@ C End of file sensed, however this is not an error at this point.
         ENDIF
         IF(IER.EQ.1)goto 1001
 
+        
+C Read surface attributes. Format depends on whether HOT3000 exensions 
+C are active (check bH3KExtentionsActive()).       
+
+        SurfFormat1: if ( .not. bH3KExtentionsActive() ) then 
+
+C Assume that line is in fixed-format, and that attributes are defined 
+C according to this convention:         
 C Read in the various attributes as in the following line.  With this
 C method both construction and surface names can have blanks.
 C        1         2         3         4         5         6         7
 C23456789012345678901234567890123456789012345678901234567890123456789012
 C 1, Surf-1        OPAQ  VERT  UNKN         EXTERIOR       
-        K=0
-        CALL EGETWI(loutstr,K,ISN,1,NSUR,'F','surface no',IER)
-        IF(IER.NE.0)GOTO 44
+          K=0
+          CALL EGETWI(loutstr,K,ISN,1,NSUR,'F','surface no',IER)
+          IF(IER.NE.0)GOTO 44        
+        
+C Recover Surface name        
+          SNAME(ICOMP,ISN)=loutstr(6:17)
+        
+C Recover specified optics
+          write(tmpsot,'(a)') loutstr(20:23)        
+        
+C Interpret positional portion of the string.
+          tmpvfc=loutstr(26:29)        
+   
+C Interpret the construction name.
+          write(SMLCN(ISN),'(a)') loutstr(32:43)   
+        
+C Recover "to-other' parameter:         
+          write(tother,'(a)') loutstr(45:59)
+        
+        else 
+C Space-separated format (Used by HOT3000)   
+C Read surface attibutes. iEGetArrW returns the contents of a line 
+C as an array of comma, tab or space-sparated variables. [The old 
+C approach of using a space-sensitive format is too inflexible and 
+C error prone. Obstensibly, it was used to permit spaces in surface
+C and consturction names, but it defies convention elsewhere in ESP-r. 
+C A (much) better approach would escape characters such as commas and 
+C spaces, as is done in the rest of the computing world.
+
+          iWordCount = iEGetArrW ( loutstr, cLnWords )
+        
+C Line should contain a number, name, and four keywords ( e.g. OPAQ, 
+C VERT, UNKN, EXTERIOR )        svn
+          read_attribute: if ( iWordCount .ne. 6 ) then 
+            write (outs, '(A,I2,A)')
+     &        'Could not intrepret attributes for surface', I, '.'
+              call edisp(itru,outs)
+              IER = 1
+          else        
+
+C Read surface number from iWordCount 
+
+            ISN = iCtoI_err ( cLnWords(1), 
+     &                        "Surface position in .geo file",
+     &                         bParseError ) 
+            if (bParseError) IER = 1
+
+C Recover Surface name
+            SNAME(ICOMP,ISN) = cLnWords(2)(1:12)            
+
+C Recover optics specification
+            tmpsot = cLnWords(3)(1:4)          
+          
+C Interpret positional portion of the string.
+            tmpvfc=cLnWords(4)(1:4)          
+            
+C Interpret the construction name.
+            SMLCN(ISN) = cLnWords(5)(1:32)            
+        
+C Recover "to-other' parameter:         
+            tother = cLnWords(6)(1:15)
+        
+          endif read_attribute
+        
+        endif SurfFormat1
+        
+C Now we've parsed the line. Process and error-trap the contents
 
 C The value of I and ISN should be the same. If not warn.
         if(I.ne.ISN)then
-          if(ITRC.ne.0) call edisp(itru,
-     &      'Disagreement between surface index and position in list.')
+           if(ITRC.ne.0) call edisp(itru,
+     &       'Disagreement between surface index and position in list.')
         endif
 
-        SNAME(ICOMP,ISN)=loutstr(6:17)
+C Porcess surface name 
         if(havec24)then
           icn=izstocn(icomp,isn)
-          ssname(icn)=loutstr(6:17)
+          ssname(icn)=cLnWords(2)(1:12)
         endif
 
-C Interpret positional portion of the string.
-        tmpvfc=loutstr(26:29)
+C Process positional attribute
         IF(tmpvfc.EQ.'VERT'.OR.tmpvfc.EQ.'SLOP')then
           write(SVFC(ISN),'(a)') tmpvfc
           if(havec24) write(SSVFC(icn),'(a)') tmpvfc
@@ -596,10 +680,8 @@ C Interpret positional portion of the string.
           izsfloor(icomp)=ISN ! identify as a floor
         ENDIF
 
-C Interpret the construction name.
-        write(SMLCN(ISN),'(a)') loutstr(32:43)
 
-C Check if there is a matching MLC name and which one it is.
+C Check if there is a matching MLC name for given construction and which one it is.
         ICF=-1
         if(NMLC.gt.0)then                
           lstr=lnblnk(SMLCN(ISN))
@@ -611,8 +693,9 @@ C Check if there is a matching MLC name and which one it is.
             endif
   20      CONTINUE
         endif
+        
         if(havec24)then
-          write(SSMLCN(icn),'(a)') loutstr(32:43)
+          write(SSMLCN(icn),'(a)') SMLCN(ISN)
           if(ICF.gt.0)then
             ssthick(icn)=THKMLC(icf)
 
@@ -620,8 +703,7 @@ C Check if there is a matching MLC name and which one it is.
         endif
 
 C Now that we know the construction try and work out the optics.
-        write(tmpsot,'(a)') loutstr(20:23)
-        if(tmpsot(1:4).eq.'OPAQ')then
+        TMPSOT_Value: if(tmpsot(1:4).eq.'OPAQ')then
           write(SOTF(ISN),'(a)') 'OPAQUE'  ! write OPAQUE
           if(havec24) write(SSOTF(icn),'(a)') 'OPAQUE' 
         elseif(tmpsot(1:4).eq.'CFC ')then
@@ -632,8 +714,8 @@ C Now that we know the construction try and work out the optics.
 C We need to find the name of the optical set for the construction.
 C If there is a matching MLC entry attempt to discover
 C the name of the optical property. Otherwise leave SOFT as TRAN
-          if(NMLC.gt.0)then                
-            if(ICF.gt.0)then
+          NMLC_GT_0: if(NMLC.gt.0)then                
+            ICF_GT_0: if(ICF.gt.0)then
               OPT=' '
               WRITE(OTF,'(A)') DESC(ICF)(15:18)
               IF(OTF.EQ.' ')OTF='OPAQ'
@@ -668,18 +750,19 @@ C  keyword.]
               
               endif user_specd_TRAN
               
-            endif
+            endif ICF_GT_0
+            
             write(SOTF(ISN),'(a)') OPT
             if(havec24) write(SSOTF(icn),'(a)') OPT
           else
             write(SOTF(ISN),'(a)') 'TRAN'
             if(havec24) write(SSOTF(icn),'(a)') 'TRAN'
-          endif
-        endif
+          endif NMLC_GT_0
+        endif TMPSOT_Value
 C Depending on what the 'other' column is file the SOTHER array.
 C Note when scanning an older file we will not yet know the
 C C3 based information and so sother(2) and sother(3) are placeholders.
-        write(tother,'(a)') loutstr(45:59)
+        
         if(tother(1:7).eq.'UNKNOWN')then
           write(sother(isn,1),'(a)') 'UNKNOWN'
           write(sother(isn,2),'(a)') '0'
@@ -807,6 +890,7 @@ C Child/parent unknown in legacy file so write place holder.
         if(havec24)then
           write(ssparent(icn),'(a)') '-'
         endif
+
    42 CONTINUE
 
 C Check if base area has been defined.
