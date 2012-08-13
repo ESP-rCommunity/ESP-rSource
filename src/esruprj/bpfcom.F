@@ -1670,8 +1670,18 @@ C List function details.
       CALL EVCNTRL(icfoc,II,1,1,'S',SSTR)
       call edisp(itru,' ')
       LN=max(1,LNBLNK(SSTR))
-      WRITE(outs,65)II,SSTR(1:LN)
-  65  FORMAT(' The sensor for function ',I2,' ',a)
+      if(icfoc.eq.0)then
+        if(IBSN(II,4).eq.0)then
+          WRITE(outs,'(a,i2,2a)') ' The sensor for function ',
+     &      II,' ',SSTR(1:LN)
+        else
+          WRITE(outs,'(a,i2,3a,i2)') ' The sensor for function ',
+     &      II,' ',SSTR(1:LN),' with nested loop ',IBSN(II,4)
+        endif
+      else
+        WRITE(outs,'(a,i2,2a)') ' The sensor for function ',
+     &    II,' ',SSTR(1:LN)
+      endif
       call edisp(itru,outs)
 
       CALL EVCNTRL(icfoc,II,1,1,'A',SSTR)
