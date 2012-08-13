@@ -1189,17 +1189,20 @@ C Check for out of range values.
       END
 
 C ******************** CHKPRIM ********************
-C CHKPRIM returns list of elements referencing required primitive material
-C for required surface in zone.
-C NEL = number of matching elements
-C IEL = index of matching elements
-
+C CHKPRIM scans the layers of the MLC for a specific surface
+C and returns if and where a specific material is used.
       SUBROUTINE CHKPRIM(IZONE,ISURF,IPRIM,NEL,IEL)
 #include "building.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
 
+C Passed parameters:
+      integer izone  ! requested zone
+      integer isurf  ! surface in the zone
+      integer iprim  ! legacy material index
+      integer nel    ! number of matching layers
+      integer iel    ! array of the position of the matched material
       DIMENSION IEL(ME)
 
 C Set number of elements to zero.
@@ -1210,8 +1213,8 @@ C Find correct MLC.
         if (DESC(I)(1:12).eq.SMLCN(ISURF)(1:12)) then
           do 20 J=1,LAYERS(I)
             if (IPR(I,J).eq.IPRIM) then
-              NEL=NEL+1
-              IEL(NEL)=J
+              NEL=NEL+1   ! matches criteria
+              IEL(NEL)=J  ! layer it was found in
             endif
  20       continue
         endif
