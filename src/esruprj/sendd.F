@@ -76,21 +76,21 @@ C Establish if material data arrays have been filled. If not return.
 C Materials - find and display unique elements.
       call edisp(iuout,' Material selection. ')
 
-C This returns the number of unique elements and there db ref.
+C This returns the number of unique materials and array of
+C materials array indices.
       call UPELM(NPRIM,IELM,IER)
+      write(6,*) 'nprim ',nprim
+      write(6,*) 'ielm ',ielm
 
 C Now find the names of the materials.
       DO 20 II=1,NPRIM
-        legmat=IELM(II)   ! which legacy index
-        if(legmat.gt.0)then
-          matarrayindex=mathash(legmat)  ! find matching array index
+        matarrayindex=IELM(II)   ! which material
  
 C And if matarrayindex is zero then re-establish NAM.
-          if(matarrayindex.eq.0)then
-            NAM='AIR'
-          else
-            write(NAM,'(a)') matname(matarrayindex)(1:32)
-          endif
+        if(matarrayindex.eq.0)then
+          NAM='AIR'
+        else
+          write(NAM,'(a)') matname(matarrayindex)(1:32)
         endif
 
 C Check for errors - add to the total error counter if error has occured.
@@ -167,7 +167,8 @@ C These limits should be set in a more considered way.
         call SDDBOUND(IALLOW,XMPERC,XMABS,XLOW,XHIGH,IER)
       endif
 
-C Write info to common.
+C Write info to common for each of the matrial and property
+C selections that have been made.
       do 99 I=1,IEPIC
         do 66 J=1,IPPIC
           if (I.gt.1.or.J.gt.1) then
@@ -178,7 +179,7 @@ C Write info to common.
 C Material properties.
           IDTYP(ICDEF)=1
 
-C Add type selection to common.
+C Add material selections to common.
           IDMAT(ICDEF,1)=IELM(IVALE(I))
 
 C Add property to common.
@@ -312,8 +313,7 @@ C If no type has been selected then return to main SA menu.
         endif
 
 C Everything is OK re selection therefore add type selection to common.
-C << alternative to IPR needed >>
-        IDMAT(ICDEF,1)=IPR(ISEL,IVALE(1))
+        IDMAT(ICDEF,1)=IPRMAT(ISEL,IVALE(1))
           
       else
         call edisp(iuout,'Not enabled yet.')
