@@ -1898,5 +1898,220 @@ C Open Ooptical Properties db and read into common.
 
       return
       end
+      
+C ******************* ADMIT *******************
+C Calculate U and Y values and surface factor.
+C If a negative conductivity is supplied the abs value represents the 
+C resistance of an air gap.
+C << NOTE: this routine gets close for some constructions, but
+C << some variables are off - further debugging required.
+      subroutine ADMIT(ITRU,IFOC,Rsi,Rso)
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
+
+      integer matarrayindex ! the indes within matdatarray
+      logical closemat1,closemat2
+      
+      dimension thick(8),rho(8),Cp(8),cond(8)
+      CHARACTER NAM*72,TITL*72,MLCN*12,OTF*4,OPT*12
+      character MLCSYM*12
+      
+      COMPLEX P,L(2,2),M(2,2),N(2,2)
+
+C Establish if material data arrays have been filled. If not return.
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
+      if(closemat1.or.closemat2)then
+        continue
+      else
+        call usrmsg('The materials arrays are incomplete so admit-',
+     &    'tance of construction attributes cannot be calculated.','W')
+        return
+      endif
+
+C Pick up general description of the composite.
+      call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
+      
+C ESP-r defines layers from outside to inside. The code in
+C subroutine admit works from inside to outside.
+C Debug layer info.
+C      write (ITRU,*) 'Layer  thick  k  rho  Cp'
+
+      layer=LAYERS(IFOC)+1
+      call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.2,0.01,closemat2)
+      do 5 IL=1,LAYERS(IFOC)
+        matarrayindex=IPRMAT(IFOC,IL)   ! which array index
+        if(matarrayindex.ge.0)then
+ 
+C And if matarrayindex is zero then resetn dbcon dbden dbsht.
+          if(matarrayindex.eq.0)then
+            DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+            E=0.99; A=0.99; DRV=1.0
+            TITL='GAPS'; NAM='AIR'
+          else
+            DBCON=matdbcon(matarrayindex)
+            DBDEN=matdbden(matarrayindex)
+            DBSHT=matdbsht(matarrayindex)
+            E=matdbine(matarrayindex)
+            A=matdbina(matarrayindex)
+            DRV=matdbdrv(matarrayindex)
+            write(TITL,'(a)') 'placeholder'
+            write(NAM,'(a)') matname(matarrayindex)(1:32)
+          endif
+        endif
+        layer=layer-1
+        thick(layer)=DTHK(IFOC,IL)
+
+C If an air gap set cond(IL) to negative of air gap res.
+        IF(IPRMAT(IFOC,IL).EQ.0)THEN
+          cond(layer) = (-1.0) * DRAIR(IFOC,IL,1)
+          rho(layer)=1.0
+          Cp(layer)=1.0
+        else
+          cond(layer)=DBCON
+          rho(layer)=DBDEN
+          Cp(layer)=DBSHT
+        endif
+
+C Debug
+C        write (ITRU,'(2i3,2f6.3,2f6.0)') layer,
+C     &    thick(layer),cond(layer),rho(layer),Cp(layer)
+ 5    continue
+      
+C Start calculation of U-value.
+      Uvalue=Rsi
+      
+C Define inside surface resistance matrix.
+      L(1,1)=CMPLX(1.,0.)
+      L(1,2)=CMPLX(Rsi,0.)
+      L(2,1)=CMPLX(0.,0.)
+      L(2,2)=CMPLX(1.,0.)
+      
+C Loop through layers (inside to outside).
+      do 10 I=1,LAYERS(IFOC)
+        if (cond(I).gt.0.0) then
+          Uvalue=Uvalue+(thick(I)/cond(I))
+
+C Define terms for arrays.
+          xP=((4.*ATAN(1.))*thick(I)*thick(I)*rho(I)*Cp(I))/
+     &     (86400.0*cond(I))
+          xP=SQRT(xP)
+        
+C Calculate cosh(P).
+          xcreal=((exp(xP)+exp(-xP))*cos(xP))/2.
+          xcimage=((exp(xP)-exp(-xP))*sin(xP))/2.
+
+C and sinh(P).
+          xsreal=((exp(xP)-exp(-xP))*cos(xP))/2.
+          xsimage=((exp(xP)+exp(-xP))*sin(xP))/2.
+        
+C Enter matrix coefficients
+          M(1,1)=CMPLX(xcreal,xcimage)
+          M(1,2)=(thick(I))*CMPLX(xsreal,xsimage)/
+     &         (cond(I)*CMPLX(xP,xP))
+          M(2,1)=(cond(I)*CMPLX(xP,xP))*CMPLX(xsreal,xsimage)/
+     &         (thick(I))
+          M(2,2)=CMPLX(xcreal,xcimage)
+        else
+        
+C Air gap
+          Uvalue=Uvalue+abs(cond(I))
+          M(1,1)=CMPLX(1.,0.)
+          M(1,2)=CMPLX(abs(cond(I)),0.)
+          M(2,1)=CMPLX(0.,0.)
+          M(2,2)=CMPLX(1.,0.)
+        endif
+
+C Calculate L*M, result in N.
+        call CMATMUL(L,M,N)
+        
+C Copy N to L.
+        L(1,1)=N(1,1)
+        L(1,2)=N(1,2)
+        L(2,1)=N(2,1)
+        L(2,2)=N(2,2)
+ 10   continue
+      Uvalue=Uvalue+Rso
+      Uvalue=1./Uvalue
+ 
+      write (ITRU,'(a)') ' '
+      write (ITRU,'(3(a,f6.2))') 'Admittance calculations using Rsi ',
+     &  rsi,' Rso ',rso,' & Uvalue=',Uvalue
+      
+C Outside face resistance.
+      M(1,1)=CMPLX(1.,0.)
+      M(1,2)=CMPLX(Rso,0.)
+      M(2,1)=CMPLX(0.,0.)
+      M(2,2)=CMPLX(1.,0.)
+      call CMATMUL(L,M,N)
+            
+C Calculate admittance.
+      P=N(2,2)/N(1,2)
+      Y=abs(P)
+      omega=(12.0/(4.0*ATAN(1.)))*atan(aimag(P)/real(P))
+      
+C Calculate decrement factor.
+      P=1./(Uvalue*N(1,2))
+      f=abs(P)
+      phi=(12.0/(4.0*ATAN(1.)))*atan(aimag(P)/real(P))
+      if (phi.gt.0.0) then
+        phi=12.0-phi
+      else
+        phi=-phi
+      endif
+      
+C Calculate surface factor.
+      P=1.-(Rsi*N(2,2)/N(1,2))
+      f=abs(P)
+      phi=(12.0/(4.0*ATAN(1.)))*atan(aimag(P)/real(P))
+      if (phi.gt.0.0) then
+        phi=12.0-phi
+      else
+        phi=-phi
+      endif
+
+C Report values for exterior.
+      write (ITRU,'(6(a,f6.2))') ' External surface admittance Y=',Y,
+     &  '  w=',omega,' decrement factor f=',f,'  phi=',phi,
+     &  ' surface factor f=',f,'  phi=',phi
+
+C Internal surfaces.
+      P=(N(2,2)-1.)/N(1,2)
+      Y=abs(P)
+      omega=(12.0/(4.0*ATAN(1.)))*atan(aimag(P)/real(P))
+
+C Calculate surface factor.
+      P=1.-(Rsi*P)
+      f=abs(P)
+      phi=(12.0/(4.0*ATAN(1.)))*atan(aimag(P)/real(P))
+      if (phi.gt.0.0) then
+        phi=12.0-phi
+      else
+        phi=-phi
+      endif
+
+C Report values for partitions.
+      write (ITRU,'(4(a,f6.2))') ' Partition admittance Y=',Y,
+     &  '  w=',omega,' surface factor f=',f,'  phi=',phi
+      return
+      end
+
+C ******************** CMATMUL 
+C CMATMUL multiplies the complex (2x2) matrices A by B returning C.
+      SUBROUTINE CMATMUL(A,B,C)
+
+      COMPLEX A(2,2),B(2,2),C(2,2)
+
+C Calculate A*B.
+      DO 10 I=1,2
+        C(I,1)=A(I,1)*B(1,1)+A(I,2)*B(2,1)
+        C(I,2)=A(I,1)*B(1,2)+A(I,2)*B(2,2)
+   10 CONTINUE
+
+      return
+      end
+      
 
 
