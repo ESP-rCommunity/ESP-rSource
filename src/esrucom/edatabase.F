@@ -1034,9 +1034,11 @@ C 0.10 inside upward flow and 0.17 inside downward flow.
 
 C Include admittance calculations (use TM33 Table 4.5 values for admittance calcs.
 C << NOTE this code needs further debugging.
-C      Rsi=0.12
-C      Rso=0.06
-C      call ADMIT(ITRC,ITRU,IFOC,Rsi,Rso)
+      if(ITRC.ne.0)then
+        Rsi=0.12
+        Rso=0.06
+        call ADMIT(ITRU,IFOC,Rsi,Rso)
+      endif
 
 C Also list optical properties for this construction (if it is
 C transparent and the optical property is something other than

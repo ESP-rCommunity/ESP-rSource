@@ -3216,7 +3216,7 @@ C If a negative conductivity is supplied the abs value represents the
 C resistance of an air gap.
 C << NOTE: this routine gets close for some constructions, but
 C << some variables are off - further debugging required.
-      subroutine ADMIT(ITRC,ITRU,IFOC,Rsi,Rso)
+      subroutine ADMIT(ITRU,IFOC,Rsi,Rso)
 #include "building.h"
 #include "esprdbfile.h"
 #include "material.h"
@@ -3249,7 +3249,6 @@ C subroutine admit works from inside to outside.
 C Debug layer info.
 C      write (ITRU,*) 'Layer  thick  k  rho  Cp'
 
-CC << example alternative to IPR >>
       layer=LAYERS(IFOC)+1
       call eclose(matver,1.1,0.01,closemat1)
       call eclose(matver,1.2,0.01,closemat2)
@@ -3276,10 +3275,8 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht.
         layer=layer-1
         thick(layer)=DTHK(IFOC,IL)
 
-C If an air gap (material zero) then set cond(IL) to negative of air gap res.
-
-C << alternative to IPR needed >>
-        IF(IPR(IFOC,IL).EQ.0)THEN
+C If an air gap set cond(IL) to negative of air gap res.
+        IF(IPRMAT(IFOC,IL).EQ.0)THEN
           cond(layer) = (-1.0) * DRAIR(IFOC,IL,1)
           rho(layer)=1.0
           Cp(layer)=1.0
@@ -3290,8 +3287,8 @@ C << alternative to IPR needed >>
         endif
 
 C Debug
-        write (ITRU,'(2i3,2f6.3,2f6.0)') layer,
-     &    thick(layer),cond(layer),rho(layer),Cp(layer)
+C        write (ITRU,'(2i3,2f6.3,2f6.0)') layer,
+C     &    thick(layer),cond(layer),rho(layer),Cp(layer)
  5    continue
       
 C Start calculation of U-value.
@@ -3305,12 +3302,12 @@ C Define inside surface resistance matrix.
       
 C Loop through layers (inside to outside).
       do 10 I=1,LAYERS(IFOC)
-        if (cond(I).gt.0) then
+        if (cond(I).gt.0.0) then
           Uvalue=Uvalue+(thick(I)/cond(I))
 
 C Define terms for arrays.
           xP=((4.*ATAN(1.))*thick(I)*thick(I)*rho(I)*Cp(I))/
-     &     (86400.*cond(I))
+     &     (86400.0*cond(I))
           xP=SQRT(xP)
         
 C Calculate cosh(P).
@@ -3364,55 +3361,54 @@ C Outside face resistance.
 C Calculate admittance.
       P=N(2,2)/N(1,2)
       Y=abs(P)
-      omega=(12./(4.*ATAN(1.)))*atan(aimag(P)/real(P))
+      omega=(12.0/(4.0*ATAN(1.)))*atan(aimag(P)/real(P))
 
-      write (ITRU,*) 'External surface'
-      write (ITRU,'(2(a,f6.2))') ' Admittance Y=',Y,'  w=',omega
+C      write (ITRU,'(2(a,f6.2))') ' External surface admittance Y=',Y,
+C     &  '  w=',omega
       
 C Calculate decrement factor.
       P=1./(Uvalue*N(1,2))
       f=abs(P)
-      phi=(12./(4.*ATAN(1.)))*atan(aimag(P)/real(P))
-      if (phi.gt.0) then
-        phi=12.-phi
+      phi=(12.0/(4.0*ATAN(1.)))*atan(aimag(P)/real(P))
+      if (phi.gt.0.0) then
+        phi=12.0-phi
       else
         phi=-phi
       endif
       
-      write (ITRU,'(2(a,f6.2))') ' Decrement factor f=',f,'  phi=',phi
-
 C Calculate surface factor.
       P=1.-(Rsi*N(2,2)/N(1,2))
       f=abs(P)
-      phi=(12./(4.*ATAN(1.)))*atan(aimag(P)/real(P))
-      if (phi.gt.0) then
-        phi=12.-phi
+      phi=(12.0/(4.0*ATAN(1.)))*atan(aimag(P)/real(P))
+      if (phi.gt.0.0) then
+        phi=12.0-phi
       else
         phi=-phi
       endif
-      
-      write (ITRU,'(2(a,f6.2))') ' Surface factor f=',f,'  phi=',phi
+
+C Report values for exterior.
+      write (ITRU,'(6(a,f6.2))') ' External surface admittance Y=',Y,
+     &  '  w=',omega,' decrement factor f=',f,'  phi=',phi,
+     &  ' surface factor f=',f,'  phi=',phi
 
 C Internal surfaces.
       P=(N(2,2)-1.)/N(1,2)
       Y=abs(P)
-      omega=(12./(4.*ATAN(1.)))*atan(aimag(P)/real(P))
+      omega=(12.0/(4.0*ATAN(1.)))*atan(aimag(P)/real(P))
 
-      write (ITRU,*) '  '
-      write (ITRU,*) 'Partition'
-      write (ITRU,'(2(a,f6.2))') ' Admittance Y=',Y,'  w=',omega
-      
 C Calculate surface factor.
       P=1.-(Rsi*P)
       f=abs(P)
-      phi=(12./(4.*ATAN(1.)))*atan(aimag(P)/real(P))
-      if (phi.gt.0) then
-        phi=12.-phi
+      phi=(12.0/(4.0*ATAN(1.)))*atan(aimag(P)/real(P))
+      if (phi.gt.0.0) then
+        phi=12.0-phi
       else
         phi=-phi
       endif
-      
-      write (ITRU,'(2(a,f6.2))') ' Surface factor f=',f,'  phi=',phi
+
+C Report values for partitions.
+      write (ITRU,'(4(a,f6.2))') ' Partition admittance Y=',Y,
+     &  '  w=',omega,' surface factor f=',f,'  phi=',phi
       return
       end
 
