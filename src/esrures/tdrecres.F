@@ -188,7 +188,9 @@ C Get value of the temporal item.
             if(focus(1:5).eq.'DBZNM')then
               itdi=IDBTZNM(izone)
             elseif(focus(1:5).eq.'SURTM')then
-              itdi=ISURTMEAS(izone,isurf)
+            
+C Currently applies only on node 1 of the surface, i.e. for external surface temperature  
+              itdi=ISURTMEAS(izone,isurf) 
             endif
             IFOC=itdi
             if(ij.eq.1)then

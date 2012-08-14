@@ -1713,22 +1713,40 @@ C intra-nodal temperatures.
 
       subroutine mzcnb1(icomp,iconst)
 #include "building.h"
-
+#include "tdf2.h"
       common/prec1/sna(mcom,ms)
       common/conadj/wa(ms,mn,6)
 
       common/fvalc/tfc(mcom,ms,mn),qfc(mcom)
       common/fvals/tfs(mcom,ms),qfs(mcom)
 
+      COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
-
+      DIMENSION VAL(MBITS+2)
+      
       n=nndc(icomp,iconst)-1
       ts=tfs(icomp,iconst)
       do 10 i=1,n
       jn=n-i+1
-      tfc(icomp,iconst,jn)=(wa(iconst,jn,4)-wa(iconst,jn,3)*
+        if(jn.eq.1)then 
+
+C Currently the tdf item applies only on node 1 of the 
+C surface, i.e. for external surface temperature        
+          if(ISURTMEAS(icomp,iconst).ne.0)then
+            IFOC=  ISURTMEAS(icomp,iconst)
+            call RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
+            tfc(icomp,iconst,jn)=VAL(ISD)
+            write(6,*) 'tfc node: ', jn, 'val: ', VAL(ISD)
+          else      
+            tfc(icomp,iconst,jn)=(wa(iconst,jn,4)-wa(iconst,jn,3)*
      &qfc(icomp)/sna(icomp,iconst)-wa(iconst,jn,2)*ts)/(wa(iconst,jn,1))
-      ts=tfc(icomp,iconst,jn)
+            ts=tfc(icomp,iconst,jn)
+          endif
+        else      
+            tfc(icomp,iconst,jn)=(wa(iconst,jn,4)-wa(iconst,jn,3)*
+     &qfc(icomp)/sna(icomp,iconst)-wa(iconst,jn,2)*ts)/(wa(iconst,jn,1))
+            ts=tfc(icomp,iconst,jn)
+        endif
    10 continue
       return
       end

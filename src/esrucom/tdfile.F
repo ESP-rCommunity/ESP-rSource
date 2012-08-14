@@ -155,6 +155,7 @@ C Vertical solar radiation data are assigned per surface
                       endif
 
 C Measured surface temperature data are assigned per surface
+C Currently applies only on node 1 of the surface, i.e. for external surface temperature
                       if(DBTASK(ITD1)(1:5).eq.'SURTM')then
                         DO 976 IS=1,NZSUR(itd3)
                           if(DBSN(itd1)(1:12).eq.
