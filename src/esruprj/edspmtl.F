@@ -1005,19 +1005,17 @@ C Loop through each layer in MLC imatch.
         do 10 j=1,LAYERS(imatch)
 
 C If an air layer include the R values in the display.
-          matarrayindex=IPRMAT(imatch,j)   ! which array index
+          matarrayindex=IPRMAT(imatch,j)   ! which material array index
           if(matarrayindex.ge.0)then
  
 C And if matarrayindex is zero then reestablish NAM.
-
-C << alternative to IPR needed >>
             if(matarrayindex.eq.0)then
               NAM='AIR'
             else
               write(NAM,'(a)') matname(matarrayindex)(1:32)
             endif
           endif
-          IF(IPR(imatch,j).EQ.0)THEN
+          IF(IPRMAT(imatch,j).EQ.0)THEN
             PNAM(j)='Air gap'
           ELSE
             PNAM(j)=NAM(1:20)
