@@ -312,6 +312,7 @@ C If no type has been selected then return to main SA menu.
         endif
 
 C Everything is OK re selection therefore add type selection to common.
+C << alternative to IPR needed >>
         IDMAT(ICDEF,1)=IPR(ISEL,IVALE(1))
           
       else

@@ -939,6 +939,8 @@ C composite construction database.
       ENDIF
 
 C Search through the composites and store the materials db ref.
+
+C << alternative to IPR needed >>
       IPRIM=0
       do 10, IMLC=1,NMLC
         do 20, ILAY=1,LAYERS(IMLC)

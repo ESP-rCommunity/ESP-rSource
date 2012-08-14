@@ -826,8 +826,10 @@ C Multilayer construction has not been defined.
      &                     DEN(ISUR,IE),SHT(ISUR,IE)
  346      FORMAT(A1,I4,' --',F6.3,3F8.2)
         ELSE
+
+C << alternative to IPR required >>
           IF(IPR(ICF,IE).NE.0)THEN
-            matarrayindex=IPRMAT(ICF,IE)   ! which legacy index
+            matarrayindex=IPRMAT(ICF,IE)   ! which materials array index
             if(matarrayindex.ge.0)then
               if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &           matopaq(matarrayindex)(1:1).eq.'h')then
@@ -964,8 +966,10 @@ C gaps in preparation of scan.
         NE(ISUR)=LAYERS(IC)
 
 C Gather information about each layer. Read in the materials db info.
+
+C << alternative to IPR needed >>
         DO 223, IL=1,LAYERS(IC)
-          matarrayindex=IPRMAT(IC,IL)   ! which legacy index
+          matarrayindex=IPRMAT(IC,IL)   ! which materials array index
           if(matarrayindex.ge.0)then
 
 C And if matarrayindex is zero then resetn dbcon dbden dbsht.
@@ -1008,6 +1012,8 @@ C Assign surface properties.
           IF(IL.EQ.LAYERS(IC))EMISI(ISUR)=E
           IF(IL.EQ.LAYERS(IC))ABSI(ISUR)=A
           IF(IL.EQ.1)         ABSE(ISUR)=A
+
+C << alternative to IPR needed >>
           IF(IPR(IC,IL).EQ.0)THEN
 
 C Keep track of the air gaps in the composite, these variables may
@@ -1030,7 +1036,9 @@ C assign an appropriate U value to each air gap encountered.
               ENDIF
             endif
           ELSE
-            matarrayindex=IPRMAT(IC,IL)   ! which legacy index
+
+C Check matopaq for 'g' or (depreciated) 'h' tag.
+            matarrayindex=IPRMAT(IC,IL)   ! which materials array index
             if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &         matopaq(matarrayindex)(1:1).eq.'h')then
               if(NAIRG(ISUR)+1.gt.MGP)then
@@ -1245,9 +1253,9 @@ C the material was not found and must be asked for.
         MODCON=.TRUE.
         NE(IS)=LAYERS(IC)
 
-C Gather information about each layer. Read in the materials db info.
+C Gather information about each layer. Read in the materials info.
         DO 23, IL=1,LAYERS(IC)
-          matarrayindex=IPRMAT(IC,IL)   ! which array index
+          matarrayindex=IPRMAT(IC,IL)   ! which materials array index
           if(matarrayindex.ge.0)then
 
 C And if matarrayindex is zero then resetn dbcon dbden dbsht.
@@ -1287,6 +1295,8 @@ C Assign surface properties.
           IF(IL.EQ.LAYERS(IC))EMISI(IS)=E
           IF(IL.EQ.LAYERS(IC))ABSI(IS)=A
           IF(IL.EQ.1)         ABSE(IS)=A
+
+C << alternative to IPR needed >>
           IF(IPR(IC,IL).EQ.0)THEN
 
 C Keep track of the air gaps in the composite, these variables may
@@ -1309,7 +1319,7 @@ C assign an appropriate U value to each air gap encountered.
               ENDIF
             endif
           ELSE
-            matarrayindex=IPRMAT(IC,IL)   ! which legacy index
+            matarrayindex=IPRMAT(IC,IL)   ! which materials array index
             if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &         matopaq(matarrayindex)(1:1).eq.'h')then
               if(NAIRG(IS)+1.gt.MGP)then
@@ -2130,7 +2140,7 @@ c homogeneous layer. Locate if the MLC database item is used.
           RES=0.
           CAP=0.
           DO 45 il=1,LAYERS(ic)
-            matarrayindex=IPRMAT(IC,IL)   ! which array index
+            matarrayindex=IPRMAT(IC,IL)   ! which materials array index
             if(matarrayindex.ge.0)then
 
 C And if matarrayindex is zero then resetn dbcon dbden dbsht.
@@ -2152,6 +2162,8 @@ C Get properties for outer layer.
             endif
 
 C If an air gap, recalculate overall resistance.
+
+C << alternative to IPR needed >>
             if(IPR(ic,il).eq.0)then
              RES=RES+((DRAIR(ic,il,1)+DRAIR(ic,il,2)+DRAIR(ic,il,3))/3.)
             else

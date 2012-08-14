@@ -276,7 +276,8 @@ C to write less than 72 char into NAM
             write(LAYDESC(I,IL),'(a)')RSTR(1:lex)
 
 C See if there is a matching matarray index, if so assign values
-C to the IPRMAT array so for each IPR there is a IPRMAT. Note:
+C to the IPRMAT array so for each legacy IPR there is a materials
+C array based IPRMAT.
 C NOTE: in case there are multiple items with the same characters
 C in the name also check to see if the legacy index associated
 C with the found item matches the IPR scanned above.

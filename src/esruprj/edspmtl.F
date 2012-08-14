@@ -1001,7 +1001,7 @@ C Write menu displaying a list of layer names
         write(item(3),'(a,a)') 'c MLC name: ',DESC(imatch)(1:12)
         item(4)='  ----------------------------'
 
-C Loop through each layer.
+C Loop through each layer in MLC imatch.
         do 10 j=1,LAYERS(imatch)
 
 C If an air layer include the R values in the display.
@@ -1009,6 +1009,8 @@ C If an air layer include the R values in the display.
           if(matarrayindex.ge.0)then
  
 C And if matarrayindex is zero then reestablish NAM.
+
+C << alternative to IPR needed >>
             if(matarrayindex.eq.0)then
               NAM='AIR'
             else

@@ -3248,6 +3248,8 @@ C ESP-r defines layers from outside to inside. The code in
 C subroutine admit works from inside to outside.
 C Debug layer info.
 C      write (ITRU,*) 'Layer  thick  k  rho  Cp'
+
+CC << example alternative to IPR >>
       layer=LAYERS(IFOC)+1
       call eclose(matver,1.1,0.01,closemat1)
       call eclose(matver,1.2,0.01,closemat2)
@@ -3275,6 +3277,8 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht.
         thick(layer)=DTHK(IFOC,IL)
 
 C If an air gap (material zero) then set cond(IL) to negative of air gap res.
+
+C << alternative to IPR needed >>
         IF(IPR(IFOC,IL).EQ.0)THEN
           cond(layer) = (-1.0) * DRAIR(IFOC,IL,1)
           rho(layer)=1.0

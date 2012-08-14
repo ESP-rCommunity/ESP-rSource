@@ -41,7 +41,7 @@ C allow choice.
       integer lnblnk  ! function definition
 
 C Parameters
-      integer iwhich         ! is the legacy database index
+      integer iwhich         ! is the legacy database index CLARIFY USE
       logical chgdb          ! flagged true if an mod made to db during session
       integer imatarrayindex ! is the index in matdatarray
 
@@ -1459,6 +1459,8 @@ C Ask for name of the new construction
           write(T12,'(a)') T14(1:12)
           call st2name(T12,DESC(NMLC))
 
+
+C << find alternative to IPR >>
           LAYERS(NMLC)=1
           IPR(NMLC,1)=1
           IPRMAT(NMLC,1)=1
@@ -1717,7 +1719,7 @@ C Get number of non-air layers of glass.
 C << todo: make use of the single lay optics from the materials commons
 C << to supply much of the information needed for the g-value calculation.
 
-C << need alternative logic to locate air gaps >>
+C << need alternative logic for IPR to locate air gaps >>
 
           IPN=0
           DO 501 ILAY=1,LAYERS(IWH)
@@ -2040,6 +2042,8 @@ C was confused then matarrayindex could be -99.
 
 C Calculate standard U value and display as well.
 C If a standard air layer include the R values in the display.
+
+C << alternative to IPR needed >>
         IF(IPR(IFOC,IL).EQ.0)THEN
           WRITE(PNAM(IL),'(A,3F5.2)')'air ',(DRAIR(IFOC,IL,IY),IY=1,3)
           RT=RT+DRAIR(IFOC,IL,1)
@@ -2412,8 +2416,6 @@ C close to VALZ.
               RT=0.
               DO 124, IL=1,LAYERS(IFOC)
 
-C << find method that avoids IPR for determining air gap position >>
-
                 matarrayindex=IPRMAT(IFOC,IL)   ! which legacy index
                 if(matarrayindex.ge.0)then
  
@@ -2444,14 +2446,14 @@ C gap R into the equation.
                   continue
                 endif
 
-C Calculate standard U value.  << Find alternative method >>
-                IF(IPR(IFOC,IL).EQ.0)THEN
+C Calculate standard U value.
+                IF(IPRMAT(IFOC,IL).EQ.0)THEN
                   if(IL.eq.IWHICH)then
                     RT=RT+currentm  ! use the current R
                   else
                     RT=RT+DRAIR(IFOC,IL,1)
                   endif
-                ELSEIF(IPR(IFOC,IL).EQ.-99)THEN
+                ELSEIF(IPRMAT(IFOC,IL).EQ.-99)THEN
                   continue  ! use RT calc above
                 ELSE
                   RT=RT+DTHK(IFOC,IL)/DBCON
@@ -2968,6 +2970,7 @@ C reference.
         else
 
 C Use the current material array index.
+C << do we need to do anything at this point to retain the current value?? >>
           IWHICH=IPR(IFOC,ILED-8)
           if(IWHICH.ge.0)then
             matarrayindex=mathash(IWHICH)  ! find matching array index
@@ -2993,6 +2996,7 @@ C menu display.
         endif
 
 C If an air gap ask for the three R values.
+C << alternative to IPR needed >>
         IF(IPR(IFOC,ILED-8).EQ.0)THEN
           WRITE(outs,118)DESC(IFOC)(1:LNBLNK(DESC(IFOC)))  
   118     FORMAT('Default R value for air gap in ',a)
@@ -3043,7 +3047,7 @@ C Find the typical thickness and if [g] or [h] gap resistance.
         ELSE
 
 C Non zero legacy index so assign thickness. And check if the
-C material is a [g] or [h] and might have air gap values.
+C material is a [g] and might have air gap values.
           DRAIR(IFOC,ILED-8,1)=0.0
           DRAIR(IFOC,ILED-8,2)=0.0
           DRAIR(IFOC,ILED-8,3)=0.0
