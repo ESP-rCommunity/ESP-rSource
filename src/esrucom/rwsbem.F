@@ -440,7 +440,7 @@ C    office/storage/industrial spaces and 6.2 for all other spaces)
 C e) quoted string name of activity (roomactname)
 C f) b_type order index (same as A) (bld_order_index)
 C g) occupant density people/m2 (occupant_dens)
-C h) metabolic rate W/person/m2 (metabolic_rate)
+C h) metabolic rate W/person (metabolic_rate)
 C i) Main cooling setpoint (Cmainsetpoint)
 C j) Main heating set point (Hmainsetpoint) to use for notional
 C       building overheating when naturally ventilated. This will be

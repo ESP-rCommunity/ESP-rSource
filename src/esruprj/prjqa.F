@@ -1368,6 +1368,12 @@ C if verbose print periods, seasons and ratios as well.
             ieripv=1  ! there is no IPV
           elseif(lipvdatf(1:7).eq.'UNKNOWN')then
             ieripv=1  ! there is no IPV
+          elseif(lipvdatf(1:8).eq.'internal')then
+            if(nipvassmt.eq.0)then ! there was nothing in the cfg file.
+              ieripv=1  ! there is no IPV
+            else
+              ieripv=0  ! there is an IPV assessment
+            endif
           else
 	    ipvaction='ipv'
             call ripvdat(IFCFG,lipvdatf,ipvaction,ieripv)  ! this returns a value for ieripv
@@ -1418,16 +1424,11 @@ C the climate file and attempt to print out IPV contents.
                 else
 
 C Set Default season definitions.
-                  CALL EDAY(1,1,is1wins)
-                  CALL EDAY(28,2,is1winf)
-                  CALL EDAY(1,11,is2wins)
-                  CALL EDAY(31,12,is2winf)
-                  CALL EDAY(1,3,is1sprs)
-                  CALL EDAY(30,4,is1sprf)
-                  CALL EDAY(1,9,is2sprs)
-                  CALL EDAY(31,10,is2sprf)
-                  CALL EDAY(1,5,is1sums)
-                  CALL EDAY(31,8,is1sumf)
+                  CALL EDAY(1,1,is1wins); CALL EDAY(28,2,is1winf)
+                  CALL EDAY(1,11,is2wins); CALL EDAY(31,12,is2winf)
+                  CALL EDAY(1,3,is1sprs); CALL EDAY(30,4,is1sprf)
+                  CALL EDAY(1,9,is2sprs); CALL EDAY(31,10,is2sprf)
+                  CALL EDAY(1,5,is1sums); CALL EDAY(31,8,is1sumf)
                   call edisp(itu,
      &              'The climate used was not in the climatelist and')
                   call edisp(itu,
@@ -2905,10 +2906,12 @@ C Check to see if version of configuration file requires updating.
 
 C Check if IPV file known and fill common blocks before writing out to
 C the cfg file. If it was previously merged in the file name will now
-C be a black string.
+C be a black string or as 'internal'.
           if(lnblnk(lipvdatf).eq.0)then
             continue
           elseif(lipvdatf(1:7).eq.'UNKNOWN')then
+            continue
+          elseif(lipvdatf(1:8).eq.'internal')then
             continue
           else
             IUO=IFIL+1

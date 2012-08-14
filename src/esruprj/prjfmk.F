@@ -339,15 +339,15 @@ C gain set to zeros with no infiltration and ventilation) and exit.
             NCAS(IDTY)=3
             ICGS(IDTY,1)=0; ICGF(IDTY,1)=24
             CMGS(IDTY,1)=0.0; CMGL(IDTY,1)=0.0
-            RADC(IDTY,1)=0.5; CONC(IDTY,1)=0.5
+            RADC(IDTY,1)=0.6; CONC(IDTY,1)=0.4  ! CIBSE Guide A 6.3
             ICGT(IDTY,1)=1
             ICGS(IDTY,2)=0; ICGF(IDTY,2)=24
             CMGS(IDTY,2)=0.0; CMGL(IDTY,2)=0.0
-            RADC(IDTY,2)=0.5; CONC(IDTY,2)=0.5
+            RADC(IDTY,2)=0.3; CONC(IDTY,2)=0.7 ! CIBSE Table A6.5
             ICGT(IDTY,2)=2
             ICGS(IDTY,3)=0; ICGF(IDTY,3)=24
             CMGS(IDTY,3)=0.0; CMGL(IDTY,3)=0.0
-            RADC(IDTY,3)=0.5; CONC(IDTY,3)=0.5
+            RADC(IDTY,3)=0.4; CONC(IDTY,3)=0.6
             ICGT(IDTY,3)=3
  399      CONTINUE
 
@@ -5396,8 +5396,8 @@ C Increment ipcount for each new period.
             ICGF(IDTY,ipcount) = iperf(ij)
             CMGS(IDTY,ipcount) = 0.0
             CMGL(IDTY,ipcount) = 0.0
-            RADC(IDTY,ipcount) = 0.5
-            CONC(IDTY,ipcount) = 0.5
+            RADC(IDTY,ipcount) = 0.6
+            CONC(IDTY,ipcount) = 0.4  ! CIBSE Guide A 6.3
             ICGT(IDTY,ipcount) = 1
   71      continue
         endif
@@ -5410,8 +5410,8 @@ C Increment ipcount for each new period.
             ICGF(IDTY,ipcount) = iperf(ij)
             CMGS(IDTY,ipcount) = 0.0
             CMGL(IDTY,ipcount) = 0.0
-            RADC(IDTY,ipcount) = 0.5
-            CONC(IDTY,ipcount) = 0.5
+            RADC(IDTY,ipcount) = 0.3
+            CONC(IDTY,ipcount) = 0.7 ! CIBSE Table A6.5
             ICGT(IDTY,ipcount) = 2
   72      continue
         endif

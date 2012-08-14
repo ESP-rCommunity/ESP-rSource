@@ -15,7 +15,7 @@ echo "Creating binary materials database in "$DBdir
 $PRJ -mode text >/dev/null 2>/dev/null <<zzz
 b
 c
-f
+g
 $ASCdb
 $MATdb
 -

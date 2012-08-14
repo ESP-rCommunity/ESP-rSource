@@ -3614,6 +3614,7 @@ C Try to use information gathered from file scan.
               if(lex.gt.maxw) maxw=lex  ! ensure widest string can be displayed
   76        continue
             if(maxw.gt.70) maxw=70  ! ensure list fits
+            if(maxw.lt.15) maxw=15  ! ensure title can be seen
             CALL EPICKS(IX,ivlist,outs,' ',
      &        maxw,nboflistf,listfc70,'Available files',IER,nbhelp)
             if(ix.eq.1)then

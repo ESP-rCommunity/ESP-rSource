@@ -61,7 +61,6 @@ C  G4ALLS: read one timesteps selected data for surfaces (save=4 only).
 C  Getallcas: read one timestep of the total conv/radiant and separate
 C     casual gain conv/rad/latent data for a zone and control fraction.
 C  GFIXED: read days single fixed surface balance items.
-C  MMAPER: calculate maximum, minimum and average values for current period.
 C  HASHL   calculate offset to base record at each timestep and zone.
 
 C ******************** GCFRAC ********************
@@ -1813,6 +1812,10 @@ C Pre calculated data (filtered).
       common/MMAFDAT/IFILT,RDFMAX(MCOM,3,MZRL),RDFMIN(MCOM,3,MZRL),
      &    RDFAVE(MCOM,3,MZRL),RDTFMAX(MCOM,3,MZRL),RDTFMIN(MCOM,3,MZRL)
 
+C Signal that pre-scan has been used.
+      logical didprescan
+      common/MMAPRE/didprescan
+
       dimension DATA(3,MZRL),XD(MZRL)
       character outs*124
 
@@ -1857,9 +1860,9 @@ C Need to loop through the number of output timesteps and average if
 C required.
       do 100 IZONE=1,NCOMP
 
-C NZI - number of zome data items = MZRL - MS + NSUR. Note use NZI3
+C NZI - number of zome data items = NSUR +12. Note use NZI3
 C for 3rd record in each set (two fewer data items to scan).
-        NZI = MZRL - MS + NZSUR(IZONE)
+        NZI = NZSUR(IZONE)+12
         NZI3 = NZI - 2
         NITMS=0
         NFITMS=0

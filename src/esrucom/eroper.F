@@ -1763,7 +1763,7 @@ C Write header for scheduled air flow.
         DO 1230 I=1,NAC(IDTY)
           acim = (VOL(ICOMP)*ACI(IDTY,I))/3600.0
           acvm = (VOL(ICOMP)*ACV(IDTY,I))/3600.0
-          WRITE(outs,'(a,i2,i2,a,i2,F9.2,F8.4,F8.2,F8.4,I4,F9.2)')
+          WRITE(outs,'(a,i2,i3,a,i2,F8.2,F8.4,F8.2,F8.4,I4,F9.2)')
      &      calentag(idty)(1:10),I,IACS(IDTY,I),' - ',IACF(IDTY,I),
      &      ACI(IDTY,I),acim,ACV(IDTY,I),acvm,IPT(IDTY,I),TA(IDTY,I)
           call edisp(itru,outs)

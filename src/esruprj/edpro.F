@@ -448,7 +448,14 @@ C If a long list include page facility text.
    15   FORMAT   ('0 Page --- Part: ',I2,' of ',I2,' ---')
       ENDIF
       ITEM(M+2)  ='! list current profile          '
-      ITEM(M+3)  ='> save current profile into db  '
+
+C Remind user if they are working with a model file or a common
+C data file.
+      if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
+        ITEM(M+3)  ='> save current profile        '
+      else
+        ITEM(M+3)  ='> save profile to common file '
+      endif
       ITEM(M+4)  ='? help                          '
       ITEM(M+5)  ='- exit                          '
 

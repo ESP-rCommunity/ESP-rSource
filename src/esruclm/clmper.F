@@ -897,7 +897,7 @@ C Edit the current period in terms of day and month.
             call stdate(iyear,jnext,descr,descrstp)
           endif
           write(louts,'(8a)') '2nd winter starts on a ',
-     &      DAYNAM(jjd4t),' and 1st winter starts on a ',
+     &      DAYNAM(jjd5t),' and 1st winter starts on a ',
      &      DAYNAM(jjd1t),' so consider ',descrstp,' or ',
      &      descrstn
           call edisp248(iuout,louts,80)

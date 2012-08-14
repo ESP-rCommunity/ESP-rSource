@@ -66,48 +66,41 @@ C Printing grid points.
       if(incalu) then
 
 C Xp 
-        WRITE(ifl,510)
+        WRITE(ifl,'(a)') 'Xp=['
         WRITE(ifl,518)(XP(I),I=2,NIM1)
-        WRITE(ifl,519)
+        WRITE(ifl,'(a)') '];'
 
 C Xu
-        WRITE(ifl,511)
+        WRITE(ifl,'(a)') 'Xu=['
         WRITE(ifl,518)(XU(I),I=2,NIM1)
-        WRITE(ifl,519)
+        WRITE(ifl,'(a)') '];'
       endif
       if(incalv) then
 
 C Yp
-        WRITE(ifl,512)
+        WRITE(ifl,'(a)') 'Yp=['
         WRITE(ifl,518)(YP(J),J=2,NJM1)
-        WRITE(ifl,519)
+        WRITE(ifl,'(a)') '];'
 
 C Yv
-        WRITE(ifl,513)
+        WRITE(ifl,'(a)') 'Yv=['
         WRITE(ifl,518)(YV(J),J=2,NJM1)
-        WRITE(ifl,519)
+        WRITE(ifl,'(a)') '];'
       endif
       if(incalw) then
 
 C Zp
-        WRITE(ifl,514)
+        WRITE(ifl,'(a)') 'Zp=['
         WRITE(ifl,518)(ZP(K),K=2,NKM1)
-        WRITE(ifl,519)
+        WRITE(ifl,'(a)') '];'
 
 C Zw
-        WRITE(ifl,515)
+        WRITE(ifl,'(a)') 'Zw=['
         WRITE(ifl,518)(ZW(K),K=2,NKM1)
-        WRITE(ifl,519)
+        WRITE(ifl,'(a)') '];'
       endif
 
- 510  FORMAT(4HXp=[)
- 511  FORMAT(4HXu=[)
- 512  FORMAT(4HYp=[)
- 513  FORMAT(4HYv=[)
- 514  FORMAT(4HZp=[)
- 515  FORMAT(4HZw=[)
- 518  FORMAT(6(1PE13.6,';'))
- 519  FORMAT(2H];)
+ 518  FORMAT(6(E13.6,';'))
 
 C Results are put in matrices for the different variables.
 C Determination of the slice for which results are written.
@@ -122,23 +115,23 @@ C Slice number is defined at initialisation or in dfs-program (3-D).
 
 C I-level.
  610  I=islice
-      WRITE(ifl,690)
+      WRITE(ifl,'(a)') 'P=['
       WRITE(ifl,698)((P(I,J,K),K=2,NKM1),J=2,NJM1)
-      WRITE(ifl,699)
+      WRITE(ifl,'(a)') '];'
       WRITE(ifl,'(a)',IOSTAT=ios,ERR=1) 
      &  'P1=reshape(P,length(Zp),length(Yp));'
 
       if(incalv)then
-        WRITE(ifl,692)
+        WRITE(ifl,'(a)') 'V=['
         WRITE(ifl,698)((0.5*(Vf(I,J+1,K)+Vf(I,J,K)),K=2,NKM1),J=2,NJM1)
-        WRITE(ifl,699)
+        WRITE(ifl,'(a)') '];'
         WRITE(ifl,'(a)',IOSTAT=ios,ERR=1)
      &   'V1=reshape(V,length(Zp),length(Yp));'
       endif
       if(incalw)then
-        WRITE(ifl,693)
+        WRITE(ifl,'(a)') 'W=['
         WRITE(ifl,698)((0.5*(Wf(I,J,K+1)+Wf(I,J,K)),K=2,NKM1),J=2,NJM1)
-        WRITE(ifl,699)
+        WRITE(ifl,'(a)') '];'
         WRITE(ifl,'(a)',IOSTAT=ios,ERR=1)
      &    'W1=reshape(W,length(Zp),length(Yp));'
       endif
@@ -146,31 +139,31 @@ C I-level.
 C Stream function field.
       if(incalv.and.incalw) then
         CALL STRFUN('YZ',I)
-        WRITE(ifl,700)
+        WRITE(ifl,'(a)') 'STR=['
         WRITE(ifl,698)((SF(J,K),K=2,NKM1),J=2,NJM1)
-        WRITE(ifl,699)
+        WRITE(ifl,'(a)') '];'
         WRITE(ifl,'(a)',IOSTAT=ios,ERR=1)
      &    'STR1=reshape(STR,length(Zw),length(Yv));'
         I=islice
       endif
       if(incalk)then
-        WRITE(ifl,694)
+        WRITE(ifl,'(a)') 'K=['
         WRITE(ifl,698)((TEf(I,J,K),K=2,NKM1),J=2,NJM1)
-        WRITE(ifl,699)
+        WRITE(ifl,'(a)') '];'
         WRITE(ifl,'(a)',IOSTAT=ios,ERR=1)
      &    'K1=reshape(K,length(Zp),length(Yp));'
       endif
       if(incald)then
-        WRITE(ifl,695)
+        WRITE(ifl,'(a)') 'E=['
         WRITE(ifl,698)((EDf(I,J,K),K=2,NKM1),J=2,NJM1)
-        WRITE(ifl,699)
+        WRITE(ifl,'(a)') '];'
         WRITE(ifl,'(a)',IOSTAT=ios,ERR=1)
      &    'E1=reshape(E,length(Zp),length(Yp));'
       endif
       if(incalt)then
-        WRITE(ifl,696)
+        WRITE(ifl,'(a)') 'T=['
         WRITE(ifl,698)((Tf(I,J,K),K=2,NKM1),J=2,NJM1)
-        WRITE(ifl,699)
+        WRITE(ifl,'(a)') '];'
         WRITE(ifl,'(a)',IOSTAT=ios,ERR=1)
      &    'T1=reshape(T,length(Zp),length(Yp));'
       endif
@@ -209,48 +202,48 @@ C Start generation of graphs I-level.
 
 C J-level.
  620  J=jslice
-      WRITE(ifl,690)
+      WRITE(ifl,'(a)') 'P=['
       WRITE(ifl,698)((P(I,J,K),K=2,NKM1),I=2,NIM1)
-      WRITE(ifl,699)
+      WRITE(ifl,'(a)') '];'
       WRITE(ifl,'(a)') 'P1=reshape(P,length(Zp),length(Xp));'
       if(incalu)then
-        WRITE(ifl,691)
+        WRITE(ifl,'(a)') 'U=['
         WRITE(ifl,698)((0.5*(Uf(I+1,J,K)+Uf(I,J,K)),K=2,NKM1),I=2,NIM1)
-        WRITE(ifl,699)
+        WRITE(ifl,'(a)') '];'
         WRITE(ifl,'(a)')'U1=reshape(U,length(Zp),length(Xp));'
       endif
       if(incalw)then
-        WRITE(ifl,693)
+        WRITE(ifl,'(a)') 'W=['
         WRITE(ifl,698)((0.5*(Wf(I,J,K+1)+Wf(I,J,K)),K=2,NKM1),I=2,NIM1)
-        WRITE(ifl,699)
+        WRITE(ifl,'(a)') '];'
         WRITE(ifl,'(a)')'W1=reshape(W,length(Zp),length(Xp));'
       endif
 
 C Stream function field.
       if(incalu.and.incalw) then
         CALL STRFUN('XZ',J)
-        WRITE(ifl,700)
+        WRITE(ifl,'(a)') 'STR=['
         WRITE(ifl,698)((SF(I,K),K=2,NKM1),I=2,NIM1)
-        WRITE(ifl,699)
+        WRITE(ifl,'(a)') '];'
         WRITE(ifl,'(a)') 'STR1=reshape(STR,length(Zw),length(Xu));'
         J=jslice
       endif
       if(incalk)then
-        WRITE(ifl,694)
+        WRITE(ifl,'(a)') 'K=['
         WRITE(ifl,698)((TEf(I,J,K),K=2,NKM1),I=2,NIM1)
-        WRITE(ifl,699)
+        WRITE(ifl,'(a)') '];'
         WRITE(ifl,'(a)') 'K1=reshape(K,length(Zp),length(Xp));'
       endif
       if(incald)then
-        WRITE(ifl,695)
+        WRITE(ifl,'(a)') 'E=['
         WRITE(ifl,698)((EDf(I,J,K),K=2,NKM1),I=2,NIM1)
-        WRITE(ifl,699)
+        WRITE(ifl,'(a)') '];'
         WRITE(ifl,'(a)') 'E1=reshape(E,length(Zp),length(Xp));'
       endif
       if(incalt)then
-        WRITE(ifl,696)
+        WRITE(ifl,'(a)') 'T=['
         WRITE(ifl,698)((Tf(I,J,K),K=2,NKM1),I=2,NIM1)
-        WRITE(ifl,699)
+        WRITE(ifl,'(a)') '];'
         WRITE(ifl,'(a)') 'T1=reshape(T,length(Zp),length(Xp));'
       endif
 
@@ -289,48 +282,48 @@ C Start generation of graphs J-level.
 
 C Z-level.
  630  K=kslice
-      WRITE(ifl,690)
+      WRITE(ifl,'(a)') 'P=['
       WRITE(ifl,698)((P(I,J,K),J=2,NJM1),I=2,NIM1)
-      WRITE(ifl,699)
+      WRITE(ifl,'(a)') '];'
       WRITE(ifl,'(a)') 'P1=reshape(P,length(Yp),length(Xp));'
       if(incalu)then
-        WRITE(ifl,691)
+        WRITE(ifl,'(a)') 'U=['
         WRITE(ifl,698)((0.5*(Uf(I+1,J,K)+Uf(I,J,K)),J=2,NJM1),I=2,NIM1)
-        WRITE(ifl,699)
+        WRITE(ifl,'(a)') '];'
         WRITE(ifl,'(a)') 'U1=reshape(U,length(Yp),length(Xp));'
       endif
       if(incalv)then
-        WRITE(ifl,692)
+        WRITE(ifl,'(a)') 'V=['
         WRITE(ifl,698)((0.5*(Vf(I,J+1,K)+Vf(I,J,K)),J=2,NJM1),I=2,NIM1)
-        WRITE(ifl,699)
+        WRITE(ifl,'(a)') '];'
         WRITE(ifl,'(a)') 'V1=reshape(V,length(Yp),length(Xp));'
       endif
 
 C Stream function field.
       if(incalu.and.incalv) then
         CALL STRFUN('XY',K)
-        WRITE(ifl,700)
+        WRITE(ifl,'(a)') 'STR=['
         WRITE(ifl,698)((SF(I,J),J=2,NJM1),I=2,NIM1)
-        WRITE(ifl,699)
+        WRITE(ifl,'(a)') '];'
         WRITE(ifl,'(a)') 'STR1=reshape(STR,length(Yv),length(Xu));'
         K=kslice
       endif
       if(incalk)then
-        WRITE(ifl,694)
+        WRITE(ifl,'(a)') 'K=['
         WRITE(ifl,698)((TEf(I,J,K),J=2,NJM1),I=2,NIM1)
-        WRITE(ifl,699)
+        WRITE(ifl,'(a)') '];'
         WRITE(ifl,'(a)') 'K1=reshape(K,length(Yp),length(Xp));'
       endif
       if(incald)then
-        WRITE(ifl,695)
+        WRITE(ifl,'(a)') 'E=['
         WRITE(ifl,698)((EDf(I,J,K),J=2,NJM1),I=2,NIM1)
-        WRITE(ifl,699)
+        WRITE(ifl,'(a)') '];'
         WRITE(ifl,'(a)') 'E1=reshape(E,length(Yp),length(Xp));'
       endif
       if(incalt)then
-        WRITE(ifl,696)
+        WRITE(ifl,'(a)') 'T=['
         WRITE(ifl,698)((Tf(I,J,K),J=2,NJM1),I=2,NIM1)
-        WRITE(ifl,699)
+        WRITE(ifl,'(a)') '];'
         WRITE(ifl,'(a)') 'T1=reshape(T,length(Yp),length(Xp));'
       endif
 
@@ -366,17 +359,7 @@ C Start generation of graphs K-level.
       endif
       GOTO 799
 
- 690   FORMAT(3HP=[)
- 691   FORMAT(3HU=[)
- 692   FORMAT(3HV=[)
- 693   FORMAT(3HW=[)
- 694   FORMAT(3HK=[)
- 695   FORMAT(3HE=[)
- 696   FORMAT(3HT=[)
- 697   FORMAT(3HC=[)
- 698   FORMAT(6(1PE13.6,';'))
- 699   FORMAT(2H];)
- 700   FORMAT(5HSTR=[)
+ 698   FORMAT(6(E13.6,';'))
 
  799   CONTINUE
       RETURN

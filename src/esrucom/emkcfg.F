@@ -163,7 +163,8 @@ C Primary energy and emissions conversions.
       REAL :: pltco2,pltnox,pltsox,pfnco2,pfnnox,pfnsox
       REAL :: pspco2,pspnox,pspsox,phwco2,phwnox,phwsox
  
-C IPV description via ipvdata.h.
+C IPV description via ipvdata.h. If within cfg file then the file
+C name is replaced with 'internal'.
       common/IPVF/lipvdatf
 
 C CPCALC description
@@ -991,6 +992,19 @@ C name of the IPV file or write the data internal to the cfg file.
           continue
         elseif(lipvdatf(1:7).eq.'UNKNOWN')then
           continue
+        elseif(lipvdatf(1:8).eq.'internal')then
+
+C If the number of IPV metrics or demand sets is greater than
+C zero. If so take common block information and include
+C it in the configuration file.
+          if(nms.gt.0.or.neds.gt.0)then
+
+C Use call mkipvdat to write into the cfg file and then clear name of
+C the external IPV file (also notify the user they can remove it).
+            ipvaction='cfg'
+            if(ipvform.eq.0) ipvform=2  ! if format not defined set to tab separated
+            call mkipvdat(ifcfg,LCFGF,ipvaction)
+          endif
         else
           WRITE(IFCFG,'(2a)',IOSTAT=IOS,ERR=2) '*ipv  ',
      &      lipvdatf(1:lnipv)
@@ -1009,13 +1023,7 @@ C the external IPV file (also notify the user they can remove it).
           ipvaction='cfg'
 	  if(ipvform.eq.0) ipvform=2  ! if format not defined set to tab separated
           call mkipvdat(ifcfg,LCFGF,ipvaction)
-          if(lnipv.eq.0)then
-            continue
-          elseif(lipvdatf(1:7).eq.'UNKNOWN')then
-            continue
-          else
-	    lipvdatf=' '  ! ensure old file name is no longer referenced
-          endif
+          lipvdatf='internal'  ! ensure old file name is no longer referenced
         endif
       endif
 

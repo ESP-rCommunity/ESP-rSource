@@ -88,22 +88,22 @@ C iterations).  Write current residuals to ACC file.
      &    'Convergence has not been achieved after ',
      &    MAXIT,' iterations.'
         write(IACC,*)' Current residual values:'
-        WRITE(IACC,'(a,1P7E10.3)') '  Mass = ',RESORM
+        WRITE(IACC,'(a,7E10.3)') '  Mass = ',RESORM
         IF(CALLU(ICFD))THEN
-          WRITE(IACC,'(a,1P7E10.3)') '  X momentum = ',RESORU
+          WRITE(IACC,'(a,7E10.3)') '  X momentum = ',RESORU
         ENDIF
         IF(CALLV(ICFD))THEN
-          WRITE(IACC,'(a,1P7E10.3)') '  Y momentum = ',RESORV
+          WRITE(IACC,'(a,7E10.3)') '  Y momentum = ',RESORV
         ENDIF
         IF(CALLW(ICFD))THEN
-          WRITE(IACC,'(a,1P7E10.3)') '  Z momentum = ',RESORW
+          WRITE(IACC,'(a,7E10.3)') '  Z momentum = ',RESORW
         ENDIF
         IF(CALLT(ICFD))THEN
-          WRITE(IACC,'(a,1P7E10.3)') '  Energy = ',RESORT
+          WRITE(IACC,'(a,7E10.3)') '  Energy = ',RESORT
         ENDIF
         IF(KEMDL(ICFD))THEN
-          WRITE(IACC,'(a,1P7E10.3)') '  Turbulent energy = ',RESORK
-          WRITE(IACC,'(a,1P7E10.3)') '  Energy dissipation = ',RESORE
+          WRITE(IACC,'(a,7E10.3)') '  Turbulent energy = ',RESORK
+          WRITE(IACC,'(a,7E10.3)') '  Energy dissipation = ',RESORE
         endif
         if (MAXITR(ICFD).eq.MAXIT) then
           ITERADD=MAXIT/2
@@ -125,28 +125,28 @@ C iterations).  Write current residuals to ACC file.
      &                       MAXIT,' iterations.'
       CALL EDISP(IUOUT,word)
       CALL EDISP(IUOUT,' Current residual values:')
-      WRITE(word,'(a,1P7E10.3)') '  Mass = ',RESORM
+      WRITE(word,'(a,7E10.3)') '  Mass = ',RESORM
       CALL EDISP(IUOUT,word)
       IF(CALLU(ICFD))THEN
-        WRITE(word,'(a,1P7E10.3)') '  X momentum = ',RESORU
+        WRITE(word,'(a,7E10.3)') '  X momentum = ',RESORU
         CALL EDISP(IUOUT,word)
       ENDIF
       IF(CALLV(ICFD))THEN
-        WRITE(word,'(a,1P7E10.3)') '  Y momentum = ',RESORV
+        WRITE(word,'(a,7E10.3)') '  Y momentum = ',RESORV
         CALL EDISP(IUOUT,word)
       ENDIF
       IF(CALLW(ICFD))THEN
-        WRITE(word,'(a,1P7E10.3)') '  Z momentum = ',RESORW
+        WRITE(word,'(a,7E10.3)') '  Z momentum = ',RESORW
         CALL EDISP(IUOUT,word)
       ENDIF
       IF(CALLT(ICFD))THEN
-        WRITE(word,'(a,1P7E10.3)') '  Energy = ',RESORT
+        WRITE(word,'(a,7E10.3)') '  Energy = ',RESORT
         CALL EDISP(IUOUT,word)
       ENDIF
       IF(KEMDL(ICFD))THEN
-        WRITE(word,'(a,1P7E10.3)') '  Turbulent energy = ',RESORK
+        WRITE(word,'(a,7E10.3)') '  Turbulent energy = ',RESORK
         CALL EDISP(IUOUT,word)
-        WRITE(word,'(a,1P7E10.3)') '  Energy dissipation = ',RESORE
+        WRITE(word,'(a,7E10.3)') '  Energy dissipation = ',RESORE
         CALL EDISP(IUOUT,word)
       ENDIF
 
@@ -298,25 +298,25 @@ C            URFCD(ICFD)=VAL
      &                         'under-relaxation factors:'
           CALL EDISP(IUOUT,outs)
           IF(CALLU(ICFD))THEN
-            WRITE(word,'(a,1PE8.2)') ' FSDTU = ',FSDTU
+            WRITE(word,'(a,E8.2)') ' FSDTU = ',FSDTU
             CALL EDISP(IUOUT,word)
           ENDIF
           IF(CALLV(ICFD))THEN
-            WRITE(word,'(a,1PE8.2)') ' FSDTV = ',FSDTV
+            WRITE(word,'(a,E8.2)') ' FSDTV = ',FSDTV
             CALL EDISP(IUOUT,word)
           ENDIF
           IF(CALLW(ICFD))THEN
-            WRITE(word,'(a,1PE8.2)') ' FSDTW = ',FSDTW
+            WRITE(word,'(a,E8.2)') ' FSDTW = ',FSDTW
             CALL EDISP(IUOUT,word)
           ENDIF
           IF(CALLT(ICFD))THEN
-            WRITE(word,'(a,1PE8.2)') ' FSDTT = ',FSDTT
+            WRITE(word,'(a,E8.2)') ' FSDTT = ',FSDTT
             CALL EDISP(IUOUT,word)
           ENDIF
           IF(KEMDL(ICFD))THEN
-            WRITE(word,'(a,1PE8.2)') ' FSDTK = ',FSDTK
+            WRITE(word,'(a,E8.2)') ' FSDTK = ',FSDTK
             CALL EDISP(IUOUT,word)
-            WRITE(word,'(a,1PE8.2)') ' FSDTE = ',FSDTE
+            WRITE(word,'(a,E8.2)') ' FSDTE = ',FSDTE
             CALL EDISP(IUOUT,word)
           ENDIF
           IF(CALLU(ICFD))THEN

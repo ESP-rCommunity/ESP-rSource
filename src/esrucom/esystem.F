@@ -375,7 +375,8 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
 C Uncertainty analysis common.
       COMMON/UA1/LUALF,LCNG(MNCNG),LLOC(MNIL)
 
-C IPV data is from ipvdata.h.
+C IPV data is from ipvdata.h. If within cfg file then the file
+C name is replaced with 'internal'.
       common/IPVF/lipvdatf
 
 C Anchor data in model.h.
@@ -1677,9 +1678,11 @@ C for the rest of the data.
           else
             ipvsimu='------'
           endif
+          lipvdatf='internal'  ! reset file name to the keyword internal
           ipvact='cfg'
-          call ripvdat(iuc,FILE,ipvact,ier)	
+          call ripvdat(iuc,FILE,ipvact,ier)
         endif
+
       elseif(WORD(1:5).eq.'*dmds')then
 
 C Building fans/pumps/DHW demands file.
@@ -2210,26 +2213,25 @@ C automatically and should not be modified through project manager
       IF(INOTI.EQ.1.AND.ITRC.NE.4)THEN
         IWARN=1
         OUTS=
-     &  'This is a UK NCM notional model and should not be modified'
+     &  'This is a UK NCM notional model and should not be modified.'
       ELSEIF(INOTI.EQ.2.AND.ITRC.NE.4)THEN
         IWARN=1
         OUTS=
-     &  'This is a UK NCM reference model and should not be modified'
+     &  'This is a UK NCM reference model and should not be modified.'
       ELSEIF(INOTI.EQ.3.AND.ITRC.NE.4)THEN
         IWARN=1
         OUTS=
-     &  'This is a UK NCM typical model and should not be modified'
+     &  'This is a UK NCM typical model and should not be modified.'
       ELSEIF(INOTI.EQ.4.AND.ITRC.NE.4)THEN
         IWARN=1
         OUTS=
-     &  'This is a UK NCM stripped model and should not be modified'
+     &  'This is a UK NCM stripped model and should not be modified.'
       ELSEIF(ISBEM.EQ.2.AND.INOTI.EQ.0.AND.ITRC.NE.4)THEN
         continue  ! this model is original which includes NCM file.
       ENDIF
       IF(IWARN.EQ.1.AND..NOT.AUTOOK)THEN
          call askok(OUTS,
-     &   'using project manager are you sure you want to continue',
-     &   OK,dok,10)
+     &   'Are you sure you want to continue?',OK,dok,10)
          IF(.NOT.OK)STOP
       ENDIF
 

@@ -378,6 +378,9 @@ C Setup and pass in parameters to win3d.
         ngset=0
         nzonec=0
         call foundcolour(mdispl,nifgrey,ncset,ngset,nzonec)
+
+c Debug
+C        write(6,*) 'colurs ',nifgrey,ncset,ngset,nzonec
         call startbuffer()
       ENDIF
       ITRC=1
