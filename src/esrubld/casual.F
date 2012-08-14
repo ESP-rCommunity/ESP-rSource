@@ -50,6 +50,7 @@ C QLAT   - latent load for present (1) and future (2) time step.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "net_flow.h"
 #include "tdf2.h"
 #include "sbem.h"
 #include "power.h"
@@ -205,14 +206,10 @@ C Common for CFC - Radiance coupling initialisation control
       REAL PEZON,QEZON
       
 C Declation of heat gain from h3k models
-c      REAL H3K_HeatGainsFromModels(ICOMP)
-      REAL H3KGains
 C     Number of electric-load->gain couplings per zone,
       INTEGER iNumb_Gain_coupling
 C     Data fro each coupling
       REAL Coupling_gain_info
-C     Flag indicating type of present day (weekday/saturday/sunday)
-      INTEGER iDay_type
 C     HOT3000 storage arrays
       REAL Cas_Rad_dat, Cas_Con_dat, Cas_Lat_dat
 
@@ -223,13 +220,12 @@ C     HVAC equipment)
       PARAMETER (occupant_load = 3)
 
 C.....Named constants for timerows
-      integer iPresent, iFuture
-      parameter (iPresent=1, iFuture=2) 
+      integer iFuture
+      parameter (iFuture=2) 
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
       integer imonth !current month at simulation time (to accumulate monthly results)
       integer idayn  
       logical closer
-      doubleprecision checkNAN
 
 C Trace output ?
       traceok = .true.
@@ -981,9 +977,6 @@ C Output the electrical results for the zone
       endif
 
   999 RETURN
-
- 1000 call edisp(iuout,' MZCASI: casual gains file read error.')
-      goto 999
       END
 
 C ******************** INTLUM ********************
@@ -1022,7 +1015,6 @@ C geometry.h provides commons G0/G1/G2/precz.
 c      common/expath/runpath,pathtype
       common/filep/ifil
       COMMON/TC/ITC,ICNT
-      common/trc/itrc
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SHOUT/ICOUT
@@ -1086,7 +1078,7 @@ C Common for CFC - Radiance coupling initialisation control
       logical cfcinit
 
       DIMENSION selum(MLCOM,MDF),alt(8),SENTMP(MLCOM,MDF)
-      DIMENSION QDFTMP(MLCOM,MDF),QDRTMP(MLCOM,MDF),Yb(MLCOM,MDF)
+      DIMENSION QDFTMP(MLCOM,MDF),Yb(MLCOM,MDF)
       DIMENSION Aa(MLCOM,MDF),Ab(MLCOM,MDF),Ac(MLCOM,MDF),Ya(MLCOM,MDF)
       DIMENSION zelum(MLCOM)
       DIMENSION ZFRAC(MLCOM)
@@ -1444,7 +1436,6 @@ C If IBOFOT()=1, then blind/shutter is ON.
 C Check if sensor values already in illuminance database and set accuracies.
             ILLDBM=0
             AZIACC=5.
-            ALTACC=5.
             QDRACC=10.
 
             write (66,*) ' ***  Solar data for timestep ',
@@ -1828,7 +1819,6 @@ C Copy glare DB information to glare variables.
               vcp(icomp,1)  =DBGLR(ICOMP,NDBENT(ICOMP),1,4)
               cgi(icomp,1)  =DBGLR(ICOMP,NDBENT(ICOMP),1,5)
               Lveil(icomp,1)=DBGLR(ICOMP,NDBENT(ICOMP),1,6)
-
             endif ! ILLDBM .eq. 0 ?
           ENDIF ! (N.EQ.1) then
         endif ! sun is up, not startup, not "no radiation" ...
@@ -2685,11 +2675,11 @@ C if ACTIVE=0. then no matching casual gain/occupants.
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
 
-      INTEGER NCAS,ICGS,ICGF,ICGT
-      REAL CMGS,CMGL,RADC,CONC
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
       COMMON/P3TYPEN/ICGT(MDTY,MC)
+      INTEGER NCAS,ICGS,ICGF,ICGT
+      REAL CMGS,CMGL,RADC,CONC
       COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
      & CGX(MCOM,MLCOM,MDF),CGY(MCOM,MLCOM,MDF),CGH(MCOM,MLCOM,MDF),
      & UX(MCOM,MLCOM,MDF),UY(MCOM,MLCOM,MDF),UH(MCOM,MLCOM,MDF),

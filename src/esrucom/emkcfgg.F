@@ -37,9 +37,9 @@ C This version uses generic databases.
 #include "model.h"
 #include "site.h"
 #include "geometry.h"
+#include "net_flow.h"
 #include "tdf2.h"
 #include "uncertainty.h"
-#include "net_flow.h"
 #include "esprdbfile.h"
 #include "CFC_common.h"
 C espprdbfile.h supplies the following:
@@ -52,8 +52,7 @@ C ICLIM,LCLIM (for climate file)
 #include "schedule.h"
 #include "e2r_common.h"
 C provides LRADCF
-c      PARAMETER (MSTMC=20,MSGAL=40)
-      INTEGER, PARAMETER :: MSTMC=20,MSGAL=40
+      INTEGER, PARAMETER :: MSTMC=20
       
       integer lnblnk  ! function definition
 
@@ -145,8 +144,6 @@ C Temporal definition commons.
       COMMON/TDFFLG0/DBTAG(MIT),DBTASK(MIT),DBZN(MIT),DBSN(MIT)
 
 C Primary energy and emissions conversions.
-      common/ECONV/ieconv
-      INTEGER :: ieconv
       common/PCONV/ipconv,pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw
       INTEGER :: ipconv
       REAL :: pcnvht,pcnvcl,pcnvlt,pcnvfn,pcnvsp,pcnvhw

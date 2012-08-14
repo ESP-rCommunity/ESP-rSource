@@ -5,7 +5,7 @@ C Strathclyde, Glasgow Scotland, 2001-6.
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -32,6 +32,7 @@ C TDFUPD: updates TDF file from an exchange file.
 #include "building.h"
 #include "model.h"
 #include "epara.h"
+#include "net_flow.h"
 #include "tdf2.h"
       
       integer lnblnk  ! function definition
@@ -691,6 +692,7 @@ C ************** CLRTABC
 C CLRTABC clears temporal commons TDFFH, tdset, tdaid,GDPER.
       SUBROUTINE CLRTABC
 #include "building.h"
+#include "net_flow.h"
 #include "tdf2.h"
       common/tdaid/tdaide(2)
       COMMON/GDPER/igbdoy,igedoy
@@ -728,6 +730,7 @@ C glbset: Global questions about TDF file. Foc is the topic.
 C If foc='init' do initial setup. 
       subroutine glbset(foc)
 #include "building.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
       COMMON/TRC/ITRC
@@ -811,6 +814,7 @@ C IER=0 OK, IER=1 problem.
 C This facility supports the esp-r module b2e. 
       SUBROUTINE extracts(ITRC,AFIL,IAFIL,TIMEJD,incr,IER)
 #include "building.h"
+#include "net_flow.h"
 #include "tdf2.h"
 
       COMMON/OUTIN/IUOUT,IUIN

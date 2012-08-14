@@ -44,8 +44,6 @@ C on internal and external surfaces.
 
       COMMON/OUTIN/IUOUT,IUIN
 
-      integer ncomp,ncon
-      COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
@@ -82,7 +80,7 @@ C and last connections associated with surfaces.
       JCONF=IZSTOCN(ICOMP,1)
       JCONL=IZSTOCN(ICOMP,NC)
 
-   11 ISURF=0
+      ISURF=0
 
 C Connection-by-connection. Note: if JCONF was not reset
 C in the loop above the zero start of loop then ict(J) will
@@ -177,6 +175,7 @@ C and future time rows. Units: W/m^2
 #include "building.h"
 #include "geometry.h"
 #include "CFC_common.h"
+#include "net_flow.h"
 #include "tdf2.h"
 C ADD NEW PARAMETER STATEMENT
 C MSTMC is number of different bidirectional datasets, limited
@@ -2490,20 +2489,14 @@ c Britain).
 
       SUBROUTINE MZSANG
 #include "building.h"
-#include "geometry.h"
 #include "roam.h"
 
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-      COMMON/OUTIN/IUOUT,IUIN
-
       COMMON/PREC8/SLAT,SLON
-
       COMMON/BTIME/BTIMEP,BTIMEF
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
-
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
       character outs*124
@@ -3486,7 +3479,6 @@ c         receiving internal surfaces.
       SUBROUTINE MZSHDO(IYRD)
 #include "building.h"
 #include "model.h"
-#include "geometry.h"
 #include "CFC_common.h"
 
       COMMON/FILEP/IFIL
@@ -4064,6 +4056,7 @@ C existing and new controls should be added here.
       SUBROUTINE MZSCTL(ICOMP,ISURFNumber,SRADDO,SRADF,ISET)
 #include "building.h"
 #include "geometry.h"
+#include "net_flow.h"
 #include "tdf2.h"
 #include "control.h"
 #include "esprdbfile.h"
@@ -4135,7 +4128,6 @@ C Definitions for daylight coefficient patch altitude:
       integer i_ctlZone  !This is used when the sensor is located to another zone and indicates
                          !which zone. It will take the value of iosn(1,1).
 
-      integer IDAYPD
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,NIN
 
@@ -4197,7 +4189,6 @@ C Check number of periods in each day and the start and finish times
           endif
           DO 22 IDAYP=1,NDAYP
             IPER=IDAYP
-            IDAYPD=IDAYP
             TOS=TOCPS(IOFP,IDTYP,IDAYP)
             IF(IDAYP.LT.NDAYP) THEN
               TOF=TOCPS(IOFP,IDTYP,IDAYP+1)

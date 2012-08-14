@@ -1114,6 +1114,7 @@ C                 external temperature (for use in MZLS3).
 
       include "building.h"
       include "geometry.h"
+      include "net_flow.h"
       include "tdf2.h"
       include "sbem.h"
       include "hvac_parameters.h"
@@ -1126,9 +1127,6 @@ C                 external temperature (for use in MZLS3).
       INTEGER :: ITCF,ITRACE,IZNTRC,ITU
       COMMON/TC/ITC,ICNT
       INTEGER :: ITC,ICNT
-      COMMON/OUTIN/IUOUT,IUIN
-      INTEGER :: IUOUT,IUIN
-
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
@@ -1164,8 +1162,6 @@ C ventilation from air-flow networks.
       COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       REAL :: QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
 
-      common/pvala/tpa(mcom),qpa(mcom)
-      REAL :: tpa,qpa
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       REAL :: TFA,QFA
 
@@ -1217,12 +1213,11 @@ C mechanical ventilation and infiltration.
 
       CHARACTER LAPROB*72
       character outs*124
-      logical close
 
       INTEGER IDAY1,IDAY2,ID1,ID2
-      DIMENSION ACC(MCOM),CCVVFM(MCOM),CCVVF(MCOM)
+      DIMENSION CCVVFM(MCOM),CCVVF(MCOM)
       logical closeto0
-      real rTempnotioOverheat
+c      real rTempnotioOverheat
       common/ncmOperHrSystem/iOperTimestep(MCOM),
      &       iMonthOperTimestep(12,MCOM)
       integer iOperTimestep,iMonthOperTimestep       
@@ -1239,11 +1234,11 @@ C mechanical ventilation and infiltration.
       integer ICF,IDTYP,IPER,IICOMP
       real BB1,BB2,BB3,TNP,QFUT,TFUT,grad
 
-      REAL :: acc,acc1,acc2,aci,acr,amh,amn
+      REAL :: acc1,acc2,aci,acr,amh,amn !acc
       REAL :: amx,ccvvf,ccvvfm,cf,cv1,cv2
       INTEGER :: icomp,i,iacc1,iacc2,ic2,ier,ifoc,isd,it1,it2,itdi
-      INTEGER :: itrc,ifunit,iv,ival
-      REAL :: sum,t1,ta1,ta2,tafl,tafu,trat,tx,val,xx
+      INTEGER :: itrc,ifunit,ival
+      REAL :: sum,t1,ta2,taf,tafl,tafu,trat,tx,val,xx !ta1
       REAL :: time
 
       COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
@@ -1576,7 +1571,6 @@ C These values were either specified in the *.opr file.
 C Check for thermostatic controls from .opr file. 
         ChkOprCtl: if ( ITCTL(ICOMP) /= 0 ) then 
 C It is controlled. Establish sensed variable.        
-            IV=ITCTL(ICOMP)
             IVAL=ABS(ITCTL(ICOMP))
             IF(IVAL.GT.4)IVAL=IVAL-10
             TX=TFA(ICOMP)
@@ -1845,7 +1839,7 @@ C .aim2 case.
           CV1=CVVN(ID1,ICOMP,IT1)*xmod
           CV2=CVVN(ID2,ICOMP,IT2)*xmod
           IC2=ICCN(ID2,ICOMP,IT2)
-          TA1=TIAN(ID1,ICOMP,IT1)
+!          TA1=TIAN(ID1,ICOMP,IT1)
           TA2=TIAN(ID2,ICOMP,IT2)
           CF=CV1+(TRAT*(CV2-CV1))
           ICF=IC2
@@ -2059,7 +2053,7 @@ C Determine XX3.
       XX3=CVIF*TF+CVVFM*XX
 
 C Save future-time values for use at next time-step.
-  171 CVM(ICOMP)=CVVFM
+      CVM(ICOMP)=CVVFM
       CIF(ICOMP)=CVIF
       CVF(ICOMP)=CVVF
       X3(ICOMP)=XX3
@@ -2202,7 +2196,6 @@ C a moisture balance at the air point.
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       COMMON/CLIMHG/HEXTP,HEXTF,GEXTP,GEXTF
 
-      COMMON/PREC6L/TQL1(MCOM,MT),TQL2(MCOM,MT),TQL3(MCOM,MT)
       COMMON/COE34L/QLAT(MCOM)
       COMMON/FVALG/GFA(MCOM)
       COMMON/PVALG/GPA(MCOM)
@@ -2619,6 +2612,7 @@ C typical building based on rules in the UK NCM guide (v4d March 2008)
       IMPLICIT NONE
 #include "building.h"
 #include "geometry.h"
+#include "net_flow.h"
 #include "tdf2.h"
 #include "sbem.h"
 
@@ -2652,13 +2646,8 @@ C It excludes start-up timesteps
       integer iOperTimestep,iMonthOperTimestep !iMonthOperTimestep is the total monthly timesteps
                                                !that heating is operational
 
-      COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      integer IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       integer imonth !current month at simulation time (to accumulate monthly results)
-      integer idayn,im  
-      COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      integer ICF,IDTYP,IPER,IICOMP
-      real BB1,BB2,BB3,TNP,QFUT,TFUT
+      integer im  
       real ValueToCalc
       INTEGER iactvalue
       real SFP ! Specific fan power for notional and reference building for this system

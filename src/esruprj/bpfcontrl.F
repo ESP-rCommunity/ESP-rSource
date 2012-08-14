@@ -1377,7 +1377,7 @@ C Plant common required for building/plant flux linkage
 
       CHARACTER outs*124,SSTR*96,TMP*96,SALT*40,hold*40,KEY*1
       character outsa*84,outsb*84,outsc*84,ltmp*248,SSTRB*48,daytype*28
-      logical close1,close2,close3,close4,useold
+      logical close1,close2,useold
 
       integer iclawt   ! control law index passed back from editctlperiod
       dimension icsn(5)! for passing sensor location to
@@ -1547,8 +1547,8 @@ C law can be jumped around.
         if((iclaw.ge.1.and.iclaw.lt.6).or.
      &      iclaw.eq.7.or.iclaw.eq.8.or.iclaw.eq.10.or.
      &      iclaw.eq.13.or.iclaw.eq.14.or.iclaw.eq.15.or.
-     &      iclaw.eq.21.or.iclaw.eq.22.or.iclaw.eq.23.
-     &      or.iclaw.eq.24)then
+     &      iclaw.eq.21.or.iclaw.eq.22.or.iclaw.eq.23.or.iclaw.eq.24)
+     &      then
 
 C Remember the previous start (prevstart) and the total number of
 C period in this control loop (nper) and the number of day types
@@ -2882,7 +2882,6 @@ C
 C ********************************************************************
       SUBROUTINE edit_CFC_control(ITRC,II,IV,IER)
 #include "building.h"
-#include "plant.h"
 #include "control.h"
       COMMON/OUTIN/IUOUT,IUIN
 
@@ -3204,7 +3203,7 @@ C Edit plant control function II.
       COMMON/OUTIN/IUOUT,IUIN
 
       common/sctl/tcps,ictyp,iclaw,cm(misc)
-      DIMENSION SALT(42),IVALS(42),PSALT(17),IPVALS(17)
+      DIMENSION SALT(42),IVALS(42),PSALT(18),IPVALS(18)
       CHARACTER*84 VERT(20)
 
       CHARACTER outs*124,SSTR*96,TMP*96,SALT*40,PSALT*40,KEY*1
@@ -3218,7 +3217,7 @@ C For help messages
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
-
+      integer iother
       helpinsub='EPCNTRL'  ! set for subroutine
 
 
@@ -3398,17 +3397,25 @@ C Plant contol law.
         PSALT(10)='Multi-sensor on-off controller'
 C DG controller
         PSALT(11)='CCHP Cogeneration system controller'
+
+C Following controllers are awaiting GUI support
 C        PSALT(12)='Hydrogen demand controller'
 C        PSALT(13)='Derive signal from boundary condition'
 C        PSALT(14)='Adsorption storage unit controller'
-C Multisensor for loops (control type is 
-C determined in loops that this sensor senses)
-        PSALT(12)='Multi-sensor (senses loops)'
-        PSALT(13)='PI Room Control'
-        PSALT(14)='Outside temperature compensation control'
+
+C Following controller indices should be updated once the above get GUI
+C support
+        PSALT(12)='PI Room Control'
+        PSALT(13)='Outside temperature compensation control'
+
+C Following controllers sense one or more (already defined) control
+C loops 
+         PSALT(14)='Multi-sensor (senses loops)'
+         PSALT(17)='Idealised optimal start control'
+         PSALT(18)='Idealised optimal stop control'
 
         write(outs,'(a,a)')' Current control law: ',
-     &                      PSALT(IPCLAW(II,JJ,KK)+1)
+     &                      PSALT(IPCLAW(II,JJ,KK))
         call edisp(iuout,outs)
         IX=1
         helptopic='sys_plant_types'
@@ -3416,14 +3423,32 @@ C determined in loops that this sensor senses)
 
  910    IF(IPCTYP(II,JJ,KK).NE.41)THEN
           CALL EPICKS(IX,IPVALS,' ',' Plant control law: ',
-     &         40,14,PSALT,'control law',IER,nbhelp)
+     &         40,13,PSALT,'control law',IER,nbhelp)
           if(ix.ne.0)iclaw=IPVALS(1)-1
 
 C Skip controllers (11-13) that are not included in the interface
-          IF(ICLAW.GE.11)ICLAW=ICLAW+3
+          IF(ICLAW.GE.11)ICLAW=ICLAW+4
+
+C Multisensor for loops (control type is 
+C determined in loops that these sensors sense)
         ELSE
-          iclaw=14
+          PSALT(1)='Multi-sensor (senses loops)'
+          PSALT(2)='Idealised optimal start control'
+          PSALT(3)='Idealised optimal stop control'
+          CALL EPICKS(IX,IPVALS,' ',' Plant control law: ',
+     &         40,3,PSALT,'control law',IER,nbhelp)
+          if(ix.ne.0)then
+            if(IPVALS(1).eq.1)then
+              iclaw=14
+            elseif(IPVALS(1).eq.2)then
+              iclaw=17
+            elseif(IPVALS(1).eq.3)then
+              iclaw=18
+            endif
+          endif
         ENDIF
+
+C Get supplementary data items based on control laws
         IPCLAW(II,JJ,KK)=iclaw
         IF(IPCTYP(II,JJ,KK).NE.41.AND.IPCLAW(II,JJ,KK).EQ.14)THEN
           helptopic='plant_must_be_multi'
@@ -3432,7 +3457,11 @@ C Skip controllers (11-13) that are not included in the interface
           IPCTYP(II,JJ,KK)=41
         ENDIF
 
+C Jump if period start time is not required
         IF(ICLAW.LT.14.AND.ICLAW.GT.10)GOTO 63
+        IF(ICLAW.EQ.14.OR.ICLAW.GE.17)GOTO 63
+
+C Ask for period start time
   62    helptopic='plant_ctl_menu'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKR(tcps,' ',' Period start time ? ',
@@ -3933,13 +3962,12 @@ C Multi-sensor of control loops
           CALL EASKR(TONV,' ',' Overrun time (min)',
      &        1.,'-',1.,'-',1.,' Overrun time (min)',IER,nbhelp)
           CM(NCLP*2+4)=TONV
-
         elseif(IPCLAW(II,JJ,KK).eq.15)then
 
 C Proportional Integral Room controller
           helptopic='plant_wch_simple_PI'
           call gethelptext(helpinsub,helptopic,nbhelp)
-          CM(1)=8.0
+          CM(1)=10.0
           call edisp(iuout,' ')
           call edisp(iuout,' current control parameters are:')
           call edisp(iuout,
@@ -3961,13 +3989,21 @@ C Proportional Integral Room controller
           CALL EGETWR(HOLD,K,cm(8),1.,1.,'-','optional cntrl loop',IER)
           CALL EGETWR(HOLD,K,cm(9),1.,1.,'-','BDATA static value',IER)
           if(ier.ne.0)goto 101
-
+ 102      write(HOLD,'(2(F5.2,1X))')CM(10),CM(11)
+          CALL EASKS(HOLD,
+     &    'Optional flow control connection numbers',
+     &    'connection no.1 , connection no. 2 (see help)',
+     &    70,HOLD,'PI room ctrlr',IER,nbhelp)
+          K=0
+          CALL EGETWR(HOLD,K,cm(10),1.,1.,'-','connection no. 1 ',IER)
+          CALL EGETWR(HOLD,K,cm(11),1.,1.,'-','connection no. 2 ',IER)
+          if(ier.ne.0)goto 102
         elseif(IPCLAW(II,JJ,KK).eq.16)then
 
 C Outside temperature compensation controller
           helptopic='plant_outside_comp'
           call gethelptext(helpinsub,helptopic,nbhelp)
-          cm(1)=10.
+          cm(1)=12.
           call edisp(iuout,' ')
           call edisp(iuout,' current control parameters are:')
           call edisp(iuout,'alpha, beta, gamma')
@@ -3997,6 +4033,105 @@ C Outside temperature compensation controller
           CALL EGETWR(HOLD,K,cm(10),1.,1.,'-','optional cntrl loop',IER)
           CALL EGETWR(HOLD,K,cm(11),1.,1.,'-','BDATA static value',IER)
           IF(IER.NE.0)GOTO 121
+ 131      write(HOLD,'(2(F5.2,1X))')CM(10),CM(11)
+          CALL EASKS(HOLD,
+     &    'Optional flow control connection numbers',
+     &    'connection no.1 , connection no. 2 (see help)',
+     &    70,HOLD,'PI room ctrlr',IER,nbhelp)
+          K=0
+          CALL EGETWR(HOLD,K,cm(12),1.,1.,'-','connection no. 1 ',IER)
+          CALL EGETWR(HOLD,K,cm(13),1.,1.,'-','connection no. 2 ',IER)
+          if(ier.ne.0)goto 131
+
+C Optimal start controller
+        elseif(IPCLAW(II,JJ,KK).eq.17)then
+          helptopic='ideal_optimal_start'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          nclp=nint(cm(1))-2
+          write(HOLD,'(a,i3,a)')' currently sensing ',nclp,' loops'
+          call edisp(iuout,HOLD)
+          CALL EASKI(NCLP,' ',' No. of control loops to sense ',
+     &      2,'-',4,'-',2,'no. of misc data items',IER,nbhelp)
+          cm(1)=real(NCLP+2)
+          call edisp(iuout,' ')
+          call edisp(iuout,'current control parameters are:')
+          call edisp(iuout,' sensed control loop(s)')
+          do 1115 iclp=1,nclp
+            write(HOLD,'(a,i3)')' control loop number ',nint(cm(1+ICLP))
+            call edisp(iuout,HOLD)
+ 1115     continue
+          write(hold,'(a,f5.2)')' period number to optimise ',cm(nclp+2)
+          call edisp(iuout,HOLD)
+          write(hold,'(a,f5.2)')' space comes up to temperature at ',
+     &    cm(nclp+3)
+          CALL EDISP(IUOUT,HOLD)
+ 112      DO 1114 iclp=1,NCLP
+            write(hold,'(f5.2)')cm(iclp+1)
+            CALL EASKS(HOLD,'Loop number to sense',
+     &      '(see help)',70,HOLD,'ideal optimum start ctrlr',IER,nbhelp)
+            K=0
+            CALL EGETWR(HOLD,K,cm(1+ICLP),1.,1.,'-','loop no.',IER)
+ 1114     CONTINUE
+          write(hold,'(2f5.2)')cm(nclp+2),cm(nclp+3)
+          CALL EASKS(HOLD,
+     &    'period no. to optimise, time to come up to temperature',
+     &    '(see help)',70,HOLD,'ideal optimum start ctrlr',IER,nbhelp)
+          K=0
+          CALL EGETWR(HOLD,K,cm(NCLP+2),1.,1.,'-','period no.',IER)
+          CALL EGETWR(HOLD,K,cm(NCLP+3),1.,1.,'-','time',IER)
+          IF(IER.NE.0)GOTO 112
+
+C Get sensor and actuator detail from loop that is to be optimised
+          DO 113 IDIN=1,4 ! Skip 5th sensor item for now
+            IPAN(II,IDIN)=IPAN(IOTHER,IDIN)
+            IPSN(II,IDIN)=IPSN(IOTHER,IDIN)
+ 113      CONTINUE
+
+C Optimal stop controller
+        elseif(IPCLAW(II,JJ,KK).eq.18)then
+          helptopic='ideal_optimal_stop'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          nclp=nint(cm(1))-2
+          write(HOLD,'(a,i3,a)')' currently sensing ',nclp,' loops'
+          call edisp(iuout,HOLD)
+          CALL EASKI(NCLP,' ',' No. of control loops to sense ',
+     &      2,'-',4,'-',2,'no. of misc data items',IER,nbhelp)
+          cm(1)=real(NCLP+2)
+          call edisp(iuout,' ')
+          call edisp(iuout,'current control parameters are:')
+          call edisp(iuout,' sensed control loop(s)')
+          do 2115 iclp=1,nclp
+            write(HOLD,'(a,i3)')' control loop number ',nint(cm(1+ICLP))
+            call edisp(iuout,HOLD)
+ 2115     continue
+          write(hold,'(a,f5.2)')' period number to optimise ',cm(nclp+2)
+          call edisp(iuout,HOLD)
+          write(hold,'(a,f5.2)')
+     &   ' acceptable temperature change at the end of this period',
+     &   cm(nclp+3)
+          CALL EDISP(IUOUT,HOLD)
+ 212      DO 2114 iclp=1,NCLP
+            write(hold,'(f5.2)')cm(iclp+1)
+            CALL EASKS(HOLD,'Loop number to sense',
+     &      '(see help)',70,HOLD,'ideal optimum start ctrlr',IER,nbhelp)
+            K=0
+            CALL EGETWR(HOLD,K,cm(1+ICLP),1.,1.,'-','loop no.',IER)
+ 2114     CONTINUE
+          write(hold,'(2f5.2)')cm(nclp+2),cm(nclp+3)
+          CALL EASKS(HOLD,
+     &    'period no. to optimise, acceptable temperature revision at ',
+     &    'the end of this period (see help)',
+     &    70,HOLD,'ideal optimum stop ctrlr',IER,nbhelp)
+          K=0
+          CALL EGETWR(HOLD,K,cm(NCLP+2),1.,1.,'-','period no.',IER)
+          CALL EGETWR(HOLD,K,cm(NCLP+3),1.,1.,'-','time',IER)
+          IF(IER.NE.0)GOTO 212
+
+C Get sensor and actuator detail from loop that is to be optimised
+          DO 213 IDIN=1,4 ! Skip 5th sensor item for now
+            IPAN(II,IDIN)=IPAN(IOTHER,IDIN)
+            IPSN(II,IDIN)=IPSN(IOTHER,IDIN)
+ 213      CONTINUE
         endif
 
 C Extract from working array to pmiscd() common structure

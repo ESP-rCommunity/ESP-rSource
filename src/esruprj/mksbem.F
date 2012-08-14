@@ -562,8 +562,6 @@ C ier is returned as non-zero if there was a problem.
 #include "geometry.h"
 #include "sbem.h"
 #include "model.h"
-C #include "tdf2.h"
-C #include "espriou.h"
 
       integer lnblnk  ! function definition
 
@@ -603,7 +601,7 @@ C For tdf to call arlist:
       integer IANSWER !Used for a call to EASKAB (1:yes, 2: no)
       integer iavailsyst !Temporary integer used for looping through the defined HVAC systems
       integer IPASS !to ask for a password
-      integer ier,itrc,IAPROB,ISTAT,iw
+      integer ier,iw
       integer iuact  ! return state from sbmedit call
       integer NITEMH,IDO,nitms,INN,INND ! max items and current menu item
       integer ivalue ! for editing integers
@@ -3420,6 +3418,7 @@ C required models ') which returned iuact=1.
 #include "building.h"
 #include "geometry.h"
 #include "sbem.h"
+#include "net_flow.h"
 #include "tdf2.h"
 #include "control.h"
 #include "model.h"
@@ -4154,6 +4153,7 @@ C to a zone changes (but nothing else does).
 #include "building.h"
 #include "geometry.h"
 #include "sbem.h"
+#include "net_flow.h"
 #include "tdf2.h"
 #include "control.h"
 #include "model.h"
@@ -6231,7 +6231,6 @@ C Test whether required constructions exist.
      &  haveEW_notP,haveSol_gr,havepa_fl,haveinv_pa_f,haveparty_w,
      &  haveint_g,haveWall_NI,haveexWall_ty,haveFl_rty,havewin_Typ_G,
      &  haveSol_gr_typ
-      logical changeuse   ! to signal change of use of surface
 
 C mlcindex for each of these required constructions.
       integer mlciopDoor,mlciVehicle,mlciNot_D,mlciNot_G,mlciframe
@@ -6531,7 +6530,7 @@ C << assumes that the cfg and cnn have already been setup. >>
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
-      common/C21/IFCFG,cfgroot,LCFGF
+
       INTEGER :: IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -6540,8 +6539,7 @@ C << assumes that the cfg and cnn have already been setup. >>
       CHARACTER*1 ACT
       character EXT*4    ! up to 4 characters in file extension
       character APE*6    ! up to 6 characters in variant name
-      CHARACTER CFGROOT*24
-      CHARACTER LCFGF*72,NNAME*72
+      CHARACTER NNAME*72
       CHARACTER OUTS*124,ADF*124,SNM*12,USE*8,USE2*8
       character SN*12,SPN*12,msg*42
       CHARACTER*12 XJCCU,XKCCU
@@ -7888,7 +7886,6 @@ C Test whether required constructions exist.
      &  haveEW_notP,haveSol_gr,havepa_fl,haveinv_pa_f,haveparty_w,
      &  haveint_g,haveWall_NI,haveexWall_ty,haveFl_rty,havewin_Typ_G,
      &  haveSol_gr_typ
-      logical changeuse   ! to signal change of use of surface
 
 C mlcindex for each of these required constructions.
       integer mlciopDoor,mlciVehicle,mlciNot_D,mlciNot_G,mlciframe
@@ -8037,9 +8034,6 @@ C building as described in SBEM - EPBD documents
 
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER IUOUT,IUIN
-
-      COMMON/APPW/IAPPW,IAPPX,IAPPY
-      INTEGER IAPPW,IAPPX,IAPPY
 
       INTEGER IER,LNBLNK,IMODE
       CHARACTER AUT*12,DOIT*248,LONGTFILE*144,LONGTFILEDOS*144
@@ -10173,15 +10167,13 @@ C It finally generate BRUKL input document and other SBEM reports.
       character BATCHFL*72
 
 C Build variable (These should eventually be placed in build_info.h)
-      logical bBuild_Info       ! Flag indicating if build info should
-                                !   be dumped.
 C      character cURL*256       ! Repository URL commented out in build_info.h
 
       CHARACTER BRUKFL*72
       CHARACTER CFGROOT*24,LCFGF*72,MODE*4
       CHARACTER TMPSTR*24,TMPSTR2*70
       character delim*1,louts*248,outs*124,TEMP1*42
-      LOGICAL CONTEXT,BNDRY,ISNEAR,ISNEAR2,ISNEAR3
+      LOGICAL ISNEAR,ISNEAR2,ISNEAR3
       LOGICAL UNIXOK
       REAL TMPREAL
       integer iactFlarea
@@ -11307,7 +11299,7 @@ C Subroutine EPCCAL generates the UK Energy Performance input file.
       character path*72,lupath*72
       character fs*1, col*1, quote*1
       CHARACTER EPCBATFL*72,EPCINIFL*72
-      integer mpof, ibrowse
+      integer ibrowse
       LOGICAL UNIXOK
 
       CHARACTER EPCFL*72
@@ -11343,8 +11335,8 @@ C      logical   bVersioned           ! Flag indicating if repository
 C                                     !   is versioned
 C      logical bRelease               ! Logical indicating if this is
 C                                     !   a release version.
-      logical bBuild_Info            ! Flag indicating if build info should
-                                     !   be dumped.
+C      logical bBuild_Info            ! Flag indicating if build info should
+C                                     !   be dumped.
 C      logical bModified              ! Flag indicating local copy contains
 C                                     !   modifications
 C      character cRelease_Num*8       ! Release version
@@ -11394,7 +11386,6 @@ C      character cXlibrary*32         !
       integer itrunc,ipos,loutln
       integer istat
       integer ios
-      real vexposed,fexposed,rexposed
       integer IAPROB
       integer itrc
       logical ExistLightType
@@ -11414,7 +11405,7 @@ C      character cXlibrary*32         !
       character cNameMainFuel*42 !string to define the name of the main fuel type
       integer IHF !index for fuel number (as used in previous routines.
       integer ifueloriginal !to hold temporarily the fuel type index number
-      INTEGER IMODE
+c      INTEGER IMODE
 
 #ifdef OSI
       integer iincomp,iincon  ! to pass nb zones connections to c code
@@ -11425,7 +11416,7 @@ C      character cXlibrary*32         !
 #include "build_info.h"
 
 C Initialise IMODE
-      IMODE=2
+c      IMODE=2
 
 C Read cfg file for the stripped model
       ifcfg=ifil+3
@@ -16014,7 +16005,6 @@ C Create a batch file to run the EPCgen input file for Windows only
 C Check if the machine is UNIX, If UNIX, do nothing
       call isunix(unixok)
       if(unixok)then
-        mpof=1
         call edisp(iuout,'Copy UK NCM input files (BRUKL.inp and')
         call edisp(iuout,'EPCGen.inp) to a windows platform and ')
         call edisp(iuout,'run BRUKL and EPCGen in order to generate')
@@ -16402,10 +16392,8 @@ C    NBS Journal of Research, Vol. 71C, Jan-Mar. 1967, pp 43-50.
       subroutine GTCALC(ZD,act,IER)
       implicit none
 #include "building.h"
-#include "model.h"
 #include "site.h"
 #include "esprdbfile.h"
-#include "espriou.h"
 
       integer lnblnk  ! function definition
 

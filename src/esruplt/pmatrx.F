@@ -1290,6 +1290,9 @@ C 2 node (ISV=20) exponent model radiator
 C 1 node (ISV=20) WCH Air Source Heat Pump
          ELSE IF(ITYPE.EQ.45) THEN
             CALL CMP45C(IPCOMP,OUT,ISTATS)
+C 2 node (ISV=20) WCH advanced modulating boiler
+         ELSE IF(ITYPE.EQ.46) THEN
+            CALL CMP46C(IPCOMP,OUT,ISTATS)
 C 1 node (ISV=29) WCH thermostatic radiator valve
          ELSE IF(ITYPE.EQ.50) THEN
             CALL CMP50C(IPCOMP,OUT,ISTATS)
@@ -1297,6 +1300,9 @@ C 1 node (ISV=29)     mechanical room thermostat
          ELSE IF(ITYPE.EQ.51) THEN
             CALL CMP51C(IPCOMP,OUT,ISTATS)
 C 4 node (ISV>19) AC  heat transfer tube with transport delay
+         ELSE IF(ITYPE.EQ.52) THEN
+            CALL CMP52C(IPCOMP,OUT,ISTATS)
+C 1 node (ISV=29)     mechanical room thermostat (sensor only)
          ELSE IF(ITYPE.EQ.53) THEN
             CALL CMP53C(IPCOMP,OUT,ISTATS)
 C 1 node (ISV=20)     water circuit flow multiplier

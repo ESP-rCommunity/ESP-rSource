@@ -7181,3 +7181,177 @@ Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
 
 Type :   0    Init suppl dat :   0    Tot suppl dat :   0    No. of conns :   0
 
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :    110
+ 
+ Component Description
+    Generic type     : Controls
+    Description      : thermostatic radiator valve; 1 node sensor only model
+    Insertion date   : 11 Mar 92 22:21
+    Type: Single component                    Component code :    520
+ 
+ Nodal Scheme Description
+    Number of nodes  :   1      No of nonzero matrix elements :      1
+    Matrix positions :   1,
+    Node connections :   0,
+    Variable type    :  29,
+ 
+ Miscellaneous Data
+    Adata items   :   2    Bdata items   :   7    Cdata items   :   0
+ ADATA variables:
+    1 Component total mass (kg)
+      Value =   0.10000        Range (Min Max):    0.10000       0.10000
+    2 Mass weighted average specific heat (J/kgK)
+      Value =    1000.0        Range (Min Max):     1000.0        1000.0
+ BDATA variables:
+    1 Index of coupled building zone (-)
+      Value =    0.0000        Range (Min Max):     0.0000        0.0000
+    2 Index of coupled wall in that zone (-)
+      Value =    0.0000        Range (Min Max):     0.0000        0.0000
+    3 Thermal conductance water to sensor (W/K)
+      Value =   0.70000E-02    Range (Min Max):    0.70000E-02   0.70000E-02
+    4 Equiv. convective conductance to air (W/K)
+      Value =   0.12000        Range (Min Max):    0.12000       0.12000
+    5 Equiv. radiative conductance to wall (W/K)
+      Value =   0.60000E-01    Range (Min Max):    0.60000E-01   0.60000E-01
+    6 Equiv. rad. conductance to radiator (W/K)
+      Value =   0.60000E-02    Range (Min Max):    0.60000E-02   0.60000E-02
+    7 Index of coupled radiator component (-)
+      Value =    0.0000        Range (Min Max):     0.0000        0.0000
+ 
+ Number of additional output parameters:     0
+
+ Mass flow components data
+Power law mass flow component       m = a.dP^b
+Type :  15    Init suppl dat :   3    Tot suppl dat :  10    No. of conns :   0
+fluid type (1=air, 2=water)                                           1.0000
+flow coefficient a (kg/s/Pa^b)                                       0.10000
+flow exponent b (-)                                                  0.40000
+control flag                                                              0.
+control period day type                                                   0.
+control period start hour                                                 0.
+control period finish hour                                                0.
+open(1) shut(0) outside period                                            0.
+index for the sensed property                                             0.
+signal set point                                                          0.
+Quadratic law mass flow component   dP= a.m+b.m^2
+Type :  25    Init suppl dat :   3    Tot suppl dat :  10    No. of conns :   0
+fluid type (1=air, 2=water)                                           2.0000
+flow coefficient a (Pa/(kg/s))                                       0.10000
+flow coefficient b (Pa/(kg/s)^2)                                     0.40000
+control flag                                                              0.
+control period day type                                                   0.
+control period start hour                                                 0.
+control period finish hour                                                0.
+open(1) shut(0) outside period                                            0.
+index for the sensed property                                             0.
+signal set point                                                          0.
+
+---------------------------------------------------------------------
+  PLANT COMPONENT                                           No :    111
+ 
+ Component Description
+    Generic type     : WCH boiler
+    Description      : boiler with explicit startup and cycle detail
+    Insertion date   : 13 Apr 12 12:05
+    Type: Single component                    Component code :    460
+ 
+ Nodal Scheme Description
+    Number of nodes  :   2      No of nonzero matrix elements :      3
+    Matrix positions :   1,   3,   4,
+    Node connections :   1,  -1,
+    Variable type    :  20,  20,
+ 
+ Miscellaneous Data
+    Adata items   :   2    Bdata items   :  30    Cdata items   :   1
+ ADATA variables:
+    1 Component total mass (kg)
+      Value =    50.000        Range (Min Max):     50.000        50.000
+    2 Mass weighted average specific heat (J/kgK)
+      Value =    1000.0        Range (Min Max):     1000.0        1000.0
+ BDATA variables:
+    1 Full load firing rate (kW)                    
+      Value =   28.0           Range (Min Max):    0.0           200.0      
+    2 dump load fraction
+      Value =    0.0000        Range (Min Max):     0.0000        1.0000
+    3 BS 4947/EN 437 gas specification (enter 20 for G20)
+      Value =   20             Range (Min Max):    20            20 
+    4 boiler lock out time (min)
+      Value =    3.0000        Range (Min Max):     0.0000        5.0000
+    5 Boiler heat loss to surroundings UA (W/K)
+      Value =    20.000        Range (Min Max):     0.0000        100.00
+    6 DHW draw schedule control loop no. if combi boiler (0 otherwise) (-)
+      Value =    0.0000        Range (Min Max):     0.0000        0.0000
+    7 DHW calorifier component number if combi boiler (0 otherwise) (-)
+      Value =    0.0000        Range (Min Max):     0.0000        0.0000
+    8 Constant cold water feed temperature for DHW for combi boiler (degC)
+      Value =    10.000        Range (Min Max):     0.0000        0.0000
+    9 Constant supply water temperature for DHW for combi boiler (degC)
+      Value =    50.000        Range (Min Max):     0.0000        0.0000
+   10 Upper boiler temperature limit (C)
+      Value =    95.000        Range (Min Max):     95.000        95.000
+   11 Lower limit of modulating range  (%) (0 for ON/OFF boiler)
+      Value =    30.000        Range (Min Max):     30.000        30.000
+   12 Lower limit of total differential  (%) (0 for ON/OFF boiler)
+      Value =    1.0000        Range (Min Max):     1.0000        1.0000
+   13 coeff for % CO2 equation (constant)
+      Value =    8.6628        Range (Min Max):     8.6628        8.6628
+   14 coeff for % CO2 equation (firingRate^1)   
+      Value =  -0.28661        Range (Min Max):   -0.28661      -0.28661
+   15 coeff for % CO2 equation (firingRate^2)   
+      Value =   0.38650E-02    Range (Min Max):    0.38650E-02   0.38650E-02
+   16 coeff for % CO2 equation (firingRate^3)   
+      Value =   -1.8676        Range (Min Max):   -0.18676E-04  -0.18676E-04
+   17 coeff for delta temp to flue equation (constant)
+      Value =    8.6628        Range (Min Max):     8.6628        8.6628
+   18 coeff for delta temp to flue equation (firingRate^1)   
+      Value =  -0.28661        Range (Min Max):   -0.28661      -0.28661
+   19 coeff for delta temp to flue equation (firingRate^2)   
+      Value =   0.38650E-02    Range (Min Max):    0.38650E-02   0.38650E-02
+   20 coeff for delta temp to flue equation (firingRate^3)   
+      Value =   -1.8676        Range (Min Max):   -0.18676E-04  -0.18676E-04
+   21 Design excess air ratio
+      Value =    1.2000        Range (Min Max):     0.0000        2.0000
+   22 First pre-purge time (seconds)
+      Value =    20.000        Range (Min Max):     0.0000        0.0000
+   23 First pre-purge fan rate as % of maximum
+      Value =    100.00        Range (Min Max):     0.0000        0.0000
+   24 Secoond pre-purge time (seconds)
+      Value =    10.000        Range (Min Max):     0.0000        0.0000
+   25 Second pre-purge fan rate as % of maximum
+      Value =    50.000        Range (Min Max):     0.0000        0.0000
+   26 Ignition stabilisation time (seconds)
+      Value =    30.000        Range (Min Max):     0.0000        0.0000
+   27 Firing rate during ignition stabilisation as % of maximum
+      Value =    70.000        Range (Min Max):     0.0000        0.0000
+   28 Anticycle time (seconds)
+      Value =    300.00        Range (Min Max):     0.0000        0.0000
+   29 Firing rate during anticycling as % of maximum
+      Value =    30.000        Range (Min Max):     0.0000        0.0000
+   30 Maximum Ramp up gradient (degC/minute)
+      Value =    3.0000        Range (Min Max):     0.0000        0.0000
+ CDATA variables:
+    1  ON/OFF control signal (-)
+ 
+ Number of additional output parameters:     5
+ Additional output variables:
+    1 ON/OFF signal                  Type :    6
+    2 Gas consumption (l/s)          Type :    7
+    3 Upper boiler temp limit        Type :    6
+    4 Water heat input               Type :    2
+    5 Efficiency                     Type :    3
+ 
+ Mass flow components data
+Quadratic law mass flow component   dP= a.m+b.m^2
+Type :  25    Init suppl dat :   3    Tot suppl dat :  10    No. of conns :   0
+fluid type (1=air, 2=water)                                           2.0000
+flow coefficient a (Pa/(kg/s))                                       0.10000
+flow coefficient b (Pa/(kg/s)^2)                                     0.40000
+control flag                                                          0.0000
+control period day type                                               0.0000
+control period start hour                                             0.0000
+control period finish hour                                            0.0000
+open(1) shut(0) outside period                                        0.0000
+index for the sensed property                                         0.0000
+signal set point                                                      0.0000
+
