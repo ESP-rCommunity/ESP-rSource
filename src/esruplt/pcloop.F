@@ -4644,7 +4644,7 @@ C Trace output.
       END
 
 
-C ******************** PCL17 ********************
+C ******************** PCL19 ********************
 C  Created on: 12.08.2008
 C  Created by: Achim Geissler
 C  Copyright: GPL
@@ -4667,7 +4667,7 @@ C                 or type  9: senses additional plant output
 C                 or type 11: senses relative humidity.
 C                 or type 24: senses temperature difference
 
-      SUBROUTINE PCL17(iterp)
+      SUBROUTINE PCL19(iterp)
       implicit none
 #include "plant.h"
 #include "building.h"

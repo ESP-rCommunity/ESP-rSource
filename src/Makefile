@@ -26,15 +26,6 @@ libnoX:
 	$(MAKE) the_libnoX; \
 	$(MAKE) the_libVer
 
-enableGccFPE:
-	cd $(SRCdir)/lib; \
-	$(MAKE) the_libFPE
-
-disableGccFPE:
-	cd $(SRCdir)/lib; \
-	$(MAKE) the_libNoFPE
-
-
 enableXML:
 	cd $(SRCdir)/lib; \
 	$(MAKE) the_libH3KReports

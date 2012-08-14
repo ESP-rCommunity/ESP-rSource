@@ -73,6 +73,7 @@ c      USE Building
 #include "CFC_common.h"
 #include "e2r_common.h"
 #include "blc25_open_windows.h"
+#include "net_flow.h"
 #include "tdf2.h"
 C.....Passed variable
       integer iZone            ! Zone number

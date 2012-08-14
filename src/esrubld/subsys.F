@@ -1238,7 +1238,7 @@ c      real rTempnotioOverheat
       REAL :: amx,ccvvf,ccvvfm,cf,cv1,cv2
       INTEGER :: icomp,i,iacc1,iacc2,ic2,ier,ifoc,isd,it1,it2,itdi
       INTEGER :: itrc,ifunit,ival
-      REAL :: sum,t1,ta2,taf,tafl,tafu,trat,tx,val,xx !ta1
+      REAL :: sum,t1,ta2,tafl,tafu,trat,tx,val,xx !ta1,taf
       REAL :: time
 
       COMMON/zfluid/znotair(mcom),zfldK,zfldD,zfldC,zfldA,
