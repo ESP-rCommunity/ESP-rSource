@@ -1382,6 +1382,46 @@ Winter season is Mon-11-Nov - Tue-31-Dec
 Typical winter week begins Mon-02-Dec
 *help_end
 *item
+*name	Kagoshima JPN
+*aide	Kagoshima JPN 1987 was sourced from US DoE
+*dbfl	/usr/esru/esp-r/climate/JPN_Kagoshima
+*avail	ONLINE
+*winter_s  1  1  1  3 30 11 31 12 # seasons Thu-01-Jan--Sun-01-Mar & Mon-30-Nov--Thu-31-Dec
+*spring_s  2  3 14  6 14  9 29 11 # seasons Mon-02-Mar--Sun-14-Jun & Mon-14-Sep--Sun-29-Nov
+*summer_s 15  6 13  9 # summer season Mon-15-Jun--Sun-13-Sep
+*winter_t 22  1 28  1  7 12 13 12 # typical Thu-22-Jan--Wed-28-Jan & Mon-07-Dec--Sun-13-Dec
+*spring_t 20  4 26  4 26 10  1 11 # typical Mon-20-Apr--Sun-26-Apr & Mon-26-Oct--Sun-01-Nov
+*summer_t 31  8  6  9 # typical summer Mon-31-Aug--Sun-06-Sep
+*help_start
+Weather is KAGOSHIMA - JPN
+ Location: 31.57N  4.45W : 1987
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan     -1.1 @ 3h00 Mon-26       18.2 @21h00 Fri-02     8.3
+ Feb     -0.4 @ 7h00 Wed-25       22.2 @13h00 Fri-06     9.5
+ Mar      1.8 @ 7h00 Tue-03       23.4 @ 5h00 Tue-17    12.1
+ Apr      6.0 @ 6h00 Sun-12       26.2 @15h00 Sat-25    17.1
+ May     11.6 @ 6h00 Tue-05       28.5 @15h00 Tue-12    20.9
+ Jun     15.5 @ 5h00 Sat-06       30.3 @15h00 Sun-28    23.8
+ Jul     20.8 @ 9h00 Sat-04       34.1 @15h00 Tue-28    27.7
+ Aug     23.0 @ 6h00 Sun-23       35.6 @15h00 Sun-09    28.3
+ Sep     16.3 @ 6h00 Fri-25       33.4 @15h00 Fri-04    25.3
+ Oct      6.2 @ 6h00 Mon-26       29.2 @15h00 Thu-15    20.7
+ Nov      7.0 @ 2h00 Mon-30       25.2 @13h00 Sat-14    15.8
+ Dec      0.2 @ 6h00 Fri-18       20.8 @15h00 Wed-02    10.2
+ Annual  -1.1 @ 3h00 Mon-26-Jan   35.6 @15h00 Sun-09-Aug    18.4
+ ---Seasons & typical periods---
+Winter season is Thu-01-Jan - Sun-01-Mar
+Typical winter week begins Thu-22-Jan
+Spring season is Mon-02-Mar - Sun-14-Jun
+Typical spring week begins Mon-20-Apr
+Summer season is Mon-15-Jun - Sun-13-Sep
+Typical summer week begins Mon-31-Aug
+Autumn season is Mon-14-Sep - Sun-29-Nov
+Typical autumn week begins Mon-26-Oct
+Winter season is Mon-30-Nov - Thu-31-Dec
+Typical winter week begins Mon-07-Dec
+*help_end
+*item
 *name	Kangnung - KOR IWEC 471050
 *aide	Kangnung - KOR IWEC 471050 was sourced from US DoE ASHRAE
 *dbfl	/usr/esru/esp-r/climate/KOR_Kangnung_IWEC
@@ -1894,6 +1934,46 @@ Autumn season is Mon-22-Aug - Sun-30-Oct
 Typical autumn week begins Mon-12-Sep
 Winter season is Mon-31-Oct - Sat-31-Dec
 Typical winter week begins Mon-14-Nov
+*help_end
+*item
+*name	Osaka JPN
+*aide	Osaka JPN 1994 was sourced from US DoE
+*dbfl	/usr/esru/esp-r/climate/JPN_Osaka
+*avail	ONLINE
+*winter_s  1  1 13  3  5 12 31 12 # seasons Sat-01-Jan--Sun-13-Mar & Mon-05-Dec--Sat-31-Dec
+*spring_s 14  3  5  6 19  9  4 12 # seasons Mon-14-Mar--Sun-05-Jun & Mon-19-Sep--Sun-04-Dec
+*summer_s  6  6 18  9 # summer season Mon-06-Jun--Sun-18-Sep
+*winter_t 22  1 28  1 19 12 25 12 # typical Sat-22-Jan--Fri-28-Jan & Mon-19-Dec--Sun-25-Dec
+*spring_t 25  4  1  5 17 10 23 10 # typical Mon-25-Apr--Sun-01-May & Mon-17-Oct--Sun-23-Oct
+*summer_t  4  7 10  7 # typical summer Mon-04-Jul--Sun-10-Jul
+*help_start
+Weather is OSAKA - JPN
+ Location: 34.78N  0.45E : 1994
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan     -2.0 @ 3h00 Sun-16       14.0 @15h00 Mon-10     4.9
+ Feb     -2.0 @ 6h00 Sun-27       15.0 @15h00 Sat-19     5.1
+ Mar     -1.0 @ 6h00 Fri-04       19.0 @12h00 Wed-30     8.0
+ Apr     -0.2 @ 6h00 Fri-01       25.0 @14h00 Wed-20    13.9
+ May      9.0 @ 6h00 Sun-01       27.0 @14h00 Fri-27    18.5
+ Jun     14.0 @ 5h00 Mon-06       31.0 @15h00 Wed-15    22.8
+ Jul     21.0 @ 1h00 Tue-05       35.0 @15h00 Sat-30    27.2
+ Aug     20.0 @ 5h00 Sat-27       36.0 @15h00 Tue-02    28.0
+ Sep     16.0 @ 4h00 Wed-21       33.0 @15h00 Thu-08    24.2
+ Oct      5.0 @ 3h00 Mon-31       30.0 @14h00 Sun-02    18.2
+ Nov      4.0 @ 7h00 Sat-12       22.0 @14h00 Mon-07    12.1
+ Dec     -3.0 @ 3h00 Sun-25       19.0 @14h00 Sat-10     6.9
+ Annual  -3.0 @ 3h00 Sun-25-Dec   36.0 @15h00 Tue-02-Aug    15.9
+ ---Seasons & typical periods---
+Winter season is Sat-01-Jan - Sun-13-Mar
+Typical winter week begins Sat-22-Jan
+Spring season is Mon-14-Mar - Sun-05-Jun
+Typical spring week begins Mon-25-Apr
+Summer season is Mon-06-Jun - Sun-18-Sep
+Typical summer week begins Mon-04-Jul
+Autumn season is Mon-19-Sep - Sun-04-Dec
+Typical autumn week begins Mon-17-Oct
+Winter season is Mon-05-Dec - Sat-31-Dec
+Typical winter week begins Mon-19-Dec
 *help_end
 *item
 *name	Ottawa CWEC 1997 IWMO 716280
@@ -2430,6 +2510,46 @@ Winter season is Tue-01-Nov - Sat-31-Dec
 Typical winter week begins Sun-20-Nov
 *help_end
 *item
+*name	Sapporo JPN 1988
+*aide	Sapporo JPN was sourced from US DoE
+*dbfl	/usr/esru/esp-r/climate/JPN_Sapporo
+*avail	ONLINE
+*winter_s  1  1  3  4 31 10 31 12 # seasons Fri-01-Jan--Sun-03-Apr & Mon-31-Oct--Sat-31-Dec
+*spring_s  4  4  3  7 15  8 30 10 # seasons Mon-04-Apr--Sun-03-Jul & Mon-15-Aug--Sun-30-Oct
+*summer_s  4  7 14  8 # summer season Mon-04-Jul--Sun-14-Aug
+*winter_t 12  2 18  2 21 11 27 11 # typical Fri-12-Feb--Thu-18-Feb & Mon-21-Nov--Sun-27-Nov
+*spring_t  9  5 15  5 29  8  4  9 # typical Mon-09-May--Sun-15-May & Mon-29-Aug--Sun-04-Sep
+*summer_t 18  7 24  7 # typical summer Mon-18-Jul--Sun-24-Jul
+*help_start
+Weather is SAPPORO - JPN
+ Location: 43.05N  6.33E : 1988
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan    -10.4 @ 6h00 Thu-28        6.6 @12h00 Fri-22    -3.8
+ Feb    -15.3 @ 6h00 Sat-20        5.2 @ 3h00 Fri-05    -2.8
+ Mar     -7.2 @ 3h00 Tue-15       10.3 @10h00 Sun-20     0.3
+ Apr     -1.8 @ 5h00 Sun-03       18.7 @15h00 Tue-19     6.9
+ May      2.7 @ 3h00 Fri-06       25.3 @12h00 Sun-29    12.4
+ Jun      9.3 @ 5h00 Sat-25       27.7 @13h00 Tue-28    16.4
+ Jul     13.0 @ 6h00 Wed-13       30.9 @14h00 Wed-27    20.3
+ Aug     14.0 @ 3h00 Wed-24       33.5 @15h00 Fri-05    22.3
+ Sep     10.1 @ 3h00 Thu-22       24.8 @15h00 Fri-16    17.5
+ Oct      3.2 @ 6h00 Tue-18       20.0 @12h00 Wed-26    11.8
+ Nov     -5.4 @ 3h00 Sun-27       14.6 @13h00 Sat-05     4.8
+ Dec     -9.0 @ 3h00 Mon-19       13.2 @12h00 Sun-04    -0.6
+ Annual -15.3 @ 6h00 Sat-20-Feb   33.5 @15h00 Fri-05-Aug     8.8
+ ---Seasons & typical periods---
+Winter season is Fri-01-Jan - Sun-03-Apr
+Typical winter week begins Fri-12-Feb
+Spring season is Mon-04-Apr - Sun-03-Jul
+Typical spring week begins Mon-09-May
+Summer season is Mon-04-Jul - Sun-14-Aug
+Typical summer week begins Mon-18-Jul
+Autumn season is Mon-15-Aug - Sun-30-Oct
+Typical autumn week begins Mon-29-Aug
+Winter season is Mon-31-Oct - Sat-31-Dec
+Typical winter week begins Mon-21-Nov
+*help_end
+*item
 *name	Saskatoon SK CAN
 *aide	Saskatoon SK CAN was sourced from US DoE
 *dbfl	/usr/esru/esp-r/climate/CAN_SK_Saskatoon_CWEC
@@ -2749,6 +2869,46 @@ Autumn season is Mon-30-Sep - Sun-24-Nov
 Typical autumn week begins Mon-18-Nov
 Winter season is Mon-25-Nov - Tue-31-Dec
 Typical winter week begins Mon-09-Dec
+*help_end
+*item
+*name	Tokyo Hyakuri JPN
+*aide	Tokyo Hyakuri JPN 1983 was sourced from US DoE
+*dbfl	/usr/esru/esp-r/climate/JPN_Tokyo.Hyakuri
+*avail	ONLINE
+*winter_s  1  1  3  4 24 10 31 12 # seasons Sat-01-Jan--Sun-03-Apr & Mon-24-Oct--Sat-31-Dec
+*spring_s  4  4 12  6 12  9 23 10 # seasons Mon-04-Apr--Sun-12-Jun & Mon-12-Sep--Sun-23-Oct
+*summer_s 13  6 11  9 # summer season Mon-13-Jun--Sun-11-Sep
+*winter_t 19  2 25  2 21 11 27 11 # typical Sat-19-Feb--Fri-25-Feb & Mon-21-Nov--Sun-27-Nov
+*spring_t  2  5  8  5  3 10  9 10 # typical Mon-02-May--Sun-08-May & Mon-03-Oct--Sun-09-Oct
+*summer_t 27  6  3  7 # typical summer Mon-27-Jun--Sun-03-Jul
+*help_start
+Weather is TOKYO HYAKURI - JPN
+ Location: 36.18N  5.42E : 1983
+ Month    Minimum  Time          Maximum  Time         Mean
+ Jan    -10.0 @ 5h00 Sun-23       13.0 @13h00 Sat-29     1.9
+ Feb     -7.0 @ 7h00 Tue-01       23.0 @12h00 Sat-12     3.2
+ Mar     -5.0 @ 5h00 Tue-08       21.0 @14h00 Sat-12     6.2
+ Apr     -3.0 @ 6h00 Tue-05       23.0 @14h00 Tue-26    11.3
+ May      6.0 @ 3h00 Sat-21       27.0 @13h00 Mon-16    16.3
+ Jun     12.0 @ 5h00 Wed-22       30.0 @15h00 Mon-27    19.1
+ Jul     15.0 @24h00 Tue-12       34.0 @15h00 Sun-03    22.6
+ Aug     17.0 @24h00 Wed-17       33.0 @15h00 Thu-04    24.4
+ Sep      8.0 @ 5h00 Thu-29       32.0 @13h00 Fri-02    20.7
+ Oct      8.0 @ 3h00 Fri-14       26.0 @14h00 Mon-03    16.0
+ Nov     -3.0 @ 1h00 Mon-28       22.0 @13h00 Sat-19     9.5
+ Dec     -7.0 @ 6h00 Sat-17       15.0 @13h00 Thu-01     4.8
+ Annual -10.0 @ 5h00 Sun-23-Jan   34.0 @15h00 Sun-03-Jul    13.1
+ ---Seasons & typical periods---
+Winter season is Sat-01-Jan - Sun-03-Apr
+Typical winter week begins Sat-19-Feb
+Spring season is Mon-04-Apr - Sun-12-Jun
+Typical spring week begins Mon-02-May
+Summer season is Mon-13-Jun - Sun-11-Sep
+Typical summer week begins Mon-27-Jun
+Autumn season is Mon-12-Sep - Sun-23-Oct
+Typical autumn week begins Mon-03-Oct
+Winter season is Mon-24-Oct - Sat-31-Dec
+Typical winter week begins Mon-21-Nov
 *help_end
 *item
 *name	Toronto Int ON CAN
