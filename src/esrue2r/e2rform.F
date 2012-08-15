@@ -710,12 +710,12 @@ C Pick up general description of the composite.
         ENDIF
 
 C For the inside and outside layer get surface properties.
-        matarrayindex=IPRMAT(IM,1)   ! which array index
+        matarrayindex=IPRMAT(IM,1)   ! which materials array index
         if(matarrayindex.ge.0)then
           AE=matdbina(matarrayindex)
         endif
 
-        matarrayindex=IPRMAT(IM,LAYERS(IM))   ! which legacy index
+        matarrayindex=IPRMAT(IM,LAYERS(IM))   ! which materials array index
         if(matarrayindex.ge.0)then
           AI=matdbina(matarrayindex)
         endif
