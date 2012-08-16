@@ -208,7 +208,7 @@
         0.850, 1900.000,  837.000,  0.900,  0.600,     52.000
   142   Concrete tile
         1.100, 2100.000,  837.000,  0.900,  0.650,     20.000
-  143   Slate
+  143   Slate tile
         2.000, 2700.000,  753.000,  0.950,  0.850,     48.000
   144   Plastic tile
         0.500, 1050.000,  837.000,  0.900,  0.400,   1000.000
@@ -359,11 +359,11 @@
        20.000,   10.000,   10.000,  0.990,  0.010,  19200.000
   246   6mm CF Low_e
         1.050, 2500.000,  750.000,  0.050,  0.060,  19200.000
-  247   optics from UK national method datase Low-e coated not tinted
+  247   REF A CLEAR LO 6MM optics from UK national method datase Low-e coated not tinted
         1.050, 2500.000,  750.000,  0.840,  0.060,  19200.000
-  248   optics from UK national method datase Low-e coated not tinted
+  248   REF A CLEAR MID 6MM optics from UK national method datase Low-e coated not tinted
         1.050, 2500.000,  750.000,  0.840,  0.060,  19200.000
-  249   optics from UK national method datase Low-e coated not tinted
+  249   LoE CLEAR 6MM optics from UK national method datase Low-e coated not tinted
         1.050, 2500.000,  750.000,  0.840,  0.060,  19200.000
   250   dispGlz_not_modCond 6 mm clear glass (copy of 6 mm clear glass)
        30.000, 2500.000,  750.000,  0.840,  0.060,  19200.000
@@ -417,7 +417,7 @@
         0.050,   12.000,  1000.000,  0.900,  0.700,     30.000
   294   Insulation (Mineral wool batt default 100mm)
         0.040,   25.000,  1000.000,  0.900,  0.700,     30.000
-  295   Insulation (Min wool quilt default 60 mm)
+  295   Insulation (Min wool quilt 60mm)
         0.040,   12.000,  1030.000,  0.900,  0.700,     30.000
   296   notional floor UK material
         0.026,   12.000,  1030.000,  0.900,  0.700,     30.000

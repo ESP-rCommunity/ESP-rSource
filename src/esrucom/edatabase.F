@@ -36,8 +36,8 @@ C           optical properties databases (for utility applications).
 C << todo - depreciate references to IPR array and use Material names only.>>
 
 C ************* ERMLDB
-C Given file name and unit number, read  an ASCII composite 
-C construction database and return data via common block MLC.
+C Given file name and unit number, read  an ASCII construction
+C common file and return data via common block MLC.
 C IFMUL is the database unit, ITRU unit number for user output,
 C IER=0 OK, IER=1 problem. 
 C DRAIR is the air gap layer resistance for 3 orientations.
@@ -88,6 +88,12 @@ C Set folder separator (fs) to \ or / as required.
 C If materials database not opened it should have been opened
 C prior to this call and matdbok would be false if it
 C had been previously opened and failed.
+
+C << what if logic returned an error state rather than trying
+C << to sort out the materials internal to this subroutine??
+C << also - how about assuming that the materials file is an
+C << ASCII file rather than a binary file first.
+
       IF(.NOT.MATDBOK)THEN
         IER=0
 
@@ -185,8 +191,8 @@ C is true then the material arrays could be problematic.
         return
       endif
 
-C Free unit and check if composite file exists.  Setup lworking for the
-C MLC database expanded name to be used later.
+C Free unit and check if constructions file exists.  Setup lworking for the
+C expanded name to be used later.
       if(ipathmul.eq.0.or.ipathmul.eq.1)then
         lworking=LFMUL
         write(currentfile,'(a)') LFMUL(1:lnblnk(LFMUL))
@@ -202,7 +208,7 @@ C MLC database expanded name to be used later.
 
       IF(IER.NE.0)RETURN
 
-C Read the number of items in the multi-layer database, followed by
+C Read the number of items in the constructions file, followed by
 C the number of layers & construction name.
       CALL STRIPC(IFMUL,OUTSTR,1,ND,1,'mlc db items',IER)
       IF(IER.NE.0)RETURN
@@ -233,7 +239,7 @@ C Set MLC thickness to zero.
         K=0
         CALL EGETWI(OUTSTR,K,LAYERS(I),1,MMLC,'F','layrs',IER)
 
-C Anything after no of layers is the description (which is overloaded
+C Anything after nb of layers is the description (which is overloaded
 C to include information on optical properties and either the name
 C of a MLC with inverted layers or the keywords SYMMETRIC or NONSYMMERTIC).
         CALL EGETRM(OUTSTR,K,RSTR,'W','layer description',IER)
@@ -250,7 +256,7 @@ C Parse the DESC string into string tokens.
           IF(IER.NE.0)RETURN
           K=0
 
-C If the model is associated with a version 1.1 materials database
+C If the model is associated with a version 1.1 or 1.2 materials file
 C some newer entities in the GAPS category may have an index of
 C -99 which requires further logic in order to locate the relevant
 C material properties.
@@ -264,7 +270,7 @@ C Increment thickness of MLC.
 
 C Current MLDB also include the name of the layer from the materials
 C db. If the layer is air then this name contains the R values for
-C air gap. In some cases the initial portion of NAM will be the
+C the air gap. In some cases the initial portion of NAM will be the
 C same as matname and this needs to be decoded if IPR is -99.
 C To simplify later tasks remember RSTR as LAYDESC. Be sure
 C to write less than 72 char into NAM
@@ -275,13 +281,20 @@ C to write less than 72 char into NAM
             lex=MIN0(LNBLNK(RSTR),124)
             write(LAYDESC(I,IL),'(a)')RSTR(1:lex)
 
-C See if there is a matching matarray index, if so assign values
-C to the IPRMAT array so for each legacy IPR there is a materials
-C array based IPRMAT.
-C NOTE: in case there are multiple items with the same characters
+C Generally we want to assign values to the IPRMAT array so for each legacy 
+C IPR. NOTE: in case there are multiple items with the same characters
 C in the name also check to see if the legacy index associated
-C with the found item matches the IPR scanned above.
+C with the found item matches the IPR scanned above. If we are
+C still confused mark IPRMAT as -99.
             ileghope=IPR(I,IL)   ! what we hope we will find a match for
+
+C Pass the legacy record number (ileghope) along with the name (NAM) of the
+C material and get back the index of the material array that fits.
+
+C << during the scan of materials there should be a report for duplicate
+C << material names. If we corrected it at source then we would not have
+C << this issue!!
+
             call parsematdesc(ileghope,NAM,matarrayindex)
             if(matarrayindex.ne.0)then
               if(matlegindex(matarrayindex).ne.IPR(I,IL))then
@@ -308,6 +321,8 @@ C with the found item matches the IPR scanned above.
                 call edisp(iuout,' --- make a note of this NOW --- ')
                 IPRMAT(I,IL)=-99  ! could not find it
               else
+
+C Found a matching matarray index, assign value to the IPRMAT.
                 IPRMAT(I,IL)=matarrayindex
               endif    
             else
@@ -1032,7 +1047,7 @@ C 0.10 inside upward flow and 0.17 inside downward flow.
      &  UVALUEH,UVALUEU,UVALUED,' (partition)',UVALUEI
       IF(ITRC.NE.0)call edisp(itru,OUTSTR)
 
-C Include admittance calculations (use TM33 Table 4.5 values for admittance calcs.
+C Include admittance calculations (use TM33 Table 4.5 values for admittance calcs).
 C << NOTE this code needs further debugging.
       if(ITRC.ne.0)then
         Rsi=0.12
@@ -1914,8 +1929,8 @@ C << some variables are off - further debugging required.
       logical closemat1,closemat2
       
       dimension thick(8),rho(8),Cp(8),cond(8)
-      CHARACTER NAM*72,TITL*72,MLCN*12,OTF*4,OPT*12
-      character MLCSYM*12
+      CHARACTER MLCN*12,OTF*4,OPT*12
+      character MLCSYM*12,outs*124
       
       COMPLEX P,L(2,2),M(2,2),N(2,2)
 
@@ -1948,17 +1963,10 @@ C      write (ITRU,*) 'Layer  thick  k  rho  Cp'
 C And if matarrayindex is zero then resetn dbcon dbden dbsht.
           if(matarrayindex.eq.0)then
             DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-            E=0.99; A=0.99; DRV=1.0
-            TITL='GAPS'; NAM='AIR'
           else
             DBCON=matdbcon(matarrayindex)
             DBDEN=matdbden(matarrayindex)
             DBSHT=matdbsht(matarrayindex)
-            E=matdbine(matarrayindex)
-            A=matdbina(matarrayindex)
-            DRV=matdbdrv(matarrayindex)
-            write(TITL,'(a)') 'placeholder'
-            write(NAM,'(a)') matname(matarrayindex)(1:32)
           endif
         endif
         layer=layer-1
@@ -2036,9 +2044,10 @@ C Copy N to L.
       Uvalue=Uvalue+Rso
       Uvalue=1./Uvalue
  
-      write (ITRU,'(a)') ' '
-      write (ITRU,'(3(a,f6.2))') 'Admittance calculations using Rsi ',
+      call edisp(itru,'  ')
+      write (outs,'(3(a,f6.2))') 'Admittance calculations using Rsi ',
      &  rsi,' Rso ',rso,' & Uvalue=',Uvalue
+      call edisp(itru,outs)
       
 C Outside face resistance.
       M(1,1)=CMPLX(1.,0.)
@@ -2073,9 +2082,10 @@ C Calculate surface factor.
       endif
 
 C Report values for exterior.
-      write (ITRU,'(6(a,f6.2))') ' External surface admittance Y=',Y,
+      write (outs,'(6(a,f6.2))') ' External surface admittance Y=',Y,
      &  '  w=',omega,' decrement factor f=',f,'  phi=',phi,
      &  ' surface factor f=',f,'  phi=',phi
+      call edisp(itru,outs)
 
 C Internal surfaces.
       P=(N(2,2)-1.)/N(1,2)
@@ -2093,8 +2103,9 @@ C Calculate surface factor.
       endif
 
 C Report values for partitions.
-      write (ITRU,'(4(a,f6.2))') ' Partition admittance Y=',Y,
+      write (outs,'(4(a,f6.2))') ' Partition admittance Y=',Y,
      &  '  w=',omega,' surface factor f=',f,'  phi=',phi
+      call edisp(itru,outs)
       return
       end
 

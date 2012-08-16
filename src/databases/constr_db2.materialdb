@@ -227,7 +227,7 @@ Category ( 8) was initially named Tiles. No other documentation (yet).
 0.850,1900.000,837.000,0.900,0.900,0.600,0.600,52.000,6.0,-
 *item,Concrete tile,142, 8,Concrete tile
 1.100,2100.000,837.000,0.900,0.900,0.650,0.650,20.000,6.0,-
-*item,Slate,143, 8,Slate
+*item,Slate tile,143, 8,Slate tile
 2.000,2700.000,753.000,0.950,0.950,0.850,0.850,48.000,6.0,-
 *item,Plastic tile,144, 8,Plastic tile
 0.500,1050.000,837.000,0.900,0.900,0.400,0.400,1000.000,6.0,-
@@ -378,11 +378,11 @@ Category (13) was initially named Glass. No other documentation (yet).
 20.000,10.000,10.000,0.990,0.990,0.010,0.010,19200.000,6.0,t,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000
 *item,6mm CF Low_e,246,13,6mm CF Low_e with placeholder single layer optics
 1.050,2500.000,750.000,0.050,0.050,0.060,0.060,19200.000,6.0,t,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000
-*item,optics from UK national method d,247,13,optics from UK national method datase Low-e coated not tinted with placeholder single layer optics
+*item,REF A CLEAR LO 6MM,247,13,optics from UK national method datase Low-e coated not tinted with placeholder single layer optics
 1.050,2500.000,750.000,0.840,0.840,0.060,0.060,19200.000,6.0,t,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000
-*item,optics from UK national method d,248,13,optics from UK national method datase Low-e coated not tinted with placeholder single layer optics
+*item,REF A CLEAR MID 6MM,248,13,optics from UK national method datase Low-e coated not tinted with placeholder single layer optics
 1.050,2500.000,750.000,0.840,0.840,0.060,0.060,19200.000,6.0,t,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000
-*item,optics from UK national method d,249,13,optics from UK national method datase Low-e coated not tinted with placeholder single layer optics
+*item,LoE CLEAR 6MM,249,13,optics from UK national method datase Low-e coated not tinted with placeholder single layer optics
 1.050,2500.000,750.000,0.840,0.840,0.060,0.060,19200.000,6.0,t,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000
 *item,dispGlz_not_modCond 6 mm clear g,250,13,dispGlz_not_modCond 6 mm clear glass (copy of 6 mm clear glass) with placeholder single layer optics
 30.000,2500.000,750.000,0.840,0.840,0.060,0.060,19200.000,6.0,t,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000
@@ -436,7 +436,7 @@ Category (15) was initially named Insulation materials (2). No other documentati
 0.050,12.000,1000.000,0.900,0.900,0.700,0.700,30.000,100.0,-
 *item,Insulation (Mineral wool batt de,294,15,Insulation (Mineral wool batt default 100mm)
 0.040,25.000,1000.000,0.900,0.900,0.700,0.700,30.000,100.0,-
-*item,Insulation (Min wool quilt defau,295,15,Insulation (Min wool quilt default 60 mm)
+*item,Insulation (Min wool quilt 60mm,295,15,Insulation (Min wool quilt default 60mm)
 0.040,12.000,1030.000,0.900,0.900,0.700,0.700,30.000,100.0,-
 *item,notional floor UK material,296,15,notional floor UK material
 0.026,12.000,1030.000,0.900,0.900,0.700,0.700,30.000,100.0,-
