@@ -51,6 +51,6 @@
 # layers  description   optics 
     3    roof_2        OPAQ  OPAQUE        NONSYMMETRIC              
 # db ref  thick   db name & air gap R 
-  141     0.015  Clay
+  141     0.015  Clay tile
   162     0.005  Roofing felt
    72     0.012  Plywood
