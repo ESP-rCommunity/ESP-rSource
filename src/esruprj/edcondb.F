@@ -41,7 +41,7 @@ C allow choice.
       integer lnblnk  ! function definition
 
 C Parameters
-      integer iwhich         ! is the legacy database index CLARIFY USE
+      integer iwhich         ! is the legacy database record CLARIFY USE
       logical chgdb          ! flagged true if a mod made during session
       integer imatarrayindex ! is the returned index in matdatarray
 
@@ -876,11 +876,14 @@ C Passed parameters.
       logical mod    ! set to true if modified
       integer ier    ! non-zero if there is an issue
 
+      COMMON/OUTIN/IUOUT,IUIN
+
       DIMENSION PELM(29)
       CHARACTER PELM*40,tnam*32,tdoc*248,message*32
       real DBCON,DBDEN,DBSHT,EOUT,EIN,AOUT,AIN,DBDRV,THICK
       real IRTRAN,SOLDRTRN,soldrotrfl,soldrinrfl,vistran
       real visotrfl,visinrfl,render
+      real airg1,airg2,airg3  ! for gap resistance
       logical modify,dok,ok
 
 C Local variables for gas materials.
@@ -921,6 +924,9 @@ C Work with local variables.
       visotrfl= matvisotrfl(index)
       visinrfl= matvisinrfl(index)
       render= matrender(index)
+      airg1=matgapares(index,1)
+      airg2=matgapares(index,2)
+      airg3=matgapares(index,3)
 
    3  IW=-4
       WRITE(PELM(1),'(A,1X,A)')    'a Name:',tnam(1:32)
@@ -955,19 +961,18 @@ C or a gas (g), include additional items.
        WRITE(PELM(20),'(A,F7.2)')'t Colour rendering (-)   :',render
         m=20
       elseif(matopaq(index).eq.'g')then
-        WRITE(PELM(12),'(A)')  'l type >>gas layer'
-        WRITE(PELM(13),'(A,F9.5)') 'm gap resistance wall    :',
-     &    matgapares(index,1)
-        WRITE(PELM(14),'(A,F9.5)') 'n gap resistance flr/ceil:',
-     &    matgapares(index,2)
-        WRITE(PELM(15),'(A,F9.5)') 'o gap resistance other   :',
-     &    matgapares(index,3)
+        WRITE(PELM(12),'(A)')  'l type >>gap layer'
+        WRITE(PELM(13),'(A,F9.5)') 'm gap resistance wall    :',airg1
+        WRITE(PELM(14),'(A,F9.5)') 'n gap resistance flr/ceil:',airg2
+        WRITE(PELM(15),'(A,F9.5)') 'o gap resistance other   :',airg3
+        call edisp(iuout,'For gaps ignore Con:Den:SpHt values.')
         m=15
       endif
       PELM(m+1) =' _____________________ '
       PELM(m+2)='? Help                 '
       PELM(m+3)='- Exit                 '
       NELM=m+3   ! number of items to display
+      write(6,*) 'nelm m is ',nelm,m
 
 C Help text for this menu.
    2  continue
@@ -1003,6 +1008,9 @@ C updating the common blocks.
             matvisotrfl(index) = visotrfl
             matvisinrfl(index) = visinrfl
             matrender(index) = render
+            matgapares(index,1)=airg1
+            matgapares(index,2)=airg2
+            matgapares(index,3)=airg3
             modify=.false.
             mod=.true.   ! pass this back to calling code.
           endif
@@ -1011,39 +1019,39 @@ C updating the common blocks.
       ELSEIF(IW.EQ.NELM-2)THEN
         GOTO 3
       ELSEIF(IW.EQ.1)THEN
-        CALL EASKS(tnam,' ',' Description of material? ',
+        CALL EASKS(tnam,'Description of material','confirm:',
      &    32,' ','material name',IER,nbhelp)
         if(tnam(1:2).ne.'  ')then
           modify=.true.
         endif
       ELSEIF(IW.EQ.2)THEN
-        CALL EASKS248(tdoc,' ',' Documentation for material? ',
+        CALL EASKS248(tdoc,'Documentation for material','confirm:',
      &    72,' ','material documentation',IER,nbhelp)
         if(tdoc(1:2).ne.'  ')then
           modify=.true.
         endif
       ELSEIF(IW.EQ.3)THEN
-        CALL EASKR(DBCON,' ',' Conductivity (W/(m deg.C): ',
+        CALL EASKR(DBCON,'Conductivity (W/(m deg.C)','confirm:',
      &    0.001,'W',300.,'W',1.,'conductivity',IER,nbhelp)
         modify=.true.
       ELSEIF(IW.EQ.4)THEN
-        CALL EASKR(DBDEN,' ',' Density (kg/m**3): ',
+        CALL EASKR(DBDEN,'Density (kg/m**3)','confirm:',
      &    1.0,'W',9000.,'W',100.,'density',IER,nbhelp)
         modify=.true.
       ELSEIF(IW.EQ.5)THEN
-        CALL EASKR(DBSHT,' ',' Specific heat (J/(kg deg.C): ',
+        CALL EASKR(DBSHT,'Specific heat (J/(kg deg.C)','confirm:',
      &    1.0,'W',2000.,'W',100.,'specific heat',IER,nbhelp)
         modify=.true.
       ELSEIF(IW.EQ.6)THEN
 
 C For legacy materials both faces should have the same value.
         if(matopaq(index).eq.'-')then
-          CALL EASKR(EOUT,' ',' Surface emissivity : ',
+          CALL EASKR(EOUT,'Surface emissivity','confirm:',
      &      0.001,'W',0.999,'W',0.9,'out emissivity',IER,nbhelp)
           EIN=EOUT
           modify=.true.
         else
-          CALL EASKR(EOUT,' ',' Outside face emissivity : ',
+          CALL EASKR(EOUT,'Outside face emissivity','confirm:',
      &      0.001,'W',0.999,'W',0.9,'out emissivity',IER,nbhelp)
           modify=.true.
         endif
@@ -1051,43 +1059,43 @@ C For legacy materials both faces should have the same value.
 
 C For legacy materials both faces should have the same value.
         if(matopaq(index).eq.'-')then
-          CALL EASKR(EIN,' ',' Surface emissivity : ',
+          CALL EASKR(EIN,'Surface emissivity','confirm:',
      &      0.001,'W',0.999,'W',0.9,'out emissivity',IER,nbhelp)
           EOUT=EIN
           modify=.true.
         else
-          CALL EASKR(EIN,' ',' Inside face emissivity : ',
+          CALL EASKR(EIN,'Inside face emissivity','confirm:',
      &      0.001,'W',0.999,'W',0.9,'in emissivity',IER,nbhelp)
           modify=.true.
         endif
       ELSEIF(IW.EQ.8)THEN
         if(matopaq(index).eq.'-')then
-          CALL EASKR(AOUT,' ',' Surface absorptance: ',
+          CALL EASKR(AOUT,'Surface absorptance','confirm:',
      &      0.001,'W',0.999,'W',0.9,'absorptance',IER,nbhelp)
           AIN=AOUT
           modify=.true.
         else
-          CALL EASKR(AOUT,' ',' Outside face absorptance: ',
+          CALL EASKR(AOUT,'Outside face absorptance','confirm:',
      &      0.001,'W',0.999,'W',0.9,'out absorptance',IER,nbhelp)
           modify=.true.
         endif
       ELSEIF(IW.EQ.9)THEN
         if(matopaq(index).eq.'-')then
-          CALL EASKR(AIN,' ',' Surface absorptance : ',
+          CALL EASKR(AIN,'Surface absorptance','confirm:',
      &      0.001,'W',0.999,'W',0.9,'absorptance',IER,nbhelp)
           AOUT=AIN
           modify=.true.
         else
-          CALL EASKR(AIN,' ',' Inside face absorptance: ',
+          CALL EASKR(AIN,'Inside face absorptance','confirm:',
      &      0.001,'W',0.999,'W',0.9,'in absorptance',IER,nbhelp)
           modify=.true.
         endif
       ELSEIF(IW.EQ.10)THEN
-        CALL EASKR(dbdrv,' ','Vapour resistvity (MNs g^-1m^-1): ',
+        CALL EASKR(dbdrv,'Vapour resistvity (MNs g^-1m^-1)','confirm:',
      &    1.0,'W',20000.,'W',1.,'vapour resistvity',IER,nbhelp)
         modify=.true.
       ELSEIF(IW.EQ.11)THEN
-        CALL EASKR(THICK,' ',' Default thickness (mm) : ',
+        CALL EASKR(THICK,'Default thickness (mm)','confirm:',
      &    1.0,'W',500.,'W',10.,'default thickness',IER,nbhelp)
         modify=.true.
       ELSEIF(IW.EQ.12)THEN
@@ -1102,15 +1110,14 @@ C Offer to toggle between different types.
         elseif(matopaq(index).eq.'t')then
           message='(currently transparent)'
         elseif(matopaq(index).eq.'g')then
-          message='(currently gas data + T cor)'
+          message='(currently gap data)'
         elseif(matopaq(index).eq.'h')then
-          message='(currently gas data @4 temp)'
+          message='(currently gap data)'
         endif
         jsur=1
         CALL EASKATOG('Material options:',message,
      &    'legacy opaque','opaque','transparent',
-     &    'gas data+correction ','gas data @4 temps',
-     &    'leave un-changed',' ',jsur,nbhelp)
+     &    'gap layer ','leave un-changed',' ',' ',jsur,nbhelp)
         if(jsur.eq.1)then
           matopaq(index)='-'
           modify=.true.
@@ -1123,13 +1130,12 @@ C Offer to toggle between different types.
         elseif(jsur.eq.4)then
           matopaq(index)='g'
           modify=.true.
-        elseif(jsur.eq.5)then
-          matopaq(index)='h'
-          modify=.true.
         else
           continue
         endif
-      ELSEIF(IW.gt.12.and.IW.LE.NELM-4)THEN
+        goto 3   ! need to re-establish how many items in menu
+
+      ELSEIF(IW.gt.12.and.IW.LE.NELM-3)THEN
         if(matopaq(index).eq.'-')then
           goto 3
         elseif(matopaq(index).eq.'o')then
@@ -1138,53 +1144,61 @@ C Offer to toggle between different types.
 
 C Single layer optical properties editing.
           if(IW.eq.13)then
-            CALL EASKR(IRTRAN,' ','Longwave transmittance (-): ',
+            CALL EASKR(IRTRAN,'Longwave transmittance (-)','confirm:',
      &        0.00,'W',1.00,'W',1.,'ir tran',IER,nbhelp)
             modify=.true.
           elseif(IW.eq.14)then
-            CALL EASKR(SOLDRTRN,' ','Solar direct transmittance (-): ',
-     &        0.00,'W',1.00,'W',1.,'solar direct tran',IER,nbhelp)
+            CALL EASKR(SOLDRTRN,'Solar direct transmittance (-)',
+     &        'confirm:',0.00,'W',1.00,'W',1.,'solar direct tran',IER,
+     &         nbhelp)
             modify=.true.
           elseif(IW.eq.15)then
-            CALL EASKR(soldrotrfl,' ',
-     &        'Solar reflectance outside face (-): ',
-     &        0.00,'W',1.00,'W',1.,'solar reflec outside',IER,nbhelp)
+            CALL EASKR(soldrotrfl,'Solar reflectance outside face (-)',
+     &        'confirm:',0.00,'W',1.00,'W',1.,'solar reflec outside',
+     &        IER,nbhelp)
             modify=.true.
           elseif(IW.eq.16)then
-            CALL EASKR(soldrinrfl,' ',
-     &        'Solar reflectance inside face (-): ',
-     &        0.00,'W',1.00,'W',1.,'solar reflec inside',IER,nbhelp)
+            CALL EASKR(soldrinrfl,'Solar reflectance inside face (-)',
+     &        'confirm:',0.00,'W',1.00,'W',1.,'solar reflec inside',
+     &        IER,nbhelp)
             modify=.true.
           elseif(IW.eq.17)then
-            CALL EASKR(vistran,' ','Visible trans (-): ',
+            CALL EASKR(vistran,'Visible trans (-)','confirm:',
      &        0.00,'W',1.00,'W',1.,'visible tran',IER,nbhelp)
             modify=.true.
           elseif(IW.eq.18)then
-            CALL EASKR(visotrfl,' ',
-     &        'Visible reflectance outside face (-): ',
-     &        0.00,'W',1.00,'W',1.,'visible reflec outside',IER,nbhelp)
+            CALL EASKR(visotrfl,'Visible reflectance outside face (-)',
+     &        'confirm:',0.00,'W',1.00,'W',1.,'visible reflec outside',
+     &        IER,nbhelp)
             modify=.true.
           elseif(IW.eq.19)then
-            CALL EASKR(visinrfl,' ',
-     &        'Visible reflectance inside face (-): ',
-     &        0.00,'W',1.00,'W',1.,'visible reflec inside',IER,nbhelp)
+            CALL EASKR(visinrfl,'Visible reflectance inside face (-)',
+     &        'confirm:',0.00,'W',1.00,'W',1.,'visible reflec inside',
+     &        IER,nbhelp)
             modify=.true.
           elseif(IW.eq.20)then !render
-            CALL EASKR(visinrfl,' ',
-     &        'Colour rendering index (-): ',
-     &        0.00,'W',100.00,'W',1.,'colour rendering',IER,nbhelp)
+            CALL EASKR(visinrfl,'Colour rendering index (-)',
+     &        'confirm:',0.00,'W',100.00,'W',1.,'colour rendering',
+     &        IER,nbhelp)
             modify=.true.
           endif
           goto 3
-        elseif(matopaq(index).eq.'g')then
+        elseif(matopaq(index).eq.'g'.or.matopaq(index).eq.'h')then
 
-C << Gas properties for data + T deriv to be added >>
-          call usrmsg('This facility not yet available.',' ','-')
-          goto 3
-        elseif(matopaq(index).eq.'h')then
-
-C << Gas properties for data at 4 T to be added >>
-          call usrmsg('This facility not yet available.',' ','-')
+C Gap resistance for wall orientations.
+          if(IW.eq.13)then
+            CALL EASKR(airg1,'Gap resistance (wall orientation)',
+     &        'confirm:',0.00,'W',10.00,'W',1.,'gap r wall',IER,nbhelp)
+            modify=.true.
+          elseif(IW.eq.14)then
+            CALL EASKR(airg2,'Gap resistance (floor/ceiling)',
+     &        'confirm:',0.00,'W',10.00,'W',1.,'gap r flr',IER,nbhelp)
+            modify=.true.
+          elseif(IW.eq.15)then
+            CALL EASKR(airg3,'Gap resistance (other)','confirm:',
+     &        0.00,'W',1.00,'W',1.,'gap r other',IER,nbhelp)
+            modify=.true.
+          endif
           goto 3
         endif
       ELSEIF(IW.EQ.NELM-1)THEN
@@ -1233,7 +1247,7 @@ C If this parameter is changed also change it in subroutine GVALUE
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/GVALCAL/CLAMDA(MMLC)
 
-      integer legmat  ! local variable for legacy index.
+      integer legmat  ! local variable for legacy record.
       integer matarrayindex ! the indes within matdatarray
 
       LOGICAL     OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,ISZERO
@@ -1459,10 +1473,8 @@ C Ask for name of the new construction
           write(T12,'(a)') T14(1:12)
           call st2name(T12,DESC(NMLC))
 
-
-C << find alternative to IPR >>
           LAYERS(NMLC)=1
-          IPR(NMLC,1)=1
+          IPR(NMLC,1)=1  ! find alternative to IPR 
           IPRMAT(NMLC,1)=1
           DTHK(NMLC,1)=0.10
 
@@ -1586,7 +1598,7 @@ C Invert an existing construction. Ask user to select original and if
 C there is room in the database copy data to a new item.
           if(NMLC.ge.MMLC)then
             CALL USRMSG('Copy & invert not allowed as the new item',
-     &        'would xceed database space! Skipping request...','W')
+     &        'would exceed database space! Skipping request...','W')
             INO=-4
             GOTO 3
           endif
@@ -1718,77 +1730,73 @@ C Get number of non-air layers of glass.
 
 C << todo: make use of the single lay optics from the materials commons
 C << to supply much of the information needed for the g-value calculation.
-
-C << need alternative logic for IPR to locate air gaps >>
-
           IPN=0
           DO 501 ILAY=1,LAYERS(IWH)
-            legmat=IPR(IWH,ILAY)   ! which legacy index
-            if(legmat.gt.0)then
-              matarrayindex=mathash(legmat)  ! find matching array index
+            matarrayindex=IPRMAT(IWH,ILAY)   ! which legacy index
  
-C And if matarrayindex is zero then get NAM.
-              if(matarrayindex.eq.0)then
-                NAM='AIR'
-              else
-                write(NAM,'(a)') matname(matarrayindex)(1:32)
-              endif
-            elseif(legmat.eq.-99)then
-
-C Use the text within the MLC database to find the data.
-              lex=MIN0(72,lnblnk(LAYDESC(IWH,ILAY)))
-              write(NAM99,'(a)')LAYDESC(IWH,ILAY)(1:lex)
-              ileghope=IPR(IWH,ILAY)   ! what we hope we will find a match for
-              call parsematdesc(ileghope,NAM99,matarrayindex)
-              if(matarrayindex.ne.0)then
-                write(NAM,'(a)') NAM99(1:32)
-              endif
+C And if a gap reset NAM.
+            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &         matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &         matarrayindex.eq.0)then
+              NAM='gap'
+            elseif(matarrayindex.eq.-99)then
+              call usrmsg('Cannot generate G-value because a layer',
+     &          'was marked with a suspect material.','W')
+              GOTO 3  ! jump back
+            else
+              write(NAM,'(a)') matname(matarrayindex)(1:32)
             endif
             IF(IER.EQ.1)RETURN
-            IF(IPR(IWH,ILAY).EQ.0)GOTO 501
-            IPN=IPN+1
+
+            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &         matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &         matarrayindex.eq.0)then
+              continue
+            else
+              IPN=IPN+1
 
 C For each nonair layer ask for reflectance, tranmittance and emissivity
-            INPICK=1
-            PROMP1='Choose TM33:2006 values or manually define '
-            WRITE(PROMP2,'(A,I2)')'properties for glazing layer no.',IPN
-            STGLP(1)='trnt  ref   o-ref ems   o-ems description'
-            STGLP(2)='0.789 0.072 0.072 0.837 0.837 clear glass'
+              INPICK=1
+              PROMP1='Choose TM33:2006 values or manually define '
+              WRITE(PROMP2,'(A,I2)')'glazing layer properties:',IPN
+             STGLP(1)='trnt  ref   o-ref ems   o-ems description'
+             STGLP(2)='0.789 0.072 0.072 0.837 0.837 clear glass'
 *            STGLP(3)='0.678 0.091 0.108 0.837 0.170 low-e glass'
-            STGLP(3)='0.678 0.108 0.091 0.170 0.837 low-e glass'
-            STGLP(4)='0.460 0.053 0.053 0.837 0.837 absorbing glass'
-            STGLP(5)='0.390 0.310 0.450 0.837 0.250 hi perf reflecting'
+             STGLP(3)='0.678 0.108 0.091 0.170 0.837 low-e glass'
+             STGLP(4)='0.460 0.053 0.053 0.837 0.837 absorbing glass'
+             STGLP(5)='0.390 0.310 0.450 0.837 0.250 hi perf reflecting'
 *            STGLP(5)='0.390 0.450 0.310 0.250 0.837 hi perf reflecting'
-            STGLP(6)='manual / user defined'
-            CALL EPICKS(INPICK,IVALS,PROMP1,PROMP2,
+             STGLP(6)='manual / user defined'
+              CALL EPICKS(INPICK,IVALS,PROMP1,PROMP2,
      &                56,6,STGLP,' ',IER,nbhelp)
-            IF(IER.NE.0)RETURN
-            IPKD=IVALS(1)
-            IF(IPKD.GE.2.AND.IPKD.LE.5)THEN
+              IF(IER.NE.0)RETURN
+              IPKD=IVALS(1)
+              IF(IPKD.GE.2.AND.IPKD.LE.5)THEN
 
 C Copy the numbers section of STGLP array item.
-              write(T72,'(a)') STGLP(IPKD)(1:29)
-            ELSEIF(IPKD.EQ.6)THEN
-              T72='  '
-              CALL EASKS(T72,
-     &        'enter trnt, reft, op-reft, ems and op-ems (see help)',
-     &        ' ',72,' ','Optical data for g-value',IER,nbhelp)
-            ELSE
-              CALL EDISP(IUOUT,'No choice made ... returning')
-              RETURN
-            ENDIF
-            K=0
-            CALL EGETWR(T72,K,VAL,0.,1.,'W','trans',IER)
-            TRNT(IPN)=VAL
-            CALL EGETWR(T72,K,VAL,0.,1.,'W','reflect',IER)
-            REF(IPN)=VAL
-            CALL EGETWR(T72,K,VAL,0.,1.,'W','op-reflect',IER)
-            OREF(IPN)=VAL
+                write(T72,'(a)') STGLP(IPKD)(1:29)
+              ELSEIF(IPKD.EQ.6)THEN
+                T72='  '
+                CALL EASKS(T72,
+     &          'enter trnt, reft, op-reft, ems and op-ems (see help)',
+     &          ' ',72,' ','Optical data for g-value',IER,nbhelp)
+              ELSE
+                CALL EDISP(IUOUT,'No choice made ... returning')
+                RETURN
+              ENDIF
+              K=0
+              CALL EGETWR(T72,K,VAL,0.,1.,'W','trans',IER)
+              TRNT(IPN)=VAL
+              CALL EGETWR(T72,K,VAL,0.,1.,'W','reflect',IER)
+              REF(IPN)=VAL
+              CALL EGETWR(T72,K,VAL,0.,1.,'W','op-reflect',IER)
+              OREF(IPN)=VAL
 
-C emissivity value not required
-            CALL EGETWR(T72,K,VAL,0.,1.,'W','emiss',IER)
-            CALL EGETWR(T72,K,VAL,0.,1.,'W','op-emiss',IER)
-            OEMS(IPN)=VAL 
+C Emissivity value not required.
+              CALL EGETWR(T72,K,VAL,0.,1.,'W','emiss',IER)
+              CALL EGETWR(T72,K,VAL,0.,1.,'W','op-emiss',IER)
+              OEMS(IPN)=VAL
+            endif 
  501      CONTINUE
 
 C Call subroutine to calculate g-value and report 
@@ -1805,6 +1813,7 @@ C Call subroutine to calculate g-value and report
         CALL EDISP (IUOUT,' ')
         IPACT=CREATE
         CALL EKPAGE(IPACT)
+
       ELSEIF(INO.GT.MHEAD.AND.INO.LT.(NITMS-MCTL+1))THEN
 
 C Edit block identified by KEYIND, remind user of details and then
@@ -1843,9 +1852,9 @@ C IFMAT is the unit for the associated materials db.
 C Information is available via common block MLC. 
 C Information on opaque/transparent is added to DESC.
 
-C Note: air gaps have several representations. The legacy
-C approach is to use the materials database index zero to
-C flag an air gap (and the user would overload the MLC layer
+C Note: gap layers have several representations. The legacy
+C approach is to use the materials index zero to flag an
+C air gap (and the user would overload the MLC layer
 C with 3 air gap resistance values). An emerging technique
 C is to label materials (matopaq) as follows: 
 C matopaq (1 char) 'o' is opaque, 't' is transparent,
@@ -1890,6 +1899,7 @@ C Paramters
 
 C Material properties.
       integer matarrayindex ! the index within matdatarray
+      integer iwhich  ! typically current position
       integer innermat,outermat ! material index at inner and outer layers
       real guessthick ! initial thickness if from version 1.1 or 1.2
 
@@ -2014,17 +2024,20 @@ C Detail menu.
         write(6,*) 'debug ',matarrayindex,matopaq(matarrayindex)
         if(matarrayindex.ge.0)then
  
-C And if a gap reset dbcon and NAM and assign DRAIR if newer materials file.
+C And if a gap reset dbcon and NAM and assign DRAIR if newer materials file
+C and we are dealing with something other than the traditional gap material.
+
+C << What if matgapares values are all zero? >>
           if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &       matopaq(matarrayindex)(1:1).eq.'h'.or.
      &       matarrayindex.eq.0)then
-            if(closemat2)then
+            if(closemat2.and.matarrayindex.ne.0)then
               DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
               DRAIR(IFOC,IL,2)=matgapares(matarrayindex,2)
               DRAIR(IFOC,IL,3)=matgapares(matarrayindex,3)
             endif
             DBCON=0.0
-            WRITE(NAM,'(A,3F5.2)')'air ',(DRAIR(IFOC,IL,IY),IY=1,3)
+            WRITE(NAM,'(A,3F5.2)')'gap ',(DRAIR(IFOC,IL,IY),IY=1,3)
           else
             DBCON=matdbcon(matarrayindex)
             write(NAM,'(a)') matname(matarrayindex)(1:32)
@@ -2039,7 +2052,7 @@ C was confused then matarrayindex could be -99.
         endif
 
 C Calculate standard U value and display as well.
-C If a standard air layer include the R values in the display.
+C If a gap layer include the R values in the display.
         PNAM(IL)=NAM
         if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &     matopaq(matarrayindex)(1:1).eq.'h'.or.
@@ -2122,26 +2135,27 @@ C Help text for this menu.
       CALL EMENU('Construction editing',MLED,NLED,ILED)
       IF(ILED.EQ.NLED.or.ILED.EQ.NLED-2.or.ILED.EQ.NLED-3)THEN
 
-C Check to see that mlc of a single air layer is not specified as well as
+C Check to see that mlc of a single gap layer is not specified as well as
 C an outer or inner gap layer.
         innermat=IPRMAT(IFOC,LAYERS(IFOC)) 
         outermat=IPRMAT(IFOC,1) 
+        write(6,*) 'debug ',innermat,outermat,LAYERS(IFOC),ifoc
         if(LAYERS(IFOC).eq.1.and.(matopaq(outermat)(1:1).eq.'g'.or.
      &     matopaq(outermat)(1:1).eq.'h'.or.outermat.eq.0))then
-          call usrmsg('A construction cannot be a single layer',
-     &      'of air. Please redefine it.','W')
+          call usrmsg('A construction cannot be a single gap layer.',
+     &      'Please redefine it.','W')
           goto 3
         endif
         if(matopaq(outermat)(1:1).eq.'g'.or.
      &     matopaq(outermat)(1:1).eq.'h'.or.outermat.eq.0)then
           call usrmsg('An outer layer of a construction cannot be',
-     &      'composed of air. Please redefine it.','W')
+     &      'a gap. Please redefine it.','W')
           goto 3
         endif
         if(matopaq(innermat)(1:1).eq.'g'.or.
      &     matopaq(innermat)(1:1).eq.'h'.or.innermat.eq.0)then
           call usrmsg('An inner layer of a construction cannot be',
-     &      'composed of air. Please redefine it.','W')
+     &      'a gap. Please redefine it.','W')
           goto 3
         endif
 
@@ -2252,7 +2266,7 @@ C List the help.
 
 C Adjust layer.
         CALL EASKABCD('Adjust options: ',' ','Alter (solid) thickness',
-     &    'Alter air gap R','Find alt material','Continue',IW,nbhelp)
+     &    'Alter gap R','Find alt material','Continue',IW,nbhelp)
         IF(IW.EQ.1.or.IW.eq.2)THEN
 
 C Report the current U value.
@@ -2304,13 +2318,11 @@ C close to VALZ.
               endif
               RT=0.
 
-C << find alternative method to detect air gap >>
-
               DO 123, IL=1,LAYERS(IFOC)
-                matarrayindex=IPRMAT(IFOC,IL)   ! which legacy index
+                matarrayindex=IPRMAT(IFOC,IL)   ! which material index
                 if(matarrayindex.ge.0)then
  
-C And if matarrayindex is zero then reset dbcon.
+C And if a gap layer reset dbcon.
                   if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &               matopaq(matarrayindex)(1:1).eq.'h'.or.
      &               matarrayindex.eq.0)then
@@ -2386,13 +2398,13 @@ C No longer getting closer so step back one and report.
             IWHICH=imlay(1)-2
             write(outs,'(3A,F7.4,A)')' Adjusting ',PNAM(IWHICH)(1:18),
      &        '... which has current ',DRAIR(IFOC,IWHICH,1),
-     &        ' air gap resistance.'
+     &        ' gap resistance.'
             call edisp(iuout,outs)
             write(t32,'(f7.4,a)') DRAIR(IFOC,IWHICH,1),
      &        '  0.60   1.4  '
             CALL EASKS(t32,
-     &        'Air gap resistance (min & max) & desired U value',
-     &        ' ',32,' ','resistance and U',IER,nbhelp)
+     &        'Gap resistance (min & max) & desired U value',
+     &        ' ',32,' ','gap resistance and U',IER,nbhelp)
             K=0
             CALL EGETWR(t32,K,VALX,0.1,250.,'W','minimum r',IER)
             CALL EGETWR(t32,K,VALY,0.1,250.,'W','maximum r',IER)
@@ -2418,14 +2430,16 @@ C close to VALZ.
                 matarrayindex=IPRMAT(IFOC,IL)   ! which legacy index
                 if(matarrayindex.ge.0)then
  
-C And if matarrayindex is zero then reset dbcon.
-                  if(matarrayindex.eq.0)then
+C And if a gap reset dbcon.
+                  if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &               matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &               matarrayindex.eq.0)then
                     DBCON=0.0
                   else
                     DBCON=matdbcon(matarrayindex)
                   endif
 
-C If g air gap and version 1.2 then assign DRAIR
+C If laryer material has a g attribute and version 1.2 assign DRAIR.
                   if(matarrayindex.eq.0)then
                     continue
                   elseif(matopaq(matarrayindex)(1:1).eq.'g')then
@@ -2605,6 +2619,14 @@ C reference. Use elistmat to select via materials array.
               CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
               write(6,*) 'selected matarrayindex iwhich ',
      &          matarrayindex,iwhich
+
+C If iwhich came back as a zero then the material actually was
+C the traditional gap so reset matarrayindex.
+              if(iwhich.eq.0)then
+                matarrayindex=0 
+                write(6,*) 'reset matarrayindex for legacy gap',
+     &            matarrayindex,iwhich
+              endif
               if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &           matopaq(matarrayindex)(1:1).eq.'h'.or.
      &           matarrayindex.eq.0)then
@@ -2613,6 +2635,11 @@ C reference. Use elistmat to select via materials array.
      &            iwair,nbhelp)
                 if(iwair.eq.2)then
                   CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
+                  if(iwhich.eq.0)then
+                    matarrayindex=0 
+                    write(6,*) 'reset matarrayindex for legacy gap',
+     &                matarrayindex,iwhich
+                  endif
                 elseif(iwair.eq.3)then
                   ILED=-1
                   GOTO 3
@@ -2660,7 +2687,7 @@ C If a gap then ask for gap resistance, recover resistance if newer matereials f
               endif
 
               WRITE(outs,117)DESC(IFOC)(1:LNBLNK(DESC(IFOC)))
-  117         FORMAT('Default R value for air gap in ',a)
+  117         FORMAT('Default R value for gap in ',a)
               if(DRAIR(IFOC,ILN,1).lt.0.001)then
                  VAL=0.17
               else
@@ -2668,7 +2695,7 @@ C If a gap then ask for gap resistance, recover resistance if newer matereials f
               endif
               CALL EASKR(VAL,outs,
      &          'if the orientation is vertical:',
-     &          0.01,'W',99.9,'W',0.17,'def air gap R',IER,nbhelp)
+     &          0.01,'W',99.9,'W',0.17,'default gap R',IER,nbhelp)
               DRAIR(IFOC,ILN,1)=VAL
               if(DRAIR(IFOC,ILN,2).lt.0.001)then
                  VAL=0.17
@@ -2677,7 +2704,7 @@ C If a gap then ask for gap resistance, recover resistance if newer matereials f
               endif
               CALL EASKR(VAL,outs,
      &          'if the orientation is a floor or ceiling:',
-     &          0.01,'W',99.9,'W',0.17,'def air gap R',IER,nbhelp)
+     &          0.01,'W',99.9,'W',0.17,'default gap R',IER,nbhelp)
               DRAIR(IFOC,ILN,2)=VAL
               if(DRAIR(IFOC,ILN,3).lt.0.001)then
                  VAL=0.17
@@ -2686,13 +2713,13 @@ C If a gap then ask for gap resistance, recover resistance if newer matereials f
               endif
               CALL EASKR(VAL,outs,
      &          'if the orientation is sloped or UNKNOWN:',
-     &          0.01,'W',99.9,'W',0.17,'def air gap R',IER,nbhelp)
+     &          0.01,'W',99.9,'W',0.17,'default gap R',IER,nbhelp)
               DRAIR(IFOC,ILN,3)=VAL
               guessthick=100.0
 
             ELSE
 
-C Not an air gap so set DRAIR to something and set default thickness.
+C Not a gap so set DRAIR to something and set default thickness.
               DRAIR(IFOC,ILN,1)=0.17
               DRAIR(IFOC,ILN,2)=0.17
               DRAIR(IFOC,ILN,3)=0.17
@@ -2963,6 +2990,14 @@ C reference.
           CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
           write(6,*) 'selected matarrayindex iwhich ',
      &      matarrayindex,iwhich
+
+C If iwhich came back as a zero then the material actually was
+C the traditional gap so reset matarrayindex.
+          if(iwhich.eq.0)then
+            matarrayindex=0 
+            write(6,*) 'reset matarrayindex for legacy gap',
+     &        matarrayindex,iwhich
+          endif
           if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &       matopaq(matarrayindex)(1:1).eq.'h'.or.
      &       matarrayindex.eq.0)then
@@ -2970,6 +3005,11 @@ C reference.
      &        ' ','accept','reselect material','abort',iwair,nbhelp)
             if(iwair.eq.2)then
               CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
+              if(iwhich.eq.0)then
+                matarrayindex=0 
+                write(6,*) 'reset matarrayindex for legacy gap',
+     &            matarrayindex,iwhich
+              endif
             elseif(iwair.eq.3)then
               ILED=-1
               GOTO 3
@@ -3013,7 +3053,7 @@ C If a gap then ask for gap resistance, recover resistance if newer matereials f
             DRAIR(IFOC,ILN,3)=matgapares(matarrayindex,3)
           endif
           WRITE(outs,118)DESC(IFOC)(1:LNBLNK(DESC(IFOC)))  
-  118     FORMAT('Default R value for air gap in ',a)
+  118     FORMAT('Default R value for gap in ',a)
           if(DRAIR(IFOC,ILED-8,1).lt.0.001)then
             VAL=0.17
           else
@@ -3021,7 +3061,7 @@ C If a gap then ask for gap resistance, recover resistance if newer matereials f
           endif
           CALL EASKR(VAL,outs,
      &      ' if the orientation is vertical          : ',
-     &      0.0,'W',99.9,'W',0.17,'def air gap R',IER,nbhelp)
+     &      0.0,'W',99.9,'W',0.17,'default gap R',IER,nbhelp)
           DRAIR(IFOC,ILED-8,1)=VAL
           if(DRAIR(IFOC,ILED-8,2).lt.0.001)then
             VAL=0.17
@@ -3030,7 +3070,7 @@ C If a gap then ask for gap resistance, recover resistance if newer matereials f
           endif
           CALL EASKR(VAL,outs,
      &      ' if the orientation is horizontal        : ',
-     &      0.0,'W',99.9,'W',0.17,'def air gap R',IER,nbhelp)
+     &      0.0,'W',99.9,'W',0.17,'default gap R',IER,nbhelp)
           DRAIR(IFOC,ILED-8,2)=VAL
           if(DRAIR(IFOC,ILED-8,3).lt.0.001)then
             VAL=0.17
@@ -3039,7 +3079,7 @@ C If a gap then ask for gap resistance, recover resistance if newer matereials f
           endif
           CALL EASKR(VAL,outs,
      &      ' if the orientation is sloped or UNKNOWN : ',
-     &      0.0,'W',99.9,'W',0.17,'def air gap R',IER,nbhelp)
+     &      0.0,'W',99.9,'W',0.17,'default gap R',IER,nbhelp)
           DRAIR(IFOC,ILED-8,3)=VAL
         ELSEIF(matarrayindex.EQ.-99)THEN
 
@@ -3062,7 +3102,7 @@ C << ?? might not work >>
         ELSE
 
 C Non zero legacy index so assign thickness. And check if the
-C material is a [g] and might have air gap values.
+C material attribute is a [g] and might have gap R values.
           DRAIR(IFOC,ILED-8,1)=0.0
           DRAIR(IFOC,ILED-8,2)=0.0
           DRAIR(IFOC,ILED-8,3)=0.0

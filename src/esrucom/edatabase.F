@@ -66,6 +66,9 @@ C espriou.h provides currentfile.
       character lworking*144,fs*1
 
       integer ier
+      integer ileghope  ! for legacy record
+      integer matarrayindex  ! for materials array index
+      integer lex       ! lenght of string
 
 C Note that the text which follows the thickness of the layer
 C is extracted from the materials database and should not
@@ -290,13 +293,10 @@ C still confused mark IPRMAT as -99.
 
 C Pass the legacy record number (ileghope) along with the name (NAM) of the
 C material and get back the index of the material array that fits.
-
-C << during the scan of materials there should be a report for duplicate
-C << material names. If we corrected it at source then we would not have
-C << this issue!!
-
             call parsematdesc(ileghope,NAM,matarrayindex)
             if(matarrayindex.ne.0)then
+
+C If a mis-match echo to the user corrective actions.
               if(matlegindex(matarrayindex).ne.IPR(I,IL))then
                 call edisp(iuout,' --- WARNING --- ')
                 write(outs,'(a,i3,a,i3,2a)') 
@@ -322,8 +322,14 @@ C << this issue!!
                 IPRMAT(I,IL)=-99  ! could not find it
               else
 
-C Found a matching matarray index, assign value to the IPRMAT.
-                IPRMAT(I,IL)=matarrayindex
+C Found a matching matarray index, assign value to the IPRMAT. If
+C it actually is equivalent to the legacy zero gap material reflect this
+C in the value of IPRMAT (in case parsematdesc did not do this).
+                if(IPR(I,IL).eq.0)then
+                  IPRMAT(I,IL)=0  ! to signal std air gap
+                else
+                  IPRMAT(I,IL)=matarrayindex
+                endif
               endif    
             else
 
@@ -333,16 +339,17 @@ C so that other facilities know about the confusion.
               if(IPR(I,IL).eq.0)then
                 IPRMAT(I,IL)=0  ! to signal std air gap
               else
-                IPRMAT(I,IL)=-99  ! could not find it
-                write(outs,*)'as referenced in ',MLCN(1:lnblnk(MLCN))
+                IPRMAT(I,IL)=-99  ! could not find it DO WE WANT TO SET THIS NOW
+                write(outs,*)'a material referenced in ',
+     &            MLCN(1:lnblnk(MLCN)),' was not found (set to -99).'
                 call edisp(iuout,outs)
               endif
             endif
 
-C For a standard air gap pick up 'AIR' followed by assumed R values.
+C For a standard gap pick up 'AIR' followed by assumed R values.
             IF(IPR(I,IL).EQ.0)THEN
               K=0
-              CALL EGETW(NAM,K,WORD,'W','AIR label',IER)
+              CALL EGETW(NAM,K,WORD,'W','gap label',IER)
               CALL EGETWR(NAM,K,VAL,0.,99.0,'W','vert R',IER)
               DRAIR(I,IL,1)=VAL
               CALL EGETWR(NAM,K,VAL,0.,99.0,'W','floor:ceil R',IER)
@@ -352,6 +359,8 @@ C For a standard air gap pick up 'AIR' followed by assumed R values.
             ELSEIF(IPR(I,IL).EQ.-99)THEN
 
 C For a layer with no legacy index use the matarray index and assign values.
+
+C << if we did have IPRMAT(I,IL) as -99 wouldn't this cause a crash?? >>
               matarrayindex=IPRMAT(I,IL)
               if(matarrayindex.ne.0)then
                 DBCON=matdbcon(matarrayindex)
@@ -1961,7 +1970,9 @@ C      write (ITRU,*) 'Layer  thick  k  rho  Cp'
         if(matarrayindex.ge.0)then
  
 C And if matarrayindex is zero then resetn dbcon dbden dbsht.
-          if(matarrayindex.eq.0)then
+          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &       matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &       matarrayindex.eq.0)then
             DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
           else
             DBCON=matdbcon(matarrayindex)
@@ -1973,7 +1984,9 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht.
         thick(layer)=DTHK(IFOC,IL)
 
 C If an air gap set cond(IL) to negative of air gap res.
-        IF(IPRMAT(IFOC,IL).EQ.0)THEN
+        if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &     matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &     matarrayindex.eq.0)then
           cond(layer) = (-1.0) * DRAIR(IFOC,IL,1)
           rho(layer)=1.0
           Cp(layer)=1.0

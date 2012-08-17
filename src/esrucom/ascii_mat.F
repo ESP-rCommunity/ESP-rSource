@@ -589,8 +589,7 @@ C The item line includes a 'legacy index' for the record number in the
 C binary materials file. Traditionally this would be a positive number
 C for a non-gas material, zero for a gap/gas material or a -99 if there
 C was some confusion associated with the material or it could not have
-C been represented in the binary materials file (e.g. other instances
-C of air gaps).
+C been represented in the binary materials file.
 
 C << the overloading of -99 is an issue to deal with! >>
 
