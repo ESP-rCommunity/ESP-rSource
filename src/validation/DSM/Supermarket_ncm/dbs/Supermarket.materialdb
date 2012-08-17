@@ -257,9 +257,9 @@ Category ( 8) Tiles includes both floor tiles, ceiling tiles and roof tile. Base
 0.300,1600.000,2000.000,0.940,0.940,0.820,0.820,1000.000,6.0,-
 *item,cork tile,146, 8,Cork tile
 0.080,530.000,1800.000,0.900,0.900,0.600,0.600,58.000,6.0,-
-*item,asphalt,147, 8,Asphalt/asbestos based tile
+*item,Asphalt/asbestos,147, 8,Asphalt/asbestos based tile
 0.550,1900.000,837.000,0.900,0.900,0.700,0.700,150.000,6.0,-
-*item,plastic tile,148, 8,P.V.C./asbestos
+*item,P.V.C./asbestos,148, 8,P.V.C./asbestos
 0.850,2000.000,837.000,0.900,0.900,0.600,0.600,1000.000,6.0,-
 *item,tile bedding,149, 8,Tile bedding/grout
 1.400,2100.000,650.000,0.900,0.900,0.600,0.600,25.000,6.0,-

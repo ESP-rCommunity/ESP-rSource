@@ -180,7 +180,7 @@
 # mat ref thickness (m) mat descr & air gap R
   112    0.0127  Plasterboard (UK code) : Plasterboard (UK code)
     0    0.0150  air  0.170 0.170 0.170
-  295    0.0600  Min wool quilt 60 mm : Insulation (Min wool quilt default 60 mm)
+  295    0.0600  Min wool quilt 60mm : Insulation (Min wool quilt default 60 mm)
    76    0.0180  plywood sheathing : Plywood sheathing (UK code)
   112    0.0127  Plasterboard (UK code) : Plasterboard (UK code)
 # layers  description   optics name   symmetry tag
@@ -188,7 +188,7 @@
 # mat ref thickness (m) mat descr & air gap R
   112    0.0127  Plasterboard (UK code) : Plasterboard (UK code)
    76    0.0180  plywood sheathing : Plywood sheathing (UK code)
-  295    0.0600  Min wool quilt 60 mm : Insulation (Min wool quilt default 60 mm)
+  295    0.0600  Min wool quilt 60mm : Insulation (Min wool quilt default 60 mm)
     0    0.0150  air  0.170 0.170 0.170
   112    0.0127  Plasterboard (UK code) : Plasterboard (UK code)
 # layers  description   optics name   symmetry tag
