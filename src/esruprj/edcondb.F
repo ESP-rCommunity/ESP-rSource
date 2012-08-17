@@ -42,8 +42,8 @@ C allow choice.
 
 C Parameters
       integer iwhich         ! is the legacy database index CLARIFY USE
-      logical chgdb          ! flagged true if an mod made to db during session
-      integer imatarrayindex ! is the index in matdatarray
+      logical chgdb          ! flagged true if a mod made during session
+      integer imatarrayindex ! is the returned index in matdatarray
 
       common/FILEP/IFIL
       COMMON/OUTIN/IUOUT,IUIN
@@ -1890,6 +1890,7 @@ C Paramters
 
 C Material properties.
       integer matarrayindex ! the index within matdatarray
+      integer innermat,outermat ! material index at inner and outer layers
       real guessthick ! initial thickness if from version 1.1 or 1.2
 
       logical chdb,showother,layermatch,layermatcha,modgeo
@@ -2010,26 +2011,23 @@ C Detail menu.
       RT=0.
       DO 23, IL=1,LAYERS(IFOC)
         matarrayindex=IPRMAT(IFOC,IL)   ! which legacy index
+        write(6,*) 'debug ',matarrayindex,matopaq(matarrayindex)
         if(matarrayindex.ge.0)then
  
-C And if matarrayindex is zero then reset dbcon and NAM.
-          if(matarrayindex.eq.0)then
-            DBCON=0.0; NAM='AIR'
-          else
-            DBCON=matdbcon(matarrayindex)
-            write(NAM,'(a)') matname(matarrayindex)(1:32)
-          endif
-
-C If g or h air gap and version 1.2 then assign DRAIR
-          if(matarrayindex.eq.0)then
-            continue
-          elseif(matopaq(matarrayindex)(1:1).eq.'g')then
+C And if a gap reset dbcon and NAM and assign DRAIR if newer materials file.
+          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &       matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &       matarrayindex.eq.0)then
             if(closemat2)then
               DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
               DRAIR(IFOC,IL,2)=matgapares(matarrayindex,2)
               DRAIR(IFOC,IL,3)=matgapares(matarrayindex,3)
-              RT=RT+DRAIR(IFOC,IL,1)  ! while we are sure
             endif
+            DBCON=0.0
+            WRITE(NAM,'(A,3F5.2)')'air ',(DRAIR(IFOC,IL,IY),IY=1,3)
+          else
+            DBCON=matdbcon(matarrayindex)
+            write(NAM,'(a)') matname(matarrayindex)(1:32)
           endif
         else
 
@@ -2042,15 +2040,14 @@ C was confused then matarrayindex could be -99.
 
 C Calculate standard U value and display as well.
 C If a standard air layer include the R values in the display.
-
-C << alternative to IPR needed >>
-        IF(IPR(IFOC,IL).EQ.0)THEN
-          WRITE(PNAM(IL),'(A,3F5.2)')'air ',(DRAIR(IFOC,IL,IY),IY=1,3)
+        PNAM(IL)=NAM
+        if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &     matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &     matarrayindex.eq.0)then
           RT=RT+DRAIR(IFOC,IL,1)
-        ELSEIF(IPR(IFOC,IL).EQ.-99)THEN
-          PNAM(IL)=NAM  ! use RT calc above
+        ELSEIF(matarrayindex.EQ.-99)THEN
+          continue
         ELSE
-          PNAM(IL)=NAM
           RT=RT+DTHK(IFOC,IL)/DBCON
         ENDIF
         M=M+1
@@ -2125,15 +2122,26 @@ C Help text for this menu.
       CALL EMENU('Construction editing',MLED,NLED,ILED)
       IF(ILED.EQ.NLED.or.ILED.EQ.NLED-2.or.ILED.EQ.NLED-3)THEN
 
-C Check to see that mlc of a single air layer is not specified.
-        if(LAYERS(IFOC).eq.1.and.IPR(IFOC,1).EQ.0)then
+C Check to see that mlc of a single air layer is not specified as well as
+C an outer or inner gap layer.
+        innermat=IPRMAT(IFOC,LAYERS(IFOC)) 
+        outermat=IPRMAT(IFOC,1) 
+        if(LAYERS(IFOC).eq.1.and.(matopaq(outermat)(1:1).eq.'g'.or.
+     &     matopaq(outermat)(1:1).eq.'h'.or.outermat.eq.0))then
           call usrmsg('A construction cannot be a single layer',
      &      'of air. Please redefine it.','W')
           goto 3
         endif
-        if(IPR(IFOC,LAYERS(IFOC)).eq.0.or.IPR(IFOC,1).EQ.0)then
-          call usrmsg('An outer or inner layer of a construction',
-     &      'cannot be composed of air. Please redefine it.','W')
+        if(matopaq(outermat)(1:1).eq.'g'.or.
+     &     matopaq(outermat)(1:1).eq.'h'.or.outermat.eq.0)then
+          call usrmsg('An outer layer of a construction cannot be',
+     &      'composed of air. Please redefine it.','W')
+          goto 3
+        endif
+        if(matopaq(innermat)(1:1).eq.'g'.or.
+     &     matopaq(innermat)(1:1).eq.'h'.or.innermat.eq.0)then
+          call usrmsg('An inner layer of a construction cannot be',
+     &      'composed of air. Please redefine it.','W')
           goto 3
         endif
 
@@ -2303,40 +2311,31 @@ C << find alternative method to detect air gap >>
                 if(matarrayindex.ge.0)then
  
 C And if matarrayindex is zero then reset dbcon.
-                  if(matarrayindex.eq.0)then
+                  if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &               matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &               matarrayindex.eq.0)then
                     DBCON=0.0
-                  else
-                    DBCON=matdbcon(matarrayindex)
-                  endif
-
-C If g air gap and version 1.2 then assign DRAIR
-                  if(matarrayindex.eq.0)then
-                    continue
-                  elseif(matopaq(matarrayindex)(1:1).eq.'g')then
                     if(closemat2)then
                       DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
                       RT=RT+DRAIR(IFOC,IL,1)  ! while we are sure
+                    else
+                      RT=RT+DRAIR(IFOC,IL,1)
+                    endif
+                  else
+                    DBCON=matdbcon(matarrayindex)
+
+C If this is the layer we are adjusting then substitute the current
+C layer thickness into the U value equation.
+                    if(IL.eq.IWHICH)then
+                      RT=RT+currentm/DBCON
+                    else
+                      RT=RT+DTHK(IFOC,IL)/DBCON
                     endif
                   endif
                 else
                   continue
                 endif
 
-C Calculate standard U value.  << fine method that avoids IPR >>
-                IF(IPR(IFOC,IL).EQ.0)THEN
-                  RT=RT+DRAIR(IFOC,IL,1)
-                ELSEIF(IPR(IFOC,IL).EQ.-99)THEN
-                  continue  ! use RT calc above
-                ELSE
-
-C If this is the layer we are adjusting then substitute the current
-C layer thickness into the equation.
-                  if(IL.eq.IWHICH)then
-                    RT=RT+currentm/DBCON
-                  else
-                    RT=RT+DTHK(IFOC,IL)/DBCON
-                  endif
-                ENDIF
   123         CONTINUE
 
 C ISO 6946 hc assumptions are 0.04 external, 0.13 inside horizontal,
@@ -2447,13 +2446,15 @@ C gap R into the equation.
                 endif
 
 C Calculate standard U value.
-                IF(IPRMAT(IFOC,IL).EQ.0)THEN
+                if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &             matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &             matarrayindex.eq.0)then
                   if(IL.eq.IWHICH)then
                     RT=RT+currentm  ! use the current R
                   else
                     RT=RT+DRAIR(IFOC,IL,1)
                   endif
-                ELSEIF(IPRMAT(IFOC,IL).EQ.-99)THEN
+                ELSEIF(matarrayindex.EQ.-99)THEN
                   continue  ! use RT calc above
                 ELSE
                   RT=RT+DTHK(IFOC,IL)/DBCON
@@ -2595,13 +2596,19 @@ C << to cancel part way through the process.
 C Ask if user wishes to browse through materials to find suitable
 C reference. Use elistmat to select via materials array.
             dok=.true.
-            CALL ASKOK('Browse the materials db for a new material',
-     &        '(NO keeps the current material)?',OK,dok,nbhelp)
+            call askok(
+     &        'Change the material reference via browsing available',
+     &        'materials? (NO keeps the current material)',
+     &        OK,dok,nbhelp)
             IF(OK)then
               iwhich = 0
               CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
-              if(iwhich.eq.0)then
-                CALL EASKABC('Your selection is `0` i.e. air. Options:',
+              write(6,*) 'selected matarrayindex iwhich ',
+     &          matarrayindex,iwhich
+              if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &           matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &           matarrayindex.eq.0)then
+                CALL EASKABC('Your selection is a gap. Options:',
      &            ' ','accept','reselect material','abort',
      &            iwair,nbhelp)
                 if(iwair.eq.2)then
@@ -2610,12 +2617,17 @@ C reference. Use elistmat to select via materials array.
                   ILED=-1
                   GOTO 3
                 endif
-              elseif(iwhich.eq.-99)then
+                IPRMAT(IFOC,ILN)=matarrayindex   ! set new material index to layer
+              elseif(matarrayindex.eq.-99)then
                 continue
               endif
             else
               IWHICH=IPR(IFOC,ILN)  ! keep the current material
+              matarrayindex=IPRMAT(IFOC,ILN)   ! and the material index
+              write(6,*) 'restored matarrayindex iwhich ',
+     &          matarrayindex,iwhich
             endif
+            write(6,*) 'matarrayindex iwhich ',matarrayindex,iwhich
 
 C Take the legacy index and assign it to this layer.
             IPR(IFOC,ILN)=IWHICH
@@ -2636,18 +2648,26 @@ C code can recover the details of a -99 item.
               IPRMAT(IFOC,ILN)=matarrayindex  ! update array index for this layer as well
             endif
 
-C If a standard air layer then ask for gap resistance.
-            IF(IPR(IFOC,ILN).EQ.0)THEN
+C If a gap then ask for gap resistance, recover resistance if newer matereials file.
+            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &         matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &         matarrayindex.eq.0)then
+              guessthick=matdbthick(matarrayindex)
+              if(closemat2)then
+                DRAIR(IFOC,ILN,1)=matgapares(matarrayindex,1)
+                DRAIR(IFOC,ILN,2)=matgapares(matarrayindex,2)
+                DRAIR(IFOC,ILN,3)=matgapares(matarrayindex,3)
+              endif
+
               WRITE(outs,117)DESC(IFOC)(1:LNBLNK(DESC(IFOC)))
   117         FORMAT('Default R value for air gap in ',a)
-
               if(DRAIR(IFOC,ILN,1).lt.0.001)then
                  VAL=0.17
               else
                  VAL=DRAIR(IFOC,ILN,1)
               endif
               CALL EASKR(VAL,outs,
-     &          ' if the construction orientation is vertical: ',
+     &          'if the orientation is vertical:',
      &          0.01,'W',99.9,'W',0.17,'def air gap R',IER,nbhelp)
               DRAIR(IFOC,ILN,1)=VAL
               if(DRAIR(IFOC,ILN,2).lt.0.001)then
@@ -2656,7 +2676,7 @@ C If a standard air layer then ask for gap resistance.
                  VAL=DRAIR(IFOC,ILN,2)
               endif
               CALL EASKR(VAL,outs,
-     &          ' if the construction is a floor or ceiling  : ',
+     &          'if the orientation is a floor or ceiling:',
      &          0.01,'W',99.9,'W',0.17,'def air gap R',IER,nbhelp)
               DRAIR(IFOC,ILN,2)=VAL
               if(DRAIR(IFOC,ILN,3).lt.0.001)then
@@ -2665,24 +2685,10 @@ C If a standard air layer then ask for gap resistance.
                  VAL=DRAIR(IFOC,ILN,3)
               endif
               CALL EASKR(VAL,outs,
-     &          ' if the construction is sloped or UNKNOWN   : ',
+     &          'if the orientation is sloped or UNKNOWN:',
      &          0.01,'W',99.9,'W',0.17,'def air gap R',IER,nbhelp)
               DRAIR(IFOC,ILN,3)=VAL
               guessthick=100.0
-            ELSEIF(IPR(IFOC,ILN).EQ.-99)THEN
-
-C Recover the stipulated air gap resistance if we have a GAP
-C type of [g].
-              if(matarrayindex.gt.0)then
-                guessthick=matdbthick(matarrayindex)
-                if(matopaq(matarrayindex)(1:1).eq.'g')then
-                  if(closemat2)then
-                    DRAIR(IFOC,ILN,1)=matgapares(matarrayindex,1)
-                    DRAIR(IFOC,ILN,2)=matgapares(matarrayindex,2)
-                    DRAIR(IFOC,ILN,3)=matgapares(matarrayindex,3)
-                  endif
-                endif
-              endif
 
             ELSE
 
@@ -2955,8 +2961,12 @@ C reference.
         if(OK)then
           iwhich=0
           CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
-          if(iwhich.eq.0)then
-            CALL EASKABC('Your selection is `0` i.e. air. Options:',
+          write(6,*) 'selected matarrayindex iwhich ',
+     &      matarrayindex,iwhich
+          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &       matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &       matarrayindex.eq.0)then
+            CALL EASKABC('Your selection is a gap. Options:',
      &        ' ','accept','reselect material','abort',iwair,nbhelp)
             if(iwair.eq.2)then
               CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
@@ -2964,18 +2974,15 @@ C reference.
               ILED=-1
               GOTO 3
             endif
-          elseif(iwhich.eq.-99)then
+            IPRMAT(IFOC,ILED-8)=matarrayindex   ! set new material index to layer
+          elseif(matarrayindex.eq.-99)then
             continue
           endif
         else
-
-C Use the current material array index.
-C << do we need to do anything at this point to retain the current value?? >>
-          IWHICH=IPR(IFOC,ILED-8)
-          if(IWHICH.ge.0)then
-            matarrayindex=mathash(IWHICH)  ! find matching array index
-            IPRMAT(IFOC,ILED-8)=matarrayindex
-          endif
+          IWHICH=IPR(IFOC,ILED-8)  ! keep the current material
+          matarrayindex=IPRMAT(IFOC,ILED-8)   ! and the material index
+          write(6,*) 'restored matarrayindex iwhich ',
+     &      matarrayindex,iwhich
         endif
         IPR(IFOC,ILED-8)=IWHICH
 
@@ -2995,42 +3002,50 @@ C menu display.
           IPRMAT(IFOC,ILED-8)=matarrayindex ! update array index for this layer
         endif
 
-C If an air gap ask for the three R values.
-C << alternative to IPR needed >>
-        IF(IPR(IFOC,ILED-8).EQ.0)THEN
+C If a gap then ask for gap resistance, recover resistance if newer matereials file.
+        if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &     matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &     matarrayindex.eq.0)then
+          guessthick=matdbthick(matarrayindex)
+          if(closemat2)then
+            DRAIR(IFOC,ILN,1)=matgapares(matarrayindex,1)
+            DRAIR(IFOC,ILN,2)=matgapares(matarrayindex,2)
+            DRAIR(IFOC,ILN,3)=matgapares(matarrayindex,3)
+          endif
           WRITE(outs,118)DESC(IFOC)(1:LNBLNK(DESC(IFOC)))  
   118     FORMAT('Default R value for air gap in ',a)
           if(DRAIR(IFOC,ILED-8,1).lt.0.001)then
-             VAL=0.17
+            VAL=0.17
           else
-             VAL=DRAIR(IFOC,ILED-8,1)
+            VAL=DRAIR(IFOC,ILED-8,1)
           endif
           CALL EASKR(VAL,outs,
-     &         ' if the orientation is vertical          : ',
-     &         0.0,'W',99.9,'W',0.17,'def air gap R',IER,nbhelp)
+     &      ' if the orientation is vertical          : ',
+     &      0.0,'W',99.9,'W',0.17,'def air gap R',IER,nbhelp)
           DRAIR(IFOC,ILED-8,1)=VAL
           if(DRAIR(IFOC,ILED-8,2).lt.0.001)then
-             VAL=0.17
+            VAL=0.17
           else
-             VAL=DRAIR(IFOC,ILED-8,2)
+            VAL=DRAIR(IFOC,ILED-8,2)
           endif
           CALL EASKR(VAL,outs,
-     &         ' if the orientation is horizontal        : ',
-     &         0.0,'W',99.9,'W',0.17,'def air gap R',IER,nbhelp)
+     &      ' if the orientation is horizontal        : ',
+     &      0.0,'W',99.9,'W',0.17,'def air gap R',IER,nbhelp)
           DRAIR(IFOC,ILED-8,2)=VAL
           if(DRAIR(IFOC,ILED-8,3).lt.0.001)then
-             VAL=0.17
+            VAL=0.17
           else
-             VAL=DRAIR(IFOC,ILED-8,3)
+            VAL=DRAIR(IFOC,ILED-8,3)
           endif
           CALL EASKR(VAL,outs,
-     &         ' if the orientation is sloped or UNKNOWN : ',
-     &         0.0,'W',99.9,'W',0.17,'def air gap R',IER,nbhelp)
+     &      ' if the orientation is sloped or UNKNOWN : ',
+     &      0.0,'W',99.9,'W',0.17,'def air gap R',IER,nbhelp)
           DRAIR(IFOC,ILED-8,3)=VAL
-        ELSEIF(IPR(IFOC,ILED-8).EQ.-99)THEN
+        ELSEIF(matarrayindex.EQ.-99)THEN
 
 C We got the new item from ELISTMAT call so use matarryindex.
 C Find the typical thickness and if [g] or [h] gap resistance.
+C << ?? might not work >>
           if(matarrayindex.ne.0)then
             guessthick=matdbthick(matarrayindex)
             write(outs,'(a,f6.1,a)') 
