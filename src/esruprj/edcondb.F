@@ -972,7 +972,6 @@ C or a gas (g), include additional items.
       PELM(m+2)='? Help                 '
       PELM(m+3)='- Exit                 '
       NELM=m+3   ! number of items to display
-      write(6,*) 'nelm m is ',nelm,m
 
 C Help text for this menu.
    2  continue
@@ -1247,7 +1246,6 @@ C If this parameter is changed also change it in subroutine GVALUE
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       COMMON/GVALCAL/CLAMDA(MMLC)
 
-      integer legmat  ! local variable for legacy record.
       integer matarrayindex ! the indes within matdatarray
 
       LOGICAL     OK,DOK,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,ISZERO
@@ -1258,7 +1256,7 @@ C If this parameter is changed also change it in subroutine GVALUE
       CHARACTER MLCN*12,OTF*4,OPT*12,PROMP2*56,PROMP1*56,T72*72
       CHARACTER*29 MLCITM(36)
       CHARACTER xfile*144,tg*1,delim*1,outs*124
-      character NAM*72,NAM99*72,LAYD*124  ! note NAM not actually used
+      character LAYD*124
       character lworking*144,fs*1
       CHARACTER STGLP(7)*56
       DIMENSION IVALS(7)
@@ -1735,17 +1733,17 @@ C << to supply much of the information needed for the g-value calculation.
             matarrayindex=IPRMAT(IWH,ILAY)   ! which legacy index
  
 C And if a gap reset NAM.
-            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &         matopaq(matarrayindex)(1:1).eq.'h'.or.
-     &         matarrayindex.eq.0)then
-              NAM='gap'
-            elseif(matarrayindex.eq.-99)then
-              call usrmsg('Cannot generate G-value because a layer',
-     &          'was marked with a suspect material.','W')
-              GOTO 3  ! jump back
-            else
-              write(NAM,'(a)') matname(matarrayindex)(1:32)
-            endif
+C            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+C     &         matopaq(matarrayindex)(1:1).eq.'h'.or.
+C     &         matarrayindex.eq.0)then
+C              NAM='gap'
+C            elseif(matarrayindex.eq.-99)then
+C              call usrmsg('Cannot generate G-value because a layer',
+C     &          'was marked with a suspect material.','W')
+C              GOTO 3  ! jump back
+C            else
+C              write(NAM,'(a)') matname(matarrayindex)(1:32)
+C            endif
             IF(IER.EQ.1)RETURN
 
             if(matopaq(matarrayindex)(1:1).eq.'g'.or.
@@ -2021,34 +2019,27 @@ C Detail menu.
       RT=0.
       DO 23, IL=1,LAYERS(IFOC)
         matarrayindex=IPRMAT(IFOC,IL)   ! which legacy index
-        write(6,*) 'debug ',matarrayindex,matopaq(matarrayindex)
-        if(matarrayindex.ge.0)then
+C Debug.
+C        write(6,*) 'debug ',matarrayindex,matopaq(matarrayindex),ifoc,
+C     &    il
  
 C And if a gap reset dbcon and NAM and assign DRAIR if newer materials file
 C and we are dealing with something other than the traditional gap material.
-
-C << What if matgapares values are all zero? >>
-          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &       matopaq(matarrayindex)(1:1).eq.'h'.or.
-     &       matarrayindex.eq.0)then
-            if(closemat2.and.matarrayindex.ne.0)then
-              DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
-              DRAIR(IFOC,IL,2)=matgapares(matarrayindex,2)
-              DRAIR(IFOC,IL,3)=matgapares(matarrayindex,3)
-            endif
-            DBCON=0.0
-            WRITE(NAM,'(A,3F5.2)')'gap ',(DRAIR(IFOC,IL,IY),IY=1,3)
-          else
-            DBCON=matdbcon(matarrayindex)
-            write(NAM,'(a)') matname(matarrayindex)(1:32)
-          endif
-        else
+        if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &     matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &     matarrayindex.eq.0)then
+          DBCON=0.0
+          WRITE(NAM,'(A,3F5.2)')'gap ',(DRAIR(IFOC,IL,IY),IY=1,3)
+        elseif(matarrayindex.eq.-99)then
 
 C If an earlier scan of MLC detected duplicate material names or
 C was confused then matarrayindex could be -99.
           call edisp(iuout,
      &      'One layer material ref is confused or a duplicate name.')
           NAM='UNKNOWN'
+        else
+          DBCON=matdbcon(matarrayindex)
+          write(NAM,'(a)') matname(matarrayindex)(1:32)
         endif
 
 C Calculate standard U value and display as well.
@@ -2139,7 +2130,6 @@ C Check to see that mlc of a single gap layer is not specified as well as
 C an outer or inner gap layer.
         innermat=IPRMAT(IFOC,LAYERS(IFOC)) 
         outermat=IPRMAT(IFOC,1) 
-        write(6,*) 'debug ',innermat,outermat,LAYERS(IFOC),ifoc
         if(LAYERS(IFOC).eq.1.and.(matopaq(outermat)(1:1).eq.'g'.or.
      &     matopaq(outermat)(1:1).eq.'h'.or.outermat.eq.0))then
           call usrmsg('A construction cannot be a single gap layer.',
@@ -2320,32 +2310,30 @@ C close to VALZ.
 
               DO 123, IL=1,LAYERS(IFOC)
                 matarrayindex=IPRMAT(IFOC,IL)   ! which material index
-                if(matarrayindex.ge.0)then
  
 C And if a gap layer reset dbcon.
-                  if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &               matopaq(matarrayindex)(1:1).eq.'h'.or.
-     &               matarrayindex.eq.0)then
-                    DBCON=0.0
-                    if(closemat2)then
-                      DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
-                      RT=RT+DRAIR(IFOC,IL,1)  ! while we are sure
-                    else
-                      RT=RT+DRAIR(IFOC,IL,1)
-                    endif
+                if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &             matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &             matarrayindex.eq.0)then
+                  DBCON=0.0
+                  if(closemat2)then
+                    DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
+                    RT=RT+DRAIR(IFOC,IL,1)  ! while we are sure
                   else
-                    DBCON=matdbcon(matarrayindex)
+                    RT=RT+DRAIR(IFOC,IL,1)
+                  endif
+                elseif(matarrayindex.eq.-99)then
+                  continue
+                else
+                  DBCON=matdbcon(matarrayindex)
 
 C If this is the layer we are adjusting then substitute the current
 C layer thickness into the U value equation.
-                    if(IL.eq.IWHICH)then
-                      RT=RT+currentm/DBCON
-                    else
-                      RT=RT+DTHK(IFOC,IL)/DBCON
-                    endif
+                  if(IL.eq.IWHICH)then
+                    RT=RT+currentm/DBCON
+                  else
+                    RT=RT+DTHK(IFOC,IL)/DBCON
                   endif
-                else
-                  continue
                 endif
 
   123         CONTINUE
@@ -2428,51 +2416,36 @@ C close to VALZ.
               DO 124, IL=1,LAYERS(IFOC)
 
                 matarrayindex=IPRMAT(IFOC,IL)   ! which legacy index
-                if(matarrayindex.ge.0)then
  
 C And if a gap reset dbcon.
-                  if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &               matopaq(matarrayindex)(1:1).eq.'h'.or.
-     &               matarrayindex.eq.0)then
-                    DBCON=0.0
-                  else
-                    DBCON=matdbcon(matarrayindex)
-                  endif
-
-C If laryer material has a g attribute and version 1.2 assign DRAIR.
-                  if(matarrayindex.eq.0)then
-                    continue
-                  elseif(matopaq(matarrayindex)(1:1).eq.'g')then
-                    if(closemat2)then
-
-C If this is the layer we are adjusting then substitute the current
-C gap R into the equation.
-                      if(IL.eq.IWHICH)then
-                        RT=RT+currentm  ! while we are sure
-                      else
-                        DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
-                        RT=RT+DRAIR(IFOC,IL,1)  ! while we are sure
-                      endif
-                    endif
-                  endif
-                else
-                  continue
-                endif
-
-C Calculate standard U value.
                 if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &             matopaq(matarrayindex)(1:1).eq.'h'.or.
      &             matarrayindex.eq.0)then
-                  if(IL.eq.IWHICH)then
-                    RT=RT+currentm  ! use the current R
+                  DBCON=0.0
+                  if(closemat2)then
+
+C If this is the layer we are adjusting then substitute the current
+C gap R into the equation.
+                    if(IL.eq.IWHICH)then
+                      RT=RT+currentm  ! while we are sure
+                    else
+                      DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
+                      RT=RT+DRAIR(IFOC,IL,1)  ! while we are sure
+                    endif
                   else
-                    RT=RT+DRAIR(IFOC,IL,1)
+                    if(IL.eq.IWHICH)then
+                      RT=RT+currentm  ! use the current R
+                    else
+                      RT=RT+DRAIR(IFOC,IL,1)
+                    endif
                   endif
-                ELSEIF(matarrayindex.EQ.-99)THEN
+                elseif(matarrayindex.EQ.-99)then
                   continue  ! use RT calc above
-                ELSE
+                else
+                  DBCON=matdbcon(matarrayindex)
                   RT=RT+DTHK(IFOC,IL)/DBCON
-                ENDIF
+                endif
+
   124         CONTINUE
 
 C ISO 6946 hc assumptions are 0.04 external, 0.13 inside horizontal,
@@ -2617,15 +2590,14 @@ C reference. Use elistmat to select via materials array.
             IF(OK)then
               iwhich = 0
               CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
-              write(6,*) 'selected matarrayindex iwhich ',
-     &          matarrayindex,iwhich
+C Debug
+C              write(6,*) 'selected matarrayindex iwhich ',
+C     &          matarrayindex,iwhich
 
 C If iwhich came back as a zero then the material actually was
 C the traditional gap so reset matarrayindex.
               if(iwhich.eq.0)then
                 matarrayindex=0 
-                write(6,*) 'reset matarrayindex for legacy gap',
-     &            matarrayindex,iwhich
               endif
               if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &           matopaq(matarrayindex)(1:1).eq.'h'.or.
@@ -2637,8 +2609,6 @@ C the traditional gap so reset matarrayindex.
                   CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
                   if(iwhich.eq.0)then
                     matarrayindex=0 
-                    write(6,*) 'reset matarrayindex for legacy gap',
-     &                matarrayindex,iwhich
                   endif
                 elseif(iwair.eq.3)then
                   ILED=-1
@@ -2651,10 +2621,10 @@ C the traditional gap so reset matarrayindex.
             else
               IWHICH=IPR(IFOC,ILN)  ! keep the current material
               matarrayindex=IPRMAT(IFOC,ILN)   ! and the material index
-              write(6,*) 'restored matarrayindex iwhich ',
-     &          matarrayindex,iwhich
+C Debug
+C              write(6,*) 'restored matarrayindex iwhich ',
+C     &          matarrayindex,iwhich
             endif
-            write(6,*) 'matarrayindex iwhich ',matarrayindex,iwhich
 
 C Take the legacy index and assign it to this layer.
             IPR(IFOC,ILN)=IWHICH
@@ -2988,15 +2958,17 @@ C reference.
         if(OK)then
           iwhich=0
           CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
-          write(6,*) 'selected matarrayindex iwhich ',
-     &      matarrayindex,iwhich
+C Debug.
+C          write(6,*) 'selected matarrayindex iwhich ',
+C     &      matarrayindex,iwhich
 
 C If iwhich came back as a zero then the material actually was
 C the traditional gap so reset matarrayindex.
           if(iwhich.eq.0)then
             matarrayindex=0 
-            write(6,*) 'reset matarrayindex for legacy gap',
-     &        matarrayindex,iwhich
+C Debug.
+C            write(6,*) 'reset matarrayindex for legacy gap',
+C     &        matarrayindex,iwhich
           endif
           if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &       matopaq(matarrayindex)(1:1).eq.'h'.or.
@@ -3006,9 +2978,7 @@ C the traditional gap so reset matarrayindex.
             if(iwair.eq.2)then
               CALL ELISTMAT(iwhich,chdb,'-',matarrayindex,IER)
               if(iwhich.eq.0)then
-                matarrayindex=0 
-                write(6,*) 'reset matarrayindex for legacy gap',
-     &            matarrayindex,iwhich
+                matarrayindex=0   ! a gap assumption
               endif
             elseif(iwair.eq.3)then
               ILED=-1
@@ -3021,8 +2991,6 @@ C the traditional gap so reset matarrayindex.
         else
           IWHICH=IPR(IFOC,ILED-8)  ! keep the current material
           matarrayindex=IPRMAT(IFOC,ILED-8)   ! and the material index
-          write(6,*) 'restored matarrayindex iwhich ',
-     &      matarrayindex,iwhich
         endif
         IPR(IFOC,ILED-8)=IWHICH
 
@@ -3048,9 +3016,9 @@ C If a gap then ask for gap resistance, recover resistance if newer matereials f
      &     matarrayindex.eq.0)then
           guessthick=matdbthick(matarrayindex)
           if(closemat2)then
-            DRAIR(IFOC,ILN,1)=matgapares(matarrayindex,1)
-            DRAIR(IFOC,ILN,2)=matgapares(matarrayindex,2)
-            DRAIR(IFOC,ILN,3)=matgapares(matarrayindex,3)
+            DRAIR(IFOC,ILED-8,1)=matgapares(matarrayindex,1)
+            DRAIR(IFOC,ILED-8,2)=matgapares(matarrayindex,2)
+            DRAIR(IFOC,ILED-8,3)=matgapares(matarrayindex,3)
           endif
           WRITE(outs,118)DESC(IFOC)(1:LNBLNK(DESC(IFOC)))  
   118     FORMAT('Default R value for gap in ',a)

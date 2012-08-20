@@ -274,21 +274,17 @@ C Pick a material in that MLC.
         II=0
         do 10 IL=1,LAYERS(ISEL)
           matarrayindex=IPRMAT(ISEL,IL)   ! which array index
-          if(matarrayindex.ge.0)then
- 
-C And if matarrayindex is zero then re-establish NAM.
-            if(matarrayindex.eq.0)then
-              NAM='AIR'
-            else
-              write(NAM,'(a)') matname(matarrayindex)(1:32)
-            endif
+          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &       matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &       matarrayindex.eq.0)then
+            NAM='AIR'
+          elseif(matarrayindex.eq.-99)then
+            IER=101  ! can no deal with this
+            return
+          else
+            write(NAM,'(a)') matname(matarrayindex)(1:32)
           endif
 
-C Check for errors - add to the total error counter if error has occured.
-          if (IERR.ne.0) then
-            IER=101
-            return
-          endif
           II=II+1
           LELM(II)=NAM(1:36)
  10     CONTINUE

@@ -1009,17 +1009,16 @@ C If an air layer include the R values in the display.
           if(matarrayindex.ge.0)then
  
 C And if matarrayindex is zero then reestablish NAM.
-            if(matarrayindex.eq.0)then
-              NAM='AIR'
+            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &         matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &         matarrayindex.eq.0)then
+              NAM='Air gap'
+              PNAM(j)='Air gap'
             else
               write(NAM,'(a)') matname(matarrayindex)(1:32)
+              PNAM(j)=NAM(1:20)
             endif
           endif
-          IF(IPRMAT(imatch,j).EQ.0)THEN
-            PNAM(j)='Air gap'
-          ELSE
-            PNAM(j)=NAM(1:20)
-          ENDIF 
           write(item(header+j),'(a,i2,1x,a12)')' Layer: ',j,PNAM(j)
           ndisp=header+j
   10    continue

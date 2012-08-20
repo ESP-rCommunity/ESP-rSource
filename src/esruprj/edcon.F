@@ -828,27 +828,25 @@ C Multilayer construction has not been defined.
         ELSE
 
           matarrayindex=IPRMAT(ICF,IE)   ! which materials array index
-          if(matarrayindex.ge.0)then
-            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &         matopaq(matarrayindex)(1:1).eq.'h'.or.
-     &         matarrayindex.eq.0)then
+          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &       matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &       matarrayindex.eq.0)then
 
 C Find air gap resistance for this layer. 
 C << remove reporting for IPR >>
-              DO 148 IGG=1,NAIRG(ISUR)
-                IF(IPAIRG(ISUR,IGG).EQ.IE)R=RAIRG(ISUR,IGG)
-                WRITE(ISD(M),48)KEY,IE,IPR(ICF,IE),THK(ISUR,IE),
-     &            CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE),R
-  48            FORMAT(A1,I3,I4,F6.3,3F8.2,F6.2)
- 148          CONTINUE
-            else
-              WRITE(ISD(M),46)KEY,IE,IPR(ICF,IE),THK(ISUR,IE),
-     &          CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE)
-  46          FORMAT(A1,I3,I4,F6.3,3F8.2)
-            endif
-          else
+            DO 148 IGG=1,NAIRG(ISUR)
+              IF(IPAIRG(ISUR,IGG).EQ.IE)R=RAIRG(ISUR,IGG)
+              WRITE(ISD(M),48)KEY,IE,IPR(ICF,IE),THK(ISUR,IE),
+     &          CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE),R
+  48          FORMAT(A1,I3,I4,F6.3,3F8.2,F6.2)
+ 148        CONTINUE
+          elseif(matarrayindex.eq.-99)then
             WRITE(ISD(M),'(a1,i3,a)')KEY,IE,
      &        ' confused material reference'
+          else
+            WRITE(ISD(M),46)KEY,IE,IPR(ICF,IE),THK(ISUR,IE),
+     &        CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE)
+  46        FORMAT(A1,I3,I4,F6.3,3F8.2)
           endif
         ENDIF
   45  CONTINUE
@@ -950,7 +948,7 @@ C the OPAQUE/TRANSPARENT flag as well.
           GOTO 12
         ENDIF
 
-C Put the composite db info into common, reset number of air
+C Put the construction common file info into common blocks, reset number of air
 C gaps in preparation of scan.
         MODCON=.TRUE.
         NAIRG(ISUR)=0
@@ -959,52 +957,43 @@ C gaps in preparation of scan.
 C Gather information about each layer via materials data structures.
         DO 223, IL=1,LAYERS(IC)
           matarrayindex=IPRMAT(IC,IL)   ! which materials array index
-          if(matarrayindex.ge.0)then
 
 C And if matarrayindex is zero then resetn dbcon dbden dbsht.
-            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &         matopaq(matarrayindex)(1:1).eq.'h'.or.
-     &         matarrayindex.eq.0)then
-              DBCON=0.0; DBDEN=0.0; DBSHT=0.0
-              E=0.99; A=0.99
-              NAM='AIR'
-
-C If g or h air gap and version 1.2 then assign DRAIR
-              if(closemat2)then
-                DRAIR(IC,IL,1)=matgapares(matarrayindex,1)
-                DRAIR(IC,IL,2)=matgapares(matarrayindex,2)
-                DRAIR(IC,IL,3)=matgapares(matarrayindex,3)
-              endif
+          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &       matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &       matarrayindex.eq.0)then
+            DBCON=0.0; DBDEN=0.0; DBSHT=0.0
+            E=0.99; A=0.99
+            NAM='AIR'
 
 C Update array NAIRG.
-              if(NAIRG(ISUR)+1.gt.MGP)then
-                call usrmsg(
-     &           'As defined, this composite contains more air gaps',
-     &           ' then allowed - please change your description','W')
-              else
-                NAIRG(ISUR)=NAIRG(ISUR)+1
-                IPAIRG(ISUR,NAIRG(ISUR))=IL
-                IF(SSVFC(icn1)(1:4).EQ.'VERT')THEN
-                   RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,1)
-                ELSEIF(SSVFC(icn1)(1:4).EQ.'FLOR'.OR.
-     &                 SSVFC(icn1)(1:4).EQ.'CEIL')THEN
-                   RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,2)
-                ELSE
-                   RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,3)
-                ENDIF
-              endif
+            if(NAIRG(ISUR)+1.gt.MGP)then
+              call usrmsg(
+     &          'As defined, this composite contains more air gaps',
+     &          ' then allowed - please change your description','W')
             else
-              DBCON=matdbcon(matarrayindex)
-              DBDEN=matdbden(matarrayindex)
-              DBSHT=matdbsht(matarrayindex)
-              E=matdbine(matarrayindex)
-              A=matdbina(matarrayindex)
-              write(NAM,'(a)') matname(matarrayindex)(1:32)
+              NAIRG(ISUR)=NAIRG(ISUR)+1
+              IPAIRG(ISUR,NAIRG(ISUR))=IL
+              IF(SSVFC(icn1)(1:4).EQ.'VERT')THEN
+                 RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,1)
+              ELSEIF(SSVFC(icn1)(1:4).EQ.'FLOR'.OR.
+     &               SSVFC(icn1)(1:4).EQ.'CEIL')THEN
+                 RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,2)
+              ELSE
+                 RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,3)
+              ENDIF
             endif
-          else
+          elseif(matarrayindex.eq.-99)then
             call edisp(iuout,
      &        'One layer material ref is confused or duplicate name.')
             goto 12
+          else
+            DBCON=matdbcon(matarrayindex)
+            DBDEN=matdbden(matarrayindex)
+            DBSHT=matdbsht(matarrayindex)
+            E=matdbine(matarrayindex)
+            A=matdbina(matarrayindex)
+            write(NAM,'(a)') matname(matarrayindex)(1:32)
           endif
           IF(IER.EQ.1)RETURN
 
@@ -1216,49 +1205,43 @@ C the material was not found and must be asked for.
 C Gather information about each layer. Read in the materials info.
         DO 23, IL=1,LAYERS(IC)
           matarrayindex=IPRMAT(IC,IL)   ! which materials array index
-          if(matarrayindex.ge.0)then
 
 C And if matarrayindex is zero then resetn dbcon dbden dbsht.
-            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &         matopaq(matarrayindex)(1:1).eq.'h'.or.
-     &         matarrayindex.eq.0)then
-              DBCON=0.0; DBDEN=0.0; DBSHT=0.0
-              E=0.99; A=0.99
-              NAM='AIR'
-
-C If g or h air gap and version 1.2 then assign DRAIR.
-              if(closemat2)then
-                DRAIR(IC,IL,1)=matgapares(matarrayindex,1)
-                DRAIR(IC,IL,2)=matgapares(matarrayindex,2)
-                DRAIR(IC,IL,3)=matgapares(matarrayindex,3)
-              endif
+          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &       matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &       matarrayindex.eq.0)then
+            DBCON=0.0; DBDEN=0.0; DBSHT=0.0
+            E=0.99; A=0.99
+            NAM='AIR'
+C Debug            write(6,*) 'EDZCON',ic,il,DRAIR(IC,IL,1),
+C     &        DRAIR(IC,IL,2),DRAIR(IC,IL,3)
 
 C Deal with air gap resistance if layer is a gap.
-              if(NAIRG(IS)+1.gt.MGP)then
-                call usrmsg(
-     &            'This construction contains more air gaps than',
-     &            'allowed - please change your description','W')
-              else
-                NAIRG(IS)=NAIRG(IS)+1
-                IPAIRG(IS,NAIRG(IS))=IL
-                IF(SSVFC(ioc)(1:4).EQ.'VERT')THEN
-                  RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,1)
-                ELSEIF(SSVFC(ioc)(1:4).EQ.'FLOR'.OR.
-     &                 SSVFC(ioc)(1:4).EQ.'CEIL')THEN
-                  RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,2)
-                ELSE
-                  RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,3)
-                ENDIF
-              endif
+            if(NAIRG(IS)+1.gt.MGP)then
+              call usrmsg(
+     &          'This construction contains more air gaps than',
+     &          'allowed - please change your description','W')
             else
-              DBCON=matdbcon(matarrayindex)
-              DBDEN=matdbden(matarrayindex)
-              DBSHT=matdbsht(matarrayindex)
-              E=matdbine(matarrayindex)
-              A=matdbina(matarrayindex)
-              write(NAM,'(a)') matname(matarrayindex)(1:32)
+              NAIRG(IS)=NAIRG(IS)+1
+              IPAIRG(IS,NAIRG(IS))=IL
+              IF(SSVFC(ioc)(1:4).EQ.'VERT')THEN
+                RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,1)
+              ELSEIF(SSVFC(ioc)(1:4).EQ.'FLOR'.OR.
+     &               SSVFC(ioc)(1:4).EQ.'CEIL')THEN
+                RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,2)
+              ELSE
+                RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,3)
+              ENDIF
             endif
-
+          elseif(matarrayindex.eq.-99)then
+            continue  ! can't deal with a confused material
+          else
+            DBCON=matdbcon(matarrayindex)
+            DBDEN=matdbden(matarrayindex)
+            DBSHT=matdbsht(matarrayindex)
+            E=matdbine(matarrayindex)
+            A=matdbina(matarrayindex)
+            write(NAM,'(a)') matname(matarrayindex)(1:32)
           endif
 
           CON(IS,IL)=DBCON
@@ -2073,18 +2056,16 @@ c homogeneous layer. Locate if the MLC database item is used.
           CAP=0.
           DO 45 il=1,LAYERS(ic)
             matarrayindex=IPRMAT(IC,IL)   ! which materials array index
-            if(matarrayindex.ge.0)then
 
 C And if matarrayindex is zero then resetn dbcon dbden dbsht.
-              if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &           matopaq(matarrayindex)(1:1).eq.'h'.or.
-     &           matarrayindex.eq.0)then
-                DBCON=0.0; DBDEN=0.0; DBSHT=0.0
-              elseif(matarrayindex.gt.0)then
-                DBCON=matdbcon(matarrayindex)
-                DBDEN=matdbden(matarrayindex)
-                DBSHT=matdbsht(matarrayindex)
-              endif
+            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &         matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &         matarrayindex.eq.0)then
+              DBCON=0.0; DBDEN=0.0; DBSHT=0.0
+            elseif(matarrayindex.gt.0)then
+              DBCON=matdbcon(matarrayindex)
+              DBDEN=matdbden(matarrayindex)
+              DBSHT=matdbsht(matarrayindex)
             endif
 
 C Get properties for outer layer.
