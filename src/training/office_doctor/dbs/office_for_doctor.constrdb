@@ -93,7 +93,7 @@
     4    entry_floor   OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
   263    0.2500  earth std : Common_earth
-  262    0.1500  gravel : Gravel based
+  262    0.1500  Gravel (earth) : Gravel based earth
    32    0.1500  heavy mix concrete : Heavy mix concrete
    83    0.0240  white marble : White marble
 # layers  description   optics name   symmetry tag
@@ -172,7 +172,7 @@
 # mat ref thickness (m) mat descr & air gap R
    78    0.0190  Plywood deck : Plywood/felt (UK code)
   290    0.1850  EPS 160 mm : EPS 160mm
-  110    0.0130  Plasterboard (wallboard) : Internal finish (UK code)
+  110    0.0130  Plasterboard (wt wallboard) : Internal finish (UK code)
 # layers  description   optics name   symmetry tag
     4    SC_Pitch_roo  OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
@@ -218,7 +218,7 @@
 # mat ref thickness (m) mat descr & air gap R
    78    0.0190  Plywood deck : Plywood/felt (UK code)
   290    0.1600  EPS 160 mm : EPS 160mm
-  110    0.0130  Plasterboard (wallboard) : Internal finish (UK code)
+  110    0.0130  Plasterboard (wt wallboard) : Internal finish (UK code)
 # layers  description   optics name   symmetry tag
     1    Not_DisplayG  TRAN  dispGlz_not   SYMMETRIC     
 # mat ref thickness (m) mat descr & air gap R
