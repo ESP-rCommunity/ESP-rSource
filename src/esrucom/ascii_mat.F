@@ -108,7 +108,7 @@ C Parameters
       DIMENSION VAL(6)
       CHARACTER IDESC*72,NDESC*72,OUTSTR*124
       character namelist*32,nametocheck*32  ! to check for duplicate names
-      character outs*124
+      character outs*142
       dimension namelist(600)
       integer loop,ih  ! loop indices
       integer iln,iln2 ! length of name strings
@@ -200,7 +200,7 @@ C Record the name and then check and see if it is a duplicate.
                   write(outs,'(3a,i4,3a,i4,a)') 'Duplicate names ',
      &              nametocheck(1:iln),' (',matdbitems,') vs ',
      &              namelist(ih)(1:iln2),' (',ih,
-     &              '). Material names must be unique!'
+     &              '). Must be unique!'
                   call edisp(iuout,outs)
                 endif
               else
