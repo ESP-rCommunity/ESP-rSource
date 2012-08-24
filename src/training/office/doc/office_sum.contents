@@ -1,39 +1,32 @@
 Synopsis
  
-This is a synopsis of the model office building, winter operation defined in
-office_win.cfg generated on Fri Jul 23 16:05:21 2010. Notes associated with
-the model are in office.log
+Synopsis of the model office building, summer operation defined in
+office_sum.cfg generated on Fri Aug 24 15:16:29 2012. Notes associated with
+the model are in ../doc/office.log
  
 The model is located at latitude   59.00 with a longitude difference of   0.00
 from the local time meridian. The year used in simulations is 1967 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical urban site and the ground reflectance is 0.20.
  
-Project name: not yet defined
-Building address: not yet defined
-Building city: not yet defined
-Building Postcode: not yet defined
-Building owner name: not yet defined
-Building owner telephone: not yet defined
-Building owner address: not yet defined
-Building owner city: not yet defined
-Building owner Postcode: not yet defined
  
 Simulationist name: not yet defined
 Simulationist telephone: not yet defined
 Simulationist address: not yet defined
 Simulationist city: not yet defined
 Simulationist postcode: not yet defined
-The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
-with hour centred solar data.
+ 
+The climate is: ESP test climate and is held in: clm67 with hour centred solar
+data.
+ standard annual weather: clm67
 Calculated ground temp at 0.5m depth
-3.8923 4.7350 6.8034 9.6438 12.450 14.471 15.151 14.293 12.151 9.2975 6.5030 4.5250
+3.0888 4.3008 6.6610 8.8949 13.123 15.349 15.963 14.834 12.227 8.9770 5.7777 3.6649
 Calculated ground temp at 1.0m depth
-5.0774 5.2557 6.5264 8.6182 10.954 12.905 13.939 13.773 12.455 10.343 8.0097 6.0850
+3.6630 4.5020 6.4738 8.4398 12.343 14.560 15.374 14.612 12.434 9.5459 6.5633 4.4524
 Calculated ground temp at 2.0m depth
-7.1669 6.6455 6.8604 7.7780 9.1669 10.650 11.827 12.386 12.160 11.219 9.8221 8.3432
+4.7588 5.0557 6.4004 7.8990 11.149 13.226 14.259 14.027 12.542 10.298 7.7730 5.7855
 Calculated ground temp at 4.0m depth
-9.4473 8.8816 8.4792 8.3374 8.5155 8.9626 9.5603 10.155 10.569 10.699 10.512 10.057
+6.4880 6.2779 6.8663 7.7174 9.8661 11.475 12.517 12.771 12.121 10.800 9.0880 7.5409
  
 An Integrated Performance View is incomplete or missing.
  
@@ -44,102 +37,307 @@ Databases associated with the model:
  standard plant comp    : plantc.db1
  standard event profiles: profiles.db1.a
  standard optical prop  : optics.db2
- UK NCM data            : /usr/esru/esp-r/databases/SBEM.db1
+ standard UK NCM data   : SBEM.db1
+ standard mould isopleth: mould.db1
  
  ____________________________________________________________
  
 The model includes ideal controls as follows:
 Control description:
-science park
+control facade windows to closed 0h00-8h00 and 18h00-24h00. During day
+open if zone is > 21C.  Doors between entry and corridor to units are
+open during office hours on weekdays only.
  
-Zones control includes  3 functions.
-winter heating with separate control logic for stairs,  offices and the
-entrances.  Note, control loop one is not referenced (which is ok)
+ Flow control includes 23 loops.
+mass_flow control is applied to each connection that has either ctdoor or
+ctwina to match the facade or inner door control logic. Made by setting up one
+of each type of control and the copy and re-assucng the sensor/actuator point.
  
- The sensor for function  1 senses the temperature of the current zone.
- The actuator for function  1 is air point of the current zone
- There have been  1 day types defined.
- Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      free floating
+ The sensor for function  1 senses node (7) unit_a
+ The actuator for function  1 is flow connection:  41 unit_a - north via ctwina
+There have been  1 periods of validity defined during the year.
+ Control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+   2  7.99 dry bulb > flow       on/off setpoint 21.00 direct action ON fraction 1.000.
+   3 18.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
  
- The sensor for function  2 senses the temperature of the current zone.
- The actuator for function  2 is air point of the current zone
- The function day types are Weekdays, Saturdays & Sundays
- Weekday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       16000.0 0.0 0.0 0.0 10.0 50.0
-basic control: max heating capacity 16000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 10.00C cooling setpoint
-50.00C. (missing 7th item)
-   2  8.00 db temp   > flux      basic control       16000.0 0.0 0.0 0.0 20.0 50.0
-basic control: max heating capacity 16000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 20.00C cooling setpoint
-50.00C. (missing 7th item)
-   3 18.00 db temp   > flux      basic control       16000.0 0.0 0.0 0.0 10.0 50.0
-basic control: max heating capacity 16000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 10.00C cooling setpoint
-50.00C. (missing 7th item)
- Saturday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       16000.0 0.0 0.0 0.0 10.0 50.0
-basic control: max heating capacity 16000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 10.00C cooling setpoint
-50.00C. (missing 7th item)
- Sunday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       16000.0 0.0 0.0 0.0 10.0 50.0
-basic control: max heating capacity 16000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 10.00C cooling setpoint
-50.00C. (missing 7th item)
+ The sensor for function  2 senses node (5) ent_g
+ The actuator for function  2 is flow connection:  56 ent_g - west via ctdoor
+ The following day types are defined:
+weekday
+saturday
+sunday
+ Day type weekday control has  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+   2  7.99 dry bulb > flow       on/off setpoint 10.00 direct action ON fraction 1.000.
+   3 18.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+ Day type saturday control has  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 0.000.
+ Day type sunday control has  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 0.000.
  
- The sensor for function  3 senses the temperature of the current zone.
- The actuator for function  3 is air point of the current zone
- The function day types are Weekdays, Saturdays & Sundays
- Weekday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       6000.0 0.0 0.0 0.0 10.0 50.0
-basic control: max heating capacity 6000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 10.00C cooling setpoint
-50.00C. (missing 7th item)
- Saturday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       6000.0 0.0 0.0 0.0 10.0 50.0
-basic control: max heating capacity 6000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 10.00C cooling setpoint
-50.00C. (missing 7th item)
- Sunday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       6000.0 0.0 0.0 0.0 10.0 0.0
-basic control: max heating capacity 6000.0W min heating capacity 0.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 10.00C cooling setpoint 0.00C.
-(missing 7th item)
+ The sensor for function  3 senses node (7) unit_a
+ The actuator for function  3 is flow connection:  42 unit_a - east via ctwina
+There have been  1 periods of validity defined during the year.
+ Control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+   2  7.99 dry bulb > flow       on/off setpoint 21.00 direct action ON fraction 1.000.
+   3 18.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
  
- Zone to contol loop linkages:
- zone ( 1) corid_1      << control  3
- zone ( 2) corid_g      << control  3
- zone ( 3) Unit_f       << control  2
- zone ( 4) Unit_g       << control  2
- zone ( 5) Unit_j       << control  2
- zone ( 6) Unit_a       << control  2
- zone ( 7) Unit_b       << control  2
- zone ( 8) Unit_e       << control  2
- zone ( 9) Unit_hi      << control  2
- zone (10) Unit_cd      << control  2
- zone (11) ceil_fg      << control  0
- zone (12) ceil_chi     << control  0
- zone (13) ceil_j       << control  0
- zone (14) stair_abfg   << control  3
- zone (15) stair_deij   << control  3
- zone (16) toilets      << control  3
- zone (17) roof         << control  0
+ The sensor for function  4 senses node (7) unit_a
+ The actuator for function  4 is flow connection:  43 unit_a - west via ctwina
+There have been  1 periods of validity defined during the year.
+ Control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+   2  7.99 dry bulb > flow       on/off setpoint 21.00 direct action ON fraction 1.000.
+   3 18.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+ 
+ The sensor for function  5 senses node (8) unit_b
+ The actuator for function  5 is flow connection:  44 unit_b - east via ctwina
+There have been  1 periods of validity defined during the year.
+ Control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+   2  7.99 dry bulb > flow       on/off setpoint 21.00 direct action ON fraction 1.000.
+   3 18.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+ 
+ The sensor for function  6 senses node (9) unt_cd
+ The actuator for function  6 is flow connection:  45 unt_cd - east via ctwina
+There have been  1 periods of validity defined during the year.
+ Control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+   2  7.99 dry bulb > flow       on/off setpoint 21.00 direct action ON fraction 1.000.
+   3 18.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+ 
+ The sensor for function  7 senses node (10) unit_e
+ The actuator for function  7 is flow connection:  46 unit_e - south via ctwina
+There have been  1 periods of validity defined during the year.
+ Control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+   2  7.99 dry bulb > flow       on/off setpoint 21.00 direct action ON fraction 1.000.
+   3 18.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+ 
+ The sensor for function  8 senses node (10) unit_e
+ The actuator for function  8 is flow connection:  47 unit_e - east via ctwina
+There have been  1 periods of validity defined during the year.
+ Control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+   2  7.99 dry bulb > flow       on/off setpoint 21.00 direct action ON fraction 1.000.
+   3 18.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+ 
+ The sensor for function  9 senses node (10) unit_e
+ The actuator for function  9 is flow connection:  48 unit_e - west via ctwina
+There have been  1 periods of validity defined during the year.
+ Control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+   2  7.99 dry bulb > flow       on/off setpoint 21.00 direct action ON fraction 1.000.
+   3 18.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+ 
+ The sensor for function 10 senses node (11) unit_f
+ The actuator for function 10 is flow connection:  49 unit_f - north via ctwina
+There have been  1 periods of validity defined during the year.
+ Control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+   2  7.99 dry bulb > flow       on/off setpoint 21.00 direct action ON fraction 1.000.
+   3 18.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+ 
+ The sensor for function 11 senses node (11) unit_f
+ The actuator for function 11 is flow connection:  50 unit_f - east via ctwina
+There have been  1 periods of validity defined during the year.
+ Control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+   2  7.99 dry bulb > flow       on/off setpoint 21.00 direct action ON fraction 1.000.
+   3 18.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+ 
+ The sensor for function 12 senses node (12) unit_g
+ The actuator for function 12 is flow connection:  51 unit_g - east via ctwina
+There have been  1 periods of validity defined during the year.
+ Control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+   2  7.99 dry bulb > flow       on/off setpoint 21.00 direct action ON fraction 1.000.
+   3 18.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+ 
+ The sensor for function 13 senses node (13) unt_hi
+ The actuator for function 13 is flow connection:  52 unt_hi - east via ctwina
+There have been  1 periods of validity defined during the year.
+ Control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+   2  7.99 dry bulb > flow       on/off setpoint 21.00 direct action ON fraction 1.000.
+   3 18.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+ 
+ The sensor for function 14 senses node (14) unit_j
+ The actuator for function 14 is flow connection:  53 unit_j - south via ctwina
+There have been  1 periods of validity defined during the year.
+ Control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+   2  7.99 dry bulb > flow       on/off setpoint 21.00 direct action ON fraction 1.000.
+   3 18.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+ 
+ The sensor for function 15 senses node (14) unit_j
+ The actuator for function 15 is flow connection:  54 unit_j - east via ctwina
+There have been  1 periods of validity defined during the year.
+ Control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+   2  7.99 dry bulb > flow       on/off setpoint 21.00 direct action ON fraction 1.000.
+   3 18.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+ 
+ The sensor for function 16 senses node (14) unit_j
+ The actuator for function 16 is flow connection:  55 unit_j - west via ctwina
+There have been  1 periods of validity defined during the year.
+ Control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+   2  7.99 dry bulb > flow       on/off setpoint 21.00 direct action ON fraction 1.000.
+   3 18.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+ 
+ The sensor for function 17 senses node (14) unit_j
+ The actuator for function 17 is flow connection:  57 unit_j - ent_g via ctdoor
+ The following day types are defined:
+weekday
+saturday
+sunday
+ Day type weekday control has  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+   2  7.99 dry bulb > flow       on/off setpoint 10.00 direct action ON fraction 1.000.
+   3 18.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+ Day type saturday control has  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 0.000.
+ Day type sunday control has  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 0.000.
+ 
+ The sensor for function 18 senses node (11) unit_f
+ The actuator for function 18 is flow connection:  58 unit_f - ent_g via ctdoor
+ The following day types are defined:
+weekday
+saturday
+sunday
+ Day type weekday control has  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+   2  7.99 dry bulb > flow       on/off setpoint 10.00 direct action ON fraction 1.000.
+   3 18.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+ Day type saturday control has  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 0.000.
+ Day type sunday control has  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 0.000.
+ 
+ The sensor for function 19 senses node (13) unt_hi
+ The actuator for function 19 is flow connection:  59 unt_hi - ent_g via ctdoor
+ The following day types are defined:
+weekday
+saturday
+sunday
+ Day type weekday control has  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+   2  7.99 dry bulb > flow       on/off setpoint 10.00 direct action ON fraction 1.000.
+   3 18.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+ Day type saturday control has  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 0.000.
+ Day type sunday control has  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 0.000.
+ 
+ The sensor for function 20 senses node (7) unit_a
+ The actuator for function 20 is flow connection:  60 unit_a - corid1 via ctdoor
+ The following day types are defined:
+weekday
+saturday
+sunday
+ Day type weekday control has  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+   2  7.99 dry bulb > flow       on/off setpoint 10.00 direct action ON fraction 1.000.
+   3 18.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+ Day type saturday control has  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 0.000.
+ Day type sunday control has  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 0.000.
+ 
+ The sensor for function 21 senses node (10) unit_e
+ The actuator for function 21 is flow connection:  61 unit_e - corid1 via ctdoor
+ The following day types are defined:
+weekday
+saturday
+sunday
+ Day type weekday control has  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+   2  7.99 dry bulb > flow       on/off setpoint 10.00 direct action ON fraction 1.000.
+   3 18.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+ Day type saturday control has  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 0.000.
+ Day type sunday control has  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 0.000.
+ 
+ The sensor for function 22 senses node (12) unit_g
+ The actuator for function 22 is flow connection:  62 unit_g - ent_g via ctdoor
+ The following day types are defined:
+weekday
+saturday
+sunday
+ Day type weekday control has  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+   2  7.99 dry bulb > flow       on/off setpoint 10.00 direct action ON fraction 1.000.
+   3 18.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+ Day type saturday control has  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 0.000.
+ Day type sunday control has  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 0.000.
+ 
+ The sensor for function 23 senses node (8) unit_b
+ The actuator for function 23 is flow connection:  63 unit_b - corid1 via ctdoor
+ The following day types are defined:
+weekday
+saturday
+sunday
+ Day type weekday control has  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+   2  7.99 dry bulb > flow       on/off setpoint 10.00 direct action ON fraction 1.000.
+   3 18.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 1.000.
+ Day type saturday control has  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 0.000.
+ Day type sunday control has  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb > flow       on/off setpoint 100.00 direct action ON fraction 0.000.
  ____________________________________________________________
  
 The model includes an air flow network.
  
  Flow network description.
  
-  18 nodes,   5 components,  40 connections;     wind reduction =  1.000
+  18 nodes,   8 components,  66 connections;     wind reduction =  1.000
    # Node      Fluid   Node Type           Height Temperature    Data_1       Data_2
    1 north        air   boundary & wind ind   1.0000   0.0000     coef    1.000  azim   0.000
    2 south        air   boundary & wind ind   1.0000   0.0000     coef    1.000  azim 180.000
@@ -176,6 +374,15 @@ The model includes an air flow network.
  
  vent          110  2  0 Specific air flow opening           m = rho.f(A,dP)
  Fluid  1.0 opening area (m)  0.200
+ 
+ ctwina        110  2  0 Specific air flow opening           m = rho.f(A,dP)
+ Fluid  1.0 opening area (m)  0.500
+ 
+ ctwinb        110  2  0 Specific air flow opening           m = rho.f(A,dP)
+ Fluid  1.0 opening area (m)  1.500
+ 
+ ctdoor        130  5  0 Specific air flow door              m = rho.f(W,H,dP)
+ Fluid  1.0 width  0.100 height 1.800 ref ht  1.500 discharge factor 0.500
  
     # +Node         dHght   -Node         dHght   Component       Z @+    Z @-
     1 toilet        0.000   north         2.000   exfan           3.000   3.000
@@ -218,6 +425,32 @@ The model includes an air flow network.
    38 unit_e        0.000   east          0.000   win_cr          5.200   1.000
    39 unit_e        0.000   west          0.000   win_cr          5.200   1.000
    40 corid1        0.000   west          0.000   win_cr          5.200   1.000
+   41 unit_a        0.000   north         0.000   ctwina          5.200   1.000
+   42 unit_a        0.000   east          0.000   ctwina          5.200   1.000
+   43 unit_a        0.000   west          0.000   ctwina          5.200   1.000
+   44 unit_b        0.000   east          0.000   ctwina          5.200   1.000
+   45 unt_cd        0.000   east          0.000   ctwina          5.200   1.000
+   46 unit_e        0.000   south         0.000   ctwina          5.200   1.000
+   47 unit_e        0.000   east          0.000   ctwina          5.200   1.000
+   48 unit_e        0.000   west          0.000   ctwina          5.200   1.000
+   49 unit_f        0.000   north         0.000   ctwina          1.200   1.000
+   50 unit_f        0.000   east          0.000   ctwina          1.200   1.000
+   51 unit_g        0.000   east          0.000   ctwina          1.200   1.000
+   52 unt_hi        0.000   east          0.000   ctwina          1.200   1.000
+   53 unit_j        0.000   south         0.000   ctwina          1.200   1.000
+   54 unit_j        0.000   east          0.000   ctwina          1.200   1.000
+   55 unit_j        0.000   west          0.000   ctwina          1.200   1.000
+   56 ent_g         0.000   west          0.000   ctdoor          1.200   1.000
+   57 unit_j        0.000   ent_g         0.000   ctdoor          1.200   1.200
+   58 unit_f        0.000   ent_g         0.000   ctdoor          1.200   1.200
+   59 unt_hi        0.000   ent_g         0.000   ctdoor          1.200   1.200
+   60 unit_a        0.000   corid1        0.000   ctdoor          5.200   5.200
+   61 unit_e        0.000   corid1        0.000   ctdoor          5.200   5.200
+   62 unit_g        0.000   ent_g         0.000   ctdoor          1.200   1.200
+   63 unit_b        0.000   corid1        0.000   ctdoor          5.200   5.200
+   64 roof          0.000   north         0.000   vent            6.200   1.000
+   65 roof          0.000   south         0.000   vent            6.200   1.000
+   66 roof          0.000   east          0.000   vent            6.200   1.000
 thermal zone to air flow node mapping:
 thermal zone -> air flow node
 corid_1      -> corid1
@@ -252,7 +485,7 @@ ID Zone         Volume|          Surface
  7 Unit_b        552.8   9   564.3     7.2   204.8  Unit_b describes a...
  8 Unit_e        743.9  12   701.0    44.4   275.5  Unit_e describes a...
  9 Unit_hi      1391.9  13  1357.4    30.3   515.5  Unit_hi describes a...
-10 Unit_cd      1391.9  13  1357.3    30.3   515.5  Unit_cd describes a...
+10 Unit_cd      1391.9  13  1357.4    30.3   515.5  Unit_cd describes a...
 11 ceil_fg       529.7  16  1078.5     0.0   481.5  ceil_fg describes a...
 12 ceil_chi      658.2  18  1317.7    12.8   598.4  ceil_chi describes a...
 13 ceil_j        303.1   9   630.2     0.0   275.5  ceil_j describes a...
@@ -303,25 +536,19 @@ Surface door has a duplicate name. Names must be unique!
  
 Notes:
 entry
-Number of weekday      casual gains=  6
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-weekd  1 OccuptW    0- 1      0.0      0.0       0.50       0.50
-weekd  2 OccuptW    1-24    100.0     70.0       0.20       0.80
-weekd  3 LightsW    0- 1      0.0      0.0       0.50       0.50
-weekd  4 LightsW    1- 8     50.0      0.0       0.60       0.40
-weekd  5 LightsW    8-18    250.0      0.0       0.60       0.40
-weekd  6 LightsW   18-24     50.0      0.0       0.60       0.40
-Number of saturday     casual gains=  2
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-satur  1 LightsW    0- 1      0.0      0.0       0.50       0.50
-satur  2 LightsW    1-24     50.0      0.0       0.60       0.40
-Number of sunday       casual gains=  2
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-sunda  1 LightsW    0- 1      0.0      0.0       0.50       0.50
-sunda  2 LightsW    1-24     50.0      0.0       0.60       0.40
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 OccuptW    0- 1      0.0      0.0       0.50       0.50
+weekday     2 OccuptW    1-24    100.0     70.0       0.20       0.80
+weekday     3 LightsW    0- 1      0.0      0.0       0.50       0.50
+weekday     4 LightsW    1- 8     50.0      0.0       0.60       0.40
+weekday     5 LightsW    8-18    250.0      0.0       0.60       0.40
+weekday     6 LightsW   18-24     50.0      0.0       0.60       0.40
+saturday    1 LightsW    0- 1      0.0      0.0       0.50       0.50
+saturday    2 LightsW    1-24     50.0      0.0       0.60       0.40
+sunday      1 LightsW    0- 1      0.0      0.0       0.50       0.50
+sunday      2 LightsW    1-24     50.0      0.0       0.60       0.40
  
  ____________________________________________________________
  
@@ -332,13 +559,13 @@ sunda  2 LightsW    1-24     50.0      0.0       0.60       0.40
  There is 101.72m2 of exposed surface area, 101.72m2 of which is vertical.
  Outside walls are 36.563 % of floor area & avg U of 0.461 & UA of 13.963
  Glazing is 86.177 % of floor & 70.211 % facade with avg U of 2.811 & UA of 200.72
- Ground contact is 99.998 % of floor area & avg U of 1.294 & perimeter 0.00
+ Ground contact is 99.998 % of floor area & avg U of 1.294 & perimeter 37.672
  
  A summary of the surfaces in corid_g( 2) follows:
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
-  1  30.3    270.   0. west_cor     OPAQUE   VERT -     insul_mtl_p  ||< external
+  1  30.3    270.  -0. west_cor     OPAQUE   VERT -     insul_mtl_p  ||< external
   2  5.40    180.   0. door         OPAQUE   VERT -     door         ||< door:Unit_j
   3  48.0     90.   0. prt_i_cor    OPAQUE   VERT -     mass_part    ||< passg:Unit_hi
   4  32.4     90.   0. prt_t_cor    OPAQUE   VERT -     gyp_blk_ptn  ||< prt_tcor:toilets
@@ -370,18 +597,18 @@ sunda  2 LightsW    1-24     50.0      0.0       0.60       0.40
  There is 122.85m2 of exposed surface area, 122.85m2 of which is vertical.
  Outside walls are 28.347 % of floor area & avg U of 0.461 & UA of 36.151
  Glazing is 16.043 % of floor & 36.142 % facade with avg U of 2.811 & UA of 124.79
- Ground contact is 100.00 % of floor area & avg U of 0.864 & perimeter 0.00
+ Ground contact is 100.00 % of floor area & avg U of 0.699 & perimeter 45.500
  
  A summary of the surfaces in Unit_f( 3) follows:
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  10.8    180.   0. prt_f-t      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_ft:toilets
-  2  36.4    180.   0. prt_f-g      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_f-g:Unit_g
+  2  36.5    180.   0. prt_f-g      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_f-g:Unit_g
   3  6.75     90.   0. str_3        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_f1:stair_abfg
   4  12.2    180.   0. str_4        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_f:stair_abfg
-  5  18.4     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
-  6  44.1    360.   0. north        OPAQUE   VERT -     insul_mtl_p  ||< external
+  5  18.5     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
+  6  44.1      0.   0. north        OPAQUE   VERT -     insul_mtl_p  ||< external
   7  15.9    270.   0. west         OPAQUE   VERT -     insul_mtl_p  ||< external
   8  277.      0.  90. ceil_f       OPAQUE   CEIL -     susp_ceil    ||< ceil_f:ceil_fg
   9  277.      0. -90. floor        OPAQUE   FLOR -     grnd_floor   ||< ground profile  1
@@ -402,41 +629,35 @@ sunda  2 LightsW    1-24     50.0      0.0       0.60       0.40
  
 Notes:
 ocup_off
-Number of weekday      casual gains= 12
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-weekd  1 OccuptW    0- 1      0.0      0.0       0.50       0.50
-weekd  2 OccuptW    1- 8      0.0      0.0       0.50       0.50
-weekd  3 OccuptW    8-18   1343.0    637.0       0.20       0.80
-weekd  4 OccuptW   18-24      0.0      0.0       0.50       0.50
-weekd  5 LightsW    0- 1      0.0      0.0       0.50       0.50
-weekd  6 LightsW    1- 8    100.0      0.0       0.60       0.40
-weekd  7 LightsW    8-18   2650.0      0.0       0.60       0.40
-weekd  8 LightsW   18-24    100.0      0.0       0.60       0.40
-weekd  9 EquiptW    0- 1      0.0      0.0       0.50       0.50
-weekd 10 EquiptW    1- 8    100.0     40.0       0.50       0.50
-weekd 11 EquiptW    8-18    700.0     40.0       0.50       0.50
-weekd 12 EquiptW   18-24    100.0     40.0       0.50       0.50
-Number of saturday     casual gains=  7
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-satur  1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-satur  2 OccuptW    8-18    100.0     70.0       0.20       0.80
-satur  3 OccuptW   18-24      0.0      0.0       0.50       0.50
-satur  4 LightsW    0- 1      0.0      0.0       0.50       0.50
-satur  5 LightsW    1-24    100.0      0.0       0.60       0.40
-satur  6 EquiptW    0- 1      0.0      0.0       0.50       0.50
-satur  7 EquiptW    1-24    100.0     40.0       0.50       0.50
-Number of sunday       casual gains=  7
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-sunda  1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-sunda  2 OccuptW    8-18    100.0     70.0       0.20       0.80
-sunda  3 OccuptW   18-24      0.0      0.0       0.50       0.50
-sunda  4 LightsW    0- 1      0.0      0.0       0.50       0.50
-sunda  5 LightsW    1-24    100.0      0.0       0.60       0.40
-sunda  6 EquiptW    0- 1      0.0      0.0       0.50       0.50
-sunda  7 EquiptW    1-24    100.0     40.0       0.50       0.50
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 OccuptW    0- 1      0.0      0.0       0.50       0.50
+weekday     2 OccuptW    1- 8      0.0      0.0       0.50       0.50
+weekday     3 OccuptW    8-18   1343.0    637.0       0.20       0.80
+weekday     4 OccuptW   18-24      0.0      0.0       0.50       0.50
+weekday     5 LightsW    0- 1      0.0      0.0       0.50       0.50
+weekday     6 LightsW    1- 8    100.0      0.0       0.60       0.40
+weekday     7 LightsW    8-18   2650.0      0.0       0.60       0.40
+weekday     8 LightsW   18-24    100.0      0.0       0.60       0.40
+weekday     9 EquiptW    0- 1      0.0      0.0       0.50       0.50
+weekday    10 EquiptW    1- 8    100.0     40.0       0.50       0.50
+weekday    11 EquiptW    8-18    700.0     40.0       0.50       0.50
+weekday    12 EquiptW   18-24    100.0     40.0       0.50       0.50
+saturday    1 OccuptW    0- 8      0.0      0.0       0.50       0.50
+saturday    2 OccuptW    8-18    100.0     70.0       0.20       0.80
+saturday    3 OccuptW   18-24      0.0      0.0       0.50       0.50
+saturday    4 LightsW    0- 1      0.0      0.0       0.50       0.50
+saturday    5 LightsW    1-24    100.0      0.0       0.60       0.40
+saturday    6 EquiptW    0- 1      0.0      0.0       0.50       0.50
+saturday    7 EquiptW    1-24    100.0     40.0       0.50       0.50
+sunday      1 OccuptW    0- 8      0.0      0.0       0.50       0.50
+sunday      2 OccuptW    8-18    100.0     70.0       0.20       0.80
+sunday      3 OccuptW   18-24      0.0      0.0       0.50       0.50
+sunday      4 LightsW    0- 1      0.0      0.0       0.50       0.50
+sunday      5 LightsW    1-24    100.0      0.0       0.60       0.40
+sunday      6 EquiptW    0- 1      0.0      0.0       0.50       0.50
+sunday      7 EquiptW    1-24    100.0     40.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -447,15 +668,15 @@ sunda  7 EquiptW    1-24    100.0     40.0       0.50       0.50
  There is 25.650m2 of exposed surface area, 25.650m2 of which is vertical.
  Outside walls are 9.0110 % of floor area & avg U of 0.461 & UA of 8.5022
  Glazing is 3.5165 % of floor & 28.070 % facade with avg U of 2.811 & UA of 20.237
- Ground contact is 100.00 % of floor area & avg U of 0.864 & perimeter 0.00
+ Ground contact is 100.00 % of floor area & avg U of 0.699 & perimeter 9.5000
  
  A summary of the surfaces in Unit_g( 4) follows:
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  48.6    180.   0. prt_g-h      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_gh:Unit_hi
-  2  18.5     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
-  3  12.2    360.   0. str_4        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_g1:stair_abfg
+  2  18.4     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
+  3  12.2      0.   0. str_4        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_g1:stair_abfg
   4  6.75     90.   0. str_5        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_g:stair_abfg
   5  36.5      0.   0. prt_f-g      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_f-g:Unit_f
   6  32.4    270.   0. prt_t        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_tg:toilets
@@ -475,41 +696,35 @@ sunda  7 EquiptW    1-24    100.0     40.0       0.50       0.50
  
 Notes:
 Each unit has similar occupancy lighting patterns to the other units.
-Number of weekday      casual gains= 12
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-weekd  1 OccuptW    0- 1      0.0      0.0       0.50       0.50
-weekd  2 OccuptW    1- 8      0.0      0.0       0.50       0.50
-weekd  3 OccuptW    8-18   1032.0    500.0       0.20       0.80
-weekd  4 OccuptW   18-24      0.0      0.0       0.50       0.50
-weekd  5 LightsW    0- 1      0.0      0.0       0.50       0.50
-weekd  6 LightsW    1- 8    100.0      0.0       0.60       0.40
-weekd  7 LightsW    8-18   2040.0      0.0       0.60       0.40
-weekd  8 LightsW   18-24    100.0      0.0       0.60       0.40
-weekd  9 EquiptW    0- 1      0.0      0.0       0.50       0.50
-weekd 10 EquiptW    1- 8    100.0     40.0       0.50       0.50
-weekd 11 EquiptW    8-18    700.0     40.0       0.50       0.50
-weekd 12 EquiptW   18-24    100.0     40.0       0.50       0.50
-Number of saturday     casual gains=  7
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-satur  1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-satur  2 OccuptW    8-18    100.0     70.0       0.20       0.80
-satur  3 OccuptW   18-24      0.0      0.0       0.50       0.50
-satur  4 LightsW    0- 1      0.0      0.0       0.50       0.50
-satur  5 LightsW    1-24    100.0      0.0       0.60       0.40
-satur  6 EquiptW    0- 1      0.0      0.0       0.50       0.50
-satur  7 EquiptW    1-24    100.0     40.0       0.50       0.50
-Number of sunday       casual gains=  7
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-sunda  1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-sunda  2 OccuptW    8-18    100.0     70.0       0.20       0.80
-sunda  3 OccuptW   18-24      0.0      0.0       0.50       0.50
-sunda  4 LightsW    0- 1      0.0      0.0       0.50       0.50
-sunda  5 LightsW    1-24    100.0      0.0       0.60       0.40
-sunda  6 EquiptW    0- 1      0.0      0.0       0.50       0.50
-sunda  7 EquiptW    1-24    100.0     40.0       0.50       0.50
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 OccuptW    0- 1      0.0      0.0       0.50       0.50
+weekday     2 OccuptW    1- 8      0.0      0.0       0.50       0.50
+weekday     3 OccuptW    8-18   1032.0    500.0       0.20       0.80
+weekday     4 OccuptW   18-24      0.0      0.0       0.50       0.50
+weekday     5 LightsW    0- 1      0.0      0.0       0.50       0.50
+weekday     6 LightsW    1- 8    100.0      0.0       0.60       0.40
+weekday     7 LightsW    8-18   2040.0      0.0       0.60       0.40
+weekday     8 LightsW   18-24    100.0      0.0       0.60       0.40
+weekday     9 EquiptW    0- 1      0.0      0.0       0.50       0.50
+weekday    10 EquiptW    1- 8    100.0     40.0       0.50       0.50
+weekday    11 EquiptW    8-18    700.0     40.0       0.50       0.50
+weekday    12 EquiptW   18-24    100.0     40.0       0.50       0.50
+saturday    1 OccuptW    0- 8      0.0      0.0       0.50       0.50
+saturday    2 OccuptW    8-18    100.0     70.0       0.20       0.80
+saturday    3 OccuptW   18-24      0.0      0.0       0.50       0.50
+saturday    4 LightsW    0- 1      0.0      0.0       0.50       0.50
+saturday    5 LightsW    1-24    100.0      0.0       0.60       0.40
+saturday    6 EquiptW    0- 1      0.0      0.0       0.50       0.50
+saturday    7 EquiptW    1-24    100.0     40.0       0.50       0.50
+sunday      1 OccuptW    0- 8      0.0      0.0       0.50       0.50
+sunday      2 OccuptW    8-18    100.0     70.0       0.20       0.80
+sunday      3 OccuptW   18-24      0.0      0.0       0.50       0.50
+sunday      4 LightsW    0- 1      0.0      0.0       0.50       0.50
+sunday      5 LightsW    1-24    100.0      0.0       0.60       0.40
+sunday      6 EquiptW    0- 1      0.0      0.0       0.50       0.50
+sunday      7 EquiptW    1-24    100.0     40.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -520,7 +735,7 @@ sunda  7 EquiptW    1-24    100.0     40.0       0.50       0.50
  There is 122.85m2 of exposed surface area, 122.85m2 of which is vertical.
  Outside walls are 28.312 % of floor area & avg U of 0.461 & UA of 35.944
  Glazing is 16.279 % of floor & 36.508 % facade with avg U of 2.811 & UA of 126.06
- Ground contact is 100.00 % of floor area & avg U of 0.864 & perimeter 0.00
+ Ground contact is 100.00 % of floor area & avg U of 0.699 & perimeter 45.500
  
  A summary of the surfaces in Unit_j( 5) follows:
  
@@ -528,7 +743,7 @@ sunda  7 EquiptW    1-24    100.0     40.0       0.50       0.50
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  44.1    180.   0. south        OPAQUE   VERT -     insul_mtl_p  ||< external
   2  18.0     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
-  3  13.5    360.   0. str_3        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_j1:stair_deij
+  3  13.5      0.   0. str_3        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_j1:stair_deij
   4  6.75     90.   0. str_4        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_j:stair_deij
   5  45.9      0.   0. prt_i-j      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_ij:Unit_hi
   6  5.40      0.   0. door         OPAQUE   VERT -     door         ||< door:corid_g
@@ -566,8 +781,8 @@ sunda  7 EquiptW    1-24    100.0     40.0       0.50       0.50
   2  36.5    180.   0. prt_a-b      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_a-b:Unit_b
   3  6.75     90.   0. str_3        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_a1:stair_abfg
   4  12.2    180.   0. str_4        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_a:stair_abfg
-  5  18.4     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
-  6  44.1    360.   0. north        OPAQUE   VERT -     insul_mtl_p  ||< external
+  5  18.5     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
+  6  44.1      0.   0. north        OPAQUE   VERT -     insul_mtl_p  ||< external
   7  15.9    270.   0. west         OPAQUE   VERT -     insul_mtl_p  ||< external
   8  277.      0.  90. ceil_a       OPAQUE   CEIL -     susp_ceil    ||< ceil_a:roof
   9  277.      0. -90. floor        OPAQUE   FLOR -     susp_floor   ||< floor_a:ceil_fg
@@ -600,8 +815,8 @@ sunda  7 EquiptW    1-24    100.0     40.0       0.50       0.50
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  48.6    180.   0. prt_b-c      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_bc:Unit_cd
-  2  18.4     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
-  3  12.2    360.   0. str_4        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_b1:stair_abfg
+  2  18.5     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
+  3  12.2      0.   0. str_4        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_b1:stair_abfg
   4  6.75     90.   0. str_5        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_b:stair_abfg
   5  36.5      0.   0. prt_a-b      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_a-b:Unit_a
   6  32.4    270.   0. prt_t_b      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_tb:toilets
@@ -625,7 +840,7 @@ sunda  7 EquiptW    1-24    100.0     40.0       0.50       0.50
  area of 745.m^2 & approx floor area of 276.m^2
  Unit_e describes a...
  There is 122.85m2 of exposed surface area, 122.85m2 of which is vertical.
- Outside walls are 28.476 % of floor area & avg U of 0.461 & UA of 36.151
+ Outside walls are 28.475 % of floor area & avg U of 0.461 & UA of 36.151
  Glazing is 16.116 % of floor & 36.142 % facade with avg U of 2.811 & UA of 124.79
  
  A summary of the surfaces in Unit_e( 8) follows:
@@ -634,7 +849,7 @@ sunda  7 EquiptW    1-24    100.0     40.0       0.50       0.50
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  44.1    180.   0. south        OPAQUE   VERT -     insul_mtl_p  ||< external
   2  18.5     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
-  3  13.5    360.   0. str_3        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_e1:stair_deij
+  3  13.5      0.   0. str_3        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_e1:stair_deij
   4  6.75     90.   0. str_4        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_e:stair_deij
   5  45.9      0.   0. prt_d-e      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_de:Unit_cd
   6  5.40      0.   0. door         OPAQUE   VERT -     door         ||< door:corid_1
@@ -663,7 +878,7 @@ sunda  7 EquiptW    1-24    100.0     40.0       0.50       0.50
  There is 58.050m2 of exposed surface area, 58.050m2 of which is vertical.
  Outside walls are 8.6421 % of floor area & avg U of 0.461 & UA of 20.530
  Glazing is 2.6188 % of floor & 23.256 % facade with avg U of 2.811 & UA of 37.944
- Ground contact is 100.00 % of floor area & avg U of 0.864 & perimeter 0.00
+ Ground contact is 100.00 % of floor area & avg U of 0.699 & perimeter 21.500
  
  A summary of the surfaces in Unit_hi( 9) follows:
  
@@ -681,7 +896,7 @@ sunda  7 EquiptW    1-24    100.0     40.0       0.50       0.50
  10  16.8    270.   0. door         DCF7671_ VERT -     dbl_glz      ||< door_icor:corid_g
  11  13.5     90.   0. w_glaz       DCF7671_ VERT -     dbl_glz      ||< external
  12  54.1    180.   0. inner_p1     OPAQUE   VERT -     mass_part    ||< adiabatic
- 13  54.1    360.   0. inner_p2     OPAQUE   VERT -     mass_part    ||< adiabatic
+ 13  54.1      0.   0. inner_p2     OPAQUE   VERT -     mass_part    ||< adiabatic
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
@@ -695,35 +910,29 @@ sunda  7 EquiptW    1-24    100.0     40.0       0.50       0.50
  
 Notes:
 Unit g has similar patterns to the other units.
-Number of weekday      casual gains=  6
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-weekd  1 OccuptW    0- 1      0.0      0.0       0.50       0.50
-weekd  2 OccuptW    1-24      0.0      0.0       0.50       0.50
-weekd  3 LightsW    0- 1      0.0      0.0       0.50       0.50
-weekd  4 LightsW    1-24    100.0      0.0       0.60       0.40
-weekd  5 EquiptW    0- 1      0.0      0.0       0.50       0.50
-weekd  6 EquiptW    1-24    100.0     40.0       0.50       0.50
-Number of saturday     casual gains=  7
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-satur  1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-satur  2 OccuptW    8-18     50.0     70.0       0.20       0.80
-satur  3 OccuptW   18-24      0.0      0.0       0.50       0.50
-satur  4 LightsW    0- 1      0.0      0.0       0.50       0.50
-satur  5 LightsW    1-24     50.0      0.0       0.60       0.40
-satur  6 EquiptW    0- 1      0.0      0.0       0.50       0.50
-satur  7 EquiptW    1-24     50.0     40.0       0.50       0.50
-Number of sunday       casual gains=  7
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-sunda  1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-sunda  2 OccuptW    8-18     50.0     70.0       0.20       0.80
-sunda  3 OccuptW   18-24      0.0      0.0       0.50       0.50
-sunda  4 LightsW    0- 1      0.0      0.0       0.50       0.50
-sunda  5 LightsW    1-24     50.0      0.0       0.60       0.40
-sunda  6 EquiptW    0- 1      0.0      0.0       0.50       0.50
-sunda  7 EquiptW    1-24     50.0     40.0       0.50       0.50
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 OccuptW    0- 1      0.0      0.0       0.50       0.50
+weekday     2 OccuptW    1-24      0.0      0.0       0.50       0.50
+weekday     3 LightsW    0- 1      0.0      0.0       0.50       0.50
+weekday     4 LightsW    1-24    100.0      0.0       0.60       0.40
+weekday     5 EquiptW    0- 1      0.0      0.0       0.50       0.50
+weekday     6 EquiptW    1-24    100.0     40.0       0.50       0.50
+saturday    1 OccuptW    0- 8      0.0      0.0       0.50       0.50
+saturday    2 OccuptW    8-18     50.0     70.0       0.20       0.80
+saturday    3 OccuptW   18-24      0.0      0.0       0.50       0.50
+saturday    4 LightsW    0- 1      0.0      0.0       0.50       0.50
+saturday    5 LightsW    1-24     50.0      0.0       0.60       0.40
+saturday    6 EquiptW    0- 1      0.0      0.0       0.50       0.50
+saturday    7 EquiptW    1-24     50.0     40.0       0.50       0.50
+sunday      1 OccuptW    0- 8      0.0      0.0       0.50       0.50
+sunday      2 OccuptW    8-18     50.0     70.0       0.20       0.80
+sunday      3 OccuptW   18-24      0.0      0.0       0.50       0.50
+sunday      4 LightsW    0- 1      0.0      0.0       0.50       0.50
+sunday      5 LightsW    1-24     50.0      0.0       0.60       0.40
+sunday      6 EquiptW    0- 1      0.0      0.0       0.50       0.50
+sunday      7 EquiptW    1-24     50.0     40.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -743,7 +952,7 @@ sunda  7 EquiptW    1-24     50.0     40.0       0.50       0.50
   2  45.9    180.   0. prt_de       OPAQUE   VERT -     gyp_blk_ptn  ||< prt_d-e:Unit_e
   3  6.75     90.   0. str_2        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_d1:stair_deij
   4  13.5    180.   0. str_3        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_d:stair_deij
-  5  44.5     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
+  5  44.6     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
   6  48.6      0.   0. prt_bc       OPAQUE   VERT -     gyp_blk_ptn  ||< prt_b-c:Unit_b
   7  10.8      0.   0. prt_tc       OPAQUE   VERT -     gyp_blk_ptn  ||< prt_ctc:toilets
   8  516.      0.  90. ceil         OPAQUE   CEIL -     susp_ceil    ||< ceil_c:roof
@@ -776,13 +985,13 @@ sunda  7 EquiptW    1-24     50.0     40.0       0.50       0.50
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  19.8    180.   0. prt_g-h      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_gh:ceil_chi
-  2  10.5     90.   0. east_s       OPAQUE   VERT -     insul_mtl_p  ||< external
-  3  4.95    360.   0. str_4        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_gc1:stair_abfg
+  2  10.4     90.   0. east_s       OPAQUE   VERT -     insul_mtl_p  ||< external
+  3  4.95      0.   0. str_4        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_gc1:stair_abfg
   4  2.75     90.   0. str_5        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_gc:stair_abfg
   5  2.75     90.   0. str_6        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_ac1:stair_abfg
   6  4.95    180.   0. str_7        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_ac:stair_abfg
   7  10.5     90.   0. east_n       OPAQUE   VERT -     insul_mtl_p  ||< external
-  8  26.4    360.   0. north        OPAQUE   VERT -     insul_mtl_p  ||< external
+  8  26.4      0.   0. north        OPAQUE   VERT -     insul_mtl_p  ||< external
   9  13.2    270.   0. west         OPAQUE   VERT -     insul_mtl_p  ||< external
  10  2.20    180.   0. cor_d        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_fcor:ceil_chi
  11  4.40    180.   0. prt_t1       OPAQUE   VERT -     gyp_blk_ptn  ||< prt_cat:toilets
@@ -802,31 +1011,23 @@ sunda  7 EquiptW    1-24     50.0     40.0       0.50       0.50
 ceilings
  Control: no control of air flow
  
-Number of air change periods for daytype weekday      :    0
- 
-Number of air change periods for daytype saturday     :    0
- 
-Number of air change periods for daytype sunday       :    0
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
  
 Notes:
 ceilings
-Number of weekday      casual gains=  4
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-weekd  1 LightsW    0- 1      0.0      0.0       0.50       0.50
-weekd  2 LightsW    1- 8     50.0      0.0       0.60       0.40
-weekd  3 LightsW    8-18   1325.0    700.0       0.60       0.40
-weekd  4 LightsW   18-24     50.0      0.0       0.60       0.40
-Number of saturday     casual gains=  2
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-satur  1 LightsW    0- 1      0.0      0.0       0.50       0.50
-satur  2 LightsW    1-24     50.0      0.0       0.60       0.40
-Number of sunday       casual gains=  2
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-sunda  1 LightsW    0- 1      0.0      0.0       0.50       0.50
-sunda  2 LightsW    1-24     50.0      0.0       0.60       0.40
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 LightsW    0- 1      0.0      0.0       0.50       0.50
+weekday     2 LightsW    1- 8     50.0      0.0       0.60       0.40
+weekday     3 LightsW    8-18   1325.0    700.0       0.60       0.40
+weekday     4 LightsW   18-24     50.0      0.0       0.60       0.40
+saturday    1 LightsW    0- 1      0.0      0.0       0.50       0.50
+saturday    2 LightsW    1-24     50.0      0.0       0.60       0.40
+sunday      1 LightsW    0- 1      0.0      0.0       0.50       0.50
+sunday      2 LightsW    1-24     50.0      0.0       0.60       0.40
  
  ____________________________________________________________
  
@@ -852,8 +1053,8 @@ sunda  2 LightsW    1-24     50.0      0.0       0.60       0.40
   8  2.75     90.   0. str_2        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_ci1:stair_deij
   9  5.50    180.   0. str_3        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_ci:stair_deij
  10  23.7     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
- 11  19.8      0.   0. prt_gh       OPAQUE   VERT -     gyp_blk_ptn  ||< prt_g-h:ceil_fg
- 12  4.40      0.   0. prt_th       OPAQUE   VERT -     gyp_blk_ptn  ||< prt_cth:toilets
+ 11  19.8    360.   0. prt_gh       OPAQUE   VERT -     gyp_blk_ptn  ||< prt_g-h:ceil_fg
+ 12  4.40    360.   0. prt_th       OPAQUE   VERT -     gyp_blk_ptn  ||< prt_cth:toilets
  13  13.2     90.   0. prt_tcor     OPAQUE   VERT -     gyp_blk_ptn  ||< prt_tcorc:toilets
  14  2.20      0.   0. prt_fcor     OPAQUE   VERT -     gyp_blk_ptn  ||< cor_d:ceil_fg
  15  516.      0.  90. upper        OPAQUE   CEIL -     susp_flr_re  ||< floor:Unit_cd
@@ -884,8 +1085,8 @@ sunda  2 LightsW    1-24     50.0      0.0       0.60       0.40
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  26.4    180.   0. south        OPAQUE   VERT -     insul_mtl_p  ||< external
-  2  10.5     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
-  3  5.50    360.   0. str_3        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_cj1:stair_deij
+  2  10.4     90.   0. east         OPAQUE   VERT -     insul_mtl_p  ||< external
+  3  5.50      0.   0. str_3        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_cj1:stair_deij
   4  2.75     90.   0. str_4        OPAQUE   VERT -     gyp_blk_ptn  ||< prt_cj:stair_deij
   5  18.7      0.   0. prt_i-j      OPAQUE   VERT -     gyp_blk_ptn  ||< prt_ij:ceil_chi
   6  2.20      0.   0. cor_dj       OPAQUE   VERT -     gyp_blk_ptn  ||< cor_j:ceil_chi
@@ -904,11 +1105,11 @@ sunda  2 LightsW    1-24     50.0      0.0       0.60       0.40
  
  Zone stair_abfg (14) is composed of 16 surfaces and 24 vertices.
  It encloses a volume of 146.m^3 of space, with a total surface
- area of 168.m^2 & approx floor area of 22.5m^2
+ area of 169.m^2 & approx floor area of 22.5m^2
  stair_abfg describes a...
  There is 32.500m2 of exposed surface area, 32.500m2 of which is vertical.
  Outside walls are 144.44 % of floor area & avg U of 0.608 & UA of 19.773
- Ground contact is 100.00 % of floor area & avg U of 0.864 & perimeter 0.00
+ Ground contact is 100.00 % of floor area & avg U of 0.699 & perimeter 5.0000
  
  A summary of the surfaces in stair_abfg(14) follows:
  
@@ -946,7 +1147,7 @@ sunda  2 LightsW    1-24     50.0      0.0       0.60       0.40
  stair_deij describes a...
  There is 32.500m2 of exposed surface area, 32.500m2 of which is vertical.
  Outside walls are 130.00 % of floor area & avg U of 0.608 & UA of 19.773
- Ground contact is 100.00 % of floor area & avg U of 0.864 & perimeter 0.00
+ Ground contact is 100.00 % of floor area & avg U of 0.699 & perimeter 5.0000
  
  A summary of the surfaces in stair_deij(15) follows:
  
@@ -966,7 +1167,7 @@ sunda  2 LightsW    1-24     50.0      0.0       0.60       0.40
  12  2.75    270.   0. prt_ci1      OPAQUE   VERT -     gyp_blk_ptn  ||< str_2:ceil_chi
  13  6.75    270.   0. prt_d1       OPAQUE   VERT -     gyp_blk_ptn  ||< str_2:Unit_cd
  14  5.50      0.   0. prt_ci       OPAQUE   VERT -     gyp_blk_ptn  ||< str_3:ceil_chi
- 15  13.5      0.   0. prt_d        OPAQUE   VERT -     gyp_blk_ptn  ||< str_3:Unit_cd
+ 15  13.5    360.   0. prt_d        OPAQUE   VERT -     gyp_blk_ptn  ||< str_3:Unit_cd
  16  1.68     90.   0. door         OPAQUE   VERT -     door         ||< external
  
  
@@ -982,7 +1183,7 @@ sunda  2 LightsW    1-24     50.0      0.0       0.60       0.40
  It encloses a volume of 312.m^3 of space, with a total surface
  area of 304.m^2 & approx floor area of 48.0m^2
  toilets describes a...
- Ground contact is 100.00 % of floor area & avg U of 0.864 & perimeter 0.00
+ Ground contact is 100.00 % of floor area & avg U of 0.699 & perimeter 0.00
  
  A summary of the surfaces in toilets(16) follows:
  
@@ -1017,8 +1218,8 @@ sunda  2 LightsW    1-24     50.0      0.0       0.60       0.40
  area of 3010.m^2 & user edited floor area of 1160.m^2
  roof describes a...
  There is 1561.9m2 of exposed surface area.
- Outside walls are 2.1610 % of floor area & avg U of 0.461 & UA of 11.581
- Sloped roof is 132.14 % of floor area & avg U of 0.427 & UA of 656.74
+ Outside walls are 2.1610 % of floor area & avg U of 0.452 & UA of 11.372
+ Sloped roof is 132.14 % of floor area & avg U of 0.433 & UA of 665.27
  
  A summary of the surfaces in roof(17) follows:
  
@@ -1051,72 +1252,84 @@ sunda  2 LightsW    1-24     50.0      0.0       0.60       0.40
  
 Notes:
 roof
-Number of weekday      casual gains=  4
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-weekd  1 LightsW    0- 1      0.0      0.0       0.50       0.50
-weekd  2 LightsW    1- 8    100.0      0.0       0.60       0.40
-weekd  3 LightsW    8-18   6100.0    700.0       0.60       0.40
-weekd  4 LightsW   18-24    100.0      0.0       0.60       0.40
-Number of saturday     casual gains=  2
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-satur  1 LightsW    0- 1      0.0      0.0       0.50       0.50
-satur  2 LightsW    1-24    100.0      0.0       0.60       0.40
-Number of sunday       casual gains=  2
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-sunda  1 LightsW    0- 1      0.0      0.0       0.50       0.50
-sunda  2 LightsW    1-24    100.0      0.0       0.60       0.40
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 LightsW    0- 1      0.0      0.0       0.50       0.50
+weekday     2 LightsW    1- 8    100.0      0.0       0.60       0.40
+weekday     3 LightsW    8-18   6100.0    700.0       0.60       0.40
+weekday     4 LightsW   18-24    100.0      0.0       0.60       0.40
+saturday    1 LightsW    0- 1      0.0      0.0       0.50       0.50
+saturday    2 LightsW    1-24    100.0      0.0       0.60       0.40
+sunday      1 LightsW    0- 1      0.0      0.0       0.50       0.50
+sunday      2 LightsW    1-24    100.0      0.0       0.60       0.40
  
  ____________________________________________________________
  
  Project floor area is 5324.6m2, wall area is 752.88m2, window area is 375.12m2.
  Sloped roof area is 1536.8m2, flat roof area is 0.00m2, skylight area is 0.00m2.
+ In contact with ground 1450.9m2.
  There is 2664.8m2 of outside surface area, 1102.9m2 of which is vertical.
  
- Outside walls are 14.140 % of floor area & avg U of 0.474 & UA of 356.54 & max MLC thickness 0.088
- Sloped roof is 28.862 % of floor area & avg U of 0.427 & UA of 656.74
+ Outside walls are 14.140 % of floor area & avg U of 0.473 & UA of 356.33 & max MLC thickness 0.088
+ Sloped roof is 28.862 % of floor area & avg U of 0.433 & UA of 665.27
  Glazing is 7.0450 % of floor & 34.013 % facade with avg U of 2.811 & UA of 1054.3
- Ground contact is 27.248 % of floor area & avg U of 0.888 & perimeter 0.00 & max MLC thickness 0.625
+ Ground contact is 27.248 % of floor area & avg U of 0.733 & perimeter 169.67 & max MLC thickness 0.975
+ CIBSE ground beta!17.102 dt 2.195 Ufleft 0.054 Ufright 3.238 Uf 0.174 R extra @ virtual layer 4.393
  
  ____________________________________________________________
  Multi-layer constructions used:
  
  Details of opaque construction: insul_mtl_p and overall thickness  0.088
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
     2  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 glass fibre quilt : Glass Fibre Quilt
  Int    47    4.0   210.000  2700.   880. 0.82 0.32 19200.  0.00 wt cotd alum : White coated aluminium
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.461  0.467  0.452 (partition)  0.442
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.46
+ External surface admittance Y=  0.81  w=  3.41 decrement factor f=  0.94  phi=  0.31 surface factor f=  0.94  phi=  0.31
+ Partition admittance Y=  0.70  w=  5.68 surface factor f=  1.00  phi=  0.32
  Total area of insul_mtl_p is    749.52
  
  Details of opaque construction: door and overall thickness  0.025
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
     1   69   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 oak : Oak (radial cut)
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
+ External surface admittance Y=  3.33  w=  0.61 decrement factor f=  0.61  phi=  0.40 surface factor f=  0.61  phi=  0.40
+ Partition admittance Y=  1.21  w=  5.38 surface factor f=  0.99  phi=  0.56
  Total area of door is     46.56
  
  Details of opaque construction: mass_part and overall thickness  0.240
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
-    1   35  240.0     0.510  1400.  1000. 0.90 0.25    10.  0.47 block white ptd : block white painted inner
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1   35  240.0     0.510  1400.  1000. 0.90 0.25    10.  0.47 block white ptd : block white painted inner (3% mc)
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.561  1.638  1.469 (partition)  1.369
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.54
+ External surface admittance Y=  4.20  w=  1.62 decrement factor f=  0.58  phi=  1.40 surface factor f=  0.58  phi=  1.40
+ Partition admittance Y=  4.70  w=  1.85 surface factor f=  0.57  phi=  1.85
  Total area of mass_part is    408.50
  
  Details of transparent construction: dbl_glz with DCF7671_06nb optics and overall thickness  0.024
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder s
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
     2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder s
+ Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
+ External surface admittance Y=  2.81  w=  0.63 decrement factor f=  0.67  phi=  0.31 surface factor f=  0.67  phi=  0.31
+ Partition admittance Y=  0.82  w=  5.64 surface factor f=  1.00  phi=  0.38
  
  Clear float 76/71,     6mm, no blind: with id of: DCF7671_06nb
  with 3 layers [including air gaps] and visible trn: 0.76
@@ -1130,79 +1343,109 @@ sunda  2 LightsW    1-24    100.0      0.0       0.60       0.40
  
  Details of opaque construction: roof and overall thickness  0.111
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext    43    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 aluminium : Aluminium
     2    0   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
     3  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 glass fibre quilt : Glass Fibre Quilt
  Int    43    3.0   210.000  2700.   880. 0.22 0.20 19200.  0.00 aluminium : Aluminium
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.427  0.433  0.420 (partition)  0.412
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.43
+ External surface admittance Y=  0.67  w=  3.12 decrement factor f=  0.95  phi=  0.23 surface factor f=  0.95  phi=  0.23
+ Partition admittance Y=  0.53  w=  5.76 surface factor f=  1.00  phi=  0.25
  Total area of roof is   1536.80
  
- Details of opaque construction: grnd_floor and overall thickness  0.625
+ Details of opaque construction: grnd_floor and overall thickness  0.975
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 earth std : Common_earth
-    2  262  150.0     0.520  2050.   184. 0.90 0.85     2.  0.29 gravel based : Gravel based
-    3   32  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 heavy mix concrete : Heavy mix concrete
-    4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    5   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    2  263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    3  263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    4  262  150.0     0.520  2050.   184. 0.90 0.85     2.  0.29 gravel based : Gravel based
+    5   32  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 heavy mix concrete : Heavy mix concrete
+    6    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    7   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
  Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet
- ISO 6946 U values (horiz/upward/downward heat flow)=  0.864  0.887  0.835 (partition)  0.802
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.699  0.714  0.680 (partition)  0.657
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.69
+ External surface admittance Y=  2.16  w=  1.36 decrement factor f=  0.76  phi=  0.46 surface factor f=  0.76  phi=  0.46
+ Partition admittance Y=  2.16  w=  1.36 surface factor f=  0.76  phi=  0.45
  Total area of grnd_floor is   1368.00
  
  Details of opaque construction: entry_floor and overall thickness  0.574
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext   263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 earth std : Common_earth
     2  262  150.0     0.520  2050.   184. 0.90 0.85     2.  0.29 gravel based : Gravel based
     3   32  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 heavy mix concrete : Heavy mix concrete
  Int    83   24.0     2.000  2500.   880. 0.90 0.46    38.  0.01 white marble : White marble
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.294  1.346  1.230 (partition)  1.159
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.28
+ External surface admittance Y=  5.89  w=  1.37 decrement factor f=  0.42  phi=  2.42 surface factor f=  0.42  phi=  2.42
+ Partition admittance Y=  6.03  w=  1.30 surface factor f=  0.40  phi=  2.49
  Total area of entry_floor is     82.87
  
  Details of opaque construction: susp_ceil and overall thickness  0.013
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
     1  104   13.0     0.420  1200.   837. 0.91 0.50    11.  0.03 gypsum plaster : Gypsum based plaster
  ISO 6946 U values (horiz/upward/downward heat flow)=  4.976  5.850  4.150 (partition)  3.437
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  4.74
+ External surface admittance Y=  4.75  w=  0.10 decrement factor f=  0.43  phi=  0.13 surface factor f=  0.43  phi=  0.13
+ Partition admittance Y=  0.34  w=  5.84 surface factor f=  1.00  phi=  0.16
  Total area of susp_ceil is   5612.48
  
- Details of opaque construction: susp_floor and overall thickness  0.219
+ Details of opaque construction: susp_floor linked to susp_flr_re  & with overall thickness  0.219
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet
     2   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
     3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
     4   32  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 heavy mix concrete : Heavy mix concrete
  Int    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.500  1.570  1.415 (partition)  1.321
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.48
+ External surface admittance Y=  5.80  w=  1.63 decrement factor f=  0.47  phi=  2.55 surface factor f=  0.47  phi=  2.55
+ Partition admittance Y=  6.12  w=  2.04 surface factor f=  0.53  phi=  3.03
  Total area of susp_floor is   1355.37
  
- Details of opaque construction: susp_flr_re and overall thickness  0.219
+ Details of opaque construction: susp_flr_re linked to susp_floor   & with overall thickness  0.219
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
     2   32  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 heavy mix concrete : Heavy mix concrete
     3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
     4   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
  Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.500  1.570  1.415 (partition)  1.321
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.48
+ External surface admittance Y=  2.11  w=  1.43 decrement factor f=  0.77  phi=  0.46 surface factor f=  0.77  phi=  0.46
+ Partition admittance Y=  2.46  w=  2.85 surface factor f=  0.81  phi=  0.95
  Total area of susp_flr_re is   1355.37
  
  Details of opaque construction: gyp_blk_ptn and overall thickness  0.226
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White paintedd Gypboard
     2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
     3   28  100.0     0.510  1400.  1000. 0.90 0.65    10.  0.20 block inner : Block inner (3% mc)
     4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
  Int   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White paintedd Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.186  1.230  1.133 (partition)  1.072
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.17
+ External surface admittance Y=  2.38  w=  1.44 decrement factor f=  0.74  phi=  0.54 surface factor f=  0.74  phi=  0.54
+ Partition admittance Y=  2.59  w=  2.21 surface factor f=  0.76  phi=  0.86
  Total area of gyp_blk_ptn is   1402.60

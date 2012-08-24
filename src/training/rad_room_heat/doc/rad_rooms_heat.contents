@@ -1,41 +1,44 @@
 Synopsis
  
-This is a synopsis of the model Model of patient room to explore overheating
-defined in rad_rooms_heat.cfg generated on Tue Aug 10 12:14:38 2010. Notes
-associated with the model are in forth_v_room.log
+Synopsis of the model Model of patient room to explore overheating defined in
+rad_rooms_heat.cfg generated on Fri Aug 24 15:27:19 2012. Notes associated
+with the model are in notes_rad_rooms.txt
  
 The model is located at latitude   52.45 with a longitude difference of  -1.73
 from the local time meridian. The year used in simulations is 1995 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical city centre and the ground reflectance is 0.20.
  
-Project name:  not yet defined
-Building address:  not yet defined
-Building city:  not yet defined
-Building Postcode:  not yet defined
-Building owner name:  not yet defined
-Building owner telephone:  not yet defined
-Building owner address:  not yet defined
-Building owner city:  not yet defined
-Building owner Postcode:  not yet defined
  
-Simulationist name:  not yet defined
-Simulationist telephone:  not yet defined
-Simulationist address:  not yet defined
-Simulationist city:  not yet defined
-Simulationist postcode:  not yet defined
-The climate is: BIRMINGHAM GBR IWEC WMO 035340 and is held in:
-/usr/esru/esp-r/climate/uk_birmingham_iwec with hour centred solar data.
+Simulationist name: not yet defined
+Simulationist telephone: not yet defined
+Simulationist address: not yet defined
+Simulationist city: not yet defined
+Simulationist postcode: not yet defined
+ 
+The climate is: BIRMINGHAM - GBR (035340) and is held in:
+/usr/esru/esp-r/climate/GBR_Birmingham with hour centred solar data.
+ annual weather         : /usr/esru/esp-r/climate/GBR_Birmingham
+Calculated ground temp at 0.5m depth
+6.2423 4.1623 3.5962 4.0872 6.8953 10.040 12.999 15.142 15.767 14.761 12.336 9.2799
+Calculated ground temp at 1.0m depth
+6.9801 4.9055 4.1654 4.4375 6.7317 9.5179 12.267 14.394 15.212 14.539 12.519 9.8072
+Calculated ground temp at 2.0m depth
+8.1121 6.1634 5.2354 5.2019 6.6842 8.8357 11.150 13.134 14.159 13.967 12.599 10.498
+Calculated ground temp at 4.0m depth
+9.3326 7.8199 6.8905 6.6051 7.1522 8.4047 9.9607 11.489 12.515 12.761 12.174 10.944
+ 
 An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
  standard pressure distr: pressc.db1
  materials              : ../dbs/rad_room.materialdb
  constructions          : ../dbs/rad_room.constrdb
- 
  standard plant comp    : plantc.db1
- standard event profiles: profiles.db1
+ standard event profiles: profiles.db1.a
  standard optical prop  : optics.db2
+ standard UK NCM data   : SBEM.db1
+ standard mould isopleth: mould.db1
  
  ____________________________________________________________
  
@@ -50,21 +53,21 @@ may need to be re-tuned.
  
  The sensor for function  1 senses dry bulb temperature in rad_400.
  The actuator for function  1 is the air point in rad_400.
- There have been  1 day types defined.
- Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1995 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      senses dry bulb tem 800.0 0.0 0.0 0.0 74.0 100.0 1.0 1.0 0.0
-Ideal multi-sensor: max heat cp 800.W min heat cp 0.W max cool cp 0.W min heat cp 0.W
-Heat stpt 74.0C cool stpt 100.0C Aux:senses dry bulb T in one_bed_400. h/c 21.0 100.0
+There have been  1 periods of validity defined during the year.
+ Control is valid Sun-01-Jan to Sun-31-Dec, 1995 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      Ideal multi-sensor: max heat cp 800.W min heat cp 0.W
+max cool cp 0.W min heat cp 0.W Heat stpt 74.0C cool stpt 100.0C Aux:senses dry bulb T
+in one_bed_400. h/c 21.0 100.0
  
  The sensor for function  2 senses dry bulb temperature in rad_600.
  The actuator for function  2 is the air point in rad_600.
- There have been  1 day types defined.
- Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1995 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      senses dry bulb tem 1000.0 0.0 0.0 0.0 74.0 100.0 1.0 1.0 0.0
-Ideal multi-sensor: max heat cp 1000.W min heat cp 0.W max cool cp 0.W min heat cp 0.W
-Heat stpt 74.0C cool stpt 100.0C Aux:senses dry bulb T in one_bed_400. h/c 21.0 100.0
+There have been  1 periods of validity defined during the year.
+ Control is valid Sun-01-Jan to Sun-31-Dec, 1995 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      Ideal multi-sensor: max heat cp 1000.W min heat cp 0.W
+max cool cp 0.W min heat cp 0.W Heat stpt 74.0C cool stpt 100.0C Aux:senses dry bulb T
+in one_bed_400. h/c 21.0 100.0
  
  Zone to contol loop linkages:
  zone ( 1) one_bed_400  << control  0
@@ -100,14 +103,14 @@ ID Zone         Volume|          Surface
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  6.84    180.   0. exterior_wl  OPAQUE   VERT -     ext_wall_a   ||< external
-  2  11.6     90.   0. left_ptn     OPAQUE   VERT -     ptn_type_d   ||< right_ptn:one_bed_600
-  3  7.41    360.   0. coridor_ptn  OPAQUE   VERT -     ptn_type_d   ||< constant @ 21dC &   0W rad
+  2  11.6     90.  -0. left_ptn     OPAQUE   VERT -     ptn_type_d   ||< right_ptn:one_bed_600
+  3  7.41      0.  -0. coridor_ptn  OPAQUE   VERT -     ptn_type_d   ||< constant @ 21dC &   0W rad
   4  11.6    270.   0. right_ptn    OPAQUE   VERT -     ptn_type_d   ||< identical environment
   5  12.5      0.  90. ceiling      OPAQUE   CEIL -     susp_ceil    ||< ceiling:plenum
   6  15.5      0. -90. floor        OPAQUE   FLOR -     struc_flr    ||< floor:lower_plen
   7  0.432   180.   0. frame        OPAQUE   VERT -     door         ||< external
   8  2.45    180.   0. window       DCF7671_ VERT -     dbl_glz      ||< external
-  9  2.31    360.   0. door         OPAQUE   VERT -     door         ||< constant @ 21dC &   0W rad
+  9  2.31      0.   0. door         OPAQUE   VERT -     door         ||< constant @ 21dC &   0W rad
  10  1.80      0.  90. bed          OPAQUE   CEIL -     door         ||< adiabatic
  11  1.80      0. -90. bed_base     OPAQUE   FLOR -     door         ||< adiabatic
  12  3.00      0.  90. rad_pnl      OPAQUE   CEIL -     alum_panel   ||< base:rad_400
@@ -119,7 +122,7 @@ window
  
  
  Explicit viewfactors have been derived for this zone.
- Shading patterns have been calculated for this zone.
+ Shading patterns have not yet been calculated.
  
  
  Air schedule notes:
@@ -128,61 +131,47 @@ light on for an hour), and small power is a TV on in afternoon and
 early evening. set ACH to 2 for winter use
  Control: no control of air flow
  
-Number of air change periods for daytype weekdays     :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     2.00  0.0232    0.00  0.0000   0     0.00
- 
-Number of air change periods for daytype saturday     :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     2.00  0.0232    0.00  0.0000   0     0.00
- 
-Number of air change periods for daytype sunday       :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     2.00  0.0232    0.00  0.0000   0     0.00
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekdays   1  0 - 24    2.00  0.0232    0.00  0.0000   0     0.00
+saturday   1  0 - 24    2.00  0.0232    0.00  0.0000   0     0.00
+sunday     1  0 - 24    2.00  0.0232    0.00  0.0000   0     0.00
  
 Notes:
 some varying occupancy and lighting gains during day (examination
 light on for an hour), and small power is a TV on in afternoon and
 early evening. set ACH to 2 for winter use
-Number of weekdays     casual gains=  9
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-weekd  1 OccuptW    0- 7    100.0     50.0       0.50       0.50
-weekd  2 OccuptW    7- 8    400.0    200.0       0.50       0.50
-weekd  3 OccuptW    8-18    100.0     50.0       0.50       0.50
-weekd  4 OccuptW   18-22    400.0    200.0       0.50       0.50
-weekd  5 OccuptW   22-24    100.0     50.0       0.50       0.50
-weekd  6 LightsW    0-15    100.0      0.0       0.50       0.50
-weekd  7 LightsW   15-16    500.0      0.0       0.50       0.50
-weekd  8 LightsW   16-24    100.0      0.0       0.50       0.50
-weekd  9 EquiptW    0-24     80.0      0.0       0.50       0.50
-Number of saturday     casual gains=  9
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-satur  1 OccuptW    0- 7    100.0     50.0       0.50       0.50
-satur  2 OccuptW    7- 8    400.0    200.0       0.50       0.50
-satur  3 OccuptW    8-18    100.0     50.0       0.50       0.50
-satur  4 OccuptW   18-22    400.0    200.0       0.50       0.50
-satur  5 OccuptW   22-24    100.0     50.0       0.50       0.50
-satur  6 LightsW    0-15    100.0      0.0       0.50       0.50
-satur  7 LightsW   15-16    500.0      0.0       0.50       0.50
-satur  8 LightsW   16-24    100.0      0.0       0.50       0.50
-satur  9 EquiptW    0-24     80.0      0.0       0.50       0.50
-Number of sunday       casual gains=  9
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-sunda  1 OccuptW    0- 7    100.0     50.0       0.50       0.50
-sunda  2 OccuptW    7- 8    400.0    200.0       0.50       0.50
-sunda  3 OccuptW    8-18    100.0     50.0       0.50       0.50
-sunda  4 OccuptW   18-22    400.0    200.0       0.50       0.50
-sunda  5 OccuptW   22-24    100.0     50.0       0.50       0.50
-sunda  6 LightsW    0-15    100.0      0.0       0.50       0.50
-sunda  7 LightsW   15-16    500.0      0.0       0.50       0.50
-sunda  8 LightsW   16-24    100.0      0.0       0.50       0.50
-sunda  9 EquiptW    0-24     80.0      0.0       0.50       0.50
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 OccuptW    0- 7    100.0     50.0       0.50       0.50
+weekdays    2 OccuptW    7- 8    400.0    200.0       0.50       0.50
+weekdays    3 OccuptW    8-18    100.0     50.0       0.50       0.50
+weekdays    4 OccuptW   18-22    400.0    200.0       0.50       0.50
+weekdays    5 OccuptW   22-24    100.0     50.0       0.50       0.50
+weekdays    6 LightsW    0-15    100.0      0.0       0.50       0.50
+weekdays    7 LightsW   15-16    500.0      0.0       0.50       0.50
+weekdays    8 LightsW   16-24    100.0      0.0       0.50       0.50
+weekdays    9 EquiptW    0-24     80.0      0.0       0.50       0.50
+saturday    1 OccuptW    0- 7    100.0     50.0       0.50       0.50
+saturday    2 OccuptW    7- 8    400.0    200.0       0.50       0.50
+saturday    3 OccuptW    8-18    100.0     50.0       0.50       0.50
+saturday    4 OccuptW   18-22    400.0    200.0       0.50       0.50
+saturday    5 OccuptW   22-24    100.0     50.0       0.50       0.50
+saturday    6 LightsW    0-15    100.0      0.0       0.50       0.50
+saturday    7 LightsW   15-16    500.0      0.0       0.50       0.50
+saturday    8 LightsW   16-24    100.0      0.0       0.50       0.50
+saturday    9 EquiptW    0-24     80.0      0.0       0.50       0.50
+sunday      1 OccuptW    0- 7    100.0     50.0       0.50       0.50
+sunday      2 OccuptW    7- 8    400.0    200.0       0.50       0.50
+sunday      3 OccuptW    8-18    100.0     50.0       0.50       0.50
+sunday      4 OccuptW   18-22    400.0    200.0       0.50       0.50
+sunday      5 OccuptW   22-24    100.0     50.0       0.50       0.50
+sunday      6 LightsW    0-15    100.0      0.0       0.50       0.50
+sunday      7 LightsW   15-16    500.0      0.0       0.50       0.50
+sunday      8 LightsW   16-24    100.0      0.0       0.50       0.50
+sunday      9 EquiptW    0-24     80.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -199,17 +188,17 @@ Surface upper has a duplicate name. Names must be unique!
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  3.60    180.   0. exterior     OPAQUE   VERT -     ext_wall_a   ||< external
-  2  2.33     90.   0. Surf-2       OPAQUE   VERT -     ptn_type_d   ||< identical environment
+  2  2.34     90.   0. Surf-2       OPAQUE   VERT -     ptn_type_d   ||< identical environment
   3  3.94      0.   0. Surf-3       OPAQUE   VERT -     ptn_type_d   ||< identical environment
   4  2.15    270.   0. Surf-4       OPAQUE   VERT -     ptn_type_d   ||< identical environment
   5  31.0      0.  90. top          OPAQUE   CEIL -     struc_ceil   ||< identical environment
   6  12.5      0. -90. ceiling      OPAQUE   FLOR -     susp_ceil    ||< ceiling:one_bed_400
   7  13.3      0. -90. ceil_600     OPAQUE   FLOR -     susp_ceil    ||< ceil_600:one_bed_600
-  8  0.160   180.   0. back_a_edge  OPAQUE   VERT -     alum_insu    ||< back_a_edge:rad_400
+  8  0.160   180.  -0. back_a_edge  OPAQUE   VERT -     alum_insu    ||< back_a_edge:rad_400
   9  0.195   270.   0. back_b_edge  OPAQUE   VERT -     alum_insu    ||< back_b_edge:rad_400
  10  3.00      0. -90. upper        OPAQUE   FLOR -     alum_insu    ||< upper:rad_400
  11  0.180   180.   0. back_edge    OPAQUE   VERT -     alum_insu    ||< back_edge:rad_600
- 12  0.010    90.   0. left_edge    OPAQUE   VERT -     alum_insu    ||< left_edge:rad_600
+ 12  0.010    90.  -0. left_edge    OPAQUE   VERT -     alum_insu    ||< left_edge:rad_600
  13  2.16      0. -90. upper        OPAQUE   FLOR -     alum_insu    ||< upper:rad_600
  
  
@@ -224,37 +213,23 @@ gain from services 24/7. Take some air from the room equivalent to
 1ach of the plenum.
  Control: no control of air flow
  
-Number of air change periods for daytype weekdays     :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     0.51  0.0024    1.01  0.0047   1     0.00
- 
-Number of air change periods for daytype saturday     :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     0.51  0.0024    1.01  0.0047   1     0.00
- 
-Number of air change periods for daytype sunday       :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     0.51  0.0024    1.01  0.0047   1     0.00
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekdays   1  0 - 24    0.51  0.0024    1.01  0.0047   1     0.00
+saturday   1  0 - 24    0.51  0.0024    1.01  0.0047   1     0.00
+sunday     1  0 - 24    0.51  0.0024    1.01  0.0047   1     0.00
  
 Notes:
 operations notes in the plenum we assume there is a constant 50W heat
 gain from services 24/7. Take some air from the room equivalent to
 1ach of the plenum.
-Number of weekdays     casual gains=  1
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-weekd  1 EquiptW    0-24     50.0      0.0       0.50       0.50
-Number of saturday     casual gains=  1
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-satur  1 EquiptW    0-24     50.0      0.0       0.50       0.50
-Number of sunday       casual gains=  1
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-sunda  1 EquiptW    0-24     50.0      0.0       0.50       0.50
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 EquiptW    0-24     50.0      0.0       0.50       0.50
+saturday    1 EquiptW    0-24     50.0      0.0       0.50       0.50
+sunday      1 EquiptW    0-24     50.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -276,7 +251,7 @@ sunda  1 EquiptW    0-24     50.0      0.0       0.50       0.50
   5  4.44      0. -90. rad_pnl      OPAQUE   FLOR -     alum_panel   ||< identical environment
   6  26.5      0. -90. ceiling      OPAQUE   FLOR -     susp_ceil    ||< identical environment
   7  15.5      0.  90. floor        OPAQUE   CEIL -     struc_ceil   ||< floor:one_bed_400
-  8  15.5      0.  90. floor_600    OPAQUE   CEIL -     struc_flr    ||< floor:one_bed_600
+  8  15.5      0.  90. floor_600    OPAQUE   CEIL -     struc_ceil   ||< floor:one_bed_600
  
  
  All surfaces will receive diffuse insolation (if shading not calculated).
@@ -288,24 +263,18 @@ sunda  1 EquiptW    0-24     50.0      0.0       0.50       0.50
 no operations notes (yet)
  Control: no control of air flow
  
-Number of air change periods for daytype weekdays     :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     0.50  0.0024    0.00  0.0000   0     0.00
- 
-Number of air change periods for daytype saturday     :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     0.50  0.0024    0.00  0.0000   0     0.00
- 
-Number of air change periods for daytype sunday       :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     0.50  0.0024    0.00  0.0000   0     0.00
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekdays   1  0 - 24    0.50  0.0024    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.50  0.0024    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.50  0.0024    0.00  0.0000   0     0.00
  
 Notes:
 no operations notes (yet)
-Number of weekdays     casual gains=  0
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -323,12 +292,12 @@ Number of weekdays     casual gains=  0
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  6.84    180.   0. exterior_wl  OPAQUE   VERT -     ext_wall_a   ||< external
   2  11.6     90.   0. left_ptn     OPAQUE   VERT -     ptn_type_d   ||< identical environment
-  3  7.41    360.   0. coridor_ptn  OPAQUE   VERT -     ptn_type_d   ||< constant @ 21dC &   0W rad
+  3  7.41      0.   0. coridor_ptn  OPAQUE   VERT -     ptn_type_d   ||< constant @ 21dC &   0W rad
   4  11.6    270.   0. right_ptn    OPAQUE   VERT -     ptn_type_d   ||< left_ptn:one_bed_400
   5  15.5      0. -90. floor        OPAQUE   FLOR -     struc_flr    ||< floor_600 :lower_plen
   6  0.432   180.   0. frame        OPAQUE   VERT -     door         ||< external
   7  2.45    180.   0. window       DCF7671_ VERT -     dbl_glz      ||< external
-  8  2.31    360.   0. door         OPAQUE   VERT -     door         ||< constant @ 21dC &   0W rad
+  8  2.31      0.   0. door         OPAQUE   VERT -     door         ||< constant @ 21dC &   0W rad
   9  1.80      0.  90. bed          OPAQUE   CEIL -     door         ||< adiabatic
  10  1.80      0. -90. bed_base     OPAQUE   FLOR -     door         ||< adiabatic
  11  2.16      0.  90. rad_600      OPAQUE   CEIL -     alum_panel   ||< base:rad_600
@@ -341,7 +310,7 @@ window
  
  
  Explicit viewfactors have been derived for this zone.
- Shading patterns have been calculated for this zone.
+ Shading patterns have not yet been calculated.
  
  
  Air schedule notes:
@@ -350,61 +319,47 @@ light on for an hour), and small power is a TV on in afternoon and
 early evening. Reset ACH to 2.0 for winter use.
  Control: no control of air flow
  
-Number of air change periods for daytype weekdays     :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     2.00  0.0232    0.00  0.0000   0     0.00
- 
-Number of air change periods for daytype saturday     :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     2.00  0.0232    0.00  0.0000   0     0.00
- 
-Number of air change periods for daytype sunday       :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     2.00  0.0232    0.00  0.0000   0     0.00
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekdays   1  0 - 24    2.00  0.0232    0.00  0.0000   0     0.00
+saturday   1  0 - 24    2.00  0.0232    0.00  0.0000   0     0.00
+sunday     1  0 - 24    2.00  0.0232    0.00  0.0000   0     0.00
  
 Notes:
 some varying occupancy and lighting gains during day (examination
 light on for an hour), and small power is a TV on in afternoon and
 early evening. Reset ACH to 2.0 for winter use.
-Number of weekdays     casual gains=  9
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-weekd  1 OccuptW    0- 7    100.0     50.0       0.50       0.50
-weekd  2 OccuptW    7- 8    400.0    200.0       0.50       0.50
-weekd  3 OccuptW    8-18    100.0     50.0       0.50       0.50
-weekd  4 OccuptW   18-22    400.0    200.0       0.50       0.50
-weekd  5 OccuptW   22-24    100.0     50.0       0.50       0.50
-weekd  6 LightsW    0-15    100.0      0.0       0.50       0.50
-weekd  7 LightsW   15-16    500.0      0.0       0.50       0.50
-weekd  8 LightsW   16-24    100.0      0.0       0.50       0.50
-weekd  9 EquiptW    0-24     80.0      0.0       0.50       0.50
-Number of saturday     casual gains=  9
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-satur  1 OccuptW    0- 7    100.0     50.0       0.50       0.50
-satur  2 OccuptW    7- 8    400.0    200.0       0.50       0.50
-satur  3 OccuptW    8-18    100.0     50.0       0.50       0.50
-satur  4 OccuptW   18-22    400.0    200.0       0.50       0.50
-satur  5 OccuptW   22-24    100.0     50.0       0.50       0.50
-satur  6 LightsW    0-15    100.0      0.0       0.50       0.50
-satur  7 LightsW   15-16    500.0      0.0       0.50       0.50
-satur  8 LightsW   16-24    100.0      0.0       0.50       0.50
-satur  9 EquiptW    0-24     80.0      0.0       0.50       0.50
-Number of sunday       casual gains=  9
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-sunda  1 OccuptW    0- 7    100.0     50.0       0.50       0.50
-sunda  2 OccuptW    7- 8    400.0    200.0       0.50       0.50
-sunda  3 OccuptW    8-18    100.0     50.0       0.50       0.50
-sunda  4 OccuptW   18-22    400.0    200.0       0.50       0.50
-sunda  5 OccuptW   22-24    100.0     50.0       0.50       0.50
-sunda  6 LightsW    0-15    100.0      0.0       0.50       0.50
-sunda  7 LightsW   15-16    500.0      0.0       0.50       0.50
-sunda  8 LightsW   16-24    100.0      0.0       0.50       0.50
-sunda  9 EquiptW    0-24     80.0      0.0       0.50       0.50
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 OccuptW    0- 7    100.0     50.0       0.50       0.50
+weekdays    2 OccuptW    7- 8    400.0    200.0       0.50       0.50
+weekdays    3 OccuptW    8-18    100.0     50.0       0.50       0.50
+weekdays    4 OccuptW   18-22    400.0    200.0       0.50       0.50
+weekdays    5 OccuptW   22-24    100.0     50.0       0.50       0.50
+weekdays    6 LightsW    0-15    100.0      0.0       0.50       0.50
+weekdays    7 LightsW   15-16    500.0      0.0       0.50       0.50
+weekdays    8 LightsW   16-24    100.0      0.0       0.50       0.50
+weekdays    9 EquiptW    0-24     80.0      0.0       0.50       0.50
+saturday    1 OccuptW    0- 7    100.0     50.0       0.50       0.50
+saturday    2 OccuptW    7- 8    400.0    200.0       0.50       0.50
+saturday    3 OccuptW    8-18    100.0     50.0       0.50       0.50
+saturday    4 OccuptW   18-22    400.0    200.0       0.50       0.50
+saturday    5 OccuptW   22-24    100.0     50.0       0.50       0.50
+saturday    6 LightsW    0-15    100.0      0.0       0.50       0.50
+saturday    7 LightsW   15-16    500.0      0.0       0.50       0.50
+saturday    8 LightsW   16-24    100.0      0.0       0.50       0.50
+saturday    9 EquiptW    0-24     80.0      0.0       0.50       0.50
+sunday      1 OccuptW    0- 7    100.0     50.0       0.50       0.50
+sunday      2 OccuptW    7- 8    400.0    200.0       0.50       0.50
+sunday      3 OccuptW    8-18    100.0     50.0       0.50       0.50
+sunday      4 OccuptW   18-22    400.0    200.0       0.50       0.50
+sunday      5 OccuptW   22-24    100.0     50.0       0.50       0.50
+sunday      6 LightsW    0-15    100.0      0.0       0.50       0.50
+sunday      7 LightsW   15-16    500.0      0.0       0.50       0.50
+sunday      8 LightsW   16-24    100.0      0.0       0.50       0.50
+sunday      9 EquiptW    0-24     80.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -421,8 +376,8 @@ sunda  9 EquiptW    0-24     80.0      0.0       0.50       0.50
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  0.180   180.   0. front_edge   OPAQUE   VERT -     alum_insu_i  ||< external
   2  0.020    90.   0. right_edge   OPAQUE   VERT -     alum_insu_i  ||< join_400:rad_600
-  3  0.160   360.   0. back_a_edge  OPAQUE   VERT -     alum_insu_i  ||< back_a_edge:plenum
-  4  0.195    90.   0. back_b_edge  OPAQUE   VERT -     alum_insu_i  ||< back_b_edge:plenum
+  3  0.160     0.   0. back_a_edge  OPAQUE   VERT -     alum_insu_i  ||< back_a_edge:plenum
+  4  0.195    90.  -0. back_b_edge  OPAQUE   VERT -     alum_insu_i  ||< back_b_edge:plenum
   5  0.020     0.   0. back_edge    OPAQUE   VERT -     alum_insu_i  ||< external
   6  0.215   270.   0. left_edge    OPAQUE   VERT -     alum_insu_i  ||< external
   7  3.00      0.  90. upper        OPAQUE   CEIL -     alum_insu_i  ||< upper:plenum
@@ -435,35 +390,34 @@ sunda  9 EquiptW    0-24     80.0      0.0       0.50       0.50
  Opened existing hc control file.
  
  Number of control periods:  1
- Number of surfaces = 8
  
  Period  1 start   0.00 finish  24.00
  User specified convection coefficients
  User supplied hc values
- Surface            Inside   Outside
- 1 front_edge   (VERT)     -1.000    -1.000
- 2 right_edge   (VERT)     -1.000    -1.000
- 3 back_a_edge  (VERT)     -1.000    -1.000
- 4 back_b_edge  (VERT)     -1.000    -1.000
- 5 back_edge    (VERT)     -1.000    -1.000
- 6 left_edge    (VERT)     -1.000    -1.000
- 7 upper        (CEIL)     -1.000    -1.000
- 8 base         (FLOR)     50.000    -1.000
+   Surface orinetation  Inside     Outside
+ 1 front_edge   (VERT)   default   default
+ 2 right_edge   (VERT)   default   default
+ 3 back_a_edge  (VERT)   default   default
+ 4 back_b_edge  (VERT)   default   default
+ 5 back_edge    (VERT)   default   default
+ 6 left_edge    (VERT)   default   default
+ 7 upper        (CEIL)   default   default
+ 8 base         (FLOR)    50.000   default
  
  
  Air schedule notes:
 nothing happens in this zone
  Control: no control of air flow
  
-Number of air change periods for daytype weekdays     :    0
- 
-Number of air change periods for daytype saturday     :    0
- 
-Number of air change periods for daytype sunday       :    0
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
  
 Notes:
 nothing happens in this zone
-Number of weekdays     casual gains=  0
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -493,51 +447,51 @@ Number of weekdays     casual gains=  0
  Opened existing hc control file.
  
  Number of control periods:  1
- Number of surfaces = 7
  
  Period  1 start   0.00 finish  24.00
  User specified convection coefficients
  User supplied hc values
- Surface            Inside   Outside
- 1 front_edge   (VERT)     -1.000    -1.000
- 2 right_edge   (VERT)     -1.000    -1.000
- 3 back_edge    (VERT)     -1.000    -1.000
- 4 left_edge    (VERT)     -1.000    -1.000
- 5 join_400     (VERT)     -1.000    -1.000
- 6 upper        (CEIL)     -1.000    -1.000
- 7 base         (FLOR)     50.000    -1.000
+   Surface orinetation  Inside     Outside
+ 1 front_edge   (VERT)   default   default
+ 2 right_edge   (VERT)   default   default
+ 3 back_edge    (VERT)   default   default
+ 4 left_edge    (VERT)   default   default
+ 5 join_400     (VERT)   default   default
+ 6 upper        (CEIL)   default   default
+ 7 base         (FLOR)    50.000   default
  
  
  Air schedule notes:
 nothing happens in this zone
  Control: no control of air flow
  
-Number of air change periods for daytype weekdays     :    0
- 
-Number of air change periods for daytype saturday     :    0
- 
-Number of air change periods for daytype sunday       :    0
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
  
 Notes:
 nothing happens in this zone
-Number of weekdays     casual gains=  0
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
  Project floor area is 70.680m2, wall area is 22.699m2, window area is 4.8960m2.
  Sloped roof area is 0.00m2, flat roof area is 0.00m2, skylight area is 0.00m2.
+ In contact with ground 0.00m2.
  There is 27.595m2 of outside surface area, 27.595m2 of which is vertical.
  
- Outside walls are 32.115 % of floor area & avg U of 0.424 & UA of 9.6257
+ Outside walls are 32.115 % of floor area & avg U of 0.424 & UA of 9.6257 & max MLC thickness 0.363
  Glazing is 6.9270 % of floor & 17.742 % facade with avg U of 2.811 & UA of 13.761
  
  ____________________________________________________________
  Multi-layer constructions used:
  
- Details of opaque construction: ext_wall_a
+ Details of opaque construction: ext_wall_a and overall thickness  0.363
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext     6  100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 Lt brown brick : Lt brown brick
     2  211   90.0     0.040   250.   840. 0.90 0.30     4.  2.25 Glasswool : Glasswool
     3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
@@ -545,24 +499,36 @@ Number of weekdays     casual gains=  0
     5    0   10.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
  Int   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 White ptd Gypboard : White ptd Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.299  0.301  0.295 (partition)  0.291
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.30
+ External surface admittance Y=  2.12  w=  2.01 decrement factor f=  0.79  phi=  0.62 surface factor f=  0.79  phi=  0.62
+ Partition admittance Y=  2.18  w=  1.96 surface factor f=  0.78  phi=  0.63
  Total area of ext_wall_a is     21.24
  
- Details of opaque construction: door
+ Details of opaque construction: door and overall thickness  0.025
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
     1   69   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 Oak (radial) : Oak (radial)
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
+ External surface admittance Y=  3.33  w=  0.61 decrement factor f=  0.61  phi=  0.40 surface factor f=  0.61  phi=  0.40
+ Partition admittance Y=  1.21  w=  5.38 surface factor f=  0.99  phi=  0.56
  Total area of door is     12.68
  
- Details of transparent construction: dbl_glz      with DCF7671_06nb optics.
+ Details of transparent construction: dbl_glz with DCF7671_06nb optics and overall thickness  0.024
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder s
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder single layer optics
     2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder s
+ Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder single layer optics
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
+ External surface admittance Y=  2.81  w=  0.63 decrement factor f=  0.67  phi=  0.31 surface factor f=  0.67  phi=  0.31
+ Partition admittance Y=  0.82  w=  5.64 surface factor f=  1.00  phi=  0.38
  
  Clear float 76/71,     6mm, no blind: with id of: DCF7671_06nb
  with 3 layers [including air gaps] and visible trn: 0.76
@@ -574,68 +540,96 @@ Number of weekdays     casual gains=  0
     3  0.117 0.124 0.127 0.112 0.077
  Total area of dbl_glz is      4.90
  
- Details of opaque construction: susp_ceil
+ Details of opaque construction: susp_ceil and overall thickness  0.015
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
     1  150   15.0     0.030   290.  2000. 0.90 0.60     8.  0.50 Ceiling (mineral) : Ceiling (mineral)
- ISO 6946 U values (horiz/upward/downward heat flow)=  1.493  1.563  1.408 (partition)  1.316
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.493  1.562  1.408 (partition)  1.316
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.47
+ External surface admittance Y=  1.49  w=  0.41 decrement factor f=  0.82  phi=  0.09 surface factor f=  0.82  phi=  0.09
+ Partition admittance Y=  0.29  w=  5.79 surface factor f=  1.00  phi=  0.13
  Total area of susp_ceil is     78.12
  
- Details of opaque construction: ptn_type_d
+ Details of opaque construction: ptn_type_d and overall thickness  0.099
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext   108   15.0     0.190   950.   840. 0.91 0.22    11.  0.08 White ptd Gypboard : White ptd Gypboard
     2    0   22.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
     3  216   25.0     0.040   105.  1800. 0.90 0.60     1.  0.63 Mineral fibre : Mineral fibre
     4    0   22.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
  Int   108   15.0     0.190   950.   840. 0.91 0.22    11.  0.08 White ptd Gypboard : White ptd Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.773  0.792  0.750 (partition)  0.723
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.77
+ External surface admittance Y=  1.15  w=  2.71 decrement factor f=  0.90  phi=  0.38 surface factor f=  0.90  phi=  0.38
+ Partition admittance Y=  0.98  w=  5.43 surface factor f=  0.99  phi=  0.45
  Total area of ptn_type_d is     78.38
  
- Details of opaque construction: struc_flr
+ Details of opaque construction: struc_flr linked to struc_ceil   & with overall thickness  0.353
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext    32  175.0     1.400  2100.   653. 0.90 0.65    19.  0.13 Heavy mix concrete : Heavy mix concrete
     2   32  175.0     1.400  2100.   653. 0.90 0.65    19.  0.13 Heavy mix concrete : Heavy mix concrete
  Int   144    3.0     0.500  1050.   837. 0.90 0.40  1000.  0.01 Plastic tile : Plastic tile
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.347  2.525  2.146 (partition)  1.938
- Total area of struc_flr is     46.44
  
- Details of opaque construction: struc_ceil
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.29
+ External surface admittance Y=  5.18  w=  1.21 decrement factor f=  0.45  phi=  1.69 surface factor f=  0.45  phi=  1.69
+ Partition admittance Y=  5.81  w=  1.55 surface factor f=  0.45  phi=  2.50
+ Total area of struc_flr is     30.96
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Details of opaque construction: struc_ceil linked to struc_flr    & with overall thickness  0.353
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext   144    3.0     0.500  1050.   837. 0.90 0.40  1000.  0.01 Plastic tile : Plastic tile
     2   32  175.0     1.400  2100.   653. 0.90 0.65    19.  0.13 Heavy mix concrete : Heavy mix concrete
  Int    32  175.0     1.400  2100.   653. 0.90 0.65    19.  0.13 Heavy mix concrete : Heavy mix concrete
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.347  2.525  2.146 (partition)  1.938
- Total area of struc_ceil is     46.44
  
- Details of opaque construction: alum_panel
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.29
+ External surface admittance Y=  5.30  w=  1.24 decrement factor f=  0.45  phi=  1.80 surface factor f=  0.45  phi=  1.80
+ Partition admittance Y=  5.93  w=  1.56 surface factor f=  0.45  phi=  2.62
+ Total area of struc_ceil is     61.92
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Details of opaque construction: alum_panel and overall thickness  0.004
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
     1   47    4.0   210.000  2700.   880. 0.82 0.32 19200.  0.00 Wt cotd aluminium : Wt cotd aluminium
  ISO 6946 U values (horiz/upward/downward heat flow)=  5.882  7.142  4.761 (partition)  3.846
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.55
+ External surface admittance Y=  5.56  w=  0.05 decrement factor f=  0.33  phi=  0.11 surface factor f=  0.33  phi=  0.11
+ Partition admittance Y=  0.23  w=  5.89 surface factor f=  1.00  phi=  0.11
  Total area of alum_panel is     14.76
  
- Details of opaque construction: alum_insu
+ Details of opaque construction: alum_insu linked to alum_insu_i  & with overall thickness  0.054
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext    47    4.0   210.000  2700.   880. 0.82 0.32 19200.  0.00 Wt cotd aluminium : Wt cotd aluminium
  Int   216   50.0     0.040   105.  1800. 0.90 0.60     1.  1.25 Mineral fibre : Mineral fibre
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.704  0.719  0.685 (partition)  0.662
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.70
+ External surface admittance Y=  0.75  w=  1.04 decrement factor f=  0.91  phi=  0.10 surface factor f=  0.91  phi=  0.10
+ Partition admittance Y=  0.36  w=  5.56 surface factor f=  1.00  phi=  0.16
  Total area of alum_insu is      5.72
  
- Details of opaque construction: alum_insu_i
+ Details of opaque construction: alum_insu_i linked to alum_insu    & with overall thickness  0.054
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext   216   50.0     0.040   105.  1800. 0.90 0.60     1.  1.25 Mineral fibre : Mineral fibre
  Int    47    4.0   210.000  2700.   880. 0.82 0.32 19200.  0.00 Wt cotd aluminium : Wt cotd aluminium
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.704  0.719  0.685 (partition)  0.662
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.70
+ External surface admittance Y=  1.10  w=  2.95 decrement factor f=  0.91  phi=  0.39 surface factor f=  0.91  phi=  0.39
+ Partition admittance Y=  0.95  w=  5.51 surface factor f=  0.99  phi=  0.44
  Total area of alum_insu_i is      6.35

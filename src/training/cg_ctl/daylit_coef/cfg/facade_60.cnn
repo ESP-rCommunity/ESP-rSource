@@ -1,5 +1,5 @@
-*connections  for facade_60
-*Date Mon Jul 20 15:31:17 2009
+*connections for facade_60
+*Date Fri Aug 24 16:05:28 2012
      11   # number of connections
    1   1   0   0   0  #    1 Frame_bot in fac_zone_c1 is External
    1   2   1   0   0  #    2 Right_wall in fac_zone_c1 >|< Identical environment
