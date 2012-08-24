@@ -1,8 +1,8 @@
 Synopsis
  
 Synopsis of the model Basic 3 zone model with thermophysical property subs.
-defined in bld_tp_sub.cfg generated on Wed Aug 15 10:46:13 2012. Notes
-associated with the model are in bld_basic.log
+defined in bld_tp_sub.cfg generated on Fri Aug 24 10:53:58 2012. Notes
+associated with the model are in ../doc/bld_basic.log
  
 The model is located at latitude   51.70 with a longitude difference of  -0.50
 from the local time meridian. The year used in simulations is 1999 and

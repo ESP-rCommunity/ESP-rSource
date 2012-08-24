@@ -1,9 +1,8 @@
 Synopsis
  
-This is a synopsis of the model Office with clear story window & TM wall &
-control dampers defined in trombe_wall_office_crack_ctl.cfg generated on Thu
-Jul 28 04:18:38 2011. Notes associated with the model are in
-trombe_wall_office.log
+Synopsis of the model Office with clear story window & TM wall & small dampers
+defined in trombe_wall_crack.cfg generated on Fri Aug 24 11:59:22 2012. Notes
+associated with the model are in ../doc/trombe_wall_office.log
  
 The model is located at latitude   55.90 with a longitude difference of  -4.10
 from the local time meridian. The year used in simulations is 2007 and
@@ -17,8 +16,9 @@ Simulationist address: not yet defined
 Simulationist city: not yet defined
 Simulationist postcode: not yet defined
  
-The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
-with hour centred solar data.
+The climate is: ESP test climate and is held in: clm67 with hour centred solar
+data.
+ standard annual weather: clm67
 Calculated ground temp at 0.5m depth
 3.0888 4.3008 6.6610 8.8949 13.123 15.349 15.963 14.834 12.227 8.9770 5.7777 3.6649
 Calculated ground temp at 1.0m depth
@@ -38,31 +38,7 @@ Databases associated with the model:
  standard event profiles: profiles.db2.a
  standard optical prop  : optics.db2
  standard UK NCM data   : SBEM.db1
- 
- ____________________________________________________________
- 
-The model includes ideal controls as follows:
-Control description:
-open upper damper if trombe_up is at least 5 deg over office T
- 
- Flow control includes  1 loops.
-try different delta T weekdays sat and sun
- 
- The sensor for function  1 sensors are nodes trombe_up (  4) & office (  6)
- The actuator for function  1 is flow connection:  12 trombe_up - office via small_dampe
- The function day types are Weekdays, Saturdays & Sundays
- Weekday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 delt T > flow         on / off            5.0 1.0 1.0
-on/off setpoint 5.00 direct action ON fraction 1.000.
- Saturday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 delt T > flow         on / off            8.0 1.0 1.0
-on/off setpoint 8.00 direct action ON fraction 1.000.
- Sunday control is valid Mon-01-Jan to Mon-31-Dec, 2007 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 delt T > flow         on / off            3.0 1.0 1.0
-on/off setpoint 3.00 direct action ON fraction 1.000.
+ standard mould isopleth: mould.db1
  ____________________________________________________________
  
 The model includes an air flow network.
@@ -169,7 +145,7 @@ ID Zone         Volume|          Surface
  An hourly solar radiation distribution is used for this zone.
  
  
- Shading patterns have been calculated for this zone.
+ Shading patterns have not yet been calculated.
  
  Ventilation & infiltration is assessed via network analysis
  and the associated network node is: trombe_low
@@ -177,24 +153,18 @@ ID Zone         Volume|          Surface
 Notes:
 nothing happens in this zone in terms of occupants lights and small
 power. There is not infiltration or ventilation.
-Number of weekdays     casual gains=  3
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-weekd  1 OccuptW    0-24      0.0      0.0       0.50       0.50
-weekd  2 LightsW    0-24      0.0      0.0       0.50       0.50
-weekd  3 EquiptW    0-24      0.0      0.0       0.50       0.50
-Number of saturday     casual gains=  3
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-satur  1 OccuptW    0-24      0.0      0.0       0.50       0.50
-satur  2 LightsW    0-24      0.0      0.0       0.50       0.50
-satur  3 EquiptW    0-24      0.0      0.0       0.50       0.50
-Number of sunday       casual gains=  3
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-sunda  1 OccuptW    0-24      0.0      0.0       0.50       0.50
-sunda  2 LightsW    0-24      0.0      0.0       0.50       0.50
-sunda  3 EquiptW    0-24      0.0      0.0       0.50       0.50
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 OccuptW    0-24      0.0      0.0       0.50       0.50
+weekdays    2 LightsW    0-24      0.0      0.0       0.50       0.50
+weekdays    3 EquiptW    0-24      0.0      0.0       0.50       0.50
+saturday    1 OccuptW    0-24      0.0      0.0       0.50       0.50
+saturday    2 LightsW    0-24      0.0      0.0       0.50       0.50
+saturday    3 EquiptW    0-24      0.0      0.0       0.50       0.50
+sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
+sunday      2 LightsW    0-24      0.0      0.0       0.50       0.50
+sunday      3 EquiptW    0-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -220,7 +190,7 @@ sunda  3 EquiptW    0-24      0.0      0.0       0.50       0.50
  An hourly solar radiation distribution is used for this zone.
  
  
- Shading patterns have been calculated for this zone.
+ Shading patterns have not yet been calculated.
  
  Uses same operations as zone trombe_low
  
@@ -248,7 +218,7 @@ sunda  3 EquiptW    0-24      0.0      0.0       0.50       0.50
  An hourly solar radiation distribution is used for this zone.
  
  
- Shading patterns have been calculated for this zone.
+ Shading patterns have not yet been calculated.
  
  Uses same operations as zone trombe_low
  
@@ -277,7 +247,7 @@ sunda  3 EquiptW    0-24      0.0      0.0       0.50       0.50
  An hourly solar radiation distribution is used for this zone.
  
  
- Shading patterns have been calculated for this zone.
+ Shading patterns have not yet been calculated.
  
  Uses same operations as zone trombe_low
  
@@ -347,24 +317,18 @@ sunda  3 EquiptW    0-24      0.0      0.0       0.50       0.50
 Notes:
 nothing happens in this zone in terms of occupants lights and small
 power. There is not infiltration or ventilation.
-Number of weekdays     casual gains=  3
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-weekd  1 OccuptW    0-24      0.0      0.0       0.50       0.50
-weekd  2 LightsW    0-24      0.0      0.0       0.50       0.50
-weekd  3 EquiptW    0-24      0.0      0.0       0.50       0.50
-Number of saturday     casual gains=  3
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-satur  1 OccuptW    0-24      0.0      0.0       0.50       0.50
-satur  2 LightsW    0-24      0.0      0.0       0.50       0.50
-satur  3 EquiptW    0-24      0.0      0.0       0.50       0.50
-Number of sunday       casual gains=  3
-Day Gain Type      Period Sensible  Latent     Radiant    Convec
-    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-sunda  1 OccuptW    0-24      0.0      0.0       0.50       0.50
-sunda  2 LightsW    0-24      0.0      0.0       0.50       0.50
-sunda  3 EquiptW    0-24      0.0      0.0       0.50       0.50
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 OccuptW    0-24      0.0      0.0       0.50       0.50
+weekdays    2 LightsW    0-24      0.0      0.0       0.50       0.50
+weekdays    3 EquiptW    0-24      0.0      0.0       0.50       0.50
+saturday    1 OccuptW    0-24      0.0      0.0       0.50       0.50
+saturday    2 LightsW    0-24      0.0      0.0       0.50       0.50
+saturday    3 EquiptW    0-24      0.0      0.0       0.50       0.50
+sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
+sunday      2 LightsW    0-24      0.0      0.0       0.50       0.50
+sunday      3 EquiptW    0-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -384,37 +348,53 @@ sunda  3 EquiptW    0-24      0.0      0.0       0.50       0.50
  
  Details of opaque construction: insul_mtl_p and overall thickness  0.088
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
     2  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 glass fibre quilt : Glass Fibre Quilt
  Int    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.461  0.467  0.452 (partition)  0.442
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.46
+ External surface admittance Y=  0.81  w=  3.41 decrement factor f=  0.94  phi=  0.31 surface factor f=  0.94  phi=  0.31
+ Partition admittance Y=  0.70  w=  5.68 surface factor f=  1.00  phi=  0.32
  Total area of insul_mtl_p is      4.08
  
  Details of opaque construction: door and overall thickness  0.025
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
     1   69   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 oak : Oak (radial cut)
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
+ External surface admittance Y=  3.33  w=  0.61 decrement factor f=  0.61  phi=  0.40 surface factor f=  0.61  phi=  0.40
+ Partition admittance Y=  1.21  w=  5.38 surface factor f=  0.99  phi=  0.56
  Total area of door is      6.00
  
- Details of opaque construction: trombe_mass and overall thickness  0.500
+ Details of opaque construction: trombe_mass linked to trombe_mas_a & with overall thickness  0.500
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext    50  250.0     1.400  2100.   653. 0.90 0.85    19.  0.18 solar_absorb concrete : Heavy mix concrete w
- Int    34  250.0     1.400  2100.   653. 0.90 0.21    19.  0.18 white ptd concrete : White painted heavy mix
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    50  250.0     1.400  2100.   653. 0.90 0.85    19.  0.18 solar_absorb concrete : Heavy mix concrete with dark surface for use in trombe-mic
+ Int    34  250.0     1.400  2100.   653. 0.90 0.21    19.  0.18 white ptd concrete : White painted heavy mix concrete
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.897  2.011  1.763 (partition)  1.620
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.86
+ External surface admittance Y=  5.28  w=  1.22 decrement factor f=  0.45  phi=  1.77 surface factor f=  0.45  phi=  1.77
+ Partition admittance Y=  5.61  w=  1.19 surface factor f=  0.41  phi=  1.99
  Total area of trombe_mass is     27.00
  
  Details of transparent construction: single_glz with SCF8477_10nb optics and overall thickness  0.006
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
-    1  242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder s
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1  242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
  ISO 6946 U values (horiz/upward/downward heat flow)=  5.621  6.762  4.589 (partition)  3.733
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.32
+ External surface admittance Y=  5.33  w=  0.08 decrement factor f=  0.36  phi=  0.15 surface factor f=  0.36  phi=  0.15
+ Partition admittance Y=  0.34  w=  5.85 surface factor f=  1.00  phi=  0.15
  
  Clear float 84/77,    10mm, no blind: with id of: SCF8477_10nb
  with 1 layers [including air gaps] and visible trn: 0.84
@@ -426,8 +406,8 @@ sunda  3 EquiptW    0-24      0.0      0.0       0.50       0.50
  
  Details of opaque construction: grnd_floor and overall thickness  0.625
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext   263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 earth std : Common_earth
     2  262  150.0     0.520  2050.   184. 0.90 0.85     2.  0.29 gravel based : Gravel based
     3   32  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 heavy mix concrete : Heavy mix concrete
@@ -435,26 +415,38 @@ sunda  3 EquiptW    0-24      0.0      0.0       0.50       0.50
     5   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
  Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.864  0.887  0.835 (partition)  0.802
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.86
+ External surface admittance Y=  2.16  w=  1.36 decrement factor f=  0.76  phi=  0.46 surface factor f=  0.76  phi=  0.46
+ Partition admittance Y=  2.20  w=  1.27 surface factor f=  0.76  phi=  0.43
  Total area of grnd_floor is     16.00
  
  Details of opaque construction: gyp_blk_ptn and overall thickness  0.226
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White paintedd Gypboard
     2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
     3   28  100.0     0.510  1400.  1000. 0.90 0.65    10.  0.20 block inner : Block inner (3% mc)
     4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
  Int   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White paintedd Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.186  1.230  1.133 (partition)  1.072
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.17
+ External surface admittance Y=  2.38  w=  1.44 decrement factor f=  0.74  phi=  0.54 surface factor f=  0.74  phi=  0.54
+ Partition admittance Y=  2.59  w=  2.21 surface factor f=  0.76  phi=  0.86
  Total area of gyp_blk_ptn is     36.75
  
  Details of transparent construction: fictitious with SC_fictit optics and overall thickness  0.004
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
-    1  245    4.0    20.000    10.    10. 0.99 0.01 19200.  0.00 fict : fictitious material (almost not there
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1  245    4.0    20.000    10.    10. 0.99 0.01 19200.  0.00 fict : fictitious material (almost not there) with matching single layer optics
  ISO 6946 U values (horiz/upward/downward heat flow)=  5.875  7.133  4.757 (partition)  3.843
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.55
+ External surface admittance Y=  5.55  w=  0.00 decrement factor f=  0.33  phi=  0.00 surface factor f=  0.33  phi=  0.00
+ Partition admittance Y=  0.00  w=  6.00 surface factor f=  1.00  phi=  0.00
  
  Fictitious 99/99,      4mm, no blind: with id of: SC_fictit
  with 1 layers [including air gaps] and visible trn: 0.99
@@ -464,11 +456,15 @@ sunda  3 EquiptW    0-24      0.0      0.0       0.50       0.50
     1  0.001 0.001 0.001 0.001 0.001
  Total area of fictitious is      6.00
  
- Details of opaque construction: trombe_mas_a and overall thickness  0.500
+ Details of opaque construction: trombe_mas_a linked to trombe_mass  & with overall thickness  0.500
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext    34  250.0     1.400  2100.   653. 0.90 0.21    19.  0.18 white ptd concrete : White painted heavy mix
- Int    50  250.0     1.400  2100.   653. 0.90 0.85    19.  0.18 solar_absorb concrete : Heavy mix concrete w
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    34  250.0     1.400  2100.   653. 0.90 0.21    19.  0.18 white ptd concrete : White painted heavy mix concrete
+ Int    50  250.0     1.400  2100.   653. 0.90 0.85    19.  0.18 solar_absorb concrete : Heavy mix concrete with dark surface for use in trombe-mic
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.897  2.011  1.763 (partition)  1.620
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.86
+ External surface admittance Y=  5.28  w=  1.22 decrement factor f=  0.45  phi=  1.77 surface factor f=  0.45  phi=  1.77
+ Partition admittance Y=  5.61  w=  1.19 surface factor f=  0.41  phi=  1.99
  Total area of trombe_mas_a is     11.00

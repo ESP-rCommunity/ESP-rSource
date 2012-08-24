@@ -1,7 +1,7 @@
 Synopsis
  
 Synopsis of the model Three offices with different window representations (no
-network). defined in 3_windows.cfg generated on Thu Aug 23 16:31:42 2012.
+network). defined in 3_windows.cfg generated on Fri Aug 24 11:47:02 2012.
 Notes associated with the model are in ../doc/3_windows.log
  
 The model is located at latitude   55.00 with a longitude difference of   0.00
@@ -52,11 +52,11 @@ Images    :   0
  
 Simulations to be undertaken:
 ____simulations ( 5)____________days descrip___
-1st win Mon-06-Feb to Sun-12-Feb   7  1st winter run
-spring  Mon-17-Apr to Sun-23-Apr   7  spring run
-summer  Mon-03-Jul to Sun-09-Jul   7  summer run
-autumn  Mon-02-Oct to Sun-08-Oct   7  autumn run
-2nd win Mon-20-Nov to Sun-26-Nov   7  2nd winter run
+1st win Mon-06-Feb to Sun-12-Feb   7 1st winter run
+spring  Mon-17-Apr to Sun-23-Apr   7 spring run
+summer  Mon-03-Jul to Sun-09-Jul   7 summer run
+autumn  Mon-02-Oct to Sun-08-Oct   7 autumn run
+2nd win Mon-20-Nov to Sun-26-Nov   7 2nd winter run
  
 display day Wed-11-Jan.
 display day Wed-08-Mar.
