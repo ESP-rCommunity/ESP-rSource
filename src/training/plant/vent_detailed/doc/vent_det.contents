@@ -1,41 +1,44 @@
 Synopsis
  
-This is a synopsis of the model Ventilation system with mech inlet
-(restricted) and mech extract defined in vent_det.cfg generated on Wed Sep 30
-17:12:09 2009. Notes associated with the model are in vent_det.log
+Synopsis of the model Ventilation system with mech inlet (restricted) and mech
+extract defined in vent_det.cfg generated on Mon Aug 27 16:36:55 2012. Notes
+associated with the model are in ../doc/vent_det.log
  
 The model is located at latitude   51.70 with a longitude difference of  -0.50
 from the local time meridian. The year used in simulations is 2000 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical urban site and the ground reflectance is 0.25.
  
-Project name: not yet defined
-Building address: not yet defined
-Building city: not yet defined
-Building Postcode: not yet defined
- 
-Building owner name: not yet defined
-Building owner telephone: not yet defined
-Building owner address: not yet defined
-Building owner city: not yet defined
-Building owner Postcode: not yet defined
  
 Simulationist name: not yet defined
 Simulationist telephone: not yet defined
 Simulationist address: not yet defined
 Simulationist city: not yet defined
 Simulationist postcode: not yet defined
-The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
-with hour centred solar data.
+ 
+The climate is: ESP test climate and is held in: clm67 with hour centred solar
+data.
+ standard annual weather: clm67
+Calculated ground temp at 0.5m depth
+3.0888 4.3008 6.6610 8.8949 13.123 15.349 15.963 14.834 12.227 8.9770 5.7777 3.6649
+Calculated ground temp at 1.0m depth
+3.6630 4.5020 6.4738 8.4398 12.343 14.560 15.374 14.612 12.434 9.5459 6.5633 4.4524
+Calculated ground temp at 2.0m depth
+4.7588 5.0557 6.4004 7.8990 11.149 13.226 14.259 14.027 12.542 10.298 7.7730 5.7855
+Calculated ground temp at 4.0m depth
+6.4880 6.2779 6.8663 7.7174 9.8661 11.475 12.517 12.771 12.121 10.800 9.0880 7.5409
+ 
 An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
- pressure distributions : pressc.db1
- materials              : /usr/esru/esp-r/databases/constr.db2.a
- constructions          : ./multicon.db1
- plant components       : plantc.db1
- event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
- optical properties     : optics.db1
+ standard pressure distr: pressc.db1
+ standard materials     : material.db3.a
+ standard constructions : multicon.db3
+ standard plant comp    : plantc.db1
+ standard event profiles: profiles.db1.a
+ standard optical prop  : optics.db1
+ standard UK NCM data   : SBEM.db1
+ standard mould isopleth: mould.db1
  
  ____________________________________________________________
  
@@ -49,10 +52,11 @@ zone_b (imaginary) is heated to 20C, throt range 3C via PID controller with
  
  The sensor for function  1 senses var in compt. 11:zone_b @ node no.  2
  The actuator for function  1 is plant component   9:heater @ node no.  1
- There have been  1 day types defined.
- Day type  1 is valid Sat-01-Jan to Sun-31-Dec, 2000 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 dry bulb   > flux     PID flux control.   1.0 6000.0 0.0 20.0 3.0 0.0 0.0 0.0 0.0
+There have been  1 periods of validity defined during the year.
+ Control is valid Sat-01-Jan to Sun-31-Dec, 2000 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 dry bulb   > flux     non-recursive postnl mode 1.0 max capacity 6000.0W min
+capacity 0.0W setpoint 20.00C Tmp range 3.00C
  
 The model includes a plant network.
  

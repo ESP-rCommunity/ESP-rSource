@@ -1,41 +1,44 @@
 Synopsis
  
-This is a synopsis of the model Office model for network flow studies -
-network vents controlled defined in office_vent_ctl.cfg generated on Wed Sep
-30 10:12:56 2009. Notes associated with the model are in office_vent.log
+Synopsis of the model Office model for network flow studies - network
+infiltration defined in office_vent_netinf.cfg generated on Mon Aug 27
+15:33:20 2012. Notes associated with the model are in ../doc/office_vent.log
  
 The model is located at latitude   46.00 with a longitude difference of   0.00
 from the local time meridian. The year used in simulations is 1997 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical city centre and the ground reflectance is 0.20.
  
-Project name: not yet defined
-Building address: not yet defined
-Building city: not yet defined
-Building Postcode: not yet defined
- 
-Building owner name: not yet defined
-Building owner telephone: not yet defined
-Building owner address: not yet defined
-Building owner city: not yet defined
-Building owner Postcode: not yet defined
  
 Simulationist name: not yet defined
 Simulationist telephone: not yet defined
 Simulationist address: not yet defined
 Simulationist city: not yet defined
 Simulationist postcode: not yet defined
-The climate is: Ottawa Intl ON CAN and is held in:
-/usr/esru/esp-r/climate/can_ottawa with hour centred solar data.
+ 
+The climate is: Ottawa Intl ON CAN and is held in: can_ottawa with hour
+centred solar data.
+ standard annual weather: can_ottawa
+Calculated ground temp at 0.5m depth
+-7.3239 -8.6098 -6.3292 -2.7603 6.5748 13.779 18.638 20.117 17.597 12.004 4.5294 -2.4058
+Calculated ground temp at 1.0m depth
+-5.5667 -7.3286 -5.7900 -2.8690 5.3395 12.038 16.869 18.802 17.103 12.437 5.7987 -0.66126
+Calculated ground temp at 2.0m depth
+-2.5922 -4.8835 -4.4157 -2.5199 3.7264 9.3732 13.890 16.314 15.797 12.626 7.4760 2.0155
+Calculated ground temp at 4.0m depth
+1.3245 -1.0252 -1.5390 -0.82819 2.7073 6.5116 9.9991 12.427 12.995 11.620 8.5955 4.9014
+ 
 An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
- pressure distributions : pressc.db1
- materials              : /usr/esru/esp-r/databases/material.db3.a
+ standard pressure distr: pressc.db1
+ standard materials     : material.db3.a
  constructions          : ../dbs/office_vent_constr.db2
- plant components       : plantc.db1
- event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
- optical properties     : optics.db2
+ standard plant comp    : plantc.db1
+ standard event profiles: profiles.db1.a
+ standard optical prop  : optics.db2
+ standard UK NCM data   : SBEM.db1
+ standard mould isopleth: mould.db1
  
  ____________________________________________________________
  
@@ -44,45 +47,41 @@ Control description:
 office environmental controls - base case heat 20 cool 24
  
 Zones control includes  1 functions.
-using zone controls and flow controls
+using zone controls only
  
  The sensor for function  1 senses the temperature of the current zone.
  The actuator for function  1 is air point of the current zone
- The function day types are Weekdays, Saturdays & Sundays
- Weekday control is valid Wed-01-Jan to Wed-31-Dec, 1997 with  3 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       20000.0 0.0 20000.0 0.0 16.0 26.0 0.0
-basic control: max heating capacity 20000.0W min heating capacity 0.0W max cooling
-capacity 20000.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
-26.00C.
-   2  8.00 db temp   > flux      basic control       20000.0 0.0 20000.0 0.0 20.0 24.0 0.0
-basic control: max heating capacity 20000.0W min heating capacity 0.0W max cooling
-capacity 20000.0W min cooling capacity 0.0W. Heating setpoint 20.00C cooling setpoint
-24.00C.
-   3 18.00 db temp   > flux      basic control       20000.0 0.0 20000.0 0.0 16.0 26.0 0.0
-basic control: max heating capacity 20000.0W min heating capacity 0.0W max cooling
-capacity 20000.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
-26.00C.
- Saturday control is valid Wed-01-Jan to Wed-31-Dec, 1997 with  3 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       20000.0 0.0 20000.0 0.0 16.0 26.0 0.0
-basic control: max heating capacity 20000.0W min heating capacity 0.0W max cooling
-capacity 20000.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
-26.00C.
-   2  9.00 db temp   > flux      basic control       20000.0 0.0 20000.0 0.0 20.0 24.0 0.0
-basic control: max heating capacity 20000.0W min heating capacity 0.0W max cooling
-capacity 20000.0W min cooling capacity 0.0W. Heating setpoint 20.00C cooling setpoint
-24.00C.
-   3 18.00 db temp   > flux      basic control       20000.0 0.0 20000.0 0.0 16.0 26.0 0.0
-basic control: max heating capacity 20000.0W min heating capacity 0.0W max cooling
-capacity 20000.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
-26.00C.
- Sunday control is valid Wed-01-Jan to Wed-31-Dec, 1997 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       20000.0 0.0 20000.0 0.0 16.0 26.0 0.0
-basic control: max heating capacity 20000.0W min heating capacity 0.0W max cooling
-capacity 20000.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
-26.00C.
+ The following day types are defined:
+weekday
+saturday
+sunday
+ Day type weekday control has  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 20000.0W min cooling capacity 0.0W. Heating
+setpoint 16.00C cooling setpoint 26.00C.
+   2  8.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 20000.0W min cooling capacity 0.0W. Heating
+setpoint 20.00C cooling setpoint 24.00C.
+   3 18.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 20000.0W min cooling capacity 0.0W. Heating
+setpoint 16.00C cooling setpoint 26.00C.
+ Day type saturday control has  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 20000.0W min cooling capacity 0.0W. Heating
+setpoint 16.00C cooling setpoint 26.00C.
+   2  9.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 20000.0W min cooling capacity 0.0W. Heating
+setpoint 20.00C cooling setpoint 24.00C.
+   3 18.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 20000.0W min cooling capacity 0.0W. Heating
+setpoint 16.00C cooling setpoint 26.00C.
+ Day type sunday control has  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 20000.0W min cooling capacity 0.0W. Heating
+setpoint 16.00C cooling setpoint 26.00C.
  
  Zone to contol loop linkages:
  zone ( 1) manager      << control  1
@@ -91,70 +90,13 @@ capacity 20000.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling set
  zone ( 4) reception    << control  1
  zone ( 5) ceil_void    << control  0
  zone ( 6) mixing_box   << control  0
- 
- Flow control includes  6 loops.
-range based control on facade vents off < 19 & > 23.9 C
- 
- The sensor for function  1 senses node (1) manager
- The actuator for function  1 is flow connection:  11 south_man - manager via fac_vent_1
- There have been  1 day types defined.
- Day type  1 is valid Wed-01-Jan to Wed-31-Dec, 1997 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 dry bulb > flow       low/default/mid/hi  20.1 21.5 23.9 0.1 1.5 0.1
-range setpoints: low 20.10 mid 21.50 high 23.90 actuation ranges: low (< low sp) 0.05
-mid (>mid sp) 1.50 high (>high sp) 0.05.
- 
- The sensor for function  2 senses node (2) general
- The actuator for function  2 is flow connection:  12 south_gen - general via fac_vent_3
- There have been  1 day types defined.
- Day type  1 is valid Wed-01-Jan to Wed-31-Dec, 1997 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 dry bulb > flow       low/default/mid/hi  20.1 21.5 23.9 0.1 1.5 0.1
-range setpoints: low 20.10 mid 21.50 high 23.90 actuation ranges: low (< low sp) 0.05
-mid (>mid sp) 1.50 high (>high sp) 0.05.
- 
- The sensor for function  3 senses node (2) general
- The actuator for function  3 is flow connection:  13 east_gener - general via fac_vent_2
- There have been  1 day types defined.
- Day type  1 is valid Wed-01-Jan to Wed-31-Dec, 1997 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 dry bulb > flow       low/default/mid/hi  20.1 21.5 23.9 0.1 1.5 0.1
-range setpoints: low 20.10 mid 21.50 high 23.90 actuation ranges: low (< low sp) 0.05
-mid (>mid sp) 1.50 high (>high sp) 0.05.
- 
- The sensor for function  4 senses node (4) reception
- The actuator for function  4 is flow connection:  14 east_recep - reception via fac_vent_2
- There have been  1 day types defined.
- Day type  1 is valid Wed-01-Jan to Wed-31-Dec, 1997 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 dry bulb > flow       low/default/mid/hi  20.1 21.5 23.9 0.1 1.5 0.1
-range setpoints: low 20.10 mid 21.50 high 23.90 actuation ranges: low (< low sp) 0.05
-mid (>mid sp) 1.50 high (>high sp) 0.05.
- 
- The sensor for function  5 senses node (3) conference
- The actuator for function  5 is flow connection:  15 east - conference via fac_vent_2
- There have been  1 day types defined.
- Day type  1 is valid Wed-01-Jan to Wed-31-Dec, 1997 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 dry bulb > flow       low/default/mid/hi  20.1 21.5 23.9 0.1 1.5 0.1
-range setpoints: low 20.10 mid 21.50 high 23.90 actuation ranges: low (< low sp) 0.05
-mid (>mid sp) 1.50 high (>high sp) 0.05.
- 
- The sensor for function  6 senses node (3) conference
- The actuator for function  6 is flow connection:  16 north - conference via fac_vent_3
- There have been  1 day types defined.
- Day type  1 is valid Wed-01-Jan to Wed-31-Dec, 1997 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 dry bulb > flow       low/default/mid/hi  20.1 21.5 23.9 0.1 1.5 0.1
-range setpoints: low 20.10 mid 21.50 high 23.90 actuation ranges: low (< low sp) 0.05
-mid (>mid sp) 1.50 high (>high sp) 0.05.
  ____________________________________________________________
  
 The model includes an air flow network.
  
  Flow network description.
  
-  13 nodes,  11 components,  16 connections;     wind reduction =  1.000
+  13 nodes,  11 components,  10 connections;     wind reduction =  1.000
    # Node      Fluid   Node Type           Height Temperature    Data_1       Data_2
    1 manager      air   internal & unknown    1.5000   20.000     (-)     0.000  vol   40.501
    2 general      air   internal & unknown    1.5000   20.000     (-)     0.000  vol  175.500
@@ -215,14 +157,8 @@ The model includes an air flow network.
     6 east_gener    0.400   general      -0.400   crack_2         1.100   1.100
     7 east_recep    0.400   reception    -0.400   crack_2         1.100   1.100
     8 east          0.400   conference   -0.400   crack_2         1.100   1.100
-    9 north         0.400   conference   -0.400   crack_3         1.100   1.100
+    9 north         0.400   conference   -0.400   fac_vent_3      1.100   1.100
    10 west_mix      0.000   mixing_box    0.000   mix_crack       3.250   3.250
-   11 south_man     0.400   manager      -0.400   fac_vent_1      1.100   1.100
-   12 south_gen     0.400   general      -0.400   fac_vent_3      1.100   1.100
-   13 east_gener    0.400   general      -0.400   fac_vent_2      1.100   1.100
-   14 east_recep    0.400   reception    -0.400   fac_vent_2      1.100   1.100
-   15 east          0.400   conference   -0.400   fac_vent_2      1.100   1.100
-   16 north         0.400   conference   -0.400   fac_vent_3      1.100   1.100
 thermal zone to air flow node mapping:
 thermal zone -> air flow node
 manager      -> manager
@@ -268,7 +204,7 @@ ID Zone         Volume|          Surface
   8  0.400   180.   0. vent         OPAQUE   VERT -     insul_frame  ||< external
   9  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
  10  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
- 11  5.04    360.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glaz:general
+ 11  5.04      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glaz:general
  
  
  An hourly solar radiation distribution is used for this zone.
@@ -278,13 +214,13 @@ spandral vent frame glazing
 glazing
  
  
-Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien
-  1     0.0    -0.1     3.1     3.0     0.0     0.3     0.0     0.0 ob1 NONE
-  2     0.0    -0.3     3.1     3.0     0.0     0.3     0.0     0.0 ob2 NONE
-  3     0.0    -0.5     3.1     3.0     0.0     0.2     0.0     0.0 ob3 NONE
-  4     0.0    -0.7     3.1     3.0     0.0     0.2     0.0     0.0 ob4 NONE
-  5     0.0    -0.9     3.1     3.0     0.0     0.2     0.0     0.0 ob5 NONE
-  6     0.0    -1.1     3.1     3.0     0.0     0.2     0.0     0.0 ob6 NONE
+Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
+  1     0.0    -0.1     3.1     3.0     0.0     0.3     0.0     0.0 1.00 ob1 NONE
+  2     0.0    -0.3     3.1     3.0     0.0     0.3     0.0     0.0 1.00 ob2 NONE
+  3     0.0    -0.5     3.1     3.0     0.0     0.2     0.0     0.0 1.00 ob3 NONE
+  4     0.0    -0.7     3.1     3.0     0.0     0.2     0.0     0.0 1.00 ob4 NONE
+  5     0.0    -0.9     3.1     3.0     0.0     0.2     0.0     0.0 1.00 ob5 NONE
+  6     0.0    -1.1     3.1     3.0     0.0     0.2     0.0     0.0 1.00 ob6 NONE
  
  Shading patterns have not yet been calculated.
  
@@ -294,27 +230,23 @@ Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien
 Notes:
 one person typical office pattern ramping up from 7-9am weekdays and
 saturdays. No lights or small power included.
-Number of weekday      casual gains=  7
-Day Gain Type     Period Sensible  Latent     Radiant    Convec
-    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
-Wkd  2 OccuptW    7 -  8     20.0     10.0       0.50       0.50
-Wkd  3 OccuptW    8 -  9     60.0     30.0       0.50       0.50
-Wkd  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
-Wkd  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
-Wkd  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
-Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
-Number of saturday     casual gains=  7
-Day Gain Type     Period Sensible  Latent     Radiant    Convec
-    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
-Wkd  2 OccuptW    7 -  8     20.0     10.0       0.50       0.50
-Wkd  3 OccuptW    8 -  9     60.0     30.0       0.50       0.50
-Wkd  4 OccuptW    9 - 12    100.0     50.0       0.50       0.50
-Wkd  5 OccuptW   12 - 14     65.0     32.5       0.50       0.50
-Wkd  6 OccuptW   14 - 17    100.0     50.0       0.50       0.50
-Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
-Number of sunday       casual gains=  0
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+weekday     2 OccuptW    7- 8     20.0     10.0       0.50       0.50
+weekday     3 OccuptW    8- 9     60.0     30.0       0.50       0.50
+weekday     4 OccuptW    9-12    100.0     50.0       0.50       0.50
+weekday     5 OccuptW   12-14     65.0     32.5       0.50       0.50
+weekday     6 OccuptW   14-17    100.0     50.0       0.50       0.50
+weekday     7 OccuptW   17-24      0.0      0.0       0.50       0.50
+saturday    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+saturday    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
+saturday    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
+saturday    4 OccuptW    9-12    100.0     50.0       0.50       0.50
+saturday    5 OccuptW   12-14     65.0     32.5       0.50       0.50
+saturday    6 OccuptW   14-17    100.0     50.0       0.50       0.50
+saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -332,7 +264,7 @@ Number of sunday       casual gains=  0
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
   1  3.00    180.   0. door         OPAQUE   VERT -     door         ||< door:manager
   2  13.5    270.   0. pt_mgrs      OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_general:manager
-  3  9.00    360.   0. pt_rec_a     OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_rec_a:reception
+  3  9.00      0.   0. pt_rec_a     OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_rec_a:reception
   4  18.0      0.   0. fict_rec     SC_ficti VERT -     fict         ||< fict_rec:reception
   5  9.00      0.   0. pt_core_a    OPAQUE   VERT -     gyp_blk_ptn  ||< identical environment
   6  4.50    270.   0. fire_door    OPAQUE   VERT -     door         ||< identical environment
@@ -343,7 +275,7 @@ Number of sunday       casual gains=  0
  11  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
  12  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
  13  0.960   180.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frame:manager
- 14  5.04    180.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glaz:manager
+ 14  5.04    180.  -0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glaz:manager
  15  2.30    180.   0. spandral_a   OPAQUE   VERT -     extern_wall  ||< external
  16  0.400   180.   0. vent_a       OPAQUE   VERT -     insul_frame  ||< external
  17  0.980   180.   0. frame_a      OPAQUE   VERT -     insul_frame  ||< external
@@ -371,19 +303,19 @@ Number of sunday       casual gains=  0
 glazing glazing_a glazing_b glazing_c glazing_d
  
  
-Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien
-  1     3.0    -0.1     3.1     9.0     0.0     0.3     0.0     0.0 ob1 NONE
-  2     3.0    -0.3     3.1     9.0     0.0     0.3     0.0     0.0 ob2 NONE
-  3     3.0    -0.5     3.1     9.0     0.0     0.2     0.0     0.0 ob3 NONE
-  4     3.0    -0.7     3.1     9.0     0.0     0.2     0.0     0.0 ob4 NONE
-  5     3.0    -0.9     3.1     9.0     0.0     0.2     0.0     0.0 ob5 NONE
-  6     3.0    -1.1     3.1     9.0     0.0     0.2     0.0     0.0 ob6 NONE
-  7    12.1     0.1     3.1     6.0     0.0     0.3    90.0     0.0 eob1 NONE
-  8    12.3     0.1     3.1     6.0     0.0     0.3    90.0     0.0 eob2 NONE
-  9    12.5     0.1     3.1     6.0     0.0     0.2    90.0     0.0 eob3 NONE
- 10    12.7     0.1     3.1     6.0     0.0     0.2    90.0     0.0 eob4 NONE
- 11    12.9     0.1     3.1     6.0     0.0     0.2    90.0     0.0 eob5 NONE
- 12    13.1     0.1     3.1     6.0     0.0     0.2    90.0     0.0 eob6 NONE
+Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
+  1     3.0    -0.1     3.1     9.0     0.0     0.3     0.0     0.0 1.00 ob1 NONE
+  2     3.0    -0.3     3.1     9.0     0.0     0.3     0.0     0.0 1.00 ob2 NONE
+  3     3.0    -0.5     3.1     9.0     0.0     0.2     0.0     0.0 1.00 ob3 NONE
+  4     3.0    -0.7     3.1     9.0     0.0     0.2     0.0     0.0 1.00 ob4 NONE
+  5     3.0    -0.9     3.1     9.0     0.0     0.2     0.0     0.0 1.00 ob5 NONE
+  6     3.0    -1.1     3.1     9.0     0.0     0.2     0.0     0.0 1.00 ob6 NONE
+  7    12.1     0.1     3.1     6.0     0.0     0.3    90.0     0.0 1.00 eob1 NONE
+  8    12.3     0.1     3.1     6.0     0.0     0.3    90.0     0.0 1.00 eob2 NONE
+  9    12.5     0.1     3.1     6.0     0.0     0.2    90.0     0.0 1.00 eob3 NONE
+ 10    12.7     0.1     3.1     6.0     0.0     0.2    90.0     0.0 1.00 eob4 NONE
+ 11    12.9     0.1     3.1     6.0     0.0     0.2    90.0     0.0 1.00 eob5 NONE
+ 12    13.1     0.1     3.1     6.0     0.0     0.2    90.0     0.0 1.00 eob6 NONE
  
  Shading patterns have not yet been calculated.
  
@@ -393,39 +325,35 @@ Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien
 Notes:
 5 people std occup ramping up from 7-9am half occupants on saturday,
 8Wm2 lights 10Wm2 small power weekdays and Saturdays, nothing Sunday
-Number of weekday      casual gains= 13
-Day Gain Type     Period Sensible  Latent     Radiant    Convec
-    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
-Wkd  2 OccuptW    7 -  8    100.0     60.0       0.50       0.50
-Wkd  3 OccuptW    8 -  9    300.0    180.0       0.50       0.50
-Wkd  4 OccuptW    9 - 12    500.0    300.0       0.50       0.50
-Wkd  5 OccuptW   12 - 14    325.0    195.0       0.50       0.50
-Wkd  6 OccuptW   14 - 17    500.0    300.0       0.50       0.50
-Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
-Wkd  8 LightsWm2  0 -  8      0.0      0.0       0.50       0.50
-Wkd  9 LightsWm2  8 - 18      8.0      0.0       0.50       0.50
-Wkd 10 LightsWm2 18 - 24      0.0      0.0       0.50       0.50
-Wkd 11 EquiptWm2  0 -  8      0.0      0.0       0.50       0.50
-Wkd 12 EquiptWm2  8 - 18     10.0      0.0       0.50       0.50
-Wkd 13 EquiptWm2 18 - 24      0.0      0.0       0.50       0.50
-Number of saturday     casual gains= 13
-Day Gain Type     Period Sensible  Latent     Radiant    Convec
-    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-Wkd  1 OccuptW    0 -  7      0.0      0.0       0.50       0.50
-Wkd  2 OccuptW    7 -  8     40.0      0.0       0.50       0.50
-Wkd  3 OccuptW    8 -  9    120.0      0.0       0.50       0.50
-Wkd  4 OccuptW    9 - 12    200.0      0.0       0.50       0.50
-Wkd  5 OccuptW   12 - 14    130.0      0.0       0.50       0.50
-Wkd  6 OccuptW   14 - 17    200.0      0.0       0.50       0.50
-Wkd  7 OccuptW   17 - 24      0.0      0.0       0.50       0.50
-Wkd  8 LightsWm2  0 -  8      0.0      0.0       0.50       0.50
-Wkd  9 LightsWm2  8 - 18      8.0      0.0       0.50       0.50
-Wkd 10 LightsWm2 18 - 24      0.0      0.0       0.50       0.50
-Wkd 11 EquiptWm2  0 -  8      0.0      0.0       0.50       0.50
-Wkd 12 EquiptWm2  8 - 18      5.0      0.0       0.50       0.50
-Wkd 13 EquiptWm2 18 - 24      0.0      0.0       0.50       0.50
-Number of sunday       casual gains=  0
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+weekday     2 OccuptW    7- 8    100.0     60.0       0.50       0.50
+weekday     3 OccuptW    8- 9    300.0    180.0       0.50       0.50
+weekday     4 OccuptW    9-12    500.0    300.0       0.50       0.50
+weekday     5 OccuptW   12-14    325.0    195.0       0.50       0.50
+weekday     6 OccuptW   14-17    500.0    300.0       0.50       0.50
+weekday     7 OccuptW   17-24      0.0      0.0       0.50       0.50
+weekday     8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
+weekday     9 LightsWm2  8-18      8.0      0.0       0.50       0.50
+weekday    10 LightsWm2 18-24      0.0      0.0       0.50       0.50
+weekday    11 EquiptWm2  0- 8      0.0      0.0       0.50       0.50
+weekday    12 EquiptWm2  8-18     10.0      0.0       0.50       0.50
+weekday    13 EquiptWm2 18-24      0.0      0.0       0.50       0.50
+saturday    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+saturday    2 OccuptW    7- 8     40.0      0.0       0.50       0.50
+saturday    3 OccuptW    8- 9    120.0      0.0       0.50       0.50
+saturday    4 OccuptW    9-12    200.0      0.0       0.50       0.50
+saturday    5 OccuptW   12-14    130.0      0.0       0.50       0.50
+saturday    6 OccuptW   14-17    200.0      0.0       0.50       0.50
+saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
+saturday    8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
+saturday    9 LightsWm2  8-18      8.0      0.0       0.50       0.50
+saturday   10 LightsWm2 18-24      0.0      0.0       0.50       0.50
+saturday   11 EquiptWm2  0- 8      0.0      0.0       0.50       0.50
+saturday   12 EquiptWm2  8-18      5.0      0.0       0.50       0.50
+saturday   13 EquiptWm2 18-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -447,18 +375,18 @@ Number of sunday       casual gains=  0
   4  9.00    180.   0. pt_recp_a    OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_recp_a:reception
   5  47.3      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< ceil_conff:ceil_void
   6  47.3      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
-  7  2.30    360.   0. spandral     OPAQUE   VERT -     extern_wall  ||< external
+  7  2.30      0.   0. spandral     OPAQUE   VERT -     extern_wall  ||< external
   8  0.400     0.   0. vent         OPAQUE   VERT -     insul_frame  ||< external
-  9  0.980     0.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
- 10  5.32    360.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
- 11  2.30    360.   0. spandral_a   OPAQUE   VERT -     extern_wall  ||< external
+  9  0.980   360.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
+ 10  5.32      0.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
+ 11  2.30      0.   0. spandral_a   OPAQUE   VERT -     extern_wall  ||< external
  12  0.400     0.   0. vent_a       OPAQUE   VERT -     insul_frame  ||< external
- 13  0.980     0.   0. frame_a      OPAQUE   VERT -     insul_frame  ||< external
- 14  5.32    360.   0. glazing_a    DCF7671_ VERT -     dbl_glz      ||< external
- 15  2.30    360.   0. spandral_b   OPAQUE   VERT -     extern_wall  ||< external
+ 13  0.980   360.   0. frame_a      OPAQUE   VERT -     insul_frame  ||< external
+ 14  5.32      0.   0. glazing_a    DCF7671_ VERT -     dbl_glz      ||< external
+ 15  2.30      0.   0. spandral_b   OPAQUE   VERT -     extern_wall  ||< external
  16  0.400     0.   0. vent_b       OPAQUE   VERT -     insul_frame  ||< external
- 17  0.980     0.   0. frame_b      OPAQUE   VERT -     insul_frame  ||< external
- 18  5.32    360.   0. glazing_b    DCF7671_ VERT -     dbl_glz      ||< external
+ 17  0.980   360.   0. frame_b      OPAQUE   VERT -     insul_frame  ||< external
+ 18  5.32      0.   0. glazing_b    DCF7671_ VERT -     dbl_glz      ||< external
  19  2.30     90.   0. spandral_c   OPAQUE   VERT -     extern_wall  ||< external
  20  0.400    90.   0. vent_c       OPAQUE   VERT -     insul_frame  ||< external
  21  0.980    90.   0. frame_c      OPAQUE   VERT -     insul_frame  ||< external
@@ -478,13 +406,13 @@ Number of sunday       casual gains=  0
 glazing glazing_a glazing_b glazing_c glazing_d
  
  
-Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien
-  1    12.1    12.0     3.1     6.0     0.0     0.3    90.0     0.0 eob1 NONE
-  2    12.3    12.0     3.1     6.0     0.0     0.3    90.0     0.0 eob2 NONE
-  3    12.5    12.0     3.1     6.0     0.0     0.2    90.0     0.0 eob3 NONE
-  4    12.7    12.0     3.1     6.0     0.0     0.2    90.0     0.0 eob4 NONE
-  5    12.9    12.0     3.1     6.0     0.0     0.2    90.0     0.0 eob5 NONE
-  6    13.1    12.0     3.1     6.0     0.0     0.2    90.0     0.0 eob6 NONE
+Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
+  1    12.1    12.0     3.1     6.0     0.0     0.3    90.0     0.0 1.00 eob1 NONE
+  2    12.3    12.0     3.1     6.0     0.0     0.3    90.0     0.0 1.00 eob2 NONE
+  3    12.5    12.0     3.1     6.0     0.0     0.2    90.0     0.0 1.00 eob3 NONE
+  4    12.7    12.0     3.1     6.0     0.0     0.2    90.0     0.0 1.00 eob4 NONE
+  5    12.9    12.0     3.1     6.0     0.0     0.2    90.0     0.0 1.00 eob5 NONE
+  6    13.1    12.0     3.1     6.0     0.0     0.2    90.0     0.0 1.00 eob6 NONE
  
  Shading patterns have not yet been calculated.
  
@@ -494,19 +422,18 @@ Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien
 Notes:
 morning and afternoon meetings 8 people on weekdays, nothing on
 weekends
-Number of weekday      casual gains=  9
-Day Gain Type     Period Sensible  Latent     Radiant    Convec
-    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-Wkd  1 OccuptW    0 - 10      0.0      0.0       0.50       0.50
-Wkd  2 OccuptW   10 - 12    800.0    400.0       0.50       0.50
-Wkd  3 OccuptW   12 - 14      0.0      0.0       0.50       0.50
-Wkd  4 OccuptW   14 - 16    700.0    350.0       0.50       0.50
-Wkd  5 OccuptW   16 - 24      0.0      0.0       0.50       0.50
-Wkd  6 LightsWm2  0 -  9      0.0      0.0       0.50       0.50
-Wkd  7 LightsWm2  9 - 17      8.0      0.0       0.50       0.50
-Wkd  8 LightsWm2 17 - 24      0.0      0.0       0.50       0.50
-Wkd  9 EquiptW    0 - 24    100.0      0.0       0.50       0.50
-Number of saturday     casual gains=  0
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 OccuptW    0-10      0.0      0.0       0.50       0.50
+weekday     2 OccuptW   10-12    800.0    400.0       0.50       0.50
+weekday     3 OccuptW   12-14      0.0      0.0       0.50       0.50
+weekday     4 OccuptW   14-16    700.0    350.0       0.50       0.50
+weekday     5 OccuptW   16-24      0.0      0.0       0.50       0.50
+weekday     6 LightsWm2  0- 9      0.0      0.0       0.50       0.50
+weekday     7 LightsWm2  9-17      8.0      0.0       0.50       0.50
+weekday     8 LightsWm2 17-24      0.0      0.0       0.50       0.50
+weekday     9 EquiptW    0-24    100.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -527,7 +454,7 @@ Number of saturday     casual gains=  0
   3  9.00    180.   0. pt_rec_a     OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_rec_a:general
   4  9.00      0.   0. pt_recp_a    OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_recp_a:conference
   5  10.1     27.   0. fict_open    SC_ficti VERT -     fict         ||< fict_open:conference
-  6  9.00    360.   0. pt_recp_b    OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_recp_b:conference
+  6  9.00      0.   0. pt_recp_b    OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_recp_b:conference
   7  2.30     90.   0. spandral     OPAQUE   VERT -     extern_wall  ||< external
   8  0.400    90.   0. vent         OPAQUE   VERT -     insul_frame  ||< external
   9  0.980    90.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
@@ -549,13 +476,13 @@ spandral vent frame glazing spandral_a vent_a frame_a glazing_a
 glazing glazing_a
  
  
-Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien
-  1    12.1     6.0     3.1     6.0     0.0     0.3    90.0     0.0 eob1 NONE
-  2    12.3     6.0     3.1     6.0     0.0     0.3    90.0     0.0 eob2 NONE
-  3    12.5     6.0     3.1     6.0     0.0     0.2    90.0     0.0 eob3 NONE
-  4    12.7     6.0     3.1     6.0     0.0     0.2    90.0     0.0 eob4 NONE
-  5    12.9     6.0     3.1     6.0     0.0     0.2    90.0     0.0 eob5 NONE
-  6    13.1     6.0     3.1     6.0     0.0     0.2    90.0     0.0 eob6 NONE
+Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
+  1    12.1     6.0     3.1     6.0     0.0     0.3    90.0     0.0 1.00 eob1 NONE
+  2    12.3     6.0     3.1     6.0     0.0     0.3    90.0     0.0 1.00 eob2 NONE
+  3    12.5     6.0     3.1     6.0     0.0     0.2    90.0     0.0 1.00 eob3 NONE
+  4    12.7     6.0     3.1     6.0     0.0     0.2    90.0     0.0 1.00 eob4 NONE
+  5    12.9     6.0     3.1     6.0     0.0     0.2    90.0     0.0 1.00 eob5 NONE
+  6    13.1     6.0     3.1     6.0     0.0     0.2    90.0     0.0 1.00 eob6 NONE
  
  Shading patterns have not yet been calculated.
  
@@ -565,19 +492,18 @@ Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien
 Notes:
 2 people most hours, 8Wm2 lights  5Wm2 small power weekdays, no gains
 on weekends, 0.33 ach infil all days all hours.
-Number of weekday      casual gains=  9
-Day Gain Type     Period Sensible  Latent     Radiant    Convec
-    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
-Wkd  1 OccuptW    0 -  9      0.0      0.0       0.50       0.50
-Wkd  2 OccuptW    9 - 18    200.0    100.0       0.50       0.50
-Wkd  3 OccuptW   18 - 24      0.0      0.0       0.50       0.50
-Wkd  4 LightsWm2  0 -  8      0.0      0.0       0.50       0.50
-Wkd  5 LightsWm2  8 - 18      8.0      0.0       0.50       0.50
-Wkd  6 LightsWm2 18 - 24      0.0      0.0       0.50       0.50
-Wkd  7 EquiptWm2  0 -  8      0.0      0.0       0.50       0.50
-Wkd  8 EquiptWm2  8 - 18      5.0      0.0       0.50       0.50
-Wkd  9 EquiptWm2 18 - 24      0.0      0.0       0.50       0.50
-Number of saturday     casual gains=  0
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 OccuptW    0- 9      0.0      0.0       0.50       0.50
+weekday     2 OccuptW    9-18    200.0    100.0       0.50       0.50
+weekday     3 OccuptW   18-24      0.0      0.0       0.50       0.50
+weekday     4 LightsWm2  0- 8      0.0      0.0       0.50       0.50
+weekday     5 LightsWm2  8-18      8.0      0.0       0.50       0.50
+weekday     6 LightsWm2 18-24      0.0      0.0       0.50       0.50
+weekday     7 EquiptWm2  0- 8      0.0      0.0       0.50       0.50
+weekday     8 EquiptWm2  8-18      5.0      0.0       0.50       0.50
+weekday     9 EquiptWm2 18-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -614,24 +540,18 @@ Number of saturday     casual gains=  0
 the ceiling void has 0.33 ach infil and no casual gains.
  Control: no control of air flow
  
-Number of air change periods for daytype weekday      :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     0.33  0.0083    0.00  0.0000   0     0.00
- 
-Number of air change periods for daytype saturday     :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     0.33  0.0083    0.00  0.0000   0     0.00
- 
-Number of air change periods for daytype sunday       :    1
-  Period   Infiltration   Ventilation     From Source
-  id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
-  1  0 - 24     0.33  0.0083    0.00  0.0000   0     0.00
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekday    1  0 - 24    0.33  0.0083    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.33  0.0083    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.33  0.0083    0.00  0.0000   0     0.00
  
 Notes:
 the ceiling void has 0.33 ach infil and no casual gains.
-Number of weekday      casual gains=  0
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -661,56 +581,75 @@ Number of weekday      casual gains=  0
  
 Notes:
 nothing happens in the mixing box
-Number of weekday      casual gains=  0
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
  Project floor area is 341.85m2, wall area is 67.340m2, window area is 69.160m2.
  Sloped roof area is 0.00m2, flat roof area is 0.00m2, skylight area is 0.00m2.
+ In contact with ground 0.00m2.
  There is 136.50m2 of outside surface area, 136.50m2 of which is vertical.
  
- Outside walls are 19.699 % of floor area & avg U of 0.280 & UA of 18.836
+ Outside walls are 19.699 % of floor area & avg U of 0.280 & UA of 18.836 & max MLC thickness 0.412
  Glazing is 20.231 % of floor & 50.667 % facade with avg U of 2.811 & UA of 194.38
  
  ____________________________________________________________
  Multi-layer constructions used:
  
- Details of opaque construction: extern_wall
+ Details of opaque construction: extern_wall and overall thickness  0.412
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext     6  100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 Lt brown brick : Light brown brick
     2  211  150.0     0.040   250.   840. 0.90 0.30     4.  3.75 glasswool : Glasswool (generic)
     3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
     4   22  100.0     0.240   750.  1000. 0.90 0.65    10.  0.42 aerated conc block : Aerated concrete block
  Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White paintedd Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.214  0.215  0.212 (partition)  0.210
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.21
+ External surface admittance Y=  2.85  w=  2.24 decrement factor f=  0.74  phi=  0.99 surface factor f=  0.74  phi=  0.99
+ Partition admittance Y=  2.87  w=  2.19 surface factor f=  0.73  phi=  0.98
  Total area of extern_wall is     49.40
  
- Details of opaque construction: insul_frame
+ Details of opaque construction: insul_frame and overall thickness  0.088
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
     2  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 glass fibre quilt : Glass Fibre Quilt
  Int    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.461  0.467  0.452 (partition)  0.442
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.46
+ External surface admittance Y=  0.81  w=  3.41 decrement factor f=  0.94  phi=  0.31 surface factor f=  0.94  phi=  0.31
+ Partition admittance Y=  0.70  w=  5.68 surface factor f=  1.00  phi=  0.32
  Total area of insul_frame is     19.86
  
- Details of opaque construction: door
+ Details of opaque construction: door and overall thickness  0.025
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
     1   69   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 oak : Oak (radial cut)
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
+ External surface admittance Y=  3.33  w=  0.61 decrement factor f=  0.61  phi=  0.40 surface factor f=  0.61  phi=  0.40
+ Partition admittance Y=  1.21  w=  5.38 surface factor f=  0.99  phi=  0.56
  Total area of door is     96.90
  
- Details of transparent construction: fict         with SC_fictit    optics.
+ Details of transparent construction: fict with SC_fictit optics and overall thickness  0.006
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
-    1  245    6.0    20.000    10.    10. 0.99 0.01 19200.  0.00 fict : fictitious material (almost not there
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1  245    6.0    20.000    10.    10. 0.99 0.01 19200.  0.00 fict : fictitious material (almost not there) with matching single layer optics
  ISO 6946 U values (horiz/upward/downward heat flow)=  5.872  7.128  4.755 (partition)  3.842
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.55
+ External surface admittance Y=  5.55  w=  0.00 decrement factor f=  0.33  phi=  0.00 surface factor f=  0.33  phi=  0.00
+ Partition admittance Y=  0.00  w=  6.00 surface factor f=  1.00  phi=  0.00
  
  Fictitious 99/99,      4mm, no blind: with id of: SC_fictit
  with 1 layers [including air gaps] and visible trn: 0.99
@@ -720,14 +659,18 @@ Number of weekday      casual gains=  0
     1  0.001 0.001 0.001 0.001 0.001
  Total area of fict is     56.12
  
- Details of transparent construction: dbl_glz      with DCF7671_06nb optics.
+ Details of transparent construction: dbl_glz with DCF7671_06nb optics and overall thickness  0.024
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder s
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
     2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder s
+ Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
+ External surface admittance Y=  2.81  w=  0.63 decrement factor f=  0.67  phi=  0.31 surface factor f=  0.67  phi=  0.31
+ Partition admittance Y=  0.82  w=  5.64 surface factor f=  1.00  phi=  0.38
  
  Clear float 76/71,     6mm, no blind: with id of: DCF7671_06nb
  with 3 layers [including air gaps] and visible trn: 0.76
@@ -739,66 +682,90 @@ Number of weekday      casual gains=  0
     3  0.117 0.124 0.127 0.112 0.077
  Total area of dbl_glz is     79.24
  
- Details of opaque construction: susp_floor
+ Details of opaque construction: susp_floor linked to susp_flr_re  & with overall thickness  0.219
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet
     2   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
     3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
     4   32  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 heavy mix concrete : Heavy mix concrete
  Int    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.500  1.570  1.415 (partition)  1.321
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.48
+ External surface admittance Y=  5.80  w=  1.63 decrement factor f=  0.47  phi=  2.55 surface factor f=  0.47  phi=  2.55
+ Partition admittance Y=  6.12  w=  2.04 surface factor f=  0.53  phi=  3.03
  Total area of susp_floor is    180.00
  
- Details of opaque construction: susp_flr_re
+ Details of opaque construction: susp_flr_re linked to susp_floor   & with overall thickness  0.219
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
     2   32  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 heavy mix concrete : Heavy mix concrete
     3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
     4   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
  Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.500  1.570  1.415 (partition)  1.321
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.48
+ External surface admittance Y=  2.11  w=  1.43 decrement factor f=  0.77  phi=  0.46 surface factor f=  0.77  phi=  0.46
+ Partition admittance Y=  2.46  w=  2.85 surface factor f=  0.81  phi=  0.95
  Total area of susp_flr_re is    180.00
  
- Details of opaque construction: ceiling
+ Details of opaque construction: ceiling linked to ceiling_rev  & with overall thickness  0.110
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext   211  100.0     0.040   250.   840. 0.90 0.30     4.  2.50 glasswool : Glasswool (generic)
- Int   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 ceiling mineral : Ceiling acoustic tile (min
+ Int   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 ceiling mineral : Ceiling acoustic tile (mineral fibre based)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.333  0.336  0.329 (partition)  0.323
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.33
+ External surface admittance Y=  0.82  w=  3.17 decrement factor f=  0.94  phi=  0.30 surface factor f=  0.94  phi=  0.30
+ Partition admittance Y=  0.92  w=  4.35 surface factor f=  0.96  phi=  0.40
  Total area of ceiling is    180.00
  
- Details of opaque construction: ceiling_rev
+ Details of opaque construction: ceiling_rev linked to ceiling      & with overall thickness  0.110
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
- Ext   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 ceiling mineral : Ceiling acoustic tile (min
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 ceiling mineral : Ceiling acoustic tile (mineral fibre based)
  Int   211  100.0     0.040   250.   840. 0.90 0.30     4.  2.50 glasswool : Glasswool (generic)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.333  0.336  0.329 (partition)  0.323
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.33
+ External surface admittance Y=  0.68  w=  2.79 decrement factor f=  0.94  phi=  0.22 surface factor f=  0.94  phi=  0.22
+ Partition admittance Y=  0.75  w=  4.26 surface factor f=  0.96  phi=  0.32
  Total area of ceiling_rev is    180.00
  
- Details of opaque construction: gyp_blk_ptn
+ Details of opaque construction: gyp_blk_ptn and overall thickness  0.226
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White paintedd Gypboard
     2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
     3   28  100.0     0.510  1400.  1000. 0.90 0.65    10.  0.20 block inner : Block inner (3% mc)
     4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
  Int   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White paintedd Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.186  1.230  1.133 (partition)  1.072
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.17
+ External surface admittance Y=  2.38  w=  1.44 decrement factor f=  0.74  phi=  0.54 surface factor f=  0.74  phi=  0.54
+ Partition admittance Y=  2.59  w=  2.21 surface factor f=  0.76  phi=  0.86
  Total area of gyp_blk_ptn is     87.00
  
- Details of opaque construction: gyp_gyp_ptn
+ Details of opaque construction: gyp_gyp_ptn and overall thickness  0.074
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
  Ext   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White paintedd Gypboard
     2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
  Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White paintedd Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.144  2.292  1.975 (partition)  1.798
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.10
+ External surface admittance Y=  2.15  w=  0.62 decrement factor f=  0.75  phi=  0.21 surface factor f=  0.75  phi=  0.21
+ Partition admittance Y=  0.61  w=  5.69 surface factor f=  1.00  phi=  0.28
  Total area of gyp_gyp_ptn is    108.00
