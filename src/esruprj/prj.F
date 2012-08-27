@@ -673,8 +673,10 @@ C or rotation.
 C            silent= .false.
             silent= .true.
 	    inpic=NCOMP
+            nzg=NCOMP
 	    do 29 iz=1,inpic
 	      ivals(iz)=iz
+              nznog(iz)=iz
   29        continue
   
 C Perform either the transform or rotation or generate QA report.

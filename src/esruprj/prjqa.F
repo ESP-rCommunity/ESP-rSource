@@ -269,10 +269,12 @@ C in the current model. A -1 means not applicable
       integer im,k,mnulen   ! multi column lines
       integer lr      ! length of model root string
       integer iglib  ! for detecting GTK or X11
+      integer iitrc  ! for passing verbosity
+      integer imlc   ! loop for MLC reporting
       logical odd   ! for display of vertex info
       
       INTEGER :: i,icc,icoth,ie,ieripv,irec,iprb,inv
-      INTEGER :: ins4,ino,imlc,imerr,ilcot,ijk,ij,ii,igrdp
+      INTEGER :: ins4,ino,imerr,ilcot,ijk,ij,ii,igrdp
       INTEGER :: ictlf,iuo,iunit1,iunit,iuf,iub,itu,itru,itrc,itbmenu
       INTEGER :: itb,istat,isc,is,ic,ins1,isel,iz,izo,izc,izz
       INTEGER :: kk,j,l,lnb,lnc,lna,lsn10,lto,lzn10,m,igraphiclib
@@ -340,8 +342,21 @@ C If silent mode then set file name and jump to report generation.
       if(silent)then
         destination=1
         itu = ixunit
-        write(xfile,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.contents'
-        call ctlexp(xfile,ixopen,ixloc,ixunit,'T','QA text',IER)
+
+C Create model QA report in the doc folder if possible. Use similar 
+C pattern to management of lmodellog.
+        lr=lnblnk(cfgroot)
+        if(docpth(1:2).eq.'  '.or.docpth(1:2).eq.'./')then
+          write(lmodelqa,'(2a)') cfgroot(1:lr),'.contents'
+        elseif(docpth(1:3).eq.'../')then
+          write(lmodelqa,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &      cfgroot(1:lr),'.contents'
+        else
+          write(lmodelqa,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &      cfgroot(1:lr),'.contents'
+        endif
+        write(xfile,'(a)') lmodelqa(1:lnblnk(lmodelqa))
+        call ctldumpt(xfile,ixopen,ixloc,ixunit,'QA text',IER)
         if(ier.eq.-3)then
           destination = 0
           itu = iuout
@@ -979,7 +994,8 @@ C Save the model configuration file to register the report.
 C Copy lmodelqa to xfile so that ctlexp can deal with it.
           write(xfile,'(2a)')lmodelqa(1:lnblnk(lmodelqa))
 
-          call ctlexp(xfile,ixopen,ixloc,ixunit,'T','QA text',IER)
+C          call ctlexp(xfile,ixopen,ixloc,ixunit,'T','QA text',IER)
+          call ctldumpt(xfile,ixopen,ixloc,ixunit,'QA text',IER)
           if(ier.eq.-3)then
             destination = 0
             itu = iuout
@@ -2459,20 +2475,23 @@ C set to 'verbose all' then include all of them.
         WRITE(outs,240)
         call edisp(itu,outs)
         call edisp(itu,' Multi-layer constructions used:')
+        write(6,*) 'nmlc is ',nmlc,databaseinfo
         do 342 imlc=1,nmlc
           found=.false.
           mlcname=DESC(imlc)(1:12)
           call mlcrefs(mlcname,areamlc,tareamlc,found)
           if(found)then
             if(databaseinfo.eq.2)then
-              call etmldb(2,itu,imlc,imerr)
+              iitrc=2
+              call etmldb(iitrc,itu,imlc,imerr)
             endif
             write(outs,'(3a,F9.2)') ' Total area of ',
      &        mlcname(1:lnblnk(mlcname)),' is ',tareamlc
             call edisp(itu,outs)
           else
             if(databaseinfo.eq.3)then
-              call etmldb(2,itu,imlc,imerr)
+              iitrc=2
+              call etmldb(iitrc,itu,imlc,imerr)
               write(outs,'(3a)') ' Total area of ',
      &          mlcname(1:lnblnk(mlcname)),' is zero (not referenced)'
               call edisp(itu,outs)
@@ -2481,13 +2500,17 @@ C set to 'verbose all' then include all of them.
   342   continue
       endif
 
-C If writing to file call ctlexp to close it and switch back to text feedback.
+C If writing to file call ctldumpt to close it and switch back to text feedback.
       if(destination.eq.1)then
-        call ctlexp(xfile,ixopen,ixloc,ixunit,'T','geom text',IER)
+        call ctldumpt(xfile,ixopen,ixloc,ixunit,'QA text',IER)
         destination=0
-        call edisp(iuout,
-     &    'The new QA file can be edited via the `edit file` option.')
-        call edisp(iuout,' ')
+        if(silent)then
+          continue
+        else
+          call edisp(iuout,
+     &     'The new QA file can be edited via the `edit file` option.')
+          call edisp(iuout,' ')
+        endif
       endif
 
 C If in silent model return without user intervention.
