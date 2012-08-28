@@ -1,5 +1,5 @@
-*connections  for cellular_contam_mv
-*Date Wed Sep 30 08:40:21 2009
+*connections for cellular_contam_mv
+*Date Tue Aug 28 11:48:16 2012
      40   # number of connections
    1   1   3   2   1  #    1 pt_general in manager_a >|< pt_general in manager_b
    1   2   3   3   8  #    2 part_frame in manager_a >|< part_frame in coridor

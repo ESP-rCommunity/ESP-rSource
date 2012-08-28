@@ -1,7 +1,7 @@
 Synopsis
  
 Synopsis of the model Systems model of ventilation via ducts, fan & mixing box
-defined in vent.cfg generated on Thu Aug  9 08:07:37 2012. Notes associated
+defined in vent.cfg generated on Tue Aug 28 10:01:57 2012. Notes associated
 with the model are in ../doc/vent.log
  
 The model is located at latitude   51.70 with a longitude difference of  -0.50
@@ -9,21 +9,13 @@ from the local time meridian. The year used in simulations is 2000 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical urban site and the ground reflectance is 0.25.
  
-Project name: not yet defined
-Building address: not yet defined
-Building city: not yet defined
-Building Postcode: not yet defined
-Building owner name: not yet defined
-Building owner telephone: not yet defined
-Building owner address: not yet defined
-Building owner city: not yet defined
-Building owner Postcode: not yet defined
  
 Simulationist name: not yet defined
 Simulationist telephone: not yet defined
 Simulationist address: not yet defined
 Simulationist city: not yet defined
 Simulationist postcode: not yet defined
+ 
 The climate is: ESP test climate and is held in: clm67 with hour centred solar
 data.
  standard annual weather: clm67
@@ -40,13 +32,13 @@ An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
  standard pressure distr: pressc.db1
- standard materials     : constr.db2.a
- constructions          : ../dbs/multicon.db1
+ standard materials     : material.db3.a
+ standard constructions : multicon.db3
  standard plant comp    : plantc.db1
  standard event profiles: profiles.db1.a
  standard optical prop  : optics.db1
- UK NCM data            : /home/jon/esru_jwh/esp-r/databases/SBEM.db1
- mould isopleths        : /home/jon/esru_jwh/esp-r/databases/mould.db1
+ standard UK NCM data   : SBEM.db1
+ standard mould isopleth: mould.db1
  
 The model includes a plant network.
  

@@ -1,5 +1,5 @@
-*connections  for office_vent
-*Date Wed Sep 30 10:20:04 2009
+*connections for office_vent_dfs_conf
+*Date Tue Aug 28 11:12:57 2012
     106   # number of connections
    1   1   3   2   2  #    1 pt_general in manager >|< pt_mgrs in general
    1   2   3   2  13  #    2 part_frame in manager >|< part_frame in general
