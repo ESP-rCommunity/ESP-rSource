@@ -1,5 +1,5 @@
-*connections  for Test_8
-*Date Mon Oct 19 12:26:06 2009
+*connections for Test_8
+*Date Wed Aug 29 17:40:53 2012
       7   # number of connections
    1   1   5   0   0  #    1 South in Test_8 is adiabatic
    1   2   5   0   0  #    2 East in Test_8 is adiabatic
