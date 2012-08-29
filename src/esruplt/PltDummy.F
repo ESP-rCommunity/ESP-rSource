@@ -34,3 +34,25 @@ C-----------------------------------------------------------------------
 
       return
       end
+
+
+
+      real function fGet_BC_data_by_col(
+     &                                   iCol_number,
+     &                                   fDay,
+     &                                   iInterp_method,
+     &                                   cContext       )
+      implicit none
+#include "bc_data.h"
+C----------------------------------------------------------------------
+C     Passed arguements
+C----------------------------------------------------------------------
+      integer iCol_number     ! column number.
+      integer iInterp_method  ! interpolation method
+      real fDay               ! day number
+      character*124 cContext  ! Contextual message
+
+      fGet_BC_data_by_col = 0.
+
+      return 
+      end
