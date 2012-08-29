@@ -1661,7 +1661,7 @@ echo " Installing ESP-r system. This may take some time."
      versioned_repository="no"
    fi
  fi
- 
+
 
  # If svn is available and repository is under versioning,
  # get misc svn information
@@ -1794,7 +1794,7 @@ echo " Installing ESP-r system. This may take some time."
   fi
   echo "       cXlibrary         = \"$xLibs\" "                           >> ${SRCdir}/include/build_info.h
 
- 
+
 #--------------------------------------------------------------
 # Now write a gnome desktop file so an icon can be used to start prj
 # other variants may be required for other display managers
@@ -1872,7 +1872,7 @@ do
        rm $result
      fi
    fi
-   
+
    # harmonizer.exe doesn't fit the pattern for the normal make proceedure...
    if [ "$result" == "${SRCdir}/harmonizer/harmonizer.exe" ]; then
 		gfortran ${SRCdir}/harmonizer/win32_interface.f95 ${SRCdir}/harmonizer/launch_dll.f95 -fcray-pointer -o ${SRCdir}/harmonizer/harmonizer.exe
