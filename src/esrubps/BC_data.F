@@ -75,6 +75,9 @@ C----------------------------------------------------------------------
 #include "building.h"
 #include "bc_data.h"
 #include "MultiYear_simulations.h"
+#include "plant.h" !needed for offsite utilities definitions
+#include "OffsiteUtilitiesPublic.h"
+#include "OffsiteUtilitiesPrivate.h"
 
 C External functions.
       integer lnblnk
@@ -152,7 +155,21 @@ C.....Meta data flags
       logical bUnits_defined      !
       logical bData_defined       !
       logical bProfiles_defined   !
-
+      
+C.....16-Oct-2011 BAL: Adding local fuel cost variables 
+      logical bParsingElecFuelCosts
+      logical bElecCosts_defined
+      logical bParsingNGFuelCosts
+      logical bNGCosts_defined
+      logical bParsingOilFuelCosts
+      logical bOilCosts_defined
+      logical bParsingPropFuelCosts
+      logical bPropCosts_defined
+      logical bParsingWoodFuelCosts
+      logical bWoodCosts_defined
+      integer iMonth
+      integer iBlock     
+      
 C.....Profile data:
       character*248 cProfile_Names(mBC_max_count)    ! names
       character*248 cProfile_Units(mBC_max_count)    ! units
@@ -213,6 +230,20 @@ C---------------------------------------------------------------------
       bParsing_Data       = .false.
       bPeriod_end_defined = .false.
       bProfiles_defined   = .false.
+      
+C.....16-Oct-2011 BAL: Initializing fuel cost flags   
+      bIncFuelCostCalcs          = .false.
+      bTOUelecRates              = .false.
+      bParsingElecFuelCosts      = .false.
+      bElecCosts_defined         = .false. 
+      bParsingNGFuelCosts        = .false.
+      bNGCosts_defined           = .false.
+      bParsingOilFuelCosts       = .false.
+      bOilCosts_defined          = .false.
+      bParsingPropFuelCosts      = .false.
+      bPropCosts_defined         = .false.
+      bParsingWoodFuelCosts      = .false.
+      bWoodCosts_defined         = .false.
 
 C.....Counter for current data row
       iBC_row_count       = 0
@@ -410,9 +441,11 @@ C....................Version is not a real.
 
                   else
 
+C....................02-Dec-2011 BAL: Adding version 0.2 which supports
+C....................fuel cost data.
 C....................Version number is a real. Is it supported?
                      if ( fBC_file_version .lt. 0. .and.
-     &                    fBC_file_version .gt. 0.11 ) then
+     &                    fBC_file_version .gt. 0.21 ) then
 C.......................Version # is unsupported
                         write (cMsg,'(A,F4.2,A)')
      &                     ' File version number (',fBC_file_version,
@@ -758,6 +791,29 @@ C....................Data has been incorrectly defined
 
                   endif ! <- Matches 'if ( iWordCount .ne. iBC_col_count...
 
+C.................20-Oct-2011 BAL: Added check for mismatch in TOU column index                  
+C.................If TOU elec. rates, check that the column is <= number of data columns
+                  if ( bTOUelecRates
+     &                  .and. iTOUcolumn .gt. iBC_col_count) then
+     
+C....................TOU column index is greater than no. of data columns
+                     write (cMsg,'(A,I2,A,I2,A)')
+     &                  ' TOU column index (',
+     &                  iTOUcolumn,
+     &                  ') > # of data columns (',
+     &                  iBC_col_count, ').'
+
+                     if ( bAutoOK ) then
+                        !call edisp(iuout, cContext)
+                        call edisp(iuout, cMsg)
+                     else
+                        call UsrMsg (cContext, cMsg, 'W')
+                     endif
+                     
+C....................Elec fuel cost data has been incorrectly defined                     
+                     bElecCosts_defined = .false.                  
+                  endif
+                  
 C.................If colun count is ok, read values
                   if ( bData_defined ) then
 
@@ -801,6 +857,712 @@ C----------------------------------------------------------------------
 
                   endif ! <- Matches 'if ( iFile_write_err .eq. 0 ) then
 
+               elseif ( cLnWords(1)(1:16) .eq. '*elec_data_start' ) then
+C----------------------------------------------------------------------
+C                 Record describes beginning of fuel rate data for
+C                 electricity.
+C----------------------------------------------------------------------
+                  bParsingElecFuelCosts = .true.
+                  bElecCosts_defined    = .true.                  
+                  iMonth = 0
+                  
+                  bIncFuelCostCalcs     = .true.                  
+                  
+               elseif ( cLnWords(1)(1:14) .eq. '*elec_data_end' ) then
+C----------------------------------------------------------------------
+C                 Record describes end of fuel rates data for 
+C                 electricity.
+C----------------------------------------------------------------------
+                  bParsingElecFuelCosts = .false.                  
+
+               elseif ( cLnWords(1)(1:14) .eq. '*ng_data_start' ) then
+C----------------------------------------------------------------------
+C                 Record describes beginning of fuel rate data for 
+C                 natural gas.
+C----------------------------------------------------------------------
+                  bParsingNGFuelCosts = .true.
+                  bNGCosts_defined    = .true.                   
+                  iMonth = 0                  
+                  
+               elseif ( cLnWords(1)(1:12) .eq. '*ng_data_end' ) then
+C----------------------------------------------------------------------
+C                 Record describes end of fuel rates data for natural
+C                 gas.
+C----------------------------------------------------------------------
+                  bParsingNGFuelCosts = .false.                    
+
+               elseif ( cLnWords(1)(1:15) .eq. '*oil_data_start' ) then
+C----------------------------------------------------------------------
+C                 Record describes beginning of fuel rate data for
+C                 oil.
+C----------------------------------------------------------------------
+                  bParsingOilFuelCosts = .true.
+                  bOilCosts_defined    = .true.                   
+                  iMonth = 0                  
+                  
+               elseif ( cLnWords(1)(1:13) .eq. '*oil_data_end' ) then
+C----------------------------------------------------------------------
+C                 Record describes end of fuel rate data for oil.
+C----------------------------------------------------------------------
+                  bParsingOilFuelCosts = .false.  
+
+               elseif ( cLnWords(1)(1:16) .eq. '*prop_data_start' ) then
+C----------------------------------------------------------------------
+C                 Record describes beginning of fuel rate data for
+C                 propane.
+C----------------------------------------------------------------------
+                  bParsingPropFuelCosts = .true.
+                  bPropCosts_defined    = .true.                   
+                  iMonth = 0                  
+                  
+               elseif ( cLnWords(1)(1:14) .eq. '*prop_data_end' ) then
+C----------------------------------------------------------------------
+C                 Record describes end of fuel rate data for propane.
+C----------------------------------------------------------------------
+                  bParsingPropFuelCosts = .false.                       
+
+               elseif ( cLnWords(1)(1:16) .eq. '*wood_data_start' ) then
+C----------------------------------------------------------------------
+C                 Record describes beginning of fuel rate data for
+C                 wood.
+C----------------------------------------------------------------------
+                  bParsingWoodFuelCosts = .true.
+                  bWoodCosts_defined    = .true.                   
+                  iMonth = 0                  
+                  
+               elseif ( cLnWords(1)(1:14) .eq. '*wood_data_end' ) then
+C----------------------------------------------------------------------
+C                 Record describes end of fuel rate data for wood.
+C----------------------------------------------------------------------
+                  bParsingWoodFuelCosts = .false.                        
+                  
+               elseif ( bParsingElecFuelCosts ) then 
+
+C.................Check if time of use (TOU) rates have been specified. If not, 
+C.................then read monthly block rates.               
+                  IF ( cLnWords(1)(1:11) .eq. '*TOU_column' ) THEN
+
+C....................Set TOU flag                  
+                     bTOUelecRates = .true.
+                     
+C....................Read the column index of the TOU schedule in bc data
+                     read (cLnWords(2),*,IOSTAT = iMiscError)
+     &                     iTOUcolumn
+     
+                       if ( iMiscError .ne. 0 ) then
+                           bElecCosts_defined = .false. 
+                           write (cMsg,'(A,A,A)')
+     &                      'Elec. fuel costs: could not convert',
+     &                      ' TOU column index (', cLnWords(2)
+     &                      (1:lnblnk(cLnWords(2)))
+     
+                           if ( bAutoOK ) then
+                              !call edisp(iuout, cContext)
+                              call edisp(iuout, cMsg)
+                           else
+                              call UsrMsg (cContext, cMsg, 'W')
+                           endif
+                       endif                         
+                  
+                  ELSE
+                  
+C...................Increment month counter
+C...................( note: counter initialized as 0 )
+                    iMonth = iMonth + 1
+
+C----------------------------------------------------------------------
+C                   Collect values from ascii input file                                                                       
+C----------------------------------------------------------------------                  
+C...................Check that number of data items in row is ok
+C...................Should be: 2 items for min. units and min charge, 8 items for rate blocks = 10 items total
+                    if ( iWordCount .ne. 10) then
+C......................Mismatch in colum count
+                       write (cMsg,'(A,I2,A,I2)')
+     &                  'In elec. fuel cost data, # of items (',
+     &                  iWordCount,
+     &                  ') does not match the expected 10 in month',
+     &                  iMonth
+
+                       if ( bAutoOK ) then
+                          !call edisp(iuout, cContext)
+                          call edisp(iuout, cMsg)
+                       else
+                          call UsrMsg (cContext, cMsg, 'W')
+                       endif
+                     
+C......................Elec. fuel cost data has been incorrectly defined                     
+                       bElecCosts_defined = .false.
+                     
+                    endif
+                  
+C...................If column count is ok, read values
+                    if ( bElecCosts_defined ) then
+
+C......................First read the min. units (item 1)
+                       read (cLnWords(1),*,IOSTAT = iMiscError)
+     &                    fFuelMinUnits( iElectricity, iMonth )
+     
+                         if ( iMiscError .ne. 0 ) then
+                             bElecCosts_defined = .false. 
+                             write (cMsg,'(A,A,A,A,I2,A)')
+     &                        'Elec. fuel costs: could not convert',
+     &                        ' data record (', cLnWords(1)
+     &                        (1:lnblnk(cLnWords(1))),
+     &                        ') in month ', iMonth, '.'
+     
+                             if ( bAutoOK ) then
+                                !call edisp(iuout, cContext)
+                                call edisp(iuout, cMsg)
+                             else
+                                call UsrMsg (cContext, cMsg, 'W')
+                             endif
+                         endif                    
+                    
+C......................Then read the min. fuel cost (item 2)
+                       read (cLnWords(2),*,IOSTAT = iMiscError)
+     &                    fFuelMinCharge( iElectricity, iMonth )
+     
+                         if ( iMiscError .ne. 0 ) then
+                             bElecCosts_defined = .false. 
+                             write (cMsg,'(A,A,A,A,I2,A)')
+     &                        'Elec. fuel costs: could not convert',
+     &                        ' data record (', cLnWords(2)
+     &                        (1:lnblnk(cLnWords(2))),
+     &                        ') in month ', iMonth, '.'
+     
+                             if ( bAutoOK ) then
+                                !call edisp(iuout, cContext)
+                                call edisp(iuout, cMsg)
+                             else
+                                call UsrMsg (cContext, cMsg, 'W')
+                             endif
+                         endif 
+     
+C......................Next read the four fuel blocks (number of energy units and cost/unit)
+                       do iBlock = 1, 4
+                       read (cLnWords(iBlock*2+1),*,IOSTAT=iMiscError)
+     &                    fFuelBlockUnits(iElectricity,iMonth,iBlock)
+     
+                          if ( iMiscError .ne. 0 ) then
+                             bElecCosts_defined = .false. 
+                             write (cMsg,'(A,A,A,A,I2,A)')
+     &                        'Elec. fuel costs: could not convert',
+     &                        ' data record (', cLnWords(iBlock*2+1)
+     &                        (1:lnblnk(cLnWords(iBlock*2+1))),
+     &                        ') in month ', iMonth, '.'
+     
+                             if ( bAutoOK ) then
+                                !call edisp(iuout, cContext)
+                                call edisp(iuout, cMsg)
+                             else
+                                call UsrMsg (cContext, cMsg, 'W')
+                             endif
+                          endif      
+     
+                          read (cLnWords((iBlock*2)+2),*, 
+     &                       IOSTAT=iMiscError)
+     &                       fFuelBlockCost(iElectricity,iMonth,iBlock)
+     
+                          if ( iMiscError .ne. 0 ) then
+                             bElecCosts_defined = .false. 
+                             write (cMsg,'(A,A,A,A,I2,A)')
+     &                        'Elec. fuel costs: could not convert',
+     &                        ' data record (', cLnWords(iBlock*2+2)
+     &                        (1:lnblnk(cLnWords(iBlock*2+2))),
+     &                        ') in month ', iMonth, '.'
+     
+                             if ( bAutoOK ) then
+                                !call edisp(iuout, cContext)
+                                call edisp(iuout, cMsg)
+                             else
+                                call UsrMsg (cContext, cMsg, 'W')
+                             endif
+                          endif     
+     
+                       end do
+                     
+                    endif
+                  
+                  ENDIF
+                  
+               elseif ( bParsingNGFuelCosts ) then 
+
+C.................Increment month counter
+C.................( note: counter initialized as 0 )
+                  iMonth = iMonth + 1
+
+C----------------------------------------------------------------------
+C                 Collect values from ascii input file                                                                       
+C----------------------------------------------------------------------                  
+C.................Check that number of data items in row is ok
+C...................Should be: 2 items for min. units and min charge, 8 items for rate blocks = 10 items total
+                    if ( iWordCount .ne. 10) then
+C....................Mismatch in colum count
+                     write (cMsg,'(A,I2,A,I2)')
+     &                  'In natural gas fuel cost data, # of items (',
+     &                  iWordCount,
+     &                  ') does not match the expected 10 in month',
+     &                  iMonth
+
+                     if ( bAutoOK ) then
+                        !call edisp(iuout, cContext)
+                        call edisp(iuout, cMsg)
+                     else
+                        call UsrMsg (cContext, cMsg, 'W')
+                     endif
+                     
+C....................Natural gas fuel cost data has been incorrectly defined                     
+                     bNGCosts_defined = .false.
+                     
+                  endif
+                  
+C.................If column count is ok, read values
+                  if ( bNGCosts_defined ) then
+                  
+C....................First read the min. units (item 1)
+                     read (cLnWords(1),*,IOSTAT = iMiscError)
+     &                  fFuelMinUnits( iNaturalGas, iMonth )
+     
+                        if ( iMiscError .ne. 0 ) then
+                           bNGCosts_defined = .false. 
+                           write (cMsg,'(A,A,A,A,I2,A)')
+     &                        'Natural gas fuel costs: could not',
+     &                        ' convert data record (', cLnWords(1)
+     &                        (1:lnblnk(cLnWords(1))),
+     &                        ') in month ', iMonth, '.'
+     
+                           if ( bAutoOK ) then
+                              !call edisp(iuout, cContext)
+                              call edisp(iuout, cMsg)
+                           else
+                              call UsrMsg (cContext, cMsg, 'W')
+                           endif
+                        endif 
+                        
+C....................Then read the min. fuel cost (item 2)
+                     read (cLnWords(2),*,IOSTAT = iMiscError)
+     &                  fFuelMinCharge( iNaturalGas, iMonth )
+     
+                        if ( iMiscError .ne. 0 ) then
+                           bNGCosts_defined = .false. 
+                           write (cMsg,'(A,A,A,A,I2,A)')
+     &                        'Natural gas fuel costs: could not',
+     &                        ' convert data record (', cLnWords(2)
+     &                        (1:lnblnk(cLnWords(2))),
+     &                        ') in month ', iMonth, '.'
+     
+                           if ( bAutoOK ) then
+                              !call edisp(iuout, cContext)
+                              call edisp(iuout, cMsg)
+                           else
+                              call UsrMsg (cContext, cMsg, 'W')
+                           endif
+                        endif                        
+     
+C....................Next read the four fuel blocks (number of energy units and cost/unit)
+                     do iBlock = 1, 4
+                        read (cLnWords(iBlock*2+1),*,IOSTAT=iMiscError)
+     &                     fFuelBlockUnits(iNaturalGas,iMonth,iBlock)
+     
+                        if ( iMiscError .ne. 0 ) then
+                           bNGCosts_defined = .false. 
+                           write (cMsg,'(A,A,A,A,I2,A)')
+     &                        'Natural gas fuel costs: could not',
+     &                        ' convert data record (',
+     &                        cLnWords(iBlock*2+1)
+     &                        (1:lnblnk(cLnWords(iBlock*2+1))),
+     &                        ') in month ', iMonth, '.'
+     
+                           if ( bAutoOK ) then
+                              !call edisp(iuout, cContext)
+                              call edisp(iuout, cMsg)
+                           else
+                              call UsrMsg (cContext, cMsg, 'W')
+                           endif
+                        endif      
+     
+                        read (cLnWords(iBlock*2+2),*, 
+     &                     IOSTAT=iMiscError)
+     &                     fFuelBlockCost(iNaturalGas,iMonth,iBlock)
+     
+                        if ( iMiscError .ne. 0 ) then
+                           bNGCosts_defined = .false. 
+                           write (cMsg,'(A,A,A,A,I2,A)')
+     &                        'Natural gas fuel costs: could not',
+     &                        ' convert data record (',
+     &                        cLnWords(iBlock*2+2)
+     &                        (1:lnblnk(cLnWords(iBlock*2+2))),
+     &                        ') in month ', iMonth, '.'
+     
+                           if ( bAutoOK ) then
+                              !call edisp(iuout, cContext)
+                              call edisp(iuout, cMsg)
+                           else
+                              call UsrMsg (cContext, cMsg, 'W')
+                           endif
+                        endif    
+     
+                     end do
+                     
+                  endif
+                  
+               elseif ( bParsingOilFuelCosts ) then 
+
+C.................Increment month counter
+C.................( note: counter initialized as 0 )
+                  iMonth = iMonth + 1
+
+C----------------------------------------------------------------------
+C                 Collect values from ascii input file                                                                       
+C----------------------------------------------------------------------                  
+C.................Check that number of data items in row is ok
+C...................Should be: 2 items for min. units and min charge, 8 items for rate blocks = 10 items total
+                    if ( iWordCount .ne. 10) then
+C....................Mismatch in colum count
+                     write (cMsg,'(A,I2,A,I2)')
+     &                  'In oil fuel cost data, # of items (',
+     &                  iWordCount,
+     &                  ') does not match the expected 10 in month',
+     &                  iMonth
+
+                     if ( bAutoOK ) then
+                        !call edisp(iuout, cContext)
+                        call edisp(iuout, cMsg)
+                     else
+                        call UsrMsg (cContext, cMsg, 'W')
+                     endif
+                     
+C....................Oil fuel cost data has been incorrectly defined                     
+                     bOilCosts_defined = .false.
+                     
+                  endif
+                  
+C.................If column count is ok, read values
+                  if ( bOilCosts_defined ) then
+                  
+C....................First read the min. units (item 1)
+                     read (cLnWords(1),*,IOSTAT = iMiscError)
+     &                  fFuelMinUnits( iOil, iMonth )
+     
+                        if ( iMiscError .ne. 0 ) then
+                           bOilCosts_defined = .false. 
+                           write (cMsg,'(A,A,A,A,I2,A)')
+     &                        'Oil fuel costs: could not convert',
+     &                        ' data record (', cLnWords(1)
+     &                        (1:lnblnk(cLnWords(1))),
+     &                        ') in month ', iMonth, '.'
+     
+                           if ( bAutoOK ) then
+                              !call edisp(iuout, cContext)
+                              call edisp(iuout, cMsg)
+                           else
+                              call UsrMsg (cContext, cMsg, 'W')
+                           endif
+                        endif 
+                        
+C....................Then read the min. fuel cost (item 2)
+                     read (cLnWords(2),*,IOSTAT = iMiscError)
+     &                  fFuelMinCharge( iOil, iMonth )
+     
+                        if ( iMiscError .ne. 0 ) then
+                           bOilCosts_defined = .false. 
+                           write (cMsg,'(A,A,A,A,I2,A)')
+     &                        'Oil fuel costs: could not convert',
+     &                        ' data record (', cLnWords(2)
+     &                        (1:lnblnk(cLnWords(2))),
+     &                        ') in month ', iMonth, '.'
+     
+                           if ( bAutoOK ) then
+                              !call edisp(iuout, cContext)
+                              call edisp(iuout, cMsg)
+                           else
+                              call UsrMsg (cContext, cMsg, 'W')
+                           endif
+                        endif                        
+     
+C....................Next read the four fuel blocks (number of energy units and cost/unit)
+                     do iBlock = 1, 4
+                        read (cLnWords(iBlock*2+1),*,IOSTAT=iMiscError)
+     &                     fFuelBlockUnits(iOil,iMonth,iBlock)
+     
+                        if ( iMiscError .ne. 0 ) then
+                           bOilCosts_defined = .false. 
+                           write (cMsg,'(A,A,A,A,I2,A)')
+     &                        'Oil fuel costs: could not convert',
+     &                        ' data record (', cLnWords(iBlock*2+1)
+     &                        (1:lnblnk(cLnWords(iBlock*2+1))),
+     &                        ') in month ', iMonth, '.'
+     
+                           if ( bAutoOK ) then
+                              !call edisp(iuout, cContext)
+                              call edisp(iuout, cMsg)
+                           else
+                              call UsrMsg (cContext, cMsg, 'W')
+                           endif
+                        endif      
+     
+                        read (cLnWords(iBlock*2+2),*, 
+     &                     IOSTAT=iMiscError)
+     &                     fFuelBlockCost(iOil,iMonth,iBlock)
+     
+                        if ( iMiscError .ne. 0 ) then
+                           bOilCosts_defined = .false. 
+                           write (cMsg,'(A,A,A,A,I2,A)')
+     &                        'Oil fuel costs: could not convert',
+     &                        ' data record (', cLnWords(iBlock*2+2)
+     &                        (1:lnblnk(cLnWords(iBlock*2+2))),
+     &                        ') in month ', iMonth, '.'
+     
+                           if ( bAutoOK ) then
+                              !call edisp(iuout, cContext)
+                              call edisp(iuout, cMsg)
+                           else
+                              call UsrMsg (cContext, cMsg, 'W')
+                           endif
+                        endif     
+     
+                     end do
+                     
+                  endif
+                  
+               elseif ( bParsingPropFuelCosts ) then 
+
+C.................Increment month counter
+C.................( note: counter initialized as 0 )
+                  iMonth = iMonth + 1
+
+C----------------------------------------------------------------------
+C                 Collect values from ascii input file                                                                       
+C----------------------------------------------------------------------                  
+C.................Check that number of data items in row is ok
+C...................Should be: 2 items for min. units and min charge, 8 items for rate blocks = 10 items total
+                    if ( iWordCount .ne. 10) then
+C....................Mismatch in colum count
+                     write (cMsg,'(A,I2,A,I2)')
+     &                  'In propane fuel cost data, # of items (',
+     &                  iWordCount,
+     &                  ') does not match the expected 10 in month',
+     &                  iMonth
+
+                     if ( bAutoOK ) then
+                        !call edisp(iuout, cContext)
+                        call edisp(iuout, cMsg)
+                     else
+                        call UsrMsg (cContext, cMsg, 'W')
+                     endif
+                     
+C....................Propane fuel cost data has been incorrectly defined                     
+                     bPropCosts_defined = .false.
+                     
+                  endif
+                  
+C.................If column count is ok, read values
+                  if ( bPropCosts_defined ) then               
+               
+C....................First read the min. units (item 1)
+                     read (cLnWords(1),*,IOSTAT = iMiscError)
+     &                  fFuelMinUnits( iPropane, iMonth )
+     
+                        if ( iMiscError .ne. 0 ) then
+                           bPropCosts_defined = .false. 
+                           write (cMsg,'(A,A,A,A,I2,A)')
+     &                        'Propane fuel costs: could not convert',
+     &                        ' data record (', cLnWords(1)
+     &                        (1:lnblnk(cLnWords(1))),
+     &                        ') in month ', iMonth, '.'
+     
+                           if ( bAutoOK ) then
+                              !call edisp(iuout, cContext)
+                              call edisp(iuout, cMsg)
+                           else
+                              call UsrMsg (cContext, cMsg, 'W')
+                           endif
+                        endif 
+                        
+C....................Then read the min. fuel cost (item 2)
+                     read (cLnWords(2),*,IOSTAT = iMiscError)
+     &                  fFuelMinCharge( iPropane, iMonth )
+     
+                        if ( iMiscError .ne. 0 ) then
+                           bPropCosts_defined = .false. 
+                           write (cMsg,'(A,A,A,A,I2,A)')
+     &                        'Propane fuel costs: could not convert',
+     &                        ' data record (', cLnWords(2)
+     &                        (1:lnblnk(cLnWords(2))),
+     &                        ') in month ', iMonth, '.'
+     
+                           if ( bAutoOK ) then
+                              !call edisp(iuout, cContext)
+                              call edisp(iuout, cMsg)
+                           else
+                              call UsrMsg (cContext, cMsg, 'W')
+                           endif
+                        endif                        
+     
+C....................Next read the four fuel blocks (number of energy units and cost/unit)
+                     do iBlock = 1, 4
+                        read (cLnWords(iBlock*2+1),*,IOSTAT=iMiscError)
+     &                     fFuelBlockUnits(iPropane,iMonth,iBlock)
+     
+                        if ( iMiscError .ne. 0 ) then
+                           bPropCosts_defined = .false. 
+                           write (cMsg,'(A,A,A,A,I2,A)')
+     &                        'Propane fuel costs: could not convert',
+     &                        ' data record (', cLnWords(iBlock*2+1)
+     &                        (1:lnblnk(cLnWords(iBlock*2+1))),
+     &                        ') in month ', iMonth, '.'
+     
+                           if ( bAutoOK ) then
+                              !call edisp(iuout, cContext)
+                              call edisp(iuout, cMsg)
+                           else
+                              call UsrMsg (cContext, cMsg, 'W')
+                           endif
+                        endif      
+     
+                        read (cLnWords(iBlock*2+2),*, 
+     &                     IOSTAT=iMiscError)
+     &                     fFuelBlockCost(iPropane,iMonth,iBlock)
+     
+                        if ( iMiscError .ne. 0 ) then
+                           bPropCosts_defined = .false. 
+                           write (cMsg,'(A,A,A,A,I2,A)')
+     &                        'Propane fuel costs: could not convert',
+     &                        ' data record (', cLnWords(iBlock*2+2)
+     &                        (1:lnblnk(cLnWords(iBlock*2+2))),
+     &                        ') in month ', iMonth, '.'
+     
+                           if ( bAutoOK ) then
+                              !call edisp(iuout, cContext)
+                              call edisp(iuout, cMsg)
+                           else
+                              call UsrMsg (cContext, cMsg, 'W')
+                           endif
+                        endif     
+     
+                     end do
+                     
+                  endif               
+               
+               elseif ( bParsingWoodFuelCosts ) then 
+               
+C.................Increment month counter
+C.................( note: counter initialized as 0 )
+                  iMonth = iMonth + 1
+
+C----------------------------------------------------------------------
+C                 Collect values from ascii input file                                                                       
+C----------------------------------------------------------------------                  
+C.................Check that number of data items in row is ok
+C...................Should be: 2 items for min. units and min charge, 8 items for rate blocks = 10 items total
+                    if ( iWordCount .ne. 10) then
+C....................Mismatch in colum count
+                     write (cMsg,'(A,I2,A,I2)')
+     &                  'In wood fuel cost data, # of items (',
+     &                  iWordCount,
+     &                  ') does not match the expected 10 in month',
+     &                  iMonth
+
+                     if ( bAutoOK ) then
+                        !call edisp(iuout, cContext)
+                        call edisp(iuout, cMsg)
+                     else
+                        call UsrMsg (cContext, cMsg, 'W')
+                     endif
+                     
+C....................Wood fuel cost data has been incorrectly defined                     
+                     bWoodCosts_defined = .false.
+                     
+                  endif
+                  
+C.................If column count is ok, read values
+                  if ( bWoodCosts_defined ) then                  
+               
+C....................First read the min. units (item 1)
+                     read (cLnWords(1),*,IOSTAT = iMiscError)
+     &                  fFuelMinUnits( iMixedWood, iMonth )
+     
+                        if ( iMiscError .ne. 0 ) then
+                           bWoodCosts_defined = .false. 
+                           write (cMsg,'(A,A,A,A,I2,A)')
+     &                        'Wood fuel costs: could not convert',
+     &                        ' data record (', cLnWords(1)
+     &                        (1:lnblnk(cLnWords(1))),
+     &                        ') in month ', iMonth, '.'
+     
+                           if ( bAutoOK ) then
+                              !call edisp(iuout, cContext)
+                              call edisp(iuout, cMsg)
+                           else
+                              call UsrMsg (cContext, cMsg, 'W')
+                           endif
+                        endif 
+                        
+C....................First read the min. fuel cost (item 1)
+                     read (cLnWords(2),*,IOSTAT = iMiscError)
+     &                  fFuelMinCharge( iMixedWood, iMonth )
+     
+                        if ( iMiscError .ne. 0 ) then
+                           bWoodCosts_defined = .false. 
+                           write (cMsg,'(A,A,A,A,I2,A)')
+     &                        'Wood fuel costs: could not convert',
+     &                        ' data record (', cLnWords(2)
+     &                        (1:lnblnk(cLnWords(2))),
+     &                        ') in month ', iMonth, '.'
+     
+                           if ( bAutoOK ) then
+                              !call edisp(iuout, cContext)
+                              call edisp(iuout, cMsg)
+                           else
+                              call UsrMsg (cContext, cMsg, 'W')
+                           endif
+                        endif                         
+     
+C....................Next read the four fuel blocks (number of energy units and cost/unit)
+                     do iBlock = 1, 4
+                        read (cLnWords(iBlock*2+1),*,IOSTAT=iMiscError)
+     &                     fFuelBlockUnits(iMixedWood,iMonth,iBlock)
+     
+                        if ( iMiscError .ne. 0 ) then
+                           bWoodCosts_defined = .false. 
+                           write (cMsg,'(A,A,A,A,I2,A)')
+     &                        'Wood fuel costs: could not convert',
+     &                        ' data record (', cLnWords(iBlock*2+1)
+     &                        (1:lnblnk(cLnWords(iBlock*2+1))),
+     &                        ') in month ', iMonth, '.'
+     
+                           if ( bAutoOK ) then
+                              !call edisp(iuout, cContext)
+                              call edisp(iuout, cMsg)
+                           else
+                              call UsrMsg (cContext, cMsg, 'W')
+                           endif
+                        endif      
+     
+                        read (cLnWords(iBlock*2+2),*, 
+     &                     IOSTAT=iMiscError)
+     &                     fFuelBlockCost(iMixedWood,iMonth,iBlock)
+     
+                        if ( iMiscError .ne. 0 ) then
+                           bWoodCosts_defined = .false. 
+                           write (cMsg,'(A,A,A,A,I2,A)')
+     &                        'Wood fuel costs: could not convert',
+     &                        ' data record (', cLnWords(iBlock*2+2)
+     &                        (1:lnblnk(cLnWords(iBlock*2+2))),
+     &                        ') in month ', iMonth, '.'
+     
+                           if ( bAutoOK ) then
+                              !call edisp(iuout, cContext)
+                              call edisp(iuout, cMsg)
+                           else
+                              call UsrMsg (cContext, cMsg, 'W')
+                           endif
+                        endif     
+     
+                     end do
+                     
+                  endif
+                  
                else
 C----------------------------------------------------------------------
 C                 Unknown record type: Warn user and move on.
@@ -1005,7 +1767,13 @@ C----------------------------------------------------------------------
      &     .not. bUnits_defined     .or.
      &     .not. bFrequency_defined .or.
      &     .not. bPeriod_defined    .or.
-     &     .not. bVersion_defined        ) bFatal_Error = .true.
+     &     .not. bVersion_defined   .or. 
+     &     ( bIncFuelCostCalcs      .and.
+     &        (   .not. bElecCosts_defined .or.
+     &            .not. bNGCosts_defined   .or. 
+     &            .not. bOilCosts_defined  .or. 
+     &            .not. bPropCosts_defined .or. 
+     &            .not. bWoodCosts_defined )  ) )bFatal_Error = .true.      
 
 
 

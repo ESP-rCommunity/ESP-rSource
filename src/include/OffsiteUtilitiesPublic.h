@@ -24,17 +24,20 @@ C.....Named constants for fuel types
 
 C.....Supported end-uses
       integer iNumUses
-      parameter ( iNumUses = 7 )
+      parameter ( iNumUses = 9 )
       integer iUseSpaceHeat, iUseSpaceCool, iUseDHW,
      &        iUseLights, iUseEquipment, iUseUncatagorized,
-     &        iUseHRV
+     &        iUseHRV, iUseOther, iExtraBillingCharges
       parameter ( iUseSpaceHeat     = 1,
      &            iUseSpaceCool     = 2,
      &            iUseDHW           = 3,
      &            iUseLights        = 4,
      &            iUseEquipment     = 5,
      &            iUseUncatagorized = 6,
-     &            iUseHRV           = 7 )
+     &            iUseHRV           = 7,
+     &            iUseOther         = 8,
+                  ! 25-Nov-2011 BAL: Added. Only used to store monthly minimum fuel cost charges. 
+     &            iExtraBillingCharges = 9 ) 
 
 C.....Number of "components" in ESP-r that report data to OffsiteUtilities
       integer iNumOffsiteUtilComp
@@ -220,12 +223,12 @@ C.....Appliances/equipment
       data cUseDesc(iUseEquipment) /'equipment'/
       data iUseDescLen(iUseEquipment) /9/
 
-C.....Appliances/equipment
-      data cUseName(iUseLights) /'lighting'/
-      data iUseNameLen(iUseLights) /8/
+C.....Lights
+      data cUseName(iUseLights) /'lights'/
+      data iUseNameLen(iUseLights) /6/
 
-      data cUseDesc(iUseLights) /'lighting'/
-      data iUseDescLen(iUseLights) /8/
+      data cUseDesc(iUseLights) /'lights'/
+      data iUseDescLen(iUseLights) /6/
 
 C.....Uncatagorized
       data cUseName(iUseUncatagorized) /'uncatagorized'/
@@ -240,3 +243,17 @@ C.....Ventilation/HRV
 
       data cUseDesc(iUseHRV) /'ventilation'/
       data iUseDescLen(iUseHRV) /11/
+      
+C.....Other
+      data cUseName(iUseOther) /'other'/
+      data iUseNameLen(iUseOther) /5/
+
+      data cUseDesc(iUseOther) /'other'/
+      data iUseDescLen(iUseOther) /5/ 
+
+C.....Extra billing charges
+      data cUseName(iExtraBillingCharges) /'extra_billing_charges'/
+      data iUseNameLen(iExtraBillingCharges) /21/
+
+      data cUseDesc(iExtraBillingCharges) /'extra_billing_charges'/
+      data iUseDescLen(iExtraBillingCharges) /21/ 
