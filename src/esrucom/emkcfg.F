@@ -712,7 +712,7 @@ C Solar radiation (half hour data) flag.
 
 C Diffuse shading flag.
       if(iexcludediff_flag.eq.1)then
-        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*exlude_diff_shad  ',
+        WRITE(IFCFG,'(A,i2,A)',IOSTAT=IOS,ERR=2) '*exclude_diff_shad  ',
      &    iexcludediff_flag,'  # diffuse shading is excluded'
       endif      
       
