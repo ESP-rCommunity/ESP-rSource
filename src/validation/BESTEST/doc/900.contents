@@ -1,7 +1,7 @@
 Synopsis
  
-Synopsis of the model test case 900 defined in 900FF.cfg generated on Tue Aug
-28 13:46:55 2012. Notes associated with the model are in ../doc/README900.txt
+Synopsis of the model test case 900 defined in 900.cfg generated on Wed Aug 29
+12:56:02 2012. Notes associated with the model are in ../doc/README900.txt
  
 The model is located at latitude   39.80 with a longitude difference of   0.10
 from the local time meridian. The year used in simulations is 1991 and
@@ -44,6 +44,27 @@ Databases associated with the model:
  optical properties     : ../dbs/opticdb
  standard UK NCM data   : SBEM.db1
  standard mould isopleth: mould.db1
+ 
+ ____________________________________________________________
+ 
+The model includes ideal controls as follows:
+Control description:
+proj cntrl
+ 
+Zones control includes  1 functions.
+no descrip
+ 
+ The sensor for function  1 senses the temperature of the current zone.
+ The actuator for function  1 is air point of the current zone
+There have been  1 periods of validity defined during the year.
+ Control is valid Tue-01-Jan to Tue-31-Dec, 1991 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 100000.0W min
+heating capacity 0.0W max cooling capacity 100000.0W min cooling capacity 0.0W. Heating
+setpoint 20.00C cooling setpoint 27.00C.
+ 
+ Zone to contol loop linkages:
+ zone ( 1) 900          << control  1
  
  ____________________________________________________________
  
