@@ -1,9 +1,9 @@
 # composite construction db defined in ../databases/WM.mlc
-# based on materials db ../databases/prim.db.a
+# based on materials db ../databases/13791.materialdb
     9     # no of composites 
 # layers  description   optics name   symmetry tag
     8    Type_n.1      OPAQ  OPAQUE        NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
+# material ref thickness (m) description & air gap R
    34    0.0400  Outer0em layer : Outer0em layer
    21    0.0400  Outer layer : Outer layer
    21    0.0350  Outer layer : Outer layer
@@ -14,13 +14,13 @@
    24    0.0150  Plaster internal : Plaster internal
 # layers  description   optics name   symmetry tag
     3    Type_n.2      OPAQ  OPAQUE        SYMMETRIC     
-# mat ref thickness (m) mat descr & air gap R
+# material ref thickness (m) description & air gap R
    25    0.0120  Plaster gypsum : Plaster gypsum
    22    0.1000  Mineral wool 1 : Mineral wool 1
    25    0.0120  Plaster gypsum : Plaster gypsum
 # layers  description   optics name   symmetry tag
     5    Type_n.3      OPAQ  OPAQUE        Type_n.3-flr  
-# mat ref thickness (m) mat descr & air gap R
+# material ref thickness (m) description & air gap R
    26    0.0040  Covering plastic : Covering plastic
    27    0.0600  Cement floor : Cement floor
    30    0.0400  Mineral wool 2 : Mineral wool 2
@@ -28,7 +28,7 @@
    31    0.0900  Concrete : Concrete
 # layers  description   optics name   symmetry tag
     8    Type_n.4      OPAQ  OPAQUE        Type_n.4-flr  
-# mat ref thickness (m) mat descr & air gap R
+# material ref thickness (m) description & air gap R
    26    0.0040  Covering plastic : Covering plastic
    27    0.0600  Cement floor : Cement floor
    30    0.0400  Mineral wool 2 : Mineral wool 2
@@ -39,7 +39,7 @@
    28    0.0200  Acoustic board : Acoustic board
 # layers  description   optics name   symmetry tag
     6    Type_n.5      OPAQ  OPAQUE        NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
+# material ref thickness (m) description & air gap R
    35    0.0040  Rain0em protection : Rain0em protection
    30    0.0800  Mineral wool 2 : Mineral wool 2
    31    0.0500  Concrete : Concrete
@@ -48,21 +48,21 @@
    31    0.0500  Concrete : Concrete
 # layers  description   optics name   symmetry tag
     3    sgl_glz_shd   TRAN  SG_CEN_shd    NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
+# material ref thickness (m) description & air gap R
    32    0.0020  2mm shade : 2mm shade
-    0    0.0060  air  0.080 0.080 0.080
+    0    0.0060  gap  0.080 0.080 0.080
    33    0.0060  6mm glass : 6mm glass
 # layers  description   optics name   symmetry tag
     5    dbl_glz_shd   TRAN  DG_CEN_shd    NONSYMMETRIC  
-# mat ref thickness (m) mat descr & air gap R
+# material ref thickness (m) description & air gap R
    32    0.0020  2mm shade : 2mm shade
-    0    0.0060  air  0.080 0.080 0.080
+    0    0.0060  gap  0.080 0.080 0.080
    33    0.0060  6mm glass : 6mm glass
-    0    0.0060  air  0.170 0.170 0.170
+    0    0.0060  gap  0.170 0.170 0.170
    33    0.0060  6mm glass : 6mm glass
 # layers  description   optics name   symmetry tag
     5    Type_n.3-flr  OPAQ  OPAQUE        Type_n.3      
-# mat ref thickness (m) mat descr & air gap R
+# material ref thickness (m) description & air gap R
    31    0.0900  Concrete : Concrete
    31    0.0900  Concrete : Concrete
    30    0.0400  Mineral wool 2 : Mineral wool 2
@@ -70,7 +70,7 @@
    26    0.0040  Covering plastic : Covering plastic
 # layers  description   optics name   symmetry tag
     8    Type_n.4-flr  OPAQ  OPAQUE        Type_n.4      
-# mat ref thickness (m) mat descr & air gap R
+# material ref thickness (m) description & air gap R
    28    0.0200  Acoustic board : Acoustic board
    30    0.1000  Mineral wool 2 : Mineral wool 2
    31    0.0600  Concrete : Concrete

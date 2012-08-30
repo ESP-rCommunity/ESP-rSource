@@ -1,41 +1,44 @@
 Synopsis
  
-This is a synopsis of the model ISO 13791 - internal radiation test defined in
-rad.cfg generated on Thu Oct 15 22:05:01 2009. Notes associated with the model
-are in job.notes
+Synopsis of the model ISO 13791 - internal radiation test defined in rad.cfg
+generated on Wed Aug 29 19:57:54 2012. Notes associated with the model are in
+../doc/README
  
 The model is located at latitude   50.00 with a longitude difference of   0.00
 from the local time meridian. The year used in simulations is 2000 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical city centre and the ground reflectance is 0.20.
  
-Project name: not yet defined
-Building address: not yet defined
-Building city: not yet defined
-Building Postcode: not yet defined
- 
-Building owner name: not yet defined
-Building owner telephone: not yet defined
-Building owner address: not yet defined
-Building owner city: not yet defined
-Building owner Postcode: not yet defined
  
 Simulationist name: not yet defined
 Simulationist telephone: not yet defined
 Simulationist address: not yet defined
 Simulationist city: not yet defined
 Simulationist postcode: not yet defined
-The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
-with hour centred solar data.
+ 
+The climate is: ESP test climate and is held in: clm67 with hour centred solar
+data.
+ standard annual weather: clm67
+Calculated ground temp at 0.5m depth
+3.0888 4.3008 6.6610 8.8949 13.123 15.349 15.963 14.834 12.227 8.9770 5.7777 3.6649
+Calculated ground temp at 1.0m depth
+3.6630 4.5020 6.4738 8.4398 12.343 14.560 15.374 14.612 12.434 9.5459 6.5633 4.4524
+Calculated ground temp at 2.0m depth
+4.7588 5.0557 6.4004 7.8990 11.149 13.226 14.259 14.027 12.542 10.298 7.7730 5.7855
+Calculated ground temp at 4.0m depth
+6.4880 6.2779 6.8663 7.7174 9.8661 11.475 12.517 12.771 12.121 10.800 9.0880 7.5409
+ 
 An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
- pressure distributions : pressc.db1
- materials              : ../databases/prim.db.a
- constructions          : ../databases/Cond.mlc
- plant components       : plantc.db1
- event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
- optical properties     : optics.db1
+ standard pressure distr: pressc.db1
+ materials              : ../databases/13791.materialdb
+ constructions          : ../databases/Cond.constrdb
+ standard plant comp    : plantc.db1
+ standard event profiles: profiles.db1.a
+ standard optical prop  : optics.db1
+ standard UK NCM data   : SBEM.db1
+ standard mould isopleth: mould.db1
  
  ____________________________________________________________
  
@@ -48,43 +51,39 @@ no zone control description supplied
  
  The sensor for function  1 senses the temperature of the current zone.
  The actuator for function  1 is at inside face of Surf-2 in test-1.
- There have been  1 day types defined.
- Day type  1 is valid Sat-01-Jan to Sun-31-Dec, 2000 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       100.0 100.0 0.0 0.0 100.0 100.0 0.0
-basic control: max heating capacity 100.0W min heating capacity 100.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 100.00C cooling setpoint
-100.00C.
+There have been  1 periods of validity defined during the year.
+ Control is valid Sat-01-Jan to Sun-31-Dec, 2000 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 100.0W min heating
+capacity 100.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+100.00C cooling setpoint 100.00C.
  
  The sensor for function  2 senses the temperature of the current zone.
  The actuator for function  2 is at inside face of Surf-2 in test-2.
- There have been  1 day types defined.
- Day type  1 is valid Sat-01-Jan to Sun-31-Dec, 2000 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       1200.0 1200.0 0.0 0.0 100.0 100.0 0.0
-basic control: max heating capacity 1200.0W min heating capacity 1200.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 100.00C cooling setpoint
-100.00C.
+There have been  1 periods of validity defined during the year.
+ Control is valid Sat-01-Jan to Sun-31-Dec, 2000 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 1200.0W min heating
+capacity 1200.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+100.00C cooling setpoint 100.00C.
  
  The sensor for function  3 senses the temperature of the current zone.
  The actuator for function  3 is at inside face of Surf-2 in test-3.
- There have been  1 day types defined.
- Day type  1 is valid Sat-01-Jan to Sun-31-Dec, 2000 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       9000.0 9000.0 0.0 0.0 100.0 100.0 0.0
-basic control: max heating capacity 9000.0W min heating capacity 9000.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 100.00C cooling setpoint
-100.00C.
+There have been  1 periods of validity defined during the year.
+ Control is valid Sat-01-Jan to Sun-31-Dec, 2000 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 9000.0W min heating
+capacity 9000.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+100.00C cooling setpoint 100.00C.
  
  The sensor for function  4 senses the temperature of the current zone.
  The actuator for function  4 is at inside face of Surf-2 in test-4.
- There have been  1 day types defined.
- Day type  1 is valid Sat-01-Jan to Sun-31-Dec, 2000 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law       | Data
-   1  0.00 db temp   > flux      basic control       600.0 600.0 0.0 0.0 100.0 100.0 0.0
-basic control: max heating capacity 600.0W min heating capacity 600.0W max cooling
-capacity 0.0W min cooling capacity 0.0W. Heating setpoint 100.00C cooling setpoint
-100.00C.
+There have been  1 periods of validity defined during the year.
+ Control is valid Sat-01-Jan to Sun-31-Dec, 2000 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 600.0W min heating
+capacity 600.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
+100.00C cooling setpoint 100.00C.
  
  Zone to contol loop linkages:
  zone ( 1) test-1       << control  1
@@ -126,33 +125,32 @@ ID Zone         Volume|          Surface
  Opened existing hc control file.
  
  Number of control periods:  1
- Number of surfaces = 6
  
  Period  1 start   0.00 finish  24.00
  User specified convection coefficients
  User supplied hc values
- Surface            Inside   Outside
- 1 Surf-1       (VERT)      2.500    13.500
- 2 Surf-2       (VERT)      2.500    13.500
- 3 Surf-3b      (VERT)      2.500    13.500
- 4 Surf-3a      (VERT)      2.500    13.500
- 5 Surf-4       (CEIL)      2.500    13.500
- 6 Surf-5       (FLOR)      2.500    13.500
+   Surface orinetation  Inside     Outside
+ 1 Surf-1       (VERT)     2.500   13.500
+ 2 Surf-2       (VERT)     2.500   13.500
+ 3 Surf-3b      (VERT)     2.500   13.500
+ 4 Surf-3a      (VERT)     2.500   13.500
+ 5 Surf-4       (CEIL)     2.500   13.500
+ 6 Surf-5       (FLOR)     2.500   13.500
  
  
  Air schedule notes:
 no operations notes (yet)
  Control: no control of air flow
  
-Number of air change periods for daytype weekday      :    0
- 
-Number of air change periods for daytype saturday     :    0
- 
-Number of air change periods for daytype sunday       :    0
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
  
 Notes:
 no operations notes (yet)
-Number of weekday      casual gains=  0
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
  
  ____________________________________________________________
  
@@ -179,18 +177,17 @@ Number of weekday      casual gains=  0
  Opened existing hc control file.
  
  Number of control periods:  1
- Number of surfaces = 6
  
  Period  1 start   0.00 finish  24.00
  User specified convection coefficients
  User supplied hc values
- Surface            Inside   Outside
- 1 Surf-1       (VERT)      2.500    13.500
- 2 Surf-2       (VERT)      2.500    13.500
- 3 Surf-3b      (VERT)      2.500    13.500
- 4 Surf-3a      (VERT)      2.500    13.500
- 5 Surf-4       (CEIL)      2.500    13.500
- 6 Surf-5       (FLOR)      2.500    13.500
+   Surface orinetation  Inside     Outside
+ 1 Surf-1       (VERT)     2.500   13.500
+ 2 Surf-2       (VERT)     2.500   13.500
+ 3 Surf-3b      (VERT)     2.500   13.500
+ 4 Surf-3a      (VERT)     2.500   13.500
+ 5 Surf-4       (CEIL)     2.500   13.500
+ 6 Surf-5       (FLOR)     2.500   13.500
  
  Uses same operations as zone test-1
  
@@ -219,18 +216,17 @@ Number of weekday      casual gains=  0
  Opened existing hc control file.
  
  Number of control periods:  1
- Number of surfaces = 6
  
  Period  1 start   0.00 finish  24.00
  User specified convection coefficients
  User supplied hc values
- Surface            Inside   Outside
- 1 Surf-1       (VERT)      2.500    13.500
- 2 Surf-2       (VERT)      2.500    13.500
- 3 Surf-3b      (VERT)      2.500    13.500
- 4 Surf-3a      (VERT)      2.500    13.500
- 5 Surf-4       (CEIL)      2.500    13.500
- 6 Surf-5       (FLOR)      2.500    13.500
+   Surface orinetation  Inside     Outside
+ 1 Surf-1       (VERT)     2.500   13.500
+ 2 Surf-2       (VERT)     2.500   13.500
+ 3 Surf-3b      (VERT)     2.500   13.500
+ 4 Surf-3a      (VERT)     2.500   13.500
+ 5 Surf-4       (CEIL)     2.500   13.500
+ 6 Surf-5       (FLOR)     2.500   13.500
  
  Uses same operations as zone test-1
  
@@ -260,19 +256,18 @@ Number of weekday      casual gains=  0
  Opened existing hc control file.
  
  Number of control periods:  1
- Number of surfaces = 7
  
  Period  1 start   0.00 finish  24.00
  User specified convection coefficients
  User supplied hc values
- Surface            Inside   Outside
- 1 Surf-1       (VERT)      2.500    13.500
- 2 Surf-2       (VERT)      2.500    13.500
- 3 Surf-3c      (VERT)      2.500    13.500
- 4 Surf-3b      (VERT)      2.500    13.500
- 5 Surf-4       (CEIL)      2.500    13.500
- 6 Surf-5       (FLOR)      2.500    13.500
- 7 Surf-3a      (VERT)      2.500    13.500
+   Surface orinetation  Inside     Outside
+ 1 Surf-1       (VERT)     2.500   13.500
+ 2 Surf-2       (VERT)     2.500   13.500
+ 3 Surf-3c      (VERT)     2.500   13.500
+ 4 Surf-3b      (VERT)     2.500   13.500
+ 5 Surf-4       (CEIL)     2.500   13.500
+ 6 Surf-5       (FLOR)     2.500   13.500
+ 7 Surf-3a      (VERT)     2.500   13.500
  
  Uses same operations as zone test-1
  
@@ -280,23 +275,32 @@ Number of weekday      casual gains=  0
  
  Project floor area is 139.00m2, wall area is 0.00m2, window area is 0.00m2.
  Sloped roof area is 0.00m2, flat roof area is 0.00m2, skylight area is 0.00m2.
+ In contact with ground 0.00m2.
  
  
  ____________________________________________________________
  Multi-layer constructions used:
  
- Details of opaque construction: cond_5.0
+ Details of opaque construction: cond_5.0 and overall thickness  0.100
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
     1   41  100.0     0.500     1.     1. 0.90 0.50    10.  0.20 ext_wall_mat : ext_wall_mat
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.703  2.941  2.439 (partition)  2.174
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.63
+ External surface admittance Y=  2.63  w=  0.00 decrement factor f=  0.68  phi=  0.00 surface factor f=  0.68  phi=  0.00
+ Partition admittance Y=  0.00  w= -6.00 surface factor f=  1.00  phi=  0.00
  Total area of cond_5.0 is    109.00
  
- Details of opaque construction: cond_1.0
+ Details of opaque construction: cond_1.0 and overall thickness  0.100
  
- Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
-      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
     1   42  100.0     0.100     1.     1. 0.90 0.50    10.  1.00 int_surf_mat : int_surf_mat
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.855  0.877  0.826 (partition)  0.794
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.85
+ External surface admittance Y=  0.85  w= -0.00 decrement factor f=  0.90  phi= 12.00 surface factor f=  0.90  phi= 12.00
+ Partition admittance Y=  0.00  w= -5.94 surface factor f=  1.00  phi=  0.00
  Total area of cond_1.0 is    491.00
