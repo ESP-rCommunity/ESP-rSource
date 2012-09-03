@@ -17,7 +17,7 @@ PROG = dbm$(EXE)
 
 MODULE_OBJECTS = h3kmodule.o aim2_module.o
 
-OBJECTS = jdbm.o basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
+OBJECTS = jdbm.o ascii_mat.o basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
 	bcffile.o c2fdum.o ctlexp.o ctread.o dbmedit.o dossupport.o edprof.o \
 	egeometry.o emfnetw.o emkcfgg.o enved.o eroper.o esru_misc.o esystemg.o \
 	filelist.o gendbb.o hyged.o implegadb.o item.o \
@@ -34,6 +34,9 @@ $(PROG) : $(MODULE_OBJECTS) $(OBJECTS)
 aim2_module.F:
 	rm -f aim2_module.F
 	ln -s $(BLDdir)/aim2_module.F .
+ascii_mat.F:
+	rm -f ascii_mat.F
+	ln -s $(COMdir)/ascii_mat.F .
 basesimp.F:
 	rm -f basesimp.F
 	ln -s $(BLDdir)/basesimp.F .
@@ -112,7 +115,7 @@ install:
 
 clean :
 	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
-	aim2_module.F basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
+	aim2_module.F ascii_mat.F basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
 	c2fdum.F ctlexp.F ctread.F dossupport.F edatabase.F \
 	egeometry.F emfnetw.F emkcfgg.F eroper.F esru_misc.F filelist.F item.F mfcdat.F nwkrewr.F \
 	pltcfg.F sort.F tdfile.F readTrnsys.F h3kmodule.f90

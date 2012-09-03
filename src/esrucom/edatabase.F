@@ -26,7 +26,6 @@ C  parsemlcdesc: Parse the DESC string from the MLC common block
 C  ETMLDB:  Provides reporting on current description of a composite.
 C  ETMLDBU returns U value of construction based on contents of common MLC.
 C  EPKMLC:  Select a composite construction with display of details.
-C  ERPCDB:  Reads one element from a binary materials db.
 C  EMKAMLD: Creates an ascii composite constr db based on common MLC.
 C  EROPTDB: Returns optical properties for TMC.
 C  EDWINO:  Allow user to select a glazing type by name.
@@ -1235,76 +1234,6 @@ C in the materials database.
 
       END
 
-C *************** ERPCDB
-C ERPCDB reads one element from a binary materials database
-C returning them via parameter list.
-C IFMAT is the unit number of the database,  IEL the requested 
-C element, ITRU unit number for user output, IER=0 OK, IER=1 problem.
-C ITRC is the trace level.  It is assumed that the database has been
-C previously opened and other parts of the code will close it when
-C appropriate.  E is the element emissivity, A is the solar absorb, DRV
-C is the diffusion resistance, TITL is the classification title, PNAM is
-C the material name.
-
-C Note: this subroutine is for use with the binary materials file
-C rather than the matdatarray common blocks.
-
-      SUBROUTINE ERPCDB(IFMAT,IEL,ITRU,IER,DBCON,DBDEN,DBSHT,E,A,
-     &                  DRV,TITL,PNAM)
-
-      CHARACTER PNAM*72,TITL*72,outs*124
-      logical close4
-
-      IER=0
-      close4=.false.
-
-C The record in the material db is IEL + 1 UNLESS the
-C reference is to material db 0 (air).
-      PNAM=' '
-      TITL=' '
-      DBCON=0.0
-      DBDEN=0.0
-      DBSHT=0.0
-      IF(IEL.NE.0)THEN
-        IR=((IEL-1)/20)*20+1
-        READ(IFMAT,REC=IR,IOSTAT=IOS,ERR=105)TITL
-        IR = IEL + 1
-        READ(IFMAT,REC=IR,IOSTAT=IOS,ERR=105)DBCON,DBDEN,DBSHT,E,A,
-     &       DRV,PNAM
-
-C If all values are still 0.0 then not an actual element.
-        call eclose3(DBCON,DBDEN,DBSHT,0.0,0.0,0.0,0.001,CLOSE4)
-        if(CLOSE4)then
-          write(outs,'(A,I3,A,2i4)') ' Material db reference ',IEL,
-     &                           ' has no data, or all zero...',IR,IFMAT
-          call usrmsg(outs,' Please check your selection! ','W')
-          ier=1
-          return
-        endif
-      ELSE
-
-C Air layer encountered so put in zeroes.
-        E=0.99
-        A=0.99
-        DRV=1.0
-        PNAM='AIR'
-        TITL='GAPS'
-      ENDIF
-
-  99  RETURN
- 105  if(IOS.eq.2)then
-        write(outs,'(A,I3,A,i4,a,i3)') ' Materials db reference ',IEL,
-     &    ' read error @ record ',IR,' on file unit ',IFMAT
-      else
-        write(outs,'(A,I3,A,i4,a,i3)') ' Materials db reference ',IEL,
-     &    ' permission error @ record ',IR,' on file unit ',IFMAT
-      endif
-      call edisp(itru,outs)
-      IER=1
-      CALL ERPFREE(IFMAT,ISTAT)
-      goto 99
-
-      END
 
 C *************** EMKAMLD 
 C EMKAMLD: Creates a legacy ascii constructions database based on the
