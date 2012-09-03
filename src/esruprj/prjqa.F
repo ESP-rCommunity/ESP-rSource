@@ -1843,7 +1843,7 @@ C If there is external glazing or skylights then report.
             call rel16str(wallper(IZZ),t16a,lna,ier)
             call rel16str(uavwall(IZZ),t16b,lnb,ier)
             write(outs,'(3a,F5.3,2a)')' Outside walls are ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        uavwall(IZZ)/areawall(IZZ),' & UA of ',t16b(1:lnb)
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
           endif
@@ -1856,7 +1856,7 @@ C If there is external glazing or skylights then report.
             call rel16str(slproofper(IZZ),t16a,lna,ier)
             call rel16str(uavslproof(IZZ),t16b,lnb,ier)
             write(outs,'(3a,F5.3,2a)')' Sloped roof is ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        uavslproof(IZZ)/areaslproof(IZZ),' & UA of ',
      &        t16b(1:lnb)
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
@@ -1870,7 +1870,7 @@ C If there is external glazing or skylights then report.
             call rel16str(flatroofper(IZZ),t16a,lna,ier)
             call rel16str(uavfltroof(IZZ),t16b,lnb,ier)
             write(outs,'(3a,F5.3,2a)')' Flat roof is ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        uavfltroof(IZZ)/areafltroof(IZZ),' & UA of ',
      &        t16b(1:lnb)
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
@@ -1887,7 +1887,7 @@ C If there is external glazing or skylights then report.
             call rel16str(uavgtran(IZZ),t16c,lnc,ier)
             write(outs,'(5a,F5.3,2a)')
      &        ' Glazing is ',t16a(1:lna),' % of floor & ',t16b(1:lnb),
-     &        ' % facade with avg U of ',
+     &        ' % facade with average U of ',
      &        uavgtran(IZZ)/areatran(IZZ),' & UA of ',t16c(1:lnc)
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
           endif
@@ -1900,7 +1900,7 @@ C If there is external glazing or skylights then report.
             call rel16str(skyper(IZZ),t16a,lna,ier)
             call rel16str(uavgsky(IZZ),t16b,lnb,ier)
             write(outs,'(3a,F5.3,2a)')' Skylights are ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        uavgsky(IZZ)/areaskylt(IZZ),' & UA of ',t16b(1:lnb)
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
           endif
@@ -1914,7 +1914,7 @@ C If there is external glazing or skylights then report.
             plen=bridgelen(IZZ,2)+bridgelen(IZZ,10)  ! tb length std and metal facade
             call rel16str(plen,t16b,lnb,ier)
             write(outs,'(3a,F5.3,2a)')' Ground contact is ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        uavground(IZZ)/areaground(IZZ),' & perimeter ',
      &        t16b(1:lnb)
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
@@ -2392,7 +2392,7 @@ C if the zones are fully attributed.
             call rel16str(xwallper,t16a,lna,ier)
             call rel16str(xuavwall,t16b,lnb,ier)
             write(outs,'(3a,F5.3,3a,F5.3)')' Outside walls are ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        xuavwall/xareawall,' & UA of ',t16b(1:lnb),
      &        ' & max MLC thickness ',xvthk
             call edisp(itu,outs)
@@ -2402,7 +2402,7 @@ C if the zones are fully attributed.
             call rel16str(xslproofper,t16a,lna,ier)
             call rel16str(xuavslproof,t16b,lnb,ier)
             write(outs,'(3a,F5.3,2a)')' Sloped roof is ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        xuavslproof/xareaslproof,' & UA of ',t16b(1:lnb)
             call edisp(itu,outs)
           endif
@@ -2411,7 +2411,7 @@ C if the zones are fully attributed.
             call rel16str(xflatroofper,t16a,lna,ier)
             call rel16str(xuavfltroof,t16b,lnb,ier)
             write(outs,'(3a,F5.3,2a)')' Flat roof is ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        xuavfltroof/xareafltroof,' & UA of ',t16b(1:lnb)
             call edisp(itu,outs)
           endif
@@ -2423,7 +2423,7 @@ C if the zones are fully attributed.
             call rel16str(xuavgtran,t16c,lnc,ier)
             write(outs,'(5a,F5.3,2a)')
      &        ' Glazing is ',t16a(1:lna),' % of floor & ',t16b(1:lnb),
-     &        ' % facade with avg U of ',
+     &        ' % facade with average U of ',
      &        xuavgtran/xareatran,' & UA of ',t16c(1:lnc)
             call edisp(itu,outs)
           endif
@@ -2432,7 +2432,7 @@ C if the zones are fully attributed.
             call rel16str(xskyper,t16a,lna,ier)
             call rel16str(xuavgsky,t16b,lnb,ier)
             write(outs,'(3a,F5.3,2a)')' Skylights are ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        xuavgsky/xareaskylt,' & UA of ',t16b(1:lnb)
             call edisp(itu,outs)
           endif
@@ -2442,7 +2442,7 @@ C if the zones are fully attributed.
             call rel16str(xgrper,t16a,lna,ier)
             call rel16str(xperimlength,t16b,lnb,ier)
             write(outs,'(3a,F5.3,3a,F5.3)')' Ground contact is ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        foundUv,' & perimeter ',t16b(1:lnb),
      &        ' & max MLC thickness ',xfndthkg
             call edisp(itu,outs)
