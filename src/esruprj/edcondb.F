@@ -25,8 +25,6 @@ C  EDMLDB: Display/edit a constructions db.
 C  EDWALL: Edit construction common block data.
 C  MKBPRC: Creates a binary materials db based on the
 C          current contents of an ASCII file. 
-C  MKAPRC: Creates an ascii materials db based on the
-C          current contents of binary db.
 C  MLCREFS: returns true/false if mlc referenced within current zone scope.
 
 C ************* ELISTMAT 
@@ -3222,108 +3220,6 @@ C File errors.
     
       END
 
-C ************* MKAPRC 
-C MKAPRC: Creates an ascii materials db based on the
-C current contents of binary materials db.
-      SUBROUTINE MKAPRC(LASCI,IFA,IER)
-#include "esprdbfile.h"
-      integer lnblnk  ! function definition
-      COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
-      integer icln
-      integer ier
-      real val
-      DIMENSION ICLN(30),VAL(6)
-      CHARACTER IDESC*72,NDESC*72
-      character lworking*144,fs*1
-      logical unixok
-
-C Parameters
-      integer IFA  ! file unit
-      character LASCI*144  ! file name
-
-C Set folder separator (fs) to \ or / as required.
-      call isunix(unixok)
-      if(unixok)then
-        fs = char(47)
-      else
-        fs = char(92)
-      endif
-
-C Open the binary materials database (in clase it was closed elsewhere).
-
-C Check the value of whichdbpath variable to see what to do with
-C this file. If local or absolute path then use efopseq. If in
-C the standard location then create lworking which has path
-C prepended.
-      CALL ERPFREE(IFMAT,ISTAT)
-      if(ipathmat.eq.0.or.ipathmat.eq.1)then
-        ier=0
-        call EFOPRAN(IFMAT,LFMAT,40,1,IER)
-      elseif(ipathmat.eq.2)then
-        ier=0
-        lndbp=lnblnk(standarddbpath)
-        write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
-     &    LFMAT(1:lnblnk(LFMAT))
-
-C Debug.
-C        write(6,*) 'working materials ',lworking
-        call EFOPRAN(IFMAT,lworking,40,1,IER)
-      endif
-      if(ier.ne.0)return
-      MATDBOK=.TRUE.
-
-C The ASCII file will be overwritten if it exists.
-      CALL EFOPSEQ(IFA,LASCI,4,IER)
-      
-C Write out a file header.
-      WRITE(IFA,30)LASCI(1:lnblnk(LASCI))
-  30  FORMAT('# materials db defined in ',A)
-
-C Check binary contents.
-      IREC=601
-      READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NCLASS,(ICLN(K),K=1,30)
-      IF(NCLASS.LE.0)THEN
-        CALL USRMSG(' binary materials database empty! ',' ','W')
-        IER=1
-        RETURN
-      ENDIF
-
-C Proceed.
-      WRITE(IFA,'(I5,4X,A)')NCLASS,'#  number of classifications'
-      DO 10 I=1,NCLASS
-        IC=ICLN(I)
-        IREC=IC*20-19
-        READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NE,IDESC
-        WRITE(IFA,'(a)') '# class|no materials|description'
-        WRITE(IFA,'(2a)') 
-     &    '# for each item index|description| conduc. density. ',
-     &    'specific ht, emis. abs. vapour resistivity.'
-        WRITE(IFA,'(I5,I5,3X,A)')IC,NE,IDESC(1:lnblnk(IDESC))
-        IF(NE.GT.0)then
-          DO 20 J=1,NE
-            IREC=IREC+1
-            READ(IFMAT,REC=IREC,IOSTAT=ISTAT,ERR=1001)(VAL(IL),IL=1,6),
-     &        NDESC
-            NCODE=IREC-1
-            WRITE(IFA,'(I5,3X,A)') NCODE,NDESC(1:lnblnk(NDESC))
-            WRITE(IFA,13) (VAL(K),K=1,6)
-   13       FORMAT(F13.3,2(', ',F9.3),2(', ',F6.3),', ',F10.3)
-   20     CONTINUE
-        ENDIF
-   10 CONTINUE
-
-  99  CALL ERPFREE(IFA,ISTAT)
-      RETURN
-
-C File errors.
- 1000 CALL USRMSG(' NE,NDESC read error in ',LFMAT,'W')
-      IER=1
-      goto 99
- 1001 CALL USRMSG(' Layer data write error in ',LFMAT,'W')
-      IER=1
-
-      END
 
 C ******* mlcrefs
 C mlcrefs returns true/false if a construction name is referenced within
