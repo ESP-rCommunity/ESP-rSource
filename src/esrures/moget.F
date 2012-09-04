@@ -518,6 +518,7 @@ C SLIST=.true. which are asked for all active zones (listed in NZNO).
       MRTLIST=.FALSE.
       AGRLIST=.FALSE. ! assume heating & cooling loads separately drawn
       IAC=0; NSEL=0; IZONE=0; ISFN=0  ! initial values
+      ireportunit=0 ! assume normal units for reports
 
 C MNGET is the maximum number of metrics allowed to be chosen from the menu.
       if (MENUTYPE.eq.1) then
@@ -540,6 +541,7 @@ C reset later in the code to 42 columns.
       elseif (MENUTYPE.eq.5) then
         MTITLE='Summary statistics'
         MNGET=1
+        ireportunit=0 ! assume normal units for stats
       elseif (MENUTYPE.eq.6) then
         MTITLE='Sensitivity'
         MNGET=1
@@ -728,10 +730,13 @@ C Make up text for 27th and 28th menu slots.
           ITEM(28)='" Units >> W or Whr'
         elseif(ireportunit.eq.2)then
           ITEM(28)='" Units >> kW or kWhr'
+        else
+          ITEM(28)='" Units >> unknown'
         endif
       else
 
-C Set delimiter, and for tabular lists allow unit choice.
+C Set delimiter, and for tabular lists allow unit choice. Stats is supposed
+C to be normal units ??
         if(delim.eq.'-')then
           ITEM(27)='^ Delim >> normal '
         elseif(delim.eq.'T')then
@@ -750,9 +755,15 @@ C Set delimiter, and for tabular lists allow unit choice.
             ITEM(28)='" Units >> W or Whr'
           elseif(ireportunit.eq.2)then
             ITEM(28)='" Units >> kW or kWhr'
+          else
+            ITEM(28)='" Units >> unknown'
           endif
-        else
-          ITEM(28)='                     '
+        elseif (MENUTYPE.eq.5) then
+          if(ireportunit.eq.0)then
+            ITEM(28)='" Units >> normal '
+          else
+            ITEM(28)='                     '
+          endif
         endif
       endif
 
@@ -5122,6 +5133,9 @@ C Calculate average for period.
       DAVE=DAVE/xNITMS
  
 C If items needs to be converted into KW do this here.
+
+C << ?? do we need to pay attention to ireportunit ?? >>
+
       if(metric.eq.8.or.metric.eq.9.or.metric.eq.10.or.metric.eq.32)then
         DMAX=DMAX/1000.; DMIN=DMIN/1000.; DAVE=DAVE/1000.
         DTOT=DTOT/1000.
