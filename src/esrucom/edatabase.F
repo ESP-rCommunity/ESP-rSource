@@ -59,7 +59,7 @@ C espriou.h provides currentfile.
       logical closemat1,closemat2,close4
       logical unixok
 
-      CHARACTER OUTSTR*124,NAM*72,H*72,outs*124,outs248*248
+      CHARACTER OUTSTR*124,NAM*72,H*72,outs*124
       CHARACTER RSTR*124
       CHARACTER WORD*20,MLCN*12,OTF*4,OPT*12,MLCSYM*12
       character lworking*144,fs*1
@@ -90,99 +90,22 @@ C Set folder separator (fs) to \ or / as required.
 C If materials database not opened it should have been opened
 C prior to this call and matdbok would be false if it
 C had been previously opened and failed.
-
-C << what if logic returned an error state rather than trying
-C << to sort out the materials internal to this subroutine??
-C << also - how about assuming that the materials file is an
-C << ASCII file rather than a binary file first.
-
       IF(.NOT.MATDBOK)THEN
         IER=0
 
-C Check the value of whichdbpath variable to see what to do with
-C this file. If local or absolute path then use efopseq. If in
-C the standard location then create lworking which has path
-C prepended.
-        if(ipathmat.eq.0.or.ipathmat.eq.1)then
-          ier=0
-          call EFOPRAN(IFMAT,LFMAT,40,1,IER)
-          if(ier.ne.0)then
-            write(outs248,'(3a)') ' No materials db ',
-     &        LFMAT(1:lnblnk(LFMAT)),' found!'
-            call edisp248(iuout,outs248,100)
-            MATDBOK=.FALSE.
-            ier=2    ! set error state so calling code will look for ascii version.
-            return
-          endif
-        elseif(ipathmat.eq.2)then
-          lndbp=lnblnk(standarddbpath)
-          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
-     &      LFMAT(1:lnblnk(LFMAT))
-
-C Debug.
-C          write(6,*) 'working materials ',lworking
-          ier=0
-          call EFOPRAN(IFMAT,lworking,40,1,IER)
-          if(ier.ne.0)then
-            write(outs,'(3a)') ' No materials db ',
-     &        lworking(1:lnblnk(lworking)),' found!'
-            call edisp(iuout,outs)
-            MATDBOK=.FALSE.
-            ier=2    ! set error state so calling code will look for ascii version.
-            return
-          endif
-        endif
-        IF(ier.eq.0)THEN
-
-C Also check to see if the file has correct info in 
-          IREC=601
-          READ(IFMAT,REC=IREC,IOSTAT=IOS,ERR=1000)NCLASS
-          if(NCLASS.LE.0)then
-            goto 1000   ! no classifications so try alternatives
-          else
-            MATDBOK=.TRUE.
-            matver = 0.0
-            goto 139  !  a binary file found so carry on.
-          endif
- 1000     if(IOS.eq.2)then
-            call edisp(iuout, 
-     &        'ERMLDB: permission issue reading material classes.')
-            CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-          else
-            CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-          endif
-          call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
-          if(ier.eq.-2)then
-            ier=0
-            call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
-            if(ier.ne.0)then
-              call usrmsg('No readable materials database was found so',
-     &                    'constructions database not reported.','W')
-              MATDBOK=.FALSE.
-              IER=1
-              return
-            else
-              call eclose(matver,1.1,0.001,closemat1)
-              call eclose(matver,1.2,0.001,closemat2)
-              if(closemat1.or.closemat2)then
-                call edisp(iuout,' Filled material data arrays...')
-                MATDBOK=.TRUE.
-              else
-                call usrmsg(
-     &            'No readable material database was found. ',
-     &            'so constructions database not reported.','W')
-                MATDBOK=.FALSE.
-                IER=1
-                return
-              endif
-            endif
-          endif
+C Scan the materials (either binary or ascii) file data into materials
+C commons and if this was sucessful and matver was set to 1.2 then
+C we can carry on using the materials common blocks for subsequent access.
+        call scananymat(ier)
+        if(ier.ne.0)then
+          call usrmsg('No readable materials file was found so',
+     &                'constructions attributes could be at risk.','W')
         endif
       ENDIF
 
 C Find version of materials database, if neither closemat1 or closemat2
 C is true then the material arrays could be problematic.
- 139  call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.1,0.01,closemat1)
       call eclose(matver,1.2,0.01,closemat2)
       if(closemat1.or.closemat2)then
         continue
@@ -1724,9 +1647,9 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
 
-C Scan the binary file data into materials commons and if this was
-C sucessful and matver was set to 1.1 in matformbin then we can
-C carry on using the materials common blocks for subsequent access.
+C Scan the materials (either binary or ascii) file data into materials
+C commons and if this was sucessful and matver was set to 1.2 then
+C we can carry on using the materials common blocks for subsequent access.
       call scananymat(ier)
       call eclose(matver,1.1,0.001,closemat1)
       call eclose(matver,1.2,0.001,closemat2)
