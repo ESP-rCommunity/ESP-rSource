@@ -469,6 +469,11 @@ C Parse the DESC string from the MLC common block returning text for
 C MLCN (its name) ,OTF (whether OPAQ/TRAN/CFC) ,OPT (optical name) ,MLCSYM
 C tag for symmetry. Where values are missing or unknown setup defaults.
 C If isymindex is non-zero it is index of MLC for symmetric MLC.
+
+C << logic below is based on fixed column positions, this should move
+C << to free form so that MLC, optical and mlcsym names can be up to 
+C << 32 char (eventually with spaces).
+
       subroutine parsemlcdesc(DES,MLCN,OTF,OPT,MLCSYM,isymindex)
 #include "building.h"
 #include "esprdbfile.h"
