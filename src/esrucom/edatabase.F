@@ -146,6 +146,22 @@ C the number of layers & construction name.
         RETURN
       ENDIF
 
+C Fill the MLC commons.
+      mlcver = 0     ! constructions version (short names)
+      write(mlcdbdoc,'(a)')
+     &  'These constructions have not yet been documented.'
+      mlccats=1      ! put everything in one category
+      write(mlccatname(1),'(a)') 'general constructions'
+      write(mlccatdoc(1),'(2a)')
+     &  'Category general constructions includes all of the ',
+     &  'MLC constructions in the file.'
+      mlcdbitems=NMLC      ! remember how many items
+      mlccatitems(1)=NMLC  ! put all in one category
+
+C Get and set date stamp for the MLC arrays (since legacy file does not
+C include this information.
+      call dstamp(mlcdbdate)
+
 C Loop to get all of the declaired constructions. Note if there
 C are fewer items then an EOF error state might give a clue. EOF
 C is 2 and set ier=3.
@@ -162,7 +178,7 @@ C Set MLC thickness to zero.
         THKMLC(I) =0.0
 
         K=0
-        CALL EGETWI(OUTSTR,K,LAYERS(I),1,MMLC,'F','layrs',IER)
+        CALL EGETWI(OUTSTR,K,LAYERS(I),1,MMLC,'F','mlc layers',IER)
 
 C Anything after nb of layers is the description (which is overloaded
 C to include information on optical properties and either the name
@@ -174,10 +190,43 @@ C of a MLC with inverted layers or the keywords SYMMETRIC or NONSYMMERTIC).
 C Parse the DESC string into string tokens.
         call parsemlcdesc(DESC(I),MLCN,OTF,OPT,MLCSYM,isymindex)
 
+C Also fill the MLC common blocks.
+        mlcoptical(I)=' '
+        mlcsymetric(I)=' '
+        matsymindex(I)=0   ! not yet known     
+        WRITE(MLCN,'(A)')DESC(I)(1:12)
+        WRITE(mlcname(I),'(A)')DESC(I)(1:12)
+        WRITE(mlcdoc(I),'(2A)')DESC(I)(1:12),' is a ...'
+C        WRITE(OTF,'(A)') DESC(I)(15:18)
+C        IF(OTF(1:2).EQ.'  ')OTF='OPAQ'
+        IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
+          WRITE(mlcoptical(I),'(A)') DESC(I)(21:32)
+          IF(mlcoptical(I)(1:2).EQ.'  ') mlcoptical(I)='UNKNOWN'
+        ELSEIF(OTF(1:4).EQ.'CFC ')THEN
+          mlcoptical(I)='USE GSLedit'
+        ELSE
+          mlcoptical(I)='OPAQUE'
+        ENDIF
+
+C Read tag for name of inverted version or symmetry if the length of the
+C DESC string could hold the tag, otherwise set MLCSYM to a blank.
+        if(lnblnk(DESC(I)).gt.35)then
+          WRITE(mlcsymetric(I),'(A)') DESC(I)(35:46)
+        else
+          mlcsymetric(I)='  '
+          matsymindex(I)=0   ! signal not applicable     
+        endif
+
+C Debug.
+        write(6,*) 'mlc index name doc ',i,mlcname(i),' : ',
+     &    mlcdoc(i)(1:lnblnk(mlcdoc(i))),' : '
+        write(6,*) 'optical sym ',otf,' ',mlcoptical(I),' : ',
+     &    mlcsymetric(I)
+
         IF(LAYERS(I).LE.0)GOTO 10
 
         DO 15, IL=1,LAYERS(I)
-          CALL STRIPC(IFMUL,OUTSTR,99,ND,1,'layer',IER)
+          CALL STRIPC(IFMUL,OUTSTR,99,ND,1,'layer line',IER)
           IF(IER.NE.0)RETURN
           K=0
 
@@ -435,6 +484,17 @@ C many of these instances. If there are
         IF(imerr.NE.0.and.matmiss.gt.5)GOTO 99
   10  CONTINUE
       MLDBOK=.TRUE.
+
+C Look for index for MLCSYM in all the items in the file.
+      do i=1,nmlc
+        isymindex=0  ! assume no matching MLC          
+        do 5 ii=1,nmlc
+          if(mlcsymetric(I)(1:12).eq.DESC(ii)(1:12)) then
+            matsymindex(I)=ii   ! remember MLC index     
+          endif
+  5     continue
+      end do
+      write(6,*) matsymindex
 
 C Close file before exiting.
   88  CALL ERPFREE(IFMUL,ISTAT)
@@ -810,7 +870,11 @@ C based on contents of common MLC.
       
 C Pick up general description of the composite.
       ier=0
-      call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
+      if(mlcver.eq.0)then
+        call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
+      else
+
+      endif
       IF(ITRC.GE.1)THEN
         CALL EDISP(ITRU,' ')
         IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
@@ -1020,7 +1084,11 @@ C Material properties.
       real RTG  ! sum of surface coef at foundation
 
 C Pick up general description of the composite.
-      call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
+      if(mlcver.eq.0)then
+        call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
+      else
+
+      endif
 
 C Reset U value reporting local variables.
       RT=0.
@@ -1745,7 +1813,11 @@ C Establish if material data arrays have been filled. If not return.
       endif
 
 C Pick up general description of the composite.
-      call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
+      if(mlcver.eq.0)then
+        call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
+      else
+
+      endif
       
 C ESP-r defines layers from outside to inside. The code in
 C subroutine admit works from inside to outside.

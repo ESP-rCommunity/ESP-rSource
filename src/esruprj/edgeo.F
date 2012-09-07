@@ -409,7 +409,11 @@ C Use ssmlcindex to get MLC index for this surface.
           if(showother.and.icoth.ne.0.and.ssmlcindex(ioc).ne.0)then
             ii=ssmlcindex(ioc)
             updoth=.false.
-            call parsemlcdesc(DESC(ii),MLCN,OTF,OPT,MLCSYM,isymindex)
+            if(mlcver.eq.0)then
+              call parsemlcdesc(DESC(ii),MLCN,OTF,OPT,MLCSYM,isymindex)
+            else
+C << to be done >>
+            endif
             if(MLCSYM(1:9).EQ.'SYMMETRIC')then
               if(SSMLCN(icoth)(1:12).eq.MLCN(1:12))then
                 TOSMLCN=MLCN
@@ -1078,8 +1082,12 @@ C << this could be a place to use ssmlcindex  >>
               if(showother.and.icoth.ne.0.and.ssmlcindex(ioc).ne.0)then
                 ii=ssmlcindex(ioc)
                 updoth=.false.
-                call parsemlcdesc(DESC(ii),MLCN,OTF,OPT,MLCSYM,
-     &            isymindex)
+                if(mlcver.eq.0)then
+                  call parsemlcdesc(DESC(ii),MLCN,OTF,OPT,MLCSYM,
+     &              isymindex)
+                else
+
+                endif
                 if(MLCSYM(1:9).EQ.'SYMMETRIC')then
                   if(SSMLCN(icoth)(1:12).eq.MLCN(1:12))then
                     TOSMLCN=MLCN
@@ -3489,8 +3497,12 @@ C to get information on the other partition.
             if(showother.and.icoth.ne.0.and.ssmlcindex(ioc).ne.0)then
               ii=ssmlcindex(ioc)
               updoth=.false.
-              call parsemlcdesc(DESC(ii),MLCN,OTF,OPT,MLCSYM,
-     &          isymindex)
+              if(mlcver.eq.0)then
+                call parsemlcdesc(DESC(ii),MLCN,OTF,OPT,MLCSYM,
+     &            isymindex)
+              else
+
+              endif
               if(MLCSYM(1:9).EQ.'SYMMETRIC')then
                 if(SSMLCN(icoth)(1:12).eq.MLCN(1:12))then
                   TOSMLCN=MLCN
@@ -3728,8 +3740,12 @@ C Also check the other side construction and see if it matches. If
 C current surface MLC index is known get isymindex for the other side
             if(ssmlcindex(ic).gt.0) then
               ii=ssmlcindex(ic)
-              call parsemlcdesc(DESC(ii),MLCN,OTF,OPT,MLCSYM,
-     &          isymindex)
+              if(mlcver.eq.0)then
+                call parsemlcdesc(DESC(ii),MLCN,OTF,OPT,MLCSYM,
+     &            isymindex)
+              else
+
+              endif
               if(MLCSYM(1:9).EQ.'SYMMETRIC')then
                 if(SSMLCN(ico)(1:12).eq.MLCN(1:12))then
                   TOSMLCN=MLCN
@@ -3870,8 +3886,12 @@ C Also check the other side construction and see if it matches. If
 C current surface MLC index is known get isymindex for the other side
                 if(ssmlcindex(ic).gt.0) then
                   ii=ssmlcindex(ic)
-                  call parsemlcdesc(DESC(ii),MLCN,OTF,OPT,MLCSYM,
-     &              isymindex)
+                  if(mlcver.eq.0)then
+                    call parsemlcdesc(DESC(ii),MLCN,OTF,OPT,MLCSYM,
+     &                isymindex)
+                  else
+
+                  endif
                   if(MLCSYM(1:9).EQ.'SYMMETRIC')then
                     if(SSMLCN(icoth)(1:12).eq.MLCN(1:12))then
                       TOSMLCN=MLCN
@@ -4168,8 +4188,12 @@ C Also check the other side construction and see if it matches. If
 C current surface MLC index is known get isymindex for the other side
                 if(ssmlcindex(ic).gt.0) then
                   ii=ssmlcindex(ic)
-                  call parsemlcdesc(DESC(ii),MLCN,OTF,OPT,MLCSYM,
-     &              isymindex)
+                  if(mlcver.eq.0)then
+                    call parsemlcdesc(DESC(ii),MLCN,OTF,OPT,MLCSYM,
+     &                isymindex)
+                  else
+
+                  endif
                   if(MLCSYM(1:9).EQ.'SYMMETRIC')then
                     if(SSMLCN(icoth)(1:12).eq.MLCN(1:12))then
                       TOSMLCN=MLCN

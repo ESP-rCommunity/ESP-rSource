@@ -2255,7 +2255,11 @@ C While looping check that constructions of partitions are matching.
           write(SN,'(a12)')SSNAME(icc)
           if(showother.and.icoth.ne.0.and.ssmlcindex(icc).ne.0)then
             ii=ssmlcindex(icc)
-            call parsemlcdesc(DESC(ii),MLCN,OTF,OPT,MLCSYM,isymindex)
+            if(mlcver.eq.0)then
+              call parsemlcdesc(DESC(ii),MLCN,OTF,OPT,MLCSYM,isymindex)
+            else
+
+            endif
             if(MLCSYM(1:9).EQ.'SYMMETRIC')then
               continue
             elseif(MLCSYM(1:12).EQ.'NONSYMMETRIC')then

@@ -109,8 +109,8 @@ C Constructions header common blocks:
       common/mlcheader/mlcver,mlccats,mlcdbitems,mlccatitems(MGCL)
 
 C Constructions categories
-      character mlcdbdate*24 ! date stamp for the database
-      character mlcdbdoc*248 ! documentation for the materials database
+      character mlcdbdate*24 ! date stamp for the constructions file
+      character mlcdbdoc*248 ! documentation for the constructions file
       character mlccatname*32 ! identity/name of category
       character mlccatdoc*248  ! documentation for the category
       common/mlcheadertxt/mlcdbdate,mlcdbdoc,mlccatname(MGCL),
@@ -126,7 +126,8 @@ C Data structures for verbose names and documentation associated with MLC
      &  mlcsymetric(MMLC)
 
       integer mlccatindex  ! is pointer to index of the MLC category
-      common/mlcdatarray/mlccatindex(MMLC)
+      integer matsymindex  ! pointer to index of reversed MLC
+      common/mlcdatarray/mlccatindex(MMLC),matsymindex(MMLC)
 
 C Data structures associated with multi-layer constructions and their
 C references to materials (index within materials database).

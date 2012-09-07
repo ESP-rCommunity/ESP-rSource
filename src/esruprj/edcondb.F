@@ -1283,6 +1283,7 @@ C Set folder separator (fs) to \ or / as required.
       moddb = .false.
       chgdb=.false.
       matarrayindex=0
+      MLCN=' '; OTF=' '; OPT=' '; MLCSYM=' '  ! clear local strings
 
 C If the common block MLC has not yet been filled the read in the
 C construction database.
@@ -1331,7 +1332,10 @@ C current menu line index. Build up text strings for the menu.
         IF(IM.GE.IST.AND.(IM.LE.(IST+MIFULL)))THEN
           M=M+1
           CALL EMKEY(M,KEY,IER)
-          call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM,isymindex)
+          if(mlcver.eq.0)then
+            call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM,isymindex)
+          else
+          endif
           WRITE(MLCITM(M),22)KEY,MLCN(1:12),' ',OPT
   22      FORMAT(A1,1X,A12,a,a)
         ENDIF
@@ -1565,7 +1569,11 @@ C Copy an existing construction to a new one at end of list.
 
 C Clear the symmetric link so SYMMETRIC or NONSYMMETRIC can be re-established.
 C When editing the construction name use a slightly wider string buffer.
-          call parsemlcdesc(DESC(NMLC),MLCN,OTF,OPT,MLCSYM,isymindex)
+          if(mlcver.eq.0)then
+            call parsemlcdesc(DESC(NMLC),MLCN,OTF,OPT,MLCSYM,isymindex)
+          else
+
+          endif
           call ismlcsymmetric(nmlc,layermatch)
           if(layermatch)then
             MLCSYM='SYMMETRIC   '
@@ -1608,7 +1616,11 @@ C there is room in the database copy data to a new item.
           DESC(NMLC)=DESC(IWHICH)
 
 C Extract construction name and check that mlc name has no illegal characters.
-          call parsemlcdesc(DESC(NMLC),T12,OTF,OPT,MLCSYM,isymindex)
+          if(mlcver.eq.0)then
+            call parsemlcdesc(DESC(NMLC),T12,OTF,OPT,MLCSYM,isymindex)
+          else
+
+          endif
           WRITE(T12OTH,'(A)')DESC(IWHICH)(1:12)
 
 C If there is space attach an "_i" to the end of the name to save the
@@ -1636,7 +1648,11 @@ C Update DESC including the name of the original MLC.
    89     FORMAT(A12,2X,A4,2X,A12,2X,A12)
 
 C Update the original to point to the inverted item.
-          call parsemlcdesc(DESC(IWHICH),T12,OTF,OPT,MLCSYM,isymindex)
+          if(mlcver.eq.0)then
+           call parsemlcdesc(DESC(IWHICH),T12,OTF,OPT,MLCSYM,isymindex)
+          else
+
+          endif
           WRITE(DESC(IWHICH),89)T12,OTF,OPT,MLCN
 
 C Copy other data associated with the MLC.
@@ -1713,7 +1729,11 @@ C First check if mlc is transparent
         moddb = .true.
         chgdb=.true.
         THCON=CLAMDA(IWH)
-        call parsemlcdesc(DESC(IWH),MLCN,OTF,OPT,MLCSYM,isymindex)
+        if(mlcver.eq.0)then
+          call parsemlcdesc(DESC(IWH),MLCN,OTF,OPT,MLCSYM,isymindex)
+        else
+
+        endif
         IF(OPT(1:4).EQ.'OPAQ'.OR.OPT(1:4).EQ.'UNKN'.OR.
      &     OPT(1:4).EQ.'CFC ')THEN
           CALL EDISP(IUOUT,' ')
@@ -1959,7 +1979,11 @@ C is true then we can continue (the common blocks are filled).
 
 C Extract construction name, opaque/transp, optical and symmetry properties.
 C Check that mlc name has no illegal characters.
-      call parsemlcdesc(DESC(IFOC),T12,OTF,OPT,MLCSYM,isymindex)
+      if(mlcver.eq.0)then
+        call parsemlcdesc(DESC(IFOC),T12,OTF,OPT,MLCSYM,isymindex)
+      else
+
+      endif
       call st2name(T12,MLCN)
       if(T12.ne.MLCN)then
         write(outs,'(a,a12,a,a12,a)')' WARNING: Corrected mlc ',
@@ -2765,6 +2789,9 @@ C If they do then warn the user.
 C Update current DESC then find matching MLC and copy data associated
 C with the current MLC to the linked MLC. Lastly re-establish tokens
 C for the current item.
+
+C << place to use mlcver >>
+
           WRITE(DESC(IFOC),89)MLCN,OTF,OPT,MLCSYM
           do 795 k=1,NMLC
             if(DESC(k)(1:12).eq.MLCSYM(1:12))then
@@ -2909,6 +2936,9 @@ C Allow linking to inverted construction.
             if(LAYERS(IFOC).eq.LAYERS(iwhich))then
 
 C Update the linked construction to point back to the current item.
+
+C << place to use mlcver >>
+
               call parsemlcdesc(DESC(IWHICH),T12,OTF,OPT,MLCSYM,
      &          isymindex)
               WRITE(T12OTH,'(A)')DESC(IFOC)(1:12)
