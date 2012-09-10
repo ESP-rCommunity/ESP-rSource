@@ -193,23 +193,24 @@ C Parse the DESC string into string tokens.
 C Also fill the MLC common blocks.
         mlcoptical(I)=' '
         mlcsymetric(I)=' '
-        matsymindex(I)=0   ! not yet known     
+        matsymindex(I)=0   ! not yet known 
+        mlccatindex(I)= 1  ! only one class for now  
         WRITE(MLCN,'(A)')DESC(I)(1:12)
         WRITE(mlcname(I),'(A)')DESC(I)(1:12)
         WRITE(mlcdoc(I),'(2A)')DESC(I)(1:12),' is a ...'
-C        WRITE(OTF,'(A)') DESC(I)(15:18)
-C        IF(OTF(1:2).EQ.'  ')OTF='OPAQ'
-        IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
+        WRITE(mlctype(I),'(A)') DESC(I)(15:18)
+        IF(mlctype(I).EQ.'  ') mlctype(I)='OPAQ'
+        IF(mlctype(I)(1:4).NE.'OPAQ'.AND.mlctype(I)(1:4).NE.'CFC ')THEN
           WRITE(mlcoptical(I),'(A)') DESC(I)(21:32)
           IF(mlcoptical(I)(1:2).EQ.'  ') mlcoptical(I)='UNKNOWN'
-        ELSEIF(OTF(1:4).EQ.'CFC ')THEN
+        ELSEIF(mlctype(I)(1:4).EQ.'CFC ')THEN
           mlcoptical(I)='USE GSLedit'
         ELSE
           mlcoptical(I)='OPAQUE'
         ENDIF
 
 C Read tag for name of inverted version or symmetry if the length of the
-C DESC string could hold the tag, otherwise set MLCSYM to a blank.
+C DESC string could hold the tag, otherwise set mlcsymetric to a blank.
         if(lnblnk(DESC(I)).gt.35)then
           WRITE(mlcsymetric(I),'(A)') DESC(I)(35:46)
         else
@@ -219,9 +220,9 @@ C DESC string could hold the tag, otherwise set MLCSYM to a blank.
 
 C Debug.
         write(6,*) 'mlc index name doc ',i,mlcname(i),' : ',
-     &    mlcdoc(i)(1:lnblnk(mlcdoc(i))),' : '
-        write(6,*) 'optical sym ',otf,' ',mlcoptical(I),' : ',
-     &    mlcsymetric(I)
+     &    mlcdoc(i)(1:lnblnk(mlcdoc(i)))
+        write(6,*) 'type optical sym ',mlctype(I),' : ',mlcoptical(I),
+     &    ' : ',mlcsymetric(I)
 
         IF(LAYERS(I).LE.0)GOTO 10
 
@@ -457,20 +458,26 @@ C If all values are still 0.0 then not an actual material.
           IF(IER.NE.0.and.matmiss.gt.5)GOTO 99
   15    CONTINUE
 
-C If the symmetric tag has not yet been set check and see if the MLC
-C is or is not symmetrical and set MLCSYM.
-        if(MLCSYM(1:2).EQ.'  ')then
+C Now that layers have been scanned we can check to see if they
+C are symmetric or not. If the symmetric tag has not yet been 
+C set check and set MLCSYM and mlcsymetric.
+        if(mlcsymetric(I)(1:2).EQ.'  ')then
           call ismlcsymmetric(i,layermatch)
           if(layermatch)then
             MLCSYM='SYMMETRIC   '
+            mlcsymetric(I)='SYMMETRIC   '
           else
             MLCSYM='NONSYMMETRIC'
+            mlcsymetric(I)='NONSYMMETRIC'
           endif
-        elseif(MLCSYM(1:9).EQ.'SYMMETRIC')then
+        elseif(mlcsymetric(I)(1:9).EQ.'SYMMETRIC')then
           continue
-        elseif(MLCSYM(1:12).EQ.'NONSYMMETRIC')then
+        elseif(mlcsymetric(I)(1:12).EQ.'NONSYMMETRIC')then
           continue
         endif
+
+C Update the DESC array with revised values of MLCSYM.
+C << this may not be necessary  >>
         WRITE(DESC(I),89)MLCN,OTF,OPT,MLCSYM
    89   FORMAT(A12,2X,A4,2X,A12,2x,A12)
 

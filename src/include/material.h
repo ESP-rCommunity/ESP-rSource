@@ -118,12 +118,13 @@ C Constructions categories
 
 C Data structures for verbose names and documentation associated with MLC
       character mlcname*32     ! name of MLC
-      character mlcdoc*248     ! documentation 
+      character mlcdoc*248     ! documentation
+      character mlctype*4      ! type (OPAQ | TRAN | CFC)
       character mlcoptical*32  ! associated optical properties name
       character mlcsymetric*32 ! associated name of reversed MLC or key words
                                ! SYMMETRIC or NONSYMMERTIC
-      common/mlcnamearray/mlcname(MMLC),mlcdoc(MMLC),mlcoptical(MMLC),
-     &  mlcsymetric(MMLC)
+      common/mlcnamearray/mlcname(MMLC),mlcdoc(MMLC),mlctype(MMLC),
+     &  mlcoptical(MMLC),mlcsymetric(MMLC)
 
       integer mlccatindex  ! is pointer to index of the MLC category
       integer matsymindex  ! pointer to index of reversed MLC

@@ -263,7 +263,6 @@ C focus and actions arguments).
       issave=2
       isavgh=0
       NSIGFIG=3
-      matver=0  ! assume legacy common constructions
 
 C Initial assumptions about common data files (prior to configuration file scan
 C that the default common data files will be defined explicitly).
