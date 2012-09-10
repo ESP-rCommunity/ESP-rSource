@@ -125,7 +125,7 @@ C  This bps main is here for convience. It
 C  allows the same version of this file to
 C  be used to compile the following forms
 C  of bps: a UNIX executable, a Windows
-C  EXE and a Windows DLL and bpsh3k.
+C  EXE and a Windows DLL.
 C
 C==========================================
       common/dllflg/dll
@@ -306,6 +306,11 @@ C      integer iTimeoutFlag
 C Name of current application
       common/APPNAME/cAppName
 
+C Flag for enabling h3k customizations 
+
+      common/H3KCustom/bEnableH3kExtensions
+      logical bEnableH3kExtensions      
+      
       character cAppName*12
       integer iverb     ! verbosity passed on command line
 
@@ -358,10 +363,6 @@ C For help messages
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
 
-C (possibly) Enable floating point exception error handling on
-C gnu 3.X compilers
-      call trapfpe()
-
 C Active domain.  Assume not active, check if running in dll mode
 C and clear dll subroutine name and error details.
       CFDOK=.false.
@@ -386,6 +387,10 @@ C mark in log file, start of simulation
         ACTCNN(I)=.TRUE.
  1    continue
 
+ 
+C Disable h3k customizations by default 
+      bEnableH3kExtensions = .false. 
+ 
 C Assume that the configuration, mlc db, primitive db, control file
 C have not been read in.
       CFGOK=.FALSE.
