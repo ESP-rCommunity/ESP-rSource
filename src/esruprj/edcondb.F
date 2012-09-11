@@ -1211,7 +1211,7 @@ C Gap resistance for wall orientations.
       END
 
 C ************* EDMLDB 
-C EDMLDB Display a constructions database.
+C EDMLDB Display data with a common constructions (MLC) file.
 C ITRU unit number  for user output, IER=0 OK, IER=1 problem.
 C Information is available via common block MLC. 
 C Overload DESC to include information on whether the construction is
@@ -1250,9 +1250,9 @@ C If this parameter is changed also change it in subroutine GVALUE
       logical moddb,chgdb,layermatch,closemat1,closemat2
       logical unixok
 
-      CHARACTER KEY*1,T12*12,T12OTH*12,T14*14,MLCSYM*12
-      CHARACTER MLCN*12,OTF*4,OPT*12,PROMP2*56,PROMP1*56,T72*72
-      CHARACTER*29 MLCITM(36)
+      CHARACTER KEY*1,T12*12,T12OTH*12,T14*14,T34*34,T34OTH*34,T72*72
+      CHARACTER PROMP2*56,PROMP1*56
+      CHARACTER*33 MLCITM(36)
       CHARACTER xfile*144,tg*1,delim*1,outs*124
       character LAYD*124
       character lworking*144,fs*1
@@ -1283,7 +1283,6 @@ C Set folder separator (fs) to \ or / as required.
       moddb = .false.
       chgdb=.false.
       matarrayindex=0
-      MLCN=' '; OTF=' '; OPT=' '; MLCSYM=' '  ! clear local strings
 
 C If the common block MLC has not yet been filled the read in the
 C construction database.
@@ -1333,11 +1332,12 @@ C current menu line index. Build up text strings for the menu.
           M=M+1
           CALL EMKEY(M,KEY,IER)
           if(mlcver.eq.0)then
-            call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM,isymindex)
+            WRITE(MLCITM(M),'(a,1x,3a)')KEY,mlcname(im)(1:12),' ',
+     &        mlcoptical(im)(1:12)
           else
+            WRITE(MLCITM(M),'(a,1x,3a)')KEY,mlcname(im)(1:15),' ',
+     &        mlcoptical(im)(1:15)
           endif
-          WRITE(MLCITM(M),22)KEY,MLCN(1:12),' ',OPT
-  22      FORMAT(A1,1X,A12,a,a)
         ENDIF
   20  CONTINUE
 
@@ -1368,14 +1368,14 @@ C Help text for this menu.
       helptopic='constr_db_overview'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
-      CALL EMENU('Constuctions database',MLCITM,NITMS,INO)
+      CALL EMENU('Constuctions file',MLCITM,NITMS,INO)
 
       IF(INO.EQ.NITMS)THEN
 
 C Check for changes/ask user to save. << TODO >>
         if(moddb)then
           dok=.true.
-          CALL ASKOK(' ','Save recent changes to constructions db?',
+          CALL ASKOK(' ','Save recent changes to constructions?',
      &      OK,dok,nbhelp)
           if(OK)then
             CALL EMKAMLD(iuout,IER)
@@ -1466,12 +1466,28 @@ C Add a construction. Update this to account for OPAQ/TRAN/CFC.
           chgdb=.true.
           NMLC=NMLC+1
 
-C Ask for name of the new construction
-          T14='  '
-          CALL EASKS(T14,' ',' Name of construction? ',
-     &      14,' ','Construction name',IER,mbhelp)
-          write(T12,'(a)') T14(1:12)
-          call st2name(T12,DESC(NMLC))
+C Ask for name of the new construction.
+          mlcname(NMLC)='  '  ! initial attributes
+          mlctype(NMLC)='OPAQ'
+          mlcoptical(NMLC)='OPAQUE'
+          mlcsymetric(NMLC)='SYMMETRIC   '
+          matsymindex(NMLC)=0
+          mlccatindex(NMLC)=1  ! assume 1st class NEEDS THOUGHT
+          if(mlcver.eq.0)then
+            T14='  '
+            CALL EASKS(T14,'Name of construction (unique)','Confirm:',
+     &        14,' ','Construction name',IER,mbhelp)
+            write(T12,'(a)') T14(1:12)
+            call st2name(T12,mlcname(NMLC))
+            write(DESC(NMLC),'(7a)') mlcname(NMLC)(1:12),'  ',
+     &        mlctype(NMLC)(1:4),'  ',mlcoptical(NMLC)(1:12),'  ',
+     &        mlcsymetric(NMLC)(1:12)
+            write(6,'(2a)') 'n ',DESC(NMLC)
+          else
+
+C << for mlcver 1 to be done >>
+
+          endif
 
           LAYERS(NMLC)=1
           IPR(NMLC,1)=1  ! find alternative to IPR 
@@ -1499,6 +1515,12 @@ C Compact the list by moving all the items in common MLC up one.
           moddb = .true.
           chgdb=.true.
           DO 891 IVV=IWHICH,NMLC-1
+            mlcname(IVV)=mlcname(IVV+1)  ! shift existing attributes
+            mlctype(IVV)=mlctype(IVV+1)
+            mlcoptical(IVV)=mlcoptical(IVV+1)
+            mlcsymetric(IVV)=mlcsymetric(IVV+1)
+            matsymindex(IVV)=matsymindex(IVV+1)
+            mlccatindex(IVV)=mlccatindex(IVV+1)  ! assume same class 
             DESC(IVV)=DESC(IVV+1)
             LAYERS(IVV)=LAYERS(IVV+1)
             DO 892 ILL=1,LAYERS(IVV)
@@ -1543,6 +1565,8 @@ C Find the index of the MLC which matches each surface.
         ELSEIF(IW.EQ.3)THEN
 
 C Copy an existing construction to a new one at end of list.
+
+C << for mlcver=1 there is no need for ipr >>
           if(NMLC.ge.MMLC)then
             CALL USRMSG('Copy not allowed as the new item',
      &        'would exceed database space! Skipping request...','W')
@@ -1555,9 +1579,14 @@ C Copy an existing construction to a new one at end of list.
           moddb = .true.
           chgdb=.true.
           NMLC=NMLC+1
-          DESC(NMLC)=DESC(IWHICH)
+          mlcname(NMLC)=mlcname(IWHICH)  ! copy existing attributes
+          mlctype(NMLC)=mlctype(IWHICH)
+          mlcoptical(NMLC)=mlcoptical(IWHICH)
+          matsymindex(NMLC)=0            ! reset to assume no reversed
+          mlccatindex(NMLC)=mlccatindex(IWHICH)  ! assume same class 
+          DESC(NMLC)=DESC(IWHICH)        ! copy the aggregate line
           LAYERS(NMLC)=LAYERS(IWHICH)
-          DO 792 ILL=1,LAYERS(NMLC)
+          DO 792 ILL=1,LAYERS(NMLC)      ! copy layer attributes
             DTHK(NMLC,ILL)=DTHK(IWHICH,ILL)
             IPR(NMLC,ILL)=IPR(IWHICH,ILL)
             IPRMAT(NMLC,ILL)=IPRMAT(IWHICH,ILL)
@@ -1567,25 +1596,32 @@ C Copy an existing construction to a new one at end of list.
             LAYDESC(NMLC,ILL)=LAYDESC(IWHICH,ILL)
   792     CONTINUE
 
-C Clear the symmetric link so SYMMETRIC or NONSYMMETRIC can be re-established.
+C Re-check the symmetric link so SYMMETRIC or NONSYMMETRIC can be re-established.
 C When editing the construction name use a slightly wider string buffer.
-          if(mlcver.eq.0)then
-            call parsemlcdesc(DESC(NMLC),MLCN,OTF,OPT,MLCSYM,isymindex)
-          else
-
-          endif
           call ismlcsymmetric(nmlc,layermatch)
           if(layermatch)then
-            MLCSYM='SYMMETRIC   '
+            mlcsymetric(NMLC)='SYMMETRIC   '
           else
-            MLCSYM='NONSYMMETRIC'
+            mlcsymetric(NMLC)='NONSYMMETRIC'
           endif
-          write(T14,'(2a)') MLCN(1:12),'  '
-          CALL EASKS(T14,' ',' Name of new construction (<12 char)?',
-     &      14,' ','New construction name',IER,nbhelp)
-          write(T12,'(a)') T14(1:12)
-          call st2name(T12,MLCN)
-          WRITE(DESC(NMLC),89)MLCN,OTF,OPT,MLCSYM
+          if(mlcver.eq.0)then
+            write(T14,'(2a)') mlcname(NMLC)(1:12),'  '
+            CALL EASKS(T14,
+     &        'Name of new construction (<12 char and UNIQUE)',
+     &        'Confirm:',14,' ','New construction name',IER,nbhelp)
+            write(T12,'(a)') T14(1:12)
+            call st2name(T12,mlcname(NMLC))
+            write(DESC(NMLC),'(7a)') mlcname(NMLC)(1:12),'  ',
+     &        mlctype(NMLC)(1:4),'  ',mlcoptical(NMLC)(1:12),'  ',
+     &        mlcsymetric(NMLC)(1:12)
+            write(6,'(2a)') 'e ',DESC(NMLC)
+          else
+            write(T34,'(2a)') mlcname(NMLC),'  '
+            CALL EASKS(T34,
+     &        'Name of new construction (<32 char and UNIQUE)?',
+     &        'Confirm:',34,' ','New construction name',IER,nbhelp)
+            write(mlcname(NMLC),'(a)') T34(1:12)
+          endif
 
 C Bring up editing menu for new item.
           CALL EPMENSV
@@ -1613,47 +1649,55 @@ C there is room in the database copy data to a new item.
           moddb = .true.
           chgdb=.true.
           NMLC=NMLC+1
+          mlcname(NMLC)=mlcname(IWHICH)  ! copy existing attributes
+          mlctype(NMLC)=mlctype(IWHICH)
+          mlcoptical(NMLC)=mlcoptical(IWHICH)
+          mlccatindex(NMLC)=mlccatindex(IWHICH)  ! assume same class 
           DESC(NMLC)=DESC(IWHICH)
 
-C Extract construction name and check that mlc name has no illegal characters.
-          if(mlcver.eq.0)then
-            call parsemlcdesc(DESC(NMLC),T12,OTF,OPT,MLCSYM,isymindex)
-          else
-
-          endif
-          WRITE(T12OTH,'(A)')DESC(IWHICH)(1:12)
+C Remember original construction name as T12OTH scratch for editing as T12
+C and T34OTH and T34 for matver 1.
+          WRITE(T12OTH,'(A)')mlcname(NMLC)(1:12)
+          WRITE(T12,'(A)')mlcname(NMLC)(1:12)
+          WRITE(T34OTH,'(A)')mlcname(NMLC)
+          WRITE(T34,'(A)')mlcname(NMLC)
 
 C If there is space attach an "_i" to the end of the name to save the
 C user this task. Get user to confirm the name and then use st2name to
 C remove any wild card charaters.
-          if(lnblnk(T12).le.8)then
-            WRITE(T14,'(2A)') T12OTH(1:lnblnk(T12OTH)),'_inv  '
-          elseif(lnblnk(T12).gt.9.and.lnblnk(T12).le.10)then
-            WRITE(T14,'(2A)') T12OTH(1:lnblnk(T12OTH)),'_i  '
-          endif
-          write(outs,'(3a)') '(original name ',
-     &      T12OTH(1:lnblnk(T12OTH)),')'
-          CALL EASKS(T14,'Name of inverted construction (<12 char)?',
-     &      outs,14,' ','Inverted construction name',IER,nbhelp)
-          write(T12,'(a)') T14(1:12)
-          call st2name(T12,MLCN)
-          if(T12.ne.MLCN)then
-            write(outs,'(a,a12,a,a12,a)')' WARNING: Corrected name ',
-     &        T12,' to ',MLCN,' in the database entry.'
-            call usrmsg(outs,DESC(NMLC),'W')
-          endif
+          if(mlcver.eq.0)then
+            if(lnblnk(T12).le.8)then
+              WRITE(T14,'(2A)') T12OTH(1:lnblnk(T12OTH)),'_inv  '
+            elseif(lnblnk(T12).gt.9.and.lnblnk(T12).le.10)then
+              WRITE(T14,'(2A)') T12OTH(1:lnblnk(T12OTH)),'_i  '
+            endif
+            write(outs,'(3a)') '(original name ',
+     &        T12OTH(1:lnblnk(T12OTH)),')'
+            CALL EASKS(T14,'Name of inverted construction (<12 char)?',
+     &        outs,14,' ','Inverted construction name',IER,nbhelp)
+            write(T12,'(a)') T14(1:12)
+            call st2name(T12,mlcname(NMLC))
 
 C Update DESC including the name of the original MLC.
-          WRITE(DESC(NMLC),89)MLCN,OTF,OPT,T12OTH
-   89     FORMAT(A12,2X,A4,2X,A12,2X,A12)
-
-C Update the original to point to the inverted item.
-          if(mlcver.eq.0)then
-           call parsemlcdesc(DESC(IWHICH),T12,OTF,OPT,MLCSYM,isymindex)
+            write(mlcsymetric(NMLC),'(a)') T12OTH  ! point back to orig
+            matsymindex(NMLC)=IWHICH
+            write(DESC(NMLC),'(7a)') mlcname(NMLC)(1:12),'  ',
+     &        mlctype(NMLC)(1:4),'  ',mlcoptical(NMLC)(1:12),'  ',
+     &        mlcsymetric(NMLC)(1:12)
+            write(6,'(2a)') 'f ',DESC(NMLC)
           else
 
+C << for mlcver 1 still to be done >>
+
           endif
-          WRITE(DESC(IWHICH),89)T12,OTF,OPT,MLCN
+
+C Update the original to point to the inverted item.
+          write(mlcsymetric(IWHICH),'(a)') mlcname(NMLC)  ! point to inverted
+          matsymindex(IWHICH)=NMLC
+          write(DESC(IWHICH),'(7a)') mlcname(IWHICH)(1:12),'  ',
+     &        mlctype(IWHICH)(1:4),'  ',mlcoptical(IWHICH)(1:12),'  ',
+     &        mlcsymetric(IWHICH)(1:12)
+          write(6,'(2a)') 'o ',DESC(NMLC)
 
 C Copy other data associated with the MLC.
           LAYERS(NMLC)=LAYERS(IWHICH)
@@ -1729,13 +1773,9 @@ C First check if mlc is transparent
         moddb = .true.
         chgdb=.true.
         THCON=CLAMDA(IWH)
-        if(mlcver.eq.0)then
-          call parsemlcdesc(DESC(IWH),MLCN,OTF,OPT,MLCSYM,isymindex)
-        else
-
-        endif
-        IF(OPT(1:4).EQ.'OPAQ'.OR.OPT(1:4).EQ.'UNKN'.OR.
-     &     OPT(1:4).EQ.'CFC ')THEN
+        IF(mlctype(IWH)(1:4).EQ.'OPAQ'.OR.
+     &     mlctype(IWH)(1:4).EQ.'UNKN'.OR.
+     &     mlctype(IWH)(1:4).EQ.'CFC ')THEN
           CALL EDISP(IUOUT,' ')
           CALL EDISP(IUOUT,
      &    ' G-value only defined for transparent constructions')
@@ -1749,22 +1789,7 @@ C << to supply much of the information needed for the g-value calculation.
           IPN=0
           DO 501 ILAY=1,LAYERS(IWH)
             matarrayindex=IPRMAT(IWH,ILAY)   ! which legacy index
- 
-C And if a gap reset NAM.
-C            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-C     &         matopaq(matarrayindex)(1:1).eq.'h'.or.
-C     &         matarrayindex.eq.0)then
-C              NAM='gap'
-C            elseif(matarrayindex.eq.-99)then
-C              call usrmsg('Cannot generate G-value because a layer',
-C     &          'was marked with a suspect material.','W')
-C              GOTO 3  ! jump back
-C            else
-C              write(NAM,'(a)') matname(matarrayindex)(1:32)
-C            endif
-            IF(IER.EQ.1)RETURN
-
-            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+             if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &         matopaq(matarrayindex)(1:1).eq.'h'.or.
      &         matarrayindex.eq.0)then
               continue
