@@ -851,7 +851,7 @@ C If we got here there was no match. The value of matarrayindex remains at zero.
 
 C *************** ETMLDB
 C ETMLDB provides reporting on current description of a construction
-C based on contents of common MLC.
+C based on contents of material.h. Should work for mlcver 0 and 1.
       SUBROUTINE ETMLDB(ITRC,ITRU,IFOC,ier)
 #include "building.h"
 #include "esprdbfile.h"
@@ -870,39 +870,43 @@ C based on contents of common MLC.
 
       DIMENSION PNAM(ME)
       CHARACTER OUTSTR*148,PNAM*124
-      CHARACTER MLCN*12,OTF*4,OPT*12,SOPT*12,GDESCR*36
-      character MLCSYM*12
+      CHARACTER SOPT*12,GDESCR*36
+      integer lnmlcn,lnmlco,lnother
 
       real RSI  ! used in reporting of R value in SI units
       
 C Pick up general description of the composite.
+      lnmlcn=lnblnk(mlcname(ifoc))
+      lnmlco=lnblnk(mlcoptical(ifoc))
+      isymindex=matsymindex(ifoc)
       ier=0
-      if(mlcver.eq.0)then
-        call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
-      else
-
-      endif
       IF(ITRC.GE.1)THEN
         CALL EDISP(ITRU,' ')
-        IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
+        IF(mlctype(IFOC)(1:4).NE.'OPAQ'.AND.
+     &     mlctype(IFOC)(1:4).NE.'CFC ')THEN
           WRITE(OUTSTR,'(5a,f6.3)')
      &      ' Details of transparent construction: ',
-     &      MLCN(1:lnblnk(MLCN)),' with ',OPT(1:lnblnk(OPT)),
+     &      mlcname(ifoc)(1:lnmlcn),' with ',
+     &      mlcoptical(ifoc)(1:lnmlco),
      &      ' optics and overall thickness ',THKMLC(ifoc)
           CALL EDISP(ITRU,OUTSTR)
-        ELSEIF(OTF(1:4).EQ.'CFC ')THEN
+        ELSEIF(mlctype(IFOC)(1:4).EQ.'CFC ')THEN
           WRITE(OUTSTR,'(3a)')' ',
-     &      'Details of complex fenestration construction: ',MLCN
+     &      'Details of complex fenestration construction: ',
+     &      mlcname(ifoc)(1:lnmlcn)
           CALL EDISP(ITRU,OUTSTR)
         ELSE
           if(isymindex.eq.0)then
             WRITE(OUTSTR,'(3a,f6.3)')
-     &      ' Details of opaque construction: ',MLCN(1:lnblnk(MLCN)),
+     &      ' Details of opaque construction: ',
+     &      mlcname(ifoc)(1:lnmlcn),
      &      ' and overall thickness ',THKMLC(ifoc)
           else
+            lnother=lnblnk(mlcname(isymindex))
             WRITE(OUTSTR,'(5a,f6.3)')
-     &      ' Details of opaque construction: ',MLCN(1:lnblnk(MLCN)),
-     &      ' linked to ',DESC(isymindex)(1:12),
+     &      ' Details of opaque construction: ',
+     &      mlcname(ifoc)(1:lnmlcn),
+     &      ' linked to ',mlcname(isymindex)(1:lnother),
      &      ' & with overall thickness ',THKMLC(ifoc)
           endif
           CALL EDISP(ITRU,OUTSTR)
@@ -1047,9 +1051,11 @@ C << NOTE this code needs further debugging.
 C Also list optical properties for this construction (if it is
 C transparent and the optical property is something other than
 C QPAQ.
-      if(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')then
-        if(OPT(1:4).ne.'OPAQ'.and.OPT(1:4).ne.'UNKN')then
-          SOPT=OPT
+      if(mlctype(IFOC)(1:4).NE.'OPAQ'.AND.
+     &   mlctype(IFOC)(1:4).NE.'CFC ')then
+        if(mlcoptical(ifoc)(1:4).ne.'OPAQ'.and.
+     &     mlcoptical(ifoc)(1:4).ne.'UNKN')then
+          write(SOPT,'(a)') mlcoptical(ifoc)(1:12)
           IF(ITRC.NE.0)CALL EROPTDB(1,itru,SOPT,GDESCR,IER)
         endif
       endif
@@ -1058,7 +1064,7 @@ C QPAQ.
 
 C *************** ETMLDBU
 C ETMLDBU return ISO 6946 U values (UVH/UVU/UVD/UVI) of current construction based
-C on contents of common MLC. Logic is a variant of ETMLDB.
+C on contents of material.h. Logic is a variant of ETMLDB. Should work for mlcver 0 and 1.
       SUBROUTINE ETMLDBU(ITRC,ITRU,IFOC,UVH,UVU,UVD,UVI,UVG)
 #include "building.h"
 #include "esprdbfile.h"
@@ -1081,21 +1087,17 @@ C Material properties.
       logical bCloseToZero
 
       CHARACTER OUTSTR*124
-      CHARACTER MLCN*12,OTF*4,OPT*12
-      character MLCSYM*12
 
       real RTH  ! sum of surface coef for horiz flow at wall
       real RTU  ! sum of surface coef for upward flow at ceiling
       real RTD  ! sum of surface coef for downward flow at floor
       real RTI  ! sum of surface coef for horiz flow at partition
       real RTG  ! sum of surface coef at foundation
+      integer lnmlcn,lnmlco
 
-C Pick up general description of the composite.
-      if(mlcver.eq.0)then
-        call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
-      else
-
-      endif
+C Pick up lengths of strings in general description of the construction.
+      lnmlcn=lnblnk(mlcname(ifoc))
+      lnmlco=lnblnk(mlcoptical(ifoc))
 
 C Reset U value reporting local variables.
       RT=0.
@@ -1155,14 +1157,16 @@ C of a foundation only the inside surface resistance is used.
      &  UVH,UVU,UVD,UVI
       IF(ITRC.NE.0)then
         CALL EDISP(ITRU,' ')
-        IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
+        if(mlctype(IFOC)(1:4).NE.'OPAQ'.AND.
+     &     mlctype(IFOC)(1:4).NE.'CFC ')then
           WRITE(OUTSTR,'(5a,F6.3,a,F6.3,a,f6.3,a,f6.3,a,f6.3)')
-     &    ' ISO 6946 U values of ',MLCN(1:lnblnk(MLCN)),' with ',OPT,
+     &    ' ISO 6946 U values of ',mlcname(ifoc)(1:lnmlcn),
+     &    ' with ',mlcoptical(ifoc)(1:lnmlco),
      &    ' optics are (horiz flow)',UVH,' (upwards flow)',UVU,
      &    ' (downwards flow)',UVD,' (partition) ',UVI,' (fndtn) ',UVG
         ELSE
           WRITE(OUTSTR,'(3a,F6.3,a,f6.2,a,f6.2,a,f6.3,a,f6.3)')
-     &    ' ISO 6946 U values of ',MLCN(1:lnblnk(MLCN)),
+     &    ' ISO 6946 U values of ',mlcname(ifoc)(1:lnmlcn),
      &    ' are (horiz flow)',UVH,' (upwards flow)',UVU,
      &    ' (downwards flow)',UVD,' partition ',UVI,' (fndtn) ',UVG
         ENDIF
