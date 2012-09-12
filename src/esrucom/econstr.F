@@ -539,7 +539,8 @@ C Jump if not all requied and not the focus surface.
         if(isur.ne.0.and.isur.ne.i)goto 9994
         sn=SSNAME(icn1)
 
-C << possible place to use ssmlcindex >>
+C << possible place to use ssmlcindex and material.h commons >>
+
         imatch(i)=0
         RT(I)=0.
         do 5 ii=1,nmlc
@@ -563,6 +564,9 @@ C Get the air gap contribution to U value for reporting.
  9990       CONTINUE
           ENDIF
         else
+
+C << code to be updated to use material.h commons >>
+
           IF(SSOTF(icn1)(1:4).NE.'OPAQ'.AND.
      &      SSOTF(icn1)(1:4).NE.'CFC ')THEN
            WRITE(OPT(i),'(A)') DESC(imatch(i))(21:32)

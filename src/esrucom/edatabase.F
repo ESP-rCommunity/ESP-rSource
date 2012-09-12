@@ -603,6 +603,9 @@ C Local variable.
       integer ii
 
 C Look for index for MLCN in the current MLC database.
+
+C << update to use mlcname() >>
+
       imlcindex=0  ! assume no matching MLC          
       WRITE(MLCN,'(A)')DES(1:12)
       if(MLCN(1:4).eq.'UNKN') return
@@ -1225,6 +1228,9 @@ C in the materials database.
       H(12)='to the same construction, especially when these controls '
       H(13)='are attempting to assign different datasets. The first '          
       H(14)='loop will be used if this mistake is made by the users. '
+
+C << update code to use material.h commons rather than desc >>
+
       DO 66 IWW=1,NMLC
         WRITE(COMPS(IWW),'(A33)')DESC(IWW)(1:33)
    66 CONTINUE
@@ -1353,6 +1359,8 @@ C Make up NAM as combination of matnam and matdoc.
             write(PNAM(IL),'(a)') NAM(1:lnblnk(NAM))
           ENDIF
   116   CONTINUE
+
+C << revise code to use material commons rather than DESC >>
 
         WRITE(IFMUL,32)LAYERS(I),DESC(I)(1:48)
    32   FORMAT(
@@ -1825,6 +1833,9 @@ C Establish if material data arrays have been filled. If not return.
       endif
 
 C Pick up general description of the composite.
+
+C << update the code to use material.h commons rather than DESC >>
+
       if(mlcver.eq.0)then
         call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
       else

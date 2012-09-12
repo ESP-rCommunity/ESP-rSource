@@ -3843,7 +3843,7 @@ C Special materials file flag
 
 C Check name of surface with construction name in MLC common.
 
-C << a place to use ssmlcindex >>
+C << a place to use ssmlcindex and use mlcname rather than DESC >>
 
       imatch=0
       icc=IZSTOCN(icomp,is)

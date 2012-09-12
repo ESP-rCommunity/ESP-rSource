@@ -141,7 +141,7 @@ C Error subroutine and error details for dll mode.
       CHARACTER tmpvfc*4,tmpsot*32,tother*15
       character ZN*12,phrase*64,outs*124,outs2*124
       character dllsubr*12,dllmesg*124
-      character OTF*4,OPT*12 ! for use with parsemlcdesc
+      character OTF*4,OPT*12 ! for use with surface attributes
       logical dll,checkbase
       logical havec24
       real XO1,YO1,ZO1,DX1,DY1,DZ1 ! to prevent name clash with geometry.h
@@ -707,6 +707,8 @@ C     &        ssthick(icn)
 C            call edisp(iuout,outs)
           endif
         endif
+
+C << this block of code to be updated to use material.h commons >>
 
 C Now that we know the construction try and work out the optics.
         TMPSOT_Value: if(tmpsot(1:4).eq.'OPAQ')then
@@ -1795,6 +1797,9 @@ C Surface construction name, allow for spaces.
 
 C Check if there is a matching MLC name find out which one it is.
 C Because many names may start similarly, check against actual widths.
+
+C << update this code to use material.h common blocks >>
+
             ICF=-1
             if(NMLC.gt.0)then                
               lstrs=lnblnk(SMLCN(NS))  ! surface attribute length
@@ -1837,8 +1842,10 @@ C If the construction database has been scanned then attempt to discover
 C the name of the optical property. Otherwise leave SOFT as TRAN
               if(NMLC.gt.0)then
 
-C Use logic similar to parsemlcdesc to find the optical name within
-C the constructions database.
+C Find the optical name within the common constructions file.
+
+C << this code to be updated to use material.h commons >>
+
                 if(ICF.gt.0)then
                   OPT=' '
                   WRITE(OTF,'(A)') DESC(ICF)(15:18)
