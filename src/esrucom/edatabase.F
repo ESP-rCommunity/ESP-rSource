@@ -1355,7 +1355,8 @@ C Make up NAM as combination of matnam and matdoc.
   116   CONTINUE
 
         WRITE(IFMUL,32)LAYERS(I),DESC(I)(1:48)
-   32   FORMAT('# layers  description   optics name   symmetry tag',/,
+   32   FORMAT(
+     &    '# layers  description  type  optics name   symmetry tag',/,
      &    I5,4X,A48,/,
      &    '# material ref thickness (m) description & air gap R')
 
