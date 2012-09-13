@@ -1262,6 +1262,7 @@ C If this parameter is changed also change it in subroutine GVALUE
       integer IW   ! for radio button
       integer NITMS,INO ! max items and current menu item
       integer icn1,ii  ! for current connection
+      integer lnssmlc,lnt32 ! for string lengths
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -1483,7 +1484,7 @@ C Ask for name of the new construction.
      &        mlctype(NMLC)(1:4),'  ',mlcoptical(NMLC)(1:12),'  ',
      &        mlcsymetric(NMLC)(1:12)
 C Debug.
-            write(6,'(2a)') 'n ',DESC(NMLC)
+C            write(6,'(2a)') 'n ',DESC(NMLC)
           else
 
 C << for mlcver 1 to be done >>
@@ -1554,8 +1555,11 @@ C Find the index of the MLC which matches each surface.
               DO 9994 I=1,NZSUR(icomp)
                 icn1=izstocn(icomp,i)
                 ssmlcindex(icn1)=0  ! assume no matching MLC          
+                lnssmlc=lnblnk(SSMLCN(icn1))
                 do 5 ii=1,nmlc
-                  if(SSMLCN(icn1)(1:12).eq.DESC(ii)(1:12)) then
+                  lnt32=lnblnk(mlcname(ii))
+                  if(SSMLCN(icn1)(1:lnssmlc).eq.
+     &               mlcname(ii)(1:lnt32))then
                     ssmlcindex(icn1)=ii   ! remember MLC index     
                   endif
   5             continue
@@ -1616,7 +1620,7 @@ C When editing the construction name use a slightly wider string buffer.
      &        mlctype(NMLC)(1:4),'  ',mlcoptical(NMLC)(1:12),'  ',
      &        mlcsymetric(NMLC)(1:12)
 C Debug.
-            write(6,'(2a)') 'e ',DESC(NMLC)
+C            write(6,'(2a)') 'e ',DESC(NMLC)
           else
             write(T34,'(2a)') mlcname(NMLC),'  '
             CALL EASKS(T34,
@@ -1687,7 +1691,7 @@ C Update DESC including the name of the original MLC.
      &        mlctype(NMLC)(1:4),'  ',mlcoptical(NMLC)(1:12),'  ',
      &        mlcsymetric(NMLC)(1:12)
 C Debug.
-            write(6,'(2a)') 'f ',DESC(NMLC)
+C            write(6,'(2a)') 'f ',DESC(NMLC)
           else
 
 C << for mlcver 1 still to be done >>
@@ -1701,7 +1705,7 @@ C Update the original to point to the inverted item.
      &        mlctype(IWHICH)(1:4),'  ',mlcoptical(IWHICH)(1:12),'  ',
      &        mlcsymetric(IWHICH)(1:12)
 C Debug.
-          write(6,'(2a)') 'o ',DESC(NMLC)
+C          write(6,'(2a)') 'o ',DESC(NMLC)
 
 C Copy other data associated with the MLC.
           LAYERS(NMLC)=LAYERS(IWHICH)
@@ -1961,7 +1965,7 @@ C Note: size of MLED supports a dozen layers in a construction.
       character ZN*12,SN*12,t32*32
       integer NLED,ILED  ! max items and current menu item
       integer icontinue  ! to control while loop
-      integer lnmlcn,lnmlct,lnt32,lnssmlc
+      integer lnmlcn,lnmlct,lnt32,lnssmlc  ! length of MLC name
       real startm, finishm, currentm
       real currentu, deltau, curdeltau ! values for adjust
       real valx, valy, valz  ! for reading range and desired U value
@@ -2301,7 +2305,6 @@ C Update DESC for focus construction before returning.
           write(DESC(ifoc),'(7a)') mlcname(ifoc)(1:12),'  ',
      &        mlctype(ifoc)(1:4),'  ',mlcoptical(ifoc)(1:12),'  ',
      &        mlcsymetric(ifoc)(1:12)
-          write(6,*) 'a ',DESC(ifoc)
 
           call edisp(iuout,'  ')
           call edisp(iuout,
@@ -2728,7 +2731,8 @@ C If a gap then ask for gap resistance, recover resistance if newer matereials f
                 DRAIR(IFOC,ILN,3)=matgapares(matarrayindex,3)
               endif
 
-              WRITE(outs,117)DESC(IFOC)(1:LNBLNK(DESC(IFOC)))
+              lnmlcn=lnblnk(mlcname(ifoc))
+              WRITE(outs,117)mlcname(IFOC)(1:lnmlcn)
   117         FORMAT('Default R value for gap in ',a)
               if(DRAIR(IFOC,ILN,1).lt.0.001)then
                  VAL=0.17
@@ -2850,7 +2854,8 @@ C for the current item.
           write(DESC(ifoc),'(7a)') mlcname(ifoc)(1:12),'  ',
      &        mlctype(ifoc)(1:4),'  ',mlcoptical(ifoc)(1:12),'  ',
      &        mlcsymetric(ifoc)(1:12)
-          write(6,*) 'b ',DESC(ifoc)
+C Debug.
+C          write(6,*) 'b ',DESC(ifoc)
 
           do 795 k=1,NMLC
             lnt32=lnblnk(mlcname(k))
@@ -2863,7 +2868,7 @@ C for the current item.
               matsymindex(k)=ifoc           ! update other to point to this one
               matsymindex(ifoc)=k           ! remember its array position
 C Debug.
-              write(6,*) 'c ',DESC(k)
+C              write(6,*) 'c ',DESC(k)
             endif
   795     continue
         endif
@@ -3010,7 +3015,7 @@ C with the current MLC to the linked MLC.
      &          '  ',mlcname(ifoc)(1:12)
               mlcsymetric(iwhich)=mlcname(ifoc)  ! update array
 C Debug.
-              write(6,*) 'd ',DESC(iwhich)
+C              write(6,*) 'd ',DESC(iwhich)
 
 C Extract strings from focus construction prior to updating its SYM tag.
               write(DESC(ifoc),'(7a)') mlcname(ifoc)(1:12),'  ',
@@ -3022,7 +3027,7 @@ C Extract strings from focus construction prior to updating its SYM tag.
               moddb = .true.
               showother = .true.
 C Debug.
-              write(6,*) 'e ',DESC(ifoc)
+C              write(6,*) 'e ',DESC(ifoc)
             else
               write(outs,'(5a)') 'Constructions ',mlcname(IFOC)(1:24),
      &          ' and ',mlcname(iwhich)(1:24),
@@ -3043,7 +3048,7 @@ C construction and reset showother.
      &        mlctype(ifoc)(1:4),'  ',mlcoptical(ifoc)(1:12),'  ',
      &        mlcsymetric(ifoc)(1:12)
 C Debug.
-             write(6,*) 'f ',DESC(ifoc)
+C             write(6,*) 'f ',DESC(ifoc)
             moddb = .true.
             showother = .false.
           endif
@@ -3123,7 +3128,9 @@ C If a gap then ask for gap resistance, recover resistance if newer matereials f
             DRAIR(IFOC,ILED-8,2)=matgapares(matarrayindex,2)
             DRAIR(IFOC,ILED-8,3)=matgapares(matarrayindex,3)
           endif
-          WRITE(outs,118)DESC(IFOC)(1:LNBLNK(DESC(IFOC)))  
+
+          lnmlcn=lnblnk(mlcname(ifoc))
+          WRITE(outs,118)mlcname(IFOC)(1:lnmlcn)  
   118     FORMAT('Default R value for gap in ',a)
           if(DRAIR(IFOC,ILED-8,1).lt.0.001)then
             VAL=0.17
