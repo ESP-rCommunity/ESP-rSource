@@ -3851,14 +3851,12 @@ C Menu loop.
       ENDIF
 
 C Hilight surface based on OPQ/TRAN or construction.
-
-C << convert to use mlcname >>
-
       IF(ITHLS.EQ.0)THEN
         ITEMS(7) ='f highlight >> normal           '
       ELSEIF(ITHLS.EQ.1)THEN
         if(ITHLZ.gt.0)then
-          WRITE(ITEMS(7),'(a,A12)')'f highlight >> ',DESC(ITHLZ)(1:12)
+          WRITE(ITEMS(7),'(2A)')'f highlight >> ',
+     &      mlcname(ITHLZ)(1:12)
         else
           ITEMS(7) ='f highlight >> composition      '
         endif
