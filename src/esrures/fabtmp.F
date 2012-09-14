@@ -118,7 +118,7 @@ C Give 100mm clearance on both sides for boundary plotting.
       END
 
 C ******************** GZPDBE
-C GZPDBE: Get material db ref for zone layers from mlc.
+C GZPDBE: Get material reference for zone layers from mlc.
 C Assumes that geometry file has been read and surface
 C attributes are known. 
 
@@ -166,19 +166,14 @@ C the construction was not found.
         CALL SURADJ(ICOMP,ISUR,IE,T,IZC,ISC,ICN,CSTR)
         ICKNE=0
 
-C << revise to use matchmlcdesc >>
+C Find matching MLC. Gather materials array index for each 
+C layer of each surface in the zone. IPRZ is used elsewhere.
+        call matchmlcdesc(SSMLCN(ICN),ic)
 
-        DO 20 IC=1,NMLC
-          IF(DESC(IC)(1:12).EQ.SSMLCN(ICN))THEN
-            ICKNE=LAYERS(IC)
-
-C Gather materials array index for each layer of each surface in
-C the zone. IPRZ is used elsewhere.
-            DO 23 IL=1,LAYERS(IC)
-              IPRZ(ISUR,IL)=IPRMAT(IC,IL)
-   23       CONTINUE
-          ENDIF
-   20   CONTINUE
+        ICKNE=LAYERS(IC)
+        DO 23 IL=1,LAYERS(IC)
+          IPRZ(ISUR,IL)=IPRMAT(IC,IL)
+   23   CONTINUE
         if(ICKNE.eq.0)then
           write(outs,'(5A)') ' The construction ',SSMLCN(ICN)(1:12),
      &       ' of ',SSNAME(ICN),' was not found in the mlc db...'
