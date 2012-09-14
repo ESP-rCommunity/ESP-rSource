@@ -216,8 +216,6 @@ C Remember if each zone is fully attributed.
       character tedlbl*20,teditor*20
       character uname*24,pwd*84
       character ipvaction*3  ! signal that external ipv file
-      character MLCSYM*12
-      character MLCN*12,OTF*4,OPT*12 ! for use with prsmlcname
       character lworking*144
 
 C For thermal bridge reporting
@@ -242,7 +240,6 @@ C in the current model. A -1 means not applicable
       integer loutln     ! length of string returned
       integer itrunc     ! to signal truncation
       integer ipos       ! position indicator when calling arlist
-      integer isymindex  ! index of MLC matching each surface
       real ZD           ! depth for ground temp calc
       real grper        ! % length of ground perimeter in a zone
       real xtranper,xskyper,xwallper,xslproofper,xflatroofper,xgrper ! % of project floor area for each
@@ -1186,7 +1183,7 @@ C Setup string buffer with distribution weather folder name.
           llclmdb=LCLIM
         elseif(ipathclim.eq.2)then
           write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
-     &      LCLIM(1:lnblnk(LCLIM))
+     &      LCLIM(1:llt)
         endif
 
         call EFOPRAN(ICLIM,llclmdb,144,0,IER)
@@ -1426,7 +1423,7 @@ C the climate file and attempt to print out IPV contents.
                   llclmdb=LCLIM
                 elseif(ipathclim.eq.2)then
                   write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
-     &              LCLIM(1:lnblnk(LCLIM))
+     &              LCLIM(1:llt)
                 endif
                 IUF=IFIL+2
                 call scancdblist(IUF,llclmdb,ok,iercl)
@@ -2255,14 +2252,9 @@ C While looping check that constructions of partitions are matching.
           write(SN,'(a12)')SSNAME(icc)
           if(showother.and.icoth.ne.0.and.ssmlcindex(icc).ne.0)then
             ii=ssmlcindex(icc)
-            if(mlcver.eq.0)then
-              call parsemlcdesc(DESC(ii),MLCN,OTF,OPT,MLCSYM,isymindex)
-            else
-
-            endif
-            if(MLCSYM(1:9).EQ.'SYMMETRIC')then
+            if(mlcsymetric(ii)(1:9).EQ.'SYMMETRIC')then
               continue
-            elseif(MLCSYM(1:12).EQ.'NONSYMMETRIC')then
+            elseif(mlcsymetric(ii).EQ.'NONSYMMETRIC')then
 
 C If the current construction is nonsymmetric then it should not be
 C used for a partition (and db does not have a linked MLC - inform the user.
@@ -2644,7 +2636,7 @@ C for this to happen.
             llclmdb=LCLIM
           elseif(ipathclim.eq.2)then
             write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
-     &        LCLIM(1:lnblnk(LCLIM))
+     &        LCLIM(1:llt)
           endif
           call scancdblist(IUF,llclmdb,ok,iercl)
           if(iercl.eq.0)then
@@ -2882,7 +2874,7 @@ C file and then include seasonal tokens in the model.
                 llclmdb=LCLIM
               elseif(ipathclim.eq.2)then
                 write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
-     &            LCLIM(1:lnblnk(LCLIM))
+     &            LCLIM(1:llt)
               endif
               call scancdblist(IUF,llclmdb,ok,iercl)
               if(iercl.eq.0)then
