@@ -23,6 +23,7 @@ C reading and reporting ESP-r databases and contains the following:
 
 C  ERMLDB:  Read an ASCII composite db and return data via block MLC.
 C  parsemlcdesc: Parse the DESC string from the MLC common block
+C  matchmlcdesc: parse string (DES) and see if it matches a MLC
 C  ETMLDB:  Provides reporting on current description of a composite.
 C  ETMLDBU returns U value of construction based on contents of common MLC.
 C  EPKMLC:  Select a composite construction with display of details.

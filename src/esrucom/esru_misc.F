@@ -3842,16 +3842,9 @@ C Special materials file flag
       logical closemat1,closemat2  ! to check version of materials db.
 
 C Check name of surface with construction name in MLC common.
-
-C << a place to use ssmlcindex and use mlcname rather than DESC >>
-
       imatch=0
       icc=IZSTOCN(icomp,is)
-      do 5 i=1,nmlc
-        if(SSMLCN(icc)(1:12).eq.DESC(i)(1:12)) then
-          imatch=i
-        endif
-  5   continue
+      call matchmlcdesc(SSMLCN(icc),imatch)
       if(imatch.eq.0) then
          call edisp(iuout,'Error: probably no construction defined!')
          ier=1
@@ -3864,7 +3857,7 @@ C Write menu displaying a list of layer names
       header=3
       footer=3
       write(item(1),'(a,a)') 'a surface name: ',SSNAME(icc)
-      write(item(2),'(a,a)') 'c constr name: ',DESC(imatch)(1:12)
+      write(item(2),'(a,a)') 'c constr name: ',mlcname(imatch)(1:12)
       item(3)='  ----------------------------'
       do 10 j=1,LAYERS(imatch)
 
