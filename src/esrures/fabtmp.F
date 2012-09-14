@@ -165,6 +165,9 @@ C the construction was not found.
       do 44 ISUR=1,NZSUR(ICOMP)
         CALL SURADJ(ICOMP,ISUR,IE,T,IZC,ISC,ICN,CSTR)
         ICKNE=0
+
+C << revise to use matchmlcdesc >>
+
         DO 20 IC=1,NMLC
           IF(DESC(IC)(1:12).EQ.SSMLCN(ICN))THEN
             ICKNE=LAYERS(IC)

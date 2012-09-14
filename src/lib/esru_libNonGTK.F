@@ -3850,7 +3850,10 @@ C Menu loop.
         ITEMS(6) ='e display >> ground only'
       ENDIF
 
-C Hilight surface based on OPQ/TRAN or material.
+C Hilight surface based on OPQ/TRAN or construction.
+
+C << convert to use mlcname >>
+
       IF(ITHLS.EQ.0)THEN
         ITEMS(7) ='f highlight >> normal           '
       ELSEIF(ITHLS.EQ.1)THEN

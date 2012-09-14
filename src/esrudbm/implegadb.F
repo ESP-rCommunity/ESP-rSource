@@ -210,7 +210,7 @@ C to include information on optical properties).
         GDESC=RSTR(1:LNBLNK(RSTR))
 
 C Parse the GDESC string into string tokens.
-        call matchmlcdesc(GDESC,im)
+        call matchmlcdesc(GDESC(1:12),im)
 
         write(symname,'(a)') mlcsymetric(im)(1:12)
         othcolr='grey50'
