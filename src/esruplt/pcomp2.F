@@ -673,7 +673,8 @@ C First initialize UA modulus (for calculation of containment heat loss)
          call eclose(PCNTMF(IPCOMP),-99.00,0.001,closea)
          IF(closea) THEN
             UA=0.
-         ELSE
+         ELSEIF(UA.gt.20)THEN ! Only work out internal heat transfer
+                              ! parameters if pipe is uninsulated
             DH=ADATA(IPCOMP,4)
             PL=ADATA(IPCOMP,5)
             TW=CONVAR(ICON1,1)
