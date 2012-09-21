@@ -660,10 +660,15 @@ C The value of I and ISN should be the same. If not warn.
      &       'Disagreement between surface index and position in list.')
         endif
 
-C Porcess surface name 
+C Process surface name. If using H3K format use cLnWords otherwise
+C instanciate ssname with SNAME.
         if(havec24)then
           icn=izstocn(icomp,isn)
-          ssname(icn)=cLnWords(2)(1:12)
+          if ( .not. bH3KExtentionsActive() ) then
+            ssname(icn) = SNAME(ICOMP,ISN)
+          else
+            ssname(icn) = cLnWords(2)(1:12)
+          endif
         endif
 
 C Process positional attribute
