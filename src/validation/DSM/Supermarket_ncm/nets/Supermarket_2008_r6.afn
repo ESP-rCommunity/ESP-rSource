@@ -1,0 +1,99 @@
+   25   18   34    1.000    (nodes, components, connections, wind reduction)
+ Node         Fld. Type   Height    Temperature    Data_1       Data_2
+ Sales           1    0   3.5000       20.000       0.0000       24531.    
+ Refrig          1    0   3.5000       20.000       0.0000       9944.2    
+ Foyer           1    0   3.0000       20.000       0.0000       2052.0    
+ Office1         1    0   1.5000       20.000       0.0000       912.02    
+ Cafe            1    0   1.5000       20.000       0.0000       912.02    
+ Office3         1    0   4.5000       20.000       0.0000       912.02    
+ passage         1    0   4.5000       20.000       0.0000       270.01    
+ Staff_traing    1    0   4.5000       20.000       0.0000       912.02    
+ Store1          1    0   1.5000       20.000       0.0000       1938.0    
+ Store2          1    0   3.0000       20.000       0.0000       3534.1    
+ Cabinet_hi      1    0   1.2500       20.000       0.0000       800.02    
+ Cabinet_lw      1    0   1.2500       20.000       0.0000       800.02    
+ cold_store      1    0   1.5000       20.000       0.0000       228.00    
+ entr_left       1    3   1.2500       0.0000       5.0000       270.00    
+ entry_right     1    3   1.2500       0.0000       5.0000       90.000    
+ off1_fr         1    3   1.5000       0.0000       5.0000       180.00    
+ off3_fr         1    3   4.5000       0.0000       5.0000       180.00    
+ cafe_fr         1    3   1.5000       0.0000       5.0000       180.00    
+ staff_fr        1    3   4.5000       0.0000       5.0000       180.00    
+ sales_left      1    3   3.0000       0.0000       5.0000       270.00    
+ store1left      1    3   1.5000       0.0000       5.0000       270.00    
+ store2left      1    3   4.5000       0.0000       5.0000       270.00    
+ vehicle         1    3   2.0000       0.0000       5.0000       0.0000    
+ refr_right      1    3   3.0000       0.0000       5.0000       90.000    
+ vent_mix        1    0   4.7000       20.000       0.0000       152.00    
+ Component    Type C+ L+ Description
+ win_cr        120  3  0 Specific air flow crack             m = rho.f(W,L,dP)       
+   1.0000000      0.010            40.000000    
+ door_cr       120  3  0 Specific air flow crack             m = rho.f(W,L,dP)       
+   1.0000000      0.020            5.0000000    
+ grill0.5      110  2  0 Specific air flow opening           m = rho.f(A,dP)         
+   1.0000000      0.50000000    
+ cab1.0ach      30  2  0 Constant vol. flow rate component   m = rho.a               
+   1.0000000      0.22222222    
+ cab5.0ach      30  2  0 Constant vol. flow rate component   m = rho.a               
+   1.0000000       1.1111112    
+ cab10ach       30  2  0 Constant vol. flow rate component   m = rho.a               
+   1.0000000       2.2222223    
+ entry         130  5  0 Specific air flow door              m = rho.f(W,H,dP)       
+   1.0000000       2.0000000       2.5000000       3.0000000      0.50000000    
+ vehc_cr       120  3  0 Specific air flow crack             m = rho.f(W,L,dP)       
+   1.0000000      0.025            30.000000    
+ makeup400p     30  2  0 Constant vol. flow rate component   m = rho.a               
+   1.0000000       2.4000001    
+ sales-refr    130  5  0 Specific air flow door              m = rho.f(W,H,dP)       
+   1.0000000       5.0000000       5.0000000       3.5000000      0.69999999    
+ foyer-sales   130  5  0 Specific air flow door              m = rho.f(W,H,dP)       
+   1.0000000       4.0000000       2.5000000       3.5000000      0.40000001    
+ entry_alt     130  5  0 Specific air flow door              m = rho.f(W,H,dP)       
+   1.0000000       1.5000000       2.5000000       3.0000000      0.50000000    
+ makeup300p     30  2  0 Constant vol. flow rate component   m = rho.a               
+   1.0000000       1.8000001    
+ makeup50p      30  2  0 Constant vol. flow rate component   m = rho.a               
+   1.0000000       0.3000001    
+ makeup20p      30  2  0 Constant vol. flow rate component   m = rho.a               
+   1.0000000       0.1200001    
+ makeup10p      30  2  0 Constant vol. flow rate component   m = rho.a               
+   1.0000000       0.0600001    
+ entry_cafe    130  5  0 Specific air flow door              m = rho.f(W,H,dP)       
+   1.0000000       1.0000000       2.5000000       3.0000000      0.40000000    
+ grill0.1      110  2  0 Specific air flow opening           m = rho.f(A,dP)         
+   1.0000000      0.10000000    
++Node         dHght   -Node         dHght   via Component
+ staff_fr      0.000   Staff_traing  0.000   win_cr          
+ cafe_fr       0.000   Cafe          0.000   win_cr          
+ entry_right   0.000   Foyer         0.000   entry_alt           
+ entr_left     0.000   Foyer        -0.000   entry_alt           
+ off1_fr       0.000   Office1       0.000   win_cr          
+ off3_fr       0.000   Office3       0.000   win_cr          
+ sales_left    0.000   Sales        -0.000   win_cr          
+ store1left    0.000   Store1        0.000   win_cr          
+ store2left   -0.000   Store2        0.000   win_cr          
+ vehicle       0.000   Store2        0.000   vehc_cr         
+ refr_right    0.000   Refrig        0.000   win_cr          
+ Store1        0.750   Store2       -0.750   grill0.5        
+ Store1        1.000   Sales        -1.000   grill0.5        
+ Store2        0.250   Refrig       -0.250   grill0.5        
+ Store2       -0.000   cold_store    0.000   door_cr         
+ Foyer         0.000   Sales        -0.000   foyer-sales     
+ Foyer        -0.000   Cafe          0.000   entry_cafe           
+ Sales         0.000   Refrig        0.000   sales-refr      
+ Refrig        0.000   Cabinet_hi    0.000   cab10ach       
+ Cabinet_hi    0.000   Refrig        0.000   grill0.5        
+ Refrig        0.000   Cabinet_lw    0.000   cab10ach       
+ Cabinet_lw    0.000   Refrig        0.000   grill0.5        
+ Staff_traing  0.000   passage       0.000   grill0.1        
+ passage       0.000   Office3       0.000   grill0.1        
+ vehicle       0.000   vent_mix      0.000   grill0.5        
+ vent_mix     -0.000   Sales         0.000   makeup300p      
+ vent_mix     -0.000   Refrig        0.000   makeup50p      
+ vent_mix     -0.000   Cafe          0.000   makeup20p      
+ vent_mix     -0.000   Office1       0.000   makeup10p      
+ vent_mix     -0.000   Office3       0.000   makeup10p      
+ vent_mix     -0.000   Staff_traing  0.000   makeup10p      
+ Foyer        -0.000   Office1       0.000   entry_cafe          
+ vent_mix     -0.000   Store1        0.000   makeup10p      
+ vent_mix     -0.000   Store2        0.000   makeup10p      

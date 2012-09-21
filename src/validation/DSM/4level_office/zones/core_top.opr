@@ -1,0 +1,39 @@
+*Operations 1.0
+*date Mon Nov  7 17:50:03 2005  # latest file modification 
+# operations of core_top defined in: 
+# ../zones/ctl_temp/core_top.opr
+Core space schedules - 1 person per 18.58m^2 (2 people), lighting at 1W/ft^2 (10.76 m^2). Plug loads at 13.45 W/m^2.  10% lights un-occup hours, 20% plug loads un-occup hours. .
+# control(no control of air flow  ), low mid & high setpoints 
+   0     0.000     0.000     0.000
+     3   # no Weekday flow periods
+# Wkd: start, stop, infil, ventil, source, data
+   0,  8,    0.500    0.000    0    0.000
+   8, 17,    0.510    0.750   21    0.000
+  17, 24,    0.500    0.000    0    0.000
+     1   # no Saturday flow periods
+# Sat: start, stop, infil, ventil, source, data
+   0, 24,    0.500    0.000    0    0.000
+     1   # no Sunday flow periods 
+# Sun: start, stop, infil, ventil, source, data
+   0, 24,    0.500    0.000    0    0.000
+     9   # no Weekday casual gains 
+# Wkd: type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,   8,      0.0,      0.0, 0.500, 0.500
+    1,   8,  17,    180.0,     90.0, 0.500, 0.500
+    1,  17,  24,      0.0,      0.0, 0.500, 0.500
+    2,   0,   8,     51.0,      0.0, 0.500, 0.500
+    2,   8,  17,    516.0,      0.0, 0.500, 0.500
+    2,  17,  24,     51.0,      0.0, 0.500, 0.500
+    3,   0,   8,    129.0,      0.0, 0.500, 0.500
+    3,   8,  17,    645.0,      0.0, 0.500, 0.500
+    3,  17,  24,    129.0,      0.0, 0.500, 0.500
+     2   # no Saturday casual gains 
+# Sat: type, start, stop, sens, latent, rad_frac, conv_frac
+    2,   0,  24,     51.0,      0.0, 0.500, 0.500
+    3,   0,  24,    129.0,      0.0, 0.500, 0.500
+     2   # no Sunday casual gains 
+# Sun: type, start, stop, sens, latent, rad_frac, conv_frac
+    2,   0,  24,     51.0,      0.0, 0.500, 0.500
+    3,   0,  24,    129.0,      0.0, 0.500, 0.500
+# Labels for gain types 
+ Occupt Lights Equipt
