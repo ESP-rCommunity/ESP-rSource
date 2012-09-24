@@ -17,7 +17,7 @@ C.....Common storing site-wide fues costs
 
 C.....Common storing fuel costs specific to plant components
 C.....(MPCom is the maximum number of plant components.)
-      real fPltFuelCost(MPCom, iNumFuel, iNumUses)\
+      real fPltFuelCost(MPCom, iNumFuel, iNumUses)
       
 C.....Common storing fuel costs specific to HOT3000 Base Loads
 C       MCOM (maximum number of zones) is provided by building.h

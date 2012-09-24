@@ -164,7 +164,7 @@ C Variables used in trace.
       common/CASGNTRC/QP(MCOM,2,MC,MPHAS),RP(MCOM,2,MC,MPHAS)
 
 C Descriptive label for a zone load or casual gain types.
-      common/loadlabel/lodlabel(mcom,30)
+      common/loadlabel/lodlabel(mcom,mgty)
       character lodlabel*6
 
 C Adaptive comfort commons

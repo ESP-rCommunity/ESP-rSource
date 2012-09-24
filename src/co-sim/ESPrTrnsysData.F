@@ -51,10 +51,10 @@ C with TRNSYS using the Harmonizer.
         INTEGER, DIMENSION(MAX_FCCs) :: iACCtoE     !Indeces for Air coupling component data to be received from TRNSYS
       END TYPE TCC_Indeces
 
-      TYPE :: FCC                                 	! Fluid Coupling Component (FCC)
-        REAL :: Flowrate                           	! Flow rate of liquid water (HCC) or dry air (ACC) (kg/s)
-        REAL :: Temperature                        	! (deg C)
-        REAL :: Moisture_flowrate               	! Moisture flow rate (ACC only) (kg/s)
+      TYPE :: FCC                                 ! Fluid Coupling Component (FCC)
+        REAL :: Flowrate                          ! Flow rate of liquid water (HCC) or dry air (ACC) (kg/s)
+        REAL :: Temperature                       ! (deg C)
+        REAL :: Moisture_flowrate                 ! Moisture flow rate (ACC only) (kg/s)
       END TYPE FCC
 
       TYPE :: ZoneData
@@ -78,8 +78,8 @@ C with TRNSYS using the Harmonizer.
 !        TYPE(ECC), DIMENSION(MAX_ECCs) :: ElectricalCouplingComponents
         TYPE(ZoneData), DIMENSION(MAX_ZONES) :: ESPrZonesData   !Temperature, Humidity & Casual Gains for ESP-r Zones
         Integer :: Invocations                              !Number of ESP-r and TRNSYS invocations
-        INTEGER :: ESPrConverged      	                    !Flag for ESPr convergence (not used yet)
-        INTEGER :: TrnsysConverged     	                    !Flag for TRNSYS convergence (notused yet)
+        INTEGER :: ESPrConverged                            !Flag for ESPr convergence (not used yet)
+        INTEGER :: TrnsysConverged                          !Flag for TRNSYS convergence (notused yet)
         INTEGER :: ESPrTimestep;                            !Number of ESP-r  timestep
         INTEGER :: TotalESPrIterations;                     !Number of ESP-r iteration
         INTEGER :: TrnsysTimestep;                          !Number of TRNSYS timestep

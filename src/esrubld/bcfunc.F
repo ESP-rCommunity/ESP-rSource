@@ -6424,11 +6424,11 @@ C Fatal error test.
       IF(.not.close5)GOTO 99
 
 C Set heat exchanger parameters using data in system control file.
-      WGACF=BMISCD(ICF,IDTYP,IPER,2)		! specific heat capacity
-      WGDIINERPIPE=BMISCD(ICF,IDTYP,IPER,3)	! inner pipe diameter
-      WGDIOUTERPIPE=BMISCD(ICF,IDTYP,IPER,4)	! outer pipe diameter
-      WGALHEAT=BMISCD(ICF,IDTYP,IPER,5)		! heat exchanger length
-      WGFMOUTER=BMISCD(ICF,IDTYP,IPER,6)	! open circuit flow rate
+      WGACF=BMISCD(ICF,IDTYP,IPER,2)        ! specific heat capacity
+      WGDIINERPIPE=BMISCD(ICF,IDTYP,IPER,3) ! inner pipe diameter
+      WGDIOUTERPIPE=BMISCD(ICF,IDTYP,IPER,4)! outer pipe diameter
+      WGALHEAT=BMISCD(ICF,IDTYP,IPER,5)     ! heat exchanger length
+      WGFMOUTER=BMISCD(ICF,IDTYP,IPER,6)    ! open circuit flow rate
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
@@ -6455,7 +6455,7 @@ C Trace output
       QFUT=0.
       TFUT=TNP
 
-      WGPI=3.14159	! pi
+      WGPI=3.14159  ! pi
 
 C Set the temperature of the fluid at inlet of the inner pipe to the
 C temperature of the fluid at the outlet of the fluid-filled glazing
@@ -6515,7 +6515,7 @@ C WGT10 AND WGT20.
       WGBV1=-0.047
       WGBV2=0.001
       WGBV3=-2.59/1000000
-    	    
+
       WGVISO=(WGAV+WGBV1*WGT2+WGBV2*WGT2**2+WGBV3*WGT2**3)/1000000.0
       WGVISI=(WGAV+WGBV1*WGT1+WGBV2*WGT1**2+WGBV3*WGT1**3)/1000000.0
 
@@ -6581,7 +6581,7 @@ C using updated guesstimate of outlet water temperature.
 
       WGAKWEXO=(WGAK+WGBK1*WGT2+WGBK2*WGT2**2+WGBK3*WGT2**3)/100
       WGAKWEXI=(WGAK+WGBK1*WGT1+WGBK2*WGT1**2+WGBK3*WGT1**3)/100
-    	    
+
       WGVISO=(WGAV+WGBV1*WGT2+WGBV2*WGT2**2+WGBV3*WGT2**3)/1000000.0
       WGVISI=(WGAV+WGBV1*WGT1+WGBV2*WGT1**2+WGBV3*WGT1**3)/1000000.0
 
@@ -6776,28 +6776,28 @@ c Fatal error test
 
 C Init...
       QFUT                       = 0.0
-      T_heating_setpoint	 = BMISCD(ICF,IDTYP,IPER,2)
-      T_max			 = BMISCD(ICF,IDTYP,IPER,3)
-      T_min			 = BMISCD(ICF,IDTYP,IPER,4)
-      heaterCapacity		 = BMISCD(ICF,IDTYP,IPER,5)
-      fracHeatGain		 = BMISCD(ICF,IDTYP,IPER,6)
-      T_changeover_charging	 = BMISCD(ICF,IDTYP,IPER,7)
+      T_heating_setpoint         = BMISCD(ICF,IDTYP,IPER,2)
+      T_max                      = BMISCD(ICF,IDTYP,IPER,3)
+      T_min                      = BMISCD(ICF,IDTYP,IPER,4)
+      heaterCapacity             = BMISCD(ICF,IDTYP,IPER,5)
+      fracHeatGain               = BMISCD(ICF,IDTYP,IPER,6)
+      T_changeover_charging      = BMISCD(ICF,IDTYP,IPER,7)
       T_changeover_notcharging   = BMISCD(ICF,IDTYP,IPER,8)
-      gradChargeActive1 	 = BMISCD(ICF,IDTYP,IPER,9)
-      interceptChargeActive1	 = BMISCD(ICF,IDTYP,IPER,10)
-      gradChargeActive2 	 = BMISCD(ICF,IDTYP,IPER,11)
-      interceptChargeActive2	 = BMISCD(ICF,IDTYP,IPER,12)
-      gradChargePassive1	 = BMISCD(ICF,IDTYP,IPER,13)
-      interceptChargePassive1	 = BMISCD(ICF,IDTYP,IPER,14)
-      gradChargePassive2	 = BMISCD(ICF,IDTYP,IPER,15)
-      interceptChargePassive2	 = BMISCD(ICF,IDTYP,IPER,16)
-      gradNotChargeActive1	 = BMISCD(ICF,IDTYP,IPER,17)
+      gradChargeActive1          = BMISCD(ICF,IDTYP,IPER,9)
+      interceptChargeActive1     = BMISCD(ICF,IDTYP,IPER,10)
+      gradChargeActive2          = BMISCD(ICF,IDTYP,IPER,11)
+      interceptChargeActive2     = BMISCD(ICF,IDTYP,IPER,12)
+      gradChargePassive1         = BMISCD(ICF,IDTYP,IPER,13)
+      interceptChargePassive1    = BMISCD(ICF,IDTYP,IPER,14)
+      gradChargePassive2         = BMISCD(ICF,IDTYP,IPER,15)
+      interceptChargePassive2    = BMISCD(ICF,IDTYP,IPER,16)
+      gradNotChargeActive1       = BMISCD(ICF,IDTYP,IPER,17)
       interceptNotChargeActive1  = BMISCD(ICF,IDTYP,IPER,18)
-      gradNotChargeActive2	 = BMISCD(ICF,IDTYP,IPER,19)
+      gradNotChargeActive2       = BMISCD(ICF,IDTYP,IPER,19)
       interceptNotChargeActive2  = BMISCD(ICF,IDTYP,IPER,20)
-      gradNotChargePassive1	 = BMISCD(ICF,IDTYP,IPER,21)
+      gradNotChargePassive1      = BMISCD(ICF,IDTYP,IPER,21)
       interceptNotChargePassive1 = BMISCD(ICF,IDTYP,IPER,22)
-      gradNotChargePassive2	 = BMISCD(ICF,IDTYP,IPER,23)
+      gradNotChargePassive2      = BMISCD(ICF,IDTYP,IPER,23)
       interceptNotChargePassive2 = BMISCD(ICF,IDTYP,IPER,24)
 
 C Determine room air point temperature
