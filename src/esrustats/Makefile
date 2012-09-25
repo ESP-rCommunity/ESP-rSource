@@ -8,8 +8,8 @@ PROG = stats$(EXE)
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-OBJECTS = esru_ask.o esru_blk.o esru_fc.o esru_lib.o esru_libNonGTK.o csv_stats.o \
-	rwsbem.o 
+OBJECTS = esru_ask.o esru_blk.o esru_fc.o esru_lib.o esru_libNonGTK.o csv_stats.o redir_console_output.o \
+	rwsbem.o  disable_h3k.o
 
 $(PROG): $(OBJECTS)
 	$(MFC) $(LD_FLAGS) -o $(PROG) $(FFLAGS) $(OBJECTS)
@@ -32,6 +32,13 @@ esru_ask.F:
 rwsbem.F:
 	rm -f rwsbem.F
 	ln -s $(COMdir)/rwsbem.F .
+redir_console_output.o:
+	rm -f redir_console_output.c
+	ln -s $(LIBdir)/redir_console_output.c 
+	$(MCC) $(LD_FLAGS) $(CFLAGS) $(GTKFLAGS) -c redir_console_output.c .
+
+	
+
 
 strip:
 	@if [ -f $(PROG) ]; then strip $(PROG); fi
@@ -41,5 +48,5 @@ install:
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(OBJECTS) \
-	esru_ask.F esru_blk.F esru_fc.F esru_lib.F esru_libNonGTK.F 
-
+	esru_ask.F esru_blk.F esru_fc.F esru_lib.F esru_libNonGTK.F redir_console_output.c rwsbem.F  
+        

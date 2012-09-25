@@ -3149,6 +3149,8 @@ C context is 124 characters.
       CHARACTER WWMSG*124,dispbuf*124
       logical unixok
 
+C Function determining if HOT3000 features enabled?
+      logical bH3KExtentionsActive
 C Temporarily set ICOUT.
       ICOUT=0
 
@@ -3196,6 +3198,10 @@ C otherwise redirect to user display.
 
 C Write this to standard text window.
         WRITE(ITRU,'(A)',iostat=ios,err=1)MSG(1:lnm)
+c.......write console output (ITRU=6) to file       
+        if(ITRU.eq.6 .and. bH3KExtentionsActive() )then
+            call redir_console_output_to_file(MSG(1:lnm)//CHAR(0))
+        endif
       ENDIF
 
       RETURN
