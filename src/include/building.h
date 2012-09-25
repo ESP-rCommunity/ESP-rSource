@@ -70,7 +70,7 @@ C Casual gains.
       PARAMETER (MC=24*MCT*MDTY)!- Total casual gains.
 
 C Mean radiant temperature.
-      PARAMETER (MCUB=4)        !- Sensors in zone.
+      PARAMETER (MCUB=6)        !- Sensors in zone.
       PARAMETER (MGC=26000)     !- Surface grid cells.
       PARAMETER (MPATCH=200)    !- Hemispherical patches.
 
