@@ -102,7 +102,7 @@ MODULE h3kmodule
          rvInternalGainsAdverse, rvBuildingAllZonesSuppliedEnergyHeating, &
          rvBuildingAllZonesSuppliedEnergyCooling, rvBuildingAllZonesSuppliedEnergyNetFlux, &
          rvFreeCoolingDelivered, rvBuildingAllZonesFreeCooling, &
-		 rvNodeTemp, rvBldZnLightPow, rvBldZnEquipPow, rvFreeCoolCtlFlag
+         rvNodeTemp, rvBldZnLightPow, rvBldZnEquipPow, rvFreeCoolCtlFlag
    Type(ReportVariable) :: rvBuildingAllZonesInsolationTotal, rvBuildingAllZonesInsolationUseful, &
          rvBuildingAllZonesInsolationAdverse, rvBuildingAllZonesEnvelopeWindowsHeatLoss, &
          rvBuildingAllZonesEnvelopeWallsHeatLoss, rvBuildingAllZonesEnvelopeFloorsHeatLoss, &
