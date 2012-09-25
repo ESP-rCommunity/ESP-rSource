@@ -1201,7 +1201,7 @@ C control.
       COMMON/SLAVE1/QHB(MCF),QCB(MCF),Qmst(MCF),
      &              bMasterFreeCoolFlag(MCF)
       real QHB, QCB, Qmst
-	  logical bMasterFreeCoolFlag
+      logical bMasterFreeCoolFlag
       
 C Freecooling algorithm
       real fQFreeCool         ! cooling achieved by ventilation
@@ -1676,7 +1676,10 @@ C A free-float controller.
       COMMON/BTIME/BTIMEP,BTIMEF
 
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
-      COMMON/SLAVE1/QHB(MCF),QCB(MCF),Qmst(MCF)
+      COMMON/SLAVE1/QHB(MCF),QCB(MCF),Qmst(MCF),
+     &      bMasterFreeCoolFlag(MCF)
+      
+      logical bMasterFreeCoolFlag
       
       character outs*124
 
@@ -5553,11 +5556,26 @@ C deliver proportionally).
       COMMON/PSTSOL/ICF,IDTYP,IPER,BB1,BB2,BB3,IICOMP,TNP,QFUT,TFUT
       COMMON/SLAVE1/QHB(MCF),QCB(MCF),Qmst(MCF),
      &              bMasterFreeCoolFlag(MCF)
-	  
-	  logical bMasterFreeCoolFlag
+      
+      logical bMasterFreeCoolFlag
       
       COMMON/FVALA/TFA(MCOM),QFA(MCOM)
       real TFA, QFA
+
+
+      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
+      REAL    QFP             !-diffuse horizontal radiation, present hour
+      REAL    QFF             !-diffuse horizontal radiation, future hour
+      REAL    TP              !-external temperature, present hour
+      REAL    TF              !-external temperature, future hour
+      REAL    QDP             !-direct normal radiation, present hour
+      REAL    QDF             !-direct normal radiation, future hour
+      REAL    VP              !-wind velocity, present hour
+      REAL    VF              !-wind velocity, future hour
+      REAL    DP              !-wind direction, present hour
+      REAL    DF              !-wind direction, future hour
+      REAL    HP              !-relative humidity, present hour
+      REAL    HF              !-relative humidity, future hour
 
 C Commons for identifying wether a zone is heated or cooled.
       common/H3KReportsControl/bZoneHeated,   bZoneCooled,
@@ -5682,16 +5700,16 @@ C Check Qslv not greater than specified base capacities
       QFUT=Qslv       
    
 C Check for free cooling in master zone (are windows open?) 
-	  if ( bMasterFreeCoolFlag(imasctlindex) ) then  
+      if ( bMasterFreeCoolFlag(imasctlindex) ) then  
 
-		Tslv = fCoolSetpoint(iicomp) 
+        Tslv = fCoolSetpoint(iicomp) 
+        
+        fFreeCoolDelivered(IICOMP) = (-1.0)*(BB3-BB1*Tslv)/BB2 
 
-		fFreeCoolDelivered(IICOMP) = (-1.0)*(BB3-BB1*Tslv)/BB2 
-
-		if( fFreeCoolDelivered(IICOMP) < 0. )  
+        if( fFreeCoolDelivered(IICOMP) < 0. )  
      &      fFreeCoolDelivered(IICOMP) = 0. 
-	 
-		QFUT = 0. 
+ 
+        QFUT = 0. 
 
 C.......Compute the 'conductivity' achieved by free cooling to 
 C.......append to zone mass-balance solution on next timestep. 
@@ -5702,13 +5720,13 @@ C                             [ Zone temp (K) - Outdoor Temp (K) ]
 C
         fCondFreeCool(IICOMP) = (fFreeCoolDelivered(IICOMP)
      &                         / ( TFA(IICOMP) - TF))		
-		
+ 
 C.......Determine temperatures in slave zone
         Tslv=(BB3-BB2*fFreeCoolDelivered(IICOMP)*(-1.0))/BB1        
 
       else  
       
-		fFreeCoolDelivered(IICOMP) = 0.
+      fFreeCoolDelivered(IICOMP) = 0.
 C.......Determine temperatures in slave zone
         Tslv=(BB3-BB2*QFUT)/BB1     
         
