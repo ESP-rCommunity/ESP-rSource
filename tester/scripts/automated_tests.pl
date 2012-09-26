@@ -76,15 +76,13 @@ my %binlist = ( "aco"   =>   "esruaco",
                 "vew"   =>   "esruvew" );         
 
 
-#my %binlist = ( "bps" => "esrubps" ); 
-
 my %binalias = ( "vew"    =>   "viewer",
                  "mrt"    =>   "espvwf" );                          
 
 # Short list of bins can 
 # be used to restrict analysis to a single binary when 
 # debugging
-# %binlist  = ( "bps" => "esrubps" ); 
+# %binlist  = ( "dfs" => "esrudfs" ); 
 
 my @Suppress_code_list  = ( "222 W" );
 my @Dangerous_info_list = ( "340 I" );
@@ -122,6 +120,7 @@ $build_args{"test"}      ="";
 
 # Flag for forcheck debugging
 my $debug_forcheck = 0;
+my $quick_FC = 0; 
 my $del_dir = 1; 
 # Hash for linking forcheck error codes to human-readable descriptions
 my %gDescriptions;
@@ -304,6 +303,7 @@ if ( @ARGV ){
   $cmd_arguements =~ s/-h;/--help;/g;
   $cmd_arguements =~ s/-v;/--verbose;/g;
   $cmd_arguements =~ s/-vv;/--very-verbose;/g;
+  $cmd_arguements =~ s/-qfc;/--quick-forcheck;/g;
   
   # Collate options expecting arguements ---
   #   transform ';' into ':'
@@ -370,6 +370,16 @@ if ( @ARGV ){
         last SWITCH;
       }
        
+      if ( $arg =~ /^--quick-forcheck/ ){
+
+        $quick_FC = 1;
+        $test_forcheck = 1;
+        $test_regression = 0;
+        $test_builds = 0; 
+         
+
+      }
+
       # Skip portions of test:
       if ($arg =~ /^--skip/ ){
         if ( $arg =~/^--skip-forcheck/ )  { $test_forcheck   = 0; }
@@ -603,23 +613,36 @@ if ( $test_forcheck || $test_builds || $test_regression ){
        
       }
       stream_out("Done\n");
-      
+  
     } elsif ( $revision_types{$key} =~ /local/ ) {
       # Local sand-box
 
-      # SVN Repository: Progress update
-      stream_out("Copying $revision to $src_dirs{$key}...");
-      
-      # Copy directory. Skip if source exists already.
-      if ( ! -d $src_dirs{$key} ){
-  
-        execute("cp -fr $revision $src_dirs{$key}");
-      }
-      stream_out("Done\n");
+      if ( $quick_FC ) {
 
+        # Link to 
+        stream_out("Linking $revision to $src_dirs{$key}...");
+        
+        execute("ln -s $revision $src_dirs{$key}");
+        stream_out("Done\n");
+
+      }else{
+
+        # SVN Repository: Progress update
+        stream_out("Copying $revision to $src_dirs{$key}...");
+        
+        # Copy directory. Skip if source exists already.
+        if ( ! -d $src_dirs{$key} ){
+    
+          execute("cp -fr $revision $src_dirs{$key}");
+        }
+        stream_out("Done\n");
+      }
     }
   }
 }
+
+
+
 
 #------------------------------------------------------------
 # Now prepare codes for forcheck static analysis. Unfortunately,
@@ -643,7 +666,9 @@ if ( $test_forcheck ){
     stream_out("Building $key ($revision) version of ESP-r for use with Forcheck.");
 
     # Build X11 debugging version.
-    buildESPr("default", $build_args{"$key"},"default","debug","onebyone");
+    if (!$debug_forcheck) {
+      buildESPr("default", $build_args{"$key"},"default","debug","onebyone");
+    }
 
 
     stream_out(" Done\n");
@@ -668,6 +693,7 @@ if ( $test_forcheck ){
   
  
   my %forcheck_output = ();
+  
   my $forcheck_summary = "";
   
   # Loop through revisions...
@@ -690,7 +716,9 @@ if ( $test_forcheck ){
       # verbosity.
       # DEBUG
 
-      if ( !$debug_forcheck || $debug_forcheck || ! -r "$TestFolder/$src_dirs{$key}/src/$folder/forcheck_$bin.out" ){
+
+      if ( ! $debug_forcheck || $debug_forcheck ){
+      #if ( ! $debug_forcheck && ! -r "$TestFolder/$src_dirs{$key}/src/$folder/forcheck_$bin.out" ){
         my $module_files = "";
         my $module_uses_module_files = ""; 
         my $non_module_files = "";
@@ -715,7 +743,7 @@ if ( $test_forcheck ){
           return if $src_file =~ m/\.svn/;
           return unless $src_file =~ m/(\.F$|\.f90$)/;
           #return if $filecount > 5;
-          $filecount ++; 
+          #$filecount ++; 
  
           # Debugging
           # print (">$src_file \n");
@@ -758,12 +786,19 @@ if ( $test_forcheck ){
         # Debugging
         #print ("\n>>>MODULE FILES  $module_files \n\n\n");
         #print (">>>NON MODULE FILES  $non_module_files \n\n\n");
-        #print  ">Command: forchk -I ../include $module_files $module_uses_module_files $non_module_files../lib/esru_blk.F ../lib/esru_libX11.F ../lib/esru_ask.F  > forcheck_$bin.out 2>&1 <\n\n";
-	  
+        #print  ">Command: forchk -I ../include $module_files $module_uses_module_files $non_module_files../lib/esru_blk.F ../lib/esru_libX11.F ../lib/esru_ask.F  > forcheck_$bin.out 2>&1 <\n\n"; 
         # Invoke forecheck (list module files first) 
         #execute ("forchk -I ../include  $module_files  -nff /tmp/tdf/src_reference/src/esrubps/TCC.F -nff /tmp/tdf/src_reference/src/esrubps/ESPrTrnsysData.F  -ff /tmp/tdf/src_reference/src/esrubps/h3kmodule.f90  $module_uses_module_files $non_module_files -nff ../lib/esru_blk.F -nff ../lib/esru_libX11.F -nff ../lib/esru_ask.F > forcheck_$bin.out " );
-        execute ("rm forcheck_$bin.out"); 
-        execute ("forchk -I ../include $module_files $module_uses_module_files $non_module_files -nff ../lib/esru_blk.F -nff ../lib/esru_libX11.F -nff ../lib/esru_ask.F  > forcheck_$bin.out 2>&1 " );
+        my $path = getcwd(); 
+        #stream_out ">>> $path \n "; 
+        execute ("rm forcheck_$bin.out");
+        
+        my $forcheck_stream = "";  
+        $forcheck_stream = ` forchk -I ../include $module_files $module_uses_module_files $non_module_files -nff ../lib/esru_blk.F -nff ../lib/esru_libX11.F -nff ../lib/esru_ask.F  ` ;
+        open ( FORCHECK_OUT, ">forcheck_$bin.out") or die( "Could not open forcheck_$bin.out\n") ;
+        print FORCHECK_OUT $forcheck_stream; 
+        close (FORCHECK_OUT); 
+        my $forcheck_stream = "";
       }
 
 
