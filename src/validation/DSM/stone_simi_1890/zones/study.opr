@@ -1,0 +1,57 @@
+*Operations 2.0
+*date Mon Aug 16 09:03:32 2010  # latest file modification 
+# operations of study defined in: 
+# ../zones/study.opr
+study is occupied in afternoon and early evening, 1 one person and a computer and task light. There is 1.5 ach infiltration.
+# control(infil only: zone temp   ), low mid & high setpoints 
+ -11    10.000    23.000    25.000
+# lower: infil, vent, source, data
+     1.500     0.000    0     0.000
+# middle: infil, vent, source, data
+     3.000     0.000    0     0.000
+# high: infil, vent, source, data
+     4.000     0.000    0     0.000
+     1   # number of flow periods in day type: weekdays    
+# start, stop, infil, ventil, source, data
+   0, 24,    1.500    0.000    0    0.000
+     1   # number of flow periods in day type: saturday    
+# start, stop, infil, ventil, source, data
+   0, 24,    1.500    0.000    0    0.000
+     1   # number of flow periods in day type: sunday      
+# start, stop, infil, ventil, source, data
+   0, 24,    1.500    0.000    0    0.000
+     9   # number of casual gains in day type: weekdays    
+# type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,  14,      0.0,      0.0, 0.500, 0.500
+    1,  14,  20,    100.0,     50.0, 0.500, 0.500
+    1,  20,  24,      0.0,      0.0, 0.500, 0.500
+    2,   0,  18,      0.0,      0.0, 0.500, 0.500
+    2,  18,  20,     80.0,      0.0, 0.500, 0.500
+    2,  20,  24,      0.0,      0.0, 0.500, 0.500
+    3,   0,  19,     20.0,      0.0, 0.500, 0.500
+    3,  19,  22,    120.0,      0.0, 0.500, 0.500
+    3,  22,  24,     20.0,      0.0, 0.500, 0.500
+     9   # number of casual gains in day type: saturday    
+# type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,  14,      0.0,      0.0, 0.500, 0.500
+    1,  14,  20,    100.0,     50.0, 0.500, 0.500
+    1,  20,  24,      0.0,      0.0, 0.500, 0.500
+    2,   0,  18,      0.0,      0.0, 0.500, 0.500
+    2,  18,  20,     80.0,      0.0, 0.500, 0.500
+    2,  20,  24,      0.0,      0.0, 0.500, 0.500
+    3,   0,  19,     20.0,      0.0, 0.500, 0.500
+    3,  19,  22,    120.0,      0.0, 0.500, 0.500
+    3,  22,  24,     20.0,      0.0, 0.500, 0.500
+     9   # number of casual gains in day type: sunday      
+# type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,  14,      0.0,      0.0, 0.500, 0.500
+    1,  14,  20,    100.0,     50.0, 0.500, 0.500
+    1,  20,  24,      0.0,      0.0, 0.500, 0.500
+    2,   0,  18,      0.0,      0.0, 0.500, 0.500
+    2,  18,  20,     80.0,      0.0, 0.500, 0.500
+    2,  20,  24,      0.0,      0.0, 0.500, 0.500
+    3,   0,  19,     50.0,      0.0, 0.500, 0.500
+    3,  19,  22,    150.0,      0.0, 0.500, 0.500
+    3,  22,  24,     50.0,      0.0, 0.500, 0.500
+# Labels for gain types 
+ Occupt Lights Equipt

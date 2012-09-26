@@ -1,0 +1,32 @@
+*Casual_gain_ctl
+*desc for west first three ltg zones
+2 2 2 # Gain to ctl for different day types
+  8 18  # Control period start & end hours
+  3  # No. of lighting zone(s)
+ 400.0  1.4  0.1  0.1  0 # Setpt, switch off lvl, min dim/el, delay
+ 0.33  1  2 # % casual, no of sensors, calc type
+ 17.500  9.500  5.100  0.000  0.000  1.000 # Sensor x y z & dir vect
+  4 # No of TMC(s) in zone 
+ 16 0.0100 # TMC number & coresp DF 
+ 17 0.0100 # TMC number & coresp DF 
+ 18 0.0100 # TMC number & coresp DF 
+ 19 0.0640 # TMC number & coresp DF 
+  1 # Control law: On-Off          
+ 400.0  1.4  0.1  0.1  0 # Setpt, switch off lvl, min dim/el, delay
+ 0.33  1  2 # % casual, no of sensors, calc type
+ 17.500 24.000  5.100  0.000  0.000  1.000 # Sensor x y z & dir vect
+  4 # No of TMC(s) in zone 
+ 16 0.0710 # TMC number & coresp DF 
+ 17 0.0100 # TMC number & coresp DF 
+ 18 0.0100 # TMC number & coresp DF 
+ 19 0.0100 # TMC number & coresp DF 
+  1 # Control law: On-Off          
+ 400.0  1.4  0.1  0.1  0 # Setpt, switch off lvl, min dim/el, delay
+ 0.33  1  2 # % casual, no of sensors, calc type
+ 17.500 15.500  5.100  0.000  0.000  1.000 # Sensor x y z & dir vect
+  4 # No of TMC(s) in zone 
+ 16 0.0600 # TMC number & coresp DF 
+ 17 0.0600 # TMC number & coresp DF 
+ 18 0.0600 # TMC number & coresp DF 
+ 19 0.0600 # TMC number & coresp DF 
+ -1 # Control law: Alway ON        

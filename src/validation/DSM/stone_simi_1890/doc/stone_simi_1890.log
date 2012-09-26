@@ -1,0 +1,22 @@
+Project notes for stone_simi_1890.cfg
+Title: Scottish traditional stone villa
+In folder: validation/DSM/stone_simi_1890
+By: jon
+Date: Wed Aug 11 15:42:47 2010
+Client: 
+Project reference: 
+_____________________________
+Notes: 
+This model is typical of an 1890s north of Scotland
+traditional stone villa which has not been upgraded
+from its original construction types. It has single
+glazed windows, stone walls up to 900mm thick and
+masonry walls inside.
+
+The model includes a slightly ventilated crawl-space
+and a slightly ventilated roof void.
+
+Environmental controls are based on radiators in each
+room (mixed R+C sensor mixed R+C actuator) with some
+diversity of use.
+_____________________________
