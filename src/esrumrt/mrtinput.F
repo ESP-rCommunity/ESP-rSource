@@ -34,6 +34,10 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
       COMMON/G1M/XM(MTV),YM(MTV),ZM(MTV),NSURM,JVNM(MSM,MV),
      &           NVERM(MSM),NTVM
       COMMON/MRT2/GEOLOAD,MRTLOAD
+
+      integer ncub,ivfok
+      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
+      character CUBN*6
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       COMMON /TOTAL/ nsurmf, NGRID, NTRPOL
@@ -47,7 +51,7 @@ C ITRU = unit number for user output, IER=0 OK, IER=1 problem.
 
       DIMENSION VERT(35),radtemp(MCUB)
       LOGICAL GEOLOAD,MRTLOAD,tmrt,temperr
-      CHARACTER VERT*29,CUBN*6
+      CHARACTER VERT*29
       character outs*124
       integer MVERT,IVERT ! max items and current menu item
 
@@ -81,7 +85,7 @@ C Loop through the items until the page to be displayed. M is the
 C current menu line index. Build up text strings for the menu. 
       WRITE(VERT(1),'(A,A)') '  VWF : ',LVIEW(icomp)(1:21)
       WRITE(VERT(2),'(A,A)') '  geom: ',LGEOM(ICOMP)(1:21)
-      WRITE(VERT(3),'(A,I2)')'  nb of sensors: ',NCUB
+      WRITE(VERT(3),'(A,I2)')'  number of MRT sensors: ',NCUB
       VERT(4)   ='  __________________________ '
       VERT(5)   ='b list/edit surface temps.   '
       VERT(6)   ='c list sensor details        '
@@ -110,18 +114,18 @@ C Browse/Edit surface temperatures.
 
 C Browse MRT sensors. 
         call edisp(iuout,' ')
-        WRITE(outs,'(A,I2)') ' No of MRT sensors: ',NCUB
+        WRITE(outs,'(A,I2)') ' Number of MRT sensors: ',NCUB
         call edisp(iuout,outs)
         call edisp(iuout,
-     &  ' ______________________________________________________')
+     &  ' ________________________________________________________')
         call edisp(iuout,
-     &  ' Sensor|     origin (m)     |     size (m)    |rotation')
+     &  ' Sensor|     origin (m)     |     size (m)      |rotation')
         call edisp(iuout,
-     &  ' name  |Xcord |Ycord |Zcord |len  |wid  |ht   |deg')
+     &  ' name  |Xcord |Ycord |Zcord |length|width|height|degree')
         DO 10 L=1,NCUB
           WRITE(outs,303)CUBN(L),XOC(L),YOC(L),ZOC(L),
      &                   DXC(L),DYC(L),DZC(L),CANG(L)
-  303     FORMAT(1X,A6,3F7.2,3F6.3,F6.1)
+  303     FORMAT(1X,A6,3F7.2,1x,3F6.3,F6.1)
           call edisp(iuout,outs)
    10   CONTINUE
         call edisp(iuout,' ')
@@ -150,8 +154,8 @@ C Use previous viewfactors to perform MRT calc.
 C (re)Calculate relative surfaces for rectangular body.
         do 990 icube=1,NCUB
           if(IVFOK(icube).ne.1)then
-            write(outs,'(A,A,A)')' Sensor ',CUBN(icube),
-     &           ' has no previous viewfactors so skipping... '
+            write(outs,'(3A)')' Sensor ',CUBN(icube),
+     &        ' has no previous viewfactors so skipping... '
             call edisp(iuout,outs)
             goto 990
           endif
@@ -337,6 +341,10 @@ C *********** CALMRT
       COMMON /FORMF/ FF(MSM,MSM), FFS
       COMMON /VISIB/ IVIS(MSM,MSM), IARECT(MSM,MSM)
       COMMON /TOTAL/ nsurmf, NGRID, NTRPOL
+
+      integer ncub,ivfok
+      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
+      character CUBN*6
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
@@ -351,7 +359,7 @@ C radtemp    : MRT value for specific cube in geometry. [C]
 C np         : number of patch-rings on bubble
       real drow,radtemp(MCUB),rowsum(MS+1)
       integer wrongrow
-      CHARACTER outs*124,CUBN*6
+      CHARACTER outs*124
 
 C     Cgfact  = Default value for griddiv. with CUBE
 C     Cnpatch = Default value for patchdiv. with CUBE
@@ -431,7 +439,7 @@ c Other gridpoints are not considdered.
         call edisp(iuout,' ')
         call edisp(iuout,' View factor information')
         WRITE(outs,2060)CUBN(icube),icube
-2060    format('    From sensor ',A,'(',i3,') to zone')
+2060    format('    From sensor ',A,' (',i3,') to the zone')
         call edisp(iuout,outs)
 
         rowsum(MS+1)=0.0
@@ -543,12 +551,16 @@ C number of the cube for reporting purposes.
      &               STMAT(4,4,MSM), SRMAT(4,4,MSM)
       COMMON /SURPNT/ ISPNT(6,MSM), GAREA(MSM), EMISI(MS)
       COMMON /TOTAL/ nsurmf, NGRID, NTRPOL
+
+      integer ncub,ivfok
+      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
+      character CUBN*6
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
       DIMENSION  IAPNT(100), APOL(1000)
       DIMENSION  CG(3),EQN(4)
-      CHARACTER outs*124,CUBN*6
+      CHARACTER outs*124
 
 C cubver: vertices of cube surfaces.
 

@@ -53,6 +53,9 @@ C IEEE callback (Solaris)
       COMMON/FIL/IOFIL,IFPOL
       COMMON/FATRIB/ATR
 
+      integer ncub,ivfok
+      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
+      character CUBN*6
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       COMMON/MRT2/GEOLOAD,MRTLOAD
@@ -110,7 +113,7 @@ C Name of current application
       LOGICAL GEOLOAD,MRTLOAD,tmrt,temperr,ATR,context
       LOGICAL MODIFY,MODLEN,MODBND,XST,unixok,there
       character outs*124,outs248*248,MODE*4
-      CHARACTER OUTSTR*124,CUBN*6,ITEM*29
+      CHARACTER OUTSTR*124,ITEM*29
       CHARACTER DFILE*72,inf*144,LCMDFL*144
       CHARACTER VFILE*72,ZN*12,LTMP*72,L144*144,LTMPFL*72
       character path*72
@@ -133,6 +136,7 @@ C Name of current application
       integer*8 iicapture,iiazi    ! to pass to updcapt updazi
 #endif
       integer NITEMS,INO ! max items and current menu item
+      integer IGFACTold,NPATCHold ! local vars to remember grid/patch settings
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -393,10 +397,11 @@ C Take command line file name as configuration file.
         LCMDFL='  '
       endif
 
-C Take command line zone name and
-C determine if focus should be to a single zone.
+C Take command line zone name and determine if the focus should
+C be to a single zone or ALL zones (e.g. not yet specified).
+      write(6,*) 'inz ',inz
       if(inz(1:1).ne.' ')then
-        inzone=inz
+        write(inzone,'(a)') inz
         call edisp(iuout,'  ') ! echo a blank line
         write(outs,'(a,a)')'The input zone is: ',inzone
         call edisp(iuout,outs)
@@ -497,10 +502,13 @@ C then remove it before opening a new scratch file.
 
 C If inzone = All display an image of the model. If inzone is either
 C a string which matches a zone name or is an index then focus on
-C that zone.  If inzone = UNKNOWN or the index 0 present a list.
+C that zone and update string ZN.  If inzone = UNKNOWN or the 
+C index 0 present a list.
           call zindex(inzone,index)
+          write(6,*) 'after zindex ',inzone,' ',index
           if(index.gt.0)then
             ic = index
+            write(ZN,'(a)') zname(ic)
             goto 42
           endif
         endif
@@ -669,7 +677,7 @@ c Change npatch.
         helptopic='patch_subdivision'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKI(NP,' ',' New value ? ',
-     &    1,'F',MPATCH/4,'F',1,'patch subdivision',IER,nbhelp)
+     &    1,'F',MPATCH/4,'F',10,'patch subdivision',IER,nbhelp)
         NPATCH=4*NP
         call tstamp('>','VWF: updated patch subdivision')
       ELSEIF(INO.EQ.9)THEN
@@ -714,13 +722,15 @@ C of rectangular body.
         NGRID = 0
         NTRPOL = 0
         IER=0
+        IGFACTold=IGFACT
+        NPATCHold=NPATCH
         call tstamp('>','VWF: enter mrt calcs')
         call EDMRTC(ITRC,IUOUT,ICOMP,IER)
         call tstamp('>','VWF: exit mrt calcs')
 
 C Reset grid and patch after return from MRT sensor calculations.
-        IGFACT = 10
-        NPATCH=40
+        IGFACT=IGFACTold
+        NPATCH=NPATCHold
       ELSEIF(INO.EQ.12)THEN
 
 C Toggle trace level.

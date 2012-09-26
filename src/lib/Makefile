@@ -18,9 +18,9 @@ LIBsqlite = libSQLite.a
 	$(MCC) $(FFLAGS) -c $<
 
 
-OBJECTSX11 = esru_ask.o esru_blk.o esru_lib.o esru_libNonGTK.o esru_libX11.o esru_x.o esru_util.o
-OBJECTSGTK = esru_ask.o esru_blk.o esru_lib.o esru_libGTK.o esru_nox.o esru.o esru_util.o
-OBJECTSnoX = esru_ask.o esru_blk.o esru_lib.o esru_libNonGTK.o esru_fc.o esru_util.o
+OBJECTSX11 = esru_ask.o esru_blk.o esru_lib.o esru_libNonGTK.o esru_libX11.o esru_x.o esru_util.o redir_console_output.o
+OBJECTSGTK = esru_ask.o esru_blk.o esru_lib.o esru_libGTK.o esru_nox.o esru.o esru_util.o redir_console_output.o
+OBJECTSnoX = esru_ask.o esru_blk.o esru_lib.o esru_libNonGTK.o esru_fc.o esru_util.o redir_console_output.o
 GTK_OBJ = esp-r.o esp_menu.o esp_text.o esp_ask.o esp_draw.o esp_file.o
 OBJECTSVersion = version.o
 
@@ -145,6 +145,8 @@ esru_util.o:
 	$(MCC) $(LD_FLAGS) $(CFLAGS) -I../lib -c esru_util.c
 version.o:
 	$(MFC) $(LD_FLAGS) $(FFLAGS) -c version.F
+redir_console_output.o:
+	$(MCC) $(LD_FLAGS) $(CFLAGS) $(GTKFLAGS) -c redir_console_output.c
 
 # H3k-reports object files
 TReportsManager.o:
