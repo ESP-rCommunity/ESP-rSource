@@ -134,6 +134,7 @@ C Name of current application
       integer*8 iicapture,iiazi    ! to pass to updcapt updazi
 #endif
       integer NITEMS,INO ! max items and current menu item
+      integer IGFACTold,NPATCHold ! local vars to remember grid/patch settings
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -671,7 +672,7 @@ c Change npatch.
         helptopic='patch_subdivision'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKI(NP,' ',' New value ? ',
-     &    1,'F',MPATCH/4,'F',1,'patch subdivision',IER,nbhelp)
+     &    1,'F',MPATCH/4,'F',10,'patch subdivision',IER,nbhelp)
         NPATCH=4*NP
         call tstamp('>','VWF: updated patch subdivision')
       ELSEIF(INO.EQ.9)THEN
@@ -716,13 +717,15 @@ C of rectangular body.
         NGRID = 0
         NTRPOL = 0
         IER=0
+        IGFACTold=IGFACT
+        NPATCHold=NPATCH
         call tstamp('>','VWF: enter mrt calcs')
         call EDMRTC(ITRC,IUOUT,ICOMP,IER)
         call tstamp('>','VWF: exit mrt calcs')
 
 C Reset grid and patch after return from MRT sensor calculations.
-        IGFACT = 10
-        NPATCH=40
+        IGFACT=IGFACTold
+        NPATCH=NPATCHold
       ELSEIF(INO.EQ.12)THEN
 
 C Toggle trace level.

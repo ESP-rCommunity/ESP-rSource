@@ -1719,7 +1719,7 @@ C report was issued more than 5 seconds ago.
           istamp=1
         end if
 
-        if(istamp.ne.0.and.(ictime-iltime).ge.5) then
+        if(istamp.ne.0.and.(ictime-iltime).ge.1) then
           iltime=ictime
           ietim=istime+(ictime-istime)*100/iperc
 

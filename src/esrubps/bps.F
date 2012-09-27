@@ -85,6 +85,7 @@ C                   hourly profiles 'Hrly_Load.tmp'
 C           ifil+80 CETC month status IO channel
 C           ifil+81 Runtime lookup table data file
 C           ifil+82 File containing wind turbine power curve data
+C           ifil+83 Temporary file access for deleting "console_out.txt" prior to simulation
 
 C MMOD   -  index returned from the 'pages' routine
 C           and determines the device type attached to current job.
@@ -373,11 +374,20 @@ C Active domain.  Assume not active, check if running in dll mode
 C and clear dll subroutine name and error details.
       CFDOK=.false.
 
+
 C Co-simulation between ESP-r and TRNSYS is possible.  By default assume
 C there is no co-simulation.  This flag will be set to true if a TRNSYS
 C coupling component is detected by the plant domain.
       COSIM = .false.
       
+
+C Prior to commencing simulation, delete "console_out.txt", if found.
+      INQUIRE (FILE="console_out.txt",EXIST=XST)
+      if(XST)then 
+            OPEN( UNIT=ifil+83, FILE="console_out.txt" )         
+            CLOSE ( UNIT=ifil+83, STATUS='DELETE' )
+      endif
+
 C mark in log file, start of simulation
       if( dll ) then
         open(UNIT=iLogFile, FILE=cLogFile,position='APPEND' )
