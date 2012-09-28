@@ -17,7 +17,7 @@ PROG = ecnv$(EXE)
 MODULE_OBJECTS = h3kmodule.o startup.o aim2_module.o
 
 OBJECTS = ecnv.o ascii_mat.o basesimp.o basesimp_inputs.o \
-	  bscoeff.o bscoeff_extended.o c2fdum.o ctread.o e2vrml.o \
+	  bscoeff.o bscoeff_extended.o c2fdum.o ctread.o dossupport.o e2vrml.o \
 	  e2vdxf.o edatabase.o egeometry.o egtgeom.o \
 	  emfnetw.o emkcfg.o enetmisc.o enetrewr.o eroper.o esru_misc.o \
 	  esystem.o filelist.o item.o low_lev.o mfcdat.o mid_lev.o \
@@ -54,6 +54,9 @@ c2fdum.F:
 ctread.F:
 	rm -f ctread.F
 	ln -s $(COMdir)/ctread.F .
+dossupport.F:
+	rm -f dossupport.F
+	ln -s $(COMdir)/dossupport.F .
 edatabase.F:
 	rm -f edatabase.F
 	ln -s $(COMdir)/edatabase.F .
@@ -130,7 +133,7 @@ install:
 clean:
 	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
 	aim2_module.F ascii_mat.F basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
-	c2fdum.F ctread.F edatabase.F egeometry.F egtgeom.F \
+	c2fdum.F ctread.F dossupport.F edatabase.F egeometry.F egtgeom.F \
 	emfnetw.F emkcfg.F enetmisc.F enetrewr.F eroper.F esru_misc.F esystem.F \
 	filelist.F item.F mfcdat.F nwkrewr.F pltcfg.F readTrnsys.F rwipv.F rwsbem.F \
 	sort.F startup.F tdfile.F h3kmodule.f90
