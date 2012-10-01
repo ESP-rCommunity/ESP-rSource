@@ -374,6 +374,9 @@ C If act is asci2bin or bin2asci read ascii file name
                 call getarg(i,act)
               end if
               if(act(1:6).eq.'rotate')then
+
+C If the -act argument is rotate then also deal with data1,
+C data2 and data3.
                 i=i+1
                 if (UsePassedCommandLine) then 
                   call EGETW(PassedCommandLine,pos,argument,'-',
@@ -399,6 +402,9 @@ C If act is asci2bin or bin2asci read ascii file name
                 end if
                 read(argument,*,IOSTAT=IOS,ERR=2)data3
               elseif(act(1:9).eq.'transform')then
+
+C If the -act argument is transform then also deal with data1,
+C data2 and data3.
                 i=i+1
                 if (UsePassedCommandLine) then 
                   call EGETW(PassedCommandLine,pos,argument,'-',
@@ -2012,6 +2018,10 @@ C parpsfh: Help message for several of the command line parsers.
         call edisp(iuout,' (where -act rotate is followed by the angle')
         call edisp(iuout,'  degrees +=anticlockwise and the X and Y')
         call edisp(iuout,'  coordinates to rotate around.)')
+        call edisp(iuout,'       [-act {QA} ] ')
+        call edisp(iuout,'  creates a model contents report')
+        call edisp(iuout,'       [-act {update_zone_con} ]')
+        call edisp(iuout,'  updates the zone construction files.')
       elseif(appn(1:3).eq.'res')then
         call edisp(iuout,'This is the ESP-r analysis module. ')
         call edisp(iuout,'  Use: [-mode {text|graphic}]')
