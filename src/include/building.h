@@ -65,7 +65,7 @@ C Special materials.
 
 C Casual gains.
       PARAMETER (MCT=7,MGTY=7) !- Casual gain types.
-      PARAMETER (MDTY=10)      !- Day types.
+      PARAMETER (MDTY=15)      !- Day types.
       PARAMETER (MGPER=72)     !- Periods.
       PARAMETER (MC=24*MCT*MDTY)!- Total casual gains.
 

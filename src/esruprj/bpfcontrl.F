@@ -306,7 +306,7 @@ C of the menu.
       if(icfoc.eq.0.and.ncf.gt.0)then
         do 88 II=1,ncf
           NN=nbcdt(ii)
-          if(nbcdt(ii).eq.0)NN=nbdaytype
+          if(nbcdt(ii).eq.0)NN=nbdaytype  ! zero indicates all calendar day types
           do 87 IJ=1,NN
             listct=listct+1
             if(listct.GE.IST.AND.(listct.LE.(IST+MIFULL)))then

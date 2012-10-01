@@ -472,10 +472,16 @@ C then re-initialize the calendar.
         if(ieri.eq.-3) goto 3
         iyear=iyeart
         MODSIT=.true.
+
+C If no day types found use calenmanage to instanciate the initial set of
+C day types. If nbdaytype is 3 then we have a legacy assumption and leave
+C it alone. If more then 3 then use the calnedar function.
         if(nbdaytype.eq.0)then
-          call calenmanage('i',ier)
+          call calenmanage('i',ier) ! no known daytypes instanciate
+        elseif(nbdaytype.lt.3)then
+          call calenmanage('i',ier) ! might not be necessary
         elseif(nbdaytype.eq.3)then
-          call calenmanage('i',ier)
+          continue
         elseif(nbdaytype.gt.3)then
 
 C Perform check that calendar day types correspond with simulation year.
@@ -522,10 +528,11 @@ C work silently. (Same logic as in esystem.F)
 
       ELSEIF(INO.EQ.8)THEN
 
-C Calendar functions. If number of daytypes is zero then
-C initialise. Then enter interactive facility to allow user
-C to define holidays.
-        if(nbdaytype.le.3)then
+C Calendar functions. If number of daytypes is zero or less than
+C the legacy assumption of 3 daytypes then initialise prior to
+C entering the interactive facility to allow user to manage the
+C calendar.
+        if(nbdaytype.lt.3)then
           act = 'i'
           call calenmanage(act,ier)
         endif
@@ -1363,7 +1370,8 @@ C Go into the tdf editing menu.
 C User supplies name of file. Find out its contents (using similar code
 C to ersys) and jump back to the start of this subroutine.
 
-C << later add add a file browse function >>
+C << later add add a file browse function it is probably in the nets
+C << folder in most new models.
         if(LTDFA(1:4).eq.'UNKN') LTDFA=DLTDF
         ltmp=LTDFA
         CALL EASKS(ltmp,' ','Temporal definitions file?',
@@ -2292,7 +2300,7 @@ C Help text for this menu.
 
 C ********** calenmanage **************
 C Calenmanage sets up and manages a calendar for ESP-r. Currently
-C up to 10 day types can be defined and one may be assigned to
+C up to 10 day types (MDTY) can be defined and one may be assigned to
 C each of the 365 days of the year.
 C calename (char*32) is the overall name of this calendar (e.g. `UK standard`)
 C calentag (char*12) is a tag for each day type (e.g. `autumn_wkd`)
@@ -2309,7 +2317,13 @@ C model cfg file if a change is made.
       implicit none
 #include "epara.h"
 #include "building.h"
-#include "control.h"
+#include "esprdbfile.h"
+#include "espriou.h"  
+C espriou.h for climatelist file name.
+C #include "control.h"
+
+#include "seasons.h"
+C seasons.h provides typper and typsea
 
       integer lnblnk  ! function definition
 
@@ -2319,6 +2333,8 @@ C Parameters passed
 
       integer iuout,iuin
       common/OUTIN/IUOUT,IUIN
+      COMMON/FILEP/IFIL
+      integer ifil
       integer iyear,ibdoy,iedoy,ifday,iftime
       common/set1/iyear,ibdoy,iedoy,ifday,iftime
       common/user/browse
@@ -2326,18 +2342,23 @@ C Parameters passed
       character calename*32,calentag*12,calendayname*32
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       integer nbdaytype,nbcaldays,icalender
-      COMMON/FILEP/IFIL
-      integer ifil
-      common/cctlnm/ctldoc,lctlf
-      character ctldoc*248,LCTLF*72
       integer MVERT,IVERT,mcvert,icvert ! max items and current menu item
-      integer iloop,ib,ld,l,idayloop,loop ! index for looping
+      integer ib,ld,l,idayloop,loop ! index for looping
       integer ijd,idayn,idwk,idt,idtt,imthn,ixd   ! for counting days
       integer idno,istjandwk,ISDS,ISDF   ! for counting days
       integer ifoc,ifrq,ihdt,m,mj,ij,mm,loopst,ix,io,isw,ipact,irt ! for position
-      integer icfoc,ictlf  ! for control domain and file unit
-      integer ieri,istat   ! for error states
-      integer ITRC         ! for verbosity
+      integer ictlf  ! for control domain and file unit
+      integer ieri   ! for error states
+      integer iuf    ! additional file unit
+      integer ipatday1,ipatday2,ipatday3,ipatday4,ipatday5,ipatday6  ! remember what the new day types are
+      integer idol,idaynum,idtyy,idwknum,imthnum  ! for determining day of week
+      logical ok,dok,xst
+
+C Variables for handling climate file.
+      character llclmdb*144
+      integer lndbp
+      logical unixok
+      character fs*1
 
 C m1slots and m2slots are for the two possible months to be
 C displayed. 42 is 7 days over maximum of 6 periods e.g.
@@ -2357,10 +2378,8 @@ C 31
       character vert*33,DS*7,DS1*10,key*1
       character outs*124,head*18,tcalename*32,citem*52,clist*52
       character tcalentag*12,tcalendayn*32
-      character dayact*2   ! action to take in managing day types
-      logical modify,browse,XST
+      logical modify,browse
       logical havectl ! to remember if control file exists
-      integer IHDTP   ! for users preference to add or copy
       logical usecalendar  ! signal so easier to detect if other domains
                            ! have a different number of day types
 
@@ -2370,14 +2389,23 @@ C For help messages
       integer nbhelp     ! number of help lines found
 
       helpinsub='calenmanage'  ! set for subroutine
+
+C Set folder separator (fs) to \ or / as required.
+      call isunix(unixok)
+      if(unixok)then
+        fs = char(47)
+      else
+        fs = char(92)
+      endif
       havectl=.false.          ! assume no control
       usecalendar=.false. 
+      ICTLF=IFIL+1
 
-C If user requested initial calendar.
+C If user requested initial calendar. Setup initial 4 day types (wk sat sun holiday).
       if(act.eq.'i'.and.(.NOT.browse))then
         if(nbdaytype.le.3)then
-          calename='standard weekday Sat & Sun'
-          nbdaytype=3
+          calename='standard weekday Sat Sun hol'
+          nbdaytype=4
           nbcaldays(1)=0
           calentag(1)='weekdays'
           calendayname(1)='weekdays (all year)'
@@ -2387,32 +2415,48 @@ C If user requested initial calendar.
           nbcaldays(3)=0
           calentag(3)='sunday'
           calendayname(3)='Sundays (all year)'
-          calentag(4)='-'
+          calentag(4)='holiday'
+          calendayname(4)='holiday'
+          nbcaldays(4)=0
           calentag(5)='-'
-          calentag(6)='-'
-          calentag(7)='-'
-          calentag(8)='-'
-          calentag(9)='-'
-          calendayname(4)='-'
           calendayname(5)='-'
+          nbcaldays(5)=0
+          calentag(6)='-'
           calendayname(6)='-'
+          nbcaldays(6)=0
+          calentag(7)='-'
           calendayname(7)='-'
+          nbcaldays(7)=0
           calendayname(8)='-'
+          calentag(8)='-'
+          nbcaldays(8)=0
+          calentag(9)='-'
           calendayname(9)='-'
+          nbcaldays(9)=0
+          calentag(10)='-'
+          calendayname(10)='-'
+          nbcaldays(10)=0
           do 42 ijd=1,365
 
-C for julian day ijd find month and day of month and day of week.
-            call edayr(ijd,idayn,imthn)
-            call eweekd(idayn,imthn,iyear,idwk)
-            if(idwk.ge.1.and.idwk.le.5)then
-              icalender(ijd)=1
-              nbcaldays(1)=nbcaldays(1)+1
-            elseif(idwk.eq.6)then
-              icalender(ijd)=2
-              nbcaldays(2)=nbcaldays(2)+1
-            elseif(idwk.eq.7)then
-              icalender(ijd)=3
-              nbcaldays(3)=nbcaldays(3)+1
+C Assume 1 Jan is a holiday (users can change this later).
+            if(ijd.eq.1)then
+              icalender(ijd)=4
+              nbcaldays(4)=nbcaldays(4)+1
+            else
+
+C For julian day ijd find month and day of month and day of week.
+              call edayr(ijd,idayn,imthn)
+              call eweekd(idayn,imthn,iyear,idwk)
+              if(idwk.ge.1.and.idwk.le.5)then
+                icalender(ijd)=1
+                nbcaldays(1)=nbcaldays(1)+1
+              elseif(idwk.eq.6)then
+                icalender(ijd)=2
+                nbcaldays(2)=nbcaldays(2)+1
+              elseif(idwk.eq.7)then
+                icalender(ijd)=3
+                nbcaldays(3)=nbcaldays(3)+1
+              endif
             endif
   42      continue
           return
@@ -2432,13 +2476,15 @@ C Initial menu entry setup.
    92 IER=0
       ILEN=365
       IVERT=-3
+
+C Set usecalendar.
       if(nbdaytype.ge.3) usecalendar=.true. 
 
 C Loop through the items until the page to be displayed. M is the 
 C current menu line index. Build up text strings for the menu. 
     3 M=MHEAD
       write(VERT(1),'(2a)')     '1 calendar: ',calename(1:20)
-      write(VERT(2),'(a,i2,a)') '2 day types (',nbdaytype,')'
+      write(VERT(2),'(a,i2,a)') '2 manage day types (',nbdaytype,')'
       VERT(3)                  =' __________________________'
       VERT(4)                  ='  date         day type    '
       DO 10 L=1,ILEN
@@ -2490,7 +2536,7 @@ C Edit calendar name
 
 C Manage day types.
         CALL EPMENSV
-  73    write(citem(1),'(2a)') '  calendar: ',calename(1:20)
+  73    write(citem(1),'(2a)') '  calendar: ',calename(1:32)
         write(citem(2),'(a)')  ' __tag________description______________'
         mj=2
         do 77 ij=1,nbdaytype
@@ -2500,7 +2546,7 @@ C Manage day types.
   77    continue
         mm=mj+nbdaytype
         write(citem(mm+1),'(a)') ' ____________________________________'
-        write(citem(mm+2),'(a)') '+ add/delete                         '
+        write(citem(mm+2),'(a)') '+ add a daytype or set of daytypes   '
         write(citem(mm+3),'(a)') '? help                               '
         write(citem(mm+4),'(a)') '- exit                               '
         mcvert=mj+nbdaytype+4
@@ -2516,88 +2562,64 @@ C Help.
           goto 73
         elseif(icvert.eq.mcvert-2)then
 
-C Add or delete a day type.
+C Add a single day type or a set of day types (e.g. seasonal patterns) if
+C there are seasonal periods defined for the current weather. 
+C Note: the delete a day type is currently not implemented.
+
+C Rescan the `climatelist` file. Check if this climate is
+C in the list. If not instanciate season and typical start and end dates.
+          if(ihaveseason.gt.0)then
+            continue
+          else
+
+C Setup string buffer with distribution weather folder name.
+            lndbp=lnblnk(standardclmpath)
+            if(ipathclim.eq.0.or.ipathclim.eq.1)then
+              llclmdb=LCLIM
+            elseif(ipathclim.eq.2)then
+              write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &          LCLIM(1:lnblnk(LCLIM))
+            endif
+            INQUIRE (FILE=cdblfil,EXIST=XST)
+            if(XST)then
+              IUF=IFIL+2
+              call scancdblist(IUF,llclmdb,ok,ier)
+              if(ok)then
+                continue
+              else
+
+C Set default early winter, spring, summer, autumn, late winter periods.
+                CALL EDAY(9,1,ia1wins); CALL EDAY(15,1,ia1winf)
+                CALL EDAY(6,3,ia1sprs); CALL EDAY(12,3,ia1sprf)
+                CALL EDAY(11,7,iasums); CALL EDAY(17,7,iasumf)
+                CALL EDAY(2,10,ia2sprs); CALL EDAY(8,10,ia2sprf)
+                CALL EDAY(20,11,ia2wins); CALL EDAY(26,11,ia2winf)
+
+C Default season definitions.
+                CALL EDAY(1,1,is1wins); CALL EDAY(28,2,is1winf)
+                CALL EDAY(1,11,is2wins); CALL EDAY(31,12,is2winf)
+                CALL EDAY(1,3,is1sprs); CALL EDAY(30,4,is1sprf)
+                CALL EDAY(1,9,is2sprs); CALL EDAY(31,10,is2sprf)
+                CALL EDAY(1,5,is1sums); CALL EDAY(31,8,is1sumf)
+              endif
+            endif
+          endif
+
+C Dialog based on whether or not seasons have been found.
+
           if(nbdaytype.ge.3.and.nbdaytype.le.MDTY)then
-            CALL EASKABC(' Options:',' ',
-     &        'add','delete (not available)','continue',IRT,nbhelp)
+            CALL EASKABCD(' Options:',' ','add day type',
+     &        'add set of day types','delete (not available)',
+     &        'continue',IRT,nbhelp)
             if(irt.eq.1)then
 
 C If there is a control file, scan it and then loop through each of the
 C existing control loops to add in what-will-become the new day type.
-              ICTLF=IFIL+1
-              CALL ERPFREE(ICTLF,ISTAT)
-              call FINDFIL(LCTLF,XST)
-              if(XST)then
-                CALL EZCTLR(ICTLF,ITRC,IUOUT,IER)
-                havectl=.true.          ! yes we have control
-
-C Ask user whether to create a minimal control regime or to
-C duplicate the last control day type in each loop.
-                IDT=nbdaytype     ! set to the not-yet-incremented value
-                IHDTP=1
-                CALL EASKABC('Pattern for new day type (see help)?',' ',
-     &            'One period free floating',
-     &            'Use pattern of last day type','cancel',IHDTP,nbhelp)
-                if(IHDTP.eq.1)then
-                  dayact='SA'       ! assume silent addition
-                elseif(IHDTP.eq.2)then
-                  dayact='SC'       ! assume silent copy
-                elseif(IHDTP.eq.3)then
-                  havectl=.false.   ! ignore control
-                  goto 87           ! do not bother processing control data
-                endif
-                if(NCF.gt.0)then  ! zone loops
-                  icfoc=0
-                  do 80 iloop=1,NCF
-                    if(nbcdt(iloop).ne.0.AND.usecalendar)then
-                      continue   ! calendar and ideal day types do not match
-                    else
-                      call ADDCTLD(icfoc,iloop,IDT,dayact)
-                    endif
-  80              continue
-                endif
-                if(NCC.gt.0)then  ! flow loops
-                  icfoc=2
-                  do 81 iloop=1,NCC
-                    if(nfcdt(iloop).ne.0.AND.usecalendar)then
-                      continue   ! calendar and flow day types do not match
-                    else
-                      call ADDCTLD(icfoc,iloop,IDT,dayact)
-                    endif
-  81              continue
-                endif
-                if(NCL.gt.0)then  ! plant loops
-                  icfoc=1
-                  do 82 iloop=1,NCL
-                    if(npcdt(iloop).ne.0.AND.usecalendar)then
-                      continue   ! calendar and plant day types do not match
-                    else
-                      call ADDCTLD(icfoc,iloop,IDT,dayact)
-                    endif
-  82              continue
-                endif
-                if(NGF.gt.0)then  ! global loops
-                  icfoc=3
-                  do 83 iloop=1,NGF
-                    call ADDCTLD(icfoc,iloop,IDT,dayact)
-  83              continue
-                endif
-                if(NOF.gt.0)then  ! optical loops
-                  icfoc=5
-                  do 84 iloop=1,NOF
-                    call ADDCTLD(icfoc,iloop,IDT,dayact)
-  84              continue
-                endif
-                if(nCFCctlloops.gt.0)then ! CFC loops
-                  icfoc=6
-                  do 86 iloop=1,nCFCctlloops
-                    call ADDCTLD(icfoc,iloop,IDT,dayact)
-  86              continue
-                endif
-              endif
+C havectl is returned as true if there is a control file.
+              call  updatectlfornewdaytype(havectl,usecalendar,ier)
 
 C Now increment nbdaytype and get its name and description.
-  87          nbdaytype=nbdaytype+1
+              nbdaytype=nbdaytype+1
               nbcaldays(nbdaytype)=0
               calentag(nbdaytype)='new'
               calendayname(nbdaytype)='new day type'
@@ -2608,7 +2630,7 @@ C Edit calendar day tag and name.
      &          '  ',12,'holiday','day tag',IER,nbhelp)
               if(tcalentag(1:2).ne.'  ')then
                 if(tcalentag(1:lnblnk(tcalentag)).ne.
-     &calentag(nbdaytype)(1:lnblnk(calentag(nbdaytype))))then
+     &         calentag(nbdaytype)(1:lnblnk(calentag(nbdaytype))))then
                   calentag(nbdaytype)=tcalentag
                 endif
               endif
@@ -2617,12 +2639,13 @@ C Edit calendar day tag and name.
      &          '  ',32,'holiday','day descr',IER,nbhelp)
               if(tcalendayn(1:2).ne.'  ')then
                 if(tcalendayn(1:lnblnk(tcalendayn)).ne.
-     &calendayname(nbdaytype)(1:lnblnk(calendayname(nbdaytype))))then
+     & calendayname(nbdaytype)(1:lnblnk(calendayname(nbdaytype))))then
                   calendayname(nbdaytype)=tcalendayn
                 endif
               endif
 
-C Update control data for all zones to include this new day type.
+C Update control data for all zones to include this new day type (now
+C that its name is known).
               if(havectl)then
                 CALL CTLWRT(ICTLF,IER)
               endif
@@ -2632,9 +2655,252 @@ C overwrite or save to new file names.
               CALL UPDOPR
               modify=.true.
               goto 73
+
             elseif(irt.eq.2)then
-              goto 73
+
+C Display a list of day type patterns.
+              idno=1
+              isw=0
+              call MENUATOL('  ','Daytype patterns',
+     &          'a retail open Monday-Saturday closed Sunday',
+     &          'b winter trans summer weekdays & weekends',
+     &          'c xxx','d xxx','e xxx','f xxx',
+     &          ' ',' ',' ',' ',' ',' ',
+     &          isw,idno,nbhelp)
+              if(isw.eq.1)then
+
+C A retail profile is open Monday thru Saturday with reduced operating
+C hours on the 2nd weekend day. Call the 1st day type retail_open and
+C the 2nd day  retail_close. Later offer the user an option to reset
+C the calendar to match this.
+                if(nbdaytype+2.lt.MDTY)then
+
+C For the 1st retail day revise the controls and then the operations.
+                  call edisp(iuout,' ')
+                  call edisp(iuout,' Processing retail_open day...')
+                  call  updatectlfornewdaytype(havectl,usecalendar,ier)
+
+C Now increment nbdaytype and get its name and description. Update
+C the control file if it exists and then process zone operation files.
+                  nbdaytype=nbdaytype+1
+                  nbcaldays(nbdaytype)=0
+                  ipatday1 = nbdaytype  ! remember this
+                  calentag(nbdaytype)='retail_open'
+                  calendayname(nbdaytype)='retail open Mon-Sat'
+                  if(havectl)then
+                    CALL CTLWRT(ICTLF,IER)
+                  endif
+                  CALL UPDOPR
+
+C For the 2nd retail day revise the controls and then the operations.
+                  call edisp(iuout,' Processing retail_close day...')
+                  call  updatectlfornewdaytype(havectl,usecalendar,ier)
+
+C Now increment nbdaytype and get its name and description. Update
+C the control file if it exists and then process zone operation files.
+                  nbdaytype=nbdaytype+1
+                  nbcaldays(nbdaytype)=0
+                  ipatday2 = nbdaytype  ! remember this
+                  calentag(nbdaytype)='retail_close'
+                  calendayname(nbdaytype)='retail closed Sunday'
+                  if(havectl)then
+                    CALL CTLWRT(ICTLF,IER)
+                  endif
+                  CALL UPDOPR
+
+C If user agrees apply these two new day types to the current calendar.
+C Loop through all days, if one of the original 3 day types revise them
+C to use the new Mon-Sat & Sunday types.
+                  DOK=.true.
+                  CALL ASKOK('Apply these new day types to the current',
+     &              'calendar of the model?',OK,DOK,nbhelp)
+                  if(OK)then
+                    DO 123 IDOL=1,365
+                      IF(ICALENDER(IDOL).LE.3)THEN
+                        CALL EDAYR(IDOL,IDAYNUM,IMTHNUM)
+                        CALL EWEEKD(IDAYNUM,IMTHNUM,IYEAR,IDWKNUM)
+                        IF(IDWKNUM.LE.6)THEN
+                          IDTYY=ipatday1 ! WEEKDAY
+                        ELSEIF(IDWKNUM.EQ.7)THEN
+                          IDTYY=ipatday2 ! SUNDAY
+                        ENDIF
+                        ICALENDER(IDOL)=IDTYY  ! update the model calendar
+                      ENDIF
+ 123                CONTINUE
+                  endif
+
+                  modify=.true.
+                  goto 73
+
+                else
+                  call usrmsg('Not able to add two more day types to',
+     &              'the current model calendar.','W')
+                  goto 73
+                endif
+              elseif(isw.eq.2)then
+
+C Create a separate weekday and weekend day type for winter transition
+C and summer for the model seasons. The day type names are win_wkday,
+C win_wkend, trn_wkday, trn_wkend, sum_wkday, sum_wkend.
+                if(nbdaytype+6.lt.MDTY)then
+
+C For the win_wkday revise the controls and then the operations.
+                  call edisp(iuout,' ')
+                  call edisp(iuout,' Processing win_wkday day...')
+                  call  updatectlfornewdaytype(havectl,usecalendar,ier)
+
+C Now increment nbdaytype and get its name and description. Update
+C the control file if it exists and then process zone operation files.
+                  nbdaytype=nbdaytype+1
+                  nbcaldays(nbdaytype)=0
+                  ipatday1 = nbdaytype  ! remember this
+                  calentag(nbdaytype)='win_wkday'
+                  calendayname(nbdaytype)='winter seasons weekdays'
+                  if(havectl)then
+                    CALL CTLWRT(ICTLF,IER)
+                  endif
+                  CALL UPDOPR
+
+C For the win_wkend revise the controls and then the operations.
+                  call edisp(iuout,' Processing win_wkend day...')
+                  call  updatectlfornewdaytype(havectl,usecalendar,ier)
+                  nbdaytype=nbdaytype+1
+                  nbcaldays(nbdaytype)=0
+                  ipatday2 = nbdaytype  ! remember this
+                  calentag(nbdaytype)='win_wkend'
+                  calendayname(nbdaytype)='winter seasons weekends'
+                  if(havectl)then
+                    CALL CTLWRT(ICTLF,IER)
+                  endif
+                  CALL UPDOPR
+
+C For the trn_wkday revise the controls and then the operations.
+                  call edisp(iuout,' Processing trn_wkday day...')
+                  call  updatectlfornewdaytype(havectl,usecalendar,ier)
+                  nbdaytype=nbdaytype+1
+                  nbcaldays(nbdaytype)=0
+                  ipatday3 = nbdaytype  ! remember this
+                  calentag(nbdaytype)='trn_wkday'
+                  calendayname(nbdaytype)='transition seasons weekdays'
+                  if(havectl)then
+                    CALL CTLWRT(ICTLF,IER)
+                  endif
+                  CALL UPDOPR
+
+C For the trn_wkend revise the controls and then the operations.
+                  call edisp(iuout,' Processing trn_wkend day...')
+                  call  updatectlfornewdaytype(havectl,usecalendar,ier)
+                  nbdaytype=nbdaytype+1
+                  nbcaldays(nbdaytype)=0
+                  ipatday4 = nbdaytype  ! remember this
+                  calentag(nbdaytype)='trn_wkend'
+                  calendayname(nbdaytype)='transition seasons weekends'
+                  if(havectl)then
+                    CALL CTLWRT(ICTLF,IER)
+                  endif
+                  CALL UPDOPR
+
+C For the sum_wkday revise the controls and then the operations.
+                  call edisp(iuout,' Processing sum_wkday day...')
+                  call  updatectlfornewdaytype(havectl,usecalendar,ier)
+                  nbdaytype=nbdaytype+1
+                  nbcaldays(nbdaytype)=0
+                  ipatday5 = nbdaytype  ! remember this
+                  calentag(nbdaytype)='sum_wkday'
+                  calendayname(nbdaytype)='summer season weekdays'
+                  if(havectl)then
+                    CALL CTLWRT(ICTLF,IER)
+                  endif
+                  CALL UPDOPR
+
+C For the sum_wkend revise the controls and then the operations.
+                  call edisp(iuout,' Processing sum_wkend day...')
+                  call  updatectlfornewdaytype(havectl,usecalendar,ier)
+                  nbdaytype=nbdaytype+1
+                  nbcaldays(nbdaytype)=0
+                  ipatday6 = nbdaytype  ! remember this
+                  calentag(nbdaytype)='sum_wkend'
+                  calendayname(nbdaytype)='summer season weekends'
+                  if(havectl)then
+                    CALL CTLWRT(ICTLF,IER)
+                  endif
+                  CALL UPDOPR
+
+C If user agrees apply these six new day types to the current calendar.
+C Loop through all days, if one of the original 3 day types revise them
+C to use the new seasonal day types. The 5 sesaons in the weather data
+C are applied so that win1 and win2 both get the winter day types and
+C spring and autumn both get the transition day type.
+                  DOK=.true.
+                  CALL ASKOK('Apply these new day types to the current',
+     &              'calendar of the model?',OK,DOK,nbhelp)
+                  if(OK)then
+C Debug.
+C                    write(6,*) nbdaytype,ipatday1,ipatday2,ipatday3,
+C     &ipatday4,ipatday5,ipatday6
+C                    write(6,*) is1wins,is1winf,is2wins,is2winf,
+C     &is1sprs,is1sprf,is2sprs,is2sprf,is1sums,is1sumf
+                    DO 124 IDOL=1,365
+                      IF(ICALENDER(IDOL).LE.3)THEN
+                        CALL EDAYR(IDOL,IDAYNUM,IMTHNUM)
+                        CALL EWEEKD(IDAYNUM,IMTHNUM,IYEAR,IDWKNUM)
+                        if(IDOL.ge.is1wins.and.IDOL.le.is1winf)then
+                          IF(IDWKNUM.LT.6)THEN
+                            IDTYY=ipatday1 ! Win weekday
+                          ELSEIF(IDWKNUM.EQ.6.or.IDWKNUM.EQ.7)THEN
+                            IDTYY=ipatday2 ! Win weekend
+                          ENDIF
+                        elseif(IDOL.ge.is1sprs.and.IDOL.le.is1sprf)then
+                          IF(IDWKNUM.LT.6)THEN
+                            IDTYY=ipatday3 ! transition weekday
+                          ELSEIF(IDWKNUM.EQ.6.or.IDWKNUM.EQ.7)THEN
+                            IDTYY=ipatday4 ! transition weekend
+                          ENDIF
+                        elseif(IDOL.ge.is1sums.and.IDOL.le.is1sumf)then
+                          IF(IDWKNUM.LT.6)THEN
+                            IDTYY=ipatday5 ! summer WEEKDAY
+                          ELSEIF(IDWKNUM.EQ.6.or.IDWKNUM.EQ.7)THEN
+                            IDTYY=ipatday6 ! summer weekend
+                          ENDIF
+                        elseif(IDOL.ge.is2sprs.and.IDOL.le.is2sprf)then
+                          IF(IDWKNUM.LT.6)THEN
+                            IDTYY=ipatday3 ! autumn weekday
+                          ELSEIF(IDWKNUM.EQ.6.or.IDWKNUM.EQ.7)THEN
+                            IDTYY=ipatday4 ! autumn weekend
+                          ENDIF
+                        elseif(IDOL.ge.is2wins.and.IDOL.le.is2winf)then
+                          IF(IDWKNUM.LT.6)THEN
+                            IDTYY=ipatday1 ! winter WEEKDAY
+                          ELSEIF(IDWKNUM.EQ.6.or.IDWKNUM.EQ.7)THEN
+                            IDTYY=ipatday2 ! winter weekend
+                          ENDIF
+                        endif
+
+C If the julian day did not match then fall back on day of the week.
+                        if(IDTYY.eq.0)then
+                          IF(IDWKNUM.LT.6)THEN
+                            IDTYY=1 ! WEEKDAY
+                          ELSEIF(IDWKNUM.EQ.6)THEN
+                            IDTYY=2 ! SATURDAY
+                          ELSEIF(IDWKNUM.EQ.7)THEN
+                            IDTYY=3 ! SUNDAY
+                          ENDIF
+                        endif
+                        ICALENDER(IDOL)=IDTYY  ! update the model calendar
+                      ENDIF
+ 124                CONTINUE
+                  endif
+
+                  modify=.true.
+                  goto 73
+
+                endif
+              else
+                goto 73
+              endif
             elseif(irt.eq.3)then
+              goto 73
+            elseif(irt.eq.4)then
               goto 73
             endif
           endif
@@ -2677,7 +2943,7 @@ C Update calendar day types
             NBCALDAYS(ICALENDER(IB))=NBCALDAYS(ICALENDER(IB))+1
  22       CONTINUE
 
-C update the model if not browsing 
+C Update the model. 
           CALL EMKCFG('-',IER)
         endif
         RETURN
@@ -2736,6 +3002,9 @@ C user can select one or more.
         CALL EPICKS(IX,IDVALS,' ',' Available day types:',
      &    52,nbdaytype,citem,'available day types',IER,nbhelp)
        if(ix.ne.0)then
+
+C << potential place to support seasonal day type allocations >>
+
           IHDT=0
           CALL EASKABC('How to add day types (see help)?',' ',
      &    'One by one','Follow pattern','cancel',IHDT,nbhelp)
@@ -2764,6 +3033,8 @@ C user can select one or more.
               modify=.true.
             endif
           ELSEIF(IHDT.EQ.2)THEN
+
+C Pattern addition of day types.
             ISDS=1
             ISDF=365
             IFRQ=1
@@ -2834,6 +3105,115 @@ C      IER=1
 C      return
       end
 
+C ********** updatectlfornewdaytype
+C updatectlfornewdaytype adds an additional day type to each of the
+C model control domains. 
+      subroutine updatectlfornewdaytype(havectl,usecalendar,ier)
+#include "building.h"
+#include "control.h"
+
+C Parameters passed
+      logical havectl ! to remember if control file exists
+      logical usecalendar  ! signal so easier to detect if other domains
+                           ! have a different number of day types
+      integer ier          ! error state
+
+      integer iuout,iuin
+      common/OUTIN/IUOUT,IUIN
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      integer nbdaytype,nbcaldays,icalender
+      COMMON/FILEP/IFIL
+      integer ifil
+      common/cctlnm/ctldoc,lctlf
+      character ctldoc*248,LCTLF*72
+      integer iloop ! index for looping
+      integer idt   ! for counting days
+      integer icfoc,ictlf  ! for control domain and file unit
+      integer istat   ! for error states
+      integer ITRC         ! for verbosity
+
+      character dayact*2   ! action to take in managing day types
+      logical XST
+      integer IHDTP   ! for users preference to add or copy
+
+      havectl=.false.          ! reset to assume no control
+
+      ICTLF=IFIL+1; itrc=0     ! set to silent read
+      CALL ERPFREE(ICTLF,ISTAT)
+      call FINDFIL(LCTLF,XST)
+      if(XST)then
+        CALL EZCTLR(ICTLF,ITRC,IUOUT,IER)
+        havectl=.true.          ! yes we have control
+
+C Ask user whether to create a minimal control regime or to
+C duplicate the last control day type in each loop.
+C The treatment of day types within addctld is based on an assumption
+C that nbdaytpe is not incremented until after the addctld call.
+        IDT=nbdaytype     ! set to the not-yet-incremented value
+        IHDTP=1
+        CALL EASKABC('Control pattern for new day type (see help)?',
+     &    ' ','One period free floating',
+     &    'Use pattern of last day type','cancel',IHDTP,nbhelp)
+        if(IHDTP.eq.1)then
+          dayact='SA'       ! assume silent addition
+        elseif(IHDTP.eq.2)then
+          dayact='SC'       ! assume silent copy
+        elseif(IHDTP.eq.3)then
+          havectl=.false.   ! ignore control
+          return            ! do not bother processing control data
+        endif
+        if(NCF.gt.0)then  ! zone loops
+          icfoc=0
+          do 80 iloop=1,NCF
+            if(nbcdt(iloop).ne.0.AND.usecalendar)then
+              continue   ! calendar and ideal day types do not match
+            else
+              call ADDCTLD(icfoc,iloop,IDT,dayact)
+            endif
+  80      continue
+        endif
+        if(NCC.gt.0)then  ! flow loops
+          icfoc=2
+          do 81 iloop=1,NCC
+            if(nfcdt(iloop).ne.0.AND.usecalendar)then
+              continue   ! calendar and flow day types do not match
+            else
+              call ADDCTLD(icfoc,iloop,IDT,dayact)
+            endif
+  81      continue
+        endif
+        if(NCL.gt.0)then  ! plant loops
+          icfoc=1
+          do 82 iloop=1,NCL
+            if(npcdt(iloop).ne.0.AND.usecalendar)then
+              continue   ! calendar and plant day types do not match
+            else
+              call ADDCTLD(icfoc,iloop,IDT,dayact)
+            endif
+  82      continue
+        endif
+        if(NGF.gt.0)then  ! global loops
+          icfoc=3
+          do 83 iloop=1,NGF
+            call ADDCTLD(icfoc,iloop,IDT,dayact)
+  83      continue
+        endif
+        if(NOF.gt.0)then  ! optical loops
+          icfoc=5
+          do 84 iloop=1,NOF
+            call ADDCTLD(icfoc,iloop,IDT,dayact)
+  84      continue
+        endif
+        if(nCFCctlloops.gt.0)then ! CFC loops
+          icfoc=6
+          do 86 iloop=1,nCFCctlloops
+            call ADDCTLD(icfoc,iloop,IDT,dayact)
+  86      continue
+        endif
+      endif
+
+      return
+      end
 
 C ********** calenprint **************
 C Calenprint displays a calendar for year iyear beginning
@@ -3256,6 +3636,7 @@ C EDDGTP Sets up ground temperature profiles
 
       CHARACTER HOLD*72,OUTS*124
       LOGICAL MODSIT
+      integer ifoc  ! the profile to edit
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -3263,6 +3644,7 @@ C For help messages
       integer nbhelp     ! number of help lines found
 
       helpinsub='EDDGTP'  ! set for subroutine
+      ifoc=1              ! initial assumption
 
 C Ground temperature profiles....
       call edisp(iuout,' ')  
@@ -3286,6 +3668,8 @@ C Ground temperature profiles....
         CALL EASKABC(' ','Options:',
      &             'edit profiles','add profile',' ',IRT,nbhelp)
         if(IRT.eq.1)then
+
+C Setup which ground temperature profile to edit (ifoc).
           if(NGRDP.gt.0)then
             ifoc=1
             CALL EASKI(IFOC,' ',' Index of profile to edit?',
@@ -3302,7 +3686,7 @@ C Ground temperature profiles....
         elseif(IRT.eq.2)then
           if(NGRDP.lt.MGRDP)then
             NGRDP=NGRDP+1
-            ifoc=NGRDP
+            ifoc=NGRDP  ! set forus for later logic
             goto 93
           else
             call usrmsg('Additional ground temperature profiles',
@@ -3314,7 +3698,7 @@ C Ground temperature profiles....
         CALL EDISP(IUOUT,'No ground temperature profiles defined!')
         if(NGRDP.lt.MGRDP)then
           NGRDP=NGRDP+1
-          ifoc=NGRDP
+          ifoc=NGRDP   ! set focus for later logic
           goto 93
         else
           call usrmsg('Additional ground temperature profiles',

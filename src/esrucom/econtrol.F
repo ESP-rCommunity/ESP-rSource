@@ -589,7 +589,7 @@ C Reporting:
  78       CONTINUE
         ENDIF
 
-        nn=nbcdt(ii)
+        nn=nbcdt(ii)  ! a zero says use all day types
         if(nn.eq.0)nn=NBDAYTYPE
         do 20 j=1,nn
           jj=j
@@ -858,7 +858,7 @@ C Reporting:
  378       CONTINUE
         ENDIF
 
-        nn=npcdt(ii)
+        nn=npcdt(ii)  ! a zero says use all day types
         if(nn.eq.0)nn=nbdaytype
         do 50 j=1,nn
           jj=j
@@ -1092,7 +1092,7 @@ C Reporting:
  788       CONTINUE
         ENDIF
 
-        nn=nfcdt(ii)
+        nn=nfcdt(ii)  ! a zero says use all day types
         if(nn.eq.0)nn=nbdaytype
         do 71 j=1,nn
           jj=j
@@ -1127,7 +1127,7 @@ C Get date strings. For this test assume some values.
      &           NTSPH,2,0,PERST1,PERST2,PERST3,IER)
 
             CALL EDISP(ITRU,' ')
-            WRITE(OUTSTR,'(A,I2,3A,I2,A)')' Day type ',JJ,
+            WRITE(OUTSTR,'(4A,I2,A)')' Day type ',CALENTAG(JJ),
      &        ' is valid ',PERST3(9:lnblnk(PERST3)),' with ',
      &        NFCDP(II,JJ),' periods.'
             CALL EDISP(ITRU,OUTSTR)
@@ -1342,7 +1342,7 @@ C Reporting:
  578      CONTINUE
         ENDIF
 
-        nn=necdt(ii)
+        nn=necdt(ii)  ! a zero says use all day types
         if(nn.eq.0)nn=nbdaytype
         do 57 j=1,nn
           jj=j
@@ -1510,7 +1510,7 @@ C Reporting:
  478      CONTINUE
         ENDIF
 
-        nn=ngcdt(ii)
+        nn=ngcdt(ii)  ! a zero says use all day types
         if(nn.eq.0)nn=nbdaytype
         do 89 j=1,nn
           jj=j
@@ -1677,7 +1677,7 @@ C Reporting:
  678      CONTINUE
         ENDIF
 
-        nn=nocdt(ii)
+        nn=nocdt(ii)  ! a zero says use all day types
         if(nn.eq.0)nn=nbdaytype
         do 200 j=1,nn
           jj=j
@@ -3737,8 +3737,11 @@ C Parameters
       integer icfoc   ! control domain to work with 
       integer II      ! index of the control
       integer JJ      ! index of day type
+      integer lncal   ! length of calendar day name
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      character calename*32,calentag*12,calendayname*32
 
       character outs*124,SSTR*96,TMP*96,LTMP*248
       CHARACTER PERST1*14,PERST2*44,PERST3*44
@@ -3787,18 +3790,16 @@ C List data for function II and day type JJ.
       elseif(icfoc.eq.6)then
         nnd=nCFCctldaytypes(ii)
       endif
-      if(nnd.eq.0.and.JJ.eq.1)then
-        WRITE(outs,'(3A,I2,A)')' Weekday control is valid ',
-     &    PERST3(9:lnblnk(PERST3)),' with ',LL,' periods.'
-      elseif(nnd.eq.0.and.JJ.eq.2)then
-       WRITE(outs,'(3A,I2,A)')' Saturday control is valid ',
-     &    PERST3(9:lnblnk(PERST3)),' with ',LL,' periods.'
-      elseif(nnd.eq.0.and.JJ.eq.3)then
-        WRITE(outs,'(3A,I2,A)')' Sunday control is valid ',
-     &    PERST3(9:lnblnk(PERST3)),' with ',LL,' periods.'
+
+C If nnd is zero then omitt days of validity information, otherwise
+C include it in the documentation line.
+      lncal=lnblnk(CALENTAG(JJ))
+      if(nnd.eq.0)then
+        WRITE(outs,'(3A,I2,A)')' Day type ',CALENTAG(JJ)(1:lncal),
+     &    ' control has ',LL,' periods.'
       else
-        WRITE(outs,'(A,I2,3A,I2,A)')' Day type ',JJ,
-     &    ' is valid ',PERST3(9:lnblnk(PERST3)),' with ',LL,
+        WRITE(outs,'(5A,I2,A)')' Day type ',CALENTAG(JJ)(1:lncal),
+     &    ' control is valid ',PERST3(9:lnblnk(PERST3)),' with ',LL,
      &    ' periods.'
       endif
       call edisp(itru,outs)

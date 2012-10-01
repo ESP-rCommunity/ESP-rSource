@@ -287,7 +287,7 @@ C        write(6,*) 'btimef.gt.24'
         DSTR='weekdays'
         IDAY=1
       endif
-      IF(NBDAYTYPE.gt.3)THEN !
+      IF(NBDAYTYPE.gt.3)THEN ! non-standard calendar
         IDAY=IDYP
         IF(IHRF.EQ.1)IDAY=IDYP+1
         IF(IDAY.GT.365)IDAY=IDAY-365
@@ -2430,9 +2430,9 @@ C if ACTIVE=0. then no matching casual gain/occupants.
       ACTIVE=0.
 
 C Determine which day of the week (6=Sat, 7=Sun ,other weekday ot other
-C day types if defined using calendar function
-C and set IGC (gain to control) to that reqested in the casual
-C gain control file.  If matching gain(s) set ACTIVE=1.0.
+C day types if defined using calendar function and set IGC
+C (gain to control) to that reqested in the casual gain control
+C file. Assumes 3 day types are standard. If matching gain(s) set ACTIVE=1.0.
       IF(NBDAYTYPE.LE.3)THEN
         IDTY=1
         IF(IDWP.EQ.6)IDTY=2

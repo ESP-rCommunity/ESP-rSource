@@ -2213,11 +2213,11 @@ C Copy periods.
         IX=1
         CALL EDISP(IUOUT,'choose daytype to copy periods from')
         CALL EPICKS(IX,KSTR,' ','choose daytype to copy periods from',
-     &  12,nbdaytype,calentag,'Choose daytype',IER,nbhelp)
+     &    12,nbdaytype,calentag,'Choose daytype',IER,nbhelp)
         IDTY=KSTR(1)
         CALL EDISP(IUOUT,'choose daytype to copy periods to')
         CALL EPICKS(IX,KSTR,' ','choose daytype to copy periods to',
-     &  12,nbdaytype,calentag,'Choose daytype',IER,nbhelp)
+     &    12,nbdaytype,calentag,'Choose daytype',IER,nbhelp)
         IDT=KSTR(1)
      	do 210 IX=1,NAC(IDTY)
      	  if (NAC(IDT).lt.MA) then

@@ -75,7 +75,8 @@ C External text editor.
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Calendar.
-      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
 C Passed in parameters.
       character root*32,mpath*72,menu*72
@@ -185,7 +186,7 @@ C Current default version is v4.
       noimg=0
       LPNF='UNKNOWN'
       lmodellog='UNKNOWN'
-      nbdaytype=0
+      nbdaytype=0   ! reset to zero day types
       call st2file(LCFTMP,LCMDFL)  ! remove unprintable characters
 
 C Derive the model root name from this.
@@ -717,7 +718,9 @@ C Ask for site position.
         IF(IER.EQ.0)sitelongdif=SLON
 
 C Ask for year, initialise and then print out the calendar if the
-C user does not cancel the operation.
+C user does not cancel the operation. Because there have been no
+C day types created use a call to calenmanage to instanciate an
+C initial set of days.
         helptopic='cfg_model_year'
         call gethelptext(helpinsub,helptopic,nbhelp)
         iyeart=iyear

@@ -689,19 +689,25 @@ C Initialize the indices.
       ANGI=40.
       initvt=0
 
-C Set day types to default of 3 (weekday/saturday/sunday) and calendar
-C day type tags to default as well. These 3 day types cannot be deleted
-C and more day types if defined will be stored in CALENTAG(4) onwards.
-C this can be modified later. [The IF clause may not be necessary]
+C Older files may not have a *list section for the calendar and
+C to support compatibility with legacy assumption of 3 day types
+C set nbdaytype = 3 but instanciate the calendar variables for
+C weekday/saturday/sunday/holiday and calendar day type tags. Newer
+C cfg files will have a *list section and thus update nbdaytype.
+C The initial day types cannot (??) be deleted and more day types if 
+C defined will be stored in CALENTAG(5) onwards.
+C this can be modified later.
       IF(NBDAYTYPE.LT.3)THEN
         nbdaytype=3
       ENDIF
       CALENTAG(1)='weekday'
       CALENTAG(2)='saturday'
       CALENTAG(3)='sunday'
+      CALENTAG(4)='holiday'
       CALENDAYNAME(1)='generic weekday'
       CALENDAYNAME(2)='generic saturday'
       CALENDAYNAME(3)='generic sunday'
+      CALENDAYNAME(4)='generic holiday'
 
 C Open the configuration file, return if not found otherwise set
 C currentfile to the configuration file.
@@ -1396,6 +1402,12 @@ C There is a calendar of day types defined read its name.
           goto 443
         elseif(WORD(1:5).eq.'*list')then
           K=6
+
+C For each day of the year read from the 365 indicies into the
+C icalender array.
+C << how about allowing 1 day type - that would be the case
+C << for a hosptal that was used 365 days a year.
+
           CALL EGETWI(OUTSTR,K,NBDAYTYPE,3,MDTY,'W','day types',IER)
           CALL EGETWIA(IUC,IRCC,365,0,10,'W','calendar day types',IER)
           DO 118 KV=1,365
