@@ -40,6 +40,7 @@ C if act = 'E' return days PMV (effective temperature) in GVAL.
 
       SUBROUTINE MOCMFT(IDAY,IZONE,act)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "espriou.h"
       
@@ -50,7 +51,6 @@ C if act = 'E' return days PMV (effective temperature) in GVAL.
       COMMON/OUTPCH/ICOUT
 
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-      common/C21/IFCFG,cfgroot,LCFGF
       character lodlabel*6
       common/loadlabel/lodlabel(mcom,MGTY)
       common/exporttg/xfile,tg,delim
@@ -68,7 +68,6 @@ C Pre calculated data (filtered).
       DIMENSION ID(12),OP(MS),TS(MS),TSO(MS),QV(MS),ITEMS(14)
       character doit*248,tmode*8,tfile*72
       character longtfile*144,longtfiledos*144
-      character LCFGF*72,cfgroot*24
       CHARACTER*25 DESC(12)
       character outs*124,TSTR*24,ZN*12
       character xfile*144,ITEMS*25,tg*1,delim*1,act*1

@@ -56,8 +56,6 @@ C Redirected text/graphics parameters.
       common/exporttg/xfile,tg,delim
       common/exporttgi/ixopen,ixloc,ixunit
 
-      common/C21/IFCFG,cfgroot,LCFGF
-
 C Path to problem and command line file (if any).
       common/rpath/path
       common/rcmd/LCMDFL
@@ -98,13 +96,13 @@ C Name of current application
       dimension dba(MGDB)
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,dbnote*72
       character cattag*12,cattype*8,catmenu*32,catdate*24,catdoc*248
-      character ittag*12,itmenu*32,seldb*12,cnsel*12,MODE*4,LCFGF*72
+      character ittag*12,itmenu*32,seldb*12,cnsel*12,MODE*4
       character LGENDB*72,LAGENDB*72
       character item*54,db*12,fs*1,inf*144,LCMDFL*144,dfile*72
       character tfile*72
       character outs248*248,LTMP*144
       character path*72,pass*12,outs*124
-      character xfile*144,tg*1,delim*1,cfgroot*24
+      character xfile*144,tg*1,delim*1
       character dba*12,act*1,action*12
 C      character curfile*72
 

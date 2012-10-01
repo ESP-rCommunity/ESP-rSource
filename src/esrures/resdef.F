@@ -908,7 +908,6 @@ C ier is zero if no problems and -3 if user issued a cancel.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
 
       COMMON/DNORGH/IRTYPE
       COMMON/RECV3/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
@@ -934,10 +933,10 @@ C Defaults.
       character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
-      CHARACTER LCFGF*72,CHDUM*72
+      CHARACTER CHDUM*72
 
 C longtmp is the model configuration file with full path.
-      CHARACTER NAME*6,longtmp*144,cfgroot*24
+      CHARACTER NAME*6,longtmp*144
       character outs*124,znpad*15,path*72,MODE*4
       character louts*248
       

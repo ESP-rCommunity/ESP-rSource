@@ -38,7 +38,6 @@ C will have been defined prior to calling edmrt.
       COMMON/OUTIN/IUOUT,IUIN
       common/user/browse
 
-      common/C21/IFCFG,cfgroot,LCFGF
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
@@ -53,8 +52,7 @@ C will have been defined prior to calling edmrt.
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
       LOGICAL MODIFY,MODLEN,MODBND,concat,cfgmod,browse,clkok,XST
       logical silent,unixok
-      CHARACTER VERT*46,CUBN*6,LTMP*72,cfgroot*24
-      CHARACTER LCFGF*72
+      CHARACTER VERT*46,CUBN*6,LTMP*72
       character VFILE*72,head*32,outs*124,KEY*1,ETEXT*82
       character doit*248,tmode*8,tfile*72,ZN*12
       character act*1

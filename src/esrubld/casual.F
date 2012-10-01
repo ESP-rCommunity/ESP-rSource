@@ -989,8 +989,6 @@ C geometry.h provides commons G0/G1/G2/precz.
       COMMON/SUNPOS/SAZI,SALT,ISUNUP
 C      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
 
-      common/C21/IFCFG,cfgroot,LCFGF
-
 C Zone casual gain control data.
       COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
      & CGX(MCOM,MLCOM,MDF),CGY(MCOM,MLCOM,MDF),CGH(MCOM,MLCOM,MDF),
@@ -1039,9 +1037,9 @@ C Illuminance database.
       DIMENSION ZFRAC(MLCOM)
       DIMENSION XPL(MV),YPL(MV),ZPL(MV)
       CHARACTER*25 CSTR
-      character outs*124,doit*124,outstr*124,cfgroot*24
+      character outs*124,doit*124,outstr*124
 
-      character*72 LCFGF,LTMPFL,LTMPFLA,OUTCMD
+      character*72 LTMPFL,LTMPFLA,OUTCMD
 
       logical nog,close,closea,closeb,closec,closed,closee,closef
       logical closeg,closeh,closei,instart,neglum,XST

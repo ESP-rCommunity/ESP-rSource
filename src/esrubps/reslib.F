@@ -56,7 +56,6 @@ C results library as well.
       integer ncomp,ncon
       common/c1/ncomp,ncon
       COMMON/C6/INDCFG
-      common/C21/IFCFG,cfgroot,LCFGF
       common/reclen/nzrl,nprl,nerl
 
 C Versions of results libraries.
@@ -89,7 +88,6 @@ C Active domain common.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
       character outs*124,ltmp*72,path*72,longtfile*144
-      character cfgroot*24,LCFGF*72
       character*72 LAPROB,ENTFLNAM,ERESLIB,CFRESF
       character RFILE*72,PFILE*72,MSTRFILE*72,LAFRES*72
       dimension iflg(MCOM)

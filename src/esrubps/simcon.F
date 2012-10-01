@@ -1864,8 +1864,6 @@ C prior to each simulation commencing.
       COMMON/SOLOFF/ISOLAR
 
       COMMON/WARN/IWARN
-      common/C21/IFCFG,cfgroot,LCFGF
-      INTEGER :: IFCFG
 
 C TSC data.
       COMMON/TS/ITSFLG,NTSCPD,ITSSCH(MSCH,5),itsmus
@@ -1893,9 +1891,9 @@ C Simulator parameters.
       LOGICAL     spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
       CHARACTER ctldoc*248
-      CHARACTER*72 LCFGF,LCTLF
+      CHARACTER LCTLF*72
       character PERST1*14,PERST2*44,PERST3*44
-      character outs*124,louts*248,cfgroot*24
+      character outs*124,louts*248
 
       LOGICAL OK,dok,IGR1D,GRND3D,MSTROK,MSTRZN
       LOGICAL ILTHPS,ILTHPZ,INTHPS,INTHPZ,global,glbrwd
@@ -2223,6 +2221,7 @@ C ICNT    - counts trace output for page numbering purposes
 
       SUBROUTINE MZTRAC
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
       
       integer lnblnk  ! function definition
@@ -2240,7 +2239,6 @@ C ICNT    - counts trace output for page numbering purposes
      &             NPGAP(MCOM,MS,MGP)
       COMMON/PREC13/C(MCOM,MS,MN,2),QC(MCOM,MS,MN)
       COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
-      common/C21/IFCFG,cfgroot,LCFGF
 
 C Common for libsv3 trace
       COMMON/enbal/nsurf,insurf(MS)
@@ -2248,7 +2246,6 @@ C Common for libsv3 trace
       dimension IVALS(MCOM)
       CHARACTER*29 ITEM(33)
       character outs*124,dtrace*72,ltrace*72
-      character cfgroot*24,LCFGF*72
       logical OK,dok
       integer NITEMS,INO  ! max items and current menu item
 
@@ -2544,14 +2541,13 @@ C if itru=33 then works as a header to the trace.
 
       integer ncomp,ncon
       common/c1/ncomp,ncon
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
 
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)
 
-      character*72 lafres,lctlf,lcfgf,rfile
-      character ctldoc*248,outs*124,PFILE*72,MSTRFILE*72,cfgroot*24
+      character*72 lafres,lctlf,rfile
+      character ctldoc*248,outs*124,PFILE*72,MSTRFILE*72
       character louts*248
 
       dimension io(mcom)

@@ -75,7 +75,7 @@ gint f_height;
 gint f_width;
 
 char cappl[5];	/* f77 application name */
-/* char cfgroot[25];	f77 project root name    */
+/* char cfgroot[32];	f77 project root name    */
 /* char path[73];	f77 project path    */
 /* char upath[73];	f77 users path    */
 /* char imgpth[25];	f77 relative path to images    */

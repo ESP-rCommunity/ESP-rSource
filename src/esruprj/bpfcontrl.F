@@ -57,7 +57,6 @@ C                             data for validity.
 
       integer ncomp,ncon
       common/c1/ncomp,ncon
-      common/C21/IFCFG,cfgroot,LCFGF
       common/cctl/icascf(mcom)
       common/cctlnm/ctldoc,lctlf
       common/fctl4/iasocc(MCF,mcmp),nfsup(MCF)
@@ -75,8 +74,8 @@ C mptback is pointer from position in display list to the control loop.
 C ipeerptbk is pointer from position in display to day type.
       dimension mptback(35),iperptbk(35)
       CHARACTER*56 VERT(35)
-      CHARACTER CTLDOC*248,LCTLF*72,KEY*1,LCFGF*72
-      CHARACTER outs*124,LASCI*72,cfgroot*24
+      CHARACTER CTLDOC*248,LCTLF*72,KEY*1
+      CHARACTER outs*124,LASCI*72
       character t248*248,SSTR*96
       character sfile*72,snpfile*72,fs*1
       logical LINKED,OK,dok,XST,browse,unixok
@@ -1498,8 +1497,8 @@ C law can be jumped around.
         if((iclaw.ge.1.and.iclaw.lt.6).or.
      &      iclaw.eq.7.or.iclaw.eq.8.or.iclaw.eq.10.or.
      &      iclaw.eq.13.or.iclaw.eq.14.or.iclaw.eq.15.or.
-     &      iclaw.eq.21.or.iclaw.eq.22.or.iclaw.eq.23.or.iclaw.eq.24)
-     &      then
+     &      iclaw.eq.21.or.iclaw.eq.22.or.iclaw.eq.23.or.
+     &      iclaw.eq.24)then
 
 C Remember the previous start (prevstart) and the total number of
 C period in this control loop (nper) and the number of day types

@@ -74,7 +74,7 @@ extern int pm_width;		/* current popup menu max line length */
 extern int pm_lines;		/* current number of active popup menu lines */
 
 extern char cappl[5];	/* fortran application name */
-extern char cfgroot[25];	/* fortran project root name    */
+extern char cfgroot[32];	/* fortran project root name    */
 extern char path[73];	/* fortran project path    */
 extern char upath[73];	/* fortran users path    */
 extern char imgpth[25];	/* fortran relative path to images    */

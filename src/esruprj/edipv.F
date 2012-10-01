@@ -52,7 +52,6 @@ C seasons.h provides typper and typsea
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
 C IPV description.
@@ -70,8 +69,8 @@ C ITMM is menu for metric sets.
       character act*1
       character lipvdatf*72,outs*124
       CHARACTER DS*7,DS1*10
-      character*72 LTMP,LCFGF
-      character cfgroot*24,t40*40,t72*72,t248*248
+      character*72 LTMP
+      character t40*40,t72*72,t248*248
       character descr*7,descrst*10,descrfn*10
       character descra*7,descrb*7,descrc*7,descrd*7,descre*7
       character t12*12,key*1
@@ -1351,6 +1350,7 @@ C      ='i--' initial values for call from interface
 C      ='i1d' initial default period ??
       subroutine ipvdatinit(act)
 #include "building.h"
+#include "model.h"
 C#include "espriou.h"  
 C espriou.h for climatelist file name.
 #include "seasons.h"
@@ -1359,12 +1359,10 @@ C seasons.h provides typper and typsea
       
       integer lnblnk  ! function definition
 
-      common/C21/IFCFG,cfgroot,LCFGF
-
 C Simulation parameter sets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
 
-      character act*6,LCFGF*72,cfgroot*24,cr*24
+      character act*6,cr*32
 
 C Set root name string and length.
       cr=cfgroot
@@ -1663,6 +1661,7 @@ C << add logic to allow for two extreme seasons
 
       subroutine ipv2simpar(act)
 #include "building.h"
+#include "model.h"
 #include "ipvdata.h"
       
       integer lnblnk  ! function definition
@@ -1670,7 +1669,6 @@ C << add logic to allow for two extreme seasons
       COMMON/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       COMMON/C6/INDCFG
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/PREC7/ITCNST
 
 C IPV description via ipvdata.h.
@@ -1687,7 +1685,7 @@ C Simulation parameter sets.
      &  smstres(MSPS),selres(MSPS),sipvres
       COMMON/ENTFILE/ENTFLNAM,IENTXIST
 
-      character act*6,lipvdatf*72,LCFGF*72,cfgroot*24,cr*24,tag*3
+      character act*6,lipvdatf*72,cr*32,tag*3
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spfdescr*8
       CHARACTER LAPROB*72,ENTFLNAM*72

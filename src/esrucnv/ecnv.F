@@ -58,7 +58,6 @@ C ESP-r commons.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C6/INDCFG
-      common/C21/IFCFG,cfgroot,LCFGF
 
 C Significant figure reporting limit (NSIGFIG).
       common/SFIG/NSIGFIG
@@ -88,10 +87,9 @@ C Name of current application
       character path*72
       character upgcfg*72
 
-      character cfgroot*24,MODE*4
+      character MODE*4
       character buffer*144
 
-      CHARACTER LCFGF*72
       character htmlfile*72
       character outs*248
       logical unixok
@@ -1063,7 +1061,6 @@ C << MUST be updated to reflect ipath and longer database names >>
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/C6/INDCFG
-      common/C21/IFCFG,cfgroot,LCFGF
 
       common/cctlnm/ctldoc,lctlf
 
@@ -1095,9 +1092,8 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       logical bSHOCCed,bZoneSHOCCed
       character SHOCCshlFile*72,SHOCCshzFile*72
 
-      CHARACTER LCFGF*72
       CHARACTER LOUT*72
-      CHARACTER CTLDOC*248,LCTLF*72,cfgroot*24
+      CHARACTER CTLDOC*248,LCTLF*72
       character indxcmt*24
 
       character dstmp*24

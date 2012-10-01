@@ -699,6 +699,8 @@ C simulation related information. It is passed npc the
 C number of plant components used in the network.
 C If user cancels file browse set ier to -3.
       subroutine opnplt(npc,imode,ier)
+#include "building.h"
+#include "model.h"
 #include "plant.h"
 #include "esprdbfile.h"
 C esprdbfile.h supplies the following:
@@ -735,7 +737,6 @@ C the best-guess of file names (but with full path).
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Defaults.
@@ -745,7 +746,7 @@ C Defaults.
 
       character DFILE*72,LTMP*144,outs*124,louts*248
       character lctlf*72,ctldoc*248,scname*12,MODE*4
-      character firstbit*72,secondbit*72,path*72,LCFGF*72,cfgroot*24
+      character firstbit*72,secondbit*72,path*72
       character longtmp*144
       logical XST,ok,dok
       logical CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK

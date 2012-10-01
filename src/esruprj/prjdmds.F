@@ -49,7 +49,6 @@ C file unit for the demands file. IER=0 is OK.
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
-      common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
@@ -69,7 +68,7 @@ C Flags noting whether casual gain periods are currently sorted.
       DIMENSION ITEM(13)
       CHARACTER tcname*248
       CHARACTER ITEM*36,H*72,LTMP*72,GFILE*72
-      character cfgroot*24,LCFGF*72,hold*60
+      character hold*60
       character calename*32,calentag*12,calendayname*32
       LOGICAL OK,DOK,XST,MODOPR,browse
       integer NITEMS,INO ! max items and current menu item

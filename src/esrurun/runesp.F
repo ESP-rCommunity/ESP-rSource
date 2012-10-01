@@ -66,8 +66,6 @@ C ************************************************************
       common/cctlnm/ctldoc,lctlf
       common/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
-      common/C21/IFCFG,cfgroot,LCFGF
-
       common/IPVF/lipvdatf
 
 C Path to problem and command line file (if any).
@@ -99,7 +97,7 @@ C Uncertainty.
       COMMON/BIDIRFL/bidirfile,bidirname(MSTMC)
       
       CHARACTER INTER*144,INF*144
-      character path*72,cfgroot*24
+      character path*72
       character outs*124,outs248*248
       character doit*248,longtfile*144,longtfiledos*144
       character fs*1
@@ -107,7 +105,6 @@ C Uncertainty.
       character LUALF*72,LCNG*15,LLOC*15
       character GTGEOM*72,lipvdatf*72
       character*10 wkd1, wkd2
-      character*72 LCFGF
       character LCTLF*72,ctldoc*248
       character LAPROB*72 
       character bidirfile*72,bidirname*12
@@ -1325,11 +1322,9 @@ C typical day with free float outside of occupied period.
 #include "geometry.h"
 #include "espriou.h"
       COMMON/FILEP/IFIL
-      common/C21/IFCFG,cfgroot,LCFGF
       common/cctl/icascf(mcom)
       common/cctlnm/ctldoc,lctlf
 
-      character cfgroot*24,LCFGF*72
       character LCTLF*72,ctldoc*248
       character fs*1
       logical unixok
