@@ -130,6 +130,8 @@ C will act on this.
 C Save back the command file name. While here also assume that any
 C other results files will be found in the same location and make
 C up full length strings that guess what those file names will be.
+C If file ends with .plr then assume it is a plant results file and
+C instanciate LAFRESABS and set PFILEABS to ltmpc.
           LCMDFL=ltmpc
           lrf=lnblnk(ltmpc)
           lrf3=lrf-3
@@ -137,6 +139,9 @@ C up full length strings that guess what those file names will be.
           if(ltmpc(lrf3:lrf).eq.'.res')then
             write(LAFRESABS,'(2a)') ltmpc(1:lrf4),'.mfr'
             write(PFILEABS,'(2a)') ltmpc(1:lrf4),'.plr'
+          elseif(ltmpc(lrf3:lrf).eq.'.plr')then
+            write(LAFRESABS,'(2a)') ltmpc(1:lrf4),'.mfr'
+            write(PFILEABS,'(a)') ltmpc(1:lrf)
           else
             continue
           endif
@@ -157,8 +162,8 @@ C scans of cfg and zone files can be accomplished.
 C Debug.
 C      write(outs248,*) 'MORFIL: current command file path is ',path
 C      call edisp248(iuout,outs248,100)
-      write(outs248,*) 'MORFIL: cmd line file is ',lcmdfl
-      call edisp248(iuout,outs248,100)
+C      write(outs248,*) 'MORFIL: cmd line file is ',lcmdfl
+C      call edisp248(iuout,outs248,100)
 
       lpath=path
       call fdroot(LCMDFL,path,LTMP)
@@ -167,7 +172,7 @@ C Debug.
 C      write(outs248,*) 'MORFIL: local file is now ',ltmp
 C      call edisp248(iuout,outs248,100)
 C      write(outs248,*) 'MORFIL: rev path is ',path
-C      call edisp248(iuout,outs248,100)
+C       call edisp248(iuout,outs248,100)
 
       CALL ERPFREE(iunit,ISTAT)
       call FINDFIL(ltmp,xst)
@@ -186,6 +191,8 @@ C Debug.
 C             write(6,*) 'MORFIL: older plant ',iftype
 
              IPLIB=1
+             write(PFILEABS,'(a)') lcmdfl(1:lnblnk(lcmdfl)) ! remember
+             CALL ERPFREE(iunit,ISTAT)  ! free the file
              return
            elseif(iftype.eq.-2) then
 
@@ -194,6 +201,8 @@ C             write(6,*) 'MORFIL: newer plant ',iftype
 
 	     IPLIB=2
              iftype=-1
+             write(PFILEABS,'(a)') lcmdfl(1:lnblnk(lcmdfl)) ! remember
+             CALL ERPFREE(iunit,ISTAT)  ! free the file
              return
            endif
         endif
