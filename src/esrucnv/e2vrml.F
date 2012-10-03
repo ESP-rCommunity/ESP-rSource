@@ -187,10 +187,8 @@ C Read in the zone geometry.
         WRITE(ioout,'(3a)')'# zone ',zname(newfoc),' starts here....'
         do 5 j=1,nsur
 
-C Work out the colours for each of the surfaces in this zone by looping
-C through each of the MLC and finding a match.
-
-C Find matching MLC.
+C Work out the colours for each of the surfaces in this zone by 
+C finding MLC match.
           call matchmlcdesc(SMLCN(j),im)
 
 C For the inside and outside layer get surface properties.
@@ -369,7 +367,7 @@ C into GB1 commons and write them out using similar logic.
           endif
 
 C Work out the colour for each block by looping
-C through each of the MLC and finding a match (for first 12 char).
+C through each of the MLC and finding a match.
           call matchmlcdesc(BLOCKMAT(newfoc,IB),im)
 
 C For the inside and outside layer get surface properties.
