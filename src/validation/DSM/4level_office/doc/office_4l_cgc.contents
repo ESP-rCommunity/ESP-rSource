@@ -1,0 +1,2123 @@
+Synopsis
+ 
+Synopsis of the model Four level small office building with lighting control
+defined in office_4l_cgc.cfg generated on Wed Oct  3 15:17:22 2012. Notes
+associated with the model are in office_bc.log
+ 
+The model is located at latitude   57.20 with a longitude difference of  -2.22
+from the local time meridian. The year used in simulations is 2001 and
+weekends occur on Saturday and Sunday.
+The site exposure is typical urban site and the ground reflectance is 0.20.
+ 
+ 
+Simulationist name: not yet defined
+Simulationist telephone: not yet defined
+Simulationist address: not yet defined
+Simulationist city: not yet defined
+Simulationist postcode: not yet defined
+ 
+The climate is: ABERDEEN/DYCE - GBR and is held in: GBR_Aberdeen.Dyce with
+hour centred solar data.
+ standard annual weather: GBR_Aberdeen.Dyce
+Calculated ground temp at 0.5m depth
+4.1933 3.7788 4.5139 5.6643 8.6733 10.995 12.562 13.038 12.226 10.423 8.0140 5.7786
+Calculated ground temp at 1.0m depth
+4.7597 4.1918 4.6877 5.6293 8.2751 10.434 11.992 12.615 12.067 10.563 8.4231 6.3409
+Calculated ground temp at 2.0m depth
+5.7185 4.9799 5.1307 5.7418 7.7552 9.5753 11.031 11.813 11.646 10.624 8.9638 7.2037
+Calculated ground temp at 4.0m depth
+6.9810 6.2236 6.0580 6.2871 7.4267 8.6529 9.7771 10.560 10.743 10.299 9.3246 8.1339
+ 
+ 
+There are currently  1 user defined ground temperature profiles.
+Ground temperatures Jan-Dec:
+   5.7   5.0   5.1   5.7   7.8   9.6  11.0  11.8  11.6  10.6   9.0   7.2
+ 
+Primary energy conversions (demand kWhr to primary kWhr) are:
+ heating   : 1.530
+ cooling   : 1.440
+ lighting  : 3.600
+ fans&pumps: 3.600
+ small powr: 3.600
+ hot water : 1.530
+ 
+ Emissions (g/kWh) co2  nox  sox
+ heating :  190.00   0.30   0.20
+ cooling :  360.00   1.20   4.50
+ lighting:  360.00   1.20   4.50
+ fan_pump:  360.00   1.20   4.50
+ small pr:  360.00   1.20   4.50
+ hot water: 190.00   0.30   0.20
+An Integrated Performance View has been defined:
+Title : Four level office building with ceil
+Version   : lighting control with no flow network
+synopsis:
+:An office building with no overhangs but with lighting controls6
+Images    :   0
+ 
+Simulations to be undertaken:
+____simulations ( 5)____________days descrip___
+1st win Mon-22-Jan to Sun-28-Jan   7 office 1st winter run
+spring  Wed-04-Apr to Tue-10-Apr   7 office spring run
+summer  Wed-08-Aug to Tue-14-Aug   7 office summer run
+autumn  Wed-19-Sep to Tue-25-Sep   7 office autumn run
+2nd win Wed-21-Nov to Tue-27-Nov   7 office 2nd winter run
+ 
+display day Tue-13-Feb.
+display day Tue-15-May.
+display day Tue-05-Jun.
+display day Tue-02-Oct.
+display day Tue-27-Nov.
+ 
+Seasons (as found in climatelist file):
+         winter  spring  summer  autumn  winter
+  start  01-Jan  07-Mar  09-May  29-Aug  07-Nov
+  finish 06-Mar  08-May  28-Aug  06-Nov  31-Dec
+  days     65       63     112      70      55
+ 
+ Ratios for:  winter spring summer autumn winter
+ heating       9.00   9.44  22.94  10.00   7.64
+ cooling       9.00   9.00  27.70  10.00   7.00
+ lighting      9.00   9.00  16.00  10.00   7.00
+ small power   9.00   9.00  16.00  10.00   7.00
+ fans&pumps    9.00   9.00  16.00  10.00   7.00
+ DHW           9.00   9.00  16.00  10.00   7.00
+ 
+Metric                zones area scaling weight  type name
+ 1 Resultant T (degC)   10 1844.00 1.000 1.000 comfort ocup_zones
+Zones: office_e_0 office_w_0 office_e_1 office_w_1 office_e_3 office_w_3 office_2_nor office_2_sth
+office_e2e office_w2w
+ 2 Resultant T (degC)    5  308.00 1.000 1.000 comfort ocup_core
+Zones: entry_core core_one core_two core_top passage_2
+ 3 Infiltration (W)   10 1844.00 1.000 1.000 Infil infil_offic
+Zones: office_e_0 office_w_0 office_e_1 office_w_1 office_e_3 office_w_3 office_2_nor office_2_sth
+office_e2e office_w2w
+ 4 Infiltration (W)    5  308.00 1.000 1.000 Infil infil_other
+Zones: entry_core core_one core_two core_top passage_2
+ 5 Ventilation (W)   10 1844.00 1.000 1.000 Vent vent_offic
+Zones: office_e_0 office_w_0 office_e_1 office_w_1 office_e_3 office_w_3 office_2_nor office_2_sth
+office_e2e office_w2w
+ 6 Ventilation (W)    5  308.00 1.000 1.000 Vent vent_other
+Zones: entry_core core_one core_two core_top passage_2
+ 7 Zone db T (degC)   10 1844.00 1.000 1.000 ZndbT dbt_offices
+Zones: office_e_0 office_w_0 office_e_1 office_w_1 office_e_3 office_w_3 office_2_nor office_2_sth
+office_e2e office_w2w
+ 8 Plnt cnv+rad&lat (W)   10 1844.00 1.000 1.000 Plt_C+R&L pltcrl_offs
+Zones: office_e_0 office_w_0 office_e_1 office_w_1 office_e_3 office_w_3 office_2_nor office_2_sth
+office_e2e office_w2w
+ 9 Plnt cnv+rad&lat (W)    4  256.00 1.000 1.000 Plt_C+R&L pltcrl_cores
+Zones: entry_core core_one core_two core_top
+10 Plnt cnv+rad&lat (W)    1    9.00 1.000 1.000 Plt_C+R&L pltcrl_mixs
+Zones: mix_supply
+ 
+Demand set,  nb zones, floor area, scaling factor
+ 1 energy_off    10 1844.00 1.000
+Zones: office_e_0 office_w_0 office_e_1 office_w_1 office_e_3 office_w_3 office_2_nor office_2_sth
+office_e2e office_w2w
+ 2 energy_core    5  308.00 1.000
+Zones: entry_core core_one core_two core_top passage_2
+ 3 energy_mix     1    9.00 1.000
+Zones: mix_supply
+ 
+Dispersed fan demands included.
+ 
+Databases associated with the model:
+ standard pressure distr: pressc.db1
+ materials              : ../dbs/impact_mat.db2.a
+ constructions          : ../dbs/office.constrdb
+ standard plant comp    : plantc.db1
+ event profiles         : ../dbs/office_profile
+ optical properties     : ../dbs/impact_opt.db2
+ standard UK NCM data   : SBEM.db1
+ standard mould isopleth: mould.db1
+ 
+ ____________________________________________________________
+ 
+The model includes ideal controls as follows:
+Control description:
+Four level office building base case heating to 22.22C and cooling to
+23.8C all hours. Supply and extract zones not yet used
+ 
+Zones control includes  3 functions.
+Office base case zone controls (setback is treated as a separate ECM)
+ 
+ The sensor for function  1 senses the temperature of the current zone.
+ The actuator for function  1 is air point of the current zone
+ The following day types are defined:
+weekdays
+saturday
+sunday
+ Day type weekdays control has  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 22000.0W min
+heating capacity 0.0W max cooling capacity 22000.0W min cooling capacity 0.0W. Heating
+setpoint 22.22C cooling setpoint 23.80C.
+   2  7.50 db temp   > flux      basic control: max heating capacity 22000.0W min
+heating capacity 0.0W max cooling capacity 22000.0W min cooling capacity 0.0W. Heating
+setpoint 22.22C cooling setpoint 23.80C.
+   3 18.50 db temp   > flux      basic control: max heating capacity 22000.0W min
+heating capacity 0.0W max cooling capacity 22000.0W min cooling capacity 0.0W. Heating
+setpoint 22.22C cooling setpoint 23.80C.
+ Day type saturday control has  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 22000.0W min
+heating capacity 0.0W max cooling capacity 22000.0W min cooling capacity 0.0W. Heating
+setpoint 22.22C cooling setpoint 23.80C.
+   2  7.50 db temp   > flux      basic control: max heating capacity 22000.0W min
+heating capacity 0.0W max cooling capacity 22000.0W min cooling capacity 0.0W. Heating
+setpoint 22.22C cooling setpoint 23.80C.
+   3 18.50 db temp   > flux      basic control: max heating capacity 22000.0W min
+heating capacity 0.0W max cooling capacity 22000.0W min cooling capacity 0.0W. Heating
+setpoint 22.22C cooling setpoint 23.80C.
+ Day type sunday control has  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 22000.0W min
+heating capacity 0.0W max cooling capacity 22000.0W min cooling capacity 0.0W. Heating
+setpoint 22.22C cooling setpoint 23.80C.
+   2  7.50 db temp   > flux      basic control: max heating capacity 22000.0W min
+heating capacity 0.0W max cooling capacity 22000.0W min cooling capacity 0.0W. Heating
+setpoint 22.22C cooling setpoint 23.80C.
+   3 18.50 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 22000.0W min cooling capacity 0.0W. Heating
+setpoint 22.22C cooling setpoint 23.80C.
+ 
+ The sensor for function  2 senses the temperature of the current zone.
+ The actuator for function  2 is air point of the current zone
+ The following day types are defined:
+weekdays
+saturday
+sunday
+ Day type weekdays control has  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      free floating
+   2  7.50 db temp   > flux      basic control: max heating capacity 40000.0W min
+heating capacity 0.0W max cooling capacity 40000.0W min cooling capacity 0.0W. Heating
+setpoint 22.22C cooling setpoint 23.80C.
+   3 18.00 db temp   > flux      free floating
+ Day type saturday control has  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      free floating
+   2  7.50 db temp   > flux      basic control: max heating capacity 40000.0W min
+heating capacity 0.0W max cooling capacity 40000.0W min cooling capacity 0.0W. Heating
+setpoint 22.22C cooling setpoint 23.80C.
+   3 18.00 db temp   > flux      free floating
+ Day type sunday control has  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      free floating
+   2  7.50 db temp   > flux      basic control: max heating capacity 40000.0W min
+heating capacity 0.0W max cooling capacity 40000.0W min cooling capacity 0.0W. Heating
+setpoint 22.22C cooling setpoint 23.80C.
+   3 18.00 db temp   > flux      free floating
+ 
+ The sensor for function  3 senses the temperature of the current zone.
+ The actuator for function  3 is air point of the current zone
+There have been  1 periods of validity defined during the year.
+ Control is valid Mon-01-Jan to Mon-31-Dec, 2001 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law description
+   1  0.00 db temp   > flux      basic control: max heating capacity 20000.0W min
+heating capacity 0.0W max cooling capacity 20000.0W min cooling capacity 0.0W. Heating
+setpoint 18.00C cooling setpoint 28.00C.
+ 
+ Zone to contol loop linkages:
+ zone ( 1) office_e_0   << control  1
+ zone ( 2) office_w_0   << control  1
+ zone ( 3) office_e_1   << control  1
+ zone ( 4) office_w_1   << control  1
+ zone ( 5) office_e_3   << control  1
+ zone ( 6) office_w_3   << control  1
+ zone ( 7) entry_core   << control  1
+ zone ( 8) core_one     << control  1
+ zone ( 9) core_two     << control  1
+ zone (10) core_top     << control  1
+ zone (11) office_2_nor << control  1
+ zone (12) office_2_sth << control  1
+ zone (13) office_e2e   << control  1
+ zone (14) office_w2w   << control  1
+ zone (15) passage_2    << control  1
+ zone (16) ceiling_g    << control  0
+ zone (17) ceiling_1    << control  0
+ zone (18) ceiling_2    << control  0
+ zone (19) roof         << control  0
+ zone (20) mix_return   << control  0
+ zone (21) mix_supply   << control  3
+ 
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 office_e_0    672.0  19   645.0    36.6   240.0  office_e_0 describes a...occupied space on ground floor
+ 2 office_w_0    672.0  19   645.0    36.6   240.0  office_w_0 is the west office at ground level
+ 3 office_e_1    688.8  19   662.6    36.6   246.0  office_e_1 is the east office on 1st level up
+ 4 office_w_1    688.8  19   662.6    36.6   246.0  office_w_1 is the middle level office on west side
+ 5 office_e_3    688.8  20   662.6    36.6   246.0  office_e_3 is the office on the 3rd level east side
+ 6 office_w_3    688.8  20   662.6    36.6   246.0  office_w_3 is the west office of the 3rd level
+ 7 entry_core    218.4  21   342.0     4.5    52.0  entry_core is the entrance and core at ground level
+ 8 core_one      184.8  14   203.8     0.0    48.0  core_mid is the core at the first level
+ 9 core_two      415.8  18   400.8     0.0   108.0  core_two is core zone of 2nd level of office building
+10 core_top      134.4   8   174.4     0.0    48.0  core_top is the core at the top level
+11 office_2_nor  350.0  20   497.8    31.6   125.0  office_2_nor is on the north side of 2nd level passage
+12 office_2_sth  350.0  22   501.2    28.2   125.0  office_2_sth is the south perimeter cellular offices
+13 office_e2e    182.0  13   260.7     6.7    65.0  office_e2e is the east perimeter offices of level 2
+14 office_w2w    182.0  13   260.7     6.7    65.0  office_w2w is the west facing perimeter of 2nd level
+15 passage_2     145.6  16   395.2     0.0    52.0  passage_2 is the passages of level 2 wraps around core
+16 ceiling_g     516.6  17  1114.2     0.0   312.0  ceiling_g ceiling over the ground level
+17 ceiling_1     516.6  23  1114.2     0.0   492.0  ceiling_1 describes the ceiling over level 1
+18 ceiling_2     453.6  21  1015.2     0.0   432.0  ceiling_2 is the ceiling of the 2nd level
+19 roof          364.4   9  1208.3     0.0   599.0  roof describes a low slope roof space
+20 mix_return      9.0   6    30.0     0.0     9.0  mix_return describes a return air mixing box
+21 mix_supply      9.0   6    30.0     0.0     9.0  mix_supply describes a A/C supply mixing box
+   all          8132.  343  11489.    297.   4005.
+ 
+ 
+ Zone office_e_0 ( 1) is composed of 19 surfaces and 50 vertices.
+ It encloses a volume of 672.m^3 of space, with a total surface
+ area of 682.m^2 & approx floor area of 240.m^2
+ office_e_0 describes a...occupied space on ground floor
+ There is 131.60m2 of exposed surface area, 131.60m2 of which is vertical.
+ Outside walls are 39.597 % of floor area & average U of 0.465 & UA of 44.171
+ Glazing is 15.236 % of floor & 27.786 % facade with average U of 2.877 & UA of 105.19
+ Ground contact is 100.00 % of floor area & average U of 0.430 & perimeter 47.000
+ 
+ A summary of the surfaces in office_e_0( 1) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  18.2     90.   0. east         OPAQUE   VERT -     ext_wall     ||< external
+  2  21.1      0.   0. north_1      OPAQUE   VERT -     ext_wall     ||< external
+  3  16.8    270.   0. west_1       OPAQUE   VERT -     partn_ltw    ||< ptn_a:entry_core
+  4  11.2      0.   0. north_2      OPAQUE   VERT -     partn_ltw    ||< north_2:entry_core
+  5  16.8    270.   0. west_2       OPAQUE   VERT -     partn_ltw    ||< west_2:office_w_0
+  6  240.      0.  90. top          OPAQUE   CEIL -     ceiling_dr   ||< ovr_off_g_e:ceiling_g
+  7  240.      0. -90. bottom       OPAQUE   FLOR -     foundation   ||< user def grnd profile  1
+  8  2.26      0.   0. frm_north    OPAQUE   VERT -     gl_frame     ||< external
+  9  0.678    90.   0. frm_est_1    OPAQUE   VERT -     gl_frame     ||< external
+ 10  0.630    90.   0. frm_est_2    OPAQUE   VERT -     gl_frame     ||< external
+ 11  24.2     90.   0. east_b       OPAQUE   VERT -     ext_wall     ||< external
+ 12  25.4    180.   0. south_wall   OPAQUE   VERT -     ext_wall     ||< external
+ 13  2.46    180.   0. south_frame  OPAQUE   VERT -     gl_frame     ||< external
+ 14  8.40    180.   0. ptn_core_a   OPAQUE   VERT -     partn_ltw    ||< ptn_b:entry_core
+ 15  16.8    270.   0. ptn_cor_b    OPAQUE   VERT -     partn_ltw    ||< ptn_c:entry_core
+ 16  14.1    180.   0. south_gl     DC_8074_ VERT C-WIN double_glz   ||< external
+ 17  15.8      0.   0. north_gl     DC_8074_ VERT C-WIN double_glz   ||< external
+ 18  3.52     90.   0. est_1_gl     DC_8074_ VERT C-WIN double_glz   ||< external
+ 19  3.15     90.   0. est_2_gl     DC_8074_ VERT C-WIN double_glz   ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ Insolation sources (all applicable):
+frm_north frm_est_1 frm_est_2 south_frame
+ 
+ 
+ Casual gains are controlled in this zone.
+ Shading patterns have not yet been calculated.
+ 
+ 
+ Air schedule notes:
+Based on 1W/ft^2 lighting (10.76 W/m2) during occupied period and 10%
+of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
+4.646m^2 in office so 51 people in this room. Ventilation should be
+0.00944m^3/person/second. Infil at 0.5 ach
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekdays   1  0 -  8    0.50  0.0933    0.00  0.0000   0     0.00
+weekdays   2  8 - 17    0.50  0.0933    2.63  0.4909  21     0.00
+weekdays   3 17 - 24    0.50  0.0933    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.50  0.0933    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.50  0.0933    0.00  0.0000   0     0.00
+ 
+Notes:
+Based on 1W/ft^2 lighting (10.76 W/m2) during occupied period and 10%
+of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
+4.646m^2 in office so 51 people in this room. Ventilation should be
+0.00944m^3/person/second. Infil at 0.5 ach
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 OccuptW    7- 8    459.0    229.7       0.50       0.50
+weekdays    3 OccuptW    8- 9   3213.0   1606.3       0.50       0.50
+weekdays    4 OccuptW    9-12   4590.0   2295.5       0.50       0.50
+weekdays    5 OccuptW   12-13   2295.0   1147.7       0.50       0.50
+weekdays    6 OccuptW   13-14   3213.0   1606.3       0.50       0.50
+weekdays    7 OccuptW   14-16   4590.0   2295.5       0.50       0.50
+weekdays    8 OccuptW   16-17   3901.5   1950.0       0.50       0.50
+weekdays    9 OccuptW   17-18   2295.0   1147.7       0.50       0.50
+weekdays   10 OccuptW   18-19    918.0    459.5       0.50       0.50
+weekdays   11 OccuptW   19-24      0.0      0.0       0.50       0.50
+weekdays   12 LightsW    0- 7    254.6      0.0       0.50       0.50
+weekdays   13 LightsW    7- 8   1273.1      0.0       0.50       0.50
+weekdays   14 LightsW    8-12   2546.1      0.0       0.50       0.50
+weekdays   15 LightsW   12-13   2036.9      0.0       0.50       0.50
+weekdays   16 LightsW   13-17   2546.1      0.0       0.50       0.50
+weekdays   17 LightsW   17-18   2036.9      0.0       0.50       0.50
+weekdays   18 LightsW   18-19   1273.1      0.0       0.50       0.50
+weekdays   19 LightsW   19-24    254.6      0.0       0.50       0.50
+weekdays   20 EquiptW    0- 7    955.0      0.0       0.50       0.50
+weekdays   21 EquiptW    7- 8   1146.1      0.0       0.50       0.50
+weekdays   22 EquiptW    8-12   1814.6      0.0       0.50       0.50
+weekdays   23 EquiptW   12-13   1910.1      0.0       0.50       0.50
+weekdays   24 EquiptW   13-18   1814.6      0.0       0.50       0.50
+weekdays   25 EquiptW   18-19   1528.1      0.0       0.50       0.50
+weekdays   26 EquiptW   19-24    955.0      0.0       0.50       0.50
+saturday    1 OccuptW    0- 9      0.0      0.0       0.50       0.50
+saturday    2 OccuptW    9-12    918.0    459.5       0.50       0.50
+saturday    3 OccuptW   12-24      0.0      0.0       0.50       0.50
+saturday    4 LightsW    0- 9    254.6      0.0       0.50       0.50
+saturday    5 LightsW    9-12   2546.1      0.0       0.50       0.50
+saturday    6 LightsW   12-24    254.6      0.0       0.50       0.50
+saturday    7 EquiptW    0- 9    573.0      0.0       0.50       0.50
+saturday    8 EquiptW    9-12    955.0      0.0       0.50       0.50
+saturday    9 EquiptW   12-24    573.0      0.0       0.50       0.50
+sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
+sunday      2 LightsW    0-24    242.4      0.0       0.50       0.50
+sunday      3 EquiptW    0-24    572.5      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone office_w_0 ( 2) is composed of 19 surfaces and 50 vertices.
+ It encloses a volume of 672.m^3 of space, with a total surface
+ area of 682.m^2 & approx floor area of 240.m^2
+ office_w_0 is the west office at ground level
+ There is 131.60m2 of exposed surface area, 131.60m2 of which is vertical.
+ Outside walls are 39.597 % of floor area & average U of 0.465 & UA of 44.171
+ Glazing is 15.236 % of floor & 27.786 % facade with average U of 2.877 & UA of 105.19
+ Ground contact is 100.00 % of floor area & average U of 0.430 & perimeter 47.000
+ 
+ A summary of the surfaces in office_w_0( 2) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  18.2    270.   0. west_a       OPAQUE   VERT -     ext_wall     ||< external
+  2  21.1      0.   0. north_wall   OPAQUE   VERT -     ext_wall     ||< external
+  3  16.8     90.   0. west_1       OPAQUE   VERT -     partn_ltw    ||< west_1:entry_core
+  4  11.2      0.   0. north_2      OPAQUE   VERT -     partn_ltw    ||< ptn_g:entry_core
+  5  16.8     90.   0. west_2       OPAQUE   VERT -     partn_ltw    ||< west_2:office_e_0
+  6  240.      0.  90. top          OPAQUE   CEIL -     ceiling_dr   ||< ovr_off_w_g:ceiling_g
+  7  240.      0. -90. bottom       OPAQUE   FLOR -     foundation   ||< user def grnd profile  1
+  8  2.26      0.   0. frm_north    OPAQUE   VERT -     gl_frame     ||< external
+  9  0.678   270.   0. frm_wst_1    OPAQUE   VERT -     gl_frame     ||< external
+ 10  0.630   270.   0. frm_wst_2    OPAQUE   VERT -     gl_frame     ||< external
+ 11  24.2    270.   0. east_b       OPAQUE   VERT -     ext_wall     ||< external
+ 12  25.4    180.   0. south_wall   OPAQUE   VERT -     ext_wall     ||< external
+ 13  2.46    180.   0. south_frm    OPAQUE   VERT -     gl_frame     ||< external
+ 14  8.40    180.   0. ptn_core_a   OPAQUE   VERT -     partn_ltw    ||< ptn_e:entry_core
+ 15  16.8     90.   0. ptn_cor_b    OPAQUE   VERT -     partn_ltw    ||< ptn_f:entry_core
+ 16  15.8      0.   0. north_gl     DC_8074_ VERT C-WIN double_glz   ||< external
+ 17  3.52    270.   0. gl_wst_1     DC_8074_ VERT C-WIN double_glz   ||< external
+ 18  3.15    270.   0. gl_wst_2     DC_8074_ VERT C-WIN double_glz   ||< external
+ 19  14.1    180.   0. south_gl     DC_8074_ VERT C-WIN double_glz   ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ Insolation sources (all applicable):
+frm_north frm_wst_1 frm_wst_2 south_frm
+ 
+ 
+ Casual gains are controlled in this zone.
+ Shading patterns have not yet been calculated.
+ 
+ 
+ Air schedule notes:
+Based on 1W/ft^2 lighting (10.76 W/m2) during occupied period and 10%
+of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
+4.646m^2 in office so 51 people in this room. Ventilation should be
+0.00944m^3/person/s. Infil at 0.5 ach
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekdays   1  0 -  8    0.50  0.0933    0.00  0.0000   0     0.00
+weekdays   2  8 - 17    0.50  0.0933    2.63  0.4909  21     0.00
+weekdays   3 17 - 24    0.50  0.0933    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.50  0.0933    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.50  0.0933    0.00  0.0000   0     0.00
+ 
+Notes:
+Based on 1W/ft^2 lighting (10.76 W/m2) during occupied period and 10%
+of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
+4.646m^2 in office so 51 people in this room. Ventilation should be
+0.00944m^3/person/s. Infil at 0.5 ach
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 OccuptW    7- 8    459.0    229.7       0.50       0.50
+weekdays    3 OccuptW    8- 9   3213.0   1606.3       0.50       0.50
+weekdays    4 OccuptW    9-12   4590.0   2295.5       0.50       0.50
+weekdays    5 OccuptW   12-13   2295.0   1147.7       0.50       0.50
+weekdays    6 OccuptW   13-14   3213.0   1606.3       0.50       0.50
+weekdays    7 OccuptW   14-16   4590.0   2295.5       0.50       0.50
+weekdays    8 OccuptW   16-17   3901.5   1950.0       0.50       0.50
+weekdays    9 OccuptW   17-18   2295.0   1147.7       0.50       0.50
+weekdays   10 OccuptW   18-19    918.0    459.5       0.50       0.50
+weekdays   11 OccuptW   19-24      0.0      0.0       0.50       0.50
+weekdays   12 LightsW    0- 7    254.6      0.0       0.50       0.50
+weekdays   13 LightsW    7- 8   1273.1      0.0       0.50       0.50
+weekdays   14 LightsW    8-12   2546.1      0.0       0.50       0.50
+weekdays   15 LightsW   12-13   2036.9      0.0       0.50       0.50
+weekdays   16 LightsW   13-17   2546.1      0.0       0.50       0.50
+weekdays   17 LightsW   17-18   2036.9      0.0       0.50       0.50
+weekdays   18 LightsW   18-19   1273.1      0.0       0.50       0.50
+weekdays   19 LightsW   19-24    254.6      0.0       0.50       0.50
+weekdays   20 EquiptW    0- 7    955.0      0.0       0.50       0.50
+weekdays   21 EquiptW    7- 8   1146.1      0.0       0.50       0.50
+weekdays   22 EquiptW    8-12   1814.6      0.0       0.50       0.50
+weekdays   23 EquiptW   12-13   1910.1      0.0       0.50       0.50
+weekdays   24 EquiptW   13-18   1814.6      0.0       0.50       0.50
+weekdays   25 EquiptW   18-19   1528.1      0.0       0.50       0.50
+weekdays   26 EquiptW   19-24    955.0      0.0       0.50       0.50
+saturday    1 OccuptW    0- 9      0.0      0.0       0.50       0.50
+saturday    2 OccuptW    9-12    918.0    459.5       0.50       0.50
+saturday    3 OccuptW   12-24      0.0      0.0       0.50       0.50
+saturday    4 LightsW    0- 9    254.6      0.0       0.50       0.50
+saturday    5 LightsW    9-12   2546.1      0.0       0.50       0.50
+saturday    6 LightsW   12-24    254.6      0.0       0.50       0.50
+saturday    7 EquiptW    0- 9    573.0      0.0       0.50       0.50
+saturday    8 EquiptW    9-12    955.0      0.0       0.50       0.50
+saturday    9 EquiptW   12-24    573.0      0.0       0.50       0.50
+sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
+sunday      2 LightsW    0-24    242.4      0.0       0.50       0.50
+sunday      3 EquiptW    0-24    572.5      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone office_e_1 ( 3) is composed of 19 surfaces and 50 vertices.
+ It encloses a volume of 689.m^3 of space, with a total surface
+ area of 699.m^2 & approx floor area of 246.m^2
+ office_e_1 is the east office on 1st level up
+ There is 134.40m2 of exposed surface area, 134.40m2 of which is vertical.
+ Outside walls are 39.770 % of floor area & average U of 0.460 & UA of 45.002
+ Glazing is 14.864 % of floor & 27.207 % facade with average U of 2.877 & UA of 105.19
+ 
+ A summary of the surfaces in office_e_1( 3) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  18.2     90.   0. east         OPAQUE   VERT -     ext_wall     ||< external
+  2  23.9      0.   0. north_1      OPAQUE   VERT -     ext_wall     ||< external
+  3  16.8    270.   0. west_1       OPAQUE   VERT -     partn_ltw    ||< west_1:office_w_1
+  4  11.2      0.   0. north_2      OPAQUE   VERT -     partn_ltw    ||< north_e1:core_one
+  5  16.8    270.   0. west_2       OPAQUE   VERT -     partn_ltw    ||< west_2:office_w_1
+  6  246.      0.  90. top          OPAQUE   CEIL -     ceiling_dr   ||< ovr_off_e:ceiling_1
+  7  246.      0. -90. bottom       OPAQUE   FLOR -     inter_flr    ||< top_e:ceiling_g
+  8  2.26      0.   0. frm_north    OPAQUE   VERT -     gl_frame     ||< external
+  9  0.678    90.   0. frm_est_1    OPAQUE   VERT -     gl_frame     ||< external
+ 10  0.630    90.   0. frm_est_2    OPAQUE   VERT -     gl_frame     ||< external
+ 11  24.2     90.   0. east_b       OPAQUE   VERT -     ext_wall     ||< external
+ 12  25.4    180.   0. south_wall   OPAQUE   VERT -     ext_wall     ||< external
+ 13  2.46    180.   0. south_frm    OPAQUE   VERT -     gl_frame     ||< external
+ 14  11.2    180.   0. ptn_core_a   OPAQUE   VERT -     partn_ltw    ||< ptn_core_a:core_one
+ 15  16.8    270.   0. ptn_cor_b    OPAQUE   VERT -     partn_ltw    ||< ptn_cor_b:core_one
+ 16  15.8      0.   0. gl_north     DC_8074_ VERT C-WIN double_glz   ||< external
+ 17  3.52     90.   0. gl_est_1     DC_8074_ VERT C-WIN double_glz   ||< external
+ 18  3.15     90.   0. gl_est_2     DC_8074_ VERT C-WIN double_glz   ||< external
+ 19  14.1    180.   0. south_gl     DC_8074_ VERT C-WIN double_glz   ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ Insolation sources (all applicable):
+frm_north frm_est_1 frm_est_2 south_frm
+ 
+ 
+ Casual gains are controlled in this zone.
+ Shading patterns have not yet been calculated.
+ 
+ 
+ Air schedule notes:
+Based on 1W/ft^2 lighting (10.76 W/m2) during occupied period and 10%
+of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
+4.646m^2 in office so 53 people here. Ventilation should be
+0.00944m^3/person/second. Infil at 0.5 ach
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekdays   1  0 -  8    0.50  0.0957    0.00  0.0000   0     0.00
+weekdays   2  8 - 17    0.50  0.0957    2.57  0.4917  21     0.00
+weekdays   3 17 - 24    0.50  0.0957    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.50  0.0957    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.50  0.0957    0.00  0.0000   0     0.00
+ 
+Notes:
+Based on 1W/ft^2 lighting (10.76 W/m2) during occupied period and 10%
+of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
+4.646m^2 in office so 53 people here. Ventilation should be
+0.00944m^3/person/second. Infil at 0.5 ach
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 OccuptW    7- 8    477.0    238.5       0.50       0.50
+weekdays    3 OccuptW    8- 9   3339.0   1669.5       0.50       0.50
+weekdays    4 OccuptW    9-12   4770.0   2385.0       0.50       0.50
+weekdays    5 OccuptW   12-13   2385.0   1192.5       0.50       0.50
+weekdays    6 OccuptW   13-14   3339.0   1669.5       0.50       0.50
+weekdays    7 OccuptW   14-16   4770.0   2385.5       0.50       0.50
+weekdays    8 OccuptW   16-17   4054.0   2027.0       0.50       0.50
+weekdays    9 OccuptW   17-18   2385.0   1192.5       0.50       0.50
+weekdays   10 OccuptW   18-19    954.0    477.0       0.50       0.50
+weekdays   11 OccuptW   19-24      0.0      0.0       0.50       0.50
+weekdays   12 LightsW    0- 7    264.6      0.0       0.50       0.50
+weekdays   13 LightsW    7- 8   1323.0      0.0       0.50       0.50
+weekdays   14 LightsW    8-12   2646.0      0.0       0.50       0.50
+weekdays   15 LightsW   12-13   2116.8      0.0       0.50       0.50
+weekdays   16 LightsW   13-17   2646.0      0.0       0.50       0.50
+weekdays   17 LightsW   17-18   2116.8      0.0       0.50       0.50
+weekdays   18 LightsW   18-19   1323.0      0.0       0.50       0.50
+weekdays   19 LightsW   19-24    264.6      0.0       0.50       0.50
+weekdays   20 EquiptW    0- 7    992.5      0.0       0.50       0.50
+weekdays   21 EquiptW    7- 8   1191.0      0.0       0.50       0.50
+weekdays   22 EquiptW    8-12   1885.8      0.0       0.50       0.50
+weekdays   23 EquiptW   12-13   1985.0      0.0       0.50       0.50
+weekdays   24 EquiptW   13-18   1885.8      0.0       0.50       0.50
+weekdays   25 EquiptW   18-19   1588.0      0.0       0.50       0.50
+weekdays   26 EquiptW   19-24    992.5      0.0       0.50       0.50
+saturday    1 OccuptW    0- 9      0.0      0.0       0.50       0.50
+saturday    2 OccuptW    9-12    954.0    238.5       0.50       0.50
+saturday    3 OccuptW   12-24      0.0      0.0       0.50       0.50
+saturday    4 LightsW    0- 9    264.6      0.0       0.50       0.50
+saturday    5 LightsW    9-12   2646.0      0.0       0.50       0.50
+saturday    6 LightsW   12-24    264.6      0.0       0.50       0.50
+saturday    7 EquiptW    0- 9    595.5      0.0       0.50       0.50
+saturday    8 EquiptW    9-12    992.5      0.0       0.50       0.50
+saturday    9 EquiptW   12-24    595.5      0.0       0.50       0.50
+sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
+sunday      2 LightsW    0-24    251.9      0.0       0.50       0.50
+sunday      3 EquiptW    0-24    595.0      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone office_w_1 ( 4) is composed of 19 surfaces and 50 vertices.
+ It encloses a volume of 689.m^3 of space, with a total surface
+ area of 699.m^2 & approx floor area of 246.m^2
+ office_w_1 is the middle level office on west side
+ There is 134.40m2 of exposed surface area, 134.40m2 of which is vertical.
+ Outside walls are 39.770 % of floor area & average U of 0.460 & UA of 45.002
+ Glazing is 14.864 % of floor & 27.207 % facade with average U of 2.877 & UA of 105.19
+ 
+ A summary of the surfaces in office_w_1( 4) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  18.2    270.   0. east         OPAQUE   VERT -     ext_wall     ||< external
+  2  23.9      0.   0. north_1      OPAQUE   VERT -     ext_wall     ||< external
+  3  16.8     90.   0. west_1       OPAQUE   VERT -     partn_ltw    ||< west_1:office_e_1
+  4  11.2      0.   0. north_2      OPAQUE   VERT -     partn_ltw    ||< ptn_f:core_one
+  5  16.8     90.   0. west_2       OPAQUE   VERT -     partn_ltw    ||< west_2:office_e_1
+  6  246.      0.  90. top          OPAQUE   CEIL -     ceiling_dr   ||< ovr_off_w:ceiling_1
+  7  246.      0. -90. bottom       OPAQUE   FLOR -     inter_flr    ||< top_w:ceiling_g
+  8  2.26      0.   0. frm_north    OPAQUE   VERT -     gl_frame     ||< external
+  9  0.678   270.   0. frm_wst_1    OPAQUE   VERT -     gl_frame     ||< external
+ 10  0.630   270.   0. frm_wst_2    OPAQUE   VERT -     gl_frame     ||< external
+ 11  24.2    270.   0. east_b       OPAQUE   VERT -     ext_wall     ||< external
+ 12  25.4    180.   0. south_wall   OPAQUE   VERT -     ext_wall     ||< external
+ 13  2.46    180.   0. south_frm    OPAQUE   VERT -     gl_frame     ||< external
+ 14  11.2    180.   0. ptn_core_a   OPAQUE   VERT -     partn_ltw    ||< ptn_d:core_one
+ 15  16.8     90.   0. ptn_cor_b    OPAQUE   VERT -     partn_ltw    ||< ptn_e:core_one
+ 16  15.8      0.   0. gl_north     DC_8074_ VERT C-WIN double_glz   ||< external
+ 17  3.52    270.   0. gl_wst_1     DC_8074_ VERT C-WIN double_glz   ||< external
+ 18  3.15    270.   0. gl_wst_2     DC_8074_ VERT C-WIN double_glz   ||< external
+ 19  14.1    180.   0. south_gl     DC_8074_ VERT C-WIN double_glz   ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ Insolation sources (all applicable):
+frm_north frm_wst_1 frm_wst_2 south_frm
+ 
+ 
+ Casual gains are controlled in this zone.
+ Shading patterns have not yet been calculated.
+ 
+ 
+ Air schedule notes:
+Based on 1W/ft^2 lighting (10.76 W/m2) during occupied period and 10%
+of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
+4.646m^2 in office so 51 people here. Ventilation should be
+0.00944m^3/person/second. Infil at 0.5 ach
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekdays   1  0 -  8    0.50  0.0957    0.00  0.0000   0     0.00
+weekdays   2  8 - 17    0.50  0.0957    2.57  0.4917  21     0.00
+weekdays   3 17 - 24    0.50  0.0957    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.50  0.0957    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.50  0.0957    0.00  0.0000   0     0.00
+ 
+Notes:
+Based on 1W/ft^2 lighting (10.76 W/m2) during occupied period and 10%
+of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
+4.646m^2 in office so 51 people here. Ventilation should be
+0.00944m^3/person/second. Infil at 0.5 ach
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 OccuptW    7- 8    477.0    238.5       0.50       0.50
+weekdays    3 OccuptW    8- 9   3339.0   1669.5       0.50       0.50
+weekdays    4 OccuptW    9-12   4770.0   2385.0       0.50       0.50
+weekdays    5 OccuptW   12-13   2385.0   1192.5       0.50       0.50
+weekdays    6 OccuptW   13-14   3339.0   1669.5       0.50       0.50
+weekdays    7 OccuptW   14-16   4770.0   2385.5       0.50       0.50
+weekdays    8 OccuptW   16-17   4054.0   2027.0       0.50       0.50
+weekdays    9 OccuptW   17-18   2385.0   1192.5       0.50       0.50
+weekdays   10 OccuptW   18-19    954.0    477.0       0.50       0.50
+weekdays   11 OccuptW   19-24      0.0      0.0       0.50       0.50
+weekdays   12 LightsW    0- 7    264.6      0.0       0.50       0.50
+weekdays   13 LightsW    7- 8   1323.0      0.0       0.50       0.50
+weekdays   14 LightsW    8-12   2646.0      0.0       0.50       0.50
+weekdays   15 LightsW   12-13   2116.8      0.0       0.50       0.50
+weekdays   16 LightsW   13-17   2646.0      0.0       0.50       0.50
+weekdays   17 LightsW   17-18   2116.8      0.0       0.50       0.50
+weekdays   18 LightsW   18-19   1323.0      0.0       0.50       0.50
+weekdays   19 LightsW   19-24    264.6      0.0       0.50       0.50
+weekdays   20 EquiptW    0- 7    992.5      0.0       0.50       0.50
+weekdays   21 EquiptW    7- 8   1191.0      0.0       0.50       0.50
+weekdays   22 EquiptW    8-12   1885.8      0.0       0.50       0.50
+weekdays   23 EquiptW   12-13   1985.0      0.0       0.50       0.50
+weekdays   24 EquiptW   13-18   1885.8      0.0       0.50       0.50
+weekdays   25 EquiptW   18-19   1588.0      0.0       0.50       0.50
+weekdays   26 EquiptW   19-24    992.5      0.0       0.50       0.50
+saturday    1 OccuptW    0- 9      0.0      0.0       0.50       0.50
+saturday    2 OccuptW    9-12    954.0    238.5       0.50       0.50
+saturday    3 OccuptW   12-24      0.0      0.0       0.50       0.50
+saturday    4 LightsW    0- 9    264.6      0.0       0.50       0.50
+saturday    5 LightsW    9-12   2646.0      0.0       0.50       0.50
+saturday    6 LightsW   12-24    264.6      0.0       0.50       0.50
+saturday    7 EquiptW    0- 9    595.5      0.0       0.50       0.50
+saturday    8 EquiptW    9-12    992.5      0.0       0.50       0.50
+saturday    9 EquiptW   12-24    595.5      0.0       0.50       0.50
+sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
+sunday      2 LightsW    0-24    251.9      0.0       0.50       0.50
+sunday      3 EquiptW    0-24    595.0      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone office_e_3 ( 5) is composed of 20 surfaces and 52 vertices.
+ It encloses a volume of 689.m^3 of space, with a total surface
+ area of 699.m^2 & approx floor area of 246.m^2
+ office_e_3 is the office on the 3rd level east side
+ There is 134.40m2 of exposed surface area, 134.40m2 of which is vertical.
+ Outside walls are 39.770 % of floor area & average U of 0.460 & UA of 45.002
+ Glazing is 14.864 % of floor & 27.207 % facade with average U of 2.877 & UA of 105.19
+ 
+ A summary of the surfaces in office_e_3( 5) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  18.2     90.   0. east         OPAQUE   VERT -     ext_wall     ||< external
+  2  23.9      0.   0. north_1      OPAQUE   VERT -     ext_wall     ||< external
+  3  16.8    270.   0. west_1       OPAQUE   VERT -     partn_ltw    ||< west_1:office_w_3
+  4  11.2      0.   0. north_2      OPAQUE   VERT -     partn_ltw    ||< ptn_f:core_top
+  5  16.8    270.   0. west_2       OPAQUE   VERT -     partn_ltw    ||< west_2:office_w_3
+  6  246.      0.  90. top          OPAQUE   CEIL -     ceiling_dr   ||< top:roof
+  7  216.      0. -90. bottom       OPAQUE   FLOR -     inter_flr    ||< top_e:ceiling_2
+  8  2.26      0.   0. frm_north    OPAQUE   VERT -     gl_frame     ||< external
+  9  0.678    90.   0. frm_est_1    OPAQUE   VERT -     gl_frame     ||< external
+ 10  0.630    90.   0. frm_est_2    OPAQUE   VERT -     gl_frame     ||< external
+ 11  24.2     90.   0. east_b       OPAQUE   VERT -     ext_wall     ||< external
+ 12  25.4    180.   0. south_wall   OPAQUE   VERT -     ext_wall     ||< external
+ 13  2.46    180.   0. south_frm    OPAQUE   VERT -     gl_frame     ||< external
+ 14  11.2    180.   0. ptn_core_a   OPAQUE   VERT -     partn_ltw    ||< ptn_core_a:core_top
+ 15  16.8    270.   0. ptn_cor_b    OPAQUE   VERT -     partn_ltw    ||< ptn_cor_b:core_top
+ 16  30.0      0. -90. top_e        OPAQUE   FLOR -     inter_flr    ||< top_e:core_two
+ 17  15.8      0.   0. gl_north     DC_8074_ VERT C-WIN double_glz   ||< external
+ 18  3.52     90.   0. gl_est_1     DC_8074_ VERT C-WIN double_glz   ||< external
+ 19  3.15     90.   0. gl_est_2     DC_8074_ VERT C-WIN double_glz   ||< external
+ 20  14.1    180.   0. south_gl     DC_8074_ VERT C-WIN double_glz   ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ Insolation sources (all applicable):
+frm_north frm_est_1 frm_est_2 south_frm
+ 
+ 
+ Casual gains are controlled in this zone.
+ Shading patterns have not yet been calculated.
+ 
+ 
+ Air schedule notes:
+Based on 1W/ft^2 lighting (10.76 W/m2) during occupied period and 10%
+of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
+4.646m^2 in office so 53 people in this room. Ventilation should be
+0.00944m^3/person/second. Infil at 0.5 ach
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekdays   1  0 -  8    0.50  0.0957    0.00  0.0000   0     0.00
+weekdays   2  8 - 17    0.50  0.0957    2.57  0.4917  21     0.00
+weekdays   3 17 - 24    0.50  0.0957    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.50  0.0957    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.50  0.0957    0.00  0.0000   0     0.00
+ 
+Notes:
+Based on 1W/ft^2 lighting (10.76 W/m2) during occupied period and 10%
+of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
+4.646m^2 in office so 53 people in this room. Ventilation should be
+0.00944m^3/person/second. Infil at 0.5 ach
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 OccuptW    7- 8    477.0    238.5       0.50       0.50
+weekdays    3 OccuptW    8- 9   3339.0   1669.5       0.50       0.50
+weekdays    4 OccuptW    9-12   4770.0   2385.0       0.50       0.50
+weekdays    5 OccuptW   12-13   2385.0   1192.5       0.50       0.50
+weekdays    6 OccuptW   13-14   3339.0   1669.5       0.50       0.50
+weekdays    7 OccuptW   14-16   4770.0   2385.5       0.50       0.50
+weekdays    8 OccuptW   16-17   4054.0   2027.0       0.50       0.50
+weekdays    9 OccuptW   17-18   2385.0   1192.5       0.50       0.50
+weekdays   10 OccuptW   18-19    954.0    477.0       0.50       0.50
+weekdays   11 OccuptW   19-24      0.0      0.0       0.50       0.50
+weekdays   12 LightsW    0- 7    264.6      0.0       0.50       0.50
+weekdays   13 LightsW    7- 8   1323.0      0.0       0.50       0.50
+weekdays   14 LightsW    8-12   2646.0      0.0       0.50       0.50
+weekdays   15 LightsW   12-13   2116.8      0.0       0.50       0.50
+weekdays   16 LightsW   13-17   2646.0      0.0       0.50       0.50
+weekdays   17 LightsW   17-18   2116.8      0.0       0.50       0.50
+weekdays   18 LightsW   18-19   1323.0      0.0       0.50       0.50
+weekdays   19 LightsW   19-24    264.6      0.0       0.50       0.50
+weekdays   20 EquiptW    0- 7    992.5      0.0       0.50       0.50
+weekdays   21 EquiptW    7- 8   1191.0      0.0       0.50       0.50
+weekdays   22 EquiptW    8-12   1885.8      0.0       0.50       0.50
+weekdays   23 EquiptW   12-13   1985.0      0.0       0.50       0.50
+weekdays   24 EquiptW   13-18   1885.8      0.0       0.50       0.50
+weekdays   25 EquiptW   18-19   1588.0      0.0       0.50       0.50
+weekdays   26 EquiptW   19-24    992.5      0.0       0.50       0.50
+saturday    1 OccuptW    0- 9      0.0      0.0       0.50       0.50
+saturday    2 OccuptW    9-12    954.0    238.5       0.50       0.50
+saturday    3 OccuptW   12-24      0.0      0.0       0.50       0.50
+saturday    4 LightsW    0- 9    264.6      0.0       0.50       0.50
+saturday    5 LightsW    9-12   2646.0      0.0       0.50       0.50
+saturday    6 LightsW   12-24    264.6      0.0       0.50       0.50
+saturday    7 EquiptW    0- 9    595.5      0.0       0.50       0.50
+saturday    8 EquiptW    9-12    992.5      0.0       0.50       0.50
+saturday    9 EquiptW   12-24    595.5      0.0       0.50       0.50
+sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
+sunday      2 LightsW    0-24    251.9      0.0       0.50       0.50
+sunday      3 EquiptW    0-24    595.0      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone office_w_3 ( 6) is composed of 20 surfaces and 52 vertices.
+ It encloses a volume of 689.m^3 of space, with a total surface
+ area of 699.m^2 & approx floor area of 246.m^2
+ office_w_3 is the west office of the 3rd level
+ There is 134.40m2 of exposed surface area, 134.40m2 of which is vertical.
+ Outside walls are 39.770 % of floor area & average U of 0.460 & UA of 45.002
+ Glazing is 14.864 % of floor & 27.207 % facade with average U of 2.877 & UA of 105.19
+ 
+ A summary of the surfaces in office_w_3( 6) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  18.2    270.   0. east         OPAQUE   VERT -     ext_wall     ||< external
+  2  23.9      0.   0. north_1      OPAQUE   VERT -     ext_wall     ||< external
+  3  16.8     90.   0. west_1       OPAQUE   VERT -     partn_ltw    ||< west_1:office_e_3
+  4  11.2      0.   0. north_2      OPAQUE   VERT -     partn_ltw    ||< ptn_e:core_top
+  5  16.8     90.   0. west_2       OPAQUE   VERT -     partn_ltw    ||< west_2:office_e_3
+  6  246.      0.  90. top          OPAQUE   CEIL -     ceiling_dr   ||< top_w:roof
+  7  216.      0. -90. bottom       OPAQUE   FLOR -     inter_flr    ||< top_w:ceiling_2
+  8  2.26      0.   0. frm_north    OPAQUE   VERT -     gl_frame     ||< external
+  9  0.678   270.   0. frm_wst_1    OPAQUE   VERT -     gl_frame     ||< external
+ 10  0.630   270.   0. frm_wst_2    OPAQUE   VERT -     gl_frame     ||< external
+ 11  24.2    270.   0. east_b       OPAQUE   VERT -     ext_wall     ||< external
+ 12  25.4    180.   0. south_wall   OPAQUE   VERT -     ext_wall     ||< external
+ 13  2.46    180.   0. south_frm    OPAQUE   VERT -     gl_frame     ||< external
+ 14  11.2    180.   0. ptn_core_a   OPAQUE   VERT -     partn_ltw    ||< ptn_core_c:core_top
+ 15  16.8     90.   0. ptn_cor_b    OPAQUE   VERT -     partn_ltw    ||< ptn_cor_d:core_top
+ 16  30.0      0. -90. top_core3w   OPAQUE   FLOR -     inter_flr    ||< top:core_two
+ 17  15.8      0.   0. gl_north     DC_8074_ VERT C-WIN double_glz   ||< external
+ 18  3.52    270.   0. gl_wst_1     DC_8074_ VERT C-WIN double_glz   ||< external
+ 19  3.15    270.   0. gl_wst_2     DC_8074_ VERT C-WIN double_glz   ||< external
+ 20  14.1    180.   0. south_gl     DC_8074_ VERT C-WIN double_glz   ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ Insolation sources (all applicable):
+frm_north frm_wst_1 frm_wst_2 south_frm
+ 
+ 
+ Casual gains are controlled in this zone.
+ Shading patterns have not yet been calculated.
+ 
+ 
+ Air schedule notes:
+Based on 1W/ft^2 lighting (10.76 W/m2) during occupied period and 10%
+of this during unoccupied. Occupied is 8h00-17h00 M-F with diversity.
+1 person per 4.646m^2 in office so 51 people in this room. Ventilation
+should be 0.00944m^3/person/second. I
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekdays   1  0 -  8    0.50  0.0957    0.00  0.0000   0     0.00
+weekdays   2  8 - 17    0.50  0.0957    2.57  0.4917  21     0.00
+weekdays   3 17 - 24    0.50  0.0957    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.50  0.0957    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.50  0.0957    0.00  0.0000   0     0.00
+ 
+Notes:
+Based on 1W/ft^2 lighting (10.76 W/m2) during occupied period and 10%
+of this during unoccupied. Occupied is 8h00-17h00 M-F with diversity.
+1 person per 4.646m^2 in office so 51 people in this room. Ventilation
+should be 0.00944m^3/person/second. I
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 OccuptW    7- 8    477.0    238.5       0.50       0.50
+weekdays    3 OccuptW    8- 9   3339.0   1669.5       0.50       0.50
+weekdays    4 OccuptW    9-12   4770.0   2385.0       0.50       0.50
+weekdays    5 OccuptW   12-13   2385.0   1192.5       0.50       0.50
+weekdays    6 OccuptW   13-14   3339.0   1669.5       0.50       0.50
+weekdays    7 OccuptW   14-16   4770.0   2385.5       0.50       0.50
+weekdays    8 OccuptW   16-17   4054.0   2027.0       0.50       0.50
+weekdays    9 OccuptW   17-18   2385.0   1192.5       0.50       0.50
+weekdays   10 OccuptW   18-19    954.0    477.0       0.50       0.50
+weekdays   11 OccuptW   19-24      0.0      0.0       0.50       0.50
+weekdays   12 LightsW    0- 7    264.6      0.0       0.50       0.50
+weekdays   13 LightsW    7- 8   1323.0      0.0       0.50       0.50
+weekdays   14 LightsW    8-12   2646.9      0.0       0.50       0.50
+weekdays   15 LightsW   12-13   2117.5      0.0       0.50       0.50
+weekdays   16 LightsW   13-17   2646.9      0.0       0.50       0.50
+weekdays   17 LightsW   17-18   2117.5      0.0       0.50       0.50
+weekdays   18 LightsW   18-19   1323.4      0.0       0.50       0.50
+weekdays   19 LightsW   19-24    264.6      0.0       0.50       0.50
+weekdays   20 EquiptW    0- 7    992.0      0.0       0.50       0.50
+weekdays   21 EquiptW    7- 8   1191.0      0.0       0.50       0.50
+weekdays   22 EquiptW    8-12   1885.2      0.0       0.50       0.50
+weekdays   23 EquiptW   12-13   1985.2      0.0       0.50       0.50
+weekdays   24 EquiptW   13-18   1885.2      0.0       0.50       0.50
+weekdays   25 EquiptW   18-19   1588.2      0.0       0.50       0.50
+weekdays   26 EquiptW   19-24    992.0      0.0       0.50       0.50
+saturday    1 OccuptW    0- 9      0.0      0.0       0.50       0.50
+saturday    2 OccuptW    9-12    954.0    477.0       0.50       0.50
+saturday    3 OccuptW   12-24      0.0      0.0       0.50       0.50
+saturday    4 LightsW    0- 9     25.1      0.0       0.50       0.50
+saturday    5 LightsW    9-12    251.9      0.0       0.50       0.50
+saturday    6 LightsW   12-24     25.1      0.0       0.50       0.50
+saturday    7 EquiptW    0- 9    595.0      0.0       0.50       0.50
+saturday    8 EquiptW    9-12    992.6      0.0       0.50       0.50
+saturday    9 EquiptW   12-24    595.0      0.0       0.50       0.50
+sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
+sunday      2 LightsW    0-24    251.9      0.0       0.50       0.50
+sunday      3 EquiptW    0-24    595.0      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone entry_core ( 7) is composed of 21 surfaces and 33 vertices.
+ It encloses a volume of 218.m^3 of space, with a total surface
+ area of 347.m^2 & user list floor area of 52.0m^2
+ entry_core is the entrance and core at ground level
+ There is 5.6000m2 of exposed surface area, 5.6000m2 of which is vertical.
+ Outside walls are 2.1538 % of floor area & average U of 3.316 & UA of 3.7137
+ Glazing is 8.6154 % of floor & 80.001 % facade with average U of 2.877 & UA of 12.888
+ Ground contact is 115.38 % of floor area & average U of 0.430 & perimeter 2.0000
+ 
+ A summary of the surfaces in entry_core( 7) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  16.8     90.   0. ptn_a        OPAQUE   VERT -     partn_ltw    ||< west_1:office_e_0
+  2  8.40      0.   0. ptn_b        OPAQUE   VERT -     partn_ltw    ||< ptn_core_a:office_e_0
+  3  16.8     90.   0. ptn_c        OPAQUE   VERT -     partn_ltw    ||< ptn_cor_b:office_e_0
+  4  11.2    180.   0. north_2      OPAQUE   VERT -     partn_ltw    ||< north_2:office_e_0
+  5  4.20      0.   0. core_c1_a    OPAQUE   VERT -     partn_ltw    ||< core_c1_a:ceiling_g
+  6  6.30     90.   0. core_c1_b    OPAQUE   VERT -     partn_ltw    ||< core_c1_b:ceiling_g
+  7  4.20      0.   0. core_c1w_a   OPAQUE   VERT -     partn_ltw    ||< core_c1w_a:ceiling_g
+  8  12.0      0.  90. over_entr    OPAQUE   CEIL -     ceiling_dr   ||< over_entr:ceiling_g
+  9  4.20    180.   0. north_c1     OPAQUE   VERT -     partn_ltw    ||< north_c1:ceiling_g
+ 10  6.30    270.   0. east_c1      OPAQUE   VERT -     partn_ltw    ||< east_c1:ceiling_g
+ 11  4.20    180.   0. north_c2     OPAQUE   VERT -     partn_ltw    ||< north_c1_f:ceiling_g
+ 12  16.8    270.   0. west_1       OPAQUE   VERT -     partn_ltw    ||< west_1:office_w_0
+ 13  8.40      0.   0. ptn_e        OPAQUE   VERT -     partn_ltw    ||< ptn_core_a:office_w_0
+ 14  16.8    270.   0. ptn_f        OPAQUE   VERT -     partn_ltw    ||< ptn_cor_b:office_w_0
+ 15  11.2    180.   0. ptn_g        OPAQUE   VERT -     partn_ltw    ||< north_2:office_w_0
+ 16  60.0      0. -90. slab_floor   OPAQUE   FLOR -     foundation   ||< user def grnd profile  1
+ 17  48.0      0.  90. upper_at_slb OPAQUE   CEIL -     inter_flrev  ||< base:core_one
+ 18  1.12      0.   0. entry_frame  OPAQUE   VERT -     window_frame ||< external
+ 19  4.48      0.   0. entry_door   DC_8074_ VERT -     double_glz   ||< external
+ 20  42.6      0.  90. drop_ceil    OPAQUE   CEIL -     ceiling_dr   ||< drop_ceilr:entry_core
+ 21  42.6      0. -90. drop_ceilr   OPAQUE   FLOR -     ceiling_dr   ||< drop_ceil:entry_core
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ 
+ Air schedule notes:
+Core space schedules - 1 person per 18.58m^2 (2 in entry), lighting at
+1W/ft^2 (10.76 m^2). Plug loads at 13.45 W/m^2.  10% lights un-occup
+hours, 20% plug loads un-occup hours. As base case assume not tight
+fit doors (1ach) with 2ach during occupi
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekdays   1  0 -  8    1.00  0.0607    0.00  0.0000   0     0.00
+weekdays   2  8 - 17    2.00  0.1213    0.46  0.0279  21     0.00
+weekdays   3 17 - 24    1.00  0.0607    0.00  0.0000   0     0.00
+saturday   1  0 - 24    1.00  0.0607    0.00  0.0000   0     0.00
+sunday     1  0 - 24    1.00  0.0607    0.00  0.0000   0     0.00
+ 
+Notes:
+Core space schedules - 1 person per 18.58m^2 (2 in entry), lighting at
+1W/ft^2 (10.76 m^2). Plug loads at 13.45 W/m^2.  10% lights un-occup
+hours, 20% plug loads un-occup hours. As base case assume not tight
+fit doors (1ach) with 2ach during occupi
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 OccuptW    0- 8      0.0      0.0       0.50       0.50
+weekdays    2 OccuptW    8-17    180.0     90.0       0.50       0.50
+weekdays    3 OccuptW   17-24      0.0      0.0       0.50       0.50
+weekdays    4 LightsW    0- 8     60.0      0.0       0.50       0.50
+weekdays    5 LightsW    8-17    600.0      0.0       0.50       0.50
+weekdays    6 LightsW   17-24     60.0      0.0       0.50       0.50
+weekdays    7 EquiptW    0- 8    140.0      0.0       0.50       0.50
+weekdays    8 EquiptW    8-17    700.0      0.0       0.50       0.50
+weekdays    9 EquiptW   17-24    140.0      0.0       0.50       0.50
+saturday    1 LightsW    0-24     60.0      0.0       0.50       0.50
+saturday    2 EquiptW    0-24    140.0      0.0       0.50       0.50
+sunday      1 LightsW    0-24     60.0      0.0       0.50       0.50
+sunday      2 EquiptW    0-24    140.0      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone core_one ( 8) is composed of 14 surfaces and 18 vertices.
+ It encloses a volume of 185.m^3 of space, with a total surface
+ area of 204.m^2 & user list floor area of 48.0m^2
+ core_mid is the core at the first level
+ 
+ A summary of the surfaces in core_one( 8) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  11.2      0.   0. ptn_core_a   OPAQUE   VERT -     partn_ltw    ||< ptn_core_a:office_e_1
+  2  16.8     90.   0. ptn_cor_b    OPAQUE   VERT -     partn_ltw    ||< ptn_cor_b:office_e_1
+  3  11.2    180.   0. north_e1     OPAQUE   VERT -     partn_ltw    ||< north_2:office_e_1
+  4  11.2      0.   0. ptn_d        OPAQUE   VERT -     partn_ltw    ||< ptn_core_a:office_w_1
+  5  16.8    270.   0. ptn_e        OPAQUE   VERT -     partn_ltw    ||< ptn_cor_b:office_w_1
+  6  11.2    180.   0. ptn_f        OPAQUE   VERT -     partn_ltw    ||< north_2:office_w_1
+  7  4.20      0.   0. core_c1_a    OPAQUE   VERT -     partn_ltw    ||< core_c1_a:ceiling_1
+  8  6.30     90.   0. core_c1_b    OPAQUE   VERT -     partn_ltw    ||< core_c1_b:ceiling_1
+  9  4.20      0.   0. core_c1w_a   OPAQUE   VERT -     partn_ltw    ||< core_c1w_a:ceiling_1
+ 10  6.30    270.   0. east_c1      OPAQUE   VERT -     partn_ltw    ||< east_c1:ceiling_1
+ 11  4.20    180.   0. north_c1     OPAQUE   VERT -     partn_ltw    ||< north_c1:ceiling_1
+ 12  4.20    180.   0. north_c1_c   OPAQUE   VERT -     partn_ltw    ||< north_c1_c:ceiling_1
+ 13  48.0      0. -90. base         OPAQUE   FLOR -     inter_flr    ||< upper_at_slb:entry_core
+ 14  48.0      0.  90. top          OPAQUE   CEIL -     inter_flr    ||< base_cor2:core_two
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ Air schedule notes:
+Core space schedules - 1 person per 18.58m^2 (2 people), lighting at
+1W/ft^2 (10.76 m^2). Plug loads at 13.45 W/m^2.  10% lights un-occup
+hours, 20% plug loads un-occup hours. .
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekdays   1  0 -  8    0.50  0.0257    0.00  0.0000   0     0.00
+weekdays   2  8 - 17    0.51  0.0262    0.55  0.0282  21     0.00
+weekdays   3 17 - 24    0.50  0.0257    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.50  0.0257    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.50  0.0257    0.00  0.0000   0     0.00
+ 
+Notes:
+Core space schedules - 1 person per 18.58m^2 (2 people), lighting at
+1W/ft^2 (10.76 m^2). Plug loads at 13.45 W/m^2.  10% lights un-occup
+hours, 20% plug loads un-occup hours. .
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 OccuptW    0- 8      0.0      0.0       0.50       0.50
+weekdays    2 OccuptW    8-17    180.0     90.0       0.50       0.50
+weekdays    3 OccuptW   17-24      0.0      0.0       0.50       0.50
+weekdays    4 LightsW    0- 8     51.0      0.0       0.50       0.50
+weekdays    5 LightsW    8-17    516.0      0.0       0.50       0.50
+weekdays    6 LightsW   17-24     51.0      0.0       0.50       0.50
+weekdays    7 EquiptW    0- 8    129.0      0.0       0.50       0.50
+weekdays    8 EquiptW    8-17    645.0      0.0       0.50       0.50
+weekdays    9 EquiptW   17-24    129.0      0.0       0.50       0.50
+saturday    1 LightsW    0-24     51.0      0.0       0.50       0.50
+saturday    2 EquiptW    0-24    129.0      0.0       0.50       0.50
+sunday      1 LightsW    0-24     51.0      0.0       0.50       0.50
+sunday      2 EquiptW    0-24    129.0      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone core_two ( 9) is composed of 18 surfaces and 26 vertices.
+ It encloses a volume of 416.m^3 of space, with a total surface
+ area of 401.m^2 & user list floor area of 108.m^2
+ core_two is core zone of 2nd level of office building
+ 
+ A summary of the surfaces in core_two( 9) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  25.2      0.   0. ptn_core_a   OPAQUE   VERT -     partn_ltw    ||< ptn_core_a:passage_2
+  2  16.8     90.   0. ptn_cor_b    OPAQUE   VERT -     partn_ltw    ||< ptn_cor_b:passage_2
+  3  25.2    180.   0. north_2      OPAQUE   VERT -     partn_ltw    ||< north_2:passage_2
+  4  25.2      0.   0. ptn_d        OPAQUE   VERT -     partn_ltw    ||< ptn_core_aw:passage_2
+  5  16.8    270.   0. ptn_e        OPAQUE   VERT -     partn_ltw    ||< ptn_cor_bw:passage_2
+  6  25.2    180.   0. ptn_f        OPAQUE   VERT -     partn_ltw    ||< north_2w:passage_2
+  7  9.45      0.   0. core_c2_a    OPAQUE   VERT -     partn_ltw    ||< core_c2_ap:ceiling_2
+  8  6.30     90.   0. core_c2_b    OPAQUE   VERT -     partn_ltw    ||< core_c2_b:ceiling_2
+  9  9.45      0.   0. core_c2w_a   OPAQUE   VERT -     partn_ltw    ||< core_c2w_ap:ceiling_2
+ 10  6.30    270.   0. east_c2      OPAQUE   VERT -     partn_ltw    ||< east_c1:ceiling_2
+ 11  9.45    180.   0. north_c2wc   OPAQUE   VERT -     partn_ltw    ||< north_c2psw:ceiling_2
+ 12  9.45    180.   0. north_c2_c   OPAQUE   VERT -     partn_ltw    ||< north_c2pse:ceiling_2
+ 13  30.0      0. -90. base_e       OPAQUE   FLOR -     inter_flr    ||< core3_be:ceiling_1
+ 14  30.0      0.  90. top          OPAQUE   CEIL -     inter_flrev  ||< top_core3w:office_w_3
+ 15  48.0      0. -90. base_cor2    OPAQUE   FLOR -     inter_flrev  ||< top:core_one
+ 16  30.0      0. -90. base_w       OPAQUE   FLOR -     inter_flr    ||< base_w:ceiling_1
+ 17  48.0      0.  90. base_core_t  OPAQUE   CEIL -     inter_flr    ||< base:core_top
+ 18  30.0      0.  90. top_e        OPAQUE   CEIL -     inter_flrev  ||< top_e:office_e_3
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ Air schedule notes:
+Core space schedules - 1 person per 18.58m^2 (5.8 people), lighting at
+1W/ft^2 (10.76 m^2). Plug loads at 13.45 W/m^2.  10% lights un-occup
+hours, 20% plug loads un-occup hours. .
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekdays   1  0 -  8    0.50  0.0578    0.00  0.0000   0     0.00
+weekdays   2  8 - 17    0.50  0.0578    0.49  0.0566  21     0.00
+weekdays   3 17 - 24    0.50  0.0578    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.50  0.0578    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.50  0.0578    0.00  0.0000   0     0.00
+ 
+Notes:
+Core space schedules - 1 person per 18.58m^2 (5.8 people), lighting at
+1W/ft^2 (10.76 m^2). Plug loads at 13.45 W/m^2.  10% lights un-occup
+hours, 20% plug loads un-occup hours. .
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 OccuptW    0- 8      0.0      0.0       0.50       0.50
+weekdays    2 OccuptW    8-17    522.0    261.0       0.50       0.50
+weekdays    3 OccuptW   17-24      0.0      0.0       0.50       0.50
+weekdays    4 LightsW    0- 8    140.2      0.0       0.50       0.50
+weekdays    5 LightsW    8-17   1419.0      0.0       0.50       0.50
+weekdays    6 LightsW   17-24    140.2      0.0       0.50       0.50
+weekdays    7 EquiptW    0- 8    354.8      0.0       0.50       0.50
+weekdays    8 EquiptW    8-17   1773.8      0.0       0.50       0.50
+weekdays    9 EquiptW   17-24    354.8      0.0       0.50       0.50
+saturday    1 LightsW    0-24    140.2      0.0       0.50       0.50
+saturday    2 EquiptW    0-24    354.8      0.0       0.50       0.50
+sunday      1 LightsW    0-24    140.2      0.0       0.50       0.50
+sunday      2 EquiptW    0-24    354.8      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone core_top (10) is composed of 8 surfaces and 12 vertices.
+ It encloses a volume of 134.m^3 of space, with a total surface
+ area of 174.m^2 & user list floor area of 48.0m^2
+ core_top is the core at the top level
+ 
+ A summary of the surfaces in core_top(10) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  11.2      0.   0. ptn_core_a   OPAQUE   VERT -     partn_ltw    ||< ptn_core_a:office_e_3
+  2  16.8     90.   0. ptn_cor_b    OPAQUE   VERT -     partn_ltw    ||< ptn_cor_b:office_e_3
+  3  11.2    180.   0. ptn_f        OPAQUE   VERT -     partn_ltw    ||< north_2:office_e_3
+  4  11.2      0.   0. ptn_core_c   OPAQUE   VERT -     partn_ltw    ||< ptn_core_a:office_w_3
+  5  16.8    270.   0. ptn_cor_d    OPAQUE   VERT -     partn_ltw    ||< ptn_cor_b:office_w_3
+  6  11.2    180.   0. ptn_e        OPAQUE   VERT -     partn_ltw    ||< north_2:office_w_3
+  7  48.0      0.  90. core_top     OPAQUE   CEIL -     ceiling_dr   ||< core_top:roof
+  8  48.0      0. -90. base         OPAQUE   FLOR -     inter_flrev  ||< base_core_t:core_two
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ Air schedule notes:
+Core space schedules - 1 person per 18.58m^2 (2 people), lighting at
+1W/ft^2 (10.76 m^2). Plug loads at 13.45 W/m^2.  10% lights un-occup
+hours, 20% plug loads un-occup hours. .
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekdays   1  0 -  8    0.50  0.0187    0.00  0.0000   0     0.00
+weekdays   2  8 - 17    0.51  0.0190    0.75  0.0280  21     0.00
+weekdays   3 17 - 24    0.50  0.0187    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.50  0.0187    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.50  0.0187    0.00  0.0000   0     0.00
+ 
+Notes:
+Core space schedules - 1 person per 18.58m^2 (2 people), lighting at
+1W/ft^2 (10.76 m^2). Plug loads at 13.45 W/m^2.  10% lights un-occup
+hours, 20% plug loads un-occup hours. .
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 OccuptW    0- 8      0.0      0.0       0.50       0.50
+weekdays    2 OccuptW    8-17    180.0     90.0       0.50       0.50
+weekdays    3 OccuptW   17-24      0.0      0.0       0.50       0.50
+weekdays    4 LightsW    0- 8     51.0      0.0       0.50       0.50
+weekdays    5 LightsW    8-17    516.0      0.0       0.50       0.50
+weekdays    6 LightsW   17-24     51.0      0.0       0.50       0.50
+weekdays    7 EquiptW    0- 8    129.0      0.0       0.50       0.50
+weekdays    8 EquiptW    8-17    645.0      0.0       0.50       0.50
+weekdays    9 EquiptW   17-24    129.0      0.0       0.50       0.50
+saturday    1 LightsW    0-24     51.0      0.0       0.50       0.50
+saturday    2 EquiptW    0-24    129.0      0.0       0.50       0.50
+sunday      1 LightsW    0-24     51.0      0.0       0.50       0.50
+sunday      2 EquiptW    0-24    129.0      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone office_2_nor (11) is composed of 20 surfaces and 44 vertices.
+ It encloses a volume of 350.m^3 of space, with a total surface
+ area of 529.m^2 & approx floor area of 125.m^2
+ office_2_nor is on the north side of 2nd level passage
+ There is 84.000m2 of exposed surface area, 84.000m2 of which is vertical.
+ Outside walls are 41.924 % of floor area & average U of 0.525 & UA of 27.524
+ Glazing is 25.276 % of floor & 37.613 % facade with average U of 2.877 & UA of 90.890
+ 
+ A summary of the surfaces in office_2_nor(11) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  23.9      0.   0. north_1      OPAQUE   VERT -     ext_wall     ||< external
+  2  125.      0.  90. top          OPAQUE   CEIL -     ceiling_dr   ||< over_north:ceiling_2
+  3  125.      0. -90. bottom       OPAQUE   FLOR -     inter_flr    ||< under_north:ceiling_1
+  4  2.26    360.   0. frm_north    OPAQUE   VERT -     gl_frame     ||< external
+  5  19.8    225.   0. nw_ptn       OPAQUE   VERT -     partn_ltw    ||< nw_ptn:office_w2w
+  6  28.0    180.   0. corid_c      OPAQUE   VERT -     partn_ltw    ||< corid_cw:passage_2
+  7  12.5    270.   0. wf_ptn_c     OPAQUE   VERT -     partn_ltw    ||< wf_ptn_cc:office_2_nor
+  8  12.5     90.   0. wf_ptn_cc    OPAQUE   VERT -     partn_ltw    ||< wf_ptn_c:office_2_nor
+  9  12.5    270.   0. wf_ptn_d     OPAQUE   VERT -     partn_ltw    ||< wf_ptn_dd:office_2_nor
+ 10  12.5     90.  -0. wf_ptn_dd    OPAQUE   VERT -     partn_ltw    ||< wf_ptn_d:office_2_nor
+ 11  2.26    360.   0. frm_neh      OPAQUE   VERT -     gl_frame     ||< external
+ 12  23.9      0.   0. north_1e     OPAQUE   VERT -     ext_wall     ||< external
+ 13  28.0    180.   0. corid_ce     OPAQUE   VERT -     partn_ltw    ||< corid_c:passage_2
+ 14  12.5     90.   0. ff_ptn_c     OPAQUE   VERT -     partn_ltw    ||< ff_ptn_cc:office_2_nor
+ 15  12.5    270.   0. ff_ptn_cc    OPAQUE   VERT -     partn_ltw    ||< ff_ptn_c:office_2_nor
+ 16  12.5     90.   0. ff_ptn_d     OPAQUE   VERT -     partn_ltw    ||< ff_ptn_dd:office_2_nor
+ 17  12.5    270.   0. ff_ptn_dd    OPAQUE   VERT -     partn_ltw    ||< ff_ptn_d:office_2_nor
+ 18  19.8    135.   0. ne_ptn       OPAQUE   VERT -     partn_ltw    ||< ne_ptn:office_e2e
+ 19  15.8      0.   0. gl_north     DC_8074_ VERT C-WIN double_glz   ||< external
+ 20  15.8      0.   0. gl_neh       DC_8074_ VERT C-WIN double_glz   ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ 
+ 
+ Shading patterns have not yet been calculated.
+ 
+ 
+ Air schedule notes:
+Based on 1W/ft^2 lighting (10.76 W/m2) during occupied period and 10%
+of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
+4.646m^2 in office so 26 people in this part of 2nd floor. Ventilation
+should be 0.00944m^3/person/second.
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekdays   1  0 -  8    0.50  0.0486    0.00  0.0000   0     0.00
+weekdays   2  8 - 17    0.50  0.0486    2.62  0.2547  21     0.00
+weekdays   3 17 - 24    0.50  0.0486    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.50  0.0486    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.50  0.0486    0.00  0.0000   0     0.00
+ 
+Notes:
+Based on 1W/ft^2 lighting (10.76 W/m2) during occupied period and 10%
+of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
+4.646m^2 in office so 26 people in this part of 2nd floor. Ventilation
+should be 0.00944m^3/person/second.
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 OccuptW    7- 8    238.5    119.6       0.50       0.50
+weekdays    3 OccuptW    8- 9   1669.5    834.4       0.50       0.50
+weekdays    4 OccuptW    9-12   2385.0   1192.2       0.50       0.50
+weekdays    5 OccuptW   12-13   1192.5    596.1       0.50       0.50
+weekdays    6 OccuptW   13-14   1669.5    834.4       0.50       0.50
+weekdays    7 OccuptW   14-16   2385.0   1192.2       0.50       0.50
+weekdays    8 OccuptW   16-17   2027.2   1013.0       0.50       0.50
+weekdays    9 OccuptW   17-18   1192.5    596.1       0.50       0.50
+weekdays   10 OccuptW   18-19    477.0    238.2       0.50       0.50
+weekdays   11 OccuptW   19-24      0.0      0.0       0.50       0.50
+weekdays   12 LightsW    0- 7    132.3      0.0       0.50       0.50
+weekdays   13 LightsW    7- 8    661.5      0.0       0.50       0.50
+weekdays   14 LightsW    8-12   1323.0      0.0       0.50       0.50
+weekdays   15 LightsW   12-13   1058.4      0.0       0.50       0.50
+weekdays   16 LightsW   13-17   1323.0      0.0       0.50       0.50
+weekdays   17 LightsW   17-18   1058.4      0.0       0.50       0.50
+weekdays   18 LightsW   18-19    661.5      0.0       0.50       0.50
+weekdays   19 LightsW   19-24    132.3      0.0       0.50       0.50
+weekdays   20 EquiptW    0- 7    496.2      0.0       0.50       0.50
+weekdays   21 EquiptW    7- 8    595.5      0.0       0.50       0.50
+weekdays   22 EquiptW    8-12    942.9      0.0       0.50       0.50
+weekdays   23 EquiptW   12-13    992.5      0.0       0.50       0.50
+weekdays   24 EquiptW   13-18    942.9      0.0       0.50       0.50
+weekdays   25 EquiptW   18-19    794.0      0.0       0.50       0.50
+weekdays   26 EquiptW   19-24    496.2      0.0       0.50       0.50
+saturday    1 OccuptW    0- 9      0.0      0.0       0.50       0.50
+saturday    2 OccuptW    9-12    477.0    238.2       0.50       0.50
+saturday    3 OccuptW   12-24      0.0      0.0       0.50       0.50
+saturday    4 LightsW    0- 9    132.3      0.0       0.50       0.50
+saturday    5 LightsW    9-12   1323.0      0.0       0.50       0.50
+saturday    6 LightsW   12-24    132.3      0.0       0.50       0.50
+saturday    7 EquiptW    0- 9    297.8      0.0       0.50       0.50
+saturday    8 EquiptW    9-12    496.2      0.0       0.50       0.50
+saturday    9 EquiptW   12-24    297.8      0.0       0.50       0.50
+sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
+sunday      2 LightsW    0-24    125.9      0.0       0.50       0.50
+sunday      3 EquiptW    0-24    297.5      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone office_2_sth (12) is composed of 22 surfaces and 44 vertices.
+ It encloses a volume of 350.m^3 of space, with a total surface
+ area of 529.m^2 & user edited floor area of 125.m^2
+ office_2_sth is the south perimeter cellular offices
+ There is 84.000m2 of exposed surface area, 84.000m2 of which is vertical.
+ Outside walls are 44.644 % of floor area & average U of 0.530 & UA of 29.591
+ Glazing is 22.556 % of floor & 33.566 % facade with average U of 2.877 & UA of 81.109
+ 
+ A summary of the surfaces in office_2_sth(12) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  62.5      0.  90. top          OPAQUE   CEIL -     ceiling_dr   ||< over_sw:ceiling_2
+  2  62.5      0. -90. bottom       OPAQUE   FLOR -     inter_flr    ||< under_off_sw:ceiling_1
+  3  25.4    180.   0. south_wall   OPAQUE   VERT -     ext_wall     ||< external
+  4  2.46    180.   0. south_swfrm  OPAQUE   VERT -     gl_frame     ||< external
+  5  28.0      0.   0. corid_a      OPAQUE   VERT -     partn_ltw    ||< corid_aw:passage_2
+  6  19.8    315.   0. sw_ptn       OPAQUE   VERT -     partn_ltw    ||< sw_ptn:office_w2w
+  7  12.5    270.   0. wf_ptn_a     OPAQUE   VERT -     partn_ltw    ||< wf_ptn_aa:office_2_sth
+  8  12.5     90.   0. wf_ptn_aa    OPAQUE   VERT -     partn_ltw    ||< wf_ptn_a:office_2_sth
+  9  12.5    270.   0. wf_ptn_b     OPAQUE   VERT -     partn_ltw    ||< wf_ptn_bb:office_2_sth
+ 10  12.5     90.   0. wf_ptn_bb    OPAQUE   VERT -     partn_ltw    ||< wf_ptn_b:office_2_sth
+ 11  25.4    180.   0. south_walle  OPAQUE   VERT -     ext_wall     ||< external
+ 12  2.46    180.   0. south_sefrm  OPAQUE   VERT -     gl_frame     ||< external
+ 13  12.5     90.   0. ff_ptn_a     OPAQUE   VERT -     partn_ltw    ||< ff_ptn_aa:office_2_sth
+ 14  12.5    270.   0. ff_ptn_aa    OPAQUE   VERT -     partn_ltw    ||< ff_ptn_a:office_2_sth
+ 15  12.5     90.   0. ff_ptn_b     OPAQUE   VERT -     partn_ltw    ||< ff_ptn_bb:office_2_sth
+ 16  12.5    270.   0. ff_ptn_bb    OPAQUE   VERT -     partn_ltw    ||< ff_ptn_b:office_2_sth
+ 17  28.0      0.   0. corid_ae     OPAQUE   VERT -     partn_ltw    ||< corid_a:passage_2
+ 18  19.8     45.   0. se_ptn       OPAQUE   VERT -     partn_ltw    ||< se_ptn:office_e2e
+ 19  62.5      0.  90. top_e        OPAQUE   CEIL -     ceiling_dr   ||< over_se:ceiling_2
+ 20  62.5      0. -90. base_east    OPAQUE   FLOR -     inter_flr    ||< under_off_se:ceiling_1
+ 21  14.1    180.   0. south_swgl   DC_8074_ VERT C-WIN double_glz   ||< external
+ 22  14.1    180.   0. south_segl   DC_8074_ VERT C-WIN double_glz   ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ Insolation sources (all applicable):
+south_swfrm south_sefrm
+ 
+ 
+ Shading patterns have not yet been calculated.
+ 
+ 
+ Air schedule notes:
+Based on 1W/ft^2 lighting (10.76 W/m2) during occupied period and 10%
+of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
+4.646m^2 in offices so 26 people. Ventilation should be
+0.00944m^3/person/second. Infil at 0.5 ach
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekdays   1  0 -  8    0.50  0.0486    0.00  0.0000   0     0.00
+weekdays   2  8 - 17    0.50  0.0486    2.62  0.2547  21     0.00
+weekdays   3 17 - 24    0.50  0.0486    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.50  0.0486    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.50  0.0486    0.00  0.0000   0     0.00
+ 
+Notes:
+Based on 1W/ft^2 lighting (10.76 W/m2) during occupied period and 10%
+of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
+4.646m^2 in offices so 26 people. Ventilation should be
+0.00944m^3/person/second. Infil at 0.5 ach
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 OccuptW    7- 8    238.5    119.6       0.50       0.50
+weekdays    3 OccuptW    8- 9   1669.5    834.4       0.50       0.50
+weekdays    4 OccuptW    9-12   2385.0   1192.2       0.50       0.50
+weekdays    5 OccuptW   12-13   1192.5    596.1       0.50       0.50
+weekdays    6 OccuptW   13-14   1669.5    834.4       0.50       0.50
+weekdays    7 OccuptW   14-16   2385.0   1192.2       0.50       0.50
+weekdays    8 OccuptW   16-17   2027.2   1013.0       0.50       0.50
+weekdays    9 OccuptW   17-18   1192.5    596.1       0.50       0.50
+weekdays   10 OccuptW   18-19    477.0    238.2       0.50       0.50
+weekdays   11 OccuptW   19-24      0.0      0.0       0.50       0.50
+weekdays   12 LightsW    0- 7    132.3      0.0       0.50       0.50
+weekdays   13 LightsW    7- 8    661.5      0.0       0.50       0.50
+weekdays   14 LightsW    8-12   1323.0      0.0       0.50       0.50
+weekdays   15 LightsW   12-13   1058.4      0.0       0.50       0.50
+weekdays   16 LightsW   13-17   1323.0      0.0       0.50       0.50
+weekdays   17 LightsW   17-18   1058.4      0.0       0.50       0.50
+weekdays   18 LightsW   18-19    661.5      0.0       0.50       0.50
+weekdays   19 LightsW   19-24    132.3      0.0       0.50       0.50
+weekdays   20 EquiptW    0- 7    496.2      0.0       0.50       0.50
+weekdays   21 EquiptW    7- 8    595.5      0.0       0.50       0.50
+weekdays   22 EquiptW    8-12    942.9      0.0       0.50       0.50
+weekdays   23 EquiptW   12-13    992.5      0.0       0.50       0.50
+weekdays   24 EquiptW   13-18    942.9      0.0       0.50       0.50
+weekdays   25 EquiptW   18-19    794.0      0.0       0.50       0.50
+weekdays   26 EquiptW   19-24    496.2      0.0       0.50       0.50
+saturday    1 OccuptW    0- 9      0.0      0.0       0.50       0.50
+saturday    2 OccuptW    9-12    477.0    238.2       0.50       0.50
+saturday    3 OccuptW   12-24      0.0      0.0       0.50       0.50
+saturday    4 LightsW    0- 9    132.3      0.0       0.50       0.50
+saturday    5 LightsW    9-12   1323.0      0.0       0.50       0.50
+saturday    6 LightsW   12-24    132.3      0.0       0.50       0.50
+saturday    7 EquiptW    0- 9    297.8      0.0       0.50       0.50
+saturday    8 EquiptW    9-12    496.2      0.0       0.50       0.50
+saturday    9 EquiptW   12-24    297.8      0.0       0.50       0.50
+sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
+sunday      2 LightsW    0-24    125.9      0.0       0.50       0.50
+sunday      3 EquiptW    0-24    297.5      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone office_e2e (13) is composed of 13 surfaces and 30 vertices.
+ It encloses a volume of 182.m^3 of space, with a total surface
+ area of 267.m^2 & approx floor area of 65.0m^2
+ office_e2e is the east perimeter offices of level 2
+ There is 50.400m2 of exposed surface area, 50.400m2 of which is vertical.
+ Outside walls are 67.275 % of floor area & average U of 0.376 & UA of 16.445
+ Glazing is 10.263 % of floor & 13.236 % facade with average U of 2.877 & UA of 19.191
+ 
+ A summary of the surfaces in office_e2e(13) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  18.2     90.   0. east         OPAQUE   VERT -     ext_wall     ||< external
+  2  65.0      0.  90. top          OPAQUE   CEIL -     ceiling_dr   ||< over_e2e:ceiling_2
+  3  65.0      0. -90. bottom       OPAQUE   FLOR -     inter_flrev  ||< under_off_e:ceiling_1
+  4  0.678    90.   0. frm_est_1    OPAQUE   VERT -     gl_frame     ||< external
+  5  0.630    90.   0. frm_est_2    OPAQUE   VERT -     gl_frame     ||< external
+  6  24.2     90.   0. east_b       OPAQUE   VERT -     ext_wall     ||< external
+  7  19.8    225.   0. se_ptn       OPAQUE   VERT -     partn_ltw    ||< se_ptn:office_2_sth
+  8  19.8    315.   0. ne_ptn       OPAQUE   VERT -     partn_ltw    ||< ne_ptn:office_2_nor
+  9  22.4    270.   0. corid_b      OPAQUE   VERT -     partn_ltw    ||< corid_b:passage_2
+ 10  12.5      0.   0. ff_ptn_e     OPAQUE   VERT -     partn_ltw    ||< ff_ptn_ee:office_e2e
+ 11  12.5    180.   0. ff_ptn_ee    OPAQUE   VERT -     partn_ltw    ||< ff_ptn_e:office_e2e
+ 12  3.52     90.   0. gl_est_1     DC_8074_ VERT C-WIN double_glz   ||< external
+ 13  3.15     90.   0. gl_est_2     DC_8074_ VERT C-WIN double_glz   ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ Insolation sources (all applicable):
+frm_est_1 frm_est_2
+ 
+ 
+ Shading patterns have not yet been calculated.
+ 
+ 
+ Air schedule notes:
+Based on 1W/ft^2 lighting (10.76 W/m2) during occupied period and 10%
+of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
+4.646m^2 in office so 14 people here. Ventilation is
+0.00944m^3/person/s. Infil at 0.5 ach
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekdays   1  0 -  8    0.50  0.0253    0.00  0.0000   0     0.00
+weekdays   2  8 - 17    0.49  0.0248    2.61  0.1320  21     0.00
+weekdays   3 17 - 24    0.50  0.0253    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.50  0.0253    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.50  0.0253    0.00  0.0000   0     0.00
+ 
+Notes:
+Based on 1W/ft^2 lighting (10.76 W/m2) during occupied period and 10%
+of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
+4.646m^2 in office so 14 people here. Ventilation is
+0.00944m^3/person/s. Infil at 0.5 ach
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 OccuptW    7- 8    125.9     62.5       0.50       0.50
+weekdays    3 OccuptW    8- 9    881.5    440.4       0.50       0.50
+weekdays    4 OccuptW    9-12   1259.3    629.8       0.50       0.50
+weekdays    5 OccuptW   12-13    629.6    314.4       0.50       0.50
+weekdays    6 OccuptW   13-14    881.5    440.4       0.50       0.50
+weekdays    7 OccuptW   14-16   1259.3    629.8       0.50       0.50
+weekdays    8 OccuptW   16-17   1070.4    535.9       0.50       0.50
+weekdays    9 OccuptW   17-18    629.6    314.4       0.50       0.50
+weekdays   10 OccuptW   18-19    251.9    125.0       0.50       0.50
+weekdays   11 OccuptW   19-24      0.0      0.0       0.50       0.50
+weekdays   12 LightsW    0- 7     69.9      0.0       0.50       0.50
+weekdays   13 LightsW    7- 8    349.3      0.0       0.50       0.50
+weekdays   14 LightsW    8-12    698.5      0.0       0.50       0.50
+weekdays   15 LightsW   12-13    558.8      0.0       0.50       0.50
+weekdays   16 LightsW   13-17    698.5      0.0       0.50       0.50
+weekdays   17 LightsW   17-18    558.8      0.0       0.50       0.50
+weekdays   18 LightsW   18-19    349.3      0.0       0.50       0.50
+weekdays   19 LightsW   19-24     69.9      0.0       0.50       0.50
+weekdays   20 EquiptW    0- 7    262.0      0.0       0.50       0.50
+weekdays   21 EquiptW    7- 8    314.4      0.0       0.50       0.50
+weekdays   22 EquiptW    8-12    497.9      0.0       0.50       0.50
+weekdays   23 EquiptW   12-13    524.0      0.0       0.50       0.50
+weekdays   24 EquiptW   13-18    497.9      0.0       0.50       0.50
+weekdays   25 EquiptW   18-19    419.2      0.0       0.50       0.50
+weekdays   26 EquiptW   19-24    262.0      0.0       0.50       0.50
+saturday    1 OccuptW    0- 9      0.0      0.0       0.50       0.50
+saturday    2 OccuptW    9-12    251.9    125.0       0.50       0.50
+saturday    3 OccuptW   12-24      0.0      0.0       0.50       0.50
+saturday    4 LightsW    0- 9     69.9      0.0       0.50       0.50
+saturday    5 LightsW    9-12    698.5      0.0       0.50       0.50
+saturday    6 LightsW   12-24     69.9      0.0       0.50       0.50
+saturday    7 EquiptW    0- 9    157.2      0.0       0.50       0.50
+saturday    8 EquiptW    9-12    262.0      0.0       0.50       0.50
+saturday    9 EquiptW   12-24    157.2      0.0       0.50       0.50
+sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
+sunday      2 LightsW    0-24     66.5      0.0       0.50       0.50
+sunday      3 EquiptW    0-24    157.1      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone office_w2w (14) is composed of 13 surfaces and 30 vertices.
+ It encloses a volume of 182.m^3 of space, with a total surface
+ area of 267.m^2 & user edited floor area of 65.0m^2
+ office_w2w is the west facing perimeter of 2nd level
+ There is 50.400m2 of exposed surface area, 50.400m2 of which is vertical.
+ Outside walls are 67.275 % of floor area & average U of 0.376 & UA of 16.445
+ Glazing is 10.263 % of floor & 13.237 % facade with average U of 2.877 & UA of 19.191
+ 
+ A summary of the surfaces in office_w2w(14) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  18.2    270.   0. wast         OPAQUE   VERT -     ext_wall     ||< external
+  2  65.0      0.  90. top          OPAQUE   CEIL -     ceiling_dr   ||< over_w2w:ceiling_2
+  3  65.0      0. -90. bottom       OPAQUE   FLOR -     inter_flr    ||< under_off_w:ceiling_1
+  4  0.678   270.   0. frm_wst_1    OPAQUE   VERT -     gl_frame     ||< external
+  5  0.630   270.   0. frm_wst_2    OPAQUE   VERT -     gl_frame     ||< external
+  6  24.2    270.   0. wast_b       OPAQUE   VERT -     ext_wall     ||< external
+  7  19.8    135.   0. sw_ptn       OPAQUE   VERT -     partn_ltw    ||< sw_ptn:office_2_sth
+  8  19.8     45.   0. nw_ptn       OPAQUE   VERT -     partn_ltw    ||< nw_ptn:office_2_nor
+  9  22.4     90.   0. corid_b      OPAQUE   VERT -     partn_ltw    ||< west_p_cor:passage_2
+ 10  12.5      0.   0. wf_ptn_e     OPAQUE   VERT -     partn_ltw    ||< wf_ptn_ee:office_w2w
+ 11  12.5    180.   0. wf_ptn_ee    OPAQUE   VERT -     partn_ltw    ||< wf_ptn_e:office_w2w
+ 12  3.52    270.   0. gl_wst_1     DC_8074_ VERT C-WIN double_glz   ||< external
+ 13  3.15    270.   0. gl_wst_2     DC_8074_ VERT C-WIN double_glz   ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ Insolation sources (all applicable):
+frm_wst_1 frm_wst_2
+ 
+ 
+ Shading patterns have not yet been calculated.
+ 
+ 
+ Air schedule notes:
+Based on 1W/ft^2 lighting (10.76 W/m2) during occupied period and 10%
+of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
+4.646m^2 in office so 14 people here. Ventilation 0.00944m^3/person/s.
+Infil at 0.5 ach
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekdays   1  0 -  8    0.50  0.0253    0.00  0.0000   0     0.00
+weekdays   2  8 - 17    0.49  0.0248    2.61  0.1320  21     0.00
+weekdays   3 17 - 24    0.50  0.0253    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.50  0.0253    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.50  0.0253    0.00  0.0000   0     0.00
+ 
+Notes:
+Based on 1W/ft^2 lighting (10.76 W/m2) during occupied period and 10%
+of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per
+4.646m^2 in office so 14 people here. Ventilation 0.00944m^3/person/s.
+Infil at 0.5 ach
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 OccuptW    7- 8    125.9     62.5       0.50       0.50
+weekdays    3 OccuptW    8- 9    881.5    440.4       0.50       0.50
+weekdays    4 OccuptW    9-12   1259.3    629.8       0.50       0.50
+weekdays    5 OccuptW   12-13    629.6    314.4       0.50       0.50
+weekdays    6 OccuptW   13-14    881.5    440.4       0.50       0.50
+weekdays    7 OccuptW   14-16   1259.3    629.8       0.50       0.50
+weekdays    8 OccuptW   16-17   1070.4    535.9       0.50       0.50
+weekdays    9 OccuptW   17-18    629.6    314.4       0.50       0.50
+weekdays   10 OccuptW   18-19    251.9    125.0       0.50       0.50
+weekdays   11 OccuptW   19-24      0.0      0.0       0.50       0.50
+weekdays   12 LightsW    0- 7     69.9      0.0       0.50       0.50
+weekdays   13 LightsW    7- 8    349.3      0.0       0.50       0.50
+weekdays   14 LightsW    8-12    698.5      0.0       0.50       0.50
+weekdays   15 LightsW   12-13    558.8      0.0       0.50       0.50
+weekdays   16 LightsW   13-17    698.5      0.0       0.50       0.50
+weekdays   17 LightsW   17-18    558.8      0.0       0.50       0.50
+weekdays   18 LightsW   18-19    349.3      0.0       0.50       0.50
+weekdays   19 LightsW   19-24     69.9      0.0       0.50       0.50
+weekdays   20 EquiptW    0- 7    262.0      0.0       0.50       0.50
+weekdays   21 EquiptW    7- 8    314.4      0.0       0.50       0.50
+weekdays   22 EquiptW    8-12    497.9      0.0       0.50       0.50
+weekdays   23 EquiptW   12-13    524.0      0.0       0.50       0.50
+weekdays   24 EquiptW   13-18    497.9      0.0       0.50       0.50
+weekdays   25 EquiptW   18-19    419.2      0.0       0.50       0.50
+weekdays   26 EquiptW   19-24    262.0      0.0       0.50       0.50
+saturday    1 OccuptW    0- 9      0.0      0.0       0.50       0.50
+saturday    2 OccuptW    9-12    251.9    125.0       0.50       0.50
+saturday    3 OccuptW   12-24      0.0      0.0       0.50       0.50
+saturday    4 LightsW    0- 9     69.9      0.0       0.50       0.50
+saturday    5 LightsW    9-12    698.5      0.0       0.50       0.50
+saturday    6 LightsW   12-24     69.9      0.0       0.50       0.50
+saturday    7 EquiptW    0- 9    157.2      0.0       0.50       0.50
+saturday    8 EquiptW    9-12    262.0      0.0       0.50       0.50
+saturday    9 EquiptW   12-24    157.2      0.0       0.50       0.50
+sunday      1 OccuptW    0-24      0.0      0.0       0.50       0.50
+sunday      2 LightsW    0-24     66.5      0.0       0.50       0.50
+sunday      3 EquiptW    0-24    157.1      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone passage_2 (15) is composed of 16 surfaces and 28 vertices.
+ It encloses a volume of 146.m^3 of space, with a total surface
+ area of 395.m^2 & user list floor area of 52.0m^2
+ passage_2 is the passages of level 2 wraps around core
+ 
+ A summary of the surfaces in passage_2(15) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  25.2    360.   0. north_2      OPAQUE   VERT -     partn_ltw    ||< north_2:core_two
+  2  26.0      0.  90. top          OPAQUE   CEIL -     ceiling_dr   ||< top_epag:ceiling_2
+  3  26.0      0. -90. bottom       OPAQUE   FLOR -     inter_flr    ||< bottom_ep2:ceiling_1
+  4  25.2    180.   0. ptn_core_a   OPAQUE   VERT -     partn_ltw    ||< ptn_core_a:core_two
+  5  16.8    270.   0. ptn_cor_b    OPAQUE   VERT -     partn_ltw    ||< ptn_cor_b:core_two
+  6  28.0    180.   0. corid_a      OPAQUE   VERT -     partn_ltw    ||< corid_ae:office_2_sth
+  7  28.0      0.   0. corid_c      OPAQUE   VERT -     partn_ltw    ||< corid_ce:office_2_nor
+  8  22.4     90.   0. corid_b      OPAQUE   VERT -     partn_ltw    ||< corid_b:office_e2e
+  9  28.0    180.   0. corid_aw     OPAQUE   VERT -     partn_ltw    ||< corid_a:office_2_sth
+ 10  25.2    360.   0. north_2w     OPAQUE   VERT -     partn_ltw    ||< ptn_f:core_two
+ 11  16.8     90.   0. ptn_cor_bw   OPAQUE   VERT -     partn_ltw    ||< ptn_e:core_two
+ 12  28.0      0.   0. corid_cw     OPAQUE   VERT -     partn_ltw    ||< corid_c:office_2_nor
+ 13  25.2    180.   0. ptn_core_aw  OPAQUE   VERT -     partn_ltw    ||< ptn_d:core_two
+ 14  22.4    270.   0. west_p_cor   OPAQUE   VERT -     partn_ltw    ||< corid_b:office_w2w
+ 15  26.0      0.  90. top_w        OPAQUE   CEIL -     ceiling_dr   ||< top_wpag:ceiling_2
+ 16  26.0      0. -90. bottom_w     OPAQUE   FLOR -     inter_flr    ||< bottom_wp2:ceiling_1
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ Air schedule notes:
+Core space schedules - 1 person per 18.58m^2 (2 in this room),
+lighting at 1W/ft^2 (10.76 m^2). Plug loads at 13.45 W/m^2.  10%
+lights un-occup hours, 20% plug loads un-occup hours. .
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekdays   1  0 -  8    0.50  0.0202    0.00  0.0000   0     0.00
+weekdays   2  8 - 17    0.49  0.0198    0.07  0.0028  21     0.00
+weekdays   3 17 - 24    0.50  0.0202    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.50  0.0202    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.50  0.0202    0.00  0.0000   0     0.00
+ 
+Notes:
+Core space schedules - 1 person per 18.58m^2 (2 in this room),
+lighting at 1W/ft^2 (10.76 m^2). Plug loads at 13.45 W/m^2.  10%
+lights un-occup hours, 20% plug loads un-occup hours. .
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 OccuptW    0- 8      0.0      0.0       0.50       0.50
+weekdays    2 OccuptW    8-17    180.0     90.0       0.50       0.50
+weekdays    3 OccuptW   17-24      0.0      0.0       0.50       0.50
+weekdays    4 LightsW    0- 8     60.0      0.0       0.50       0.50
+weekdays    5 LightsW    8-17    600.0      0.0       0.50       0.50
+weekdays    6 LightsW   17-24     60.0      0.0       0.50       0.50
+weekdays    7 EquiptW    0- 8    140.0      0.0       0.50       0.50
+weekdays    8 EquiptW    8-17    700.0      0.0       0.50       0.50
+weekdays    9 EquiptW   17-24    140.0      0.0       0.50       0.50
+saturday    1 LightsW    0-24     60.0      0.0       0.50       0.50
+saturday    2 EquiptW    0-24    140.0      0.0       0.50       0.50
+sunday      1 LightsW    0-24     60.0      0.0       0.50       0.50
+sunday      2 EquiptW    0-24    140.0      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone ceiling_g (16) is composed of 17 surfaces and 32 vertices.
+ It encloses a volume of 517.m^3 of space, with a total surface
+ area of 1110.m^2 & user edited floor area of 312.m^2
+ ceiling_g ceiling over the ground level
+ There is 100.80m2 of exposed surface area, 100.80m2 of which is vertical.
+ Outside walls are 32.308 % of floor area & average U of 0.297 & UA of 29.931
+ 
+ A summary of the surfaces in ceiling_g(16) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  15.8    180.   0. south_e      OPAQUE   VERT -     ext_wall     ||< external
+  2  18.9     90.   0. east         OPAQUE   VERT -     ext_wall     ||< external
+  3  15.8      0.   0. north_e      OPAQUE   VERT -     ext_wall     ||< external
+  4  4.20    360.   0. north_c1_f   OPAQUE   VERT -     partn_ltw    ||< north_c2:entry_core
+  5  246.      0.  90. top_e        OPAQUE   CEIL -     inter_flrev  ||< bottom:office_e_1
+  6  15.7    180.   0. south_w      OPAQUE   VERT -     ext_wall     ||< external
+  7  18.9    270.   0. west         OPAQUE   VERT -     ext_wall     ||< external
+  8  15.7      0.   0. north_w      OPAQUE   VERT -     ext_wall     ||< external
+  9  6.30     90.   0. east_c1      OPAQUE   VERT -     partn_ltw    ||< east_c1:entry_core
+ 10  4.20    360.   0. north_c1     OPAQUE   VERT -     partn_ltw    ||< north_c1:entry_core
+ 11  246.      0.  90. top_w        OPAQUE   CEIL -     inter_flrev  ||< bottom:office_w_1
+ 12  4.20    180.   0. core_c1_a    OPAQUE   VERT -     partn_ltw    ||< core_c1_a:entry_core
+ 13  6.30    270.   0. core_c1_b    OPAQUE   VERT -     partn_ltw    ||< core_c1_b:entry_core
+ 14  4.20    180.   0. core_c1w_a   OPAQUE   VERT -     partn_ltw    ||< core_c1w_a:entry_core
+ 15  240.      0. -90. ovr_off_g_e  OPAQUE   FLOR -     ceiling_dr   ||< top:office_e_0
+ 16  240.      0. -90. ovr_off_w_g  OPAQUE   FLOR -     ceiling_dr   ||< top:office_w_0
+ 17  12.0      0. -90. over_entr    OPAQUE   FLOR -     ceiling_dr   ||< over_entr:entry_core
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ Air schedule notes:
+no operations notes (yet)
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+ 
+Notes:
+no operations notes (yet)
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+ 
+ ____________________________________________________________
+ 
+ Zone ceiling_1 (17) is composed of 23 surfaces and 42 vertices.
+ It encloses a volume of 517.m^3 of space, with a total surface
+ area of 1110.m^2 & approx floor area of 492.m^2
+ ceiling_1 describes the ceiling over level 1
+ There is 100.80m2 of exposed surface area, 100.80m2 of which is vertical.
+ Outside walls are 20.488 % of floor area & average U of 0.297 & UA of 29.931
+ 
+ A summary of the surfaces in ceiling_1(17) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  15.8    180.   0. south_e      OPAQUE   VERT -     ext_wall     ||< external
+  2  18.9     90.   0. east         OPAQUE   VERT -     ext_wall     ||< external
+  3  15.8      0.   0. north_e      OPAQUE   VERT -     ext_wall     ||< external
+  4  4.20      0.   0. north_c1_c   OPAQUE   VERT -     partn_ltw    ||< north_c1_c:core_one
+  5  246.      0. -90. ovr_off_e    OPAQUE   FLOR -     ceiling_dr   ||< top:office_e_1
+  6  15.8    180.   0. south_w      OPAQUE   VERT -     ext_wall     ||< external
+  7  18.9    270.   0. west         OPAQUE   VERT -     ext_wall     ||< external
+  8  15.8      0.   0. north_w      OPAQUE   VERT -     ext_wall     ||< external
+  9  6.30     90.   0. east_c1      OPAQUE   VERT -     partn_ltw    ||< east_c1:core_one
+ 10  4.20      0.   0. north_c1     OPAQUE   VERT -     partn_ltw    ||< north_c1:core_one
+ 11  246.      0. -90. ovr_off_w    OPAQUE   FLOR -     ceiling_dr   ||< top:office_w_1
+ 12  4.20    180.   0. core_c1_a    OPAQUE   VERT -     partn_ltw    ||< core_c1_a:core_one
+ 13  6.30    270.   0. core_c1_b    OPAQUE   VERT -     partn_ltw    ||< core_c1_b:core_one
+ 14  4.20    180.   0. core_c1w_a   OPAQUE   VERT -     partn_ltw    ||< core_c1w_a:core_one
+ 15  65.0      0.  90. under_off_w  OPAQUE   CEIL -     inter_flrev  ||< bottom:office_w2w
+ 16  65.0      0.  90. under_off_e  OPAQUE   CEIL -     inter_flr    ||< bottom:office_e2e
+ 17  62.5      0.  90. under_off_sw OPAQUE   CEIL -     inter_flrev  ||< bottom:office_2_sth
+ 18  62.5      0.  90. under_off_se OPAQUE   CEIL -     inter_flrev  ||< base_east:office_2_sth
+ 19  125.      0.  90. under_north  OPAQUE   CEIL -     inter_flrev  ||< bottom:office_2_nor
+ 20  26.0      0.  90. bottom_wp2   OPAQUE   CEIL -     inter_flrev  ||< bottom_w:passage_2
+ 21  26.0      0.  90. bottom_ep2   OPAQUE   CEIL -     inter_flrev  ||< bottom:passage_2
+ 22  30.0      0.  90. base_w       OPAQUE   CEIL -     inter_flrev  ||< base_w:core_two
+ 23  30.0      0.  90. core3_be     OPAQUE   CEIL -     inter_flrev  ||< base_e:core_two
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ Uses same operations as zone ceiling_g
+ 
+ ____________________________________________________________
+ 
+ Zone ceiling_2 (18) is composed of 21 surfaces and 41 vertices.
+ It encloses a volume of 454.m^3 of space, with a total surface
+ area of 1020.m^2 & approx floor area of 432.m^2
+ ceiling_2 is the ceiling of the 2nd level
+ There is 100.80m2 of exposed surface area, 100.80m2 of which is vertical.
+ Outside walls are 23.333 % of floor area & average U of 0.297 & UA of 29.931
+ 
+ A summary of the surfaces in ceiling_2(18) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  15.8    180.   0. south_e      OPAQUE   VERT -     ext_wall     ||< external
+  2  18.9     90.   0. east         OPAQUE   VERT -     ext_wall     ||< external
+  3  15.8      0.   0. north_e      OPAQUE   VERT -     ext_wall     ||< external
+  4  216.      0.  90. top_e        OPAQUE   CEIL -     inter_flrev  ||< bottom:office_e_3
+  5  15.8    180.   0. south_w      OPAQUE   VERT -     ext_wall     ||< external
+  6  18.9    270.   0. west         OPAQUE   VERT -     ext_wall     ||< external
+  7  15.8      0.   0. north_w      OPAQUE   VERT -     ext_wall     ||< external
+  8  6.30     90.   0. east_c1      OPAQUE   VERT -     partn_ltw    ||< east_c2:core_two
+  9  216.      0.  90. top_w        OPAQUE   CEIL -     inter_flrev  ||< bottom:office_w_3
+ 10  6.30    270.   0. core_c2_b    OPAQUE   VERT -     partn_ltw    ||< core_c2_b:core_two
+ 11  9.45      0.   0. north_c2psw  OPAQUE   VERT -     partn_ltw    ||< north_c2wc:core_two
+ 12  9.45      0.   0. north_c2pse  OPAQUE   VERT -     partn_ltw    ||< north_c2_c:core_two
+ 13  9.45    180.   0. core_c2w_ap  OPAQUE   VERT -     partn_ltw    ||< core_c2w_a:core_two
+ 14  9.45    180.   0. core_c2_ap   OPAQUE   VERT -     partn_ltw    ||< core_c2_a:core_two
+ 15  65.0      0. -90. over_w2w     OPAQUE   FLOR -     ceiling_dr   ||< top:office_w2w
+ 16  65.0      0. -90. over_e2e     OPAQUE   FLOR -     ceiling_dr   ||< top:office_e2e
+ 17  62.5      0. -90. over_se      OPAQUE   FLOR -     ceiling_dr   ||< top_e:office_2_sth
+ 18  62.5      0. -90. over_sw      OPAQUE   FLOR -     ceiling_dr   ||< top:office_2_sth
+ 19  125.      0. -90. over_north   OPAQUE   FLOR -     ceiling_dr   ||< top:office_2_nor
+ 20  26.0      0. -90. top_epag     OPAQUE   FLOR -     ceiling_dr   ||< top:passage_2
+ 21  26.0      0. -90. top_wpag     OPAQUE   FLOR -     ceiling_dr   ||< top_w:passage_2
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ Uses same operations as zone ceiling_g
+ 
+ ____________________________________________________________
+ 
+ Zone roof (19) is composed of 9 surfaces and 20 vertices.
+ It encloses a volume of 364.m^3 of space, with a total surface
+ area of 1210.m^2 & approx floor area of 599.m^2
+ roof describes a low slope roof space
+ There is 668.25m2 of exposed surface area.
+ Outside walls are 9.8558 % of floor area & average U of 0.940 & UA of 55.471
+ Sloped roof is 101.70 % of floor area & average U of 1.006 & UA of 612.67
+ 
+ A summary of the surfaces in roof(19) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  245.    180.  81. south        OPAQUE   SLOP -     roof         ||< external
+  2  31.4     90.  67. east         OPAQUE   SLOP -     roof         ||< external
+  3  301.      0.  83. north        OPAQUE   SLOP -     roof         ||< external
+  4  31.4    270.  67. west         OPAQUE   SLOP -     roof         ||< external
+  5  29.5      0. -90. soffet_sw    OPAQUE   FLOR -     roof         ||< external
+  6  29.5      0. -90. soffet_ne    OPAQUE   FLOR -     roof         ||< external
+  7  246.      0. -90. top          OPAQUE   FLOR -     ceiling_dr   ||< top:office_e_3
+  8  246.      0. -90. top_w        OPAQUE   FLOR -     ceiling_dr   ||< top:office_w_3
+  9  48.0      0. -90. core_top     OPAQUE   FLOR -     ceiling_dr   ||< core_top:core_top
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ Air schedule notes:
+nothing happens in the roof, but there is 0.5 ach infiltration all
+days and all hours as a basic assumption.
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekdays   1  0 - 24    0.50  0.0506    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.50  0.0506    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.50  0.0506    0.00  0.0000   0     0.00
+ 
+Notes:
+nothing happens in the roof, but there is 0.5 ach infiltration all
+days and all hours as a basic assumption.
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+ 
+ ____________________________________________________________
+ 
+ Zone mix_return (20) is composed of 6 surfaces and 8 vertices.
+ It encloses a volume of 9.00m^3 of space, with a total surface
+ area of 30.0m^2 & approx floor area of 9.00m^2
+ mix_return describes a return air mixing box
+ There is 30.000m2 of exposed surface area, 12.000m2 of which is vertical.
+ Outside walls are 233.33 % of floor area & average U of 0.295 & UA of 6.2042
+ Flat roof is 100.00 % of floor area & average U of 0.300 & UA of 2.6964
+ 
+ A summary of the surfaces in mix_return(20) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  3.00    180.   0. Surf-1       OPAQUE   VERT -     ext_wall     ||< external
+  2  3.00     90.   0. Surf-2       OPAQUE   VERT -     ext_wall     ||< external
+  3  3.00      0.   0. Surf-3       OPAQUE   VERT -     ext_wall     ||< external
+  4  3.00    270.   0. Surf-4       OPAQUE   VERT -     ext_wall     ||< external
+  5  9.00      0.  90. Surf-5       OPAQUE   CEIL -     ext_wall     ||< external
+  6  9.00      0. -90. Surf-6       OPAQUE   FLOR -     ext_wall     ||< external
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ Air schedule notes:
+no operations notes (yet)
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+ 
+Notes:
+no operations notes (yet)
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+ 
+ ____________________________________________________________
+ 
+ Zone mix_supply (21) is composed of 6 surfaces and 8 vertices.
+ It encloses a volume of 9.00m^3 of space, with a total surface
+ area of 30.0m^2 & approx floor area of 9.00m^2
+ mix_supply describes a A/C supply mixing box
+ There is 30.000m2 of exposed surface area, 12.000m2 of which is vertical.
+ Outside walls are 233.33 % of floor area & average U of 0.295 & UA of 6.2042
+ Flat roof is 100.00 % of floor area & average U of 0.300 & UA of 2.6964
+ 
+ A summary of the surfaces in mix_supply(21) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  3.00    180.   0. Surf-1       OPAQUE   VERT -     ext_wall     ||< external
+  2  3.00     90.   0. Surf-2       OPAQUE   VERT -     ext_wall     ||< external
+  3  3.00      0.   0. Surf-3       OPAQUE   VERT -     ext_wall     ||< external
+  4  3.00    270.   0. Surf-4       OPAQUE   VERT -     ext_wall     ||< external
+  5  9.00      0.  90. Surf-5       OPAQUE   CEIL -     ext_wall     ||< external
+  6  9.00      0. -90. Surf-6       OPAQUE   FLOR -     ext_wall     ||< external
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ Air schedule notes:
+no operations notes (yet)
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+ 
+Notes:
+no operations notes (yet)
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+ 
+ ____________________________________________________________
+ 
+ Project floor area is 4005.0m2, wall area is 1181.6m2, window area is 297.01m2.
+ Sloped roof area is 609.21m2, flat roof area is 18.000m2, skylight area is 0.00m2.
+ In contact with ground 540.00m2.
+ There is 2105.9m2 of outside surface area, 1401.6m2 of which is vertical.
+ 
+ Outside walls are 29.504 % of floor area & average U of 0.440 & UA of 519.74 & max MLC thickness 0.300
+ Sloped roof is 15.211 % of floor area & average U of 1.006 & UA of 612.67
+ Flat roof is 0.44943 % of floor area & average U of 0.300 & UA of 5.3928
+ Glazing is 7.4159 % of floor & 21.191 % facade with average U of 2.877 & UA of 854.42
+ Ground contact is 13.483 % of floor area & average U of 0.430 & perimeter 96.000 & max MLC thickness 1.480
+ CIBSE ground beta!11.250 dt 3.850 Ufleft 0.077 Ufright 2.320 Uf 0.178 R extra @ virtual layer 3.303
+ 
+ ____________________________________________________________
+ Multi-layer constructions used:
+ 
+ Details of opaque construction: roof and overall thickness  0.161
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    47    3.0    40.000  7800.   502. 0.82 0.72 19200.  0.00 Grey ptd steel : Grey ptd steel
+    2    0   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  212  130.0     0.190   960.   950. 0.90 0.55    15.  0.68 Roof insulation board : Roof insulation board
+ Int    42    3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.976  1.006  0.940 (partition)  0.897
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.97
+ External surface admittance Y=  3.10  w=  2.46 decrement factor f=  0.74  phi=  1.18 surface factor f=  0.74  phi=  1.18
+ Partition admittance Y=  3.49  w=  2.93 surface factor f=  0.76  phi=  1.50
+ Total area of roof is    668.25
+ 
+ Details of opaque construction: ext_wall linked to ext_wall_r & with overall thickness  0.300
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext     6  100.0     0.960  2000.   650. 0.90 0.70    25.  0.10 Lt brown brick : Lt brown brick
+    2    0   10.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3    2  100.0     0.440  1500.   650. 0.90 0.65    15.  0.23 Breeze block : Breeze block
+    4  214   75.0     0.030    25.  1000. 0.90 0.30    67.  2.50 EPS : EPS
+    5    0   10.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   108    5.0     0.190   950.   840. 0.91 0.22    11.  0.03 White ptd Gypboard : White ptd Gypboard
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.297  0.300  0.293 (partition)  0.289
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.30
+ External surface admittance Y=  0.48  w=  2.78 decrement factor f=  0.96  phi=  0.15 surface factor f=  0.96  phi=  0.15
+ Partition admittance Y=  0.56  w=  2.89 surface factor f=  0.95  phi=  0.19
+ Total area of ext_wall is   1091.20
+ 
+ Details of transparent construction: double_glz with DC_8074_04nb optics and overall thickness  0.020
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   243    4.0     1.050  2500.   750. 0.83 0.05 19200.  0.00 4mm clear float : 4mm clear float with placeholder single layer optics
+    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   243    4.0     1.050  2500.   750. 0.83 0.05 19200.  0.00 4mm clear float : 4mm clear float with placeholder single layer optics
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.877  3.148  2.580 (partition)  2.285
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.80
+ External surface admittance Y=  2.82  w=  0.34 decrement factor f=  0.66  phi=  0.17 surface factor f=  0.66  phi=  0.17
+ Partition admittance Y=  0.45  w=  5.80 surface factor f=  1.00  phi=  0.21
+ 
+ Clear glass 80/75,     4mm, no blind: with id of: DC_8074_04nb
+ with 3 layers [including air gaps] and visible trn: 0.80
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.676 0.651 0.604 0.441 0.201
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.113 0.124 0.134 0.148 0.154
+    2  0.001 0.002 0.003 0.004 0.005
+    3  0.087 0.094 0.097 0.087 0.062
+ Total area of double_glz is    297.01
+ 
+ Details of opaque construction: partn_ltw and overall thickness  0.049
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 White ptd Gypboard : White ptd Gypboard
+    2    0   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 White ptd Gypboard : White ptd Gypboard
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.144  2.292  1.975 (partition)  1.798
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.10
+ External surface admittance Y=  2.15  w=  0.62 decrement factor f=  0.75  phi=  0.21 surface factor f=  0.75  phi=  0.21
+ Partition admittance Y=  0.61  w=  5.69 surface factor f=  1.00  phi=  0.28
+ Total area of partn_ltw is   1903.19
+ 
+ Details of opaque construction: foundation and overall thickness  1.480
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common_earth : Common_earth
+    2  263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common_earth : Common_earth
+    3  263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common_earth : Common_earth
+    4  263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common_earth : Common_earth
+    5  263  250.0     1.280  1460.   879. 0.90 0.85     5.  0.20 Common_earth : Common_earth
+    6  262  100.0     0.520  2050.   184. 0.90 0.85     2.  0.19 Gravel based : Gravel based
+    7  205   25.0     0.030    30.   837. 0.90 0.50    90.  0.83 Polyurethane foam board : Polyurethane foam board
+    8   32  100.0     1.400  2100.   653. 0.90 0.65    19.  0.07 Heavy mix concrete : Heavy mix concrete
+ Int   228    5.0     0.060   160.  2500. 0.90 0.85    10.  0.08 Grey loop pile synth : Grey loop pile synth
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.430  0.435  0.422 (partition)  0.414
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.47
+ External surface admittance Y=  3.92  w=  1.56 decrement factor f=  0.60  phi=  1.21 surface factor f=  0.60  phi=  1.21
+ Partition admittance Y=  3.92  w=  1.56 surface factor f=  0.60  phi=  1.21
+ Total area of foundation is    540.00
+ 
+ Details of opaque construction: inter_flr linked to inter_flrev & with overall thickness  0.110
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    42    3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+    2   32  101.6     1.400  2100.   653. 0.90 0.65    19.  0.07 Heavy mix concrete : Heavy mix concrete
+ Int   228    5.0     0.060   160.  2500. 0.90 0.85    10.  0.08 Grey loop pile synth : Grey loop pile synth
+ ISO 6946 U values (horiz/upward/downward heat flow)=  3.068  3.379  2.733 (partition)  2.404
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.98
+ External surface admittance Y=  3.45  w=  0.77 decrement factor f=  0.60  phi=  0.53 surface factor f=  0.60  phi=  0.53
+ Partition admittance Y=  2.67  w=  3.89 surface factor f=  0.88  phi=  1.21
+ Total area of inter_flr is   1620.00
+ 
+ Details of opaque construction: inter_flrev linked to inter_flr & with overall thickness  0.110
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext   228    5.0     0.060   160.  2500. 0.90 0.85    10.  0.08 Grey loop pile synth : Grey loop pile synth
+    2   32  101.6     1.400  2100.   653. 0.90 0.65    19.  0.07 Heavy mix concrete : Heavy mix concrete
+ Int    42    3.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+ ISO 6946 U values (horiz/upward/downward heat flow)=  3.068  3.379  2.733 (partition)  2.404
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.98
+ External surface admittance Y=  5.00  w=  1.64 decrement factor f=  0.52  phi=  1.92 surface factor f=  0.52  phi=  1.92
+ Partition admittance Y=  4.74  w=  3.48 surface factor f=  0.79  phi=  2.31
+ Total area of inter_flrev is   1620.00
+ 
+ Details of opaque construction: ceiling_dr and overall thickness  0.010
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1  150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 Ceiling (mineral) : Ceiling (mineral)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.987  2.113  1.840 (partition)  1.685
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.95
+ External surface admittance Y=  1.95  w=  0.19 decrement factor f=  0.77  phi=  0.06 surface factor f=  0.77  phi=  0.06
+ Partition admittance Y=  0.19  w=  5.88 surface factor f=  1.00  phi=  0.09
+ Total area of ceiling_dr is   3997.12
+ 
+ Details of opaque construction: window_frame and overall thickness  0.025
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+    1   69   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 Oak (radial) : Oak (radial)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
+ External surface admittance Y=  3.33  w=  0.61 decrement factor f=  0.61  phi=  0.40 surface factor f=  0.61  phi=  0.40
+ Partition admittance Y=  1.21  w=  5.38 surface factor f=  0.99  phi=  0.56
+ Total area of window_frame is      1.12
+ 
+ Details of opaque construction: gl_frame and overall thickness  0.029
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 Grey cotd aluminium : Grey cotd aluminium
+    2    0   20.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    46    5.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 Grey cotd aluminium : Grey cotd aluminium
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.941  3.225  2.631 (partition)  2.325
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.86
+ External surface admittance Y=  2.91  w=  0.51 decrement factor f=  0.66  phi=  0.27 surface factor f=  0.66  phi=  0.27
+ Partition admittance Y=  0.68  w=  5.71 surface factor f=  1.00  phi=  0.31
+ Total area of gl_frame is     48.27
