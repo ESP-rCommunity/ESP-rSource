@@ -25,7 +25,7 @@ OBJECTS = jdbm.o ascii_mat.o basesimp.o basesimp_inputs.o bscoeff.o bscoeff_exte
 	prsitem.o sort.o startupg.o tdfile.o readTrnsys.o
 
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod \
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod \
           h3kmodule.mod
 
 $(PROG) : $(MODULE_OBJECTS) $(OBJECTS)
