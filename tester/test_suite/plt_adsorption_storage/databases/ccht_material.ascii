@@ -1,5 +1,5 @@
-# materials db defined in ccht_material.ascii                                                    .
-   20    #  number of classifications
+# materials db defined in ccht_material.ascii
+   15    #  number of classifications
 # class|no elements|description
     1    5   Brick
     1   Paviour brick
@@ -70,7 +70,7 @@
         0.150,  560.000, 2500.000,  0.900,  0.650,    576.000
    71   Softwood
         0.130,  630.000, 2760.000,  0.900,  0.650,     12.000
-   72   Plywood
+   72   Plywood 700d
         0.150,  700.000, 1420.000,  0.900,  0.650,    576.000
    73   Softboard
         0.560,  350.000, 1000.000,  0.900,  0.650,     13.000
@@ -258,19 +258,3 @@
         0.052,   97.700, 1507.000,  0.900,  0.650,     30.000
   286   Earth Insulation
         0.060,   16.000,  840.000,  0.900,  0.650,     30.000
-# class|no elements|description
-   16    0   CCHT
-# class|no elements|description
-   17   -1   CCHT
-# class|no elements|description
-   18    1   CCHT
-  341   new_element
-        1.000,    1.000,    1.000,  0.900,  0.500,     10.000
-# class|no elements|description
-   19    1   
-  361   new_element
-        1.000,    1.000,    1.000,  0.900,  0.500,     10.000
-# class|no elements|description
-   20    1   
-  381   new_element
-        1.000,    1.000,    1.000,  0.900,  0.500,     10.000

@@ -33,6 +33,8 @@ C  EDWINO:  Allow user to select a glazing type by name.
 C  module_opendb: open materials constructions, multi-layer constructions and
 C           optical properties databases (for utility applications).
 
+C << todo - depreciate references to IPR array and use Material names only.>>
+
 C ************* ERMLDB
 C Given file name and unit number, read  an ASCII composite 
 C construction database and return data via common block MLC.
@@ -340,9 +342,8 @@ C For a layer with no legacy index use the matarray index and assign values.
                 DBDEN=matdbden(matarrayindex)
                 DBSHT=matdbsht(matarrayindex)
 
-C If g or h air gap and version 1.2 then assign DRAIR
-	        if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &             matopaq(matarrayindex)(1:1).eq.'h')then
+C If g air gap and version 1.2 then assign DRAIR
+                if(matopaq(matarrayindex)(1:1).eq.'g')then
                   if(closemat2)then
                     DRAIR(I,IL,1)=matgapares(matarrayindex,1)
                     DRAIR(I,IL,2)=matgapares(matarrayindex,2)
@@ -361,7 +362,7 @@ C And check the matarray index in case this is a gap and assign values.
               matarrayindex=IPRMAT(I,IL)
               if(matarrayindex.gt.0)then
 
-C If g or h air gap and version 1.2 then assign DRAIR
+C If g air gap and version 1.2 then assign DRAIR
 	        if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &             matopaq(matarrayindex)(1:1).eq.'h')then
                   if(closemat2)then
@@ -728,6 +729,8 @@ C the matname matches.
           write(testname,'(a)') PNAM(1:ipos-1)
           ltnam=lnblnk(testname)
 
+C << todo - see if we can manage without using ileghope >>
+
 C Find a matching matname, if the legacy index associated with this item
 C matches ileghope then our search is complete.  If it does not match
 C ileghope then there could be duplicate names to check further. If
@@ -938,8 +941,7 @@ C Also check if it is a gap. If version 1.2 materials then we will
 C have access to pre-defined air gap resistances.
           if(matarrayindex.eq.0)then
             continue
-          elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &           matopaq(matarrayindex)(1:1).eq.'h')then
+          elseif(matopaq(matarrayindex)(1:1).eq.'g')then
             if(closemat2)then
               DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
               DRAIR(IFOC,IL,2)=matgapares(matarrayindex,2)
@@ -1129,8 +1131,7 @@ C Make up NAM as combination of matnam and matdoc.
 C Also check if it is a gap.
             if(matarrayindex.eq.0)then
               continue
-	    elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &             matopaq(matarrayindex)(1:1).eq.'h')then
+            elseif(matopaq(matarrayindex)(1:1).eq.'g')then
               if(closemat2)then
                 DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
                 DRAIR(IFOC,IL,2)=matgapares(matarrayindex,2)
