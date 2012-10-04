@@ -1794,9 +1794,8 @@ C terms of the control function information previously
 C defined.
 
       subroutine mzpst1(b1,b2,b3,icomp,qf)
-      include "building.h"
-      include "control.h"
-      include "blc25_open_windows.h"
+#include "building.h"
+#include "control.h"
 
       common/tc/itc,icnt
 
@@ -1840,11 +1839,6 @@ C For help messages
 
       helpinsub='mzpst1'  ! set for subroutine
 
-C Zeroise free-cooling variables.
-      fFreeCoolDelivered(icomp) = 0.
-      fCondFreeCool(icomp) = 0.
-	  bFreeCoolCtl(icomp) = .false.
-	  
 C Zeroise moisture addition to zone from plant -
 C required in event of BCL06 not being referenced 
 C at current time-step.      

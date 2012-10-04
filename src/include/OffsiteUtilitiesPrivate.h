@@ -6,26 +6,9 @@ C     the offsite utilities facility.
 C-----------------------------------------------------------------------
 
 C.....Counters
-      integer iComponent, iFuel, iEndUse, iZone
+      integer iComponent, iFuel, iEndUse
 
-C.....14-Oct-2011 BAL: Added arrays for storing fuel costs      
-      common/FuelCost/fSiteFuelCost, fPltFuelCost,
-     &                 fH3KBaseLoadsFuelCost
-
-C.....Common storing site-wide fues costs
-      real fSiteFuelCost(iNumOffsiteUtilComp, iNumFuel, iNumUses)
-
-C.....Common storing fuel costs specific to plant components
-C.....(MPCom is the maximum number of plant components.)
-      real fPltFuelCost(MPCom, iNumFuel, iNumUses)
-      
-C.....Common storing fuel costs specific to HOT3000 Base Loads
-C       MCOM (maximum number of zones) is provided by building.h
-      real fH3KBaseLoadsFuelCost(MCOM, iNumFuel, iNumUses)
-
-
-      common/EnergyUse/fSiteEnergyUse, fPltEnergyUse,
-     &                 fH3KBaseLoadsEnergyUse
+      common/EnergyUse/fSiteEnergyUse, fPltEnergyUse
 
 C.....Common storing site-wide energy use
       real fSiteEnergyUse(iNumOffsiteUtilComp, iNumFuel, iNumUses)
@@ -33,10 +16,6 @@ C.....Common storing site-wide energy use
 C.....Common storing energy use specific to plant components
 C.....(MPCom is the maximum number of plant components.)
       real fPltEnergyUse(MPCom, iNumFuel, iNumUses)
-      
-C.....Common storing energy use specific to HOT3000 Base Loads
-C       MCOM (maximum number of zones) is provided by building.h
-      real fH3KBaseLoadsEnergyUse(MCOM, iNumFuel, iNumUses)
 
 C.....Array indicating if energy used by plt components is catagorized, or not.
       logical bPltUseCatagorized(MPCom, iNumFuel)
@@ -48,68 +27,21 @@ C.....Actual fuel consumption (various units)
       real fTotalFuelUse( iNumFuel )
 C.....Total GHG emmissions  by fuel type (kg)
       real fTotalGHGEmissions( iNumFuel )
-C.....Total fuel cost by fuel type (14-Oct-2011 BAL)
-      real fTotalFuelCost( iNumFuel)
-      
+
 C.....Energy use by end-use (W) 
       real fEndUseEnergyUse( iNumFuel, iNumUses )
 C.....Actual fuel consumption by fuel, end/use (various units)
       real fEndUseFuelUse( iNumFuel, iNumUses )
 C.....Total GHG emmissions  by end-use (kg)
       real fEndUseGHGEmissions( iNumUses )
-C.....Total fuel cost by fuel, end-use (14-Oct-2011 BAL)
-      real fEndUseFuelCost ( iNumFuel, iNumUses )
 
       common/SiteFuelUse/fTotalEnergyUse,
      &                   fTotalFuelUse,
      &                   fTotalGHGEmissions,
-     &                   fTotalFuelCost,
      &                   fEndUseFuelUse,
      &                   fEndUseEnergyUse,
-     &                   fEndUseGHGEmissions,
-     &                   fEndUseFuelCost
+     &                   fEndUseGHGEmissions
 
-C.....14-Oct-2011 BAL: Added arrays for storing fuel rate blocks
-C.....Uses the following energy unit convention:
-C           Electricity -> kWh
-C           Natural Gas -> m3
-C           Oil         -> L
-C           Propane     -> L
-C           Wood(mixed) -> Tonne
-C
-C.....Minimum charge for each fuel type
-      real fFuelMinCharge( iNumFuel, 12 )
-C.....Minimum units for each fuel type
-      real fFuelMinUnits( iNumFuel, 12 )      
-C.....Number of energy units for a max. of 4 rate blocks
-      real fFuelBlockUnits( iNumFuel, 12, 4 )
-C.....Fuel cost for each rate block
-      real fFuelBlockCost( iNumFuel, 12, 4 )      
-C.....Sum of fuel cost - used to determine which block rate
-C.....energy unit cost to use for each simulation time-step
-      real fSumFuelUse( iNumFuel )      
-C.....Flag indicating whether to include fuel cost calculations
-      logical bIncFuelCostCalcs
-C.....Index to store the current month
-      integer iCurrentMonth
-C.....Flag indicating whether to apply the minimum monthly fuel charge
-      logical bApplyMonthlyMinCharge( iNumFuel )     
-C.....Flag indicating whether time of use (TOU) electricity rates have been specified
-      logical bTOUelecRates
-C.....Column in BC data file corresponding to TOU electricity rates schedule
-      integer iTOUcolumn
-
-      common/SiteFuelRates/fFuelBlockUnits,
-     &                   fFuelBlockCost,
-     &                   fFuelMinCharge,
-     &                   fFuelMinUnits,
-     &                   fSumFuelUse,
-     &                   bIncFuelCostCalcs,
-     &                   iCurrentMonth,
-     &                   bApplyMonthlyMinCharge,
-     &                   bTOUelecRates,
-     &                   iTOUcolumn
-      
 C.....Calorific value of fuels
       real fFuelConversionFactor(iNumFuel)
 

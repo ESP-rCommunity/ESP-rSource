@@ -4,7 +4,6 @@
 //Hardcoded available bin type (annual/monthly)
 #define BIN_MONTH_TYPE     0
 #define BIN_ANNUAL_TYPE    1
-#define BIN_SEASONAL_TYPE  2
 
 #ifdef _WIN32
 #pragma warning (disable: 4786) //to disable annoying "identifier was truncated to '255' characters in the debug information" in VC++

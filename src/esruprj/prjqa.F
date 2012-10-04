@@ -82,8 +82,6 @@ C Parameters passed into subroutine:
       INTEGER :: ic1,ie1,ict,ic2,ie2
       common/C6/INDCFG
       INTEGER :: INDCFG
-      common/C21/IFCFG,cfgroot,LCFGF
-      INTEGER :: IFCFG
 
 C IFPNF is the unit for the plant network file.
 C LPNF (72 char) plant network file name.
@@ -200,10 +198,10 @@ C Remember if each zone is fully attributed.
       character*72 LTMP
       character*72 GTGEOM
       character GTNAME*15,CLMLOC*30,lipvdatf*72
-      character LCFGF*72,lco*72,lcot*72
+      character lco*72,lcot*72
       character longtfile*144,longtfiledos*144
       character DESCRC*25
-      character cfgroot*24,ZN*12,SN*12
+      character ZN*12,SN*12
       character aok*17,CTLDOC*248,LCTLF*72
       character xfile*144,tg*1,delim*1,head*21
       character outs*124,outs248*248
@@ -2524,7 +2522,6 @@ C not browsing.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/cctlnm/ctldoc,lctlf
@@ -2547,7 +2544,7 @@ C Images.
       integer iton   ! zero if images not yet shown, one if yes
       common/imagfi/noimg,iton
 
-      character cfgroot*24,LCFGF*72,outs*124
+      character outs*124
       CHARACTER CTLDOC*248,LCTLF*72
       character ZN*12
       character ipvaction*3  ! to instruct it to read from external IPV file

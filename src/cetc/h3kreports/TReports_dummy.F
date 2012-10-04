@@ -135,22 +135,8 @@
       return
       end
 !.....
-      subroutine report_new_season(iSeason, fHtgMultiplier,
-     & fClgMultiplier,fGenMultiplier)
-      integer, intent(in) :: iSeason
-      real, intent(in) :: fHtgMultiplier,fClgMultiplier,fGenMultiplier
-      return
-      end
-!.....
       subroutine rep_Update_Config(cVariable,cValue)
       character(len=*), intent(in)::cVariable,cValue
-      return
-      end
-!.....
-      subroutine set_var_additional_info(iIdentifier,
-     & iPropertyNum,bValue)
-      integer,intent(in) :: iIdentifier, iPropertyNum
-      logical, intent(in) :: bValue
       return
       end
 !.....

@@ -24,24 +24,21 @@ C.....Named constants for fuel types
 
 C.....Supported end-uses
       integer iNumUses
-      parameter ( iNumUses = 9 )
+      parameter ( iNumUses = 7 )
       integer iUseSpaceHeat, iUseSpaceCool, iUseDHW,
      &        iUseLights, iUseEquipment, iUseUncatagorized,
-     &        iUseHRV, iUseOther, iExtraBillingCharges
+     &        iUseHRV 
       parameter ( iUseSpaceHeat     = 1,
      &            iUseSpaceCool     = 2,
      &            iUseDHW           = 3,
      &            iUseLights        = 4,
      &            iUseEquipment     = 5,
      &            iUseUncatagorized = 6,
-     &            iUseHRV           = 7,
-     &            iUseOther         = 8,
-                  ! 25-Nov-2011 BAL: Added. Only used to store monthly minimum fuel cost charges. 
-     &            iExtraBillingCharges = 9 ) 
+     &            iUseHRV           = 7 )
 
 C.....Number of "components" in ESP-r that report data to OffsiteUtilities
       integer iNumOffsiteUtilComp
-      parameter ( iNumOffsiteUtilComp = 5 )
+      parameter ( iNumOffsiteUtilComp = 4 )
 
 C.....Named constants for components that report data
 
@@ -56,9 +53,6 @@ C.....Named constants for components that report data
 
       integer iIdealVent
       parameter ( iIdealVent = 4 )       ! Ideal Ventilation/HRV model (CentralVentSys.F)
-
-      integer iH3KBaseLoads
-      parameter ( iH3KBaseLoads = 5 )    ! HOT3000 Base Loads linked with BCD file (casual.F)
 
 C-----------------------------------------------------------------------
 C     Named constants used to describe plt/pfs loads and
@@ -223,12 +217,12 @@ C.....Appliances/equipment
       data cUseDesc(iUseEquipment) /'equipment'/
       data iUseDescLen(iUseEquipment) /9/
 
-C.....Lights
-      data cUseName(iUseLights) /'lights'/
-      data iUseNameLen(iUseLights) /6/
+C.....Appliances/equipment
+      data cUseName(iUseLights) /'lighting'/
+      data iUseNameLen(iUseLights) /8/
 
-      data cUseDesc(iUseLights) /'lights'/
-      data iUseDescLen(iUseLights) /6/
+      data cUseDesc(iUseLights) /'lighting'/
+      data iUseDescLen(iUseLights) /8/
 
 C.....Uncatagorized
       data cUseName(iUseUncatagorized) /'uncatagorized'/
@@ -243,17 +237,3 @@ C.....Ventilation/HRV
 
       data cUseDesc(iUseHRV) /'ventilation'/
       data iUseDescLen(iUseHRV) /11/
-      
-C.....Other
-      data cUseName(iUseOther) /'other'/
-      data iUseNameLen(iUseOther) /5/
-
-      data cUseDesc(iUseOther) /'other'/
-      data iUseDescLen(iUseOther) /5/ 
-
-C.....Extra billing charges
-      data cUseName(iExtraBillingCharges) /'extra_billing_charges'/
-      data iUseNameLen(iExtraBillingCharges) /21/
-
-      data cUseDesc(iExtraBillingCharges) /'extra_billing_charges'/
-      data iUseDescLen(iExtraBillingCharges) /21/ 

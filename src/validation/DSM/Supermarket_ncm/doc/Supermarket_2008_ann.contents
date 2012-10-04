@@ -1,0 +1,2130 @@
+Synopsis
+ 
+This is a synopsis of the model supermarket sales 2008 stds (all days
+assessments) defined in Supermarket_2008_ann.cfg generated on Thu Feb 16
+09:41:23 2012. Notes associated with the model are in ../doc/SMsales.log
+ 
+The model is located at latitude   52.00 with a longitude difference of   0.00
+from the local time meridian. The year used in simulations is 2005 and
+weekends occur on Saturday and Sunday.
+The site exposure is typical city centre and the ground reflectance is 0.20.
+ 
+ 
+Simulationist name: not yet defined
+Simulationist telephone: not yet defined
+Simulationist address: not yet defined
+Simulationist city: not yet defined
+Simulationist postcode: not yet defined
+ 
+The climate is: ESP test climate and is held in: ../dbs/Supermarket.climate
+with hour centred solar data.
+ annual weather         : ../dbs/Supermarket.climate
+Calculated ground temp at 0.5m depth
+3.0888 4.3008 6.6610 8.8949 13.123 15.349 15.963 14.834 12.227 8.9770 5.7777 3.6649
+Calculated ground temp at 1.0m depth
+3.6630 4.5020 6.4738 8.4398 12.343 14.560 15.374 14.612 12.434 9.5459 6.5633 4.4524
+Calculated ground temp at 2.0m depth
+4.7588 5.0557 6.4004 7.8990 11.149 13.226 14.259 14.027 12.542 10.298 7.7730 5.7855
+Calculated ground temp at 4.0m depth
+6.4880 6.2779 6.8663 7.7174 9.8661 11.475 12.517 12.771 12.121 10.800 9.0880 7.5409
+ 
+Primary energy conversions (demand kWhr to primary kWhr) are:
+ heating   : 1.530
+ cooling   : 1.440
+ lighting  : 3.600
+ fans&pumps: 3.600
+ small powr: 3.600
+ hot water : 1.530
+ 
+ Emissions (g/kWh) co2  nox  sox
+ heating :  190.00   0.30   0.20
+ cooling :  612.00   2.06   7.57
+ lighting:  612.00   2.06   7.57
+ fan_pump:  612.00   2.06   7.57
+ small pr:  612.00   2.06   7.57
+ hot water: 190.00   0.30   0.20
+ 
+The model includes dispersed casual gains (e.g. pumps & fans).
+ 
+Notes:
+no dispersed demands notes (yet)
+ No. weekdays demands =  2
+ Gain Type Start Finish Sensible  Latent    Radiant   Convec
+           Hour  Hour   Magn. (W) Magn. (W) Frac      Frac
+   1 Pumps Wm2    0 24      1.0      0.0       0.50       0.50
+   2 Fans  Wm2    0 24      1.0      0.0       0.50       0.50
+ 
+ No. saturday demands =  0
+ 
+ No. sunday demands =  0
+ 
+An Integrated Performance View has been defined:
+The climate used was not in the climatelist and
+no local seasons set - default seasons assumed.
+Title : supermarket sales
+Version   : Version SMsales all days
+synopsis:
+:The SMsales
+Images    :   0
+ 
+Simulations to be undertaken:
+____simulations ( 5)____________days descrip___
+1st win Sat-01-Jan to Mon-28-Feb  59 Supermarket_2008_a 1st winter sea
+spring  Tue-01-Mar to Sat-30-Apr  61 Supermarket_2008_a spring sea
+summer  Sun-01-May to Wed-31-Aug 123 Supermarket_2008_a summer sea
+autumn  Thu-01-Sep to Mon-31-Oct  61 Supermarket_2008_a autumn sea
+2nd win Tue-01-Nov to Sat-31-Dec  61 Supermarket_2008_a 2nd winter sea
+ 
+display day Sun-02-Jan.
+display day Wed-02-Mar.
+display day Mon-02-May.
+display day Fri-02-Sep.
+display day Wed-02-Nov.
+ 
+Seasons (as found in climatelist file):
+         winter  spring  summer  autumn  winter
+  start  01-Jan  01-Mar  01-May  01-Sep  01-Nov
+  finish 28-Feb  30-Apr  31-Aug  31-Oct  31-Dec
+  days     59       61     123      61      61
+ 
+ Ratios for:  winter spring summer autumn winter
+ heating       1.00   1.00   1.00   1.00   1.00
+ cooling       1.00   1.00   1.00   1.00   1.00
+ lighting      1.00   1.00   1.00   1.00   1.00
+ small power   1.00   1.00   1.00   1.00   1.00
+ fans&pumps    1.00   1.00   1.00   1.00   1.00
+ DHW           1.00   1.00   1.00   1.00   1.00
+ 
+Metric                zones area scaling weight  type name
+ 1 Zone db T (degC)    2 2300.00 1.000 1.000 ZndbT dbt_zones
+Zones: Store1 Store2
+ 2 Resultant T (degC)    6 6766.00 1.000 1.000 comfort ocup_zones
+Zones: Sales Refrig Office1 Cafe Office3 Staff_traing
+ 
+Demand set,  nb zones, floor area, scaling factor
+ 1 public         4 6340.00 1.000
+Zones: Sales Refrig Foyer Cafe
+ 2 private        6 3302.00 1.000
+Zones: Office1 Office3 passage Staff_traing Store1 Store2
+ 3 chilled        3  716.00 1.000
+Zones: Cabinet_hi Cabinet_lw cold_store
+ 
+Dispersed fan demands included.
+Dispersed pump demands included.
+ 
+Databases associated with the model:
+ pressure distributions : ../dbs/Supermarket.pressuredb
+ materials              : ../dbs/Supermarket.materialdb
+ constructions          : ../dbs/Supermarket_ncm.constrdb
+ plant components       : ../dbs/Supermarket.plantdb
+ event profiles         : ../dbs/Supermarket.eventdb.a
+ optical properties     : ../dbs/Supermarket.opticdb
+ standard UK NCM data   : SBEM.db1
+ standard mould isopleth: mould.db1
+ 
+ ____________________________________________________________
+ 
+The model includes ideal controls as follows:
+Control description:
+assumes air based heating and cooling in shop offices cafe storage
+ 
+Zones control includes 14 functions.
+no zone control description supplied
+ 
+ The sensor for function  1 senses dry bulb temperature in Sales.
+ The actuator for function  1 is the air point in Sales.
+ There have been  1 day types defined.
+ Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 16.0 25.0 0.0
+basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
+25.00C.
+   2  7.00 db temp   > flux      basic control       99999.0 0.0 159999.0 0.0 18.0 23.0 0.0
+basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
+capacity 159999.0W min cooling capacity 0.0W. Heating setpoint 18.00C cooling setpoint
+23.00C.
+   3 21.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 16.0 25.0 0.0
+basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
+25.00C.
+ 
+ The sensor for function  2 senses dry bulb temperature in Refrig.
+ The actuator for function  2 is the air point in Refrig.
+ There have been  1 day types defined.
+ Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 15.0 24.0 0.0
+basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 15.00C cooling setpoint
+24.00C.
+   2  7.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 17.0 22.0 0.0
+basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 17.00C cooling setpoint
+22.00C.
+   3 21.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 15.0 24.0 0.0
+basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 15.00C cooling setpoint
+24.00C.
+ 
+ The sensor for function  3 senses dry bulb temperature in Cabinet_hi.
+ The actuator for function  3 is the air point in Cabinet_hi.
+ There have been  1 day types defined.
+ Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 -100.0 3.0 0.0
+basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint -100.00C cooling setpoint
+3.00C.
+ 
+ The sensor for function  4 senses dry bulb temperature in Cabinet_lw.
+ The actuator for function  4 is the air point in Cabinet_lw.
+ There have been  1 day types defined.
+ Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 -100.0 -12.0 0.0
+basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint -100.00C cooling setpoint
+-12.00C.
+ 
+ The sensor for function  5 senses dry bulb temperature in Foyer.
+ The actuator for function  5 is the air point in Foyer.
+ There have been  1 day types defined.
+ Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 14.0 28.0 0.0
+basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 14.00C cooling setpoint
+28.00C.
+   2  7.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 16.0 26.0 0.0
+basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
+26.00C.
+   3 21.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 14.0 28.0 0.0
+basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 14.00C cooling setpoint
+28.00C.
+ 
+ The sensor for function  6 senses dry bulb temperature in Office1.
+ The actuator for function  6 is the air point in Office1.
+ There have been  1 day types defined.
+ Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+   2  9.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 20.0 25.0 0.0
+basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 20.00C cooling setpoint
+25.00C.
+   3 19.00 db temp   > flux      free floating
+ 
+ The sensor for function  7 senses dry bulb temperature in Cafe.
+ The actuator for function  7 is the air point in Cafe.
+ There have been  1 day types defined.
+ Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+   2  9.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 18.0 100.0 0.0
+basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 18.00C cooling setpoint
+100.00C.
+   3 19.00 db temp   > flux      free floating
+ 
+ The sensor for function  8 senses dry bulb temperature in Office3.
+ The actuator for function  8 is the air point in Office3.
+ There have been  1 day types defined.
+ Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+   2  9.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 18.0 25.0 0.0
+basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 18.00C cooling setpoint
+25.00C.
+   3 19.00 db temp   > flux      free floating
+ 
+ The sensor for function  9 senses dry bulb temperature in passage.
+ The actuator for function  9 is the air point in passage.
+ There have been  1 day types defined.
+ Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+   2  9.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 18.0 25.0 0.0
+basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 18.00C cooling setpoint
+25.00C.
+   3 19.00 db temp   > flux      free floating
+ 
+ The sensor for function 10 senses dry bulb temperature in Staff_traing.
+ The actuator for function 10 is the air point in Staff_traing.
+ There have been  1 day types defined.
+ Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+   2  9.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 20.0 25.0 0.0
+basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 20.00C cooling setpoint
+25.00C.
+   3 19.00 db temp   > flux      free floating
+ 
+ The sensor for function 11 senses dry bulb temperature in Store1.
+ The actuator for function 11 is the air point in Store1.
+ There have been  1 day types defined.
+ Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 16.0 24.0 0.0
+basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
+24.00C.
+ 
+ The sensor for function 12 senses dry bulb temperature in Store2.
+ The actuator for function 12 is the air point in Store2.
+ There have been  1 day types defined.
+ Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       99999.0 0.0 99999.0 0.0 16.0 24.0 0.0
+basic control: max heating capacity 99999.0W min heating capacity 0.0W max cooling
+capacity 99999.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
+24.00C.
+ 
+ The sensor for function 13 senses dry bulb temperature in cold_store.
+ The actuator for function 13 is the air point in cold_store.
+ There have been  1 day types defined.
+ Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       1000.0 0.0 10000.0 0.0 0.0 1.0 0.0
+basic control: max heating capacity 1000.0W min heating capacity 0.0W max cooling
+capacity 10000.0W min cooling capacity 0.0W. Heating setpoint 0.00C cooling setpoint
+1.00C.
+ 
+ The sensor for function 14 senses the temperature of the current zone.
+ The actuator for function 14 is air point of the current zone
+ The function day types are Weekdays, Saturdays & Sundays
+ Weekday control is valid Sat-01-Jan to Sat-31-Dec, 2005 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       90000.0 0.0 1000.0 0.0 16.0 30.0 0.0
+basic control: max heating capacity 90000.0W min heating capacity 0.0W max cooling
+capacity 1000.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
+30.00C.
+   2  8.00 db temp   > flux      basic control       90000.0 0.0 1000.0 0.0 16.0 30.0 0.0
+basic control: max heating capacity 90000.0W min heating capacity 0.0W max cooling
+capacity 1000.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
+30.00C.
+   3 19.00 db temp   > flux      basic control       90000.0 0.0 1000.0 0.0 16.0 30.0 0.0
+basic control: max heating capacity 90000.0W min heating capacity 0.0W max cooling
+capacity 1000.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
+30.00C.
+ Saturday control is valid Sat-01-Jan to Sat-31-Dec, 2005 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       90000.0 0.0 1000.0 0.0 16.0 30.0 0.0
+basic control: max heating capacity 90000.0W min heating capacity 0.0W max cooling
+capacity 1000.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
+30.00C.
+   2  8.00 db temp   > flux      basic control       90000.0 0.0 1000.0 0.0 16.0 30.0 0.0
+basic control: max heating capacity 90000.0W min heating capacity 0.0W max cooling
+capacity 1000.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
+30.00C.
+   3 19.00 db temp   > flux      basic control       90000.0 0.0 1000.0 0.0 16.0 30.0 0.0
+basic control: max heating capacity 90000.0W min heating capacity 0.0W max cooling
+capacity 1000.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
+30.00C.
+ Sunday control is valid Sat-01-Jan to Sat-31-Dec, 2005 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       90000.0 0.0 1000.0 0.0 16.0 30.0 0.0
+basic control: max heating capacity 90000.0W min heating capacity 0.0W max cooling
+capacity 1000.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
+30.00C.
+   2  8.00 db temp   > flux      basic control       90000.0 0.0 1000.0 0.0 16.0 30.0 0.0
+basic control: max heating capacity 90000.0W min heating capacity 0.0W max cooling
+capacity 1000.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
+30.00C.
+   3 19.00 db temp   > flux      basic control       90000.0 0.0 1000.0 0.0 16.0 30.0 0.0
+basic control: max heating capacity 90000.0W min heating capacity 0.0W max cooling
+capacity 1000.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
+30.00C.
+ 
+ Zone to contol loop linkages:
+ zone ( 1) Sales        << control  1
+ zone ( 2) Refrig       << control  2
+ zone ( 3) Foyer        << control  5
+ zone ( 4) Office1      << control  6
+ zone ( 5) Cafe         << control  7
+ zone ( 6) Office3      << control  8
+ zone ( 7) passage      << control  9
+ zone ( 8) Staff_traing << control 10
+ zone ( 9) Store1       << control 11
+ zone (10) Store2       << control 12
+ zone (11) Cabinet_hi   << control  3
+ zone (12) Cabinet_lw   << control  4
+ zone (13) cold_store   << control 13
+ zone (14) m_vent_mix   << control 14
+ 
+ Flow control includes  1 loops.
+control the makeup air fan roughly on occupancy
+ 
+ The sensor for function  1 senses dry bulb temperature in Sales.
+ The actuator for function  1 is flow connection:  26 vent_mix - Sales via makeup400p
+ There have been  1 day types defined.
+ Day type  1 is valid Sat-01-Jan to Sat-31-Dec, 2005 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 dry bulb > flow       on / off            0.0 1.0 0.2
+on/off setpoint 0.00 direct action ON fraction 0.200.
+   2  8.00 dry bulb > flow       on / off            0.0 1.0 1.0
+on/off setpoint 0.00 direct action ON fraction 1.000.
+   3 19.00 dry bulb > flow       on / off            0.0 1.0 0.2
+on/off setpoint 0.00 direct action ON fraction 0.200.
+ ____________________________________________________________
+ 
+The model includes an air flow network.
+ 
+ Flow network description.
+ 
+  25 nodes,  11 components,  26 connections;     wind reduction =  1.000
+   # Node      Fluid   Node Type           Height Temperature    Data_1       Data_2
+   1 Sales        air   internal & unknown    3.5000   20.000     (-)     0.000  vol ********
+   2 Refrig       air   internal & unknown    3.5000   20.000     (-)     0.000  vol 9944.200
+   3 Foyer        air   internal & unknown    3.0000   20.000     (-)     0.000  vol 2052.000
+   4 Office1      air   internal & unknown    1.5000   20.000     (-)     0.000  vol  912.020
+   5 Cafe         air   internal & unknown    1.5000   20.000     (-)     0.000  vol  912.020
+   6 Office3      air   internal & unknown    4.5000   20.000     (-)     0.000  vol  912.020
+   7 passage      air   internal & unknown    4.5000   20.000     (-)     0.000  vol  270.010
+   8 Staff_traing air   internal & unknown    4.5000   20.000     (-)     0.000  vol  912.020
+   9 Store1       air   internal & unknown    1.5000   20.000     (-)     0.000  vol 1938.000
+  10 Store2       air   internal & unknown    3.0000   20.000     (-)     0.000  vol 3534.100
+  11 Cabinet_hi   air   internal & unknown    1.2500   20.000     (-)     0.000  vol  800.020
+  12 Cabinet_lw   air   internal & unknown    1.2500   20.000     (-)     0.000  vol  800.020
+  13 cold_store   air   internal & unknown    1.5000   20.000     (-)     0.000  vol  228.000
+  14 entr_left    air   boundary & wind ind   1.2500   0.0000     coef    5.000  azim 270.000
+  15 entry_right  air   boundary & wind ind   1.2500   0.0000     coef    5.000  azim  90.000
+  16 off1_fr      air   boundary & wind ind   1.5000   0.0000     coef    5.000  azim 180.000
+  17 off3_fr      air   boundary & wind ind   4.5000   0.0000     coef    5.000  azim 180.000
+  18 cafe_fr      air   boundary & wind ind   1.5000   0.0000     coef    5.000  azim 180.000
+  19 staff_fr     air   boundary & wind ind   4.5000   0.0000     coef    5.000  azim 180.000
+  20 sales_left   air   boundary & wind ind   3.0000   0.0000     coef    5.000  azim 270.000
+  21 store1left   air   boundary & wind ind   1.5000   0.0000     coef    5.000  azim 270.000
+  22 store2left   air   boundary & wind ind   4.5000   0.0000     coef    5.000  azim 270.000
+  23 vehicle      air   boundary & wind ind   2.0000   0.0000     coef    5.000  azim   0.000
+  24 refr_right   air   boundary & wind ind   3.0000   0.0000     coef    5.000  azim  90.000
+  25 vent_mix     air   internal & unknown    4.7000   20.000     (-)     0.000  vol  152.000
+ 
+ Component    Type C+ L+ Description
+ 
+ win_cr        120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
+ Fluid  1.0 crack width (m)  0.0080 crack length (m) 30.000
+ 
+ door_cr       120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
+ Fluid  1.0 crack width (m)  0.0100 crack length (m)  3.000
+ 
+ grill0.5      110  2  0 Specific air flow opening           m = rho.f(A,dP)
+ Fluid  1.0 opening area (m)  0.500
+ 
+ cab1.0ach      30  2  0 Constant vol. flow rate component   m = rho.a
+ Fluid  1.0 flow rate (m^3/s)  0.22222
+ 
+ cab5.0ach      30  2  0 Constant vol. flow rate component   m = rho.a
+ Fluid  1.0 flow rate (m^3/s)   1.1111
+ 
+ cab10ach       30  2  0 Constant vol. flow rate component   m = rho.a
+ Fluid  1.0 flow rate (m^3/s)   2.2222
+ 
+ entry         130  5  0 Specific air flow door              m = rho.f(W,H,dP)
+ Fluid  1.0 width  2.000 height 2.500 ref ht  3.000 discharge factor 0.500
+ 
+ vehc_cr       120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
+ Fluid  1.0 crack width (m)  0.0100 crack length (m) 15.000
+ 
+ makeup400p     30  2  0 Constant vol. flow rate component   m = rho.a
+ Fluid  1.0 flow rate (m^3/s)   2.4000
+ 
+ sales-refr    130  5  0 Specific air flow door              m = rho.f(W,H,dP)
+ Fluid  1.0 width  5.000 height 5.000 ref ht  3.500 discharge factor 0.700
+ 
+ foyer-sales   130  5  0 Specific air flow door              m = rho.f(W,H,dP)
+ Fluid  1.0 width  4.000 height 2.500 ref ht  3.500 discharge factor 0.400
+ 
+    # +Node         dHght   -Node         dHght   Component       Z @+    Z @-
+    1 staff_fr      0.000   Staff_traing  0.000   win_cr          4.500   4.500
+    2 cafe_fr       0.000   Cafe          0.000   win_cr          1.500   1.500
+    3 entry_right   0.000   Foyer         0.000   entry           1.250   3.000
+    4 entr_left     0.000   Foyer        -0.000   entry           1.250   3.000
+    5 off1_fr       0.000   Office1       0.000   win_cr          1.500   1.500
+    6 off3_fr       0.000   Office3       0.000   win_cr          4.500   4.500
+    7 sales_left    0.000   Sales        -0.000   win_cr          3.000   3.500
+    8 store1left    0.000   Store1        0.000   win_cr          1.500   1.500
+    9 store2left   -0.000   Store2        0.000   win_cr          4.500   3.000
+   10 vehicle       0.000   Store2        0.000   vehc_cr         2.000   3.000
+   11 refr_right    0.000   Refrig        0.000   win_cr          3.000   3.500
+   12 Store1        0.750   Store2       -0.750   grill0.5        2.250   2.250
+   13 Store1        1.000   Sales        -1.000   grill0.5        2.500   2.500
+   14 Store2        0.250   Refrig       -0.250   grill0.5        3.250   3.250
+   15 Store2       -0.000   cold_store    0.000   door_cr         3.000   1.500
+   16 Foyer         0.000   Sales        -0.000   foyer-sales     3.000   3.500
+   17 Foyer        -0.000   Cafe          0.000   entry           3.000   1.500
+   18 Sales         0.000   Refrig        0.000   sales-refr      3.500   3.500
+   19 Refrig        0.000   Cabinet_hi    0.000   cab1.0ach       3.500   1.250
+   20 Cabinet_hi    0.000   Refrig        0.000   grill0.5        1.250   3.500
+   21 Refrig        0.000   Cabinet_lw    0.000   cab1.0ach       3.500   1.250
+   22 Cabinet_lw    0.000   Refrig        0.000   grill0.5        1.250   3.500
+   23 Staff_traing  0.000   passage       0.000   door_cr         4.500   4.500
+   24 passage       0.000   Office3       0.000   door_cr         4.500   4.500
+   25 vehicle       0.000   vent_mix      0.000   grill0.5        2.000   4.700
+   26 vent_mix     -0.000   Sales         0.000   makeup400p      4.700   3.500
+thermal zone to air flow node mapping:
+thermal zone -> air flow node
+Sales        -> Sales
+Refrig       -> Refrig
+Foyer        -> Foyer
+Office1      -> Office1
+Cafe         -> Cafe
+Office3      -> Office3
+passage      -> passage
+Staff_traing -> Staff_traing
+Store1       -> Store1
+Store2       -> Store2
+Cabinet_hi   -> Cabinet_hi
+Cabinet_lw   -> Cabinet_lw
+cold_store   -> cold_store
+m_vent_mix   -> vent_mix
+ 
+ 
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 Sales       24531.5  48  9995.4   718.5  3774.0  Sales describes a
+ 2 Refrig       9944.2  21  3984.6  1034.0  1776.0  Refrig describes a
+ 3 Foyer        2052.0  17  1111.4   313.1   486.0  Foyer describes a
+ 4 Office1       912.0   7   809.0    48.0   304.0  Office1 describes a
+ 5 Cafe          912.0   7   809.0    48.0   304.0  Office2 describes a
+ 6 Office3       912.0   9   809.0    48.0   304.0  Office3 describes a
+ 7 passage       270.0   7   357.0    54.0    90.0  passage connects office and staff room across the foyer
+ 8 Staff_traing  912.0   9   809.0    48.0   304.0  Staff describes a room for staff changing & meetings.
+ 9 Store1       1938.0   7  1727.0    30.0  1350.0  Store1 describes a
+10 Store2       3534.1  14  2758.0     0.0   950.0  Store2 describes a
+11 Cabinet_hi    800.0  10  1720.2   320.0   320.0  Cabinet_hi describes a high temperature chilled cabinet
+12 Cabinet_lw    800.0  10  1777.1   320.0   320.0  Cabinet_lw describes a low temperature frozen cabinet
+13 cold_store    228.0   6   257.0     0.0    76.0  cold_store is a storage for cold product at zero degrees.
+14 m_vent_mix    152.0   6   222.0     0.0    76.0  m_vent_mix describes a mixing box for ventilation preheat
+   all         47898.  178  27146.   2982.  10434.
+ 
+ 
+ Zone Sales ( 1) is composed of 48 surfaces and 93 vertices.
+ It encloses a volume of 24500.m^3 of space, with a total surface
+ area of 10700.m^2 & user edited floor area of 3770.m^2
+ Sales describes a
+ There is 4137.2m2 of exposed surface area, 360.75m2 of which is vertical.
+ Outside walls are 2.9412 % of floor area & avg U of 0.353 & UA of 39.130
+ Sloped roof is 100.06 % of floor area & avg U of 0.252 & UA of 950.44
+ Glazing is 6.6177 % of floor & 69.231 % facade with avg U of 2.241 & UA of 559.68
+ Ground contact is 100.00 % of floor area & avg U of 0.383 & perimeter 55.500
+ 
+ A summary of the surfaces in Sales( 1) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  361.     90.   0. fict_refr    SC_ficti VERT -     fictitious   ||< fict_store:Refrig
+  2  204.      0.   0. ptn_st2      OPAQUE   VERT -     mass_part    ||< ptn_sales:Store2
+  3  111.    270.   0. left_fac     OPAQUE   VERT WALL  SMexwal2008  ||< external
+  4  1890.   180.  88. roof_a       OPAQUE   SLOP ROOF  SM_roof2008  ||< external
+  5  3770.     0. -90. floor        OPAQUE   FLOR FLOOR SM_grnd_floo ||< ground profile  1
+  6  108.    180.   0. ptn_psg      OPAQUE   VERT -     mass_part    ||< ptn_store:passage
+  7  108.    180.   0. ptn_foy      SC_ficti VERT -     fictitious   ||< ptn_shop:Foyer
+  8  96.0    180.   0. ptn_off1     OPAQUE   VERT -     mass_part    ||< ptn_shop:Office1
+  9  96.0    180.   0. ptn_off3     OPAQUE   VERT -     mass_part    ||< ptn_shop:Office3
+ 10  204.      0.   0. ptn_st1      OPAQUE   VERT -     mass_part    ||< ptn_sales:Store1
+ 11  250.    270.   0. left_glaz    DCF7671_ VERT D-WIN SM_glazing   ||< external
+ 12  46.5     90.   0. shelf_a      OPAQUE   VERT -     dry_product  ||< shelf_a_:Sales
+ 13  46.5    270.   0. shelf_a_     OPAQUE   VERT -     dry_product  ||< shelf_a:Sales
+ 14  46.5     90.   0. shelf_b      OPAQUE   VERT -     dry_product  ||< shelf_b_:Sales
+ 15  46.5    270.   0. shelf_b_     OPAQUE   VERT -     dry_product  ||< shelf_b:Sales
+ 16  46.5     90.   0. shelf_c      OPAQUE   VERT -     dry_product  ||< shelf_c_:Sales
+ 17  46.5    270.   0. shelf_c_     OPAQUE   VERT -     dry_product  ||< shelf_c:Sales
+ 18  46.5     90.   0. shelf_d      OPAQUE   VERT -     dry_product  ||< shelf_d_:Sales
+ 19  46.5    270.   0. shelf_d_     OPAQUE   VERT -     dry_product  ||< shelf_d:Sales
+ 20  46.5     90.   0. shelf_e      OPAQUE   VERT -     dry_product  ||< shelf_e_:Sales
+ 21  46.5    270.   0. shelf_e_     OPAQUE   VERT -     dry_product  ||< shelf_e:Sales
+ 22  40.5     90.   0. shelf_f      OPAQUE   VERT -     dry_product  ||< shelf_f_:Sales
+ 23  40.5    270.   0. shelf_f_     OPAQUE   VERT -     dry_product  ||< shelf_f:Sales
+ 24  40.5     90.   0. shelf_g      OPAQUE   VERT -     dry_product  ||< shelf_g_:Sales
+ 25  40.5    270.   0. shelf_g_     OPAQUE   VERT -     dry_product  ||< shelf_g:Sales
+ 26  40.5     90.   0. shelf_h      OPAQUE   VERT -     dry_product  ||< shelf_h_:Sales
+ 27  40.5    270.   0. shelf_h_     OPAQUE   VERT -     dry_product  ||< shelf_h:Sales
+ 28  40.5     90.   0. shelf_i      OPAQUE   VERT -     dry_product  ||< shelf_i_:Sales
+ 29  40.5    270.   0. shelf_i_     OPAQUE   VERT -     dry_product  ||< shelf_i:Sales
+ 30  1890.     0.  88. roof_b       OPAQUE   SLOP ROOF  SM_roof2008  ||< external
+ 31  46.5     90.   0. shelf_k      OPAQUE   VERT PARTN dry_product  ||< shelf_k_:Sales
+ 32  46.5    270.   0. shelf_k_     OPAQUE   VERT PARTN dry_product  ||< shelf_k:Sales
+ 33  46.5     90.   0. shelf_l      OPAQUE   VERT PARTN dry_product  ||< shelf_l_:Sales
+ 34  46.5    270.   0. shelf_l_     OPAQUE   VERT PARTN dry_product  ||< shelf_l:Sales
+ 35  46.5     90.   0. shelf_m      OPAQUE   VERT PARTN dry_product  ||< shelf_m_:Sales
+ 36  46.5    270.   0. shelf_m_     OPAQUE   VERT PARTN dry_product  ||< shelf_m:Sales
+ 37  46.5     90.   0. shelf_n      OPAQUE   VERT PARTN dry_product  ||< shelf_n_:Sales
+ 38  46.5    270.   0. shelf_n_     OPAQUE   VERT PARTN dry_product  ||< shelf_n:Sales
+ 39  46.5     90.   0. shelf_o      OPAQUE   VERT PARTN dry_product  ||< shelf_o_:Sales
+ 40  46.5    270.   0. shelf_o_     OPAQUE   VERT PARTN dry_product  ||< shelf_o:Sales
+ 41  46.5     90.   0. shelf_p      OPAQUE   VERT PARTN dry_product  ||< shelf_p_:Sales
+ 42  46.5    270.   0. shelf_p_     OPAQUE   VERT PARTN dry_product  ||< shelf_p:Sales
+ 43  46.5     90.   0. shelf_q      OPAQUE   VERT PARTN dry_product  ||< shelf_q_:Sales
+ 44  46.5    270.   0. shelf_q_     OPAQUE   VERT PARTN dry_product  ||< shelf_q:Sales
+ 45  46.5     90.   0. shelf_r      OPAQUE   VERT PARTN dry_product  ||< shelf_r_:Sales
+ 46  46.5    270.   0. shelf_r_     OPAQUE   VERT PARTN dry_product  ||< shelf_r:Sales
+ 47  46.5     90.   0. shelf_s      OPAQUE   VERT PARTN dry_product  ||< shelf_s_:Sales
+ 48  46.5    270.   0. shelf_s_     OPAQUE   VERT PARTN dry_product  ||< shelf_s:Sales
+ 
+ Vertices ( index X Y Z) in the zone...
+vertex   1    0.00000   13.50000    0.00000   vertex  47   39.00000   19.50000    2.20000
+vertex   2   68.00000   13.50000    0.00000   vertex  48   45.00000   19.50000    0.20000
+vertex   3   68.00000   69.00000    0.00000   vertex  49   45.00000   39.75000    0.20000
+vertex   4    0.00000   69.00000    0.00000   vertex  50   45.00000   39.75000    2.20000
+vertex   5    0.00000   13.50000    6.00000   vertex  51   45.00000   19.50000    2.20000
+vertex   6   68.00000   13.50000    6.00000   vertex  52   51.00000   19.50000    0.20000
+vertex   7   68.00000   69.00000    6.00000   vertex  53   51.00000   39.75000    0.20000
+vertex   8    0.00000   69.00000    6.00000   vertex  54   51.00000   39.75000    2.20000
+vertex   9   32.00000   13.50000    0.00000   vertex  55   51.00000   19.50000    2.20000
+vertex  10   32.00000   13.50000    3.00000   vertex  56   68.00000   41.25000    7.00000
+vertex  11   68.00000   13.50000    3.00000   vertex  57    0.00000   41.25000    7.00000
+vertex  12    0.00000   13.50000    3.00000   vertex  58    3.00000   42.75000    0.20000
+vertex  13   32.00000   13.50000    6.00000   vertex  59    3.00000   66.00000    0.20000
+vertex  14    0.00000   69.00000    3.00000   vertex  60    3.00000   66.00000    2.20000
+vertex  15   68.00000   69.00000    3.00000   vertex  61    3.00000   42.75000    2.20000
+vertex  16    0.00000   65.28220    0.40192   vertex  62    9.00000   42.75000    0.20000
+vertex  17    0.00000   17.21779    0.40192   vertex  63    9.00000   66.00000    0.20000
+vertex  18    0.00000   17.21779    5.59808   vertex  64    9.00000   66.00000    2.20000
+vertex  19    0.00000   65.28220    5.59808   vertex  65    9.00000   42.75000    2.20000
+vertex  20    3.00000   16.50000    0.20000   vertex  66   15.00000   42.75000    0.20000
+vertex  21    3.00000   39.75000    0.20000   vertex  67   15.00000   66.00000    0.20000
+vertex  22    3.00000   39.75000    2.20000   vertex  68   15.00000   66.00000    2.20000
+vertex  23    3.00000   16.50000    2.20000   vertex  69   15.00000   42.75000    2.20000
+vertex  24    9.00000   16.50000    0.20000   vertex  70   21.00000   42.75000    0.20000
+vertex  25    9.00000   39.75000    0.20000   vertex  71   21.00000   66.00000    0.20000
+vertex  26    9.00000   39.75000    2.20000   vertex  72   21.00000   66.00000    2.20000
+vertex  27    9.00000   16.50000    2.20000   vertex  73   21.00000   42.75000    2.20000
+vertex  28   15.00000   16.50000    0.20000   vertex  74   27.00000   42.75000    0.20000
+vertex  29   15.00000   39.75000    0.20000   vertex  75   27.00000   66.00000    0.20000
+vertex  30   15.00000   39.75000    2.20000   vertex  76   27.00000   66.00000    2.20000
+vertex  31   15.00000   16.50000    2.20000   vertex  77   27.00000   42.75000    2.20000
+vertex  32   21.00000   16.50000    0.20000   vertex  78   33.00000   42.75000    0.20000
+vertex  33   21.00000   39.75000    0.20000   vertex  79   33.00000   66.00000    0.20000
+vertex  34   21.00000   39.75000    2.20000   vertex  80   33.00000   66.00000    2.20000
+vertex  35   21.00000   16.50000    2.20000   vertex  81   33.00000   42.75000    2.20000
+vertex  36   27.00000   16.50000    0.20000   vertex  82   45.00000   42.75000    0.20000
+vertex  37   27.00000   39.75000    0.20000   vertex  83   45.00000   66.00000    0.20000
+vertex  38   27.00000   39.75000    2.20000   vertex  84   45.00000   66.00000    2.20000
+vertex  39   27.00000   16.50000    2.20000   vertex  85   45.00000   42.75000    2.20000
+vertex  40   33.00000   19.50000    0.20000   vertex  86   51.00000   42.75000    0.20000
+vertex  41   33.00000   39.75000    0.20000   vertex  87   51.00000   66.00000    0.20000
+vertex  42   33.00000   39.75000    2.20000   vertex  88   51.00000   66.00000    2.20000
+vertex  43   33.00000   19.50000    2.20000   vertex  89   51.00000   42.75000    2.20000
+vertex  44   39.00000   19.50000    0.20000   vertex  90   57.00000   42.75000    0.20000
+vertex  45   39.00000   39.75000    0.20000   vertex  91   57.00000   66.00000    0.20000
+vertex  46   39.00000   39.75000    2.20000   vertex  92   57.00000   66.00000    2.20000
+                                              vertex  93   57.00000   42.75000    2.20000
+ Number of vertices followed by list of associated vert
+*edges,7,2,3,15,7,56,6,11   fict_refr
+*edges,4,14,8,7,15   ptn_st2
+*edges,13,4,1,12,5,57,8,14,4,16,19,18,17,16   left_fac
+*edges,5,5,13,6,56,57   roof_a
+*edges,5,1,4,3,2,9   floor
+*edges,4,10,11,6,13   ptn_psg
+*edges,4,9,2,11,10   ptn_foy
+*edges,4,1,9,10,12   ptn_off1
+*edges,4,12,10,13,5   ptn_off3
+*edges,4,4,14,15,3   ptn_st1
+*edges,4,16,17,18,19   left_glaz
+*edges,4,20,21,22,23   shelf_a
+*edges,4,21,20,23,22   shelf_a_
+*edges,4,24,25,26,27   shelf_b
+*edges,4,25,24,27,26   shelf_b_
+*edges,4,28,29,30,31   shelf_c
+*edges,4,29,28,31,30   shelf_c_
+*edges,4,32,33,34,35   shelf_d
+*edges,4,33,32,35,34   shelf_d_
+*edges,4,36,37,38,39   shelf_e
+*edges,4,37,36,39,38   shelf_e_
+*edges,4,40,41,42,43   shelf_f
+*edges,4,41,40,43,42   shelf_f_
+*edges,4,44,45,46,47   shelf_g
+*edges,4,45,44,47,46   shelf_g_
+*edges,4,48,49,50,51   shelf_h
+*edges,4,49,48,51,50   shelf_h_
+*edges,4,52,53,54,55   shelf_i
+*edges,4,53,52,55,54   shelf_i_
+*edges,4,7,8,57,56   roof_b
+*edges,4,58,59,60,61   shelf_k
+*edges,4,59,58,61,60   shelf_k_
+*edges,4,62,63,64,65   shelf_l
+*edges,4,63,62,65,64   shelf_l_
+*edges,4,66,67,68,69   shelf_m
+*edges,4,67,66,69,68   shelf_m_
+*edges,4,70,71,72,73   shelf_n
+*edges,4,71,70,73,72   shelf_n_
+*edges,4,74,75,76,77   shelf_o
+*edges,4,75,74,77,76   shelf_o_
+*edges,4,78,79,80,81   shelf_p
+*edges,4,79,78,81,80   shelf_p_
+*edges,4,82,83,84,85   shelf_q
+*edges,4,83,82,85,84   shelf_q_
+*edges,4,86,87,88,89   shelf_r
+*edges,4,87,86,89,88   shelf_r_
+*edges,4,90,91,92,93   shelf_s
+*edges,4,91,90,93,92   shelf_s_
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: Sales
+ 
+Notes:
+General sales area
+Number of weekdays     casual gains= 27
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+weekd  1 OccuptW    0- 1   6762.6   5171.4       0.20       0.80
+weekd  2 OccuptW    1- 2   5569.2   3978.0       0.20       0.80
+weekd  3 OccuptW    2- 3   3978.0   2784.6       0.20       0.80
+weekd  4 OccuptW    3- 4   2386.8   1989.0       0.20       0.80
+weekd  5 OccuptW    4- 6   1193.4    795.6       0.20       0.80
+weekd  6 OccuptW    6- 7   1591.2   1193.4       0.20       0.80
+weekd  7 OccuptW    7- 8   1989.0   1591.2       0.20       0.80
+weekd  8 OccuptW    8- 9   9547.2   6762.6       0.20       0.80
+weekd  9 OccuptW    9-10  16309.8  11934.0       0.20       0.80
+weekd 10 OccuptW   10-11  17105.4  12729.6       0.20       0.80
+weekd 11 OccuptW   11-12  23470.2  17105.4       0.20       0.80
+weekd 12 OccuptW   12-13  25061.4  18298.8       0.20       0.80
+weekd 13 OccuptW   13-14  29437.2  21879.0       0.20       0.80
+weekd 14 OccuptW   14-15  24663.6  17901.0       0.20       0.80
+weekd 15 OccuptW   15-16  28641.6  21083.4       0.20       0.80
+weekd 16 OccuptW   16-17  33415.2  24663.6       0.20       0.80
+weekd 17 OccuptW   17-18  33017.4  24265.8       0.20       0.80
+weekd 18 OccuptW   18-19  33813.0  24663.6       0.20       0.80
+weekd 19 OccuptW   19-20  31028.4  22674.6       0.20       0.80
+weekd 20 OccuptW   20-21  26652.6  19492.2       0.20       0.80
+weekd 21 OccuptW   21-22  16309.8  11934.0       0.20       0.80
+weekd 22 OccuptW   22-23  10740.6   7956.0       0.20       0.80
+weekd 23 OccuptW   23-24   8353.8   6364.8       0.20       0.80
+weekd 24 LightsWm2  0- 7      3.0      0.0       0.20       0.80
+weekd 25 LightsWm2  7-22     10.0      0.0       0.20       0.80
+weekd 26 LightsWm2 22-24      3.0      0.0       0.20       0.80
+weekd 27 EquiptWm2  0-24      6.0      0.0       0.20       0.80
+Number of saturday     casual gains= 27
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+satur  1 OccuptW    0- 1   7956.0   5569.2       0.20       0.80
+satur  2 OccuptW    1- 2   5967.0   4375.8       0.20       0.80
+satur  3 OccuptW    2- 3   4375.8   3182.4       0.20       0.80
+satur  4 OccuptW    3- 4   2784.6   1989.0       0.20       0.80
+satur  5 OccuptW    4- 6   1193.4   1193.4       0.20       0.80
+satur  6 OccuptW    6- 7   1591.2   1193.4       0.20       0.80
+satur  7 OccuptW    7- 8   2386.8   1591.2       0.20       0.80
+satur  8 OccuptW    8- 9   9945.0   7160.4       0.20       0.80
+satur  9 OccuptW    9-10  17901.0  13127.4       0.20       0.80
+satur 10 OccuptW   10-11  18696.6  13923.0       0.20       0.80
+satur 11 OccuptW   11-12  25857.0  19094.4       0.20       0.80
+satur 12 OccuptW   12-13  27846.0  20287.8       0.20       0.80
+satur 13 OccuptW   13-14  33017.4  24265.8       0.20       0.80
+satur 14 OccuptW   14-15  27448.2  19890.0       0.20       0.80
+satur 15 OccuptW   15-16  32221.8  23868.0       0.20       0.80
+satur 16 OccuptW   16-17  37791.0  27448.2       0.20       0.80
+satur 17 OccuptW   17-18  37393.2  27448.2       0.20       0.80
+satur 18 OccuptW   18-19  37791.0  27846.0       0.20       0.80
+satur 19 OccuptW   19-20  35006.4  25459.2       0.20       0.80
+satur 20 OccuptW   20-21  29835.0  21879.0       0.20       0.80
+satur 21 OccuptW   21-22  18696.6  13525.2       0.20       0.80
+satur 22 OccuptW   22-23  12331.8   9149.4       0.20       0.80
+satur 23 OccuptW   23-24   9547.2   7160.4       0.20       0.80
+satur 24 LightsWm2  0- 7      3.0      0.0       0.20       0.80
+satur 25 LightsWm2  7-22     10.0      0.0       0.20       0.80
+satur 26 LightsWm2 22-24      3.0      0.0       0.20       0.80
+satur 27 EquiptWm2  0-24      6.0      0.0       0.20       0.80
+Number of sunday       casual gains= 27
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+sunda  1 OccuptW    0- 1   7956.0   5569.2       0.20       0.80
+sunda  2 OccuptW    1- 2   5967.0   4375.8       0.20       0.80
+sunda  3 OccuptW    2- 3   4375.8   3182.4       0.20       0.80
+sunda  4 OccuptW    3- 4   2784.6   1989.0       0.20       0.80
+sunda  5 OccuptW    4- 6   1193.4   1193.4       0.20       0.80
+sunda  6 OccuptW    6- 7   1591.2   1193.4       0.20       0.80
+sunda  7 OccuptW    7- 8   2386.8   1591.2       0.20       0.80
+sunda  8 OccuptW    8- 9   9945.0   7160.4       0.20       0.80
+sunda  9 OccuptW    9-10  17901.0  13127.4       0.20       0.80
+sunda 10 OccuptW   10-11  18696.6  13923.0       0.20       0.80
+sunda 11 OccuptW   11-12  25857.0  19094.4       0.20       0.80
+sunda 12 OccuptW   12-13  27846.0  20287.8       0.20       0.80
+sunda 13 OccuptW   13-14  33017.4  24265.8       0.20       0.80
+sunda 14 OccuptW   14-15  27448.2  19890.0       0.20       0.80
+sunda 15 OccuptW   15-16  32221.8  23868.0       0.20       0.80
+sunda 16 OccuptW   16-17  37791.0  27448.2       0.20       0.80
+sunda 17 OccuptW   17-18  37393.2  27448.2       0.20       0.80
+sunda 18 OccuptW   18-19  37791.0  27846.0       0.20       0.80
+sunda 19 OccuptW   19-20  35006.4  25459.2       0.20       0.80
+sunda 20 OccuptW   20-21  29835.0  21879.0       0.20       0.80
+sunda 21 OccuptW   21-22  18696.6  13525.2       0.20       0.80
+sunda 22 OccuptW   22-23  12331.8   9149.4       0.20       0.80
+sunda 23 OccuptW   23-24   9547.2   7160.4       0.20       0.80
+sunda 24 LightsWm2  0- 7      3.0      0.0       0.20       0.80
+sunda 25 LightsWm2  7-22     10.0      0.0       0.20       0.80
+sunda 26 LightsWm2 22-24      3.0      0.0       0.20       0.80
+sunda 27 EquiptWm2  0-24      6.0      0.0       0.20       0.80
+ 
+ ____________________________________________________________
+ 
+ Zone Refrig ( 2) is composed of 21 surfaces and 38 vertices.
+ It encloses a volume of 9940.m^3 of space, with a total surface
+ area of 5020.m^2 & user edited floor area of 1780.m^2
+ Refrig describes a
+ There is 2137.9m2 of exposed surface area, 360.75m2 of which is vertical.
+ Outside walls are 18.438 % of floor area & avg U of 0.353 & UA of 115.43
+ Sloped roof is 100.06 % of floor area & avg U of 0.252 & UA of 447.26
+ Glazing is 1.8750 % of floor & 9.2307 % facade with avg U of 2.241 & UA of 74.623
+ Ground contact is 63.964 % of floor area & avg U of 0.383 & perimeter 55.500
+ 
+ A summary of the surfaces in Refrig( 2) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  96.0    180.   0. ptn_staff    OPAQUE   VERT -     mass_part    ||< ptn_shop:Staff_traing
+  2  327.     90.  -0. right_fac    OPAQUE   VERT WALL  SMexwal2008  ||< external
+  3  361.    270.   0. fict_store   SC_ficti VERT -     fictitious   ||< fict_refr:Sales
+  4  889.    180.  88. ceiling      OPAQUE   SLOP ROOF  SM_roof2008  ||< external
+  5  33.3     90.  -0. fac_glaz     DCF7671_ VERT C-WIN SM_glazing   ||< external
+  6  40.0      0.   0. low_cab_fr   OPAQUE   VERT -     insul_cab    ||< cab_front:Cabinet_hi
+  7  50.0    270.   0. low_cab_ri   OPAQUE   VERT -     insul_cab    ||< cab_right:Cabinet_hi
+  8  40.0    180.   0. low_cab_bk   OPAQUE   VERT -     insul_cab    ||< cab_back:Cabinet_hi
+  9  50.0     90.   0. low_cab_lft  OPAQUE   VERT -     insul_cab    ||< cab_left:Cabinet_hi
+ 10  320.      0. -90. low_cab_top  SC_ficti FLOR -     fictitious   ||< cab_top:Cabinet_hi
+ 11  40.0      0.   0. cab_fr       OPAQUE   VERT -     insul_cab    ||< lt_cab_fr:Cabinet_lw
+ 12  50.0    270.   0. cab_ri       OPAQUE   VERT -     insul_cab    ||< lt_cab_ri:Cabinet_lw
+ 13  40.0    180.   0. cab_bk       OPAQUE   VERT -     insul_cab    ||< lt_cab_bk:Cabinet_lw
+ 14  50.0     90.   0. cab_lft      OPAQUE   VERT -     insul_cab    ||< lt_cab_lft:Cabinet_lw
+ 15  320.      0. -90. cab_top      SC_ficti FLOR -     fictitious   ||< lt_cab_top:Cabinet_lw
+ 16  96.0    180.   0. ptn_cafe     OPAQUE   VERT -     mass_part    ||< ptn_shop:Cafe
+ 17  560.      0. -90. floor_a      OPAQUE   FLOR -     SM_grnd_floo ||< ground profile  1
+ 18  576.      0. -90. floor_b      OPAQUE   FLOR -     SM_grnd_floo ||< ground profile  1
+ 19  24.0      0.   0. ptn_refr     OPAQUE   VERT -     insul_cab    ||< ptn_refr:cold_store
+ 20  168.      0.   0. ptn_refra    OPAQUE   VERT -     mass_part    ||< ptn_refr:Store2
+ 21  889.      0.  88. roof_b       OPAQUE   SLOP ROOF  SM_roof2008  ||< external
+ 
+ Vertices ( index X Y Z) in the zone...
+vertex   1   68.00000   13.50000    0.00000   vertex  20   77.50000   62.50000    2.50000
+vertex   2  100.00000   13.50000    0.00000   vertex  21   77.50000   20.00000    0.00000
+vertex   3  100.00000   69.00000    0.00000   vertex  22   93.50000   20.00000    0.00000
+vertex   4   68.00000   69.00000    0.00000   vertex  23   93.50000   20.00000    2.50000
+vertex   5   68.00000   13.50000    6.00000   vertex  24   77.50000   20.00000    2.50000
+vertex   6  100.00000   13.50000    6.00000   vertex  25   93.50000   40.00000    0.00000
+vertex   7  100.00000   69.00000    6.00000   vertex  26   93.50000   40.00000    2.50000
+vertex   8   68.00000   69.00000    6.00000   vertex  27   77.50000   40.00000    0.00000
+vertex   9  100.00000   32.47468    2.05132   vertex  28   77.50000   40.00000    2.50000
+vertex  10  100.00000   50.02532    2.05132   vertex  29   68.00000   69.00000    3.00000
+vertex  11  100.00000   50.02532    3.94868   vertex  30  100.00000   69.00000    3.00000
+vertex  12  100.00000   32.47468    3.94868   vertex  31  100.00000   13.50000    3.00000
+vertex  13   77.50000   42.50000    0.00000   vertex  32   68.00000   13.50000    3.00000
+vertex  14   93.50000   42.50000    0.00000   vertex  33   68.00000   41.00000    0.00000
+vertex  15   93.50000   42.50000    2.50000   vertex  34  100.00000   41.00000    0.00000
+vertex  16   77.50000   42.50000    2.50000   vertex  35   92.00000   69.00000    0.00000
+vertex  17   93.50000   62.50000    0.00000   vertex  36   92.00000   69.00000    3.00000
+vertex  18   93.50000   62.50000    2.50000   vertex  37  100.00000   41.25000    7.00000
+vertex  19   77.50000   62.50000    0.00000   vertex  38   68.00000   41.25000    7.00000
+ Number of vertices followed by list of associated vert
+*edges,4,31,6,5,32   ptn_staff
+*edges,14,2,34,3,30,7,37,6,31,2,9,12,11,10,9   right_fac
+*edges,8,4,33,1,32,5,38,8,29   fict_store
+*edges,4,5,6,37,38   ceiling
+*edges,4,9,10,11,12   fac_glaz
+*edges,4,14,13,16,15   low_cab_fr
+*edges,4,17,14,15,18   low_cab_ri
+*edges,4,19,17,18,20   low_cab_bk
+*edges,4,13,19,20,16   low_cab_lft
+*edges,4,15,16,20,18   low_cab_top
+*edges,4,22,21,24,23   cab_fr
+*edges,4,25,22,23,26   cab_ri
+*edges,4,27,25,26,28   cab_bk
+*edges,4,21,27,28,24   cab_lft
+*edges,4,23,24,28,26   cab_top
+*edges,4,1,2,31,32   ptn_cafe
+*edges,10,1,33,34,2,1,21,22,25,27,21   floor_a
+*edges,11,3,34,33,4,35,3,17,19,13,14,17   floor_b
+*edges,4,3,35,36,30   ptn_refr
+*edges,7,35,4,29,8,7,30,36   ptn_refra
+*edges,4,7,8,38,37   roof_b
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: Refrig
+ 
+Notes:
+Area for chilled sales withing which are cabinets
+Number of weekdays     casual gains= 27
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+weekd  1 OccuptW    0- 1   3182.4   2433.6       0.20       0.80
+weekd  2 OccuptW    1- 2   2620.8   1872.0       0.20       0.80
+weekd  3 OccuptW    2- 3   1872.0   1310.4       0.20       0.80
+weekd  4 OccuptW    3- 4   1123.2    936.0       0.20       0.80
+weekd  5 OccuptW    4- 6    561.6    374.4       0.20       0.80
+weekd  6 OccuptW    6- 7    748.8    561.6       0.20       0.80
+weekd  7 OccuptW    7- 8    936.0    748.8       0.20       0.80
+weekd  8 OccuptW    8- 9   4492.8   3182.4       0.20       0.80
+weekd  9 OccuptW    9-10   7675.2   5616.0       0.20       0.80
+weekd 10 OccuptW   10-11   8049.6   5990.4       0.20       0.80
+weekd 11 OccuptW   11-12  11044.8   8049.6       0.20       0.80
+weekd 12 OccuptW   12-13  11793.6   8611.2       0.20       0.80
+weekd 13 OccuptW   13-14  13852.8  10296.0       0.20       0.80
+weekd 14 OccuptW   14-15  11606.4   8424.0       0.20       0.80
+weekd 15 OccuptW   15-16  13478.4   9921.6       0.20       0.80
+weekd 16 OccuptW   16-17  15724.8  11606.4       0.20       0.80
+weekd 17 OccuptW   17-18  15537.6  11419.2       0.20       0.80
+weekd 18 OccuptW   18-19  15912.0  11606.4       0.20       0.80
+weekd 19 OccuptW   19-20  14601.6  10670.4       0.20       0.80
+weekd 20 OccuptW   20-21  12542.4   9172.8       0.20       0.80
+weekd 21 OccuptW   21-22   7675.2   5616.0       0.20       0.80
+weekd 22 OccuptW   22-23   5054.4   3744.0       0.20       0.80
+weekd 23 OccuptW   23-24   3931.2   2995.2       0.20       0.80
+weekd 24 LightsWm2  0- 7      3.0      0.0       0.20       0.80
+weekd 25 LightsWm2  7-22     10.0      0.0       0.20       0.80
+weekd 26 LightsWm2 22-24      3.0      0.0       0.20       0.80
+weekd 27 EquiptWm2  0-24      6.0      0.0       0.20       0.80
+Number of saturday     casual gains= 27
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+satur  1 OccuptW    0- 1   3744.0   2620.8       0.20       0.80
+satur  2 OccuptW    1- 2   2808.0   2059.2       0.20       0.80
+satur  3 OccuptW    2- 3   2059.2   1497.6       0.20       0.80
+satur  4 OccuptW    3- 4   1310.4    936.0       0.20       0.80
+satur  5 OccuptW    4- 6    561.6    561.6       0.20       0.80
+satur  6 OccuptW    6- 7    748.8    561.6       0.20       0.80
+satur  7 OccuptW    7- 8   1123.2    748.8       0.20       0.80
+satur  8 OccuptW    8- 9   4680.0   3369.6       0.20       0.80
+satur  9 OccuptW    9-10   8424.0   6177.6       0.20       0.80
+satur 10 OccuptW   10-11   8798.4   6552.0       0.20       0.80
+satur 11 OccuptW   11-12  12168.0   8985.6       0.20       0.80
+satur 12 OccuptW   12-13  13104.0   9547.2       0.20       0.80
+satur 13 OccuptW   13-14  15537.6  11419.2       0.20       0.80
+satur 14 OccuptW   14-15  12916.8   9360.0       0.20       0.80
+satur 15 OccuptW   15-16  15163.2  11232.0       0.20       0.80
+satur 16 OccuptW   16-17  17784.0  12916.8       0.20       0.80
+satur 17 OccuptW   17-18  17596.8  12916.8       0.20       0.80
+satur 18 OccuptW   18-19  15912.0  11606.4       0.20       0.80
+satur 19 OccuptW   19-20  16473.6  11980.8       0.20       0.80
+satur 20 OccuptW   20-21  14040.0  10296.0       0.20       0.80
+satur 21 OccuptW   21-22   8798.4   6364.8       0.20       0.80
+satur 22 OccuptW   22-23   5803.2   4305.6       0.20       0.80
+satur 23 OccuptW   23-24   4492.8   3369.6       0.20       0.80
+satur 24 LightsWm2  0- 7      3.0      0.0       0.20       0.80
+satur 25 LightsWm2  7-22     10.0      0.0       0.20       0.80
+satur 26 LightsWm2 22-24      3.0      0.0       0.20       0.80
+satur 27 EquiptWm2  0-24      6.0      0.0       0.20       0.80
+Number of sunday       casual gains= 27
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+sunda  1 OccuptW    0- 1   3744.0   2620.8       0.20       0.80
+sunda  2 OccuptW    1- 2   2808.0   2059.2       0.20       0.80
+sunda  3 OccuptW    2- 3   2059.2   1497.6       0.20       0.80
+sunda  4 OccuptW    3- 4   1310.4    936.0       0.20       0.80
+sunda  5 OccuptW    4- 6    561.6    561.6       0.20       0.80
+sunda  6 OccuptW    6- 7    748.8    561.6       0.20       0.80
+sunda  7 OccuptW    7- 8   1123.2    748.8       0.20       0.80
+sunda  8 OccuptW    8- 9   4680.0   3369.6       0.20       0.80
+sunda  9 OccuptW    9-10   8424.0   6177.6       0.20       0.80
+sunda 10 OccuptW   10-11   8798.4   6552.0       0.20       0.80
+sunda 11 OccuptW   11-12  12168.0   8985.6       0.20       0.80
+sunda 12 OccuptW   12-13  13104.0   9547.2       0.20       0.80
+sunda 13 OccuptW   13-14  15537.6  11419.2       0.20       0.80
+sunda 14 OccuptW   14-15  12916.8   9360.0       0.20       0.80
+sunda 15 OccuptW   15-16  15163.2  11232.0       0.20       0.80
+sunda 16 OccuptW   16-17  17784.0  12916.8       0.20       0.80
+sunda 17 OccuptW   17-18  17596.8  12916.8       0.20       0.80
+sunda 18 OccuptW   18-19  15912.0  11606.4       0.20       0.80
+sunda 19 OccuptW   19-20  16473.6  11980.8       0.20       0.80
+sunda 20 OccuptW   20-21  14040.0  10296.0       0.20       0.80
+sunda 21 OccuptW   21-22   8798.4   6364.8       0.20       0.80
+sunda 22 OccuptW   22-23   5803.2   4305.6       0.20       0.80
+sunda 23 OccuptW   23-24   4492.8   3369.6       0.20       0.80
+sunda 24 LightsWm2  0- 7      3.0      0.0       0.20       0.80
+sunda 25 LightsWm2  7-22     10.0      0.0       0.20       0.80
+sunda 26 LightsWm2 22-24      3.0      0.0       0.20       0.80
+sunda 27 EquiptWm2  0-24      6.0      0.0       0.20       0.80
+ 
+ ____________________________________________________________
+ 
+ Zone Foyer ( 3) is composed of 17 surfaces and 38 vertices.
+ It encloses a volume of 2050.m^3 of space, with a total surface
+ area of 1420.m^2 & user edited floor area of 486.m^2
+ Foyer describes a
+ There is 546.83m2 of exposed surface area, 136.36m2 of which is vertical.
+ Outside walls are 13.861 % of floor area & avg U of 0.353 & UA of 23.747
+ Sloped roof is 67.566 % of floor area & avg U of 0.252 & UA of 82.643
+ Glazing is 14.198 % of floor & 50.600 % facade with avg U of 2.365 & UA of 163.17
+ Skylights are 16.891 % of floor area & avg U of 3.069 & UA of 251.98
+ Ground contact is 100.00 % of floor area & avg U of 0.383 & perimeter 44.000
+ 
+ A summary of the surfaces in Foyer( 3) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  54.0    180.   0. entrance     OPAQUE   VERT WALL  SMexwal2008  ||< external
+  2  6.68     90.   0. right_fac    OPAQUE   VERT WALL  SMexwal2008  ||< external
+  3  108.      0.   0. ptn_shop     SC_ficti VERT -     fictitious   ||< ptn_foy:Sales
+  4  6.68    270.   0. left-fac     OPAQUE   VERT WALL  SMexwal2008  ||< external
+  5  328.    180.  75. roof         OPAQUE   SLOP ROOF  SM_roof2008  ||< external
+  6  486.      0. -90. floor_gr     OPAQUE   FLOR FLOOR SM_grnd_floo ||< ground profile  1
+  7  54.0    180.   0. entry_glz    DCF7671_ VERT C-WIN SM_glazing   ||< external
+  8  90.0      0.  90. floor        OPAQUE   CEIL -     susp_floor   ||< floor:passage
+  9  54.0      0.   0. inner_glaz   DCF7671_ VERT -     dbl_glz      ||< inner_glaz:passage
+ 10  54.0      0.   0. ptn_corid    OPAQUE   VERT -     mass_part    ||< ptn_foy:passage
+ 11  14.3    270.   0. tri_left     OPAQUE   VERT -     mass_part    ||< tri_left:Office3
+ 12  14.3     90.   0. tri_right    OPAQUE   VERT -     mass_part    ||< tri_right:Staff_traing
+ 13  28.5    270.   0. ptn_off_lft  OPAQUE   VERT -     mass_part    ||< ptn_foy:Office1
+ 14  28.5     90.   0. ptn_cafe     OPAQUE   VERT -     mass_part    ||< ptn_foy:Cafe
+ 15  82.1    180.  75. skylight     DCF7671_ SLOP S-WIN dbl_glz      ||< external
+ 16  7.50    270.   0. left_door    DCF7671_ VERT D-WIN dbl_glz      ||< external
+ 17  7.50     90.   0. right_door   DCF7671_ VERT D-WIN dbl_glz      ||< external
+ 
+ Vertices ( index X Y Z) in the zone...
+vertex   1   32.00000    0.00000    0.00000   vertex  20   32.00000   11.00000    6.00000
+vertex   2   68.00000    0.00000    0.00000   vertex  21   32.00000    4.00000    0.00000
+vertex   3   68.00000   13.50000    0.00000   vertex  22   32.00000    4.00000    3.00000
+vertex   4   32.00000   13.50000    0.00000   vertex  23   68.00000    4.00000    0.00000
+vertex   5   32.00000    0.00000    3.00000   vertex  24   68.00000    4.00000    3.00000
+vertex   6   68.00000    0.00000    3.00000   vertex  25   68.00000    4.00000    4.09091
+vertex   7   68.00000   13.50000    3.00000   vertex  26   32.00000    4.00000    4.09091
+vertex   8   32.00000   13.50000    3.00000   vertex  27   41.95016    3.04032    3.82918
+vertex   9   37.27208    0.00000    0.43934   vertex  28   58.04984    3.04032    3.82918
+vertex  10   62.72792    0.00000    0.43934   vertex  29   58.04984    7.95967    5.17082
+vertex  11   62.72792    0.00000    2.56066   vertex  30   41.95016    7.95967    5.17082
+vertex  12   37.27208    0.00000    2.56066   vertex  31   32.00000    3.50000    0.00000
+vertex  13   32.00000   11.00000    3.00000   vertex  32   32.00000    0.50000    0.00000
+vertex  14   68.00000   11.00000    3.00000   vertex  33   32.00000    0.50000    2.50000
+vertex  15   37.27208   11.00000    3.43934   vertex  34   32.00000    3.50000    2.50000
+vertex  16   62.72792   11.00000    3.43934   vertex  35   68.00000    0.50000    0.00000
+vertex  17   62.72792   11.00000    5.56066   vertex  36   68.00000    3.50000    0.00000
+vertex  18   37.27208   11.00000    5.56066   vertex  37   68.00000    3.50000    2.50000
+vertex  19   68.00000   11.00000    6.00000   vertex  38   68.00000    0.50000    2.50000
+ Number of vertices followed by list of associated vert
+*edges,10,1,2,6,5,1,9,12,11,10,9   entrance
+*edges,9,2,35,38,37,36,23,24,25,6   right_fac
+*edges,4,3,4,8,7   ptn_shop
+*edges,9,21,31,34,33,32,1,5,26,22   left-fac
+*edges,12,5,6,25,19,20,26,5,27,30,29,28,27   roof
+*edges,10,1,32,31,21,4,3,23,36,35,2   floor_gr
+*edges,4,9,10,11,12   entry_glz
+*edges,4,8,13,14,7   floor
+*edges,4,16,15,18,17   inner_glaz
+*edges,10,14,13,15,16,17,18,15,13,20,19   ptn_corid
+*edges,4,13,22,26,20   tri_left
+*edges,4,24,14,19,25   tri_right
+*edges,5,4,21,22,13,8   ptn_off_lft
+*edges,5,23,3,7,14,24   ptn_cafe
+*edges,4,27,28,29,30   skylight
+*edges,4,31,32,33,34   left_door
+*edges,4,35,36,37,38   right_door
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: Foyer
+ 
+Notes:
+Minimally conditioned space for shelter and transit
+Number of weekdays     casual gains= 27
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+weekd  1 OccuptW    0- 1   1193.4    795.6       0.20       0.80
+weekd  2 OccuptW    1- 2    831.6    594.0       0.20       0.80
+weekd  3 OccuptW    2- 3    594.0    415.8       0.20       0.80
+weekd  4 OccuptW    3- 4    356.4    297.0       0.20       0.80
+weekd  5 OccuptW    4- 6    178.2    118.8       0.20       0.80
+weekd  6 OccuptW    6- 7    237.6    178.2       0.20       0.80
+weekd  7 OccuptW    7- 8    297.0    237.6       0.20       0.80
+weekd  8 OccuptW    8- 9   1425.6   1009.8       0.20       0.80
+weekd  9 OccuptW    9-10   2435.4   1782.0       0.20       0.80
+weekd 10 OccuptW   10-11   2554.2   1900.8       0.20       0.80
+weekd 11 OccuptW   11-12   3504.6   2554.2       0.20       0.80
+weekd 12 OccuptW   12-13   3742.2   2732.4       0.20       0.80
+weekd 13 OccuptW   13-14   4375.8   3182.4       0.20       0.80
+weekd 14 OccuptW   14-15   3682.8   2673.0       0.20       0.80
+weekd 15 OccuptW   15-16   4276.8   3148.2       0.20       0.80
+weekd 16 OccuptW   16-17   4989.6   3682.8       0.20       0.80
+weekd 17 OccuptW   17-18   4930.2   3623.4       0.20       0.80
+weekd 18 OccuptW   18-19   5171.4   3580.2       0.20       0.80
+weekd 19 OccuptW   19-20   4633.2   3385.8       0.20       0.80
+weekd 20 OccuptW   20-21   3979.8   2910.6       0.20       0.80
+weekd 21 OccuptW   21-22   2435.4   1782.0       0.20       0.80
+weekd 22 OccuptW   22-23   1603.8   1188.0       0.20       0.80
+weekd 23 OccuptW   23-24   1247.4    950.4       0.20       0.80
+weekd 24 LightsWm2  0- 7      3.0      0.0       0.20       0.80
+weekd 25 LightsWm2  7-22     10.0      0.0       0.20       0.80
+weekd 26 LightsWm2 22-24      3.0      0.0       0.20       0.80
+weekd 27 EquiptWm2  0-24      6.0      0.0       0.20       0.80
+Number of saturday     casual gains= 27
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+satur  1 OccuptW    0- 1   1188.0    831.6       0.20       0.80
+satur  2 OccuptW    1- 2    891.0    653.4       0.20       0.80
+satur  3 OccuptW    2- 3    653.4    475.2       0.20       0.80
+satur  4 OccuptW    3- 4    415.8    297.0       0.20       0.80
+satur  5 OccuptW    4- 6    178.2    178.2       0.20       0.80
+satur  6 OccuptW    6- 7    237.6    178.2       0.20       0.80
+satur  7 OccuptW    7- 8    356.4    237.6       0.20       0.80
+satur  8 OccuptW    8- 9   1485.0   1069.2       0.20       0.80
+satur  9 OccuptW    9-10   2673.0   1960.2       0.20       0.80
+satur 10 OccuptW   10-11   2791.8   2079.0       0.20       0.80
+satur 11 OccuptW   11-12   3861.0   2851.2       0.20       0.80
+satur 12 OccuptW   12-13   4158.0   3029.4       0.20       0.80
+satur 13 OccuptW   13-14   4930.2   3623.4       0.20       0.80
+satur 14 OccuptW   14-15   4098.6   2970.0       0.20       0.80
+satur 15 OccuptW   15-16   4811.4   3564.0       0.20       0.80
+satur 16 OccuptW   16-17   5643.0   4098.6       0.20       0.80
+satur 17 OccuptW   17-18   5583.6   4098.6       0.20       0.80
+satur 18 OccuptW   18-19   5643.0   4158.0       0.20       0.80
+satur 19 OccuptW   19-20   5227.2   3801.6       0.20       0.80
+satur 20 OccuptW   20-21   4455.0   3267.0       0.20       0.80
+satur 21 OccuptW   21-22   2791.8   2019.6       0.20       0.80
+satur 22 OccuptW   22-23   1841.4   1366.2       0.20       0.80
+satur 23 OccuptW   23-24   1425.6   1069.2       0.20       0.80
+satur 24 LightsWm2  0- 7      3.0      0.0       0.20       0.80
+satur 25 LightsWm2  7-22     10.0      0.0       0.20       0.80
+satur 26 LightsWm2 22-24      3.0      0.0       0.20       0.80
+satur 27 EquiptWm2  0-24      6.0      0.0       0.20       0.80
+Number of sunday       casual gains= 27
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+sunda  1 OccuptW    0- 1   1188.0    831.6       0.20       0.80
+sunda  2 OccuptW    1- 2    891.0    653.4       0.20       0.80
+sunda  3 OccuptW    2- 3    653.4    475.2       0.20       0.80
+sunda  4 OccuptW    3- 4    415.8    297.0       0.20       0.80
+sunda  5 OccuptW    4- 6    178.2    178.2       0.20       0.80
+sunda  6 OccuptW    6- 7    237.6    178.2       0.20       0.80
+sunda  7 OccuptW    7- 8    356.4    237.6       0.20       0.80
+sunda  8 OccuptW    8- 9   1485.0   1069.2       0.20       0.80
+sunda  9 OccuptW    9-10   2673.0   1960.2       0.20       0.80
+sunda 10 OccuptW   10-11   2791.8   2079.0       0.20       0.80
+sunda 11 OccuptW   11-12   3861.0   2851.2       0.20       0.80
+sunda 12 OccuptW   12-13   4158.0   3029.4       0.20       0.80
+sunda 13 OccuptW   13-14   4930.2   3623.4       0.20       0.80
+sunda 14 OccuptW   14-15   4098.6   2970.0       0.20       0.80
+sunda 15 OccuptW   15-16   4811.4   3564.0       0.20       0.80
+sunda 16 OccuptW   16-17   5643.0   4098.6       0.20       0.80
+sunda 17 OccuptW   17-18   5583.6   4098.6       0.20       0.80
+sunda 18 OccuptW   18-19   5643.0   4158.0       0.20       0.80
+sunda 19 OccuptW   19-20   5227.2   3801.6       0.20       0.80
+sunda 20 OccuptW   20-21   4455.0   3267.0       0.20       0.80
+sunda 21 OccuptW   21-22   2791.8   2019.6       0.20       0.80
+sunda 22 OccuptW   22-23   1841.4   1366.2       0.20       0.80
+sunda 23 OccuptW   23-24   1425.6   1069.2       0.20       0.80
+sunda 24 LightsWm2  0- 7      3.0      0.0       0.20       0.80
+sunda 25 LightsWm2  7-22     10.0      0.0       0.20       0.80
+sunda 26 LightsWm2 22-24      3.0      0.0       0.20       0.80
+sunda 27 EquiptWm2  0-24      6.0      0.0       0.20       0.80
+ 
+ ____________________________________________________________
+ 
+ Zone Office1 ( 4) is composed of 7 surfaces and 12 vertices.
+ It encloses a volume of 912.m^3 of space, with a total surface
+ area of 857.m^2 & approx floor area of 304.m^2
+ Office1 describes a
+ There is 124.50m2 of exposed surface area, 124.50m2 of which is vertical.
+ Outside walls are 25.164 % of floor area & avg U of 0.353 & UA of 26.968
+ Glazing is 15.789 % of floor & 38.554 % facade with avg U of 2.241 & UA of 107.57
+ Ground contact is 100.00 % of floor area & avg U of 0.383 & perimeter 41.500
+ 
+ A summary of the surfaces in Office1( 4) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  48.0    180.   0. front_fac    OPAQUE   VERT WALL  SMexwal2008  ||< external
+  2  28.5     90.   0. ptn_foy      OPAQUE   VERT -     mass_part    ||< ptn_off_lft:Foyer
+  3  96.0      0.   0. ptn_shop     OPAQUE   VERT -     mass_part    ||< ptn_off1:Sales
+  4  28.5    270.   0. left_fac     OPAQUE   VERT WALL  SMexwal2008  ||< external
+  5  304.      0.  90. ceiling      OPAQUE   CEIL -     susp_floor   ||< floor:Office3
+  6  304.      0. -90. floor        OPAQUE   FLOR FLOOR SM_grnd_floo ||< ground profile  1
+  7  48.0    180.   0. fac_glz      DCF7671_ VERT C-WIN SM_glazing   ||< external
+ 
+ Vertices ( index X Y Z) in the zone...
+*vertex   1     0.00000     4.00000     0.00000
+*vertex   2    32.00000     4.00000     0.00000
+*vertex   3    32.00000    13.50000     0.00000
+*vertex   4     0.00000    13.50000     0.00000
+*vertex   5     0.00000     4.00000     3.00000
+*vertex   6    32.00000     4.00000     3.00000
+*vertex   7    32.00000    13.50000     3.00000
+*vertex   8     0.00000    13.50000     3.00000
+*vertex   9     4.68629     4.00000     0.43934
+*vertex  10    27.31371     4.00000     0.43934
+*vertex  11    27.31371     4.00000     2.56066
+*vertex  12     4.68629     4.00000     2.56066
+ Number of vertices followed by list of associated vert
+*edges,10,1,2,6,5,1,9,12,11,10,9   front_fac
+*edges,4,2,3,7,6   ptn_foy
+*edges,4,3,4,8,7   ptn_shop
+*edges,4,4,1,5,8   left_fac
+*edges,4,5,6,7,8   ceiling
+*edges,4,1,4,3,2   floor
+*edges,4,9,10,11,12   fac_glz
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: Office1
+ 
+Notes:
+General office area 10Wm2 lights 6Wm2 equipment
+Number of weekdays     casual gains=  7
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+weekd  1 OccuptW    0- 9    259.2    172.8       0.20       0.80
+weekd  2 OccuptW    9-19   2894.4   2160.0       0.20       0.80
+weekd  3 OccuptW   19-24    259.2    172.8       0.20       0.80
+weekd  4 LightsWm2  0- 9      0.0      0.0       0.50       0.50
+weekd  5 LightsWm2  9-19     10.0      0.0       0.20       0.80
+weekd  6 LightsWm2 19-24      0.0      0.0       0.50       0.50
+weekd  7 EquiptWm2  0-24      6.8      0.0       0.20       0.80
+Number of saturday     casual gains=  7
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+satur  1 OccuptW    0- 9    259.2    194.4       0.20       0.80
+satur  2 OccuptW    9-19   2894.4   2160.0       0.20       0.80
+satur  3 OccuptW   19-24    259.2    194.4       0.20       0.80
+satur  4 LightsWm2  0- 9      0.0      0.0       0.50       0.50
+satur  5 LightsWm2  9-19     10.0      0.0       0.20       0.80
+satur  6 LightsWm2 19-24      0.0      0.0       0.50       0.50
+satur  7 EquiptWm2  0-24      6.8      0.0       0.20       0.80
+Number of sunday       casual gains=  7
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+sunda  1 OccuptW    0- 9    259.2    194.4       0.20       0.80
+sunda  2 OccuptW    9-19   2635.2   2160.0       0.20       0.80
+sunda  3 OccuptW   19-24    259.2    194.4       0.20       0.80
+sunda  4 LightsWm2  0- 9      0.0      0.0       0.50       0.50
+sunda  5 LightsWm2  9-19     10.0      0.0       0.20       0.80
+sunda  6 LightsWm2 19-24      0.0      0.0       0.50       0.50
+sunda  7 EquiptWm2  0-24      6.8      0.0       0.20       0.80
+ 
+ ____________________________________________________________
+ 
+ Zone Cafe ( 5) is composed of 7 surfaces and 12 vertices.
+ It encloses a volume of 912.m^3 of space, with a total surface
+ area of 857.m^2 & approx floor area of 304.m^2
+ Office2 describes a
+ There is 124.50m2 of exposed surface area, 124.50m2 of which is vertical.
+ Outside walls are 25.164 % of floor area & avg U of 0.353 & UA of 26.968
+ Glazing is 15.789 % of floor & 38.554 % facade with avg U of 2.241 & UA of 107.57
+ Ground contact is 100.00 % of floor area & avg U of 0.383 & perimeter 41.500
+ 
+ A summary of the surfaces in Cafe( 5) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  48.0    180.   0. front_fac    OPAQUE   VERT WALL  SMexwal2008  ||< external
+  2  28.5     90.   0. right_fac    OPAQUE   VERT WALL  SMexwal2008  ||< external
+  3  96.0      0.   0. ptn_shop     OPAQUE   VERT -     mass_part    ||< ptn_cafe:Refrig
+  4  28.5    270.   0. ptn_foy      OPAQUE   VERT -     mass_part    ||< ptn_cafe:Foyer
+  5  304.      0.  90. ceiling      OPAQUE   CEIL -     susp_floor   ||< floor:Staff_traing
+  6  304.      0. -90. floor        OPAQUE   FLOR FLOOR SM_grnd_floo ||< ground profile  1
+  7  48.0    180.   0. fac_glz      DCF7671_ VERT C-WIN SM_glazing   ||< external
+ 
+ Vertices ( index X Y Z) in the zone...
+*vertex   1    68.00000     4.00000     0.00000
+*vertex   2   100.00000     4.00000     0.00000
+*vertex   3   100.00000    13.50000     0.00000
+*vertex   4    68.00000    13.50000     0.00000
+*vertex   5    68.00000     4.00000     3.00000
+*vertex   6   100.00000     4.00000     3.00000
+*vertex   7   100.00000    13.50000     3.00000
+*vertex   8    68.00000    13.50000     3.00000
+*vertex   9    72.68629     4.00000     0.43934
+*vertex  10    95.31371     4.00000     0.43934
+*vertex  11    95.31371     4.00000     2.56066
+*vertex  12    72.68629     4.00000     2.56066
+ Number of vertices followed by list of associated vert
+*edges,10,1,2,6,5,1,9,12,11,10,9   front_fac
+*edges,4,2,3,7,6   right_fac
+*edges,4,3,4,8,7   ptn_shop
+*edges,4,4,1,5,8   ptn_foy
+*edges,4,5,6,7,8   ceiling
+*edges,4,1,4,3,2   floor
+*edges,4,9,10,11,12   fac_glz
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: Cafe
+ 
+Notes:
+Occupants are transient lights and small power 10Wm2 and 7Wm2. power.
+There is not infiltration or ventilation.
+Number of weekdays     casual gains=  7
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+weekd  1 OccuptW    0- 9      0.0      0.0       0.50       0.50
+weekd  2 OccuptW    9-19   2736.0   1216.0       0.50       0.50
+weekd  3 OccuptW   19-24      0.0      0.0       0.50       0.50
+weekd  4 LightsWm2  0- 8      3.0      0.0       0.50       0.50
+weekd  5 LightsWm2  8-19      7.0      0.0       0.50       0.50
+weekd  6 LightsWm2 19-24      3.0      0.0       0.50       0.50
+weekd  7 EquiptWm2  0-24      7.0      7.0       0.50       0.50
+Number of saturday     casual gains=  7
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+satur  1 OccuptW    0- 9      0.0      0.0       0.50       0.50
+satur  2 OccuptW    9-19   2736.0   1216.0       0.50       0.50
+satur  3 OccuptW   19-24      0.0      0.0       0.50       0.50
+satur  4 LightsWm2  0- 8      3.0      0.0       0.50       0.50
+satur  5 LightsWm2  8-19      7.0      0.0       0.50       0.50
+satur  6 LightsWm2 19-24      3.0      0.0       0.50       0.50
+satur  7 EquiptWm2  0-24      7.0      7.0       0.50       0.50
+Number of sunday       casual gains=  7
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+sunda  1 OccuptW    0- 9      0.0      0.0       0.50       0.50
+sunda  2 OccuptW    9-19   2736.0   1216.0       0.50       0.50
+sunda  3 OccuptW   19-24      0.0      0.0       0.50       0.50
+sunda  4 LightsWm2  0- 8      3.0      0.0       0.50       0.50
+sunda  5 LightsWm2  8-19      7.0      0.0       0.50       0.50
+sunda  6 LightsWm2 19-24      3.0      0.0       0.50       0.50
+sunda  7 EquiptWm2  0-24      0.0      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone Office3 ( 6) is composed of 9 surfaces and 15 vertices.
+ It encloses a volume of 912.m^3 of space, with a total surface
+ area of 857.m^2 & approx floor area of 304.m^2
+ Office3 describes a
+ There is 435.18m2 of exposed surface area, 131.18m2 of which is vertical.
+ Outside walls are 27.362 % of floor area & avg U of 0.467 & UA of 38.854
+ Flat roof is 100.00 % of floor area & avg U of 0.252 & UA of 76.509
+ Glazing is 15.789 % of floor & 36.590 % facade with avg U of 2.241 & UA of 107.57
+ 
+ A summary of the surfaces in Office3( 6) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  48.0    180.   0. front_fac    OPAQUE   VERT WALL  SMexwal2008  ||< external
+  2  28.5    270.   0. left_fac     OPAQUE   VERT WALL  SMexwal2008  ||< external
+  3  96.0      0.   0. ptn_shop     OPAQUE   VERT -     mass_part    ||< ptn_off3:Sales
+  4  6.68     90.   0. ptn_foy      OPAQUE   VERT WALL  mass_part    ||< external
+  5  304.      0.  90. roof         OPAQUE   CEIL ROOF  SM_roof2008  ||< external
+  6  304.      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< ceiling:Office1
+  7  48.0    180.   0. fac_glaz     DCF7671_ VERT C-WIN SM_glazing   ||< external
+  8  7.50     90.   0. ptn_off      OPAQUE   VERT -     mass_part    ||< ptn_off:passage
+  9  14.3     90.   0. tri_left     OPAQUE   VERT -     mass_part    ||< tri_left:Foyer
+ 
+ Vertices ( index X Y Z) in the zone...
+*vertex   1    32.00000     4.00000     3.00000
+*vertex   2     0.00000     4.00000     3.00000
+*vertex   3     0.00000    13.50000     3.00000
+*vertex   4    32.00000    13.50000     3.00000
+*vertex   5    32.00000     4.00000     6.00000
+*vertex   6     0.00000     4.00000     6.00000
+*vertex   7     0.00000    13.50000     6.00000
+*vertex   8    32.00000    13.50000     6.00000
+*vertex   9    27.31371     4.00000     3.43934
+*vertex  10     4.68629     4.00000     3.43934
+*vertex  11     4.68629     4.00000     5.56066
+*vertex  12    27.31371     4.00000     5.56066
+*vertex  13    32.00000    11.00000     3.00000
+*vertex  14    32.00000    11.00000     6.00000
+*vertex  15    32.00000     4.00000     4.09091
+ Number of vertices followed by list of associated vert
+*edges,11,2,1,15,5,6,2,10,11,12,9,10   front_fac
+*edges,4,3,2,6,7   left_fac
+*edges,4,4,3,7,8   ptn_shop
+*edges,3,14,5,15   ptn_foy
+*edges,5,6,5,14,8,7   roof
+*edges,5,4,13,1,2,3   floor
+*edges,4,10,9,12,11   fac_glaz
+*edges,4,13,4,8,14   ptn_off
+*edges,4,1,13,14,15   tri_left
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Uses same operations as zone Office1
+ 
+ ____________________________________________________________
+ 
+ Zone passage ( 7) is composed of 7 surfaces and 12 vertices.
+ It encloses a volume of 270.m^3 of space, with a total surface
+ area of 411.m^2 & approx floor area of 90.0m^2
+ passage connects office and staff room across the foyer
+ There is 90.000m2 of exposed surface area.
+ Flat roof is 100.00 % of floor area & avg U of 0.252 & UA of 22.651
+ 
+ A summary of the surfaces in passage( 7) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  54.0    180.  -0. ptn_foy      OPAQUE   VERT -     mass_part    ||< ptn_corid:Foyer
+  2  7.50     90.   0. ptn_staff    OPAQUE   VERT -     mass_part    ||< ptn_staff:Staff_traing
+  3  108.      0.   0. ptn_store    OPAQUE   VERT -     mass_part    ||< ptn_psg:Sales
+  4  7.50    270.   0. ptn_off      OPAQUE   VERT -     mass_part    ||< ptn_off:Office3
+  5  90.0      0.  90. roof         OPAQUE   CEIL ROOF  SM_roof2008  ||< external
+  6  90.0      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< floor:Foyer
+  7  54.0    180.   0. inner_glaz   DCF7671_ VERT -     dbl_glz      ||< inner_glaz:Foyer
+ 
+ Vertices ( index X Y Z) in the zone...
+*vertex   1    32.00000    11.00000     3.00000
+*vertex   2    68.00000    11.00000     3.00000
+*vertex   3    68.00000    13.50000     3.00000
+*vertex   4    32.00000    13.50000     3.00000
+*vertex   5    32.00000    11.00000     6.00000
+*vertex   6    68.00000    11.00000     6.00000
+*vertex   7    68.00000    13.50000     6.00000
+*vertex   8    32.00000    13.50000     6.00000
+*vertex   9    37.27208    11.00000     3.43934
+*vertex  10    62.72792    11.00000     3.43934
+*vertex  11    62.72792    11.00000     5.56066
+*vertex  12    37.27208    11.00000     5.56066
+ Number of vertices followed by list of associated vert
+*edges,10,1,2,6,5,1,9,12,11,10,9   ptn_foy
+*edges,4,2,3,7,6   ptn_staff
+*edges,4,3,4,8,7   ptn_store
+*edges,4,4,1,5,8   ptn_off
+*edges,4,5,6,7,8   roof
+*edges,4,1,4,3,2   floor
+*edges,4,9,10,11,12   inner_glaz
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Uses same operations as zone Office1
+ 
+ ____________________________________________________________
+ 
+ Zone Staff_traing ( 8) is composed of 9 surfaces and 15 vertices.
+ It encloses a volume of 912.m^3 of space, with a total surface
+ area of 857.m^2 & approx floor area of 304.m^2
+ Staff describes a room for staff changing & meetings.
+ There is 435.18m2 of exposed surface area, 131.18m2 of which is vertical.
+ Outside walls are 27.362 % of floor area & avg U of 0.353 & UA of 29.324
+ Flat roof is 100.00 % of floor area & avg U of 0.252 & UA of 76.509
+ Glazing is 15.789 % of floor & 36.590 % facade with avg U of 2.241 & UA of 107.57
+ 
+ A summary of the surfaces in Staff_traing( 8) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  48.0    180.   0. front_fac    OPAQUE   VERT WALL  SMexwal2008  ||< external
+  2  6.68    270.   0. left_fac     OPAQUE   VERT WALL  SMexwal2008  ||< external
+  3  96.0      0.   0. ptn_shop     OPAQUE   VERT -     mass_part    ||< ptn_staff:Refrig
+  4  28.5     90.   0. right_fac    OPAQUE   VERT WALL  SMexwal2008  ||< external
+  5  304.      0.  90. roof         OPAQUE   CEIL ROOF  SM_roof2008  ||< external
+  6  304.      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< ceiling:Cafe
+  7  48.0    180.   0. fac_glaz     DCF7671_ VERT C-WIN SM_glazing   ||< external
+  8  7.50    270.   0. ptn_staff    OPAQUE   VERT -     mass_part    ||< ptn_staff:passage
+  9  14.3    270.   0. tri_right    OPAQUE   VERT -     mass_part    ||< tri_right:Foyer
+ 
+ Vertices ( index X Y Z) in the zone...
+*vertex   1   100.00000     4.00000     3.00000
+*vertex   2    68.00000     4.00000     3.00000
+*vertex   3    68.00000    13.50000     3.00000
+*vertex   4   100.00000    13.50000     3.00000
+*vertex   5   100.00000     4.00000     6.00000
+*vertex   6    68.00000     4.00000     6.00000
+*vertex   7    68.00000    13.50000     6.00000
+*vertex   8   100.00000    13.50000     6.00000
+*vertex   9    95.31371     4.00000     3.43934
+*vertex  10    72.68629     4.00000     3.43934
+*vertex  11    72.68629     4.00000     5.56066
+*vertex  12    95.31371     4.00000     5.56066
+*vertex  13    68.00000    11.00000     3.00000
+*vertex  14    68.00000    11.00000     6.00000
+*vertex  15    68.00000     4.00000     4.09091
+ Number of vertices followed by list of associated vert
+*edges,11,2,1,5,6,15,2,10,11,12,9,10   front_fac
+*edges,3,6,14,15   left_fac
+*edges,4,4,3,7,8   ptn_shop
+*edges,4,1,4,8,5   right_fac
+*edges,5,6,5,8,7,14   roof
+*edges,5,4,1,2,13,3   floor
+*edges,4,10,9,12,11   fac_glaz
+*edges,4,3,13,14,7   ptn_staff
+*edges,4,13,2,15,14   tri_right
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Uses same operations as zone Office1
+ 
+ ____________________________________________________________
+ 
+ Zone Store1 ( 9) is composed of 7 surfaces and 12 vertices.
+ It encloses a volume of 1940.m^3 of space, with a total surface
+ area of 1760.m^2 & user edited floor area of 1350.m^2
+ Store1 describes a
+ There is 232.50m2 of exposed surface area, 232.50m2 of which is vertical.
+ Outside walls are 15.000 % of floor area & avg U of 0.353 & UA of 71.386
+ Glazing is 2.2222 % of floor & 12.903 % facade with avg U of 2.241 & UA of 67.228
+ Ground contact is 47.852 % of floor area & avg U of 0.383 & perimeter 77.500
+ 
+ A summary of the surfaces in Store1( 9) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  174.    360.  -0. back_fac     OPAQUE   VERT WALL  SMexwal2008  ||< external
+  2  28.5    270.   0. left_fac     OPAQUE   VERT WALL  SMexwal2008  ||< external
+  3  646.      0.  90. ceiling      OPAQUE   CEIL -     susp_floor   ||< floor:Store2
+  4  646.      0. -90. floor        OPAQUE   FLOR FLOOR SM_grnd_floo ||< ground profile  1
+  5  30.0      0.  -0. fac_glaz     DCF7671_ VERT C-WIN SM_glazing   ||< external
+  6  204.    180.   0. ptn_sales    OPAQUE   VERT -     mass_part    ||< ptn_st1:Sales
+  7  28.5     90.   0. ptn_storage  OPAQUE   VERT -     insul_cab    ||< ptn_st1:Store2
+ 
+ Vertices ( index X Y Z) in the zone...
+*vertex   1     0.00000    69.00000     0.00000
+*vertex   2     0.00000    78.50000     0.00000
+*vertex   3     0.00000    69.00000     3.00000
+*vertex   4     0.00000    78.50000     3.00000
+*vertex   5    65.81139    78.50000     1.02566
+*vertex   6    34.18861    78.50000     1.02566
+*vertex   7    34.18861    78.50000     1.97434
+*vertex   8    65.81139    78.50000     1.97434
+*vertex   9    68.00000    69.00000     0.00000
+*vertex  10    68.00000    69.00000     3.00000
+*vertex  11    68.00000    78.50000     0.00000
+*vertex  12    68.00000    78.50000     3.00000
+ Number of vertices followed by list of associated vert
+*edges,10,11,2,4,12,11,5,8,7,6,5   back_fac
+*edges,4,2,1,3,4   left_fac
+*edges,4,3,10,12,4   ceiling
+*edges,4,1,2,11,9   floor
+*edges,4,5,6,7,8   fac_glaz
+*edges,4,1,9,10,3   ptn_sales
+*edges,4,9,11,12,10   ptn_storage
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: Store1
+ 
+Notes:
+Storage for dry goods shipping and receiving
+Number of weekdays     casual gains=  7
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+weekd  1 OccuptW    0- 9    540.0    405.0       0.20       0.80
+weekd  2 OccuptW    9-19   5130.0   3780.0       0.20       0.80
+weekd  3 OccuptW   19-24    540.0    405.0       0.20       0.80
+weekd  4 LightsWm2  0- 7      3.2      0.0       0.20       0.80
+weekd  5 LightsWm2  7-19      6.4      0.0       0.20       0.80
+weekd  6 LightsWm2 19-24      3.2      0.0       0.20       0.80
+weekd  7 EquiptWm2  0-24      6.0      0.0       0.20       0.80
+Number of saturday     casual gains=  7
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+satur  1 OccuptW    0- 9    540.0    405.0       0.20       0.80
+satur  2 OccuptW    9-19   5130.0   3780.0       0.20       0.80
+satur  3 OccuptW   19-24    540.0    405.0       0.20       0.80
+satur  4 LightsWm2  0- 7      3.2      0.0       0.20       0.80
+satur  5 LightsWm2  7-19      6.4      0.0       0.20       0.80
+satur  6 LightsWm2 19-24      3.2      0.0       0.20       0.80
+satur  7 EquiptWm2  0-24      6.0      0.0       0.20       0.80
+Number of sunday       casual gains=  7
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+sunda  1 OccuptW    0- 9    513.0      0.0       0.20       0.80
+sunda  2 OccuptW    9-19   5130.0      0.0       0.20       0.80
+sunda  3 OccuptW   19-24    513.0      0.0       0.20       0.80
+sunda  4 LightsWm2  0- 7      3.2      0.0       0.20       0.80
+sunda  5 LightsWm2  7-19      6.4      0.0       0.20       0.80
+sunda  6 LightsWm2 19-24      3.2      0.0       0.20       0.80
+sunda  7 EquiptWm2  0-24      6.0      0.0       0.20       0.80
+ 
+ ____________________________________________________________
+ 
+ Zone Store2 (10) is composed of 14 surfaces and 26 vertices.
+ It encloses a volume of 3530.m^3 of space, with a total surface
+ area of 2760.m^2 & approx floor area of 950.m^2
+ Store2 describes a
+ There is 1379.0m2 of exposed surface area, 429.00m2 of which is vertical.
+ Outside walls are 45.158 % of floor area & avg U of 0.527 & UA of 226.12
+ Flat roof is 100.00 % of floor area & avg U of 0.252 & UA of 239.09
+ Ground contact is 24.000 % of floor area & avg U of 0.383 & perimeter 24.000
+ 
+ A summary of the surfaces in Store2(10) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  168.    180.   0. ptn_refr     OPAQUE   VERT -     mass_part    ||< ptn_refra:Refrig
+  2  28.5     90.   0. right_fac    OPAQUE   VERT WALL  SMexwal2008  ||< external
+  3  174.    360.  -0. back_fac     OPAQUE   VERT WALL  SMexwal2008  ||< external
+  4  28.5    270.   0. left_fac     OPAQUE   VERT WALL  SMexwal2008  ||< external
+  5  950.      0.  90. roof         OPAQUE   CEIL ROOF  SM_roof2008  ||< external
+  6  646.      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< ceiling:Store1
+  7  30.0      0.  -0. fac_glz      OPAQUE   VERT C-WIN SM_glazing   ||< external
+  8  204.    180.   0. ptn_sales    OPAQUE   VERT -     mass_part    ||< ptn_st2:Sales
+  9  76.0      0. -90. ptn_storage  OPAQUE   FLOR -     insul_cab    ||< ceiling:cold_store
+ 10  28.5    270.   0. ptn_st1      OPAQUE   VERT ANOTH insul_cab    ||< ptn_storage:Store1
+ 11  28.5     90.   0. ptn_cold     OPAQUE   VERT -     insul_cab    ||< ptn_storage:cold_store
+ 12  228.      0. -90. grnd_floor   OPAQUE   FLOR FLOOR SM_grnd_floo ||< ground profile  1
+ 13  152.      0.   0. double_back  OPAQUE   VERT WALL  SMexwal2008  ||< external
+ 14  16.0      0.   0. freight      OPAQUE   VERT V-DOO Vehicle_door ||< external
+ 
+ Vertices ( index X Y Z) in the zone...
+vertex   1    0.00000   69.00000    3.00000   vertex  14   68.00000   69.00000    6.00000
+vertex   2  100.00000   69.00000    3.00000   vertex  15   92.00000   69.00000    3.00000
+vertex   3  100.00000   78.50000    3.00000   vertex  16   92.00000   78.50000    3.00000
+vertex   4    0.00000   78.50000    3.00000   vertex  17   68.00000   78.50000    3.00000
+vertex   5    0.00000   69.00000    6.00000   vertex  18   68.00000   78.50000    6.00000
+vertex   6  100.00000   69.00000    6.00000   vertex  19   68.00000   69.00000    0.00000
+vertex   7  100.00000   78.50000    6.00000   vertex  20   68.00000   78.50000    0.00000
+vertex   8    0.00000   78.50000    6.00000   vertex  21   92.00000   78.50000    0.00000
+vertex   9   65.81139   78.50000    4.02566   vertex  22   92.00000   69.00000    0.00000
+vertex  10   34.18861   78.50000    4.02566   vertex  23   90.00000   78.50000    0.00000
+vertex  11   34.18861   78.50000    4.97434   vertex  24   86.00000   78.50000    0.00000
+vertex  12   65.81139   78.50000    4.97434   vertex  25   86.00000   78.50000    4.00000
+vertex  13   68.00000   69.00000    3.00000   vertex  26   90.00000   78.50000    4.00000
+ Number of vertices followed by list of associated vert
+*edges,7,19,22,15,2,6,14,13   ptn_refr
+*edges,4,2,3,7,6   right_fac
+*edges,10,17,4,8,18,17,9,12,11,10,9   back_fac
+*edges,4,4,1,5,8   left_fac
+*edges,6,5,14,6,7,18,8   roof
+*edges,4,1,4,17,13   floor
+*edges,4,9,10,11,12   fac_glz
+*edges,4,1,13,14,5   ptn_sales
+*edges,4,2,15,16,3   ptn_storage
+*edges,4,20,19,13,17   ptn_st1
+*edges,4,22,21,16,15   ptn_cold
+*edges,6,22,19,20,24,23,21   grnd_floor
+*edges,11,21,23,26,25,24,20,17,18,7,3,16   double_back
+*edges,4,23,24,25,26   freight
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ Uses same operations as zone Store1
+ 
+ ____________________________________________________________
+ 
+ Zone Cabinet_hi (11) is composed of 10 surfaces and 16 vertices.
+ It encloses a volume of 800.m^3 of space, with a total surface
+ area of 2040.m^2 & user list floor area of 320.m^2
+ Cabinet_hi describes a high temperature chilled cabinet
+ Ground contact is 100.00 % of floor area & avg U of 0.236 & perimeter 0.00
+ 
+ A summary of the surfaces in Cabinet_hi(11) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  40.0    180.   0. cab_front    OPAQUE   VERT -     insul_cab    ||< low_cab_fr:Refrig
+  2  50.0     90.   0. cab_right    OPAQUE   VERT -     insul_cab    ||< low_cab_ri:Refrig
+  3  40.0      0.   0. cab_back     OPAQUE   VERT -     insul_cab    ||< low_cab_bk:Refrig
+  4  50.0    270.   0. cab_left     OPAQUE   VERT -     insul_cab    ||< low_cab_lft:Refrig
+  5  320.      0.  90. cab_top      SC_ficti CEIL -     fictitious   ||< low_cab_top:Refrig
+  6  320.      0. -90. cab_base     OPAQUE   FLOR FLOOR SM_grnd_cab  ||< ground profile  1
+  7  305.      0.  90. up_TM_fu     OPAQUE   CEIL -     mass_part    ||< up_TM_fd:Cabinet_hi
+  8  305.      0. -90. up_TM_fd     OPAQUE   FLOR -     mass_part    ||< up_TM_fu:Cabinet_hi
+  9  305.      0.  90. low_TM_fu    OPAQUE   CEIL -     mass_part    ||< low_TM_fd:Cabinet_hi
+ 10  305.      0. -90. low_TM_fd    OPAQUE   FLOR -     mass_part    ||< low_TM_fu:Cabinet_hi
+ 
+ Vertices ( index X Y Z) in the zone...
+*vertex   1    77.50000    42.50000     0.00000
+*vertex   2    93.50000    42.50000     0.00000
+*vertex   3    93.50000    62.50000     0.00000
+*vertex   4    77.50000    62.50000     0.00000
+*vertex   5    77.50000    42.50000     2.50000
+*vertex   6    93.50000    42.50000     2.50000
+*vertex   7    93.50000    62.50000     2.50000
+*vertex   8    77.50000    62.50000     2.50000
+*vertex   9    77.71000    42.71000     1.50000
+*vertex  10    93.29000    42.71000     1.50000
+*vertex  11    93.29000    62.29000     1.50000
+*vertex  12    77.71000    62.29000     1.50000
+*vertex  13    77.71000    42.71000     1.00000
+*vertex  14    93.29000    42.71000     1.00000
+*vertex  15    93.29000    62.29000     1.00000
+*vertex  16    77.71000    62.29000     1.00000
+ Number of vertices followed by list of associated vert
+*edges,4,1,2,6,5   cab_front
+*edges,4,2,3,7,6   cab_right
+*edges,4,3,4,8,7   cab_back
+*edges,4,4,1,5,8   cab_left
+*edges,4,5,6,7,8   cab_top
+*edges,4,1,4,3,2   cab_base
+*edges,4,9,10,11,12   up_TM_fu
+*edges,4,10,9,12,11   up_TM_fd
+*edges,4,13,14,15,16   low_TM_fu
+*edges,4,14,13,16,15   low_TM_fd
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: Cabinet_hi
+ 
+Notes:
+refrigerated cabinet nothing happens inside power. There is not
+infiltration or ventilation.
+Number of weekdays     casual gains=  3
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+weekd  1 OccuptW    0-24      0.0      0.0       0.50       0.50
+weekd  2 LightsW    0-24      0.0      0.0       0.50       0.50
+weekd  3 EquiptW    0-24      0.0      0.0       0.50       0.50
+Number of saturday     casual gains=  3
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+satur  1 OccuptW    0-24      0.0      0.0       0.50       0.50
+satur  2 LightsW    0-24      0.0      0.0       0.50       0.50
+satur  3 EquiptW    0-24      0.0      0.0       0.50       0.50
+Number of sunday       casual gains=  3
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+sunda  1 OccuptW    0-24      0.0      0.0       0.50       0.50
+sunda  2 LightsW    0-24      0.0      0.0       0.50       0.50
+sunda  3 EquiptW    0-24      0.0      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone Cabinet_lw (12) is composed of 10 surfaces and 16 vertices.
+ It encloses a volume of 800.m^3 of space, with a total surface
+ area of 2100.m^2 & user list floor area of 320.m^2
+ Cabinet_lw describes a low temperature frozen cabinet
+ Ground contact is 100.00 % of floor area & avg U of 0.236 & perimeter 0.00
+ 
+ A summary of the surfaces in Cabinet_lw(12) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  40.0    180.   0. lt_cab_fr    OPAQUE   VERT -     insul_cab    ||< cab_fr:Refrig
+  2  50.0     90.   0. lt_cab_ri    OPAQUE   VERT -     insul_cab    ||< cab_ri:Refrig
+  3  40.0      0.   0. lt_cab_bk    OPAQUE   VERT -     insul_cab    ||< cab_bk:Refrig
+  4  50.0    270.   0. lt_cab_lft   OPAQUE   VERT -     insul_cab    ||< cab_lft:Refrig
+  5  320.      0.  90. lt_cab_top   SC_ficti CEIL -     fictitious   ||< cab_top:Refrig
+  6  320.      0. -90. lt_cab_base  OPAQUE   FLOR FLOOR SM_grnd_cab  ||< ground profile  1
+  7  319.      0.  90. up_TM_fu     OPAQUE   CEIL -     mass_part    ||< up_TM_fd:Cabinet_lw
+  8  319.      0. -90. up_TM_fd     OPAQUE   FLOR -     mass_part    ||< up_TM_fu:Cabinet_lw
+  9  319.      0.  90. low_TM_fu    OPAQUE   CEIL -     mass_part    ||< low_TM_fd:Cabinet_lw
+ 10  319.      0. -90. low_TM_fd    OPAQUE   FLOR -     mass_part    ||< low_TM_fu:Cabinet_lw
+ 
+ Vertices ( index X Y Z) in the zone...
+*vertex   1    77.50000    20.00000     0.00000
+*vertex   2    93.50000    20.00000     0.00000
+*vertex   3    93.50000    40.00000     0.00000
+*vertex   4    77.50000    40.00000     0.00000
+*vertex   5    77.50000    20.00000     2.50000
+*vertex   6    93.50000    20.00000     2.50000
+*vertex   7    93.50000    40.00000     2.50000
+*vertex   8    77.50000    40.00000     2.50000
+*vertex   9    77.51000    20.01000     1.50000
+*vertex  10    93.49000    20.01000     1.50000
+*vertex  11    93.49000    39.99000     1.50000
+*vertex  12    77.51000    39.99000     1.50000
+*vertex  13    77.51000    20.01000     1.00000
+*vertex  14    93.49000    20.01000     1.00000
+*vertex  15    93.49000    39.99000     1.00000
+*vertex  16    77.51000    39.99000     1.00000
+ Number of vertices followed by list of associated vert
+*edges,4,1,2,6,5   lt_cab_fr
+*edges,4,2,3,7,6   lt_cab_ri
+*edges,4,3,4,8,7   lt_cab_bk
+*edges,4,4,1,5,8   lt_cab_lft
+*edges,4,5,6,7,8   lt_cab_top
+*edges,4,1,4,3,2   lt_cab_base
+*edges,4,9,10,11,12   up_TM_fu
+*edges,4,10,9,12,11   up_TM_fd
+*edges,4,13,14,15,16   low_TM_fu
+*edges,4,14,13,16,15   low_TM_fd
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: Cabinet_lw
+ 
+Notes:
+nothing happens in this refrigerated cabinet power. There is not
+infiltration or ventilation.
+Number of weekdays     casual gains=  3
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+weekd  1 OccuptW    0-24      0.0      0.0       0.50       0.50
+weekd  2 LightsW    0-24      0.0      0.0       0.50       0.50
+weekd  3 EquiptW    0-24      0.0      0.0       0.50       0.50
+Number of saturday     casual gains=  3
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+satur  1 OccuptW    0-24      0.0      0.0       0.50       0.50
+satur  2 LightsW    0-24      0.0      0.0       0.50       0.50
+satur  3 EquiptW    0-24      0.0      0.0       0.50       0.50
+Number of sunday       casual gains=  3
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+sunda  1 OccuptW    0-24      0.0      0.0       0.50       0.50
+sunda  2 LightsW    0-24      0.0      0.0       0.50       0.50
+sunda  3 EquiptW    0-24      0.0      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone cold_store (13) is composed of 6 surfaces and 8 vertices.
+ It encloses a volume of 228.m^3 of space, with a total surface
+ area of 257.m^2 & user list floor area of 76.0m^2
+ cold_store is a storage for cold product at zero degrees.
+ There is 52.500m2 of exposed surface area, 52.500m2 of which is vertical.
+ Outside walls are 69.079 % of floor area & avg U of 0.353 & UA of 18.508
+ Ground contact is 100.00 % of floor area & avg U of 0.383 & perimeter 17.500
+ 
+ A summary of the surfaces in cold_store(13) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  24.0    180.   0. ptn_refr     OPAQUE   VERT -     insul_cab    ||< ptn_refr:Refrig
+  2  28.5     90.   0. right_fac    OPAQUE   VERT WALL  SMexwal2008  ||< external
+  3  24.0      0.   0. back_fac     OPAQUE   VERT WALL  SMexwal2008  ||< external
+  4  76.0      0.  90. ceiling      OPAQUE   CEIL -     insul_cab    ||< ptn_storage:Store2
+  5  76.0      0. -90. floor        OPAQUE   FLOR FLOOR SM_grnd_floo ||< ground profile  1
+  6  28.5    270.   0. ptn_storage  OPAQUE   VERT -     insul_cab    ||< ptn_cold:Store2
+ 
+ Vertices ( index X Y Z) in the zone...
+*vertex   1   100.00000    69.00000     0.00000
+*vertex   2   100.00000    78.50000     0.00000
+*vertex   3   100.00000    69.00000     3.00000
+*vertex   4   100.00000    78.50000     3.00000
+*vertex   5    92.00000    69.00000     0.00000
+*vertex   6    92.00000    69.00000     3.00000
+*vertex   7    92.00000    78.50000     3.00000
+*vertex   8    92.00000    78.50000     0.00000
+ Number of vertices followed by list of associated vert
+*edges,4,5,1,3,6   ptn_refr
+*edges,4,1,2,4,3   right_fac
+*edges,4,2,8,7,4   back_fac
+*edges,4,6,3,4,7   ceiling
+*edges,4,8,2,1,5   floor
+*edges,4,8,5,6,7   ptn_storage
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: cold_store
+ 
+Notes:
+Cold storage prior to stocking shelves and cabinets 0 deg
+Number of weekdays     casual gains=  7
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+weekd  1 OccuptW    0- 9    135.0    101.3       0.20       0.80
+weekd  2 OccuptW    9-19   1282.5    945.0       0.20       0.80
+weekd  3 OccuptW   19-24    135.0    101.3       0.20       0.80
+weekd  4 LightsWm2  0- 7      3.2      0.0       0.20       0.80
+weekd  5 LightsWm2  7-19      6.4      0.0       0.20       0.80
+weekd  6 LightsWm2 19-24      3.2      0.0       0.20       0.80
+weekd  7 EquiptWm2  0-24      6.0      0.0       0.20       0.80
+Number of saturday     casual gains=  7
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+satur  1 OccuptW    0- 9    135.0    101.3       0.20       0.80
+satur  2 OccuptW    9-19   1282.5    945.0       0.20       0.80
+satur  3 OccuptW   19-24    135.0    101.3       0.20       0.80
+satur  4 LightsWm2  0- 7      3.2      0.0       0.20       0.80
+satur  5 LightsWm2  7-19      6.4      0.0       0.20       0.80
+satur  6 LightsWm2 19-24      3.2      0.0       0.20       0.80
+satur  7 EquiptWm2  0-24      6.0      0.0       0.20       0.80
+Number of sunday       casual gains=  7
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+sunda  1 OccuptW    0- 9    128.3      0.0       0.20       0.80
+sunda  2 OccuptW    9-19   1282.5      0.0       0.20       0.80
+sunda  3 OccuptW   19-24    128.3      0.0       0.20       0.80
+sunda  4 LightsWm2  0- 7      3.2      0.0       0.20       0.80
+sunda  5 LightsWm2  7-19      6.4      0.0       0.20       0.80
+sunda  6 LightsWm2 19-24      3.2      0.0       0.20       0.80
+sunda  7 EquiptWm2  0-24      6.0      0.0       0.20       0.80
+ 
+ ____________________________________________________________
+ 
+ Zone m_vent_mix (14) is composed of 6 surfaces and 8 vertices.
+ It encloses a volume of 152.m^3 of space, with a total surface
+ area of 222.m^2 & user list floor area of 76.0m^2
+ m_vent_mix describes a mixing box for ventilation preheat
+ There is 222.00m2 of exposed surface area, 70.000m2 of which is vertical.
+ Outside walls are 192.11 % of floor area & avg U of 0.259 & UA of 37.849
+ Flat roof is 100.00 % of floor area & avg U of 0.263 & UA of 19.965
+ 
+ A summary of the surfaces in m_vent_mix(14) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  16.0    180.   0. ptn_refr     OPAQUE   VERT WALL  SMexwal2010  ||< external
+  2  19.0     90.   0. right_fac    OPAQUE   VERT WALL  SMexwal2010  ||< external
+  3  16.0      0.   0. back_fac     OPAQUE   VERT WALL  SMexwal2010  ||< external
+  4  76.0      0.  90. ceiling      OPAQUE   CEIL ROOF  SMexwal2010  ||< external
+  5  76.0      0. -90. floor        OPAQUE   FLOR FLOOR SMexwal2010  ||< external
+  6  19.0    270.   0. ptn_storage  OPAQUE   VERT WALL  SMexwal2010  ||< external
+ 
+ Vertices ( index X Y Z) in the zone...
+*vertex   1   100.00000    69.00000     3.20000
+*vertex   2   100.00000    78.50000     3.20000
+*vertex   3   100.00000    69.00000     5.20000
+*vertex   4   100.00000    78.50000     5.20000
+*vertex   5    92.00000    69.00000     3.20000
+*vertex   6    92.00000    69.00000     5.20000
+*vertex   7    92.00000    78.50000     5.20000
+*vertex   8    92.00000    78.50000     3.20000
+ Number of vertices followed by list of associated vert
+*edges,4,5,1,3,6   ptn_refr
+*edges,4,1,2,4,3   right_fac
+*edges,4,2,8,7,4   back_fac
+*edges,4,6,3,4,7   ceiling
+*edges,4,8,2,1,5   floor
+*edges,4,8,5,6,7   ptn_storage
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: vent_mix
+ 
+Notes:
+Acts as a mixing box for make-up air to sales and refr zones
+Number of weekdays     casual gains=  3
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+weekd  1 OccuptW    0-24      0.0      0.0       0.50       0.50
+weekd  2 LightsW    0-24     20.0      0.0       0.20       0.80
+weekd  3 EquiptW    0-24     50.0      0.0       0.20       0.80
+Number of saturday     casual gains=  3
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+satur  1 OccuptW    0-24      0.0      0.0       0.50       0.50
+satur  2 LightsW    0-24      0.0      0.0       0.50       0.50
+satur  3 EquiptW    0-24      0.0      0.0       0.50       0.50
+Number of sunday       casual gains=  3
+Day Gain Type      Period Sensible  Latent     Radiant    Convec
+    No.  label     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+sunda  1 OccuptW    0-24      0.0      0.0       0.50       0.50
+sunda  2 LightsW    0-24      0.0      0.0       0.50       0.50
+sunda  3 EquiptW    0-24      0.0      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Project floor area is 10434.m2, wall area is 1655.2m2, window area is 574.05m2.
+ Sloped roof area is 5882.0m2, flat roof area is 1724.0m2, skylight area is 82.093m2.
+ In contact with ground 7594.0m2.
+ There is 9917.3m2 of outside surface area, 2153.2m2 of which is vertical.
+ 
+ Outside walls are 15.863 % of floor area & avg U of 0.395 & UA of 654.29 & max MLC thickness 0.200
+ Sloped roof is 56.373 % of floor area & avg U of 0.252 & UA of 1480.3
+ Flat roof is 16.523 % of floor area & avg U of 0.252 & UA of 434.72
+ Glazing is 5.5017 % of floor & 26.660 % facade with avg U of 2.256 & UA of 1295.0
+ Skylights are 0.78678 % of floor area & avg U of 3.069 & UA of 251.98
+ Ground contact is 72.781 % of floor area & avg U of 0.371 & perimeter 357.00 & max MLC thickness 1.202
+ CIBSE ground beta!42.543 dt 4.308 Ufleft 0.022 Ufright 3.466 Uf 0.075 R extra @ virtual layer10.568
+ 
+ ____________________________________________________________
+ Multi-layer constructions used:
+ 
+ Details of opaque construction: mass_part and overall thickness  0.200
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+    1   35  200.0     0.510  1400.  1000. 0.90 0.25    10.  0.39 block white ptd : block white painted inner
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.779  1.879  1.661 (partition)  1.533
+ Total area of mass_part is   4949.30
+ 
+ Details of transparent construction: dbl_glz with DCF7671_06nb optics and overall thickness  0.024
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder s
+    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder s
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
+ 
+ Clear float 76/71,     6mm, no blind: with id of: DCF7671_06nb
+ with 3 layers [including air gaps] and visible trn: 0.76
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.611 0.583 0.534 0.384 0.170
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.157 0.172 0.185 0.201 0.202
+    2  0.001 0.002 0.003 0.004 0.005
+    3  0.117 0.124 0.127 0.112 0.077
+ Total area of dbl_glz is    205.09
+ 
+ Details of opaque construction: susp_floor and overall thickness  0.219
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet
+    2   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
+    3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    4   32  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 heavy mix concrete : Heavy mix concrete
+ Int    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.500  1.570  1.415 (partition)  1.321
+ Total area of susp_floor is   1344.00
+ 
+ Details of opaque construction: susp_flr_re and overall thickness  0.219
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
+    2   32  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 heavy mix concrete : Heavy mix concrete
+    3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    4   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
+ Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.500  1.570  1.415 (partition)  1.321
+ Total area of susp_flr_re is   1344.00
+ 
+ Details of transparent construction: fictitious with SC_fictit optics and overall thickness  0.004
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+    1  245    4.0    20.000    10.    10. 0.99 0.01 19200.  0.00 fict : fictitious material (almost not there
+ ISO 6946 U values (horiz/upward/downward heat flow)=  5.875  7.133  4.757 (partition)  3.843
+ 
+ Fictitious 99/99,      4mm, no blind: with id of: SC_fictit
+ with 1 layers [including air gaps] and visible trn: 0.99
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.998 0.987 0.986 0.985 0.984
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.001 0.001 0.001 0.001 0.001
+ Total area of fictitious is   2217.50
+ 
+ Details of opaque construction: Vehicle_door and overall thickness  0.022
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    51    1.0    60.000  7800.   502. 0.12 0.20 19200.  0.00 steelSheedSBEM : Steel sheed SBEM
+    2  216   20.0     0.040   105.  1800. 0.90 0.60     1.  0.50 mineral fibre : Mineral fibre
+ Int    51    1.0    60.000  7800.   502. 0.12 0.20 19200.  0.00 steelSheedSBEM : Steel sheed SBEM
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.492  1.562  1.408 (partition)  1.316
+ Total area of Vehicle_door is     16.00
+ 
+ Details of transparent construction: SM_glazing with DCF7671_06nb optics and overall thickness  0.030
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   243    6.0     1.050  2500.   750. 0.83 0.05 19200.  0.01 clear float : 4mm clear float glass with opt
+    2    0   16.0     0.000     0.     0. 0.99 0.99     1.  0.26 air  0.26 0.26 0.26
+ Int   242    8.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder s
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.241  2.402  2.057 (partition)  1.865
+ 
+ Clear float 76/71,     6mm, no blind: with id of: DCF7671_06nb
+ with 3 layers [including air gaps] and visible trn: 0.76
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.611 0.583 0.534 0.384 0.170
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.157 0.172 0.185 0.201 0.202
+    2  0.001 0.002 0.003 0.004 0.005
+    3  0.117 0.124 0.127 0.112 0.077
+ Total area of SM_glazing is    589.05
+ 
+ Details of opaque construction: SM_grnd_floo and overall thickness  1.156
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    2  263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    3  263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    4  263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    5   86  150.0     0.360  1840.   840. 0.90 0.60     2.  0.42 gravel : Gravel
+    6  216   50.0     0.040   105.  1800. 0.90 0.60     1.  1.25 mineral fibre : Mineral fibre
+    7   32  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 heavy mix concrete : Heavy mix concrete
+ Int    65    6.0     0.140   600.  1210. 0.91 0.65    14.  0.04 flooring : Flooring (source does not clarify
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.383  0.387  0.377 (partition)  0.370
+ Total area of SM_grnd_floo is   6954.00
+ 
+ Details of opaque construction: SM_roof2008 and overall thickness  0.117
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    44    1.0    40.000  7800.   502. 0.82 0.45 19200.  0.00 beige ptd steel : Beige painted steel
+    2  205  115.0     0.030    30.   837. 0.90 0.50    90.  3.83 Polyurethane foam bd : Polyurethane foam boa
+ Int    45    1.0    40.000  7800.   502. 0.82 0.30 19200.  0.00 white ptd steel : White painted steel
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.250  0.252  0.247 (partition)  0.244
+ Total area of SM_roof2008 is   7529.97
+ 
+ Details of opaque construction: SMexwal2008 and overall thickness  0.082
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    46    1.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
+    2  205   80.0     0.030    30.   837. 0.90 0.50    90.  2.67 Polyurethane foam bd : Polyurethane foam boa
+ Int    47    1.0   210.000  2700.   880. 0.82 0.32 19200.  0.00 wt cotd alum : White coated aluminium
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.353  0.356  0.348 (partition)  0.342
+ Total area of SMexwal2008 is   1456.50
+ 
+ Details of opaque construction: SMexwal2010 and overall thickness  0.112
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    46    1.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
+    2  205  110.0     0.030    30.   837. 0.90 0.50    90.  3.67 Polyurethane foam bd : Polyurethane foam boa
+ Int    47    1.0   210.000  2700.   880. 0.82 0.32 19200.  0.00 wt cotd alum : White coated aluminium
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.261  0.263  0.258 (partition)  0.255
+ Total area of SMexwal2010 is    222.00
+ 
+ Details of opaque construction: insul_cab and overall thickness  0.034
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    45    2.0    40.000  7800.   502. 0.82 0.30 19200.  0.00 white ptd steel : White painted steel
+    2  215   30.0     0.040   100.   750. 0.90 0.60    40.  0.75 expanded PVC : Expanded PVC
+ Int    45    2.0    40.000  7800.   502. 0.82 0.30 19200.  0.00 white ptd steel : White painted steel
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.087  1.123  1.042 (partition)  0.990
+ Total area of insul_cab is   1034.00
+ 
+ Details of opaque construction: dry_product and overall thickness  0.100
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+    1   73  100.0     0.560   350.  1000. 0.90 0.65    13.  0.18 Softboard : Softboard (source does not clari
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.869  3.139  2.574 (partition)  2.280
+ Total area of dry_product is   1626.00
+ 
+ Details of opaque construction: SM_grnd_cab and overall thickness  1.202
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    2  263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    3  263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    4  263  200.0     1.280  1460.   879. 0.90 0.85     5.  0.16 earth std : Common_earth
+    5   86  150.0     0.360  1840.   840. 0.90 0.60     2.  0.42 gravel : Gravel
+    6  216   50.0     0.040   105.  1800. 0.90 0.60     1.  1.25 mineral fibre : Mineral fibre
+    7   32  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 heavy mix concrete : Heavy mix concrete
+    8  205   50.0     0.030    30.   837. 0.90 0.50    90.  1.67 Polyurethane foam bd : Polyurethane foam boa
+ Int    45    2.0    40.000  7800.   502. 0.82 0.30 19200.  0.00 white ptd steel : White painted steel
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.236  0.238  0.234 (partition)  0.231
+ Total area of SM_grnd_cab is    640.00

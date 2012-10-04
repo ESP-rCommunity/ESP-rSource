@@ -644,7 +644,7 @@ C Before sending the data to the harmonizer save it (as the harmonizer only copi
 C the bare minimum to save time, so all data sent to TRNSYS is lost on it's return
 C to ESP-r)
 C---------------------------------------------------------------------------------
-      COSIM_DATA_SAVED = COSIM_DATA
+	  COSIM_DATA_SAVED = COSIM_DATA
 
 
 C---------------------------------------------------------------------------------
@@ -677,7 +677,7 @@ C-------------------------------------------------------------------------------
 C Make all data passed back and forth between ESP-r and TRNSYS through the
 C Harmonizer to H3K reports to make it available in .csv and .xml output.
 C---------------------------------------------------------------------------------
-      call H3K_Report_TCC
+	  call H3K_Report_TCC
 
 
       END FUNCTION TCC_communication
@@ -702,8 +702,8 @@ C-------------------------------------------------------------------------------
 C Declare local variables.
 C---------------------------------------------------------------------------------
 C.....Local Variables
-      INTEGER :: i            !loop index
-      INTEGER :: TCCindex     !Trnsys coupling component index
+      INTEGER :: i					!loop index
+      INTEGER :: TCCindex			!Trnsys coupling component index
       CHARACTER*2 cTCCIndex, cZoneIndex
       REAL :: TotalEsprIterations, TotalTrnsysIterations
       REAL :: Invocations

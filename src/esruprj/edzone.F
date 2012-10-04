@@ -53,7 +53,6 @@ C Use geometry for common g0/g1/g2/g4/g5/g6/g7/prec16/precz/c20.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C21/IFCFG,cfgroot,LCFGF
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/user/browse
@@ -62,10 +61,9 @@ C Use geometry for common g0/g1/g2/g4/g5/g6/g7/prec16/precz/c20.
 
       DIMENSION XX(MS),YY(MS)
       CHARACTER HOLD*32
-      character MODE*4,fs*1,LCFGF*72
+      character MODE*4,fs*1
       CHARACTER OUTSTR*124,ZN*12,outs*124
       character ctldoc*248,LCTLF*72,zd*64,DFILE*72,CFILE*72,OFILE*72
-      character cfgroot*24
       LOGICAL OK,dok,browse,OKC,XST,unixok
       logical newgeo  ! to use for testing if new/old geometry file.
       real DX1,DY1,DZ1  ! to avoid name clash with geometry.h
@@ -977,7 +975,6 @@ C espriou.h provides currentfile.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C21/IFCFG,cfgroot,LCFGF
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -1004,8 +1001,7 @@ C espriou.h provides currentfile.
       LOGICAL DOK,OK,XST,changed,OKC,OKM,modopr,browse
       logical newgeo  ! to use for testing if new/old geometry file.
 
-      CHARACTER LAPROB*72,LCFGF*72
-      CHARACTER cfgroot*24
+      CHARACTER LAPROB*72
       CHARACTER ctldoc*248,LCTLF*72,outs*124
       character ltmp*72,NDNAM*12
       character OUTSTR*124
@@ -1357,7 +1353,7 @@ C Disconnect high range alternative ventilation if pointing to focus.
           ACVH(IX)=0.0
         endif
 
-C Air flows
+C Air flows for each day type.
         DO 400 IDTY=1,NBDAYTYPE
           IF(NAC(IDTY).GT.0)THEN
             DO 10 I=1,NAC(IDTY)
@@ -1866,16 +1862,14 @@ C     = 'in '  interactive new
       
       integer lnblnk  ! function definition
 
-      common/C21/IFCFG,cfgroot,LCFGF
       common/OUTIN/IUOUT,IUIN
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/appw/iappw,iappx,iappy
 
-      character LCFGF*72
       CHARACTER ZN*12,longtfile*144,longtfiledos*144
-      character TMODE*8,outs*248,DOIT*248,CFGROOT*24
+      character TMODE*8,outs*248,DOIT*248
       character act*3  ! the parameter passed
       logical XST,concat,unixok
 #ifdef OSI

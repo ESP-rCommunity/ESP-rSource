@@ -103,13 +103,6 @@ C                 4. User controllable gain (not fully utilised as yet)
 C                -1. Occupancy as floor area per person
 C                -2. Lights in w/m^2 per floor area
 C                -3. Equipment in w/m^2 per floor area
-C               Extra types for use with HOT3000 central and zonal base loads:
-C                20. BCD-App (Appliances - linked with BCD file)
-C                21. BCD-Lights (Lights linked with BCD file)
-C                22. BCD-OElec (Other Electrical linked with BCD file)
-C                23. BCD-Occ (Occupants linked with BCD file)
-
-
 
 C ICGS,ICGF    - start and finish hours of each of the above casual gain
 C                periods
@@ -136,7 +129,6 @@ C Maximum number of casual gains/day       MC=20
       include "model.h"
       include "espriou.h"
 
-#include "bc_data.h"
 C espriou.h provides currentfile.
       
       integer lnblnk  ! function definition
@@ -167,19 +159,6 @@ C espriou.h provides currentfile.
       COMMON/P3TYPEN/ICGT(MDTY,MC)
       INTEGER NCAS,ICGS,ICGF,ICGT
       REAL CMGS,CMGL,RADC,CONC
-
-C----------------------------------------------------------------------
-C Common for data associated with HOT3000 central and zonal Base Loads.
-C - Bart, Aug 28 2010
-      common / H3K_BL_data / iH3K_Base_Loads(MCOM),
-     &                       iBCD_column(MCOM,MDTY,MC),
-     &                       fBL_fraction(MCOM,MDTY,MC),
-     &                       nGain_types(MCOM,MDTY),
-     &                       iGain_type(MCOM,MDTY,MC)
-
-      integer iH3K_Base_Loads, iBCD_column, nGain_types, iGain_type
-      real fBL_fraction
-C----------------------------------------------------------------------
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
 C =2 with more than 3 day types allowed and sorted
@@ -218,7 +197,6 @@ C Error subroutine and error details for dll mode.
       ijk=0
       ireader=0
       reader=0.0
-      iH3K_Base_Loads(icomp) = 0
 
 C Check if running in dll mode.
       call isadll(dll)
@@ -256,7 +234,10 @@ C are later used in precal.F as indexing arrays.
 C Read lines from file, discarding comments. Look for header on
 C newer files. Older files will begin with a description. To allow for
 C description with spaces copy directly from OUTSTR rather than parsing
-C it into words.  
+C it into words.
+
+C << Why reset ip3ver if there are more than 3 day types?
+ 
       CALL STRIPC(IUO,OUTSTR,0,ND,1,'oper name or header',IER)
       IF(IER.NE.0) goto 1002
       if(outstr(1:11).eq.'*Operations')then
@@ -527,77 +508,28 @@ C Casual gains for different day types
         K=0
         CALL EGETWI(OUTSTR,K,IREADER,0,MC,'W','gain periods',IER)
         NCAS(IDTY)=IREADER
-        nGain_types(ICOMP, IDTY) = IREADER     ! used for HOT3000 base loads 
         IF(NCAS(IDTY).EQ.0)goto 600
         DO 40 I=1,NCAS(IDTY)
           CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period gain detl',IER)
           K=0
-          if(ND.eq.7.or.ND.eq.9.or.ND.eq.12)then
-            CALL EGETWI(OUTSTR,K,IREADER,-3,30,'W','gain type',IER)
+          if(ND.eq.7.or.ND.eq.12)then
+            CALL EGETWI(OUTSTR,K,IREADER,-3,5,'W','gain type',IER)
             ICGT(IDTY,I)=IREADER
-            iGain_type(ICOMP, IDTY,I) = IREADER ! used for HOT3000 base loads
           else
             ICGT(IDTY,I)=1
           endif
-
-        ! Added support of HOT3000 Base Loads BC data file linkage with
-        ! operations file. Bart, Aug 28 2010.
-          if(ND.eq.9)then ! two additional data are read in: BCD column
-                          ! index and Base Load fraction
-
-          ! Make sure that BCD file has been defined. If not, display
-          ! error message and stop.
-            if ( .not. bBC_data_defined ) then
-              ! Display error message and stop.
-              write(outs,'(a,I2, a)') 
-     &         ' Error: Operations file for zone ',
-     &         icomp, ' expects BC data file which does not exist.'
-              call edisp(iuout,outs)
-              stop 'Fatal Error'
-            endif
-
-          ! set flag for HOT3000 Base Loads
-            iH3K_Base_Loads(icomp) = 1
-
-            CALL EGETWI(OUTSTR,K,IREADER,1,100,'W','BCD column',IER)
-            iBCD_column(ICOMP,IDTY,I) = IREADER
-            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','BL fraction',IER)
-            fBL_fraction(ICOMP,IDTY,I)=READER
-            CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain st',IER)
-            ICGS(IDTY,I)=IREADER
-            CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain fn',IER)
-            ICGF(IDTY,I)=IREADER
-
-          ! When BCD data is used with the HOT3000 base loads facility,
-          ! set CMGS and CMGL to sensible and latent fractions to account
-          ! for any base load that does not translate 100% into a 
-          ! internal heat gain (e.g., dishwasher or dryer) 
-            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain sens',IER)
-            CMGS(IDTY,I)=READER
-            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain latent',IER)
-            CMGL(IDTY,I)=READER
-
-            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain rad fr',IER)
-            RADC(IDTY,I)=READER
-            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain conv fr',IER)
-            CONC(IDTY,I)=READER
-
-          else ! default read sequence
-
-            CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain st',IER)
-            ICGS(IDTY,I)=IREADER
-            CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain fn',IER)
-            ICGF(IDTY,I)=IREADER
-            CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','gain sens',IER)
-            CMGS(IDTY,I)=READER
-            CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','gain latent',IER)
-            CMGL(IDTY,I)=READER
-            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain rad fr',IER)
-            RADC(IDTY,I)=READER
-            CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain conv fr',IER)
-            CONC(IDTY,I)=READER
-          end if
-
+          CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain st',IER)
+          ICGS(IDTY,I)=IREADER
+          CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain fn',IER)
+          ICGF(IDTY,I)=IREADER
+          CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','gain sens',IER)
+          CMGS(IDTY,I)=READER
+          CALL EGETWR(OUTSTR,K,READER,0.,0.,'-','gain latent',IER)
+          CMGL(IDTY,I)=READER
+          CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain rad fr',IER)
+          RADC(IDTY,I)=READER
+          CALL EGETWR(OUTSTR,K,READER,0.,1.,'W','gain conv fr',IER)
+          CONC(IDTY,I)=READER
           IF(ICGS(IDTY,I).GT.ICGF(IDTY,I))then
 
 C Found a period out of order, warn user and carry on.
@@ -2209,9 +2141,9 @@ C ICGTYP the casual gain type (remembering negative index).
 C PERSN keeps track of the original number of people/m2.
       real CMGSA,CMGLA,RADCA,CONCA,RADFAC,CONFAC,PERSN
       integer ICGTYP,LNCAS
-      dimension CMGSA(MC,MCT),CMGLA(MC,MCT),RADCA(MC,MCT)
-      dimension CONCA(MC,MCT),RADFAC(MC,MCT),CONFAC(MC,MCT)
-      dimension ICGTYP(MC,MCT),PERSN(MC,MCT),LNCAS(MDTY)
+      dimension CMGSA(MC,7),CMGLA(MC,7),RADCA(MC,7)
+      dimension CONCA(MC,7),RADFAC(MC,7),CONFAC(MC,7)
+      dimension ICGTYP(MC,7),PERSN(MC,7),LNCAS(MDTY)
 
 C Logical for testing whether there is any difference in casual gains.
       logical bCMGSA,bCMGLA,bRADCA,bCONCA,bRADFAC,bCONFAC
@@ -2221,8 +2153,8 @@ C pfA power factor, ipfA leading/lagging, pwrA real power W,
 C bvoltA voltage, iphasA phases assoc with electrical casual gain. 
 C aparva is apparent power component VA.
 C aparvar is reactive power component VAr.
-      dimension pfA(mc,MCT),ipfA(mc,MCT),pwrA(mc,MCT),bvoltA(mc,MCT)
-      dimension iphasA(mc,MCT),aparva(mc,MCT),aparvar(mc,MCT)
+      dimension pfA(mc,7),ipfA(mc,7),pwrA(mc,7),bvoltA(mc,7)
+      dimension iphasA(mc,7),aparva(mc,7),aparvar(mc,7)
 
 C Logical for testing whether there is any difference in electrical gains.
       logical bpfA,bpwrA,bbvoltA
@@ -2697,7 +2629,7 @@ C Initialise local variables
       IER=0
       ISTAT=0
       XST=.FALSE.
-      NBDAYTYPEHOLD=NBDAYTYPE
+      NBDAYTYPEHOLD=NBDAYTYPE  ! remember NBDAYTYPE
 
        H(1)='Zone operations files that have been defined in this '
        H(2)='model need to be updated in order to reflect the new'
@@ -2767,6 +2699,6 @@ C Write operations file
           CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
         ENDIF
  100  CONTINUE
-      NBDAYTYPE=NBDAYTYPEHOLD
+      NBDAYTYPE=NBDAYTYPEHOLD  ! restore the origianl nb of day types
       RETURN
       END

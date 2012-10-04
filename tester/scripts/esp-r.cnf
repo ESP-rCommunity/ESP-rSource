@@ -1,32 +1,231 @@
-'V13.0'                                 'lowest applicable Forcheck release'
+'V14.0'                                 'lowest applicable Forcheck release'
 'gfortran' 'F95'                        'GNU Fortran 4.5'
 32 1                                    'no of bits for def.int., mxdif'
 32                                      'no of bits for integer pointer'
-1 8  2 16  4 32  8 0                    'mxintb'
-    24    53     0     0                'significant binary digits of reals'
-     6    15     0     0                'decimal precision of reals'
-    37   307     0     0                'decimal exponent range of reals'
-   128  1024     0     0                'maximum exponent of reals'
-  -126 -1022     0     0                'minimum exponent of reals'
-1.1755-38                               'eps'
+1 8  2 16  4 32  8 64                   'mxintb'
+    24    53     64    0                'significant binary digits of reals'
+     6    15     18    0                'decimal precision of reals'
+    37   307   4931    0                'decimal exponent range of reals'
+   128  1024  16384    0                'maximum exponent of reals'
+  -125 -1021 -16381    0                'minimum exponent of reals'
+1.17E-38                                'eps'
 2147483647                              'maximum length of character data'
 'I' 'R' 'C' 'L' 'S' 'R' 'C' 'I' '?'     'type codes'
 4 4 8 4 1 8 16 1 4                      'default type lengths'
-2 4 8 2                                 'lengths with length option off'
+2 4 8 4                                 'lengths with length option off'
 4 8 8 4                                 'lengths with length option on'
-2 4 8 0  4 8 0 0  8 16 0 0  1 2 4 0     'allowed data type lengths'
-2 4 8 0  4 8 0 0  8 16 0 0  1 2 4 0     'idem, for generic functions'
-1 4  2 8  3 1  5 2                      'integer kinds       '
-1 4  2 8  0 0  0 0                      'real kinds          '
-1 8  2 16 0 0  0 0                      'complex kinds       '
-1 4  2 8  3 1  5 2                      'logical kinds       '
-1 1  0 0  0 0  0 0                      'character kinds     '
-'f' ' ' ' '                             'def.file ext.: src,incl.;LIST opt.del.'
+1 2 4 8  4 8 10 0  8 16 20 0  1 2 4 0   'allowed type lengths'
+1 2 4 8  4 8 10 0  8 16 20 0  1 2 4 0   'idem, for generic functions'
+1 1  2 2  4  4  8 8                     'integer kinds       '
+4 4  8 8  0 10  0 0                     'real kinds          '
+4 8  8 16 0 20  0 0                     'complex kinds       '
+1 1  2 2  4  4  8 8                     'logical kinds       '
+1 1  4 4  0  0  0 0                     'character kinds     '
+'f' ' ' ' '                             'def.file ext.:src,incl; LIST opt.del.'
 0  0                                    'max.number of cont.lines'
 0  0  0                                 'mxnml, mxenl, mxcml'
 '#' ' '                                 'compiler directive strings'
-'&' '&'                                 'free-form cont.char.'
-'C' ' '                                 '1st column free-form comment char'
-1                                       'lower case characters'
-31  2                                   'Debug lines'
-32  4                                   'tabs'
+'&' '&'                                 'free-form.cont.char.'
+' ' ' '                                 '1st column free-form.comment char.'
+2                                       'Debug lines'
+4                                       'tabs'
+7                                       'cpp preprocessing'
+13                                      'symbolic names with $'
+16                                      'built-in functions beginning with %'
+22                                      'complex with symbolic constants'
+23                                      'Hollerith constants'
+26                                      ' X'xxx' hexadecimals'
+28                                      ' 'xxx'B binaries'
+29                                      ' 'xxx'O octals'
+30                                      ' 'xxx'X hexadecimals'
+31                                      ' 'xxx'Z hexadecimals'
+42                                      'C-string: \ editing'
+50                                      'DOUBLE COMPLEX'
+55                                      'integer (Cray) POINTER'
+62                                      'VOLATILE'
+70                                      'init.of var. /../'
+99                                      'SELECT TYPE'
+106                                     'ERRMSG= in (DE)ALLOCATE'
+109                                     '[...] array constructor'
+124                                     'component keywords'
+129                                     'typeless data allowed in expressions'
+135                                     'BOZ constants in some intrinsics'
+149                                     'FLUSH'
+159                                     'asynchronous i/o'
+160                                     'stream i/o, POS='
+161                                     'temp. i/o mode'
+162                                     'IOMSG='
+163                                     'namelist i/o on internal file'
+185                                     '$ edit descriptor'
+191                                     'RU... round edit descriptors'
+221                                     '[type[*len]] FUNCTION name'
+230                                     'intrinsic modules'
+231                                     'procedure pointers'
+233                                     'ABSTRACT INTERFACE'
+235                                     'allocatable function results'
+236                                     'definition of interface of containing procedure'
+239                                     'PROTECTED'
+240                                     'C-binding, enumerators'
+241                                     'VALUE'
+245                                     'allocatable components'
+249                                     'procedure components'
+250                                     'type bound procedures'
+251                                     'IMPORT'
+252                                     'INTENT attribute for POINTER dummy arguments'
+257                                     'renaming of operators'
+259                                     'allocatable scalars'
+262                                     'PROCEDURE'
+264                                     'allocatable dummy arguments'
+273                                     'CLASS'
+302                                     'SOURCE= specifier on ALLOCATE'
+310                                     'F2003 array constructor enhancements'
+0                                       'delimiter of F77-extensions'
+!Fortran 2003 specific
+'                    ' 'COMMAND_ARGUMENT_COUNT' 'I' -1 0 0 F 'I' F
+'                    ' 'EXTENDS_TYPE_OF' 'L' -1 0 2 F 'I' F
+  'A'   ,'T', 0,-3,F,F,F,F
+  'MOLD','T', 0,-3,F,F,F,F
+'                    ' 'GET_COMMAND' 'S' 0 0 3 F 'S' F
+  'COMMAND','CH',-1, 0,F,T,F,T
+  'LENGTH ', 'I',-1, 0,F,T,F,T
+  'STATUS ', 'I',-1, 0,F,T,F,T
+'                    ' 'GET_COMMAND_ARGUMENT' 'S' 0 0 4 F 'S' F
+  'NUMBER',  'I',-1, 0,F,F,T,F
+  'VALUE',  'CH',-1, 0,F,T,F,T
+  'LENGTH ', 'I',-1, 0,F,T,F,T
+  'STATUS ', 'I',-1, 0,F,T,F,T
+'                    ' 'GET_ENVIRONMENT_VARIABLE' 'S' 0 0 5 F 'S' F
+  'NAME',     'CH',-1, 0,F,F,T,F
+  'VALUE',    'CH',-1, 0,F,T,F,T
+  'LENGTH ',   'I',-1, 0,F,T,F,T
+  'STATUS ',   'I',-1, 0,F,T,F,T
+  'TRIM_NAME', 'L', 0, 0,F,T,T,F
+!
+'ASINH               ' 'ASINH               ' 'R '  4 -1  1 T 'E' F
+  'X','R ', 4,-3,T,F,T,F
+'ASINH               ' 'DASINH              ' 'R '  8 -1  1 T 'E' F
+  'X','R ', 8,-3,T,F,T,F
+'ACOSH               ' 'ACOSH               ' 'R '  4 -1  1 T 'E' F
+  'X','R ', 4,-3,T,F,T,F
+'ACOSH               ' 'DACOSH              ' 'R '  8 -1  1 T 'E' F
+  'X','R ', 8,-3,T,F,T,F
+'ATANH               ' 'ATANH               ' 'R '  4 -1  1 T 'E' F
+  'X','R ', 4,-3,T,F,T,F
+'ATANH               ' 'DATANH              ' 'R '  8 -1  1 T 'E' F
+  'X','R ', 8,-3,T,F,T,F
+'SQRT                ' 'CDSQRT              ' 'C ' 16 -1  1 T 'E' F
+  ' ','C ',16,-3,T,F,T,F
+'ERF                 ' 'ERF                 ' 'R '  4 -1  1 T 'E' F
+  'X','R ', 4,-3,T,F,T,F
+'ERF                 ' 'DERF                ' 'R '  8 -1  1 T 'E' F
+  'X','R ', 8,-3,T,F,T,F
+'ERF                 ' 'QERF                ' 'R ' 16 -1  1 T 'E' F
+  'X','R ',16,-3,T,F,T,F
+'ERFC                ' 'ERFC                ' 'R '  4 -1  1 T 'E' F
+  'X','R ', 4,-3,T,F,T,F
+'ERFC                ' 'DERFC               ' 'R '  8 -1  1 T 'E' F
+  'X','R ', 8,-3,T,F,T,F
+'ERFC                ' 'QERFC               ' 'R ' 16 -1  1 T 'E' F
+  'X','R ',16,-3,T,F,T,F
+'LOG                 ' 'CDLOG               ' 'C ' 16 -1  1 T 'E' F
+  ' ','C ',16,-3,T,F,T,F
+'EXP                 ' 'CDEXP               ' 'C ' 16 -1  1 T 'E' F
+  ' ','C ',16,-3,T,F,T,F
+'SIN                 ' 'CDSIN               ' 'C ' 16 -1  1 T 'E' F
+  ' ','C ',16,-3,T,F,T,F
+'COS                 ' 'CDCOS               ' 'C ' 16 -1  1 T 'E' F
+  ' ','C ',16,-3,T,F,T,F
+'ABS                 ' 'CDABS               ' 'R '  8 -1  1 T 'E' F
+  ' ','C ',16,-3,T,F,T,F
+'                    ' 'ZSQRT               ' 'C ' 16 -1  1 T 'E' F
+  ' ','C ',16,-3,T,F,T,F
+'                    ' 'ZLOG                ' 'C ' 16 -1  1 T 'E' F
+  ' ','C ',16,-3,T,F,T,F
+'                    ' 'ZEXP                ' 'C ' 16 -1  1 T 'E' F
+  ' ','C ',16,-3,T,F,T,F
+'                    ' 'ZSIN                ' 'C ' 16 -1  1 T 'E' F
+  ' ','C ',16,-3,T,F,T,F
+'                    ' 'ZCOS                ' 'C ' 16 -1  1 T 'E' F
+  ' ','C ',16,-3,T,F,T,F
+'                    ' 'ZABS                ' 'R '  8 -1  1 T 'E' F
+  ' ','C ',16,-3,T,F,T,F
+'DFLOAT              ' 'DFLOAT              ' 'R '  8 -1  1 F 'E' F
+  ' ','I ', 0,-3,T,F,T,F
+'DCMPLX              ' '                    ' 'C ' 16 -1 -4 F 'E' F
+  'X   ', 'N', 0,-3, T,F,T,F
+  'Y   ', 'N', 0,-3, T,T,T,F
+  'KIND', 'I', 0, 0, F,T,T,F
+'                    ' 'DREAL               ' 'R '  8 -1  1 F 'E' F
+  ' ','C ',16,-3,T,F,T,F
+'GAMMA               ' '                    ' 'R '  0 -1  1 T 'E' F
+  'X','R ', 0,-3,T,F,T,F
+'LGAMMA              ' '                    ' 'R '  0 -1  1 T 'E' F
+  'X','R ', 0,-3,T,F,T,F
+'IMAG                ' 'DIMAG               ' 'R '  8 -1  1 T 'E' F
+  ' ','C ',16,-3,T,F,T,F
+'CONJG               ' 'DCONJG              ' 'C ' 16 -1  1 T 'E' F
+  ' ','C ',16,-3,T,F,T,F
+'AND                 ' 'AND                 ' 'I '  0 -1  2 T 'E' F
+  ' ','I ', 0,-3,T,F,T,F
+  ' ','I ', 0,-3,T,F,T,F
+'OR                  ' 'OR                  ' 'I '  0 -1  2 T 'E' F
+  ' ','I ', 0,-3,T,F,T,F
+  ' ','I ', 0,-3,T,F,T,F
+'XOR                 ' 'XOR                 ' 'I '  0 -1  2 T 'E' F
+  ' ','I ', 0,-3,T,F,T,F
+  ' ','I ', 0,-3,T,F,T,F
+'LSHIFT              ' 'LSHIFT              ' 'I '  0 -1  2 T 'E' F
+  ' ','I ', 0,-3,T,F,T,F
+  ' ','I ', 0,-3,T,F,T,F
+'RSHIFT              ' 'RSHIFT              ' 'I '  0 -1  2 T 'E' F
+  ' ','I ', 0,-3,T,F,T,F
+  ' ','I ', 0,-3,T,F,T,F
+'LOC                 ' 'LOC                 ' 'I '  4  0  1 F 'T' F
+  ' ','  ', 0,-7,T,F,F,F
+'%VAL                ' '%VAL                ' 'I '  4  0  1 F 'T' F
+  ' ','I ', 0, 0,T,F,T,F
+'%VAL                ' '                    ' 'R '  0  0  1 F 'T' F
+  ' ','R ', 0, 0,T,F,T,F
+'%VAL                ' '                    ' 'L '  4  0  1 F 'T' F
+  ' ','L ', 0, 0,T,F,T,F
+'%REF                ' '%REF                ' 'H '  0 -1  1 F 'E' F
+  ' ','CH', 0,-2,T,F,F,F
+'%REF                ' '                    ' '  '  0 -1  1 F 'E' F
+  ' ','I ', 1,-2,T,F,F,F
+'%REF                ' '                    ' '  '  0 -1  1 F 'E' F
+  ' ','  ', 0,-2,T,F,F,F
+'                    ' '%DESCR              ' 'CH'  0 -1  1 F 'E' F
+  ' ','  ', 0,-2,T,F,F,F
+'%LOC                ' '%LOC                ' 'I '  4  0  1 F 'T' F
+  ' ','  ', 0,-7,T,F,F,F
+'                    ' 'IARGC               ' 'I ' -1  0  0 F 'I' F
+'                    ' 'SYSTEM              ' 'I ' -1  0  1 F 'S' F
+  ' ','CH', 0, 0,T,F,T,F
+0                                       'delimiter of intrinsic functions
+'ACCESS','O','STREAM',' ',T
+'ASYNCHRONOUS','O','YES',' ',T
+'ASYNCHRONOUS','O','NO',' ',T
+'CONVERT','O','NATIVE',' ',F
+'CONVERT','O','SWAB',' ',F
+'CONVERT','O','LITTLE_ENDIAN',' ',F
+'CONVERT','O','BIG_ENDIAN',' ',F
+'DECIMAL','O','COMMA',' ',T
+'DECIMAL','O','POINT',' ',T
+'IOMSG','O','CA',' ', T
+'NAME','O','C','FILE',F
+'SIGN','O','PLUS',' ',T
+'SIGN','O','SUPPRESS',' ',T
+'SIGN','O','PROCESSOR_DEFINED',' ',T
+'STATUS','O','REPLACE',' ',F
+'IOMSG','C','CA',' ', T
+'ASYNCHRONOUS','I','V',' ',T
+'DECIMAL','I','V',' ',T
+'DELIM =','I','V',' ',T
+'IOMSG','I','V',' ',T
+'PAD =','I','V',' ',T
+'PENDING','I',' ',' ',T
+'POSITION =','I','V',' ',T
+'POS','I','I',' ',T
+'SIGN','I','V',' ',T
+'STREAM','I','V',' ',T
+0                                       'delimiter of oci specifiers'

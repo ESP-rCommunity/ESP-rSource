@@ -32,7 +32,7 @@ C if 'e ' then provide editing menu, if 'sn' use passed parameters
 C for the root and path to create a new model, if 'sc' silent continue,
 C if 'sw' then pased root and model is assumed to be created silently 
 C within the current folder.
-C root (24 char) root name (for 'sn' case)
+C root (32 char) root name (for 'sn' case)
 C mpath (72 char) path to model folder (for 'sn' case)
 C menu (72 char) brief title of model
       subroutine pregist(act,root,mpath,menu,ier)
@@ -51,7 +51,6 @@ C espriou.h provides currentfile and MFFOLD.
       common/C1/NCOMP,NCON
       common/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/C6/INDCFG
-      common/C21/IFCFG,cfgroot,LCFGF
       common/PREC8/SLAT,SLON
       common/rpath/path
       common/rcmd/LCMDFL
@@ -76,19 +75,19 @@ C External text editor.
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
 C Calendar.
-      common/caleni/nbdaytype,nbcaldays(10),icalender(365)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
 C Passed in parameters.
-      character root*24,mpath*72,menu*72
+      character root*32,mpath*72,menu*72
 
       logical XST,OK,dok,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       logical OKI,concat,unixok,clkok
 
-      character dstmp*24,LCFTMP*24
+      character dstmp*24,LCFTMP*32
       character*72 LTMP
       character path*72,LCMDFL*144,LPNF*72
       character odir*84,pwd*84
-      character LCFGF*72,cfgroot*24
       character doit*248,longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20
       character uname*24,tmode*8
@@ -155,7 +154,7 @@ C        write(6,*)  ' pregist ',mpath
         call gethelptext(helpinsub,helptopic,nbhelp)
         LCFTMP='  '
         CALL EASKSCMD(LCFTMP,' ','Model root name?',
-     &    'cancel',clkok,24,'new_model','model root name',IER,nbhelp)
+     &    'cancel',clkok,32,'new_model','model root name',IER,nbhelp)
         call usrmsg(' ',' ','-')
         if(clkok) return         ! User selected cancel.
 
@@ -187,8 +186,8 @@ C Current default version is v4.
       noimg=0
       LPNF='UNKNOWN'
       lmodellog='UNKNOWN'
-      nbdaytype=0
-      call st2file(LCFTMP,LCMDFL)
+      nbdaytype=0   ! reset to zero day types
+      call st2file(LCFTMP,LCMDFL)  ! remove unprintable characters
 
 C Derive the model root name from this.
 C If sting > 4 char it might have a .cfg attached, otherwise add.
@@ -197,24 +196,24 @@ C If sting > 4 char it might have a .cfg attached, otherwise add.
       lcfgl=lcfgr-3
       if(lcfgr.gt.4)then
         if(LCFGF(lcfgl:lcfgr).eq.'.cfg')then
-          if(lcfgl-1.le.24)then
+          if(lcfgl-1.le.32)then
             write(cfgroot,'(a)') LCFGF(1:lcfgl-1)
           else
-            write(cfgroot,'(a)') LCFGF(1:24)
+            write(cfgroot,'(a)') LCFGF(1:32)
           endif
         else
-          if(lcfgr.le.24)then
+          if(lcfgr.le.32)then
             write(cfgroot,'(a)') LCFGF(1:lcfgr)
           else
-            write(cfgroot,'(a)') LCFGF(1:24)
+            write(cfgroot,'(a)') LCFGF(1:32)
           endif
           write(LCFGF,'(a,a)')LCFGF(1:lcfgr),'.cfg'
         endif
       else
-        if(lcfgr.le.24)then
+        if(lcfgr.le.32)then
           write(cfgroot,'(a)') LCFGF(1:lcfgr)
         else
-          write(cfgroot,'(a)') LCFGF(1:24)
+          write(cfgroot,'(a)') LCFGF(1:32)
         endif
         write(LCFGF,'(a,a)')LCFGF(1:lcfgr),'.cfg'
       endif
@@ -719,7 +718,9 @@ C Ask for site position.
         IF(IER.EQ.0)sitelongdif=SLON
 
 C Ask for year, initialise and then print out the calendar if the
-C user does not cancel the operation.
+C user does not cancel the operation. Because there have been no
+C day types created use a call to calenmanage to instanciate an
+C initial set of days.
         helptopic='cfg_model_year'
         call gethelptext(helpinsub,helptopic,nbhelp)
         iyeart=iyear
@@ -782,7 +783,6 @@ C geometry.h provides commons G0 and G2.
       common/FILEP/IFIL
       common/OUTIN/IUOUT,IUIN
       
-      common/C21/IFCFG,cfgroot,LCFGF
       common/rpath/path
 
 C External text editor.
@@ -795,7 +795,6 @@ C External text editor.
       logical concat,unixok,changedit,browse
 
       character*72 path,LFIL,odir
-      character LCFGF*72,cfgroot*24
       character doit*248,sfile*72,snpfile*72
       character longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20

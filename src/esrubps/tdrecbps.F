@@ -325,11 +325,11 @@ C see if there is one which is within tollerance.
 
 C Work out which day to read, IPRECD
         IF(IDYP.LT.ITDBDOY)THEN
-          IPRECD=ITDBDOY
+	  IPRECD=ITDBDOY
         ELSEIF(IDYP.GE.ITDBDOY.AND.IDYP.LE.ITDEDOY)THEN
-          IPRECD=IDYP
+	  IPRECD=IDYP
         ELSEIF(IDYP.GT.ITDEDOY)THEN
-          IPRECD=ITDEDOY
+	  IPRECD=ITDEDOY
         ENDIF
 
 C Go to next day if 1st record for the day is to be read in order to

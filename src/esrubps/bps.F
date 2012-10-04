@@ -233,7 +233,6 @@ C Record lengths for zone (nzrl), plant (nprl), electrical(nerl) results librari
       common/recver/izver,ipver,iever
       common/hcthry/ihct,icorexhct
       COMMON/DNORGH/IRTYPE
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       common/rdcgen/irdact
       common/rdcmfs/irdcm,sFLWTIM,sDRYB,sWDIR,sWSPD,sITER,sIOK,
@@ -324,7 +323,7 @@ C Flag for enabling h3k customizations
 C      logical gopher  ! not references
       logical concat
 
-      character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
+      character LUALF*72,LCNG*15,LLOC*15
       character*29 item(15)
       character OUTS*124,spsname*8
       character LCMDFL*144,inf*144,sps*8,aut*12,fs*1,actf*72

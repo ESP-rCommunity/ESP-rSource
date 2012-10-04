@@ -10,7 +10,7 @@ C Re-compile all control-related modules if this file is altered.
       INTEGER MCF ! Max. control loops (allow one per zone)
       PARAMETER (MCF=72)
       INTEGER MCDP ! Max. periods per day
-      PARAMETER (MCDP=12)
+      PARAMETER (MCDP=24)
       INTEGER MISCC ! Max. miscellaneous data items
       PARAMETER (MISCC=41)
 

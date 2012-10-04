@@ -493,7 +493,7 @@ sub get_lines(&$){
   while ($line = <SOURCE_FILE> ) {
     #nuke linefeeds
     $line =~ s/\n\r\f//g;
-    $line =~ s/!.+$//g; 
+
     #check for include statements. Assume include files don't reference other
     #include files
     if ($line =~ /^#include[\s]*"/ ){

@@ -237,13 +237,6 @@ C NZSUR is the number of surfaces in each zone (from geometry.h).
 C NZTV is the number of vertices in each zone (from geometry.h).
 C VCOORD, NZNVER & NZJVN (from geometry.h)
 
-C IFCFG is the file unit for the model configuration file.
-C cfgroot (24 char) root name for the model (used when generating
-C   system files.
-C LCFGF (72 char) model configuration file name.
-      common/C21/IFCFG,cfgroot,LCFGF
-      INTEGER :: IFCFG
-
 C IFPNF is the unit for the plant network file.
 C LPNF (72 char) plant network file name.
       COMMON/C23/IFPNF,LPNF
@@ -526,14 +519,14 @@ C Simulation parameters
       character GTGEOM*72
       CHARACTER ectime*24,wkd1*10,wkd2*10,naco*40,type*4
       character*10 wkday(7)
-      character LUALF*72,LCNG*15,LLOC*15,cfgroot*24,LCFGF*72
+      character LUALF*72,LCNG*15,LLOC*15
       CHARACTER NDNAM*12
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character hvacfile*72,LBSIMP*72,LFClds*72
       character gshpfile*72
       character gcepfile*72
       character dllsubr*12,dllmesg*124
-      character limgpth*24,ldocpth*24,lcfgroot*24,lpath*72
+      character limgpth*24,ldocpth*24,lcfgroot*32,lpath*72
       character path*72,lupath*72
       character namez*12,namen*12
       CHARACTER*72 NWKNAM,NWKDSC,NWKFLNAM
@@ -696,19 +689,25 @@ C Initialize the indices.
       ANGI=40.
       initvt=0
 
-C Set day types to default of 3 (weekday/saturday/sunday) and calendar
-C day type tags to default as well. These 3 day types cannot be deleted
-C and more day types if defined will be stored in CALENTAG(4) onwards.
-C this can be modified later. [The IF clause may not be necessary]
+C Older files may not have a *list section for the calendar and
+C to support compatibility with legacy assumption of 3 day types
+C set nbdaytype = 3 but instanciate the calendar variables for
+C weekday/saturday/sunday/holiday and calendar day type tags. Newer
+C cfg files will have a *list section and thus update nbdaytype.
+C The initial day types cannot (??) be deleted and more day types if 
+C defined will be stored in CALENTAG(5) onwards.
+C this can be modified later.
       IF(NBDAYTYPE.LT.3)THEN
         nbdaytype=3
       ENDIF
       CALENTAG(1)='weekday'
       CALENTAG(2)='saturday'
       CALENTAG(3)='sunday'
+      CALENTAG(4)='holiday'
       CALENDAYNAME(1)='generic weekday'
       CALENDAYNAME(2)='generic saturday'
       CALENDAYNAME(3)='generic sunday'
+      CALENDAYNAME(4)='generic holiday'
 
 C Open the configuration file, return if not found otherwise set
 C currentfile to the configuration file.
@@ -734,21 +733,21 @@ C If FILE > 4 char it might have a .cfg attached, otherwise add.
       lcfgl=lcfgr-3
       if(lcfgr.gt.4)then
         if(FILE(lcfgl:lcfgr).eq.'.cfg')then
-          if(lcfgl.gt.24)then
-            write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:24)
+          if(lcfgl.gt.32)then
+            write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:32)
           else
             write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:lcfgl-1)
           endif
         else
-          if(lcfgr.gt.24)then
-            write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:24)
+          if(lcfgr.gt.32)then
+            write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:32)
           else
             write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:lcfgr)
           endif
         endif
       else
-        if(lcfgr.gt.24)then
-          write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:24)
+        if(lcfgr.gt.32)then
+          write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:32)
         else
           write(cfgroot,'(a)',iostat=ios,err=99) FILE(1:lcfgr)
         endif
@@ -1403,6 +1402,12 @@ C There is a calendar of day types defined read its name.
           goto 443
         elseif(WORD(1:5).eq.'*list')then
           K=6
+
+C For each day of the year read from the 365 indicies into the
+C icalender array.
+C << how about allowing 1 day type - that would be the case
+C << for a hosptal that was used 365 days a year.
+
           CALL EGETWI(OUTSTR,K,NBDAYTYPE,3,MDTY,'W','day types',IER)
           CALL EGETWIA(IUC,IRCC,365,0,10,'W','calendar day types',IER)
           DO 118 KV=1,365

@@ -3247,14 +3247,13 @@ C Path to model and command line file (if any).
 C Indicator of possible focus zone.
       logical browse
       common/user/browse
-      common/C21/IFCFG,cfgroot,LCFGF
       common/textbuf/dispbuf(500)
       common/textbufl/indexbuf,lnbuf(500)
 
       character path*72,h*72,uname*24,fs*1
-      character sstr*144,cfgroot*24
+      character sstr*144
       character lltmp*144
-      character LCFGF*72,dispbuf*124,outs*124
+      character dispbuf*124,outs*124
       logical unixok,there
       integer ltf  ! position of last character in string.
       integer iw   ! for user selection
@@ -3395,16 +3394,15 @@ C Path to model and command line file (if any).
 C Indicator of possible focus zone.
       logical browse
       common/user/browse
-      common/C21/IFCFG,cfgroot,LCFGF
 
 C Graphic capture, window dump: label, command.
       character gprlbl*20,gprcmd*48
       common/gprint/gprlbl,gprcmd
 
       character path*72,h*72,uname*24,fs*1
-      character sstr*144,cfgroot*24
+      character sstr*144
       character lltmp*144,outs*124
-      character LCFGF*72,gcmd*144
+      character gcmd*144
       integer ltf  ! position of last character in string.
       integer iw   ! for user selection
 

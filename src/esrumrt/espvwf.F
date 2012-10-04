@@ -83,7 +83,6 @@ C Indicator of possible focus zone.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
 
 C Project journal on/off, unit number, cmd, file name.
       common/journopt/journio,iuj,journcmd,jfile
@@ -112,9 +111,9 @@ C Name of current application
       LOGICAL MODIFY,MODLEN,MODBND,XST,unixok,there
       character outs*124,outs248*248,MODE*4
       CHARACTER OUTSTR*124,CUBN*6,ITEM*29
-      CHARACTER DFILE*72,inf*144,LCMDFL*144,LCFGF*72
+      CHARACTER DFILE*72,inf*144,LCMDFL*144
       CHARACTER VFILE*72,ZN*12,LTMP*72,L144*144,LTMPFL*72
-      character path*72,cfgroot*24
+      character path*72
       character journcmd*20,jfile*72,uname*24
       character inz*16,inzone*16,fs*1,cjfile*72
 
@@ -134,6 +133,7 @@ C Name of current application
       integer*8 iicapture,iiazi    ! to pass to updcapt updazi
 #endif
       integer NITEMS,INO ! max items and current menu item
+      integer IGFACTold,NPATCHold ! local vars to remember grid/patch settings
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -670,7 +670,7 @@ c Change npatch.
         helptopic='patch_subdivision'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL EASKI(NP,' ',' New value ? ',
-     &    1,'F',MPATCH/4,'F',1,'patch subdivision',IER,nbhelp)
+     &    1,'F',MPATCH/4,'F',10,'patch subdivision',IER,nbhelp)
         NPATCH=4*NP
         call tstamp('>','VWF: updated patch subdivision')
       ELSEIF(INO.EQ.9)THEN
@@ -715,13 +715,15 @@ C of rectangular body.
         NGRID = 0
         NTRPOL = 0
         IER=0
+        IGFACTold=IGFACT
+        NPATCHold=NPATCH
         call tstamp('>','VWF: enter mrt calcs')
         call EDMRTC(ITRC,IUOUT,ICOMP,IER)
         call tstamp('>','VWF: exit mrt calcs')
 
 C Reset grid and patch after return from MRT sensor calculations.
-        IGFACT = 10
-        NPATCH=40
+        IGFACT=IGFACTold
+        NPATCH=NPATCHold
       ELSEIF(INO.EQ.12)THEN
 
 C Toggle trace level.

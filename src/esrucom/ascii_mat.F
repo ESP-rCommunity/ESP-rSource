@@ -498,7 +498,7 @@ C common block arrays so that future reads are more efficient.
      &          matsoldrinrfl(J),matvistran(J),matvisotrfl(J),
      &          matvisinrfl(J),matrender(J)
             elseif(matopaq(J)(1:1).eq.'g')then
-              if(closemat1)then
+	      if(closemat1)then
                 write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,
      &            f8.5,f9.6,2f11.8,f8.4,f9.5,2f9.6,f9.3,f9.6)')
      &            matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
@@ -508,7 +508,7 @@ C common block arrays so that future reads are more efficient.
      &            matvisco(J,2),matgapden(J,1),matgapden(J,2),
      &            matprandtl(J,1),matprandtl(J,2),matgapsht(J,1),
      &            matgapsht(J,2)
-              elseif(closemat2)then
+	      elseif(closemat2)then
                 write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,
      &            3f7.4,f8.5,f9.6,2f11.8,f8.4,f9.5,2f9.6,f9.3,f9.6)')
      &            matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
@@ -521,7 +521,7 @@ C common block arrays so that future reads are more efficient.
      &            matgapsht(J,2)
               endif
             elseif(matopaq(J)(1:1).eq.'h')then
-              if(closemat1)then
+	      if(closemat1)then
                 write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,4f8.5,
      &            4f11.8,4f9.6,f9.6,f9.3)')
      &            matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
@@ -532,7 +532,7 @@ C common block arrays so that future reads are more efficient.
      &            matvisco(J,3),matvisco(J,4),matgapden(J,1),
      &            matgapden(J,2),matgapden(J,3),matgapden(J,4),
      &            matprandtl(J,1),matgapsht(J,1)
-               elseif(closemat2)then
+	      elseif(closemat2)then
                 write(outs,'(f13.3,2F9.3,4f6.3,f10.3,F6.1,2a,3f7.4,
      &            4f8.5,4f11.8,4f9.6,f9.6,f9.3)')
      &            matdbcon(J),matdbden(J),matdbsht(J),matdboute(J),
@@ -601,7 +601,7 @@ C next token as the version number as set closemat.
   42    continue
         matver = 1.1   ! set initial version of database.
         CALL EGETWR(OUTSTR,K,VAL(1),1.0,1.2,'-','db mat version',IER)
-      if(VAL(1).gt.1.0) matver = VAL(1)
+	if(VAL(1).gt.1.0) matver = VAL(1)
         call eclose(matver,1.1,0.001,closemat1)
         call eclose(matver,1.2,0.001,closemat2)
       else
@@ -709,7 +709,7 @@ C Read single layer optics if there are more than
           endif
         elseif(WORD32(1:1).eq.'g')then   ! gas (data+temp correction)
           matopaq(matdbitems)='g'
-      if(closemat1)then
+	  if(closemat1)then
             CALL EGETWR(LOUTSTR,K,VAL(1),0.,0.,'-','db gas cond',IER)
             CALL EGETWR(LOUTSTR,K,VAL(2),0.,0.,'-','db cond T deriv',
      &        IER)
@@ -782,7 +782,7 @@ C of layer (and thus has the air gap resistances).
           endif
         elseif(WORD32(1:1).eq.'h')then   ! gas (data at 4 temps)
           matopaq(matdbitems)='h'
-       if(closemat1)then
+	  if(closemat1)then
             CALL EGETWR(LOUTSTR,K,VAL(1),0.,0.,'-','gas cond -10',IER)
             CALL EGETWR(LOUTSTR,K,VAL(2),0.,0.,'-','gas cond 0',IER)
             CALL EGETWR(LOUTSTR,K,VAL(3),0.,0.,'-','gas cond 10',IER)

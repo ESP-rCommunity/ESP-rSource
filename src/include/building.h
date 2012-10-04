@@ -65,17 +65,12 @@ C Special materials.
 
 C Casual gains.
       PARAMETER (MCT=7,MGTY=7) !- Casual gain types.
-      PARAMETER (MDTY=10)      !- Day types.
+      PARAMETER (MDTY=15)      !- Day types.
       PARAMETER (MGPER=72)     !- Periods.
-C Parameters used for HOT3000
-C     PARAMETER (MCT=30,MGTY=30)!- Casual gain types.
-C     PARAMETER (MDTY=10)       !- Day types.
-C     PARAMETER (MGPER=72)      !- Periods.
-
       PARAMETER (MC=24*MCT*MDTY)!- Total casual gains.
 
 C Mean radiant temperature.
-      PARAMETER (MCUB=4)        !- Sensors in zone.
+      PARAMETER (MCUB=6)        !- Sensors in zone.
       PARAMETER (MGC=26000)     !- Surface grid cells.
       PARAMETER (MPATCH=200)    !- Hemispherical patches.
 

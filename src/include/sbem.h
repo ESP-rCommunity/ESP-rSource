@@ -361,11 +361,11 @@ C are local variables in mksbem.F subroutine BERTER.
      & TyER_HEATCO2,TyER_COOLCO2,TyER_AUXCO2,TyER_LIGHTCO2,TyER_DHWCO2
       
       CHARACTER*72 LCFGF_O      ! Original cfg file name
-      CHARACTER*24 CFGROOT_O    ! original cfg root name
-      CHARACTER*24 CFGROOT_S    ! stripped cfg root name
-      CHARACTER*24 CFGROOT_N    ! notional cfg root name
-      CHARACTER*24 CFGROOT_R    ! referemce cfg root name
-      CHARACTER*24 CFGROOT_T    ! typical cfg root name
+      CHARACTER*32 CFGROOT_O    ! original cfg root name
+      CHARACTER*32 CFGROOT_S    ! stripped cfg root name
+      CHARACTER*32 CFGROOT_N    ! notional cfg root name
+      CHARACTER*32 CFGROOT_R    ! referemce cfg root name
+      CHARACTER*32 CFGROOT_T    ! typical cfg root name
       CHARACTER*72 LGEOM_O      ! Original geometry file names
       CHARACTER*72 LCFGF_S      ! Stripped cfg file name
       CHARACTER*72 LCFGF_N      ! Notional cfg file name

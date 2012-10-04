@@ -231,12 +231,7 @@ C then include initial data for energy demand sets and metrics.
       integer lnblnk  ! function definition
 
 C Comments about common blocks are in ripvdat.
-      common/C21/IFCFG,cfgroot,LCFGF
-
-
       character act*1
-      character cfgroot*24
-      character LCFGF*72
 
 C Days to display (default is three (early winter, spring, summer).
       nipvdispjd=3
@@ -337,6 +332,7 @@ C Read IPV data from an external file or within cfg file based
 C on the parameter act (3 char) ='ipv' or ='cfg'.
       subroutine ripvdat(ifu,file,act,ier)
 #include "building.h"
+#include "model.h"
 #include "espriou.h"
 #include "ipvdata.h"
       
@@ -352,9 +348,6 @@ C on the parameter act (3 char) ='ipv' or ='cfg'.
       character tipvadesc*40
 
 C Comments about common blocks are in ripvdat.
-      common/C21/IFCFG,cfgroot,LCFGF
-      character cfgroot*24
-      character LCFGF*72
 
 C Open any existing file by this name.
       if(act(1:3).eq.'ipv')then

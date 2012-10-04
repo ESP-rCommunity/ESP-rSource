@@ -214,8 +214,6 @@ C default file names for databases
 C Path to model and command line file name.
       common/rpath/path
       common/rcmd/LCMDFL
-      common/C21/IFCFG,cfgroot,LCFGF
-      INTEGER :: IFCFG
       common/c6/indcfg
       INTEGER :: indcfg
 
@@ -288,7 +286,7 @@ C For reading in of bi-directional data.
 
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGrdSt
 
-      CHARACTER OUTSTR*124,LCFGF*72,MODE*4,cfgroot*24
+      CHARACTER OUTSTR*124,MODE*4
       CHARACTER outs*124,louts*248,spsname*8,L144*144
       CHARACTER outs248*248,LCMDFL*144
       character*72 laprob,path,ENTFLNAM

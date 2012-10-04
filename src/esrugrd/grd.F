@@ -63,7 +63,6 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
 
 C Path to problem
       common/rpath/path
@@ -87,9 +86,9 @@ C Name of current application
       LOGICAL MODIFY,MODBND,MODLEN,XST,GRDOK
 
       DIMENSION ITEM(11)
-      CHARACTER LFILE*72,LCFGF*72
+      CHARACTER LFILE*72
       CHARACTER OUTSTR*124,ITEM*24,path*72,inf*144,LCMDFL*144
-      character cfgroot*24,outs248*248,L144*144
+      character outs248*248,L144*144
       character inz*16,inzone*16,outs*124,MODE*4
 
       character cVnum*16      ! returned from ESPrVersionNum

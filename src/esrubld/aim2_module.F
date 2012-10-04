@@ -24,7 +24,7 @@ C This file contains the module AIM2 which contains the data for
 C the following routines related to the AIM-2 infiltration model.
 C These routines are invoked prior to bps commencing its time-step simulation:
 
-C   AIM2_H2KDefaults        Initializes generic house data 
+C   AIM2_H2KDefaults	    Initializes generic house data 
 C   AIM2_READIN             Reads the data contained in the .aim file.
 C   AIM2_SETVARS            Controls calc of time-invariant data for AIM-2 model.
 C   AIM2_HOUSE_VOLUME       Calculates house volume.
@@ -210,8 +210,8 @@ C but rather treated with different approach.
 
 C File version (used in report functions)
       REAL :: fAIM2VersionNumber
-
-C Initialization flag
+	
+C Initialization flag	
       LOGICAL :: AIM2_Initialized 
 
 C Air flow when windows open (ACH)
@@ -939,7 +939,7 @@ C of the zones that do receive infiltration.
       CALL STRIPC(IUNIT,OUTSTR,0,ND,1,' AIM-2 data',IER)
       IF(IER.NE.0)goto 1000
       K=0
-      CALL EGETWI(OUTSTR,K,IVAL,1,30,'F',' num zones with infil',IER)   ! 24-Feb-2011 BAL: increased max number of zones receiving infil. to 30
+      CALL EGETWI(OUTSTR,K,IVAL,1,10,'F',' num zones with infil',IER)
       if(IER.NE.0)then
         call edisp(IUOUT,' Cannot read num of zones with infil.')
         goto 1000
@@ -967,7 +967,7 @@ C Check allocation was sucessful
  
         IF (ALLOCATED(AIM2_zone_infil)) THEN
           DO ICOMP=1,AIM2_num_zones_infil
-            CALL EGETWI(OUTSTR,K,IVAL,1,30,'F',       ! 24-Feb-2011 BAL: increased max number of zones receiving infil. to 30
+            CALL EGETWI(OUTSTR,K,IVAL,1,10,'F',
      &          ' zone receiving infil',IER)
             if(IER.NE.0)then
               call edisp(IUOUT,' zone receiving infil.')
@@ -1406,12 +1406,12 @@ C indicates the foundation type, but uses a different numbering
 C scheme than H2K's generic foundation description.
 
 C INPUTS:
-C ifound  The index number of the foundation under consideration.
+C	ifound  The index number of the foundation under consideration.
 C       H2K_found_type  The H2K foundation type flag.
 C       H2K_found_depth  The depth of the foundation as input by the user.
 
 C OUTPUTS:
-C j  The foundation type index corresponding to the `LeakDis' array.
+C	j  The foundation type index corresponding to the `LeakDis' array.
 C --------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_SETJ(ifound,j)
@@ -2384,8 +2384,8 @@ C Common blocks
 
       IF (ALLOCATED(AIM2_infil_to_zones)) THEN
 C Debig AIM2      
-C        WRITE(*,*)'AIM2_infil_to_zones',AIM2_infil_to_zones      
-        DEALLOCATE(AIM2_infil_to_zones, STAT=deallocatestatus)
+C        WRITE(*,*)'AIM2_infil_to_zones',AIM2_infil_to_zones      	
+	DEALLOCATE(AIM2_infil_to_zones, STAT=deallocatestatus)
         IF (deallocatestatus.NE.0) THEN
           CALL EDISP(IUOUT,
      &       ' Problem with deallocation of AIM2_infil_to_zones array')
@@ -2394,7 +2394,7 @@ C        WRITE(*,*)'AIM2_infil_to_zones',AIM2_infil_to_zones
 
       IF (ALLOCATED(AIM2_zone_infil)) THEN
 C Debig AIM2      
-C        WRITE(*,*)'AIM2_zone_infil',AIM2_zone_infil     
+C        WRITE(*,*)'AIM2_zone_infil',AIM2_zone_infil      	
         DEALLOCATE(AIM2_zone_infil, STAT=deallocatestatus)
         IF (deallocatestatus.NE.0) THEN
           CALL EDISP(IUOUT,
