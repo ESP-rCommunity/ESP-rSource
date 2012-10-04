@@ -1147,9 +1147,6 @@ C Materials db: BINARY > ASCII. Open the ascii file on IAF=IFIL+1.
 C Do not assume that LFMAT is necessarily the binary file
 C the user may have been working earlier with an ascii version
 C revise to request the name of the binary file before opening it.
-
-C << what about value of ipathmat? >>
-
         write(LLTMP,'(a)') LFMAT(1:lnblnk(LFMAT))  ! remember current file name
         lsn2=MIN0(lnblnk(LLTMP),92)
         LTMP=' '
