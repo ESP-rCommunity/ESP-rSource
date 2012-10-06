@@ -121,9 +121,9 @@ C 1. scan G6 common and check that CFCs are VERT and EXTERIOR
         IF (SSOTF(icn1)(1:4).eq.'CFC ') then
 c           if(SSVFC(icn1)(1:4).eq.'VERT'.and.
            if(
-     &          SSOTHER(icn1,1)(1:5).eq.'EXTER')then
-				ncfccount=ncfccount+1   !count CFCs in zone
-				con_name(is)=SSMLCN(icn1)
+     &         SSOTHER(icn1,1)(1:5).eq.'EXTER')then
+               ncfccount=ncfccount+1   !count CFCs in zone
+               con_name(is)=SSMLCN(icn1)
 
 C 2.  scan constructions layers and check that there are air gaps
 C between each glazing/shading layer
@@ -137,7 +137,7 @@ C between each glazing/shading layer
      &              'W')
                     IER=1
                     return
-				  endif
+                  endif
  15             continue
 
             else
@@ -344,7 +344,7 @@ C===========V E R S I O N   2   F I L E S===================
 C Write out file version header if version 2 file
       if (im_CFCfileversion(icomp).eq.2) then
         WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
-     &    '*CFC_Fileversion 2'      
+     &    '*CFC_Fileversion 2'
       endif
 C-----------------------------------------------------------
 
@@ -1150,7 +1150,7 @@ c      ITRC=1
           CALL EDISP(ITRU,OUTS)
    31   CONTINUE
       ENDIF
-	  
+
       DO 20 I=1,ncfc(icomp)
 
 c Establish the number of layers in CFC type I, check that no. of 
@@ -2848,9 +2848,9 @@ C Copy periods.
         CALL EPICKS(IX,KSTR,' ','choose daytype to copy periods to',
      &  12,nbdaytype,calentag,'Choose daytype',IER,35)
         IDT=KSTR(1)
-     	do 210 IX=1,n_ctl_periods(icomp,icfctype,IDTY)
-     	  if (n_ctl_periods(icomp,icfctype,IDT).lt.MA) then
-     	    IPER=0
+        do 210 IX=1,n_ctl_periods(icomp,icfctype,IDTY)
+          if (n_ctl_periods(icomp,icfctype,IDT).lt.MA) then
+            IPER=0
 
           IctlSX=i_ctl_start(icomp,icfctype,IDTY,IX)
           IctlFX=i_ctl_end(icomp,icfctype,IDTY,IX)
@@ -2860,14 +2860,14 @@ C Copy periods.
           call addCFC_period_data(icomp,icfctype,IPER,IDT,IctlSX,
      &                            IctlFX,ishdONX,slat_angleX)
 
-     	    call chkCFC_period_data(icomp,icfctype)
+            call chkCFC_period_data(icomp,icfctype)
           
           ELSE
             WRITE(OUTS,'(2a)')'Sorry, too many periods in day type ',
      &      calentag(idt)
             call usrmsg(' ',outs,'W')
-     	  endif
- 210 	continue
+          endif
+ 210    continue
       endif
       return
       end

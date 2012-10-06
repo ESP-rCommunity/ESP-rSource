@@ -804,7 +804,7 @@ C misc local variables
       integer icomp,isurf,icfctp,nc,i,j,indx
       integer iDiaIn,iDiaOut,irow,icol,k,indxj,ij,jk
       integer N                            !matrix size
-      integer nExtPart,nCFCPart			   !matrix partition sizes
+      integer nExtPart,nCFCPart            !matrix partition sizes
       real B(N,N+2),tmpB(N,N+2)            !radiosity matrix
       real JsolB(N)                        !solution matrix
 
@@ -989,7 +989,7 @@ C zone surface.
 C Calculate exchange factor for intra-constructional CFC layers.
               do 110 j=i,nCFCPart,2
                   indxj=j+nExtPart
- 		  if(j.eq.i.and.j.lt.nCFCPart-2)then 
+                if(j.eq.i.and.j.lt.nCFCPart-2)then
                     FSbb(icomp,isurf,i-1,j-1)=0.
                     FSbf(icomp,isurf,i-1,j+1)=JsolB(indxj)
                     FSbb(icomp,isurf,i-1,j+1)=JsolB(indxj+3)
@@ -2851,8 +2851,8 @@ C *******************************************************************
 C      real ab,bc        ! lengths of slat sub-surfaces
       !real ae,bd,bf,ce
       real cd,af        ! lengths of the diagonal strings used in the four-surface model
-      real F12_4,F13_4, F14_4, F31_4, F41_4, FSS_4	                ! four-surface model shape factors
-      real C3, B3, C4, B4, K3, K4, DEN   	                        ! temporaries
+      real F12_4,F13_4, F14_4, F31_4, F41_4, FSS_4  ! four-surface model shape factors
+      real C3, B3, C4, B4, K3, K4, DEN              ! temporaries
 
 C Front reflectance of slats given in *.cfc file
 C corresponds to upwards facing slat surface reflectance.
@@ -2894,8 +2894,8 @@ C diagonal string lengths used to calculate shape factors using Hottel's method
       K3 = (C3 + (B3*C4))/(1.0 - (B3*B4))
       K4 = (C4 + (B4*C3))/(1.0 - (B3*B4))
 
-      tauvb = F12_4 + (F14_4*K3) + (F13_4*K4)	! transmittance of VB (equal front/back)
-      rhofvb = (F13_4*K3) + (F14_4*K4)          ! diffuse reflectance of VB front-side
+      tauvb = F12_4 + (F14_4*K3) + (F13_4*K4)  ! transmittance of VB (equal front/back)
+      rhofvb = (F13_4*K3) + (F14_4*K4)         ! diffuse reflectance of VB front-side
 
       IF (TAUVB < 0.) TAUVB = 0.
       IF (RHOFVB < 0.) RHOFVB = 0.
@@ -3084,7 +3084,7 @@ C OUTPUT VARIABLES
       ENDIF
 
 
-      SL_RAD=W*SL_RAD_OVERW	
+      SL_RAD=W*SL_RAD_OVERW
       SL_THETA = 2.0*(ASIN(0.5/SL_RAD_OVERW))
 
 !--------------------------------------------------------------------
@@ -3095,11 +3095,11 @@ C OUTPUT VARIABLES
       IF(ABS(PHI+OMEGA).LT.(SL_THETA/2.0)) THEN
 
 !  CALCULATE BEAM TRANSMISSION
-            XA=SL_RAD*SIN(-SL_THETA/2.0)	!Glass-side end coordinate
+            XA=SL_RAD*SIN(-SL_THETA/2.0)  !Glass-side end coordinate
             YA=SL_RAD*COS(-SL_THETA/2.0)
             XB=-XA      !Indoor-side end coordinate
             YB=YA
-            YC=SL_RAD*COS(PHI+OMEGA)	!Tangent to slat in irradiance direction
+            YC=SL_RAD*COS(PHI+OMEGA)  !Tangent to slat in irradiance direction
             XC=SQRT(SL_RAD**2-YC**2)
             Slope=-XC/YC
             IF (ABS(Slope).LT.SMALL_ERROR) THEN
@@ -3124,7 +3124,7 @@ C OUTPUT VARIABLES
                   YF=-XF/Slope
             ENDIF
 
-            T_CORR_D=SQRT((XC-XD)**2+(YC-YD)**2)	!Slat thickness perpendicular to light direction
+            T_CORR_D=SQRT((XC-XD)**2+(YC-YD)**2)  !Slat thickness perpendicular to light direction
             T_CORR_F=SQRT((XC-XF)**2+(YC-YF)**2)
 
             TAUSFBB=1.0-T_CORR_D/(S*COS(OMEGA))
@@ -3142,7 +3142,7 @@ C OUTPUT VARIABLES
 
       ENDIF
 
-! CHECK TO SEE IF CURVATURE CORRECTION INCLUDES DOUBLE BLOCKAGE	
+! CHECK TO SEE IF CURVATURE CORRECTION INCLUDES DOUBLE BLOCKAGE
 ! (TAUSFBB < 0.0 AND SET TAUSFBB = 0.0)
       IF(TAUSFBB.LT.0.0) THEN  ! YES, THERE IS DOUBLE BLOCKAGE
 
@@ -3168,7 +3168,7 @@ C OUTPUT VARIABLES
                   YA=SL_RAD*COS(-SL_THETA/2.0)
                   XB=-XA                              !Indoor-side end coordinate
                   YB=YA
-                  YC=SL_RAD*COS(PHI+OMEGA)	!Tangent to slat in irradiance direction
+                  YC=SL_RAD*COS(PHI+OMEGA)  !Tangent to slat in irradiance direction
                   XC=SQRT(SL_RAD**2-YC**2)
                   Slope=-XC/YC
                   IF (ABS(Slope).LT.SMALL_ERROR) THEN
@@ -3343,8 +3343,8 @@ C OUTPUT VARIABLES
       PARAMETER (PI = 3.14159265359, SMALL_ERROR = 0.000001)
 
       DE = 0.0          ! INITIALIZE DE
-      PHI = 0.0	        ! INITIALIZE PHI
-      OMEGA = 0.0	! INITIALIZE OMEGA
+      PHI = 0.0         ! INITIALIZE PHI
+      OMEGA = 0.0       ! INITIALIZE OMEGA
 
 
 !-----------------------------------------------------------------------------------
@@ -3352,7 +3352,7 @@ C OUTPUT VARIABLES
 !  AND SET THE SLAT ANGLE TO 89.5 DEGREES 
 !  (THIS IS DONE FOR BOTH POSITIVE AND NEGATIVE SLAT ANGLES)
       IF((PHI_RAD.ge.(89.5*PI/180.0)).OR.
-     &      (PHI_RAD.le.(-89.5*PI/180.0)))THEN		
+     &      (PHI_RAD.le.(-89.5*PI/180.0)))THEN
             IF (PHI_RAD.lt.0.0) THEN
                   PHI = -89.5*PI/180.0
             ELSE
@@ -3464,7 +3464,7 @@ C INTERMEDIATE VARIABLES:
 C   AF, C  = Lengths of diagonal strings used in four surface model
 C   F13, F14, F23, F24, F34, F43 =  shape factors
 C   Z3, Z4 = Diffuse source terms from surfaces 3 and 4 due to incident
-C            beam radiation	
+C            beam radiation
 C   J3, J4 = Radiosities from surfaces 3 and 4
 C   B3, B4, C3, C4 = temporarily used variables
 C
@@ -3508,19 +3508,19 @@ C OUTPUT VARIABLES
 
       AF = SQRT ((W*COS(PHI))**2   +   (S - W*SIN(PHI))**2)
       CD = SQRT ((W*COS(PHI))**2   +   (S + W*SIN(PHI))**2)
-!-----------------------------------------------------------------------------------	
+!-------------------------------------------------------------------------------
 !  CHECK TO SEE WHICH SIDE OF SLAT IS SUNLIT
       IF((PHI + OMEGA).GE.0.0) THEN   ! SUN SHINES ON TOP OF SLAT
 
             Z3 = TAU*S/DE
             Z4 = RHO4*S/DE
 
-      ELSE  ! SUN SHINES ON BOTTOM OF SLAT	
+      ELSE  ! SUN SHINES ON BOTTOM OF SLAT
             Z3 = RHO3*S/DE
             Z4 = TAU*S/DE 
       ENDIF
 
-!-----------------------------------------------------------------------------------	
+!-------------------------------------------------------------------------------
 !  CHECK TO SEE IF VENETIAN BLIND IS CLOSED
       IF( ABS(PHI - (PI/2.0)).LT.SMALL_ERROR ) THEN    !VENETIAN BLIND IS CLOSED
 
@@ -3546,7 +3546,7 @@ C OUTPUT VARIABLES
             B3 = (RHO3*F34) / (1.0 - TAU*F43)
             C4 = 1.0 / (1.0 - TAU*F34)
             B4 = (RHO4*F43) / (1.0 - TAU*F34)
-            J3 = (C3*Z3 + B3*C4*Z4) / (1.0 - B3*B4)	
+            J3 = (C3*Z3 + B3*C4*Z4) / (1.0 - B3*B4)
             J4 = (C4*Z4 + B4*C3*Z3) / (1.0 - B3*B4)
 
             RHOSFBD = F13*J3 + F14*J4
@@ -3637,19 +3637,18 @@ C ********************************************************************
       REAL XSOL(4)
       REAL PI, SMALL_ERROR
       PARAMETER(PI = 3.14159265359, SMALL_ERROR = 0.000001)
-	
+
 !-----------------------------------------------------------------------------------
 
 !  CHECK TO SEE WHICH SIDE OF SLAT IS SUNLIT
       IF((PHI + OMEGA).GE.0.0) THEN   ! SUN SHINES ON TOP OF SLAT
             Z3 = TAU*S/DE
             Z4 = RHO46*S/DE
-      ELSE  ! SUN SHINES ON BOTTOM OF SLAT	
+      ELSE  ! SUN SHINES ON BOTTOM OF SLAT
             Z3 = RHO35*S/DE
             Z4 = TAU*S/DE
       ENDIF
 !-----------------------------------------------------------------------------------
-	
 !  CHECK TO SEE IF VENETIAN BLIND IS CLOSED
       IF( ABS(PHI - (PI/2.0)).LT.SMALL_ERROR ) THEN  !VENETIAN BLIND IS CLOSED
 
@@ -3674,7 +3673,7 @@ C ********************************************************************
             AE = SQRT ((DE*COS(PHI))**2   +  (S - DE*SIN(PHI))**2)
 
             F13 = (S + AB - BD) / (2.0*S)
-            F14 = (S + DE - AE) / (2.0*S)	
+            F14 = (S + DE - AE) / (2.0*S)
             F15 = (W + BD - (AB + CD)) / (2.0*S)
             F16 = (W + AE - (AF + DE)) / (2.0*S)
             F23 = (W + BF - (BC + AF)) / (2.0*S)
