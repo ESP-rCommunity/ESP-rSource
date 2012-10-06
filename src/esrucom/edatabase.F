@@ -33,6 +33,8 @@ C  EDWINO:  Allow user to select a glazing type by name.
 C  module_opendb: open materials constructions, multi-layer constructions and
 C           optical properties databases (for utility applications).
 
+C << todo - depreciate references to IPR array and use Material names only.>>
+
 C ************* ERMLDB
 C Given file name and unit number, read  an ASCII composite 
 C construction database and return data via common block MLC.
@@ -95,7 +97,7 @@ C the standard location then create lworking which has path
 C prepended.
         if(ipathmat.eq.0.or.ipathmat.eq.1)then
           ier=0
-        call EFOPRAN(IFMAT,LFMAT,40,1,IER)
+          call EFOPRAN(IFMAT,LFMAT,40,1,IER)
           if(ier.ne.0)then
             write(outs248,'(3a)') ' No materials db ',
      &        LFMAT(1:lnblnk(LFMAT)),' found!'
@@ -114,12 +116,12 @@ C          write(6,*) 'working materials ',lworking
           ier=0
           call EFOPRAN(IFMAT,lworking,40,1,IER)
           if(ier.ne.0)then
-          write(outs,'(3a)') ' No materials db ',
-     &        lworking(1:lnblnk(lworking)),' found!'
-          call edisp(iuout,outs)
-          MATDBOK=.FALSE.
-          ier=2    ! set error state so calling code will look for ascii version.
-          return
+            write(outs,'(3a)') ' No materials db ',
+     &         lworking(1:lnblnk(lworking)),' found!'
+            call edisp(iuout,outs)
+            MATDBOK=.FALSE.
+            ier=2    ! set error state so calling code will look for ascii version.
+            return
           endif
         endif
         IF(ier.eq.0)THEN
@@ -269,57 +271,57 @@ C to write less than 72 char into NAM
           IF(ND.GT.2)THEN
             CALL EGETRM(OUTSTR,K,RSTR,'W','layer name:gap R',IER)
             lex=MIN0(LNBLNK(RSTR),72)
-	    write(NAM,'(a)')RSTR(1:lex)
+            write(NAM,'(a)')RSTR(1:lex)
             lex=MIN0(LNBLNK(RSTR),124)
-	    write(LAYDESC(I,IL),'(a)')RSTR(1:lex)
+            write(LAYDESC(I,IL),'(a)')RSTR(1:lex)
 
 C See if there is a matching matarray index, if so assign values
 C to the IPRMAT array so for each IPR there is a IPRMAT. Note:
 C NOTE: in case there are multiple items with the same characters
 C in the name also check to see if the legacy index associated
 C with the found item matches the IPR scanned above.
-              ileghope=IPR(I,IL)   ! what we hope we will find a match for
-              call parsematdesc(ileghope,NAM,matarrayindex)
-              if(matarrayindex.ne.0)then
-                if(matlegindex(matarrayindex).ne.IPR(I,IL))then
+            ileghope=IPR(I,IL)   ! what we hope we will find a match for
+            call parsematdesc(ileghope,NAM,matarrayindex)
+            if(matarrayindex.ne.0)then
+              if(matlegindex(matarrayindex).ne.IPR(I,IL))then
                 call edisp(iuout,' --- WARNING --- ')
-                  write(outs,'(a,i3,a,i3,2a)') 
-     &              'Duplicate material names ',
-     &              matlegindex(matarrayindex),' index does not match ',
-     &              IPR(I,IL),' name: ',NAM(1:lnblnk(NAM))
-                  call edisp(iuout,outs)
-                  write(outs,*) 'as referenced in ',MLCN(1:lnblnk(MLCN))
-                  call edisp(iuout,outs)
-                  write(outs,'(2a)') 
-     &            'Marking the confused layer with a -99. Check the ',
-     &              'materials database for two identically named'
-                  call edisp(iuout,outs)
-                  write(outs,'(2a)') 
-     &            'materials, edit to make names unique, save and ',
-     &              'then rescan databases and re-make zone files.'
-                  call edisp(iuout,outs)
+                write(outs,'(a,i3,a,i3,2a)') 
+     &            'Duplicate material names ',
+     &            matlegindex(matarrayindex),' index does not match ',
+     &            IPR(I,IL),' name: ',NAM(1:lnblnk(NAM))
+                call edisp(iuout,outs)
+                write(outs,*) 'as referenced in ',MLCN(1:lnblnk(MLCN))
+                call edisp(iuout,outs)
                 write(outs,'(2a)') 
-     &            'Or use the interface to locate the named construc-',
-     &            'tion and re-select the correct material.'
+     &          'Marking the confused layer with a -99. Check the ',
+     &            'materials database for two identically named'
+                call edisp(iuout,outs)
+                write(outs,'(2a)') 
+     &          'materials, edit to make names unique, save and ',
+     &            'then rescan databases and re-make zone files.'
+                call edisp(iuout,outs)
+                write(outs,'(2a)') 
+     &          'Or use the interface to locate the named construc-',
+     &          'tion and re-select the correct material.'
                 call edisp(iuout,outs)
                 call edisp(iuout,' --- make a note of this NOW --- ')
-                  IPRMAT(I,IL)=-99  ! could not find it
-                else
-                  IPRMAT(I,IL)=matarrayindex
-                endif    
+                IPRMAT(I,IL)=-99  ! could not find it
               else
+                IPRMAT(I,IL)=matarrayindex
+              endif    
+            else
 
 C Did not find it, check if IPR(I,IL) is zero, if so set
 C IPRMAT to zero to signal an air gap.  If not mark as -99
 C so that other facilities know about the confusion.
-                if(IPR(I,IL).eq.0)then
-                  IPRMAT(I,IL)=0  ! to signal std air gap
-                else
-                  IPRMAT(I,IL)=-99  ! could not find it
-                  write(outs,*)'as referenced in ',MLCN(1:lnblnk(MLCN))
-                  call edisp(iuout,outs)
-                endif
+              if(IPR(I,IL).eq.0)then
+                IPRMAT(I,IL)=0  ! to signal std air gap
+              else
+                IPRMAT(I,IL)=-99  ! could not find it
+                write(outs,*)'as referenced in ',MLCN(1:lnblnk(MLCN))
+                call edisp(iuout,outs)
               endif
+            endif
 
 C For a standard air gap pick up 'AIR' followed by assumed R values.
             IF(IPR(I,IL).EQ.0)THEN
@@ -334,43 +336,42 @@ C For a standard air gap pick up 'AIR' followed by assumed R values.
             ELSEIF(IPR(I,IL).EQ.-99)THEN
 
 C For a layer with no legacy index use the matarray index and assign values.
-                matarrayindex=IPRMAT(I,IL)
-                if(matarrayindex.ne.0)then
-                  DBCON=matdbcon(matarrayindex)
-                  DBDEN=matdbden(matarrayindex)
-                  DBSHT=matdbsht(matarrayindex)
+              matarrayindex=IPRMAT(I,IL)
+              if(matarrayindex.ne.0)then
+                DBCON=matdbcon(matarrayindex)
+                DBDEN=matdbden(matarrayindex)
+                DBSHT=matdbsht(matarrayindex)
 
-C If g or h air gap and version 1.2 then assign DRAIR
-	          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &               matopaq(matarrayindex)(1:1).eq.'h')then
-                    if(closemat2)then
-                      DRAIR(I,IL,1)=matgapares(matarrayindex,1)
-                      DRAIR(I,IL,2)=matgapares(matarrayindex,2)
-                      DRAIR(I,IL,3)=matgapares(matarrayindex,3)
-                    else
-                      continue
-                    endif
+C If g air gap and version 1.2 then assign DRAIR
+                if(matopaq(matarrayindex)(1:1).eq.'g')then
+                  if(closemat2)then
+                    DRAIR(I,IL,1)=matgapares(matarrayindex,1)
+                    DRAIR(I,IL,2)=matgapares(matarrayindex,2)
+                    DRAIR(I,IL,3)=matgapares(matarrayindex,3)
+                  else
+                    continue
                   endif
                 endif
+              endif
             ELSE
               DRAIR(I,IL,1)=0.0
               DRAIR(I,IL,2)=0.0
               DRAIR(I,IL,3)=0.0
 
 C And check the matarray index in case this is a gap and assign values.
-                matarrayindex=IPRMAT(I,IL)
-                if(matarrayindex.gt.0)then
+              matarrayindex=IPRMAT(I,IL)
+              if(matarrayindex.gt.0)then
 
-C If g or h air gap and version 1.2 then assign DRAIR
-	          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &               matopaq(matarrayindex)(1:1).eq.'h')then
-                    if(closemat2)then
-                      DRAIR(I,IL,1)=matgapares(matarrayindex,1)
-                      DRAIR(I,IL,2)=matgapares(matarrayindex,2)
-                      DRAIR(I,IL,3)=matgapares(matarrayindex,3)
-                    endif
+C If g air gap and version 1.2 then assign DRAIR
+	            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &              matopaq(matarrayindex)(1:1).eq.'h')then
+                  if(closemat2)then
+                    DRAIR(I,IL,1)=matgapares(matarrayindex,1)
+                    DRAIR(I,IL,2)=matgapares(matarrayindex,2)
+                    DRAIR(I,IL,3)=matgapares(matarrayindex,3)
                   endif
                 endif
+              endif
             ENDIF
             IF(IER.NE.0)GOTO 99
           ELSE
@@ -422,26 +423,26 @@ C values, otherwise get element name from materials db.
               ier=0
 
 C An air layer includes the R values in the display.
-                matarrayindex=IPRMAT(I,IL)
-                if(matarrayindex.ge.0)then
+              matarrayindex=IPRMAT(I,IL)
+              if(matarrayindex.ge.0)then
  
 C And if matarrayindex is zero then resetn dbcon dbden dbsht
-                  if(matarrayindex.eq.0)then
-                    DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+                if(matarrayindex.eq.0)then
+                  DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
                   NAM='AIR'
-                  else
-                    DBCON=matdbcon(matarrayindex)
-                    DBDEN=matdbden(matarrayindex)
-                    DBSHT=matdbsht(matarrayindex)
-                    write(NAM,'(a)') matname(matarrayindex)(1:32)
+                else
+                  DBCON=matdbcon(matarrayindex)
+                  DBDEN=matdbden(matarrayindex)
+                  DBSHT=matdbsht(matarrayindex)
+                  write(NAM,'(a)') matname(matarrayindex)(1:32)
 
 C If all values are still 0.0 then not an actual material.
                   call eclose3(DBCON,DBDEN,DBSHT,0.0,0.0,0.0,0.001,
      &              CLOSE4)
                   if(CLOSE4)then
-                    write(outs,'(A,I3,2A)') 
-     &                ' Material array reference ',matarrayindex,
-     &                ' has no data, or all zero...',NAM
+                    write(outs,'(A,I3,2A)')
+     &               ' Material array reference ',matarrayindex,
+     &               ' has no data, or all zero...',NAM
                     call usrmsg(outs,'Please check your selection!','W')
                     ier=1  ! set so that matmiss can be incremented
                   endif
@@ -728,6 +729,8 @@ C the matname matches.
           write(testname,'(a)') PNAM(1:ipos-1)
           ltnam=lnblnk(testname)
 
+C << todo - see if we can manage without using ileghope >>
+
 C Find a matching matname, if the legacy index associated with this item
 C matches ileghope then our search is complete.  If it does not match
 C ileghope then there could be duplicate names to check further. If
@@ -932,20 +935,20 @@ C Loop through all of the layers and compose RT for the construction.
 
 C If data available in material array gather it. And if an air
 C layer include the R values in the display.
-          matarrayindex=IPRMAT(IFOC,IL)   ! which array index
-          if(matarrayindex.ge.0)then
+        matarrayindex=IPRMAT(IFOC,IL)   ! which array index
+        if(matarrayindex.ge.0)then
  
 C And if matarrayindex is zero then reset dbcon dbden dbsht.
-            if(matarrayindex.eq.0)then
-              DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-              E=0.99; A=0.99; DRV=1.0
-            else
-              DBCON=matdbcon(matarrayindex)
-              DBDEN=matdbden(matarrayindex)
-              DBSHT=matdbsht(matarrayindex)
-              E=matdbine(matarrayindex)
-              A=matdbina(matarrayindex)
-              DRV=matdbdrv(matarrayindex)
+          if(matarrayindex.eq.0)then
+            DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+            E=0.99; A=0.99; DRV=1.0
+          else
+            DBCON=matdbcon(matarrayindex)
+            DBDEN=matdbden(matarrayindex)
+            DBSHT=matdbsht(matarrayindex)
+            E=matdbine(matarrayindex)
+            A=matdbina(matarrayindex)
+            DRV=matdbdrv(matarrayindex)
 
 C Make up PNAM as combination of matnam and matdoc.
             lnam=lnblnk(matname(matarrayindex))
@@ -956,19 +959,18 @@ C Make up PNAM as combination of matnam and matdoc.
 
 C Also check if it is a gap. If version 1.2 materials then we will
 C have access to pre-defined air gap resistances.
-            if(matarrayindex.eq.0)then
-              continue
-            elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &             matopaq(matarrayindex)(1:1).eq.'h')then
-              if(closemat2)then
-                DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
-                DRAIR(IFOC,IL,2)=matgapares(matarrayindex,2)
-                DRAIR(IFOC,IL,3)=matgapares(matarrayindex,3)
-                RT=RT+DRAIR(IFOC,IL,1)  ! while we know
-                RSI=DRAIR(IFOC,IL,1)
-              endif
+          if(matarrayindex.eq.0)then
+            continue
+          elseif(matopaq(matarrayindex)(1:1).eq.'g')then
+            if(closemat2)then
+              DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
+              DRAIR(IFOC,IL,2)=matgapares(matarrayindex,2)
+              DRAIR(IFOC,IL,3)=matgapares(matarrayindex,3)
+              RT=RT+DRAIR(IFOC,IL,1)  ! while we know
+              RSI=DRAIR(IFOC,IL,1)
             endif
-          else
+          endif
+        else
 
 C Referenced item was not in the materials hash list. Write zeros.
           DBCON=0.0
@@ -1252,8 +1254,7 @@ C Make up NAM as combination of matnam and matdoc.
 C Also check if it is a gap.
             if(matarrayindex.eq.0)then
               continue
-	    elseif(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &             matopaq(matarrayindex)(1:1).eq.'h')then
+            elseif(matopaq(matarrayindex)(1:1).eq.'g')then
               if(closemat2)then
                 DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
                 DRAIR(IFOC,IL,2)=matgapares(matarrayindex,2)

@@ -212,23 +212,7 @@ C Add another category to the database << not yet tested >>
           matvisinrfl(ILNE)=0.5
           matrender(ILNE)=0.0
 
-          matgapcnd(ILNE,1)=0.0
-          matgapcnd(ILNE,2)=0.0
-          matgapcnd(ILNE,3)=0.0
-          matgapcnd(ILNE,4)=0.0
-          matvisco(ILNE,1)=0.0
-          matvisco(ILNE,2)=0.0
-          matvisco(ILNE,3)=0.0
-          matvisco(ILNE,4)=0.0
-          matgapden(ILNE,1)=0.0
-          matgapden(ILNE,2)=0.0
-          matgapden(ILNE,3)=0.0
-          matgapden(ILNE,4)=0.0
-          matprandtl(ILNE,1)=0.0
-          matprandtl(ILNE,2)=0.0
-          matgapsht(ILNE,1)=0.0
-          matgapsht(ILNE,2)=0.0
-          chgdb=.true.
+         chgdb=.true.
         endif
         goto 40
       ELSEIF(ICO.GT.1.AND.ICO.LT.(NCO-4))THEN
@@ -465,22 +449,6 @@ C If there is room add a note about its origin.
           matvisinrfl(ILNE)=matvisinrfl(IWHICH)
           matrender(ILNE)=matrender(IWHICH)
 
-          matgapcnd(ILNE,1)=matgapcnd(IWHICH,1)
-          matgapcnd(ILNE,2)=matgapcnd(IWHICH,2)
-          matgapcnd(ILNE,3)=matgapcnd(IWHICH,3)
-          matgapcnd(ILNE,4)=matgapcnd(IWHICH,4)
-          matvisco(ILNE,1)=matvisco(IWHICH,1)
-          matvisco(ILNE,2)=matvisco(IWHICH,2)
-          matvisco(ILNE,3)=matvisco(IWHICH,3)
-          matvisco(ILNE,4)=matvisco(IWHICH,4)
-          matgapden(ILNE,1)=matgapden(IWHICH,1)
-          matgapden(ILNE,2)=matgapden(IWHICH,2)
-          matgapden(ILNE,3)=matgapden(IWHICH,3)
-          matgapden(ILNE,4)=matgapden(IWHICH,4)
-          matprandtl(ILNE,1)=matprandtl(IWHICH,1)
-          matprandtl(ILNE,2)=matprandtl(IWHICH,2)
-          matgapsht(ILNE,1)=matgapsht(IWHICH,1)
-          matgapsht(ILNE,2)=matgapsht(IWHICH,2)
           matdbitems=matdbitems+1
           matcatitems(IC)=matcatitems(IC)+1
             MODDB=.TRUE.
@@ -523,22 +491,6 @@ C copy the contents of material > IWHICH into the next lower one.
               matvisinrfl(IVV)=matvisinrfl(IVV+1)
               matrender(IVV)=matrender(IVV+1)
 
-              matgapcnd(IVV,1)=matgapcnd(IVV+1,1)
-              matgapcnd(IVV,2)=matgapcnd(IVV+1,2)
-              matgapcnd(IVV,3)=matgapcnd(IVV+1,3)
-              matgapcnd(IVV,4)=matgapcnd(IVV+1,4)
-              matvisco(IVV,1)=matvisco(IVV+1,1)
-              matvisco(IVV,2)=matvisco(IVV+1,2)
-              matvisco(IVV,3)=matvisco(IVV+1,3)
-              matvisco(IVV,4)=matvisco(IVV+1,4)
-              matgapden(IVV,1)=matgapden(IVV+1,1)
-              matgapden(IVV,2)=matgapden(IVV+1,2)
-              matgapden(IVV,3)=matgapden(IVV+1,3)
-              matgapden(IVV,4)=matgapden(IVV+1,4)
-              matprandtl(IVV,1)=matprandtl(IVV+1,1)
-              matprandtl(IVV,2)=matprandtl(IVV+1,2)
-              matgapsht(IVV,1)=matgapsht(IVV+1,1)
-              matgapsht(IVV,2)=matgapsht(IVV+1,2)
   791       CONTINUE
             matdbitems=matdbitems-1
             matcatitems(IC)=matcatitems(IC)-1
@@ -600,22 +552,6 @@ C If there is room add a note about its origin.
                 matvisinrfl(ILNE)=matvisinrfl(lastcatitem)
                 matrender(ILNE)=matrender(lastcatitem)
 
-                matgapcnd(ILNE,1)=matgapcnd(lastcatitem,1)
-                matgapcnd(ILNE,2)=matgapcnd(lastcatitem,2)
-                matgapcnd(ILNE,3)=matgapcnd(lastcatitem,3)
-                matgapcnd(ILNE,4)=matgapcnd(lastcatitem,4)
-                matvisco(ILNE,1)=matvisco(lastcatitem,1)
-                matvisco(ILNE,2)=matvisco(lastcatitem,2)
-                matvisco(ILNE,3)=matvisco(lastcatitem,3)
-                matvisco(ILNE,4)=matvisco(lastcatitem,4)
-                matgapden(ILNE,1)=matgapden(lastcatitem,1)
-                matgapden(ILNE,2)=matgapden(lastcatitem,2)
-                matgapden(ILNE,3)=matgapden(lastcatitem,3)
-                matgapden(ILNE,4)=matgapden(lastcatitem,4)
-                matprandtl(ILNE,1)=matprandtl(lastcatitem,1)
-                matprandtl(ILNE,2)=matprandtl(lastcatitem,2)
-                matgapsht(ILNE,1)=matgapsht(lastcatitem,1)
-                matgapsht(ILNE,2)=matgapsht(lastcatitem,2)
                 matdbitems=matdbitems+1
                 matcatitems(IC)=matcatitems(IC)+1
 

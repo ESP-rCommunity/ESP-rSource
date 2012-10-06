@@ -460,7 +460,7 @@ C Establish if floor area needs be specified.
           IF(INDEX.EQ.1)GOTO 400
           IF(NCAS(IDTY).GT.0)THEN
             DO 160 I=1,NCAS(IDTY)
-            IF(ICGT(IDTY,I).LT.0)INDEX=1
+              IF(ICGT(IDTY,I).LT.0)INDEX=1  ! if gain type overloaded
  160        CONTINUE
           ENDIF
  400    CONTINUE

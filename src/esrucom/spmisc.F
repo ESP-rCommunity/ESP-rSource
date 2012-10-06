@@ -168,6 +168,7 @@ C defined.
 
       subroutine SPMWRIT
 #include "building.h"
+#include "model.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -177,13 +178,12 @@ C defined.
       common/spmatlbl/spmlabel(mspmnod)
 
       common/FILEP/IFIL
-      common/C21/IFCFG,cfgroot,LCFGF
 
 C Special materials file flag
       common/spmfxst/ispmxist,spflnam  
 
-      character outs*124,deflnam*72,spflnam*72,lcfgf*72,h*72
-      character spmlabel*16,lfil*72,cfgroot*24
+      character outs*124,deflnam*72,spflnam*72,h*72
+      character spmlabel*16,lfil*72
       logical ok,dok
 
 C Set the number of special material data items per line

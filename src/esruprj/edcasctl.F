@@ -46,7 +46,6 @@ C geometry.h provides commons G0/G1/G2/G5/c20/precz.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
 
 C Zone casual gain control data.
       common/CGCIND/cgcdesc(MCOM)
@@ -79,9 +78,9 @@ C TMC common block:
       logical browse
 
       character outs*124,LTMP*72,DTMP*64
-      character KEY*1,hold*40,hold2*72,doitl*248,cfgroot*24
+      character KEY*1,hold*40,hold2*72,doitl*248
       character*48 ITEM(30)
-      CHARACTER*72 DLCGCIN,LCFGF
+      CHARACTER*72 DLCGCIN
       CHARACTER info*18,cgcdesc*64,brw*8
       character sn*12  ! for source surface name.
       INTEGER IX,IY,IZ,KSTR
@@ -430,7 +429,7 @@ C <<  Perhaps this could be joined together? >>
         call edisp(iuout,outs)
         DO 401 IDTY=1,NBDAYTYPE
           write(outs,9989)CALENTAG(IDTY),NCGTC(ICOMP,IDTY)
- 9989     format(' Casual gain type for control during ',1A,' = ',1I3)
+ 9989     format(' Casual gain type for control during ',A,' = ',I3)
           call edisp(itru,outs)
  401    CONTINUE
         DO 117 NLZ=1,NLITZ(ICOMP)

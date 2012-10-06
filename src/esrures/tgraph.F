@@ -448,6 +448,9 @@ C IROC, if rate of change of variable alter the axis label.
       ILR(2)=1
       ILR(3)=1
       ILR(4)=1
+      
+C Cast values for linescale.
+      iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
       do 100 I=1,4
         if (YAXSET(I).gt.0) then
 

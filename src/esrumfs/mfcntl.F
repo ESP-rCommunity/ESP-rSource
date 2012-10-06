@@ -48,10 +48,10 @@ C Determine year day number of present day
 C Set up day type and period pointers
       NDAYT=NFCDT(ICFP)
 
-c determine current day of the week
+c Determine current day of the week.
       CALL EWEEKD(IRD,IRM,IRY,IDW)
 
-C If NDAYT=0 set data to all day types
+C If NDAYT=0 set data to all calendar day types.
       NIN=0
       IF(NDAYT.EQ.0)THEN
         NDAYT=NBDAYTYPE

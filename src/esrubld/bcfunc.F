@@ -7284,9 +7284,10 @@ C Debug.
 C        write(6,*) 'Updating thermophysical properties of surface ',ii
 C        write(6,*) 'with construction ',DESC(ic)' at btimef ',btimef
 
-C Put the composite db info into current surface attributes
-C common.  Gather information about each layer. Read in the
-C material db info. 
+C Put the MLC info into current surface attributes common.
+C Gather information about each layer. Read in the material info.
+
+C << look for alternative to legmat & ipr >> 
           ne(ii)=layers(ic)
           do 223 i=1,layers(ic)
             if(closemat1.or.closemat2)then
@@ -7302,7 +7303,10 @@ C material db info.
             else
               ier=1  ! incomplete materials arrays so pass back ier
             endif
-            if(ier.eq.1)return
+            if(ier.eq.1)return 
+
+C If not an air gap assign con den sht thk. Otherwise use the
+C air gap values depending on the surface orientation.
             if(ipr(ic,i).ne.0)then
               con(ii,i)=dbcon
               THRMLI(ICMP,II,I,1)=CON(II,I)

@@ -70,13 +70,10 @@ C -------------------------------HVACGIN-------------------------------
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK      ! file flags
       
-      COMMON/C21/IFCFG,cfgroot,LCFGF
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/rpath/path
       
       CHARACTER path*72                !path
-      CHARACTER LCFGF*72
-      CHARACTER cfgroot*24
       CHARACTER hvacfile*72            ! hvac file name
       CHARACTER def_hvacfile*72        ! default hvac filename
       CHARACTER sfile*72               ! file name returned from browsefilelist (with file path)

@@ -2361,9 +2361,10 @@ C from a non-PCM layer.
 
 C Modify present and future value of 'c' and 'qc' coefficients (i.e.
 C coeficients of nodal energy balance equations.
-         x1=1./pcmshtp
          if(nsinc.eq.1)then
-            x1=0
+           x1=0
+         else
+           x1=1./pcmshtp
          endif
          x2=1./pcmsht
          if(iphnl.eq.1.and.ielem.eq.1)then			!- outermost node
@@ -2753,9 +2754,10 @@ C equations, and substitute the new values as established above.
 
 C Modify present and future value of 'c' and 'qc' coefficients (i.e.
 C coeficients of nodal energy balance equations.
-         x1=1./pcmshtp
          if(nsinc.eq.1)then
-            x1=0
+           x1=0
+         else
+           x1=1./pcmshtp
          endif
          x2=1./pcmsht
          if(iphnl.eq.1.and.ielem.eq.1)then !- outermost node
@@ -3128,9 +3130,10 @@ C from a non-PCM layer.
 
 C Modify present and future value of 'c' and 'qc' coefficients (i.e.
 C coeficients of nodal energy balance equations.
-         x1=1./pcmshtp
          if(nsinc.eq.1)then
-            x1=0
+           x1=0
+         else
+           x1=1./pcmshtp
          endif
          x2=1./pcmsht
          if(iphnl.eq.1.and.ielem.eq.1)then			!- outermost node
@@ -3539,9 +3542,10 @@ C from a non-PCM layer.
 
 C Modify present and future value of 'c' and 'qc' coefficients (i.e.
 C coeficients of nodal energy balance equations.
-         x1=1./pcmshtp
          if(nsinc.eq.1)then
-            x1=0
+           x1=0
+         else
+           x1=1./pcmshtp
          endif
          x2=1./pcmsht
          if(iphnl.eq.1.and.ielem.eq.1)then  !- outermost node

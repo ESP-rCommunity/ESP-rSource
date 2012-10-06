@@ -92,7 +92,6 @@ C Zone information
 
 C Composites information
       COMMON/CompPik/IComfoc,NComPik,LstComp(MMLC)
-      COMMON/C21/IFCFG,cfgroot,LCFGF
 
 C Defaults and paths
       character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
@@ -152,7 +151,6 @@ C Name of current application
 
       REAL HeightCo,WidthCo, Perimeter, Area
       CHARACTER BCFName*72,DBCFNam*72,System*72,BCFVer*5
-      CHARACTER LCFGF*72,cfgroot*24
       CHARACTER outs*124,ITEM*35,Hold*24
       CHARACTER inf*144,LCMDFL*144
       CHARACTER path*72,L144*144

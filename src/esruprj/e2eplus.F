@@ -53,7 +53,6 @@ C ICLIM,LCLIM (for climate file)
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
 
-      common/C21/IFCFG,cfgroot,LCFGF
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
@@ -108,8 +107,7 @@ C Simulation parameter presets.
 
       character GDESCR*36
       CHARACTER NAM*72,outs*124
-      character CLMLOC*30,LCFGF*72
-      character cfgroot*24
+      character CLMLOC*30
       character ctldoc*248,LCTLF*72
       character ZSDES*28,ZSDESC*20,ZSDESS*16,mlcname*12
       character dstmp*24
@@ -1092,14 +1090,16 @@ C Start with a comment about zone schedule documentation.
         WRITE(ioout,'(2a)',iostat=ios,err=7) 
      &    '! ',oprdesc(mz)(1:lnblnk(oprdesc(mz)))
 
-C Scan each days gains and calculate maximum gain.
-C First clear loadcasp, looping for each gain type.
+C Scan each days gains and calculate maximum gain for each
+C calendar day type.
+C First clear loadcasp, looping for each gain type (7 or less)
+C and loadonday for day type and gain type.
         do 9 I=1,NBDAYTYPE
           if(I.le.7)loadcasp(mz,i,1)=0.0
+          if(I.le.7)loadcasp(mz,i,2)=0.0
           if(I.le.7)loadradfrac(mz,i)=0.0
-          loadcasp(mz,i,2)=0.0
           do 8 JD=1,7
-            loadonday(mz,jd,i)=.false.
+            loadonday(mz,i,jd)=.false.
   8       continue
   9     continue
 

@@ -1264,6 +1264,9 @@ C been applied.
 
 C Note: Because there can be more than one casual gain of each
 C type in a zone, UCCRT1 etc. need to be summed.
+
+C If W/Sat/Sun then use idwk logic to set, otherwise use the
+C calendar array to set the day type.
       IF(NBDAYTYPE.LE.3)THEN
         IDTY=1
         IF(IDWK.EQ.6)THEN

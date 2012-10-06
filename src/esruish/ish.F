@@ -131,7 +131,6 @@ C IEEE callback (Solaris)
       
       integer ncomp,ncon
       common/c1/ncomp,ncon
-      common/c21/ifcfg,cfgroot,lcfgf
 
 C Path to model and command line file (if any).
       common/rpath/path
@@ -159,11 +158,10 @@ C Name of current application.
 
       dimension month(12),items(24),isadd(12),ishd(12),iavdec(12)
       character*72 lname,tbase
-      character*72 lcfgf
       character items*26,cAppName*12
       character month*3,outs*124,outs248*248,etext*70,ltmp*144
       character descrh*5,descrd*5,inf*144,lcmdfl*144
-      character path*72,cfgroot*24,outstr*124
+      character path*72,outstr*124
       character inz*16,inzone*16,zn*12,pact*16,paction*16
       character ascif*72,pascif*72
       character journcmd*20,jfile*72,uname*24,fs*1,cjfile*72

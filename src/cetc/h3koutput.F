@@ -818,14 +818,13 @@ C     tzph,tzpc are zone heating/cooling use over time.
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/rcmd/LCMDFL
       character LCMDFL*144
       character LTMP*72,h*72,outs*124,louts*248
       character PFILE*72,MSTRFILE*72,LAFRES*72
-      character cfgroot*24,tab*1
-      character*72 lcfgf,rfile
+      character tab*1
+      character*72 rfile
       DIMENSION MTHNAM(12)
       CHARACTER DS*7,DS1*10,DE*7,DE1*10,MTHNAM*3
       logical OK

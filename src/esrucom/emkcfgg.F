@@ -71,8 +71,6 @@ C provides LRADCF
       INTEGER :: IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/C6/INDCFG
       INTEGER :: INDCFG
-      common/C21/IFCFG,cfgroot,LCFGF
-      INTEGER :: ifcfg
       INTEGER :: IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -241,9 +239,8 @@ C Generic databases from esprdbfile.h.
 
       CHARACTER*72 LBSIMP,hvacfile,LFClds
 
-      CHARACTER LCFGF*72
       CHARACTER LAPROB*72
-      CHARACTER CXSTR*78,cfgroot*24
+      CHARACTER CXSTR*78
       CHARACTER LPNF*72
       CHARACTER*72 LGDCVS,LGDCNC,LGDNDC,LGDNDD,LGDTAQ,LGRD1D,LNLTHP
       CHARACTER*72 L3DCVS,L3DCNC,L3DNDC,L3DTAQ,LMOIST,LGrdSt
@@ -313,21 +310,21 @@ C If filename > 4 char it might have a .cfg attached.
           lcfgl=lcfgr-3
           if(lcfgr.gt.4)then
             if(LCFGF(lcfgl:lcfgr).eq.'.cfg')then
-              if(lcfgl.gt.24)then
-                write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:24)
+              if(lcfgl.gt.32)then
+                write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:32)
               else
                 write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:lcfgl-1)
               endif
             else
-              if(lcfgr.gt.24)then
-                write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:24)
+              if(lcfgr.gt.32)then
+                write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:32)
               else
                 write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:lcfgr)
               endif
             endif
           else
-            if(lcfgr.gt.24)then
-              write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:24)
+            if(lcfgr.gt.32)then
+              write(cfgroot,'(a)',iostat=ios,err=3) LCFGF(1:32)
             else
               write(cfgroot,'(a)') LCFGF(1:lcfgr)
             endif

@@ -2281,6 +2281,9 @@ C Scan through the zone loads and determine the active types
           IAPPF(3)=0
 
 C Loop through each casual gain and determine if it is applicable or not.
+
+C << see if data structures can be updated! 
+
           IF(NBDAYTYPE.GT.3)THEN
             CALL EDISP(IUOUT,'More than three day types are not')
             CALL EDISP(IUOUT,'supported for hybrid power components')

@@ -43,7 +43,6 @@ C creates a grey-scale VRML 2.0 world.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
 
       COMMON/GOPT/DG(5),HG(5),UVAL,VTRN,NTL,AB(ME,5),RF(ME),SRF,SAB
 
@@ -62,7 +61,6 @@ C creates a grey-scale VRML 2.0 world.
       CHARACTER*72 GTGEOM
       character GDESCR*36,MLCN*12,OTF*4,OPT*12
       character MLCSYM*12
-      CHARACTER cfgroot*24,LCFGF*72
       CHARACTER GMLCN*12,GSNAME*6
       character ZSN*28,q*1
       DIMENSION SNA(MS),PAZI(MS),PELV(MS),ZSN(MS)

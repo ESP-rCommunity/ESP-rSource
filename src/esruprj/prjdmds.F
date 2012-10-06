@@ -49,7 +49,6 @@ C file unit for the demands file. IER=0 is OK.
       COMMON/FILEP/IFIL
       common/pophelp/h(60)
 
-      common/C21/IFCFG,cfgroot,LCFGF
       common/user/browse
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
 
@@ -59,6 +58,7 @@ C Floor area (optionally) associated with each demand type in an IPV.
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER :: icalender,nbcaldays,nbdaytype
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -69,7 +69,7 @@ C Flags noting whether casual gain periods are currently sorted.
       DIMENSION ITEM(13)
       CHARACTER tcname*248
       CHARACTER ITEM*36,H*72,LTMP*72,GFILE*72
-      character cfgroot*24,LCFGF*72,hold*60
+      character hold*60
       character calename*32,calentag*12,calendayname*32
       LOGICAL OK,DOK,XST,MODOPR,browse
       integer NITEMS,INO ! max items and current menu item
@@ -91,10 +91,14 @@ C Initially assume periods are not sorted.
 
 C If the model calendar has not yet been setup confirm what to
 C do with the user.
+
+C << this is where a number of new patterns of calendard could
+C << be implemented. Try for an initial default of wk sat sun holiday.
+
       if(nbdaytype.eq.0)then
         h(1)='Each model has a master calendar which indicates the'
         h(2)='day type for each Julian day (initially based on the'
-        h(3)='year and a basic Weekday Saturday Sunday scheme. '
+        h(3)='year & a basic Weekday Saturday Sunday Holiday scheme.'
         h(4)=' '
         h(5)='No calendar has been defined so if you want the basic '
         h(6)='Weekday Saturday Sunday scheme it will be created. If '
@@ -113,6 +117,8 @@ C do with the user.
             call calenprint(iuout,'t',iyear,loopst,loop)
           endif
         elseif(IW.eq.2)then
+
+C Advise the user what to do.
           call usrmsg('Go to the Model context -> calendar option',
      &      'and when the calendar is defined return here.','W')
           return
@@ -498,6 +504,7 @@ C ITRC is the trace level, ITRU is the ouput channel, IER=0 is OK.
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER :: icalender,nbcaldays,nbdaytype
 
 C Local editing arrays.
       dimension IEBCGS(MC),IEBCGF(MC),CEBMGS(MC),CEBMGL(MC),BERADC(MC)
@@ -838,6 +845,7 @@ C << use in the demands file timings
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER :: icalender,nbcaldays,nbdaytype
 
 C Profile database commons via profile.h.
       CHARACTER outs248*248
@@ -995,6 +1003,7 @@ C espriou.h provides currentfile.
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER :: icalender,nbcaldays,nbdaytype
 
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
@@ -1217,6 +1226,7 @@ C ITRC unit number for user output, IER=0 OK IER=1 problem.
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER :: icalender,nbcaldays,nbdaytype
 
       CHARACTER OPFIL*72
       character calename*32,calentag*12,calendayname*32
@@ -1302,6 +1312,7 @@ C from common block data.
 C Calendar commons.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER :: icalender,nbcaldays,nbdaytype
 
       CHARACTER outs*124
       character calename*32,calentag*12,calendayname*32

@@ -84,7 +84,6 @@ C IEEE callback (Solaris)
       integer ncomp,ncon
       common/C1/NCOMP,NCON
       common/C6/INDCFG
-      common/C21/IFCFG,cfgroot,LCFGF
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/cctlnm/ctldoc,lctlf
@@ -155,12 +154,11 @@ C Name of current application
 
       character dstmp*24,uname*24
       character LUALF*72,LCNG*15,LLOC*15
-      character*72 LCFGF
       character LTMP*72
       character inf*144,inz*16,inzone*16,act_16*16,inact*16,LCMDFL*144
       character outs*124,outstr*124
 C      character outs248*248
-      character path*72,cfgroot*24,exemplar*144
+      character path*72,exemplar*144
       character LAPROB*72
       character ITEMS(27)*34
       character ltcmdfl*144
@@ -171,14 +169,15 @@ C      character outs248*248
       character CMDCFG*72,CMDCLM*72,CMDCLMN*72,CMDNOTE*64,CMDRES*72
       character CMDLBL*12,CMDLNAM*80
       CHARACTER cpth*48,cmdn*48,topt*72
-      character t24*24,DFILE*72,DCNN*72,bidirfile*72,bidirname*12
+      character t32*32,DFILE*72,DCNN*72
+      character bidirfile*72,bidirname*12
       CHARACTER dinstpath*60,dirpath*72
       character useraction*8  ! returned from exemplar access call.
       character menu*72       ! blank model title for pregist call
       character fs*1
 
 C Passed parameters for pregist.
-      character root*24,mpath*72
+      character root*32,mpath*72
 
 C Returned parameters from silentread.
       character theprimedirective*8
@@ -190,6 +189,7 @@ C Returned parameters from silentread.
       integer MITEM,INO ! max items and current menu item
       dimension ivals(MCOM)
       logical silent  ! for dependency checking on transform or rotate
+      logical QUIET   ! to force silent rebuild of zone constructions
 
       character cVnum*16      ! returned from ESPrVersionNum
       character pagestitle*42 ! for banner title via epages call
@@ -628,8 +628,14 @@ C Clear allocatable arrays
             endif
           endif
         endif
+
       elseif(inact(1:9).eq.'transform'.or.inact(1:6).eq.'rotate'.or.
-     &       inact(1:2).eq.'QA')then
+     &       inact(1:2).eq.'QA'.or.
+     &       inact(1:15).eq.'update_zone_con')then
+
+C Act on a command line request to transform the model or generate
+C a model contents report or rebuilt the zone construction files
+C (assumes that zone file names are known).
         XST=.false.
         if(LCMDFL(1:2).ne.'  '.and.LCMDFL(1:4).ne.'UNKN')then
           INQUIRE (FILE=LCMDFL,EXIST=XST)
@@ -688,6 +694,13 @@ C Perform either the transform or rotation or generate QA report.
               call globalrotate(d1,d2,d3,inpic,ivals,silent,itru,ier)
             elseif(inact(1:2).eq.'QA')then
               call prjqa(inpic,ivals,silent,ier)
+            elseif(inact(1:15).eq.'update_zone_con')then
+              QUIET=.TRUE.
+              DO 2491, IZ=1,NCOMP
+               CALL EDCON(ITRC,itru,IZ,QUIET,IER)
+ 2491         CONTINUE
+              QUIET=.FALSE.
+
 	    endif
             if(silent)then 
               call usrmsg(
@@ -1272,10 +1285,10 @@ C Root name of the model.
         if(CFGOK)then
           helptopic='model_root_name'
           call gethelptext(helpinsub,helptopic,nbhelp)
-          t24=cfgroot
-          CALL EASKS(t24,' ','Project root name (<24 chars)?',
-     &                24,'project','root name',IER,nbhelp)
-          if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')cfgroot=t24
+          t32=cfgroot
+          CALL EASKS(t32,' ','Project root name (<32 chars)?',
+     &      32,'project','root name',IER,nbhelp)
+          if(t32(1:2).ne.'  '.and.t32(1:4).ne.'UNKN')cfgroot=t32
           changedit=.true.
         endif
       ELSEIF(INO.EQ.11)THEN
@@ -1356,11 +1369,11 @@ C Ask for file name.
 C Also give user option to alter the root name.
           helptopic='model_root_name'
           call gethelptext(helpinsub,helptopic,nbhelp)
-          t24=cfgroot
-          CALL EASKS(t24,' Root name for the project? (see help',
-     &     'about whether to modify)',24,'project','root name',
-     &     IER,nbhelp)
-          if(t24(1:2).ne.'  '.and.t24(1:4).ne.'UNKN')cfgroot=t24
+          t32=cfgroot
+          CALL EASKS(t32,' Root name for the project? (see help',
+     &      'about whether to modify)',32,'project','root name',
+     &      IER,nbhelp)
+          if(t32(1:2).ne.'  '.and.t32(1:4).ne.'UNKN')cfgroot=t32
         endif
 
 C If configuration file format is version 3 then check to see if there
@@ -1455,7 +1468,6 @@ C to include the path and create a string to drive the modules.
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/appw/iappw,iappx,iappy
-      common/C21/IFCFG,cfgroot,LCFGF
       COMMON/PREC7/ITCNST
       COMMON/C6/INDCFG
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
@@ -1487,8 +1499,8 @@ C level).
       character doit*248,tmode*8,ITEMS*34,key*1
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,spflnam*72,longtfile*144,longtfiledos*144
-      CHARACTER*72 LAPROB,LCFGF,ENTFLNAM,lipvdatf
-      character cfgroot*24,cr*24,spfdescr*8,ipvaction*3
+      CHARACTER*72 LAPROB,ENTFLNAM,lipvdatf
+      character cr*32,spfdescr*8,ipvaction*3
 
 C dd is character array for selecting simulation parameter sets.
       character dd(MSPS+3)*33,de*8,aut*12
@@ -2350,7 +2362,6 @@ C to include the path and create a string to drive the modules.
       common/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
       common/appw/iappw,iappx,iappy
-      common/C21/IFCFG,cfgroot,LCFGF
       common/IPVF/lipvdatf
       common/exporttg/xfile,tg,delim
       
@@ -2370,8 +2381,8 @@ C level), isavgh = 0 save every timestep = 1 save hourly zone data.
       character doit*248,tmode*8,tfile*72
       character sblres*72,sflres*72,splres*72,smstres*72,sipvres*72
       character selres*72,longtfile*144,longtfiledos*144
-      CHARACTER LCFGF*72,lipvdatf*72
-      character cfgroot*24,aut*12
+      CHARACTER lipvdatf*72
+      character aut*12
 
       dimension assmttag(MSPS),runtag(MSPS)
       character assmttag*8,runtag*16,brw*8
@@ -3913,12 +3924,11 @@ C << the latest version prior to running this facility.
       common/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       common/user/browse
-      common/C21/IFCFG,cfgroot,LCFGF
 
       dimension items2(33)
-      CHARACTER*72 H,LCFGF
+      CHARACTER*72 H
       CHARACTER ITEMS2*36,APP*6
-      CHARACTER NBSTR*6,CFGROOT*24,OUTS*124
+      CHARACTER NBSTR*6,OUTS*124
       LOGICAL BROWSE,clkok
       integer MITEMS2,KNO ! max items and current menu item
 
@@ -4247,7 +4257,6 @@ C Path to model and command line file (if any).
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
       common/FILEP/IFIL
       common/IPVF/lipvdatf
       common/pophelp/h(60)
@@ -4270,10 +4279,9 @@ C ivalsg keeps track of whether a geometry file has alread been copied.
 
       character*72 sblres,sflres,splres,smstres,sipvres,selres
       character CNTMFIL*72
-      CHARACTER*72 LIPVDATF,NNAME,H,LCFGF,msg1,MSG2,LCFD
+      CHARACTER*72 LIPVDATF,NNAME,H,msg1,MSG2,LCFD
       character ctldoc*248,lctlf*72
       CHARACTER*72 LAPROB
-      CHARACTER*24 cfgroot
       CHARACTER OUTSTR*124
       CHARACTER APE*6,EXT*4,OUTS*124,doit*248,tmode*8
       CHARACTER SALT*31,CNTMDESC*124
@@ -5487,8 +5495,8 @@ C whole of ape in the root name, even if this requires removing
 C some characters from the middle of the string buffer.
         irootlen=LNBLNK(CFGROOT)
 	iapelin=lnblnk(ape)
-        IF(irootlen.GT.(24-iapelin))THEN
-          irootlen=24-iapelin
+        IF(irootlen.GT.(32-iapelin))THEN
+          irootlen=32-iapelin
         ENDIF
         write(cfgroot,'(2a)')cfgroot(1:irootlen),ape(1:iapelin)
 

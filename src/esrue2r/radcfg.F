@@ -561,6 +561,7 @@ C if MODE='c' (create) then allow all purposes and auto name files or
 C if MODE='-' is similar to 'a' but does not use word default in dialog.
       SUBROUTINE newscene(MODE)
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "e2r_common.h"
 
@@ -568,13 +569,11 @@ C if MODE='-' is similar to 'a' but does not use word default in dialog.
 
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
 
       dimension IVALS(MCOM)
 
-      character cfgroot*24,LCFGF*72
       character MODE*1,outs*124
       character dname*28,tname*28
       character dname72*72,tname72*72
@@ -816,7 +815,7 @@ C Set default names based on above.
       else
         IL=min(lnblnk(cfgroot),21)
         write (outs,'(3a)') cfgroot(1:IL),'_',SCENEPURP(ISCENE)(1:6)
-        write (SCENEDESC(ISCENE),'(a,a,a,a,a)') 'Scene of ',
+        write (SCENEDESC(ISCENE),'(5a)') 'Scene of ',
      &     cfgroot(1:lnblnk(cfgroot)),' for ',
      &     SCENEPURP(ISCENE)(1:lnblnk(SCENEPURP(ISCENE))),
      &            ' analysis.'
@@ -1392,10 +1391,7 @@ C If filexst is 'o' then old file, 'n' then create a new file.
 
       COMMON/FILEP/IFIL
 
-      common/C21/IFCFG,cfgroot,LCFGF
-
       character filexst*1
-      character cfgroot*24,LCFGF*72
       character pfile*72
 
       LOGICAL modscene

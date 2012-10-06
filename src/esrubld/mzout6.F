@@ -35,6 +35,7 @@ C ----------------------------------------------------------------
 
       SUBROUTINE MZOUT6
 #include "building.h"
+#include "model.h"
 #include "geometry.h"
 #include "sbem.h"      
       
@@ -51,11 +52,9 @@ C ----------------------------------------------------------------
 
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      common/C21/IFCFG,cfgroot,LCFGF
 
       character LTMP*72
-      character cfgroot*24,tab*1
-      character*72 lcfgf
+      character tab*1
       CHARACTER DS*7,DS1*10,DE*7,DE1*10
       CHARACTER min*420
 

@@ -143,7 +143,8 @@ C Process plant control loop ICFP to test if it is active
 C Set up day type and period pointers
       NDAYT=NPCDT(ICFP)
 
-C If NDAYT=0 set data to weekday, saturday and sunday format
+C If NDAYT=0 set data to weekday, saturday and sunday format.
+C << would need to change if there are default holidays >>
       NIN=0
       IF(NDAYT.EQ.0)THEN
         NDAYT=NBDAYTYPE

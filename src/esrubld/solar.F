@@ -4157,7 +4157,7 @@ C<<<probably there is no need for this >>>>>
 C Set up day type and period pointers
           NDAYT=NOCDT(iol)
 
-C If NDAYT=0 set data to all day types
+C If NDAYT=0 set data to all day types.
           NIN=0
           IF(NDAYT.EQ.0)THEN
             NIN=NBDAYTYPE

@@ -53,7 +53,6 @@ C espriou.h provides currentfile.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C21/IFCFG,cfgroot,LCFGF
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -88,8 +87,6 @@ C Pause length during sequentail scan longpause (true=1 sec)
       DIMENSION ITEMS1(23)
       CHARACTER CXSTR*78,outs*124,ITEMS1*34,CFGFN*72
       character CXITM*48
-      CHARACTER LCFGF*72
-      character cfgroot*24
       character DCNN*72
       character bl*2
       DIMENSION VERT(35)
@@ -806,7 +803,6 @@ C the user to confirm before writing to temporary configuration file.
       COMMON/RAY6/LINSTY(MCON)
 
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
-      common/C21/IFCFG,cfgroot,LCFGF
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
@@ -826,7 +822,7 @@ C Pause length during sequentail scan longpause (true=1 sec)
       character outs*124,CXSTR*78,SN*12
       character SO*24,TOTHER*24
       character DESCRC*25
-      character DCNN*72,cfgroot*24,LCFGF*72,bl*2
+      character DCNN*72,bl*2
       integer izselfcheck  ! the surface being tested
       logical selfcheck  ! set true if currently looking within zone
 

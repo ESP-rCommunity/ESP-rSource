@@ -55,8 +55,8 @@ C results library as well.
 
       integer ncomp,ncon
       common/c1/ncomp,ncon
+      integer indcfg
       COMMON/C6/INDCFG
-      common/C21/IFCFG,cfgroot,LCFGF
       common/reclen/nzrl,nprl,nerl
 
 C Versions of results libraries.
@@ -89,7 +89,6 @@ C Active domain common.
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
       character outs*124,ltmp*72,path*72,longtfile*144
-      character cfgroot*24,LCFGF*72
       character*72 LAPROB,ENTFLNAM,ERESLIB,CFRESF
       character RFILE*72,PFILE*72,MSTRFILE*72,LAFRES*72
       dimension iflg(MCOM)
@@ -97,6 +96,7 @@ C Active domain common.
       logical OK,dok,MSTROK,MSTRZN,remote,unixok,browse
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical CFDOK,concat
+      integer nsim  ! number of simulations
 
       integer ier
 
@@ -232,7 +232,8 @@ C      write(doit,'(a)') 'mysqladmin -u iain -pxx CREATE fred'
 C      write(6,*) doit
 C      call runit(doit,'-')
 
-c Does this library contain results ?
+c Does this zone library contain results? If a new file
+C it will fail reading nsim and jump to 7.
       IREC=1
       READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=7)NSIM
 
@@ -420,7 +421,8 @@ C If remote path then use EFOPRAN otherwise FPRAND.
         call tstamp('>',PFILE)
       endif
 
-c Does this library contain results ?
+C Does this plant library contain results? If a new file
+C it will fail reading nsim and jump to 107.
       IREC=1
       READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=107)NSIM
 
@@ -447,8 +449,8 @@ c Determine if design data has been changed.
         dok=.false.
         helptopic='preserve_data_with_change'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        CALL ASKOK(' Is the current model different in any way from',
-     &  ' the model of the stored results (see help)?',OK,dok,nbhelp)
+        CALL ASKOK('Is the current model different in any way from',
+     &  'the model of the stored results (see help)?',OK,dok,nbhelp)
         if(.NOT.OK)goto 17
         GOTO 100
       else
@@ -456,7 +458,7 @@ c Determine if design data has been changed.
 c Delete all simulations by setting NSIM=0.
         IREC=1
         NSIM=0
-        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl
+        WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM
       endif
 
 c Write header block information to plant library.
@@ -641,15 +643,16 @@ C Error handling
       call edisp(iuout,outs)
       goto 17
 
-C Error on read of library - reset and initialize.
+C Error on read of zone library - reset and initialize.
    7  IREC=1
       NSIM=0
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver
       goto 8
 
+C Error on read of plant library - reset and initialize.
  107  IREC=1
       NSIM=0
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM
       goto 108
 
       END
@@ -854,13 +857,15 @@ c IN THE OVERWRITING OF THESE RESULTS.
       SUBROUTINE MZSAVE(ISIMN1,ISIMN2)
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
+      integer indcfg
       COMMON/C6/INDCFG
       common/reclen/nzrl,nprl,nerl
       common/recver/izver,ipver,iever
 
       character outs*124
+      integer nsim  ! number of simulations in libary
 
-      IF(INDCFG.EQ.2)goto 3
+      IF(INDCFG.EQ.2)goto 3   ! plant only
       IUNIT=IFIL+2
 
 C READ NUMBER OF SIMULATIONS CURRENTLY HELD WITHIN SOLUTION FILE.
@@ -870,17 +875,20 @@ C READ NUMBER OF SIMULATIONS CURRENTLY HELD WITHIN SOLUTION FILE.
 C INCREMENT BY 1.
       NSIM=NSIM+1
 
-C WRITE THIS TO SOLUTION FILE.
+C Update the zone library file.
       WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver
-      ISIMN1=NSIM
+      ISIMN1=NSIM  ! pass this back
+
+C For plant results or building + plant results update the first
+C record of the plant results file.
     3 IF(INDCFG.EQ.1)goto 2
 
       IUNIT=IFIL+3
       IREC=1
       READ(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM
       NSIM=NSIM+1
-      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl
-      ISIMN2=NSIM
+      WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM
+      ISIMN2=NSIM  ! pass this back
 
     2 RETURN
 

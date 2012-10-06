@@ -466,8 +466,12 @@ C Pre calculated data (filtered).
 
 C Comfort parameters and hash table.
       common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
+      
+C MRT Sensors.
+      common/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
+     &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
-      CHARACTER ITEM(35)*24, MTITLE*22, values*20
+      CHARACTER ITEM(35)*24, MTITLE*22, values*20, CUBN*6
       CHARACTER ITEMS(18)*23
       CHARACTER ITEMC(21)*24
       character xfile*144,tg*1,delim*1
@@ -3585,15 +3589,15 @@ C Copy new data into IGETNO array if a selection has been made.
                     LNTABLABEL(NGET)=ITLEN+ISLEN
                   elseif (MRTLIST) then
                     call ZSID(IZ,ISFSEL(IG),ZSDES,ZSDESC,ZSDESS)
-                    ITLEN=lnblnk(ZSDES)
+                    ITLEN=lnblnk(CUBN(ISFSEL(IG)))
                     IZLEN=lnzname(IZ)
                     ISLEN=lnblnk(SUFFIX)
                     if ((IZLEN+ISLEN).gt.16) IZLEN=16-ISLEN
-                    write (GLABEL(NGET),'(a,a,i2,a)')ZNAME(IZ)(1:IZLEN),
-     &                                  ' S',ISFSEL(IG),SUFFIX(1:ISLEN)
+                    write (GLABEL(NGET),'(3a)')ZNAME(IZ)(1:IZLEN),
+     &                        CUBN(ISFSEL(IG))(1:ITLEN),SUFFIX(1:ISLEN)
                     LNGLABEL(NGET)=lnblnk(GLABEL(NGET))
-                    write (TABLABEL(NGET),'(a,a)')
-     &                ZSDES(1:ITLEN),SUFFIX(1:ISLEN)
+                    write (TABLABEL(NGET),'(3a)') ZNAME(IZ)(1:IZLEN),
+     &                        CUBN(ISFSEL(IG))(1:ITLEN),SUFFIX(1:ISLEN)
                     LNTABLABEL(NGET)=ITLEN+ISLEN
                   else
                     ISLEN=lnblnk(SUFFIX)
@@ -3615,12 +3619,13 @@ C Copy new data into IGETNO array if a selection has been made.
                     LNTABLABEL(NGET)=ITLEN
                   elseif (MRTLIST) then
                     call ZSID(IZ,ISFSEL(IG),ZSDES,ZSDESC,ZSDESS)
-                    ITLEN=lnblnk(ZSDES)
+                    ITLEN=lnblnk(CUBN(ISFSEL(IG)))
                     IZLEN=lnzname(IZ)
-                    write(GLABEL(NGET),'(a,a,i2)')ZNAME(IZ)(1:IZLEN),
-     &                ' S',ISFSEL(IG)
+                    write (GLABEL(NGET),'(2a)')ZNAME(IZ)(1:IZLEN),
+     &                        CUBN(ISFSEL(IG))(1:ITLEN)
                     LNGLABEL(NGET)=lnblnk(GLABEL(NGET))
-                    write (TABLABEL(NGET),'(a)') ZSDES(1:ITLEN)
+                    write (TABLABEL(NGET),'(2a)') ZNAME(IZ)(1:IZLEN),
+     &                        CUBN(ISFSEL(IG))(1:ITLEN)
                     LNTABLABEL(NGET)=ITLEN
                   else
                     write(GLABEL(NGET),'(a)') ZNAME(IZ)(1:lnzname(IZ))
@@ -3671,15 +3676,15 @@ C specific information.
                     LNTABLABEL(NGET)=ITLEN+ISLEN
                   elseif (MRTLIST) then
                     call ZSID(IZ,ISFSEL(IG),ZSDES,ZSDESC,ZSDESS)
-                    ITLEN=lnblnk(ZSDES)
+                    ITLEN=lnblnk(CUBN(ISFSEL(IG)))
                     IZLEN=lnzname(IZ)
                     ISLEN=lnblnk(SUFFIX)
                     if ((IZLEN+ISLEN).gt.16) IZLEN=16-ISLEN
-                    write (GLABEL(NGET),'(a,a,i2,a)')ZNAME(IZ)(1:IZLEN),
-     &                                  ' S',ISFSEL(IG),SUFFIX(1:ISLEN)
+                    write (GLABEL(NGET),'(3a)')ZNAME(IZ)(1:IZLEN),
+     &                        CUBN(ISFSEL(IG))(1:ITLEN),SUFFIX(1:ISLEN)
                     LNGLABEL(NGET)=lnblnk(GLABEL(NGET))
-                    write (TABLABEL(NGET),'(a,a)')
-     &                ZSDES(1:ITLEN),SUFFIX(1:ISLEN)
+                    write (TABLABEL(NGET),'(3a)') ZNAME(IZ)(1:IZLEN),
+     &                        CUBN(ISFSEL(IG))(1:ITLEN),SUFFIX(1:ISLEN)
                     LNTABLABEL(NGET)=ITLEN+ISLEN
                   else
                     ISLEN=lnblnk(SUFFIX)
@@ -3701,12 +3706,13 @@ C specific information.
                     LNTABLABEL(NGET)=ITLEN
                   elseif (MRTLIST) then
                     call ZSID(IZ,ISFSEL(IG),ZSDES,ZSDESC,ZSDESS)
-                    ITLEN=lnblnk(ZSDES)
+                    ITLEN=lnblnk(CUBN(ISFSEL(IG)))
                     IZLEN=lnzname(IZ)
-                    write (GLABEL(NGET),'(a,a,i2)')ZNAME(IZ)(1:IZLEN),
-     &                                                  ' S',ISFSEL(IG)
+                    write (GLABEL(NGET),'(2a)')ZNAME(IZ)(1:IZLEN),
+     &                        CUBN(ISFSEL(IG))(1:ITLEN)
                     LNGLABEL(NGET)=lnblnk(GLABEL(NGET))
-                    write (TABLABEL(NGET),'(a)') ZSDES(1:ITLEN)
+                    write (TABLABEL(NGET),'(2a)') ZNAME(IZ)(1:IZLEN),
+     &                        CUBN(ISFSEL(IG))(1:ITLEN)
                     LNTABLABEL(NGET)=ITLEN
                   else
                     write(GLABEL(NGET),'(a)') ZNAME(IZ)(1:lnzname(IZ))
