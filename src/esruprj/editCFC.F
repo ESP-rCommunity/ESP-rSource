@@ -1,11 +1,11 @@
 C This file is part of the ESP-r system.
 C Copyright Energy Systems Research Unit, University of
-C Strathclyde, Glasgow Scotland, 2001.
+C Strathclyde, Glasgow Scotland, 2001-2012.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -119,68 +119,67 @@ C 1. scan G6 common and check that CFCs are VERT and EXTERIOR
       DO 10 IS=1,NZSUR(icomp)
         icn1=izstocn(icomp,is)
         IF (SSOTF(icn1)(1:4).eq.'CFC ') then
-c           if(SSVFC(icn1)(1:4).eq.'VERT'.and.
-           if(
-     &         SSOTHER(icn1,1)(1:5).eq.'EXTER')then
-               ncfccount=ncfccount+1   !count CFCs in zone
-               con_name(is)=SSMLCN(icn1)
+c          if(SSVFC(icn1)(1:4).eq.'VERT'.and.
+          if(
+     &        SSOTHER(icn1,1)(1:5).eq.'EXTER')then
+            ncfccount=ncfccount+1   !count CFCs in zone
+            con_name(is)=SSMLCN(icn1)
 
 C 2.  scan constructions layers and check that there are air gaps
 C between each glazing/shading layer
-                igap=0
-                do 15 ie=2,ne(is),2
-                  igap=igap+1
-                  if (ie.ne.IPAIRG(IS,igap)) then
-                    CALL USRMSG(
-     &             ' CFCs must have alternating solid and gas',
-     &             ' gap layers. Check constructions and try again.',
-     &              'W')
-                    IER=1
-                    return
-                  endif
- 15             continue
+            igap=0
+            do 15 ie=2,ne(is),2
+              igap=igap+1
+              if (ie.ne.IPAIRG(IS,igap)) then
+                CALL USRMSG(
+     &         ' CFCs must have alternating solid and gas',
+     &         ' gap layers. Check constructions and try again.',
+     &          'W')
+                IER=1
+                return
+              endif
+ 15         continue
 
-            else
-                  CALL USRMSG(
-     &            ' CFC must be (VERT) and EXTERIOR',
-     &            ' please update geometry and try again.','W')
-                  IER=1
-                  return
-            end if
+          else
+            CALL USRMSG(
+     &      ' CFC must be (VERT) and EXTERIOR',
+     &      ' please update geometry and try again.','W')
+            IER=1
+            return
+          endif
         ELSE
-            con_name(is)=' '
-        END IF
+          con_name(is)=' '
+        ENDIF
  10   CONTINUE
 
 C Count how many default CFC types exist (ie. how many different
-C CFC constructions exist in the zone)
-C nmaxtypes holds default max # of CFC types
-      IF(ncfccount.ge.1)then
-          nmaxtypes=0
-          ntypes=0
-          DO 20 IS=1,NZSUR(icomp)
-             if(is.eq.1.and.con_name(is).ne.' ') ntypes=1
-             if(is.ne.NZSUR(icomp))then
+C CFC constructions exist in the zone) nmaxtypes holds default max # of CFC types.
+      IF (ncfccount.ge.1)then
+        nmaxtypes=0
+        ntypes=0
+        DO 20 IS=1,NZSUR(icomp)
+          if (is.eq.1.and.con_name(is).ne.' ') ntypes=1
+          if (is.ne.NZSUR(icomp)) then
 
-               if(con_name(is).ne.con_name(is+1)
-     &               .and.con_name(is+1).ne.' ')then
-                 isame=0
-                 do 30 iss=is,1,-1
-                        if(con_name(is+1).eq.con_name(iss))then
-                          isame=isame+1
-                        end if
- 30              continue
-                 if(isame.eq.0)ntypes=ntypes+1
+            if(con_name(is).ne.con_name(is+1)
+     &            .and.con_name(is+1).ne.' ')then
+              isame=0
+              do 30 iss=is,1,-1
+                if(con_name(is+1).eq.con_name(iss))then
+                  isame=isame+1
+                end if
+ 30           continue
+              if (isame.eq.0) ntypes=ntypes+1
 
-               endif
+            endif
 
-             if(ntypes.gt.nmaxtypes)then
-                nmaxtypes=ntypes
-             endif
+          if(ntypes.gt.nmaxtypes)then
+             nmaxtypes=ntypes
+          endif
 
-             endif
- 20       CONTINUE
-      END IF
+          endif ! .ne.nzsur
+ 20     CONTINUE
+      ENDIF
       ncfctypes=nmaxtypes
 
 C Ask user to provide alternate number of CFC types
@@ -215,44 +214,44 @@ C check that all CFC types have been assigned
       DO 50 i=1,ncfctypes
       icount=0
 
-       do 60 is=1,NZSUR(icomp)
+        do 60 is=1,NZSUR(icomp)
           if(im_cfcfl(icomp,is).eq.i)icount=icount+1
- 60    continue
+ 60     continue
 
-       if(icount.gt.0)then
+        if(icount.gt.0)then
           continue
-       else
+        else
           write(outs,'(A,I4)')'Missing CFC type: ',i
           CALL USRMSG(outs,'Please try again. ','W')
           goto 11
-       endif
+        endif
 
  50   CONTINUE
 
 C check mismatch between CFC type and construction (two different CFC 
 C constructions cannot have the same CFC type)
       if(ncfccount.ge.1)then
-      DO 70 is=1, NZSUR(icomp)
-        icn1=izstocn(icomp,is)
-        icompare1=im_cfcfl(icomp,is)
-        if(icompare1.gt.0)then
-         do 80 iss=1,NZSUR(icomp)
-         icn2=izstocn(icomp,iss)
-         icompare2=im_cfcfl(icomp,iss)
-          if(icompare2.gt.0)then
-            if(icompare2.eq.icompare1)then
-              if(SSMLCN(icn1).ne.SSMLCN(icn2))then
-                 CALL USRMSG(
-     &           ' Two different CFC compositions cannot',
-     &           ' have same CFC type, please try again. ','W')
-                 goto 11
-              end if
-            endif
+        DO 70 is=1, NZSUR(icomp)
+          icn1=izstocn(icomp,is)
+          icompare1=im_cfcfl(icomp,is)
+          if (icompare1.gt.0) then
+            do 80 iss=1,NZSUR(icomp)
+              icn2=izstocn(icomp,iss)
+              icompare2=im_cfcfl(icomp,iss)
+              if (icompare2.gt.0) then
+                if (icompare2.eq.icompare1) then
+                  if (SSMLCN(icn1).ne.SSMLCN(icn2)) then
+                    CALL USRMSG(
+     &                ' Two different CFC compositions cannot',
+     &                ' have same CFC type, please try again. ','W')
+                    goto 11
+                  endif
+                endif
+              endif
+ 80         continue
           endif
- 80      continue
-        endif
- 70   CONTINUE
-      end if
+ 70     CONTINUE
+      endif
 
 C ------------------------------------------------------------------
 C if at this point then checks passed, ready to assemble *.GSL files
@@ -341,7 +340,7 @@ C Open *.cfc file
       ENDIF
 
 C===========V E R S I O N   2   F I L E S===================
-C Write out file version header if version 2 file
+C Write out file version header if version 2 file.
       if (im_CFCfileversion(icomp).eq.2) then
         WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
      &    '*CFC_Fileversion 2'
@@ -386,30 +385,30 @@ C commons.
 
         do 130 ie=1,im_ncfc_el(icomp,it)
 
-              if(im_cfcltp(icomp,it,ie).eq.2)then
-                write(outs,'(3F8.3,a)')rim_SolRf(icomp,it,ie),
-     &            rim_SolRb(icomp,it,ie),rim_SolT(icomp,it,ie),
-     &            '   # slat-type blind '
-                WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
-     &                        outs(1:lnblnk(outs))
+          if(im_cfcltp(icomp,it,ie).eq.2)then
+            write(outs,'(3F8.3,a)')rim_SolRf(icomp,it,ie),
+     &        rim_SolRb(icomp,it,ie),rim_SolT(icomp,it,ie),
+     &        '   # slat-type blind '
+            WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
+     &                    outs(1:lnblnk(outs))
 
-              elseif(im_cfcltp(icomp,it,ie).eq.1)then
-                write(outs,'(3F8.3,a)')rim_SolRf(icomp,it,ie),
-     &            rim_SolRb(icomp,it,ie),rim_SolT(icomp,it,ie),
-     &            '   # glazing '
-                WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
-     &                        outs(1:lnblnk(outs))
+          elseif(im_cfcltp(icomp,it,ie).eq.1)then
+            write(outs,'(3F8.3,a)')rim_SolRf(icomp,it,ie),
+     &        rim_SolRb(icomp,it,ie),rim_SolT(icomp,it,ie),
+     &        '   # glazing '
+            WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
+     &                    outs(1:lnblnk(outs))
 
-              elseif(im_cfcltp(icomp,it,ie).eq.0)then
-                write(outs,'(3F8.3,a)')rim_SolRf(icomp,it,ie),
-     &            rim_SolRb(icomp,it,ie),rim_SolT(icomp,it,ie),
-     &            '   # gas gap '
-                WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
-     &                        outs(1:lnblnk(outs))
+          elseif(im_cfcltp(icomp,it,ie).eq.0)then
+            write(outs,'(3F8.3,a)')rim_SolRf(icomp,it,ie),
+     &        rim_SolRb(icomp,it,ie),rim_SolT(icomp,it,ie),
+     &        '   # gas gap '
+            WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
+     &                    outs(1:lnblnk(outs))
 
-              else
-                GOTO 98
-              endif
+          else
+            GOTO 98
+          endif
 
  130    continue
 
@@ -420,30 +419,30 @@ C commons.
 
         do 140 ie=1,im_ncfc_el(icomp,it)
 
-              if(im_cfcltp(icomp,it,ie).eq.2)then
-                write(outs,'(3F8.3,a)')rim_VisRf(icomp,it,ie),
-     &            rim_VisRb(icomp,it,ie),rim_VisT(icomp,it,ie),
-     &            '   # slat-type blind '
-                WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
-     &                        outs(1:lnblnk(outs))
+          if(im_cfcltp(icomp,it,ie).eq.2)then
+            write(outs,'(3F8.3,a)')rim_VisRf(icomp,it,ie),
+     &        rim_VisRb(icomp,it,ie),rim_VisT(icomp,it,ie),
+     &        '   # slat-type blind '
+            WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
+     &                    outs(1:lnblnk(outs))
 
-              elseif(im_cfcltp(icomp,it,ie).eq.1)then
-                write(outs,'(3F8.3,a)')rim_VisRf(icomp,it,ie),
-     &            rim_VisRb(icomp,it,ie),rim_VisT(icomp,it,ie),
-     &            '   # glazing '
-                WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
-     &                        outs(1:lnblnk(outs))
+          elseif(im_cfcltp(icomp,it,ie).eq.1)then
+            write(outs,'(3F8.3,a)')rim_VisRf(icomp,it,ie),
+     &        rim_VisRb(icomp,it,ie),rim_VisT(icomp,it,ie),
+     &        '   # glazing '
+            WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
+     &                    outs(1:lnblnk(outs))
 
-              elseif(im_cfcltp(icomp,it,ie).eq.0)then
-                write(outs,'(3F8.3,a)')rim_VisRf(icomp,it,ie),
-     &            rim_VisRb(icomp,it,ie),rim_VisT(icomp,it,ie),
-     &            '   # gas gap '
-                WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
-     &                        outs(1:lnblnk(outs))
+          elseif(im_cfcltp(icomp,it,ie).eq.0)then
+            write(outs,'(3F8.3,a)')rim_VisRf(icomp,it,ie),
+     &        rim_VisRb(icomp,it,ie),rim_VisT(icomp,it,ie),
+     &        '   # gas gap '
+            WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
+     &                    outs(1:lnblnk(outs))
 
-              else
-                GOTO 98
-              endif
+          else
+            GOTO 98
+          endif
 
  140    continue
 
@@ -454,30 +453,30 @@ C commons.
 
         do 150 ie=1,im_ncfc_el(icomp,it)
 
-              if(im_cfcltp(icomp,it,ie).eq.2)then
-                write(outs,'(3F8.3,a)')rim_lwEf(icomp,it,ie),
-     &            rim_lwEb(icomp,it,ie),rim_lwT(icomp,it,ie),
-     &            '   # slat-type blind '
-                WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
-     &                        outs(1:lnblnk(outs))
+          if(im_cfcltp(icomp,it,ie).eq.2)then
+            write(outs,'(3F8.3,a)')rim_lwEf(icomp,it,ie),
+     &        rim_lwEb(icomp,it,ie),rim_lwT(icomp,it,ie),
+     &        '   # slat-type blind '
+            WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
+     &                    outs(1:lnblnk(outs))
 
-              elseif(im_cfcltp(icomp,it,ie).eq.1)then
-                write(outs,'(3F8.3,a)')rim_lwEf(icomp,it,ie),
-     &            rim_lwEb(icomp,it,ie),rim_lwT(icomp,it,ie),
-     &            '   # glazing '
-                WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
-     &                        outs(1:lnblnk(outs))
+          elseif(im_cfcltp(icomp,it,ie).eq.1)then
+            write(outs,'(3F8.3,a)')rim_lwEf(icomp,it,ie),
+     &        rim_lwEb(icomp,it,ie),rim_lwT(icomp,it,ie),
+     &        '   # glazing '
+            WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
+     &                    outs(1:lnblnk(outs))
 
-              elseif(im_cfcltp(icomp,it,ie).eq.0)then
-                write(outs,'(3F8.3,a)')rim_lwEf(icomp,it,ie),
-     &            rim_lwEb(icomp,it,ie),rim_lwT(icomp,it,ie),
-     &            '   # gas gap '
-                WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
-     &                        outs(1:lnblnk(outs))
+          elseif(im_cfcltp(icomp,it,ie).eq.0)then
+            write(outs,'(3F8.3,a)')rim_lwEf(icomp,it,ie),
+     &        rim_lwEb(icomp,it,ie),rim_lwT(icomp,it,ie),
+     &        '   # gas gap '
+            WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)
+     &                    outs(1:lnblnk(outs))
 
-              else
-                GOTO 98
-              endif
+          else
+            GOTO 98
+          endif
 
  150    continue
 
@@ -508,7 +507,7 @@ C write out layer type index
 C===========V E R S I O N   2   F I L E S===================
       if (im_CFCfileversion(icomp).eq.2) then
 
-C     Write layer names and IGDB index to version 2 CFC files
+C     Write layer names and IGDB index to version 2 CFC files.
         write(outs,'(a,i2)')
      &      '# layer names for cfc type: ',it
         WRITE(IFU,'(A)',IOSTAT=ISTAT,ERR=98)outs(1:lnblnk(outs))
@@ -626,7 +625,7 @@ C WRITE OUT SLAT-TYPE BLIND PROPERTIES HERE
       CALL ERPFREE(IFU,ISTAT)
  1111 RETURN
 
-C Error if we are here
+C Error if we are here.
    98 CALL EDISP(IUOUT,' ')
       CALL EDISP(IUOUT,' CFC file write error ')
       IER=1
@@ -636,7 +635,7 @@ C Error if we are here
       CALL EFDELET(IFU,ISTAT)
       goto 1111
 
-c User cancelled if we are here
+c User cancelled if we are here.
    99 CALL EDISP(IUOUT,' ')
       CALL EDISP(IUOUT,' Import of GSL files cancelled by user')
       IER=1
@@ -648,7 +647,7 @@ c User cancelled if we are here
       CALL EFDELET(IFU,ISTAT)
       GOTO 1111
 
-C User choice 'continue'
+C User choice 'continue'.
       ELSEIF(IWA.eq.2)then
         return
       ENDIF 
@@ -708,12 +707,12 @@ C For help messages
       vb_xst=.false.
 
       if(GSLfile(1:4).eq.'UNKN'.or.GSLfile(1:2).eq.'  ')then
-         goto 98
+        goto 98
       else
-         CALL EFOPSEQ(IUF,GSLfile,1,IER) !Open *.GSL ASCII file
-         call edisp(iuout,' ')
-         call edisp(iuout,' Importing data from GSLedit file:')
-         call edisp(iuout,GSLfile)
+        CALL EFOPSEQ(IUF,GSLfile,1,IER) !Open *.GSL ASCII file
+        call edisp(iuout,' ')
+        call edisp(iuout,' Importing data from GSLedit file:')
+        call edisp(iuout,GSLfile)
       endif
       IF(IER.NE.0)THEN
         GOTO 98
@@ -758,48 +757,48 @@ C each layer assign a '0' in array icfltype for a gas gap.
       ivb_count=0
       do 10 j=1,nelts,2
         CALL EGETW(OUTSTR,K,ltype,'F','layer type',IER)
-        if(ltype.ne.'GLZ'.and.ltype.ne.'VBD')then
-            call edisp(iuout,' GSLedit import error: ')
-            call edisp(iuout,' allowed layer types: GLZ, VBD ')
-            IER=1
-            goto 1111
+        if (ltype.ne.'GLZ'.and.ltype.ne.'VBD') then
+          call edisp(iuout,' GSLedit import error: ')
+          call edisp(iuout,' allowed layer types: GLZ, VBD ')
+          IER=1
+          goto 1111
         elseif(ltype.eq.'VBD')then
-            im_cfcltp(icomp,icfctp,j)=2
-            ivb_count=ivb_count+1
-            vb_xst=.true.
+          im_cfcltp(icomp,icfctp,j)=2
+          ivb_count=ivb_count+1
+          vb_xst=.true.
         else
-            im_cfcltp(icomp,icfctp,j)=1
+          im_cfcltp(icomp,icfctp,j)=1
         end if
 
-        if(j.lt.nelts)im_cfcltp(icomp,icfctp,j+1)=0
+        if (j.lt.nelts) im_cfcltp(icomp,icfctp,j+1)=0
    10 continue
-      if(ivb_count.gt.1)then
-            call edisp(iuout,' GSLedit import error: ')
-            call edisp(iuout,' Maximum of 1 VBD layers allowed ')
-            IER=1
-            goto 1111
+      if (ivb_count.gt.1) then
+        call edisp(iuout,' GSLedit import error: ')
+        call edisp(iuout,' Maximum of 1 VBD layers allowed ')
+        IER=1
+        goto 1111
       endif
 
 C Ask user to specify slat orientation (HORZ, VERT) and initial slat
 C angle. 
       helptopic='slat_angle_convention'
       call gethelptext(helpinsub,helptopic,nbhelp)
-      if(vb_xst)then
-          write(outs,'(a,i2)')
-     &      'Specify blind slat orientation for cfc type: ',icfctp
-          ln_outs=lnblnk(outs)
-          CALL EASKAB(outs(1:ln_outs),' ',
-     &            'Vertical','Horizontal',IWA,nbhelp)
-          if(IWA.eq.1)cim_VorH(icomp,icfctp)='VERT'
-          if(IWA.eq.2)cim_VorH(icomp,icfctp)='HORZ'
+      if (vb_xst) then
+        write(outs,'(a,i2)')
+     &    'Specify blind slat orientation for cfc type: ',icfctp
+        ln_outs=lnblnk(outs)
+        CALL EASKAB(outs(1:ln_outs),' ',
+     &          'Vertical','Horizontal',IWA,nbhelp)
+        if(IWA.eq.1)cim_VorH(icomp,icfctp)='VERT'
+        if(IWA.eq.2)cim_VorH(icomp,icfctp)='HORZ'
 
-          write(outs,'(a,i2)')
-     &      'Specify intial blind slat angle for cfc type: ',icfctp
-          rphi=0.0
-          ln_outs=lnblnk(outs)
-          CALL EASKR(rphi,' ',outs(1:ln_outs),-89.999,'F',
-     &               89.999,'F',0.0,'slat angle',IER,nbhelp)
-          rim_vb_phi(icomp,icfctp)=rphi
+        write(outs,'(a,i2)')
+     &    'Specify intial blind slat angle for cfc type: ',icfctp
+        rphi=0.0
+        ln_outs=lnblnk(outs)
+        CALL EASKR(rphi,' ',outs(1:ln_outs),-89.999,'F',
+     &             89.999,'F',0.0,'slat angle',IER,nbhelp)
+        rim_vb_phi(icomp,icfctp)=rphi
       endif
 
 C Read Solar optical, visual and longwave optical properties for
@@ -807,129 +806,129 @@ C each layer. If venetian/slat-type blind, also read w/r ratio (width/radius
 C curvature ratio), slat thickness and slat apparent thickness
       nelts=ne(isur)
       do 20 i=1,nelts,2
-         CALL LSTRIPC(IUF,LOUTSTR,99,litems,1,
-     &            'optical properties in GSLedit file',IER)
-         IF(IER.NE.0)GOTO 1001
-         
-         Kg=0
-         Ki=13 ! next character is first digit of IGDB index
-         im_CFCfileversion(icomp)=2 ! set this for read / write of cfc files
-                                    ! henceforth, all imported files are
-                                    ! version 2 (May 8, 2012)
+        CALL LSTRIPC(IUF,LOUTSTR,99,litems,1,
+     &           'optical properties in GSLedit file',IER)
+        IF (IER.NE.0) GOTO 1001
+        
+        Kg=0
+        Ki=13 ! next character is first digit of IGDB index
+        im_CFCfileversion(icomp)=2 ! set this for read / write of cfc files
+                                   ! henceforth, all imported files are
+                                   ! version 2 (May 8, 2012)
 
-         K=23  ! next character is first digit of solar transmission
+        K=23  ! next character is first digit of solar transmission
 
-         if(im_cfcltp(icomp,icfctp,i).eq.1)then
+        if (im_cfcltp(icomp,icfctp,i).eq.1) then
 
 C===========V E R S I O N   2   F I L E S===================
 C Read of layer name (characters 1:13) and IGDB index
 C (characters 14:17) and store.
 cx This is (will be?) used in cfc2rad ... 08052012
 
-            CALL EGETW(LOUTSTR,Kg,gname,'F','layer name',IER)
-            rim_LayNam(icomp,icfctp,i)=gname
-            rim_lLayNam(icomp,icfctp,i)=
-     &                   lnblnk(rim_LayNam(icomp,icfctp,i))
+          CALL EGETW(LOUTSTR,Kg,gname,'F','layer name',IER)
+          rim_LayNam(icomp,icfctp,i)=gname
+          rim_lLayNam(icomp,icfctp,i)=
+     &                 lnblnk(rim_LayNam(icomp,icfctp,i))
 
-            CALL EGETWI(LOUTSTR,Ki,iIGDBindex,0,50000,'F',
-     &            'IGDB index',IER)
-            rim_IGDBindex(icomp,icfctp,i)=iIGDBindex
+          CALL EGETWI(LOUTSTR,Ki,iIGDBindex,0,50000,'F',
+     &          'IGDB index',IER)
+          rim_IGDBindex(icomp,icfctp,i)=iIGDBindex
 C-----------------------------------------------------------
 
-            CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
-     &            'solar transmission',IER)
-            rim_SolT(icomp,icfctp,i)=rprop
-            CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
-     &            'solar reflectance - front',IER)
-            rim_SolRf(icomp,icfctp,i)=rprop
-            CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
-     &            'solar reflectance - back',IER)
-            rim_SolRb(icomp,icfctp,i)=rprop
-            CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
-     &            'visual transmission',IER)
-            rim_VisT(icomp,icfctp,i)=rprop
-            CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
-     &            'visual reflectance - front ',IER)
-            rim_VisRf(icomp,icfctp,i)=rprop
-            CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
-     &            'visual reflectance - back',IER)
-            rim_VisRb(icomp,icfctp,i)=rprop
-            CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
-     &            'long wave transmission',IER)
-            rim_lwT(icomp,icfctp,i)=rprop
-            CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
-     &            'long wave emissivity - front',IER)
-            rim_lwEf(icomp,icfctp,i)=rprop
-            CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
-     &            'long wave emissivity - back',IER)
-            rim_lwEb(icomp,icfctp,i)=rprop
+          CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
+     &          'solar transmission',IER)
+          rim_SolT(icomp,icfctp,i)=rprop
+          CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
+     &          'solar reflectance - front',IER)
+          rim_SolRf(icomp,icfctp,i)=rprop
+          CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
+     &          'solar reflectance - back',IER)
+          rim_SolRb(icomp,icfctp,i)=rprop
+          CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
+     &          'visual transmission',IER)
+          rim_VisT(icomp,icfctp,i)=rprop
+          CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
+     &          'visual reflectance - front ',IER)
+          rim_VisRf(icomp,icfctp,i)=rprop
+          CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
+     &          'visual reflectance - back',IER)
+          rim_VisRb(icomp,icfctp,i)=rprop
+          CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
+     &          'long wave transmission',IER)
+          rim_lwT(icomp,icfctp,i)=rprop
+          CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
+     &          'long wave emissivity - front',IER)
+          rim_lwEf(icomp,icfctp,i)=rprop
+          CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
+     &          'long wave emissivity - back',IER)
+          rim_lwEb(icomp,icfctp,i)=rprop
 
-         elseif(im_cfcltp(icomp,icfctp,i).eq.2)then
+        elseif(im_cfcltp(icomp,icfctp,i).eq.2)then
 
-            CALL EGETW(LOUTSTR,Kg,gname,'F','layer name',IER)
-            rim_LayNam(icomp,icfctp,i)=gname
-            rim_lLayNam(icomp,icfctp,i)=
-     &                   lnblnk(rim_LayNam(icomp,icfctp,i))
+          CALL EGETW(LOUTSTR,Kg,gname,'F','layer name',IER)
+          rim_LayNam(icomp,icfctp,i)=gname
+          rim_lLayNam(icomp,icfctp,i)=
+     &                 lnblnk(rim_LayNam(icomp,icfctp,i))
 
-            rim_IGDBindex(icomp,icfctp,i)=0
+          rim_IGDBindex(icomp,icfctp,i)=0
 
-            CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
-     &            'solar slat transmission',IER)
-            rim_SolT(icomp,icfctp,i)=rprop
-            CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
-     &            'solar slat reflectance - front(top)',IER)
-            rim_SolRf(icomp,icfctp,i)=rprop
-            CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
-     &            'solar slat reflectance - back(top)',IER)
-            rim_SolRb(icomp,icfctp,i)=rprop
+          CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
+     &          'solar slat transmission',IER)
+          rim_SolT(icomp,icfctp,i)=rprop
+          CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
+     &          'solar slat reflectance - front(top)',IER)
+          rim_SolRf(icomp,icfctp,i)=rprop
+          CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
+     &          'solar slat reflectance - back(top)',IER)
+          rim_SolRb(icomp,icfctp,i)=rprop
 
 C Assign default visual=solar properties for Venetian blind slats
 C until visual properies added to GSLedit
-            rim_VisT(icomp,icfctp,i) = rim_SolT(icomp,icfctp,i)
-            rim_VisRf(icomp,icfctp,i)= rim_SolRf(icomp,icfctp,i)
-            rim_VisRb(icomp,icfctp,i)= rim_SolRb(icomp,icfctp,i)
+          rim_VisT(icomp,icfctp,i) = rim_SolT(icomp,icfctp,i)
+          rim_VisRf(icomp,icfctp,i)= rim_SolRf(icomp,icfctp,i)
+          rim_VisRb(icomp,icfctp,i)= rim_SolRb(icomp,icfctp,i)
 
-            CALL EGETWR(LOUTSTR,K,rprop,.001,0.30,'F',
-     &            'slat width (m)',IER)
-            rim_vb_w(icomp,icfctp)=rprop*1000.  ![convert to mm]
-            CALL EGETWR(LOUTSTR,K,rprop,.001,0.30,'F',
-     &            'slat spacing (m)',IER)
-            rim_vb_s(icomp,icfctp)=rprop*1000.  ![convert to mm]
-            rvb_w=rprop
-            CALL EGETWR(LOUTSTR,K,rprop,0.0,rvb_w/2.0,'F',
-     &            'slat crown (m)',IER)
-            rim_vb_crown(icomp,icfctp)=rprop*1000.    ![convert to mm]
-            CALL EGETWR(LOUTSTR,K,rprop,0.0,1.999,'F',
-     &            'slat w/r ratio',IER)
-            rim_vb_wr(icomp,icfctp)=rprop
-            CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
-     &            'long wave transmission',IER)
-            rim_lwT(icomp,icfctp,i)=rprop
-            CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
-     &            'long wave emissivity - front',IER)
-            rim_lwEf(icomp,icfctp,i)=rprop
-            CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
-     &            'long wave emissivity - back',IER)
-            rim_lwEb(icomp,icfctp,i)=rprop
-            CALL EGETWR(LOUTSTR,K,rprop,.0,0.3,'F',
-     &            'slat thickness (m)',IER)
-            rim_vb_t(icomp,icfctp)=rprop*1000.  ![convert to mm]
+          CALL EGETWR(LOUTSTR,K,rprop,.001,0.30,'F',
+     &          'slat width (m)',IER)
+          rim_vb_w(icomp,icfctp)=rprop*1000.  ![convert to mm]
+          CALL EGETWR(LOUTSTR,K,rprop,.001,0.30,'F',
+     &          'slat spacing (m)',IER)
+          rim_vb_s(icomp,icfctp)=rprop*1000.  ![convert to mm]
+          rvb_w=rprop
+          CALL EGETWR(LOUTSTR,K,rprop,0.0,rvb_w/2.0,'F',
+     &          'slat crown (m)',IER)
+          rim_vb_crown(icomp,icfctp)=rprop*1000.    ![convert to mm]
+          CALL EGETWR(LOUTSTR,K,rprop,0.0,1.999,'F',
+     &          'slat w/r ratio',IER)
+          rim_vb_wr(icomp,icfctp)=rprop
+          CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
+     &          'long wave transmission',IER)
+          rim_lwT(icomp,icfctp,i)=rprop
+          CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
+     &          'long wave emissivity - front',IER)
+          rim_lwEf(icomp,icfctp,i)=rprop
+          CALL EGETWR(LOUTSTR,K,rprop,.0,0.999,'F',
+     &          'long wave emissivity - back',IER)
+          rim_lwEb(icomp,icfctp,i)=rprop
+          CALL EGETWR(LOUTSTR,K,rprop,.0,0.3,'F',
+     &          'slat thickness (m)',IER)
+          rim_vb_t(icomp,icfctp)=rprop*1000.  ![convert to mm]
 
-         else
-            goto 1001
-         end if
+        else
+          goto 1001
+        endif
 
 C assign optical properties for air gap
         if(i.lt.nelts)then
-         rim_SolT(icomp,icfctp,i+1) =     0.0001
-         rim_SolRf(icomp,icfctp,i+1)=     0.0001
-         rim_SolRb(icomp,icfctp,i+1)=     0.0001
-         rim_VisT(icomp,icfctp,i+1) =     0.0001
-         rim_VisRf(icomp,icfctp,i+1)=     0.0001
-         rim_VisRb(icomp,icfctp,i+1)=     0.0001
-         rim_lwT(icomp,icfctp,i+1)  =     0.0001
-         rim_lwEf(icomp,icfctp,i+1) =     0.0001
-         rim_lwEb(icomp,icfctp,i+1) =     0.0001
+          rim_SolT(icomp,icfctp,i+1) = 0.0001
+          rim_SolRf(icomp,icfctp,i+1)= 0.0001
+          rim_SolRb(icomp,icfctp,i+1)= 0.0001
+          rim_VisT(icomp,icfctp,i+1) = 0.0001
+          rim_VisRf(icomp,icfctp,i+1)= 0.0001
+          rim_VisRb(icomp,icfctp,i+1)= 0.0001
+          rim_lwT(icomp,icfctp,i+1)  = 0.0001
+          rim_lwEf(icomp,icfctp,i+1) = 0.0001
+          rim_lwEb(icomp,icfctp,i+1) = 0.0001
         endif
 
  20   continue
@@ -939,9 +938,9 @@ C If here, import commons for optical properties and slat blind
 C attributes are filled.
 C -------------------------------------------------------------------
 
-      if(im_ncfc_el(icomp,icfctp).eq.1)then  !CFC must have more than one layer
-            IER=-1
-            goto 98
+      if (im_ncfc_el(icomp,icfctp).eq.1)then  !CFC must have more than one layer
+        IER=-1
+        goto 98
       end if
 
 C Read cavity gas data
@@ -949,11 +948,11 @@ C Read cavity gas data
 C count number of gas gaps and check that this equals NAIRG
       CALL STRIPC(IUF,OUTSTR,99,lgasgaps,1,'no. of gas gaps',IER)
       IF(IER.NE.0)GOTO 1001
-      if(lgasgaps.ne.nairg(isur))then
-            call edisp(iuout,' GSLedit import error: ')
-            call edisp(iuout,' mismatch in no. of gas gaps ')
-            IER=1
-            goto 1111
+      if (lgasgaps.ne.nairg(isur))then
+        call edisp(iuout,' GSLedit import error: ')
+        call edisp(iuout,' mismatch in no. of gas gaps ')
+        IER=1
+        goto 1111
       endif
 
 C Loop through CFC layers and assign gas properties to CFC commons
@@ -1069,8 +1068,8 @@ c      character dllsubr*12,dllmesg*124
 
       CALL EFOPSEQ(IUA,LUA,1,IER)
       IF(IER.NE.0)THEN
-       IER=1
-       goto 1000
+        IER=1
+        goto 1000
       ENDIF
 
 C===========V E R S I O N   2   F I L E S===================
@@ -1117,15 +1116,15 @@ C if the surface attribute should be updated.
       ncfc(icomp)=0
       DO 10 I=1,NS
         icfcfl(icomp,i)=iva(i)
-       IF(icfcfl(icomp,i).NE.0.AND.(SSOTF(izstocn(icomp,I)).NE. 
+        IF(icfcfl(icomp,i).NE.0.AND.(SSOTF(izstocn(icomp,I)).NE.
      &                                                  'CFC '))THEN 
-         WRITE(OUTS,'(5a)')' The CFC file ',LUA(1:lnblnk(LUA)),
+          WRITE(OUTS,'(5a)')' The CFC file ',LUA(1:lnblnk(LUA)),
      &      ' not sure if ',SSNAME(IZSTOCN(ICOMP,I)),
-     &     ' is a complex fenestration constr.'
-         call edisp(itru,outs)
-         call edisp(itru,' Check your zone files.')
-       ENDIF
-        IF(icfcfl(icomp,i).GT.ncfc(icomp))ncfc(icomp)=icfcfl(icomp,i)
+     &      ' is a complex fenestration constr.'
+          call edisp(itru,outs)
+          call edisp(itru,' Check your zone files.')
+        ENDIF
+        IF (icfcfl(icomp,i).GT.ncfc(icomp)) ncfc(icomp)=icfcfl(icomp,i)
    10 CONTINUE
       IF(ncfc(icomp).EQ.0.OR.ncfc(icomp).GT.mcfc)THEN
         CALL EDISP(ITRU,' No. of CFC types out of range.')
@@ -1234,7 +1233,7 @@ C Reporting
          CALL EDISP(ITRU,
      &      ' Normal solar-optical prop. front/back/tran. ')
          do 32 j=1,ncfc_el(icomp,i)
-         WRITE(OUTS,'(2X,3F7.3)')solRF(icomp,i,j),solRB(icomp,i,j),
+           WRITE(OUTS,'(2X,3F7.3)')solRF(icomp,i,j),solRB(icomp,i,j),
      &                           solT(icomp,i,j)
   32     continue
          CALL EDISP(ITRU,OUTS)
@@ -1242,7 +1241,7 @@ C Reporting
          CALL EDISP(ITRU,
      &      ' Normal visual-optical prop. front/back/tran. ')
          do 33 j=1,ncfc_el(icomp,i)
-         WRITE(OUTS,'(2X,3F7.3)')visRF(icomp,i,j),visRB(icomp,i,j),
+           WRITE(OUTS,'(2X,3F7.3)')visRF(icomp,i,j),visRB(icomp,i,j),
      &                           visT(icomp,i,j)
   33     continue
          CALL EDISP(ITRU,OUTS)
@@ -1250,7 +1249,7 @@ C Reporting
          CALL EDISP(ITRU,
      &      ' Normal longwave-optical prop. front/back/tran. ')
          do 34 j=1,ncfc_el(icomp,i)
-         WRITE(OUTS,'(2X,3F7.3)')rlwEF(icomp,i,j),rlwEB(icomp,i,j),
+           WRITE(OUTS,'(2X,3F7.3)')rlwEF(icomp,i,j),rlwEB(icomp,i,j),
      &                           rlwT(icomp,i,j)
   34     continue
          CALL EDISP(ITRU,OUTS)
@@ -1263,105 +1262,104 @@ C Read element type for each layer of complex fenestration construction
 C icfcltp - 0=gas gap, 1=opaque/glass, 2=slat-type blind
       do 80 i=1,ncfc(icomp)
 
-      nshade_layers=0
-      IRVA=ncfc_el(icomp,i)
-      CALL EGETWIA(IUA,IVA,IRVA,0,2,'W','cfc layer type index',IER)
+        nshade_layers=0
+        IRVA=ncfc_el(icomp,i)
+        CALL EGETWIA(IUA,IVA,IRVA,0,2,'W','cfc layer type index',IER)
 
 C check that only one slat-type blind exists and highest value in 
 C icfcltp = 2 (currently only slat-type blinds and glazings allowed)
-      do 90 j=1,ncfc_el(icomp,i)
-             if(IVA(j).eq.2)then
-               nshade_layers=nshade_layers+1
-             elseif(iva(j).gt.2)then
-               call edisp(itru,' ')
-               call edisp(itru,
-     &         ' CFC layer type index cannot exceed 2.')
-               GOTO 1002
-             end if
-             icfcltp(icomp,i,j)=IVA(j)
-   90 continue
+        do 90 j=1,ncfc_el(icomp,i)
+          if(IVA(j).eq.2)then
+            nshade_layers=nshade_layers+1
+          elseif(iva(j).gt.2)then
+            call edisp(itru,' ')
+            call edisp(itru,
+     &      ' CFC layer type index cannot exceed 2.')
+            GOTO 1002
+          end if
+          icfcltp(icomp,i,j)=IVA(j)
+   90   continue
 
-      if(nshade_layers.eq.1)then
-        vb_xst=.true.
-      elseif(nshade_layers.gt.1)then
-        call edisp(itru,' ')
-        call edisp(itru,
+        if (nshade_layers.eq.1) then
+          vb_xst=.true.
+        elseif(nshade_layers.gt.1)then
+          call edisp(itru,' ')
+          call edisp(itru,
      &      ' Detected more than one slat-type blind layer.')
-        GOTO 1002
-      else
-        vb_xst=.false.
-      end if
+          GOTO 1002
+        else
+          vb_xst=.false.
+        endif
 
 C===========V E R S I O N   2   F I L E S===================
-      if (im_CFCfileversion(icomp).eq.2) then
-C     Read layername and IGDB index here for 
-C     version 2 CFC files (starting May 8, 2012)
-        CALL STRIPC(IUA,OUTSTR,99,ND,1,'cfc layer name line',IER)
-        IF(IER.NE.0)GOTO 1001
+        if (im_CFCfileversion(icomp).eq.2) then
+C       Read layername and IGDB index here for
+C       version 2 CFC files (starting May 8, 2012)
+          CALL STRIPC(IUA,OUTSTR,99,ND,1,'cfc layer name line',IER)
+          IF(IER.NE.0)GOTO 1001
 
-        kk=0 ! read from position
-        CALL EGETAGWSA(OUTSTR,kk,IUA,IRVA,SVA,me,'W',
+          kk=0 ! read from position
+          CALL EGETAGWSA(OUTSTR,kk,IUA,IRVA,SVA,me,'W',
      &                          'cfc layer names',IER)
-        IF(IER.NE.0)GOTO 1001
+          IF(IER.NE.0)GOTO 1001
 
-        do 91 j=1,ncfc_el(icomp,i)
-             rim_LayNam(icomp,i,j)=SVA(j)
-             rim_lLayNam(icomp,i,j)=lnblnk(rim_LayNam(icomp,i,j))
-   91   continue
-c        write(*,*)
+          do 91 j=1,ncfc_el(icomp,i)
+            rim_LayNam(icomp,i,j)=SVA(j)
+            rim_lLayNam(icomp,i,j)=lnblnk(rim_LayNam(icomp,i,j))
+   91     continue
 
-        CALL EGETWIA(IUA,IVA,IRVA,0,50000,'W',
+          CALL EGETWIA(IUA,IVA,IRVA,0,50000,'W',
      &                          'cfc layer IGDB index',IER)
 
-        IF(IER.NE.0)GOTO 1001
+          IF(IER.NE.0)GOTO 1001
 
-        do 92 j=1,ncfc_el(icomp,i)
-             rim_IGDBindex(icomp,i,j)=IVA(j)
-   92   continue
+          do 92 j=1,ncfc_el(icomp,i)
+            rim_IGDBindex(icomp,i,j)=IVA(j)
+   92     continue
 
-C     Read Radiance coupling settings
-        CALL STRIPC(IUA,OUTSTR,99,ND,1,
+C         Read Radiance coupling settings
+          CALL STRIPC(IUA,OUTSTR,99,ND,1,
      &              'CFC Radiance coupling settings line',IER)
-        IF(IER.NE.0)GOTO 1001
+          IF(IER.NE.0)GOTO 1001
 
-        kk=0 ! read from position
-        CALL EGETAGWSA(OUTSTR,kk,IUA,icfc_rad,SVA,me,'W',
+          kk=0 ! read from position
+          CALL EGETAGWSA(OUTSTR,kk,IUA,icfc_rad,SVA,me,'W',
      &                          'CFC Radiance coupling settings',IER)
-        IF(IER.NE.0)GOTO 1001
+          IF(IER.NE.0)GOTO 1001
 
-        if (SVA(1)(1:lnblnk(SVA(1))).eq.'T') then
-          ExplicitVB(icomp,i)=.true.
-        else
-          ExplicitVB(icomp,i)=.false.
-        endif
+          if (SVA(1)(1:lnblnk(SVA(1))).eq.'T') then
+            ExplicitVB(icomp,i)=.true.
+          else
+            ExplicitVB(icomp,i)=.false.
+          endif
 
-        if (SVA(2)(1:lnblnk(SVA(2))).eq.'T') then
-          BRTDfunc(icomp,i)=.true.
-        else
-          BRTDfunc(icomp,i)=.false.
-        endif
+          if (SVA(2)(1:lnblnk(SVA(2))).eq.'T') then
+            BRTDfunc(icomp,i)=.true.
+          else
+            BRTDfunc(icomp,i)=.false.
+          endif
 
-      endif ! version 2 file
+        endif ! version 2 file
 C-----------------------------------------------------------
 
 C Reporting
-      IF(ITRC.GT.0)THEN
-        CALL EDISP(ITRU,' ')
-        WRITE(OUTS,'(A,I2,A)')
-     &   ' For CFC type ',I,' ,layer type index:'
-        CALL EDISP(ITRU,OUTS)
-        CALL EDISP(ITRU,' ')
-        CALL EDISP(ITRU,' Layer      type index')
-        DO 93, j=1,ncfc_el(icomp,i)
-          WRITE(OUTS,'(1X,i5,2X,i4)')i,icfcltp(icomp,i,j)
+        IF(ITRC.GT.0)THEN
+          CALL EDISP(ITRU,' ')
+          WRITE(OUTS,'(A,I2,A)')
+     &     ' For CFC type ',I,' ,layer type index:'
           CALL EDISP(ITRU,OUTS)
-   93   CONTINUE
-      ENDIF
+          CALL EDISP(ITRU,' ')
+          CALL EDISP(ITRU,' Layer      type index')
+          DO 93, j=1,ncfc_el(icomp,i)
+            WRITE(OUTS,'(1X,i5,2X,i4)')i,icfcltp(icomp,i,j)
+            CALL EDISP(ITRU,OUTS)
+   93     CONTINUE
+        ENDIF
 
-      if(ncfc_el(icomp,i).eq.1)goto 81
+        if(ncfc_el(icomp,i).eq.1)goto 81
 
 C Read gas gap properties
-      do 100 ie=2,ncfc_el(icomp,i),2
+        do 100 ie=2,ncfc_el(icomp,i),2
 
           CALL STRIPC(IUA,OUTSTR,99,ND,1,
      &            'molecular mass (g/gmole)',IER)
@@ -1400,33 +1398,33 @@ C Read gas gap properties
           spht_B(icomp,i,ie)=VAL
 
 C Reporting
-      IF(ITRC.GT.0)THEN
-        CALL EDISP(ITRU,' ')
-        WRITE(OUTS,'(A,I2,A,I2,A)')
-     &   ' For CFC type ',I,' ,layer ',ie,' , gas mix. properties:'
-        CALL EDISP(ITRU,OUTS)
-        CALL EDISP(ITRU,' ')
-        write(OUTS,'(e10.3,a)')rmlr_mass(icomp,i,ie),
+          IF(ITRC.GT.0)THEN
+            CALL EDISP(ITRU,' ')
+            WRITE(OUTS,'(A,I2,A,I2,A)')
+     &       ' For CFC type ',I,' ,layer ',ie,' , gas mix. properties:'
+            CALL EDISP(ITRU,OUTS)
+            CALL EDISP(ITRU,' ')
+            write(OUTS,'(e10.3,a)')rmlr_mass(icomp,i,ie),
      &        '    - molecular mass of gas mixture (g/gmole)'
-        CALL EDISP(ITRU,OUTS)
-        write(OUTS,'(2e10.3,a)')cond_A(icomp,i,ie),
+            CALL EDISP(ITRU,OUTS)
+            write(OUTS,'(2e10.3,a)')cond_A(icomp,i,ie),
      &        cond_B(icomp,i,ie),
      &        '    - a and b coeffs.- gas conductivity (W/m.K)'
-        CALL EDISP(ITRU,OUTS)
+            CALL EDISP(ITRU,OUTS)
 
-        write(OUTS,'(2e10.3,a)')visc_A(icomp,i,ie),
+            write(OUTS,'(2e10.3,a)')visc_A(icomp,i,ie),
      &        visc_B(icomp,i,ie),
      &        '    - a and b coeffs.- gas viscosity (N.s/m2)'
-        CALL EDISP(ITRU,OUTS)
+            CALL EDISP(ITRU,OUTS)
 
-        write(OUTS,'(2e10.3,a)')spht_A(icomp,i,ie),
+            write(OUTS,'(2e10.3,a)')spht_A(icomp,i,ie),
      &        spht_B(icomp,i,ie),
      &        '    - a and b coeffs.- specific heat (J/kg.K)'
-        CALL EDISP(ITRU,OUTS)
-        CALL EDISP(ITRU,' ')
-      ENDIF
+            CALL EDISP(ITRU,OUTS)
+            CALL EDISP(ITRU,' ')
+          ENDIF
 
- 100  continue
+ 100    continue
 
 
 C If slat-type blind exists then read slat attributes:
@@ -1438,52 +1436,51 @@ C    vb_crown  = slat crown [mm]
 C    vb_wr     = slat w/r ratio
 C    vb_t      = thickness [mm]
 C    vb_VorH   = slat orientation ("HORZ" OR "VERT")
-  81  if(vb_xst)then
+  81    if (vb_xst)then
 
-      CALL STRIPC(IUA,OUTSTR,99,ND,1,'slat-type blind attributes',IER)
-      IF(IER.NE.0)GOTO 1001
-      K=0
-      CALL EGETWR(OUTSTR,K,VAL,1.0,300.,'W','slat width(mm)',
-     &              IER)
-      vb_w(ICOMP,i)=VAL
-      CALL EGETWR(OUTSTR,K,VAL,1.0,300.,'W','slat spacing(mm)',
-     &              IER)
-      vb_s(ICOMP,i)=VAL
-      CALL EGETWR(OUTSTR,K,VAL,-89.999,89.999,'W','slat angle(deg)',
-     &              IER)
-      vb_phi(icomp,i)=VAL
-      vb_phiNew(icomp,i)=VAL ! also set "new" angle to this default value
-      CALL EGETW(OUTSTR,K,WORD,'W','slat orientation',IFLAG)
-      vb_VorH(icomp,i)=WORD(1:4)
-      CALL EGETWR(OUTSTR,K,VAL,0.0,vb_w(icomp,i)/2.,'W',
+          CALL STRIPC(IUA,OUTSTR,99,ND,1,'slat-type blind attributes',
+     &                IER)
+          IF(IER.NE.0)GOTO 1001
+          K=0
+          CALL EGETWR(OUTSTR,K,VAL,1.0,300.,'W','slat width(mm)',IER)
+          vb_w(ICOMP,i)=VAL
+          CALL EGETWR(OUTSTR,K,VAL,1.0,300.,'W','slat spacing(mm)',IER)
+          vb_s(ICOMP,i)=VAL
+          CALL EGETWR(OUTSTR,K,VAL,-89.999,89.999,'W','slat angle(deg)',
+     &                IER)
+          vb_phi(icomp,i)=VAL
+          vb_phiNew(icomp,i)=VAL ! also set "new" angle to this default value
+          CALL EGETW(OUTSTR,K,WORD,'W','slat orientation',IFLAG)
+          vb_VorH(icomp,i)=WORD(1:4)
+          CALL EGETWR(OUTSTR,K,VAL,0.0,vb_w(icomp,i)/2.,'W',
      &      'slat crown(mm)',IER)
-      vb_crown(icomp,i)=VAL
-      CALL EGETWR(OUTSTR,K,VAL,0.0,1.999,'W',
+          vb_crown(icomp,i)=VAL
+          CALL EGETWR(OUTSTR,K,VAL,0.0,1.999,'W',
      &      'slat w/r ratio',IER)
-      vb_wr(icomp,i)=VAL
-      CALL EGETWR(OUTSTR,K,VAL,0.0,300.,'W',
+          vb_wr(icomp,i)=VAL
+          CALL EGETWR(OUTSTR,K,VAL,0.0,300.,'W',
      &      'slat thickness (mm)',IER)
-      vb_t(icomp,i)=VAL
+          vb_t(icomp,i)=VAL
 
 C << 18.05.2012
-      i_shd(icomp,i)=1 ! set blind to down position as default
+          i_shd(icomp,i)=1 ! set blind to down position as default
 
 C Reporting
-      IF(ITRC.GT.0)THEN
-       CALL EDISP(ITRU,' ')
-       WRITE(OUTS,'(A,I2)')
-     &  ' For CFC type ',I
-       CALL EDISP(ITRU,OUTS)
-       CALL EDISP(ITRU,' Slat-type blind attributes:')
-       CALL EDISP(ITRU,
-     & ' width(mm),spacing(mm),angle(deg),orient,crown(mm),w/r rat.')
-       WRITE(OUTS,'(1X,3F7.3,1x,a,1x,2F7.3)')vb_w(ICOMP,i),
-     &      vb_s(ICOMP,i),vb_phi(icomp,i),vb_VorH(icomp,i),
-     &      vb_crown(icomp,i),vb_wr(icomp,i)
-       CALL EDISP(ITRU,OUTS)
-      ENDIF
+          IF(ITRC.GT.0)THEN
+            CALL EDISP(ITRU,' ')
+            WRITE(OUTS,'(A,I2)')
+     &        ' For CFC type ',I
+            CALL EDISP(ITRU,OUTS)
+            CALL EDISP(ITRU,' Slat-type blind attributes:')
+            CALL EDISP(ITRU,
+     &    ' width(mm),spacing(mm),angle(deg),orient,crown(mm),w/r rat.')
+            WRITE(OUTS,'(1X,3F7.3,1x,a,1x,2F7.3)')vb_w(ICOMP,i),
+     &       vb_s(ICOMP,i),vb_phi(icomp,i),vb_VorH(icomp,i),
+     &       vb_crown(icomp,i),vb_wr(icomp,i)
+            CALL EDISP(ITRU,OUTS)
+          ENDIF
 
-      end if
+        endif
 
    80 continue
 c      ITRC=0
@@ -1816,7 +1813,7 @@ c     &             LTWIN(MCOM),LCGCIN(MCOM),ZOBS(MCOM)
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
 C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types allowed and sorted
+C =2 with more than 3 day types allowed and sorted.
       common/p3ver/ip3ver(MCOM)
 
       LOGICAL SELECT,XST
@@ -1831,7 +1828,7 @@ C =2 with more than 3 day types allowed and sorted
 
       DIMENSION IVA(MS)
 
-C For help messages
+C For help messages.
       character helpinsub*24 ! subroutine name
       character helptopic*24 ! string (unique) for topic
       integer nbhelp     ! number of help lines found
@@ -1853,26 +1850,26 @@ c   92 IER=0
       IER=0
       IVERT=-3
 
-C find *.cfc file for this zone and read it in      
+C Find *.cfc file for this zone and read it in.
       call FINDFIL(lcfcin(icomp),XST)
-      
+
       IF(XST.and.icfc(icomp).eq.1)then
 
-C Read CFC type index from zone *.cfc file
+C Read CFC type index from zone *.cfc file.
         CALL EFOPSEQ(IUA,lcfcin(icomp),1,IER)
         IF(IER.NE.0)THEN
          IER=1
          goto 1000
         ENDIF
 
-C read in number of surfaces in zone
+C Read in number of surfaces in zone.
         CALL STRIPC(IUA,OUTSTR,1,ND,1,'no zone surfaces',IER)
         IF(IER.NE.0)GOTO 1001
         K=0
         CALL EGETWI(OUTSTR,K,NS,4,MS,'W','no zone cfc surf',IER)
 
 C Read pointer to type of CFC for each surface, strip comments etc.
-C Determine number of CFC types in zone
+C Determine number of CFC types in zone.
         IRVA=NS
         CALL EGETWIA(IUA,IVA,IRVA,0,MCFC,'W','cfc list',IER)
         ncfc(icomp)=0
@@ -1893,7 +1890,7 @@ C Determine number of CFC types in zone
             WRITE(VERT(M),'(a1, 1x, a10, i2)')KEY, 'CFC type ', L
    20   continue
 
-C write out corresponding surfaces to each CFC type in zone
+C Write out corresponding surfaces to each CFC type in zone.
         VERT(M+1)=  '  ______________________'
         VERT(M+2)=  'Corresponding surface(s)'
         VERT(M+3)=' '
@@ -1926,7 +1923,7 @@ C If a long list include page facility text and info on portion seen.
         VERT(M+2)  ='? help                  '
         VERT(M+3)  ='- exit this menu        '
 
-C Number of actual items displayed
+C Number of actual items displayed.
         MVERT=M+MCTL
         
 C Help message for this menu.
@@ -1938,7 +1935,7 @@ C Display the menu.
      &  zname(icomp)(1:lnblnk(zname(icomp)))
         CALL EMENU(title,VERT,MVERT,IVERT)        
         
-C Get user selection
+C Get user selection.
         if (IVERT.EQ.MVERT) then
           return
         elseif (IVERT.EQ.(MVERT-1)) then
@@ -2035,9 +2032,9 @@ C Scan each days gains and find maximum flow.
      &           n_ctl_periods(icomp,icfctype,JDAY),
      &           n_ctl_periods(icomp,icfctype,KDAY))
       do 10 I=1,MXPERS
-       YMAX=amax1(YMAX,slat_angle(icomp,icfctype,IDAY,I),
-     &  slat_angle(icomp,icfctype,JDAY,I),
-     &  slat_angle(icomp,icfctype,KDAY,I))
+        YMAX=amax1(YMAX,slat_angle(icomp,icfctype,IDAY,I),
+     &    slat_angle(icomp,icfctype,JDAY,I),
+     &    slat_angle(icomp,icfctype,KDAY,I))
  10   continue
 
 C Clear and setup plot area.
@@ -2306,13 +2303,13 @@ c      COMMON/precz/zname(MCOM),zdesc(MCOM)
 
 c      COMMON/PREC2/VOL(MCOM)
       COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+     &           ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
       INTEGER NAC,IACS,IACF,IPT
       REAL ACI,ACV,TA
      
       character OUTS*124,HOLD*16,h*72
 
-C Working variables
+C Working variables.
       real slatX         !shade ON/OFF, slat angle
       integer IctlSX,IctlFX,ishdX   !period start, period end
       real Xslat
@@ -2361,18 +2358,18 @@ C Ask for shading ON/OFF and/or slat angle.
           ishdX=0
         endif
 
-  11    if(itype.eq.-1.or.itype.eq.0)then
-  20        Xslat=slatX
-            h(1)='Supply the slat angle in degrees from horizontal.'
-            call EASKR(Xslat,' ','Slat angle?',
-     &        -89.9,'F',89.9,'F',0.0,'slat angle (deg)',IERI,1)
-            if(IERI.eq.0)then
-              slatX=Xslat
-            elseif(ieri.eq.-3)then
-              call edisp(iuout,'Cancel not implemented.')
-            else
-              goto 20
-            endif          
+  11    if (itype.eq.-1.or.itype.eq.0) then
+  20      Xslat=slatX
+          h(1)='Supply the slat angle in degrees from horizontal.'
+          call EASKR(Xslat,' ','Slat angle?',
+     &      -89.9,'F',89.9,'F',0.0,'slat angle (deg)',IERI,1)
+          if(IERI.eq.0)then
+            slatX=Xslat
+          elseif(ieri.eq.-3)then
+            call edisp(iuout,'Cancel not implemented.')
+          else
+            goto 20
+          endif          
         endif
 
       endif
@@ -2436,7 +2433,7 @@ C ********************************************************************
             if (i_ctl_start(icomp,icfctype,IDT,I).lt.IctlSX) then
               ILPER=I+1
             elseif(i_ctl_start(icomp,icfctype,IDT,I).eq.IctlSX.and.
-     &      i_ctl_end(icomp,icfctype,IDT,I).gt.IctlFX)then
+     &             i_ctl_end(icomp,icfctype,IDT,I).gt.IctlFX)then
               ILPER=I
             endif
           endif
@@ -2485,7 +2482,7 @@ C ********************************************************************
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+     &           ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
       INTEGER NAC,IACS,IACF,IPT
       REAL ACI,ACV,TA
       
@@ -2511,9 +2508,9 @@ C overlapping period of the two initial periods.
         if (I+1.le.n_ctl_periods(icomp,icfctype,IDTY)) then
         do 15 J=I+1,n_ctl_periods(icomp,icfctype,IDTY)
           if (i_ctl_start(icomp,icfctype,IDTY,J).ge.
-     &    i_ctl_start(icomp,icfctype,IDTY,I).and.
-     &    i_ctl_start(icomp,icfctype,IDTY,J).lt.
-     &    i_ctl_end(icomp,icfctype,IDTY,I)) then
+     &        i_ctl_start(icomp,icfctype,IDTY,I).and.
+     &        i_ctl_start(icomp,icfctype,IDTY,J).lt.
+     &        i_ctl_end(icomp,icfctype,IDTY,I)) then
 
 C Start time of period J is between start and finish times of period I.
 C Create a new period by splitting period J, only if start or finish time 
@@ -2525,9 +2522,9 @@ C     ||    |           |      ||    |
 C  -----------------------------
 
             if (i_ctl_start(icomp,icfctype,IDTY,J).eq.
-     &      i_ctl_start(icomp,icfctype,IDTY,I).and.
-     &      i_ctl_end(icomp,icfctype,IDTY,J).gt.
-     &      i_ctl_end(icomp,icfctype,IDTY,I)) then
+     &          i_ctl_start(icomp,icfctype,IDTY,I).and.
+     &          i_ctl_end(icomp,icfctype,IDTY,J).gt.
+     &          i_ctl_end(icomp,icfctype,IDTY,I)) then
 C
 C     |----I------------|
 C     |                 |
@@ -2540,9 +2537,9 @@ C  -----------------------------
               i_ctl_start(icomp,icfctype,IDTY,J)=
      &        i_ctl_end(icomp,icfctype,IDTY,I)
             elseif (i_ctl_start(icomp,icfctype,IDTY,J).eq.
-     &      i_ctl_start(icomp,icfctype,IDTY,I).and.
-     &      i_ctl_end(icomp,icfctype,IDTY,J).lt.
-     &      i_ctl_end(icomp,icfctype,IDTY,I)) then
+     &              i_ctl_start(icomp,icfctype,IDTY,I).and.
+     &              i_ctl_end(icomp,icfctype,IDTY,J).lt.
+     &              i_ctl_end(icomp,icfctype,IDTY,I)) then
 
 C
 C     |----I------------|
@@ -2576,9 +2573,9 @@ C so swap period data from I to J and J to I.
               slat_angle(icomp,icfctype,IDTY,J)=slat_angleTMP
  
             elseif (i_ctl_end(icomp,icfctype,IDTY,J).eq.
-     &      i_ctl_end(icomp,icfctype,IDTY,I).and.
-     &      i_ctl_start(icomp,icfctype,IDTY,J).ne.
-     &      i_ctl_start(icomp,icfctype,IDTY,I)) then
+     &              i_ctl_end(icomp,icfctype,IDTY,I).and.
+     &              i_ctl_start(icomp,icfctype,IDTY,J).ne.
+     &              i_ctl_start(icomp,icfctype,IDTY,I)) then
 
 C     |---I------------|
 C     |                |
@@ -2593,9 +2590,9 @@ C Finishes are the same and starts are different.
      &        i_ctl_start(icomp,icfctype,IDTY,J)
 
             elseif (i_ctl_start(icomp,icfctype,IDTY,J).gt.
-     &      i_ctl_start(icomp,icfctype,IDTY,I).and.
-     &      i_ctl_end(icomp,icfctype,IDTY,J).lt.
-     &      i_ctl_end(icomp,icfctype,IDTY,I)) then
+     &              i_ctl_start(icomp,icfctype,IDTY,I).and.
+     &              i_ctl_end(icomp,icfctype,IDTY,J).lt.
+     &              i_ctl_end(icomp,icfctype,IDTY,I)) then
 
 C     |---I------------|
 C     |                |
@@ -2638,9 +2635,9 @@ C the earlier period.
               endif
 
             elseif (i_ctl_start(icomp,icfctype,IDTY,J).gt.
-     &      i_ctl_start(icomp,icfctype,IDTY,I).and.
-     &      i_ctl_end(icomp,icfctype,IDTY,J).gt.
-     &      i_ctl_end(icomp,icfctype,IDTY,I)) then
+     &              i_ctl_start(icomp,icfctype,IDTY,I).and.
+     &              i_ctl_end(icomp,icfctype,IDTY,J).gt.
+     &              i_ctl_end(icomp,icfctype,IDTY,I)) then
 
 C     |---I------------|
 C     |                |
@@ -2667,11 +2664,11 @@ C after the earlier period.
      &            n_ctl_periods(icomp,icfctype,IDTY)+1
 
                 i_ctl_end(icomp,icfctype,IDTY,J)=
-     &          i_ctl_end(icomp,icfctype,IDTY,I)
+     &            i_ctl_end(icomp,icfctype,IDTY,I)
                 i_ctl_end(icomp,icfctype,IDTY,I)=
-     &          i_ctl_start(icomp,icfctype,IDTY,J)
+     &            i_ctl_start(icomp,icfctype,IDTY,J)
                 i_ctl_start(icomp,icfctype,IDTY,J+1)=
-     &          i_ctl_end(icomp,icfctype,IDTY,J)
+     &            i_ctl_end(icomp,icfctype,IDTY,J)
 
               else
                 Ifrom=0
@@ -2750,7 +2747,7 @@ c      COMMON/precz/zname(MCOM),zdesc(MCOM)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
       COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+     &           ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
       INTEGER NAC,IACS,IACF,IPT
       REAL ACI,ACV,TA
       
