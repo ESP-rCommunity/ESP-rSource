@@ -2116,8 +2116,7 @@ C Commons for electrical data
       REAL PF,PWR,BVOLT
 
 C loadcount(zone,gaintype,daytype) - nb of each gain type (whether
-C   absolute or W/m2). Up to 7 different casual gain types are
-C   supported.
+C   absolute or W/m2). Up to MGTY casual gain types are supported.
 C loadm2count(zone,gaintype,daytype) - nb of each m2 gain types.
 C loadmixed(zone,gaintype,daytype) - if zero then nothing, if one
 C   then all non-zero are absolute, if two then all (non-zero) are in
@@ -2129,26 +2128,21 @@ C   W/m2 or person/m2, if three then non-zero are mixed.
 
       character outs*124
 
-C Note: NBDAYTYPE has evolved and may clash with logic, especially
-C as ip3ver=0 files only knew about 3 day types. Consider changing
-C the hard coded 7 below to reflect new data structures.
-
-C Temporary arrays: MC array is 72 so that is
-C   sized for 24 hours X 3 day types. Array size should be
-C   adjusted if additional day types added.
-C CMGSA total sensible W for each hour (all day types). 
-C CMGSA total latent W for each hour (all day types). 
-C RADCA total radiant casual W for the zone at each hour (all day types)
-C CONCA total conv casual W for the zone at each hour (all day types)
+C Temporary arrays: MC array is sized for 24 hours X all gain types X 
+C all day types.
+C CMGSA total sensible W for each hour and gain type. 
+C CMGSA total latent W for each hour and gain type). 
+C RADCA total radiant casual W for the zone at each hour and gain type
+C CONCA total conv casual W for the zone at each hour and gain type
 C RADFAC implied radiant fraction RADCA/CMGSA
 C CONFAC implied convective fraction CONCA/CMGSA
 C ICGTYP the casual gain type (remembering negative index).
 C PERSN keeps track of the original number of people/m2.
       real CMGSA,CMGLA,RADCA,CONCA,RADFAC,CONFAC,PERSN
       integer ICGTYP,LNCAS
-      dimension CMGSA(MC,7),CMGLA(MC,7),RADCA(MC,7)
-      dimension CONCA(MC,7),RADFAC(MC,7),CONFAC(MC,7)
-      dimension ICGTYP(MC,7),PERSN(MC,7),LNCAS(MDTY)
+      dimension CMGSA(MC,MGTY),CMGLA(MC,MGTY),RADCA(MC,MGTY)
+      dimension CONCA(MC,MGTY),RADFAC(MC,MGTY),CONFAC(MC,MGTY)
+      dimension ICGTYP(MC,MGTY),PERSN(MC,MGTY),LNCAS(MDTY)
 
 C Logical for testing whether there is any difference in casual gains.
       logical bCMGSA,bCMGLA,bRADCA,bCONCA,bRADFAC,bCONFAC
@@ -2158,8 +2152,8 @@ C pfA power factor, ipfA leading/lagging, pwrA real power W,
 C bvoltA voltage, iphasA phases assoc with electrical casual gain. 
 C aparva is apparent power component VA.
 C aparvar is reactive power component VAr.
-      dimension pfA(mc,7),ipfA(mc,7),pwrA(mc,7),bvoltA(mc,7)
-      dimension iphasA(mc,7),aparva(mc,7),aparvar(mc,7)
+      dimension pfA(mc,MGTY),ipfA(mc,MGTY),pwrA(mc,MGTY),bvoltA(mc,MGTY)
+      dimension iphasA(mc,MGTY),aparva(mc,MGTY),aparvar(mc,MGTY)
 
 C Logical for testing whether there is any difference in electrical gains.
       logical bpfA,bpwrA,bbvoltA
@@ -2181,8 +2175,7 @@ C Warn user if the zone base area is still zero.
         call edisp(iuout,outs)
       endif
 
-C Remember how many of each. There will be just 3 day types in older
-C version files
+C Remember how many of each.
       DO 600 IDTY=1,NBDAYTYPE
         LNCAS(IDTY)=NCAS(IDTY)
  600  CONTINUE
@@ -2193,9 +2186,9 @@ C or based on area (casual gain type negative) or if mixed +-.
       call checkcascount(icomp)
       
 C Zero derived gains in the temporary array and set the type as per
-C the call to checkcascount. Note: assumes 7 day types.
+C the call to checkcascount.
       do 130 IP=1,MC
-        do 120 IG=1,7
+        do 120 IG=1,MGTY
           CMGSA(IP,IG)=0.0
           CMGLA(IP,IG)=0.0
           RADCA(IP,IG)=0.0
@@ -2345,7 +2338,7 @@ C to checkcascount and subsequent checks of n1/n2/n3 etc.) and weekday hour...
         write(itru,*) 'loadmix  ',loadmixed(icomp,1,IDT),
      &    loadmixed(icomp,2,IDT),loadmixed(icomp,3,IDT)
       endif
-      do 300 ITYP=1,7
+      do 300 ITYP=1,MGTY
         if(loadcount(icomp,ityp,IDT).eq.0)goto 300
 
 C Test if casual gain index is mixed loadmixed(icomp,ityp,IDT)==2) in this schedule.
