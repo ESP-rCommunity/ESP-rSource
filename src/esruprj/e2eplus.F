@@ -1127,6 +1127,7 @@ C Detect radiant fraction.
               if (ICGT(ID,J).eq.-1) then
 
 C For case of m2/person CMGL(ID,J) remains zero so use cmgs(ID,J) instead.
+C << see if it can be generalized >>
                 if(CMGS(ID,J).lt.0.001)then
                   continue   ! to avoid division by zero.
                 else

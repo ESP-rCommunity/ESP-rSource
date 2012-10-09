@@ -191,7 +191,7 @@ C Electrical data flag and elctrical data.
       INTEGER NEL,IPF,IPHAS
       REAL PF,PWR,BVOLT
 
-C Descriptive label for a zone load or casual gain types.
+C Descriptive label for a zone casual gain type.
       character lodlabel*6
       common/loadlabel/lodlabel(mcom,MGTY)
 
@@ -206,6 +206,7 @@ C Error subroutine and error details for dll mode.
       integer ijk,ireader
       integer lsn  ! length of currentfile
       real reader
+      integer irange,icur  ! for looping
       
       ijk=0
       ireader=0
@@ -589,15 +590,35 @@ C Check if electrical data has also been saved.
  600  CONTINUE
 
 C Check to see if gain labels have been added to the end of the file.
+      irange=0
+      do 701 IDTY=1,NBDAYTYPE
+        if (NCAS(IDTY).GT.0) then
+          do I = 1,NCAS(IDTY)
+            icur=ICGT(IDTY,I)
+            if(iabs(icur).gt.irange) irange=iabs(icur)
+          enddo
+        endif
+ 701  continue
+      if(irange.lt.3) irange=3
+      write(6,*) 'casual gain read range is ',irange
 
 C << This is hard-coded to 3 gain type labels. Revise code to check the
 C << number of items on the line and loop accordingly.
       CALL STRIPC(IUO,OUTSTR,99,ND,1,'Type labels',IERV)
-      IF(ND.NE.3.OR.IERV.ne.0) THEN
+      IF(IERV.ne.0) THEN
         goto 1001
       ELSE
+        if(irange.ne.nd)then
+          write(loutstr,'(a,i2,4a)')
+     &      'The number of different casual gain types ',irange,
+     &      ' differs from tokens on the line...',
+     &      outstr(1:50),' of operation file ',
+     &      currentfile(1:lnblnk(currentfile))
+          call edisp248(iuout,loutstr,100)
+          ier=2
+        endif
         K=0
-        DO 1234 ITYP=1,3
+        DO 1234 ITYP=1,irange
           CALL EGETW(OUTSTR,K,lodlabel(ICOMP,ITYP),'W',
      &         'type label',IER) 
  1234   CONTINUE
@@ -1029,15 +1050,20 @@ C Check if electrical data has also been saved.
   600 CONTINUE
 
 C Check to see if gain labels have been added to the end of the file.
-
-C << Revise code to check number of items in the line and then loop
-C << acording to this.
+C Fill defaults prior to scanning the labels.
       CALL STRIPC(IUO,OUTSTR,99,ND,1,'Type labels',IERV)
-      IF(ND.NE.3.OR.IERV.ne.0) THEN
+      IF(IERV.ne.0) THEN
         goto 1001
       ELSE
+        lodlabelc(1)='Occupt'
+        lodlabelc(2)='Lights'
+        lodlabelc(3)='Equipt' 
+        lodlabelc(4)='NA    ' 
+        lodlabelc(5)='AnnEl ' 
+        lodlabelc(6)='NA    ' 
+        lodlabelc(7)='NA    ' 
         K=0
-        DO 1234 ITYP=1,3
+        DO 1234 ITYP=1,ND  ! for each token found
           CALL EGETW(OUTSTR,K,lodlabelc(ITYP),'W','type label',IER) 
  1234   CONTINUE
       ENDIF      
@@ -1343,6 +1369,7 @@ C Descriptive label for a zone load or casual gain.
 
       character dstmp*24
       logical Vldtng
+      integer irange,icur  ! for looping
       
       IER=0
 
@@ -1439,6 +1466,19 @@ C Finally write the documentation for casual gains.
         ENDIF
  400  CONTINUE
 
+C Check the range of icgt, remember in irange and use for looping.
+      irange=0
+      do 700 IDTY=1,NBDAYTYPE
+        if (NCAS(IDTY).GT.0) then
+          do I = 1,NCAS(IDTY)
+            icur=ICGT(IDTY,I)
+            if(iabs(icur).gt.irange) irange=iabs(icur)
+          enddo
+        endif
+ 700  continue
+      if(irange.lt.3) irange=3
+      write(6,*) 'casual gain range is ',irange
+
       DO 600 IDTY=1,NBDAYTYPE
         WRITE(IUO,'(1X,I5,2A)',IOSTAT=IOS,ERR=1)NCAS(IDTY),
      &  '   # number of casual gains in day type: ',calentag(idty)
@@ -1470,13 +1510,11 @@ C Finally write the documentation for casual gains.
 5470  FORMAT(1X,3(I3,','),F7.1,',',F7.1,',',F4.1,',',F4.1,',',F5.2,
      &       ',',I2,',',F7.1,',',F7.1,',',I2)
 
-C Write out the type labels to the file for future reference
-
-C << revise to write out as many labels as are needed
-C << what tells us how many types?
+C Write out the type labels to the file for future reference. In version
+C 3 this section is relocated and extended.
       WRITE(IUO,'(a)')'# Labels for gain types '
-      WRITE(IUO,'(3(1X,A6))',IOSTAT=IOS,ERR=1) 
-     &  (lodlabel(icomp,I),I=1,3)
+      WRITE(IUO,'(7(1X,A6))',IOSTAT=IOS,ERR=1) 
+     &  (lodlabel(icomp,I),I=1,irange)
      
       CALL ERPFREE(IUO,ISTAT)
       RETURN
