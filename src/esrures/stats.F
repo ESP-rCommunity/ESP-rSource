@@ -2194,7 +2194,7 @@ C Prepare to recover information from results library.
             write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',izone,' periods being sorted!'
             call edisp(iuout,outs)
-            call PROCESSOLDCAS(izone,0,iuout,IER)
+            call PROCESSOLDCAS(izone,0,iuout)
           endif
           IF(IER.EQ.1)RETURN
           IF(ICGC(IZONE).EQ.1)CALL ercgcf(0,iuout,LCGCIN(izone),

@@ -4195,7 +4195,7 @@ C operation file is old, sort the periods via processoldcas.
      &          'Operation file for zone ',IGETNO(KGET,2),
      &          ' periods being sorted!'
               call edisp(iuout,outs)
-              call PROCESSOLDCAS(IGETNO(KGET,2),0,iuout,IER)
+              call PROCESSOLDCAS(IGETNO(KGET,2),0,iuout)
             endif
             IF(ICGC(IGETNO(KGET,2)).EQ.1)then
               CALL ercgcf(0,iuout,LCGCIN(IGETNO(KGET,2)),
@@ -4233,7 +4233,7 @@ C operation file is old, sort the periods.
      &          'Operation file for zone ',IGETNO(KGET,2),
      &          ' periods being sorted!'
               call edisp(iuout,outs)
-              call PROCESSOLDCAS(IGETNO(KGET,2),0,iuout,IER)
+              call PROCESSOLDCAS(IGETNO(KGET,2),0,iuout)
             endif
             IF(ICGC(IGETNO(KGET,2)).EQ.1)then
               CALL ercgcf(0,iuout,LCGCIN(IGETNO(KGET,2)),
@@ -4406,7 +4406,7 @@ C read the zone operation file.
      &        'Operation file for zone ',IGETNO(KGET,2),
      &        ' periods being sorted!'
             call edisp(iuout,outs)
-            call PROCESSOLDCAS(IGETNO(KGET,2),0,iuout,IER)
+            call PROCESSOLDCAS(IGETNO(KGET,2),0,iuout)
           endif
           IF(ICGC(IZ).EQ.1)CALL ercgcf(0,iuout,LCGCIN(iz),IZ,ier)
         endif

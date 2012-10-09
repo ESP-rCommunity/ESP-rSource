@@ -275,7 +275,7 @@ C Do cursory check to see if the file is sorted.
         sorted=.true.
         problem=.false.
         DO 401 IDTY=1,NBDAYTYPE
-          call checksort(icomp,IDTY,problem,ier)
+          call checksort(icomp,IDTY,problem)
           if(problem)then
             sorted=.false.
             MODOPR=.true.
@@ -616,10 +616,10 @@ C Remind users to check their data.
 C Display different options depending on the version of the file.
   20  write(ITEM(1),'(2a)')   '  zone: ',zname(ICOMP)
       if(ip3ver(icomp).le.2)then
-        write(ITEM(2),'(3a)') 'a description: ',oprdesc(ICOMP)(1:16),'-'
-        write(ITEM(3),'(2x,2a)')   oprdesc(ICOMP)(17:45),'-'
-        write(ITEM(4),'(2x,2a)')   oprdesc(ICOMP)(46:74),'-'
-        write(ITEM(5),'(2x,2a)')   oprdesc(ICOMP)(75:103),'-'
+        write(ITEM(2),'(3a)') 'a notes: ',oprdesc(ICOMP)(1:22),'-'
+        write(ITEM(3),'(2x,2a)')   oprdesc(ICOMP)(23:52),'-'
+        write(ITEM(4),'(2x,2a)')   oprdesc(ICOMP)(53:80),'-'
+        write(ITEM(5),'(2x,2a)')   oprdesc(ICOMP)(81:109),'-'
         ITEM(6)=              '  ----------------------------- '
         ITEM(7)=              'c edit scheduled air flows      '
         ITEM(8)=              'd edit casual gains             '
@@ -631,10 +631,10 @@ C Display different options depending on the version of the file.
         ITEM(14)=             '- exit this menu                '
         NITEMS=14
       elseif(ip3ver(icomp).eq.3)then
-        write(ITEM(2),'(3a)') 'a inf vent notes: ',
+        write(ITEM(2),'(3a)') 'a infiltration & vent notes: ',
      &    ventdesc(ICOMP)(1:13),'-'
         write(ITEM(3),'(2x,a)')    ventdesc(ICOMP)(14:44)
-        write(ITEM(4),'(3a)') 'b casual notes: ',
+        write(ITEM(4),'(3a)') 'b casual gain notes: ',
      &    oprdesc(ICOMP)(1:15),'-'
         write(ITEM(5),'(2x,a)')    oprdesc(ICOMP)(16:44)
         ITEM(6)=              '  ----------------------------- '
@@ -672,8 +672,8 @@ C even if modopr has not been set.
      &        'to the casual gain periods?',OK,DOK,nbhelp)
             if(ok)then
 
-C Sort the gains and then updated the file and mark MODOPR.
-              call PROCESSOLDCAS(ICOMP,0,iuout,IER)
+C Sort the gains and then update the file and mark MODOPR.
+              call PROCESSOLDCAS(ICOMP,0,iuout)
               IUO=IFIL+1
               CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
               MODOPR=.false.
@@ -3124,17 +3124,17 @@ C and decide if the periods need to be updated.
 
 C Display initial gain profiles and then sort and remove overlaps and
 C ensure that periods start at zero and end with 24. Sorted files can
-C be saved as version 3.0
+C be saved as version 2.0
 C          call edisp(iuout,'Before sorting')
           call CASINF(ICOMP,iuout)
           if(ip3ver(ICOMP).eq.0)then
             itrc=0
             itru=6
-            call PROCESSOLDCAS(ICOMP,itrc,itru,IER)
+            call PROCESSOLDCAS(ICOMP,itrc,itru)
           else
             itrc=0
             itru=6
-            call PROCESSOLDCAS(ICOMP,itrc,itru,IER)
+            call PROCESSOLDCAS(ICOMP,itrc,itru)
           endif
           ip3ver(ICOMP)=2
           sorted=.true.
@@ -3321,7 +3321,7 @@ C number of periods might have changed, rebuild the menus.
         ILLEN(IDTYP)=NCAS(IDTYP)
         call edisp(iuout,'Before sorting')
         call CASINF(ICOMP,iuout)
-        call PROCESSOLDCAS(ICOMP,0,iuout,IER)
+        call PROCESSOLDCAS(ICOMP,0,iuout)
         if(ier.ne.0)then
           call edisp(iuout,'Problem while sorting gains.')
         endif
@@ -4667,7 +4667,7 @@ C If the user has asked for verbosity list out the result.
 C Because there is a small chance that the source file lacked fully
 C sorted casual gains (e.g. was an older file) force a sorting.
       call edisp(iuout,'Sorting imported casual gains...')
-      call PROCESSOLDCAS(idest,0,iuout,IER)
+      call PROCESSOLDCAS(idest,0,iuout)
       call edisp(iuout,'Sorting imported casual gains...completed.')
 
 C Save the destination operation file.

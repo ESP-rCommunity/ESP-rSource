@@ -2813,7 +2813,7 @@ C an older format write to new format.
 C Do cursory check to see if the file is sorted.
               sorted=.true.
               problem=.false.
-              call checksort(iz,1,problem,ier)
+              call checksort(iz,1,problem)
               if(problem)then
                 sorted=.false.
                 MODOPR=.true.
@@ -2821,7 +2821,7 @@ C Do cursory check to see if the file is sorted.
      &           'Weekday casual gains might be unsorted.')
               endif
               problem=.false.
-              call checksort(iz,2,problem,ier)
+              call checksort(iz,2,problem)
               if(problem)then
                 sorted=.false.
                 MODOPR=.true.
@@ -2829,7 +2829,7 @@ C Do cursory check to see if the file is sorted.
      &            'Saturday casual gains might be unsorted.')
               endif
               problem=.false.
-              call checksort(iz,3,problem,ier)
+              call checksort(iz,3,problem)
               if(problem)then
                 sorted=.false.
                 MODOPR=.true.
@@ -2849,7 +2849,7 @@ C Save the file, sorting the periods if necessary.
                 if(sorted)then
                   CALL EMKOPER(IUO,LPROJ(IZ),IZ,IER)
                 else
-                  call PROCESSOLDCAS(iz,0,iuout,IER)
+                  call PROCESSOLDCAS(iz,0,iuout)
                   MODOPR=.true.
                   CALL EMKOPER(IUO,LPROJ(IZ),IZ,IER)
                 endif

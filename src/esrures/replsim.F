@@ -132,7 +132,7 @@ C if izver >=4 the zone operation file is not needed.
             write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',J,' periods being sorted!'
             call edisp(iuout,outs)
-            call PROCESSOLDCAS(J,0,iuout,IER)
+            call PROCESSOLDCAS(J,0,iuout)
           endif
         endif
    30 CONTINUE

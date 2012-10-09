@@ -2628,7 +2628,7 @@ C << and apply it to another zone.
 
 C File is older format and assumed to be unsorted.
                     sorted=.false.
-                    call PROCESSOLDCAS(ICOMP,0,iuout,IER)
+                    call PROCESSOLDCAS(ICOMP,0,iuout)
                     if(browse)then
                       continue
                     else
@@ -2642,14 +2642,14 @@ C browsing update the operation file.
                     sorted=.true.
                     problem=.false.
                     DO 400 IDTY=1,NBDAYTYPE
-                      call checksort(icomp,IDTY,problem,ier)
+                      call checksort(icomp,IDTY,problem)
                       if(problem)then
                         sorted=.false.
                         call edisp(iuout,'casual gains may be unsorted')
                       endif
  400                CONTINUE
                     if(.NOT.sorted)then
-                      call PROCESSOLDCAS(ICOMP,0,iuout,IER)
+                      call PROCESSOLDCAS(ICOMP,0,iuout)
                       if(browse)then
                         continue
                       else

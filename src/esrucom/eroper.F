@@ -95,11 +95,10 @@ C                incoming air for each period above respectively.
 
 C NCAS         - number of casual gains during each daytype
 
-C ICGT         - Casual gain type:
+C ICGT         - Casual gain type (traditional uses of index):
 C                 1. Occupancy
 C                 2. Lights
 C                 3. Equipment
-C                 4. User controllable gain (not fully utilised as yet)
 C                -1. Occupancy as floor area per person
 C                -2. Lights in w/m^2 per floor area
 C                -3. Equipment in w/m^2 per floor area
@@ -171,8 +170,9 @@ C `cetc_appliances` NRCan appliances, `cetc_lights` NRC lights,
 C `cetc_other` NRCan other electrical, `cetc_occupants` NRCan occupants
 C `cetc_gas` NRCan gas appliances.
 
-C Future type examples `pmv_people` people with clo and metabolic rate,
-C `organics` vegitation or latent sources, `waterdraw` DHW draws,
+C Future type examples
+C `pmv_people` people with clo and metabolic rate,
+C `transpiraton` vegitation or latent sources, `waterdraw` DHW draws,
 C `roomfan` future linked to flow component
       character caskeytype*16
       common/p3typekey/caskeytype(MDTY,MC)
@@ -289,7 +289,7 @@ C << this logic may be preventing ventdesc from being correctly used >>
             CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'air sched notes',IER)
             ventdesc(icomp)=LOUTSTR
           else
-            ventdesc(icomp)=LOUTSTR
+            ventdesc(icomp)=LOUTSTR  ! set to same as oprdesc
           endif
         endif
       else
@@ -750,7 +750,6 @@ C FILE (variable width char) is the name of the file to scan.
 
       SUBROUTINE ERZSCHED(IUO,FILE,actflatfile,IER)
 #include "building.h"
-#include "schedule.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
       
@@ -1790,7 +1789,6 @@ C checkcascount scans current P3 & P3TYPE commons and refreshes
 C loadcount() & load24() in common blocks loadcnt & loadall
       subroutine checkcascount(icomp)
 #include "building.h"
-#include "schedule.h"
 
 C Parameters
       integer icomp  ! index of the zone to scan
@@ -1952,7 +1950,6 @@ C Parameters
       integer ix       ! is the destination
       integer jx       ! is the source
 
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
       COMMON/P3TYPEN/ICGT(MDTY,MC)
@@ -2001,7 +1998,6 @@ C Parameters
       integer ipfX,iphasX          ! temporary variables
       real pfX,pwrX,bvoltX         ! temporary variables
 
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
       COMMON/P3TYPEN/ICGT(MDTY,MC)
@@ -2055,7 +2051,6 @@ C Parameters
       integer ipfX,iphasX          ! temporary variables
       real pfX,pwrX,bvoltX         ! temporary variables
 
-      COMMON/OUTIN/IUOUT,IUIN
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
       COMMON/P3TYPEN/ICGT(MDTY,MC)
@@ -2096,14 +2091,12 @@ C Electrical data flag and elctrical data.
 C ********************* PROCESSOLDCAS *********************
 C PROCESSOLDCAS: Processes gains in an old format operations file.
 C Passed the zone index.
-C Returns IER=0 if all ok.
-      SUBROUTINE PROCESSOLDCAS(ICOMP,ITRC,ITRU,IER)
+      SUBROUTINE PROCESSOLDCAS(ICOMP,ITRC,ITRU)
 #include "building.h"
 #include "geometry.h"
-#include "schedule.h"
+C #include "schedule.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      common/pophelp/h(60)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,idty,idt
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
@@ -2134,7 +2127,11 @@ C   W/m2 or person/m2, if three then non-zero are mixed.
 
       logical close,needtodivide,writeit
 
-      character H*72,outs*124
+      character outs*124
+
+C Note: NBDAYTYPE has evolved and may clash with logic, especially
+C as ip3ver=0 files only knew about 3 day types. Consider changing
+C the hard coded 7 below to reflect new data structures.
 
 C Temporary arrays: MC array is 72 so that is
 C   sized for 24 hours X 3 day types. Array size should be
@@ -2196,7 +2193,7 @@ C or based on area (casual gain type negative) or if mixed +-.
       call checkcascount(icomp)
       
 C Zero derived gains in the temporary array and set the type as per
-C the call to checkcascount.
+C the call to checkcascount. Note: assumes 7 day types.
       do 130 IP=1,MC
         do 120 IG=1,7
           CMGSA(IP,IG)=0.0
@@ -2227,7 +2224,6 @@ C the call to checkcascount.
  120    continue
  130  continue
 
-C First do occupants, lights, small power and two reserved types.
 C For every hour in a day check if one of the casual gains
 C is applicable. Time is on the half hour to make it easy to
 C test for a casual gain period being between T1 and T2.
@@ -2514,7 +2510,7 @@ C Calculate the rectangular co-ordinates
 C ******************* checksort *********************
 C checksort does a quick check of casual gains for sorted state.
 C not extensive, but should catch most issues.
-      subroutine checksort(icomp,idaytype,problem,ier)
+      subroutine checksort(icomp,idaytype,problem)
 #include "building.h"
 #include "schedule.h"
 

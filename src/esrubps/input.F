@@ -1049,7 +1049,7 @@ C        write(6,*) IZ,IP3VER(IZ)
           write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',IZ,' periods being sorted!'
           call edisp(iuout,outs)
-          call PROCESSOLDCAS(IZ,itrc,itu,IER)
+          call PROCESSOLDCAS(IZ,itrc,itu)
         endif
 
 C Zero the thermal bridge heat loss before (perhaps) reading in from geometry file.

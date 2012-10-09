@@ -600,7 +600,7 @@ C If izver >= 4 the read the data directly.
             write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',izone,' periods being sorted!'
             call edisp(iuout,outs)
-            call PROCESSOLDCAS(izone,0,iuout,IER)
+            call PROCESSOLDCAS(izone,0,iuout)
           endif
         endif
 

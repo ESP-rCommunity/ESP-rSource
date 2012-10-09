@@ -1151,7 +1151,7 @@ C Set to current zone operation file format.
         call IMPORTZCASG(isource,idest,icact,iwatt,sfile,itrc,'s',ier)
 
 C Just in case sort the data.
-        call PROCESSOLDCAS(ICOMP,0,iuout,IER)
+        call PROCESSOLDCAS(ICOMP,0,iuout)
         IUO=IFIL+2
         CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
       endif
