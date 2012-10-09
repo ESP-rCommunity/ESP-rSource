@@ -2530,6 +2530,7 @@ C not browsing.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
 #include "esprdbfile.h"
 #include "espriou.h"
 #include "seasons.h"
@@ -2546,7 +2547,6 @@ C not browsing.
       common/cctlnm/ctldoc,lctlf
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &     nsurfinso(MCOM),isurfinso(MCOM,MS)
-      common/p3ver/ip3ver(MCOM)
       
 C IPV data.
       common/IPVF/lipvdatf

@@ -42,6 +42,7 @@ C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 #include "material.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -59,10 +60,6 @@ C ICLIM,LCLIM (for climate file)
 
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       common/cctlnm/ctldoc,lctlf
-
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types
-      common/p3ver/ip3ver(MCOM)
 
       CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)

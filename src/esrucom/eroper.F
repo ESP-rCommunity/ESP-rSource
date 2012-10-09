@@ -127,6 +127,7 @@ C Maximum number of casual gains/day       MC=20
       SUBROUTINE EROPER(ITRC,ITRU,IUO,ICOMP,IER)
       include "building.h"
       include "model.h"
+      include "schedule.h"
       include "espriou.h"
 
 C espriou.h provides currentfile.
@@ -160,9 +161,21 @@ C espriou.h provides currentfile.
       INTEGER NCAS,ICGS,ICGF,ICGT
       REAL CMGS,CMGL,RADC,CONC
 
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types allowed and sorted
-      common/p3ver/ip3ver(MCOM)
+C Key word for each casual gain type (if ip3ver is 3). As follows:
+C `-` no user defined meaning, `people` basic occupant, 
+C 'lighting' basic lighting, `equipment` basic small power
+
+C Bespoke types
+C `net_utilities` same as icgtyp = 5, `ctlgain4` sams as icgtyp = 4,
+C `cetc_appliances` NRCan appliances, `cetc_lights` NRC lights,
+C `cetc_other` NRCan other electrical, `cetc_occupants` NRCan occupants
+C `cetc_gas` NRCan gas appliances.
+
+C Future type examples `pmv_people` people with clo and metabolic rate,
+C `organics` vegitation or latent sources, `waterdraw` DHW draws,
+C `roomfan` future linked to flow component
+      character caskeytype*16
+      common/p3typekey/caskeytype(MDTY,MC)
 
 C Common block P2UNIT defines the units for infiltration and ventilation
 C for each zone and day type. The default value of zero is the same as
@@ -235,8 +248,6 @@ C Read lines from file, discarding comments. Look for header on
 C newer files. Older files will begin with a description. To allow for
 C description with spaces copy directly from OUTSTR rather than parsing
 C it into words.
-
-C << Why reset ip3ver if there are more than 3 day types?
  
       CALL STRIPC(IUO,OUTSTR,0,ND,1,'oper name or header',IER)
       IF(IER.NE.0) goto 1002
@@ -248,6 +259,8 @@ C << Why reset ip3ver if there are more than 3 day types?
         elseif(outstr(13:15).eq.'3.0')then
           ip3ver(icomp)=3
         endif
+
+C Reset ip3ver if there are more than 3 day types.
         if(nbdaytype.gt.3)ip3ver(icomp)=2
         CALL STRIPC(IUO,OUTSTR,0,ND,1,'header',IER)
         IF(IER.NE.0) goto 1002
@@ -262,6 +275,9 @@ C If ip3ver(icomp) is less than or equal to two then read the
 C combined documentation (casual gains and air schedules) otherwise
 C read a *air_schedules line and then the infiltration/ventilation
 C documentation.
+
+C << this logic may be preventing ventdesc from being correctly used >>
+
         if(ip3ver(icomp).le.2)then
           CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'oper notes',IER)
           oprdesc(icomp)=LOUTSTR
@@ -734,6 +750,7 @@ C FILE (variable width char) is the name of the file to scan.
 
       SUBROUTINE ERZSCHED(IUO,FILE,actflatfile,IER)
 #include "building.h"
+#include "schedule.h"
 #include "espriou.h"
 C espriou.h provides currentfile.
       
@@ -743,6 +760,10 @@ C espriou.h provides currentfile.
       common/pophelp/h(60)
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
+
+C Scratch version of operations file (as pattern in schedule.h).
+      integer ip3verc
+      common/p3verc/ip3verc
 
       COMMON/P1C/oprdescc,ctlstrc
 
@@ -767,10 +788,6 @@ C Electrical data flag and elctrical data.
      &BVOLTC(MDTY,MC),IPHASC(MDTY,MC)
       INTEGER NELC,IPFC,IPHASC
       REAL PFC,PWRC,BVOLTC
-
-C Version of operations file. ip3verc=0 standard, =1 sorted with header
-C =2 with more than 3 day types allowed and sorted
-      common/p3verc/ip3verc
 
 C Descriptive label for a zone load or casual gain types.
       character lodlabelc*6
@@ -1280,6 +1297,7 @@ C the file to be written to (confirm if to be overwritten).
       SUBROUTINE  EMKOPER(IUO,OPFIL,ICOMP,IER)
 #include "building.h"
 #include "geometry.h"
+#include "schedule.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -1311,10 +1329,6 @@ C Parameters
       COMMON/P3TYPEN/ICGT(MDTY,MC)
       INTEGER NCAS,ICGS,ICGF,ICGT
       REAL CMGS,CMGL,RADC,CONC
-
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types allowed and sorted
-      common/p3ver/ip3ver(MCOM)
 
 C Electrical data flag and elctrical data.
       common/elecflg/ielf(mcom)
@@ -1370,7 +1384,9 @@ C Write the common block data to the file.
 C If ipv3ver is 1 or 2 write ventilation control data as if
 C there was only one day type and one period during the day.
       if(ip3ver(icomp).eq.1.or.ip3ver(icomp).eq.2)then
+
 C << revise for multiple days and periods >>
+
         WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
      &    oprdesc(ICOMP)(1:lnblnk(oprdesc(ICOMP)))
         WRITE(IUO,'(3A)',IOSTAT=IOS,ERR=1)
@@ -1485,6 +1501,7 @@ C << need to update reporting for different day types and ctl periods >>
       SUBROUTINE VENTINF(ICOMP,ITRU)
 #include "building.h"
 #include "geometry.h"
+#include "schedule.h"
 
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
@@ -1502,10 +1519,6 @@ C << need to update reporting for different day types and ctl periods >>
      &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
-
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types allowed and sorted
-      common/p3ver/ip3ver(MCOM)
 
       CHARACTER outs*124
 
@@ -1777,6 +1790,7 @@ C checkcascount scans current P3 & P3TYPE commons and refreshes
 C loadcount() & load24() in common blocks loadcnt & loadall
       subroutine checkcascount(icomp)
 #include "building.h"
+#include "schedule.h"
 
 C Parameters
       integer icomp  ! index of the zone to scan
@@ -1790,10 +1804,6 @@ C Parameters
       COMMON/P3TYPEN/ICGT(MDTY,MC)
       INTEGER NCAS,ICGS,ICGF,ICGT
       REAL CMGS,CMGL,RADC,CONC
-
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types allowed and sorted
-      common/p3ver/ip3ver(MCOM)
 
 C loadcount(zone,gaintype,daytype) - nb of each gain type (whether
 C   absolute or W/m2).
@@ -2090,6 +2100,7 @@ C Returns IER=0 if all ok.
       SUBROUTINE PROCESSOLDCAS(ICOMP,ITRC,ITRU,IER)
 #include "building.h"
 #include "geometry.h"
+#include "schedule.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -2110,10 +2121,6 @@ C Commons for electrical data
      &BVOLT(MDTY,MC),IPHAS(MDTY,MC)
       INTEGER NEL,IPF,IPHAS,istarthr,ifinishr,ip
       REAL PF,PWR,BVOLT
-
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types allowed and sorted
-      common/p3ver/ip3ver(MCOM)
 
 C loadcount(zone,gaintype,daytype) - nb of each gain type (whether
 C   absolute or W/m2). Up to 7 different casual gain types are
@@ -2509,12 +2516,9 @@ C checksort does a quick check of casual gains for sorted state.
 C not extensive, but should catch most issues.
       subroutine checksort(icomp,idaytype,problem,ier)
 #include "building.h"
+#include "schedule.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types allowed and sorted
-      common/p3ver/ip3ver(MCOM)
 
 C How many of each gain type is there each zone/gaintype/daytype.
       common/loadcnt/loadcount(mcom,MGTY,MDTY),
@@ -2596,6 +2600,7 @@ C UPDOPR     Updates all operations data when day types are incremented
       SUBROUTINE UPDOPR
 #include "building.h"
 #include "model.h"
+#include "schedule.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/FILEP/IFIL
@@ -2605,7 +2610,6 @@ C UPDOPR     Updates all operations data when day types are incremented
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       common/pophelp/h(60)
-      common/p3ver/ip3ver(MCOM)
       COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
      &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
       INTEGER NAC,IACS,IACF,IPT
@@ -2695,7 +2699,7 @@ C power.
             ICGF(NBDAYTYPE,I)=24
  400      CONTINUE
 
-C Write operations file
+C Write zone operations file.
           ip3ver(icomp)=2
           CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
         ENDIF

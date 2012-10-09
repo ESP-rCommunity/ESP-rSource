@@ -422,6 +422,7 @@ C IER=0 OK.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
+#include "schedule.h"
 
       integer lnblnk  ! function definition
 
@@ -453,9 +454,6 @@ C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
       character dinstpath*60
 
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types
-      common/p3ver/ip3ver(MCOM)
       COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
      &           ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
       INTEGER NAC,IACS,IACF,IPT
@@ -1133,7 +1131,7 @@ C Clear commons.
 C Fill common blocks for new zone based on information in the
 C pattern file.
 
-C Set to current format
+C Set to current zone operation file format.
         ip3ver(icomp)=2
         afact = use(2)
         iflow='ach-ach '

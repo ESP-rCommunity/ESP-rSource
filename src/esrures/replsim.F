@@ -31,6 +31,7 @@ C MZINPT code in espbps/input.f.
       SUBROUTINE MOGCFG
 #include "building.h"
 #include "model.h"
+#include "schedule.h"
 #include "net_flow.h"
 C #include "geometry.h"
 #include "tdf2.h"
@@ -43,9 +44,6 @@ C #include "geometry.h"
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types
-      common/p3ver/ip3ver(MCOM)
       common/rpath/path
       COMMON/CCTLNM/CTLDOC,LCTLF
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK

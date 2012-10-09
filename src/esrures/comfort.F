@@ -505,6 +505,7 @@ C sundays ioucpz(izone,[49-72]), This hash table will need altering
 C if sub-hour casual gains definitions are implemented. 
       subroutine scnocup(ier)
 #include "building.h"
+#include "schedule.h"
 #include "espriou.h"
 
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
@@ -517,10 +518,6 @@ C if sub-hour casual gains definitions are implemented.
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       common/cmftpar/WVEL,ACTL,CLO,iocut,iocuset,ioucpz(MCOM,72)
       common/recver/izver,ipver,iever
-
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types
-      common/p3ver/ip3ver(MCOM)
 
       logical close15,close16,close17
       character hold*24,outs*124

@@ -3905,6 +3905,7 @@ C This recovers one day.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
 #include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -3922,10 +3923,6 @@ C This recovers one day.
       common/getmenu/menutype,igetind(65),igetflux(65)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
-           
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types
-      common/p3ver/ip3ver(MCOM)
 
       integer ireportunit ! zero is default one is W two is kW three Joules
       common/repunit/ireportunit

@@ -1,10 +1,10 @@
 C This file is part of the ESP-r system.
 C Copyright Energy Systems Research Unit, University of
-C Strathclyde, Glasgow Scotland, 2010.
+C Strathclyde, Glasgow Scotland, 2010-2012.
 
 C Schedule.h holds common block for project scheduled demands
-C i.e. those not associated with any particular zone.  It may
-C also later hold zone operations common blocks.
+C i.e. those not associated with any particular zone.  It also
+C hold zone operations common blocks.
 C References to schedule.h should follow building.h so that
 C the parameters MDTY, MGTY and MC have been defined.
 
@@ -53,5 +53,11 @@ C How many of each dispersed demands for each gaintype/daytype.
       common/b3ver/idmdver
       integer idmdver   ! version of the demands file.
                         ! idmdver =0 standard, idmdver =1 with header
+
+C Version of zone operations file. ip3ver=0 legacy, =1 sorted with header,
+C =2 with more than 3 day types allowed and periods sorted,
+C =3 with key words for casual gain types.
+      integer ip3ver
+      common/p3ver/ip3ver(MCOM)
 
 C end of schedule.h

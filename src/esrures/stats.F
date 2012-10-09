@@ -2046,6 +2046,7 @@ C << file does not need to be scanned to get the surface emissivity.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -2069,9 +2070,6 @@ C << file does not need to be scanned to get the surface emissivity.
 
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
 
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types
-      common/p3ver/ip3ver(MCOM)
       COMMON/RECV5/SNA(MCOM,MS)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES

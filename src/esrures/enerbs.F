@@ -34,6 +34,7 @@ C CALLS: MOSCS1 MOSCS2    CALLED BY: MOENER
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -49,9 +50,6 @@ C CALLS: MOSCS1 MOSCS2    CALLED BY: MOENER
 
       COMMON/RECV5/SNA(MCOM,MS)
 
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types
-      common/p3ver/ip3ver(MCOM)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/SNAP/SNAPSH
       logical SNAPSH

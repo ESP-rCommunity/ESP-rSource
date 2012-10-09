@@ -56,6 +56,7 @@ C and should just write out this data.
 #include "building.h"  
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -66,10 +67,6 @@ C and should just write out this data.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
-
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types allowed and sorted
-      common/p3ver/ip3ver(MCOM)
 
       CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
@@ -802,6 +799,7 @@ C << must be revised for multiple day types and periods. >>
 
 #include "building.h"
 #include "geometry.h"
+#include "schedule.h"
 
       CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
@@ -809,7 +807,6 @@ C << must be revised for multiple day types and periods. >>
      &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
      &             IVH(MCOM),TAH(MCOM)
-      common/p3ver/ip3ver(MCOM)
 
       DIMENSION IVALS(3), ALTS(3)
       CHARACTER hold*40,outs*80,outs2*80
@@ -1445,6 +1442,7 @@ C IER=0 is OK.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
 #include "epara.h"
       
 C      integer lnblnk  ! function definition
@@ -1452,10 +1450,6 @@ C      integer lnblnk  ! function definition
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
-
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types allowed and sorted
-      common/p3ver/ip3ver(MCOM)
 
       CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
@@ -1470,7 +1464,7 @@ C =2 with more than 3 day types allowed and sorted
 
 C Common block P2UNIT defines the units for infiltration and ventilation
 C for each zone and day type. The default value of zero is the same as
-C the traditional (implied) unit in the version (ip3ver 0, 1, 2). A value
+C the traditional (implied) unit in the version (ip3ver 0, 1, 2, 3). A value
 C of one signals m3/h and a value of 2 signals m3/s.
       integer INFUNIT,IVENTUNIT
       COMMON/P2UNIT/INFUNIT(MCOM,MDTY),IVENTUNIT(MCOM,MDTY)
@@ -2273,15 +2267,13 @@ C << initial intent to guide later revisions?
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types allowed and sorted
-      common/p3ver/ip3ver(MCOM)
       CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
       COMMON/P1C/oprdescc,ctlstrc
@@ -2458,7 +2450,7 @@ C IF asked to copy all then
           LPROJ(idest)=ltmp
         endif
 
-C And any new file will be in the sorted format.
+C And any new zone operation file will use the sorted format.
         ip3ver(idest)=2
       endif
       if(iflow(1:7).eq.'ach-ach')then
@@ -3055,6 +3047,7 @@ C ITRC is the trace level, IER=0 is OK.
       SUBROUTINE EDCAS(ICOMP,modopr,sorted,IER)
 #include "building.h"
 #include "geometry.h"
+#include "schedule.h"
 #include "epara.h"
       
       integer lnblnk  ! function definition
@@ -3073,10 +3066,6 @@ C ITRC is the trace level, IER=0 is OK.
       COMMON/P3TYPEN/ICGT(MDTY,MC)
       INTEGER NCAS,ICGS,ICGF,ICGT
       REAL CMGS,CMGL,RADC,CONC
-
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types allowed and sorted
-      common/p3ver/ip3ver(MCOM)
 
 C Electrical data flag and elctrical data.
       common/elecflg/ielf(mcom)
@@ -4334,6 +4323,7 @@ C << initial intent to guide later revisions?
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -4350,9 +4340,6 @@ C Passed parameters
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types allowed and sorted
-      common/p3ver/ip3ver(MCOM)
       CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
       COMMON/P1C/oprdescc,ctlstrc
@@ -4563,7 +4550,7 @@ C initial setup is done for these topics.
           NAC(IDTY)=0
  400    CONTINUE
 
-C New file will be in sorted format with multiple day types allowed
+C New file will be in sorted format with multiple day types allowed.
         ip3ver(idest)=2
       endif
 

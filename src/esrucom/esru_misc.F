@@ -3033,6 +3033,7 @@ C `h` heat transfer (comvective) methods, `-` zone names only.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
 #include "epara.h"
 
       COMMON/FILEP/IFIL
@@ -3042,10 +3043,6 @@ C `h` heat transfer (comvective) methods, `-` zone names only.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
-
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types allowed and sorted
-      common/p3ver/ip3ver(MCOM)
 
       LOGICAL SELECT,XST
       CHARACTER*(*) prompt,title,errmsg
@@ -3321,6 +3318,7 @@ C `-` zone names only.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
 #include "epara.h"
 
       integer lnblnk  ! function definition
@@ -3332,10 +3330,6 @@ C `-` zone names only.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
-
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types allowed and sorted
-      common/p3ver/ip3ver(MCOM)
 
       LOGICAL XST,FOUND
       CHARACTER*(*) prompt,title

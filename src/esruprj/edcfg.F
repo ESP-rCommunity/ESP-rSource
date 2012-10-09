@@ -1230,6 +1230,7 @@ C output, IER=0 indicates no error.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
+#include "schedule.h"
 #include "prj3dv.h"
       
       integer lnblnk  ! function definition
@@ -1258,10 +1259,6 @@ C output, IER=0 indicates no error.
       common/MOIST01/MSTROK,MSTRZN(MCOM)
       common/MOIST02/LMOIST(MCOM)
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
-
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types
-      common/p3ver/ip3ver(MCOM)
 
       CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
