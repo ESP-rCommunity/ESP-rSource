@@ -108,8 +108,10 @@ C Parameters
       character tedlbl*20,teditor*20
 
 C Name of current application - only invoke editing if prj.
-      common/APPNAME/cAppName
       character cAppName*12
+      common/APPNAME/cAppName
+      character h*72
+      common/pophelp/h(60)
 
       character tmode*8
       CHARACTER DOIT*300
@@ -365,6 +367,12 @@ C the option of editing the materials files.
       if(dupfound)then
         if(ipathmat.eq.0.or.ipathmat.eq.1)then
           dok=.false.
+          h(1)='Each material should have a unique name. Duplicates'
+          h(2)='were found and should be rectified as soon as possible'
+          h(3)='to prevent confusion in the model. After editing the '
+          h(4)='materials file you should exit prj and re-open the '
+          h(5)='model. '
+          nbhelp=5
           CALL ASKOK(
      &      'Edit materials file to address duplicate material names?',
      &      '(be sure to save file and re-open the model)',
