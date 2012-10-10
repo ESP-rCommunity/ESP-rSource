@@ -68,14 +68,6 @@ C and should just write out this data.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF
-      REAL CMGS,CMGL,RADC,CONC
       common/user/browse
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -794,11 +786,6 @@ C << must be revised for multiple day types and periods. >>
 #include "geometry.h"
 #include "schedule.h"
 
-      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
-     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
-     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
-     &             IVH(MCOM),TAH(MCOM)
-
       DIMENSION IVALS(3), ALTS(3)
       CHARACTER hold*40,outs*80,outs2*80
       CHARACTER ALTS*31
@@ -1079,14 +1066,6 @@ C      integer lnblnk  ! function definition
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
-      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
-     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
-     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
-     &             IVH(MCOM),TAH(MCOM)
 
       character vert(35)*33,KEY*1,title*33
       character LTMP*72
@@ -1440,15 +1419,6 @@ C      integer lnblnk  ! function definition
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
-
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
-      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
-     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
-     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
-     &             IVH(MCOM),TAH(MCOM)
 
 C Common block P2UNIT defines the units for infiltration and ventilation
 C for each zone and day type. The default value of zero is the same as
@@ -1818,15 +1788,11 @@ C     =2 infil, =0 ventilation attributes.
       subroutine EDAIRFL(ICOMP,IDT,IPER,itype)
 #include "building.h"
 #include "geometry.h"
+#include "schedule.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
-
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
 
       character OUTS*124,HOLD*16
 
@@ -2036,11 +2002,7 @@ C IPT,TA ventilation source zone, if IPT=0 then TA is source temperature
 
       subroutine ADDAFP(IPER,IDT,IACSX,IACFX,ACIX,ACVX,IPTX,TAX)
 #include "building.h"
-
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
+#include "schedule.h"
 
       if (IPER.eq.0) then
         ILPER=1
@@ -2090,16 +2052,12 @@ C  ICD - copy (=2) delete (=1) flag
       subroutine CDAIRFL(ICD)
 #include "building.h"
 #include "geometry.h"
+#include "schedule.h"
 
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
-
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
 
       character VERT(3*MA)*35,OUTS*124,OUT*4
       INTEGER IGOON,ILET,IDT,IDTY,IAFP,IX,KSTR(MDTY),ilistlen,ilm
@@ -2265,17 +2223,9 @@ C << initial intent to guide later revisions?
       COMMON/P1C/oprdescc,ctlstrc
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
-      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
-     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
-     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
-     &             IVH(MCOM),TAH(MCOM)
 
 C Scratch copy of air flow pattern from an operations file.
-      COMMON/P2CN/NACC(MDTY),IACSC(MDTY,MA),IACFC(MDTY,MA),
+      COMMON/P2NC/NACC(MDTY),IACSC(MDTY,MA),IACFC(MDTY,MA),
      &ACIC(MDTY,MA),ACVC(MDTY,MA),IPTC(MDTY,MA),TAC(MDTY,MA)
       INTEGER NACC,IACSC,IACFC,IPTC
       REAL ACIC,ACVC,TAC
@@ -2528,13 +2478,10 @@ C CHKAIRFL - check air flow data for overlapping periods.
 
       subroutine CHKAIRFL
 #include "building.h"
+#include "schedule.h"
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
 
       logical RECHECK
 
@@ -2772,6 +2719,7 @@ C  ICOMP zone number
       subroutine PLTAIR(ICOMP,idtyp)
 #include "building.h"
 #include "geometry.h"
+#include "schedule.h"
 
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -2780,10 +2728,7 @@ C  ICOMP zone number
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT,IDTY,IDAY,JDAY,KDAY
-      REAL ACI,ACV,TA
+      INTEGER IDTY,IDAY,JDAY,KDAY
 
       character outs*124
       dimension TACI(24),TACV(24)
@@ -3046,11 +2991,6 @@ C ITRC is the trace level, IER=0 is OK.
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/user/browse
-
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF
-      REAL CMGS,CMGL,RADC,CONC
 
 C Electrical data flag and elctrical data.
       common/elecflg/ielf(mcom)
@@ -3593,11 +3533,6 @@ C LPRFDB,IPRODB (for event profile database)
 #include "profile.h"
 #include "schedule.h"
 
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF
-      REAL CMGS,CMGL,RADC,CONC
-
 C Electrical data flag and elctrical data.
       common/elecflg/ielf(mcom)
       COMMON/ELP3N/NEL(MDTY),PF(MDTY,MC),IPF(MDTY,MC),PWR(MDTY,MC),
@@ -3806,10 +3741,6 @@ C If silent is true then use icgs & icgf parameters.
       COMMON/OUTIN/IUOUT,IUIN
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF
-      REAL CMGS,CMGL,RADC,CONC
 
 C Electrical data flag and elctrical data.
       common/elecflg/ielf(mcom)
@@ -4167,10 +4098,6 @@ C  ICD - copy (=2) delete (=1) flag
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
 
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF
-      REAL CMGS,CMGL,RADC,CONC
       INTEGER IX,IDT,IDTT
 
 C Electrical data flag and elctrical data.
@@ -4329,19 +4256,7 @@ C Passed parameters
       COMMON/P1C/oprdescc,ctlstrc
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
-      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
-     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
-     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
-     &             IVH(MCOM),TAH(MCOM)
 
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF
-      REAL CMGS,CMGL,RADC,CONC
       common/elecflg/ielf(mcom)
       COMMON/ELP3N/NEL(MDTY),PF(MDTY,MC),IPF(MDTY,MC),PWR(MDTY,MC),
      &BVOLT(MDTY,MC),IPHAS(MDTY,MC)
@@ -4352,6 +4267,7 @@ C Descriptive label for scratch zone load or casual gain.
       character lodlabelc*6
       common/loadlabelc/lodlabelc(MGTY)
 
+C Scratch version of P3N
       COMMON/P3NC/NCASC(MDTY),ICGSC(MDTY,MC),ICGFC(MDTY,MC),
      &CMGSC(MDTY,MC),CMGLC(MDTY,MC),RADCC(MDTY,MC),CONCC(MDTY,MC)
       COMMON/P3TYPENC/ICGTC(MDTY,MC)
@@ -4686,10 +4602,7 @@ C  ICOMP zone number
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,IDTY
-      REAL CMGS,CMGL,RADC,CONC
+      INTEGER IDTY
 
       dimension CGAINS(25,7),CGAINL(25,7),CGAINTS(25),CGAINTL(25)
 
@@ -5193,13 +5106,9 @@ C   idp - point of insertion or deletion.
 C   ier - set to 1 if there was a problem
       subroutine insdelcasper(icomp,idaytype,act,idp,ier)
 #include "building.h"
+#include "schedule.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,IDTY
-      REAL CMGS,CMGL,RADC,CONC
 
 C Electrical data flag and elctrical data.
       common/elecflg/ielf(mcom)
@@ -5266,10 +5175,7 @@ C initcasday does initial setup of all casual day types.
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ILN
-      REAL CMGS,CMGL,RADC,CONC
+      INTEGER ILN
       dimension iper(24),iperf(24)
       character hold*48,OUTS*12,LOUTS*24,VOUTS*50
       

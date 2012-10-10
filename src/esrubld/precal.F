@@ -293,13 +293,12 @@ C may have a different value defined for the above variables
       SUBROUTINE MZVENC(ICOMP)
 #include "building.h"
 #include "geometry.h"
+#include "schedule.h"
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,idty
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
       COMMON/PREC5N/CVIN(MDTY,MCOM,MT),CVVN(MDTY,MCOM,MT),
      &ICCN(MDTY,MCOM,MT),TIAN(MDTY,MCOM,MT)
       INTEGER ICCN
@@ -404,11 +403,6 @@ C geometry.h provides commons G0/G1/G2/G4/prec2/prec17/precz.
       COMMON/TC/ITC,ICNT
       COMMON/TRACE/ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
       COMMON/OUTIN/IUOUT,IUIN
-
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF
-      REAL CMGS,CMGL,RADC,CONC
 
 C Commons for electrical data
       COMMON/ELECFLG/IELF(MCOM)

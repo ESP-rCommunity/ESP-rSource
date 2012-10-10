@@ -1185,10 +1185,6 @@ C will be corrected in the revised results library.
       COMMON/CGCIN3/ICGCS(MCOM),ICGCF(MCOM),
      & ICGCFL(MCOM,MLCOM),SPELEC(MCOM,MLCOM),SLOPEM(MCOM,MLCOM)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF
-      REAL CMGS,CMGL,RADC,CONC
 
       real QCASR,QCASC,QCASL  ! total radiant/convective/latent
       real FRAC ! controlled fraction.

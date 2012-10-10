@@ -76,4 +76,37 @@ C -1=floor area/person -2 Light W/m2 -3=small power W/m2
       integer ICGT  ! position within array of casual gains (overloaded see above)
       COMMON/P3TYPEN/ICGT(MDTY,MC)
 
+      integer NAC       ! number of distinct air change periods per day type
+      integer IACS,IACF ! start & finish hours for each air change day:period
+      real ACI          ! infiltration air changes/hour for each day:period
+      real ACV          ! ventilation air changes/hour from other zones for each
+                        ! day:period
+      integer IPT  ! ACV source 0=specified constant temperature or
+                   ! N>0 ACV is at the time-dependent temperature of zone N.
+      real TA      ! where IPV=0 the constant source temperature otherwise 0
+      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
+     &           ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
+
+      integer NCAS       ! number casual gain periods for each daytype
+      integer ICGS,ICGF  ! start & finish hours for each casual day:period
+      real CMGS,CMGL     ! sensible and latent magnitude for each casual 
+                         ! day:period, units depend on value of ICGT
+      real RADC,CONC     ! radiant and convective fraction (0.0 - 1.0) for
+                         ! each casual gain day:period
+      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
+     &           CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
+
+C NOTE: P2CTL should be extended to support controls for each day type.
+      integer ITCTL    ! index of air flow control (see above)
+      real TLO,TUP,THI ! setpoint for low upper & high flow rates
+      real ACIL,ACVL   ! low level controlled infiltration & ventilation rates
+      real ACIU,ACVU   ! 1st stage controlled infiltration & ventilation rates
+      real ACIH,ACVH   ! 2nd stage controlled infiltration & ventilation rates
+      integer IVL,IVU,IVH ! indicates controlled ventilation source (see IPT)
+      real TAL,TAU,TAH    ! source temperature for low upper & high ventilation 
+      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
+     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
+     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
+     &             IVH(MCOM),TAH(MCOM)
+
 C end of schedule.h

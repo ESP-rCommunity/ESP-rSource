@@ -1260,11 +1260,6 @@ C output, IER=0 indicates no error.
       common/MOIST02/LMOIST(MCOM)
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
-      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
-     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
-     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
-     &             IVH(MCOM),TAH(MCOM)
-
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)

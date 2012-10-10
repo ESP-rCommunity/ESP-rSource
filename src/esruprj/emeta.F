@@ -454,15 +454,6 @@ C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
       character dinstpath*60
 
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &           ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &           CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF
-      REAL CMGS,CMGL,RADC,CONC
-
       COMMON/Vld20/Vldtng
       logical Vldtng
       common/SLNTFULL/ifullysilent

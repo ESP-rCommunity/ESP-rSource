@@ -267,7 +267,7 @@ C door width and height.
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
      
-      INTEGER :: i,icc,ibe,ibu,j,ixs,ix,ivu,isystcurrent,imu
+      INTEGER :: i,icc,ibe,ibu,j,ixs,ix,iivu,isystcurrent,imu
  
       call tstamp('>','PRJ: clearing model commons')
       
@@ -502,8 +502,8 @@ C Per-zone areas and U-values.
           zhasglaze(ix,ixs)=0.0
           zhasdoor(ix,ixs)=0.0
           isznbedges(ix,ixs)=0
-          do 54 ivu=1,MV
-            iszlist(ix,ixs,ivu)=0
+          do 54 iivu=1,MV
+            iszlist(ix,ixs,iivu)=0
             szcoords(ix,ixs,1)=0.0
             szcoords(ix,ixs,2)=0.0
             szcoords(ix,ixs,3)=0.0

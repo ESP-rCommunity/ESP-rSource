@@ -53,55 +53,6 @@ C datafile.
 
 C Common block variables are:
 
-C ITCTL        - Thermostatic control index :
-C                    control on zone coupled air temperature
-C                    control on zone air temperature
-C                  0 no control
-C                    control on zone air temperature and infiltration
-C                    control on zone coupled air and infiltration
-C TLO, TUP,    - setpoint for low, upper and high
-C THI
-C ACIL, ACVL,  - low level (i.e. if below a setpoint) for control.
-C IVL, TAL     
-C ACIU, ACVU,  - mid level (i.e. if above a setpoint) 1st stage options
-C IVU, TAU       for control.
-C ACIH, ACVH,  - high level (2nd stage options) for control.
-C IVH, TAH
-
-C NAC          - number of distinct air change periods during day type
-C                IDTY
-
-C IACS,IACF    - start and finish hours of each of the above air change
-
-C ACI          - natural infiltration air changes/hour for each period
-C                relating to daytypes above respectively.
-
-C ACV          - additional incoming air changes/hour for each period
-C                relating to daytypes above respectively.
-
-C IPT          - the additional incoming air (corresponding to ACV) 
-C                can either be at constant temperature -
-C                changing, if required, between each period - or set
-C                at the time-dependent temperature of some coupled
-C                zone. The IPT? variable controls this, where:
-C                 IPT?=0 signifies a constant temperature will be specified
-C                 IPT?=N (N>0) signifies that incoming air is at the
-C                        time-dependent temperature of zone N.
-
-C TA           - correspond to IPT?=0 and define the temperature of the
-C                incoming air for each period above respectively.
-
-C NCAS         - number of casual gains during each daytype
-
-C ICGS,ICGF    - start and finish hours of each of the above casual gain
-C                periods
-
-C CMGS,CMGL,   - sensible and latent magnitude (in Watts) of
-C                each casual gain
-
-C RADC,CONC,   - radiant and convective portions (proportion
-C                of 1) of each casual gain
-
 C pf           - power factor of electrical load.
 C ipf          - nature of load lagging (reactive), leading (capacative),
 C                or unity (pure resistive).
@@ -131,20 +82,6 @@ C espriou.h provides currentfile.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
-      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
-     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
-     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
-     &             IVH(MCOM),TAH(MCOM)
-
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF
-      REAL CMGS,CMGL,RADC,CONC
 
 C Key word for each casual gain type (if ip3ver is 3). As follows:
 C `-` no user defined meaning, `people` basic occupant, 
@@ -766,14 +703,17 @@ C Descriptive label for a zone load or casual gain types.
       COMMON/P1C/oprdescc,ctlstrc
 
 C Scratch copy of air flow pattern from an operations file.
-      COMMON/P2N/NACC(MDTY),IACSC(MDTY,MA),IACFC(MDTY,MA),ACIC(MDTY,MA),
-     &ACVC(MDTY,MA),IPTC(MDTY,MA),TAC(MDTY,MA)
+      COMMON/P2NC/NACC(MDTY),IACSC(MDTY,MA),IACFC(MDTY,MA),
+     &            ACIC(MDTY,MA),ACVC(MDTY,MA),IPTC(MDTY,MA),
+     &            TAC(MDTY,MA)
       INTEGER NACC,IACSC,IACFC,IPTC
       REAL ACIC,ACVC,TAC
 
+C Scratch version of P2CTL
       COMMON/P2CTLC/ITCTLC,TLOC,TUPC,THIC,ACILC,ACVLC,IVLC,TALC,
      &   ACIUC,ACVUC,IVUC,TAUC,ACIHC,ACVHC,IVHC,TAHC
 
+C Scratch version of P3N
       COMMON/P3NC/NCASC(MDTY),ICGSC(MDTY,MC),ICGFC(MDTY,MC),
      &CMGSC(MDTY,MC),CMGLC(MDTY,MC),RADCC(MDTY,MC),CONCC(MDTY,MC)
 
@@ -1315,19 +1255,6 @@ C Parameters
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
       COMMON/OUTIN/IUOUT,IUIN
 
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
-      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
-     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
-     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
-     &             IVH(MCOM),TAH(MCOM)
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF
-      REAL CMGS,CMGL,RADC,CONC
-
 C Electrical data flag and elctrical data.
       common/elecflg/ielf(mcom)
       COMMON/ELP3N/NEL(MDTY),PF(MDTY,MC),IPF(MDTY,MC),PWR(MDTY,MC),
@@ -1514,15 +1441,6 @@ C << need to update reporting for different day types and ctl periods >>
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
-      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
-     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
-     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
-     &             IVH(MCOM),TAH(MCOM)
-
       CHARACTER outs*124
 
 C Write documentation on air schedules. 
@@ -1699,11 +1617,6 @@ C from zone operation common block data.
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
 
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF
-      REAL CMGS,CMGL,RADC,CONC
-
 C Electrical data flag and elctrical data.
       common/elecflg/ielf(mcom)
       COMMON/ELP3N/NEL(MDTY),PF(MDTY,MC),IPF(MDTY,MC),PWR(MDTY,MC),
@@ -1794,11 +1707,6 @@ C Parameters
       COMMON/OUTIN/IUOUT,IUIN
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
-
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF
-      REAL CMGS,CMGL,RADC,CONC
 
 C loadcount(zone,gaintype,daytype) - nb of each gain type (whether
 C   absolute or W/m2).
@@ -1948,10 +1856,7 @@ C Parameters
       integer ix       ! is the destination
       integer jx       ! is the source
 
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,IDTY
-      REAL CMGS,CMGL,RADC,CONC
+      INTEGER IDTY
 
 C Electrical data flag and elctrical data.
       common/elecflg/ielf(mcom)
@@ -1995,11 +1900,6 @@ C Parameters
       real cmgsX,cmglX,radcX,concX ! temporary variables
       integer ipfX,iphasX          ! temporary variables
       real pfX,pwrX,bvoltX         ! temporary variables
-
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF
-      REAL CMGS,CMGL,RADC,CONC
 
 C Electrical data flag and elctrical data.
       common/elecflg/ielf(mcom)
@@ -2049,11 +1949,6 @@ C Parameters
       integer ipfX,iphasX          ! temporary variables
       real pfX,pwrX,bvoltX         ! temporary variables
 
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF
-      REAL CMGS,CMGL,RADC,CONC
-
 C Electrical data flag and elctrical data.
       common/elecflg/ielf(mcom)
       COMMON/ELP3N/NEL(MDTY),PF(MDTY,MC),IPF(MDTY,MC),PWR(MDTY,MC),
@@ -2098,11 +1993,6 @@ C Passed the zone index.
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,idty,idt
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
-
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF
-      REAL CMGS,CMGL,RADC,CONC
 
 C Commons for electrical data
       COMMON/ELECFLG/IELF(MCOM)
@@ -2595,13 +2485,7 @@ C UPDOPR     Updates all operations data when day types are incremented
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       common/pophelp/h(60)
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF
-      REAL CMGS,CMGL,RADC,CONC
+
       COMMON/ELP3N/NEL(MDTY),PF(MDTY,MC),IPF(MDTY,MC),PWR(MDTY,MC),
      &BVOLT(MDTY,MC),IPHAS(MDTY,MC)
       INTEGER NEL,IPF,IPHAS
