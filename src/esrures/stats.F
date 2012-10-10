@@ -2059,9 +2059,6 @@ C << file does not need to be scanned to get the surface emissivity.
       common/getmenu/menutype,igetind(65),igetflux(65)
       common/recver/izver,ipver,iever
 
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
-
       character SLABEL*32,GLABEL*20,TABLABEL*36
       COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
       integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
@@ -2161,6 +2158,7 @@ C Read geometry and construction files and setup labels.
         CALL ECONST(LTHRM(IZONE),IUNIT,izone,0,IUOUT,IER)
 
 C Update labels to match the current zone.
+C << revise for additional casual gains >>
         write(LABELS(1),'(1x,a,4x)')lodlabel(izone,1)
         write(LABELS(2),'(1x,a,4x)')lodlabel(izone,1)
         write(LABELS(3),'(1x,a,4x)')lodlabel(izone,2)

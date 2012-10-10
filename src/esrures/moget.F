@@ -416,14 +416,13 @@ C above.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
 #include "net_flow.h"
 #include "tdf2.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
       common/recov01/pifltog,lpifl
       COMMON/DNORGH/IRTYPE
 

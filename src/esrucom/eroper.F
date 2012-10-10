@@ -53,8 +53,6 @@ C datafile.
 
 C Common block variables are:
 
-C oprdesc      - operation notes (248 char)
-
 C ITCTL        - Thermostatic control index :
 C                    control on zone coupled air temperature
 C                    control on zone air temperature
@@ -95,14 +93,6 @@ C                incoming air for each period above respectively.
 
 C NCAS         - number of casual gains during each daytype
 
-C ICGT         - Casual gain type (traditional uses of index):
-C                 1. Occupancy
-C                 2. Lights
-C                 3. Equipment
-C                -1. Occupancy as floor area per person
-C                -2. Lights in w/m^2 per floor area
-C                -3. Equipment in w/m^2 per floor area
-
 C ICGS,ICGF    - start and finish hours of each of the above casual gain
 C                periods
 
@@ -142,9 +132,6 @@ C espriou.h provides currentfile.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
-      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
-
       COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
      &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
       INTEGER NAC,IACS,IACF,IPT
@@ -156,8 +143,7 @@ C espriou.h provides currentfile.
 
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT
+      INTEGER NCAS,ICGS,ICGF
       REAL CMGS,CMGL,RADC,CONC
 
 C Key word for each casual gain type (if ip3ver is 3). As follows:
@@ -190,10 +176,6 @@ C Electrical data flag and elctrical data.
      &BVOLT(MDTY,MC),IPHAS(MDTY,MC)
       INTEGER NEL,IPF,IPHAS
       REAL PF,PWR,BVOLT
-
-C Descriptive label for a zone casual gain type.
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
 
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
@@ -652,7 +634,7 @@ C Error messages.
         lodlabel(icomp,1)='Occupt'
         lodlabel(icomp,2)='Lights'
         lodlabel(icomp,3)='Equipt' 
-        lodlabel(icomp,4)='NA    ' 
+        lodlabel(icomp,4)='Other ' 
         lodlabel(icomp,5)='AnnEl ' 
         lodlabel(icomp,6)='NA    ' 
         lodlabel(icomp,7)='NA    ' 
@@ -738,15 +720,6 @@ C                  Saturdays, Sundays and other day types if defined
 C NCASC          - number of casual gains during a typical Weekday,
 C                 Saturday and Sunday and other day types if defined
 
-C ICGTC          - Casual gain type:
-C                 1. Occupancy
-C                 2. Lights
-C                 3. Equipment
-C                 4. User controllable gain (not fully utilised as yet)
-C                -1. Occupancy as floor area per person
-C                -2. Lights in w/m^2 per floor area
-C                -3. Equipment in w/m^2 per floor area
-
 C ICGSC,ICGFC,   - start and finish hours of each of the above casual gain
 C                  periods
 
@@ -785,6 +758,11 @@ C Scratch version of operations file (as pattern in schedule.h).
       integer ip3verc
       common/p3verc/ip3verc
 
+C Descriptive label for a zone load or casual gain types.
+      character lodlabelc*6
+      common/loadlabelc/lodlabelc(MGTY)
+
+      CHARACTER oprdescc*248,ctlstrc*24
       COMMON/P1C/oprdescc,ctlstrc
 
 C Scratch copy of air flow pattern from an operations file.
@@ -798,6 +776,8 @@ C Scratch copy of air flow pattern from an operations file.
 
       COMMON/P3NC/NCASC(MDTY),ICGSC(MDTY,MC),ICGFC(MDTY,MC),
      &CMGSC(MDTY,MC),CMGLC(MDTY,MC),RADCC(MDTY,MC),CONCC(MDTY,MC)
+
+C Scratch version of P3TYPEN.
       COMMON/P3TYPENC/ICGTC(MDTY,MC)
       INTEGER NCASC,ICGSC,ICGFC,ICGTC
       REAL CMGSC,CMGLC,RADCC,CONCC
@@ -809,14 +789,10 @@ C Electrical data flag and elctrical data.
       INTEGER NELC,IPFC,IPHASC
       REAL PFC,PWRC,BVOLTC
 
-C Descriptive label for a zone load or casual gain types.
-      character lodlabelc*6
-      common/loadlabelc/lodlabelc(MGTY)
-
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
-      CHARACTER oprdescc*248,ctlstrc*24,outstr*124,outs*124
+      CHARACTER outstr*124,outs*124
       CHARACTER*(*) FILE
       character dllsubr*12,dllmesg*124,WORD*20,loutstr*248,outs2*124
       character dstmp*24,H*72
@@ -1058,7 +1034,7 @@ C Fill defaults prior to scanning the labels.
         lodlabelc(1)='Occupt'
         lodlabelc(2)='Lights'
         lodlabelc(3)='Equipt' 
-        lodlabelc(4)='NA    ' 
+        lodlabelc(4)='Other ' 
         lodlabelc(5)='AnnEl ' 
         lodlabelc(6)='NA    ' 
         lodlabelc(7)='NA    ' 
@@ -1092,7 +1068,7 @@ C Error messages.
         lodlabelc(1)='Occupt'
         lodlabelc(2)='Lights'
         lodlabelc(3)='Equipt' 
-        lodlabelc(4)='NA    ' 
+        lodlabelc(4)='Other ' 
         lodlabelc(5)='AnnEl ' 
         lodlabelc(6)='NA    ' 
         lodlabelc(7)='NA    ' 
@@ -1338,8 +1314,6 @@ C Parameters
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
       COMMON/OUTIN/IUOUT,IUIN
-      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
-      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
 
       COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
      &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
@@ -1351,8 +1325,7 @@ C Parameters
      &             IVH(MCOM),TAH(MCOM)
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT
+      INTEGER NCAS,ICGS,ICGF
       REAL CMGS,CMGL,RADC,CONC
 
 C Electrical data flag and elctrical data.
@@ -1361,10 +1334,6 @@ C Electrical data flag and elctrical data.
      &BVOLT(MDTY,MC),IPHAS(MDTY,MC)
       INTEGER NEL,IPF,IPHAS
       REAL PF,PWR,BVOLT
-
-C Descriptive label for a zone load or casual gain.
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
       COMMON/Vld20/Vldtng
 
       character dstmp*24
@@ -1545,9 +1514,6 @@ C << need to update reporting for different day types and ctl periods >>
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
-      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
-      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
-
       COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
      &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
       INTEGER NAC,IACS,IACF,IPT
@@ -1726,19 +1692,16 @@ C from zone operation common block data.
       SUBROUTINE CASINF(ICOMP,ITRU)
 
 #include "building.h"
+#include "schedule.h"
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
 
-      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
-      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
-
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT
+      INTEGER NCAS,ICGS,ICGF
       REAL CMGS,CMGL,RADC,CONC
 
 C Electrical data flag and elctrical data.
@@ -1747,10 +1710,6 @@ C Electrical data flag and elctrical data.
      &BVOLT(MDTY,MC),IPHAS(MDTY,MC)
       INTEGER NEL,IPF,IPHAS
       REAL PF,PWR,BVOLT
-
-C Descriptive label for a zone load or casual gain types.
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
 
       CHARACTER outs*124
       CHARACTER llbl*9
@@ -1827,6 +1786,7 @@ C checkcascount scans current P3 & P3TYPE commons and refreshes
 C loadcount() & load24() in common blocks loadcnt & loadall
       subroutine checkcascount(icomp)
 #include "building.h"
+#include "schedule.h"
 
 C Parameters
       integer icomp  ! index of the zone to scan
@@ -1837,8 +1797,7 @@ C Parameters
 
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT
+      INTEGER NCAS,ICGS,ICGF
       REAL CMGS,CMGL,RADC,CONC
 
 C loadcount(zone,gaintype,daytype) - nb of each gain type (whether
@@ -1981,6 +1940,7 @@ C daytype idaytype.
 
       SUBROUTINE CPYCASIJ(icomp,idaytype,ix,jx)
 #include "building.h"
+#include "schedule.h"
 
 C Parameters
       integer icomp    ! current zone
@@ -1990,8 +1950,7 @@ C Parameters
 
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT,IDTY
+      INTEGER NCAS,ICGS,ICGF,IDTY
       REAL CMGS,CMGL,RADC,CONC
 
 C Electrical data flag and elctrical data.
@@ -2026,6 +1985,7 @@ C and daytype idaytype.
       SUBROUTINE CPYCASIT(icomp,idaytype,jx,icgtX,icgsX,icgfX,cmgsX,
      &  cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
 #include "building.h"
+#include "schedule.h"
 
 C Parameters
       integer icomp    ! current zone
@@ -2038,8 +1998,7 @@ C Parameters
 
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT
+      INTEGER NCAS,ICGS,ICGF
       REAL CMGS,CMGL,RADC,CONC
 
 C Electrical data flag and elctrical data.
@@ -2079,6 +2038,7 @@ C and daytype idaytype.
       SUBROUTINE CPYCASTI(icomp,idaytype,jx,icgtX,icgsX,icgfX,cmgsX,
      &  cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
 #include "building.h"
+#include "schedule.h"
 
 C Parameters
       integer icomp    ! current zone
@@ -2091,8 +2051,7 @@ C Parameters
 
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT
+      INTEGER NCAS,ICGS,ICGF
       REAL CMGS,CMGL,RADC,CONC
 
 C Electrical data flag and elctrical data.
@@ -2132,7 +2091,7 @@ C Passed the zone index.
       SUBROUTINE PROCESSOLDCAS(ICOMP,ITRC,ITRU)
 #include "building.h"
 #include "geometry.h"
-C #include "schedule.h"
+#include "schedule.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
@@ -2142,8 +2101,7 @@ C #include "schedule.h"
 
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT
+      INTEGER NCAS,ICGS,ICGF
       REAL CMGS,CMGL,RADC,CONC
 
 C Commons for electrical data
@@ -2642,8 +2600,7 @@ C UPDOPR     Updates all operations data when day types are incremented
       INTEGER NAC,IACS,IACF,IPT
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT
+      INTEGER NCAS,ICGS,ICGF
       REAL CMGS,CMGL,RADC,CONC
       COMMON/ELP3N/NEL(MDTY),PF(MDTY,MC),IPF(MDTY,MC),PWR(MDTY,MC),
      &BVOLT(MDTY,MC),IPHAS(MDTY,MC)

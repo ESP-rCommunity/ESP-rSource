@@ -49,6 +49,7 @@ C QLAT   - latent load for present (1) and future (2) time step.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
 #include "net_flow.h"
 #include "tdf2.h"
 #include "sbem.h"
@@ -148,10 +149,6 @@ C ICGCTL - pointer to controlled gain type.
 
 C Variables used in trace.
       common/CASGNTRC/QP(MCOM,2,MC,MPHAS),RP(MCOM,2,MC,MPHAS)
-
-C Descriptive label for a zone load or casual gain types.
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
 
 C Adaptive comfort commons
       COMMON/ADPCOM/PREVSTATWIN,PREVSTATFAN,PREVSTATLIGHT,TOTPWR(MCOM)
@@ -2411,6 +2408,7 @@ C if ACTIVE=0. then no matching casual gain/occupants.
 
       SUBROUTINE HUNTA(IZONE,IH,ACTIVE)
 #include "building.h"
+#include "schedule.h"
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
@@ -2418,8 +2416,7 @@ C if ACTIVE=0. then no matching casual gain/occupants.
 
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT
+      INTEGER NCAS,ICGS,ICGF
       REAL CMGS,CMGL,RADC,CONC
       COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
      & CGX(MCOM,MLCOM,MDF),CGY(MCOM,MLCOM,MDF),CGH(MCOM,MLCOM,MDF),

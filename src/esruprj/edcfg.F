@@ -1260,8 +1260,6 @@ C output, IER=0 indicates no error.
       common/MOIST02/LMOIST(MCOM)
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
-      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
-      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
       COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
      &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
      &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
@@ -1269,9 +1267,6 @@ C output, IER=0 indicates no error.
 
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
-C Descriptive label for a zone load or casual gain types.
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
@@ -2190,6 +2185,7 @@ C Also update lodlabel commons before writing out.
               IVU(ncomp)=IVU(ic); TAU(ncomp)=TAU(ic)
               ACIH(ncomp)=ACIH(ic); ACVH(ncomp)=ACVH(ic)
               IVH(ncomp)=IVH(ic); TAH(ncomp)=TAH(ic)
+C << revise for more casual gains >>
               lodlabel(ncomp,1)=lodlabel(ic,1)  ! revise to be in a loop
               lodlabel(ncomp,2)=lodlabel(ic,2)
               lodlabel(ncomp,3)=lodlabel(ic,3)

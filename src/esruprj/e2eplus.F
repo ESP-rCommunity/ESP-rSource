@@ -61,13 +61,6 @@ C ICLIM,LCLIM (for climate file)
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       common/cctlnm/ctldoc,lctlf
 
-      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
-      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
-
-C Descriptive label for a zone load or casual gain types.
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
-
 C Peaks (loadcasp(z,ty,1) sens)(loadcasp(z,ty,2) latent) for each
 C possible gain type in each zone.
 C Radiant fraction loadradfrac(z,ty) for each possible gain type
@@ -87,8 +80,7 @@ C compact schedule is correctly written out.
 
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT
+      INTEGER NCAS,ICGS,ICGF
       REAL CMGS,CMGL,RADC,CONC
 
 C Simulation parameter presets.
@@ -1232,6 +1224,7 @@ C Write the AllOtherDays line as well.
      &    '24:00',com,'0.0',sim
 
 C Write the light objects for this zone.
+C << revise for additional gain types >>
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         WRITE(ioout,'(2a)',iostat=ios,err=7) '  Lights',com
         WRITE(ioout,'(5a)',iostat=ios,err=7) indent,

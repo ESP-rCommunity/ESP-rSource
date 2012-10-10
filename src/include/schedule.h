@@ -60,4 +60,20 @@ C =3 with key words for casual gain types.
       integer ip3ver
       common/p3ver/ip3ver(MCOM)
 
+      character oprdesc*248  ! notes for casual gain
+      character ventdesc*248 ! notes for air schedules
+      character ctlstr*24    ! summary of air control scheme
+      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
+
+      character lodlabel*6  ! use label for each zone casual gain
+      common/loadlabel/lodlabel(mcom,MGTY)
+
+C Users can track a number of different casual gains up to MGTY and ICGT 
+C is this index for each period in each calendar day type. Older files 
+C implied a purpose to this index
+C 1=occupancy W, 2=lighting W, 3=small power W, 4=other W, 5=external electrical
+C -1=floor area/person -2 Light W/m2 -3=small power W/m2
+      integer ICGT  ! position within array of casual gains (overloaded see above)
+      COMMON/P3TYPEN/ICGT(MDTY,MC)
+
 C end of schedule.h

@@ -153,11 +153,10 @@ C MOSCS1 provides I/O for heating/cooling breakdown for surfaces.
       SUBROUTINE MOSCS1(IZONE,ISFN,IANZSE,IE,IZC)
 
 #include "building.h"
+#include "schedule.h"
       COMMON/OUTPCH/ICOUT
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
 
       DIMENSION IUSERD(MCOM,2)
 
@@ -270,11 +269,10 @@ C CALLS: MOSSUM MOFADJ    CALLED BY: MOSCAS
 
 #include "building.h"
 #include "geometry.h"
+#include "schedule.h"
       COMMON/OUTPCH/ICOUT
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
 
       DIMENSION IUSERD(MCOM,2)
 

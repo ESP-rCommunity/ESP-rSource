@@ -33,6 +33,7 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
 #include "control.h"
       
       integer lnblnk  ! function definition
@@ -47,8 +48,6 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       common/recver/izver,ipver,iever
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit

@@ -142,9 +142,6 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       logical found,XST,apply,MODIFY,MODLEN,MODBND,duplicate
       logical bndrysxc,context,bound
 
-      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
-      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
-
 C External text editor.
       common/texted/tedlbl,teditor
 

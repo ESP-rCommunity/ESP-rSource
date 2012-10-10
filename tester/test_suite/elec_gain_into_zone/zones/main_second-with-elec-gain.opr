@@ -22,4 +22,4 @@ nil_operations
 # Sun: type, start, stop, sens, latent, rad_frac, conv_frac
     5,   0,  24,      0.8,      0.0, 0.000, 1.000
 # Labels for gain types 
- Occupt Lights Equipt
+ Occupt Lights Equipt Other E-gain

@@ -463,12 +463,6 @@ C Where ESP-r was installed (as recorded when it was compiled).
       INTEGER NCAS,ICGS,ICGF
       REAL CMGS,CMGL,RADC,CONC
 
-      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
-      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
-
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
-
       COMMON/Vld20/Vldtng
       logical Vldtng
       common/SLNTFULL/ifullysilent
@@ -1123,7 +1117,7 @@ C Clear commons.
         lodlabel(icomp,1)='Occupt'
         lodlabel(icomp,2)='Lights'
         lodlabel(icomp,3)='Equipt'
-        lodlabel(icomp,4)='N/A   '
+        lodlabel(icomp,4)='Other '
         lodlabel(icomp,5)='Ann.El'
         lodlabel(icomp,6)='N/A   '
         lodlabel(icomp,7)='N/A   '

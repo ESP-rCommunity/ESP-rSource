@@ -395,6 +395,7 @@ C CGCTL - gain control fraction (zone, present/future, gain type)
 
 C geometry.h provides commons G0/G1/G2/G4/prec2/prec17/precz.
 #include "geometry.h"
+#include "schedule.h"
 #include "power.h"
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
@@ -406,8 +407,7 @@ C geometry.h provides commons G0/G1/G2/G4/prec2/prec17/precz.
 
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT
+      INTEGER NCAS,ICGS,ICGF
       REAL CMGS,CMGL,RADC,CONC
 
 C Commons for electrical data
@@ -502,8 +502,6 @@ C NOTE: support for additional casual gains types added:
 C - if ICGTYP = 5, casual gain is coupled to electric load
 C   and electric_net_utilities is called to characterize
 C   the casual gain.
-C - if ICGTYP = 4, casual gain corresponds to ESRU-designated
-C   but yet-unimplemented controlable casual gain. Stop simulation 
 C Alex, Feb 20, 2004.
       do 300 iday=1,nbdaytype
       if (NCAS(iday).gt.0) then

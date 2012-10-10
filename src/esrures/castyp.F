@@ -1171,6 +1171,7 @@ C will be corrected in the revised results library.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
@@ -1186,8 +1187,7 @@ C will be corrected in the revised results library.
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
      &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT
+      INTEGER NCAS,ICGS,ICGF
       REAL CMGS,CMGL,RADC,CONC
 
       real QCASR,QCASC,QCASL  ! total radiant/convective/latent
@@ -1280,6 +1280,7 @@ C calendar array to set the day type.
 
 C Check if there are any casual gains at this hour.
 C for occupancy, lighting and equipment.
+C << adjust for additional casual gains >>
       IF(NCAS(IDTY).GE.1)THEN
         DO 30 ICNN=1,NCAS(IDTY)
           XC=CMGS(IDTY,ICNN)*CONC(IDTY,ICNN)
