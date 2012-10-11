@@ -824,7 +824,8 @@ C Set record length of library file.
         endif
       ELSE
 
-C Try again ?
+C Try again? Note: because of space limits only echo the start of
+C the plant file name.
         dok=.false.
         helptopic='plant_res_file_not'
         call gethelptext(helpinsub,helptopic,nbhelp)
