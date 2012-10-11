@@ -187,6 +187,7 @@ C Returned parameters from silentread.
       integer MITEM,INO ! max items and current menu item
       dimension ivals(MCOM)
       logical silent  ! for dependency checking on transform or rotate
+      logical QUIET   ! to force silent rebuild of zone constructions
 
       character cVnum*16      ! returned from ESPrVersionNum
       character pagestitle*42 ! for banner title via epages call
@@ -625,8 +626,14 @@ C Clear allocatable arrays
             endif
           endif
         endif
+
       elseif(inact(1:9).eq.'transform'.or.inact(1:6).eq.'rotate'.or.
-     &       inact(1:2).eq.'QA')then
+     &       inact(1:2).eq.'QA'.or.
+     &       inact(1:15).eq.'update_zone_con')then
+
+C Act on a command line request to transform the model or generate
+C a model contents report or rebuilt the zone construction files
+C (assumes that zone file names are known).
         XST=.false.
         if(LCMDFL(1:2).ne.'  '.and.LCMDFL(1:4).ne.'UNKN')then
           INQUIRE (FILE=LCMDFL,EXIST=XST)
@@ -687,6 +694,13 @@ C Perform either the transform or rotation or generate QA report.
               call globalrotate(d1,d2,d3,inpic,ivals,silent,itru,ier)
             elseif(inact(1:2).eq.'QA')then
               call prjqa(inpic,ivals,silent,ier)
+            elseif(inact(1:15).eq.'update_zone_con')then
+              QUIET=.TRUE.
+              DO 2491, IZ=1,NCOMP
+               CALL EDCON(ITRC,itru,IZ,QUIET,IER)
+ 2491         CONTINUE
+              QUIET=.FALSE.
+
 	    endif
             if(silent)then 
               call usrmsg(
