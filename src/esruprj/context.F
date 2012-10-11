@@ -1123,6 +1123,8 @@ C TDF related.
 
       common/sctl/tcps,ictyp,iclaw,cm(misc)
       common/cctl/icascf(mcom)
+      integer iairn,icaas
+      character LAPROB*72
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/MFLOW1/NNOD,NCMP,NCNN
       COMMON/MFLOW2/NDNAM(0:MNOD)
@@ -1140,6 +1142,7 @@ C TDF related.
       character*34 ITEMS(7)
       integer ier
       integer nitms,irt ! max items and current menu item
+      DIMENSION INPK(MNOD)
 
 C Action to pass to tdfedit. Prior 'update' option moved into
 C esrub2e rather than invoking tdf.
@@ -2057,7 +2060,7 @@ C Ask for node name if flow network is present
               PROMPT1='Which node to link to this pressure'
               PROMPT2='  '
               call ASKMFNOD(INOPT,NNPK,INPK,PROMPT1,PROMPT2,nbhelp)
-              write(DBZN(ITE),'(a)')ndnam(inpk)(1:12)
+              write(DBZN(ITE),'(a)')ndnam(inpk(1))(1:12)
               write(DBSN(ITE),'(a)')'No surf reqd'
             endif
           else
