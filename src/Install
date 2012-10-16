@@ -2314,6 +2314,7 @@ echo " Installing standard databases. This may take some time."
   ./bin/materials_db_conv databases constr.db3.a ${DESTdir}/esp-r/databases/constr.db3 >/dev/null
   ./bin/materials_db_conv databases north_american.materialdb.a ${DESTdir}/esp-r/databases/north_american.materialdb >/dev/null
   cp ${SRCdir}/databases/ccht_constr.db1 ${DESTdir}/esp-r/databases/ccht_constr.db1
+  cp ${SRCdir}/databases/ccht_material.ascii ${DESTdir}/esp-r/databases/ccht_material.ascii
   cp ${SRCdir}/databases/constr.db1.a ${DESTdir}/esp-r/databases/constr.db1.a
   cp ${SRCdir}/databases/constr_db1.materialdb ${DESTdir}/esp-r/databases/constr_db1.materialdb
   cp ${SRCdir}/databases/constr.db2.a ${DESTdir}/esp-r/databases/constr.db2.a
@@ -2361,7 +2362,7 @@ echo " Installing standard databases. This may take some time."
 
    cd ${SRCdir}/databases
    echo -n "   - Copying ASCII databases..."
-   cp multicon.db1 multicon.db2 multicon.db3 multicon.db4 north_american.constrdb optics.db1 optics.db2 optics.db3 mould.db1 pressc.db1 mscomp.db1 *.desc ${DESTdir}/esp-r/databases
+   cp ccht_mlc.db multicon.db1 multicon.db2 multicon.db3 multicon.db4 north_american.constrdb optics.db1 optics.db2 optics.db3 ccht-optics.db1 mould.db1 pressc.db1 mscomp.db1 *.desc ${DESTdir}/esp-r/databases
    echo " Done."
 
 fi

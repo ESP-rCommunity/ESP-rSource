@@ -9,19 +9,14 @@
 #  emissivity out (-) emissivity in (-)#   absorptivity out (-) absorptivity in (-)
 #  diffusion rest (?) default thickness (mm)
 #  flag [-] legacy [o] opaque [t] transparent
-#       [g] gas data+T cor [h] gas data at 4T
+#       [g] gas layer [h] gas layer (should be changed to g type)
 #  
 # Transparent material attributes:
 #  longwave tran (-) solar direct tran (-) solar reflec out (-) solar refled in (-)
 #  visable tran (-) visable reflec out (-) visable reflec in (-) colour rendering (-)
 #  
 # Gas material attributes:
-#  (first 9 items the same) [g] or [h]
-#  air gap resistance for vert horiz other
-#  [g] 2 conduction, 2 viscosity, 2 density
-#      2 prandtl, 2 specific heat
-#  [h] 4 conduction, 4 viscosity, 4 density
-#      prandtl, specific heat
+#  (first 9 items the same) [g] air gap resistance for 3 surface orientations
 #  
 # class index |nb items|description (32 char)
 *class, 1,11,Brick
@@ -257,9 +252,9 @@ Category ( 8) Tiles includes both floor tiles, ceiling tiles and roof tile. Base
 0.300,1600.000,2000.000,0.940,0.940,0.820,0.820,1000.000,6.0,-
 *item,cork tile,146, 8,Cork tile
 0.080,530.000,1800.000,0.900,0.900,0.600,0.600,58.000,6.0,-
-*item,Asphalt/asbestos,147, 8,Asphalt/asbestos based tile
+*item,asphalt,147, 8,Asphalt/asbestos based tile
 0.550,1900.000,837.000,0.900,0.900,0.700,0.700,150.000,6.0,-
-*item,P.V.C./asbestos,148, 8,P.V.C./asbestos
+*item,plastic tile,148, 8,P.V.C./asbestos
 0.850,2000.000,837.000,0.900,0.900,0.600,0.600,1000.000,6.0,-
 *item,tile bedding,149, 8,Tile bedding/grout
 1.400,2100.000,650.000,0.900,0.900,0.600,0.600,25.000,6.0,-
@@ -362,7 +357,7 @@ Category (11) Insulation materials (1) is an initial tranche of loose, batt and 
 0.040,105.000,1800.000,0.900,0.900,0.600,0.600,15.000,100.0,-
 *item,straw thatch,218,11,Straw thatch
 0.070,240.000,180.000,0.900,0.900,0.500,0.500,3.000,100.0,-
-*item,Thermalite turbo block,219,11,Thermalite turbo block heidelbergcement.com
+*item,Thermalite,219,11,Thermalite turbo block heidelbergcement.com
 0.110,470.000,1050.000,0.900,0.900,0.650,0.650,10.000,100.0,-
 *item,XPS CO2 foamed,220,11,XPS extruded polystyrene foamed with Co2 from IBO PassivHaus
 0.040,38.000,1450.000,0.900,0.900,0.300,0.300,350.000,100.0,-
@@ -468,7 +463,7 @@ Category (15) Insulation materials (2) is a second tranche of loose, batt and fo
 0.050,12.000,1000.000,0.900,0.900,0.700,0.700,30.000,50.0,-
 *item,Mineral wool batt 100mm,294,15,Insulation (Mineral wool batt default 100mm)
 0.040,25.000,1000.000,0.900,0.900,0.700,0.700,30.000,100.0,-
-*item,Min wool quilt 60mm,295,15,Insulation (Min wool quilt default 60 mm)
+*item,Min wool quilt 60 mm,295,15,Insulation (Min wool quilt default 60 mm)
 0.040,12.000,1030.000,0.900,0.900,0.700,0.700,30.000,60.0,-
 *item,PUR,296,15,notional floor UK material
 0.026,12.000,1030.000,0.900,0.900,0.700,0.700,30.000,60.0,-
@@ -497,7 +492,7 @@ Category (16) Board is similar to plaster and wood. Based on data traditionally 
 0.044,11.000,1500.000,0.900,0.900,0.650,0.650,20.000,5.0,-
 # class index |nb items|description (32 char)
 *class,17, 3,Sheathing
-Category (17) Sheathing is similar to the wood category. It also includes a test air gap layer. Based on data traditionally distributed with ESP-r.
+Category (17) Sheathing is similar to the wood category. Based on data traditionally distributed with ESP-r.
 *item,sheating std,321,17,regular density sheathing
 0.055,290.000,1300.000,0.900,0.900,0.900,0.900,10.000,100.0,-
 *item,air 12mm,322,17,place holder for testing an air material type for isbem
@@ -510,13 +505,13 @@ Category (18) holds the implied air material with a legacy index of zero.
 *item,air gap,  0,18,Air layer with default properties assumed for legacy treatment of air (index zero).
 0.000,0.000,0.000,0.990,0.990,0.990,0.990,1.000,25.0,-
 *item,Void 400mm,-99,18,Void 400mm
-0.000,0.000,0.000,0.990,0.990,0.990,0.990,1.000,25.0,g,0.00000,0.000000,0.00000000,0.00000000,0.0000,0.00000,0.000000,0.000000,0.000,0.000000
+0.000,0.000,0.000,0.990,0.990,0.990,0.990,1.000,25.0,g
 *item,Loft space,-99,18,Loft space (R=0.2)
-0.000,0.000,0.000,0.990,0.990,0.990,0.990,1.000,200.0,h,0.00000,0.00000,0.00000,0.00000,0.00000000,0.00000000,0.00000000,0.00000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000
+0.000,0.000,0.000,0.990,0.990,0.990,0.990,1.000,200.0,g,0.170000,0.170000,0.170000
 *item,Air layer 25 mm wall,-99,18,Battens
-0.140,0.000,0.000,0.990,0.990,0.990,0.990,1.000,22.0,h,0.00000,0.00000,0.00000,0.00000,0.00000000,0.00000000,0.00000000,0.00000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000
+0.140,0.000,0.000,0.990,0.990,0.990,0.990,1.000,22.0,g
 *item,Air layer 50mm wall,-99,18,Air cavity
-0.140,0.000,0.000,0.990,0.990,0.990,0.990,1.000,50.0,h,0.00000,0.00000,0.00000,0.00000,0.00000000,0.00000000,0.00000000,0.00000000,0.000000,0.000000,0.000000,0.000000,0.000000,0.000
+0.140,0.000,0.000,0.990,0.990,0.990,0.990,1.000,50.0,g
 *item,Argon 16 mm,-99,18,Argon 16 mm
-0.020,1.700,519.000,0.990,0.990,0.990,0.990,1.000,16.0,g,0.00000,0.000000,0.00000000,0.00000000,0.0000,0.00000,0.000000,0.000000,0.000,0.000000
+0.020,1.700,519.000,0.990,0.990,0.990,0.990,1.000,16.0,g
 *end
