@@ -1,7 +1,7 @@
 Synopsis
  
 Synopsis of the model Two adjacent cellular offices with PV modules. defined
-in cellular_pv.cfg generated on Fri Aug 24 11:48:21 2012. Notes associated
+in cellular_pv.cfg generated on Wed Oct 17 10:37:41 2012. Notes associated
 with the model are in cellular_offices_pv.log
  
 The model is located at latitude   46.00 with a longitude difference of   0.00
@@ -151,8 +151,8 @@ ID Zone         Volume|          Surface
  area of 72.0m^2 & approx floor area of 13.5m^2
  manager describes cellular office on left
  There is 9.0000m2 of exposed surface area, 9.0000m2 of which is vertical.
- Outside walls are 9.6225 % of floor area & avg U of 0.461 & UA of 0.59862
- Glazing is 57.044 % of floor & 85.566 % facade with avg U of 1.805 & UA of 13.900
+ Outside walls are 9.6225 % of floor area & average U of 0.461 & UA of 0.59862
+ Glazing is 57.044 % of floor & 85.566 % facade with average U of 1.805 & UA of 13.900
  
  A summary of the surfaces in manager_a( 1) follows:
  
@@ -219,8 +219,8 @@ saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
  area of 72.0m^2 & approx floor area of 13.5m^2
  manager_b describes right office
  There is 9.0000m2 of exposed surface area, 9.0000m2 of which is vertical.
- Outside walls are 33.668 % of floor area & avg U of 0.461 & UA of 2.0945
- Glazing is 32.999 % of floor & 49.498 % facade with avg U of 2.811 & UA of 12.521
+ Outside walls are 33.668 % of floor area & average U of 0.461 & UA of 2.0945
+ Glazing is 32.999 % of floor & 49.498 % facade with average U of 2.811 & UA of 12.521
  
  A summary of the surfaces in manager_b( 2) follows:
  
@@ -249,7 +249,8 @@ saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
  
  
  Air schedule notes:
-manager b has the same profile as manager a . . .
+manager_b occupancy has some diversity of occupancy lights at 10W/m2
+and small power on weekdays at 5W/m2
  Control: no control of air flow
  
 Scheduled air infiltration and ventilation:
@@ -260,17 +261,24 @@ saturday   1  0 - 24    0.33  0.0037    0.00  0.0000   0     0.00
 sunday     1  0 - 24    0.33  0.0037    0.00  0.0000   0     0.00
  
 Notes:
-manager b has the same profile as manager a . . .
+manager_b occupancy has some diversity of occupancy lights at 10W/m2
+and small power on weekdays at 5W/m2
  
 Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
           No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
 weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
-weekdays    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
-weekdays    4 OccuptW    9-12    100.0     50.0       0.50       0.50
-weekdays    5 OccuptW   12-14     65.0     32.5       0.50       0.50
-weekdays    6 OccuptW   14-17    100.0     50.0       0.50       0.50
+weekdays    2 OccuptW    7- 8     20.0     10.0       0.60       0.40
+weekdays    3 OccuptW    8- 9     60.0     30.0       0.60       0.40
+weekdays    4 OccuptW    9-12    100.0     50.0       0.60       0.40
+weekdays    5 OccuptW   12-14     65.0     32.5       0.60       0.40
+weekdays    6 OccuptW   14-17    100.0     50.0       0.60       0.40
 weekdays    7 OccuptW   17-24      0.0      0.0       0.50       0.50
+weekdays    8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
+weekdays    9 LightsWm2  8-18     10.0      0.0       0.30       0.70
+weekdays   10 LightsWm2 18-24      0.0      0.0       0.50       0.50
+weekdays   11 EquiptWm2  0- 8      0.0      0.0       0.50       0.50
+weekdays   12 EquiptWm2  8-18      5.0      0.0       0.40       0.60
+weekdays   13 EquiptWm2 18-24      0.0      0.0       0.50       0.50
 saturday    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
 saturday    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
 saturday    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
@@ -278,6 +286,12 @@ saturday    4 OccuptW    9-12    100.0     50.0       0.50       0.50
 saturday    5 OccuptW   12-14     65.0     32.5       0.50       0.50
 saturday    6 OccuptW   14-17    100.0     50.0       0.50       0.50
 saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
+saturday    8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
+saturday    9 LightsWm2  8-12     10.0      0.0       0.30       0.70
+saturday   10 LightsWm2 12-24      0.0      0.0       0.50       0.50
+saturday   11 EquiptWm2  0-24      0.0      0.0       0.50       0.50
+sunday      1 LightsWm2  0-24      0.0      0.0       0.50       0.50
+sunday      2 EquiptWm2  0-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -352,8 +366,8 @@ sunday      6 LightsW   20-24     0.0     0.0      0.5      0.5    0.00  0    0.
  In contact with ground 0.00m2.
  There is 18.000m2 of outside surface area, 18.000m2 of which is vertical.
  
- Outside walls are 16.500 % of floor area & avg U of 0.461 & UA of 2.6931 & max MLC thickness 0.088
- Glazing is 34.319 % of floor & 67.532 % facade with avg U of 2.174 & UA of 26.421
+ Outside walls are 16.500 % of floor area & average U of 0.461 & UA of 2.6931 & max MLC thickness 0.088
+ Glazing is 34.319 % of floor & 67.532 % facade with average U of 2.174 & UA of 26.421
  
  ____________________________________________________________
  Multi-layer constructions used:
@@ -407,7 +421,7 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
     3  0.117 0.124 0.127 0.112 0.077
  Total area of dbl_glz is     26.83
  
- Details of opaque construction: susp_flr_re linked to susp_floor   & with overall thickness  0.219
+ Details of opaque construction: susp_flr_re linked to susp_floor & with overall thickness  0.219
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
@@ -423,7 +437,7 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.48
  Partition admittance Y=  2.46  w=  2.85 surface factor f=  0.81  phi=  0.95
  Total area of susp_flr_re is     33.10
  
- Details of opaque construction: ceiling linked to ceiling_rev  & with overall thickness  0.110
+ Details of opaque construction: ceiling linked to ceiling_rev & with overall thickness  0.110
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W

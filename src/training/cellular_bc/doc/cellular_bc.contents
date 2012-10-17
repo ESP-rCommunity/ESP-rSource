@@ -1,11 +1,11 @@
 Synopsis
  
-Synopsis of the model Two adjacent cellular offices with walls subdivided
-defined in cellular_hires.cfg generated on Wed Oct 17 10:38:12 2012. Notes
-associated with the model are in ../doc/cellular_offices_bc.log
+Synopsis of the model Two adjacent cellular offices with measurements in
+manager_a defined in cellular_measured.cfg generated on Wed Oct 17 10:36:54
+2012. Notes associated with the model are in cellular_offices_bc.log
  
 The model is located at latitude   46.00 with a longitude difference of   0.00
-from the local time meridian. The year used in simulations is 2000 and
+from the local time meridian. The year used in simulations is 1967 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical city centre and the ground reflectance is 0.20.
  
@@ -30,21 +30,20 @@ Calculated ground temp at 4.0m depth
  
 An Integrated Performance View has been defined:
 Title : base case model of two adjacent cellular
-Version   : Version cellular_offices_hires
+Version   : Version cellular_offices_bc
 synopsis:
-:The cellular_hires has higher geometric resolution as well as an insolation
-analysis and explicit viewfactors.
+:The cellular_bc is for comparison purposes for other model variants
 Images    :   0
  
 Simulations to be undertaken:
 ____simulations ( 5)____________days descrip___
-1st win Sun-06-Feb to Sat-12-Feb   7 cellular_offices_bc 1st winter run
+1st win Mon-06-Feb to Sun-12-Feb   7 cellular_offices_bc 1st winter run
 spring  Mon-17-Apr to Sun-23-Apr   7 cellular_offices_bc spring run
 summer  Mon-03-Jul to Sun-09-Jul   7 cellular_offices_bc summer run
 autumn  Mon-02-Oct to Sun-08-Oct   7 cellular_offices_bc autumn run
 2nd win Mon-20-Nov to Sun-26-Nov   7 cellular_offices_bc 2nd winter run
  
-display day Sun-06-Feb.
+display day Mon-06-Feb.
 display day Mon-17-Apr.
 display day Mon-03-Jul.
 display day Mon-02-Oct.
@@ -66,17 +65,28 @@ Seasons (as found in climatelist file):
  
 Metric                zones area scaling weight  type name
  1 Resultant T (degC)    3   35.40 1.000 1.000 comfort ocup_zones
-Zones: manager_a coridor manager_b
+Zones: manager_a manager_b coridor
  2 Zone db T (degC)    3   35.40 1.000 1.000 ZndbT dbt_zones
-Zones: manager_a coridor manager_b
+Zones: manager_a manager_b coridor
  3 Infiltration (W)    3   35.40 1.000 1.000 Infil infil_zones
-Zones: manager_a coridor manager_b
+Zones: manager_a manager_b coridor
  
 Demand set,  nb zones, floor area, scaling factor
  1 offices        2   27.00 1.000
-Zones: manager_a coridor
+Zones: manager_a manager_b
  2 other          1    8.40 1.000
-Zones: manager_b
+Zones: coridor
+ 
+ 
+Temporal data is available for this model.
+ 
+ Temporal entities currently used...
+  ________________________________
+  |temporal    |generic |associated
+  |entity name |type    |with   zone &     surface
+ 1 office_dbt   DBTZNM        manager_a       ALL
+ 2 floor_t      SURTM         manager_a       floor
+ 3 spandrel_t   SURTM         manager_a       spandral
  
  
 Databases associated with the model:
@@ -134,20 +144,20 @@ capacity 0.0W max cooling capacity 2500.0W min cooling capacity 0.0W. Heating se
  
  Zone to contol loop linkages:
  zone ( 1) manager_a    << control  1
- zone ( 2) coridor      << control  1
- zone ( 3) manager_b    << control  1
+ zone ( 2) manager_b    << control  1
+ zone ( 3) coridor      << control  1
  
  ____________________________________________________________
  
 ID Zone         Volume|          Surface
    Name         m^3   | No. Opaque  Transp  ~Floor
- 1 manager_a      40.5  20    62.2     9.8    13.5  manager describes cellular office on left
- 2 coridor        18.3  14    45.8     9.0     8.4  coridor describes passage adjacent to offices
- 3 manager_b      40.5  20    62.2     9.8    13.5  manager_b describes right higher resolution office
-   all            99.   54    170.     29.     35.
+ 1 manager_a      40.5  13    62.2     9.8    13.5  manager describes cellular office on left
+ 2 manager_b      40.5  13    62.2     9.8    13.5  manager_b describes right office
+ 3 coridor        18.3  14    45.8     9.0     8.4  coridor describes passage adjacent to offices
+   all            99.   40    170.     29.     35.
  
  
- Zone manager_a ( 1) is composed of 20 surfaces and 36 vertices.
+ Zone manager_a ( 1) is composed of 13 surfaces and 30 vertices.
  It encloses a volume of 40.5m^3 of space, with a total surface
  area of 72.0m^2 & approx floor area of 13.5m^2
  manager describes cellular office on left
@@ -159,35 +169,26 @@ ID Zone         Volume|          Surface
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
-  1  3.00     90.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_general:manager_b
+  1  13.5     90.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_general:manager_b
   2  0.920   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frame:coridor
   3  2.32      0.   0. door         OPAQUE   VERT -     door         ||< door:coridor
   4  6.00    270.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
-  5  3.00      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< identical environment
-  6  3.00      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
+  5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< identical environment
+  6  13.5      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
   7  2.70    180.   0. spandral     OPAQUE   VERT -     insul_frame  ||< external
   8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
   9  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
  10  4.48      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glaz:coridor
  11  1.28    360.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_corid:coridor
  12  0.450   270.   0. pt_other_a   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
- 13  4.05    270.   0. pt_other_b   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
- 14  4.05     90.   0. pt_gen_a     OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_gen_a:manager_b
- 15  6.45     90.   0. pt_gen_b     OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_gen_b:manager_b
- 16  3.00    270.   0. pt_other_c   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
- 17  4.05      0. -90. floor_b      OPAQUE   FLOR -     susp_flr_re  ||< identical environment
- 18  6.45      0. -90. floor_c      OPAQUE   FLOR -     susp_flr_re  ||< identical environment
- 19  4.05      0.  90. ceiling_b    OPAQUE   CEIL -     ceiling      ||< identical environment
- 20  6.45      0.  90. ceiling_c    OPAQUE   CEIL -     ceiling      ||< identical environment
+ 13  7.05    270.   0. pt_other_b   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
  
  
- An hourly solar radiation distribution is used for this zone.
- Insolation sources (all applicable):
-glazing
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
  
  
- Explicit viewfactors have been derived for this zone.
- Shading patterns have not yet been calculated.
  
  
  Air schedule notes:
@@ -237,12 +238,93 @@ sunday      2 EquiptWm2  0-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
- Zone coridor ( 2) is composed of 14 surfaces and 32 vertices.
+ Zone manager_b ( 2) is composed of 13 surfaces and 30 vertices.
+ It encloses a volume of 40.5m^3 of space, with a total surface
+ area of 72.0m^2 & approx floor area of 13.5m^2
+ manager_b describes right office
+ There is 9.0000m2 of exposed surface area, 9.0000m2 of which is vertical.
+ Outside walls are 27.259 % of floor area & average U of 0.461 & UA of 1.6958
+ Glazing is 39.407 % of floor & 59.111 % facade with average U of 2.811 & UA of 14.953
+ 
+ A summary of the surfaces in manager_b( 2) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
+    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
+  1  13.5    270.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_general:manager_a
+  2  0.920   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frameb:coridor
+  3  2.32      0.   0. door         OPAQUE   VERT -     door         ||< door_b:coridor
+  4  6.00     90.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+  5  13.5      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< identical environment
+  6  13.5      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
+  7  2.70    180.   0. spandral     OPAQUE   VERT -     insul_frame  ||< external
+  8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
+  9  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
+ 10  4.48      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glazb:coridor
+ 11  1.28      0.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_coridb:coridor
+ 12  0.450    90.   0. pt_other_a   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+ 13  7.05     90.   0. pt_other_b   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ 
+ Air schedule notes:
+manager_b occupancy has some diversity of occupancy lights at 10W/m2
+and small power on weekdays at 5W/m2
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekdays   1  0 - 24    0.33  0.0037    0.00  0.0000   0     0.00
+saturday   1  0 - 24    0.33  0.0037    0.00  0.0000   0     0.00
+sunday     1  0 - 24    0.33  0.0037    0.00  0.0000   0     0.00
+ 
+Notes:
+manager_b occupancy has some diversity of occupancy lights at 10W/m2
+and small power on weekdays at 5W/m2
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+weekdays    2 OccuptW    7- 8     20.0     10.0       0.60       0.40
+weekdays    3 OccuptW    8- 9     60.0     30.0       0.60       0.40
+weekdays    4 OccuptW    9-12    100.0     50.0       0.60       0.40
+weekdays    5 OccuptW   12-14     65.0     32.5       0.60       0.40
+weekdays    6 OccuptW   14-17    100.0     50.0       0.60       0.40
+weekdays    7 OccuptW   17-24      0.0      0.0       0.50       0.50
+weekdays    8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
+weekdays    9 LightsWm2  8-18     10.0      0.0       0.30       0.70
+weekdays   10 LightsWm2 18-24      0.0      0.0       0.50       0.50
+weekdays   11 EquiptWm2  0- 8      0.0      0.0       0.50       0.50
+weekdays   12 EquiptWm2  8-18      5.0      0.0       0.40       0.60
+weekdays   13 EquiptWm2 18-24      0.0      0.0       0.50       0.50
+saturday    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
+saturday    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
+saturday    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
+saturday    4 OccuptW    9-12    100.0     50.0       0.50       0.50
+saturday    5 OccuptW   12-14     65.0     32.5       0.50       0.50
+saturday    6 OccuptW   14-17    100.0     50.0       0.50       0.50
+saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
+saturday    8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
+saturday    9 LightsWm2  8-12     10.0      0.0       0.30       0.70
+saturday   10 LightsWm2 12-24      0.0      0.0       0.50       0.50
+saturday   11 EquiptWm2  0-24      0.0      0.0       0.50       0.50
+sunday      1 LightsWm2  0-24      0.0      0.0       0.50       0.50
+sunday      2 EquiptWm2  0-24      0.0      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone coridor ( 3) is composed of 14 surfaces and 32 vertices.
  It encloses a volume of 18.3m^3 of space, with a total surface
  area of 54.8m^2 & approx floor area of 8.42m^2
  coridor describes passage adjacent to offices
  
- A summary of the surfaces in coridor( 2) follows:
+ A summary of the surfaces in coridor( 3) follows:
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
@@ -267,7 +349,6 @@ sunday      2 EquiptWm2  0-24      0.0      0.0       0.50       0.50
  No insolation analysis requested.
  
  
- Explicit viewfactors have been derived for this zone.
  
  
  Air schedule notes:
@@ -303,95 +384,6 @@ sunday      3 OccuptW   20-24     0.0     0.0      0.6      0.4    0.00  0    0.
 sunday      4 LightsW    0- 8     0.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
 sunday      5 LightsW    8-20    10.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
 sunday      6 LightsW   20-24     0.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
- 
- ____________________________________________________________
- 
- Zone manager_b ( 3) is composed of 20 surfaces and 36 vertices.
- It encloses a volume of 40.5m^3 of space, with a total surface
- area of 72.0m^2 & approx floor area of 13.5m^2
- manager_b describes right higher resolution office
- There is 9.0000m2 of exposed surface area, 9.0000m2 of which is vertical.
- Outside walls are 27.259 % of floor area & average U of 0.461 & UA of 1.6958
- Glazing is 39.407 % of floor & 59.111 % facade with average U of 2.811 & UA of 14.953
- 
- A summary of the surfaces in manager_b( 3) follows:
- 
- Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
-    | m^2   |deg |deg | name       |optical|locat| use | name         |other side
-  1  3.00    270.   0. pt_general   OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_general:manager_a
-  2  0.920   360.   0. part_frame   OPAQUE   VERT -     insul_frame  ||< part_frameb:coridor
-  3  2.32      0.   0. door         OPAQUE   VERT -     door         ||< door_b:coridor
-  4  6.00     90.   0. pt_other     OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
-  5  3.00      0.  90. ceiling      OPAQUE   CEIL -     ceiling      ||< identical environment
-  6  3.00      0. -90. floor        OPAQUE   FLOR -     susp_flr_re  ||< identical environment
-  7  2.70    180.   0. spandral     OPAQUE   VERT -     insul_frame  ||< external
-  8  0.980   180.   0. frame        OPAQUE   VERT -     insul_frame  ||< external
-  9  5.32    180.   0. glazing      DCF7671_ VERT -     dbl_glz      ||< external
- 10  4.48      0.   0. part_glaz    DCF7671_ VERT -     dbl_glz      ||< part_glazb:coridor
- 11  1.28      0.   0. ptn_corid    OPAQUE   VERT -     gyp_gyp_ptn  ||< ptn_coridb:coridor
- 12  0.450    90.   0. pt_other_a   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
- 13  4.05     90.   0. pt_other_b   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
- 14  4.05    270.   0. pt_gen_a     OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_gen_a:manager_a
- 15  6.45    270.   0. pt_gen_b     OPAQUE   VERT -     gyp_gyp_ptn  ||< pt_gen_b:manager_a
- 16  3.00     90.   0. pt_other_c   OPAQUE   VERT -     gyp_gyp_ptn  ||< identical environment
- 17  4.05      0. -90. floor_b      OPAQUE   FLOR -     susp_flr_re  ||< identical environment
- 18  6.45      0. -90. floor_c      OPAQUE   FLOR -     susp_flr_re  ||< identical environment
- 19  4.05      0.  90. ceiling_b    OPAQUE   CEIL -     ceiling      ||< identical environment
- 20  6.45      0.  90. ceiling_c    OPAQUE   CEIL -     ceiling      ||< identical environment
- 
- 
- An hourly solar radiation distribution is used for this zone.
- Insolation sources (all applicable):
-glazing
- 
- 
- Shading patterns have not yet been calculated.
- 
- 
- Air schedule notes:
-manager_b occupancy has some diversity of occupancy lights at 10W/m2
-and small power on weekdays at 5W/m2
- Control: no control of air flow
- 
-Scheduled air infiltration and ventilation:
-Daytype    Period     Infiltration     Ventilation     From Source
-           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
-weekdays   1  0 - 24    0.33  0.0037    0.00  0.0000   0     0.00
-saturday   1  0 - 24    0.33  0.0037    0.00  0.0000   0     0.00
-sunday     1  0 - 24    0.33  0.0037    0.00  0.0000   0     0.00
- 
-Notes:
-manager_b occupancy has some diversity of occupancy lights at 10W/m2
-and small power on weekdays at 5W/m2
- 
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    7- 8     20.0     10.0       0.60       0.40
-weekdays    3 OccuptW    8- 9     60.0     30.0       0.60       0.40
-weekdays    4 OccuptW    9-12    100.0     50.0       0.60       0.40
-weekdays    5 OccuptW   12-14     65.0     32.5       0.60       0.40
-weekdays    6 OccuptW   14-17    100.0     50.0       0.60       0.40
-weekdays    7 OccuptW   17-24      0.0      0.0       0.50       0.50
-weekdays    8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
-weekdays    9 LightsWm2  8-18     10.0      0.0       0.30       0.70
-weekdays   10 LightsWm2 18-24      0.0      0.0       0.50       0.50
-weekdays   11 EquiptWm2  0- 8      0.0      0.0       0.50       0.50
-weekdays   12 EquiptWm2  8-18      5.0      0.0       0.40       0.60
-weekdays   13 EquiptWm2 18-24      0.0      0.0       0.50       0.50
-saturday    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-saturday    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
-saturday    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
-saturday    4 OccuptW    9-12    100.0     50.0       0.50       0.50
-saturday    5 OccuptW   12-14     65.0     32.5       0.50       0.50
-saturday    6 OccuptW   14-17    100.0     50.0       0.50       0.50
-saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
-saturday    8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
-saturday    9 LightsWm2  8-12     10.0      0.0       0.30       0.70
-saturday   10 LightsWm2 12-24      0.0      0.0       0.50       0.50
-saturday   11 EquiptWm2  0-24      0.0      0.0       0.50       0.50
-sunday      1 LightsWm2  0-24      0.0      0.0       0.50       0.50
-sunday      2 EquiptWm2  0-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -455,7 +447,7 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
     3  0.117 0.124 0.127 0.112 0.077
  Total area of dbl_glz is     28.56
  
- Details of opaque construction: susp_flr_re and overall thickness  0.219
+ Details of opaque construction: susp_flr_re linked to susp_floor & with overall thickness  0.219
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
@@ -471,7 +463,7 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.48
  Partition admittance Y=  2.46  w=  2.85 surface factor f=  0.81  phi=  0.95
  Total area of susp_flr_re is     33.10
  
- Details of opaque construction: ceiling and overall thickness  0.110
+ Details of opaque construction: ceiling linked to ceiling_rev & with overall thickness  0.110
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
