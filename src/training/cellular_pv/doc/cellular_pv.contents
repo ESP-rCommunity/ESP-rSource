@@ -1,7 +1,7 @@
 Synopsis
  
 Synopsis of the model Two adjacent cellular offices with PV modules. defined
-in cellular_pv.cfg generated on Wed Oct 17 10:37:41 2012. Notes associated
+in cellular_pv.cfg generated on Wed Oct 17 09:53:33 2012. Notes associated
 with the model are in cellular_offices_pv.log
  
 The model is located at latitude   46.00 with a longitude difference of   0.00
@@ -182,7 +182,8 @@ ID Zone         Volume|          Surface
  
  
  Air schedule notes:
-manager b has the same profile as manager a . . .
+manager a has some diversity of occupancy  lights at 10W/m2 and small
+power on weekdays at 5W/m2
  Control: no control of air flow
  
 Scheduled air infiltration and ventilation:
@@ -193,17 +194,24 @@ saturday   1  0 - 24    0.33  0.0037    0.00  0.0000   0     0.00
 sunday     1  0 - 24    0.33  0.0037    0.00  0.0000   0     0.00
  
 Notes:
-manager b has the same profile as manager a . . .
+manager a has some diversity of occupancy  lights at 10W/m2 and small
+power on weekdays at 5W/m2
  
 Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
           No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
 weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
-weekdays    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
-weekdays    4 OccuptW    9-12    100.0     50.0       0.50       0.50
-weekdays    5 OccuptW   12-14     65.0     32.5       0.50       0.50
-weekdays    6 OccuptW   14-17    100.0     50.0       0.50       0.50
+weekdays    2 OccuptW    7- 8     20.0     10.0       0.60       0.40
+weekdays    3 OccuptW    8- 9     60.0     30.0       0.60       0.40
+weekdays    4 OccuptW    9-12    100.0     50.0       0.60       0.40
+weekdays    5 OccuptW   12-14     65.0     32.5       0.60       0.40
+weekdays    6 OccuptW   14-17    100.0     50.0       0.60       0.40
 weekdays    7 OccuptW   17-24      0.0      0.0       0.50       0.50
+weekdays    8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
+weekdays    9 LightsWm2  8-18     10.0      0.0       0.30       0.70
+weekdays   10 LightsWm2 18-24      0.0      0.0       0.50       0.50
+weekdays   11 EquiptWm2  0- 8      0.0      0.0       0.50       0.50
+weekdays   12 EquiptWm2  8-18      5.0      0.0       0.40       0.60
+weekdays   13 EquiptWm2 18-24      0.0      0.0       0.50       0.50
 saturday    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
 saturday    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
 saturday    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
@@ -211,6 +219,12 @@ saturday    4 OccuptW    9-12    100.0     50.0       0.50       0.50
 saturday    5 OccuptW   12-14     65.0     32.5       0.50       0.50
 saturday    6 OccuptW   14-17    100.0     50.0       0.50       0.50
 saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
+saturday    8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
+saturday    9 LightsWm2  8-12     10.0      0.0       0.30       0.70
+saturday   10 LightsWm2 12-24      0.0      0.0       0.50       0.50
+saturday   11 EquiptWm2  0-24      0.0      0.0       0.50       0.50
+sunday      1 LightsWm2  0-24      0.0      0.0       0.50       0.50
+sunday      2 EquiptWm2  0-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -328,7 +342,8 @@ sunday      2 EquiptWm2  0-24      0.0      0.0       0.50       0.50
  
  
  Air schedule notes:
-half a person and 10W/m2 lighting
+half a person and 50-100W lighting weekdays 10W weekends with
+electrical properties
  Control: no control of air flow
  
 Scheduled air infiltration and ventilation:
@@ -336,28 +351,29 @@ Daytype    Period     Infiltration     Ventilation     From Source
            id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
  
 Notes:
-half a person and 10W/m2 lighting
+half a person and 50-100W lighting weekdays 10W weekends with
+electrical properties
  
 Daytype   Gain Type    Period Sensible  Latent  Radiant  Convec p.f +/-  Power Voltage Phase
           No.  label   Hours  Magn.(W)  Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)
-weekdays    1 OccuptW    0- 8     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
-weekdays    2 OccuptW    8-20   100.0    50.0      0.5      0.5    0.00  0    0.0    0.0  1
-weekdays    3 OccuptW   20-24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
-weekdays    4 LightsW    0- 8    50.0     0.0      0.5      0.5    0.90  1   50.0  220.0  1
-weekdays    5 LightsW    8-20   100.0     0.0      0.5      0.5    0.90  1  100.0  220.0  1
-weekdays    6 LightsW   20-24    50.0     0.0      0.5      0.5    0.90  1   50.0  220.0  1
-saturday    1 OccuptW    0- 8     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
-saturday    2 OccuptW    8-20   100.0    50.0      0.5      0.5    0.00  0    0.0    0.0  1
-saturday    3 OccuptW   20-24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
-saturday    4 LightsW    0- 8     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
-saturday    5 LightsW    8-20    10.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
-saturday    6 LightsW   20-24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
-sunday      1 OccuptW    0- 8     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
-sunday      2 OccuptW    8-20   100.0    50.0      0.5      0.5    0.00  0    0.0    0.0  1
-sunday      3 OccuptW   20-24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
-sunday      4 LightsW    0- 8     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
-sunday      5 LightsW    8-20    10.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
-sunday      6 LightsW   20-24     0.0     0.0      0.5      0.5    0.00  0    0.0    0.0  1
+weekdays    1 OccuptW    0- 8     0.0     0.0      0.6      0.4    0.00  0    0.0    0.0  1
+weekdays    2 OccuptW    8-20   100.0    50.0      0.6      0.4    0.00  0    0.0    0.0  1
+weekdays    3 OccuptW   20-24     0.0     0.0      0.6      0.4    0.00  0    0.0    0.0  1
+weekdays    4 LightsW    0- 8    50.0     0.0      0.3      0.7    0.90  1   50.0  220.0  1
+weekdays    5 LightsW    8-20   100.0     0.0      0.3      0.7    0.90  1  100.0  220.0  1
+weekdays    6 LightsW   20-24    50.0     0.0      0.3      0.7    0.90  1   50.0  220.0  1
+saturday    1 OccuptW    0- 8     0.0     0.0      0.6      0.4    0.00  0    0.0    0.0  1
+saturday    2 OccuptW    8-20   100.0    50.0      0.6      0.4    0.00  0    0.0    0.0  1
+saturday    3 OccuptW   20-24     0.0     0.0      0.6      0.4    0.00  0    0.0    0.0  1
+saturday    4 LightsW    0- 8     0.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
+saturday    5 LightsW    8-20    10.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
+saturday    6 LightsW   20-24     0.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
+sunday      1 OccuptW    0- 8     0.0     0.0      0.6      0.4    0.00  0    0.0    0.0  1
+sunday      2 OccuptW    8-20   100.0    50.0      0.6      0.4    0.00  0    0.0    0.0  1
+sunday      3 OccuptW   20-24     0.0     0.0      0.6      0.4    0.00  0    0.0    0.0  1
+sunday      4 LightsW    0- 8     0.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
+sunday      5 LightsW    8-20    10.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
+sunday      6 LightsW   20-24     0.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
  
  ____________________________________________________________
  
@@ -376,9 +392,9 @@ sunday      6 LightsW   20-24     0.0     0.0      0.5      0.5    0.00  0    0.
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 Grey cotd aluminium : Grey cotd aluminium
-    2  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 Glass Fibre Quilt : Glass Fibre Quilt
- Int    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 Grey cotd aluminium : Grey cotd aluminium
+ Ext    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
+    2  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 glass fibre quilt : Glass Fibre Quilt
+ Int    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.461  0.467  0.452 (partition)  0.442
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.46
@@ -390,7 +406,7 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.46
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1   69   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 Oak (radial) : Oak (radial)
+    1   69   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 oak : Oak (radial cut)
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
@@ -402,9 +418,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder single layer optics
+ Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
     2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder single layer optics
+ Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 plate glass : Plate glass with placeholder single layer optics
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
@@ -425,11 +441,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
-    2   32  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 Heavy mix concrete : Heavy mix concrete
+ Ext    42    4.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 steel : Steel
+    2   32  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 heavy mix concrete : Heavy mix concrete
     3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    4   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 Chipboard : Chipboard
- Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton
+    4   67   19.0     0.150   800.  2093. 0.91 0.65    96.  0.13 chipboard : Chipboard
+ Int   221    6.0     0.060   186.  1360. 0.90 0.60    10.  0.10 Wilton : Wilton weave wool carpet
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.500  1.570  1.415 (partition)  1.321
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.48
@@ -441,8 +457,8 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.48
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   211  100.0     0.040   250.   840. 0.90 0.30     4.  2.50 Glasswool : Glasswool
- Int   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 Ceiling (mineral) : Ceiling (mineral)
+ Ext   211  100.0     0.040   250.   840. 0.90 0.30     4.  2.50 glasswool : Glasswool (generic)
+ Int   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 ceiling mineral : Ceiling acoustic tile (mineral fibre based)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.333  0.336  0.329 (partition)  0.323
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.33
@@ -454,11 +470,11 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.33
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 White ptd Gypboard : White ptd Gypboard
+ Ext   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White paintedd Gypboard
     2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    3   28  100.0     0.510  1400.  1000. 0.90 0.65    10.  0.20 Block inner (3% mc) : Block inner (3% mc)
+    3   28  100.0     0.510  1400.  1000. 0.90 0.65    10.  0.20 block inner : Block inner (3% mc)
     4    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 White ptd Gypboard : White ptd Gypboard
+ Int   108   13.0     0.190   950.   840. 0.91 0.22    11.  0.07 white gypboard : White paintedd Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.186  1.230  1.133 (partition)  1.072
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.17
@@ -470,9 +486,9 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.17
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 White ptd Gypboard : White ptd Gypboard
+ Ext   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White paintedd Gypboard
     2    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 White ptd Gypboard : White ptd Gypboard
+ Int   108   12.0     0.190   950.   840. 0.91 0.22    11.  0.06 white gypboard : White paintedd Gypboard
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.144  2.292  1.975 (partition)  1.798
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.10
@@ -484,20 +500,20 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.10
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   301    3.0     1.050  2500.   750. 0.83 0.05 19200.  0.00 low-iron-glass : low-iron-glass
-    2  302    3.0     0.380   920.  2100. 0.90 0.50 19200.  0.01 EVA : EVA
-    3  301    3.0     1.050  2500.   750. 0.83 0.05 19200.  0.00 low-iron-glass : low-iron-glass
+ Ext   251    3.0     1.050  2500.   750. 0.83 0.05 19200.  0.00 low-iron-glass : low iron glass for use in PV modules and solar collectors
+    2  252    3.0     0.380   920.  2100. 0.90 0.50 19200.  0.01 EVA layer : EVA layer for embedded PV cells (resin cell resin)
+    3  251    3.0     1.050  2500.   750. 0.83 0.05 19200.  0.00 low-iron-glass : low iron glass for use in PV modules and solar collectors
     4    0   20.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    5   46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 Grey cotd aluminium : Grey cotd aluminium
-    6  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 Glass Fibre Quilt : Glass Fibre Quilt
- Int    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 Grey cotd aluminium : Grey cotd aluminium
+    5   46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
+    6  281   80.0     0.040    12.   840. 0.90 0.65    30.  2.00 glass fibre quilt : Glass Fibre Quilt
+ Int    46    4.0   210.000  2700.   880. 0.82 0.72 19200.  0.00 grey cotd alum : Grey coated aluminium
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.425  0.430  0.418 (partition)  0.409
  
 Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.42
  External surface admittance Y=  0.80  w=  3.57 decrement factor f=  0.95  phi=  0.31 surface factor f=  0.95  phi=  0.31
  Partition admittance Y=  0.79  w=  5.58 surface factor f=  0.99  phi=  0.36
  
- PV_optical: with id of: PVmod_opt
+ PV_optical assuming opaque backplate: with id of: PVmod_opt
  with 7 layers [including air gaps] and visible trn: 0.00
  Direct transmission @ 0, 40, 55, 70, 80 deg
    0.000 0.000 0.000 0.000 0.000
