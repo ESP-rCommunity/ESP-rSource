@@ -128,14 +128,17 @@ C Advise the user what to do.
       else
 
 C List out the initial months of the calendar.
+C << NOTE: The graphic calendar draw to screen does
+C << not work on 64bit enterprise platforms. Probably
+C << fortran -> c integer passing conventions.
         call edisp(iuout,'A reminder of current day types...')
         loop=4
         loopst=1
-        if(MMOD.eq.8)then
-          call calenprint(iuout,'g',iyear,loopst,loop)
-        else
+C        if(MMOD.eq.8)then
+C          call calenprint(iuout,'g',iyear,loopst,loop)
+C        else
           call calenprint(iuout,'t',iyear,loopst,loop)
-        endif
+C        endif
       endif
         
 C Clear all of the possible day types and gain types.
@@ -220,14 +223,14 @@ C << place for future user choices >>
   20  write(ITEM(1),'(A,A25)')'a notes: ',dmdsdesc(1:25)
       ITEM(2) =               'b type associated base areas     '
       ITEM(4) =               '  _________________________      '
-      ITEM(5)=                'c edit project demands           '
-      ITEM(6)=                'd zeroise project demands        '
+      ITEM(5)=                'd edit project demands           '
+      ITEM(6)=                'e zeroise project demands        '
       if(iwss.eq.1)then
-        write(item(3),'(3a)') 'b focus on >> ',calentag(iwss),'        '
+        write(item(3),'(3a)') 'c focus on >> ',calentag(iwss),'        '
         ITEM(7)=              '                                 '
       elseif(iwss.gt.1)then
-        write(item(3),'(3a)') 'b focus on >> ',calentag(iwss),'        '
-        write(item(7),'(3a)') 'e copy ',calentag(iwss-1),' demands     '
+        write(item(3),'(3a)') 'c focus on >> ',calentag(iwss),'        '
+        write(item(7),'(3a)') 'f copy ',calentag(iwss-1),' demands     '
       endif
       ITEM(8)=                '  _________________________      '
       ITEM(9)=                'l list project demands   '
@@ -277,6 +280,9 @@ C Help text for this menu.
       IF(INO.EQ.NITEMS)THEN
 
 C If not sorted then warn the user prior to exiting.
+C << might need to do this for all day types??
+C << have a look in dmdchecksort to see what it
+C << deals with.
         sorted=.true.
         problem=.false.
         call dmdchecksort(1,problem,ier)
@@ -349,8 +355,12 @@ C Edit loads description.
 C Floor area associated with each demand type.
 C << echo the floor area of the various zones >>
 C << to be done... >>
+        call edisp(iuout,'Current areas for:')
+        call edisp(iuout,
+     &    'Occupants Lights Small Pwr Fans Pumps Lifts DHW')
         WRITE(hold,'(7f8.1,a)')dmdfla(1),dmdfla(2),dmdfla(3),dmdfla(4),
      &    dmdfla(5),dmdfla(6),dmdfla(7),'  '
+        call edisp(iuout,hold)
         h(1)='Optional base area associated with each demand type. '
         h(2)='This will be used to support IPV creation for period '
         h(3)='data which is per m^2. '
@@ -748,6 +758,15 @@ C If there are enough items allow paging control via EKPAGE.
 C Edit block identified by KEYIND.
         CALL KEYIND(MVERT,IVERT,I,IO)
 
+C Remind user of current values.
+        call edisp(iuout,
+     &    'start end label    sensible  latent radiant convective')
+        WRITE(outs,304) IEBCGS(I),IEBCGF(I),
+     &       blodlabel(IABS(IEBCGT(I))),'W  ',CEBMGS(I),CEBMGL(I),
+     &       BERADC(I),BECONC(I)
+  304     FORMAT(I5,I4,1x,A6,A3,F8.1,F8.1,F7.2,F7.2)
+        call edisp(iuout,outs)
+
         WRITE(OUTS,'(A,I2)') ' Start and finish hours for period ',I
         WRITE(hold,'(2i8)')iebcgs(i),iebcgf(i)
         h(1)='Period during which demand applies. '
@@ -771,7 +790,7 @@ C Depending on type set relevant idmdinc value.
         call easkab('Are values',' ','absolute','per m^2',IW,8)
         if(IW.eq.1)IEBCGT(I)=IWM
         if(IW.eq.2)IEBCGT(I)=-1*IWM
- 100    WRITE(HOLD,'(2f9.0,2f8.2,a)')CEBMGS(I),CEBMGL(I),BERADC(I),
+ 100    WRITE(HOLD,'(2f9.1,2f8.2,a)')CEBMGS(I),CEBMGL(I),BERADC(I),
      &    BECONC(I),'  '
         H(1)='Sensible and latent demands are specified in '
         h(2)='Watts. '
@@ -795,6 +814,9 @@ C Depending on type set relevant idmdinc value.
      &                      ' fractions not close to 1.0! ','W')
           goto 100
         endif
+
+C Re-establish menu.
+        goto 265
       else
         IVERT=-1
         GOTO 92
