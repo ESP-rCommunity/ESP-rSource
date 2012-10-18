@@ -155,7 +155,7 @@ Category ( 8) was initially named Tiles. No other documentation (yet).
 0.850,1900.000,837.000,0.900,0.900,0.600,0.600,52.000,6.0,-
 *item,Concrete tile,142, 8,Concrete tile
 1.100,2100.000,837.000,0.900,0.900,0.650,0.650,20.000,6.0,-
-*item,Slate,143, 8,Slate
+*item,Slate tile,143, 8,Slate tile
 2.000,2700.000,753.000,0.950,0.950,0.850,0.850,48.000,6.0,-
 *item,Plastic tile,144, 8,Plastic tile
 0.500,1050.000,837.000,0.900,0.900,0.400,0.400,1000.000,6.0,-

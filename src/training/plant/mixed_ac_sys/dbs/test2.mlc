@@ -1,0 +1,56 @@
+# composite construction db defined in test2.mlc
+# based on primitive construction db /usr/esru/esp/defaults/defpcdb
+   9     # no of composites 
+# layers  description   optics 
+    3    d_glz         TRAN  DCF7671_06nb  SYMMETRIC        
+# db ref  thick   db name & air gap R 
+  242     0.006  Plate
+    0     0.012  air  0.170 0.170 0.170
+  242     0.006  Plate
+# layers  description   optics 
+    4    extern_wall   OPAQ  OPAQUE        NONSYMMETRIC              
+# db ref  thick   db name & air gap R 
+    4     0.100  Outer leaf
+  211     0.075  Glasswool
+    0     0.050  air  0.170 0.170 0.170
+    2     0.100  Breeze block
+# layers  description   optics 
+    4    roof_1        OPAQ  OPAQUE        NONSYMMETRIC              
+# db ref  thick   db name & air gap R 
+  162     0.012  Roofing felt
+   21     0.050  Light mix
+    0     0.050  air  0.170 0.170 0.170
+  151     0.008  Ceiling (plaster)
+# layers  description   optics 
+    4    floor_1       OPAQ  OPAQUE        NONSYMMETRIC              
+# db ref  thick   db name & air gap R 
+  263     0.100  Common
+   82     0.100  Red granite
+   32     0.050  Heavy mix
+  124     0.050  Cement screed
+# layers  description   optics 
+    1    door          OPAQ  OPAQUE        SYMMETRIC              
+# db ref  thick   db name & air gap R 
+   69     0.025  Oak (radial)
+# layers  description   optics 
+    3    int_part      OPAQ  OPAQUE        SYMMETRIC              
+# db ref  thick   db name & air gap R 
+  103     0.012  Perlite plasterboard
+    0     0.025  air  0.170 0.170 0.170
+  103     0.012  Perlite plasterboard
+# layers  description   optics 
+    2    ceiling       OPAQ  OPAQUE        ceiling_rev         
+# db ref  thick   db name & air gap R 
+  211     0.100  Glasswool
+  150     0.010  Ceiling (mineral)
+# layers  description   optics 
+    2    ceiling_rev   OPAQ  OPAQUE        ceiling              
+# db ref  thick   db name & air gap R 
+  150     0.010  Ceiling (mineral)
+  211     0.100  Glasswool
+# layers  description   optics 
+    3    roof_2        OPAQ  OPAQUE        NONSYMMETRIC              
+# db ref  thick   db name & air gap R 
+  141     0.015  Clay tile
+  162     0.005  Roofing felt
+   72     0.012  Plywood

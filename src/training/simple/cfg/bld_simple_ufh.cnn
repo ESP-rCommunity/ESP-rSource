@@ -1,5 +1,5 @@
 *connections for bld_simple_ufh
-*Date Fri Jul 23 16:12:51 2010
+*Date Tue Aug 28 11:21:12 2012
      14   # number of connections
    1   1   0   0   0  #    1 south in reception is External
    1   2   0   0   0  #    2 east in reception is External
