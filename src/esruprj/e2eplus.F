@@ -101,7 +101,6 @@ C Simulation parameter presets.
       COMMON/CLMDT1/CLMLOC
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
 
-      integer legmat  ! local variable for legacy index.
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
 
@@ -216,7 +215,7 @@ C have been filled (warn user if not).
       endif
 
 C First task is to loop through each of the mlc and get a
-C list of primitives used in this problem. Clear the local
+C list of materials used in this problem. Clear the local
 C arrays. Assumes that there are no more than 100 materials
 C and constructions used in the model.
       do 17 ii=1,100
@@ -579,9 +578,6 @@ C the overall construction and for single glazing this will the
 C the same for EnergyPlus. For multiple layers the data is not
 C quite correct. Assume that visible reflection is based on
 C visible trans and solar absorb.
-
-C << to be done - use if IPRMAT >>
-
         WRITE(OPT,'(A)') DESC(INO)(21:32)
         if(opt(1:6).eq.'OPAQUE')then
           continue
@@ -591,14 +587,20 @@ C << to be done - use if IPRMAT >>
         endif
         DO 23 IL=1,LAYERS(INO)
 
-C For each layer get primitive db ref and then check either thickness
+C For each layer get material arraay index and then check either thickness
 C or air gap resistance before adding it to the iprndx array.
+
           if(iij.gt.0)then
             close1 = .false.
             do 24 ij = 1,iij
               found = .false.
-              if(IPR(INO,IL).eq.iprndx(ij))found = .true.
-              if(IPR(INO,IL).eq.0)then
+              matarrayindex=IPRMAT(INO,IL)   ! which material index
+              if(matarrayindex.eq.iprndx(ij))found = .true.
+ 
+C And if a gap layer reset dbcon.
+              if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &           matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &           matarrayindex.eq.0)then
 
 C If an opaque air gap, we have a unique one if the air gap resistence
 C is different (thickness does not matter for an opaque construction
@@ -622,9 +624,11 @@ C If solid then check if thickness is unique.
                 endif
               endif
   24        continue
+
+C If not already known add it to the list.
             if(.NOT.close1)then
               iij=iij+1
-              iprndx(iij)=IPR(INO,IL)
+              iprndx(iij)=IPRMAT(INO,IL)
               thkiprndx(iij)=DTHK(ino,IL)
               if(opt(1:6).eq.'OPAQUE')then
                 iglassndx(iij)=0
@@ -645,7 +649,10 @@ C If this approximation yields a negative reflectance try 1-vtrn.
 
 C If an opaque air gap remember air gap resistence and clear thickness.
 C If a window air gap remember thickness and resetn airgap res to 0.0.
-              if(IPR(INO,IL).eq.0)then
+              matarrayindex=IPRMAT(INO,IL)   ! which material index
+              if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &           matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &           matarrayindex.eq.0)then
                 if(opt(1:6).eq.'OPAQUE')then
                   riair(iij)=DRAIR(ino,IL,1)
                   thkiprndx(iij)=0.0
@@ -661,7 +668,7 @@ C If a window air gap remember thickness and resetn airgap res to 0.0.
 
 C First material (which will never be air).
             iij=iij+1
-            iprndx(iij)=IPR(INO,IL)
+            iprndx(iij)=IPRMAT(INO,IL)
             thkiprndx(iij)=DTHK(ino,IL)
             if(opt(1:6).eq.'OPAQUE')then
               iglassndx(iij)=0
@@ -679,12 +686,55 @@ C First material (which will never be air).
   20  continue
       nmat=iij
 
-C Now, for each unique material write description.
+C Now, for each unique material write description. 
       WRITE(ioout,'(a)') ' '
       WRITE(ioout,'(a)') '!- ======= MATERIAL ======'
 
       do 25 iy = 1,nmat
-        if(iprndx(iy).gt.0)then
+        matarrayindex=iprndx(iy)   ! which material array index
+
+C A gap layer.
+        if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &     matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &     matarrayindex.eq.0)then
+          DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+          E=0.99; A=0.99
+          NAM='AIR'
+
+C Make up air name for opaque construction. t12a holds air gap resistance
+C as a string w/o leading blanks (use only first 7 char of t12a).
+          if(iglassndx(iy).eq.0)then
+            WRITE(ioout,'(a)',iostat=ios,err=3) ' '
+            WRITE(ioout,'(2a)',iostat=ios,err=3) '  Material:AirGap',
+     &        com
+            call relstr(riair(iy),t12a,lna,ier)
+            write(t25,'(3a)') 'Air-gap',':',t12a(1:7)
+            call st2name(T25,T25a)
+            write(nameiprndx(iy),'(a)') T25a
+            WRITE(ioout,'(4a)',iostat=ios,err=3) indent,
+     &        T25a(1:lnblnk(T25a)),com,'   !- Name'
+            WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,
+     &        riair(iy),sim,'   !- Thermal Resistance {m2-K/W}'
+          else
+
+C For the case of an air gap in a window, assume air is the gas and
+C write out the thickness (rather than the air gap resistence, but only
+C the first 7 characters of t12a).
+            WRITE(ioout,'(a)',iostat=ios,err=3) ' '
+            WRITE(ioout,'(2a)',iostat=ios,err=3) 
+     &        '  WindowMaterial:Gas',com
+            call relstr(thkiprndx(iy),t12a,lna,ier)
+            write(t25,'(3a)') 'Air-win',':',t12a(1:7)
+            call st2name(T25,T25a)
+            write(nameiprndx(iy),'(a)') T25a
+            WRITE(ioout,'(4a)',iostat=ios,err=3) indent,
+     &        T25a(1:lnblnk(T25a)),com,'   !- Name'
+            WRITE(ioout,'(4a)',iostat=ios,err=3) indent,'Air',com,
+     &        '   !- Gas Type'
+            WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,
+     &        thkiprndx(iy),sim,'   !- Thickness {m}'
+          endif
+        else
           WRITE(ioout,'(a)',iostat=ios,err=3) ' '
           if(iglassndx(iy).eq.0)then
             WRITE(ioout,'(2a)',iostat=ios,err=3) '  Material',com
@@ -692,24 +742,14 @@ C Now, for each unique material write description.
             WRITE(ioout,'(2a)',iostat=ios,err=3) 
      &        '  WindowMaterial:Glazing',com
           endif
-          legmat=iprndx(iy)   ! which legacy index
-          if(legmat.gt.0)then
-            matarrayindex=mathash(legmat)  ! find matching array index
+          matarrayindex=iprndx(iy)   ! which material array index
  
-C And if matarrayindex is zero then resetn dbcon dbden dbsht.
-            if(matarrayindex.eq.0)then
-              DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-              E=0.99; A=0.99
-              NAM='AIR'
-            else
-              DBCON=matdbcon(matarrayindex)
-              DBDEN=matdbden(matarrayindex)
-              DBSHT=matdbsht(matarrayindex)
-              E=matdbine(matarrayindex)
-              A=matdbina(matarrayindex)
-              write(NAM,'(a)') matname(matarrayindex)(1:32)
-            endif
-          endif
+          DBCON=matdbcon(matarrayindex)
+          DBDEN=matdbden(matarrayindex)
+          DBSHT=matdbsht(matarrayindex)
+          E=matdbine(matarrayindex)
+          A=matdbina(matarrayindex)
+          write(NAM,'(a)') matname(matarrayindex)(1:32)
 
 C Make up name. t12a holds the thickness as a string w/o leading blanks
 C (but only use the initial 7 characters of t12a.
@@ -777,41 +817,6 @@ C Take up to 12 char from NAM and the remove any blanks via st2name.
             WRITE(ioout,'(a,f7.4,2a)',iostat=ios,err=3)   indent,DBCON,
      &        sim,'   !- Conductivity {W/m-K}'
           endif
-        else
-
-C Make up air name for opaque construction. t12a holds air gap resistance
-C as a string w/o leading blanks (use only first 7 char of t12a).
-          if(iglassndx(iy).eq.0)then
-            WRITE(ioout,'(a)',iostat=ios,err=3) ' '
-            WRITE(ioout,'(2a)',iostat=ios,err=3) '  Material:AirGap',
-     &        com
-            call relstr(riair(iy),t12a,lna,ier)
-            write(t25,'(3a)') 'Air-gap',':',t12a(1:7)
-            call st2name(T25,T25a)
-            write(nameiprndx(iy),'(a)') T25a
-            WRITE(ioout,'(4a)',iostat=ios,err=3) indent,
-     &        T25a(1:lnblnk(T25a)),com,'   !- Name'
-            WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,
-     &        riair(iy),sim,'   !- Thermal Resistance {m2-K/W}'
-          else
-
-C For the case of an air gap in a window, assume air is the gas and
-C write out the thickness (rather than the air gap resistence, but only
-C the first 7 characters of t12a).
-            WRITE(ioout,'(a)',iostat=ios,err=3) ' '
-            WRITE(ioout,'(2a)',iostat=ios,err=3) 
-     &        '  WindowMaterial:Gas',com
-            call relstr(thkiprndx(iy),t12a,lna,ier)
-            write(t25,'(3a)') 'Air-win',':',t12a(1:7)
-            call st2name(T25,T25a)
-            write(nameiprndx(iy),'(a)') T25a
-            WRITE(ioout,'(4a)',iostat=ios,err=3) indent,
-     &        T25a(1:lnblnk(T25a)),com,'   !- Name'
-            WRITE(ioout,'(4a)',iostat=ios,err=3) indent,'Air',com,
-     &        '   !- Gas Type'
-            WRITE(ioout,'(a,f6.4,2a)',iostat=ios,err=3) indent,
-     &        thkiprndx(iy),sim,'   !- Thickness {m}'
-          endif
         endif
   25  continue
 
@@ -828,13 +833,16 @@ C is used in the model and if so proceed to check.
         WRITE(OPT,'(A)') DESC(INO)(21:32)
         DO 230 IL=1,LAYERS(INO)
 
-C For each layer get primitive db ref and then check either thickness
+C For each layer get material array index and then check either thickness
 C or air gap resistance before adding it to the iprndx array.
           close1 = .false.
           do 240 ij = 1,nmat
             found = .false.
-            if(IPR(INO,IL).eq.iprndx(ij))found = .true.
-            if(IPR(INO,IL).eq.0)then
+            matarrayindex=IPRMAT(INO,IL)   ! which material index
+            if(matarrayindex.eq.iprndx(ij))found = .true.
+            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &         matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &         matarrayindex.eq.0)then
 
 C If air gap, we have a unique one if the air gap resistence
 C is different (thickness does not matter for an opaque construction

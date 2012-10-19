@@ -432,7 +432,7 @@ Category (15) Insulation materials (2) is a second tranche of loose, batt and fo
 0.050,12.000,1000.000,0.900,0.900,0.700,0.700,30.000,50.0,-
 *item,Mineral wool batt 100mm,294,15,Insulation (Mineral wool batt default 100mm)
 0.040,25.000,1000.000,0.900,0.900,0.700,0.700,30.000,100.0,-
-*item,Min wool quilt 60 mm,295,15,Insulation (Min wool quilt default 60 mm)
+*item,Min wool quilt 60mm,295,15,Insulation (Min wool quilt default 60 mm)
 0.040,12.000,1030.000,0.900,0.900,0.700,0.700,30.000,60.0,-
 # class index |nb items|description (32 char)
 *class,16, 2,Board

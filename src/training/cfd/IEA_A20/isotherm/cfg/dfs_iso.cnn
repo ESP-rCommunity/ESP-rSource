@@ -1,5 +1,5 @@
-*connections  for dfs_iso
-*Date Wed Sep 30 14:33:48 2009
+*connections for dfs_iso
+*Date Tue Aug 28 10:45:22 2012
       8   # number of connections
    1   1   1   0   0  #    1 part_b in office >|< Identical environment
    1   2   1   0   0  #    2 part_a in office >|< Identical environment

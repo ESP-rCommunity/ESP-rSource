@@ -1,5 +1,5 @@
-*connections  for mst
-*Date Fri Jul 17 13:45:28 2009
+*connections for mst
+*Date Fri Aug 24 11:20:52 2012
     106   # number of connections
    1   1   0   0   0  #    1 north in bin_c is External
    1   2   0   0   0  #    2 porch in bin_c is External

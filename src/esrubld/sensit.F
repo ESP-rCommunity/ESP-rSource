@@ -442,7 +442,7 @@ C      COMMON/PREC12/EI(MCOM,MS),EE(MCOM,MS),AI(MCOM,MS),AE(MCOM,MS)
       DIMENSION IEL(ME)
 
 C Data stored in UA01 has the following meaning in this routine:
-C IDMAT(?,1): Primitive db reference number.
+C IDMAT(?,1): Materials array index.
 C IDMAT(?,2): Thermophysical property (con; den; sp ht).
 C IDMAT(?,3): Change type (%; +/-; explicit).
 C Define variables for current location and change.
@@ -462,8 +462,8 @@ C Change data in the required surfaces.
          do 20 JJ=1,NSG(ICL,II)
            IS=NSNOG(ICL,II,JJ)
 
-C Check to see if primitive material is used in current construction.
-C CHKPRIM returns the elements which are made of the required material (if any).
+C Check to see if material is used in current construction.
+C CHKPRIM returns the layers which are made of the required material (if any).
            call CHKPRIM(IZ,IS,IDMAT(ICC,1),NEL,IEL)
            if (NEL.gt.0) then
              do 30 IEindex=1,NEL
@@ -528,8 +528,8 @@ C Check if surface ISC has associated uncertainties, if yes then edit.
              do 60 JJ=1,NSG(ICL,II)
                if (NSNOG(ICL,II,JJ).eq.ISC) then
 
-C Check to see if primitive material is used in current construction.
-C CHKPRIM returns the elements which are made of the required material (if any).
+C Check to see if material is used in current construction.
+C CHKPRIM returns the layers which are made of the required material (if any).
                  call CHKPRIM(IZONE,ISURF,IDMAT(ICC,1),NEL,IEL)
                  if (NEL.gt.0) then
                    do 50 IEindex=1,NEL
@@ -654,9 +654,9 @@ C entry is it?
            if (DESC(IX)(1:12).eq.SMLCN(IS)) IMLC=IX
  25       continue
           do 30 IE=1,NE(IS)
-C           write (36,*) 'ipr(imlc,ie): ',IPR(IMLC,IE),imlc,ie
+C           write (36,*) 'iprmat(imlc,ie): ',IPRMAT(IMLC,IE),imlc,ie
 C           write (36,*) 'IDMAT(ICC,1): ',IDMAT(ICC,1),icc
-           if (IPR(IMLC,IE).eq.IDMAT(ICC,1)) then
+           if (IPRMAT(IMLC,IE).eq.IDMAT(ICC,1)) then
 
 C Either edit layer thickness or whole construction.
             if (IE.eq.0) then
@@ -714,9 +714,9 @@ C is then we have to edit the matching surface in this zone ISURF.
               if (DESC(IX)(1:12).eq.SMLCN(ISURF)) IMLC=IX
  65          continue
              do 50 IE=1,NE(ISURF)
-              write (36,*) 'ipr(imlc,ie): ',IPR(IMLC,IE),imlc,ie
+              write (36,*) 'iprmat(imlc,ie): ',IPRMAT(IMLC,IE),imlc,ie
               write (36,*) 'IDMAT(ICC,1): ',IDMAT(ICC,1),icc
-              if (IPR(IMLC,IE).eq.IDMAT(ICC,1)) then
+              if (IPRMAT(IMLC,IE).eq.IDMAT(ICC,1)) then
 
 C Either edit layer thickness or whole construction.
 C Note the next few lines are not indented wrt the 'if' statement above.
@@ -1189,29 +1189,33 @@ C Check for out of range values.
       END
 
 C ******************** CHKPRIM ********************
-C CHKPRIM returns list of elements referencing required primitive material
-C for required surface in zone.
-C NEL = number of matching elements
-C IEL = index of matching elements
-
+C CHKPRIM scans the layers of the MLC for a specific surface
+C and returns if and where a specific material is used.
       SUBROUTINE CHKPRIM(IZONE,ISURF,IPRIM,NEL,IEL)
 #include "building.h"
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
 
+C Passed parameters:
+      integer izone  ! requested zone
+      integer isurf  ! surface in the zone
+      integer iprim  ! material array index
+      integer nel    ! number of matching layers
+      integer iel    ! array of the position of the matched material
       DIMENSION IEL(ME)
 
-C Set number of elements to zero.
+C Set number of matching layers to zero.
       NEL=0
 
-C Find correct MLC. 
+C Find correct MLC. Check if the material array index matches
+C the passed value.
       do 10 I=1,NMLC
         if (DESC(I)(1:12).eq.SMLCN(ISURF)(1:12)) then
           do 20 J=1,LAYERS(I)
-            if (IPR(I,J).eq.IPRIM) then
-              NEL=NEL+1
-              IEL(NEL)=J
+            if (IPRMAT(I,J).eq.IPRIM) then
+              NEL=NEL+1   ! matches criteria
+              IEL(NEL)=J  ! layer it was found in
             endif
  20       continue
         endif

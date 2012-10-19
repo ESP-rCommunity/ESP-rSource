@@ -1,56 +1,56 @@
-# composite construction db defined in multicon.db
-# based on primitive construction db /usr/esru/esp-r/databases/constr.db1
+# composite construction db defined in ../dbs/multicon.db
+# based on materials db ../dbs/constr.db1.a
    10     # no of composites 
-# layers  description   optics 
-    1    Floor         OPAQ  OPAQUE              
-# db ref  thick   db name & air gap R 
-   32    0.2000  Heavy mix concrete
-# layers  description   optics 
-    3    dbl_gl_up     TRAN  DBL_glz_6nb1        
-# db ref  thick   db name & air gap R 
-  242    0.0060  Plate glass
-    0    0.0120  air  0.430 0.430 0.430
-  242    0.0060  Plate glass
-# layers  description   optics 
-    1    Ceiling       OPAQ  OPAQUE              
-# db ref  thick   db name & air gap R 
-   32    0.2000  Heavy mix concrete
-# layers  description   optics 
-    4    Facade_bot    OPAQ  OPAQUE              
-# db ref  thick   db name & air gap R 
-  241    0.0060  Glass block
-    0    0.0050  air  0.170 0.170 0.170
-  211    0.1150  Glasswool
-  107    0.0100  Gypsum plasterboard
-# layers  description   optics 
-    4    Facade_top    OPAQ  OPAQUE              
-# db ref  thick   db name & air gap R 
-   81    0.0750  Sandstone
-    0    0.0500  air  0.170 0.170 0.170
-  211    0.0500  Glasswool
-   32    0.2750  Heavy mix concrete
-# layers  description   optics 
-    3    Frame         OPAQ  OPAQUE              
-# db ref  thick   db name & air gap R 
-   43    0.0050  Aluminium
-    0    0.0100  air  0.170 0.170 0.170
-   43    0.0050  Aluminium
-# layers  description   optics 
-    2    Int_wall      OPAQ  OPAQUE              
-# db ref  thick   db name & air gap R 
-    2    0.1500  Breeze block
-  103    0.0120  Perlite plasterboard
-# layers  description   optics 
-    1    Light_sh_t    OPAQ  OPAQUE              
-# db ref  thick   db name & air gap R 
-   43    0.0020  Aluminium
-# layers  description   optics 
-    3    dbl_glz_low   TRAN  DBL_glz_6nb2        
-# db ref  thick   db name & air gap R 
-  242    0.0060  Plate glass
-    0    0.0120  air  0.430 0.430 0.430
-  242    0.0060  Plate glass
-# layers  description   optics 
-    1    Light_sh_b    OPAQ  OPAQUE              
-# db ref  thick   db name & air gap R 
-   66    0.0100  Cork board
+# layers  description   optics name   symmetry tag
+    1    Floor         OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+   32    0.2000  Heavy mix concrete : Heavy mix concrete
+# layers  description   optics name   symmetry tag
+    3    dbl_gl_up     TRAN  DBL_glz_6nb1  SYMMETRIC     
+# material ref thickness (m) description & air gap R
+  242    0.0060  Plate glass : Plate glass with placeholder single layer optics
+    0    0.0120  gap  0.430 0.430 0.430
+  242    0.0060  Plate glass : Plate glass with placeholder single layer optics
+# layers  description   optics name   symmetry tag
+    1    Ceiling       OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+   32    0.2000  Heavy mix concrete : Heavy mix concrete
+# layers  description   optics name   symmetry tag
+    4    Facade_bot    OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+  241    0.0060  Glass block : Glass block with placeholder single layer optics
+    0    0.0050  gap  0.170 0.170 0.170
+  211    0.1150  Glasswool : Glasswool
+  107    0.0100  Gypsum plasterboard : Gypsum plasterboard
+# layers  description   optics name   symmetry tag
+    4    Facade_top    OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   81    0.0750  Sandstone : Sandstone
+    0    0.0500  gap  0.170 0.170 0.170
+  211    0.0500  Glasswool : Glasswool
+   32    0.2750  Heavy mix concrete : Heavy mix concrete
+# layers  description   optics name   symmetry tag
+    3    Frame         OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+   43    0.0050  Aluminium : Aluminium
+    0    0.0100  gap  0.170 0.170 0.170
+   43    0.0050  Aluminium : Aluminium
+# layers  description   optics name   symmetry tag
+    2    Int_wall      OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+    2    0.1500  Breeze block : Breeze block
+  103    0.0120  Perlite plasterboard : Perlite plasterboard
+# layers  description   optics name   symmetry tag
+    1    Light_sh_t    OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+   43    0.0020  Aluminium : Aluminium
+# layers  description   optics name   symmetry tag
+    3    dbl_glz_low   TRAN  DBL_glz_6nb2  SYMMETRIC     
+# material ref thickness (m) description & air gap R
+  242    0.0060  Plate glass : Plate glass with placeholder single layer optics
+    0    0.0120  gap  0.430 0.430 0.430
+  242    0.0060  Plate glass : Plate glass with placeholder single layer optics
+# layers  description   optics name   symmetry tag
+    1    Light_sh_b    OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+   66    0.0100  Cork board : Cork board

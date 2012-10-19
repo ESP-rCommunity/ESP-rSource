@@ -1,5 +1,5 @@
 *connections for trombe_wall_office
-*Date Thu Jul 28 04:25:32 2011
+*Date Fri Aug 24 11:59:44 2012
      43   # number of connections
    1   1   0   0   0  #    1 front in trombe_low is External
    1   2   1   0   0  #    2 right in trombe_low >|< Identical environment
