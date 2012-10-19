@@ -164,19 +164,22 @@ C ventilation 0.3 ACH per hour as HOT2000 assumes during ERS calculations.
            if ( fVentPLR > 1. ) fVentPLR = 1.
            if ( fVentPLR < 0. ) fVentPLR = 0.
            
-           write (*,*) "MVNT: AIM2Total: ", fACHpHour_ERSreq
-           write (*,*) "      AIM2Vol:   ", AIM2_house_vol
-           write (*,*) "      Nat ACH:   ", 
-     &           fAIM2_TotalHouseInfil * 3600./ AIM2_house_vol
-           write (*,*) "      Frac:      ", fVentPLR
+!           write (*,*) "MVNT: AIM2Total: ", fACHpHour_ERSreq
+!           write (*,*) "      AIM2Vol:   ", AIM2_house_vol
+!           write (*,*) "      Nat ACH:   ", 
+!     &           fAIM2_TotalHouseInfil * 3600./ AIM2_house_vol
+!           write (*,*) "      Frac:      ", fVentPLR
+     
+         elseif ( iCVSOpType == 9 ) then 
+     
+          fVentPLR = 8./24.
      
          else 
      
           fVentPLR  = CVSOpTime
      
          endif ErsACH         
-         
-         
+                 
          
          
 c If a CVS exists,call the appropriate subroutine to

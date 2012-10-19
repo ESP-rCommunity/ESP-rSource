@@ -83,28 +83,68 @@ c Variable passed in call
       INTEGER IUNIT,IFIL,k,IER,ND,ival,i,ISTAT,IUOUT, IUIN
       REAL val
 
+
 c Define the characters variables associated with the utility
 c functions STRIPC,EGETWI,and EGETWR
-      character OUTSTR*124,word*124
+      character OUTSTR*248,word*248
+
+      character*248 cLnWords(124) ! words on the line
+      integer iWordCount
+      integer iEGetArrW
 
 c Declare function for determining fan size
       REAL FAN_SIZE
+
+C Error flag
+      logical bError
  
 C Open the hvac file
       IUNIT=IFIL+20
       CALL EFOPSEQ(IUNIT,hvacfile,1,IER)
 
+C----------------------------------------------------------------------
+C     Get first line
+C          -> stripc: stips comments from line. Synopsys:
+C             stripc ( file #     (input),
+C                      line data (output),
+C                      # items expected (input, 0 to disable checking),
+C                      Error handling (input, 0 for silent)
+C                      Contextual message (input)
+C                      error status (output)
+C                    )
+C----------------------------------------------------------------------
+      call LStripC (iUnit, OUTSTR, 99, ND, 1,
+     &                'HVAC data',
+     &                IER)
+C----------------------------------------------------------------------
+C     Get space/comma/tab separated words
+C       -> iEGetArrW: returns the number of words encountered
+C          and a character array containing the words. Synopsys
+C          # of words = ( string, array of words)
+C
+C----------------------------------------------------------------------
+      iWordCount = iEGetArrW ( OUTSTR, cLnWords )
+C----------------------------------------------------------------------
+C     Check to see if first word is '*idealized_hvac', in which
+C     case, we need to use improved HVAC parsing routine
+C----------------------------------------------------------------------
+      if ( OUTSTR(1:16) == '*idealized-hvac ' ) then
+         call HVACINPUT_improved ( iUnit, hvacfile )
+         bHVACVersion2 = .true.
+      else
+         bHVACVersion2 = .false.
+
 c Read the total number of HVAC systems serving the various zones in
 c the building
       k = 0
-      CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'hvac data',IER)
       CALL EGETWI(OUTSTR,K,ival,1,10,'F',
      &'hvac data: num_hvac_sys',IER)
       num_hvac_sys=ival
+
 c Read site altitude
-      CALL EGETWR(OUTSTR,K,val,0.,10000.,'F',
-     &'hvac input: site_altitude',IER)
-      site_altitude = val
+        CALL EGETWR(OUTSTR,K,val,0.,10000.,'F',
+     &  'hvac input: site_altitude',IER)
+        site_altitude = val
 
 c Read the following information about each of the hvac systems:
 
@@ -117,7 +157,7 @@ c                       =9 ground-source heat pump (Ecole Polytechnique, GCEP)
 c   ipriority(i) 	indicates whether the system is a primary heating
 c			source or a backup system
 c			=1 primary system
-c			=2 backup system
+c			=2 backup system2
 c                               
 c   num_sys_zones(i)	total number of zones served by an HVAC system
 
@@ -133,78 +173,95 @@ C Initialize linking flags to zero
 
 
 c Read the data associated with each of the HVAC systems
+
       do 10 i = 1,num_hvac_sys
-        CALL STRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
+
+        CALL LSTRIPC(IUNIT,OUTSTR,99,ND,1,'hvac input',IER)
+
+!        write(*,*) ">",i,"> OUTSTR:", OUTSTR
         K = 0
+
 c Read the type of the hvac system ihvac_type
-        CALL EGETWI(OUTSTR,K,ival,1,9,'F','hvac input: ihvac_type',IER)
-        ihvac_type(i) = ival
+          CALL EGETWI(OUTSTR,K,ival,1,9,'F',
+     &                'hvac input: ihvac_type',IER)
+          ihvac_type(i) = ival
+!          write(*,*) ">",i,"> TYPE", ival
 c Read whether the hvac system is a primary system or a backup system
-        CALL EGETWI(OUTSTR,K,ival,1,2,'F','hvac input: ipriority',IER)
-        ipriority(i) = ival
+          CALL EGETWI(OUTSTR,K,ival,1,2,'F','hvac input: ipriority',IER)
+          ipriority(i) = ival
+!          write(*,*) ">",i,"> PRI", ival
 c Read the total number of zones being served by the HAVC system
 c num_sys_zones
-        CALL EGETWI(OUTSTR,K,ival,1,100,'F',
-     &'hvac input: num_sys_zones',IER)
-        num_sys_zones(i) = ival
+          CALL EGETWI(OUTSTR,K,ival,1,100,'F',
+     &      'hvac input: num_sys_zones',IER)
+          num_sys_zones(i) = ival
+!          write(*,*) ">",i,"> ZONES", ival
 
 c The data required to simulate the performance of the hvac system depends
 c on the hvac system type. For each type of hvac system, call the appropriate
 c subroutine to read input data
 
 c If the hvac system is a furnace, call FURNACE_INPUT
-        if(ihvac_type(i) .eq. 1 ) then
-          call FURNACE_INPUT(i)
+          if(ihvac_type(i) .eq. 1 ) then
+            call FURNACE_INPUT(i)
+            iunit_function(i) = iFuncHeating
 c If the hvac system is a boiler, call FURNACE_INPUT. Boiler model is
 c the same as furnace model
-        elseif(ihvac_type(i) .eq. 2) then
-          call FURNACE_INPUT(i)
+          elseif(ihvac_type(i) .eq. 2) then
+            call FURNACE_INPUT(i)
+            iunit_function(i) = iFuncHeating
 c If hvac system is Baseboards/Hydronics/Plenum Heater, call BASEBOARD_INPUT
-        elseif(ihvac_type(i) .eq. 3) then
-          call BASEBOARD_INPUT(i)
+          elseif(ihvac_type(i) .eq. 3) then
+            call BASEBOARD_INPUT(i)
+            iunit_function(i) = iFuncHeating
 C Assume baseboard is electric.
           ifuel_type(i) = iElectricity
 c If the hvac system is an air-source heat pump, call ASHP_INPUT
-        elseif(ihvac_type(i) .eq. 7) then
-          call ASHP_INPUT(i)
+          elseif(ihvac_type(i) .eq. 7) then
+            call ASHP_INPUT(i)
           ifuel_type(i) = iElectricity
 c GSHP: begin
 C If the hvac system is a ground-source heat pump, call ASHP_INPUT
-        elseif(ihvac_type(i) .eq. 8) then
-          call ASHP_INPUT(i)
+          elseif(ihvac_type(i) .eq. 8) then
+            call ASHP_INPUT(i)
           ifuel_type(i) = iElectricity
 C GSHP: end
 
 c GCEP: begin
 C If the hvac system is a ground-source heat pump using the algorithm from Ecole Polytechnique,
 C call ASHP_INPUT
-        elseif(ihvac_type(i) .eq. 9) then
-          call ASHP_INPUT(i)
+          elseif(ihvac_type(i) .eq. 9) then
+            call ASHP_INPUT(i)
           ifuel_type(i) = iElectricity
 C GCEP: end
-
-        endif
+  
+          endif
 
 c If there is a circulation fan associated with the hvac system
 c (ifan_operation > 0), and the capacity of the fan is not specified by
-c the user (fan_power < 0), then function FAN_SIZE is used to set an 
+c the user (fan_power < 0), then function FAN_SIZE is used to set an
 c appropriate fan size. For systems with backup heat, the backup heat
 c data has to be read in before that of the primary system. 
         if((fan_power(i) .lt. 0.).and.((ifan_operation(i) .eq. 1).or.
      &    (ifan_operation(i) .eq. 2)).and.(ipriority(i) .eq. 1)) then
           fan_power(i) = FAN_SIZE(i)
         endif
+
 c If the fan power associated with the system in auto mode is < 0, then
 c set this equal to the total fan power fan_power
-        if(fan_power_auto(i) .lt. 0.) then
-          fan_power_auto(i) = fan_power(i)
-        endif
+          if(fan_power_auto(i) .lt. 0.) then
+            fan_power_auto(i) = fan_power(i)
+          endif
 
-  10  end do
+  10    end do
+
+      endif
 
       CALL ERPFREE(IUNIT,ISTAT)
       return
       end
+
+
 
 c *********************************************************************
 c *********************************************************************
@@ -1621,7 +1678,7 @@ c For electric forced-air furnaces
         if(isys_type.eq.12) then
 c Note that af and bf appear in Equation 5 in Furnace Ref by Haddad
           af(isys) = 1.
-          bf(isys) = 0
+          bf(isys) = 0.
         endif      
 c** Natural Gas (type =2) can have systypes = 5,6,7,8,10**
 c For natural gas furnaces
