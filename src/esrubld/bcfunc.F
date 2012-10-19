@@ -1214,10 +1214,11 @@ C in H3Kreports to determine heating, cooling loads and
 C to evaluate passive solar design performance. Also used 
 C by BCL25_open_windows below.
       common/H3KReportsControl/bZoneHeated,   bZoneCooled,
-     &                         fHeatSetpoint, fCoolSetpoint
+     &                         fHeatSetpoint, fCoolSetpoint,
+     &                         bSlaveActive
 
 C Flags indicating zone is heated, cooled.
-      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
+      logical bZoneHeated(MCOM), bZoneCooled(MCOM), bSlaveActive(MCOM) 
 C Heating and cooling setpoint (oC)
       real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
 
@@ -1503,7 +1504,7 @@ C Inserted for the EU Fog Project: if heating or cooling set point is set to
 C -1000., the controller will use the dew point temperature as the set point.
 C This is an alternative to humidification in that the zone RH is  maintained
 C at (approx.) 100% RH.
-      IF(int(CSP).EQ.-1000. .OR. int(HSP).EQ.-1000.)THEN
+      IF(int(CSP).EQ.-1000 .OR. int(HSP).EQ.-1000)THEN
         
 C Set point is the dew point temperature of the zone. 
         PATMOS=1013.25
@@ -1519,8 +1520,8 @@ C
       HeatOrCool: if ( TCTL > CSP ) THEN 
       
         IPLT=2
-        QMX=QCN    ! Note that cooling is negative!
-        QMN=QCM
+        QMX=QCM    ! Note that cooling is negative!
+        QMN=QCN
         TCont=CSP
       
       else 
@@ -1537,7 +1538,9 @@ C
 C Determine required plant capacity 
 
       Q=(BB3-BB1*TCont)/BB2
-           
+
+
+
 C Is heat flux determined according to surface area?
 
       
@@ -1597,9 +1600,18 @@ C No free cooling.
         
         fCondFreeCool(IICOMP) = 0.
       
-C Do we have enough heating/cooling capacity?      
-        if ( fQTotal > QMX ) fQTotal = QMX
-        if ( fQTotal < QMN ) fQTotal = QMN
+C Do we have enough heating/cooling capacity? 
+        if ( fQTotal > 0. ) then
+          
+          if ( fQTotal > QMX ) fQTotal = QMX
+          if ( fQTotal < QMN ) fQTotal = QMN
+
+        else 
+     
+          if ( fQTotal < QMX ) fQTotal = QMX
+          if ( fQTotal > QMN ) fQTotal = QMN
+
+        endif 
       
       endif 
 
@@ -1632,13 +1644,10 @@ C is active, plant does not inject any heating/cooling.
         QFUT = Q      
       endif 
       
-C      print*, TF, TFA(IICOMP), bFreeCoolActive, fQTotal, QFut, 
-C     &   fFreeCoolDelivered(IICOMP)    
-      
 c      WRITE(*,*)'Heating/cooling flux and set points',QFUT,HSP,CSP
       IF(IBAN(ICF,1).EQ.-2)CALL MZRCPL(IICOMP,BB1,BB2,BB3,TCONT,0.05,
      &IPLT,QMX,QMN,TFUT,QFUT)
-
+     
 C Set QFUT for use by slave controller
       Qmst(ICF)=Q
       bMasterFreeCoolFlag(ICF)=bFreeCoolActive
@@ -1651,7 +1660,7 @@ C Trace output.
          call edisp(itu,outs)
          call edisp(itu,' Leaving subroutine BCL01')
       END IF
-
+     
       RETURN
    99 write(outs,'(a)')' BCL01: data incomplete.'
       if(dll)then
@@ -5584,8 +5593,10 @@ C deliver proportionally).
 
 C Commons for identifying wether a zone is heated or cooled.
       common/H3KReportsControl/bZoneHeated,   bZoneCooled,
-     &                         fHeatSetpoint, fCoolSetpoint
-      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
+     &                         fHeatSetpoint, fCoolSetpoint,
+     &                         bSlaveActive
+
+      logical bZoneHeated(MCOM), bZoneCooled(MCOM), bSlaveActive(MCOM) 
       real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
       integer iMasterZone
       character outs*124  
@@ -6500,10 +6511,11 @@ C in H3Kreports to determine heating, cooling loads and
 C to evaluate passive solar design performance. Also used 
 C by BCL25_open_windows, below. 
       common/H3KReportsControl/bZoneHeated,   bZoneCooled,
-     &                         fHeatSetpoint, fCoolSetpoint
+     &                         fHeatSetpoint, fCoolSetpoint,
+     &                         bSlaveActive
 
 C Flags indicating zone is heated, cooled.
-      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
+      logical bZoneHeated(MCOM), bZoneCooled(MCOM), bSlaveActive(MCOM) 
 C Heating and cooling setpoint (oC)
       real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)      
       
