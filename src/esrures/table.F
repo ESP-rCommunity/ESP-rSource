@@ -21,6 +21,7 @@ C Boston, MA 02111-1307 USA.
 C This file contains the following routines:
 C  MOTABL Produces tabular output for a 24 hour period.
 C  ZONTAB Multi-column tabular listing for performance metrics.
+C  MGLTBL monthly multi-column tabular listing for selected gains & losses.
 C  CZMRT  returns one day's temperatures of zone mean radiant temp.
 C  CZRESL returns one day's temperatures of zone resultant temp.
 
@@ -736,9 +737,16 @@ C gains and losses.
       CHARACTER RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
 
-      DIMENSION VAL(12),TVAL(12,12)
+      DIMENSION VAL(13),TVAL(13,12)
       DIMENSION NDYMTH(12), CQ(MTS), CQR(MTS),CQOUT(MTS)
+      DIMENSION CASDAY(MTS,4)  ! to hold casual type data
+      integer looplimit
       real biggest  ! guage size of annual numbers
+      real perocupc,perocupr,perocupl ! average occupant to write out
+      real perlightc,perlightr,perlightl ! average lighting to write out
+      real perequipc,perequipr,perequipl ! average equipment to write out
+      real otherc,otherr,otherl ! average other (future expansion) to write out
+      integer theonectld  ! if non-zero the casual gain type that is controlled.
 
       DATA NDYMTH/31,59,90,120,151,181,212,243,273,304,334,365/
       DATA NMTHNM/'Jan','Feb','Mar','Apr','May','Jun','Jul',
@@ -796,31 +804,59 @@ C Set header text.
       call edisp(itru,outs)
       call edisp(itru,' ')
 
+C Echo header with units.
       if(IR.eq.1)call edisp(itru,
      &' Monthly selection of gains & losses (to nearest 100Wh).')
       if(IR.eq.2)call edisp(itru,
      &' Monthly selection of gains & losses (to nearest kWh).')
       call edisp(itru,' ')
 
-C Monthly statistics of energy gains and losses.
-      write(outs,602)
-  602 format(
-     &  ' Zone      Period| Transp surfs   | Opaque surfs  | Casual',
-     &  ' Gains |Infilt.|Ventil |    Plant      |Solar radiation|')
-      call edisp(itru,outs)
-      write(outs,6021)
- 6021 format(
-     &  '             in  |extern  |other  |extern |other  |convec ',
-     &  'radiant|       |       |Heating|Cooling|absor |entering|')
-      call edisp(itru,outs)
-      write(outs,6022)
- 6022 format(
-     &  '                 |facing  |facing |facing |facing |       ',
-     &  '       |       |       |       |       |inside|zone    |')
-      call edisp(itru,outs)
+C If current version allow wider display, otherwise use previous.
+      if(izver.eq.4)then
 
-C Loop for 12 topics and then each month.
-      DO 620 IJK=1,12
+C Monthly statistics of energy gains and losses.
+        write(outs,'(3a)')
+     &  ' Zone      Period| Surface convection at face of |  Casual',
+     &  ' Gains (R+C)   |Air movement   | Environmental |Solar',
+     &  ' radiation |'
+        call edisp(itru,outs)
+        write(outs,'(3a)')
+     &  '           in    |   transparent |    opaque     |Occu-  |',
+     &  'Lights |Small  |Infil- |Venti- |   controls    |absorbd|',
+     &  'entering|'
+        call edisp(itru,outs)
+        write(outs,'(3a)')
+     &  '           month |outside|other  |outside|other  |pant   |',
+     &  '       |Power  |tration|lation |Heating|Cooling|within |',
+     &  'the     |'
+        call edisp(itru,outs)
+        write(outs,'(3a)')
+     &  '                 |facing |facing |facing |facing |       |',
+     &  '       |       |       |       |       |       |zone   |zone',
+     &  '    |'
+        call edisp(itru,outs)
+      else
+
+        write(outs,'(2a)')
+     &  ' Zone      Period| Surface convection at face of | Casual',
+     &  ' Gains  |Air movement   | Environmental |Solar radiation|'
+        call edisp(itru,outs)
+        write(outs,'(2a)')
+     &  ' Zone      Period|   transparent |    opaque     |convect|',
+     &  'radiant|Infil- |Venti- |   controls    |               |'
+        call edisp(itru,outs)
+        write(outs,'(2a)')
+     &  '             in  |outside|other  |outside|other  |ive    |',
+     &  '       |tration|lation |Heating|Cooling|absor |entering|'
+        call edisp(itru,outs)
+        write(outs,'(2a)')
+     &  '                 |facing |facing |facing |facing |       |',
+     &  '       |       |       |       |       |inside|zone    |'
+        call edisp(itru,outs)
+      endif
+
+C Loop for 13 topics and then each month.
+      DO 620 IJK=1,13
         DO 610 IMNTH=1,12
           TVAL(IJK,IMNTH)=0.0
   610   CONTINUE
@@ -829,7 +865,7 @@ C Loop for 12 topics and then each month.
 C Per zone statistics.
       DO 660 KGET=1,NGET
         izn=IGETNO(KGET,2)
-        DO 621 IJK=1,12
+        DO 621 IJK=1,13
           VAL(IJK)=0.0
   621   CONTINUE
 
@@ -849,24 +885,24 @@ C If version 2 of library then recover via goutopq etc.
           if(ISAVE.lt.4.and.izver.ge.2)then
             CALL GOUTOPQ(JD,IZN,ISET)
             CALL FLTIAV(JD,GVAL,CQ,NEL)
-            do 161 ISTP=ISTART,IEND
+            do ISTP=ISTART,IEND
               VAL(3)=VAL(3)+CQ(ISTP)
-  161       continue
+            enddo
             CALL GOPQIN(JD,IZN,ISET)
             CALL FLTIAV(JD,GVAL,CQ,NEL)
-            do 162 ISTP=ISTART,IEND
+            do ISTP=ISTART,IEND
               VAL(4)=VAL(4)+CQ(ISTP)
-  162       continue
+            enddo
             CALL GOUTTRN(JD,IZN,ISET)
             CALL FLTIAV(JD,GVAL,CQ,NEL)
-            do 163 ISTP=ISTART,IEND
+            do ISTP=ISTART,IEND
               VAL(1)=VAL(1)+CQ(ISTP)
-  163       continue
+            enddo
             CALL GTRNIN(JD,IZN,ISET)
             CALL FLTIAV(JD,GVAL,CQ,NEL)
-            do 164 ISTP=ISTART,IEND
+            do ISTP=ISTART,IEND
               VAL(2)=VAL(2)+CQ(ISTP)
-  164       continue
+            enddo
           elseif(ISAVE.eq.4)then
 
 C Surface convection contributions, loop through each surface,
@@ -897,122 +933,218 @@ C in terms of surface so negate it to have contribution to air node.
      &        'recovery of convection data.','W')
           endif
 
+          if(izver.eq.4)then
+
+C Get seperate casual gain total rad+convec. NOTE: this has been tested
+C for use with zone operations - but not yet temporal.
+
+C << extend code to check for TDF and NCM data structures >>
+
+            DO J2=ISTART,IEND
+              call getallcas(JD,IZN,ISET,J2,QCASR,QCASC,QCASL,FRAC,
+     &          perocupc,perlightc,perequipc,otherc,perocupr,
+     &          perlightr,perequipr,otherr,perocupl,perlightl,
+     &          perequipl,otherl,theonectld)
+              CASDAY(J2,1)=perocupc+perocupr ! Total occupant gain (W)
+              CASDAY(J2,2)=perlightc+perlightr ! Total lighting gain (W)
+              CASDAY(J2,3)=perequipc+perequipr ! Total small power gain (W)
+              CASDAY(J2,4)=otherc+otherr ! Total other gain (W)
+            ENDDO
+
+C Pass across the occupant gains into gval and then filter and sum.
+            DO J2=ISTART,IEND
+              GVAL(J2)=CASDAY(J2,1)
+            ENDDO
+            CALL FLTIAV(JD,GVAL,CQ,NEL)
+            CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+            VAL(5)=VAL(5)+SGT+SLT
+
+C Pass across the lighiting gains into gval and then filter and sum.
+            DO J2=ISTART,IEND
+              GVAL(J2)=CASDAY(J2,2)
+            ENDDO
+            CALL FLTIAV(JD,GVAL,CQ,NEL)
+            CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+            VAL(6)=VAL(6)+SGT+SLT
+
+C Pass across the small power gains into gval and then filter and sum.
+            DO J2=ISTART,IEND
+              GVAL(J2)=CASDAY(J2,3)
+            ENDDO
+            CALL FLTIAV(JD,GVAL,CQ,NEL)
+            CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+            VAL(7)=VAL(7)+SGT+SLT
+
+C Infiltration.
+            CALL GQV1(JD,IZN,ISET)
+            CALL FLTIAV(JD,GVAL,CQ,NEL)
+            CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+            VAL(8)=VAL(8)+SGT+SLT
+
+C Ventilation.
+            CALL GQV2(JD,IZN,ISET)
+            CALL FLTIAV(JD,GVAL,CQ,NEL)
+            CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+            VAL(9)=VAL(9)+SGT+SLT
+
+C Convection portion of plant.
+            CALL GZQM(JD,IZN,ISET)
+            CALL FLTIAV(JD,GVAL,CQ,NEL)
+            CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+            VAL(10)=VAL(10)+SGT
+            VAL(11)=VAL(11)+SLT
+
+C Solar absorbed in the zone.
+            call GSOLABS(JD,IZN,ISET)
+            CALL FLTIAV(JD,GVAL,CQ,NEL)
+            CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+            VAL(12)=VAL(12)+SGT
+
+C Solar entering zone from outside.
+            call GSOLX(JD,IZN,ISET)
+            CALL FLTIAV(JD,GVAL,CQ,NEL)
+            CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+            VAL(13)=VAL(13)+SGT
+
+          else
+
+C Really old results files. Consider depreciating.
 C Get casual gains. Unlike other facilities, only the total
 C casual convective and radiant are required so there is
 C little overhead with the GCASC and GCASR method.
-          CALL GCASC(JD,IZN,ISET) ! for older versions.
-          CALL FLTIAV(JD,GVAL,CQ,NEL)
-          CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
-          VAL(5)=VAL(5)+SGT+SLT
+            CALL GCASC(JD,IZN,ISET) ! for older versions.
+            CALL FLTIAV(JD,GVAL,CQ,NEL)
+            CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+            VAL(5)=VAL(5)+SGT+SLT
 
-          CALL GCASR(JD,IZN,ISET) ! for older versions.
-          CALL FLTIAV(JD,GVAL,CQ,NEL)
-          CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
-          VAL(6)=VAL(6)+SGT+SLT
+            CALL GCASR(JD,IZN,ISET) ! for older versions.
+            CALL FLTIAV(JD,GVAL,CQ,NEL)
+            CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+            VAL(6)=VAL(6)+SGT+SLT
 
 C Infiltration.
-          CALL GQV1(JD,IZN,ISET)
-          CALL FLTIAV(JD,GVAL,CQ,NEL)
-          CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
-          VAL(7)=VAL(7)+SGT+SLT
+            CALL GQV1(JD,IZN,ISET)
+            CALL FLTIAV(JD,GVAL,CQ,NEL)
+            CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+            VAL(7)=VAL(7)+SGT+SLT
 
 C Ventilation.
-          CALL GQV2(JD,IZN,ISET)
-          CALL FLTIAV(JD,GVAL,CQ,NEL)
-          CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
-          VAL(8)=VAL(8)+SGT+SLT
+            CALL GQV2(JD,IZN,ISET)
+            CALL FLTIAV(JD,GVAL,CQ,NEL)
+            CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+            VAL(8)=VAL(8)+SGT+SLT
 
 C Convection portion of plant.
-          CALL GZQM(JD,IZN,ISET)
-          CALL FLTIAV(JD,GVAL,CQ,NEL)
-          CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
-          VAL(9)=VAL(9)+SGT
-          VAL(10)=VAL(10)+SLT
+            CALL GZQM(JD,IZN,ISET)
+            CALL FLTIAV(JD,GVAL,CQ,NEL)
+            CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+            VAL(9)=VAL(9)+SGT
+            VAL(10)=VAL(10)+SLT
 
 C Solar absorbed in the zone.
-          call GSOLABS(JD,IZN,ISET)
-          CALL FLTIAV(JD,GVAL,CQ,NEL)
-          CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
-          VAL(11)=VAL(11)+SGT
+            call GSOLABS(JD,IZN,ISET)
+            CALL FLTIAV(JD,GVAL,CQ,NEL)
+            CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+            VAL(11)=VAL(11)+SGT
 
 C Solar entering zone from outside.
-          call GSOLX(JD,IZN,ISET)
-          CALL FLTIAV(JD,GVAL,CQ,NEL)
-          CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
-          VAL(12)=VAL(12)+SGT
+            call GSOLX(JD,IZN,ISET)
+            CALL FLTIAV(JD,GVAL,CQ,NEL)
+            CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+            VAL(12)=VAL(12)+SGT
+            VAL(13)=0.0  ! nothing in this slot
+          endif
 
 C Check if month finished.
           IF(JD.LT.NDYMTH(IMNTH).AND.JD.NE.IODF)goto 650
 
 C Dump this month's statistics.
-          DO 638 IJK=1,12
+          DO IJK=1,13
             VAL(IJK)=VAL(IJK)/1000.
-  638     CONTINUE
+          ENDDO
 
+          if(izver.eq.4)then
+            looplimit=13
+          else
+            looplimit=12
+          endif
           IF(IMNTH.EQ.IOM1)THEN
             if(IR.eq.1)then
               WRITE(outs,701)zname(IZN)(1:12),NMTHNM(IMNTH),
-     &                      (VAL(IJ),IJ=1,12)
-  701         FORMAT(1X,A12,1X,A3,1X,12F8.1)
+     &                      (VAL(IJ),IJ=1,looplimit)
+  701         FORMAT(1X,A12,1X,A3,1X,13F8.1)
             elseif(IR.eq.2)then
               WRITE(outs,703)zname(IZN)(1:12),NMTHNM(IMNTH),
-     &                      (VAL(IJ),IJ=1,12)
-  703         FORMAT(1X,A12,1X,A3,1X,12F8.0)
+     &                      (VAL(IJ),IJ=1,looplimit)
+  703         FORMAT(1X,A12,1X,A3,1X,13F8.0)
             endif
             call eddisp(itru,outs)
           ELSE
             if(IR.eq.1)then
-              WRITE(outs,702)NMTHNM(IMNTH),(VAL(IJ),IJ=1,12)
-  702         FORMAT(14x,A3,1X,12F8.1)
+              WRITE(outs,702)NMTHNM(IMNTH),(VAL(IJ),IJ=1,looplimit)
+  702         FORMAT(14x,A3,1X,13F8.1)
             elseif(IR.eq.2)then
-              WRITE(outs,704)NMTHNM(IMNTH),(VAL(IJ),IJ=1,12)
-  704         FORMAT(14x,A3,1X,12F8.0)
+              WRITE(outs,704)NMTHNM(IMNTH),(VAL(IJ),IJ=1,looplimit)
+  704         FORMAT(14x,A3,1X,13F8.0)
             endif
             call eddisp(itru,outs)
           ENDIF
 
-          DO 640 IJK=1,12
+          DO IJK=1,looplimit
             TVAL(IJK,IMNTH)=TVAL(IJK,IMNTH)+VAL(IJK)
             VAL(IJK)=0.0
-  640     CONTINUE
+          ENDDO
           IMNTH=IMNTH+1
   650   CONTINUE
   660 CONTINUE
 
 C Dump 'all-zone' statistics if more than one zone.
+      if(izver.eq.4)then
+        looplimit=13
+      else
+        looplimit=12
+      endif
       DO 680 IMNTH=IOM1,IOM2
         if (NZ.GT.1) then
           IF(IMNTH.EQ.IOM1)THEN
-            write(outs,705)NMTHNM(IMNTH),(TVAL(IJK,IMNTH),IJK=1,12)
-  705       format(' All zones    ',A3,1X,12(F8.0))
+            write(outs,705)NMTHNM(IMNTH),
+     &        (TVAL(IJK,IMNTH),IJK=1,looplimit)
+  705       format(' All zones    ',A3,1X,13(F8.0))
             call edisp(itru,' ')
             call eddisp(itru,outs)
           ELSE
-            write(outs,706)NMTHNM(IMNTH),(TVAL(IJK,IMNTH),IJK=1,12)
-  706       format(14X,A3,1X,12(F8.0))
+            write(outs,706)NMTHNM(IMNTH),
+     &        (TVAL(IJK,IMNTH),IJK=1,looplimit)
+  706       format(14X,A3,1X,13(F8.0))
             call eddisp(itru,outs)
           ENDIF
         endif
         biggest=0.0
-        DO 685 IJK=1,12
+        DO IJK=1,looplimit
           VAL(IJK)=VAL(IJK)+TVAL(IJK,IMNTH)
           if(VAL(IJK).gt.biggest) biggest=VAL(IJK)
-  685   CONTINUE
+        ENDDO
   680 CONTINUE
 
 C Dump the annual totals if run was for more than one month.
 
 C Find if any of the annual totals is large enough to require 10 digits
 C otherwise write with 8 or 9 digits.
-
+      if(izver.eq.4)then
+        looplimit=13
+      else
+        looplimit=12
+      endif
       if (IOM2.GT.IOM1) then
         if(biggest.gt.999999.0)then
-          write(outsl,'(A,12(F10.0))') ' Annual   ',(VAL(IJK),IJK=1,12)
+          write(outsl,'(A,13(F10.0))') ' Annual   ',
+     &      (VAL(IJK),IJK=1,looplimit)
         elseif(biggest.gt.99999.0.and.biggest.lt.999999.0)then
-          write(outsl,'(A,12(F9.0))')' Annual      ',(VAL(IJK),IJK=1,12)
+          write(outsl,'(A,13(F9.0))')' Annual      ',
+     &      (VAL(IJK),IJK=1,looplimit)
         else
-          write(outsl,'(A,12(F8.0))')' Annual           ',
-     &      (VAL(IJK),IJK=1,12)
+          write(outsl,'(A,13(F8.0))')' Annual           ',
+     &      (VAL(IJK),IJK=1,looplimit)
         endif
         call edisp(itru,' ')
         call eddisp(itru,outsl)

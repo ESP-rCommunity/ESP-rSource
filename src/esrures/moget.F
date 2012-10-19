@@ -4095,8 +4095,8 @@ C Get zone air temperatureand RH, use xdum and xdum1 for processing.
 
       elseif(IGETNO(KGET,1).eq.15)then
 
-C IGETNO(KGET,1) = 15 Casual gains. Total, convective, radiant or by
-C type.
+C IGETNO(KGET,1) = 15 Casual gains. Total, convective, radiant or by type.
+C IGETNO(KGET,3) 1=all c+r, 2=all conv, 3=all rad, 4=ocup, 5=light, 6=sm pwr, 7=ctld
         iicrcg=IGETNO(KGET,3)
         if(izver.eq.4)then
 
