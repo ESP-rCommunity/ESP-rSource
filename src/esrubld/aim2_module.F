@@ -275,6 +275,9 @@ C House volume in m^3.
 C Matrix holding the infiltration rate apportioned to each zone.
 C Dynamic memory allocation to set the size of the array
       REAL, ALLOCATABLE, DIMENSION(:) :: AIM2_infil_to_zones
+      
+C Total infiltration to house 
+      REAL :: fAIM2_TotalHouseInfil
 
       END MODULE AIM2_CalcData 
 
