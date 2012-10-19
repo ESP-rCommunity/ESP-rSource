@@ -14,8 +14,7 @@ C on the parameter act (3 char) ='ipv' or ='cfg'
       character dstmp*24
       character act*3   ! indicate which file destination
       integer list
-      dimension list(72)  ! zone lists currently limited to 72 max.
-                          ! edit if MCOM changes
+      dimension list(MCOM)  ! zone lists currently set to MCOM
       integer loutlen,itrunc,ipos  ! used with ailist call
 
 C      tab=CHAR(9)
@@ -140,7 +139,7 @@ C Copy izmg to single array list and then write via ailist call.
             itrunc=1
             ipos=1
             do while (itrunc.ne.0)
-              call ailist(ipos,nzmg(ijj),list,72,'C',louts,loutlen,
+              call ailist(ipos,nzmg(ijj),list,MCOM,'C',louts,loutlen,
      &          itrunc)
               write(ifu,'(1x,a)',IOSTAT=ios,ERR=1003) louts(1:loutlen)
               ipos=itrunc+1
@@ -180,7 +179,7 @@ C Copy izedg into list and the write out via ailist call.
             itrunc=1
             ipos=1
             do while (itrunc.ne.0)
-              call ailist(ipos,nzedg(ij),list,72,'C',louts,loutlen,
+              call ailist(ipos,nzedg(ij),list,MCOM,'C',louts,loutlen,
      &          itrunc)
               write(ifu,'(1x,a)',IOSTAT=ios,ERR=1003) louts(1:loutlen)
               ipos=itrunc+1
@@ -343,8 +342,7 @@ C on the parameter act (3 char) ='ipv' or ='cfg'.
       character dstmp*24
       character act*3   ! indicate which file destination
       integer list
-      dimension list(72)  ! zone lists currently limited to 72 max.
-                          ! edit if MCOM changes
+      dimension list(MCOM)  ! zone lists currently set to MCOM
       character tipvadesc*40
 
 C Comments about common blocks are in ripvdat.
@@ -613,8 +611,7 @@ C seasons.h provides typper and typsea
 
 C See ipvdata.h and ripvdat for IPV common block information.
       integer list
-      dimension list(72)  ! zone lists currently limited to 72 max.
-                          ! edit if MCOM changes
+      dimension list(MCOM)  ! zone lists set to MCOM
 
       character outs*124
       character act*1
@@ -818,7 +815,9 @@ C List current metrics and demand sets.
             do 829 ijj=1,nzmg(ij)
               list(ijj)=izmg(ij,ijj)
  829        continue
-            call znarlist(inlist,list,72,zdescr,length,ier)
+
+C 3rd parameter needs to be MCOM.
+            call znarlist(inlist,list,MCOM,zdescr,length,ier)
             call edisp248(itru,zdescr,100)
  269      continue
         else
@@ -827,7 +826,7 @@ C List current metrics and demand sets.
       endif
       if(act.eq.'a'.or.act.eq.'d')then
 
-C List current demand sets..
+C List current demand sets.
         if(neds.ge.1)then
           call edisp(itru,' ')
           call edisp(itru,
@@ -840,7 +839,7 @@ C List current demand sets..
             do 828 ijj=1,nzedg(ij)
               list(ijj)=izedg(ij,ijj)
  828        continue
-            call znarlist(inlist,list,72,zdescr,length,ier)
+            call znarlist(inlist,list,MCOM,zdescr,length,ier)
             call edisp248(itru,zdescr,100)
  268      continue
         else
