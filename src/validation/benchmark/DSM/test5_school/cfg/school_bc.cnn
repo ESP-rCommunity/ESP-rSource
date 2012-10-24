@@ -1,5 +1,5 @@
-*connections forschool_bc_str
-*Date Mon Sep 21 19:32:08 2009
+*connections for school_bc
+*Date Thu Aug 30 09:34:27 2012
      83   # number of connections
    1   1   0   0   0  #    1 south in op_plan_off is External
    1   2   3   2   4  #    2 ptn_a in op_plan_off >|< ptn_c in class_1

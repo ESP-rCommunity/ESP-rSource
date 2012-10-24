@@ -1,0 +1,706 @@
+Synopsis
+ 
+Synopsis of the model Whole model CEN validation test - Geometry B defined in
+B.cfg generated on Wed Aug 29 21:13:05 2012. Notes associated with the model
+are in ../doc/README_whole.txt
+ 
+The model is located at latitude   52.00 with a longitude difference of   0.00
+from the local time meridian. The year used in simulations is 1996 and
+weekends occur on Saturday and Sunday.
+The site exposure is sky=0.20 ground=0.40 other buildings=0.40 and the ground
+reflectance is 0.20.
+ 
+ 
+Simulationist name: not yet defined
+Simulationist telephone: not yet defined
+Simulationist address: not yet defined
+Simulationist city: not yet defined
+Simulationist postcode: not yet defined
+ 
+Ground temperatures Jan-Dec:
+  19.0  19.0  19.0  19.0  19.0  19.0  19.0  19.0  19.0  19.0  19.0  19.0
+ 
+An Integrated Performance View is incomplete or missing.
+ 
+Databases associated with the model:
+ standard pressure distr: pressc.db1
+ materials              : ../databases/13791.materialdb
+ constructions          : ../databases/WM.mlc
+ standard plant comp    : plantc.db1
+ standard event profiles: profiles.db1.a
+ optical properties     : ../databases/WM.opt
+ standard UK NCM data   : SBEM.db1
+ standard mould isopleth: mould.db1
+ 
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 T_1-V_a        55.4   7    83.6     7.0    19.8  T_1-V_a describes a...
+ 2 T_1-V_b        55.4   7    83.6     7.0    19.8  T_1-V_b describes a...
+ 3 T_1-V_c        55.4   7    83.6     7.0    19.8  T_1-V_c describes a...
+ 4 T_2-V_a        55.4   7    83.6     7.0    19.8  T_2-V_a describes a...
+ 5 T_2-V_b        55.4   7    83.6     7.0    19.8  T_2-V_b describes a...
+ 6 T_2-V_c        55.4   7    83.6     7.0    19.8  T_2-V_c describes a...
+ 7 T_3-V_a        55.4   7    83.6     7.0    19.8  T_3-V_a describes a...
+ 8 T_3-V_b        55.4   7    83.6     7.0    19.8  T_3-V_b describes a...
+ 9 T_3-V_c        55.4   7    83.6     7.0    19.8  T_3-V_c describes a...
+   all           499.   63    752.     63.    178.
+ 
+ 
+ Zone T_1-V_a ( 1) is composed of 7 surfaces and 12 vertices.
+ It encloses a volume of 55.4m^3 of space, with a total surface
+ area of 90.6m^2 & approx floor area of 19.8m^2
+ T_1-V_a describes a...
+ There is 10.080m2 of exposed surface area, 10.080m2 of which is vertical.
+ Outside walls are 15.556 % of floor area & avg U of 0.493 & UA of 1.5179
+ Glazing is 35.354 % of floor & 69.444 % facade with avg U of 2.377 & UA of 16.639
+ 
+ A summary of the surfaces in T_1-V_a( 1) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  15.4    180.   0. South        OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  2  10.1     90.   0. East         OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  3  15.4      0.   0. North        OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  4  3.08    270.   0. West         OPAQUE VERT Type_n.1     ||< external
+  5  19.8      0.  90. Ceiling      OPAQUE CEIL Type_n.4     ||< Identical CEN 13791
+  6  19.8      0. -90. Floor        OPAQUE FLOR Type_n.4-flr ||< Identical CEN 13791
+  7  7.00    270.   0. window       DG_CEN VERT dbl_glz_shd  ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ 
+ 
+ Shading patterns have not yet been calculated.
+ Opened existing hc control file.
+ 
+ Number of control periods:  1
+ 
+ Period  1 start   0.00 finish  24.00
+ CEN convection regime:
+ CEN user edited hc coefficients
+ CEN regime based on typical floor Floor and typcial ceiling Ceiling.
+Floor upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Ceiling upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Sloped upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Walls inside hc is   2.500 and other side of partitions   2.500 and external  13.500.
+ 
+ 
+ Air schedule notes:
+constant 1 ac/h
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekday    1  0 - 24    1.00  0.0154    0.00  0.0000   0     0.00
+saturday   1  0 - 24    1.00  0.0154    0.00  0.0000   0     0.00
+sunday     1  0 - 24    1.00  0.0154    0.00  0.0000   0     0.00
+ 
+Notes:
+constant 1 ac/h
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 EquiptW    0- 7      0.0      0.0       0.50       0.50
+weekday     2 EquiptW    7-11     19.8      0.0       0.50       0.50
+weekday     3 EquiptW   11-15    198.0      0.0       0.50       0.50
+weekday     4 EquiptW   15-18     19.8      0.0       0.50       0.50
+weekday     5 EquiptW   18-22    297.0      0.0       0.50       0.50
+weekday     6 EquiptW   22-23    198.0      0.0       0.50       0.50
+weekday     7 EquiptW   23-24      0.0      0.0       0.50       0.50
+saturday    1 EquiptW    0- 7      0.0      0.0       0.50       0.50
+saturday    2 EquiptW    7-11     19.8      0.0       0.50       0.50
+saturday    3 EquiptW   11-15    198.0      0.0       0.50       0.50
+saturday    4 EquiptW   15-18     19.8      0.0       0.50       0.50
+saturday    5 EquiptW   18-22    297.0      0.0       0.50       0.50
+saturday    6 EquiptW   22-23    198.0      0.0       0.50       0.50
+saturday    7 EquiptW   23-24      0.0      0.0       0.50       0.50
+sunday      1 EquiptW    0- 7      0.0      0.0       0.50       0.50
+sunday      2 EquiptW    7-11     19.8      0.0       0.50       0.50
+sunday      3 EquiptW   11-15    198.0      0.0       0.50       0.50
+sunday      4 EquiptW   15-18     19.8      0.0       0.50       0.50
+sunday      5 EquiptW   18-22    297.0      0.0       0.50       0.50
+sunday      6 EquiptW   22-23    198.0      0.0       0.50       0.50
+sunday      7 EquiptW   23-24      0.0      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone T_1-V_b ( 2) is composed of 7 surfaces and 12 vertices.
+ It encloses a volume of 55.4m^3 of space, with a total surface
+ area of 90.6m^2 & approx floor area of 19.8m^2
+ T_1-V_b describes a...
+ There is 10.080m2 of exposed surface area, 10.080m2 of which is vertical.
+ Outside walls are 15.556 % of floor area & avg U of 0.493 & UA of 1.5179
+ Glazing is 35.354 % of floor & 69.444 % facade with avg U of 2.377 & UA of 16.639
+ 
+ A summary of the surfaces in T_1-V_b( 2) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  15.4    180.   0. South        OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  2  10.1     90.   0. East         OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  3  15.4      0.   0. North        OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  4  3.08    270.   0. West         OPAQUE VERT Type_n.1     ||< external
+  5  19.8      0.  90. Ceiling      OPAQUE CEIL Type_n.4     ||< Identical CEN 13791
+  6  19.8      0. -90. Floor        OPAQUE FLOR Type_n.4-flr ||< Identical CEN 13791
+  7  7.00    270.   0. window       DG_CEN VERT dbl_glz_shd  ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ 
+ 
+ Shading patterns have not yet been calculated.
+ Opened existing hc control file.
+ 
+ Number of control periods:  1
+ 
+ Period  1 start   0.00 finish  24.00
+ CEN convection regime:
+ CEN user edited hc coefficients
+ CEN regime based on typical floor Floor and typcial ceiling Ceiling.
+Floor upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Ceiling upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Sloped upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Walls inside hc is   2.500 and other side of partitions   2.500 and external  13.500.
+ 
+ 
+ Air schedule notes:
+night flush
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekday    1  0 -  6   10.00  0.1540    0.00  0.0000   0     0.00
+weekday    2  6 - 18    0.50  0.0077    0.00  0.0000   0     0.00
+weekday    3 18 - 24   10.00  0.1540    0.00  0.0000   0     0.00
+saturday   1  0 -  6   10.00  0.1540    0.00  0.0000   0     0.00
+saturday   2  6 - 18    0.50  0.0077    0.00  0.0000   0     0.00
+saturday   3 18 - 24   10.00  0.1540    0.00  0.0000   0     0.00
+sunday     1  0 -  6   10.00  0.1540    0.00  0.0000   0     0.00
+sunday     2  6 - 18    0.50  0.0077    0.00  0.0000   0     0.00
+sunday     3 18 - 24   10.00  0.1540    0.00  0.0000   0     0.00
+ 
+Notes:
+night flush
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 EquiptW    0- 7      0.0      0.0       0.50       0.50
+weekday     2 EquiptW    7-11     19.8      0.0       0.50       0.50
+weekday     3 EquiptW   11-15    198.0      0.0       0.50       0.50
+weekday     4 EquiptW   15-18     19.8      0.0       0.50       0.50
+weekday     5 EquiptW   18-22    297.0      0.0       0.50       0.50
+weekday     6 EquiptW   22-23    198.0      0.0       0.50       0.50
+weekday     7 EquiptW   23-24      0.0      0.0       0.50       0.50
+saturday    1 EquiptW    0- 7      0.0      0.0       0.50       0.50
+saturday    2 EquiptW    7-11     19.8      0.0       0.50       0.50
+saturday    3 EquiptW   11-15    198.0      0.0       0.50       0.50
+saturday    4 EquiptW   15-18     19.8      0.0       0.50       0.50
+saturday    5 EquiptW   18-22    297.0      0.0       0.50       0.50
+saturday    6 EquiptW   22-23    198.0      0.0       0.50       0.50
+saturday    7 EquiptW   23-24      0.0      0.0       0.50       0.50
+sunday      1 EquiptW    0- 7      0.0      0.0       0.50       0.50
+sunday      2 EquiptW    7-11     19.8      0.0       0.50       0.50
+sunday      3 EquiptW   11-15    198.0      0.0       0.50       0.50
+sunday      4 EquiptW   15-18     19.8      0.0       0.50       0.50
+sunday      5 EquiptW   18-22    297.0      0.0       0.50       0.50
+sunday      6 EquiptW   22-23    198.0      0.0       0.50       0.50
+sunday      7 EquiptW   23-24      0.0      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone T_1-V_c ( 3) is composed of 7 surfaces and 12 vertices.
+ It encloses a volume of 55.4m^3 of space, with a total surface
+ area of 90.6m^2 & approx floor area of 19.8m^2
+ T_1-V_c describes a...
+ There is 10.080m2 of exposed surface area, 10.080m2 of which is vertical.
+ Outside walls are 15.556 % of floor area & avg U of 0.493 & UA of 1.5179
+ Glazing is 35.354 % of floor & 69.444 % facade with avg U of 2.377 & UA of 16.639
+ 
+ A summary of the surfaces in T_1-V_c( 3) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  15.4    180.   0. South        OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  2  10.1     90.   0. East         OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  3  15.4      0.   0. North        OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  4  3.08    270.   0. West         OPAQUE VERT Type_n.1     ||< external
+  5  19.8      0.  90. Ceiling      OPAQUE CEIL Type_n.4     ||< Identical CEN 13791
+  6  19.8      0. -90. Floor        OPAQUE FLOR Type_n.4-flr ||< Identical CEN 13791
+  7  7.00    270.   0. window       DG_CEN VERT dbl_glz_shd  ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ 
+ 
+ Shading patterns have not yet been calculated.
+ Opened existing hc control file.
+ 
+ Number of control periods:  1
+ 
+ Period  1 start   0.00 finish  24.00
+ CEN convection regime:
+ CEN user edited hc coefficients
+ CEN regime based on typical floor Floor and typcial ceiling Ceiling.
+Floor upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Ceiling upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Sloped upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Walls inside hc is   2.500 and other side of partitions   2.500 and external  13.500.
+ 
+ 
+ Air schedule notes:
+constant 10 ac/h
+ Control: no control of air flow
+ 
+Scheduled air infiltration and ventilation:
+Daytype    Period     Infiltration     Ventilation     From Source
+           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+weekday    1  0 - 24   10.00  0.1540    0.00  0.0000   0     0.00
+saturday   1  0 - 24   10.00  0.1540    0.00  0.0000   0     0.00
+sunday     1  0 - 24   10.00  0.1540    0.00  0.0000   0     0.00
+ 
+Notes:
+constant 10 ac/h
+ 
+Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
+          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+weekday     1 EquiptW    0- 7      0.0      0.0       0.50       0.50
+weekday     2 EquiptW    7-11     19.8      0.0       0.50       0.50
+weekday     3 EquiptW   11-15    198.0      0.0       0.50       0.50
+weekday     4 EquiptW   15-18     19.8      0.0       0.50       0.50
+weekday     5 EquiptW   18-22    297.0      0.0       0.50       0.50
+weekday     6 EquiptW   22-23    198.0      0.0       0.50       0.50
+weekday     7 EquiptW   23-24      0.0      0.0       0.50       0.50
+saturday    1 EquiptW    0- 7      0.0      0.0       0.50       0.50
+saturday    2 EquiptW    7-11     19.8      0.0       0.50       0.50
+saturday    3 EquiptW   11-15    198.0      0.0       0.50       0.50
+saturday    4 EquiptW   15-18     19.8      0.0       0.50       0.50
+saturday    5 EquiptW   18-22    297.0      0.0       0.50       0.50
+saturday    6 EquiptW   22-23    198.0      0.0       0.50       0.50
+saturday    7 EquiptW   23-24      0.0      0.0       0.50       0.50
+sunday      1 EquiptW    0- 7      0.0      0.0       0.50       0.50
+sunday      2 EquiptW    7-11     19.8      0.0       0.50       0.50
+sunday      3 EquiptW   11-15    198.0      0.0       0.50       0.50
+sunday      4 EquiptW   15-18     19.8      0.0       0.50       0.50
+sunday      5 EquiptW   18-22    297.0      0.0       0.50       0.50
+sunday      6 EquiptW   22-23    198.0      0.0       0.50       0.50
+sunday      7 EquiptW   23-24      0.0      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone T_2-V_a ( 4) is composed of 7 surfaces and 12 vertices.
+ It encloses a volume of 55.4m^3 of space, with a total surface
+ area of 90.6m^2 & approx floor area of 19.8m^2
+ T_2-V_a describes a...
+ There is 10.080m2 of exposed surface area, 10.080m2 of which is vertical.
+ Outside walls are 15.556 % of floor area & avg U of 0.493 & UA of 1.5179
+ Glazing is 35.354 % of floor & 69.444 % facade with avg U of 2.377 & UA of 16.639
+ 
+ A summary of the surfaces in T_2-V_a( 4) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  15.4    180.   0. South        OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  2  10.1     90.   0. East         OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  3  15.4      0.   0. North        OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  4  3.08    270.   0. West         OPAQUE VERT Type_n.1     ||< external
+  5  19.8      0.  90. Ceiling      OPAQUE CEIL Type_n.3     ||< Identical CEN 13791
+  6  19.8      0. -90. Floor        OPAQUE FLOR Type_n.3-flr ||< Identical CEN 13791
+  7  7.00    270.   0. window       DG_CEN VERT dbl_glz_shd  ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ 
+ 
+ Shading patterns have not yet been calculated.
+ Opened existing hc control file.
+ 
+ Number of control periods:  1
+ 
+ Period  1 start   0.00 finish  24.00
+ CEN convection regime:
+ CEN user edited hc coefficients
+ CEN regime based on typical floor Floor and typcial ceiling Ceiling.
+Floor upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Ceiling upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Sloped upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Walls inside hc is   2.500 and other side of partitions   2.500 and external  13.500.
+ 
+ Uses same operations as zone T_1-V_a
+ 
+ ____________________________________________________________
+ 
+ Zone T_2-V_b ( 5) is composed of 7 surfaces and 12 vertices.
+ It encloses a volume of 55.4m^3 of space, with a total surface
+ area of 90.6m^2 & approx floor area of 19.8m^2
+ T_2-V_b describes a...
+ There is 10.080m2 of exposed surface area, 10.080m2 of which is vertical.
+ Outside walls are 15.556 % of floor area & avg U of 0.493 & UA of 1.5179
+ Glazing is 35.354 % of floor & 69.444 % facade with avg U of 2.377 & UA of 16.639
+ 
+ A summary of the surfaces in T_2-V_b( 5) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  15.4    180.   0. South        OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  2  10.1     90.   0. East         OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  3  15.4      0.   0. North        OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  4  3.08    270.   0. West         OPAQUE VERT Type_n.1     ||< external
+  5  19.8      0.  90. Ceiling      OPAQUE CEIL Type_n.3     ||< Identical CEN 13791
+  6  19.8      0. -90. Floor        OPAQUE FLOR Type_n.3-flr ||< Identical CEN 13791
+  7  7.00    270.   0. window       DG_CEN VERT dbl_glz_shd  ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ 
+ 
+ Shading patterns have not yet been calculated.
+ Opened existing hc control file.
+ 
+ Number of control periods:  1
+ 
+ Period  1 start   0.00 finish  24.00
+ CEN convection regime:
+ CEN user edited hc coefficients
+ CEN regime based on typical floor Floor and typcial ceiling Ceiling.
+Floor upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Ceiling upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Sloped upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Walls inside hc is   2.500 and other side of partitions   2.500 and external  13.500.
+ 
+ Uses same operations as zone T_1-V_b
+ 
+ ____________________________________________________________
+ 
+ Zone T_2-V_c ( 6) is composed of 7 surfaces and 12 vertices.
+ It encloses a volume of 55.4m^3 of space, with a total surface
+ area of 90.6m^2 & approx floor area of 19.8m^2
+ T_2-V_c describes a...
+ There is 10.080m2 of exposed surface area, 10.080m2 of which is vertical.
+ Outside walls are 15.556 % of floor area & avg U of 0.493 & UA of 1.5179
+ Glazing is 35.354 % of floor & 69.444 % facade with avg U of 2.377 & UA of 16.639
+ 
+ A summary of the surfaces in T_2-V_c( 6) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  15.4    180.   0. South        OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  2  10.1     90.   0. East         OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  3  15.4      0.   0. North        OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  4  3.08    270.   0. West         OPAQUE VERT Type_n.1     ||< external
+  5  19.8      0.  90. Ceiling      OPAQUE CEIL Type_n.3     ||< Identical CEN 13791
+  6  19.8      0. -90. Floor        OPAQUE FLOR Type_n.3-flr ||< Identical CEN 13791
+  7  7.00    270.   0. window       DG_CEN VERT dbl_glz_shd  ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ 
+ 
+ Shading patterns have not yet been calculated.
+ Opened existing hc control file.
+ 
+ Number of control periods:  1
+ 
+ Period  1 start   0.00 finish  24.00
+ CEN convection regime:
+ CEN user edited hc coefficients
+ CEN regime based on typical floor Floor and typcial ceiling Ceiling.
+Floor upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Ceiling upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Sloped upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Walls inside hc is   2.500 and other side of partitions   2.500 and external  13.500.
+ 
+ Uses same operations as zone T_1-V_c
+ 
+ ____________________________________________________________
+ 
+ Zone T_3-V_a ( 7) is composed of 7 surfaces and 12 vertices.
+ It encloses a volume of 55.4m^3 of space, with a total surface
+ area of 90.6m^2 & approx floor area of 19.8m^2
+ T_3-V_a describes a...
+ There is 29.880m2 of exposed surface area, 10.080m2 of which is vertical.
+ Outside walls are 15.556 % of floor area & avg U of 0.493 & UA of 1.5179
+ Flat roof is 100.00 % of floor area & avg U of 0.444 & UA of 8.7897
+ Glazing is 35.354 % of floor & 69.444 % facade with avg U of 2.377 & UA of 16.639
+ 
+ A summary of the surfaces in T_3-V_a( 7) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  15.4    180.   0. South        OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  2  10.1     90.   0. East         OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  3  15.4      0.   0. North        OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  4  3.08    270.   0. West         OPAQUE VERT Type_n.1     ||< external
+  5  19.8      0.  90. Roof         OPAQUE CEIL Type_n.5     ||< external
+  6  19.8      0. -90. Floor        OPAQUE FLOR Type_n.3-flr ||< Identical CEN 13791
+  7  7.00    270.   0. window       DG_CEN VERT dbl_glz_shd  ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ 
+ 
+ Shading patterns have not yet been calculated.
+ Opened existing hc control file.
+ 
+ Number of control periods:  1
+ 
+ Period  1 start   0.00 finish  24.00
+ CEN convection regime:
+ User supplied hc values
+ CEN regime based on typical floor Floor and typcial ceiling Roof.
+Floor upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Ceiling upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Sloped upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Walls inside hc is   2.500 and other side of partitions   2.500 and external  13.500.
+ 
+ Uses same operations as zone T_1-V_a
+ 
+ ____________________________________________________________
+ 
+ Zone T_3-V_b ( 8) is composed of 7 surfaces and 12 vertices.
+ It encloses a volume of 55.4m^3 of space, with a total surface
+ area of 90.6m^2 & approx floor area of 19.8m^2
+ T_3-V_b describes a...
+ There is 29.880m2 of exposed surface area, 10.080m2 of which is vertical.
+ Outside walls are 15.556 % of floor area & avg U of 0.493 & UA of 1.5179
+ Flat roof is 100.00 % of floor area & avg U of 0.444 & UA of 8.7897
+ Glazing is 35.354 % of floor & 69.444 % facade with avg U of 2.377 & UA of 16.639
+ 
+ A summary of the surfaces in T_3-V_b( 8) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  15.4    180.   0. South        OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  2  10.1     90.   0. East         OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  3  15.4      0.   0. North        OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  4  3.08    270.   0. West         OPAQUE VERT Type_n.1     ||< external
+  5  19.8      0.  90. Roof         OPAQUE CEIL Type_n.5     ||< external
+  6  19.8      0. -90. Floor        OPAQUE FLOR Type_n.3-flr ||< Identical CEN 13791
+  7  7.00    270.   0. window       DG_CEN VERT dbl_glz_shd  ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ 
+ 
+ Shading patterns have not yet been calculated.
+ Opened existing hc control file.
+ 
+ Number of control periods:  1
+ 
+ Period  1 start   0.00 finish  24.00
+ CEN convection regime:
+ User supplied hc values
+ CEN regime based on typical floor Floor and typcial ceiling Roof.
+Floor upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Ceiling upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Sloped upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Walls inside hc is   2.500 and other side of partitions   2.500 and external  13.500.
+ 
+ Uses same operations as zone T_1-V_b
+ 
+ ____________________________________________________________
+ 
+ Zone T_3-V_c ( 9) is composed of 7 surfaces and 12 vertices.
+ It encloses a volume of 55.4m^3 of space, with a total surface
+ area of 90.6m^2 & approx floor area of 19.8m^2
+ T_3-V_c describes a...
+ There is 29.880m2 of exposed surface area, 10.080m2 of which is vertical.
+ Outside walls are 15.556 % of floor area & avg U of 0.493 & UA of 1.5179
+ Flat roof is 100.00 % of floor area & avg U of 0.444 & UA of 8.7897
+ Glazing is 35.354 % of floor & 69.444 % facade with avg U of 2.377 & UA of 16.639
+ 
+ A summary of the surfaces in T_3-V_c( 9) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  15.4    180.   0. South        OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  2  10.1     90.   0. East         OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  3  15.4      0.   0. North        OPAQUE VERT Type_n.2     ||< Identical CEN 13791
+  4  3.08    270.   0. West         OPAQUE VERT Type_n.1     ||< external
+  5  19.8      0.  90. Roof         OPAQUE CEIL Type_n.5     ||< external
+  6  19.8      0. -90. Floor        OPAQUE FLOR Type_n.3-flr ||< Identical CEN 13791
+  7  7.00    270.   0. window       DG_CEN VERT dbl_glz_shd  ||< external
+ 
+ 
+ An hourly solar radiation distribution is used for this zone.
+ 
+ 
+ Shading patterns have not yet been calculated.
+ Opened existing hc control file.
+ 
+ Number of control periods:  1
+ 
+ Period  1 start   0.00 finish  24.00
+ CEN convection regime:
+ User supplied hc values
+ CEN regime based on typical floor Floor and typcial ceiling Roof.
+Floor upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Ceiling upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Sloped upwards flow hc is   5.000 and downwards   0.700 and external  13.500.
+Walls inside hc is   2.500 and other side of partitions   2.500 and external  13.500.
+ 
+ Uses same operations as zone T_1-V_c
+ 
+ ____________________________________________________________
+ 
+ Project floor area is 178.20m2, wall area is 27.720m2, window area is 63.000m2.
+ Sloped roof area is 0.00m2, flat roof area is 59.400m2, skylight area is 0.00m2.
+ In contact with ground 0.00m2.
+ There is 150.12m2 of outside surface area, 90.720m2 of which is vertical.
+ 
+ Outside walls are 15.556 % of floor area & avg U of 0.493 & UA of 13.661 & max MLC thickness 0.365
+ Flat roof is 33.333 % of floor area & avg U of 0.444 & UA of 26.369
+ Glazing is 35.354 % of floor & 69.444 % facade with avg U of 2.377 & UA of 149.75
+ 
+ ____________________________________________________________
+ Multi-layer constructions used:
+ 
+ Details of opaque construction: Type_n.1 and overall thickness  0.365
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    34   40.0     0.990  1800.   850. 0.00 0.60    10.  0.04 Outer0em layer : Outer0em layer
+    2   21   40.0     0.990  1800.   850. 0.90 0.60    10.  0.04 Outer layer : Outer layer
+    3   21   35.0     0.990  1800.   850. 0.90 0.60    10.  0.04 Outer layer : Outer layer
+    4   22   60.0     0.040    30.   850. 0.01 0.60    10.  1.50 Mineral wool 1 : Mineral wool 1
+    5   23   60.0     0.790  1600.   850. 0.01 0.60    10.  0.08 Masonry : Masonry
+    6   23   60.0     0.790  1600.   850. 0.01 0.60    10.  0.08 Masonry : Masonry
+    7   23   55.0     0.790  1600.   850. 0.01 0.60    10.  0.07 Masonry : Masonry
+ Int    24   15.0     0.700  1400.   850. 0.90 1.00    10.  0.02 Plaster internal : Plaster internal
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.493  0.500  0.483 (partition)  0.472
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.49
+ External surface admittance Y=  4.77  w=  1.40 decrement factor f=  0.51  phi=  1.58 surface factor f=  0.51  phi=  1.58
+ Partition admittance Y=  4.85  w=  1.39 surface factor f=  0.50  phi=  1.62
+ Total area of Type_n.1 is     27.72
+ 
+ Details of opaque construction: Type_n.2 and overall thickness  0.124
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    25   12.0     0.210   900.   850. 0.90 1.00    10.  0.06 Plaster gypsum : Plaster gypsum
+    2   22  100.0     0.040    30.   850. 0.01 0.60    10.  2.50 Mineral wool 1 : Mineral wool 1
+ Int    25   12.0     0.210   900.   850. 0.90 1.00    10.  0.06 Plaster gypsum : Plaster gypsum
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.359  0.363  0.354 (partition)  0.348
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.36
+ External surface admittance Y=  0.77  w=  3.79 decrement factor f=  0.95  phi=  0.31 surface factor f=  0.95  phi=  0.31
+ Partition admittance Y=  0.74  w=  5.59 surface factor f=  0.99  phi=  0.34
+ Total area of Type_n.2 is    183.96
+ 
+ Details of opaque construction: Type_n.3 linked to Type_n.3-flr & with overall thickness  0.284
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    26    4.0     0.230  1500.  1500. 0.90 1.00    10.  0.02 Covering plastic : Covering plastic
+    2   27   60.0     1.400  2000.   850. 0.01 0.60    10.  0.04 Cement floor : Cement floor
+    3   30   40.0     0.040    50.   850. 0.01 0.60    10.  1.00 Mineral wool 2 : Mineral wool 2
+    4   31   90.0     2.100  2400.   850. 0.90 1.00    10.  0.04 Concrete : Concrete
+ Int    31   90.0     2.100  2400.   850. 0.90 1.00    10.  0.04 Concrete : Concrete
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.760  0.778  0.737 (partition)  0.711
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.75
+ External surface admittance Y=  6.47  w=  1.06 decrement factor f=  0.33  phi=  2.67 surface factor f=  0.33  phi=  2.67
+ Partition admittance Y=  6.62  w=  1.11 surface factor f=  0.33  phi=  2.90
+ Total area of Type_n.3 is     29.70
+ 
+ Details of opaque construction: Type_n.4 linked to Type_n.4-flr & with overall thickness  0.404
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    26    4.0     0.230  1500.  1500. 0.90 1.00    10.  0.02 Covering plastic : Covering plastic
+    2   27   60.0     1.400  2000.   850. 0.01 0.60    10.  0.04 Cement floor : Cement floor
+    3   30   40.0     0.040    50.   850. 0.01 0.60    10.  1.00 Mineral wool 2 : Mineral wool 2
+    4   31   60.0     2.100  2400.   850. 0.90 1.00    10.  0.03 Concrete : Concrete
+    5   31   60.0     2.100  2400.   850. 0.90 1.00    10.  0.03 Concrete : Concrete
+    6   31   60.0     2.100  2400.   850. 0.90 1.00    10.  0.03 Concrete : Concrete
+    7   30  100.0     0.040    50.   850. 0.01 0.60    10.  2.50 Mineral wool 2 : Mineral wool 2
+ Int    28   20.0     0.060   400.   840. 0.90 1.00    10.  0.33 Acoustic board : Acoustic board
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.241  0.243  0.239 (partition)  0.236
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.24
+ External surface admittance Y=  0.62  w=  3.30 decrement factor f=  0.95  phi=  0.23 surface factor f=  0.95  phi=  0.23
+ Partition admittance Y=  0.62  w=  3.27 surface factor f=  0.95  phi=  0.23
+ Total area of Type_n.4 is     29.70
+ 
+ Details of opaque construction: Type_n.5 and overall thickness  0.284
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    35    4.0     0.230  1500.  1300. 0.00 0.90    10.  0.02 Rain0em protection : Rain0em protection
+    2   30   80.0     0.040    50.   850. 0.01 0.60    10.  2.00 Mineral wool 2 : Mineral wool 2
+    3   31   50.0     2.100  2400.   850. 0.90 1.00    10.  0.02 Concrete : Concrete
+    4   31   50.0     2.100  2400.   850. 0.90 1.00    10.  0.02 Concrete : Concrete
+    5   31   50.0     2.100  2400.   850. 0.90 1.00    10.  0.02 Concrete : Concrete
+ Int    31   50.0     2.100  2400.   850. 0.90 1.00    10.  0.02 Concrete : Concrete
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.438  0.444  0.431 (partition)  0.421
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.44
+ External surface admittance Y=  6.42  w=  0.98 decrement factor f=  0.32  phi=  2.50 surface factor f=  0.32  phi=  2.50
+ Partition admittance Y=  6.47  w=  1.03 surface factor f=  0.33  phi=  2.63
+ Total area of Type_n.5 is     59.40
+ 
+ Details of transparent construction: dbl_glz_shd with DG_CEN_shd optics and overall thickness  0.026
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    32    2.0    20.000  1800.  1000. 0.00 0.31    10.  0.00 2mm shade : 2mm shade
+    2    0    6.0     0.000     0.     0. 0.99 0.99     1.  0.08 air  0.08 0.08 0.08
+    3   33    6.0    20.000  2500.  1000. 0.84 0.60    10.  0.00 6mm glass : 6mm glass
+    4    0    6.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    33    6.0    20.000  2500.  1000. 0.84 0.60    10.  0.00 6mm glass : 6mm glass
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.377  2.560  2.171 (partition)  1.958
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.32
+ External surface admittance Y=  2.50  w=  1.04 decrement factor f=  0.72  phi=  0.43 surface factor f=  0.72  phi=  0.43
+ Partition admittance Y=  1.17  w=  5.45 surface factor f=  0.99  phi=  0.54
+ 
+   :CEN shaded double 6mm glazing: with id of: DG_CEN_shd
+ with 5 layers [including air gaps] and visible trn: 0.15
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.152 0.152 0.152 0.152 0.152
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.309 0.309 0.309 0.309 0.309
+    2  0.000 0.000 0.000 0.000 0.000
+    3  0.018 0.018 0.018 0.018 0.018
+    4  0.000 0.000 0.000 0.000 0.000
+    5  0.014 0.014 0.014 0.014 0.014
+ Total area of dbl_glz_shd is     63.00
+ 
+ Details of opaque construction: Type_n.3-flr linked to Type_n.3     & with overall thickness  0.284
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    31   90.0     2.100  2400.   850. 0.90 1.00    10.  0.04 Concrete : Concrete
+    2   31   90.0     2.100  2400.   850. 0.90 1.00    10.  0.04 Concrete : Concrete
+    3   30   40.0     0.040    50.   850. 0.01 0.60    10.  1.00 Mineral wool 2 : Mineral wool 2
+    4   27   60.0     1.400  2000.   850. 0.01 0.60    10.  0.04 Cement floor : Cement floor
+ Int    26    4.0     0.230  1500.  1500. 0.90 1.00    10.  0.02 Covering plastic : Covering plastic
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.760  0.778  0.737 (partition)  0.711
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.75
+ External surface admittance Y=  4.90  w=  2.48 decrement factor f=  0.64  phi=  2.25 surface factor f=  0.64  phi=  2.25
+ Partition admittance Y=  5.11  w=  2.50 surface factor f=  0.64  phi=  2.40
+ Total area of Type_n.3-flr is     59.40
+ 
+ Details of opaque construction: Type_n.4-flr linked to Type_n.4     & with overall thickness  0.404
+ 
+ Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
+      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Ext    28   20.0     0.060   400.   840. 0.90 1.00    10.  0.33 Acoustic board : Acoustic board
+    2   30  100.0     0.040    50.   850. 0.01 0.60    10.  2.50 Mineral wool 2 : Mineral wool 2
+    3   31   60.0     2.100  2400.   850. 0.90 1.00    10.  0.03 Concrete : Concrete
+    4   31   60.0     2.100  2400.   850. 0.90 1.00    10.  0.03 Concrete : Concrete
+    5   31   60.0     2.100  2400.   850. 0.90 1.00    10.  0.03 Concrete : Concrete
+    6   30   40.0     0.040    50.   850. 0.01 0.60    10.  1.00 Mineral wool 2 : Mineral wool 2
+    7   27   60.0     1.400  2000.   850. 0.01 0.60    10.  0.04 Cement floor : Cement floor
+ Int    26    4.0     0.230  1500.  1500. 0.90 1.00    10.  0.02 Covering plastic : Covering plastic
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.241  0.243  0.239 (partition)  0.236
+ 
+Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.24
+ External surface admittance Y=  4.90  w=  2.48 decrement factor f=  0.64  phi=  2.25 surface factor f=  0.64  phi=  2.25
+ Partition admittance Y=  4.91  w=  2.48 surface factor f=  0.64  phi=  2.25
+ Total area of Type_n.4-flr is     29.70
