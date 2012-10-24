@@ -955,7 +955,8 @@ C Loop through all of the layers and compose RT for the construction.
       DO 15, IL=1,LAYERS(IFOC)
       
 C If data available in material array gather it. And if an air
-C layer reset dbcon dbden dbsht andinclude the R values in the display.
+C layer (matarrayindex of zero or matopaq 'g' or 'h' then
+C reset dbcon dbden dbsht andinclude the R values in the display.
         matarrayindex=IPRMAT(IFOC,IL)   ! which array index
         if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &     matopaq(matarrayindex)(1:1).eq.'h'.or.

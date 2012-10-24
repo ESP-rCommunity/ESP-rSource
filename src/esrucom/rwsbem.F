@@ -414,7 +414,10 @@ C holds the static data associated with the activity.
       IF(OUTSTR(1:23).NE.'*activities_by_building')then
         call usrmsg('expecting *activities_by_building and got...',
      &    outstr,'W')  
-      endif   
+      endif
+
+C Reset IAT to one, process entry and jump back to 17 until the
+C tag *end_activities_by_ is found.
       IAT=1
  17   CALL STRIPC(IUF,OUTSTR,99,ND,1,'Activity types',IER)
       IF(OUTSTR(1:19).EQ.'*end_activities_by_')GOTO 18

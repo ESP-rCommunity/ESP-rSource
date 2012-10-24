@@ -750,7 +750,7 @@ C Material properties.
 
       LOGICAL closemat1,closemat2
 
-      DIMENSION ISD(19)
+      DIMENSION ISD(25)
       CHARACTER ISD*46
       CHARACTER KEY*1,HOLD*48,TOPTIC*12,optic*12
       integer ISDN,INODA ! max items and current menu item
@@ -833,12 +833,12 @@ C Multilayer construction has not been defined.
 
 C Find air gap resistance for this layer. 
 C << remove reporting for IPR >>
-            DO 148 IGG=1,NAIRG(ISUR)
+            DO IGG=1,NAIRG(ISUR)
               IF(IPAIRG(ISUR,IGG).EQ.IE)R=RAIRG(ISUR,IGG)
               WRITE(ISD(M),48)KEY,IE,IPR(ICF,IE),THK(ISUR,IE),
      &          CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE),R
   48          FORMAT(A1,I3,I4,F6.3,3F8.2,F6.2)
- 148        CONTINUE
+            ENDDO
           elseif(matarrayindex.eq.-99)then
             WRITE(ISD(M),'(a1,i3,a)')KEY,IE,
      &        ' confused material reference'
@@ -2054,7 +2054,7 @@ c homogeneous layer. Locate if the MLC database item is used.
           DO 45 il=1,LAYERS(ic)
             matarrayindex=IPRMAT(IC,IL)   ! which materials array index
 
-C And if matarrayindex is zero then resetn dbcon dbden dbsht.
+C And if matarrayindex is zero or matopaq g or h then resetn dbcon dbden dbsht.
             if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &         matopaq(matarrayindex)(1:1).eq.'h'.or.
      &         matarrayindex.eq.0)then

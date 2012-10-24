@@ -162,11 +162,11 @@ C array of duplicate checking names and materials data.
       nametocheck=' '
       do ih=0,600
         mathash(ih)=-1
-        namelist(ih)=' '
-        matname(ih)=' '
-        matdoc(ih)=' '
+        if(ih.gt.0)namelist(ih)=' '
+        if(ih.gt.0)matname(ih)=' '
+        if(ih.gt.0)matdoc(ih)=' '
         matopaq(ih)=' '
-        matcatindex(ih)=0
+        if(ih.gt.0)matcatindex(ih)=0
       end do
 
       K=0
@@ -621,11 +621,11 @@ C array of duplicate checking names and materials data.
         nametocheck=' '
         do ih=0,600
           mathash(ih)=-1
-          namelist(ih)=' '
-          matname(ih)=' '
-          matdoc(ih)=' '
+          if(ih.gt.0)namelist(ih)=' '
+          if(ih.gt.0)matname(ih)=' '
+          if(ih.gt.0)matdoc(ih)=' '
           matopaq(ih)=' '
-          matcatindex(ih)=0
+          if(ih.gt.0)matcatindex(ih)=0
         end do
 
         matver = 1.1   ! set initial version of database.
@@ -999,10 +999,10 @@ C Clear the materials common blocks.
 C Fill the hash table with not included marker (-1)
       do ih=0,600
         mathash(ih)=-1
-        matname(ih)=' '
-        matdoc(ih)=' '
-        matopaq(ih)=' '
-        matcatindex(ih)=0
+        if(ih.gt.0)matname(ih)=' '
+        if(ih.gt.0)matdoc(ih)=' '
+        matopaq(ih)=' '  ! allow zero so that iprmat of zero is ok
+        if(ih.gt.0)matcatindex(ih)=0
       end do
 
 C Proceed with the assumption that ICLN increments in the same order as
