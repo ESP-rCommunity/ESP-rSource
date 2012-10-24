@@ -66,26 +66,6 @@ C Read (silently) construction file to get surface emissivities.
       CALL ECONST(LTHRM(IZONE),IUNIT,IZONE,0,IUOUT,IER)
       IF(IER.NE.0)RETURN
 
-C If izver >= 4 then there is no need to read the operation file.
-      if(izver.gt.4)then
-        continue
-      else
-
-C Assume that the operation file name has been read in via MOINIT.
-C Read in the zone operational file data.
-        CALL EROPER(0,iuout,iunit,izone,IER) ! for older files
-        if(ip3ver(izone).eq.0)then
-          write(outs,'(a,i2,a)') 
-     &    'Operation file for zone ',izone,' periods being sorted!'
-          call edisp(iuout,outs)
-          call PROCESSOLDCAS(izone,0,iuout)
-        endif
-        IF(IER.EQ.1)RETURN
-
-C Read casual gain control file.
-        IF(ICGC(IZONE).EQ.1)CALL ercgcf(0,iuout,LCGCIN(izone),IZONE,ier)
-      endif
-
 C Determine which surface is of interest.
       if(isfn.eq.0)CALL ASKSUR(IZONE,ISFN)
 

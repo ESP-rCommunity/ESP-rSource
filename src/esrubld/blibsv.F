@@ -65,7 +65,7 @@ c AND THE CURRENTLY ASSIGNED CLIMATE FILE NAME ARE ALSO SAVED.
 C      character doit*248
       character llclmdb*144  ! for expanded climate file name
       CHARACTER*6 NAME
-      character outs*124,tfile*72,longtfile*144
+      character outs*124,longtfile*144
       character fs*1
       logical concat,unixok
       integer lndbp  ! length of weather folder path
@@ -666,7 +666,7 @@ C#include "cfd.h"
       COMMON/PREC1/SNA(MCOM,MS)
       COMMON/PERS/ISD1,ISM1,ISD2,ISM2,ISDS,ISDF,NTSTEP
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      common/recver/izver,ipver,iever
+C      common/recver/izver,ipver,iever
 
       COMMON/PVALC/TPC(MCOM,MS,MN),QPC(MCOM)
       COMMON/PVALS/TPS(MCOM,MS),QPS(MCOM)
@@ -1159,8 +1159,9 @@ C      IF(IDAY.EQ.ISDF.AND.IHRP.EQ.24) then
 C        ipass=0
 C        return
 C      endif     
+C  991 IUNIT=IFIL+2
 
-  991 IUNIT=IFIL+2
+      IUNIT=IFIL+2
       IREC=IRECPL
       irecpb(icntb)=irecpl
       icntb=icntb+1
@@ -1626,13 +1627,11 @@ C        write(outs,'(A,2F9.2,A,2F9.2)')'Opaque conv: ext int',outopq,
 C     &    opqin,' Transp conv: ext int',outtrn,trnin
 C        call edisp(itu,outs)
 
-C Prior to izver 4 the zone air node energy balance information
-C did not include storage of the air mass itself. The following
-C qair could be written to the results file to improve the reporting
+C Qair is written to the results file to improve the reporting
 C of energy balances.
          qair=real(ntstep)*0.33*VOL(ICOMP)*(TPA(ICOMP)-TFA(ICOMP))
 
-C As of izver 4 explicit casual gain information is written into
+C For izver >=4 explicit casual gain information are written into
 C the results library. The first record has appended to it the sensible
 C convective W for occup/light/equip/other as well as qair.
 C The second record has the sensible radiant W for occup/light/equip/other
@@ -1923,27 +1922,19 @@ C Outside surface node temperature and average surface energy transfers.
               avqswrde=(qswrde(ICOMP,ISF,1)+qswrde(ICOMP,ISF,2))*0.5
             endif
 
-C Write out all of the information for ISAVE=4.
+C Write out all of the information for ISAVE=4 including explicit
+C radiant casual gains for occupants, lights, small power and other
+C so no calculations are needed to reconstitute the radiant casual 
+C gains.
 C << Note: in some cases it should be possible to write info for two
 C << surfaces into one record. 
             if(irdact.eq.0) then
-              if(izver.lt.4)then
-                WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)TMC(1),
-     &              avqswrdi,avqlwrdi,avqconvi,avqcondi,avqstori,
-     &              avqstore,avqconde,avqconve,avqlwrde,avqlwrbd,
-     &              avqlwrsk,avqswrde
-              else
-
-C For izver >=4 also include the explicit radiant casual gains
-C for occupants, lights, small power and other so no calculations
-C are needed to reconstitute the radiant casual gains.
-                WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)TMC(1),
-     &              avqswrdi,avqlwrdi,avqconvi,avqcondi,avqstori,
-     &              avqstore,avqconde,avqconve,avqlwrde,avqlwrbd,
-     &              avqlwrsk,avqswrde,avqcri*fracrocup,
-     &              avqcri*fracrlight,avqcri*fracrequip,
-     &              avqcri*fracroth
-              endif
+              WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)TMC(1),
+     &          avqswrdi,avqlwrdi,avqconvi,avqcondi,avqstori,
+     &          avqstore,avqconde,avqconve,avqlwrde,avqlwrbd,
+     &          avqlwrsk,avqswrde,avqcri*fracrocup,
+     &          avqcri*fracrlight,avqcri*fracrequip,
+     &          avqcri*fracroth
               IREC=IREC+1
             else
               sTMC(ICOMP,ISF,1)=sTMC(ICOMP,ISF,1)+TMC(1)

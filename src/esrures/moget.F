@@ -4098,7 +4098,7 @@ C Get zone air temperatureand RH, use xdum and xdum1 for processing.
 C IGETNO(KGET,1) = 15 Casual gains. Total, convective, radiant or by type.
 C IGETNO(KGET,3) 1=all c+r, 2=all conv, 3=all rad, 4=ocup, 5=light, 6=sm pwr, 7=ctld
         iicrcg=IGETNO(KGET,3)
-        if(izver.eq.4)then
+        if(izver.ge.4)then
 
 C If izver >= 4 the read the data directly.
           IZ=IGETNO(KGET,2)
@@ -4185,98 +4185,6 @@ C If izver >= 4 the read the data directly.
             endif
   202     CONTINUE
           CALL XTVAL1(GC,ISTART,IEND,KGET)
-        else
-          if(IICRCG.eq.1)then
-
-C Combined radiant and convective. If the
-C operation file is old, sort the periods via processoldcas.
-            DO J2=ISTART,IEND
-              GC(J2)=0.0
-            END DO
-            IUNIT=IFIL+1
-            CALL EROPER(0,iuout,iunit,IGETNO(KGET,2),IER) ! for older results files.
-            if(ip3ver(IGETNO(KGET,2)).eq.0)then
-              write(outs,'(a,i2,a)') 
-     &          'Operation file for zone ',IGETNO(KGET,2),
-     &          ' periods being sorted!'
-              call edisp(iuout,outs)
-              call PROCESSOLDCAS(IGETNO(KGET,2),0,iuout)
-            endif
-            IF(ICGC(IGETNO(KGET,2)).EQ.1)then
-              CALL ercgcf(0,iuout,LCGCIN(IGETNO(KGET,2)),
-     &            IGETNO(KGET,2),ier)
-            endif
-            CALL ZCASC(IGETNO(KGET,2),IDAY)
-            DO JC2=ISTART,IEND
-              GC(JC2)=VAL3(15,JC2)+VAL3(16,JC2)+VAL3(17,JC2)+
-     &                VAL3(18,JC2)+VAL3(19,JC2)+VAL3(20,JC2)
-            END DO
-            CALL CASRT(IGETNO(KGET,2),IDAY)
-            DO JC2=ISTART,IEND
-              GC(JC2)=GC(JC2)+VAL3(15,JC2)+VAL3(16,JC2)+VAL3(17,JC2)+
-     &                VAL3(18,JC2)+VAL3(19,JC2)+VAL3(20,JC2)
-            END DO
-            CALL XTVAL1(GC,ISTART,IEND,KGET)
-          elseif(IICRCG.eq.2)then
-            CALL GCASC(IDAY,IGETNO(KGET,2),IGETNO(KGET,5)) ! for older versions.
-            CALL XTVAL1(GVAL,ISTART,IEND,KGET)
-          elseif(IICRCG.eq.3)then
-            CALL GCASR(IDAY,IGETNO(KGET,2),IGETNO(KGET,5)) ! for older versions.
-            CALL XTVAL1(GVAL,ISTART,IEND,KGET)
-          elseif(IICRCG.gt.3.and.IICRCG.le.7)then
-
-C Casual by type. Use GC to hold sum at each timestep. First read the
-C zone operation file and possible casual gain control file. If the
-C operation file is old, sort the periods.
-            DO J2=ISTART,IEND
-              GC(J2)=0.0
-            END DO
-            IUNIT=IFIL+1
-            CALL EROPER(0,iuout,iunit,IGETNO(KGET,2),IER) ! for older results files.
-            if(ip3ver(IGETNO(KGET,2)).eq.0)then
-              write(outs,'(a,i2,a)') 
-     &          'Operation file for zone ',IGETNO(KGET,2),
-     &          ' periods being sorted!'
-              call edisp(iuout,outs)
-              call PROCESSOLDCAS(IGETNO(KGET,2),0,iuout)
-            endif
-            IF(ICGC(IGETNO(KGET,2)).EQ.1)then
-              CALL ercgcf(0,iuout,LCGCIN(IGETNO(KGET,2)),
-     &          IGETNO(KGET,2),ier)
-            endif
-            CALL ZCASC(IGETNO(KGET,2),IDAY)
-            DO 50, JC2=ISTART,IEND
-              if(iicrcg.eq.4)then
-                GC(JC2)=VAL3(15,JC2)
-              elseif(iicrcg.eq.5)then
-                GC(JC2)=VAL3(16,JC2)
-              elseif(iicrcg.eq.6)then
-                GC(JC2)=VAL3(17,JC2)
-              elseif(iicrcg.eq.7)then
-                GC(JC2)=VAL3(18,JC2)+VAL3(19,JC2)+VAL3(20,JC2)
-              endif
-   50       CONTINUE
-
-C Use XDUM1 for radiant portion, sum depending on gain type.
-            CALL CASRT(IGETNO(KGET,2),IDAY)
-            DO 52, JC2=ISTART,IEND
-              if(iicrcg.eq.4)then
-                GC(JC2)=GC(JC2)+VAL3(15,JC2)
-              elseif(iicrcg.eq.5)then
-                GC(JC2)=GC(JC2)+VAL3(16,JC2)
-              elseif(iicrcg.eq.6)then
-                GC(JC2)=GC(JC2)+VAL3(17,JC2)
-              elseif(iicrcg.eq.7)then
-                GC(JC2)=GC(JC2)+VAL3(18,JC2)+VAL3(19,JC2)+VAL3(20,JC2)
-              endif
-   52       CONTINUE
-            CALL XTVAL1(GC,ISTART,IEND,KGET)
-
-C Casual gain fraction (controlled).
-          elseif(IICRCG.eq.8)then
-            CALL GCFRAC(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
-            CALL XTVAL1(GVAL,ISTART,IEND,KGET)
-          endif
         endif
 
       elseif(IGETNO(KGET,1).eq.16)then
@@ -4393,28 +4301,12 @@ C area to 1.
           SAREA=1.
         endif
           
-C Read in the zone geometry, construction data, zone operational data,
-C and casual gain control file. << Work towards not reading zone files >>
+C Read in the zone geometry, construction data.
+C << Work towards not reading zone files >>
         IUNIT=IFIL+1
         call georead(IUNIT,LGEOM(IZ),IZ,0,IUOUT,IER)
 
         CALL ECONST(LTHRM(IZ),IUNIT,IZ,0,IUOUT,IER)
-
-C If izver is 4 or greater then assume direct read of data, otherwise
-C read the zone operation file.
-        if(izver.eq.4)then
-          continue
-        else
-          CALL EROPER(0,iuout,iunit,iz,IER) ! for older results files.
-          if(ip3ver(iz).eq.0)then
-            write(outs,'(a,i2,a)') 
-     &        'Operation file for zone ',IGETNO(KGET,2),
-     &        ' periods being sorted!'
-            call edisp(iuout,outs)
-            call PROCESSOLDCAS(IGETNO(KGET,2),0,iuout)
-          endif
-          IF(ICGC(IZ).EQ.1)CALL ercgcf(0,iuout,LCGCIN(iz),IZ,ier)
-        endif
 
 C Set default surface absorbtivity.
         absorb=1.0
