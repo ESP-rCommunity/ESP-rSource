@@ -218,7 +218,7 @@ C here, any change of this code number in the database will require
 C the changes in the source code. This may be potentially improved
 C by not referring to the code number.
       IF(NPREF(IPCOMP) .EQ. 85) THEN
-        CALL TRNPMXT(IPCOMP, ICODE, NXT, MATPOS, LOCCON)
+	CALL TRNPMXT(IPCOMP, ICODE, NXT, MATPOS, LOCCON)
         CYCLE
       END IF
 

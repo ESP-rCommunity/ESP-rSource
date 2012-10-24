@@ -673,8 +673,7 @@ C First initialize UA modulus (for calculation of containment heat loss)
          call eclose(PCNTMF(IPCOMP),-99.00,0.001,closea)
          IF(closea) THEN
             UA=0.
-         ELSEIF(UA.gt.20)THEN ! Only work out internal heat transfer
-                              ! parameters if pipe is uninsulated
+         ELSE
             DH=ADATA(IPCOMP,4)
             PL=ADATA(IPCOMP,5)
             TW=CONVAR(ICON1,1)
@@ -694,20 +693,20 @@ C laminar flow).
               IF(HW.lt.(2.1/DH))HW=2.1/DH
 
 C Modify UA to account for internal pipe heat transfer
-	      UA=1./(1./(HW*PI*DH*PL)+1./UA)
+              UA=1./(1./(HW*PI*DH*PL)+1./UA)
 
 C Apply limiting value to mass flow rate. If mass flow rate is less than
 C limiting value then it can be safely assumed that the pipe loses heat
 C fairly quickly and a high value of UA will be calculated below
               call eclose(WMFR,0.00,0.001,closec)
-	      if(closec)WMFR=0.001 
-	      WMCP=WMFR*SHTFLD(3,CONVAR(ICON1,1))
+              if(closec)WMFR=0.001 
+              WMCP=WMFR*SHTFLD(3,CONVAR(ICON1,1))
 
 C Pipe heat loss is calculated using exit temperature therefore UA is
 C artificially modified to account for the temperature distribution over
 C the pipe length. For low flow rates this will substantially increase
 C UA because average pipe temperature is much higher than at exit.
-	      UA=WMCP*(EXP(UA/WMCP)-1.)
+              UA=WMCP*(EXP(UA/WMCP)-1.)
             ENDIF
          END IF
 
@@ -3731,7 +3730,7 @@ C Then evaluate the current environment temperature
 C If this is a plant only simulation or if no zone has been defined then
 C set the environmental temperature to the nominal value specified in the
 C data.
-         IF(INDCFG.EQ.2.OR.NINT(BDATA(IPCOMP,4)).EQ.0) THEN
+	 IF(INDCFG.EQ.2.OR.NINT(BDATA(IPCOMP,4)).EQ.0) THEN
             call eclose(PCNTMF(IPCOMP),-99.00,0.001,closea)
             IF(closea) THEN
                TE=T_env_nom
@@ -3758,7 +3757,7 @@ C Otherwise get the zone/surface temperatures.
 C Mark the nodal temperatures for iteration.
          ICSV(INOD1,1)=1
          CSVI(INOD1,1)=CSVF(INOD1,1)
-         ICSV(INOD2,1)=1
+	 ICSV(INOD2,1)=1
          CSVI(INOD2,1)=CSVF(INOD2,1)
          TS=CSVF(INOD1,1)
          TX=CSVF(INOD2,1)
@@ -3820,7 +3819,7 @@ C Store "environment" variables future values
          PCTF(ICON1)=CONVAR(ICON1,1)
          PCRF(ICON1)=C1
          PCQF(INOD1)=Q1
-         PCQF(INOD2)=Q2
+	 PCQF(INOD2)=Q2
 
 C Establish "containment loss" data
          QDATA(IPCOMP)=ALPHA*Q+(1.-ALPHA)*(PCQP(INOD2)+PCQP(INOD1))
@@ -3898,7 +3897,7 @@ C     BDATA: 1 COP heating (if < 0 use quadratic f(Twater))
 C            2 coef. h0
 C            3 coef. h1
 C            4 coef. h2
-C            5 COP cooling (if < 0 use quadratic f(Tair))
+C	     5 COP cooling (if < 0 use quadratic f(Tair))
 C            6 coef. c0
 C            7 coef. c1
 C            8 coef. c2
@@ -3992,7 +3991,7 @@ C node 1 water
 
 C node 2 moist air
         C2=PCONDR(ICON2)*(CONVAR(ICON2,2)*SHTFLD(1,CONVAR(ICON2,1))
-     &     +CONVAR(ICON2,3)*SHTFLD(2,CONVAR(ICON2,1)))
+     &	+CONVAR(ICON2,3)*SHTFLD(2,CONVAR(ICON2,1)))
 
 C Establish the COP for heating mode
         COPh=BDATA(IPCOMP,1)
@@ -4031,21 +4030,21 @@ C Establish heat loss modulus
         IF(CLOSE) UA=0.0
 
 C Set default state (off)
-        w_compressor=0.
+	w_compressor=0.
         Q_water=0.
-        Q_air=0.
+	Q_air=0.
 
 C If zero flow found then set transfered flux to zero and skip.
         IF(C1.LT.SMALL.OR.C2.LT.SMALL) THEN
           heat_pump_duty=0.
-          Q_water=0.
-          Q_air=0.
-          w_compressor=0.
-        ELSE
+	  Q_water=0.
+	  Q_air=0.
+	  w_compressor=0.
+	ELSE
 
 C Establish if heating or cooling
           if(heat_pump_duty.ge.0.)then
-            if(COPh.gt.small) w_compressor=heat_pump_duty/COPh
+	    if(COPh.gt.small) w_compressor=heat_pump_duty/COPh
 
 C heating mode, heat removed from water + compressor work added to
 C air node.
@@ -4063,11 +4062,11 @@ C Calculate effect of possible condensation here.
 C << to be added >>
 C end condensation calc.
 
-          endif
+	  endif
         ENDIF
 
 C Calculate the electrical demand of the components
-        PWRP(IPCOMP)=w_compressor
+	PWRP(IPCOMP)=w_compressor
         IEMODEL=1
         CALL EMACH(IPCOMP,IEMODEL,PWRP(IPCOMP),PQ,PA)
 
@@ -4124,8 +4123,8 @@ C Store "environment" variables future values
 C Addition output for results analysis.
          NAPDAT(IPCOMP)=6
          PCAOUT(IPCOMP,1)=heat_pump_duty
-         PCAOUT(IPCOMP,2)=Q_water
-         PCAOUT(IPCOMP,3)=Q_air
+	 PCAOUT(IPCOMP,2)=Q_water
+	 PCAOUT(IPCOMP,3)=Q_air
          PCAOUT(IPCOMP,4)=w_compressor
          PCAOUT(IPCOMP,5)=COPh
          PCAOUT(IPCOMP,6)=COPc
@@ -4353,7 +4352,7 @@ C Trace output
      &   ITRACE(37).NE.0) THEN
          WRITE(ITU,*) ' Component      ',IPCOMP,':'
          WRITE(ITU,*) ' 1 node (ISV=20) air cooled or evaporative heat'
-         WRITE(ITU,*) ' 1 node (ISV=20) rejection device'
+	 WRITE(ITU,*) ' 1 node (ISV=20) rejection device'
          WRITE(ITU,*) ' Matrix node(s) ',INOD1
          WRITE(ITU,*) ' Connection(s)  ',ICON1
          IF(ISTATS.EQ.1) THEN
@@ -5027,7 +5026,7 @@ C Condensing boiler
       ELSE
 
 C non condensing - non modulating (QLD=1)
-        QLD=1
+	QLD=1
         EFF_ON=(A1*TRD+A2*(TRD**2.)+A3*(TRD**3.)+A4*(TRD**4.)
      &         +A5*QLD+A6*TRD*QLD+A7*(TRD**2.)*QLD+A8+A9*(QL**2.))/100.
       ENDIF
@@ -5087,7 +5086,7 @@ C hot water if it is a combiboiler)
           IF (NINT(BDATA(IPCOMP,12)).NE.0) THEN
             FGAS=GMAX*GFR/BDATA(IPCOMP,3)
           ENDIF
-          PHIW=EFF_ON*FGAS*BDATA(IPCOMP,3)
+	  PHIW=EFF_ON*FGAS*BDATA(IPCOMP,3)
         ENDIF
 
 C Then calculate net heat input Q
@@ -5338,7 +5337,7 @@ C Then evaluate the current environment temperature
 C If this is a plant only simulation or if no zone has been defined then
 C set the environmental temperature to the nominal value specified in the
 C data.
-         IF(INDCFG.EQ.2.OR.NINT(BDATA(IPCOMP,10)).EQ.0) THEN
+	 IF(INDCFG.EQ.2.OR.NINT(BDATA(IPCOMP,10)).EQ.0) THEN
             call eclose(PCNTMF(IPCOMP),-99.00,0.001,closea)
             IF(closea) THEN
                TE=TE_N
@@ -5369,7 +5368,7 @@ C Just consider two maximum of two walls currently
 C Mark the nodal temperatures for iteration.
          ICSV(INOD1,1)=1
          CSVI(INOD1,1)=CSVF(INOD1,1)
-         ICSV(INOD2,1)=1
+	 ICSV(INOD2,1)=1
          CSVI(INOD2,1)=CSVF(INOD2,1)
          TS=CSVF(INOD1,1)
          TX=CSVF(INOD2,1)
@@ -5386,7 +5385,7 @@ C Then calculate radiator heat emission Q
            ELSE
              Q2=0.
            ENDIF
-           Q=Q1+Q2
+	   Q=Q1+Q2
 
 C Establish heat capacity of component mass CM (J/K) and
 C fluid heat capacity rate(s) C (W/K), ie. SUM(mass flow * specific heat)
@@ -5438,7 +5437,7 @@ C Store "environment" variables future values
          PCTF(ICON1)=CONVAR(ICON1,1)
          PCRF(ICON1)=C1
          PCQF(INOD1)=Q1
-         PCQF(INOD2)=Q2
+	 PCQF(INOD2)=Q2
 
 C Establish "containment loss" data
          QDATA(IPCOMP)=ALPHA*Q+(1.-ALPHA)*(PCQP(INOD2)+PCQP(INOD1))
@@ -5514,7 +5513,7 @@ C     BDATA: 1 COP model [1 - fixed COP 2 - modified Carnot efficiency; 3- f(dT)
 C            2 Model coef a0
 C            3 Model coef a1
 C            4 Model coef a2
-C            5 Model coef a3
+C	     5 Model coef a3
 C            6 Device power draw (kW) model [1 - fixed 2- polynomial]
 C            7 Model coef b0
 C            8 Model coef b1
@@ -5866,7 +5865,7 @@ C Calculate the electrical demand of the device assumung the controller is ON.
 c Calculate the compressor power draw.
         CompressPower=CompPower-(PumpPower+FanPower+CtlPower)
         IF(CompressPower.LT.0.0)CompressPower=0.0
-C       TotRealPower=CompPower+PumpPower+CtlPower+FanPower
+C	TotRealPower=CompPower+PumpPower+CtlPower+FanPower
 
         TotReacPower=(((CompressPower/CompressPf)**2)
      &-(CompressPower**2))**0.5
@@ -5917,9 +5916,9 @@ C Store "environment" variables future values
 C Addition output for results analysis.
          NAPDAT(IPCOMP)=9
          PCAOUT(IPCOMP,1)=HeatOutput
-         PCAOUT(IPCOMP,2)=COP
+	 PCAOUT(IPCOMP,2)=COP
          PCAOUT(IPCOMP,3)=Tamb
-         PCAOUT(IPCOMP,4)=DeviceONOFF
+	 PCAOUT(IPCOMP,4)=DeviceONOFF
          PCAOUT(IPCOMP,5)=ReturnSP
          PCAOUT(IPCOMP,6)=TotRealPower
          PCAOUT(IPCOMP,7)=TotReacPower

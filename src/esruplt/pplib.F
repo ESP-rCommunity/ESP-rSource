@@ -136,7 +136,7 @@ C Present-time-and-excitation coefficients
        IF(ISTATS.EQ.2) THEN
          B(21,2)=0.
        ELSE
-         B(21,2)=-Cc
+	 B(21,2)=-Cc
        ENDIF
       ENDIF
 
@@ -182,7 +182,7 @@ C Present-time-and-excitation coefficients
        IF(ISTATS.EQ.2) THEN
          B(22,2)=Cc
        ELSE
-         B(22,2)=-Cc
+	 B(22,2)=-Cc
        ENDIF
       ENDIF
 
@@ -718,7 +718,7 @@ C Determine the saturated moist content at surface temperature
        END IF
 
 C Limit condensing rate for relatively dry incoming air
-       if(condens.gt.rmv0) condens=rmv0
+	if(condens.gt.rmv0) condens=rmv0
 
 C Update amount of condensate at future time step
             Cd=CdP+Condens*TIMSEC
@@ -1047,15 +1047,15 @@ C Present-time-and-excitation coefficients
 
       ELSE IF(ISTATS.EQ.2.OR.ISTATS.EQ.3) THEN
 C Self-coupling coefficients
-        A(64,1)=1.
+       A(64,1)=1.
 C Cross-coupling coefficients
-        A(64,2)=-1.
+       A(64,2)=-1.
 C Present-time-and-excitation coefficients
-        IF(ISTATS.EQ.2) THEN
-          B(64,1)=Rmae
-        ELSE
-          B(64,1)=Rmve
-        ENDIF
+	IF(ISTATS.EQ.2) THEN
+        B(64,1)=Rmae
+	ELSE
+	B(64,1)=Rmve
+	ENDIF
 
       ENDIF
 
@@ -1150,8 +1150,8 @@ C Fluid Injection (water/steam to moist air)
       Rmr0=Rmw0+Rmv0
       call eclose(Rma1,0.00,0.0001,close)
       IF(.NOT.close) THEN
-        Ga2=(Rmv1+Rmr0)/Rma1
-      ELSE
+	Ga2=(Rmv1+Rmr0)/Rma1
+        ELSE
         Ga2=0.
       ENDIF
 
