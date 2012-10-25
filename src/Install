@@ -103,7 +103,7 @@ unversioned="no"           # Check svn for versioning info?
 #-----------------------------------------------------------
 
 # Buildable targets:
-programs="aco b2e bps dbm dfs c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res stats vew"
+programs="aco b2e bps dbm dfs cdb c2e clm e2r ecnv eco grd ish mfs mld mrt pdb prj res stats vew"
 # (bld plt, net are not currently built)
 # (net, run, stats are not currently built)
 
@@ -2379,7 +2379,7 @@ echo " Installing standard databases. This may take some time."
 
    cd ${SRCdir}/databases
    echo -n "   - Copying ASCII databases..."
-   cp ccht_mlc.db multicon.db1 multicon.db2 multicon.db3 multicon.db4 north_american.constrdb optics.db1 optics.db2 optics.db3 ccht-optics.db1 mould.db1 pressc.db1 mscomp.db1 *.desc ${DESTdir}/esp-r/databases
+   cp components.db1 ccht_mlc.db multicon.db1 multicon.db2 multicon.db3 multicon.db4 north_american.constrdb optics.db1 optics.db2 optics.db3 ccht-optics.db1 mould.db1 pressc.db1 mscomp.db1 *.desc ${DESTdir}/esp-r/databases
    echo " Done."
 
 fi

@@ -1,5 +1,6 @@
 SRCdir = `pwd`/..
 BLDdir = $(SRCdir)/esrubld
+CDBdir = $(SRCdir)/esrucdb
 COMdir = $(SRCdir)/esrucom
 DFSdir = $(SRCdir)/esrudfs
 MFSdir = $(SRCdir)/esrumfs
@@ -22,6 +23,7 @@ MODULE_OBJECTS = h3kmodule.o startup.o aim2_module.o
 OBJECTS = runesp.o arrow.o ascii_mat.o \
 	basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
 	blcond.o bnlthp.o bpfcom.o bsimsel.o \
+	CDBPlugins.o CDBCommon.o CDBExplore.o\
 	c2fdum.o cfdat.o cfdrw.o cfg3dv.o cfgmsc.o cfgrid.o cgd.o \
 	clickonbitmap.o commonclm.o context.o ctlexp.o ctlwrt.o ctread.o \
 	dossupport.o e3dviews.o ecasctl.o \
@@ -72,6 +74,15 @@ bpfcom.F:
 bsimsel.F:
 	rm -f bsimsel.F
 	ln -s $(COMdir)/bsimsel.F .
+CDBPlugins.F:
+	rm -f CDBPlugins.F
+	ln -s $(CDBdir)/CDBPlugins.F .
+CDBCommon.F:
+	rm -f CDBCommon.F
+	ln -s $(CDBdir)/CDBCommon.F .
+CDBExplore.F:
+	rm -f CDBExplore.F
+	ln -s $(CDBdir)/CDBExplore.F .
 c2fdum.F:
 	rm -f c2fdum.F
 	ln -s $(COMdir)/c2fdum.F .
@@ -320,6 +331,7 @@ clean:
 	h3kmodule.f90 aim2_module.F arrow.F ascii_mat.F \
 	basesimp.F basesimp_inputs.F bscoeff.F bscoeff_extended.F \
 	blcond.F bnlthp.F bpfcom.F bsimsel.F \
+	CDBPlugins.F CDBCommon.F CDBExplore.F \
 	c2fdum.F cfdat.F cfdrw.F cfg3dv.F cfgmsc.F cfgrid.F cgd.F clickonbitmap.F commonclm.F \
 	context.F ctlexp.F ctlwrt.F ctread.F dossupport.F e3dviews.F ecasctl.F \
 	econstr.F econtrol.F edcfd.F edcon.F edcondb.F edatabase.F eddb.F edgeo.F edipv.F \

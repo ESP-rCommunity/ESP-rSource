@@ -1,15 +1,14 @@
 SRCdir = `pwd`/..
 COMdir = $(SRCdir)/esrucom
-PROG = pdb$(EXE)
+PROG = cdb$(EXE)
 
 .SUFFIXES: .o .F
 .F.o:
 	$(MFC) $(FFLAGS) -c $<
 
-MODULE_OBJECTS = startup.o
+OBJECTS = cdb.o c2fdum.o CDBExplore.o CDBCommon.o
 
-OBJECTS = pdb.o c2fdum.o pcexp.o pc_manip.o pcedit.o pcentr.o pcompi.o \
-	  pcwrt.o pshell.o
+MODULE_OBJECTS = startup.o
 
 MODULES = start_up.mod parse_command_line.mod
 
@@ -31,4 +30,4 @@ install:
 
 clean:
 	rm -f core $(PROG) $(PROG).exe $(MODULE_OBJECTS) $(OBJECTS) $(MODULES) \
-	c2fdum.F startup.F
+	c2fdum.F startup.F 
