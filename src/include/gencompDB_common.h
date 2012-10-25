@@ -5,7 +5,7 @@ C Database structural information.
       COMMON/CGDB1/cdbversion
       COMMON/CGDB2/Comp_DBase_Unit,nbdomain,nbcat(Max_Domain_Types),
      &nbitem(Max_Domain_Types,Max_Categories)
-      COMMON/CGDB3/Comp_DBase_Name,domaintag(Max_Domain_Types),	
+      COMMON/CGDB3/Comp_DBase_Name,domaintag(Max_Domain_Types),
      &domainmenu(Max_Domain_Types),
      &cattag(Max_Domain_Types,Max_Categories),
      &catmenu(Max_Domain_Types,Max_Categories),
