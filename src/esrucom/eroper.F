@@ -280,6 +280,7 @@ C documentation.
 
 C We have a really old file which has documentation line first.
         oprdesc(icomp)=OUTSTR
+        ventdesc(icomp)=OUTSTR
         ip3ver(icomp)=0
       endif
 

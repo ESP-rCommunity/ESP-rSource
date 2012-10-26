@@ -1080,10 +1080,10 @@ C Parameters passed
 
 C Material properties.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat1,closemat2,bCloseToZero
+      logical bCloseToZero
 
-      CHARACTER OUTSTR*124,NAM*72
-      CHARACTER TITL*72,MLCN*12,OTF*4,OPT*12
+      CHARACTER OUTSTR*124
+      CHARACTER MLCN*12,OTF*4,OPT*12
       character MLCSYM*12
 
       real RTH  ! sum of surface coef for horiz flow at wall
@@ -1095,64 +1095,26 @@ C Material properties.
 C Pick up general description of the composite.
       call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
 
-C Check version of material database.
-      call eclose(matver,1.1,0.01,closemat1)
-      call eclose(matver,1.2,0.01,closemat2)
-
 C Reset U value reporting local variables.
       RT=0.
-      RTH=0.
-      RTU=0.
-      RTD=0.
-      RTI=0.
-      UVH=0.
-      UVU=0.
-      UVD=0.
-      UVI=0.
+
       DO 15, IL=1,LAYERS(IFOC)
 
-C If an air layer include the R values.
-        if(closemat1.or.closemat2)then
-          matarrayindex=IPRMAT(IFOC,IL)   ! which array index
+C If data available in material array gather it. And if an air
+C layer reset dbcon dbsht andinclude the R values in the display.
+        matarrayindex=IPRMAT(IFOC,IL)   ! which array index
 
-C And if matarrayindex is zero then resetn dbcon dbden dbsht.
-          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &       matopaq(matarrayindex)(1:1).eq.'h'.or.
-     &       matarrayindex.eq.0)then
-            DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-            E=0.99; A=0.99; DRV=1.0
-            TITL='GAPS'; NAM='AIR'
-          elseif(matarrayindex.eq.-99)then
-            continue
-          else
-            DBCON=matdbcon(matarrayindex)
-            DBDEN=matdbden(matarrayindex)
-            DBSHT=matdbsht(matarrayindex)
-            E=matdbine(matarrayindex)
-            A=matdbina(matarrayindex)
-            DRV=matdbdrv(matarrayindex)
-            write(TITL,'(a)') 'placeholder'
-
-C Make up NAM as combination of matnam and matdoc.
-            lnam=lnblnk(matname(matarrayindex))
-            lfordoc = 72 - (lnam +4)    ! space left for doc
-            write(NAM,'(3a)') matname(matarrayindex)(1:lnam),' : ',
-     &        matdoc(matarrayindex)(1:lfordoc)
-          endif
-        else
-          CALL ERPCDB(IFMAT,IPR(IFOC,IL),ITRU,IER,DBCON,DBDEN,
-     &      DBSHT,E,A,DRV,TITL,NAM)
-        endif
-
-        IF(IER.EQ.1)RETURN
-        IF(IPR(IFOC,IL).EQ.0)THEN
+C And if matarrayindex is zero then resetn dbcon dbsht.
+        if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &     matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &     matarrayindex.eq.0)then
+          DBCON=0.0
           RT=RT+DRAIR(IFOC,IL,1)
           RSI=DRAIR(IFOC,IL,1)
-        ELSEIF(IPR(IFOC,IL).EQ.-99)THEN
-
-C RT and RSI in above code.
-          continue
-        ELSE
+        elseif(matarrayindex.eq.-99)then
+          DBCON=0.0
+        else
+          DBCON=matdbcon(matarrayindex)
 
 C Also report on thermal resistance (m^2K/W) of the layer. If dbcon
 C is zero then avoid divide by zero.
@@ -1167,7 +1129,7 @@ C is zero then avoid divide by zero.
           else
             RT=1.0
           endif
-        ENDIF
+        endif
 
 C Calculate and (optionally) report.
   15  CONTINUE
