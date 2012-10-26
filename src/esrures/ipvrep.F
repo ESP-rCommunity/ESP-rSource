@@ -22,12 +22,16 @@ C Subroutines in this file:
 C  ipvrep - manage and write out an integrated performance view.
 C  mkannrep - write IPV report based on description held in common.
 C  ipvgtcap - recover capacity data from an intermediate report.
-C  ipvgtdmd - recover demand data (per m^2) from intermediate report
+C  ipvgtdmd - recover demand data (per m^2) from intermediate report.
+C  ipvseadmd - recover seasonal demand data from intermediate report.
 C  ipvgcmft - recover comfort data from a intermediate report
 C  aggreghd - hourly aggregate energy demand per unit time.
 C  aggregpv - recover pv electrical output
 C  ipvexp - control feedback to IPV report file or text feedback area.
 C  bemsrep - write BEMS report (for IPV).
+C  jumpassmt - rewinds and then scans intermidiate IPV file.
+C  jumpreport - scans intermidiate IPV file for *report matching index.
+
 
 C *********** ipvrep
 C Write IPV report based on description held in common.

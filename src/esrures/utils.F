@@ -602,7 +602,7 @@ C Not a domain combination that we can work with.
 C ******************** ZNLIST ********************
 C ZNLIST takes the current selected zones and builds a descriptive
 C string to be used in headers. 
-
+C Currently only deals with up to 28 zones.
       SUBROUTINE ZNLIST(zdescr,length,ierr)
 #include "building.h"
 
@@ -664,6 +664,8 @@ C a different colour for each name.
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
       character word*24
       logical unixok
+
+      integer NZL
       
 #ifdef OSI
       integer iix,iiy,iicol,iiline,iicx,iisize
@@ -753,23 +755,9 @@ C Then get index of colour for this zone, then plot text in that colour.
         call forceflush()
         return
       else
-        if(NZ.eq.1)then
-          write(word,'(A,I2,A)',iostat=ios,err=1)' Zone (',NZNO(1),') '
-          iiline=line; iicx=2; iisize=isize
-          call findviewtext(iicx,iiline,iisize,iix,iiy)
-          iicol=0
-          call winscl('-',iicol)
-          call wstxpt(iix,iiy,word)
-          icx=11
-          iiline=line; iicx=icx; iisize=isize
-          call findviewtext(iicx,iiline,iisize,iix,iiy)
-          lna=lnzname(NZNO(1))
-          write(word,'(a)',iostat=ios,err=1) zname(NZNO(1))(1:lna)
-          call textatxy(iix,iiy,word,'z',NZNO(1))
-          iicol=0
-          call winscl('-',iicol)
-          call forceflush()
-        elseif(NZ.gt.1.and.NZ.LE.20)THEN
+
+C There are more than 140 characters so write numbers instead.
+        if(NZ.ge.1.and.NZ.LE.28)THEN
           word='Zones:'
           iiline=line; iicx=2; iisize=isize
           call findviewtext(iicx,iiline,iisize,iix,iiy)
@@ -777,83 +765,51 @@ C Then get index of colour for this zone, then plot text in that colour.
           call winscl('-',iicol)
           call wstxpt(iix,iiy,word)
           icx=9
-          do 44 i=1,NZ
+          do i=1,NZ
             iiline=line; iicx=icx; iisize=isize
             call findviewtext(iicx,iiline,iisize,iix,iiy)
             lna=2
-            write(word,'(i2)',iostat=ios,err=1) NZNO(I)
+            write(word,'(i2.2)',iostat=ios,err=1) NZNO(I)
             call textatxy(iix,iiy,word,'z',NZNO(i))
             icx=icx+lna+1
-  44      continue
-          iicol=0
-          call winscl('-',iicol)
-          call forceflush()
-          return
-        ELSEIF(NZ.GT.20.AND.NZ.LE.24)THEN
-          word='Zones:'
-          iiline=line; iicx=2; iisize=isize
-          call findviewtext(iicx,iiline,iisize,iix,iiy)
-          iicol=0
-          call winscl('-',iicol)
-          call wstxpt(iix,iiy,word)
-          icx=9
-          do 45 i=1,NZ
-            iiline=line; iicx=icx; iisize=isize
-            call findviewtext(iicx,iiline,iisize,iix,iiy)
-            if(i.ge.1.and.i.lt.10)then
-              lna=1
-              write(word,'(i1)',iostat=ios,err=1) NZNO(I)
-            elseif(i.ge.10)then
-              lna=2
-              write(word,'(i2)',iostat=ios,err=1) NZNO(I)
-            endif
-            call textatxy(iix,iiy,word,'z',NZNO(i))
-            icx=icx+lna+1
-  45      continue
-          iicol=0
-          call winscl('-',iicol)
-          call forceflush()
-          return
-        ELSEIF(NZ.GT.24.AND.NZ.LE.28)THEN
-          word='Zn:'
-          iiline=line; iicx=2; iisize=isize
-          call findviewtext(iicx,iiline,iisize,iix,iiy)
-          iicol=0
-          call winscl('-',iicol)
-          call wstxpt(iix,iiy,word)
-          icx=5
-          do 46 i=1,NZ
-            iiline=line; iicx=icx; iisize=isize
-            call findviewtext(iicx,iiline,iisize,iix,iiy)
-            if(i.ge.1.and.i.lt.10)then
-              lna=1
-              write(word,'(i1)',iostat=ios,err=1) NZNO(I)
-            elseif(i.ge.10)then
-              lna=2
-              write(word,'(i2)',iostat=ios,err=1) NZNO(I)
-            endif
-            call textatxy(iix,iiy,word,'z',NZNO(i))
-            icx=icx+lna+1
-  46      continue
+          enddo
           iicol=0
           call winscl('-',iicol)
           call forceflush()
           return
         ELSEIF(NZ.GT.28)THEN
-          icx=2
-          do 47 i=1,NZ
-            iiline=line; iicx=2; iisize=isize
+
+C Write out digits on two lines.
+          word='Zones:'
+          iiline=line; iicx=2; iisize=isize
+          call findviewtext(iicx,iiline,iisize,iix,iiy)
+          iicol=0
+          call winscl('-',iicol)
+          call wstxpt(iix,iiy,word)
+          icx=9
+          do i=1,28
+            iiline=line; iicx=icx; iisize=isize
             call findviewtext(iicx,iiline,iisize,iix,iiy)
-            if(i.ge.1.and.i.lt.10)then
-              lna=1
-              write(word,'(i1)',iostat=ios,err=1) NZNO(I)
-            elseif(i.ge.10)then
-              lna=2
-              write(word,'(i2)',iostat=ios,err=1) NZNO(I)
-            endif
+            lna=2
+            write(word,'(i2.2)',iostat=ios,err=1) NZNO(I)
             call textatxy(iix,iiy,word,'z',NZNO(i))
             icx=icx+lna+1
-  47      continue
+          enddo
+          iicol=0
+          call winscl('-',iicol)
+          call forceflush()
+
+          icx=2
+          NZL=NZ
+          if(NZ.gt.56)NZL=56
+          do i=29,NZL
+            iiline=line+1; iicx=icx; iisize=isize
+            call findviewtext(iicx,iiline,iisize,iix,iiy)
+            lna=2
+            write(word,'(i2.2)',iostat=ios,err=1) NZNO(I)
+            call textatxy(iix,iiy,word,'z',NZNO(i))
+            icx=icx+lna+1
+          enddo
           iicol=0
           call winscl('z',iicol)
           call forceflush()

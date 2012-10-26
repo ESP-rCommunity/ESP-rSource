@@ -472,7 +472,7 @@ C MRT Sensors.
 
       CHARACTER ITEM(35)*24, MTITLE*22, values*20, CUBN*6
       CHARACTER ITEMS(18)*23
-      CHARACTER ITEMC(24)*24
+      CHARACTER ITEMC(25)*24
       character xfile*144,tg*1,delim*1
       character SUFFIX*8
       character ll1*8,ll2*8,ll3*8
@@ -2473,12 +2473,13 @@ C IGET = 15  Casual gains.
           ITEMC(19)='controlled convective '
           ITEMC(20)='controlled radiant'
           ITEMC(21)='controlled latent'
-          ITEMC(22)='aggregate lighting (c+r)'
-          ITEMC(23)='aggregate equipment(c+r)'
-          ITEMC(24)='aggregate lights+equip'
+          ITEMC(22)='aggregate occupant (c+r)'
+          ITEMC(23)='aggregate lighting (c+r)'
+          ITEMC(24)='aggregate equipment(c+r)'
+          ITEMC(25)='aggregate lights+equip'
           IX=1
           CALL EPICKS(IX,IVALC,' ','Casual sensible and latent:',
-     &      24,24,ITEMC,'Casual fluxes',IER,nbhelp)
+     &      24,25,ITEMC,'Casual fluxes',IER,nbhelp)
           if(IVALC(1).eq.0)goto 1
           inoc=IVALC(1)
           call usrmsg('  ','  ','-')
@@ -2781,8 +2782,21 @@ C IGET = 15  Casual gains.
             endif
           elseif(inoc.eq.22)then
 
-C Aggregate lighting (r+c) for all currently selected zones.
+C Aggregate occupant (r+c) for all currently selected zones. 
             IGETNO(NGET,3)=22;  IGETNO(NGET,4)=2 ! signal aggregate
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=14
+            SUFFIX=' AgrOcup'; AGRLIST=.TRUE.   ! draw aggregate
+            if(IROC.eq.0)then
+              SLABEL(NGET)='Agr occupant gain (W)'
+              LNSLABEL(NGET)=21
+            elseif(IROC.eq.-1)then
+              SLABEL(NGET)='Agr occupant gain (Whr)'
+              LNSLABEL(NGET)=23
+            endif
+          elseif(inoc.eq.23)then
+
+C Aggregate lighting (r+c) for all currently selected zones.
+            IGETNO(NGET,3)=23;  IGETNO(NGET,4)=2 ! signal aggregate
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=14
             SUFFIX=' AgrLtng'; AGRLIST=.TRUE.   ! draw aggregate
             if(IROC.eq.0)then
@@ -2792,8 +2806,8 @@ C Aggregate lighting (r+c) for all currently selected zones.
               SLABEL(NGET)='Agr lighting gain (Whr)'
               LNSLABEL(NGET)=23
             endif
-          elseif(inoc.eq.23)then
-            IGETNO(NGET,3)=23; IGETNO(NGET,4)=2 ! signal aggregate
+          elseif(inoc.eq.24)then
+            IGETNO(NGET,3)=24; IGETNO(NGET,4)=2 ! signal aggregate
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=15
             SUFFIX=' AgrSmPw'; AGRLIST=.TRUE.   ! draw aggregate
             if(IROC.eq.0)then
@@ -2803,8 +2817,8 @@ C Aggregate lighting (r+c) for all currently selected zones.
               SLABEL(NGET)='Agr small pwr gain (Whr)'
               LNSLABEL(NGET)=24
             endif
-          elseif(inoc.eq.24)then
-            IGETNO(NGET,3)=24; IGETNO(NGET,4)=2 ! signal aggregate
+          elseif(inoc.eq.25)then
+            IGETNO(NGET,3)=25; IGETNO(NGET,4)=2 ! signal aggregate
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=15
             SUFFIX=' AgrLtPw'; AGRLIST=.TRUE.   ! draw aggregate
             if(IROC.eq.0)then
@@ -4136,7 +4150,8 @@ C Get zone air temperatureand RH, use xdum and xdum1 for processing.
 
 C IGETNO(KGET,1) = 15 Casual gains. Total, convective, radiant or by type.
 C IGETNO(KGET,3) 1=all c+r, 2=all conv, 3=all rad, 4=ocup, 5=light, 6=sm pwr, 7=ctld
-C (also check if aggregate lighting or small power or lighitng+small power requested.
+C (also check if aggregate occupant, lighting or small power or lighitng+small
+C power requested.
         iicrcg=IGETNO(KGET,3)
         if(izver.ge.4)then
 
@@ -4229,7 +4244,7 @@ C If izver >= 4 the read the data directly for individual items.
           elseif(IGETNO(KGET,4).eq.2)then
 
 C For each of the currently selected zones call getallcas and add to
-C the aggregate figure for lighting or small power.
+C aggregate figure for occupant, lights, small power or lights+smallpower.
             N=24*NTS
             do i=1,N
               AGR(i)=0.0  ! clear the AGR array
@@ -4242,10 +4257,12 @@ C the aggregate figure for lighting or small power.
      &            perlightr,perequipr,otherr,perocupl,perlightl,
      &            perequipl,otherl,theonectld)
                 if(IICRCG.eq.22)then
-                  AGR(J2)=AGR(J2)+perlightc+perlightr ! Lighting convec+r gain (W)
+                  AGR(J2)=AGR(J2)+perocupc+perocupr ! occupant convec+r gain (W)
                 elseif(IICRCG.eq.23)then
-                  AGR(J2)=AGR(J2)+perequipc+perequipr ! sm power convec+r gain (W)
+                  AGR(J2)=AGR(J2)+perlightc+perlightr ! Lighting convec+r gain (W)
                 elseif(IICRCG.eq.24)then
+                  AGR(J2)=AGR(J2)+perequipc+perequipr ! sm power convec+r gain (W)
+                elseif(IICRCG.eq.25)then
                   AGR(J2)=AGR(J2)+
      &              perlightc+perlightr+perequipc+perequipr ! lights+small power gain (W)
                 endif
