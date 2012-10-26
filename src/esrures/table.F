@@ -318,7 +318,7 @@ C Write tag line if tagged output requested.
       endif
       
 C Write general header information (skip if IPV mode).
-      if(act.ne.'m')then
+      if(act(1:1).ne.'m')then
         CALL HDDATE(PDESCR)
         CALL HDSTEP(SDESCR)
         
@@ -382,7 +382,7 @@ C we can write to << ?? to be done >>
 
 C Write day of results and column headings information (skip if IPV mode).
         CALL STDATE(IYEAR,IDAY,DESCR,DESCR1)
-        if(act.ne.'m')then
+        if(act(1:1).ne.'m')then
           if (IDHFLG.eq.1.and.ixopen.eq.1) then
             outs='# '
             call edisp(itru,outs)
