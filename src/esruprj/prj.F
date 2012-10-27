@@ -681,10 +681,12 @@ C value of silent = .false if you want to interact with the transform
 C or rotation.
 C            silent= .false.
             silent= .true.
-        inpic=NCOMP
-        do 29 iz=1,inpic
-          ivals(iz)=iz
-  29    continue
+            inpic=NCOMP
+            nzg=NCOMP
+            do 29 iz=1,inpic
+              ivals(iz)=iz
+              nznog(iz)=iz
+  29        continue
 
 C Perform either the transform or rotation or generate QA report.
             if(inact(1:9).eq.'transform')then

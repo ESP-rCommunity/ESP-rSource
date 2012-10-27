@@ -1,5 +1,5 @@
-*connections  for ahu_vav
-*Date Fri Oct  2 08:29:00 2009
+*connections for ahu_vav
+*Date Mon Aug 27 15:48:56 2012
      27   # number of connections
    1   1   0   0   0  #    1 south in reception is External
    1   2   0   0   0  #    2 east in reception is External

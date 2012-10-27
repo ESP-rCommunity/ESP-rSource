@@ -182,7 +182,7 @@ C Copy appropriate fields for this single item into VAL.
       VAL(1)=real(IDYP)+(time/24.)
 
 C Debug...
-      if(idebug.eq.1.and.iwrite.eq.1)
+      if(idebug.eq.1)
      & write(96,*)nsinc,itrec,iprecd,iprect,time,fptla,val(2)
 
 C If required to interpolate do that now and use the alternate

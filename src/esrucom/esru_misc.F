@@ -3871,25 +3871,19 @@ C Write menu displaying a list of layer names
       item(3)='  ----------------------------'
       do 10 j=1,LAYERS(imatch)
 
-C Pick up the material name of each layer by reading data from
-C materials db or from the.
-        iel=IPR(imatch,j)
+C Pick up the material name of each layer. Uses zero matarrayindex to signal gap.
         if(closemat1.or.closemat2)then
           matarrayindex=IPRMAT(imatch,j)
-          if(matarrayindex.ge.0)then
+          if(matarrayindex.ne.0)then
             write(NAM,'(a)') matname(matarrayindex)(1:32)
             PNAM(j)=NAM(1:20)
+          else
+            write(NAM,'(a)') 'air '
+            write(PNAM(j),'(a)') 'air '
           endif
         else
-          IF(iel.EQ.0)THEN
-            PNAM(j)='Air gap'
-          ELSE
-            NAM='  '
-            IR = iel + 1
-            READ(IFMAT,REC=IR,IOSTAT=IOS,ERR=105)DBCON,DBDEN,DBSHT,E,
-     &        A,DRV,NAM
-            PNAM(j)=NAM(1:20)
-          ENDIF
+          call usrmsg('Materials are incomplete or not yet scanned.',
+     &      'Please check your model materials file.','W')
         endif
         write(item(header+j),'(a,i2,1x,a12)')' Layer: ',j,PNAM(j)
         ndisp=header+j
@@ -3942,19 +3936,6 @@ C Ask for the nodal location, first calculate a location at centre.
 
       return
 
- 105  if(IOS.eq.2)then
-        write(outs,'(A,I3,A,2i4)') ' Materials db reference ',IEL,
-     &    ' permission error @ record ',IR,' in file',IFMAT
-      else
-        write(outs,'(A,I3,A,2i4)') ' Materials db reference ',IEL,
-     &    ' read error @ record ',IR,' in file',IFMAT
-      endif
-      call edisp(iuout,outs)
-      write(outs,'(A,6f9.3)') ' with data ',DBCON,DBDEN,DBSHT,E,A,DRV
-      call edisp(iuout,outs)
-      IER=1
-      CALL ERPFREE(IFMAT,ISTAT)
-      return
       end
 
 C ******************** SURADJ

@@ -1,0 +1,47 @@
+# composite construction db defined in ../databases/Cond.constrdb
+# based on materials db ../databases/13791.materialdb
+    7     # no of composites 
+# layers  description   optics name   symmetry tag
+    4    Surf_type_1   OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+    1    0.0500  material A : material A
+    1    0.0500  material A : material A
+    1    0.0500  material A : material A
+    1    0.0500  material A : material A
+# layers  description   optics name   symmetry tag
+    2    Surf_type_2   OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+    2    0.0500  material B : material B
+    2    0.0500  material B : material B
+# layers  description   optics name   symmetry tag
+    1    Surf_type_3   OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+    3    0.0050  material C : material C
+# layers  description   optics name   symmetry tag
+    7    Surf_type_4   OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+    1    0.0500  material A : material A
+    1    0.0500  material A : material A
+    1    0.0500  material A : material A
+    1    0.0500  material A : material A
+    2    0.0500  material B : material B
+    2    0.0500  material B : material B
+    3    0.0050  material C : material C
+# layers  description   optics name   symmetry tag
+    7    Surf_type_5   OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+    3    0.0050  material C : material C
+    2    0.0500  material B : material B
+    2    0.0500  material B : material B
+    1    0.0500  material A : material A
+    1    0.0500  material A : material A
+    1    0.0500  material A : material A
+    1    0.0500  material A : material A
+# layers  description   optics name   symmetry tag
+    1    cond_5.0      OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+   41    0.1000  ext_wall_mat : ext_wall_mat
+# layers  description   optics name   symmetry tag
+    1    cond_1.0      OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+   42    0.1000  int_surf_mat : int_surf_mat

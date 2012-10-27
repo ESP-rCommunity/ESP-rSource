@@ -694,20 +694,20 @@ C laminar flow).
               IF(HW.lt.(2.1/DH))HW=2.1/DH
 
 C Modify UA to account for internal pipe heat transfer
-	      UA=1./(1./(HW*PI*DH*PL)+1./UA)
+              UA=1./(1./(HW*PI*DH*PL)+1./UA)
 
 C Apply limiting value to mass flow rate. If mass flow rate is less than
 C limiting value then it can be safely assumed that the pipe loses heat
 C fairly quickly and a high value of UA will be calculated below
               call eclose(WMFR,0.00,0.001,closec)
-	      if(closec)WMFR=0.001 
-	      WMCP=WMFR*SHTFLD(3,CONVAR(ICON1,1))
+              if(closec)WMFR=0.001 
+              WMCP=WMFR*SHTFLD(3,CONVAR(ICON1,1))
 
 C Pipe heat loss is calculated using exit temperature therefore UA is
 C artificially modified to account for the temperature distribution over
 C the pipe length. For low flow rates this will substantially increase
 C UA because average pipe temperature is much higher than at exit.
-	      UA=WMCP*(EXP(UA/WMCP)-1.)
+              UA=WMCP*(EXP(UA/WMCP)-1.)
             ENDIF
          END IF
 

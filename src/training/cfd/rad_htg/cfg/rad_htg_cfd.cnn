@@ -1,5 +1,5 @@
-*connections  for rad_htg_cfd
-*Date Wed Sep 30 16:06:32 2009
+*connections for rad_htg_cfd
+*Date Tue Aug 28 10:28:18 2012
      42   # number of connections
    1   1   0   0   0  #    1 Surf-1 in room is External
    1   2   3   3   4  #    2 part-1a in room >|< Surf-4 in zone_S

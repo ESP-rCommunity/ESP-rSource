@@ -269,10 +269,12 @@ C in the current model. A -1 means not applicable
       integer im,k,mnulen   ! multi column lines
       integer lr      ! length of model root string
       integer iglib  ! for detecting GTK or X11
+      integer iitrc  ! for passing verbosity
+      integer imlc   ! loop for MLC reporting
       logical odd   ! for display of vertex info
       
       INTEGER :: i,icc,icoth,ie,ieripv,irec,iprb,inv
-      INTEGER :: ins4,ino,imlc,imerr,ilcot,ijk,ij,ii,igrdp
+      INTEGER :: ins4,ino,imerr,ilcot,ijk,ij,ii,igrdp
       INTEGER :: ictlf,iuo,iunit1,iunit,iuf,iub,itu,itru,itrc,itbmenu
       INTEGER :: itb,istat,isc,is,ic,ins1,isel,iz,izo,izc,izz
       INTEGER :: kk,j,l,lnb,lnc,lna,lsn10,lto,lzn10,m,igraphiclib
@@ -340,8 +342,21 @@ C If silent mode then set file name and jump to report generation.
       if(silent)then
         destination=1
         itu = ixunit
-        write(xfile,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.contents'
-        call ctlexp(xfile,ixopen,ixloc,ixunit,'T','QA text',IER)
+
+C Create model QA report in the doc folder if possible. Use similar 
+C pattern to management of lmodellog.
+        lr=lnblnk(cfgroot)
+        if(docpth(1:2).eq.'  '.or.docpth(1:2).eq.'./')then
+          write(lmodelqa,'(2a)') cfgroot(1:lr),'.contents'
+        elseif(docpth(1:3).eq.'../')then
+          write(lmodelqa,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &      cfgroot(1:lr),'.contents'
+        else
+          write(lmodelqa,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &      cfgroot(1:lr),'.contents'
+        endif
+        write(xfile,'(a)') lmodelqa(1:lnblnk(lmodelqa))
+        call ctldumpt(xfile,ixopen,ixloc,ixunit,'QA text',IER)
         if(ier.eq.-3)then
           destination = 0
           itu = iuout
@@ -982,7 +997,8 @@ C Save the model configuration file to register the report.
 C Copy lmodelqa to xfile so that ctlexp can deal with it.
           write(xfile,'(2a)')lmodelqa(1:lnblnk(lmodelqa))
 
-          call ctlexp(xfile,ixopen,ixloc,ixunit,'T','QA text',IER)
+C          call ctlexp(xfile,ixopen,ixloc,ixunit,'T','QA text',IER)
+          call ctldumpt(xfile,ixopen,ixloc,ixunit,'QA text',IER)
           if(ier.eq.-3)then
             destination = 0
             itu = iuout
@@ -1835,7 +1851,7 @@ C If there is external glazing or skylights then report.
             call rel16str(wallper(IZZ),t16a,lna,ier)
             call rel16str(uavwall(IZZ),t16b,lnb,ier)
             write(outs,'(3a,F5.3,2a)')' Outside walls are ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        uavwall(IZZ)/areawall(IZZ),' & UA of ',t16b(1:lnb)
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
           endif
@@ -1848,7 +1864,7 @@ C If there is external glazing or skylights then report.
             call rel16str(slproofper(IZZ),t16a,lna,ier)
             call rel16str(uavslproof(IZZ),t16b,lnb,ier)
             write(outs,'(3a,F5.3,2a)')' Sloped roof is ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        uavslproof(IZZ)/areaslproof(IZZ),' & UA of ',
      &        t16b(1:lnb)
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
@@ -1862,7 +1878,7 @@ C If there is external glazing or skylights then report.
             call rel16str(flatroofper(IZZ),t16a,lna,ier)
             call rel16str(uavfltroof(IZZ),t16b,lnb,ier)
             write(outs,'(3a,F5.3,2a)')' Flat roof is ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        uavfltroof(IZZ)/areafltroof(IZZ),' & UA of ',
      &        t16b(1:lnb)
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
@@ -1879,7 +1895,7 @@ C If there is external glazing or skylights then report.
             call rel16str(uavgtran(IZZ),t16c,lnc,ier)
             write(outs,'(5a,F5.3,2a)')
      &        ' Glazing is ',t16a(1:lna),' % of floor & ',t16b(1:lnb),
-     &        ' % facade with avg U of ',
+     &        ' % facade with average U of ',
      &        uavgtran(IZZ)/areatran(IZZ),' & UA of ',t16c(1:lnc)
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
           endif
@@ -1892,7 +1908,7 @@ C If there is external glazing or skylights then report.
             call rel16str(skyper(IZZ),t16a,lna,ier)
             call rel16str(uavgsky(IZZ),t16b,lnb,ier)
             write(outs,'(3a,F5.3,2a)')' Skylights are ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        uavgsky(IZZ)/areaskylt(IZZ),' & UA of ',t16b(1:lnb)
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
           endif
@@ -1906,7 +1922,7 @@ C If there is external glazing or skylights then report.
             plen=bridgelen(IZZ,2)+bridgelen(IZZ,10)  ! tb length std and metal facade
             call rel16str(plen,t16b,lnb,ier)
             write(outs,'(3a,F5.3,2a)')' Ground contact is ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        uavground(IZZ)/areaground(IZZ),' & perimeter ',
      &        t16b(1:lnb)
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
@@ -2384,7 +2400,7 @@ C if the zones are fully attributed.
             call rel16str(xwallper,t16a,lna,ier)
             call rel16str(xuavwall,t16b,lnb,ier)
             write(outs,'(3a,F5.3,3a,F5.3)')' Outside walls are ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        xuavwall/xareawall,' & UA of ',t16b(1:lnb),
      &        ' & max MLC thickness ',xvthk
             call edisp(itu,outs)
@@ -2394,7 +2410,7 @@ C if the zones are fully attributed.
             call rel16str(xslproofper,t16a,lna,ier)
             call rel16str(xuavslproof,t16b,lnb,ier)
             write(outs,'(3a,F5.3,2a)')' Sloped roof is ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        xuavslproof/xareaslproof,' & UA of ',t16b(1:lnb)
             call edisp(itu,outs)
           endif
@@ -2403,7 +2419,7 @@ C if the zones are fully attributed.
             call rel16str(xflatroofper,t16a,lna,ier)
             call rel16str(xuavfltroof,t16b,lnb,ier)
             write(outs,'(3a,F5.3,2a)')' Flat roof is ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        xuavfltroof/xareafltroof,' & UA of ',t16b(1:lnb)
             call edisp(itu,outs)
           endif
@@ -2415,7 +2431,7 @@ C if the zones are fully attributed.
             call rel16str(xuavgtran,t16c,lnc,ier)
             write(outs,'(5a,F5.3,2a)')
      &        ' Glazing is ',t16a(1:lna),' % of floor & ',t16b(1:lnb),
-     &        ' % facade with avg U of ',
+     &        ' % facade with average U of ',
      &        xuavgtran/xareatran,' & UA of ',t16c(1:lnc)
             call edisp(itu,outs)
           endif
@@ -2424,7 +2440,7 @@ C if the zones are fully attributed.
             call rel16str(xskyper,t16a,lna,ier)
             call rel16str(xuavgsky,t16b,lnb,ier)
             write(outs,'(3a,F5.3,2a)')' Skylights are ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        xuavgsky/xareaskylt,' & UA of ',t16b(1:lnb)
             call edisp(itu,outs)
           endif
@@ -2434,7 +2450,7 @@ C if the zones are fully attributed.
             call rel16str(xgrper,t16a,lna,ier)
             call rel16str(xperimlength,t16b,lnb,ier)
             write(outs,'(3a,F5.3,3a,F5.3)')' Ground contact is ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        foundUv,' & perimeter ',t16b(1:lnb),
      &        ' & max MLC thickness ',xfndthkg
             call edisp(itu,outs)
@@ -2467,20 +2483,23 @@ C set to 'verbose all' then include all of them.
         WRITE(outs,240)
         call edisp(itu,outs)
         call edisp(itu,' Multi-layer constructions used:')
+        write(6,*) 'nmlc is ',nmlc,databaseinfo
         do 342 imlc=1,nmlc
           found=.false.
           mlcname=DESC(imlc)(1:12)
           call mlcrefs(mlcname,areamlc,tareamlc,found)
           if(found)then
             if(databaseinfo.eq.2)then
-              call etmldb(2,itu,imlc,imerr)
+              iitrc=2
+              call etmldb(iitrc,itu,imlc,imerr)
             endif
             write(outs,'(3a,F9.2)') ' Total area of ',
      &        mlcname(1:lnblnk(mlcname)),' is ',tareamlc
             call edisp(itu,outs)
           else
             if(databaseinfo.eq.3)then
-              call etmldb(2,itu,imlc,imerr)
+              iitrc=2
+              call etmldb(iitrc,itu,imlc,imerr)
               write(outs,'(3a)') ' Total area of ',
      &          mlcname(1:lnblnk(mlcname)),' is zero (not referenced)'
               call edisp(itu,outs)
@@ -2489,13 +2508,17 @@ C set to 'verbose all' then include all of them.
   342   continue
       endif
 
-C If writing to file call ctlexp to close it and switch back to text feedback.
+C If writing to file call ctldumpt to close it and switch back to text feedback.
       if(destination.eq.1)then
-        call ctlexp(xfile,ixopen,ixloc,ixunit,'T','geom text',IER)
+        call ctldumpt(xfile,ixopen,ixloc,ixunit,'QA text',IER)
         destination=0
-        call edisp(iuout,
-     &    'The new QA file can be edited via the `edit file` option.')
-        call edisp(iuout,' ')
+        if(silent)then
+          continue
+        else
+          call edisp(iuout,
+     &     'The new QA file can be edited via the `edit file` option.')
+          call edisp(iuout,' ')
+        endif
       endif
 
 C If in silent model return without user intervention.
@@ -3218,221 +3241,3 @@ C For surfaces connected to the ground.
 
       return
       end
-      
-C ******************* ADMIT *******************
-C Calculate U and Y values and surface factor.
-C If a negative conductivity is supplied the abs value represents the 
-C resistance of an air gap.
-C << NOTE: this routine gets close for some constructions, but
-C << some variables are off - further debugging required.
-      subroutine ADMIT(ITRC,ITRU,IFOC,Rsi,Rso)
-#include "building.h"
-#include "esprdbfile.h"
-#include "material.h"
-
-      integer matarrayindex ! the indes within matdatarray
-      logical closemat1,closemat2
-      
-      dimension thick(8),rho(8),Cp(8),cond(8)
-      CHARACTER NAM*72,TITL*72,MLCN*12,OTF*4,OPT*12
-      character MLCSYM*12
-      
-      COMPLEX P,L(2,2),M(2,2),N(2,2)
-
-C Establish if material data arrays have been filled. If not return.
-      call eclose(matver,1.1,0.01,closemat1)
-      call eclose(matver,1.2,0.01,closemat2)
-      if(closemat1.or.closemat2)then
-        continue
-      else
-        call usrmsg('The materials arrays are incomplete so admit-',
-     &    'tance of construction attributes cannot be calculated.','W')
-        return
-      endif
-
-C Pick up general description of the composite.
-      call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
-      
-C ESP-r defines layers from outside to inside. The code in
-C subroutine admit works from inside to outside.
-C Debug layer info.
-C      write (ITRU,*) 'Layer  thick  k  rho  Cp'
-      layer=LAYERS(IFOC)+1
-      call eclose(matver,1.1,0.01,closemat1)
-      call eclose(matver,1.2,0.01,closemat2)
-      do 5 IL=1,LAYERS(IFOC)
-          matarrayindex=IPRMAT(IFOC,IL)   ! which array index
-          if(matarrayindex.ge.0)then
- 
-C And if matarrayindex is zero then resetn dbcon dbden dbsht.
-            if(matarrayindex.eq.0)then
-              DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-              E=0.99; A=0.99; DRV=1.0
-              TITL='GAPS'; NAM='AIR'
-            else
-              DBCON=matdbcon(matarrayindex)
-              DBDEN=matdbden(matarrayindex)
-              DBSHT=matdbsht(matarrayindex)
-              E=matdbine(matarrayindex)
-              A=matdbina(matarrayindex)
-              DRV=matdbdrv(matarrayindex)
-              write(TITL,'(a)') 'placeholder'
-              write(NAM,'(a)') matname(matarrayindex)(1:32)
-            endif
-          endif
-        layer=layer-1
-        thick(layer)=DTHK(IFOC,IL)
-
-C If an air gap (material zero) then set cond(IL) to negative of air gap res.
-        IF(IPR(IFOC,IL).EQ.0)THEN
-          cond(layer) = (-1.0) * DRAIR(IFOC,IL,1)
-          rho(layer)=1.0
-          Cp(layer)=1.0
-        else
-          cond(layer)=DBCON
-          rho(layer)=DBDEN
-          Cp(layer)=DBSHT
-        endif
-
-C Debug
-        write (ITRU,'(2i3,2f6.3,2f6.0)') layer,
-     &    thick(layer),cond(layer),rho(layer),Cp(layer)
- 5    continue
-      
-C Start calculation of U-value.
-      Uvalue=Rsi
-      
-C Define inside surface resistance matrix.
-      L(1,1)=CMPLX(1.,0.)
-      L(1,2)=CMPLX(Rsi,0.)
-      L(2,1)=CMPLX(0.,0.)
-      L(2,2)=CMPLX(1.,0.)
-      
-C Loop through layers (inside to outside).
-      do 10 I=1,LAYERS(IFOC)
-        if (cond(I).gt.0) then
-          Uvalue=Uvalue+(thick(I)/cond(I))
-
-C Define terms for arrays.
-          xP=((4.*ATAN(1.))*thick(I)*thick(I)*rho(I)*Cp(I))/
-     &     (86400.*cond(I))
-          xP=SQRT(xP)
-        
-C Calculate cosh(P).
-          xcreal=((exp(xP)+exp(-xP))*cos(xP))/2.
-          xcimage=((exp(xP)-exp(-xP))*sin(xP))/2.
-
-C and sinh(P).
-          xsreal=((exp(xP)-exp(-xP))*cos(xP))/2.
-          xsimage=((exp(xP)+exp(-xP))*sin(xP))/2.
-        
-C Enter matrix coefficients
-          M(1,1)=CMPLX(xcreal,xcimage)
-          M(1,2)=(thick(I))*CMPLX(xsreal,xsimage)/
-     &         (cond(I)*CMPLX(xP,xP))
-          M(2,1)=(cond(I)*CMPLX(xP,xP))*CMPLX(xsreal,xsimage)/
-     &         (thick(I))
-          M(2,2)=CMPLX(xcreal,xcimage)
-        else
-        
-C Air gap
-          Uvalue=Uvalue+abs(cond(I))
-          M(1,1)=CMPLX(1.,0.)
-          M(1,2)=CMPLX(abs(cond(I)),0.)
-          M(2,1)=CMPLX(0.,0.)
-          M(2,2)=CMPLX(1.,0.)
-        endif
-
-C Calculate L*M, result in N.
-        call CMATMUL(L,M,N)
-        
-C Copy N to L.
-        L(1,1)=N(1,1)
-        L(1,2)=N(1,2)
-        L(2,1)=N(2,1)
-        L(2,2)=N(2,2)
- 10   continue
-      Uvalue=Uvalue+Rso
-      Uvalue=1./Uvalue
- 
-      write (ITRU,'(a)') ' '
-      write (ITRU,'(3(a,f6.2))') 'Admittance calculations using Rsi ',
-     &  rsi,' Rso ',rso,' & Uvalue=',Uvalue
-      
-C Outside face resistance.
-      M(1,1)=CMPLX(1.,0.)
-      M(1,2)=CMPLX(Rso,0.)
-      M(2,1)=CMPLX(0.,0.)
-      M(2,2)=CMPLX(1.,0.)
-      call CMATMUL(L,M,N)
-            
-C Calculate admittance.
-      P=N(2,2)/N(1,2)
-      Y=abs(P)
-      omega=(12./(4.*ATAN(1.)))*atan(aimag(P)/real(P))
-
-      write (ITRU,*) 'External surface'
-      write (ITRU,'(2(a,f6.2))') ' Admittance Y=',Y,'  w=',omega
-      
-C Calculate decrement factor.
-      P=1./(Uvalue*N(1,2))
-      f=abs(P)
-      phi=(12./(4.*ATAN(1.)))*atan(aimag(P)/real(P))
-      if (phi.gt.0) then
-        phi=12.-phi
-      else
-        phi=-phi
-      endif
-      
-      write (ITRU,'(2(a,f6.2))') ' Decrement factor f=',f,'  phi=',phi
-
-C Calculate surface factor.
-      P=1.-(Rsi*N(2,2)/N(1,2))
-      f=abs(P)
-      phi=(12./(4.*ATAN(1.)))*atan(aimag(P)/real(P))
-      if (phi.gt.0) then
-        phi=12.-phi
-      else
-        phi=-phi
-      endif
-      
-      write (ITRU,'(2(a,f6.2))') ' Surface factor f=',f,'  phi=',phi
-
-C Internal surfaces.
-      P=(N(2,2)-1.)/N(1,2)
-      Y=abs(P)
-      omega=(12./(4.*ATAN(1.)))*atan(aimag(P)/real(P))
-
-      write (ITRU,*) '  '
-      write (ITRU,*) 'Partition'
-      write (ITRU,'(2(a,f6.2))') ' Admittance Y=',Y,'  w=',omega
-      
-C Calculate surface factor.
-      P=1.-(Rsi*P)
-      f=abs(P)
-      phi=(12./(4.*ATAN(1.)))*atan(aimag(P)/real(P))
-      if (phi.gt.0) then
-        phi=12.-phi
-      else
-        phi=-phi
-      endif
-      
-      write (ITRU,'(2(a,f6.2))') ' Surface factor f=',f,'  phi=',phi
-      return
-      end
-
-C ******************** CMATMUL 
-C CMATMUL multiplies the complex (2x2) matrices A by B returning C.
-      SUBROUTINE CMATMUL(A,B,C)
-
-      COMPLEX A(2,2),B(2,2),C(2,2)
-
-C Calculate A*B.
-      DO 10 I=1,2
-        C(I,1)=A(I,1)*B(1,1)+A(I,2)*B(2,1)
-        C(I,2)=A(I,1)*B(1,2)+A(I,2)*B(2,2)
-   10 CONTINUE
-
-      return
-      end
-      

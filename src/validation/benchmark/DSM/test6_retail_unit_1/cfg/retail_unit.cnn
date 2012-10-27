@@ -1,5 +1,5 @@
-*connections forretail_unit_str
-*Date Mon Sep 21 19:35:08 2009
+*connections for retail_unit
+*Date Mon Sep  3 09:22:40 2012
      20   # number of connections
    1   1   5   0   0  #    1 ptn_adb_a in sales_area is adiabatic
    1   2   3   2   4  #    2 ptn_stor in sales_area >|< ptn_store in storage

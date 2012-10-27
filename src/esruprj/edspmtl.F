@@ -1001,25 +1001,24 @@ C Write menu displaying a list of layer names
         write(item(3),'(a,a)') 'c MLC name: ',DESC(imatch)(1:12)
         item(4)='  ----------------------------'
 
-C Loop through each layer.
+C Loop through each layer in MLC imatch.
         do 10 j=1,LAYERS(imatch)
 
 C If an air layer include the R values in the display.
-            matarrayindex=IPRMAT(imatch,j)   ! which array index
-            if(matarrayindex.ge.0)then
+          matarrayindex=IPRMAT(imatch,j)   ! which material array index
+          if(matarrayindex.ge.0)then
  
 C And if matarrayindex is zero then reestablish NAM.
-              if(matarrayindex.eq.0)then
-              NAM='AIR'
+            if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &         matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &         matarrayindex.eq.0)then
+              NAM='Air gap'
+              PNAM(j)='Air gap'
               else
                 write(NAM,'(a)') matname(matarrayindex)(1:32)
               endif
+              PNAM(j)=NAM(1:20)
             endif
-          IF(IPR(imatch,j).EQ.0)THEN
-            PNAM(j)='Air gap'
-          ELSE
-            PNAM(j)=NAM(1:20)
-          ENDIF 
           write(item(header+j),'(a,i2,1x,a12)')' Layer: ',j,PNAM(j)
           ndisp=header+j
   10    continue

@@ -3330,7 +3330,7 @@ C Relevant only for pre-fabricated element
                         GOTO 901
                       ENDIF 
                       IF (K .EQ. 1) THEN
-C First transport line display is different than others
+C First transport line display is different than others.
                         WRITE (outs,325) LayerNam(ICurComp,J),
      &                    WeitLayr(J),CoTrPt(ICurComp,K),
      &                   CoTrDist(ICurComp,K),(LCAValue(IY),IY=1,MIMP)
@@ -3346,10 +3346,10 @@ C First transport line display is different than others
                         endif
                       ENDIF
 
-C 8 Dump waste transport
+C 8 Dump waste transport.
                     elseif (M.EQ.8) then
                       IF (K .EQ. 1) THEN
-C First transport line display is different than others
+C First transport line display is different than others.
                         WRITE (outs,315) LayerNam(ICurComp,J),
      &                          WtLayrDu(J),DuTrPt(ICurMat,K),
      &                   DuTrDist(ICurMat,K),(LCAValue(IY),IY=1,MIMP)
@@ -3365,10 +3365,10 @@ C First transport line display is different than others
                         endif
                       ENDIF
 
-C 10 Incinarated waste transport
+C 10 Incinarated waste transport.
                     elseif (M .EQ. 10) then
                       IF (K .EQ. 1) THEN
-C First transport line display is different than others
+C First transport line display is different than others.
                         WRITE (outs,318 )LayerNam(ICurComp,J), 
      &                     WtLayrBu(J),BuTrPt(ICurMat,K),
      &                     BuTrDist(ICurMat,K),(LCAValue(IY),IY=1,MIMP)
@@ -3385,10 +3385,10 @@ C First transport line display is different than others
                       ENDIF
 
 
-C 11 Transport to recycling site
+C 11 Transport to recycling site.
                     elseif (M.EQ.12) then
                       IF (K.EQ.1) THEN
-C First transport line display is different than others
+C First transport line display is different than others.
                         WRITE (outs,321) LayerNam(ICurComp,J),
      &                         WtLayrRe(J),ReTrPt(ICurMat,K),
      &                     ReTrDist(ICurMat,K),(LCAValue(IY),IY=1,MIMP)
@@ -3410,14 +3410,14 @@ C Next layer
  40             CONTINUE
               ENDIF
 
-C Layer related
+C Layer related. Check value of IPRMAT to see if an air gap.
 C -------------
               IF (M.EQ.1 .OR. M.EQ.7 .OR. M.EQ.9 .OR. M.EQ.11 .OR. 
      &              M.EQ.13 .OR. M.EQ.14) THEN
                 DO 11 J=1,NbLays
                   ICurMat = IMatID(ICurComp,J)
-                    matarrayindex=IPRMAT(ICurComp,J)   ! which arrat index
-                    if(matarrayindex.ge.0)then
+                  matarrayindex=IPRMAT(ICurComp,J)   ! which array index
+                  if(matarrayindex.ge.0)then
  
 C And if matarrayindex is zero then reset dbcon dbden dbsht.
                       if(matarrayindex.eq.0)then
@@ -3436,11 +3436,11 @@ C And if matarrayindex is zero then reset dbcon dbden dbsht.
                       endif
                     endif
 
-C Loop over the impacts
+C Loop over the impacts.
                   DO 12 L=1,MIMP
                     IF (M.EQ.1.OR.M.EQ.9.OR.M.EQ.11.OR.M.EQ.13)THEN
                       LCAValue(L) = STEPIMP(ICurzone,ICurComp,J,-1,L,M)
-C Material replacement
+C Material replacement.
                     ELSEIF (M.EQ.7) THEN
                       LCAValue(L)=STEPIMP(ICurzone,ICurComp,J,-1,L,7)
                       LCAValue(L)=STEPIMP(ICurzone,ICurComp,J,-1,L,7)

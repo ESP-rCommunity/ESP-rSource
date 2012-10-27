@@ -103,9 +103,15 @@ C Parameters
       character LASCI*144  ! ascii file name
       integer IER         ! error return where zero is ok, 
                           ! ier=-1 file not found, ier=-2 no classes
+      COMMON/OUTIN/IUOUT,IUIN
 
       DIMENSION VAL(6)
       CHARACTER IDESC*72,NDESC*72,OUTSTR*124
+      character namelist*32,nametocheck*32  ! to check for duplicate names
+      character outs*142
+      dimension namelist(600)
+      integer loop,ih  ! loop indices
+      integer iln,iln2 ! length of name strings
 
 C Open the ASCII file for reading. Reset ier state prior to efopseq.
       ier=0
@@ -116,9 +122,12 @@ C Open the ASCII file for reading. Reset ier state prior to efopseq.
 C Get date stamp for the materials arrays.
       call dstamp(matdbdate)
 
-C Fill the hash table with not included marker (-1)
+C Fill the hash table with not included marker (-1) and clear the
+C array of duplicate checking names.
+      nametocheck=' '
       do 42 ih=0,600
         mathash(ih)=-1
+        namelist(ih)=' '
   42  continue
 
 C Initiate documentation for the database (new concept).
@@ -177,6 +186,29 @@ C The MLC database will expect to find the name of the material matching the
 C description NDESC initial characters. Write the initial 32 char of NDESC 
 C as the material name.
           lex=MIN0(lnblnk(IDESC),32)
+
+C Record the name and then check and see if it is a duplicate.
+          write(namelist(matdbitems),'(a)') IDESC(1:lex)
+          write(nametocheck,'(a)') IDESC(1:lex)
+          iln=lnblnk(nametocheck)  ! length of name to test
+          if(matdbitems.gt.1)then
+            loop=matdbitems-1
+            do 43 ih=1,loop
+              iln2=lnblnk(namelist(ih))  ! length of prior name to test
+              if(iln.eq.iln2)then
+                if(namelist(ih)(1:iln2).eq.nametocheck(1:iln))then
+                  write(outs,'(3a,i4,3a,i4,a)') 'Duplicate names ',
+     &              nametocheck(1:iln),' (',matdbitems,') vs ',
+     &              namelist(ih)(1:iln2),' (',ih,
+     &              '). Must be unique!'
+                  call edisp(iuout,outs)
+                endif
+              else
+                continue
+              endif
+  43        continue
+          endif
+ 
           write(matname(matdbitems),'(a)') IDESC(1:lex)
           write(matdoc(matdbitems),'(a)') IDESC(1:lnblnk(IDESC))
 
@@ -373,7 +405,7 @@ C Loop through each classification (index I) and write out contents.
         lncat=lnblnk(matcatdoc(I))
         write(IFA,'(a)') matcatdoc(I)(1:lncat)
 
-C Loop through each of the database items (index J) for items that fit the current
+C Loop through each of the items (index J) to check if in the current
 C category.  This has the effect of packing the file and sorting the
 C common block arrays so that future reads are more efficient.
         do 20 J=1,matdbitems
@@ -467,11 +499,18 @@ C Parameters
       character LASCI*144  ! ascii file name
       integer IER         ! error return where zero is ok and -2 signals
                           ! that the expected header was not found
+                          ! ier=-1 file not found, ier=-2 no classes
+      COMMON/OUTIN/IUOUT,IUIN
 
       DIMENSION VAL(19)
       CHARACTER NDESC*72,OUTSTR*124,WORD*24
       character WORD32*32,WORD248*248,LOUTSTR*248
       logical closemat1,closemat2
+      character namelist*32,nametocheck*32  ! to check for duplicate names
+      character outs*124
+      dimension namelist(600)
+      integer loop,ih  ! loop indices
+      integer iln,iln2 ! length of name strings
 
 C Open the ASCII file for reading.
       CALL EFOPSEQ(IFA,LASCI,1,IER)
@@ -490,10 +529,14 @@ C Proceed with header.
       if(WORD(1:10).eq.'*Materials'.or.WORD(1:10).eq.'*materials')then
 
 C Fill the hash table with not included marker (-1) and then get the
-C next token as the version number as set closemat.
-        do 42 ih=0,600
+C next token as the version number as set closemat. Clear the
+C array of duplicate checking names.
+        nametocheck=' '
+        do 42 ih=1,600
           mathash(ih)=-1
+          namelist(ih)=' '
   42    continue
+
         matver = 1.1   ! set initial version of database.
         CALL EGETWR(OUTSTR,K,VAL(1),1.0,1.2,'-','db mat version',IER)
 	if(VAL(1).gt.1.0) matver = VAL(1)
@@ -541,8 +584,41 @@ C class index IC is used for subsequent items.
         write(matcatdoc(IC),'(a)') WORD248(1:lnblnk(WORD248))
         goto 41
       elseif(WORD(1:5).eq.'*Item'.or.WORD(1:5).eq.'*item')then
+
+C The item line includes a 'legacy index' for the record number in the
+C binary materials file. Traditionally this would be a positive number
+C for a non-gas material, zero for a gap/gas material or a -99 if there
+C was some confusion associated with the material or it could not have
+C been represented in the binary materials file.
+
+C << the overloading of -99 is an issue to deal with! >>
+
         matdbitems=matdbitems+1   ! increment counter
         CALL EGETP(LOUTSTR,K,WORD32,'-','item name',IER) ! name might contain a space
+
+C Record the name and then check and see if it is a duplicate.
+        lex=MIN0(lnblnk(WORD32),32)
+        write(namelist(matdbitems),'(a)') WORD32(1:lex)
+        write(nametocheck,'(a)') WORD32(1:lex)
+        iln=lnblnk(nametocheck)  ! length of name to test
+        if(matdbitems.gt.1)then
+          loop=matdbitems-1
+          do 43 ih=1,loop
+            iln2=lnblnk(namelist(ih))  ! length of prior name to test
+            if(iln.eq.iln2)then
+              if(namelist(ih)(1:iln2).eq.nametocheck(1:iln))then
+                write(outs,'(3a,i4,3a,i4,a)') 'Duplicate names ',
+     &            nametocheck(1:iln),' (',matdbitems,') vs ',
+     &            namelist(ih)(1:iln2),' (',ih,
+     &            '). Material names must be unique!'
+                call edisp(iuout,outs)
+              endif
+            else
+              continue
+            endif
+  43      continue
+        endif
+
         write(matname(matdbitems),'(a)') WORD32(1:lnblnk(WORD32))
         CALL EGETWI(LOUTSTR,K,NCODE,-99,600,'F','legacy index',IER)
         matlegindex(matdbitems)=NCODE

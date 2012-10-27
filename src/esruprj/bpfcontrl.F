@@ -3226,6 +3226,8 @@ C Number of plant loops and day type must be > 0.
 C Control day types.
       J=IV
       JJ=J
+      iother=1  ! index not yet assigned within the code near
+                ! line 4026
 
 C Initial menu entry setup.
    92 IER=0

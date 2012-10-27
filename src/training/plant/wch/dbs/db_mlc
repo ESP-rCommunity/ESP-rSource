@@ -15,7 +15,7 @@
    37    0.0100  Verdicht ongewapend : Verdicht ongewapend
     0    0.0400  air  0.170 0.170 0.170
   284    0.0350  PU-schuim (freon gebl.) : PU-schuim (freon gebl.)
-   75    0.0200  Spaanplaat : Spaanplaat
+   75    0.0200  Spaanplaat 600d : Spaanplaat 600d
 # layers  description   optics name   symmetry tag
     3    Ground_floor  OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R

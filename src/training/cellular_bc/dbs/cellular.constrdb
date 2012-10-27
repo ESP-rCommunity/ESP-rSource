@@ -151,8 +151,8 @@
   130    0.0200  Render External 20 mm : Render External 20 mm (UK code)
    10    0.1020  Brick outer leaf : Brick (UK code)
     0    0.0500  air  0.180 0.180 0.180
-  295    0.0500  Min wool quilt 60 mm : Insulation (Min wool quilt default 60 mm)
-  295    0.0500  Min wool quilt 60 mm : Insulation (Min wool quilt default 60 mm)
+  295    0.0500  Min wool quilt 60mm : Insulation (Min wool quilt default 60 mm)
+  295    0.0500  Min wool quilt 60mm : Insulation (Min wool quilt default 60 mm)
    40    0.1000  Concrete med density (1800) : Blockwork (UK code)
     0    0.0250  air  0.180 0.180 0.180
   112    0.0130  Plasterboard (UK code) : Plasterboard (UK code)
