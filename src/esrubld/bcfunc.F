@@ -1342,15 +1342,18 @@ C Set maximum cooling capacity:
 C Set minimum cooling capacity
       QCN=-BMISCD(ICF,IDTYP,IPER,5)
 
+C Ensure that free cooling is sufficient to manage zone temperature. 
+C Note that the free-cooling algorithm is not intended to estimate 
+C the maximum amount of cooling that can be achieved with window-ventilation-
+C it merely ensures that zones don't overheat when the outdoor temperature 
+C is in a moderate range. More detailed methods (ie. air flow networks) should 
+C be used to analyse natural ventialtion potential.  
 
       if (bFreeCool) then 
-        QCM = min(QCM,10000.)
+        QCM = max(QCM,10000.)
         QCN = 0.
       endif 
        
-
-
-
       HSP=BMISCD(ICF,IDTYP,IPER,6)
       CSP=BMISCD(ICF,IDTYP,IPER,7)
 
@@ -1358,7 +1361,8 @@ C Save heating/cooling setpoints
       fHeatSetpoint(iicomp) = HSP
       fCoolSetpoint(iicomp) = CSP
 
-C Set heating flags to true...
+C Set heating flags to true. These are used for reporting passive-solar 
+C performance. 
       bZoneHeated(iicomp) = .true.
       bZoneCooled(iicomp) = .true.
 
@@ -1381,14 +1385,22 @@ C as a master control.
       QHB(ICF)=QHM
       QCB(ICF)=QCM
 
-C Get temperature threshold for free-cooling estimates 
-      if ( bFreeCool ) fFreeCoolTemp=BMISCD(ICF,IDTYP,IPER,8)
-      
+C Get temperature threshold for free-cooling estimates. Free cooling 
+C is available if the sum of the outdoor temperature (TF) and the 
+C free-cooling threshold (fFreeCoolTemp) is less than the zone 
+C temperature (TFA(iComp)) 
+      if ( bFreeCool ) then 
+		fFreeCoolTemp=BMISCD(ICF,IDTYP,IPER,8)
+C Note that free cooling temperature must be greater than zero 
+C to ensure that mass-balance calculation is stable. 		
+		fFreeCoolTemp = max( fFreeCoolTemp, 2.0 )
+	  endif 
+	  
       
 C Determine if a RH is to be controlled. If this is the case store the set point
 C for the zone and set the RH control flag. The control action takes place in 
 C MZVAPC, where the zone humidity and moisture content is calculated. 
-C (note: humidity control and symplistic free-cooling are mutually 
+C (note: humidity control and simplistic free-cooling are mutually 
 C  exclusive.) 
       IRHCT(IICOMP)=0
       IF(INT(BMISCD(ICF,IDTYP,IPER,1)).GT.7 .and. .not. bFreeCool )THEN
@@ -1493,6 +1505,7 @@ c              WRITE(*,*)'New heating and cooling set point',HSP,CSP
         IRHCT(IICOMP)=0
       ENDIF
 
+C Check if control is required and return if setpoints are met.  	  
       IF(TCTL.LE.CSP.AND.TCTL.GE.HSP)RETURN
 
 c      WRITE(*,*)'Controlling zone to...',HSP,CSP,TCTL,TNP    
@@ -1514,8 +1527,8 @@ C Set point is the dew point temperature of the zone.
         IF(CSP.LT.0.0)CSP=0.0
       ENDIF
 
-C Check zone temperature and determine of heating or cooling functions 
-C 
+C Check zone temperature and determine if heating or cooling functions 
+C should be invoked.
 
       HeatOrCool: if ( TCTL > CSP ) THEN 
       
@@ -1532,24 +1545,20 @@ C
         TCont=HSP
             
       endif HeatOrCool
-      
-      
-           
+
 C Determine required plant capacity 
 
       Q=(BB3-BB1*TCont)/BB2
 
-
-
 C Is heat flux determined according to surface area?
-
       
       if ( IBAN(ICF,1).EQ.IICOMP.AND.IBAN(ICF,2).GT.0) then 
+	    ! Yes
         bQBySurf = .true. 
         ISUR=IBAN(ICF,2)
       
       else 
-      
+		! No.
         bQBySurf = .false.   
         
       endif 
@@ -1557,7 +1566,6 @@ C Is heat flux determined according to surface area?
       
 C If necessary, multiply heat flux by surface area to convert 
 C from W/m^2 to W 
-
 
       if ( bQBySurf ) then 
       
@@ -1572,7 +1580,12 @@ C from W/m^2 to W
 C Determine if this capacity can be delivered using free-cooling. 
 C (This is very simple algorithm at present, but it might one day connect
 C  to more sophisticated algorithms) 
-
+C  Apply free cooing if: 
+C 
+C    1. free cooling is enabled 
+C    2. Cooling is requested.
+C    3. Outdoor temperatue < ( zone temp - free cooling threshold )
+C
       if ( bFreeCool    .and. 
      &     fQTotal < 0. .and. 
      &     TF < ( TFA(IICOMP) - fFreeCoolTemp ) ) then 
@@ -1587,8 +1600,11 @@ C
 C                              [ Free Cooling Load (W) ]
 C    conductivity (W/K) =  ------------------------------------
 C                          [ Zone temp (K) - Outdoor Temp (K) ]
-C
+
         fCondFreeCool(IICOMP) = -1.*(fQFreeCool / ( TFA(IICOMP) - TF)) 
+
+C ( Note that the the free cooling threshold (fFreeCoolTemp) must 
+C   be greater than 2, and the denomenator will never be zero. )
         
       else  
 
