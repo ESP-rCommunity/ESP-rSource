@@ -122,14 +122,6 @@ C Open the ASCII file for reading. Reset ier state prior to efopseq.
 C Get date stamp for the materials arrays.
       call dstamp(matdbdate)
 
-C Fill the hash table with not included marker (-1) and clear the
-C array of duplicate checking names.
-      nametocheck=' '
-      do 42 ih=0,600
-        mathash(ih)=-1
-        namelist(ih)=' '
-  42  continue
-
 C Initiate documentation for the database (new concept).
       write(matdbdoc,'(4a)')
      & 'ESP-r Materials based on scan of a legacy ASCII materials',
@@ -143,11 +135,31 @@ C Proceed.
         ier=-2
         RETURN
       endif
+
+C Clear the materials common blocks.
+      matdbitems = 0   ! reset the total number of items.
+      do ij=1,MGCL
+        matcatname(ij)=' '
+        matcatdoc(ij)=' '
+        matcatitems(ij)=0
+      end do
+
+C Fill the hash table with not included marker (-1) and clear the
+C array of duplicate checking names and materials data.
+      nametocheck=' '
+      do ih=0,600
+        mathash(ih)=-1
+        namelist(ih)=' '
+        matname(ih)=' '
+        matdoc(ih)=' '
+        matopaq(ih)=' '
+        matcatindex(ih)=0
+      end do
+
       K=0
       CALL EGETWI(OUTSTR,K,matcats,1,MGCL,'W','nb mat classes',IER)
       IF(IER.NE.0.or.matcats.le.0)RETURN  ! if no categories return
 
-      matdbitems = 0   ! reset the total number of items.
       DO 10 I=1,matcats
         CALL STRIPC(IFA,OUTSTR,0,ND,1,'IC NE NDESC',IER)
         IF(IER.NE.0)RETURN
@@ -353,7 +365,7 @@ C Parameters
 
       integer matcount,matcatcount  ! used to increment arrays
       integer lncat     ! for length of string
-      logical closemat1,closemat2,closer1,closer2,closer3
+      logical closemat1,closemat2
 
       tab=','       ! create tab separator.
       matcount=0    ! setup initial overall counter
@@ -517,7 +529,6 @@ C Open the ASCII file for reading.
       IF(IER.NE.0)RETURN
       write(currentfile,'(a)') LASCI(1:lnblnk(LASCI))
 
-      matdbitems = 0   ! reset the total number of items.
       closemat1=.false.
       closemat2=.false.
 
@@ -528,14 +539,25 @@ C Proceed with header.
       CALL EGETW(OUTSTR,K,WORD,'-','*material',IER)
       if(WORD(1:10).eq.'*Materials'.or.WORD(1:10).eq.'*materials')then
 
-C Fill the hash table with not included marker (-1) and then get the
-C next token as the version number as set closemat. Clear the
-C array of duplicate checking names.
+C Clear the materials common blocks.
+        matdbitems = 0   ! reset the total number of items.
+        do ij=1,MGCL
+          matcatname(ij)=' '
+          matcatdoc(ij)=' '
+          matcatitems(ij)=0
+        end do
+
+C Fill the hash table with not included marker (-1) and clear the
+C array of duplicate checking names and materials data.
         nametocheck=' '
-        do 42 ih=0,600
+        do ih=0,600
           mathash(ih)=-1
           namelist(ih)=' '
-  42    continue
+          matname(ih)=' '
+          matdoc(ih)=' '
+          matopaq(ih)=' '
+          matcatindex(ih)=0
+        end do
 
         matver = 1.1   ! set initial version of database.
         CALL EGETWR(OUTSTR,K,VAL(1),1.0,1.2,'-','db mat version',IER)
@@ -771,11 +793,11 @@ C be sure to instanciate mathash with the material array index.
       end
 
 C ************* MATFROMBIN 
-C MATFROMBIN: Fills materials common blocks via scan of binary materials
-C database.  It should be called after an initial scan of the binary
-C file establishes that the file is ok for scanning. Other code blocks
-C can check the value of natdbitems is non-zero. If the returned value
-C of IER is zero then scan was ok.
+C MATFROMBIN: Fills materials common blocks via scan of a legacy
+C binary materials database.  It should be called after an initial 
+C scan of the binary file establishes that the file is ok for scanning.
+C Other code blocks can check the value of natdbitems is non-zero.
+C If the returned value of IER is zero then scan was ok.
 
 C << this could be part of a legacy file conversion facility >>
 
@@ -837,11 +859,6 @@ C Reset ier state prior to reading data.
 C Get date stamp for the materials arrays.
       call dstamp(matdbdate)
 
-C Fill the hash table with not included marker (-1)
-      do 42 ih=0,600
-        mathash(ih)=-1
-  42  continue
-
 C Initiate documentation for the database (new concept).
       write(matdbdoc,'(4a)')
      & 'ESP-r Materials based on scan of a binary materials',
@@ -861,11 +878,28 @@ C the file is not binary there is no need to inform the user.
         IER=-2
         RETURN
       ENDIF
-      matcats=NCLASS
+
+C Clear the materials common blocks.
       matdbitems = 0   ! reset the total number of items.
+
+      do ij=1,MGCL
+        matcatname(ij)=' '
+        matcatdoc(ij)=' '
+        matcatitems(ij)=0
+      end do
+
+C Fill the hash table with not included marker (-1)
+      do ih=0,600
+        mathash(ih)=-1
+        matname(ih)=' '
+        matdoc(ih)=' '
+        matopaq(ih)=' '
+        matcatindex(ih)=0
+      end do
 
 C Proceed with the assumption that ICLN increments in the same order as
 C 1 -> NCLASS increments. ICLN is not held in the common blocks.
+      matcats=NCLASS
       DO 10 I=1,NCLASS
         IC=ICLN(I)
         IREC=IC*20-19
@@ -999,7 +1033,7 @@ C category for air and fill it with default information.
         matgapares(matdbitems,3)=0.17
       endif
 
-      matver = 1.1   ! set version of materials structures.
+      matver = 1.2   ! set version of materials structures.
 
 C Debug.
 C      write(6,*) 'b matdbitems ',matdbitems

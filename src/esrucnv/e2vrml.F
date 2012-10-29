@@ -105,7 +105,11 @@ C Define a VRML material for each construction in the database.
       do 166 im= 1,NMLC
 
 C Pick up general description of the composite.
-        call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM,isymindex)
+        if(mlcver.eq.0)then
+          call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM,isymindex)
+        else
+
+        endif
 
 C For the inside and outside layer get surface properties (AE & AI).
         matarrayindex=IPRMAT(IM,1)   ! which array index
@@ -191,6 +195,9 @@ C Read in the zone geometry.
 
 C Work out the colours for each of the surfaces in this zone by looping
 C through each of the MLC and finding a match.
+
+C << place to use mlcver >>
+
           do 6 im= 1,NMLC
             if(SMLCN(j)(1:12).eq.DESC(IM)(1:12))then
 

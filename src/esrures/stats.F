@@ -766,6 +766,9 @@ C act='p' iget parameters already set.
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
+      integer ireportunit ! zero is default one is W two is kW three Joules
+      common/repunit/ireportunit
+
       dimension YMAX(MZS), YMIN(MZS), YTOTSD(MZS)
       dimension YAVE(MZS), YSTD(MZS), NY(MZS), YTOT(MZS)
       dimension TMAX(MZS), TMIN(MZS)
@@ -803,6 +806,8 @@ C The logical variable totals controls the displaying of cumulative
 C data for all the zones chosen.  
       if(act(1:1).eq.'-')then
         MENUTYPE=5
+C        write(6,*) 'in stats ireportunit is ',ireportunit
+        ireportunit=0  ! assume normal for stats
         call GOMSETUP
         call GOMENU
         if(ixopen.eq.1)then

@@ -3879,6 +3879,7 @@ C Pick up the material name of each layer. Uses zero matarrayindex to signal gap
             write(PNAM(j),'(a)') 'air '
           endif
         else
+          write(PNAM(j),'(a)') 'unknown'
           call usrmsg('Materials are incomplete or not yet scanned.',
      &      'Please check your model materials file.','W')
         endif

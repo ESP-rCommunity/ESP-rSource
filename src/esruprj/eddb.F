@@ -1211,7 +1211,14 @@ C << temporary shorter string until EASKXORGTKF >>
             CALL ERPFREE(IFMUL,ISTAT)  ! in case other unit is still open
             CALL mkascimat(IAF,LLASCI,IER)
           else
-            CALL MKAPRC(LLASCI,IAF,IER)
+
+C Use a call to MATFROMBIN (to scan binary file into common blocks)
+C followed by a call to mkascimat.
+            call MATFROMBIN(IER)  ! fill materials common blocks
+            if(ier.eq.0)then
+              CALL ERPFREE(IFMUL,ISTAT)  ! in case other unit is still open
+              CALL mkascimat(IAF,LLASCI,IER)
+            endif
           endif
         endif
 
@@ -1389,11 +1396,12 @@ C Work with a shorter string until we can switch to EASKXORGTKF
           continue
         else
 
-C Write out the ASCII version and make it the new LFMAT.
+C Write ASCII version from the common blocks and make it the new LFMAT.
 C << shorter string until replacement of EASKXORGTKF >>
           write(LLASCI,'(a)') LTMP(1:lnblnk(LTMP))
           IAF=IFIL+1
-          CALL MKAPRC(LLASCI,IAF,IER)
+          CALL ERPFREE(IFMUL,ISTAT)  ! in case other unit is still open
+          CALL mkascimat(IAF,LLASCI,IER)
           write(LFMAT,'(a)') LLASCI(1:lnblnk(LLASCI))
           origmatwasbin=.false.   ! reset so only done once
         endif
@@ -4847,7 +4855,7 @@ C Setup assumptions based on topic.
       lndbp=lnblnk(standarddbpath)
       if(topic(1:3).eq.'mat')then
         defaultfile=dfcon     ! default standard file
-        sourcemsg='Material properties file (in source folder).'   ! dialog
+        sourcemsg='Material properties file (in common).'   ! dialog
         ending='.materialdb'  ! file ending
         if(ipathmat.eq.0.or.ipathmat.eq.1)then
           write(lguess,'(a)') LFMAT(1:lnblnk(LFMAT)) ! suggested name
@@ -4857,7 +4865,7 @@ C Setup assumptions based on topic.
         endif
       elseif(topic(1:3).eq.'mlc')then
         defaultfile=dfmul
-        sourcemsg='Constructions file (in source folder).'
+        sourcemsg='Constructions file (in common).'
         ending='.constrdb'
         if(ipathmul.eq.0.or.ipathmul.eq.1)then
           lguess=LFMUL  ! use as is
@@ -4867,7 +4875,7 @@ C Setup assumptions based on topic.
         endif
       elseif(topic(1:3).eq.'opt')then
         defaultfile=doptdb
-        sourcemsg='Optical properties file (in source folder).'
+        sourcemsg='Optical properties file (in common).'
         ending='.opticdb'
         if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
           lguess=LOPTDB  ! use as is
@@ -4877,7 +4885,7 @@ C Setup assumptions based on topic.
         endif
       elseif(topic(1:3).eq.'pdb')then
         defaultfile=DPCDB
-        sourcemsg='Plant components file (in source folder).'
+        sourcemsg='Plant components file (in common).'
         ending='.plantdb'
         if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
           lguess=LPCDB
@@ -4887,7 +4895,7 @@ C Setup assumptions based on topic.
         endif
       elseif(topic(1:3).eq.'prs')then
         defaultfile=DAPRES
-        sourcemsg='Pressure coefficients file (in source folder).'
+        sourcemsg='Pressure coefficients file (in common).'
         ending='.pressuredb'
         if(ipathapres.eq.0.or.ipathapres.eq.1)then
           lguess=LPCDB
@@ -4897,7 +4905,7 @@ C Setup assumptions based on topic.
         endif
       elseif(topic(1:3).eq.'msc')then
         defaultfile=DMCMPDBFL
-        sourcemsg='Active components file (in source folder).'
+        sourcemsg='Active components file (in common).'
         ending='.miscdb'
         if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
           lguess=MCMPDBFL
@@ -4907,7 +4915,7 @@ C Setup assumptions based on topic.
         endif
       elseif(topic(1:3).eq.'mld')then
         defaultfile=dmdbnam
-        sourcemsg='Mould isopleths file (in source folder).'
+        sourcemsg='Mould isopleths file (in common).'
         ending='.moulddta'
         if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
           lguess=lfmould
@@ -4917,7 +4925,7 @@ C Setup assumptions based on topic.
         endif
       elseif(topic(1:3).eq.'pro')then
         defaultfile=DPRFDB
-        sourcemsg='Event profile file (in source folder).'
+        sourcemsg='Event profile file (in common).'
         ending='.eventdb.a'
         if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
           lguess=LPRFDB
@@ -5350,7 +5358,7 @@ C will exist.
       
 
 C ******** usecommondbsfile
-C usemodeldbsfile is a general facility to browse files in the
+C usecommondbsfile is a general facility to browse files in the
 C distribution databases folder. All files in this folder will 
 C be added to a menu list for selection. Selected file becomes
 C the current common file type and is returned via lltmp.
@@ -5407,7 +5415,7 @@ C Remember current file for the current topic, set message to
 C users and the guess for file name.
       lndbp=lnblnk(standarddbpath)
       if(topic(1:3).eq.'mat')then
-        sourcemsg='material properties file (in ../dbs).'   ! dialog
+        sourcemsg='material properties file (in common).'   ! dialog
         if(ipathmat.eq.0.or.ipathmat.eq.1)then
           write(lguess,'(a)') LFMAT(1:lnblnk(LFMAT)) ! suggested name
         elseif(ipathmat.eq.2)then
@@ -5415,7 +5423,7 @@ C users and the guess for file name.
      &      LFMAT(1:lnblnk(LFMAT))
         endif
       elseif(topic(1:3).eq.'mlc')then
-        sourcemsg='constructions file (in ../dbs).'
+        sourcemsg='constructions file (in common).'
         if(ipathmul.eq.0.or.ipathmul.eq.1)then
           lguess=LFMUL  ! use as is
         elseif(ipathmul.eq.2)then
@@ -5423,7 +5431,7 @@ C users and the guess for file name.
      &      lfmul(1:lnblnk(lfmul))  ! prepend db folder path
         endif
       elseif(topic(1:3).eq.'opt')then
-        sourcemsg='optical properties file (in ../dbs).'
+        sourcemsg='optical properties file (in common).'
         if(ipathoptdb.eq.0.or.ipathoptdb.eq.1)then
           lguess=LOPTDB  ! use as is
         elseif(ipathoptdb.eq.2)then
@@ -5431,7 +5439,7 @@ C users and the guess for file name.
      &      LOPTDB(1:lnblnk(LOPTDB))  ! prepend db folder path
         endif
       elseif(topic(1:3).eq.'pdb')then
-        sourcemsg='plant components file (in ../dbs).'
+        sourcemsg='plant components file (in common).'
         if(ipathpcdb.eq.0.or.ipathpcdb.eq.1)then
           lguess=LPCDB
         elseif(ipathpcdb.eq.2)then
@@ -5439,7 +5447,7 @@ C users and the guess for file name.
      &      lpcdb(1:lnblnk(lpcdb))
         endif
       elseif(topic(1:3).eq.'prs')then
-        sourcemsg='pressure coefficients file (in ../dbs).'
+        sourcemsg='pressure coefficients file (in common).'
         if(ipathapres.eq.0.or.ipathapres.eq.1)then
           lguess=LPCDB
         elseif(ipathapres.eq.2)then
@@ -5447,7 +5455,7 @@ C users and the guess for file name.
      &      lapres(1:lnblnk(lapres))
         endif
       elseif(topic(1:3).eq.'msc')then
-        sourcemsg='active components file (in ../dbs).'
+        sourcemsg='active components file (in common).'
         if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
           lguess=MCMPDBFL
         elseif(ipathmsc.eq.2)then
@@ -5455,7 +5463,7 @@ C users and the guess for file name.
      &      MCMPDBFL(1:lnblnk(MCMPDBFL))
         endif
       elseif(topic(1:3).eq.'mld')then
-        sourcemsg='mould isopleths file (in ../dbs).'
+        sourcemsg='mould isopleths file (in common).'
         if(ipathmsc.eq.0.or.ipathmsc.eq.1)then
           lguess=lfmould
         elseif(ipathmsc.eq.2)then
@@ -5463,7 +5471,7 @@ C users and the guess for file name.
      &      lfmould(1:lnblnk(lfmould))
         endif
       elseif(topic(1:3).eq.'pro')then
-        sourcemsg='event profile file (in ../dbs).'
+        sourcemsg='event profile file (in common).'
         if(ipathprodb.eq.0.or.ipathprodb.eq.1)then
           lguess=LPRFDB
         elseif(ipathprodb.eq.2)then
