@@ -1341,19 +1341,7 @@ C Set maximum cooling capacity:
 
 C Set minimum cooling capacity
       QCN=-BMISCD(ICF,IDTYP,IPER,5)
-
-C Ensure that free cooling is sufficient to manage zone temperature. 
-C Note that the free-cooling algorithm is not intended to estimate 
-C the maximum amount of cooling that can be achieved with window-ventilation-
-C it merely ensures that zones don't overheat when the outdoor temperature 
-C is in a moderate range. More detailed methods (ie. air flow networks) should 
-C be used to analyse natural ventialtion potential.  
-
-      if (bFreeCool) then 
-        QCM = max(QCM,10000.)
-        QCN = 0.
-      endif 
-       
+      
       HSP=BMISCD(ICF,IDTYP,IPER,6)
       CSP=BMISCD(ICF,IDTYP,IPER,7)
 
@@ -1393,7 +1381,7 @@ C temperature (TFA(iComp))
 		fFreeCoolTemp=BMISCD(ICF,IDTYP,IPER,8)
 C Note that free cooling temperature must be greater than zero 
 C to ensure that mass-balance calculation is stable. 		
-		fFreeCoolTemp = max( fFreeCoolTemp, 2.0 )
+		fFreeCoolTemp = max( fFreeCoolTemp, 0.1 )
 	  endif 
 	  
       
