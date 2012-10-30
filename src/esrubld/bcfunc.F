@@ -7163,7 +7163,7 @@ C ic is tested for zero in solar.F
 
 C Debug.
 C        write(6,*) 'Updating thermophysical properties of surface ',ii
-C        write(6,*) 'with construction ',DESC(ic)' at btimef ',btimef
+C        write(6,*) 'with construction ',mlcname(ic)' at btimef ',btimef
 
 C Put the MLC info into current surface attributes common.
 C Gather information about each layer via materials info.

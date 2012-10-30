@@ -3928,11 +3928,11 @@ C Call in the future here different subroutines for different controls
 C **** IMPORTANT: TAKE ONLY THE 1ST 12 CHARS FROM "DESC" ****
 
 C Debug.
-C        write(6,*) 'desc', DESC(ictl_constrdbindex_number)
+C        write(6,*) 'desc', mlcname(ictl_constrdbindex_number)
 C        write(6,*) 'ssmlcn', SSMLCN(izstocn(icomp,ISURFNumber))
 
               write(ctl_constrdb_name,'(a)')
-     &             DESC(ictl_constrdbindex_number)(1:12)
+     &             mlcname(ictl_constrdbindex_number)(1:12)
               write(name_constr_ofStudy,'(a)')
      &             SSMLCN(izstocn(icomp,ISURFNumber))(1:12)
 

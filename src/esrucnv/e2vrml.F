@@ -59,8 +59,8 @@ C creates a grey-scale VRML 2.0 world.
       logical closemat1,closemat2
 
       CHARACTER*72 GTGEOM
-      character GDESCR*36,MLCN*12,OTF*4,OPT*12
-      character MLCSYM*12
+      character GDESCR*36
+      character OPT*12  ! to pass optical properties
       CHARACTER GMLCN*12,GSNAME*6
       character ZSN*28,q*1
       DIMENSION SNA(MS),PAZI(MS),PELV(MS),ZSN(MS)
@@ -104,13 +104,6 @@ C Define a VRML material for each construction in the database.
      &  '# VRML materials derived from ESP-r constructions...'
       do 166 im= 1,NMLC
 
-C Pick up general description of the composite.
-        if(mlcver.eq.0)then
-          call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM,isymindex)
-        else
-
-        endif
-
 C For the inside and outside layer get surface properties (AE & AI).
         matarrayindex=IPRMAT(IM,1)   ! which array index
         if(matarrayindex.ge.0)then
@@ -126,7 +119,8 @@ C If a tmc then find tranmission functions.  If more transparent than
 C the ficticious limit then mark to be skipped. Convert visible
 C transmission to transmissivity (as per Ward 1/12/94 Radiance 2.4 paper).
 C If TMC has an opaque layer then set gvt to a small number.
-        if(OTF(1:4).NE.'OPAQ')then
+        if(mlctype(IM)(1:4).NE.'OPAQ')then
+          write(OPT,'(a)') mlcoptical(IM)(1:12)
           CALL EROPTDB(ITRC,iuout,OPT,GDESCR,IER)
           if(VTRN.gt.0.02)then
             gvt1=(sqrt(0.8402528435+(0.007252224*VTRN*VTRN))
@@ -150,10 +144,10 @@ C << surface should be skipped logic for later...>>
         WRITE(ioout,'(5a)')'parameter [ ',q,'target = description',q,
      &    ' ]'
         WRITE(ioout,'(a)') '  children [ Shape {'
-        if(OTF(1:4).NE.'OPAQ')then
+        if(mlctype(IM)(1:4).NE.'OPAQ')then
           WRITE(ioout,'(3a)')
-     &      '   appearance DEF Glass_',MLCN(1:lnblnk(MLCN)),
-     &      ' Appearance {'
+     &      '   appearance DEF Glass_',
+     &      mlcname(IM)(1:lnblnk(mlcname(IM))),' Appearance {'
           WRITE(ioout,'(2a)')
      &      '     material Material { diffuseColor 1 1 1 ',
      &      ' ambientIntensity 1.0 specularColor 0 0 100  '
@@ -162,8 +156,8 @@ C << surface should be skipped logic for later...>>
           WRITE(ioout,'(a)')'      } '
         else
           WRITE(ioout,'(3a)')
-     &      '    appearance DEF Solid_',MLCN(1:lnblnk(MLCN)),
-     &      ' Appearance {'
+     &      '    appearance DEF Solid_',
+     &      mlcname(IM)(1:lnblnk(mlcname(IM))),' Appearance {'
           WRITE(ioout,'(a,3F5.2,a,3F5.2)')
      &      '      material Material { diffuseColor ',
      &      1.0-AE,1.0-AE,1.0-AE,' specularColor ',1.0-AE,1.0-AE,1.0-AE
@@ -193,31 +187,20 @@ C Read in the zone geometry.
         WRITE(ioout,'(3a)')'# zone ',zname(newfoc),' starts here....'
         do 5 j=1,nsur
 
-C Work out the colours for each of the surfaces in this zone by looping
-C through each of the MLC and finding a match.
-
-C << place to use mlcver >>
-
-          do 6 im= 1,NMLC
-            if(SMLCN(j)(1:12).eq.DESC(IM)(1:12))then
-
-C Pick up general description of the composite.
-              call parsemlcdesc(DESC(IM),MLCN,OTF,OPT,MLCSYM,isymindex)
+C Work out the colours for each of the surfaces in this zone by 
+C finding MLC match.
+          call matchmlcdesc(SMLCN(j),im)
 
 C For the inside and outside layer get surface properties.
-              matarrayindex=IPRMAT(IM,1)   ! which array index
-              if(matarrayindex.ge.0)then
-                AE=matdbina(matarrayindex)
-              endif
+          matarrayindex=IPRMAT(IM,1)   ! which array index
+          if(matarrayindex.ge.0)then
+            AE=matdbina(matarrayindex)
+          endif
 
-              matarrayindex=IPRMAT(IM,LAYERS(IM))   ! which array index
-              if(matarrayindex.ge.0)then
-                AI=matdbina(matarrayindex)
-              endif
-              goto 7
-            endif
-  6       continue
-  7       continue
+          matarrayindex=IPRMAT(IM,LAYERS(IM))   ! which array index
+          if(matarrayindex.ge.0)then
+            AI=matdbina(matarrayindex)
+          endif
 
 C Remeber characters in surface name
           lsn=lnblnk(sname(newfoc,j))
@@ -253,12 +236,14 @@ C (which holds the coordinates of the zone along with the first surface.
           WRITE(ioout,'(a)') '  children ['
           WRITE(ioout,'(a)') '    Shape {'
           if(j.eq.1)then
-            if(OTF(1:4).NE.'OPAQ')then
+            if(mlctype(IM)(1:4).NE.'OPAQ')then
               WRITE(ioout,'(2a)')
-     &          '      appearance USE Glass_',MLCN(1:lnblnk(MLCN))
+     &          '      appearance USE Glass_',
+     &          mlcname(IM)(1:lnblnk(mlcname(IM)))
             else
               WRITE(ioout,'(2a)')
-     &          '      appearance USE Solid_',MLCN(1:lnblnk(MLCN))
+     &          '      appearance USE Solid_',
+     &          mlcname(IM)(1:lnblnk(mlcname(IM)))
             endif
 
 C Ensure first character is not a number.
@@ -309,12 +294,14 @@ C Write a comma separated list of vertices (in both directions) with a trailing 
           else
 
 C Write differently if opaque or transparent.
-            if(OTF(1:4).NE.'OPAQ')then
+            if( mlctype(IM)(1:4).NE.'OPAQ')then
               WRITE(ioout,'(2a)')
-     &          '     appearance USE Glass_',MLCN(1:lnblnk(MLCN))
+     &          '     appearance USE Glass_',
+     &          mlcname(IM)(1:lnblnk(mlcname(IM)))
             else
               WRITE(ioout,'(2a)')
-     &          '     appearance USE Solid_',MLCN(1:lnblnk(MLCN))
+     &          '     appearance USE Solid_',
+     &          mlcname(IM)(1:lnblnk(mlcname(IM)))
             endif
             call ifnumber(sname(newfoc,j)(1:1),numb)
             if(numb)then
@@ -325,7 +312,7 @@ C Write differently if opaque or transparent.
      &          sname(newfoc,j)(1:lsn),' IndexedFaceSet {'
             endif
             WRITE(ioout,'(a)')  '        ccw TRUE'
-            if(OTF(1:4).NE.'OPAQ')then
+            if(mlctype(IM)(1:4).NE.'OPAQ')then
               WRITE(ioout,'(a)')'        solid FALSE'
             else
               WRITE(ioout,'(a)')'        solid TRUE'
@@ -380,23 +367,15 @@ C into GB1 commons and write them out using similar logic.
           endif
 
 C Work out the colour for each block by looping
-C through each of the MLC and finding a match (for first 12 char).
-          do 66 im= 1,NMLC
-            if(BLOCKMAT(newfoc,IB)(1:12).eq.DESC(IM)(1:12))then
-
-C Pick up general description of the composite.
-              WRITE(MLCN,'(A)')DESC(IM)(1:12)
+C through each of the MLC and finding a match.
+          call matchmlcdesc(BLOCKMAT(newfoc,IB),im)
 
 C For the inside and outside layer get surface properties.
-              matarrayindex=IPRMAT(IM,1)   ! which array index
-              if(matarrayindex.ge.0)then
-                AE=matdbina(matarrayindex)
-              endif
-              gvt=0.00
-              goto 77
-            endif
- 66       continue
- 77       continue
+          matarrayindex=IPRMAT(IM,1)   ! which array index
+          if(matarrayindex.ge.0)then
+            AE=matdbina(matarrayindex)
+          endif
+          gvt=0.00
 
 C Remeber characters in block name
           lsn=LNBLOCKNAME(newfoc,IB)
@@ -500,17 +479,12 @@ C If there is a ground topology create surfaces for it.
 
 C Find the matching mlc index.
             AE=0.5
-            DO 701 imm=1,NMLC
-              IF(DESC(imm)(1:12).EQ.GMLCN(igg)(1:12))then
-                matarrayindex=IPRMAT(IM,1)   ! which array index
-                if(matarrayindex.ge.0)then
-                  AE=matdbina(matarrayindex)
-                endif
-                gvt=0.00
-                goto 702
-              endif
- 701        CONTINUE
- 702        continue
+            call matchmlcdesc(GMLCN(igg),imm)
+            matarrayindex=IPRMAT(IMM,1)   ! which array index
+            if(matarrayindex.ge.0)then
+              AE=matdbina(matarrayindex)
+            endif
+            gvt=0.00
 
 C Remeber characters in surface name
             lsn=lnblnk(gsname(igg))

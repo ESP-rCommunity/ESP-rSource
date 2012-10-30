@@ -27,9 +27,6 @@ C IMPRESSC: Imports from legacy pressure coef file (AFIL) to a generic
 C    wind pressure db file (BFIL).
 C IMPROFL: Imports from legacy ascii profile file (AFIL) to a generic
 C    profile db file (BFIL)
-C parsemlcdesc: Parse the DESC string from common block returning text for
-C   MLCN (its name) ,OTF (whether OPAQ/TAN) ,OPT (optical name) ,MLCSYM
-C   tag for symmetry.
 
 C ************* IMPMLC 
 C IMPMLC: Imports from legacy construction file (AFIL) to a generic
@@ -66,18 +63,19 @@ C providing paramaters MGDB,MGCL,MGIT
       dimension thrmtg(ME),gaptg(ME),mattag(ME),DT(ME)
       dimension IP(ME),DRA(ME,3),glaydesc(ME)
       CHARACTER OUTSTR*124,AFIL*72,BFIL*72,GDESC*48,NAM*72,RSTR*124
-      CHARACTER WORD*20,MLCN*12,OTF*4,OPT*12,MLCSYM*12
+      CHARACTER WORD*20
+C      character MLCN*12,OTF*4,OPT*12,MLCSYM*12
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,catdoc*248
       character cattag*12,cattype*8,catmenu*32,catdate*24
       character itdat*248,itrep*248
       character ittag*12,itmenu*32,itdate*24,itdoc*248
-      character dbnote*72,c8*8,c20*20,outs*124,outsd*124
+      character dbnote*72,c8*8,c20*20,outs*124
       character ituntstr*42,itsrcstr*1,itcnfstr*42
       character unitchr*4,unitstr*12,unitnote*72,srcchr*4,srcnote*248
       character dstmp*24,symname*12,othcolr*12,incolr*12
       character othacou*12,inacou*12,cnstimp*12
       character thrmtg*1,gaptg*1,mattag*12,glaydesc*32
-      CHARACTER TITL*72,LTMP*72,DFILE*72
+      CHARACTER LTMP*72,DFILE*72
 
 C Logical noting whether it was possible to open legacy material
 C database to get IR and solar properties.
@@ -142,7 +140,7 @@ C there probably was an earlier scan and conversion of a legacy
 C material database so LFMAT should already be instanciated.
 C If it was not possible to open the material db then set default
 C values for the inside and outside solar and IR.
-      LTMP=LFMAT
+      write(LTMP,'(a)') LFMAT(1:72)
       DFILE='/usr/esru/esp-r/databases/constr.db3.a'
   29  CALL EASKS(LTMP,
      &  'Legacy materials db used with this legacy construction',
@@ -212,21 +210,17 @@ C to include information on optical properties).
         GDESC=RSTR(1:LNBLNK(RSTR))
 
 C Parse the GDESC string into string tokens.
-        if(mlcver.eq.0)then
-          call parsemlcdesc(GDESC,MLCN,OTF,OPT,MLCSYM,isymindex)
-        else
+        call matchmlcdesc(GDESC(1:12),im)
 
-        endif
-
-        symname=MLCSYM
+        write(symname,'(a)') mlcsymetric(im)(1:12)
         othcolr='grey50'
         incolr='grey50'
         othacou='none'
         inacou='none'
         cnstimp='none'
-        write(itmenu(iit),'(a,20x)') MLCN
-        write(itdoc,'(3a)') 'construction ',MLCN(1:lnblnk(MLCN)),
-     &    ' is...'
+        write(itmenu(iit),'(a,20x)') mlcname(im)(1:lnblnk(mlcname(im)))
+        write(itdoc,'(3a)') 'construction ',
+     &    mlcname(im)(1:lnblnk(mlcname(im))),' is...'
         call dstamp(dstmp)
         write(itdate(iit),'(a)') dstmp
 
@@ -258,7 +252,6 @@ C Pass the legacy record number (ileghope) along with the name (NAM) of the
 C material and get back the index of the material array that fits.
             call parsematdesc(ileghope,NAM,matarrayindex)
 
-            itru=0
             if(IL.eq.1)then
               if(matarrayindex.eq.0)then
                 othir=0.0
@@ -1193,53 +1186,35 @@ C Close file before exiting.
     
       END
 
-
-C ******* parsemlcdesc (copy from edatabase.F)
-C Parse the DESC string from the MLC common block returning text for
-C MLCN (its name) ,OTF (whether OPAQ/TRAN/CFC) ,OPT (optical name) ,MLCSYM
-C tag for symmetry. Where values are missing or unknown setup defaults.
-C If isymindex is non-zero it is index of MLC for symmetric MLC.
-      subroutine parsemlcdesc(DES,MLCN,OTF,OPT,MLCSYM,isymindex)
+C << this is a copy of source from esrucom/edatabase.F >>
+C ******* matchmlcdesc
+C matchmlcdesc parse string (DES) and see if it matches a MLC
+C item - if so return its MLC index. DES might be from SMLCN or some 
+C other source.
+      subroutine matchmlcdesc(DES,imlcindex)
 #include "building.h"
 #include "esprdbfile.h"
 #include "material.h"
-      
-      integer lnblnk  ! function definition
 
-      character DES*48,MLCN*12,OTF*4,OPT*12,MLCSYM*12
+C Passed parameters DES length is flexable.
+      character*(*) DES
+      integer imlcindex
 
-C Clear parameters to be returned and then copy from DES.
-      OPT=' '
-      MLCSYM=' '
-      WRITE(MLCN,'(A)')DES(1:12)
-      WRITE(OTF,'(A)') DES(15:18)
-      IF(OTF(1:2).EQ.'  ')OTF='OPAQ'
-      IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
-        WRITE(OPT,'(A)') DES(21:32)
-        IF(OPT.EQ.' ')OPT='UNKNOWN'
-      ELSEIF(OTF(1:4).EQ.'CFC ')THEN
-        OPT='USE GSLedit'
-      ELSE
-        OPT='OPAQUE'
-      ENDIF
+C Local variable.
+      character MLCN*32
+      integer ii,lnmlcn,lndesc
 
-C Read tag for name of inverted version or symmetry if the length of the
-C DESC string could hold the tag, otherwise set MLCSYM to a blank. Also
-C check the MLC index of MLCSYM so that can be returned.
-      if(lnblnk(DES).gt.35)then
-        WRITE(MLCSYM,'(A)') DES(35:46)
-
-C Look for index for MLCSYM in the current MLC database.
-        isymindex=0  ! assume no matching MLC          
-        do 5 ii=1,nmlc
-          if(MLCSYM(1:12).eq.DESC(ii)(1:12)) then
-            isymindex=ii   ! remember MLC index     
-          endif
-  5     continue
-      else
-        MLCSYM='  '
-        isymindex=0   ! signal not applicable     
-      endif
+C Look for index for MLCN in the current constructions file.
+      imlcindex=0  ! assume no matching MLC          
+      lnmlcn=lnblnk(DES)
+      WRITE(MLCN,'(A)')DES
+      if(MLCN(1:4).eq.'UNKN') return
+      do ii=1,nmlc
+        lndesc=lnblnk(mlcname(ii))
+        if(MLCN(1:lnmlcn).eq.mlcname(ii)(1:lndesc)) then
+          imlcindex=ii   ! remember MLC index     
+        endif
+      end do
       return
       end
 

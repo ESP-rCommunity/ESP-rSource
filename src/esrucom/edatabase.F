@@ -23,6 +23,7 @@ C reading and reporting ESP-r databases and contains the following:
 
 C  ERMLDB:  Read an ASCII composite db and return data via block MLC.
 C  parsemlcdesc: Parse the DESC string from the MLC common block
+C  matchmlcdesc: parse string (DES) and see if it matches a MLC
 C  ETMLDB:  Provides reporting on current description of a composite.
 C  ETMLDBU returns U value of construction based on contents of common MLC.
 C  EPKMLC:  Select a composite construction with display of details.
@@ -67,7 +68,7 @@ C espriou.h provides currentfile.
       integer ier
       integer ileghope  ! for legacy record
       integer matarrayindex  ! for materials array index
-      integer lex       ! lenght of string
+      integer lex,lnt32,lnsym,lnmlcn     ! lenght of string
 
 C Note that the text which follows the thickness of the layer
 C is extracted from the materials database and should not
@@ -180,7 +181,7 @@ C Set MLC thickness to zero.
         K=0
         CALL EGETWI(OUTSTR,K,LAYERS(I),1,MMLC,'F','mlc layers',IER)
 
-C Anything after nb of layers is the description (which is overloaded
+C Anything after number of layers is the description (which is overloaded
 C to include information on optical properties and either the name
 C of a MLC with inverted layers or the keywords SYMMETRIC or NONSYMMERTIC).
         CALL EGETRM(OUTSTR,K,RSTR,'W','layer description',IER)
@@ -188,6 +189,9 @@ C of a MLC with inverted layers or the keywords SYMMETRIC or NONSYMMERTIC).
         IF(IER.NE.0)GOTO 99
 
 C Parse the DESC string into string tokens.
+
+C << when references to DESC removed this structure can be removed. >>
+
         call parsemlcdesc(DESC(I),MLCN,OTF,OPT,MLCSYM,isymindex)
 
 C Also fill the MLC common blocks.
@@ -219,10 +223,10 @@ C DESC string could hold the tag, otherwise set mlcsymetric to a blank.
         endif
 
 C Debug.
-        write(6,*) 'mlc index name doc ',i,mlcname(i),' : ',
-     &    mlcdoc(i)(1:lnblnk(mlcdoc(i)))
-        write(6,*) 'type optical sym ',mlctype(I),' : ',mlcoptical(I),
-     &    ' : ',mlcsymetric(I)
+C        write(6,*) 'mlc index name doc ',i,mlcname(i),' : ',
+C     &    mlcdoc(i)(1:lnblnk(mlcdoc(i)))
+C        write(6,*) 'type optical sym ',mlctype(I),' : ',mlcoptical(I),
+C     &    ' : ',mlcsymetric(I)
 
         IF(LAYERS(I).LE.0)GOTO 10
 
@@ -385,7 +389,8 @@ C values, otherwise get element name from materials db.
       H(2)='case the composite construction is used in different'
       H(3)='orientations are requested.  This information supports'
       H(4)='the automatic creation of zone construction files.'
-              WRITE(OUTSTR,117)IL,DESC(I)(1:LNBLNK(DESC(I))),
+              lnt32=lnblnk(mlcname(i))
+              WRITE(OUTSTR,117)IL,mlcname(I)(1:lnt32),
      &          DTHK(I,IL)*1000.0
   117         FORMAT('Default R value for air gap ',I2,' in ',a,
      &            ' (which is',F7.1,' mm thick)')
@@ -494,14 +499,18 @@ C many of these instances. If there are
 
 C Look for index for MLCSYM in all the items in the file.
       do i=1,nmlc
-        isymindex=0  ! assume no matching MLC          
+        isymindex=0  ! assume no matching MLC
+        lnsym=lnblnk(mlcsymetric(I))         
         do 5 ii=1,nmlc
-          if(mlcsymetric(I)(1:12).eq.DESC(ii)(1:12)) then
+          lnmlcn=lnblnk(mlcname(ii))
+          if(mlcsymetric(I)(1:lnsym).eq.mlcname(ii)(1:lnmlcn))then
             matsymindex(I)=ii   ! remember MLC index     
           endif
   5     continue
       end do
-      write(6,*) matsymindex
+
+C Debug.
+C      write(6,*) matsymindex
 
 C Close file before exiting.
   88  CALL ERPFREE(IFMUL,ISTAT)
@@ -586,7 +595,7 @@ C Look for index for MLCSYM in the current MLC database.
       end
 
 C ******* matchmlcdesc
-C matchmlcdesc parse string (DES) and see if first 12 char matches a MLC
+C matchmlcdesc parse string (DES) and see if it matches a MLC
 C item - if so return its MLC index. DES might be from SMLCN or some 
 C other source.
       subroutine matchmlcdesc(DES,imlcindex)
@@ -594,23 +603,25 @@ C other source.
 #include "esprdbfile.h"
 #include "material.h"
 
-C Passed parameters
+C Passed parameters DES length is flexable.
       character*(*) DES
       integer imlcindex
 
 C Local variable.
-      character MLCN*12
-      integer ii
+      character MLCN*32
+      integer ii,lnmlcn,lndesc
 
-C Look for index for MLCN in the current MLC database.
+C Look for index for MLCN in the current constructions file.
       imlcindex=0  ! assume no matching MLC          
-      WRITE(MLCN,'(A)')DES(1:12)
+      lnmlcn=lnblnk(DES)
+      WRITE(MLCN,'(A)')DES
       if(MLCN(1:4).eq.'UNKN') return
-      do 5 ii=1,nmlc
-        if(MLCN(1:12).eq.DESC(ii)(1:12)) then
+      do ii=1,nmlc
+        lndesc=lnblnk(mlcname(ii))
+        if(MLCN(1:lnmlcn).eq.mlcname(ii)(1:lndesc)) then
           imlcindex=ii   ! remember MLC index     
         endif
-  5   continue
+      end do
       return
       end
 
@@ -944,7 +955,8 @@ C Loop through all of the layers and compose RT for the construction.
       DO 15, IL=1,LAYERS(IFOC)
       
 C If data available in material array gather it. And if an air
-C layer reset dbcon dbden dbsht andinclude the R values in the display.
+C layer (matarrayindex of zero or matopaq 'g' or 'h' then
+C reset dbcon dbden dbsht andinclude the R values in the display.
         matarrayindex=IPRMAT(IFOC,IL)   ! which array index
         if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &     matopaq(matarrayindex)(1:1).eq.'h'.or.
@@ -1184,6 +1196,9 @@ C IER=0 OK, IER=1 problem.
 #include "building.h"
 #include "esprdbfile.h"
 #include "material.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -1192,6 +1207,8 @@ C IER=0 OK, IER=1 problem.
       DIMENSION IVAL(MMLC),COMPS(MMLC)
       CHARACTER*(*) PROMPT1,PROMPT2
       CHARACTER H*72,COMPS*33
+
+      integer lnmlcn
 
       IER=0
       ISEL=0
@@ -1225,8 +1242,12 @@ C in the materials database.
       H(12)='to the same construction, especially when these controls '
       H(13)='are attempting to assign different datasets. The first '          
       H(14)='loop will be used if this mistake is made by the users. '
+
+C Present list based on the name and type of the MLC.
       DO 66 IWW=1,NMLC
-        WRITE(COMPS(IWW),'(A33)')DESC(IWW)(1:33)
+        lnmlcn=lnblnk(mlcname(iww))
+        WRITE(COMPS(IWW),'(3A)')mlcname(IWW)(1:lnmlcn),' ',
+     &    mlctype(IWW)
    66 CONTINUE
       IX=1
       CALL EPICKS(IX,IVAL,PROMPT1,PROMPT2,
@@ -1354,11 +1375,14 @@ C Make up NAM as combination of matnam and matdoc.
           ENDIF
   116   CONTINUE
 
-        WRITE(IFMUL,32)LAYERS(I),DESC(I)(1:48)
-   32   FORMAT(
-     &    '# layers  description  type  optics name   symmetry tag',/,
-     &    I5,4X,A48,/,
-     &    '# material ref thickness (m) description & air gap R')
+C Write via material commons with comment before and after names.
+        write(IFMUL,'(a)')
+     &    '# layers  description  type  optics name   symmetry tag'
+        write(IFMUL,'(i5,4x,8a)')LAYERS(I),mlcname(i)(1:12),'  ',
+     &        mlctype(i)(1:4),'  ',mlcoptical(i)(1:12),'  ',
+     &        mlcsymetric(i)(1:12),'  '
+        write(IFMUL,'(a)')
+     &    '# material ref thickness (m) description & air gap R'
 
 C As a transition, for gap layers the index is going to have to
 C be a zero to trick the reading code into recognizing it as
@@ -1808,8 +1832,7 @@ C << some variables are off - further debugging required.
       logical closemat1,closemat2
       
       dimension thick(8),rho(8),Cp(8),cond(8)
-      CHARACTER MLCN*12,OTF*4,OPT*12
-      character MLCSYM*12,outs*124
+      character outs*124
       
       COMPLEX P,L(2,2),M(2,2),N(2,2)
 
@@ -1824,13 +1847,6 @@ C Establish if material data arrays have been filled. If not return.
         return
       endif
 
-C Pick up general description of the composite.
-      if(mlcver.eq.0)then
-        call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
-      else
-
-      endif
-      
 C ESP-r defines layers from outside to inside. The code in
 C subroutine admit works from inside to outside.
 C Debug layer info.

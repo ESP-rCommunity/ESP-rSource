@@ -61,7 +61,7 @@ C results library as well.
 
 C Versions of results libraries.
       common/recver/izver,ipver,iever
-      common/rpath/path
+C      common/rpath/path
       common/user/browse
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
@@ -88,12 +88,14 @@ C Active domain common.
 
       COMMON/SPFL/spfileok,perok,tstepok,saveok,autook,exitok,startupok
 
-      character outs*124,ltmp*72,path*72,longtfile*144
+      character outs*124,ltmp*72,longtfile*144
+C      character path*72
       character*72 LAPROB,ENTFLNAM,ERESLIB,CFRESF
       character RFILE*72,PFILE*72,MSTRFILE*72,LAFRES*72
       dimension iflg(MCOM)
 
-      logical OK,dok,MSTROK,MSTRZN,remote,unixok,browse
+      logical OK,dok,MSTROK,MSTRZN,remote,browse
+C      logical unixok
       LOGICAL spfileok,perok,tstepok,saveok,autook,exitok,startupok
       logical CFDOK,concat
       integer nsim  ! number of simulations
@@ -280,12 +282,9 @@ c Delete all simulations by setting NSIM=0.
         IREC=1
         NSIM=0
 
-C izver is the version flag for building results: 
-C   izver=1 tells res that the results files have associated descriptive strings.
-C   izver=2 tells res that aggregate inside and outside face convective transfer 
-C     is included in zone info. 
-C   izver=3 total exterior transparent and floor areas saved for each zone
-C   izver<4 does not include explicit conv/rad/latent gain fields for each casual gain type.
+C izver is the version flag for building results. Set at 4 since
+C Feb 2008. Earlier (depreciated) versions did not include explicit
+C casual gains and required re-scanning of zone operation files.
         izver=4
         WRITE(IUNIT,REC=IREC,IOSTAT=ISTAT,ERR=1000)NSIM,nzrl,izver
       endif
@@ -447,7 +446,7 @@ c Response according to number of existing results sets.
 
 c Determine if design data has been changed.
         dok=.false.
-        helptopic='preserve_data_with_change'
+        helptopic='preserve_data_change'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL ASKOK('Is the current model different in any way from',
      &  'the model of the stored results (see help)?',OK,dok,nbhelp)
@@ -533,7 +532,7 @@ C Write the moisture result library header.
 
 C Assign a library for the power flow results, and open on IFIL+21. 
 
-  127 if( ientxist.gt.0 .and. 
+      if( ientxist.gt.0 .and. 
      &     ( .not. autook .or. 
      &     (isave .ne. 0 .and. isave .ne. 5) ) )then
    11   LTMP=ERESLIB
@@ -675,7 +674,7 @@ C        as 2 if in some other location.
       
       integer lnblnk  ! function definition
 
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
       character topic*2,LFILE*72
       character ltmp*72,ltpath*72,filen*72
       logical unixok,remote

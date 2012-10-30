@@ -463,7 +463,7 @@ C used for a partition (and db does not have a linked MLC - inform the user.
               call georead(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),0,iuout,IER)
 
 C Assign new MLC name to the icoth surface as well as SSOTF with the
-C optical properties returned from parsemlcdesc.
+C optical properties returned from material.h commons.
               SSMLCN(icoth)=TOSMLCN
               if(iissmlci.ne.0) ssmlcindex(icoth)=iissmlci ! update
 
@@ -1049,7 +1049,7 @@ C Associate mlc with each selected surface.
               ssmlcindex(ioc)=ISEL       ! update array
               ssthick(ioc)=THKMLC(isel)  ! update the thermophysical thickness
 
-C Use logic similar to parsemlcdesc to find the optical name.
+C Find the optical name.
               IF(DESC(ISEL)(15:18).EQ.'OPAQ')then
                 SOTF(ISS)='OPAQUE'
               ELSEIF(DESC(ISEL)(15:18).EQ.'CFC ')then
@@ -3458,7 +3458,7 @@ C << properties and the optical name.
             ssmlcindex(ioc)=isel   ! update the array
             ssthick(ioc)=THKMLC(isel)  ! update the thermophysical thickness
 
-C Use logic similar to parsemlcdesc to find the optical name.
+C Find the optical name.
             IF(DESC(ISEL)(15:18).EQ.'OPAQ')then
               SOTF(IS)='OPAQUE'
             ELSEIF(DESC(ISEL)(15:18).EQ.'CFC ')then
@@ -3476,8 +3476,8 @@ C an equivalent construction. If the current construction is
 C symmetric then expect to find the same construction name and if
 C the name does not match or is UNKN get user to confirm change.
 
-C Use ssmlcindex to get MLC index for this surface and parsemlcdesc
-C to get information on the other partition.
+C Use ssmlcindex to get MLC index for this surface and material.h
+C commons to get information on the other partition.
             if(showother.and.icoth.ne.0.and.ssmlcindex(ioc).ne.0)then
               ii=ssmlcindex(ioc)
               updoth=.false.
@@ -3548,7 +3548,7 @@ C zone.
                 endif
 
 C Assign new MLC name to the icoth surface as well as SSOTF with the
-C optical properties and MLC index returned from parsemlcdesc.
+C optical properties and MLC index from material.h commons.
                 SSMLCN(icoth)=TOSMLCN
                 if(iissmlci.ne.0) ssmlcindex(icoth)=iissmlci  ! update
                 write(SSOTF(icoth),'(a)') TOOPT
@@ -7788,7 +7788,7 @@ C Ask for surface construction.
           if(ISEL.GT.0)then
             WRITE(constr,'(A12)')DESC(ISEL)(1:12)
 
-C Use logic similar to parsemlcdesc to find the optical name.
+C Find the optical name.
             OPT=' '
             IF(DESC(ISEL)(15:18).EQ.'OPAQ')then
               OPT='OPAQUE'
