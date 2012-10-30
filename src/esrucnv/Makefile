@@ -24,7 +24,7 @@ OBJECTS = ecnv.o ascii_mat.o basesimp.o basesimp_inputs.o \
 	  nwkrewr.o pltcfg.o readTrnsys.o rwipv.o rwsbem.o sort.o \
 	  tdfile.o wwxfig.o
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod \
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod start_up.mod \
 	parse_command_line.mod h3kmodule.mod
 
 $(PROG): $(MODULE_OBJECTS) $(OBJECTS)

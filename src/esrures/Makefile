@@ -30,7 +30,7 @@ OBJECTS = res.o arrow.o ascii_mat.o basesimp.o basesimp_inputs.o bscoeff.o \
 	  stats.o table.o tdfile.o tdrecres.o temps.o tgraph.o utils.o \
 	  vgraph.o visgrd.o visual.o visvec.o
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod start_up.mod \
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod start_up.mod \
 	parse_command_line.mod h3kmodule.mod
 
 $(PROG): $(MODULE_OBJECTS) $(OBJECTS)
