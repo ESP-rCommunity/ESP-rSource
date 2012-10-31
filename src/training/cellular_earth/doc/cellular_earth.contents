@@ -1,8 +1,8 @@
 Synopsis
  
 Synopsis of the model Two adjacent cellular offices with earth tube defined in
-cellular_earth.cfg generated on Fri Aug 24 11:51:44 2012. Notes associated
-with the model are in cellular_offices_earth.log
+cellular_earth.cfg generated on Wed Oct 17 10:37:47 2012. Notes associated
+with the model are in ../doc/cellular_offices_earth.log
  
 The model is located at latitude   46.00 with a longitude difference of   0.00
 from the local time meridian. The year used in simulations is 1967 and
@@ -43,11 +43,11 @@ Images    :   0
  
 Simulations to be undertaken:
 ____simulations ( 5)____________days descrip___
-1st win Mon-06-Feb to Sun-12-Feb   7  1st winter run
-spring  Mon-17-Apr to Sun-23-Apr   7  spring run
-summer  Mon-03-Jul to Sun-09-Jul   7  summer run
-autumn  Mon-02-Oct to Sun-08-Oct   7  autumn run
-2nd win Mon-20-Nov to Sun-26-Nov   7  2nd winter run
+1st win Mon-06-Feb to Sun-12-Feb   7 1st winter run
+spring  Mon-17-Apr to Sun-23-Apr   7 spring run
+summer  Mon-03-Jul to Sun-09-Jul   7 summer run
+autumn  Mon-02-Oct to Sun-08-Oct   7 autumn run
+2nd win Mon-20-Nov to Sun-26-Nov   7 2nd winter run
  
 display day Mon-06-Feb.
 display day Mon-17-Apr.
@@ -252,8 +252,8 @@ ID Zone         Volume|          Surface
  area of 72.0m^2 & approx floor area of 13.5m^2
  manager describes cellular office on left
  There is 9.0000m2 of exposed surface area, 9.0000m2 of which is vertical.
- Outside walls are 27.259 % of floor area & avg U of 0.461 & UA of 1.6958
- Glazing is 39.407 % of floor & 59.111 % facade with avg U of 2.811 & UA of 14.953
+ Outside walls are 27.259 % of floor area & average U of 0.461 & UA of 1.6958
+ Glazing is 39.407 % of floor & 59.111 % facade with average U of 2.811 & UA of 14.953
  
  A summary of the surfaces in manager_a( 1) follows:
  
@@ -284,19 +284,24 @@ ID Zone         Volume|          Surface
  and the associated network node is: manager_a
  
 Notes:
-The office has one occupant during office hours, lighting at 10W/m2
-and one computer in the room. . and the client ask for use to check
-these numbers for compilance with standards
+manager a has some diversity of occupancy  lights at 10W/m2 and small
+power on weekdays at 5W/m2
  
 Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
           No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
 weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
-weekdays    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
-weekdays    4 OccuptW    9-12    100.0     50.0       0.50       0.50
-weekdays    5 OccuptW   12-14     65.0     32.5       0.50       0.50
-weekdays    6 OccuptW   14-17    100.0     50.0       0.50       0.50
+weekdays    2 OccuptW    7- 8     20.0     10.0       0.60       0.40
+weekdays    3 OccuptW    8- 9     60.0     30.0       0.60       0.40
+weekdays    4 OccuptW    9-12    100.0     50.0       0.60       0.40
+weekdays    5 OccuptW   12-14     65.0     32.5       0.60       0.40
+weekdays    6 OccuptW   14-17    100.0     50.0       0.60       0.40
 weekdays    7 OccuptW   17-24      0.0      0.0       0.50       0.50
+weekdays    8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
+weekdays    9 LightsWm2  8-18     10.0      0.0       0.30       0.70
+weekdays   10 LightsWm2 18-24      0.0      0.0       0.50       0.50
+weekdays   11 EquiptWm2  0- 8      0.0      0.0       0.50       0.50
+weekdays   12 EquiptWm2  8-18      5.0      0.0       0.40       0.60
+weekdays   13 EquiptWm2 18-24      0.0      0.0       0.50       0.50
 saturday    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
 saturday    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
 saturday    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
@@ -304,6 +309,12 @@ saturday    4 OccuptW    9-12    100.0     50.0       0.50       0.50
 saturday    5 OccuptW   12-14     65.0     32.5       0.50       0.50
 saturday    6 OccuptW   14-17    100.0     50.0       0.50       0.50
 saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
+saturday    8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
+saturday    9 LightsWm2  8-12     10.0      0.0       0.30       0.70
+saturday   10 LightsWm2 12-24      0.0      0.0       0.50       0.50
+saturday   11 EquiptWm2  0-24      0.0      0.0       0.50       0.50
+sunday      1 LightsWm2  0-24      0.0      0.0       0.50       0.50
+sunday      2 EquiptWm2  0-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -312,8 +323,8 @@ saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
  area of 72.0m^2 & approx floor area of 13.5m^2
  manager_b describes right office
  There is 9.0000m2 of exposed surface area, 9.0000m2 of which is vertical.
- Outside walls are 27.259 % of floor area & avg U of 0.461 & UA of 1.6958
- Glazing is 39.407 % of floor & 59.111 % facade with avg U of 2.811 & UA of 14.953
+ Outside walls are 27.259 % of floor area & average U of 0.461 & UA of 1.6958
+ Glazing is 39.407 % of floor & 59.111 % facade with average U of 2.811 & UA of 14.953
  
  A summary of the surfaces in manager_b( 2) follows:
  
@@ -344,17 +355,24 @@ saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
  and the associated network node is: manager_b
  
 Notes:
-manager b has the same profile as manager a . . .
+manager_b occupancy has some diversity of occupancy lights at 10W/m2
+and small power on weekdays at 5W/m2
  
 Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
           No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
 weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
-weekdays    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
-weekdays    4 OccuptW    9-12    100.0     50.0       0.50       0.50
-weekdays    5 OccuptW   12-14     65.0     32.5       0.50       0.50
-weekdays    6 OccuptW   14-17    100.0     50.0       0.50       0.50
+weekdays    2 OccuptW    7- 8     20.0     10.0       0.60       0.40
+weekdays    3 OccuptW    8- 9     60.0     30.0       0.60       0.40
+weekdays    4 OccuptW    9-12    100.0     50.0       0.60       0.40
+weekdays    5 OccuptW   12-14     65.0     32.5       0.60       0.40
+weekdays    6 OccuptW   14-17    100.0     50.0       0.60       0.40
 weekdays    7 OccuptW   17-24      0.0      0.0       0.50       0.50
+weekdays    8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
+weekdays    9 LightsWm2  8-18     10.0      0.0       0.30       0.70
+weekdays   10 LightsWm2 18-24      0.0      0.0       0.50       0.50
+weekdays   11 EquiptWm2  0- 8      0.0      0.0       0.50       0.50
+weekdays   12 EquiptWm2  8-18      5.0      0.0       0.40       0.60
+weekdays   13 EquiptWm2 18-24      0.0      0.0       0.50       0.50
 saturday    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
 saturday    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
 saturday    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
@@ -362,6 +380,12 @@ saturday    4 OccuptW    9-12    100.0     50.0       0.50       0.50
 saturday    5 OccuptW   12-14     65.0     32.5       0.50       0.50
 saturday    6 OccuptW   14-17    100.0     50.0       0.50       0.50
 saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
+saturday    8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
+saturday    9 LightsWm2  8-12     10.0      0.0       0.30       0.70
+saturday   10 LightsWm2 12-24      0.0      0.0       0.50       0.50
+saturday   11 EquiptWm2  0-24      0.0      0.0       0.50       0.50
+sunday      1 LightsWm2  0-24      0.0      0.0       0.50       0.50
+sunday      2 EquiptWm2  0-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -400,28 +424,29 @@ saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
  and the associated network node is: coridor
  
 Notes:
-half a person and 10W/m2 lighting
+half a person and 50-100W lighting weekdays 10W weekends with
+electrical properties
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    8-20    100.0     50.0       0.50       0.50
-weekdays    3 OccuptW   20-24      0.0      0.0       0.50       0.50
-weekdays    4 LightsWm2  0- 8      0.0      0.0       0.50       0.50
-weekdays    5 LightsWm2  8-20     10.0      0.0       0.50       0.50
-weekdays    6 LightsWm2 20-24      0.0      0.0       0.50       0.50
-saturday    1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-saturday    2 OccuptW    8-20    100.0     50.0       0.50       0.50
-saturday    3 OccuptW   20-24      0.0      0.0       0.50       0.50
-saturday    4 LightsWm2  0- 8      0.0      0.0       0.50       0.50
-saturday    5 LightsWm2  8-20     10.0      0.0       0.50       0.50
-saturday    6 LightsWm2 20-24      0.0      0.0       0.50       0.50
-sunday      1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-sunday      2 OccuptW    8-20    100.0     50.0       0.50       0.50
-sunday      3 OccuptW   20-24      0.0      0.0       0.50       0.50
-sunday      4 LightsWm2  0- 8      0.0      0.0       0.50       0.50
-sunday      5 LightsWm2  8-20     10.0      0.0       0.50       0.50
-sunday      6 LightsWm2 20-24      0.0      0.0       0.50       0.50
+Daytype   Gain Type    Period Sensible  Latent  Radiant  Convec p.f +/-  Power Voltage Phase
+          No.  label   Hours  Magn.(W)  Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)
+weekdays    1 OccuptW    0- 8     0.0     0.0      0.6      0.4    0.00  0    0.0    0.0  1
+weekdays    2 OccuptW    8-20   100.0    50.0      0.6      0.4    0.00  0    0.0    0.0  1
+weekdays    3 OccuptW   20-24     0.0     0.0      0.6      0.4    0.00  0    0.0    0.0  1
+weekdays    4 LightsW    0- 8    50.0     0.0      0.3      0.7    0.90  1   50.0  220.0  1
+weekdays    5 LightsW    8-20   100.0     0.0      0.3      0.7    0.90  1  100.0  220.0  1
+weekdays    6 LightsW   20-24    50.0     0.0      0.3      0.7    0.90  1   50.0  220.0  1
+saturday    1 OccuptW    0- 8     0.0     0.0      0.6      0.4    0.00  0    0.0    0.0  1
+saturday    2 OccuptW    8-20   100.0    50.0      0.6      0.4    0.00  0    0.0    0.0  1
+saturday    3 OccuptW   20-24     0.0     0.0      0.6      0.4    0.00  0    0.0    0.0  1
+saturday    4 LightsW    0- 8     0.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
+saturday    5 LightsW    8-20    10.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
+saturday    6 LightsW   20-24     0.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
+sunday      1 OccuptW    0- 8     0.0     0.0      0.6      0.4    0.00  0    0.0    0.0  1
+sunday      2 OccuptW    8-20   100.0    50.0      0.6      0.4    0.00  0    0.0    0.0  1
+sunday      3 OccuptW   20-24     0.0     0.0      0.6      0.4    0.00  0    0.0    0.0  1
+sunday      4 LightsW    0- 8     0.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
+sunday      5 LightsW    8-20    10.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
+sunday      6 LightsW   20-24     0.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
  
  ____________________________________________________________
  
@@ -430,8 +455,8 @@ sunday      6 LightsWm2 20-24      0.0      0.0       0.50       0.50
  area of 16.9m^2 & approx floor area of 5.94m^2
  tube_a describes the a section of earth tube
  There is 5.9419m2 of exposed surface area.
- Flat roof is 100.03 % of floor area & avg U of 0.844 & UA of 5.0143
- Ground contact is 182.33 % of floor area & avg U of 0.823 & perimeter 0.00
+ Flat roof is 100.03 % of floor area & average U of 0.844 & UA of 5.0143
+ Ground contact is 182.33 % of floor area & average U of 0.823 & perimeter 0.00
  
  A summary of the surfaces in tube_a( 4) follows:
  
@@ -492,8 +517,8 @@ sunday      3 EquiptW    0-24      0.0      0.0       0.40       0.60
  area of 18.4m^2 & approx floor area of 6.50m^2
  tube_b is the b section of the earth tube
  There is 6.5000m2 of exposed surface area.
- Flat roof is 100.00 % of floor area & avg U of 0.844 & UA of 5.4853
- Ground contact is 180.00 % of floor area & avg U of 0.823 & perimeter 0.00
+ Flat roof is 100.00 % of floor area & average U of 0.844 & UA of 5.4853
+ Ground contact is 180.00 % of floor area & average U of 0.823 & perimeter 0.00
  
  A summary of the surfaces in tube_b( 5) follows:
  
@@ -568,8 +593,8 @@ sunday      3 EquiptW    0-24      0.0      0.0       0.50       0.50
  area of 24.0m^2 & approx floor area of 8.50m^2
  tube_c is thye c section of the earth tube
  There is 8.5000m2 of exposed surface area.
- Flat roof is 100.00 % of floor area & avg U of 0.844 & UA of 7.1731
- Ground contact is 181.18 % of floor area & avg U of 0.821 & perimeter 0.00
+ Flat roof is 100.00 % of floor area & average U of 0.844 & UA of 7.1731
+ Ground contact is 181.18 % of floor area & average U of 0.821 & perimeter 0.00
  
  A summary of the surfaces in tube_c( 6) follows:
  
@@ -622,10 +647,10 @@ sunday      3 EquiptW    0-24      0.0      0.0       0.50       0.50
  In contact with ground 37.930m2.
  There is 38.942m2 of outside surface area, 18.000m2 of which is vertical.
  
- Outside walls are 13.059 % of floor area & avg U of 0.461 & UA of 3.3916 & max MLC thickness 0.088
- Flat roof is 37.157 % of floor area & avg U of 0.844 & UA of 17.673
- Glazing is 18.879 % of floor & 59.111 % facade with avg U of 2.811 & UA of 29.905
- Ground contact is 67.300 % of floor area & avg U of 0.822 & perimeter 0.00 & max MLC thickness 1.200
+ Outside walls are 13.059 % of floor area & average U of 0.461 & UA of 3.3916 & max MLC thickness 0.088
+ Flat roof is 37.157 % of floor area & average U of 0.844 & UA of 17.673
+ Glazing is 18.879 % of floor & 59.111 % facade with average U of 2.811 & UA of 29.905
+ Ground contact is 67.300 % of floor area & average U of 0.822 & perimeter 0.00 & max MLC thickness 1.200
  CIBSE ground beta!37.930 dt 1.973 Ufleft 0.025 Ufright 4.118 Uf 0.102 R extra @ virtual layer 8.590
  
  ____________________________________________________________

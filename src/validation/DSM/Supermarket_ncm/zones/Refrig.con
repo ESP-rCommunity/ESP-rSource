@@ -20,7 +20,7 @@
      8,     0  # 17 floor_a      SM_grnd_floo
      8,     0  # 18 floor_b      SM_grnd_floo
      3,     0  # 19 ptn_refr     insul_cab   
-     1,     0  # 20 ptn_refr     mass_part   
+     1,     0  # 20 ptn_refra    mass_part   
      3,     0  # 21 roof_b       SM_roof2008 
 # air gap position & resistance for surface  5
   2,   0.260,

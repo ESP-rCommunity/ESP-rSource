@@ -1,7 +1,7 @@
 Synopsis
  
 Synopsis of the model Cellular offices hybrid nat vent and mech cooling (via
-flow network) defined in cellular_mctl.cfg generated on Tue Aug 28 11:53:25
+flow network) defined in cellular_mctl.cfg generated on Wed Oct 17 10:39:06
 2012. Notes associated with the model are in ../doc/cellular_mctl.log
  
 The model is located at latitude   39.18 with a longitude difference of  -1.67
@@ -262,8 +262,8 @@ ID Zone         Volume|          Surface
  area of 72.0m^2 & approx floor area of 13.5m^2
  manager describes cellular office on left
  There is 9.0000m2 of exposed surface area, 9.0000m2 of which is vertical.
- Outside walls are 27.259 % of floor area & avg U of 0.461 & UA of 1.6958
- Glazing is 39.407 % of floor & 59.111 % facade with avg U of 2.811 & UA of 14.953
+ Outside walls are 27.259 % of floor area & average U of 0.461 & UA of 1.6958
+ Glazing is 39.407 % of floor & 59.111 % facade with average U of 2.811 & UA of 14.953
  
  A summary of the surfaces in manager_a( 1) follows:
  
@@ -294,18 +294,24 @@ ID Zone         Volume|          Surface
  and the associated network node is: manager_a
  
 Notes:
-The office has one occupant during office hours, lighting at 10W/m2
-and one computer in the room. .
+manager a has some diversity of occupancy  lights at 10W/m2 and small
+power on weekdays at 5W/m2
  
 Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
           No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
 weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
-weekdays    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
-weekdays    4 OccuptW    9-12    100.0     50.0       0.50       0.50
-weekdays    5 OccuptW   12-14     65.0     32.5       0.50       0.50
-weekdays    6 OccuptW   14-17    100.0     50.0       0.50       0.50
+weekdays    2 OccuptW    7- 8     20.0     10.0       0.60       0.40
+weekdays    3 OccuptW    8- 9     60.0     30.0       0.60       0.40
+weekdays    4 OccuptW    9-12    100.0     50.0       0.60       0.40
+weekdays    5 OccuptW   12-14     65.0     32.5       0.60       0.40
+weekdays    6 OccuptW   14-17    100.0     50.0       0.60       0.40
 weekdays    7 OccuptW   17-24      0.0      0.0       0.50       0.50
+weekdays    8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
+weekdays    9 LightsWm2  8-18     10.0      0.0       0.30       0.70
+weekdays   10 LightsWm2 18-24      0.0      0.0       0.50       0.50
+weekdays   11 EquiptWm2  0- 8      0.0      0.0       0.50       0.50
+weekdays   12 EquiptWm2  8-18      5.0      0.0       0.40       0.60
+weekdays   13 EquiptWm2 18-24      0.0      0.0       0.50       0.50
 saturday    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
 saturday    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
 saturday    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
@@ -313,6 +319,12 @@ saturday    4 OccuptW    9-12    100.0     50.0       0.50       0.50
 saturday    5 OccuptW   12-14     65.0     32.5       0.50       0.50
 saturday    6 OccuptW   14-17    100.0     50.0       0.50       0.50
 saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
+saturday    8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
+saturday    9 LightsWm2  8-12     10.0      0.0       0.30       0.70
+saturday   10 LightsWm2 12-24      0.0      0.0       0.50       0.50
+saturday   11 EquiptWm2  0-24      0.0      0.0       0.50       0.50
+sunday      1 LightsWm2  0-24      0.0      0.0       0.50       0.50
+sunday      2 EquiptWm2  0-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -321,8 +333,8 @@ saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
  area of 72.0m^2 & approx floor area of 13.5m^2
  manager_b describes right office
  There is 9.0000m2 of exposed surface area, 9.0000m2 of which is vertical.
- Outside walls are 27.259 % of floor area & avg U of 0.461 & UA of 1.6958
- Glazing is 39.407 % of floor & 59.111 % facade with avg U of 2.811 & UA of 14.953
+ Outside walls are 27.259 % of floor area & average U of 0.461 & UA of 1.6958
+ Glazing is 39.407 % of floor & 59.111 % facade with average U of 2.811 & UA of 14.953
  
  A summary of the surfaces in manager_b( 2) follows:
  
@@ -353,17 +365,24 @@ saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
  and the associated network node is: manager_b
  
 Notes:
-manager b has the same profile as manager a . . .
+manager_b occupancy has some diversity of occupancy lights at 10W/m2
+and small power on weekdays at 5W/m2
  
 Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
           No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
 weekdays    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
-weekdays    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
-weekdays    4 OccuptW    9-12    100.0     50.0       0.50       0.50
-weekdays    5 OccuptW   12-14     65.0     32.5       0.50       0.50
-weekdays    6 OccuptW   14-17    100.0     50.0       0.50       0.50
+weekdays    2 OccuptW    7- 8     20.0     10.0       0.60       0.40
+weekdays    3 OccuptW    8- 9     60.0     30.0       0.60       0.40
+weekdays    4 OccuptW    9-12    100.0     50.0       0.60       0.40
+weekdays    5 OccuptW   12-14     65.0     32.5       0.60       0.40
+weekdays    6 OccuptW   14-17    100.0     50.0       0.60       0.40
 weekdays    7 OccuptW   17-24      0.0      0.0       0.50       0.50
+weekdays    8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
+weekdays    9 LightsWm2  8-18     10.0      0.0       0.30       0.70
+weekdays   10 LightsWm2 18-24      0.0      0.0       0.50       0.50
+weekdays   11 EquiptWm2  0- 8      0.0      0.0       0.50       0.50
+weekdays   12 EquiptWm2  8-18      5.0      0.0       0.40       0.60
+weekdays   13 EquiptWm2 18-24      0.0      0.0       0.50       0.50
 saturday    1 OccuptW    0- 7      0.0      0.0       0.50       0.50
 saturday    2 OccuptW    7- 8     20.0     10.0       0.50       0.50
 saturday    3 OccuptW    8- 9     60.0     30.0       0.50       0.50
@@ -371,6 +390,12 @@ saturday    4 OccuptW    9-12    100.0     50.0       0.50       0.50
 saturday    5 OccuptW   12-14     65.0     32.5       0.50       0.50
 saturday    6 OccuptW   14-17    100.0     50.0       0.50       0.50
 saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
+saturday    8 LightsWm2  0- 8      0.0      0.0       0.50       0.50
+saturday    9 LightsWm2  8-12     10.0      0.0       0.30       0.70
+saturday   10 LightsWm2 12-24      0.0      0.0       0.50       0.50
+saturday   11 EquiptWm2  0-24      0.0      0.0       0.50       0.50
+sunday      1 LightsWm2  0-24      0.0      0.0       0.50       0.50
+sunday      2 EquiptWm2  0-24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -409,28 +434,29 @@ saturday    7 OccuptW   17-24      0.0      0.0       0.50       0.50
  and the associated network node is: coridor
  
 Notes:
-half a person and 10W/m2 lighting
+half a person and 50-100W lighting weekdays 10W weekends with
+electrical properties
  
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    8-20    100.0     50.0       0.50       0.50
-weekdays    3 OccuptW   20-24      0.0      0.0       0.50       0.50
-weekdays    4 LightsWm2  0- 8      0.0      0.0       0.50       0.50
-weekdays    5 LightsWm2  8-20     10.0      0.0       0.50       0.50
-weekdays    6 LightsWm2 20-24      0.0      0.0       0.50       0.50
-saturday    1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-saturday    2 OccuptW    8-20    100.0     50.0       0.50       0.50
-saturday    3 OccuptW   20-24      0.0      0.0       0.50       0.50
-saturday    4 LightsWm2  0- 8      0.0      0.0       0.50       0.50
-saturday    5 LightsWm2  8-20     10.0      0.0       0.50       0.50
-saturday    6 LightsWm2 20-24      0.0      0.0       0.50       0.50
-sunday      1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-sunday      2 OccuptW    8-20    100.0     50.0       0.50       0.50
-sunday      3 OccuptW   20-24      0.0      0.0       0.50       0.50
-sunday      4 LightsWm2  0- 8      0.0      0.0       0.50       0.50
-sunday      5 LightsWm2  8-20     10.0      0.0       0.50       0.50
-sunday      6 LightsWm2 20-24      0.0      0.0       0.50       0.50
+Daytype   Gain Type    Period Sensible  Latent  Radiant  Convec p.f +/-  Power Voltage Phase
+          No.  label   Hours  Magn.(W)  Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)
+weekdays    1 OccuptW    0- 8     0.0     0.0      0.6      0.4    0.00  0    0.0    0.0  1
+weekdays    2 OccuptW    8-20   100.0    50.0      0.6      0.4    0.00  0    0.0    0.0  1
+weekdays    3 OccuptW   20-24     0.0     0.0      0.6      0.4    0.00  0    0.0    0.0  1
+weekdays    4 LightsW    0- 8    50.0     0.0      0.3      0.7    0.90  1   50.0  220.0  1
+weekdays    5 LightsW    8-20   100.0     0.0      0.3      0.7    0.90  1  100.0  220.0  1
+weekdays    6 LightsW   20-24    50.0     0.0      0.3      0.7    0.90  1   50.0  220.0  1
+saturday    1 OccuptW    0- 8     0.0     0.0      0.6      0.4    0.00  0    0.0    0.0  1
+saturday    2 OccuptW    8-20   100.0    50.0      0.6      0.4    0.00  0    0.0    0.0  1
+saturday    3 OccuptW   20-24     0.0     0.0      0.6      0.4    0.00  0    0.0    0.0  1
+saturday    4 LightsW    0- 8     0.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
+saturday    5 LightsW    8-20    10.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
+saturday    6 LightsW   20-24     0.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
+sunday      1 OccuptW    0- 8     0.0     0.0      0.6      0.4    0.00  0    0.0    0.0  1
+sunday      2 OccuptW    8-20   100.0    50.0      0.6      0.4    0.00  0    0.0    0.0  1
+sunday      3 OccuptW   20-24     0.0     0.0      0.6      0.4    0.00  0    0.0    0.0  1
+sunday      4 LightsW    0- 8     0.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
+sunday      5 LightsW    8-20    10.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
+sunday      6 LightsW   20-24     0.0     0.0      0.3      0.7    0.90  1   10.0  220.0  1
  
  ____________________________________________________________
  
@@ -503,8 +529,8 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  In contact with ground 0.00m2.
  There is 18.000m2 of outside surface area, 18.000m2 of which is vertical.
  
- Outside walls are 19.669 % of floor area & avg U of 0.461 & UA of 3.3916 & max MLC thickness 0.088
- Glazing is 28.434 % of floor & 59.111 % facade with avg U of 2.811 & UA of 29.905
+ Outside walls are 19.669 % of floor area & average U of 0.461 & UA of 3.3916 & max MLC thickness 0.088
+ Glazing is 28.434 % of floor & 59.111 % facade with average U of 2.811 & UA of 29.905
  
  ____________________________________________________________
  Multi-layer constructions used:
@@ -574,7 +600,7 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.73
     3  0.117 0.124 0.127 0.112 0.077
  Total area of dbl_glz is     28.56
  
- Details of opaque construction: susp_flr_re linked to susp_floor   & with overall thickness  0.219
+ Details of opaque construction: susp_flr_re linked to susp_floor & with overall thickness  0.219
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
@@ -590,7 +616,7 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.48
  Partition admittance Y=  2.46  w=  2.85 surface factor f=  0.81  phi=  0.95
  Total area of susp_flr_re is     33.10
  
- Details of opaque construction: ceiling linked to ceiling_rev  & with overall thickness  0.110
+ Details of opaque construction: ceiling linked to ceiling_rev & with overall thickness  0.110
  
  Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
       |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
