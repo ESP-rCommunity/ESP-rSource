@@ -373,7 +373,7 @@ C Calculate averages.
 C ******************** DDMDS ********************
 
 C DDMDS reconstructs one day's values of each of 
-C the project demands.
+C the project dispersed demands.
 C To save space VAL3(15,I) to VAL3(21,I) are used for temporary storage.
 C The method used shifts information from the demands file into the
 C equivalent of bps timestep averaging.

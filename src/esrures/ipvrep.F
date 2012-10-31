@@ -820,7 +820,7 @@ C The IGET number is fixed at 70.
         call edisp(itru,' ')
  888  continue
 
-C *****Maximum Capacity for non-specific demands, also ask
+C *****Maximum Capacity for dispersed demands, also ask
 C for any PV data. Note that erbdmd does
 C not know about idmdinc() so this needs to be applied.
       if(dmdsok)then
@@ -848,7 +848,10 @@ C not know about idmdinc() so this needs to be applied.
         endif
         pvmax=0.
         totpv=0.
-        call aggregpv(iseas,pvok,pvmax,totpv,iier)
+
+C Ignore pvoutput for now.
+C        call aggregpv(iseas,pvok,pvmax,totpv,iier)
+        pvok=.false.  ! force it to ignored
         
 C The IGET number is fixed at 71.
         SLABEL(1)='Dispersed demands'; LNSLABEL(1)=17
@@ -891,25 +894,23 @@ C The IGET number is fixed at 71.
         write(outs,'(5a)') '*title',tab,'Minimum capacity',tab,'W'
         call edisp(itru,outs)
         if(pvok)then
-          write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'8'
-          call edisp(itru,outs)
-          write(outs,'(17A)',IOSTAT=IOS,ERR=1) '*fields',tab,
-     &      'Lighting (unctld)',tab,'Lighting (ctld)',tab,
-     &      'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
-     &      'Hot water',tab,'PV'
-          call edisp(itru,outs)
-          write(outs,'(a,F12.1,a,5F12.1,a)') '*data ',ddmin(2),' 0.000',
-     &      ddmin(4),ddmin(5),ddmin(6),ddmin(3),ddmin(7),' 0.000'
-          call eddisp(itru,outs)
-        else
           write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'7'
           call edisp(itru,outs)
           write(outs,'(15A)',IOSTAT=IOS,ERR=1) '*fields',tab,
-     &      'Lighting (unctld)',tab,'Lighting (ctld)',tab,
-     &      'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
-     &      'Hot water'
+     &      'Lighting',tab,'Fans',tab,'Pumps',tab,'Lifts',tab,
+     &      'Small Power',tab,'Hot water',tab,'PV'
           call edisp(itru,outs)
-          write(outs,'(a,F12.1,a,5F12.1)') '*data ',ddmin(2),' 0.000',
+          write(outs,'(a,6F12.1,a)') '*data ',ddmin(2),
+     &      ddmin(4),ddmin(5),ddmin(6),ddmin(3),ddmin(7),' 0.000'
+          call eddisp(itru,outs)
+        else
+          write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'6'
+          call edisp(itru,outs)
+          write(outs,'(13A)',IOSTAT=IOS,ERR=1) '*fields',tab,
+     &      'Lighting',tab,'Fans',tab,'Pumps',tab,'Lifts',tab,
+     &      'Small Power',tab,'Hot water'
+          call edisp(itru,outs)
+          write(outs,'(a,6F12.1)') '*data ',ddmin(2),
      &      ddmin(4),ddmin(5),ddmin(6),ddmin(3),ddmin(7)
           call eddisp(itru,outs)
         endif
@@ -923,14 +924,13 @@ C The IGET number is fixed at 71.
         call edisp(itru,outs)
         write(outs,'(5a)') '*title',tab,'Average capacity',tab,'W'
         call edisp(itru,outs)
-        write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'7'
+        write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'6'
         call edisp(itru,outs)
-        write(outs,'(15A)',IOSTAT=IOS,ERR=1) '*fields',tab,
-     &    'Lighting (unctld)',tab,'Lighting (ctld)',tab,
-     &    'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
-     &    'Hot water'
+        write(outs,'(13A)',IOSTAT=IOS,ERR=1) '*fields',tab,
+     &    'Lighting',tab,'Fans',tab,'Pumps',tab,'Lifts',tab,
+     &    'Small Power',tab,'Hot water'
         call edisp(itru,outs)
-        write(outs,'(a,F12.1,a,5F12.1)') '*data ',dave(2),' 0.000',
+        write(outs,'(a,6F12.1)') '*data ',dave(2),
      &    dave(4),dave(5),dave(6),dave(3),dave(7)
         call eddisp(itru,outs)
         call edisp(itru,'*end_report')
@@ -953,25 +953,23 @@ C The IGET number is fixed at 71.
         write(outs,'(5a)') '*title',tab,'Integrated demand',tab,'kWhr'
         call edisp(itru,outs)
         if(pvok)then
-          write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'8'
-          call edisp(itru,outs)
-          write(outs,'(17A)',IOSTAT=IOS,ERR=1) '*fields',tab,
-     &      'Lighting (unctld)',tab,'Lighting (ctld)',tab,
-     &      'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
-     &      'Hot water',tab,'PV'
-          call edisp(itru,outs)
-          write(outs,'(a,F13.2,a,6F13.2)') '*data ',dtot(2),' 0.000',
-     &      dtot(4),dtot(5),dtot(6),dtot(3),dtot(7),totpv
-          call eddisp(itru,outs)
-        else
           write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'7'
           call edisp(itru,outs)
           write(outs,'(15A)',IOSTAT=IOS,ERR=1) '*fields',tab,
-     &      'Lighting (unctld)',tab,'Lighting (ctld)',tab,
-     &      'Fans',tab,'Pumps',tab,'Lifts',tab,'Small Power',tab,
-     &      'Hot water'
+     &      'Lighting',tab,'Fans',tab,'Pumps',tab,'Lifts',tab,
+     &      'Small Power',tab,'Hot water',tab,'PV'
           call edisp(itru,outs)
-          write(outs,'(a,F13.2,a,5F13.2)') '*data ',dtot(2),' 0.000',
+          write(outs,'(a,7F13.2)') '*data ',dtot(2),
+     &      dtot(4),dtot(5),dtot(6),dtot(3),dtot(7),totpv
+          call eddisp(itru,outs)
+        else
+          write(outs,'(7a)') '*format',tab,'table',tab,'1',tab,'6'
+          call edisp(itru,outs)
+          write(outs,'(13A)',IOSTAT=IOS,ERR=1) '*fields',tab,
+     &      'Lighting',tab,'Fans',tab,'Pumps',tab,'Lifts',tab,
+     &      'Small Power',tab,'Hot water'
+          call edisp(itru,outs)
+          write(outs,'(a,6F13.2)') '*data ',dtot(2),
      &      dtot(4),dtot(5),dtot(6),dtot(3),dtot(7)
           call eddisp(itru,outs)
         endif
@@ -1494,7 +1492,7 @@ C Before looping back clear edput array.
    13     continue
  988    continue
 
-C ***** Do this for non-specific demands.
+C ***** Do this for dispersed (non-specific) demands.
 C If PV included take the largest floor area in the dmdfla.
         if(dmdsok)then
           pvfla=1.
@@ -1524,7 +1522,9 @@ C Clear edput array.
   181     continue
 
 C Write out timestep results depending on whether there is PV
-C data and the hourly format.
+C data and the hourly format. Note: the initial dispersed gain
+C is occupants which makes no sense in the context. Do not include
+C that in the report.
           call edisp(itru,'  ')
           write(outs,'(9a)') '*report',tab,'71',tab,'demand',tab,
      &     'per_unit_time',tab,'Dispersed'
@@ -1533,16 +1533,16 @@ C data and the hourly format.
      &      tab,'W'
           call edisp(itru,outs)
           if(pvok)then
-            write(outs,'(7a)') '*format',tab,'tabular',tab,'24',tab,'9'
-            call edisp(itru,outs)
-            write(outs,'(19A)',IOSTAT=IOS,ERR=1) '*fields',tab,
-     &       'Time',tab,'Occup',tab,'Lighting',tab,'Small Power',tab,
-     &       'Fans',tab,'Pumps',tab,'Lifts',tab,'Hot water',tab,'PV'
-          else
             write(outs,'(7a)') '*format',tab,'tabular',tab,'24',tab,'8'
             call edisp(itru,outs)
             write(outs,'(17A)',IOSTAT=IOS,ERR=1) '*fields',tab,
-     &       'Time',tab,'Occup',tab,'Lighting',tab,'Small Power',tab,
+     &       'Time',tab,'Lighting',tab,'Small Power',tab,
+     &       'Fans',tab,'Pumps',tab,'Lifts',tab,'Hot water',tab,'PV'
+          else
+            write(outs,'(7a)') '*format',tab,'tabular',tab,'24',tab,'7'
+            call edisp(itru,outs)
+            write(outs,'(15A)',IOSTAT=IOS,ERR=1) '*fields',tab,
+     &       'Time',tab,'Lighting',tab,'Small Power',tab,
      &       'Fans',tab,'Pumps',tab,'Lifts',tab,'Hot water'
           endif
           call edisp(itru,outs)
@@ -1563,13 +1563,13 @@ C Depending on the ihflag write as julian decimal or 10h30 format.
                 if(ipvform.eq.3)then
                   call SJTIME(J,LJTIME)
 C                 ipvhr=ipvhr+1
-                  write(outs,'(4a,8F12.3)')sq,ljtime,sq,' ',edput(1,j),
+                  write(outs,'(4a,7F12.3)')sq,ljtime,sq,' ',
      &            edput(2,j),edput(3,j),edput(4,j),edput(5,j),
      &            edput(6,j),edput(7,j),pvdayhr(ipvhr)/pvfla
                 else
                   call STIME(J,LTIME)
 C                 ipvhr=ipvhr+1
-                  write(outs,'(2a,8F12.3)') ltime,' ',edput(1,j),
+                  write(outs,'(2a,7F12.3)') ltime,' ',
      &            edput(2,j),edput(3,j),edput(4,j),edput(5,j),
      &            edput(6,j),edput(7,j),pvdayhr(ipvhr)/pvfla
                 endif
@@ -1577,12 +1577,12 @@ C                 ipvhr=ipvhr+1
                 if(ipvform.eq.3)then
                   call SJTIME(J,LJTIME)
 C                 ipvhr=ipvhr+1
-                  write(outs,'(4a,8F12.3)')sq,ljtime,sq,' ',edput(1,j),
+                  write(outs,'(4a,7F12.3)')sq,ljtime,sq,' ',
      &            edput(2,j),edput(3,j),edput(4,j),edput(5,j),
      &            edput(6,j),edput(7,j),pvdayhr(ipvhr)/pvfla
                 else
                   RDOTY=FLOAT(IDAY)+(ATIME/24.)
-                  write(outs,'(F10.4,8F12.3)') RDOTY,edput(1,j),
+                  write(outs,'(F10.4,7F12.3)') RDOTY,
      &            edput(2,j),edput(3,j),edput(4,j),edput(5,j),
      &            edput(6,j),edput(7,j),pvdayhr(ipvhr)/pvfla
                 endif
@@ -1591,24 +1591,24 @@ C                 ipvhr=ipvhr+1
               if(IHFLAG.eq.0)then 
                 if(ipvform.eq.3)then
                   call SJTIME(J,LJTIME)
-                  write(outs,'(4a,7F12.3)')sq,ljtime,sq,' ',edput(1,j),
+                  write(outs,'(4a,6F12.3)')sq,ljtime,sq,' ',
      &              edput(2,j),edput(3,j),edput(4,j),edput(5,j),
      &              edput(6,j),edput(7,j)
                 else
                   call STIME(J,LTIME)
-                  write(outs,'(2a,7F12.3)') ltime,' ',edput(1,j),
+                  write(outs,'(2a,6F12.3)') ltime,' ',
      &              edput(2,j),edput(3,j),edput(4,j),edput(5,j),
      &              edput(6,j),edput(7,j)
                 endif
               else
                 if(ipvform.eq.3)then
                   call SJTIME(J,LJTIME)
-                  write(outs,'(4a,7F12.3)')sq,ljtime,sq,' ',edput(1,j),
+                  write(outs,'(4a,6F12.3)')sq,ljtime,sq,' ',
      &              edput(2,j),edput(3,j),edput(4,j),edput(5,j),
      &              edput(6,j),edput(7,j)
                 else
                   RDOTY=FLOAT(IDAY)+(ATIME/24.)
-                  write(outs,'(F10.4,7F12.3)') RDOTY,edput(1,j),
+                  write(outs,'(F10.4,6F12.3)') RDOTY,
      &              edput(2,j),edput(3,j),edput(4,j),edput(5,j),
      &              edput(6,j),edput(7,j)
                 endif
@@ -1921,7 +1921,7 @@ C Write IPV report based on description held in common.
 
       COMMON/FILEP/IFIL
       COMMON/OUTPCH/ICOUT
-      common/OUTIN/IUOUT,IUIN
+C      common/OUTIN/IUOUT,IUIN
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
 
@@ -2113,7 +2113,8 @@ C << find an iget number for this >>
               call edisp(itru,outs)
               write(outs,'(15A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &          'Heating',tab,'Cooling',tab,'Lighting',tab,
-     &          'Fans',tab,'Small Power',tab,'Hot water',tab,'PV'
+     &          'Fans+Pumps+Lifts',tab,'Small Power',tab,'Hot water',
+     &          tab,'PV'
               call edisp(itru,outs)
               write(outs,'(a,7F12.3)') '*data ',THE,TCE,tlight,tpumps,
      &          tsmlpw,tdhw,tpv
@@ -2123,7 +2124,7 @@ C << find an iget number for this >>
               call edisp(itru,outs)
               write(outs,'(13A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &          'Heating',tab,'Cooling',tab,'Lighting',tab,
-     &          'Fans',tab,'Small Power',tab,'Hot water'
+     &          'Fans+Pumps+Lifts',tab,'Small Power',tab,'Hot water'
               call edisp(itru,outs)
               write(outs,'(a,6F12.3)') '*data ',THE,TCE,tlight,tpumps,
      &          tsmlpw,tdhw
@@ -2148,7 +2149,8 @@ C Report for the total building as well
               call edisp(itru,outs)
               write(outs,'(15A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &          'Heating',tab,'Cooling',tab,'Lighting',tab,
-     &          'Fans',tab,'Small Power',tab,'Hot water',tab,'PV'
+     &          'Fans+Pumps+Lifts',tab,'Small Power',tab,'Hot water',
+     &          tab,'PV'
               call edisp(itru,outs)
               write(outs,'(a,7F12.3)') '*data ',THEKW,TCEKW,tlightkw,
      &          tpumpskw,tsmlpwkw,tdhwkw,tpvkw
@@ -2158,7 +2160,7 @@ C Report for the total building as well
               call edisp(itru,outs)
               write(outs,'(13A)',IOSTAT=IOS,ERR=1) '*fields',tab,
      &          'Heating',tab,'Cooling',tab,'Lighting',tab,
-     &          'Fans',tab,'Small Power',tab,'Hot water'
+     &          'Fans+Pumps+Lifts',tab,'Small Power',tab,'Hot water'
               call edisp(itru,outs)
               write(outs,'(a,6F12.1)') '*data ',THEKW,TCEKW,tlightkw,
      &          tpumpskw,tsmlpwkw,tdhwkw
@@ -2861,7 +2863,7 @@ C Position pointer to get aggregate for dispersed demands.
             CALL EGETW(OUTSTR,K,WORD,'W','tag',IFLAG)
             if(WORD(1:5).eq.'*data')then
              CALL EGETWR(OUTSTR,K,ZLUDS(ik,11),0.,0.,'-','ltuc dmd',IER)
-             CALL EGETWR(OUTSTR,K,ZLDS(ik,11),0.,0.,'-','ltct dmd',IER)
+C             CALL EGETWR(OUTSTR,K,ZLDS(ik,11),0.,0.,'-','ltct dmd',IER)
              CALL EGETWR(OUTSTR,K,dfan,0.,0.,'-','fans dmd',IER)
              CALL EGETWR(OUTSTR,K,dpump,0.,0.,'-','pump dmd',IER)
              CALL EGETWR(OUTSTR,K,dlifts,0.,0.,'-','lifts dmd',IER)
@@ -3007,7 +3009,7 @@ C Skip title and format and fields and read demand data line
         endif
   145 continue
 
-C Skip title and format and fields and read demand data line
+C Skip title and format and fields and read dispersed demand data line.
       if(dmdsok)then
 
 C Position pointer to get aggregate for dispersed demands.
@@ -3022,15 +3024,14 @@ C Position pointer to get aggregate for dispersed demands.
           K=0
           CALL EGETW(OUTSTR,K,WORD,'W','tag',IFLAG)
           if(WORD(1:5).eq.'*data')then
-            CALL EGETWR(OUTSTR,K,ZLUDS(11),0.,0.,'-','ltuc dmd',IER)
-            CALL EGETWR(OUTSTR,K,ZLDS(11),0.,0.,'-','ltct dmd',IER)
+            CALL EGETWR(OUTSTR,K,ZLUDS(11),0.,0.,'-','ltng dmd',IER)
             CALL EGETWR(OUTSTR,K,dfan,0.,0.,'-','fans dmd',IER)
             CALL EGETWR(OUTSTR,K,dpump,0.,0.,'-','pump dmd',IER)
             CALL EGETWR(OUTSTR,K,dlifts,0.,0.,'-','lifts dmd',IER)
             FDS(11)=dfan+dpump+dlifts
             CALL EGETWR(OUTSTR,K,SPDS(11),0.,0.,'-','smp dmd',IER)
             CALL EGETWR(OUTSTR,K,DHWDS(11),0.,0.,'-','dhw dmd',IER)
-            if(ND.eq.9)then
+            if(ND.eq.8)then
               CALL EGETWR(OUTSTR,K,DPVD(11),0.,0.,'-','PV sply',IER)
             endif
           else
@@ -3425,7 +3426,7 @@ C Recover pv electrical output in terms of an hourly integration
 C of all nodes (W).
       subroutine aggregpv(iseas,pvok,pvmax,totpv,iier)
 #include "building.h"
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
 C      COMMON/FILEP/IFIL
 C      COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
 
@@ -3709,7 +3710,7 @@ C bemsrep: Write IPV report based on description held in common.
       subroutine bemsrep(actf,bact,iier)
 #include "building.h"
 
-      common/OUTIN/IUOUT,IUIN
+C      common/OUTIN/IUOUT,IUIN
 
 C nrepro number of groups of entities of interest for BEMS.
 C resgrp(i) types of variables (i.e. 1=temps, 2=fluxes, 3=power etc.)
@@ -3782,7 +3783,7 @@ C report line has been found.
       
       integer lnblnk  ! function definition
 
-      common/OUTIN/IUOUT,IUIN
+C      common/OUTIN/IUOUT,IUIN
 
       character outstr*124,word1*20,word2*20,word3*20,third*20,name*12
       logical atreports,okname,oktype
