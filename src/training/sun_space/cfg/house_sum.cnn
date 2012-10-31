@@ -1,5 +1,5 @@
-*connections for house_sun
-*Date Fri Aug 24 14:58:41 2012
+*connections  for house_sun
+*Date Wed Sep 30 10:51:40 2009
      89   # number of connections
    1   1   3   7   6  #    1 s_buf in kitliv >|< s_liv in buf_1
    1   2   3   3   4  #    2 s_hall in kitliv >|< s_liv in hall

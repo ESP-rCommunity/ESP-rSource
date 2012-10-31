@@ -1,44 +1,41 @@
 Synopsis
  
-Synopsis of the model house with sun space, winter operations defined in
-house_win.cfg generated on Fri Aug 24 14:59:30 2012. Notes associated with the
-model are in ../doc/house_sun.log
+This is a synopsis of the model house with sun space, winter operations
+defined in house_win.cfg generated on Wed Sep 30 10:52:24 2009. Notes
+associated with the model are in house_sun.log
  
 The model is located at latitude   58.20 with a longitude difference of  -6.21
 from the local time meridian. The year used in simulations is 1967 and
 weekends occur on Saturday and Sunday.
 The site exposure is typical urban site and the ground reflectance is 0.20.
  
+Project name: not yet defined
+Building address: not yet defined
+Building city: not yet defined
+Building Postcode: not yet defined
+ 
+Building owner name: not yet defined
+Building owner telephone: not yet defined
+Building owner address: not yet defined
+Building owner city: not yet defined
+Building owner Postcode: not yet defined
  
 Simulationist name: not yet defined
 Simulationist telephone: not yet defined
 Simulationist address: not yet defined
 Simulationist city: not yet defined
 Simulationist postcode: not yet defined
- 
 The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
 with hour centred solar data.
- annual weather         : /usr/esru/esp-r/climate/clm67
-Calculated ground temp at 0.5m depth
-3.0888 4.3008 6.6610 8.8949 13.123 15.349 15.963 14.834 12.227 8.9770 5.7777 3.6649
-Calculated ground temp at 1.0m depth
-3.6630 4.5020 6.4738 8.4398 12.343 14.560 15.374 14.612 12.434 9.5459 6.5633 4.4524
-Calculated ground temp at 2.0m depth
-4.7588 5.0557 6.4004 7.8990 11.149 13.226 14.259 14.027 12.542 10.298 7.7730 5.7855
-Calculated ground temp at 4.0m depth
-6.4880 6.2779 6.8663 7.7174 9.8661 11.475 12.517 12.771 12.121 10.800 9.0880 7.5409
- 
 An Integrated Performance View is incomplete or missing.
  
 Databases associated with the model:
- standard pressure distr: pressc.db1
- standard materials     : material.db3.a
+ pressure distributions : pressc.db1
+ materials              : /usr/esru/esp-r/databases/material.db3.a
  constructions          : ../dbs/ss.mdb
- standard plant comp    : plantc.db1
- standard event profiles: profiles.db1.a
- standard optical prop  : optics.db2
- standard UK NCM data   : SBEM.db1
- standard mould isopleth: mould.db1
+ plant components       : plantc.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
+ optical properties     : optics.db2
  
  ____________________________________________________________
  
@@ -51,50 +48,56 @@ winter heating to 19C in occupied spaces
  
  The sensor for function  1 senses the temperature of the current zone.
  The actuator for function  1 is air point of the current zone
-There have been  1 periods of validity defined during the year.
- Control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
- Per|Start|Sensing  |Actuating  | Control law description
+ There have been  1 day types defined.
+ Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
    1  0.00 db temp   > flux      free floating
  
  The sensor for function  2 senses the temperature of the current zone.
  The actuator for function  2 is air point of the current zone
- The following day types are defined:
-weekdays
-saturday
-sunday
- Day type weekdays control has  3 periods.
- Per|Start|Sensing  |Actuating  | Control law description
-   1  0.00 db temp   > flux      basic control: max heating capacity 2000.0W min heating
-capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
-16.00C cooling setpoint 50.00C. (missing 7th item)
-   2  6.00 db temp   > flux      basic control: max heating capacity 3000.0W min heating
-capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
-19.00C cooling setpoint 100.00C.
-   3 22.00 db temp   > flux      basic control: max heating capacity 2000.0W min heating
-capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
-16.00C cooling setpoint 50.00C. (missing 7th item)
- Day type saturday control has  3 periods.
- Per|Start|Sensing  |Actuating  | Control law description
-   1  0.00 db temp   > flux      basic control: max heating capacity 2000.0W min heating
-capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
-16.00C cooling setpoint 50.00C. (missing 7th item)
-   2  8.00 db temp   > flux      basic control: max heating capacity 3000.0W min heating
-capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
-19.00C cooling setpoint 100.00C.
-   3 23.00 db temp   > flux      basic control: max heating capacity 2000.0W min heating
-capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
-16.00C cooling setpoint 50.00C. (missing 7th item)
- Day type sunday control has  3 periods.
- Per|Start|Sensing  |Actuating  | Control law description
-   1  0.00 db temp   > flux      basic control: max heating capacity 2000.0W min heating
-capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
-16.00C cooling setpoint 50.00C. (missing 7th item)
-   2  8.00 db temp   > flux      basic control: max heating capacity 3000.0W min heating
-capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
-19.00C cooling setpoint 100.00C.
-   3 22.00 db temp   > flux      basic control: max heating capacity 2000.0W min heating
-capacity 0.0W max cooling capacity 0.0W min cooling capacity 0.0W. Heating setpoint
-16.00C cooling setpoint 50.00C. (missing 7th item)
+ The function day types are Weekdays, Saturdays & Sundays
+ Weekday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       2000.0 0.0 0.0 0.0 16.0 50.0
+basic control: max heating capacity 2000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
+50.00C. (missing 7th item)
+   2  6.00 db temp   > flux      basic control       3000.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 3000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   3 22.00 db temp   > flux      basic control       2000.0 0.0 0.0 0.0 16.0 50.0
+basic control: max heating capacity 2000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
+50.00C. (missing 7th item)
+ Saturday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       2000.0 0.0 0.0 0.0 16.0 50.0
+basic control: max heating capacity 2000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
+50.00C. (missing 7th item)
+   2  8.00 db temp   > flux      basic control       3000.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 3000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   3 23.00 db temp   > flux      basic control       2000.0 0.0 0.0 0.0 16.0 50.0
+basic control: max heating capacity 2000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
+50.00C. (missing 7th item)
+ Sunday control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       2000.0 0.0 0.0 0.0 16.0 50.0
+basic control: max heating capacity 2000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
+50.00C. (missing 7th item)
+   2  8.00 db temp   > flux      basic control       3000.0 0.0 0.0 0.0 19.0 100.0 0.0
+basic control: max heating capacity 3000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 19.00C cooling setpoint
+100.00C.
+   3 22.00 db temp   > flux      basic control       2000.0 0.0 0.0 0.0 16.0 50.0
+basic control: max heating capacity 2000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 16.00C cooling setpoint
+50.00C. (missing 7th item)
  
  Zone to contol loop linkages:
  zone ( 1) kitliv       << control  2
@@ -113,25 +116,35 @@ kitchen and bath extracts run 7-8am and 17-18h
  
  The sensor for function  1 senses node (3) bath
  The actuator for function  1 is flow connection:  18 bath - north via bathex
-There have been  1 periods of validity defined during the year.
- Control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  5 periods.
- Per|Start|Sensing  |Actuating  | Control law description
-   1  0.00 dry bulb > flow       on/off setpoint 30.00 direct action ON fraction 1.000.
-   2  7.00 dry bulb > flow       on/off setpoint 0.00 direct action ON fraction 1.000.
-   3  9.00 dry bulb > flow       on/off setpoint 30.00 direct action ON fraction 1.000.
-   4 17.00 dry bulb > flow       on/off setpoint 10.00 direct action ON fraction 1.000.
-   5 19.00 dry bulb > flow       on/off setpoint 30.00 direct action ON fraction 1.000.
+ There have been  1 day types defined.
+ Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  5 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 dry bulb > flow       on / off            30.0 1.0 1.0
+on/off setpoint 30.00 direct action ON fraction 1.000.
+   2  7.00 dry bulb > flow       on / off            0.0 1.0 1.0
+on/off setpoint 0.00 direct action ON fraction 1.000.
+   3  9.00 dry bulb > flow       on / off            30.0 1.0 1.0
+on/off setpoint 30.00 direct action ON fraction 1.000.
+   4 17.00 dry bulb > flow       on / off            10.0 1.0 1.0
+on/off setpoint 10.00 direct action ON fraction 1.000.
+   5 19.00 dry bulb > flow       on / off            30.0 1.0 1.0
+on/off setpoint 30.00 direct action ON fraction 1.000.
  
  The sensor for function  2 senses node (1) liv
  The actuator for function  2 is flow connection:  17 liv - north via kitex
-There have been  1 periods of validity defined during the year.
- Control is valid Sun-01-Jan to Sun-31-Dec, 1967 with  5 periods.
- Per|Start|Sensing  |Actuating  | Control law description
-   1  0.00 dry bulb > flow       on/off setpoint 30.00 direct action ON fraction 1.000.
-   2  7.00 dry bulb > flow       on/off setpoint 0.00 direct action ON fraction 1.000.
-   3  8.00 dry bulb > flow       on/off setpoint 30.00 direct action ON fraction 1.000.
-   4 17.00 dry bulb > flow       on/off setpoint 0.00 direct action ON fraction 1.000.
-   5 18.00 dry bulb > flow       on/off setpoint 30.00 direct action ON fraction 1.000.
+ There have been  1 day types defined.
+ Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  5 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 dry bulb > flow       on / off            30.0 1.0 1.0
+on/off setpoint 30.00 direct action ON fraction 1.000.
+   2  7.00 dry bulb > flow       on / off            0.0 1.0 1.0
+on/off setpoint 0.00 direct action ON fraction 1.000.
+   3  8.00 dry bulb > flow       on / off            30.0 1.0 1.0
+on/off setpoint 30.00 direct action ON fraction 1.000.
+   4 17.00 dry bulb > flow       on / off            0.0 1.0 1.0
+on/off setpoint 0.00 direct action ON fraction 1.000.
+   5 18.00 dry bulb > flow       on / off            30.0 1.0 1.0
+on/off setpoint 30.00 direct action ON fraction 1.000.
  ____________________________________________________________
  
 The model includes an air flow network.
@@ -245,13 +258,12 @@ ID Zone         Volume|          Surface
  kitliv describes a...
  There is 2.5497m2 of exposed surface area, 2.5497m2 of which is vertical.
  Glazing is 9.7914 % of floor & 100.00 % facade with avg U of 2.877 & UA of 7.3347
- Ground contact is 99.982 % of floor area & avg U of 0.359 & perimeter 0.00
  
  A summary of the surfaces in kitliv( 1) follows:
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
-  1  7.68    120.  -0. s_buf        OPAQUE   VERT -     int_buf      ||< s_liv:buf_1
+  1  7.68    120.   0. s_buf        OPAQUE   VERT -     int_buf      ||< s_liv:buf_1
   2  9.60     30.   0. s_hall       OPAQUE   VERT -     int_buf      ||< s_liv:hall
   3  10.1    300.   0. s_adjhouse   OPAQUE   VERT -     ext_west     ||< identical environment
   4  12.3    210.   0. s_west       OPAQUE   VERT -     int_west     ||< s_liv:west_space
@@ -270,13 +282,13 @@ win1 win2
 win1 win2
  
  
-Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
-  1     3.5     8.2     0.6     0.4     0.1     1.5    60.0     0.0 1.00 nl NONE
-  2     4.3     7.8     0.6     0.4     0.1     1.5    60.0     0.0 1.00 nr NONE
-  3     3.6     8.6     2.2     0.4     1.0     0.1   240.0     0.0 1.00 nt NONE
-  4     6.8     6.3     0.6     0.4     0.1     1.5    60.0     0.0 1.00 sl NONE
-  5     7.6     5.9     0.6     0.4     0.1     1.5    60.0     0.0 1.00 sr NONE
-  6     7.0     6.7     2.2     0.4     1.0     0.1   240.0     0.0 1.00 st NONE
+Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien
+  1     3.5     8.2     0.6     0.4     0.1     1.5    60.0     0.0 nl NONE
+  2     4.3     7.8     0.6     0.4     0.1     1.5    60.0     0.0 nr NONE
+  3     3.6     8.6     2.2     0.4     1.0     0.1   240.0     0.0 nt NONE
+  4     6.8     6.3     0.6     0.4     0.1     1.5    60.0     0.0 sl NONE
+  5     7.6     5.9     0.6     0.4     0.1     1.5    60.0     0.0 sr NONE
+  6     7.0     6.7     2.2     0.4     1.0     0.1   240.0     0.0 st NONE
  
  Shading patterns have not yet been calculated.
  
@@ -285,51 +297,57 @@ Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
  
 Notes:
 kitliv
- 
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-weekdays    2 OccuptW    8-22    285.0    135.0       0.20       0.80
-weekdays    3 OccuptW   22-24      0.0      0.0       0.50       0.50
-weekdays    4 LightsW    0-19      0.0      0.0       0.50       0.50
-weekdays    5 LightsW   19-23    200.0      0.0       0.80       0.20
-weekdays    6 LightsW   23-24      0.0      0.0       0.50       0.50
-weekdays    7 EquiptW    0- 8      0.0      0.0       0.50       0.50
-weekdays    8 EquiptW    8- 9   1000.0      0.0       0.40       0.60
-weekdays    9 EquiptW    9-12     60.0      0.0       0.40       0.60
-weekdays   10 EquiptW   12-13   1000.0      0.0       0.40       0.60
-weekdays   11 EquiptW   13-18     60.0      0.0       0.40       0.60
-weekdays   12 EquiptW   18-19   1000.0      0.0       0.40       0.60
-weekdays   13 EquiptW   19-23     60.0      0.0       0.40       0.60
-weekdays   14 EquiptW   23-24      0.0      0.0       0.50       0.50
-saturday    1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-saturday    2 OccuptW    8-22    285.0    135.0       0.20       0.80
-saturday    3 OccuptW   22-24      0.0      0.0       0.50       0.50
-saturday    4 LightsW    0-19      0.0      0.0       0.50       0.50
-saturday    5 LightsW   19-23    200.0      0.0       0.80       0.20
-saturday    6 LightsW   23-24      0.0      0.0       0.50       0.50
-saturday    7 EquiptW    0- 8      0.0      0.0       0.50       0.50
-saturday    8 EquiptW    8- 9   1000.0      0.0       0.40       0.60
-saturday    9 EquiptW    9-12     60.0      0.0       0.40       0.60
-saturday   10 EquiptW   12-13   1000.0      0.0       0.40       0.60
-saturday   11 EquiptW   13-18     60.0      0.0       0.40       0.60
-saturday   12 EquiptW   18-19   1000.0      0.0       0.40       0.60
-saturday   13 EquiptW   19-23     60.0      0.0       0.40       0.60
-saturday   14 EquiptW   23-24      0.0      0.0       0.50       0.50
-sunday      1 OccuptW    0- 8      0.0      0.0       0.50       0.50
-sunday      2 OccuptW    8-22    285.0    135.0       0.20       0.80
-sunday      3 OccuptW   22-24      0.0      0.0       0.50       0.50
-sunday      4 LightsW    0-19      0.0      0.0       0.50       0.50
-sunday      5 LightsW   19-23    200.0      0.0       0.80       0.20
-sunday      6 LightsW   23-24      0.0      0.0       0.50       0.50
-sunday      7 EquiptW    0- 8      0.0      0.0       0.50       0.50
-sunday      8 EquiptW    8- 9   1000.0      0.0       0.40       0.60
-sunday      9 EquiptW    9-12     60.0      0.0       0.40       0.60
-sunday     10 EquiptW   12-13   1000.0      0.0       0.40       0.60
-sunday     11 EquiptW   13-18     60.0      0.0       0.40       0.60
-sunday     12 EquiptW   18-19   1000.0      0.0       0.40       0.60
-sunday     13 EquiptW   19-23     60.0      0.0       0.40       0.60
-sunday     14 EquiptW   23-24      0.0      0.0       0.50       0.50
+Number of weekday      casual gains= 14
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
+Wkd  2 OccuptW    8 - 22    285.0    135.0       0.20       0.80
+Wkd  3 OccuptW   22 - 24      0.0      0.0       0.50       0.50
+Wkd  4 LightsW    0 - 19      0.0      0.0       0.50       0.50
+Wkd  5 LightsW   19 - 23    200.0      0.0       0.80       0.20
+Wkd  6 LightsW   23 - 24      0.0      0.0       0.50       0.50
+Wkd  7 EquiptW    0 -  8      0.0      0.0       0.50       0.50
+Wkd  8 EquiptW    8 -  9   1000.0      0.0       0.40       0.60
+Wkd  9 EquiptW    9 - 12     60.0      0.0       0.40       0.60
+Wkd 10 EquiptW   12 - 13   1000.0      0.0       0.40       0.60
+Wkd 11 EquiptW   13 - 18     60.0      0.0       0.40       0.60
+Wkd 12 EquiptW   18 - 19   1000.0      0.0       0.40       0.60
+Wkd 13 EquiptW   19 - 23     60.0      0.0       0.40       0.60
+Wkd 14 EquiptW   23 - 24      0.0      0.0       0.50       0.50
+Number of saturday     casual gains= 14
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
+Wkd  2 OccuptW    8 - 22    285.0    135.0       0.20       0.80
+Wkd  3 OccuptW   22 - 24      0.0      0.0       0.50       0.50
+Wkd  4 LightsW    0 - 19      0.0      0.0       0.50       0.50
+Wkd  5 LightsW   19 - 23    200.0      0.0       0.80       0.20
+Wkd  6 LightsW   23 - 24      0.0      0.0       0.50       0.50
+Wkd  7 EquiptW    0 -  8      0.0      0.0       0.50       0.50
+Wkd  8 EquiptW    8 -  9   1000.0      0.0       0.40       0.60
+Wkd  9 EquiptW    9 - 12     60.0      0.0       0.40       0.60
+Wkd 10 EquiptW   12 - 13   1000.0      0.0       0.40       0.60
+Wkd 11 EquiptW   13 - 18     60.0      0.0       0.40       0.60
+Wkd 12 EquiptW   18 - 19   1000.0      0.0       0.40       0.60
+Wkd 13 EquiptW   19 - 23     60.0      0.0       0.40       0.60
+Wkd 14 EquiptW   23 - 24      0.0      0.0       0.50       0.50
+Number of sunday       casual gains= 14
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  8      0.0      0.0       0.50       0.50
+Wkd  2 OccuptW    8 - 22    285.0    135.0       0.20       0.80
+Wkd  3 OccuptW   22 - 24      0.0      0.0       0.50       0.50
+Wkd  4 LightsW    0 - 19      0.0      0.0       0.50       0.50
+Wkd  5 LightsW   19 - 23    200.0      0.0       0.80       0.20
+Wkd  6 LightsW   23 - 24      0.0      0.0       0.50       0.50
+Wkd  7 EquiptW    0 -  8      0.0      0.0       0.50       0.50
+Wkd  8 EquiptW    8 -  9   1000.0      0.0       0.40       0.60
+Wkd  9 EquiptW    9 - 12     60.0      0.0       0.40       0.60
+Wkd 10 EquiptW   12 - 13   1000.0      0.0       0.40       0.60
+Wkd 11 EquiptW   13 - 18     60.0      0.0       0.40       0.60
+Wkd 12 EquiptW   18 - 19   1000.0      0.0       0.40       0.60
+Wkd 13 EquiptW   19 - 23     60.0      0.0       0.40       0.60
+Wkd 14 EquiptW   23 - 24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -338,9 +356,8 @@ sunday     14 EquiptW   23-24      0.0      0.0       0.50       0.50
  area of 35.3m^2 & user list floor area of 2.48m^2
  west_space is the construction void within west wall
  There is 16.112m2 of exposed surface area, 14.751m2 of which is vertical.
- Outside walls are 622.24 % of floor area & avg U of 3.763 & UA of 58.067
- Flat roof is 27.454 % of floor area & avg U of 4.270 & UA of 2.9070
- Ground contact is 99.920 % of floor area & avg U of 0.359 & perimeter 6.2006
+ Outside walls are 622.24 % of floor area & avg U of 3.785 & UA of 58.406
+ Flat roof is 27.454 % of floor area & avg U of 3.785 & UA of 2.5769
  
  A summary of the surfaces in west_space( 2) follows:
  
@@ -349,7 +366,7 @@ sunday     14 EquiptW   23-24      0.0      0.0       0.50       0.50
   1  0.959   120.   0. s_buf        OPAQUE   VERT -     int_buf      ||< s_west:buf_1
   2  12.3     30.   0. s_liv        OPAQUE   VERT -     int_westrev  ||< s_west:kitliv
   3  0.959   300.   0. s_adjhouse   OPAQUE   VERT -     ext_west     ||< identical environment
-  4  12.3    210.  -0. ext_west     OPAQUE   VERT -     ext_west     ||< external
+  4  12.3    210.   0. ext_west     OPAQUE   VERT -     ext_west     ||< external
   5  2.48      0.  90. ceil         OPAQUE   CEIL -     int_roof     ||< west_sp:roof
   6  2.48      0. -90. floor        OPAQUE   FLOR -     house_floor  ||< ground profile  1
   7  0.605   127.   0. jambl        OPAQUE   VERT -     ext_west     ||< external
@@ -371,15 +388,15 @@ sunday     14 EquiptW   23-24      0.0      0.0       0.50       0.50
 west_space
  Control: no control of air flow
  
-Scheduled air infiltration and ventilation:
-Daytype    Period     Infiltration     Ventilation     From Source
-           id Hours   Rate ac/h m3/s   Rate ac/h m3/s  Zone DegC
+Number of air change periods for daytype weekday      :    0
+ 
+Number of air change periods for daytype saturday     :    0
+ 
+Number of air change periods for daytype sunday       :    0
  
 Notes:
 west_space
- 
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Number of weekday      casual gains=  0
  
  ____________________________________________________________
  
@@ -387,14 +404,13 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  It encloses a volume of 16.3m^3 of space, with a total surface
  area of 41.0m^2 & approx floor area of 6.80m^2
  hall describes a...
- Ground contact is 99.966 % of floor area & avg U of 0.359 & perimeter 0.00
  
  A summary of the surfaces in hall( 3) follows:
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
-  1  2.40    120.  -0. s_buf        OPAQUE   VERT -     int_buf      ||< s_hall:buf_2
-  2  7.44     30.  -0. s_bed1       OPAQUE   VERT -     int_buf      ||< s_hall:bed1
+  1  2.40    120.   0. s_buf        OPAQUE   VERT -     int_buf      ||< s_hall:buf_2
+  2  7.44     30.   0. s_bed1       OPAQUE   VERT -     int_buf      ||< s_hall:bed1
   3  4.08    300.   0. s_bath       OPAQUE   VERT -     int_buf      ||< s_hall:bath
   4  9.60    210.   0. s_liv        OPAQUE   VERT -     int_buf      ||< s_hall:kitliv
   5  6.80      0.  90. ceil         OPAQUE   CEIL -     int_roof     ||< hall:roof
@@ -412,9 +428,7 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  
 Notes:
 hall
- 
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Number of weekday      casual gains=  0
  
  ____________________________________________________________
  
@@ -422,7 +436,6 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  It encloses a volume of 8.97m^3 of space, with a total surface
  area of 26.2m^2 & approx floor area of 3.74m^2
  bath describes a...
- Ground contact is 99.983 % of floor area & avg U of 0.359 & perimeter 0.00
  
  A summary of the surfaces in bath( 4) follows:
  
@@ -445,24 +458,30 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  
 Notes:
 bath
- 
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 LightsW    0- 7      0.0      0.0       0.50       0.50
-weekdays    2 LightsW    7- 8    100.0      0.0       0.80       0.20
-weekdays    3 LightsW    8-17      0.0      0.0       0.50       0.50
-weekdays    4 LightsW   17-18    100.0      0.0       0.80       0.20
-weekdays    5 LightsW   18-24      0.0      0.0       0.50       0.50
-saturday    1 LightsW    0- 7      0.0      0.0       0.50       0.50
-saturday    2 LightsW    7- 8    100.0      0.0       0.80       0.20
-saturday    3 LightsW    8-17      0.0      0.0       0.50       0.50
-saturday    4 LightsW   17-18    100.0      0.0       0.80       0.20
-saturday    5 LightsW   18-24      0.0      0.0       0.50       0.50
-sunday      1 LightsW    0- 7      0.0      0.0       0.50       0.50
-sunday      2 LightsW    7- 8    100.0      0.0       0.80       0.20
-sunday      3 LightsW    8-17      0.0      0.0       0.50       0.50
-sunday      4 LightsW   17-18    100.0      0.0       0.80       0.20
-sunday      5 LightsW   18-24      0.0      0.0       0.50       0.50
+Number of weekday      casual gains=  5
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 LightsW    0 -  7      0.0      0.0       0.50       0.50
+Wkd  2 LightsW    7 -  8    100.0      0.0       0.80       0.20
+Wkd  3 LightsW    8 - 17      0.0      0.0       0.50       0.50
+Wkd  4 LightsW   17 - 18    100.0      0.0       0.80       0.20
+Wkd  5 LightsW   18 - 24      0.0      0.0       0.50       0.50
+Number of saturday     casual gains=  5
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 LightsW    0 -  7      0.0      0.0       0.50       0.50
+Wkd  2 LightsW    7 -  8    100.0      0.0       0.80       0.20
+Wkd  3 LightsW    8 - 17      0.0      0.0       0.50       0.50
+Wkd  4 LightsW   17 - 18    100.0      0.0       0.80       0.20
+Wkd  5 LightsW   18 - 24      0.0      0.0       0.50       0.50
+Number of sunday       casual gains=  5
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 LightsW    0 -  7      0.0      0.0       0.50       0.50
+Wkd  2 LightsW    7 -  8    100.0      0.0       0.80       0.20
+Wkd  3 LightsW    8 - 17      0.0      0.0       0.50       0.50
+Wkd  4 LightsW   17 - 18    100.0      0.0       0.80       0.20
+Wkd  5 LightsW   18 - 24      0.0      0.0       0.50       0.50
  
  ____________________________________________________________
  
@@ -473,7 +492,6 @@ sunday      5 LightsW   18-24      0.0      0.0       0.50       0.50
  There is 7.4407m2 of exposed surface area, 7.4407m2 of which is vertical.
  Outside walls are 64.147 % of floor area & avg U of 0.211 & UA of 1.2994
  Glazing is 13.279 % of floor & 17.151 % facade with avg U of 2.877 & UA of 3.6711
- Ground contact is 100.02 % of floor area & avg U of 0.359 & perimeter 3.1003
  
  A summary of the surfaces in bed1( 5) follows:
  
@@ -495,10 +513,10 @@ ext_east win
 win
  
  
-Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
-  1    12.0    14.3     0.6     0.6     0.1     1.5    60.0     0.0 1.00 S NONE
-  2    11.2    14.8     0.6     0.6     0.1     1.5    60.0     0.0 1.00 N NONE
-  3    12.0    14.3     2.1     0.6     1.0     0.1    60.0     0.0 1.00 T NONE
+Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien
+  1    12.0    14.3     0.6     0.6     0.1     1.5    60.0     0.0 S NONE
+  2    11.2    14.8     0.6     0.6     0.1     1.5    60.0     0.0 N NONE
+  3    12.0    14.3     2.1     0.6     1.0     0.1    60.0     0.0 T NONE
  
  Shading patterns have not yet been calculated.
  
@@ -507,24 +525,30 @@ Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
  
 Notes:
 two children sleeping
- 
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 8    190.0     90.0       0.20       0.80
-weekdays    2 OccuptW    8-22      0.0      0.0       0.20       0.80
-weekdays    3 OccuptW   22-24    190.0     90.0       0.20       0.80
-weekdays    4 LightsW    0-22      0.0      0.0       0.50       0.50
-weekdays    5 LightsW   22-24    100.0      0.0       0.80       0.20
-saturday    1 OccuptW    0- 8    190.0     90.0       0.20       0.80
-saturday    2 OccuptW    8-22      0.0      0.0       0.20       0.80
-saturday    3 OccuptW   22-24    190.0     90.0       0.20       0.80
-saturday    4 LightsW    0-22      0.0      0.0       0.50       0.50
-saturday    5 LightsW   22-24    100.0      0.0       0.80       0.20
-sunday      1 OccuptW    0- 8    190.0     90.0       0.20       0.80
-sunday      2 OccuptW    8-22      0.0      0.0       0.20       0.80
-sunday      3 OccuptW   22-24    190.0     90.0       0.20       0.80
-sunday      4 LightsW    0-22      0.0      0.0       0.50       0.50
-sunday      5 LightsW   22-24    100.0      0.0       0.80       0.20
+Number of weekday      casual gains=  5
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  8    190.0     90.0       0.20       0.80
+Wkd  2 OccuptW    8 - 22      0.0      0.0       0.20       0.80
+Wkd  3 OccuptW   22 - 24    190.0     90.0       0.20       0.80
+Wkd  4 LightsW    0 - 22      0.0      0.0       0.50       0.50
+Wkd  5 LightsW   22 - 24    100.0      0.0       0.80       0.20
+Number of saturday     casual gains=  5
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  8    190.0     90.0       0.20       0.80
+Wkd  2 OccuptW    8 - 22      0.0      0.0       0.20       0.80
+Wkd  3 OccuptW   22 - 24    190.0     90.0       0.20       0.80
+Wkd  4 LightsW    0 - 22      0.0      0.0       0.50       0.50
+Wkd  5 LightsW   22 - 24    100.0      0.0       0.80       0.20
+Number of sunday       casual gains=  5
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  8    190.0     90.0       0.20       0.80
+Wkd  2 OccuptW    8 - 22      0.0      0.0       0.20       0.80
+Wkd  3 OccuptW   22 - 24    190.0     90.0       0.20       0.80
+Wkd  4 LightsW    0 - 22      0.0      0.0       0.50       0.50
+Wkd  5 LightsW   22 - 24    100.0      0.0       0.80       0.20
  
  ____________________________________________________________
  
@@ -535,7 +559,6 @@ sunday      5 LightsW   22-24    100.0      0.0       0.80       0.20
  There is 7.4386m2 of exposed surface area, 7.4386m2 of which is vertical.
  Outside walls are 64.139 % of floor area & avg U of 0.211 & UA of 1.2993
  Glazing is 13.266 % of floor & 17.138 % facade with avg U of 2.877 & UA of 3.6674
- Ground contact is 99.988 % of floor area & avg U of 0.359 & perimeter 3.0994
  
  A summary of the surfaces in bed2( 6) follows:
  
@@ -558,10 +581,10 @@ ext_east win
 win
  
  
-Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
-  1     9.7    15.6     0.6     0.6     0.1     1.5    60.0     0.0 1.00 S NONE
-  2     8.9    16.1     0.6     0.6     0.1     1.5    60.0     0.0 1.00 N NONE
-  3     9.7    15.6     2.1     0.6     1.0     0.1    60.0     0.0 1.00 T NONE
+Block X-coord Y-coord Z-coord DX VAL. DY VAL. DZ VAL. Orien
+  1     9.7    15.6     0.6     0.6     0.1     1.5    60.0     0.0 S NONE
+  2     8.9    16.1     0.6     0.6     0.1     1.5    60.0     0.0 N NONE
+  3     9.7    15.6     2.1     0.6     1.0     0.1    60.0     0.0 T NONE
  
  Shading patterns have not yet been calculated.
  
@@ -570,24 +593,30 @@ Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity
  
 Notes:
 bed2 with one person sleeping
- 
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
-weekdays    1 OccuptW    0- 8     95.0     45.0       0.20       0.80
-weekdays    2 OccuptW    8-22      0.0      0.0       0.20       0.80
-weekdays    3 OccuptW   22-24     95.0     45.0       0.20       0.80
-weekdays    4 LightsW    0-22      0.0      0.0       0.50       0.50
-weekdays    5 LightsW   22-24    100.0      0.0       0.80       0.20
-saturday    1 OccuptW    0- 8     95.0     45.0       0.20       0.80
-saturday    2 OccuptW    8-22      0.0      0.0       0.20       0.80
-saturday    3 OccuptW   22-24     95.0     45.0       0.20       0.80
-saturday    4 LightsW    0-22      0.0      0.0       0.50       0.50
-saturday    5 LightsW   22-24    100.0      0.0       0.80       0.20
-sunday      1 OccuptW    0- 8     95.0     45.0       0.20       0.80
-sunday      2 OccuptW    8-22      0.0      0.0       0.20       0.80
-sunday      3 OccuptW   22-24     95.0     45.0       0.20       0.80
-sunday      4 LightsW    0-22      0.0      0.0       0.50       0.50
-sunday      5 LightsW   22-24    100.0      0.0       0.80       0.20
+Number of weekday      casual gains=  5
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  8     95.0     45.0       0.20       0.80
+Wkd  2 OccuptW    8 - 22      0.0      0.0       0.20       0.80
+Wkd  3 OccuptW   22 - 24     95.0     45.0       0.20       0.80
+Wkd  4 LightsW    0 - 22      0.0      0.0       0.50       0.50
+Wkd  5 LightsW   22 - 24    100.0      0.0       0.80       0.20
+Number of saturday     casual gains=  5
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  8     95.0     45.0       0.20       0.80
+Wkd  2 OccuptW    8 - 22      0.0      0.0       0.20       0.80
+Wkd  3 OccuptW   22 - 24     95.0     45.0       0.20       0.80
+Wkd  4 LightsW    0 - 22      0.0      0.0       0.50       0.50
+Wkd  5 LightsW   22 - 24    100.0      0.0       0.80       0.20
+Number of sunday       casual gains=  5
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 OccuptW    0 -  8     95.0     45.0       0.20       0.80
+Wkd  2 OccuptW    8 - 22      0.0      0.0       0.20       0.80
+Wkd  3 OccuptW   22 - 24     95.0     45.0       0.20       0.80
+Wkd  4 LightsW    0 - 22      0.0      0.0       0.50       0.50
+Wkd  5 LightsW   22 - 24    100.0      0.0       0.80       0.20
  
  ____________________________________________________________
  
@@ -598,7 +627,6 @@ sunday      5 LightsW   22-24    100.0      0.0       0.80       0.20
  There is 18.002m2 of exposed surface area, 18.002m2 of which is vertical.
  Outside walls are 102.57 % of floor area & avg U of 3.487 & UA of 47.708
  Glazing is 32.378 % of floor & 23.994 % facade with avg U of 2.877 & UA of 12.425
- Ground contact is 99.991 % of floor area & avg U of 1.261 & perimeter 7.5007
  
  A summary of the surfaces in buf_1( 7) follows:
  
@@ -626,9 +654,7 @@ sunday      5 LightsW   22-24    100.0      0.0       0.80       0.20
  
 Notes:
 buf_1
- 
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Number of weekday      casual gains=  0
  
  ____________________________________________________________
  
@@ -639,7 +665,6 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  There is 18.480m2 of exposed surface area, 18.480m2 of which is vertical.
  Outside walls are 101.73 % of floor area & avg U of 3.484 & UA of 49.343
  Glazing is 31.029 % of floor & 23.372 % facade with avg U of 2.877 & UA of 12.425
- Ground contact is 100.01 % of floor area & avg U of 1.261 & perimeter 7.7002
  
  A summary of the surfaces in buf_2( 8) follows:
  
@@ -651,7 +676,7 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
   4  13.9      0.  90. fict         SC_ficti CEIL -     fictitious   ||< buf_2:buf_roof
   5  13.9      0. -90. floor        OPAQUE   FLOR -     buf_floor    ||< ground profile  1
   6  4.32     30.   0. eastwin      DC_8074_ VERT -     doub_glaz    ||< external
-  7  2.40    300.  -0. s_hall       OPAQUE   VERT -     int_buf      ||< s_buf:hall
+  7  2.40    300.   0. s_hall       OPAQUE   VERT -     int_buf      ||< s_buf:hall
   8  1.68    300.   0. door         OPAQUE   VERT -     door         ||< door:hall
   9  6.96    210.   0. fictv        SC_ficti VERT -     fictitious   ||< fictv:buf_1
  
@@ -667,9 +692,7 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  
 Notes:
 nil_operations
- 
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Number of weekday      casual gains=  0
  
  ____________________________________________________________
  
@@ -679,8 +702,8 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  buf_roof describes a...
  There is 44.899m2 of exposed surface area, 13.159m2 of which is vertical.
  Outside walls are 48.273 % of floor area & avg U of 3.415 & UA of 44.945
- Sloped roof is 104.55 % of floor area & avg U of 0.777 & UA of 22.135
- Skylights are 11.882 % of floor area & avg U of 3.148 & UA of 10.198
+ Sloped roof is 104.55 % of floor area & avg U of 0.759 & UA of 21.631
+ Skylights are 11.882 % of floor area & avg U of 2.877 & UA of 9.3178
  
  A summary of the surfaces in buf_roof( 9) follows:
  
@@ -689,11 +712,11 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
   1  13.3      0. -90. buf_1        SC_ficti FLOR -     fictitious   ||< fict:buf_1
   2  14.7    210.  60. roof_e       OPAQUE   SLOP -     roof         ||< external
   3  13.8     30.  58. roof_w       OPAQUE   SLOP -     roof         ||< external
-  4  13.2    120.  -0. roof_s       OPAQUE   VERT -     ext_buf      ||< external
+  4  13.2    120.   0. roof_s       OPAQUE   VERT -     ext_buf      ||< external
   5  1.64    210.  60. win2         DC_8074_ SLOP -     doub_glaz    ||< external
   6  1.60     30.  58. glz_w        DC_8074_ SLOP -     doub_glaz    ||< external
   7  13.9      0. -90. buf_2        SC_ficti FLOR -     fictitious   ||< fict:buf_2
-  8  13.2    300.  -0. roof_buf     OPAQUE   VERT -     int_buf      ||< roof_buf:roof
+  8  13.2    300.   0. roof_buf     OPAQUE   VERT -     int_buf      ||< roof_buf:roof
  
  
  Solar insolation focused on glz_w        & buf_1        (if shading not calculated).
@@ -707,32 +730,30 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  
 Notes:
 buf_roof
- 
-Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
-          No.  label   Hours  Magn.(W)  Magn.(W)   Fraction   Fraction
+Number of weekday      casual gains=  0
  
  ____________________________________________________________
  
- Zone roof (10) is composed of 10 surfaces and 17 vertices.
+ Zone roof (10) is composed of 10 surfaces and 16 vertices.
  It encloses a volume of 81.6m^3 of space, with a total surface
  area of 152.m^2 & approx floor area of 58.3m^2
  roof describes a...
- There is 81.028m2 of exposed surface area, 13.160m2 of which is vertical.
- Outside walls are 22.578 % of floor area & avg U of 3.785 & UA of 49.810
- Sloped roof is 116.43 % of floor area & avg U of 1.860 & UA of 126.24
+ There is 81.018m2 of exposed surface area, 13.160m2 of which is vertical.
+ Outside walls are 22.581 % of floor area & avg U of 3.785 & UA of 49.810
+ Sloped roof is 116.43 % of floor area & avg U of 1.762 & UA of 119.55
  
  A summary of the surfaces in roof(10) follows:
  
  Sur| Area  |Azim|Elev| surface    |    geometry       | construction |environment
     | m^2   |deg |deg | name       |optical|locat| use | name         |other side
-  1  13.2    300.  -0. roof_n       OPAQUE   VERT -     ext_west     ||< external
+  1  13.2    300.   0. roof_n       OPAQUE   VERT -     ext_west     ||< external
   2  26.0      0. -90. liv          OPAQUE   FLOR -     int_roofrev  ||< ceil:kitliv
   3  6.80      0. -90. hall         OPAQUE   FLOR -     int_roofrev  ||< ceil:hall
   4  3.74      0. -90. bath         OPAQUE   FLOR -     int_roofrev  ||< ceil:bath
-  5  9.62      0. -90. bed1         OPAQUE   FLOR -     int_roofrev  ||< ceil:bed1
+  5  9.61      0. -90. bed1         OPAQUE   FLOR -     int_roofrev  ||< ceil:bed1
   6  9.61      0. -90. bed2         OPAQUE   FLOR -     int_roofrev  ||< ceil:bed2
   7  2.48      0. -90. west_sp      OPAQUE   FLOR -     int_roofrev  ||< ceil:west_space
-  8  13.2    120.  -0. roof_buf     OPAQUE   VERT -     int_buf      ||< roof_buf:buf_roof
+  8  13.2    120.   0. roof_buf     OPAQUE   VERT -     int_buf      ||< roof_buf:buf_roof
   9  35.0    210.  60. roof_w       OPAQUE   SLOP -     ni_roof      ||< external
  10  32.9     30.  58. roof_e       OPAQUE   SLOP -     ni_roof      ||< external
  
@@ -745,194 +766,143 @@ Daytype   Gain Type    Period Sensible  Latent     Radiant    Convec
  
  ____________________________________________________________
  
- Project floor area is 171.09m2, wall area is 81.923m2, window area is 13.739m2.
- Sloped roof area is 96.369m2, flat roof area is 0.68086m2, skylight area is 3.2391m2.
- In contact with ground 85.531m2.
- There is 195.95m2 of outside surface area, 94.981m2 of which is vertical.
+ Project floor area is 171.08m2, wall area is 81.923m2, window area is 13.739m2.
+ Sloped roof area is 96.359m2, flat roof area is 0.68086m2, skylight area is 3.2391m2.
+ There is 195.94m2 of outside surface area, 94.981m2 of which is vertical.
  
- Outside walls are 47.883 % of floor area & avg U of 3.082 & UA of 252.47 & max MLC thickness 0.642
- Sloped roof is 56.326 % of floor area & avg U of 1.540 & UA of 148.38
- Flat roof is 0.39795 % of floor area & avg U of 4.270 & UA of 2.9070
- Glazing is 8.0304 % of floor & 14.465 % facade with avg U of 2.877 & UA of 39.524
- Skylights are 1.8932 % of floor area & avg U of 3.148 & UA of 10.198
- Ground contact is 49.992 % of floor area & avg U of 0.646 & perimeter 27.601 & max MLC thickness 0.385
- CIBSE ground beta! 6.198 dt 3.023 Ufleft 0.133 Ufright 2.007 Uf 0.268 R extra @ virtual layer 2.189
+ Outside walls are 47.886 % of floor area & avg U of 3.086 & UA of 252.81
+ Sloped roof is 56.324 % of floor area & avg U of 1.465 & UA of 141.18
+ Flat roof is 0.39798 % of floor area & avg U of 3.785 & UA of 2.5769
+ Glazing is 8.0309 % of floor & 14.465 % facade with avg U of 2.877 & UA of 39.524
+ Skylights are 1.8933 % of floor area & avg U of 2.877 & UA of 9.3178
  
  ____________________________________________________________
  Multi-layer constructions used:
  
- Details of opaque construction: ext_west and overall thickness  0.118
+ Details of opaque construction: ext_west
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext   127   18.0     0.790  1329.  1000. 0.91 0.50    19.  0.02 rendering not-dry : Rendering (8% mc)
  Int    32  100.0     1.400  2100.   653. 0.90 0.65    19.  0.07 heavy mix concrete : Heavy mix concrete
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.785  4.270  3.287 (partition)  2.823
- 
-Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.65
- External surface admittance Y=  4.77  w=  1.22 decrement factor f=  0.49  phi=  1.44 surface factor f=  0.49  phi=  1.44
- Partition admittance Y=  4.07  w=  3.90 surface factor f=  0.85  phi=  1.95
  Total area of ext_west is     57.12
  
- Details of opaque construction: ext_east and overall thickness  0.642
+ Details of opaque construction: ext_east
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext   127   18.0     0.790  1329.  1000. 0.91 0.50    19.  0.02 rendering not-dry : Rendering (8% mc)
     2   32  100.0     1.400  2100.   653. 0.90 0.65    19.  0.07 heavy mix concrete : Heavy mix concrete
     3    0  350.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
-    4  205   50.0     0.030    30.   837. 0.90 0.50    90.  1.67 Polyurethane foam bd : Polyurethane foam board
+    4  205   50.0     0.030    30.   837. 0.90 0.50    90.  1.67 Polyurethane foam bd : Polyurethane foam boa
     5   70   12.0     0.150   560.  2500. 0.90 0.65   576.  0.08 plywood 560d : Plywood (generic 560 density)
     6  216  100.0     0.040   105.  1800. 0.90 0.60     1.  2.50 mineral fibre : Mineral fibre
- Int   107   12.0     0.190   950.   840. 0.91 0.50    11.  0.06 gypsum plasterboard : Gypsum plasterboard (generic)
+ Int   107   12.0     0.190   950.   840. 0.91 0.50    11.  0.06 gypsum plasterboard : Gypsum plasterboard (g
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.211  0.212  0.209 (partition)  0.207
- 
-Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.21
- External surface admittance Y=  1.17  w=  3.76 decrement factor f=  0.93  phi=  0.48 surface factor f=  0.93  phi=  0.48
- Partition admittance Y=  1.22  w=  3.66 surface factor f=  0.92  phi=  0.50
  Total area of ext_east is     12.33
  
- Details of opaque construction: int_west linked to int_westrev  & with overall thickness  0.174
+ Details of opaque construction: int_west
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   205   50.0     0.030    30.   837. 0.90 0.50    90.  1.67 Polyurethane foam bd : Polyurethane foam board
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   205   50.0     0.030    30.   837. 0.90 0.50    90.  1.67 Polyurethane foam bd : Polyurethane foam boa
     2   70   12.0     0.150   560.  2500. 0.90 0.65   576.  0.08 plywood 560d : Plywood (generic 560 density)
     3  216  100.0     0.040   105.  1800. 0.90 0.60     1.  2.50 mineral fibre : Mineral fibre
- Int   107   12.0     0.190   950.   840. 0.91 0.50    11.  0.06 gypsum plasterboard : Gypsum plasterboard (generic)
+ Int   107   12.0     0.190   950.   840. 0.91 0.50    11.  0.06 gypsum plasterboard : Gypsum plasterboard (g
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.223  0.225  0.221 (partition)  0.219
- 
-Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.22
- External surface admittance Y=  1.17  w=  3.77 decrement factor f=  0.93  phi=  0.48 surface factor f=  0.93  phi=  0.48
- Partition admittance Y=  1.26  w=  3.87 surface factor f=  0.93  phi=  0.53
  Total area of int_west is     12.33
  
- Details of opaque construction: int_westrev linked to int_west     & with overall thickness  0.174
+ Details of opaque construction: int_westrev
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   107   12.0     0.190   950.   840. 0.91 0.50    11.  0.06 gypsum plasterboard : Gypsum plasterboard (generic)
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   107   12.0     0.190   950.   840. 0.91 0.50    11.  0.06 gypsum plasterboard : Gypsum plasterboard (g
     2  216  100.0     0.040   105.  1800. 0.90 0.60     1.  2.50 mineral fibre : Mineral fibre
     3   70   12.0     0.150   560.  2500. 0.90 0.65   576.  0.08 plywood 560d : Plywood (generic 560 density)
- Int   205   50.0     0.030    30.   837. 0.90 0.50    90.  1.67 Polyurethane foam bd : Polyurethane foam board
+ Int   205   50.0     0.030    30.   837. 0.90 0.50    90.  1.67 Polyurethane foam bd : Polyurethane foam boa
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.223  0.225  0.221 (partition)  0.219
- 
-Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.22
- External surface admittance Y=  0.50  w=  1.25 decrement factor f=  0.94  phi=  0.08 surface factor f=  0.94  phi=  0.08
- Partition admittance Y=  0.56  w=  1.84 surface factor f=  0.94  phi=  0.13
  Total area of int_westrev is     12.33
  
- Details of opaque construction: ext_buf and overall thickness  0.158
+ Details of opaque construction: ext_buf
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext   127   18.0     0.790  1329.  1000. 0.91 0.50    19.  0.02 rendering not-dry : Rendering (8% mc)
  Int    32  140.0     1.400  2100.   653. 0.90 0.65    19.  0.10 heavy mix concrete : Heavy mix concrete
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.415  3.805  3.005 (partition)  2.612
- 
-Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.30
- External surface admittance Y=  5.00  w=  1.34 decrement factor f=  0.48  phi=  1.69 surface factor f=  0.48  phi=  1.69
- Partition admittance Y=  4.94  w=  3.27 surface factor f=  0.76  phi=  2.42
  Total area of ext_buf is     35.72
  
- Details of opaque construction: int_buf and overall thickness  0.124
+ Details of opaque construction: int_buf
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   107   12.0     0.190   950.   840. 0.91 0.50    11.  0.06 gypsum plasterboard : Gypsum plasterboard (generic)
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   107   12.0     0.190   950.   840. 0.91 0.50    11.  0.06 gypsum plasterboard : Gypsum plasterboard (g
     2  216  100.0     0.040   105.  1800. 0.90 0.60     1.  2.50 mineral fibre : Mineral fibre
- Int   107   12.0     0.190   950.   840. 0.91 0.50    11.  0.06 gypsum plasterboard : Gypsum plasterboard (generic)
+ Int   107   12.0     0.190   950.   840. 0.91 0.50    11.  0.06 gypsum plasterboard : Gypsum plasterboard (g
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.358  0.361  0.353 (partition)  0.346
- 
-Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.36
- External surface admittance Y=  1.13  w=  3.85 decrement factor f=  0.93  phi=  0.47 surface factor f=  0.93  phi=  0.47
- Partition admittance Y=  1.25  w=  4.80 surface factor f=  0.96  phi=  0.57
  Total area of int_buf is    141.52
  
- Details of opaque construction: int_roof linked to int_roofrev  & with overall thickness  0.230
+ Details of opaque construction: int_roof
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext    70   18.0     0.150   560.  2500. 0.90 0.65   576.  0.12 plywood 560d : Plywood (generic 560 density)
     2  216  200.0     0.040   105.  1800. 0.90 0.60     1.  5.00 mineral fibre : Mineral fibre
- Int   107   12.0     0.190   950.   840. 0.91 0.50    11.  0.06 gypsum plasterboard : Gypsum plasterboard (generic)
+ Int   107   12.0     0.190   950.   840. 0.91 0.50    11.  0.06 gypsum plasterboard : Gypsum plasterboard (g
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.187  0.188  0.185 (partition)  0.184
- 
-Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.19
- External surface admittance Y=  1.20  w=  3.81 decrement factor f=  0.93  phi=  0.50 surface factor f=  0.93  phi=  0.50
- Partition admittance Y=  1.29  w=  3.77 surface factor f=  0.92  phi=  0.53
  Total area of int_roof is     58.27
  
- Details of opaque construction: int_roofrev linked to int_roof     & with overall thickness  0.230
+ Details of opaque construction: int_roofrev
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   107   12.0     0.190   950.   840. 0.91 0.50    11.  0.06 gypsum plasterboard : Gypsum plasterboard (generic)
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   107   12.0     0.190   950.   840. 0.91 0.50    11.  0.06 gypsum plasterboard : Gypsum plasterboard (g
     2  216  200.0     0.040   105.  1800. 0.90 0.60     1.  5.00 mineral fibre : Mineral fibre
  Int    70   18.0     0.150   560.  2500. 0.90 0.65   576.  0.12 plywood 560d : Plywood (generic 560 density)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.187  0.188  0.185 (partition)  0.184
+ Total area of int_roofrev is     58.28
  
-Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.19
- External surface admittance Y=  2.04  w=  3.86 decrement factor f=  0.89  phi=  0.89 surface factor f=  0.89  phi=  0.89
- Partition admittance Y=  2.12  w=  3.82 surface factor f=  0.89  phi=  0.93
- Total area of int_roofrev is     58.29
+ Details of opaque construction: roof
  
- Details of opaque construction: roof and overall thickness  0.345
- 
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext   142  200.0     1.100  2100.   837. 0.90 0.65    20.  0.18 concrete tile : Concrete tile
     2  213    3.0     0.190   960.   950. 0.90 0.90    15.  0.02 felt sheathing : Felt sheathing
     3    0  100.0     0.000     0.     0. 0.99 0.99     1.  0.12 air  0.12 0.12 0.12
     4  216   30.0     0.040   105.  1800. 0.90 0.60     1.  0.75 mineral fibre : Mineral fibre
  Int    70   12.0     0.150   560.  2500. 0.90 0.65   576.  0.08 plywood 560d : Plywood (generic 560 density)
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.759  0.777  0.737 (partition)  0.710
- 
-Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.75
- External surface admittance Y=  1.49  w=  2.92 decrement factor f=  0.88  phi=  0.54 surface factor f=  0.88  phi=  0.54
- Partition admittance Y=  1.71  w=  3.07 surface factor f=  0.87  phi=  0.65
  Total area of roof is     28.50
  
- Details of opaque construction: house_floor and overall thickness  0.385
+ Details of opaque construction: house_floor
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext    86  200.0     0.360  1840.   840. 0.90 0.60     2.  0.56 gravel : Gravel
     2   21   25.0     0.380  1200.   653. 0.90 0.65     6.  0.07 light mix concrete : Light mix concrete
-    3  205   50.0     0.030    30.   837. 0.90 0.50    90.  1.67 Polyurethane foam bd : Polyurethane foam board
+    3  205   50.0     0.030    30.   837. 0.90 0.50    90.  1.67 Polyurethane foam bd : Polyurethane foam boa
     4  122  100.0     1.280  2100.  1007. 0.90 0.65    44.  0.08 cast conc screed : Cast concrete screed
  Int   217   10.0     0.040   105.  1800. 0.90 0.60    15.  0.25 cork insulation : Cork insulation
  ISO 6946 U values (horiz/upward/downward heat flow)=  0.359  0.363  0.354 (partition)  0.348
- 
-Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  0.36
- External surface admittance Y=  2.49  w=  0.68 decrement factor f=  0.71  phi=  0.29 surface factor f=  0.71  phi=  0.29
- Partition admittance Y=  2.49  w=  0.66 surface factor f=  0.71  phi=  0.28
  Total area of house_floor is     58.27
  
- Details of opaque construction: buf_floor and overall thickness  0.250
+ Details of opaque construction: buf_floor
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext    86  200.0     0.360  1840.   840. 0.90 0.60     2.  0.56 gravel : Gravel
     2  262   25.0     0.520  2050.   184. 0.90 0.85     2.  0.05 gravel based : Gravel based
  Int   122   25.0     1.280  2100.  1007. 0.90 0.65    44.  0.02 cast conc screed : Cast concrete screed
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.261  1.310  1.200 (partition)  1.132
- 
-Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.25
- External surface admittance Y=  4.58  w=  1.90 decrement factor f=  0.58  phi=  1.80 surface factor f=  0.58  phi=  1.80
- Partition admittance Y=  4.93  w=  1.89 surface factor f=  0.56  phi=  2.03
  Total area of buf_floor is     27.26
  
- Details of transparent construction: fictitious with SC_fictit optics and overall thickness  0.004
+ Details of transparent construction: fictitious   with SC_fictit    optics.
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
-    1  245    4.0    20.000    10.    10. 0.99 0.01 19200.  0.00 fict : fictitious material (almost not there) with matching single layer optics
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+    1  245    4.0    20.000    10.    10. 0.99 0.01 19200.  0.00 fict : fictitious material (almost not there
  ISO 6946 U values (horiz/upward/downward heat flow)=  5.875  7.133  4.757 (partition)  3.843
- 
-Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.55
- External surface admittance Y=  5.55  w=  0.00 decrement factor f=  0.33  phi=  0.00 surface factor f=  0.33  phi=  0.00
- Partition admittance Y=  0.00  w=  6.00 surface factor f=  1.00  phi=  0.00
  
  Fictitious 99/99,      4mm, no blind: with id of: SC_fictit
  with 1 layers [including air gaps] and visible trn: 0.99
@@ -942,18 +912,14 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  5.55
     1  0.001 0.001 0.001 0.001 0.001
  Total area of fictitious is     68.44
  
- Details of transparent construction: doub_glaz with DC_8074_04nb optics and overall thickness  0.020
+ Details of transparent construction: doub_glaz    with DC_8074_04nb optics.
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
- Ext   243    4.0     1.050  2500.   750. 0.83 0.05 19200.  0.00 clear float : 4mm clear float glass with optics from UK national method datase for
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   243    4.0     1.050  2500.   750. 0.83 0.05 19200.  0.00 clear float : 4mm clear float glass with opt
     2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
- Int   243    4.0     1.050  2500.   750. 0.83 0.05 19200.  0.00 clear float : 4mm clear float glass with optics from UK national method datase for
+ Int   243    4.0     1.050  2500.   750. 0.83 0.05 19200.  0.00 clear float : 4mm clear float glass with opt
  ISO 6946 U values (horiz/upward/downward heat flow)=  2.877  3.148  2.580 (partition)  2.285
- 
-Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.80
- External surface admittance Y=  2.82  w=  0.34 decrement factor f=  0.66  phi=  0.17 surface factor f=  0.66  phi=  0.17
- Partition admittance Y=  0.45  w=  5.80 surface factor f=  1.00  phi=  0.21
  
  Clear glass 80/75,     4mm, no blind: with id of: DC_8074_04nb
  with 3 layers [including air gaps] and visible trn: 0.80
@@ -965,29 +931,21 @@ Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  2.80
     3  0.087 0.094 0.097 0.087 0.062
  Total area of doub_glaz is     21.78
  
- Details of opaque construction: door and overall thickness  0.025
+ Details of opaque construction: door
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
     1   69   25.0     0.190   700.  2390. 0.90 0.65    12.  0.13 oak : Oak (radial cut)
  ISO 6946 U values (horiz/upward/downward heat flow)=  3.316  3.682  2.928 (partition)  2.554
- 
-Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  3.21
- External surface admittance Y=  3.33  w=  0.61 decrement factor f=  0.61  phi=  0.40 surface factor f=  0.61  phi=  0.40
- Partition admittance Y=  1.21  w=  5.38 surface factor f=  0.99  phi=  0.56
  Total area of door is      7.68
  
- Details of opaque construction: ni_roof and overall thickness  0.315
+ Details of opaque construction: ni_roof
  
- Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu| R    |Description
-      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|m^2K/W
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
  Ext   142  200.0     1.100  2100.   837. 0.90 0.65    20.  0.18 concrete tile : Concrete tile
     2  213    3.0     0.190   960.   950. 0.90 0.90    15.  0.02 felt sheathing : Felt sheathing
     3    0  100.0     0.000     0.     0. 0.99 0.99     1.  0.12 air  0.12 0.12 0.12
  Int    70   12.0     0.150   560.  2500. 0.90 0.65   576.  0.08 plywood 560d : Plywood (generic 560 density)
  ISO 6946 U values (horiz/upward/downward heat flow)=  1.762  1.860  1.646 (partition)  1.521
- 
-Admittance calculations using Rsi   0.12 Rso   0.06 & Uvalue=  1.73
- External surface admittance Y=  2.74  w=  1.17 decrement factor f=  0.69  phi=  0.55 surface factor f=  0.69  phi=  0.55
- Partition admittance Y=  3.16  w=  1.86 surface factor f=  0.69  phi=  1.00
- Total area of ni_roof is     67.87
+ Total area of ni_roof is     67.86

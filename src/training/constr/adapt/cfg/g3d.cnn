@@ -1,5 +1,5 @@
-*connections for g3d
-*Date Fri Aug 24 11:23:44 2012
+*connections  for g3d
+*Date Fri Jul 17 13:51:10 2009
     106   # number of connections
    1   1   0   0   0  #    1 north in bin_c is External
    1   2   0   0   0  #    2 porch in bin_c is External

@@ -431,7 +431,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
 
-C VDIF is diffusion res, IPRZ is material array index for each layer.
+C VDIF is diffusion res, IPRZ is primitive db ref for each layer.
       COMMON/T7/VDIF(ME)
       common/T8/IPRZ(MS,ME)
 
@@ -480,15 +480,18 @@ C Determine diffusion resistance factor for each element.
       call edisp(iuout,' Diffusion resistance factor for:')
       call edisp(iuout,' ')
       DO 20 I=1,NE(ISUR)
-        matarrayindex=IPRZ(ISUR,I)   ! which material
+        legmat=IPRZ(ISUR,I)   ! which legacy index
+        if(legmat.gt.0)then
+          matarrayindex=mathash(legmat)  ! find matching array index
  
 C And if matarrayindex is zero then reset DRVAL and NAM.
-        if(matarrayindex.eq.0)then
-          DRVAL=1.0
-          NAM='AIR'
-        else
-          DRVAL=matdbdrv(matarrayindex)
-          write(NAM,'(a)') matname(matarrayindex)(1:32)
+          if(matarrayindex.eq.0)then
+            DRVAL=1.0
+            NAM='AIR'
+          else
+            DRVAL=matdbdrv(matarrayindex)
+            write(NAM,'(a)') matname(matarrayindex)(1:32)
+          endif
         endif
 
         helptopic='res_diffusion_resistance'
@@ -779,7 +782,7 @@ C and vapour pressure gradients.
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
 
-C IPRZ is materials array index for each layer.
+C IPRZ is primitive db ref for each layer.
       common/T8/IPRZ(MS,ME)
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
       COMMON/T1/NE(MS),NAIRG(MS),IPAIRG(MS,MGP),RAIRG(MS,MGP)
@@ -891,7 +894,7 @@ C period.
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
 
-C IPRZ is materials array index for each layer.
+C IPRZ is primitive db ref for each layer.
       COMMON/T7/VDIF(ME)
       common/T8/IPRZ(MS,ME)
       COMMON/ETHICK/ETHK(ME),THKMAX,THKMIN
@@ -964,16 +967,19 @@ C For each surface.
         SN=SSNAME(ICN)
 
 C Determine diffusion resistance factor for each element
-C check if gap via materials array and compute layer thickness.
+C from ascii or binary materials db and compute layer thickness.
         DO 24 I=1,NE(ISUR)
           ETHK(I)=THK(ISUR,I)*1000.0
-          matarrayindex=IPRZ(ISUR,I)   ! which material
+          legmat=IPRZ(ISUR,I)   ! which legacy index
+          if(legmat.gt.0)then
+            matarrayindex=mathash(legmat)  ! find matching array index
  
 C And if matarrayindex is zero then reset DRVAL.
-          if(matarrayindex.eq.0)then
-            DRVAL=1.0
-          else
-            DRVAL=matdbdrv(matarrayindex)
+            if(matarrayindex.eq.0)then
+              DRVAL=1.0
+            else
+              DRVAL=matdbdrv(matarrayindex)
+            endif
           endif
           VDIF(I)=DRVAL
    24   CONTINUE

@@ -1,0 +1,812 @@
+Synopsis
+ 
+This is a synopsis of the model Room acoustics assessment exemplar: see
+documentation defined in EOS_atrium.cfg generated on Wed Sep 30 13:56:36 2009.
+Notes associated with the model are in EOS.notes
+ 
+The model is located at latitude   46.00 with a longitude difference of  -6.00
+from the local time meridian. The year used in simulations is 1967 and
+weekends occur on Saturday and Sunday.
+The site exposure is typical city centre and the ground reflectance is 0.20.
+ 
+Project name: not yet defined
+Building address: not yet defined
+Building city: not yet defined
+Building Postcode: not yet defined
+ 
+Building owner name: not yet defined
+Building owner telephone: not yet defined
+Building owner address: not yet defined
+Building owner city: not yet defined
+Building owner Postcode: not yet defined
+ 
+Simulationist name: not yet defined
+Simulationist telephone: not yet defined
+Simulationist address: not yet defined
+Simulationist city: not yet defined
+Simulationist postcode: not yet defined
+The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
+with hour centred solar data.
+Primary energy conversions (demand kWhr to primary kWhr) are:
+ heating   : 1.250
+ cooling   : 3.600
+ lighting  : 3.600
+ fans&pumps: 3.600
+ small powr: 3.600
+ hot water : 1.250
+ 
+ Emissions (g/kWh) co2  nox  sox
+ heating :  190.00   0.20   0.10
+ cooling :  612.00   2.06   7.50
+ lighting:  612.00   2.06   7.50
+ fan_pump:  612.00   2.06   7.50
+ small pr:  612.00   2.06   7.50
+ hot water: 190.00   0.20   0.10
+An Integrated Performance View is incomplete or missing.
+ 
+Databases associated with the model:
+ pressure distributions : /usr/esru/esp-r/databases/pressc.db1
+ materials              : /usr/esru/esp-r/databases/constr.db2.a
+ constructions          : ../databases/EOSmlc.db1
+ plant components       : ../databases/plantc.db1
+ event profiles         : ../databases/profiles.db1.a
+ optical properties     : ../databases/optics.db1
+ 
+ ____________________________________________________________
+ 
+The model includes ideal controls as follows:
+Control description:
+proj cntrl
+ 
+ Flow control includes  4 loops.
+flow control applied to F4 hall to roof, F0 hall door & window, F1 hall window
+ 
+ The sensor for function  1 senses node (1) F4_hall
+ The actuator for function  1 is flow connection:   6 F4_hall - roof via atri-roof
+ There have been  1 day types defined.
+ Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 dry bulb > flow       on / off            100.0 1.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
+   2  6.00 dry bulb > flow       proportional + hyst 24.0 0.0 32.0 100.0 0.0
+proportional + hysteresis: signal lower limit 24.00 valve lower limit (%) 0.0 signal
+upper limit 32.00 valve upper limit (%)100.0 dS 0.00.
+   3 22.00 dry bulb > flow       on / off            100.0 1.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
+ 
+ The sensor for function  2 senses node (5) F0_hall
+ The actuator for function  2 is flow connection:   5 ground - F0_hall via Door
+ There have been  1 day types defined.
+ Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 dry bulb > flow       on / off            100.0 1.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
+   2  6.00 dry bulb > flow       proportional + hyst 24.0 0.0 32.0 100.0 0.0
+proportional + hysteresis: signal lower limit 24.00 valve lower limit (%) 0.0 signal
+upper limit 32.00 valve upper limit (%)100.0 dS 0.00.
+   3 22.00 dry bulb > flow       on / off            100.0 1.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
+ 
+ The sensor for function  3 senses node (5) F0_hall
+ The actuator for function  3 is flow connection:  18 F0_hall - F0_win via Window
+ There have been  1 day types defined.
+ Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 dry bulb > flow       on / off            100.0 1.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
+   2  8.00 dry bulb > flow       proportional + hyst 28.0 0.0 32.0 100.0 0.0
+proportional + hysteresis: signal lower limit 28.00 valve lower limit (%) 0.0 signal
+upper limit 32.00 valve upper limit (%)100.0 dS 0.00.
+   3 19.00 dry bulb > flow       on / off            100.0 1.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
+ 
+ The sensor for function  4 senses node (4) F1_hall
+ The actuator for function  4 is flow connection:  19 F1_hall - F1_win via Window
+ There have been  1 day types defined.
+ Day type  1 is valid Sun-01-Jan to Sun-31-Dec, 1967 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 dry bulb > flow       on / off            100.0 1.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
+   2  8.00 dry bulb > flow       proportional + hyst 28.0 0.0 32.0 100.0 0.0
+proportional + hysteresis: signal lower limit 28.00 valve lower limit (%) 0.0 signal
+upper limit 32.00 valve upper limit (%)100.0 dS 0.00.
+   3 19.00 dry bulb > flow       on / off            100.0 1.0
+on/off setpoint 100.00 direct action ON fraction 0.000.
+ ____________________________________________________________
+ 
+The model includes an air flow network.
+ 
+ Flow network description.
+ 
+  14 nodes,   7 components,  19 connections;     wind reduction =  1.000
+   # Node      Fluid   Node Type           Height Temperature    Data_1       Data_2
+   1 F4_hall      air   internal & unknown   13.5250   20.000     (-)     0.000  vol  227.280
+   2 F3_hall      air   internal & unknown   10.6750   20.000     (-)     0.000  vol  227.280
+   3 F2_hall      air   internal & unknown    7.8250   20.000     (-)     0.000  vol  227.280
+   4 F1_hall      air   internal & unknown    4.9750   20.000     (-)     0.000  vol  227.280
+   5 F0_hall      air   internal & unknown    2.1250   20.000     (-)     0.000  vol  227.280
+   6 roof         air   boundary & wind ind  25.0000   0.0000     coef   15.000  azim   0.000
+   7 ground       air   boundary & wind ind   1.0000   0.0000     coef   18.000  azim  90.000
+   8 Elev0        air   internal & unknown    2.3750   20.000     (-)     0.000  vol   15.191
+   9 Elev1        air   internal & unknown    5.2250   20.000     (-)     0.000  vol   15.191
+  10 Elev2        air   internal & unknown    8.0750   20.000     (-)     0.000  vol   15.191
+  11 Elev3        air   internal & unknown   10.9250   20.000     (-)     0.000  vol   15.191
+  12 Elev4        air   internal & unknown   13.7750   20.000     (-)     0.000  vol   15.191
+  13 F0_win       air   boundary & wind ind   3.3200   0.0000     coef   18.000  azim   0.000
+  14 F1_win       air   boundary & wind ind   6.2200   0.0000     coef   18.000  azim   0.000
+ 
+ Component    Type C+ L+ Description
+ 
+ Door          130  5  0 Specific air flow door              m = rho.f(W,H,dP)
+ Fluid  1.0 width  1.000 height 2.000 ref ht  0.000 discharge factor 0.600
+ 
+ atri-roof     110  2  0 Specific air flow opening           m = rho.f(A,dP)
+ Fluid  1.0 opening area (m)  4.000
+ 
+ stairs        110  2  0 Specific air flow opening           m = rho.f(A,dP)
+ Fluid  1.0 opening area (m) 20.000
+ 
+ Crack         120  3  0 Specific air flow crack             m = rho.f(W,L,dP)
+ Fluid  1.0 crack width (m)  0.1000 crack length (m)  1.000
+ 
+ Elev_door     110  2  0 Specific air flow opening           m = rho.f(A,dP)
+ Fluid  1.0 opening area (m) 10.000
+ 
+ Elev_level    110  2  0 Specific air flow opening           m = rho.f(A,dP)
+ Fluid  1.0 opening area (m)  3.000
+ 
+ Window        110  2  0 Specific air flow opening           m = rho.f(A,dP)
+ Fluid  1.0 opening area (m)  2.000
+ 
+    # +Node         dHght   -Node         dHght   Component       Z @+    Z @-
+    1 F4_hall      -1.425   F3_hall       1.425   stairs         12.100  12.100
+    2 F3_hall      -1.425   F2_hall       1.425   stairs          9.250   9.250
+    3 F2_hall      -1.425   F1_hall       1.425   stairs          6.400   6.400
+    4 F1_hall      -1.425   F0_hall       1.425   stairs          3.550   3.550
+    5 ground        0.562   F0_hall      -0.562   Door            1.562   1.563
+    6 F4_hall       5.738   roof         -5.737   atri-roof      19.263  19.263
+    7 ground        0.562   F0_hall      -0.562   Crack           1.562   1.563
+    8 F4_hall       5.738   roof         -5.738   Crack          19.263  19.262
+    9 F0_hall       0.125   Elev0        -0.125   Elev_door       2.250   2.250
+   10 F1_hall       0.125   Elev1        -0.125   Elev_door       5.100   5.100
+   11 F2_hall       0.125   Elev2        -0.125   Elev_door       7.950   7.950
+   12 F3_hall       0.125   Elev3        -0.125   Elev_door      10.800  10.800
+   13 F4_hall       0.125   Elev4        -0.125   Elev_door      13.650  13.650
+   14 Elev0         1.425   Elev1        -1.425   Elev_level      3.800   3.800
+   15 Elev1         1.425   Elev2        -1.425   Elev_level      6.650   6.650
+   16 Elev2         1.425   Elev3        -1.425   Elev_level      9.500   9.500
+   17 Elev3         1.425   Elev4        -1.425   Elev_level     12.350  12.350
+   18 F0_hall       0.598   F0_win       -0.598   Window          2.723   2.722
+   19 F1_hall       0.598   F1_win       -0.598   Window          5.573   5.622
+thermal zone to air flow node mapping:
+thermal zone -> air flow node
+F4_hall      -> F4_hall
+F3_hall      -> F3_hall
+F2_hall      -> F2_hall
+F1_hall      -> F1_hall
+F0_hall      -> F0_hall
+Elev_0       -> Elev0
+Elev_1       -> Elev1
+Elev_2       -> Elev2
+Elev_3       -> Elev3
+Elev_4       -> Elev4
+ 
+ 
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 F4_hall       227.3  25   185.9    87.9    84.2  F4_hall describes a...
+ 2 F3_hall       227.3  24   172.9   101.0    84.2  F3_hall describes a...
+ 3 F2_hall       227.3  24   172.9   101.0    84.2  F2_hall describes a...
+ 4 F1_hall       227.3  24   172.9   101.0    84.2  F1_hall describes a...
+ 5 F0_hall       227.3  24   206.5    67.3    84.2  F0_hall describes a...
+ 6 Elev_0         15.2   6    36.1     5.3     5.3  Elev_0 describes elevator at first floor
+ 7 Elev_1         15.2   6    30.8    10.7     5.3  Elev_1 describes a...
+ 8 Elev_2         15.2   6    30.8    10.7     5.3  Elev_2 describes a...
+ 9 Elev_3         15.2   6    30.8    10.7     5.3  Elev_3 describes a...
+10 Elev_4         15.2   6    36.1     5.3     5.3  Elev_4 describes a...
+   all          1212.  151   1076.    501.    448.
+ 
+ 
+ Zone F4_hall ( 1) is composed of 25 surfaces and 66 vertices.
+ It encloses a volume of 227.m^3 of space, with a total surface
+ area of 274.m^2 & approx floor area of 84.2m^2
+ F4_hall describes a...
+ There is 101.76m2 of exposed surface area, 36.905m2 of which is vertical.
+ Outside walls are 12.663 % of floor area & avg U of 0.302 & UA of 3.2156
+ Flat roof is 52.578 % of floor area & avg U of 0.731 & UA of 32.340
+ Glazing is 31.177 % of floor & 71.115 % facade with avg U of 0.700 & UA of 18.384
+ Skylights are 24.471 % of floor area & avg U of 0.700 & UA of 14.430
+ 
+ A summary of the surfaces in F4_hall( 1) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  6.46    180.   0. F4_420       OPAQUE VERT Int_wall     ||< identical environment
+  2  9.40    180.   0. F4_419       OPAQUE VERT Int_wall     ||< identical environment
+  3  12.1    180.   0. F4_418       OPAQUE VERT Int_wall     ||< identical environment
+  4  6.46      0.   0. F4_421       OPAQUE VERT Int_wall     ||< identical environment
+  5  9.40      0.   0. F4_422       OPAQUE VERT Int_wall     ||< identical environment
+  6  12.1      0.   0. F4_423       OPAQUE VERT Int_wall     ||< identical environment
+  7  0.816   180.   0. Win_420      eos_in VERT dbl_glz_int  ||< identical environment
+  8  1.26    180.   0. Win_419      eos_in VERT dbl_glz_int  ||< identical environment
+  9  1.67    180.   0. Win_418      eos_in VERT dbl_glz_int  ||< identical environment
+ 10  0.816   360.   0. Win_421      eos_in VERT dbl_glz_int  ||< identical environment
+ 11  1.26    360.   0. Win_422      eos_in VERT dbl_glz_int  ||< identical environment
+ 12  1.67    360.   0. Win_423      eos_in VERT dbl_glz_int  ||< identical environment
+ 13  50.6      0. -90. floor_P4     OPAQUE FLOR F-P_down     ||< identical environment
+ 14  2.05    180.   0. Esc_P4_s     OPAQUE VERT Base_up      ||< identical environment
+ 15  1.03    270.   0. Esc_P4_o     OPAQUE VERT Base_up      ||< identical environment
+ 16  2.05      0.   0. Esc_P4_n     OPAQUE VERT Base_up      ||< identical environment
+ 17  33.6      0. -90. Esc4_Esc3    SC_898 FLOR fictious     ||< Esc3_Esc4:F3_hall
+ 18  3.64    270.   0. F4_west_1    Superg VERT Superglass   ||< external
+ 19  3.64    270.   0. F4_west_2    Superg VERT Superglass   ||< external
+ 20  10.7    270.   0. F4_west      OPAQUE VERT Facade       ||< external
+ 21  19.0     90.   0. F4_East      Superg VERT Superglass   ||< external
+ 22  20.6      0.  90. Esc4_atrium  Superg CEIL Superglass   ||< external
+ 23  31.2      0.  90. F4_roof      OPAQUE CEIL roof         ||< external
+ 24  19.3      0.  90. Abs_ceil     OPAQUE CEIL roof_abs     ||< identical environment
+ 25  13.0      0.  90. Opaque_roof  OPAQUE CEIL roof         ||< external
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: F4_hall
+ 
+Notes:
+nil_operations
+Number of weekday      casual gains=  0
+ 
+ ____________________________________________________________
+ 
+ Zone F3_hall ( 2) is composed of 24 surfaces and 62 vertices.
+ It encloses a volume of 227.m^3 of space, with a total surface
+ area of 274.m^2 & approx floor area of 84.2m^2
+ F3_hall describes a...
+ There is 36.905m2 of exposed surface area, 36.905m2 of which is vertical.
+ Outside walls are 12.663 % of floor area & avg U of 0.302 & UA of 3.2156
+ Glazing is 31.177 % of floor & 71.115 % facade with avg U of 0.700 & UA of 18.384
+ 
+ A summary of the surfaces in F3_hall( 2) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  6.46    180.   0. F3_320       OPAQUE VERT Int_wall     ||< identical environment
+  2  9.40    180.   0. F3_319       OPAQUE VERT Int_wall     ||< identical environment
+  3  12.1    180.   0. F3_318       OPAQUE VERT Int_wall     ||< identical environment
+  4  6.46    360.   0. F3_321       OPAQUE VERT Int_wall     ||< identical environment
+  5  9.40    360.   0. F3_322       OPAQUE VERT Int_wall     ||< identical environment
+  6  12.1    360.   0. F3_323       OPAQUE VERT Int_wall     ||< identical environment
+  7  0.816   180.   0. Win_320      eos_in VERT dbl_glz_int  ||< identical environment
+  8  1.26    180.   0. Win_319      eos_in VERT dbl_glz_int  ||< identical environment
+  9  1.67    180.   0. Win_318      eos_in VERT dbl_glz_int  ||< identical environment
+ 10  0.816   360.   0. Win_321      eos_in VERT dbl_glz_int  ||< identical environment
+ 11  1.26    360.   0. Win_322      eos_in VERT dbl_glz_int  ||< identical environment
+ 12  1.67    360.   0. Win_323      eos_in VERT dbl_glz_int  ||< identical environment
+ 13  50.6      0. -90. floor_P3     OPAQUE FLOR F-P_down     ||< identical environment
+ 14  2.05    180.   0. Esc_P3_s     OPAQUE VERT Base_up      ||< identical environment
+ 15  1.03    270.   0. Esc_P3_o     OPAQUE VERT Base_up      ||< identical environment
+ 16  2.05      0.   0. Esc_P3_n     OPAQUE VERT Base_up      ||< identical environment
+ 17  33.6      0. -90. Esc_base1    SC_898 FLOR fictious     ||< Esc3_Esc4:F2_hall
+ 18  3.64    270.   0. F3_west_1    Superg VERT Superglass   ||< external
+ 19  3.64    270.   0. F3_west_2    Superg VERT Superglass   ||< external
+ 20  10.7    270.   0. F3_west      OPAQUE VERT Facade       ||< external
+ 21  19.0     90.   0. F3_East      Superg VERT Superglass   ||< external
+ 22  33.6      0.  90. Esc3_Esc4    SC_898 CEIL fictious     ||< Esc4_Esc3:F4_hall
+ 23  31.2      0.  90. F3_P4        OPAQUE CEIL cor_ceil     ||< identical environment
+ 24  19.3      0.  90. Abs_ceil     OPAQUE CEIL Base_up      ||< identical environment
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: F3_hall
+ 
+Notes:
+nil_operations
+Number of weekday      casual gains=  0
+ 
+ ____________________________________________________________
+ 
+ Zone F2_hall ( 3) is composed of 24 surfaces and 62 vertices.
+ It encloses a volume of 227.m^3 of space, with a total surface
+ area of 274.m^2 & approx floor area of 84.2m^2
+ F2_hall describes a...
+ There is 36.905m2 of exposed surface area, 36.905m2 of which is vertical.
+ Outside walls are 12.663 % of floor area & avg U of 0.302 & UA of 3.2156
+ Glazing is 31.177 % of floor & 71.115 % facade with avg U of 0.700 & UA of 18.384
+ 
+ A summary of the surfaces in F2_hall( 3) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  6.46    180.   0. F3_320       OPAQUE VERT Int_wall     ||< identical environment
+  2  9.40    180.   0. F3_319       OPAQUE VERT Int_wall     ||< identical environment
+  3  12.1    180.   0. F3_318       OPAQUE VERT Int_wall     ||< identical environment
+  4  6.46    360.   0. F3_321       OPAQUE VERT Int_wall     ||< identical environment
+  5  9.40    360.   0. F3_322       OPAQUE VERT Int_wall     ||< identical environment
+  6  12.1    360.   0. F3_323       OPAQUE VERT Int_wall     ||< identical environment
+  7  0.816   180.   0. Win_320      eos_in VERT dbl_glz_int  ||< identical environment
+  8  1.26    180.   0. Win_319      eos_in VERT dbl_glz_int  ||< identical environment
+  9  1.67    180.   0. Win_318      eos_in VERT dbl_glz_int  ||< identical environment
+ 10  0.816     0.   0. Win_321      eos_in VERT dbl_glz_int  ||< identical environment
+ 11  1.26      0.   0. Win_322      eos_in VERT dbl_glz_int  ||< identical environment
+ 12  1.67      0.   0. Win_323      eos_in VERT dbl_glz_int  ||< identical environment
+ 13  50.6      0. -90. floor_P3     OPAQUE FLOR F-P_down     ||< identical environment
+ 14  2.05    180.   0. Esc_P3_s     OPAQUE VERT Base_up      ||< identical environment
+ 15  1.03    270.   0. Esc_P3_o     OPAQUE VERT Base_up      ||< identical environment
+ 16  2.05      0.   0. Esc_P3_n     OPAQUE VERT Base_up      ||< identical environment
+ 17  33.6      0. -90. Esc_base1    SC_898 FLOR fictious     ||< Esc3_Esc4:F1_hall
+ 18  3.64    270.   0. F3_west_1    Superg VERT Superglass   ||< external
+ 19  3.64    270.   0. F3_west_2    Superg VERT Superglass   ||< external
+ 20  10.7    270.   0. F3_west      OPAQUE VERT Facade       ||< external
+ 21  19.0     90.   0. F3_East      Superg VERT Superglass   ||< external
+ 22  33.6      0.  90. Esc3_Esc4    SC_898 CEIL fictious     ||< Esc_base1:F3_hall
+ 23  31.2      0.  90. F3_P4        OPAQUE CEIL cor_ceil     ||< identical environment
+ 24  19.3      0.  90. Abs_ceil     OPAQUE CEIL Base_up      ||< identical environment
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: F2_hall
+ 
+Notes:
+nil_operations
+Number of weekday      casual gains=  0
+ 
+ ____________________________________________________________
+ 
+ Zone F1_hall ( 4) is composed of 24 surfaces and 62 vertices.
+ It encloses a volume of 227.m^3 of space, with a total surface
+ area of 274.m^2 & approx floor area of 84.2m^2
+ F1_hall describes a...
+ There is 36.905m2 of exposed surface area, 36.905m2 of which is vertical.
+ Outside walls are 12.663 % of floor area & avg U of 0.302 & UA of 3.2156
+ Glazing is 31.177 % of floor & 71.115 % facade with avg U of 0.700 & UA of 18.384
+ 
+ A summary of the surfaces in F1_hall( 4) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  6.46    180.   0. F3_320       OPAQUE VERT Int_wall     ||< identical environment
+  2  9.40    180.   0. F3_319       OPAQUE VERT Int_wall     ||< identical environment
+  3  12.1    180.   0. F3_318       OPAQUE VERT Int_wall     ||< identical environment
+  4  6.46    360.   0. F3_321       OPAQUE VERT Int_wall     ||< identical environment
+  5  9.40    360.   0. F3_322       OPAQUE VERT Int_wall     ||< identical environment
+  6  12.1    360.   0. F3_323       OPAQUE VERT Int_wall     ||< identical environment
+  7  0.816   180.   0. Win_320      eos_in VERT dbl_glz_int  ||< identical environment
+  8  1.26    180.   0. Win_319      eos_in VERT dbl_glz_int  ||< identical environment
+  9  1.67    180.   0. Win_318      eos_in VERT dbl_glz_int  ||< identical environment
+ 10  0.816   360.   0. Win_321      eos_in VERT dbl_glz_int  ||< identical environment
+ 11  1.26    360.   0. Win_322      eos_in VERT dbl_glz_int  ||< identical environment
+ 12  1.67    360.   0. Win_323      eos_in VERT dbl_glz_int  ||< identical environment
+ 13  50.6      0. -90. floor_P3     OPAQUE FLOR F-P_down     ||< identical environment
+ 14  2.05    180.   0. Esc_P3_s     OPAQUE VERT Base_up      ||< identical environment
+ 15  1.02    270.   0. Esc_P3_o     OPAQUE VERT Base_up      ||< identical environment
+ 16  2.05      0.   0. Esc_P3_n     OPAQUE VERT Base_up      ||< identical environment
+ 17  33.6      0. -90. Esc_base1    SC_898 FLOR fictious     ||< Esc3_Esc4:F0_hall
+ 18  3.64    270.   0. F3_west_1    Superg VERT Superglass   ||< external
+ 19  3.64    270.   0. F3_west_2    Superg VERT Superglass   ||< external
+ 20  10.7    270.   0. F3_west      OPAQUE VERT Facade       ||< external
+ 21  19.0     90.   0. F3_East      Superg VERT Superglass   ||< external
+ 22  33.6      0.  90. Esc3_Esc4    SC_898 CEIL fictious     ||< Esc_base1:F2_hall
+ 23  31.2      0.  90. F3_P4        OPAQUE CEIL cor_ceil     ||< identical environment
+ 24  19.3      0.  90. Abs_ceil     OPAQUE CEIL Base_up      ||< identical environment
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: F1_hall
+ 
+Notes:
+nil_operations
+Number of weekday      casual gains=  0
+ 
+ ____________________________________________________________
+ 
+ Zone F0_hall ( 5) is composed of 24 surfaces and 62 vertices.
+ It encloses a volume of 227.m^3 of space, with a total surface
+ area of 274.m^2 & approx floor area of 84.2m^2
+ F0_hall describes a...
+ There is 36.905m2 of exposed surface area, 36.905m2 of which is vertical.
+ Outside walls are 12.663 % of floor area & avg U of 0.302 & UA of 3.2156
+ Glazing is 31.177 % of floor & 71.115 % facade with avg U of 0.700 & UA of 18.384
+ 
+ A summary of the surfaces in F0_hall( 5) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  6.46    180.   0. F3_320       OPAQUE VERT Int_wall     ||< identical environment
+  2  9.40    180.   0. F3_319       OPAQUE VERT Int_wall     ||< identical environment
+  3  12.1    180.   0. F3_318       OPAQUE VERT Int_wall     ||< identical environment
+  4  6.46      0.   0. F3_321       OPAQUE VERT Int_wall     ||< identical environment
+  5  9.40      0.   0. F3_322       OPAQUE VERT Int_wall     ||< identical environment
+  6  12.1      0.   0. F3_323       OPAQUE VERT Int_wall     ||< identical environment
+  7  0.816   180.   0. Win_320      eos_in VERT dbl_glz_int  ||< identical environment
+  8  1.26    180.   0. Win_319      eos_in VERT dbl_glz_int  ||< identical environment
+  9  1.67    180.   0. Win_318      eos_in VERT dbl_glz_int  ||< identical environment
+ 10  0.816     0.   0. Win_321      eos_in VERT dbl_glz_int  ||< identical environment
+ 11  1.26      0.   0. Win_322      eos_in VERT dbl_glz_int  ||< identical environment
+ 12  1.67      0.   0. Win_323      eos_in VERT dbl_glz_int  ||< identical environment
+ 13  50.6      0. -90. floor_P3     OPAQUE FLOR concrete     ||< identical environment
+ 14  2.05    180.   0. Esc_P3_s     OPAQUE VERT Base_up      ||< identical environment
+ 15  1.03    270.   0. Esc_P3_o     OPAQUE VERT Base_up      ||< identical environment
+ 16  2.05      0.   0. Esc_P3_n     OPAQUE VERT Base_up      ||< identical environment
+ 17  33.6      0. -90. Esc_base1    OPAQUE FLOR concrete     ||< identical environment
+ 18  3.64    270.   0. F3_west_1    Superg VERT Superglass   ||< external
+ 19  3.64    270.   0. F3_west_2    Superg VERT Superglass   ||< external
+ 20  10.7    270.   0. F3_west      OPAQUE VERT Facade       ||< external
+ 21  19.0     90.   0. F3_East      Superg VERT Superglass   ||< external
+ 22  33.6      0.  90. Esc3_Esc4    SC_898 CEIL fictious     ||< Esc_base1:F1_hall
+ 23  31.2      0.  90. F3_P4        OPAQUE CEIL cor_ceil     ||< identical environment
+ 24  19.3      0.  90. Abs_ceil     OPAQUE CEIL Base_up      ||< identical environment
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: F0_hall
+ 
+Notes:
+nil_operations
+Number of weekday      casual gains=  0
+ 
+ ____________________________________________________________
+ 
+ Zone Elev_0 ( 6) is composed of 6 surfaces and 10 vertices.
+ It encloses a volume of 15.2m^3 of space, with a total surface
+ area of 41.4m^2 & approx floor area of 5.33m^2
+ Elev_0 describes elevator at first floor
+ There is 19.095m2 of exposed surface area, 19.095m2 of which is vertical.
+ Outside walls are 358.26 % of floor area & avg U of 0.288 & UA of 5.4953
+ 
+ A summary of the surfaces in Elev_0( 6) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  11.7     90.   0. Surf-1       OPAQUE VERT Int_wall     ||< identical environment
+  2  3.71      0.   0. Surf-2       OPAQUE VERT Facade_vent  ||< external
+  3  11.7    270.   0. Surf-3       OPAQUE VERT Facade_vent  ||< external
+  4  3.71    180.   0. Surf-4       OPAQUE VERT Facade_vent  ||< external
+  5  5.33      0.  90. Surf-5       SC_898 CEIL fictious     ||< Surf-6:Elev_1
+  6  5.33      0. -90. Surf-6       OPAQUE FLOR concrete     ||< ground profile  1
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: Elev0
+ 
+Notes:
+nil_operations
+Number of weekday      casual gains=  0
+ 
+ ____________________________________________________________
+ 
+ Zone Elev_1 ( 7) is composed of 6 surfaces and 10 vertices.
+ It encloses a volume of 15.2m^3 of space, with a total surface
+ area of 41.4m^2 & approx floor area of 5.33m^2
+ Elev_1 describes a...
+ There is 19.095m2 of exposed surface area, 19.095m2 of which is vertical.
+ Outside walls are 358.26 % of floor area & avg U of 0.288 & UA of 5.4953
+ 
+ A summary of the surfaces in Elev_1( 7) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  11.7     90.   0. Surf-1       OPAQUE VERT Int_wall     ||< identical environment
+  2  3.71    360.   0. Surf-2       OPAQUE VERT Facade_vent  ||< external
+  3  11.7    270.   0. Surf-3       OPAQUE VERT Facade_vent  ||< external
+  4  3.71    180.   0. Surf-4       OPAQUE VERT Facade_vent  ||< external
+  5  5.33      0.  90. Surf-5       SC_898 CEIL fictious     ||< Surf-6:Elev_2
+  6  5.33      0. -90. Surf-6       SC_898 FLOR fictious     ||< Surf-5:Elev_0
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: Elev1
+ 
+Notes:
+nil_operations
+Number of weekday      casual gains=  0
+ 
+ ____________________________________________________________
+ 
+ Zone Elev_2 ( 8) is composed of 6 surfaces and 10 vertices.
+ It encloses a volume of 15.2m^3 of space, with a total surface
+ area of 41.4m^2 & approx floor area of 5.33m^2
+ Elev_2 describes a...
+ There is 19.095m2 of exposed surface area, 19.095m2 of which is vertical.
+ Outside walls are 358.26 % of floor area & avg U of 0.288 & UA of 5.4953
+ 
+ A summary of the surfaces in Elev_2( 8) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  11.7     90.   0. Surf-1       OPAQUE VERT Int_wall     ||< identical environment
+  2  3.71    360.   0. Surf-2       OPAQUE VERT Facade_vent  ||< external
+  3  11.7    270.   0. Surf-3       OPAQUE VERT Facade_vent  ||< external
+  4  3.71    180.   0. Surf-4       OPAQUE VERT Facade_vent  ||< external
+  5  5.33      0.  90. Surf-5       SC_898 CEIL fictious     ||< Surf-6:Elev_3
+  6  5.33      0. -90. Surf-6       SC_898 FLOR fictious     ||< Surf-5:Elev_1
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: Elev2
+ 
+Notes:
+nil_operations
+Number of weekday      casual gains=  0
+ 
+ ____________________________________________________________
+ 
+ Zone Elev_3 ( 9) is composed of 6 surfaces and 10 vertices.
+ It encloses a volume of 15.2m^3 of space, with a total surface
+ area of 41.4m^2 & approx floor area of 5.33m^2
+ Elev_3 describes a...
+ There is 19.095m2 of exposed surface area, 19.095m2 of which is vertical.
+ Outside walls are 358.26 % of floor area & avg U of 0.288 & UA of 5.4953
+ 
+ A summary of the surfaces in Elev_3( 9) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  11.7     90.   0. Surf-1       OPAQUE VERT Int_wall     ||< identical environment
+  2  3.71      0.   0. Surf-2       OPAQUE VERT Facade_vent  ||< external
+  3  11.7    270.   0. Surf-3       OPAQUE VERT Facade_vent  ||< external
+  4  3.71    180.   0. Surf-4       OPAQUE VERT Facade_vent  ||< external
+  5  5.33      0.  90. Surf-5       SC_898 CEIL fictious     ||< Surf-6:Elev_4
+  6  5.33      0. -90. Surf-6       SC_898 FLOR fictious     ||< Surf-5:Elev_2
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: Elev3
+ 
+Notes:
+nil_operations
+Number of weekday      casual gains=  0
+ 
+ ____________________________________________________________
+ 
+ Zone Elev_4 (10) is composed of 6 surfaces and 10 vertices.
+ It encloses a volume of 15.2m^3 of space, with a total surface
+ area of 41.4m^2 & approx floor area of 5.33m^2
+ Elev_4 describes a...
+ There is 24.425m2 of exposed surface area, 19.095m2 of which is vertical.
+ Outside walls are 358.26 % of floor area & avg U of 0.288 & UA of 5.4953
+ Flat roof is 100.00 % of floor area & avg U of 2.869 & UA of 15.291
+ 
+ A summary of the surfaces in Elev_4(10) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  11.7     90.   0. Surf-1       OPAQUE VERT Int_wall     ||< identical environment
+  2  3.70    360.   0. Surf-2       OPAQUE VERT Facade_vent  ||< external
+  3  11.7    270.   0. Surf-3       OPAQUE VERT Facade_vent  ||< external
+  4  3.71    180.   0. Surf-4       OPAQUE VERT Facade_vent  ||< external
+  5  5.33      0.  90. Surf-5       OPAQUE CEIL concrete     ||< external
+  6  5.33      0. -90. Surf-6       SC_898 FLOR fictious     ||< Surf-5:Elev_3
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ Ventilation & infiltration is assessed via network analysis
+ and the associated network node is: Elev4
+ 
+Notes:
+nil_operations
+Number of weekday      casual gains=  0
+ 
+ ____________________________________________________________
+ 
+ Project floor area is 447.55m2, wall area is 148.78m2, window area is 131.22m2.
+ Sloped roof area is 0.00m2, flat roof area is 49.590m2, skylight area is 20.600m2.
+ There is 350.19m2 of outside surface area, 280.00m2 of which is vertical.
+ 
+ Outside walls are 33.242 % of floor area & avg U of 0.293 & UA of 43.554
+ Flat roof is 11.080 % of floor area & avg U of 0.961 & UA of 47.631
+ Glazing is 29.321 % of floor & 46.866 % facade with avg U of 0.700 & UA of 91.919
+ Skylights are 4.6028 % of floor area & avg U of 0.700 & UA of 14.430
+ 
+ ____________________________________________________________
+ Multi-layer constructions used:
+ 
+ Details of transparent construction: dbl_glz_int  with eos_int_win  optics.
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   243    6.0     1.050  2500.   750. 0.83 0.05 19200.  0.01 4mm clear float : 4mm clear float with place
+    2    0   61.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   243    6.0     1.050  2500.   750. 0.83 0.05 19200.  0.01 4mm clear float : 4mm clear float with place
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.862  3.131  2.568 (partition)  2.276
+ 
+ 6/61/6 clear float + air: with id of: eos_int_win
+ with 3 layers [including air gaps] and visible trn: 0.78
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.604 0.572 0.508 0.353 0.155
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.163 0.178 0.193 0.211 0.211
+    2  0.001 0.001 0.001 0.001 0.001
+    3  0.120 0.128 0.127 0.113 0.078
+ Total area of dbl_glz_int is     37.40
+ 
+ Details of opaque construction: roof_abs
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    86   60.0     0.360  1840.   840. 0.90 0.60     2.  0.17 Gravel : Gravel
+    2  161   10.0     0.500  1700.  1000. 0.90 0.90  1000.  0.02 Bitumen felt : Bitumen felt
+    3  212  160.0     0.190   960.   950. 0.90 0.55    15.  0.84 Roof insulation board : Roof insulation boar
+    4   32  220.0     1.400  2100.   653. 0.90 0.65    19.  0.16 Heavy mix concrete : Heavy mix concrete
+    5    0  150.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    6  216   20.0     0.040   105.  1800. 0.90 0.60     1.  0.50 Mineral fibre : Mineral fibre
+ Int    62   10.0     0.080   600.  2000. 0.91 0.70   110.  0.13 Hardboard (medium) : Hardboard (medium)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.465  0.471  0.456 (partition)  0.446
+ Total area of roof_abs is     19.32
+ 
+ Details of opaque construction: roof
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    86   60.0     0.360  1840.   840. 0.90 0.60     2.  0.17 Gravel : Gravel
+    2  161   10.0     0.500  1700.  1000. 0.90 0.90  1000.  0.02 Bitumen felt : Bitumen felt
+    3  212  160.0     0.190   960.   950. 0.90 0.55    15.  0.84 Roof insulation board : Roof insulation boar
+    4   32  220.0     1.400  2100.   653. 0.90 0.65    19.  0.16 Heavy mix concrete : Heavy mix concrete
+ Int   127   10.0     0.790  1329.  1000. 0.91 0.50    19.  0.01 Rendering (8% mc) : Rendering (8% mc)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.731  0.747  0.710 (partition)  0.686
+ Total area of roof is     44.26
+ 
+ Details of opaque construction: Int_wall
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    42    6.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+    2  107   12.0     0.190   950.   840. 0.91 0.50    11.  0.06 Gypsum plasterboard : Gypsum plasterboard
+    3  216   47.0     0.040   105.  1800. 0.90 0.60     1.  1.17 Mineral fibre : Mineral fibre
+    4  107   12.0     0.190   950.   840. 0.91 0.50    11.  0.06 Gypsum plasterboard : Gypsum plasterboard
+ Int    42    6.0    50.000  7800.   502. 0.12 0.20 19200.  0.00 Steel : Steel
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.680  0.694  0.662 (partition)  0.640
+ Total area of Int_wall is    338.23
+ 
+ Details of transparent construction: fictious     with SC_8985_04nb optics.
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+    1  245    1.0    20.000    10.    10. 0.99 0.01 19200.  0.00 fict : fict with placeholder single layer op
+ ISO 6946 U values (horiz/upward/downward heat flow)=  5.881  7.140  4.761 (partition)  3.845
+ 
+ Clear glass 89/85,     4mm, no blind: with id of: SC_8985_04nb
+ with 1 layers [including air gaps] and visible trn: 0.89
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.819 0.802 0.761 0.621 0.376
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.106 0.116 0.124 0.129 0.125
+ Total area of fictious is    311.60
+ 
+ Details of transparent construction: Superglass   with Superglass   optics.
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   243    4.0     1.050  2500.   750. 0.83 0.05 19200.  0.00 4mm clear float : 4mm clear float with place
+    2    0   23.0     0.000     0.     0. 0.99 0.99     1.  1.25 air  1.25 1.25 1.25
+ Int   243    4.0     1.050  2500.   750. 0.83 0.05 19200.  0.00 4mm clear float : 4mm clear float with place
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.700  0.716  0.681 (partition)  0.659
+ 
+ CF + 2 HM88 + CF with Kr: with id of: Superglass
+ with 3 layers [including air gaps] and visible trn: 0.62
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.337 0.316 0.270 0.157 0.055
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.117 0.128 0.139 0.152 0.152
+    2  0.001 0.001 0.001 0.001 0.001
+    3  0.035 0.037 0.036 0.027 0.015
+ Total area of Superglass is    151.82
+ 
+ Details of opaque construction: Facade
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   127   20.0     0.790  1329.  1000. 0.91 0.50    19.  0.03 Rendering (8% mc) : Rendering (8% mc)
+    2  216  120.0     0.040   105.  1800. 0.90 0.60     1.  3.00 Mineral fibre : Mineral fibre
+    3   32  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 Heavy mix concrete : Heavy mix concrete
+ Int   127   10.0     0.790  1329.  1000. 0.91 0.50    19.  0.01 Rendering (8% mc) : Rendering (8% mc)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.302  0.304  0.298 (partition)  0.294
+ Total area of Facade is     53.30
+ 
+ Details of opaque construction: F-P_down
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    72   30.0     0.150   700.  1420. 0.90 0.65   576.  0.20 Plywood 700d : Plywood 700d
+ Int   225   10.0     0.060   160.  2500. 0.90 0.65    10.  0.17 Synthetic carpet : Synthetic carpet
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.863  1.974  1.734 (partition)  1.596
+ Total area of F-P_down is    202.24
+ 
+ Details of opaque construction: Base_up
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    32  220.0     1.400  2100.   653. 0.90 0.65    19.  0.16 Heavy mix concrete : Heavy mix concrete
+    2    0  150.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  216   20.0     0.040   105.  1800. 0.90 0.60     1.  0.50 Mineral fibre : Mineral fibre
+ Int    62   10.0     0.080   600.  2000. 0.91 0.70   110.  0.13 Hardboard (medium) : Hardboard (medium)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.891  0.916  0.860 (partition)  0.825
+ Total area of Base_up is    102.91
+ 
+ Details of opaque construction: Facade_vent
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    83   30.0     2.000  2500.   880. 0.90 0.46    38.  0.01 White marble : White marble
+    2    0   40.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  216  120.0     0.040   105.  1800. 0.90 0.60     1.  3.00 Mineral fibre : Mineral fibre
+    4   32  150.0     1.400  2100.   653. 0.90 0.65    19.  0.11 Heavy mix concrete : Heavy mix concrete
+ Int   127   10.0     0.790  1329.  1000. 0.91 0.50    19.  0.01 Rendering (8% mc) : Rendering (8% mc)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.288  0.290  0.285 (partition)  0.281
+ Total area of Facade_vent is     95.48
+ 
+ Details of opaque construction: concrete
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+    1   32  250.0     1.400  2100.   653. 0.90 0.65    19.  0.18 Heavy mix concrete : Heavy mix concrete
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.869  3.139  2.574 (partition)  2.280
+ Total area of concrete is     94.84
+ 
+ Details of opaque construction: cor_ceil
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    32  220.0     1.400  2100.   653. 0.90 0.65    19.  0.16 Heavy mix concrete : Heavy mix concrete
+ Int   127   10.0     0.790  1329.  1000. 0.91 0.50    19.  0.01 Rendering (8% mc) : Rendering (8% mc)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.943  3.228  2.633 (partition)  2.327
+ Total area of cor_ceil is    124.96

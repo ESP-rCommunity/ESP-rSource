@@ -4439,7 +4439,7 @@ C 'i' appears to serve no purpose in this code.
       if(m.eq.3)goto 22
       if(m.eq.4)goto 32
 
-C Check for minimum allowable free cooling delta T
+C 14-Mar-2012 BAL: Added check for minimum allowable free cooling delta T
       do ii = 1, NCF
         nn=nbcdt(ii) 
         do jj = 1, nn

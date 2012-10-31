@@ -1,0 +1,399 @@
+Synopsis
+ 
+This is a synopsis of the model zone heated by radiator, cfd not active.
+defined in rad_htg.cfg generated on Wed Sep 30 16:05:03 2009. Notes associated
+with the model are in rad_htg.log
+ 
+The model is located at latitude   50.00 with a longitude difference of   0.00
+from the local time meridian. The year used in simulations is 1999 and
+weekends occur on Saturday and Sunday.
+The site exposure is typical city centre and the ground reflectance is 0.20.
+ 
+Project name: not yet defined
+Building address: not yet defined
+Building city: not yet defined
+Building Postcode: not yet defined
+ 
+Building owner name: not yet defined
+Building owner telephone: not yet defined
+Building owner address: not yet defined
+Building owner city: not yet defined
+Building owner Postcode: not yet defined
+ 
+Simulationist name: not yet defined
+Simulationist telephone: not yet defined
+Simulationist address: not yet defined
+Simulationist city: not yet defined
+Simulationist postcode: not yet defined
+The climate is: ESP test climate and is held in: /usr/esru/esp-r/climate/clm67
+with hour centred solar data.
+An Integrated Performance View is incomplete or missing.
+ 
+Databases associated with the model:
+ pressure distributions : /usr/esru/esp-r/databases/pressc.db1
+ materials              : /usr/esru/esp-r/databases/constr.db1.a
+ constructions          : ./multicon.db1
+ plant components       : /usr/esru/esp-r/databases/plantc.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1.a
+ optical properties     : /usr/esru/esp-r/databases/optics.db1
+ 
+ ____________________________________________________________
+ 
+The model includes ideal controls as follows:
+Control description:
+rad ctl
+ 
+Zones control includes  1 functions.
+radiator ctl
+ 
+ The sensor for function  1 senses dry bulb temperature in room.
+ The actuator for function  1 is at inside face of radiator in room.
+ There have been  1 day types defined.
+ Day type  1 is valid Fri-01-Jan to Fri-31-Dec, 1999 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+   2  7.99 db temp   > flux      basic proportional  4.0 4000.0 2000.0 18.0 2.0 0.0 0.0 0.0 0.0
+proportional+I+D: max heat 4000.0W min heat 2000.0W heat spt 18.00C throttling range
+2.00C. Max cool 0.0W min cool 0.0W cool spt 0.00C throttling range 0.00C integral action
+time 200.0s derivative action time 0.0s.
+   3 16.99 db temp   > flux      free floating
+ 
+ Zone to contol loop linkages:
+ zone ( 1) room         << control  1
+ zone ( 2) roof_1       << control  0
+ zone ( 3) zone_S       << control  0
+ zone ( 4) zone_L       << control  0
+ zone ( 5) roof_2       << control  0
+ 
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 room           42.0  11    73.6     1.2    15.0  room describes a...
+ 2 roof_1         11.3   6    52.5     0.0    22.5  roof_1 describes a...
+ 3 zone_S         24.8   6    51.5     0.0     8.9  zone_S describes a...
+ 4 zone_L         48.7  13    84.8     3.0    17.4  zone_L describes a...
+ 5 roof_2          9.4   6    45.4     0.0    18.8  roof_2 describes a...
+   all           136.   42    308.      4.     83.
+ 
+ 
+ Zone room ( 1) is composed of 11 surfaces and 20 vertices.
+ It encloses a volume of 42.0m^3 of space, with a total surface
+ area of 74.8m^2 & approx floor area of 15.0m^2
+ room describes a...
+ There is 22.400m2 of exposed surface area, 22.400m2 of which is vertical.
+ Outside walls are 141.33 % of floor area & avg U of 0.393 & UA of 8.3253
+ Glazing is 8.0000 % of floor & 5.3571 % facade with avg U of 2.811 & UA of 3.3728
+ 
+ A summary of the surfaces in room( 1) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  7.20    180.   0. Surf-1       OPAQUE VERT extern_wall  ||< external
+  2  9.91     90.   0. part-1a      OPAQUE VERT int_part     ||< Surf-4:zone_S
+  3  2.80      0.   0. part-2b      OPAQUE VERT int_part     ||< part-2b:zone_L
+  4  14.0    270.   0. Surf-4       OPAQUE VERT extern_wall  ||< external
+  5  15.0      0.  90. ceiling      OPAQUE CEIL ceiling      ||< ceil_1:roof_1
+  6  15.0      0. -90. floor        OPAQUE FLOR floor_1      ||< user def grnd profile  0
+  7  1.000     0.   0. radiator     OPAQUE VERT int_part     ||< radiator:zone_L
+  8  1.20    180.   0. window       DCF767 VERT d_glz        ||< external
+  9  4.09     90.   0. part-2a      OPAQUE VERT int_part     ||< part-2a:zone_L
+ 10  1.80      0.   0. part-2c      OPAQUE VERT int_part     ||< part-2c:zone_L
+ 11  2.80      0.   0. part-2d      OPAQUE VERT int_part     ||< part-2d:zone_L
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ 
+ Air schedule notes:
+nil_operations
+ Control: no control of air flow
+ 
+Number of air change periods for daytype weekday      :    0
+ 
+Number of air change periods for daytype saturday     :    0
+ 
+Number of air change periods for daytype sunday       :    0
+ 
+Notes:
+nil_operations
+Number of weekday      casual gains=  0
+ 
+ ____________________________________________________________
+ 
+ Zone roof_1 ( 2) is composed of 6 surfaces and 8 vertices.
+ It encloses a volume of 11.3m^3 of space, with a total surface
+ area of 52.5m^2 & user edited floor area of 22.5m^2
+ roof_1 describes a...
+ There is 30.042m2 of exposed surface area, 3.0000m2 of which is vertical.
+ Outside walls are 13.333 % of floor area & avg U of 1.799 & UA of 5.3977
+ Sloped roof is 120.19 % of floor area & avg U of 3.402 & UA of 91.990
+ 
+ A summary of the surfaces in roof_1( 2) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  1.50    180.   0. Surf-1       OPAQUE VERT roof_1       ||< external
+  2  13.5     90.  56. Surf-2       OPAQUE SLOP roof_2       ||< external
+  3  1.50      0.   0. Surf-3       OPAQUE VERT roof_1       ||< external
+  4  13.5    270.  56. Surf-4       OPAQUE SLOP roof_2       ||< external
+  5  15.0      0. -90. ceil_1       OPAQUE FLOR ceiling_rev  ||< ceiling:room
+  6  7.50      0. -90. ceil_2       OPAQUE FLOR ceiling_rev  ||< ceil_1:zone_L
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ Air schedule notes:
+nil_operations
+ Control: no control of air flow
+ 
+Number of air change periods for daytype weekday      :    0
+ 
+Number of air change periods for daytype saturday     :    0
+ 
+Number of air change periods for daytype sunday       :    0
+ 
+Notes:
+nil_operations
+Number of weekday      casual gains=  0
+ 
+ ____________________________________________________________
+ 
+ Zone zone_S ( 3) is composed of 6 surfaces and 8 vertices.
+ It encloses a volume of 24.8m^3 of space, with a total surface
+ area of 51.5m^2 & approx floor area of 8.85m^2
+ zone_S describes a...
+ There is 16.912m2 of exposed surface area, 16.912m2 of which is vertical.
+ Outside walls are 191.10 % of floor area & avg U of 0.393 & UA of 6.6414
+ 
+ A summary of the surfaces in zone_S( 3) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  7.00    180.   0. Surf-1       OPAQUE VERT extern_wall  ||< external
+  2  9.91     90.   0. Surf-2       OPAQUE VERT extern_wall  ||< external
+  3  7.00    360.   0. Surf-3       OPAQUE VERT int_part     ||< Surf-1:zone_L
+  4  9.91    270.   0. Surf-4       OPAQUE VERT int_part     ||< part-1a:room
+  5  8.85      0.  90. ceiling      OPAQUE CEIL ceiling      ||< ceil_1:roof_2
+  6  8.85      0. -90. floor        OPAQUE FLOR floor_1      ||< user def grnd profile  0
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ Air schedule notes:
+nil_operations
+ Control: no control of air flow
+ 
+Number of air change periods for daytype weekday      :    0
+ 
+Number of air change periods for daytype saturday     :    0
+ 
+Number of air change periods for daytype sunday       :    0
+ 
+Notes:
+nil_operations
+Number of weekday      casual gains=  0
+ 
+ ____________________________________________________________
+ 
+ Zone zone_L ( 4) is composed of 13 surfaces and 23 vertices.
+ It encloses a volume of 48.7m^3 of space, with a total surface
+ area of 87.8m^2 & approx floor area of 17.4m^2
+ zone_L describes a...
+ There is 33.488m2 of exposed surface area, 33.488m2 of which is vertical.
+ Outside walls are 175.22 % of floor area & avg U of 0.393 & UA of 11.973
+ Glazing is 17.241 % of floor & 8.9584 % facade with avg U of 2.811 & UA of 8.4320
+ 
+ A summary of the surfaces in zone_L( 4) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  7.00    180.   0. Surf-1       OPAQUE VERT int_part     ||< Surf-3:zone_S
+  2  11.1     90.   0. Surf-2       OPAQUE VERT extern_wall  ||< external
+  3  12.4    360.   0. Surf-3       OPAQUE VERT extern_wall  ||< external
+  4  7.00    270.   0. Surf-4       OPAQUE VERT extern_wall  ||< external
+  5  4.09    270.   0. part-2a      OPAQUE VERT int_part     ||< part-2a:room
+  6  9.90      0.  90. ceil_2       OPAQUE CEIL ceiling      ||< ceil_2:roof_2
+  7  17.4      0. -90. floor        OPAQUE FLOR floor_1      ||< user def grnd profile  0
+  8  7.50      0.  90. ceil_1       OPAQUE CEIL ceiling      ||< ceil_2:roof_1
+  9  3.00      0.   0. window       DCF767 VERT d_glz        ||< external
+ 10  2.80    180.   0. part-2b      OPAQUE VERT int_part     ||< part-2b:room
+ 11  2.80    180.   0. part-2d      OPAQUE VERT int_part     ||< part-2d:room
+ 12  1.000   180.   0. radiator     OPAQUE VERT int_part     ||< radiator:room
+ 13  1.80    180.   0. part-2c      OPAQUE VERT int_part     ||< part-2c:room
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ 
+ 
+ Air schedule notes:
+nil_operations
+ Control: no control of air flow
+ 
+Number of air change periods for daytype weekday      :    0
+ 
+Number of air change periods for daytype saturday     :    0
+ 
+Number of air change periods for daytype sunday       :    0
+ 
+Notes:
+nil_operations
+Number of weekday      casual gains=  0
+ 
+ ____________________________________________________________
+ 
+ Zone roof_2 ( 5) is composed of 6 surfaces and 8 vertices.
+ It encloses a volume of 9.38m^3 of space, with a total surface
+ area of 45.4m^2 & approx floor area of 18.8m^2
+ roof_2 describes a...
+ There is 26.627m2 of exposed surface area, 2.5000m2 of which is vertical.
+ Outside walls are 13.333 % of floor area & avg U of 1.799 & UA of 4.4981
+ Sloped roof is 128.68 % of floor area & avg U of 3.402 & UA of 82.076
+ 
+ A summary of the surfaces in roof_2( 5) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    | geometry | construction |environment
+    | m^2   |deg |deg | name       |type |loca| name         |other side
+  1  1.25    180.   0. Surf-1       OPAQUE VERT roof_1       ||< external
+  2  10.6     90.  45. Surf_2       OPAQUE SLOP roof_2       ||< external
+  3  1.25      0.   0. Surf-3       OPAQUE VERT roof_1       ||< external
+  4  13.5    270.  56. Surf-4       OPAQUE SLOP roof_2       ||< external
+  5  8.85      0. -90. ceil_1       OPAQUE FLOR ceiling_rev  ||< ceiling:zone_S
+  6  9.90      0. -90. ceil_2       OPAQUE FLOR ceiling_rev  ||< ceil_2:zone_L
+ 
+ 
+ All surfaces will receive diffuse insolation (if shading not calculated).
+ No shading analysis requested.
+ No insolation analysis requested.
+ 
+ 
+ Air schedule notes:
+nil_operations
+ Control: no control of air flow
+ 
+Number of air change periods for daytype weekday      :    0
+ 
+Number of air change periods for daytype saturday     :    0
+ 
+Number of air change periods for daytype sunday       :    0
+ 
+Notes:
+nil_operations
+Number of weekday      casual gains=  0
+ 
+ ____________________________________________________________
+ 
+ Project floor area is 82.500m2, wall area is 74.100m2, window area is 4.2000m2.
+ Sloped roof area is 51.169m2, flat roof area is 0.00m2, skylight area is 0.00m2.
+ There is 129.47m2 of outside surface area, 78.300m2 of which is vertical.
+ 
+ Outside walls are 89.818 % of floor area & avg U of 0.497 & UA of 36.835
+ Sloped roof is 62.023 % of floor area & avg U of 3.402 & UA of 174.07
+ Glazing is 5.0909 % of floor & 5.3640 % facade with avg U of 2.811 & UA of 11.805
+ 
+ ____________________________________________________________
+ Multi-layer constructions used:
+ 
+ Details of transparent construction: d_glz        with DCF7671_06nb optics.
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder s
+    2    0   12.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   242    6.0     0.760  2710.   837. 0.83 0.05 19200.  0.01 Plate glass : Plate glass with placeholder s
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.811  3.069  2.527 (partition)  2.243
+ 
+ Clear float 76/71,     6mm, no blind: with id of: DCF7671_06nb
+ with 3 layers [including air gaps] and visible trn: 0.76
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.611 0.583 0.534 0.384 0.170
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.157 0.172 0.185 0.201 0.202
+    2  0.001 0.002 0.003 0.004 0.005
+    3  0.117 0.124 0.127 0.112 0.077
+ Total area of d_glz is      4.20
+ 
+ Details of opaque construction: extern_wall
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext     4  100.0     0.960  2000.   650. 0.90 0.93    25.  0.10 Outer leaf brick : Outer leaf brick
+    2  211   75.0     0.040   250.   840. 0.90 0.30     4.  1.88 Glasswool : Glasswool
+    3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int     2  100.0     0.440  1500.   650. 0.90 0.65    15.  0.23 Breeze block : Breeze block
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.393  0.397  0.387 (partition)  0.379
+ Total area of extern_wall is     68.60
+ 
+ Details of opaque construction: roof_1
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   162   12.0     0.190   960.   837. 0.90 0.90    15.  0.06 Roofing felt : Roofing felt
+    2   21   50.0     0.380  1200.   653. 0.90 0.65     6.  0.13 Light mix concrete : Light mix concrete
+    3    0   50.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   151    8.0     0.380  1120.   840. 0.90 0.60    12.  0.02 Ceiling (plaster) : Ceiling (plaster)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.799  1.902  1.678 (partition)  1.548
+ Total area of roof_1 is      5.50
+ 
+ Details of opaque construction: floor_1
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   263  100.0     1.280  1460.   879. 0.90 0.85     5.  0.08 Common earth : Common earth
+    2   82  100.0     2.900  2650.   900. 0.90 0.55    77.  0.03 Red granite : Red granite
+    3   32   50.0     1.400  2100.   653. 0.90 0.65    19.  0.04 Heavy mix concrete : Heavy mix concrete
+ Int   124   50.0     1.400  2100.   650. 0.91 0.65    19.  0.04 Cement screed : Cement screed
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.825  3.086  2.538 (partition)  2.252
+ Total area of floor_1 is     41.25
+ 
+ Details of opaque construction: int_part
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   103   12.0     0.180   800.   837. 0.91 0.60     9.  0.07 Perlite plasterboard : Perlite plasterboard
+    2    0   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   103   12.0     0.180   800.   837. 0.91 0.60     9.  0.07 Perlite plasterboard : Perlite plasterboard
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.113  2.256  1.948 (partition)  1.775
+ Total area of int_part is     58.80
+ 
+ Details of opaque construction: ceiling
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   211  100.0     0.040   250.   840. 0.90 0.30     4.  2.50 Glasswool : Glasswool
+ Int   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 Ceiling (mineral) : Ceiling (mineral)
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.333  0.336  0.329 (partition)  0.323
+ Total area of ceiling is     41.25
+ 
+ Details of opaque construction: ceiling_rev
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   150   10.0     0.030   290.  2000. 0.90 0.60     8.  0.33 Ceiling (mineral) : Ceiling (mineral)
+ Int   211  100.0     0.040   250.   840. 0.90 0.30     4.  2.50 Glasswool : Glasswool
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.333  0.336  0.329 (partition)  0.323
+ Total area of ceiling_rev is     41.25
+ 
+ Details of opaque construction: roof_2
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   141   15.0     0.850  1900.   837. 0.90 0.60    52.  0.02 Clay tile : Clay tile
+    2  162    5.0     0.190   960.   837. 0.90 0.90    15.  0.03 Roofing felt : Roofing felt
+ Int    72   12.0     0.150   700.  1420. 0.90 0.65   576.  0.08 Plywood 700d : Plywood 700d
+ ISO 6946 U values (horiz/upward/downward heat flow)=  3.402  3.788  2.994 (partition)  2.604
+ Total area of roof_2 is     51.17

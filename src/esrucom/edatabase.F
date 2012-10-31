@@ -36,8 +36,8 @@ C           optical properties databases (for utility applications).
 C << todo - depreciate references to IPR array and use Material names only.>>
 
 C ************* ERMLDB
-C Given file name and unit number, read  an ASCII construction
-C common file and return data via common block MLC.
+C Given file name and unit number, read  an ASCII composite 
+C construction database and return data via common block MLC.
 C IFMUL is the database unit, ITRU unit number for user output,
 C IER=0 OK, IER=1 problem. 
 C DRAIR is the air gap layer resistance for 3 orientations.
@@ -66,9 +66,6 @@ C espriou.h provides currentfile.
       character lworking*144,fs*1
 
       integer ier
-      integer ileghope  ! for legacy record
-      integer matarrayindex  ! for materials array index
-      integer lex       ! lenght of string
 
 C Note that the text which follows the thickness of the layer
 C is extracted from the materials database and should not
@@ -91,12 +88,6 @@ C Set folder separator (fs) to \ or / as required.
 C If materials database not opened it should have been opened
 C prior to this call and matdbok would be false if it
 C had been previously opened and failed.
-
-C << what if logic returned an error state rather than trying
-C << to sort out the materials internal to this subroutine??
-C << also - how about assuming that the materials file is an
-C << ASCII file rather than a binary file first.
-
       IF(.NOT.MATDBOK)THEN
         IER=0
 
@@ -194,8 +185,8 @@ C is true then the material arrays could be problematic.
         return
       endif
 
-C Free unit and check if constructions file exists.  Setup lworking for the
-C expanded name to be used later.
+C Free unit and check if composite file exists.  Setup lworking for the
+C MLC database expanded name to be used later.
       if(ipathmul.eq.0.or.ipathmul.eq.1)then
         lworking=LFMUL
         write(currentfile,'(a)') LFMUL(1:lnblnk(LFMUL))
@@ -211,7 +202,7 @@ C expanded name to be used later.
 
       IF(IER.NE.0)RETURN
 
-C Read the number of items in the constructions file, followed by
+C Read the number of items in the multi-layer database, followed by
 C the number of layers & construction name.
       CALL STRIPC(IFMUL,OUTSTR,1,ND,1,'mlc db items',IER)
       IF(IER.NE.0)RETURN
@@ -242,7 +233,7 @@ C Set MLC thickness to zero.
         K=0
         CALL EGETWI(OUTSTR,K,LAYERS(I),1,MMLC,'F','layrs',IER)
 
-C Anything after nb of layers is the description (which is overloaded
+C Anything after no of layers is the description (which is overloaded
 C to include information on optical properties and either the name
 C of a MLC with inverted layers or the keywords SYMMETRIC or NONSYMMERTIC).
         CALL EGETRM(OUTSTR,K,RSTR,'W','layer description',IER)
@@ -259,7 +250,7 @@ C Parse the DESC string into string tokens.
           IF(IER.NE.0)RETURN
           K=0
 
-C If the model is associated with a version 1.1 or 1.2 materials file
+C If the model is associated with a version 1.1 materials database
 C some newer entities in the GAPS category may have an index of
 C -99 which requires further logic in order to locate the relevant
 C material properties.
@@ -273,7 +264,7 @@ C Increment thickness of MLC.
 
 C Current MLDB also include the name of the layer from the materials
 C db. If the layer is air then this name contains the R values for
-C the air gap. In some cases the initial portion of NAM will be the
+C air gap. In some cases the initial portion of NAM will be the
 C same as matname and this needs to be decoded if IPR is -99.
 C To simplify later tasks remember RSTR as LAYDESC. Be sure
 C to write less than 72 char into NAM
@@ -284,19 +275,14 @@ C to write less than 72 char into NAM
             lex=MIN0(LNBLNK(RSTR),124)
 	    write(LAYDESC(I,IL),'(a)')RSTR(1:lex)
 
-C Generally we want to assign values to the IPRMAT array so for each legacy 
-C IPR. NOTE: in case there are multiple items with the same characters
+C See if there is a matching matarray index, if so assign values
+C to the IPRMAT array so for each IPR there is a IPRMAT. Note:
+C NOTE: in case there are multiple items with the same characters
 C in the name also check to see if the legacy index associated
-C with the found item matches the IPR scanned above. If we are
-C still confused mark IPRMAT as -99.
+C with the found item matches the IPR scanned above.
             ileghope=IPR(I,IL)   ! what we hope we will find a match for
-
-C Pass the legacy record number (ileghope) along with the name (NAM) of the
-C material and get back the index of the material array that fits.
             call parsematdesc(ileghope,NAM,matarrayindex)
             if(matarrayindex.ne.0)then
-
-C If a mis-match echo to the user corrective actions.
               if(matlegindex(matarrayindex).ne.IPR(I,IL))then
                 call edisp(iuout,' --- WARNING --- ')
                 write(outs,'(a,i3,a,i3,2a)') 
@@ -321,15 +307,7 @@ C If a mis-match echo to the user corrective actions.
                 call edisp(iuout,' --- make a note of this NOW --- ')
                 IPRMAT(I,IL)=-99  ! could not find it
               else
-
-C Found a matching matarray index, assign value to the IPRMAT. If
-C it actually is equivalent to the legacy zero gap material reflect this
-C in the value of IPRMAT (in case parsematdesc did not do this).
-                if(IPR(I,IL).eq.0)then
-                  IPRMAT(I,IL)=0  ! to signal std air gap
-                else
-                  IPRMAT(I,IL)=matarrayindex
-                endif
+                IPRMAT(I,IL)=matarrayindex
               endif    
             else
 
@@ -339,18 +317,16 @@ C so that other facilities know about the confusion.
               if(IPR(I,IL).eq.0)then
                 IPRMAT(I,IL)=0  ! to signal std air gap
               else
-                IPRMAT(I,IL)=-99  ! could not find it DO WE WANT TO SET THIS NOW
-                write(outs,*)'a material referenced in ',
-     &            MLCN(1:lnblnk(MLCN)),' was not found (set to -99).'
+                IPRMAT(I,IL)=-99  ! could not find it
+                write(outs,*)'as referenced in ',MLCN(1:lnblnk(MLCN))
                 call edisp(iuout,outs)
               endif
             endif
 
-C For a standard gap pick up 'AIR' or 'gap' followed by assumed R values.
-C Currently space in the gap name are not allowed.
+C For a standard air gap pick up 'AIR' followed by assumed R values.
             IF(IPR(I,IL).EQ.0)THEN
               K=0
-              CALL EGETW(NAM,K,WORD,'W','gap label',IER)
+              CALL EGETW(NAM,K,WORD,'W','AIR label',IER)
               CALL EGETWR(NAM,K,VAL,0.,99.0,'W','vert R',IER)
               DRAIR(I,IL,1)=VAL
               CALL EGETWR(NAM,K,VAL,0.,99.0,'W','floor:ceil R',IER)
@@ -360,8 +336,6 @@ C Currently space in the gap name are not allowed.
             ELSEIF(IPR(I,IL).EQ.-99)THEN
 
 C For a layer with no legacy index use the matarray index and assign values.
-
-C << if we did have IPRMAT(I,IL) as -99 wouldn't this cause a crash?? >>
               matarrayindex=IPRMAT(I,IL)
               if(matarrayindex.ne.0)then
                 DBCON=matdbcon(matarrayindex)
@@ -399,8 +373,6 @@ C If g air gap and version 1.2 then assign DRAIR
                 endif
               endif
             ENDIF
-C Debug.
-C            write(6,*) i,il,DRAIR(I,IL,1),DRAIR(I,IL,2),DRAIR(I,IL,3)
             IF(IER.NE.0)GOTO 99
           ELSE
 
@@ -856,8 +828,8 @@ C If we got here there was no match. The value of matarrayindex remains at zero.
       end
 
 C *************** ETMLDB
-C ETMLDB provides reporting on current description of a construction
-C based on contents of common MLC.
+C ETMLDB provides reporting on current description of a composite
+C construction based on contents of common MLC.
       SUBROUTINE ETMLDB(ITRC,ITRU,IFOC,ier)
 #include "building.h"
 #include "esprdbfile.h"
@@ -942,18 +914,43 @@ C Loop through all of the layers and compose RT for the construction.
       DO 15, IL=1,LAYERS(IFOC)
       
 C If data available in material array gather it. And if an air
-C layer reset dbcon dbden dbsht andinclude the R values in the display.
+C layer include the R values in the display.
         matarrayindex=IPRMAT(IFOC,IL)   ! which array index
-        if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &     matopaq(matarrayindex)(1:1).eq.'h'.or.
-     &     matarrayindex.eq.0)then
-          DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-          E=0.99; A=0.99; DRV=1.0
+        if(matarrayindex.ge.0)then
+ 
+C And if matarrayindex is zero then reset dbcon dbden dbsht.
+          if(matarrayindex.eq.0)then
+            DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+            E=0.99; A=0.99; DRV=1.0
+          else
+            DBCON=matdbcon(matarrayindex)
+            DBDEN=matdbden(matarrayindex)
+            DBSHT=matdbsht(matarrayindex)
+            E=matdbine(matarrayindex)
+            A=matdbina(matarrayindex)
+            DRV=matdbdrv(matarrayindex)
 
-          WRITE(PNAM(IL),'(A,3F5.2)')'air ',(DRAIR(IFOC,IL,IY),IY=1,3)
-          RT=RT+DRAIR(IFOC,IL,1)
-          RSI=DRAIR(IFOC,IL,1)
-        elseif(matarrayindex.eq.-99)then
+C Make up PNAM as combination of matnam and matdoc.
+            lnam=lnblnk(matname(matarrayindex))
+            lfordoc = 124 - (lnam +4)    ! space left for doc
+            write(PNAM(IL),'(3a)') matname(matarrayindex)(1:lnam),
+     &        ' : ',matdoc(matarrayindex)(1:lfordoc)
+          endif
+
+C Also check if it is a gap. If version 1.2 materials then we will
+C have access to pre-defined air gap resistances.
+          if(matarrayindex.eq.0)then
+            continue
+          elseif(matopaq(matarrayindex)(1:1).eq.'g')then
+            if(closemat2)then
+              DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
+              DRAIR(IFOC,IL,2)=matgapares(matarrayindex,2)
+              DRAIR(IFOC,IL,3)=matgapares(matarrayindex,3)
+              RT=RT+DRAIR(IFOC,IL,1)  ! while we know
+              RSI=DRAIR(IFOC,IL,1)
+            endif
+          endif
+        else
 
 C Referenced item was not in the materials hash list. Write zeros.
           DBCON=0.0
@@ -963,20 +960,16 @@ C Referenced item was not in the materials hash list. Write zeros.
           A=0.0
           DRV=0.0
           write(PNAM(IL),'(a)') 'unknown : unknown '
+        endif
 
-        else
-          DBCON=matdbcon(matarrayindex)
-          DBDEN=matdbden(matarrayindex)
-          DBSHT=matdbsht(matarrayindex)
-          E=matdbine(matarrayindex)
-          A=matdbina(matarrayindex)
-          DRV=matdbdrv(matarrayindex)
-
-C Make up PNAM as combination of matnam and matdoc.
-          lnam=lnblnk(matname(matarrayindex))
-          lfordoc = 124 - (lnam +4)    ! space left for doc
-          write(PNAM(IL),'(3a)') matname(matarrayindex)(1:lnam),
-     &      ' : ',matdoc(matarrayindex)(1:lfordoc)
+C << this logic could be updated to use something other than IPR >>
+        IF(IPR(IFOC,IL).EQ.0)THEN
+          WRITE(PNAM(IL),'(A,3F5.2)')'air ',(DRAIR(IFOC,IL,IY),IY=1,3)
+          RT=RT+DRAIR(IFOC,IL,1)
+          RSI=DRAIR(IFOC,IL,1)
+        ELSEIF(IPR(IFOC,IL).EQ.-99)THEN
+          continue
+        ELSE
 
 C Also report on thermal resistance (m^2K/W) of the layer. If dbcon
 C is zero then avoid divide by zero.
@@ -991,7 +984,7 @@ C is zero then avoid divide by zero.
           else
             RT=1.0
           endif
-        endif
+        ENDIF
 
 C Reporting.
         IF(ITRC.GT.1)THEN
@@ -1038,13 +1031,11 @@ C 0.10 inside upward flow and 0.17 inside downward flow.
      &  UVALUEH,UVALUEU,UVALUED,' (partition)',UVALUEI
       IF(ITRC.NE.0)call edisp(itru,OUTSTR)
 
-C Include admittance calculations (use TM33 Table 4.5 values for admittance calcs).
+C Include admittance calculations (use TM33 Table 4.5 values for admittance calcs.
 C << NOTE this code needs further debugging.
-      if(ITRC.ne.0)then
-        Rsi=0.12
-        Rso=0.06
-        call ADMIT(ITRU,IFOC,Rsi,Rso)
-      endif
+C      Rsi=0.12
+C      Rso=0.06
+C      call ADMIT(ITRC,ITRU,IFOC,Rsi,Rso)
 
 C Also list optical properties for this construction (if it is
 C transparent and the optical property is something other than
@@ -1114,30 +1105,41 @@ C Reset U value reporting local variables.
 C If an air layer include the R values.
         if(closemat1.or.closemat2)then
           matarrayindex=IPRMAT(IFOC,IL)   ! which array index
+          if(matarrayindex.ge.0)then
 
 C And if matarrayindex is zero then resetn dbcon dbden dbsht.
-          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &       matopaq(matarrayindex)(1:1).eq.'h'.or.
-     &       matarrayindex.eq.0)then
-            DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-            E=0.99; A=0.99; DRV=1.0
-            TITL='GAPS'; NAM='AIR'
-          elseif(matarrayindex.eq.-99)then
-            continue
-          else
-            DBCON=matdbcon(matarrayindex)
-            DBDEN=matdbden(matarrayindex)
-            DBSHT=matdbsht(matarrayindex)
-            E=matdbine(matarrayindex)
-            A=matdbina(matarrayindex)
-            DRV=matdbdrv(matarrayindex)
-            write(TITL,'(a)') 'placeholder'
+            if(matarrayindex.eq.0)then
+              DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
+              E=0.99; A=0.99; DRV=1.0
+              TITL='GAPS'; NAM='AIR'
+            else
+              DBCON=matdbcon(matarrayindex)
+              DBDEN=matdbden(matarrayindex)
+              DBSHT=matdbsht(matarrayindex)
+              E=matdbine(matarrayindex)
+              A=matdbina(matarrayindex)
+              DRV=matdbdrv(matarrayindex)
+              write(TITL,'(a)') 'placeholder'
 
 C Make up NAM as combination of matnam and matdoc.
-            lnam=lnblnk(matname(matarrayindex))
-            lfordoc = 72 - (lnam +4)    ! space left for doc
-            write(NAM,'(3a)') matname(matarrayindex)(1:lnam),' : ',
-     &        matdoc(matarrayindex)(1:lfordoc)
+              lnam=lnblnk(matname(matarrayindex))
+              lfordoc = 72 - (lnam +4)    ! space left for doc
+              write(NAM,'(3a)') matname(matarrayindex)(1:lnam),' : ',
+     &          matdoc(matarrayindex)(1:lfordoc)
+            endif
+
+C Also check if it is a gap.
+            if(matarrayindex.eq.0)then
+              continue
+            elseif(matopaq(matarrayindex)(1:1).eq.'g')then
+              if(closemat2)then
+                DRAIR(IFOC,IL,1)=matgapares(matarrayindex,1)
+                DRAIR(IFOC,IL,2)=matgapares(matarrayindex,2)
+                DRAIR(IFOC,IL,3)=matgapares(matarrayindex,3)
+                RT=RT+DRAIR(IFOC,IL,1)  ! while we know
+                RSI=DRAIR(IFOC,IL,1)
+              endif
+            endif
           endif
         else
           CALL ERPCDB(IFMAT,IPR(IFOC,IL),ITRU,IER,DBCON,DBDEN,
@@ -1368,7 +1370,6 @@ C Parameters
 
       integer lnam    ! length of material name
       integer lfordoc ! length available for material documentation
-      integer izero   ! transitional trick for air gap
       logical closemat1,closemat2
 
       DIMENSION PNAM(ME)
@@ -1434,24 +1435,37 @@ C of DRAIR.
       DO 110 I = 1,NMLC
         IF(LAYERS(I).EQ.0)GOTO 110
         DO 116, IL=1,LAYERS(I)
-          matarrayindex=IPRMAT(I,IL)
-          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &       matopaq(matarrayindex)(1:1).eq.'h'.or.
-     &       matarrayindex.eq.0)then
-            WRITE(PNAM(IL),'(A,1X,3F6.3)')'gap',(DRAIR(I,IL,IY),IY=1,3)
-          ELSEIF(matarrayindex.EQ.-99)THEN
+          IF(IPR(I,IL).EQ.0)THEN
+            WRITE(PNAM(IL),'(A,1X,3F6.3)')'air',(DRAIR(I,IL,IY),IY=1,3)
+          ELSEIF(IPR(I,IL).EQ.-99)THEN
 
-C A confused material found.
-            write(NAM,'(a)')
-     &        'unable-to-determine : unable-to-determine material name'
-            write(PNAM(IL),'(a)') NAM(1:lnblnk(NAM))
-          ELSE
+C Re-establish data.
+            matarrayindex=IPRMAT(I,IL)
+            if(matarrayindex.gt.0)then
 
 C Make up NAM as combination of matnam and matdoc.
-            lnam=lnblnk(matname(matarrayindex))
-            lfordoc = 72 - (lnam +4)    ! space left for doc
-            write(NAM,'(3a)') matname(matarrayindex)(1:lnam),
-     &        ' : ',matdoc(matarrayindex)(1:lfordoc)
+              lnam=lnblnk(matname(matarrayindex))
+              lfordoc = 72 - (lnam +4)    ! space left for doc
+              write(NAM,'(3a)') matname(matarrayindex)(1:lnam),' : ',
+     &          matdoc(matarrayindex)(1:lfordoc)
+              write(PNAM(IL),'(a)') NAM(1:lnblnk(NAM))
+            endif
+          ELSE
+            matarrayindex=IPRMAT(I,IL)
+            if(matarrayindex.ge.0)then
+
+C And if matarrayindex is zero then resetn dbcon dbden dbsht to mimic erpcdb
+              if(matarrayindex.eq.0)then
+                NAM='AIR'
+              elseif(matarrayindex.gt.0)then
+
+C Make up NAM as combination of matnam and matdoc.
+                lnam=lnblnk(matname(matarrayindex))
+                lfordoc = 72 - (lnam +4)    ! space left for doc
+                write(NAM,'(3a)') matname(matarrayindex)(1:lnam),
+     &            ' : ',matdoc(matarrayindex)(1:lfordoc)
+              endif
+            endif
             write(PNAM(IL),'(a)') NAM(1:lnblnk(NAM))
           ENDIF
   116   CONTINUE
@@ -1461,21 +1475,9 @@ C Make up NAM as combination of matnam and matdoc.
      &    I5,4X,A48,/,
      &    '# material ref thickness (m) description & air gap R')
 
-C As a transition, for gap layers the index is going to have to
-C be a zero to trick the reading code into recognizing it as
-C a gap layer. 
         DO 115, IL=1,LAYERS(I)
-          matarrayindex=IPRMAT(I,IL)
-          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &       matopaq(matarrayindex)(1:1).eq.'h'.or.
-     &       matarrayindex.eq.0)then
-            izero=0
-            WRITE(IFMUL,'(I5,F10.4,2X,A)')izero,DTHK(I,IL),
-     &        PNAM(IL)(1:lnblnk(PNAM(IL)))
-          else
-            WRITE(IFMUL,'(I5,F10.4,2X,A)')IPR(I,IL),DTHK(I,IL),
-     &        PNAM(IL)(1:lnblnk(PNAM(IL)))
-          endif
+          WRITE(IFMUL,'(I5,F10.4,2X,A)')IPR(I,IL),DTHK(I,IL),
+     &              PNAM(IL)(1:lnblnk(PNAM(IL)))
   115   CONTINUE
   110 CONTINUE
 
@@ -1893,220 +1895,5 @@ C Open Ooptical Properties db and read into common.
 
       return
       end
-      
-C ******************* ADMIT *******************
-C Calculate U and Y values and surface factor.
-C If a negative conductivity is supplied the abs value represents the 
-C resistance of an air gap.
-C << NOTE: this routine gets close for some constructions, but
-C << some variables are off - further debugging required.
-      subroutine ADMIT(ITRU,IFOC,Rsi,Rso)
-#include "building.h"
-#include "esprdbfile.h"
-#include "material.h"
-
-      integer matarrayindex ! the indes within matdatarray
-      logical closemat1,closemat2
-      
-      dimension thick(8),rho(8),Cp(8),cond(8)
-      CHARACTER MLCN*12,OTF*4,OPT*12
-      character MLCSYM*12,outs*124
-      
-      COMPLEX P,L(2,2),M(2,2),N(2,2)
-
-C Establish if material data arrays have been filled. If not return.
-      call eclose(matver,1.1,0.01,closemat1)
-      call eclose(matver,1.2,0.01,closemat2)
-      if(closemat1.or.closemat2)then
-        continue
-      else
-        call usrmsg('The materials arrays are incomplete so admit-',
-     &    'tance of construction attributes cannot be calculated.','W')
-        return
-      endif
-
-C Pick up general description of the composite.
-      call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
-      
-C ESP-r defines layers from outside to inside. The code in
-C subroutine admit works from inside to outside.
-C Debug layer info.
-C      write (ITRU,*) 'Layer  thick  k  rho  Cp'
-
-      layer=LAYERS(IFOC)+1
-      call eclose(matver,1.1,0.01,closemat1)
-      call eclose(matver,1.2,0.01,closemat2)
-      do 5 IL=1,LAYERS(IFOC)
-        matarrayindex=IPRMAT(IFOC,IL)   ! which array index
-        if(matarrayindex.ge.0)then
- 
-C And if matarrayindex is zero then resetn dbcon dbden dbsht.
-          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &       matopaq(matarrayindex)(1:1).eq.'h'.or.
-     &       matarrayindex.eq.0)then
-            DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-          else
-            DBCON=matdbcon(matarrayindex)
-            DBDEN=matdbden(matarrayindex)
-            DBSHT=matdbsht(matarrayindex)
-          endif
-        endif
-        layer=layer-1
-        thick(layer)=DTHK(IFOC,IL)
-
-C If an air gap set cond(IL) to negative of air gap res.
-        if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &     matopaq(matarrayindex)(1:1).eq.'h'.or.
-     &     matarrayindex.eq.0)then
-          cond(layer) = (-1.0) * DRAIR(IFOC,IL,1)
-          rho(layer)=1.0
-          Cp(layer)=1.0
-        else
-          cond(layer)=DBCON
-          rho(layer)=DBDEN
-          Cp(layer)=DBSHT
-        endif
-
-C Debug
-C        write (ITRU,'(2i3,2f6.3,2f6.0)') layer,
-C     &    thick(layer),cond(layer),rho(layer),Cp(layer)
- 5    continue
-      
-C Start calculation of U-value.
-      Uvalue=Rsi
-      
-C Define inside surface resistance matrix.
-      L(1,1)=CMPLX(1.,0.)
-      L(1,2)=CMPLX(Rsi,0.)
-      L(2,1)=CMPLX(0.,0.)
-      L(2,2)=CMPLX(1.,0.)
-      
-C Loop through layers (inside to outside).
-      do 10 I=1,LAYERS(IFOC)
-        if (cond(I).gt.0.0) then
-          Uvalue=Uvalue+(thick(I)/cond(I))
-
-C Define terms for arrays.
-          xP=((4.*ATAN(1.))*thick(I)*thick(I)*rho(I)*Cp(I))/
-     &     (86400.0*cond(I))
-          xP=SQRT(xP)
-        
-C Calculate cosh(P).
-          xcreal=((exp(xP)+exp(-xP))*cos(xP))/2.
-          xcimage=((exp(xP)-exp(-xP))*sin(xP))/2.
-
-C and sinh(P).
-          xsreal=((exp(xP)-exp(-xP))*cos(xP))/2.
-          xsimage=((exp(xP)+exp(-xP))*sin(xP))/2.
-        
-C Enter matrix coefficients
-          M(1,1)=CMPLX(xcreal,xcimage)
-          M(1,2)=(thick(I))*CMPLX(xsreal,xsimage)/
-     &         (cond(I)*CMPLX(xP,xP))
-          M(2,1)=(cond(I)*CMPLX(xP,xP))*CMPLX(xsreal,xsimage)/
-     &         (thick(I))
-          M(2,2)=CMPLX(xcreal,xcimage)
-        else
-        
-C Air gap
-          Uvalue=Uvalue+abs(cond(I))
-          M(1,1)=CMPLX(1.,0.)
-          M(1,2)=CMPLX(abs(cond(I)),0.)
-          M(2,1)=CMPLX(0.,0.)
-          M(2,2)=CMPLX(1.,0.)
-        endif
-
-C Calculate L*M, result in N.
-        call CMATMUL(L,M,N)
-        
-C Copy N to L.
-        L(1,1)=N(1,1)
-        L(1,2)=N(1,2)
-        L(2,1)=N(2,1)
-        L(2,2)=N(2,2)
- 10   continue
-      Uvalue=Uvalue+Rso
-      Uvalue=1./Uvalue
- 
-      call edisp(itru,'  ')
-      write (outs,'(3(a,f6.2))') 'Admittance calculations using Rsi ',
-     &  rsi,' Rso ',rso,' & Uvalue=',Uvalue
-      call edisp(itru,outs)
-      
-C Outside face resistance.
-      M(1,1)=CMPLX(1.,0.)
-      M(1,2)=CMPLX(Rso,0.)
-      M(2,1)=CMPLX(0.,0.)
-      M(2,2)=CMPLX(1.,0.)
-      call CMATMUL(L,M,N)
-            
-C Calculate admittance.
-      P=N(2,2)/N(1,2)
-      Y=abs(P)
-      omega=(12.0/(4.0*ATAN(1.)))*atan(aimag(P)/real(P))
-      
-C Calculate decrement factor.
-      P=1./(Uvalue*N(1,2))
-      f=abs(P)
-      phi=(12.0/(4.0*ATAN(1.)))*atan(aimag(P)/real(P))
-      if (phi.gt.0.0) then
-        phi=12.0-phi
-      else
-        phi=-phi
-      endif
-      
-C Calculate surface factor.
-      P=1.-(Rsi*N(2,2)/N(1,2))
-      f=abs(P)
-      phi=(12.0/(4.0*ATAN(1.)))*atan(aimag(P)/real(P))
-      if (phi.gt.0.0) then
-        phi=12.0-phi
-      else
-        phi=-phi
-      endif
-
-C Report values for exterior.
-      write (outs,'(6(a,f6.2))') ' External surface admittance Y=',Y,
-     &  '  w=',omega,' decrement factor f=',f,'  phi=',phi,
-     &  ' surface factor f=',f,'  phi=',phi
-      call edisp(itru,outs)
-
-C Internal surfaces.
-      P=(N(2,2)-1.)/N(1,2)
-      Y=abs(P)
-      omega=(12.0/(4.0*ATAN(1.)))*atan(aimag(P)/real(P))
-
-C Calculate surface factor.
-      P=1.-(Rsi*P)
-      f=abs(P)
-      phi=(12.0/(4.0*ATAN(1.)))*atan(aimag(P)/real(P))
-      if (phi.gt.0.0) then
-        phi=12.0-phi
-      else
-        phi=-phi
-      endif
-
-C Report values for partitions.
-      write (outs,'(4(a,f6.2))') ' Partition admittance Y=',Y,
-     &  '  w=',omega,' surface factor f=',f,'  phi=',phi
-      call edisp(itru,outs)
-      return
-      end
-
-C ******************** CMATMUL 
-C CMATMUL multiplies the complex (2x2) matrices A by B returning C.
-      SUBROUTINE CMATMUL(A,B,C)
-
-      COMPLEX A(2,2),B(2,2),C(2,2)
-
-C Calculate A*B.
-      DO 10 I=1,2
-        C(I,1)=A(I,1)*B(1,1)+A(I,2)*B(2,1)
-        C(I,2)=A(I,1)*B(1,2)+A(I,2)*B(2,2)
-   10 CONTINUE
-
-      return
-      end
-      
 
 

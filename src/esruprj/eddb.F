@@ -2494,8 +2494,6 @@ C be explored).
 
 C Create a minimal constructions.
 C Set the value of ipathmul to signal local file.
-
-C << alternative to IPR needed >>
         ipathmul=1  
 
         NMLC=1

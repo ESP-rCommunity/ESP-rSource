@@ -132,7 +132,7 @@ C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 
       COMMON/OUTIN/IUOUT,IUIN
 
-C IPRZ is materials array for each layer.
+C IPRZ is material db ref for each layer.
       common/T8/IPRZ(MS,ME)
 
       integer matarrayindex ! the indes within matdatarray
@@ -169,10 +169,9 @@ C the construction was not found.
           IF(DESC(IC)(1:12).EQ.SSMLCN(ICN))THEN
             ICKNE=LAYERS(IC)
 
-C Gather materials array index for each layer of each surface in
-C the zone. IPRZ is used elsewhere.
+C Gather material index about each layer. IPRZ is used elsewhere.
             DO 23 IL=1,LAYERS(IC)
-              IPRZ(ISUR,IL)=IPRMAT(IC,IL)
+              IPRZ(ISUR,IL)=IPR(IC,IL)
    23       CONTINUE
           ENDIF
    20   CONTINUE
@@ -540,7 +539,7 @@ C Passed parameters
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
       common/appcols/mdispl,nifgrey,ncset,ngset,nzonec
 
-C IPRZ is materials array index for each layer.
+C IPRZ is material db ref for each layer.
       common/T8/IPRZ(MS,ME)
 
       DIMENSION XVAL1(MZS)
@@ -581,8 +580,6 @@ C Draw construction section.
       XX=0.
       YD=TMAX-TMIN
       NE=NELTS(ICOMP,ISUR)
-
-C Draw a grey box for each layer that is not a gap.
       DO 101 L=1,NE
         XL=XX
         XD=ETHK(L)

@@ -484,13 +484,6 @@ C ESP-r binaries without CETC files
       integer  dummy_1
       real     dummy_2(mpcoe)
       integer  dummy_3
-      
+
       return
       end
-      
-      subroutine IMS_ConvertP10Data(iSystem)
-      implicit none
-      integer iSystem 
-      
-      return
-      end 
