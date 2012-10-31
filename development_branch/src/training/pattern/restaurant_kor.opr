@@ -1,0 +1,27 @@
+*Operations 1.0
+*date Tue Jul 07 10:32:57 2009  # latest file modification 
+# operations of reception defined in: 
+# ../zones/restaurant_kor.opr
+restaurant_kor;weekdays_and_saturday10-24;casual_gains6.7W/m2(80%conv);7.8ach
+# control(no control of air flow  ), low mid & high setpoints 
+   0     0.000     0.000   100.000
+     1   # number of flow periods in day type: weekday     
+# start, stop, infil, ventil, source, data
+   10, 24,    7.800    0.000    0    0.000
+     1   # number of flow periods in day type: saturday    
+# start, stop, infil, ventil, source, data
+   0, 24,    0.000    0.000    0    0.000
+     1   # number of flow periods in day type: sunday      
+# start, stop, infil, ventil, source, data
+   0, 24,    0.000    0.000    0    0.000
+     2   # number of casual gains in day type: weekday     
+# type, start, stop, sens, latent, rad_frac, conv_frac
+   -3,   0,   10,      0.0,      0.0, 0.200, 0.800
+   -3,   10,  24,      6.7,      0.0, 0.200, 0.800
+     2   # number of casual gains in day type: saturday     
+# type, start, stop, sens, latent, rad_frac, conv_frac
+   -3,   0,   10,      0.0,      0.0, 0.200, 0.800
+   -3,   10,  24,      6.7,      0.0, 0.200, 0.800
+     0   # number of casual gains in day type: sunday      
+# Labels for gain types 
+ Occupt Lights Equipt

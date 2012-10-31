@@ -1,0 +1,23 @@
+This directory contains a test case for the adsorption storage unit plant component model.
+The plant component is connect to a SOFC plant component (heat source) and hot water tank (heat sink).
+The operation of the plant components is controlled by an adsorption storage controller, which was
+created specifically for this plant network. Please refer to (Mottillo, 2006) for more information.
+
+A simulation that spans a charge and discharge period of the adsorption storage system must be 
+separated into two simulations; this is a shortcoming of the adsorption storage component model.
+For example, to perform a one-year simulation for this test case, 3 simulations are required:
+(1) for the period of January 1 - April 30 (discharge period); (2) for the period of May 1 -
+September 30 (charge period) and (3) for the period of October 1 - December 31 (discharge period).
+The temperature and pressure of the adsorber node at the end of one simulation (this can be obtained
+from the timestep output in the out.csv file) is input as the initial temperature and pressure of the 
+adsorber (for the adsorption storage plant component) in the plant network file for the next simulation.
+
+It should be noted that run times are very long - this is to be addressed in future work. A 4 month simulation
+requires a run time of approximately 12 hours! 
+
+
+References:
+Mottillo M. (2006), Investigation of an Adsorption System for the Seasonal
+Storage of Heat Applied to Residential Buildings, M.A.Sc. thesis dissertation,
+Concordia University, Montreal, Canada.
+

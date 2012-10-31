@@ -1,0 +1,540 @@
+Synopsis
+ 
+This is a synopsis of the model more detailed description/simulation of CCHT
+house defined in detailed_AIM_TIGHT_ver1.cfg generated on Thu Mar  1 09:32:01
+2007. Notes associated with the model are in ccht_detailed.log
+ 
+The model is located at latitude   50.00 with a longitude difference of   0.00
+from the local time meridian. The year used in simulations is 1999 and
+weekends occur on Saturday and Sunday.
+The site exposure is isolated rural site site and the ground reflectance is
+0.20.
+ 
+The climate used is: Ottawa Intl ON CAN and is held in:
+/usr/esru/esp-r/climate/can_ottawa and uses hour centred solar data.
+ 
+Alberta Infil Method defined in ../aim2_detailed/cchtTight_ver1.aim version 1.0 based on
+a blower door test with flow coef  0.026 exp n  0.703 &   0.000 ac/h @ 50Pa &   0.000
+press diff.
+The distribution of leakage has been set as: ceiling 0.20 walls 0.65 floor 0.15.
+ 
+Weather measurements taken open flat terrain, grass (wind @  10.0m) and the building
+site is suburban, forest with very heavy shielding of building and light local shielding
+of flues.
+ 
+The building is a one storey single detached with a unspecified foundation. There is no
+fireplace in the building and the furnace flue is   0.00mm.
+Hot water: there is one DHW system where primary DHW shares furnace flue. Location:
+primary DHW is inside .
+Indoor air temperatures are taken from mainfloor and infiltration is applied to  4
+zones. There is no crawl space. There is no attic space.
+ 
+An Integrated Performance View is incomplete or missing.
+ 
+Databases associated with the model:
+ pressure distributions : /usr/esru/esp-r/databases/pressc.db1
+ materials              : /usr/esru/esp-r/databases/north_american.materialdb
+ constructions          : ../../ascii_dbs/ccht_constr.db1
+ plant components       : /usr/esru/esp-r/databases/plantc.db1
+ event profiles         : /usr/esru/esp-r/databases/profiles.db1
+ optical properties     : /usr/esru/esp-r/databases/optics.db2
+ 
+ ____________________________________________________________
+ 
+The model includes ideal controls as follows:
+Control description:
+control for CCHT house
+ 
+Zones control includes  2 functions.
+no descrip
+ 
+ The sensor for function  1 senses the temperature of the current zone.
+ The actuator for function  1 is air point of the current zone
+ There have been  1 day types defined.
+ Day type  1 is valid Fri-01-Jan to Fri-31-Dec, 1999 with  1 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      free floating
+ 
+ The sensor for function  2 senses the temperature of the current zone.
+ The actuator for function  2 is air point of the current zone
+ There have been  1 day types defined.
+ Day type  1 is valid Fri-01-Jan to Fri-31-Dec, 1999 with  3 periods.
+ Per|Start|Sensing  |Actuating  | Control law       | Data
+   1  0.00 db temp   > flux      basic control       20000.0 0.0 0.0 0.0 18.0 100.0 0.0
+basic control: max heating capacity 20000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 18.00C cooling setpoint
+100.00C.
+   2  8.00 db temp   > flux      basic control       20000.0 0.0 6000.0 0.0 21.0 25.0 0.0
+basic control: max heating capacity 20000.0W min heating capacity 0.0W max cooling
+capacity 6000.0W min cooling capacity 0.0W. Heating setpoint 21.00C cooling setpoint
+25.00C.
+   3 20.00 db temp   > flux      basic control       20000.0 0.0 0.0 0.0 18.0 100.0 0.0
+basic control: max heating capacity 20000.0W min heating capacity 0.0W max cooling
+capacity 0.0W min cooling capacity 0.0W. Heating setpoint 18.00C cooling setpoint
+100.00C.
+ 
+ Zone to contol loop linkages:
+ zone ( 1) basement     << control  2
+ zone ( 2) garage       << control  1
+ zone ( 3) mainfloor    << control  2
+ zone ( 4) secondfloor  << control  2
+ zone ( 5) stairwell    << control  2
+ zone ( 6) roof         << control  1
+ 
+ ____________________________________________________________
+ 
+ID Zone         Volume|          Surface
+   Name         m^3   | No. Opaque  Transp  ~Floor
+ 1 basement      267.5  12   337.1     6.3   102.9  basement describes the basement not including the area below the
+ 2 garage        114.9   7   151.2     0.0    38.0  garage describes the garage with slab on grade floor, exterior s
+ 3 mainfloor     310.7  19   344.8    20.9   102.9  mainfloor describes the main floor of the house as 1 zone, not i
+ 4 secondfloor   347.4  17   402.2    18.8   140.9  secondfloor describes the second floor of the ccht house as 1 zo
+ 5 stairwell      44.3  15    68.7    21.1     5.5  stairwell describes the stairwell for the basement will be merg
+ 6 roof          207.0  11   331.5     0.0   140.9  roof describes the two-level roof of the house
+   all          1292.   81   1635.     67.    531.
+ 
+ 
+ Zone basement ( 1) is composed of 12 surfaces and 20 vertices.
+ It encloses a volume of 267.m^3 of space, with a total surface
+ area of 343.m^2 & approx floor area of 103.m^2
+ basement describes the basement not including the area below the
+ 
+ A summary of the surfaces in basement( 1) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
+    | m^2   |deg |deg | name       |type|loc| name         |other side
+  1  18.3      0.   0. found_lft2   OPAQ VERT ccht_wall    ||< ground profile  1
+  2  14.1     90.   0. found_frnt2  OPAQ VERT foundation_  ||< ground profile  1
+  3  12.9      0.   0. found_lft1   OPAQ VERT foundation_  ||< ground profile  1
+  4  103.      0.  90. bsment_ceiln OPAQ CEIL floors_r     ||< main_floor:mainfloor
+  5  103.      0. -90. bsment_floor OPAQ FLOR slab_floor   ||< ground profile  1
+  6  5.90     90.   0. stair_north  OPAQ VERT int_partitn  ||< bsm_north:stairwell
+  7  6.29    180.   0. stair_east   TRAN VERT fictitious   ||< bsm_east:stairwell
+  8  5.90    270.   0. stair_south  OPAQ VERT int_partitn  ||< bsm_south:stairwell
+  9  12.4    180.   0. found_rgt2   OPAQ VERT foundation_  ||< ground profile  1
+ 10  12.6    180.   0. found_rgt1   OPAQ VERT foundation_  ||< ground profile  1
+ 11  17.7     90.   0. found_frnt1  OPAQ VERT foundation_  ||< ground profile  1
+ 12  31.7    270.   0. found_back   OPAQ VERT foundation_  ||< ground profile  1
+ 
+ 
+ All surfaces will receive diffuse insolation.
+ 
+ 
+ 
+ Control: no control of air flow
+ 
+ Number of Weekday Sat Sun air change periods =  1  1  1
+     Period   Infiltration   Ventilation     From Source
+     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+Wkd  1  0 - 24     0.30  0.0223    0.00  0.0000   0     0.00
+Sat  1  0 - 24     0.30  0.0223    0.00  0.0000   0     0.00
+Sun  1  0 - 24     0.30  0.0223    0.00  0.0000   0     0.00
+ 
+Notes:
+nil_operations
+ Number of Weekday Sat Sun casual gains=  0  0  0
+ 
+ ____________________________________________________________
+ 
+ Zone garage ( 2) is composed of 7 surfaces and 12 vertices.
+ It encloses a volume of 115.m^3 of space, with a total surface
+ area of 151.m^2 & approx floor area of 38.0m^2
+ garage describes the garage with slab on grade floor, exterior s
+ There is 37.569m2 of exposed surface area, 37.569m2 of which is vertical.
+ Outside walls are 98.787 % of floor area & avg U of 0.215 & UA of 8.0590
+ 
+ A summary of the surfaces in garage( 2) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
+    | m^2   |deg |deg | name       |type|loc| name         |other side
+  1  21.2    180.   0. main_share   OPAQ VERT ccht_wall_r  ||< garage_share:mainfloor
+  2  6.38     90.   0. front_garage OPAQ VERT ccht_wall    ||< external
+  3  21.2      0.   0. side_wall    OPAQ VERT ccht_wall    ||< external
+  4  16.3    270.   0. garage_back  OPAQ VERT ccht_wall_r  ||< garage_back:mainfloor
+  5  38.0      0.  90. garage_ceiln OPAQ CEIL exp_flr      ||< flr_abv_gar:secondfloor
+  6  38.0      0. -90. slab-on-grad OPAQ FLOR slab_floor   ||< ground profile  1
+  7  9.96     90.   0. garage_door  OPAQ VERT ext_doors    ||< external
+ 
+ 
+ All surfaces will receive diffuse insolation.
+ 
+ Control: no control of air flow
+ 
+ Number of Weekday Sat Sun air change periods =  0  0  0
+ 
+Notes:
+nil_operations
+ Number of Weekday Sat Sun casual gains=  0  0  0
+ 
+ ____________________________________________________________
+ 
+ Zone mainfloor ( 3) is composed of 19 surfaces and 50 vertices.
+ It encloses a volume of 311.m^3 of space, with a total surface
+ area of 366.m^2 & approx floor area of 103.m^2
+ mainfloor describes the main floor of the house as 1 zone, not i
+ There is 101.29m2 of exposed surface area, 101.29m2 of which is vertical.
+ Outside walls are 85.285 % of floor area & avg U of 0.000 & UA of 0.00
+ Glazing is 13.180 % of floor & 13.386 % facade with avg U of 1.927 & UA of 26.130
+ 
+ A summary of the surfaces in mainfloor( 3) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
+    | m^2   |deg |deg | name       |type|loc| name         |other side
+  1  14.6    180.   0. sidewall_1   OPAQ VERT ccht_wall    ||< external
+  2  16.0     90.   0. front        OPAQ VERT ccht_wall    ||< external
+  3  21.2      0.   0. garage_share OPAQ VERT ccht_wall    ||< main_share:garage
+  4  16.3     90.   0. garage_back  OPAQ VERT ccht_wall    ||< garage_back:garage
+  5  12.7    360.   0. sidewall_2   OPAQ VERT ccht_wall    ||< external
+  6  11.9    270.   0. back_2       OPAQ VERT ccht_wall    ||< external
+  7  18.1    270.   0. back_1       OPAQ VERT ccht_wall    ||< external
+  8  103.      0.  90. main_ceiling OPAQ CEIL floors_r     ||< 2nd_floor:secondfloor
+  9  3.00    270.   0. w_dining     TRAN VERT ccht_window  ||< external
+ 10  1.88    270.   0. w_family1    TRAN VERT ccht_window  ||< external
+ 11  1.88    270.   0. w_family2    TRAN VERT ccht_window  ||< external
+ 12  4.47     90.   0. w_living     TRAN VERT ccht_window  ||< external
+ 13  1.16      0.   0. w_side1      TRAN VERT ccht_window  ||< external
+ 14  1.16      0.   0. w_side2      TRAN VERT ccht_window  ||< external
+ 15  6.86     90.   0. stair_north  OPAQ VERT int_partitn  ||< main_north:stairwell
+ 16  7.31    180.   0. stair_east   TRAN VERT fictitious   ||< main_east:stairwell
+ 17  6.86    270.   0. stair_south  OPAQ VERT int_partitn  ||< main_south:stairwell
+ 18  14.3    180.   0. sidewallfron OPAQ VERT ccht_wall    ||< external
+ 19  103.      0. -90. main_floor   OPAQ FLOR floors       ||< bsment_ceiln:basement
+ 
+ 
+ All surfaces will receive diffuse insolation.
+ 
+ 
+ 
+ Control: no control of air flow
+ 
+ Number of Weekday Sat Sun air change periods =  1  1  1
+     Period   Infiltration   Ventilation     From Source
+     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+Wkd  1  0 - 24     0.30  0.0259    0.00  0.0000   0     0.00
+Sat  1  0 - 24     0.30  0.0259    0.00  0.0000   0     0.00
+Sun  1  0 - 24     0.30  0.0259    0.00  0.0000   0     0.00
+ 
+Notes:
+nil_operations
+ Number of Weekday Sat Sun casual gains=  2  2  2
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 LightsW    0 - 24    150.0      0.0       0.50       0.50
+Wkd  2 OccuptW    0 - 24    150.0      0.0       0.50       0.50
+Sat  1 LightsW    0 - 24    150.0      0.0       0.50       0.50
+Sat  2 OccuptW    0 - 24    150.0      0.0       0.50       0.50
+Sun  1 LightsW    0 - 24    150.0      0.0       0.50       0.50
+Sun  2 OccuptW    0 - 24    150.0      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone secondfloor ( 4) is composed of 17 surfaces and 43 vertices.
+ It encloses a volume of 347.m^3 of space, with a total surface
+ area of 421.m^2 & approx floor area of 141.m^2
+ secondfloor describes the second floor of the ccht house as 1 zo
+ There is 122.14m2 of exposed surface area, 122.14m2 of which is vertical.
+ Outside walls are 77.524 % of floor area & avg U of 0.000 & UA of 0.00
+ Glazing is 9.1583 % of floor & 10.565 % facade with avg U of 1.927 & UA of 24.870
+ 
+ A summary of the surfaces in secondfloor( 4) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
+    | m^2   |deg |deg | name       |type|loc| name         |other side
+  1  11.9    180.   0. 2nd_rt_side  OPAQ VERT ccht_wall    ||< external
+  2  21.6     90.   0. 2nd_front    OPAQ VERT ccht_wall    ||< external
+  3  29.6      0.   0. 2ns_l_side   OPAQ VERT ccht_wall    ||< external
+  4  34.5    270.   0. 2nd_back     OPAQ VERT ccht_wall    ||< external
+  5  141.    180.  90. 2nd_ceiling  OPAQ CEIL ceiling      ||< ceiling:roof
+  6  103.      0. -90. 2nd_floor    OPAQ FLOR floors       ||< main_ceiling:mainfloor
+  7  3.99     90.   0. w_bedrm2     TRAN VERT ccht_window  ||< external
+  8  1.70     90.   0. w_bathroom   TRAN VERT ccht_window  ||< external
+  9  2.77     90.   0. w_master     TRAN VERT ccht_window  ||< external
+ 10  2.27     90.   0. w_bdroom3    TRAN VERT ccht_window  ||< external
+ 11  1.53     90.   0. w_bedroom4   TRAN VERT ccht_window  ||< external
+ 12  0.655    90.   0. w_bathrom2   TRAN VERT ccht_window  ||< external
+ 13  5.55     90.   0. stair_north  OPAQ VERT int_partitn  ||< 2nd_north:stairwell
+ 14  5.92    180.   0. stair_east   TRAN VERT fictitious   ||< 2nd_east:stairwell
+ 15  5.55    270.   0. stair_south  OPAQ VERT int_partitn  ||< 2nd_south:stairwell
+ 16  11.7    180.   0. 2nd_rt_side2 OPAQ VERT ccht_wall    ||< external
+ 17  38.0      0. -90. flr_abv_gar  OPAQ FLOR exp_flr_r    ||< garage_ceiln:garage
+ 
+ 
+ All surfaces will receive diffuse insolation.
+ 
+ 
+ 
+ Control: no control of air flow
+ 
+ Number of Weekday Sat Sun air change periods =  1  1  1
+     Period   Infiltration   Ventilation     From Source
+     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+Wkd  1  0 - 24     0.30  0.0290    0.00  0.0000   0     0.00
+Sat  1  0 - 24     0.30  0.0290    0.00  0.0000   0     0.00
+Sun  1  0 - 24     0.30  0.0290    0.00  0.0000   0     0.00
+ 
+Notes:
+nil_operations
+ Number of Weekday Sat Sun casual gains=  2  2  2
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 LightsW    0 - 24    150.0      0.0       0.50       0.50
+Wkd  2 OccuptW    0 - 24    150.0      0.0       0.50       0.50
+Sat  1 LightsW    0 - 24    150.0      0.0       0.50       0.50
+Sat  2 OccuptW    0 - 24    150.0      0.0       0.50       0.50
+Sun  1 LightsW    0 - 24    150.0      0.0       0.50       0.50
+Sun  2 OccuptW    0 - 24    150.0      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone stairwell ( 5) is composed of 15 surfaces and 20 vertices.
+ It encloses a volume of 44.3m^3 of space, with a total surface
+ area of 89.8m^2 & approx floor area of 5.49m^2
+ stairwell describes the stairwell for the basement will be merg
+ There is 16.350m2 of exposed surface area, 16.350m2 of which is vertical.
+ Outside walls are 269.36 % of floor area & avg U of 0.000 & UA of 0.00
+ Glazing is 28.461 % of floor & 9.5564 % facade with avg U of 1.927 & UA of 3.0112
+ 
+ A summary of the surfaces in stairwell( 5) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
+    | m^2   |deg |deg | name       |type|loc| name         |other side
+  1  6.29    180.   0. st_bsm_out   OPAQ VERT foundation_  ||< ground profile  1
+  2  5.90     90.   0. bsm_south    OPAQ VERT int_partitn  ||< stair_south:basement
+  3  6.29      0.   0. bsm_east     TRAN VERT fictitious   ||< stair_east:basement
+  4  5.90    270.   0. bsm_north    OPAQ VERT int_partitn  ||< stair_north:basement
+  5  5.49      0. -90. stair_floor  OPAQ FLOR slab_floor   ||< ground profile  1
+  6  7.31    360.   0. main_east    TRAN VERT fictitious   ||< stair_east:mainfloor
+  7  6.86    270.   0. main_north   OPAQ VERT int_partitn  ||< stair_north:mainfloor
+  8  7.31    180.   0. st_1_out     OPAQ VERT ccht_wall    ||< external
+  9  7.48    180.   0. st_2_out     OPAQ VERT ccht_wall    ||< external
+ 10  5.92      0.   0. 2nd_east     TRAN VERT fictitious   ||< stair_east:secondfloor
+ 11  5.55    270.   0. 2nd_north    OPAQ VERT int_partitn  ||< stair_north:secondfloor
+ 12  5.55     90.   0. 2nd_south    OPAQ VERT int_partitn  ||< stair_south:secondfloor
+ 13  5.49      0.  90. stair_ceilin OPAQ CEIL ceiling      ||< stair_ceilin:roof
+ 14  6.86     90.   0. main_south   OPAQ VERT int_partitn  ||< stair_south:mainfloor
+ 15  1.56      0.   0. w_triangle   TRAN VERT ccht_window  ||< external
+ 
+ 
+ All surfaces will receive diffuse insolation.
+ 
+ 
+ 
+ Control: no control of air flow
+ 
+ Number of Weekday Sat Sun air change periods =  1  1  1
+     Period   Infiltration   Ventilation     From Source
+     id Hours Rate ac/h m3/s Rate ac/h m3/s  Zone Temp.
+Wkd  1  0 - 24     0.30  0.0037    0.00  0.0000   0     0.00
+Sat  1  0 - 24     0.30  0.0037    0.00  0.0000   0     0.00
+Sun  1  0 - 24     0.30  0.0037    0.00  0.0000   0     0.00
+ 
+Notes:
+nil_operations
+ Number of Weekday Sat Sun casual gains=  2  2  2
+Day Gain Type     Period Sensible  Latent     Radiant    Convec
+    No.  labl     Hours  Magn.(W)  Magn. (W)  Frac       Frac
+Wkd  1 LightsW    0 - 24     15.0      0.0       0.50       0.50
+Wkd  2 OccuptW    0 - 24     15.0      0.0       0.50       0.50
+Sat  1 LightsW    0 - 24     15.0      0.0       0.50       0.50
+Sat  2 OccuptW    0 - 24     15.0      0.0       0.50       0.50
+Sun  1 LightsW    0 - 24     15.0      0.0       0.50       0.50
+Sun  2 OccuptW    0 - 24     15.0      0.0       0.50       0.50
+ 
+ ____________________________________________________________
+ 
+ Zone roof ( 6) is composed of 11 surfaces and 17 vertices.
+ It encloses a volume of 207.m^3 of space, with a total surface
+ area of 331.m^2 & approx floor area of 141.m^2
+ roof describes the two-level roof of the house
+ There is 185.05m2 of exposed surface area, 8.2000m2 of which is vertical.
+ Outside walls are 5.8193 % of floor area & avg U of 3.932 & UA of 32.239
+ Sloped roof is 125.51 % of floor area & avg U of 3.932 & UA of 695.32
+ 
+ A summary of the surfaces in roof( 6) follows:
+ 
+ Sur| Area  |Azim|Elev| surface    |geometry| construction |environment
+    | m^2   |deg |deg | name       |type|loc| name         |other side
+  1  31.8    270.  56. roof1_back   OPAQ SLOP asphalt      ||< external
+  2  23.1     90.  64. roof1_frnt   OPAQ SLOP asphalt      ||< external
+  3  33.0    181.  51. roof1_side   OPAQ SLOP asphalt      ||< external
+  4  8.20     90.   0. roof1_vert   OPAQ VERT asphalt      ||< external
+  5  23.4      0.  50. roof2_vert   OPAQ SLOP asphalt      ||< external
+  6  19.3    270.  67. roof2_back   OPAQ SLOP asphalt      ||< external
+  7  19.3     90.  67. roof2_front  OPAQ SLOP asphalt      ||< external
+  8  18.4    358.  50. roof_1_2     OPAQ SLOP asphalt      ||< external
+  9  8.59    180.  44. roof1_tri    OPAQ SLOP asphalt      ||< external
+ 10  141.      0. -90. ceiling      OPAQ FLOR ceiling_r    ||< 2nd_ceiling:secondfloor
+ 11  5.49      0. -90. stair_ceilin OPAQ FLOR ceiling_r    ||< stair_ceilin:stairwell
+ 
+ 
+ All surfaces will receive diffuse insolation.
+ 
+ Control: no control of air flow
+ 
+ Number of Weekday Sat Sun air change periods =  0  0  0
+ 
+Notes:
+nil_operations
+ Number of Weekday Sat Sun casual gains=  0  0  0
+ 
+ ____________________________________________________________
+ 
+ Project floor area is 531.08m2, wall area is 257.53m2, window area is 28.026m2.
+ Sloped roof area is 176.85m2, flat roof area is 0.00m2, skylight area is 0.00m2.
+ There is 462.41m2 of outside surface area, 285.55m2 of which is vertical.
+ 
+ Outside walls are 48.491 % of floor area & avg U of 0.156 & UA of 40.298
+ Sloped roof is 33.301 % of floor area & avg U of 3.932 & UA of 695.32
+ Glazing is 5.2772 % of floor & 9.8146 % facade with avg U of 1.927 & UA of 54.011
+ 
+ ____________________________________________________________
+ Multi-layer constructions used:
+ 
+ Details of transparent construction: ccht_window  with ccht-win     optics.
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   242    3.0     0.760  2710.   837. 0.83 0.05 19200.  0.00 Plate glass
+    2    0   13.0     0.000     0.     0. 0.99 0.99     1.  0.34 air  0.34 0.34 0.34
+ Int   242    3.0     0.760  2710.   837. 0.83 0.05 19200.  0.00 Plate glass
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.927  2.045  1.789 (partition)  1.642
+ Total area of ccht_window is     28.03
+ 
+ Details of opaque construction: slab_floor
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+    1   21  250.0     0.380  1200.   653. 0.90 0.65     6.  0.66 Light mix conc
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.208  1.253  1.152 (partition)  1.089
+ Total area of slab_floor is    146.40
+ 
+ Details of opaque construction: foundation_
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    21  200.0     0.380  1200.   653. 0.90 0.65     6.  0.53 Light mix conc
+ Int   107   13.5     0.190   950.   840. 0.91 0.50    11.  0.07 Gypsum plasterboard
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.303  1.356  1.239 (partition)  1.166
+ Total area of foundation_ is    107.56
+ 
+ Details of opaque construction: ceiling
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   107   12.7     0.190   950.   840. 0.91 0.50    11.  0.07 Gypsum plasterboard
+    2  219  250.0     0.110   480.  1050. 0.90 0.65    10.  2.27 Thermalite turbo blk
+ Int    72   25.0     0.150   700.  1420. 0.90 0.65   576.  0.17 Plywood
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.374  0.378  0.368 (partition)  0.362
+ Total area of ceiling is    146.40
+ 
+ Details of opaque construction: ccht_wall_r
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    72   12.0     0.150   700.  1420. 0.90 0.65   576.  0.08 Plywood
+    2  281  140.0     0.040    12.   840. 0.90 0.65    30.  3.50 Glass Fibre Quilt
+    3   67   11.0     0.150   800.  2093. 0.91 0.65    96.  0.07 Chipboard
+    4    0   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int     4  100.0     0.960  2000.   650. 0.90 0.93    25.  0.10 Outer leaf brk
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.244  0.246  0.242 (partition)  0.239
+ Total area of ccht_wall_r is     37.57
+ 
+ Details of opaque construction: floors
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   225   15.0     0.060   160.  2500. 0.90 0.65    10.  0.25 Synthetic carpet
+    2   65   25.0     0.140   600.  1210. 0.91 0.65    14.  0.18 Flooring
+    3    0  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    70   17.0     0.150   560.  2500. 0.90 0.65   576.  0.11 Plywood
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.134  1.174  1.085 (partition)  1.029
+ Total area of floors is    205.75
+ 
+ Details of opaque construction: floors_r
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    70   17.0     0.150   560.  2500. 0.90 0.65   576.  0.11 Plywood
+    2    0  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3   65   25.0     0.140   600.  1210. 0.91 0.65    14.  0.18 Flooring
+ Int   225   15.0     0.060   160.  2500. 0.90 0.65    10.  0.25 Synthetic carpet
+ ISO 6946 U values (horiz/upward/downward heat flow)=  1.134  1.174  1.085 (partition)  1.029
+ Total area of floors_r is    205.75
+ 
+ Details of opaque construction: ext_doors
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   283    5.0     0.043    91.   837. 0.90 0.50     1.  0.12 B5-1_IN_DENSE_INSULATION_0.025
+    2  205   25.0     0.030    30.   837. 0.90 0.50    90.  0.83 Polyurethane foam bd
+ Int   283    5.0     0.043    91.   837. 0.90 0.50     1.  0.12 B5-1_IN_DENSE_INSULATION_0.025
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.809  0.829  0.784 (partition)  0.754
+ Total area of ext_doors is      9.96
+ 
+ Details of opaque construction: asphalt
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   163    5.0     1.150  2325.   837. 0.90 0.90 19200.  0.00 Asphalt mastic roofing
+ Int    72   12.0     0.150   700.  1420. 0.90 0.65   576.  0.08 Plywood
+ ISO 6946 U values (horiz/upward/downward heat flow)=  3.932  4.457  3.397 (partition)  2.904
+ Total area of asphalt is    185.05
+ 
+ Details of opaque construction: int_partitn
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   107   12.5     0.190   950.   840. 0.91 0.50    11.  0.07 Gypsum plasterboard
+    2    0   25.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int   107   12.5     0.190   950.   840. 0.91 0.50    11.  0.07 Gypsum plasterboard
+ ISO 6946 U values (horiz/upward/downward heat flow)=  2.121  2.265  1.955 (partition)  1.781
+ Total area of int_partitn is     73.23
+ 
+ Details of opaque construction: ceiling_r
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    72   25.0     0.150   700.  1420. 0.90 0.65   576.  0.17 Plywood
+    2  219  250.0     0.110   480.  1050. 0.90 0.65    10.  2.27 Thermalite turbo blk
+ Int   107   12.7     0.190   950.   840. 0.91 0.50    11.  0.07 Gypsum plasterboard
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.374  0.378  0.368 (partition)  0.362
+ Total area of ceiling_r is    146.40
+ 
+ Details of transparent construction: fictitious   with SC_fictit    optics.
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+    1  284    5.0     0.153   614.  1630. 0.90 0.92     1.  0.03 1.375in-Solid-Core
+ ISO 6946 U values (horiz/upward/downward heat flow)=  4.934  5.791  4.121 (partition)  3.417
+ 
+ Fictitious 99/99,      4mm, no blind: with id of: SC_fictit
+ with 1 layers [including air gaps] and visible trn: 0.99
+ Direct transmission @ 0, 40, 55, 70, 80 deg
+   0.998 0.987 0.986 0.985 0.984
+ Layer| absorption @ 0, 40, 55, 70, 80 deg
+    1  0.001 0.001 0.001 0.001 0.001
+ Total area of fictitious is     39.03
+ 
+ Details of opaque construction: exp_flr
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext   225   15.0     0.060   160.  2500. 0.90 0.65    10.  0.25 Synthetic carpet
+    2   65   25.0     0.140   600.  1210. 0.91 0.65    14.  0.18 Flooring
+    3  281  140.0     0.040    12.   840. 0.90 0.65    30.  3.50 Glass Fibre Quilt
+    4    0  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+ Int    70   17.0     0.150   560.  2500. 0.90 0.65   576.  0.11 Plywood
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.228  0.230  0.226 (partition)  0.224
+ Total area of exp_flr is     38.03
+ 
+ Details of opaque construction: exp_flr_r
+ 
+ Layer|Prim|Thick |Conduc-|Density|Specif|IR  |Solr|Diffu| R    |Descr
+      |db  |(mm)  |tivity |       |heat  |emis|abs |resis|m^2K/W
+ Ext    70   17.0     0.150   560.  2500. 0.90 0.65   576.  0.11 Plywood
+    2    0  100.0     0.000     0.     0. 0.99 0.99     1.  0.17 air  0.17 0.17 0.17
+    3  281  140.0     0.040    12.   840. 0.90 0.65    30.  3.50 Glass Fibre Quilt
+    4   65   25.0     0.140   600.  1210. 0.91 0.65    14.  0.18 Flooring
+ Int   225   15.0     0.060   160.  2500. 0.90 0.65    10.  0.25 Synthetic carpet
+ ISO 6946 U values (horiz/upward/downward heat flow)=  0.228  0.230  0.226 (partition)  0.224
+ Total area of exp_flr_r is     38.03

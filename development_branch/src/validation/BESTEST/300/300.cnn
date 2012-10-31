@@ -1,0 +1,11 @@
+*connections for 300
+*Date Wed Aug 29 13:11:51 2012
+      8   # number of connections
+   1   1   0   0   0  #    1 East_Wall in 300 is External
+   1   2   0   0   0  #    2 North_Wall in 300 is External
+   1   3   0   0   0  #    3 West_Wall in 300 is External
+   1   4   0   0   0  #    4 Roof in 300 is External
+   1   5   4   0   1  #    5 Floor in 300 >|< user def ground profile 1
+   1   6   0   0   0  #    6 South_Wall in 300 is External
+   1   7   0   0   0  #    7 EastWindow in 300 is External
+   1   8   0   0   0  #    8 WestWindow in 300 is External

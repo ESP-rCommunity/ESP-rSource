@@ -1,0 +1,95 @@
+
+CHP Unit Feeding DHW System
+----------------------------
+Plant only simulation.
+
+This plant network represents a CHP unit feeding a building WCH system
+along with the DHS calorifier which supplies the hot water for the
+building. For the sake of clarity the radiator system is not modelled
+explicitly. The CHP unit supplies the total heat load for the building,
+usually the CHP unit operates in parallel with conventional boilers.
+Again for the sake of clarity these have been omitted and the system is
+effectively running in a "base load" situation.
+
+Plant Network
+-------------
+The plant network consists of eight  plant components;
+ 
+* 20kWe CHP unit 
+* 400 litre WCH calorifier
+* CHP-pump
+* DHW-pump
+* WCH flow control valve
+* DHS-pump
+* DHW-converge
+* bpass-converge
+ 
+The CHP engine unit feeds both the radator system (WCH) and
+the calorifier unit. The calorifier feeds the building 
+hot water services (DHS). The CHP unit recieves the return
+from bothe the calorifer and radiator systems. The core
+of the system is shown in the schematic associated with this
+exemplar. Neither the radiator system or DHS systems are modeled
+explicitly.
+
+The supply flow rate to the radiator system is 0.008kg/s while the
+supply to the calorifier is 0.008kg/s, the supply to the calorifier 
+can be changed by operation of the diverting valve. The return from 
+the radiator system is at 71 DegC while the feed to the calorifier is
+12 DegC. The DHS demand is 0.08kg/s
+
+
+Control
+--------
+Two control loops are operational within the system. The CHP unit 
+has an ON/OFF control regime sensing return flow temperatures;
+
+
+                OFF
+        _____________________ SPT HI 90 DegC 
+
+        Hysteresis Dead Band
+
+        _____________________ SPT LO 80 DegC
+
+                ON
+
+The ON/OFF control is active in the simulation from
+7.00-22.00hrs, outside the this period the plant is 
+shut down. 
+
+The diverting valve on in the circuit is subject to 
+proportional control sensing the calorifier temperature;
+
+                CLOSED
+        _____________________ SPT HI 80 DegC  
+
+        Proportional band
+
+        _____________________ SPT LO 70 DegC
+
+             FULLY OPEN
+
+Simulation
+----------
+The system requires a 1-day start-up to bring the calorifier up to 
+temperature. It is recommended for reasons of stability that a 
+minimum of 4 time steps per hour are used (the system in the exemplar
+has been tested at 1, 10 and 30 time steps per hour).
+
+Results
+-------
+The two main components of interest in the simulation are the 
+calorifier and and the CHP unit. Output which can be recovered
+in tabular format from res includes;
+
+CHP unit power output.
+CHP unit fuel comsumption.
+CHP and calorifier unit temperatures.
+
+The action of the control valve can be investigated 
+by comparing flow rates in the calorifier coil (node 2)
+and the bypass valve. The ON/OFF control action on the CHP
+unit can be seen when comparing CHP unit output and the
+return flow temperatures in the DHW converging junction.
+

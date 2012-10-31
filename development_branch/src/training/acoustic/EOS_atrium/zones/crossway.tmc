@@ -1,0 +1,12 @@
+# transparent properties of Crossway defined in Crossway.tmc
+   6   # surfaces
+# tmc index for each surface
+   0  0  0  1  0  0
+   3  # layers
+# Transmission @ 5 angles & visible tr.
+   0.337   0.316   0.270   0.157   0.055   0.623
+# For each layer absorption @ 5 angles
+   0.117   0.128   0.139   0.152   0.152
+   0.001   0.001   0.001   0.001   0.001
+   0.035   0.037   0.036   0.027   0.015
+   0  # blind/shutter control flag

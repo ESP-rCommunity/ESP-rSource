@@ -1,0 +1,10 @@
+*HC_CTL for zone T_1-V_a
+*Date,Tue May 17 16:24:41 2005
+   1 # number control intervals
+   7 # number of surfaces
+# (South East North West Ceiling Floor window)
+  0.00    24.00 # start and end time of interval
+   2 # calculation control type
+*Doc,User supplied hc correlations
+ 7,7,7,7,7,7,7
+ 7,7,7,7,7,7,7

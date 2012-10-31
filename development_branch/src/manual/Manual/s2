@@ -1,0 +1,527 @@
+.ds CH
+.ds RH 2-%
+.ds LH ESP-r User Guide Version 11 Series
+.ps 12
+.vs 14
+.nr PS 12
+.nr VS 14
+.EQ
+delim $$
+.EN
+.LP
+\ 
+.sp 3
+\ 
+.ce
+\fB\s+9Section Two\s0\fR
+.sp 1
+.ce
+\fB\s+5A guide to effective system use\s0\fR
+.sp 5
+.SH
+Contents
+.sp 1
+.IP 2.0
+Introduction
+.IP 2.1
+Simulation strategy
+.IP 2.2
+General outline of program operation
+.IP 2.3
+Data file management
+.bp
+.SH
+2.0 Introduction
+.LP
+In use ESP-r can be divided into two distinct parts.
+.LP
+The first is concerned with establishing a valid data model
+(description of the building and/or plant configuration) for
+simulation. This will involve the use of
+the Project Manager.
+The support modules can then be used to
+increase the detail of the simulation to follow, if
+this is deemed necessary.
+.LP
+The second part is concerned with the simulation processing
+and subsequent results analysis. This will involve the use
+of the Simulator and the Results Analyser. Note that all
+ESP-r modules are invoked from the Project Manager.
+.LP
+In using ESP-r it is not important to know all the relationships
+between the ESP-r program modules and the system's data structures.
+However for a deeper appreciation these relationships are
+shown in Figure 2.1.
+.br
+To work with ESP-r you need to be able to cope with a range of
+technical concepts relating to material properties, control systems, and
+the like. Information on the data requirements of ESP-r is held on-line
+and is accessible through the Project Manager (via its tutorial facility).
+Additional
+details are given in a separate document "Summary of ESP-r's Data Model".
+.KF
+.PSPIC FIGS/fig2.1.epsi 14c 16c
+.sp
+.ce 2
+Figure 2.1 Relationship between the ESP-r application modules and databases.
+.sp
+.KE
+.LP
+For each zone in the
+building a geometry, construction and operations file must
+be established. Then, optionally and to increase simulation
+rigour, one or more
+of the following zone files can be set up to replace the default
+schemes implied by the data of the essential files:
+a shading/insolation file, a blind/shutter
+control file, a view factor file, an air flow file, a casual
+gain (control) file and a convection coefficients file. The existence
+of these optional files is indicated by the entries of a
+zone utilities file created for the purpose.
+The system configuration file is now set up to define
+the zones and, perhaps, the plant components which will
+participate in a simulation. Following this, the configuration control file
+is established to define the control to be imposed on building
+zones and plant components.
+All of these files are created and/or edited via the Project Manager. This
+program module can also be used to establish the data sets
+as required by the \fIFluid Flow Simulation Module\fP
+and the \fIInsolation and Shading Prediction Module\fP; namely, a
+configuration leakage distribution file, a pressure coefficients file
+and a site obstructions file.
+Note that some of the optional zone files can also be created directly
+from the support modules - for example
+the \fIView Factor Prediction Module\fP can create a zone view
+factor file. This is a powerful feature of ESP-r.
+.LP
+There are other files active in the system. These include the
+primitives and composite construction databases, the event
+profiles database, the plant components database,
+the windows database and the climate
+database. In addition: the Simulator will
+produce two databases, for building- and plant-side, for transmission
+to the \fIResults Analyser\fR; the \fISimulator\fR can also produce
+a fluid flow results file for analysis and archival purposes;
+and many of the modules can produce detailed computation trace files for
+fault finding and highly focused appraisals.
+Figure 2.1 summarises these possibilities and indicates the file
+types involved.
+.LP
+The next section of the documentation set outlines a strategy
+for effective use of these modules. Interactive
+operation, by means of hierarchical menu
+drivers or function button protocols, is also explained
+and advice is given on managing
+the file structures which result from the data preparation and
+simulation activities.
+.SH
+2.1 Simulation strategy
+.LP
+The following step-by-step procedure should be closely
+followed by a novice. On the other hand, an experienced user
+may prefer an alternative strategy which bypasses some steps
+or changes their order.
+.IP 1.
+Analyse the design problem in hand and decide on the
+performance features to be appraised by ESP-r. Perhaps
+zone comfort levels are to be determined, the consequences
+of alternative design options assessed, or an optimum
+control regime formulated. This is an important task since
+it will influence the time and expense incurred thereafter.
+.IP 2.
+Now decide on the minimum number of building zones
+and plant components which will yield the performance
+measures required. For example, a one zone building model
+will allow an appraisal of summer overheating in the absence
+of cooling and against any number of design hypotheses. The
+same model, combined with a six plant component air
+conditioning plant (a mixing box, humidifier, fan,
+cooler, heater and supply duct, say), will allow a study of
+plant energy consumption against several control options.
+Avoid, in the first instance, any attempt to
+simulate large, complex building/plant
+systems. It is, of course, possible to undertake such an
+exercise, but only at the expense of time (data preparation)
+and cost (simulation). Very often good design insight can be
+obtained from simulations directed at portions of
+the overall system. It is important not to be merely led by
+the system but to give careful thought to the problem
+composition. Perhaps small multi-zone building problems, with
+specified zone conditions maintained, can be used to study
+several building design options. Then, at some later stage, a
+plant systems can be progressively added.
+In ESP-r terminology, the final
+system for simulation, irrespective of size or composition,
+is termed the
+.ul 1
+system configuration.
+.IP 3.
+A computer model of the system configuration must now be
+created via the Project Manager. The underlying procedure
+is as follows. Firstly, each building zone in the
+configuration is described in terms of its
+.ul 1
+geometry, construction
+and
+.ul 1
+operation.
+This results in the creation of three mandatory disk files per zone.
+A
+.ul 1
+system configuration
+file is then built. This contains a reference to these zone files,
+information defining zone interaction, and a description of
+the plant network (if one exists) in terms of individual components,
+their inter-connections and building associations.
+At the appropriate point, any of the constructions databases, the
+event profiles database, the plant components database or the optics
+database can be
+accessed and an item contained therein extracted to define a
+zone property or plant component.
+.IP
+The designer is simply required to answer
+a series of questions concerning the system configuration. Control
+of this interactive dialogue, along with validity checking
+and automatic disk file building, is the principal function
+of the Project Manager.
+.IP 4.
+At this stage, additional model details can be added.
+.IP
+An
+.ul 1
+air flow
+file containing time-series infiltration and zone-coupled air
+flow for use during a simulation. If present,
+these air flows supersede the design air change profiles
+specified in the corresponding zone operation
+file. Note that if a building leakage description is active
+(see later) then calculated flows will supersede both design
+air change profiles and time-series air flow data.
+.IP
+A
+.ul 1
+casual gains
+file containing time-series heat gains for use during a
+simulation. Again, if specified, the casual gains will supersede
+any casual gain profiles defined in the corresponding zone operation file.
+.IP
+A
+.ul 1
+casual gains control
+file containing information on scheduling of casual gains
+in order to simulate, for example, various switching
+strategies for artificial
+lighting based on the availability of daylight.
+.IP
+A
+.ul 1
+view factor
+file containing inter-surface view factors for use in a
+simulation to improve longwave radiation calculations.
+.IP
+A
+.ul 1
+shading/insolation
+file containing time-series data on external surface shading
+and/or internal surface insolation.
+.IP
+A
+.ul 1
+convection coefficients
+file allowing the specification of zone surface convection values
+to supersede those values which are computed at simulation
+time on the basis of natural convection considerations.
+.IP
+A
+.ul 1
+transparent multi-layered constructions
+file allowing elected zone multi-layered constructions to
+be declared transparent.
+.IP
+A
+.ul 1
+flow domain
+file specifying a 1-, 2- or 3-D grid and related
+parameters in support of a CFD simulation.
+.IP
+Each of these optional zone files can be created by
+terminal input directed by the Project Manager.
+.IP
+The time taken to reach this stage can vary greatly. An
+experienced user will require about 20 minutes per zone
+if the required data is readily available.
+On the other hand a beginner can take substantially longer.
+The only rule is to omit complexity in cases where its
+inclusion cannot significantly influence the performance
+aspect to be tested. For example, the omission of wall
+vapour barriers will have little effect on summer cooling
+loads but will completely alter winter interstitial
+condensation profiles.
+.IP 5.
+A plant network can now be defined, component-by-component,
+and connected to the established building model. It is normal
+practice to bypass this step at an early design stage. Instead
+ideal control statements are associated with each zone to
+allow a study of the effects of the various design parameters.
+At some later time the plant is added to allow a study of the
+control issues. Of course, if the relationship between the
+building-side design issues and the plant characteristics
+are strong, and the plant details are known, then a combined
+building/plant study can be undertaken from the outset.
+.IP 6.
+Simulations can now be commissioned from within
+the Project Manager against the assumption that the configuration is
+not subjected to control (a free-floating simulation). 
+However, in most cases, some control will be required.
+From the Project Manager the control regime can be
+specified in terms of sensors, actuators and control laws.
+The control specification is stored in the
+.ul 1
+configuration control
+file which is then invoked from the Simulator.
+This configuration control file, together with
+the system configuration file (which references the
+basic zone files and the active plant components),
+and a climate file are the only
+files required by the Simulator to completely describe the
+problem for simulation processing.
+.IP 7.
+If air flow within the building configuration is to be
+simulated by the Simulator in tandem with the energy
+simulation (and perhaps a zone CFD simulation), it is necessary to define the distributed
+building leakage and to ensure that the required pressure
+coefficient sets are located in a related database. Both
+operations are directed by the Project Manager, resulting in two
+further disk files: the
+.ul 1
+fluid flow network
+and
+.ul 1
+pressure coefficients
+files. The names of these files are given to the Simulator at
+the time of configuration file creation. The Simulator will now
+assess the pressure and temperature driven air flows for the
+defined zones and
+disregard any air change profiles (located in the corresponding
+zone
+operations file) or active zone air flow file.
+.IP 8.
+From within the Project Manager it is possible to check
+configuration geometry by computing area and volume
+quantities or by generating perspective displays.
+At this stage, it is possible to create a description of surrounding
+site obstructions to define
+the objects which will cause target zone shading.
+.IP
+Throughout the entire data preparation process, the Project Manager
+offers editing and listing operations so that mistakes can
+be easily rectified and hard copy records can be kept.
+.IP 9.
+The climate analysis module can now be used to analyse
+the climatic collections held on disk in the format required
+by ESP-r. By this mechanism, one collection is selected,
+and typical sequences identified, to provide boundary
+conditions which best stress the
+performance attribute to be tested.
+.IP 10.
+Simulations are now performed
+from within the Project Manager against one or
+more
+.ul 1
+system configuration
+and
+.ul 1
+configuration control
+files. Changing either of these files, or the climate file,
+allows different design options and control regimes to be
+tested under different weather influences.
+.IP 11.
+All results recovery and analysis is then undertaken with
+the help of the Results Analyser (invocable from within the Project Manager),
+with the principal objective of
+understanding the cause and effect relationships implied by
+the energy flowpath magnitudes and directions.
+.IP 12.
+Appropriate design modification can now be implemented via
+the Project Manager by editing a mandatory or optional
+zone file, the system configuration file
+or the configuration control file. In this way constructions
+can be changed, operational schemes modified, plant layout
+re-configured, shading devices added or removed, and so on.
+.SH
+2.2 General outline of program operation
+.LP
+A session with ESP-r might adhere to the following sequence.
+.IP \(bu
+Log on to the computer offering ESP-r.
+.IP \(bu
+Start ESP-r by issuing the command \fIesp-r\fR.
+This will start ESP-r in its default graphics mode. You can specify
+an alternative mode from the following list:
+.nf
+     esp-r -mode text     (text only mode with no pauses)
+     esp-r -mode graphic  (default)
+.fi
+.IP
+It is also possible to start up ESP-r directly with a 
+configuration file. For example \fIesp-r -file xxx.cfg\fR
+will start ESP-r with the problem specified in the system configuration
+file \fIxxx.cfg\fR already loaded into the Project Manager.
+.IP
+The start-up
+window size can also be controlled: type \fIesp-r -help\fR for
+the required syntax.
+.IP \(bu
+Select commands as required from the menus displayed and
+thereby pick a path through the program.
+.IP \(bu
+Answer the questions posed at each interaction.
+.IP \(bu
+Eventually terminate the program by returning to the main
+menu and selecting the \fIExit\fP command.
+.IP \(bu
+Delete any unwanted files; for example, zone files no longer
+required or results files (usually large) which have been
+fully analysed.
+.IP \(bu
+Log off after checking that any disk quotas have not been
+exceeded.
+.LP
+All program menus are hierarchical so that each menu pick
+will result in a particular processing option (with control
+returning to the same menu level), or will lead to a lower
+level command menu. In graphics mode, menu
+picks are initiated by the left mouse button. In text mode
+selection is by an identifier.
+.LP
+To questions requiring a yes/no response a user may type 1,
+Y, y, YES or yes and 0, N, n, NO or no. Also, after some output sequences,
+the program will pause to allow examination of the displayed
+page. The pause state is indicated by a \fBmore\fP button at the
+bottom screen position. To continue click the left mouse button over
+the "more" button.
+.\" .LP
+.\" \fIFunction buttons\fR
+.\" .LP
+.\" Here the run sequence is
+.\" .IP \(bu
+.\" Log on to the computer offering ESP-r.
+.\" .IP \(bu
+.\" Define the configuration for simulation by using \fBesp-r\fR in
+.\" interactive menu mode.
+.\" .IP \(bu
+.\" Start the process \fBExpert\fR to initiate function button operation.
+.\" This caused active rules scripts, containing the rules
+.\" which govern each
+.\" processing function, to be bound to selected keyboard buttons.
+.\" .IP \(bu
+.\" Select, by single button push, the required analysis or analyses.
+.\" .IP \(bu
+.\" Delete any unwanted files as above and log off.
+.\" .LP
+.\" ESP-r will normally offer several standard analysis scripts. When
+.\" invoked, \fBExpert\fR will detail the processing
+.\" options on offer and the
+.\" corresponding terminal keys. At any time a user can develop a
+.\" customised script and define this to \fBExpert\fR. Scripts contain the
+.\" rules which will govern ESP-r's actions at runtime. They may also
+.\" invoke other object modules which act to examine simulation results
+.\" and make expert decisions to influence subsequent simulations or the
+.\" nature of the results display associated with the particular script.
+.\" .LP
+.\" The establishment of a script is also the appropriate mechanism for
+.\" controlling simulations which are best performed
+.\" in batch or background mode.
+.SH
+2.3 Data file management
+.LP
+In addition to the database structures essential to ESP-r's
+operation (containing primitive and composite
+constructions, event profiles, plant components and climatic
+collections), the following file types may be produced in a
+typical session.
+.IP \(bu
+A mandatory
+.ul 1
+geometry, construction
+and
+.ul 1
+operation
+file for each zone.
+.IP \(bu
+An optional
+.ul 2
+air flow, casual gains, 
+shading/insulation, view factor, surface convection
+and
+.ul 1
+transparent multi-layered construction
+file for some or all zones.
+.IP \(bu
+A mandatory
+.ul 1
+system configuration
+file and, perhaps, a
+.ul 1
+configuration control
+file.
+.IP \(bu
+Optionally, a
+.ul 1
+fluid flow network description
+file
+(i.e. a leakage distribution file in the case of a building air flow network), a
+.ul 1
+pressure coefficients
+file and a
+.ul 1
+fluid flow results
+file
+(i.e. air flow results in the case of an air-only flows problem).
+.IP \(bu
+One or more
+.ul 1
+simulation results
+files.
+.KS
+.TS
+center box;
+l l.
+File Type	Extension
+_
+System Configuration	.cfg
+Connections	.cnn
+System Control	.ctl
+Geometry	.geo
+Construction	.con
+Operations	.opr
+Shading/Insolation	.shd
+View Factors	.vwf
+Air Flows	.air
+Convection Coefficients	.hcf
+Site Obstructions	.obs
+Mass Flow Network	.mfn
+Transparent Constructions	.tmc
+Casual Gains Control	.cgc
+CFD file	.dfd
+.TE
+.sp 0.5
+.ce
+Table 2.1 Filename convention
+.KE
+.LP
+Effective file management can only follow from a file
+naming convention (largely automated by the Project Manager) in which
+the name itself yields information about the project and file type.
+In ESP-r the file type is reflected in the filename extension as indicated
+in Table 2.1.
+.TS
+doublebox center;
+lbw(5i).
+T{
+Remember to avoid unnecessary complexity
+by keeping the system configuration
+as simple as allowed by the
+design issue being studied.
+T}
+.TE

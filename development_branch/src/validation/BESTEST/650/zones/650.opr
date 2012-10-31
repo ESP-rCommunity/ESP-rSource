@@ -1,0 +1,33 @@
+*Operations 1.0
+*date Mon May  2 14:32:07 2005  # latest file modification 
+# operations of 650 defined in: 
+# 650.opr
+Nothing written yet.
+# control(no control of air flow  ), low mid & high setpoints 
+   0     0.000     0.000     0.000
+     3   # no Weekday flow periods
+# Wkd: start, stop, infil, ventil, source, data
+   0,  7,   11.210    0.000    0    0.000
+   7, 18,    0.410    0.000    0    0.000
+  18, 24,   11.210    0.000    0    0.000
+     3   # no Saturday flow periods
+# Sat: start, stop, infil, ventil, source, data
+   0,  7,   11.210    0.000    0    0.000
+   7, 18,    0.410    0.000    0    0.000
+  18, 24,   11.210    0.000    0    0.000
+     3   # no Sunday flow periods 
+# Sun: start, stop, infil, ventil, source, data
+   0,  7,   11.210    0.000    0    0.000
+   7, 18,    0.410    0.000    0    0.000
+  18, 24,   11.210    0.000    0    0.000
+     1   # no Weekday casual gains 
+# Wkd: type, start, stop, sens, latent, rad_frac, conv_frac
+    3,   0,  24,    200.0,      0.0, 0.600, 0.400
+     1   # no Saturday casual gains 
+# Sat: type, start, stop, sens, latent, rad_frac, conv_frac
+    3,   0,  24,    200.0,      0.0, 0.600, 0.400
+     1   # no Sunday casual gains 
+# Sun: type, start, stop, sens, latent, rad_frac, conv_frac
+    3,   0,  24,    200.0,      0.0, 0.600, 0.400
+# Labels for gain types 
+ Occupt Lights Equipt

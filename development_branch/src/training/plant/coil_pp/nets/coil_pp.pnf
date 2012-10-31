@@ -1,0 +1,91 @@
+# Plant component data base:
+plantc.db1                                                                                                                                      
+# Project title:
+coil.pnf                                                              
+# Total no. of specified components and simulation type
+   11    3
+#->   1, air flow multiplier; 1 node PP model                                    
+  1                 41
+    0        # Component has   0 control variable(s).
+    2
+ 0.27778E-01  0.27778E-01
+#->   2, air/water heat transfer tube; 4 node PP model                           
+  2                 39
+    0        # Component has   0 control variable(s).
+    9
+ 0.39680       692.60       0.0000      0.97160      0.38350E-01  0.19290E-01
+ 0.11850E-01   1.0300      0.90000E-03
+#->   3, air/water heat transfer tube; 4 node PP model                           
+  3                 39
+    0        # Component has   0 control variable(s).
+    9
+ 0.39680       692.60       0.0000      0.97160      0.38350E-01  0.19290E-01
+ 0.11850E-01   1.0300      0.90000E-03
+#->   4, air/water heat transfer tube; 4 node PP model                           
+  4                 39
+    0        # Component has   0 control variable(s).
+    9
+ 0.39680       692.60       0.0000      0.97160      0.38350E-01  0.19290E-01
+ 0.11850E-01   1.0300      0.90000E-03
+#->   5, air/water heat transfer tube; 4 node PP model                           
+  5                 39
+    0        # Component has   0 control variable(s).
+    9
+ 0.39680       692.60       0.0000      0.97160      0.38350E-01  0.19290E-01
+ 0.11850E-01   1.0300      0.90000E-03
+#->   6, air flow multiplier; 1 node PP model                                    
+  6                 41
+    0        # Component has   0 control variable(s).
+    2
+  36.000       36.000    
+#->   7, centrifugal fan, 1 node model ; flow control                            
+  7                  3
+    1        # Component has   1 control variable(s).
+   2.384000    
+    6
+  10.000       500.00       7.0000       200.00       2.3840      0.70000    
+#->   8, air & water temperature source                                          
+  8                 24
+    2        # Component has   2 control variable(s).
+   30.00000       6.000000    
+    0
+#->   9, water and/or steam flow multiplier; 1 node PP model                     
+  9                 40
+    0        # Component has   0 control variable(s).
+    2
+ 0.27778E-01  0.27778E-01
+#->  10, water and/or steam flow multiplier; 1 node PP model                     
+  10                40
+    0        # Component has   0 control variable(s).
+    2
+  36.000       36.000    
+#->  11, variable speed domestic WCH pump; 1 node model                          
+  11                15
+    1        # Component has   1 control variable(s).
+  9.0019999E-04
+    6
+  5.0000       2250.0      0.20000       150.00      0.90000E-03  0.70000    
+# The following is a list of component connections.
+ 16          # Total number of connections
+# receiving       node  conncn sending          node  diversion  suppl1   suppl2
+# component              type  component                ratio
+  1                 1     3     8                 1    1.000                 #  1
+  2                 2     3     1                 1    1.000                 #  2
+  3                 2     3     2                 2    1.000                 #  3
+  4                 2     3     3                 2    1.000                 #  4
+  5                 2     3     4                 2    1.000                 #  5
+  6                 1     3     5                 2    1.000                 #  6
+  7                 1     3     6                 1    1.000                 #  7
+  8                 1     2     7                 1    1.000    30.00   0.01 #  8
+  9                 1     3     8                 2    1.000                 #  9
+  5                 3     3     9                 1    1.000                 # 10
+  4                 3     3     5                 4    1.000                 # 11
+  3                 3     3     4                 4    1.000                 # 12
+  2                 3     3     3                 4    1.000                 # 13
+  10                1     3     2                 4    1.000                 # 14
+  11                1     3     10                1    1.000                 # 15
+  8                 2     2     11                1    1.000     6.00   0.00 # 16
+# No containment temperatures defined
+  0
+# No mass flow network defined.
+    0

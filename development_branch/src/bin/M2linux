@@ -1,0 +1,87 @@
+#!/bin/csh
+# take an esp-r model in the standard folder layout and go into
+# each of the folders and convert ascii files (not shading files
+# or binary databases) into linux format. Should be run in the project
+# root folder (i.e. above cfg zones etc.)
+
+echo "FIRST: export any local materials db to ascii format"
+echo "SECOND: Make a copy of the model (i.e. cp -r model model_nt)"
+echo "   (substitute your own folder names for model and model_nt)"
+echo "THIRD: cd to model_nt root directory (above cfg zones etc.)" 
+echo "  "
+echo "This procedure assumes the standard ESP-r model folder layout"
+echo " (cfg zones ctl nets) and standard file names"
+echo " (*.geo *.cfg *.con *.tmc etc.). It does NOT" 
+echo " alter (*.shd or binary databases)"
+echo "  "
+echo "It requires the Linux utility fromdos." 
+echo "  "
+echo "The script searches for backslashes and converts them to "
+echo "forward slashes. It also looks for c:\Esru and replaces it with  "
+echo "/usr/esru "
+echo "  "
+echo "This version of DOS model to Linux is setup for Linux workstations." 
+echo "  " 
+echo "usage example: ./M2linux" 
+echo "current model is in $PWD " 
+set x="y"
+echo "Proceed (y/n) ?"
+set x = {$<}
+if ( $x == "n") then
+  echo " "
+  echo "Exiting with no changes."
+  echo " "
+  exit
+endif
+echo "starting conversion..."  >mprogress
+
+foreach i ( `ls -d cfg zones nets ctl doc` )
+  if ( -d $i ) then
+    echo $i
+    echo "*" Checking folder $i >>../mprogress
+    cd $i
+    foreach j ( `ls *.cfg *.cnn *.ipv *.log *.ctl *.geo *.con *.tmc *.opr *.obs *.htc *.contents *.afn *.ctm *.txt *.pln` )
+      if ( -f $j ) then
+        echo "checking for slash in $j" 
+        rm -f $j-tf1 $j-tf2 $j-tf3
+        echo "*" Checking back slash in file $j >>../mprogress
+        sed 's/\\/\//g' $j > $j-tf1        
+        sed 's/c:/\/usr/g' $j-tf1 > $j-tf2       
+        sed 's/C:/\/usr/g' $j-tf2 > $j-tf3       
+        sed 's/Esru/esru/g' $j-tf3 > $j
+        fromdos $j-tf2
+        mv $j-tf2 $j
+        rm -f $j-tf1 $j-tf2 $j-tf3
+        echo "$j  finished"
+      endif
+    end
+    cd ..
+  endif
+end
+echo "finished folders cfg zones nets ctl..." >>mprogress
+
+echo "converting any local multicon databases"
+foreach i ( `ls -d dbs databases` )
+  if ( -d $i ) then
+    echo $i
+    echo "*" Checking folder $i >>../mprogress
+    cd $i
+    foreach j ( `ls *.txt *.asc multicon.* optic* *.a *opticdb *materialdb *constrdb` )
+      if ( -f $j ) then
+        echo "checking for slash in $j" 
+        rm -f $j-tf1 $j-tf2
+        echo "*" Checking back slash in file $j >>../mprogress
+        sed 's/\\/\//g' $j > $j-tf1        
+        sed 's/c:/\/usr/g' $j-tf1 > $j-tf2       
+        sed 's/Esru/esru/g' $j-tf2 > $j
+        fromdos $j-tf2
+        mv $j-tf2 $j
+        rm -f $j-tf1 $j-tf2
+        echo "$j  finished"
+      endif
+    end
+    cd ..
+  endif
+end
+echo "finished folder dbs..." >>../mprogress 
+echo "finished conversion..." >>../mprogress 

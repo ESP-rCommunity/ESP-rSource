@@ -1,0 +1,40 @@
+Notes on basic 3 zone building with global control:
+
+This set of files is an example of a basic multi-zone
+building representation with global phasing strategy control.  
+An energy demand reduction strategy commonly adopted in a BEMS 
+involves individual control loop actuators being activated with 
+the precondition that nominated control loops have ON status. 
+For example, consider the following 3-loop control scheme. 
+The user-specified number of scheduled loops is set to `3`, with 
+sequence, say: LOOP_3, LOOP_1 and LOOP_2. Thus, LOOP_3 and LOOP_1 
+output must both be non-zero for LOOP_2 to be activated else LOOP_2 
+will be zeroed at this time-step.
+
+The simulatiom may then be re-run using a different sequence and the 
+results compared.
+
+The problem comprises the following files.
+
+    file                       description
+____________________________________________________________
+cfg/bld_basic.cfg        problem configuration file defining a basic
+                         3 zone model.
+ctl/bld_basic_gb3.ctl    global phasing strategy control.
+
+zones/reception.opr      zone schedules.
+zones/office.opr
+zones/roof_space.opr
+
+zones/reception.geo      zone geometry.
+zones/office.geo
+zones/roof_space.geo
+
+zones/reception.con      zone constructions.
+zones/office.con
+zones/roof_space.con
+
+zones/reception.tmc      zone TMC files.
+zones/office.tmc        
+
+_________

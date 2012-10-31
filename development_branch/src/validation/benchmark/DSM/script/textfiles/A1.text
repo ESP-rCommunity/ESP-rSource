@@ -1,0 +1,196 @@
+\end{tabular}\\
+
+\underline{CONCLUSION:} Emissions for actual and reference are within 0.5\%
+
+\section{Appendix}
+\begin{small}
+\subsection{Modelling details}
+\begin{multicols}{2} 
+\begin{tabular}{|p{5cm}|p{2cm}|}
+\hline
+\multicolumn{2}{|c|}{Case 1} \\
+\hline
+& All zones \\ 
+\hline
+Heating SSEFF & 0.73 \\
+\hline
+Heating generator SEFF & 0.73 \\
+\hline
+Cooling SSEFF & NA \\
+\hline
+Cooling generator SEEF & NA \\
+\hline
+Infiltration rate & 0.1429\\
+\hline
+NCM documents & Attached \\
+\hline
+%\end{tabular}\\
+%\vspace{1cm}
+%\begin{tabular}{|p{5cm}|p{2cm}|}
+%\hline
+\multicolumn{2}{|c|}{Case 2} \\
+\hline
+& All zones \\ 
+\hline
+Heating SSEFF & 0.78 \\
+\hline
+Heating generator SEFF & 0.78 \\
+\hline
+Cooling SSEFF & NA \\
+\hline
+Cooling generator SEEF & NA \\
+\hline
+Infiltration rate & 0.1429\\
+\hline
+NCM documents & Attached \\
+\hline
+\end{tabular}\\
+\vspace{2cm}
+\begin{tabular}{|p{5cm}|p{2cm}|}
+\hline
+\multicolumn{2}{|c|}{Case 3} \\
+\hline
+& All zones \\ 
+\hline
+Heating SSEFF & 0.83 \\
+\hline
+Heating generator SEFF & 0.83 \\
+\hline
+Cooling SSEFF & 1.67 \\
+\hline
+Cooling generator SEEF & 1.67 \\
+\hline
+Infiltration rate Atrium & 0.125\\
+\hline
+Infiltration rate other zones & 0.025\\
+\hline
+NCM documents & Attached \\
+\hline
+\end{tabular}\\
+\vspace{1cm}
+\begin{tabular}{|p{5cm}|p{2cm}|}
+\hline
+\multicolumn{2}{|c|}{Case 4} \\
+\hline
+\multicolumn{2}{|c|}{Circulation, food preparation and storage} \\
+\hline
+Heating SSEFF & 0.78 \\
+\hline
+Heating generator SEFF & 0.78 \\
+\hline
+Cooling SSEFF & NA \\
+\hline
+Cooling generator SEEF & NA \\
+\hline
+\multicolumn{2}{|c|}{All other zones} \\
+\hline
+Heating SSEFF & 0.83 \\
+\hline
+Heating generator SEFF & 0.83 \\
+\hline
+Cooling SSEFF & 1.67 \\
+\hline
+Cooling generator SEEF & 1.67 \\
+\hline
+Infiltration rate & 0.1429\\
+\hline
+NCM documents & Attached \\
+\hline
+\end{tabular}\\
+\vspace{1cm}
+\begin{tabular}{|p{5cm}|p{2cm}|}
+\hline
+\multicolumn{2}{|c|}{Case 5} \\
+\hline
+\multicolumn{2}{|c|}{Toilet} \\
+\hline
+Heating SSEFF & 0.78 \\
+\hline
+Heating generator SEFF & 0.78 \\
+\hline
+Cooling SSEFF & NA \\
+\hline
+Cooling generator SEEF & NA \\
+\hline
+\multicolumn{2}{|c|}{All other zones} \\
+\hline
+Heating SSEFF & 0.73 \\
+\hline
+Heating generator SEFF & 0.73 \\
+\hline
+Cooling SSEFF & NA \\
+\hline
+Cooling generator SEEF & NA \\
+\hline
+Infiltration rate & 0.1429\\
+\hline
+NCM documents & Attached \\
+\hline
+\end{tabular}\\
+\vspace{1cm}
+\begin{tabular}{|p{5cm}|p{2cm}|}
+\hline
+\multicolumn{2}{|c|}{Case 6} \\
+\hline
+\multicolumn{2}{|c|}{Storage zone} \\
+\hline
+Heating SSEFF & 0.78 \\
+\hline
+Heating generator SEFF & 0.78 \\
+\hline
+Cooling SSEFF & NA \\
+\hline
+Cooling generator SEEF & NA \\
+\hline
+\multicolumn{2}{|c|}{Sales zone} \\
+\hline
+Heating SSEFF & 0.83 \\
+\hline
+Heating generator SEFF & 0.83 \\
+\hline
+Cooling SSEFF & 1.67 \\
+\hline
+Cooling generator SEEF & 1.67 \\
+\hline
+Infiltration rate & 0.1429\\
+\hline
+NCM documents & Attached \\
+\hline
+\end{tabular}\\
+\vspace{1cm}
+\begin{tabular}{|p{5cm}|p{2cm}|}
+\hline
+\multicolumn{2}{|c|}{Case 7} \\
+\hline
+\multicolumn{2}{|c|}{Same as case 1} \\
+\hline
+%\end{tabular}\\
+%\vspace{1cm}
+%\begin{tabular}{|p{5cm}|p{2cm}|}
+%\hline
+\multicolumn{2}{|c|}{Case 8} \\
+\hline
+\multicolumn{2}{|c|}{Same as case 4} \\
+\hline
+%\end{tabular}\\
+%\vspace{1cm}
+%\begin{tabular}{|p{5cm}|p{2cm}|}
+%\hline
+\multicolumn{2}{|c|}{Case 9} \\
+\hline
+\multicolumn{2}{|c|}{Same as case 1} \\
+\hline
+%\end{tabular}\\
+%\vspace{1cm}
+%\begin{tabular}{|p{5cm}|p{2cm}|}
+%\hline
+\multicolumn{2}{|c|}{Case 10} \\
+\hline
+\multicolumn{2}{|c|}{Same as case 6} \\
+\hline
+\end{tabular}\\
+\vspace{1cm}
+\end{multicols}
+\pagebreak
+\subsection{Case 1: Detailed results}
+ \begin{tabular}{|c|c|c|c|c|c|c|c|}

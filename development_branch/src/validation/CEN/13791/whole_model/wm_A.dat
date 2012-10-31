@@ -1,0 +1,18 @@
+ 
+Lib: geometry_A.res: Results for geometry_A
+Period: Fri 14 Jul @00h59 to: Sun 16 Jul @23h59 Year:2000 : sim@  1m, output@  1m
+Resultant temperature (degC)
+ 
+ Description       Maximum                  Minimum                Mean   Standard
+                 value   occurrence       value   occurrence       value  deviation
+T_1-V_a          39.22 16 Jul@18h26       33.60 14 Jul@06h59       35.92      1.80
+T_1-V_b          34.69 16 Jul@18h08       25.71 14 Jul@06h00       29.60      2.68
+T_1-V_c          33.80 16 Jul@17h00       25.63 14 Jul@06h03       29.27      2.77
+T_2-V_a          37.80 16 Jul@18h18       34.36 14 Jul@06h38       35.81      1.12
+T_2-V_b          32.43 16 Jul@18h10       26.55 14 Jul@05h59       29.39      1.79
+T_2-V_c          32.52 16 Jul@16h59       26.52 14 Jul@06h00       29.22      2.04
+T_3-V_a          40.87 16 Jul@18h22       36.92 14 Jul@06h59       38.56      1.29
+T_3-V_b          35.31 16 Jul@18h06       27.93 14 Jul@05h59       31.40      2.22
+T_3-V_c          33.87 16 Jul@17h00       27.47 14 Jul@06h02       30.33      2.17
+ 
+   All           40.87                    25.63                    32.17

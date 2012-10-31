@@ -1,0 +1,3883 @@
+*Icons 1.2
+# Vector icon database June 2003.
+# Patched 12 May by Jon Hand for height of components.
+# Patched 23 May by Jon Hand for 5 attribute tags (was 3).
+# Patched 17 June by Jon Hand for global attributes.
+# Patched 24 June by Jon Hand for external pressure attributes.
+#  
+# All user defined tags are 12 characters, menu 
+# entries are 32 characters. Up to 60 lines of text
+# (each line up to 72 characters) can be accommodated.
+#
+# This type of database can hold icons for several analysis
+# domains (bracketed by *Domain and *End_domain).
+#
+# For each domain there can be several categories of icons.
+#  Each category has a tag and a menu entry (bracketed by
+#  *Category and *End_category) and contains one or more icons.
+# 
+# Icons have a tag, menu entry, text, attribute,
+#  vertices, edges, circles, arcs, filled polygons and
+#  text (bracketed by *Item and *End_item).
+# Vertices (*Vertex within range 0.0 to 1.0) are used by:
+#  edges (*Edge start vert & end vert & colour name & line style),
+#  circles (*Circle centre vert and radius vert),
+#  arcs, (*Arc centre vert, start vert & finish vert),
+#  filled polygons (*Poly nb of vert & list of vert & colour & fill),
+#  dot (*Dot centre vert & colour name & size 0=small 1=4pixel),
+#  label (*Label lower left vert).
+#  attachment points (*Attach vert and tag).
+# Icon attributes (denoted by *Attributes) nb of attributes followed
+#  by comma separated text or numbers (must fit on one line).
+#
+# ----Domain------
+*Domain,FLODB  # domain of icons
+*Attribute_cnn   # attributes and data
+*location,real,-,-,0.0,-99.0,99.0,user,height diff node & flow comp
+*flow,real,-,-,0.0,-9.0,9.0,user,supplimentary data 1
+*flow,real,-,-,0.0,-9.0,9.0,user,supplimentary data 2  
+*End_cnn_attribute
+*Attribute_global   # attributes and data
+*flow,real,-,-,1.0,0.0,10.0,user,wind pressure reduction factor  
+*End_global_attribute
+# ----Category------
+*Category,inodes,internal nodes   # category tag and menu entry
+# ----Item------
+*Item,node_P_var,unknown variable pressure     # icon tag and menu entry
+*Attribute   # attributes and data
+*flow,intg,-,-,0,0,3,static,flow node type
+*flow,intg,-,-,1,0,2,user,fluid type
+*flow,text,-,-,20.0,user,temperature or node name
+*flow,real,external,*Zones,10.0,0.0,10000.0,user,volume
+*location,real,external,*Zones,4.55,-10.0,99.0,user,height
+*location,text,external,*Zones,nozone,user,linked zone name
+*End_attribute
+*Text
+This is an zone air flow node of unknown variable pressure
+*End_Text
+*Vertex,0.05,0.25   
+*Vertex,0.21,0.08   
+*Vertex,0.4,0.24   
+*Vertex,0.58,0.08   
+*Vertex,0.92,0.36   
+*Vertex,0.92,0.70   
+*Vertex,0.44,0.92   
+*Vertex,0.05,0.64   
+*Vertex,0.21,0.5   
+*Vertex,0.4,0.62   
+*Vertex,0.58,0.48   
+*Vertex,0.64,0.28   
+*Vertex,0.8,0.38   
+*Vertex,0.8,0.54   
+*Vertex,0.64,0.44   
+*Vertex,0.75,0.04   
+*Vertex,0.5,0.0   
+*Vertex,1.1,0.5   
+*Vertex,0.5,1.0   
+*Vertex,-0.1,0.5   
+*Edge,1,2,black,solid
+*Edge,2,3,black,solid
+*Edge,3,4,black,solid
+*Edge,4,5,black,solid
+*Edge,5,6,black,solid
+*Edge,6,7,black,solid
+*Edge,7,8,black,solid
+*Edge,8,9,black,solid
+*Edge,9,10,black,solid
+*Edge,10,11,black,solid
+*Edge,11,6,black,solid
+*Edge,1,8,black,solid
+*Edge,2,9,grey50,solid
+*Edge,3,10,grey50,solid
+*Edge,4,11,grey50,solid
+*Edge,12,13,black,solid
+*Edge,13,14,black,solid
+*Edge,14,15,black,solid
+*Edge,12,15,black,solid
+*Label,16,black,unkn
+*Attach,18,1
+*Attach,20,1
+*End_item
+# ----Item------
+*Item,node_P_fix,known fixed pressure     # icon tag and menu entry
+*Attribute   # attributes and data
+*flow,intg,-,-,1,0,3,static,flow node type
+*flow,intg,-,-,1,0,2,user,fluid type
+*flow,text,-,-,20.0,user,temperature or node name
+*flow,real,-,-,1.0,0.0,100.0,user,pressure
+*flow,real,-,-,10.0,0.0,10000.0,user,volume
+*location,real,-,-,1.00,-10.0,99.0,user,height
+*location,text,-,-,nozone,user,linked zone name
+*End_attribute
+*Text
+This is an internal air flow node of known pressure
+*End_Text
+*Vertex,0.05,0.25   
+*Vertex,0.21,0.08   
+*Vertex,0.4,0.24   
+*Vertex,0.58,0.08   
+*Vertex,0.92,0.36   
+*Vertex,0.92,0.70   
+*Vertex,0.44,0.92   
+*Vertex,0.05,0.64   
+*Vertex,0.21,0.5   
+*Vertex,0.4,0.62   
+*Vertex,0.58,0.48   
+*Vertex,0.64,0.28   
+*Vertex,0.8,0.38   
+*Vertex,0.8,0.54   
+*Vertex,0.64,0.44   
+*Vertex,0.75,0.04   
+*Vertex,0.5,0.0   
+*Vertex,1.1,0.5   
+*Vertex,0.5,1.0   
+*Vertex,-0.1,0.5   
+*Edge,1,2,black,solid
+*Edge,2,3,black,solid
+*Edge,3,4,black,solid
+*Edge,4,5,black,solid
+*Edge,5,6,black,solid
+*Edge,6,7,black,solid
+*Edge,7,8,black,solid
+*Edge,8,9,black,solid
+*Edge,9,10,black,solid
+*Edge,10,11,black,solid
+*Edge,11,6,black,solid
+*Edge,1,8,black,solid
+*Edge,2,9,grey50,solid
+*Edge,3,10,grey50,solid
+*Edge,4,11,grey50,solid
+*Edge,12,13,black,solid
+*Edge,13,14,black,solid
+*Edge,14,15,black,solid
+*Edge,12,15,black,solid
+*Label,16,black,Pa
+*Attach,18,1
+*Attach,20,1
+*End_item
+*End_category
+# ----Category------
+*Category,bnodes,boundary nodes   # category tag and menu entry
+# ----Item------
+*Item,node_bPfix,known fixed pressure     # icon tag and menu entry
+*Attribute   # attributes and data
+*flow,intg,-,-,2,0,3,static,flow node type
+*flow,intg,-,-,1,0,2,user,fluid type
+*flow,real,-,-,1.0,0.0,100.0,user,pressure
+*flow,text,-,-,20.0,user,temperature or node name
+*location,real,-,-,1.00,-10.0,99.0,user,height
+*location,text,-,-,nozone,user,linked zone name
+*location,text,-,-,nosurf,user,linked surface name
+*End_attribute
+*Text
+This is an boundary air flow node of known pressure
+Its attributes include:
+a) fluid type which is always air (value=1)
+b) a pressure index matching the current models pressure
+   coeffients database
+c) either a temperature (deg C) or the name of a flow
+   node to match temperatures with.
+d) height (in model coordinates)
+e) optional the name of the associate zone and surface
+   where wind pressure applies within the model.
+*End_Text
+*Vertex,0.1,0.5   
+*Vertex,0.25,0.5
+*Vertex,0.5,0.5
+*Vertex,0.75,0.5
+*Vertex,0.9,0.5
+*Vertex,0.7,0.1
+*Vertex,0.5,0.1
+*Vertex,0.5,0.25
+*Vertex,0.5,0.75
+*Vertex,0.5,0.9
+*Vertex,0.5,0.5
+*Vertex,1.0 0.5
+*Vertex,0.5 0.0
+*Vertex,0.5 1.05
+*Edge,1,2,black,solid
+*Edge,4,5,black,solid
+*Edge,7,8,black,solid
+*Edge,9,10,black,solid
+*Arc,3,4,0,360,black,nofill
+*Label,6,black,bndr
+*Attach,11,1
+*End_item
+# ----Item------
+*Item,node_windbP,wind induced pressure    # icon tag and menu entry
+*Attribute   # attributes and data
+*flow,intg,-,-,3,0,3,static,flow node type
+*flow,intg,-,-,1,0,1,static,fluid type
+*flow,real,external,*Pressures,1.0,0.0,10.0,user,pressure coef index
+*flow,real,-,-,0.0,0.0,360.0,user,azimuth
+*location,real,-,-,1.00,-10.0,99.0,user,height
+*location,text,-,-,nozone,user,linked zone name
+*location,text,-,-,nosurf,user,linked surface name
+*End_attribute
+*Text
+This is an boundary wind pressure node. 
+Its attributes include:
+a) fluid type which is always air (value=1)
+b) an index from the models pressure coefficient database
+c) an azimuth which is associated with some point on a 
+   surface of the model where wind pressure will act on
+   a leakage path (if the surface faces south then the
+   azimuth is 180.0).
+d) height (with reference to the point on the surface
+e) you may also type in the name of the associated zone
+   and surface (this information is not yet used). 
+*End_Text
+*Vertex,0.1,0.5   
+*Vertex,0.25,0.5
+*Vertex,0.5,0.5
+*Vertex,0.75,0.5
+*Vertex,0.9,0.5
+*Vertex,0.7,0.1
+*Vertex,0.5,0.1
+*Vertex,0.5,0.25
+*Vertex,0.5,0.75
+*Vertex,0.5,0.9
+*Vertex,0.5 0.5
+*Vertex,1.0 0.5
+*Vertex,0.5 0.0
+*Vertex,0.5 1.05
+*Edge,1,2,black,solid
+*Edge,4,5,black,solid
+*Edge,7,8,black,solid
+*Edge,9,10,black,solid
+*Arc,3,4,0,360,black,nofill
+*Label,6,black,wind
+*Attach,11,1
+*End_item
+*End_category
+# ----Category------
+*Category,basic,basic flow components  # category and associated icons
+# ----Item------
+*Item,mf010,power law volume flow (MF10)    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,10,0,500,static,flow component index
+*flow,intg,-,-,1,0,2,user,fluid type
+*flow,real,-,-,0.20,0.0,1000.0,user,flow coef a
+*flow,real,-,-,0.50,0.0,1000.0,user,flow coef b
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control
+*End_attribute
+*Text
+Power law volume flow resistance (MF10) component.
+ m = rho . a . dP^b [m^3/s]
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - flow coef a (-)
+ - flow coef b (-)
+*End_Text
+*Vertex,0.2,0.25  
+*Vertex,0.9,0.25 
+*Vertex,0.9,0.75 
+*Vertex,0.2,0.75
+*Vertex,0.0 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.04
+*Vertex,0.5,0.45
+*Edge,1 2,black,solid
+*Edge,2 3,grey50,solid
+*Edge,3 4,black,solid
+*Edge,4 1,grey50,solid
+*Label,7,black,10
+*Label,8,black,v
+*Attach,5,1
+*Attach,6,1
+*End_item
+# ----Item------
+*Item,mf015,power law mass flow (MF15)    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,15,0,500,static,flow component index
+*flow,intg,-,-,1,0,2,user,fluid type
+*flow,real,-,-,0.20,0.0,1000.0,user,flow coef a
+*flow,real,-,-,0.50,0.0,1000.0,user,flow coef b
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control
+*End_attribute
+*Text
+Power law mass flow resistance (MF15) component.
+ m = a . dP^b [kg/s]
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - flow coef a (-)
+ - flow coef b (-)
+To convert from CIBSE velocity pressure loss factors:
+a = SQRT((2 x rho x x-section)/k)
+b = 0.5
+where k is value from table c4.35
+*End_Text
+*Vertex,0.2,0.25  
+*Vertex,0.9,0.25 
+*Vertex,0.9,0.75 
+*Vertex,0.2,0.75
+*Vertex,0.0 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.04
+*Vertex,0.5,0.45
+*Edge,1 2,black,solid
+*Edge,2 3,grey50,solid
+*Edge,3 4,black,solid
+*Edge,4 1,grey50,solid
+*Label,7,black,15
+*Label,8,black,m
+*Attach,5,1
+*Attach,6,1
+*End_item
+# ----Item------
+*Item,mf017,power law mass flow (MF17)    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,17,0,500,static,flow component index
+*flow,intg,-,-,1,0,2,user,fluid type
+*flow,real,-,-,0.20,0.0,1000.0,user,flow coef a
+*flow,real,-,-,0.50,0.0,1000.0,user,flow coef b
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control
+*End_attribute
+*Text
+Power law mass flow resistance (MF17) component.
+ m = a.rho^1/2.dP^b [kg/s]
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - flow coef a (-)
+ - flow coef b (-)
+*End_Text
+*Vertex,0.2,0.25  
+*Vertex,0.9,0.25 
+*Vertex,0.9,0.75 
+*Vertex,0.2,0.75
+*Vertex,0.0 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.04
+*Vertex,0.5,0.45
+*Edge,1 2,black,solid
+*Edge,2 3,grey50,solid
+*Edge,3 4,black,solid
+*Edge,4 1,grey50,solid
+*Label,7,black,17
+*Label,8,black,m
+*Attach,5,1
+*Attach,6,1
+*End_item
+# ----Item------
+*Item,mf020,quadratic volume flow (MF20)    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,20,0,500,static,flow component index
+*flow,intg,-,-,1,0,2,user,fluid type
+*flow,real,-,-,0.20,0.0,1000.0,user,flow coef a (Pa.s/m^3)
+*flow,real,-,-,0.50,0.0,1000.0,user,flow coef b (Pa.(s/m^3)^2)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control
+*End_attribute
+*Text
+Quadratic law volume flow resistance (MF20) component.
+ dP = a.m/ro+b.(m/ro)^2
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - flow coef a (Pa.s/m^3)
+ - flow coef b (Pa.(s/m^3)^2)
+ Some sources regard this is a superior form for building
+ fabric infiltration as it allows consideration of both
+ the laminar and turbulent flow. Type 20 is more commonly
+ encountered in the literature than type 25.
+*End_Text
+*Vertex,0.2,0.25  
+*Vertex,0.9,0.25 
+*Vertex,0.9,0.75 
+*Vertex,0.2,0.75
+*Vertex,0.0 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.04
+*Vertex,0.5,0.45
+*Edge,1 2,black,solid
+*Edge,2 3,grey50,solid
+*Edge,3 4,black,solid
+*Edge,4 1,grey50,solid
+*Label,7,black,20
+*Label,8,black,v
+*Attach,5,1
+*Attach,6,1
+*End_item
+# ----Item------
+*Item,mf025,quadratic mass flow (MF25)    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,25,0,500,static,flow component index
+*flow,intg,-,-,1,0,2,user,fluid type
+*flow,real,-,-,0.20,0.0,1000.0,user,flow coef a (Pa.s/m^3)
+*flow,real,-,-,0.50,0.0,1000.0,user,flow coef b (Pa.(s/m^3)^2)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control
+*End_attribute
+*Text
+Quadratic law mass flow resistance (MF25) component.
+ dP = a.m + b.m^2d
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - flow coef a (Pa.s/kg)
+ - flow coef b (Pa.(s/kg)^2)
+*End_Text
+*Vertex,0.2,0.25  
+*Vertex,0.8,0.25 
+*Vertex,0.8,0.75 
+*Vertex,0.2,0.75
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Vertex,0.6,0.04
+*Vertex,0.5,0.45
+*Edge,1 2,black,solid
+*Edge,2 3,grey50,solid
+*Edge,3 4,black,solid
+*Edge,4 1,grey50,solid
+*Label,7,black,25
+*Label,8,black,m
+*Attach,5,1
+*Attach,6,1
+*End_item
+# ----Item------
+*Item,mf30,constant volume flow (MF030)      # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,30,0,500,static,flow component index
+*flow,intg,-,-,1,0,2,user,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,flow rate (m^3/s)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 30 is a constant volume flow rate component
+included as a convenient constant flow inducer
+which can be combined with other components.
+Equation: (m = rho . a)
+Supplemental data:
+  (1) fluid type (1=air, 2=water),
+  (2) flow rate in m^3/s.
+The flow rate can be modified via a flow control loop.
+*End_Text
+*Vertex,0.1,0.5   
+*Vertex,0.25,0.5
+*Vertex,0.5,0.5
+*Vertex,0.75,0.5
+*Vertex,0.9,0.5
+*Vertex,0.7,0.04
+*Vertex,0.375,0.284
+*Vertex,0.375,0.716
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Edge,1,2,black,solid
+*Edge,4,5,black,solid
+*Edge,7,4,black,solid
+*Edge,4,8,black,solid
+*Edge,8,7,black,solid
+*Arc,3,4,0,360,black,nofill
+*Label,6,black,30
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,mf35,constant mass flow (MF035)      # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,35,0,500,static,flow component index
+*flow,intg,-,-,1,0,2,user,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,flow rate (kg/s)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 35 is a constant mass flow rate component
+included as a convenient constant flow inducer
+which can be combined with other components.
+Equation: (m = a)
+Supplemental data:
+  (1) fluid type (1=air, 2=water),
+  (2) flow rate in kg/s.
+The flow rate can be modified via a flow control loop.
+*End_Text
+*Vertex,0.1,0.5   
+*Vertex,0.25,0.5
+*Vertex,0.5,0.5
+*Vertex,0.75,0.5
+*Vertex,0.9,0.5
+*Vertex,0.7,0.1
+*Vertex,0.375,0.284
+*Vertex,0.375,0.716
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Edge,1,2,black,solid
+*Edge,4,5,black,solid
+*Edge,7,4,black,solid
+*Edge,4,8,black,solid
+*Edge,8,7,black,solid
+*Arc,3,4,0,360,black,nofill
+*Label,6,black,35
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,mf040,common orifice (MF40)    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,40,0,500,static,flow component index
+*flow,intg,-,-,1,0,2,user,fluid type
+*flow,real,-,-,0.20,0.0,1000.0,user,opening area (m)
+*flow,real,-,-,0.60,0.0,1000.0,user,discharge coef (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control
+*End_attribute
+*Text
+Type 40 is a common orifice flow component which is a
+basic expression for turbulent flow through relatively
+large openings such as a vent in the case of buildings
+or a pipe restriction in a hydronic network.
+Supplemental data: 
+ (1) fluid type (1=air, 2=water), 
+ (2) opening area (m^2), 
+ (3) discharge factor (-).
+The opening area can be modified by the use of a flow
+control law.
+*End_Text
+*Vertex,0.25,0.05  
+*Vertex,0.75,0.3 
+*Vertex,0.75,0.85 
+*Vertex,0.25,0.60
+*Vertex,0.15,0.15  
+*Vertex,0.15,0.70
+*Vertex,0.65,0.95 
+*Vertex,0.65,0.4 
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Vertex,0.7,0.01
+*Edge,1 2,black,solid
+*Edge,2 3,black,solid
+*Edge,3 4,black,solid
+*Edge,4 1,black,solid
+*Edge,1 5,black,solid
+*Edge,4 6,black,solid
+*Edge,3 7,black,solid
+*Edge,2 8,black,solid
+*Label,11,black,40
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,mf50,laminar pipe/duct (MF50)     # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,50,0,500,static,flow component index
+*flow,intg,-,-,1,0,2,user,fluid type
+*flow,real,-,-,2.0,0.0,100.0,user,path length (m)
+*flow,real,-,-,0.20,0.0,100.0,user,opening radius (m)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Laminar flow pipe/duct (MF50) component.
+ m = rho (dP/(8 mu L)) pi R**4
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - path length (m)
+ - opening radius (m)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,50
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,mf110,specific air flow opening (MF110)    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,110,0,500,static,flow component index
+*flow,intg,-,-,1,0,1,static,fluid type
+*flow,real,-,-,0.20,0.0,1000.0,user,opening area (m)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control
+*End_attribute
+*Text
+Type 110 is an air flow opening (type 40) with the
+fluid type set to air and a discharge factor of 0.65.
+Supplemental data: opening area(m)
+ (1) fluid type (air only)
+ (2) opening area (m).
+The opening area can be modified by the use of a flow
+control law.
+*End_Text
+*Vertex,0.25,0.05  
+*Vertex,0.75,0.3 
+*Vertex,0.75,0.85 
+*Vertex,0.25,0.60
+*Vertex,0.15,0.15  
+*Vertex,0.15,0.70
+*Vertex,0.65,0.95 
+*Vertex,0.65,0.4 
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Vertex,0.7,0.01
+*Edge,1 2,black,solid
+*Edge,2 3,black,solid
+*Edge,3 4,black,solid
+*Edge,4 1,black,solid
+*Edge,1 5,black,solid
+*Edge,4 6,black,solid
+*Edge,3 7,black,solid
+*Edge,2 8,black,solid
+*Label,11,black,110
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,crack,crack (width & length) (MF120)     # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,120,0,500,static,flow component index
+*flow,intg,-,-,1,0,1,static,fluid type
+*flow,real,-,-,0.005,0.0,0.10,user,crack width(m)
+*flow,real,-,-,2.00,0.0,100.0,user,crack length(m)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 120 is an air flow crack component.
+Equation: m = rho.f(W,L,dP)
+Supplemental data:
+ (1) fluid type (air only)
+ (2) crack width (m) NOTE unit!
+ (3) crack length(m)
+*End_Text
+*Vertex,0.1 0.5  
+*Vertex,0.3 0.5
+*Vertex,0.4 0.7
+*Vertex,0.5 0.3
+*Vertex,0.6 0.5
+*Vertex,0.9 0.5
+*Vertex,0.6 0.2
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Edge,1,2,black,solid
+*Edge,2,3,black,solid
+*Edge,3,4,black,solid
+*Edge,4,5,black,solid
+*Edge,5,6,black,solid
+*Label,7,black,cr
+*Attach,8,1
+*Attach,9,1
+*End_item
+# ----Item------
+*Item,door,bidirectional flow (door) (MF130)    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,130,0,500,static,flow component index
+*flow,intg,-,-,1,0,1,static,fluid type
+*flow,real,-,-,5.00,0.0,20.0,user,door width(m)
+*flow,real,-,-,2.00,0.0,100.0,user,door height(m)
+*flow,real,-,-,2.00,0.0,100.0,user,dist from base to air node(m)
+*flow,real,-,-,2.00,0.0,1.0,user,discharge coef. (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height @base (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Door allowing two way flow.
+Type 130 is an air flow door component which is '
+applicable to vertical opening where bi-directional'
+flow may exist. Based on an expression by Cockroft.'
+Equation: m = rho.f(W,H,dP)
+Supplemental data:
+ (1) fluid type (air only)
+ (2) door width (m)
+ (3) door height (m),
+ (4) vertical distance (m) between base of door and
+     adjacent air nodes (nodes should be at the same
+     height). Where this component type is required for
+     several locations with different vertical heights
+     you should create multiple door components.
+ (5) discharge factor (-)
+*End_Text
+*Vertex,0.24 0.06  
+*Vertex,0.4 0.18  
+*Vertex,0.4 0.8  
+*Vertex,0.62 0.94  
+*Vertex,0.62 0.35  
+*Vertex,0.88 0.56  
+*Vertex,0.2 0.4  
+*Vertex,0.58 0.4  
+*Vertex,0.3 0.5  
+*Vertex,0.3 0.3  
+*Vertex,0.3 0.6  
+*Vertex,0.58 0.6  
+*Vertex,0.46 0.7  
+*Vertex,0.46 0.5  
+*Vertex,0.6 0.2  
+*Vertex,0.0 0.5  
+*Vertex,1.0 0.5  
+*Edge,1,2,black,solid
+*Edge,2,3,black,solid
+*Edge,3,4,black,solid
+*Edge,4,5,black,solid
+*Edge,5,6,black,solid
+*Edge,2,5,grey50,solid
+*Edge,7,8,red,solid
+*Edge,7,9,red,solid
+*Edge,7,10,red,solid
+*Edge,11,12,red,solid
+*Edge,12,13,red,solid
+*Edge,12,14,red,solid
+*Label,15,black,door
+*Attach,16,1
+*Attach,17,1
+*End_item
+# ----Item------
+*Item,mf210,general flow conduit (MF210)     # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,210,0,500,static,flow component index
+*flow,intg,-,-,1,0,2,user,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,roughness (mm)
+*flow,real,-,-,0.20,0.0,100.0,user,conduit length (m)
+*flow,real,-,-,0.20,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.20,0.0,100.0,user,cross-sectional area (m^")
+*flow,real,-,-,0.20,0.0,100.0,user,local loss factor (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+General flow conduit (MF210) component.
+ m = rho.f(D,A,L,k,SCi)
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - conduit hydraulic diameter (m)
+ - cross-sectional area (m^2)
+ - conduit length (m)
+ - absolute wall roughness (m)
+ - sum of local dynamic loss factors (-)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,210
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,mf220,conduit with converg 3-leg (MF220)     # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,220,0,500,static,flow component index
+*flow,intg,-,-,1,0,2,user,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.20,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,0.20,0.0,100.0,user,conduit length (m)
+*flow,real,-,-,0.20,0.0,100.0,user,wall roughness (m)
+*flow,real,-,-,0.20,0.0,100.0,user,sum of local loss factors (-)
+*flow,real,-,-,0.20,0.0,100.0,user,junction cross-sectional area (m^2)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a0 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a1 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a2 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a3 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a4 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a5 (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 220 is a variant of a general flow conduit which
+ends in a converging 3-leg junction.  It represents
+only half of a junction and the branch must be rep-
+resented by a similar component.  It is well supported
+in the literature.  Supplemental data:
+  fluid type, conduit hydraulic diam, x-section area
+  conduit length, wall roughness, sum of local dynamic
+  loss factors, x-sectional area of common junction 
+  section, Ccp coefficients a0 - a5 in:
+    Ccp = a0+a1.X+a2.X.X+a3.Y+a4.Y.Y+a5.X.Y  
+  where X is the ratio between the volume flow rate in
+  this conduit and the common section, respectively and
+  Y is the ratio between the volume flow rate in the 
+  other entrance of the junction and the common.
+*End_Text
+*Vertex,0.1,0.66  
+*Vertex,0.36,0.5  
+*Vertex,0.18,0.4  
+*Vertex,0.3,0.27  
+*Vertex,0.55,0.45  
+*Vertex,0.8,0.45  
+*Vertex,0.8,0.65  
+*Vertex,0.55,0.65  
+*Vertex,0.2,0.85  
+*Vertex,0.1,0.8  
+*Vertex,0.55,0.55  
+*Vertex,1.00,0.55  
+*Vertex,0.9,0.65  
+*Vertex,0.9,0.45  
+*Vertex,-0.1 0.8
+*Vertex,1.1 0.55
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,2 3,black,solid
+*Edge,3 4,grey50,solid
+*Edge,4 5,black,solid
+*Edge,5 6,black,solid
+*Edge,6 7,grey50,solid
+*Edge,7 8,black,solid
+*Edge,8 9,black,solid
+*Edge,9 1,grey50,solid
+*Edge,10 11,black,solid
+*Edge,11 12,grey50,solid
+*Edge,12 13,grey50,solid
+*Edge,12 14,grey50,solid
+*Dot,11,black,2
+*Label,17,black,220
+*Attach,15,1
+*Attach,16,1
+*End_item
+# ----Item------
+*Item,mf230,conduit with diverg 3-leg (MF230)     # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,230,0,500,static,flow component index
+*flow,intg,-,-,1,0,2,user,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.20,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,0.20,0.0,100.0,user,conduit length (m)
+*flow,real,-,-,0.20,0.0,100.0,user,wall roughness (m)
+*flow,real,-,-,0.20,0.0,100.0,user,sum of local loss factors (-)
+*flow,real,-,-,0.20,0.0,100.0,user,junction cross-sectional area (m^2)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a0 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a1 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a2 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a3 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a4 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a5 (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 230 is a variant of a general flow conduit which
+ends in a diverging 3-leg junction.  It represents
+only half of a junction and the branch must be rep-
+resented by a similar component.  It is well supported
+in the literature.  Supplemental data:
+  fluid type, conduit hydraulic diam, x-section area
+  conduit length, wall roughness, sum of local dynamic
+  loss factors, x-sectional area of common junction 
+  section, Ccp coefficients a0 - a5 in:
+    Ccp = a0+a1.X+a2.X.X+a3.Y+a4.Y.Y+a5.X.Y  
+  where X is the ratio between the volume flow rate in
+  this conduit and the common section, respectively and
+  Y is the ratio between the volume flow rate in the 
+  other entrance of the junction and the common.
+*End_Text
+*Vertex,0.15,0.66  
+*Vertex,0.36,0.5  
+*Vertex,0.18,0.4  
+*Vertex,0.3,0.27  
+*Vertex,0.5,0.45  
+*Vertex,0.8,0.45  
+*Vertex,0.8,0.65  
+*Vertex,0.55,0.65  
+*Vertex,0.25,0.85  
+*Vertex,0.04,0.81  
+*Vertex,0.50,0.55  
+*Vertex,0.95,0.55  
+*Vertex,0.16,0.85  
+*Vertex,0.12,0.69  
+*Vertex,-0.1 0.8
+*Vertex,1.1 0.55
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,2 3,black,solid
+*Edge,3 4,grey50,solid
+*Edge,4 5,black,solid
+*Edge,5 6,black,solid
+*Edge,6 7,grey50,solid
+*Edge,7 8,black,solid
+*Edge,8 9,black,solid
+*Edge,9 1,grey50,solid
+*Edge,10 11,black,solid
+*Edge,11 12,grey50,solid
+*Edge,10 13,black,solid
+*Edge,10 14,black,solid
+*Dot,11,black,2
+*Label,17,black,230
+*Attach,15,1
+*Attach,16,1
+*End_item
+# ----Item------
+*Item,mf240,conduit with converg 4-leg (MF240)     # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,240,0,500,static,flow component index
+*flow,intg,-,-,1,0,2,user,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.20,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,0.20,0.0,100.0,user,conduit length (m)
+*flow,real,-,-,0.20,0.0,100.0,user,wall roughness (m)
+*flow,real,-,-,0.20,0.0,100.0,user,sum of local loss factors (-)
+*flow,real,-,-,0.20,0.0,100.0,user,junction cross-sectional area (m^2)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a0 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a1 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a2 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a3 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a4 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a5 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a6 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a7 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a8 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a9 (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 240 is a variant of a general flow conduit which
+ends in a converging 4-leg junction.  It represents
+only part of a junction and the other branchs must be rep-
+resented by similar components.  It is well supported
+in the literature.  Supplemental data:
+  fluid type, conduit hydraulic diam, x-section area
+  conduit length, wall roughness, sum of local dynamic
+  loss factors, x-sectional area of common junction 
+  section, Ccp coefficients a0 - a9 in:
+    Ccp = a0+a1.X+a2.X.X+a3.Y+a4.Y.Y+a5.X.Y  '
+            +a6.Z+a7.Z.Z+a8.X.Z+a9.Y.Z' 
+  where X is the ratio between the volume flow rate in
+  this conduit and the common section, respectively and
+  Y is the ratio between the volume flow rate in the 
+  other entrance of the junction and the common.
+*End_Text
+*Vertex,0.1,0.66  
+*Vertex,0.36,0.5  
+*Vertex,0.18,0.4  
+*Vertex,0.3,0.27  
+*Vertex,0.5,0.45  
+*Vertex,0.8,0.45  
+*Vertex,0.8,0.65  
+*Vertex,0.55,0.65  
+*Vertex,0.2,0.85  
+*Vertex,0.1,0.8  
+*Vertex,0.50,0.55  
+*Vertex,1.00,0.55  
+*Vertex,0.9,0.65  
+*Vertex,0.9,0.45  
+*Vertex,0.55,0.9  
+*Vertex,0.70,0.9  
+*Vertex,0.70,0.65  
+*Vertex,-0.1 0.8
+*Vertex,1.1 0.55
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,2 3,black,solid
+*Edge,3 4,grey50,solid
+*Edge,4 5,black,solid
+*Edge,5 6,black,solid
+*Edge,6 7,grey50,solid
+*Edge,7 17,black,solid
+*Edge,17 16,black,solid
+*Edge,16 15,grey50,solid
+*Edge,15 8,black,solid
+*Edge,8 9,black,solid
+*Edge,9 1,grey50,solid
+*Edge,10 11,black,solid
+*Edge,11 12,grey50,solid
+*Edge,12 13,grey50,solid
+*Edge,12 14,grey50,solid
+*Dot,11,black,2
+*Label,20,black,240
+*Attach,18,1
+*Attach,19,1
+*End_item
+# ----Item------
+*Item,mf250,conduit with diverg 4-leg (MF250)     # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,250,0,500,static,flow component index
+*flow,intg,-,-,1,0,2,user,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.20,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,0.20,0.0,100.0,user,conduit length (m)
+*flow,real,-,-,0.20,0.0,100.0,user,wall roughness (m)
+*flow,real,-,-,0.20,0.0,100.0,user,sum of local loss factors (-)
+*flow,real,-,-,0.20,0.0,100.0,user,junction cross-sectional area (m^2)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a0 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a1 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a2 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a3 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a4 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a5 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a6 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a7 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a8 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a9 (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 250 is a variant of a general flow conduit which
+ends in a diverging 4-leg junction.  It represents
+only part of a junction and the other branch must be
+represented by similar components.  It is well supported
+in the literature.  Supplemental data:
+  fluid type, conduit hydraulic diam, x-section area
+  conduit length, wall roughness, sum of local dynamic
+  loss factors, x-sectional area of common junction 
+  section, Ccp coefficients a0 - a9 in:
+    Ccp = a0+a1.X+a2.X.X+a3.Y+a4.Y.Y+a5.X.Y  '
+            +a6.Z+a7.Z.Z+a8.X.Z+a9.Y.Z  
+  where X is the ratio between the volume flow rate in
+  this conduit and the common section, respectively and
+  Y is the ratio between the volume flow rate in the 
+  other entrance of the junction and the common.
+*End_Text
+*Vertex,0.15,0.66  
+*Vertex,0.36,0.5  
+*Vertex,0.18,0.4  
+*Vertex,0.3,0.27  
+*Vertex,0.5,0.45  
+*Vertex,0.85,0.45  
+*Vertex,0.85,0.65  
+*Vertex,0.55,0.65  
+*Vertex,0.25,0.85  
+*Vertex,0.04,0.82  
+*Vertex,0.50,0.55  
+*Vertex,0.95,0.55  
+*Vertex,0.16,0.85  
+*Vertex,0.12,0.69  
+*Vertex,0.55,0.9  
+*Vertex,0.70,0.9  
+*Vertex,0.70,0.65  
+*Vertex,-0.1 0.8
+*Vertex,1.1 0.55
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,2 3,black,solid
+*Edge,3 4,grey50,solid
+*Edge,4 5,black,solid
+*Edge,5 6,black,solid
+*Edge,6 7,grey50,solid
+*Edge,7 17,black,solid
+*Edge,17 16,black,solid
+*Edge,16 15,grey50,solid
+*Edge,15 8,black,solid
+*Edge,8 9,black,solid
+*Edge,9 1,grey50,solid
+*Edge,10 11,black,solid
+*Edge,11 12,grey50,solid
+*Edge,10 13,black,solid
+*Edge,10 14,black,solid
+*Dot,11,black,2
+*Label,20,black,250
+*Attach,18,1
+*Attach,19,1
+*End_item
+# ----Item------
+*Item,mf310,general flow inducer (MF310)      # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,310,0,500,static,flow component index
+*flow,intg,-,-,1,0,2,user,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,lower flow rate (m^3/s)
+*flow,real,-,-,0.20,0.0,100.0,user,upper flow rate (m^3/s)
+*flow,real,-,-,0.20,0.0,100.0,user,flow coef a0 (Pa)
+*flow,real,-,-,0.20,0.0,100.0,user,flow coef a1 (Pa/(m^3/s)))
+*flow,real,-,-,0.20,0.0,100.0,user,flow coef a2 (Pa.(m^3/s)^2)
+*flow,real,-,-,0.20,0.0,100.0,user,flow coef a3 (Pa.(m^3/s)^3)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 310 is a general flow inducer which approximates
+a pump or fan by a performance curve (cubic polynomial)
+which relates the total pressure rise to the volume
+flow rate for a given fan or pump speed and fluid
+density.
+Equation:
+ (dP = SUM (i=0 to 3) ai.(m/ro)^i; which is
+       only valid for q,min <= m/ro <= q,max )
+Supplemental data:'
+ (1) fluid type (1=air, 2=water)
+ (2,3) volume flow rate lower and upper limits (m^3/s),
+ (4-7) flow coef a0 (Pa),     a1 (Pa/(m^3/s))),
+           a2 (Pa.(m^3/s)^2), a3 (Pa.(m^3/s)^3)
+*End_Text
+*Vertex,0.1,0.5   
+*Vertex,0.25,0.5
+*Vertex,0.5,0.5
+*Vertex,0.75,0.5
+*Vertex,0.9,0.5
+*Vertex,0.7,0.1
+*Vertex,0.375,0.284
+*Vertex,0.375,0.716
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Edge,1,2,black,solid
+*Edge,4,5,black,solid
+*Edge,7,4,black,solid
+*Edge,4,8,black,solid
+*Edge,8,7,black,solid
+*Arc,3,4,0,360,black,nofill
+*Label,6,black,35
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,damper,general flow corrector (MF410)    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,410,0,500,static,flow component index
+*flow,intg,-,-,1,0,2,static,fluid type
+*flow,real,-,-,0.0,0.0,1000,user,fluid density rho 0 (kg/m^3)
+*flow,real,-,-,0.0,0.0,100000,user,presure drop dP0 (Pa)
+*flow,intg,-,-,1,0,2,user,linear (1) or log (2) characteristic
+*flow,real,-,-,0.0,0.0,1000.0,user,flow when fully open k,vs (m^3/s)
+*flow,real,-,-,0.0,0.0,100.0,user,flow when closed, k,v0 (%)
+*flow,real,-,-,0.0,0.0,100.0,user,lower validity limit k,vr (%)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 410 is a general flow corrector or variable
+flow resistance such as a valve or damper. Actuation
+of this component requires a flow control loop
+otherwise it is assumed the valve (or damper) is
+open. 
+Equation: m = rho.f(comp, signal)
+Supplemental data:
+ (1) fluid type (1=air, 2=water)
+ (2) fluid density rho 0 (kg/m^3),
+ (3) presure drop dP0 (Pa),
+ (4) linear (1) or logarithmic (2)position dependency,
+ (5) volume flow when fully open  k,vs (m^3/s),
+ (6) theoretical flow when closed, k,v0 (%)
+ (7) lower validity limit k,vr (%).
+*End_Text
+*Vertex,0.2 0.2  
+*Vertex,0.8 0.2
+*Vertex,0.8 0.8
+*Vertex,0.2 0.8
+*Vertex,0.3 0.7
+*Vertex,0.7 0.3
+*Vertex,0.48 0.48
+*Vertex,0.52 0.52
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Edge,1,2,black,solid
+*Edge,2,3,grey50,solid
+*Edge,3,4,black,solid
+*Edge,4,1,grey50,solid
+*Edge,5,6,black,solid
+*Dot,7,black,1
+*Dot,8,black,1
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,damper,flow corrector polynomial (MF420)    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,420,0,500,static,flow component index
+*flow,intg,-,-,1,0,2,user,fluid type
+*flow,real,-,-,0.1,0.0,100,user,cross-sectional area (m^2)
+*flow,real,-,-,0.0,0.0,1000,user,polynomial coefficients a0 (-)
+*flow,real,-,-,0.0,0.0,1000,user,polynomial coefficients a1 (-)
+*flow,real,-,-,0.0,0.0,1000,user,polynomial coefficients a2 (-)
+*flow,real,-,-,0.0,0.0,1000,user,polynomial coefficients a3 (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 420 is a flow corrector or variable flow resis-
+tance such as a valve or damper which is represented
+as a polynomial. This approach is as if it were a
+conduit with local dynamic losses dependent on the
+correctors relative position. For actuation in
+this component the configuration control file must be
+used together otherwise the valve (or damper) is kept
+open during the whole simulation.
+Supplemental data:
+ (1) fluid type (air|water), , polynomial
+ (2) cross-sectional area (m^2)
+ (3-6) polynomial coefficients a0 - a3 (-) in:
+    C = a0+a1.(H/H100)+a2.(H/H100)^2+a3.(H/H100)^3
+ where H/H100 is the relative valve/damper position
+ (ie. valve stem displacement of damper blade angle).
+*End_Text
+*Vertex,0.2 0.2  
+*Vertex,0.8 0.2
+*Vertex,0.8 0.8
+*Vertex,0.2 0.8
+*Vertex,0.3 0.7
+*Vertex,0.7 0.3
+*Vertex,0.48 0.48
+*Vertex,0.52 0.52
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Edge,1,2,black,solid
+*Edge,2,3,grey50,solid
+*Edge,3,4,black,solid
+*Edge,4,1,grey50,solid
+*Edge,5,6,black,solid
+*Dot,7,black,1
+*Dot,8,black,1
+*Attach,9,1
+*Attach,10,1
+*End_item
+*End_category
+# ----Category------
+*Category,duct,ducting  # category and associated icons
+# ----Item------
+*Item,mf50,duct with laminar flow     # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,50,0,500,static,flow component index
+*flow,intg,-,-,1,0,1,static,fluid type
+*flow,real,-,-,2.0,0.0,100.0,user,path length (m)
+*flow,real,-,-,0.20,0.0,100.0,user,opening radius (m)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Laminar flow duct (MF50) component.
+ m = rho (dP/(8 mu L)) pi R**4
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - path length (m)
+ - opening radius (m)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,50
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,st_re_5050,steel rectangular 50x50     # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,210,0,500,static,flow component index
+*flow,intg,-,-,1,0,1,static,fluid type
+*flow,real,-,-,0.0015,0.0,100.0,user,roughness (mm)
+*flow,real,-,-,1.00,0.0,100.0,user,conduit length (m)
+*flow,real,-,-,0.05,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.0025,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,0.00,0.0,100.0,user,local loss factor (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*End_attribute
+*Text
+This component is derived from the
+general flow conduit (MF210) component.
+ m = rho.f(D,A,L,k,SCi)
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - conduit hydraulic diameter (m)
+ - cross-sectional area (m^2)
+ - conduit length (m)
+ - absolute wall roughness (m)
+ - sum of local dynamic loss factors (-)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,210
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,st_re_50100,steel rectangular 50x100     # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,210,0,500,static,flow component index
+*flow,intg,-,-,1,0,1,static,fluid type
+*flow,real,-,-,0.0015,0.0,100.0,user,roughness (mm)
+*flow,real,-,-,1.00,0.0,100.0,user,conduit length (m)
+*flow,real,-,-,0.067,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.005,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,0.00,0.0,100.0,user,local loss factor (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*End_attribute
+*Text
+This component is derived from the
+general flow conduit (MF210) component.
+ m = rho.f(D,A,L,k,SCi)
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - conduit hydraulic diameter (m)
+ - cross-sectional area (m^2)
+ - conduit length (m)
+ - absolute wall roughness (m)
+ - sum of local dynamic loss factors (-)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,210
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,st_re_50200,steel rectangular 50x200     # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,210,0,500,static,flow component index
+*flow,intg,-,-,1,0,1,static,fluid type
+*flow,real,-,-,0.0015,0.0,100.0,user,roughness (mm)
+*flow,real,-,-,1.00,0.0,100.0,user,conduit length (m)
+*flow,real,-,-,0.08,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.001,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,0.00,0.0,100.0,user,local loss factor (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*End_attribute
+*Text
+This component is derived from the
+general flow conduit (MF210) component.
+ m = rho.f(D,A,L,k,SCi)
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - conduit hydraulic diameter (m)
+ - cross-sectional area (m^2)
+ - conduit length (m)
+ - absolute wall roughness (m)
+ - sum of local dynamic loss factors (-)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,210
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,st_ci_d100,steel circular D=100     # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,210,0,500,static,flow component index
+*flow,intg,-,-,1,0,1,static,fluid type
+*flow,real,-,-,0.0015,0.0,100.0,user,roughness (mm)
+*flow,real,-,-,1.00,0.0,100.0,user,conduit length (m)
+*flow,real,-,-,0.01,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.0078,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,0.00,0.0,100.0,user,local loss factor (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*End_attribute
+*Text
+This component is derived from the
+general flow conduit (MF210) component.
+ m = rho.f(D,A,L,k,SCi)
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - conduit hydraulic diameter (m)
+ - cross-sectional area (m^2)
+ - conduit length (m)
+ - absolute wall roughness (m)
+ - sum of local dynamic loss factors (-)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,210
+*Attach,9,1
+*Attach,10,1
+*End_item
+*End_category
+# ----Category------
+*Category,pipe,piping  # category and associated icons
+*Item,mf50,pipe with laminar flow      # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,50,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,2.0,0.0,100.0,user,path length (m)
+*flow,real,-,-,0.20,0.0,100.0,user,opening radius (m)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Laminar flow pipe (MF50) component.
+ m = rho (dP/(8 mu L)) pi R**4
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - path length (m)
+ - opening radius (m)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,50
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,st_ci_d10,steel circular D=10mm    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,210,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,user,fluid type
+*flow,real,-,-,0.0015,0.0,100.0,user,roughness (mm)
+*flow,real,-,-,1.00,0.0,100.0,user,pipe length (m)
+*flow,real,-,-,0.01,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.00008,0.0,100.0,user,cross-sectional area (m^")
+*flow,real,-,-,0.00,0.0,100.0,user,local loss factor (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*End_attribute
+*Text
+Pipe component based on the 
+general flow conduit (MF210) component.
+ m = rho.f(D,A,L,k,SCi)
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - conduit hydraulic diameter (m)
+ - cross-sectional area (m^2)
+ - conduit length (m)
+ - absolute wall roughness (m)
+ - sum of local dynamic loss factors (-)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,210
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,st_ci_d20,steel circular D=20mm    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,210,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,user,fluid type
+*flow,real,-,-,0.0015,0.0,100.0,user,roughness (mm)
+*flow,real,-,-,1.00,0.0,100.0,user,pipe length (m)
+*flow,real,-,-,0.02,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.0002,0.0,100.0,user,cross-sectional area (m^")
+*flow,real,-,-,0.00,0.0,100.0,user,local loss factor (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*End_attribute
+*Text
+Pipe component based on the 
+general flow conduit (MF210) component.
+ m = rho.f(D,A,L,k,SCi)
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - conduit hydraulic diameter (m)
+ - cross-sectional area (m^2)
+ - conduit length (m)
+ - absolute wall roughness (m)
+ - sum of local dynamic loss factors (-)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,210
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,st_ci_d30,steel circular D=30mm    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,210,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,user,fluid type
+*flow,real,-,-,0.0015,0.0,100.0,user,roughness (mm)
+*flow,real,-,-,1.00,0.0,100.0,user,pipe length (m)
+*flow,real,-,-,0.03,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.0007,0.0,100.0,user,cross-sectional area (m^")
+*flow,real,-,-,0.00,0.0,100.0,user,local loss factor (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*End_attribute
+*Text
+Pipe component based on the 
+general flow conduit (MF210) component.
+ m = rho.f(D,A,L,k,SCi)
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - conduit hydraulic diameter (m)
+ - cross-sectional area (m^2)
+ - conduit length (m)
+ - absolute wall roughness (m)
+ - sum of local dynamic loss factors (-)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,210
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Category------
+*Category,fans,fans  # category and associated icons
+# ----Item------
+*Item,mf30,basic constant volume flow      # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,30,0,500,static,flow component index
+*flow,intg,-,-,1,0,1,static,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,flow rate (m^3/s)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 30 is a constant volume flow rate component
+included as a convenient constant flow inducer
+which can be combined with other components.
+Equation: (m = rho . a)
+Supplemental data:
+  (1) fluid type (1=air, 2=water),
+  (2) flow rate in m^3/s.
+The flow rate can be modified via a flow control loop.
+*End_Text
+*Vertex,0.1,0.5   
+*Vertex,0.25,0.5
+*Vertex,0.5,0.5
+*Vertex,0.75,0.5
+*Vertex,0.9,0.5
+*Vertex,0.7,0.04
+*Vertex,0.375,0.284
+*Vertex,0.375,0.716
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Edge,1,2,black,solid
+*Edge,4,5,black,solid
+*Edge,7,4,black,solid
+*Edge,4,8,black,solid
+*Edge,8,7,black,solid
+*Arc,3,4,0,360,black,nofill
+*Label,6,black,30
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,mf35,basic constant mass flow      # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,35,0,500,static,flow component index
+*flow,intg,-,-,1,0,1,static,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,flow rate (kg/s)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 35 is a constant mass flow rate component
+included as a convenient constant flow inducer
+which can be combined with other components.
+Equation: (m = a)
+Supplemental data:
+  (1) fluid type (1=air, 2=water),
+  (2) flow rate in kg/s.
+The flow rate can be modified via a flow control loop.
+*End_Text
+*Vertex,0.1,0.5   
+*Vertex,0.25,0.5
+*Vertex,0.5,0.5
+*Vertex,0.75,0.5
+*Vertex,0.9,0.5
+*Vertex,0.7,0.1
+*Vertex,0.375,0.284
+*Vertex,0.375,0.716
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Edge,1,2,black,solid
+*Edge,4,5,black,solid
+*Edge,7,4,black,solid
+*Edge,4,8,black,solid
+*Edge,8,7,black,solid
+*Arc,3,4,0,360,black,nofill
+*Label,6,black,35
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,centr_fan,centrifugal     # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,30,0,500,static,flow component index
+*flow,intg,-,-,1,0,1,static,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,flow rate
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+A basic centrifugal fan.
+*End_Text
+*Vertex,0.5,0.5   
+*Vertex,0.6,0.5
+*Vertex,0.8,0.5
+*Vertex,0.5,0.85
+*Vertex,0.9,0.85
+*Vertex,0.9,0.5
+*Vertex,0.0,0.5
+*Vertex,1.0,0.65
+*Edge,4,5,black,solid
+*Edge,5,6,black,solid
+*Edge,6,3,black,solid
+# centre vertex, radius vertex, two angles, line colour, fill type
+*Arc,1,2,0,360,black,nofill
+*Arc,1,3,90,270,black,nofill
+*Attach,7,1
+*Attach,8,1
+*End_item
+# ----Item------
+*Item,axi_fan,axial    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,30,0,500,static,flow component index
+*flow,intg,-,-,1,0,1,static,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,flow rate
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+A simple axial fan.
+*End_Text
+*Vertex,0.2,0.4   
+*Vertex,0.4,0.4
+*Vertex,0.4,0.6
+*Vertex,0.2,0.6
+*Vertex,0.4,0.5
+*Vertex,0.6,0.5
+*Vertex,0.6,0.85
+*Vertex,0.6,0.15
+*Vertex,0.85,0.325
+*Vertex,0.85,0.675
+*Vertex,0.35,0.675
+*Vertex,0.35,0.325
+*Vertex,0.0,0.5
+*Vertex,1.0,0.5
+*Edge,1,2,black,solid
+*Edge,2,3,black,solid
+*Edge,3,4,black,solid
+*Edge,4,1,black,solid
+*Edge,5,6,black,solid
+*Arc,9,8,140,80,black,nofill
+*Arc,10,7,140,80,black,nofill
+*Arc,11,7,40,-80,black,nofill
+*Arc,12,8,40,-80,black,nofill
+*Attach,13,1
+*Attach,14,1
+*End_item
+*End_category
+# ----Item------
+*Item,prop_fan,propeller     # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,30,0,500,static,flow component index
+*flow,intg,-,-,1,0,1,static,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,flow rate
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+A simple axial fan.
+*End_Text
+*Vertex,0.2,0.4   
+*Vertex,0.4,0.4
+*Vertex,0.4,0.6
+*Vertex,0.2,0.6
+*Vertex,0.4,0.5
+*Vertex,0.6,0.5
+*Vertex,0.6,0.85
+*Vertex,0.6,0.15
+*Vertex,0.85,0.325
+*Vertex,0.85,0.675
+*Vertex,0.35,0.675
+*Vertex,0.35,0.325
+*Vertex,0.0,0.5
+*Vertex,1.0,0.5
+*Edge,1,2,black,solid
+*Edge,2,3,black,solid
+*Edge,3,4,black,solid
+*Edge,4,1,black,solid
+*Edge,5,6,black,solid
+*Arc,9,8,140,80,black,nofill
+*Arc,10,7,140,80,black,nofill
+*Arc,11,7,40,-80,black,nofill
+*Arc,12,8,40,-80,black,nofill
+*Attach,13,1
+*Attach,14,1
+*End_item
+*End_category
+# ----Category------
+*Category,pumps,pumps   # category tag and menu entry
+# ----Item------
+*Item,mf_30,basic constant volume flow      # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,30,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,flow rate (m^3/s)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 30 is a constant flow rate component (simple pump)
+included as a convenient constant flow inducer
+which can be combined with other components.
+Equation: (m = rho . a)
+Supplemental data:
+  (1) fluid type (1=air, 2=water),
+  (2) flow rate in m^3/s.
+The flow rate can be modified via a flow control loop.
+*End_Text
+*Vertex,0.1,0.5   
+*Vertex,0.25,0.5
+*Vertex,0.5,0.5
+*Vertex,0.75,0.5
+*Vertex,0.9,0.5
+*Vertex,0.7,0.1
+*Vertex,0.375,0.284
+*Vertex,0.375,0.716
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Edge,1,2,black,solid
+*Edge,4,5,black,solid
+*Edge,7,4,black,solid
+*Edge,4,8,black,solid
+*Edge,8,7,black,solid
+*Arc,3,4,0,360,black,nofill
+*Label,6,black,30
+*Attach,9,2
+*Attach,10,2
+*End_item
+# ----Item------
+*Item,pump_centr,centrifugal      # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,30,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,flow rate (m^3/s)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 30 is a constant flow rate component (simple pump)
+included as a convenient constant flow inducer
+which can be combined with other components.
+Equation: (m = rho . a)
+Supplemental data:
+  (1) fluid type (1=air, 2=water),
+  (2) flow rate in m^3/s.
+The flow rate can be modified via a flow control loop.
+*End_Text
+*Vertex,0.1,0.5   
+*Vertex,0.25,0.5
+*Vertex,0.5,0.5
+*Vertex,0.75,0.5
+*Vertex,0.9,0.5
+*Vertex,0.7,0.1
+*Vertex,0.375,0.284
+*Vertex,0.375,0.716
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Edge,1,2,black,solid
+*Edge,4,5,black,solid
+*Edge,7,4,black,solid
+*Edge,4,8,black,solid
+*Edge,8,7,black,solid
+*Arc,3,4,0,360,black,nofill
+*Label,6,black,30
+*Attach,9,2
+*Attach,10,2
+*End_item
+# ----Item------
+*Item,pump_axial,axial flow      # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,30,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,flow rate (m^3/s)
+*location,real-,-,,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 30 is a constant flow rate component (simple pump)
+included as a convenient constant flow inducer
+which can be combined with other components.
+Equation: (m = rho . a)
+Supplemental data:
+  (1) fluid type (1=air, 2=water),
+  (2) flow rate in m^3/s.
+The flow rate can be modified via a flow control loop.
+*End_Text
+*Vertex,0.1,0.5   
+*Vertex,0.25,0.5
+*Vertex,0.5,0.5
+*Vertex,0.75,0.5
+*Vertex,0.9,0.5
+*Vertex,0.7,0.1
+*Vertex,0.375,0.284
+*Vertex,0.375,0.716
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Edge,1,2,black,solid
+*Edge,4,5,black,solid
+*Edge,7,4,black,solid
+*Edge,4,8,black,solid
+*Edge,8,7,black,solid
+*Arc,3,4,0,360,black,nofill
+*Label,6,black,30
+*Attach,9,2
+*Attach,10,2
+*End_item
+# ----Item------
+*Item,pump_mixed,mixed flow      # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,30,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,flow rate (m^3/s)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 30 is a constant flow rate component (simple pump)
+included as a convenient constant flow inducer
+which can be combined with other components.
+Equation: (m = rho . a)
+Supplemental data:
+  (1) fluid type (1=air, 2=water),
+  (2) flow rate in m^3/s.
+The flow rate can be modified via a flow control loop.
+*End_Text
+*Vertex,0.1,0.5   
+*Vertex,0.25,0.5
+*Vertex,0.5,0.5
+*Vertex,0.75,0.5
+*Vertex,0.9,0.5
+*Vertex,0.7,0.1
+*Vertex,0.375,0.284
+*Vertex,0.375,0.716
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Edge,1,2,black,solid
+*Edge,4,5,black,solid
+*Edge,7,4,black,solid
+*Edge,4,8,black,solid
+*Edge,8,7,black,solid
+*Arc,3,4,0,360,black,nofill
+*Label,6,black,30
+*Attach,9,2
+*Attach,10,2
+*End_item
+*End_category
+# ----Category------
+*Category,damper,dampers  # category and associated icons
+# ----Item------
+*Item,damper,basic damper    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,410,0,500,static,flow component index
+*flow,intg,-,-,1,0,2,user,fluid type
+*flow,real,-,-,0.0,0.0,1000,user,fluid density rho 0 (kg/m^3)
+*flow,real,-,-,0.0,0.0,100000,user,presure drop dP0 (Pa)
+*flow,intg,-,-,1,0,2,user,linear (1) or log (2) characteristic
+*flow,real,-,-,0.0,0.0,1000.0,user,flow when fully open k,vs (m^3/s)
+*flow,real,-,-,0.0,0.0,100.0,user,flow when closed, k,v0 (%)
+*flow,real,-,-,0.0,0.0,100.0,user,lower validity limit k,vr (%)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 410 is a general flow corrector or variable
+flow resistance such as a valve or damper. Actuation
+of this component requires a flow control loop
+otherwise it is assumed the valve (or damper) is
+open. 
+Equation: m = rho.f(comp, signal)
+Supplemental data:
+ (1) fluid type (1=air, 2=water)
+ (2) fluid density rho 0 (kg/m^3),
+ (3) presure drop dP0 (Pa),
+ (4) linear (1) or logarithmic (2)position dependency,
+ (5) volume flow when fully open  k,vs (m^3/s),
+ (6) theoretical flow when closed, k,v0 (%)
+ (7) lower validity limit k,vr (%).
+*End_Text
+*Vertex,0.2 0.2  
+*Vertex,0.8 0.2
+*Vertex,0.8 0.8
+*Vertex,0.2 0.8
+*Vertex,0.3 0.7
+*Vertex,0.7 0.3
+*Vertex,0.48 0.48
+*Vertex,0.52 0.52
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Edge,1,2,black,solid
+*Edge,2,3,grey50,solid
+*Edge,3,4,black,solid
+*Edge,4,1,grey50,solid
+*Edge,5,6,black,solid
+*Dot,7,black,1
+*Dot,8,black,1
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,damper,basic linear/log characteristics    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,410,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.0,0.0,1000,user,fluid density rho 0 (kg/m^3)
+*flow,real,-,-,0.0,0.0,100000,user,presure drop dP0 (Pa)
+*flow,intg,-,-,1,0,2,user,linear (1) or log (2) characteristic
+*flow,real,-,-,0.0,0.0,1000.0,user,flow when fully open k,vs (m^3/s)
+*flow,real,-,-,0.0,0.0,100.0,user,flow when closed, k,v0 (%)
+*flow,real,-,-,0.0,0.0,100.0,user,lower validity limit k,vr (%)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 410 is a general flow corrector or variable
+flow resistance such as a valve. Actuation
+of this component requires a flow control loop
+otherwise it is assumed the valve (or damper) is
+open. 
+Equation: m = rho.f(comp, signal)
+Supplemental data:
+ (1) fluid type (1=air, 2=water)
+ (2) fluid density rho 0 (kg/m^3),
+ (3) presure drop dP0 (Pa),
+ (4) linear (1) or logarithmic (2)position dependency,
+ (5) volume flow when fully open  k,vs (m^3/s),
+ (6) theoretical flow when closed, k,v0 (%)
+ (7) lower validity limit k,vr (%).
+*End_Text
+*Vertex,0.2 0.2  
+*Vertex,0.8 0.2
+*Vertex,0.8 0.8
+*Vertex,0.2 0.8
+*Vertex,0.3 0.7
+*Vertex,0.7 0.3
+*Vertex,0.48 0.48
+*Vertex,0.52 0.52
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Edge,1,2,black,solid
+*Edge,2,3,grey50,solid
+*Edge,3,4,black,solid
+*Edge,4,1,grey50,solid
+*Edge,5,6,black,solid
+*Dot,7,black,1
+*Dot,8,black,1
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,damper,butterfly    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,410,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.0,0.0,1000,user,fluid density rho 0 (kg/m^3)
+*flow,real,-,-,0.0,0.0,100000,user,presure drop dP0 (Pa)
+*flow,intg,-,-,1,0,2,user,linear (1) or log (2) characteristic
+*flow,real,-,-,0.0,0.0,1000.0,user,flow when fully open k,vs (m^3/s)
+*flow,real,-,-,0.0,0.0,100.0,user,flow when closed, k,v0 (%)
+*flow,real,-,-,0.0,0.0,100.0,user,lower validity limit k,vr (%)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 410 is a general flow corrector or variable
+flow resistance such as a valve. Actuation
+of this component requires a flow control loop
+otherwise it is assumed the valve (or damper) is
+open. 
+Equation: m = rho.f(comp, signal)
+Supplemental data:
+ (1) fluid type (1=air, 2=water)
+ (2) fluid density rho 0 (kg/m^3),
+ (3) presure drop dP0 (Pa),
+ (4) linear (1) or logarithmic (2)position dependency,
+ (5) volume flow when fully open  k,vs (m^3/s),
+ (6) theoretical flow when closed, k,v0 (%)
+ (7) lower validity limit k,vr (%).
+*End_Text
+*Vertex,0.2 0.2  
+*Vertex,0.8 0.2
+*Vertex,0.8 0.8
+*Vertex,0.2 0.8
+*Vertex,0.3 0.7
+*Vertex,0.7 0.3
+*Vertex,0.48 0.48
+*Vertex,0.52 0.52
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Edge,1,2,black,solid
+*Edge,2,3,grey50,solid
+*Edge,3,4,black,solid
+*Edge,4,1,grey50,solid
+*Edge,5,6,black,solid
+*Dot,7,black,1
+*Dot,8,black,1
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,damper,parallel blade    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,410,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.0,0.0,1000,user,fluid density rho 0 (kg/m^3)
+*flow,real,-,-,0.0,0.0,100000,user,presure drop dP0 (Pa)
+*flow,intg,-,-,1,0,2,user,linear (1) or log (2) characteristic
+*flow,real,-,-,0.0,0.0,1000.0,user,flow when fully open k,vs (m^3/s)
+*flow,real,-,-,0.0,0.0,100.0,user,flow when closed, k,v0 (%)
+*flow,real,-,-,0.0,0.0,100.0,user,lower validity limit k,vr (%)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 410 is a general flow corrector or variable
+flow resistance such as a valve. Actuation
+of this component requires a flow control loop
+otherwise it is assumed the valve (or damper) is
+open. 
+Equation: m = rho.f(comp, signal)
+Supplemental data:
+ (1) fluid type (1=air, 2=water)
+ (2) fluid density rho 0 (kg/m^3),
+ (3) presure drop dP0 (Pa),
+ (4) linear (1) or logarithmic (2)position dependency,
+ (5) volume flow when fully open  k,vs (m^3/s),
+ (6) theoretical flow when closed, k,v0 (%)
+ (7) lower validity limit k,vr (%).
+*End_Text
+*Vertex,0.2 0.2  
+*Vertex,0.8 0.2
+*Vertex,0.8 0.8
+*Vertex,0.2 0.8
+*Vertex,0.3 0.7
+*Vertex,0.7 0.3
+*Vertex,0.48 0.48
+*Vertex,0.52 0.52
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Edge,1,2,black,solid
+*Edge,2,3,grey50,solid
+*Edge,3,4,black,solid
+*Edge,4,1,grey50,solid
+*Edge,5,6,black,solid
+*Dot,7,black,1
+*Dot,8,black,1
+*Attach,9,1
+*Attach,10,1
+*End_item
+*End_category
+# ----Category------
+*Category,valve,valves  # category and associated icons
+# ----Item------
+*Item,valve,basic linear/log characteristic    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,410,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.0,0.0,1000,user,fluid density rho 0 (kg/m^3)
+*flow,real,-,-,0.0,0.0,100000,user,presure drop dP0 (Pa)
+*flow,intg,-,-,1,0,2,user,linear (1) or log (2) characteristic
+*flow,real,-,-,0.0,0.0,1000.0,user,flow when fully open k,vs (m^3/s)
+*flow,real,-,-,0.0,0.0,100.0,user,flow when closed, k,v0 (%)
+*flow,real,-,-,0.0,0.0,100.0,user,lower validity limit k,vr (%)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 410 is a general flow corrector or variable
+flow resistance such as a valve. Actuation
+of this component requires a flow control loop
+otherwise it is assumed the valve (or damper) is
+open. 
+Equation: m = rho.f(comp, signal)
+Supplemental data:
+ (1) fluid type (1=air, 2=water)
+ (2) fluid density rho 0 (kg/m^3),
+ (3) presure drop dP0 (Pa),
+ (4) linear (1) or logarithmic (2)position dependency,
+ (5) volume flow when fully open  k,vs (m^3/s),
+ (6) theoretical flow when closed, k,v0 (%)
+ (7) lower validity limit k,vr (%).
+*End_Text
+*Vertex,0.2 0.2  
+*Vertex,0.8 0.2
+*Vertex,0.8 0.8
+*Vertex,0.2 0.8
+*Vertex,0.3 0.7
+*Vertex,0.7 0.3
+*Vertex,0.48 0.48
+*Vertex,0.52 0.52
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Edge,1,2,black,solid
+*Edge,2,3,grey50,solid
+*Edge,3,4,black,solid
+*Edge,4,1,grey50,solid
+*Edge,5,6,black,solid
+*Dot,7,black,1
+*Dot,8,black,1
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,valve,globe    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,410,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.0,0.0,1000,user,fluid density rho 0 (kg/m^3)
+*flow,real,-,-,0.0,0.0,100000,user,presure drop dP0 (Pa)
+*flow,intg,-,-,1,0,2,user,linear (1) or log (2) characteristic
+*flow,real,-,-,0.0,0.0,1000.0,user,flow when fully open k,vs (m^3/s)
+*flow,real,-,-,0.0,0.0,100.0,user,flow when closed, k,v0 (%)
+*flow,real,-,-,0.0,0.0,100.0,user,lower validity limit k,vr (%)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 410 is a general flow corrector or variable
+flow resistance such as a valve. Actuation
+of this component requires a flow control loop
+otherwise it is assumed the valve (or damper) is
+open. 
+Equation: m = rho.f(comp, signal)
+Supplemental data:
+ (1) fluid type (1=air, 2=water)
+ (2) fluid density rho 0 (kg/m^3),
+ (3) presure drop dP0 (Pa),
+ (4) linear (1) or logarithmic (2)position dependency,
+ (5) volume flow when fully open  k,vs (m^3/s),
+ (6) theoretical flow when closed, k,v0 (%)
+ (7) lower validity limit k,vr (%).
+*End_Text
+*Vertex,0.2 0.2  
+*Vertex,0.8 0.2
+*Vertex,0.8 0.8
+*Vertex,0.2 0.8
+*Vertex,0.3 0.7
+*Vertex,0.7 0.3
+*Vertex,0.48 0.48
+*Vertex,0.52 0.52
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Edge,1,2,black,solid
+*Edge,2,3,grey50,solid
+*Edge,3,4,black,solid
+*Edge,4,1,grey50,solid
+*Edge,5,6,black,solid
+*Dot,7,black,1
+*Dot,8,black,1
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,valve,ball    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,410,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.0,0.0,1000,user,fluid density rho 0 (kg/m^3)
+*flow,real,-,-,0.0,0.0,100000,user,presure drop dP0 (Pa)
+*flow,intg,-,-,1,0,2,user,linear (1) or log (2) characteristic
+*flow,real,-,-,0.0,0.0,1000.0,user,flow when fully open k,vs (m^3/s)
+*flow,real,-,-,0.0,0.0,100.0,user,flow when closed, k,v0 (%)
+*flow,real,-,-,0.0,0.0,100.0,user,lower validity limit k,vr (%)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 410 is a general flow corrector or variable
+flow resistance such as a valve. Actuation
+of this component requires a flow control loop
+otherwise it is assumed the valve (or damper) is
+open. 
+Equation: m = rho.f(comp, signal)
+Supplemental data:
+ (1) fluid type (1=air, 2=water)
+ (2) fluid density rho 0 (kg/m^3),
+ (3) presure drop dP0 (Pa),
+ (4) linear (1) or logarithmic (2)position dependency,
+ (5) volume flow when fully open  k,vs (m^3/s),
+ (6) theoretical flow when closed, k,v0 (%)
+ (7) lower validity limit k,vr (%).
+*End_Text
+*Vertex,0.2 0.2  
+*Vertex,0.8 0.2
+*Vertex,0.8 0.8
+*Vertex,0.2 0.8
+*Vertex,0.3 0.7
+*Vertex,0.7 0.3
+*Vertex,0.48 0.48
+*Vertex,0.52 0.52
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Edge,1,2,black,solid
+*Edge,2,3,grey50,solid
+*Edge,3,4,black,solid
+*Edge,4,1,grey50,solid
+*Edge,5,6,black,solid
+*Dot,7,black,1
+*Dot,8,black,1
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,valve,gate    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,410,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.0,0.0,1000,user,fluid density rho 0 (kg/m^3)
+*flow,real,-,-,0.0,0.0,100000,user,presure drop dP0 (Pa)
+*flow,intg,-,-,1,0,2,user,linear (1) or log (2) characteristic
+*flow,real,-,-,0.0,0.0,1000.0,user,flow when fully open k,vs (m^3/s)
+*flow,real,-,-,0.0,0.0,100.0,user,flow when closed, k,v0 (%)
+*flow,real,-,-,0.0,0.0,100.0,user,lower validity limit k,vr (%)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 410 is a general flow corrector or variable
+flow resistance such as a valve. Actuation
+of this component requires a flow control loop
+otherwise it is assumed the valve (or damper) is
+open. 
+Equation: m = rho.f(comp, signal)
+Supplemental data:
+ (1) fluid type (1=air, 2=water)
+ (2) fluid density rho 0 (kg/m^3),
+ (3) presure drop dP0 (Pa),
+ (4) linear (1) or logarithmic (2)position dependency,
+ (5) volume flow when fully open  k,vs (m^3/s),
+ (6) theoretical flow when closed, k,v0 (%)
+ (7) lower validity limit k,vr (%).
+*End_Text
+*Vertex,0.2 0.2  
+*Vertex,0.8 0.2
+*Vertex,0.8 0.8
+*Vertex,0.2 0.8
+*Vertex,0.3 0.7
+*Vertex,0.7 0.3
+*Vertex,0.48 0.48
+*Vertex,0.52 0.52
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Edge,1,2,black,solid
+*Edge,2,3,grey50,solid
+*Edge,3,4,black,solid
+*Edge,4,1,grey50,solid
+*Edge,5,6,black,solid
+*Dot,7,black,1
+*Dot,8,black,1
+*Attach,9,1
+*Attach,10,1
+*End_item
+*End_category
+# ----Category------
+*Category,duct_fit,fittings (ducting)  # category and associated icons
+# ----Item------
+*Item,mf220,converging 3-leg junction     # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,220,0,500,static,flow component index
+*flow,intg,-,-,1,0,2,user,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.20,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,0.20,0.0,100.0,user,conduit length (m)
+*flow,real,-,-,0.20,0.0,100.0,user,wall roughness (m)
+*flow,real,-,-,0.20,0.0,100.0,user,sum of local loss factors (-)
+*flow,real,-,-,0.20,0.0,100.0,user,junction cross-sectional area (m^2)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a0 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a1 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a2 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a3 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a4 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a5 (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 220 is a variant of a general flow conduit which
+ends in a converging 3-leg junction.  It represents
+only half of a junction and the branch must be rep-
+resented by a similar component.  It is well supported
+in the literature.  Supplemental data:
+  fluid type, conduit hydraulic diam, x-section area
+  conduit length, wall roughness, sum of local dynamic
+  loss factors, x-sectional area of common junction 
+  section, Ccp coefficients a0 - a5 in:
+    Ccp = a0+a1.X+a2.X.X+a3.Y+a4.Y.Y+a5.X.Y  
+  where X is the ratio between the volume flow rate in
+  this conduit and the common section, respectively and
+  Y is the ratio between the volume flow rate in the 
+  other entrance of the junction and the common.
+*End_Text
+*Vertex,0.1,0.66  
+*Vertex,0.36,0.5  
+*Vertex,0.18,0.4  
+*Vertex,0.3,0.27  
+*Vertex,0.55,0.45  
+*Vertex,0.8,0.45  
+*Vertex,0.8,0.65  
+*Vertex,0.55,0.65  
+*Vertex,0.2,0.85  
+*Vertex,0.1,0.8  
+*Vertex,0.55,0.55  
+*Vertex,1.00,0.55  
+*Vertex,0.9,0.65  
+*Vertex,0.9,0.45  
+*Vertex,-0.1 0.8
+*Vertex,1.1 0.55
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,2 3,black,solid
+*Edge,3 4,grey50,solid
+*Edge,4 5,black,solid
+*Edge,5 6,black,solid
+*Edge,6 7,grey50,solid
+*Edge,7 8,black,solid
+*Edge,8 9,black,solid
+*Edge,9 1,grey50,solid
+*Edge,10 11,black,solid
+*Edge,11 12,grey50,solid
+*Edge,12 13,grey50,solid
+*Edge,12 14,grey50,solid
+*Dot,11,black,2
+*Label,17,black,220
+*Attach,15,1
+*Attach,16,1
+*End_item
+# ----Item------
+*Item,mf230,diverging 3-leg junction     # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,230,0,500,static,flow component index
+*flow,intg,-,-,1,0,2,user,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.20,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,0.20,0.0,100.0,user,conduit length (m)
+*flow,real,-,-,0.20,0.0,100.0,user,wall roughness (m)
+*flow,real,-,-,0.20,0.0,100.0,user,sum of local loss factors (-)
+*flow,real,-,-,0.20,0.0,100.0,user,junction cross-sectional area (m^2)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a0 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a1 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a2 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a3 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a4 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a5 (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 230 is a variant of a general flow conduit which
+ends in a diverging 3-leg junction.  It represents
+only half of a junction and the branch must be rep-
+resented by a similar component.  It is well supported
+in the literature.  Supplemental data:
+  fluid type, conduit hydraulic diam, x-section area
+  conduit length, wall roughness, sum of local dynamic
+  loss factors, x-sectional area of common junction 
+  section, Ccp coefficients a0 - a5 in:
+    Ccp = a0+a1.X+a2.X.X+a3.Y+a4.Y.Y+a5.X.Y  
+  where X is the ratio between the volume flow rate in
+  this conduit and the common section, respectively and
+  Y is the ratio between the volume flow rate in the 
+  other entrance of the junction and the common.
+*End_Text
+*Vertex,0.15,0.66  
+*Vertex,0.36,0.5  
+*Vertex,0.18,0.4  
+*Vertex,0.3,0.27  
+*Vertex,0.5,0.45  
+*Vertex,0.8,0.45  
+*Vertex,0.8,0.65  
+*Vertex,0.55,0.65  
+*Vertex,0.25,0.85  
+*Vertex,0.04,0.81  
+*Vertex,0.50,0.55  
+*Vertex,0.95,0.55  
+*Vertex,0.16,0.85  
+*Vertex,0.12,0.69  
+*Vertex,-0.1 0.8
+*Vertex,1.1 0.55
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,2 3,black,solid
+*Edge,3 4,grey50,solid
+*Edge,4 5,black,solid
+*Edge,5 6,black,solid
+*Edge,6 7,grey50,solid
+*Edge,7 8,black,solid
+*Edge,8 9,black,solid
+*Edge,9 1,grey50,solid
+*Edge,10 11,black,solid
+*Edge,11 12,grey50,solid
+*Edge,10 13,black,solid
+*Edge,10 14,black,solid
+*Dot,11,black,2
+*Label,17,black,230
+*Attach,15,1
+*Attach,16,1
+*End_item
+# ----Item------
+*Item,mf240,converging 4-leg junction     # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,240,0,500,static,flow component index
+*flow,intg,-,-,1,0,2,user,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.20,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,0.20,0.0,100.0,user,conduit length (m)
+*flow,real,-,-,0.20,0.0,100.0,user,wall roughness (m)
+*flow,real,-,-,0.20,0.0,100.0,user,sum of local loss factors (-)
+*flow,real,-,-,0.20,0.0,100.0,user,junction cross-sectional area (m^2)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a0 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a1 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a2 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a3 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a4 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a5 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a6 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a7 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a8 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a9 (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 240 is a variant of a general flow conduit which
+ends in a converging 4-leg junction.  It represents
+only part of a junction and the other branchs must be rep-
+resented by similar components.  It is well supported
+in the literature.  Supplemental data:
+  fluid type, conduit hydraulic diam, x-section area
+  conduit length, wall roughness, sum of local dynamic
+  loss factors, x-sectional area of common junction 
+  section, Ccp coefficients a0 - a9 in:
+    Ccp = a0+a1.X+a2.X.X+a3.Y+a4.Y.Y+a5.X.Y  '
+            +a6.Z+a7.Z.Z+a8.X.Z+a9.Y.Z' 
+  where X is the ratio between the volume flow rate in
+  this conduit and the common section, respectively and
+  Y is the ratio between the volume flow rate in the 
+  other entrance of the junction and the common.
+*End_Text
+*Vertex,0.1,0.66  
+*Vertex,0.36,0.5  
+*Vertex,0.18,0.4  
+*Vertex,0.3,0.27  
+*Vertex,0.5,0.45  
+*Vertex,0.8,0.45  
+*Vertex,0.8,0.65  
+*Vertex,0.55,0.65  
+*Vertex,0.2,0.85  
+*Vertex,0.1,0.8  
+*Vertex,0.50,0.55  
+*Vertex,1.00,0.55  
+*Vertex,0.9,0.65  
+*Vertex,0.9,0.45  
+*Vertex,0.55,0.9  
+*Vertex,0.70,0.9  
+*Vertex,0.70,0.65  
+*Vertex,-0.1 0.8
+*Vertex,1.1 0.55
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,2 3,black,solid
+*Edge,3 4,grey50,solid
+*Edge,4 5,black,solid
+*Edge,5 6,black,solid
+*Edge,6 7,grey50,solid
+*Edge,7 17,black,solid
+*Edge,17 16,black,solid
+*Edge,16 15,grey50,solid
+*Edge,15 8,black,solid
+*Edge,8 9,black,solid
+*Edge,9 1,grey50,solid
+*Edge,10 11,black,solid
+*Edge,11 12,grey50,solid
+*Edge,12 13,grey50,solid
+*Edge,12 14,grey50,solid
+*Dot,11,black,2
+*Label,20,black,240
+*Attach,18,1
+*Attach,19,1
+*End_item
+# ----Item------
+*Item,mf250,diverging 4-leg junction     # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,250,0,500,static,flow component index
+*flow,intg,-,-,1,0,2,user,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.20,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,0.20,0.0,100.0,user,conduit length (m)
+*flow,real,-,-,0.20,0.0,100.0,user,wall roughness (m)
+*flow,real,-,-,0.20,0.0,100.0,user,sum of local loss factors (-)
+*flow,real,-,-,0.20,0.0,100.0,user,junction cross-sectional area (m^2)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a0 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a1 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a2 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a3 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a4 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a5 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a6 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a7 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a8 (-)
+*flow,real,-,-,0.20,0.0,100.0,user,Ccp coef a9 (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 250 is a variant of a general flow conduit which
+ends in a diverging 4-leg junction.  It represents
+only part of a junction and the other branch must be
+represented by similar components.  It is well supported
+in the literature.  Supplemental data:
+  fluid type, conduit hydraulic diam, x-section area
+  conduit length, wall roughness, sum of local dynamic
+  loss factors, x-sectional area of common junction 
+  section, Ccp coefficients a0 - a9 in:
+    Ccp = a0+a1.X+a2.X.X+a3.Y+a4.Y.Y+a5.X.Y  '
+            +a6.Z+a7.Z.Z+a8.X.Z+a9.Y.Z  
+  where X is the ratio between the volume flow rate in
+  this conduit and the common section, respectively and
+  Y is the ratio between the volume flow rate in the 
+  other entrance of the junction and the common.
+*End_Text
+*Vertex,0.15,0.66  
+*Vertex,0.36,0.5  
+*Vertex,0.18,0.4  
+*Vertex,0.3,0.27  
+*Vertex,0.5,0.45  
+*Vertex,0.85,0.45  
+*Vertex,0.85,0.65  
+*Vertex,0.55,0.65  
+*Vertex,0.25,0.85  
+*Vertex,0.04,0.82  
+*Vertex,0.50,0.55  
+*Vertex,0.95,0.55  
+*Vertex,0.16,0.85  
+*Vertex,0.12,0.69  
+*Vertex,0.55,0.9  
+*Vertex,0.70,0.9  
+*Vertex,0.70,0.65  
+*Vertex,-0.1 0.8
+*Vertex,1.1 0.55
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,2 3,black,solid
+*Edge,3 4,grey50,solid
+*Edge,4 5,black,solid
+*Edge,5 6,black,solid
+*Edge,6 7,grey50,solid
+*Edge,7 17,black,solid
+*Edge,17 16,black,solid
+*Edge,16 15,grey50,solid
+*Edge,15 8,black,solid
+*Edge,8 9,black,solid
+*Edge,9 1,grey50,solid
+*Edge,10 11,black,solid
+*Edge,11 12,grey50,solid
+*Edge,10 13,black,solid
+*Edge,10 14,black,solid
+*Dot,11,black,2
+*Label,20,black,250
+*Attach,18,1
+*Attach,19,1
+*End_item
+# ----Item------
+*Item,mf040,0.2m^2 orifice plate    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,40,0,500,static,flow component index
+*flow,intg,-,-,1,0,2,user,fluid type
+*flow,real,-,-,0.20,0.0,1000.0,user,opening area (m)
+*flow,real,-,-,0.60,0.0,1000.0,user,discharge coef (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control
+*End_attribute
+*Text
+Type 40 is a common orifice flow component which is a
+basic expression for turbulent flow through relatively
+large openings such as a vent in the case of buildings
+or a pipe restriction in a hydronic network.
+Supplemental data: 
+ (1) fluid type (1=air, 2=water), 
+ (2) opening area (m^2), 
+ (3) discharge factor (-).
+The opening area can be modified by the use of a flow
+control law.
+*End_Text
+*Vertex,0.25,0.05  
+*Vertex,0.75,0.3 
+*Vertex,0.75,0.85 
+*Vertex,0.25,0.60
+*Vertex,0.15,0.15  
+*Vertex,0.15,0.70
+*Vertex,0.65,0.95 
+*Vertex,0.65,0.4 
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Vertex,0.7,0.01
+*Edge,1 2,black,solid
+*Edge,2 3,black,solid
+*Edge,3 4,black,solid
+*Edge,4 1,black,solid
+*Edge,1 5,black,solid
+*Edge,4 6,black,solid
+*Edge,3 7,black,solid
+*Edge,2 8,black,solid
+*Label,11,black,40
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,mf110,1m^2 opening    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,110,0,500,static,flow component index
+*flow,intg,-,-,1,0,2,static,fluid type
+*flow,real,-,-,1.00,0.0,1000.0,user,opening area (m)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control
+*End_attribute
+*Text
+Type 110 is an air flow opening (type 40) with the
+fluid type set to air and a discharge factor of 0.65.
+Supplemental data: opening area(m)
+ (1) fluid type (air only)
+ (2) opening area (m).
+The opening area can be modified by the use of a flow
+control law.
+*End_Text
+*Vertex,0.25,0.05  
+*Vertex,0.75,0.3 
+*Vertex,0.75,0.85 
+*Vertex,0.25,0.60
+*Vertex,0.15,0.15  
+*Vertex,0.15,0.70
+*Vertex,0.65,0.95 
+*Vertex,0.65,0.4 
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Vertex,0.7,0.01
+*Edge,1 2,black,solid
+*Edge,2 3,black,solid
+*Edge,3 4,black,solid
+*Edge,4 1,black,solid
+*Edge,1 5,black,solid
+*Edge,4 6,black,solid
+*Edge,3 7,black,solid
+*Edge,2 8,black,solid
+*Label,11,black,110
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,mf210,local loss (MF210)     # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,210,0,500,static,flow component index
+*flow,intg,-,-,1,0,2,static,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,roughness (mm)
+*flow,real,-,-,0.20,0.0,100.0,user,conduit length (m)
+*flow,real,-,-,0.20,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.20,0.0,100.0,user,cross-sectional area (m^")
+*flow,real,-,-,0.20,0.0,100.0,user,local loss factor (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+General flow conduit (MF210) component.
+ m = rho.f(D,A,L,k,SCi)
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - conduit hydraulic diameter (m)
+ - cross-sectional area (m^2)
+ - conduit length (m)
+ - absolute wall roughness (m)
+ - sum of local dynamic loss factors (-)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,210
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,exh_grill,exhaust grill     # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,110,0,500,user,flow component index (?)
+*flow,intg,-,-,1,0,2,static,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,area of opening
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Exhaust grille or register. (? which component type ?)
+*End_Text
+*Vertex,0.2 0.2  
+*Vertex,0.2 0.8
+*Vertex,0.3 0.3
+*Vertex,0.3 0.7
+*Vertex,0.3 0.5
+*Vertex,0.5 0.5
+*Vertex,0.6 0.6
+*Vertex,0.7 0.4
+*Vertex,0.8 0.5
+*Vertex,0.9 0.5
+*Vertex,0.4 0.6
+*Vertex,0.4 0.4
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Edge,1,2,black,solid
+*Edge,3,4,black,solid
+*Edge,5,6,black,solid
+*Edge,6,7,black,solid
+*Edge,7,8,black,solid
+*Edge,8,9,black,solid
+*Edge,9,10,black,solid
+*Edge,5,11,black,solid
+*Edge,5,12,black,solid
+*Attach,13,1
+*Attach,14,1
+*End_item
+# ----Item------
+*Item,sup_grill,supply grill     # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,110,0,500,static,flow component index (?)
+*flow,intg,-,-,1,0,2,static,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,area of opening
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Exhaust grille or register. (? which component type ?)
+*End_Text
+*Vertex,0.2 0.2  
+*Vertex,0.2 0.8
+*Vertex,0.3 0.3
+*Vertex,0.3 0.7
+*Vertex,0.3 0.5
+*Vertex,0.9 0.5
+*Vertex,0.8 0.6
+*Vertex,0.8 0.4
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Edge,1,2,black,solid
+*Edge,3,4,black,solid
+*Edge,5,6,black,solid
+*Edge,6,7,black,solid
+*Edge,6,8,black,solid
+*Attach,9,1
+*Attach,10,1
+*End_item
+*End_category
+# ----Category------
+*Category,pipe_fit,fittings (piping)  # category and associated icons
+# ----Item------
+*Item,mf210,general fitting loss (K value)    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,210,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,roughness (mm)
+*flow,real,-,-,0.20,0.0,100.0,user,fitting length (m)
+*flow,real,-,-,0.20,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.20,0.0,100.0,user,cross-sectional area (m^")
+*flow,real,-,-,0.20,0.0,100.0,user,local loss factor (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*End_attribute
+*Text
+General flow conduit (MF210) component.
+ m = rho.f(D,A,L,k,SCi)
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - conduit hydraulic diameter (m)
+ - cross-sectional area (m^2)
+ - conduit length (m)
+ - absolute wall roughness (m)
+ - sum of local dynamic loss factors (-)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,210
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,bend,bend 45 deg. flanged # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,210,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.0015,0.0,100.0,user,roughness (mm)
+*flow,real,-,-,0.01,0.0,100.0,user,fitting length (m)
+*flow,real,-,-,0.1,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.008,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,0.2,0.0,100.0,user,local loss factor (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*End_attribute
+*Text
+The bend component is based on the 
+general flow conduit (MF210) component.
+Losses are of the form dP = 0.5*k*rho*v^2
+where k is the loss coefficient. 
+ m = rho.f(D,A,L,k,SCi)
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - conduit hydraulic diameter (m)
+ - cross-sectional area (m^2)
+ - conduit length (m)
+ - absolute wall roughness (m)
+ - sum of local dynamic loss factors (-)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,210
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,bend,bend 90 deg. flanged # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,210,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.0015,0.0,100.0,user,roughness (mm)
+*flow,real,-,-,0.01,0.0,100.0,user,fitting length (m)
+*flow,real,-,-,0.1,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.008,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,0.3,0.0,100.0,user,local loss factor (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*End_attribute
+*Text
+The bend component is based on the 
+general flow conduit (MF210) component.
+Losses are of the form dP = 0.5*k*rho*v^2
+where k is the loss coefficient. 
+ m = rho.f(D,A,L,k,SCi)
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - conduit hydraulic diameter (m)
+ - cross-sectional area (m^2)
+ - conduit length (m)
+ - absolute wall roughness (m)
+ - sum of local dynamic loss factors (-)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,210
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,bend,bend 180 deg. flanged # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,210,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.0015,0.0,100.0,user,roughness (mm)
+*flow,real,-,-,0.01,0.0,100.0,user,fitting length (m)
+*flow,real,-,-,0.1,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.008,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,0.2,0.0,100.0,user,local loss factor (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*End_attribute
+*Text
+The bend component is based on the 
+general flow conduit (MF210) component.
+Losses are of the form dP = 0.5*k*rho*v^2
+where k is the loss coefficient. 
+ m = rho.f(D,A,L,k,SCi)
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - conduit hydraulic diameter (m)
+ - cross-sectional area (m^2)
+ - conduit length (m)
+ - absolute wall roughness (m)
+ - sum of local dynamic loss factors (-)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,210
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,bend,threaded pipe union # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,210,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.0015,0.0,100.0,user,roughness (mm)
+*flow,real,-,-,0.01,0.0,100.0,user,fitting length (m)
+*flow,real,-,-,0.1,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.008,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,0.08,0.0,100.0,user,local loss factor (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*End_attribute
+*Text
+The union component is based on the 
+general flow conduit (MF210) component.
+Losses are of the form dP = 0.5*k*rho*v^2
+where k is the loss coefficient. 
+ m = rho.f(D,A,L,k,SCi)
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - conduit hydraulic diameter (m)
+ - cross-sectional area (m^2)
+ - conduit length (m)
+ - absolute wall roughness (m)
+ - sum of local dynamic loss factors (-)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,210
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,expan,sudden expansion # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,210,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.0015,0.0,100.0,user,roughness (mm)
+*flow,real,-,-,0.01,0.0,100.0,user,fitting length (m)
+*flow,real,-,-,0.1,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.008,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,0.25,0.0,100.0,user,local loss factor (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*End_attribute
+*Text
+The expansion component is based on the 
+general flow conduit (MF210) component.
+Losses are of the form dP = 0.5*k*rho*v^2
+where k is the loss coefficient. The loss
+coefficient is given by: (1-(A1/A2))^2
+Referenced to upstream velocity.
+ m = rho.f(D,A,L,k,SCi)
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - conduit hydraulic diameter (m)
+ - cross-sectional area (m^2)
+ - conduit length (m)
+ - absolute wall roughness (m)
+ - sum of local dynamic loss factors (-)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,210
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,expan,conical expansion 15 deg. # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,210,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.0015,0.0,100.0,user,roughness (mm)
+*flow,real,-,-,0.01,0.0,100.0,user,fitting length (m)
+*flow,real,-,-,0.1,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.008,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,0.6,0.0,100.0,user,local loss factor (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*End_attribute
+*Text
+The expansion component is based on the 
+general flow conduit (MF210) component.
+Losses are of the form dP = 0.5*k*rho*v^2
+where k is the loss coefficient. The loss
+coefficient is given by: (1-(A1/A2))^2. 
+Referenced to upstream velocity.
+ m = rho.f(D,A,L,k,SCi)
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - conduit hydraulic diameter (m)
+ - cross-sectional area (m^2)
+ - conduit length (m)
+ - absolute wall roughness (m)
+ - sum of local dynamic loss factors (-)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,210
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,expan,conical expansion 30 deg. # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,210,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.0015,0.0,100.0,user,roughness (mm)
+*flow,real,-,-,0.01,0.0,100.0,user,fitting length (m)
+*flow,real,-,-,0.1,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.008,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,1.0,0.0,100.0,user,local loss factor (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*End_attribute
+*Text
+The expansion component is based on the 
+general flow conduit (MF210) component.
+Losses are of the form dP = 0.5*k*rho*v^2
+where k is the loss coefficient. The loss
+coefficient is given by: (1-(A1/A2))^2
+Referenced to upstream velocity.
+ m = rho.f(D,A,L,k,SCi)
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - conduit hydraulic diameter (m)
+ - cross-sectional area (m^2)
+ - conduit length (m)
+ - absolute wall roughness (m)
+ - sum of local dynamic loss factors (-)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,210
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,expan,sudden contraction # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,210,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.0015,0.0,100.0,user,roughness (mm)
+*flow,real,-,-,0.01,0.0,100.0,user,fitting length (m)
+*flow,real,-,-,0.1,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.008,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,0.02,0.0,100.0,user,local loss factor (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*End_attribute
+*Text
+The expansion contraction is based on the 
+general flow conduit (MF210) component.
+Losses are of the form dP = 0.5*k*rho*v^2
+where k is the loss coefficient. The loss
+coefficient is given by: (1-(A1/A2))^2
+Referenced to downstream velocity.
+ m = rho.f(D,A,L,k,SCi)
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - conduit hydraulic diameter (m)
+ - cross-sectional area (m^2)
+ - conduit length (m)
+ - absolute wall roughness (m)
+ - sum of local dynamic loss factors (-)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,210
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,expan,conical contraction 30 deg. # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,210,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.0015,0.0,100.0,user,roughness (mm)
+*flow,real,-,-,0.01,0.0,100.0,user,fitting length (m)
+*flow,real,-,-,0.1,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.008,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,0.02,0.0,100.0,user,local loss factor (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*End_attribute
+*Text
+The expansion component is based on the 
+general flow conduit (MF210) component.
+Losses are of the form dP = 0.5*k*rho*v^2
+where k is the loss coefficient. The loss
+coefficient is given by: (1-(A1/A2))^2
+Referenced to downstream velocity.
+ m = rho.f(D,A,L,k,SCi)
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - conduit hydraulic diameter (m)
+ - cross-sectional area (m^2)
+ - conduit length (m)
+ - absolute wall roughness (m)
+ - sum of local dynamic loss factors (-)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,210
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,expan,conical contraction 60 deg. # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,210,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.0015,0.0,100.0,user,roughness (mm)
+*flow,real,-,-,0.01,0.0,100.0,user,fitting length (m)
+*flow,real,-,-,0.1,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.008,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,0.07,0.0,100.0,user,local loss factor (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*End_attribute
+*Text
+The expansion component is based on the 
+general flow conduit (MF210) component.
+Losses are of the form dP = 0.5*k*rho*v^2
+where k is the loss coefficient. The loss
+coefficient is given by: (1-(A1/A2))^2
+Referenced to downstream velocity.
+ m = rho.f(D,A,L,k,SCi)
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - conduit hydraulic diameter (m)
+ - cross-sectional area (m^2)
+ - conduit length (m)
+ - absolute wall roughness (m)
+ - sum of local dynamic loss factors (-)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,210
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,entry,re-entrant pipe entry # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,210,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.0015,0.0,100.0,user,roughness (mm)
+*flow,real,-,-,0.01,0.0,100.0,user,fitting length (m)
+*flow,real,-,-,0.1,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.008,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,0.8,0.0,100.0,user,local loss factor (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*End_attribute
+*Text
+The pipe entry component is based on the 
+general flow conduit (MF210) component.
+Losses are of the form dP = 0.5*k*rho*v^2
+where k is the loss coefficient. 
+ m = rho.f(D,A,L,k,SCi)
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - conduit hydraulic diameter (m)
+ - cross-sectional area (m^2)
+ - conduit length (m)
+ - absolute wall roughness (m)
+ - sum of local dynamic loss factors (-)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,210
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,entry,sharp edged pipe entry # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,210,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.0015,0.0,100.0,user,roughness (mm)
+*flow,real,-,-,0.01,0.0,100.0,user,fitting length (m)
+*flow,real,-,-,0.1,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.008,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,0.5,0.0,100.0,user,local loss factor (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*End_attribute
+*Text
+The pipe entry component is based on the 
+general flow conduit (MF210) component.
+Losses are of the form dP = 0.5*k*rho*v^2
+where k is the loss coefficient. 
+ m = rho.f(D,A,L,k,SCi)
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - conduit hydraulic diameter (m)
+ - cross-sectional area (m^2)
+ - conduit length (m)
+ - absolute wall roughness (m)
+ - sum of local dynamic loss factors (-)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,210
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,entry,rounded pipe entry # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,210,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.0015,0.0,100.0,user,roughness (mm)
+*flow,real,-,-,0.01,0.0,100.0,user,fitting length (m)
+*flow,real,-,-,0.1,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.008,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,0.2,0.0,100.0,user,local loss factor (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*End_attribute
+*Text
+The pipe entry component is based on the 
+general flow conduit (MF210) component.
+Losses are of the form dP = 0.5*k*rho*v^2
+where k is the loss coefficient. 
+ m = rho.f(D,A,L,k,SCi)
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - conduit hydraulic diameter (m)
+ - cross-sectional area (m^2)
+ - conduit length (m)
+ - absolute wall roughness (m)
+ - sum of local dynamic loss factors (-)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,210
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,entry,well-rounded pipe entry # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,210,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.0015,0.0,100.0,user,roughness (mm)
+*flow,real,-,-,0.01,0.0,100.0,user,fitting length (m)
+*flow,real,-,-,0.1,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.008,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,0.2,0.0,100.0,user,local loss factor (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*End_attribute
+*Text
+The pipe entry component is based on the 
+general flow conduit (MF210) component.
+Losses are of the form dP = 0.5*k*rho*v^2
+where k is the loss coefficient. 
+ m = rho.f(D,A,L,k,SCi)
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - conduit hydraulic diameter (m)
+ - cross-sectional area (m^2)
+ - conduit length (m)
+ - absolute wall roughness (m)
+ - sum of local dynamic loss factors (-)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,210
+*Attach,9,1
+*Attach,10,1
+*End_item
+# ----Item------
+*Item,exit,pipe exit # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,210,0,500,static,flow component index
+*flow,intg,-,-,2,0,2,static,fluid type
+*flow,real,-,-,0.0015,0.0,100.0,user,roughness (mm)
+*flow,real,-,-,0.01,0.0,100.0,user,fitting length (m)
+*flow,real,-,-,0.1,0.0,100.0,user,hydraulic diameter (m)
+*flow,real,-,-,0.008,0.0,100.0,user,cross-sectional area (m^2)
+*flow,real,-,-,1.0,0.0,100.0,user,local loss factor (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*End_attribute
+*Text
+The pipe exit component is based on the 
+general flow conduit (MF210) component.
+Losses are of the form dP = 0.5*k*rho*v^2
+where k is the loss coefficient. 
+ m = rho.f(D,A,L,k,SCi)
+ with attributes:
+ - fluid type (1=air, 2=water)
+ - conduit hydraulic diameter (m)
+ - cross-sectional area (m^2)
+ - conduit length (m)
+ - absolute wall roughness (m)
+ - sum of local dynamic loss factors (-)
+*End_Text
+*Vertex,0.1,0.3  
+*Vertex,0.9,0.3 
+*Vertex,0.1,0.36  
+*Vertex,0.9,0.36 
+*Vertex,0.9,0.7 
+*Vertex,0.1,0.7
+*Vertex,0.9,0.75 
+*Vertex,0.1,0.75
+*Vertex,-0.1 0.5
+*Vertex,1.1 0.5
+*Vertex,0.6,0.01
+*Edge,1 2,black,solid
+*Edge,3 4,black,solid
+*Edge,2 7,grey50,solid
+*Edge,5 6,black,solid
+*Edge,7 8,black,solid
+*Edge,8 1,grey50,solid
+*Label,11,black,210
+*Attach,9,1
+*Attach,10,1
+*End_item
+*End_category
+# ----Category------
+*Category,window,windows  # category and associated icons
+# ----Item------
+*Item,mf110,window (monodirectional) (MF110)    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,110,0,500,static,flow component index
+*flow,intg,-,-,1,0,1,static,fluid type
+*flow,real,-,-,0.20,0.0,1000.0,user,opening area (m)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control
+*End_attribute
+*Text
+Type 110 is an air flow opening (type 40) with the
+fluid type set to air and a discharge factor of 0.65.
+Supplemental data: opening area(m)
+ (1) fluid type (air only)
+ (2) opening area (m).
+The opening area can be modified by the use of a flow
+control law.
+*End_Text
+*Vertex,0.25,0.05  
+*Vertex,0.75,0.3 
+*Vertex,0.75,0.85 
+*Vertex,0.25,0.60
+*Vertex,0.15,0.15  
+*Vertex,0.15,0.70
+*Vertex,0.65,0.95 
+*Vertex,0.65,0.4 
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Vertex,0.7,0.01
+*Edge,1 2,black,solid
+*Edge,2 3,black,solid
+*Edge,3 4,black,solid
+*Edge,4 1,black,solid
+*Edge,1 5,black,solid
+*Edge,4 6,black,solid
+*Edge,3 7,black,solid
+*Edge,2 8,black,solid
+*Label,11,black,110
+*Attach,9,1
+*Attach,10,1
+*End_item
+*End_category
+# ----Category------
+*Category,door,doors  # category and associated icons
+*Item,door,door component (MF130)    # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,130,0,500,static,flow component index
+*flow,intg,-,-,1,0,1,static,fluid type
+*flow,real,-,-,0.80,0.0,20.0,user,door width(m)
+*flow,real,-,-,2.10,0.0,100.0,user,door height(m)
+*flow,real,-,-,1.50,0.0,100.0,user,dist from base to air node(m)
+*flow,real,-,-,0.60,0.0,1.0,user,discharge coef. (-)
+*location,real,-,-,1.00,-10.0,99.0,user,height @ base (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Door allowing two way flow.
+Type 130 is an air flow door component which is '
+applicable to vertical opening where bi-directional'
+flow may exist. Based on an expression by Cockroft.'
+Equation: m = rho.f(W,H,dP)
+Supplemental data:
+ (1) fluid type (air only)
+ (2) door width (m)
+ (3) door height (m),
+ (4) vertical distance (m) between base of door and
+     adjacent air nodes (nodes should be at the same
+     height). Where this component type is required for
+     several locations with different vertical heights
+     you should create multiple door components.
+ (5) discharge factor (-)
+*End_Text
+*Vertex,0.24 0.06  
+*Vertex,0.4 0.18  
+*Vertex,0.4 0.8  
+*Vertex,0.62 0.94  
+*Vertex,0.62 0.35  
+*Vertex,0.88 0.56  
+*Vertex,0.2 0.4  
+*Vertex,0.58 0.4  
+*Vertex,0.3 0.5  
+*Vertex,0.3 0.3  
+*Vertex,0.3 0.6  
+*Vertex,0.58 0.6  
+*Vertex,0.46 0.7  
+*Vertex,0.46 0.5  
+*Vertex,0.6 0.2  
+*Vertex,0.0 0.5  
+*Vertex,1.0 0.5  
+*Edge,1,2,black,solid
+*Edge,2,3,black,solid
+*Edge,3,4,black,solid
+*Edge,4,5,black,solid
+*Edge,5,6,black,solid
+*Edge,2,5,grey50,solid
+*Edge,7,8,red,solid
+*Edge,7,9,red,solid
+*Edge,7,10,red,solid
+*Edge,11,12,red,solid
+*Edge,12,13,red,solid
+*Edge,12,14,red,solid
+*Label,15,black,door
+*Attach,16,1
+*Attach,17,1
+*End_item
+*End_category
+# ----Category------
+*Category,miscel,grills louvres and cracks  # category and associated icons
+# ----Item------
+*Item,crack,door crack (MF120)     # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,120,0,500,static,flow component index
+*flow,intg,-,-,1,0,1,static,fluid type
+*flow,real,-,-,0.005,0.0,0.10,user,crack width(m)
+*flow,real,-,-,1.00,0.0,100.0,user,crack length(m)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 120 is an air flow crack component.
+Equation: m = rho.f(W,L,dP)
+Supplemental data:
+ (1) fluid type (air only)
+ (2) crack width (m) NOTE unit!
+ (3) crack length(m)
+*End_Text
+*Vertex,0.1 0.5  
+*Vertex,0.3 0.5
+*Vertex,0.4 0.7
+*Vertex,0.5 0.3
+*Vertex,0.6 0.5
+*Vertex,0.9 0.5
+*Vertex,0.6 0.2
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Edge,1,2,black,solid
+*Edge,2,3,black,solid
+*Edge,3,4,black,solid
+*Edge,4,5,black,solid
+*Edge,5,6,black,solid
+*Label,7,black,cr
+*Attach,8,1
+*Attach,9,1
+*End_item
+# ----Item------
+*Item,crack,window crack (MF120)     # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,120,0,500,static,flow component index
+*flow,intg,-,-,1,0,1,static,fluid type
+*flow,real,-,-,0.003,0.0,0.10,user,crack width(m)
+*flow,real,-,-,2.00,0.0,100.0,user,crack length(m)
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Type 120 is an air flow crack component.
+Equation: m = rho.f(W,L,dP)
+Supplemental data:
+ (1) fluid type (air only)
+ (2) crack width (m), NOTE unit!
+ (3) crack length(m)
+*End_Text
+*Vertex,0.1 0.5  
+*Vertex,0.3 0.5
+*Vertex,0.4 0.7
+*Vertex,0.5 0.3
+*Vertex,0.6 0.5
+*Vertex,0.9 0.5
+*Vertex,0.6 0.2
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Edge,1,2,black,solid
+*Edge,2,3,black,solid
+*Edge,3,4,black,solid
+*Edge,4,5,black,solid
+*Edge,5,6,black,solid
+*Label,7,black,cr
+*Attach,8,1
+*Attach,9,1
+*End_item
+# ----Item------
+*Item,misc_grill,grill     # icon tag and menu entry
+*Attribute   # nb attributes and data
+*flow,intg,-,-,110,0,500,user,flow component index (?)
+*flow,intg,-,-,1,0,1,static,fluid type
+*flow,real,-,-,0.20,0.0,100.0,user,area of opening
+*location,real,-,-,1.00,-10.0,99.0,user,height (m)
+*control,real,-,-,0.0,0.0,1.0,user,default control state
+*End_attribute
+*Text
+Exhaust grille or register. (? which component type ?)
+*End_Text
+*Vertex,0.2 0.2  
+*Vertex,0.2 0.8
+*Vertex,0.3 0.3
+*Vertex,0.3 0.7
+*Vertex,0.3 0.5
+*Vertex,0.5 0.5
+*Vertex,0.6 0.6
+*Vertex,0.7 0.4
+*Vertex,0.8 0.5
+*Vertex,0.9 0.5
+*Vertex,0.4 0.6
+*Vertex,0.4 0.4
+*Vertex,0.0 0.5
+*Vertex,1.0 0.5
+*Edge,1,2,black,solid
+*Edge,3,4,black,solid
+*Edge,5,6,black,solid
+*Edge,6,7,black,solid
+*Edge,7,8,black,solid
+*Edge,8,9,black,solid
+*Edge,9,10,black,solid
+*Edge,5,11,black,solid
+*Edge,5,12,black,solid
+*Attach,13,1
+*Attach,14,1
+*End_item
+*End_category
+*End_domain
+*End_icons

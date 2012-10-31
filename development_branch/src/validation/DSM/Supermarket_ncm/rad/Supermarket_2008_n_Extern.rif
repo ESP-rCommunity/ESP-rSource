@@ -1,0 +1,22 @@
+# Radiance RIF file: Supermarket_2008_n_Extern.rif
+#e2r_gen_view   0 -1
+#e2r_glaz_type   1
+view= def -vtv -vp  -100.000 -100.000  100.000 -vd   0.6629  0.6154 -0.4265 -vu 0 0 1 -vh   19.7 -vv   19.7 -vs 0 -vl 0
+scene= Supermarket_2008_n_Extern.sky
+scene= Supermarket_2008_n_Extern-glz.rad
+scene= Supermarket_2008_n_Extern.mat
+scene= Supermarket_2008_n_Extern-out.rad
+scene= Supermarket_2008_n_Extern-in.rad
+UP= Z
+QUALITY= Medium
+DETAIL= Medium
+VARIABILITY= High  
+RESOLUTION=   400
+INDIRECT=  1
+PENUMBRAS= False
+REPORT=    1
+render= -av 14.7 14.7 14.7
+ZONE= Exterior  -140.70  240.70 -151.45  229.95    0.00  190.70
+OPTFILE= Supermarket_2008_n_Extern.opt
+OCTREE= Supermarket_2008_n_Extern.oct
+PICTURE= Supermarket_2008_n_Extern

@@ -1,0 +1,35 @@
+# ESP-r special materials file used in 
+# configuration file elsa.cfg            
+   4# No. of special material nodes.
+# Node No:  1
+photov1     # label
+# Zone Surf Node Type Opq/Trn
+   5   1   6   1   0
+# No. of data items.
+  10
+# Data:
+     80.43      2.68     72.38      2.38    600.00    312.92    150.00      1.00    120.00    100.00
+# Node No:  2
+photov2     # label
+# Zone Surf Node Type Opq/Trn
+   7   1   6   1   0
+# No. of data items.
+  10
+# Data:
+     80.43      2.68     72.38      2.38    600.00    312.92    150.00      1.00    120.00    100.00
+# Node No:  3
+photov3     # label
+# Zone Surf Node Type Opq/Trn
+   8   7   6   1   0
+# No. of data items.
+  10
+# Data:
+     80.43      2.68     72.38      2.38    600.00    312.92    150.00      1.00    120.00    100.00
+# Node No:  4
+photov3     # label
+# Zone Surf Node Type Opq/Trn
+   6   1   6   1   0
+# No. of data items.
+  10
+# Data:
+     80.43      2.68     72.38      2.38    600.00    312.92    150.00      1.00    120.00    100.00

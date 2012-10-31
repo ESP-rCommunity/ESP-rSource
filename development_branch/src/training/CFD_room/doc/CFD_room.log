@@ -1,0 +1,22 @@
+Project notes for CFD_room.cfg
+Description: A basic room with CFD domain defined
+In folder: CFD_room
+By: iain
+Date: Thu Aug  8 15:43:15 2002
+For: 
+Project reference: 
+Notes: 
+_____________________________
+
+There are several varints in this folder:
+CFD_room.cfg       basic domain solved without buoyancy
+CFD_room1.cfg      with surface conflation
+CFD_room4.cfg      with adaptive conflation
+CFD_room_afn.cfg   uses a mass flow network with CFD
+CFD_room_blk.cfg   uses the conf1.dfd domain file
+CFD_room_buoy.cfg   basic domain solved with buoyancy
+CFD_room_src.cfg   includes CO2 and moisture sources
+
+Suggested that you look in the various dfd files in the nets folder
+for details about the domains and solution.
+ 

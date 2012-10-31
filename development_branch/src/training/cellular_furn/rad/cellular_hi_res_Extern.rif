@@ -1,0 +1,22 @@
+# Radiance RIF file: cellular_hi_res_Extern.rif
+#e2r_gen_view   0 -1
+#e2r_glaz_type   1
+view= def -vtv -vp   -65.000 -142.500   73.300 -vd   0.3872  0.8266 -0.4085 -vu 0 0 1 -vh    2.6 -vv    2.6 -vs 0 -vl 0
+scene= cellular_hi_res_Extern.sky
+scene= cellular_hi_res_Extern-glz.rad
+scene= cellular_hi_res_Extern.mat
+scene= cellular_hi_res_Extern-out.rad
+scene= cellular_hi_res_Extern-in.rad
+UP= Z
+QUALITY= Medium
+DETAIL= Medium
+VARIABILITY= High  
+RESOLUTION=   258
+INDIRECT=  1
+PENUMBRAS= False
+REPORT=    1
+render= -av 18.1 18.1 18.1
+ZONE= Exterior    -9.32   15.42   -9.60   15.15    0.00   12.37
+OPTFILE= cellular_hi_res_Extern.opt
+OCTREE= cellular_hi_res_Extern.oct
+PICTURE= cellular_hi_res_Extern

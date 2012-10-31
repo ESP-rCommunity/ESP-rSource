@@ -1,0 +1,47 @@
+# Plant component data base:
+/usr/esru/esp-r/databases/plantc.db1
+# Project title:
+                                                                      
+# Total no. of specified components and simulation type
+    4    2
+#->   1, Stratified tank with up to 100 layers; 2 node model                     
+  StratTank         89
+    0        # Component has   0 control variable(s).
+   13
+ 0.27300       1.5000      -1.0000       1.5000       0.0000       0.0000    
+  1.5000      0.10000       0.0000       50.000       5.0000       20.000    
+  100.00    
+#->   2, variable speed domestic WCH pump; 1 node model                          
+  TankPump          15
+    1        # Component has   1 control variable(s).
+  0.
+    6
+  5.0000       2250.0      0.20000       150.00      0.30000E-03  0.70000    
+#->   3, variable speed domestic WCH pump; 1 node model                          
+  CollPump          15
+    1        # Component has   1 control variable(s).
+  0.0199999996
+    6
+  5.0000       2250.0      0.20000       150.00      0.30000E-03  0.70000    
+#->   4, Thermosyphon (NCHE) heat exchanger - SDHW systems                       
+  NCHE              90
+    0        # Component has   0 control variable(s).
+    5
+  1.1402     -0.34880      0.39800E-01  0.65050      0.25000    
+# The following is a list of component connections.
+  6          # Total number of connections
+# receiving       node  conncn sending          node  diversion  suppl1   suppl2
+# component              type  component                ratio
+  StratTank         1     3     NCHE              2    1.000                 #  1
+  StratTank         2     2     TankPump          1    1.000    15.00   0.00 #  2
+  NCHE              1     2     CollPump          1    1.000    80.00   0.00 #  3
+  NCHE              2     3     StratTank         1    1.000                 #  4
+  CollPump          1     3     NCHE              1    1.000                 #  5
+  TankPump          1     3     StratTank         2    1.000                 #  6
+# The following is a list of containment temperatures.
+  2          # Total number of containments
+# Component       cont type        suppl1     suppl2    suppl3
+  StratTank           2            20.00000   0.00000   0.00000
+  NCHE                2            20.00000   0.00000   0.00000
+# No mass flow network defined.
+    0

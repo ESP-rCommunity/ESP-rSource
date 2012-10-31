@@ -1,0 +1,11 @@
+# site obstruction file defined in low_a.obs
+# associated with zone geometry file low_a.geo
+# and referenced by zone utility file low_a.utl
+  46.000  -6.000   # Latitude & Longitude 
+    2    # no obstruction blocks
+# origin  X   Y   Z   width  depth  height  angle  descr
+    27    1    14.95   22.5000   16.500   4.25    0.0  lightself         # block  
+# origin  X   Y   Z   width  depth  height  angle  descr
+    25    -1    19.20   26.5   20.5   0.300    0.0  lightself         # block  
+# grid opq X  opq Z
+    15    15

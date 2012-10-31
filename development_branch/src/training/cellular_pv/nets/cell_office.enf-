@@ -1,0 +1,74 @@
+* electrical network
+# ESP-r Electrical network file created with configuration file:
+  cellular_offices_pv.cfg
+# Network description:
+  simple network connecting PV into electrical grid
+* net type 
+  balanced
+* base power value (all nodes)
+     1000.00
+* phase angles (each phase)
+      0.00    120.00    240.00
+# List and details of nodes in the network
+* nodes
+    4
+# No.    Node name   Phase type   Phase Node type    Base volt
+    1  cons_unit     1-phase         1  fixed_V           110.00
+    2  corr_lights   1-phase         1  variable          110.00
+    3  pv_node       1-phase         1  variable          110.00
+    4  invert_out    1-phase         1  variable          110.00
+** end nodes
+# List and details of load and generator connections to nodes
+* hybrid components
+    2
+# No. comp. type   comp. name      phase type  connects node(s)  location
+    1  spmaterial    PV_array      1-phase         3    0    0     1    0    0
+# description:
+  inverted PV array feeding office
+# No. of additional data items:
+    0
+# No. comp. type   comp. name      phase type  connects node(s)  location
+    2  zone          corr_light    1-phase         2    0    0     3    2    0
+# description:
+  corridoor_lights
+# No. of additional data items:
+    0
+** end hybrid
+# List and details of power only components
+* power-only components
+    0
+** end power-only 
+# Listing and Description of components connecting the nodes
+* connecting components
+    3
+# No.  i.d. Comp. name    Phase type
+    1    2  cable_light   1-phase
+# description: 
+  cable connecting coridoor lights
+# No. of additional data items:
+    6
+   0.10000E-02   0.10000E-01   0.10000E-02   0.10000E-01    0.0000        10.000
+# No.  i.d. Comp. name    Phase type
+    2    2  cable_pvt     1-phase
+# description: 
+  lossy inverter coupling PV to switchboard
+# No. of additional data items:
+    6
+   0.10000E-02   0.10000E-01   0.10000E-02   0.10000E-01    0.0000        7.0000
+# No.  i.d. Comp. name    Phase type
+    3    2  invert_loss   1-phase
+# description: 
+  resistor to represent loss from lossy inverter
+# No. of additional data items:
+    6
+    4.0000       0.10000E-01    4.0000       0.10000E-01    0.0000        1.0000
+** end connecting components
+# connections between nodes in the network 
+* connections
+    3
+# No. Conn. type  Phase.   Conn. com.    Start nodes       End nodes
+    1  1-phase      1 0 0     1         1    0    0       2    0    0
+    2  1-phase      1 0 0     3         4    0    0       3    0    0
+    3  1-phase      1 0 0     2         1    0    0       4    0    0
+** end connections
+** electrical network end

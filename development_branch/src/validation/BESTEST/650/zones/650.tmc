@@ -1,0 +1,12 @@
+# transparent properties of 650 defined in 650.tmc
+   9   # surfaces
+# tmc index for each surface
+0,0,0,0,0,1,1,0,0
+   3  DG_Bestest   # layers in tmc type 1
+# Transmission @ 5 angles & visible tr.
+   0.747   0.730   0.680   0.517   0.263   0.870
+# For each layer absorption @ 5 angles
+   0.064   0.071   0.077   0.086   0.094
+   0.000   0.000   0.000   0.000   0.000
+   0.052   0.057   0.059   0.054   0.041
+   0  # optical control flag

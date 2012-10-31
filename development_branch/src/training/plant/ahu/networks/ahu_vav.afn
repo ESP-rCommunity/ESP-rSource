@@ -1,0 +1,44 @@
+   10    8   13    1.000    (nodes, components, connections, wind reduction)
+ Node   Fld. Type   Height    Temperature    Data_1       Data_2
+ outsid    1    3   1.0000           0.       18.000       180.00
+ exit      1    3   1.0000           0.       18.000           0.
+ n1        1    0   2.0000       22.000           0.           0.
+ n2        1    0   2.0000       22.000           0.           0.
+ n3        1    0   2.0000       22.000           0.           0.
+ n4        1    0   2.0000       22.000           0.           0.
+ recepn    1    0   2.0000       22.000           0.           4.
+ office    1    0   2.0000       22.000           0.           4.
+ n6        1    0   2.0000       22.000           0.           0.
+ n7        1    0   2.0000       22.000           0.           0.
+ Comp   Type C+ L+ Description
+ m_box   220 13  1 Conduit ending in converging 3-leg junction & Ccp = f(q/qc)
+    1.00000   0.125000    1.22700E-02    2.00000    1.50000E-04    4.0000
+    7.85400E-03  -0.800000    2.97000   -1.09000  0.  0.  0.
+ fans     30  2  0 Constant vol. flow rate component   m = rho.a
+    1.00000   0.60000
+ fanr     30  2  0 Constant vol. flow rate component   m = rho.a
+    1.00000   0.60000
+ c_coil  210  6  0 General flow conduit component      m = rho.f(D,A,L,k,SCi)
+    1.00000   0.125000    1.22700E-02   0.500000    1.50000E-04    2.00000
+ h_coil  210  6  0 General flow conduit component      m = rho.f(D,A,L,k,SCi)
+    1.00000   0.125000    1.22700E-02   0.500000    1.50000E-04    2.00000
+ s_duct  210  6  0 General flow conduit component      m = rho.f(D,A,L,k,SCi)
+    1.00000   0.10000    0.00786     1.00000    1.50000E-04   0.250000
+ VAV1    410 7  0 General flow corrector component    m = rho.f(comp, signal)
+      1.00000         1.20000         30.0000         1.00000        6.000000E-01     2.00000         3.00000
+ VAV2    410 7  0 General flow corrector component    m = rho.f(comp, signal)
+      1.00000         1.20000         30.0000         1.00000        6.000000E-01     2.00000         3.00000
+ +Node   dHght   -Node   dHght   Comp     Snod1  Snod2
+ outsid  1.000   n1      0.000   m_box    n6
+ n6      1.000   n1      0.000   m_box    outsid
+ n1      0.000   n2      0.000   h_coil
+ n2      0.000   n3      0.000   c_coil
+ n3      0.000   n4      0.000   fans
+ n4      0.000   recepn  0.000   VAV1     
+ recepn  0.000   n7      0.000   s_duct
+ n4      0.000   office  0.000   VAV2     
+ office  0.000   n7      0.000   s_duct
+ n7      0.000   n6      0.000   fanr
+ n6      0.000   outsid  0.000   s_duct
+ recepn  0.000   exit    0.000   s_duct
+ office  0.000   exit    0.000   s_duct

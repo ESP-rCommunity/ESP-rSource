@@ -1,0 +1,53 @@
+*Operations 1.0
+*date Thu Jul 29 15:01:28 2004  # latest file modification 
+# operations of Unit_f defined in: 
+# ../zones/occup_offices.opr
+ocup_off  # description
+# control(no control of air flow  ), low mid & high setpoints 
+   0     0.000     0.000   100.000
+     2   # no Weekday flow periods
+# Wkd: start, stop, infil, ventil, source, data
+   1, 24,    0.500    0.000    0    0.000
+   7, 18,    1.000    0.000    0    0.000
+     2   # no Saturday flow periods
+# Sat: start, stop, infil, ventil, source, data
+   1, 24,    0.500    0.000    0    0.000
+   7, 18,    1.000    0.000    0    0.000
+     2   # no Sunday flow periods 
+# Sun: start, stop, infil, ventil, source, data
+   1, 24,    0.500    0.000    0    0.000
+   7, 18,    1.000    0.000    0    0.000
+    12   # no Weekday casual gains 
+# Wkd: type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,   1,      0.0,      0.0, 0.500, 0.500
+    1,   1,   8,      0.0,      0.0, 0.500, 0.500
+    1,   8,  18,   1343.0,    637.0, 0.200, 0.800
+    1,  18,  24,      0.0,      0.0, 0.500, 0.500
+    2,   0,   1,      0.0,      0.0, 0.500, 0.500
+    2,   1,   8,    100.0,      0.0, 0.600, 0.400
+    2,   8,  18,   2650.0,      0.0, 0.600, 0.400
+    2,  18,  24,    100.0,      0.0, 0.600, 0.400
+    3,   0,   1,      0.0,      0.0, 0.500, 0.500
+    3,   1,   8,    100.0,     40.0, 0.500, 0.500
+    3,   8,  18,    700.0,     40.0, 0.500, 0.500
+    3,  18,  24,    100.0,     40.0, 0.500, 0.500
+     7   # no Saturday casual gains 
+# Sat: type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,   8,      0.0,      0.0, 0.500, 0.500
+    1,   8,  18,    100.0,     70.0, 0.200, 0.800
+    1,  18,  24,      0.0,      0.0, 0.500, 0.500
+    2,   0,   1,      0.0,      0.0, 0.500, 0.500
+    2,   1,  24,    100.0,      0.0, 0.600, 0.400
+    3,   0,   1,      0.0,      0.0, 0.500, 0.500
+    3,   1,  24,    100.0,     40.0, 0.500, 0.500
+     7   # no Sunday casual gains 
+# Sun: type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,   8,      0.0,      0.0, 0.500, 0.500
+    1,   8,  18,    100.0,     70.0, 0.200, 0.800
+    1,  18,  24,      0.0,      0.0, 0.500, 0.500
+    2,   0,   1,      0.0,      0.0, 0.500, 0.500
+    2,   1,  24,    100.0,      0.0, 0.600, 0.400
+    3,   0,   1,      0.0,      0.0, 0.500, 0.500
+    3,   1,  24,    100.0,     40.0, 0.500, 0.500
+# Labels for gain types 
+ Occupt Lights Equipt

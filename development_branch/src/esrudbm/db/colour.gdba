@@ -1,0 +1,544 @@
+*ESP-r ascii gdb 2
+# db type, menu, width,nb of units:sources:cat:items, date
+colourimetry,Colourimetry db,65, 2, 3, 6, 34,Mon Dec 15 16:01:57 2003
+*DBNOTE,Colourimetry db log...
+*UNIT,-,none,no documentation
+*UNIT,a,(-),(-)
+*SOURCE,-,no documentation
+*SOURCE,a,Solar Energy and Building Physics Lab. (LESO-PB), Switzerland
+*SOURCE,b,X11R6 rgb.txt file.
+# db level documentation
+*DD,Colour database (from scratch) Documentation follows:
+*DD,Data is Red, Green, Blue values (range 0-255) and an equivalent grey reflectance (range 0.0-1.0) with two optional fields (12 char and 72 char) supporting surface patterns or bitmaps.
+# CAT tag,id,type,menu,items_in_cat,date
+*CATEG,whites,STD,Whites,19,Fri Oct 27 06:05:35 2000
+# cat documentation
+*CD,whites category with typical colours from Paul Bourke
+# item id, menu, data & reptng lines, USC, date
+*ITEM,white,pure white,Thu Feb 17 13:18:13 2000
+*ID Absolute white (not physically possible).
+*USC,aaaa--,-,------ # units srcs uncert
+*DAT,254,254,254,0.9866,none,none,
+*ENDITEM
+*ITEM,ghost,ghost white,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 1 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,248,248,255,0.9743334,none,none,
+*ENDITEM
+# item id, menu, data & reptng lines, USC, date
+*ITEM,gainsboro,gainsboro ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 5 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,220,220,220,0.8627454,none,none,
+*ENDITEM
+# item id, menu, data & reptng lines, USC, date
+*ITEM,linen,linen ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 10 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,250,240,230,0.9490204,none,none,
+*ENDITEM
+*ITEM,ivory,ivory,Thu Feb 17 13:18:30 2000
+*ID,colourimetry new item colour4 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,254,254,240,0.9831,none,none,
+*ENDITEM
+*ITEM,zinc_white,zinc white,Thu Feb 17 13:18:51 2000
+*ID,colourimetry new item colour5 is...
+*USC,aaaa--,-,------ # units srcs uncert
+*DAT,253,248,255,0.9701,none,none,
+*ENDITEM
+# item id, menu, data & reptng lines, USC, date
+*ITEM,linen,linen ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 10 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,250,240,230,0.9490204,none,none,
+*ENDITEM
+*ITEM,antiquewhite,antique white,Thu Feb 17 13:19:21 2000
+*ID,colourimetry new item colour7 is...
+*USC,aaaa--,-,------ # units srcs uncert
+*DAT,250,235,215,0.9320594,none,none,
+*ENDITEM
+*ITEM,bisque,bisque ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 17 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,255,228,196,0.9140204,none,none,
+*ENDITEM
+*ITEM,moccasin,moccasin ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 22 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,255,228,181,0.9101964,none,none,
+*ENDITEM
+# item id, menu, data & reptng lines, USC, date
+*ITEM,cornsilk,cornsilk ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 23 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,255,248,220,0.9726864,none,none,
+*ENDITEM
+*ITEM,azure,azure ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 31 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,240,255,255,0.9844124,none,none,
+*ENDITEM
+*ITEM,Cream_fab,Cream textile (fabric) blind,Mon Oct 23 11:36:53 2000
+*ID,Cream textil used for fabric blind
+*USC,aaaa--,a,------ # units srcs uncert
+*DAT,181,150,131,0.6130,none,none,
+*ENDITEM
+*ITEM,Plasterboard,Plaster board,Fri Oct 27 06:03:44 2000
+*ID,Uncoated plaster board
+*USC,aaaa--,a,------ # units srcs uncert
+*DAT,177,171,168,0.6695,none,none,
+*ENDITEM
+*ITEM,PVC_frame,PVC frame (white),Fri Oct 27 06:05:35 2000
+*ID,White PVC frame (Ego Kiefer, Switzerland)
+*USC,aaaa--,a,------ # units srcs uncert
+*DAT,206,204,190,0.7909,none,none,
+*ENDITEM
+# item id, menu, data & reptng lines, USC, date
+*ITEM,snow1,snow1 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 224 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,255,250,250,0.9855884,none,none,
+*ENDITEM
+# item id, menu, data & reptng lines, USC, date
+*ITEM,snow2,snow2 ,Thu Feb 17 13:18:30 2000
+*USC,bbbb--,-,------ # units srcs uncert
+*ID,colourimetry item 225 is...
+*DAT,238,233,233,0.9189224,none,none,
+*ENDITEM
+# item id, menu, data & reptng lines, USC, date
+*ITEM,snow3,snow3 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 226 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,205,201,201,0.7923924,none,none,
+*ENDITEM
+# item id, menu, data & reptng lines, USC, date
+*ITEM,snow4,snow4 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 227 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,139,137,137,0.5393334,none,none,
+*ENDITEM
+*ENDCAT
+# CAT tag,id,type,menu,items_in_cat,date
+*CATEG,blacks,STD,Blacks, 7,Mon Dec 15 16:01:57 2003
+# cat documentation
+*CD,Category blacks with some typical colours from Paul Bourke
+# item id, menu, data & reptng lines, USC, date
+*ITEM,pure_black,pure black,Thu Feb 17 13:19:40 2000
+*ID,colourimetry new item colour2 is...
+*USC,aaaa--,-,------ # units srcs uncert
+*DAT,1,1,1,0.0039,none,none,
+*ENDITEM
+*ITEM,ivory_black,ivory black,Thu Feb 17 13:19:51 2000
+*ID,colourimetry new item colour8 is...
+*USC,aaaa--,-,------ # units srcs uncert
+*DAT,41,36,33,0.1441,none,none,
+*ENDITEM
+*ITEM,lamp_black,lamp black,Thu Feb 17 13:19:58 2000
+*ID,colourimetry new item colour9 is...
+*USC,aaaa--,-,------ # units srcs uncert
+*DAT,46,71,59,0.2477,none,none,
+*ENDITEM
+*ITEM,dark,dark slate,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 41 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,47,79,79,0.2765494,none,none,
+*ENDITEM
+*ITEM,slate,slate gray,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 49 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,112,128,144,0.4894124,none,none,
+*ENDITEM
+*ITEM,Cell_glass,Cellular glass,Mon Oct 23 11:37:50 2000
+*ID,Cellular glass (no bitume)
+*USC,aaaa--,a,------ # units srcs uncert
+*DAT,12,11,9,0.0420,none,none,
+*ENDITEM
+*ITEM,Polymer_blck,Polymer black,Fri Oct 27 06:14:55 2000
+*ID,Black polymer, such as rubber, or waterproffing. Data correspond to black waterproofing - Sarnavap, Switzerland
+*USC,aaaa--,a,------ # units srcs uncert
+*DAT,18,17,19,0.0675,none,none,
+*ENDITEM
+*ENDCAT
+# CAT tag,id,type,menu,items_in_cat,date
+*CATEG,greys,STD,Greys,49,Mon Dec 15 15:59:35 2003
+# cat documentation
+*CD,Category category greys was added by a user.
+# item id, menu, data & reptng lines, USC, date
+*ITEM,grey2,grey2 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 541 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,5,5,5,0.0196084,none,none,
+*ENDITEM
+*ITEM,grey4,grey4 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 545 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,10,10,10,0.0392164,none,none,
+*ENDITEM
+*ITEM,grey8,grey8 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 553 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,20,20,20,0.0784314,none,none,
+*ENDITEM
+*ITEM,grey12,grey12 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 561 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,31,31,31,0.1215694,none,none,
+*ENDITEM
+*ITEM,grey16,grey16 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 569 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,41,41,41,0.1607844,none,none,
+*ENDITEM
+*ITEM,grey20,grey20 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 577 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,51,51,51,0.2000004,none,none,
+*ENDITEM
+*ITEM,grey24,grey24 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 585 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,61,61,61,0.2392164,none,none,
+*ENDITEM
+*ITEM,grey28,grey28 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 593 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,71,71,71,0.2784314,none,none,
+*ENDITEM
+*ITEM,grey32,grey32 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 601 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,82,82,82,0.3215694,none,none,
+*ENDITEM
+*ITEM,grey36,grey36 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 609 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,92,92,92,0.3607844,none,none,
+*ENDITEM
+*ITEM,grey38,grey38 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 613 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,97,97,97,0.3803924,none,none,
+*ENDITEM
+*ITEM,grey40,grey40 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 617 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,102,102,102,0.4000004,none,none,
+*ENDITEM
+*ITEM,grey42,grey42 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 621 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,107,107,107,0.4196084,none,none,
+*ENDITEM
+*ITEM,grey44,grey44 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 625 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,112,112,112,0.4392164,none,none,
+*ENDITEM
+*ITEM,grey46,grey46 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 629 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,117,117,117,0.4588244,none,none,
+*ENDITEM
+*ITEM,grey48,grey48 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 633 is...
+*DAT,122,122,122,0.4784314,none,none,
+*ENDITEM
+*ITEM,grey50,grey50 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 637 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,127,127,127,0.4980394,none,none,
+*ENDITEM
+*ITEM,grey52,grey52 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 641 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,133,133,133,0.5215694,none,none,
+*ENDITEM
+*ITEM,grey54,grey54 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 645 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,138,138,138,0.5411764,none,none,
+*ENDITEM
+*ITEM,grey56,grey56 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 649 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,143,143,143,0.5607844,none,none,
+*ENDITEM
+*ITEM,grey58,grey58 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 653 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,148,148,148,0.5803924,none,none,
+*ENDITEM
+*ITEM,grey60,grey60 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 657 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,153,153,153,0.6000004,none,none,
+*ENDITEM
+*ITEM,grey62,grey62 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 661 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,158,158,158,0.6196084,none,none,
+*ENDITEM
+*ITEM,grey64,grey64 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 665 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,163,163,163,0.6392164,none,none,
+*ENDITEM
+*ITEM,grey66,grey66 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 669 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,168,168,168,0.6588244,none,none,
+*ENDITEM
+*ITEM,grey68,grey68 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 673 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,173,173,173,0.6784314,none,none,
+*ENDITEM
+*ITEM,grey70,grey70 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 677 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,179,179,179,0.7019614,none,none,
+*ENDITEM
+*ITEM,grey72,grey72 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 681 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,184,184,184,0.7215694,none,none,
+*ENDITEM
+*ITEM,grey74,grey74 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 685 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,189,189,189,0.7411764,none,none,
+*ENDITEM
+*ITEM,grey76,grey76 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 689 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,194,194,194,0.7607844,none,none,
+*ENDITEM
+*ITEM,grey80,grey80 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 697 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,204,204,204,0.8000004,none,none,
+*ENDITEM
+*ITEM,grey82,grey82 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 701 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,209,209,209,0.8196084,none,none,
+*ENDITEM
+*ITEM,grey84,grey84 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 705 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,214,214,214,0.8392164,none,none,
+*ENDITEM
+*ITEM,grey86,grey86 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 709 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,219,219,219,0.8588244,none,none,
+*ENDITEM
+*ITEM,grey90,grey90 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 717 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,229,229,229,0.8980394,none,none,
+*ENDITEM
+*ITEM,grey94,grey94 ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 725 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,240,240,240,0.9411764,none,none,
+*ENDITEM
+*ITEM,grey_75r,grey 75% refl,Thu Feb 17 13:21:46 2000
+*ID,colourimetry new item colour3 is...
+*USC,aaaa--,-,------ # units srcs uncert
+*DAT,192,192,192,0.7458,none,none,
+*ENDITEM
+*ITEM,cold_grey,cold grey,Thu Feb 17 13:21:01 2000
+*ID,colourimetry new item colour10 is...
+*USC,aaaa--,-,------ # units srcs uncert
+*DAT,128,138,135,0.5252,none,none,
+*ENDITEM
+*ITEM,slate_grey,slate grey,Thu Feb 17 13:21:09 2000
+*ID,colourimetry new item colour11 is...
+*USC,aaaa--,-,------ # units srcs uncert
+*DAT,112,128,144,0.4852,none,none,
+*ENDITEM
+*ITEM,slate_grey_l,slate grey light,Thu Feb 17 13:21:16 2000
+*ID,colourimetry new item colour12 is...
+*USC,aaaa--,-,------ # units srcs uncert
+*DAT,119,136,153,0.5155,none,none,
+*ENDITEM
+*ITEM,slate_grey_d,slate grey dark,Mon Dec 15 15:59:35 2003
+*ID,colourimetry new item colour13 is...and it is rather dark
+*USC,aaaa--,-,------ # units srcs uncert
+*DAT,47,79,79,0.2747,none,none,
+*ENDITEM
+*ITEM,Alu_galv,Aluminium galvanished,Mon Oct 23 11:37:23 2000
+*ID,Aluminium galvanished
+*USC,aaaa--,a,------ # units srcs uncert
+*DAT,159,171,17,0.6610,none,none,
+*ENDITEM
+*ITEM,Cement_brick,Cement brick (rough),Mon Oct 23 11:42:13 2000
+*ID,Rough cement brick
+*USC,aaaa--,a,------ # units srcs uncert
+*DAT,91,68,57,0.2880,none,none,
+*ENDITEM
+*ITEM,Grey_concr,Grey concrete,Mon Oct 23 11:44:20 2000
+*ID,Grey concrete
+*USC,aaaa--,a,------ # units srcs uncert
+*DAT,62,49,37,0.2003,none,none,
+*ENDITEM
+*ITEM,FitCarp_med,Fitted carpet (medium grey),Mon Oct 23 11:49:37 2000
+*ID,Fitted carpet (medium grey)
+*USC,aaaa--,a,------ # units srcs uncert
+*DAT,45,44,41,0.1720,none,none,
+*ENDITEM
+*ITEM,Granite_gy,Granite grey,Mon Oct 23 11:56:24 2000
+*ID,colourimetry new item colour27 is...
+*USC,aaaa--,a,------ # units srcs uncert
+*DAT,53,54,52,0.2082,none,none,
+*ENDITEM
+*ITEM,Clear_gravel,Clear gravel,Fri Oct 27 06:01:57 2000
+*ID,Clear grey-white gravel
+*USC,aaaa--,a,------ # units srcs uncert
+*DAT,115,94,66,0.3791,none,none,
+*ENDITEM
+*ITEM,Strati_grey,Stratified PVC,Fri Oct 27 06:08:47 2000
+*ID,Stratified PVC (light grey) for desk, partition, etc.
+*USC,aaaa--,a,------ # units srcs uncert
+*DAT,131,131,127,0.5078,none,none,
+*ENDITEM
+*ITEM,Steel_grey,Steel (natural grey),Fri Oct 27 06:10:11 2000
+*ID,Natural steel (medium grey)
+*USC,aaaa--,a,------ # units srcs uncert
+*DAT,117,110,103,0.4325,none,none,
+*ENDITEM
+*ENDCAT
+# CAT tag,id,type,menu,items_in_cat,date
+*CATEG,red,STD,Reds, 19,Thu Feb 17 15:32:50 2000
+# cat documentation
+*CD,Category reds was added by a user.
+# item id, menu, data & reptng lines, USC, date
+*ITEM,brick_red,brick red,Thu Feb 17 14:35:56 2000
+*ID,colourimetry new item colour14 is...
+*USC,aaaa--,-,------ # units srcs uncert
+*DAT,156,102,31,0.4325,none,none,
+*ENDITEM
+*ITEM,coral,coral,Thu Feb 17 14:37:05 2000
+*ID,colourimetry new item colour15 is...
+*USC,aaaa--,-,------ # units srcs uncert
+*DAT,255,127,80,0.6099,none,none,
+*ENDITEM
+*ITEM,firebrick,fire brick,Thu Feb 17 15:31:20 2000
+*ID,colourimetry new item colour15 is...
+*USC,aaaa--,-,------ # units srcs uncert
+*DAT,178,18,48,0.2381,none,none,
+*ENDITEM
+*ITEM,maroon,maroon,Thu Feb 17 15:32:50 2000
+*ID,colourimetry new item colour17 is...
+*USC,aaaa--,-,------ # units srcs uncert
+*DAT,176,48,96,0.3271,none,none,
+*ENDITEM
+*ITEM,dark,dark salmon,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 179 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,233,150,122,0.6673534,none,none,
+*ENDITEM
+*ITEM,salmon,salmon ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 181 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,250,128,114,0.6251764,none,none,
+*ENDITEM
+*ITEM,light,light salmon,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 182 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,255,160,122,0.7164904,none,none,
+*ENDITEM
+*ITEM,orange,orange ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 184 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,255,165,0,0.6985294,none,none,
+*ENDITEM
+# item id, menu, data & reptng lines, USC, date
+*ITEM,dark,dark orange,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 185 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,255,140,0,0.6328434,none,none,
+*ENDITEM
+*ITEM,coral,coral ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 187 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,255,127,80,0.6190784,none,none,
+*ENDITEM
+# item id, menu, data & reptng lines, USC, date
+*ITEM,light,light coral,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 188 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,240,128,128,0.6183534,none,none,
+*ENDITEM
+*ITEM,tomato,tomato ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 190 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,255,99,71,0.5432164,none,none,
+*ENDITEM
+# item id, menu, data & reptng lines, USC, date
+*ITEM,orange,orange red,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 191 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,255,69,0,0.4462944,none,none,
+*ENDITEM
+*ITEM,magenta,magenta ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 208 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,255,0,255,0.3300004,none,none,
+*ENDITEM
+*ITEM,plum,plum ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 210 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,221,160,221,0.7063924,none,none,
+*ENDITEM
+*ITEM,orchid,orchid ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 211 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,218,112,214,0.5753734,none,none,
+*ENDITEM
+*ITEM,dark,dark violet,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 216 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,148,0,211,0.2075884,none,none,
+*ENDITEM
+*ITEM,blue,blue violet,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 218 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,138,43,226,0.3140004,none,none,
+*ENDITEM
+*ITEM,thistle,thistle ,Thu Feb 17 13:18:30 2000
+*ID,colourimetry item 223 is...
+*USC,bbbb--,-,------ # units srcs uncert
+*DAT,216,191,216,0.7813734,none,none,
+*ENDITEM
+*ENDCAT
+# CAT tag,id,type,menu,items_in_cat,date
+*CATEG,category5,STD,Brown, 2,Mon Oct 23 11:46:00 2000
+# cat documentation
+*CD,Category category5 browns was added by a user.
+# item id, menu, data & reptng lines, USC, date
+*ITEM,Chipboard,Chipboard (medium brown),Mon Oct 23 11:42:54 2000
+*ID,Chipboard (medium brown)
+*USC,aaaa--,a,------ # units srcs uncert
+*DAT,108,71,37,0.3070,none,none,
+*ENDITEM
+*ITEM,Earth_grass,Earth with grass,Mon Oct 23 11:46:00 2000
+*ID,Earth (dry) with grass and organic waste
+*USC,aaaa--,a,------ # units srcs uncert
+*DAT,18,16,7,0.0619,none,none,
+*ENDITEM
+*ENDCAT
+# CAT tag,id,type,menu,items_in_cat,date
+*CATEG,Yellow,STD,Yellow, 1,Fri Oct 27 05:57:32 2000
+# cat documentation
+*CD,Category category6 for yellow was added by a user.
+# item id, menu, data & reptng lines, USC, date
+*ITEM,Min_insul,Glass wool (light yellow),Mon Oct 23 11:52:00 2000
+*ID,Glass wool (light yellow)
+*USC,aaaa--,a,------ # units srcs uncert
+*DAT,189,164,59,0.6350,none,none,
+*ENDITEM
+*ENDCAT
+*ENDDB

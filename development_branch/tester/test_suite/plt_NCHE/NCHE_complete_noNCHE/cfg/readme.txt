@@ -1,0 +1,1 @@
+This directory contains the model of SDHW system without a NCHE (that is, with a regular heat exchanger and tank/exchanger pump). The model is a debugged and simplified version of the system2_strat_tank model.  

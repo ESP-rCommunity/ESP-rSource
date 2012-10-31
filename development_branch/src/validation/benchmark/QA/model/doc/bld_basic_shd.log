@@ -1,0 +1,38 @@
+Notes on basic 3 zone building with external shading, and
+convective heating of the reception and office (under ideal control):
+
+This set of files is an example of a basic multi-zone
+building  representation, with external shading.
+Shading has been established for all exterior surfaces
+in the reception for the year and insolation distribution
+has been calculated for the contribution of the windows.
+
+The problem comprises the following files.
+
+    file                       description
+____________________________________________________________
+cfg/bld_basic_shd_lwv.cfg    problem configuration file defining a
+                             3 zone model with shading and explicit
+                             longwave radiation exchange.
+ctl/bld_basic.ctl            configuration control file defining convective
+                             heating and ideal control for zones 1 & 2.
+
+zones/reception.opr          zone schedules.
+zones/office.opr
+zones/roof_space.opr
+
+zones/reception.geo          zone geometry.
+zones/office.geo
+zones/roof_space.geo
+
+zones/reception.con          zone constructions.
+zones/office.con
+zones/roof_space.con
+
+zones/reception.tmc          zone TMC files.
+zones/office.tmc         
+
+zones/reception.shd          zone shading file.
+
+zones/reception.obs          zone obstructions file.
+____________________________________________________________

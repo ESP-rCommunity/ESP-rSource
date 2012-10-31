@@ -1,0 +1,60 @@
+*DFS V2 # Zone air movement description.
+*conflation 0  # conflation type (not applicable to cfd-only)
+*title Testing a large number of grid points                                   
+# user supplied notes for this domain
+*thermal_geom
+*vrts    1   2   4   5
+# Ze is 0 if orthogonal
+*regions    2   1   1   0  # regions in X Y Zw Ze directions
+# Negative cell number enables symetrical gridding.
+*xregion
+  82   4.000   1.100 # no cells, length, power law coeff
+  35   2.000   1.000 # no cells, length, power law coeff
+*yregion
+  62   1.000   0.980 # no cells, length, power law coeff
+*zwregion
+  44   1.500   0.960 # no cells, length, power law coeff
+# Define the volumes for the CFD domain.
+*volumes    7
+# name  type  Ii If Ji Jf Ki Kf
+Inflow1      West    1  1  1 62  1 44
+Outflow1     East  117 117  1 62  1 44
+Wall3        South   1 117  1  1  1 44
+Wall4        North   1 117 62 62  1 44
+Wall5        Low     1 117  1 62  1  1
+Wall6        High    1 117  1 62 44 44
+Block7       Block   50 70  15 25  28 38 
+# Solid boundary conditions.
+*solids 
+Wall3        Heat   0.00
+Wall4        Heat   0.00
+Wall5        Heat   0.00
+Wall6        Heat   0.00
+# Air flow boundary conditions.
+*air_flow 
+Inflow1      Velocity  0.020 Temp 20.000 Hum  0.000 Area  0.000 Ang  0.000  0.000
+Outflow1     Velocity -0.020 Temp 20.000 Hum  0.000 Area  0.000 Ang  0.000  0.000
+# Internal sources.
+*sources
+# Blockages.
+*blockages
+Block7       Heat   0.000
+*solution_methods
+Turbulence 1 # k-e model
+Buoyancy 0 # ignored
+# Equations to be solved:
+*solution_equations
+#  Type  Initial value  Relaxation type and factor
+Pressure  0.000 Linear   0.400
+Vel U  0.100E-02 Linear  0.300
+Vel V  0.100E-02 Linear  0.300
+Vel W  0.100E-02 Linear  0.300
+Ted  0.500E-02 Linear  0.400    
+Epd  0.500E-02 Linear  0.400    
+Lmage 0.05 Linear 0.6
+# Iteration control.
+*iteration 
+  1080  0.1000E-04 No
+*monitor    6   4   8  CFD.mon
+*reint  NO
+*svf  1  # frequency of results writing

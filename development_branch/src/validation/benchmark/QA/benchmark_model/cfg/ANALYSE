@@ -1,0 +1,83 @@
+#!/bin/sh 
+RESFILE=$1
+VERSION=$2
+$VERSION/res -file $RESFILE -mode text<<XXX
+
+d # enquire about
+>
+$RESFILE.data
+$RESFILE results
+a # summary statistics
+h # sensible
+a # heating
+h
+b # cooling
+b # temperatures
+a # zone db
+b
+e # zone resultant
+b
+d # zone control pt
+-
+-
+d # enquire
+a # summary statistics
+f # zone flux
+a # infiltration
+f
+b # ventilation
+m
+a # real power
+m
+b # reactive power
+j
+b # convective casual gains
+j
+c # radiant casual gains
+d # solar processes
+a # entering from outside
+d
+c # solar absorbed
+i # zone rh
+j # casual gains
+a # all
+j
+b # convective portion
+j
+c # radiant portion
+j
+d # total occupant gain
+j
+e # total lighting gain
+j
+f # total small power
+-
+-
+c # timestep reports
+g # perf metrics
+j # casual
+d # total occupant
+j
+e # total lighting
+j
+f # total small power
+! # list data
+-
+-
+d
+f # energy delivered
+g # casual gains distrib
+h # zone energy balance
+b
+b
+l # monthly 
+a
+b # frequency
+b # of temperatures
+a # zone db
+y
+>
+-
+-
+-
+XXX

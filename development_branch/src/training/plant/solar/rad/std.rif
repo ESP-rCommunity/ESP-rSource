@@ -1,0 +1,21 @@
+# Radiance RIF file: std.rif
+#e2r_gen_view   0 -1
+#e2r_glaz_type   1
+view= low -vtv -vp    36.788  -34.757    8.883 -vd  -0.5683  0.8116 -0.1354 -vu 0 0 1 -vh   26.0 -vv   26.0 -vs 0 -vl 0
+scene= std.sky
+scene= std-glz.rad
+scene= std.mat
+scene= std-out.rad
+scene= std-in.rad
+UP= Z
+QUALITY= Medium
+DETAIL= Medium
+VARIABILITY= High  
+RESOLUTION=   400
+INDIRECT=  1
+PENUMBRAS= True 
+REPORT=    1
+ZONE= Exterior   -18.02   38.02  -24.52   31.52    0.00   28.02
+OPTFILE= std.opt
+OCTREE= std.oct
+PICTURE= std

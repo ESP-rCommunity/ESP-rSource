@@ -1,0 +1,44 @@
+Detailed ventilation system
+
+The most common ventilation system used in practice is
+of the mechanical inlet and extract type. This implies that
+both supply air and exhaust air are handled by mechanical
+means (i.e. using fans).  This type can be applied to all
+manner of spaces and is preferred to other ventilation systems
+(e.g. mechanical inlet and natural extract, natural
+inlet and mechanical extract).  Some applications include
+smoke control in fire escape routes, kitchens, fume extracts
+and so on.
+
+In practice, the ratio between the air volume flow rate
+of the inlet and extract systems are selected to suit the
+particular application. For instance, in  normal living
+and working spaces where no noxious fumes are generated,
+the extract volume is usually arranged to be less by
+10-20% than that provided by the inlet system. In cases
+where fumes might be generated in a space, the balance
+would be reversed so that the inlet volume is less by 10-20%
+than that handled by the extract system. The former
+arrangement was applied to this system.
+
+The system comprises a suction fan (component 8), an
+exhaust fan (component 5), a heating coil (component 9) and
+some ducting arrangement. The heating coil used is of type
+50 which has the heating flux as the control variable. A
+control loop with control law 1 was defined in proportional
+control mode to actuate the coil heating flux based on the
+component 11 air temperature. The heating set point for this
+controller was set to 20degC with a throttling range of
+3degC and the maximum and minimum heating flux was set
+to be 6000W and 0W respectively.
+
+Components 11 and 12 are used as a building-like load
+generator (type 910) in which a control variable exists to
+act as the building load. Although the building load can be
+introduced as time dependent, in this example it was assumed
+constant with a value of -500W for component 11 and -1000W
+for component 12, the negative sign indicating a heat loss.
+
+A simulation for the period between 9 Jan and  11 Jan
+was conducted using ESP-r test climate file with a
+simulation time-step of 15 minutes.

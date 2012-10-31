@@ -1,0 +1,46 @@
+#!/bin/bash
+# create a link in /Users/jon/bin to current esp-r executables
+# so can test out different variants easily.
+echo "use is"
+echo "link_to [path to folder with exectables]"
+echo "from the folder $HOME/bin"
+rm -f $HOME/bin/aco; ln -s $1/aco $HOME/bin/aco
+echo aco " is now pointing to "$1/aco
+rm -f $HOME/bin/bps; ln -s $1/bps $HOME/bin/bps
+echo bps " is now pointing to "$1/bps
+rm -f $HOME/bin/c2e; ln -s $1/c2e $HOME/bin/c2e
+echo c2e " is now pointing to "$1/c2e
+rm -f $HOME/bin/clm; ln -s $1/clm $HOME/bin/clm
+echo clm " is now pointing to "$1/clm
+rm -f $HOME/bin/dfs; ln -s $1/dfs $HOME/bin/dfs
+echo dfs " is now pointing to "$1/dfs
+rm -f $HOME/bin/e2r; ln -s $1/e2r $HOME/bin/e2r
+echo e2r " is now pointing to "$1/e2r
+rm -f $HOME/bin/ecnv; ln -s $1/ecnv $HOME/bin/ecnv
+echo ecnv " is now pointing to "$1/ecnv
+rm -f $HOME/bin/eco; ln -s $1/eco $HOME/bin/eco
+echo eco " is now pointing to "$1/eco
+rm -f $HOME/bin/espvwf; ln -s $1/espvwf $HOME/bin/espvwf
+echo espvwf " is now pointing to "$1/espvwf
+rm -f $HOME/bin/grd; ln -s $1/grd $HOME/bin/grd
+echo grd " is now pointing to "$1/grd
+rm -f $HOME/bin/ish; ln -s $1/ish $HOME/bin/ish
+echo ish " is now pointing to "$1/ish
+rm -f $HOME/bin/mfs; ln -s $1/mfs $HOME/bin/mfs
+echo mfs " is now pointing to "$1/mfs
+rm -f $HOME/bin/mld; ln -s $1/mld $HOME/bin/mld
+echo mld " is now pointing to "$1/mld
+rm -f $HOME/bin/pdb; ln -s $1/pdb $HOME/bin/pdb
+echo pdb " is now pointing to "$1/pdb
+rm -f $HOME/bin/prj; ln -s $1/prj $HOME/bin/prj
+echo prj " is now pointing to "$1/prj
+rm -f $HOME/bin/res; ln -s $1/res $HOME/bin/res
+echo res " is now pointing to "$1/res
+rm -f $HOME/bin/viewer; ln -s $1/viewer $HOME/bin/viewer
+echo viewer " is now pointing to "$1/viewer
+rm -f $HOME/bin/esp-r; cp $1/esp-r $HOME/bin/esp-r
+echo esp-r " script is copied to "$1/esp-r
+echo "moving any existing .esprc file in $HOME to .esprc_old"
+mv -f $HOME/.esprc $HOME/.esprc_old
+echo "and copying the esprc file in $1/../esprc to $HOME/.esprc"
+cp $1/../esprc $HOME/.esprc

@@ -1,0 +1,8 @@
+1.3 0.0561 1021. # GCEP ground prop
+2.6 # GCEP grout Prop
+0.152 100.0 # GCEP bore dim
+3 3 8.0 8.0 # GCEP bore layout
+2 2 0.42 1800. # GCEP tube layout
+0.49 1022.0 3960.0 0.000855 2.0 # GCEP fluide
+10.0 10.0 # GCEP ref temp
+

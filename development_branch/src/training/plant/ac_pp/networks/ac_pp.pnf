@@ -1,0 +1,65 @@
+# Plant component data base:
+/usr/esru/esp-r/databases/plantc.tt                                 
+# Project title:
+Primtive parts representation of heat & vent system.                               
+# Total no. of specified components and simulation type
+    7    3
+#-> air duct; 4 node model             
+  fresh_duct       44
+    0        # Component has   0 control variable(s).
+    11
+  4.6250      4.6250      500.00     500.00       0.0300     0.0300
+  2.0671      1.9635      0.1250     5.0000       1.0000  
+#-> air mixing box or converging junction; 1 node model                     
+  mixbox             49
+    0        # Component has   0 control variable(s).
+    0
+#-> centrifugal fan, 1 node model ; flow control                            
+  fan               42
+    1        # Component has   1 control variable(s).
+   0.210000
+    13
+  7.0000      3.0000      500.00      500.00     0.03000     1.00000
+  2.8000      2.5000      0.5000      50.000     4.00000     1.00000
+  0.9000  
+#-> air duct; 4 node model                                                  
+  supply_duct       44
+    0        # Component has   0 control variable(s).
+    11
+  4.6250      4.6250      500.00     500.00       0.0300     0.0300
+  2.0671      1.9635      0.1250     5.0000       1.0000
+#-> duct electric heater; 4 node PP model ; flux control                           
+  heater             45
+    1        # Component has   1 control variable(s).
+   1000.000
+    8
+  9.0000      6.0000      465.00     3.5000       0.5000     1.0000
+  0.2800      420.00  
+#-> air duct; 4 node model                                                  
+  return_duct       44
+    0        # Component has   0 control variable(s).
+    11
+  4.6250      4.6250      500.00     500.00       0.0300     0.0300
+  2.0671      1.9635      0.1250     5.0000       1.0000
+#-> air diverging junction; 3 node model                     
+  air_div             48
+    0        # Component has   0 control variable(s).
+    1
+  0.8000 
+# The following is a list of component connections.
+   8          # Total number of connections
+# receiving       node  conncn sending          node  diversion  suppl1   suppl2
+# component              type  component                ratio
+  mixbox            1     3     fresh_duct        4    1.000                #1
+  mixbox            1     3     air_div           1    1.000                #2
+  fan               3     3     mixbox            1    1.000                #3
+  supply_duct       3     3     fan               5    1.000                #4
+  heater            2     3     supply_duct       4    1.000                #5
+  return_duct       3     4     heater            4    1.000     1.0000     #6
+  fresh_duct        3     4     air_div           2    1.000     0.0000     #7
+  air_div           3     3     return_duct       4    1.000                #8
+# No containment temperatures defined
+  0
+# Mass flow network definition.
+    0
+#  1  2  3  4   5   6  7                    

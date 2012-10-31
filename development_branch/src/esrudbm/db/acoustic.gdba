@@ -1,0 +1,340 @@
+*ESP-r ascii gdb 2
+# db type, menu, width,nb of units:sources:cat:items, date
+acoustic,Acoustic properties db,65, 5, 7,12, 49,Mon Apr 23 08:35:41 2001
+*DBNOTE,Acoustic properties db log...
+*UNIT,-,(-),(-)
+*UNIT,a,(m^2),(per m^2 of surface area)
+*UNIT,b,(person),(per person)
+*UNIT,c,(1000 m^3),(per 1000 m^3 space volume)
+*UNIT,d,(unit),(unit of element)
+*SOURCE,-,no documentation
+*SOURCE,a,CNA
+*SOURCE,b,Fasold Sonntag Winkler p.168  éd 1971
+*SOURCE,c,Flumroc: Technical Doc - Lausanne - Switzerland
+*SOURCE,d,Lamoral: Probleme d'acoustique des salles et des studios
+*SOURCE,e,Isover: Technical doc - Lucens - Switzerland
+*SOURCE,f,LESO (Solar energy and building physics lab.) - Lausanne - Switzerland
+# db level documentation
+*DD,Acoustic database (from scratch) Documentation follows:
+*DD,Data for a material layer (Names should start with an `M`) or a composite construction (Names should start with a `C`). Frequencies are listed below:
+*DD,100, 125, 160, 200, 250, 315, 400, 500, 630, 800, 1000, 1250, 1600, 2000, 2500, 3150, 4000.
+# CAT tag,id,type,menu,items_in_cat,date
+*CATEG,MassiveMat,MAT,Concrete & brick & stone, 6,Mon Apr 23 08:35:41 2001
+# cat documentation
+*CD,Category for concrete, brick and stone materials.
+# item id, menu, date
+*ITEM,RoughCon,Rough concrete (strip. formwork),Mon Apr 23 08:35:41 2001
+*ID,Rough concrete (strip. formwork) and similar
+*USC,--aaaaaaaaaaaaaaaaa,b,------------------- # units srcs uncert
+*DAT,M,unit,0.010,0.010,0.010,0.010,0.010,0.010,0.010,0.010,0.010,0.020,0.020,0.020,0.030,0.030,0.030,0.030,0.030,
+*ENDITEM
+*ITEM,ConTile,Concrete tiling,Thu Mar 16 11:04:17 2000
+*ID,Concrete tiling
+*USC,--aaaaaaaaaaaaaaaaa,b,------------------- # units srcs uncert
+*DAT,C,unit,0.020,0.020,0.020,0.020,0.020,0.020,0.030,0.030,0.030,0.040,0.040,0.040,0.050,0.050,0.050,0.050,0.050,
+*ENDITEM
+*ITEM,FacBrick,Facing brick,Mon Oct 23 10:49:51 2000
+*ID,Facing brick
+*USC,--aaaaaaaaaaaaaaaaa,a,------------------- # units srcs uncert
+*DAT,M,unit,0.010,0.010,0.010,0.010,0.010,0.010,0.020,0.020,0.020,0.020,0.020,0.020,0.020,0.020,0.020,0.030,0.030,
+*ENDITEM
+*ITEM,Marble,Marble (polished),Mon Oct 23 10:47:49 2000
+*ID,Polished marble
+*USC,--aaaaaaaaaaaaaaaaa,b,------------------- # units srcs uncert
+*DAT,M,unit,0.010,0.010,0.010,0.010,0.010,0.010,0.020,0.020,0.020,0.020,0.020,0.020,0.030,0.030,0.030,0.030,0.030,
+*ENDITEM
+*ITEM,Plaster,Plaster (thick/rigid),Mon Oct 23 10:49:34 2000
+*ID,Rigid (thick) plaster facing (brick, etc.)
+*USC,--aaaaaaaaaaaaaaaaa,d,------------------- # units srcs uncert
+*DAT,M,unit,0.040,0.040,0.040,0.030,0.030,0.030,0.030,0.030,0.030,0.040,0.040,0.040,0.050,0.050,0.060,0.070,0.080,
+*ENDITEM
+*ITEM,RoughCast,Roughcast on support,Mon Nov 20 08:26:35 2000
+*ID,Roughcast on support such as masonry or concrete
+*USC,--aaaaaaaaaaaaaaaaa,a,------------------- # units srcs uncert
+*DAT,M,unit,0.020,0.020,0.020,0.020,0.020,0.020,0.030,0.030,0.030,0.040,0.040,0.040,0.050,0.050,0.050,0.050,0.050,
+*ENDITEM
+*ENDCAT
+# CAT tag,id,type,menu,items_in_cat,date
+*CATEG,Insacou,MAT,Insulation, 5,Mon Oct 30 13:30:25 2000
+# cat documentation
+*CD : Category for insulation products:
+# item id, menu, date
+*ITEM,Insacou1,Polystyrene,Mon Oct 30 13:30:25 2000
+*ID,Polystyrene
+*USC,--aaaaaaaaaaaaaaaaa,b,------------------- # units srcs uncert
+*DAT,M,unit,0.030,0.030,0.030,0.030,0.030,0.030,0.020,0.020,0.050,0.080,0.110,0.150,0.180,0.220,0.190,0.170,0.140,
+*ENDITEM
+*ITEM,CellGlass,Cellular glass (140 kg/m3),Mon Oct 23 10:16:27 2000
+*ID,Cellular glass
+*USC,--aaaaaaaaaaaaaaaaa,b,------------------- # units srcs uncert
+*DAT,M,unit,0.030,0.040,0.050,0.050,0.060,0.090,0.130,0.160,0.170,0.180,0.190,0.190,0.190,0.190,0.200,0.220,0.230,
+*ENDITEM
+*ITEM,MW60S,Mineral wool (60mm-85kg/m3),Mon Oct 23 10:43:42 2000
+*ID Dense mineral wool (60 mm - 85 kg/m3) on rigid support. No fiber net
+*USC,--aaaaaaaaaaaaaaaaa,c,------------------- # units srcs uncert
+*DAT,M,unit,0.400,0.450,0.650,0.830,0.940,1.020,1.060,0.970,0.950,1.020,1.080,1.010,1.010,1.020,1.010,1.000,1.000,
+*ENDITEM
+*ITEM,Insacou2,Min. wool + net,Thu Mar 16 15:50:41 2000
+*ID,Mineral wool (Isover PBA) 50 kg/m3 (30 mm) + glass fiber net
+*USC,--aaaaaaaaaaaaaaaaa,e,------------------- # units srcs uncert
+*DAT,M,unit,0.060,0.050,0.120,0.150,0.270,0.440,0.600,0.770,0.850,0.930,0.940,0.900,0.940,0.940,0.980,0.930,0.920,
+*ENDITEM
+*ITEM,Insacou3,Min. wool + net + 30 mm air,Thu Mar 16 15:50:41 2000
+*ID,Mineral wool (Isover PBA) 50 kg/m3 (30 mm) + glass fiber net + 30 mm a
+*USC,--aaaaaaaaaaaaaaaaa,e,------------------- # units srcs uncert
+*DAT,M,unit,0.290,0.470,0.810,0.710,0.860,0.840,0.990,0.910,0.870,0.940,0.980,0.960,0.990,1.020,1.000,1.000,0.940,
+*ENDITEM
+*ENDCAT
+# CAT tag,id,type,menu,items_in_cat,date
+*CATEG,Coracou,SYS,Metal-Corrugated iron, 5,Mon Oct 23 11:16:56 2000
+# cat documentation
+*CD : Category for metals:
+# item id, menu, date
+*ITEM,Coracou1,Corrugated iron + air gap,Thu Mar 16 15:50:41 2000
+*ID,Corrugated iron + air gap
+*USC,--aaaaaaaaaaaaaaaaa,-,------------------- # units srcs uncert
+*DAT,C,unit,0.130,0.130,0.130,0.140,0.140,0.140,0.150,0.150,0.140,0.140,0.130,0.120,0.120,0.110,0.100,0.080,0.070,
+*ENDITEM
+*ITEM,Coracou2,Corrugated iron + mineral wool,Thu Mar 16 15:50:41 2000
+*ID,Corrugated iron (unperforated) + mineral wool
+*USC,--aaaaaaaaaaaaaaaaa,g,------------------- # units srcs uncert
+*DAT,C,unit,0.350,0.350,0.500,0.500,0.450,0.400,0.300,0.200,0.150,0.150,0.150,0.150,0.150,0.100,0.100,0.150,0.150,
+*ENDITEM
+*ITEM,Coracou3,Perfo. corrugated iron + mineral,Thu Mar 16 15:50:41 2000
+*ID,Perforated corrugated iron (wings) + mineral wool (SP 95 Montana)
+*USC,--aaaaaaaaaaaaaaaaa,g,------------------- # units srcs uncert
+*DAT,C,unit,0.160,0.320,0.440,0.520,0.730,0.840,0.910,0.850,0.860,0.920,0.810,0.710,0.580,0.580,0.570,0.580,0.610,
+*ENDITEM
+*ITEM,Metal,Rigid (thick) metal sheet,Mon Oct 23 10:38:33 2000
+*ID,Rigid (thick) metal sheet
+*USC,--aaaaaaaaaaaaaaaaa,d,------------------- # units srcs uncert
+*DAT,M,unit,0.010,0.010,0.010,0.010,0.010,0.010,0.010,0.010,0.010,0.010,0.010,0.010,0.020,0.020,0.020,0.020,0.020,
+*ENDITEM
+*ITEM,SteelPart,Steiner mobile partition PM,Mon Oct 23 11:16:56 2000
+*ID Steiner Mobile Partition PM PVC film + Steel sheet 6mm + Plasterboard 12.5 mm + Mineral wool (96kg/m3) 50 mm + Plasterboard 12.5 mm + Steel sheet + PVC film (data are estimated)
+*USC,--aaaaaaaaaaaaaaaaa,f,------------------- # units srcs uncert
+*DAT,C,unit,0.350,0.270,0.200,0.120,0.110,0.090,0.080,0.080,0.070,0.070,0.070,0.060,0.060,0.060,0.050,0.050,0.050,
+*ENDITEM
+*ENDCAT
+# CAT tag,id,type,menu,items_in_cat,date
+*CATEG,Flooracou,SYS,Floor-covering, 5,Mon Nov 27 14:30:02 2000
+# cat documentation
+*CD,This category includes different flooring systems
+# item id, menu, date
+*ITEM,GlutLino,Gluted linoleum (PVC),Thu Mar 16 11:04:04 2000
+*ID,Gluted linoleum (PVC) 2mm on rigid support (concrete slab, etc.)
+*USC,--aaaaaaaaaaaaaaaaa,b,------------------- # units srcs uncert
+*DAT,C,unit,0.020,0.020,0.020,0.030,0.030,0.030,0.030,0.030,0.030,0.040,0.040,0.050,0.050,0.060,0.060,0.050,0.050,
+*ENDITEM
+*ITEM,LinoFelt,Linoleum on felt,Thu Mar 16 10:58:11 2000
+*ID,Linoleum (PVC) 2mm on 3mm felt
+*USC,--aaaaaaaaaaaaaaaaa,b,------------------- # units srcs uncert
+*DAT,C,unit,0.400,0.500,0.060,0.060,0.070,0.080,0.090,0.100,0.140,0.170,0.210,0.160,0.120,0.070,0.060,0.060,0.050,
+*ENDITEM
+*ITEM,Parquet,Parquet on lattice,Thu Mar 16 11:03:34 2000
+*ID,Parquet on lattice
+*USC,--aaaaaaaaaaaaaaaaa,b,------------------- # units srcs uncert
+*DAT,C,unit,0.110,0.100,0.090,0.080,0.000,0.060,0.060,0.050,0.050,0.060,0.060,0.060,0.060,0.060,0.060,0.060,0.060,
+*ENDITEM
+*ITEM,CarpetRS,Fitted carpet (on rigid support),Mon Oct 23 10:26:43 2000
+*ID,Fitted carpet on rigid support (conrete slab, etc.)
+*USC,--aaaaaaaaaaaaaaaaa,b,------------------- # units srcs uncert
+*DAT,C,unit,0.030,0.040,0.050,0.060,0.070,0.090,0.100,0.120,0.180,0.240,0.300,0.370,0.430,0.500,0.600,0.700,0.800,
+*ENDITEM
+*ITEM,Carplenum,Fitted carpet on plenum,Mon Nov 27 14:30:02 2000
+*ID,Fitted carpet on plenum (these data are extrapolated from fiited carpe + wooden plenum profile)
+*USC,--aaaaaaaaaaaaaaaaa,f,------------------- # units srcs uncert
+*DAT,C,unit,0.220,0.200,0.180,0.170,0.180,0.180,0.190,0.200,0.220,0.230,0.250,0.320,0.380,0.450,0.470,0.500,0.520,
+*ENDITEM
+*ENDCAT
+# CAT tag,id,type,menu,items_in_cat,date
+*CATEG,Wallacou,SYS,Wood-covering, 8,Mon Oct 23 11:22:36 2000
+# cat documentation
+*CD,This category includes massive wood and wood-based covering
+# item id, menu, date
+*ITEM,MassWood,Massif wood or wood on support,Mon Oct 23 11:22:36 2000
+*ID,Massif wood or wood board on rigid support
+*USC,--aaaaaaaaaaaaaaaaa,b,------------------- # units srcs uncert
+*DAT,M,unit,0.040,0.040,0.040,0.040,0.040,0.040,0.050,0.050,0.050,0.060,0.060,0.060,0.060,0.060,0.060,0.060,0.060,
+*ENDITEM
+*ITEM,Py16Ai30,Chipboard (16mm) + air (30mm),Thu Mar 16 15:50:41 2000
+*ID,16 mm chipboard (or plywood) + 30 mm air gap
+*USC,--aaaaaaaaaaaaaaaaa,a,------------------- # units srcs uncert
+*DAT,C,unit,0.200,0.170,0.140,0.100,0.070,0.050,0.030,0.010,0.010,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+*ENDITEM
+*ITEM,Py10Ai20,Chipboard  (10mm) + air (20mm),Thu Mar 16 15:50:41 2000
+*ID,10 mm chipboard (or plywood) + 20 mm air gap
+*USC,--aaaaaaaaaaaaaaaaa,a,------------------- # units srcs uncert
+*DAT,C,unit,0.130,0.130,0.170,0.200,0.240,0.210,0.170,0.140,0.110,0.070,0.040,0.080,0.120,0.160,0.140,0.120,0.100,
+*ENDITEM
+*ITEM,Py08Ai30,Chipboard  (8mm) + air (30mm),Thu Mar 16 15:50:41 2000
+*ID,8 mm chipboard (or plywood) + 30 mm air gap
+*USC,--aaaaaaaaaaaaaaaaa,a,------------------- # units srcs uncert
+*DAT,C,unit,0.200,0.250,0.240,0.230,0.220,0.160,0.100,0.040,0.030,0.010,0.000,0.010,0.020,0.030,0.050,0.060,0.080,
+*ENDITEM
+*ITEM,Py08MW20Ai10,Chipboard + MW + air (8/20/10),Thu Mar 16 15:50:41 2000
+*ID,8 mm chipboard (or plywood) + 20mm mineral wool + 10 mm air gap
+*USC,--aaaaaaaaaaaaaaaaa,a,------------------- # units srcs uncert
+*DAT,C,unit,0.350,0.380,0.330,0.280,0.230,0.160,0.090,0.020,0.010,0.010,0.000,0.000,0.000,0.000,0.020,0.040,0.060,
+*ENDITEM
+*ITEM,Py08MW50,Chipboard 8mm + Min. wool 50mm,Thu Mar 16 15:50:41 2000
+*ID,8 mm chipboard (or plywood) + 50mm mineral wool (no air gap)
+*USC,--aaaaaaaaaaaaaaaaa,a,------------------- # units srcs uncert
+*DAT,C,unit,0.400,0.460,0.390,0.310,0.240,0.170,0.110,0.040,0.030,0.020,0.010,0.010,0.000,0.000,0.000,0.010,0.010,
+*ENDITEM
+*ITEM,PY06MW50Ai50,Chipboard + MW + air (6/50/50),Thu Mar 16 15:50:41 2000
+*ID,6 mm chipboard (or plywood) + 50mm mineral wool + 50mm air gap
+*USC,--aaaaaaaaaaaaaaaaa,a,------------------- # units srcs uncert
+*DAT,C,unit,0.650,0.750,0.600,0.450,0.300,0.240,0.180,0.120,0.0100,0.070,0.050,0.050,0.040,0.040,0.040,0.030,0.030,
+*ENDITEM
+*ITEM,Py06MW100,Chipboard (6mm) + MW (100mm),Thu Mar 16 15:50:41 2000
+*ID,6 mm chipboard (or plywood) + 100mm mineral wool (no air gap)
+*USC,--aaaaaaaaaaaaaaaaa,a,------------------- # units srcs uncert
+*DAT,C,unit,0.550,0.590,0.510,0.440,0.360,0.300,0.240,0.180,0.150,0.110,0.080,0.070,0.060,0.050,0.060,0.070,0.080,
+*ENDITEM
+*ENDCAT
+# CAT tag,id,type,menu,items_in_cat,date
+*CATEG,Windowacou,SYS,Windows and Openings, 5,Mon Oct 23 10:33:42 2000
+# cat documentation
+*CD,This category includes windows and Openings
+# item id, menu, date
+*ITEM,SglGlazg,Simple glazing,Mon Oct 23 10:33:42 2000
+*ID,Simple glazing pane (3-4 mm)
+*USC,--aaaaaaaaaaaaaaaaa,a,------------------- # units srcs uncert
+*DAT,C,unit,0.070,0.060,0.050,0.050,0.040,0.040,0.030,0.030,0.030,0.020,0.020,0.020,0.020,0.020,0.020,0.020,0.020,
+*ENDITEM
+*ITEM,Dgz3-10-3,Double glazing (3/10/3),Mar 16 15:20:56 2000
+*ID,Double (closed) glazing (3/10/3)
+*USC,--aaaaaaaaaaaaaaaaa,a,------------------- # units srcs uncert
+*DAT,M,unit,0.010,0.020,0.030,0.050,0.060,0.050,0.040,0.030,0.030,0.030,0.030,0.030,0.020,0.020,0.020,0.020,0.020,
+*ENDITEM
+*ITEM,Dgz4-12-4,Double glazing (4/12/4),Mon Oct 23 10:30:41 2000
+*ID,Double (closed) glazing 4/12/4
+*USC,--aaaaaaaaaaaaaaaaa,a,------------------- # units srcs uncert
+*DAT,C,unit,0.220,0.200,0.180,0.170,0.150,0.130,0.120,0.100,0.080,0.070,0.050,0.040,0.040,0.030,0.030,0.020,0.020,
+*ENDITEM
+*ITEM,OpenWin,Open window,Thu Mar 16 15:23:47 2000
+*ID,Open window (single or double)
+*USC,--aaaaaaaaaaaaaaaaa,a,------------------- # units srcs uncert
+*DAT,C,unit,1.100,1.100,1.100,1.100,1.100,1.100,1.100,1.100,1.100,1.100,1.100,1.100,1.100,1.100,1.100,1.100,1.100,
+*ENDITEM
+*ITEM,OpenStg,Opening on stage,Thu Mar 16 15:29:47 2000
+*ID,Opening on stage (no curtain)
+*USC,--aaaaaaaaaaaaaaaaa,a,------------------- # units srcs uncert
+*DAT,C,unit,0.200,0.200,0.200,0.200,0.200,0.220,0.230,0.250,0.250,0.250,0.250,0.300,0.350,0.400,0.400,0.400,0.400,
+*ENDITEM
+*ENDCAT
+# CAT tag,id,type,menu,items_in_cat,date
+*CATEG,Screenacou,MAT,Curtain and Screen, 3,Mon Oct 23 10:22:07 2000
+# cat documentation
+*CD,This category includes different curtains type and screens. It must be stressed, that the folding percentage and the fabric type is important.
+*CD,The surface of curtain used in the Reverberation time calculation correspond to the area of the construction.
+# item id, menu, date
+*ITEM,Screenacou1,Heavy curtains,Thu Mar 16 15:51:01 2000
+*ID,Heavy curtains (not folded)
+*USC,--aaaaaaaaaaaaaaaaa,a,------------------- # units srcs uncert
+*DAT,M,unit,0.050,0.060,0.070,0.090,0.100,0.190,0.290,0.380,0.460,0.550,0.630,0.650,0.680,0.700,0.710,0.720,0.730,
+*ENDITEM
+*ITEM,LightCur,Light folded curtains,Mon Oct 23 10:22:07 2000
+*ID,Light curtain (25% folded)
+*USC,--aaaaaaaaaaaaaaaaa,a,------------------- # units srcs uncert
+*DAT,M,unit,0.020,0.040,0.100,0.170,0.230,0.290,0.350,0.410,0.460,0.520,0.570,0.560,0.540,0.530,0.490,0.440,0.400,
+*ENDITEM
+*ITEM,Screenacou3,Cinema screen,Thu Mar 16 15:47:05 2000
+*ID,Cinema screen
+*USC,--aaaaaaaaaaaaaaaaa,a,------------------- # units srcs uncert
+*DAT,M,unit,0.050,0.100,0.120,0.130,0.150,0.170,0.180,0.200,0.270,0.330,0.400,0.430,0.470,0.500,0.480,0.470,0.450,
+*ENDITEM
+*ENDCAT
+# CAT tag,id,type,menu,items_in_cat,date
+*CATEG,Furacou,MAT,Furnitures, 5,Mon Nov 20 09:52:13 2000
+# cat documentation
+*CD,This category includes different type of furniture Seats are assumed to be unoccupied
+# item id, menu, date
+*ITEM,Furacou1,Wooden door,Tue Apr 11 09:23:43 2000
+*ID The first material acoustic is...
+*USC,--bbbbbbbbbbbbbbbbb,a,------------------- # units srcs uncert
+*DAT,M,pers,0.220,0.200,0.180,0.170,0.150,0.130,0.120,0.100,0.100,0.100,0.100,0.080,0.070,0.050,0.050,0.050,0.050,
+*ENDITEM
+*ITEM,Cupboard,Cupboard wooden,Mon Oct 23 11:25:05 2000
+*ID,Cupboard in wood
+*USC,--bbbbbbbbbbbbbbbbb,a,------------------- # units srcs uncert
+*DAT,M,pers,0.220,0.200,0.180,0.170,0.150,0.130,0.120,
+*DAT,0.100,0.100,0.100,0.100,0.080,0.070,0.050,0.050,0.050,0.050,
+*ENDITEM
+*ITEM,Wood_Plen,Wooden stage (plenum),Mon Nov 20 09:52:13 2000
+*ID,acoustic new item Macou4 is...
+*USC,--bbbbbbbbbbbbbbbbb,b,------------------- # units srcs uncert
+*DAT,M,unit,0.130,0.120,0.110,0.090,0.080,0.080,0.070,0.070,0.070,0.060,0.060,0.060,0.060,0.060,0.060,0.060,0.060,
+*ENDITEM
+*ITEM,Furacou4,Wood or plastic seat,Thu Mar 16 10:39:02 2000
+*ID,acoustic new item Macou4 is...
+*USC,--bbbbbbbbbbbbbbbbb,a,------------------- # units srcs uncert
+*DAT,M,unit,0.010,0.010,0.010,0.010,0.010,0.010,0.020,0.020,0.020,0.030,0.030,0.040,0.040,0.050,0.050,0.050,0.050,
+*ENDITEM
+*ITEM,Furacou5,Slightly upholstered seat,Thu Mar 16 10:39:02 2000
+*ID,acoustic new item Macou4 is...
+*USC,--bbbbbbbbbbbbbbbbb,a,------------------- # units srcs uncert
+*DAT,M,unit,0.060,0.100,0.140,0.190,0.230,0.260,0.290,0.320,0.290,0.250,0.220,0.210,0.200,0.190,0.190,0.180,0.180,
+*ENDITEM
+*ENDCAT
+# CAT tag,id,type,menu,items_in_cat,date
+*CATEG,Gasacou,MAT,Gas, 1,Thu Mar 16 15:50:41 2000
+# cat documentation
+*CD,This category includes the absorption due to gas. It is used for the reverberation time calcultion, when the the air absorption is not calculated.
+# item id, menu, date
+*ITEM,Gasacou1,Air,Thu Mar 16 15:50:41 2000
+*ID,Air absorption at 20°C and 50% relative humidity
+*USC,--aaaaaaaaaaaaaaaaa,a,------------------- # units srcs uncert
+*DAT,M,unit,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.020,0.030,0.050,1.370,2.680,4.000,7.000,10.000,13.000,
+*ENDITEM
+*ENDCAT
+# CAT tag,id,type,menu,items_in_cat,date
+*CATEG,pubacou,MAT,Occupants, 3,Wed Oct 25 06:11:34 2000
+# cat documentation
+*CD : Category for people
+# item id, menu, date
+*ITEM,StandPers,Standing person,Mon Oct 23 11:23:27 2000
+*ID Standing person
+*USC,--bbbbbbbbbbbbbbbbb,a,------------------- # units srcs uncert
+*DAT,M,pers,0.120,0.150,0.180,0.220,0.250,0.280,0.320,0.350,0.380,0.420,0.450,0.480,0.520,0.550,0.550,0.550,0.550,
+*ENDITEM
+*ITEM,PersWood,Person on wooden seat,Thu Mar 16 10:35:37 2000
+*ID Person sitting on a wooden seat
+*USC,--bbbbbbbbbbbbbbbbb,a,------------------- # units srcs uncert
+*DAT,M,unit,0.120,0.150,0.180,0.220,0.250,0.300,0.350,0.400,0.430,0.470,0.500,0.500,0.500,0.500,0.470,0.430,0.400,
+*ENDITEM
+*ITEM,AdultUph,Person on upholst. seat,Mon Oct 23 11:23:59 2000
+*ID,Person sitting on a upholstered seat
+*USC,--bbbbbbbbbbbbbbbbb,a,------------------- # units srcs uncert
+*DAT,M,unit,0.130,0.200,0.270,0.330,0.400,0.450,0.500,0.550,0.570,0.580,0.600,0.600,0.600,0.600,0.570,0.530,0.500,
+*ENDITEM
+*ENDCAT
+# CAT tag,id,type,menu,items_in_cat,date
+*CATEG,Plastic,MAT,Plastic and polymer, 2,Mon Nov 13 09:54:16 2000
+# cat documentation
+*CD,This category includes plastic and polymers materials
+# item id, menu, date
+*ITEM,PVC,PVC,Mon Oct 23 10:54:05 2000
+*ID,PVC (board, frame, etc.)
+*USC,--aaaaaaaaaaaaaaaaa,a,------------------- # units srcs uncert
+*DAT,M,unit,0.020,0.020,0.020,0.030,0.030,0.030,0.030,0.030,0.030,0.040,0.040,0.050,0.050,0.060,0.060,0.050,0.050,
+*ENDITEM
+*ITEM,Rubber,Rubber,Mon Oct 23 10:54:31 2000
+*ID,Rubber and other polymers such as EPDM
+*USC,--aaaaaaaaaaaaaaaaa,b,------------------- # units srcs uncert
+*DAT,M,unit,0.030,0.030,0.030,0.040,0.040,0.050,0.050,0.060,0.060,0.060,0.060,0.060,0.060,0.060,0.060,0.060,0.060,
+*ENDITEM
+*ENDCAT
+# CAT tag,id,type,menu,items_in_cat,date
+*CATEG,Fictious,MAT,Fictious material, 1,Wed Dec 20 11:01:15 2000
+# cat documentation
+*CD,Category category12 was added by a user.
+# item id, menu, date
+*ITEM,Fictif,Fictious material,Wed Dec 20 11:01:15 2000
+*ID,Non absorbant material, used to delimite two thermal zones that correspond to a same acoustical zone
+*USC,--aaaaaaaaaaaaaaaaa,b,------------------- # units srcs uncert
+*DAT,M,0.16,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,0.000,
+*ENDITEM
+*ENDCAT
+*ENDDB

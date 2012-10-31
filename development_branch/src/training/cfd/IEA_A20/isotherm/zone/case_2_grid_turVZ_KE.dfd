@@ -1,0 +1,71 @@
+DFS DESCRIPTION
+*conflation  0
+#   Geometry of the problem
+#
+#        ---------------------------------------------------
+#        --->                                              |
+#        ----                                              |
+#           |                                              |
+#           |                                              |
+#           |                                              |___
+#           |                                               --->
+#           |__________________________________________________
+#
+#
+#   Simulation Title
+2D flow in a sealed cavity
+#   N. of x-Regions      N. of y-Regions      N. of z-Regions
+         0                    1                   3 
+#   Grid X-direction    N. of cells    Length   Pow. law coefficient
+#   Grid Y-direction    N. of cells    Length    Pow. law coefficient
+         Y                 -20         9.0            1.7 
+#   Grid Z-direction    N. of cells    Length    Pow. law coefficient
+         Z                  4          0.48           1.1 
+         Z                 -14         2.352          1.3
+         Z                  2          0.168          1.1
+#   Variables:
+         V   W  T   K   E   
+#   Number of openings
+            2
+#   Opening type   location   Ii  If  Ji  Jf  Ki  Kf   P(Pa) or m(kg/s)   T('C)   C(-)
+        Vel         South      1   1   1   1  19  20        9.082E-2      20.0
+        Zer         North      1   1  20  20   1   4          0.0         20.0
+#   Number of solid boundaries
+            4
+#   Solid  Bnd. type     location   Ii  If  Ji  Jf  Ki  Kf    T('C) or H(W)
+         Temp              South     1   1   1   1   1  18        20.0
+         Temp              North     1   1  20  20   5  20        20.0
+         Temp              Low       1   1   1  20   1   1        20.0
+         Temp              High      1   1   1  20  20  20        20.0
+#   Number of heat/concentration sources
+            0
+#   Source type    Ii  If  Ji  Jf  Ki  Kf   T('C) or Q(W) or C(-) or CF(kg/s)   Yes(blocked) or No
+#   Max. iterations   Convergence criteria   renormalize residuals?
+          600                  0.005                No
+#   Number of relaxation factors
+          6 
+#   Relaxation factor type       variable       value
+           Linear                   P            1.0
+           Linear                   V            0.5
+           Linear                   W            0.5
+           Linear                   T            1.0
+           Inertia                  K            0.3
+           Inertia                  E            0.3
+#   default sweeping will be used.
+    0
+#   Number of variables to be initiated
+           5 
+#   Initial conditions variable          initial value
+           V                                    0.1
+           W                                    0.01
+           T                                    20.0
+           k                                    0.01
+           E                                    0.0001
+#   Time-step interval to print results              result file name
+                    1                                     case_2_KET.phi
+#   Flow vector file name, to be used for flow visualization.
+               case_2_KET.vectors
+#   Monitoring position IMON  JMON  KMON           monitoring file name
+                          1    7     19                   case_2_KET.mon
+#   Re-initialize simulation ?  Yes or No 
+                                  no 

@@ -1,0 +1,17 @@
+Project notes for cellular_shd.cfg
+Description: Two adjacent cellular offices with shading assessment
+In folder: cellular_shd
+By: jon
+Date: September 2006
+For: 
+Project reference: 
+Notes: 
+_____________________________
+
+This model includes additional descriptions of a series of
+vertical fins above the windows on the south facade. This
+type of fin is often used rather than a solid overhang.
+
+You can also use the views-from-the-sun option to see the
+impact of this type of shading visually. 
+ 

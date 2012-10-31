@@ -1,0 +1,28 @@
+
+This is a basic heating and ventilating system
+making use of conventional plant components.  It is
+equivalent to the problem in prim_ac_sys which uses
+primitive parts.  If you want to study the differences
+between conventional and primitive parts representations
+of plant systems look at the two file sets.
+
+The configuration file is heat.cfg
+The control file is heat.ctl
+The plant network description is heat.pnf
+
+The building portion of the problem is the
+standard three zone exemplar.
+
+You may look at a standard building & plant
+libraries in heat_pp.res and heat_pp.plr
+which are for a one day simulation on
+11 of February.  They use the standard climate
+database.  Interesting phychrometric data 
+can be plotted around mid-day which is
+at timestep 360.
+
+Recommended building timesteps should be
+6 timesteps per hour.
+
+Recommended plant timesteps should be equivalent
+to 2 minute intervals (or less). 

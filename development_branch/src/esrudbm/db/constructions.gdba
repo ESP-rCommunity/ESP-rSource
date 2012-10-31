@@ -1,0 +1,128 @@
+*ESP-r ascii gdb 2
+# db type, menu, width,nb of units:sources:cat:items, date
+multicon_db,Constructions db,65, 4, 1, 1, 13,Fri Dec 19 09:07:05 2003
+*DBNOTE,Constructions db log...
+*UNIT,-,(-),(-)
+*UNIT,a,(km),(distance in km)
+*UNIT,b,(m),(thickness in m)
+*UNIT,c,(index),(index)
+*SOURCE,-,from a legacy file
+# db level documentation
+*DD,Constructions (imported from a legacy file) Documentation follows:
+*DD,Each entry contains the following data fields: matching construction name (`same` if symetric),
+*DD,colour name on `other` face, colour name on `inside` face, OPAQ:TRAN tag and optical name, acoustic name on `other` face, acoustic name on `inside` face,
+*DD,longwave emissivity at `inside` and `other` face, solar absorb at `inside` and `other` face, environmental effects name
+*DD,For each layer: indicator for thermal or non-thermal layer, indicator for solid or air gap, material name, thickness (m) material index (for legacy models),
+*DD,air gap resistance (vertical placement) air gap resistance (floor:ceiling placement) air gap resistance (sloped placement)
+# CAT tag,id,type,menu,items_in_cat,date
+*CATEG,convmlc,STD,Converted construction items,13,Fri Dec 19 09:07:05 2003
+# cat documentation
+*CD,Category documentation: (imported from legacy construction db.)
+# item id, menu, date
+*ITEM,extern_wall,extern_wall,Thu Dec 12 18:26:54 2002
+*ID,constr extern_wall is...
+*USC,------aaaa-a----aaaaa-,-,----------------------
+*DAT,same,grey50,grey50,OPAQ,OPAQUE,none,none,0.900,0.910,0.700,0.220,none,5,
+*REP,t,s,mat6,0.10000,6,0.0000,0.0000,0.0000,Lt brown brick
+*REP,t,s,mat211,0.15000,211,0.0000,0.0000,0.0000,Glasswool
+*REP,t,g,mat0,0.05000,0,0.1700,0.1700,0.1700,air (@ 25C)
+*REP,t,s,mat22,0.10000,22,0.0000,0.0000,0.0000,Aerated conc block
+*REP,t,s,mat108,0.01200,108,0.0000,0.0000,0.0000,White ptd Gypboard
+*ENDITEM
+*ITEM,insul_frame,insul_frame,Thu Dec 12 18:26:54 2002
+*ID,constr insul_frame is...
+*USC,------aaaa-a----aaaaa-,-,----------------------
+*DAT,same,grey50,grey50,OPAQ,OPAQUE,none,none,0.820,0.820,0.720,0.720,none,3,
+*REP,t,s,mat46,0.00400,46,0.0000,0.0000,0.0000,Grey cotd aluminium
+*REP,t,s,mat281,0.08000,281,0.0000,0.0000,0.0000,Glass Fibre Quilt
+*REP,t,s,mat46,0.00400,46,0.0000,0.0000,0.0000,Grey cotd aluminium
+*ENDITEM
+*ITEM,door,door,Fri Dec 19 09:07:05 2003
+*ID,constr door is...
+*USC,------aaaa-a----aaaaa-,-,----------------------
+*DAT,same,Chipboard,Chipboard,OPAQ,OPAQUE,none,none,0.900,0.820,0.650,0.720,none,1
+*REP,t,s,mat69,0.02500,69,0.0000,0.0000,0.0000(radial)
+*ENDITEM
+*ITEM,mass_part,mass_part,Thu Dec 12 18:26:54 2002
+*ID,constr mass_part is...
+*USC,------aaaa-a----aaaaa-,-,----------------------
+*DAT,same,grey50,grey50,OPAQ,OPAQUE,none,none,0.900,0.820,0.250,0.720,none,1,
+*REP,t,s,mat35,0.24000,35,0.0000,0.0000,0.0000,Block white ptd inner (3% mc)
+*ENDITEM
+*ITEM,fict,fict,Thu Dec 12 18:26:54 2002
+*ID,constr fict is...
+*USC,------aaaa-a----aaaaa-,-,----------------------
+*DAT,same,grey50,grey50,TRAN,SC_fictit,none,none,0.990,0.820,0.010,0.720,none,1,
+*REP,t,s,mat245,0.00600,245,0.0000,0.0000,0.0000,fict
+*ENDITEM
+*ITEM,dbl_glz,dbl_glz,Thu Dec 12 18:26:54 2002
+*ID,constr dbl_glz is...
+*USC,------aaaa-a----aaaaa-,-,----------------------
+*DAT,same,grey50,grey50,TRAN,DCF7671_06nb,none,none,0.830,0.830,0.050,0.050,none,3,
+*REP,t,s,mat242,0.00600,242,0.0000,0.0000,0.0000,Plate glass
+*REP,t,g,mat0,0.01200,0,0.1700,0.1700,0.1700,air (@ 25C)
+*REP,t,s,mat242,0.00600,242,0.0000,0.0000,0.0000,Plate glass
+*ENDITEM
+*ITEM,roof,roof,Thu Dec 12 18:26:54 2002
+*ID,constr roof is...
+*USC,------aaaa-a----aaaaa-,-,----------------------
+*DAT,same,grey50,grey50,OPAQ,OPAQUE,none,none,0.220,0.220,0.200,0.200,none,4,
+*REP,t,s,mat43,0.00300,43,0.0000,0.0000,0.0000,Aluminium
+*REP,t,g,mat0,0.02500,0,0.1700,0.1700,0.1700,air (@ 25C)
+*REP,t,s,mat281,0.08000,281,0.0000,0.0000,0.0000,Glass Fibre Quilt
+*REP,t,s,mat43,0.00300,43,0.0000,0.0000,0.0000,Aluminium
+*ENDITEM
+*ITEM,susp_floor,susp_floor,Thu Dec 12 18:26:54 2002
+*ID,constr susp_floor is...
+*USC,------aaaa-a----aaaaa-,-,----------------------
+*DAT,same,grey50,grey50,OPAQ,OPAQUE,none,none,0.900,0.120,0.600,0.200,none,5,
+*REP,t,s,mat221,0.00600,221,0.0000,0.0000,0.0000,Wilton
+*REP,t,s,mat67,0.01900,67,0.0000,0.0000,0.0000,Chipboard
+*REP,t,g,mat0,0.05000,0,0.1700,0.1700,0.1700,air (@ 25C)
+*REP,t,s,mat32,0.14000,32,0.0000,0.0000,0.0000,Heavy mix concrete
+*REP,t,s,mat42,0.00400,42,0.0000,0.0000,0.0000,Steel
+*ENDITEM
+*ITEM,susp_flr_re,susp_flr_re,Thu Dec 12 18:26:54 2002
+*ID,constr susp_flr_re is...
+*USC,------aaaa-a----aaaaa-,-,----------------------
+*DAT,same,grey50,grey50,OPAQ,OPAQUE,none,none,0.120,0.900,0.200,0.600,none,5,
+*REP,t,s,mat42,0.00400,42,0.0000,0.0000,0.0000,Steel
+*REP,t,s,mat32,0.14000,32,0.0000,0.0000,0.0000,Heavy mix concrete
+*REP,t,g,mat0,0.05000,0,0.1700,0.1700,0.1700,air (@ 25C)
+*REP,t,s,mat67,0.01900,67,0.0000,0.0000,0.0000,Chipboard
+*REP,t,s,mat221,0.00600,221,0.0000,0.0000,0.0000,Wilton
+*ENDITEM
+*ITEM,ceiling,ceiling,Wed Dec 18 19:07:46 2002
+*ID,constr ceiling is...
+*USC,------aaaa-a----aaaaa-,-,----------------------
+*DAT,same,grey50,grey50,OPAQ,OPAQUE,none,none,0.900,0.900,0.300,0.600,cnstrimp,2,
+*REP,t,s,mat211,0.10000,211,0.0000,0.0000,0.0000,Glasswool
+*REP,t,s,mat150,0.01000,150,0.0000,0.0000,0.0000,Ceiling (mineral)
+*ENDITEM
+*ITEM,ceiling_rev,ceiling_rev,Thu Dec 12 18:26:54 2002
+*ID,constr ceiling_rev is...
+*USC,------aaaa-a----aaaaa-,-,----------------------
+*DAT,same,grey50,grey50,OPAQ,OPAQUE,none,none,0.900,0.900,0.600,0.300,none,2,
+*REP,t,s,mat150,0.01000,150,0.0000,0.0000,0.0000,Ceiling (mineral)
+*REP,t,s,mat211,0.10000,211,0.0000,0.0000,0.0000,Glasswool
+*ENDITEM
+*ITEM,gyp_blk_ptn,gyp_blk_ptn,Thu Dec 12 18:26:54 2002
+*ID,constr gyp_blk_ptn is...
+*USC,------aaaa-a----aaaaa-,-,----------------------
+*DAT,same,grey50,grey50,OPAQ,OPAQUE,none,none,0.910,0.910,0.220,0.220,none,5,
+*REP,t,s,mat108,0.01300,108,0.0000,0.0000,0.0000,White ptd Gypboard
+*REP,t,g,mat0,0.05000,0,0.1700,0.1700,0.1700,air (@ 25C)
+*REP,t,s,mat28,0.10000,28,0.0000,0.0000,0.0000,Block inner (3% mc)
+*REP,t,g,mat0,0.05000,0,0.1700,0.1700,0.1700,air (@ 25C)
+*REP,t,s,mat108,0.01300,108,0.0000,0.0000,0.0000,White ptd Gypboard
+*ENDITEM
+*ITEM,gyp_gyp_ptn,gyp_gyp_ptn,Thu Dec 12 18:26:54 2002
+*ID,constr gyp_gyp_ptn is...
+*USC,------aaaa-a----aaaaa-,-,----------------------
+*DAT,same,grey50,grey50,OPAQ,OPAQUE,none,none,0.910,0.910,0.220,0.220,none,3,
+*REP,t,s,mat108,0.01200,108,0.0000,0.0000,0.0000,White ptd Gypboard
+*REP,t,g,mat0,0.05000,0,0.1700,0.1700,0.1700,air (@ 25C)
+*REP,t,s,mat108,0.01200,108,0.0000,0.0000,0.0000,White ptd Gypboard
+*ENDITEM
+*ENDCAT
+*ENDDB

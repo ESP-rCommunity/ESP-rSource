@@ -1,0 +1,201 @@
+#!/bin/bash -f
+
+echo " "
+echo "This script installs an ESP-r 64 bit distribution on a Linux"
+echo "computer including executables, example models and "
+echo "standard databases."
+echo " "
+echo "You should be root when running this installer"
+echo " "
+echo "NOTE: the installation folder is /opt/esru. IF YOU HAVE AN"
+echo "OLDER ESP-r in /home/esru or /usr/esru you should"
+echo "remove it."
+echo " "
+echo "Your current HOME folder is defined as: $HOME"
+echo "if $HOME/bin does not exist it will be created."
+echo "  "
+echo "Note on a 64 bit Linux computer you should use a 64 bit"
+echo "version of ESP-r to avoid clashes in operating system"
+echo "libraries between 32 and 46 bit versions."
+echo "  "
+echo "here is a readme (hint reading it might save time later)..."
+
+more $ISD/esp-r_v11.11_linux_precomp.readme
+
+echo "  "
+echo "continuing the install process..."
+
+DSP1=" \n
+ Oops, you are not root, if you do not have administrative\n
+ privileges the installer will not work correctly. Consider
+ a re-login as root.\n"
+DSP2=" \n
+ Hit return to start reading the licence\n
+ \n"
+DSP3=" \n
+ The type of computer does not match this precompiled\n
+ distribution of ESP-r. Aborting...\n"
+DSP4=" \n
+ Your PATH environment variable needs to be updated. The .bash_profile\n
+ file the PATH= line should include the following...\n
+ :/opt/esru/bin:/opt/esru/esp-r/bin\n
+ \n
+ and if you have separately installed Radiance then be sure\n
+ to define the RAYPATH environment variable and export it.\n
+ \n
+ Once you have updated the .bash_profile files for the users\n
+ on this computer logout and log in as a normal user and\n
+ in a command window issue 'prj' (without the quotes). If the\n
+ installation was successful you should find that the Project\n
+ Manager application has started up. If it does then you can\n
+ remove this installer.\n"
+DSP5=" \n
+    ESP-r is free software; you can redistribute it and/or modify\n
+    it under the terms of the GNU General Public License as published by\n
+    the Free Software Foundation; either version 2 of the License, or\n
+    (at your option) any later version.\n
+    \n
+    This program is distributed in the hope that it will be useful,\n
+    but WITHOUT ANY WARRANTY; without even the implied warranty of\n
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the\n
+    GNU General Public License for more details.\n
+    \n
+    You should have received a copy of the GNU General Public License\n
+    along with this program; if not, write to the Free Software\n
+    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA\n
+    \n"
+    
+
+ISD=`pwd`
+
+USR=`whoami`
+echo " User = $USR"
+if [ $USR != "root" ]; then
+	echo -e $DSP1
+fi
+
+echo
+echo -n " proceed to install (y/n) ? "
+read x
+
+if [[ "$x" != "y" ]]
+then
+	echo -e " You have chosen to terminate the installation\n"
+	exit
+fi
+
+echo -e $DSP2
+
+read x
+echo -e $DSP5 
+echo " "
+echo -n " Do you agree to the above license terms? [y/n]: "
+read x
+
+if [[ $x != 'y' ]] ; then
+	echo " If you do not agree to the license, you can't install this software !"
+	exit
+fi
+
+# proceed to install
+          
+#-----------------------------------------------------------
+# Detect architecture
+#-----------------------------------------------------------
+echo " Checking computer operating system..."
+architecture=`uname -s`      # machine type
+if [ $architecture = "Linux" ]; then
+ echo "Linux box detected - continuing..."
+else
+ echo -e $DSP2
+ exit
+fi
+
+# proceed to install, first ask user which version.
+echo " "
+echo " ESP-r is available in two versions:"
+echo " a) the standard X11 implementation"
+echo " b) an implementation using the GTK graphics"
+echo "    library which lacks a few functions which"
+echo "    have not been ported."
+echo " c) choose between X11 and GTK after install"
+echo " "
+echo "You can choose one of these now or to switch between"
+echo "them via a link_to script at any time in the future."
+echo " select option [a/b/c]:"
+read which
+if [[ $which = 'a' ]] ; then
+  echo "proceeding with the X11 version..."
+elif  [[ $which = 'b' ]] ; then
+  echo "proceeding with the GTK version..."
+elif  [[ $which = 'c' ]] ; then
+  echo "allowing future switching between X11 and GTK version..."
+else
+ echo "did not understand your response....aborting."
+ exit
+fi
+
+
+echo " This may take a few minutes ..."
+
+# Check that necessary folders exist.
+if [ ! -d /opt/esru ]; then
+  mkdir /opt/esru
+fi
+if [ ! -d $HOME/bin ]; then
+  mkdir $HOME/bin
+  cp $ISD/link_to $HOME/bin
+  cp $ISD/link_to_bash $HOME/bin
+  chmod a+x $HOME/bin/link_to
+  chmod a+x $HOME/bin/link_to_bash
+  echo "putting link_to script in $HOME/bin"
+else
+  cp $ISD/link_to $HOME/bin
+  cp $ISD/link_to_bash $HOME/bin
+  chmod a+x $HOME/bin/link_to
+  chmod a+x $HOME/bin/link_to_bash
+  echo " putting link_to script in $HOME/bin"
+fi
+  
+cd /opt/esru
+if [[ $which = 'a' ]] ; then
+  echo " Extracting X11 ESP-r distribution ..."
+  zcat $ISD/esp-r_11.11_linux_64bit.tar.gz | tar xf - 
+  $HOME/bin/link_to_bash /opt/esru/esp-r/binX11
+  echo " Extracting ESP-r distribution ...done."
+elif  [[ $which = 'b' ]] ; then
+  echo " Extracting GTK ESP-r distribution ..."
+  zcat $ISD/esp-r_11.11_linux_64bit.tar.gz | tar xf - 
+  $HOME/bin/link_to_bash /opt/esru/esp-r/binGTK
+  echo " Extracting ESP-r distribution ...done."
+elif  [[ $which = 'c' ]] ; then
+  echo " Extracting ESP-r distribution ..."
+  zcat $ISD/esp-r_11.11_linux_64bit.tar.gz | tar xf - 
+  echo " Please run the link_to script to set ESP-r version preference."
+  echo " Extracting ESP-r distribution ...done."
+fi
+echo " "
+echo "Setting folder permissions... "
+chmod a+x /opt/esru
+chmod a+x /opt/esru/esp-r
+chmod a+x /opt/esru/esp-r/bin
+chmod a+r /opt/esru
+chmod a+r /opt/esru/esp-r
+chmod a+r /opt/esru/esp-r/bin
+
+echo "...done. "
+echo -e $DSP4
+
+cd $ISD
+
+echo " "
+echo -n " Please wait while the installer performs cleanup..."
+for i in `ls /opt/esru/esp-r/bin`; do echo -n .; sleep 0.5; done;
+
+echo "  "
+echo "another chance to view the readme text..."
+echo "  "
+more $ISD/esp-r_v11.11_linux_precomp.readme
+
+
+

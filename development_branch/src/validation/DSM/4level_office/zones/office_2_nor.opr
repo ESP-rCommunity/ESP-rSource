@@ -1,0 +1,64 @@
+*Operations 1.0
+*date Sun Jul  2 21:52:25 2006  # latest file modification 
+# operations of office_2_nor defined in: 
+# ../zones/ctl_temp/office_2_nordivz.opr
+Based on 1W/ft^2 lighting (10.76 W/m2) during occupied period and 10% of this during unoccupied. Occupied is 8h00-17h00 M-F. 1 person per 4.646m^2 in office so 26 people in this part of 2nd floor. Ventilation should be 0.00944m^3/person/second.
+# control(no control of air flow  ), low mid & high setpoints 
+   0     0.000     0.000     0.000
+     3   # no Weekday flow periods
+# Wkd: start, stop, infil, ventil, source, data
+   0,  8,    0.500    0.000    0    0.000
+   8, 17,    0.500    2.620   21    0.000
+  17, 24,    0.500    0.000    0    0.000
+     1   # no Saturday flow periods
+# Sat: start, stop, infil, ventil, source, data
+   0, 24,    0.500    0.000    0    0.000
+     1   # no Sunday flow periods 
+# Sun: start, stop, infil, ventil, source, data
+   0, 24,    0.500    0.000    0    0.000
+    26   # no Weekday casual gains 
+# Wkd: type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,   7,      0.0,      0.0, 0.500, 0.500
+    1,   7,   8,    238.5,    119.6, 0.500, 0.500
+    1,   8,   9,   1669.5,    834.4, 0.500, 0.500
+    1,   9,  12,   2385.0,   1192.2, 0.500, 0.500
+    1,  12,  13,   1192.5,    596.1, 0.500, 0.500
+    1,  13,  14,   1669.5,    834.4, 0.500, 0.500
+    1,  14,  16,   2385.0,   1192.2, 0.500, 0.500
+    1,  16,  17,   2027.2,   1013.0, 0.500, 0.500
+    1,  17,  18,   1192.5,    596.1, 0.500, 0.500
+    1,  18,  19,    477.0,    238.2, 0.500, 0.500
+    1,  19,  24,      0.0,      0.0, 0.500, 0.500
+    2,   0,   7,    132.3,      0.0, 0.500, 0.500
+    2,   7,   8,    661.5,      0.0, 0.500, 0.500
+    2,   8,  12,   1323.0,      0.0, 0.500, 0.500
+    2,  12,  13,   1058.4,      0.0, 0.500, 0.500
+    2,  13,  17,   1323.0,      0.0, 0.500, 0.500
+    2,  17,  18,   1058.4,      0.0, 0.500, 0.500
+    2,  18,  19,    661.5,      0.0, 0.500, 0.500
+    2,  19,  24,    132.3,      0.0, 0.500, 0.500
+    3,   0,   7,    496.2,      0.0, 0.500, 0.500
+    3,   7,   8,    595.5,      0.0, 0.500, 0.500
+    3,   8,  12,    942.9,      0.0, 0.500, 0.500
+    3,  12,  13,    992.5,      0.0, 0.500, 0.500
+    3,  13,  18,    942.9,      0.0, 0.500, 0.500
+    3,  18,  19,    794.0,      0.0, 0.500, 0.500
+    3,  19,  24,    496.2,      0.0, 0.500, 0.500
+     9   # no Saturday casual gains 
+# Sat: type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,   9,      0.0,      0.0, 0.500, 0.500
+    1,   9,  12,    477.0,    238.2, 0.500, 0.500
+    1,  12,  24,      0.0,      0.0, 0.500, 0.500
+    2,   0,   9,    132.3,      0.0, 0.500, 0.500
+    2,   9,  12,   1323.0,      0.0, 0.500, 0.500
+    2,  12,  24,    132.3,      0.0, 0.500, 0.500
+    3,   0,   9,    297.8,      0.0, 0.500, 0.500
+    3,   9,  12,    496.2,      0.0, 0.500, 0.500
+    3,  12,  24,    297.8,      0.0, 0.500, 0.500
+     3   # no Sunday casual gains 
+# Sun: type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,  24,      0.0,      0.0, 0.500, 0.500
+    2,   0,  24,    125.9,      0.0, 0.500, 0.500
+    3,   0,  24,    297.5,      0.0, 0.500, 0.500
+# Labels for gain types 
+ Occupt Lights Equipt

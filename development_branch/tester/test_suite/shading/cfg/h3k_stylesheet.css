@@ -1,0 +1,53 @@
+body{
+   font-family: arial, verdana, sans-serif;
+   font-size: small;
+}
+
+table{
+   width: 100%;
+   font-size: 100%;
+   border-spacing: 0px;
+   padding: 0px;
+   border-collapse: collapse;
+}
+
+th {
+   font-weight: bold;
+   padding: 2px 10px 2px 10px;
+}
+
+td { padding: 2px 10px 2px 10px; }
+
+p { width: 80%;
+    font-size: 100%;
+  }
+
+.title {
+
+}
+
+h1 {font-size: 150%;}
+h2 {font-size: 120%;}
+h3 {font-size: 100%;}
+
+.headerRow {
+    background: #AEDEC4;
+    font-weight: bold;
+}
+
+.row {
+    background: #F6F6F6;
+}
+
+.altRow {
+    background: #FFFFFF;
+}
+
+.totalRow {
+    background: #AABBFF;
+    font-weight: bold;
+}
+
+.subtotalRow {
+    background: #D8E0FE;
+}

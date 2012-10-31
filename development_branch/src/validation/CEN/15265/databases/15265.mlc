@@ -1,0 +1,348 @@
+# composite construction db defined in ../databases/15265.mlc
+# based on materials db ../databases/15265.materialdb
+   40     # no of composites 
+# layers  description   optics name   symmetry tag
+    8    Type_n.1      OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   34    0.0400  mat_034 : Outer0em layer
+   21    0.0400  mat_021 : Outer layer
+   21    0.0350  mat_021 : Outer layer
+   22    0.0600  mat_022 : Mineral wool 1
+   23    0.0600  mat_023 : Masonry
+   23    0.0600  mat_023 : Masonry
+   23    0.0550  mat_023 : Masonry
+   24    0.0150  mat_024 : Plaster internal
+# layers  description   optics name   symmetry tag
+    3    Type_n.2      OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+   25    0.0120  mat_025 : Plaster gypsum
+   22    0.1000  mat_022 : Mineral wool 1
+   25    0.0120  mat_025 : Plaster gypsum
+# layers  description   optics name   symmetry tag
+    5    Type_n.3      OPAQ  OPAQUE        Type_n.3-flr  
+# material ref thickness (m) description & air gap R
+   26    0.0040  mat_026 : Covering plastic
+   27    0.0600  mat_027 : Cement floor
+   30    0.0400  mat_030 : Mineral wool 2
+   31    0.0900  mat_031 : Concrete
+   31    0.0900  mat_031 : Concrete
+# layers  description   optics name   symmetry tag
+    8    Type_n.4      OPAQ  OPAQUE        Type_n.4-flr  
+# material ref thickness (m) description & air gap R
+   26    0.0040  mat_026 : Covering plastic
+   27    0.0600  mat_027 : Cement floor
+   30    0.0400  mat_030 : Mineral wool 2
+   31    0.0600  mat_031 : Concrete
+   31    0.0600  mat_031 : Concrete
+   31    0.0600  mat_031 : Concrete
+   30    0.1000  mat_030 : Mineral wool 2
+   28    0.0200  mat_028 : Acoustic board
+# layers  description   optics name   symmetry tag
+    6    Type_n.5      OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   35    0.0040  mat_035 : Rain0em protection
+   30    0.0800  mat_030 : Mineral wool 2
+   31    0.0500  mat_031 : Concrete
+   31    0.0500  mat_031 : Concrete
+   31    0.0500  mat_031 : Concrete
+   31    0.0500  mat_031 : Concrete
+# layers  description   optics name   symmetry tag
+    3    sgl_glz_shd   TRAN  SG_CEN_shd    NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   32    0.0020  mat_032 : 2mm shade
+    0    0.0060  gap  0.080 0.080 0.080
+   33    0.0060  mat_033 : 6mm glass
+# layers  description   optics name   symmetry tag
+    5    dbl_glz_shd   TRAN  DG_CEN_shd    NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   32    0.0020  mat_032 : 2mm shade
+    0    0.0060  gap  0.080 0.080 0.080
+   33    0.0060  mat_033 : 6mm glass
+    0    0.0060  gap  0.170 0.170 0.170
+   33    0.0060  mat_033 : 6mm glass
+# layers  description   optics name   symmetry tag
+    5    Type_n.3-flr  OPAQ  OPAQUE        Type_n.3      
+# material ref thickness (m) description & air gap R
+   31    0.0900  mat_031 : Concrete
+   31    0.0900  mat_031 : Concrete
+   30    0.0400  mat_030 : Mineral wool 2
+   27    0.0600  mat_027 : Cement floor
+   26    0.0040  mat_026 : Covering plastic
+# layers  description   optics name   symmetry tag
+    8    Type_n.4-flr  OPAQ  OPAQUE        Type_n.4      
+# material ref thickness (m) description & air gap R
+   28    0.0200  mat_028 : Acoustic board
+   30    0.1000  mat_030 : Mineral wool 2
+   31    0.0600  mat_031 : Concrete
+   31    0.0600  mat_031 : Concrete
+   31    0.0600  mat_031 : Concrete
+   30    0.0400  mat_030 : Mineral wool 2
+   27    0.0600  mat_027 : Cement floor
+   26    0.0040  mat_026 : Covering plastic
+# layers  description   optics name   symmetry tag
+    8    Type_n.1_0em  OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   34    0.0400  mat_034 : Outer0em layer
+   21    0.0400  mat_021 : Outer layer
+   21    0.0350  mat_021 : Outer layer
+   22    0.0600  mat_022 : Mineral wool 1
+   23    0.0600  mat_023 : Masonry
+   23    0.0600  mat_023 : Masonry
+   23    0.0550  mat_023 : Masonry
+   36    0.0150  mat_036 : Plaster internal_0emiss
+# layers  description   optics name   symmetry tag
+    3    Type_n.2_0em  OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   44    0.0120  mat_044 : Plaster gypsum 0emissivity 06abs
+   22    0.1000  mat_022 : Mineral wool 1
+   37    0.0120  mat_037 : Plaster gypsum 0emissivity
+# layers  description   optics name   symmetry tag
+    5    Type_n.3_0em  OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   45    0.0040  mat_045 : Covering plastic 0 emissivity (copy of mat_039)
+   27    0.0600  mat_027 : Cement floor
+   30    0.0400  mat_030 : Mineral wool 2
+   31    0.0900  mat_031 : Concrete
+   38    0.0900  mat_038 : Concrete 0 emissivity
+# layers  description   optics name   symmetry tag
+    8    Type_n.4_0em  OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   45    0.0040  mat_045 : Covering plastic 0 emissivity (copy of mat_039)
+   27    0.0600  mat_027 : Cement floor
+   30    0.0400  mat_030 : Mineral wool 2
+   31    0.0600  mat_031 : Concrete
+   31    0.0600  mat_031 : Concrete
+   31    0.0600  mat_031 : Concrete
+   30    0.1000  mat_030 : Mineral wool 2
+   40    0.0200  mat_040 : Acoustic board 0 emissivity
+# layers  description   optics name   symmetry tag
+    6    Type_n.5_0em  OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   35    0.0040  mat_035 : Rain0em protection
+   30    0.0800  mat_030 : Mineral wool 2
+   31    0.0500  mat_031 : Concrete
+   31    0.0500  mat_031 : Concrete
+   31    0.0500  mat_031 : Concrete
+   38    0.0500  mat_038 : Concrete 0 emissivity
+# layers  description   optics name   symmetry tag
+    3    sglglzshd_0e  TRAN  SG_CEN_shd    NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   32    0.0020  mat_032 : 2mm shade
+    0    0.0060  gap  0.080 0.080 0.080
+   43    0.0060  mat_043 : 6mm glass 0 emissivity
+# layers  description   optics name   symmetry tag
+    5    dblglzshd_0e  TRAN  DG_CEN_shd    NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   32    0.0020  mat_032 : 2mm shade
+    0    0.0060  gap  0.080 0.080 0.080
+   33    0.0060  mat_033 : 6mm glass
+    0    0.0060  gap  0.170 0.170 0.170
+   43    0.0060  mat_043 : 6mm glass 0 emissivity
+# layers  description   optics name   symmetry tag
+    8    Type_n4fl0em  OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   46    0.0200  mat_046 : Acoustic board 0 emissivity 06absorptovity
+   30    0.1000  mat_030 : Mineral wool 2
+   31    0.0600  mat_031 : Concrete
+   31    0.0600  mat_031 : Concrete
+   31    0.0600  mat_031 : Concrete
+   30    0.0400  mat_030 : Mineral wool 2
+   27    0.0600  mat_027 : Cement floor
+   39    0.0040  mat_039 : Covering plastic 0 emissivity
+# layers  description   optics name   symmetry tag
+    5    Type_n3fl0em  OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   47    0.0900  mat_047 : as mat_38 but 06 absorptivity
+   31    0.0900  mat_031 : Concrete
+   30    0.0400  mat_030 : Mineral wool 2
+   27    0.0600  mat_027 : Cement floor
+   39    0.0040  mat_039 : Covering plastic 0 emissivity
+# layers  description   optics name   symmetry tag
+    3    dblglz_0e     TRAN  DG_15265      NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   32    0.0060  mat_032 : 2mm shade
+    0    0.0060  gap  0.173 0.173 0.173
+   43    0.0060  mat_043 : 6mm glass 0 emissivity
+# layers  description   optics name   symmetry tag
+    5    W5dbglzshd0e  TRAN  DG_15265_shd  NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   32    0.0020  mat_032 : 2mm shade
+    0    0.0060  gap  0.080 0.080 0.080
+   33    0.0060  mat_033 : 6mm glass
+    0    0.0060  gap  0.173 0.173 0.173
+   43    0.0060  mat_043 : 6mm glass 0 emissivity
+# layers  description   optics name   symmetry tag
+    8    T_n2_split0e  OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   44    0.0120  mat_044 : Plaster gypsum 0emissivity 06abs
+   22    0.0200  mat_022 : Mineral wool 1
+   22    0.0150  mat_022 : Mineral wool 1
+   22    0.0200  mat_022 : Mineral wool 1
+   22    0.0100  mat_022 : Mineral wool 1
+   22    0.0200  mat_022 : Mineral wool 1
+   22    0.0150  mat_022 : Mineral wool 1
+   37    0.0120  mat_037 : Plaster gypsum 0emissivity
+# layers  description   optics name   symmetry tag
+    3    T2_0emAbs06   OPAQ  OPAQUE        SYMMETRIC     
+# material ref thickness (m) description & air gap R
+   44    0.0120  mat_044 : Plaster gypsum 0emissivity 06abs
+   22    0.1000  mat_022 : Mineral wool 1
+   44    0.0120  mat_044 : Plaster gypsum 0emissivity 06abs
+# layers  description   optics name   symmetry tag
+    8    T1_0em06abs   OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   34    0.0400  mat_034 : Outer0em layer
+   21    0.0400  mat_021 : Outer layer
+   21    0.0350  mat_021 : Outer layer
+   22    0.0600  mat_022 : Mineral wool 1
+   23    0.0600  mat_023 : Masonry
+   23    0.0600  mat_023 : Masonry
+   23    0.0550  mat_023 : Masonry
+   48    0.0150  mat_048 : as mat_38 but 06 absorptivity (copy of mat_047)
+# layers  description   optics name   symmetry tag
+    8    T4_0em09abso  OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   45    0.0040  mat_045 : Covering plastic 0 emissivity (copy of mat_039)
+   27    0.0600  mat_027 : Cement floor
+   30    0.0400  mat_030 : Mineral wool 2
+   31    0.0600  mat_031 : Concrete
+   31    0.0600  mat_031 : Concrete
+   31    0.0600  mat_031 : Concrete
+   30    0.1000  mat_030 : Mineral wool 2
+   40    0.0200  mat_040 : Acoustic board 0 emissivity
+# layers  description   optics name   symmetry tag
+    3    WISdblglz0em  TRAN  Gunter_DG6    SYMMETRIC     
+# material ref thickness (m) description & air gap R
+   43    0.0040  mat_043 : 6mm glass 0 emissivity
+    0    0.0120  gap  0.173 0.173 0.173
+   43    0.0040  mat_043 : 6mm glass 0 emissivity
+# layers  description   optics name   symmetry tag
+    5    WISdblshd0e   TRAN  Gunt2_shadd   NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   32    0.0020  mat_032 : 2mm shade
+    0    0.0120  gap  0.080 0.080 0.080
+   33    0.0040  mat_033 : 6mm glass
+    0    0.0120  gap  0.173 0.173 0.173
+   43    0.0040  mat_043 : 6mm glass 0 emissivity
+# layers  description   optics name   symmetry tag
+    3    T_n.2_0em0ab  OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   51    0.0120  mat_051 : as mat_44 but abs is 0
+   22    0.1000  mat_022 : Mineral wool 1
+   37    0.0120  mat_037 : Plaster gypsum 0emissivity
+# layers  description   optics name   symmetry tag
+    8    T_n.4_0em0ab  OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   52    0.0040  mat_052 : as mat_45 but abs is 0
+   27    0.0600  mat_027 : Cement floor
+   30    0.0400  mat_030 : Mineral wool 2
+   31    0.0600  mat_031 : Concrete
+   31    0.0600  mat_031 : Concrete
+   31    0.0600  mat_031 : Concrete
+   30    0.1000  mat_030 : Mineral wool 2
+   40    0.0200  mat_040 : Acoustic board 0 emissivity
+# layers  description   optics name   symmetry tag
+    8    T_n4fl0em0ab  OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   53    0.0200  mat_053 : as mat_46 but abs is 0
+   30    0.1000  mat_030 : Mineral wool 2
+   31    0.0600  mat_031 : Concrete
+   31    0.0600  mat_031 : Concrete
+   31    0.0600  mat_031 : Concrete
+   30    0.0400  mat_030 : Mineral wool 2
+   27    0.0600  mat_027 : Cement floor
+   39    0.0040  mat_039 : Covering plastic 0 emissivity
+# layers  description   optics name   symmetry tag
+    5    T_n.3_0em0ab  OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   52    0.0040  mat_052 : as mat_45 but abs is 0
+   27    0.0600  mat_027 : Cement floor
+   30    0.0400  mat_030 : Mineral wool 2
+   31    0.0900  mat_031 : Concrete
+   38    0.0900  mat_038 : Concrete 0 emissivity
+# layers  description   optics name   symmetry tag
+    5    T_n3fl0em0ab  OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   54    0.0900  mat_054 : as mat_47 but 0 absorptivity
+   31    0.0900  mat_031 : Concrete
+   30    0.0400  mat_030 : Mineral wool 2
+   27    0.0600  mat_027 : Cement floor
+   39    0.0040  mat_039 : Covering plastic 0 emissivity
+# layers  description   optics name   symmetry tag
+    3    WISdblglz09e  TRAN  Gunter_DG6    NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   43    0.0040  mat_043 : 6mm glass 0 emissivity
+    0    0.0120  gap  0.173 0.173 0.173
+   55    0.0040  mat_055 : 6mm glass 0.9 emissivity (copy of mat_043)
+# layers  description   optics name   symmetry tag
+    5    WISdblshd09e  TRAN  Gunt2_shadd   NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   32    0.0020  mat_032 : 2mm shade
+    0    0.0120  gap  0.080 0.080 0.080
+   33    0.0040  mat_033 : 6mm glass
+    0    0.0120  gap  0.173 0.173 0.173
+   55    0.0040  mat_055 : 6mm glass 0.9 emissivity (copy of mat_043)
+# layers  description   optics name   symmetry tag
+    3    T_n.2_09em0a  OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   51    0.0120  mat_051 : as mat_44 but abs is 0
+   22    0.1000  mat_022 : Mineral wool 1
+   56    0.0120  mat_056 : Plaster gypsum 0.9emissivity (copy of mat_037)
+# layers  description   optics name   symmetry tag
+    8    T_n.4_09em0a  OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   52    0.0040  mat_052 : as mat_45 but abs is 0
+   27    0.0600  mat_027 : Cement floor
+   30    0.0400  mat_030 : Mineral wool 2
+   31    0.0600  mat_031 : Concrete
+   31    0.0600  mat_031 : Concrete
+   31    0.0600  mat_031 : Concrete
+   30    0.1000  mat_030 : Mineral wool 2
+   57    0.0200  mat_057 : Acoustic board 0.9 emissivity (copy of mat_040)
+# layers  description   optics name   symmetry tag
+    8    T_n4fl09em0a  OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   53    0.0200  mat_053 : as mat_46 but abs is 0
+   30    0.1000  mat_030 : Mineral wool 2
+   31    0.0600  mat_031 : Concrete
+   31    0.0600  mat_031 : Concrete
+   31    0.0600  mat_031 : Concrete
+   30    0.0400  mat_030 : Mineral wool 2
+   27    0.0600  mat_027 : Cement floor
+   59    0.0040  mat_059 : Covering plastic 0.9 emissivity (copy of mat_039)
+# layers  description   optics name   symmetry tag
+    5    T_n.3_09em0a  OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   52    0.0040  mat_052 : as mat_45 but abs is 0
+   27    0.0600  mat_027 : Cement floor
+   30    0.0400  mat_030 : Mineral wool 2
+   31    0.0900  mat_031 : Concrete
+   58    0.0900  mat_058 : Concrete 0.9 emissivity (copy of mat_038)
+# layers  description   optics name   symmetry tag
+    5    T_n3fl09em0a  OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   54    0.0900  mat_054 : as mat_47 but 0 absorptivity
+   31    0.0900  mat_031 : Concrete
+   30    0.0400  mat_030 : Mineral wool 2
+   27    0.0600  mat_027 : Cement floor
+   59    0.0040  mat_059 : Covering plastic 0.9 emissivity (copy of mat_039)
+# layers  description   optics name   symmetry tag
+    8    Typ_n.1_09em  OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   34    0.0400  mat_034 : Outer0em layer
+   21    0.0400  mat_021 : Outer layer
+   21    0.0350  mat_021 : Outer layer
+   22    0.0600  mat_022 : Mineral wool 1
+   23    0.0600  mat_023 : Masonry
+   23    0.0600  mat_023 : Masonry
+   23    0.0550  mat_023 : Masonry
+   61    0.0150  mat_061 : Plaster internal_0emiss
+# layers  description   optics name   symmetry tag
+    6    Typ_n.5_09em  OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+   35    0.0040  mat_035 : Rain0em protection
+   30    0.0800  mat_030 : Mineral wool 2
+   31    0.0500  mat_031 : Concrete
+   31    0.0500  mat_031 : Concrete
+   31    0.0500  mat_031 : Concrete
+   58    0.0500  mat_058 : Concrete 0.9 emissivity (copy of mat_038)

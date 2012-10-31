@@ -1,0 +1,60 @@
+tester/additional_tests/A42_combustion_cogen_comp_tests
+
+This folder contains models used during comparative testing of the Annex 42 
+combustion CHP model. The tests are grouped into 9 series: 
+
+  The 100 series tests exercise the evaluation of fuel compositions,
+    and fuel heating value. To pass the 100 series tests, models must
+    successfully compute the fuel heating value and molar mass for a
+    variety of different fuel compositions.
+
+  The 200 series tests exercise the steady-state performance
+    correlations. To pass the 200~series tests, the models must successfully
+    calculate the steady-state electrical and thermal efficients, and
+    fuel, air and cooling water flow rates.  The models will be exercised
+    over a range of boundary conditions and input configurations.
+
+  The 300 series tests exercise the dynamic thermal mass model. To pass
+    these tests, the thermal mass model must correctly predict the engine
+    control volume temperature, the cooling water control volume
+    temperature, and the heat transfer between these control volumes
+    in response to varying cooling water temperatures, flow rates and
+    operating points.
+
+  The 400 series tests exercise the model's treatment of standby, warm-up
+    and cool-down operation. To pass these tests, the model must correctly
+    predict the unit's progression through the four operating modes, as well
+    as the fuel and energy flows in each mode.
+
+  The 500 series tests exercise the model's treatment of the warm-up
+    period fuel flow and power generation correlations, which are specific
+    to the Stirling engine configuration. To pass these tests, the model
+    must correctly predict the Stirling engine's fuel flow, power and heat
+    generation in response to the temperature of the engine control volume.
+
+  The 600 series tests exercise the model's facility for limiting the rate
+    of change in the system fuel flow and electric output. To pass these
+    tests, the model must correctly predict the rate-limited fuel flow and
+    electrical output in response to varying electrical demand.
+  
+  The 700 series tests exercise the model's low-level controls that protect
+    the unit from overheating when the cooling water temperature is to high,
+    or the flow of the cooling water is interrupted. To pass these tests,
+    the model must correctly predict the unit's response when these
+    conditions are encountered.
+
+  The 800 series tests exercise the model's dimensionless control signal
+    interface. To pass these tests, the model must correctly determine the
+    unit's operating point when regulated by a dimensionless control
+    signal varying between zero and one.
+
+  The 900 series tests exercise the model's emissions calculations. To
+    pass these tests, the model must correctly predict the carbon dioxide
+    emissions produced by the unit in various states of operation.
+
+A complete description of the test cases and the expected results
+is available in: 
+
+  Beausoleil-Morrison, I., and Ferguson, A., editors (2007). 
+    Inter-program Comparative testing and Empirical valication of 
+    Annex 42 Residential cogeneration models. IEA/ECBCS Annex 42.
