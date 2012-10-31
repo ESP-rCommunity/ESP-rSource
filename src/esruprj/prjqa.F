@@ -205,7 +205,7 @@ C Remember if each zone is fully attributed.
       character aok*17,CTLDOC*248,LCTLF*72
       character xfile*144,tg*1,delim*1,head*21
       character outs*124,outs248*248
-      character dstmp*24,mlcname*12
+      character dstmp*24,mlc_name*12
       CHARACTER LAPROB*72,LPNF*72
       CHARACTER NDNAM*12,TOPTIC*12,msg*28,doit*248
       character t16a*16,t16b*16,t16c*16
@@ -216,8 +216,6 @@ C Remember if each zone is fully attributed.
       character tedlbl*20,teditor*20
       character uname*24,pwd*84
       character ipvaction*3  ! signal that external ipv file
-      character MLCSYM*12
-      character MLCN*12,OTF*4,OPT*12 ! for use with prsmlcname
       character lworking*144
 
 C For thermal bridge reporting
@@ -242,7 +240,6 @@ C in the current model. A -1 means not applicable
       integer loutln     ! length of string returned
       integer itrunc     ! to signal truncation
       integer ipos       ! position indicator when calling arlist
-      integer isymindex  ! index of MLC matching each surface
       real ZD           ! depth for ground temp calc
       real grper        ! % length of ground perimeter in a zone
       real xtranper,xskyper,xwallper,xslproofper,xflatroofper,xgrper ! % of project floor area for each
@@ -269,10 +266,12 @@ C in the current model. A -1 means not applicable
       integer im,k,mnulen   ! multi column lines
       integer lr      ! length of model root string
       integer iglib  ! for detecting GTK or X11
+      integer iitrc  ! for passing verbosity
+      integer imlc   ! loop for MLC reporting
       logical odd   ! for display of vertex info
       
       INTEGER :: i,icc,icoth,ie,ieripv,irec,iprb,inv
-      INTEGER :: ins4,ino,imlc,imerr,ilcot,ijk,ij,ii,igrdp
+      INTEGER :: ins4,ino,imerr,ilcot,ijk,ij,ii,igrdp
       INTEGER :: ictlf,iuo,iunit1,iunit,iuf,iub,itu,itru,itrc,itbmenu
       INTEGER :: itb,istat,isc,is,ic,ins1,isel,iz,izo,izc,izz
       INTEGER :: kk,j,l,lnb,lnc,lna,lsn10,lto,lzn10,m,igraphiclib
@@ -340,8 +339,21 @@ C If silent mode then set file name and jump to report generation.
       if(silent)then
         destination=1
         itu = ixunit
-        write(xfile,'(2a)')cfgroot(1:lnblnk(cfgroot)),'.contents'
-        call ctlexp(xfile,ixopen,ixloc,ixunit,'T','QA text',IER)
+
+C Create model QA report in the doc folder if possible. Use similar 
+C pattern to management of lmodellog.
+        lr=lnblnk(cfgroot)
+        if(docpth(1:2).eq.'  '.or.docpth(1:2).eq.'./')then
+          write(lmodelqa,'(2a)') cfgroot(1:lr),'.contents'
+        elseif(docpth(1:3).eq.'../')then
+          write(lmodelqa,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &      cfgroot(1:lr),'.contents'
+        else
+          write(lmodelqa,'(4a)') docpth(1:lnblnk(docpth)),fs,
+     &      cfgroot(1:lr),'.contents'
+        endif
+        write(xfile,'(a)') lmodelqa(1:lnblnk(lmodelqa))
+        call ctldumpt(xfile,ixopen,ixloc,ixunit,'QA text',IER)
         if(ier.eq.-3)then
           destination = 0
           itu = iuout
@@ -979,7 +991,8 @@ C Save the model configuration file to register the report.
 C Copy lmodelqa to xfile so that ctlexp can deal with it.
           write(xfile,'(2a)')lmodelqa(1:lnblnk(lmodelqa))
 
-          call ctlexp(xfile,ixopen,ixloc,ixunit,'T','QA text',IER)
+C          call ctlexp(xfile,ixopen,ixloc,ixunit,'T','QA text',IER)
+          call ctldumpt(xfile,ixopen,ixloc,ixunit,'QA text',IER)
           if(ier.eq.-3)then
             destination = 0
             itu = iuout
@@ -1170,7 +1183,7 @@ C Setup string buffer with distribution weather folder name.
           llclmdb=LCLIM
         elseif(ipathclim.eq.2)then
           write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
-     &      LCLIM(1:lnblnk(LCLIM))
+     &      LCLIM(1:llt)
         endif
 
         call EFOPRAN(ICLIM,llclmdb,144,0,IER)
@@ -1410,7 +1423,7 @@ C the climate file and attempt to print out IPV contents.
                   llclmdb=LCLIM
                 elseif(ipathclim.eq.2)then
                   write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
-     &              LCLIM(1:lnblnk(LCLIM))
+     &              LCLIM(1:llt)
                 endif
                 IUF=IFIL+2
                 call scancdblist(IUF,llclmdb,ok,iercl)
@@ -1827,7 +1840,7 @@ C If there is external glazing or skylights then report.
             call rel16str(wallper(IZZ),t16a,lna,ier)
             call rel16str(uavwall(IZZ),t16b,lnb,ier)
             write(outs,'(3a,F5.3,2a)')' Outside walls are ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        uavwall(IZZ)/areawall(IZZ),' & UA of ',t16b(1:lnb)
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
           endif
@@ -1840,7 +1853,7 @@ C If there is external glazing or skylights then report.
             call rel16str(slproofper(IZZ),t16a,lna,ier)
             call rel16str(uavslproof(IZZ),t16b,lnb,ier)
             write(outs,'(3a,F5.3,2a)')' Sloped roof is ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        uavslproof(IZZ)/areaslproof(IZZ),' & UA of ',
      &        t16b(1:lnb)
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
@@ -1854,7 +1867,7 @@ C If there is external glazing or skylights then report.
             call rel16str(flatroofper(IZZ),t16a,lna,ier)
             call rel16str(uavfltroof(IZZ),t16b,lnb,ier)
             write(outs,'(3a,F5.3,2a)')' Flat roof is ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        uavfltroof(IZZ)/areafltroof(IZZ),' & UA of ',
      &        t16b(1:lnb)
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
@@ -1871,7 +1884,7 @@ C If there is external glazing or skylights then report.
             call rel16str(uavgtran(IZZ),t16c,lnc,ier)
             write(outs,'(5a,F5.3,2a)')
      &        ' Glazing is ',t16a(1:lna),' % of floor & ',t16b(1:lnb),
-     &        ' % facade with avg U of ',
+     &        ' % facade with average U of ',
      &        uavgtran(IZZ)/areatran(IZZ),' & UA of ',t16c(1:lnc)
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
           endif
@@ -1884,7 +1897,7 @@ C If there is external glazing or skylights then report.
             call rel16str(skyper(IZZ),t16a,lna,ier)
             call rel16str(uavgsky(IZZ),t16b,lnb,ier)
             write(outs,'(3a,F5.3,2a)')' Skylights are ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        uavgsky(IZZ)/areaskylt(IZZ),' & UA of ',t16b(1:lnb)
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
           endif
@@ -1898,7 +1911,7 @@ C If there is external glazing or skylights then report.
             plen=bridgelen(IZZ,2)+bridgelen(IZZ,10)  ! tb length std and metal facade
             call rel16str(plen,t16b,lnb,ier)
             write(outs,'(3a,F5.3,2a)')' Ground contact is ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        uavground(IZZ)/areaground(IZZ),' & perimeter ',
      &        t16b(1:lnb)
             if(attribok(IVALS(IZ)))call edisp(itu,outs)
@@ -2239,10 +2252,9 @@ C While looping check that constructions of partitions are matching.
           write(SN,'(a12)')SSNAME(icc)
           if(showother.and.icoth.ne.0.and.ssmlcindex(icc).ne.0)then
             ii=ssmlcindex(icc)
-            call parsemlcdesc(DESC(ii),MLCN,OTF,OPT,MLCSYM,isymindex)
-            if(MLCSYM(1:9).EQ.'SYMMETRIC')then
+            if(mlcsymetric(ii)(1:9).EQ.'SYMMETRIC')then
               continue
-            elseif(MLCSYM(1:12).EQ.'NONSYMMETRIC')then
+            elseif(mlcsymetric(ii).EQ.'NONSYMMETRIC')then
 
 C If the current construction is nonsymmetric then it should not be
 C used for a partition (and db does not have a linked MLC - inform the user.
@@ -2376,7 +2388,7 @@ C if the zones are fully attributed.
             call rel16str(xwallper,t16a,lna,ier)
             call rel16str(xuavwall,t16b,lnb,ier)
             write(outs,'(3a,F5.3,3a,F5.3)')' Outside walls are ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        xuavwall/xareawall,' & UA of ',t16b(1:lnb),
      &        ' & max MLC thickness ',xvthk
             call edisp(itu,outs)
@@ -2386,7 +2398,7 @@ C if the zones are fully attributed.
             call rel16str(xslproofper,t16a,lna,ier)
             call rel16str(xuavslproof,t16b,lnb,ier)
             write(outs,'(3a,F5.3,2a)')' Sloped roof is ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        xuavslproof/xareaslproof,' & UA of ',t16b(1:lnb)
             call edisp(itu,outs)
           endif
@@ -2395,7 +2407,7 @@ C if the zones are fully attributed.
             call rel16str(xflatroofper,t16a,lna,ier)
             call rel16str(xuavfltroof,t16b,lnb,ier)
             write(outs,'(3a,F5.3,2a)')' Flat roof is ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        xuavfltroof/xareafltroof,' & UA of ',t16b(1:lnb)
             call edisp(itu,outs)
           endif
@@ -2407,7 +2419,7 @@ C if the zones are fully attributed.
             call rel16str(xuavgtran,t16c,lnc,ier)
             write(outs,'(5a,F5.3,2a)')
      &        ' Glazing is ',t16a(1:lna),' % of floor & ',t16b(1:lnb),
-     &        ' % facade with avg U of ',
+     &        ' % facade with average U of ',
      &        xuavgtran/xareatran,' & UA of ',t16c(1:lnc)
             call edisp(itu,outs)
           endif
@@ -2416,7 +2428,7 @@ C if the zones are fully attributed.
             call rel16str(xskyper,t16a,lna,ier)
             call rel16str(xuavgsky,t16b,lnb,ier)
             write(outs,'(3a,F5.3,2a)')' Skylights are ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        xuavgsky/xareaskylt,' & UA of ',t16b(1:lnb)
             call edisp(itu,outs)
           endif
@@ -2426,7 +2438,7 @@ C if the zones are fully attributed.
             call rel16str(xgrper,t16a,lna,ier)
             call rel16str(xperimlength,t16b,lnb,ier)
             write(outs,'(3a,F5.3,3a,F5.3)')' Ground contact is ',
-     &        t16a(1:lna),' % of floor area & avg U of ',
+     &        t16a(1:lna),' % of floor area & average U of ',
      &        foundUv,' & perimeter ',t16b(1:lnb),
      &        ' & max MLC thickness ',xfndthkg
             call edisp(itu,outs)
@@ -2459,35 +2471,42 @@ C set to 'verbose all' then include all of them.
         WRITE(outs,240)
         call edisp(itu,outs)
         call edisp(itu,' Multi-layer constructions used:')
+        write(6,*) 'nmlc is ',nmlc,databaseinfo
         do 342 imlc=1,nmlc
           found=.false.
-          mlcname=DESC(imlc)(1:12)
-          call mlcrefs(mlcname,areamlc,tareamlc,found)
+          mlc_name=DESC(imlc)(1:12)
+          call mlcrefs(mlc_name,areamlc,tareamlc,found)
           if(found)then
             if(databaseinfo.eq.2)then
-              call etmldb(2,itu,imlc,imerr)
+              iitrc=2
+              call etmldb(iitrc,itu,imlc,imerr)
             endif
             write(outs,'(3a,F9.2)') ' Total area of ',
-     &        mlcname(1:lnblnk(mlcname)),' is ',tareamlc
+     &        mlc_name(1:lnblnk(mlc_name)),' is ',tareamlc
             call edisp(itu,outs)
           else
             if(databaseinfo.eq.3)then
-              call etmldb(2,itu,imlc,imerr)
+              iitrc=2
+              call etmldb(iitrc,itu,imlc,imerr)
               write(outs,'(3a)') ' Total area of ',
-     &          mlcname(1:lnblnk(mlcname)),' is zero (not referenced)'
+     &          mlc_name(1:lnblnk(mlc_name)),' is zero (not referenced)'
               call edisp(itu,outs)
             endif
           endif
   342   continue
       endif
 
-C If writing to file call ctlexp to close it and switch back to text feedback.
+C If writing to file call ctldumpt to close it and switch back to text feedback.
       if(destination.eq.1)then
-        call ctlexp(xfile,ixopen,ixloc,ixunit,'T','geom text',IER)
+        call ctldumpt(xfile,ixopen,ixloc,ixunit,'QA text',IER)
         destination=0
-        call edisp(iuout,
-     &    'The new QA file can be edited via the `edit file` option.')
-        call edisp(iuout,' ')
+        if(silent)then
+          continue
+        else
+          call edisp(iuout,
+     &     'The new QA file can be edited via the `edit file` option.')
+          call edisp(iuout,' ')
+        endif
       endif
 
 C If in silent model return without user intervention.
@@ -2617,7 +2636,7 @@ C for this to happen.
             llclmdb=LCLIM
           elseif(ipathclim.eq.2)then
             write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
-     &        LCLIM(1:lnblnk(LCLIM))
+     &        LCLIM(1:llt)
           endif
           call scancdblist(IUF,llclmdb,ok,iercl)
           if(iercl.eq.0)then
@@ -2855,7 +2874,7 @@ C file and then include seasonal tokens in the model.
                 llclmdb=LCLIM
               elseif(ipathclim.eq.2)then
                 write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
-     &            LCLIM(1:lnblnk(LCLIM))
+     &            LCLIM(1:llt)
               endif
               call scancdblist(IUF,llclmdb,ok,iercl)
               if(iercl.eq.0)then

@@ -1,7 +1,0 @@
-#
-# HVAC input file for the CCHT house from HOT2000 inputs
-#
-1 0.0                                    # number of HVAC systems
-1 1 2                                    # furnace; primary/secondary; number of zones served
-8 2 1 0.6 2 0.4 0. 0.70 1 0. 0. 0  # type; fuel; zones; cap; eff; fan op; fan pwr; pilot; duct
-

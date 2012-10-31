@@ -851,7 +851,10 @@ C update menu text
       ELSEIF (Ino.eq.6.and.IcalType.eq.2)then
 
         NZG = 0
-C Display the composites list.
+C Display the constructons list.
+
+C << needs to be converted to material.h >>
+
         CALL CompoList
         IF (NComPik .EQ. 0) THEN
           CALL USRMSG(' No Composite has been selected.',' ','-')

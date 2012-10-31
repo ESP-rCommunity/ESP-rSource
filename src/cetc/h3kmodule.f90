@@ -75,7 +75,7 @@ MODULE h3kmodule
       logical*1      :: Enabled !Variable requested or not, populated by c++
    End Type ReportVariable
 
-   SAVE
+ SAVE
    !Used by h3kstore.F
    Type(ReportVariable) :: rvPlantPumpElec
 
@@ -100,7 +100,7 @@ MODULE h3kmodule
          rvInsolationAdverse, rvInternalGainsTotal, rvInternalGainsUseful, &
          rvInternalGainsAdverse, rvBuildingAllZonesSuppliedEnergyHeating, &
          rvBuildingAllZonesSuppliedEnergyCooling, rvBuildingAllZonesSuppliedEnergyNetFlux, &
-         rvFreeCoolingDelivered , rvNodeTemp
+         rvNodeTemp
    Type(ReportVariable) :: rvBuildingAllZonesInsolationTotal, rvBuildingAllZonesInsolationUseful, &
          rvBuildingAllZonesInsolationAdverse, rvBuildingAllZonesEnvelopeWindowsHeatLoss, &
          rvBuildingAllZonesEnvelopeWallsHeatLoss, rvBuildingAllZonesEnvelopeFloorsHeatLoss, &
@@ -120,8 +120,7 @@ MODULE h3kmodule
          rvClimateSolarDiffuseHorizontalRadiation, rvClimateSolarDirectNormalRadiation, &
          rvClimateDryBulbTemperature, rvClimateRelativeHumidity, rvClimateWindVelocity, &
          rvClimateWindDirection, rvClimateCloudCover, rvClimateSkyTemperature, &
-         rvClimateSkyTemperatureDepression, rvClimateAmbientAirTsat, &
-         rvBuildingAllZonesFreeCooling
+         rvClimateSkyTemperatureDepression, rvClimateAmbientAirTsat
    Type(ReportVariable) :: rvBuildingTimePresent, rvBuildingTimeFuture,rvBuildingHourPresent, &
          rvBuildingHourFuture,rvBuildingDayNumberPresent, rvBuildingDayNumberFuture,&
          rvBuildingYearPresent,rvBuildingYearFuture, rvBuildingDayPresent,rvBuildingMonth, &
@@ -152,8 +151,7 @@ MODULE h3kmodule
          rvTFuelAllEndEnergyContPropane,rvTFuelAllEndEnergyContMixWood,rvTFuelAllEndEnergyContHardWood, &
          rvTFuelAllEndEnergyContSoftWood,rvTFuelAllEndEnergyContPellets, &
          rvTFuelQty,rvTFuelQtyElec,rvTFuelQtyNatGas,rvTFuelQtyOil,rvTFuelQtyProp, &
-         rvTFuelQtyMixWood,rvTFuelQtyHardWood,rvTFuelQtySoftWood,rvTFuelQtyPellets, &
-         rvTEnergyQty
+         rvTFuelQtyMixWood,rvTFuelQtyHardWood,rvTFuelQtySoftWood,rvTFuelQtyPellets
 
    !Used by Solar.F
    Type(ReportVariable) :: rvBuildingGroundReflectivity,rvClimateSnownDepth
@@ -448,12 +446,6 @@ CONTAINS
       rvSuppliedEnergyCooling%Description = 'Zone net heat extraction'
       Call AddVariable(rvSuppliedEnergyCooling )
 
-      rvFreeCoolingDelivered%VariableName = 'building/zone_*/free_cooling/'
-      rvFreeCoolingDelivered%MetaType = 'units'
-      rvFreeCoolingDelivered%VariableType = '(W)'
-      rvFreeCoolingDelivered%Description = 'Free cooling delivered to zone '
-      Call AddVariable(rvFreeCoolingDelivered )
-      
       rvSuppliedEnergyNetPerm2%VariableName = 'building/zone_*/supplied_energy/net_Perm2'
       rvSuppliedEnergyNetPerm2%MetaType = 'units'
       rvSuppliedEnergyNetPerm2%VariableType = '(W/m2)'
@@ -712,12 +704,6 @@ CONTAINS
       rvBuildingAllZonesSuppliedEnergyCooling%Description = 'Total amount of cooling supplied to the building (all zones).'
       Call AddVariable(rvBuildingAllZonesSuppliedEnergyCooling )
 
-      rvBuildingAllZonesFreeCooling%VariableName = 'building/all_zones/free_cooling'
-      rvBuildingAllZonesFreeCooling%MetaType = 'units'
-      rvBuildingAllZonesFreeCooling%VariableType = '(W)'
-      rvBuildingAllZonesFreeCooling%Description = 'Free cooling used in building (all zones).'
-      Call AddVariable(rvBuildingAllZonesSuppliedEnergyCooling )      
-      
       rvBuildingAllZonesSuppliedEnergyNetFlux%VariableName = 'building/all_zones/supplied_energy/net_flux'
       rvBuildingAllZonesSuppliedEnergyNetFlux%MetaType = 'units'
       rvBuildingAllZonesSuppliedEnergyNetFlux%VariableType = '(W)'
@@ -1435,13 +1421,6 @@ CONTAINS
       rvTFuelQty%Description = '*** Description not defined ***'
       Call AddVariable(rvTFuelQty)
 
-      rvTEnergyQty%VariableName = 'total_fuel_use/test/*/*/energy_content'
-      rvTEnergyQty%MetaType = 'units'
-      rvTEnergyQty%VariableType = '(W)'
-      rvTEnergyQty%Description = 'Energy content of fuel used on site'
-      Call AddVariable(rvTEnergyQty)      
-      
-      
       !Claude - the following 8 variable's description differs from the original reporting
       rvTFuelQtyElec%VariableName = 'total_fuel_use/electricity/*/quantity'
       rvTFuelQtyElec%MetaType = 'units'
@@ -4016,7 +3995,7 @@ CONTAINS
       rvpltCosimAirPointCasualGains%Description = ''
       Call AddVariable(rvpltCosimAirPointCasualGains)
 
-      End Subroutine UpdateH3kReport
+End Subroutine UpdateH3kReport
 
 
    ! ********************************************************************

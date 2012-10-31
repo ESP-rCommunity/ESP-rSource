@@ -1,4 +1,0 @@
-#?RADIANCE
-oconv 1Cou.sky 1Cou.mat 1Cou-out.rad- 1Cou-in.rad 1Cou-glz.rad
-FORMAT=Radiance_octree
-

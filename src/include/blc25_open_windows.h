@@ -22,22 +22,3 @@ C Named constants
      &            iAIM2model   = 1, 
      &            iOPRschedule = 2,      
      &            iFlowNetwork = 3 )
-
-C-----------------------------------------------------------------------
-C This common is only relevant to blc01_extended, a simple free cooling
-C controller. 
-C-----------------------------------------------------------------------
-C Parameters for free cooling component of BCL01
-      common /blc01/ bFreeCoolCtl, fFreeCoolDelivered
-      logical bFreeCoolCtl(mcom)
-      real fFreeCoolDelivered(mcom)
-                                    
-C Named constants
-      real fMinDelTFreeCool         ! Minimum allowed temperature difference between indoor and outdoor temp
-                                    ! to prevent excessive infiltration conductance values for free cooling. 
-                                    
-      parameter ( fMinDelTFreeCool = 2.0)
-      
-      real fCondFreeCool(mcom)      ! Conductivity assoc. with 
-                                    ! free-cooling
-

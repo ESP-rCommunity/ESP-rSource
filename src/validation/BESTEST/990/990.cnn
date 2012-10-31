@@ -1,5 +1,5 @@
-*connections  for 990
-*Date Thu Oct 15 08:50:44 2009
+*connections for 990
+*Date Wed Aug 29 13:18:13 2012
      10   # number of connections
    1   1   4   0   1  #    1 S-Ground in 990 >|< user def ground profile 1
    1   2   4   0   1  #    2 E-Ground in 990 >|< user def ground profile 1

@@ -447,7 +447,7 @@ C into account the value of ireportunit.
      &             IGETNO(IL,1).eq.10.or.IGETNO(IL,1).eq.30.or.
      &             IGETNO(IL,1).eq.31.or.IGETNO(IL,1).eq.32.or.
      &             IGETNO(IL,1).eq.33) then
-                  if(ireportunit.eq.0.or.ireportunit.eq.3)then
+                  if(ireportunit.eq.0.or.ireportunit.eq.2)then
                     unit='(kW)'
                   else
                     unit='(W)'

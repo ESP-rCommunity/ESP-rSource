@@ -1033,6 +1033,9 @@ C Otherwise select the zones from a list of zone names.
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C <<Jon : allowing *Select all surface allow only one pik for the moment (Max.: NMLC)
+
+C << convert to use mlcname and mlctype...>>
+
       INPIC=NMLC
       CALL EPICKS(INPIC,IVALZ,' ',' Which composites to include:',
      &  48,NMLC,Desc,' Composite(s) list',IDerr,nbhelp)

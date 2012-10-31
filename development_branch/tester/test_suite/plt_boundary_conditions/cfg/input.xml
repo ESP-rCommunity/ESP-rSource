@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<configuration>
-	<hierarchy>tree</hierarchy>
-	<dump_all_data>true</dump_all_data>
-	<time_step_averaging>false</time_step_averaging>
-
-</configuration>

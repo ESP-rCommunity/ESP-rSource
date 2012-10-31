@@ -141,7 +141,7 @@ C Error subroutine and error details for dll mode.
       CHARACTER tmpvfc*4,tmpsot*32,tother*15
       character ZN*12,phrase*64,outs*124,outs2*124
       character dllsubr*12,dllmesg*124
-      character OTF*4,OPT*12 ! for use with parsemlcdesc
+      character OPT*32 ! for use with surface attributes
       logical dll,checkbase
       logical havec24
       real XO1,YO1,ZO1,DX1,DY1,DZ1 ! to prevent name clash with geometry.h
@@ -537,7 +537,7 @@ C 1st item - surface number ISN,
 C 2nd item - 12 char name SNAME()
 C 3rd item is a string (32 char) indicating whether the surface is
 C     OPAQ/OPAQAUE (opaque) TRAN/optical set name or CFC. 
-C 4th item SOTF() is a string (4 char) indicating whether the surface 
+C 4th item is a string (4 char) indicating whether the surface 
 C     is to be counted as a FLOR (floor), VERT (wall), CEIL (ceiling).
 C 5th item is the name of the construction ( 32 char).
 C 6th item is a 24*3 char string indicating the environment faced by the
@@ -690,12 +690,9 @@ C Check if there is a matching MLC name for given construction and which one it 
         ICF=-1
         if(NMLC.gt.0)then                
           lstr=lnblnk(SMLCN(ISN))
+          lnmlc=lnblnk(mlcname(ic))
           DO 20 IC=1,NMLC
-            if(lstr.lt.12)then
-              IF(DESC(IC)(1:lstr).EQ.SMLCN(ISN)(1:lstr))ICF=IC
-            else
-              IF(DESC(IC)(1:12).EQ.SMLCN(ISN)(1:12))ICF=IC
-            endif
+            if(mlcname(ic)(1:lnmlc).EQ.SMLCN(ISN)(1:lstr))ICF=IC
   20      CONTINUE
         endif
         
@@ -706,6 +703,8 @@ C Check if there is a matching MLC name for given construction and which one it 
 
           endif
         endif
+
+C << this block of code to be updated to use material.h commons >>
 
 C Now that we know the construction try and work out the optics.
         TMPSOT_Value: if(tmpsot(1:4).eq.'OPAQ')then
@@ -721,15 +720,7 @@ C If there is a matching MLC entry attempt to discover
 C the name of the optical property. Otherwise leave SOFT as TRAN
           NMLC_GT_0: if(NMLC.gt.0)then                
             ICF_GT_0: if(ICF.gt.0)then
-              OPT=' '
-              WRITE(OTF,'(A)') DESC(ICF)(15:18)
-              IF(OTF.EQ.' ')OTF='OPAQ'
-              IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
-                WRITE(OPT,'(A)') DESC(ICF)(21:32)
-                IF(OPT.EQ.' ')OPT='UNKNOWN'
-              ELSE
-                OPT='OPAQUE'
-              ENDIF
+              write(OPT,'(a)') mlcoptical(ICF)
 
             else
 
@@ -1438,8 +1429,7 @@ C GS7/GS8 are defined in geometry.h
       character ZN*12,phrase*64,outs*124,outs2*124
       character dllsubr*12,dllmesg*124,loutstr*248
       character dstmp*24
-      character OTF*4,OPT*12 ! for use with parsemlcdesc
-      character MLCN*12      ! local string for comparison
+      character OPT*32 ! for use with optical attributes
       logical dll,checkbase
       logical havec24
       logical optcorrected   ! set to true if optics corrected
@@ -1737,7 +1727,7 @@ C (3) child of (name of surface, otherwise a -)
 C (4-5) useage: a pair of tags for code complience and to assist with air
 C  flow network creation. A full description is at the top of this source
 C  file.
-C (6) construction name (from MLC database, (tbd allow spaces))
+C (6) construction name (from MLC database)
 C (7) optical name (OPAQUE or the name of the optical set name, (tbd allow spaces))
 C (8-10) boundary condition (including indices from cnn file):
 C   ANOTHER, i index of zone, j index of surface in that zone
@@ -1796,13 +1786,8 @@ C Because many names may start similarly, check against actual widths.
             if(NMLC.gt.0)then                
               lstrs=lnblnk(SMLCN(NS))  ! surface attribute length
               DO 20 IC=1,NMLC
-                WRITE(MLCN,'(A)')DESC(IC)(1:12)  ! the first 12 char of desc
-                lstrd=lnblnk(MLCN)    ! mlc name length
-                if(lstrs.le.12)then
-                  IF(DESC(IC)(1:lstrd).EQ.SMLCN(NS)(1:lstrs))ICF=IC
-                else
-                  IF(DESC(IC)(1:12).EQ.SMLCN(NS)(1:12))ICF=IC
-                endif
+                lstrd=lnblnk(mlcname(ic))
+                if(mlcname(ic)(1:lstrd).EQ.SMLCN(NS)(1:lstrs))ICF=IC
   20          CONTINUE
             endif
 
@@ -1830,18 +1815,9 @@ C If the construction database has been scanned then attempt to discover
 C the name of the optical property. Otherwise leave SOFT as TRAN
               if(NMLC.gt.0)then
 
-C Use logic similar to parsemlcdesc to find the optical name within
-C the constructions database.
+C Find the optical name within the common constructions file.
                 if(ICF.gt.0)then
-                  OPT=' '
-                  WRITE(OTF,'(A)') DESC(ICF)(15:18)
-                  IF(OTF.EQ.' ')OTF='OPAQ'
-                  IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
-                    WRITE(OPT,'(A)') DESC(ICF)(21:32)
-                    IF(OPT.EQ.' ')OPT='UNKNOWN'
-                  ELSE
-                    OPT='OPAQUE'
-                  ENDIF
+                  write(OPT,'(a)') mlcoptical(ICF)
                 else
                   OPT='OPAQUE'
                 endif
@@ -1858,7 +1834,7 @@ C with the construction (TRAN is an ok mis-match).
                     else
 		      write(outs,*) 'Optics ',WORD(1:lnow),
      &                ' in geo file does not match optics of the MLC ',
-     &                  DESC(ICF)(1:12),' ',OPT(1:lno)
+     &                  mlcname(ICF)(1:12),' ',OPT(1:lno)
                       call edisp(iuout,outs)
                       optcorrected=.true.
                     endif

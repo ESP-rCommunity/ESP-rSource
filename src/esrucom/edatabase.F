@@ -23,10 +23,10 @@ C reading and reporting ESP-r databases and contains the following:
 
 C  ERMLDB:  Read an ASCII composite db and return data via block MLC.
 C  parsemlcdesc: Parse the DESC string from the MLC common block
+C  matchmlcdesc: parse string (DES) and see if it matches a MLC
 C  ETMLDB:  Provides reporting on current description of a composite.
 C  ETMLDBU returns U value of construction based on contents of common MLC.
 C  EPKMLC:  Select a composite construction with display of details.
-C  ERPCDB:  Reads one element from a binary materials db.
 C  EMKAMLD: Creates an ascii composite constr db based on common MLC.
 C  EROPTDB: Returns optical properties for TMC.
 C  EDWINO:  Allow user to select a glazing type by name.
@@ -60,7 +60,7 @@ C espriou.h provides currentfile.
       logical closemat1,closemat2,close4
       logical unixok
 
-      CHARACTER OUTSTR*124,NAM*72,H*72,outs*124,outs248*248
+      CHARACTER OUTSTR*124,NAM*72,H*72,outs*124
       CHARACTER RSTR*124
       CHARACTER WORD*20,MLCN*12,OTF*4,OPT*12,MLCSYM*12
       character lworking*144,fs*1
@@ -68,7 +68,7 @@ C espriou.h provides currentfile.
       integer ier
       integer ileghope  ! for legacy record
       integer matarrayindex  ! for materials array index
-      integer lex       ! lenght of string
+      integer lex,lnt32,lnsym,lnmlcn     ! lenght of string
 
 C Note that the text which follows the thickness of the layer
 C is extracted from the materials database and should not
@@ -91,99 +91,22 @@ C Set folder separator (fs) to \ or / as required.
 C If materials database not opened it should have been opened
 C prior to this call and matdbok would be false if it
 C had been previously opened and failed.
-
-C << what if logic returned an error state rather than trying
-C << to sort out the materials internal to this subroutine??
-C << also - how about assuming that the materials file is an
-C << ASCII file rather than a binary file first.
-
       IF(.NOT.MATDBOK)THEN
         IER=0
 
-C Check the value of whichdbpath variable to see what to do with
-C this file. If local or absolute path then use efopseq. If in
-C the standard location then create lworking which has path
-C prepended.
-        if(ipathmat.eq.0.or.ipathmat.eq.1)then
-          ier=0
-          call EFOPRAN(IFMAT,LFMAT,40,1,IER)
-          if(ier.ne.0)then
-            write(outs248,'(3a)') ' No materials db ',
-     &        LFMAT(1:lnblnk(LFMAT)),' found!'
-            call edisp248(iuout,outs248,100)
-            MATDBOK=.FALSE.
-            ier=2    ! set error state so calling code will look for ascii version.
-            return
-          endif
-        elseif(ipathmat.eq.2)then
-          lndbp=lnblnk(standarddbpath)
-          write(lworking,'(3a)') standarddbpath(1:lndbp),fs,
-     &      LFMAT(1:lnblnk(LFMAT))
-
-C Debug.
-C          write(6,*) 'working materials ',lworking
-          ier=0
-          call EFOPRAN(IFMAT,lworking,40,1,IER)
-          if(ier.ne.0)then
-            write(outs,'(3a)') ' No materials db ',
-     &        lworking(1:lnblnk(lworking)),' found!'
-            call edisp(iuout,outs)
-            MATDBOK=.FALSE.
-            ier=2    ! set error state so calling code will look for ascii version.
-            return
-          endif
-        endif
-        IF(ier.eq.0)THEN
-
-C Also check to see if the file has correct info in 
-          IREC=601
-          READ(IFMAT,REC=IREC,IOSTAT=IOS,ERR=1000)NCLASS
-          if(NCLASS.LE.0)then
-            goto 1000   ! no classifications so try alternatives
-          else
-            MATDBOK=.TRUE.
-            matver = 0.0
-            goto 139  !  a binary file found so carry on.
-          endif
- 1000     if(IOS.eq.2)then
-            call edisp(iuout, 
-     &        'ERMLDB: permission issue reading material classes.')
-            CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-          else
-            CALL ERPFREE(IFMAT,ISTAT)  ! if a read error look at alternatives.
-          endif
-          call rascimat(IFMAT,LFMAT,IER)  ! try current ascii format
-          if(ier.eq.-2)then
-            ier=0
-            call rlegacymat(IFMAT,LFMAT,ier)  ! try older ascii format
-            if(ier.ne.0)then
-              call usrmsg('No readable materials database was found so',
-     &                    'constructions database not reported.','W')
-              MATDBOK=.FALSE.
-              IER=1
-              return
-            else
-              call eclose(matver,1.1,0.001,closemat1)
-              call eclose(matver,1.2,0.001,closemat2)
-              if(closemat1.or.closemat2)then
-                call edisp(iuout,' Filled material data arrays...')
-                MATDBOK=.TRUE.
-              else
-                call usrmsg(
-     &            'No readable material database was found. ',
-     &            'so constructions database not reported.','W')
-                MATDBOK=.FALSE.
-                IER=1
-                return
-              endif
-            endif
-          endif
+C Scan the materials (either binary or ascii) file data into materials
+C commons and if this was sucessful and matver was set to 1.2 then
+C we can carry on using the materials common blocks for subsequent access.
+        call scananymat(ier)
+        if(ier.ne.0)then
+          call usrmsg('No readable materials file was found so',
+     &                'constructions attributes could be at risk.','W')
         endif
       ENDIF
 
 C Find version of materials database, if neither closemat1 or closemat2
 C is true then the material arrays could be problematic.
- 139  call eclose(matver,1.1,0.01,closemat1)
+      call eclose(matver,1.1,0.01,closemat1)
       call eclose(matver,1.2,0.01,closemat2)
       if(closemat1.or.closemat2)then
         continue
@@ -224,6 +147,22 @@ C the number of layers & construction name.
         RETURN
       ENDIF
 
+C Fill the MLC commons.
+      mlcver = 0     ! constructions version (short names)
+      write(mlcdbdoc,'(a)')
+     &  'These constructions have not yet been documented.'
+      mlccats=1      ! put everything in one category
+      write(mlccatname(1),'(a)') 'general constructions'
+      write(mlccatdoc(1),'(2a)')
+     &  'Category general constructions includes all of the ',
+     &  'MLC constructions in the file.'
+      mlcdbitems=NMLC      ! remember how many items
+      mlccatitems(1)=NMLC  ! put all in one category
+
+C Get and set date stamp for the MLC arrays (since legacy file does not
+C include this information.
+      call dstamp(mlcdbdate)
+
 C Loop to get all of the declaired constructions. Note if there
 C are fewer items then an EOF error state might give a clue. EOF
 C is 2 and set ier=3.
@@ -240,9 +179,9 @@ C Set MLC thickness to zero.
         THKMLC(I) =0.0
 
         K=0
-        CALL EGETWI(OUTSTR,K,LAYERS(I),1,MMLC,'F','layrs',IER)
+        CALL EGETWI(OUTSTR,K,LAYERS(I),1,MMLC,'F','mlc layers',IER)
 
-C Anything after nb of layers is the description (which is overloaded
+C Anything after number of layers is the description (which is overloaded
 C to include information on optical properties and either the name
 C of a MLC with inverted layers or the keywords SYMMETRIC or NONSYMMERTIC).
         CALL EGETRM(OUTSTR,K,RSTR,'W','layer description',IER)
@@ -250,12 +189,49 @@ C of a MLC with inverted layers or the keywords SYMMETRIC or NONSYMMERTIC).
         IF(IER.NE.0)GOTO 99
 
 C Parse the DESC string into string tokens.
+
+C << when references to DESC removed this structure can be removed. >>
+
         call parsemlcdesc(DESC(I),MLCN,OTF,OPT,MLCSYM,isymindex)
+
+C Also fill the MLC common blocks.
+        mlcoptical(I)=' '
+        mlcsymetric(I)=' '
+        matsymindex(I)=0   ! not yet known 
+        mlccatindex(I)= 1  ! only one class for now  
+        WRITE(MLCN,'(A)')DESC(I)(1:12)
+        WRITE(mlcname(I),'(A)')DESC(I)(1:12)
+        WRITE(mlcdoc(I),'(2A)')DESC(I)(1:12),' is a ...'
+        WRITE(mlctype(I),'(A)') DESC(I)(15:18)
+        IF(mlctype(I).EQ.'  ') mlctype(I)='OPAQ'
+        IF(mlctype(I)(1:4).NE.'OPAQ'.AND.mlctype(I)(1:4).NE.'CFC ')THEN
+          WRITE(mlcoptical(I),'(A)') DESC(I)(21:32)
+          IF(mlcoptical(I)(1:2).EQ.'  ') mlcoptical(I)='UNKNOWN'
+        ELSEIF(mlctype(I)(1:4).EQ.'CFC ')THEN
+          mlcoptical(I)='USE GSLedit'
+        ELSE
+          mlcoptical(I)='OPAQUE'
+        ENDIF
+
+C Read tag for name of inverted version or symmetry if the length of the
+C DESC string could hold the tag, otherwise set mlcsymetric to a blank.
+        if(lnblnk(DESC(I)).gt.35)then
+          WRITE(mlcsymetric(I),'(A)') DESC(I)(35:46)
+        else
+          mlcsymetric(I)='  '
+          matsymindex(I)=0   ! signal not applicable     
+        endif
+
+C Debug.
+C        write(6,*) 'mlc index name doc ',i,mlcname(i),' : ',
+C     &    mlcdoc(i)(1:lnblnk(mlcdoc(i)))
+C        write(6,*) 'type optical sym ',mlctype(I),' : ',mlcoptical(I),
+C     &    ' : ',mlcsymetric(I)
 
         IF(LAYERS(I).LE.0)GOTO 10
 
         DO 15, IL=1,LAYERS(I)
-          CALL STRIPC(IFMUL,OUTSTR,99,ND,1,'layer',IER)
+          CALL STRIPC(IFMUL,OUTSTR,99,ND,1,'layer line',IER)
           IF(IER.NE.0)RETURN
           K=0
 
@@ -413,7 +389,8 @@ C values, otherwise get element name from materials db.
       H(2)='case the composite construction is used in different'
       H(3)='orientations are requested.  This information supports'
       H(4)='the automatic creation of zone construction files.'
-              WRITE(OUTSTR,117)IL,DESC(I)(1:LNBLNK(DESC(I))),
+              lnt32=lnblnk(mlcname(i))
+              WRITE(OUTSTR,117)IL,mlcname(I)(1:lnt32),
      &          DTHK(I,IL)*1000.0
   117         FORMAT('Default R value for air gap ',I2,' in ',a,
      &            ' (which is',F7.1,' mm thick)')
@@ -486,20 +463,26 @@ C If all values are still 0.0 then not an actual material.
           IF(IER.NE.0.and.matmiss.gt.5)GOTO 99
   15    CONTINUE
 
-C If the symmetric tag has not yet been set check and see if the MLC
-C is or is not symmetrical and set MLCSYM.
-        if(MLCSYM(1:2).EQ.'  ')then
+C Now that layers have been scanned we can check to see if they
+C are symmetric or not. If the symmetric tag has not yet been 
+C set check and set MLCSYM and mlcsymetric.
+        if(mlcsymetric(I)(1:2).EQ.'  ')then
           call ismlcsymmetric(i,layermatch)
           if(layermatch)then
             MLCSYM='SYMMETRIC   '
+            mlcsymetric(I)='SYMMETRIC   '
           else
             MLCSYM='NONSYMMETRIC'
+            mlcsymetric(I)='NONSYMMETRIC'
           endif
-        elseif(MLCSYM(1:9).EQ.'SYMMETRIC')then
+        elseif(mlcsymetric(I)(1:9).EQ.'SYMMETRIC')then
           continue
-        elseif(MLCSYM(1:12).EQ.'NONSYMMETRIC')then
+        elseif(mlcsymetric(I)(1:12).EQ.'NONSYMMETRIC')then
           continue
         endif
+
+C Update the DESC array with revised values of MLCSYM.
+C << this may not be necessary  >>
         WRITE(DESC(I),89)MLCN,OTF,OPT,MLCSYM
    89   FORMAT(A12,2X,A4,2X,A12,2x,A12)
 
@@ -513,6 +496,21 @@ C many of these instances. If there are
         IF(imerr.NE.0.and.matmiss.gt.5)GOTO 99
   10  CONTINUE
       MLDBOK=.TRUE.
+
+C Look for index for MLCSYM in all the items in the file.
+      do i=1,nmlc
+        isymindex=0  ! assume no matching MLC
+        lnsym=lnblnk(mlcsymetric(I))         
+        do 5 ii=1,nmlc
+          lnmlcn=lnblnk(mlcname(ii))
+          if(mlcsymetric(I)(1:lnsym).eq.mlcname(ii)(1:lnmlcn))then
+            matsymindex(I)=ii   ! remember MLC index     
+          endif
+  5     continue
+      end do
+
+C Debug.
+C      write(6,*) matsymindex
 
 C Close file before exiting.
   88  CALL ERPFREE(IFMUL,ISTAT)
@@ -547,6 +545,11 @@ C Parse the DESC string from the MLC common block returning text for
 C MLCN (its name) ,OTF (whether OPAQ/TRAN/CFC) ,OPT (optical name) ,MLCSYM
 C tag for symmetry. Where values are missing or unknown setup defaults.
 C If isymindex is non-zero it is index of MLC for symmetric MLC.
+
+C << logic below is based on fixed column positions, this should move
+C << to free form so that MLC, optical and mlcsym names can be up to 
+C << 32 char (eventually with spaces).
+
       subroutine parsemlcdesc(DES,MLCN,OTF,OPT,MLCSYM,isymindex)
 #include "building.h"
 #include "esprdbfile.h"
@@ -592,7 +595,7 @@ C Look for index for MLCSYM in the current MLC database.
       end
 
 C ******* matchmlcdesc
-C matchmlcdesc parse string (DES) and see if first 12 char matches a MLC
+C matchmlcdesc parse string (DES) and see if it matches a MLC
 C item - if so return its MLC index. DES might be from SMLCN or some 
 C other source.
       subroutine matchmlcdesc(DES,imlcindex)
@@ -600,23 +603,25 @@ C other source.
 #include "esprdbfile.h"
 #include "material.h"
 
-C Passed parameters
+C Passed parameters DES length is flexable.
       character*(*) DES
       integer imlcindex
 
 C Local variable.
-      character MLCN*12
-      integer ii
+      character MLCN*32
+      integer ii,lnmlcn,lndesc
 
-C Look for index for MLCN in the current MLC database.
+C Look for index for MLCN in the current constructions file.
       imlcindex=0  ! assume no matching MLC          
-      WRITE(MLCN,'(A)')DES(1:12)
+      lnmlcn=lnblnk(DES)
+      WRITE(MLCN,'(A)')DES
       if(MLCN(1:4).eq.'UNKN') return
-      do 5 ii=1,nmlc
-        if(MLCN(1:12).eq.DESC(ii)(1:12)) then
+      do ii=1,nmlc
+        lndesc=lnblnk(mlcname(ii))
+        if(MLCN(1:lnmlcn).eq.mlcname(ii)(1:lndesc)) then
           imlcindex=ii   ! remember MLC index     
         endif
-  5   continue
+      end do
       return
       end
 
@@ -857,7 +862,7 @@ C If we got here there was no match. The value of matarrayindex remains at zero.
 
 C *************** ETMLDB
 C ETMLDB provides reporting on current description of a construction
-C based on contents of common MLC.
+C based on contents of material.h. Should work for mlcver 0 and 1.
       SUBROUTINE ETMLDB(ITRC,ITRU,IFOC,ier)
 #include "building.h"
 #include "esprdbfile.h"
@@ -876,35 +881,43 @@ C based on contents of common MLC.
 
       DIMENSION PNAM(ME)
       CHARACTER OUTSTR*148,PNAM*124
-      CHARACTER MLCN*12,OTF*4,OPT*12,SOPT*12,GDESCR*36
-      character MLCSYM*12
+      CHARACTER SOPT*12,GDESCR*36
+      integer lnmlcn,lnmlco,lnother
 
       real RSI  ! used in reporting of R value in SI units
       
 C Pick up general description of the composite.
+      lnmlcn=lnblnk(mlcname(ifoc))
+      lnmlco=lnblnk(mlcoptical(ifoc))
+      isymindex=matsymindex(ifoc)
       ier=0
-      call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
       IF(ITRC.GE.1)THEN
         CALL EDISP(ITRU,' ')
-        IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
+        IF(mlctype(IFOC)(1:4).NE.'OPAQ'.AND.
+     &     mlctype(IFOC)(1:4).NE.'CFC ')THEN
           WRITE(OUTSTR,'(5a,f6.3)')
      &      ' Details of transparent construction: ',
-     &      MLCN(1:lnblnk(MLCN)),' with ',OPT(1:lnblnk(OPT)),
+     &      mlcname(ifoc)(1:lnmlcn),' with ',
+     &      mlcoptical(ifoc)(1:lnmlco),
      &      ' optics and overall thickness ',THKMLC(ifoc)
           CALL EDISP(ITRU,OUTSTR)
-        ELSEIF(OTF(1:4).EQ.'CFC ')THEN
+        ELSEIF(mlctype(IFOC)(1:4).EQ.'CFC ')THEN
           WRITE(OUTSTR,'(3a)')' ',
-     &      'Details of complex fenestration construction: ',MLCN
+     &      'Details of complex fenestration construction: ',
+     &      mlcname(ifoc)(1:lnmlcn)
           CALL EDISP(ITRU,OUTSTR)
         ELSE
           if(isymindex.eq.0)then
             WRITE(OUTSTR,'(3a,f6.3)')
-     &      ' Details of opaque construction: ',MLCN(1:lnblnk(MLCN)),
+     &      ' Details of opaque construction: ',
+     &      mlcname(ifoc)(1:lnmlcn),
      &      ' and overall thickness ',THKMLC(ifoc)
           else
+            lnother=lnblnk(mlcname(isymindex))
             WRITE(OUTSTR,'(5a,f6.3)')
-     &      ' Details of opaque construction: ',MLCN(1:lnblnk(MLCN)),
-     &      ' linked to ',DESC(isymindex)(1:12),
+     &      ' Details of opaque construction: ',
+     &      mlcname(ifoc)(1:lnmlcn),
+     &      ' linked to ',mlcname(isymindex)(1:lnother),
      &      ' & with overall thickness ',THKMLC(ifoc)
           endif
           CALL EDISP(ITRU,OUTSTR)
@@ -942,7 +955,8 @@ C Loop through all of the layers and compose RT for the construction.
       DO 15, IL=1,LAYERS(IFOC)
       
 C If data available in material array gather it. And if an air
-C layer reset dbcon dbden dbsht andinclude the R values in the display.
+C layer (matarrayindex of zero or matopaq 'g' or 'h' then
+C reset dbcon dbden dbsht andinclude the R values in the display.
         matarrayindex=IPRMAT(IFOC,IL)   ! which array index
         if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &     matopaq(matarrayindex)(1:1).eq.'h'.or.
@@ -1049,9 +1063,11 @@ C << NOTE this code needs further debugging.
 C Also list optical properties for this construction (if it is
 C transparent and the optical property is something other than
 C QPAQ.
-      if(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')then
-        if(OPT(1:4).ne.'OPAQ'.and.OPT(1:4).ne.'UNKN')then
-          SOPT=OPT
+      if(mlctype(IFOC)(1:4).NE.'OPAQ'.AND.
+     &   mlctype(IFOC)(1:4).NE.'CFC ')then
+        if(mlcoptical(ifoc)(1:4).ne.'OPAQ'.and.
+     &     mlcoptical(ifoc)(1:4).ne.'UNKN')then
+          write(SOPT,'(a)') mlcoptical(ifoc)(1:12)
           IF(ITRC.NE.0)CALL EROPTDB(1,itru,SOPT,GDESCR,IER)
         endif
       endif
@@ -1060,7 +1076,7 @@ C QPAQ.
 
 C *************** ETMLDBU
 C ETMLDBU return ISO 6946 U values (UVH/UVU/UVD/UVI) of current construction based
-C on contents of common MLC. Logic is a variant of ETMLDB.
+C on contents of material.h. Logic is a variant of ETMLDB. Should work for mlcver 0 and 1.
       SUBROUTINE ETMLDBU(ITRC,ITRU,IFOC,UVH,UVU,UVD,UVI,UVG)
 #include "building.h"
 #include "esprdbfile.h"
@@ -1080,79 +1096,41 @@ C Parameters passed
 
 C Material properties.
       integer matarrayindex ! the indes within matdatarray
-      logical closemat1,closemat2,bCloseToZero
+      logical bCloseToZero
 
-      CHARACTER OUTSTR*124,NAM*72
-      CHARACTER TITL*72,MLCN*12,OTF*4,OPT*12
-      character MLCSYM*12
+      CHARACTER OUTSTR*124
 
       real RTH  ! sum of surface coef for horiz flow at wall
       real RTU  ! sum of surface coef for upward flow at ceiling
       real RTD  ! sum of surface coef for downward flow at floor
       real RTI  ! sum of surface coef for horiz flow at partition
       real RTG  ! sum of surface coef at foundation
+      integer lnmlcn,lnmlco
 
-C Pick up general description of the composite.
-      call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
-
-C Check version of material database.
-      call eclose(matver,1.1,0.01,closemat1)
-      call eclose(matver,1.2,0.01,closemat2)
+C Pick up lengths of strings in general description of the construction.
+      lnmlcn=lnblnk(mlcname(ifoc))
+      lnmlco=lnblnk(mlcoptical(ifoc))
 
 C Reset U value reporting local variables.
       RT=0.
-      RTH=0.
-      RTU=0.
-      RTD=0.
-      RTI=0.
-      UVH=0.
-      UVU=0.
-      UVD=0.
-      UVI=0.
+
       DO 15, IL=1,LAYERS(IFOC)
 
-C If an air layer include the R values.
-        if(closemat1.or.closemat2)then
-          matarrayindex=IPRMAT(IFOC,IL)   ! which array index
+C If data available in material array gather it. And if an air
+C layer reset dbcon dbsht andinclude the R values in the display.
+        matarrayindex=IPRMAT(IFOC,IL)   ! which array index
 
-C And if matarrayindex is zero then resetn dbcon dbden dbsht.
-          if(matopaq(matarrayindex)(1:1).eq.'g'.or.
-     &       matopaq(matarrayindex)(1:1).eq.'h'.or.
-     &       matarrayindex.eq.0)then
-            DBCON=0.0; DBDEN=0.0; DBSHT=0.0 
-            E=0.99; A=0.99; DRV=1.0
-            TITL='GAPS'; NAM='AIR'
-          elseif(matarrayindex.eq.-99)then
-            continue
-          else
-            DBCON=matdbcon(matarrayindex)
-            DBDEN=matdbden(matarrayindex)
-            DBSHT=matdbsht(matarrayindex)
-            E=matdbine(matarrayindex)
-            A=matdbina(matarrayindex)
-            DRV=matdbdrv(matarrayindex)
-            write(TITL,'(a)') 'placeholder'
-
-C Make up NAM as combination of matnam and matdoc.
-            lnam=lnblnk(matname(matarrayindex))
-            lfordoc = 72 - (lnam +4)    ! space left for doc
-            write(NAM,'(3a)') matname(matarrayindex)(1:lnam),' : ',
-     &        matdoc(matarrayindex)(1:lfordoc)
-          endif
-        else
-          CALL ERPCDB(IFMAT,IPR(IFOC,IL),ITRU,IER,DBCON,DBDEN,
-     &      DBSHT,E,A,DRV,TITL,NAM)
-        endif
-
-        IF(IER.EQ.1)RETURN
-        IF(IPR(IFOC,IL).EQ.0)THEN
+C And if matarrayindex is zero then resetn dbcon dbsht.
+        if(matopaq(matarrayindex)(1:1).eq.'g'.or.
+     &     matopaq(matarrayindex)(1:1).eq.'h'.or.
+     &     matarrayindex.eq.0)then
+          DBCON=0.0
           RT=RT+DRAIR(IFOC,IL,1)
           RSI=DRAIR(IFOC,IL,1)
-        ELSEIF(IPR(IFOC,IL).EQ.-99)THEN
-
-C RT and RSI in above code.
-          continue
-        ELSE
+        elseif(matarrayindex.eq.-99)then
+          DBCON=0.0
+        else
+          DBCON=matdbcon(matarrayindex)
 
 C Also report on thermal resistance (m^2K/W) of the layer. If dbcon
 C is zero then avoid divide by zero.
@@ -1167,7 +1145,7 @@ C is zero then avoid divide by zero.
           else
             RT=1.0
           endif
-        ENDIF
+        endif
 
 C Calculate and (optionally) report.
   15  CONTINUE
@@ -1191,14 +1169,16 @@ C of a foundation only the inside surface resistance is used.
      &  UVH,UVU,UVD,UVI
       IF(ITRC.NE.0)then
         CALL EDISP(ITRU,' ')
-        IF(OTF(1:4).NE.'OPAQ'.AND.OTF(1:4).NE.'CFC ')THEN
+        if(mlctype(IFOC)(1:4).NE.'OPAQ'.AND.
+     &     mlctype(IFOC)(1:4).NE.'CFC ')then
           WRITE(OUTSTR,'(5a,F6.3,a,F6.3,a,f6.3,a,f6.3,a,f6.3)')
-     &    ' ISO 6946 U values of ',MLCN(1:lnblnk(MLCN)),' with ',OPT,
+     &    ' ISO 6946 U values of ',mlcname(ifoc)(1:lnmlcn),
+     &    ' with ',mlcoptical(ifoc)(1:lnmlco),
      &    ' optics are (horiz flow)',UVH,' (upwards flow)',UVU,
      &    ' (downwards flow)',UVD,' (partition) ',UVI,' (fndtn) ',UVG
         ELSE
           WRITE(OUTSTR,'(3a,F6.3,a,f6.2,a,f6.2,a,f6.3,a,f6.3)')
-     &    ' ISO 6946 U values of ',MLCN(1:lnblnk(MLCN)),
+     &    ' ISO 6946 U values of ',mlcname(ifoc)(1:lnmlcn),
      &    ' are (horiz flow)',UVH,' (upwards flow)',UVU,
      &    ' (downwards flow)',UVD,' partition ',UVI,' (fndtn) ',UVG
         ENDIF
@@ -1216,6 +1196,9 @@ C IER=0 OK, IER=1 problem.
 #include "building.h"
 #include "esprdbfile.h"
 #include "material.h"
+      
+      integer lnblnk  ! function definition
+
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -1224,6 +1207,8 @@ C IER=0 OK, IER=1 problem.
       DIMENSION IVAL(MMLC),COMPS(MMLC)
       CHARACTER*(*) PROMPT1,PROMPT2
       CHARACTER H*72,COMPS*33
+
+      integer lnmlcn
 
       IER=0
       ISEL=0
@@ -1257,8 +1242,12 @@ C in the materials database.
       H(12)='to the same construction, especially when these controls '
       H(13)='are attempting to assign different datasets. The first '          
       H(14)='loop will be used if this mistake is made by the users. '
+
+C Present list based on the name and type of the MLC.
       DO 66 IWW=1,NMLC
-        WRITE(COMPS(IWW),'(A33)')DESC(IWW)(1:33)
+        lnmlcn=lnblnk(mlcname(iww))
+        WRITE(COMPS(IWW),'(3A)')mlcname(IWW)(1:lnmlcn),' ',
+     &    mlctype(IWW)
    66 CONTINUE
       IX=1
       CALL EPICKS(IX,IVAL,PROMPT1,PROMPT2,
@@ -1273,76 +1262,6 @@ C in the materials database.
 
       END
 
-C *************** ERPCDB
-C ERPCDB reads one element from a binary materials database
-C returning them via parameter list.
-C IFMAT is the unit number of the database,  IEL the requested 
-C element, ITRU unit number for user output, IER=0 OK, IER=1 problem.
-C ITRC is the trace level.  It is assumed that the database has been
-C previously opened and other parts of the code will close it when
-C appropriate.  E is the element emissivity, A is the solar absorb, DRV
-C is the diffusion resistance, TITL is the classification title, PNAM is
-C the material name.
-
-C Note: this subroutine is for use with the binary materials file
-C rather than the matdatarray common blocks.
-
-      SUBROUTINE ERPCDB(IFMAT,IEL,ITRU,IER,DBCON,DBDEN,DBSHT,E,A,
-     &                  DRV,TITL,PNAM)
-
-      CHARACTER PNAM*72,TITL*72,outs*124
-      logical close4
-
-      IER=0
-      close4=.false.
-
-C The record in the material db is IEL + 1 UNLESS the
-C reference is to material db 0 (air).
-      PNAM=' '
-      TITL=' '
-      DBCON=0.0
-      DBDEN=0.0
-      DBSHT=0.0
-      IF(IEL.NE.0)THEN
-        IR=((IEL-1)/20)*20+1
-        READ(IFMAT,REC=IR,IOSTAT=IOS,ERR=105)TITL
-        IR = IEL + 1
-        READ(IFMAT,REC=IR,IOSTAT=IOS,ERR=105)DBCON,DBDEN,DBSHT,E,A,
-     &       DRV,PNAM
-
-C If all values are still 0.0 then not an actual element.
-        call eclose3(DBCON,DBDEN,DBSHT,0.0,0.0,0.0,0.001,CLOSE4)
-        if(CLOSE4)then
-          write(outs,'(A,I3,A,2i4)') ' Material db reference ',IEL,
-     &                           ' has no data, or all zero...',IR,IFMAT
-          call usrmsg(outs,' Please check your selection! ','W')
-          ier=1
-          return
-        endif
-      ELSE
-
-C Air layer encountered so put in zeroes.
-        E=0.99
-        A=0.99
-        DRV=1.0
-        PNAM='AIR'
-        TITL='GAPS'
-      ENDIF
-
-  99  RETURN
- 105  if(IOS.eq.2)then
-        write(outs,'(A,I3,A,i4,a,i3)') ' Materials db reference ',IEL,
-     &    ' read error @ record ',IR,' on file unit ',IFMAT
-      else
-        write(outs,'(A,I3,A,i4,a,i3)') ' Materials db reference ',IEL,
-     &    ' permission error @ record ',IR,' on file unit ',IFMAT
-      endif
-      call edisp(itru,outs)
-      IER=1
-      CALL ERPFREE(IFMAT,ISTAT)
-      goto 99
-
-      END
 
 C *************** EMKAMLD 
 C EMKAMLD: Creates a legacy ascii constructions database based on the
@@ -1456,10 +1375,14 @@ C Make up NAM as combination of matnam and matdoc.
           ENDIF
   116   CONTINUE
 
-        WRITE(IFMUL,32)LAYERS(I),DESC(I)(1:48)
-   32   FORMAT('# layers  description   optics name   symmetry tag',/,
-     &    I5,4X,A48,/,
-     &    '# material ref thickness (m) description & air gap R')
+C Write via material commons with comment before and after names.
+        write(IFMUL,'(a)')
+     &    '# layers  description  type  optics name   symmetry tag'
+        write(IFMUL,'(i5,4x,8a)')LAYERS(I),mlcname(i)(1:12),'  ',
+     &        mlctype(i)(1:4),'  ',mlcoptical(i)(1:12),'  ',
+     &        mlcsymetric(i)(1:12),'  '
+        write(IFMUL,'(a)')
+     &    '# material ref thickness (m) description & air gap R'
 
 C As a transition, for gap layers the index is going to have to
 C be a zero to trick the reading code into recognizing it as
@@ -1833,9 +1756,9 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
 
-C Scan the binary file data into materials commons and if this was
-C sucessful and matver was set to 1.1 in matformbin then we can
-C carry on using the materials common blocks for subsequent access.
+C Scan the materials (either binary or ascii) file data into materials
+C commons and if this was sucessful and matver was set to 1.2 then
+C we can carry on using the materials common blocks for subsequent access.
       call scananymat(ier)
       call eclose(matver,1.1,0.001,closemat1)
       call eclose(matver,1.2,0.001,closemat2)
@@ -1909,8 +1832,7 @@ C << some variables are off - further debugging required.
       logical closemat1,closemat2
       
       dimension thick(8),rho(8),Cp(8),cond(8)
-      CHARACTER MLCN*12,OTF*4,OPT*12
-      character MLCSYM*12,outs*124
+      character outs*124
       
       COMPLEX P,L(2,2),M(2,2),N(2,2)
 
@@ -1925,9 +1847,6 @@ C Establish if material data arrays have been filled. If not return.
         return
       endif
 
-C Pick up general description of the composite.
-      call parsemlcdesc(DESC(IFOC),MLCN,OTF,OPT,MLCSYM,isymindex)
-      
 C ESP-r defines layers from outside to inside. The code in
 C subroutine admit works from inside to outside.
 C Debug layer info.

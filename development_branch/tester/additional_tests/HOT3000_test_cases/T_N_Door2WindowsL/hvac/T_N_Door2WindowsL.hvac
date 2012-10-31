@@ -1,3 +1,0 @@
-1 114.0        # Number of HVAC systems, site altitude
-1 1 2 # SysType; Pri; Zones;
-5 2 1 0.7 2 0.3 25000 0.78 1 -1 125 0 1 #FnType; fuel; zone1; frac; zone2, frac, cap eff F_mode;

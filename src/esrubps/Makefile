@@ -32,7 +32,7 @@ BPS_OBJECTS = bps.o adaptconf1.o adaptconf2.o adjb.o adjp.o ascii_mat.o \
 	  bcfunc.o bctlf.o blibsv.o bmatsu.o bmatsv.o basesimp.o basesimp_inputs.o bscoeff.o bscoeff_extended.o \
 	  bndarybl.o bndaryl.o bndaryt.o bsim2cfd.o btherm.o c2fdum.o casual.o cfcalc.o \
 	  cfconv.o cfdat.o cfdrw.o cfgrid.o cfmgerb.o cfutil.o chkconvg.o chtmst.o \
-	  climi.o cntmnt.o conc.o convect1.o convect2.o ctread.o dayfac.o drylink.o ecasctl.o \
+	  climi.o cntmnt.o conc.o convect1.o convect2.o ctread.o dayfac.o drylink.o dossupport.o ecasctl.o \
 	  econstr.o econtrol.o edatabase.o egeometry.o egrid.o emfnetw.o emoist.o \
 	  enetbound.o enetmath.o enetmisc.o enetpost.o enetrewr.o enetsetu.o \
 	  enetsolv.o eroper.o esgrid.o esru_misc.o esystem.o filelist.o g3dfac.o \
@@ -190,6 +190,9 @@ ctread.F:
 dayfac.F:
 	rm -f dayfac.F
 	ln -s $(BLDdir)/dayfac.F .
+dossupport.F:
+	rm -f dossupport.F
+	ln -s $(COMdir)/dossupport.F .
 drylink.F:
 	rm -f drylink.F
 	ln -s $(BLDdir)/drylink.F .
@@ -728,7 +731,7 @@ clean:
 	ConfigureH3kReports.o cfcalc.F cfconv.F cfdat.F cfdrw.F cfgrid.F cfmgerb.F \
 	cfutil.F chemical_properties.F \
 	chkconvg.F chtmst.F climi.F cntmnt.F conc.F convect1.F convect2.F ctread.F dayfac.F \
-	drylink.F ecasctl.F econstr.F econtrol.F edatabase.F egeometry.F \
+	dossupport.F drylink.F ecasctl.F econstr.F econtrol.F edatabase.F egeometry.F \
 	egrid.F emfnetw.F emoist.F enetbound.F enetmath.F enetmisc.F enetpost.F \
 	enetrewr.F enetsetu.F enetsolv.F enet_state_variable_manipulate.F eroper.F esgrid.F ESPrTrnsysData.F \
 	esru_misc.F esystem.F fan.F filelist.F furnace.F g3dfac.F g3dfnc.F g3dmtx.F gcfunc.F gsdmtx.F \

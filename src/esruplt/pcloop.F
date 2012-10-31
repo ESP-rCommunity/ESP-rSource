@@ -3137,11 +3137,10 @@ C Description of zone control action; these data are used
 C in H3Kreports to determine heating, cooling loads and
 C to evaluate passive solar design performance.
       common/H3KReportsControl/bZoneHeated,   bZoneCooled,
-     &                         fHeatSetpoint, fCoolSetpoint, 
-     &                         bSlaveActive
+     &                         fHeatSetpoint, fCoolSetpoint
 
 C Flags indicating zone is heated, cooled.
-      logical bZoneHeated(MCOM), bZoneCooled(MCOM), bSlaveActive(MCOM) 
+      logical bZoneHeated(MCOM), bZoneCooled(MCOM)
 C Heating and cooling setpoint (oC)
       real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
 

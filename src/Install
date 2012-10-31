@@ -114,10 +114,15 @@ programs=" ${programs} "
 targets=" "
 
 #-----------------------------------------------------------
-# Detect architecture.
+# Detect architecture. In the case of OSX 10.6 or 10.7 force it to x86_64
+# otherwise let uname -m do it.
 #-----------------------------------------------------------
 architecture=`uname -s`      # computer type e.g. Linux Darwin SunOS
-machine=`uname -m`           # CPU  e.g. i386 x86_64  sun4u
+if [ "$architecture" = "Darwin" ]; then
+  machine="x86_64"
+else
+  machine=`uname -m`           # CPU  e.g. i386 x86_64  sun4u
+fi
 
 #-----------------------------------------------------------
 # Is Stat available? assume stat will be in /bin or /usr/bin,
@@ -947,15 +952,21 @@ case $xLibs in
             # Try /usr/X11R6 - legacy location on monolithic X locations
             case $machine in
               x86_64)
-                if [ -d /usr/X11R6/lib64/X11 ] ; then
-                  X11_found="yes"
-                  XINSTALLDIR="/usr/X11R6"
-                else
-                  if [ -d /usr/lib64/X11 ] ; then
+                case $platform in
+                  mac) if [ -d /usr/X11R6/lib/X11 ] ; then
                     X11_found="yes"
-                    XINSTALLDIR="/usr/lib64"
-                  fi
-                fi;;
+                    XINSTALLDIR="/usr/X11R6"
+                  fi;;
+                  *) if [ -d /usr/X11R6/lib64/X11 ] ; then
+                       X11_found="yes"
+                       XINSTALLDIR="/usr/X11R6"
+                     else
+                       if [ -d /usr/lib64/X11 ] ; then
+                         X11_found="yes"
+                         XINSTALLDIR="/usr/lib64"
+                       fi
+                     fi;;
+                esac;;
               sun4u)
                 if [ -d /usr/X11R6/lib/64 ] ; then
                   X11_found="yes"
@@ -1089,6 +1100,7 @@ esac
 #--------------- FFLAGS -----------------------
 # Write out platform specific ifdef variables.
 # These will be inserted into FFLAGS, below.
+# for OSX 10.6 and x86_64 force -m64 otherwise -m32
 case $platform in
    sun) case $machine in
           sun4u)   fDefType="-DSUN -DOSI";;
@@ -1103,6 +1115,7 @@ case $platform in
    cygwin)     fDefType="-DCYGW";;
    mac) case $machine in
           i386)    fDefType="-DOSX -DOSI -DLIN -m32";;
+          x86_64)  fDefType="-DOSX -DLIN -m64";;
         esac;;
    mingw)      fDefType="-DMINGW";;
 esac
@@ -1198,13 +1211,17 @@ esac
 ULIBS="$ULIBS -lversion"
 
 # Append X11 library paths to ULIBS as required
+# For OSX 10.6 and x86_64 look in lib rather than lib64
 case $xLibs in
   X11) case $machine in
          sun4u) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
          i386) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
          i86pc) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
          i686) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
-         x86_64) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib64 -lX11";;
+         x86_64) case $platform in
+                 mac) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
+                 *) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib64 -lX11";;        
+                 esac;;
        esac;;
   GTK) ULIBS="$ULIBS -lgtkesru -L${XINSTALLDIR}";;
   noX) ULIBS="$ULIBS -lnoxesru";;
