@@ -3634,11 +3634,11 @@ C Multisensing controller
             WRITE(LMSG,'(3A,i4,2a)')LMSG(1:LN),MSG2(1:LN2),' ',
      &      nlps,' ',MSG1(1:LN1)
  5050     CONTINUE
-	  IF(NINT(CM(NCLP*3+1)).EQ.1)THEN
-	    MSG2='Actuates massflow loop #'
-	  ELSEIF(NINT(CM(NCLP*3+1)).EQ.2)THEN
-	    MSG2='Actuates plant loop #'
-	  ENDIF
+      IF(NINT(CM(NCLP*3+1)).EQ.1)THEN
+        MSG2='Actuates massflow loop #'
+      ELSEIF(NINT(CM(NCLP*3+1)).EQ.2)THEN
+        MSG2='Actuates plant loop #'
+      ENDIF
           IALP=NINT(CM(NCLP*3+2))
           LN=LNBLNK(LMSG)
           LN2=LNBLNK(MSG2)
@@ -4402,11 +4402,13 @@ C control loops for legality.
       COMMON/MFLOW1/NNOD,NCMP,NCNN
 
       character outstr*124
+      
+      integer ii, jj, ll, kk
     
 C This code loops throug the building (m=1), plant (m=2) and flow (m=3)
 C control loops and tests them for validity. It's a mess of goto statements,
 C and is a good candidate for rewriting. 
-      
+
 C Loop through building/plant/flow/optical control loops       
       do 10 m=1,4
 
@@ -4436,6 +4438,22 @@ C 'i' appears to serve no purpose in this code.
       if(m.eq.2)goto 3
       if(m.eq.3)goto 22
       if(m.eq.4)goto 32
+
+C Check for minimum allowable free cooling delta T
+      do ii = 1, NCF
+        nn=nbcdt(ii) 
+        do jj = 1, nn
+          ll = nbcdp(ii,jj)
+          do kk = 1, ll
+            if ( ibclaw(ii, jj, kk) .eq. 27) then
+                if( bmiscd(II,JJ,KK,8) .lt. 2.0 )then
+                    goto 1011
+                end if
+            end if 
+          end do
+        end do
+      end do
+
 
 C Set up data for building control function ii.
       isn1=ibsn(ii,1)
@@ -4500,7 +4518,7 @@ C Sensor references a function generator.
          if(isn2.gt.9)goto 1008
          goto 9
       endif
-
+      
 C Senses data from a temporal file, 2nd item will temporal item.
   33  if(isn2.lt.1.or.isn2.gt.24)goto 1022
       goto 9
@@ -4653,6 +4671,10 @@ C Error messages.
       goto 1000
  1010 write(outstr,'(A,I3,A)')' Sensor node: 5th item (',isn5,
      &  ') invalid.'
+      call edisp(iuout,outstr)
+      goto 1000
+ 1011 write(outstr,'(A)')
+     &' Delta T for free cooling is below the minimum 2 deg C'
       call edisp(iuout,outstr)
       goto 1000
 
