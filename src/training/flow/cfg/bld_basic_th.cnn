@@ -1,5 +1,5 @@
 *connections for bld_mech_ven_th
-*Date Fri Jul 23 16:02:02 2010
+*Date Tue Aug 28 12:23:20 2012
      35   # number of connections
    1   1   0   0   0  #    1 south in reception is External
    1   2   0   0   0  #    2 east in reception is External

@@ -2083,8 +2083,8 @@ C Reset electrical flag for component to 'off'
       end
 
 C ****************CONTLYR**************************************************
-C CONTLYR allows the user to select a layer in a construction
-C of a particular zone surface as a containment for or to embed a plant component.
+C CONTLYR allows the user to select a layer in a construction of a
+C particular zone surface as a containment for or to embed a plant component.
 C The routine presents a list of surface layers.
 
       subroutine CONTLYR(IZ,IS,IND)
@@ -2145,15 +2145,12 @@ C If an air layer include the R values in the display.
 C And if matarrayindex is zero then reestablish NAM.
           if(matarrayindex.eq.0)then
             NAM='AIR'
+            PNAM(j)='Air gap'
           else
             write(NAM,'(a)') matname(matarrayindex)(1:32)
+            PNAM(j)=NAM(1:20)
           endif
         endif
-        IF(IPR(imatch,j).EQ.0)THEN
-          PNAM(j)='Air gap'
-        ELSE
-          PNAM(j)=NAM(1:20)
-        ENDIF 
         write(item(header+j),'(a,i2,1x,a12)')' Layer: ',j,PNAM(j)
         ndisp=header+j
   10  continue
