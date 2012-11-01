@@ -550,7 +550,7 @@ C a Month string or end marker.
              mnth=mnth+1   ! increment the month and jump back
              goto 172
            elseif(outstr(1:5).eq.'* end')then
-             goto 18
+	     goto 18
            endif
            message='expecting 24 hours internal'
            goto 1002

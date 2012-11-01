@@ -451,7 +451,7 @@ C to be scanned.
             endif
   27      continue
           call edisp(iuout,'end of cfg file without finding *building')
-        else
+	else
           call mksyshd(filname2,ier)
         endif
       elseif(oformat(1:5).eq.'click')then

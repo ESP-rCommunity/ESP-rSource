@@ -174,17 +174,17 @@ C Return after advising user.
       if(paction(1:13).ne.'update_silent')then
         lnf=lnblnk(fname)
         call edisp(iuout,' ')
-        if(ifstat.eq.0)then
+	if(ifstat.eq.0)then
           write(outs,'(3a)')'Opened existing ',fname(1:lnf),'.'
-        elseif(ifstat.eq.1)then
+	elseif(ifstat.eq.1)then
           write(outs,'(3a)')'Opened new ',fname(1:lnf),'.'
-        elseif(ifstat.eq.2)then
+	elseif(ifstat.eq.2)then
           write(outs,'(3a)')'No shading file given ',fname(1:lnf),'.'
-        elseif(ifstat.eq.3)then
+	elseif(ifstat.eq.3)then
           write(outs,'(3a)')'Error opening ',fname(1:lnf),'.'
-        elseif(ifstat.eq.4.or.ifstat.eq.5)then
+	elseif(ifstat.eq.4.or.ifstat.eq.5)then
           write(outs,'(3a)')'Error reading ',fname(1:lnf),'.'
-        endif
+	endif
         call edisp(iuout,outs)
       endif
       return

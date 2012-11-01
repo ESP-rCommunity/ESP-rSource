@@ -630,7 +630,7 @@ C Psychrometric analysis. Enlarge graphics area if small.
                 LIMIT = MAX0(int(6*iappw*0.01),4)
               else
                 menuchw = 29
-                LIMTTY=6
+                LIMTTY=6	
                 LIMIT =6
               endif
               call winclr
