@@ -519,10 +519,12 @@ c Formula
       SELECT CASE (iTankType)
 
       CASE (Elec_Tankless_Heatpump)
-       fEnergy = fDHW_EnergyInputWater()/fDOEEF
+       fEnergy     = fDHW_EnergyInputWater()/fDOEEF
+       fHPRoomLoad = fDHW_EnergyInputWater() - fEnergy
 
       CASE (Elec_Heatpump)
        fEnergy = fDHW_EnergyInputWater()/fDOEEF
+       fHPRoomLoad = fDHW_EnergyInputWater() - fEnergy
 
       CASE (Elec_Instantaneous)
        fEnergy = fDHW_EnergyInputWater()
@@ -579,19 +581,62 @@ c Formula
 c Parasitic losses to room from water in tank losing energy.
 c Pipe Losses (very small..may eliminate in future)
 c Portion of Pilot energy that is transmitted to room.
+
+      if ( iTankType ==  Elec_Heatpump .or. 
+     &     iTankType ==  Elec_Tankless_Heatpump ) then 
+      
+        fDHW_EnergyToZone =
+     &    + fDHW_StandByTankLosses()
+     &    + fDHW_PipeGains()
+     &    + fDHW_PipeLosses()
+     &    + fDHW_PilotEnergyToRoom()
+     &    - fHPRoomLoad
+      else 
+      
         fDHW_EnergyToZone =
      &    + fDHW_StandByTankLosses()
      &    + fDHW_PipeGains()
      &    + fDHW_PipeLosses()
      &    + fDHW_PilotEnergyToRoom()
 
+      endif 
 C.....Save energy transfer to room (W)
       fDHW_H3K_heat_xfer_to_room = fDHW_EnergyToZone
      &                                       * real (iNTSTEP)
      &                                       * ( 1.0 / 3600.0 ) ! (W)
+     
 
       END
 
+C *********************************************************************
+c Function fIdealDHWGain
+C
+C Report the heat gain from a water heater so that it can be imposed
+C on a zone.
+
+      real function fIdealDHWGain(iZone) 
+      implicit none 
+      
+      include "building.h"
+      include "dhw_parameters.h"
+      include "dhw_common.h"
+      include "ground_temp_mains_common.h"
+
+      integer iZone 
+      
+      if ( iZone == iDHWZoneLocation ) then 
+      
+        fIdealDHWGain = fDHW_H3K_heat_xfer_to_room
+      
+      else 
+      
+        fIdealDHWGain = 0 
+      
+      endif 
+      return 
+      
+      end function fIdealDHWGain
+      
 c *********************************************************************
 c FUNCTION fDHW_PipeGains
 c
@@ -1563,7 +1608,7 @@ C Read  DOEEF of DHW.
         endif
 
         if(.not. error_flag) then
-          CALL EGETWR(OUTSTR,K,VAL,0.,2.,'F',' DHW EF ',IER)
+          CALL EGETWR(OUTSTR,K,VAL,0.,4.,'F',' DHW EF ',IER)
           if(IER.NE.0)then
             call edisp(IUOUT,' Cannot read DOEEF.')
             error_flag = .true.
