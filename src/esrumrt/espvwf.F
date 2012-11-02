@@ -399,7 +399,6 @@ C Take command line file name as configuration file.
 
 C Take command line zone name and determine if the focus should
 C be to a single zone or ALL zones (e.g. not yet specified).
-      write(6,*) 'inz ',inz
       if(inz(1:1).ne.' ')then
         write(inzone,'(a)') inz
         call edisp(iuout,'  ') ! echo a blank line
@@ -505,7 +504,6 @@ C a string which matches a zone name or is an index then focus on
 C that zone and update string ZN.  If inzone = UNKNOWN or the 
 C index 0 present a list.
           call zindex(inzone,index)
-          write(6,*) 'after zindex ',inzone,' ',index
           if(index.gt.0)then
             ic = index
             write(ZN,'(a)') zname(ic)

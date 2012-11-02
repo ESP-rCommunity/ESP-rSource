@@ -6517,7 +6517,6 @@ C << assumes that the cfg and cnn have already been setup. >>
       COMMON/C1/NCOMP,NCON
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: ic1,ie1,ict,ic2,ie2
-
       INTEGER :: IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 

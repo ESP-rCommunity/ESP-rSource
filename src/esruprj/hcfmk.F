@@ -2751,9 +2751,9 @@ C checking.
 
 C Correlation indices.
             CALL EGETWIA(IUF,IHCIA,NS,-1,99,'W',
-     &        'inside face hc cor',IER)
+     &               'inside face hc cor',IER)
             CALL EGETWIA(IUF,IHCEA,NS,-1,99,'W',
-     &        'other face hc cor',IER)
+     &               'other face hc cor',IER)
             DO 115 KV=1,NS
               IHCI(I,KV)=IHCIA(KV)
               IHCE(I,KV)=IHCEA(KV)

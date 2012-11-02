@@ -334,6 +334,7 @@ C Not one of the legal menu choices.
 C *********** CALMRT
       SUBROUTINE CALMRT(ITRC,ITRU,radtemp,ICOMP)
 #include "building.h"
+#include "geometry.h"
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/G1M/XM(MTV),YM(MTV),ZM(MTV),NSURM,JVNM(MSM,MV),
      &           NVERM(MSM),NTVM
@@ -468,33 +469,27 @@ C Update the master list of sensor view factors.
 252     CONTINUE
 
 C MRT calc reporting.
-        do 254 i = fstsur,nsurmf
-          if(lstsur.le.10)then
-            WRITE(outs,'(1X,10F7.4)')  (FF(I,J),J=1,lstsur)
-            call edisp(iuout,outs)
-          elseif(lstsur.gt.10.and.lstsur.le.20)then
-            WRITE(outs,'(1X,10F7.4)')  (FF(I,J),J=1,10)
-            call edisp(iuout,outs)
-            WRITE(outs,'(1X,10F7.4)')  (FF(I,J),J=11, lstsur)
-            call edisp(iuout,outs)
-          elseif(lstsur.gt.20.and.lstsur.le.30)then
-            WRITE(outs,'(1X,10F7.4)')  (FF(I,J),J=1,10)
-            call edisp(iuout,outs)
-            WRITE(outs,'(1X,10F7.4)')  (FF(I,J),J=11,20)
-            call edisp(iuout,outs)
-            WRITE(outs,'(1X,10F7.4)')  (FF(I,J),J=21,lstsur)
-            call edisp(iuout,outs)
-          elseif(lstsur.gt.30.and.lstsur.le.40)then
-            WRITE(outs,'(1X,10F7.4)')  (FF(I,J),J=1,10)
-            call edisp(iuout,outs)
-            WRITE(outs,'(1X,10F7.4)')  (FF(I,J),J=11,20)
-            call edisp(iuout,outs)
-            WRITE(outs,'(1X,10F7.4)')  (FF(I,J),J=21,30)
-            call edisp(iuout,outs)
-            WRITE(outs,'(1X,10F7.4)')  (FF(I,J),J=31,lstsur)
-            call edisp(iuout,outs)
-          endif
-254     continue
+        write (outs,'(2a)')  'Surface       |',
+     &     ' Cube face and MRT fraction from surface'
+        call edisp(iuout,outs)
+        write (outs,'(2a)') '(ID, Name)    | 1 (back),  2 (right),',
+     &     '  3 (front),  4 (left),  5 (top),  6 (base),  MRT fraction'
+        call edisp(iuout,outs)
+        do 254 I=1,lstsur
+        
+C Calculate influence of each surface - total viewfactors*relative surface area(of sensor).
+          total=0.
+          do 2541 J=fstsur,nsurmf
+            iface=J-fstsur+1
+            total=total+FF(J,I)*surarea(iface)
+ 2541     continue
+          write (outs,'(i3,1x,a,7(1X,F7.4))') I,SNAME(ICOMP,I),
+     &                          (FF(J,I),J=fstsur,nsurmf),total
+          call edisp(iuout,outs)  
+ 254    continue
+        write (outs,'(4x,a,6(1X,F7.4))') ' Face total',
+     &                    (rowsum(I),I=fstsur,nsurmf)
+        call edisp(iuout,outs) 
 
 C If summation is not close to unity then report.
         if (rowsum(MS+1).gt.0.01) then
