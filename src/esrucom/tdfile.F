@@ -206,7 +206,7 @@ C Search instances in temporal file to find match(s).
                           ISETPTT(itd3)=itd4
                         ENDIF
   81                  CONTINUE
-                    endif
+		    endif
                   endif
   80            continue
               endif          
