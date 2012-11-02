@@ -380,3 +380,35 @@ C Depending on computer type set integer size of passed parameters.
       return
       end
 
+C << copy from edatabase.F >>
+C ******* matchmlcdesc
+C matchmlcdesc parse string (DES) and see if it matches a MLC
+C item - if so return its MLC index. DES might be from SMLCN or some 
+C other source.
+      subroutine matchmlcdesc(DES,imlcindex)
+#include "building.h"
+#include "esprdbfile.h"
+#include "material.h"
+
+C Passed parameters DES length is flexable.
+      character*(*) DES
+      integer imlcindex
+
+C Local variable.
+      character MLCN*32
+      integer ii,lnmlcn,lndesc
+
+C Look for index for MLCN in the current constructions file.
+      imlcindex=0  ! assume no matching MLC          
+      lnmlcn=lnblnk(DES)
+      WRITE(MLCN,'(A)')DES
+      if(MLCN(1:4).eq.'UNKN') return
+      do ii=1,nmlc
+        lndesc=lnblnk(mlcname(ii))
+        if(MLCN(1:lnmlcn).eq.mlcname(ii)(1:lndesc)) then
+          imlcindex=ii   ! remember MLC index     
+        endif
+      end do
+      return
+      end
+

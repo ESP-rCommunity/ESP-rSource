@@ -1,0 +1,51 @@
+*Operations 1.0
+*date Thu Feb 23 20:30:16 2012  # latest file modification 
+# operations of Staff_traing defined in: 
+# ../zones/Staff_traing.opr
+Training area for staff 10Wm2 lights 6Wm2 equipment
+# control(no control of air flow  ), low mid & high setpoints 
+   0     0.000     0.000     0.000
+     1   # number of flow periods in day type: weekdays    
+# start, stop, infil, ventil, source, data
+   0, 24,    0.700    0.000    0    0.000
+     1   # number of flow periods in day type: saturday    
+# start, stop, infil, ventil, source, data
+   0, 24,    0.700    0.000    0    0.000
+     1   # number of flow periods in day type: sunday      
+# start, stop, infil, ventil, source, data
+   0, 24,    0.700    0.000    0    0.000
+     9   # number of casual gains in day type: weekdays    
+# type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,   9,    259.2,    172.8, 0.200, 0.800
+    1,   9,  19,   2894.4,   2160.0, 0.200, 0.800
+    1,  19,  24,    259.2,    172.8, 0.200, 0.800
+   -2,   0,   9,      1.0,      0.0, 0.500, 0.500
+   -2,   9,  19,     10.0,      0.0, 0.200, 0.800
+   -2,  19,  24,      1.0,      0.0, 0.500, 0.500
+   -3,   0,   8,      3.0,      0.0, 0.500, 0.500
+   -3,   8,  20,      6.8,      0.0, 0.200, 0.800
+   -3,  20,  24,      3.0,      0.0, 0.500, 0.500
+     9   # number of casual gains in day type: saturday    
+# type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,   9,    259.2,    194.4, 0.200, 0.800
+    1,   9,  19,   2894.4,   2160.0, 0.200, 0.800
+    1,  19,  24,    259.2,    194.4, 0.200, 0.800
+   -2,   0,   9,      0.0,      0.0, 0.500, 0.500
+   -2,   9,  19,     10.0,      0.0, 0.200, 0.800
+   -2,  19,  24,      0.0,      0.0, 0.500, 0.500
+   -3,   0,   8,      3.0,      0.0, 0.500, 0.500
+   -3,   8,  20,      6.8,      0.0, 0.200, 0.800
+   -3,  20,  24,      3.0,      0.0, 0.500, 0.500
+     9   # number of casual gains in day type: sunday      
+# type, start, stop, sens, latent, rad_frac, conv_frac
+    1,   0,   9,    259.2,    194.4, 0.200, 0.800
+    1,   9,  19,   2635.2,   2160.0, 0.200, 0.800
+    1,  19,  24,    259.2,    194.4, 0.200, 0.800
+   -2,   0,   9,      0.0,      0.0, 0.500, 0.500
+   -2,   9,  19,     10.0,      0.0, 0.200, 0.800
+   -2,  19,  24,      1.0,      0.0, 0.500, 0.500
+   -3,   0,   8,      3.0,      0.0, 0.500, 0.500
+   -3,   8,  20,      6.8,      0.0, 0.200, 0.800
+   -3,  20,  24,      3.0,      0.0, 0.500, 0.500
+# Labels for gain types 
+ Occupt Lights Equipt

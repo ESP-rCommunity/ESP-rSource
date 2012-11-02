@@ -952,17 +952,22 @@ case $xLibs in
             # Try /usr/X11R6 - legacy location on monolithic X locations
             case $machine in
               x86_64)
-#                if [ -d /usr/X11R6/lib64/X11 ] ; then
-                if [ -d /opt/X11/lib/X11 ] ; then
-                  X11_found="yes"
-#                  XINSTALLDIR="/usr/X11R6"
-                  XINSTALLDIR="/opt/X11"
-                else
-                  if [ -d /usr/lib64/X11 ] ; then
+                case $platform in
+                  mac) if [ -d /usr/X11R6/lib/X11 ] ; then
                     X11_found="yes"
-                    XINSTALLDIR="/usr/lib64"
-                  fi
-                fi;;
+#                    XINSTALLDIR="/usr/X11R6"
+                    XINSTALLDIR="/opt/X11"
+                  fi;;
+                  *) if [ -d /usr/X11R6/lib64/X11 ] ; then
+                       X11_found="yes"
+                       XINSTALLDIR="/usr/X11R6"
+                     else
+                       if [ -d /usr/lib64/X11 ] ; then
+                         X11_found="yes"
+                         XINSTALLDIR="/usr/lib64"
+                       fi
+                     fi;;
+                esac;;
               sun4u)
                 if [ -d /usr/X11R6/lib/64 ] ; then
                   X11_found="yes"

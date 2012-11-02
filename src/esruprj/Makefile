@@ -40,7 +40,7 @@ OBJECTS = prj.o anlytc.o arrow.o ascii_mat.o basesimp.o \
 	  hvacinput.o \
 	  PltDummy.o
 
-MODULES = aim2.mod aim2_calcdata.mod aim2_h2K_dummy.mod aim2_inputdata.mod aim2_inputs.mod \
+MODULES = aim2.mod aim2_calcdata.mod aim2_h2k_dummy.mod aim2_inputdata.mod aim2_inputs.mod \
 	  aim2_inputs_inputdata.mod start_up.mod parse_command_line.mod h3kmodule.mod
 
 $(PROG): $(MODULE_OBJECTS) $(OBJECTS)

@@ -394,3 +394,17 @@ tr_Kgl_arg    :Tripple glazing Pilk Kglass argon
   1.520 0.103 0.111 0.115 0.107 0.083
   1.000 0.001 0.001 0.001 0.001 0.001
   1.520 0.098 0.095 0.086 0.061 0.028
+# 12 char id |  description       | thick | blind
+PVmod_opt     :PV_optical assuming opaque backplate
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   7  0.000  0.070  0.110  0.420
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.000 0.000 0.000 0.000 0.000 0.200 0.200 0.200 0.200 0.200
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.027 0.030 0.032 0.034 0.034
+  1.000 0.823 0.813 0.775 0.643 0.401
+  1.000 0.000 0.000 0.000 0.000 0.000
+  1.000 0.000 0.000 0.000 0.000 0.000
+  1.000 0.000 0.000 0.000 0.000 0.000
+  1.000 0.000 0.000 0.000 0.000 0.000
+  1.000 0.000 0.000 0.000 0.000 0.000

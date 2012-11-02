@@ -539,14 +539,11 @@ C Jump if not all requied and not the focus surface.
         if(isur.ne.0.and.isur.ne.i)goto 9994
         sn=SSNAME(icn1)
 
-C << possible place to use ssmlcindex >>
+C Find matching MLC index in ii and assign to imatch array.
         imatch(i)=0
         RT(I)=0.
-        do 5 ii=1,nmlc
-          if(SSMLCN(icn1)(1:12).eq.DESC(ii)(1:12)) then
-            imatch(i)=ii          
-          endif
-  5     continue
+        call matchmlcdesc(SSMLCN(icn1),ii)
+        imatch(i)=ii          
         if(imatch(i).eq.0) then
           call edisp(iuout,'Warning: no matching MLC defined!')
           OPT(i)='UNKNOWN'
@@ -563,17 +560,9 @@ C Get the air gap contribution to U value for reporting.
  9990       CONTINUE
           ENDIF
         else
-          IF(SSOTF(icn1)(1:4).NE.'OPAQ'.AND.
-     &      SSOTF(icn1)(1:4).NE.'CFC ')THEN
-           WRITE(OPT(i),'(A)') DESC(imatch(i))(21:32)
-           IF(OPT(i).EQ.' ')OPT(i)='UNKNOWN'
-          ELSEIF(SSOTF(icn1)(1:4).EQ.'OPAQ')THEN
-            OPT(i)='OPAQUE'
-          ELSEIF(SSOTF(icn1)(1:4).EQ.'CFC ')THEN
-            OPT(i)='USE GSLedit'
-          ELSE
-            OPT(I)='OPAQ'
-          ENDIF
+
+C Set local optical name from material.h commons.
+          WRITE(OPT(i),'(A)') mlcoptical(imatch(i))(1:12)
           NELT=NE(I)
 
 C For each layer recover the name of material. For non-airgap layers

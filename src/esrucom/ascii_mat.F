@@ -104,31 +104,36 @@ C Parameters
       integer IER         ! error return where zero is ok, 
                           ! ier=-1 file not found, ier=-2 no classes
       COMMON/OUTIN/IUOUT,IUIN
+      common/texted/tedlbl,teditor
+      character tedlbl*20,teditor*20
 
+C Name of current application - only invoke editing if prj.
+      character cAppName*12
+      common/APPNAME/cAppName
+      character h*72
+      common/pophelp/h(60)
+
+      character tmode*8
+      CHARACTER DOIT*300
       DIMENSION VAL(6)
       CHARACTER IDESC*72,NDESC*72,OUTSTR*124
       character namelist*32,nametocheck*32  ! to check for duplicate names
-      character outs*142
+      character outs*142,lltmp*144,longtfile*144,longtfiledos*144
       dimension namelist(600)
       integer loop,ih  ! loop indices
       integer iln,iln2 ! length of name strings
+      logical dupfound,concat,unixok,ok,dok
 
 C Open the ASCII file for reading. Reset ier state prior to efopseq.
       ier=0
+      dupfound = .false.  ! assume no duplicate names
       CALL EFOPSEQ(IFA,LASCI,1,IER)
       IF(IER.NE.0)RETURN
+
       write(currentfile,'(a)') LASCI(1:lnblnk(LASCI))
 
 C Get date stamp for the materials arrays.
       call dstamp(matdbdate)
-
-C Fill the hash table with not included marker (-1) and clear the
-C array of duplicate checking names.
-      nametocheck=' '
-      do 42 ih=0,600
-        mathash(ih)=-1
-        namelist(ih)=' '
-  42  continue
 
 C Initiate documentation for the database (new concept).
       write(matdbdoc,'(4a)')
@@ -143,11 +148,31 @@ C Proceed.
         ier=-2
         RETURN
       endif
+
+C Clear the materials common blocks.
+      matdbitems = 0   ! reset the total number of items.
+      do ij=1,MGCL
+        matcatname(ij)=' '
+        matcatdoc(ij)=' '
+        matcatitems(ij)=0
+      end do
+
+C Fill the hash table with not included marker (-1) and clear the
+C array of duplicate checking names and materials data.
+      nametocheck=' '
+      do ih=0,600
+        mathash(ih)=-1
+        if(ih.gt.0)namelist(ih)=' '
+        if(ih.gt.0)matname(ih)=' '
+        if(ih.gt.0)matdoc(ih)=' '
+        matopaq(ih)=' '
+        if(ih.gt.0)matcatindex(ih)=0
+      end do
+
       K=0
       CALL EGETWI(OUTSTR,K,matcats,1,MGCL,'W','nb mat classes',IER)
       IF(IER.NE.0.or.matcats.le.0)RETURN  ! if no categories return
 
-      matdbitems = 0   ! reset the total number of items.
       DO 10 I=1,matcats
         CALL STRIPC(IFA,OUTSTR,0,ND,1,'IC NE NDESC',IER)
         IF(IER.NE.0)RETURN
@@ -202,6 +227,7 @@ C Record the name and then check and see if it is a duplicate.
      &              namelist(ih)(1:iln2),' (',ih,
      &              '). Must be unique!'
                   call edisp(iuout,outs)
+                  dupfound = .true.  ! a duplicate name found
                 endif
               else
                 continue
@@ -329,6 +355,50 @@ C      write(6,*) 'mathash ',mathash
 C      write(6,*) 'matlegindex ',matlegindex
       
       CALL ERPFREE(IFA,ISTAT)
+
+C If it is a local materials file and there has been a duplicate
+C name discovered and the application is 'prj' then offer the user
+C the option of editing the materials files.
+      if(cAppName(1:3).eq.'prj')then
+        continue
+      else
+        return
+      endif
+      if(dupfound)then
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          dok=.false.
+          h(1)='Each material should have a unique name. Duplicates'
+          h(2)='were found and should be rectified as soon as possible'
+          h(3)='to prevent confusion in the model. After editing the '
+          h(4)='materials file you should exit prj and re-open the '
+          h(5)='model. '
+          nbhelp=5
+          CALL ASKOK(
+     &      'Edit materials file to address duplicate material names?',
+     &      '(be sure to save file and re-open the model)',
+     &      OK,dok,nbhelp)
+          if(OK)then
+            lltmp=LASCI  ! file name to edit
+
+C Depending on whether Unix or DOS based setup paths. If DOS
+C then check for spaces in name and change / to \.
+            call isunix(unixok)
+            if(unixok)then
+              call addpath(lltmp,longtfile,concat)
+            else
+              call addpath(lltmp,longtfile,concat)
+              call cmdfiledos(longtfile,longtfiledos,ier)
+              longtfile=' '
+              longtfile=longtfiledos
+            endif
+            tmode='graph'
+            if(teditor(1:2).eq.'vi')tmode='text'
+            write(doit,'(a,2x,a)') teditor(1:lnblnk(teditor)),
+     &        longtfile(1:lnblnk(longtfile))
+            call runit(doit,tmode)
+          endif
+        endif
+      endif
       RETURN
     
       END
@@ -353,7 +423,7 @@ C Parameters
 
       integer matcount,matcatcount  ! used to increment arrays
       integer lncat     ! for length of string
-      logical closemat1,closemat2,closer1,closer2,closer3
+      logical closemat1,closemat2
 
       tab=','       ! create tab separator.
       matcount=0    ! setup initial overall counter
@@ -501,23 +571,33 @@ C Parameters
                           ! that the expected header was not found
                           ! ier=-1 file not found, ier=-2 no classes
       COMMON/OUTIN/IUOUT,IUIN
+      common/texted/tedlbl,teditor
+      character tedlbl*20,teditor*20
+
+C Name of current application - only invoke editing if prj.
+      common/APPNAME/cAppName
+      character cAppName*12
+
+      character tmode*8
+      CHARACTER DOIT*300
 
       DIMENSION VAL(19)
       CHARACTER NDESC*72,OUTSTR*124,WORD*24
       character WORD32*32,WORD248*248,LOUTSTR*248
       logical closemat1,closemat2
       character namelist*32,nametocheck*32  ! to check for duplicate names
-      character outs*124
+      character outs*124,lltmp*144,longtfile*144,longtfiledos*144
       dimension namelist(600)
       integer loop,ih  ! loop indices
       integer iln,iln2 ! length of name strings
+      logical dupfound,concat,unixok,ok,dok
 
 C Open the ASCII file for reading.
+      dupfound = .false.  ! assume no duplicate names
       CALL EFOPSEQ(IFA,LASCI,1,IER)
       IF(IER.NE.0)RETURN
       write(currentfile,'(a)') LASCI(1:lnblnk(LASCI))
 
-      matdbitems = 0   ! reset the total number of items.
       closemat1=.false.
       closemat2=.false.
 
@@ -528,14 +608,25 @@ C Proceed with header.
       CALL EGETW(OUTSTR,K,WORD,'-','*material',IER)
       if(WORD(1:10).eq.'*Materials'.or.WORD(1:10).eq.'*materials')then
 
-C Fill the hash table with not included marker (-1) and then get the
-C next token as the version number as set closemat. Clear the
-C array of duplicate checking names.
+C Clear the materials common blocks.
+        matdbitems = 0   ! reset the total number of items.
+        do ij=1,MGCL
+          matcatname(ij)=' '
+          matcatdoc(ij)=' '
+          matcatitems(ij)=0
+        end do
+
+C Fill the hash table with not included marker (-1) and clear the
+C array of duplicate checking names and materials data.
         nametocheck=' '
-        do 42 ih=1,600
+        do ih=1,600
           mathash(ih)=-1
-          namelist(ih)=' '
-  42    continue
+          if(ih.gt.0)namelist(ih)=' '
+          if(ih.gt.0)matname(ih)=' '
+          if(ih.gt.0)matdoc(ih)=' '
+          matopaq(ih)=' '
+          if(ih.gt.0)matcatindex(ih)=0
+        end do
 
         matver = 1.1   ! set initial version of database.
         CALL EGETWR(OUTSTR,K,VAL(1),1.0,1.2,'-','db mat version',IER)
@@ -612,6 +703,7 @@ C Record the name and then check and see if it is a duplicate.
      &            namelist(ih)(1:iln2),' (',ih,
      &            '). Material names must be unique!'
                 call edisp(iuout,outs)
+                dupfound = .true.  ! a duplicate name found
               endif
             else
               continue
@@ -722,7 +814,6 @@ C the rest of the line.
 
 C End of file marker.
         CALL ERPFREE(IFA,ISTAT)
-        RETURN
       else
 
 C << did not find the correct header.... >>
@@ -735,6 +826,45 @@ C << did not find the correct header.... >>
       endif
       
       CALL ERPFREE(IFA,ISTAT)
+
+C If it is a local materials file and there has been a duplicate
+C name discovered and the application is 'prj' then offer the user
+C the option of editing the materials files.
+      if(cAppName(1:3).eq.'prj')then
+        continue
+      else
+        return
+      endif
+      if(dupfound)then
+        if(ipathmat.eq.0.or.ipathmat.eq.1)then
+          dok=.false.
+          CALL ASKOK(
+     &      'Edit materials file to address duplicate material names?',
+     &      '(be sure to save file and re-open the model)',
+     &      OK,dok,nbhelp)
+          if(OK)then
+            lltmp=LASCI  ! file name to edit
+
+C Depending on whether Unix or DOS based setup paths. If DOS
+C then check for spaces in name and change / to \.
+            call isunix(unixok)
+            if(unixok)then
+              call addpath(lltmp,longtfile,concat)
+            else
+              call addpath(lltmp,longtfile,concat)
+              call cmdfiledos(longtfile,longtfiledos,ier)
+              longtfile=' '
+              longtfile=longtfiledos
+            endif
+            tmode='graph'
+            if(teditor(1:2).eq.'vi')tmode='text'
+            write(doit,'(a,2x,a)') teditor(1:lnblnk(teditor)),
+     &        longtfile(1:lnblnk(longtfile))
+            call runit(doit,tmode)
+          endif
+        endif
+      endif
+
       RETURN
     
       END
@@ -771,11 +901,11 @@ C be sure to instanciate mathash with the material array index.
       end
 
 C ************* MATFROMBIN 
-C MATFROMBIN: Fills materials common blocks via scan of binary materials
-C database.  It should be called after an initial scan of the binary
-C file establishes that the file is ok for scanning. Other code blocks
-C can check the value of natdbitems is non-zero. If the returned value
-C of IER is zero then scan was ok.
+C MATFROMBIN: Fills materials common blocks via scan of a legacy
+C binary materials database.  It should be called after an initial 
+C scan of the binary file establishes that the file is ok for scanning.
+C Other code blocks can check the value of natdbitems is non-zero.
+C If the returned value of IER is zero then scan was ok.
 
 C << this could be part of a legacy file conversion facility >>
 
@@ -837,11 +967,6 @@ C Reset ier state prior to reading data.
 C Get date stamp for the materials arrays.
       call dstamp(matdbdate)
 
-C Fill the hash table with not included marker (-1)
-      do 42 ih=0,600
-        mathash(ih)=-1
-  42  continue
-
 C Initiate documentation for the database (new concept).
       write(matdbdoc,'(4a)')
      & 'ESP-r Materials based on scan of a binary materials',
@@ -861,11 +986,28 @@ C the file is not binary there is no need to inform the user.
         IER=-2
         RETURN
       ENDIF
-      matcats=NCLASS
+
+C Clear the materials common blocks.
       matdbitems = 0   ! reset the total number of items.
+
+      do ij=1,MGCL
+        matcatname(ij)=' '
+        matcatdoc(ij)=' '
+        matcatitems(ij)=0
+      end do
+
+C Fill the hash table with not included marker (-1)
+      do ih=0,600
+        mathash(ih)=-1
+        if(ih.gt.0)matname(ih)=' '
+        if(ih.gt.0)matdoc(ih)=' '
+        matopaq(ih)=' '  ! allow zero so that iprmat of zero is ok
+        if(ih.gt.0)matcatindex(ih)=0
+      end do
 
 C Proceed with the assumption that ICLN increments in the same order as
 C 1 -> NCLASS increments. ICLN is not held in the common blocks.
+      matcats=NCLASS
       DO 10 I=1,NCLASS
         IC=ICLN(I)
         IREC=IC*20-19
@@ -999,7 +1141,7 @@ C category for air and fill it with default information.
         matgapares(matdbitems,3)=0.17
       endif
 
-      matver = 1.1   ! set version of materials structures.
+      matver = 1.2   ! set version of materials structures.
 
 C Debug.
 C      write(6,*) 'b matdbitems ',matdbitems

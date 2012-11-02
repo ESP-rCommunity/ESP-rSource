@@ -182,3 +182,17 @@ DCF7671_06tb  :Clear float 76/71,  6mm, trnsul blnd
   1.52, 0.172, 0.181, 0.178, 0.151, 0.097 
   1.00, 0.001, 0.002, 0.003, 0.004, 0.005 
   1.00, 0.192, 0.183, 0.164, 0.116, 0.052 
+# 12 char id |  description       | thick | blind
+PVmod_opt     :PV_optical assuming opaque backplate
+# def lyr, tmc lyr, vis trn, sol refl, sol absor, U val
+  1   7  0.000  0.070  0.110  0.420
+# direct trn @ 5 angles, total heat gain @ 5 angles
+  0.000 0.000 0.000 0.000 0.000 0.200 0.200 0.200 0.200 0.200
+# refr index, absorption @ 5 angles for each tmc layer
+  1.520 0.027 0.030 0.032 0.034 0.034
+  1.000 0.823 0.813 0.775 0.643 0.401
+  1.000 0.000 0.000 0.000 0.000 0.000
+  1.000 0.000 0.000 0.000 0.000 0.000
+  1.000 0.000 0.000 0.000 0.000 0.000
+  1.000 0.000 0.000 0.000 0.000 0.000
+  1.000 0.000 0.000 0.000 0.000 0.000

@@ -108,7 +108,7 @@ C Simulation parameter presets.
       CHARACTER NAM*72,outs*124
       character CLMLOC*30
       character ctldoc*248,LCTLF*72
-      character ZSDES*28,ZSDESC*20,ZSDESS*16,mlcname*12
+      character ZSDES*28,ZSDESC*20,ZSDESS*16,mlc_name*12
       character dstmp*24
       CHARACTER LAPROB*72
 
@@ -568,8 +568,8 @@ C Scan for materials.
 
 C Loop through each construction in the database, check if it
 C is used in the model and if so proceed to check.
-        mlcname=DESC(ino)(1:12)
-        call mlcrefs(mlcname,areamlc,tareamlc,foundmlc)
+        mlc_name=DESC(ino)(1:12)
+        call mlcrefs(mlc_name,areamlc,tareamlc,foundmlc)
         if(.NOT.foundmlc) goto 20
 
 C If the construction is transparent then the materials need
@@ -826,8 +826,8 @@ C and assign iconmatpointer for each layer.
 
 C Loop through each construction in the database, check if it
 C is used in the model and if so proceed to check.
-        mlcname=DESC(ino)(1:12)
-        call mlcrefs(mlcname,areamlc,tareamlc,foundmlc)
+        mlc_name=DESC(ino)(1:12)
+        call mlcrefs(mlc_name,areamlc,tareamlc,foundmlc)
         if(.NOT.foundmlc) goto 200
 
         WRITE(OPT,'(A)') DESC(INO)(21:32)
@@ -887,14 +887,14 @@ C Now for each construction.
      &  '!- ======= CONSTRUCTION ======'
 
       do 36 ino = 1,NMLC
-        mlcname=DESC(ino)(1:12)
-        call mlcrefs(mlcname,areamlc,tareamlc,foundmlc)
+        mlc_name=DESC(ino)(1:12)
+        call mlcrefs(mlc_name,areamlc,tareamlc,foundmlc)
         if(.NOT.foundmlc) goto 36
 
         WRITE(ioout,'(a)',iostat=ios,err=4) ' '
         WRITE(ioout,'(2a)',iostat=ios,err=4) '  Construction',com
         WRITE(ioout,'(4a)',iostat=ios,err=4) indent,
-     &    mlcname(1:lnblnk(mlcname)),com,'   !- Name'    
+     &    mlc_name(1:lnblnk(mlc_name)),com,'   !- Name'    
         do 37 il = 1,LAYERS(INO)
           ilamat=iconmatpointer(ino,IL)
           if(ilamat.eq.0)then

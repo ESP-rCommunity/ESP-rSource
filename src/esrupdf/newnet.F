@@ -2119,11 +2119,7 @@ C with ier=1.
 
 C Check composite name of surface with composite name in MLC common.
       imatch=0
-      do 5 i=1,nmlc
-        if(SMLCN(is)(1:12).eq.DESC(i)(1:12)) then
-          imatch=i          
-        endif
-  5   continue
+      call matchmlcdesc(SMLCN(is),imatch)
       if(imatch.eq.0) then
          call edisp(iuout,'Error: probably no MLC defined!')
          return
@@ -2134,7 +2130,7 @@ C Write menu displaying a list of layer names
       footer=3
       write(item(1),'(a,a)') 'a surface name: ',SNAME(iz,is)
       write(item(2),'(a,i2)')'b number of layers: ',LAYERS(imatch)
-      write(item(3),'(a,a)') 'c MLC name: ',DESC(imatch)(1:12)
+      write(item(3),'(a,a)') 'c MLC name: ',mlcname(imatch)(1:12)
       item(4)='  ----------------------------'
       do 10 j=1,LAYERS(imatch)
 

@@ -492,8 +492,8 @@ C For obstruction blocks of type "obsp":
       common/grndpl/NGT,NGTV,XGT(MGTV),YGT(MGTV),ZGT(MGTV),JGVN(MGRT,8),
      &  NGVER(MGRT),IVEDGE(MGRT)
 
+      CHARACTER GSNAME*6,GMLCN*32
       COMMON/GT5/GSNAME(MGRT),GMLCN(MGRT)
-      character GSNAME*6,GMLCN*12
 
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
@@ -505,7 +505,7 @@ C For obstruction blocks of type "obsp":
       character ZSN*28
       character ZN*12,outs*124,material*25,QT*1
       character GDESCR*36,DESCRC*25
-      CHARACTER MLCN*12,OTF*4,OPT*12
+      CHARACTER OPT*12  ! for optical name of the MLC
       CHARACTER ACT_1*1,doit*144
       character outsn*124,outsd*124, tfile*72
       character pfile*72,atfile*72,ltmp72*72,dtmp72*72,ObsMatName*32
@@ -723,17 +723,8 @@ C Initial assumption is that material is not ficticious and should
 C not be skipped.
         iskip(im)=0
 
-C Pick up general description of the composite from construction 
-C data base entry.
-        WRITE(MLCN,'(A)') DESC(IM)(1:12) ! MLC construction name
-        WRITE(OTF,'(A)') DESC(IM)(15:18) ! MLC type
-        IF(OTF.EQ.' ') OTF='OPAQ'
-        IF(OTF(1:4).EQ.'TRAN'.or.OTF(1:4).EQ.'CFC ') THEN
-          WRITE(OPT,'(A)') DESC(IM)(21:32) ! "OPAQUE", "<optics data set name>" or "USE GSLedit"
-          IF(OPT.EQ.' ') OPT='UNKNOWN'
-        ELSE
-          OPT='OPAQUE'
-        ENDIF
+C Pick up general description of the composite.
+        WRITE(OPT,'(A)') mlcoptical(IM)(1:12)
 
 C For the inside and outside layer get surface properties.
         matarrayindex=IPRMAT(IM,1)   ! which materials array index
@@ -750,7 +741,7 @@ C If a tmc then find tranmission functions.  If more transparent than
 C the ficticious limit then mark to be skipped. Convert visible
 C transmission to transmissivity (as per Ward 1/12/94 Radiance 2.4 paper).
 C If TMC has an opaque layer then set gvt to a small number.
-        if (OTF(1:4).eq.'TRAN') then
+        if(mlctype(IM)(1:4).EQ.'TRAN')then
           CALL EROPTDB(ITRC,iuout,OPT,GDESCR,IER)
           if(VTRN.gt.0.02)then
           gvt1=(sqrt(0.8402528435+(0.007252224*VTRN*VTRN))-0.9166530661)
@@ -764,14 +755,15 @@ C If TMC has an opaque layer then set gvt to a small number.
           endif
 
 C Setup equivalent for default use. 
-          WRITE(iglzfil,'(a,a)') 'void glass ',MLCN(1:lnblnk(MLCN))
+          WRITE(iglzfil,'(a,a)') 'void glass ',
+     &      mlcname(IM)(1:lnblnk(mlcname(IM)))
           WRITE(iglzfil,'(a)') '0 '
           WRITE(iglzfil,'(a)') '0 '
           WRITE(iglzfil,'(a,3F6.2)') '3  ',gvt,gvt,gvt
           WRITE(iglzfil,'(a)') '  '
 
 C Aternative glazing descriptions file (not for CFC!).
-          if ((NABS.gt.0).and.(OTF(1:4).ne.'CFC ')) then
+          if ((NABS.gt.0).and.(mlctype(IM)(1:4).ne.'CFC ')) then
 
 C Check for blind shutter control.
             do 100 newfoc=1,ncomp
@@ -779,7 +771,8 @@ C Check for blind shutter control.
               do 111 isf=1,nsur
                ICN=IZSTOCN(newfoc,isf)
                if(ITMCFL(newfoc,isf).gt.0.AND.
-     &            SSMLCN(icn)(1:12).eq.MLCN(1:12))then
+     &            SSMLCN(icn)(1:lnblnk(SSMLCN(icn))).eq.
+     &            mlcname(IM)(1:lnblnk(mlcname(IM))))then
                 if (IBCMT(newfoc,ITMCFL(newfoc,isf)).gt.0) then
                  VTRAN=TVTR2(newfoc,ITMCFL(newfoc,isf),NABS)
                  if(VTRN.gt.0.02)then
@@ -793,7 +786,8 @@ C Check for blind shutter control.
               endif
  111         continue
  100        continue
-            WRITE(ita2,'(3a)')'void glass ',MLCN(1:lnblnk(MLCN)),'_sw'
+            WRITE(ita2,'(3a)')'void glass ',
+     &        mlcname(IM)(1:lnblnk(mlcname(IM))),'_sw'
             WRITE(ita2,'(a)') '0 '
             WRITE(ita2,'(a)') '0 '
             WRITE(ita2,'(a,3F6.2)') '3  ',gvt,gvt,gvt
@@ -801,14 +795,14 @@ C Check for blind shutter control.
           endif ! NABS > 0
 
 C       =================== C F C ====================
-        elseif (OTF(1:4).eq.'CFC ') then
+        elseif (mlctype(IM)(1:4).eq.'CFC ') then
           init=2 ! create materials descriptions (check for "first loop"?)
           do iZone=1,ncomp
             do iSurf=1,NZSUR(iZone)
               icn=IZSTOCN(iZone,iSurf)
 C             Check if surface is a cfc and compare names ...
               if(ICFCFL(iZone,iSurf).gt.0.AND.
-     &            SSMLCN(icn)(1:12).eq.MLCN(1:12)) then
+     &            SSMLCN(icn)(1:12).eq.mlcname(IM)(1:12)) then
 
                 call CFC2rad(init,iZone,iSurf)
 
@@ -822,10 +816,10 @@ C       -----------------------------------------------
           if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
      &        SCENEPURP(ISCENE)(1:8).eq.'Internal') then
             WRITE(imatfil,'(a,a)') 'fin_ex plastic rc_ex_',
-     &        MLCN(1:lnblnk(MLCN))
+     &        mlcname(IM)(1:lnblnk(mlcname(IM)))
           else
             WRITE(imatfil,'(a,a)') 'void plastic rc_ex_',
-     &        MLCN(1:lnblnk(MLCN))
+     &        mlcname(IM)(1:lnblnk(mlcname(IM)))
           endif
           WRITE(imatfil,'(a)') '0 '
           WRITE(imatfil,'(a)') '0 '
@@ -837,10 +831,10 @@ C       -----------------------------------------------
           if (SCENEPURP(ISCENE)(1:8).eq.'External'.or.
      &        SCENEPURP(ISCENE)(1:8).eq.'Internal') then
             WRITE(imatfil,'(a,a)') 'fin_in plastic rc_in_',
-     &        MLCN(1:lnblnk(MLCN))
+     &        mlcname(IM)(1:lnblnk(mlcname(IM)))
           else
             WRITE(imatfil,'(a,a)') 'void plastic rc_in_',
-     &        MLCN(1:lnblnk(MLCN))
+     &        mlcname(IM)(1:lnblnk(mlcname(IM)))
           endif
           WRITE(imatfil,'(a)') '0 '
           WRITE(imatfil,'(a)') '0 '
@@ -940,9 +934,7 @@ C to the outside file.
 
 C Find the matching mlc index.
           ICF=-1
-          DO 701 IC=1,NMLC
-            IF(DESC(IC)(1:12).EQ.GMLCN(isf)(1:12))ICF=IC
- 701      CONTINUE
+          call matchmlcdesc(GMLCN(isf),icf)
 
 C If not found then it is probably unknown.
           if(GMLCN(isf)(1:4).eq.'UNKN')then
@@ -1152,11 +1144,11 @@ C   All connections: create one surface (no shift).
           endif
 
 C Find the matching mlc index and set the material name.
+
+C << use call to matchmlcdesc >>
           ICF=-1
           ifict=0
-          DO 201 IC=1,NMLC
-            IF(DESC(IC)(1:12).EQ.SSMLCN(icn)(1:12))ICF=IC
- 201      CONTINUE
+          call matchmlcdesc(SSMLCN(icn),icf)
           if(ICF.eq.-1.or.SSMLCN(icn)(1:4).eq.'UNKN')then
             if (SSOTF(icn)(1:4).ne.'OPAQ') then
 C     &            .and.SSOTF(icn)(1:4).ne.'CFC ') then

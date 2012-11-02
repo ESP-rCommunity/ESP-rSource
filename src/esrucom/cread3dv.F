@@ -73,7 +73,7 @@ C NZJVN : topology of vertices associated with each connection (via geometry.h).
       DIMENSION  CG(3),VN(3),ipoints(6,2)
 
       CHARACTER temp*16,DESCRC*25,stemp*13,temp20*21
-      CHARACTER MLCN*12,t13*13
+      CHARACTER t13*13
 
 C Local variables to pass to edline and axiscale.
 #ifdef OSI
@@ -204,7 +204,7 @@ C label and loop back to the next body.
           call u2pixel(COG3(1),COG3(2),iix,iiy)
           CALL ecirc(iix,iiy,3,1)
           CALL VERTLBL(iix,iiy,IV,ier)
-        call forceflush()
+          call forceflush()
   202   CONTINUE
         GOTO 100
       ELSEIF(NZSUR(nznog(IZ)).GE.1.AND.NZTV(nznog(IZ)).GT.1)THEN
@@ -260,7 +260,7 @@ C Continue on with any surfaces in the zone.
       DO 1000 I=1,NZSUR(nznog(IZ))
 
 C icc is the connection related to the current surface.
-          icc=IZSTOCN(nznog(IZ),I)
+        icc=IZSTOCN(nznog(IZ),I)
 
 C If the configuration file has been read and there is a filter for
 C which surfaces should be displayed test this here. Locate the
@@ -280,14 +280,14 @@ C IAPNT = Pointer to first vertex of polygon
         IAPNT = 1
         NAP = NZNVER(icc)
         DO 1100 J = 1,NZNVER(icc)
-            K = NZJVN(icc,J)
-            AX(J) = VCOORD(nznog(IZ),K,1)
-            AY(J) = VCOORD(nznog(IZ),K,2)
-            AZ(J) = VCOORD(nznog(IZ),K,3)
+          K = NZJVN(icc,J)
+          AX(J) = VCOORD(nznog(IZ),K,1)
+          AY(J) = VCOORD(nznog(IZ),K,2)
+          AZ(J) = VCOORD(nznog(IZ),K,3)
           IANXT(J) = J + 1
  1100   CONTINUE
 
-          IANXT(NZNVER(icc)) = IAPNT
+        IANXT(NZNVER(icc)) = IAPNT
 
 C-----------------------------------------------------------------------
 C Transform surface polygon to EYE co-ordinates
@@ -311,57 +311,56 @@ C If ISTAT = -1 : straddles frustrum
         iiyc=0
 
 C Set line style for this surface. linsty=2 is double width line. 
-          if(ICC.ne.0)then
-            if(LINSTY(ICC).eq.2)then
-              IPEN= -305
-            else
-              IPEN= 1
-            endif
+        if(ICC.ne.0)then
+          if(LINSTY(ICC).eq.2)then
+            IPEN= -305
           else
             IPEN= 1
           endif
+        else
+          IPEN= 1
+        endif
 
 C Check for hilights. ITHLS=1 is composition, ITHLS=2 trn:opq,
 C ITHLS = 3 partial attributes
-          if(ITHLS.eq.1.and.ITHLZ.gt.0)then
-            WRITE(MLCN,'(A12)')DESC(ITHLZ)(1:12)
-            if(MLCN(1:12).eq.SSMLCN(ICC)(1:12))then
-              IPEN= -305
-            else
-              IPEN= 1
-            endif
-          elseif(ITHLS.eq.2)then
-            if(ITHLZ.eq.1.and.SSOTF(ICC)(1:4).eq.'OPAQ')then
-              IPEN= -305
-            else
-              IPEN= 1
-            endif
-            if(ITHLZ.eq.2.and.SSOTF(ICC)(1:4).ne.'OPAQ')then
-              IPEN= -305
-            else
-              IPEN= 1
-            endif
-          elseif(ITHLS.eq.3)then
-            if(SSMLCN(ICC)(1:4).eq.'UNKN'.or.
-     &         SSOTHER(ICC,1)(1:4).eq.'UNKN')then
-              IPEN= -305
-            else
-              IPEN= 1
-            endif
+        if(ITHLS.eq.1.and.ITHLZ.gt.0)then
+          if(mlcname(ITHLZ)(1:12).eq.SSMLCN(ICC)(1:12))then
+            IPEN= -305
+          else
+            IPEN= 1
           endif
+        elseif(ITHLS.eq.2)then
+          if(ITHLZ.eq.1.and.SSOTF(ICC)(1:4).eq.'OPAQ')then
+            IPEN= -305
+          else
+            IPEN= 1
+          endif
+          if(ITHLZ.eq.2.and.SSOTF(ICC)(1:4).ne.'OPAQ')then
+            IPEN= -305
+          else
+            IPEN= 1
+          endif
+        elseif(ITHLS.eq.3)then
+          if(SSMLCN(ICC)(1:4).eq.'UNKN'.or.
+     &       SSOTHER(ICC,1)(1:4).eq.'UNKN')then
+            IPEN= -305
+          else
+            IPEN= 1
+          endif
+        endif
 
 C Debug.
-C          write(6,*)'icc linsty ipen ithls ithlz',icc,linsty(icc),ipen,
-C     &      ithls,ithlz,ISTOK
+C        write(6,*)'icc linsty ipen ithls ithlz',icc,linsty(icc),ipen,
+C     &    ithls,ithlz,ISTOK
 
 C Count the edges in case enhanced edge drawing required.
         iedge=0
         DO 300 J = 1,NB
 
 C Multiply each vertex by ETSMAT to transform to screen coords
-C ETSMAT = Eye to Screen Matrix.  First move to the beginning.
+C ETSMAT = Eye to Screen Matrix. First move to the beginning.
           IP = IABS(IBPNT)
-          CALL  ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
+          CALL ORTTRN(BX(IP),BY(IP),BZ(IP),ETSMAT,AAX,AAY,AAZ,IERR)
           call u2pixel(AAX,AAY,iix,iiy)
 
 C If vertex are to be labeled do it in the smallest font, then

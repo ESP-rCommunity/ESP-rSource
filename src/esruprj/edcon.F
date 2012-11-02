@@ -750,8 +750,8 @@ C Material properties.
 
       LOGICAL closemat1,closemat2
 
-      DIMENSION ISD(19)
-      CHARACTER NAM*72,ISD*46
+      DIMENSION ISD(25)
+      CHARACTER ISD*46
       CHARACTER KEY*1,HOLD*48,TOPTIC*12,optic*12
       integer ISDN,INODA ! max items and current menu item
 
@@ -808,7 +808,6 @@ C Surface properties.
 
 C Find composite which matches.
       ICF=-1
-      lstr=lnblnk(SSMLCN(icn1))
       if(ssmlcindex(icn1).ne.0) ICF=ssmlcindex(icn1)
 
 C For each layer.
@@ -834,12 +833,12 @@ C Multilayer construction has not been defined.
 
 C Find air gap resistance for this layer. 
 C << remove reporting for IPR >>
-            DO 148 IGG=1,NAIRG(ISUR)
+            DO IGG=1,NAIRG(ISUR)
               IF(IPAIRG(ISUR,IGG).EQ.IE)R=RAIRG(ISUR,IGG)
               WRITE(ISD(M),48)KEY,IE,IPR(ICF,IE),THK(ISUR,IE),
      &          CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE),R
   48          FORMAT(A1,I3,I4,F6.3,3F8.2,F6.2)
- 148        CONTINUE
+            ENDDO
           elseif(matarrayindex.eq.-99)then
             WRITE(ISD(M),'(a1,i3,a)')KEY,IE,
      &        ' confused material reference'
@@ -964,7 +963,6 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht.
      &       matarrayindex.eq.0)then
             DBCON=0.0; DBDEN=0.0; DBSHT=0.0
             E=0.99; A=0.99
-            NAM='AIR'
 
 C Update array NAIRG.
             if(NAIRG(ISUR)+1.gt.MGP)then
@@ -993,7 +991,6 @@ C Update array NAIRG.
             DBSHT=matdbsht(matarrayindex)
             E=matdbine(matarrayindex)
             A=matdbina(matarrayindex)
-            write(NAM,'(a)') matname(matarrayindex)(1:32)
           endif
           IF(IER.EQ.1)RETURN
 
@@ -1107,7 +1104,6 @@ C Material properties.
       logical closemat1,closemat2
 
       CHARACTER outs*124
-      CHARACTER NAM*72
 
 C Assume no window optical properties asked for.
       IER=0
@@ -1212,7 +1208,7 @@ C And if matarrayindex is zero then resetn dbcon dbden dbsht.
      &       matarrayindex.eq.0)then
             DBCON=0.0; DBDEN=0.0; DBSHT=0.0
             E=0.99; A=0.99
-            NAM='AIR'
+
 C Debug            write(6,*) 'EDZCON',ic,il,DRAIR(IC,IL,1),
 C     &        DRAIR(IC,IL,2),DRAIR(IC,IL,3)
 
@@ -1234,6 +1230,8 @@ C Deal with air gap resistance if layer is a gap.
               ENDIF
             endif
           elseif(matarrayindex.eq.-99)then
+            DBCON=0.0; DBDEN=0.0; DBSHT=0.0
+            E=0.99; A=0.99
             continue  ! can't deal with a confused material
           else
             DBCON=matdbcon(matarrayindex)
@@ -1241,7 +1239,6 @@ C Deal with air gap resistance if layer is a gap.
             DBSHT=matdbsht(matarrayindex)
             E=matdbine(matarrayindex)
             A=matdbina(matarrayindex)
-            write(NAM,'(a)') matname(matarrayindex)(1:32)
           endif
 
           CON(IS,IL)=DBCON
@@ -2099,7 +2096,7 @@ c homogeneous layer. Locate if the MLC database item is used.
           DO 45 il=1,LAYERS(ic)
             matarrayindex=IPRMAT(IC,IL)   ! which materials array index
 
-C And if matarrayindex is zero then resetn dbcon dbden dbsht.
+C And if matarrayindex is zero or matopaq g or h then resetn dbcon dbden dbsht.
             if(matopaq(matarrayindex)(1:1).eq.'g'.or.
      &         matopaq(matarrayindex)(1:1).eq.'h'.or.
      &         matarrayindex.eq.0)then

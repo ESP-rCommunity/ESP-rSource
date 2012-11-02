@@ -2544,7 +2544,7 @@ C <<<Confirm this with bpfcontrl.F>>>>>>>>>>>>>>>>
 C<<<<Probably IOAN does not need a 3rd item. >>>>
           if(IOAN(II,2).gt.0)then
             icons=IOAN(II,2)
-            write(disp_constr,'(a)') DESC(icons)(1:12)
+            write(disp_constr,'(a)') mlcname(icons)(1:12)
             WRITE(SSTR,'(3a)')  'actuating the optical properties at ',
      &        'construction ', disp_constr
           else
@@ -2709,9 +2709,9 @@ C Check if the sensor is thermophysical property substitution.
             isub1=nint(cm(3)); isub2=nint(cm(4)); isub3=nint(cm(5))
             sub1='-           '; sub2='-           '
             sub3='-           '
-            if(isub1.ne.0) sub1=DESC(isub1)(1:12)
-            if(isub2.ne.0) sub2=DESC(isub2)(1:12)
-            if(isub3.ne.0) sub3=DESC(isub3)(1:12)
+            if(isub1.ne.0) sub1=mlcname(isub1)(1:12)
+            if(isub2.ne.0) sub2=mlcname(isub2)(1:12)
+            if(isub3.ne.0) sub3=mlcname(isub3)(1:12)
             if(nint(cm(1)).eq.4)then
               write(lmsg,'(8a)')  msg1,' use mlc ',sub1,
      &          ' mlc ',sub2,' mlc ',sub3,' for the surfaces.'
