@@ -2161,14 +2161,18 @@ C Remind user of standard optics as well as the alternatives.
           endif
         endif
 
-C Note optional zone extensions.
+C Note optional zone extensions. If there are casual gain controls
+C then rescan that zone file with verbose setting.
         if(zoneextrainfo.ge.1)then
           ivz=IVALS(IZ)   ! remember the selected zone
           if(IVF(ivz).EQ.1)call edisp(itu,
      &      ' Explicit viewfactors have been derived for this zone.')
-          if(ICGC(ivz).EQ.1)call edisp(itu,
+          if(ICGC(ivz).EQ.1)then
+            call edisp(itu,
      &      ' Casual gains are controlled in this zone.')
-
+            iitrc=1
+            call ercgcf(iitrc,itu,LCGCIN(IVALS(IZ)),IVALS(IZ),ier)
+          endif
           if(IOBS(ivz).gt.0.and.nbobs(ivz).gt.0)then
             call edisp(itu,
      &   'Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity')
