@@ -60,10 +60,10 @@ C conductances to building domain
       COMMON/AfnToBldData/fAfnCondInfil,fAfnCondVent,iAfnIndex,
      &                    fAfnCondNorm, bAfnZoneActive,fZoneMassBalance
      
-      real fAfnCondInfil(MCOM) ! Ventilation conductance (infiltration)
-      real fAfnCondVent(MCOM)  ! Ventilation conductance (zone coupled)
-      real fAfnCondNorm(MCOM)  ! fAfnCondVent(MCOM) after normalisation
-                               ! to external temperature.
+      real fAfnCondInfil(MCOM)	! Ventilation conductance (infiltration)
+      real fAfnCondVent(MCOM)	! Ventilation conductance (zone coupled)
+      real fAfnCondNorm(MCOM)	! fAfnCondVent(MCOM) after normalisation
+				! to external temperature.
       integer iAfnIndex(MCOM)
       logical bAfnZoneActive(MCOM)
       real fZoneMassBalance(MCOM,4)
@@ -263,8 +263,8 @@ C temperatures.
         END IF
 
 C Assign fluid specific heat.
-        CP=1006.0                   ! air
-        if(znotair(ICOMP))CP=zfldC  ! alternative zone fluid
+        CP=1006.0			! air
+        if(znotair(ICOMP))CP=zfldC	! alternative zone fluid
 
 C Zone infiltration conductance.
         CVI=AMFR(JNOD,JNOD)*CP

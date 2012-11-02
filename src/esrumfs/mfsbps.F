@@ -346,7 +346,7 @@ C Check that zones are legally mapped to network flow nodes.
           call edisp(iuout,outs)
           goto 99
         else if(ICAAS(ICOMP).ne.0) then
-          if(znotair(ICOMP)) then  ! zone is not air filled
+          if(znotair(ICOMP)) then		! zone is not air filled
             if(NDFLD(ICAAS(ICOMP)).ne.2) then
               write(outs,'(2(A,I3))') ' Building zone ',ICOMP,
      &            ' incorrectly references an air flow node.',
@@ -354,7 +354,7 @@ C Check that zones are legally mapped to network flow nodes.
               call edisp(iuout,outs)
               goto 99
             end if
-          else     ! zone is air filled
+          else					! zone is air filled
             if(NDFLD(ICAAS(ICOMP)).ne.1) then
               write(outs,'(2(A,I3))') ' Building zone ',ICOMP,
      &          ' incorrectly references a non-air flow node.',
