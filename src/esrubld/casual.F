@@ -200,7 +200,11 @@ C     Data fro each coupling
       REAL Coupling_gain_info
 C     HOT3000 storage arrays
       REAL Cas_Rad_dat, Cas_Con_dat, Cas_Lat_dat
+C     Function returning gains from ideal hot water tank
+      real fIdealDHWGain
 
+      
+      
 C     Flag indicating that function Elec_Net_Load_Calc(?) should 
 C     return the occupant-driven electrical load (excluding 
 C     HVAC equipment)
@@ -847,11 +851,14 @@ C These data are actually used to calculate the heat injection
 C into the building.
 C
 C Also append convective and radiant gains associated with
-C heat losses from plant components.
+C heat losses from plant components. Gains from ideal plant 
+C components are assumed to be all convective. 
 C 
 C 
       QCASC(2)= QCASC(2) + Total_elec_CON_gain
      &                   + fPltZone_Convective_Gain(iComp,iFuture) !(W)
+     &                   + fIdealDHWGain(iComp)                    !
+     
       QCASR(2)= QCASR(2) + Total_elec_RAD_gain
      &                   + fPltZone_Radiant_Gain(iComp,iFuture)    !(W)
 
@@ -869,7 +876,7 @@ C injected as a weighted mix of convection and radiation.
         QCASC(2) = QCASC(2) +
      &              COSIM_DATA%ESPrZonesData(icomp)%AirPointCasualGains
       END IF
-      
+
 C STORE future row casual and radiant gains
       Cas_Con_dat(icomp) = QCASC(2)  ! W
       Cas_Rad_dat(icomp) = QCASR(2)  ! W
