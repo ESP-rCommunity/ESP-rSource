@@ -521,7 +521,7 @@ C Lighting total
      &    LCFGF(1:icfgNameLen),tab,'Total_lighting',
      &    tab,'t_light_kWh',tab,ncmBuildLight_kWh
         call edisp(IWU,min)
-        ncm_m2_BuildLight_kWh=ncmBuildLight_kWh/total_floor_area  
+	ncm_m2_BuildLight_kWh=ncmBuildLight_kWh/total_floor_area  
         write(min,'(6a,f12.3)') 
      &    LCFGF(1:icfgNameLen),tab,'Total_lighting_per_m^2',
      &    tab,'t_light_kWhperm2',tab,ncm_m2_BuildLight_kWh
@@ -748,17 +748,17 @@ C Fill DHW demand variables
       do 741 I=1,NCOMP
 
 C Avoid cases of dividing by 0
-        call eclose(ZBASEA(I),0.0,0.0001,closea)
-        if(closea)then
-          write(min,'(a,I3)') 
+	call eclose(ZBASEA(I),0.0,0.0001,closea)
+	if(closea)then
+	  write(min,'(a,I3)') 
      &    'NCMDHW: Base area seems to be 0 for zone: ',I
           call edisp(iuout,min)
           call edisp(iuout,'Check the model and try again')
-          return       
-        else
+	  return       
+	else
           total_floor_area=total_floor_area+zbasea(I)
-        endif
-        iactvalue=theactivityindex(I)
+	endif
+	iactvalue=theactivityindex(I)
 
 C DHW in MJ:
         MJ_DHW_ann_energy(I)=

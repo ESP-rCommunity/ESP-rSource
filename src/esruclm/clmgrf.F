@@ -955,13 +955,13 @@ C Local variables to pass to edline and axiscale.
 #ifdef OSI
       integer iigr35,iigr50,iigr85,iigr100,iigr135,iigt40
       integer iicol
-      integer iigl,iigr,iigt,iigb,iigw,iigwh
       integer iiw1,iiw2,iiw3,iiw4
+      integer iigl,iigr,iigt,iigb,iigw,iigwh
 #else
       integer*8 iigr35,iigr50,iigr85,iigr100,iigr135,iigt40
       integer*8 iicol
-      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
       integer*8 iiw1,iiw2,iiw3,iiw4
+      integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
 #endif
 
 C Check if can draw in colour.
