@@ -57,6 +57,7 @@ C ICLIM,LCLIM (for climate file)
 #include "seasons.h"
 #include "UserSimulationToggles.h"
 #include "schedule.h"
+#include "dhw_common.h"
 
 #include "e2r_common.h"
 C provides LRADCF
@@ -232,10 +233,6 @@ C SHOCCshzFile - path to SHOCC .shz file for each SHOCC'd zone
       logical bSHOCCed,bZoneSHOCCed
       character SHOCCshlFile*72,SHOCCshzFile*72
       
-C DHW.
-      common/dhw/sDHW_InputFileName,iDHW_FLAG
-      character sDHW_InputFileName*72
-      INTEGER   iDHW_FLAG
 
 C Fuel cell.
       common/Fcell/iFClds,LFClds

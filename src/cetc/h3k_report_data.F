@@ -70,10 +70,10 @@ c      USE Building
 #include "model.h"
 #include "geometry.h"
 #include "control.h"
+#include "net_flow.h"
 #include "CFC_common.h"
 #include "e2r_common.h"
 #include "blc25_open_windows.h"
-#include "net_flow.h"
 #include "tdf2.h"
 C.....Passed variable
       integer iZone            ! Zone number
@@ -217,16 +217,19 @@ C.....Window properties
       integer itmcfl
 
 C.....Description of zone control action; these data are used
-C.....in H3Kreports to determine heating, cooling loads and
-C.....to evaluate passive solar design performance.
+C.....in H3Kreports to determine heating, cooling loads and 
+C.....to evaluate passive solar design performance. Also used 
+C.....by BCL25_open_windows, below. 
       common/H3KReportsControl/bZoneHeated,   bZoneCooled,
-     &                         fHeatSetpoint, fCoolSetpoint
+     &                         fHeatSetpoint, fCoolSetpoint,
+     &                         bSlaveActive
 
 C.....Flags indicating zone is heated, cooled.
       logical bZoneHeated(MCOM), bZoneCooled(MCOM)
 
 C.....Heating and cooling setpoint (oC)
       real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
+      logical bSlaveActive(MCOM) 
 
 C.....Ventilation, infiltration data
       common/coe39/cvip,cvvp,cvif,cvvf,qvnp,xx3,cvvpm,cvvfm
@@ -565,7 +568,7 @@ C.....Loads
       real fSUMHeatGainFloor                 !
       real fSUMHeatGainInfiltration          !
       real fSUMHeatGainVentilation
-
+      real fSUMFreeCooling                   ! Free cooling delivered 
 C.....Gains (W)
       real fSUMInternalGains                 ! Internal sources
       real fSUMUsefulInternalGains           !   - coincident with heating
@@ -593,9 +596,19 @@ C.....Air loads (W)
      &     fSUMHeatGainCeiling, fSUMHeatGainWindows, fSUMHeatGainWalls,
      &     fSUMHeatGainFloor, fSUMHeatLossVentilation,
      &     fSUMHeatGainVentilation, fSUMHeatLossInfiltration,
-     &     fSUMHeatGainInfiltration
+     &     fSUMHeatGainInfiltration, fSUMFreeCooling
 
 
+
+C Function counting # of operable windows in zone      
+      integer iCountAFN110Couplings 
+      
+C Window opening data
+      integer iWindowCount    
+      integer iWindow      
+C Flow control data 
+      COMMON/mfctl/ctlpos(MCNN)      
+      real ctlpos
 
 C----------------------------------------------------------------------
 C     Criteria to determine if solar gains are useful, or not;
@@ -609,7 +622,8 @@ C----------------------------------------------------------------------
       !   Hard-coded for now. )
       parameter ( bPSwindowsOpen      = .false. )
       parameter ( fSwingTemperature = 5.0     )
-
+     
+      real fFreeCoolTemp   ! Max permissible temp. (oC)
 
 C----------------------------------------------------------------------
 C     References
@@ -711,6 +725,8 @@ C----------------------------------------------------------------------
         fSUMAdverseInternalGains          = 0.0
         fSUMAdverseSolarGains             = 0.0
         fSUMHeatGainVentilation           = 0.0
+        fSUMFreeCooling                   = 0.0
+
       endif reset_building_totals
 
 
@@ -971,6 +987,7 @@ C-----------------------------------------------------------------------
 
 
         endif check_for_window
+
         fZoneSurfaceFlux = fZoneSurfaceFlux + fSurface_balance_net
 
 C-----------------------------------------------------------------------
@@ -1240,10 +1257,23 @@ C     (above which Sandars and Barakat assume the building will be
 C     ventilated).
 C-----------------------------------------------------------------------
 
+! 14-Mar-2012 BAL: If the zone is being heated, and temperature
+! is below the free cooling threshold fFreeCoolTemp, then 
+! count internal and solar gains as useful. fFreeCoolTemp
+! is equal to the cooling stepoint used for the free cooling
+! controller, type 27 (BLC01_extended). If type 27 controller 
+! detected, use the coolign setpoint, otherwise, use default
+! of heating setpoint + 5 deg C. 
+      if ( bFreeCoolCtl(iZone) ) then
+        fFreeCoolTemp = fCoolSetpoint(iZone)
+      else
+        fFreeCoolTemp = fHeatSetpoint(iZone) + 5.0
+      end if
+
       are_gains_useful:
-     &if ( .not. bPSwindowsOpen .and.
-     &           bZoneHeated(iZone)  .and.
-     &     TFA(iZone) <= fHeatSetpoint(iZone) + fSwingTemperature ) then
+     &if ( bZoneHeated(iZone)  .and.
+     &     TFA(iZone) <= fFreeCoolTemp ) then
+
 
         fZoneUsefulSolarGains    = fZoneSolarGains
         fZoneUsefulInternalGains = fZoneInternalGains
@@ -1316,6 +1346,7 @@ C.....Thermal loads
       fSUMHeatLoss = fSUMHeatLoss + fZoneHeatLoad
       fSUMHeatGain = fSUMHeatGain + fZoneCoolLoad
 
+      fSUMFreeCooling = fSUMFreeCooling + fFreeCoolDelivered(iZone) 
 
 C.....Air load
       fSUMVentilationLoad  = fSUMVentilationLoad + fZoneVentilationLoad
@@ -1746,6 +1777,14 @@ C.....ZONE HEAT INJECTION / EXTRACTION
      &         Q_cool,
      &         zname(iZone)(1:lnzname(iZone)))
 
+C.....Cooling delivered by free-cooling means
+
+C      call AddToReportWild1 (
+C     &         rvFreeCoolingDelivered%Identifier,
+C     &         fFreeCoolDelivered(iZone),
+C     &         cZone_Chars)
+    
+     
 C Convert heat injection/extraction metrics to "per m2 of floor area"
       Qm2_ZONE=Q_ZONE/zbasea(iZone)
       Qm2_Heat=Q_Heat/zbasea(iZone)
@@ -2031,6 +2070,11 @@ C.......Net flux for building
      &         rvBuildingAllZonesSuppliedEnergyNetFlux%Identifier,
      &         fSUMNetFlux)
 
+C.......Free cooling 
+      call AddToReport(
+     &         rvBuildingAllZonesFreeCooling%Identifier,
+     &         fSUMFreeCooling)     
+     
 C.......Total solar gains
       call AddToReport(
      &         rvBuildingAllZonesInsolationTotal%Identifier,
@@ -4333,15 +4377,18 @@ c      USE Building
 
 C.....Description of zone control action; these data are used
 C.....in H3Kreports to determine heating, cooling loads and
-C.....to evaluate passive solar design performance.
+C.....to evaluate passive solar design performance. Also used 
+C.....by BCL25_open_windows, below
       common/H3KReportsControl/bZoneHeated,   bZoneCooled,
-     &                         fHeatSetpoint, fCoolSetpoint
+     &                         fHeatSetpoint, fCoolSetpoint,
+     &                         bSlaveActive
 
 C.....Flags indicating zone is heated, cooled.
       logical bZoneHeated(MCOM), bZoneCooled(MCOM)
 
 C.....Heating and cooling setpoint (oC)
       real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
+      logical bSlaveActive(MCOM) 
 
       data bZoneHeated / MCOM * .false. /
       data bZoneCooled / MCOM * .false. /
@@ -4356,17 +4403,20 @@ C-----------------------------------------------------------------------
 c      USE Building
 #include "building.h"
 
-C.....Description of zone control action; these data are used
-C.....in H3Kreports to determine heating, cooling loads and
-C.....to evaluate passive solar design performance.
+C Description of zone control action; these data are used
+C in H3Kreports to determine heating, cooling loads and 
+C to evaluate passive solar design performance. Also used 
+C by BCL25_open_windows, below. 
       common/H3KReportsControl/bZoneHeated,   bZoneCooled,
-     &                         fHeatSetpoint, fCoolSetpoint
+     &                         fHeatSetpoint, fCoolSetpoint,
+     &                         bSlaveActive
 
 C.....Flags indicating zone is heated, cooled.
       logical bZoneHeated(MCOM), bZoneCooled(MCOM)
 
 C.....Heating and cooling setpoint (oC)
       real fHeatSetpoint(MCOM), fCoolSetpoint(MCOM)
+      logical bSlaveActive(MCOM) 
 
       common/c1/ncomp,ncon
       integer ncomp          ! number of zones
