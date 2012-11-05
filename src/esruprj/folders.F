@@ -558,7 +558,9 @@ C Documentation.
         endif
       endif
 
-C Detect if working on X11 or GTK.
+C Detect if working on X11 or GTK. The file name returned (lltmp).
+C If X11 lltmp will be the file name and if GTK it will include the
+C full path to the file.
       iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
       lltmp='  '
       lguess='  '
@@ -589,7 +591,7 @@ C Ask user whether file is in ../doc and if so use fdroot if GTK.
      &      fname(1:lnblnk(fname))
         endif
       else
-        write(lmodellog,'(a)') lguess(1:lnblnk(lguess))
+        write(lmodellog,'(a)') lltmp(1:lnblnk(lltmp))
       endif
 
 C See if file exists, otherwise create it and write basic
@@ -770,12 +772,12 @@ C Open core of databases if not already done so.
 
 C ********** pfolders
 C Maintain model folders.
-      subroutine pfolders(act,ier)
+      subroutine pfolders(ier)
 #include "building.h"
 #include "model.h"
 
 C geometry.h provides commons G0 and G2.
-#include "geometry.h"
+C #include "geometry.h"
 #include "espriou.h"
       
       integer lnblnk  ! function definition
@@ -798,7 +800,7 @@ C External text editor.
       character doit*248,sfile*72,snpfile*72
       character longtfile*144,longtfiledos*144
       character tedlbl*20,teditor*20
-      character tmode*8,t24*24,act*1,outstr*124,outs*124
+      character tmode*8,t24*24,outs*124
       character*33 ITEMS(24)
       character fs*1
       character subpath*72,action*3
@@ -1384,7 +1386,6 @@ C Set folder separator (fs) to \ or / as required.
         fs = char(92)
       endif
 
-      IER=0
       IUF=IFIL+1
 
     3 INO=-4

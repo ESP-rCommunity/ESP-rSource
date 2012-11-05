@@ -1322,7 +1322,7 @@ C Browse the current model.
       ELSEIF(INO.EQ.16)THEN
 
 C Import from 3rd party tools.
-        call cadin(itrc,ichoice,ier)
+        call cadin(itrc,ier)
       ELSEIF(INO.EQ.17)THEN
 
 C Export, if something other than registration or plant only.
@@ -1340,7 +1340,7 @@ C in the cfg file).
       ELSEIF(INO.EQ.20)THEN
 
 C Project folders and files.
-        call pfolders('-',iier)
+        call pfolders(iier)
       ELSEIF(INO.EQ.22.or.INO.EQ.23)THEN
 
 C Save model (22 without asking for file name & 23 asking for file name).

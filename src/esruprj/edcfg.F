@@ -3369,16 +3369,18 @@ C Also scan utility files if they exist.
         LTMP=' '    ! reset return string
         call edisp(iuout,'  ')  ! echo a blank line
         CALL EASKXORGTKF(LCMDFL,
-     &    'System configuration file?',' ',
-     &    DFCFG,LTMP,'config file name',IER,nbhelp)
+     &    'Model configuration file?',' ',
+     &    DFCFG,LTMP,'model config file name',IER,nbhelp)
 
 C Cancel request, return and ensure that the calling
 C routine deals with the -3 ier passed back.
         if(ier.eq.-3) return
 
+C If X11 lltmp will be the file name and if GTK it will include
+C the full path to the file.
         IF(LTMP(1:2).EQ.'  ')GOTO 289
         LCMDFL='  '
-        call st2file(LTMP,LCMDFL)
+        call st2file(LTMP,LCMDFL)  ! remove unprintable chars
       endif
 
 C Debug.
