@@ -416,14 +416,13 @@ C above.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
 #include "net_flow.h"
 #include "tdf2.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
       common/recov01/pifltog,lpifl
       COMMON/DNORGH/IRTYPE
 
@@ -3911,6 +3910,7 @@ C This recovers one day.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
 #include "control.h"
 
       COMMON/OUTIN/IUOUT,IUIN
@@ -3928,10 +3928,6 @@ C This recovers one day.
       common/getmenu/menutype,igetind(65),igetflux(65)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/GET2/XDUM(MTS),XDUM1(MTS),GVAL(MTS)
-           
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types
-      common/p3ver/ip3ver(MCOM)
 
       integer ireportunit ! zero is default one is W two is kW three Joules
       common/repunit/ireportunit
@@ -4204,7 +4200,7 @@ C operation file is old, sort the periods via processoldcas.
      &          'Operation file for zone ',IGETNO(KGET,2),
      &          ' periods being sorted!'
               call edisp(iuout,outs)
-              call PROCESSOLDCAS(IGETNO(KGET,2),0,iuout,IER)
+              call PROCESSOLDCAS(IGETNO(KGET,2),0,iuout)
             endif
             IF(ICGC(IGETNO(KGET,2)).EQ.1)then
               CALL ercgcf(0,iuout,LCGCIN(IGETNO(KGET,2)),
@@ -4242,7 +4238,7 @@ C operation file is old, sort the periods.
      &          'Operation file for zone ',IGETNO(KGET,2),
      &          ' periods being sorted!'
               call edisp(iuout,outs)
-              call PROCESSOLDCAS(IGETNO(KGET,2),0,iuout,IER)
+              call PROCESSOLDCAS(IGETNO(KGET,2),0,iuout)
             endif
             IF(ICGC(IGETNO(KGET,2)).EQ.1)then
               CALL ercgcf(0,iuout,LCGCIN(IGETNO(KGET,2)),
@@ -4415,7 +4411,7 @@ C read the zone operation file.
      &        'Operation file for zone ',IGETNO(KGET,2),
      &        ' periods being sorted!'
             call edisp(iuout,outs)
-            call PROCESSOLDCAS(IGETNO(KGET,2),0,iuout,IER)
+            call PROCESSOLDCAS(IGETNO(KGET,2),0,iuout)
           endif
           IF(ICGC(IZ).EQ.1)CALL ercgcf(0,iuout,LCGCIN(iz),IZ,ier)
         endif

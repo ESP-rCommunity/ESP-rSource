@@ -858,7 +858,7 @@ C Profile database commons via profile.h.
       character lltmp*144
       character fs*1   ! file separator
       logical unixok  ! to check for database path file separators
-      integer ICGT    ! for radio button
+      integer ICGTL   ! for radio button
 
 C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
@@ -878,7 +878,7 @@ C Labels for loads.
       write(ll7,'(1x,a6,1x)') blodlabel(7)
 
       IER=0
-      ICGT=1
+      ICGTL=1
       PS=0.
       PL=0.
       RAD=0.5
@@ -928,15 +928,15 @@ C Identify nature of demands
       H(3)='pump demands can be separately tracked from that of '
       H(4)='other equipment.  Values from 1 to 4 are accepted'
       H(5)='and can have any meaning that the user chooses. '
-      ICGT=1
+      ICGTL=1
       CALL EASKATOG(' ','Type of casual gain: ',ll1,ll2,ll3,ll4,ll5,
-     &  ll6,ll7,ICGT,5)
+     &  ll6,ll7,ICGTL,5)
 
 C Depending on type set relevant idmdinc value.
-      idmdinc(ICGT)=1
+      idmdinc(ICGTL)=1
 
       call easkab('Are values',' ','absolute','per m^2',IW,5)
-      if(IW.eq.2)ICGT=-1*ICGT
+      if(IW.eq.2)ICGTL=-1*ICGTL
 
  100  WRITE(HOLD,'(2f9.0,2f8.2,a)')PS,PL,RAD,CON,'  '
       H(1)='In order to expand the profile into energy values the'
@@ -974,7 +974,7 @@ C The current calendar day type gains.
           CBMGL(iday,I+IN) = CGL1(INDEX,I)*PL/100.0
           BRADC(iday,I+IN) = RAD
           BCONC(iday,I+IN) = CON
-          IBCGT(iday,I+IN) = ICGT
+          IBCGT(iday,I+IN) = ICGTL
 140     CONTINUE
       endif
 

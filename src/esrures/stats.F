@@ -2046,6 +2046,7 @@ C << file does not need to be scanned to get the surface emissivity.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -2058,9 +2059,6 @@ C << file does not need to be scanned to get the surface emissivity.
       common/getmenu/menutype,igetind(65),igetflux(65)
       common/recver/izver,ipver,iever
 
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
-
       character SLABEL*32,GLABEL*20,TABLABEL*36
       COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
       integer LNSLABEL,LNGLABEL,LNTABLABEL  ! lengths for label strings
@@ -2069,9 +2067,6 @@ C << file does not need to be scanned to get the surface emissivity.
 
       COMMON/T4/EMISI(MS),EMISE(MS),ABSI(MS),ABSE(MS)
 
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types
-      common/p3ver/ip3ver(MCOM)
       COMMON/RECV5/SNA(MCOM,MS)
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
@@ -2163,6 +2158,7 @@ C Read geometry and construction files and setup labels.
         CALL ECONST(LTHRM(IZONE),IUNIT,izone,0,IUOUT,IER)
 
 C Update labels to match the current zone.
+C << revise for additional casual gains >>
         write(LABELS(1),'(1x,a,4x)')lodlabel(izone,1)
         write(LABELS(2),'(1x,a,4x)')lodlabel(izone,1)
         write(LABELS(3),'(1x,a,4x)')lodlabel(izone,2)
@@ -2196,7 +2192,7 @@ C Prepare to recover information from results library.
             write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',izone,' periods being sorted!'
             call edisp(iuout,outs)
-            call PROCESSOLDCAS(izone,0,iuout,IER)
+            call PROCESSOLDCAS(izone,0,iuout)
           endif
           IF(IER.EQ.1)RETURN
           IF(ICGC(IZONE).EQ.1)CALL ercgcf(0,iuout,LCGCIN(izone),

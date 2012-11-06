@@ -1230,6 +1230,7 @@ C output, IER=0 indicates no error.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
+#include "schedule.h"
 #include "prj3dv.h"
       
       integer lnblnk  ! function definition
@@ -1259,22 +1260,8 @@ C output, IER=0 indicates no error.
       common/MOIST02/LMOIST(MCOM)
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
 
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types
-      common/p3ver/ip3ver(MCOM)
-
-      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
-      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
-      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
-     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
-     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
-     &             IVH(MCOM),TAH(MCOM)
-
       common/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
 
-C Descriptive label for a zone load or casual gain types.
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
       COMMON/AFN/IAIRN,LAPROB,ICAAS(MCOM)
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),
      &       TMCA(MCOM,MTMC,ME,5),TMCREF(MCOM,MTMC),TVTR(MCOM,MTMC)
@@ -2193,6 +2180,7 @@ C Also update lodlabel commons before writing out.
               IVU(ncomp)=IVU(ic); TAU(ncomp)=TAU(ic)
               ACIH(ncomp)=ACIH(ic); ACVH(ncomp)=ACVH(ic)
               IVH(ncomp)=IVH(ic); TAH(ncomp)=TAH(ic)
+C << revise for more casual gains >>
               lodlabel(ncomp,1)=lodlabel(ic,1)  ! revise to be in a loop
               lodlabel(ncomp,2)=lodlabel(ic,2)
               lodlabel(ncomp,3)=lodlabel(ic,3)
@@ -2631,7 +2619,7 @@ C << and apply it to another zone.
 
 C File is older format and assumed to be unsorted.
                     sorted=.false.
-                    call PROCESSOLDCAS(ICOMP,0,iuout,IER)
+                    call PROCESSOLDCAS(ICOMP,0,iuout)
                     if(browse)then
                       continue
                     else
@@ -2645,14 +2633,14 @@ C browsing update the operation file.
                     sorted=.true.
                     problem=.false.
                     DO 400 IDTY=1,NBDAYTYPE
-                      call checksort(icomp,IDTY,problem,ier)
+                      call checksort(icomp,IDTY,problem)
                       if(problem)then
                         sorted=.false.
                         call edisp(iuout,'casual gains may be unsorted')
                       endif
  400                CONTINUE
                     if(.NOT.sorted)then
-                      call PROCESSOLDCAS(ICOMP,0,iuout,IER)
+                      call PROCESSOLDCAS(ICOMP,0,iuout)
                       if(browse)then
                         continue
                       else

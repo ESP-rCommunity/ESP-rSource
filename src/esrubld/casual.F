@@ -49,6 +49,7 @@ C QLAT   - latent load for present (1) and future (2) time step.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
 #include "net_flow.h"
 #include "tdf2.h"
 #include "sbem.h"
@@ -100,6 +101,7 @@ C and is used for code related to UK NCM method
 
 C Common for occupant/lighting/equipment sensible convective, sensible
 C radiant and latent W for future and present in each zone.
+C << adapt to include other casual gain >>
       real ctlperocupc,ctlperocupr,ctlperocupl ! occupant after control applied
       real ctlperlightc,ctlperlightr,ctlperlightl ! lighting after control applied
       real ctlequipc,ctlequipr,ctlequipl ! equipment after control applied
@@ -148,10 +150,6 @@ C ICGCTL - pointer to controlled gain type.
 
 C Variables used in trace.
       common/CASGNTRC/QP(MCOM,2,MC,MPHAS),RP(MCOM,2,MC,MPHAS)
-
-C Descriptive label for a zone load or casual gain types.
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
 
 C Adaptive comfort commons
       COMMON/ADPCOM/PREVSTATWIN,PREVSTATFAN,PREVSTATLIGHT,TOTPWR(MCOM)
@@ -331,6 +329,7 @@ C Update SHOCC-calculated equipment loads.
 C Use data from one of three sources.
 C NB tdf and time step file should have electrical data added to the 
 C definition.
+C << adapt to work with other gain type >>
       if(ICASUAL(icomp).ne.0)then
 
 C Data in temporal database (1 column of gains). Also
@@ -645,6 +644,8 @@ C it can be used within MZLS3.
         ctlperocupl(icomp,2)=QOCCLATN
         ctlperlightl(icomp,2)=QLIGHTLATN
         ctlequipl(icomp,2)=QEQUIPLATN
+
+C << place to adapt for other casual gain >>
 
 C Using LGHT_ncm_Energy(icomp) for the results of the UK's NCM method
 C This will be in Wh units. It will also need to be divided with NTSTEP
@@ -2418,16 +2419,12 @@ C if ACTIVE=0. then no matching casual gain/occupants.
 
       SUBROUTINE HUNTA(IZONE,IH,ACTIVE)
 #include "building.h"
+#include "schedule.h"
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
 
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT
-      REAL CMGS,CMGL,RADC,CONC
       COMMON/CGCIN2N/NCGTC(MCOM,MDTY),NLITZ(MCOM),IDFST(MCOM,MLCOM),
      & CGX(MCOM,MLCOM,MDF),CGY(MCOM,MLCOM,MDF),CGH(MCOM,MLCOM,MDF),
      & UX(MCOM,MLCOM,MDF),UY(MCOM,MLCOM,MDF),UH(MCOM,MLCOM,MDF),

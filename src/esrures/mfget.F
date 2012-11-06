@@ -114,6 +114,7 @@ C columns listed above.
       SUBROUTINE MFMENU
 #include "building.h"
 #include "geometry.h"
+#include "schedule.h"
 #include "net_flow.h"
       
       integer lnblnk  ! function definition
@@ -152,8 +153,6 @@ C Comfort parameters and hash table.
 C iocpzone is the zone to get occupancy pattern from for use by
 C air flow reporting.
       common/mfocup/iocpzone
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
 
       COMMON/GRAF1/YMAX(5),YMIN(5),YAXSET(5),ADDLIN,horaxisdiv
 

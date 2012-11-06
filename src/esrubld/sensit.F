@@ -767,6 +767,7 @@ C UAE04 edits casual gains in memory.
 
       SUBROUTINE UAE04(IZONE,IACT,DIR)
 #include "building.h"
+#include "schedule.h"
 #include "uncertainty.h"
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
@@ -782,14 +783,9 @@ C UAE04 edits casual gains in memory.
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
       COMMON/UA4/NIACT,IACTD(MNACT,2)
 
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
-      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
-     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
-     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
-     &             IVH(MCOM),TAH(MCOM)
+C << P3 is a old representation of casual gains - it be removed >>
+C << or converted to P3N variables!!! >>
+
       COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
      &          RADC1(MC),CONC1(MC),NCAS2,ICGS2(MC),ICGF2(MC),CMGS2(MC),
      &          CMGL2(MC),RADC2(MC),CONC2(MC),NCAS3,ICGS3(MC),ICGF3(MC),
