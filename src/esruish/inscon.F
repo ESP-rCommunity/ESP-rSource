@@ -548,10 +548,10 @@ C system.
 
 C Set up source surface global coordinates.
                do 90 inv=1,nznver(iccisrc)
-	          iwhich=nzjvn(iccisrc,inv)
-                  xf(inv)=vcoord(icomp,iwhich,1)
-                  yf(inv)=vcoord(icomp,iwhich,2)
-                  zf(inv)=vcoord(icomp,iwhich,3)
+                 iwhich=nzjvn(iccisrc,inv)
+                 xf(inv)=vcoord(icomp,iwhich,1)
+                 yf(inv)=vcoord(icomp,iwhich,2)
+                 zf(inv)=vcoord(icomp,iwhich,3)
    90          continue
 
 C Initiate source surface grid point-by-point analysis.

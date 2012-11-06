@@ -101,14 +101,14 @@ C Recover calculated shading for the current surface hour-by-hour.
         iprint=0
         do 20 j=1,24
            stime=float(j)
-	   
+   
 C << the value of isunupx should be the same as what is
 C << read from the transitional file.
            call eazalts(stime,iyd,slat,slon,isunupx,sazi,salt)
            isunup=isunupx
            read(iunit,rec=irec,iostat=istat,err=1000)isunup
            irec=irec+1
-           if(isunup.eq.0)then			! Sun not up.
+           if(isunup.eq.0)then  ! Sun not up.
               if(iprint.eq.2)then
                  write(outs,'(i2,a)')j,':00   After sun-set'
                  call edisp(itru,outs)
@@ -119,7 +119,7 @@ C Don't write again.
               endif
               pso(i,j)=0.0
               psof(i,j)=0.0
-           else					! Sun up.
+           else  ! Sun up.
               if(iprint.eq.1)then
                  write(outs,'(i2,a)')j-1,':00   Before sun-rise'
                  call edisp(itru,outs)
@@ -286,11 +286,11 @@ C Write output header information.
         iprint=0
         do 20 j=1,24
            stime=float(j)
-	   
+   
 C The value of isunupx indicates if sun is up.
            call eazalts(stime,iyd,slat,slon,isunupx,sazi,salt)
            isunup=isunupx
-           if(isunup.eq.0)then			! Sun not up.
+           if(isunup.eq.0)then  ! Sun not up.
               if(iprint.eq.2)then
                  write(outs,'(i2,a)')j,':00   After sun-set'
                  call edisp(itru,outs)
@@ -301,7 +301,7 @@ C Don't write again.
               endif
               pso(i,j)=0.0
               psof(i,j)=0.0
-           else					! Sun up.
+           else   ! Sun up.
               if(iprint.eq.1)then
                  write(outs,'(i2,a)')j-1,':00   Before sun-rise'
                  call edisp(itru,outs)
@@ -488,9 +488,9 @@ C mode then list all surfaces.
    40    continue
          if(mores.eq.0)return
          dok=.true.
-	 if(act.eq.'s')then
-	   ok=.true.
-	 else
+         if(act.eq.'s')then
+           ok=.true.
+         else
            call askok(' ','Consider next surface?',ok,dok,0)
          endif
          if(.not.ok)return
