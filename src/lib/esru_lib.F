@@ -3887,7 +3887,8 @@ C Find out the number of separate words/string groupings.
 
       END
 
-C ******************** LSTRIPC
+      
+C ******************** LSTRIPC_LN
 C LSTRIPC strips comments from a ASCII file (long) string and returns the data.
 C It assumes that if a string begins with a '#' then the whole line is
 C a comment an the next line is read.  If a ' #' is discovered within
@@ -3898,23 +3899,65 @@ C IEXP is the number of expected items in the line:
 C   IEXP = 0 means don't care or already know no. items - don't check
 C   IEXP >0  means a specific number of items expected (error if not)
 C   IEXP = 99 check number of items and return in ITEMS
-
+C LineOut is the line number of the string that was returned.
+      
+C LSTRIPC is a legacy interface to LSTRIPC_LN
       SUBROUTINE LSTRIPC(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER)
-#include "espriou.h"
-      integer iCountWords
-
-      COMMON/OUTIN/IUOUT,IUIN
       CHARACTER*248 OUTSTR,STRING,TMP
-      CHARACTER loutstr*248,outs*124
+      CHARACTER loutstr*248
       CHARACTER*(*) MSG
-      logical unixok
+      
+      CALL LSTRIPC_LN(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER,LineNum)
+      
+      RETURN
+      END 
+      
+      SUBROUTINE LSTRIPC_LN(INPCH,OUTSTR,IEXP,ITEMS,IR,MSG,IER,LineOut)
+#include "espriou.h"
+
+      CHARACTER*248 OUTSTR,STRING,TMP
+      CHARACTER loutstr*248
+      CHARACTER*(*) MSG
+
+
+      logical bInitialized
+      save bInitialized
+      data bInitialized /.false./
+
+      character*248 cNewName, cOldName
+      save cOldName
+
+
+      integer LineNum
+      save LineNum
+      
+C Collect current file name
+      inquire (UNIT=INPCH, NAME=cNewName)
+      
+      if ( .not. bInitialized ) then
+        write ( cOldName, '(A)') cNewName 
+        bInitialized = .true. 
+      endif
+
+C If file has changed, reset line counter and update
+C file name buffer. 
+      if ( cOldName .ne. cNewName ) then 
+        write ( cOldName, '(A)') cNewName 
+        LineNum = 0
+      endif 
+        
 
 C Read a line of the file, strip off any trailing blanks, if the first
 C character is a # then read the next line from the file.
       IER=0
-    8 READ(INPCH,10,IOSTAT=ISTAT,ERR=101,END=102)STRING
+C Empty string      
+    8 write (STRING, '(A)') ' '
+C Increment line number counter
+      LineNum = LineNum + 1
+      LineOut = LineNum          
+      READ(INPCH,10,IOSTAT=ISTAT,ERR=101,END=102)STRING
    10 FORMAT(A)
-      tmp=STRING(1:LNBLNK(STRING))
+   11 tmp=STRING(1:LNBLNK(STRING))
 
 C Take the string and check for a #, discarding any text which follows.
       iloc = INDEX(tmp,'#')
@@ -3928,11 +3971,11 @@ C Take the string and check for a #, discarding any text which follows.
 
 C Find out the number of separate words/string groupings.
       if(IEXP.eq.99)then
-        items = iCountWords(OUTSTR)
+        CALL LCHITMS(OUTSTR,ITEMS)
       elseif(IEXP.eq.0)then
         ITEMS=0
       elseif(IEXP.gt.0)then
-        items = iCountWords(OUTSTR)
+        CALL LCHITMS(OUTSTR,ITEMS)
         if(IEXP.ne.ITEMS)then
           LN=max(1,lnblnk(currentfile))
           LNM=max(1,lnblnk(MSG))
@@ -3964,36 +4007,28 @@ C Find out the number of separate words/string groupings.
         CALL LUSRMSG(loutstr,OUTSTR,'W')
       ENDIF
       goto 4
-
+C End of file reached.
   102 IER=2
+C But if last line is non-blank, parse contents anyways.
+      if (lnblnk(STRING).gt.0 ) goto 11
+      OUTSTR = ''
       IF(IR.EQ.1)THEN
         LN=max(1,lnblnk(currentfile))
         LNM=max(1,lnblnk(MSG))
         if(currentfile(1:2).ne.'  ')then
-          WRITE(loutstr,'(5A)')' In ',currentfile(1:LN),
+          WRITE(tmp,'(5A)')' In ',currentfile(1:LN),
      &      ' error reading (',MSG(1:LNM),') EOF sensed.'
         else
-          WRITE(loutstr,'(3A)',IOSTAT=IOS,ERR=1)' Error reading ',
+          WRITE(tmp,'(3A)',IOSTAT=IOS,ERR=1)' Error reading ',
      &      MSG(1:LNM),' EOF sensed.'
         endif
-        CALL LUSRMSG(' ',loutstr,'-')
+        CALL LUSRMSG(' ',tmp,'-')
       ENDIF
       goto 4
-
-   1  call isunix(unixok)
-      if(.NOT.unixok) return  ! if DOS return because of lack of I/O channel
-      if(IOS.eq.2)then
-        write(outs,*) 'LSTRIPC: permission error writing warning re: '
-        call edisp(iuout,outs)
-	call edisp(iuout,outstr(1:72))
-      else
-        write(outs,*) 'LSTRIPC: error writing warning re: '
-        call edisp(iuout,outs)
-	call edisp(iuout,outstr(1:72))
-      endif
-      return
+   1  write(6,*) 'LSTRIPC: error writing warning re: ',OUTSTR
 
       END
+      
 
 C ******************** STRIPC400
 C STRIPC400 strips comments from a ASCII file (400 char long) string and returns the data.
