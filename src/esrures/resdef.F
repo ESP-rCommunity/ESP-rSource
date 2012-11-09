@@ -914,6 +914,8 @@ C ier is zero if no problems and -3 if user issued a cancel.
 
       common/recver/izver,ipver,iever
       common/rpath/path
+      character xfile*144,tg*1,delim*1
+      common/exporttg/xfile,tg,delim
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
@@ -1294,6 +1296,10 @@ C Open core databases (materials, constructions, optics).
           else
             call usrmsg('Databases scan (ok)',' ','P')
           endif
+
+C Set the default export file name based on model root name.
+          write(xfile,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.csv'
+
         ENDIF
 
 C Take into account weather file location.
