@@ -191,6 +191,10 @@ c
 c ---
 c # CVS temperature control data (flag,low temperature trip, high temperature trip)
 c 7   0.    0.  # flag 3 = Temperature controlled, or 1,2,4,5,6,7 = N/A
+C                      8 = ERS assumptions: Natural + mech ventilation = 0.3 ACH/hour
+C                      9 = 8hr/day average operation (1/3 of every hour)
+C
+
             If ( iErr .eq. 0 ) Then
                Call STRIPC ( iUnit, OUTSTR, 0, ND, 1,
      x ' CVS temperature control data', iErr )
@@ -198,7 +202,8 @@ c 7   0.    0.  # flag 3 = Temperature controlled, or 1,2,4,5,6,7 = N/A
 c
             If ( iErr .eq. 0 ) Then
                k = 0
-               Call MSG_EGETWI ( OUTSTR, k, iVal, 1, 7, 'F',
+
+               Call MSG_EGETWI ( OUTSTR, k, iVal, 1, 9, 'F',
      x ' CVS temperature control flag', IUOUT, iErr )
             Endif
 c
