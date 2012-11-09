@@ -91,7 +91,7 @@ c ( JWH remove continuation lines)
      & TMAIN,SensibleEff, HRVventHLR, HRVairHLR,
      & CVSSupplyTemp,TotalPower,ExhaustFanPower, PreheaterPower,
      & HRVSupDuctHG, HRVExhDuctHG,iOtherFans,OtherFansSupplyRate,
-     & OtherFansExhaustRate,OtherFansTotalPower
+     & OtherFansExhaustRate,OtherFansTotalPower, fVentPLR
         Integer  iCVSType
         Real  HRVTest(2,3)
         Real  CoolEF
@@ -115,3 +115,4 @@ c ( JWH remove continuation lines)
         Integer  OtherFansSupplyRate
         Integer  OtherFansExhaustRate
         Integer  OtherFansTotalPower
+        real fVentPLR ! Fraction of time step HRV is operational for. 
