@@ -3502,11 +3502,11 @@ C Now look for unknown files.
 
 C Do cursory check to see if the file is sorted.
             problem=.false.
-            call checksort(i,1,problem,ier)
+            call checksort(i,1,problem)
             problem=.false.
-            call checksort(i,2,problem,ier)
+            call checksort(i,2,problem)
             problem=.false.
-            call checksort(i,3,problem,ier)
+            call checksort(i,3,problem)
             if(problem)then
               oprfok=.false.
             endif

@@ -819,7 +819,7 @@ C Local variables for casual gains.
       real avgctlperocupc,avgctlperocupr,avgctlperocupl ! average occupant to write out
       real avgctlperlightc,avgctlperlightr,avgctlperlightl ! average lighting to write out
       real avgctlperequipc,avgctlperequipr,avgctlperequipl ! average equipment to write out
-      real avgctlotherc,avgctlotherr,avgctlotherl ! average other (future expansion) to write out
+      real avgctlotherc,avgctlotherr,avgctlotherl ! average other to write out
       integer theonectld  ! if non-zero the casual gain type that is controlled.
       PARAMETER       (SMALL=1.0E-15)
 
@@ -1025,6 +1025,9 @@ C to the lighting code block above.
           ctlperequipr(icomp,2)=perequipr
           ctlperequipl(icomp,2)=perequipl
         endif
+
+C << place to add in logic for other casual gain >>
+
       endif
 
 C If it is the first timestep of the simulation the present value
@@ -1039,6 +1042,9 @@ C will be unknown so follow the pattern established in casual.F
         ctlperequipc(icomp,1)=ctlperequipc(icomp,2)
         ctlperequipr(icomp,1)=ctlperequipr(icomp,2)
         ctlperequipl(icomp,1)=ctlperequipl(icomp,2)
+
+C << place to add in logic for other casual gain >>
+
       endif
 
 C Calculate surface balance data for use later (need to do this now so 
@@ -1565,6 +1571,9 @@ C the future value until after the trace logic (i.e. after 700).
         ctlperequipr(icomp,1)=ctlperequipr(icomp,2)
         ctlperequipl(icomp,1)=ctlperequipl(icomp,2)
 
+C << place to add in logic for other casual gain >>
+
+
 C Get the ratio between the W for occup/lighting and small power
 C to use when writing out surface energy balance data.
         avgradtot=avgctlperequipr+avgctlperlightr+avgctlperocupr+
@@ -2050,6 +2059,8 @@ C Solar distribution info.
               endif
               call edisp(itu,outs)
 
+C << place to add in logic for other casual gain >>
+
               write(outs,'(A,F9.2,A,3F9.2,3i3)') 
      &          ' Total casual convec',QCASC,
      &          ' future ocup/light/equip ',
@@ -2267,6 +2278,8 @@ C the future values are reset to zero at this point.
           ctlperequipc(icomp,2)=0.0
           ctlperequipr(icomp,2)=0.0
           ctlperequipl(icomp,2)=0.0
+
+C << place to adapt for other casual gain >>
 
   300     CONTINUE
         endif
@@ -2535,6 +2548,7 @@ C STANDARD ESP-R CALCULATION APPLIES
         ENDIF
 
 C -- Radiant casual gains are area AND emissivity weighted.
+C << does this need to be adapted for other gain? >>
         zoar = zonetotsurfacearea(ICOMP) ! assign local value
         qcri(ICOMP,ISFN,1)=qcri(ICOMP,ISFN,2)
         qcri(ICOMP,ISFN,2)=QCASRT(ICOMP)*0.5*zoar*sna(ICOMP,ISFN)*

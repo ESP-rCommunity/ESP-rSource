@@ -267,7 +267,7 @@ C door width and height.
       LOGICAL INTHPS,INTHPZ,IGR1D,GRND3D
       LOGICAL BLDG3D,ZONE3D,MSTROK,MSTRZN
      
-      INTEGER :: i,icc,ibe,ibu,j,ixs,ix,ivu,isystcurrent,imu
+      INTEGER :: i,icc,ibe,ibu,j,ixs,ix,iivu,isystcurrent,imu
  
       call tstamp('>','PRJ: clearing model commons')
       
@@ -502,8 +502,8 @@ C Per-zone areas and U-values.
           zhasglaze(ix,ixs)=0.0
           zhasdoor(ix,ixs)=0.0
           isznbedges(ix,ixs)=0
-          do 54 ivu=1,MV
-            iszlist(ix,ixs,ivu)=0
+          do 54 iivu=1,MV
+            iszlist(ix,ixs,iivu)=0
             szcoords(ix,ixs,1)=0.0
             szcoords(ix,ixs,2)=0.0
             szcoords(ix,ixs,3)=0.0
@@ -3033,6 +3033,7 @@ C `h` heat transfer (comvective) methods, `-` zone names only.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
 #include "epara.h"
 
       COMMON/FILEP/IFIL
@@ -3042,10 +3043,6 @@ C `h` heat transfer (comvective) methods, `-` zone names only.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
-
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types allowed and sorted
-      common/p3ver/ip3ver(MCOM)
 
       LOGICAL SELECT,XST
       CHARACTER*(*) prompt,title,errmsg
@@ -3321,6 +3318,7 @@ C `-` zone names only.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
 #include "epara.h"
 
       integer lnblnk  ! function definition
@@ -3332,10 +3330,6 @@ C `-` zone names only.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
       common/cfdfil/LCFD(MCOM),IFCFD(MCOM)
-
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types allowed and sorted
-      common/p3ver/ip3ver(MCOM)
 
       LOGICAL XST,FOUND
       CHARACTER*(*) prompt,title

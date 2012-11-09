@@ -1114,6 +1114,7 @@ C                 external temperature (for use in MZLS3).
 
       include "building.h"
       include "geometry.h"
+      include "schedule.h"
       include "net_flow.h"
       include "tdf2.h"
       include "sbem.h"
@@ -1129,12 +1130,6 @@ C                 external temperature (for use in MZLS3).
       INTEGER :: ITC,ICNT
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
-     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
-     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
-     &             IVH(MCOM),TAH(MCOM)
-      INTEGER :: ITCTL,IVL,IVU,IVH
-      REAL :: TLO,TUP,THI,ACIL,ACVL,TAL,ACIU,ACVU,TAU,ACIH,ACVH,TAH
 
 C Delete?
 C TDF commons.
@@ -1242,7 +1237,7 @@ c      real rTempnotioOverheat
       integer ICF,IDTYP,IPER,IICOMP
       real BB1,BB2,BB3,TNP,QFUT,TFUT
 
-      REAL :: acc1,acc2,aci,acr,amh,amn !acc
+      REAL :: acc1,acc2,acii,acr,amh,amn !acc
       REAL :: amx,ccvvf,ccvvfm,cf,cv1,cv2
       INTEGER :: icomp,i,iacc1,iacc2,ic2,ier,ifoc,isd,it1,it2,itdi
       INTEGER :: itrc,ifunit,ival
@@ -1377,14 +1372,14 @@ C IACC2 is the 2nd source zone for ventilation (0 means skip).
 
         CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
 
-C ACI is the infiltration value, ACC1 & ACC2 are 1st & 2nd ventilation
+C ACII is the infiltration value, ACC1 & ACC2 are 1st & 2nd ventilation
 C depending on the unit of flow (ifunit).
         if(ifunit.eq.0)then
-          ACI=VAL(ISD)
+          ACII=VAL(ISD)
           ACC1=VAL(ISD+1)
           ACC2=VAL(ISD+2)
         else
-          ACI=VAL(ISD)*3600.0/VOL(ICOMP)
+          ACII=VAL(ISD)*3600.0/VOL(ICOMP)
           ACC1=VAL(ISD+1)*3600.0/VOL(ICOMP)
           ACC2=VAL(ISD+2)*3600.0/VOL(ICOMP)
         endif
@@ -1392,13 +1387,13 @@ C depending on the unit of flow (ifunit).
 C Debug.
         CALL DAYCLK(IDYP,BTIMEF,6)
 C        write(6,*)'tdf infil data @',btimef,' is item',itdi,
-C     &   ' values ',ifunit,aci,acc1,acc2,VAL(ISD),VAL(ISD+1),VAL(ISD+2)
+C     &   ' values ',ifunit,acii,acc1,acc2,VAL(ISD),VAL(ISD+1),VAL(ISD+2)
 
         CVVF=0.
         SUM=0.
-        CVIF=0.33*VOL(ICOMP)*ACI
+        CVIF=0.33*VOL(ICOMP)*ACII
         
-        IF(ACI.LE.0.)CVIF=0.
+        IF(ACII.LE.0.)CVIF=0.
 
 C Fill ZMBI(*,2) = zone coupling mass flow times moisture content
 C and  ZMBI(*,4) = total mass flow rate lost from the zone.
@@ -1448,19 +1443,37 @@ C Note: set trace to verbose for testing.
 
 C Multiply: outdoor air value from tdf (based on fresh air requirements
 C in l/s/pers)*Occupants density (pers/m2)*zone area
-C Removed the occcupant fraction val(isd) from the calculation of ACI 
+C Removed the occcupant fraction val(isd) from the calculation of ACII 
 C because the default ncm calculation assumes that there is no "demand-ventilation".
-          ACI=TMAR(itdi,IATDF(itdi,9))*TMAR(itdi,IATDF(itdi,1))
+
+C << Note: 2010 NCM doc implies that there can be demand-ventilation.
+C << what, if any attributes are needed to implement demand-ventilation?
+
+C << This is a place where MVHR logic could be added.  If we assume an
+C << MVHR bypass if it is warmer outside then we could reduce ACII by
+C << 1.0 - MVHR efficiency when it is cooler outside. Probably need to
+C << take into account whether a plant system has been associated with
+C << the zone.
+
+          ACII=TMAR(itdi,IATDF(itdi,9))*TMAR(itdi,IATDF(itdi,1))
      &       *ZBASEA(ICOMP)
+
+C Patch by JWH to represent MVHR of 70% efficiency if the ambient
+C temperature is below the zone temperature, otherwise assume a
+C bypass of MVHR. Not to be committed. Comment out after use.
+          if(TF.lt.TFA(ICOMP))then
+            write(6,*) 'MVHR applied in ',icomp,' to ACII',ACII,ACI*0.3
+            ACII=ACII*0.3
+          endif
         else
-          ACI=0.0
+          ACII=0.0  ! there are no occupants so assume no makeup air
         endif
 
 C <<<Check what would happen if there was also a ventilation value in the>>>>
 C <<<original model - variables ACC1 & ACC2>>>>
 
 C Convert l/s to ach
-        ACI=ACI*(3600.0/1000.)/VOL(ICOMP)
+        ACII=ACII*(3600.0/1000.)/VOL(ICOMP)
 
 C Need the number of timesteps of operation - be based on the heating
 C and cooling flux
@@ -1555,12 +1568,12 @@ C Using AIR PERMEABILITY values (ACH(ICOMP)) specified in the NCM file.
           endif
         endif INOTIcheck
 
-        ACI=ACI+ACH(ICOMP)
+        ACII=ACII+ACH(ICOMP)
 
         CVVF=0.
         SUM=0.
-        CVIF=0.33*VOL(ICOMP)*ACI        
-        IF(ACI.LE.0.)CVIF=0.
+        CVIF=0.33*VOL(ICOMP)*ACII
+        IF(ACII.LE.0.)CVIF=0.
 
 C Set xx=0 for now. Not used at the moment but attempting
 C to follow similar pattern as the classic ventilation

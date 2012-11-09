@@ -56,6 +56,7 @@ C and should just write out this data.
 #include "building.h"  
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -67,27 +68,7 @@ C and should just write out this data.
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types allowed and sorted
-      common/p3ver/ip3ver(MCOM)
-
-      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
-      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
-
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NAC,IACS,IACF,IPT,ICGT
-      REAL ACI,ACV,TA
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF
-      REAL CMGS,CMGL,RADC,CONC
       common/user/browse
-
-C Descriptive label for a zone load or casual gain types.
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
 
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       LOGICAL        CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
@@ -261,7 +242,7 @@ C Set the default type labels for this zone
       lodlabel(icomp,1)='Occupt'
       lodlabel(icomp,2)='Lights'
       lodlabel(icomp,3)='Equipt'  
-      lodlabel(icomp,4)='N/A   '  
+      lodlabel(icomp,4)='Other '  
       lodlabel(icomp,5)='Ann.El'  
       lodlabel(icomp,6)='N/A   ' 
       lodlabel(icomp,7)='N/A   '      
@@ -278,7 +259,7 @@ C Do cursory check to see if the file is sorted.
         sorted=.true.
         problem=.false.
         DO 401 IDTY=1,NBDAYTYPE
-          call checksort(icomp,IDTY,problem,ier)
+          call checksort(icomp,IDTY,problem)
           if(problem)then
             sorted=.false.
             MODOPR=.true.
@@ -320,6 +301,7 @@ C the definition already defined in another zone.
 
 C Setup minimal description (single period for each type of casual
 C gain set to zeros with no infiltration and ventilation) and exit.
+C << expand for additional gain types >>
           DO 399 IDTY=1,NBDAYTYPE
             ctlstr(icomp,IDTY)='no control of air flow  '
             NAC(IDTY)=1
@@ -351,7 +333,7 @@ C Set the default type labels for this zone
           lodlabel(icomp,1)='Occupt'
           lodlabel(icomp,2)='Lights'
           lodlabel(icomp,3)='Equipt'  
-          lodlabel(icomp,4)='N/A   '  
+          lodlabel(icomp,4)='Other '  
           lodlabel(icomp,5)='Ann.El'  
           lodlabel(icomp,6)='N/A   ' 
           lodlabel(icomp,7)='N/A   '
@@ -619,10 +601,10 @@ C Remind users to check their data.
 C Display different options depending on the version of the file.
   20  write(ITEM(1),'(2a)')   '  zone: ',zname(ICOMP)
       if(ip3ver(icomp).le.2)then
-        write(ITEM(2),'(3a)') 'a description: ',oprdesc(ICOMP)(1:16),'-'
-        write(ITEM(3),'(2x,2a)')   oprdesc(ICOMP)(17:45),'-'
-        write(ITEM(4),'(2x,2a)')   oprdesc(ICOMP)(46:74),'-'
-        write(ITEM(5),'(2x,2a)')   oprdesc(ICOMP)(75:103),'-'
+        write(ITEM(2),'(3a)') 'a notes: ',oprdesc(ICOMP)(1:23),'-'
+        write(ITEM(3),'(2x,2a)')   oprdesc(ICOMP)(24:53),'-'
+        write(ITEM(4),'(2x,2a)')   oprdesc(ICOMP)(54:83),'-'
+        write(ITEM(5),'(2x,2a)')   oprdesc(ICOMP)(84:112),'-'
         ITEM(6)=              '  ----------------------------- '
         ITEM(7)=              'c edit scheduled air flows      '
         ITEM(8)=              'd edit casual gains             '
@@ -634,10 +616,10 @@ C Display different options depending on the version of the file.
         ITEM(14)=             '- exit this menu                '
         NITEMS=14
       elseif(ip3ver(icomp).eq.3)then
-        write(ITEM(2),'(3a)') 'a inf vent notes: ',
+        write(ITEM(2),'(3a)') 'a infiltration & vent notes: ',
      &    ventdesc(ICOMP)(1:13),'-'
         write(ITEM(3),'(2x,a)')    ventdesc(ICOMP)(14:44)
-        write(ITEM(4),'(3a)') 'b casual notes: ',
+        write(ITEM(4),'(3a)') 'b casual gain notes: ',
      &    oprdesc(ICOMP)(1:15),'-'
         write(ITEM(5),'(2x,a)')    oprdesc(ICOMP)(16:44)
         ITEM(6)=              '  ----------------------------- '
@@ -675,8 +657,8 @@ C even if modopr has not been set.
      &        'to the casual gain periods?',OK,DOK,nbhelp)
             if(ok)then
 
-C Sort the gains and then updated the file and mark MODOPR.
-              call PROCESSOLDCAS(ICOMP,0,iuout,IER)
+C Sort the gains and then update the file and mark MODOPR.
+              call PROCESSOLDCAS(ICOMP,0,iuout)
               IUO=IFIL+1
               CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
               MODOPR=.false.
@@ -802,14 +784,7 @@ C << must be revised for multiple day types and periods. >>
 
 #include "building.h"
 #include "geometry.h"
-
-      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
-      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
-      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
-     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
-     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
-     &             IVH(MCOM),TAH(MCOM)
-      common/p3ver/ip3ver(MCOM)
+#include "schedule.h"
 
       DIMENSION IVALS(3), ALTS(3)
       CHARACTER hold*40,outs*80,outs2*80
@@ -1078,6 +1053,7 @@ C IER=0 is OK.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
 #include "epara.h"
       
 C      integer lnblnk  ! function definition
@@ -1086,20 +1062,10 @@ C      integer lnblnk  ! function definition
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
 
-      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
-      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
-      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
-     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
-     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
-     &             IVH(MCOM),TAH(MCOM)
 
       character vert(35)*33,KEY*1,title*33
       character LTMP*72
@@ -1445,6 +1411,7 @@ C IER=0 is OK.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
 #include "epara.h"
       
 C      integer lnblnk  ! function definition
@@ -1453,24 +1420,9 @@ C      integer lnblnk  ! function definition
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
 
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types allowed and sorted
-      common/p3ver/ip3ver(MCOM)
-
-      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
-      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
-      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
-     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
-     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
-     &             IVH(MCOM),TAH(MCOM)
-
 C Common block P2UNIT defines the units for infiltration and ventilation
 C for each zone and day type. The default value of zero is the same as
-C the traditional (implied) unit in the version (ip3ver 0, 1, 2). A value
+C the traditional (implied) unit in the version (ip3ver 0, 1, 2, 3). A value
 C of one signals m3/h and a value of 2 signals m3/s.
       integer INFUNIT,IVENTUNIT
       COMMON/P2UNIT/INFUNIT(MCOM,MDTY),IVENTUNIT(MCOM,MDTY)
@@ -1836,15 +1788,11 @@ C     =2 infil, =0 ventilation attributes.
       subroutine EDAIRFL(ICOMP,IDT,IPER,itype)
 #include "building.h"
 #include "geometry.h"
+#include "schedule.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
-
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
 
       character OUTS*124,HOLD*16
 
@@ -2054,11 +2002,7 @@ C IPT,TA ventilation source zone, if IPT=0 then TA is source temperature
 
       subroutine ADDAFP(IPER,IDT,IACSX,IACFX,ACIX,ACVX,IPTX,TAX)
 #include "building.h"
-
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
+#include "schedule.h"
 
       if (IPER.eq.0) then
         ILPER=1
@@ -2108,16 +2052,12 @@ C  ICD - copy (=2) delete (=1) flag
       subroutine CDAIRFL(ICD)
 #include "building.h"
 #include "geometry.h"
+#include "schedule.h"
 
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
-
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
 
       character VERT(3*MA)*35,OUTS*124,OUT*4
       INTEGER IGOON,ILET,IDT,IDTY,IAFP,IX,KSTR(MDTY),ilistlen,ilm
@@ -2273,31 +2213,19 @@ C << initial intent to guide later revisions?
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types allowed and sorted
-      common/p3ver/ip3ver(MCOM)
-      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
-      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
       COMMON/P1C/oprdescc,ctlstrc
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
-      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
-     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
-     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
-     &             IVH(MCOM),TAH(MCOM)
 
 C Scratch copy of air flow pattern from an operations file.
-      COMMON/P2CN/NACC(MDTY),IACSC(MDTY,MA),IACFC(MDTY,MA),
+      COMMON/P2NC/NACC(MDTY),IACSC(MDTY,MA),IACFC(MDTY,MA),
      &ACIC(MDTY,MA),ACVC(MDTY,MA),IPTC(MDTY,MA),TAC(MDTY,MA)
       INTEGER NACC,IACSC,IACFC,IPTC
       REAL ACIC,ACVC,TAC
@@ -2458,7 +2386,7 @@ C IF asked to copy all then
           LPROJ(idest)=ltmp
         endif
 
-C And any new file will be in the sorted format.
+C And any new zone operation file will use the sorted format.
         ip3ver(idest)=2
       endif
       if(iflow(1:7).eq.'ach-ach')then
@@ -2550,13 +2478,10 @@ C CHKAIRFL - check air flow data for overlapping periods.
 
       subroutine CHKAIRFL
 #include "building.h"
+#include "schedule.h"
 
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
 
       logical RECHECK
 
@@ -2794,6 +2719,7 @@ C  ICOMP zone number
       subroutine PLTAIR(ICOMP,idtyp)
 #include "building.h"
 #include "geometry.h"
+#include "schedule.h"
 
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -2802,10 +2728,7 @@ C  ICOMP zone number
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT,IDTY,IDAY,JDAY,KDAY
-      REAL ACI,ACV,TA
+      INTEGER IDTY,IDAY,JDAY,KDAY
 
       character outs*124
       dimension TACI(24),TACV(24)
@@ -3055,6 +2978,7 @@ C ITRC is the trace level, IER=0 is OK.
       SUBROUTINE EDCAS(ICOMP,modopr,sorted,IER)
 #include "building.h"
 #include "geometry.h"
+#include "schedule.h"
 #include "epara.h"
       
       integer lnblnk  ! function definition
@@ -3068,26 +2992,12 @@ C ITRC is the trace level, IER=0 is OK.
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       common/user/browse
 
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT
-      REAL CMGS,CMGL,RADC,CONC
-
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types allowed and sorted
-      common/p3ver/ip3ver(MCOM)
-
 C Electrical data flag and elctrical data.
       common/elecflg/ielf(mcom)
       COMMON/ELP3N/NEL(MDTY),PF(MDTY,MC),IPF(MDTY,MC),PWR(MDTY,MC),
      &BVOLT(MDTY,MC),IPHAS(MDTY,MC)
       INTEGER NEL,IPF,IPHAS
       REAL PF,PWR,BVOLT
-
-C Descriptive label for a zone load or casual gain.
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
 
 C How many of each gain type is there each zone/gaintype/daytype.
 C << this common should be re-sized 7 -> MGTY >>
@@ -3135,17 +3045,17 @@ C and decide if the periods need to be updated.
 
 C Display initial gain profiles and then sort and remove overlaps and
 C ensure that periods start at zero and end with 24. Sorted files can
-C be saved as version 3.0
+C be saved as version 2.0
 C          call edisp(iuout,'Before sorting')
           call CASINF(ICOMP,iuout)
           if(ip3ver(ICOMP).eq.0)then
             itrc=0
             itru=6
-            call PROCESSOLDCAS(ICOMP,itrc,itru,IER)
+            call PROCESSOLDCAS(ICOMP,itrc,itru)
           else
             itrc=0
             itru=6
-            call PROCESSOLDCAS(ICOMP,itrc,itru,IER)
+            call PROCESSOLDCAS(ICOMP,itrc,itru)
           endif
           ip3ver(ICOMP)=2
           sorted=.true.
@@ -3183,7 +3093,7 @@ C Loop through the items until the page to be displayed. M is the
 C current menu line index. Build up text strings for the menu. 
       M=MHEAD
 
-C loop for each day type
+C Loop for each day type.
       DO 10 L=1,NCAS(IDTYP)
         IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
         M=M+1
@@ -3285,9 +3195,9 @@ C Import profile.
 
 C Include/ exclude electrical definitions.
         if(IELF(ICOMP).EQ.0.or.IELF(ICOMP).EQ.2) then
-         call easkabc('Do you wish to include definition of electrical', 
-     &     'data in the operations description?','Yes','No','Cancel',
-     &     IW,nbhelp)
+          call easkabc('Do you wish to include electrical data', 
+     &      'in the operations description?','Yes','No','Cancel',
+     &      IW,nbhelp)
           if(IW.eq.1) then
 
 C Set flag and default values.
@@ -3305,8 +3215,8 @@ C Set flag and default values.
             ielf(ICOMP)=2
           endif
         elseif(IELF(ICOMP).EQ.1) then
-          call easkab(' Do you wish to remove definition of  ', 
-     &    ' electrical data in operations file ?','Yes','No',IW,7)
+          call easkab('Do you wish to remove electrical data ', 
+     &    'from the operations file?','Yes','No',IW,nbhelp)
           if(IW.eq.1) then
             ielf(ICOMP)=2
           endif
@@ -3323,7 +3233,7 @@ C Increment the daytype focus.
         CALL PHELPD('gains menu',18,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
 
-C List current.
+C List current casual gains.
         call CASINF(ICOMP,IUOUT)
       ELSEIF(IVERT.EQ.(MVERT-3))THEN
 
@@ -3332,7 +3242,7 @@ C number of periods might have changed, rebuild the menus.
         ILLEN(IDTYP)=NCAS(IDTYP)
         call edisp(iuout,'Before sorting')
         call CASINF(ICOMP,iuout)
-        call PROCESSOLDCAS(ICOMP,0,iuout,IER)
+        call PROCESSOLDCAS(ICOMP,0,iuout)
         if(ier.ne.0)then
           call edisp(iuout,'Problem while sorting gains.')
         endif
@@ -3344,50 +3254,48 @@ C If different period, update the menu length.
      &  call edisp(iuout,'Periods have changed.')
         ILEN=NCAS(IDTYP)
         goto 44
+
       ELSEIF(IVERT.EQ.(MVERT-4))THEN
+
+C Offer gain types to scale. User can cancel request.
+C << revise to support more casual gain types >>
         ICGTS=1
         CALL EASKATOG('Apply scaling factor to which casual gain type?',
      &     ' ',lodlabel(icomp,1),lodlabel(icomp,2),lodlabel(icomp,3),
      &     'All gain types','Cancel',' ',' ',ICGTS,nbhelp)
-        if (ICGTS.ne.5) then
-          if (ICGTS.ne.4) then
-            write (outs,'(3a)') 'Scale ',lodlabel(icomp,ICGTS),
-     &                          ' gain for day type: '
-          else
-            write (outs,'(a)') 'Scale all gains for day type: '
-          endif
-          call EASKABC('Import profile for one or all day types',
-     &      ' ','One day type','All day types','Cancel',IOPT,nbhelp)
-          IF(IOPT.EQ.1)THEN
-            IW=0
-            IX=1
-            CALL EPICKS(IX,KSTR,' ',
+        if (ICGTS.eq.4) goto 5  ! cancel requested
+        write (outs,'(3a)') 'Scale ',lodlabel(icomp,ICGTS),
+     &                      ' gain for day type: '
+        call EASKABC('Import profile for one or all day types',
+     &    ' ','One day type','All day types','Cancel',IOPT,nbhelp)
+        IF(IOPT.EQ.1)THEN
+          IW=0
+          IX=1
+          CALL EPICKS(IX,KSTR,' ',
      &      'Import a profile for which day type?',12,NBDAYTYPE,
      &      CALENTAG,'Import a profile for which day type?',IER,nbhelp)
-            IW=KSTR(1)
-            write (outs,'(2a)') outs(1:lnblnk(outs)),CALENTAG(IW)
-          ELSEIF(IOPT.EQ.2)THEN
-            IW=0
-            write (outs,'(2a)') outs(1:lnblnk(outs)),'ALL'
-          ELSE
-            GOTO 5
-          ENDIF
-          CALL EASKR(VAL,outs,'(typically between 0.1 and 5.0)',
-     &    0.1,'W',5.0,'W',1.0,'scaling factor',IER,nbhelp)
-          DO 760 IDTY=1,NBDAYTYPE
-            do 33 i=1,NCAS(IDTY)
-              IF(IDTY.EQ.IW.OR.IW.EQ.0)THEN
-                if(IABS(ICGT(IDTY,I)).eq.ICGTS.or.ICGTS.eq.4)then
-                  CMGS(IDTY,I)=CMGS(IDTY,I)*VAL
-                  CMGL(IDTY,I)=CMGL(IDTY,I)*VAL
-                endif
-              ENDIF
- 33         continue
- 760      CONTINUE
+          IW=KSTR(1)
+          write (outs,'(2a)') outs(1:lnblnk(outs)),CALENTAG(IW)
+        ELSEIF(IOPT.EQ.2)THEN
+          IW=0
+          write (outs,'(2a)') outs(1:lnblnk(outs)),'ALL'
         ELSE
-          GOTO 5
-        endif
+          GOTO 5  ! cancel request
+        ENDIF
+        CALL EASKR(VAL,outs,'(typically between 0.1 and 5.0)',
+     &    0.1,'W',5.0,'W',1.0,'scaling factor',IER,nbhelp)
+        DO 760 IDTY=1,NBDAYTYPE
+          do 33 i=1,NCAS(IDTY)
+            IF(IDTY.EQ.IW.OR.IW.EQ.0)THEN
+              if(IABS(ICGT(IDTY,I)).eq.ICGTS)then
+                CMGS(IDTY,I)=CMGS(IDTY,I)*VAL
+                CMGL(IDTY,I)=CMGL(IDTY,I)*VAL
+              endif
+            ENDIF
+ 33       continue
+ 760    CONTINUE
         goto 5
+
       elseif (IVERT.eq.(MVERT-5)) then
 
 C Add delete copy period or import full set of casual gains.
@@ -3402,82 +3310,82 @@ C Add new casual gain period.
 
 C << revise to support more casual gain types >>
           CALL EASKABCD('New casual gain of which type?',' ',
-     &        lodlabel(icomp,1),lodlabel(icomp,2),lodlabel(icomp,3),
-     &        'Cancel',ICGTS,nbhelp)
-          if (ICGTS.ne.4) then
-            IQ=0
-            if(.NOT.browse)call checkcascount(icomp)
-            call EASKABC('Add period for one or all day types',
-     &        ' ','One day type','All day types','Cancel',IOPT,nbhelp)
-            IF(IOPT.EQ.1)THEN
-              write (outs,'(3a)') 'New ',lodlabel(icomp,ICGTS),
+     &      lodlabel(icomp,1),lodlabel(icomp,2),lodlabel(icomp,3),
+     &      'Cancel',ICGTS,nbhelp)
+          if (ICGTS.eq.4) goto 5  ! cancel request
+          IQ=0
+          if(.NOT.browse)call checkcascount(icomp)
+          call EASKABC('Add period for one or all day types',
+     &      ' ','One day type','All day types','Cancel',IOPT,nbhelp)
+          IF(IOPT.EQ.1)THEN
+            write (outs,'(3a)') 'New ',lodlabel(icomp,ICGTS),
      &                          ' gain for day type: '
-              IQ=0
-              IX=1
-              CALL EPICKS(IX,KSTR,' ',outs,12,NBDAYTYPE,
+            IQ=0
+            IX=1
+            CALL EPICKS(IX,KSTR,' ',outs,12,NBDAYTYPE,
      &        CALENTAG,outs,IER,1)
-              IQ=KSTR(1)
-            ELSEIF(IOPT.EQ.2)THEN
-              IQ=0
-            ELSE
-              GOTO 5
-            ENDIF
-            IF(IQ.EQ.0)THEN
-              ITRK=0
-              DO 619 IDU=1,NBDAYTYPE
-                IF(NCAS(IDU).EQ.MC)THEN
-                  WRITE(OUTS,'(2A)')
+            IQ=KSTR(1)
+          ELSEIF(IOPT.EQ.2)THEN
+            IQ=0
+          ELSE
+            GOTO 5   ! cancel request
+          ENDIF
+          IF(IQ.EQ.0)THEN
+            ITRK=0
+            DO 619 IDU=1,NBDAYTYPE
+              IF(NCAS(IDU).EQ.MC)THEN
+                WRITE(OUTS,'(2A)')
      &            'Sorry, too many periods for day type ',CALENTAG(IDT)
                   CALL USRMSG(' ',OUTS,'W')
-                  ITRK=1
-                ENDIF
- 619          CONTINUE
-              IF(ITRK.EQ.0)THEN
-                IDT=-1
-                IPER=0
-                silent=.false.
+                ITRK=1
+              ENDIF
+ 619        CONTINUE
+            IF(ITRK.EQ.0)THEN
+              IDT=-1
+              IPER=0
+              silent=.false.
+              izs=0
+              izf=24
+              call EDCASGN(ICOMP,ICGTS,IDT,IPER,silent,izs,izf)
+            ENDIF
+          ELSE
+            IDT=IQ
+            IF(NCAS(IDT).EQ.MC)THEN
+              WRITE(OUTS,'(2A)')
+     &          'Sorry, too many periods for day type ',CALENTAG(IDT)
+              CALL USRMSG(' ',OUTS,'W')
+            ELSE
+              IPER=0
+              if(loadcount(icomp,ICGTS,IDT).eq.0)then
+
+C If there are no loads of this type make a default one.
+                silent=.true.
                 izs=0
                 izf=24
                 call EDCASGN(ICOMP,ICGTS,IDT,IPER,silent,izs,izf)
-              ENDIF
-            ELSE
-              IDT=IQ
-              IF(NCAS(IDT).EQ.MC)THEN
-                WRITE(OUTS,'(2A)')
-     &          'Sorry, too many periods for day type ',CALENTAG(IDT)
-                CALL USRMSG(' ',OUTS,'W')
-              ELSE
-                IPER=0
-                if(loadcount(icomp,ICGTS,IDT).eq.0)then
-
-C If there are no loads of this type make a default one.
-                  silent=.true.
-                  izs=0
-                  izf=24
-                  call EDCASGN(ICOMP,ICGTS,IDT,IPER,silent,izs,izf)
-                endif
-                silent=.false.
-                izs=8
-                izf=18
-                call EDCASGN(ICOMP,ICGTS,IDT,IPER,silent,izs,izf)
-              ENDIF
+              endif
+              silent=.false.
+              izs=8
+              izf=18
+              call EDCASGN(ICOMP,ICGTS,IDT,IPER,silent,izs,izf)
             ENDIF
-          ELSE
-            GOTO 5
-          endif
+          ENDIF
           sorted=.false.
           modopr=.true.
           goto 5
+
         elseif (IW.EQ.2) then 
           call CDCASGN(ICOMP,1)
           sorted=.false.
           modopr=.true.
           goto 5
+
         elseif (IW.EQ.3) then
           call CDCASGN(ICOMP,2)
           sorted=.false.
           modopr=.true.
           goto 5
+
         elseif (IW.EQ.4.or.IW.EQ.5) then
 
 C Import casual gains from another zone. Ask which zone, then
@@ -3557,9 +3465,11 @@ C Remind users to check their data.
         elseif(iw.eq.-3)then
           goto 44  ! re-display the menu
         endif
+
       ELSEIF(IVERT.EQ.(MVERT-6))THEN
 
 C Provide a bit of editing space (8 char) for the  char string.
+C << deal with hard coded 3 below >>
         helptopic='operations_casual_labels'
         call gethelptext(helpinsub,helptopic,nbhelp)
         dok=.false.
@@ -3574,6 +3484,7 @@ C Provide a bit of editing space (8 char) for the  char string.
  567      CONTINUE
           goto 5
         endif
+
       ELSEIF(IVERT.EQ.(MVERT-7))THEN
 
 C If there are enough items allow paging control via EKPAGE.
@@ -3583,6 +3494,7 @@ C If there are enough items allow paging control via EKPAGE.
           ILEN=NCAS(IDTYP)
           goto 44
         ENDIF
+
       ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
 
 C Edit block identified by KEYIND.
@@ -3619,12 +3531,7 @@ C << use in the zone operation file timings
 C esprdbfile.h supplies the following:
 C LPRFDB,IPRODB (for event profile database)
 #include "profile.h"
-
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT
-      REAL CMGS,CMGL,RADC,CONC
+#include "schedule.h"
 
 C Electrical data flag and elctrical data.
       common/elecflg/ielf(mcom)
@@ -3632,10 +3539,6 @@ C Electrical data flag and elctrical data.
      &BVOLT(MDTY,MC),IPHAS(MDTY,MC)
       INTEGER NEL,IPF,IPHAS
       REAL PF,PWR,BVOLT
-
-C Descriptive label for a zone load or casual gain types.
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
 
 C Profile database commons via profile.h.
 
@@ -3716,7 +3619,8 @@ C Present a list of profiles to select from.
 
       INDEX=IPRVAL(1)
 
-C Identify nature of casual gain
+C Identify nature of casual gain.
+C << revise for more types >>
       CALL EASKABC(' ','Type of casual gain: ',ll1,ll2,ll3,ICGTX,
      &  nbhelp)
 
@@ -3832,15 +3736,11 @@ C If silent is true then use icgs & icgf parameters.
       subroutine EDCASGN(ICOMP,ICGTX,IDT,IPER,silent,icgsX,icgfX)
 #include "building.h"
 #include "geometry.h"
+#include "schedule.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT
-      REAL CMGS,CMGL,RADC,CONC
 
 C Electrical data flag and elctrical data.
       common/elecflg/ielf(mcom)
@@ -3864,8 +3764,15 @@ C If new period then set defaults otherwise get data from common.
       if (IPER.eq.0) then
         CMGSX=0.
         CMGLX=0.
-        RADCX=0.5
-        CONCX=0.5
+        if(icgtX.eq.1)then
+          RADCX=0.6; CONCX=0.4
+        elseif(icgtX.eq.2)then
+          RADCX=0.3; CONCX=0.7
+        elseif(icgtX.eq.3)then
+          RADCX=0.4; CONCX=0.6
+        else
+          RADCX=0.5; CONCX=0.5
+        endif
         IPFX=0
         IPHASX=1
         PFX=0.0
@@ -3923,7 +3830,7 @@ C Gain as W - require gain only.
           write (HOLD,'(2f8.1,a)') CMGSX,CMGLX,'  '
         endif
         call EASKS(HOLD,'Sensible and latent gain (W):',
-     &          ' ',24,'0.   0. ','casual gn info',IER,nbhelp)
+     &    ' ',24,'0.   0. ','casual gn info',IER,nbhelp)
         if(ier.eq.-3) goto 10  ! user canceled
         K=0
         call EGETWR(HOLD,K,XSEN,0.,100000.0,'W','sensible gain',IER)
@@ -3948,7 +3855,7 @@ C Gain as W/m^2 - require gain per square meter.
         call EGETWR(HOLD,K,XLATGN,0.,50.0,'W','latent gain',IER)
         if (IER.ne.0) goto 30
         if (ICGTX.eq.1) then
-          CMGSX=XSEN*zb
+          CMGSX=XSEN*zb   ! assumes occupants
           CMGLX=XLATGN*zb
         else
           if (ICGTX.gt.1) ICGTX=ICGTX*(-1)
@@ -3994,7 +3901,7 @@ C Gain as m^2/object - floor area of an object and gain per object.
 C If user cancels go back to initial question.
         NOBJ=1
  50     if (ICGTX.eq.-1) then
-          FLA=CMGSX
+          FLA=CMGSX  ! assumes occupants
         else
           FLA=10.
         endif
@@ -4041,6 +3948,9 @@ C that each person is 95W sensible and 45W latent.
       endif
 
 C Ask for rad/ conv split.
+
+C << take into account which gain type when setting intial values >>
+
  70   write (HOLD,'(2f7.3,a)') RADCX,CONCX,'  '
       helptopic='operations_lighting_data'
       call gethelptext(helpinsub,helptopic,nbhelp)
@@ -4132,7 +4042,7 @@ C If idt=-1 then do for all day types
         IDT=1
       ENDIF
 
-C Start insertion
+C Start insertion of casual gain.
  113  if (IDT.gt.0) then
         IF(IPER.EQ.0)THEN
           NCG=NCAS(IDT)
@@ -4153,7 +4063,7 @@ C Start insertion
           INC=IPER
         endif
 
-C Now update common blocks. Loop backwards from 
+C Now update common blocks. Loop backwards from INC to ILPER.
         do 300 IX=INC,ILPER,-1
           if (IX.eq.ILPER) then
             call CPYCASTI(icomp,idt,ix,icgtX,icgsX,icgfX,cmgsX,cmglX,
@@ -4180,6 +4090,7 @@ C  ICD - copy (=2) delete (=1) flag
 
       subroutine CDCASGN(ICOMP,ICD)
 #include "building.h"
+#include "schedule.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
@@ -4187,11 +4098,6 @@ C  ICD - copy (=2) delete (=1) flag
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
 
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT
-      REAL CMGS,CMGL,RADC,CONC
       INTEGER IX,IDT,IDTT
 
 C Electrical data flag and elctrical data.
@@ -4199,10 +4105,6 @@ C Electrical data flag and elctrical data.
      &BVOLT(MDTY,MC),IPHAS(MDTY,MC)
       INTEGER NEL,IPF,IPHAS
       REAL PF,PWR,BVOLT
-
-C Descriptive label for a zone load or casual gain.
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
 
       character VERT(3*MC)*35
       dimension IVERT(MC),ITEMP(3*MC),kstr(MDTY)
@@ -4235,7 +4137,7 @@ C Choose day type to delete/copy period from
       M=0
       ilistlen=NCAS(IDT)
 
-C << Revise to work with more casual gain types >>
+C Generate menu text for each gain on the current day.
       DO 10 L=1,NCAS(IDT)
         M=M+1
         if(ICGT(IDT,L).gt.0)then
@@ -4243,7 +4145,7 @@ C << Revise to work with more casual gain types >>
      &        lodlabel(icomp,ICGT(IDT,L)),' W  ',CMGS(IDT,L),CMGL(IDT,L)
   303     FORMAT('Wkd ',2i4,1x,2a,2f6.0)
         elseif(ICGT(IDT,L).eq.-1)then
-          jicgt=iabs(ICGT(IDT,L))
+          jicgt=iabs(ICGT(IDT,L))   ! assumes occupant
           WRITE(VERT(M),303)ICGS(IDT,L),ICGF(IDT,L),
      &        lodlabel(icomp,jicgt),' m2p',CMGS(IDT,L),CMGL(IDT,L)
         else
@@ -4334,6 +4236,7 @@ C << initial intent to guide later revisions?
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -4350,40 +4253,21 @@ C Passed parameters
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types allowed and sorted
-      common/p3ver/ip3ver(MCOM)
-      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
-      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
       COMMON/P1C/oprdescc,ctlstrc
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
-      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
-     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
-     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
-     &             IVH(MCOM),TAH(MCOM)
 
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT
-      REAL CMGS,CMGL,RADC,CONC
       common/elecflg/ielf(mcom)
       COMMON/ELP3N/NEL(MDTY),PF(MDTY,MC),IPF(MDTY,MC),PWR(MDTY,MC),
      &BVOLT(MDTY,MC),IPHAS(MDTY,MC)
       INTEGER NEL,IPF,IPHAS
       REAL PF,PWR,BVOLT
 
-C Descriptive label for a zone load or casual gain.
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
+C Descriptive label for scratch zone load or casual gain.
       character lodlabelc*6
       common/loadlabelc/lodlabelc(MGTY)
 
+C Scratch version of P3N
       COMMON/P3NC/NCASC(MDTY),ICGSC(MDTY,MC),ICGFC(MDTY,MC),
      &CMGSC(MDTY,MC),CMGLC(MDTY,MC),RADCC(MDTY,MC),CONCC(MDTY,MC)
       COMMON/P3TYPENC/ICGTC(MDTY,MC)
@@ -4431,7 +4315,7 @@ C so there is no need to clear nac
       lodlabel(idest,1)='Occupt'
       lodlabel(idest,2)='Lights'
       lodlabel(idest,3)='Equipt'  
-      lodlabel(idest,4)='NA    '  
+      lodlabel(idest,4)='Other '  
       lodlabel(idest,5)='AnnEl '  
       lodlabel(idest,6)='NA    ' 
       lodlabel(idest,7)='NA    '
@@ -4563,7 +4447,7 @@ C initial setup is done for these topics.
           NAC(IDTY)=0
  400    CONTINUE
 
-C New file will be in sorted format with multiple day types allowed
+C New file will be in sorted format with multiple day types allowed.
         ip3ver(idest)=2
       endif
 
@@ -4680,7 +4564,7 @@ C If the user has asked for verbosity list out the result.
 C Because there is a small chance that the source file lacked fully
 C sorted casual gains (e.g. was an older file) force a sorting.
       call edisp(iuout,'Sorting imported casual gains...')
-      call PROCESSOLDCAS(idest,0,iuout,IER)
+      call PROCESSOLDCAS(idest,0,iuout)
       call edisp(iuout,'Sorting imported casual gains...completed.')
 
 C Save the destination operation file.
@@ -4707,6 +4591,7 @@ C  ICOMP zone number
       subroutine PLTCASGN(ICOMP,IDTYP)
 #include "building.h"
 #include "geometry.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -4717,15 +4602,7 @@ C  ICOMP zone number
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT,IDTY
-      REAL CMGS,CMGL,RADC,CONC
-
-C Descriptive label for a zone load or casual gain.
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
+      INTEGER IDTY
 
       dimension CGAINS(25,7),CGAINL(25,7),CGAINTS(25),CGAINTL(25)
 
@@ -4926,7 +4803,8 @@ C first day type requested
         do 65 IHR=ICGS(IDAY,IP),ICGF(IDAY,IP)-1
           if (ICGT(IDAY,IP).eq.-1) then
 
-C For case of m2/person CMGL is zero so use CMGS to get CGNL
+C For case of m2/person CMGL is zero so use CMGS to get CGNL.
+C << can this be generalized >>
             if (CMGS(IDAY,IP).gt.0.0) then
               CGNS=real(int((ZBASEA(ICOMP)/CMGS(IDAY,IP))))*95.
               CGNL=real(int((ZBASEA(ICOMP)/CMGS(IDAY,IP))))*45.
@@ -5228,13 +5106,9 @@ C   idp - point of insertion or deletion.
 C   ier - set to 1 if there was a problem
       subroutine insdelcasper(icomp,idaytype,act,idp,ier)
 #include "building.h"
+#include "schedule.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,IDTY
-      REAL CMGS,CMGL,RADC,CONC
 
 C Electrical data flag and elctrical data.
       common/elecflg/ielf(mcom)
@@ -5293,6 +5167,7 @@ C initcasday does initial setup of all casual day types.
       subroutine initcasday(ier)
 
 #include "building.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -5300,11 +5175,7 @@ C initcasday does initial setup of all casual day types.
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT,ILN
-      REAL CMGS,CMGL,RADC,CONC
+      INTEGER ILN
       dimension iper(24),iperf(24)
       character hold*48,OUTS*12,LOUTS*24,VOUTS*50
       
@@ -5331,9 +5202,9 @@ C For help messages
      &  'occupants / lights / equipment or small power',
      &  24,'  0  0  0  ','no. CG periods',IER,nbhelp)
         K=0
-        CALL EGETWI(HOLD,K,nbocper,0,24,'F','occup perds',IER)
-        CALL EGETWI(HOLD,K,nbltper,0,24,'F','light perds',IER)
-        CALL EGETWI(HOLD,K,nbspper,0,24,'F','sm pwr perds',IER)
+        CALL EGETWI(HOLD,K,nbocper,0,24,'F','occupant periods',IER)
+        CALL EGETWI(HOLD,K,nbltper,0,24,'F','light periods',IER)
+        CALL EGETWI(HOLD,K,nbspper,0,24,'F','small power periods',IER)
 
 C Debug.
 C        write(6,*) 'occup light sm pwr per ',nbocper,nbltper,hbspper

@@ -453,7 +453,7 @@ according to this two cases can be considered:
 *IDDATA
 # Category | Assoc. special 
 #            material model no 
-     7            52
+     8            52
 *DESC
 Evaporative_surf   
 *SPECDATA
@@ -490,7 +490,7 @@ Hsl is the enthalpy of liquid water at the surface temperature
 #            material model no 
      4            4 
 *DESC
-Solar collector back plate    
+Solar_collector_back_plate    
 *SPECDATA
 5                 
 0.002     Water flow rate (l/s)
@@ -504,13 +504,99 @@ diamater circular tubes.
 
 *ENDTEXT
 *END
+*SPECMATL
+*IDDATA
+# Category | Assoc. special 
+#            material model no 
+     1            5 
+*DESC
+WATSUN-PV_multic
+*SPECDATA
+16                    
+22.1      Open circuit voltage at ref (V)
+4.80      Short circuit current at ref (A)
+17.6      Voltage at maximum power point at ref (V)
+4.55      Current at maximum power point at ref (A)
+1000.     Reference insolation. (W/m^2)
+298.      Reference temperature. (K)
+0.00065   Temperature coefficient of Isc (/K)
+-0.0036   Temperature coefficient of Voc (/K)
+1.        Coefficient of logarithm of irradiance for Voc (-)
+36.       Number of series connected cells (not modules) (-)
+1.        Number of parallel connected branches. (-)
+2.        Number of modules in surface. (-)     
+0.        Load type (0-maximum power, 1-fixed V)
+0.        Load value - voltage (V)
+0.        Shading treatment (0-def,1-prop,2-total,3-diff.)
+0.10      Miscellaneous loss factor (-)
+*TEXT
+Data from BP solar:
+BP Saturn (BP 380)
+Module type             BP Saturn (BP 380)
+Module size             1197 x 530 mm
+Weight                  6.1 kg
+Construction            Clear universal frame with standard junction box
+Cells in series         36
+Cells in parallel       1
+Peak power  at STC      80
+Voc at STC              22.1
+Isc at STC              4.80
+Vmax at STC             17.6
+Imax at STC             4.55
+*ENDTEXT
+*END
+*SPECMATL
+*IDDATA
+# Category | Assoc. special 
+#            material model no 
+     2            5 
+*DESC
+WATSUN-PV_amorph
+*SPECDATA
+16                    
+42.0      Open circuit voltage at ref (V)
+5.10      Short circuit current at ref (A)
+30.0      Voltage at maximum power point at ref (V)
+4.10      Current at maximum power point at ref (A)
+1000.     Reference insolation. (W/m^2)
+298.      Reference temperature. (K)
+0.001     Temperature coefficient of Isc (/K)
+-0.0038   Temperature coefficient of Voc (/K)
+1.        Empirical coefficient beta used in calc of Voc (-)
+20.       Number of series connected cells (not modules) (-)
+1.        Number of parallel connected branches. (-)
+2.        Number of modules in surface. (-)
+0.        Load type (0-maximum power, 1-fixed V)
+0.        Load value - voltage (V)
+0.        Shading treatment (0-def,1-prop,2-total,3-diff.)
+0.10      Miscellaneous loss factor (-)     
+*TEXT
+Data from Uni-Solar:
+Uni-Solar ECO-Series
+Module type             Uni-Solar ES-124
+Module size             2459 x 792 mm
+Weight                  20.5 kg
+Construction            Framed module with terminal housing assembly
+Cells in series         20
+Cells in parallel       1
+Peak power  at STC      124
+Voc at STC              42.0
+Isc at STC              5.10
+Vmax at STC             30.0
+Imax at STC             4.10
+*ENDTEXT
 *ENDSPMDB
 # Additional classes of entity to be added here same format as above.
 *POWRODB
 *CATEGORY
 # The categories of special material currently supported in the database
-1
+6
 Wind Turbines
+non-HVAC electrical loads
+HVAC electrical loads
+Transformation and network losses
+Off-site loads and generation
+Batteries
 *ENDCATEGORY
 *POWOCOMP
 *IDDATA
@@ -538,6 +624,247 @@ This is a very simple wind turbine mode based on that described by
 
 *ENDTEXT
 *END
+*POWOCOMP
+*IDDATA
+# Category | Assoc. special 
+#            power only model no 
+     2            10  
+*DESC
+non-HVAC_elec_load
+*SPECDATA
+1  1
+1.        Scalar multiplier for loads in .fcl file
+UNKNOWN
+non-HVAC electrical loads input file (.fcl)
+*TEXT
+This allows non-HVAC electrical loads stored in .fcl files
+to be imposed upon the electrical network.
+
+*ENDTEXT
+*END
+*POWOCOMP
+*IDDATA
+# Category | Assoc. special 
+#            power only model no 
+     3            11  
+*DESC
+HVAC_elec_load
+*SPECDATA
+0  
+*TEXT
+This component allows the electrical loads from CETC's idealized 
+plant component models to be imposed on the electrical network
+
+*ENDTEXT
+*END
+*POWOCOMP
+*IDDATA
+# Category | Assoc. special 
+#            power only model no 
+     5            12
+*DESC
+Outside_elec_load
+*SPECDATA
+1  1
+1.        Scalar multiplier for loads in .fcl file
+UNKNOWN
+Electrical loads input file (.elec)
+*TEXT
+This allows electrical loads stored in .elec files for
+other buildings to be imposed upon the electrical network.
+
+*ENDTEXT
+*END
+*POWOCOMP
+*IDDATA
+# Category | Assoc. special
+#            power only model no
+     4            13
+*DESC
+Wind_transformer_loss
+*SPECDATA
+1  0
+0.96       Transformer efficiency
+*TEXT
+This component allows transformer losses to be imposed
+as a load on the electrical network.
+*ENDTEXT
+*END
+*POWOCOMP
+*IDDATA
+# Category | Assoc. special
+#            power only model no
+     4            14
+*DESC
+Wind_TxDx_loss
+*SPECDATA
+1 0
+0.95
+*TEXT
+This component allows transmission and distribution
+losses to be imposed as a load on the electrical network.
+*ENDTEXT
+*END
+*POWOCOMP
+*IDDATA
+# Category | Assoc. special
+#            power only model no
+     4            15
+*DESC
+PCU_loss
+*SPECDATA
+1 0
+0.95
+*TEXT
+This component allows losses from the power conditioning
+unit that converts DC power from the electrical generation
+device to AC power to be imposed as a load on the electrical network.
+*ENDTEXT
+*END
+*POWOCOMP
+*IDDATA
+# Category | Assoc. special 
+#            power only model no 
+     5            16
+*DESC
+Off_site_generated_power
+*SPECDATA
+1  1
+1.        Scalar multiplier for supply in .wnd file
+wind-generated electrical supply input file (.wnd)
+*TEXT
+This allows wind-generated electrical supply stored in .wnd files
+to be imposed upon the electrical network.
+*ENDTEXT
+*END
+*POWOCOMP
+*IDDATA
+# Category | Assoc. special
+#            power only model no
+     4            20
+*DESC
+DC-AC_inverter
+*SPECDATA
+6 0
+1.        Operating mode of PCU (-)           
+2000.     Nominal power (W)
+8.975E-06 Idling constant (-)
+3.65      Set-point voltage (V)
+1.227E07  Internal resistance constant (V^2)
+0.        Auxiliary power (W)
+*TEXT
+This component determines the power sink term for the
+node sending current to the PCU and the power source term
+for the node receiving current from the PCU.
+*ENDTEXT
+*END
+*POWOCOMP
+*IDDATA
+# Category | Assoc. special
+#            power only model no
+     6            17
+*DESC
+Power-sonic battery (CETC battery model)
+*SPECDATA
+47 0
+1        Number of battery cells in parallel in a pack (-)
+6        Number of packs in series in a battery (-)
+1.66     Capacity at operating temperature (Ah/cell)
+20.      Operating temperature recommended by manufacturer (oC)
+2.15     Maximum manufacturer voltage of a battery cell (V)
+1.94     Minimum manufacturer voltage of a battery cell (V)
+1.5      Maximum recommended charge current of a battery cell (A)
+2.2      Maximum recommended charge voltage of a battery cell (V)
+30.      Initial battery temperature (oC)
+0.       Initial battery depth of discharge (-)
+1666.    Thermal mass of one battery cell (J/oC)
+0.01     Battery heat loss coefficient of one battery cell (W/oC)
+600.     Resistance of the heating elements for one battery cell (ohms)
+15.      Temperature below which the thermal management system takes priority (oC)
+2.15     Coefficient A for battery free voltage correlation (V)
+-0.21    Coefficient B for battery free voltage correlation (V)
+0.       Coefficient C for battery free voltage correlation (V)
+0.       Coefficient D for battery free voltage correlation (V)
+1.       Exponential coefficient B for battery free voltage correlation (-)
+0.       Exponential coefficient C for battery free voltage correlation (-)
+0.       Exponential coefficient D for battery free voltage correlation (-)
+0.8      Coefficient A for cell capacity/temperature correlation (-)
+0.0095   Coefficient B for cell capacity/temperature correlation (/oC)
+-0.00006 Coefficient C for cell capacity/temperature correlation (/oC^2)
+0.2      Coefficient CA for cell internal resistance correlation in charge mode
+0.       Coefficient CB for cell internal resistance correlation in charge mode
+0.       Coefficient CC for cell internal resistance correlation in charge mode
+0.       Coefficient CD for cell internal resistance correlation in charge mode
+0.       Coefficient CH for cell internal resistance correlation in charge mode
+0.       Exponential coefficient EB for cell internal resistance correlation in charge mode
+0.       Exponential coefficient EC for cell internal resistance correlation in charge mode
+0.       Exponential coefficient ED for cell internal resistance correlation in charge mode
+0.       Exponential coefficient EH1 for cell internal resistance correlation in charge mode
+0.       Exponential coefficient EH2 for cell internal resistance correlation in charge mode
+0.       Exponential coefficient EH3 for cell internal resistance correlation in charge mode
+0.2      Coefficient CA for cell internal resistance correlation in discharge mode
+0.       Coefficient CB for cell internal resistance correlation in discharge mode
+0.       Coefficient CC for cell internal resistance correlation in discharge mode
+0.       Coefficient CD for cell internal resistance correlation in discharge mode
+0.       Coefficient CH for cell internal resistance correlation in discharge mode
+0.       Exponential coefficient EB for cell internal resistance correlation in discharge mode
+0.       Exponential coefficient EC for cell internal resistance correlation in discharge mode
+0.       Exponential coefficient ED for cell internal resistance correlation in discharge mode
+0.       Exponential coefficient EH1 for cell internal resistance correlation in discharge mode
+0.       Exponential coefficient EH2 for cell internal resistance correlation in discharge mode
+0.       Exponential coefficient EH3 for cell internal resistance correlation in discharge mode
+1        Index number of zone containing battery
+*TEXT
+Battery model developed by CETC (Patrice Pinel, modified Hajo Ribberink).
+*ENDTEXT
+*END
+*POWOCOMP
+*IDDATA
+# Category | Assoc. special 
+#            power only model no 
+     2            18
+*DESC
+non-HVAC_elec_load_from_BCD
+*SPECDATA
+4  1
+1.        Scalar multiplier for loads 
+1.        Interpolation method (1=step, 2=linear)
+1.        Flag for managing hydrogen loads (0=ignore loads, 1=deduct loads)
+1.        Flag for loads source (1: .fcl file, 2: .bcd file
+UNKNOWN
+Name of .fcl file, or boundary condition column corresponding to electric load
+*TEXT
+This component is an improved version of 'non-HVAC_elec_load'. In 
+addition to allowing loads read from the boundary condition facility
+to be imposed on the electric network, it is 'hydrogen-appliance-aware',
+and can deduct energy used by hydrogen equipment.
+*ENDTEXT
+*END
+*POWOCOMP
+*IDDATA
+# Category | Assoc. special 
+#            power only model no 
+     1            19 
+*DESC
+wind_turbine2
+*SPECDATA 
+8 2
+10.0      Height of the turbine (m)
+1.0       Number of turbines (-)
+1.0       Location (1-urban,2-suburban,3-open)
+10.0      Reference height (m)
+0.0       Wind speed statistics (ON/OFF)
+0.0       Wind speed data source (0=clm file w/o corr, 1= clm file w/ corr for height, 2= bcd file)
+0.2       Default turbulence intensity (-)
+1.0       Wind speed interpolation method (1 = step, 2 = linear)
+UNKNOWN
+Wind turbine power output profile file. 
+UNKNOWN
+Column heading corresponding to wind speed data (if using bcd data source). 
+*TEXT
+A simple user configurable wind turbine model. 
+*ENDTEXT
+*END
 *ENDPOWERODB
 *ECONDDB 
 *CATEGORY
@@ -553,7 +880,7 @@ Transformers
 *DESC
 dc_cable
 *SPECDATA
-6       
+2       
 0.0       Conductor series resistance Rs (ohms/m)   
 1.0       Length (m)
 *TEXT
@@ -619,6 +946,100 @@ three_phase_cable
 *TEXT
 This is a very simple short line model that ignores the capacitive properties 
 of the conductor. 
+*ENDTEXT
+*END
+*POWOCOMP
+*IDDATA
+# Category | Assoc. special
+#            power only model no
+     6            22
+*DESC
+Lithium Ion Battery (CETC Battery subroutine)
+*SPECDATA
+81 0
+34       Number of cells connected in parrallel
+35       Number of cells connected in series
+1.5      reference capacity for a unit cell (Amp h)
+25.      battery reference operating temperature
+4.3      DOD=0 (V) of a single cell
+3.15     DOD=100% (V) of a single cell
+24.2     Maximum charge/discharge current of one cell(Amps)
+4.3      Maximum charge/discharge voltage of one cell(V)
+25.      initial battery temperature  (?C) 
+0.       initial depth of discharge (probably zero for a charged battery)
+27.3     thermal mass of a single cell -mass*Cp (J/?C)
+42.64    heat loss factor h*A (W/?C)
+582.86   resistance of the heaters (Ohm)
+1.0      maximum DOD of battery (in percentage... probably 0.8)
+0.       minimum DOD of battery (in percentage... probably 0)
+60.      Maximum battery temperature (?C)
+-40.     Minimum battery temperature (?C)
+-.05712  E5 Exponential coefficent for OCV
+-.05255  E4 Exponential coefficent for OCV
+-.20969  E3 Exponential coefficent for OCV
+-.34512  E2 Exponential coefficent for OCV
+-.41175  E1 Exponential coefficent for OCV
+4.2228   E0 Exponential coefficent for OCV
+0.1152   Rint5 Exponential coefficent for Rint
+-0.2556  Rint4 Exponential coefficent for Rint
+0.2007   Rint3 Exponential coefficent for Rint
+-0.0651  Rint2 Exponential coefficent for Rint
+0.0265   Rint1 Exponential coefficent for Rint
+0.0202   Rint0 Exponential coefficent for Rint
+0.0605   The first current discharged at (Amps)
+1.00     The alpha required to discharge/charge at first rate
+0.1210   The second current discharged at (Amps)
+1.00     The alpha required to discharge/charge at second rate
+0.2419   The third current discharged at (Amps) 
+1.00     The alpha required to discharge/charge at third rate 
+1.2096   The fourth current discharged at (Amps) 
+0.985    The alpha required to discharge/charge at fourth rate 
+6.0480   The fifth current discharged at (Amps)
+0.895    The alpha required to discharge/charge at fifth rate
+12.096   The sixth current discharged at (Amps)
+0.775    The alpha required to discharge/charge at sixth rate
+24.192   The seventh current discharged at (Amps)
+0.593    The alpha required to discharge/charge at seventh rate
+999.     The eighth current discharged at (Amps)
+0.593    The alpha required to discharge/charge at eighth rate
+-40.     The first temperature discharged/charged at in Celsius
+0.905    The beta required to discharge/charge at the first temperature
+0.1870   The voltage offset required to discharge/charge at the first temperature (V)
+-20.     The second temperature discharged/charged at in Celsius
+0.985    The beta required to discharge/charge at the second temperature
+0.0366   The voltage offset required to discharge/charge at the second temperature (V)
+0.       The third temperature discharged/charged at in Celsius
+1.       The beta required to discharge/charge at the third temperature
+0.0123   The voltage offset required to discharge/charge at the third temperature (V)
+10.      The fourth temperature discharged/charged at in Celsius 
+1.       The beta required to discharge/charge at the fourth temperature 
+0.0062   The voltage offset required to discharge/charge at the fourth temperature (V) 
+20.      The fifth temperature discharged/charged at in Celsius
+1.       The beta required to discharge/charge at the fifth temperature
+0.0024   The voltage offset required to discharge/charge at the fifth temperature (V)
+30.      The sixth temperature discharged/charged at in Celsius
+1.       The beta required to discharge/charge at the sixth temperature
+-1.5e-5  The voltage offset required to discharge/charge at the sixth temperature (V)
+40.      The seventh temperature discharged/charged at in Celsius
+1.       The beta required to discharge/charge at the seventh temperature
+-0.0012  The voltage offset required to discharge/charge at the seventh temperature (V)
+60.      The eighth temperature discharged/charged at in Celsius
+1.       The beta required to discharge/charge at the eighth temperature
+-0.0012  The voltage offset required to discharge/charge at the eighth temperature (V)
+0.       self discharge constant in amps (keep zero if unknown or for zero self discharge)
+0.       Activation energy for self-discharge in kJ.kmol-1 (keep zero if unknown  or for zero self discharge)
+1        The index of the zone where the battery is located (-)
+0.       The power required to run the li-on BMS circuitry (W)
+0.1972   Second optional Exponential coefficent for Rint
+-0.4749  Second optional Exponential coefficent for Rint
+0.4118   Second optional Exponential coefficent for Rint
+-0.1472  Second optional Exponential coefficent for Rint
+0.0380   Second optional Exponential coefficent for Rint
+0.0154   Second optional Exponential coefficent for Rint
+16.      If the current is above this value, the internal resistance will be calculated with this 2nd set (A)
+3000.    The crucial cycle to indicate the end of the cell's life
+*TEXT
+Lithium Ion Battery
 *ENDTEXT
 *END
 *ENDCONDDB 

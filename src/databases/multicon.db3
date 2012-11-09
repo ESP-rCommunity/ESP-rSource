@@ -1,6 +1,6 @@
 # composite construction db defined in ./multicon.db3
 # based on materials db ./material.db3.a
-   47     # no of composites 
+   48     # no of composites 
 # layers  description   optics name   symmetry tag
     4    extern_wall   OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness (m) mat descr & air gap R
@@ -321,3 +321,13 @@
   247    0.0040  REF A CLEAR LO 6MM : optics from UK national method datase Low-e coated
     0    0.0160  air  0.125 0.125 0.125
   247    0.0040  REF A CLEAR LO 6MM : optics from UK national method datase Low-e coated
+# layers  description   optics name   symmetry tag
+    7    PV_constr     TRAN  PVmod_opt     NONSYMMETRIC  
+# mat ref thickness (m) mat descr & air gap R
+  251    0.0030  low-iron-glass : low iron glass for use in PV modules and solar collectors
+  252    0.0030  EVA layer : EVA layer for embedded PV cells (resin cell resin)
+  251    0.0030  low-iron-glass : low-iron-glass for use in PV modules and solar collectors
+    0    0.0200  air  0.170 0.170 0.170
+   46    0.0040  grey cotd alum : Grey coated aluminium
+  281    0.0800  Glass Fibre Quilt : Glass Fibre Quilt
+   46    0.0040  grey cotd alum : Grey coated aluminium
