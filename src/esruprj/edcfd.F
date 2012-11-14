@@ -499,9 +499,9 @@ C Create menu text.
         NCP=1
       endif
       if (griderr) then
-        ITEM(10+NCP) =' Gridding incomplete! '
+        ITEM(10+NCP) ='  Gridding incomplete or errors! '
       else
-        ITEM(10+NCP) ='g Visualize gridding  '
+        ITEM(10+NCP) ='g Visualize gridding             '
       endif
       ITEM(11+NCP) =' ------------------------------ '
       ITEM(12+NCP) ='? help              '
@@ -3731,7 +3731,6 @@ C Setup and pass in parameters to win3d.
         iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
         CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &    iigl,iigr,iigt,iigb,iigw,iigwh)
-C        CALL win3d(menuchw,6,6,2,4,igl,igr,igt,igb,igw,igwh)
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
         GRMODE=.true.
@@ -3758,7 +3757,24 @@ C Check current defined distance and total no of cells.
  8    continue
       ierr=0
       if (NTC.gt.1) then
-        if (abs(CTDIS-TOTDIS).gt.0.00001) ierr=1
+        if (abs(CTDIS-TOTDIS).gt.0.001)then
+          if (IAX.eq.1) then
+            write(outs,'(a,f6.3,a,f6.3,a)') 'The current length ',
+
+     &       CTDIS,' & TOTDIS',TOTDIS,' are not close for X axis.'
+          elseif(IAX.eq.2)then
+            write(outs,'(a,f6.3,a,f6.3,a)') 'The current length ',
+     &        CTDIS,' & TOTDIS',TOTDIS,' are not close for Y axis.'
+          elseif(IAX.eq.3)then
+            write(outs,'(a,f6.3,a,f6.3,a)') 'The current length ',
+     &        CTDIS,' & TOTDIS',TOTDIS,' are not close for Z axis.'
+          elseif(IAX.eq.4)then
+            write(outs,'(a,f6.3,a,f6.3,a)') 'The current length',
+     &        CTDIS,' & TOTDIS',TOTDIS,' are not close for Z eaxis.'
+          endif
+          call edisp(iuout,outs)
+          ierr=1
+        endif
       endif
 
 C Draw grid in 1D.

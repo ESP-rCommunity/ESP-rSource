@@ -564,7 +564,9 @@ C Edit project documentation.
 C            write(lmodellog,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.log'
           endif
 
-C Detect if working on X11 or GTK.
+C Detect if working on X11 or GTK and set lguess to pass into EASKXORGTKF.
+C The file name returned (lltmp). If X11 lltmp will be the file name and if
+C GTK it will include the full path to the file. 
           iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
           lltmp='  '
           lguess='  '
@@ -578,7 +580,7 @@ C Detect if working on X11 or GTK.
           call edisp(iuout,'  ')  ! echo blank line
           CALL EASKXORGTKF(lguess,
      &      'Project log file:',' ',lldef,lltmp,'log file',IER,nbhelp)
-          write(lmodellog,'(a)') lguess(1:lnblnk(lguess))
+          write(lmodellog,'(a)') lguess(1:lnblnk(lguess)) ! might be changed 
 
 C If user request jump back and re-display the menu.
           if(ier.eq.-3)then
@@ -596,6 +598,8 @@ C Ask user whether file is in ../doc and if so use fdroot if GTK.
               write(lmodellog,'(3a)') docpth(1:lnblnk(docpth)),fs,
      &          fname(1:lnblnk(fname))
             endif
+          else
+            write(lmodellog,'(a)') lltmp(1:lnblnk(lltmp))
           endif
 
 C See if file exists, (it should have been created within pregist
@@ -948,7 +952,9 @@ C pattern to management of lmodellog.
             endif
           endif
 
-C Detect if working on X11 or GTK.
+C Detect if working on X11 or GTK and set lguess to pass into EASKXORGTKF.
+C The file name returned (lltmp). If X11 lltmp will be the file name and if
+C GTK it will include the full path to the file.
           iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
           lltmp='  '
           lguess='  '
@@ -979,8 +985,13 @@ C Ask user whether file is in ../doc and if so use fdroot if GTK.
      &          fname(1:lnblnk(fname))
             endif
           else
-            write(lmodelqa,'(a)') lguess(1:lnblnk(lguess))
+            write(lmodelqa,'(a)') lltmp(1:lnblnk(lltmp))
           endif
+
+C Debug.
+C          write(6,*) 'lguess ',lguess
+C          write(6,*) 'lmodelqa ',lmodelqa
+C          write(6,*) 'lltmp ',lltmp
 
 C Save the model configuration file to register the report.
           CALL EMKCFG('-',IER)
@@ -2161,14 +2172,18 @@ C Remind user of standard optics as well as the alternatives.
           endif
         endif
 
-C Note optional zone extensions.
+C Note optional zone extensions. If there are casual gain controls
+C then rescan that zone file with verbose setting.
         if(zoneextrainfo.ge.1)then
           ivz=IVALS(IZ)   ! remember the selected zone
           if(IVF(ivz).EQ.1)call edisp(itu,
      &      ' Explicit viewfactors have been derived for this zone.')
-          if(ICGC(ivz).EQ.1)call edisp(itu,
+          if(ICGC(ivz).EQ.1)then
+            call edisp(itu,
      &      ' Casual gains are controlled in this zone.')
-
+            iitrc=1
+            call ercgcf(iitrc,itu,LCGCIN(IVALS(IZ)),IVALS(IZ),ier)
+          endif
           if(IOBS(ivz).gt.0.and.nbobs(ivz).gt.0)then
             call edisp(itu,
      &   'Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity')

@@ -43,6 +43,10 @@ C will have been defined prior to calling edmrt.
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       COMMON/RAY5/ZCOG(MCOM,3),XMN,YMN,ZMN,XMX,YMX,ZMX
+
+      integer ncub,ivfok
+      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
+      character CUBN*6
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
@@ -52,7 +56,7 @@ C will have been defined prior to calling edmrt.
       DIMENSION SNA(MS),PAZI(MS),PELV(MS)
       LOGICAL MODIFY,MODLEN,MODBND,concat,cfgmod,browse,clkok,XST
       logical silent,unixok
-      CHARACTER VERT*46,CUBN*6,LTMP*72
+      CHARACTER VERT*46,LTMP*72
       character VFILE*72,head*32,outs*124,KEY*1,ETEXT*82
       character doit*248,tmode*8,tfile*72,ZN*12
       character act*1
@@ -332,7 +336,7 @@ C current menu line index. Build up text strings for the menu.
       VERT(3)='a Edit zone viewfactors                      '
       VERT(4)='b Calculate zone or MRT sensor viewfactors   '
       VERT(5)='  ___________________________________________'
-      WRITE(VERT(6),'(A,I2)') '  No of MRT sensors: ',NCUB
+      WRITE(VERT(6),'(A,I2)') '  Number of MRT sensors: ',NCUB
       VERT(7)='  ___________________________________________'
       VERT(8)='  Sensor|   Origin (m)    |    Size (m)  |Rot'
       VERT(9)='  name  |Xcord|Ycord|Zcord|len |wid |ht  |deg'
@@ -450,7 +454,7 @@ C Add a sensor.
           DYC(NCUB)=0.1
           DZC(NCUB)=0.1
           CANG(NCUB)=0.
-          write(CUBN(NCUB),'(A4,I1)')'sen_',NCUB
+          write(CUBN(NCUB),'(A,I2.2)')'sen_',NCUB
           MODIFY=.TRUE.
         ELSE
           CALL USRMSG(' ',' Too many sensors defined!','W')
@@ -607,13 +611,16 @@ C EDMRTS: Edit details of a MRT sensor block.
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
 
+      integer ncub,ivfok
+      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
+      character CUBN*6
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
       COMMON/gzonpik/izgfoc,nzg,nznog(mcom)
       COMMON/RAY3/MODIFY,MODLEN,MODBND
       DIMENSION VERT(15)
-      CHARACTER VERT*28,MSG*72,S6*6,CUBN*6,head*30
+      CHARACTER VERT*28,MSG*72,S6*6,head*30
       character ETEXT*82
       LOGICAL MODIFY,MODLEN,MODBND
       integer NITMS,IVERT ! max items and current menu item

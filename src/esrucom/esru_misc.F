@@ -1178,7 +1178,7 @@ C For each block write info, use space as item separation.
      &    ZOB(icomp,I),DXOB(icomp,I),DYOB(icomp,I),DZOB(icomp,I),
      &    BANGOB(icomp,I,1),OPOB(icomp,I),
      &    BLOCKNAME(ICOMP,I)(1:llbn),BLOCKMAT(ICOMP,I)(1:llbm),I
-  34    FORMAT(7F9.3,F6.2,2X,A,1X,A,1X,'# block ',I2)
+  34    FORMAT(7F9.3,F6.2,2X,A,1X,A,1X,'# block ',I3)
         call SDELIM(outl,outld,'S',IW)
         WRITE(IAF,'(a)',IOSTAT=IOS,ERR=3) outld(1:lnblnk(outld))
    10 CONTINUE
@@ -1214,6 +1214,10 @@ C (for use in mrt).  IER=0 OK, IER=1 problem.
       integer lnblnk  ! function definition
 
       common/TOTAL/nsurmf, NGRID, NTRPOL
+      
+      integer ncub,ivfok
+      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
+      character CUBN*6
       common/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       common/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
@@ -1224,7 +1228,7 @@ C Error subroutine and error details for dll mode.
 
       DIMENSION VA(MSM)
 
-      CHARACTER LMRT*72,LGEO*72,CUBN*6,OUTSTR*124,WORD*20,outs*124
+      CHARACTER LMRT*72,LGEO*72,OUTSTR*124,WORD*20,outs*124
       character dllsubr*12,dllmesg*124
       integer fstgrp,fstsur,lstsur,strtgr
       logical dll
@@ -1281,9 +1285,9 @@ C currently not used - mrt accesses configuration file.
 C Read number of sensors.
       CALL STRIPC(IUF,OUTSTR,0,ND,1,'no sensors & surfs',IER)
       K=0
-      CALL EGETWI(OUTSTR,K,NCUB,0,MCUB,'F','no sensors',IER)
-      CALL EGETWI(OUTSTR,K,NZS,1,MS,'F','no zone surfs',IER)
-      CALL EGETWI(OUTSTR,K,IZINDX,1,MCOM,'F','zone index',IER)
+      CALL EGETWI(OUTSTR,K,NCUB,0,MCUB,'F','number mrt sensors',IER)
+      CALL EGETWI(OUTSTR,K,NZS,1,MS,'F','number mrt zone surfs',IER)
+      CALL EGETWI(OUTSTR,K,IZINDX,1,MCOM,'F','mrt zone index',IER)
       if(ier.ne.0)return
       if(IZINDX.ne.IC)then
         write(outs,'(3a)') LMRT(1:lnblnk(LMRT)),
@@ -1441,20 +1445,16 @@ C sensor name then read the viewfactors and exit.
         IF(IER.NE.0)return
         IF(ND.EQ.8.OR.ND.EQ.9)THEN
           K=0
-          CALL EGETWI(OUTSTR,K,IVFOK(I),0,1,'W','vf flag',IER)
-          CALL EGETWR(OUTSTR,K,XOC(I),-999.,998.,'W','X org',IER)
-          CALL EGETWR(OUTSTR,K,YOC(I),-999.,998.,'W','Y org',IER)
-          CALL EGETWR(OUTSTR,K,ZOC(I),  -9., 99.,'W','Z org',IER)
-          CALL EGETWR(OUTSTR,K,DXC(I),   0., 99.,'W','X dis',IER)
-          CALL EGETWR(OUTSTR,K,DYC(I),   0., 99.,'W','Y dis',IER)
-          CALL EGETWR(OUTSTR,K,DZC(I),   0., 99.,'W','Z dis',IER)
-          CALL EGETWR(OUTSTR,K,CANG(I),-359.,359.,'W','rot',IER)
+          CALL EGETWI(OUTSTR,K,IVFOK(I),0,1,'W','mrt flag',IER)
+          CALL EGETWR(OUTSTR,K,XOC(I),-999.,998.,'W','mrt X org',IER)
+          CALL EGETWR(OUTSTR,K,YOC(I),-999.,998.,'W','mrt Y org',IER)
+          CALL EGETWR(OUTSTR,K,ZOC(I),  -9., 99.,'W','mrt Z org',IER)
+          CALL EGETWR(OUTSTR,K,DXC(I),   0., 99.,'W','mrt X dis',IER)
+          CALL EGETWR(OUTSTR,K,DYC(I),   0., 99.,'W','mrt Y dis',IER)
+          CALL EGETWR(OUTSTR,K,DZC(I),   0., 99.,'W','mrt Z dis',IER)
+          CALL EGETWR(OUTSTR,K,CANG(I),-359.,359.,'W','mrt rot',IER)
           IF(ND.EQ.8)THEN
-            IF(I.LE.9)THEN
-              WRITE(CUBN(I),'(A,I1)')'MRT-',I
-            ELSEIF(I.GT.9)THEN
-              WRITE(CUBN(I),'(A,I2)')'MRT-',I
-            ENDIF
+            WRITE(CUBN(I),'(A,I2.2)')'sen_',I
           ELSEIF(ND.EQ.9)THEN
             CALL EGETW(OUTSTR,K,WORD,'W','cube name',IFLAG)
             CUBN(I)=WORD(1:6)
@@ -1504,12 +1504,15 @@ C act character*1 if 'a' then area weighted, if 'r' ray traced.
 
       integer lnblnk  ! function definition
 
-      COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
+      integer ncub,ivfok
+      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
+      character CUBN*6
+      common/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
       COMMON/MRTF/FFL(MCUB,6,MSM),VEWF(MS,MS)
 
       dimension rval(MS)
-      character LMRT*72,LGEOM*72,CUBN*6,act*1
+      character LMRT*72,LGEOM*72,act*1
       character louts*248
 
       IER=0
@@ -1532,7 +1535,8 @@ C Write out the file data.
       WRITE(IUF,'(A,A)',IOSTAT=IOS,ERR=14)'*GEOM  ',
      &  LGEOM(1:lnblnk(LGEOM))
       WRITE(IUF,'(3I4,A)',IOSTAT=IOS,ERR=14)
-     &  NCUB,NZS,ICOMP,'    # no sensors, zone surfs, zone no'
+     &  NCUB,NZS,ICOMP,
+     &  '   # numb mrt sensors, numb zone surfs, zone index'
       if(act.eq.'a')then
         WRITE(IUF,'(A)',IOSTAT=IOS,ERR=14)
      &    '# Area weighted zone viewfactors follow'
@@ -1570,7 +1574,7 @@ C If there are any cubes the save this information as well.
       if(NCUB.eq.0)goto 999
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=14) '*MRT_SENSOR'
       WRITE(IUF,'(A)',IOSTAT=IOS,ERR=14)
-     &  '# OK, Xorig, Yorig, Zorig,   DX,    DY,    DZ,   rot,  name'
+     & '# OK, Xorig, Yorig, Zorig,   DX,    DY,    DZ, rotation,  name'
 
       DO 1180 I=1,NCUB
         WRITE(IUF,34)IVFOK(I),XOC(I),YOC(I),ZOC(I),DXC(I),DYC(I),

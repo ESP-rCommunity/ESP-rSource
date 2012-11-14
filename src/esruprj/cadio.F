@@ -249,6 +249,10 @@ C by the user selection.
         CALL EASKXORGTKF(L144,'DXF export file name?',' ',
      &    dvfil,lltmp,'dxf file',IER,nbhelp)
 
+C Debug.
+C        write(6,*) 'l144 ',l144
+C        write(6,*) 'lltmp ',lltmp
+
 C If user request jump back and re-display the menu.
         if(ier.eq.-3)then
           return  ! cancel detected, return.
@@ -521,9 +525,8 @@ C Error.
 
 C ******** cadin
 C CADIN drives the conversion of CAD input into data model.
-C used by the Project Manager.
-C Parameter ichoice is currently not used.
-      subroutine cadin(itrc,ichoice,ier)
+C Used by the Project Manager.
+      subroutine cadin(itrc,ier)
 #include "building.h"
 #include "model.h"
       
@@ -544,7 +547,7 @@ C Indicator of possible focus zone.
 C External cad package.
       common/cad3rd/cadlbl,cadexe,cadfmt
 
-      LOGICAL     OK,DOK,concat,browse,typez,confirm,ckpath,unixok
+      LOGICAL     OK,DOK,concat,browse,confirm,ckpath,unixok
       logical itisanexemplar  ! passed to newprb to ensure correct browse mode.
 
       character LFIL*72,LCMDFL*144
@@ -657,7 +660,6 @@ C is a DXF file.
         CALL STRIPC(ifun,OUTSTR,0,ND,1,'CAD first line',IER)
         CALL STRIPC(ifun,OUTSTR,0,ND,1,'CAD 2nd line',IER)
         if(OUTSTR(1:7).eq.'SECTION')then
-          typez=.false.
           call edisp(iuout,'Based on 2nd line of file:')
           call edisp(iuout,outstr)
           call edisp(iuout,'this file is assumed to be a DXF file.')
@@ -724,16 +726,16 @@ C Passed parameters.
       
       integer ncomp,ncon
       common/C1/NCOMP,NCON
-      common/C6/INDCFG
       INTEGER :: INDFCG
+      common/C6/INDCFG
 
 C Images - included to warn user on subsequent browsing sessions
 C to quit the image browser.
-      character imgfmt*4  ! GIF XBMP TIF JPG
-      character imgfoc*4  ! FZON FNET FCTL FDFS
-      character limgfil*72  ! file name (extend to 144 char)
-      character imgdoc*248  ! text associated with image
-      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
+C      character imgfmt*4  ! GIF XBMP TIF JPG
+C      character imgfoc*4  ! FZON FNET FCTL FDFS
+C      character limgfil*72  ! file name (extend to 144 char)
+C      character imgdoc*248  ! text associated with image
+C      common/imagf/imgfmt(MIMG),imgfoc(MIMG),limgfil(MIMG),imgdoc(MIMG)
 
       integer noimg  ! number of images
       integer iton   ! zero if images not yet shown, one if yes
@@ -743,7 +745,7 @@ C to quit the image browser.
       dimension gitem(18),gh(13),cfgitem(30),inl2ngr(30),itemlog(30)
       character name*70,label*42,mitem*72,gitem*44,OUTSTR*124,WORD*20
       character group*42,tgroup*42,key*1,look*70,tlook*70
-      character line*72,outs*124,rootp*84,separ*42
+      character outs*124,rootp*84,separ*42
       character doit*248
       character gh*72,cfgitem*144,exdescr*81,doc*72,head*42
       character cfg*144,cfg_path*84,cfg_root*72,doc_file*96
@@ -803,6 +805,7 @@ C Clear some of the local strings.
         itemlog(loop)='  '
         inl2in(loop)=0
         inl2ngr(loop)=0
+        if(loop.le.15) group(loop)='  '
   38  continue
 
 C Read the header and see if '*EXEMPLARS'
@@ -1083,7 +1086,6 @@ C User selected an exemplar, attempt to access it.
   3     CALL STRIPC(iexfil,OUTSTR,0,ND,0,'item lines',IER)
         if(ier.ne.0)goto 92
 
-        line=' '
         exemplar=' '
         rootp=' '
         K=0
@@ -1247,7 +1249,6 @@ C                    call edisp(iuout,outs)
 C For an xcopy command we need the destination to also include the
 C model folder so use fdroot to extract this from rootp.
                     call fdroot(rootpdos,rootpath,modelroot)
-                    lnmr=lnblnk(modelroot)
 
                     call edisp(iuout,' ')
 
@@ -1352,7 +1353,8 @@ C the top menu to re-resent groups.
                 goto 41
               endif
 
-C If there was a prior model in memory clear it.
+C If there was a prior model in memory (e.g. some zones or a plant
+C only model) clear it.
               CALL ERPFREE(iexfil,ISTAT)
               if(ncomp.gt.0.or.INDCFG.eq.2)then
                 call usrmsg('Please wait... ',
