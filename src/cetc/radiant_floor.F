@@ -212,6 +212,14 @@ C     (found in ESRUPLT/PMATRX.F)to store present time values of some variables
      &     ConDp(MCOM,MS), TetaMf(MCOM,MS), TetaMp(MCOM,MS),
      &     Tpipef(MCOM,MS), Tpipep(MCOM,MS)
       REAL    COUT(MPCOE), J11, J12, J21, J22
+      COMMON/GR1D01/NNDS,NNDZ(MCOM),NNDC(MCOM,MS),NNDL(MCOM,MS,ME)
+
+C Common saving coupled zones/surfaces
+      common/Zone_Couplings/ bCoupled_Zone (MCOM,MS),
+     &                       iCoupled_Zone (MCOM,MS),
+     &                       iCoupled_Surf (MCOM,MS)
+
+      logical bCoupled_Zone
       
       character outs*124
 C----------------------------------------------------------------------
@@ -577,6 +585,13 @@ C     temperatures and node heat injection flux (W)
                Qboiler = ADATA(IPCOMP,1) * FLWCp * (Tin - Tout)
                Qnode   = ADATA(IPCOMP,1) * Qcir
                GENFLXF(Iz,Is,In) = Qnode / AreaR
+C.....store the same flux for adiacent surface
+               if ( bCoupled_Zone( Iz, Is ) ) then
+                 Iza = iCoupled_Zone ( Iz, Is)
+                 Isa = iCoupled_Surf ( Iz, Is)
+                 Ina = NNDC(Iz, Is) - (In - 1)
+                 GENFLXF(Iza,Isa,Ina) = Qnode / AreaR
+               endif
 
 C     Establish additional output variables
 C     Minimum inside surface temperature
