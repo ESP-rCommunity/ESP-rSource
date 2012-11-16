@@ -76,7 +76,7 @@
 # mat ref thickness mat descr & air gap R
   141    0.0150  Clay tile
   162    0.0050  Roofing felt
-   72    0.0120  Plywood
+   72    0.0120  Plywood 700d
 # layers  description   optics name   symmetry tag
     6    grnd_floor    OPAQ  OPAQUE        NONSYMMETRIC  
 # mat ref thickness mat descr & air gap R
@@ -152,9 +152,9 @@
     5    PVmod         TRAN  DC_8074_04nb  SYMMETRIC     
 # mat ref thickness mat descr & air gap R
   243    0.0020  4mm clear float
-  421    0.0010  EVA
+  407    0.0010  EVA
   322    0.0010  Silicium
-  421    0.0010  EVA
+  407    0.0010  EVA
   243    0.0020  4mm clear float
 # layers  description   optics name   symmetry tag
     1    PVmod_s       TRAN  SCF8783_06nb  SYMMETRIC     
