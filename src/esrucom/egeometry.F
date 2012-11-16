@@ -690,8 +690,8 @@ C Check if there is a matching MLC name for given construction and which one it 
         ICF=-1
         if(NMLC.gt.0)then                
           lstr=lnblnk(SMLCN(ISN))
-          lnmlc=lnblnk(mlcname(ic))
           DO 20 IC=1,NMLC
+            lnmlc=lnblnk(mlcname(ic))
             if(mlcname(ic)(1:lnmlc).EQ.SMLCN(ISN)(1:lstr))ICF=IC
   20      CONTINUE
         endif
