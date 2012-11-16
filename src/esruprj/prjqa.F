@@ -142,9 +142,6 @@ C Assume: Mon=1, Tue=2, Wed=3, Thu=4, Fri=5, Sat=6, Sun=7
       logical found,XST,apply,MODIFY,MODLEN,MODBND,duplicate
       logical bndrysxc,context,bound
 
-      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
-      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
-
 C External text editor.
       common/texted/tedlbl,teditor
 
@@ -567,7 +564,9 @@ C Edit project documentation.
 C            write(lmodellog,'(a,a)') cfgroot(1:lnblnk(cfgroot)),'.log'
           endif
 
-C Detect if working on X11 or GTK.
+C Detect if working on X11 or GTK and set lguess to pass into EASKXORGTKF.
+C The file name returned (lltmp). If X11 lltmp will be the file name and if
+C GTK it will include the full path to the file. 
           iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
           lltmp='  '
           lguess='  '
@@ -581,7 +580,7 @@ C Detect if working on X11 or GTK.
           call edisp(iuout,'  ')  ! echo blank line
           CALL EASKXORGTKF(lguess,
      &      'Project log file:',' ',lldef,lltmp,'log file',IER,nbhelp)
-          write(lmodellog,'(a)') lguess(1:lnblnk(lguess))
+          write(lmodellog,'(a)') lguess(1:lnblnk(lguess)) ! might be changed 
 
 C If user request jump back and re-display the menu.
           if(ier.eq.-3)then
@@ -599,6 +598,8 @@ C Ask user whether file is in ../doc and if so use fdroot if GTK.
               write(lmodellog,'(3a)') docpth(1:lnblnk(docpth)),fs,
      &          fname(1:lnblnk(fname))
             endif
+          else
+            write(lmodellog,'(a)') lltmp(1:lnblnk(lltmp))
           endif
 
 C See if file exists, (it should have been created within pregist
@@ -954,7 +955,9 @@ C pattern to management of lmodellog.
             endif
           endif
 
-C Detect if working on X11 or GTK.
+C Detect if working on X11 or GTK and set lguess to pass into EASKXORGTKF.
+C The file name returned (lltmp). If X11 lltmp will be the file name and if
+C GTK it will include the full path to the file.
           iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
           lltmp='  '
           lguess='  '
@@ -985,8 +988,13 @@ C Ask user whether file is in ../doc and if so use fdroot if GTK.
      &          fname(1:lnblnk(fname))
             endif
           else
-            write(lmodelqa,'(a)') lguess(1:lnblnk(lguess))
+            write(lmodelqa,'(a)') lltmp(1:lnblnk(lltmp))
           endif
+
+C Debug.
+C          write(6,*) 'lguess ',lguess
+C          write(6,*) 'lmodelqa ',lmodelqa
+C          write(6,*) 'lltmp ',lltmp
 
 C Save the model configuration file to register the report.
           CALL EMKCFG('-',IER)
@@ -2172,14 +2180,18 @@ C Remind user of standard optics as well as the alternatives.
           endif
         endif
 
-C Note optional zone extensions.
+C Note optional zone extensions. If there are casual gain controls
+C then rescan that zone file with verbose setting.
         if(zoneextrainfo.ge.1)then
           ivz=IVALS(IZ)   ! remember the selected zone
           if(IVF(ivz).EQ.1)call edisp(itu,
      &      ' Explicit viewfactors have been derived for this zone.')
-          if(ICGC(ivz).EQ.1)call edisp(itu,
+          if(ICGC(ivz).EQ.1)then
+            call edisp(itu,
      &      ' Casual gains are controlled in this zone.')
-
+            iitrc=1
+            call ercgcf(iitrc,itu,LCGCIN(IVALS(IZ)),IVALS(IZ),ier)
+          endif
           if(IOBS(ivz).gt.0.and.nbobs(ivz).gt.0)then
             call edisp(itu,
      &   'Block X- Y- Z- coords DX- DY- DZ- values Orient Opacity')
@@ -2538,6 +2550,7 @@ C not browsing.
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
 #include "esprdbfile.h"
 #include "espriou.h"
 #include "seasons.h"
@@ -2554,7 +2567,6 @@ C not browsing.
       common/cctlnm/ctldoc,lctlf
       common/ishdirec/iaplic(MCOM,2),nsurfcalc(MCOM),lstsfcalc(MCOM,MS),
      &     nsurfinso(MCOM),isurfinso(MCOM,MS)
-      common/p3ver/ip3ver(MCOM)
       
 C IPV data.
       common/IPVF/lipvdatf
@@ -2821,7 +2833,7 @@ C an older format write to new format.
 C Do cursory check to see if the file is sorted.
               sorted=.true.
               problem=.false.
-              call checksort(iz,1,problem,ier)
+              call checksort(iz,1,problem)
               if(problem)then
                 sorted=.false.
                 MODOPR=.true.
@@ -2829,7 +2841,7 @@ C Do cursory check to see if the file is sorted.
      &           'Weekday casual gains might be unsorted.')
               endif
               problem=.false.
-              call checksort(iz,2,problem,ier)
+              call checksort(iz,2,problem)
               if(problem)then
                 sorted=.false.
                 MODOPR=.true.
@@ -2837,7 +2849,7 @@ C Do cursory check to see if the file is sorted.
      &            'Saturday casual gains might be unsorted.')
               endif
               problem=.false.
-              call checksort(iz,3,problem,ier)
+              call checksort(iz,3,problem)
               if(problem)then
                 sorted=.false.
                 MODOPR=.true.
@@ -2857,7 +2869,7 @@ C Save the file, sorting the periods if necessary.
                 if(sorted)then
                   CALL EMKOPER(IUO,LPROJ(IZ),IZ,IER)
                 else
-                  call PROCESSOLDCAS(iz,0,iuout,IER)
+                  call PROCESSOLDCAS(iz,0,iuout)
                   MODOPR=.true.
                   CALL EMKOPER(IUO,LPROJ(IZ),IZ,IER)
                 endif

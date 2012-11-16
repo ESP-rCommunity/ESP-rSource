@@ -33,6 +33,7 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
 #include "building.h"
 #include "model.h"
 #include "geometry.h"
+#include "schedule.h"
 #include "control.h"
       
       integer lnblnk  ! function definition
@@ -47,8 +48,6 @@ C CALLS: MOZSUM   CALLED BY: MOSTAT
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       common/recver/izver,ipver,iever
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       common/exporttg/xfile,tg,delim
       COMMON/EXPORTI/ixopen,ixunit,ixpunit
@@ -277,6 +276,7 @@ C CALLS: MOEGET    CALLED BY: MOZCAS
       SUBROUTINE MOZSUM(IZONE,IANZSE)
 #include "building.h"
 #include "model.h"
+#include "schedule.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -284,10 +284,6 @@ C CALLS: MOEGET    CALLED BY: MOZCAS
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
-
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types
-      common/p3ver/ip3ver(MCOM)
 
       character outs*124
 
@@ -308,7 +304,7 @@ C Read in the zone operational file data.
           write(outs,'(a,i2,a)') 
      &    'Operation file for zone ',izone,' periods being sorted!'
           call edisp(iuout,outs)
-          call PROCESSOLDCAS(izone,0,iuout,IER)
+          call PROCESSOLDCAS(izone,0,iuout)
         endif
         IF(IER.EQ.1)RETURN
 

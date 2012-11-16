@@ -422,6 +422,7 @@ C IER=0 OK.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
+#include "schedule.h"
 
       integer lnblnk  ! function definition
 
@@ -452,24 +453,6 @@ C Parameters
 C Where ESP-r was installed (as recorded when it was compiled).
       common/deflt4/dinstpath
       character dinstpath*60
-
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types
-      common/p3ver/ip3ver(MCOM)
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &           ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &           CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF
-      REAL CMGS,CMGL,RADC,CONC
-
-      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
-      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
-
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
 
       COMMON/Vld20/Vldtng
       logical Vldtng
@@ -1125,7 +1108,7 @@ C Clear commons.
         lodlabel(icomp,1)='Occupt'
         lodlabel(icomp,2)='Lights'
         lodlabel(icomp,3)='Equipt'
-        lodlabel(icomp,4)='N/A   '
+        lodlabel(icomp,4)='Other '
         lodlabel(icomp,5)='Ann.El'
         lodlabel(icomp,6)='N/A   '
         lodlabel(icomp,7)='N/A   '
@@ -1133,7 +1116,7 @@ C Clear commons.
 C Fill common blocks for new zone based on information in the
 C pattern file.
 
-C Set to current format
+C Set to current zone operation file format.
         ip3ver(icomp)=2
         afact = use(2)
         iflow='ach-ach '
@@ -1153,7 +1136,7 @@ C Set to current format
         call IMPORTZCASG(isource,idest,icact,iwatt,sfile,itrc,'s',ier)
 
 C Just in case sort the data.
-        call PROCESSOLDCAS(ICOMP,0,iuout,IER)
+        call PROCESSOLDCAS(ICOMP,0,iuout)
         IUO=IFIL+2
         CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
       endif

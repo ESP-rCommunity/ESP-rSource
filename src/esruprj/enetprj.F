@@ -2110,6 +2110,7 @@ C 'CPY' - copy a HVAC/PV/Lighting/equipment load component.
 #include "power.h"
 #include "plant.h"
 #include "building.h"
+#include "schedule.h"
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
@@ -2120,12 +2121,6 @@ C Electrical data flag for zones.
 C Plant commons
       COMMON/PCELFLG/IPCELF(MPCOM)
       COMMON/C9/NPCOMP,NCI(MPCOM),CDATA(MPCOM,MMISCD)
-
-C Descriptive label for a zone load or casual gain types.
-      character LODLABEL*6
-      COMMON/LOADLABEL/LODLABEL(MCOM,MGTY)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER ICGT
 
 C The electrical nodes
       COMMON/ENOD/NENOD,ENODNO(MENOD),ENODPHTYP(MENOD),

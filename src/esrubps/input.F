@@ -928,6 +928,7 @@ C IREP=1 implies no reporting or data checking.
 #include "building.h"
 #include "model.h"
 #include "site.h"
+#include "schedule.h"
 
 C geometry.h provides commons G0/G2/G5/c20/precz/prec16.
 #include "geometry.h"
@@ -942,10 +943,6 @@ C geometry.h provides commons G0/G2/G5/c20/precz/prec16.
       
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
-
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types
-      common/p3ver/ip3ver(MCOM)
       INTEGER :: ic1,ie1,ict,ic2,ie2
       COMMON/C3/IC1(MCON),IE1(MCON),ICT(MCON),IC2(MCON),IE2(MCON)
       INTEGER :: IZSTOCN
@@ -1052,7 +1049,7 @@ C        write(6,*) IZ,IP3VER(IZ)
           write(outs,'(a,i2,a)') 
      &      'Operation file for zone ',IZ,' periods being sorted!'
           call edisp(iuout,outs)
-          call PROCESSOLDCAS(IZ,itrc,itu,IER)
+          call PROCESSOLDCAS(IZ,itrc,itu)
         endif
 
 C Zero the thermal bridge heat loss before (perhaps) reading in from geometry file.

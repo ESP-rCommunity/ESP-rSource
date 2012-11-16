@@ -91,7 +91,9 @@ C prec17 common is described in geometry.h.
       COMMON/RAY6/LINSTY(MCON)
       common/user/browse
 
-
+      integer ncub,ivfok
+      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
+      character CUBN*6
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
@@ -107,7 +109,7 @@ C prec17 common is described in geometry.h.
       CHARACTER ITEMS*33,ITEMSS*32,trnalt*33,outs*124
       character T64*64,D64*64
       CHARACTER LAPROB*72
-      character SN*12,CUBN*6,act*1
+      character SN*12,act*1
       character SIGSTR*12,fs*1,t16a*16,t16b*16,t16c*16,msgv*42
       character TOSMLCN*32  ! to remember other side mlc name
       character TOOPT*32    ! to remember other side optics

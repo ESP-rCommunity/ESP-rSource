@@ -42,6 +42,7 @@ C LOPTDB,IOPTDB (for optical database)
 C LFMAT,IFMAT,LFMUL,IFMUL (for materials and constructions database)
 C ICLIM,LCLIM (for climate file)
 #include "material.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
@@ -60,17 +61,6 @@ C ICLIM,LCLIM (for climate file)
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
       common/cctlnm/ctldoc,lctlf
 
-C Version of operations file. ip3ver=0 standard, =1 sorted with header
-C =2 with more than 3 day types
-      common/p3ver/ip3ver(MCOM)
-
-      CHARACTER oprdesc*248,ventdesc*248,ctlstr*24
-      COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
-
-C Descriptive label for a zone load or casual gain types.
-      character lodlabel*6
-      common/loadlabel/lodlabel(mcom,MGTY)
-
 C Peaks (loadcasp(z,ty,1) sens)(loadcasp(z,ty,2) latent) for each
 C possible gain type in each zone.
 C Radiant fraction loadradfrac(z,ty) for each possible gain type
@@ -87,12 +77,6 @@ C compact schedule is correctly written out.
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
-
-      COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
-      COMMON/P3TYPEN/ICGT(MDTY,MC)
-      INTEGER NCAS,ICGS,ICGF,ICGT
-      REAL CMGS,CMGL,RADC,CONC
 
 C Simulation parameter presets.
       common/spfldat/nsset,isset,isstup,isbnstep,ispnstep,issave,isavgh
@@ -1130,6 +1114,7 @@ C Detect radiant fraction.
               if (ICGT(ID,J).eq.-1) then
 
 C For case of m2/person CMGL(ID,J) remains zero so use cmgs(ID,J) instead.
+C << see if it can be generalized >>
                 if(CMGS(ID,J).lt.0.001)then
                   continue   ! to avoid division by zero.
                 else
@@ -1234,6 +1219,7 @@ C Write the AllOtherDays line as well.
      &    '24:00',com,'0.0',sim
 
 C Write the light objects for this zone.
+C << revise for additional gain types >>
         WRITE(ioout,'(a)',iostat=ios,err=7) ' '
         WRITE(ioout,'(2a)',iostat=ios,err=7) '  Lights',com
         WRITE(ioout,'(5a)',iostat=ios,err=7) indent,

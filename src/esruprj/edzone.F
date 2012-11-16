@@ -965,6 +965,7 @@ C DELZONE systematicly removes a thermal zone.
 #include "CFC_common.h"
 C espriou.h provides currentfile.
 #include "control.h"
+#include "schedule.h"
 #include "prj3dv.h"
       
       integer lnblnk  ! function definition
@@ -978,16 +979,8 @@ C espriou.h provides currentfile.
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
 
-      COMMON/P2N/NAC(MDTY),IACS(MDTY,MA),IACF(MDTY,MA),ACI(MDTY,MA),
-     &ACV(MDTY,MA),IPT(MDTY,MA),TA(MDTY,MA)
-      INTEGER NAC,IACS,IACF,IPT
-      REAL ACI,ACV,TA
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
-      COMMON/P2CTL/ITCTL(MCOM),TLO(MCOM),TUP(MCOM),THI(MCOM),ACIL(MCOM),
-     &             ACVL(MCOM),IVL(MCOM),TAL(MCOM),ACIU(MCOM),ACVU(MCOM),
-     &             IVU(MCOM),TAU(MCOM),ACIH(MCOM),ACVH(MCOM),
-     &             IVH(MCOM),TAH(MCOM)
 
       common/cctlnm/ctldoc,lctlf
       common/cctl/icascf(mcom)

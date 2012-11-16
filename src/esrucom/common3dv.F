@@ -830,6 +830,9 @@ C Passed parameter.
       
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/GB1/XB(12),YB(12),ZB(12),JVNB(6,4)
+      integer ncub,ivfok
+      real XOC,YOC,ZOC,DXC,DYC,DZC,CANG
+      character CUBN*6
       COMMON/MRTC/NCUB,XOC(MCUB),YOC(MCUB),ZOC(MCUB),DXC(MCUB),
      &            DYC(MCUB),DZC(MCUB),CANG(MCUB),IVFOK(MCUB),CUBN(MCUB)
 
@@ -845,7 +848,7 @@ C Local arrays.
       integer*8 iix,iiy,iixlast,iiylast,iid2
 #endif     
 
-      CHARACTER temp*7,CUBN*6
+      CHARACTER temp*7
 
 C If not in graphic mode return.
       if(MMOD.lt.8)return
