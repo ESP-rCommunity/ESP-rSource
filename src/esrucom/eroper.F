@@ -1306,9 +1306,9 @@ C If version 1 write out header.
   30  FORMAT('# operations of ',a,' defined in: ',/,'# ',a)
 
 C Write the common block data to the file.
-C If ipv3ver is 1 or 2 write ventilation control data as if
+C If ipv3ver is 0, 1 or 2 write ventilation control data as if
 C there was only one day type and one period during the day.
-      if(ip3ver(icomp).eq.1.or.ip3ver(icomp).eq.2)then
+      if(ip3ver(icomp).le.2)then
 
 C << revise for multiple days and periods >>
 
