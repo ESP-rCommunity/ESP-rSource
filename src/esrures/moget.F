@@ -472,7 +472,7 @@ C MRT Sensors.
 
       CHARACTER ITEM(35)*24, MTITLE*22, values*20, CUBN*6
       CHARACTER ITEMS(18)*23
-      CHARACTER ITEMC(21)*24
+      CHARACTER ITEMC(25)*24
       character xfile*144,tg*1,delim*1
       character SUFFIX*8
       character ll1*8,ll2*8,ll3*8
@@ -2473,9 +2473,13 @@ C IGET = 15  Casual gains.
           ITEMC(19)='controlled convective '
           ITEMC(20)='controlled radiant'
           ITEMC(21)='controlled latent'
+          ITEMC(22)='aggregate occupant (c+r)'
+          ITEMC(23)='aggregate lighting (c+r)'
+          ITEMC(24)='aggregate equipment(c+r)'
+          ITEMC(25)='aggregate lights+equip'
           IX=1
-          CALL EPICKS(IX,IVALC,' ',' Casual sensible and latent:',
-     &      24,21,ITEMC,'Casuaul fluxes',IER,nbhelp)
+          CALL EPICKS(IX,IVALC,' ','Casual sensible and latent:',
+     &      24,25,ITEMC,'Casual fluxes',IER,nbhelp)
           if(IVALC(1).eq.0)goto 1
           inoc=IVALC(1)
           call usrmsg('  ','  ','-')
@@ -2775,6 +2779,54 @@ C IGET = 15  Casual gains.
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Controlled latent gain (Whr)'
               LNSLABEL(NGET)=28
+            endif
+          elseif(inoc.eq.22)then
+
+C Aggregate occupant (r+c) for all currently selected zones. 
+            IGETNO(NGET,3)=22;  IGETNO(NGET,4)=2 ! signal aggregate
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=14
+            SUFFIX=' AgrOcup'; AGRLIST=.TRUE.   ! draw aggregate
+            if(IROC.eq.0)then
+              SLABEL(NGET)='Agr occupant gain (W)'
+              LNSLABEL(NGET)=21
+            elseif(IROC.eq.-1)then
+              SLABEL(NGET)='Agr occupant gain (Whr)'
+              LNSLABEL(NGET)=23
+            endif
+          elseif(inoc.eq.23)then
+
+C Aggregate lighting (r+c) for all currently selected zones.
+            IGETNO(NGET,3)=23;  IGETNO(NGET,4)=2 ! signal aggregate
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=14
+            SUFFIX=' AgrLtng'; AGRLIST=.TRUE.   ! draw aggregate
+            if(IROC.eq.0)then
+              SLABEL(NGET)='Agr lighting gain (W)'
+              LNSLABEL(NGET)=21
+            elseif(IROC.eq.-1)then
+              SLABEL(NGET)='Agr lighting gain (Whr)'
+              LNSLABEL(NGET)=23
+            endif
+          elseif(inoc.eq.24)then
+            IGETNO(NGET,3)=24; IGETNO(NGET,4)=2 ! signal aggregate
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=15
+            SUFFIX=' AgrSmPw'; AGRLIST=.TRUE.   ! draw aggregate
+            if(IROC.eq.0)then
+              SLABEL(NGET)='Agr small pwr gain (W)'
+              LNSLABEL(NGET)=22
+            elseif(IROC.eq.-1)then
+              SLABEL(NGET)='Agr small pwr gain (Whr)'
+              LNSLABEL(NGET)=24
+            endif
+          elseif(inoc.eq.25)then
+            IGETNO(NGET,3)=25; IGETNO(NGET,4)=2 ! signal aggregate
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=15
+            SUFFIX=' AgrLtPw'; AGRLIST=.TRUE.   ! draw aggregate
+            if(IROC.eq.0)then
+              SLABEL(NGET)='Agr light+small pwr (W)'
+              LNSLABEL(NGET)=23
+            elseif(IROC.eq.-1)then
+              SLABEL(NGET)='Agr light+small pwr (Whr)'
+              LNSLABEL(NGET)=25
             endif
           endif
         else
@@ -3548,7 +3600,8 @@ C Need to ask for MRT sensors.
           call usrmsg('  ','  ','-')
         elseif (AGRLIST) then
 
-C If we have asked for an aggregate of heating or cooling set the label.
+C If we have asked for an aggregate of heating or cooling or lighting
+C or small power or lighitng+small power set the label.
           IGETNO(NGET,2)=0    ! no specific zone associated with aggregate
           ISLEN=lnblnk(SUFFIX)
           write (GLABEL(NGET),'(a)') SUFFIX(1:ISLEN)
@@ -4095,187 +4148,127 @@ C Get zone air temperatureand RH, use xdum and xdum1 for processing.
 
       elseif(IGETNO(KGET,1).eq.15)then
 
-C IGETNO(KGET,1) = 15 Casual gains. Total, convective, radiant or by
-C type.
+C IGETNO(KGET,1) = 15 Casual gains. Total, convective, radiant or by type.
+C IGETNO(KGET,3) 1=all c+r, 2=all conv, 3=all rad, 4=ocup, 5=light, 6=sm pwr, 7=ctld
+C (also check if aggregate occupant, lighting or small power or lighitng+small
+C power requested.
         iicrcg=IGETNO(KGET,3)
-        if(izver.eq.4)then
+        if(izver.ge.4)then
 
-C If izver >= 4 the read the data directly.
+C If izver >= 4 the read the data directly for individual items.
           IZ=IGETNO(KGET,2)
           ISET=IGETNO(KGET,5)
-          DO  202 J2=ISTART,IEND
-            call getallcas(IDAY,IZ,ISET,J2,QCASR,QCASC,QCASL,FRAC,
-     &        perocupc,perlightc,perequipc,otherc,perocupr,
-     &        perlightr,perequipr,otherr,perocupl,perlightl,
-     &        perequipl,otherl,theonectld)
-            if(IICRCG.eq.1)then
-              GC(J2)=QCASR+QCASC  ! Total casual gain (W)
-            elseif(IICRCG.eq.2)then
-              GC(J2)=QCASC        ! Total casual gain convective (W)
-            elseif(IICRCG.eq.3)then
-              GC(J2)=QCASR        ! Total casual gain radiant (W)
-            elseif(IICRCG.eq.4)then
-              GC(J2)=perocupc+perocupr ! Total occupant gain (W)
-            elseif(IICRCG.eq.5)then
-              GC(J2)=perlightc+perlightr ! Total lighting gain (W)
-            elseif(IICRCG.eq.6)then
-              GC(J2)=perequipc+perequipr ! Total small power gain (W)
-            elseif(IICRCG.eq.7)then
-              if(theonectld.eq.0)then ! Total controled casual gain (W)
-                GC(J2)=0.0
-              elseif(theonectld.eq.1)then
-                GC(J2)=perocupc+perocupr
-              elseif(theonectld.eq.2)then
-                GC(J2)=perlightc+perlightr
-              elseif(theonectld.eq.3)then
-                GC(J2)=perequipc+perequipr
-              endif
-            elseif(IICRCG.eq.8)then
-              GC(J2)=FRAC*100.     ! Frac of ctld casual gain (%)
-            elseif(IICRCG.eq.9)then
-              GC(J2)=perocupl+perlightl+perequipl  ! Total casual gain latent (W)
-            elseif(IICRCG.eq.10)then
-              GC(J2)=perocupc ! Occupant convec gain (W)
-            elseif(IICRCG.eq.11)then
-              GC(J2)=perocupr ! Occupant radiant gain (W)
-            elseif(IICRCG.eq.12)then
-              GC(J2)=perocupl ! Occupant latent gain (W)
-            elseif(IICRCG.eq.13)then
-              GC(J2)=perlightc ! Lighting convec gain (W)
-            elseif(IICRCG.eq.14)then
-              GC(J2)=perlightr ! Lighting radiant gain (W)
-            elseif(IICRCG.eq.15)then
-              GC(J2)=perlightl ! Lighting latent gain (W)
-            elseif(IICRCG.eq.16)then
-              GC(J2)=perequipc    ! Small pwr convec gain (W)
-            elseif(IICRCG.eq.17)then
-              GC(J2)=perequipr    ! Small pwr radiant gain (W)
-            elseif(IICRCG.eq.18)then
-              GC(J2)=perequipl    ! Small pwr latent gain (W)
-            elseif(IICRCG.eq.19)then
-              if(theonectld.eq.0)then ! Controlled convec gain (W)
-                GC(J2)=0.0
-              elseif(theonectld.eq.1)then
-                GC(J2)=perocupc
-              elseif(theonectld.eq.2)then
-                GC(J2)=perlightc
-              elseif(theonectld.eq.3)then
-                GC(J2)=perequipc
-              endif
-            elseif(IICRCG.eq.20)then
-              if(theonectld.eq.0)then ! Controlled radiant gain (W) 
-                GC(J2)=0.0
-              elseif(theonectld.eq.1)then
-                GC(J2)=perocupr
-              elseif(theonectld.eq.2)then
-                GC(J2)=perlightr
-              elseif(theonectld.eq.3)then
-                GC(J2)=perequipr
-              endif
-            elseif(IICRCG.eq.21)then
-              if(theonectld.eq.0)then ! Controlled latent gain (W)
-                GC(J2)=0.0
-              elseif(theonectld.eq.1)then
-                GC(J2)=perocupl
-              elseif(theonectld.eq.2)then
-                GC(J2)=perlightl
-              elseif(theonectld.eq.3)then
-                GC(J2)=perequipl
-              endif
-            endif
-  202     CONTINUE
-          CALL XTVAL1(GC,ISTART,IEND,KGET)
-        else
-          if(IICRCG.eq.1)then
-
-C Combined radiant and convective. If the
-C operation file is old, sort the periods via processoldcas.
+          if(IGETNO(KGET,4).eq.0.or.IGETNO(KGET,4).eq.1)then
             DO J2=ISTART,IEND
-              GC(J2)=0.0
-            END DO
-            IUNIT=IFIL+1
-            CALL EROPER(0,iuout,iunit,IGETNO(KGET,2),IER) ! for older results files.
-            if(ip3ver(IGETNO(KGET,2)).eq.0)then
-              write(outs,'(a,i2,a)') 
-     &          'Operation file for zone ',IGETNO(KGET,2),
-     &          ' periods being sorted!'
-              call edisp(iuout,outs)
-              call PROCESSOLDCAS(IGETNO(KGET,2),0,iuout)
-            endif
-            IF(ICGC(IGETNO(KGET,2)).EQ.1)then
-              CALL ercgcf(0,iuout,LCGCIN(IGETNO(KGET,2)),
-     &            IGETNO(KGET,2),ier)
-            endif
-            CALL ZCASC(IGETNO(KGET,2),IDAY)
-            DO JC2=ISTART,IEND
-              GC(JC2)=VAL3(15,JC2)+VAL3(16,JC2)+VAL3(17,JC2)+
-     &                VAL3(18,JC2)+VAL3(19,JC2)+VAL3(20,JC2)
-            END DO
-            CALL CASRT(IGETNO(KGET,2),IDAY)
-            DO JC2=ISTART,IEND
-              GC(JC2)=GC(JC2)+VAL3(15,JC2)+VAL3(16,JC2)+VAL3(17,JC2)+
-     &                VAL3(18,JC2)+VAL3(19,JC2)+VAL3(20,JC2)
-            END DO
-            CALL XTVAL1(GC,ISTART,IEND,KGET)
-          elseif(IICRCG.eq.2)then
-            CALL GCASC(IDAY,IGETNO(KGET,2),IGETNO(KGET,5)) ! for older versions.
-            CALL XTVAL1(GVAL,ISTART,IEND,KGET)
-          elseif(IICRCG.eq.3)then
-            CALL GCASR(IDAY,IGETNO(KGET,2),IGETNO(KGET,5)) ! for older versions.
-            CALL XTVAL1(GVAL,ISTART,IEND,KGET)
-          elseif(IICRCG.gt.3.and.IICRCG.le.7)then
-
-C Casual by type. Use GC to hold sum at each timestep. First read the
-C zone operation file and possible casual gain control file. If the
-C operation file is old, sort the periods.
-            DO J2=ISTART,IEND
-              GC(J2)=0.0
-            END DO
-            IUNIT=IFIL+1
-            CALL EROPER(0,iuout,iunit,IGETNO(KGET,2),IER) ! for older results files.
-            if(ip3ver(IGETNO(KGET,2)).eq.0)then
-              write(outs,'(a,i2,a)') 
-     &          'Operation file for zone ',IGETNO(KGET,2),
-     &          ' periods being sorted!'
-              call edisp(iuout,outs)
-              call PROCESSOLDCAS(IGETNO(KGET,2),0,iuout)
-            endif
-            IF(ICGC(IGETNO(KGET,2)).EQ.1)then
-              CALL ercgcf(0,iuout,LCGCIN(IGETNO(KGET,2)),
-     &          IGETNO(KGET,2),ier)
-            endif
-            CALL ZCASC(IGETNO(KGET,2),IDAY)
-            DO 50, JC2=ISTART,IEND
-              if(iicrcg.eq.4)then
-                GC(JC2)=VAL3(15,JC2)
-              elseif(iicrcg.eq.5)then
-                GC(JC2)=VAL3(16,JC2)
-              elseif(iicrcg.eq.6)then
-                GC(JC2)=VAL3(17,JC2)
-              elseif(iicrcg.eq.7)then
-                GC(JC2)=VAL3(18,JC2)+VAL3(19,JC2)+VAL3(20,JC2)
+              call getallcas(IDAY,IZ,ISET,J2,QCASR,QCASC,QCASL,FRAC,
+     &          perocupc,perlightc,perequipc,otherc,perocupr,
+     &          perlightr,perequipr,otherr,perocupl,perlightl,
+     &          perequipl,otherl,theonectld)
+              if(IICRCG.eq.1)then
+                GC(J2)=QCASR+QCASC  ! Total casual gain (W)
+              elseif(IICRCG.eq.2)then
+                GC(J2)=QCASC        ! Total casual gain convective (W)
+              elseif(IICRCG.eq.3)then
+                GC(J2)=QCASR        ! Total casual gain radiant (W)
+              elseif(IICRCG.eq.4)then
+                GC(J2)=perocupc+perocupr ! Total occupant gain (W)
+              elseif(IICRCG.eq.5)then
+                GC(J2)=perlightc+perlightr ! Total lighting gain (W)
+              elseif(IICRCG.eq.6)then
+                GC(J2)=perequipc+perequipr ! Total small power gain (W)
+              elseif(IICRCG.eq.7)then
+                if(theonectld.eq.0)then ! Total controled casual gain (W)
+                  GC(J2)=0.0
+                elseif(theonectld.eq.1)then
+                  GC(J2)=perocupc+perocupr
+                elseif(theonectld.eq.2)then
+                  GC(J2)=perlightc+perlightr
+                elseif(theonectld.eq.3)then
+                  GC(J2)=perequipc+perequipr
+                endif
+              elseif(IICRCG.eq.8)then
+                GC(J2)=FRAC*100.     ! Frac of ctld casual gain (%)
+              elseif(IICRCG.eq.9)then
+                GC(J2)=perocupl+perlightl+perequipl  ! Total casual gain latent (W)
+              elseif(IICRCG.eq.10)then
+                GC(J2)=perocupc ! Occupant convec gain (W)
+              elseif(IICRCG.eq.11)then
+                GC(J2)=perocupr ! Occupant radiant gain (W)
+              elseif(IICRCG.eq.12)then
+                GC(J2)=perocupl ! Occupant latent gain (W)
+              elseif(IICRCG.eq.13)then
+                GC(J2)=perlightc ! Lighting convec gain (W)
+              elseif(IICRCG.eq.14)then
+                GC(J2)=perlightr ! Lighting radiant gain (W)
+              elseif(IICRCG.eq.15)then
+                GC(J2)=perlightl ! Lighting latent gain (W)
+              elseif(IICRCG.eq.16)then
+                GC(J2)=perequipc    ! Small pwr convec gain (W)
+              elseif(IICRCG.eq.17)then
+                GC(J2)=perequipr    ! Small pwr radiant gain (W)
+              elseif(IICRCG.eq.18)then
+                GC(J2)=perequipl    ! Small pwr latent gain (W)
+              elseif(IICRCG.eq.19)then
+                if(theonectld.eq.0)then ! Controlled convec gain (W)
+                  GC(J2)=0.0
+                elseif(theonectld.eq.1)then
+                  GC(J2)=perocupc
+                elseif(theonectld.eq.2)then
+                  GC(J2)=perlightc
+                elseif(theonectld.eq.3)then
+                  GC(J2)=perequipc
+                endif
+              elseif(IICRCG.eq.20)then
+                if(theonectld.eq.0)then ! Controlled radiant gain (W) 
+                  GC(J2)=0.0
+                elseif(theonectld.eq.1)then
+                  GC(J2)=perocupr
+                elseif(theonectld.eq.2)then
+                  GC(J2)=perlightr
+                elseif(theonectld.eq.3)then
+                  GC(J2)=perequipr
+                endif
+              elseif(IICRCG.eq.21)then
+                if(theonectld.eq.0)then ! Controlled latent gain (W)
+                  GC(J2)=0.0
+                elseif(theonectld.eq.1)then
+                  GC(J2)=perocupl
+                elseif(theonectld.eq.2)then
+                  GC(J2)=perlightl
+                elseif(theonectld.eq.3)then
+                  GC(J2)=perequipl
+                endif
               endif
-   50       CONTINUE
-
-C Use XDUM1 for radiant portion, sum depending on gain type.
-            CALL CASRT(IGETNO(KGET,2),IDAY)
-            DO 52, JC2=ISTART,IEND
-              if(iicrcg.eq.4)then
-                GC(JC2)=GC(JC2)+VAL3(15,JC2)
-              elseif(iicrcg.eq.5)then
-                GC(JC2)=GC(JC2)+VAL3(16,JC2)
-              elseif(iicrcg.eq.6)then
-                GC(JC2)=GC(JC2)+VAL3(17,JC2)
-              elseif(iicrcg.eq.7)then
-                GC(JC2)=GC(JC2)+VAL3(18,JC2)+VAL3(19,JC2)+VAL3(20,JC2)
-              endif
-   52       CONTINUE
+            ENDDO  ! of J2 loop
             CALL XTVAL1(GC,ISTART,IEND,KGET)
+          elseif(IGETNO(KGET,4).eq.2)then
 
-C Casual gain fraction (controlled).
-          elseif(IICRCG.eq.8)then
-            CALL GCFRAC(IDAY,IGETNO(KGET,2),IGETNO(KGET,5))
-            CALL XTVAL1(GVAL,ISTART,IEND,KGET)
+C For each of the currently selected zones call getallcas and add to
+C aggregate figure for occupant, lights, small power or lights+smallpower.
+            N=24*NTS
+            do i=1,N
+              AGR(i)=0.0  ! clear the AGR array
+            end do
+            do izz=1,NZ
+              DO J2=ISTART,IEND
+                call getallcas(IDAY,NZNO(izz),ISET,J2,QCASR,QCASC,
+     &            QCASL,FRAC,
+     &            perocupc,perlightc,perequipc,otherc,perocupr,
+     &            perlightr,perequipr,otherr,perocupl,perlightl,
+     &            perequipl,otherl,theonectld)
+                if(IICRCG.eq.22)then
+                  AGR(J2)=AGR(J2)+perocupc+perocupr ! occupant convec+r gain (W)
+                elseif(IICRCG.eq.23)then
+                  AGR(J2)=AGR(J2)+perlightc+perlightr ! Lighting convec+r gain (W)
+                elseif(IICRCG.eq.24)then
+                  AGR(J2)=AGR(J2)+perequipc+perequipr ! sm power convec+r gain (W)
+                elseif(IICRCG.eq.25)then
+                  AGR(J2)=AGR(J2)+
+     &              perlightc+perlightr+perequipc+perequipr ! lights+small power gain (W)
+                endif
+              enddo  ! of j2 loop
+            enddo    ! of izz loop
+            CALL XTVAL1(AGR,ISTART,IEND,KGET)
           endif
         endif
 
@@ -4393,28 +4386,12 @@ C area to 1.
           SAREA=1.
         endif
           
-C Read in the zone geometry, construction data, zone operational data,
-C and casual gain control file. << Work towards not reading zone files >>
+C Read in the zone geometry, construction data.
+C << Work towards not reading zone files >>
         IUNIT=IFIL+1
         call georead(IUNIT,LGEOM(IZ),IZ,0,IUOUT,IER)
 
         CALL ECONST(LTHRM(IZ),IUNIT,IZ,0,IUOUT,IER)
-
-C If izver is 4 or greater then assume direct read of data, otherwise
-C read the zone operation file.
-        if(izver.eq.4)then
-          continue
-        else
-          CALL EROPER(0,iuout,iunit,iz,IER) ! for older results files.
-          if(ip3ver(iz).eq.0)then
-            write(outs,'(a,i2,a)') 
-     &        'Operation file for zone ',IGETNO(KGET,2),
-     &        ' periods being sorted!'
-            call edisp(iuout,outs)
-            call PROCESSOLDCAS(IGETNO(KGET,2),0,iuout)
-          endif
-          IF(ICGC(IZ).EQ.1)CALL ercgcf(0,iuout,LCGCIN(iz),IZ,ier)
-        endif
 
 C Set default surface absorbtivity.
         absorb=1.0

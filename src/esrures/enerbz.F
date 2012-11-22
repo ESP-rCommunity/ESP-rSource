@@ -291,35 +291,13 @@ C CALLS: MOEGET    CALLED BY: MOZCAS
 
       TCMULT=NOUT/(NTS*1000.)
 
-C If izver >= 4 then there is no need to read the operation file.
-      if(izver.eq.4)then
-        continue
-      else
-
-C Assume that the operation file name has been read in via MOINIT.
-C Read in the zone operational file data.
-        IUNIT=IFIL+1
-        CALL EROPER(0,iuout,iunit,izone,IER) ! for older results files.
-        if(ip3ver(izone).eq.0)then
-          write(outs,'(a,i2,a)') 
-     &    'Operation file for zone ',izone,' periods being sorted!'
-          call edisp(iuout,outs)
-          call PROCESSOLDCAS(izone,0,iuout)
-        endif
-        IF(IER.EQ.1)RETURN
-
-C Read casual gain control file for this zone.
-        IF(ICGC(IZONE).EQ.1)CALL ercgcf(0,iuout,LCGCIN(izone),IZONE,ier)
-        IF(IER.EQ.1)RETURN
-      endif
-
 C Initialise summation locations: VAL2(I,J) is used to store summations
 C where I=1 to 16 (one for each flowpath) and J=1 to 6 (representing
 C columns) depending on selected summation mode.
       DO 20 I=1,16
-       DO 201 J=1,7
-        VAL2(I,J)=0.
-  201  CONTINUE
+        DO 201 J=1,7
+          VAL2(I,J)=0.
+  201   CONTINUE
    20 CONTINUE
 
 C Day-by-day recovery.

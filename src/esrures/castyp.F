@@ -31,9 +31,7 @@ C ******************** ZCASC ********************
 C ZCASC reconstructs one day's values of each of 
 C the uncontrolled and controlled convective casual gains for a zone.
 C To save space VAL3(15,I) to VAL3(21,I) are used for temporary storage.
-C For izver <4 the method used shifts information from the operations
-C file into the equivalent of bps timestep averaging. For izver >=4 the
-C data is read directly from the data fields.
+C Casual gain data is read directly from the data fields.
 C The parameter IDAY is 
 C VAL3(15,?) holds uncontrolled convective casual type 1.
 C VAL3(16,?) holds uncontrolled convective casual type 2.
@@ -87,8 +85,8 @@ C Initialise 'present values'.
       PUCCT3=0.0
       ICCP=0
 
-C If izver >= 4 the read the data directly.
-      if(izver.eq.4)then
+C For izver >= 4 the read the casual gain data directly.
+      if(izver.ge.4)then
         found = .false.
         if(ICASUAL(izone).ne.0)found = .true.  ! if single casual item
         if(ICASUAL3(izone).ne.0)found = .true. ! if 3 separate casual item
@@ -458,9 +456,9 @@ C Radiant casual gains are area AND emissivity weighted.
         emarea=emarea+sna(izone,kk)*EMISI(kk)
   80  continue
 
-C If izver >= 4 the read the data directly and multiply the radiant
+C For izver >= 4 the read the data directly and multiply the radiant
 C value by SCALE. Similar pattern of code used elsewhere for izver >=4.
-      if(izver.eq.4)then
+      if(izver.ge.4)then
         found = .false.
         if(ICASUAL(izone).ne.0)found = .true.  ! if single casual item
         if(ICASUAL3(izone).ne.0)found = .true. ! if 3 separate casual item
@@ -831,7 +829,7 @@ C Set chosen result set.
       ISET=ISIM
 
 C If izver >= 4 the read the data directly.
-      if(izver.eq.4)then
+      if(izver.ge.4)then
         found = .false.
         if(ICASUAL(izone).ne.0)found = .true.  ! if single casual item
         if(ICASUAL3(izone).ne.0)found = .true. ! if 3 separate casual item
@@ -1214,7 +1212,7 @@ C Set chosen result set.
       ISET=ISIM
 
 C If izver >= 4 the read the data directly.
-      if(izver.eq.4)then
+      if(izver.ge.4)then
 
 C Assume that the original description was from a zone operation file.
         call getallcas(IDAY,IZ,ISET,ITSTEP,QCASR,QCASC,QCASL,FRAC,
@@ -1448,8 +1446,8 @@ C Set chosen result set.
 C Initialise 'present values'.
       ICCP=0
 
-C If izver >= 4 the read the data directly.
-      if(izver.eq.4)then
+C If izver >= 4 the read the casual gain data directly.
+      if(izver.ge.4)then
         found = .false.
         if(ICASUAL(izone).ne.0)found = .true.  ! if single casual item
         if(ICASUAL3(izone).ne.0.and.IJDAY.ne.0)found = .true.  ! if separate casual item

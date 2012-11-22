@@ -743,6 +743,8 @@ C Defaults.
       character*96 DFCFG,DFCTL,DEFRLB,DAPROB,DAFRES,DPNF
       COMMON/DEFLT2/DFCFG,DFCTL,DEFRLB,DAFRES,DAPROB,DPNF
 
+      character xfile*144,tg*1,delim*1
+      common/exporttg/xfile,tg,delim
 
       character DFILE*72,LTMP*144
       character outs*124,louts*248
@@ -920,6 +922,10 @@ C this information.
               CALL EROPER(0,iuout,IAPROB,izone,IER)
   43        CONTINUE
           endif
+
+C Set the default export file name based on model root name.
+          write(xfile,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.csv'
+
         ELSE
 
 C Not found, might be in a remote folder.  Warn user first.

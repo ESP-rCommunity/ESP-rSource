@@ -3309,6 +3309,8 @@ C Add delete copy period or import full set of casual gains.
 C Add new casual gain period.
 
 C << revise to support more casual gain types >>
+C << revise to offer selection of day types to apply new periods >>
+
           CALL EASKABCD('New casual gain of which type?',' ',
      &      lodlabel(icomp,1),lodlabel(icomp,2),lodlabel(icomp,3),
      &      'Cancel',ICGTS,nbhelp)
