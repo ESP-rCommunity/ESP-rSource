@@ -1458,13 +1458,6 @@ C << the zone.
           ACII=TMAR(itdi,IATDF(itdi,9))*TMAR(itdi,IATDF(itdi,1))
      &       *ZBASEA(ICOMP)
 
-C Patch by JWH to represent MVHR of 70% efficiency if the ambient
-C temperature is below the zone temperature, otherwise assume a
-C bypass of MVHR. Not to be committed. Comment out after use.
-          if(TF.lt.TFA(ICOMP))then
-            write(6,*) 'MVHR applied in ',icomp,' to ACII',ACII,ACI*0.3
-            ACII=ACII*0.3
-          endif
         else
           ACII=0.0  ! there are no occupants so assume no makeup air
         endif
