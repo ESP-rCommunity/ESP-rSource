@@ -18,7 +18,7 @@ foreach i ( `ls -d archive esru* cetc cetc/h3kreports include lib shocc` )
  if ( -d $i ) then
    echo looking at $i $1/$i
    echo looking at $i $1/$i >>mydiff
-   /usr/bin/diff -b $i $1/$i >>mydiff
+   /usr/bin/diff -b -B $i $1/$i >>mydiff
  endif
 end
 foreach i ( Install Makefile Makefile Readme* common_list Version )
@@ -26,7 +26,7 @@ foreach i ( Install Makefile Makefile Readme* common_list Version )
  if ( -f $i ) then
    echo looking at $i $1/$i
    echo looking at $i $1/$i >>mydiff
-   /usr/bin/diff -b $i $1/$i >>mydiff
+   /usr/bin/diff -b -B $i $1/$i >>mydiff
  endif
 end
 echo "stripping out the .svn lines..."
