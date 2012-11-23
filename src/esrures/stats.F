@@ -460,6 +460,10 @@ C scanning data. Call MOSURC for each selected zone in turn.
         call edisp(itru,outs)
 
 C For each selected zone and surface condensation report.
+        write(outs,'(2a)')
+     &  ' Total occurances = timesteps with condensation',
+     &  ' on at least one surface.'
+        call edisp(itru,outs)
         DO 166 KGET=1,NGET
           izone=IGETNO(KGET,2)
           izrh =IGETNO(KGET,3)

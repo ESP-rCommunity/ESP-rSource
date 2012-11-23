@@ -458,13 +458,13 @@ C Check for command line actions.
 
 C Export (grtool) file information. Temporarily use 
 C unit ifil+6 for output file.
-      xfile = 'data.grt'
+      xfile = 'data.csv'
       ixopen = 0
       ixunit = ifil + 6
       ixpunit = ifil + 12
       delim = '-'
 
-C Assume primitive constructions input from IFIL+3.
+C Assume materials input from IFIL+3.
       IFMAT=IFIL+3
       write(LFMAT,'(a)') DFCON(1:lnblnk(DFCON))
 
@@ -504,11 +504,13 @@ C Read the plant configuration file.
 
 	  call fdroot(longtmp,path,LCFGF)
 
-C Read the model plant-only configuration file.
+C Read the model plant-only configuration file. Also set the initial
+C export file name to reflect the model root name.
           IFCFG=IFIL+1
           IAPROB=IFIL+2  
           MODE='ALL '
           call ERSYS(LFCFG,IFCFG,IAPROB,MODE,ITRC,IER)
+          write(xfile,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.csv'
 	endif
 
 C If we have a plant only file go straight to the plant results menu.

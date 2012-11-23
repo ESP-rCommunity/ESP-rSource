@@ -22,7 +22,9 @@ C Routines which deal with non-specific project demands (fans/lifts/etc.).
 
 C ******************** ERBDMD
 C Similar prjdmds.F except do not bother to set idmdinc.
-C ERBDMD reads project level demand profiles for fans, pumps, DHW etc.
+C ERBDMD reads project level dispersed demand profiles for fans, pumps, DHW etc.
+
+C << see if it can be adapted to return timestep information for graphing >>
 
       SUBROUTINE ERBDMD(ITRC,IUO,IER)
 #include "building.h"
@@ -215,6 +217,9 @@ C Now free project data file.
       CALL ERPFREE(IUO,ISTAT)
       RETURN
 
+C << Occup is a silly name for a dispersed demand - who cares if
+C << there are people not in a zone?
+
 C Error messages.
  1001 call usrmsg(' ',' No type names found ...supplying defaults.','-')
       blodlabel(1)='Occup '
@@ -247,7 +252,7 @@ C Error messages.
       END
 
 C ****************** BDMDINF (same as in prjdmds.F)
-C BDMDINF provides an English description of non-specific project demands
+C BDMDINF provides an English description of dispersed demands
 C from common block data.
       SUBROUTINE BDMDINF(ITRU,ier)
 
@@ -300,9 +305,8 @@ C Calendar commons.
       END
 
 C ******************** DMDSTOT ********************
-C DMDSTOT retrieves max, min and totals (XMXUM & XMINSUM are distributed 
-C totals while DMAX & DMIN are diversified totals) for non-specific 
-C demands. 
+C DMDSTOT retrieves max, min, totals and average for dispersed
+C demands (not associated with specific zones). 
 
       SUBROUTINE DMDSTOT(XMAX,XMIN,XTOT,XAVE)
 #include "building.h"
@@ -312,14 +316,17 @@ C demands.
 
       COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
-      dimension XMAX(MGTY),XMIN(MGTY),XTOT(MGTY),XAVE(MGTY),NX(MGTY)
+C The parameters returned.
+      dimension XMAX(MGTY),XMIN(MGTY),XTOT(MGTY),XAVE(MGTY)
+
+      dimension NX(MGTY)
       character prompts*52,prompte*52
 
       prompts=' Scanning non-specific demands...'
       prompte=' Scanning non-specific demands...done.'
 
 C Setup parameters and call DDMDS for each output day to get required data.
-C DDMDS recovers the data in VAL? (and averages output if required.)
+C DDMDS recovers the data in VAL3 positions 15-21 (and averages output if required.)
       do 5 I=1,MGTY
         XMAX(I)=-1.E+10
         XMIN(I)=1.E+10
@@ -333,8 +340,8 @@ C DDMDS recovers the data in VAL? (and averages output if required.)
 C Get days worth of data.
         call DDMDS(IDAY)
 
-C Add values in VAL2 to the correct bins. IX in range of 15-21 so
-C offset is 14
+C Add values in VAL3 to the correct bins. IX in range of 15-21 so
+C offset from the gain type is 14 within the VAL3 array.
         do 400 I=1,MGTY
           IX=I+14
           NDTS=24*NTS
@@ -366,7 +373,7 @@ C Calculate averages.
 C ******************** DDMDS ********************
 
 C DDMDS reconstructs one day's values of each of 
-C the project demands.
+C the project dispersed demands.
 C To save space VAL3(15,I) to VAL3(21,I) are used for temporary storage.
 C The method used shifts information from the demands file into the
 C equivalent of bps timestep averaging.
@@ -389,13 +396,8 @@ C VAL3(21,?) holds DHW demands.
       IEND=24*NTS
 
 C Initialise 'present values'.
-      pddt1=0.0
-      pddt2=0.0
-      pddt3=0.0
-      pddt4=0.0
-      pddt5=0.0
-      pddt6=0.0
-      pddt7=0.0
+      pddt1=0.0; pddt2=0.0; pddt3=0.0; pddt4=0.0
+      pddt5=0.0; pddt6=0.0; pddt7=0.0
 
 C Note that the demand at the first timestep of the day is dependent
 C on the demand at the last timestep of the previous day.    
@@ -403,28 +405,18 @@ C If IDAY is equal to the first day of the simulation then there is no
 C previous day so assume DUCCT?= current day.
       IF(IDAY.EQ.IODS.AND.IDAY.EQ.ISDS)THEN
         CALL DMDTYP(IDAY,IEND,hddt1,hddt2,hddt3,hddt4,hddt5,
-     &  hddt6,hddt7)
-        Dhddt1=hddt1
-        Dhddt2=hddt1
-        Dhddt3=hddt1
-        Dhddt4=hddt1
-        Dhddt5=hddt1
-        Dhddt6=hddt1
-        Dhddt7=hddt1
+     &    hddt6,hddt7)
+        Dhddt1=hddt1; Dhddt2=hddt1; Dhddt3=hddt1; Dhddt4=hddt1
+        Dhddt5=hddt1; Dhddt6=hddt1; Dhddt7=hddt1
       ELSEIF(IDAY.EQ.IODS.AND.IDAY.GT.ISDS)THEN
 
 C Need to get the last timestep of the previous day to have the last 
 C timestep for interpolation before recovering the demands
 C for the day in question.
         CALL DMDTYP(IDAY-1,IEND,hddt1,hddt2,hddt3,hddt4,hddt5,
-     &  hddt6,hddt7)
-        Dhddt1=hddt1
-        Dhddt2=hddt1
-        Dhddt3=hddt1
-        Dhddt4=hddt1
-        Dhddt5=hddt1
-        Dhddt6=hddt1
-        Dhddt7=hddt1
+     &    hddt6,hddt7)
+        Dhddt1=hddt1; Dhddt2=hddt1; Dhddt3=hddt1; Dhddt4=hddt1
+        Dhddt5=hddt1; Dhddt6=hddt1; Dhddt7=hddt1
       ELSEIF(IDAY.GT.IODS)THEN
 
 C Subsequent recovery day - information on previous day has already
@@ -456,23 +448,13 @@ C that of the last of the previous day.
         ENDIF
 
 C Shift future to present.
-        Pddt1=hddt1
-        Pddt2=hddt2
-        Pddt3=hddt3
-        Pddt4=hddt4
-        Pddt5=hddt5
-        Pddt6=hddt6
-        Pddt7=hddt7
+        Pddt1=hddt1; Pddt2=hddt2; Pddt3=hddt3; Pddt4=hddt4
+        Pddt5=hddt5; Pddt6=hddt6; Pddt7=hddt7
    50 CONTINUE
 
 C Save the last timestep for use the next day.
-      Dhddt1=hddt1
-      Dhddt2=hddt2
-      Dhddt3=hddt3
-      Dhddt4=hddt4
-      Dhddt5=hddt5
-      Dhddt6=hddt6
-      Dhddt7=hddt7
+      Dhddt1=hddt1; Dhddt2=hddt2; Dhddt3=hddt3; Dhddt4=hddt4
+      Dhddt5=hddt5; Dhddt6=hddt6; Dhddt7=hddt7
       RETURN
       END
 

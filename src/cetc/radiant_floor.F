@@ -593,7 +593,6 @@ C.....store the same flux for adiacent surface
                  GENFLXF(Iza,Isa,Ina) = Qnode / AreaR
                endif
 
-c== end insertion
 C     Establish additional output variables
 C     Minimum inside surface temperature
                PCAOUT(IPCOMP,1) = Tmin

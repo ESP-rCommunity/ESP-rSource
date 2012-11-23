@@ -9014,7 +9014,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'is associated with a set of pre-defined parameters,these can be'
 'altered if required. '
 '  '
-'Switching the "component info" toggle to ON lets the user view'
+'Switching the [component info] toggle to ON lets the user view'
 'any more information associated with the special component; this'
 'appears in the text window. '
 '  '
@@ -9960,7 +9960,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 '  3 - a three phase point in the network              '
 '  '
 'Points of more than one phase in an a.c. system are described'
-'by a "multi-phase set" of 2-3 nodes, each of the form:'
+'by a [multi-phase set] of 2-3 nodes, each of the form:'
 '   root_name_phase_extension.             '
 'For example: generator_1, generator_2, generator_3 '
 'or lighting_1, lighting_2 or fan_1, fan_3, etc.    '
@@ -10126,7 +10126,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'shown is associated with a set of pre-defined [arameters,'
 'these can be altered if required. '
 '  '
-'Switching the "additional info" toggle to ON lets the'
+'Switching the [additional info] toggle to ON lets the'
 'user view any more information associted with the component;  '
 'this appears in the text window. '
 *enditem
@@ -10182,7 +10182,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 'is associated with a set of pre-defined parameters, these can'
 'be altered if required. '
 '  '
-'Switching the "additional info" toggle to ON lets the user'
+'Switching the [additional info] toggle to ON lets the user'
 'view any more information associted with the component,'
 'this appears in the text window. '
 *enditem
@@ -11561,7 +11561,7 @@ For the purposes of ESP-r, the use of WIS is focused on the'
 *item EconvE zone_htc_CVVT
 'The constant-volume variable-temperature system delivers'
 'a constant flow of air, varying the temperature of the'
-'supply air in response to the zone. You are asked for"'
+'supply air in response to the zone. You are asked for'
 '  '
 '  the air flow rate in ac/h'
 '  '
@@ -13045,7 +13045,7 @@ c              call askok(outs,
 'simulation progresses. Otherwise this value is fixed'
 'as the nodal temperature. '
 ' '
-'If "Set to temperature of another node" is chosen then'
+'If [Set to temperature of another node] is chosen then'
 'this node will pick up the temperature of a designated'
 *enditem
           CALL EASKAB('Node temperature: ','(see help)',
@@ -14778,7 +14778,7 @@ Another mode is to scan the zone operations file and to compose'
 'component editing menu. Deletion is allowed'
 'only during the editing phase, when an individual  '
 'component is chosen from the displayed list. '
-'Choose a component from the list or "Exit".'
+'Choose a component from the list or [Exit].'
 *enditem
         CALL PHELPD('node connection selection',7,'-',0,0,IER)
 *item ASKPCMP
@@ -14803,7 +14803,7 @@ Another mode is to scan the zone operations file and to compose'
 'connection editing menu. Connections deletion '
 'is allowed only during the editing phase, when an '
 'individual connection is chosen from the displayed'
-'list. Choose a connection from the list or "Exit".'
+'list. Choose a connection from the list or [Exit].'
 *enditem
         CALL PHELPD('node connection selection',7,'-',0,0,IER)
 *item ASKPCON
@@ -14828,7 +14828,7 @@ Another mode is to scan the zone operations file and to compose'
 'editing. Containment deletion is allowed only during'
 'the editing phase, when an individual containment  '
 'is chosen from the displayed list. '
-'Choose a containment from the list or "Exit". '
+'Choose a containment from the list or [Exit]. '
 *enditem
         CALL PHELPD('node connection selection',6,'-',0,0,IER)
 *item ASKCONT
@@ -15041,8 +15041,8 @@ Another mode is to scan the zone operations file and to compose'
 *item EDCPFAC
 'Here you can define the coordinates for which'
 'CPCALC is going to calculate the pressure'
-'"Add coordinates" allows a manual input of the '
-'coordinates, "generate coordinates" will search the '
+'[Add coordinates] allows a manual input of the '
+'coordinates, [generate coordinates] will search the '
 'model for windows and suggest a position.'
 'Delete coordinates allows to remove allready defined'
 *enditem
@@ -15231,9 +15231,9 @@ C          CALL EASKS(LTMP,' Pressure coefficients database?',
 *item EDPCDB
 'Parameter a to j are general building parameters'
 'required by CPCALC and are defined in the model'
-'In "facade coordinates" the user can define for which'
+'In [facade coordinates] the user can define for which'
 'coordinates he wants to calculate pressure'
-'"Calculate pressure coefficients" runs CPCALC.'
+'[Calculate pressure coefficients] runs CPCALC.'
 *enditem
             CALL PHELPD('cpcalc in mfs',7,'-',0,0,IER)
 *item EDPCDB

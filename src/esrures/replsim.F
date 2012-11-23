@@ -48,6 +48,8 @@ C #include "geometry.h"
       COMMON/CCTLNM/CTLDOC,LCTLF
       COMMON/FOPENED/CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
       common/recver/izver,ipver,iever
+      character xfile*144,tg*1,delim*1
+      common/exporttg/xfile,tg,delim
 
       CHARACTER*72 path
       character longtmp*144
@@ -83,6 +85,10 @@ C Open the cfg file.
         ELSE
           CFGOK=.TRUE.
         ENDIF
+
+C Set the default export file name based on model root name.
+          write(xfile,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.csv'
+
       ELSE
 
 C Not found, might be in a remote folder.  Warn user first.
