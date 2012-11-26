@@ -199,7 +199,7 @@ C             write(6,*) 'MORFIL: older plant ',iftype
 C Debug.
 C             write(6,*) 'MORFIL: newer plant ',iftype
 
-	     IPLIB=2
+             IPLIB=2
              iftype=-1
              write(PFILEABS,'(a)') lcmdfl(1:lnblnk(lcmdfl)) ! remember
              CALL ERPFREE(iunit,ISTAT)  ! free the file
@@ -990,9 +990,9 @@ C read again.
         if(NCOMP.gt.MCOM.or.NCON.gt.MCON)then
           write(outs,*) 'WARNING: ncomp at record was dubious',NCOMP,
      &       IREC
-	  call edisp(iuout,outs)
-	  call edisp(iuout,'this results file needs to be scanned')
-	  call edisp(iuout,'with an older version of res.')
+          call edisp(iuout,outs)
+          call edisp(iuout,'this results file needs to be scanned')
+          call edisp(iuout,'with an older version of res.')
         endif
       endif
       IREC=IREC+1
@@ -1096,7 +1096,7 @@ C     IREC=IREC+3*NCOMP
       DO 20 I=1,NCOMP
         READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)znpad
         write(ZNAME(I),'(a)') znpad(1:12)
-	lnzname(I)=lnblnk(znpad)  ! update string length
+        lnzname(I)=lnblnk(znpad)  ! update string length
         IREC=IREC+1
    20 CONTINUE
       READ(IUNIT,REC=IREC,IOSTAT=ios,ERR=1000)(NCONST(I),I=1,NCP)

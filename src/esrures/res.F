@@ -502,7 +502,7 @@ C Read the plant configuration file.
           endif
           if(ier.eq.-3) goto 902  ! cancel detected pass back -3 in ier.
 
-	  call fdroot(longtmp,path,LCFGF)
+          call fdroot(longtmp,path,LCFGF)
 
 C Read the model plant-only configuration file. Also set the initial
 C export file name to reflect the model root name.
@@ -511,7 +511,7 @@ C export file name to reflect the model root name.
           MODE='ALL '
           call ERSYS(LFCFG,IFCFG,IAPROB,MODE,ITRC,IER)
           write(xfile,'(2a)') cfgroot(1:lnblnk(cfgroot)),'.csv'
-	endif
+        endif
 
 C If we have a plant only file go straight to the plant results menu.
         call sysoutp('-',0)

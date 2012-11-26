@@ -1383,7 +1383,7 @@ C Give feedback to user on selected entities.
         IN=NODNE(ICPK(I))
         IC=ITPCON(ICPK(I))
         if(unixok)then
-	  write(outs,'(5a)') NDNAM(IP),'->',NDNAM(IN),' via ',
+          write(outs,'(5a)') NDNAM(IP),'->',NDNAM(IN),' via ',
      &      CMNAM(IC)
           call edisp(iuout,outs)
         endif
