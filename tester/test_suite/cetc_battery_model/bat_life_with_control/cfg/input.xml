@@ -6,7 +6,7 @@
 	<hierarchy>flat</hierarchy>
 	<time_step_averaging>false</time_step_averaging>
 	<enable_xml_wildcards>true</enable_xml_wildcards>
-	<output_dictionary>true</output_dictionary>
+	<output_dictionary>false</output_dictionary>
         <dump_all_data>false</dump_all_data>
 
 <report_startup_period_data>false</report_startup_period_data>

@@ -5,7 +5,7 @@
         <time_step_averaging>false</time_step_averaging>
         <apply_style_sheet>true</apply_style_sheet>
         <enable_xml_wildcards>true</enable_xml_wildcards>
-        <output_dictionary>true</output_dictionary>
+        <output_dictionary>false</output_dictionary>
 
         <log_variable>climate/dry_bulb_temperature</log_variable>
         <log_variable>climate/relative_humidity</log_variable>
