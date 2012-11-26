@@ -425,7 +425,7 @@ C << need an alternative to wegeom for version 1.1 >>
             WRITE(outs,'(A,I3,A,A)',IOSTAT=IOS,ERR=2)
      &        'Writing zone ',NCCODE(iv),' named ',zname(iv)
             call edisp248(iuout,outs,100)
-	  endif
+          endif
           lf=LGEOM(iv)
           ivv=iv
           call wegeom(iotmp2,ivv,lf,ier)
