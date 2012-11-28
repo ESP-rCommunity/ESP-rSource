@@ -2164,6 +2164,7 @@ C door width and height.
       CHARACTER T14*14
       character guesstype*24  ! for context of surface addition
       integer loop6  ! to keep track of inserted surface edges
+      integer iwedge ! number of extra frame vertices
 
 #ifdef OSI
       integer iupdown,isym    ! passed to etplot
@@ -2429,8 +2430,11 @@ C in XFA YFA ZFA.
       if(IRT.eq.1.or.IRT.eq.2.or.IRT.eq.3)then
         CALL ETRANSW(ITRC,ITRU,N,XX,YY,ZZ,0.00,XO1,ZO1,XW,ZH,XA,YA,ZA)
       else
-        CALL ETRANFRAME(ITRC,ICOMP,IS,N,XX,YY,ZZ,FRW,XFA,YFA,ZFA,IER)
+        CALL ETRANFRAME(ITRC,ICOMP,IS,N,XX,YY,ZZ,FRW,XFA,YFA,ZFA,
+     &    iwedge,IER)
+        write(6,*) 'orig & after edges ',n,iwedge
         loop=N  ! reset to match polygon edges
+        loop=iwedge  ! reset to match polygon edges
 C << trap non-zero ier value >>
       endif
 
