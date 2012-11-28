@@ -1060,14 +1060,11 @@ C Find the optical name.
               SSOTF(ioc)=SOTF(iss)
               call warnmod(ICOMP,'sat')
 
-C If this is a partition loop and find MLC index of current surface
+C If this is a partition find MLC index of current surface
 C attribute and see if the surface in the adjacent zone is made of
 C an equivalent construction. If the current construction is
 C symmetric then expect to find the same construction name and if
 C the name does not match or is UNKN get user to confirm change.
-
-C << this could be a place to use ssmlcindex  >>
-
               write(SN,'(a12)')SSNAME(ioc)
               if(showother.and.icoth.ne.0.and.ssmlcindex(ioc).ne.0)then
                 ii=ssmlcindex(ioc)
@@ -1078,11 +1075,14 @@ C << this could be a place to use ssmlcindex  >>
                   if(SSMLCN(icoth)(1:lnssmlc).eq.
      &               mlcname(ii)(1:lnmlcn))then
                     TOSMLCN=mlcname(ii)
+                    write(TOOPT,'(a)') mlcoptical(ii)
                   elseif(SSMLCN(icoth)(1:4).eq.'UNKN')then
                     TOSMLCN=mlcname(ii)
+                    write(TOOPT,'(a)') mlcoptical(ii)
                     updoth=.true.
                   else
                     TOSMLCN=mlcname(ii)
+                    write(TOOPT,'(a)') mlcoptical(ii)
                     updoth=.true.
                   endif
                   iissmlci=ii
@@ -1107,12 +1107,15 @@ C used for a partition (and db does not have a linked MLC - inform the user.
                 else
                   if(SSMLCN(icoth)(1:4).eq.'UNKN')then
                     TOSMLCN=mlcsymetric(ii)
+                    write(TOOPT,'(a)') mlcoptical(ii)
                     updoth=.true.
                   elseif(SSMLCN(icoth)(1:12).eq.
      &                   mlcsymetric(ii)(1:12))then
                     TOSMLCN=mlcsymetric(ii)
+                    write(TOOPT,'(a)') mlcoptical(ii)
                   else
                     TOSMLCN=mlcsymetric(ii)
+                    write(TOOPT,'(a)') mlcoptical(ii)
                     updoth=.true.
                   endif
                   iissmlci=matsymindex(ii)  ! use returned value
@@ -1129,6 +1132,7 @@ C Assign new MLC name to the icoth surface.
                   SSMLCN(icoth)=TOSMLCN
                   if(iissmlci.ne.0) ssmlcindex(icoth)=iissmlci ! update
                   ssthick(icoth)=THKMLC(isel)  ! update the thermophysical thickness
+                  write(SSOTF(icoth),'(a)') TOOPT
                   call eclose(gversion(IC2(ioc)),1.1,0.01,newgeo)
                   if(igupgrade.eq.2.and.(.NOT.newgeo))then
                     gversion(IC2(ioc)) =1.1
@@ -3470,7 +3474,7 @@ C Find the optical name.
             MODGEO=.TRUE.
             call warnmod(ICOMP,'sat')
 
-C If this is a partition loop and find MLC index of current surface
+C If this is a partition find MLC index of current surface
 C attribute and see if the surface in the adjacent zone is made of
 C an equivalent construction. If the current construction is
 C symmetric then expect to find the same construction name and if
