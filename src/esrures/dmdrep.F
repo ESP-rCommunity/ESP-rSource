@@ -20,9 +20,21 @@ C Boston, MA 02111-1307 USA.
 
 C Routines which deal with non-specific project demands (fans/lifts/etc.).
 
+C  ERBDMD reads model dispersed demand profiles for fans, pumps, DHW etc.
+
+C  BDMDINF provides an English description of dispersed demands
+C          from common block data.
+
+C  DMDSTOT retrieves max, min, totals & average for dispersed demands.
+
+C  DDMDS reconstructs one day's values of each dispersed demands.
+ 
+C  DMDTYP works out the demand types 1-7 (MGTY) at each time step.
+
+
 C ******************** ERBDMD
 C Similar prjdmds.F except do not bother to set idmdinc.
-C ERBDMD reads project level dispersed demand profiles for fans, pumps, DHW etc.
+C ERBDMD reads model dispersed demand profiles for fans, pumps, DHW etc.
 
 C << see if it can be adapted to return timestep information for graphing >>
 
@@ -306,7 +318,8 @@ C Calendar commons.
 
 C ******************** DMDSTOT ********************
 C DMDSTOT retrieves max, min, totals and average for dispersed
-C demands (not associated with specific zones). 
+C demands (not associated with specific zones) for the currently
+C selected period. 
 
       SUBROUTINE DMDSTOT(XMAX,XMIN,XTOT,XAVE)
 #include "building.h"
@@ -372,12 +385,11 @@ C Calculate averages.
 
 C ******************** DDMDS ********************
 
-C DDMDS reconstructs one day's values of each of 
-C the project dispersed demands.
+C DDMDS reconstructs one day's values of each of dispersed demands.
 C To save space VAL3(15,I) to VAL3(21,I) are used for temporary storage.
 C The method used shifts information from the demands file into the
 C equivalent of bps timestep averaging.
-C VAL3(15,?) holds occupant demands.
+C VAL3(15,?) holds other demands.
 C VAL3(16,?) holds lighting demands.
 C VAL3(17,?) holds small power demands.
 C VAL3(18,?) holds fans demands.
@@ -460,8 +472,7 @@ C Save the last timestep for use the next day.
 
 C ******************** DMDTYP ********************
 
-C DMDTYP is a generic routine to work out the
-C demand types 1-7 (MGTY) at each time step.
+C DMDTYP work out the demand types 1-7 (MGTY) at each time step.
 C Given the information in common block bl3data returns:
 C hddt1,hddt2,hddt3,hddt4,hddt5,hddt6,hddt7
 C However, because of the averaging in bps, the beginning and ending
