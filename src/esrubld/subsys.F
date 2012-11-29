@@ -1462,7 +1462,7 @@ C Patch by JWH to represent MVHR of 70% efficiency if the ambient
 C temperature is below the zone temperature, otherwise assume a
 C bypass of MVHR. Not to be committed. Comment out after use.
           if(TF.lt.TFA(ICOMP))then
-            write(6,*) 'MVHR applied in ',icomp,' to ACII',ACII,ACI*0.3
+            write(6,*)'MVHR applied in ',icomp,' to ACII',ACII,ACII*0.3
             ACII=ACII*0.3
           endif
         else
@@ -2549,15 +2549,19 @@ C Initialise specific fan power
 C If there is zero SFP in the stripped model there will be no SFP in the
 C not/ref/typ models either. Otherwise use default of 2 and 3 respectively
       closeto0=.false.
-      call eclose(SFPHS(IHLZ(ICOMP)),0.0,0.01,closeto0)
-      if(closeto0)then
+      if(IHLZ(ICOMP).eq.0)then
         SFP=0.
       else
-        if(inoti.eq.1.or. !notional
-     &  (inoti.eq.4.and.iDsmTestingFlag.eq.1))then ! or stripped with notional DSM testing flag
-          SFP=2.
-        elseif(inoti.eq.3)then ! Typical model
-          SFP=3.
+        call eclose(SFPHS(IHLZ(ICOMP)),0.0,0.01,closeto0)
+        if(closeto0)then
+          SFP=0.
+        else
+          if(inoti.eq.1.or. !notional
+     &      (inoti.eq.4.and.iDsmTestingFlag.eq.1))then ! or stripped with notional DSM testing flag
+            SFP=2.
+          elseif(inoti.eq.3)then ! Typical model
+            SFP=3.
+          endif
         endif
       endif
 
