@@ -905,6 +905,7 @@ C ier is zero if no problems and -3 if user issued a cancel.
 #include "model.h"
 #include "geometry.h"
 #include "esprdbfile.h"
+#include "schedule.h"
 
       integer lnblnk  ! function definition
       integer igraphiclib  ! external definition
@@ -952,6 +953,7 @@ C longtmp is the model configuration file with full path.
       character louts*248
       
       logical XST,CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK
+      logical dmdsok  ! for dispersed demands
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -1311,6 +1313,16 @@ C Take into account weather file location.
      &     LCLIM(1:lnblnk(LCLIM))
        endif
        lclim=llclmdb  ! overwrite weather with expanded file name
+
+C If there is a model dispersed demands file read it.
+       call FINDFIL(bdmds,XST)
+       IF(XST)THEN
+         CALL ERPFREE(IAPROB,ISTAT)
+         CALL ERBDMD(0,IAPROB,IER)
+         dmdsok=.true.
+       else
+         dmdsok=.false.
+       endif
 
 C If izver is >=4 then the only information needed from the zone
 C operation file is the user name for each casual gain type. Scan

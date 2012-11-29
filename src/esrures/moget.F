@@ -494,7 +494,6 @@ C Note: 60 is the maximum number of items associated with an anchor point.
       integer ISLEN      ! length of SUFFIX
       integer ITLEN      ! length of ZSDES
       integer lastireportunit  ! to detect change in unit
-      integer iloop      ! to clear data
       integer NSEL       ! nb of items selected
       integer IZONE      ! user selected zone
       integer ISFN       ! user selected surface
@@ -505,6 +504,8 @@ C Note: 60 is the maximum number of items associated with an anchor point.
 #else
       integer*8 iid1,iid2
 #endif
+
+      logical dmdsok,xst
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -522,6 +523,14 @@ C SLIST=.true. which are asked for all active zones (listed in NZNO).
       AGRLIST=.FALSE. ! assume heating & cooling loads separately drawn
       IAC=0; NSEL=0; IZONE=0; ISFN=0  ! initial values
       ireportunit=0 ! assume normal units for reports
+
+C Check existance of demands file (it will have been scanned elsewhere).
+      call FINDFIL(bdmds,XST)
+      if(XST)then
+        dmdsok=.true.
+      else
+        dmdsok=.false.
+      endif
 
 C MNGET is the maximum number of metrics allowed to be chosen from the menu.
       if (MENUTYPE.eq.1) then
@@ -1214,7 +1223,7 @@ C IGET = 14  Zone dew point.
             LNSLABEL(NGET)=32
           endif
         elseif(inoc.eq.11)then
-          IF(ISAVE.lt.3.)then
+          IF(ISAVE.lt.3)then
             call edisp(iuout,' This selection only available with')
             call edisp(iuout,' a save option 3-4 result-set.')
           endif
@@ -2472,11 +2481,15 @@ C IGET = 15  Casual gains.
           ITEMC(18)='controlled (conv+rad) '
           ITEMC(19)='controlled convective '
           ITEMC(20)='controlled radiant'
-          ITEMC(21)='controlled latent'
-          ITEMC(22)='aggregate occupant (c+r)'
-          ITEMC(23)='aggregate lighting (c+r)'
-          ITEMC(24)='aggregate equipment(c+r)'
-          ITEMC(25)='aggregate lights+equip'
+          ITEMC(21)='aggregate occupant (c+r)'
+          ITEMC(22)='aggregate lighting (c+r)'
+          ITEMC(23)='aggregate equipment(c+r)'
+          ITEMC(24)='aggregate lights+equip'
+          if(dmdsok)then
+            ITEMC(25)='dispersed demands'
+          else
+            ITEMC(25)='                 '
+          endif
           IX=1
           CALL EPICKS(IX,IVALC,' ','Casual sensible and latent:',
      &      24,25,ITEMC,'Casual fluxes',IER,nbhelp)
@@ -2767,23 +2780,9 @@ C IGET = 15  Casual gains.
               LNSLABEL(NGET)=29
             endif
           elseif(inoc.eq.21)then
-            IGETNO(NGET,3)=21   ! not avail for izver <4
-            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=16
-            SUFFIX=' CtlLatG'
-            if(IROC.eq.0)then
-              SLABEL(NGET)='Controlled latent gain (W)'
-              LNSLABEL(NGET)=26
-            elseif(IROC.eq.1)then
-              SLABEL(NGET)='Cntrld latent gain chg (W/hr)'
-              LNSLABEL(NGET)=29
-            elseif(IROC.eq.-1)then
-              SLABEL(NGET)='Controlled latent gain (Whr)'
-              LNSLABEL(NGET)=28
-            endif
-          elseif(inoc.eq.22)then
 
 C Aggregate occupant (r+c) for all currently selected zones. 
-            IGETNO(NGET,3)=22;  IGETNO(NGET,4)=2 ! signal aggregate
+            IGETNO(NGET,3)=21;  IGETNO(NGET,4)=2 ! signal aggregate
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=14
             SUFFIX=' AgrOcup'; AGRLIST=.TRUE.   ! draw aggregate
             if(IROC.eq.0)then
@@ -2793,10 +2792,10 @@ C Aggregate occupant (r+c) for all currently selected zones.
               SLABEL(NGET)='Agr occupant gain (Whr)'
               LNSLABEL(NGET)=23
             endif
-          elseif(inoc.eq.23)then
+          elseif(inoc.eq.22)then
 
 C Aggregate lighting (r+c) for all currently selected zones.
-            IGETNO(NGET,3)=23;  IGETNO(NGET,4)=2 ! signal aggregate
+            IGETNO(NGET,3)=22;  IGETNO(NGET,4)=2 ! signal aggregate
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=14
             SUFFIX=' AgrLtng'; AGRLIST=.TRUE.   ! draw aggregate
             if(IROC.eq.0)then
@@ -2806,8 +2805,8 @@ C Aggregate lighting (r+c) for all currently selected zones.
               SLABEL(NGET)='Agr lighting gain (Whr)'
               LNSLABEL(NGET)=23
             endif
-          elseif(inoc.eq.24)then
-            IGETNO(NGET,3)=24; IGETNO(NGET,4)=2 ! signal aggregate
+          elseif(inoc.eq.23)then
+            IGETNO(NGET,3)=23; IGETNO(NGET,4)=2 ! signal aggregate
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=15
             SUFFIX=' AgrSmPw'; AGRLIST=.TRUE.   ! draw aggregate
             if(IROC.eq.0)then
@@ -2817,8 +2816,8 @@ C Aggregate lighting (r+c) for all currently selected zones.
               SLABEL(NGET)='Agr small pwr gain (Whr)'
               LNSLABEL(NGET)=24
             endif
-          elseif(inoc.eq.25)then
-            IGETNO(NGET,3)=25; IGETNO(NGET,4)=2 ! signal aggregate
+          elseif(inoc.eq.24)then
+            IGETNO(NGET,3)=24; IGETNO(NGET,4)=2 ! signal aggregate
             IGETNO(NGET,6)=-3; IGETNO(NGET,7)=15
             SUFFIX=' AgrLtPw'; AGRLIST=.TRUE.   ! draw aggregate
             if(IROC.eq.0)then
@@ -2827,6 +2826,17 @@ C Aggregate lighting (r+c) for all currently selected zones.
             elseif(IROC.eq.-1)then
               SLABEL(NGET)='Agr light+small pwr (Whr)'
               LNSLABEL(NGET)=25
+            endif
+          elseif(inoc.eq.25)then
+            IGETNO(NGET,3)=25; IGETNO(NGET,4)=2 ! signal aggregate
+            IGETNO(NGET,6)=-3; IGETNO(NGET,7)=15
+            SUFFIX=' Dispers'; AGRLIST=.TRUE.   ! draw aggregate
+            if(IROC.eq.0)then
+              SLABEL(NGET)='Dispersed demands (W)'
+              LNSLABEL(NGET)=21
+            elseif(IROC.eq.-1)then
+              SLABEL(NGET)='Dispersed demands (Whr)'
+              LNSLABEL(NGET)=23
             endif
           endif
         else
@@ -3662,6 +3672,12 @@ C Copy new data into IGETNO array if a selection has been made.
                     write (TABLABEL(NGET),'(3a)') ZNAME(IZ)(1:IZLEN),
      &                        CUBN(ISFSEL(IG))(1:ITLEN),SUFFIX(1:ISLEN)
                     LNTABLABEL(NGET)=ITLEN+ISLEN
+                  elseif (AGRLIST) then  ! aggregate does not need a zone name
+                    ISLEN=lnblnk(SUFFIX)
+                    write(GLABEL(NGET),'(2a)') 'All',SUFFIX
+                    LNGLABEL(NGET)=lnblnk(GLABEL(NGET))
+                    write(TABLABEL(NGET),'(2a)') 'All ',SUFFIX(1:ISLEN)
+                    LNTABLABEL(NGET)=lnblnk(TABLABEL(NGET))
                   else
                     ISLEN=lnblnk(SUFFIX)
                     write(GLABEL(NGET),'(2a)')ZNAME(IZ)(1:lnzname(IZ)),
@@ -3690,6 +3706,12 @@ C Copy new data into IGETNO array if a selection has been made.
                     write (TABLABEL(NGET),'(2a)') ZNAME(IZ)(1:IZLEN),
      &                        CUBN(ISFSEL(IG))(1:ITLEN)
                     LNTABLABEL(NGET)=ITLEN
+                  elseif (AGRLIST) then  ! aggregate does not need a zone name
+                    ISLEN=lnblnk(SUFFIX)
+                    write(GLABEL(NGET),'(2a)') 'All',SUFFIX
+                    LNGLABEL(NGET)=lnblnk(GLABEL(NGET))
+                    write(TABLABEL(NGET),'(2a)') 'All ',SUFFIX(1:ISLEN)
+                    LNTABLABEL(NGET)=lnblnk(TABLABEL(NGET))
                   else
                     write(GLABEL(NGET),'(a)') ZNAME(IZ)(1:lnzname(IZ))
                     LNGLABEL(NGET)=lnblnk(GLABEL(NGET))
@@ -3749,6 +3771,12 @@ C specific information.
                     write (TABLABEL(NGET),'(3a)') ZNAME(IZ)(1:IZLEN),
      &                        CUBN(ISFSEL(IG))(1:ITLEN),SUFFIX(1:ISLEN)
                     LNTABLABEL(NGET)=ITLEN+ISLEN
+                  elseif (AGRLIST) then  ! aggregate does not need a zone name
+                    ISLEN=lnblnk(SUFFIX)
+                    write(GLABEL(NGET),'(2a)') 'All',SUFFIX
+                    LNGLABEL(NGET)=lnblnk(GLABEL(NGET))
+                    write(TABLABEL(NGET),'(2a)') 'All ',SUFFIX(1:ISLEN)
+                    LNTABLABEL(NGET)=lnblnk(TABLABEL(NGET))
                   else
                     ISLEN=lnblnk(SUFFIX)
                     write (GLABEL(NGET),'(a,a)')
@@ -3777,6 +3805,12 @@ C specific information.
                     write (TABLABEL(NGET),'(2a)') ZNAME(IZ)(1:IZLEN),
      &                        CUBN(ISFSEL(IG))(1:ITLEN)
                     LNTABLABEL(NGET)=ITLEN
+C                  elseif (AGRLIST) then  ! aggregate does not need a zone name
+C                    ISLEN=lnblnk(SUFFIX)
+C                    write(GLABEL(NGET),'(2a)') 'All',SUFFIX
+C                    LNGLABEL(NGET)=lnblnk(GLABEL(NGET))
+C                    write(TABLABEL(NGET),'(2a)') 'All ',SUFFIX(1:ISLEN)
+C                    LNTABLABEL(NGET)=lnblnk(TABLABEL(NGET))
                   else
                     write(GLABEL(NGET),'(a)') ZNAME(IZ)(1:lnzname(IZ))
                     LNGLABEL(NGET)=lnblnk(GLABEL(NGET))
@@ -3985,7 +4019,8 @@ C This recovers one day.
       integer ireportunit ! zero is default one is W two is kW three Joules
       common/repunit/ireportunit
       
-      character outs*124,CSTR*25
+C      character outs*124
+      character CSTR*25
       dimension CQ(MTS),GC(MTS),AGR(MTS)
 
       real QCASR,QCASC,QCASL  ! total radiant/convective/latent
@@ -3996,6 +4031,15 @@ C This recovers one day.
       real otherc,otherr,otherl ! average other (future expansion) to write out
       integer theonectld  ! if non-zero the casual gain type that is controlled.
       integer iset    ! IGETNO(*,5)
+      logical dmdsok,xst
+
+C Check existance of demands file (it will have been scanned elsewhere).
+      call FINDFIL(bdmds,XST)
+      if(XST)then
+        dmdsok=.true.
+      else
+        dmdsok=.false.
+      endif
 
       if(IGETNO(KGET,1).eq.1)then
 
@@ -4228,16 +4272,6 @@ C If izver >= 4 the read the data directly for individual items.
                 elseif(theonectld.eq.3)then
                   GC(J2)=perequipr
                 endif
-              elseif(IICRCG.eq.21)then
-                if(theonectld.eq.0)then ! Controlled latent gain (W)
-                  GC(J2)=0.0
-                elseif(theonectld.eq.1)then
-                  GC(J2)=perocupl
-                elseif(theonectld.eq.2)then
-                  GC(J2)=perlightl
-                elseif(theonectld.eq.3)then
-                  GC(J2)=perequipl
-                endif
               endif
             ENDDO  ! of J2 loop
             CALL XTVAL1(GC,ISTART,IEND,KGET)
@@ -4245,30 +4279,48 @@ C If izver >= 4 the read the data directly for individual items.
 
 C For each of the currently selected zones call getallcas and add to
 C aggregate figure for occupant, lights, small power or lights+smallpower.
+C Also do the model dispersed demands here....
             N=24*NTS
             do i=1,N
               AGR(i)=0.0  ! clear the AGR array
             end do
-            do izz=1,NZ
+            if(IICRCG.ge.21.and.IICRCG.le.24)then
+              do izz=1,NZ
+                DO J2=ISTART,IEND
+                  call getallcas(IDAY,NZNO(izz),ISET,J2,QCASR,QCASC,
+     &              QCASL,FRAC,
+     &              perocupc,perlightc,perequipc,otherc,perocupr,
+     &              perlightr,perequipr,otherr,perocupl,perlightl,
+     &              perequipl,otherl,theonectld)
+                  if(IICRCG.eq.21)then
+                    AGR(J2)=AGR(J2)+perocupc+perocupr ! occupant convec+r gain (W)
+                  elseif(IICRCG.eq.22)then
+                    AGR(J2)=AGR(J2)+perlightc+perlightr ! Lighting convec+r gain (W)
+                  elseif(IICRCG.eq.23)then
+                    AGR(J2)=AGR(J2)+perequipc+perequipr ! sm power convec+r gain (W)
+                  elseif(IICRCG.eq.24)then
+                    AGR(J2)=AGR(J2)+
+     &                perlightc+perlightr+perequipc+perequipr ! lights+small power gain (W)
+                  endif
+                enddo  ! of j2 loop
+              enddo    ! of izz loop
+              CALL XTVAL1(AGR,ISTART,IEND,KGET)
+            elseif(IICRCG.eq.25)then
+
+C If dispersed demands (via VAL3 arrays) sum them to VAL(14).
+C As dispersed demands are for whole model in the reporting
+C for each zone factor it by the base area of that zone.
+              if(dmdsok)call DDMDS(IDAY)
               DO J2=ISTART,IEND
-                call getallcas(IDAY,NZNO(izz),ISET,J2,QCASR,QCASC,
-     &            QCASL,FRAC,
-     &            perocupc,perlightc,perequipc,otherc,perocupr,
-     &            perlightr,perequipr,otherr,perocupl,perlightl,
-     &            perequipl,otherl,theonectld)
-                if(IICRCG.eq.22)then
-                  AGR(J2)=AGR(J2)+perocupc+perocupr ! occupant convec+r gain (W)
-                elseif(IICRCG.eq.23)then
-                  AGR(J2)=AGR(J2)+perlightc+perlightr ! Lighting convec+r gain (W)
-                elseif(IICRCG.eq.24)then
-                  AGR(J2)=AGR(J2)+perequipc+perequipr ! sm power convec+r gain (W)
-                elseif(IICRCG.eq.25)then
-                  AGR(J2)=AGR(J2)+
-     &              perlightc+perlightr+perequipc+perequipr ! lights+small power gain (W)
+                if(dmdsok)then
+                  AGR(J2)=VAL3(15,J2)+VAL3(16,J2)+VAL3(17,J2)+
+     &              VAL3(18,J2)+VAL3(19,J2)+VAL3(20,J2)+VAL3(21,J2)
+                else
+                  AGR(J2)=0.0
                 endif
-              enddo  ! of j2 loop
-            enddo    ! of izz loop
-            CALL XTVAL1(AGR,ISTART,IEND,KGET)
+              ENDDO
+              CALL XTVAL1(AGR,ISTART,IEND,KGET)
+            endif
           endif
         endif
 
@@ -4844,7 +4896,7 @@ C will be called.
 #include "building.h"
 #include "geometry.h"
 
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
