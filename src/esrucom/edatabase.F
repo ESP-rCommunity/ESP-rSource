@@ -1831,7 +1831,7 @@ C << some variables are off - further debugging required.
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
       
-      dimension thick(8),rho(8),Cp(8),cond(8)
+      dimension thick(ME),rho(ME),Cp(ME),cond(ME)
       character outs*124
       
       COMPLEX P,L(2,2),M(2,2),N(2,2)
