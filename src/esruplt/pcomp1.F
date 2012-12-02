@@ -2878,26 +2878,27 @@ C First establish TDW1 and TDW2; assume present moisture contents
            TDW1=CSVF(INOD1,1)-1.
          ELSE
            TDW1=DEWPT(CONVAR(ICON1,3)/AMAX1(SMALL,CONVAR(ICON1,2)),
-     &PATMOS)
+     &                 PATMOS)
          ENDIF
          IF(CONVAR(ICON2,2).LT.CONVAR(ICON2,3)) THEN
            TDW1=CSVF(INOD2,1)-1.
          ELSE
            TDW2=DEWPT(CONVAR(ICON2,3)/AMAX1(SMALL,CONVAR(ICON2,2)),
-     &PATMOS)
+     &                 PATMOS)
          ENDIF
 
+Cx -- comment out console chatter (ageissler@20121202)
          IF(CSVF(INOD1,1).LT.TDW1.OR.CSVF(INOD2,1).LT.TDW2.and.
      &      iwmoff.eq.0) THEN
-            CALL DAYCLK(IDYP,PTIMEF,ICOUT)
-            WRITE(ICOUT,*) ' CMP12C: plate exchanger ',IPCOMP,' is',
-     &                     ' likely to experience internal condensation'
-            WRITE(ICOUT,*) '         Tcur1 = ',CSVF(INOD1,1),' C',
-     &                     '         Tcur2 = ',CSVF(INOD2,1),' C'
-            WRITE(ICOUT,*) '         Tdew1 = ',TDW1,' C',
-     &                     '         Tdew2 = ',TDW2,' C'
-         END IF
-      END IF
+cx            CALL DAYCLK(IDYP,PTIMEF,ICOUT)
+cx            WRITE(ICOUT,*) ' CMP12C: plate exchanger ',IPCOMP,' is',
+cx     &                     ' likely to experience internal condensation'
+cx            WRITE(ICOUT,*) '         Tcur1 = ',CSVF(INOD1,1),' C',
+cx     &                     '         Tcur2 = ',CSVF(INOD2,1),' C'
+cx            WRITE(ICOUT,*) '         Tdew1 = ',TDW1,' C',
+cx     &                     '         Tdew2 = ',TDW2,' C'
+         END IF ! condensation check
+      END IF ! istats
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.

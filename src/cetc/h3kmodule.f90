@@ -1247,127 +1247,127 @@ CONTAINS
       rvPlantCompNodeConnectHydrogenFlow%Description = 'Plant component node connection Hydrogen flow'
       Call AddVariable(rvPlantCompNodeConnectHydrogenFlow)
 
-      rvElecNetLoadsTotalLoad%VariableName = 'electrical_net/loads/total_load'
+      rvElecNetLoadsTotalLoad%VariableName = 'enet/loads/total_load'
       rvElecNetLoadsTotalLoad%MetaType = 'units'
       rvElecNetLoadsTotalLoad%VariableType = '(W)'
       rvElecNetLoadsTotalLoad%Description = 'Total load on electrical network'
       Call AddVariable(rvElecNetLoadsTotalLoad)
 
-      rvElecNetLoadsHvacLoad%VariableName = 'electrical_net/loads/HVAC_load'
+      rvElecNetLoadsHvacLoad%VariableName = 'enet/loads/HVAC_load'
       rvElecNetLoadsHvacLoad%MetaType = 'units'
       rvElecNetLoadsHvacLoad%VariableType = '(W)'
       rvElecNetLoadsHvacLoad%Description = 'HVAC load on electrical network'
       Call AddVariable(rvElecNetLoadsHvacLoad)
 
-      rvElecNetLoadsOccupantLoad%VariableName = 'electrical_net/loads/occupant_load'
+      rvElecNetLoadsOccupantLoad%VariableName = 'enet/loads/occupant_load'
       rvElecNetLoadsOccupantLoad%MetaType = 'units'
       rvElecNetLoadsOccupantLoad%VariableType = '(W)'
       rvElecNetLoadsOccupantLoad%Description = 'Occupant-driven load on electrical network'
       Call AddVariable(rvElecNetLoadsOccupantLoad)
 
-      rvElecNetLoadsExternalLoad%VariableName = 'electrical_net/loads/external_load'
+      rvElecNetLoadsExternalLoad%VariableName = 'enet/loads/external_load'
       rvElecNetLoadsExternalLoad%MetaType = 'units'
       rvElecNetLoadsExternalLoad%VariableType = '(W)'
       rvElecNetLoadsExternalLoad%Description = 'Load on electrical network from off-site sources'
       Call AddVariable(rvElecNetLoadsExternalLoad)
 
-      rvElecNetGenTotalGeneration%VariableName = 'electrical_net/generation/total_generation'
+      rvElecNetGenTotalGeneration%VariableName = 'enet/generation/total_generation'
       rvElecNetGenTotalGeneration%MetaType = 'units'
       rvElecNetGenTotalGeneration%VariableType = '(W)'
       rvElecNetGenTotalGeneration%Description = 'Total onsite+offsite electrical generation'
       Call AddVariable(rvElecNetGenTotalGeneration)
 
-      rvElecNetGenOnsiteGeneration%VariableName = 'electrical_net/generation/onsite_generation'
+      rvElecNetGenOnsiteGeneration%VariableName = 'enet/generation/onsite_generation'
       rvElecNetGenOnsiteGeneration%MetaType = 'units'
       rvElecNetGenOnsiteGeneration%VariableType = '(W)'
       rvElecNetGenOnsiteGeneration%Description = 'Total onsite electrical generation'
       Call AddVariable(rvElecNetGenOnsiteGeneration)
 
-      rvElecNetGenOffsiteGeneration%VariableName = 'electrical_net/generation/offsite_generation'
+      rvElecNetGenOffsiteGeneration%VariableName = 'enet/generation/offsite_generation'
       rvElecNetGenOffsiteGeneration%MetaType = 'units'
       rvElecNetGenOffsiteGeneration%VariableType = '(W)'
       rvElecNetGenOffsiteGeneration%Description = 'Total offsite electrical generation'
       Call AddVariable(rvElecNetGenOffsiteGeneration)
 
-      rvElecNetGenOffsiteCoincident%VariableName = 'electrical_net/generation/offsite_coincident'
+      rvElecNetGenOffsiteCoincident%VariableName = 'enet/generation/offsite_coincident'
       rvElecNetGenOffsiteCoincident%MetaType = 'units'
       rvElecNetGenOffsiteCoincident%VariableType = '(W)'
       rvElecNetGenOffsiteCoincident%Description = 'Total offsite generation coincident with occupant load'
       Call AddVariable(rvElecNetGenOffsiteCoincident)
 
-      rvElecNetGridImport%VariableName = 'electrical_net/grid/import'
+      rvElecNetGridImport%VariableName = 'enet/grid/import'
       rvElecNetGridImport%MetaType = 'units'
       rvElecNetGridImport%VariableType = '(W)'
       rvElecNetGridImport%Description = 'Net balance on electrical grid'
       Call AddVariable(rvElecNetGridImport)
 
-      rvElecNetGridExport%VariableName = 'electrical_net/grid/export'
+      rvElecNetGridExport%VariableName = 'enet/grid/export'
       rvElecNetGridExport%MetaType = 'units'
       rvElecNetGridExport%VariableType = '(W)'
       rvElecNetGridExport%Description = 'Surplus electricity exported go grid'
       Call AddVariable(rvElecNetGridExport)
 
-      rvElecNetGridNetBalance%VariableName = 'electrical_net/grid/net_balance'
+      rvElecNetGridNetBalance%VariableName = 'enet/grid/net_balance'
       rvElecNetGridNetBalance%MetaType = 'units'
       rvElecNetGridNetBalance%VariableType = '(W)'
       rvElecNetGridNetBalance%Description = 'Net electricity balance'
       Call AddVariable(rvElecNetGridNetBalance)
 
-      rvElecNetNodesVoltageMagnitude%VariableName = 'electrical_net/nodes/node_*/voltage/magnitude'
+      rvElecNetNodesVoltageMagnitude%VariableName = 'enet/nodes/node_*/voltage/magnitude'
       rvElecNetNodesVoltageMagnitude%MetaType = 'units'
       rvElecNetNodesVoltageMagnitude%VariableType = '(Volts)'
       rvElecNetNodesVoltageMagnitude%Description = 'Electrical network node: V magnitude'
       Call AddVariable(rvElecNetNodesVoltageMagnitude)
 
-      rvElecNetNodesVoltageAngle%VariableName = 'electrical_net/nodes/node_*/voltage/angle'
+      rvElecNetNodesVoltageAngle%VariableName = 'enet/nodes/node_*/voltage/angle'
       rvElecNetNodesVoltageAngle%MetaType = 'units'
       rvElecNetNodesVoltageAngle%VariableType = '(radians)'
       rvElecNetNodesVoltageAngle%Description = 'Electrical network node: V angle'
       Call AddVariable(rvElecNetNodesVoltageAngle)
 
-      rvElecNetNodesLoadReal%VariableName = 'electrical_net/nodes/node_*/load/real'
+      rvElecNetNodesLoadReal%VariableName = 'enet/nodes/node_*/load/real'
       rvElecNetNodesLoadReal%MetaType = 'units'
       rvElecNetNodesLoadReal%VariableType = '(W)'
       rvElecNetNodesLoadReal%Description = 'Electrical network node: real load'
       Call AddVariable(rvElecNetNodesLoadReal)
 
-      rvElecNetNodesLoadReactive%VariableName = 'electrical_net/nodes/node_*/load/reactive'
+      rvElecNetNodesLoadReactive%VariableName = 'enet/nodes/node_*/load/reactive'
       rvElecNetNodesLoadReactive%MetaType = 'units'
       rvElecNetNodesLoadReactive%VariableType = '(W)'
       rvElecNetNodesLoadReactive%Description = 'Electrical network node: reactive load'
       Call AddVariable(rvElecNetNodesLoadReactive)
 
-      rvElecNetNodesGenerationReal%VariableName = 'electrical_net/nodes/node_*/generation/real'
+      rvElecNetNodesGenerationReal%VariableName = 'enet/nodes/node_*/generation/real'
       rvElecNetNodesGenerationReal%MetaType = 'units'
       rvElecNetNodesGenerationReal%VariableType = '(W)'
       rvElecNetNodesGenerationReal%Description = 'Electrical network node: real generation'
       Call AddVariable(rvElecNetNodesGenerationReal)
 
-      rvElecNetNodesGenerationReactive%VariableName = 'electrical_net/nodes/node_*/generation/reactive'
+      rvElecNetNodesGenerationReactive%VariableName = 'enet/nodes/node_*/generation/reactive'
       rvElecNetNodesGenerationReactive%MetaType = 'units'
       rvElecNetNodesGenerationReactive%VariableType = '(W)'
       rvElecNetNodesGenerationReactive%Description = 'Electrical network node: reactive generation'
       Call AddVariable(rvElecNetNodesGenerationReactive)
 
-      rvElecNetNodesTransmissionReal%VariableName = 'electrical_net/nodes/node_*/transmission/real'
+      rvElecNetNodesTransmissionReal%VariableName = 'enet/nodes/node_*/transmission/real'
       rvElecNetNodesTransmissionReal%MetaType = 'units'
       rvElecNetNodesTransmissionReal%VariableType = '(W)'
       rvElecNetNodesTransmissionReal%Description = 'Electrical network node: real transmission'
       Call AddVariable(rvElecNetNodesTransmissionReal)
 
-      rvElecNetNodesTransmissionReative%VariableName = 'electrical_net/nodes/node_*/transmission/reactive'
+      rvElecNetNodesTransmissionReative%VariableName = 'enet/nodes/node_*/transmission/reactive'
       rvElecNetNodesTransmissionReative%MetaType = 'units'
       rvElecNetNodesTransmissionReative%VariableType = '(W)'
       rvElecNetNodesTransmissionReative%Description = 'Electrical network node: reactive transmission'
       Call AddVariable(rvElecNetNodesTransmissionReative)
 
-      rvElecNetHybridComponentFlux%VariableName = 'electrical_net/hybrid_components/*/flux'
+      rvElecNetHybridComponentFlux%VariableName = 'enet/hybrid_components/*/flux'
       rvElecNetHybridComponentFlux%MetaType = 'units'
       rvElecNetHybridComponentFlux%VariableType = '(W)'
       rvElecNetHybridComponentFlux%Description = 'Electrical network hybrid component net electrical power'
       Call AddVariable(rvElecNetHybridComponentFlux)
 
-      rvElecNetPowerOnlyComponents%VariableName = 'electrical_net/power_only_components/*/flux'
+      rvElecNetPowerOnlyComponents%VariableName = 'enet/poc/*/flux'
       rvElecNetPowerOnlyComponents%MetaType = 'units'
       rvElecNetPowerOnlyComponents%VariableType = '(W)'
       rvElecNetPowerOnlyComponents%Description = 'Electrical network power only component: electrical power'
@@ -3188,226 +3188,226 @@ CONTAINS
       Call AddVariable(rvPltHeatingOut)
 
       !Used by wind_turbine_profile_model.F
-      rvEPowWindGenOut%VariableName = 'electrical_net/power_only_components/*/misc_data/Wind_Gen_Output'
+      rvEPowWindGenOut%VariableName = 'enet/poc/*/misc_data/Wind_Gen_Output'
       rvEPowWindGenOut%MetaType = 'units'
       rvEPowWindGenOut%VariableType = '(W)'
       rvEPowWindGenOut%Description = 'Wind generator output'
       Call AddVariable(rvEPowWindGenOut)
 
-      rvEPowWindSpeed%VariableName = 'electrical_net/power_only_components/*/misc_data/Wind_Speed'
+      rvEPowWindSpeed%VariableName = 'enet/poc/*/misc_data/Wind_Speed'
       rvEPowWindSpeed%MetaType = 'units'
       rvEPowWindSpeed%VariableType = '(m/s)'
       rvEPowWindSpeed%Description = 'Wind speed'
       Call AddVariable(rvEPowWindSpeed)
 
       !Used by powoc_calc.F
-      rvEPowLoadProf%VariableName = 'electrical_net/power_only_components/elec_load/elec_load_profile'
+      rvEPowLoadProf%VariableName = 'enet/poc/elec_load/elec_load_profile'
       rvEPowLoadProf%MetaType = 'units'
       rvEPowLoadProf%VariableType = '(W)'
       rvEPowLoadProf%Description = 'Original E-load'
       Call AddVariable(rvEPowLoadProf)
 
-      rvEPowH2Load%VariableName = 'electrical_net/power_only_components/elec_load/elec_H2_loads'
+      rvEPowH2Load%VariableName = 'enet/poc/elec_load/elec_H2_loads'
       rvEPowH2Load%MetaType = 'units'
       rvEPowH2Load%VariableType = '(W)'
       rvEPowH2Load%Description = 'Total H2 loads'
       Call AddVariable(rvEPowH2Load)
 
-      rvEPowLoadAdj%VariableName = 'electrical_net/power_only_components/elec_load/elec_load_adjusted'
+      rvEPowLoadAdj%VariableName = 'enet/poc/elec_load/elec_load_adjusted'
       rvEPowLoadAdj%MetaType = 'units'
       rvEPowLoadAdj%VariableType = '(W)'
       rvEPowLoadAdj%Description = 'Adjusted E-load'
       Call AddVariable(rvEPowLoadAdj)
 
-      rvEPowPCUPowLoss%VariableName = 'electrical_net/power_only_components/*/misc_data/PCU_power_loss'
+      rvEPowPCUPowLoss%VariableName = 'enet/poc/*/misc_data/PCU_power_loss'
       rvEPowPCUPowLoss%MetaType = 'units'
       rvEPowPCUPowLoss%VariableType = '(W)'
       rvEPowPCUPowLoss%Description = 'Power loss from PCU'
       Call AddVariable(rvEPowPCUPowLoss)
 
-      rvEPowPCUEff%VariableName = 'electrical_net/power_only_components/*/misc_data/PCU_efficiency'
+      rvEPowPCUEff%VariableName = 'enet/poc/*/misc_data/PCU_efficiency'
       rvEPowPCUEff%MetaType = 'units'
       rvEPowPCUEff%VariableType = '(-)'
       rvEPowPCUEff%Description = 'Efficiency of PCU'
       Call AddVariable(rvEPowPCUEff)
 
-      rvEPowPCUPowIn%VariableName = 'electrical_net/power_only_components/*/misc_data/PCU_power_input'
+      rvEPowPCUPowIn%VariableName = 'enet/poc/*/misc_data/PCU_power_input'
       rvEPowPCUPowIn%MetaType = 'units'
       rvEPowPCUPowIn%VariableType = '(W)'
       rvEPowPCUPowIn%Description = 'Power input to PCU'
       Call AddVariable(rvEPowPCUPowIn)
 
-      rvEPowPCUPowOut%VariableName = 'electrical_net/power_only_components/*/misc_data/PCU_power_output'
+      rvEPowPCUPowOut%VariableName = 'enet/poc/*/misc_data/PCU_power_output'
       rvEPowPCUPowOut%MetaType = 'units'
       rvEPowPCUPowOut%VariableType = '(W)'
       rvEPowPCUPowOut%Description = 'Power output from PCU'
       Call AddVariable(rvEPowPCUPowOut)
 
       !Used by CETC_BATTERY.F
-      rvEPowBattDem%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_system_demand'
+      rvEPowBattDem%VariableName = 'enet/poc/*/misc_data/battery_system_demand'
       rvEPowBattDem%MetaType = 'units'
       rvEPowBattDem%VariableType = '(W)'
       rvEPowBattDem%Description = 'Demand on battery system'
       Call AddVariable(rvEPowBattDem)
 
-      rvEPowBattOper%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_mode'
+      rvEPowBattOper%VariableName = 'enet/poc/*/misc_data/battery_mode'
       rvEPowBattOper%MetaType = 'units'
       rvEPowBattOper%VariableType = '(-)'
       rvEPowBattOper%Description = 'Battery mode of operation'
       Call AddVariable(rvEPowBattOper)
 
-      rvEPowBattVolt%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_voltage'
+      rvEPowBattVolt%VariableName = 'enet/poc/*/misc_data/battery_voltage'
       rvEPowBattVolt%MetaType = 'units'
       rvEPowBattVolt%VariableType = '(V)'
       rvEPowBattVolt%Description = 'Battery operating voltage'
       Call AddVariable(rvEPowBattVolt)
 
-      rvEPowBattDOD%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_DOD'
+      rvEPowBattDOD%VariableName = 'enet/poc/*/misc_data/battery_DOD'
       rvEPowBattDOD%MetaType = 'units'
       rvEPowBattDOD%VariableType = '(-)'
       rvEPowBattDOD%Description = 'Battery depth of discharge'
       Call AddVariable(rvEPowBattDOD)
 
-      rvEPowBattCurr%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_current'
+      rvEPowBattCurr%VariableName = 'enet/poc/*/misc_data/battery_current'
       rvEPowBattCurr%MetaType = 'units'
       rvEPowBattCurr%VariableType = '(A)'
       rvEPowBattCurr%Description = 'Battery current'
       Call AddVariable(rvEPowBattCurr)
 
-      rvEPowbattIntH%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_internal_heat'
+      rvEPowbattIntH%VariableName = 'enet/poc/*/misc_data/battery_internal_heat'
       rvEPowbattIntH%MetaType = 'units'
       rvEPowbattIntH%VariableType = '(W)'
       rvEPowbattIntH%Description = 'Battery internal heat'
       Call AddVariable(rvEPowbattIntH)
 
-      rvEPowBattSOC%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_SOC'
+      rvEPowBattSOC%VariableName = 'enet/poc/*/misc_data/battery_SOC'
       rvEPowBattSOC%MetaType = 'units'
       rvEPowBattSOC%VariableType = '(%)'
       rvEPowBattSOC%Description = 'Battery state of charge'
       Call AddVariable(rvEPowBattSOC)
 
-      rvEPowBattLd%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_load'
+      rvEPowBattLd%VariableName = 'enet/poc/*/misc_data/battery_load'
       rvEPowBattLd%MetaType = 'units'
       rvEPowBattLd%VariableType = '(W)'
       rvEPowBattLd%Description = 'Load on the battery'
       Call AddVariable(rvEPowBattLd)
 
-      rvEPowBattMaxPow%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_max_power'
+      rvEPowBattMaxPow%VariableName = 'enet/poc/*/misc_data/battery_max_power'
       rvEPowBattMaxPow%MetaType = 'units'
       rvEPowBattMaxPow%VariableType = '(W)'
       rvEPowBattMaxPow%Description = 'Battery max power'
       Call AddVariable(rvEPowBattMaxPow)
 
-      rvEPowBattMaxPowChrg%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_max_charge_power'
+      rvEPowBattMaxPowChrg%VariableName = 'enet/poc/*/misc_data/battery_max_charge_power'
       rvEPowBattMaxPowChrg%MetaType = 'units'
       rvEPowBattMaxPowChrg%VariableType = '(W)'
       rvEPowBattMaxPowChrg%Description = 'Battery max charge power'
       Call AddVariable(rvEPowBattMaxPowChrg)
 
-      rvEPowBattMaxDschrg%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_max_discharge_power'
+      rvEPowBattMaxDschrg%VariableName = 'enet/poc/*/misc_data/battery_max_discharge_power'
       rvEPowBattMaxDschrg%MetaType = 'units'
       rvEPowBattMaxDschrg%VariableType = '(W)'
       rvEPowBattMaxDschrg%Description = 'Battery max discharge power'
       Call AddVariable(rvEPowBattMaxDschrg)
 
-      rvEPowBattMaxHPow%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_max_heater_power'
+      rvEPowBattMaxHPow%VariableName = 'enet/poc/*/misc_data/battery_max_heater_power'
       rvEPowBattMaxHPow%MetaType = 'units'
       rvEPowBattMaxHPow%VariableType = '(W)'
       rvEPowBattMaxHPow%Description = 'Battery max heater power'
       Call AddVariable(rvEPowBattMaxHPow)
 
-      rvEPowBattHPow%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_heater_power'
+      rvEPowBattHPow%VariableName = 'enet/poc/*/misc_data/battery_heater_power'
       rvEPowBattHPow%MetaType = 'units'
       rvEPowBattHPow%VariableType = '(W)'
       rvEPowBattHPow%Description = 'Battery heater power'
       Call AddVariable(rvEPowBattHPow)
 
-      rvEPowBattPowBal%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_power_balance'
+      rvEPowBattPowBal%VariableName = 'enet/poc/*/misc_data/battery_power_balance'
       rvEPowBattPowBal%MetaType = 'units'
       rvEPowBattPowBal%VariableType = '(W)'
       rvEPowBattPowBal%Description = 'Battery power balance'
       Call AddVariable(rvEPowBattPowBal)
 
-      rvEPowBattSysLd%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_system_load'
+      rvEPowBattSysLd%VariableName = 'enet/poc/*/misc_data/battery_system_load'
       rvEPowBattSysLd%MetaType = 'units'
       rvEPowBattSysLd%VariableType = '(W)'
       rvEPowBattSysLd%Description = 'Load on battery system'
       Call AddVariable(rvEPowBattSysLd)
 
-      rvEPowBattSysChrgLd%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_system_charge_load'
+      rvEPowBattSysChrgLd%VariableName = 'enet/poc/*/misc_data/battery_system_charge_load'
       rvEPowBattSysChrgLd%MetaType = 'units'
       rvEPowBattSysChrgLd%VariableType = '(W)'
       rvEPowBattSysChrgLd%Description = 'Charge load on battery system'
       Call AddVariable(rvEPowBattSysChrgLd)
 
-      rvEPowBattSysDschrgLd%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_system_discharge_load'
+      rvEPowBattSysDschrgLd%VariableName = 'enet/poc/*/misc_data/battery_system_discharge_load'
       rvEPowBattSysDschrgLd%MetaType = 'units'
       rvEPowBattSysDschrgLd%VariableType = '(W)'
       rvEPowBattSysDschrgLd%Description = 'Discharge load on battery system'
       Call AddVariable(rvEPowBattSysDschrgLd)
 
-      rvEPowBattTemp%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_temp'
+      rvEPowBattTemp%VariableName = 'enet/poc/*/misc_data/battery_temp'
       rvEPowBattTemp%MetaType = 'units'
       rvEPowBattTemp%VariableType = '(oC)'
       rvEPowBattTemp%Description = 'Battery temperature'
       Call AddVariable(rvEPowBattTemp)
 
-      rvEPowBattLfUsed%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_life_used'
+      rvEPowBattLfUsed%VariableName = 'enet/poc/*/misc_data/battery_life_used'
       rvEPowBattLfUsed%MetaType = 'units'
       rvEPowBattLfUsed%VariableType = '(years)'
       rvEPowBattLfUsed%Description = 'Battery life used'
       Call AddVariable(rvEPowBattLfUsed)
 
-      rvEPowBattLfUsedCum%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_life_used_cum'
+      rvEPowBattLfUsedCum%VariableName = 'enet/poc/*/misc_data/battery_life_used_cum'
       rvEPowBattLfUsedCum%MetaType = 'units'
       rvEPowBattLfUsedCum%VariableType = '(years)'
       rvEPowBattLfUsedCum%Description = 'Cumulative battery life used'
       Call AddVariable(rvEPowBattLfUsedCum)
 
-      rvEPowBattLfUseFac%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_life_use_factor'
+      rvEPowBattLfUseFac%VariableName = 'enet/poc/*/misc_data/battery_life_use_factor'
       rvEPowBattLfUseFac%MetaType = 'units'
       rvEPowBattLfUseFac%VariableType = '(-)'
       rvEPowBattLfUseFac%Description = 'Battery life use factor'
       Call AddVariable(rvEPowBattLfUseFac)
 
-      rvEPowBattChrgCyc%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_mand_charge_cycle'
+      rvEPowBattChrgCyc%VariableName = 'enet/poc/*/misc_data/battery_mand_charge_cycle'
       rvEPowBattChrgCyc%MetaType = 'units'
       rvEPowBattChrgCyc%VariableType = '(-)'
       rvEPowBattChrgCyc%Description = 'Battery mandatory charge cycle'
       Call AddVariable(rvEPowBattChrgCyc)
 
-      rvEPowBattManChrgPh%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_mand_charge_phase'
+      rvEPowBattManChrgPh%VariableName = 'enet/poc/*/misc_data/battery_mand_charge_phase'
       rvEPowBattManChrgPh%MetaType = 'units'
       rvEPowBattManChrgPh%VariableType = '(-)'
       rvEPowBattManChrgPh%Description = 'Battery mandatory charge phase'
       Call AddVariable(rvEPowBattManChrgPh)
 
-      rvEPowBattManChrgPhInc%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_mand_charge_phase_increase'
+      rvEPowBattManChrgPhInc%VariableName = 'enet/poc/*/misc_data/battery_mand_charge_phase_increase'
       rvEPowBattManChrgPhInc%MetaType = 'units'
       rvEPowBattManChrgPhInc%VariableType = '(-)'
       rvEPowBattManChrgPhInc%Description = 'Battery mandatory charge phase increase'
       Call AddVariable(rvEPowBattManChrgPhInc)
 
-      rvEPowBattTmeLstFulChrg%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_time_since_last_full_charge'
+      rvEPowBattTmeLstFulChrg%VariableName = 'enet/poc/*/misc_data/battery_time_since_last_full_charge'
       rvEPowBattTmeLstFulChrg%MetaType = 'units'
       rvEPowBattTmeLstFulChrg%VariableType = '(hours)'
       rvEPowBattTmeLstFulChrg%Description = 'Battery time since last full charge'
       Call AddVariable(rvEPowBattTmeLstFulChrg)
 
-      rvEPowBattBdTreatFlg%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_bad_treatment_flag'
+      rvEPowBattBdTreatFlg%VariableName = 'enet/poc/*/misc_data/battery_bad_treatment_flag'
       rvEPowBattBdTreatFlg%MetaType = 'units'
       rvEPowBattBdTreatFlg%VariableType = '(-)'
       rvEPowBattBdTreatFlg%Description = 'Battery abuse flag'
       Call AddVariable(rvEPowBattBdTreatFlg)
 
 
-      rvEPowBattCtrlScn%VariableName = 'electrical_net/power_only_components/*/misc_data/battery_control_scenario'
+      rvEPowBattCtrlScn%VariableName = 'enet/poc/*/misc_data/battery_control_scenario'
       rvEPowBattCtrlScn%MetaType = 'units'
       rvEPowBattCtrlScn%VariableType = '(-)'
       rvEPowBattCtrlScn%Description = 'Battery control scenario'
       Call AddVariable(rvEPowBattCtrlScn)
 
-      rvEPowBattLiOnCycUsed%VariableName = 'electrical_net/power_only_components/*/misc_data/Lion_cycles_used'
+      rvEPowBattLiOnCycUsed%VariableName = 'enet/poc/*/misc_data/Lion_cycles_used'
       rvEPowBattLiOnCycUsed%MetaType = 'units'
       rvEPowBattLiOnCycUsed%VariableType = '(-)'
       rvEPowBattLiOnCycUsed%Description = 'Li-on cycles used'
@@ -3910,8 +3910,6 @@ CONTAINS
       rvPltWtrFlw%VariableType = '(kg/s)'
       rvPltWtrFlw%Description = ''
       Call AddVariable(rvPltWtrFlw)
-
-
 
       !Used by h3kstore.F
       rvPltSDHWSumPmpElec%VariableName = 'plt/SDHW_summary/pump_elec'
