@@ -751,7 +751,7 @@ C Material properties.
       LOGICAL closemat1,closemat2
 
       DIMENSION ISD(25)
-      CHARACTER ISD*46
+      CHARACTER ISD*56
       CHARACTER KEY*1,HOLD*48,TOPTIC*12,optic*12
       integer ISDN,INODA ! max items and current menu item
 
@@ -780,29 +780,29 @@ C with ier=1.
 C Setup text for menu.
    12 INODA=-3
       icn1=izstocn(icomp,isur)
-   13 write(ISD(1),'(A,A)') '  Surface name    : ',SSNAME(icn1)
+   13 write(ISD(1),'(A,A)') '  surface name    : ',SSNAME(icn1)
       if(SSOTF(icn1)(1:4).eq.'OPAQ'.or.
      &   SSOTF(icn1)(1:4).eq.'TRAN'.or.
      &   SSOTF(icn1)(1:4).eq.'CFC ')then
-        write(ISD(2),'(A,A)') 'a Surface type    : ',SSOTF(icn1)(1:12)
+        write(ISD(2),'(A,A)') 'a surface type    : ',SSOTF(icn1)(1:12)
       else
         WRITE(ISD(2),'(A,A)') 'a optical set name: ',SSOTF(icn1)(1:12)
       endif
-      write(ISD(3),'(A,A)') 'b Construction    : ',SSMLCN(icn1)(1:12)
+      write(ISD(3),'(A,A)') 'b construction    : ',SSMLCN(icn1)(1:12)
       if(ITMCFL(ICOMP,ISUR).GT.0)then
         optic=TOPTIC(ICOMP,ITMCFL(ICOMP,ISUR))
-        write(ISD(4),'(2A)')'  Optical property: ',optic
+        write(ISD(4),'(2A)')'  optical property: ',optic
       else
         optic=' - '
-        write(ISD(4),'(2A)')'  Optical property: ',optic
+        write(ISD(4),'(2A)')'  optical property: ',optic
       endif
       ISD(5)='  ______________________________________ '
 
 C Surface properties.
       WRITE(ISD(6),22)EMISI(ISUR),EMISE(ISUR)
-   22 FORMAT('c Emissivity int face: ',F5.3,' ext face: ',F5.3)
+   22 FORMAT('c emissivity   inside face: ',F5.3,' other face: ',F5.3)
       WRITE(ISD(7),23)ABSI(ISUR),ABSE(ISUR)
-   23 FORMAT('d Absorp.    int face: ',F5.3,' ext face: ',F5.3)
+   23 FORMAT('d absorptivity inside face: ',F5.3,' other face: ',F5.3)
       ISD(8)='  ______________________________________ '
       M=8
 
@@ -812,9 +812,9 @@ C Find composite which matches.
 
 C For each layer.
       M=M+1
-      ISD(M)=' lyr|Mat|Thick|Conduc-|Density|Specific|Air  '
+      ISD(M)=' lyr|Material     |Thick|Conduc-|Density|Specific|Air  '
       M=M+1
-      ISD(M)='    |db |metre|tivity |       |heat    |gap R'
+      ISD(M)='    |name         |metre|tivity |       |heat    |gap R'
       DO 45 IE=1,NE(ISUR)
         M=M+1
         CALL EMKEY(M,KEY,IER)
@@ -823,7 +823,7 @@ C For each layer.
 C Multilayer construction has not been defined.
           WRITE(ISD(M),346)KEY,IE,THK(ISUR,IE),CON(ISUR,IE),
      &                     DEN(ISUR,IE),SHT(ISUR,IE)
- 346      FORMAT(A1,I4,' --',F6.3,3F8.2)
+ 346      FORMAT(A1,I4,'  --   ',F6.3,3F8.2)
         ELSE
 
           matarrayindex=IPRMAT(ICF,IE)   ! which materials array index
@@ -832,20 +832,19 @@ C Multilayer construction has not been defined.
      &       matarrayindex.eq.0)then
 
 C Find air gap resistance for this layer. 
-C << remove reporting for IPR >>
             DO IGG=1,NAIRG(ISUR)
               IF(IPAIRG(ISUR,IGG).EQ.IE)R=RAIRG(ISUR,IGG)
-              WRITE(ISD(M),48)KEY,IE,IPR(ICF,IE),THK(ISUR,IE),
-     &          CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE),R
-  48          FORMAT(A1,I3,I4,F6.3,3F8.2,F6.2)
+              WRITE(ISD(M),48)KEY,IE,' gap          ',
+     &          THK(ISUR,IE),CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE),R
+  48          FORMAT(A1,I3,A,F6.3,3F8.2,F6.2)
             ENDDO
           elseif(matarrayindex.eq.-99)then
             WRITE(ISD(M),'(a1,i3,a)')KEY,IE,
      &        ' confused material reference'
           else
-            WRITE(ISD(M),46)KEY,IE,IPR(ICF,IE),THK(ISUR,IE),
-     &        CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE)
-  46        FORMAT(A1,I3,I4,F6.3,3F8.2)
+            WRITE(ISD(M),46)KEY,IE,matname(matarrayindex)(1:12),
+     &        THK(ISUR,IE),CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE)
+  46        FORMAT(A1,I3,1x,a,1x,F6.3,3F8.2)
           endif
         ENDIF
   45  CONTINUE
@@ -866,7 +865,7 @@ C Help text for this menu.
       call gethelptext(helpinsub,helptopic,nbhelp)
 
 C Menu control.
-      CALL EMENU('Surface Attributes',ISD,ISDN,INODA)
+      CALL EMENU('Surface construction attributes',ISD,ISDN,INODA)
       IF(INODA.EQ.ISDN)THEN
         RETURN
       ELSEIF(INODA.EQ.0)THEN
