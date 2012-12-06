@@ -2087,10 +2087,10 @@ C and we are dealing with something other than the traditional gap material.
      &     matarrayindex.eq.0)then
           DBCON=0.0
           WRITE(NAM,'(A,3F5.2)')'gap ',(DRAIR(IFOC,IL,IY),IY=1,3)
-        elseif(matarrayindex.eq.-99)then
+        elseif(matarrayindex.lt.0)then
 
 C If an earlier scan of MLC detected duplicate material names or
-C was confused then matarrayindex could be -99.
+C was confused then matarrayindex could be -1.
           call edisp(iuout,
      &'One layer material reference is confused or a duplicate name.')
           NAM='UNKNOWN'
@@ -2106,8 +2106,8 @@ C If a gap layer include the R values in the display.
      &     matopaq(matarrayindex)(1:1).eq.'h'.or.
      &     matarrayindex.eq.0)then
           RT=RT+DRAIR(IFOC,IL,1)
-        ELSEIF(matarrayindex.EQ.-99)THEN
-          continue
+        ELSEIF(matarrayindex.lt.0)THEN
+          continue  ! a confused material
         ELSE
           RT=RT+DTHK(IFOC,IL)/DBCON
         ENDIF
@@ -2395,8 +2395,8 @@ C And if a gap layer reset dbcon.
                   else
                     RT=RT+DRAIR(IFOC,IL,1)
                   endif
-                elseif(matarrayindex.eq.-99)then
-                  continue
+                elseif(matarrayindex.lt.0)then
+                  continue  ! confused material
                 else
                   DBCON=matdbcon(matarrayindex)
 
@@ -2512,7 +2512,7 @@ C gap R into the equation.
                       RT=RT+DRAIR(IFOC,IL,1)
                     endif
                   endif
-                elseif(matarrayindex.EQ.-99)then
+                elseif(matarrayindex.lt.0)then
                   continue  ! use RT calc above
                 else
                   DBCON=matdbcon(matarrayindex)
@@ -2688,8 +2688,8 @@ C the traditional gap so reset matarrayindex.
                   GOTO 3
                 endif
                 IPRMAT(IFOC,ILN)=matarrayindex   ! set new material index to layer
-              elseif(matarrayindex.eq.-99)then
-                continue
+              elseif(matarrayindex.lt.0)then
+                continue  ! confused material
               endif
             else
               IWHICH=IPR(IFOC,ILN)  ! keep the current material
@@ -3091,8 +3091,8 @@ C     &        matarrayindex,iwhich
               GOTO 3
             endif
             IPRMAT(IFOC,ILED-8)=matarrayindex   ! set new material index to layer
-          elseif(matarrayindex.eq.-99)then
-            continue
+          elseif(matarrayindex.lt.0)then
+            continue  ! confused material
           endif
         else
           IWHICH=IPR(IFOC,ILED-8)  ! keep the current material
@@ -3157,24 +3157,14 @@ C If a gap then ask for gap resistance, recover resistance if newer matereials f
      &      ' if the orientation is sloped or UNKNOWN : ',
      &      0.0,'W',99.9,'W',0.17,'default gap R',IER,nbhelp)
           DRAIR(IFOC,ILED-8,3)=VAL
-        ELSEIF(matarrayindex.EQ.-99)THEN
+        ELSEIF(matarrayindex.lt.0)THEN
 
-C We got the new item from ELISTMAT call so use matarryindex.
-C Find the typical thickness and if [g] or [h] gap resistance.
-C << ?? might not work >>
-          if(matarrayindex.ne.0)then
-            guessthick=matdbthick(matarrayindex)
-            write(outs,'(a,f6.1,a)') 
-     &        'Material selected has a thickness of ',guessthick,'mm.'
-            call edisp(iuout,outs)
-            if(matopaq(matarrayindex)(1:1).eq.'g')then
-              if(closemat2)then
-                DRAIR(IFOC,ILED-8,1)=matgapares(matarrayindex,1)
-                DRAIR(IFOC,ILED-8,2)=matgapares(matarrayindex,2)
-                DRAIR(IFOC,ILED-8,3)=matgapares(matarrayindex,3)
-              endif
-            endif
-          endif
+C This is a confused material (perhaps a duplicate). Assign zero
+C for air gap resistances and 0.1m estimated thickness.
+          DRAIR(IFOC,ILED-8,1)=0.0
+          DRAIR(IFOC,ILED-8,2)=0.0
+          DRAIR(IFOC,ILED-8,3)=0.0
+          guessthick=0.1
         ELSE
 
 C Non zero legacy index so assign thickness. And check if the

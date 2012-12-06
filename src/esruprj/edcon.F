@@ -838,7 +838,7 @@ C Find air gap resistance for this layer.
      &          THK(ISUR,IE),CON(ISUR,IE),DEN(ISUR,IE),SHT(ISUR,IE),R
   48          FORMAT(A1,I3,A,F6.3,3F8.2,F6.2)
             ENDDO
-          elseif(matarrayindex.eq.-99)then
+          elseif(matarrayindex.lt.0)then
             WRITE(ISD(M),'(a1,i3,a)')KEY,IE,
      &        ' confused material reference'
           else
@@ -980,9 +980,9 @@ C Update array NAIRG.
                  RAIRG(ISUR,NAIRG(ISUR))=DRAIR(IC,IL,3)
               ENDIF
             endif
-          elseif(matarrayindex.eq.-99)then
+          elseif(matarrayindex.lt.0)then
             call edisp(iuout,
-     &        'One layer material ref is confused or duplicate name.')
+     &  'One material reference is confused or has a duplicate name.')
             goto 12
           else
             DBCON=matdbcon(matarrayindex)
@@ -1228,7 +1228,7 @@ C Deal with air gap resistance if layer is a gap.
                 RAIRG(IS,NAIRG(IS))=DRAIR(IC,IL,3)
               ENDIF
             endif
-          elseif(matarrayindex.eq.-99)then
+          elseif(matarrayindex.lt.0)then
             DBCON=0.0; DBDEN=0.0; DBSHT=0.0
             E=0.99; A=0.99
             continue  ! can't deal with a confused material

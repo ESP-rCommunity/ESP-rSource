@@ -160,6 +160,7 @@ C Clear the materials common blocks.
 C Fill the hash table with not included marker (-1) and clear the
 C array of duplicate checking names and materials data.
       nametocheck=' '
+      matopaq(-1)=' '  ! clear the confused material slot
       do ih=0,600
         mathash(ih)=-1
         if(ih.gt.0)namelist(ih)=' '

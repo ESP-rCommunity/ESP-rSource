@@ -27,12 +27,13 @@ C Otherwise it is a user supplied short phrase (spaces are allowed).
       character matdoc*248 ! documentation (initially filled with the 72 char from
                            ! the older name of the material.
 C The variable matopaq indicates whether the material was opaque/transparent
-C and/or a gas (various types). Set lower range to zero so that the older
-C convention of zero meaning air does not result in out-of-bounds seg-fault.
+C and/or a gas (various types). Set lower range to -1 so that the older
+C convention of zero meaning air and confused materials do not result in
+C out-of-bounds seg-fault.
 C 'o' is opaque, 't' is transparent, '-' imported from legacy
 C 'g' is a gap resistance layer, 'h' depreciated gas
       character matopaq*1  ! tag for opaque/transparent/gas
-      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(0:MGIT)
+      common/matnamearray/matname(MGIT),matdoc(MGIT),matopaq(-1:MGIT)
 
 C Data for each material:
       integer matlegindex  ! is the original material index
