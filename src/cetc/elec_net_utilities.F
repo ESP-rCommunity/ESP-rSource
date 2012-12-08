@@ -168,6 +168,16 @@ C     Plant component  power consumption variables.
 C---------------------------------------------------------------------
 C     Real Power (W), reactive power, Complex power vector.
       COMMON/ENETPCOMP/PPCMP(MPCOM),QPCMP(MPCOM),VCMP(MPCOM)
+
+C---------------------------------------------------------------------
+C     Special materials variables.
+C---------------------------------------------------------------------
+C     ...
+      COMMON/ENETSPM/PSPM(MSPMNOD),QSPM(MSPMNOD),
+     &               VSPM(MSPMNOD)
+      REAL  PSPM,QSPM
+      Complex VSPM
+
 C---------------------------------------------------------------------
 C     Common for writing data 
 C---------------------------------------------------------------------
@@ -370,7 +380,8 @@ C..............Zone casual gains (ESRU coupling)
 
             ELSEIF ( iComponentType .eq. 2 ) THEN
 C..............Special Materials, including PV
-C..............- this is a placeholder for future use
+               Hybrid_Power_Real(iHybridComponent) =
+     &              PSPM( iIndex ) ! (W)
 
             ELSEIF ( iComponentType .eq. 3 ) THEN
 C..............Plant component. 

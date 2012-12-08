@@ -2421,7 +2421,8 @@ C.....Storage variables
 
       REAL tempp_store(mpcom,mdly) ! storage for primitive part future value ??
       REAL yposp_store(mpcom,mdly) ! storage for primitive part future value ?
-      REAL nsectp_store(mpcom)  ! storage for primitive part future value ?
+c      REAL nsectp_store(mpcom)  ! storage for primitive part future value ?
+      integer nsectp_store(mpcom)  ! storage for primitive part future value ?
 
       SAVE CSVP_store, PUAP_store, PCQP_store, PCTP_store,PCRP_store
       SAVE PCNTMP_store, PCDATP_store, tempp_store, yposp_store
