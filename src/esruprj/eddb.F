@@ -2511,9 +2511,7 @@ C << alternative to IPR needed >>
         DTHK(1,1)=0.100
         IPR(1,1)=1
         LAYERS(1)=1
-        DRAIR(1,1,1)=0.0
-        DRAIR(1,1,2)=0.0
-        DRAIR(1,1,3)=0.0
+        DRAIR(1,1,1)=0.0; DRAIR(1,1,2)=0.0; DRAIR(1,1,3)=0.0
         MLDBOK=.TRUE.
         moddb=.true.
         CALL EMKAMLD(iuout,IER)
@@ -3343,9 +3341,9 @@ C Calendar.
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER :: icalender,nbcaldays,nbdaytype
 
-      CHARACTER DFILE*72,LLASCI*144
+      CHARACTER DFILE*72,LLASCI*144,lltmp*144
       character longtfile*144,longtafile*144,message*48,longtmp*144
-      CHARACTER DOIT*248,fs*1,TMODE*8,CLMLOC*30,LCOPY*72
+      CHARACTER DOIT*248,fs*1,TMODE*8,CLMLOC*30,LCOPY*144
       CHARACTER OUTS*124,APP*6,ext*4,llclmdb*144
       LOGICAL OK,concat,COPYDEF,MODDB,XST,DOK,UNIXOK
       character dinstpath*60,path*72
@@ -3412,8 +3410,9 @@ C Depending on where the weather is located offer different options.
         isw=0
         call MENUATOL('  ','Weather',
      &    ' ','b select another from list',
-     &    'c create new weather','d copy standard weather',
-     &    ' ',' ',' ',' ',' ',' ',' ',' ',isw,idno,nbhelp)
+     &    'c select from model ../dbs',
+     &    'd create new weather','e copy standard weather',
+     &    ' ',' ',' ',' ',' ',' ',' ',isw,idno,nbhelp)
         copydef=.true.
       elseif(llclmdb(1:ldirpath).eq.dirpath(1:ldirpath))then
 
@@ -3422,9 +3421,10 @@ C If corportate weather then offer the following choices:
         isw=0
         call MENUATOL('  ','Weather <std>',
      &    'a browse/edit','b select another from list',
-     &    'c create new weather','d copy it to model',
-     &    'e weather >> ascii export','f ascii >> weather import',
-     &    'g EPW >> weather import',' ',' ',' ',' ',' ',
+     &    'c select from model ../dbs',
+     &    'd create new weather','e copy it to model',
+     &    'f weather >> ascii export','g ascii >> weather import',
+     &    'h EPW >> weather import',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
         copydef=.false.
       else
@@ -3434,9 +3434,10 @@ C If db exists locally offer the following choices:
         isw=0
         call MENUATOL('  ','Weather <mod>',
      &    'a browse/edit','b select another from list',
-     &    'c create new weather','d copy standard weather',
-     &    'e weather >> ascii export','f ascii >> weather import',
-     &    'g EPW >> weather import',' ',' ',' ',' ',' ',
+     &    'c select from model ../dbs',
+     &    'd create new weather','e copy standard weather',
+     &    'f weather >> ascii export','g ascii >> weather import',
+     &    'h EPW >> weather import',' ',' ',' ',' ',
      &    isw,idno,nbhelp)
         copydef=.true.
       endif
@@ -3500,7 +3501,6 @@ C use a file browser to go looking for it.
           if(ier.eq.0)then
             if(longtfile(1:12).eq.'USER_DEFINED')then
 
-C << todo suggest name within the model dbs folder >>
               write(llclmdb,'(a)') 'newclim'
               ipathclim=0
  291          llt=lnblnk(llclmdb)
@@ -3592,6 +3592,55 @@ C use the editing facility.
 
       elseif(isw.eq.3)then
 
+C Allow user to select from the model ../dbs folder for a
+C weather file. If moddb was set to true then proceed.
+        numhelp=nbhelp
+        lltmp='  '
+        call usemodeldbsfile('clm',numhelp,lltmp,istat,moddb)
+        if(istat.eq.0.and.moddb)then
+          CALL ERPFREE(ICLIM,ISTAT)
+          call FINDFIL(lltmp,XST)
+          IF(XST)THEN
+
+C If file exists and user wants to browse then scan the file and
+C use the editing facility.
+            IER=0
+            call EFOPRAN(ICLIM,lltmp,144,0,IER)
+            if(ier.eq.0)then
+              call tstamp('>','PRJ: start clm')
+              doit = ' '
+              call tchild(ICPMOD)
+              call termode(ICPMOD,tmode)
+              if(ipathclim.eq.0.or.ipathclim.eq.1)then
+                call addpath(lltmp,longtfile,concat)
+              elseif(ipathclim.eq.2)then
+                longtfile=lltmp
+              endif
+              if(iappw.gt.0.and.iappw.le.200)then
+                write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
+     &            ' -s ',iappw,iappx+10,iappy+10,' -file ',
+     &            longtfile(1:lnblnk(longtfile))
+              else
+                write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
+     &            longtfile(1:lnblnk(longtfile))
+              endif
+              call runit(doit,tmode)
+            else
+              call usrmsg('Problem encountered with Climate db!',
+     &                    'Please check db location and content.','W')
+              goto 552
+            endif
+          else
+            call usrmsg('No weather to browse/edit.',
+     &                  'Please use one of the other options.','W')
+            goto 552
+          endif
+        else
+          goto 552
+        endif
+
+      elseif(isw.eq.4)then
+
 C Set-up minimal common block, create a new weather file, populate
 C it with zeros and present editing facility.
         lr=lnblnk(cfgroot)
@@ -3620,17 +3669,11 @@ C but if using GTK then we need the full length to avoid truncation.
 C Create a blank climate file (code similar to clm.F).
         moddb=.true.
         clmloc='new site'
-        ID1=1
-        IM1=1
-        IT1=1
-        ID2=31
-        IM2=12
-        IT2=24
-        IDS=1
-        IDF=365
+        ID1=1; IM1=1; IT1=1
+        ID2=31; IM2=12; IT2=24
+        IDS=1; IDF=365
         IYEAR=2006
-        CLAT=50.
-        CLONG=0.
+        CLAT=50.0; CLONG=0.
         IDNGH=0
         IER=0
         call EFOPRAN(ICLIM,longtmp,144,4,IER)
@@ -3639,12 +3682,8 @@ C Loop through days and zero the data to be written.
         DO 101 I=IDS,IDF
           IDD=I
           DO 201 J=1,24
-            ICLM(J,1)=0
-            ICLM(J,2)=0
-            ICLM(J,3)=0
-            ICLM(J,4)=0
-            ICLM(J,5)=0
-            ICLM(J,6)=50
+            ICLM(J,1)=0; ICLM(J,2)=0; ICLM(J,3)=0; ICLM(J,4)=0
+            ICLM(J,5)=0; ICLM(J,6)=50
   201     CONTINUE
 
 C Transfer this to the binary file.
@@ -3707,11 +3746,11 @@ C not do the fall-through for site data unless the user asks.
           if(OK)then
             continue
           else
-            goto 552
+            goto 552  ! go back and re-display menu
           endif
         endif
 
-      elseif(isw.eq.4)then
+      elseif(isw.eq.5)then
 
 C Copy standard weather to project folder. Suggest a local
 C file name based on the project root name. Update common to
@@ -3755,6 +3794,8 @@ C but if using GTK then we need the full length to avoid truncation.
         else
           goto 554
         endif
+
+C << convert the next section to work in 144 char space and use dblongdoscopy >>
         call isunix(unixok)
         IF(longtmp(1:2).NE.'  ')then
           write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
@@ -3768,7 +3809,7 @@ C but if using GTK then we need the full length to avoid truncation.
 
 C Similar logic but using DCLIM.
               message='getting climate file from '
-              call dbdoscopy(DCLIM,lcopy,message,doit,ier)
+              call dblongdoscopy(DCLIM,lcopy,message,doit,ier)
             endif
             call runit(doit,'-')
             LCLIM=longtmp
@@ -3781,7 +3822,7 @@ C Similar logic but using DCLIM.
 
 C Similar logic but using LCLIM.
               message='getting weather file from '
-              call dbdoscopy(llclmdb,lcopy,message,doit,ier)
+              call dblongdoscopy(llclmdb,lcopy,message,doit,ier)
             endif
             call runit(doit,'-')
 
@@ -3827,7 +3868,7 @@ C latitude & longitude and year pop-up over the climate module.
           goto 554
         endif
 
-      elseif(isw.eq.5)then
+      elseif(isw.eq.6)then
 
 C Weather >> ascii export.  If current weather is
 C in standard folder start ASCII name in users home folder.
@@ -3868,7 +3909,7 @@ C to asking clm to do the conversion.
         call runit(doit,tmode)
         goto 552  ! jump to redisplay menu.
 
-      elseif(isw.eq.6)then
+      elseif(isw.eq.7)then
 
 C Climate ascii >> weather import.
 C Confirm suggested name and then write out binary file.
@@ -3933,7 +3974,7 @@ C Assign weather file name based on longtmp location via findwhichdbpath.
 C After clm module run there will be a new binary file so fall
 C through to the code near line 4700 to check contents.
 
-      elseif(isw.eq.7)then
+      elseif(isw.eq.8)then
 
 C EPW >> weather import
 C Confirm suggested name and then write out binary file.
@@ -4041,7 +4082,7 @@ C Check if weather site and model site differ.
         endif
       ENDIF
 
-C Update year.  This is similarlogic as is used in esystem.F ~line 1569
+C Update year.  This is similar logic as is used in esystem.F ~line 1569
       if(icyear.eq.iyear)then
         continue
       else 
@@ -4802,7 +4843,7 @@ C Passed parameters:
                           ! mlc = constructions  opt = optics
                           ! pdb = plant components  prs = pressure coef
                           ! msc = active components  mld = mould isopleths
-                          ! pro = event profiles
+                          ! pro = event profiles  clm = weather
       logical copydef     ! copy the default file or current file
       logical allowbrowse ! whether browse of common folder allowed
       integer numhelp     ! number of help lines from calling code
@@ -4933,6 +4974,15 @@ C Setup assumptions based on topic.
           write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
      &      LPRFDB(1:lnblnk(LPRFDB))
         endif
+      elseif(topic(1:3).eq.'clm')then
+        defaultfile=DCLIM
+        sourcemsg='Weather file (in common).'
+        if(ipathclim.eq.0.or.ipathclim.eq.1)then
+          lguess=LCLIM
+        elseif(ipathclim.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LCLIM(1:lnblnk(LCLIM))
+        endif
 
       endif
 
@@ -5011,6 +5061,8 @@ C        endif
           ipathmould=1  ! signal that it will be a local file.
         elseif(topic(1:3).eq.'pro')then
           ipathprodb=1  ! signal that it is a local file.
+        elseif(topic(1:3).eq.'clm')then
+          ipathclim=1   ! signal that it is a local file.
         else
 
         endif
@@ -5117,6 +5169,9 @@ C If it exists then update the common block name.
           elseif(topic(1:3).eq.'pro')then
             write(LPRFDB,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
      &        fname(1:lnblnk(fname))
+          elseif(topic(1:3).eq.'clm')then
+            write(LCLIM,'(3a)') dbspth(1:lnblnk(dbspth)),fs,
+     &        fname(1:lnblnk(fname))
           else
 
           endif
@@ -5147,6 +5202,8 @@ C Signal that file is a local to model.
           ipathmould=1
         elseif(topic(1:3).eq.'pro')then
           ipathprodb=1
+        elseif(topic(1:3).eq.'clm')then
+          ipathclim=1
         else
 
         endif
@@ -5164,6 +5221,9 @@ C usemodeldbsfile is a general facility to browse files in the
 C model ../dbs folder. All files in the ../dbs folder will 
 C be added to a menu list for selection. Selected file becomes
 C the current common file type and is returned via lltmp.
+
+C << consider extending logic to include weather file in ../dbs folder >>
+
       subroutine usemodeldbsfile(topic,numhelp,lltmp,istat,moddb)
 #include "building.h"
 #include "model.h"
@@ -5178,7 +5238,7 @@ C Passed parameters:
                           ! mlc = constructions  opt = optics
                           ! pdb = plant components  prs = pressure coef
                           ! msc = active components  mld = mould isopleths
-                          ! pro = event profiles
+                          ! pro = event profiles  clm = weather
       integer numhelp     ! number of help lines from calling code
       character lltmp*144 ! the returned file name
       integer istat       ! return status index for calling code
@@ -5278,6 +5338,14 @@ C users and the guess for file name.
           write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
      &      LPRFDB(1:lnblnk(LPRFDB))
         endif
+      elseif(topic(1:3).eq.'clm')then
+        sourcemsg='weather file (in ../dbs).'
+        if(ipathclim.eq.0.or.ipathclim.eq.1)then
+          lguess=LCLIM
+        elseif(ipathclim.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LCLIM(1:lnblnk(LCLIM))
+        endif
       endif
 
 C Remind user the current common data file.
@@ -5345,6 +5413,9 @@ C User did not select a file. Take them back to the question.
       elseif(topic(1:3).eq.'pro')then
         ipathprodb=1  ! signal that it is a local file.
         write(LPRFDB,'(a)') fname(1:lnblnk(fname))
+      elseif(topic(1:3).eq.'clm')then
+        ipathclim=1  ! signal that it is a local file.
+        write(LCLIM,'(a)') fname(1:lnblnk(fname))
       else
 
       endif
@@ -5376,7 +5447,7 @@ C Passed parameters:
                           ! mlc = constructions  opt = optics
                           ! pdb = plant components  prs = pressure coef
                           ! msc = active components  mld = mould isopleths
-                          ! pro = event profiles
+                          ! pro = event profiles  clm = weather
       integer numhelp     ! number of help lines from calling code
       character lltmp*144 ! the returned file name
       integer istat       ! return status index for calling code
@@ -5478,6 +5549,14 @@ C users and the guess for file name.
           write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
      &      LPRFDB(1:lnblnk(LPRFDB))
         endif
+      elseif(topic(1:3).eq.'clm')then
+        sourcemsg='weather file (in common).'
+        if(ipathclim.eq.0.or.ipathclim.eq.1)then
+          lguess=LCLIM
+        elseif(ipathclim.eq.2)then
+          write(lguess,'(3a)') standarddbpath(1:lndbp),fs,
+     &      LCLIM(1:lnblnk(LCLIM))
+        endif
       endif
 
 C Remind user the current common data file.
@@ -5547,6 +5626,9 @@ C User did not select a file. Take them back to the question.
       elseif(topic(1:3).eq.'pro')then
         ipathprodb=2  ! signal that it is a common file.
         write(LPRFDB,'(a)') snpfile(1:lnblnk(snpfile))
+      elseif(topic(1:3).eq.'clm')then
+        ipathclim=2   ! signal that it is a common file.
+        write(LCLIM,'(a)') snpfile(1:lnblnk(snpfile))
       else
 
       endif
