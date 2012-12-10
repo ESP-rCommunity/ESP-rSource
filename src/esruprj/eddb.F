@@ -3341,7 +3341,7 @@ C Calendar.
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER :: icalender,nbcaldays,nbdaytype
 
-      CHARACTER DFILE*72,LLASCI*144,lltmp*144
+      CHARACTER DFILE*72,LLASCI*144,lltmp*144,ltmp*96
       character longtfile*144,longtafile*144,message*48,longtmp*144
       CHARACTER DOIT*248,fs*1,TMODE*8,CLMLOC*30,LCOPY*144
       CHARACTER OUTS*124,APP*6,ext*4,llclmdb*144
@@ -3349,12 +3349,13 @@ C Calendar.
       character dinstpath*60,path*72
       character dirpath*72
       CHARACTER*72 NNAME
+      character gdef*72          ! fall back file name
       dimension ICLM(24,6)
       integer llt  ! length of string buffer
       integer ier
       integer icreport  ! to signal that calendar has been updated.
       integer IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY  ! for correcting calendar
-      logical closelat,closelong
+      logical closelat,closelong,clkok
       
 #ifdef OSI
       integer ICPMOD     ! passed from tchild
@@ -3645,26 +3646,22 @@ C Set-up minimal common block, create a new weather file, populate
 C it with zeros and present editing facility.
         lr=lnblnk(cfgroot)
         if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-          write(longtmp,'(2a)') cfgroot(1:lr),'.climate'
+          write(ltmp,'(2a)') cfgroot(1:lr),'.climate'
         else
-          write(longtmp,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+          write(ltmp,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
      &        cfgroot(1:lr),'.climate'
         endif
 
-C If using X11 assume that the full path is less than 96 chars
-C but if using GTK then we need the full length to avoid truncation.
-        iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(longtmp,'New weather file (full of zeros)',
-     &      'Confirm:',96,DCLIM,'climate file name',IER,nbhelp)
-        elseif(iglib.eq.2)then
-          CALL EASKF(longtmp,'New weather file (full of zeros)',
-     &      'Confirm:',144,DCLIM,'climate file name',IER,nbhelp)
-        else
-          CALL EASKF(longtmp,'New weather file (full of zeros)',
-     &      'Confirm:',96,DCLIM,'climate file name',IER,nbhelp)
+        clkok=.false.
+        CALL EASKSCNCL(ltmp,
+     &    'Suggested name of the model copy of standard file.',
+     &    'Confirm:','cancel',clkok,96,DCLIM,'copied file',IER,numhelp)
+        if(clkok)then
+          moddb=.false.
+          goto 552
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
+        write(longtmp,'(a)') ltmp  ! cast file name to longer buffer
 
 C Create a blank climate file (code similar to clm.F).
         moddb=.true.
@@ -3768,52 +3765,50 @@ C reflect it is local.
         endif
         lr=lnblnk(cfgroot)
         if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
-          write(longtmp,'(2a)') cfgroot(1:lr),'.climate'
+          write(ltmp,'(2a)') cfgroot(1:lr),'.climate'
         else
-          write(longtmp,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
+          write(ltmp,'(4a)') dbspth(1:lnblnk(dbspth)),fs,
      &        cfgroot(1:lr),'.climate'
         endif
 
-C If using X11 assume that the full path is less than 96 chars
-C but if using GTK then we need the full length to avoid truncation.
- 554    iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-        if(iglib.eq.1.or.iglib.eq.3)then
-          CALL EASKF(longtmp,'Weather file (in model)','Confirm:',
-     &      96,DCLIM,'climate file name',IER,nbhelp)
-        elseif(iglib.eq.2)then
-          CALL EASKF(longtmp,'Weather file (in model)','Confirm:',
-     &      144,DCLIM,'climate file name',IER,nbhelp)
-        else
-          CALL EASKF(longtmp,'Weather file (in model)','Confirm:',
-     &      96,DCLIM,'climate file name',IER,nbhelp)
+ 554    clkok=.false.
+        CALL EASKSCNCL(ltmp,
+     &    'Suggested name of the model copy of standard file.',
+     &    'Confirm:','cancel',clkok,96,DCLIM,'copied file',IER,numhelp)
+        if(clkok)then
+          moddb=.false.
+          goto 552
         endif
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
+        write(longtmp,'(a)') ltmp  ! cast file name to longer buffer
 
         if(longtmp(1:2).ne.'  '.and.longtmp(1:4).ne.'UNKN')then
           LCLIM=longtmp
+          ipathclim=1   ! signal that it is a local file.
         else
           goto 554
         endif
 
-C << convert the next section to work in 144 char space and use dblongdoscopy >>
         call isunix(unixok)
         IF(longtmp(1:2).NE.'  ')then
           write(LCOPY,'(3a)') path(1:lnblnk(path)),fs,
-     &        longtmp(1:lnblnk(longtmp))
+     &      longtmp(1:lnblnk(longtmp))
           if(copydef)then
+
+C Copy the default weather file (dclim) to the model folder.
             doit = ' '
             if(unixok)then
               write(doit,'(4a)',IOSTAT=IOS) 'cp ',
      &          DCLIM(1:lnblnk(DCLIM)),' ',LCOPY(1:lnblnk(LCOPY))
             else
-
-C Similar logic but using DCLIM.
               message='getting climate file from '
               call dblongdoscopy(DCLIM,lcopy,message,doit,ier)
             endif
             call runit(doit,'-')
             LCLIM=longtmp
           else
+
+C Copy the current common weather file to the model folder.
             doit = ' '
             if(unixok)then
               write(doit,'(4a)',IOSTAT=IOS) 'cp ',
@@ -3826,14 +3821,8 @@ C Similar logic but using LCLIM.
             endif
             call runit(doit,'-')
 
-C Assign weather file name based on longtmp location via findwhichdbpath.
-            call findwhichdbpath('clm',longtmp,ier)
-            if(ipathclim.eq.0.or.ipathclim.eq.1)then
-              llclmdb=LCLIM
-            elseif(ipathclim.eq.2)then
-              write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
-     &          LCLIM(1:lnblnk(LCLIM))
-            endif
+C Assign weather file name to pass to the clm application.
+            llclmdb=LCLIM
           endif
           moddb=.true.
           call tstamp('>','PRJ: start clm')
@@ -3842,11 +3831,7 @@ C Assign weather file name based on longtmp location via findwhichdbpath.
           call termode(ICPMOD,tmode)
 
 C Take into account location.
-          if(ipathclim.eq.0.or.ipathclim.eq.1)then
-            call addpath(llclmdb,longtfile,concat)
-          elseif(ipathclim.eq.2)then
-            longtfile=llclmdb
-          endif
+          call addpath(llclmdb,longtfile,concat)
 
 C Clm is started up in forground mode because when it was starting
 C up in background mode the questions about whether to use its
@@ -3870,16 +3855,23 @@ C latitude & longitude and year pop-up over the climate module.
 
       elseif(isw.eq.6)then
 
-C Weather >> ascii export.  If current weather is
-C in standard folder start ASCII name in users home folder.
-C Confirm suggested name and then write out asci file.
+C Weather >> ascii export.  If current weather is in standard
+C folder or model folder put it in the model ../dbs folder.
         DFILE='./climate.a'
         if(ipathclim.eq.0.or.ipathclim.eq.1)then
           write(LLASCI,'(2a)') LCLIM(1:lnblnk(LCLIM)),'.a'
         elseif(ipathclim.eq.2)then
-          write(LLASCI,'(4a)') path(1:lnblnk(path)),fs,
-     &      LCLIM(1:lnblnk(LCLIM)),'.a'
+          if(dbspth(1:2).eq.'  '.or.dbspth(1:2).eq.'./')then
+            write(LLASCI,'(4a)') path(1:lnblnk(path)),fs,
+     &        LCLIM(1:lnblnk(LCLIM)),'.a'
+          else
+            write(LLASCI,'(6a)') path(1:lnblnk(path)),fs,
+     &        dbspth(1:lnblnk(dbspth)),fs,LCLIM(1:lnblnk(LCLIM)),'.a'
+          endif
         endif
+
+C Confirm suggested name and then write out asci file. In GTK the full
+C path is returned.
         iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
         if(iglib.eq.1.or.iglib.eq.3)then
           CALL EASKF(LLASCI,'Export ASCII weather file','Confirm:',
@@ -3901,6 +3893,10 @@ C to asking clm to do the conversion.
           longtfile=llclmdb
         endif
         call addpath(LLASCI,longtafile,concat)
+
+C Debug.
+C        write(6,*) 'llasci ',LLASCI(1:lnblnk(LLASCI))
+C        write(6,*) 'longtafile ',longtafile(1:lnblnk(longtafile))
         call tstamp('>','PRJ: start clm for conversion')
         doit = ' '
         write(doit,'(4a)') 'clm -mode text -file ',
