@@ -3348,7 +3348,6 @@ C Calendar.
       LOGICAL OK,concat,COPYDEF,MODDB,XST,DOK,UNIXOK
       character dinstpath*60,path*72
       character dirpath*72
-      character dq*1      ! double quote
       CHARACTER*72 NNAME
       character gdef*72          ! fall back file name
       dimension ICLM(24,6)
@@ -3375,10 +3374,8 @@ C Set folder separator (fs) to \ or / as required.
       call isunix(unixok)
       if(unixok)then
         fs = char(47)
-        dq = char(34)
       else
         fs = char(92)
-        dq = char(34)
       endif
 
 C Setup string buffer with distribution weather folder name.
@@ -3470,9 +3467,10 @@ C If file exists read it and enter editing facility.
         CALL ERPFREE(ICLIM,ISTAT)
 
 C Get logical name of child process terminal type, expand climate 
-C name to include the path and create a string to drive clm. To
-C cope with the case of spaces in model path use double quotes
-C around the file for native windows.
+C name to include the path and create a string to drive clm.
+
+C << update to deal with dos paths >>
+
         call tstamp('>','PRJ: start clm')
         doit = ' '
         call tchild(ICPMOD)
@@ -3483,23 +3481,12 @@ C around the file for native windows.
           longtfile=llclmdb
         endif
         if(iappw.gt.0.and.iappw.le.200)then
-          if(unixok)then
-            write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
+          write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
      &        ' -s ',iappw,iappx+10,iappy+10,' -file ',
      &        longtfile(1:lnblnk(longtfile))
-          else
-            write(doit,'(3a,3i4,4a)') 'clm -mode ',tmode,
-     &        ' -s ',iappw,iappx+10,iappy+10,' -file ',
-     &        dq,longtfile(1:lnblnk(longtfile)),dq
-          endif
         else
-          if(unixok)then
-            write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
+          write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
      &        longtfile(1:lnblnk(longtfile))
-          else
-            write(doit,'(6a)') 'clm -mode ',tmode,' -file ',
-     &        dq,longtfile(1:lnblnk(longtfile)),dq
-          endif
         endif
         call runit(doit,tmode)
 
@@ -3585,23 +3572,12 @@ C use the editing facility.
               longtfile=llclmdb
             endif
             if(iappw.gt.0.and.iappw.le.200)then
-              if(unixok)then
-                write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
+              write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
      &            ' -s ',iappw,iappx+10,iappy+10,' -file ',
      &            longtfile(1:lnblnk(longtfile))
-              else
-                write(doit,'(3a,3i4,4a)') 'clm -mode ',tmode,
-     &            ' -s ',iappw,iappx+10,iappy+10,' -file ',
-     &            dq,longtfile(1:lnblnk(longtfile)),dq
-              endif
             else
-              if(unixok)then
-                write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
+              write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
      &            longtfile(1:lnblnk(longtfile))
-              else
-                write(doit,'(6a)') 'clm -mode ',tmode,' -file ',
-     &            dq,longtfile(1:lnblnk(longtfile)),dq
-              endif
             endif
             call runit(doit,tmode)
           else
@@ -3642,23 +3618,12 @@ C use the editing facility.
                 longtfile=lltmp
               endif
               if(iappw.gt.0.and.iappw.le.200)then
-                if(unixok)then
-                  write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
-     &              ' -s ',iappw,iappx+10,iappy+10,' -file ',
-     &              longtfile(1:lnblnk(longtfile))
-                else
-                  write(doit,'(3a,3i4,4a)') 'clm -mode ',tmode,
-     &              ' -s ',iappw,iappx+10,iappy+10,' -file ',
-     &              dq,longtfile(1:lnblnk(longtfile)),dq
-                endif
+                write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
+     &            ' -s ',iappw,iappx+10,iappy+10,' -file ',
+     &            longtfile(1:lnblnk(longtfile))
               else
-                if(unixok)then
-                  write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
-     &              longtfile(1:lnblnk(longtfile))
-                else
-                  write(doit,'(6a)') 'clm -mode ',tmode,' -file ',
-     &              dq,longtfile(1:lnblnk(longtfile)),dq
-                endif
+                write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
+     &            longtfile(1:lnblnk(longtfile))
               endif
               call runit(doit,tmode)
             else
@@ -3761,23 +3726,12 @@ C Take into account location for clm command parameters.
             longtfile=llclmdb
           endif
           if(iappw.gt.0.and.iappw.le.200)then
-            if(unixok)then
-              write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
+            write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
      &          ' -s ',iappw,iappx+10,iappy+10,' -file ',
      &          longtfile(1:lnblnk(longtfile))
-            else
-              write(doit,'(3a,3i4,4a)') 'clm -mode ',tmode,
-     &          ' -s ',iappw,iappx+10,iappy+10,' -file ',
-     &          dq,longtfile(1:lnblnk(longtfile)),dq
-            endif
           else
-            if(unixok)then
-              write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
+            write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
      &          longtfile(1:lnblnk(longtfile))
-            else
-              write(doit,'(6a)') 'clm -mode ',tmode,' -file ',
-     &          dq,longtfile(1:lnblnk(longtfile)),dq
-            endif
           endif
           call runit(doit,tmode)
 
@@ -3883,23 +3837,12 @@ C Clm is started up in forground mode because when it was starting
 C up in background mode the questions about whether to use its
 C latitude & longitude and year pop-up over the climate module.
           if(iappw.gt.0.and.iappw.le.200)then
-            if(unixok)then
-              write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
+            write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
      &          ' -s ',iappw,iappx+10,iappy+10,' -file ',
      &          longtfile(1:lnblnk(longtfile))
-            else
-              write(doit,'(3a,3i4,4a)') 'clm -mode ',tmode,
-     &          ' -s ',iappw,iappx+10,iappy+10,' -file ',
-     &          dq,longtfile(1:lnblnk(longtfile)),dq
-            endif
           else
-            if(unixok)then
-              write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
+            write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
      &          longtfile(1:lnblnk(longtfile))
-            else
-              write(doit,'(6a)') 'clm -mode ',tmode,' -file ',
-     &          dq,longtfile(1:lnblnk(longtfile)),dq
-            endif
           endif
           CALL ASKOK(' ','Browse/edit copied climate data?',
      &      OK,dok,nbhelp)
@@ -3956,16 +3899,9 @@ C        write(6,*) 'llasci ',LLASCI(1:lnblnk(LLASCI))
 C        write(6,*) 'longtafile ',longtafile(1:lnblnk(longtafile))
         call tstamp('>','PRJ: start clm for conversion')
         doit = ' '
-        if(unixok)then
-          write(doit,'(4a)') 'clm -mode text -file ',
-     &      longtfile(1:lnblnk(longtfile)),' -act bin2asci silent ',
-     &      longtafile(1:lnblnk(longtafile))
-        else
-          write(doit,'(8a)') 'clm -mode text -file ',
-     &      dq,longtfile(1:lnblnk(longtfile)),dq,
-     &      ' -act bin2asci silent ',
-     &      dq,longtafile(1:lnblnk(longtafile)),dq
-        endif
+        write(doit,'(4a)') 'clm -mode text -file ',
+     &    longtfile(1:lnblnk(longtfile)),' -act bin2asci silent ',
+     &    longtafile(1:lnblnk(longtafile))
         call runit(doit,tmode)
         goto 552  ! jump to redisplay menu.
 
@@ -4017,16 +3953,9 @@ C to asking clm to do the conversion.
         call addpath(LLASCI,longtafile,concat)
         call tstamp('>','PRJ: start clm for conversion')
         doit = ' '
-        if(unixok)then
-          write(doit,'(4a)') 'clm -mode text -file ',
-     &      longtfile(1:lnblnk(longtfile)),' -act asci2bin silent ',
-     &      longtafile(1:lnblnk(longtafile))
-        else
-          write(doit,'(8a)') 'clm -mode text -file ',dq,
-     &      longtfile(1:lnblnk(longtfile)),dq,
-     &      ' -act asci2bin silent ',
-     &      dq,longtafile(1:lnblnk(longtafile)),dq
-        endif
+        write(doit,'(4a)') 'clm -mode text -file ',
+     &    longtfile(1:lnblnk(longtfile)),' -act asci2bin silent ',
+     &    longtafile(1:lnblnk(longtafile))
         call runit(doit,tmode)
 
 C Assign weather file name based on longtmp location via findwhichdbpath.
@@ -4089,16 +4018,9 @@ C to asking clm to do the conversion.
         call addpath(LLASCI,longtafile,concat)
         call tstamp('>','PRJ: start clm for conversion')
         doit = ' '
-        if(unixok)then
-          write(doit,'(4a)') 'clm -mode text -file ',
+        write(doit,'(4a)') 'clm -mode text -file ',
      &      longtfile(1:lnblnk(longtfile)),' -act epw2bin silent ',
      &      longtafile(1:lnblnk(longtafile))
-        else
-          write(doit,'(8a)') 'clm -mode text -file ',dq,
-     &      longtfile(1:lnblnk(longtfile)),dq,
-     &      ' -act epw2bin silent ',
-     &      dq,longtafile(1:lnblnk(longtafile)),dq
-        endif
         call runit(doit,tmode)
 
 C Assign weather file name based on longtmp location via findwhichdbpath.
