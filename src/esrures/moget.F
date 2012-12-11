@@ -520,7 +520,7 @@ C SLIST=.true. which are asked for all active zones (listed in NZNO).
       SLIST=.FALSE.   ! do we need to ask about surfaces
       NLIST=.FALSE.
       MRTLIST=.FALSE.
-      AGRLIST=.FALSE. ! assume heating & cooling loads separately drawn
+      AGRLIST=.FALSE. ! assume heating & cooling & lighting loads separately drawn
       IAC=0; NSEL=0; IZONE=0; ISFN=0  ! initial values
       ireportunit=0 ! assume normal units for reports
 
@@ -4279,7 +4279,6 @@ C If izver >= 4 the read the data directly for individual items.
 
 C For each of the currently selected zones call getallcas and add to
 C aggregate figure for occupant, lights, small power or lights+smallpower.
-C Also do the model dispersed demands here....
             N=24*NTS
             do i=1,N
               AGR(i)=0.0  ! clear the AGR array
@@ -4318,7 +4317,7 @@ C for each zone factor it by the base area of that zone.
                 else
                   AGR(J2)=0.0
                 endif
-              ENDDO
+              ENDDO  ! of j2 loop
               CALL XTVAL1(AGR,ISTART,IEND,KGET)
             endif
           endif
