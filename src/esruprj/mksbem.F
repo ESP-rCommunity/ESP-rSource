@@ -8233,7 +8233,11 @@ C Air conditioned
           ELSEIF(IDHWLZ(ICDHW).LT.0)THEN
             INDX=-1*IDHWLZ(ICDHW)
             DHW_efficiency=Heating_efficiency
-            DHW_efficiency=HeatSCoP_N(IHLZ(ICDHW))
+            if(IHLZ(ICDHW).eq.0)then
+              DHW_efficiency=0.0
+            else
+              DHW_efficiency=HeatSCoP_N(IHLZ(ICDHW))
+            endif
           ENDIF
         ENDIF
 
