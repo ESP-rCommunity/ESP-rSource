@@ -312,7 +312,7 @@ C Record ACC actions (begin).
 
 C Debug.
         call isunix(unixok)
-	if(unixok)then
+        if(unixok)then
           write(6,*)
           write(6,*) 'Initiating CFD sim with following parameters:'
           if(INCALU) write(6,*) '  U-momentum active'

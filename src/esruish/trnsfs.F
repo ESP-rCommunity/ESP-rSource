@@ -507,13 +507,13 @@ C common block.
           yc(ib)=YB(ib)
   42    continue
         zc(1)=ZB(5)
-	zc(2)=ZB(6)
-	zc(3)=ZB(7)
-	zc(4)=ZB(8)
-	zc(5)=ZB(1)
-	zc(6)=ZB(2)
-	zc(7)=ZB(3)
-	zc(8)=ZB(4)
+        zc(2)=ZB(6)
+        zc(3)=ZB(7)
+        zc(4)=ZB(8)
+        zc(5)=ZB(1)
+        zc(6)=ZB(2)
+        zc(7)=ZB(3)
+        zc(8)=ZB(4)
       elseif(BLOCKTYP(iz,ibn)(1:4).eq.'obs3')then
         CALL CNVBLK3A(XOB(iz,ibn),YOB(iz,ibn),ZOB(iz,ibn),
      &    DXOB(iz,ibn),DYOB(iz,ibn),DZOB(iz,ibn),
@@ -527,13 +527,13 @@ C common block.
           yc(ib)=YB(ib)
   43    continue
         zc(1)=ZB(5)
-	zc(2)=ZB(6)
-	zc(3)=ZB(7)
-	zc(4)=ZB(8)
-	zc(5)=ZB(1)
-	zc(6)=ZB(2)
-	zc(7)=ZB(3)
-	zc(8)=ZB(4)
+        zc(2)=ZB(6)
+        zc(3)=ZB(7)
+        zc(4)=ZB(8)
+        zc(5)=ZB(1)
+        zc(6)=ZB(2)
+        zc(7)=ZB(3)
+        zc(8)=ZB(4)
       elseif(BLOCKTYP(iz,ibn)(1:4).eq.'obsp')then
         CALL CNVBLKP(iz,ibn) ! convert obsp type.
 
@@ -545,13 +545,13 @@ C common block.
           yc(ib)=YB(ib)
   44    continue
         zc(1)=ZB(5)
-	zc(2)=ZB(6)
-	zc(3)=ZB(7)
-	zc(4)=ZB(8)
-	zc(5)=ZB(1)
-	zc(6)=ZB(2)
-	zc(7)=ZB(3)
-	zc(8)=ZB(4)
+        zc(2)=ZB(6)
+        zc(3)=ZB(7)
+        zc(4)=ZB(8)
+        zc(5)=ZB(1)
+        zc(6)=ZB(2)
+        zc(7)=ZB(3)
+        zc(8)=ZB(4)
       endif
 
       if(tok)then

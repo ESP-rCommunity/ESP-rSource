@@ -1242,7 +1242,7 @@ C *********************************************************************
  10   CONTINUE
 
 C Solve the steady state part of the analytical solution, and find the
-C eigen values.	
+C eigen values.
 C Solve the steady state term.
       NL=NLayer
       I=ILayer
