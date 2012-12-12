@@ -54,6 +54,8 @@ C QLAT   - latent load for present (1) and future (2) time step.
 #include "tdf2.h"
 #include "sbem.h"
 #include "power.h"
+#include "dhw_parameters.h"
+#include "dhw_common.h"
 
       common/tc/itc,icnt
       common/trc/itrc
@@ -213,7 +215,7 @@ C.....Named constants for timerows
       integer iFuture
       parameter (iFuture=2) 
       common/wkdtyp/idwe1,idwe2,wkd1,wkd2
-      integer imonth !current month at simulation time (to accumulate monthly results)
+      integer imonth_iter !current month at simulation time (to accumulate monthly results)
       integer idayn  
       logical closer
 
@@ -452,7 +454,8 @@ C Also display lighting TMAR(IFOC,7) is added for 24hrs every day
 C Establish solar data.
         CALL MZSINT(ICOMP,QDIR,QDIF)
         CALL LUMEFF(QDIF,QDIR,SALT,IDYP,skyeff,suneff)
-        PI = 4.0 * ATAN(1.0)
+!        The below PI definition is now provided from dhw_parameters.h
+!        PI = 4.0 * ATAN(1.0) 
         E_ext=QDIF*skyeff + QDIR *suneff*sin(salt*PI/180.0)
 
 C Convert units to klux (DF are in %) following SBEM manual units.
@@ -655,8 +658,8 @@ C (number of timesteps) to use it in results.
 C Initialise LGHT_ncm_Energy(icomp)
           if(i_countsteps(icomp).eq.1)then
             LGHT_ncm_Energy(icomp)=0.
-            do 333 imonth=1,12
-              fmonthLGHT_ncm_Energy(imonth,icomp)=0.
+            do 333 imonth_iter=1,12
+              fmonthLGHT_ncm_Energy(imonth_iter,icomp)=0.
  333        continue
           endif          
 
@@ -672,9 +675,9 @@ C for the next simulation
      &        ctlperlightl(icomp,2)    
 
 C determine month number by calling edayr
-            call edayr(idyp,idayn,imonth)
-            fmonthLGHT_ncm_Energy(imonth,icomp)=
-     &          fmonthLGHT_ncm_Energy(imonth,icomp)+ 
+            call edayr(idyp,idayn,imonth_iter)
+            fmonthLGHT_ncm_Energy(imonth_iter,icomp)=
+     &          fmonthLGHT_ncm_Energy(imonth_iter,icomp)+ 
      &          ctlperlightc(icomp,2)+ctlperlightr(icomp,2)+
      &          ctlperlightl(icomp,2)       
           endif
