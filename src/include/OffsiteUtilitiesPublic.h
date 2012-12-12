@@ -1,3 +1,4 @@
+C     OffsiteUtilitiesPublic.h
 
 C-----------------------------------------------------------------------
 C     This file contains data structures used to track fuel consumption,
@@ -27,18 +28,18 @@ C.....Supported end-uses
       parameter ( iNumUses = 7 )
       integer iUseSpaceHeat, iUseSpaceCool, iUseDHW,
      &        iUseLights, iUseEquipment, iUseUncatagorized,
-     &        iUseHRV 
+     &        iUseHRV
       parameter ( iUseSpaceHeat     = 1,
      &            iUseSpaceCool     = 2,
      &            iUseDHW           = 3,
      &            iUseLights        = 4,
      &            iUseEquipment     = 5,
      &            iUseUncatagorized = 6,
-     &            iUseHRV           = 7 )
+     &            iUseHRV           = 7)
 
 C.....Number of "components" in ESP-r that report data to OffsiteUtilities
       integer iNumOffsiteUtilComp
-      parameter ( iNumOffsiteUtilComp = 4 )
+      parameter ( iNumOffsiteUtilComp = 6 )
 
 C.....Named constants for components that report data
 
@@ -54,6 +55,11 @@ C.....Named constants for components that report data
       integer iIdealVent
       parameter ( iIdealVent = 4 )       ! Ideal Ventilation/HRV model (CentralVentSys.F)
 
+      integer iPowoc
+      parameter ( iPowoc = 5 )       ! Power only components (powoc_calc.F)
+
+      integer iCasual_NG
+      parameter ( iCasual_NG = 6 )       ! Power only components (powoc_calc.F)
 C-----------------------------------------------------------------------
 C     Named constants used to describe plt/pfs loads and
 C     energy conversion.
@@ -67,13 +73,13 @@ C-----------------------------------------------------------------------
 !       parameter ( iDomainPfs = 2 )     ! Electric domain
 
 C.....Types of end-use loads
-      integer iLoadCount
-      parameter ( iLoadCount = 4 )
-      integer iLoadSpaceH, iLoadSpaceC, iLoadWaterH, iLoadElec
-      parameter ( iLoadSpaceH = 1 )            ! Space heating
-      parameter ( iLoadSpaceC = 2 )            ! Space cooling 
-      parameter ( iLoadWaterH = 3 )            ! Water heating 
-      parameter ( iLoadElec   = 4 )            ! electric loads 
+!       integer iLoadCount
+!       parameter ( iLoadCount = 4 )
+!       integer iLoadSpaceH, iLoadSpaceC, iLoadWaterH, iLoadElec
+!       parameter ( iLoadSpaceH = 1 )            ! Space heating
+!       parameter ( iLoadSpaceC = 2 )            ! Space cooling 
+!       parameter ( iLoadWaterH = 3 )            ! Water heating 
+!       parameter ( iLoadElec   = 4 )            ! electric loads 
 
 ! C.....Types of generation
 !       integer ( iGenCount = 3 )
@@ -139,7 +145,7 @@ C.....Propane
       data cFuelDesc(iPropane) /'propane'/
       data iFuelDescLen(iPropane) /7/
 
-      data cFuelUnit(iPropane) /'(m3/s)'/
+      data cFuelUnit(iPropane) /'(l/s)'/
       data iFuelUnitLen(iPropane) /6/
 
 C.....HardWood
@@ -237,3 +243,4 @@ C.....Ventilation/HRV
 
       data cUseDesc(iUseHRV) /'ventilation'/
       data iUseDescLen(iUseHRV) /11/
+

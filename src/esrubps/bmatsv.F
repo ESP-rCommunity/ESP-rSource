@@ -526,8 +526,8 @@ C process file if necessary
         if ( bLookup_data_err ) bLookup_data_defined = .false.
       endif
 
-C Zero Site energy usage storage array
-      call ZeroFuelEnergyStorageArray()
+C Zero energy usage storage arrays
+      call ZeroEnergyStorageArrays()
 
 C Initialize file unit number. This number should correspond
 C to the climate file number. However, the climate file name

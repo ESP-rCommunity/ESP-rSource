@@ -1,3 +1,5 @@
+C     OffsiteUtilitiesPrivate.h
+
 C-----------------------------------------------------------------------
 C     This file contains data structures used to track fuel consumption,
 C     costs and green-house-gas emissions associated with a building's
@@ -5,22 +7,38 @@ C     energy use. These data are private, and are only used withn
 C     the offsite utilities facility.
 C-----------------------------------------------------------------------
 
+
 C.....Counters
-      integer iComponent, iFuel, iEndUse
+      integer iSiteComp, iFuel, iEndUse, iPltComp, iPowocComp, iZone
 
-      common/EnergyUse/fSiteEnergyUse, fPltEnergyUse
 
+C     Commons storing energy use by site utility or plant component
+      common/EnergyUse/fSiteEnergyUse, fPltEnergyUse, fPowocEnergyUse,
+     &  fCasualNGEnergyUse
 C.....Common storing site-wide energy use
       real fSiteEnergyUse(iNumOffsiteUtilComp, iNumFuel, iNumUses)
-
 C.....Common storing energy use specific to plant components
-C.....(MPCom is the maximum number of plant components.)
+C       MPCom (maximum number of plant components) is provided by plant.h
       real fPltEnergyUse(MPCom, iNumFuel, iNumUses)
+C.....Common storing energy use specific to Power only components
+C       MPOWCOM (maximum number of power only components) is provided by power.h
+      real fPowocEnergyUse(MPOWCOM, iNumFuel, iNumUses)
+C.....Common storing energy use specific to Casual gain NG components (e.g. NG clothes dryer or stove)
+C       MCOM (maximum number of zones) is provided by building.h
+      real fCasualNGEnergyUse(MCOM, iNumFuel, iNumUses)
 
 C.....Array indicating if energy used by plt components is catagorized, or not.
-      logical bPltUseCatagorized(MPCom, iNumFuel)
       common/PltFuelCatagorize/bPltUseCatagorized
+      logical bPltUseCatagorized(MPCom, iNumFuel)
 
+
+C     Common storing characteristics (energy, mass/volume, GHG) by energy source and end-use
+      common/SiteFuelUse/fTotalEnergyUse,
+     &                   fTotalFuelUse,
+     &                   fTotalGHGEmissions,
+     &                   fEndUseFuelUse,
+     &                   fEndUseEnergyUse,
+     &                   fEndUseGHGEmissions
 C.....Total energy used by fuel type (W)
       real fTotalEnergyUse( iNumFuel )
 C.....Actual fuel consumption (various units)
@@ -33,14 +51,8 @@ C.....Energy use by end-use (W)
 C.....Actual fuel consumption by fuel, end/use (various units)
       real fEndUseFuelUse( iNumFuel, iNumUses )
 C.....Total GHG emmissions  by end-use (kg)
-      real fEndUseGHGEmissions( iNumUses )
+      real fEndUseGHGEmissions(iNumFuel, iNumUses )
 
-      common/SiteFuelUse/fTotalEnergyUse,
-     &                   fTotalFuelUse,
-     &                   fTotalGHGEmissions,
-     &                   fEndUseFuelUse,
-     &                   fEndUseEnergyUse,
-     &                   fEndUseGHGEmissions
 
 C.....Calorific value of fuels
       real fFuelConversionFactor(iNumFuel)
@@ -59,7 +71,7 @@ C      - pellets                    (19800 MJ/Tonne)
 C
 C     NATURAL GAS:    26.8392 M3/GJ
 C     OIL:            25.9578 L/GJ
-C     PROPANE:        39.065  L/GJ (?!?)
+C     PROPANE:        39.065  L/GJ (?!?) Wikipedia says 46 MJ/kg which at 0.51 kg/L results in 42 L/GJ
 C         
 C-----------------------------------------------------------------------
 
