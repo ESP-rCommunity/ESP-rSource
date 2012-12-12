@@ -1591,9 +1591,10 @@ C If reached this point then no surface selected.
             MODBND=.TRUE.
             MODIFY=.TRUE.
             MODLEN=.TRUE.
-            CALL EASKABCD(' None of the suggestions taken:',' ',
-     &        'loop again','set to UNKNOWN','set to EXTERIOR',
-     &        'continue',IRTA,nbhelp)
+            CALL EASKATOG('None of the suggestions taken:',' ',
+     &        'loop again','set UNKNOWN','set EXTERIOR',
+     &        'set SIMILAR','set ADIABATIC','continue',' ',
+     &        IRTA,nbhelp)
             if(irta.eq.1)then
               goto 840
             elseif(irta.eq.2)then
@@ -1602,25 +1603,41 @@ C If reached this point then no surface selected.
               ICT(IC)=-1   ! unknown connection is a -1
               IE2(IC)=0
               IC2(IC)=0
-              if(SO(1:7).ne.'UNKNOWN')then
-                TOTHER(JS,1)='UNKNOWN'
-                write(tother(JS,2),'(i2.2)') IC2(ic)
-                write(tother(JS,3),'(i2.2)') IE2(ic)
-                UPDGEO=.TRUE.
-              endif
+              TOTHER(JS,1)='UNKNOWN'
+              write(tother(JS,2),'(i2.2)') IC2(ic)
+              write(tother(JS,3),'(i2.2)') IE2(ic)
+              UPDGEO=.TRUE.
             elseif(irta.eq.3)then
               IC1(IC)=IZ
               IE1(IC)=JS
               ICT(IC)=0
               IE2(IC)=0
               IC2(IC)=0
-              if(SO(1:7).ne.'EXTERIOR')then
-                TOTHER(JS,1)='EXTERIOR'
-                write(tother(JS,2),'(i2.2)') IC2(ic)
-                write(tother(JS,3),'(i2.2)') IE2(ic)
-                UPDGEO=.TRUE.
-              endif
+              TOTHER(JS,1)='EXTERIOR'
+              write(tother(JS,2),'(i2.2)') IC2(ic)
+              write(tother(JS,3),'(i2.2)') IE2(ic)
+              UPDGEO=.TRUE.
             elseif(irta.eq.4)then
+              IC1(IC)=IZ
+              IE1(IC)=JS
+              ICT(IC)=1
+              IE2(IC)=0
+              IC2(IC)=0
+              TOTHER(JS,1)='SIMILAR'
+              write(tother(JS,2),'(i2.2)') IC2(ic)
+              write(tother(JS,3),'(i2.2)') IE2(ic)
+              UPDGEO=.TRUE.
+            elseif(irta.eq.5)then
+              IC1(IC)=IZ
+              IE1(IC)=JS
+              ICT(IC)=5
+              IE2(IC)=0
+              IC2(IC)=0
+              TOTHER(JS,1)='ADIABATIC'
+              write(tother(JS,2),'(i2.2)') IC2(ic)
+              write(tother(JS,3),'(i2.2)') IE2(ic)
+              UPDGEO=.TRUE.
+            elseif(irta.eq.6)then
               ICNT=0
               goto 110
             endif
@@ -1651,7 +1668,7 @@ C << what about using CALL ESCZONE(ICOMP) and then CALL ERCZONE(ICOMP)? >>
   323     continue
   
 C Debug.
-C          write(6,*) (TOTHER(ij,1),ij=1,10)
+          write(6,*) (TOTHER(ij,1),ij=1,10)
 
           call eclose(gversion(IZ),1.1,0.01,newgeo)
           if(igupgrade.eq.2.and.(.NOT.newgeo))then
@@ -2279,7 +2296,7 @@ C Remind user of surface attributes.
 C Loop through surfaces in the zone and report on which ones match.
               do 91 i=1,nsur
                 icc=izstocn(ivals(iz),i)
-                if(SSMLCN(icc)(1:12).eq.DESC(ISEL)(1:12))then
+                if(SSMLCN(icc)(1:12).eq.mlcname(ISEL)(1:12))then
                   write(sn,'(a)') SSNAME(icc)
                   WRITE(outs,'(2a,F7.2,F5.0,F5.0,1X,A,
      &              1X,A,1X,A,1X,A)') 'Match: ',sn,SSNA(icc),
@@ -2944,7 +2961,7 @@ C Remind user of surface attributes.
 C Loop through surfaces in the zone and report on which ones match.
               do 91 i=1,nsur
                 icc=izstocn(ivals(iz),i)
-                if(SSMLCN(icc)(1:12).eq.DESC(ISEL)(1:12))then
+                if(SSMLCN(icc)(1:12).eq.mlcname(ISEL)(1:12))then
                   write(sn,'(a)') SSNAME(icc)
                   WRITE(outs,'(2a,F7.2,F5.0,F5.0,1X,A,1X,A,
      &              1X,A,1X,A)')'Match: ',sn,SSNA(icc),
@@ -2957,16 +2974,13 @@ C Loop through surfaces in the zone and report on which ones match.
                   CALL ASKOK(' ',outs,OK,dok,nbhelp)
                   IF(OK)then
                     ioc=IZSTOCN(IVALS(IZ),i)
-                    WRITE(SSMLCN(ioc),'(A12)')DESC(ISELR)(1:12)
+                    WRITE(SSMLCN(ioc),'(A12)') mlcname(ISELR)(1:12)
 
-C << If newgeometry then can write out the optical property instead
-C << of TRAN for SSOTF.
+C << this is a place to update ssmlcindex? >>
 
-C << this is a place to update ssmlcindex >>
-
-                    if(DESC(ISELR)(15:18).NE.'OPAQ')SSOTF(ioc)='TRAN'
-                    if(DESC(ISELR)(15:18).EQ.'OPAQ')SSOTF(ioc)='OPAQUE'
-                    if(DESC(ISELR)(15:18).EQ.'CFC ')SSOTF(ioc)='CFC '
+                    if(mlctype(ISELR)(1:4).NE.'OPAQ')SSOTF(ioc)='TRAN'
+                    if(mlctype(ISELR)(1:4).EQ.'OPAQ')SSOTF(ioc)='OPAQUE'
+                    if(mlctype(ISELR)(1:4).EQ.'CFC ')SSOTF(ioc)='CFC '
                   endif
                 endif
  91           continue
@@ -3038,16 +3052,13 @@ C Anchor point substitution.
             icc=izstocn(iz,is)
             LTMP=LGEOM(IZ)
             call georead(IUF,LTMP,IZ,1,iuout,IER)
-            WRITE(SSMLCN(icc),'(A12)')DESC(ISELR)(1:12)
+            WRITE(SSMLCN(icc),'(A12)') mlcname(ISELR)(1:12)
 
-C << If newgeometry then can write out the optical property instead
-C << of TRAN for SSOTF.
+C << this is a place to update ssmlcindex? >>
 
-C << this is a place to update ssmlcindex >>
-
-            IF(DESC(ISELR)(15:18).NE.'OPAQ')SSOTF(icc)='TRAN'
-            IF(DESC(ISELR)(15:18).EQ.'OPAQ')SSOTF(icc)='OPAQUE'
-            IF(DESC(ISELR)(15:18).EQ.'CFC ')SSOTF(icc)='CFC '
+            IF(mlctype(ISELR)(1:4).NE.'OPAQ')SSOTF(icc)='TRAN'
+            IF(mlctype(ISELR)(1:4).EQ.'OPAQ')SSOTF(icc)='OPAQUE'
+            IF(mlctype(ISELR)(1:4).EQ.'CFC ')SSOTF(icc)='CFC '
             call eclose(gversion(IZ),1.1,0.01,newgeo)
             if(igupgrade.eq.2.and.(.NOT.newgeo))then
               gversion(iz) =1.1
@@ -3185,13 +3196,13 @@ C 'any horizontal','any orien.','cancel'.
                 CALL ASKOK(' ',outs,OK,dok,nbhelp)
                 IF(OK)then
                   ioc=IZSTOCN(IVALS(IZ),i)
-                  WRITE(SSMLCN(ioc),'(A12)')DESC(ISEL)(1:12)
+                  WRITE(SSMLCN(ioc),'(A12)') mlcname(ISEL)(1:12)
 
-C << this is a place to update ssmlcindex >>
+C << this is a place to update ssmlcindex? >>
 
-                  IF(DESC(ISEL)(15:18).NE.'OPAQ')SSOTF(ioc)='TRAN'
-                  IF(DESC(ISEL)(15:18).EQ.'OPAQ')SSOTF(ioc)='OPAQ'
-                  IF(DESC(ISEL)(15:18).EQ.'CFC ')SSOTF(ioc)='CFC '
+                  IF(mlctype(ISEL)(1:4).NE.'OPAQ')SSOTF(ioc)='TRAN'
+                  IF(mlctype(ISEL)(1:4).EQ.'OPAQ')SSOTF(ioc)='OPAQ'
+                  IF(mlctype(ISEL)(1:4).EQ.'CFC ')SSOTF(ioc)='CFC '
                 endif
               endif
  11         continue
