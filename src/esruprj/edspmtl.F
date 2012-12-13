@@ -984,7 +984,7 @@ c        ispmloc(ispmn,3)=0
 C Check composite name of surface with composite name in MLC common.
         imatch=0
         do 5 i=1,nmlc
-          if(SMLCN(iso)(1:12).eq.DESC(i)(1:12)) then
+          if(SMLCN(iso)(1:12).eq.mlcname(i)(1:12)) then
             imatch=i          
           endif
   5     continue
@@ -998,7 +998,7 @@ C Write menu displaying a list of layer names
         footer=3
         write(item(1),'(a,a)') 'a surface name: ',SNAME(iz,iso)
         write(item(2),'(a,i2)')'b number of layers: ',LAYERS(imatch)
-        write(item(3),'(a,a)') 'c MLC name: ',DESC(imatch)(1:12)
+        write(item(3),'(a,a)') 'c MLC name: ',mlcname(imatch)(1:12)
         item(4)='  ----------------------------'
 
 C Loop through each layer in MLC imatch.
