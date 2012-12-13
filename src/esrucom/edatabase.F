@@ -63,6 +63,7 @@ C espriou.h provides currentfile.
       CHARACTER OUTSTR*124,NAM*72,H*72,outs*124
       CHARACTER RSTR*124
       CHARACTER WORD*20,MLCN*12,OTF*4,OPT*12,MLCSYM*12
+      character DES*48   ! the contents of line with MLC attributes
       character lworking*144,fs*1
 
       integer ier
@@ -185,13 +186,13 @@ C Anything after number of layers is the description (which is overloaded
 C to include information on optical properties and either the name
 C of a MLC with inverted layers or the keywords SYMMETRIC or NONSYMMERTIC).
         CALL EGETRM(OUTSTR,K,RSTR,'W','layer description',IER)
-        DESC(I)=RSTR(1:LNBLNK(RSTR))
+        DESC(I)=RSTR(1:LNBLNK(RSTR))   ! mark for deletion
+        DES=RSTR(1:LNBLNK(RSTR))
         IF(IER.NE.0)GOTO 99
 
-C Parse the DESC string into string tokens.
+C Parse the DES string into string tokens.
 
 C << when references to DESC removed this structure can be removed. >>
-
         call parsemlcdesc(DESC(I),MLCN,OTF,OPT,MLCSYM,isymindex)
 
 C Also fill the MLC common blocks.
@@ -482,7 +483,7 @@ C set check and set MLCSYM and mlcsymetric.
         endif
 
 C Update the DESC array with revised values of MLCSYM.
-C << this may not be necessary  >>
+C << mark for deletion  >>
         WRITE(DESC(I),89)MLCN,OTF,OPT,MLCSYM
    89   FORMAT(A12,2X,A4,2X,A12,2x,A12)
 
@@ -497,7 +498,7 @@ C many of these instances. If there are
   10  CONTINUE
       MLDBOK=.TRUE.
 
-C Look for index for MLCSYM in all the items in the file.
+C Look for index for mlcsymetric in all the items in the file.
       do i=1,nmlc
         isymindex=0  ! assume no matching MLC
         lnsym=lnblnk(mlcsymetric(I))         
@@ -1344,7 +1345,7 @@ C Write out a file header.
      &       '# based on materials db ',A)
 
 C For each composite construction write the number of layers (LAYERS),
-C its description (DESC) and then the materials db reference IPR,
+C its description and then the materials db reference IPR,
 C thickness DTHK and material name NAM.  
 C In the case of db reference 0 (air) overwrite NAM with the 3 values
 C of DRAIR.
