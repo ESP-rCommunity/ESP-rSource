@@ -986,6 +986,7 @@ C HeightCo (Real) : Height [m] of the composite, for LCA calculation.
 
       SUBROUTINE CompoList
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
 
