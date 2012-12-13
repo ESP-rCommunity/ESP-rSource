@@ -1552,7 +1552,7 @@ C Find the index of the MLC which matches each surface.
               icn1=izstocn(icomp,i)
               ssmlcindex(icn1)=0  ! assume no matching MLC          
               do 5 ii=1,nmlc
-                if(SSMLCN(icn1)(1:12).eq.DESC(ii)(1:12)) then
+                if(SSMLCN(icn1)(1:12).eq.mlcname(ii)(1:12)) then
                   ssmlcindex(icn1)=ii   ! remember MLC index     
                 endif
   5           continue
