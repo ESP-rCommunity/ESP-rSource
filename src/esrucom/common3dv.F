@@ -973,7 +973,7 @@ C Local arrays.
       DIMENSION  BX(MPL),BY(MPL),BZ(MPL),IBNXT(MPL)
       DIMENSION  SBBOX(3,2),COG1(3),COG2(3),COG3(3)
 
-      CHARACTER GMLCN*12, GSNAME*6,stemp*7
+      CHARACTER GMLCN*32, GSNAME*6,stemp*7
 
 C Local variables to pass to edline.
 #ifdef OSI
@@ -1280,7 +1280,7 @@ C Passed parameters.
 C Use JGVNT for ground surfaces and JVNZ to hold inverted order for zone.
       DIMENSION IVALS(MCOM),JGVNT(MGRT,8),JVNZ(MS,MV)
       CHARACTER H*72
-      CHARACTER GMLCN*12,GSNAME*6,outs*124
+      CHARACTER GMLCN*32,GSNAME*6,outs*124
 
       IER=0
       IUF=IFIL+1
