@@ -267,7 +267,7 @@ C Check for errors - add to the total error counter if error has occured.
         IER=101
         return
       endif
-      write (MATNAM(ICDEF,1),'(a)') DESC(ISEL)(1:12)
+      write (MATNAM(ICDEF,1),'(a)') mlcname(ISEL)(1:12)
       call EASKAB('Which composite construction parameter? ','  ',
      &  'A materials thickness','Whole composite',IRT,nbhelp)
       if (IRT.eq.1) then
