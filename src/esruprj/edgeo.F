@@ -3085,16 +3085,21 @@ C << report inside and outside hc regime here >>
       ISD(14)        ='  ___ @ other face____________ '
       if(showother)then
         if(IC2(ioc).ne.0.and.IE2(ioc).ne.0)then
+          icoth=IZSTOCN(IC2(ioc),IE2(ioc))
           WRITE(ISD(15),'(2A)')'   surface name: ',SSNAME(icoth)
           write(ozn,'(a)') zname(IC2(ioc))
+          WRITE(ISD(16),'(2A)') '   surface type: ',SSOTF(icoth)(1:12)
+          WRITE(ISD(17),'(2A)') '   location    : ',SSVFC(icoth)
+          WRITE(ISD(18),'(2A)') '   construction: ',SSMLCN(icoth)(1:12)
+          WRITE(ISD(19),'(2A)') '   in zone     : ',ozn(1:lnblnk(ozn))
         else
           WRITE(ISD(15),'(A)')'   surface name: IS NOT KNOWN'
           write(ozn,'(a)') 'IS NOT KNOWN'
+          WRITE(ISD(16),'(A)') '   surface type: IS NOT KNOWN'
+          WRITE(ISD(17),'(A)') '   location    : IS NOT KNOWN'
+          WRITE(ISD(18),'(A)') '   construction: IS NOT KNOWN'
+          WRITE(ISD(19),'(A)') '   in zone     : IS NOT KNOWN'
         endif
-        WRITE(ISD(16),'(2A)') '   surface type: ',SSOTF(icoth)(1:12)
-        WRITE(ISD(17),'(2A)') '   location    : ',SSVFC(icoth)
-        WRITE(ISD(18),'(2A)') '   construction: ',SSMLCN(icoth)(1:12)
-        WRITE(ISD(19),'(2A)') '   in zone     : ',ozn(1:lnblnk(ozn))
 
 C << report other faces inside and outside hc regime here >>
 
