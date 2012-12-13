@@ -64,7 +64,7 @@ C providing paramaters MGDB,MGCL,MGIT
       dimension IP(ME),DRA(ME,3),glaydesc(ME)
       CHARACTER OUTSTR*124,AFIL*72,BFIL*72,GDESC*48,NAM*72,RSTR*124
       CHARACTER WORD*20
-C      character MLCN*12,OTF*4,OPT*12,MLCSYM*12
+      character OTF*4,OPT*12
       character dbtag*12,dbmenu*32,dbdate*24,dbdoc*248,catdoc*248
       character cattag*12,cattype*8,catmenu*32,catdate*24
       character itdat*248,itrep*248
