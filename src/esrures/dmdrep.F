@@ -18,7 +18,7 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
-C Routines which deal with non-specific project demands (fans/lifts/etc.).
+C Routines which deal with dispersed demands (fans/lifts/etc.).
 
 C  ERBDMD reads model dispersed demand profiles for fans, pumps, DHW etc.
 
@@ -36,7 +36,7 @@ C ******************** ERBDMD
 C Similar prjdmds.F except do not bother to set idmdinc.
 C ERBDMD reads model dispersed demand profiles for fans, pumps, DHW etc.
 
-C << see if it can be adapted to return timestep information for graphing >>
+C << Note: why not just use ERBDMD in prjdmds.F? >>
 
       SUBROUTINE ERBDMD(ITRC,IUO,IER)
 #include "building.h"
@@ -234,7 +234,7 @@ C << there are people not in a zone?
 
 C Error messages.
  1001 call usrmsg(' ',' No type names found ...supplying defaults.','-')
-      blodlabel(1)='Occup '
+      blodlabel(1)='Other '
       blodlabel(2)='Lights'
       blodlabel(3)='SmPowr'      
       blodlabel(4)='Fans  '
@@ -287,8 +287,8 @@ C Calendar commons.
 
       do 30 idt=1,nbdaytype
         ldt=lnblnk(calentag(idt))
-        WRITE(outs,'(3A,I3)')' No. ',calentag(idt)(1:ldt),' demands =',
-     &    NBCAS(idt)
+        WRITE(outs,'(3A,I3)')' Number of ',calentag(idt)(1:ldt),
+     &   ' demands =',NBCAS(idt)
         call edisp(itru,outs)
         IF(NBCAS(idt).GT.0)THEN
           call edisp(itru,

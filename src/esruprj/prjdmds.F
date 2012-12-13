@@ -18,6 +18,27 @@ C License along with ESP-r. If not, write to the Free
 C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
+C Subroutines in this file:
+C  PRJDMDS: Creates and edits a dispersed demands data.
+
+C  EDBCAS:  Edits dispersed demands for one day type.
+
+C  SBCASL:  Import a profile from a profiles database to build
+C           dispersed demand patterns.
+
+C  ERBDMD:  Reads dispersed demand profiles for fans, pumps, DHW etc.
+
+C  EMKBDMD: Write dispersed demands file (assumed data is correct).
+
+C  BDMDINF: Provides an English description of dispersed demands.
+
+C  dmdcheckcascount: scans dispersed demand commons and refreshes 
+C           bookkeepping indices.
+
+C  dmdchecksort: does a quick check of dispersed demands for sorted
+C           state (lacks some features found in zone casual gains).
+
+
 C << missing functionality for dispersed demands:
 C << a) facility to sort dispersed demand periods
 C << b) facility to define sub-hour periods
@@ -158,7 +179,7 @@ C Initial IPV demand inclusion for each type set to zero.
       IER=0
 
 C Set the default demand type labels
-      blodlabel(1)='Occup '
+      blodlabel(1)='Other '
       dmdfla(1)= 1.0
       blodlabel(2)='Lights'
       dmdfla(2)= 1.0
@@ -255,7 +276,7 @@ C Help text for this menu.
       H(12)='includes the standard Weekday Saturday Sunday day '
       H(13)='types then you may work at that resolution. If you'
       H(14)='have also defined holidays then dispersed gains can '
-      H(15)='also be assigned (UNDER TESTING) '
+      H(15)='also be assigned for these day types as well. '
       H(16)=' '
       H(17)=' '
       H(18)='The data requirements are summarized below :- '
@@ -264,7 +285,7 @@ C Help text for this menu.
       H(21)='    Sunday, holiday (etc.) demands data:'
       H(22)='       Start and finish hours for each period'
       H(23)='       Casual gain type:'
-      H(24)='         type 1: usually occupant demands'
+      H(24)='         type 1: usually other demands'
       H(25)='         type 2: usually lighting demands'
       H(26)='         type 3: usually small power demands'
       H(27)='         type 4: usually fan demands'
@@ -496,10 +517,11 @@ C Explain
 
 
 C -------- EDBCAS ----------
-C EDBCAS: Edits dispersed demands.
+C EDBCAS: Edits dispersed demands for one day type.
 C Returns: IBCGS(),IBCGF(),CBMGS(),CBMGL(),BRADC(),BCONC() common
 C based on the day type passed.
 C ITRC is the trace level, ITRU is the ouput channel, IER=0 is OK.
+C IWSS is the calendar day type passed from the calling code.
       SUBROUTINE EDBCAS(ITRU,IWSS,IER)
 
 #include "building.h"
@@ -522,7 +544,7 @@ C Local editing arrays.
       dimension vert(35),X(5)
       CHARACTER vert*43,head*28,H*72,outs*124,KEY*1,hold*40
 
-C blodlabel(1)='Occup',(2)='Lights',(3)='SmPowr',(4)='Fans',(5)='Pumps',(6)='Lifts',(7)='DHW'     
+C blodlabel(1)='Other',(2)='Lights',(3)='SmPowr',(4)='Fans',(5)='Pumps',(6)='Lifts',(7)='DHW'     
       character*8 ll1,ll2,ll3,ll4,ll5,ll6,ll7
       character calename*32,calentag*12,calendayname*32
       integer IEBCGTS,IWM  ! for radio buttons
@@ -632,30 +654,39 @@ C If a long list include page facility text.
       VERT(M+6)  ='- exit this menu              '
 
 C Help text for this menu.
-      H(1)='Casual gains are defined via one or more periods, the'
-      H(2)='magnitude at a given time being the summation of the '
-      H(3)='gains in all periods which include that time.  In '
-      H(4)='this way complex patterns may be described. '
-      H(5)=' '
-      H(6)='Please note that neither the order in which periods'
-      H(7)='are described nor their position in the display is'
-      H(8)='important.  You may use an `additive` or `sequential`'
-      H(9)='approach or a combination as you choose. '
-      H(10)=' '
-      H(11)='You may insert or delete a period at any point in '
-      H(12)='the list by selecting it`s key  (a,b,c...).'
+      H(1)='Casual gains are defined via one or more periods, to form'
+      H(2)='a profile over the day for each of the day types defined'
+      H(3)='in the model calendar. '
+      H(4)=' '
+      H(5)='The casual gains in this menu represent dispersed gains '
+      H(6)='which are not associated with any particular thermal zone'
+      H(7)='but which apply to the whole building. Examples are lifts'
+      H(8)='or central HVAC fans. They are not considered in the zone'
+      H(9)='thermophysical solution but are reported in the results'
+      H(10)='analysis tool as part of the Integrated Performance View'
+      H(11)='and as [dispersed demands] in graphs / timestep listings'
+      H(12)='and monthly reports. '
       H(13)=' '
-      H(14)='See section 3.4 of the users manual for more info. '
+      H(14)='The radiant and convective split is not directly used '
+      H(15)='in the reporting, only the total sensible magnitude. '
+      H(16)=' '
+      H(17)='Please note that neither the order in which periods'
+      H(18)='are described nor their position in the display is'
+      H(19)='important.  '
+      H(20)=' '
+      H(21)='You can define gains as absolute W or in terms of W/m2'
+      H(22)='with a user defined area for each type.'
+      H(23)='  '
 
 C Now display the menu.
-      CALL EMENU(' Project demands',VERT,MVERT,IVERT)
+      CALL EMENU(' Project dispersed demands',VERT,MVERT,IVERT)
 
       IF(IVERT.eq.2)THEN
         continue
       ELSEIF(IVERT.EQ.MVERT)THEN
         GOTO 80
       ELSEIF(IVERT.EQ.(MVERT-1))THEN
-        CALL PHELPD('gains menu',14,'-',0,0,IER)
+        CALL PHELPD('gains menu',23,'-',0,0,IER)
       ELSEIF(IVERT.EQ.(MVERT-2))THEN
         IF(IWSS.ge.1.and.iwss.le.nbdaytype)THEN
           IN=NBCAS(iwss)
@@ -666,6 +697,8 @@ C Now display the menu.
         h(1)='You can apply a scaling factor to all entries of a '
         h(2)='particular casual gain type (useful for parametric '
         h(3)='studies on profiles which have been imported).'
+
+C << probably need to change to a menu selection >>
         IEBCGTS=1
         CALL EASKATOG('Apply scaling factor to which casual gain type?',
      &     ' : ',ll1,ll2,ll3,ll4,ll5,ll6,ll7,IEBCGTS,3)
@@ -777,23 +810,25 @@ C Remind user of current values.
         iebcgs(I)=IV1
         iebcgf(I)=IV
 
-C Establish the nature of the casual gain
+C Establish the nature of the casual gain.
+C << remind user of the current type. convert choice to menu >>
         H(1)='The type of demand can be one of those listed in the '
         H(2)='selections. '
         IWM=1
         CALL EASKATOG('Which casual gain type?',
      &     ' : ',ll1,ll2,ll3,ll4,ll5,ll6,ll7,IWM,2)
 
-C Depending on type set relevant idmdinc value.
+C Depending on type set relevant included in the IPV idmdinc value.
         idmdinc(IWM)=1
 
-        call easkab('Are values',' ','absolute','per m^2',IW,8)
+        call easkab('Dispersed demand units','Confirm:','absolute W',
+     &    'W per m^2',IW,8)
         if(IW.eq.1)IEBCGT(I)=IWM
         if(IW.eq.2)IEBCGT(I)=-1*IWM
  100    WRITE(HOLD,'(2f9.1,2f8.2,a)')CEBMGS(I),CEBMGL(I),BERADC(I),
      &    BECONC(I),'  '
         H(1)='Sensible and latent demands are specified in '
-        h(2)='Watts. '
+        h(2)='Watts or W/m^2 as per your earlier choice. '
         h(3)='Also supply the radiant and convective fraction for'
         h(4)='the sensible load (should sum to ~1.00) '
         CALL EASKS(HOLD,
@@ -843,7 +878,7 @@ C Assign to common depending on day type.
       END
 
 C ----------- SBCASL
-C Import a profile from a profiles database to build project demand
+C SBCASL: Import a profile from a profiles database to build dispersed demand
 C patterns.
       SUBROUTINE  SBCASL(IN,IDAY,IER)
 
@@ -945,14 +980,16 @@ C Present a list of profiles to select from.
       INDEX=IPRVAL(1)
 
 C Identify nature of demands
-      H(1)='Project level demands can be be designated to be '
-      H(2)='of one of four user-defined types so that for example '
+      H(1)='Dispersed demands can be be designated to be one of'
+      H(2)='seven user-defined types so that for example '
       H(3)='pump demands can be separately tracked from that of '
-      H(4)='other equipment.  Values from 1 to 4 are accepted'
-      H(5)='and can have any meaning that the user chooses. '
+      H(4)='other equipment.  Values from 1 to 7 are accepted'
+      H(5)='and can have any meaning that the user chooses however'
+      H(6)='it is traditional to allign the meaning with the'
+      H(7)='initial labels provided in the interface.'
       ICGTL=1
       CALL EASKATOG(' ','Type of casual gain: ',ll1,ll2,ll3,ll4,ll5,
-     &  ll6,ll7,ICGTL,5)
+     &  ll6,ll7,ICGTL,7)
 
 C Depending on type set relevant idmdinc value.
       idmdinc(ICGTL)=1
@@ -1007,7 +1044,7 @@ C The current calendar day type gains.
 
 
 C ******************** ERBDMD
-C ERBDMD reads project level demand profiles for fans, pumps, DHW etc.
+C ERBDMD reads dispersed demand profiles for fans, pumps, DHW etc.
 
       SUBROUTINE ERBDMD(ITRC,ITRU,IUO,IER)
 #include "building.h"
@@ -1164,7 +1201,9 @@ C If radiant plus convective is over unity warn.
         IF(IER.NE.0) goto 1002
    30 continue
 
-C Check to see if demand labels have been added to the end of the file
+C Check to see if demand labels have been added to the end of the file.
+C Note: current assumption is that 7 labels will be included in this
+C line whether or not all of them are used.
     8 CALL STRIPC(IUO,OUTSTR,99,ND,1,'Type labels',IERV)
       IF(ND.NE.7.OR.IERV.ne.0) THEN
         goto 1001
@@ -1177,7 +1216,7 @@ C Check to see if demand labels have been added to the end of the file
       ENDIF      
 
 C Check for areas associated with each demand label.
-C << revise for different than 7 demands >>
+C Note: current assumption is that 7 areas will be found on the line.
       CALL STRIPC(IUO,OUTSTR,99,ND,1,'Type areas',IERV)
       IF(ND.NE.7.OR.IERV.ne.0) THEN
         goto 1001
@@ -1200,7 +1239,7 @@ C Now free project data file.
 
 C Error messages.
  1001 call usrmsg(' ',' No type names found ...supplying defaults.','-')
-      blodlabel(1)='Occup '
+      blodlabel(1)='Other '
       blodlabel(2)='Lights'
       blodlabel(3)='SmPowr'      
       blodlabel(4)='Fans  '
@@ -1231,7 +1270,7 @@ C Error messages.
 
 
 C --------- EMKBDMD
-C Write project demands file. It is assumed that this data
+C EMKBDMD: Write dispersed demands file. It is assumed that this data
 C has been checked.  OPFIL is the name of the file to be
 C written to (confirm if to be overwritten).
 C ITRC unit number for user output, IER=0 OK IER=1 problem.
@@ -1270,7 +1309,7 @@ C << also consider just putting it in the configuration file >>
       if(idmdver.eq.0)then
         WRITE(IUO,31,IOSTAT=ISTAT,ERR=1)
      &    OPFIL(:lnblnk(OPFIL))
-  31    FORMAT('# project demands defined in: ',/,'# ',a)
+  31    FORMAT('# dispersed demands defined in: ',/,'# ',a)
       elseif(idmdver.eq.1)then
         WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1) 
      &    '*Dispersed 1.0  # dispersed demands for model'
@@ -1304,7 +1343,8 @@ C the calendar day types.
         ENDIF
   30  continue
 
-C << logic needs changing to acommodate more than 7 gain types >>
+C I/O assumes there are 7 dispersed demand labels and areas to be
+C written at the end of the file.
 
 5460  FORMAT(1X,3(I4,','),F11.3,',',F11.3,',',F6.3,',',F6.3)
 C Write out the type labels and associated areas.
@@ -1322,7 +1362,7 @@ C Write out the type labels and associated areas.
       END
 
 C ****************** BDMDINF 
-C BDMDINF provides an English description of non-specific project demands
+C BDMDINF provides an English description of dispersed demands
 C from common block data.
       SUBROUTINE BDMDINF(ITRU,ier)
 
@@ -1345,8 +1385,8 @@ C Calendar commons.
 
       do 30 idt=1,nbdaytype
         ldt=lnblnk(calentag(idt))
-        WRITE(outs,'(3A,I3)')' No. ',calentag(idt)(1:ldt),' demands =',
-     &    NBCAS(idt)
+        WRITE(outs,'(3A,I3)')' Number of ',calentag(idt)(1:ldt),
+     &    ' demands =',NBCAS(idt)
         call edisp(itru,outs)
         IF(NBCAS(idt).GT.0)THEN
           call edisp(itru,
@@ -1375,9 +1415,10 @@ C Calendar commons.
       END
 
 C ************* dmdcheckcascount
-C checkcascount scans current P3 & P3TYPE commons and refreshes 
+C dmdcheckcascount scans dispersed demand commons and refreshes 
 C dmdloadcount() & dmdload24() in common blocks dmdloadcnt & dmdloadall
-C in schedule.h
+C in schedule.h.  This logic figures out if gains have been purely defined
+C as absolute W or W/m2 or a mix of the two.
 
 C Parameters:
 C   ier - set to 1 if there was a problem.
@@ -1410,12 +1451,14 @@ C Zero the dmdloadcount arrays for each gain type (ij) and day type (ik).
 C Debug..
 C      write(6,*) 'Nb of daytype periods for dispersed demands...'
 
-C Loope through each possible day type (ik) and period (ij).
+C Loop through each possible day type (ik) and period (ij).
       do 42 ik=1,MDTY
         if(NBCAS(ik).gt.0)then
           do 43 ij=1,NBCAS(ik)
             idtype=IBCGT(ik,ij)  ! find dispersed demand type
             if(idtype.gt.0.and.idtype.le.MGTY)then
+
+C These dispersed demands defined as absolute W.
               dmdloadcount(idtype,ik)=dmdloadcount(idtype,ik)+1
               if(CBMGS(ik,ij).gt.0.0)then
                 dmdloadnonzero(idtype,ik)=dmdloadnonzero(idtype,ik)+1
@@ -1438,6 +1481,8 @@ C Determine if any of the casual gain types were mixed.
                 dmdloadmixed(idtype,ik)=3
               endif
             elseif(idtype.lt.0)then
+
+C These dispersed demands were defined as W/m2.
               idindex=iabs(idtype)
               dmdloadcount(idindex,ik)=dmdloadcount(idindex,ik)+1
               dmdloadm2count(idindex,ik)=dmdloadm2count(idindex,ik)+1
@@ -1485,6 +1530,9 @@ C     &      dmdloadmixed(6,ik),dmdloadmixed(7,ik)
 C ******************* dmdchecksort *********************
 C dmdchecksort does a quick check of dispersed demands for sorted state.
 C not extensive, but should catch most issues.
+
+C << should include logic similar to zone casual gains to ensure that
+C << the whole day is covered.
       subroutine dmdchecksort(idaytype,problem,ier)
 #include "building.h"
 #include "schedule.h"

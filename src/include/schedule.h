@@ -19,8 +19,8 @@ C Demand data with support for up to MDTY calendar day types
       real CBMGS,CBMGL    ! sensible and latent magnitude (Watts) of each demand
       real BRADC,BCONC    ! radiant and convective portions of each demand
       integer IBCGT       ! ibcgt is type of gain:
-C  1. Occup, 2. Lighting, 3. Small power, 4. Fans, 5. Pumps, 6. Lifts, 7. DHW
-C -1. Occup w/m2, -2. Lighting w/m2, -3. Sml power w/m2, -4 Fan per w/m2,
+C  1. Other, 2. Lighting, 3. Small power, 4. Fans, 5. Pumps, 6. Lifts, 7. DHW
+C -1. Other w/m2, -2. Lighting w/m2, -3. Sml power w/m2, -4 Fan per w/m2,
 C -5. Pumps per w/m2  -6. Lifts w/m^2, -7. DHW w/m^2
       COMMON/BL3data/NBCAS(MDTY),IBCGS(MDTY,MC),IBCGF(MDTY,MC),
      &  CBMGS(MDTY,MC),CBMGL(MDTY,MC),BRADC(MDTY,MC),BCONC(MDTY,MC),
