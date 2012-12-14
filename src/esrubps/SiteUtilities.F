@@ -45,22 +45,22 @@ C=======================================================================
       subroutine SiteUtilities()
 
 C.....Attribute uncatagorized energy use in elec, plant domains.
-      call AttributePltPfsEnergyUse()
+      call AttributePltEnergyUse()
 
-C.....Aggregate energy use from all plant components
-      call AggregatePltCompEnergyUse()
+C.....Aggregate energy use from all plant and power only components
+      call AggregateMdlCompEnergyUse()
 
 C.....Compute site-wide energy consumption
       call TotalEnergyConsumption()
 
-C.....Convert purchased energy to fuel quantity
-      call ConvertEnergyToFuel()
+C.....Convert purchased energy to fuel quantity and GHG
+      call ConvertEnergyToFuelandGHG()
 
 C.....Report fuel use data
       call H3KReportsFuelUse()
 
-C.....Reset storage array for next time step.
-      call ZeroFuelEnergyStorageArray()
+C.....Reset storage arrays for next time step.
+      call ZeroEnergyStorageArrays()
 
       return
       end
@@ -76,9 +76,12 @@ C
 C=======================================================================
       subroutine TotalEnergyConsumption()
       implicit none
+#include "building.h"
 #include "plant.h"
+#include "power.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "OffsiteUtilitiesPrivate.h"
+
 
 C-----------------------------------------------------------------------
 C     Loop through all components, end uses; and sum fuel consumption.
@@ -92,27 +95,30 @@ C.......Zero total enery use (by fuel) array slot
 
 C.........Zero end-use energy use (by fuel) array slot
           fEndUseEnergyUse ( iFuel, iEndUse ) = 0.0
-
-          component_loop: do iComponent = 1, iNumOffsiteUtilComp
+          
+          component_loop: do iSiteComp = 1, iNumOffsiteUtilComp
 
             fTotalEnergyUse( iFuel ) =
      &               fTotalEnergyUse( iFuel )
-     &             + fSiteEnergyUse( iComponent, iFuel, iEndUse )
+     &             + fSiteEnergyUse( iSiteComp, iFuel, iEndUse )
 
             fEndUseEnergyUse ( iFuel, iEndUse ) =
      &              fEndUseEnergyUse ( iFuel, iEndUse )
-     &            + fSiteEnergyUse( iComponent, iFuel, iEndUse )
+     &            + fSiteEnergyUse( iSiteComp, iFuel, iEndUse )
 
           enddo component_loop
 
+          
         enddo use_loop
+        
+        
 
       enddo fuel_loop
 
       return
       end
 
-C=ConvertEnergyToFuel===================================================
+C=ConvertEnergyToFuelandGHG===================================================
 C
 C ABSTRACT:
 C
@@ -121,11 +127,15 @@ C fuel into a standard unit of measure, based on the fuel's calorific
 C value.
 C
 C=======================================================================
-      subroutine ConvertEnergyToFuel()
+      subroutine ConvertEnergyToFuelandGHG()
       implicit none
+#include "building.h"
 #include "plant.h"
+#include "power.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "OffsiteUtilitiesPrivate.h"
+
+      
 
       fuel_loop: do iFuel = 1, iNumFuel
 
@@ -137,17 +147,19 @@ C.......Site-wide fuel consuption (by fuel)
         fTotalFuelUse( iFuel ) = fTotalEnergyUse( iFuel )
      &            * fFuelConversionFactor( iFuel )
 
+        
 C.......Site-wide fuel consumption (by fuel, end-use)
         use_loop: do iEndUse = 1, iNumUses
-
+          
           fEndUseFuelUse( iFuel, iEndUse ) =
      &                    fEndUseEnergyUse (iFuel, iEndUse)
      &                  * fFuelConversionFactor( iFuel )
 
+                    
         enddo use_loop
 
+        
       enddo fuel_loop
-
 
       return
       end
@@ -162,12 +174,17 @@ C=======================================================================
       subroutine H3KReportsFuelUse
       use h3kmodule
       implicit none
+#include "building.h"
 #include "plant.h"
+#include "power.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "OffsiteUtilitiesPrivate.h"
 
       logical bCloseToZero
       integer iRVId; !Report Variable Identifier
+
+      
+
 
 C.....Fuel loop:
       fuel_loop: do iFuel = 1, iNumFuel
@@ -201,6 +218,7 @@ C-----------------------------------------------------------------------
                !Should never execute, but just in case
                iRVId = rvTFuelAllEndEnergyContent%Identifier
           END SELECT
+
 
           call AddToReport(
      &         iRVID,
@@ -242,7 +260,7 @@ C-----------------------------------------------------------------------
 
 C.......end-use loop:
         use_loop: do iEndUse = 1, iNumUses
-        call eclose ( fEndUseEnergyUse(iFuel,iEndUse),
+          call eclose ( fEndUseEnergyUse(iFuel,iEndUse),
      &                0.0, 0.01, bCloseToZero)
 
         if ( .not. bCloseToZero ) then
@@ -276,90 +294,106 @@ C.......end-use loop:
      &         fEndUseFuelUse(iFuel,iEndUse),
      &         cUseName(iEndUse)(1:iUseNameLen(iEndUse)))
         endif
+
         enddo use_loop
 
       enddo fuel_loop
       return
       end
 
-C=ZeroFuelEnergyStorageArray============================================
+C=ZeroEnergyStorageArrays============================================
 C
 C ABSTRACT:
 C
-C ZeroFuelEnergyStorageArray zeros the site energy usage storage array.
+C ZeroEnergyStorageArrays zeros the energy usage storage arrays.
 C
 C=======================================================================
-      subroutine ZeroFuelEnergyStorageArray()
+      subroutine ZeroEnergyStorageArrays()
       implicit none
+#include "building.h"
 #include "plant.h"
+#include "power.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "OffsiteUtilitiesPrivate.h"
+
+
+C.....ESP commons
+      ! Plant component count
+      common/c9/nPComp,NCI(mpcom),CData(mpcom,mmiscd)
+      integer nPComp                     ! # of plant component models
+      integer nci                        ! not used
+      real CData                         ! not used
+
+      ! DHW
+      common/report_loads/fReportDHWLoad(mpcom)
+      real fReportDHWLoad                ! DHW load computed by a plant
+                                         ! component (W)
+
+      ! Power only components
+      common/powc/npowcom,powcomno(mpowcom),powcomid(mpowcom),
+     &  powcomphtyp(mpowcom),powconen(mpowcom,mphas),
+     &  npowcdat(mpowcom),npowcdats(mpowcom),powcdat(mpowcom,mpwdat)
+      integer      npowcom, ! Number of power only component models
+     &  powcomno, powcomid, powcomphtyp, powconen, ! not used
+     &  npowcdat, npowcdats ! not used
+      real         powcdat ! not used
+
+      ! Zone information
+      common/c1/ncomp,ncon
+      integer ncomp          ! number of zones
+      integer ncon           ! not used 
 
 C-----------------------------------------------------------------------
 C     Loop through all components, and sum fuel consumption.
 C-----------------------------------------------------------------------
       fuel_loop: do iFuel = 1, iNumFuel
 
-        component_loop: do iComponent = 1, iNumOffsiteUtilComp
+        use_loop: do iEndUse = 1, iNumUses
 
-          use_loop: do iEndUse = 1, iNumUses
+C         Zero Site Components
+          SiteComp_loop: do iSiteComp = 1, iNumOffsiteUtilComp
 
-            fSiteEnergyUse( iComponent, iFuel, iEndUse ) = 0.0
+            fSiteEnergyUse( iSiteComp, iFuel, iEndUse ) = 0.
 
-          enddo use_loop
+          enddo SiteComp_loop
 
-        enddo component_loop
+C         Zero Plant Components
+          PltComp_loop: do iPltComp = 1, nPComp
+
+            fPltEnergyUse( iPltComp, iFuel, iEndUse ) = 0.
+
+          enddo PltComp_loop
+
+C         Zero Power only Components
+          PowocComp_loop: do iPowocComp = 1, npowcom
+
+            fPowocEnergyUse( iPowocComp, iFuel, iEndUse ) = 0.
+
+          enddo PowocComp_loop
+
+C         Zero Casual gain NG Components
+          CasualNG_loop: do iZone = 1, ncomp
+
+            fCasualNGEnergyUse( iZone, iFuel, iEndUse ) = 0.
+
+          enddo CasualNG_loop
+
+        enddo use_loop
 
       enddo fuel_loop
 
-      return
-      end
 
-C=ZeroPltEnergyStorageArray=============================================
-C
-C ABSTRACT:
-C
-C ZeroPltEnergyStorageArray zeros the site energy usage storage array.
-C
-C=======================================================================
-      subroutine ZeroPltEnergyStorageArray()
-      implicit none
-#include "plant.h"
-#include "OffsiteUtilitiesPublic.h"
-#include "OffsiteUtilitiesPrivate.h"
+C     Zero per-plant-component load arrays
+      PltComp_loop2: do iPltComp = 1, nPComp
 
-C.....ESP commons
-      common/c9/nPComp,NCI(mpcom),CData(mpcom,mmiscd)
-      integer nPComp                     ! # of plant component models
-      integer nci                        ! not used
-      real CData                         ! not used
+        fReportDHWLoad( iPltComp ) = 0.
 
-      common/report_loads/fReportDHWLoad(mpcom)
-      real fReportDHWLoad                ! DHW load computed by a plant
-                                         ! component (W)
-
-C-----------------------------------------------------------------------
-C     Loop through all components, and sum fuel consumption.
-C-----------------------------------------------------------------------
-      component_loop: do iComponent = 1, nPComp
-
-        fuel_loop: do iFuel = 1, iNumFuel
-
-          use_loop: do iEndUse = 1, iNumUses
-
-            fPltEnergyUse( iComponent, iFuel, iEndUse ) = 0.0
-
-          enddo use_loop
-
-        enddo fuel_loop
-
-C.......Zero per-component load arrays
-        fReportDHWLoad( iComponent ) = 0.0
-
-      enddo component_loop
+      enddo PltComp_loop2
+         
 
       return
       end
+
 
 C=StoreSiteUtilityData==================================================
 C
@@ -370,16 +404,18 @@ C array and stuffs it into the protected fSiteEnergyUse array
 C
 C Input parameters defined via include statements.
 C
-C   - iComponent: integer flag indicating where data originated
+C   - iSiteComp: integer flag indicating where data originated
 C
 C   - fSUFuelEnergyUse: 2d array used transport fuel consumption
 C     data into Site utilities facility. Array indicies correspond
 C     to fuel, end-use.
 C
 C=======================================================================
-      subroutine StoreSiteEnergyUse(iComponent, fSUFuelEnergyUse )
+      subroutine StoreSiteEnergyUse(iSiteComp, fSUFuelEnergyUse )
       implicit none
+#include "building.h"
 #include "plant.h"
+#include "power.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "OffsiteUtilitiesPrivate.h"
 
@@ -391,7 +427,7 @@ C-----------------------------------------------------------------------
 
         use_loop: do iEndUse = 1, iNumUses
 
-          fSiteEnergyUse( iComponent, iFuel, iEndUse ) =
+          fSiteEnergyUse( iSiteComp, iFuel, iEndUse ) =
      &       fSUFuelEnergyUse ( iFuel, iEndUse )
 
         enddo use_loop
@@ -410,16 +446,18 @@ C component models for later access in the site utilities facility.
 C
 C Input parameters defined via include statements.
 C
-C   - iComponent: Plant component index
+C   - iPltComp: Plant component index
 C
 C   - fSUFuelEnergyUse: 2d array used transport fuel consumption
 C     data into Site utilities facility. Array indicies correspond
 C     to fuel, end-use.
 C
 C=======================================================================
-      subroutine StorePltCompEnergyUse(iComponent, fSUFuelEnergyUse )
+      subroutine StorePltCompEnergyUse(iPltComp, fSUFuelEnergyUse )
       implicit none
+#include "building.h"
 #include "plant.h"
+#include "power.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "OffsiteUtilitiesPrivate.h"
 
@@ -433,7 +471,7 @@ C-----------------------------------------------------------------------
 
         use_loop: do iEndUse = 1, iNumUses
 
-          fPltEnergyUse( iComponent, iFuel, iEndUse ) =
+          fPltEnergyUse( iPltComp, iFuel, iEndUse ) =
      &       fSUFuelEnergyUse( iFuel, iEndUse )
 
 C...........Mark uncatagorized end-uses for reapportionment
@@ -444,11 +482,11 @@ C...........Mark uncatagorized end-uses for reapportionment
               if ( bNumsAreClose .and.
      &             fSUFuelEnergyUse( iFuel, iEndUse ) > 0.0 ) then
 
-                bPltUseCatagorized(iComponent, iFuel) = .false.
+                bPltUseCatagorized(iPltComp, iFuel) = .false.
 
               else
 
-                bPltUseCatagorized(iComponent, iFuel) = .false.
+                bPltUseCatagorized(iPltComp, iFuel) = .false.
 
               endif
 
@@ -461,12 +499,97 @@ C...........Mark uncatagorized end-uses for reapportionment
       return
       end
 
-C=AggregatePltCompEnergyUse=============================================
+C=StorePowocCompEnergyUse=================================================
 C
 C ABSTRACT
 C
-C AggregatePltCompEnergy aggregates energy consumption computed
-C by various plant components, and appends it to the site-wide
+C StorePowocCompEnergyUse stores fuel energy use computed by power-only
+C component models for later access in the site utilities facility.
+C
+C Input parameters defined via include statements.
+C
+C   - iPowocComp: Power only component index
+C
+C   - fSUFuelEnergyUse: 2d array used transport fuel consumption
+C     data into Site utilities facility. Array indicies correspond
+C     to fuel, end-use.
+C
+C=======================================================================
+      subroutine StorePowocCompEnergyUse(iPowocComp,fSUFuelEnergyUse)
+      implicit none
+#include "building.h"
+#include "plant.h"
+#include "power.h"
+#include "OffsiteUtilitiesPublic.h"
+#include "OffsiteUtilitiesPrivate.h"
+
+C-----------------------------------------------------------------------
+C     Loop through fuels, end-uses and stuff fuel consumption into
+C     protected fSiteEnergyUse array
+C-----------------------------------------------------------------------
+      fuel_loop: do iFuel = 1, iNumFuel
+
+        use_loop: do iEndUse = 1, iNumUses
+
+          fPowocEnergyUse( iPowocComp, iFuel, iEndUse ) =
+     &       fSUFuelEnergyUse( iFuel, iEndUse )
+
+        enddo use_loop
+
+      enddo fuel_loop
+
+      return
+      end 
+
+C=StoreCasualNGZoneEnergyUse=================================================
+C
+C ABSTRACT
+C
+C StoreCasualNGZoneEnergyUse stores fuel energy use computed by casual gain NG
+C components for a zone for later access in the site utilities facility.
+C
+C Input parameters defined via include statements.
+C
+C   - iZone: Zone in which the NG is consumed
+C
+C   - fSUFuelEnergyUse: 2d array used transport fuel consumption
+C     data into Site utilities facility. Array indicies correspond
+C     to fuel, end-use.
+C
+C=======================================================================
+      subroutine StoreCasualNGZoneEnergyUse(iZone,fSUFuelEnergyUse)
+      implicit none
+#include "building.h"
+#include "plant.h"
+#include "power.h"
+#include "OffsiteUtilitiesPublic.h"
+#include "OffsiteUtilitiesPrivate.h"
+
+C-----------------------------------------------------------------------
+C     Loop through fuels, end-uses and stuff fuel consumption into
+C     protected fSiteEnergyUse array
+C-----------------------------------------------------------------------
+      fuel_loop: do iFuel = 1, iNumFuel
+
+        use_loop: do iEndUse = 1, iNumUses
+
+          fCasualNGEnergyUse( iZone, iFuel, iEndUse ) =
+     &       fSUFuelEnergyUse( iFuel, iEndUse )
+
+        enddo use_loop
+
+      enddo fuel_loop
+
+      return
+      end 
+
+
+C=AggregateMdlCompEnergyUse=============================================
+C
+C ABSTRACT
+C
+C AggregateMdlCompEnergyUse aggregates energy consumption computed
+C by various plant, power-only, and casual gain components, and appends it to the site-wide
 C energy consumption array.
 C
 C Inputs:
@@ -474,18 +597,35 @@ C
 C   - None.
 C
 C=======================================================================
-      subroutine AggregatePltCompEnergyUse()
+      subroutine AggregateMdlCompEnergyUse()
 
       implicit none
+#include "building.h"
 #include "plant.h"
+#include "power.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "OffsiteUtilitiesPrivate.h"
 
 C.....ESP commons
+      ! Plant
       common/c9/nPComp,NCI(mpcom),CData(mpcom,mmiscd)
       integer nPComp                     ! # of plant component models
       integer nci                        ! not used
       real CData                         ! not used
+
+      ! Power only components
+      common/powc/npowcom,powcomno(mpowcom),powcomid(mpowcom),
+     &  powcomphtyp(mpowcom),powconen(mpowcom,mphas),
+     &  npowcdat(mpowcom),npowcdats(mpowcom),powcdat(mpowcom,mpwdat)
+      integer      npowcom, ! Number of power only component models
+     &  powcomno, powcomid, powcomphtyp, powconen, ! not used
+     &  npowcdat, npowcdats ! not used
+      real         powcdat ! not used
+
+      ! Zone information
+      common/c1/ncomp,ncon
+      integer ncomp          ! number of zones
+      integer ncon           ! not used 
 
 C-----------------------------------------------------------------------
 C     Loop through fuels, end-uses and sum fuel consumption
@@ -495,17 +635,44 @@ C-----------------------------------------------------------------------
 
         use_loop: do iEndUse = 1, iNumUses
 
+C         PLANT
 C.........Initialize fuel/end-use combination to zero.
-          fSiteEnergyUse( iPltComponents, iFuel, iEndUse ) = 0.0
+          fSiteEnergyUse( iPltComponents, iFuel, iEndUse ) = 0.
 
 C.........Sum fuel/end-use consumtion for all components
-          plt_component_loop: do iComponent =1 , nPComp
+          plt_component_loop: do iPltComp =1 , nPComp
 
             fSiteEnergyUse( iPltComponents, iFuel, iEndUse ) =
      &           fSiteEnergyUse( iPltComponents, iFuel, iEndUse )
-     &         + fPltEnergyUse( iComponent, iFuel, iEndUse )
+     &         + fPltEnergyUse( iPltComp, iFuel, iEndUse )
 
           enddo plt_component_loop
+
+c         POWOC
+C.........Initialize fuel/end-use combination to zero.
+          fSiteEnergyUse( iPowoc, iFuel, iEndUse ) = 0.
+
+C.........Sum fuel/end-use consumtion for all components
+          powoc_component_loop: do iPowocComp =1 , npowcom
+
+            fSiteEnergyUse( iPowoc, iFuel, iEndUse ) =
+     &           fSiteEnergyUse( iPowoc, iFuel, iEndUse )
+     &         + fPowocEnergyUse( iPowocComp, iFuel, iEndUse )
+
+          enddo powoc_component_loop
+
+c         Casual gain NG
+C.........Initialize fuel/end-use combination to zero.
+          fSiteEnergyUse( iCasual_NG, iFuel, iEndUse ) = 0.
+
+C.........Sum fuel/end-use consumtion for all components
+          CasualNG_component_loop: do iZone =1 , ncomp
+
+            fSiteEnergyUse( iCasual_NG, iFuel, iEndUse ) =
+     &           fSiteEnergyUse( iCasual_NG, iFuel, iEndUse )
+     &         + fCasualNGEnergyUse( iZone, iFuel, iEndUse )
+
+          enddo CasualNG_component_loop
 
         enddo use_loop
 
@@ -515,21 +682,23 @@ C.........Sum fuel/end-use consumtion for all components
       return
       end
 
-C=AttributePltPfsEnergyUse==============================================
+C=AttributePltEnergyUse==============================================
 C
 C ABSTRACT:
 C
-C AttributePltPfsEnergyUse analyses uncatagorized energy consumption reported in
-C the plant/elec domains and attempts to attribute them according to
+C AttributePltEnergyUse analyses uncatagorized energy consumption reported in
+C the plant domains and attempts to attribute them according to
 C end-use.
 C
 C Inputs: None.
 C
 CC=======================================================================
-      subroutine AttributePltPfsEnergyUse()
+      subroutine AttributePltEnergyUse()
 
       implicit none
+#include "building.h"
 #include "plant.h"
+#include "power.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "OffsiteUtilitiesPrivate.h"
 
@@ -721,17 +890,17 @@ C     (this loop might one-day be expanded to collect space loads from
 C     radiant systems as well.)
 C-----------------------------------------------------------------------
       do_plt_comp_exist: if (nPComp > 0 ) then
-      component_loop_1: do iComponent = 1, nPComp
+      component_loop_1: do iPltComp = 1, nPComp
 
 C.......Collect component type:
-        iCompType = nPCdat(iComponent, 4)
+        iCompType = nPCdat(iPltComp, 4)
 
         Plant_type: select case ( iCompType )
 
 C.........Hot water tanks with DHW loads
           case (81,82)
 
-            fLoadWHCur = fLoadWHCur + fReportDHWLoad ( iComponent )
+            fLoadWHCur = fLoadWHCur + fReportDHWLoad ( iPltComp )
 
           case default
 
@@ -802,23 +971,23 @@ C     Now loop through plant components, and reassign 'uncatagorized'
 C     energy end-use based on computed load ratios
 C-----------------------------------------------------------------------
 
-      component_loop_2: do iComponent = 1, nPComp
+      component_loop_2: do iPltComp = 1, nPComp
 
         fuel_loop: do iFuel = 1, iNumFuel
 
           uncatagorized:
-     &    if ( .not. bPltUseCatagorized(iComponent, iFuel ) .and.
+     &    if ( .not. bPltUseCatagorized(iPltComp, iFuel ) .and.
      &         .not. bNumsAreClose ) then
 
-            fPltEnergyUse(iComponent, iFuel, iUseSpaceHeat )
-     &        =   fPltEnergyUse( iComponent, iFuel, iUseUncatagorized )
+            fPltEnergyUse(iPltComp, iFuel, iUseSpaceHeat )
+     &        =   fPltEnergyUse( iPltComp, iFuel, iUseUncatagorized )
      &          * fLoadRatioSH
 
-            fPltEnergyUse(iComponent, iFuel, iUseDHW)
-     &        =   fPltEnergyUse( iComponent, iFuel, iUseUncatagorized )
+            fPltEnergyUse(iPltComp, iFuel, iUseDHW)
+     &        =   fPltEnergyUse( iPltComp, iFuel, iUseUncatagorized )
      &          * fLoadRatioWH
 
-            fPltEnergyUse( iComponent, iFuel, iUseUncatagorized ) = 0.0
+            fPltEnergyUse( iPltComp, iFuel, iUseUncatagorized ) = 0.0
 
           endif uncatagorized
 
@@ -850,7 +1019,9 @@ C
 C=======================================================================
       real function fConvertEnergyToFuelAmount(fEnergy,iFuelIndex)
       implicit none
+#include "building.h"
 #include "plant.h"
+#include "power.h"
 #include "OffsiteUtilitiesPublic.h"
 #include "OffsiteUtilitiesPrivate.h"
 

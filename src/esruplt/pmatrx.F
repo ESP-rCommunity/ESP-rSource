@@ -1171,10 +1171,7 @@ C Trace output
 c This subroutine keeps track of plantsteps per month.
       IF(ISTATS.eq.1) CALL TrackPlantTimeSteps()
 
-C Zero plant component model energy usage storage array.
-      call ZeroPltEnergyStorageArray()
 
-C
 C For each defined plant component, call the appropriate coefficient
 C generator (CMP??C) to generate the balance equations as required.
 C Finally locate the generated coefficients in the network matrix which
