@@ -74,7 +74,7 @@ C Establish if material data arrays have been filled. If not return.
       endif
 
 C Materials - find and display unique elements.
-      call edisp(iuout,' Material selection. ')
+      call edisp(iuout,' Material selection.')
 
 C This returns the number of unique materials and array of
 C materials array indices.
@@ -89,6 +89,8 @@ C Now find the names of the materials.
 C And if matarrayindex is zero then re-establish NAM.
         if(matarrayindex.eq.0)then
           NAM='AIR'
+        elseif(matarrayindex.lt.0)then
+          NAM='Confused'
         else
           write(NAM,'(a)') matname(matarrayindex)(1:32)
         endif
@@ -278,7 +280,7 @@ C Pick a material in that MLC.
      &       matopaq(matarrayindex)(1:1).eq.'h'.or.
      &       matarrayindex.eq.0)then
             NAM='AIR'
-          elseif(matarrayindex.eq.-99)then
+          elseif(matarrayindex.lt.0)then
             IER=101  ! can no deal with this
             return
           else
