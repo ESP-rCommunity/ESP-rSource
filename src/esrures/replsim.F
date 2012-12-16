@@ -119,7 +119,7 @@ C but if using GTK then we need the full length to avoid truncation.
         if(ier.eq.-3) return  ! cancel detected pass back -3 in ier.
 
         if (longtmp.eq.' ') goto 45
-	call fdroot(longtmp,path,LCFGF)
+        call fdroot(longtmp,path,LCFGF)
         if(longtmp(1:2).ne.'  ')GOTO 289
         RETURN
       ENDIF

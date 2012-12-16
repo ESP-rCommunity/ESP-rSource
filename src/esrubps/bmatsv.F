@@ -411,8 +411,7 @@ C iblnd(i,j) contains the index to the SHOCC zone blind array [1,~]
 C Initialize HVAC variables
       call ZERO_HVAC_VAR
 
-C Initialize DHW
-      call DHW_Initialize
+
 
 C Initialize zone<->plant casual gain coupling
       call plt_zone_gain_zero()
@@ -526,6 +525,11 @@ C and process file if necessary.
         if ( bBC_data_err ) bBC_data_defined = .false.
       endif
 
+
+C Initialize DHW - NOTE this has been moved down below BCD initialization
+! to support a column check in the DHW_Initialize function
+      call DHW_Initialize
+
 C Check to see if lookup table data file has been defined and
 C process file if necessary
 
@@ -536,8 +540,8 @@ C process file if necessary
         if ( bLookup_data_err ) bLookup_data_defined = .false.
       endif
 
-C Zero Site energy usage storage array
-      call ZeroFuelEnergyStorageArray()
+C Zero energy usage storage arrays
+      call ZeroEnergyStorageArrays()
 
 C Initialize file unit number. This number should correspond
 C to the climate file number. However, the climate file name
@@ -1087,6 +1091,12 @@ C component heat losses to associated zone/surface/
 C containment
             call plt_zone_gain_calc()
 
+C Call DHW simulation controller if DHW models are active.
+C This is placed here to be prior to Casual gains - so that the heat transfer to the zones may be accounted for.
+            if(iDHW_Flag.eq.1) then
+              call DHW_Main
+            endif
+
 C Determine for each component and surface, the defining
 C index and the adjacent space temperature and radiation
 C at the present and future time-rows.  Also set up plant
@@ -1357,11 +1367,6 @@ C Zone loop complete. Call HVAC simulation controller if HVAC models are active.
               call START_HVAC_SIM(i)
             endif
 
-C Call DHW simulation controller if DHW models are active.
-            if(iDHW_Flag.eq.1) then
-              call DHW_Main
-            endif
-
 C Transport climate data to reporting object
             if ( isH3KEnabled() )
      &          call H3K_transport_climi_data()
@@ -1400,6 +1405,9 @@ C Reset h3k zone control action flags
             call h3kReports_reset_zone_flags()
 
 C Building side now complete.
+
+
+C If there is no plant, then skip down to 77 and check for BLD side electrical network
             if(indcfg.eq.1)goto 77
 
 C~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

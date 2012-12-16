@@ -264,11 +264,12 @@ C Generally we want to assign values to the IPRMAT array so for each legacy
 C IPR. NOTE: in case there are multiple items with the same characters
 C in the name also check to see if the legacy index associated
 C with the found item matches the IPR scanned above. If we are
-C still confused mark IPRMAT as -99.
+C still confused mark IPRMAT as -1.
             ileghope=IPR(I,IL)   ! what we hope we will find a match for
 
 C Pass the legacy record number (ileghope) along with the name (NAM) of the
-C material and get back the index of the material array that fits.
+C material and get back the index of the material array that fits. If
+C nothing found matarrayindex is zero.
             call parsematdesc(ileghope,NAM,matarrayindex)
             if(matarrayindex.ne.0)then
 
@@ -295,7 +296,7 @@ C If a mis-match echo to the user corrective actions.
      &          'tion and re-select the correct material.'
                 call edisp(iuout,outs)
                 call edisp(iuout,' --- make a note of this NOW --- ')
-                IPRMAT(I,IL)=-99  ! could not find it
+                IPRMAT(I,IL)=-1  ! could not find it
               else
 
 C Found a matching matarray index, assign value to the IPRMAT. If
@@ -310,14 +311,15 @@ C in the value of IPRMAT (in case parsematdesc did not do this).
             else
 
 C Did not find it, check if IPR(I,IL) is zero, if so set
-C IPRMAT to zero to signal an air gap.  If not mark as -99
+C IPRMAT to zero to signal an air gap.  If not mark as -1
 C so that other facilities know about the confusion.
               if(IPR(I,IL).eq.0)then
                 IPRMAT(I,IL)=0  ! to signal std air gap
               else
-                IPRMAT(I,IL)=-99  ! could not find it DO WE WANT TO SET THIS NOW
+                IPRMAT(I,IL)=-1  ! could not find it
                 write(outs,*)'a material referenced in ',
-     &            MLCN(1:lnblnk(MLCN)),' was not found (set to -99).'
+     &            MLCN(1:lnblnk(MLCN)),
+     &            ' was not found (setting array index to -1).'
                 call edisp(iuout,outs)
               endif
             endif
@@ -333,11 +335,9 @@ C Currently space in the gap name are not allowed.
               DRAIR(I,IL,2)=VAL
               CALL EGETWR(NAM,K,VAL,0.,99.0,'W','other R',IER)
               DRAIR(I,IL,3)=VAL
-            ELSEIF(IPR(I,IL).EQ.-99)THEN
+            ELSEIF(IPR(I,IL).LT.0)THEN
 
 C For a layer with no legacy index use the matarray index and assign values.
-
-C << if we did have IPRMAT(I,IL) as -99 wouldn't this cause a crash?? >>
               matarrayindex=IPRMAT(I,IL)
               if(matarrayindex.ne.0)then
                 DBCON=matdbcon(matarrayindex)
@@ -767,14 +767,14 @@ C << todo - see if we can manage without using ileghope >>
 C Find a matching matname, if the legacy index associated with this item
 C matches ileghope then our search is complete.  If it does not match
 C ileghope then there could be duplicate names to check further. If
-C ileghope is -99 then return what was found as an index match not possible.
+C ileghope is -1 then return what was found as an index match not possible.
           do 43 imt=1,matdbitems
             if(testname(1:ltnam).eq.matname(imt)(1:ltnam))then
               if(matlegindex(imt).eq.ileghope)then
                 matarrayindex=imt
                 return
               else
-                if(ileghope.eq.-99)then
+                if(ileghope.eq.-1)then
                   matarrayindex=imt
                   return
                 else
@@ -989,7 +989,7 @@ c     &     matarrayindex.eq.0)then
           WRITE(PNAM(IL),'(A,3F5.2)')'air ',(DRAIR(IFOC,IL,IY),IY=1,3)
           RT=RT+DRAIR(IFOC,IL,1)
           RSI=DRAIR(IFOC,IL,1)
-        elseif(matarrayindex.eq.-99)then
+        elseif(matarrayindex.lt.0)then
 
 C Referenced item was not in the materials hash list. Write zeros.
           DBCON=0.0
@@ -1255,8 +1255,8 @@ c     &     matarrayindex.eq.0)then
           DBCON=0.0
           RT=RT+DRAIR(IFOC,IL,1)
           RSI=DRAIR(IFOC,IL,1)
-        elseif(matarrayindex.eq.-99)then
-          DBCON=0.0
+        elseif(matarrayindex.lt.0)then
+          DBCON=0.0  ! unknown material
         else
           DBCON=matdbcon(matarrayindex)
 
@@ -1488,7 +1488,7 @@ c     &       matopaq(matarrayindex)(1:1).eq.'h'.or.
 c     &       matarrayindex.eq.0)then
      &         matarrayindex.eq.0)then
             WRITE(PNAM(IL),'(A,1X,3F6.3)')'gap',(DRAIR(I,IL,IY),IY=1,3)
-          ELSEIF(matarrayindex.EQ.-99)THEN
+          ELSEIF(matarrayindex.LT.0)THEN
 
 C A confused material found.
             write(NAM,'(a)')

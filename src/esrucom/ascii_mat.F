@@ -160,6 +160,7 @@ C Clear the materials common blocks.
 C Fill the hash table with not included marker (-1) and clear the
 C array of duplicate checking names and materials data.
       nametocheck=' '
+      matopaq(-1)=' '  ! clear the confused material slot
       do ih=0,600
         mathash(ih)=-1
         if(ih.gt.0)namelist(ih)=' '
@@ -586,7 +587,7 @@ C Name of current application - only invoke editing if prj.
       character WORD32*32,WORD248*248,LOUTSTR*248
       logical closemat1,closemat2
       character namelist*32,nametocheck*32  ! to check for duplicate names
-      character outs*124,lltmp*144,longtfile*144,longtfiledos*144
+      character outs*132,lltmp*144,longtfile*144,longtfiledos*144
       dimension namelist(600)
       integer loop,ih  ! loop indices
       integer iln,iln2 ! length of name strings

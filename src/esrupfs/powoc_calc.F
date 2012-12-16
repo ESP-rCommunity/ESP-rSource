@@ -1699,6 +1699,7 @@ C ------------------------------------------------------------------------------
 #include "plant.h"
 #include "power.h"
 #include "Hydrogen_demand_controller.h"
+#include "OffsiteUtilitiesPublic.h"
 
 C---------------------------------------------------------------------------------
 C     Passed variables

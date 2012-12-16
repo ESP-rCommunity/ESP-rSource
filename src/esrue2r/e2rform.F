@@ -731,7 +731,7 @@ C For the inside and outside layer get surface properties.
         if(matarrayindex.ge.0)then
           AE=matdbina(matarrayindex)
         endif
-	
+
         matarrayindex=IPRMAT(IM,LAYERS(IM))   ! which materials array index
         if(matarrayindex.ge.0)then
           AI=matdbina(matarrayindex)

@@ -348,7 +348,7 @@ C- To revert back to original remove npts from following statement
         if(npts.eq.0) npts=1
         TST=TSTART/real(npts)
         TFI=TFINISH/real(npts)
-	TSCR=TSC*real(npts)
+        TSCR=TSC*real(npts)
 C        call horaxis(TST,TFI,iigl,iigr,iigb,Xadd,TSCR,1,'Time Hrs')
         if(horaxisdiv.eq.0.or.horaxisdiv.eq.1)then
 

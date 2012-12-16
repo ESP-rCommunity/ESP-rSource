@@ -99,6 +99,7 @@ c Calculated Values
        REAL    fFGas                       !FlueGas Loss Factor
        REAL    fFTank                      !Energy Factor of Tank
        REAL    fUA                         !UA value of Tank
+
         
 c Monthly values Arrays 
         REAL    fSumTotalEnergy(12)             !Fuel energy required
@@ -142,16 +143,16 @@ c Function Declarations
 C.......Array used to store data for H3Kreports, transport to
 C.......site-utilities.
         common/DHW_H3Kdata_storage/
-     &         fDHW_H3K_energy_requirement,
-     &         fDHW_H3K_energy_transfer_to_water,
-     &         fDHW_H3K_water_draw,
-     &         fDHW_H3K_supply_temp,
-     &         fDHW_H3K_delivery_temp,
-     &         fDHW_H3K_heating_load,
-     &         fDHW_H3K_flue_loss,
-     &         fDHW_H3K_skin_loss,
-     &         fDHW_H3K_heat_xfer_to_room,
-     &         fDHW_H3K_pilot_energy
+     &         fDHW_H3K_energy_requirement(2),
+     &         fDHW_H3K_energy_transfer_to_water(2),
+     &         fDHW_H3K_water_draw(2),
+     &         fDHW_H3K_supply_temp(2),
+     &         fDHW_H3K_delivery_temp(2),
+     &         fDHW_H3K_heating_load(2),
+     &         fDHW_H3K_flue_loss(2),
+     &         fDHW_H3K_skin_loss(2),
+     &         fDHW_H3K_heat_xfer_to_room(2),
+     &         fDHW_H3K_pilot_energy(2)
 
 C.......Energy input (fuel calorific value) needed by DHW system (W)
         real fDHW_H3K_energy_requirement
@@ -180,3 +181,12 @@ C.......Heat trasnfer to room (W)
 
 C.......Pilot energy (W)
         real fDHW_H3K_pilot_energy
+
+       COMMON/DHW_BCD/
+     &  fDayDrawMultiplier,
+     &  cDHW_BCD_col, bDHW_BCD
+
+      REAL fDayDrawMultiplier ! multiplier from fDayLitres to boundary condition file value
+
+      CHARACTER*248 cDHW_BCD_col
+      LOGICAL bDHW_BCD

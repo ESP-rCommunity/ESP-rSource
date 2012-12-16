@@ -880,7 +880,7 @@ C scan it in at this point. Read the 2nd item on record 32 to get location.
 C Debug.
 C        write(6,*) 'opnplt: newer plant ',iftype
 
-	IPLIB=2
+        IPLIB=2
         IREC=32
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000)iftype,ireccfg
 
@@ -893,7 +893,7 @@ C        write(6,*) 'opnplt: the jump for cfg ',ireccfg
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) secondbit
         lnfb=lnblnk(firstbit)
         lnsb=lnblnk(secondbit)
-	write(longtmp,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
+        write(longtmp,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
 
 C Debug.
 C        write(6,*) longtmp
@@ -1007,7 +1007,7 @@ C Read climate file name.
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) secondbit
         lnfb=lnblnk(firstbit)
         lnsb=lnblnk(secondbit)
-	write(LCLIM,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
+        write(LCLIM,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
 
 C Debug.
 C        write(6,*) 'plant lclim is ',LCLIM
@@ -1063,7 +1063,7 @@ C Read plant component file name (long or short)
         IREC=IREC+1
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) firstbit
         lnfb=lnblnk(firstbit)
-	write(Lpcdb,'(a)') firstbit(1:lnfb)
+        write(Lpcdb,'(a)') firstbit(1:lnfb)
 
 C Debug.
 C        write(6,*) Lpcdb
@@ -1075,7 +1075,7 @@ C        write(6,*) Lpcdb
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) secondbit
         lnfb=lnblnk(firstbit)
         lnsb=lnblnk(secondbit)
-	write(Lpcdb,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
+        write(Lpcdb,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
 
 C Debug.
 C        write(6,*) Lpcdb
@@ -1095,7 +1095,7 @@ C        write(6,*) ' irec at  cfg file name ',irec
         READ(IUNITp,REC=IREC,IOSTAT=ISTAT,ERR=1000) secondbit
         lnfb=lnblnk(firstbit)
         lnsb=lnblnk(secondbit)
-	write(longtmp,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
+        write(longtmp,'(2a)') firstbit(1:lnfb),secondbit(1:lnsb)
 
 C Debug.
 C        write(6,*) longtmp
