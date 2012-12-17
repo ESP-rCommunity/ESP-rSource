@@ -26,9 +26,9 @@ C -5. Pumps per w/m2  -6. Lifts w/m^2, -7. DHW w/m^2
      &  CBMGS(MDTY,MC),CBMGL(MDTY,MC),BRADC(MDTY,MC),BCONC(MDTY,MC),
      &  IBCGT(MDTY,MC)
 
-C Descriptive label for a zone load or casual gain types.
+C Descriptive label for each dispered demand type.
 C blodlabel(1)='Occup',(2)='Lights',(3)='SmPowr',(4)='Fans',(5)='Pumps',(6)='Lifts',(7)='DHW'     
-      character*6 blodlabel
+      character*12 blodlabel
       common/bloadlabel/blodlabel(MGTY)
 
 C Does each gain type on each day:

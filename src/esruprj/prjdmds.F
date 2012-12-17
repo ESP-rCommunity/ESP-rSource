@@ -169,7 +169,7 @@ C Clear all of the possible day types and gain types.
 
 C Initial IPV demand inclusion for each type set to zero.
       do 343 ij=1,MGTY
-        blodlabel(ij)='     '
+        blodlabel(ij)='         '
         dmdfla(ij)= 1.0
         idmdinc(ij)=0
  343  continue
@@ -178,12 +178,12 @@ C Initial IPV demand inclusion for each type set to zero.
       dmdsdesc='no dispersed demands notes (yet)'
       IER=0
 
-C Set the default demand type labels
-      blodlabel(1)='Other '
+C Set the default dispersed demand type labels
+ 42   blodlabel(1)='Other '
       dmdfla(1)= 1.0
       blodlabel(2)='Lights'
       dmdfla(2)= 1.0
-      blodlabel(3)='SmPowr'      
+      blodlabel(3)='SmallPower'      
       dmdfla(3)= 1.0
       blodlabel(4)='Fans  '
       dmdfla(4)= 1.0
@@ -191,17 +191,17 @@ C Set the default demand type labels
       dmdfla(5)= 1.0
       blodlabel(6)='Lifts '      
       dmdfla(6)= 1.0
-      blodlabel(7)='DHW   '      
+      blodlabel(7)='DomesticHW'      
       dmdfla(7)= 1.0
 
 C Read file for editing or listing. If there is no file then begin with
 C default data.
-      H(1)='A project demands file contains project level info'
+      H(1)='A dispersed demands file contains project level info'
       H(2)='on fans, pumps, lifts, DHW demands which may '
       H(3)='be applied to an integrated performance view. '
       ltmp=BDMDS
-      CALL EASKS(ltmp,' Project demands file name: ',
-     &      ' ',72,GFILE,'proj demands file',IER,3)
+      CALL EASKS(ltmp,'Dispersed demands file name',
+     &  'Confirm:',72,GFILE,'proj demands file',IER,3)
       if(ltmp(1:2).ne.'  '.and.ltmp(1:4).ne.'UNKN')then
         BDMDS=ltmp
       endif
@@ -213,6 +213,8 @@ C default data.
         CALL ERBDMD(ITRC,ITRU,IUO,IER)
 
 C Do cursory check to see if the file is sorted.
+
+C << put in a loop for each of the calendar day types >>
         sorted=.true.
         problem=.false.
         call dmdchecksort(1,problem,ier)
@@ -237,15 +239,17 @@ C Do cursory check to see if the file is sorted.
         endif
       ELSE
 
-C << place for future user choices >>
+C No file was located. As the user what to do.
+        call edisp(iuout,
+     &    'No existing file, starting with default values.')
         idmdver=1
       ENDIF
 
   20  write(ITEM(1),'(A,A25)')'a notes: ',dmdsdesc(1:25)
       ITEM(2) =               'b type associated base areas     '
       ITEM(4) =               '  _________________________      '
-      ITEM(5)=                'd edit project demands           '
-      ITEM(6)=                'e zeroise project demands        '
+      ITEM(5)=                'd edit dispersed demands         '
+      ITEM(6)=                'e zeroise dispersed demands      '
       if(iwss.eq.1)then
         write(item(3),'(3a)') 'c focus on >> ',calentag(iwss),'        '
         ITEM(7)=              '                                 '
@@ -254,7 +258,7 @@ C << place for future user choices >>
         write(item(7),'(3a)') 'f copy ',calentag(iwss-1),' demands     '
       endif
       ITEM(8)=                '  _________________________      '
-      ITEM(9)=                'l list project demands   '
+      ITEM(9)=                'l list dispersed demands   '
       ITEM(10)=               '  _________________________      '
       ITEM(11)=               '> save                           '
       ITEM(12)=               '? help                           '
@@ -284,7 +288,7 @@ C Help text for this menu.
       H(20)=' 2) For each calendar day type e.g. Weekday, Saturday,'
       H(21)='    Sunday, holiday (etc.) demands data:'
       H(22)='       Start and finish hours for each period'
-      H(23)='       Casual gain type:'
+      H(23)='       Demand type:'
       H(24)='         type 1: usually other demands'
       H(25)='         type 2: usually lighting demands'
       H(26)='         type 3: usually small power demands'
@@ -328,8 +332,8 @@ C << deals with.
         endif
         if(.NOT.sorted)then
           dok=.true.
-          h(1)='The dispersed demand periods do not cover the entire'
-          h(2)='day or might have gaps or overlaps. You should correct'
+          h(1)='The dispersed demand periods should cover the entire'
+          h(2)='day (no gaps or overlaps). You should correct periods'
           h(3)='this prior to leaving this facility. If you say no then'
           h(4)='the dispersed demands might be mis-interpreted. '
           CALL askok(
@@ -348,7 +352,7 @@ C If the file changed then warn the user about lost data.
      &      ' changes that you might have made ?',OK,dok,2)
           IF(.not.OK) return
           LTMP=bdmds
-   91     H(1)='A project demands file contains project level info'
+   91     H(1)='A dispersed demands file contains project level info'
           H(2)='on fans, pumps, lifts, DHW demands which may '
           H(3)='be applied to an integrated performance view. '
           CALL EASKS(LTMP,' Project demands file name: ',
@@ -364,7 +368,7 @@ C If the file changed then warn the user about lost data.
       ELSEIF(INO.EQ.1)THEN
 
 C Edit loads description.
-        H(1)='Project demands schedules have notes' 
+        H(1)='Dispersed demands schedules have notes' 
         H(2)='(<248 char) which will be included in reports.'
         tcname=dmdsdesc
         CALL EASKS248(tcname,' Dispersed demands notes: ',' ',
@@ -378,15 +382,15 @@ C << echo the floor area of the various zones >>
 C << to be done... >>
         call edisp(iuout,'Current areas for:')
         call edisp(iuout,
-     &    'Occupants Lights Small Pwr Fans Pumps Lifts DHW')
+     &    'Other Lights Small Power Fans Pumps Lifts DHW')
         WRITE(hold,'(7f8.1,a)')dmdfla(1),dmdfla(2),dmdfla(3),dmdfla(4),
      &    dmdfla(5),dmdfla(6),dmdfla(7),'  '
         call edisp(iuout,hold)
-        h(1)='Optional base area associated with each demand type. '
+        h(1)='Base area associated with each demand type. '
         h(2)='This will be used to support IPV creation for period '
-        h(3)='data which is per m^2. '
+        h(3)='data which is Watts per m^2. '
         CALL EASKS(hold,
-     &    'Area (m^2) for occup lights sm power fans pumps lifts DHW',
+     &    'Area (m^2) for other lights sm power fans pumps lifts DHW',
      &    ' : ',60,' 1.0 1.0 1.0 1.0 1.0 1.0 1.0 ','dmd floor area',
      &    IER,3)
         K=0
@@ -453,7 +457,7 @@ C Save common block information to file.
           LTMP=bdmds
         endif
 
-   9    H(1)='A project demands file contains building level info'
+   9    H(1)='Dispersed demands file contains building level info'
         H(2)='on fans, pumps, lifts, DHW casual gains which may '
         H(3)='be applied to an integrated performance view. '
         CALL EASKS(LTMP,' Dispersed demands file name: ',
@@ -542,22 +546,22 @@ C Local editing arrays.
       dimension IEBCGS(MC),IEBCGF(MC),CEBMGS(MC),CEBMGL(MC),BERADC(MC)
       dimension IEBCGT(MC),BECONC(MC)
       dimension vert(35),X(5)
-      CHARACTER vert*43,head*28,H*72,outs*124,KEY*1,hold*40
+      CHARACTER vert*50,head*28,H*72,outs*124,KEY*1,hold*40
 
 C blodlabel(1)='Other',(2)='Lights',(3)='SmPowr',(4)='Fans',(5)='Pumps',(6)='Lifts',(7)='DHW'     
-      character*8 ll1,ll2,ll3,ll4,ll5,ll6,ll7
+      character*12 ll1,ll2,ll3,ll4,ll5,ll6,ll7
       character calename*32,calentag*12,calendayname*32
       integer IEBCGTS,IWM  ! for radio buttons
       integer MVERT,IVERT ! max items and current menu item
 
 C Labels for loads.
-      write(ll1,'(1x,a6,1x)') blodlabel(1)
-      write(ll2,'(1x,a6,1x)') blodlabel(2)
-      write(ll3,'(1x,a6,1x)') blodlabel(3)
-      write(ll4,'(1x,a6,1x)') blodlabel(4)
-      write(ll5,'(1x,a6,1x)') blodlabel(5)
-      write(ll6,'(1x,a6,1x)') blodlabel(6)
-      write(ll7,'(1x,a6,1x)') blodlabel(7)
+      write(ll1,'(a)') blodlabel(1)
+      write(ll2,'(a)') blodlabel(2)
+      write(ll3,'(a)') blodlabel(3)
+      write(ll4,'(a)') blodlabel(4)
+      write(ll5,'(a)') blodlabel(5)
+      write(ll6,'(a)') blodlabel(6)
+      write(ll7,'(a)') blodlabel(7)
 
 C Defaults for any new gains.
       if(iwss.eq.1)idt = 1
@@ -620,7 +624,7 @@ C current menu line index. Build up text strings for the menu.
      &       blodlabel(IABS(IEBCGT(L))),'Wm2',CEBMGS(L),CEBMGL(L),
      &       BERADC(L),BECONC(L)
           endif
-  303     FORMAT(A1,I5,I3,1x,A6,A3,F7.0,F7.0,F5.2,F5.2)
+  303     FORMAT(A1,I4,I4,1x,A,A3,F7.1,F7.1,F5.2,F5.2)
         ENDIF
    10 CONTINUE
 
@@ -633,16 +637,16 @@ C current menu line index. Build up text strings for the menu.
         endif
       endif
       write(VERT(1),'(A)') head
-      vert(2) =            '1 (electrical power not yet implemented)  '
-      vert(3) =            '  ______________________________________  '
-      vert(4) =            '  Start End Type   Sensib Latent Rad  Conv'
+      vert(2) =  '1 (electrical power not yet implemented)         '
+      vert(3) =  ' _______________________________________________ '
+      vert(4) =  ' Start End Type    Unit Sensible Latent Rad  Conv'
 
 C Number of actual items displayed.
       MVERT=M+MCTL
 
 C If a long list include page facility text.      
       IF(IPFLG.EQ.0)THEN
-        VERT(M+1)='  __________________________  '
+        VERT(M+1)='  ___________________________________________  '
       ELSE
         WRITE(VERT(M+1),15)IPM,MPM 
    15   FORMAT   ('0 Page --- Part: ',I2,' of ',I2,' ---')
@@ -700,7 +704,7 @@ C Now display the menu.
 
 C << probably need to change to a menu selection >>
         IEBCGTS=1
-        CALL EASKATOG('Apply scaling factor to which casual gain type?',
+        CALL EASKATOG('Apply scaling factor to which dispersed type?',
      &     ' : ',ll1,ll2,ll3,ll4,ll5,ll6,ll7,IEBCGTS,3)
         VAL=1.0
         CALL EASKR(VAL,' ',' Factor to be applied (0.1 to 5.0) ',
@@ -793,11 +797,11 @@ C Edit block identified by KEYIND.
 
 C Remind user of current values.
         call edisp(iuout,
-     &    'start end label    sensible  latent radiant convective')
+     &  'start end label   unit sensible  latent radiant convective')
         WRITE(outs,304) IEBCGS(I),IEBCGF(I),
      &       blodlabel(IABS(IEBCGT(I))),'W  ',CEBMGS(I),CEBMGL(I),
      &       BERADC(I),BECONC(I)
-  304     FORMAT(I5,I4,1x,A6,A3,F8.1,F8.1,F7.2,F7.2)
+  304     FORMAT(I5,I4,1x,A,A3,F8.1,F8.1,F7.2,F7.2)
         call edisp(iuout,outs)
 
         WRITE(OUTS,'(A,I2)') ' Start and finish hours for period ',I
@@ -815,7 +819,7 @@ C << remind user of the current type. convert choice to menu >>
         H(1)='The type of demand can be one of those listed in the '
         H(2)='selections. '
         IWM=1
-        CALL EASKATOG('Which casual gain type?',
+        CALL EASKATOG('Which dispersed type?',
      &     ' : ',ll1,ll2,ll3,ll4,ll5,ll6,ll7,IWM,2)
 
 C Depending on type set relevant included in the IPV idmdinc value.
@@ -910,7 +914,7 @@ C Profile database commons via profile.h.
       DIMENSION  DESC(MGIT),IPRVAL(MGIT)
       CHARACTER*40 DESC
       CHARACTER H*72,hold*40
-      character*8 ll1,ll2,ll3,ll4,ll5,ll6,ll7
+      character*12 ll1,ll2,ll3,ll4,ll5,ll6,ll7
       character calename*32,calentag*12,calendayname*32
       character lltmp*144
       character fs*1   ! file separator
@@ -926,13 +930,13 @@ C Set folder separator (fs) to \ or / as required.
       endif
 
 C Labels for loads.
-      write(ll1,'(1x,a6,1x)') blodlabel(1)
-      write(ll2,'(1x,a6,1x)') blodlabel(2)
-      write(ll3,'(1x,a6,1x)') blodlabel(3)
-      write(ll4,'(1x,a6,1x)') blodlabel(4)
-      write(ll5,'(1x,a6,1x)') blodlabel(5)
-      write(ll6,'(1x,a6,1x)') blodlabel(6)
-      write(ll7,'(1x,a6,1x)') blodlabel(7)
+      write(ll1,'(a)') blodlabel(1)
+      write(ll2,'(a)') blodlabel(2)
+      write(ll3,'(a)') blodlabel(3)
+      write(ll4,'(a)') blodlabel(4)
+      write(ll5,'(a)') blodlabel(5)
+      write(ll6,'(a)') blodlabel(6)
+      write(ll7,'(a)') blodlabel(7)
 
       IER=0
       ICGTL=1
@@ -1241,11 +1245,11 @@ C Error messages.
  1001 call usrmsg(' ',' No type names found ...supplying defaults.','-')
       blodlabel(1)='Other '
       blodlabel(2)='Lights'
-      blodlabel(3)='SmPowr'      
+      blodlabel(3)='SmallPower'      
       blodlabel(4)='Fans  '
       blodlabel(5)='Pumps '
       blodlabel(6)='Lifts '      
-      blodlabel(7)='DHW   '      
+      blodlabel(7)='DomesticHW'      
       goto 1235
 
  1002 write(outs,'(3a)') 'ERBDMD: conversion error in...',
@@ -1291,7 +1295,8 @@ C Calendar commons.
 
       CHARACTER OPFIL*72
       character calename*32,calentag*12,calendayname*32
-      character dstmp*24
+      character dstmp*24,louts*124
+      integer itrunc,ipos,loutln
 
       IER=0
 
@@ -1348,16 +1353,37 @@ C written at the end of the file.
 
 5460  FORMAT(1X,3(I4,','),F11.3,',',F11.3,',',F6.3,',',F6.3)
 C Write out the type labels and associated areas.
-      WRITE(IUO,'(a)')'# Labels for demand types '
-      WRITE(IUO,'(7(1X,A6))',IOSTAT=ISTAT,ERR=1)(blodlabel(I),I=1,7)
-      WRITE(IUO,'(a)')'# Areas associated with demand types '
-      WRITE(IUO,'(7F11.2)',IOSTAT=ISTAT,ERR=1)(dmdfla(I),I=1,7)
+      WRITE(IUO,'(a)')'# Labels for dispersed demand types '
+      itrunc=1
+      ipos=1
+      do while (itrunc.ne.0)
+        call aslist(ipos,7,blodlabel,7,'C',louts,loutln,itrunc)
+        write(iuo,'(1x,a)',IOSTAT=ios,ERR=146) louts(1:loutln)
+        ipos=itrunc+1
+      end do
+
+      WRITE(IUO,'(a)')'# Areas associated with dispersed demand types'
+      itrunc=1
+      ipos=1
+      do while (itrunc.ne.0)
+        call arlist(ipos,7,dmdfla,7,'C',louts,loutln,itrunc)
+        write(iuo,'(1x,a)',IOSTAT=ios,ERR=146) louts(1:loutln)
+        ipos=itrunc+1
+      end do
       CALL ERPFREE(IUO,ISTAT)
       RETURN
 
  1    call usrmsg(' Project demands file transfer error !',
      &            ' returning to menu...','W')
       RETURN
+
+C Error messages.
+  146 if(IOS.eq.2)then
+        CALL USRMSG(' No permission to write ',OPFIL,'W')
+      else
+        CALL USRMSG(' File write error in ',OPFIL,'W')
+      endif
+      return
 
       END
 
@@ -1389,10 +1415,14 @@ C Calendar commons.
      &    ' demands =',NBCAS(idt)
         call edisp(itru,outs)
         IF(NBCAS(idt).GT.0)THEN
-          call edisp(itru,
-     &  ' Gain Type Start Finish Sensible  Latent    Radiant   Convec')
-          call edisp(itru,
-     &  '           Hour  Hour   Magn. (W) Magn. (W) Frac      Frac')
+          write(outs,'(2a)')
+     &    ' Gain Type      Unit Start Finish Sensible  Latent    ',
+     &    'Radiant  Convecive'
+          call edisp(itru,outs)
+          write(outs,'(2a)')
+     &    '                     Hour  Hour   Magnitude Magnitude ',
+     &    'Fraction Fraction'
+          call edisp(itru,outs)
           DO 1270 I=1,NBCAS(idt)
             if(IBCGT(idt,i).gt.0)then
               WRITE(outs,5360)I,blodlabel(IABS(IBCGT(idt,I))),'W  ',
@@ -1409,7 +1439,7 @@ C Calendar commons.
         call edisp(itru,' ')
   30  continue
 
-5360  FORMAT(I4,1x,A6,A3,I5,I3,F9.1,F9.1,F11.2,F11.2)
+5360  FORMAT(I3,1x,A,A3,I5,I7,F10.2,F10.2,F10.2,F10.2)
 
       RETURN
       END
