@@ -3342,8 +3342,10 @@ C Calendar.
       INTEGER :: icalender,nbcaldays,nbdaytype
 
       CHARACTER DFILE*72,LLASCI*144,lltmp*144,ltmp*96
-      character longtfile*144,longtafile*144,message*48,longtmp*144
-      CHARACTER DOIT*248,fs*1,TMODE*8,CLMLOC*30,LCOPY*144
+      character longtfile*144,longtafile*144,longtfiledos*144
+      character message*48,longtmp*144
+      CHARACTER DOIT*248,ldoit*300
+      CHARACTER fs*1,TMODE*8,CLMLOC*30,LCOPY*144
       CHARACTER OUTS*124,APP*6,ext*4,llclmdb*144
       LOGICAL OK,concat,COPYDEF,MODDB,XST,DOK,UNIXOK
       character dinstpath*60,path*72
@@ -3796,30 +3798,30 @@ C reflect it is local.
           if(copydef)then
 
 C Copy the default weather file (dclim) to the model folder.
-            doit = ' '
+            ldoit = ' '
             if(unixok)then
-              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+              write(ldoit,'(4a)',IOSTAT=IOS) 'cp ',
      &          DCLIM(1:lnblnk(DCLIM)),' ',LCOPY(1:lnblnk(LCOPY))
             else
               message='getting climate file from '
-              call dblongdoscopy(DCLIM,lcopy,message,doit,ier)
+              call dblongdoscopy(DCLIM,lcopy,message,ldoit,ier)
             endif
-            call runit(doit,'-')
+            call runit(ldoit,'-')
             LCLIM=longtmp
           else
 
 C Copy the current common weather file to the model folder.
-            doit = ' '
+            ldoit = ' '
             if(unixok)then
-              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+              write(ldoit,'(4a)',IOSTAT=IOS) 'cp ',
      &          llclmdb(1:lnblnk(llclmdb)),' ',LCOPY(1:lnblnk(LCOPY))
             else
 
 C Similar logic but using LCLIM.
               message='getting weather file from '
-              call dblongdoscopy(llclmdb,lcopy,message,doit,ier)
+              call dblongdoscopy(llclmdb,lcopy,message,ldoit,ier)
             endif
-            call runit(doit,'-')
+            call runit(ldoit,'-')
 
 C Assign weather file name to pass to the clm application.
             llclmdb=LCLIM
