@@ -1003,8 +1003,9 @@ C Use a slightly wider editing box than the name. Take the string
 C (T14) and ensure that there are no spaces or strange characters.
               T14='  '
               write(D14,'(2a)')SSNAME(ioc),'  '
-              write (outs,'(4a)')'Surface name (default=',D14,') for ',
-     &                           'highlighted surface'
+              write (outs,'(7a)')'Surface name (default=',D14,
+     &          ') composed of ',ssmlcn(ioc)(1:12),' facing ',
+     &          SSOTHER(ioc,1)(1:12),' highlighted surface'
  52           CALL EASKS(T14,outs,'(<=12 chars, no spaces)',
      &                   14,D14,'surface name',IER,nbhelp)
               write(T12,'(a)') T14(1:12)
@@ -3756,6 +3757,9 @@ C used for a partition if db does not have a linked MLC - inform the user.
                 endif
                 iissmlci=matsymindex(ii)  ! use returned value
               endif
+            else
+              iissmlci=0  ! mark as unknown
+              TOSMLCN='UNKNOWN'
             endif
 
 C Update the attributes of the other surface in the zone so it will
@@ -3897,6 +3901,9 @@ C used for a partition if db does not have a linked MLC - inform the user.
                     endif
                     iissmlci=matsymindex(ii)  ! use returned value
                   endif
+                else
+                  iissmlci=0  ! mark as unknown
+                  TOSMLCN='UNKNOWN'
                 endif
                 icoth=ICO  ! remember the connection for the other surface
 
@@ -4158,52 +4165,59 @@ C of this surface (i.e. if we went from unknown to a partition).
                 ii=ssmlcindex(ic)
 
 C Also check the other side construction and see if it matches. If
-C current surface MLC index is known get isymindex for the other side
-                lnmlcn=lnblnk(mlcname(ii))
-                lnssmlc=lnblnk(SSMLCN(icoth))
-                if(mlcsymetric(ii)(1:9).EQ.'SYMMETRIC')then
-                  if(SSMLCN(icoth)(1:lnssmlc).eq.
-     &               mlcname(ii)(1:lnmlcn))then
-                    TOSMLCN= mlcname(ii)
-                  elseif(SSMLCN(icoth)(1:4).eq.'UNKN')then
-                    TOSMLCN= mlcname(ii)
-                  else
-                    TOSMLCN= mlcname(ii)
-                  endif
-                  iissmlci=ii
-                elseif(mlcsymetric(ii)(1:12).EQ.'NONSYMMETRIC')then
+C current surface MLC index is known get isymindex for the other side.
+                if(ii.gt.0)then
+                  lnmlcn=lnblnk(mlcname(ii))
+                  lnssmlc=lnblnk(SSMLCN(icoth))
+                  if(mlcsymetric(ii)(1:9).EQ.'SYMMETRIC')then
+                    if(SSMLCN(icoth)(1:lnssmlc).eq.
+     &                 mlcname(ii)(1:lnmlcn))then
+                      TOSMLCN= mlcname(ii)
+                    elseif(SSMLCN(icoth)(1:4).eq.'UNKN')then
+                      TOSMLCN= mlcname(ii)
+                    else
+                      TOSMLCN= mlcname(ii)
+                    endif
+                    iissmlci=ii
+                  elseif(mlcsymetric(ii)(1:12).EQ.'NONSYMMETRIC')then
 
 C If the current construction is nonsymmetric then it should not be
 C used for a partition if db does not have a linked MLC - inform the user.
-                  write(outs,'(5a)') 'Surface ',SN(1:lnblnk(SN)),
-     &              ' has a nonsymmetric construction ',
-     &              SSMLCN(ic)(1:lnblnk(SSMLCN(ic))),'.'
-                  call edisp(iuout,outs)
-                  write(outs,'(5a)') 'It faces ',
-     &              SSNAME(icoth),' composed of ',
-     &              SSMLCN(icoth)(1:12),' (which may not match).'
-                  call edisp(iuout,outs)
-                  call edisp(iuout,
+                    write(outs,'(5a)') 'Surface ',SN(1:lnblnk(SN)),
+     &                ' has a nonsymmetric construction ',
+     &                SSMLCN(ic)(1:lnblnk(SSMLCN(ic))),'.'
+                    call edisp(iuout,outs)
+                    write(outs,'(5a)') 'It faces ',
+     &                SSNAME(icoth),' composed of ',
+     &                SSMLCN(icoth)(1:12),' (which may not match).'
+                    call edisp(iuout,outs)
+                    call edisp(iuout,
      &  'Please check attributes and/or revise the Cconstructions db.')
-                  iissmlci=matsymindex(ii)  ! use returned value 
-                else
-                  ii=ssmlcindex(ic)
-                  if(SSMLCN(icoth)(1:4).eq.'UNKN')then
-                    TOSMLCN= mlcsymetric(ii)
-                  elseif(SSMLCN(icoth)(1:12).eq.
-     &                   mlcsymetric(ii)(1:12))then
-                    TOSMLCN= mlcsymetric(ii)
+                    iissmlci=matsymindex(ii)  ! use returned value 
                   else
-                    TOSMLCN= mlcsymetric(ii)
+                    ii=ssmlcindex(ic)
+                    if(SSMLCN(icoth)(1:4).eq.'UNKN')then
+                      TOSMLCN= mlcsymetric(ii)
+                    elseif(SSMLCN(icoth)(1:12).eq.
+     &                     mlcsymetric(ii)(1:12))then
+                      TOSMLCN= mlcsymetric(ii)
+                    else
+                      TOSMLCN= mlcsymetric(ii)
+                    endif
+                    iissmlci=matsymindex(ii)  ! use returned value
                   endif
-                  iissmlci=matsymindex(ii)  ! use returned value
-                endif
 
 C At this point the other zone surface attributes are known.
-                icoth=ICO  ! remember the connection for the other surface
-                showother=.true.
-                updoth=.true.
-
+                  icoth=ICO  ! remember the connection for the other surface
+                  showother=.true.
+                  updoth=.true.
+                else
+                  iissmlci=0  ! set to ignore MLC
+                  TOSMLCN='UNKNOWN'
+                  icoth=ICO  ! remember the connection for the other surface
+                  showother=.true.
+                  updoth=.true.
+                endif
               elseif(INVT.eq.3)then
                 goto 13    ! user canceled so jump back
               endif
