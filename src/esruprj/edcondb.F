@@ -1481,10 +1481,6 @@ C Ask for name of the new construction.
             write(T12,'(a)') T14(1:12)
             call st2name(T12,mlcname(NMLC))
 
-C << mark for deletion >>
-            write(DESC(NMLC),'(7a)') mlcname(NMLC)(1:12),'  ',
-     &        mlctype(NMLC)(1:4),'  ',mlcoptical(NMLC)(1:12),'  ',
-     &        mlcsymetric(NMLC)(1:12)
           else
 
 C << for mlcver 1 to be done >>
@@ -1523,7 +1519,6 @@ C Compact the list by moving all the items in common MLC up one.
             mlcsymetric(IVV)=mlcsymetric(IVV+1)
             matsymindex(IVV)=matsymindex(IVV+1)
             mlccatindex(IVV)=mlccatindex(IVV+1)  ! assume same class 
-            DESC(IVV)=DESC(IVV+1)   !  mark for deletion
             LAYERS(IVV)=LAYERS(IVV+1)
             DO 892 ILL=1,LAYERS(IVV)
               DTHK(IVV,ILL)=DTHK(IVV+1,ILL)
@@ -1589,7 +1584,6 @@ C << for mlcver=1 there is no need for ipr >>
           mlcoptical(NMLC)=mlcoptical(IWHICH)
           matsymindex(NMLC)=0            ! reset to assume no reversed
           mlccatindex(NMLC)=mlccatindex(IWHICH)  ! assume same class 
-          DESC(NMLC)=DESC(IWHICH)        ! mark for deletion
           LAYERS(NMLC)=LAYERS(IWHICH)
           DO 792 ILL=1,LAYERS(NMLC)      ! copy layer attributes
             DTHK(NMLC,ILL)=DTHK(IWHICH,ILL)
@@ -1617,10 +1611,6 @@ C When editing the construction name use a slightly wider string buffer.
             write(T12,'(a)') T14(1:12)
             call st2name(T12,mlcname(NMLC))
 
-C << mark for deletion >>
-            write(DESC(NMLC),'(7a)') mlcname(NMLC)(1:12),'  ',
-     &        mlctype(NMLC)(1:4),'  ',mlcoptical(NMLC)(1:12),'  ',
-     &        mlcsymetric(NMLC)(1:12)
           else
             write(T34,'(2a)') mlcname(NMLC),'  '
             CALL EASKS(T34,
@@ -1660,9 +1650,6 @@ C there is room in the database copy data to a new item.
           mlcoptical(NMLC)=mlcoptical(IWHICH)
           mlccatindex(NMLC)=mlccatindex(IWHICH)  ! assume same class 
 
-C << mark for deletion 
-          DESC(NMLC)=DESC(IWHICH)
-
 C Remember original construction name as T12OTH scratch for editing as T12
 C and T34OTH and T34 for matver 1.
           WRITE(T12OTH,'(A)')mlcname(NMLC)(1:12)
@@ -1690,10 +1677,6 @@ C Update linked MLC including the name of the original MLC.
             write(mlcsymetric(NMLC),'(a)') T12OTH  ! point back to orig
             matsymindex(NMLC)=IWHICH
 
-C << mark for deletion
-            write(DESC(NMLC),'(7a)') mlcname(NMLC)(1:12),'  ',
-     &        mlctype(NMLC)(1:4),'  ',mlcoptical(NMLC)(1:12),'  ',
-     &        mlcsymetric(NMLC)(1:12)
           else
 
 C << for mlcver 1 still to be done >>
@@ -1703,11 +1686,6 @@ C << for mlcver 1 still to be done >>
 C Update the original to point to the inverted item.
           write(mlcsymetric(IWHICH),'(a)') mlcname(NMLC)  ! point to inverted
           matsymindex(IWHICH)=NMLC
-
-C << mark for deletion
-          write(DESC(IWHICH),'(7a)') mlcname(IWHICH)(1:12),'  ',
-     &        mlctype(IWHICH)(1:4),'  ',mlcoptical(IWHICH)(1:12),'  ',
-     &        mlcsymetric(IWHICH)(1:12)
 
 C Copy other data associated with the MLC.
           LAYERS(NMLC)=LAYERS(IWHICH)
@@ -2301,12 +2279,6 @@ C Finally copy temporary data into opposite layer.
             endif
           endif
 
-C Update DESC for focus construction before returning.
-C << mark for deletion
-          write(DESC(ifoc),'(7a)') mlcname(ifoc)(1:12),'  ',
-     &        mlctype(ifoc)(1:4),'  ',mlcoptical(ifoc)(1:12),'  ',
-     &        mlcsymetric(ifoc)(1:12)
-
           call edisp(iuout,'  ')
           call edisp(iuout,
      &      'Please ensure that you save the constructions...')
@@ -2852,20 +2824,10 @@ C << todo mlcver 1 >>
 C Update current MLC then find matching MLC and copy data associated
 C with the current MLC to the linked MLC. Lastly re-establish tokens
 C for the current item.
-C << mark for deletion
-          write(DESC(ifoc),'(7a)') mlcname(ifoc)(1:12),'  ',
-     &        mlctype(ifoc)(1:4),'  ',mlcoptical(ifoc)(1:12),'  ',
-     &        mlcsymetric(ifoc)(1:12)
-
           do 795 k=1,NMLC
             lnt32=lnblnk(mlcname(k))
             lnmlct=lnblnk(mlcsymetric(ifoc))
             if(mlcname(k)(1:lnt32).eq.mlcsymetric(ifoc)(1:lnmlct))then
-
-C << mark for deletion
-              write(DESC(k),'(7a)') mlcname(k)(1:12),'  ',
-     &          mlctype(k)(1:4),'  ',mlcoptical(k)(1:12),'  ',
-     &          mlcname(ifoc)(1:12)
               mlcsymetric(k)=mlcname(ifoc)  ! update other array
               matsymindex(k)=ifoc           ! update other to point to this one
               matsymindex(ifoc)=k           ! remember its array position
@@ -3010,17 +2972,9 @@ C Allow linking to inverted construction.
 
 C Update current MLC then find matching MLC and copy data associated
 C with the current MLC to the linked MLC.
-C << mark for deletion
-              write(DESC(iwhich),'(7a)') mlcname(iwhich)(1:12),'  ',
-     &          mlctype(iwhich)(1:4),'  ',mlcoptical(iwhich)(1:12),
-     &          '  ',mlcname(ifoc)(1:12)
               mlcsymetric(iwhich)=mlcname(ifoc)  ! update array
 
 C Extract strings from focus construction prior to updating its SYM tag.
-C << mark for deletion
-              write(DESC(ifoc),'(7a)') mlcname(ifoc)(1:12),'  ',
-     &          mlctype(ifoc)(1:4),'  ',mlcoptical(ifoc)(1:12),
-     &          '  ',mlcname(iwhich)(1:12)
               mlcsymetric(ifoc)=mlcname(iwhich)  ! update array
               matsymindex(ifoc)=iwhich   ! remember its array position
               matsymindex(iwhich)=ifoc   ! update other to point to this one
@@ -3043,10 +2997,6 @@ C construction and reset showother.
               mlcsymetric(ifoc)='NONSYMMETRIC'
             endif
 
-C << mark for deletion
-            write(DESC(ifoc),'(7a)') mlcname(ifoc)(1:12),'  ',
-     &        mlctype(ifoc)(1:4),'  ',mlcoptical(ifoc)(1:12),'  ',
-     &        mlcsymetric(ifoc)(1:12)
             moddb = .true.
             showother = .false.
           endif

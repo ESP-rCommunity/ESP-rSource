@@ -2507,7 +2507,6 @@ C << alternative to IPR needed >>
         ipathmul=1  
 
         NMLC=1
-        DESC(1)='first_constr  OPAQ  OPAQUE        SYMMETRIC'
         DTHK(1,1)=0.100
         IPR(1,1)=1
         LAYERS(1)=1
