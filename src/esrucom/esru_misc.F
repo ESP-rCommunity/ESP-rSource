@@ -1998,7 +1998,7 @@ C STEP 6 - Apply reverse transformation to Window/Door co-ordinates via
 C          ORTTRN to give vertices in global co-ords.
 
       SUBROUTINE ETRANFRAME(ITRC,IZONE,ISURF,N,X,Y,Z,FRW,XXF,YYF,ZZF,
-     &  IER)
+     &  nwvert,IER)
 #include "building.h"
 
 C Passed parameters:
@@ -2010,6 +2010,7 @@ C Passed parameters:
       real FRW      ! frame width (m)
       real XXF,YYF,ZZF ! array of returned frame coordinates
       DIMENSION  XXF(MV),YYF(MV),ZZF(MV)
+      integer nwvert  ! returned number of conformant new vertices
       integer ier   ! if 1 can not deal with complexity
 
       common/OUTIN/IUOUT,IUIN
@@ -2021,14 +2022,16 @@ C Local variables:
       real XPN,YPN    ! 2D coordinate array (plus offset)
       DIMENSION  XN(MV),YN(MV),XPN(MV),YPN(MV)
       real XL,YL    ! ?? 
-      DIMENSION  XL(MV),YL(MV) 
+      DIMENSION  XL(MV),YL(MV)
       real AIL,BIL,CIL  ! defines inner lines
       DIMENSION AIL(MVS),BIL(MVS),CIL(MVS)
       CHARACTER OUTSTR*124
       integer ITVX   ! number of vertices in polygon
       logical BCLOSE,ICLOSE,MCLOSE ! close to X or Y axis
       logical close  ! to avoid divide by zero
-      real pi
+      logical is180,close180  ! to avoid stright edge
+      dimension is180(MV)
+      real pi,ang3
 
 C Check if we can deal with additional complexity in parent surface.
       ITVX = N  ! remember N
@@ -2065,12 +2068,39 @@ C relative to the COG of the surface).
       XMIN=0.0
       YMIN=0.0
       DO 300 I=1,N
+
+C Also mark which of the edge angles is not close to 180 degrees.
+C Check where we are in the list of edges to ensure that we also
+C check from terminus vertex back to 1 & 2nd vertices.
+        is180(I)=.false.
+        if(I.lt.N-2)then
+          call ang3vtx(x(i),y(i),z(i),x(i+1),y(i+1),z(i+1),
+     &      x(i+2),y(i+2),z(i+2),ang3)
+C          write(6,*) 'angle v ',i,i+1,i+2,ang3
+          call eclose(ang3,180.,1.0,close180)
+          if(close180) is180(I)=.true.
+        elseif(I.eq.N-1)then
+          call ang3vtx(x(i),y(i),z(i),x(i+1),y(i+1),z(i+1),
+     &      x(1),y(1),z(1),ang3)
+C          write(6,*) 'angle v ',i,i+1,' 1',ang3
+          call eclose(ang3,180.,1.0,close180)
+          if(close180) is180(I)=.true.
+        elseif(I.eq.N)then
+          call ang3vtx(x(i),y(i),z(i),x(1),y(1),z(1),
+     &      x(2),y(2),z(2),ang3)
+C          write(6,*) 'angle v ',i,' 1 2',ang3
+          call eclose(ang3,180.,1.0,close180)
+          if(close180) is180(I)=.true.
+        endif
         CALL ORTTRN(X(I),Y(I),Z(I),TMAT,X1,Y1,ZZZ,IERR)
         IF(X1.LT.XMIN)XMIN=X1
         IF(Y1.LT.YMIN)YMIN=Y1
         XN(I)=X1
         YN(I)=Y1
   300 CONTINUE
+
+C Debug of list of angles that are close to 180 degrees.
+C      write(6,*) 'angles  ',is180
 
 C Offset the 2D coordinates so that lower left is at zero zero.
       if(XMIN.lt.0.0)then
@@ -2109,10 +2139,16 @@ C A1,B1,C1,A2,B2,C2,C22 are used in equation of line.
 C      AREA=0.  ! calculated area of inner polygon
 C      ITER=0   ! number of iterations to calculate required area
 
-C Loop through the 2D vertices.
-C 997  NWVERT=0   ! new vertices
+C Loop through all the possivblew 2D vertices.
       NWVERT=0   ! new vertices
       DO 765 IV=1,ITVX
+
+C If the next pair of edges would be a straight line do not bother.
+C This ensures that the AIL BIL CIL array is packed with only valid
+C corner data.
+        if(is180(iv))then
+          goto 765
+        endif
         I1=IV
         I2=IV+1
         IF(I1.EQ.ITVX)I2=1   ! end point at the start of polygon
@@ -2205,27 +2241,27 @@ C Figure out if M'or M'' is  contained within polygon
             BIL(NWVERT)=B2
             CIL(NWVERT)=C2
           ELSE
-            GOTO 765
+            GOTO 765  ! not a valid new corner
           ENDIF
         ENDIF
  765  CONTINUE
 
 C Debug.
       IF(ITRC.GT.1)THEN
-        WRITE(OUTSTR,'(a,42F8.3)') ' AIL:',(AIL(I),I=1,N)
+        WRITE(OUTSTR,'(a,42F8.3)') ' AIL:',(AIL(I),I=1,NWVERT)
         CALL EDISP(IUOUT,OUTSTR)
-        WRITE(OUTSTR,'(a,42F8.3)') ' BIL:',(BIL(I),I=1,N)
+        WRITE(OUTSTR,'(a,42F8.3)') ' BIL:',(BIL(I),I=1,NWVERT)
         CALL EDISP(IUOUT,OUTSTR)
-        WRITE(OUTSTR,'(a,42F8.3)') ' CIL:',(CIL(I),I=1,N)
+        WRITE(OUTSTR,'(a,42F8.3)') ' CIL:',(CIL(I),I=1,NWVERT)
         CALL EDISP(IUOUT,OUTSTR)
       endif
 
 C Solve equation to get intersections of the inner polygon 
 C XL,YL (2D points).
-      DO 766 IV=1,ITVX
+      DO 766 IV=1,NWVERT
         I1=IV
         I2=IV+1
-        IF(I1.EQ.ITVX)I2=1 
+        IF(I1.EQ.NWVERT)I2=1 
         XL(I1)= (((CIL(I1))*(AIL(I2)))-((CIL(I2))*(AIL(I1))))/
      &          (((BIL(I1))*(AIL(I2)))-((AIL(I1))*(BIL(I2))))
         YL(I1)= (((CIL(I1))*(BIL(I2)))-((CIL(I2))*(BIL(I1))))/
@@ -2243,10 +2279,11 @@ C the offsets.
  766  CONTINUE  
 
 C Take frame coords and apply reverse transformation from 2D to 3D.
-C Adjust looping to prevent the first edge of the new polygon being vertical. 
-      DO 350 K = 1,ITVX
+C Adjust looping to prevent the first edge of the new polygon being
+C vertical. Note: working within packed list.
+      DO 350 K = 1,NWVERT
         if(K.eq.1)then
-          I1=ITVX
+          I1=NWVERT
         else
           I1=K-1
         endif
@@ -2257,11 +2294,11 @@ C Adjust looping to prevent the first edge of the new polygon being vertical.
   350 CONTINUE
       IF(ITRC.GT.1)THEN
         CALL EDISP(IUOUT,' Transformed frame coords: ')
-        WRITE(OUTSTR,'(a,42F8.3)') ' X coords:',(XXF(I),I=1,N)
+        WRITE(OUTSTR,'(a,42F8.3)') ' X coords:',(XXF(I),I=1,NWVERT)
         CALL EDISP(IUOUT,OUTSTR)
-        WRITE(OUTSTR,'(a,42F8.3)') ' Y coords:',(YYF(I),I=1,N)
+        WRITE(OUTSTR,'(a,42F8.3)') ' Y coords:',(YYF(I),I=1,NWVERT)
         CALL EDISP(IUOUT,OUTSTR)
-        WRITE(OUTSTR,'(a,42F8.3)') ' Z coords:',(ZZF(I),I=1,N)
+        WRITE(OUTSTR,'(a,42F8.3)') ' Z coords:',(ZZF(I),I=1,NWVERT)
         CALL EDISP(IUOUT,OUTSTR)
       ENDIF
 

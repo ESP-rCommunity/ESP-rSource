@@ -22,6 +22,6 @@ c     sL5 Output file number is IFIL+70 = 80
         parameter (iFC_TimeStep_File_Number4 = 84)
 
         INTEGER iMonthStatusUnitNumber
-	parameter ( iMonthStatusUnitNumber = 90 )
+        parameter ( iMonthStatusUnitNumber = 90 )
 
 

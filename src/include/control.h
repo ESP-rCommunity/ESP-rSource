@@ -26,8 +26,8 @@ C Building control
      &     IBCDV(MCF,MCDT,2),NBCDP(MCF,MCDT),TBCPS(MCF,MCDT,MCDP),
      &     IBCTYP(MCF,MCDT,MCDP),IBCLAW(MCF,MCDT,MCDP),
      &     BMISCD(MCF,MCDT,MCDP,MISCC)
-      INTEGER	NCF,IBSN,IBAN,NBCDT,IBCDV,NBCDP,IBCTYP,IBCLAW
-      REAL	TBCPS,BMISCD
+      INTEGER NCF,IBSN,IBAN,NBCDT,IBCDV,NBCDP,IBCTYP,IBCLAW
+      REAL TBCPS,BMISCD
 
 C Mass flow network control
       COMMON/FCTL/NCC,IFSN(MCF,4),IFAN(MCF,3),NFCDT(MCF),
@@ -79,7 +79,7 @@ C is summarized variables is documented in econtrol.F
      &              iCFCctltype(MCF,MCDT,MCDP),
      &              iCFCctllaw(MCF,MCDT,MCDP),
      &              CFCmiscdata(MCF,MCDT,MCDP,MISCC)
-      INTEGER	nCFCctlloops, iCFCactuator, iCFCsensor, nCFCctldaytypes
-      INTEGER     iCFCctldatevalid, nCFCdayctlperiods
-      INTEGER     iCFCctltype,iCFCctllaw
-      REAL        CFCctlperiodstart,CFCmiscdata
+      INTEGER nCFCctlloops, iCFCactuator, iCFCsensor, nCFCctldaytypes
+      INTEGER iCFCctldatevalid, nCFCdayctlperiods
+      INTEGER iCFCctltype,iCFCctllaw
+      REAL    CFCctlperiodstart,CFCmiscdata
