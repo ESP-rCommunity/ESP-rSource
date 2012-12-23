@@ -83,11 +83,12 @@ C espriou.h provides currentfile.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-C Key word for each casual gain type (if ip3ver is 3). As follows:
+C Key word for each casual gain to assign it a type (if ip3ver is 3).
+C As follows:
 C `-` no user defined meaning, `people` basic occupant, 
 C 'lighting' basic lighting, `equipment` basic small power
 
-C Bespoke types
+C Bespoke types  << update these tags >>
 C `net_utilities` same as icgtyp = 5, `ctlgain4` sams as icgtyp = 4,
 C `cetc_appliances` NRCan appliances, `cetc_lights` NRC lights,
 C `cetc_other` NRCan other electrical, `cetc_occupants` NRCan occupants
@@ -97,8 +98,8 @@ C Future type examples
 C `pmv_people` people with clo and metabolic rate,
 C `transpiraton` vegitation or latent sources, `waterdraw` DHW draws,
 C `roomfan` future linked to flow component
-      character caskeytype*16
-      common/p3typekey/caskeytype(MDTY,MC)
+      character caskeytypeper*16
+      common/p3typekey/caskeytypeper(MDTY,MC)
 
 C Common block P2UNIT defines the units for infiltration and ventilation
 C for each zone and day type. The default value of zero is the same as
@@ -699,7 +700,7 @@ C Scratch version of operations file (as pattern in schedule.h).
       common/p3verc/ip3verc
 
 C Descriptive label for a zone load or casual gain types.
-      character lodlabelc*6
+      character lodlabelc*12
       common/loadlabelc/lodlabelc(MGTY)
 
       CHARACTER oprdescc*248,ctlstrc*24
@@ -1414,7 +1415,7 @@ C      write(6,*) 'casual gain range is ',irange
 C Write out the type labels to the file for future reference. In version
 C 3 this section is relocated and extended.
       WRITE(IUO,'(a)')'# Labels for gain types '
-      WRITE(IUO,'(7(1X,A6))',IOSTAT=IOS,ERR=1) 
+      WRITE(IUO,'(7(1X,A))',IOSTAT=IOS,ERR=1) 
      &  (lodlabel(icomp,I),I=1,irange)
      
       CALL ERPFREE(IUO,ISTAT)
@@ -1630,25 +1631,27 @@ C Electrical data flag and elctrical data.
       REAL PF,PWR,BVOLT
 
       CHARACTER outs*124
-      CHARACTER llbl*9
+      CHARACTER llbl*15
 
       call edisp(itru,' ')
       call edisp(itru,'Notes: ')
       call edisp248(itru,oprdesc(icomp),72)
       call edisp(itru,' ')
       if(IELF(ICOMP).EQ.1)then
-        write(outs,'(a,a)')'Daytype   Gain Type    Period Sensible ',
-     &    ' Latent  Radiant  Convec p.f +/-  Power Voltage Phase'
+        write(outs,'(3a)')'Daytype   Gain Type    Unit Period',
+     &    ' Sensible  Latent  Radiant  Convec p.f +/-  Power ',
+     &    'Voltage Phase'
         call edisp(itru,outs)
-        write(outs,'(a,a)')'          No.  label   Hours  Magn.(W) ',
-     &    ' Magn.(W) Frac     Frac    (-) (-)    (W)    (V) (rgb)'
+        write(outs,'(3a)')'          No.  label        Hours ',
+     &    ' Magn.(W) Magn.(W) Frac     Frac    (-) (-)    (W) ',
+     &    '   (V) (rgb)'
         call edisp(itru,outs)
       else  
-        write(outs,'(a,a)')'Daytype   Gain Type    Period Sensible ',
-     &    ' Latent     Radiant    Convec'
+        write(outs,'(2a)')'Daytype   Gain Type    Unit  Period',
+     &    ' Sensible  Latent     Radiant    Convec'
         call edisp(itru,outs)
-        write(outs,'(a,a)')'          No.  label   Hours  Magn.(W) ',
-     &    ' Magn.(W)   Fraction   Fraction'
+        write(outs,'(2a)')'          No.  label         Hours ',
+     &    ' Magn.(W)  Magn.(W)   Fraction   Fraction'
         call edisp(itru,outs)
       endif
       DO 600 IDTY=1,NBDAYTYPE
@@ -1670,7 +1673,7 @@ C Electrical data flag and elctrical data.
      &        '-',ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
      &        CONC(IDTY,I),PF(IDTY,I),
      &        IPF(IDTY,I),PWR(IDTY,I),BVOLT(IDTY,I),IPHAS(IDTY,I)
-5361          FORMAT(a,I3,1x,A9,I3,a,I2,F8.1,F8.1,F9.1,F9.1,
+5361          FORMAT(a,I3,1x,A,I3,a,I2,F8.1,F8.1,F9.1,F9.1,
      &          1x,F7.2,I3,F7.1,F7.1,I3)
               call edisp(itru,outs)
 1269        CONTINUE
@@ -1688,7 +1691,7 @@ C Electrical data flag and elctrical data.
               WRITE(outs,5362)calentag(idty)(1:10),I,llbl,ICGS(IDTY,I),
      &        '-',ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
      &        CONC(IDTY,I)
-5362          FORMAT(a,I3,1x,A9,I3,a,I2,F9.1,F9.1,F11.2,F11.2)
+5362          FORMAT(a,I3,1x,A,I3,a,I2,F9.1,F9.1,F11.2,F11.2)
               call edisp(itru,outs)
 1270        CONTINUE
           ENDIF
@@ -2489,7 +2492,7 @@ C See if first period is 0hr or 1hr and last period is 24.
 
 
 C ******************** UPDOPR 
-C UPDOPR     Updates all operations data when day types are incremented
+C UPDOPR  Updates all operations data when day types are incremented.
 
       SUBROUTINE UPDOPR
 #include "building.h"

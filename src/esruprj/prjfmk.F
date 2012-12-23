@@ -3034,7 +3034,7 @@ C << this common should be re-sized 7 -> MGTY >>
       integer MVERT,IVERT ! max items and current menu item
 
       CHARACTER vert(35)*33,outs*124,KEY*1,sfile*72,snpfile*72
-      character typstr*8
+      character typstr*14
       character title*28
 
 C iwatt (8 char) = 'W-W' for absolute W values preserves value
@@ -3505,9 +3505,9 @@ C << deal with hard coded 3 below >>
           DO 567 ITYPE=1,3
             write(outs,'(a,i2)') 'Label for type ',ITYPE
             write(TYPSTR,'(2a)') lodlabel(icomp,ITYPE),'  '
-            call easks(TYPSTR,' ',outs,8,
+            call easks(TYPSTR,' ',outs,12,
      &                 lodlabel(icomp,ITYPE),' Type label',IER,2)
-            write(lodlabel(icomp,ITYPE),'(a)') TYPSTR(1:6)
+            write(lodlabel(icomp,ITYPE),'(a)') TYPSTR(1:12)
  567      CONTINUE
           goto 5
         endif
@@ -3572,7 +3572,7 @@ C Profile database commons via profile.h.
       DIMENSION  DESC(MGIT),IPRVAL(MGIT)
       CHARACTER*40 DESC
       CHARACTER hold*40
-      character*8 ll1,ll2,ll3
+      character*12 ll1,ll2,ll3
       character lltmp*144
       character fs*1  ! file separator
       logical OK,DOK
@@ -3597,9 +3597,9 @@ C Set folder separator (fs) to \ or / as required.
 
 C Labels for loads.
 C << revise for more loads >>
-      write(ll1,'(1x,a6,1x)') lodlabel(icomp,1)
-      write(ll2,'(1x,a6,1x)') lodlabel(icomp,2)
-      write(ll3,'(1x,a6,1x)') lodlabel(icomp,3)
+      write(ll1,'(a)') lodlabel(icomp,1)
+      write(ll2,'(a)') lodlabel(icomp,2)
+      write(ll3,'(a)') lodlabel(icomp,3)
 
       IER=0
       ICGTX=1
@@ -4165,6 +4165,7 @@ C Choose day type to delete/copy period from
       ilistlen=NCAS(IDT)
 
 C Generate menu text for each gain on the current day.
+C << what is the Wkd in 303 ? >>
       DO 10 L=1,NCAS(IDT)
         M=M+1
         if(ICGT(IDT,L).gt.0)then
@@ -4291,7 +4292,7 @@ C Passed parameters
       REAL PF,PWR,BVOLT
 
 C Descriptive label for scratch zone load or casual gain.
-      character lodlabelc*6
+      character lodlabelc*12
       common/loadlabelc/lodlabelc(MGTY)
 
 C Scratch version of P3N
