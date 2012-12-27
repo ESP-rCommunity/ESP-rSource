@@ -3281,19 +3281,19 @@ C Save total PCM heat stored.
 C Results output.
       ndatspm(ispmnod)=4
       if(nsinc.le.1)then
-         strspm(ispmnod,1)='/AppCON'
+         strspm(ispmnod,1)='AppCON'
          unitspm(ispmnod,1)='(W/(m.degC))'
          txtspm(ispmnod,1)='Average conductivity of PCM layer'
 
-         strspm(ispmnod,2)='/SHCtot'
+         strspm(ispmnod,2)='SHCtot'
          unitspm(ispmnod,2)='(J/kg)'
          txtspm(ispmnod,2)='Tot. heat stored in PCM'
 
-         strspm(ispmnod,3)='/SHCarea'
+         strspm(ispmnod,3)='SHCarea'
          unitspm(ispmnod,3)='(J/m2)'
          txtspm(ispmnod,3)='Heat stored per PCM area'
 
-         strspm(ispmnod,4)='/PCMFAC'
+         strspm(ispmnod,4)='PCMFAC'
          unitspm(ispmnod,4)='(-)'
          txtspm(ispmnod,4)='PCMFAC of middle node'
       endif
@@ -3693,41 +3693,41 @@ C Save future time row values as present values for next time step.
 C Results output.
       ndatspm(ispmnod)=9
       if(nsinc.le.1)then
-         strspm(ispmnod,1)='/state'
+         strspm(ispmnod,1)='State'
          unitspm(ispmnod,1)='(-)'
          txtspm(ispmnod,1)=
      &                 'PCM state 1 solid, 2 mixed, 3 liquid'
 
-         strspm(ispmnod,2)='/AppCON'
+         strspm(ispmnod,2)='AppCON'
          unitspm(ispmnod,2)='(W/(m.degC))'
          txtspm(ispmnod,2)='Apparent conductivity of PCM layer'
 
-         strspm(ispmnod,7)='/APPSHC'
+         strspm(ispmnod,7)='APPSHC'
          unitspm(ispmnod,7)='(J/(kg.degC))'
          txtspm(ispmnod,7)='Apparent spec. heat capacity of PCM layer'
 
-         strspm(ispmnod,3)='/StoredLH'
+         strspm(ispmnod,3)='StoredLH'
          unitspm(ispmnod,3)='(J/kg)'
          txtspm(ispmnod,3)='Latent heat stored in PCM'
 
-         strspm(ispmnod,4)='/SHCarea'
+         strspm(ispmnod,4)='SHCarea'
          unitspm(ispmnod,4)='(J/m2)'
          txtspm(ispmnod,4)='Latent heat stored per PCM area'
 
-         strspm(ispmnod,5)='/PCMFAC'
+         strspm(ispmnod,5)='PCMFAC'
          unitspm(ispmnod,5)='(-)'
          txtspm(ispmnod,5)='PCMFAC of middle node'
 
-         strspm(ispmnod,6)='/kkk'
+         strspm(ispmnod,6)='kkk'
          unitspm(ispmnod,6)='(-)'
          txtspm(ispmnod,6)='k for each subnode - outside to inside'
 
-         strspm(ispmnod,8)='/ccc'
+         strspm(ispmnod,8)='ccc'
          unitspm(ispmnod,8)='(-)'
          txtspm(ispmnod,8)=
      &                 'case for each subnode - outside to inside'
 
-         strspm(ispmnod,9)='/DT_F-P'
+         strspm(ispmnod,9)='DT_F-P'
          unitspm(ispmnod,9)='(K)'
          txtspm(ispmnod,9)=
      &                 'Temperature difference (T_Future - T_Present)'
@@ -4490,47 +4490,47 @@ C Results output.
       ndatspm(ispmnod)=9
 
       dataspm(ispmnod,1)=genflxf(icomp,isurf,inode)
-      strspm(ispmnod,1)='/QPhCh'
+      strspm(ispmnod,1)='QPhCh'
       unitspm(ispmnod,1)='(W/m^2)'
       txtspm(ispmnod,1)='Heat flux of phase change of water'
 
       dataspm(ispmnod,2)=mflux(2)*1000./time_step
-      strspm(ispmnod,2)='/MFluxInt'
+      strspm(ispmnod,2)='MFluxInt'
       unitspm(ispmnod,2)='(g/s)'
       txtspm(ispmnod,2)='Internal surface mass flux'    
 
       dataspm(ispmnod,3)=mh2o(icomp,isurf,2)
-      strspm(ispmnod,3)='/totH2OInt'
+      strspm(ispmnod,3)='totH2OInt'
       unitspm(ispmnod,3)='(kg)'
       txtspm(ispmnod,3)='total mass on internal surface'
 
       dataspm(ispmnod,4)=mflux(1)*1000./time_step
-      strspm(ispmnod,4)='/MFluxExt'
+      strspm(ispmnod,4)='MFluxExt'
       unitspm(ispmnod,4)='(g/s)'
       txtspm(ispmnod,4)='External surface mass flux'
       
       dataspm(ispmnod,5)=mh2o(icomp,isurf,1)
-      strspm(ispmnod,5)='/totH2OExt'
+      strspm(ispmnod,5)='totH2OExt'
       unitspm(ispmnod,5)='(kg)'
       txtspm(ispmnod,5)='total mass on external surface'
 
       dataspm(ispmnod,6)=asurf_min(2)
-      strspm(ispmnod,6)='/AminInt'
+      strspm(ispmnod,6)='AminInt'
       unitspm(ispmnod,6)='(%)'
       txtspm(ispmnod,6)='Area frac. for visibility, internal, lower'
 
       dataspm(ispmnod,7)=asurf_max(2)
-      strspm(ispmnod,7)='/AmaxInt'
+      strspm(ispmnod,7)='AmaxInt'
       unitspm(ispmnod,7)='(%)'
       txtspm(ispmnod,7)='Area frac. for visibility, internal, upper'
 
       dataspm(ispmnod,8)=asurf_min(1)
-      strspm(ispmnod,8)='/AminExt'
+      strspm(ispmnod,8)='AminExt'
       unitspm(ispmnod,8)='(%)'
       txtspm(ispmnod,8)='Area frac. for visibility, external, lower'
 
       dataspm(ispmnod,9)=asurf_max(1)
-      strspm(ispmnod,9)='/AmaxExt'
+      strspm(ispmnod,9)='AmaxExt'
       unitspm(ispmnod,9)='(%)'
       txtspm(ispmnod,9)='Area frac. for visibility, external, upper'
 
@@ -4603,6 +4603,7 @@ C facilities. Created by Achim Geissler, June 17 2008.
       implicit none
 
 #include "building.h"
+#include "geometry.h"
 
 C Parameters.
       integer iZone,iNode,iSurf,ispmnod
@@ -4620,18 +4621,13 @@ C Commons.
       character txtspm*72   !- description of data item
 
 C Local variables.
-      character*2 cZone_Chars, cSurf_Chars, cNode_Chars
+      character*2 cSurf_Chars, cNode_Chars
       integer ndat,idat
 
 C References.
       integer lnblnk
 
 C Pad index to 'XX'.
-      if(iZone.gt.9)then
-         write(cZone_Chars,'(i2)')iZone
-      else
-         write(cZone_Chars,'(a,i1)') '0',iZone
-      endif
       if(isurf.gt.9)then
          write(cSurf_Chars,'(i2)')isurf
       else
@@ -4647,15 +4643,21 @@ C Pad index to 'XX'.
 
 C Output available PCM layer data.
       do idat=1,ndat
-c         call add_to_xml_reporting(
-c     &     dataspm(ispmnod,idat),
-c     &     'bui/spm/'//spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod)))//
-c     &     '/z' // cZone_Chars // '/s' // cSurf_Chars //
-c     &     '/nd' // cNode_Chars // 
-c     &     strspm(ispmnod,idat)(1:lnblnk(strspm(ispmnod,idat))),
-c     &     'units',
-c     &     unitspm(ispmnod,idat)(1:lnblnk(unitspm(ispmnod,idat))),
-c     &     txtspm(ispmnod,idat)(1:lnblnk(txtspm(ispmnod,idat))))
+        Call AddToReport(rvBuiSpm%Identifier,
+     &     dataspm(ispmnod,idat),
+     &     zname(iZone)(1:lnzname(iZone)) //
+     &     '/s' // cSurf_Chars // '/n' // cNode_Chars // '/' //
+     &     spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod))),
+     &     strspm(ispmnod,idat)(1:lnblnk(spmlabel(ispmnod))))
+
+        Call AddToReportDetails(rvBuiSpm%Identifier,
+     &     zname(iZone)(1:lnzname(iZone)) //
+     &     '/s' // cSurf_Chars // '/n' // cNode_Chars // '/' //
+     &     spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod))),
+     &     strspm(ispmnod,idat)(1:lnblnk(spmlabel(ispmnod))),
+     &     'units',
+     &     unitspm(ispmnod,idat)(1:lnblnk(unitspm(ispmnod,idat))),
+     &     txtspm(ispmnod,idat)(1:lnblnk(txtspm(ispmnod,idat))))
       enddo
 
       return
@@ -4714,21 +4716,21 @@ C Pad index to 'XX'.
 
 C Output available surface condensation data.
       do idat=1,ndat
-         Call AddToReport(rvBuiSpm%Identifier,
-     &      dataspm(ispmnod,idat),
-     &      spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod))),
-     &      '/z' // cZone_Chars // '/s' // cSurf_Chars
-     &   // '/nd' // cNode_Chars,
-     &      strspm(ispmnod,idat)(1:lnblnk(strspm(ispmnod,idat))))
+c         Call AddToReport(rvBuiSpm%Identifier,
+c     &      dataspm(ispmnod,idat),
+c     &      spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod))),
+c     &      '/z' // cZone_Chars // '/s' // cSurf_Chars
+c     &   // '/nd' // cNode_Chars,
+c     &      strspm(ispmnod,idat)(1:lnblnk(strspm(ispmnod,idat))))
 
-         Call AddToReportDetails(rvBuiSpm%Identifier,
-     &      spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod))),
-     &      '/z' // cZone_Chars // '/s' // cSurf_Chars
-     &   // '/nd' // cNode_Chars,
-     &      strspm(ispmnod,idat)(1:lnblnk(strspm(ispmnod,idat))),
-     &      'units',
-     &      unitspm(ispmnod,idat)(1:lnblnk(unitspm(ispmnod,idat))),
-     &      txtspm(ispmnod,idat)(1:lnblnk(txtspm(ispmnod,idat))))
+c         Call AddToReportDetails(rvBuiSpm%Identifier,
+c     &      spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod))),
+c     &      '/z' // cZone_Chars // '/s' // cSurf_Chars
+c     &   // '/nd' // cNode_Chars,
+c     &      strspm(ispmnod,idat)(1:lnblnk(strspm(ispmnod,idat))),
+c     &      'units',
+c     &      unitspm(ispmnod,idat)(1:lnblnk(unitspm(ispmnod,idat))),
+c     &      txtspm(ispmnod,idat)(1:lnblnk(txtspm(ispmnod,idat))))
 
       enddo
 

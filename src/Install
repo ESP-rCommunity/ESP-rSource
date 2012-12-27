@@ -95,7 +95,7 @@ extendedDebug="yes"         # Enable agressive debugging / warnings /FPE?
 use_intel="no"             # Use intel compilers?
 skip_ish_calcs="no"        # Skip update of exemplar shading files?
 reuse_ish_calcs="yes"      # if yes limit re-calculation of exemplar shading files?
-clean="yes"                # Clean object files?
+clean="no"                # Clean object files?
 unversioned="no"           # Check svn for versioning info?
 
 #-----------------------------------------------------------

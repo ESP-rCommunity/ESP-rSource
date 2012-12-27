@@ -3995,7 +3995,7 @@ CONTAINS
       rvBldSPMatlTtlIncAr%VariableName = 'bui/spmatl/*/misc_data/total_incident_irradiance/unit_area'
       rvBldSPMatlTtlIncAr%MetaType = 'units'
       rvBldSPMatlTtlIncAr%VariableType = '(W/m^2)'
-      rvBldSPMatlTtlIncAr%Description = 'Total irradiance of PV module (/m^2'
+      rvBldSPMatlTtlIncAr%Description = 'Total irradiance of PV module (/m^2)'
       Call AddVariable(rvBldSPMatlTtlIncAr)
 
       rvBldSPMatlTtlIncTtl%VariableName = 'bui/spmatl/*/misc_data/total_incident_irradiance/total'
@@ -4022,7 +4022,7 @@ CONTAINS
       rvBldSPMatlPVPow%Description = 'Power produced by PV module'
       Call AddVariable(rvBldSPMatlPVPow)
 
-      rvBuiSpm%VariableName = 'bui/spm/*/z*/*'
+      rvBuiSpm%VariableName = 'bui/*/*'
       rvBuiSpm%MetaType = '*'
       rvBuiSpm%VariableType = '*'
       rvBuiSpm%Description = '*'
