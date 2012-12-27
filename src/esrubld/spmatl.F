@@ -3356,7 +3356,21 @@ C Trace output.
 C ***************** SPMCMP56 *****************
 C Phase change material model: extended approach allowing sub-cooling.
 C Created by Achim Geissler, July 30 2008. Parameters are defined in
-C file databases/mscomp.db1. Calls:
+C file databases/mscomp.db1. 
+C
+C This code is copyright Achim Geissler in accordance with the 
+C GNU General Public License. You can redistribute it and/or
+C modify it under the terms of the GNU General Public
+C License as published by the Free Software Foundation
+C (Version 2 or later).
+C
+C The code is distributed in the hope that it will be useful
+C but WITHOUT ANY WARRANTY; without even the implied
+C warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+C PURPOSE. See the GNU General Public License for more
+C details.
+C
+C Calls:
 C    LatentHeat(k,T1,T2) - calculate integral of latent heat between
 C                          T1 and T2 for k=1 'standard' range and
 C                          k=0 sub-cooled PCM;
@@ -3784,6 +3798,19 @@ C Trace output.
 
 C ***************** LatentHeat *****************
 C Created by Achim Geissler, July 11 2008.
+C
+C This code is copyright Achim Geissler in accordance with the 
+C GNU General Public License. You can redistribute it and/or
+C modify it under the terms of the GNU General Public
+C License as published by the Free Software Foundation
+C (Version 2 or later).
+C
+C The code is distributed in the hope that it will be useful
+C but WITHOUT ANY WARRANTY; without even the implied
+C warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+C PURPOSE. See the GNU General Public License for more
+C details.
+C
 C This function models PCM materials which show significant sub-cooling
 C properties, i.e. materials that, once melted, must be sub-cooled by
 C a few degrees below the conversion temperature at which they are
@@ -3875,7 +3902,19 @@ C More than |Lges| is not possible.
 
 C ***************** v_func *****************
 C Function for extended latent heat integral.
-
+C
+C This code is copyright Achim Geissler in accordance with the 
+C GNU General Public License. You can redistribute it and/or
+C modify it under the terms of the GNU General Public
+C License as published by the Free Software Foundation
+C (Version 2 or later).
+C
+C The code is distributed in the hope that it will be useful
+C but WITHOUT ANY WARRANTY; without even the implied
+C warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+C PURPOSE. See the GNU General Public License for more
+C details.
+C
       real function v_func(k,T)
       implicit none
 
@@ -3933,7 +3972,19 @@ C Calculate coefficients (v(FP,Theta)).
 C ***************** extfunc *****************
 C Extended Hoffmann function for latent heat for 
 C PCM materials.
-
+C
+C This code is copyright Achim Geissler in accordance with the 
+C GNU General Public License. You can redistribute it and/or
+C modify it under the terms of the GNU General Public
+C License as published by the Free Software Foundation
+C (Version 2 or later).
+C
+C The code is distributed in the hope that it will be useful
+C but WITHOUT ANY WARRANTY; without even the implied
+C warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+C PURPOSE. See the GNU General Public License for more
+C details.
+C
       real function extfunc(k,T)
       implicit none
       
@@ -3985,7 +4036,19 @@ C ***************** PCMSTORE *****************
 C This routine keeps track of the latent heat stored/released by a
 C PCM. The routine is called once each simulation time step and for
 C each PCM node.
-
+C
+C This code is copyright Achim Geissler in accordance with the 
+C GNU General Public License. You can redistribute it and/or
+C modify it under the terms of the GNU General Public
+C License as published by the Free Software Foundation
+C (Version 2 or later).
+C
+C The code is distributed in the hope that it will be useful
+C but WITHOUT ANY WARRANTY; without even the implied
+C warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+C PURPOSE. See the GNU General Public License for more
+C details.
+C
       subroutine pcmstore(TnS,TnS1,k,storedLH,AppCon,AppSHC,Debug)
       implicit none
 
