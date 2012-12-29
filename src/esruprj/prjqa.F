@@ -2586,6 +2586,8 @@ C Images.
       logical allnew  ! if true then all zones are v1.1 or newer.
       logical forceupgrade  ! if any other zone is version 1.1
       logical MODOPR ! to flag if zone operations file needs changing.
+      logical opernew ! if true then all operations are current.
+      logical forceoper ! force if any operation is older
 
 C Flags noting whether casual gain periods are currently sorted.
       logical sorted,problem
@@ -2617,10 +2619,11 @@ C Check if Unix-based or DOS based.
 
 C Loop through and find out if all zone geometry files are
 C v1.1 or newer (so set igupgrade=2). If so then there is
-C no need for an upgrade. And if there are v1.1 geometry
+C no need for a geometric upgrade. And if there are v1.1 geometry
 C files but still some zone obstruction files then there
 C is still a need for upgrading.
       allnew=.true.
+      opernew=.true.
       do 775 iz=1,ncomp
         if(gversion(iz).lt.1.1) then
           allnew=.false.
@@ -2633,7 +2636,26 @@ C is still a need for upgrading.
             continue
           endif
         endif
+
+C If ip3ver=0 then force it to write to version 2 and if it
+C ip3ver=1 then write to version 2 and if already 2 then write
+C to version 21.
+        if(ip3ver(iz).eq.0)then
+          opernew=.false.
+        elseif(ip3ver(iz).eq.1)then
+          opernew=.false.
+        elseif(ip3ver(iz).eq.2)then
+          opernew=.false.
+        endif
   775 continue
+
+      if(opernew)then
+        forceoper=.false.
+      else
+        forceoper=.true.   ! if some older operations do upgrade
+        write(6,*) 'some older operations found.'
+      endif
+      write(6,*) 'status of forceoper is ',forceoper
 
 C Check whether the climate file is associated with seasons defined
 C in the climatelist file and if none written to the model set flag
@@ -2676,6 +2698,7 @@ C igupgrade was set to 2 in preferences also force an upgrade.
         if(forceupgrade.and.igupgrade.eq.0) igupgrade=2
         if(igupgrade.eq.2) forceupgrade=.true.
       endif
+      write(6,*) 'status of forceupgrade is ',forceupgrade
 
 
       if(forceupgrade)then
@@ -2815,16 +2838,34 @@ C geometry file and zobs() cleared for this zone and iobs set.
 C The documentation in the zone construction and tmc files might
 C have changed to scan and write out these files.
 C << to be done >>
+  776     continue
+        endif
+      endif
 
 C Check for the version of the zone operations file and if it is
-C an older format write to new format.
+C an older format write to a newer format.
+      if(forceoper)then
+        dok=.true.
+        helptopic='model_upgrade_older'
+        call gethelptext(helpinsub,helptopic,nbhelp)
+
+        call askok('The current model uses an out-of-date format for',
+     &    'some zone operation files. Update this?',ok,dok,
+     &     nbhelp)
+        if(ok)then
+          call edisp(iuout,
+     &    'You might wish to update the documentation in the zone')
+          call edisp(iuout,
+     &    'operations (more space for air and casual gains notes).')
+          do iz=1,ncomp
             IUO=IFIL+1
             call FINDFIL(LPROJ(iz),XST)
             IF(XST)THEN
               CALL ERPFREE(IUO,ISTAT)
               CALL EROPER(ITRC,ITRU,IUO,iz,IER)
+              write(6,*) ' existing version ',iz,ip3ver(iz)
 
-C Do cursory check to see if the file is sorted.
+C Do cursory check to see if the daytypes in the file are sorted.
               sorted=.true.
               problem=.false.
               call checksort(iz,1,problem)
@@ -2851,14 +2892,22 @@ C Do cursory check to see if the file is sorted.
      &            'Sunday casual gains might be unsorted.')
               endif
 
-C If older format ip3ver=0 then force it to write to the
-C current format.
+C If ip3ver=0 then force it to write to version 2 and if it
+C ip3ver=1 then write to version 2 and if already 2 then write
+C to version 21.
               if(ip3ver(iz).eq.0)then
                 MODOPR=.true.
                 ip3ver(iz)=2
+              elseif(ip3ver(iz).eq.1)then
+                MODOPR=.true.
+                ip3ver(iz)=2
+              elseif(ip3ver(iz).eq.2)then
+                MODOPR=.true.
+                ip3ver(iz)=21
               endif
 
 C Save the file, sorting the periods if necessary.
+              write(6,*) ' proposed version ',iz,ip3ver(iz)
               if(MODOPR)then
                 if(sorted)then
                   CALL EMKOPER(IUO,LPROJ(IZ),IZ,IER)
@@ -2869,51 +2918,51 @@ C Save the file, sorting the periods if necessary.
                 endif
               endif
             endif
-  776     continue
+          enddo   ! loop for operations
+        endif
+      endif
 
 C Save the model configuration file before continuing.
-          CALL EMKCFG('-',IER)
+      CALL EMKCFG('-',IER)
 
 C Check if climate file season data is available via the climatelist
 C file and then include seasonal tokens in the model.
-          if(ihaveseason.gt.0)then
-            continue
-          else
-            INQUIRE (FILE=cdblfil,EXIST=XST)
-            if(XST)then
-              IUF=IFIL+2
-              llt=lnblnk(LCLIM)
-              lndbp=lnblnk(standardclmpath)
-              if(ipathclim.eq.0.or.ipathclim.eq.1)then
-                llclmdb=LCLIM
-              elseif(ipathclim.eq.2)then
-                write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
-     &            LCLIM(1:llt)
-              endif
-              call scancdblist(IUF,llclmdb,ok,iercl)
-              if(iercl.eq.0)then
-                ihaveseason=1
-                CALL EMKCFG('-',IER)
-              endif
-            endif
+      if(ihaveseason.gt.0)then
+        continue
+      else
+        INQUIRE (FILE=cdblfil,EXIST=XST)
+        if(XST)then
+          IUF=IFIL+2
+          llt=lnblnk(LCLIM)
+          lndbp=lnblnk(standardclmpath)
+          if(ipathclim.eq.0.or.ipathclim.eq.1)then
+            llclmdb=LCLIM
+          elseif(ipathclim.eq.2)then
+            write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
+     &        LCLIM(1:llt)
           endif
+          call scancdblist(IUF,llclmdb,ok,iercl)
+          if(iercl.eq.0)then
+            ihaveseason=1
+            CALL EMKCFG('-',IER)
+          endif
+        endif
+      endif
 
 
 C While we are at it, control files often include out of date descriptions
 C and if there is a control file scan it and write it back out again.
-          if(LCTLF(1:2).eq.'  '.or.LCTLF(1:4).eq.'UNKN')then
-            continue
-          else
-            ICTLF=IFIL+1
-            CALL ERPFREE(ICTLF,ISTAT)
-            XST=.false.
-            call FINDFIL(LCTLF,XST)
-            if(XST)then
-              CALL EZCTLR(ICTLF,0,IUOUT,IER)
-              CALL CTLWRT(ICTLF,IER)
-              call usrmsg(' ',' ','-')
-            endif
-          endif
+      if(LCTLF(1:2).eq.'  '.or.LCTLF(1:4).eq.'UNKN')then
+        continue
+      else
+        ICTLF=IFIL+1
+        CALL ERPFREE(ICTLF,ISTAT)
+        XST=.false.
+        call FINDFIL(LCTLF,XST)
+        if(XST)then
+          CALL EZCTLR(ICTLF,0,IUOUT,IER)
+          CALL CTLWRT(ICTLF,IER)
+          call usrmsg(' ',' ','-')
         endif
       endif
 

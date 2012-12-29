@@ -65,15 +65,16 @@ C =3 with key words for casual gain types.
       character ctlstr*24    ! summary of air control scheme
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
 
-      character lodlabel*12   ! user label for each zone casual gain
+      character lodlabel*12   ! user label for each zone casual gain slot
       character caskeytype*16 ! key word attribute of casual gain type (see
-                              ! also caskeytypeper to be held at each period)
+                              ! also lodslotper to be held at each period)
       common/loadlabel/lodlabel(mcom,MGTY),caskeytype(mcom,MGTY)
 
-      integer lodkeyint      ! pointer (from period first index) to caskeytype
-      integer lodatr1        ! 1st attribute associated with a caskeytype
-      integer lodatr2        ! 2nd attribute associated with a caskeytype
-      common/loadkey/lodkeyint(mcom,MGTY),lodatr1(mcom,MGTY),
+      integer lodslot     ! pointer (from period data lines first index) to
+                          ! a casual slot, if zero slot not used
+      integer lodatr1     ! 1st attribute associated with a caskeytype
+      integer lodatr2     ! 2nd attribute associated with a caskeytype
+      common/loadkey/lodslot(mcom,MGTY),lodatr1(mcom,MGTY),
      &               lodatr2(mcom,MGTY)
 
 C Users can track a number of different casual gains up to MGTY and ICGT 

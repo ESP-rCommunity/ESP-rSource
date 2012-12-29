@@ -19,7 +19,7 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 C eroper.f provides the following facilities:
-C  EROPER:   Reads all zone project data from a user-constructed
+C  EROPER:   Reads all zone schedules from a user-constructed
 C            datafile.
 C  ERZSCHED: Reads air and casual gain schedules from an operations
 C            file outside the model.
@@ -48,8 +48,7 @@ C            starting time. (Uses a odified QUICKSORT).
 C UPDOPR     Updates all operations data when day types are incremented
 
 C ******************** EROPER 
-C EROPER reads all zone project data from a user-constructed
-C datafile.
+C EROPER reads zone schedules from a user-constructed datafile.
 
 C Common block variables are:
 
@@ -62,7 +61,7 @@ C iphas        - which phase the load is connected to (1-3) or
 C                all 3 (4).
 
 C Maximum number of air change periods/day MA=5
-C Maximum number of casual gains/day       MC=20
+C Maximum number of casual gain periods (MC) set in building.h
 
       SUBROUTINE EROPER(ITRC,ITRU,IUO,ICOMP,IER)
       include "building.h"
@@ -83,10 +82,12 @@ C espriou.h provides currentfile.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-C Key word for each casual gain to assign it a type (if ip3ver is 3).
+C Key word for each casual gain to assign it a type (if ip3ver is >= 21).
 C As follows:
-C `-` no user defined meaning, `people` basic occupant, 
+C `-` no user defined meaning treat with legacy assumptions,
+C `people` basic occupant (with m2/person), 
 C 'lighting' basic lighting, `equipment` basic small power
+C 'other' with ??
 
 C Bespoke types  << update these tags >>
 C `net_utilities` same as icgtyp = 5, `ctlgain4` sams as icgtyp = 4,
@@ -177,12 +178,15 @@ C it into words.
           ip3ver(icomp)=1
         elseif(outstr(13:15).eq.'2.0')then
           ip3ver(icomp)=2
+        elseif(outstr(13:15).eq.'2.1')then
+          ip3ver(icomp)=21
         elseif(outstr(13:15).eq.'3.0')then
-          ip3ver(icomp)=3
+          ip3ver(icomp)=30
         endif
 
-C Reset ip3ver if there are more than 3 day types.
-        if(nbdaytype.gt.3)ip3ver(icomp)=2
+C Ancient operation files assumed 3 day types. Reset ip3ver if there
+C are more than 3 day types.
+        if(nbdaytype.gt.3.and.ip3ver(icomp).lt.2) ip3ver(icomp)=2
         CALL STRIPC(IUO,OUTSTR,0,ND,1,'header',IER)
         IF(IER.NE.0) goto 1002
         K=0
@@ -192,18 +196,19 @@ C Reset ip3ver if there are more than 3 day types.
           CALL EGETRM(OUTSTR,K,dstmp,'W','date stamp',IER)
         endif
 
-C If ip3ver(icomp) is less than or equal to two then read the
-C combined documentation (casual gains and air schedules) otherwise
-C read a *air_schedules line and then the infiltration/ventilation
+C If ip3ver(icomp) is less than 21 then read the combined
+C documentation (casual gains and air schedules). If equal to
+C 21 read only the ventdesc here. If > 21 read the token
+C *air_schedules line and then the infiltration/ventilation
 C documentation.
-
-C << this logic may be preventing ventdesc from being correctly used >>
-
-        if(ip3ver(icomp).le.2)then
+        if(ip3ver(icomp).lt.21)then
           CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'oper notes',IER)
           oprdesc(icomp)=LOUTSTR
           ventdesc(icomp)=LOUTSTR
-        elseif(ip3ver(icomp).eq.3)then
+        elseif(ip3ver(icomp).eq.21)then
+          CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'oper notes',IER)
+          ventdesc(icomp)=LOUTSTR
+        elseif(ip3ver(icomp).gt.21)then
           CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'oper *air_schedules',IER)
           IF(IER.NE.0) goto 1002
           if(loutstr(1:14).eq.'*air_schedules')then
@@ -215,18 +220,19 @@ C << this logic may be preventing ventdesc from being correctly used >>
         endif
       else
 
-C We have a really old file which has documentation line first.
+C We have a really old file which has documentation line first so
+C use the string buffer from the initial STRIPC call.
         oprdesc(icomp)=OUTSTR
         ventdesc(icomp)=OUTSTR
         ip3ver(icomp)=0
       endif
 
-C If ip3ver(icomp) is less than or equal to two then set assumed
-C units for air movement to ach. If ip3ver(icomp) is three then
+C If ip3ver(icomp) is less than or equal to 21 then set assumed
+C units for air movement to ach. If ip3ver(icomp) is >= 30 then
 C the pair of units needs to be established for each day type. 
+      if(ip3ver(icomp).le.21)then
 
 C << put in a loop for each day type >> 
-      if(ip3ver(icomp).le.2)then
         INFUNIT(icomp,1)=0
         INFUNIT(icomp,2)=0
         INFUNIT(icomp,3)=0
@@ -359,12 +365,14 @@ C Found a period out of order, warn user and carry on.
  10       CONTINUE
  400    CONTINUE
         IF(IER.NE.0) goto 1002
-      elseif(ip3ver(icomp).eq.3)then
 
-C Thermostatic control data.
+      elseif(ip3ver(icomp).ge.30)then
+
+C Newer format file. Thermostatic control data.
         havehi = .false.
         idaytype=0
         iperiod=0
+        islot=0    ! assume no casual slots have been filled
   77    CALL STRIPC(IUO,OUTSTR,99,ND,1,'*day definition',IER)
         K=0
         CALL EGETW(OUTSTR,K,WORD,'W','air schedule tags',IER)
@@ -424,21 +432,75 @@ C << ITCTL needs to be updated for day type and period >>
 
         elseif(WORD(1:8).eq.'*End_air'.or.WORD(1:8).eq.'*end_air')then
 
-C At the end of the air schedule data is *end_air which should be followed
-C by *casual_schedules and then the casual notes
-          CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'oper *air_schedules',IER)
-          if(loutstr(1:17).eq.'*casual_schedules')then
-            CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'oper casual notes',IER)
-            oprdesc(icomp)=LOUTSTR
-          else
-            oprdesc(icomp)=LOUTSTR
-          endif
-
 C Flow reporting if requested.
           if(ITRC.GE.1)CALL VENTINF(ICOMP,ITRU)
+          goto 77
+
+        elseif(WORD(1:7).eq.'*Casual'.or.WORD(1:7).eq.'*casual')then
+          CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'oper casual notes',IER)
+          oprdesc(icomp)=LOUTSTR
+          goto 77
+
+        elseif(WORD(1:5).eq.'*Type'.or.WORD(1:5).eq.'*type')then
+
+C Read high level attributes of the casual gains used in the zone
+C such as user label, keyword, index that the period lines can use
+C and two integer attributes to be used in post-processing.
+          islot=islot+1   ! increment the casual gain slot
+          CALL EGETW(OUTSTR,K,lodlabel(ICOMP,ISLOT),'W',
+     &      'user label',IER) 
+          CALL EGETW(OUTSTR,K,caskeytype(ICOMP,ISLOT),'W',
+     &      'keyword',IER) 
+          CALL EGETWI(OUTSTR,K,lodslot(icomp,ISLOT),0,99,'W',
+     &      'slot position',IER)
+          CALL EGETWI(OUTSTR,K,lodatr1(icomp,ISLOT),0,99,'W',
+     &      'atribute 1',IER)
+          CALL EGETWI(OUTSTR,K,lodatr2(icomp,ISLOT),0,99,'W',
+     &      'atribute 2',IER)
+          goto 77   ! read another line
+
+        elseif(WORD(1:9).eq.'*End_type'.or.
+     &         WORD(1:9).eq.'*end_type')then
+          continue   ! we are done with this section
         endif
       endif
 
+C For ip3ver = 21 read section about casual types.
+      if(ip3ver(icomp).ge.21)then
+        CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'start of casual',IER)
+        if(loutstr(1:7).eq.'*casual')then
+          CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'oper casual notes',IER)
+          oprdesc(icomp)=LOUTSTR
+        else
+          oprdesc(icomp)=LOUTSTR
+        endif
+
+C Read high level attributes of the casual gains used in the zone
+C such as user label, keyword, index that the period lines can use
+C and two integer attributes to be used in post-processing.
+
+C << do we need to track how many slots have been filled so we can
+C << later check that the period data points to a known slot?
+        islot=0
+  42    CALL STRIPC(IUO,OUTSTR,0,ND,1,'*type or *end_type',IER)
+        if(outstr(1:5).eq.'*type')then
+          islot=islot+1   ! increment the casual gain slot
+          K=6
+          CALL EGETW(OUTSTR,K,lodlabel(ICOMP,ISLOT),'W',
+     &      'user label',IER) 
+          CALL EGETW(OUTSTR,K,caskeytype(ICOMP,ISLOT),'W',
+     &      'keyword',IER) 
+          CALL EGETWI(OUTSTR,K,lodslot(icomp,ISLOT),0,99,'W',
+     &      'slot position',IER)
+          CALL EGETWI(OUTSTR,K,lodatr1(icomp,ISLOT),0,99,'W',
+     &      'atribute 1',IER)
+          CALL EGETWI(OUTSTR,K,lodatr2(icomp,ISLOT),0,99,'W',
+     &      'atribute 2',IER)
+          goto 42   ! read another line
+        elseif(outstr(1:9).eq.'*end_type')then
+          continue   ! we are done with this section
+        endif
+      endif
 
 C Casual gains for different day types
       DO 600 IDTY=1,NBDAYTYPE
@@ -520,32 +582,51 @@ C Check to see if gain labels have been added to the end of the file.
         endif
  701  continue
 
-C For now assume there are always at least 3 different type names.
-C Test that the number of type names matches what was found when
+C For older files now assume there are always at least 3 different labels.
+C Test that the number of labels matches what was found when
 C reading the period lines.
       if(irange.lt.3) irange=3
 C Debug.
 C      write(6,*) 'casual gain read range is ',irange
 
-      CALL STRIPC(IUO,OUTSTR,99,ND,1,'Type labels',IERV)
-      IF(IERV.ne.0) THEN
-        goto 1001
-      ELSE
-        if(irange.ne.nd)then
-          write(loutstr,'(a,i2,4a)')
-     &      'The number of different casual gain types ',irange,
-     &      ' differs from tokens on the line...',
-     &      outstr(1:50),' of operation file ',
-     &      currentfile(1:lnblnk(currentfile))
-          call edisp248(iuout,loutstr,100)
-          ier=2
-        endif
-        K=0
-        DO 1234 ITYP=1,irange
-          CALL EGETW(OUTSTR,K,lodlabel(ICOMP,ITYP),'W',
-     &         'type label',IER) 
- 1234   CONTINUE
-      ENDIF      
+      if(ip3ver(icomp).lt.21)then
+        CALL STRIPC(IUO,OUTSTR,99,ND,1,'gain labels',IERV)
+        IF(IERV.ne.0) THEN
+          goto 1001
+        ELSE
+
+C Warn user if the expected lables are not found.
+          if(irange.ne.nd)then
+            write(loutstr,'(a,i2,4a)')
+     &        'The number of unique casual gain labels ',irange,
+     &        ' differs from tokens on the line...',
+     &        outstr(1:50),' of operation file ',
+     &        currentfile(1:lnblnk(currentfile))
+            call edisp248(iuout,loutstr,100)
+            ier=2
+          endif
+
+C Gather each of the user labels. Depending on the file version
+C guess or assign caskeytype(). lodslot is the same as ISOLT
+C and the two attributes are zero.
+          K=0
+          DO 1234 ISLOT=1,irange
+            CALL EGETW(OUTSTR,K,lodlabel(ICOMP,ISLOT),'W',
+     &         'gain label',IER) 
+            lodslot(icomp,ISLOT)=ISLOT; lodatr1(icomp,ISLOT)=0
+            lodatr2(icomp,ISLOT)=0
+            if(lodlabel(ICOMP,ISLOT)(1:6).eq.'Occupt')then
+              caskeytype(icomp,ISLOT)='people'
+            elseif(lodlabel(ICOMP,ISLOT)(1:6).eq.'Lights')then
+              caskeytype(icomp,ISLOT)='lighting'
+            elseif(lodlabel(ICOMP,ISLOT)(1:6).eq.'Equipt')then
+              caskeytype(icomp,ISLOT)='equipment'
+            else
+              caskeytype(icomp,ISLOT)='-'
+            endif
+ 1234     CONTINUE
+        ENDIF 
+      ENDIF     
  1235 CONTINUE
 
 C Gain reporting if requested.
@@ -571,7 +652,7 @@ C Error messages.
       endif
 
  1001 call usrmsg(' ',
-     &  ' No casual gains type names found ...supplying defaults.','-')
+     &  ' No casual gains labels found ...supplying defaults.','-')
         lodlabel(icomp,1)='Occupt'
         lodlabel(icomp,2)='Lights'
         lodlabel(icomp,3)='Equipt' 
@@ -803,8 +884,10 @@ C it into words.
           ip3verc=1
         elseif(outstr(13:15).eq.'2.0')then
           ip3verc=2
+        elseif(outstr(13:15).eq.'2.1')then
+          ip3verc=21
         elseif(outstr(13:15).eq.'3.0')then
-          ip3verc=3
+          ip3verc=30
         endif
         CALL STRIPC(IUO,OUTSTR,0,ND,1,'header',IER)
         IF(IER.NE.0) goto 1002
@@ -971,7 +1054,7 @@ C Check if electrical data has also been saved.
 
 C Check to see if gain labels have been added to the end of the file.
 C Fill defaults prior to scanning the labels.
-      CALL STRIPC(IUO,OUTSTR,99,ND,1,'Type labels',IERV)
+      CALL STRIPC(IUO,OUTSTR,99,ND,1,'gain labels',IERV)
       IF(IERV.ne.0) THEN
         goto 1001
       ELSE
@@ -984,7 +1067,7 @@ C Fill defaults prior to scanning the labels.
         lodlabelc(7)='NA    ' 
         K=0
         DO 1234 ITYP=1,ND  ! for each token found
-          CALL EGETW(OUTSTR,K,lodlabelc(ITYP),'W','type label',IER) 
+          CALL EGETW(OUTSTR,K,lodlabelc(ITYP),'W','gain label',IER) 
  1234   CONTINUE
       ENDIF      
  1235 CONTINUE
@@ -1008,14 +1091,15 @@ C Error messages.
       endif
 
  1001 call usrmsg(' ',
-     &  ' No casual gains type names found ...supplying defaults.','-')
-        lodlabelc(1)='Occupt'
-        lodlabelc(2)='Lights'
-        lodlabelc(3)='Equipt' 
-        lodlabelc(4)='Other ' 
-        lodlabelc(5)='AnnEl ' 
-        lodlabelc(6)='NA    ' 
-        lodlabelc(7)='NA    ' 
+     &  ' No casual gains labels found ...supplying defaults.','-')
+      lodlabelc(1)='Occupt'
+      lodlabelc(2)='Lights'
+      lodlabelc(3)='Equipt' 
+      lodlabelc(4)='Other ' 
+      lodlabelc(5)='AnnEl ' 
+      lodlabelc(6)='NA    ' 
+      lodlabelc(7)='NA    ' 
+C << also type attributes >>
       goto 1235
 
  1002 write(outs,'(3a)') 'ERZSCHED: conversion error in...',
@@ -1060,7 +1144,8 @@ C espriou.h provides currentfile.
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
-      CHARACTER oprdescc*248,ctlstrc*24,outstr*124,outs*124
+      CHARACTER oprdescc*248,ventdescc*248
+      CHARACTER ctlstrc*24,outstr*124,outs*124
       CHARACTER*(*) FILE
       character dllsubr*12,dllmesg*124,WORD*20,loutstr*248
       character dstmp*24,h*72
@@ -1073,7 +1158,7 @@ C Error subroutine and error details for dll mode.
       dok=.true.
       IELFC=0
 
-C Initialise number of day types
+C Initialise number of day types.
       NDTY=3
 
 C Compose help message
@@ -1125,8 +1210,10 @@ C it into words.
           ip3verc=1
         elseif(outstr(13:15).eq.'2.0')then
           ip3verc=2
+        elseif(outstr(13:15).eq.'2.1')then
+          ip3verc=21
         elseif(outstr(13:15).eq.'3.0')then
-          ip3verc=3
+          ip3verc=30
         endif
         CALL STRIPC(IUO,OUTSTR,0,ND,1,'header',IER)
         K=0
@@ -1134,78 +1221,122 @@ C it into words.
         if(WORD(1:5).eq.'*Date'.or.WORD(1:5).eq.'*date')then
           CALL EGETRM(OUTSTR,K,dstmp,'W','date stamp',IER)
         endif
-        CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'oper notes',IER)
-        oprdescc=LOUTSTR
+        if(ip3verc.lt.21)then
+          CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'oper notes',IER)
+          oprdescc=LOUTSTR
+          ventdescc=LOUTSTR
+        elseif(ip3verc.eq.21)then
+          CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'oper notes',IER)
+          ventdescc=LOUTSTR
+        elseif(ip3verc.gt.21)then
+          CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'oper *air_schedules',IER)
+          if(loutstr(1:14).eq.'*air_schedules')then
+            CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'air sched notes',IER)
+            ventdescc=LOUTSTR
+          else
+            ventdescc=LOUTSTR  ! set to same as oprdesc
+          endif
+        endif
+
       else
         oprdescc=OUTSTR
       endif
-      call edisp(iuout,' Source operation notes:')
-      call edisp248(iuout,oprdescc,80)
+      call edisp(iuout,' Source scheduled air notes:')
+      call edisp248(iuout,ventdescc,80)
 
 C Thermostatic control data. If 4th item then
-      havehi = .false.
-      CALL STRIPC(IUO,OUTSTR,99,ND,1,'Thmst control',IER)
-      K=0
-      CALL EGETWI(OUTSTR,K,ITCTLC,-14,4,'W','opr cntl',IER)
-      if(nd.eq.4)havehi=.true.
+      if(ip3verc.le.21)then
+        havehi = .false.
+        CALL STRIPC(IUO,OUTSTR,99,ND,1,'Thmst control',IER)
+        K=0
+        CALL EGETWI(OUTSTR,K,ITCTLC,-14,4,'W','opr cntl',IER)
+        if(nd.eq.4)havehi=.true.
 
 C Generate a brief descrition and proceed acording to control type.
-      IY=ITCTLC
-      if(IY.eq.-14)then
-        ctlstrc='infil only: wind speed  '
-      elseif(IY.eq.-13)then
-        ctlstrc='infil only: ext db temp '
-      elseif(IY.eq.-12)then
-        ctlstrc='infil only: adj zone tmp'
-      elseif(IY.eq.-11)then
-        ctlstrc='infil only: zone temp   '
-      elseif(IY.eq.-4)then
-        ctlstrc='vent only: wind speed   '
-      elseif(IY.eq.-3)then
-        ctlstrc='vent only: ext db temp  '
-      elseif(IY.eq.-2)then
-        ctlstrc='vent only: adj zone temp'
-      elseif(IY.eq.-1)then
-        ctlstrc='vent only: zone temp    '
-      elseif(IY.eq.4)then
-        ctlstrc='infil & vent: wind speed'
-      elseif(IY.eq.3)then
-        ctlstrc='infil & vent: ext db T  '
-      elseif(IY.eq.2)then
-        ctlstrc='infil & vent: adj zone T'
-      elseif(IY.eq.1)then
-        ctlstrc='infil & vent: zone T    '
-      elseif(IY.eq.0)then
-        ctlstrc='no control of air flow  '
+        IY=ITCTLC
+        if(IY.eq.-14)then
+          ctlstrc='infil only: wind speed  '
+        elseif(IY.eq.-13)then
+          ctlstrc='infil only: ext db temp '
+        elseif(IY.eq.-12)then
+          ctlstrc='infil only: adj zone tmp'
+        elseif(IY.eq.-11)then
+          ctlstrc='infil only: zone temp   '
+        elseif(IY.eq.-4)then
+          ctlstrc='vent only: wind speed   '
+        elseif(IY.eq.-3)then
+          ctlstrc='vent only: ext db temp  '
+        elseif(IY.eq.-2)then
+          ctlstrc='vent only: adj zone temp'
+        elseif(IY.eq.-1)then
+          ctlstrc='vent only: zone temp    '
+        elseif(IY.eq.4)then
+          ctlstrc='infil & vent: wind speed'
+        elseif(IY.eq.3)then
+          ctlstrc='infil & vent: ext db T  '
+        elseif(IY.eq.2)then
+          ctlstrc='infil & vent: adj zone T'
+        elseif(IY.eq.1)then
+          ctlstrc='infil & vent: zone T    '
+        elseif(IY.eq.0)then
+          ctlstrc='no control of air flow  '
+          write(outs,'(a,a)') ' Control: ',ctlstrc
+          call edisp(iuout,outs) 
+          goto 22
+        else
+          ctlstrc='unknown flow control   '
+        endif
         write(outs,'(a,a)') ' Control: ',ctlstrc
         call edisp(iuout,outs) 
-        goto 22
-      else
-        ctlstrc='unknown flow control   '
-      endif
-      write(outs,'(a,a)') ' Control: ',ctlstrc
-      call edisp(iuout,outs) 
 
-      CALL STRIPC(IUO,OUTSTR,0,ND,1,'Lower flow details',IER)
+C Skip past the flow control details.
+        CALL STRIPC(IUO,OUTSTR,0,ND,1,'Lower flow details',IER)
 
-      CALL STRIPC(IUO,OUTSTR,0,ND,1,'Mid flow details',IER)
-      if(havehi)then
-        CALL STRIPC(IUO,OUTSTR,0,ND,1,'High flow details',IER)
-      endif
+        CALL STRIPC(IUO,OUTSTR,0,ND,1,'Mid flow details',IER)
+        if(havehi)then
+          CALL STRIPC(IUO,OUTSTR,0,ND,1,'High flow details',IER)
+        endif
 
 C Air change information.
- 22   DO 400 IDTY=1,NDTY
-        CALL STRIPC(IUO,OUTSTR,0,ND,1,'flow periods',IER)
-        K=0
-        CALL EGETWI(OUTSTR,K,NACC(idty),0,MA,'W','periods',IER)
-        IF(NACC(idty).EQ.0)goto 4
-        DO 10 I=1,NACC(idty)
-          CALL STRIPC(IUO,OUTSTR,0,ND,1,'Period flow details',IER)
-  10    CONTINUE
-  4     WRITE(outs,'(A,2I3)')
+ 22     DO 400 IDTY=1,NDTY
+          CALL STRIPC(IUO,OUTSTR,0,ND,1,'flow periods',IER)
+          K=0
+          CALL EGETWI(OUTSTR,K,NACC(idty),0,MA,'W','periods',IER)
+          IF(NACC(idty).EQ.0)goto 4
+          DO 10 I=1,NACC(idty)
+            CALL STRIPC(IUO,OUTSTR,0,ND,1,'Period flow details',IER)
+  10      CONTINUE
+  4       WRITE(outs,'(A,2I3)')
      &  ' Number of air flow periods in day type no. ',idty,NACC(idty)
-        call edisp(iuout,outs)
- 400  CONTINUE
+          call edisp(iuout,outs)
+ 400    CONTINUE
+
+      elseif(ip3verc.ge.30)then
+
+C This logic for scanning newer files still to be done.
+
+      endif
+
+C For ip3ver = 21 read section about casual types.
+      if(ip3verc.ge.21)then
+        CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'start of casual',IER)
+        if(loutstr(1:7).eq.'*casual')then
+          CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'oper casual notes',IER)
+          oprdescc=LOUTSTR
+        else
+          oprdescc=LOUTSTR
+        endif
+        islot=0
+  42    CALL STRIPC(IUO,OUTSTR,0,ND,1,'*type or *end_type',IER)
+        if(outstr(1:5).eq.'*type')then
+          islot=islot+1   ! increment the casual gain slot
+          goto 42   ! read another line
+        elseif(outstr(1:9).eq.'*end_type')then
+          continue   ! we are done with this section
+        endif
+      endif
+      call edisp(iuout,' Source casual notes:')
+      call edisp248(iuout,oprdescc,80)
 
 C Casual gains.
       DO 500 IDTY=1,NDTY      
@@ -1287,9 +1418,13 @@ C over-write) or create a new file.
         RETURN
       ENDIF
 
-C If version 1 write out header.
+C If version 1/2/21/30 write out appropriate header. In order
+C to account for smaller step changes use 10x the version number
+C after 2.0  i.e. ip3ver 21 for 2.1.
       call dstamp(dstmp)
-      if(ip3ver(icomp).eq.1)then
+      if(ip3ver(icomp).eq.0)then
+        continue
+      elseif(ip3ver(icomp).eq.1)then
         WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1) '*Operations 1.0'
         WRITE(IUO,'(3a)',IOSTAT=IOS,ERR=1) '*date ',dstmp,
      &  '  # latest file modification '
@@ -1297,7 +1432,11 @@ C If version 1 write out header.
         WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1) '*Operations 2.0'
         WRITE(IUO,'(3a)',IOSTAT=IOS,ERR=1) '*date ',dstmp,
      &  '  # latest file modification '
-      elseif(ip3ver(icomp).eq.3)then
+      elseif(ip3ver(icomp).eq.21)then
+        WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1) '*Operations 2.1'
+        WRITE(IUO,'(3a)',IOSTAT=IOS,ERR=1) '*date ',dstmp,
+     &  '  # latest file modification '
+      elseif(ip3ver(icomp).eq.30)then
         WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1) '*Operations 3.0'
         WRITE(IUO,'(3a)',IOSTAT=IOS,ERR=1) '*date ',dstmp,
      &  '  # latest file modification '
@@ -1306,15 +1445,19 @@ C If version 1 write out header.
      &  zname(ICOMP)(1:lnzname(ICOMP)),OPFIL(1:lnblnk(OPFIL))
   30  FORMAT('# operations of ',a,' defined in: ',/,'# ',a)
 
-C Write the common block data to the file.
-C If ipv3ver is 0, 1 or 2 write ventilation control data as if
-C there was only one day type and one period during the day.
-      if(ip3ver(icomp).le.2)then
-
-C << revise for multiple days and periods >>
-
+C Write either the combined or scheduled air description.
+      if(ip3ver(icomp).lt.21)then
         WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
      &    oprdesc(ICOMP)(1:lnblnk(oprdesc(ICOMP)))
+      elseif(ip3ver(icomp).eq.21)then
+        WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
+     &    ventdesc(ICOMP)(1:lnblnk(ventdesc(ICOMP)))
+      endif
+
+C Write air flow control data to the file.
+C If ipv3ver is 0, 1 or 2 write ventilation control data as if
+C there was only one day type and one period during the day.
+      if(ip3ver(icomp).le.21)then
         WRITE(IUO,'(3A)',IOSTAT=IOS,ERR=1)
      &    '# control(',ctlstr(icomp,1),'), low mid & high setpoints '
         WRITE(IUO,'(I4,3F10.3)',IOSTAT=IOS,ERR=1)ITCTL(ICOMP),
@@ -1335,34 +1478,48 @@ C << revise for multiple days and periods >>
      &      IVH(ICOMP),TAH(ICOMP)
         ENDIF
 
-      elseif(ip3ver(icomp).eq.3)then
+      elseif(ip3ver(icomp).gt.21)then
 
-C Write the infiltration and ventilation documentation
+C Write the scheduled air documentation.
+        WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1) '*ventilation_descr'
         WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
      &    ventdesc(ICOMP)(1:lnblnk(ventdesc(ICOMP)))
 
-C Write the infiltration and ventilation periods.
-C << to be done >>
+C Write the infiltration and ventilation control data.
+C << calendar day types to be done >>
+        WRITE(IUO,'(3A)',IOSTAT=IOS,ERR=1)
+     &    '# control(',ctlstr(icomp,1),'), low mid & high setpoints '
+        WRITE(IUO,'(I4,3F10.3)',IOSTAT=IOS,ERR=1)ITCTL(ICOMP),
+     &      TLO(ICOMP),TUP(ICOMP),THI(ICOMP)
 
-C Write the infiltration and ventilation control data periods.
-C << to be done >>
-
-C Finally write the documentation for casual gains.
-        WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     &    oprdesc(ICOMP)(1:lnblnk(oprdesc(ICOMP)))
+        IF(ITCTL(ICOMP).NE.0)THEN
+          WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
+     &      '# lower: infil, vent, source, data'
+          WRITE(IUO,'(2F10.3,I5,F10.3)')ACIL(ICOMP),ACVL(ICOMP),
+     &        IVL(ICOMP),TAL(ICOMP)
+          WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
+     &      '# middle: infil, vent, source, data'
+          WRITE(IUO,'(2F10.3,I5,F10.3)')ACIU(ICOMP),ACVU(ICOMP),
+     &      IVU(ICOMP),TAU(ICOMP)
+          WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
+     &      '# high: infil, vent, source, data'
+          WRITE(IUO,'(2F10.3,I5,F10.3)')ACIH(ICOMP),ACVH(ICOMP),
+     &      IVH(ICOMP),TAH(ICOMP)
+        ENDIF
 
       endif
 
+C For all versions, write each calendar day ventilation instructions.
       DO 400 IDTY=1,NBDAYTYPE
         WRITE(IUO,'(1X,I5,2A)',IOSTAT=ISTAT,ERR=1)NAC(IDTY),
      &  '   # number of flow periods in day type: ',calentag(idty)
         IF (NAC(IDTY).GT.0)THEN
           WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
      &    '# start, stop, infil, ventil, source, data'
-          DO 1120 I = 1,NAC(IDTY)
+          do I = 1,NAC(IDTY)
             WRITE(IUO,5450,IOSTAT=IOS,ERR=1)IACS(IDTY,I),IACF(IDTY,I),
      &            ACI(IDTY,I),ACV(IDTY,I),IPT(IDTY,I),TA(IDTY,I)
- 1120     CONTINUE
+          enddo
         ENDIF
  400  CONTINUE
 
@@ -1381,14 +1538,36 @@ C Check the range of icgt, remember in irange and use for looping.
 C Debug.
 C      write(6,*) 'casual gain range is ',irange
 
+      if(ip3ver(icomp).ge.21)then
+
+C Write tag *casual and then documentation for casual gains.
+        WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1) '*casual'
+        WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
+     &    oprdesc(ICOMP)(1:lnblnk(oprdesc(ICOMP)))
+
+C For ip3ver >= 21 write casual gain attributes. Loop
+C through all the possible casual gain slots for this zone
+C and if lodslot is non-zero then write a *type line.
+        WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1) 
+     &    '# casual user-label type-key-word slot attributes'
+        do ir= 1,MGTY
+          if(lodslot(icomp,ir).ne.0)then
+            WRITE(IUO,'(4A,3i3)',IOSTAT=IOS,ERR=1) '*type ',
+     &        lodlabel(icomp,ir),' ',caskeytype(icomp,ir),
+     &        lodslot(icomp,ir),lodatr1(icomp,ir),lodatr2(icomp,ir)
+          endif         
+        enddo
+        WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1) '*end_type '
+      endif
+
       DO 600 IDTY=1,NBDAYTYPE
         WRITE(IUO,'(1X,I5,2A)',IOSTAT=IOS,ERR=1)NCAS(IDTY),
      &  '   # number of casual gains in day type: ',calentag(idty)
         IF (NCAS(IDTY).GT.0)THEN
           IF(IELF(ICOMP).EQ.1) THEN
             WRITE(IUO,'(a,a)',IOSTAT=IOS,ERR=1)
-     &      '# typ, sta, fin, sen, lat, rad, ',
-     &      'con, pf, +/-, pwr, volt, pha'  
+     &      '# slot, period, sensible, latent, rad_frac, ',
+     &      'conv_frac, pf, +/-, power, volt, phase'  
             DO 1159 I = 1,NCAS(IDTY)
               WRITE(IUO,5470,IOSTAT=IOS,ERR=1)ICGT(IDTY,I),ICGS(IDTY,I),
      &        ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
@@ -1397,7 +1576,7 @@ C      write(6,*) 'casual gain range is ',irange
 1159        CONTINUE
           ELSE
             WRITE(IUO,'(A)',IOSTAT=IOS,ERR=1)
-     &     '# type, start, stop, sens, latent, rad_frac, conv_frac'
+     &     '# slot, period, sensible, latent, rad_frac, conv_frac'
             DO 1160 I = 1,NCAS(IDTY)
               WRITE(IUO,5460,IOSTAT=IOS,ERR=1)ICGT(IDTY,I),ICGS(IDTY,I),
      &        ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
@@ -1408,15 +1587,17 @@ C      write(6,*) 'casual gain range is ',irange
  600  CONTINUE
 
 5450  FORMAT(1X,I3,',',I3,',',2F9.3,I5,F9.3)
-5460  FORMAT(1X,3(I4,','),F9.1,',',F9.1,',',F6.3,',',F6.3)
-5470  FORMAT(1X,3(I3,','),F7.1,',',F7.1,',',F4.1,',',F4.1,',',F5.2,
+5460  FORMAT(3(I4,','),F9.1,',',F9.1,',',F7.3,',',F7.3)
+5470  FORMAT(3(I4,','),F9.1,',',F9.1,',',F7.3,',',F8.3,',',F5.2,
      &       ',',I2,',',F7.1,',',F7.1,',',I2)
 
-C Write out the type labels to the file for future reference. In version
-C 3 this section is relocated and extended.
-      WRITE(IUO,'(a)')'# Labels for gain types '
-      WRITE(IUO,'(7(1X,A))',IOSTAT=IOS,ERR=1) 
-     &  (lodlabel(icomp,I),I=1,irange)
+C Write out the gain labels to the file for future reference. In version
+C >= 21 this section is relocated to ~line 1508.
+      if(ip3ver(icomp).lt.21)then
+        WRITE(IUO,'(a)')'# Labels for gains '
+        WRITE(IUO,'(7(1X,A))',IOSTAT=IOS,ERR=1) 
+     &    (lodlabel(icomp,I),I=1,irange)
+      endif
      
       CALL ERPFREE(IUO,ISTAT)
       RETURN
@@ -1452,7 +1633,7 @@ C << need to update reporting for different day types and ctl periods >>
 C Write documentation on air schedules. 
       call edisp(itru,' Air schedule notes:')
       call edisp248(itru,ventdesc(icomp),72)
-      if(ip3ver(icomp).le.2)then
+      if(ip3ver(icomp).le.21)then
 
 C Older file versions only display ctlstr for first day and period.
         IY=ITCTL(ICOMP)
@@ -1489,33 +1670,36 @@ C Older file versions only display ctlstr for first day and period.
         call edisp(itru,outs)
 
         if(IY.eq.0) goto 1225
-        WRITE(outs,'(A,3F7.2)')' Lower/Middle/High temp setpoints: ',
-     &    TLO(ICOMP),TUP(ICOMP),THI(ICOMP)
+        write(outs,'(2a)')' Control Setpoint  Infiltration',
+     &    '     Ventilation    Source  temp'
         call edisp(itru,outs)
-        write(outs,'(20x,a,a)')'Infil. ac/h m^3/s  Vent. ac/h m^3/s ',
-     &    ' from  data'
+        write(outs,'(2a)')' range             ac/h   m^3/s',
+     &    '     ac/h   m^3/s   index   degC'
         call edisp(itru,outs)
         acilm = (VOL(ICOMP)*ACIL(ICOMP))/3600.0
         acvlm = (VOL(ICOMP)*ACVL(ICOMP))/3600.0
-        WRITE(outs,'(A,F9.3,F8.4,F10.3,F8.4,I5,F10.3)')
-     &    ' Lower range data ',ACIL(ICOMP),acilm,
+        WRITE(outs,'(A,F7.2,F9.3,F8.4,F10.3,F8.4,I5,F10.3)')
+     &    ' Lower  ',TLO(ICOMP),ACIL(ICOMP),acilm,
      &    ACVL(ICOMP),acvlm,IVL(ICOMP),TAL(ICOMP)
+        call edisp(itru,outs)
+        write(outs,'(a,F5.1,a,F5.1,a)') ' Nominal between',
+     &    TLO(ICOMP),' & ',TUP(ICOMP),' based on period data.'
         call edisp(itru,outs)
 
         acium = (VOL(ICOMP)*ACIU(ICOMP))/3600.0
         acvum = (VOL(ICOMP)*ACVU(ICOMP))/3600.0
-        WRITE(outs,'(A,F9.3,F8.4,F10.3,F8.4,I5,F10.3)')
-     &    ' Middle range data',ACIU(ICOMP),acium,
+        WRITE(outs,'(A,F7.2,F9.3,F8.4,F10.3,F8.4,I5,F10.3)')
+     &    ' Middle ',TUP(ICOMP),ACIU(ICOMP),acium,
      &    ACVU(ICOMP),acvum,IVU(ICOMP),TAU(ICOMP)
         call edisp(itru,outs)
 
         acihm = (VOL(ICOMP)*ACIH(ICOMP))/3600.0
         acvhm = (VOL(ICOMP)*ACVH(ICOMP))/3600.0
-        WRITE(outs,'(A,F9.3,F8.4,F10.3,F8.4,I5,F10.3)')
-     &    ' High range data  ',ACIH(ICOMP),acihm,
+        WRITE(outs,'(A,F7.2,F9.3,F8.4,F10.3,F8.4,I5,F10.3)')
+     &    ' High   ',THI(ICOMP),ACIH(ICOMP),acihm,
      &    ACVH(ICOMP),acvhm,IVH(ICOMP),TAH(ICOMP)
         call edisp(itru,outs)
-      elseif(ip3ver(icomp).eq.3)then
+      elseif(ip3ver(icomp).ge.30)then
 
 C Display ctlstr for day and period << convert to multi days >>.
         IY=ITCTL(ICOMP)
@@ -1638,19 +1822,19 @@ C Electrical data flag and elctrical data.
       call edisp248(itru,oprdesc(icomp),72)
       call edisp(itru,' ')
       if(IELF(ICOMP).EQ.1)then
-        write(outs,'(3a)')'Daytype   Gain Type    Unit Period',
-     &    ' Sensible  Latent  Radiant  Convec p.f +/-  Power ',
+        write(outs,'(3a)')'Daytype   Gain Label    Unit Period',
+     &    ' Sensible  Latent  Radiant  Convec   p.f +/-  Power ',
      &    'Voltage Phase'
         call edisp(itru,outs)
-        write(outs,'(3a)')'          No.  label        Hours ',
-     &    ' Magn.(W) Magn.(W) Frac     Frac    (-) (-)    (W) ',
+        write(outs,'(3a)')'          No.                Hours ',
+     &    ' Magn.(W) Magn.(W) Frac     Frac     (-) (-)    (W) ',
      &    '   (V) (rgb)'
         call edisp(itru,outs)
       else  
-        write(outs,'(2a)')'Daytype   Gain Type    Unit  Period',
+        write(outs,'(2a)')'Daytype   Gain Label   Unit  Period',
      &    ' Sensible  Latent     Radiant    Convec'
         call edisp(itru,outs)
-        write(outs,'(2a)')'          No.  label         Hours ',
+        write(outs,'(2a)')'          No.                Hours ',
      &    ' Magn.(W)  Magn.(W)   Fraction   Fraction'
         call edisp(itru,outs)
       endif
@@ -1673,7 +1857,7 @@ C Electrical data flag and elctrical data.
      &        '-',ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
      &        CONC(IDTY,I),PF(IDTY,I),
      &        IPF(IDTY,I),PWR(IDTY,I),BVOLT(IDTY,I),IPHAS(IDTY,I)
-5361          FORMAT(a,I3,1x,A,I3,a,I2,F8.1,F8.1,F9.1,F9.1,
+5361          FORMAT(a,I3,1x,A,I3,a,I2,F9.1,F9.1,F8.2,F8.2,
      &          1x,F7.2,I3,F7.1,F7.1,I3)
               call edisp(itru,outs)
 1269        CONTINUE
@@ -1804,7 +1988,8 @@ C      write(6,*) 'Nb of periods for occ/lt/equip for each day type'
           endif
  41     continue
 
-C Determine if any of the casual gain types were mixed.
+C Determine if any of the casual gains were mixed (i.e. different units
+C at different periods).
         if(loadnonzero(1,1).eq.0.and.loadm2nonzero(1,1).eq.0)then
           loadmixed(ic,1,IDTY)=0
         elseif(loadnonzero(1,1).gt.0.and.loadm2nonzero(1,1).eq.0)then
@@ -2074,7 +2259,7 @@ C Remember how many of each.
         LNCAS(IDTY)=NCAS(IDTY)
  600  CONTINUE
 
-C Find how many of each casual gain type for each day type as well
+C Find how many in each casual gain slot for each day type as well
 C as whether each profile needs to be absolute (casual gain type positive),
 C or based on area (casual gain type negative) or if mixed +-.
       call checkcascount(icomp)

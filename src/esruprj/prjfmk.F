@@ -1,7 +1,7 @@
 C This file is part of the ESP-r system.
 C Copyright Energy Systems Research Unit, University of
 C Strathclyde, Glasgow Scotland, 2001.
-
+   
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
@@ -624,40 +624,32 @@ C Remind users to check their data.
       ENDIF
 
 C Display different options depending on the version of the file.
+C If ip3ver is < 21 then there is a single string for both air
+C and casual descriptions.
   20  write(ITEM(1),'(2a)')   '  zone: ',zname(ICOMP)
-      if(ip3ver(icomp).le.2)then
+      if(ip3ver(icomp).lt.21)then
         write(ITEM(2),'(3a)') 'a notes: ',oprdesc(ICOMP)(1:23),'-'
         write(ITEM(3),'(2x,2a)')   oprdesc(ICOMP)(24:53),'-'
         write(ITEM(4),'(2x,2a)')   oprdesc(ICOMP)(54:83),'-'
         write(ITEM(5),'(2x,2a)')   oprdesc(ICOMP)(84:112),'-'
-        ITEM(6)=              '  ----------------------------- '
-        ITEM(7)=              'c edit scheduled air flows      '
-        ITEM(8)=              'd edit casual gains             '
-        ITEM(9)=             '  ----------------------------- '    
-        ITEM(10)=             '! list air flow & casual gains  '
-        ITEM(11)=             '  ----------------------------- '
-        ITEM(12)=             '> save operations file          '
-        ITEM(13)=             '? help                          '
-        ITEM(14)=             '- exit this menu                '
-        NITEMS=14
-      elseif(ip3ver(icomp).eq.3)then
-        write(ITEM(2),'(3a)') 'a infiltration & vent notes: ',
-     &    ventdesc(ICOMP)(1:13),'-'
-        write(ITEM(3),'(2x,a)')    ventdesc(ICOMP)(14:44)
+      else
+        write(ITEM(2),'(3a)') 'a air schedule notes: ',
+     &    ventdesc(ICOMP)(1:10),'-'
+        write(ITEM(3),'(2x,a)')    ventdesc(ICOMP)(11:41)
         write(ITEM(4),'(3a)') 'b casual gain notes: ',
-     &    oprdesc(ICOMP)(1:15),'-'
-        write(ITEM(5),'(2x,a)')    oprdesc(ICOMP)(16:44)
-        ITEM(6)=              '  ----------------------------- '
-        ITEM(7)=              'c edit scheduled air flows      '
-        ITEM(8)=              'd edit casual gains             '
-        ITEM(9)=             '  ----------------------------- '    
-        ITEM(10)=             '! list air flow & casual gains  '
-        ITEM(11)=             '  ----------------------------- '
-        ITEM(12)=             '> save operations file          '
-        ITEM(13)=             '? help                          '
-        ITEM(14)=             '- exit this menu                '
-        NITEMS=14
+     &    oprdesc(ICOMP)(1:11),'-'
+        write(ITEM(5),'(2x,a)')    oprdesc(ICOMP)(12:42)
       endif
+      ITEM(6)=              '  ----------------------------- '
+      ITEM(7)=              'c edit scheduled air flows      '
+      ITEM(8)=              'd edit casual gains             '
+      ITEM(9)=             '  ----------------------------- '    
+      ITEM(10)=             '! list air flow & casual gains  '
+      ITEM(11)=             '  ----------------------------- '
+      ITEM(12)=             '> save operations file          '
+      ITEM(13)=             '? help                          '
+      ITEM(14)=             '- exit this menu                '
+      NITEMS=14
 
 C Help text for this menu.
       helptopic='operations_summary'
@@ -704,15 +696,15 @@ C So save the changes to the file and then exit.
         endif
         RETURN
       ELSEIF(INO.EQ.2)THEN
-        if(ip3ver(icomp).le.2)then
+        if(ip3ver(icomp).lt.21)then
 
-C Edit operation description.
+C Edit combined operation description or scheduled air description.
           tcname=oprdesc(icomp)
-          CALL EASKS248(tcname,' ','Zone operations notes:',
+          CALL EASKS248(tcname,' ','Zone operation notes:',
      &          72,'base_case','operation notes',IER,nbhelp)
           if(tcname(1:2).ne.'  ')oprdesc(icomp)=tcname
           MODOPR=.true.
-        elseif(ip3ver(icomp).eq.3)then
+        else
           tcname=ventdesc(icomp)
           CALL EASKS248(tcname,' ','Zone scheduled air notes:',
      &          72,'base_case','operation notes',IER,nbhelp)
@@ -720,19 +712,21 @@ C Edit operation description.
           MODOPR=.true.
         endif
       ELSEIF(INO.EQ.4)THEN
-        if(ip3ver(icomp).eq.3)then
+
+C Edit the casual documentation
+        if(ip3ver(icomp).ge.21)then
           tcname=oprdesc(icomp)
-          CALL EASKS248(tcname,' ','Zone operations notes:',
+          CALL EASKS248(tcname,' ','Zone casual gains notes:',
      &          72,'base_case','operation notes',IER,nbhelp)
           if(tcname(1:2).ne.'  ')oprdesc(icomp)=tcname
           MODOPR=.true.
         endif
       ELSEIF(INO.EQ.7)THEN
 
-C Edit air flows.
-        if(ip3ver(icomp).le.2)then
+C Edit air flows depending on the file version.
+        if(ip3ver(icomp).le.21)then
           CALL EDAIR2(ICOMP,IER)
-        elseif(ip3ver(icomp).eq.3)then
+        elseif(ip3ver(icomp).ge.30)then
           CALL EDAIR3(ICOMP,IER)
         endif
         MODOPR=.true.
@@ -880,7 +874,7 @@ C Flow control browse & editing.
 
 C Generate a brief description.
 C << this does not yet take into account day type >>
-      if(ip3ver(icomp).le.2)then
+      if(ip3ver(icomp).le.21)then
         IY=ITCTL(ICOMP)
         if(IY.eq.-14)then
           ctlstr(icomp,1)='infil only: wind speed  '
@@ -911,7 +905,7 @@ C << this does not yet take into account day type >>
         else
           ctlstr(icomp,1)='unknown flow control   '
         endif
-      elseif(ip3ver(icomp).eq.3)then
+      elseif(ip3ver(icomp).ge.30)then
 
 C << to be done >>
 
@@ -1447,7 +1441,7 @@ C      integer lnblnk  ! function definition
 
 C Common block P2UNIT defines the units for infiltration and ventilation
 C for each zone and day type. The default value of zero is the same as
-C the traditional (implied) unit in the version (ip3ver 0, 1, 2, 3). A value
+C the traditional (implied) unit in the version (ip3ver 0,1,2,21,30). A value
 C of one signals m3/h and a value of 2 signals m3/s.
       integer INFUNIT,IVENTUNIT
       COMMON/P2UNIT/INFUNIT(MCOM,MDTY),IVENTUNIT(MCOM,MDTY)
@@ -1473,7 +1467,7 @@ C For help messages
       helpinsub='EDAIR3'  ! set for subroutine
       
 C Return if the version is not three.
-      if(ip3ver(icomp).lt.3)then
+      if(ip3ver(icomp).lt.30)then
         call usrmsg('EDAIR3 called with older version of zone ',
      &    'operation file.','-')
         return
@@ -2184,23 +2178,23 @@ C Copy periods.
         CALL EPICKS(IX,KSTR,' ','choose daytype to copy periods to',
      &    12,nbdaytype,calentag,'Choose daytype',IER,nbhelp)
         IDT=KSTR(1)
-     	do 210 IX=1,NAC(IDTY)
-     	  if (NAC(IDT).lt.MA) then
-     	    IPER=0
-     	    IACSX=IACS(IDTY,IX)
-     	    IACFX=IACF(IDTY,IX)
-     	    ACIX=ACI(IDTY,IX)
-     	    ACVX=ACV(IDTY,IX)
-     	    IPTX=IPT(IDTY,IX)
-     	    TAX=TA(IDTY,IX)
-     	    call ADDAFP(IPER,IDT,IACSX,IACFX,ACIX,ACVX,IPTX,TAX)
-     	    call CHKAIRFL
+        do 210 IX=1,NAC(IDTY)
+          if (NAC(IDT).lt.MA) then
+            IPER=0
+            IACSX=IACS(IDTY,IX)
+            IACFX=IACF(IDTY,IX)
+            ACIX=ACI(IDTY,IX)
+            ACVX=ACV(IDTY,IX)
+            IPTX=IPT(IDTY,IX)
+            TAX=TA(IDTY,IX)
+            call ADDAFP(IPER,IDT,IACSX,IACFX,ACIX,ACVX,IPTX,TAX)
+            call CHKAIRFL
           ELSE
             WRITE(OUTS,'(2a)')'Sorry, too many periods in day type ',
      &      calentag(idt)
             call usrmsg(' ',outs,'W')
-     	  endif
- 210 	continue
+          endif
+ 210    continue
       endif
       return
       end
@@ -3033,7 +3027,7 @@ C << this common should be re-sized 7 -> MGTY >>
       integer ICGTS,IW  ! for radio buttons
       integer MVERT,IVERT ! max items and current menu item
 
-      CHARACTER vert(35)*33,outs*124,KEY*1,sfile*72,snpfile*72
+      CHARACTER vert(35)*37,outs*124,KEY*1,sfile*72,snpfile*72
       character typstr*14
       character title*28
 
@@ -3108,10 +3102,10 @@ C Set up top of menu.
      &NCAS(IDTYP),')'
       IF(IELF(ICOMP).EQ.1) THEN
         VERT(2) = '2 electrical data >> included'
-        VERT(5) = ' Start End  Type     Power  p.f.'
+        VERT(5) = ' Start End  Label   Unit Power  p.f.'
       ELSE
         VERT(2) = '2 electrical data >> not included'
-        VERT(5) = ' Start End  Type  Sensib  Latent'
+        VERT(5) = ' Start End  Label  Unit Sensib Latent'
       ENDIF
 
 C Loop through the items until the page to be displayed. M is the 
@@ -3126,30 +3120,31 @@ C Loop for each day type.
         if(ICGT(IDTYP,L).gt.0)then
           if (IELF(ICOMP).EQ.1) then
             if (PWR(IDTYP,L).gt.0.0001) then
-              write (VERT(M),303)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
+              write (VERT(M),304)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
      &        lodlabel(icomp,ICGT(IDTYP,L)),' W  ',
      &        PWR(IDTYP,L),PF(IDTYP,L)
             else
               write (VERT(M),313)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
-     &        lodlabel(icomp,ICGT(IDTYP,L)),' W   no power use'
+     &        lodlabel(icomp,ICGT(IDTYP,L)),' W   no power'
             endif
           else
             write (VERT(M),303)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
      &      lodlabel(icomp,ICGT(IDTYP,L)),' W  ',CMGS(IDTYP,L),
      &      CMGL(IDTYP,L)
           endif
-  303     FORMAT(a,2i4,1x,2a,2f6.0)
-  313     FORMAT(a,2i4,1x,2a)
+  303     FORMAT(a,i3,i4,1x,2a,2f6.0)
+  304     FORMAT(a,i3,i4,1x,2a,f6.0,f5.1)
+  313     FORMAT(a,i3,i4,1x,2a)
         elseif(ICGT(IDTYP,L).eq.-1)then
           jicgt=iabs(ICGT(IDTYP,L))
           if (IELF(ICOMP).EQ.1) then
             if (PWR(IDTYP,L).gt.0.0001) then
               write (VERT(M),303)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
-     &        lodlabel(icomp,ICGT(IDTYP,L)),' m2p',PWR(IDTYP,L),
+     &        lodlabel(icomp,jicgt),' m2p',PWR(IDTYP,L),
      &        PF(IDTYP,L)
             else
               write (VERT(M),313)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
-     &        lodlabel(icomp,ICGT(IDTYP,L)),' m2p no power use'
+     &        lodlabel(icomp,jicgt),' m2p no power'
             endif
           else
             write (VERT(M),303)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
@@ -3159,12 +3154,12 @@ C Loop for each day type.
           jicgt=iabs(ICGT(IDTYP,L))
           if (IELF(ICOMP).EQ.1) then
             if (PWR(IDTYP,L).gt.0.0001) then
-              write (VERT(M),303)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
-     &        lodlabel(icomp,ICGT(IDTYP,L)),' Wm2',PWR(IDTYP,L),
+              write (VERT(M),304)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
+     &        lodlabel(icomp,jicgt),' Wm2',PWR(IDTYP,L),
      &        PF(IDTYP,L)
             else
               write (VERT(M),313)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
-     &        lodlabel(icomp,ICGT(IDTYP,L)),' Wm2 no power use'
+     &        lodlabel(icomp,jicgt),' Wm2 no power'
             endif
           else
             write (VERT(M),303)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
@@ -3185,7 +3180,7 @@ C If a long list include page facility text.
         WRITE(VERT(M+1),15)IPM,MPM 
    15   FORMAT   ('0 Page --- Part: ',I2,' of ',I2,' ---')
       ENDIF
-      VERT(M+2)  ='@ edit type labels            '
+      VERT(M+2)  ='@ edit casual gain labels     '
       VERT(M+3)  ='+ add/delete/copy/import gains'
       VERT(M+4)  ='* scale existing gains        '
       VERT(M+5)  ='# check/remove overlaps       '
@@ -3283,11 +3278,11 @@ C If different period, update the menu length.
       ELSEIF(IVERT.EQ.(MVERT-4))THEN
 
 C Offer gain types to scale. User can cancel request.
-C << revise to support more casual gain types >>
+C << revise to support more casual gain slots >>
         ICGTS=1
-        CALL EASKATOG('Apply scaling factor to which casual gain type?',
+        CALL EASKATOG('Apply scaling factor to which casual gain?',
      &     ' ',lodlabel(icomp,1),lodlabel(icomp,2),lodlabel(icomp,3),
-     &     'All gain types','Cancel',' ',' ',ICGTS,nbhelp)
+     &     'All gains','Cancel',' ',' ',ICGTS,nbhelp)
         if (ICGTS.eq.4) goto 5  ! cancel requested
         write (outs,'(3a)') 'Scale ',lodlabel(icomp,ICGTS),
      &                      ' gain for day type: '
@@ -3385,7 +3380,7 @@ C << revise to offer selection of day types to apply new periods >>
               IPER=0
               if(loadcount(icomp,ICGTS,IDT).eq.0)then
 
-C If there are no loads of this type make a default one.
+C If there are no loads using this slot make a default one.
                 silent=.true.
                 izs=0
                 izf=24
@@ -3500,13 +3495,13 @@ C << deal with hard coded 3 below >>
         helptopic='operations_casual_labels'
         call gethelptext(helpinsub,helptopic,nbhelp)
         dok=.false.
-        call askok(' ','Change type labels?',OK,dok,3)
+        call askok(' ','Change casual gain labels?',OK,dok,3)
         if (OK) then 
           DO 567 ITYPE=1,3
-            write(outs,'(a,i2)') 'Label for type ',ITYPE
+            write(outs,'(a,i2)') 'Label for gains in slot ',ITYPE
             write(TYPSTR,'(2a)') lodlabel(icomp,ITYPE),'  '
             call easks(TYPSTR,' ',outs,12,
-     &                 lodlabel(icomp,ITYPE),' Type label',IER,2)
+     &                 lodlabel(icomp,ITYPE),' Gain label',IER,2)
             write(lodlabel(icomp,ITYPE),'(a)') TYPSTR(1:12)
  567      CONTINUE
           goto 5
@@ -3548,7 +3543,7 @@ C gain patterns.
       SUBROUTINE  SCASL(IN,IDAY,IER,ICOMP)
 
 C << introduce concept of profiles with multiple day types as well
-C << as multiple casual gain types
+C << as multiple casual gain slots
 
 C << also consider that periods can be defined as reals for later
 C << use in the zone operation file timings
@@ -3647,8 +3642,8 @@ C Present a list of profiles to select from.
       INDEX=IPRVAL(1)
 
 C Identify nature of casual gain.
-C << revise for more types >>
-      CALL EASKABC(' ','Type of casual gain: ',ll1,ll2,ll3,ICGTX,
+C << revise for more casual slots >>
+      CALL EASKABC(' ','Which casual gain: ',ll1,ll2,ll3,ICGTX,
      &  nbhelp)
 
  100  WRITE(HOLD,'(2f9.0,2f8.2,a)')PS,PL,RAD,CON,'  '
@@ -3688,7 +3683,7 @@ C << and small power can be entered in terms of W/m2.
      &      0.,'F',1.,'F',0.8,'Power factor ',IER,nbhelp)
           ippft=ippf
           CALL EASKI(ippft,'Lagging -1, Leading 1 or Unity 0?',
-     &      '(see help) ',-1,'F',1,'F',0,'casual gain type',IERI,
+     &      '(see help) ',-1,'F',1,'F',0,'casual gain lagging',IERI,
      &      nbhelp) 
           if(ieri.eq.-3)then
             PPF=0.0
@@ -3712,7 +3707,7 @@ C << and small power can be entered in terms of W/m2.
           IPPHAST=1
           ipphast=ipphas
           CALL EASKI(IPPHAST,'Supply phase 1-3 or 4 ?','(see help)',
-     &       1,'F',4,'F',1,'casual gain type',IERI,6) 
+     &       1,'F',4,'F',1,'casual gain phase',IERI,6) 
           if(ieri.eq.-3)then
             PPF=0.0
             IPPF=0
@@ -3729,20 +3724,20 @@ C << and small power can be entered in terms of W/m2.
 C Instanciate the casual gain commons with data from the profile.
       NCAS(IDAY) = NCAS(IDAY) + NCG(INDEX)
       DO 140 I = 1,NCG(INDEX)
-	ICGS(IDAY,I+IN) = ICGS1(INDEX,I)
-	ICGF(IDAY,I+IN) = ICGF1(INDEX,I)
-	CMGS(IDAY,I+IN) = CGS1(INDEX,I)*PS/100.0
-	CMGL(IDAY,I+IN) = CGL1(INDEX,I)*PL/100.0
-	RADC(IDAY,+IN) = RAD
-	CONC(IDAY,I+IN) = CON
-	ICGT(IDAY,I+IN) = ICGTX
-	IF(IELF(ICOMP).GT.0) THEN
-	  PF(IDAY,I+IN)=PPF
-	  IPF(IDAY,I+IN)=IPPF
-	  PWR(IDAY,I+IN)=CGS1(INDEX,I)*PE/100.
-	  BVOLT(IDAY,I+IN)=PBVOLT
-	  IPHAS(IDAY,I+IN)=IPPHAS
-	ENDIF
+        ICGS(IDAY,I+IN) = ICGS1(INDEX,I)
+        ICGF(IDAY,I+IN) = ICGF1(INDEX,I)
+        CMGS(IDAY,I+IN) = CGS1(INDEX,I)*PS/100.0
+        CMGL(IDAY,I+IN) = CGL1(INDEX,I)*PL/100.0
+        RADC(IDAY,+IN) = RAD
+        CONC(IDAY,I+IN) = CON
+        ICGT(IDAY,I+IN) = ICGTX
+        IF(IELF(ICOMP).GT.0) THEN
+          PF(IDAY,I+IN)=PPF
+          IPF(IDAY,I+IN)=IPPF
+          PWR(IDAY,I+IN)=CGS1(INDEX,I)*PE/100.
+          BVOLT(IDAY,I+IN)=PBVOLT
+          IPHAS(IDAY,I+IN)=IPPHAS
+        ENDIF
 140   CONTINUE
 
       CALL ERPFREE(IPRODB,ISTAT)

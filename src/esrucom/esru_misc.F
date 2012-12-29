@@ -3159,7 +3159,7 @@ C if it has been sorted and notify user.
                 elseif(ip3ver(L).eq.1)then
                   WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
      &              ' (defined)'
-                elseif(ip3ver(L).eq.2)then
+                elseif(ip3ver(L).ge.2)then
                   WRITE(VERT(M),'(a1,1x,a12,a)')KEY,zname(L),
      &              ' (defined)'
                 endif
