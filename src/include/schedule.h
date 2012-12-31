@@ -54,9 +54,10 @@ C How many of each dispersed demands for each gaintype/daytype.
       integer idmdver   ! version of the demands file.
                         ! idmdver =0 standard, idmdver =1 with header
 
-C Version of zone operations file. ip3ver=0 legacy, =1 sorted with header,
-C =2 with more than 3 day types allowed and periods sorted,
-C =3 with key words for casual gain types.
+C Version of zone operations file. ip3ver=0 legacy, =1.0 (1) sorted with header,
+C =2.0 (2) with more than 3 day types allowed and periods sorted,
+C =2.1 (21) with key words for casual gain types and separate documentation,
+C =3 (30) with tag:data format (not yet fully implemented).
       integer ip3ver
       common/p3ver/ip3ver(MCOM)
 
@@ -66,12 +67,14 @@ C =3 with key words for casual gain types.
       COMMON/P1/oprdesc(MCOM),ventdesc(MCOM),ctlstr(MCOM,MDTY)
 
       character lodlabel*12   ! user label for each zone casual gain slot
-      character caskeytype*16 ! key word attribute of casual gain type (see
-                              ! also lodslotper to be held at each period)
+      character caskeytype*16 ! key word attribute of casual gain type (to
+                              ! replace overloaded icgt array below). Keys
+                              ! are listed in eroper.F
       common/loadlabel/lodlabel(mcom,MGTY),caskeytype(mcom,MGTY)
 
-      integer lodslot     ! pointer (from period data lines first index) to
-                          ! a casual slot, if zero slot not used
+      integer lodslot     ! which slot (for pointer from period data lines 1st
+                          ! index) to indicate which casual slot, if zero
+                          ! the slot not used
       integer lodatr1     ! 1st attribute associated with a caskeytype
       integer lodatr2     ! 2nd attribute associated with a caskeytype
       common/loadkey/lodslot(mcom,MGTY),lodatr1(mcom,MGTY),
@@ -79,7 +82,7 @@ C =3 with key words for casual gain types.
 
 C Users can track a number of different casual gains up to MGTY and ICGT 
 C is this index for each period in each calendar day type. Older files 
-C implied a purpose to this index
+C implied a purpose to this index. << this is being depreciated >>
 C 1=occupancy W, 2=lighting W, 3=small power W, 4=other W, 5=external electrical
 C -1=floor area/person -2 Light W/m2 -3=small power W/m2
       integer ICGT  ! position within array of casual gains (overloaded see above)

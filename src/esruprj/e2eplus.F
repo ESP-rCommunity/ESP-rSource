@@ -1113,6 +1113,7 @@ C Detect radiant fraction.
               rfr=RADC(ID,J)
               if(loadradfrac(mz,ity).lt.rfr) loadradfrac(mz,ity)=rfr
 
+C << oveerload of ICGT here >>
               if (ICGT(ID,J).eq.-1) then
 
 C For case of m2/person CMGL(ID,J) remains zero so use cmgs(ID,J) instead.
@@ -1186,6 +1187,8 @@ C Write day type name if start of the day type.
             do 77 J=1,NCAS(ID)
               CGNS=0.
               CGNL=0.
+
+C << overloaded ICGT here >>
               ity=iabs(ICGT(ID,J))
               totcgnsl=loadcasp(mz,ity,1)+loadcasp(mz,ity,2)
               if(ity.eq.2)then
@@ -1282,6 +1285,8 @@ C Write day type name if start of the day type.
             do 67 J=1,NCAS(ID)
               CGNS=0.
               CGNL=0.
+
+C << overloaded ICGT here >>
               ity=iabs(ICGT(ID,J))
               totcgnsl=loadcasp(mz,ity,1)+loadcasp(mz,ity,2)
               if(ity.eq.3)then
@@ -1400,6 +1405,8 @@ C Write day type name if start of the day type.
             do 57 J=1,NCAS(ID)
               CGNS=0.
               CGNL=0.
+
+C << overloaded ICGT here >>
               ity=iabs(ICGT(ID,J))
               totcgnsl=loadcasp(mz,ity,1)+loadcasp(mz,ity,2)
               if(ity.eq.1)then

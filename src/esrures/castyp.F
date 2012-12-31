@@ -1275,6 +1275,7 @@ C calendar array to set the day type.
 C Check if there are any casual gains at this hour.
 C for occupancy, lighting and equipment.
 C << adjust for additional casual gains >>
+C << overloading of ICGT here >>
       IF(NCAS(IDTY).GE.1)THEN
         DO 30 ICNN=1,NCAS(IDTY)
           XC=CMGS(IDTY,ICNN)*CONC(IDTY,ICNN)
@@ -1326,6 +1327,7 @@ C if one of the periods includes HOUR then save magnitudes;
      &         HOUR.LE.float(ICGF(IDTY,ICNN)))THEN
 
 C If time step is in operation period.
+C << overloading of ICGT here >>
               IF(ICGT(IDTY,ICNN).EQ.1.AND.NCGTC(IZ,IDTY).EQ.1)THEN
 
 C If absolute GAINS (W) ARE CONTROLED.
@@ -1351,6 +1353,7 @@ C If relative GAINS (W/2) ARE NOT CONTROLED.
 
 C If there is a control for type 2 (lighting), test the control periods.
 C If one of the periods includes HOUR then save magnitudes.
+C << overloading of ICGT here >>
               IF(ICGT(IDTY,ICNN).EQ.2.AND.NCGTC(IZ,IDTY).EQ.2)THEN
                 IF(HOUR.GT.float(ICGCS(IZ)).AND.
      &             HOUR.LE.float(ICGCF(IZ))) ICC= 2

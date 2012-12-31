@@ -41,6 +41,7 @@ C PLTCASGN - plot casual gain data.
 C Inscasper - inserts or deletes a casual gain period into the
 C             current P3 & elp3 data structure.
 C initcasday - does initial setup of a casual day type.
+C initcasday21 - does initial setup of one or more casual day labels types.
 C initcasper - supports setting up initial periods for schedules.
 
 C ********************* PRJFMK *********************
@@ -260,14 +261,16 @@ C Instanciate for current day types prior to scanning the source operation file.
         NCAS(IDTY)=0
         ctlstr(icomp,IDTY)='no control of air flow  '
  400  CONTINUE
-      oprdesc(icomp)='no operations notes (yet)'
+      write(oprdesc(icomp),'(a)') 'no casual gain notes (yet)'
+      write(ventdesc(icomp),'(a)')
+     &  'no infiltration or venitlation notes (yet)'
       IER=0
 
 C Set the default type labels for this zone
-      lodlabel(icomp,1)='Occupt'
+      lodlabel(icomp,1)='Occupants'
       lodlabel(icomp,2)='Lights'
-      lodlabel(icomp,3)='Equipt'  
-      lodlabel(icomp,4)='Other '  
+      lodlabel(icomp,3)='SmallPower'  
+      lodlabel(icomp,4)='Otherstuff'  
       lodlabel(icomp,5)='Ann.El'  
       lodlabel(icomp,6)='N/A   ' 
       lodlabel(icomp,7)='N/A   '      
@@ -324,9 +327,10 @@ C the definition already defined in another zone.
           goto 19
         elseif(igu.eq.8)then
 
-C Setup minimal description (single period for each type of casual
-C gain set to zeros with no infiltration and ventilation) and exit.
+C Setup minimal description (single period for the initial 3 slots of
+C casual gain arrays to zeros with no infiltration and ventilation).
 C << expand for additional gain types >>
+C << overloading of ICGT here >>
           DO 399 IDTY=1,NBDAYTYPE
             ctlstr(icomp,IDTY)='no control of air flow  '
             NAC(IDTY)=1
@@ -340,36 +344,53 @@ C << expand for additional gain types >>
             ICGT(IDTY,1)=1
             ICGS(IDTY,2)=0; ICGF(IDTY,2)=24
             CMGS(IDTY,2)=0.0; CMGL(IDTY,2)=0.0
-            RADC(IDTY,2)=0.3; CONC(IDTY,2)=0.7 ! CIBSE Table A6.5
-            ICGT(IDTY,2)=2
+            RADC(IDTY,2)=0.3; CONC(IDTY,2)=0.7  ! CIBSE Table A 6.5
+            ICGT(IDTY,2)=2 
             ICGS(IDTY,3)=0; ICGF(IDTY,3)=24
             CMGS(IDTY,3)=0.0; CMGL(IDTY,3)=0.0
             RADC(IDTY,3)=0.4; CONC(IDTY,3)=0.6
-            ICGT(IDTY,3)=3
+            ICGT(IDTY,3)=3 
  399      CONTINUE
 
-C Instanciate for initial weekday/saturday/sunday day types
-C prior to scanning the source operation file.
+C Instanciate initial documentation for air schedules and casual gains.
           write(oprdesc(icomp),'(2a)')
-     &    'nothing happens in this zone in terms of occupants lights',
-     &    ' and small power. There is not infiltration or ventilation.'
+     &    'Nothing happens in this zone in terms of occupants lights',
+     &    ' and small power. Initial period of 0-24 hour for each.'
+          write(ventdesc(icomp),'(2a)')
+     &    'The zone has no infiltration or ventilation from other ',
+     &    'zones in the model and no control imposed on air movement.'
 
-C Set the default type labels for this zone
-          lodlabel(icomp,1)='Occupt'
+C Set the default labels, slot, type labels for this zone. Only set
+C the lodslot to non-zero for the initial 3 casual gain slots.
+          lodlabel(icomp,1)='Occupants'
+          caskeytype(icomp,1)='people      '
+          lodslot(icomp,1)=1; lodatr1(icomp,1)=0;  lodatr2(icomp,1)=0
           lodlabel(icomp,2)='Lights'
-          lodlabel(icomp,3)='Equipt'  
-          lodlabel(icomp,4)='Other '  
+          caskeytype(icomp,2)='lighting    '
+          lodslot(icomp,2)=2; lodatr1(icomp,2)=0;  lodatr2(icomp,2)=0
+          lodlabel(icomp,3)='SmallPower'
+          caskeytype(icomp,3)='equipment   '  
+          lodslot(icomp,3)=3; lodatr1(icomp,3)=0;  lodatr2(icomp,3)=0
+          lodlabel(icomp,4)='Otherstuff'  
+          caskeytype(icomp,4)='other       '  
+          lodslot(icomp,4)=0; lodatr1(icomp,4)=0;  lodatr2(icomp,4)=0
           lodlabel(icomp,5)='Ann.El'  
+          caskeytype(icomp,5)='net_utils   '  
+          lodslot(icomp,5)=0; lodatr1(icomp,5)=0;  lodatr2(icomp,5)=0
           lodlabel(icomp,6)='N/A   ' 
+          caskeytype(icomp,6)='-           '  
+          lodslot(icomp,6)=0; lodatr1(icomp,6)=0;  lodatr2(icomp,6)=0
           lodlabel(icomp,7)='N/A   '
-          ip3ver(icomp)=2
+          caskeytype(icomp,7)='-           '  
+          lodslot(icomp,7)=0; lodatr1(icomp,7)=0;  lodatr2(icomp,7)=0
+          ip3ver(icomp)=21   ! set version for testing 2.1
           MODOPR=.true.
           sorted=.true.
 
 C Write file and return.
           LTMP=LPROJ(ICOMP)
-          CALL EASKS(LTMP,' ','Zone operations file name?',
-     &           72,GFILE,'operations file',IER,nbhelp)
+          CALL EASKS(LTMP,'Zone operations file name','Confirm:',
+     &      72,GFILE,'operations file',IER,nbhelp)
           IF(LTMP.NE.' ')THEN
             call usrmsg(
      &        'Updating model to reflect changes',
@@ -515,12 +536,14 @@ C We have all of the directives, do the import.
         if(igu.eq.1.or.igu.eq.2.or.igu.eq.5)then
 
 C Each of these leaves the user to define the casual gains manually.
-C The from scratch should intially be version 2.0
-          ip3ver(icomp)=2
+C The from scratch should intially be version 2.1
+C << test calling initcasday21 >>
+          ip3ver(icomp)=21
           helptopic='operations_synopsys'
           call gethelptext(helpinsub,helptopic,nbhelp)
           CALL PHELPD('operation setup',nbhelp,'-',0,0,IER)
-          call initcasday(ier)
+C          call initcasday(ier)
+          call initcasday21(icomp,ier)
 
           MODOPR=.true.
           sorted=.true.
@@ -695,7 +718,9 @@ C So save the changes to the file and then exit.
           CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
         endif
         RETURN
+
       ELSEIF(INO.EQ.2)THEN
+
         if(ip3ver(icomp).lt.21)then
 
 C Edit combined operation description or scheduled air description.
@@ -711,6 +736,7 @@ C Edit combined operation description or scheduled air description.
           if(tcname(1:2).ne.'  ')ventdesc(icomp)=tcname
           MODOPR=.true.
         endif
+
       ELSEIF(INO.EQ.4)THEN
 
 C Edit the casual documentation
@@ -730,15 +756,18 @@ C Edit air flows depending on the file version.
           CALL EDAIR3(ICOMP,IER)
         endif
         MODOPR=.true.
+
       ELSEIF(INO.EQ.8)THEN
 
 C Edit casual gains.
         CALL EDCAS(ICOMP,MODOPR,sorted,IER)
+
       ELSEIF(INO.EQ.10)THEN
 
 C List flows and gains.
         CALL VENTINF(ICOMP,ITRU)
         call CASINF(ICOMP,ITRU)
+
       ELSEIF(INO.EQ.(NITEMS-2))THEN
 
 C Edit or browse for operations file name.
@@ -783,6 +812,7 @@ C and rewrite the system configuration file if not browsing.
           goto 20
         endif
         MODOPR=.false.
+
       ELSEIF(INO.EQ.(NITEMS-1))THEN
 
 C Explain
@@ -2239,7 +2269,8 @@ C << initial intent to guide later revisions?
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
-      COMMON/P1C/oprdescc,ctlstrc
+      CHARACTER oprdescc*248,ventdescc*248,ctlstrc*24
+      COMMON/P1C/oprdescc,ventdescc,ctlstrc
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
@@ -2257,7 +2288,6 @@ C Scratch copy of air flow pattern from an operations file.
                            !questions about the operation files data
 
       character*(*) sfile
-      CHARACTER oprdescc*248,ctlstrc*24
       character ltmp*72
       character fs*1,GFILE*72,afact*8,iflow*8,vflow*8
       character act*1   ! s for silent, - for normal
@@ -2293,6 +2323,7 @@ C to reading in source.
       ctlstr(idest,2)='no control of air flow  '
       ctlstr(idest,3)='no control of air flow  '
       oprdesc(idest)='Flow schedules imported. No other notes (yet).'
+      ventdesc(idest)='Flow schedules imported. No other notes (yet).'
 
 C First scan the source zone operation file if there is a problem
 C reading or it does not exist then return an error state.
@@ -3596,7 +3627,6 @@ C << revise for more loads >>
       write(ll2,'(a)') lodlabel(icomp,2)
       write(ll3,'(a)') lodlabel(icomp,3)
 
-      IER=0
       ICGTX=1
       PS=0.
       PL=0.
@@ -3771,7 +3801,7 @@ C Electrical data flag and elctrical data.
 
       character OUTS*124,hold*24
 
-      integer IV,ipft,IPHAST  ! for local editing.
+      integer ipft,IPHAST  ! for local editing.
       real pft,pwrt,bvoltt,xfla,zb   ! for local editing.
       integer IALL
       
@@ -4276,7 +4306,8 @@ C Passed parameters
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/FILEP/IFIL
 
-      COMMON/P1C/oprdescc,ctlstrc
+      CHARACTER oprdescc*248,ventdescc*248,ctlstrc*24
+      COMMON/P1C/oprdescc,ventdescc,ctlstrc
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
@@ -4307,7 +4338,6 @@ C Scratch version of P3N
       integer ifullysilent !flag to drive the silent model creation without
                            !questions about the operation files data
 
-      CHARACTER oprdescc*248,ctlstrc*24
       character ltmp*72
       character fs*1,GFILE*72
       LOGICAL XST,unixok,dok,ok
@@ -4537,8 +4567,12 @@ C << separate documentation string for air flows and casual gains.
           call edisp(iuout,' Current operation notes:')
           call edisp248(iuout,oprdesc(idest),80)
           call edisp(iuout,' ')
+          call edisp248(iuout,ventdesc(idest),80)
+          call edisp(iuout,' ')
           call edisp(iuout,' Source operation notes:')
           call edisp248(iuout,oprdescc,80)
+          call edisp(iuout,' ')
+          call edisp248(iuout,ventdescc,80)
           call edisp(iuout,' ')
           dok=.true.
           call askok('Use the source documentation?',' ',OK,DOK,0)
@@ -5279,6 +5313,125 @@ C Increment ipcount for each new period.
         endif
         NCAS(IDTY)=NCAS(IDTY)+nbocper+nbltper+nbspper
  600  CONTINUE
+      return
+      end
+
+C ******* initcasday21
+C initcasday21 does initial setup of one or more casual day types. 
+      subroutine initcasday21(icomp,ier)
+
+#include "building.h"
+#include "schedule.h"
+      
+      integer lnblnk  ! function definition
+
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
+      common/calena/calename,calentag(MDTY),calendayname(MDTY)
+      CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
+      INTEGER ILN,islot,nbper
+      dimension iper(24),iperf(24)
+      character OUTS*12,LOUTS*24,VOUTS*50
+      character typstr*14
+      real rf,cf
+      logical ok,dok
+      
+C For help messages
+      character helpinsub*24 ! subroutine name
+      character helptopic*24 ! string (unique) for topic
+      integer nbhelp     ! number of help lines found
+
+      helpinsub='initcasday'  ! set for subroutine
+      helptopic='operations_initial'
+      call gethelptext(helpinsub,helptopic,nbhelp)
+
+      islot=0
+ 42   typstr='  '
+      islot=islot+1
+      call easks(TYPSTR,
+     &  'User label for new casual gain <= 12 characters ','  ',14,
+     &  'object',' Gain label',IER,nbhelp)
+      write(lodlabel(icomp,islot),'(a)') TYPSTR(1:12)
+
+C Type to go with this casual gain.
+      idno=islot+1
+      isw=0
+      call MENUATOL('  ','Available types',
+     &  'a -        not yet defined W & W/m2',
+     &  'b people   basic occupant W & m2/p',
+     &  'c lighting basic lighting W & W/m2',
+     &  'd equipment basic small power W & W/m2',
+     &  'e other    non-specific gains W & W/m2',
+     &  'f net_utilities as legacy icgtyp = 5',
+     &  'g ALOtherElectric H3K other appliances',
+     &  'h ALStoveNG H3K natural gas stoves',
+     &  'i ALStoveElectric H3K electrical stoves',
+     &  'j ALDryer H3K clothes dryers',
+     &  ' ',' ',isw,idno,nbhelp)
+      if(isw.eq.1)then
+      elseif(isw.eq.2)then
+        caskeytype(icomp,islot)='people      '
+        rf=0.6; cf=0.4  ! CIBSE Guide A 6.3
+      elseif(isw.eq.3)then
+        caskeytype(icomp,islot)='lighting    '
+        rf=0.3; cf=0.7  ! CIBSE Table A6.5
+      elseif(isw.eq.4)then
+        caskeytype(icomp,islot)='equipment   '
+        rf=0.4 ; cf=0.6 
+      elseif(isw.eq.5)then
+        caskeytype(icomp,islot)='other       '  
+        rf=0.5 ; cf=0.5 
+      elseif(isw.eq.6)then
+        caskeytype(icomp,islot)='net_utils   '  
+        rf=0.5 ; cf=0.5 
+      elseif(isw.eq.7)then
+        caskeytype(icomp,islot)='ALOtherElectric'  
+        rf=0.4 ; cf=0.6 
+      elseif(isw.eq.8)then
+        caskeytype(icomp,islot)='ALStoveNG   '  
+        rf=0.5 ; cf=0.5 
+      elseif(isw.eq.9)then
+        caskeytype(icomp,islot)='ALStoveElectric'  
+        rf=0.4 ; cf=0.6 
+      elseif(isw.eq.10)then
+        caskeytype(icomp,islot)='ALDryer     '  
+        rf=0.5 ; cf=0.5 
+      endif
+      lodslot(icomp,islot)=islot; lodatr1(icomp,islot)=0;
+      lodatr2(icomp,islot)=0
+
+      DO 600 IDTY=1,NBDAYTYPE  
+        nbper=1
+        OUTS=CALENTAG(IDTY)
+        ILN=LNBLNK(OUTS)
+        WRITE(VOUTS,'(4A)')'Number of ',TYPSTR,' periods on ',
+     &     OUTS(1:ILN)
+        CALL EASKI(nbper,VOUTS,'Confirm:',0,'F',24,'F',1,
+     &    'no. CG periods',IER,nbhelp)
+
+C Get user to specify the start times for occup periods if non-zero.
+C Increment ipcount for each new period.
+        ipcount=NCAS(IDTY)
+        if(nbper.gt.0)then
+          WRITE(LOUTS,'(3A)')OUTS(1:ILN),' ',TYPSTR
+          call initcasper(nbper,iper,iperf,'i',LOUTS)
+          do 71 ij=1,nbper
+            ipcount=ipcount+1
+            ICGS(IDTY,ipcount) = iper(ij)
+            ICGF(IDTY,ipcount) = iperf(ij)
+            CMGS(IDTY,ipcount) = 0.0
+            CMGL(IDTY,ipcount) = 0.0
+            RADC(IDTY,ipcount) = rf
+            CONC(IDTY,ipcount) = cf
+            ICGT(IDTY,ipcount) = islot  ! set to the current slot 
+  71      continue
+        endif
+        NCAS(IDTY)=NCAS(IDTY)+nbper
+ 600  CONTINUE
+      DOK=.false.
+      CALL ASKOK('Define another casual gain label/type/periods?',
+     &  '  ',OK,DOK,nbhelp)
+      if(ok) goto 42   ! loop again
       return
       end
 

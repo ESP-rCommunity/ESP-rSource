@@ -82,30 +82,30 @@ C espriou.h provides currentfile.
       integer ncomp,ncon
       COMMON/C1/NCOMP,NCON
 
-C Key word for each casual gain to assign it a type (if ip3ver is >= 21).
-C As follows:
-C `-` no user defined meaning treat with legacy assumptions,
-C `people` basic occupant (with m2/person), 
-C 'lighting' basic lighting, `equipment` basic small power
-C 'other' with ??
-
-C Bespoke types  << update these tags >>
-C `net_utilities` same as icgtyp = 5, `ctlgain4` sams as icgtyp = 4,
-C `cetc_appliances` NRCan appliances, `cetc_lights` NRC lights,
-C `cetc_other` NRCan other electrical, `cetc_occupants` NRCan occupants
-C `cetc_gas` NRCan gas appliances.
+C Key word (caskeytype) for each casual gain slot to assign it a type
+C (if ip3ver is >= 21). As follows:
+C `-` not yet defined units are W and W/m2,
+C `people` basic occupant units are W and m2/person, 
+C 'lighting' basic lighting units are W and W/m2,
+C `equipment` basic small power units are W and W/m2,
+C 'other' as '-' non-specific casual gains units are W and W/m2
+C `net_utilities` same as legacy icgtyp = 5 (see ?? for documentation),
+C 'ALOtherElectric' used with H3K other appliances,
+C 'ALStoveNG' used with H3K stoves using natural gas,
+C 'ALStoveElectric' used with H3K electrical stoves,
+C 'ALDryer' used with H3K clothes dryers
 
 C Future type examples
 C `pmv_people` people with clo and metabolic rate,
 C `transpiraton` vegitation or latent sources, `waterdraw` DHW draws,
 C `roomfan` future linked to flow component
-      character caskeytypeper*16
+      character caskeytypeper*16  ! for future use with ip3ver 30
       common/p3typekey/caskeytypeper(MDTY,MC)
 
 C Common block P2UNIT defines the units for infiltration and ventilation
 C for each zone and day type. The default value of zero is the same as
-C the traditional (implied) unit in the version (ip3ver 0, 1, 2). A value
-C of one signals m3/h and a value of 2 signals m3/s.
+C the (implied) unit in the version (ip3ver 0, 1, 2). A value of
+C of one signals m3/h and a value of 2 signals m3/s. << not yet used >>
       integer INFUNIT,IVENTUNIT
       COMMON/P2UNIT/INFUNIT(MCOM,MDTY),IVENTUNIT(MCOM,MDTY)
 
@@ -448,15 +448,15 @@ C such as user label, keyword, index that the period lines can use
 C and two integer attributes to be used in post-processing.
           islot=islot+1   ! increment the casual gain slot
           CALL EGETW(OUTSTR,K,lodlabel(ICOMP,ISLOT),'W',
-     &      'user label',IER) 
+     &      'user casual gain label',IER) 
           CALL EGETW(OUTSTR,K,caskeytype(ICOMP,ISLOT),'W',
-     &      'keyword',IER) 
+     &      'casual gain type keyword',IER) 
           CALL EGETWI(OUTSTR,K,lodslot(icomp,ISLOT),0,99,'W',
-     &      'slot position',IER)
+     &      'casual gain slot position',IER)
           CALL EGETWI(OUTSTR,K,lodatr1(icomp,ISLOT),0,99,'W',
-     &      'atribute 1',IER)
+     &      'casual gain atribute 1',IER)
           CALL EGETWI(OUTSTR,K,lodatr2(icomp,ISLOT),0,99,'W',
-     &      'atribute 2',IER)
+     &      'casual gain atribute 2',IER)
           goto 77   ! read another line
 
         elseif(WORD(1:9).eq.'*End_type'.or.
@@ -487,15 +487,15 @@ C << later check that the period data points to a known slot?
           islot=islot+1   ! increment the casual gain slot
           K=6
           CALL EGETW(OUTSTR,K,lodlabel(ICOMP,ISLOT),'W',
-     &      'user label',IER) 
+     &      'user casual gain label',IER) 
           CALL EGETW(OUTSTR,K,caskeytype(ICOMP,ISLOT),'W',
-     &      'keyword',IER) 
+     &      'casual gain keyword',IER) 
           CALL EGETWI(OUTSTR,K,lodslot(icomp,ISLOT),0,99,'W',
-     &      'slot position',IER)
+     &      'casual gain slot position',IER)
           CALL EGETWI(OUTSTR,K,lodatr1(icomp,ISLOT),0,99,'W',
-     &      'atribute 1',IER)
+     &      'casual gain atribute 1',IER)
           CALL EGETWI(OUTSTR,K,lodatr2(icomp,ISLOT),0,99,'W',
-     &      'atribute 2',IER)
+     &      'casual gain atribute 2',IER)
           goto 42   ! read another line
         elseif(outstr(1:9).eq.'*end_type')then
           continue   ! we are done with this section
@@ -510,13 +510,14 @@ C Casual gains for different day types
         NCAS(IDTY)=IREADER
         IF(NCAS(IDTY).EQ.0)goto 600
         DO 40 I=1,NCAS(IDTY)
-          CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period gain detl',IER)
+          CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period gain detail',IER)
           K=0
           if(ND.eq.7.or.ND.eq.12)then
-            CALL EGETWI(OUTSTR,K,IREADER,-3,5,'W','gain type',IER)
+            CALL EGETWI(OUTSTR,K,IREADER,-3,5,'W',
+     &        'verloaded gain type',IER)
             ICGT(IDTY,I)=IREADER
           else
-            ICGT(IDTY,I)=1
+            ICGT(IDTY,I)=1 ! assume slot one if unspecified
           endif
           CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain st',IER)
           ICGS(IDTY,I)=IREADER
@@ -571,7 +572,8 @@ C Check if electrical data has also been saved.
         IF(IER.NE.0) goto 1002
  600  CONTINUE
 
-C Check to see if gain labels have been added to the end of the file.
+C Check to see if gain labels have been added to the end of the file
+C for ip3ver < 21. Loop to see the magintude of icgt already referenced.
       irange=0
       do 701 IDTY=1,NBDAYTYPE
         if (NCAS(IDTY).GT.0) then
@@ -616,13 +618,18 @@ C and the two attributes are zero.
             lodslot(icomp,ISLOT)=ISLOT; lodatr1(icomp,ISLOT)=0
             lodatr2(icomp,ISLOT)=0
             if(lodlabel(ICOMP,ISLOT)(1:6).eq.'Occupt')then
-              caskeytype(icomp,ISLOT)='people'
+              caskeytype(icomp,ISLOT)='people       '
             elseif(lodlabel(ICOMP,ISLOT)(1:6).eq.'Lights')then
-              caskeytype(icomp,ISLOT)='lighting'
+              caskeytype(icomp,ISLOT)='lighting     '
             elseif(lodlabel(ICOMP,ISLOT)(1:6).eq.'Equipt')then
               caskeytype(icomp,ISLOT)='equipment'
             else
-              caskeytype(icomp,ISLOT)='-'
+              caskeytype(icomp,ISLOT)='-            '
+            endif
+
+C File included a 5th label and we assume that this is this reserved use.
+            if(ISLOT.eq.5)then
+              caskeytype(icomp,ISLOT)='net_utilities'
             endif
  1234     CONTINUE
         ENDIF 
@@ -784,8 +791,8 @@ C Descriptive label for a zone load or casual gain types.
       character lodlabelc*12
       common/loadlabelc/lodlabelc(MGTY)
 
-      CHARACTER oprdescc*248,ctlstrc*24
-      COMMON/P1C/oprdescc,ctlstrc
+      CHARACTER oprdescc*248,ventdescc*248,ctlstrc*24
+      COMMON/P1C/oprdescc,ventdescc,ctlstrc
 
 C Scratch copy of air flow pattern from an operations file.
       COMMON/P2NC/NACC(MDTY),IACSC(MDTY,MA),IACFC(MDTY,MA),
@@ -1014,13 +1021,13 @@ C Casual gains.
         NCASC(IDTY)=IR
         IF(NCASC(IDTY).EQ.0)goto 600
         DO 40 I=1,NCASC(IDTY)
-          CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period gain detl',IER)
+          CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period gain detail',IER)
           K=0
           if(ND.eq.7.or.ND.eq.12)then
-            CALL EGETWI(OUTSTR,K,IR,-3,5,'W','day type',IER)
+            CALL EGETWI(OUTSTR,K,IR,-3,5,'W','overloaded type',IER)
             ICGTC(IDTY,I)=IR
           else
-            ICGTC(IDTY,I)=1
+            ICGTC(IDTY,I)=1  ! if not mentioned assume slot 1
           endif
           CALL EGETWI(OUTSTR,K,IR,0,24,'W',' gain st',IER)
           ICGSC(IDTY,I)=IR
@@ -1239,7 +1246,7 @@ C it into words.
         endif
 
       else
-        oprdescc=OUTSTR
+        write(oprdescc,'(a)') OUTSTR
       endif
       call edisp(iuout,' Source scheduled air notes:')
       call edisp248(iuout,ventdescc,80)
@@ -1841,6 +1848,7 @@ C Electrical data flag and elctrical data.
       DO 600 IDTY=1,NBDAYTYPE
         if(NCAS(IDTY).eq.0) goto 600
 
+C << overload of ICGT to be relaxed here >>
         IF(NCAS(IDTY).GT.0)THEN
           IF(IELF(ICOMP).EQ.1) THEN
             DO 1269 I=1,NCAS(IDTY)
@@ -1862,6 +1870,8 @@ C Electrical data flag and elctrical data.
               call edisp(itru,outs)
 1269        CONTINUE
           ELSE
+
+C << overload of ICGT to be relaxed here >>
             DO 1270 I=1,NCAS(IDTY)
               if(ICGT(IDTY,I).gt.0)then
                 write(llbl,'(a,a)')lodlabel(ICOMP,ICGT(IDTY,I)),'W  '
@@ -1939,6 +1949,8 @@ C      write(6,*) 'Nb of periods for occ/lt/equip for each day type'
       DO 600 IDTY=1,NBDAYTYPE
       if(ncas(IDTY).gt.0)then
         do 41 ij=1,ncas(IDTY)
+
+C << overloading of icgt to be revised >>
           if(icgt(IDTY,ij).eq.1)then
             loadcount(ic,1,IDTY)=loadcount(ic,1,IDTY)+1
             if(CMGS(IDTY,ij).gt.0.0)loadnonzero(1,1)=loadnonzero(1,1)+1
@@ -2215,7 +2227,7 @@ C RADCA total radiant casual W for the zone at each hour and gain type
 C CONCA total conv casual W for the zone at each hour and gain type
 C RADFAC implied radiant fraction RADCA/CMGSA
 C CONFAC implied convective fraction CONCA/CMGSA
-C ICGTYP the casual gain type (remembering negative index).
+C ICGTYP the casual gain type (negative index to be depreciated).
 C PERSN keeps track of the original number of people/m2.
       real CMGSA,CMGLA,RADCA,CONCA,RADFAC,CONFAC,PERSN
       integer ICGTYP,LNCAS
@@ -2266,6 +2278,8 @@ C or based on area (casual gain type negative) or if mixed +-.
       
 C Zero derived gains in the temporary array and set the type as per
 C the call to checkcascount.
+
+C << might be overloading of ICGT below >>
       do 130 IP=1,MC
         do 120 IG=1,MGTY
           CMGSA(IP,IG)=0.0
@@ -2309,6 +2323,8 @@ C test for a casual gain period being between T1 and T2.
           do 210 I=1,NCAS(IDTY)
             T1=real(ICGS(IDTY,I))
             T2=real(ICGF(IDTY,I))
+
+C << overloading of ICGT below >>
             ITYP=abs(ICGT(IDTY,I))
             if(time.gt.T1.and.time.lt.T2)then
               if (ICGT(IDTY,I).gt.0) then
@@ -2342,6 +2358,7 @@ C calculate apparent power and reactive power.
                 endif
               elseif (ICGT(IDTY,I).eq.-1) then
 
+C << overloading of ICGT here >>
 C If -1 and m2/person is zero, the intention is no occupancy.
                 call eclose(CMGS(IDTY,I),0.00,0.001,close)
                 if (close) then
@@ -2458,6 +2475,8 @@ C Adjust for area based, for m2 per person just divide floor area by
 C the number of persons to get back to the original CMGSA. For the
 C case of mixed absolute and per unit area persn might be zero so
 C trap for this case and set CMGSA to zero.
+
+C << overloading of ICGT >>
             if(needtodivide)then
               if(ICGTYP(IP,ITYP).eq.-1)then
                 if(PERSN(IP,ITYP).gt.0.0)then
@@ -2478,6 +2497,8 @@ C trap for this case and set CMGSA to zero.
 
 C Assign values. If a new period with zero sensible then set
 C the radiant convective split based on its type.
+
+C << overloading of ICGT here >>
             ICGT(IDT,NCASwk) = ICGTYP(IP,ITYP)
             NCAS(IDT) = NCASwk
             ICGS(IDT,NCASwk) = ihst

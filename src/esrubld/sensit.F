@@ -783,7 +783,7 @@ C UAE04 edits casual gains in memory.
       COMMON/UA3/NICNG,IDTYP(MNCNG),IDMAT(MNCNG,3),DAT(MNCNG,2)
       COMMON/UA4/NIACT,IACTD(MNACT,2)
 
-C << P3 is a old representation of casual gains - it be removed >>
+C << P3 and PeTYPE are old representations of casual gains - remove >>
 C << or converted to P3N variables!!! >>
 
       COMMON/P3/NCAS1,ICGS1(MC),ICGF1(MC),CMGS1(MC),CMGL1(MC),
