@@ -101,12 +101,17 @@ C -1=floor area/person -2 Light W/m2 -3=small power W/m2
 
       integer NCAS       ! number casual gain periods for each daytype
       integer ICGS,ICGF  ! start & finish hours for each casual day:period
+      integer ICGUnit    ! unit for sensible day:period 0 is W, 1 is W/m2,
+                         ! 2 is m2/p assumes 95W sensible & 45W latent),
+                         ! 3 is W/object (future feature), 4 is Met (metabolic
+                         ! rate as per CIBSE Guide A table 1.4 future feature)
       real CMGS,CMGL     ! sensible and latent magnitude for each casual 
                          ! day:period, units depend on value of ICGT
       real RADC,CONC     ! radiant and convective fraction (0.0 - 1.0) for
                          ! each casual gain day:period
       COMMON/P3N/NCAS(MDTY),ICGS(MDTY,MC),ICGF(MDTY,MC),
-     &           CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),CONC(MDTY,MC)
+     &  ICGUnit(MDTY,MC),CMGS(MDTY,MC),CMGL(MDTY,MC),RADC(MDTY,MC),
+     &  CONC(MDTY,MC)
 
 C NOTE: P2CTL should be extended to support controls for each day type.
       integer ITCTL    ! index of air flow control (see above)
