@@ -502,7 +502,7 @@ C << later check that the period data points to a known slot?
         endif
       endif
 
-C Casual gains for different day types
+C Casual gains for different day types.
       DO 600 IDTY=1,NBDAYTYPE
         CALL STRIPC(IUO,OUTSTR,0,ND,1,'gain periods for day type',IER)
         K=0
@@ -512,13 +512,46 @@ C Casual gains for different day types
         DO 40 I=1,NCAS(IDTY)
           CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period gain detail',IER)
           K=0
+
+C If there are 7 or 12 items on the line then the first item will be
+C an overloaded casual gain index. The units implied depend on the value
+C of ip3ver. For ip3ver <21 a positive ICGT implies the unit is Watts. 
+C If negative the unit is m2/p for occupants and W/m2 otherwise. 
+C Ip3ver 21+ will already have scanned *type lines. and the lodslot
+C value will be the same as iabs(ICGT).
           if(ND.eq.7.or.ND.eq.12)then
             CALL EGETWI(OUTSTR,K,IREADER,-3,5,'W',
      &        'verloaded gain type',IER)
             ICGT(IDTY,I)=IREADER
+            ipslot=iabs(ireader)  ! get equivalent of lodslot
+            if(ip3ver(icomp).lt.21)then
+              if(ireader.gt.0)then
+                ICGUnit(IDTY,I)=0
+              elseif(ireader.eq.-1)then
+                ICGUnit(IDTY,I)=2
+              else
+                ICGUnit(IDTY,I)=1
+              endif
+            elseif(ip3ver(icomp).eq.21)then
+              if(ireader.gt.0)then
+                ICGUnit(IDTY,I)=0
+              elseif(ireader.lt.0)then
+                if(caskeytype(icomp,ipslot)(1:6).eq.'people')then
+                  ICGUnit(IDTY,I)=2
+                else
+                  ICGUnit(IDTY,I)=1
+                endif
+              endif
+            else
+C << still to be done for ip3ver >21 >>
+            endif
           else
             ICGT(IDTY,I)=1 ! assume slot one if unspecified
+            ICGUnit(IDTY,I)=1
           endif
+          write(6,*) 'eroper 552 ',idty,i,ireader,ICGT(IDTY,I),
+     &      ICGUnit(IDTY,I)
+
           CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain st',IER)
           ICGS(IDTY,I)=IREADER
           CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain fn',IER)
@@ -783,13 +816,18 @@ C espriou.h provides currentfile.
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
-C Scratch version of operations file (as pattern in schedule.h).
+C Scratch version of operations file (following pattern in schedule.h).
       integer ip3verc
       common/p3verc/ip3verc
 
-C Descriptive label for a zone load or casual gain types.
-      character lodlabelc*12
-      common/loadlabelc/lodlabelc(MGTY)
+C Descriptive label for a zone load & casual gain types.
+      character lodlabelc*12,caskeytypec*16
+      common/loadlabelc/lodlabelc(MGTY),caskeytypec(MGTY)
+
+      integer lodslotc    ! same meaning as loadkey common
+      integer lodatr1c,lodatr2c
+      common/loadkeyc/lodslotc(MGTY),lodatr1c(MGTY),
+     &                lodatr2c(MGTY)
 
       CHARACTER oprdescc*248,ventdescc*248,ctlstrc*24
       COMMON/P1C/oprdescc,ventdescc,ctlstrc
@@ -806,13 +844,15 @@ C Scratch version of P2CTL
      &   ACIUC,ACVUC,IVUC,TAUC,ACIHC,ACVHC,IVHC,TAHC
 
 C Scratch version of P3N
+      INTEGER NCASC,ICGSC,ICGFC,ICGUnitC
+      REAL CMGSC,CMGLC,RADCC,CONCC
       COMMON/P3NC/NCASC(MDTY),ICGSC(MDTY,MC),ICGFC(MDTY,MC),
-     &CMGSC(MDTY,MC),CMGLC(MDTY,MC),RADCC(MDTY,MC),CONCC(MDTY,MC)
+     & ICGUnitC(MDTY,MC),CMGSC(MDTY,MC),CMGLC(MDTY,MC),
+     & RADCC(MDTY,MC),CONCC(MDTY,MC)
 
 C Scratch version of P3TYPEN.
+      INTEGER ICGTC
       COMMON/P3TYPENC/ICGTC(MDTY,MC)
-      INTEGER NCASC,ICGSC,ICGFC,ICGTC
-      REAL CMGSC,CMGLC,RADCC,CONCC
 
 C Electrical data flag and elctrical data.
       common/elecflgc/ielfc
@@ -831,10 +871,16 @@ C Error subroutine and error details for dll mode.
       character louts*248
       character actflatfile*1  ! action requested.
       logical havehi,dll,ok,dok
-      INTEGER IDTY,IR
+      logical needtoaddone     ! in case short on calendar day types
+      INTEGER IDTY,IR,ndty
       REAL R
 
       dok=.false.
+      needtoaddone=.false.
+
+C Initialise number of day types assuming that it matches that
+C used in the current model.
+      NDTY=nbdaytype
  
       if(actflatfile(1:1).eq.'W')then
 C Compose help message
@@ -855,7 +901,7 @@ C Check if running in dll mode.
       call isadll(dll)
 
 C Initialise project data file.
-      CALL EFOPSEQ(IUO,FILE,1,IER)
+ 43   CALL EFOPSEQ(IUO,FILE,1,IER)
       IF(IER.NE.0)THEN
         write(louts,'(3a)') 'Operations file ',
      &    FILE(1:lnblnk(FILE)),' could not be opened.'
@@ -875,7 +921,7 @@ C Initialise project data file.
 
 C Initialise the iphase arrays to avoid zero array elements.
       do 909 iph=1, mc
-        do 989 idty=1,nbdaytype
+        do 989 idty=1,ndty
           iphasc(idty,iph)=1
  989    continue
  909  continue
@@ -883,7 +929,7 @@ C Initialise the iphase arrays to avoid zero array elements.
 C Read lines from file, discarding comments. Look for header on
 C newer files. Older files will begin with a description. To allow for
 C description with spaces copy directly from OUTSTR rather than parsing
-C it into words.  
+C it into words.
       CALL STRIPC(IUO,OUTSTR,0,ND,1,'oper name or header',IER)
       IF(IER.NE.0) goto 1002
       if(outstr(1:11).eq.'*Operations')then
@@ -904,118 +950,218 @@ C it into words.
         if(WORD(1:5).eq.'*Date'.or.WORD(1:5).eq.'*date')then
           CALL EGETRM(OUTSTR,K,dstmp,'W','date stamp',IER)
         endif
-        CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'oper notes',IER)
-        oprdescc=LOUTSTR
+        if(ip3verc.lt.21)then
+          CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'oper notes',IER)
+          oprdescc=LOUTSTR
+          ventdescc=LOUTSTR
+        elseif(ip3verc.eq.21)then
+          CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'oper notes',IER)
+          ventdescc=LOUTSTR
+        elseif(ip3verc.gt.21)then
+          CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'oper *air_schedules',IER)
+          if(loutstr(1:14).eq.'*air_schedules')then
+            CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'air sched notes',IER)
+            ventdescc=LOUTSTR
+          else
+            ventdescc=LOUTSTR  ! set to same as oprdesc
+          endif
+        endif
       else
-        oprdescc=OUTSTR
+        write(oprdescc,'(a)') OUTSTR(1:lnblnk(OUTSTR))
       endif
 
 C Thermostatic control data. If 4th item then
-      havehi = .false.
-      CALL STRIPC(IUO,OUTSTR,99,ND,1,'Thmst control',IER)
-      K=0
-      CALL EGETWI(OUTSTR,K,ITCTLC,-14,4,'W','opr cntl',IER)
-      CALL EGETWR(OUTSTR,K,TLOC,0.,0.,'-','lower temp',IER)
-      CALL EGETWR(OUTSTR,K,TUPC,0.,0.,'-','mid temp',IER)
-      if(nd.eq.4)then
-        havehi=.true.
-        CALL EGETWR(OUTSTR,K,THIC,0.,0.,'-','hi temp',IER)
-      else
-        THIC=100.0
-      endif
-      IF(IER.NE.0) goto 1002
+      if(ip3verc.le.21)then
+        havehi = .false.
+        CALL STRIPC(IUO,OUTSTR,99,ND,1,'Thmst control',IER)
+        K=0
+        CALL EGETWI(OUTSTR,K,ITCTLC,-14,4,'W','opr cntl',IER)
+        CALL EGETWR(OUTSTR,K,TLOC,0.,0.,'-','lower temp',IER)
+        CALL EGETWR(OUTSTR,K,TUPC,0.,0.,'-','mid temp',IER)
+        if(nd.eq.4)then
+          havehi=.true.
+          CALL EGETWR(OUTSTR,K,THIC,0.,0.,'-','hi temp',IER)
+        else
+          THIC=100.0
+        endif
+        IF(IER.NE.0) goto 1002
 
 C Generate a brief descrition and proceed acording to control type.
-      IY=ITCTLC
-      if(IY.eq.-14)then
-        ctlstrc='infil only: wind speed  '
-      elseif(IY.eq.-13)then
-        ctlstrc='infil only: ext db temp '
-      elseif(IY.eq.-12)then
-        ctlstrc='infil only: adj zone tmp'
-      elseif(IY.eq.-11)then
-        ctlstrc='infil only: zone temp   '
-      elseif(IY.eq.-4)then
-        ctlstrc='vent only: wind speed   '
-      elseif(IY.eq.-3)then
-        ctlstrc='vent only: ext db temp  '
-      elseif(IY.eq.-2)then
-        ctlstrc='vent only: adj zone temp'
-      elseif(IY.eq.-1)then
-        ctlstrc='vent only: zone temp    '
-      elseif(IY.eq.4)then
-        ctlstrc='infil & vent: wind speed'
-      elseif(IY.eq.3)then
-        ctlstrc='infil & vent: ext db T  '
-      elseif(IY.eq.2)then
-        ctlstrc='infil & vent: adj zone T'
-      elseif(IY.eq.1)then
-        ctlstrc='infil & vent: zone T    '
-      elseif(IY.eq.0)then
-        ctlstrc='no control of air flow  '
-        goto 22
-      else
-        ctlstrc='unknown flow control   '
-        goto 1022
-      endif
+        IY=ITCTLC
+        if(IY.eq.-14)then
+          ctlstrc='infil only: wind speed  '
+        elseif(IY.eq.-13)then
+          ctlstrc='infil only: ext db temp '
+        elseif(IY.eq.-12)then
+          ctlstrc='infil only: adj zone tmp'
+        elseif(IY.eq.-11)then
+          ctlstrc='infil only: zone temp   '
+        elseif(IY.eq.-4)then
+          ctlstrc='vent only: wind speed   '
+        elseif(IY.eq.-3)then
+          ctlstrc='vent only: ext db temp  '
+        elseif(IY.eq.-2)then
+          ctlstrc='vent only: adj zone temp'
+        elseif(IY.eq.-1)then
+          ctlstrc='vent only: zone temp    '
+        elseif(IY.eq.4)then
+          ctlstrc='infil & vent: wind speed'
+        elseif(IY.eq.3)then
+          ctlstrc='infil & vent: ext db T  '
+        elseif(IY.eq.2)then
+          ctlstrc='infil & vent: adj zone T'
+        elseif(IY.eq.1)then
+          ctlstrc='infil & vent: zone T    '
+        elseif(IY.eq.0)then
+          ctlstrc='no control of air flow  '
+          goto 22
+        else
+          ctlstrc='unknown flow control   '
+          goto 1022
+        endif
 
-      CALL STRIPC(IUO,OUTSTR,0,ND,1,'Lower flow details',IER)
-      K=0
-      CALL EGETWR(OUTSTR,K,ACILC,0.,2000.,'W','l infil',IER)
-      CALL EGETWR(OUTSTR,K,ACVLC,0.,2000.,'W','l vent',IER)
-      CALL EGETWI(OUTSTR,K,IVLC,0,MCOM,'W','l vent zn',IER)
-      CALL EGETWR(OUTSTR,K,TALC,0.,0.,'-','l vent tmp',IER)
-
-      CALL STRIPC(IUO,OUTSTR,0,ND,1,'Mid flow details',IER)
-      K=0
-      CALL EGETWR(OUTSTR,K,ACIUC,0.,2000.,'W','m infil',IER)
-      CALL EGETWR(OUTSTR,K,ACVUC,0.,2000.,'W','m vent',IER)
-      CALL EGETWI(OUTSTR,K,IVUC,0,MCOM,'W','m vent zn',IER)
-      CALL EGETWR(OUTSTR,K,TAUC,0.,0.,'-','m vent tmp',IER)
-      IF(IER.NE.0) goto 1002
-      if(havehi)then
-        CALL STRIPC(IUO,OUTSTR,0,ND,1,'High flow details',IER)
+        CALL STRIPC(IUO,OUTSTR,0,ND,1,'Lower flow details',IER)
         K=0
-        CALL EGETWR(OUTSTR,K,ACIHC,0.,2000.,'W','h inf',IER)
-        CALL EGETWR(OUTSTR,K,ACVHC,0.,2000.,'W','h vent',IER)
-        CALL EGETWI(OUTSTR,K,IVHC,0,MCOM,'W','h vent zn',IER)
-        CALL EGETWR(OUTSTR,K,TAHC,0.,0.,'-','h vent tmp',IER)
+        CALL EGETWR(OUTSTR,K,ACILC,0.,2000.,'W','l infil',IER)
+        CALL EGETWR(OUTSTR,K,ACVLC,0.,2000.,'W','l vent',IER)
+        CALL EGETWI(OUTSTR,K,IVLC,0,MCOM,'W','l vent zn',IER)
+        CALL EGETWR(OUTSTR,K,TALC,0.,0.,'-','l vent tmp',IER)
+
+        CALL STRIPC(IUO,OUTSTR,0,ND,1,'Mid flow details',IER)
+        K=0
+        CALL EGETWR(OUTSTR,K,ACIUC,0.,2000.,'W','m infil',IER)
+        CALL EGETWR(OUTSTR,K,ACVUC,0.,2000.,'W','m vent',IER)
+        CALL EGETWI(OUTSTR,K,IVUC,0,MCOM,'W','m vent zn',IER)
+        CALL EGETWR(OUTSTR,K,TAUC,0.,0.,'-','m vent tmp',IER)
         IF(IER.NE.0) goto 1002
-      else
-        ACIHC=0.
-        ACVHC=0.
-        IVHC=0
-        TAHC=0.
+        if(havehi)then
+          CALL STRIPC(IUO,OUTSTR,0,ND,1,'High flow details',IER)
+          K=0
+          CALL EGETWR(OUTSTR,K,ACIHC,0.,2000.,'W','h inf',IER)
+          CALL EGETWR(OUTSTR,K,ACVHC,0.,2000.,'W','h vent',IER)
+          CALL EGETWI(OUTSTR,K,IVHC,0,MCOM,'W','h vent zn',IER)
+          CALL EGETWR(OUTSTR,K,TAHC,0.,0.,'-','h vent tmp',IER)
+          IF(IER.NE.0) goto 1002
+        else
+          ACIHC=0.
+          ACVHC=0.
+          IVHC=0
+          TAHC=0.
+        endif
+
+C Air change information. Expect 1 item defining nb period. If six
+C items then there was at least one extra day type. Could try to
+C re-scan with different assumption.
+
+C << logic needed to reconcile the difference in day types >>
+ 22     DO 400 IDTY=1,ndty
+          CALL STRIPC(IUO,OUTSTR,99,ND,1,'flow periods',IER)
+          if(ND.ne.1)then
+            write(outs,'(2a,i2)') 'The source operation file may',
+     &        ' assume more calendar day types ',ndty
+            call edisp(iuout,outs)
+            write(outs,'(a,i2,a)') 
+     &        ' than is used in the model',nbdaytype,' please check.'
+            call edisp(iuout,outs)
+            goto 1002  ! can not yet deal with this
+          endif
+          K=0
+          CALL EGETWI(OUTSTR,K,NACC(IDTY),0,MA,'W','flow periods',IER)
+          IF(NACC(IDTY).EQ.0)goto 400
+          DO 10 I=1,NACC(IDTY)
+
+C Expect 6 items on each period line. If only one item then we got to
+C the next days data a bit soon. Could try to rescan file.
+C << more logic needed to add an additional day type data prior
+C << to exiting the facility and transferring scratch commons
+C << into the model.
+            CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period flow details',IER)
+            if(ND.ne.6)then
+              write(outs,'(2a,i2)') 'The source operation file may',
+     &          ' assume fewer calendar day types ',ndty
+              call edisp(iuout,outs)
+              ndty=ndty-1    ! decrement and try again
+              write(outs,'(a,i2,a,i2,a)') 'than is used in the model',
+     &          nbdaytype,' trying',ndty,'....'
+              call edisp(iuout,outs)
+              CALL ERPFREE(IUO,ISTAT)
+              needtoaddone=.true.
+              goto 43
+            endif
+            K=0
+            CALL EGETWI(OUTSTR,K,IR,0,24,'W','flow start',IER)
+            IACSC(IDTY,I)=IR
+            CALL EGETWI(OUTSTR,K,IR,0,24,'W','flow end',IER)
+            IACFC(IDTY,I)=IR
+            CALL EGETWR(OUTSTR,K,R,0.,2000.,'W','infil',IER)
+            ACIC(IDTY,I)=R
+            CALL EGETWR(OUTSTR,K,R,0.,2000.,'W','vent',IER)
+            ACVC(IDTY,I)=R
+            CALL EGETWI(OUTSTR,K,IR,0,100,'W','vent z',IER)
+            IPTC(IDTY,I)=IR
+            CALL EGETWR(OUTSTR,K,R,0.,0.,'-','vent tmp',IER)
+            TAC(IDTY,I)=R
+   10     CONTINUE
+ 400    CONTINUE
+        IF(IER.NE.0) goto 1002
+
+      elseif(ip3verc.ge.30)then
+
+C This logic for scanning newer files still to be done.
+
       endif
 
-C Air change information.
- 22   DO 400 IDTY=1,NBDAYTYPE
-        CALL STRIPC(IUO,OUTSTR,0,ND,1,'flow periods',IER)
-        K=0
-        CALL EGETWI(OUTSTR,K,NACC(IDTY),0,MA,'W','flow periods',IER)
-        IF(NACC(IDTY).EQ.0)goto 400
-        DO 10 I=1,NACC(IDTY)
-          CALL STRIPC(IUO,OUTSTR,0,ND,1,'Period flow details',IER)
-          K=0
-          CALL EGETWI(OUTSTR,K,IR,0,24,'W','flow start',IER)
-          IACSC(IDTY,I)=IR
-          CALL EGETWI(OUTSTR,K,IR,0,24,'W','flow end',IER)
-          IACFC(IDTY,I)=IR
-          CALL EGETWR(OUTSTR,K,R,0.,2000.,'W','infil',IER)
-          ACIC(IDTY,I)=R
-          CALL EGETWR(OUTSTR,K,R,0.,2000.,'W','vent',IER)
-          ACVC(IDTY,I)=R
-          CALL EGETWI(OUTSTR,K,IR,0,100,'W','vent z',IER)
-          IPTC(IDTY,I)=IR
-          CALL EGETWR(OUTSTR,K,R,0.,0.,'-','vent tmp',IER)
-          TAC(IDTY,I)=R
-   10   CONTINUE
- 400  CONTINUE
-      IF(IER.NE.0) goto 1002
+C Casual gains.  
 
-C Casual gains.
-      DO 600 IDTY=1,NBDAYTYPE
-        CALL STRIPC(IUO,OUTSTR,0,ND,1,'gain periods',IER)
+C For ip3ver = 21 read section about casual types.
+      if(ip3verc.ge.21)then
+        CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'start of casual',IER)
+        if(loutstr(1:7).eq.'*casual')then
+          CALL LSTRIPC(IUO,LOUTSTR,0,ND,1,'oper casual notes',IER)
+          oprdescc=LOUTSTR
+        else
+          oprdescc=LOUTSTR
+        endif
+
+C Read scratch variables for *type.
+        islot=0
+  42    CALL STRIPC(IUO,OUTSTR,0,ND,1,'*type or *end_type',IER)
+        if(outstr(1:5).eq.'*type')then
+          islot=islot+1   ! increment the casual gain slot
+          K=6
+          CALL EGETW(OUTSTR,K,lodlabelc(ISLOT),'W',
+     &      'user casual gain label',IER) 
+          CALL EGETW(OUTSTR,K,caskeytypec(ISLOT),'W',
+     &      'casual gain keyword',IER) 
+          CALL EGETWI(OUTSTR,K,lodslotc(ISLOT),0,99,'W',
+     &      'casual gain slot position',IER)
+          CALL EGETWI(OUTSTR,K,lodatr1c(ISLOT),0,99,'W',
+     &      'casual gain atribute 1',IER)
+          CALL EGETWI(OUTSTR,K,lodatr2c(ISLOT),0,99,'W',
+     &      'casual gain atribute 2',IER)
+          goto 42   ! read another line
+        elseif(outstr(1:9).eq.'*end_type')then
+          WRITE(6,*) 'lodlabelc ',lodlabelc
+          WRITE(6,*) 'caskeytypec ',caskeytypec
+          WRITE(6,*) 'lodslotc ',lodslotc
+          WRITE(6,*) 'lodatr1c ',lodatr1c
+          continue   ! we are done with this section
+        endif
+      endif
+
+C Casual gains expect 1 item for number of periods. If we get six
+C items then there was at least one extra day type. Give warning.
+      DO 600 IDTY=1,ndty
+        CALL STRIPC(IUO,OUTSTR,99,ND,1,'gain periods',IER)
+        if(ND.ne.1)then
+          write(outs,'(2a,i2)') 'The source operation file may',
+     &      ' assume more calendar day types ',ndty
+          call edisp(iuout,outs)
+          write(outs,'(a,i2,a)') 
+     &      ' than is used in the model',nbdaytype,' please check.'
+          call edisp(iuout,outs)
+          goto 1002  ! can not yet deal with this
+        endif
         K=0
         CALL EGETWI(OUTSTR,K,IR,0,MC,'W','periods',IER)
         NCASC(IDTY)=IR
@@ -1026,9 +1172,35 @@ C Casual gains.
           if(ND.eq.7.or.ND.eq.12)then
             CALL EGETWI(OUTSTR,K,IR,-3,5,'W','overloaded type',IER)
             ICGTC(IDTY,I)=IR
+            ipslot=iabs(ir)  ! get equivalent of lodslot
+            if(ip3verc.lt.21)then
+              if(ir.gt.0)then
+                ICGUnitC(IDTY,I)=0
+              elseif(ir.eq.-1)then
+                ICGUnitC(IDTY,I)=2
+              else
+                ICGUnitC(IDTY,I)=1
+              endif
+            elseif(ip3verc.eq.21)then
+              if(ir.gt.0)then
+                ICGUnitC(IDTY,I)=0
+              elseif(ir.lt.0)then
+                if(caskeytypec(ipslot)(1:6).eq.'people')then
+                  ICGUnitC(IDTY,I)=2
+                else
+                  ICGUnitC(IDTY,I)=1
+                endif
+              endif
+            else
+C << still to be done for ip3ver >21 >>
+            endif
           else
-            ICGTC(IDTY,I)=1  ! if not mentioned assume slot 1
+            ICGTC(IDTY,I)=1 ! assume slot one if unspecified
+            ICGUnitC(IDTY,I)=1
           endif
+          write(6,*) ' ERZSCHED ',idty,i,ir,ICGTC(IDTY,I),
+     &      ICGUnitC(IDTY,I)
+
           CALL EGETWI(OUTSTR,K,IR,0,24,'W',' gain st',IER)
           ICGSC(IDTY,I)=IR
           CALL EGETWI(OUTSTR,K,IR,0,24,'W',' gain fn',IER)
@@ -1061,23 +1233,41 @@ C Check if electrical data has also been saved.
 
 C Check to see if gain labels have been added to the end of the file.
 C Fill defaults prior to scanning the labels.
-      CALL STRIPC(IUO,OUTSTR,99,ND,1,'gain labels',IERV)
-      IF(IERV.ne.0) THEN
-        goto 1001
-      ELSE
-        lodlabelc(1)='Occupt'
-        lodlabelc(2)='Lights'
-        lodlabelc(3)='Equipt' 
-        lodlabelc(4)='Other ' 
-        lodlabelc(5)='AnnEl ' 
-        lodlabelc(6)='NA    ' 
-        lodlabelc(7)='NA    ' 
-        K=0
-        DO 1234 ITYP=1,ND  ! for each token found
-          CALL EGETW(OUTSTR,K,lodlabelc(ITYP),'W','gain label',IER) 
- 1234   CONTINUE
-      ENDIF      
+      if(ip3verc.lt.21)then
+        CALL STRIPC(IUO,OUTSTR,99,ND,1,'gain labels',IERV)
+        IF(IERV.ne.0) THEN
+          goto 1001
+        ELSE
+          K=0
+          DO 1234 islot=1,ND  ! for each token found
+            CALL EGETW(OUTSTR,K,lodlabelc(islot),'W','gain label',IER) 
+            lodslotc(ISLOT)=ISLOT; lodatr1c(ISLOT)=0
+            lodatr2c(ISLOT)=0
+            if(lodlabelc(ISLOT)(1:6).eq.'Occupt')then
+              caskeytypec(ISLOT)='people       '
+            elseif(lodlabelc(ISLOT)(1:6).eq.'Lights')then
+              caskeytypec(ISLOT)='lighting     '
+            elseif(lodlabelc(ISLOT)(1:6).eq.'Equipt')then
+              caskeytypec(ISLOT)='equipment'
+            else
+              caskeytypec(ISLOT)='-            '
+            endif
+
+C File included a 5th label and we assume that this is this reserved use.
+            if(ISLOT.eq.5)then
+              caskeytypec(ISLOT)='net_utilities'
+            endif
+ 1234     CONTINUE
+        ENDIF
+      endif  
  1235 CONTINUE
+
+C If we need to add in an additional calendar day type to ensure
+C a match with the model do it here.
+      if(needtoaddone)then
+        NACC(NBDAYTYPE)=0
+        NCASC(NBDAYTYPE)=0
+      endif
 
 C Now free project data file.
       CALL ERPFREE(IUO,ISTAT)
@@ -1099,14 +1289,20 @@ C Error messages.
 
  1001 call usrmsg(' ',
      &  ' No casual gains labels found ...supplying defaults.','-')
-      lodlabelc(1)='Occupt'
-      lodlabelc(2)='Lights'
-      lodlabelc(3)='Equipt' 
-      lodlabelc(4)='Other ' 
-      lodlabelc(5)='AnnEl ' 
-      lodlabelc(6)='NA    ' 
-      lodlabelc(7)='NA    ' 
-C << also type attributes >>
+      lodlabelc(1)='Occupants '
+      caskeytypec(1)='people      '
+      lodlabelc(2)='Lights    '
+      caskeytypec(2)='lighting    '
+      lodlabelc(3)='SmallPower' 
+      caskeytypec(3)='equipment   '
+      lodlabelc(4)='Otherstuff' 
+      caskeytypec(4)='other       '  
+      lodlabelc(5)='Ann.El    ' 
+      caskeytypec(5)='net_utils   '  
+      lodlabelc(6)='NA        ' 
+      caskeytypec(6)='-           '  
+      lodlabelc(7)='NA        ' 
+      caskeytypec(7)='-           '  
       goto 1235
 
  1002 write(outs,'(3a)') 'ERZSCHED: conversion error in...',
@@ -1138,6 +1334,13 @@ C it so a user can decide if they want to use it. It is written to
 C not alter any common blocks.
 C IUO is the file unit to use
 C FILE (variable width char) is the name of the file to scan.
+
+C << it would be useful to use this subroutine to discover the
+C << number of calendar day types assumed in the file and return
+C << this information.
+C << what about just showing the raw contents of the file (all or
+C << the first couple of dozen lines) so that the user can notice
+C << the number of day types?
       SUBROUTINE ZSCHEDHINT(IUO,FILE,IER)
 #include "building.h"
 #include "espriou.h"
@@ -1147,10 +1350,13 @@ C espriou.h provides currentfile.
 
       COMMON/OUTIN/IUOUT,IUIN
       COMMON/POPHELP/H(60)
+      common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
+      INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
 C Error subroutine and error details for dll mode.
       common/dllerr/dllsubr,dllmesg
 
+C Local variables (to protect info in common blovks)
       CHARACTER oprdescc*248,ventdescc*248
       CHARACTER ctlstrc*24,outstr*124,outs*124
       CHARACTER*(*) FILE
@@ -1165,8 +1371,9 @@ C Error subroutine and error details for dll mode.
       dok=.true.
       IELFC=0
 
-C Initialise number of day types.
-      NDTY=3
+C Initialise number of day types assuming that it matches that
+C used in the current model.
+      NDTY=nbdaytype
 
 C Compose help message
       H(1) ='The number of day types defined in the operations file'
@@ -1174,23 +1381,17 @@ C Compose help message
       H(3) ='the same as the number of day types defined in the current'
       H(4) ='model. If this is not the case then the data imported may'
       H(5) ='corrupt the operations file in the current model.'
-      h(6) ='You will be asked for the number of day types defined in '
-      h(7) ='the model to which this operations file belongs. If you'
-      h(8) ='have not altered it then this number is 3. Otherwise open'
-      h(9) ='the model to which the operations file belongs, go to the '
-      h(10)='context menu and choose calendar to view the number of '
-      h(11)='day types this file has'
-      CALL PHELPD('Warning',11,'-',0,0,IER)
-      call askok(' ','Import data?',OK,dok,3)
+      CALL PHELPD('Warning',5,'-',0,0,IER)
+      call askok(' ','View file contents?',OK,dok,5)
       if(.not.ok)return
-      CALL EASKI(ndty,' Number of day types',
-     &      '(see help) ',0,'F',mdty,'F',3,'day types',IER,11) 
+      CALL EASKI(ndty,'Number of calendar day types (see help)',
+     &      'Confirm:',0,'F',mdty,'F',3,'day types',IER,5) 
 
 C Check if running in dll mode.
       call isadll(dll)
 
 C Initialise project data file.
-      CALL EFOPSEQ(IUO,FILE,1,IER)
+ 43   CALL EFOPSEQ(IUO,FILE,1,IER)
       IF(IER.NE.0)THEN
         write(louts,'(3a)') 'Operations file ',
      &    FILE(1:lnblnk(FILE)),' could not be opened.'
@@ -1215,12 +1416,16 @@ C it into words.
       if(outstr(1:11).eq.'*Operations')then
         if(outstr(13:15).eq.'1.0')then
           ip3verc=1
+          call edisp(iuout,' Source file version 1.0')
         elseif(outstr(13:15).eq.'2.0')then
           ip3verc=2
+          call edisp(iuout,' Source file version 2.0')
         elseif(outstr(13:15).eq.'2.1')then
           ip3verc=21
+          call edisp(iuout,' Source file version 2.1')
         elseif(outstr(13:15).eq.'3.0')then
           ip3verc=30
+          call edisp(iuout,' Source file version 3.0')
         endif
         CALL STRIPC(IUO,OUTSTR,0,ND,1,'header',IER)
         K=0
@@ -1244,9 +1449,8 @@ C it into words.
             ventdescc=LOUTSTR  ! set to same as oprdesc
           endif
         endif
-
       else
-        write(oprdescc,'(a)') OUTSTR
+        write(oprdescc,'(a)') OUTSTR(1:lnblnk(OUTSTR))
       endif
       call edisp(iuout,' Source scheduled air notes:')
       call edisp248(iuout,ventdescc,80)
@@ -1306,12 +1510,31 @@ C Skip past the flow control details.
 
 C Air change information.
  22     DO 400 IDTY=1,NDTY
-          CALL STRIPC(IUO,OUTSTR,0,ND,1,'flow periods',IER)
+          CALL STRIPC(IUO,OUTSTR,99,ND,1,'flow periods',IER)
+          if(ND.ne.1)then
+            write(outs,'(2a,i2)') 'The source operation file may',
+     &        ' assume more calendar day types ',ndty
+            call edisp(iuout,outs)
+            write(outs,'(a,i2,a)') 'than is used in the model',
+     &        nbdaytype,' please check before importing.'
+            call edisp(iuout,outs)
+          endif
           K=0
           CALL EGETWI(OUTSTR,K,NACC(idty),0,MA,'W','periods',IER)
           IF(NACC(idty).EQ.0)goto 4
           DO 10 I=1,NACC(idty)
-            CALL STRIPC(IUO,OUTSTR,0,ND,1,'Period flow details',IER)
+            CALL STRIPC(IUO,OUTSTR,99,ND,1,'Period flow details',IER)
+            if(ND.ne.6)then
+              write(outs,'(2a,i2)') 'The source operation file may',
+     &          ' assume fewer calendar day types ',ndty
+              call edisp(iuout,outs)
+              ndty=ndty-1    ! decrement and try again
+              write(outs,'(a,i2,a,i2,a)') 'than is used in the model',
+     &          nbdaytype,' trying',ndty,'....'
+              call edisp(iuout,outs)
+              CALL ERPFREE(IUO,ISTAT)
+              goto 43
+            endif
   10      CONTINUE
   4       WRITE(outs,'(A,2I3)')
      &  ' Number of air flow periods in day type no. ',idty,NACC(idty)
@@ -1333,6 +1556,8 @@ C For ip3ver = 21 read section about casual types.
         else
           oprdescc=LOUTSTR
         endif
+
+C Read scratch variables for *type.
         islot=0
   42    CALL STRIPC(IUO,OUTSTR,0,ND,1,'*type or *end_type',IER)
         if(outstr(1:5).eq.'*type')then
@@ -2279,7 +2504,7 @@ C or based on area (casual gain type negative) or if mixed +-.
 C Zero derived gains in the temporary array and set the type as per
 C the call to checkcascount.
 
-C << might be overloading of ICGT below >>
+C << overloading of ICGT below >>
       do 130 IP=1,MC
         do 120 IG=1,MGTY
           CMGSA(IP,IG)=0.0
@@ -2509,6 +2734,8 @@ C << overloading of ICGT here >>
               RADC(IDT,NCASwk) = RADFAC(IP,ITYP)
               CONC(IDT,NCASwk) = CONFAC(IP,ITYP)
             else
+
+C << place for caskeytype, lodslot & ICGUnit >>
               ITYPL=abs(ICGTYP(IP,ITYP))
               if(ITYPL.eq.1)then
                 RADC(IDT,NCASwk)=0.6; CONC(IDT,NCASwk)=0.4
@@ -2777,6 +3004,7 @@ C Initialise the air flows and casual gains to zero for new day type
             ICGT(NBDAYTYPE,I)=0
             ICGS(NBDAYTYPE,I)=0
             ICGF(NBDAYTYPE,I)=0
+            ICGUnit(NBDAYTYPE,I)=0  ! Assume Watts
             CMGS(NBDAYTYPE,I)=0.
             CMGL(NBDAYTYPE,I)=0.
             RADC(NBDAYTYPE,I)=0.

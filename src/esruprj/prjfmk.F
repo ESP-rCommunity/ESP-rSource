@@ -33,7 +33,7 @@ C PLTAIR - plot air flow data.
 C EDCAS: Edits casual gains portion of a zone operations file.
 C SCASL: Import a profile from a profiles database to build casual
 C        gain patterns.
-C EDCASGN - edit casual gain data.
+C EDCASGN - edit casual gain data for one period.
 C CDCASGN - copy/ delete casual gain data.
 C IMPORTZCASG - import a casual gain regime from zone isource to
 C               zone idest based on user instructions.
@@ -225,9 +225,14 @@ C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
         endif
 
 C Display a bit of information about this browsed file.
+
+C << add dialog with user to see if they want to use this file >>
         IUO=IFIL+1
         call FINDFIL(LTMP,XST)
         IF(XST) call ZSCHEDHINT(IUO,LTMP,IER)
+        dok=.true.
+        call askok(' ','Use this information?',OK,dok,nbhelp)
+        if(.not.ok)return
 
       elseif(iclkok.eq.2)then
         call edisp(iuout,'No file selected so returning.')
@@ -266,14 +271,16 @@ C Instanciate for current day types prior to scanning the source operation file.
      &  'no infiltration or venitlation notes (yet)'
       IER=0
 
-C Set the default type labels for this zone
-      lodlabel(icomp,1)='Occupants'
-      lodlabel(icomp,2)='Lights'
+C Set the default casual labels for this zone.
+
+C << should *type also be set here prior to reading file? >>
+      lodlabel(icomp,1)='Occupants '
+      lodlabel(icomp,2)='Lights    '
       lodlabel(icomp,3)='SmallPower'  
       lodlabel(icomp,4)='Otherstuff'  
-      lodlabel(icomp,5)='Ann.El'  
-      lodlabel(icomp,6)='N/A   ' 
-      lodlabel(icomp,7)='N/A   '      
+      lodlabel(icomp,5)='Ann.El    '  
+      lodlabel(icomp,6)='N/A       ' 
+      lodlabel(icomp,7)='N/A       '      
  
 C Read file for editing or listing. If there is no file then begin with
 C default data (and set ip3ver to 2 in case user does nothing else).
@@ -330,7 +337,6 @@ C the definition already defined in another zone.
 C Setup minimal description (single period for the initial 3 slots of
 C casual gain arrays to zeros with no infiltration and ventilation).
 C << expand for additional gain types >>
-C << overloading of ICGT here >>
           DO 399 IDTY=1,NBDAYTYPE
             ctlstr(icomp,IDTY)='no control of air flow  '
             NAC(IDTY)=1
@@ -338,15 +344,15 @@ C << overloading of ICGT here >>
             ACI(IDTY,1)=0.0; ACV(IDTY,1)=0.0
             IPT(IDTY,1)=0; TA(IDTY,1)=0.0
             NCAS(IDTY)=3
-            ICGS(IDTY,1)=0; ICGF(IDTY,1)=24
+            ICGS(IDTY,1)=0; ICGF(IDTY,1)=24; ICGUnit(IDTY,1)=0
             CMGS(IDTY,1)=0.0; CMGL(IDTY,1)=0.0
             RADC(IDTY,1)=0.6; CONC(IDTY,1)=0.4  ! CIBSE Guide A 6.3
             ICGT(IDTY,1)=1
-            ICGS(IDTY,2)=0; ICGF(IDTY,2)=24
+            ICGS(IDTY,2)=0; ICGF(IDTY,2)=24; ICGUnit(IDTY,2)=0
             CMGS(IDTY,2)=0.0; CMGL(IDTY,2)=0.0
             RADC(IDTY,2)=0.3; CONC(IDTY,2)=0.7  ! CIBSE Table A 6.5
             ICGT(IDTY,2)=2 
-            ICGS(IDTY,3)=0; ICGF(IDTY,3)=24
+            ICGS(IDTY,3)=0; ICGF(IDTY,3)=24; ICGUnit(IDTY,3)=0
             CMGS(IDTY,3)=0.0; CMGL(IDTY,3)=0.0
             RADC(IDTY,3)=0.4; CONC(IDTY,3)=0.6
             ICGT(IDTY,3)=3 
@@ -365,7 +371,7 @@ C the lodslot to non-zero for the initial 3 casual gain slots.
           lodlabel(icomp,1)='Occupants'
           caskeytype(icomp,1)='people      '
           lodslot(icomp,1)=1; lodatr1(icomp,1)=0;  lodatr2(icomp,1)=0
-          lodlabel(icomp,2)='Lights'
+          lodlabel(icomp,2)='Lights   '
           caskeytype(icomp,2)='lighting    '
           lodslot(icomp,2)=2; lodatr1(icomp,2)=0;  lodatr2(icomp,2)=0
           lodlabel(icomp,3)='SmallPower'
@@ -374,13 +380,13 @@ C the lodslot to non-zero for the initial 3 casual gain slots.
           lodlabel(icomp,4)='Otherstuff'  
           caskeytype(icomp,4)='other       '  
           lodslot(icomp,4)=0; lodatr1(icomp,4)=0;  lodatr2(icomp,4)=0
-          lodlabel(icomp,5)='Ann.El'  
+          lodlabel(icomp,5)='Ann.El    '  
           caskeytype(icomp,5)='net_utils   '  
           lodslot(icomp,5)=0; lodatr1(icomp,5)=0;  lodatr2(icomp,5)=0
-          lodlabel(icomp,6)='N/A   ' 
+          lodlabel(icomp,6)='N/A       ' 
           caskeytype(icomp,6)='-           '  
           lodslot(icomp,6)=0; lodatr1(icomp,6)=0;  lodatr2(icomp,6)=0
-          lodlabel(icomp,7)='N/A   '
+          lodlabel(icomp,7)='N/A       '
           caskeytype(icomp,7)='-           '  
           lodslot(icomp,7)=0; lodatr1(icomp,7)=0;  lodatr2(icomp,7)=0
           ip3ver(icomp)=21   ! set version for testing 2.1
@@ -2293,7 +2299,7 @@ C Scratch copy of air flow pattern from an operations file.
       character act*1   ! s for silent, - for normal
       LOGICAL XST,unixok
       INTEGER IDTY
-      character actflatfile*1
+      character actflatfile*1  ! parameter to pass
       
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -3144,24 +3150,26 @@ C current menu line index. Build up text strings for the menu.
       M=MHEAD
 
 C Loop for each day type.
+
+C << ICGT overloaded here >>
       DO 10 L=1,NCAS(IDTYP)
         IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
         M=M+1
         CALL EMKEY(M-MHEAD,KEY,IER)
         if(ICGT(IDTYP,L).gt.0)then
+          jicgt=ICGT(IDTYP,L)
           if (IELF(ICOMP).EQ.1) then
             if (PWR(IDTYP,L).gt.0.0001) then
               write (VERT(M),304)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
-     &        lodlabel(icomp,ICGT(IDTYP,L)),' W  ',
-     &        PWR(IDTYP,L),PF(IDTYP,L)
+     &          lodlabel(icomp,jicgt),' W  ',PWR(IDTYP,L),PF(IDTYP,L)
             else
               write (VERT(M),313)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
-     &        lodlabel(icomp,ICGT(IDTYP,L)),' W   no power'
+     &          lodlabel(icomp,jicgt),' W   no power'
             endif
           else
             write (VERT(M),303)KEY,ICGS(IDTYP,L),ICGF(IDTYP,L),
-     &      lodlabel(icomp,ICGT(IDTYP,L)),' W  ',CMGS(IDTYP,L),
-     &      CMGL(IDTYP,L)
+     &        lodlabel(icomp,jicgt),' W  ',CMGS(IDTYP,L),
+     &        CMGL(IDTYP,L)
           endif
   303     FORMAT(a,i3,i4,1x,2a,2f6.0)
   304     FORMAT(a,i3,i4,1x,2a,f6.0,f5.1)
@@ -3384,6 +3392,8 @@ C << revise to offer selection of day types to apply new periods >>
             GOTO 5   ! cancel request
           ENDIF
           IF(IQ.EQ.0)THEN
+
+C For all day types. 
             ITRK=0
             DO 619 IDU=1,NBDAYTYPE
               IF(NCAS(IDU).EQ.MC)THEN
@@ -3427,13 +3437,17 @@ C If there are no loads using this slot make a default one.
           modopr=.true.
           goto 5
 
-        elseif (IW.EQ.2) then 
+        elseif (IW.EQ.2) then
+
+C Delete a casual gain.
           call CDCASGN(ICOMP,1)
           sorted=.false.
           modopr=.true.
           goto 5
 
         elseif (IW.EQ.3) then
+
+C Copy a casual gain.
           call CDCASGN(ICOMP,2)
           sorted=.false.
           modopr=.true.
@@ -3521,20 +3535,22 @@ C Remind users to check their data.
 
       ELSEIF(IVERT.EQ.(MVERT-6))THEN
 
-C Provide a bit of editing space (8 char) for the  char string.
+C Provide a bit of editing space (12 char) for the  char string.
+
 C << deal with hard coded 3 below >>
+
         helptopic='operations_casual_labels'
         call gethelptext(helpinsub,helptopic,nbhelp)
         dok=.false.
         call askok(' ','Change casual gain labels?',OK,dok,3)
         if (OK) then 
-          DO 567 ITYPE=1,3
+          DO ITYPE=1,3
             write(outs,'(a,i2)') 'Label for gains in slot ',ITYPE
             write(TYPSTR,'(2a)') lodlabel(icomp,ITYPE),'  '
             call easks(TYPSTR,' ',outs,12,
      &                 lodlabel(icomp,ITYPE),' Gain label',IER,2)
             write(lodlabel(icomp,ITYPE),'(a)') TYPSTR(1:12)
- 567      CONTINUE
+          ENDDO  ! of itype
           goto 5
         endif
 
@@ -3550,7 +3566,7 @@ C If there are enough items allow paging control via EKPAGE.
 
       ELSEIF(IVERT.GT.MHEAD.AND.IVERT.LT.(MVERT-MCTL+1))THEN
 
-C Edit block identified by KEYIND.
+C Edit casual gain identified by KEYIND.
         CALL KEYIND(MVERT,IVERT,I,IO)
         IDT=IDTYP
         IPER=I
@@ -3777,7 +3793,7 @@ C Instanciate the casual gain commons with data from the profile.
 
 
 C ********************* EDCASGN *********************
-C EDCASGN - edit casual gain data.
+C EDCASGN - edit casual gain data for one period.
 C  ICOMP zone number
 C  ICGTX casual gain type index
 C  IDT day type (=-1 then all day types)
@@ -3813,6 +3829,8 @@ C For help messages
       helpinsub='EDCASGN'  ! set for subroutine
 
 C If new period then set defaults otherwise get data from common.
+
+C << place to use ip3ver and *type >>
       if (IPER.eq.0) then
         CMGSX=0.
         CMGLX=0.
@@ -3875,7 +3893,8 @@ C Can be specified as: W, W/obj, W/m^2, m^2/obj
 C Common portion of help message for detailed dialogs.
       if (IGU.eq.1) then
 
-C Gain as W - require gain only.
+C Gain as W - require gain only. If existing is in W/m2 then multiply
+C up to get W and revised icgtx to be positive.
  20     if (ICGTX.lt.-1) then
           write (HOLD,'(2f8.1,a)') CMGSX*zb,CMGLX*zb,'  '
         else
@@ -3893,7 +3912,8 @@ C Gain as W - require gain only.
         CMGLX=XLATGN
       elseif (IGU.eq.2) then
 
-C Gain as W/m^2 - require gain per square meter.
+C Gain as W/m^2 - require gain per square meter. If original was in
+C W divide by base area to present value. 
         if (ICGTX.gt.0) then
           write (HOLD,'(2f8.1,a)') CMGSX/zb,CMGLX/zb,'  '
         else
@@ -3907,7 +3927,7 @@ C Gain as W/m^2 - require gain per square meter.
         call EGETWR(HOLD,K,XLATGN,0.,50.0,'W','latent gain',IER)
         if (IER.ne.0) goto 30
         if (ICGTX.eq.1) then
-          CMGSX=XSEN*zb   ! assumes occupants
+          CMGSX=XSEN*zb   ! occupants so convert back to W
           CMGLX=XLATGN*zb
         else
           if (ICGTX.gt.1) ICGTX=ICGTX*(-1)
@@ -3923,7 +3943,7 @@ C Gain as W/object - require no of objects and gain per object. If
 C user cancels go back to initial question.
 C << an actual cancel option not yet implemented >>
         NOBJ=1
- 40     CALL EASKI(NOBJ,' ','Number of objects (e.g. people)?',
+ 40     CALL EASKI(NOBJ,' ','Number of objects (e.g. lamps)?',
      &    0,'W',100,'W',1,'no. objects',IERI,nbhelp)
         if(ieri.eq.0)then
           continue
@@ -3933,6 +3953,8 @@ C << an actual cancel option not yet implemented >>
           goto 40
         endif
 
+C Display value is current sensible and latent divided by the number
+C of objects given above.
         write (HOLD,'(2f8.1,a)') CMGSX/real(NOBJ),CMGLX/real(NOBJ),'  '
         call EASKS(HOLD,'Object sensible and latent gain (W):',
      &          ' ',24,'  0.   0. ','casual gn info',IER,nbhelp)
@@ -3947,18 +3969,20 @@ C << an actual cancel option not yet implemented >>
         write(outs,'(a,f9.1,a,f9.1)') 'Sensible Watts are now ',CMGSX,
      &    ' & latent Watts ',CMGLX
         call edisp(iuout,outs)
+
       elseif (IGU.eq.4) then
 
 C Gain as m^2/object - floor area of an object and gain per object.
-C If user cancels go back to initial question.
+C If user cancels go back to initial question. For the particular
+C case of people the current logic converts into W using 95W & 45W.
         NOBJ=1
  50     if (ICGTX.eq.-1) then
-          FLA=CMGSX  ! assumes occupants
+          FLA=CMGSX  ! assumes occupants already in m2/p
         else
           FLA=10.
         endif
         XFLA=FLA
-        call EASKR(XFLA,'Floor area per object (e.g. people)?','  ',
+        call EASKR(XFLA,'Floor area per object (e.g. lamp)?','  ',
      &    0.1,'F',100.0,'W',1.0,'area per object',IERI,nbhelp)
         if(IERI.eq.0)then
           FLA=XFLA
@@ -3971,9 +3995,11 @@ C that each person is 95W sensible and 45W latent.
             CMGLX=0.   ! Why is CMGLX set to zero?
             VS=(ZBASEA(ICOMP)/CMGSX)*95.  ! find sensible watts
             VL=(ZBASEA(ICOMP)/CMGSX)*45.  ! find latent watts
-            write(outs,'(a,f9.1,a,f9.1)') 'Sensible Watts now ',VS,
-     &        ' & latent Watts ',VL
+            write(outs,'(a,f9.1,a,f9.1,a)') 
+     &        'Sensible now equivalent to',VS,
+     &        'W & latent equivalent to ',VL,'W.'
             call edisp(iuout,outs)
+            write(6,*) 'xx ',icgtx,cmgsx,cmglx,vs,vl
           else
             write (HOLD,'(2f8.1,a)') CMGSX/(zb/FLA),
      &                               CMGLX/(zb/FLA),'  '
@@ -4101,7 +4127,7 @@ C Start insertion of casual gain.
           IF(NCG.LE.0)NCG=1
           do 210 I=1,NCG
             if(iabs(ICGT(IDT,I)).le.iabs(ICGTX))then
-              if(ICGS(IDT,I).lT.ICGSX)then
+              if(ICGS(IDT,I).lt.ICGSX)then
                 ILPER=I+1
               elseif(ICGS(IDT,I).eq.ICGSX)then!.and.ICGF(IDT,I).gt.ICGFX)then
                 ILPER=I
@@ -4118,6 +4144,8 @@ C Start insertion of casual gain.
 C Now update common blocks. Loop backwards from INC to ILPER.
         do 300 IX=INC,ILPER,-1
           if (IX.eq.ILPER) then
+            write(6,*) 'cpycasit ',icomp,idt,ix,icgtX,icgsX,icgfX,
+     &        cmgsX,cmglX,radcX,concX
             call CPYCASTI(icomp,idt,ix,icgtX,icgsX,icgfX,cmgsX,cmglX,
      &      radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
           else
@@ -4129,7 +4157,6 @@ C Now update common blocks. Loop backwards from INC to ILPER.
 C Loop back if more than one day type requested
       IF(IALL.EQ.1)THEN
         IDT=IDT+1
-        IGB=0
         IF(IDT.LE.NBDAYTYPE)GOTO 113
       ENDIF
       return
@@ -4194,17 +4221,18 @@ C << what is the Wkd in 303 ? >>
       DO 10 L=1,NCAS(IDT)
         M=M+1
         if(ICGT(IDT,L).gt.0)then
+          jicgt=ICGT(IDT,L)
           WRITE(VERT(M),303)ICGS(IDT,L),ICGF(IDT,L),
-     &        lodlabel(icomp,ICGT(IDT,L)),' W  ',CMGS(IDT,L),CMGL(IDT,L)
+     &      lodlabel(icomp,jicgt),' W  ',CMGS(IDT,L),CMGL(IDT,L)
   303     FORMAT('Wkd ',2i4,1x,2a,2f6.0)
         elseif(ICGT(IDT,L).eq.-1)then
           jicgt=iabs(ICGT(IDT,L))   ! assumes occupant
           WRITE(VERT(M),303)ICGS(IDT,L),ICGF(IDT,L),
-     &        lodlabel(icomp,jicgt),' m2p',CMGS(IDT,L),CMGL(IDT,L)
+     &      lodlabel(icomp,jicgt),' m2p',CMGS(IDT,L),CMGL(IDT,L)
         else
           jicgt=iabs(ICGT(IDT,L))
           WRITE(VERT(M),303)ICGS(IDT,L),ICGF(IDT,L),
-     &        lodlabel(icomp,jicgt),' Wm2',CMGS(IDT,L),CMGL(IDT,L)
+     &      lodlabel(icomp,jicgt),' Wm2',CMGS(IDT,L),CMGL(IDT,L)
         endif
  10   continue
 
@@ -4317,16 +4345,23 @@ C Passed parameters
       INTEGER NEL,IPF,IPHAS
       REAL PF,PWR,BVOLT
 
-C Descriptive label for scratch zone load or casual gain.
-      character lodlabelc*12
-      common/loadlabelc/lodlabelc(MGTY)
+C Descriptive label for a zone load & casual gain types.
+      character lodlabelc*12,caskeytypec*16
+      common/loadlabelc/lodlabelc(MGTY),caskeytypec(MGTY)
+
+      integer lodslotc    ! same meaning as loadkey common
+      integer lodatr1c,lodatr2c
+      common/loadkeyc/lodslotc(MGTY),lodatr1c(MGTY),
+     &                lodatr2c(MGTY)
 
 C Scratch version of P3N
-      COMMON/P3NC/NCASC(MDTY),ICGSC(MDTY,MC),ICGFC(MDTY,MC),
-     &CMGSC(MDTY,MC),CMGLC(MDTY,MC),RADCC(MDTY,MC),CONCC(MDTY,MC)
-      COMMON/P3TYPENC/ICGTC(MDTY,MC)
-      INTEGER NCASC,ICGSC,ICGFC,ICGTC
+      INTEGER NCASC,ICGSC,ICGFC,ICGUnitC
       REAL CMGSC,CMGLC,RADCC,CONCC
+      COMMON/P3NC/NCASC(MDTY),ICGSC(MDTY,MC),ICGFC(MDTY,MC),
+     & ICGUnitC(MDTY,MC),CMGSC(MDTY,MC),CMGLC(MDTY,MC),
+     & RADCC(MDTY,MC),CONCC(MDTY,MC)
+      INTEGER ICGTC
+      COMMON/P3TYPENC/ICGTC(MDTY,MC)
 
       common/elecflgc/ielfc
       COMMON/ELP3NC/NELC(MDTY),PFC(MDTY,MC),IPFC(MDTY,MC),PWRC(MDTY,MC),
@@ -4360,18 +4395,26 @@ C Set folder separator (fs) to \ or / as required.
       endif
 
 C It is assumed that a prior call to COPYAIRFL has been made
-C so there is no need to clear nac
+C so there is no need to clear nac. The task is not to setup
+C the casual gain portion of the file.
       IER=0
       DO 600 IDTY=1,NBDAYTYPE
         NCAS(IDTY)=0
  600  CONTINUE
-      lodlabel(idest,1)='Occupt'
+      lodlabel(idest,1)='Occupants'
+      caskeytype(idest,1)='people      '
       lodlabel(idest,2)='Lights'
-      lodlabel(idest,3)='Equipt'  
-      lodlabel(idest,4)='Other '  
-      lodlabel(idest,5)='AnnEl '  
-      lodlabel(idest,6)='NA    ' 
-      lodlabel(idest,7)='NA    '
+      caskeytype(idest,2)='lighting    '
+      lodlabel(idest,3)='SmallPower'  
+      caskeytype(idest,3)='equipment   '
+      lodlabel(idest,4)='Otherstuff'  
+      caskeytype(idest,4)='other       '  
+      lodlabel(idest,5)='Ann.El '  
+      caskeytype(idest,5)='net_utils   '  
+      lodlabel(idest,6)='N/A    ' 
+      caskeytype(idest,6)='-           '  
+      lodlabel(idest,7)='N/A    '
+      caskeytype(idest,7)='-           '  
   
       helptopic='oper_import_dialogs'
       call gethelptext(helpinsub,helptopic,nbhelp)
@@ -4398,6 +4441,7 @@ C the source zones air flows.
           else
             actflatfile='W'            
           endif
+
 C Use ERZSCHED to fill P2C and P2CTLC common blocks and
 C then jump to 32 to read in the destination operations file.
           CALL ERZSCHED(IUO,sfile,act,IER)
@@ -4410,7 +4454,7 @@ C then jump to 32 to read in the destination operations file.
         else
 
 C Read the source operations file from within the model and
-C if this is successful the instanciate the P2C and P2CTLC
+C if this is successful then instanciate the P2C and P2CTLC
           CALL EROPER(ITRC,iuout,IUO,isource,IER)
           if(ier.ne.0)then
             call edisp(iuout,'Source operation file not clean...')
@@ -4424,7 +4468,10 @@ C if this is successful the instanciate the P2C and P2CTLC
         return
       endif
 
-C Copy the casual gains into the local arrays 
+C Copy the casual gains into the local arrays.
+
+C << logic needed to copy *type attributes >>
+
       ielfc=ielf(isource)
       DO 601 IDTY=1,NBDAYTYPE
         nelc(idty)=nel(IDTY)
@@ -4433,6 +4480,7 @@ C Copy the casual gains into the local arrays
           do 10 L=1,NCAS(IDTY)
             ICGSC(IDTY,L)=ICGS(IDTY,L)
             ICGFC(IDTY,L)=ICGF(IDTY,L)
+            ICGUnitC(IDTY,L)=ICGUnit(IDTY,L)
             CMGSC(IDTY,L)=CMGS(IDTY,L)
             CMGLC(IDTY,L)=CMGL(IDTY,L)
             RADCC(IDTY,L)=RADC(IDTY,L)
@@ -4449,6 +4497,7 @@ C Copy the casual gains into the local arrays
         endif
  601  CONTINUE
       oprdescc=oprdesc(isource)
+C << ?? ventdescc ?? >>
 
 C Scan in the destination operations file, if it does not exist
 C then clear casual gain data structure and create a new file.
@@ -4538,6 +4587,7 @@ C then we do not know the ratio set to 1.0 and inform user.
             do 11 L=1,NCASC(IDTY)
               ICGS(IDTY,L)=ICGSC(IDTY,L)
               ICGF(IDTY,L)=ICGFC(IDTY,L)
+              ICGUnit(IDTY,L)=ICGUnitC(IDTY,L)
               if(ICGTC(IDTY,L).lt.0)then
                 CMGS(IDTY,L)=CMGSC(IDTY,L)
                 CMGL(IDTY,L)=CMGLC(IDTY,L)
@@ -4589,21 +4639,21 @@ C << separate documentation string for air flows and casual gains.
 
 C << revise to loop >>
         if(isource.eq.0)then
-          lodlabel(idest,1)=lodlabelc(1)
-          lodlabel(idest,2)=lodlabelc(2)
-          lodlabel(idest,3)=lodlabelc(3)
-          lodlabel(idest,4)=lodlabelc(4)
-          lodlabel(idest,5)=lodlabelc(5)
-          lodlabel(idest,6)=lodlabelc(6)
-          lodlabel(idest,7)=lodlabelc(7)
+          do il=1,7
+            lodlabel(idest,il)=lodlabelc(il)
+            caskeytype(idest,il)=caskeytypec(il)
+            lodslot(idest,il)=lodslotc(il)
+            lodatr1(idest,il)=lodatr1c(il)
+            lodatr2(idest,il)=lodatr2c(il)
+          enddo
         else
-          lodlabel(idest,1)=lodlabel(isource,1)
-          lodlabel(idest,2)=lodlabel(isource,2)
-          lodlabel(idest,3)=lodlabel(isource,3)
-          lodlabel(idest,4)=lodlabel(isource,4)
-          lodlabel(idest,5)=lodlabel(isource,5)
-          lodlabel(idest,6)=lodlabel(isource,6)
-          lodlabel(idest,7)=lodlabel(isource,7)
+          do il=1,7
+            lodlabel(idest,il)=lodlabel(isource,il)
+            caskeytype(idest,il)=caskeytype(isource,il)
+            lodslot(idest,il)=lodslot(isource,il)
+            lodatr1(idest,il)=lodatr1(isource,il)
+            lodatr2(idest,il)=lodatr2(isource,il)
+          enddo
         endif
       endif
 
@@ -4659,7 +4709,7 @@ C  ICOMP zone number
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
-      INTEGER IDTY
+      INTEGER IDTY,lnlb
 
       dimension CGAINS(25,7),CGAINL(25,7),CGAINTS(25),CGAINTL(25)
 
@@ -5105,13 +5155,12 @@ C Title and labels.
 
 C << Hard coded casual gain types revise >>
       do 300 I=1,3
-        write(outs,'(2a)')
-     &    lodlabel(ICOMP,I)(1:lnblnk(lodlabel(ICOMP,I))),' sensible'
+        lnlb=lnblnk(lodlabel(ICOMP,I))
+        write(outs,'(2a)') lodlabel(ICOMP,I)(1:lnlb),' sensible'
         IY=igt-(12*I)-18
         iid1=igl+20; iid2=IY;
         call wstxpt(iid1,iid2,outs)
-        write(outs,'(2a)')
-     &    lodlabel(ICOMP,I)(1:lnblnk(lodlabel(ICOMP,I))),' latent'
+        write(outs,'(2a)') lodlabel(ICOMP,I)(1:lnlb),' latent'
         iid1=igr-100; iid2=IY;
         call wstxpt(iid1,iid2,outs)
         if (COLOK)then
