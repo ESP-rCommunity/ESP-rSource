@@ -1668,7 +1668,7 @@ C << what about using CALL ESCZONE(ICOMP) and then CALL ERCZONE(ICOMP)? >>
   323     continue
   
 C Debug.
-          write(6,*) (TOTHER(ij,1),ij=1,10)
+C          write(6,*) (TOTHER(ij,1),ij=1,10)
 
           call eclose(gversion(IZ),1.1,0.01,newgeo)
           if(igupgrade.eq.2.and.(.NOT.newgeo))then

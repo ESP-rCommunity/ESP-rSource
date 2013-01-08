@@ -2485,7 +2485,8 @@ C set to 'verbose all' then include all of them.
         WRITE(outs,240)
         call edisp(itu,outs)
         call edisp(itu,' Multi-layer constructions used:')
-        write(6,*) 'nmlc is ',nmlc,databaseinfo
+C Debug.
+C        write(6,*) 'nmlc is ',nmlc,databaseinfo
         do 342 imlc=1,nmlc
           found=.false.
           mlc_name=mlcname(imlc)(1:12)
@@ -2653,9 +2654,7 @@ C to version 21.
         forceoper=.false.
       else
         forceoper=.true.   ! if some older operations do upgrade
-        write(6,*) 'some older operations found.'
       endif
-      write(6,*) 'status of forceoper is ',forceoper
 
 C Check whether the climate file is associated with seasons defined
 C in the climatelist file and if none written to the model set flag
@@ -2698,8 +2697,6 @@ C igupgrade was set to 2 in preferences also force an upgrade.
         if(forceupgrade.and.igupgrade.eq.0) igupgrade=2
         if(igupgrade.eq.2) forceupgrade=.true.
       endif
-      write(6,*) 'status of forceupgrade is ',forceupgrade
-
 
       if(forceupgrade)then
         dok=.true.
@@ -2863,7 +2860,6 @@ C an older format write to a newer format.
             IF(XST)THEN
               CALL ERPFREE(IUO,ISTAT)
               CALL EROPER(ITRC,ITRU,IUO,iz,IER)
-              write(6,*) ' existing version ',iz,ip3ver(iz)
 
 C Do cursory check to see if the daytypes in the file are sorted.
               sorted=.true.
@@ -2907,7 +2903,6 @@ C to version 21.
               endif
 
 C Save the file, sorting the periods if necessary.
-              write(6,*) ' proposed version ',iz,ip3ver(iz)
               if(MODOPR)then
                 if(sorted)then
                   CALL EMKOPER(IUO,LPROJ(IZ),IZ,IER)

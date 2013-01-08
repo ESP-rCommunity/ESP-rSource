@@ -5374,15 +5374,15 @@ C for deletion in IRMV
       DO 6100 ICOMP=1,NCOMP
 
 C Debug the initial list of surfaces to remove.
-        write(6,*) 'about to remove ',NRMV(icomp),' surfs in z ',
-     &    icomp
+C        write(6,*) 'about to remove ',NRMV(icomp),' surfs in z ',
+C     &    icomp
 
 C In the current zone we need to delete NRMV surfaces.
         DO 6001 IR=1,NRMV(icomp)
 
 C Debug.
-          write(6,*) ' x conn surf ',IRMV(ICOMP,IR),' ',
-     &     ssname(IRMV(ICOMP,IR)),' ',ie1(IRMV(ICOMP,IR)),' for ir ',ir
+C          write(6,*) ' x conn surf ',IRMV(ICOMP,IR),' ',
+C     &     ssname(IRMV(ICOMP,IR)),' ',ie1(IRMV(ICOMP,IR)),' for ir ',ir
 
 C Pack the list of TARSURF etc from the current connection data
 C to one less than the end of the number of connections in the
@@ -5488,8 +5488,10 @@ C additional windows
               XNWAREA(ICC)=
      &          TARSURF(ICC)*GLZFR-XREAREA(ICC)+XNWAREA(ICC)
             ENDIF
-            write(6,*) 'estimating ',icc,GLZFR,FRMFR,TARSURF(ICC),
-     &        XREAREA(ICC),XNWAREA(ICC)
+
+C Debug.
+C            write(6,*) 'estimating ',icc,GLZFR,FRMFR,TARSURF(ICC),
+C     &        XREAREA(ICC),XNWAREA(ICC)
           endif
  200    continue
  557  continue
@@ -5539,8 +5541,8 @@ C Get scale factors
             SCALEFACTORFR=SQRT(FRMFR)
 
 C Debug.
-            write(6,*) '580 ',ICC,TOTAREA,REQDAREA,SCALEFACTORPD,
-     &        SCALEFACTORFR,XPDAREA(ICC)
+C            write(6,*) '580 ',ICC,TOTAREA,REQDAREA,SCALEFACTORPD,
+C     &        SCALEFACTORFR,XPDAREA(ICC)
 
 C First put pedestrian door in if there was one in the original model.
 C If likely new surface complexity is within limits add door.
@@ -6877,8 +6879,8 @@ C area for the parent reset to the required area.
                 ENDIF
                 write(SSUSE(ICC,1),'(a)') 'WALL'
 C Debug.
-                write(6,*) 'reset use',ssname(icc),' ',SSMLCN(ICC),
-     &            ' ',SSOTF(ICC),' ',SSUSE(ICC,1)
+C                write(6,*) 'reset use',ssname(icc),' ',SSMLCN(ICC),
+C     &            ' ',SSOTF(ICC),' ',SSUSE(ICC,1)
                 changeuse=.true.  ! change of use
               else
                 continue
@@ -6939,8 +6941,8 @@ C area for the parent reset to the required area.
                 ENDIF
                 write(SSUSE(ICC,1),'(a)') 'WALL'
 C Debug.
-                write(6,*) 'reset use',ssname(icc),'  ',SSMLCN(ICC),
-     &            ' ',SOTF(ICC)
+C                write(6,*) 'reset use',ssname(icc),'  ',SSMLCN(ICC),
+C     &            ' ',SOTF(ICC)
                 changeuse=.true.  ! change of use
               else
                 continue
