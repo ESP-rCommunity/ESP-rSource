@@ -107,7 +107,7 @@ C ------------------------------------------------------------------------------
       USE AIM2
       CONTAINS
       SUBROUTINE AIM2_CONTROL(ICOMP,ZONE_infil_cond)
-     
+
 
       IMPLICIT NONE
 
@@ -130,7 +130,7 @@ C Declarations for local variables.
       REAL AIM2_Cflue,AIM2_Ctotal,AIM2_Y,AIM2_R,AIM2_X,AIM2_Fs,AIM2_Ps,
      &     AIM2_Qstack,AIM2_Fw,AIM2_Sw,AIM2_Pw,AIM2_Qwind,AIM2_natural,
      &     AIM2_unbal_mech,AIM2_total,AIM2_total_sum
-      
+
       LOGICAL bNumsAreClose ! For close-to-zero comparisons
       logical bProcessCalcs 
       
@@ -144,7 +144,7 @@ C we are currently within the zone loop. Therefore, execute the AIM-2 algorithm
 C only for the model's first zone. This will calculate the infiltration rate for
 C the whole house. Following this, apportion the infiltration air flow to
 C the individual zones.
-      
+
       if ( iCOMP <= iLastZone ) then
         bProcessCalcs = .true. 
       else
@@ -1091,10 +1091,11 @@ C differently in the future.
 c Check to see if infiltration is spec'd for this zone, and that 
 C it's not a crawl-space
             rightzone: if( AIM2_zone_infil(i) .eq. ICOMP .and. 
-     &          ICOMP .ne. AIM2_CrawlSpace_zone )then 
+     &          ICOMP .ne. AIM2_CrawlSpace_zone .and. 
+     &          ICOMP .ne. AIM2_Attic_zone ) then 
      
 C Operable window model: Are windows open and is aim2 model specified 
-C during this period?
+C during this period? This logic relies on Controller type 25 (nested in Control 1) to set bWindowsOpen
 
               winopen: if ( bWindowsOpen(iComp) .and. 
      &                      iAirFlowModel(iComp) == iAIM2model ) then 
@@ -1112,7 +1113,7 @@ C be used to examine free cooling and summer comfort.
                 AIM2_infil_to_zones(ICOMP) =                  
      &                   VOL(ICOMP)  * fACH_when_windows_open / 3600.
 
-              elseif ( bWIndowsOpen(iComp) .and. 
+              elseif ( bWindowsOpen(iComp) .and. 
      &                 iAirFlowModel(iComp) /= iAIM2model ) then 
      
                 ! There is infil to this zone, windows are open. 
@@ -1128,10 +1129,10 @@ C be used to examine free cooling and summer comfort.
                 ! Impose AIM-2 computed infiltration, pro-rated to 
                 ! zone volume. 
               
-     
+
                 AIM2_infil_to_zones(ICOMP) =                  ! There is infil to this zone:
      &                 VOL(ICOMP)/AIM2_house_vol * AIM2_total ! calc air flow rate.
-     
+
               else 
               
                 ! Should not happen: all possibilities innumerated above. 
@@ -1177,7 +1178,7 @@ C ------------------------------------------------------------------------------
 
       SUBROUTINE AIM2_airflow_to_conduct(ICOMP,ZONE_infil_cond)          
       IMPLICIT NONE
-      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF 
+      COMMON/CLIMI/QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF,HP,HF
       REAL QFP,QFF,TP,TF,QDP,QDF,VP,VF,DP,DF, HP, HF
       COMMON/OUTIN/IUOUT,IUIN
       INTEGER :: IUOUT,IUIN
@@ -1228,8 +1229,8 @@ C OUTPUTS:
 C    AIM2_infil_to_zones(i)  The infiltration rate (m^3/s) apportioned to zone `i'.
 C --------------------------------------------------------------------------------
 
-      SUBROUTINE AIM2_inf2attic 
-      
+      SUBROUTINE AIM2_inf2attic
+
       IMPLICIT NONE
 
 #include "building.h"

@@ -927,19 +927,24 @@ C restore last one.
 C Don't use correlation if artificial emissivity used (>1)
         IF(ABS(QELWF(I)).GT.495.0.AND.EE(ICOMP,I).LE.1.)THEN
           call zsid(icomp,I,ZSDES,ZSDESC,ZSDESS)
-          write(outs,'(A,F9.1,A,A,A,I6)')
+          write(outs,'(A,F9.1,A,A,A,F5.1,A,I6)')
      &    ' MZELWE: a longwave flux of',QELWF(I),
-     &    ' Watts has been calculated for ',ZSDESC(1:lnblnk(ZSDESC)),
-     &    ' @ increment',NSINC
+     &    ' W/m^2 has been calculated for ',ZSDESC(1:lnblnk(ZSDESC)),
+     &    ' (T=',TFC(ICOMP,I,1)+ZEROK,'K) @ increment',NSINC
           call edisp(iuout,outs)
-          write(outs,'(A)')
-     &    ' This is considered high and a correlation will be used.'
+          write(outs,'(A,F7.1,A,F5.1,A,F7.1,A,F5.1,A,F7.1,A,F5.1,A)')
+     &    '  Components: sky = ',QELWFK(I),' (T=',TSKY,
+     &    '), buildings = ',QELWFB(I),' (T=',TBLD(I),'), ground = ',
+     &    QELWFG(I),' (T=',TGRD,')'
           call edisp(iuout,outs)
-          write(outs,'(A,F7.1,A,F7.1,A,F7.1)')
-     &    ' <sky = ',QELWFK(I),' <buildings = ',QELWFB(I),
-     &    ' <ground = ',QELWFG(I)
-          call edisp(iuout,outs)
+
+!         CORRELATION?
           QELWF(I)=(3.0+1.7*VF)*(TF-TFC(ICOMP,I,1))
+
+          write(outs,'(A,F9.1,A)')
+     &    '  A correlation long wave flux value of',QELWF(I),
+     &    ' W/m^2 will be used instead.'
+          call edisp(iuout,outs)
         ENDIF
    49   QELWS(ICOMP,I)=QELWF(I)
         QELWB(ICOMP,I)=QELWFB(I)
@@ -1254,6 +1259,9 @@ C      CHARACTER*2   cZone_Chars ! Padded zone number (two digits)
       
 C Logical flags for indicating which air flow model is in use.      
       logical :: bOPR, bAFN, bAIM2, bNoFlow
+      
+C      Used to check if windows are open or not for AIM
+      LOGICAL AreWindowsOpen
 
 C  Initialise.
       IF(NSINC.EQ.1)X3(ICOMP)=0.0
@@ -1632,7 +1640,7 @@ C to the above priority table.
           case ( iAIM2model )
             ! Make sure AIM2 model is defined: otherwise revert to 
             ! afn/opr
-            if ( iAIM2 == 1 ) then 
+            if ( iAIM2 == 1 .and. .not. AreWindowsOpen(iComp) ) then
               bAIM2 = .true. 
             elseif ( bAfnZoneActive(iComp) ) then
               bAFN = .true. 
