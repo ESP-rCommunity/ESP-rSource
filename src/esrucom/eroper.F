@@ -546,8 +546,8 @@ C value will be the same as iabs(ICGT).
 C << still to be done for ip3ver >21 >>
             endif
           else
-            ICGT(IDTY,I)=1 ! assume slot one if unspecified
-            ICGUnit(IDTY,I)=1
+            ICGT(IDTY,I)=1    ! assume slot one if unspecified
+            ICGUnit(IDTY,I)=0 ! assume unit is W
           endif
           write(6,*) 'eroper 552 ',idty,i,ireader,ICGT(IDTY,I),
      &      ICGUnit(IDTY,I)
@@ -2043,31 +2043,31 @@ C Electrical data flag and elctrical data.
       common/elecflg/ielf(mcom)
       COMMON/ELP3N/NEL(MDTY),PF(MDTY,MC),IPF(MDTY,MC),PWR(MDTY,MC),
      &BVOLT(MDTY,MC),IPHAS(MDTY,MC)
-      INTEGER NEL,IPF,IPHAS
+      INTEGER NEL,IPF,IPHAS,jicgt
       REAL PF,PWR,BVOLT
 
       CHARACTER outs*124
-      CHARACTER llbl*15
+      CHARACTER llbl*24
 
       call edisp(itru,' ')
       call edisp(itru,'Notes: ')
       call edisp248(itru,oprdesc(icomp),72)
       call edisp(itru,' ')
       if(IELF(ICOMP).EQ.1)then
-        write(outs,'(3a)')'Daytype   Gain Label    Unit Period',
-     &    ' Sensible  Latent  Radiant  Convec   p.f +/-  Power ',
-     &    'Voltage Phase'
+        write(outs,'(3a)')'Daytype   Gain Label    Type    Unit',
+     &    ' Period Sensible  Latent  Radiant  Convec   p.f +/- ',
+     &    ' Power Voltage Phase'
         call edisp(itru,outs)
-        write(outs,'(3a)')'          No.                Hours ',
-     &    ' Magn.(W) Magn.(W) Frac     Frac     (-) (-)    (W) ',
-     &    '   (V) (rgb)'
+        write(outs,'(3a)')'          No.               ',
+     &    ' Hours  Magn.(W) Magn.(W) Frac     Frac     (-) (-) ',
+     &    '   (W)    (V) (rgb)'
         call edisp(itru,outs)
       else  
-        write(outs,'(2a)')'Daytype   Gain Label   Unit  Period',
-     &    ' Sensible  Latent     Radiant    Convec'
+        write(outs,'(2a)')'Daytype   Gain Label     Type    Unit',
+     &    ' Period Sensible  Latent     Radiant    Convec'
         call edisp(itru,outs)
-        write(outs,'(2a)')'          No.                Hours ',
-     &    ' Magn.(W)  Magn.(W)   Fraction   Fraction'
+        write(outs,'(2a)')'          No.                        ',
+     &    '  Hours Magn.(W)  Magn.(W)   Fraction   Fraction'
         call edisp(itru,outs)
       endif
       DO 600 IDTY=1,NBDAYTYPE
@@ -2077,14 +2077,16 @@ C << overload of ICGT to be relaxed here >>
         IF(NCAS(IDTY).GT.0)THEN
           IF(IELF(ICOMP).EQ.1) THEN
             DO 1269 I=1,NCAS(IDTY)
+              jicgt=iabs(ICGT(IDTY,I))
               if(ICGT(IDTY,I).gt.0)then
-                write(llbl,'(a,a)')lodlabel(ICOMP,ICGT(IDTY,I)),'W  '
+                write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+     &            ' ',caskeytype(icomp,jicgt)(1:10),'W  '
               elseif(ICGT(IDTY,I).eq.-1)then
-                write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),
-     &            'm2p'
+                write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+     &            ' ',caskeytype(icomp,jicgt)(1:10),'m2p'
               elseif(ICGT(IDTY,I).lt.-1)then
-                write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),
-     &            'Wm2'
+                write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+     &            ' ',caskeytype(icomp,jicgt)(1:10),'Wm2'
               endif
               WRITE(outs,5361)calentag(idty)(1:10),I,llbl,ICGS(IDTY,I),
      &        '-',ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
@@ -2098,14 +2100,16 @@ C << overload of ICGT to be relaxed here >>
 
 C << overload of ICGT to be relaxed here >>
             DO 1270 I=1,NCAS(IDTY)
+              jicgt=iabs(ICGT(IDTY,I))
               if(ICGT(IDTY,I).gt.0)then
-                write(llbl,'(a,a)')lodlabel(ICOMP,ICGT(IDTY,I)),'W  '
+                write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+     &            ' ',caskeytype(icomp,jicgt)(1:10),'W  '
               elseif(ICGT(IDTY,I).eq.-1)then
-                write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),
-     &            'm2p'
+                write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+     &            ' ',caskeytype(icomp,jicgt)(1:10),'m2p'
               elseif(ICGT(IDTY,I).lt.-1)then
-                write(llbl,'(a,a)')lodlabel(ICOMP,iabs(ICGT(IDTY,I))),
-     &            'Wm2'
+                write(llbl,'(4a)')lodlabel(ICOMP,jicgt)(1:10),
+     &            ' ',caskeytype(icomp,jicgt)(1:10),'Wm2'
               endif
               WRITE(outs,5362)calentag(idty)(1:10),I,llbl,ICGS(IDTY,I),
      &        '-',ICGF(IDTY,I),CMGS(IDTY,I),CMGL(IDTY,I),RADC(IDTY,I),
@@ -2297,6 +2301,7 @@ C Electrical data flag and elctrical data.
 
       IDTY=IDAYTYPE
       ICGT(IDTY,ix)=ICGT(IDTY,jx)
+      ICGUnit(IDTY,ix)=ICGUnit(IDTY,jx)
       ICGS(IDTY,ix)=ICGS(IDTY,jx)
       ICGF(IDTY,ix)=ICGF(IDTY,jx)
       CMGS(IDTY,ix)=CMGS(IDTY,jx)
@@ -2317,8 +2322,8 @@ C Electrical data flag and elctrical data.
 C ******************* CPYCASIT ***********************
 C CPYCASIT Copy one casual period jx to backup variables for zone icomp 
 C and daytype idaytype. 
-      SUBROUTINE CPYCASIT(icomp,idaytype,jx,icgtX,icgsX,icgfX,cmgsX,
-     &  cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
+      SUBROUTINE CPYCASIT(icomp,idaytype,jx,icgtX,icguX,icgsX,icgfX,
+     &  cmgsX,cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
 #include "building.h"
 #include "schedule.h"
 
@@ -2326,7 +2331,7 @@ C Parameters
       integer icomp    ! current zone
       integer idaytype ! day type to sort
       integer jx       ! is the source
-      integer icgtX,icgsX,icgfX    ! temporary variables
+      integer icgtX,icguX,icgsX,icgfX    ! temporary variables
       real cmgsX,cmglX,radcX,concX ! temporary variables
       integer ipfX,iphasX          ! temporary variables
       real pfX,pwrX,bvoltX         ! temporary variables
@@ -2340,6 +2345,7 @@ C Electrical data flag and elctrical data.
 
       IDTY=IDAYTYPE
       ICGTX=ICGT(IDTY,jx)
+      ICGUX=ICGUnit(IDTY,jx)
       ICGSX=ICGS(IDTY,jx)
       ICGFX=ICGF(IDTY,jx)
       CMGSX=CMGS(IDTY,jx)
@@ -2365,8 +2371,8 @@ C Electrical data flag and elctrical data.
 C ******************* CPYCASTI ***********************
 C CPYCASTI - Copy from backup variables to casual period jx for zone icomp 
 C and daytype idaytype. 
-      SUBROUTINE CPYCASTI(icomp,idaytype,jx,icgtX,icgsX,icgfX,cmgsX,
-     &  cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
+      SUBROUTINE CPYCASTI(icomp,idaytype,jx,icgtX,icguX,icgsX,icgfX,
+     &  cmgsX,cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
 #include "building.h"
 #include "schedule.h"
 
@@ -2374,7 +2380,7 @@ C Parameters
       integer icomp    ! current zone
       integer idaytype ! day type to sort
       integer jx       ! is the source
-      integer icgtX,icgsX,icgfX    ! temporary variables
+      integer icgtX,icguX,icgsX,icgfX    ! temporary variables
       real cmgsX,cmglX,radcX,concX ! temporary variables
       integer ipfX,iphasX          ! temporary variables
       real pfX,pwrX,bvoltX         ! temporary variables
@@ -2388,6 +2394,7 @@ C Electrical data flag and elctrical data.
 
       IDTY=IDAYTYPE
       ICGT(IDTY,jx)=ICGTX
+      ICGUnit(IDTY,jx)=ICGUX
       ICGS(IDTY,jx)=ICGSX
       ICGF(IDTY,jx)=ICGFX
       CMGS(IDTY,jx)=CMGSX
