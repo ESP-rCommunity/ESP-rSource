@@ -1,5 +1,5 @@
-*connections for Supermarket_pv
-*Date Wed Oct  3 15:26:41 2012
+*connections for SM_ann_pv_r5
+*Date Tue Feb 28 11:02:28 2012
     179   # number of connections
    1   1   3   2   3  #    1 fict_refr in Sales >|< fict_store in Refrig
    1   2   3  10   8  #    2 ptn_st2 in Sales >|< ptn_sales in Store2

@@ -39,7 +39,7 @@ no plant control description supplied
      1  # No. of periods in day: weekdays    
     1    8   0.000  # ctl type, law (On-Off control.), start @
       7.  # No. of data items
-  1.00000 20.50000 21.50000 0.25000 0.00000 0.00000 0.00000
+  1.00000 20.50000 21.50000 0.60000 0.00000 0.00000 0.00000
 * Control loops    2
 # senses var in compt.  2:tank @ node no.  1
    -1    2    1    0    0  # sensor 

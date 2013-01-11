@@ -530,11 +530,14 @@ C Check to see if gain labels have been added to the end of the file.
           enddo
         endif
  701  continue
-      if(irange.lt.3) irange=3
-cx      write(6,*) 'casual gain read range is ',irange
 
-C << This is hard-coded to 3 gain type labels. Revise code to check the
-C << number of items on the line and loop accordingly.
+C For now assume there are always at least 3 different type names.
+C Test that the number of type names matches what was found when
+C reading the period lines.
+      if(irange.lt.3) irange=3
+C Debug.
+C      write(6,*) 'casual gain read range is ',irange
+
       CALL STRIPC(IUO,OUTSTR,99,ND,1,'Type labels',IERV)
       IF(IERV.ne.0) THEN
         goto 1001
@@ -1323,7 +1326,7 @@ C Parameters
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
       common/calena/calename,calentag(MDTY),calendayname(MDTY)
       CHARACTER CALENAME*32,CALENTAG*12,CALENDAYNAME*32
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
 
 C Electrical data flag and elctrical data.
       common/elecflg/ielf(mcom)
@@ -1373,9 +1376,9 @@ C If version 1 write out header.
   30  FORMAT('# operations of ',a,' defined in: ',/,'# ',a)
 
 C Write the common block data to the file.
-C If ipv3ver is 1 or 2 write ventilation control data as if
+C If ipv3ver is 0, 1 or 2 write ventilation control data as if
 C there was only one day type and one period during the day.
-      if(ip3ver(icomp).eq.1.or.ip3ver(icomp).eq.2)then
+      if(ip3ver(icomp).le.2)then
 
 C << revise for multiple days and periods >>
 
@@ -1443,7 +1446,9 @@ C Check the range of icgt, remember in irange and use for looping.
         endif
  700  continue
       if(irange.lt.3) irange=3
-      write(6,*) 'casual gain range is ',irange
+
+C Debug.
+C      write(6,*) 'casual gain range is ',irange
 
       DO 600 IDTY=1,NBDAYTYPE
         WRITE(IUO,'(1X,I5,2A)',IOSTAT=IOS,ERR=1)NCAS(IDTY),
@@ -1810,7 +1815,7 @@ C loadcount() & load24() in common blocks loadcnt & loadall
 C Parameters
       integer icomp  ! index of the zone to scan
 
-      COMMON/OUTIN/IUOUT,IUIN
+C      COMMON/OUTIN/IUOUT,IUIN
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER,IDTY
 
@@ -2185,7 +2190,7 @@ C the call to checkcascount.
           CMGLA(IP,IG)=0.0
           RADCA(IP,IG)=0.0
           CONCA(IP,IG)=0.0
-          RADFAC(IP,IG)=0.50
+          RADFAC(IP,IG)=0.50  ! should refine based on gain type
           CONFAC(IP,IG)=0.50
           DO 609 IDTY=1,NBDAYTYPE
             ISTARTHR=(IDTY-1)*24+1
@@ -2389,15 +2394,29 @@ C trap for this case and set CMGSA to zero.
               endif
             endif
 
-C Assign values.
+C Assign values. If a new period with zero sensible then set
+C the radiant convective split based on its type.
+            ICGT(IDT,NCASwk) = ICGTYP(IP,ITYP)
             NCAS(IDT) = NCASwk
             ICGS(IDT,NCASwk) = ihst
             ICGF(IDT,NCASwk) = ihcg
             CMGS(IDT,NCASwk) = CMGSA(IP,ITYP)
             CMGL(IDT,NCASwk) = CMGLA(IP,ITYP)
-            RADC(IDT,NCASwk) = RADFAC(IP,ITYP)
-            CONC(IDT,NCASwk) = CONFAC(IP,ITYP)
-            ICGT(IDT,NCASwk) = ICGTYP(IP,ITYP)
+            if(CMGSA(IP,ITYP).gt.0.0)then
+              RADC(IDT,NCASwk) = RADFAC(IP,ITYP)
+              CONC(IDT,NCASwk) = CONFAC(IP,ITYP)
+            else
+              ITYPL=abs(ICGTYP(IP,ITYP))
+              if(ITYPL.eq.1)then
+                RADC(IDT,NCASwk)=0.6; CONC(IDT,NCASwk)=0.4
+              elseif(ITYPL.eq.2)then
+                RADC(IDT,NCASwk)=0.3; CONC(IDT,NCASwk)=0.7
+              elseif(ITYPL.eq.3)then
+                RADC(IDT,NCASwk)=0.4; CONC(IDT,NCASwk)=0.6
+              else
+                RADC(IDT,NCASwk)=0.5; CONC(IDT,NCASwk)=0.5
+              endif
+            endif
 
 C If there is electrical data then also assign these values (note:
 C electrical power is assumed to use the same units as the casual gain).

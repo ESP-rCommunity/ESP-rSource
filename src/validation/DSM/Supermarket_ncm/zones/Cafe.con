@@ -1,4 +1,4 @@
-# thermophysical properties of Cafe defined in ../zones/Cafe.con
+# thermophysical properties of Cafe defined in ../zones/Office2.con
 # no of |air |surface(from geo)| multilayer construction
 # layers|gaps|  no.  name      | database name 
      3,     0  #  1 front_fac    SMexwal2008 

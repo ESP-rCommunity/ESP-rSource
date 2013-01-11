@@ -209,12 +209,12 @@ ESP-r plant file version 2 written on: Thu Mar  1 15:28:35 2012
     1        # Component has   1 control variable(s).
   0.60000002    
     6
-      0.10000     #   1 Component total mass (kg)                                       
-      0.10000     #   2 Average specific heat of solids (J/kgK)                         
+      5.00000     #   1 Component total mass (kg)                                       
+      500.000     #   2 Average specific heat of solids (J/kgK)                         
        0.0000     #   3 UA modulus (node 1 to surroundings) (W/K)                       
-       50.000     #   4 Mass of water encapsulated in component (kg)                    
-      0.60000     #   5 Coil outside (air) heat transfer area (m^2)                     
-      0.70000     #   6 Coil inside (water) heat transfer area (m^2)                    
+       50.000     #   4 Rater power (W)                    
+      0.60000     #   5 Rated flow rate (m^3/s)                     
+      0.70000     #   6 Overall efficiency (-)                    
 #->   7, The sending hydronic coupling component (HCC-S) is used for water coupli
   TRNSYS-S-1       106
     0        # Component has   0 control variable(s).

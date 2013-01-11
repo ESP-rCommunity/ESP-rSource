@@ -1,4 +1,4 @@
-# thermophysical properties of Sales defined in ../zones/Sales_pv.con
+# thermophysical properties of Sales defined in ../zones/Sales.con
 # no of |air |surface(from geo)| multilayer construction
 # layers|gaps|  no.  name      | database name 
      1,     0  #  1 fict_refr    fictitious  

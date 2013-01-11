@@ -11,10 +11,10 @@
 /* #endif */
 
 #ifndef TRUE
-#define TRUE		1
-#define FALSE		0
+#define TRUE  1
+#define FALSE 0
 #endif /* TRUE */
-# define NULLPTR(x)	((x *)0)	/* null (coerced) */
+# define NULLPTR(x) ((x *)0)  /* null (coerced) */
 
 typedef unsigned char byte;
 

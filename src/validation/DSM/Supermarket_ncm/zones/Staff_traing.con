@@ -1,4 +1,4 @@
-# thermophysical properties of Staff_traing defined in ../zones/Staff_traing.con
+# thermophysical properties of Staff_traing defined in ../zones/Office5.con
 # no of |air |surface(from geo)| multilayer construction
 # layers|gaps|  no.  name      | database name 
      3,     0  #  1 front_fac    SMexwal2008 

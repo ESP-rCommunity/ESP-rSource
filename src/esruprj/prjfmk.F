@@ -84,6 +84,8 @@ C updated when the user exits).
       CHARACTER tcname*248
       CHARACTER ITEM(15)*33,choices(11)*32,LTMP*72,GFILE*72
       character sfile*72,snpfile*72,fs*1,outs*124
+      character priorname*72
+      integer lnprior,lnoprf
       character act*8,iwatt*8,afact*8,iflow*8,vflow*8
 
       LOGICAL OK,DOK,XST,MODOPR,browse,unixok,needtoask,clkok
@@ -133,6 +135,10 @@ C just write operations file
         endif
       endif
 
+C Remember the file name in case user browses to something else.
+      write(priorname,'(a)') LPROJ(ICOMP)(1:lnblnk(LPROJ(ICOMP)))
+      lnprior=lnblnk(priorname)
+
 C GFILE is the default file name for any operations file.
       if(zonepth(1:2).eq.'  '.or.zonepth(1:2).eq.'./')then
         WRITE(GFILE,'(2a)') zname(ICOMP)(1:lnzname(ICOMP)),'.opr'
@@ -172,6 +178,7 @@ C Operations file not known, allow user to give name or browse.
      &      'browse','cancel',iclkok,72,GFILE,
      &      'operations file',IER,nbhelp)
         endif
+        lnoprf=lnblnk(LTMP)
         call usrmsg(' ',' ','-')   ! clear the display
       else
         helptopic='operations_need_confirm'
@@ -189,6 +196,7 @@ C Operations file not known, allow user to give name or browse.
      &      'operations file',IER,nbhelp)
         endif
         call usrmsg(' ',' ','-')   ! clear the display
+        lnoprf=lnblnk(LTMP)
       endif
       if(iclkok.eq.1)then
         sfile=' '
@@ -214,10 +222,12 @@ C            write(6,*) 'the snpfile is ',snpfile(1:lnblnk(snpfile))
             CALL EASKS(LTMP,' ','Zone operations file name?',
      &            72,GFILE,'operations file',IER,nbhelp)
           endif
+          lnoprf=lnblnk(LTMP)
         else
           LTMP=GFILE
           CALL EASKS(LTMP,' ','Zone operations file name?',
      &            72,GFILE,'operations file',IER,nbhelp)
+          lnoprf=lnblnk(LTMP)
         endif
 
 C Display a bit of information about this browsed file.
@@ -229,7 +239,22 @@ C Display a bit of information about this browsed file.
         call edisp(iuout,'No file selected so returning.')
         return
       endif
+
       LPROJ(ICOMP)=LTMP
+
+C If the file name has changed then remember this in cfg file.
+C Debug.
+C      write(6,*) lnprior,' ',priorname(1:lnprior)
+C      write(6,*) lnoprf,' ',ltmp(1:lnoprf)
+      if(priorname(1:lnprior).eq.ltmp(1:lnoprf))then
+        continue  ! name is the same
+      else
+        call usrmsg('Updating model to reflect changes',
+     &        'in zone operations file name...','-')
+        CALL EMKCFG('-',ier)
+        call usrmsg('Updating model to reflect changes',
+     &        'in zone operations file name...done.','-')
+      endif
 
 C Debug.
 C      write(6,*) 'lproj is ',lproj(icomp)

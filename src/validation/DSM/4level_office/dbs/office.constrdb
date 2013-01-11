@@ -1,48 +1,48 @@
 # composite construction db defined in ../dbs/office.constrdb
 # based on materials db ../dbs/impact_mat.db2.a
    18     # no of composites 
-# layers  description  type  optics name   symmetry tag
+# layers  description   optics name   symmetry tag
     4    roof          OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
    47    0.0030  Grey ptd steel : Grey ptd steel
-    0    0.0250  gap  0.170 0.170 0.170
+    0    0.0250  air  0.170 0.170 0.170
   212    0.1300  Roof insulation board : Roof insulation board
    42    0.0030  Steel : Steel
-# layers  description  type  optics name   symmetry tag
+# layers  description   optics name   symmetry tag
     6    ext_wall      OPAQ  OPAQUE        ext_wall_r    
 # material ref thickness (m) description & air gap R
     6    0.1000  Lt brown brick : Lt brown brick
-    0    0.0100  gap  0.170 0.170 0.170
+    0    0.0100  air  0.170 0.170 0.170
     2    0.1000  Breeze block : Breeze block
   214    0.0750  EPS : EPS
-    0    0.0100  gap  0.170 0.170 0.170
+    0    0.0100  air  0.170 0.170 0.170
   108    0.0050  White ptd Gypboard : White ptd Gypboard
-# layers  description  type  optics name   symmetry tag
+# layers  description   optics name   symmetry tag
     6    ext_wall_r    OPAQ  OPAQUE        ext_wall      
 # material ref thickness (m) description & air gap R
   108    0.0050  White ptd Gypboard : White ptd Gypboard
-    0    0.0100  gap  0.170 0.170 0.170
+    0    0.0100  air  0.170 0.170 0.170
   214    0.0750  EPS : EPS
     2    0.1000  Breeze block : Breeze block
-    0    0.0100  gap  0.170 0.170 0.170
+    0    0.0100  air  0.170 0.170 0.170
     6    0.1000  Lt brown brick : Lt brown brick
-# layers  description  type  optics name   symmetry tag
+# layers  description   optics name   symmetry tag
     3    double_glz    TRAN  DC_8074_04nb  SYMMETRIC     
 # material ref thickness (m) description & air gap R
   243    0.0040  4mm clear float : 4mm clear float with placeholder single layer optics
-    0    0.0120  gap  0.170 0.170 0.170
+    0    0.0120  air  0.170 0.170 0.170
   243    0.0040  4mm clear float : 4mm clear float with placeholder single layer optics
-# layers  description  type  optics name   symmetry tag
+# layers  description   optics name   symmetry tag
     3    partn_ltw     OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
   108    0.0120  White ptd Gypboard : White ptd Gypboard
-    0    0.0250  gap  0.170 0.170 0.170
+    0    0.0250  air  0.170 0.170 0.170
   108    0.0120  White ptd Gypboard : White ptd Gypboard
-# layers  description  type  optics name   symmetry tag
+# layers  description   optics name   symmetry tag
     1    door          OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
    69    0.0250  Oak (radial) : Oak (radial)
-# layers  description  type  optics name   symmetry tag
+# layers  description   optics name   symmetry tag
     9    foundation    OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
   263    0.2500  Common_earth : Common_earth
@@ -54,59 +54,59 @@
   205    0.0250  Polyurethane foam board : Polyurethane foam board
    32    0.1000  Heavy mix concrete : Heavy mix concrete
   228    0.0050  Grey loop pile synth : Grey loop pile synth
-# layers  description  type  optics name   symmetry tag
+# layers  description   optics name   symmetry tag
     3    inter_flr     OPAQ  OPAQUE        inter_flrev   
 # material ref thickness (m) description & air gap R
    42    0.0030  Steel : Steel
    32    0.1016  Heavy mix concrete : Heavy mix concrete
   228    0.0050  Grey loop pile synth : Grey loop pile synth
-# layers  description  type  optics name   symmetry tag
+# layers  description   optics name   symmetry tag
     3    inter_flrev   OPAQ  OPAQUE        inter_flr     
 # material ref thickness (m) description & air gap R
   228    0.0050  Grey loop pile synth : Grey loop pile synth
    32    0.1016  Heavy mix concrete : Heavy mix concrete
    42    0.0030  Steel : Steel
-# layers  description  type  optics name   symmetry tag
+# layers  description   optics name   symmetry tag
     1    fict          TRAN  SC_fictit     SYMMETRIC     
 # material ref thickness (m) description & air gap R
   245    0.0050  Fict : Fict with placeholder single layer optics
-# layers  description  type  optics name   symmetry tag
+# layers  description   optics name   symmetry tag
     1    ceiling_dr    OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
   150    0.0100  Ceiling (mineral) : Ceiling (mineral)
-# layers  description  type  optics name   symmetry tag
+# layers  description   optics name   symmetry tag
     1    window_frame  OPAQ  OPAQUE        SYMMETRIC     
 # material ref thickness (m) description & air gap R
    69    0.0250  Oak (radial) : Oak (radial)
-# layers  description  type  optics name   symmetry tag
+# layers  description   optics name   symmetry tag
     2    raised_flr    OPAQ  OPAQUE        raised_flr_r  
 # material ref thickness (m) description & air gap R
    67    0.0190  Chipboard : Chipboard
   221    0.0060  Wilton : Wilton
-# layers  description  type  optics name   symmetry tag
+# layers  description   optics name   symmetry tag
     2    raised_flr_r  OPAQ  OPAQUE        raised_flr    
 # material ref thickness (m) description & air gap R
   221    0.0060  Wilton : Wilton
    67    0.0190  Chipboard : Chipboard
-# layers  description  type  optics name   symmetry tag
+# layers  description   optics name   symmetry tag
     2    ceiling_tl    OPAQ  OPAQUE        ceiling_tl_r  
 # material ref thickness (m) description & air gap R
   211    0.0500  Glasswool : Glasswool
   150    0.0100  Ceiling (mineral) : Ceiling (mineral)
-# layers  description  type  optics name   symmetry tag
+# layers  description   optics name   symmetry tag
     2    ceiling_tl_r  OPAQ  OPAQUE        ceiling_tl    
 # material ref thickness (m) description & air gap R
   150    0.0100  Ceiling (mineral) : Ceiling (mineral)
   211    0.0500  Glasswool : Glasswool
-# layers  description  type  optics name   symmetry tag
+# layers  description   optics name   symmetry tag
     3    gl_frame      OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
    46    0.0040  Grey cotd aluminium : Grey cotd aluminium
-    0    0.0200  gap  0.170 0.170 0.170
+    0    0.0200  air  0.170 0.170 0.170
    46    0.0050  Grey cotd aluminium : Grey cotd aluminium
-# layers  description  type  optics name   symmetry tag
+# layers  description   optics name   symmetry tag
     3    dark_glz      TRAN  Darkdoublen   SYMMETRIC     
 # material ref thickness (m) description & air gap R
   243    0.0040  4mm clear float : 4mm clear float with placeholder single layer optics
-    0    0.0120  gap  0.170 0.170 0.170
+    0    0.0120  air  0.170 0.170 0.170
   243    0.0040  4mm clear float : 4mm clear float with placeholder single layer optics
