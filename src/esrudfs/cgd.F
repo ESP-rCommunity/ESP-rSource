@@ -174,7 +174,7 @@ C 3D gridding with zone geometry and solids.
         elseif(iwo.eq.4)then
           call VGRID3D('zn ','xyg',ic)
         endif
-        call VSB3D(0)
+        call VSB3D(0,ic)
       ELSEIF(INO.EQ.7.and.GRMODE)THEN
 
 C 3D gridding with zone geometry and solids and openings.
@@ -189,7 +189,7 @@ C 3D gridding with zone geometry and solids and openings.
         elseif(iwo.eq.4)then
           call VGRID3D('zn ','xyg',ic)
         endif
-        call VSB3D(0)
+        call VSB3D(0,ic)
         call VAO3D(0)
       ELSEIF(INO.EQ.8.and.GRMODE)THEN
 
@@ -219,7 +219,7 @@ C 3D gridding without zone geometry and with solids.
         elseif(iwo.eq.4)then
           call VGRID3D('---','xyg',ic)
         endif
-        call VSB3D(0)
+        call VSB3D(0,ic)
       ELSEIF(INO.EQ.10.and.GRMODE)THEN
 
 C 3D gridding without zone geometry and with solids and openings.
@@ -234,7 +234,7 @@ C 3D gridding without zone geometry and with solids and openings.
         elseif(iwo.eq.4)then
           call VGRID3D('---','xyg',ic)
         endif
-        call VSB3D(0)
+        call VSB3D(0,ic)
         call VAO3D(0)
       ELSEIF(INO.EQ.12)THEN
 
@@ -454,43 +454,48 @@ C xax,yax   - text for horiz and vert axis.
       integer iside,isize,ifont     ! passed to viewtext
       integer iupdown,isym    ! passed to etplot
       integer iigl,iigr,iigt,iigb,iigw,iigwh
-      integer iiw1
+      integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iside,isize,ifont     ! passed to viewtext
       integer*8 iupdown,isym    ! passed to etplot
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
-      integer*8 iiw1
+      integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
 #endif
 
 C x-z plane grid.
       call startbuffer()
 
-C Cast values for linescale.
+C Setup and pass in parameters to win3d.
+      iiw1=4; iiw2=4; iiw3=3; iiw4=3; iimenu=menuchw
       iigl=igl;iigr=igr;iigt=igt;iigb=igb;iigw=igw;iigwh=igwh
+      CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &  iigl,iigr,iigt,iigb,iigw,iigwh)
+      igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+      igw=int(iigw); igwh=int(iigwh)
+      igwid=igw
+      igheight=igwh
 
       Xmin=xoff
       Xmax=xgrd(nx)+xoff
       Ymin=yoff
       Ymax=ygrd(ny)+yoff
-      igwid=igw
-      igheight=igwh
       call axiscale(igwid,igheight,Xmin,Xmax,Ymin,Ymax,xsc,ysc,sca,
      &  Xadd,Yadd)
 
 C Store the scaling parameters used in drawing the axes.
       CALL linescale(iigl,Xadd,sca,iigb,Yadd,sca)
       iiw1=iigb+10
-      call horaxis(Xmin,Xmax,iigl,iigr,iiw1,Xadd,sca,0,xax)
+      call horaxis(Xmin,Xmax,iigl,iigr,iigb,Xadd,sca,0,xax)
       if((Ymax-Ymin).lt.2.0)then
         iiw1=iigl-10
         call vrtaxis(Ymin,Ymax,iiw1,iigb,iigt,Yadd,sca,0,0,yax)
-        iiw1=iigl+10
+        iiw1=iigr-15
         call vrtaxis(Ymin,Ymax,iiw1,iigb,iigt,Yadd,sca,0,1,yax)
       else
         iiw1=iigl-10
         call vrtaxis(Ymin,Ymax,iiw1,iigb,iigt,Yadd,sca,1,0,yax)
-        iiw1=iigl+10
+        iiw1=iigr-15
         call vrtaxis(Ymin,Ymax,iiw1,iigb,iigt,Yadd,sca,1,1,yax)
       endif
       iside=1
@@ -557,6 +562,9 @@ C izone is the index of the zone to be drawin (if zero do not bother`).
 
       logical greyok
       character gact*3,zact*3
+      real XPP,YPP,ZPP  ! points taking into account zone minimum
+      real X0,Y0,Z0
+
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iixs,iiys,iix,iiy,iixlast,iiylast
@@ -588,11 +596,10 @@ C Clear current viewing box and re-establish image bounds.
       CALL startbuffer
 
 C Setup and pass in parameters to win3d.
-      iiw1=1; iiw2=1; iiw3=1; iiw4=1; iimenu=menuchw
+      iiw1=4; iiw2=4; iiw3=3; iiw4=3; iimenu=menuchw
       iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
       CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &  iigl,iigr,iigt,iigb,iigw,iigwh)
-C      CALL win3d(menuchw,1,1,1,1,igl,igr,igt,igb,igw,igwh)
       igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
       igw=int(iigw); igwh=int(iigwh)
       igwid=igw
@@ -617,12 +624,16 @@ C Loop through all X-Y plane grid lines.
           do 20 J=2,NJ
 
 C Transform first point to screen coords.
-            CALL ORTTRN(XU(i),YV(j),0.,TEMAT,X0,Y0,Z0,IERR)
+            XPP=ZXMN(izone)+XU(i); YPP=ZYMN(izone)+YV(j)
+            ZPP=ZZMN(izone)+0.
+            CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
             CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
             call u2pixel(X1,Y1,iixs,iiys)
 
 C Transform first point to screen coords.
-            CALL ORTTRN(XU(i),YV(j),ZW(NK),TEMAT,X0,Y0,Z0,IERR)
+            XPP=ZXMN(izone)+XU(i); YPP=ZYMN(izone)+YV(j)
+            ZPP=ZZMN(izone)+ZW(NK)
+            CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
             CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
             call u2pixel(X1,Y1,iix,iiy)
 
@@ -657,12 +668,16 @@ C Loop through all Z-Y plane grid lines.
           do 40 J=2,NJ
 
 C Transform first point to screen coords.
-            CALL ORTTRN(0.,YV(j),ZW(k),TEMAT,X0,Y0,Z0,IERR)
+            XPP=ZXMN(izone)+0.; YPP=ZYMN(izone)+YV(j)
+            ZPP=ZZMN(izone)+ZW(k)
+            CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
             CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
             call u2pixel(X1,Y1,iixs,iiys)
 
 C Transform first point to screen coords.
-            CALL ORTTRN(XU(NI),YV(j),ZW(k),TEMAT,X0,Y0,Z0,IERR)
+            XPP=ZXMN(izone)+XU(NI); YPP=ZYMN(izone)+YV(j)
+            ZPP=ZZMN(izone)+ZW(k)
+            CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
             CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
             call u2pixel(X1,Y1,iix,iiy)
 
@@ -695,12 +710,16 @@ C Loop through all Z-X plane grid lines.
           do 60 I=2,NI
 
 C Transform first point to screen coords.
-            CALL ORTTRN(XU(i),0.,ZW(k),TEMAT,X0,Y0,Z0,IERR)
+            XPP=ZXMN(izone)+XU(I); YPP=ZYMN(izone)+0.
+            ZPP=ZZMN(izone)+ZW(k)
+            CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
             CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
             call u2pixel(X1,Y1,iixs,iiys)
 
 C Transform end point to screen coords.
-            CALL ORTTRN(XU(i),YV(NJ),ZW(k),TEMAT,X0,Y0,Z0,IERR)
+            XPP=ZXMN(izone)+XU(I); YPP=ZYMN(izone)+YV(NJ)
+            ZPP=ZZMN(izone)+ZW(k)
+            CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
             CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
             call u2pixel(X1,Y1,iix,iiy)
 
@@ -815,8 +834,9 @@ C Complete the polygon.
 
 C ********************* VSB3D *********************
 C VSB3D - draws the solid boundaries - highlighting the chosen one.
-      SUBROUTINE VSB3D(ISBHL)
+      SUBROUTINE VSB3D(ISBHL,izone)
 #include "building.h"
+#include "geometry.h"
 #include "cfd.h"
 #include "prj3dv.h"
       
@@ -844,6 +864,8 @@ C VSB3D - draws the solid boundaries - highlighting the chosen one.
 #else
       integer*8 iixs,iiys,iix,iiy
 #endif
+      real XPP,YPP,ZPP  ! points taking into account zone minimum
+      real XX,YY,ZZ
 
 C Check in graphics mode.
       IF(MMOD.ne.8) return
@@ -866,12 +888,16 @@ C Draw round solid boundaries and last character of label.
 
 C In YZ plane.
 C Transform local coords to screen coords and draw box around boundary.
-          CALL ORTTRN(XU(MNOD),YV(JSBi(Isbn,ICFD)),
-     &                      ZW(KSBi(Isbn,ICFD)),TEMAT,X0,Y0,Z0,IERR)
+          XPP=ZXMN(izone)+XU(MNOD); YPP=ZYMN(izone)+YV(JSBi(Isbn,ICFD))
+          ZPP=ZZMN(izone)+ZW(KSBi(Isbn,ICFD))
+          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iixs,iiys)
-          CALL ORTTRN(XU(MNOD),YV(JSBf(Isbn,ICFD)+1),
-     &                      ZW(KSBi(Isbn,ICFD)),TEMAT,X0,Y0,Z0,IERR)
+
+          XPP=ZXMN(izone)+XU(MNOD) 
+          YPP=ZYMN(izone)+YV(JSBf(Isbn,ICFD)+1)
+          ZPP=ZZMN(izone)+ZW(KSBi(Isbn,ICFD))
+          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           if (Isbn.eq.ISBHL) then
@@ -880,10 +906,13 @@ C Transform local coords to screen coords and draw box around boundary.
             call eswline(iixs,iiys,iix,iiy)
           endif
           call forceflush()
+
           iixs=iix
           iiys=iiy
-          CALL ORTTRN(XU(MNOD),YV(JSBf(Isbn,ICFD)+1),
-     &                      ZW(KSBf(Isbn,ICFD)+1),TEMAT,X0,Y0,Z0,IERR)
+          XPP=ZXMN(izone)+XU(MNOD)
+          YPP=ZYMN(izone)+YV(JSBf(Isbn,ICFD)+1)
+          ZPP=ZZMN(izone)+ZW(KSBf(Isbn,ICFD)+1)
+          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           if (Isbn.eq.ISBHL) then
@@ -892,10 +921,12 @@ C Transform local coords to screen coords and draw box around boundary.
             call eswline(iixs,iiys,iix,iiy)
           endif
           call forceflush()
+
           iixs=iix
           iiys=iiy
-          CALL ORTTRN(XU(MNOD),YV(JSBi(Isbn,ICFD)),
-     &                      ZW(KSBf(Isbn,ICFD)+1),TEMAT,X0,Y0,Z0,IERR)
+          XPP=ZXMN(izone)+XU(MNOD); YPP=ZYMN(izone)+YV(JSBi(Isbn,ICFD))
+          ZPP=ZZMN(izone)+ZW(KSBf(Isbn,ICFD)+1)
+          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           if (Isbn.eq.ISBHL) then
@@ -904,10 +935,12 @@ C Transform local coords to screen coords and draw box around boundary.
             call eswline(iixs,iiys,iix,iiy)
           endif
           call forceflush()
+
           iixs=iix
           iiys=iiy
-          CALL ORTTRN(XU(MNOD),YV(JSBi(Isbn,ICFD)),
-     &                      ZW(KSBi(Isbn,ICFD)),TEMAT,X0,Y0,Z0,IERR)
+          XPP=ZXMN(izone)+XU(MNOD); YPP=ZYMN(izone)+YV(JSBi(Isbn,ICFD))
+          ZPP=ZZMN(izone)+ZW(KSBi(Isbn,ICFD))
+          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           if (Isbn.eq.ISBHL) then
@@ -918,9 +951,9 @@ C Transform local coords to screen coords and draw box around boundary.
           call forceflush()
 
 C Label in center of boundary.
-          Y=(YV(JSBi(Isbn,ICFD))+YV(JSBf(Isbn,ICFD)))/2.
-          Z=(ZW(KSBi(Isbn,ICFD))+ZW(KSBf(Isbn,ICFD)))/2.
-          CALL ORTTRN(XU(MNOD),Y,Z,TEMAT,X0,Y0,Z0,IERR)
+          YY=(YV(JSBi(Isbn,ICFD))+YV(JSBf(Isbn,ICFD)))/2.
+          ZZ=(ZW(KSBi(Isbn,ICFD))+ZW(KSBf(Isbn,ICFD)))/2.
+          CALL ORTTRN(XU(MNOD),YY,ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           write (temp,'(a,i2)') 'SB',Isbn
@@ -936,12 +969,16 @@ C Label in center of boundary.
 
 C In XZ plane.
 C Transform local coords to screen coords and draw box around boundary.
-          CALL ORTTRN(XU(ISBi(Isbn,ICFD)),YV(MNOD),
-     &                      ZW(KSBi(Isbn,ICFD)),TEMAT,X0,Y0,Z0,IERR)
+          XPP=ZXMN(izone)+XU(ISBi(Isbn,ICFD)); YPP=ZYMN(izone)+YV(MNOD)
+          ZPP=ZZMN(izone)+ZW(KSBi(Isbn,ICFD))
+          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iixs,iiys)
-          CALL ORTTRN(XU(ISBf(Isbn,ICFD)+1),YV(MNOD),
-     &                      ZW(KSBi(Isbn,ICFD)),TEMAT,X0,Y0,Z0,IERR)
+
+          XPP=ZXMN(izone)+XU(ISBf(Isbn,ICFD)+1)
+          YPP=ZYMN(izone)+YV(MNOD)
+          ZPP=ZZMN(izone)+ZW(KSBi(Isbn,ICFD))
+          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           if (Isbn.eq.ISBHL) then
@@ -950,10 +987,13 @@ C Transform local coords to screen coords and draw box around boundary.
             call eswline(iixs,iiys,iix,iiy)
           endif
           call forceflush()
+
           iixs=iix
           iiys=iiy
-          CALL ORTTRN(XU(ISBf(Isbn,ICFD)+1),YV(MNOD),
-     &                      ZW(KSBf(Isbn,ICFD)+1),TEMAT,X0,Y0,Z0,IERR)
+          XPP=ZXMN(izone)+XU(ISBf(Isbn,ICFD)+1)
+          YPP=ZYMN(izone)+YV(MNOD)
+          ZPP=ZZMN(izone)+ZW(KSBf(Isbn,ICFD)+1)
+          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           if (Isbn.eq.ISBHL) then
@@ -962,10 +1002,12 @@ C Transform local coords to screen coords and draw box around boundary.
             call eswline(iixs,iiys,iix,iiy)
           endif
           call forceflush()
+
           iixs=iix
           iiys=iiy
-          CALL ORTTRN(XU(ISBi(Isbn,ICFD)),YV(MNOD),
-     &                      ZW(KSBf(Isbn,ICFD)+1),TEMAT,X0,Y0,Z0,IERR)
+          XPP=ZXMN(izone)+XU(ISBi(Isbn,ICFD)); YPP=ZYMN(izone)+YV(MNOD)
+          ZPP=ZZMN(izone)+ZW(KSBf(Isbn,ICFD)+1)
+          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           if (Isbn.eq.ISBHL) then
@@ -974,10 +1016,12 @@ C Transform local coords to screen coords and draw box around boundary.
             call eswline(iixs,iiys,iix,iiy)
           endif
           call forceflush()
+
           iixs=iix
           iiys=iiy
-          CALL ORTTRN(XU(ISBi(Isbn,ICFD)),YV(MNOD),
-     &                      ZW(KSBi(Isbn,ICFD)),TEMAT,X0,Y0,Z0,IERR)
+          XPP=ZXMN(izone)+XU(ISBi(Isbn,ICFD)); YPP=ZYMN(izone)+YV(MNOD)
+          ZPP=ZZMN(izone)+ZW(KSBi(Isbn,ICFD))
+          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           if (Isbn.eq.ISBHL) then
@@ -988,9 +1032,9 @@ C Transform local coords to screen coords and draw box around boundary.
           call forceflush()
 
 C Label in center of boundary.
-          X=(XU(ISBi(Isbn,ICFD))+XU(ISBf(Isbn,ICFD)))/2.
-          Z=(ZW(KSBi(Isbn,ICFD))+ZW(KSBf(Isbn,ICFD)))/2.
-          CALL ORTTRN(X,YV(MNOD),Z,TEMAT,X0,Y0,Z0,IERR)
+          XX=(XU(ISBi(Isbn,ICFD))+XU(ISBf(Isbn,ICFD)))/2.
+          ZZ=(ZW(KSBi(Isbn,ICFD))+ZW(KSBf(Isbn,ICFD)))/2.
+          CALL ORTTRN(XX,YV(MNOD),ZZ,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           write (temp,'(a,i2)') 'SB',Isbn
@@ -1005,12 +1049,17 @@ C Label in center of boundary.
 
 C In XY plane.
 C Transform local coords to screen coords and draw box around boundary.
-          CALL ORTTRN(XU(ISBi(Isbn,ICFD)),YV(JSBi(Isbn,ICFD)),
-     &                                   ZW(MNOD),TEMAT,X0,Y0,Z0,IERR)
+          XPP=ZXMN(izone)+XU(ISBi(Isbn,ICFD)) 
+          YPP=ZYMN(izone)+YV(JSBi(Isbn,ICFD))
+          ZPP=ZZMN(izone)+ZW(MNOD)
+          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iixs,iiys)
-          CALL ORTTRN(XU(ISBf(Isbn,ICFD)+1),YV(JSBi(Isbn,ICFD)),
-     &                                   ZW(MNOD),TEMAT,X0,Y0,Z0,IERR)
+
+          XPP=ZXMN(izone)+XU(ISBf(Isbn,ICFD)+1)
+          YPP=ZYMN(izone)+YV(JSBi(Isbn,ICFD))
+          ZPP=ZZMN(izone)+ZW(MNOD)
+          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           if (Isbn.eq.ISBHL) then
@@ -1019,10 +1068,13 @@ C Transform local coords to screen coords and draw box around boundary.
             call eswline(iixs,iiys,iix,iiy)
           endif
           call forceflush()
+
           iixs=iix
           iiys=iiy
-          CALL ORTTRN(XU(ISBf(Isbn,ICFD)+1),YV(JSBf(Isbn,ICFD)+1),
-     &                                   ZW(MNOD),TEMAT,X0,Y0,Z0,IERR)
+          XPP=ZXMN(izone)+XU(ISBf(Isbn,ICFD)+1)
+          YPP=ZYMN(izone)+YV(JSBf(Isbn,ICFD)+1)
+          ZPP=ZZMN(izone)+ZW(MNOD)
+          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           if (Isbn.eq.ISBHL) then
@@ -1031,10 +1083,13 @@ C Transform local coords to screen coords and draw box around boundary.
             call eswline(iixs,iiys,iix,iiy)
           endif
           call forceflush()
+
           iixs=iix
           iiys=iiy
-          CALL ORTTRN(XU(ISBi(Isbn,ICFD)),YV(JSBf(Isbn,ICFD)+1),
-     &                                   ZW(MNOD),TEMAT,X0,Y0,Z0,IERR)
+          XPP=ZXMN(izone)+XU(ISBi(Isbn,ICFD))
+          YPP=ZYMN(izone)+YV(JSBf(Isbn,ICFD)+1)
+          ZPP=ZZMN(izone)+ZW(MNOD)
+          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           if (Isbn.eq.ISBHL) then
@@ -1043,10 +1098,13 @@ C Transform local coords to screen coords and draw box around boundary.
             call eswline(iixs,iiys,iix,iiy)
           endif
           call forceflush()
+
           iixs=iix
           iiys=iiy
-          CALL ORTTRN(XU(ISBi(Isbn,ICFD)),YV(JSBi(Isbn,ICFD)),
-     &                                   ZW(MNOD),TEMAT,X0,Y0,Z0,IERR)
+          XPP=ZXMN(izone)+XU(ISBi(Isbn,ICFD))
+          YPP=ZYMN(izone)+YV(JSBi(Isbn,ICFD))
+          ZPP=ZZMN(izone)+ZW(MNOD)
+          CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           if (Isbn.eq.ISBHL) then
@@ -1057,9 +1115,9 @@ C Transform local coords to screen coords and draw box around boundary.
           call forceflush()
 
 C Label in center of boundary.
-          X=(XU(ISBi(Isbn,ICFD))+XU(ISBf(Isbn,ICFD)))/2.
-          Y=(YV(JSBi(Isbn,ICFD))+YV(JSBf(Isbn,ICFD)))/2.
-          CALL ORTTRN(X,Y,ZW(MNOD),TEMAT,X0,Y0,Z0,IERR)
+          XX=(XU(ISBi(Isbn,ICFD))+XU(ISBf(Isbn,ICFD)))/2.
+          YY=(YV(JSBi(Isbn,ICFD))+YV(JSBf(Isbn,ICFD)))/2.
+          CALL ORTTRN(XX,YY,ZW(MNOD),TEMAT,X0,Y0,Z0,IERR)
           CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
           call u2pixel(X1,Y1,iix,iiy)
           write (temp,'(a,i2)') 'SB',Isbn

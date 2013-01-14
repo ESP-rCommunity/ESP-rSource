@@ -362,6 +362,7 @@ C << low/medium/high resolution and/or the size of the zone.
       icellx=20
       icelly=20
       icellz=20
+      itrc=0   ! silent feedback initially
 
 C Help text for this menu.
       helptopic='cfd_gridding_setup'
@@ -606,9 +607,8 @@ C XS,YS,ZS for array to sort and XSI,YSI,ZSI for their link back to
 C initial position. Use XSS,YSS,ZSS for the compacted sorted list (with
 C duplicates removed).
 
-C << logic does not deal well with zones with minimum X and Y values
-C << greater than zero.  Need to find the zone bounds (ZXMN ZYMN ZZMN)
-C << and use that in the logic.
+C Take into account if the zone is offset from the site origin.
+C Use the zone bounds (ZXMN ZYMN ZZMN)
         do 42 il=1,NZTV(izone)
           XS(il)=X(il); YS(il)=Y(il); ZS(il)=Z(il)
           XSS(il)=ZXMN(izone); YSS(il)=ZYMN(izone); ZSS(il)=ZZMN(izone)
