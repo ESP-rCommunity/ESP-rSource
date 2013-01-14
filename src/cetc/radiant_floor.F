@@ -392,12 +392,13 @@ C     Size (Dx, Dy, volume) of the heat generation control volume = pipe volume
       DYq   = DXq
       Volq  = 4. * DXq * DYq * CirL
 
-C--------------------------------------------------------------------------------------
-C     INITIALIZE VARIABLES BEFORE SIMULATION
-      IF( (ptimep .LE. 1.) .AND. (IDYP .LE. ISS) ) THEN
 C
 C     find the component radiant floor number of component
       irf = IRadFloor(IPCOMP)
+
+C--------------------------------------------------------------------------------------
+C     INITIALIZE VARIABLES BEFORE SIMULATION
+      IF( (ptimep .LE. 1.) .AND. (IDYP .LE. ISS) ) THEN
 
 C     Circuit average temperature difference (Tfluid - Tpipe) at the present time
          TetaMp(irf) = 0.
