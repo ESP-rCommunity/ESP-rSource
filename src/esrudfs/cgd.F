@@ -149,6 +149,9 @@ C y-z plane grid.
       ELSEIF(INO.EQ.5.and.GRMODE)THEN
 
 C 3D gridding with zone geometry.
+
+C << how about an option to place grid on one face only ?? >>
+
         CALL EASKABCD('Options for 3D gridding:',' ','all faces',
      &    'south->north','east->west','high->low',IWO,nbhelp)
         if(iwo.eq.1)then
@@ -163,6 +166,7 @@ C 3D gridding with zone geometry.
       ELSEIF(INO.EQ.6.and.GRMODE)THEN
 
 C 3D gridding with zone geometry and solids.
+C << does not appear to draw the solids yet >>
         CALL EASKABCD('Options for 3D gridding:',' ','all faces',
      &    'south->north','east->west','high->low',IWO,nbhelp)
         if(iwo.eq.1)then
@@ -178,6 +182,7 @@ C 3D gridding with zone geometry and solids.
       ELSEIF(INO.EQ.7.and.GRMODE)THEN
 
 C 3D gridding with zone geometry and solids and openings.
+C << does not appear to draw the openings yet >>
         CALL EASKABCD('Options for 3D gridding:',' ','all faces',
      &    'south->north','east->west','high->low',IWO,nbhelp)
         if(iwo.eq.1)then
@@ -223,6 +228,7 @@ C 3D gridding without zone geometry and with solids.
       ELSEIF(INO.EQ.10.and.GRMODE)THEN
 
 C 3D gridding without zone geometry and with solids and openings.
+C << does not appear to draw the openings yet >>
         CALL EASKABCD('Options for 3D gridding:',' ','all faces',
      &    'south->north','east->west','high->low',IWO,nbhelp)
         if(iwo.eq.1)then
@@ -271,6 +277,7 @@ C Text listings
      &          asprat 
           call edisp(iuout,outs)
   102   CONTINUE
+
       ELSEIF(INO.EQ.14)THEN
         call edisp(iuout,'Grid in the Z axis... ')
         outs='Cell index, Z start & end,   distance, aspect ratio'
@@ -302,7 +309,6 @@ C Setup and pass in parameters to win3d.
           iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
           CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &      iigl,iigr,iigt,iigb,iigw,iigwh)
-C          CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
           igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
           igw=int(iigw); igwh=int(iigwh)
         ENDIF
@@ -561,19 +567,22 @@ C izone is the index of the zone to be drawin (if zero do not bother`).
       DIMENSION  SBBOX(3,2)
 
       logical greyok
-      character gact*3,zact*3
+      character gact*3,zact*3,btemp*6
       real XPP,YPP,ZPP  ! points taking into account zone minimum
       real X0,Y0,Z0
+      real DX,DY,DHX,DHY ! for intermediate label points 
 
 #ifdef OSI
       integer igwid,igheight  ! for use with axiscale
       integer iixs,iiys,iix,iiy,iixlast,iiylast
+      integer iixhs,iiyhs,iixxhs,iixyhs
       integer iicol
       integer iigl,iigr,iigt,iigb,iigw,iigwh
       integer iiw1,iiw2,iiw3,iiw4,iimenu
 #else
       integer*8 igwid,igheight  ! for use with axiscale
       integer*8 iixs,iiys,iix,iiy,iixlast,iiylast
+      integer*8 iixhs,iiyhs,iixxhs,iixyhs
       integer*8 iicol
       integer*8 iigl,iigr,iigt,iigb,iigw,iigwh
       integer*8 iiw1,iiw2,iiw3,iiw4,iimenu
@@ -618,10 +627,13 @@ C Determine the 2D coords of the site extremes.
      &  Xadd,Yadd)
       call linescale(iigl,Xadd,sca,iigb,Yadd,sca)
 
+C Debug.
+C      write(6,*) 'zact gact ',zact,gact
+
 C Loop through all X-Y plane grid lines.
       if(gact.eq.'xyz'.or.gact.eq.'xyg')then
-        do 10 I=2,NI
-          do 20 J=2,NJ
+        do 10 I=2,NI    ! I traverses along south X axis cells
+          do 20 J=2,NJ  ! J traverses along west Y axis cells
 
 C Transform first point to screen coords.
             XPP=ZXMN(izone)+XU(i); YPP=ZYMN(izone)+YV(j)
@@ -630,19 +642,53 @@ C Transform first point to screen coords.
             CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
             call u2pixel(X1,Y1,iixs,iiys)
 
-C Transform first point to screen coords.
+C Get half way point for west face cells.
+            DY=YV(j+1)-YV(j); DHY= DY*0.5
+            XPP=ZXMN(izone)+XU(i); YPP=ZYMN(izone)+YV(j)+DHY
+            ZPP=ZZMN(izone)+0.
+            CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
+            CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
+            call u2pixel(X1,Y1,iixhs,iiyhs)
+
+C Get half way point for south face cells.
+            DX=XU(i+1)-XU(i); DHX= DX*0.5
+            XPP=ZXMN(izone)+XU(i)+DHX; YPP=ZYMN(izone)+YV(j)
+            ZPP=ZZMN(izone)+0.
+            CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
+            CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
+            call u2pixel(X1,Y1,iixxhs,iixyhs)
+
+C Transform end point to screen coords.
             XPP=ZXMN(izone)+XU(i); YPP=ZYMN(izone)+YV(j)
             ZPP=ZZMN(izone)+ZW(NK)
             CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
             CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
             call u2pixel(X1,Y1,iix,iiy)
 
-C Draw dotted line.
+            if(J.eq.2.and.I.eq.2)then  ! label the lower left corner
+              btemp='   '
+              write(btemp,'(a,i2.2)') 'i',i-1
+              CALL wstxpt(iixxhs,iixyhs+10,btemp)
+              btemp='   '
+              write(btemp,'(a,i2.2)') 'j',j-1
+              CALL wstxpt(iixhs-20,iiyhs+10,btemp)
+            elseif(I.eq.2.and.J.lt.NJ)then
+              btemp='   '  ! along lower Y
+              write(btemp,'(a,i2.2)') 'j',j-1
+              CALL wstxpt(iixhs-20,iiyhs+10,btemp)
+            elseif(J.eq.2.and.I.lt.NI)then
+              btemp='   '
+              write(btemp,'(a,i2.2)') 'i',i-1
+              CALL wstxpt(iixxhs,iixyhs+10,btemp)
+            endif
+
+C Draw dotted or solid line.
             if (I.eq.2.or.I.eq.NI.or.J.eq.2.or.J.eq.NJ) then
               if ((I.eq.2.and.J.eq.2).or.(I.eq.NI.and.J.eq.NJ).or.
      &            (I.eq.2.and.J.eq.NJ).or.(I.eq.NI.and.J.eq.2)) then
-                call eline(iixs,iiys,1)
+                call eline(iixs,iiys,1)  ! solid line
                 call eline(iix,iiy,0)
+                call forceflush()
               else
                 if(greyok)then
                   iicol=nifgrey-3
@@ -664,8 +710,8 @@ C Draw the dotted line after casting to local variable.
 
 C Loop through all Z-Y plane grid lines.
       if(gact.eq.'xyz'.or.gact.eq.'yzg')then
-        do 30 K=2,NK
-          do 40 J=2,NJ
+        do 30 K=2,NK    ! is along the West Z face
+          do 40 J=2,NJ  ! is along the West Y face
 
 C Transform first point to screen coords.
             XPP=ZXMN(izone)+0.; YPP=ZYMN(izone)+YV(j)
@@ -674,7 +720,28 @@ C Transform first point to screen coords.
             CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
             call u2pixel(X1,Y1,iixs,iiys)
 
-C Transform first point to screen coords.
+C Get half way point for west face cells.
+            DY=YV(j+1)-YV(j); DHY= DY*0.5
+            XPP=ZXMN(izone)+0.; YPP=ZYMN(izone)+YV(j)+DHY
+            ZPP=ZZMN(izone)+ZW(k)
+            CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
+            CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
+            call u2pixel(X1,Y1,iixhs,iiyhs)
+
+            if(J.eq.NJ.and.K.lt.NK)then
+              btemp='   '  ! along the left vertical
+              write(btemp,'(a,i2.2)') 'k',k-1
+              CALL wstxpt(iixs-20,iiys-5,btemp)
+            endif
+            if(gact.eq.'yzg')then
+              if(K.eq.2.and.J.lt.NJ)then
+                btemp='   '  ! along the left lower Y
+                write(btemp,'(a,i2.2)') 'j',j-1
+                CALL wstxpt(iixhs-20,iiyhs+10,btemp)
+              endif
+            endif
+
+C Transform 2nd point to screen coords.
             XPP=ZXMN(izone)+XU(NI); YPP=ZYMN(izone)+YV(j)
             ZPP=ZZMN(izone)+ZW(k)
             CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
@@ -687,6 +754,7 @@ C Draw line to end point.
      &            (K.eq.2.and.J.eq.NJ).or.(K.eq.NK.and.J.eq.2)) then
                 call eline(iixs,iiys,1)
                 call eline(iix,iiy,0)
+                call forceflush()
               else
                 if(greyok)then
                   iicol=nifgrey-3
@@ -706,8 +774,8 @@ C Draw line to end point.
 
 C Loop through all Z-X plane grid lines.
       if(gact.eq.'xyz'.or.gact.eq.'xzg')then
-        do 50 K=2,NK
-          do 60 I=2,NI
+        do 50 K=2,NK    ! along South face X axis
+          do 60 I=2,NI  ! along South face Z axis
 
 C Transform first point to screen coords.
             XPP=ZXMN(izone)+XU(I); YPP=ZYMN(izone)+0.
@@ -716,6 +784,22 @@ C Transform first point to screen coords.
             CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
             call u2pixel(X1,Y1,iixs,iiys)
 
+C Get half way point for south face cells.
+            DX=XU(i+1)-XU(i); DHX= DX*0.5
+            XPP=ZXMN(izone)+XU(i)+DHX; YPP=ZYMN(izone)+0.
+            ZPP=ZZMN(izone)+ZW(k)
+            CALL ORTTRN(XPP,YPP,ZPP,TEMAT,X0,Y0,Z0,IERR)
+            CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
+            call u2pixel(X1,Y1,iixxhs,iixyhs)
+
+            if(gact.eq.'xzg')then
+              if(k.eq.2.and.I.lt.NI)then
+                btemp='   '   ! labels along lower X axis
+                write(btemp,'(a,i2.2)') 'i',i-1
+                CALL wstxpt(iixxhs,iixyhs+10,btemp)
+              endif
+            endif
+
 C Transform end point to screen coords.
             XPP=ZXMN(izone)+XU(I); YPP=ZYMN(izone)+YV(NJ)
             ZPP=ZZMN(izone)+ZW(k)
@@ -723,12 +807,21 @@ C Transform end point to screen coords.
             CALL ORTTRN(X0,Y0,Z0,ETSMAT,X1,Y1,Z1,IERR)
             call u2pixel(X1,Y1,iix,iiy)
 
+            if(gact.eq.'xzg')then
+              if(I.eq.2.and.K.lt.NK)then
+                btemp='   '   ! labels along left vertical
+                write(btemp,'(a,i2.2)') 'k',k-1
+                CALL wstxpt(iix-20,iiy-5,btemp)
+              endif
+            endif
+
 C Draw line to end point.
             if (K.eq.2.or.K.eq.NK.or.I.eq.2.or.I.eq.NI) then
               if ((K.eq.2.and.I.eq.2).or.(K.eq.NK.and.I.eq.NI).or.
      &            (K.eq.2.and.I.eq.NI).or.(K.eq.NK.and.I.eq.2)) then
                 call eline(iixs,iiys,1)
                 call eline(iix,iiy,0)
+                call forceflush()
               else
                 if(greyok)then
                   iicol=nifgrey-3

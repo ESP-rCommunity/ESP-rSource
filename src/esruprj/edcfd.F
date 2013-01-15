@@ -1553,6 +1553,26 @@ C For help messages
 C << Note: for more complex domains grow this menu needs
 C << to be one that can support multiple pages.
 
+C Reset the display bounds for grid display over the zone
+C and if in graphic mode go ahead and display.
+      IF(MMOD.EQ.8)THEN
+
+C Set up grid information in case it was not already done
+C and clear graphic display.
+        CALL INICNT
+        CALL GRID(ier)
+        call startbuffer()
+
+C Setup and pass in parameters to win3d.
+        iiw1=6; iiw2=6; iiw3=2; iiw4=4; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
+        call VGRID3D('zn ','xyz',izone)
+      ENDIF
+
 C Create menu text.
  5    M=0
       do 10 I=1,NVOL(ICFD)
@@ -1637,7 +1657,6 @@ C Setup and pass in parameters to win3d.
             iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
             CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &        iigl,iigr,iigt,iigb,iigw,iigwh)
-C            CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
             igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
             igw=int(iigw); igwh=int(iigwh)
             call startbuffer()
@@ -3785,7 +3804,6 @@ C Check current defined distance and total no of cells.
         if (abs(CTDIS-TOTDIS).gt.0.001)then
           if (IAX.eq.1) then
             write(outs,'(a,f6.3,a,f6.3,a)') 'The current length ',
-
      &       CTDIS,' & TOTDIS',TOTDIS,' are not close for X axis.'
           elseif(IAX.eq.2)then
             write(outs,'(a,f6.3,a,f6.3,a)') 'The current length ',
