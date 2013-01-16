@@ -21,12 +21,12 @@ C Software Foundation, Inc., 59 Temple Place, Suite 330,
 C Boston, MA 02111-1307 USA.
 
 c The file contains the following routines:
-c	START_HVAC_SIM
-c		   start the simulation of HVAC systems performance by
-c		   calling HVACSIM
-c	HVACSIM    control the simulation of the performance of the hvac
-c		   system
-c 	PLR	   determine the part-load ratio of the hvac equipment
+c  START_HVAC_SIM
+c   start the simulation of HVAC systems performance by
+c   calling HVACSIM
+c  HVACSIM    control the simulation of the performance of the hvac
+c   system
+c  PLR   determine the part-load ratio of the hvac equipment
 c *********************************************************************
 
 
@@ -55,7 +55,7 @@ c *********************************************************************
       CASE (BOILER)
          HVAC_STRING ='BOILER'
       CASE (BASEBOARD)
-      	 HVAC_STRING ='BASEBOARD'
+         HVAC_STRING ='BASEBOARD'
       CASE (ASHP)
          HVAC_STRING ='ASHP'
       CASE (GSHP)
@@ -79,7 +79,7 @@ c Subroutine to start HVAC systems simulation for the simulation period
 c after the startup period
 
 c     INPUTS:
-c     iday		day corresponding to the current time step
+c     iday  day corresponding to the current time step
 c     ********************************************************************
       SUBROUTINE START_HVAC_SIM(iday)
 
@@ -121,13 +121,13 @@ c                       common for total number of hours there is under
 c                       heating or under cooling
 c     HEAT_PUMP_INPUT_DATA
 c                       common for heat pump data
-c     pvala 	        common for the present time step loads
-c     fvala 	        common for the future time step loads
+c     pvala             common for the present time step loads
+c     fvala             common for the future time step loads
 c     GCEP_INPUT        common for parameters for GCEP
 c     hvacinfo          common for hvac simulation flag
 
 c     OUTPUTS:
-c     HVAC_OUTPUT	common for system energy consumption for time
+c     HVAC_OUTPUT  common for system energy consumption for time
 c     FC_ctl_h3khvacloads
 c                       common for electrical draws of hvac systems
 c     step
@@ -152,7 +152,7 @@ c     *********************************************************************
 
 #include "control.h"
 
-c hvac system file and flag:  	ihvacflag=1 there is hvac file
+c hvac system file and flag:  ihvacflag=1 there is hvac file
 c ihvacflag=0 no hvac file
       common/hvacinfo/ihvacflag,hvacfile
 
@@ -1740,24 +1740,24 @@ c
 c     Function to determine the part-load ratio of the hvac system based on
 c     the mode of operation of the indoor fan of the air handler
 
-c     References:	HOT2000 Technical Manual, Version 6, Canadian Home Builders
+c     References:  HOT2000 Technical Manual, Version 6, Canadian Home Builders
 c     Association, August 1991
 
 c     Furnace Model for Implementation in H3K, H3K model documentation,
 c     Kamel Haddad, April 5th 2000
 
 c     INPUTS:
-c     fan_power	indoor fan power in W
-c     ss_cap		capacity of the hvac unit in W
-c     req_load	load on the hvac equipment in W
+c     fan_power indoor fan power in W
+c     ss_cap    capacity of the hvac unit in W
+c     req_load  load on the hvac equipment in W
 c     ifan_operation  mode of operation of the indoor circulation fan
 c     =0 no circulation fan
 c     =1 fan in auto mode
 c     =2 fan in continuous mode
 
 c     OUTPUTS:
-c     PLR		estimate of the part-load ratio on the equipment.
-c     plr is the ratio of the load on the system to the
+c     PLR     estimate of the part-load ratio on the equipment.
+c     plr     is the ratio of the load on the system to the
 c     steay-state capacity of the equipment. The capacity
 c     accounts for the contribution of the circulation fan
 c     **********************************************************************

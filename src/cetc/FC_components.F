@@ -144,10 +144,10 @@ C ------------------------------------------------------------------------------
 #include "building.h"
 
       COMMON/OUTIN/IUOUT,IUIN
-      INTEGER	IUOUT,IUIN
+      INTEGER  IUOUT,IUIN
 
       COMMON/TC/ITC,ICNT
-      INTEGER	ITC,ICNT
+      INTEGER  ITC,ICNT
 
       COMMON/TRACE/ITCF,ITRACE,IZNTRC,ITU
       INTEGER ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
@@ -157,11 +157,11 @@ C ------------------------------------------------------------------------------
       REAL CDATA(MPCOM,MMISCD)
 
       COMMON/PDBDT/ADATA,BDATA
-      REAL	ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
+      REAL  ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
 
       COMMON/PCOND/CONVAR,ICONTP,ICONDX
-      REAL	CONVAR(MPCON,MCONVR)
-      INTEGER	ICONTP(MPCON),ICONDX(MPCOM,MNODEC,MPCONC)
+      REAL  CONVAR(MPCON,MCONVR)
+      INTEGER  ICONTP(MPCON),ICONDX(MPCOM,MNODEC,MPCONC)
 
       COMMON/C12PS/NPCDAT,IPOFS1,IPOFS2
       INTEGER NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
@@ -639,22 +639,22 @@ C ------------------------------------------------------------------------------
 
 
       COMMON/OUTIN/IUOUT,IUIN
-      INTEGER	IUOUT,IUIN
+      INTEGER  IUOUT,IUIN
 
       COMMON/TC/ITC,ICNT
-      INTEGER	ITC,ICNT
+      INTEGER  ITC,ICNT
 
       COMMON/TRACE/ITCF,ITRACE,IZNTRC,ITU
       INTEGER ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      INTEGER	IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      INTEGER  IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
       COMMON/BTIME/BTIMEP,BTIMEF
-      REAL	BTIMEP,BTIMEF
+      REAL  BTIMEP,BTIMEF
 
       COMMON/PTIME/PTIMEP,PTIMEF
-      REAL	PTIMEP,PTIMEF
+      REAL  PTIMEP,PTIMEF
 
       COMMON/PITER/MAXITP,PERREL,PERTMP,PERFLX,PERMFL,itrclp,
      &             ICSV,CSVI
@@ -666,9 +666,9 @@ C ------------------------------------------------------------------------------
       REAL CDATA(MPCOM,MMISCD)
 
       COMMON/C10/NPCON,IPC1,IPN1,IPCT,IPC2,IPN2,PCONDR,PCONSD
-      INTEGER	NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON)
-      INTEGER	IPC2(MPCON),IPN2(MPCON)
-      REAL	PCONDR(MPCON),PCONSD(MPCON,2)
+      INTEGER  NPCON,IPC1(MPCON),IPN1(MPCON),IPCT(MPCON)
+      INTEGER  IPC2(MPCON),IPN2(MPCON)
+      REAL     PCONDR(MPCON),PCONSD(MPCON,2)
 
       COMMON/C12PS/NPCDAT,IPOFS1,IPOFS2
       INTEGER NPCDAT(MPCOM,9),IPOFS1(MCOEFG),IPOFS2(MCOEFG,MPVAR)
@@ -677,13 +677,13 @@ C ------------------------------------------------------------------------------
       REAL CSVF(MPNODE,MPVAR),CSVP(MPNODE,MPVAR)
 
       COMMON/PCVAR/PCTF,PCRF,PUAF,PCQF,PCNTMF,PCTP,PCRP,PUAP,PCQP,PCNTMP
-      REAL	PCTF(MPCON),PCRF(MPCON),PUAF(MPNODE),PCQF(MPNODE)
-      REAL	PCNTMF(MPCOM),PCTP(MPCON),PCRP(MPCON),PUAP(MPNODE)
-      REAL	PCQP(MPNODE),PCNTMP(MPCOM)
+      REAL  PCTF(MPCON),PCRF(MPCON),PUAF(MPNODE),PCQF(MPNODE)
+      REAL  PCNTMF(MPCOM),PCTP(MPCON),PCRP(MPCON),PUAP(MPNODE)
+      REAL  PCQP(MPNODE),PCNTMP(MPCOM)
 
       COMMON/PCOND/CONVAR,ICONTP,ICONDX
-      REAL	CONVAR(MPCON,MCONVR)
-      INTEGER	ICONTP(MPCON),ICONDX(MPCOM,MNODEC,MPCONC)
+      REAL  CONVAR(MPCON,MCONVR)
+      INTEGER  ICONTP(MPCON),ICONDX(MPCOM,MNODEC,MPCONC)
 
       COMMON/PCRES/QDATA(MPCOM),PCAOUT(MPCOM,MPCRES),napdat(mpcom)
       REAL QDATA,PCAOUT
@@ -1731,14 +1731,14 @@ C ------------------------------------------------------------------------------
 #include "SOFC.h"
 
       COMMON/FILEP/IFIL
-      INTEGER	IFIL
+      INTEGER  IFIL
 
       common/Fcell/iFClds,LFClds
       INTEGER iFClds
       CHARACTER LFClds*72
 
       COMMON/OUTIN/IUOUT,IUIN
-      INTEGER	IUOUT,IUIN
+      INTEGER  IUOUT,IUIN
 
 C---------------------------------------------------------------------------------
 C Declare local variables.
@@ -2008,7 +2008,7 @@ C-------------------------------------------------------------------------------
 C     ESP-r commons
 C-------------------------------------------------------------------------------
       COMMON/OUTIN/IUOUT,IUIN           ! Number for default output and input screens
-      INTEGER	IUOUT,IUIN
+      INTEGER  IUOUT,IUIN
 
       COMMON/PDBDT/ADATA(MPCOM,MADATA),BDATA(MPCOM,MBDATA)
       REAL    ADATA                     !-array containing component data
@@ -2320,16 +2320,16 @@ C-------------------------------------------------------------------------------
 #include "h3kstore_parameters.h"
 #include "h3kstore_common.h"
       COMMON/OUTIN/IUOUT,IUIN
-      INTEGER	IUOUT,IUIN
+      INTEGER  IUOUT,IUIN
 
       COMMON/TC/ITC,ICNT
-      INTEGER	ITC,ICNT
+      INTEGER  ITC,ICNT
 
       COMMON/TRACE/ITCF,ITRACE,IZNTRC,ITU
       INTEGER ITCF,ITRACE(MTRACE),IZNTRC(MCOM),ITU
 
       COMMON/PCTIME/TIMSEC
-      REAL	TIMSEC
+      REAL  TIMSEC
 
       common/pltcon/bpltcon,LastTSTP
       logical bpltcon  ! Boolean indicating whether plant domain has converged.
@@ -2338,10 +2338,10 @@ C-------------------------------------------------------------------------------
       INTEGER isd1,ism1,isd2,ism2,isds,isdf,ntstep
 
       COMMON/PCTSTP/NTSTPP
-      INTEGER	NTSTPP
+      INTEGER  NTSTPP
 
       COMMON/SIMTIM/IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
-      INTEGER	IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
+      INTEGER  IHRP,IHRF,IDYP,IDYF,IDWP,IDWF,NSINC,ITS
 
 
 C---------------------------------------------------------------------------------

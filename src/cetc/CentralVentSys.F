@@ -170,17 +170,17 @@ c in proportion to each room's volume
          ZoneFraction = 0.
 c
 C Check to ensure memory has been allocated
-	 IF (ALLOCATED(AIM2_zone_infil)) THEN
+         IF (ALLOCATED(AIM2_zone_infil)) THEN
            Do j = 1, AIM2_num_zones_infil
               If ( AIM2_zone_infil(j) .eq. iComp ) Then
                  ZoneFraction = VOL(iComp) / AIM2_house_vol
                  Exit
               Endif
            End Do
-	 ELSE
+         ELSE
           CALL EDISP(IUOUT,
      &          ' Warning: array AIM2_zone_infil not allocated')
-	 END IF
+         END IF
 c
 c --- Air heat loss rate for zone
 c
@@ -695,7 +695,7 @@ c This routine gathers the energy used by the HRV systems
 
 c INPUTS:
 c OUTPUTS:
-c	None. Sums up Monthly HRV energy in H3KSTORE_DATA module
+c  None. Sums up Monthly HRV energy in H3KSTORE_DATA module
 
       SUBROUTINE H3KSTORE_HRV_DATA()
            IMPLICIT NONE
