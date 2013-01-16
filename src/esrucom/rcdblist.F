@@ -353,7 +353,7 @@ C Get info for db matching the alias.
         call egetrm(outstr,K,tlook,'W','name',IER)
         if(tlook(1:lnblnk(tlook)).eq.alias(1:lnblnk(alias)))then
           write(clmlnam,'(a)') tlook(1:32)  ! remember menu entry 
-	
+
   4       CALL STRIPC(idblfil,OUTSTR,0,ND,0,'item line',IER)
           if(ier.ne.0)goto 92
           K=0
