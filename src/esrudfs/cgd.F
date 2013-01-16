@@ -40,6 +40,8 @@ C IC = zone number (if in dfs set to 1)
       COMMON/SHOUT/ICOUT
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
+      COMMON/RAY2/ITDSP,ITBND,ITEPT,ITZNM,ITSNM,ITVNO,ITORG,ITSNR,
+     &            ITOBS,ITHLS,ITHLZ,ITGRD,GRDIS,ITPPSW
 
       COMMON/GEOM/XP(ntcelx),YP(ntcely),ZP(ntcelz),
      1            DXEP(ntcelx),DXPW(ntcelx),DYNP(ntcely),DYPS(ntcely),
@@ -97,6 +99,10 @@ C Setup and pass in parameters to win3d.
         igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
         igw=int(iigw); igwh=int(iigwh)
         GRMODE=.true.
+
+C Set wire-frame display options so that we see only surfaces,
+C we are focused on this zone, no origin no grid, no surface normals
+        itorg=1; itgrd=1; itsnr=1; 
       ENDIF
       CALL INICNT
       CALL GRID(ier)
@@ -548,6 +554,8 @@ C izone is the index of the zone to be drawin (if zero do not bother`).
 #include "cfd.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      integer ifs,itfs,imfs
+      COMMON/GFONT/IFS,ITFS,IMFS
 
       integer menuchw,igl,igr,igt,igb,igw,igwh
       COMMON/VIEWPX/menuchw,igl,igr,igt,igb,igw,igwh
@@ -615,6 +623,7 @@ C Setup and pass in parameters to win3d.
       igheight=igwh
 
 C Get bounds for image.
+      call bndobj(0,IER)
       HANG=ANG/2.0
       HITH=1.0
       YON=1300.0
@@ -629,6 +638,9 @@ C Determine the 2D coords of the site extremes.
 
 C Debug.
 C      write(6,*) 'zact gact ',zact,gact
+
+C Reset to smallest font for drawing i j k labels.
+      IF(IFS.GT.0)CALL winfnt(0)
 
 C Loop through all X-Y plane grid lines.
       if(gact.eq.'xyz'.or.gact.eq.'xyg')then
@@ -838,6 +850,10 @@ C Draw line to end point.
  60       continue
  50     continue
       endif
+
+C Restore the original font size.
+      IF(IFS.GT.0)CALL winfnt(IFS)
+      call forceflush()
 
 C If the zone geometry is requested then use some of the code from
 C cread3dv.F to draw the surfaces of the zone in bold lines.
