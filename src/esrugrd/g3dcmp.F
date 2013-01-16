@@ -308,7 +308,6 @@ C Setup and pass in parameters to win3d.
       iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
       CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &  iigl,iigr,iigt,iigb,iigw,iigwh)
-C      CALL win3d(29,7,4,3,3,igl,igr,igt,igb,igw,igwh)
       igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
       igw=int(iigw); igwh=int(iigwh)
       igwid=igw
@@ -1255,7 +1254,6 @@ C Setup and pass in parameters to win3d.
       iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
       CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &  iigl,iigr,iigt,iigb,iigw,iigwh)
-C      CALL win3d(29,20,4,3,3,igl,igr,igt,igb,igw,igwh)
       igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
       igw=int(iigw); igwh=int(iigwh)
       igwid=igw
@@ -1653,7 +1651,6 @@ C Setup and pass in parameters to win3d.
       iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
       CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &  iigl,iigr,iigt,iigb,iigw,iigwh)
-C      CALL WIN3D(29,30,10,5,5,igl,igr,igt,igb,igw,igwh)
       igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
       igw=int(iigw); igwh=int(iigwh)
       igwid=igw
@@ -2278,7 +2275,6 @@ C Setup and pass in parameters to win3d.
       iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
       CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &  iigl,iigr,iigt,iigb,iigw,iigwh)
-C      CALL WIN3D(29,20,4,3,3,igl,igr,igt,igb,igw,igwh)
       igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
       igw=int(iigw); igwh=int(iigwh)
       igwid=igw
@@ -2678,7 +2674,6 @@ C Setup and pass in parameters to win3d.
       iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
       CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &  iigl,iigr,iigt,iigb,iigw,iigwh)
-C      CALL WIN3D(29,30,10,5,5,igl,igr,igt,igb,igw,igwh)
       igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
       igw=int(iigw); igwh=int(iigwh)
       igwid=igw
