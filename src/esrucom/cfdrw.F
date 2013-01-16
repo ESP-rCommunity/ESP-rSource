@@ -184,6 +184,10 @@ C File header and conflation.
         write(IUF,'(a,i2,a)',IOSTAT=ios,ERR=3)'*conflation',
      &    IFCFD(izone),
      &    '  # mass flow and cfd cooperate for solution'
+      else
+        write(IUF,'(a,i2,a)',IOSTAT=ios,ERR=3)'*conflation',
+     &    IFCFD(izone),
+     &    '  # conflation type'
       endif
 
 C Title, date and documentation.

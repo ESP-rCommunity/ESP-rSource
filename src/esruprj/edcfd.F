@@ -238,9 +238,11 @@ C Conflation options.
         call gethelptext(helpinsub,helptopic,nbhelp)
         IWO=0
         call EASKATOG('Conflation options:',' ','CFD only',
-     &    'type 1 thermal','type 2 thermal','air-flow',
+     &    'thermal only','adaptive thermal','air-flow',
      &    'cancel','  ','  ',IWO,nbhelp)
-        if (IWO.ne.5) IFCFD(izone)=IWO-1
+        if(IWO.le.2)IFCFD(izone)=IWO-1
+	if(IWO.eq.3)IFCFD(izone)=4
+	if(IWO.eq.4)IFCFD(izone)=5
       ELSEIF(INO.EQ.5)THEN 
 
 C Geometry and Gridding
