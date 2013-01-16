@@ -113,7 +113,6 @@ C Setup and pass in parameters to win3d.
       iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
       CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &  iigl,iigr,iigt,iigb,iigw,iigwh)
-C      call win3d(menuchw,7,4,4,3,igl,igr,igt,igb,igw,igwh)
       igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
       igw=int(iigw); igwh=int(iigwh)
       igwid=igw
@@ -247,7 +246,6 @@ C Display header information. Calculate graphic boundaries.
       iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
       CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &  iigl,iigr,iigt,iigb,iigw,iigwh)
-C      call win3d(menuchw,7,4,3,3,igl,igr,igt,igb,igw,igwh)
       igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
       igw=int(iigw); igwh=int(iigwh)
       icn=izstocn(icomp,isur)
@@ -395,7 +393,6 @@ C Setup and pass in parameters to win3d.
       iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
       CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &  iigl,iigr,iigt,iigb,iigw,iigwh)
-C      call win3d(menuchw,8,8,4,3,igl,igr,igt,igb,igw,igwh)
       igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
       igw=int(iigw); igwh=int(iigwh)
       igwid=igw
