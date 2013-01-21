@@ -2957,8 +2957,8 @@ C faces another zone, get the other surface connection index.
 
 C Echo back to the user additional information about the surface.
 C start with the vertices associated with the surface.
-      write(message,'(2a)') ' Vertices (X Y Z) used by ',
-     &  SNAME(ICOMP,IS)
+      write(SN,'(a12)') SNAME(ICOMP,IS)
+      write(message,'(2a)') ' Vertices (X Y Z) used by ',SN
       call edisp(iuout,message)
       NV=NVER(IS)
 
@@ -2992,8 +2992,8 @@ C See if an even or odd number of items in list.
 
 C Now tell the user the edge list for the surface. This write
 C statement should be kept up to date with MV changes.
-      write(message,'(2a)') ' Vertices associated with ',
-     &  SNAME(ICOMP,IS)
+      write(SN,'(a12)') SNAME(ICOMP,IS)
+      write(message,'(2a)') ' Vertices associated with ',SN
       call edisp(iuout,message)
       WRITE(t248,'(42I4)')(JVN(is,j),J=1,nv)
       call edisp248(iuout,t248,90)
@@ -3411,8 +3411,8 @@ C a zone construction file report its common block information, otherwise
 C if SMLCN matches something in the constructions database then use
 C that reporting mechanism.
         ioc=IZSTOCN(ICOMP,is)
+        write(SN,'(a12)') SSNAME(ioc)
         if(SSMLCN(ioc)(1:4).ne.'UNKN')then
-          write(SN,'(a12)') SSNAME(ioc)
 
 C << TODO - test if date of zone construction file is older than the
 C << geometry file and if so do not use CONINF.
@@ -3520,9 +3520,15 @@ C used for a partition (and db does not have a linked MLC - inform the user.
                 call edisp(iuout,
      &            'Please check that one construction has inverted')
                 call edisp(iuout,
-     &            'layers or revise the Constructions database.')
+     &            'layers or revise the common constructions.')
                 updoth=.false.
-                iissmlci=matsymindex(ii)  ! use returned value
+                if(SSMLCN(icoth)(1:4).eq.'UNKN')then
+                  TOSMLCN= mlcname(ii)  ! replace UNKNOWN
+                  iissmlci=ssmlcindex(ioc)
+                else
+                  TOSMLCN= SSMLCN(icoth)
+                  iissmlci=ssmlcindex(icoth)  ! leave it alone
+                endif
               else
                 if(SSMLCN(icoth)(1:4).eq.'UNKN')then
                   TOSMLCN= mlcsymetric(ii)
@@ -3889,6 +3895,7 @@ C used for a partition if db does not have a linked MLC - inform the user.
                     call edisp(iuout,outs)
                     call edisp(iuout,
      &  'Please check attributes and/or revise the Cconstructions db.')
+                    TOSMLCN= mlcsymetric(ii)
                     iissmlci=matsymindex(ii)  ! use returned value 
                   else
                     if(SSMLCN(icoth)(1:4).eq.'UNKN')then
@@ -4192,8 +4199,14 @@ C used for a partition if db does not have a linked MLC - inform the user.
      &                SSMLCN(icoth)(1:12),' (which may not match).'
                     call edisp(iuout,outs)
                     call edisp(iuout,
-     &  'Please check attributes and/or revise the Cconstructions db.')
-                    iissmlci=matsymindex(ii)  ! use returned value 
+     &  'Please check attributes and/or revise common constructions.')
+                    if(SSMLCN(icoth)(1:4).eq.'UNKN')then
+                      TOSMLCN= mlcname(ii)   ! replace UNKNOWN
+                      iissmlci=ssmlcindex(ioc)
+                    else
+                      TOSMLCN= SSMLCN(icoth)
+                      iissmlci=ssmlcindex(icoth)  ! leave it alone
+                    endif
                   else
                     ii=ssmlcindex(ic)
                     if(SSMLCN(icoth)(1:4).eq.'UNKN')then
@@ -4230,6 +4243,7 @@ C At this point the other zone surface attributes are known.
 
         ENDIF
         MODGEO=.TRUE.
+        write(6,*) 'tosmlcn is ',iissmlci,' ',tosmlcn
 
 C Finally update the system configuration file if not browsing.
         if(cfgok.and.(.NOT.browse))then
