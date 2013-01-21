@@ -1,11 +1,11 @@
 C This file is part of the ESP-r system.
 C Copyright Energy Systems Research Unit, University of
-C Strathclyde, Glasgow Scotland, 2001.
+C Strathclyde, Glasgow Scotland, 2001-2013.
 
 C ESP-r is free software.  You can redistribute it and/or
 C modify it under the terms of the GNU General Public
 C License as published by the Free Software Foundation 
-C (version 2 orlater).
+C (version 2 or later).
 
 C ESP-r is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
@@ -334,9 +334,10 @@ C definition.
 C << adapt to work with other gain type >>
       if(ICASUAL(icomp).ne.0)then
 
-C Data in temporal database (1 column of gains). Also
-C instanciate the future value of equipment casual gain so that
-C it can be used within MZLS3. Equipment is an arbitrary choice.
+C Data in temporal database (aggregate convective, radiant and
+C latent casual i.e. 3 columns). Also instanciate the future value
+C of equipment casual gain so that it can be used within MZLS3.
+C Equipment is an arbitrary choice for this aggregate data.
         IFOC=ICASUAL(icomp)
         CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
         QCASC(2)=VAL(ISD)
@@ -360,9 +361,9 @@ C it can be used within MZLS3. Equipment is an arbitrary choice.
         endif
       elseif(ICASUAL3(icomp).ne.0)then
 
-C Data in temporal database (3 columns of gains). Also
-C instanciate the future value of each casual gain so that
-C it can be used within MZLS3.
+C Data in temporal database (convective, radiant, latent for 3 separate
+C slots i.e. 9 columns of gains). Also instanciate the future value of
+C each casual gain so that it can be used within MZLS3.
         IFOC=ICASUAL3(icomp)
         CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
         QCASC(2)=VAL(ISD)+VAL(ISD+3)+VAL(ISD+6)
@@ -387,7 +388,7 @@ C it can be used within MZLS3.
         endif
       elseif(IACTIV(icomp).ne.0)then
 
-C Data in temporal database.
+C Activity data for UK NCM calculations are held in a temporal file.
 C The calculations need to change in case the order of the 
 C activity data type changes (in the tdf file).
         IFOC=IACTIV(icomp)
@@ -703,7 +704,7 @@ C First find total number of simulation period timesteps including start-up peri
         endif
       else
 
-C Data in operations file.
+C Data in zone operations file.
 C For each casual gain type set gain for current period.
         do 10 IGN=1,MGTY
 
