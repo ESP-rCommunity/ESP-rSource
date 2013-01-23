@@ -349,6 +349,9 @@ MODULE h3kmodule
       rvpltHCCTempToEspr, rvpltHCCFlowToEspr, rvpltACCTempToEspr, rvpltACCFlowToEspr, &
       rvpltACCMoistFlowToEspr, rvpltCosimAirPointTemperatures, rvpltCosimAirPointHumidities, &
       rvpltCosimAirPointCasualGains
+
+   !Used by complex_fenestration.F
+   Type(ReportVariable) :: rvCFCShadeCtl, rvCFCSlatAngle
    
 CONTAINS
    ! ********************************************************************
@@ -3920,7 +3923,7 @@ CONTAINS
       Call AddVariable(rvBldInfAirChg)
 
       !Used by TCC.F
-      rvpltCosimInvocations%VariableName = 'plant/co-sim/Invocaions'
+      rvpltCosimInvocations%VariableName = 'plant/co-sim/Invocations'
       rvpltCosimInvocations%MetaType = 'units'
       rvpltCosimInvocations%VariableType = '-'
       rvpltCosimInvocations%Description = ''
@@ -4016,6 +4019,19 @@ CONTAINS
       rvpltCosimAirPointCasualGains%Description = ''
       Call AddVariable(rvpltCosimAirPointCasualGains)
 
+      !Used by complex_fenestration.F
+      rvCFCShadeCtl%VariableName = 'building/zone_*/cfc_*/cfc_shade_ctl'
+      rvCFCShadeCtl%MetaType = 'units'
+      rvCFCShadeCtl%VariableType = ''
+      rvCFCShadeCtl%Description = 'state of shade control'
+      Call AddVariable(rvCFCShadeCtl)
+
+      rvCFCSlatAngle%VariableName = 'building/zone_*/cfc_*/cfc_shade_angle'
+      rvCFCSlatAngle%MetaType = 'units'
+      rvCFCSlatAngle%VariableType = 'degrees'
+      rvCFCSlatAngle%Description = 'angle of cfc controlled shade'
+      Call AddVariable(rvCFCSlatAngle)
+      
       End Subroutine UpdateH3kReport
 
 
