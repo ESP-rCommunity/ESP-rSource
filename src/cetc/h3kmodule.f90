@@ -448,10 +448,10 @@ CONTAINS
       rvSuppliedEnergyCooling%Description = 'Zone net heat extraction'
       Call AddVariable(rvSuppliedEnergyCooling )
 
-      rvFreeCoolingDelivered%VariableName = 'building/zone_*/free_cooling/'
+      rvFreeCoolingDelivered%VariableName = 'building/zone_*/BCL29_free_cooling'
       rvFreeCoolingDelivered%MetaType = 'units'
       rvFreeCoolingDelivered%VariableType = '(W)'
-      rvFreeCoolingDelivered%Description = 'Free cooling delivered to zone '
+      rvFreeCoolingDelivered%Description = 'Free cooling delivered to zone through BCL 29'
       Call AddVariable(rvFreeCoolingDelivered )
       
       rvSuppliedEnergyNetPerm2%VariableName = 'building/zone_*/supplied_energy/net_Perm2'
