@@ -131,7 +131,7 @@ C prec17 common is described in geometry.h.
       integer iissmlci  ! index for other side mlc
       integer icob    ! for passing to clickon facility
       integer itrcl   ! local trace on first entry to zone
-      integer lnssmlc,lnmlcn
+      integer lnssmlc,lnmlcn,lnsym
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -427,8 +427,9 @@ C Use ssmlcindex to get MLC index for this surface.
               iissmlci=ii
             elseif(mlcsymetric(ii)(1:12).EQ.'NONSYMMETRIC')then
 
-C If the current construction is nonsymmetric then it should not be
-C used for a partition (and db does not have a linked MLC - inform the user.
+C If the current construction is nonsymmetric but is linked to
+C the key phrase NONSYMMETRIC rather than a specific MLC name
+C then it should not be used for a partition - inform the user.
               write(outs,'(5a)') 'Surface ',SN(1:lnblnk(SN)),
      &          ' has a nonsymmetric construction ',
      &          SSMLCN(ioc)(1:lnblnk(SSMLCN(ioc))),'.'
@@ -440,13 +441,17 @@ C used for a partition (and db does not have a linked MLC - inform the user.
               updoth=.false.
               iissmlci=matsymindex(ii)   ! returned value
             else
+
+C We have a non-symmetric MLC which does point to a reversed version
+C so check to see if the name of the other MLC matches mlcsymetric.
+              lnsym=lnblnk(mlcsymetric(ii))
               if(SSMLCN(icoth)(1:4).eq.'UNKN')then
                 TOSMLCN=mlcsymetric(ii)
                 write(TOOPT,'(a)') mlcoptical(ii)
                 updoth=.true.
               elseif(SSMLCN(icoth)(1:lnssmlc).eq.
-     &               mlcname(ii)(1:lnmlcn))then
-                continue
+     &               mlcsymetric(ii)(1:lnsym))then
+                updoth=.false.
               else
                 TOSMLCN=mlcsymetric(ii)
                 write(TOOPT,'(a)') mlcoptical(ii)
@@ -454,11 +459,15 @@ C used for a partition (and db does not have a linked MLC - inform the user.
               endif
               iissmlci=matsymindex(ii)   ! returned value
             endif
+
+C A difference was discovered, report this.
             if(updoth)then
               CALL ESCZONE(ICOMP)
-              write(outs,'(3a)') 
+              lnicoth=lnblnk(SSMLCN(icoth))
+              write(outs,'(6a)') 
      &          'Updating `other side` composition of ',
-     &           SN(1:lnblnk(SN)),'...'
+     &           SN(1:lnblnk(SN)),' from ',SSMLCN(icoth)(1:lnicoth),
+     &          ' > ',TOSMLCN
               call edisp(iuout,outs)
               call georead(IFIL+2,LGEOM(IC2(ioc)),IC2(ioc),0,iuout,IER)
 
@@ -3521,15 +3530,19 @@ C used for a partition (and db does not have a linked MLC - inform the user.
      &            'Please check that one construction has inverted')
                 call edisp(iuout,
      &            'layers or revise the common constructions.')
-                updoth=.false.
                 if(SSMLCN(icoth)(1:4).eq.'UNKN')then
                   TOSMLCN= mlcname(ii)  ! replace UNKNOWN
                   iissmlci=ssmlcindex(ioc)
+                  updoth=.true.
                 else
                   TOSMLCN= SSMLCN(icoth)
                   iissmlci=ssmlcindex(icoth)  ! leave it alone
+                  updoth=.false.
                 endif
               else
+
+C We have a non-symmetric MLC which does point to a reversed version
+C so check to see if the name of the other MLC matches mlcsymetric.
                 if(SSMLCN(icoth)(1:4).eq.'UNKN')then
                   TOSMLCN= mlcsymetric(ii)
                   write(TOOPT,'(a)') mlcoptical(ii)
@@ -3550,9 +3563,11 @@ C used for a partition (and db does not have a linked MLC - inform the user.
 C First backup the current zones data before reading in the other
 C zone.
                 CALL ESCZONE(ICOMP)
-                write(outs,'(3a)') 
+                lnicoth=lnblnk(SSMLCN(icoth))
+                write(outs,'(6a)') 
      &            'Updating `other side` composition of ',
-     &            SN(1:lnblnk(SN)),'...'
+     &            SN(1:lnblnk(SN)),' from ',SSMLCN(icoth)(1:lnicoth),
+     &            ' > ',TOSMLCN
                 call edisp(iuout,outs)
                 call eclose(gversion(IC2(ioc)),1.1,0.01,newgeo)
                 if(newgeo)then
@@ -4208,6 +4223,9 @@ C used for a partition if db does not have a linked MLC - inform the user.
                       iissmlci=ssmlcindex(icoth)  ! leave it alone
                     endif
                   else
+
+C We have a non-symmetric MLC which does point to a reversed version
+C so check to see if the name of the other MLC matches mlcsymetric.
                     ii=ssmlcindex(ic)
                     if(SSMLCN(icoth)(1:4).eq.'UNKN')then
                       TOSMLCN= mlcsymetric(ii)
@@ -4263,8 +4281,10 @@ C in the zone pointed to by IC2, update SOTHER (of index IE2 in the
 C other zone) and write out that zones geometry.
           if(updoth)then
             CALL ESCZONE(ICOMP)
-            write(outs,'(3a)') 'Updating `other side` composition of ',
-     &        SN(1:lnblnk(SN)),'...'
+            lnicoth=lnblnk(SSMLCN(icoth))
+            write(outs,'(6a)')'Updating `other side` composition of ',
+     &        SN(1:lnblnk(SN)),' from ',SSMLCN(icoth)(1:lnicoth),
+     &        ' > ',TOSMLCN
             call edisp(iuout,outs)
             call eclose(gversion(IC2(IC)),1.1,0.01,newgeo)
             if(newgeo)then
