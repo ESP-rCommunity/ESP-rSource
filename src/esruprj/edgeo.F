@@ -4215,13 +4215,8 @@ C used for a partition if db does not have a linked MLC - inform the user.
                     call edisp(iuout,outs)
                     call edisp(iuout,
      &  'Please check attributes and/or revise common constructions.')
-                    if(SSMLCN(icoth)(1:4).eq.'UNKN')then
-                      TOSMLCN= mlcname(ii)   ! replace UNKNOWN
-                      iissmlci=ssmlcindex(ioc)
-                    else
-                      TOSMLCN= SSMLCN(icoth)
-                      iissmlci=ssmlcindex(icoth)  ! leave it alone
-                    endif
+                    TOSMLCN= SSMLCN(icoth)
+                    iissmlci=ssmlcindex(icoth)  ! leave it alone
                   else
 
 C We have a non-symmetric MLC which does point to a reversed version
@@ -5323,8 +5318,6 @@ C Initial values for vertex at angle facility.
       anotherone=.false.
       iwhich=0; iwhich1=0; iwhich2=0
       lastv1=0; lastv2=0
-      lastv1=0
-      lastv2=0
 
 C Write vertices with minimal white space comma separated.
 C See if an even or odd number of items in list. Do this
@@ -6078,7 +6071,7 @@ C Surface (ivj) vertex list has been updated. Go on to next surface.
         
 C Find close vertices.
           CALL EASKABC(' ','Options:','find close vertices',
-     &          'find closest to a vertex','cancel',INVT,nbhelp)
+     &      'find closest to a vertex','cancel',INVT,nbhelp)
           if(INVT.eq.1)then
             call edisp(itru,'Scanning for vertices within 50mm...')
             do 102 iwhich1=1,NTV
@@ -6901,7 +6894,6 @@ C Strings for surface attributes to pass to insrec.
       integer icmpall  ! to signal request to compare all names
       integer ibopt    ! to specify which mass origin option
       integer mnulen,iwhich2   ! multi column lines
-      integer itrul  ! local trace
       logical greyok,odd   ! for display of vertex info
       
 #ifdef OSI
