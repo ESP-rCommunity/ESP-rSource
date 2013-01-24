@@ -1058,6 +1058,7 @@ C espriou.h provides current file.
       CHARACTER outs*124
       character outstr*248,LOUTSTR*1000,WORD*20,TMP*4,tail*8,msgl2*86
       integer ier
+      real toler  ! what is half of the timestep
 
 C If not already opened free unit and check if file exists.
       IER=0
@@ -1309,12 +1310,21 @@ C For nuwpr items read as many lines as required.
             if(TABU(J).lt.TABUMN(J))TABUMN(J)=TABU(J)
             if(TABU(J).gt.TABUMX(J))TABUMX(J)=TABU(J)
   47      continue
+
+C Calculate the julian day fraction RDOTY and check to see if the time
+C that has been read TIMEJD is within 0.0006 day tollerance in the case
+C of a >10 minute timestep and 0.00034 day for a one minute timestep.
           CDAY=AINT(FLOAT(IP)/FLOAT(NTSPH*24))
           ITIME=IP-(INT(CDAY)*NTSPH*24)
           RDOTY=REAL(itdbdoy)+CDAY+(REAL(ITIME)/(REAL(NTSPH)*24.))
-          call eclose(RDOTY,TIMEJD,0.0006,close)
+          toler=(1./(24.0*float(NTSPH)))*0.5
+          if(NTSPH.le.6)then
+            call eclose(RDOTY,TIMEJD,0.0006,close)
+          else
+            call eclose(RDOTY,TIMEJD,0.00034,close)
+          endif
           if(.NOT.close)then
-            write(iuout,*)'RDOTY ne TIMEJD @',ip,RDOTY,TIMEJD
+            write(iuout,*)'RDOTY ne TIMEJD @',ip,RDOTY,TIMEJD,toler
           else
 
 C The records for timstep data begins at 50.
@@ -1583,7 +1593,7 @@ C as many lines as are required.
         call arlist(ipos,nuwpr+iadcols,TABU,MTABC,delim,louts,loutln,
      &    itrunc)
         if(ipos.eq.1) then
-          WRITE(iafil,'(F8.4,2a)',IOSTAT=ios,ERR=2) RDOTY,',',
+          WRITE(iafil,'(F10.6,2a)',IOSTAT=ios,ERR=2) RDOTY,',',
      &      louts(1:loutln)
         else
           WRITE(iafil,'(1x,a)',IOSTAT=ios,ERR=2) louts(1:loutln)

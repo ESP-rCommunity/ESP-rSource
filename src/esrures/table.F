@@ -587,9 +587,9 @@ C Display data. Create both data strings for this timestep.
               write (outs800,'(3a)') sq,LJTIME,sq
               K=11
             else
-              RDOTY=FLOAT(IDAY)+(ATIME/24.)
-              write (outs248,'(f10.4)') RDOTY
-              write (outs800,'(f10.4)') RDOTY
+              RDOTY=REAL(IDAY)+(ATIME/24.)
+              write (outs248,'(f11.6)') RDOTY
+              write (outs800,'(f11.6)') RDOTY
               K=11
             endif
           endif
