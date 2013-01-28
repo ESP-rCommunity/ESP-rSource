@@ -8,7 +8,7 @@ C the number of zones in building.h
       PARAMETER (MIT=82)
 
 C Allowed columns of tabular data in TAB file.
-      PARAMETER (MTABC=50)
+      PARAMETER (MTABC=80)
 
 C Maximum number of help lines associated with a generic item.
       PARAMETER (MHEL=5)
