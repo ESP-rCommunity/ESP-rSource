@@ -4756,6 +4756,11 @@ C Changes to the model are then made, geometry and construction files
 C are changed and so are the constructions and materials databases.
 C If ier=0 no problems, ier=2 insufficient data.
 C This routine assumes newer geometry files are being used.
+
+C This logic has been superceeded by EMKSBM2 which uses a
+C zone by zone approach rather than passing multiple times
+C though the whole model to identify, remove and rebuild the
+C facade.
       SUBROUTINE EMKSBM(ier)
 #include "building.h"
 #include "geometry.h"
@@ -4928,13 +4933,13 @@ C in order to instanciate ssmlcindex.
   6   continue
 
 C Debug.
-      write(6,*) 'Index of required UK NCM constructions...'
-      write(6,*) mlciopDoor,mlciVehicle,mlciNot_D,mlciNot_G,mlciframe
-      write(6,*) mlciWall_Sc,mlciWall_EW,mlciFl_r,mlciSC_P,mlciEW_notP
-      write(6,*) mlciSol_gr,mlcipa_fl,mlciinv_pa_f,mlciparty_w,
-     &  mlciint_g
-      write(6,*) mlciWall_NI,mlciWall_ty,mlciFL_rty,mlciwin_Typ_G
-      write(6,*) mlciSol_gr_typ
+C      write(6,*) 'Index of required UK NCM constructions...'
+C      write(6,*) mlciopDoor,mlciVehicle,mlciNot_D,mlciNot_G,mlciframe
+C      write(6,*) mlciWall_Sc,mlciWall_EW,mlciFl_r,mlciSC_P,mlciEW_notP
+C      write(6,*) mlciSol_gr,mlcipa_fl,mlciinv_pa_f,mlciparty_w,
+C     &  mlciint_g
+C      write(6,*) mlciWall_NI,mlciWall_ty,mlciFL_rty,mlciwin_Typ_G
+C      write(6,*) mlciSol_gr_typ
 
       if(mlcf.eq.20)then
         call edisp(iuout,'All reqd MLC found so using std databases')
@@ -4990,7 +4995,7 @@ C << (e.g. a zero activity) need to be marked at this point.
 
 C Find the index of the MLC which matches each surface.
 C Debug.
-        write(6,*) icomp,NZSUR(icomp),nmlc
+C        write(6,*) icomp,NZSUR(icomp),nmlc
 
         DO 9994 I=1,NZSUR(icomp)
           icn1=izstocn(icomp,i)
@@ -5236,8 +5241,8 @@ C into which compliant glass and frames can be added subsequently.
                 if(iparent(icc).eq.0)then
 
 C Debug.
-                  write(6,*) 'found external glazed parent surf',icc
-                  write(6,*) 'it has ',nbchild(icc),' child surfaces'
+C                  write(6,*) 'found external glazed parent surf',icc
+C                  write(6,*) 'it has ',nbchild(icc),' child surfaces'
 
                   DO 554 ICHL=1,NBCHILD(ICC)
 
@@ -5410,9 +5415,9 @@ C connection index held in IRMV.
  6006     CONTINUE
 
 C Debug the packed irmv array.
-        write(6,*) 'listx ',IRMV(ICOMP,1),IRMV(ICOMP,2),IRMV(ICOMP,3),
-     &    IRMV(ICOMP,4),IRMV(ICOMP,5),IRMV(ICOMP,6),IRMV(ICOMP,7),
-     &    IRMV(ICOMP,8),IRMV(ICOMP,9),IRMV(ICOMP,10),IRMV(ICOMP,11)
+C        write(6,*) 'listx ',IRMV(ICOMP,1),IRMV(ICOMP,2),IRMV(ICOMP,3),
+C     &    IRMV(ICOMP,4),IRMV(ICOMP,5),IRMV(ICOMP,6),IRMV(ICOMP,7),
+C     &    IRMV(ICOMP,8),IRMV(ICOMP,9),IRMV(ICOMP,10),IRMV(ICOMP,11)
 
 C Remove the surface. Get is from the irmv list (which is
 C connection based).
@@ -5428,13 +5433,13 @@ C Re-scan the geometry, use ADDSUR to delete surface index 'is' and then
 C update the model cfg file and then re-write the geometry file.
           iopt=0
           call georead(IUF,LGEOM(ICOMP),ICOMP,1,iuout,IER)
-          write(6,*) 'before addsur d ',NZSUR(icomp)
+C          write(6,*) 'before addsur d ',NZSUR(icomp)
           CALL ADDSUR(ITRC,ICOMP,IS,'D','A',iopt,IER)
-          write(6,*) 'after addsur d ',NZSUR(icomp)
+C          write(6,*) 'after addsur d ',NZSUR(icomp)
           CALL EMKCFG('-',IER)
-          write(6,*) 'after emkcfg d ',NZSUR(icomp)
+C          write(6,*) 'after emkcfg d ',NZSUR(icomp)
           call geowrite(IFIL+2,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
-          write(6,*) 'after geowrite d ',NZSUR(icomp)
+C          write(6,*) 'after geowrite d ',NZSUR(icomp)
 
 C Update the image if working in graphics mode.
           if(MMOD.eq.8)then
@@ -5606,17 +5611,6 @@ C added as child of door and not child of original surface.
               is=nsur
               TOTAREA=REQDAREA
 
-C Update the wireframe image if running in graphics mode.
-C              if(MMOD.eq.8)then
-C                MODBND=.TRUE.
-C                MODIFY=.TRUE.
-C                CALL INLNST(1)
-C                nzg=1
-C                nznog(1)=ICOMP
-C                izgfoc=ICOMP
-C                CALL ADJVIEW(IER)
-C                call pausems(500)
-C              endif
             ENDIF
 
 C Now put vehicle door in if there was one in the original model
@@ -5696,17 +5690,6 @@ C added as child of door and not child of original surface.
               is=nsur
               TOTAREA=REQDAREA
 
-C Update the image if running in graphics mode.
-C              if(MMOD.eq.8)then
-C                MODBND=.TRUE.
-C                MODIFY=.TRUE.
-C                CALL INLNST(1)
-C                nzg=1
-C                nznog(1)=ICOMP
-C                izgfoc=ICOMP
-C                CALL ADJVIEW(IER)
-C                call pausems(500)
-C              endif
             ENDIF
 
 C Now put display glazing in if there was one in the original model
@@ -5715,8 +5698,8 @@ C and within complexity limits.
             SCALEFACTORDG=SQRT(REQDAREA/TOTAREA)
 
 C Debug.
-            write(6,*) 'D-glz ',ICC,REQDAREA,SCALEFACTORDG,
-     &        XDWAREA(ICC)
+C            write(6,*) 'D-glz ',ICC,REQDAREA,SCALEFACTORDG,
+C     &        XDWAREA(ICC)
 
             CALL ECLOSE(XDWAREA(ICC),0.0,0.1,NEAR)
             if(2*NVER(IS)+2.lt.42.and.(.NOT.NEAR).and.
@@ -5753,9 +5736,9 @@ C Debug.
 
 C Update the connection list. Move all others up and then insert with
 C default values.
-              write(6,*) 'before adddedsurf c ',icon,NZSUR(icomp)
+C              write(6,*) 'before adddedsurf c ',icon,NZSUR(icomp)
               call addedsurf(icomp,icon,itrc,ier)
-              write(6,*) 'after adddedsurf c ',icon,NZSUR(icomp),ier
+C              write(6,*) 'after adddedsurf c ',icon,NZSUR(icomp),ier
 
 C Add surfaces attribution parameters
               ICT(ICON)=0
@@ -5787,17 +5770,6 @@ C added as child of door and not child of original surface.
               is=nsur
               TOTAREA=REQDAREA
 
-C Update the image if running in graphic mode.
-C              if(MMOD.eq.8)then
-C                MODBND=.TRUE.
-C                MODIFY=.TRUE.
-C                CALL INLNST(1)
-C                nzg=1
-C                nznog(1)=ICOMP
-C                izgfoc=ICOMP
-C                CALL ADJVIEW(IER)
-C                call pausems(500)
-C              endif
             ENDIF
 
 C Now put glazing and frame based on the NCM requirements (there might
@@ -5806,8 +5778,8 @@ C not have been a window or frame in the original model).
             SCALEFACTORNG=SQRT(REQDAREA/TOTAREA)
 
 C Debug.
-            write(6,*) 'glz ',ICC,REQDAREA,SCALEFACTORNG,
-     &        XNWAREA(ICC)
+C            write(6,*) 'glz ',ICC,REQDAREA,SCALEFACTORNG,
+C     &        XNWAREA(ICC)
 
             CALL ECLOSE(XNWAREA(ICC),0.0,0.1,NEAR)
 
@@ -5847,9 +5819,9 @@ C already gotten enough glazing area add another window and frame.
 
 C Update the connection list. Move all others up and then insert with
 C default values.
-              write(6,*) 'before adddedsurf d ',icon,NZSUR(icomp)
+C              write(6,*) 'before adddedsurf d ',icon,NZSUR(icomp)
               call addedsurf(icomp,icon,itrc,ier)
-              write(6,*) 'after adddedsurf d ',icon,NZSUR(icomp),ier
+C              write(6,*) 'after adddedsurf d ',icon,NZSUR(icomp),ier
 
 C Add surfaces attribution parameters
               ICT(ICON)=0
@@ -5875,18 +5847,6 @@ C Update connections list before displaying notional model zone
               call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
               call emkcfg('-',IER)
               is=nsur
-
-C Update the image if running in graphic mode.
-C              if(MMOD.eq.8)then
-C                MODBND=.TRUE.
-C                MODIFY=.TRUE.
-C                CALL INLNST(1)
-C                nzg=1
-C                nznog(1)=ICOMP
-C                izgfoc=ICOMP
-C                CALL ADJVIEW(IER)
-C                call pausems(500)
-C              endif
 
 C Now put frame based on the NCM requirements (e.g. there might not have
 C been a frame in the original model).
@@ -5922,9 +5882,9 @@ C been a frame in the original model).
 
 C Update the connection list. Move all others up and then insert with
 C default values.
-              write(6,*) 'before adddedsurf e ',icon,NZSUR(icomp)
+C              write(6,*) 'before adddedsurf e ',icon,NZSUR(icomp)
               call addedsurf(icomp,icon,itrc,ier)
-              write(6,*) 'after adddedsurf e ',icon,NZSUR(icomp),ier
+C              write(6,*) 'after adddedsurf e ',icon,NZSUR(icomp),ier
 
 C Add surfaces attribution parameters
               ICT(ICON)=0
@@ -5949,17 +5909,6 @@ C Update connections list before displaying notional model zone
               call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
               call emkcfg('-',IER)
 
-C Update the image if running in graphic mode.
-C              if(MMOD.eq.8)then
-C                MODBND=.TRUE.
-C                MODIFY=.TRUE.
-C                CALL INLNST(1)
-C                nzg=1
-C                nznog(1)=ICOMP
-C                izgfoc=ICOMP
-C                CALL ADJVIEW(IER)
-C                call pausems(500)
-C              endif
             ENDIF
           ENDIF
  580    CONTINUE
@@ -6180,6 +6129,10 @@ C Update constructions and tmc files if applicable.
 
 C ********************* EMKSBM2
 C The setup part of creating notional model.
+
+C Note: because a notional assessment is writing a save 6 file for
+C a period which may differ from any IPV definition. It might be
+C better to simply not write out any IPV definitions.
       SUBROUTINE EMKSBM2(ier)
 #include "building.h"
 #include "geometry.h"
@@ -6496,9 +6449,8 @@ C UK standard construction and materials databases are also copied.
 C Changes to the model are then made, geometry and construction files
 C are changed and so are the constructions and materials databases.
 C If ier=0 no problems, ier=2 insufficient data.
-C This routine assumes newer geometry files are being used.
-
-C << assumes that the cfg and cnn have already been setup. >>
+C This routine assumes newer geometry files are being used and
+C it also assumes that the cfg and cnn have already been setup.
       SUBROUTINE EMKSBMZN(icomp,ier)
 #include "building.h"
 #include "geometry.h"
@@ -6777,6 +6729,9 @@ C For each surface in this zone.
         do 555 isur=1,nzsur(icomp)
           ICC=IZSTOCN(icomp,isur)
           write(SNM,'(a)') SSUSE(ICC,1)  ! remember surface use
+          write(outs,'(9a)') 'Considering ',ssname(icc),' ',SSMLCN(ICC),
+     &            ' ',SSOTF(ICC),' ',SSUSE(ICC,1),'...'
+          call edisp(iuout,outs)
 
 C Only the following types of areas will be retained in this exterior
 C type surface with use roof or wall.
@@ -6785,7 +6740,7 @@ C type surface with use roof or wall.
           XDWAREA(ICC)=0. ! display window area in this parent
           XNWAREA(ICC)=0. ! normal window area in this parent
           XREAREA(ICC)=0. ! If requisite area is more than required
-                              ! do not put any glazing in this surface
+                          ! do not put any glazing in this surface
           TARSURF(ICC)=SSNA(ICC)
 
 C For all exterior surfaces that are marked wall or roof.
@@ -6795,8 +6750,11 @@ C For all exterior surfaces that are marked wall or roof.
 C For each grand child.
               DO 5500 IGCD=1,NBGCHILD(ICC)
                 KCC=IGCHILD(ICC,IGCD)      ! index of grand child
-                NRMV(icomp)=NRMV(icomp)+1  ! increment list of surfaces to remove
-                IRMV(ICOMP,NRMV(icomp))=KCC
+                write(outs,'(9a)') 'Mark to remove ',ssname(kcc),' ',
+     &            SSMLCN(kCC),' ',SSOTF(kCC),' ',SSUSE(kCC,1),'...'
+                call edisp(iuout,outs)
+                NRMV(icomp)=NRMV(icomp)+1    ! increment list of surfaces to remove
+                IRMV(ICOMP,NRMV(icomp))=KCC  ! remember its connection number
                 XKCCU=SSUSE(KCC,1)
                 TARSURF(ICC)=TARSURF(ICC)+SSNA(KCC)
                 IF(XKCCU(1:6).EQ.'P-DOOR')THEN
@@ -6827,8 +6785,11 @@ C area for the parent reset to the required area.
 C Mark child surfaces for removal (via IRMV) and add their surface
 C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
                 JCC=ICHILD(ICC,ICHL)        ! index of child surface
+                write(outs,'(9a)') 'Mark to remove ',ssname(jcc),' ',
+     &            SSMLCN(jCC),' ',SSOTF(jCC),' ',SSUSE(jCC,1),'...'
+                call edisp(iuout,outs)
                 NRMV(icomp)=NRMV(icomp)+1   ! increment list of surfaces to remove
-                IRMV(ICOMP,NRMV(icomp))=JCC
+                IRMV(ICOMP,NRMV(icomp))=JCC ! remember its connection
                 XJCCU=SSUSE(JCC,1)
                 TARSURF(ICC)=TARSURF(ICC)+SSNA(JCC)
                 IF(XJCCU(1:6).EQ.'P-DOOR')THEN
@@ -6863,16 +6824,19 @@ C into which compliant glass and frames can be added subsequently.
               if(iparent(icc).eq.0)then
 
 C Debug.
-                write(6,*) 'found external glazed parent surface',icc
-                write(6,*) 'it has ',nbchild(icc),' child surfaces'
+C                write(6,*) 'found external glazed parent surface',icc
+C                write(6,*) 'it has ',nbchild(icc),' child surfaces'
 
                 DO 554 ICHL=1,NBCHILD(ICC)
 
 C Mark child surfaces for removal (via IRMV) and add their surface
 C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
                   JCC=ICHILD(ICC,ICHL)
-                  NRMV(icomp)=NRMV(icomp)+1
-                  IRMV(ICOMP,NRMV(icomp))=JCC
+                  write(outs,'(9a)') 'Mark to remove ',ssname(jcc),' ',
+     &              SSMLCN(jCC),' ',SSOTF(jCC),' ',SSUSE(jCC,1),'...'
+                  call edisp(iuout,outs)
+                  NRMV(icomp)=NRMV(icomp)+1   ! increment how many to remove
+                  IRMV(ICOMP,NRMV(icomp))=JCC ! remember its connection
                   XJCCU=SSUSE(JCC,1)
                   TARSURF(ICC)=TARSURF(ICC)+SSNA(JCC)
                   IF(XJCCU(1:6).EQ.'P-DOOR')THEN
@@ -6913,7 +6877,7 @@ C area for the parent reset to the required area.
                 ENDIF
                 write(SSUSE(ICC,1),'(a)') 'WALL'
 C Debug.
-                write(6,*) 'reset ',ssname(icc),'  ',SSMLCN(ICC),
+                write(6,*) 'reset use',ssname(icc),' ',SSMLCN(ICC),
      &            ' ',SSOTF(ICC),' ',SSUSE(ICC,1)
                 changeuse=.true.  ! change of use
               else
@@ -6930,8 +6894,11 @@ C they need to be converted into wall uses and constructions.
 C Mark child surfaces for removal (via IRMV) and add their surface
 C areas to TARSURF as well as XPDAREA / XREAREA / XVDAREA etc.
                   JCC=ICHILD(ICC,ICHL)
-                  NRMV(icomp)=NRMV(icomp)+1
-                  IRMV(ICOMP,NRMV(icomp))=JCC
+                  write(outs,'(9a)') 'Mark to remove ',ssname(jcc),' ',
+     &              SSMLCN(jCC),' ',SSOTF(jCC),' ',SSUSE(jCC,1),'...'
+                  call edisp(iuout,outs)
+                  NRMV(icomp)=NRMV(icomp)+1   ! increment how many to remove
+                  IRMV(ICOMP,NRMV(icomp))=JCC ! remember which connection
                   XJCCU=SSUSE(JCC,1)
                   TARSURF(ICC)=TARSURF(ICC)+SSNA(JCC)
                   IF(XJCCU(1:6).EQ.'P-DOOR')THEN
@@ -6972,7 +6939,7 @@ C area for the parent reset to the required area.
                 ENDIF
                 write(SSUSE(ICC,1),'(a)') 'WALL'
 C Debug.
-                write(6,*) 'reset ',ssname(icc),'  ',SSMLCN(ICC),
+                write(6,*) 'reset use',ssname(icc),'  ',SSMLCN(ICC),
      &            ' ',SOTF(ICC)
                 changeuse=.true.  ! change of use
               else
@@ -6990,19 +6957,20 @@ C to the geometry file prior to deleting surfaces.
  
       ENDIF
 
-C Remove surfaces marked for deletion in IRMV
+C Remove surfaces marked for deletion in IRMV.
  559  CONTINUE
 
 C Debug the initial list of surfaces to remove.
-      write(6,*) 'about to remove ',NRMV(icomp),' surfs in z ',
+      write(outs,*) 'about to remove ',NRMV(icomp),' surfs in z ',
      &  icomp
+      call edisp(iuout,outs)
 
 C In the current zone we need to delete NRMV surfaces.
       DO 6001 IR=1,NRMV(icomp)
 
 C Debug.
-        write(6,*) ' x conn surf ',IRMV(ICOMP,IR),' ',
-     &    ssname(IRMV(ICOMP,IR)),' ',ie1(IRMV(ICOMP,IR)),' for ir ',ir
+C        write(6,*) ' x conn surf ',IRMV(ICOMP,IR),' ',
+C     &    ssname(IRMV(ICOMP,IR)),' ',ie1(IRMV(ICOMP,IR)),' for ir ',ir
 
 C Pack the list of TARSURF etc from the current connection data
 C to one less than the end of the number of connections in the
@@ -7027,7 +6995,7 @@ C connection index held in IRMV.
  6005   CONTINUE
 
 C And for subsequent surfaces in subsequent zones, decrement their
-C connection index held in IRMV.
+C connection index held in IRMV.  << is this necessary ?? >>
         DO 6006 IC=ICOMP+1,NCOMP
           DO 6007 IRC=1,NRMV(IC)
             IRMV(IC,IRC)=IRMV(IC,IRC)-1
@@ -7039,8 +7007,9 @@ C connection based).
         is=ie1(IRMV(ICOMP,IR))
 
 C Debug.
-        write(6,*) 'removing surf ',ssname(irmv(icomp,ir))
-        write(6,*) 'ir is ',ir,' surf ',is,' in zone ',icomp
+        write(outs,*) 'removing surf ',ssname(irmv(icomp,ir))
+        call edisp(iuout,outs)
+C        write(6,*) 'ir is ',ir,' surf ',is,' in zone ',icomp
 
 C Re-scan the geometry, use ADDSUR to delete surface index 'is' and then
 C update the model cfg file and then re-write the geometry file.
@@ -7053,7 +7022,8 @@ C update the model cfg file and then re-write the geometry file.
 
 C Update the image if working in graphics mode.
       if(MMOD.eq.8)then
-        call edisp(iuout,'Zone with child surfaces removed...')
+        call edisp(iuout,
+     &    'Displaying the zone with child surfaces removed...')
         MODBND=.TRUE.
         MODIFY=.TRUE.
         CALL INLNST(1)
@@ -7096,8 +7066,8 @@ C additional windows
             XNWAREA(ICC)=
      &        TARSURF(ICC)*GLZFR-XREAREA(ICC)+XNWAREA(ICC)
           ENDIF
-          write(6,*) 'estimating ',icc,GLZFR,FRMFR,TARSURF(ICC),
-     &      XREAREA(ICC),XNWAREA(ICC)
+C          write(6,*) 'estimating ',icc,GLZFR,FRMFR,TARSURF(ICC),
+C     &      XREAREA(ICC),XNWAREA(ICC)
         endif
  200  continue
  557  continue
@@ -7107,7 +7077,9 @@ C vehicle door or display glazing then re-instate them. You will
 C notice several repeating blocks of code below which carries this
 C out. If the logic in one is updated then check the others to
 C ensure they are updated (if required).
+
 C << need to trap error state in georead >>
+
       if(.NOT.ivalocup(icomp)) goto 551  ! do not bother if unoccupied & unconditioned
       NUMBS=NZSUR(ICOMP)
       do 580 isur=NUMBS,1,-1
@@ -7145,8 +7117,8 @@ C Get scale factors
           SCALEFACTORFR=SQRT(FRMFR)
 
 C Debug.
-          write(6,*) '580 ',ICC,TOTAREA,REQDAREA,SCALEFACTORPD,
-     &      SCALEFACTORFR,XPDAREA(ICC)
+C          write(6,*) '580 ',ICC,TOTAREA,REQDAREA,SCALEFACTORPD,
+C     &      SCALEFACTORFR,XPDAREA(ICC)
 
 C First put pedestrian door in if there was one in the original model.
 C If likely new surface complexity is within limits add door.
@@ -7218,17 +7190,6 @@ C added as child of door and not child of original surface.
             is=nsur
             TOTAREA=REQDAREA
 
-C Update the wireframe image if running in graphics mode.
-C            if(MMOD.eq.8)then
-C              MODBND=.TRUE.
-C              MODIFY=.TRUE.
-C              CALL INLNST(1)
-C              nzg=1
-C              nznog(1)=ICOMP
-C              izgfoc=ICOMP
-C              CALL ADJVIEW(IER)
-C              call pausems(500)
-C            endif
           ENDIF
 
 C Now put vehicle door in if there was one in the original model
@@ -7238,8 +7199,8 @@ C and the new surface will be within complexity limits.
           SCALEFACTORVD=SQRT(REQDAREA/TOTAREA)
 
 C Debug.
-          write(6,*) 'V-door ',ICC,REQDAREA,SCALEFACTORVD,
-     &      XVDAREA(ICC)
+C          write(6,*) 'V-door ',ICC,REQDAREA,SCALEFACTORVD,
+C     &      XVDAREA(ICC)
 
           CALL ECLOSE(XVDAREA(ICC),0.0,0.1,NEAR)
           if(2*NVER(IS)+2.lt.42.and.(.NOT.NEAR).and.
@@ -7277,9 +7238,9 @@ C Debug.
 
 C Update the connection list. Move all others up and then insert with
 C default values.
-            write(6,*) 'before adddedsurf b ',icon,NZSUR(icomp)
+C            write(6,*) 'before adddedsurf b ',icon,NZSUR(icomp)
             call addedsurf(icomp,icon,itrc,ier)
-            write(6,*) 'after adddedsurf b ',icon,NZSUR(icomp),ier
+C            write(6,*) 'after adddedsurf b ',icon,NZSUR(icomp),ier
 
 C Add surfaces attribution parameters
             ICT(ICON)=0
@@ -7311,17 +7272,6 @@ C added as child of door and not child of original surface.
             is=nsur
             TOTAREA=REQDAREA
 
-C Update the image if running in graphics mode.
-C            if(MMOD.eq.8)then
-C              MODBND=.TRUE.
-C              MODIFY=.TRUE.
-C              CALL INLNST(1)
-C              nzg=1
-C              nznog(1)=ICOMP
-C              izgfoc=ICOMP
-C              CALL ADJVIEW(IER)
-C              call pausems(500)
-C            endif
           ENDIF
 
 C Now put display glazing in if there was one in the original model
@@ -7330,8 +7280,8 @@ C and within complexity limits.
           SCALEFACTORDG=SQRT(REQDAREA/TOTAREA)
 
 C Debug.
-          write(6,*) 'D-glz ',ICC,REQDAREA,SCALEFACTORDG,
-     &      XDWAREA(ICC)
+C          write(6,*) 'D-glz ',ICC,REQDAREA,SCALEFACTORDG,
+C     &      XDWAREA(ICC)
 
           CALL ECLOSE(XDWAREA(ICC),0.0,0.1,NEAR)
           if(2*NVER(IS)+2.lt.42.and.(.NOT.NEAR).and.
@@ -7369,9 +7319,9 @@ C Debug.
 
 C Update the connection list. Move all others up and then insert with
 C default values.
-            write(6,*) 'before adddedsurf c ',icon,NZSUR(icomp)
+C            write(6,*) 'before adddedsurf c ',icon,NZSUR(icomp)
             call addedsurf(icomp,icon,itrc,ier)
-            write(6,*) 'after adddedsurf c ',icon,NZSUR(icomp),ier
+C            write(6,*) 'after adddedsurf c ',icon,NZSUR(icomp),ier
 
 C Add surfaces attribution parameters
             ICT(ICON)=0
@@ -7403,17 +7353,6 @@ C added as child of door and not child of original surface.
             is=nsur
             TOTAREA=REQDAREA
 
-C Update the image if running in graphic mode.
-C            if(MMOD.eq.8)then
-C              MODBND=.TRUE.
-C              MODIFY=.TRUE.
-C              CALL INLNST(1)
-C              nzg=1
-C              nznog(1)=ICOMP
-C              izgfoc=ICOMP
-C              CALL ADJVIEW(IER)
-C              call pausems(900)
-C            endif
           ENDIF
 
 C Now put glazing and frame based on the NCM requirements (there might
@@ -7422,8 +7361,8 @@ C not have been a window or frame in the original model).
           SCALEFACTORNG=SQRT(REQDAREA/TOTAREA)
 
 C Debug.
-          write(6,*) 'glz ',ICC,REQDAREA,SCALEFACTORNG,
-     &      XNWAREA(ICC)
+C          write(6,*) 'glz ',ICC,REQDAREA,SCALEFACTORNG,
+C     &      XNWAREA(ICC)
 
           CALL ECLOSE(XNWAREA(ICC),0.0,0.1,NEAR)
 
@@ -7441,8 +7380,7 @@ C already gotten enough glazing area add another window and frame.
      &        is,CHAR(96+IELF),'_glz'  ! Name
             write(outs,'(4a)') 'Adding new glaz ',SN(1:lnblnk(SN)),
      &        ' into ',SPN(1:lnblnk(SPN))
-            write(6,*) icomp,nsur,is,nver(is)
-            write(6,*) outs
+C            write(6,*) icomp,nsur,is,nver(is)
             call edisp(iuout,outs)
             ISUR2=NSUR
             DO 7512 NV=1,NVER(IS)
@@ -7466,9 +7404,9 @@ C already gotten enough glazing area add another window and frame.
 
 C Update the connection list. Move all others up and then insert with
 C default values.
-            write(6,*) 'before adddedsurf d ',icon,NZSUR(icomp)
+C            write(6,*) 'before adddedsurf d ',icon,NZSUR(icomp)
             call addedsurf(icomp,icon,itrc,ier)
-            write(6,*) 'after adddedsurf d ',icon,NZSUR(icomp),ier
+C            write(6,*) 'after adddedsurf d ',icon,NZSUR(icomp),ier
 
 C Add surfaces attribution parameters
             ICT(ICON)=0
@@ -7494,18 +7432,6 @@ C Update connections list before displaying notional model zone
             call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
             call emkcfg('-',IER)
             is=nsur
-
-C Update the image if running in graphic mode.
-C            if(MMOD.eq.8)then
-C              MODBND=.TRUE.
-C              MODIFY=.TRUE.
-C              CALL INLNST(1)
-C              nzg=1
-C              nznog(1)=ICOMP
-C              izgfoc=ICOMP
-C              CALL ADJVIEW(IER)
-C              call pausems(900)
-C            endif
 
 C Now put frame based on the NCM requirements (e.g. there might not have
 C been a frame in the original model).
@@ -7542,9 +7468,9 @@ C been a frame in the original model).
 
 C Update the connection list. Move all others up and then insert with
 C default values.
-            write(6,*) 'before adddedsurf e ',icon,NZSUR(icomp)
+C            write(6,*) 'before adddedsurf e ',icon,NZSUR(icomp)
             call addedsurf(icomp,icon,itrc,ier)
-            write(6,*) 'after adddedsurf e ',icon,NZSUR(icomp),ier
+C            write(6,*) 'after adddedsurf e ',icon,NZSUR(icomp),ier
 
 C Add surfaces attribution parameters
             ICT(ICON)=0
@@ -7569,17 +7495,6 @@ C Update connections list before displaying notional model zone
             call geowrite(IUF,LGEOM(ICOMP),ICOMP,ITRU,3,IER)
             call emkcfg('-',IER)
 
-C Update the image if running in graphic mode.
-C            if(MMOD.eq.8)then
-C              MODBND=.TRUE.
-C              MODIFY=.TRUE.
-C              CALL INLNST(1)
-C              nzg=1
-C              nznog(1)=ICOMP
-C              izgfoc=ICOMP
-C              CALL ADJVIEW(IER)
-C              call pausems(500)
-C            endif
           ENDIF
         ENDIF
  580  CONTINUE
@@ -7798,6 +7713,10 @@ C EMKREF creates a model variant based on the SBEM methodology. Details
 C of this can be found in relevant EU and UK building regulations.
 C This subroutine copies and modifies the cfg file and
 C makes a new model representative of the reference building.
+
+C Note: because a reference assessment is writing a save 6 file for
+C a period which may differ from any IPV definition. It might be
+C better to simply not write out any IPV definitions.
       SUBROUTINE EMKREF
       IMPLICIT NONE
 #include "building.h"
@@ -7831,6 +7750,10 @@ C of this can be found in relevant EU and UK building regulations.
 C This subroutine copies and modifies the cfg file and
 C makes a new model representative of the typical building.
 C Changes to the model are then made.
+
+C Note: because a typical assessment is writing a save 6 file for
+C a period which may differ from any IPV definition. It might be
+C better to simply not write out any IPV definitions.
       SUBROUTINE EMKTYP
       IMPLICIT NONE
 #include "sbem.h"
