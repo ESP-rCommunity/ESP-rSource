@@ -1919,8 +1919,6 @@ C geometry.h provides commons G0/G1/G2/G7/precz.
 #include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
-
-C << todo - depreciate references to IPR array and use Material names only.>>
       
       integer lnblnk  ! function definition
 
@@ -1960,7 +1958,7 @@ C Note: size of MLED supports a dozen layers in a construction.
       CHARACTER NAM*72,KEY*1,GDESCR*36
       CHARACTER SOPT*12,LAYD*124
       character T12*12,T14*14
-      CHARACTER outs*124,MLED*38,MMLAY*38
+      CHARACTER outs*124,MLED*42,MMLAY*38
       character PNAM*72
       character ZN*12,SN*12,t32*32
       integer NLED,ILED  ! max items and current menu item
@@ -2046,7 +2044,7 @@ C this in the menu.
       endif
 
 C Present editing menu.
-   2  WRITE(MLED(1),'(A,1X,A)')'a Construction:',mlcname(ifoc)(1:22)
+   2  WRITE(MLED(1),'(A,1X,A)')'a Construction:',mlcname(ifoc)(1:26)
       IF(mlctype(ifoc)(1:4).EQ.'TRAN')THEN
         MLED(2)='b General type: Transparent '
       ELSEIF(mlctype(ifoc)(1:4).EQ.'CFC ')THEN
@@ -2055,23 +2053,23 @@ C Present editing menu.
         MLED(2)='b General type: Opaque      '
       ENDIF
       WRITE(MLED(3),'(A,1X,A12)')'c Optical properties:',
-     &  mlcoptical(ifoc)(1:17)
+     &  mlcoptical(ifoc)(1:20)
       WT=0.0   ! figure out the total thickness
       DO 22, IL=1,LAYERS(IFOC)
         WT=WT+DTHK(IFOC,IL)
   22  continue
-      WRITE(MLED(4),'(A,I2,a,F7.1,a)')  '  No of layers:',LAYERS(IFOC),
-     &  ' (',WT*1000.0,'mm thick)'
+      WRITE(MLED(4),'(A,I2,a,F6.1,a)') '  Number of layers:',
+     &  LAYERS(IFOC),' (',WT*1000.0,'mm thick)'
       if(showother)then
         WRITE(MLED(5),'(2a)')  'd Linked with: ',
-     &    mlcsymetric(ifoc)(1:23)
+     &    mlcsymetric(ifoc)(1:26)
       else
         WRITE(MLED(5),'(2a)')  'd Layers are: ',
-     &    mlcsymetric(ifoc)(1:23)
+     &    mlcsymetric(ifoc)(1:26)
       endif
       MLED(6)='  _____________________________  '
-      MLED(7)=' Layer|Matr|Thick| Description   '
-      MLED(8)='      |db  |(mm) | of material   '
+      MLED(7)=' Layer|Thick | Description        '
+      MLED(8)='      |(mm)  | of material        '
 
 C Detail menu.
       M=8
@@ -2115,9 +2113,9 @@ C If a gap layer include the R values in the display.
         ENDIF
         M=M+1
         CALL EMKEY(M,KEY,IER)
-        WRITE(MLED(M),29)KEY,IL,IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
-     &                   PNAM(IL)(1:19)
-  29    FORMAT(A1,I4,I5,F7.1,2X,A)
+        WRITE(MLED(M),29)KEY,IL,DTHK(IFOC,IL)*1000.0,
+     &                   PNAM(IL)(1:26)
+  29    FORMAT(A1,I5,F7.1,2X,A)
   23  CONTINUE
 
 C Rest of detail menu.
@@ -2136,7 +2134,7 @@ C 0.10 inside upward flow and 0.17 inside downward flow.
       UVALUEU=1.0/RTU
       RTD=RT+0.04+0.17
       UVALUED=1.0/RTD
-      write(MLED(M),'(A,3F6.3)') ' ISO 6946 U h/u/d',
+      write(MLED(M),'(A,3F6.3)') ' ISO 6946 U hor/up/down',
      &    UVALUEH,UVALUEU,UVALUED
       currentu=UVALUEH  ! remember the initial U value
       M=M+1
@@ -2169,12 +2167,12 @@ C If possible to jump next.
       ILED=-4
 
 C Also compose a list of layers for additions/deletions.
-      MMLAY(1)=' Layer|Matl|Thick| Description   '
-      MMLAY(2)='      |db  |(mm) | of material   '
+      MMLAY(1)=' Layer|Thick| Description   '
+      MMLAY(2)='      |(mm) | of material   '
       DO 11, IL=1,LAYERS(IFOC)
-        WRITE(MMLAY(IL+2),299)IL,IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
+        WRITE(MMLAY(IL+2),299)IL,DTHK(IFOC,IL)*1000.0,
      &                   PNAM(IL)(1:20)
- 299    FORMAT(I4,I5,F7.1,2X,A)
+ 299    FORMAT(I4,F7.1,2X,A)
   11  CONTINUE
 
 C Help text for this menu.
