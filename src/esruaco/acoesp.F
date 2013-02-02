@@ -79,7 +79,7 @@ C Otherwise select the zones from a list of zone names.
  7      helptopic='aco_zones_to_inclue'
         call gethelptext(helpinsub,helptopic,nbhelp)
         INPIC = NCOMP 
-        CALL EPICKS(INPIC,IVALZ,' ',' Which zones to include:',
+        CALL EPICKS(INPIC,IVALZ,' ','Which zones to include:',
      &    12,NCOMP,ZNAME,'Zone(s) list',IDerr,nbhelp)
 
 C Check for errors (if => exit sub).
@@ -248,6 +248,7 @@ C HeightCo (Real) : Height [m] of the constructions, for LCA calculation.
 
       SUBROUTINE CompoList
 #include "building.h"
+#include "geometry.h"
 #include "esprdbfile.h"
 #include "material.h"
 

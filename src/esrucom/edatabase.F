@@ -957,17 +957,17 @@ C Reporting based on report level.
       IF(ITRC.GT.1)THEN
         CALL EDISP(ITRU,' ')
         write(OUTSTR,'(2a)')
-     &' Layer|Matr|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu|',
+     &' Layer|Thick |Conduc-|Density|Specif|IR  |Solar|Diffu|',
      &' R    |Description'
         CALL EDISP(ITRU,OUTSTR)
         write(OUTSTR,'(2a)')
-     &'      |db  |(mm)  |tivity |       |heat  |emis|abs  |resis|',
+     &'      |(mm)  |tivity |       |heat  |emis|abs  |resis|',
      &'m^2K/W'
         CALL EDISP(ITRU,OUTSTR)
       ELSEIF(ITRC.EQ.1)THEN
         CALL EDISP(ITRU,' ')
-        CALL EDISP(ITRU,' Layer|Matr|Thick | Description ')
-        CALL EDISP(ITRU,'      |db  |(mm)  | of material ')
+        CALL EDISP(ITRU,' Layer|Thick | Description ')
+        CALL EDISP(ITRU,'      |(mm)  | of material ')
       ENDIF
 
 C Loop through all of the layers and compose RT for the construction.
@@ -1033,27 +1033,27 @@ C Reporting.
         IF(ITRC.GT.1)THEN
           lnlist = MIN0(LNBLNK(PNAM(IL)),82)    ! space left for doc
           if(LAYERS(IFOC).eq.1)then 
-            WRITE(OUTSTR,24)IL,IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
+            WRITE(OUTSTR,24)IL,DTHK(IFOC,IL)*1000.0,
      &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:lnlist)
           elseif(LAYERS(IFOC).ge.2.and.IL.eq.1)then 
-            WRITE(OUTSTR,25)' Ext ',IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
+            WRITE(OUTSTR,25)' Ext ',DTHK(IFOC,IL)*1000.0,
      &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:lnlist)
           elseif(LAYERS(IFOC).ge.2.and.IL.eq.LAYERS(IFOC))then 
-            WRITE(OUTSTR,25)' Int ',IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
+            WRITE(OUTSTR,25)' Int ',DTHK(IFOC,IL)*1000.0,
      &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:lnlist)
           else 
-            WRITE(OUTSTR,24)IL,IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
+            WRITE(OUTSTR,24)IL,DTHK(IFOC,IL)*1000.0,
      &              DBCON,DBDEN,DBSHT,E,A,DRV,RSI,PNAM(IL)(1:lnlist)
           endif
-  24      FORMAT(I5,I5,F7.1,F10.3,F7.0,F7.0,F5.2,F5.2,F7.0,F6.2,1X,A)
-  25      FORMAT(A5,I5,F7.1,F10.3,F7.0,F7.0,F5.2,F5.2,F7.0,F6.2,1X,A)
+  24      FORMAT(I5,F7.1,F10.3,F7.0,F7.0,F5.2,F5.2,F7.0,F6.2,1X,A)
+  25      FORMAT(A5,F7.1,F10.3,F7.0,F7.0,F5.2,F5.2,F7.0,F6.2,1X,A)
           CALL EDISP(ITRU,OUTSTR)
         ELSEIF(ITRC.EQ.1)THEN
 
 C Compact report has more room for material description.
-          WRITE(OUTSTR,29)IL,IPR(IFOC,IL),DTHK(IFOC,IL)*1000.0,
+          WRITE(OUTSTR,29)IL,DTHK(IFOC,IL)*1000.0,
      &      PNAM(IL)(1:lnblnk(PNAM(IL)))
-  29      FORMAT(I5,I5,F8.1,1X,a)
+  29      FORMAT(I5,F8.1,1X,a)
           CALL EDISP(ITRU,OUTSTR)
         ENDIF
   15  CONTINUE
@@ -1293,7 +1293,7 @@ C of a foundation only the inside surface resistance is used.
       RTG=RT+0.17
       UVG=1.0/RTG
       write(OUTSTR,'(A,4F7.3)')
-     &  ' ISO 6946 U values (horiz/upward/downward/partition)= ',
+     &  ' ISO 6946 U values (horizontal/upward/downward/partition)= ',
      &  UVH,UVU,UVD,UVI
       IF(ITRC.NE.0)then
         CALL EDISP(ITRU,' ')
@@ -1963,7 +1963,7 @@ C << some variables are off - further debugging required.
       integer matarrayindex ! the indes within matdatarray
       logical closemat1,closemat2
       
-      dimension thick(8),rho(8),Cp(8),cond(8)
+      dimension thick(ME),rho(ME),Cp(ME),cond(ME)
       character outs*124
       
       COMPLEX P,L(2,2),M(2,2),N(2,2)
