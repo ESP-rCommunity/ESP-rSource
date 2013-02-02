@@ -7304,7 +7304,7 @@ C clrtextbuf clears the text buffer common blocks.
       subroutine clrtextbuf()
       common/textbuf/dispbuf(500)
       common/textbufl/indexbuf,lnbuf(500)
-      character dispbuf*124
+      character dispbuf*144
 
       indexbuf=0
       do 42 i=1,500

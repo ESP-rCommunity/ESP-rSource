@@ -1067,8 +1067,8 @@ esac
 case $compiler in
    sunF90)   CC=cc;  CPL=CC;  FC=f90  ;;
    GNU) case $gnu_version in
-#           gcc4)     CC=gcc-mp-4.6;   CPL=g++-mp-4.6;    FC=gfortran-mp-4.6  ;;
-           gcc4)     CC=gcc;   CPL=g++;    FC=gfortran  ;;
+           gcc4)     CC=gcc-mp-4.6;   CPL=g++-mp-4.6;    FC=gfortran-mp-4.6  ;;
+#           gcc4)     CC=gcc;   CPL=g++;    FC=gfortran  ;;
         esac;;
    intel)    CC=icc;  CPL=icpc;  FC=ifort ;;
 esac

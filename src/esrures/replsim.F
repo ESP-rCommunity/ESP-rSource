@@ -56,6 +56,7 @@ C #include "geometry.h"
       CHARACTER MODE*4,OUTSTR*124,LCTLF*72,CTLDOC*248
       character outs*124
       LOGICAL CFGOK,MLDBOK,MATDBOK,CTLOK,OPTKOK,XST,ok,dok
+      logical dmdsok
 
 C For help messages
       character helpinsub*24   ! subroutine name
@@ -142,6 +143,18 @@ C if izver >=4 the zone operation file is not needed.
           endif
         endif
    30 CONTINUE
+
+C Also scan the model dispersed demands file if it exists.
+      IUNIT=IFIL+1
+      call FINDFIL(bdmds,XST)
+      IF(XST)THEN
+        CALL ERPFREE(IUNIT,ISTAT)
+        CALL ERBDMD(0,IUNIT,IER)
+        dmdsok=.true.
+      else
+        dmdsok=.false.
+      endif
+
       call usrmsg(' ',
      &  ' Checking existence of descriptive files...done.','-')
 

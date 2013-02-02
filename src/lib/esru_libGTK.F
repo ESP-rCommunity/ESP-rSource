@@ -3667,7 +3667,7 @@ C treatment as a scrolling window.
       common/textbuf/dispbuf(500)
       common/textbufl/indexbuf,lnbuf(500)
       CHARACTER*(*) MSG
-      CHARACTER WWMSG*124,dispbuf*124
+      CHARACTER WWMSG*144,dispbuf*144
       logical unixok
 
 C Temporarily set ICOUT.
@@ -3676,7 +3676,7 @@ C Temporarily set ICOUT.
 C Create matching string to pass to wwlib.c and hold in dispbuf.
 C Use logic similar to that in egdisp.
       lnm=max0(1,lnblnk(MSG))
-      lcc = MIN0(lnm,124)
+      lcc = MIN0(lnm,144)
       if(lcc.eq.0) lcc=1
       write(WWMSG,'(a)',iostat=ios,err=1)MSG(1:lcc)
 
@@ -3767,7 +3767,7 @@ C Path to model and command line file (if any).
       character path*72,h*72,uname*24,fs*1
       character sstr*144,title*18,ltypes*4
       character lltmp*144
-      character dispbuf*124,outs*124
+      character dispbuf*144,outs*124
       logical unixok,there
       integer ltf  ! position of last character in string.
       integer iw   ! for user selection

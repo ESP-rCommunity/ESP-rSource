@@ -170,7 +170,7 @@ C Begin with high level menu.
       ITEMS(15)=                'm 3-D ground representation      '
       ITEMS(16)=                '  ___________________________    '
       ITEMS(17)=                'n primary energy conversions     '
-      ITEMS(18)=                'o fan/lift/DHW demands           '
+      ITEMS(18)=                'o fan/lift/DHW dispersed demands '
       ITEMS(19)=                'p integrated performance view    '
       ITEMS(20)=                '  ___________________________    '
       ITEMS(21)=                'q pressure coefficients calc.    '

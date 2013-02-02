@@ -709,16 +709,19 @@ C gains and losses.
       SUBROUTINE MGLTBL
 #include "building.h"
 #include "geometry.h"
+#include "schedule.h"
       
       integer lnblnk  ! function definition
 
 C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
+      COMMON/FILEP/IFIL
       COMMON/OUTPCH/ICOUT
       COMMON/SIMPIK/ISIM,ISTADD,ID1,IM1,ID2,IM2,ISDS,ISDF,NTS,ISAVE
       common/recver/izver,ipver,iever
       COMMON/ZONPIK/NZ,NZNO(MCOM)
       COMMON/PERO/IOD1,IOM1,IOH1,IOD2,IOM2,IOH2,IODS,IODF,NOUT,IAV
       COMMON/GETPIK/NGET,IGETNO(MZS,9)
+      COMMON/GET1/VAL1(MZS,MTS),VAL2(MZS,MTS),VAL3(MZRL,MTS)
 
       character SLABEL*32,GLABEL*20,TABLABEL*36
       COMMON/GETLABEL/SLABEL(MZS),GLABEL(MZS),TABLABEL(MZS)
@@ -731,14 +734,15 @@ C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/RESLIB/RFILE,PFILE,MSTRFILE,LAFRES
       COMMON/SETNAM/RSNAME(MNRS)
       COMMON/SIMPKA/NSIM
-
+      integer ncomp,ncon
+      COMMON/C1/NCOMP,NCON
 
       CHARACTER PDESCR*60,SDESCR*44,CSTR*25,NMTHNM(12)*3
       character outs*124,prompt*124,outsl*144
       CHARACTER RSNAME*40
       character rfile*72,PFILE*72,MSTRFILE*72,LAFRES*72
 
-      DIMENSION VAL(13),TVAL(13,12)
+      DIMENSION VAL(14),TVAL(14,12)
       DIMENSION NDYMTH(12), CQ(MTS), CQOUT(MTS)
       DIMENSION CASDAY(MTS,4)  ! to hold casual type data
       integer looplimit
@@ -748,6 +752,8 @@ C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
       real perequipc,perequipr,perequipl ! average equipment to write out
       real otherc,otherr,otherl ! average other (future expansion) to write out
       integer theonectld  ! if non-zero the casual gain type that is controlled.
+      logical XST,dmdsok  ! for dispersed demands
+      real overallm2,zonem2frac(MCOM)  ! total of all the selected zones base areas
 
       DATA NDYMTH/31,59,90,120,151,181,212,243,273,304,334,365/
       DATA NMTHNM/'Jan','Feb','Mar','Apr','May','Jun','Jul',
@@ -756,6 +762,17 @@ C      COMMON/SPAD/MMOD,LIMIT,LIMTTY
 C Set chosen result set.
       ISET=ISIM
       IEND=24*NTS
+
+C Read project demands file if it exists.
+      IUO=IFIL+1
+      call FINDFIL(bdmds,XST)
+      IF(XST)THEN
+        CALL ERPFREE(IUO,ISTAT)
+        CALL ERBDMD(0,IUO,IER)
+        dmdsok=.true.
+      else
+        dmdsok=.false.
+      endif
 
 C Generate descriptive strings & output general header information.
 C If output to file alter the edisp unit number.
@@ -816,30 +833,65 @@ C If current version display monthly summary.
       if(izver.ge.4)then
 
 C Monthly statistics of energy gains and losses.
-        write(outs,'(3a)')
-     &  ' Zone      Period| Surface convection at face of |  Casual',
-     &  ' Gains (R+C)   |Air movement   | Environmental |Solar',
-     &  ' radiation |'
-        call edisp(itru,outs)
-        write(outs,'(3a)')
-     &  '           in    |   transparent |    opaque     |Occu-  |',
-     &  'Lights |Small  |Infil- |Venti- |   controls    |absorbd|',
-     &  'entering|'
-        call edisp(itru,outs)
-        write(outs,'(3a)')
-     &  '           month |outside|other  |outside|other  |pant   |',
-     &  '       |Power  |tration|lation |Heating|Cooling|within |',
-     &  'the     |'
-        call edisp(itru,outs)
-        write(outs,'(3a)')
-     &  '                 |facing |facing |facing |facing |       |',
-     &  '       |       |       |       |       |       |zone   |zone',
-     &  '    |'
-        call edisp(itru,outs)
+        if(dmdsok)then
+          write(outsl,'(3a)')
+     &    ' Zone      Period| Surface convection at face of |  Casual',
+     &    ' Gains (R+C)   |Air movement   | Environmental |Solar',
+     &    ' radiation |dispersed'
+          call edisp(itru,outsl)
+          write(outsl,'(3a)')
+     &    '           in    |   transparent |    opaque     |Occu-  |',
+     &    'Lights |Small  |Infil- |Venti- |   controls    |absorbd|',
+     &    'entering| demands'
+          call edisp(itru,outsl)
+          write(outsl,'(3a)')
+     &    '           month |outside|other  |outside|other  |pant   |',
+     &    '       |Power  |tration|lation |Heating|Cooling|within |',
+     &    'the     |for model'
+          call edisp(itru,outsl)
+          write(outsl,'(3a)')
+     &    '                 |facing |facing |facing |facing |       |',
+     &    '       |       |       |       |       |       |zone   |',
+     &    'zone    |'
+          call edisp(itru,outsl)
+        else
+          write(outsl,'(3a)')
+     &    ' Zone      Period| Surface convection at face of |  Casual',
+     &    ' Gains (R+C)   |Air movement   | Environmental |Solar',
+     &    ' radiation |'
+          call edisp(itru,outsl)
+          write(outsl,'(3a)')
+     &    '           in    |   transparent |    opaque     |Occu-  |',
+     &    'Lights |Small  |Infil- |Venti- |   controls    |absorbd|',
+     &    'entering|'
+          call edisp(itru,outsl)
+          write(outsl,'(3a)')
+     &    '           month |outside|other  |outside|other  |pant   |',
+     &    '       |Power  |tration|lation |Heating|Cooling|within |',
+     &    'the     |'
+          call edisp(itru,outsl)
+          write(outsl,'(3a)')
+     &    '                 |facing |facing |facing |facing |       |',
+     &    '       |       |       |       |       |       |zone   |',
+     &    'zone    |'
+          call edisp(itru,outsl)
+        endif
       endif
 
+C For each zone in model sum the zone base areas and then get the
+C fraction of model base area for the zone.
+      overallm2=0.0
+      DO izn=1,NCOMP
+        overallm2=overallm2+ZBASEA(izn)
+      ENDDO
+      DO izn=1,NCOMP
+        zonem2frac(izn)=ZBASEA(izn)/overallm2
+      ENDDO
+      write(outs,*) 'The model overall base area is ',overallm2,'m2.'
+      call edisp(itru,outs)
+
 C Loop for 13 topics and then each month.
-      DO 620 IJK=1,13
+      DO 620 IJK=1,14
         DO 610 IMNTH=1,12
           TVAL(IJK,IMNTH)=0.0
   610   CONTINUE
@@ -848,7 +900,7 @@ C Loop for 13 topics and then each month.
 C Per zone statistics.
       DO 660 KGET=1,NGET
         izn=IGETNO(KGET,2)
-        DO 621 IJK=1,13
+        DO 621 IJK=1,14
           VAL(IJK)=0.0
   621   CONTINUE
 
@@ -989,37 +1041,57 @@ C Solar entering zone from outside.
             CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
             VAL(13)=VAL(13)+SGT
 
+C If dispersed demands (via VAL3 arrays) sum them to VAL(14).
+C As dispersed demands are for whole model in the reporting
+C for each zone factor it by the base area of that zone.
+            if(dmdsok)then
+              call DDMDS(JD)
+              DO J2=ISTART,IEND
+                GVAL(J2)=VAL3(15,J2)+VAL3(16,J2)+VAL3(17,J2)+
+     &            VAL3(18,J2)+VAL3(19,J2)+VAL3(20,J2)+VAL3(21,J2)
+              ENDDO
+              CALL FLTIAV(JD,GVAL,CQ,NEL)
+              CALL SUM1V(CQ,ISTART,IEND,SGT,SLT,IGT,IEQ,ILT)
+              VAL(14)=VAL(14)+(SGT*zonem2frac(izn))
+            else
+              VAL(14)=0.0
+            endif
+
           endif
 
 C Check if month finished.
           IF(JD.LT.NDYMTH(IMNTH).AND.JD.NE.IODF)goto 650
 
 C Dump this month's statistics.
-          DO IJK=1,13
+          DO IJK=1,14
             VAL(IJK)=VAL(IJK)/1000.
           ENDDO
 
-          looplimit=13
+          if(dmdsok)then
+            looplimit=14
+          else
+            looplimit=13
+          endif
           IF(IMNTH.EQ.IOM1)THEN
             if(IR.eq.1)then
-              WRITE(outs,701)zname(IZN)(1:12),NMTHNM(IMNTH),
+              WRITE(outsl,701)zname(IZN)(1:12),NMTHNM(IMNTH),
      &                      (VAL(IJ),IJ=1,looplimit)
-  701         FORMAT(1X,A12,1X,A3,1X,13F8.1)
+  701         FORMAT(1X,A12,1X,A3,1X,14F8.1)
             elseif(IR.eq.2)then
-              WRITE(outs,703)zname(IZN)(1:12),NMTHNM(IMNTH),
+              WRITE(outsl,703)zname(IZN)(1:12),NMTHNM(IMNTH),
      &                      (VAL(IJ),IJ=1,looplimit)
-  703         FORMAT(1X,A12,1X,A3,1X,13F8.0)
+  703         FORMAT(1X,A12,1X,A3,1X,14F8.0)
             endif
-            call eddisp(itru,outs)
+            call eddisp(itru,outsl)
           ELSE
             if(IR.eq.1)then
-              WRITE(outs,702)NMTHNM(IMNTH),(VAL(IJ),IJ=1,looplimit)
-  702         FORMAT(14x,A3,1X,13F8.1)
+              WRITE(outsl,702)NMTHNM(IMNTH),(VAL(IJ),IJ=1,looplimit)
+  702         FORMAT(14x,A3,1X,14F8.1)
             elseif(IR.eq.2)then
-              WRITE(outs,704)NMTHNM(IMNTH),(VAL(IJ),IJ=1,looplimit)
-  704         FORMAT(14x,A3,1X,13F8.0)
+              WRITE(outsl,704)NMTHNM(IMNTH),(VAL(IJ),IJ=1,looplimit)
+  704         FORMAT(14x,A3,1X,14F8.0)
             endif
-            call eddisp(itru,outs)
+            call eddisp(itru,outsl)
           ENDIF
 
           DO IJK=1,looplimit
@@ -1031,20 +1103,24 @@ C Dump this month's statistics.
   660 CONTINUE
 
 C Dump 'all-zone' statistics if more than one zone.
-      looplimit=13
+      if(dmdsok)then
+        looplimit=14
+      else
+        looplimit=13
+      endif
       DO 680 IMNTH=IOM1,IOM2
         if (NZ.GT.1) then
           IF(IMNTH.EQ.IOM1)THEN
-            write(outs,705)NMTHNM(IMNTH),
+            write(outsl,705)NMTHNM(IMNTH),
      &        (TVAL(IJK,IMNTH),IJK=1,looplimit)
-  705       format(' All zones    ',A3,1X,13(F8.0))
+  705       format(' All zones    ',A3,1X,14(F8.0))
             call edisp(itru,' ')
-            call eddisp(itru,outs)
+            call eddisp(itru,outsl)
           ELSE
-            write(outs,706)NMTHNM(IMNTH),
+            write(outsl,706)NMTHNM(IMNTH),
      &        (TVAL(IJK,IMNTH),IJK=1,looplimit)
-  706       format(14X,A3,1X,13(F8.0))
-            call eddisp(itru,outs)
+  706       format(14X,A3,1X,14(F8.0))
+            call eddisp(itru,outsl)
           ENDIF
         endif
         biggest=0.0
@@ -1058,16 +1134,20 @@ C Dump the annual totals if run was for more than one month.
 
 C Find if any of the annual totals is large enough to require 10 digits
 C otherwise write with 8 or 9 digits.
-      looplimit=13
+      if(dmdsok)then
+        looplimit=14
+      else
+        looplimit=13
+      endif
       if (IOM2.GT.IOM1) then
         if(biggest.gt.999999.0)then
-          write(outsl,'(A,13(F10.0))') ' Annual   ',
+          write(outsl,'(A,14(F10.0))') ' Annual   ',
      &      (VAL(IJK),IJK=1,looplimit)
         elseif(biggest.gt.99999.0.and.biggest.lt.999999.0)then
-          write(outsl,'(A,13(F9.0))')' Annual      ',
+          write(outsl,'(A,14(F9.0))')' Annual      ',
      &      (VAL(IJK),IJK=1,looplimit)
         else
-          write(outsl,'(A,13(F8.0))')' Annual           ',
+          write(outsl,'(A,14(F8.0))')' Annual           ',
      &      (VAL(IJK),IJK=1,looplimit)
         endif
         call edisp(itru,' ')

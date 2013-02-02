@@ -462,7 +462,7 @@ CONTAINS
       rvFreeCoolingDelivered%VariableName = 'bui/*/free_cooling/'
       rvFreeCoolingDelivered%MetaType = 'units'
       rvFreeCoolingDelivered%VariableType = '(W)'
-      rvFreeCoolingDelivered%Description = 'Free cooling delivered to zone '
+      rvFreeCoolingDelivered%Description = 'Free cooling delivered to zone through BCL 29'
       Call AddVariable(rvFreeCoolingDelivered )
       
       rvSuppliedEnergyNetPerm2%VariableName = 'bui/*/supplied_energy/net_Perm2'

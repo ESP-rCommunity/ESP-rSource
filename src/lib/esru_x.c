@@ -334,7 +334,7 @@ static int asklprompt; /* left position of prompt text */
 
 static char help_list[HELP_LIST_LEN][73];	/* character arrays to hold help to be displayed
 				   by functions which include help */
-static char edisp_list[EDISP_LIST_LEN][125];	/* character arrays for edisp buffer */
+static char edisp_list[EDISP_LIST_LEN][145];	/* character arrays for edisp buffer */
 static char edit_list[PROFMA_LEN][96];	/* character arrays to be edited in fprofma_ */
 static char display_list[PROFMA_LEN][125];	/* character arrays used within fprofma_ */
 static int edisp_index = 0;	/* current position in edisp past list */
@@ -5144,12 +5144,12 @@ void disptext()
   int iy,lm1,i,len;
   long int saved_font;
   int j,jstart; 	/* variables for text feedback redisplay */
-  char msg2[125];
+  char msg2[145];
 
   saved_font = current_font;   /* save existing font  */
   if (disp_fnt != saved_font) winfnt_(&disp_fnt);
 
-  len = 124; /* max char width to print */
+  len = 144; /* max char width to print */
   disp_lines = (int) ((disp.b_bottom - disp.b_top) / (f_height+1));
   if (disp_lines != tfb_limtty) {
     tfb_line = tfb_line - tfb_limtty + disp_lines;
@@ -5190,7 +5190,7 @@ void egdisp_(msg,line,len)
   long int *line;             	 /* position indicator */
 {
   int i;		 /* local string length */
-  char msg2[125];
+  char msg2[145];
 
   if( len <= 1 )return; /* don`t bother if no characters */
 
@@ -5210,7 +5210,7 @@ void egdisp_(msg,line,len)
     strncpy(edisp_list[edisp_index],msg,len);	/* copy to static array */
   } else {
     for ( i = 0; i < EDISP_LIST_LEN-1; i++ ) {
-      strncpy(edisp_list[i],edisp_list[i+1],124);	/* shift array up */
+      strncpy(edisp_list[i],edisp_list[i+1],144);	/* shift array up */
     }
     strncpy(edisp_list[EDISP_LIST_LEN-1],msg,len);   /* copy to static array */
   }
