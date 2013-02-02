@@ -3471,9 +3471,9 @@ C Total latent heat capacity of PCM (J/kg).
       endif
 
 C Coefficients for non-subcooling (a1-f1) and sub-cooling (a2-f2) integral
-C of latent heat - lh(t1,t2)=exp(a)/b*(exp(b*T1)-exp(b*t2)) - and latent
+C of latent heat - lh(T1,T2)=exp(a)/b*(exp(b*T1)-exp(b*T2)) - and latent
 C heat function from c(T)=(a+cT+eT**2)/(1+bT+dT**2) extended to
-C (t**f)*c(t) (see thesis by Sabine Hoffmann).
+C (T**f)*c(T) (see thesis by Sabine Hoffmann).
       a1=spmdat(ispmnod,10)
       b1=spmdat(ispmnod,11)
       c1=spmdat(ispmnod,12)
@@ -3496,6 +3496,7 @@ C Initialisations.
             appconp(icomp,isurf,nloc)=consol
             appshcp(icomp,isurf,nloc)=shcsol
          enddo
+         iPcmStateFlag=1 ! initialize to solid
       endif
 
 C Initialisations for xml output.
@@ -4286,10 +4287,28 @@ C Set new k.
             endif  !- temperature bracketing for k=0
          endif
       else
-         !- what happens here (TnS = TnS1)?
-         if(AppCon.le.0.0E+00)AppCon=consol
-         if(AppSHC.le.0.0E+00)AppSHC=shcsol
-         iPcmStateFlag=1 ! 1: solid, if 2: mixed, if 3: liquid
+C        Default behaviour for TnS = TnS1, i.e. future and present
+C        temperatures are equal, should be "do nothing" (?)
+C        <<< should some variables be zeroed, here? >>>
+C
+C        Set apparent thermal conductivity to fixed value if (for
+C        whatever reason) it is < 0
+         if (AppCon.le.0.0E+00) AppCon=consol
+
+C        Set apparent specific heat capacity to fixed value if
+C        it is < 0
+C        <<< is this actually a good idea?? Needs checking >>>
+         if (AppSHC.le.0.0E+00) AppSHC=shcsol
+
+C        Set state flag if not a valid value
+         if (iPcmStateFlag.ne.1 .and.iPcmStateFlag.ne.2
+     &         .and.iPcmStateFlag.ne.3) then
+C          debug:
+           write(*,*)"iPcmStateFlag= ",iPcmStateFlag
+
+           iPcmStateFlag=1 ! 1: solid, if 2: mixed, if 3: liquid
+         endif
+
          Debug=9
       endif
 
@@ -4648,13 +4667,13 @@ C Output available PCM layer data.
      &     zname(iZone)(1:lnzname(iZone)) //
      &     '/s' // cSurf_Chars // '/n' // cNode_Chars // '/' //
      &     spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod))),
-     &     strspm(ispmnod,idat)(1:lnblnk(spmlabel(ispmnod))))
+     &     strspm(ispmnod,idat)(1:lnblnk(strspm(ispmnod,idat))))
 
         Call AddToReportDetails(rvBuiSpm%Identifier,
      &     zname(iZone)(1:lnzname(iZone)) //
      &     '/s' // cSurf_Chars // '/n' // cNode_Chars // '/' //
      &     spmlabel(ispmnod)(1:lnblnk(spmlabel(ispmnod))),
-     &     strspm(ispmnod,idat)(1:lnblnk(spmlabel(ispmnod))),
+     &     strspm(ispmnod,idat)(1:lnblnk(strspm(ispmnod,idat))),
      &     'units',
      &     unitspm(ispmnod,idat)(1:lnblnk(unitspm(ispmnod,idat))),
      &     txtspm(ispmnod,idat)(1:lnblnk(txtspm(ispmnod,idat))))
