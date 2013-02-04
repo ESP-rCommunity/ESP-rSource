@@ -3758,6 +3758,7 @@ C control for the specified CFC type.
 C
 C ********************************************************************
       subroutine CFC_control()
+      use h3kmodule
       IMPLICIT NONE
 #include "building.h"
 #include "control.h"
@@ -3820,6 +3821,7 @@ C      real slat_angleX
       real solrad_dir               ! incident direct solar radiation [W/m2] - returned by sub. get_incident_solrad
       real solrad_diff              ! incident diffuse solar radiation [W/m2] - returned by sub. get_incident_solrad
       character msgout*124
+      character*2 cZone_Chars, cCFC_Chars
       
 C Prior to initiating control logic, set the default slat angle and 
 C shading state for the next time step in all zones and all CFC types
@@ -4125,7 +4127,40 @@ C Save slat angle and shade state for use in future time-step.
   34      continue   
         endif
   33  continue
-  
+
+C Make slat angle and shade state available in H3KReports.
+      DO 43 i = 1, ncomp                            ! Examine each zone in turn.
+        IF (icfc(i)==1) THEN                        ! Check if there are CFCs in this zone.
+          DO 44 j = 1, ncfc(i)                      ! Examine each type of CFC in zone.
+
+            if ( i > 9 ) then                       ! Tag output with zone number (pad to 'XX' format).
+              write( cZone_Chars, '(I2)' ) i
+            else
+              write( cZone_Chars, '(A,I1)' ) '0', i
+            end if
+            if ( j > 9 ) then                       ! Tag output with CFC type.
+              write( cCFC_Chars, '(I2)' ) j
+            else
+              write( cCFC_Chars, '(A,I1)' ) '0', j
+            end if
+
+            call AddToReport (                      ! Report control state.
+     &             rvCFCShadeCtl%Identifier,
+     &             float( i_shd(i,j) ),
+     &             cZone_Chars,
+     &             cCFC_Chars )
+
+            call AddToReport (                      ! Report slat angle.
+     &             rvCFCSlatAngle%Identifier,
+     &             vb_phiNew(i,j),
+     &             cZone_Chars,
+     &             cCFC_Chars )
+
+  44      CONTINUE
+        END IF
+  43  CONTINUE
+
+
       return
       end
 

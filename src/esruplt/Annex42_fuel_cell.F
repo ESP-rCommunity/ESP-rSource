@@ -3475,6 +3475,20 @@ C CV5 (gas within burner).
         END SELECT ! CASE DEFAULT not required because already checked above.
 
 C Gas-to-water heat exchanger: CV6 (HX-water) and CV7 (HX-gas).
+C-------If there is no flow of water through HX then protect plant matrix from
+C-------division by zero.
+        CALL ECLOSE( C_water, 0., 0.001, CLOSE)
+        HX_no_flow: IF(CLOSE)THEN
+          COUT(10) = 0.  ! Water side of HX.
+          COUT(11) = 1.
+          COUT(12) = 0.
+          COUT(30) = -1.
+          COUT(37) = 0.
+          COUT(13) = -1. ! Gas side of HX.
+          COUT(14) = 1.
+          COUT(38) = 0.
+
+        ELSE HX_no_flow ! There is water flow through HX.
         SELECT CASE ( HX_method )
         CASE ( HX_fixed_eff )
 C---------CV6 (HX-water).
@@ -3571,6 +3585,7 @@ C-----------CV7 (HX-gas).
         CASE DEFAULT
 
         END SELECT
+        END IF HX_no_flow ! This goes with check on zero flow: need to label this 'endif'.
 
 
 C CV8 (dilution air system).
@@ -4693,6 +4708,10 @@ C-------------------------------------------------------------------------------
       REAL tH_at_min_range ! Difference in enthalpy between temp at min of range and
                            ! that at standard state (J/kmol).
       REAL Cp_at_min_range ! Heat capacity at temp at min of range of applicability (J/kmolK).
+      LOGICAL msg_max_range(15), msg_min_range(15) ! Flags indicating warnings have been given.
+      DATA msg_max_range(1:15) / 15*.false. /
+      DATA msg_min_range(1:15) / 15*.false. /
+      SAVE msg_max_range, msg_min_range
 
 C---------------------------------------------------------------------------------
 C Shomate coefficients from NIST web site for N2, O2, Ar, CO2, H2, CH4, and
@@ -4753,15 +4772,22 @@ C-------------------------------------------------------------------------------
 C Issue error message and halt simulation if temperature exceeds maximum of
 C range of applicability of the correlations.
 C---------------------------------------------------------------------------------
-      IF (tempK > max_range(gas) ) THEN
-        write(IUOUT,*) ' Temperature > range of applicability'
-        write(IUOUT,*) ' of Shomate correlation for gas: ',gas
-        write(IUOUT,*) '   : ',tempK,' > ',max_range(gas)
+      IF( .not. msg_max_range(gas) ) THEN
+        IF (tempK > max_range(gas) ) THEN
+          write(IUOUT,*) ' Temperature > range of applicability'
+          write(IUOUT,*) ' of Shomate correlation for gas: ',gas
+          write(IUOUT,*) '   : ',tempK,' > ',max_range(gas)
+          msg_max_range(gas) = .true.
+        END IF
       END IF
-      IF (tempK < min_range(gas) ) THEN
-        write(IUOUT,*) ' Temperature < range of applicability'
-        write(IUOUT,*) ' of Shomate correlation for gas: ',gas
-        write(IUOUT,*) '   : ',tempK,' < ',min_range(gas)
+
+      IF( .not. msg_min_range(gas) ) THEN
+        IF (tempK < min_range(gas) ) THEN
+          write(IUOUT,*) ' Temperature < range of applicability'
+          write(IUOUT,*) ' of Shomate correlation for gas: ',gas
+          write(IUOUT,*) '   : ',tempK,' < ',min_range(gas)
+          msg_min_range(gas) = .true.
+        END IF
       END IF
 
 

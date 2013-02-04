@@ -1254,12 +1254,11 @@ C.....ZONE HEAT INJECTION / EXTRACTION
      &         Q_cool,
      &         cZone_Chars)
 
-C.....Cooling delivered by free-cooling means
-
-C      call AddToReportWild1 (
-C     &         rvFreeCoolingDelivered%Identifier,
-C     &         fFreeCoolDelivered(iZone),
-C     &         cZone_Chars)
+C.....Cooling delivered by free-cooling means through BCL 29.
+      call AddToReport (
+     &         rvFreeCoolingDelivered%Identifier,
+     &         fFreeCoolDelivered(iZone),
+     &         cZone_Chars)
     
      
 C Convert heat injection/extraction metrics to "per m2 of floor area"
