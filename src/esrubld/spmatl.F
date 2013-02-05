@@ -3800,17 +3800,14 @@ C Trace output.
 C ***************** LatentHeat *****************
 C Created by Achim Geissler, July 11 2008.
 C
-C This code is copyright Achim Geissler in accordance with the 
-C GNU General Public License. You can redistribute it and/or
-C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation
-C (Version 2 or later).
+C This Source Code Form is subject to the terms of the Mozilla Public
+C License, v. 2.0. If a copy of the MPL was not distributed with this
+C file, You can obtain one at http://mozilla.org/MPL/2.0/.
 C
 C The code is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
 C warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-C PURPOSE. See the GNU General Public License for more
-C details.
+C PURPOSE.
 C
 C This function models PCM materials which show significant sub-cooling
 C properties, i.e. materials that, once melted, must be sub-cooled by
@@ -3902,20 +3899,19 @@ C More than |Lges| is not possible.
       end
 
 C ***************** v_func *****************
-C Function for extended latent heat integral.
+C Created by Achim Geissler, July 11 2008.
 C
-C This code is copyright Achim Geissler in accordance with the 
-C GNU General Public License. You can redistribute it and/or
-C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation
-C (Version 2 or later).
+C This Source Code Form is subject to the terms of the Mozilla Public
+C License, v. 2.0. If a copy of the MPL was not distributed with this
+C file, You can obtain one at http://mozilla.org/MPL/2.0/.
 C
 C The code is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
 C warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-C PURPOSE. See the GNU General Public License for more
-C details.
+C PURPOSE.
 C
+C Function for extended latent heat integral.
+
       real function v_func(k,T)
       implicit none
 
@@ -3971,21 +3967,20 @@ C Calculate coefficients (v(FP,Theta)).
       end
 
 C ***************** extfunc *****************
-C Extended Hoffmann function for latent heat for 
-C PCM materials.
+C Created by Achim Geissler, July 11 2008.
 C
-C This code is copyright Achim Geissler in accordance with the 
-C GNU General Public License. You can redistribute it and/or
-C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation
-C (Version 2 or later).
+C This Source Code Form is subject to the terms of the Mozilla Public
+C License, v. 2.0. If a copy of the MPL was not distributed with this
+C file, You can obtain one at http://mozilla.org/MPL/2.0/.
 C
 C The code is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
 C warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-C PURPOSE. See the GNU General Public License for more
-C details.
+C PURPOSE.
 C
+C Extended Hoffmann function for latent heat for 
+C PCM materials.
+
       real function extfunc(k,T)
       implicit none
       
@@ -4034,22 +4029,21 @@ C Calculate function value.
       end
 	  
 C ***************** PCMSTORE *****************
-C This routine keeps track of the latent heat stored/released by a
-C PCM. The routine is called once each simulation time step and for
-C each PCM node.
+C Created by Achim Geissler, July 11 2008.
 C
-C This code is copyright Achim Geissler in accordance with the 
-C GNU General Public License. You can redistribute it and/or
-C modify it under the terms of the GNU General Public
-C License as published by the Free Software Foundation
-C (Version 2 or later).
+C This Source Code Form is subject to the terms of the Mozilla Public
+C License, v. 2.0. If a copy of the MPL was not distributed with this
+C file, You can obtain one at http://mozilla.org/MPL/2.0/.
 C
 C The code is distributed in the hope that it will be useful
 C but WITHOUT ANY WARRANTY; without even the implied
 C warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
-C PURPOSE. See the GNU General Public License for more
-C details.
+C PURPOSE.
 C
+C This routine keeps track of the latent heat stored/released by a
+C PCM. The routine is called once each simulation time step and for
+C each PCM node.
+
       subroutine pcmstore(TnS,TnS1,k,storedLH,AppCon,AppSHC,Debug)
       implicit none
 
