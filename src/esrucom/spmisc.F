@@ -94,25 +94,25 @@ C Open special materials file on temporary file channel.
 C Read data from opened special materials file to the common blocks.
 C Get the number of entries in the file. 
       call stripc(ispmfil,outstr,1,ND,0,
-     &'special materials file error..',IER)
+     &  'special materials file error..',IER)
       if(IER.ne.0) goto 999
       k=0
       call egetwi(outstr,K,nspmnod,1,mspmnod,'W',
-     &'no spmatl node',IER)
+     &  'number spmatl node',IER)
       if(IER.ne.0) goto 999
 
 C For each entry read the associated special materials data.
       do 10 I=1,nspmnod
 
-C Firstly the material label.
+C Firstly the special material label (first 16 characters).
         call stripc(ispmfil,outstr,1,ND,0,
-     &'special materials file error..',IER)
+     &    'special materials file error..',IER)
         if(IER.ne.0) goto 999
         spmlabel(I)=outstr(1:16)
 
 C Next read the material info.
         call stripc(ispmfil,outstr,5,ND,0,
-     &'special materials file error..',IER)
+     &    'special materials file error..',IER)
         if(IER.ne.0) goto 999
         k=0
         call egetwi(outstr,K,ivar1,1,mcom,'W','-',IER)
@@ -129,12 +129,13 @@ C Next read the material info.
 
 C Read the material miscellaneous data.
         call stripc(ispmfil,outstr,1,ND,0,
-     &'special materials file error..',IER)
+     &    'special materials file error..',IER)
         if(IER.ne.0) goto 999
         K=0
         call egetwi(outstr,K,nspmdat,1,mspmdat,'W','-',IER)
         nnodat(I)=nspmdat
         if(IER.ne.0) goto 999
+
 C Recover misellaneous data:
         call EGetWRA( ispmfil, hold_data, nspmdat,0.,0., '-',
      &      'special materials file error', IER )
@@ -169,6 +170,8 @@ C defined.
       subroutine SPMWRIT
 #include "building.h"
 #include "model.h"
+
+      integer lnblnk
 
       COMMON/OUTIN/IUOUT,IUIN
       common/pophelp/h(60)
@@ -217,11 +220,12 @@ C Open spm file with filename 'spflnam' unit number IFIL+1.
 
 C Write header label for file
       write(ispmfil,'(a)')'# ESP-r special materials file used in '
-      write(ispmfil,'(a,a)')'# configuration file ',LCFGF(1:20)
+      write(ispmfil,'(a,a)')'# configuration file ',
+     &  LCFGF(1:lnblnk(LCFGF))
 
 C Write out nodal information
       write(ispmfil,'(i4,a)') nspmnod,
-     &'# No. of special material nodes.'
+     &'  # Number of special material nodes.'
       do 10 isp=1,nspmnod
         write(ispmfil,'(a,i3)') '# Node No:',isp
         write(ispmfil,'(a,a)') spmlabel(isp),' # label'
@@ -230,10 +234,31 @@ C Write out nodal information
      &  ispmloc(isp,1),ispmloc(isp,2),ispmloc(isp,3),
      &ispmtyp(isp,1),ispmtyp(isp,2)
  
-C Write node specific data.
-        write(ispmfil,'(a)')'# No. of data items.'
+C Write node specific data. 
+C << TODO expand feedback to use text in the mscomp file. >>
+C << there is a pattern in edspmtl.F near line 530. >>
+        write(ispmfil,'(a)')'# Number of data items.'
         write(ispmfil,'(2x,i2)') nnodat(isp)
         write(ispmfil,'(a)')'# Data:'
+        if(ispmtyp(isp,1).eq.1)then
+          write(ispmfil,'(a)')
+     &    '# Open circuit voltage (V), Short circuit current. (I)'
+          write(ispmfil,'(a)')
+     &    '# Short circuit current (I) Voltage at maximum pwr pt (V)'
+          write(ispmfil,'(a)')
+     &  '# Current at maximum pwr pt (A), Reference insolation (W/m^2)'
+          write(ispmfil,'(a)')
+     & '# Reference temperature (K), Number series connected cells (-)'
+          write(ispmfil,'(2a)')
+     &    '# Number of parallel connected branches (-), ',
+     &    'Number of panels in surface. (-)'
+          write(ispmfil,'(2a)')
+     &    '# Empirical value used in calculation of Io, ',
+     &    'Load type (0-maximum power,1-fixed R,2-fixed V)'
+          write(ispmfil,'(2a)')
+     &    '# Load value - resistance or voltage (-), ',
+     &    'Shading treatment (0-def,1-prop.,2-total,3-diff.)'
+        endif
         istrt=1
         iend=nspmdatl
 

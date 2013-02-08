@@ -137,7 +137,7 @@ C Clear temporary storage for special material node numbers.
   5   CONTINUE
 
       NSPMTYP1=0
-C Display active material components.
+C Display active material components (ispmtyp above 50).
       IF(MODE.EQ.'EM'.OR.MODE.EQ.'LM')THEN
         DO 10 L=1,ILEN
           IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
@@ -158,7 +158,7 @@ c              WRITE(*,*) NSPMTYP1,ITKEY(NSPMTYP1)
        
       NSPMTYP2=0
 
-C Display embedded renewable components.
+C Display embedded renewable components (ispmtyp less than 50).
       IF(MODE.EQ.'EG'.OR.MODE.EQ.'LG')THEN
         DO 9 L=1,ILEN
           IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
@@ -617,6 +617,9 @@ c      ISO=ispmloc(IVAL,2)
       IF(ISPMTYP(ISPMN,1).EQ.3)THEN
         WRITE(OUTS,'(A)') 
      &  'Select zone to in which locate the DWT inlet. '
+      ELSEIF(ISPMTYP(ISPMN,1).EQ.6)THEN
+        WRITE(OUTS,'(A)') 
+     &  'Select a zone to associate with the turbine. '
       ELSE
         WRITE(OUTS,'(A)') 
      &  'Select zone to in which locate the special component. '
@@ -632,17 +635,9 @@ C << rewrite logic to use G7 common rather than call zinfo >>
       CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
 
 C General image option flags.
-      ITDSP=1
-      ITBND=1
-      ITEPT=0
-      ITZNM=0
-      ITSNM=0
-      ITVNO=1
-      ITORG=1
-      ITSNR=1
-      ITGRD=1
-      GRDIS=0.0
-      ITPPSW=0
+      ITDSP=1; ITBND=1; ITEPT=0; ITZNM=0
+      ITSNM=0; ITVNO=1; ITORG=1; ITSNR=1
+      ITGRD=1; GRDIS=0.0; ITPPSW=0
 
       MODIFY=.TRUE.
       MODBND=.TRUE.
@@ -659,6 +654,8 @@ C General image option flags.
       CALL EPMENSV
       IF(ISPMTYP(ISPMN,1).EQ.3)THEN
         CALL EASKSUR(IZ,ISO,'-','Select surface for DWT','inlet.',IER)
+      ELSEIF(ISPMTYP(ISPMN,1).EQ.6)THEN
+        ISO=1   ! free standing turbine does not need this
       ELSE
         CALL EASKSUR(IZ,ISO,'-','Select surface for special',
      &    'component. ',IER)
@@ -822,16 +819,10 @@ C For ducted wind turbine - select the position of the DWT outlet
         if(IZ.eq.0) return
         call georead(IFIL+1,LGEOM(IZ),IZ,1,iuout,IER)
         CALL ZINFO(SNA,ZOA,PAZI,PELV,ZVOL)
+
 C General image option flags.
-        ITDSP=1
-        ITBND=1
-        ITEPT=0
-        ITZNM=0
-        ITSNM=0
-        ITVNO=1
-        ITORG=1
-        ITSNR=1
-        ITGRD=1
+        ITDSP=1; ITBND=1; ITEPT=0; ITZNM=0; ITSNM=0
+        ITVNO=1; ITORG=1; ITSNR=1; ITGRD=1
         GRDIS=0.0
         ITPPSW=0
 
@@ -979,6 +970,11 @@ C and extract the azimuth info.
 
 C Set the nodal location to 0 for the DWT - this information is not needed.
 c        ispmloc(ispmn,3)=0 
+      elseif(ispmtyp(ispmn,1).eq.6)then
+
+C Free standing turbine does not need this information.
+        ispmloc(ispmn,3)=0
+
       else
 
 C Check composite name of surface with composite name in MLC common.
@@ -1106,7 +1102,9 @@ C Report back to user
         call edisp(iuout,outs)
       endif
 
-      if(ispmtyp(ispmn,1).NE.3)THEN
+      if(ispmtyp(ispmn,1).eq.3.or.ispmtyp(ispmn,1).eq.6)then
+        continue
+      else
         write(outs,'(a,i2)')' Placed at node: ',ispmloc(ispmn,3)
         call edisp(iuout,outs)
       endif
