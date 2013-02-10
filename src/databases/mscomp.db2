@@ -14,13 +14,12 @@
 # The categories of special components currently supported in the database
 # categories 1-4 are reserved for building integrated renewables all other
 # categories are for active materials
-9
+8
 crystalline PV model
 amorphous PV model
 simple PV model
 solar collector backplate
-ducted wind turbine
-free standing wind turbine
+wind turbines
 thermocromic glazing
 phase change material
 evaporating surface
@@ -404,13 +403,13 @@ to calculate d as a function of the wind incidence angle.
 *IDDATA
     5     6
 *DESC
-free_standing_wind_turbine
+2.5_wind_turbine
 *SPECDATA 
 11
 10.0      Height of the turbine inlet (m)
-1.0       Turbine cross sectional area (m^2)
-1.0       Power velocity coefficient (-)
-4.0       Cut-in wind speed (m/s)
+2.54      Turbine cross sectional area (m^2)
+0.4       Power velocity coefficient (-)
+3.0       Cut-in wind speed (m/s)
 12.5      Rated wind speed (m/s)
 1.0       Number of turbines (-)
 1.0       Location (1-urban,2-suburban,3-open)
