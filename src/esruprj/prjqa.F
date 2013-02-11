@@ -788,7 +788,7 @@ C Generate report sorted by surface attributes.
         elseif(ins4.eq.2)then
           call edisp(itu,' Filtering for UNKNOWN surface composition.')
         elseif(ins4.eq.3)then
-          write(outs,'(3a)') ' Filtering for ',DESC(ISEL)(1:12),
+          write(outs,'(3a)') ' Filtering for ',mlcname(ISEL)(1:12),
      &      ' composition.'
           call edisp(itu,outs)
         endif
@@ -900,7 +900,9 @@ C 'any horizontal','any orien.','cancel'.
                 if(SSMLCN(icc)(1:4).ne.'UNKN')apply=.false.
               elseif(ins4.eq.3)then
                 if(SSMLCN(icc)(1:4).eq.'UNKN')apply=.false.
-                if(SSMLCN(icc)(1:12).ne.DESC(ISEL)(1:12))apply=.false.
+                if(SSMLCN(icc)(1:12).ne.mlcname(ISEL)(1:12))then
+                  apply=.false.
+                endif
               endif
               
               if(apply)then
@@ -2494,7 +2496,7 @@ C set to 'verbose all' then include all of them.
         write(6,*) 'nmlc is ',nmlc,databaseinfo
         do 342 imlc=1,nmlc
           found=.false.
-          mlc_name=DESC(imlc)(1:12)
+          mlc_name=mlcname(imlc)(1:12)
           call mlcrefs(mlc_name,areamlc,tareamlc,found)
           if(found)then
             if(databaseinfo.eq.2)then
@@ -3144,7 +3146,7 @@ C Check the U value for each surface.
 C << possible place to use ssmlcindex >>
 
             do 511 ii=1,nmlc
-              if(SSMLCN(icc)(1:12).eq.DESC(ii)(1:12)) then
+              if(SSMLCN(icc)(1:12).eq.mlcname(ii)(1:12)) then
 
 C Recover the ISO 6946 U values for horizontal, upwards and downwards
 C flow as well as internal partition (horizontal 0.13 both sides).
@@ -3154,7 +3156,7 @@ C the U and UA reporting below.
                 call etmldbu(0,itu,ii,UVH,UVU,UVD,UVI,UVG)
 
 C Debug.
-C                write(6,*) DESC(ii)(1:12),'ii UVH UVU UVD UVI UVG',
+C                write(6,*) mlcname(ii)(1:12),'ii UVH UVU UVD UVI UVG',
 C     &            ii,UVH,UVU,UVD,UVI,UVG
 
               else

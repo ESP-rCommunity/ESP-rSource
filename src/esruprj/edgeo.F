@@ -1053,9 +1053,9 @@ C Associate mlc with each selected surface.
               ssthick(ioc)=THKMLC(isel)  ! update the thermophysical thickness
 
 C Find the optical name.
-              IF(DESC(ISEL)(15:18).EQ.'OPAQ')then
+              IF(mlctype(ISEL)(1:4).EQ.'OPAQ')then
                 SOTF(ISS)='OPAQUE'
-              ELSEIF(DESC(ISEL)(15:18).EQ.'CFC ')then
+              ELSEIF(mlctype(ISEL)(1:4).EQ.'CFC ')then
                 SOTF(ISS)='CFC '
               ELSE
                 WRITE(SOTF(ISS),'(A)') mlcoptical(ISEL)
@@ -2011,7 +2011,7 @@ C exposed walls and floors, pitched roofs, flat roofs
            UVU = 0.0
            UVD = 0.0
            do 511 ii=1,nmlc
-             if(SMLCN(is)(1:12).eq.DESC(ii)(1:12)) then
+             if(SMLCN(is)(1:12).eq.mlcname(ii)(1:12)) then
 
 C Recover the ISO 6946 U values as in prjqa.F.
                call etmldbu(0,itu,ii,UVH,UVU,UVD,UVI,UVG)
@@ -3465,15 +3465,15 @@ C << properties and the optical name.
           CALL EPMENRC
           IF(ISEL.GT.0)then
             ioc=IZSTOCN(ICOMP,is)
-            WRITE(SMLCN(IS),'(A12)')DESC(ISEL)(1:12)
+            WRITE(SMLCN(IS),'(A12)') mlcname(ISEL)(1:12)
             SSMLCN(ioc)=SMLCN(is)
             ssmlcindex(ioc)=isel   ! update the array
             ssthick(ioc)=THKMLC(isel)  ! update the thermophysical thickness
 
 C Find the optical name.
-            IF(DESC(ISEL)(15:18).EQ.'OPAQ')then
+            IF(mlctype(ISEL)(1:4).EQ.'OPAQ')then
               SOTF(IS)='OPAQUE'
-            ELSEIF(DESC(ISEL)(15:18).EQ.'CFC ')then
+            ELSEIF(mlctype(ISEL)(1:4).EQ.'CFC ')then
               SOTF(IS)='CFC '
             ELSE
               WRITE(SOTF(ISS),'(A)') mlcoptical(ISEL)
@@ -7811,16 +7811,16 @@ C Ask for surface construction.
      &      'inserted surface. ',IER)
           CALL EPMENRC
           if(ISEL.GT.0)then
-            WRITE(constr,'(A12)')DESC(ISEL)(1:12)
+            WRITE(constr,'(A12)') mlcname(ISEL)(1:12)
 
 C Find the optical name.
             OPT=' '
-            IF(DESC(ISEL)(15:18).EQ.'OPAQ')then
+            IF(mlctype(ISEL)(1:4).EQ.'OPAQ')then
               OPT='OPAQUE'
-            ELSEIF(DESC(ISEL)(15:18).EQ.'CFC ')then
+            ELSEIF(mlctype(ISEL)(1:4).EQ.'CFC ')then
               SOTF(NSUR)='CFC '
             ELSE
-              WRITE(OPT,'(A)') DESC(ISEL)(21:32)
+              WRITE(OPT,'(A)') mlcoptical(ISEL)(1:12)
               IF(OPT.EQ.' ')OPT='UNKNOWN'
             ENDIF
           endif

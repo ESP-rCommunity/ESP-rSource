@@ -743,7 +743,7 @@ C Update the connection based data structures.
 C Find the index of the MLC which matches this surface.
           ssmlcindex(iccc)=0  ! assume no matching MLC          
           do 5 ii=1,nmlc
-            if(SSMLCN(iccc)(1:12).eq.DESC(ii)(1:12)) then
+            if(SSMLCN(iccc)(1:12).eq.mlcname(ii)(1:12)) then
               ssmlcindex(iccc)=ii   ! remember MLC index     
             endif
   5       continue

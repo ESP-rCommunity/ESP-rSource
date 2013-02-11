@@ -245,7 +245,7 @@ C Now edit the composition.
           CALL EPKMLC(ISEL,outs,'(or exit to leave unknown)',IERR)
           CALL EPMENRC
           IF(ISEL.GT.0.and.ierr.eq.0)then
-            WRITE(GMLCN(IS),'(A12)')DESC(ISEL)(1:12)
+            WRITE(GMLCN(IS),'(A12)') mlcname(ISEL)(1:12)
           else
             if(GMLCN(IS)(1:1).eq.' ')GMLCN(IS)='UNKNOWN'
           endif
@@ -266,7 +266,7 @@ C Now edit the composition.
      &        'Surface  composition',IER,nbhelp)
             do 11 i=1,inpick
               iss = ivals(i)
-              WRITE(GMLCN(ISS),'(A12)')DESC(ISEL)(1:12)
+              WRITE(GMLCN(ISS),'(A12)') mlcname(ISEL)(1:12)
   11        continue
             MODIFY=.TRUE.
             grmod=.true.
@@ -2941,7 +2941,7 @@ C following code is similar to that in addsur in edzone.f.
      &      'inserted surface. ',IER)
           CALL EPMENRC
           IF(ISEL.GT.0)then
-            WRITE(GMLCN(NGT),'(A12)')DESC(ISEL)(1:12)
+            WRITE(GMLCN(NGT),'(A12)') mlcname(ISEL)(1:12)
           endif
         endif
         if(LASTS.ne.NGT)then

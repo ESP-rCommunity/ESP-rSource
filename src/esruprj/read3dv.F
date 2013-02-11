@@ -348,60 +348,60 @@ C If ISTAT = -1 : straddles frustrum
         ENDIF
 
 C Set line style for this surface. linsty=2 is double width line. 
-          if(ICC.ne.0)then
-            if(LINSTY(ICC).eq.2)then
+        if(ICC.ne.0)then
+          if(LINSTY(ICC).eq.2)then
+            IPEN= -305
+          else
+            IPEN= 1
+          endif
+        else
+          IPEN= 1
+        endif
+
+C Check for hilights. ITHLS=1 is composition, ITHLS=2 trn:opq,
+C ITHLS = 3 partial attributes
+        if(ITHLS.eq.1.and.ITHLZ.gt.0)then
+          WRITE(MLCN,'(A12)') mlcname(ITHLZ)(1:12)
+          if(ICC.gt.0)then
+            if(MLCN(1:12).eq.SSMLCN(ICC)(1:12))then
               IPEN= -305
             else
               IPEN= 1
             endif
           else
-            IPEN= 1
+            IPEN=1
           endif
-
-C Check for hilights. ITHLS=1 is composition, ITHLS=2 trn:opq,
-C ITHLS = 3 partial attributes
-          if(ITHLS.eq.1.and.ITHLZ.gt.0)then
-            WRITE(MLCN,'(A12)')DESC(ITHLZ)(1:12)
-            if(ICC.gt.0)then
-              if(MLCN(1:12).eq.SSMLCN(ICC)(1:12))then
-                IPEN= -305
-              else
-                IPEN= 1
-              endif
+        elseif(ITHLS.eq.2)then
+          if(ICC.gt.0)then
+            if(ITHLZ.eq.1.and.SSOTF(ICC)(1:4).eq.'OPAQ')then
+              IPEN= -305
             else
-              IPEN=1
+              IPEN= 1
             endif
-          elseif(ITHLS.eq.2)then
-            if(ICC.gt.0)then
-              if(ITHLZ.eq.1.and.SSOTF(ICC)(1:4).eq.'OPAQ')then
-                IPEN= -305
-              else
-                IPEN= 1
-              endif
-              if(ITHLZ.eq.2.and.SSOTF(ICC)(1:4).eq.'TRAN')then
-                IPEN= -305
-              else
-                IPEN= 1
-              endif
+            if(ITHLZ.eq.2.and.SSOTF(ICC)(1:4).eq.'TRAN')then
+              IPEN= -305
             else
-              IPEN=1
+              IPEN= 1
             endif
-          elseif(ITHLS.eq.3)then
-            if(ICC.gt.0)then
-              if(SSMLCN(ICC)(1:3).eq.'UNK'.or.
-     &           SSOTHER(ICC,1)(1:3).eq.'UNK')then
-                IPEN= -305
-              else
-                IPEN= 1
-              endif
-            else
-              IPEN=1
-            endif
+          else
+            IPEN=1
           endif
+        elseif(ITHLS.eq.3)then
+          if(ICC.gt.0)then
+            if(SSMLCN(ICC)(1:3).eq.'UNK'.or.
+     &         SSOTHER(ICC,1)(1:3).eq.'UNK')then
+              IPEN= -305
+            else
+              IPEN= 1
+            endif
+          else
+            IPEN=1
+          endif
+        endif
 
 C Debug...
-C          write(6,*)'icc linsty ipen ithls ithlz',icc,linsty(icc),ipen,
-C     &      ithls,ithlz,ISTOK
+C        write(6,*)'icc linsty ipen ithls ithlz',icc,linsty(icc),ipen,
+C     &    ithls,ithlz,ISTOK
 
 C Count the edges in case enhanced edge drawing required.
         iedge=0

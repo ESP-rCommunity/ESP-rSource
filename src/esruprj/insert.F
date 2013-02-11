@@ -2580,10 +2580,10 @@ C If in silent mode assign construction otherwise select.
      &    'inserted surface. ',IER)
         CALL EPMENRC
         IF(ISEL.GT.0)then
-          WRITE(SMLCN(NSUR),'(A12)')DESC(ISEL)(1:12)
-          IF(DESC(ISEL)(15:18).NE.'OPAQ')SOTF(NSUR)='TRAN'
-          IF(DESC(ISEL)(15:18).EQ.'OPAQ')SOTF(NSUR)='OPAQUE'
-          IF(DESC(ISEL)(15:18).EQ.'CFC ')SOTF(NSUR)='CFC '
+          WRITE(SMLCN(NSUR),'(A12)') mlcname(ISEL)(1:12)
+          IF(mlctype(ISEL)(1:4).NE.'OPAQ')SOTF(NSUR)='TRAN'
+          IF(mlctype(ISEL)(1:4).EQ.'OPAQ')SOTF(NSUR)='OPAQUE'
+          IF(mlctype(ISEL)(1:4).EQ.'CFC ')SOTF(NSUR)='CFC '
         endif
       endif
 

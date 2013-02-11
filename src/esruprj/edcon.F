@@ -929,16 +929,16 @@ C the OPAQUE/TRANSPARENT flag as well.
           RETURN
         ENDIF
         IF(IC.GT.0)THEN
-          WRITE(SSMLCN(icn1),'(A)')DESC(IC)(1:12)
+          WRITE(SSMLCN(icn1),'(A)') mlcname(IC)(1:12)
           ssmlcindex(icn1)=IC   ! update array
-          if(DESC(IC)(15:18).EQ.'TRAN')then
+          if(mlctype(IC)(1:4).EQ.'TRAN')then
             SSOTF(icn1)='TRAN'
           endif
-          if(DESC(IC)(15:18).EQ.'OPAQ')then
+          if(mlctype(IC)(1:4).EQ.'OPAQ')then
             SSOTF(icn1)='OPAQUE'
             ITMCFL(ICOMP,ISUR)=0
           endif
-          if(DESC(IC)(15:18).EQ.'CFC ')then
+          if(mlctype(IC)(1:4).EQ.'CFC ')then
             SSOTF(icn1)='CFC '
             ITMCFL(ICOMP,ISUR)=0
           endif
@@ -1159,17 +1159,17 @@ C << The logic for dealing with TRAN/OPAQ needs to be updated! >>
      &                         ' is unknown.'
           CALL EPKMLC(ISEL,outs,'Please select one...',IER)
           IF(ISEL.GT.0)THEN
-            WRITE(SSMLCN(ioc),'(A)')DESC(ISEL)(1:12)
+            WRITE(SSMLCN(ioc),'(A)') mlcname(ISEL)(1:12)
             ssmlcindex(ioc)=ISEL  ! update other surf index
-            if(DESC(ISEL)(15:18).EQ.'TRAN')then
+            if(mlctype(ISEL)(1:4).EQ.'TRAN')then
               SSOTF(ioc)='TRAN'
               ITMCFL(ICOMP,IS)=1
             endif
-            if(DESC(ISEL)(15:18).EQ.'OPAQ')then
+            if(mlctype(ISEL)(1:4).EQ.'OPAQ')then
               SSOTF(ioc)='OPAQUE'
               ITMCFL(ICOMP,IS)=0
             endif
-            if(DESC(ISEL)(15:18).EQ.'CFC ')then
+            if(mlctype(ISEL)(1:4).EQ.'CFC ')then
               SSOTF(ioc)='CFC '
               ITMCFL(ICOMP,IS)=0
             endif
@@ -1503,7 +1503,7 @@ C a display of the current data.
       IF(NTMC.GT.0)GOTO 90
 
 C Loop through each surface and if not opaque get its composite
-C description (DESC) and remember its index ICF, otherwise set ITMCFL
+C description (mlcname) and remember its index ICF, otherwise set ITMCFL
 C to 0.
       lastopt='  '
       DO 10 IS=1,NZSUR(icomp)
@@ -1523,7 +1523,7 @@ C Use ssmlcindex to get matching MLC index
           CALL EPKMLC(ISEL,'From the available composites please',
      &      outs,IER)
           IF(ISEL.GT.0)THEN
-            WRITE(SSMLCN(icn1),'(A12)')DESC(ISEL)(1:12)
+            WRITE(SSMLCN(icn1),'(A12)') mlcname(ISEL)(1:12)
             ssmlcindex(icn1)=ISEL   ! update array
             ICF=ISEL
           ELSE
@@ -1536,8 +1536,8 @@ C an associated set of optical properties. If no equivalent set of
 C optical properties then the user will have to supply this manually.
         helptopic='constr_attribute_checks'
         call gethelptext(helpinsub,helptopic,nbhelp)
-        WRITE(outs,'(A12,A)') DESC(ICF)(1:12),' is not transparent!'
-        IF(DESC(ICF)(15:18).EQ.'OPAQ')THEN
+        WRITE(outs,'(A12,A)') mlcname(ICF)(1:12),' is not transparent!'
+        IF(mlctype(ICF)(1:4).EQ.'OPAQ')THEN
           CALL EASKAB(outs,' do you want to:','switch to opaque',
      &    'select a transparent material',IWB,nbhelp)
           if(IWB.eq.1)then
@@ -1545,7 +1545,7 @@ C optical properties then the user will have to supply this manually.
 C Switch back to opaque construction.
             CALL EPKMLC(ISEL,'Which OPAQUE construction?',' ',IER)
             if(ISEL.GT.0)then
-              WRITE(SSMLCN(icn1),'(A12)')DESC(ISEL)(1:12)
+              WRITE(SSMLCN(icn1),'(A12)') mlcname(ISEL)(1:12)
               ssmlcindex(icn1)=ISEL   ! update array
               ICF=ISEL
               ITMCFL(ICOMP,IS)=0
@@ -1557,7 +1557,7 @@ C Switch back to opaque construction.
             CALL EPKMLC(ISEL,'Which TRANSPARENT construction?',
      &        ' ',IER)
             if(ISEL.GT.0)then
-              WRITE(SSMLCN(icn1),'(A12)')DESC(ISEL)(1:12)
+              WRITE(SSMLCN(icn1),'(A12)') mlcname(ISEL)(1:12)
               ssmlcindex(icn1)=ISEL   ! update array
               ICF=ISEL
             endif
@@ -1565,7 +1565,7 @@ C Switch back to opaque construction.
         ENDIF
 
 C Check to see if this new construction has a known set of opticals.
-        WRITE(OPT,'(A)') DESC(ICF)(21:32)
+        WRITE(OPT,'(A)') mlcoptical(ICF)(1:12)
         IF(OPT(1:2).EQ.'  '.OR.OPT(1:7).EQ.'UNKNOWN'.OR.
      &     OPT(1:6).EQ.'OPAQUE')THEN
           WRITE(outs,'(1X,A12,A)')SSMLCN(icn1),
@@ -2148,12 +2148,12 @@ c time constant.
       write(outs,'(A,G12.4)')' Maximum thermal diffusivity is',TDM
       call edisp(iuout,outs)
       write(outs,'(3A,i3,A,i3)')' Associated MLC is ',
-     &  DESC(istd)(1:12),' (',istd,') Layer',IE
+     &  mlcname(istd)(1:12),' (',istd,') Layer',IE
       call edisp(iuout,outs)
       write(outs,'(A,G12.4,A)')' Maximum time constant is',TCM,' secs.'
       call edisp(iuout,outs)
       write(outs,'(A,A)')' Associated MLC construction is',
-     &  DESC(ISTC)(1:12)
+     &  mlcname(ISTC)(1:12)
       call edisp(iuout,outs)
       write(outs,'(A,I3,A)')' Simulation start-up is',ITCNST,' days.'
       call edisp(iuout,outs)

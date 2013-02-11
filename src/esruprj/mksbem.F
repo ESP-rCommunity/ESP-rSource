@@ -4889,45 +4889,45 @@ C in order to instanciate ssmlcindex.
       call opendb(ier) ! make sure materials & constructions known
   41  mlcf=0
       do 6 ii=1,nmlc
-        if(DESC(ii)(1:12).eq.'opDoorWind_n') then
+        if(mlcname(ii)(1:12).eq.'opDoorWind_n') then
           haveopDoor=.true.; mlciopDoor=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Vehicle_door') then
+        elseif(mlcname(ii)(1:12).eq.'Vehicle_door') then
           haveVehicle=.true.; mlciVehicle=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Not_DisplayG') then
+        elseif(mlcname(ii)(1:12).eq.'Not_DisplayG') then
           haveNot_D=.true.; mlciNot_D=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'window_Not_G') then
+        elseif(mlcname(ii)(1:12).eq.'window_Not_G') then
           haveNot_G=.true.; mlciNot_G=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'frame_notion') then
+        elseif(mlcname(ii)(1:12).eq.'frame_notion') then
           haveframe=.true.; mlciframe=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Wall_Scot_no') then
+        elseif(mlcname(ii)(1:12).eq.'Wall_Scot_no') then
           haveWall_Sc=.true.; mlciWall_Sc=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Wall_EW_noti') then
+        elseif(mlcname(ii)(1:12).eq.'Wall_EW_noti') then
           haveWall_EW=.true.; mlciWall_EW=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Wall_NI_noti') then
+        elseif(mlcname(ii)(1:12).eq.'Wall_NI_noti') then
           haveWall_NI=.true.; mlciWall_NI=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Fl_roof_noti') then
+        elseif(mlcname(ii)(1:12).eq.'Fl_roof_noti') then
           haveFl_r=.true.; mlciFl_r=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'SC_Pitch_roo') then
+        elseif(mlcname(ii)(1:12).eq.'SC_Pitch_roo') then
           haveSC_P=.true.; mlciSC_P=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'EW_notPitch_') then
+        elseif(mlcname(ii)(1:12).eq.'EW_notPitch_') then
           haveEW_notP=.true.; mlciEW_notP=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Sol_grnd_not') then
+        elseif(mlcname(ii)(1:12).eq.'Sol_grnd_not') then
           haveSol_gr=.true.; mlciSol_gr=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'pa_fl_notion') then
+        elseif(mlcname(ii)(1:12).eq.'pa_fl_notion') then
           havepa_fl=.true.; mlcipa_fl=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'inv_pa_fl_no') then
+        elseif(mlcname(ii)(1:12).eq.'inv_pa_fl_no') then
           haveinv_pa_f=.true.; mlciinv_pa_f=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'party_wall_n') then
+        elseif(mlcname(ii)(1:12).eq.'party_wall_n') then
           haveparty_w=.true.; mlciparty_w=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'internal_glz') then
+        elseif(mlcname(ii)(1:12).eq.'internal_glz') then
           haveint_g=.true.; mlciint_g=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'exWall_typic') then
+        elseif(mlcname(ii)(1:12).eq.'exWall_typic') then
           haveexWall_ty=.true.; mlciWall_ty=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Fl_roof_typi') then
+        elseif(mlcname(ii)(1:12).eq.'Fl_roof_typi') then
           haveFl_rty=.true.; mlciFL_rty=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'window_Typ_G') then
+        elseif(mlcname(ii)(1:12).eq.'window_Typ_G') then
           havewin_Typ_G=.true.; mlciwin_Typ_G=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Sol_grnd_typ') then
+        elseif(mlcname(ii)(1:12).eq.'Sol_grnd_typ') then
           haveSol_gr_typ=.true.; mlciSol_gr_typ=ii; mlcf=mlcf+1
         endif
   6   continue
@@ -5001,7 +5001,7 @@ C        write(6,*) icomp,NZSUR(icomp),nmlc
           icn1=izstocn(icomp,i)
           ssmlcindex(icn1)=0  ! assume no matching MLC          
           do 5 ii=1,nmlc
-            if(SSMLCN(icn1)(1:12).eq.DESC(ii)(1:12)) then
+            if(SSMLCN(icn1)(1:12).eq.mlcname(ii)(1:12)) then
               ssmlcindex(icn1)=ii   ! remember MLC index     
             endif
   5       continue
@@ -6228,45 +6228,45 @@ C in order to instanciate ssmlcindex.
       call opendb(ier) ! make sure materials & constructions known
    41  mlcf=0
       do 6 ii=1,nmlc
-        if(DESC(ii)(1:12).eq.'opDoorWind_n') then
+        if(mlcname(ii)(1:12).eq.'opDoorWind_n') then
           haveopDoor=.true.; mlciopDoor=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Vehicle_door') then
+        elseif(mlcname(ii)(1:12).eq.'Vehicle_door') then
           haveVehicle=.true.; mlciVehicle=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Not_DisplayG') then
+        elseif(mlcname(ii)(1:12).eq.'Not_DisplayG') then
           haveNot_D=.true.; mlciNot_D=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'window_Not_G') then
+        elseif(mlcname(ii)(1:12).eq.'window_Not_G') then
           haveNot_G=.true.; mlciNot_G=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'frame_notion') then
+        elseif(mlcname(ii)(1:12).eq.'frame_notion') then
           haveframe=.true.; mlciframe=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Wall_Scot_no') then
+        elseif(mlcname(ii)(1:12).eq.'Wall_Scot_no') then
           haveWall_Sc=.true.; mlciWall_Sc=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Wall_EW_noti') then
+        elseif(mlcname(ii)(1:12).eq.'Wall_EW_noti') then
           haveWall_EW=.true.; mlciWall_EW=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Wall_NI_noti') then
+        elseif(mlcname(ii)(1:12).eq.'Wall_NI_noti') then
           haveWall_NI=.true.; mlciWall_NI=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Fl_roof_noti') then
+        elseif(mlcname(ii)(1:12).eq.'Fl_roof_noti') then
           haveFl_r=.true.; mlciFl_r=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'SC_Pitch_roo') then
+        elseif(mlcname(ii)(1:12).eq.'SC_Pitch_roo') then
           haveSC_P=.true.; mlciSC_P=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'EW_notPitch_') then
+        elseif(mlcname(ii)(1:12).eq.'EW_notPitch_') then
           haveEW_notP=.true.; mlciEW_notP=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Sol_grnd_not') then
+        elseif(mlcname(ii)(1:12).eq.'Sol_grnd_not') then
           haveSol_gr=.true.; mlciSol_gr=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'pa_fl_notion') then
+        elseif(mlcname(ii)(1:12).eq.'pa_fl_notion') then
           havepa_fl=.true.; mlcipa_fl=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'inv_pa_fl_no') then
+        elseif(mlcname(ii)(1:12).eq.'inv_pa_fl_no') then
           haveinv_pa_f=.true.; mlciinv_pa_f=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'party_wall_n') then
+        elseif(mlcname(ii)(1:12).eq.'party_wall_n') then
           haveparty_w=.true.; mlciparty_w=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'internal_glz') then
+        elseif(mlcname(ii)(1:12).eq.'internal_glz') then
           haveint_g=.true.; mlciint_g=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'exWall_typic') then
+        elseif(mlcname(ii)(1:12).eq.'exWall_typic') then
           haveexWall_ty=.true.; mlciWall_ty=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Fl_roof_typi') then
+        elseif(mlcname(ii)(1:12).eq.'Fl_roof_typi') then
           haveFl_rty=.true.; mlciFL_rty=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'window_Typ_G') then
+        elseif(mlcname(ii)(1:12).eq.'window_Typ_G') then
           havewin_Typ_G=.true.; mlciwin_Typ_G=ii; mlcf=mlcf+1
-        elseif(DESC(ii)(1:12).eq.'Sol_grnd_typ') then
+        elseif(mlcname(ii)(1:12).eq.'Sol_grnd_typ') then
           haveSol_gr_typ=.true.; mlciSol_gr_typ=ii; mlcf=mlcf+1
         endif
   6   continue
@@ -6595,7 +6595,7 @@ C      write(6,*) icomp,NZSUR(icomp),nmlc
         icn1=izstocn(icomp,i)
         ssmlcindex(icn1)=0  ! assume no matching MLC          
         do 5 ii=1,nmlc
-          if(SSMLCN(icn1)(1:12).eq.DESC(ii)(1:12)) then
+          if(SSMLCN(icn1)(1:12).eq.mlcname(ii)(1:12)) then
             ssmlcindex(icn1)=ii   ! remember MLC index     
           endif
   5     continue
@@ -10264,7 +10264,7 @@ c      EXP_COND=0.   ! External envelope conductance W/K
 
 C Recover the ISO 6946 U values as in prjqa.F.
             do 7511 ii=1,nmlc
-              if(SSMLCN(icc)(1:12).eq.DESC(ii)(1:12))then
+              if(SSMLCN(icc)(1:12).eq.mlcname(ii)(1:12))then
                 call etmldbu(0,itu,ii,UVH,UVU,UVD,UVI,UVG)
               endif
  7511       continue

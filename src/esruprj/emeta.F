@@ -678,7 +678,7 @@ C Also set ssmlcindex for this surface.
         imatch=0
         ssmlcindex(iccc)=0  ! assume no matching MLC          
         do 5 ii=1,nmlc
-          if(SMLCN(icc)(1:12).eq.DESC(ii)(1:12)) then
+          if(SMLCN(icc)(1:12).eq.mlcname(ii)(1:12)) then
             imatch=ii
             ssmlcindex(iccc)=ii   ! remember MLC index     
           endif
@@ -700,7 +700,7 @@ C mark anunknownmlc so construction files are not created.
         elseif(metaver.eq.1)then
 
 C See if it is opaque or transparent and copy out the relevant
-C section of the string DESC.
+C section of the construction attributes.
           if(imatch.eq.0) then
 
 C If we do not have a match it might be because we are referencing a local
@@ -713,8 +713,12 @@ C the original model. In this case << ? >>
           if(DESC(imatch)(15:18).EQ.'OPAQ')then
             SOTF(icc)='OPAQUE'
           else
-            WRITE(SOTF(icc),'(A)') DESC(imatch)(21:32)
-            willneedtmc=.true.
+            if(mlctype(imatch)(1:4).EQ.'OPAQ')then
+              SOTF(icc)='OPAQUE'
+            else
+              WRITE(SOTF(icc),'(A)') mlcoptical(imatch)(1:12)
+              willneedtmc=.true.
+            endif
           endif
         endif
         endif
@@ -856,10 +860,10 @@ C parent surface.  Later add logic to better place the door..
 
 C Loop thru all of the constructions to find the matching construction
 C and then see if it is opaque or transparent and copy out the relevant
-C section of the string DESC.
+C section of the construction attributes.
             imatch=0
             do 56 ii=1,nmlc
-              if(rsmlcn(1:12).eq.DESC(ii)(1:12)) then
+              if(rsmlcn(1:12).eq.mlcname(ii)(1:12)) then
                 imatch=ii
               endif
  56         continue
@@ -867,10 +871,10 @@ C section of the string DESC.
               rsotf='UNKNOWN'
               anunknownmlc=.true.   ! mark that one MLC is unknown
             else
-              if(DESC(imatch)(15:18).EQ.'OPAQ')then
+              if(mlctype(imatch)(1:4).EQ.'OPAQ')then
                 rsotf='OPAQUE'
               else
-                write(rsotf,'(A)') DESC(imatch)(21:32)
+                write(rsotf,'(A)') mlcoptical(imatch)(1:12)
                 willneedtmc=.true.
               endif
             endif
@@ -944,10 +948,10 @@ C the parent surface as a percentage of area.
 
 C Loop thru all of the constructions to find the matching construction
 C and then see if it is opaque or transparent and copy out the relevant
-C section of the string DESC.
+C section of the construction attributes.
             imatch=0
             do 55 ii=1,nmlc
-              if(rsmlcn(1:12).eq.DESC(ii)(1:12)) then
+              if(rsmlcn(1:12).eq.mlcname(ii)(1:12)) then
                 imatch=ii
               endif
  55         continue
@@ -955,10 +959,10 @@ C section of the string DESC.
               rsotf='UNKNOWN'
               anunknownmlc=.true.   ! mark that one MLC is unknown
             else
-              if(DESC(imatch)(15:18).EQ.'OPAQ')then
+              if(mlctype(imatch)(1:4).EQ.'OPAQ')then
                 rsotf='OPAQUE'
               else
-                write(rsotf,'(A)') DESC(imatch)(21:32)
+                write(rsotf,'(A)') mlcoptical(imatch)(1:12)
                 willneedtmc=.true.
               endif
             endif
@@ -2470,8 +2474,8 @@ C Add in site information if tokens were included.
   128   continue
       endif
 
-C Just to be sure re-scan the MLC database so that the string
-C array DESC is filled.
+C Just to be sure re-scan the MLC database so that the construction
+C attributes array are filled.
       call opendb(ier)
 
 C << location for further system level data >>
