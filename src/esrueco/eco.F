@@ -864,7 +864,7 @@ C << needs to be converted to material.h >>
           TxtCompo=' All'
           GOTO 10
         ELSE
-          TxtCompo= DESC(LstComp(1))(1:12)
+          TxtCompo= mlcname(LstComp(1))(1:12)
           TxtMat= 'All'
         ENDIF
 
@@ -998,7 +998,7 @@ C Display the composites list.
           TxtCompo=' All'
          GOTO 10
         ELSE
-          TxtCompo= DESC(LstComp(1))(1:12)
+          TxtCompo= mlcname(LstComp(1))(1:12)
           TxtMat= 'All'
         ENDIF
 

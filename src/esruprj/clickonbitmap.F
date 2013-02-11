@@ -2640,7 +2640,7 @@ C          S12='blk_'
      &      'Select an OPAQUE construction from the list to',
      &      'associate with the block for visualisation purposes.',IER)
           IF(ISEL.GT.0)then
-            WRITE(BLOCKMAT(IC,nbo),'(A)')DESC(ISEL)(1:12)
+            WRITE(BLOCKMAT(IC,nbo),'(A)') mlcname(ISEL)(1:12)
             LNBLOCKMAT(IC,nbo)=lnblnk(BLOCKMAT(IC,nbo))
           endif
           XOB(IC,nbo)=tpx1; YOB(IC,nbo)=tpy1; ZOB(IC,nbo)=Z1

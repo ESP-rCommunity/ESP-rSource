@@ -125,6 +125,8 @@ C surface can be resolved into a quad).
       integer ier
       integer ich,iedg ! loop variable
       integer icc,iccc ! array index
+
+C << need to revise OPT to be 32 char >>
       character optndx*12,nameiprndx*25,OPT*12,com*1,sim*1
       character act*1,layname*25
       character T25*25,T25a*25,t12a*12
@@ -552,7 +554,7 @@ C Scan for materials.
 
 C Loop through each construction in the database, check if it
 C is used in the model and if so proceed to check.
-        mlc_name=DESC(ino)(1:12)
+        mlc_name=mlcname(ino)(1:12)
         call mlcrefs(mlc_name,areamlc,tareamlc,foundmlc)
         if(.NOT.foundmlc) goto 20
 
@@ -562,7 +564,7 @@ C the overall construction and for single glazing this will the
 C the same for EnergyPlus. For multiple layers the data is not
 C quite correct. Assume that visible reflection is based on
 C visible trans and solar absorb.
-        WRITE(OPT,'(A)') DESC(INO)(21:32)
+        WRITE(OPT,'(A)') mlcoptical(ino)(1:12) 
         if(opt(1:6).eq.'OPAQUE')then
           continue
         else
@@ -810,11 +812,11 @@ C and assign iconmatpointer for each layer.
 
 C Loop through each construction in the database, check if it
 C is used in the model and if so proceed to check.
-        mlc_name=DESC(ino)(1:12)
+        mlc_name=mlcname(ino)(1:12)
         call mlcrefs(mlc_name,areamlc,tareamlc,foundmlc)
         if(.NOT.foundmlc) goto 200
 
-        WRITE(OPT,'(A)') DESC(INO)(21:32)
+        WRITE(OPT,'(A)') mlcoptical(INO)(1:12)
         DO 230 IL=1,LAYERS(INO)
 
 C For each layer get material array index and then check either thickness
@@ -871,7 +873,7 @@ C Now for each construction.
      &  '!- ======= CONSTRUCTION ======'
 
       do 36 ino = 1,NMLC
-        mlc_name=DESC(ino)(1:12)
+        mlc_name=mlcname(ino)(1:12)
         call mlcrefs(mlc_name,areamlc,tareamlc,foundmlc)
         if(.NOT.foundmlc) goto 36
 
