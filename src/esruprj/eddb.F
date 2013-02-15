@@ -2507,7 +2507,6 @@ C << alternative to IPR needed >>
         ipathmul=1  
 
         NMLC=1
-        DESC(1)='first_constr  OPAQ  OPAQUE        SYMMETRIC'
         DTHK(1,1)=0.100
         IPR(1,1)=1
         LAYERS(1)=1
@@ -3341,9 +3340,11 @@ C Calendar.
       common/caleni/nbdaytype,nbcaldays(MDTY),icalender(365)
       INTEGER :: icalender,nbcaldays,nbdaytype
 
-      CHARACTER DFILE*72,LLASCI*144,lltmp*144,ltmp*96
-      character longtfile*144,longtafile*144,message*48,longtmp*144
-      CHARACTER DOIT*248,fs*1,TMODE*8,CLMLOC*30,LCOPY*144
+      CHARACTER DFILE*72,LLASCI*144,lltmp*144,ltmp*96,lguess*144
+      character longtfile*144,longtafile*144,longtfiledos*144
+      character message*48,longtmp*144
+      CHARACTER DOIT*248,ldoit*300
+      CHARACTER fs*1,TMODE*8,CLMLOC*30,LCOPY*144
       CHARACTER OUTS*124,APP*6,ext*4,llclmdb*144
       LOGICAL OK,concat,COPYDEF,MODDB,XST,DOK,UNIXOK
       character dinstpath*60,path*72
@@ -3355,7 +3356,7 @@ C Calendar.
       integer ier
       integer icreport  ! to signal that calendar has been updated.
       integer IDOL,IDAYNUM,IMTHNUM,IDWKNUM,IDTYY  ! for correcting calendar
-      logical closelat,closelong,clkok
+      logical closelat,closelong,clkok,usercreatednew
       
 #ifdef OSI
       integer ICPMOD     ! passed from tchild
@@ -3386,6 +3387,7 @@ C Setup string buffer with distribution weather folder name.
 C Take into account whether weather file is in standard folder.
 C If so llclmdb will be expanded to the full path.
       moddb=.false.
+      usercreatednew=.false.  ! dealing with a new weather file
  552  llt=lnblnk(LCLIM)
       lndbp=lnblnk(standardclmpath)
       if(ipathclim.eq.0.or.ipathclim.eq.1)then
@@ -3494,7 +3496,7 @@ C << update to deal with dos paths >>
 
 C Pull up the official list of climate files and if the user selects
 C one that exists then assign it. If the user picks USER_DEFINED then
-C use a file browser to go looking for it.
+C use a file dialog (X11) or browser (GTK) to go looking for it.
         iuf=IFIL+1
         INQUIRE (FILE=cdblfil,EXIST=XST)
         if(XST)then
@@ -3503,28 +3505,17 @@ C use a file browser to go looking for it.
             if(longtfile(1:12).eq.'USER_DEFINED')then
 
               write(llclmdb,'(a)') 'newclim'
+              write(lguess,'(a)') 'newclim'
               ipathclim=0
- 291          llt=lnblnk(llclmdb)
+ 291          llt=lnblnk(lguess)
               iglib = igraphiclib()  ! find out if X11 or GTK or text support only.
-              if(iglib.eq.1.or.iglib.eq.3)then
-                if(llt.lt.96)then
-                  CALL EASKF(llclmdb,'Weather file:',
-     &              'Confirm:',96,DCLIM,'climate file name',IER,nbhelp)
-                elseif(llt.ge.96.and.llt.lt.124)then
-                  CALL EASKF(llclmdb,'Weather file:',
-     &              'Confirm:',124,DCLIM,'climate file name',IER,nbhelp)
-                elseif(llt.ge.124.and.llt.le.144)then
-                  CALL EASKF(llclmdb,'Weather file:',
-     &              'Confirm:',144,DCLIM,'climate file name',IER,nbhelp)
-                endif
-              elseif(iglib.eq.2)then
-                CALL EASKF(llclmdb,'Weather file:',
-     &            'Confirm:',144,DCLIM,'climate file name',IER,nbhelp)
-              else
-                CALL EASKF(llclmdb,'Weather file:',
-     &            'Confirm:',96,DCLIM,'climate file name',IER,nbhelp)
-              endif
+              CALL EASKXORGTKF(lguess,'Weather file:','Confirm:',
+     &          DCLIM,llclmdb,'climate file name',IER,numhelp)
               IF(llclmdb(1:2).EQ.'  ')GOTO 291
+              if(ier.eq.-3)then
+                moddb=.false.
+                goto 552
+              endif
               IER=0
 
 C Cast back to LCLIM.
@@ -3559,32 +3550,7 @@ C Assign weather file name based on its location via findwhichdbpath.
 
 C If file exists and user wants to browse then scan the file and
 C use the editing facility.
-          IER=0
-          call EFOPRAN(ICLIM,llclmdb,144,0,IER)
-          if(ier.eq.0)then
-            call tstamp('>','PRJ: start clm')
-            doit = ' '
-            call tchild(ICPMOD)
-            call termode(ICPMOD,tmode)
-            if(ipathclim.eq.0.or.ipathclim.eq.1)then
-              call addpath(llclmdb,longtfile,concat)
-            elseif(ipathclim.eq.2)then
-              longtfile=llclmdb
-            endif
-            if(iappw.gt.0.and.iappw.le.200)then
-              write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
-     &            ' -s ',iappw,iappx+10,iappy+10,' -file ',
-     &            longtfile(1:lnblnk(longtfile))
-            else
-              write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
-     &            longtfile(1:lnblnk(longtfile))
-            endif
-            call runit(doit,tmode)
-          else
-            call usrmsg('Problem encountered with Climate db!',
-     &                  'Please check db location and content.','W')
-            goto 552
-          endif
+          goto 44
         else
           call usrmsg('No weather to browse/edit.',
      &                'Please use one of the other options.','W')
@@ -3596,41 +3562,15 @@ C use the editing facility.
 C Allow user to select from the model ../dbs folder for a
 C weather file. If moddb was set to true then proceed.
         numhelp=nbhelp
-        lltmp='  '
-        call usemodeldbsfile('clm',numhelp,lltmp,istat,moddb)
+        llclmdb='  '
+        call usemodeldbsfile('clm',numhelp,llclmdb,istat,moddb)
         if(istat.eq.0.and.moddb)then
           CALL ERPFREE(ICLIM,ISTAT)
-          call FINDFIL(lltmp,XST)
+          call FINDFIL(llclmdb,XST)
           IF(XST)THEN
 
-C If file exists and user wants to browse then scan the file and
-C use the editing facility.
-            IER=0
-            call EFOPRAN(ICLIM,lltmp,144,0,IER)
-            if(ier.eq.0)then
-              call tstamp('>','PRJ: start clm')
-              doit = ' '
-              call tchild(ICPMOD)
-              call termode(ICPMOD,tmode)
-              if(ipathclim.eq.0.or.ipathclim.eq.1)then
-                call addpath(lltmp,longtfile,concat)
-              elseif(ipathclim.eq.2)then
-                longtfile=lltmp
-              endif
-              if(iappw.gt.0.and.iappw.le.200)then
-                write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
-     &            ' -s ',iappw,iappx+10,iappy+10,' -file ',
-     &            longtfile(1:lnblnk(longtfile))
-              else
-                write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
-     &            longtfile(1:lnblnk(longtfile))
-              endif
-              call runit(doit,tmode)
-            else
-              call usrmsg('Problem encountered with Climate db!',
-     &                    'Please check db location and content.','W')
-              goto 552
-            endif
+C If file exists scan the file and use the editing facility.
+            goto 44
           else
             call usrmsg('No weather to browse/edit.',
      &                  'Please use one of the other options.','W')
@@ -3711,40 +3651,8 @@ C Assign weather file name based on longtmp location via findwhichdbpath.
             write(llclmdb,'(3a)') standardclmpath(1:lndbp),fs,
      &        LCLIM(1:lnblnk(LCLIM))
           endif
-
-C Get logical name of child process terminal type, expand climate 
-C name to include the path and create a string to drive clm.
-          call tstamp('>','PRJ: start clm')
-          doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
-
-C Take into account location for clm command parameters.
-          if(ipathclim.eq.0.or.ipathclim.eq.1)then
-            call addpath(llclmdb,longtfile,concat)
-          elseif(ipathclim.eq.2)then
-            longtfile=llclmdb
-          endif
-          if(iappw.gt.0.and.iappw.le.200)then
-            write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
-     &          ' -s ',iappw,iappx+10,iappy+10,' -file ',
-     &          longtfile(1:lnblnk(longtfile))
-          else
-            write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
-     &          longtfile(1:lnblnk(longtfile))
-          endif
-          call runit(doit,tmode)
-
-C Note: this new climate site might be altered or not so lets
-C not do the fall-through for site data unless the user asks.
-          dok=.false.
-          CALL ASKOK(' ','Check new site data against model?',
-     &      OK,dok,nbhelp)
-          if(OK)then
-            continue
-          else
-            goto 552  ! go back and re-display menu
-          endif
+          usercreatednew=.true.
+          goto 44
         endif
 
       elseif(isw.eq.5)then
@@ -3796,61 +3704,41 @@ C reflect it is local.
           if(copydef)then
 
 C Copy the default weather file (dclim) to the model folder.
-            doit = ' '
+            ldoit = ' '
             if(unixok)then
-              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+              write(ldoit,'(4a)',IOSTAT=IOS) 'cp ',
      &          DCLIM(1:lnblnk(DCLIM)),' ',LCOPY(1:lnblnk(LCOPY))
             else
               message='getting climate file from '
-              call dblongdoscopy(DCLIM,lcopy,message,doit,ier)
+              call dblongdoscopy(DCLIM,lcopy,message,ldoit,ier)
             endif
-            call runit(doit,'-')
+            call runit(ldoit,'-')
+            llclmdb=longtmp
             LCLIM=longtmp
           else
 
 C Copy the current common weather file to the model folder.
-            doit = ' '
+            ldoit = ' '
             if(unixok)then
-              write(doit,'(4a)',IOSTAT=IOS) 'cp ',
+              write(ldoit,'(4a)',IOSTAT=IOS) 'cp ',
      &          llclmdb(1:lnblnk(llclmdb)),' ',LCOPY(1:lnblnk(LCOPY))
             else
 
 C Similar logic but using LCLIM.
               message='getting weather file from '
-              call dblongdoscopy(llclmdb,lcopy,message,doit,ier)
+              call dblongdoscopy(llclmdb,lcopy,message,ldoit,ier)
             endif
-            call runit(doit,'-')
+            call runit(ldoit,'-')
 
 C Assign weather file name to pass to the clm application.
             llclmdb=LCLIM
           endif
           moddb=.true.
-          call tstamp('>','PRJ: start clm')
-          doit = ' '
-          call tchild(ICPMOD)
-          call termode(ICPMOD,tmode)
-
-C Take into account location.
-          call addpath(llclmdb,longtfile,concat)
-
-C Clm is started up in forground mode because when it was starting
-C up in background mode the questions about whether to use its
-C latitude & longitude and year pop-up over the climate module.
-          if(iappw.gt.0.and.iappw.le.200)then
-            write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
-     &          ' -s ',iappw,iappx+10,iappy+10,' -file ',
-     &          longtfile(1:lnblnk(longtfile))
-          else
-            write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
-     &          longtfile(1:lnblnk(longtfile))
-          endif
           CALL ASKOK(' ','Browse/edit copied climate data?',
      &      OK,dok,nbhelp)
           if(ok)then
-            call runit(doit,tmode)
+            goto 44
           endif
-        else
-          goto 554
         endif
 
       elseif(isw.eq.6)then
@@ -4039,7 +3927,7 @@ C After clm module run there will be a new binary file so fall through.
 C Confirm with user about update Site latitude and longitude, recover
 C clat and clong. First check if climate file exists: if so open,
 C otherwise create with 0 length.
-      CALL ERPFREE(ICLIM,ISTAT)
+  43  CALL ERPFREE(ICLIM,ISTAT)
       call EFOPRAN(ICLIM,llclmdb,144,0,IER)
       if(ISTAT.ge.0)then
         CALL ERPFREE(ICLIM,ISTAT)
@@ -4151,6 +4039,53 @@ C from version manager
   42    continue
       ENDIF
       RETURN
+
+C Invoke the climate module with llclmdb, it is assumed that the
+C weather file exists.
+  44  continue
+      IER=0
+      call EFOPRAN(ICLIM,llclmdb,144,0,IER)
+      if(ier.eq.0)then
+        call tstamp('>','PRJ: start clm')
+        doit = ' '
+        call tchild(ICPMOD)
+        call termode(ICPMOD,tmode)
+        if(ipathclim.eq.0.or.ipathclim.eq.1)then
+          call addpath(llclmdb,longtfile,concat)
+        elseif(ipathclim.eq.2)then
+          longtfile=llclmdb
+        endif
+        if(iappw.gt.0.and.iappw.le.200)then
+          write(doit,'(3a,3i4,2a)') 'clm -mode ',tmode,
+     &      ' -s ',iappw,iappx+10,iappy+10,' -file ',
+     &      longtfile(1:lnblnk(longtfile))
+        else
+          write(doit,'(4a)') 'clm -mode ',tmode,' -file ',
+     &      longtfile(1:lnblnk(longtfile))
+        endif
+        call runit(doit,tmode)
+
+C If this was a freshly created weather file check if user wants to
+C checks its site data against the model.
+        if(usercreatednew)then
+          dok=.false.
+          CALL ASKOK(' ','Check new site data against model?',
+     &      OK,dok,nbhelp)
+          if(OK)then
+            usercreatednew=.false.
+            continue
+          else
+            usercreatednew=.false.
+            goto 552  ! go back and re-display menu
+          endif
+        endif
+        goto 43   ! check if site location or year has changed
+      else
+         call usrmsg('Problem encountered with Climate db!',
+     &               'Please check db location and content.','W')
+         goto 552
+      endif
+
 
  1000 WRITE(outs,774)ISTAT
   774 FORMAT(' Error ',I7,' reading Climate db information.')
@@ -5217,9 +5152,6 @@ C usemodeldbsfile is a general facility to browse files in the
 C model ../dbs folder. All files in the ../dbs folder will 
 C be added to a menu list for selection. Selected file becomes
 C the current common file type and is returned via lltmp.
-
-C << consider extending logic to include weather file in ../dbs folder >>
-
       subroutine usemodeldbsfile(topic,numhelp,lltmp,istat,moddb)
 #include "building.h"
 #include "model.h"

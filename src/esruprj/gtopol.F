@@ -52,9 +52,9 @@ C ****** GTOPOL
       common/C6/INDCFG
       
       CHARACTER*33 ITEMS(12)
-      character*32 VERTS(MGRT)
+      character*45 VERTS(MGRT)
       dimension ivals(MGRT)
-      CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72
+      CHARACTER GMLCN*32,GSNAME*6,GTNAME*15,GTGEOM*72
       CHARACTER outs*124,ltmp*72,t15*15,ETEXT*82
       logical XST,MODIFY,MODLEN,MODBND,grmod,ok,dok
       integer nitms,INO ! max items and current menu item
@@ -245,7 +245,7 @@ C Now edit the composition.
           CALL EPKMLC(ISEL,outs,'(or exit to leave unknown)',IERR)
           CALL EPMENRC
           IF(ISEL.GT.0.and.ierr.eq.0)then
-            WRITE(GMLCN(IS),'(A12)') mlcname(ISEL)(1:12)
+            WRITE(GMLCN(IS),'(A)') mlcname(ISEL)(1:12)
           else
             if(GMLCN(IS)(1:1).eq.' ')GMLCN(IS)='UNKNOWN'
           endif
@@ -262,11 +262,11 @@ C Now edit the composition.
               WRITE(VERTS(L),'(a,1x,a)')GSNAME(L),GMLCN(L)
   10        continue
             INPICK=NGT
-            CALL EPICKS(INPICK,IVALS,' ',' ',32,NGT,VERTS,
+            CALL EPICKS(INPICK,IVALS,' ',' ',45,NGT,VERTS,
      &        'Surface  composition',IER,nbhelp)
             do 11 i=1,inpick
               iss = ivals(i)
-              WRITE(GMLCN(ISS),'(A12)') mlcname(ISEL)(1:12)
+              WRITE(GMLCN(ISS),'(A)') mlcname(ISEL)(1:12)
   11        continue
             MODIFY=.TRUE.
             grmod=.true.
@@ -403,7 +403,7 @@ C IER=0 OK, IER=1 problem.
 
       DIMENSION VERT(35),IVLST(MGTV),ITEMP(MGTV),COG1(3),COG2(3),COG3(3)
       CHARACTER VERT*35,KEY*1,HOLD*32,GTGEOM*72
-      character outs*124,headv*48,GMLCN*12,GSNAME*6
+      character outs*124,headv*48,GMLCN*32,GSNAME*6
       integer IRT  ! for radio button
       integer MVERT,IVERT ! max items and current menu item
 
@@ -1527,7 +1527,7 @@ C added at the end of the list.
 
       DIMENSION ISASSO(MS),X1(MV),Y1(MV),Z1(MV)
       CHARACTER OUTSTR*124,ACTION*1,HOLD*32,outs*124
-      character GMLCN*12,GSNAME*6
+      character GMLCN*32,GSNAME*6
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -1830,8 +1830,8 @@ C show attributes in list.
       DIMENSION VERT(35),VERTS(35)
 
       CHARACTER*(*) PROMPT1,PROMPT2
-      CHARACTER VERT*20,VERTS*33,KEY*1,MOD*1,title*32
-      CHARACTER GMLCN*12,GSNAME*6,GTNAME*15
+      CHARACTER VERT*20,VERTS*42,KEY*1,MOD*1,title*32
+      CHARACTER GMLCN*32,GSNAME*6,GTNAME*15
       LOGICAL SELECT
       integer MVERT,IVERT ! max items and current menu item
 
@@ -1878,7 +1878,7 @@ C current menu line index. Build up text strings for the menu.
             WRITE(VERT(M),14)KEY,GSNAME(L)
    14       FORMAT(A1,1X,A)
           else
-            WRITE(VERTS(M),13)KEY,GSNAME(L),GMLCN(L)
+            WRITE(VERTS(M),13)KEY,GSNAME(L),GMLCN(L)(1:12)
    13       FORMAT(A1,1X,A,1X,A)
           endif
         ENDIF
@@ -1993,9 +1993,9 @@ C Method checks for minimally linked vertices.
       dimension X1(8),Y1(8),Z1(8),jvn1(8),XT(8),YT(8),ZT(8)
       DIMENSION COG1(3),COG2(3),COG3(3),JJVN(8)
 
-      CHARACTER GMLCN*12,GSNAME*6
+      CHARACTER GMLCN*32,GSNAME*6
       CHARACTER ACTION*1,HOLD*72,outs*124,SN*6,SN2*6
-      character holds*36,SNAME1*6,SNAMED*6,SMLCN1*12
+      character holds*36,SNAME1*6,SNAMED*6,SMLCN1*32
       integer IRT  ! for radio button
 #ifdef OSI
       integer iix,iiy,ixd,iyd
@@ -2411,7 +2411,7 @@ C IER=1 problem.
       DIMENSION  XX(8),YY(8),ZZ(8),XT(8),YT(8),ZT(8),jvn1(8)
       CHARACTER VERT*35,KEY*1,HOLD*72,SN*6
       character head*32,HOLDS*36,outs*124
-      CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72
+      CHARACTER GMLCN*32,GSNAME*6,GTNAME*15,GTGEOM*72
       integer IRT   ! for radio button
       integer MVERT,IVERT ! max items and current menu item
 
@@ -2941,7 +2941,7 @@ C following code is similar to that in addsur in edzone.f.
      &      'inserted surface. ',IER)
           CALL EPMENRC
           IF(ISEL.GT.0)then
-            WRITE(GMLCN(NGT),'(A12)') mlcname(ISEL)(1:12)
+            WRITE(GMLCN(NGT),'(A)') mlcname(ISEL)(1:12)
           endif
         endif
         if(LASTS.ne.NGT)then
@@ -3222,7 +3222,7 @@ C output: triangle list
 
       DIMENSION CG(2), CCR(MGRT), CENT(MGRT,2), IVSEL(90)
       DIMENSION PTA(2), ITSEL(90), ITCHK(90)
-      CHARACTER GMLCN*12,GSNAME*6,msg*32,outs*124
+      CHARACTER GMLCN*32,GSNAME*6,msg*32,outs*124
       LOGICAL LVERT(MGTV), INPOLY
       logical MODIFY,MODLEN,MODBND,OK,dok
 
