@@ -1353,6 +1353,12 @@ C silent is a logical toggle: true keeps user interactions to a minimum.
       COMMON/RADTYP/IDNGH
       common/rcmd/LCMDFL
 
+C Climate list common.
+      character clmlnam*32,clmlaid*72,clmldbfile*144,clmlavail*10
+      character clmlhelp*72
+      common/clmltext/clmlnam,clmlaid,clmldbfile,clmlavail,clmlhelp(60)
+      common/clmlnum/nbclmlhelp
+
       logical XST,ok,silent,unixok
       
 C Logical rescan = true if climatelist needs to be rescanned to
@@ -1560,14 +1566,24 @@ C user for period definition).
       INIT=1
       INEW=1
 
-C If no documentation and periods know scan the climatelist
-C file for this information. If no climatelist then the defaults
-C set in clm.F will be used.
+C If rescan was set to TRUE re-scan the climatelist file
+C for period information. If no climatelist then the defaults
+C set in clm.F will be used and the climatelist data will be
+C reset to indicate the weather was not in the list.
       if(rescan)then
         IUF=ifil+1
         INQUIRE (FILE=cdblfil,EXIST=XST)
         if(XST)then
           call scancdblist(IUF,LCMDFL,ok,ier)
+          if(ok)then
+            continue
+          else
+            clmlnam = 'not yet entered'
+            clmlaid = 'not yet entered'
+            clmlavail = 'OFFLINE'
+            clmldbfile = ' '
+            nbclmlhelp = 1
+          endif
         endif
       endif
       call edisp(iuout,' ')

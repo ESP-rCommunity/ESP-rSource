@@ -176,14 +176,13 @@ C Default season definitions.
       CALL EDAY(1,5,is1sums)
       CALL EDAY(31,8,is1sumf)
 
-C Set default climatelist text entries
+C Set default climatelist text entries.
       clmlnam = 'not yet entered'
       clmlaid = 'not yet entered'
       clmlavail = 'OFFLINE'
       clmldbfile = ' '
       nbclmlhelp = 1
       clmlhelp(1) = 'not yet entered'
-
  
 C Text/graphic feedback redirection on channel ifil +12 
       ixunit = ifil + 12
