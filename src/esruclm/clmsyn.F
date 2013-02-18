@@ -511,6 +511,13 @@ C      6 RELATIVE HUMIDITY
       DIMENSION XMAXM(MT),XMINM(MT),XMEANM(MT),X2M(MT)
       character outs*124,VNAME*32
 
+C If IP is zero then warn user and return.
+      if(IP.eq.0)then
+        call usrmsg('No weather data selected for stats.',
+     &    'Please select one and try again.','W')
+        return
+      endif
+
 C INITIALISE PARAMETERS FOR WHOLE PERIOD
       BIG=1E10
       TMNMN=BIG

@@ -230,7 +230,7 @@ C comma separated.
 
 C For solar radiation units can be W/m2 real, W/m2 integer, integer tenths W/m2
 C For dry bulb degrees C real, integer tenths deg C
-C For wind speed m/s real, m/s integer, integer tenths m/s
+C For wind speed m/s real, m/s integer, integer tenths m/s, knots integer
 C For wind direction degrees from north real or integer, integer thenth degrees
 C For RH  % real, tenths % integer, between 0. and 1.
 
@@ -261,6 +261,7 @@ C read in.
       COMMON/CLMSET/ICYEAR,ICDNGH,CLAT,CLONG
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       COMMON/RADTYP/IDNGH
+      COMMON/APPRDIFF/iapprox_diff
       LOGICAL OK,DOK,silent
       dimension ICLM(24,6)
 
@@ -272,6 +273,8 @@ C read in.
       character word*32  ! for skipped column data
       integer iwidest    ! the last column to look in
       integer IREAD  ! set to 1 if day demarcation lines
+      real longit_for_diffuse_calcs,differ_from_Greenwich
+      real dbtc
 
 C For help messages
       character helpinsub*24 ! subroutine name
@@ -279,6 +282,10 @@ C For help messages
       integer nbhelp     ! number of help lines found (will be non-zero
 
       helpinsub='COLTOBCLM'  ! set for cfiles
+
+C Initialiase defaults for easkr in the case of single dir+dif solar value
+      longit_for_diffuse_calcs=0.
+      differ_from_Greenwich=clong
 
 C Open the ASCII file for reading.
       if(iunit.eq.0)then
@@ -364,6 +371,10 @@ C For solar radiation units can be W/m2 real, W/m2 integer, integer tenths W/m2
         WRITE(IMPT(13),'(A)')'h Glob hor solar >> W/m2 integer'
       elseif(ITUNITS(4).eq.2)then
         WRITE(IMPT(13),'(A)')'h Glob hor solar >> tenths W/m2 integer'
+      elseif(ITUNITS(4).eq.3)then
+        WRITE(IMPT(13),'(A)')'h Glob hor solar >> dir+dif KJ/m2 real'
+      elseif(ITUNITS(4).eq.4)then
+        WRITE(IMPT(13),'(A)')'h Glob hor solar >> dir+dif KJ/m2 int'
       endif
       WRITE(IMPT(14),'(A,I2)')'i Wind speed colm: ',IMSTC(5)
       if(ITUNITS(5).eq.0)then
@@ -372,6 +383,10 @@ C For solar radiation units can be W/m2 real, W/m2 integer, integer tenths W/m2
         WRITE(IMPT(15),'(A)')'j Wind speed >> m/s integer'
       elseif(ITUNITS(5).eq.2)then
         WRITE(IMPT(15),'(A)')'j Wind speed >> tenths m/s integer'
+      elseif(ITUNITS(5).eq.3)then
+        WRITE(IMPT(15),'(A)')'j Wind speed >> knots real'
+      elseif(ITUNITS(5).eq.4)then
+        WRITE(IMPT(15),'(A)')'j Wind speed >> knots integer'
       endif
       WRITE(IMPT(16),'(A,I2)')'i Wind direc colm: ',IMSTC(6)
       if(ITUNITS(6).eq.0)then
@@ -505,7 +520,42 @@ C Define the year if not already done.
         if(iwidest.lt.IV) iwidest=IV  ! remember
       ELSEIF(INODA.EQ.13)THEN
         ITUNITS(4)=ITUNITS(4)+1
-        if(ITUNITS(4).gt.2) ITUNITS(4)=0
+        if(ITUNITS(4).gt.4) ITUNITS(4)=0
+        if(ITUNITS(4).eq.3.or.ITUNITS(4).eq.4)then
+      
+C Set the radiation flag to Global horizontal.     
+          IDNGH=123
+          helptopic='confirm_lat_log_diff'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL EASKR(longit_for_diffuse_calcs,' ',
+     &     'Weather site longitude (actual)? (west: positive):',
+     &     -180.0,'W',180.0,'W',30.0,'weather longitude',IER,nbhelp)
+
+          helptopic='local_time_difference'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          CALL EASKR(differ_from_Greenwich,' ',
+     &      ' Time difference from Greenwich? (west: positive) ',
+     &      -24.0,'W',24.0,'W',0.0,'time_difference',IER,nbhelp)
+
+C Export weather data to ASCII file (with similar name).
+          helptopic='korea_met_conversion'
+          call gethelptext(helpinsub,helptopic,nbhelp)
+          call easkabc
+     &     ('There are three available models to approximate diffuse:',
+     &     ' ','Muneer (default)','Maxwell','Erbs Klein & Duffie',
+     &     IDIFF,nbhelp)
+
+C Set the global variable iapprox_diff to tell underlying calculation
+C method which equation set to use.
+          if(IDIFF.eq.1)then
+            iapprox_diff=1
+          elseif(IDIFF.eq.2)then  
+            iapprox_diff=2
+          elseif(IDIFF.eq.3)then  
+            iapprox_diff=3
+          endif
+        endif
+  
       ELSEIF(INODA.EQ.14)THEN
         IV=IMSTC(5)
         CALL EASKI(IV,' ','Column for wind speed:',
@@ -514,7 +564,7 @@ C Define the year if not already done.
         if(iwidest.lt.IV) iwidest=IV  ! remember
       ELSEIF(INODA.EQ.15)THEN
         ITUNITS(5)=ITUNITS(5)+1
-        if(ITUNITS(5).gt.2) ITUNITS(5)=0
+        if(ITUNITS(5).gt.4) ITUNITS(5)=0
       ELSEIF(INODA.EQ.16)THEN
         IV=IMSTC(6)
         CALL EASKI(IV,' ','Column for wind direction:',
@@ -583,9 +633,11 @@ C next column.
                 endif
               elseif(N1.eq.IMSTC(2))then
                 if(ITUNITS(2).eq.0)then
-                  CALL EGETWR(OUTSTR,K,TMP,0.0,0.0,'-',
+                  CALL EGETWR(OUTSTR,K,dbtc,0.0,0.0,'-',
      &              'deg C real',IER)
-                  ICLM(J,2)= NINT(TMP*10.0)
+                  ICLM(J,2)= NINT(dbtc*10.0)
+C Debug.
+C                  write(6,*) j,dbtc,ICLM(J,2)
                 elseif(ITUNITS(2).eq.1)then
                   CALL EGETWI(OUTSTR,K,ITMP,0,0,'-','deg C int',IER)
                   ICLM(J,2)=ITMP*10
@@ -616,7 +668,24 @@ C next column.
                 elseif(ITUNITS(4).eq.2)then
                  CALL EGETWI(OUTSTR,K,IGLO,0,0,'-','glo 10th w/m2',IER)
                   ICLM(J,3)=IGLO/10  ! to get back to w/m2
+                elseif(ITUNITS(4).eq.3)then
+
+C Source is global horizontal, so also need to derive the diffuse as
+C per the approach decoding Korea MET office data.
+                  CALL EGETWR(OUTSTR,K,GLO,0.0,0.0,'-',
+     &              'glo KJ/m2 real',IER)
+                  ICLM(J,3)= NINT(GLO*0.277777778)
+                elseif(ITUNITS(4).eq.4)then
+                  CALL EGETWI(OUTSTR,K,IGLO,0,0,'-','glo KJ/m2 int',IER)
+                  ICLM(J,3)= NINT(IGLO*0.277777778)
                 endif
+                call edayr(IDD,imonth,iday)
+                CALL APPRDIFFUSE(iyear,imonth,iday,J,ICLM(J,3),
+     &            longit_for_diffuse_calcs,differ_from_Greenwich,DRAD)
+                IDRAD=NINT(DRAD)
+                ICLM(J,1)=IDRAD
+C Debug.
+C                write(6,*) iyear,imonth,iday,j,iclm(j,3),drad
               elseif(N1.eq.IMSTC(5))then
                 if(ITUNITS(5).eq.0)then
                   CALL EGETWR(OUTSTR,K,VEL,0.0,0.0,'-',
@@ -628,6 +697,13 @@ C next column.
                 elseif(ITUNITS(5).eq.2)then
                   CALL EGETWI(OUTSTR,K,IVEL,0,0,'-','tenths m/s',IER)
                   ICLM(J,4)=IVEL  ! no conversion required
+                elseif(ITUNITS(5).eq.3)then
+                  CALL EGETWR(OUTSTR,K,VEL,0.0,0.0,'-',
+     &              'vel knots real',IER)
+                  ICLM(J,4)= NINT((VEL*10.0)*0.51444)
+                elseif(ITUNITS(5).eq.4)then
+                  CALL EGETWI(OUTSTR,K,IVEL,0,0,'-','vel knot int',IER)
+                  ICLM(J,4)= NINT((IVEL*10)*0.51444)
                 endif
               elseif(N1.eq.IMSTC(6))then
                 if(ITUNITS(6).eq.0)then
@@ -1151,7 +1227,7 @@ C Clear solar values.
             CALL EGETWI(OUTSTR,K,IGLOBH,0,100,'-','GLOB_HORIZO',IER)
 
 C Convert MJ/m2 to W/m2
-            IGLOBH=IGLOBH*277
+            IGLOBH=NINT(IGLOBH*277.777)
             ICLM(ih,3)=IGLOBH
             CALL APPRDIFFUSE(iyear,imonth,iday,ih,IGLOBH,
      &        longit_for_diffuse_calcs,differ_from_Greenwich,DRAD)
