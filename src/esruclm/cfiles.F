@@ -229,9 +229,11 @@ C data as well as the units of the data column. Columns can be space or tab or
 C comma separated.
 
 C For solar radiation units can be W/m2 real, W/m2 integer, integer tenths W/m2
+C or (sum direct+diffuse) KJ integer or real using one of three methods to
+C evaluate the diffuse component.
 C For dry bulb degrees C real, integer tenths deg C
-C For wind speed m/s real, m/s integer, integer tenths m/s, knots integer
-C For wind direction degrees from north real or integer, integer thenth degrees
+C For wind speed m/s real, m/s integer, integer tenths m/s, knots integer or real.
+C For wind direction degrees from north real or integer, integer tenths degrees
 C For RH  % real, tenths % integer, between 0. and 1.
 
 C At the end of the process we have...
@@ -1113,8 +1115,8 @@ C Export weather data to ASCII file (with similar name).
       helptopic='korea_met_conversion'
       call gethelptext(helpinsub,helptopic,nbhelp)
       call easkabc
-     &  ('There are three available models to approximate diffuse:',
-     &  ' ','Muneer (default)','Maxwell','Erbs Klein & Duffie',
+     &  ('Available models to approximate diffuse:',
+     &  ' ','Muneer','Maxwell','Erbs Klein & Duffie',
      &  IDIFF,nbhelp)
 
 C Set the global variable iapprox_diff to tell underlying calculation
