@@ -541,8 +541,8 @@ C Export weather data to ASCII file (with similar name).
           helptopic='korea_met_conversion'
           call gethelptext(helpinsub,helptopic,nbhelp)
           call easkabc
-     &     ('There are three available models to approximate diffuse:',
-     &     ' ','Muneer (default)','Maxwell','Erbs Klein & Duffie',
+     &     ('Available models to approximate diffuse:',
+     &     ' ','Muneer','Maxwell','Erbs Klein & Duffie (default)',
      &     IDIFF,nbhelp)
 
 C Set the global variable iapprox_diff to tell underlying calculation
@@ -712,7 +712,7 @@ C                write(6,*) iyear,imonth,iday,j,iclm(j,3),drad
                   ICLM(J,5)= NINT(DIR)
                 elseif(ITUNITS(6).eq.1)then
                   CALL EGETWI(OUTSTR,K,IDIR,0,0,'-','w dir int',IER)
-                  ICLM(J,5)=IVEL
+                  ICLM(J,5)=IDIR
                 elseif(ITUNITS(6).eq.2)then
                  CALL EGETWI(OUTSTR,K,IDIR,0,0,'-','tenths dir dg',IER)
                   ICLM(J,5)=IDIR/10  ! to get back to m/s

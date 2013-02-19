@@ -905,6 +905,10 @@ C See "Solar radiation and daylight models" book from Muneer
 C (1997) - ISBN: 0-7506-2495-7  pages 101-104.
 C and Erbs, Klein and Duffie model: see Solar energy Journal Vol. 28,
 C pp.293-302
+C Note: Erbs Klein & Duffie often results in lower diffuse which is
+C closer to values seen in weather files with direct and diffuse
+C pre-computed. Maxwell (as described in Muneer) can result in high
+C diffuse values.
       SUBROUTINE APPRDIFFUSE(IYEAR,IMT,IDAY,IHR,IGLOBH,LONGITUDE,
      &           DIFFGRNWCH,DRAD)
 
@@ -1018,11 +1022,13 @@ C Calculate horizontal Diffuse irRADiance Orgill and Hollands
       XKT=GRAD/ERAD 
       IF(iapprox_diff.EQ.1)THEN
 
-C Muneer model using Orgill and Hollands.
+C Muneer model using Orgill and Hollands (eq 3.4.1). Note this
+C sometimes results in high diffuse values when the global
+C horizontal is high.
         DIFRAT=0.98
         IF(XKT.GT.0.2) THEN
           DIFRAT=1.006-(0.317*XKT)+(3.1241*XKT**2)
-     &    -(12.7616*XKT**3)+9.7166*XKT**4
+     &    -(12.7616*XKT**3)+(9.7166*XKT**4)
         ENDIF
 
 C Occassionally DIFRAT evaluates to greater than one. If so use 0.98
@@ -1044,31 +1050,45 @@ C        ENDIF
       ELSEIF(iapprox_diff.EQ.2)THEN
 
 C Calculate horizontal beam irradiance using Maxwell model on
-C page 102 of Muneer book (1987). 
-        XAM=1.0/SIN(SOLALT*DTOR)
-        XKNC=0.866-0.122*XAM+0.0121*XAM*XAM
+C page 102 of Muneer book (1987). If SOLALT is negative then
+C set to be .98 of GRAD or if GRAD is less than 1W/2m ignore.
+C Brackets included to clarify equations.
+        if(SOLALT.lt.0.2.or.GRAD.lt.1.0)then
+          DRAD=GRAD*0.98
+        else
+          XAM=1.0/SIN(SOLALT*DTOR)
+          XKNC=0.866-0.122*XAM+0.0121*XAM**2
      &       -(0.000653*XAM**3)+0.000014*XAM**4 
      
-        IF(XKT.LE.0.6) THEN
-          CAPA=0.512-1.56*XKT+2.286*XKT*XKT-2.222*XKT**3
-          CAPB=0.37+0.962*XKT
-          CAPC=-0.28+0.932*XKT-2.048*XKT**2 
-        ELSE
-          CAPA=-5.743+21.77*XKT-27.49*XKT*XKT+11.56*XKT**3
-          CAPB=41.4-118.5*XKT+66.05*XKT*XKT+31.9*XKT**3
-          CAPC=-47.01+184.2*XKT-222.0*XKT**2+73.81*XKT**3
-        ENDIF
+          IF(XKT.LE.0.6) THEN
+            CAPA=0.512-(1.56*XKT)+(2.286*XKT**2)-(2.222*XKT**3)
+            CAPB=0.37+(0.962*XKT)
+            CAPC=-0.28+(0.932*XKT)-(2.048*XKT**2)
+          ELSE
+            CAPA=-5.743+(21.77*XKT)-(27.49*XKT**2)+(11.56*XKT**3)
+            CAPB=41.4-(118.5*XKT)+(66.05*XKT**2)+(31.9*XKT**3)
+            CAPC=-47.01+(184.2*XKT)-(222.0*XKT**2)+(73.81*XKT**3)
+          ENDIF
 
 C Calculate the beam (XMAXHB) and if a posive number
 C and less than GRAD then subtract it from GRAD to get
 C the diffuse. If (XMAXHB) would cause diffuse to be
 C greater than global then set it to 0.98 of global.
-        XMAXI=XMAXI0*(XKNC-(CAPA+CAPB*EXP(XAM*CAPC)))      
-        XMAXHB=XMAXI*SIN(SOLALT*DTOR)
-        if(XMAXHB.gt.0.0.and.GRAD.gt.XMAXHB)then
-          DRAD=GRAD-XMAXHB
-        else
-          DRAD=GRAD*0.98
+C Limit the size of the exponent to 60 to reduce the chance
+C of a numerical overflow.
+          if((XAM*CAPC).gt.60.0)then
+            XMAXI=XMAXI0*(XKNC-(CAPA+CAPB*EXP(60.0)))      
+          elseif((XAM*CAPC).lt.(-60.0))then
+            XMAXI=XMAXI0*(XKNC-(CAPA+CAPB*EXP(-60.0)))      
+          else
+            XMAXI=XMAXI0*(XKNC-(CAPA+CAPB*EXP(XAM*CAPC)))
+          endif     
+          XMAXHB=XMAXI*SIN(SOLALT*DTOR)
+          if(XMAXHB.gt.0.0.and.GRAD.gt.XMAXHB)then
+            DRAD=GRAD-XMAXHB
+          else
+            DRAD=GRAD*0.98
+          endif
         endif
 
 C And if GRAD is zero then set DRAD to zero. 
@@ -1078,7 +1098,8 @@ C And if GRAD is zero then set DRAD to zero.
         endif
       ELSEIF(iapprox_diff.EQ.3)THEN
 
-C Erbs, Klein and Duffie model.
+C Erbs, Klein and Duffie model. This tends to limit the diffuse
+C when global horizontal is large.
         IF(XKT.LE.0.22)THEN
           DIFRAT=1.0-0.09*XKT
         ELSEIF(XKT.GT.0.22.AND.XKT.LE.0.8)THEN
