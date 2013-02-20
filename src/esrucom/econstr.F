@@ -720,7 +720,8 @@ c               NBCTT=1 ; ambient temperature sensed,
 c               NBCTT=2 ; internal air temperature sensed,
 c               NBCTT=3 ; daylight coeff. sensor lux maintainance
 C                         by linear optical property variation,
-C               NBCTT=4 ; SHOCC control (Lightswitch2002 manual control)
+C               NBCTT=4 ; SHOCC control (Lightswitch2002 manual
+C                         control is currently not available)
 C               NBCTT=-99; time based control (force alternative optics).
 c BACTPT  - actuation point of blind. Value of sensed variable
 c         must exceed this value for blind to operate. Setting

@@ -2157,7 +2157,7 @@ C Remind user of standard optics as well as the alternatives.
                   elseif(NBCTT(IVALS(IZ),KK,I).eq.3)then
                     msg=' sensing daylight coeff.'
                   elseif(NBCTT(IVALS(IZ),KK,I).eq.4)then
-                    msg=' Lightswitch2002.'
+                    msg=' Lightswitch not available'
                   elseif(NBCTT(IVALS(IZ),KK,I).eq.-99)then
                     msg=' sensing time only'
                   endif

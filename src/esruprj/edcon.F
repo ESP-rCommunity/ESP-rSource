@@ -1682,7 +1682,7 @@ C Display of current information...
           elseif(NBCTT(ICOMP,KK,I).eq.3)then
             msg=' sensing daylight coeff.'
           elseif(NBCTT(ICOMP,KK,I).eq.4)then
-            msg=' Lightswitch2002.'
+            msg=' Lightswitch (not available)'
           elseif(NBCTT(ICOMP,KK,I).eq.-99)then
             msg=' sensing time only'
           endif
@@ -1801,33 +1801,41 @@ C For each control period get the appropriate replacement properties.
           N3=NBCTT(ICOMP,ICP,IT)
           IRT=1
           if(n3.eq.-99)then
-            call EASKATOG('Controlled on:','(currently time)',
+            call EASKATOG('Controlled on: (currently time)','Confirm',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
+     &      'lux level','LtSwitch (not avail)','cancel',IRT,nbhelp)
           elseif(n3.eq.0)then
-            call EASKATOG('Controlled on:','(currently radiation)',
+            call EASKATOG('Controlled on: (currently radiation)',
+     &      'Confirm',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
+     &      'lux level','LtSwitch (not avail)','cancel',IRT,nbhelp)
           elseif(n3.eq.1)then
-            call EASKATOG('Controlled on:','(currently ambient temp.)',
+            call EASKATOG(
+     &      'Controlled on:(currently ambient temperature)','Confirm',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
+     &      'lux level','LtSwitch (not avail)','cancel',IRT,nbhelp)
           elseif(n3.eq.2)then
-            call EASKATOG('Controlled on:','(currently zone temp.)',
+            call EASKATOG(
+     &      'Controlled on: (currently zone temperature)','Confirm',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
+     &      'lux level','LtSwitch (not avail)','cancel',IRT,nbhelp)
           elseif(n3.eq.3)then
-            call EASKATOG('Controlled on:','(currently daylight coef)',
+            call EASKATOG(
+     &      'Controlled on: (currently daylight coefficients)',
+     &      'Confirm',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
+     &      'lux level','LtSwitch (not avail)','cancel',IRT,nbhelp)
           elseif(n3.eq.4)then
-            call EASKATOG('Controlled on:','(currently Lightswitch)',
-     &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
+            call usrmsg('Currently link to Lightswitch 2002 is not',
+     &        'available. Please select something else.','W')
+C            call EASKATOG('Controlled on:','(currently Lightswitch)',
+C     &      'time','incident radiation','ambient temp.','zone temp.',
+C     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
           else
-            call EASKATOG('Controlled on:','(currently undefined)',
+            call EASKATOG('Controlled on: (currently undefined)',
+     &      'Confirm',
      &      'time','incident radiation','ambient temp.','zone temp.',
-     &      'lux level','LtSwitch','cancel',IRT,nbhelp)
+     &      'lux level','LtSwitch (not avail)','cancel',IRT,nbhelp)
           endif
           if(irt.eq.1)then
             NBCTT(ICOMP,ICP,IT)= -99
@@ -1858,13 +1866,13 @@ C For each control period get the appropriate replacement properties.
             BACTPT(ICOMP,ICP,IT)=VAL
           elseif(irt.eq.6)then
 
-C << Do not know what sort of question is to be asked here! >>
-            NBCTT(ICOMP,ICP,IT)= 4
-            VAL=BACTPT(ICOMP,ICP,IT)
-            CALL EASKR(VAL,' ','Lightswitch lux set point?',
-     &        0.00,'W',1000.0,'W',0.0,'LtSw illum. set point',
-     &        IER,nbhelp)
-            BACTPT(ICOMP,ICP,IT)=VAL
+C << ESP-r to Lightswitch is not currently implemented >>
+C            NBCTT(ICOMP,ICP,IT)= 4
+C            VAL=BACTPT(ICOMP,ICP,IT)
+C            CALL EASKR(VAL,' ','Lightswitch lux set point?',
+C     &        0.00,'W',1000.0,'W',0.0,'LtSw illum. set point',
+C     &        IER,nbhelp)
+C            BACTPT(ICOMP,ICP,IT)=VAL
           elseif(irt.eq.7)then
             return
           ENDIF
