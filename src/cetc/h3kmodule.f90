@@ -82,8 +82,11 @@ MODULE h3kmodule
    !Used by h3k_report_data.F
    Type(ReportVariable) :: rvHeatFluxRadiationShortwave, rvHeatFluxRadiationShortwaveUnitArea, &
          rvHeatFluxAboveGradeNet, rvHeatFluxSpecifiedBCsNet, rvHeatFluxBelowGradeNet, &
-         rvHeatFluxCENPartitionNet, rvAirPointTemperature, rvWindowsPosition, rvAirFlowModel, &
-         rvAirPointRelativeHumidity, rvSuppliedEnergyNet, rvSuppliedEnergyHeating, &
+         rvHeatFluxCENPartitionNet, rvAirPointTemperature, rvAirPointRelativeHumidity, &
+         rvAirPointResultantTemperature, rvAirPointDryAirMass, rvAirPointMoistureContent, &
+         rvAirPointPartialVapourPressure, rvAirPointSaturationTemperature, &
+         rvWindowsPosition, rvAirFlowModel, &
+         rvSuppliedEnergyNet, rvSuppliedEnergyHeating, &
          rvSuppliedEnergyCooling, rvSuppliedEnergyNetPerm2, rvSuppliedEnergyHeatingPerm2, &
          rvSuppliedEnergyCoolingPerm2, rvThermalLoadsHeatingTotal, rvThermalLoadsCoolingTotal, &
          rvThermalLoadsNetLoad, rvThermalLoadsHeatingTotalPerm2, rvThermalLoadsCoolingTotalPerm2, &
@@ -417,11 +420,47 @@ CONTAINS
       rvHeatFluxCENPartitionNet%Description = 'Heat transfer through CEN 13917 partition'
       Call AddVariable(rvHeatFluxCENPartitionNet)
 
-      rvAirPointTemperature%VariableName = 'bui/*/air_point/temperature'
+      rvAirPointTemperature%VariableName = 'bui/*/air_point/temp'
       rvAirPointTemperature%MetaType = 'units'
       rvAirPointTemperature%VariableType = '(oC)'
       rvAirPointTemperature%Description = 'Zone air-point temperature'
       Call AddVariable(rvAirPointTemperature)
+
+      rvAirPointResultantTemperature%VariableName = 'bui/*/air_point/resultant_temp'
+      rvAirPointResultantTemperature%MetaType = 'units'
+      rvAirPointResultantTemperature%VariableType = '(oC)'
+      rvAirPointResultantTemperature%Description = 'Zone air-point resultant temperature'
+      Call AddVariable(rvAirPointResultantTemperature)
+
+      rvAirPointRelativeHumidity%VariableName = 'bui/*/air_point/rh'
+      rvAirPointRelativeHumidity%MetaType = 'units'
+      rvAirPointRelativeHumidity%VariableType = '(%)'
+      rvAirPointRelativeHumidity%Description = 'Zone relative humidity'
+      Call AddVariable(rvAirPointRelativeHumidity)
+
+      rvAirPointMoistureContent%VariableName = 'bui/*/air_point/moisture'
+      rvAirPointMoistureContent%MetaType = 'units'
+      rvAirPointMoistureContent%VariableType = '(kg/kg_dry-air)'
+      rvAirPointMoistureContent%Description = 'Zone air moisture content'
+      Call AddVariable(rvAirPointMoistureContent)
+
+      rvAirPointPartialVapourPressure%VariableName = 'bui/*/air_point/pvap'
+      rvAirPointPartialVapourPressure%MetaType = 'units'
+      rvAirPointPartialVapourPressure%VariableType = '(Pa)'
+      rvAirPointPartialVapourPressure%Description = 'Zone air partial vapour pressure'
+      Call AddVariable(rvAirPointPartialVapourPressure)
+
+      rvAirPointSaturationTemperature%VariableName = 'bui/*/air_point/tsat'
+      rvAirPointSaturationTemperature%MetaType = 'units'
+      rvAirPointSaturationTemperature%VariableType = '(°C)'
+      rvAirPointSaturationTemperature%Description = 'Zone air saturation temperature'
+      Call AddVariable(rvAirPointSaturationTemperature)
+
+      rvAirPointDryAirMass%VariableName = 'bui/*/air_point/mass'
+      rvAirPointDryAirMass%MetaType = 'units'
+      rvAirPointDryAirMass%VariableType = '(kg)'
+      rvAirPointDryAirMass%Description = 'Zone dry air mass'
+      Call AddVariable(rvAirPointDryAirMass)
 
       rvWindowsPosition%VariableName = 'bui/*/windows/position'
       rvWindowsPosition%MetaType = 'units'
@@ -434,12 +473,6 @@ CONTAINS
       rvAirFlowModel%VariableType = '(-)'
       rvAirFlowModel%Description = 'Air-flow-model (0->3)'
       Call AddVariable(rvAirFlowModel)
-
-      rvAirPointRelativeHumidity%VariableName = 'bui/*/air_point/relative_humidity'
-      rvAirPointRelativeHumidity%MetaType = 'units'
-      rvAirPointRelativeHumidity%VariableType = '(%)'
-      rvAirPointRelativeHumidity%Description = 'Zone relative humidity'
-      Call AddVariable(rvAirPointRelativeHumidity)
 
       rvSuppliedEnergyNet%VariableName = 'bui/*/supplied_energy/net'
       rvSuppliedEnergyNet%MetaType = 'units'

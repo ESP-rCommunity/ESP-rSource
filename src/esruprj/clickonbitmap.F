@@ -89,7 +89,7 @@ C end indices for each zone.
       character phrase*124,WORD*48,msg*72,ltmp*72,fs*1
       character zn*12
       character ctldoc*248,LCTLF*72,zd*64,DFILE*72,CFILE*72,OFILE*72
-      CHARACTER GMLCN*12,GSNAME*6,GTNAME*15,GTGEOM*72,t15*15,S12*12
+      CHARACTER GMLCN*32,GSNAME*6,GTNAME*15,GTGEOM*72,t15*15,S12*12
       character longtfile*144,fname*96
       integer nfile  ! nb of files in image folder
       character sfile*72,snpfile*72

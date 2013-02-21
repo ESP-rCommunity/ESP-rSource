@@ -441,6 +441,7 @@ if [ "$platform" = "auto-detect" ]; then
       [ "$architecture" != "MINGW32_NT-5.1" ] &&
       [ "$architecture" != "MINGW32_NT-5.0" ] &&
       [ "$architecture" != "MINGW32_NT-5.2" ] &&
+      [ "$architecture" != "MINGW32_NT-6.1" ] &&
       [ "$architecture" != "Darwin" ] &&
       [ "$architecture" != "SunOS" ]; then
       platform="prompt";
@@ -553,7 +554,7 @@ if [ "$platform" = "auto-detect" ]; then
    case $architecture in
       Linux)                           platform="linux";;
       CYGWIN_NT-5.2  | CYGWIN_NT-5.1  | CYGWIN_NT-5.0  | CYGWIN_NT-6.0 | CYGWIN_NT-6.1 | CYGWIN_NT-6.1-WOW64 ) platform="cygwin";;
-      MINGW32_NT-5.2 | MINGW32_NT-5.1 | MINGW32_NT-5.0 ) platform="mingw";;
+      MINGW32_NT-6.1 | MINGW32_NT-5.2 | MINGW32_NT-5.1 | MINGW32_NT-5.0 ) platform="mingw";;
       Darwin)                          platform="mac";;
       SunOS)                           platform="sun";;
    esac
@@ -943,7 +944,7 @@ case $xLibs in
             fi
             ;;
          *)
-            # linux/mac/cygwin: we'll need to search for
+            # linux/mac/cygwin/arm: we'll need to search for
             # the X11 libraries in a number of possible
             # locations:
 
@@ -972,6 +973,11 @@ case $xLibs in
                 if [ -d /usr/X11R6/lib/64 ] ; then
                   X11_found="yes"
                   XINSTALLDIR="/usr/X11R6"
+                fi;;
+              armv6l)
+                if [ -d /usr/lib/arm-linux-gnueabihf ] ; then
+                  X11_found="yes"
+                  XINSTALLDIR="/usr/lib/arm-linux-gnueabihf"
                 fi;;
               *)
                 if [ -d /usr/X11R6/lib/X11 ] ; then
@@ -1114,6 +1120,7 @@ case $platform in
           i386)    fDefType="-DLIN";;
           i686)    fDefType="-DLIN";;
           x86_64)  fDefType="-DLIN";;
+          armv6l)  fDefType="-DLIN";;
         esac;;
    cygwin)     fDefType="-DCYGW";;
    mac) case $machine in
@@ -1224,6 +1231,7 @@ case $xLibs in
          i386) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
          i86pc) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
          i686) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
+         armv6l) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR} -lX11";;
          x86_64) case $platform in
                  mac) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib -lX11";;
                  *) ULIBS="$ULIBS -lxesru -L${XINSTALLDIR}/lib64 -lX11";;        

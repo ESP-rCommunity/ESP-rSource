@@ -1696,11 +1696,10 @@ C Sum product of surface temperatures and areas (i.e. area weighted surface temp
       TRESL=0.5*TFA(iZone)+0.5*(ZPROD/allsurf)
 C End moresl code
 
-c      call add_to_xml_reporting (
-c     &      TRESL,
-c     &      H3K_rep_Name(1:iH3K_NameLen)// '/resultant_temp',
-c     &      'units', '(oC)',
-c     &      'Zone resultant temperature' )
+      call AddToReport (
+     &         rvAirPointResultantTemperature%Identifier,
+     &         TRESL,
+     &         zname(iZone)(1:lnzname(iZone)))
       
 C.....AIR POINT TEMPERATURE
       call AddToReport (
@@ -1709,11 +1708,10 @@ C.....AIR POINT TEMPERATURE
      &         zname(iZone)(1:lnzname(iZone)))
 
 C .... ZONE DRY AIR MASS
-c      call add_to_xml_reporting (
-c     &         ZMDAF(iZone),
-c     &         H3K_rep_Name(1:iH3K_NameLen)// '/air_point/mass',
-c     &         'units', '(kg)',
-c     &         'Zone dry air mass' )
+      call AddToReport (
+     &         rvAirPointDryAirMass%Identifier,
+     &         ZMDAF(iZone),
+     &         zname(iZone)(1:lnzname(iZone)))
 
 C.....Window position from BCL25 controller
       if ( bWindowsOpen(iZone) ) then
@@ -1739,27 +1737,23 @@ C.....Zone relative humidity
      &         fZoneRH,
      &         zname(iZone)(1:lnzname(iZone)))
 
-c
-c     &         GFA(iZone),
-c     &         H3K_rep_Name(1:iH3K_NameLen)// '/air_point/moisture',
-c     &         'units', '(kg/kg_dry-air)',
-c     &         'Zone air moisture content' )
-c     
+      call AddToReport (
+     &         rvAirPointMoistureContent%Identifier,
+     &         GFA(iZone),
+     &         zname(iZone)(1:lnzname(iZone)))
 
 C .... ZONE AIR NODE PARTIAL VAPOUR PRESSURE
-c      call add_to_xml_reporting (
 C     &         Pfair(iZone),
-c     &         ZRH/100.0*Psat01(TFA(iZone)),
-c     &         H3K_rep_Name(1:iH3K_NameLen)// '/air_point/pvap',
-c     &         'units', '(Pa)',
-c     &         'Zone air node partial vapour pressure' )
+      call AddToReport (
+     &         rvAirPointPartialVapourPressure%Identifier,
+     &         fZoneRH/100.0*Psat01(TFA(iZone)),
+     &         zname(iZone)(1:lnzname(iZone)))
 
 C.....Zone air saturation temperature
-c      call add_to_xml_reporting (
-c     &         DEWPT(HUMR(TFA(iZone),ZRH,PATMOS),PATMOS),
-c     &         H3K_rep_NAME(1:iH3K_NameLen)// '/air_point/tsat',
-c     &         'units', '(oC)',
-c     &         'Zone air saturation temperature' )
+      call AddToReport (
+     &         rvAirPointSaturationTemperature%Identifier,
+     &         DEWPT(HUMR(TFA(iZone),fZoneRH,PATMOS),PATMOS),
+     &         zname(iZone)(1:lnzname(iZone)))
 
 C.....ZONE HEAT INJECTION / EXTRACTION
       call AddToReport (
