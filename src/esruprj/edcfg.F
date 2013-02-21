@@ -3895,8 +3895,8 @@ C Scan control file (silently) if one exists.
           endif
         endif
 
-C Display any general associated images.
-        call imgdisp(0,'****',ier)
+C Display any general associated images if in graphic mode.
+        if(MMOD.EQ.8) call imgdisp(0,'****',ier)
 
 C If a plant only model then no need to read zone files.
 C Set flag so that bounds are checked.
