@@ -1073,8 +1073,10 @@ esac
 case $compiler in
    sunF90)   CC=cc;  CPL=CC;  FC=f90  ;;
    GNU) case $gnu_version in
-#           gcc4)     CC=gcc-mp-4.6;   CPL=g++-mp-4.6;    FC=gfortran-mp-4.6  ;;
-           gcc4)     CC=gcc;   CPL=g++;    FC=gfortran  ;;
+           gcc4) case $platform in
+                    cygwin) CC=gcc;   CPL=g++;    FC=gfortran  ;;
+                    mac)    CC=gcc-mp-4.6;   CPL=g++-mp-4.6;    FC=gfortran-mp-4.6  ;;
+                 esac;;
         esac;;
    intel)    CC=icc;  CPL=icpc;  FC=ifort ;;
 esac
@@ -1091,9 +1093,11 @@ if [ "$extendedDebugging" == "yes" ]; then
   case $compiler in
     sunF90) ExtendedDebugFlags="$ExtendedDebugFlags";;
     GNU) case $gnu_version in
-            gcc4)     ExtendedDebugFlags="$ExtendedDebugFlags -fbounds-check -Wunderflow -Wconversion -frange-check -ffpe-trap=zero,invalid,overflow,underflow"  ;;
-#            gcc4)     ExtendedDebugFlags="$ExtendedDebugFlags -fbounds-check -Wconversion"  ;;
-          esac;;
+            gcc4) case $platform in
+                     cygwin) ExtendedDebugFlags="$ExtendedDebugFlags -fbounds-check -Wunderflow -Wconversion -frange-check -ffpe-trap=zero,invalid,overflow,underflow"  ;;
+                     mac)    ExtendedDebugFlags="$ExtendedDebugFlags -fbounds-check -Wconversion"  ;;
+                  esac;;
+         esac;;
     intel)  ExtendedDebugFlags="$ExtendedDebugFlags -debug all -C -fp-stack-check -traceback -inline-debug-info -fpe0 "  ;;
   esac
 fi
