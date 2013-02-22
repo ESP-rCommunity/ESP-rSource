@@ -1,2 +1,2 @@
 #!/bin/bash
-./Install $1 --xml --X11 --no_training --extra-debug --gcc4 --silent
+./Install $1 --xml --X11 --no_dbs --no_training --extra-debug --gcc4 --silent

@@ -85,7 +85,7 @@ MODULE h3kmodule
          rvHeatFluxCENPartitionNet, rvAirPointTemperature, rvAirPointRelativeHumidity, &
          rvAirPointResultantTemperature, rvAirPointDryAirMass, rvAirPointMoistureContent, &
          rvAirPointPartialVapourPressure, rvAirPointSaturationTemperature, &
-         rvWindowsPosition, rvAirFlowModel, &
+         rvWindowsPosition, rvAirFlowModel, rvHeatSetpoint, rvCoolSetpoint, &
          rvSuppliedEnergyNet, rvSuppliedEnergyHeating, &
          rvSuppliedEnergyCooling, rvSuppliedEnergyNetPerm2, rvSuppliedEnergyHeatingPerm2, &
          rvSuppliedEnergyCoolingPerm2, rvThermalLoadsHeatingTotal, rvThermalLoadsCoolingTotal, &
@@ -474,6 +474,18 @@ CONTAINS
       rvAirFlowModel%Description = 'Air-flow-model (0->3)'
       Call AddVariable(rvAirFlowModel)
 
+      rvHeatSetpoint%VariableName = 'bui/*/ctl/heatsetpt'
+      rvHeatSetpoint%MetaType = 'units'
+      rvHeatSetpoint%VariableType = '(°C)'
+      rvHeatSetpoint%Description = 'Zone control heating setpoint'
+      Call AddVariable(rvHeatSetpoint)
+
+      rvCoolSetpoint%VariableName = 'bui/*/ctl/coolsetpt'
+      rvCoolSetpoint%MetaType = 'units'
+      rvCoolSetpoint%VariableType = '(°C)'
+      rvCoolSetpoint%Description = 'Zone control cooling setpoint'
+      Call AddVariable(rvCoolSetpoint)
+
       rvSuppliedEnergyNet%VariableName = 'bui/*/supplied_energy/net'
       rvSuppliedEnergyNet%MetaType = 'units'
       rvSuppliedEnergyNet%VariableType = '(W)'
@@ -492,7 +504,7 @@ CONTAINS
       rvSuppliedEnergyCooling%Description = 'Zone net heat extraction'
       Call AddVariable(rvSuppliedEnergyCooling )
 
-      rvFreeCoolingDelivered%VariableName = 'bui/*/free_cooling/'
+      rvFreeCoolingDelivered%VariableName = 'bui/*/free_cooling'
       rvFreeCoolingDelivered%MetaType = 'units'
       rvFreeCoolingDelivered%VariableType = '(W)'
       rvFreeCoolingDelivered%Description = 'Free cooling delivered to zone through BCL 29'

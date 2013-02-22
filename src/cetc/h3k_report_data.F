@@ -1411,22 +1411,16 @@ C---------------------*****---------------------------------------------
 
       if (icascf(iZone).ne.0) then
       ! Heating
-c        call add_to_xml_reporting (
-c     &    fHeatSetpoint(iZone),
-c     &    H3K_rep_NAME(1:iH3K_NameLen) 
-c     &     // '/ctl/heatsetpt',
-c     &     'units', '(°C)',
-c     &     'zone control heating setpoint'
-c     &  )
+        call AddToReport (
+     &         rvHeatSetpoint%Identifier,
+     &         fHeatSetpoint(iZone),
+     &         zname(iZone)(1:lnzname(iZone)))
 
       ! Cooling
-c        call add_to_xml_reporting (
-c     &    fCoolSetpoint(iZone),
-c     &    H3K_rep_NAME(1:iH3K_NameLen) 
-c     &     // '/ctl/coolsetpt',
-c     &     'units', '(°C)',
-c     &     'zone control cooling setpoint'
-c     &  )
+        call AddToReport (
+     &         rvCoolSetpoint%Identifier,
+     &         fCoolSetpoint(iZone),
+     &         zname(iZone)(1:lnzname(iZone)))
       endif
 
 C-----------------------------*****-------------------------------------
@@ -1775,9 +1769,8 @@ C.....Cooling delivered by free-cooling means through BCL 29.
       call AddToReport (
      &         rvFreeCoolingDelivered%Identifier,
      &         fFreeCoolDelivered(iZone),
-     &         cZone_Chars)
-    
-     
+     &         zname(iZone)(1:lnzname(iZone)))
+
 C Convert heat injection/extraction metrics to "per m2 of floor area"
       Qm2_ZONE=Q_ZONE/zbasea(iZone)
       Qm2_Heat=Q_Heat/zbasea(iZone)
