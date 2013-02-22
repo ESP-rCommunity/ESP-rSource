@@ -348,9 +348,9 @@ C....................Warn user
                      write (cMsg, '(A,I2,A,I2,A,I2,A,I2,A)' )
      &                 'Plant containment #', iContainment,
      &                 ': Zone #', iZone,
-     &                 ' Surface #', iSurface,
-     &                 ' Layer #', iLayer, ' are invalid.'
-     
+     &                 ', Surface #', iSurface,
+     &                 ', Layer #', iLayer, ' are invalid.'
+                     goto 999
                   endif             
 
                else
@@ -421,6 +421,7 @@ C----------------------------------------------------------------------
             write (cMsg, '(A,I2,A,I2,A,I2,A,I2,A)' )
      &              'Specified plant component index (',
      &              iComponent,') is invalid.'
+            goto 999
          else
 
 C----------------------------------------------------------------------
@@ -583,6 +584,7 @@ C...........Containment index incorrectly assigned.
      &              ' Zone #', iZone,
      &              ' Surface #', iSurface,
      &              ' Node #', iNode, ' are invalid.'
+            goto 999
          endif
 
       elseif ( .not. bContainments ) then
@@ -594,15 +596,22 @@ C........Action type not supported.
          bFatal_Error = .true. 
          write (cMsg, '(A,I2,A)' )
      &              'Passed action (', iAction, ') is not supported'
+         goto 999
 
       endif             
 
 C----------------------------------------------------------------------
-C     Error handling      
-C----------------------------------------------------------------------      
+C     Error handling
+Cag@130222 added label to be able to jump here as soon as bFatal_Error
+C          is set to .true. Otherwise, the cMsg string is not the
+C          relevant one but the last one e.g. of a loop!      
+C----------------------------------------------------------------------
+999   continue
       if ( bFatal_Error ) then
+c         write(*,*)cMsg
          call edisp (iuout, cContext )
          call edisp (iuout, cMsg )
+         call edisp (iuout, " " )
          stop "plt_zone_gain_inventory(): Unresolvable error"
       endif
 
