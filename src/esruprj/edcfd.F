@@ -238,9 +238,11 @@ C Conflation options.
         call gethelptext(helpinsub,helptopic,nbhelp)
         IWO=0
         call EASKATOG('Conflation options:',' ','CFD only',
-     &    'type 1 thermal','type 2 thermal','air-flow',
+     &    'thermal only','adaptive thermal','air-flow',
      &    'cancel','  ','  ',IWO,nbhelp)
-        if (IWO.ne.5) IFCFD(izone)=IWO-1
+        if(IWO.le.2)IFCFD(izone)=IWO-1
+	if(IWO.eq.3)IFCFD(izone)=4
+	if(IWO.eq.4)IFCFD(izone)=5
       ELSEIF(INO.EQ.5)THEN 
 
 C Geometry and Gridding
@@ -295,6 +297,7 @@ C IER=0 indicates no error.
 #include "model.h"
 #include "geometry.h"
 #include "cfd.h"
+#include "prj3dv.h"
 
       COMMON/SPAD/MMOD,LIMIT,LIMTTY
       COMMON/FILEP/IFIL
@@ -331,7 +334,7 @@ C Arrays for sorting domains from (see code for comments).
       logical origin,xgrid,ygrid,zgrid,zegrid,ortho
       LOGICAL ZEROT,ZandKE,MITzero,vclose
 
-      character ITEM(13)*36
+      character ITEM(14)*36
       character outs*124
 
       integer iglib   ! if 1 then X11, if 2 then GTK, if 3 then text only.
@@ -361,12 +364,13 @@ C << low/medium/high resolution and/or the size of the zone.
       icellx=20
       icelly=20
       icellz=20
+      itrc=0   ! silent feedback initially
 
 C Help text for this menu.
       helptopic='cfd_gridding_setup'
       call gethelptext(helpinsub,helptopic,nbhelp)
 
-C Check if we have vertex data.
+C Check if we have vertex at ends of axis data.
       if (iorg.eq.0) then
         call usrmsg('You will have to define the CFD axis relationship',
      &              'to the zone geometry via vertex numbers.','W')
@@ -415,8 +419,8 @@ C Check X and Y.
       call eclose(ang3,90.00,0.1,close)
       if(.NOT.close) then
         call usrmsg(
-     &     'X & Y axes are not orthogonal. Please check and respecify.',
-     &                    '  ','W')
+     &    'X & Y axes are not orthogonal. Please check and respecify.',
+     &    '  ','W')
         origin=.FALSE.
         xgrid=.FALSE.
       endif
@@ -427,8 +431,8 @@ C Check X and Z.
       call eclose(ang3,90.00,0.1,close)
       if(.NOT.close) then
         call usrmsg(
-     &     'X & Z axes are not orthogonal. Please check and respecify.',
-     &                    '  ','W')
+     &    'X & Z axes are not orthogonal. Please check and respecify.',
+     &    '  ','W')
         origin=.FALSE.
         ygrid=.FALSE.
       endif
@@ -439,8 +443,8 @@ C Check Y and Z.
       call eclose(ang3,90.00,0.1,close)
       if(.NOT.close) then
         call usrmsg(
-     &     'Y & Z axes are not orthogonal. Please check and respecify.',
-     &                    '  ','W')
+     &    'Y & Z axes are not orthogonal. Please check and respecify.',
+     &    '  ','W')
         origin=.FALSE.
         zgrid=.FALSE.
       endif
@@ -455,11 +459,11 @@ C Non orthogonal.
 
 C Check Y and Ze.
         call ang3vtx(X(iyend),Y(iyend),Z(iyend),X(iorg),Y(iorg),
-     &                Z(iorg),X(izende),Y(izende),Z(izende),ang3)
+     &               Z(iorg),X(izende),Y(izende),Z(izende),ang3)
         call eclose(ang3,90.00,0.1,close)
         if(.NOT.close) then
-          call usrmsg(' Y & Ze axes are not orthogonal. ',
-     &                ' Please check and respecify.','W')
+          call usrmsg('Y & Ze axes are not orthogonal. ',
+     &                'Please check and respecify.','W')
           INO=1
           goto 9
         endif
@@ -504,9 +508,16 @@ C Create menu text.
         ITEM(10+NCP) ='g Visualize gridding             '
       endif
       ITEM(11+NCP) =' ------------------------------ '
-      ITEM(12+NCP) ='? help              '
-      ITEM(13+NCP) ='- exit               '
-      NITMS=13+NCP
+      if(itrc.eq.0)then
+        ITEM(12+NCP) ='> feedback silent             '
+      elseif(itrc.eq.1)then
+        ITEM(12+NCP) ='> feedback brief              '
+      elseif(itrc.eq.2)then
+        ITEM(12+NCP) ='> feedback verbose            '
+      endif
+      ITEM(13+NCP)   ='? help                        '
+      ITEM(14+NCP)   ='- exit                        '
+      NITMS=14+NCP
 
 C Help text for this menu.
       helptopic='cfd_gridding_setup'
@@ -597,29 +608,20 @@ C Scan X,Y,Z coordinates and then sort in ascending order. Make use of
 C XS,YS,ZS for array to sort and XSI,YSI,ZSI for their link back to
 C initial position. Use XSS,YSS,ZSS for the compacted sorted list (with
 C duplicates removed).
-        do 42 il=1,MTV
-          if(il.le.NTV)then
-            XS(il)=X(il)
-            YS(il)=Y(il)
-            ZS(il)=Z(il)
-          else
-            XS(il)=0.
-            YS(il)=0.
-            ZS(il)=0.
-          endif
-          XSS(il)=0.
-          YSS(il)=0.
-          ZSS(il)=0.
-          XSI(il)=il
-          YSI(il)=il
-          ZSI(il)=il
+
+C Take into account if the zone is offset from the site origin.
+C Use the zone bounds (ZXMN ZYMN ZZMN)
+        do 42 il=1,NZTV(izone)
+          XS(il)=X(il); YS(il)=Y(il); ZS(il)=Z(il)
+          XSS(il)=ZXMN(izone); YSS(il)=ZYMN(izone); ZSS(il)=ZZMN(izone)
+          XSI(il)=il; YSI(il)=il; ZSI(il)=il
   42    continue
 
 C Sort each axis in ascending order.
         KFLAG = 2
-        call SORTR(XS,XSI,MTV,KFLAG)
-        call SORTR(YS,YSI,MTV,KFLAG)
-        call SORTR(ZS,ZSI,MTV,KFLAG)
+        call SORTR(XS,XSI,NZTV(izone),KFLAG)
+        call SORTR(YS,YSI,NZTV(izone),KFLAG)
+        call SORTR(ZS,ZSI,NZTV(izone),KFLAG)
 
 C Start at smallest value for each axis. tolx,toly,tolz is how small
 C a cell can be at max resolution.
@@ -633,10 +635,17 @@ C a cell can be at max resolution.
         ilz=1
         ZSS(1)=ZS(1)
         tolz=(zdis/real(NTCELZ)) * 0.2
-        do 43 il=2,MTV
+
+C Debug.
+        if(itrc.gt.0)then
+          write(outs,'(a,3f9.3)') 'Smallest cells tollerance: ',
+     &      tolx,toly,tolz
+          call edisp(iuout,outs)
+        endif
+        do 43 il=2,NZTV(izone)
 
 C For X/Y/Z axis in turn see if next sorted point is sufficiently bigger
-C than the last one to qualify as a new region boundary. Not that in
+C than the last one to qualify as a new region boundary. Note that in
 C less complex zones only the latter part of XS,YS,ZS array will have
 C anything other than zero.
           vclose=.false.
@@ -670,18 +679,21 @@ C anything other than zero.
             endif
           endif
   43    continue
-  
-C debug       write(6,*) ilx,(XSS(j),j=1,ilx)
-C debug       write(6,*) ily,(YSS(j),j=1,ily)
-C debug       write(6,*) ilz,(ZSS(j),j=1,ilz)
+
+C Debug.
+        if(itrc.gt.1)then
+          write(6,*) 'x axis ',ilx,(XSS(j),j=1,ilx)
+          write(6,*) 'y axis ',ily,(YSS(j),j=1,ily)
+          write(6,*) 'z axis ',ilz,(ZSS(j),j=1,ilz)
+        endif
 
         if(NREG(1,ICFD).eq.0)NREG(1,ICFD)=ilx-1
         if(NREG(2,ICFD).eq.0)NREG(2,ICFD)=ily-1
         if(NREG(3,ICFD).eq.0)NREG(3,ICFD)=ilz-1
 
         write(outs,'(a,i3,a,f6.2,a)') 
-     &    ' How many total cells along X axis (max is ',NTCELX,
-     &    ' over ',xdis,'m) would you like to have?'
+     &    'How many total cells along X axis (max is ',NTCELX,
+     &    'over ',xdis,'m) would you like to have?'
         CALL EASKI(icellx,outs,' ',1,'F',NTCELX,'F',10,
      &    'requested total X cells',IERI,nbhelp)
         if(ieri.eq.-3) then
@@ -701,12 +713,14 @@ C debug       write(6,*) ilz,(ZSS(j),j=1,ilz)
   44      continue
         endif
 
-C debug        write(6,*) xd,tolx,int(xd/tolx)
-C debug        write(6,*) 'ncellx ',NCELX
-
+C Debug.
+        if(itrc.gt.1)then
+          write(6,*) xd,tolx,int(xd/tolx)
+          write(6,*) 'ncellx ',NCELX
+        endif
         write(outs,'(a,i3,a,f6.2,a)') 
-     &    ' How many total cells along Y axis (max is ',NTCELY,
-     &    ' over ',ydis,'m) would you like to have?'
+     &    'How many total cells along Y axis (max is ',NTCELY,
+     &    'over ',ydis,'m) would you like to have?'
         CALL EASKI(icelly,outs,' ',1,'F',NTCELY,'F',10,
      &    'requested total Y cells',IERI,nbhelp)
         if(ieri.eq.-3) then
@@ -726,12 +740,15 @@ C debug        write(6,*) 'ncellx ',NCELX
   45      continue
         endif
 
-C debug        write(6,*) yd,toly,int(yd/toly)
-C debug        write(6,*) 'ncelly ',NCELY
+C Debug.
+        if(itrc.gt.1)then
+          write(6,*) yd,toly,int(yd/toly)
+          write(6,*) 'ncelly ',NCELY
+        endif
 
         write(outs,'(a,i3,a,f6.2,a)') 
-     &    ' How many total cells along Z axis (max is ',NTCELZ,
-     &    ' over ',zdis,'m) would you like to have?'
+     &    'How many total cells along Z axis (max is ',NTCELZ,
+     &    'over ',zdis,'m) would you like to have?'
         CALL EASKI(icellz,outs,' ',1,'F',NTCELZ,'F',10,
      &    'requested total Z cells',IERI,nbhelp)
         if(ieri.eq.-3) then
@@ -751,9 +768,11 @@ C debug        write(6,*) 'ncelly ',NCELY
   46      continue
         endif
 
-C debug        write(6,*) zd,tolz,int(zd/tolz)
-C debug        write(6,*) 'ncellz ',NCELZ
-
+C Debug.
+        if(itrc.gt.1)then
+          write(6,*) 'Z distance ',zd,' tollerance ',tolz,int(zd/tolz)
+          write(6,*) 'ncellz ',NCELZ
+        endif 
       elseif(INO.EQ.7)then
 
 C Grid X-axis.
@@ -782,7 +801,7 @@ C if curvilinear.
 
 C Ask whether Z is Orthogonal or curvilinear.
         CALL EASKABC('Options for Z gridding:',' ','orthogonal',
-     &      'curvilinear','cancel',IWO,nbhelp)
+     &               'curvilinear','cancel',IWO,nbhelp)
         if(iwo.ne.3)then
           ortho=.TRUE.
 
@@ -838,6 +857,7 @@ C Grid Zeast-axis.
             endif
           endif
         endif
+
       elseif(INO.EQ.(10+NCP).and.(.NOT.griderr))then
 
 C Visualize gridding.
@@ -857,7 +877,6 @@ C Setup and pass in parameters to win3d.
             iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
             CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &        iigl,iigr,iigt,iigb,iigw,iigwh)
-C            CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
             igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
             igw=int(iigw); igwh=int(iigwh)
             call startbuffer()
@@ -884,15 +903,23 @@ C to be refreshed.
           CALL USRMSG(' Define origin of CFD domain ',
      &         ' and grid axes first ','W')
         endif
+
       elseif(INO.EQ.NITMS-1)then
+
         helptopic='cfd_gridding_setup'
         call gethelptext(helpinsub,helptopic,nbhelp)
         CALL PHELPD('gridding',nbhelp,'-',0,0,IER)
+
+      elseif(INO.EQ.NITMS-2)then
+
+        itrc=itrc+1           ! toggle feedback level
+        if(itrc.gt.2) itrc=0
+
       elseif(INO.EQ.NITMS)then
 
 C Return to higher level menu.
         if (griderr) CALL USRMSG(
-     &         'The current gridding scheme is incomplete!','  ','W')
+     &    'The current gridding scheme is incomplete!','  ','W')
 
 C Check grid definition and current velocity solution requirements are 
 C consistant.
@@ -1528,6 +1555,26 @@ C For help messages
 C << Note: for more complex domains grow this menu needs
 C << to be one that can support multiple pages.
 
+C Reset the display bounds for grid display over the zone
+C and if in graphic mode go ahead and display.
+      IF(MMOD.EQ.8)THEN
+
+C Set up grid information in case it was not already done
+C and clear graphic display.
+        CALL INICNT
+        CALL GRID(ier)
+        call startbuffer()
+
+C Setup and pass in parameters to win3d.
+        iiw1=6; iiw2=6; iiw3=2; iiw4=4; iimenu=menuchw
+        iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw; iigwh=igwh
+        CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
+     &    iigl,iigr,iigt,iigb,iigw,iigwh)
+        igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
+        igw=int(iigw); igwh=int(iigwh)
+        call VGRID3D('zn ','xyz',izone)
+      ENDIF
+
 C Create menu text.
  5    M=0
       do 10 I=1,NVOL(ICFD)
@@ -1612,7 +1659,6 @@ C Setup and pass in parameters to win3d.
             iigl=igl; iigr=igr; iigt=igt; iigb=igb; iigw=igw;iigwh=igwh
             CALL win3d(iimenu,iiw1,iiw2,iiw3,iiw4,
      &        iigl,iigr,iigt,iigb,iigw,iigwh)
-C            CALL win3d(menuchw,4,1,1,3,igl,igr,igt,igb,igw,igwh)
             igl=int(iigl); igr=int(iigr); igt=int(iigt); igb=int(iigb)
             igw=int(iigw); igwh=int(iigwh)
             call startbuffer()
@@ -3760,7 +3806,6 @@ C Check current defined distance and total no of cells.
         if (abs(CTDIS-TOTDIS).gt.0.001)then
           if (IAX.eq.1) then
             write(outs,'(a,f6.3,a,f6.3,a)') 'The current length ',
-
      &       CTDIS,' & TOTDIS',TOTDIS,' are not close for X axis.'
           elseif(IAX.eq.2)then
             write(outs,'(a,f6.3,a,f6.3,a)') 'The current length ',
