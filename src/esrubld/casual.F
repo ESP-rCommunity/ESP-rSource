@@ -364,6 +364,7 @@ C Equipment is an arbitrary choice for this aggregate data.
 C Data in temporal database (convective, radiant, latent for 3 separate
 C slots i.e. 9 columns of gains). Also instanciate the future value of
 C each casual gain so that it can be used within MZLS3.
+C << any need for ICGUnit?  Probably always is W. >>
         IFOC=ICASUAL3(icomp)
         CALL RCTDFB(itrc,btimef,VAL,ISD,IFOC,IER)
         QCASC(2)=VAL(ISD)+VAL(ISD+3)+VAL(ISD+6)
@@ -2440,7 +2441,8 @@ C if ACTIVE=0. then no matching casual gain/occupants.
 C Determine which day of the week (6=Sat, 7=Sun ,other weekday ot other
 C day types if defined using calendar function and set IGC
 C (gain to control) to that reqested in the casual gain control
-C file. Assumes 3 day types are standard. If matching gain(s) set ACTIVE=1.0.
+C file. Assumes 3 day types are standard but checks status of NBDAYTYPE
+C and uses ICALENDER if required. If matching gain(s) set ACTIVE=1.0.
       IF(NBDAYTYPE.LE.3)THEN
         IDTY=1
         IF(IDWP.EQ.6)IDTY=2

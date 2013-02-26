@@ -166,6 +166,10 @@ C are later used in precal.F as indexing arrays.
  909    continue
  700  continue
 
+C Debug.
+C      write(6,*) '170 lodslot ',icomp,':',
+C     & (lodslot(icomp,iph),iph=1,7)
+
 C Read lines from file, discarding comments. Look for header on
 C newer files. Older files will begin with a description. To allow for
 C description with spaces copy directly from OUTSTR rather than parsing
@@ -549,8 +553,9 @@ C << still to be done for ip3ver >21 >>
             ICGT(IDTY,I)=1    ! assume slot one if unspecified
             ICGUnit(IDTY,I)=0 ! assume unit is W
           endif
-          write(6,*) 'eroper 552 ',idty,i,ireader,ICGT(IDTY,I),
-     &      ICGUnit(IDTY,I)
+C Debug.
+C          write(6,*) 'eroper 552 ',idty,i,ireader,ICGT(IDTY,I),
+C     &      ICGUnit(IDTY,I)
 
           CALL EGETWI(OUTSTR,K,IREADER,0,24,'W','gain st',IER)
           ICGS(IDTY,I)=IREADER
@@ -1298,7 +1303,7 @@ C Error messages.
       lodlabelc(4)='Otherstuff' 
       caskeytypec(4)='other       '  
       lodlabelc(5)='Ann.El    ' 
-      caskeytypec(5)='net_utils   '  
+      caskeytypec(5)='net_utilities'  
       lodlabelc(6)='NA        ' 
       caskeytypec(6)='-           '  
       lodlabelc(7)='NA        ' 
@@ -1768,7 +1773,9 @@ C Check the range of icgt, remember in irange and use for looping.
       if(irange.lt.3) irange=3
 
 C Debug.
-C      write(6,*) 'casual gain range is ',irange
+      write(6,*) 'casual gain range is ',irange
+      write(6,*) 'EMKOPER lodslot ',icomp,':',
+     &  (lodslot(icomp,iph),iph=1,7)
 
       if(ip3ver(icomp).ge.21)then
 

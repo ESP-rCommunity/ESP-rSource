@@ -118,6 +118,9 @@ C just write operations file
         ICOMP=IVER
         if(cfgok.and.(.NOT.browse))then
           CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
+C Debug.
+C          write(6,*) 'f lodslot ',icomp,':',
+C     &      (lodslot(icomp,iph),iph=1,7)
           IF(IER.LT.0)THEN
             call edisp(iuout,
      &        'Problem saving current operations to the new file.')
@@ -274,6 +277,7 @@ C Instanciate for current day types prior to scanning the source operation file.
 C Set the default casual labels for this zone.
 
 C << should *type also be set here prior to reading file? >>
+C << do we need any of this >>
       lodlabel(icomp,1)='Occupants '
       lodlabel(icomp,2)='Lights    '
       lodlabel(icomp,3)='SmallPower'  
@@ -368,6 +372,8 @@ C Instanciate initial documentation for air schedules and casual gains.
 
 C Set the default labels, slot, type labels for this zone. Only set
 C the lodslot to non-zero for the initial 3 casual gain slots.
+
+C << it might not be necessary to set lodslot??? >>
           lodlabel(icomp,1)='Occupants'
           caskeytype(icomp,1)='people      '
           lodslot(icomp,1)=1; lodatr1(icomp,1)=0;  lodatr2(icomp,1)=0
@@ -381,7 +387,7 @@ C the lodslot to non-zero for the initial 3 casual gain slots.
           caskeytype(icomp,4)='other       '  
           lodslot(icomp,4)=0; lodatr1(icomp,4)=0;  lodatr2(icomp,4)=0
           lodlabel(icomp,5)='Ann.El    '  
-          caskeytype(icomp,5)='net_utils   '  
+          caskeytype(icomp,5)='net_utilities'  
           lodslot(icomp,5)=0; lodatr1(icomp,5)=0;  lodatr2(icomp,5)=0
           lodlabel(icomp,6)='N/A       ' 
           caskeytype(icomp,6)='-           '  
@@ -403,6 +409,9 @@ C Write file and return.
      &        'in zone operations data or file name...','-')
             LPROJ(ICOMP)=LTMP
             CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
+C Debug
+C            write(6,*) 'g lodslot ',icomp,':',
+C     &        (lodslot(icomp,iph),iph=1,7)
             CALL EMKCFG('-',ier)
             call usrmsg(
      &        'Updating model to reflect changes',
@@ -652,6 +661,9 @@ C Remind users to check their data.
       
       ENDIF
 
+C Debug.
+C      write(6,*) '663 prjfmk lodslot ',(lodslot(icomp,iph),iph=1,7)
+
 C Display different options depending on the version of the file.
 C If ip3ver is < 21 then there is a single string for both air
 C and casual descriptions.
@@ -708,6 +720,9 @@ C Sort the gains and then update the file and mark MODOPR.
               IUO=IFIL+1
               CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
               MODOPR=.false.
+C Debug
+C              write(6,*) 'a lodslot ',icomp,':',
+C     &          (lodslot(icomp,iph),iph=1,7)
             endif
           endif
         endif
@@ -722,6 +737,9 @@ C Sort the gains and then update the file and mark MODOPR.
 C So save the changes to the file and then exit.
           IUO=IFIL+1
           CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
+C Debug
+C          write(6,*) 'b lodslot ',icomp,':',
+C     &      (lodslot(icomp,iph),iph=1,7)
         endif
         RETURN
 
@@ -796,6 +814,9 @@ C Save current information into a descriptive file
 C and rewrite the system configuration file if not browsing.
         if(cfgok.and.(.NOT.browse))then
    11     CALL EMKOPER(IUO,LPROJ(ICOMP),ICOMP,IER)
+C Debug
+C          write(6,*) 'c lodslot ',icomp,':',
+C     &       (lodslot(icomp,iph),iph=1,7)
           IF(IER.LT.0)THEN
             DOK=.true.
             helptopic='operations_save_error'
@@ -2521,6 +2542,9 @@ C Save the destination operation file.
      &  'Updating model to reflect changes in destination',
      &  'operations data or file name...','-')
       CALL EMKOPER(IUO,LPROJ(idest),idest,IER)
+C Debug
+C      write(6,*) 'd lodslot ',icomp,':',
+C     &  (lodslot(icomp,iph),iph=1,7)
       CALL EMKCFG('-',ier)
       call usrmsg(
      &  'Updating model to reflect changes in destination',
@@ -3156,7 +3180,8 @@ C << ICGT overloaded here >>
         IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
         M=M+1
         CALL EMKEY(M-MHEAD,KEY,IER)
-        write(6,*) 'icgunit is',idtyp,l,ICGUnit(IDTYP,L),ICGT(IDTYP,L)
+C Debug
+C        write(6,*) 'icgunit is',idtyp,l,ICGUnit(IDTYP,L),ICGT(IDTYP,L)
         if(ICGUnit(IDTYP,L).eq.0)then
           jicgt=iabs(ICGT(IDTYP,L))
           if (IELF(ICOMP).EQ.1) then
@@ -3413,7 +3438,7 @@ C For all day types.
               izs=0
               izf=24
               call EDCASGN(ICOMP,ICGTS,IDT,IPER,silent,izs,izf)
-              write(6,*) '619 icgts',icgts,idt,iper,izs,izf
+C              write(6,*) '619 icgts',icgts,idt,iper,izs,izf
             ENDIF
           ELSE
             IDT=IQ
@@ -3433,13 +3458,13 @@ C this ??
                 izs=0
                 izf=24
                 call EDCASGN(ICOMP,ICGTS,IDT,IPER,silent,izs,izf)
-                write(6,*) '619+ icgts',icgts,idt,iper,izs,izf
+C                write(6,*) '619+ icgts',icgts,idt,iper,izs,izf
               endif
               silent=.false.
               izs=8
               izf=18
               call EDCASGN(ICOMP,ICGTS,IDT,IPER,silent,izs,izf)
-              write(6,*) '619++ icgts',icgts,idt,iper,izs,izf
+C              write(6,*) '619++ icgts',icgts,idt,iper,izs,izf
             ENDIF
           ENDIF
           sorted=.false.
@@ -3586,7 +3611,7 @@ C Type to go with this casual gain.
             elseif(isw.eq.5)then
               caskeytype(icomp,islot)='other       '  
             elseif(isw.eq.6)then
-              caskeytype(icomp,islot)='net_utils   '  
+              caskeytype(icomp,islot)='net_utilities'  
             elseif(isw.eq.7)then
               caskeytype(icomp,islot)='ALOtherElectric'  
             elseif(isw.eq.8)then
@@ -3625,7 +3650,7 @@ C Edit casual gain identified by KEYIND.
         izs=0
         izf=0
         call EDCASGN(ICOMP,ICGTX,IDT,IPER,silent,izs,izf)
-        write(6,*) '619+++ icgtx',icgtx,idt,iper,izs,izf
+C        write(6,*) '619+++ icgtx',icgtx,idt,iper,izs,izf
         sorted=.false.
         modopr=.true.
       endif
@@ -3958,7 +3983,7 @@ C Warn user if the zone base area is still zero.
 C Ask for sensible and latent gain.
 C Can be specified as: W, W/obj, W/m^2, m^2/obj
       IGU=1
-      write(6,*) 'icgux before dialog is ',icguX
+C      write(6,*) 'icgux before dialog is ',icguX
       if(icguX.eq.0)then
         msg='Gain to be specified (currently Watts)'
       elseif(icguX.eq.1)then
@@ -4095,7 +4120,7 @@ C that each person is 95W sensible and 45W latent.
      &          'W & latent to ',VL,'W.'
             endif
             call edisp(iuout,outs)
-            write(6,*) 'xx ',icgtx,cmgsx,cmglx,vs,vl
+C            write(6,*) 'xx ',icgtx,cmgsx,cmglx,vs,vl
           else
             write (HOLD,'(2f8.1,a)') CMGSX/(zb/FLA),
      &                               CMGLX/(zb/FLA),'  '
@@ -4510,7 +4535,7 @@ C the casual gain portion of the file.
       lodlabel(idest,4)='Otherstuff'  
       caskeytype(idest,4)='other       '  
       lodlabel(idest,5)='Ann.El '  
-      caskeytype(idest,5)='net_utils   '  
+      caskeytype(idest,5)='net_utilities'  
       lodlabel(idest,6)='N/A    ' 
       caskeytype(idest,6)='-           '  
       lodlabel(idest,7)='N/A    '
@@ -4781,6 +4806,9 @@ C Save the destination operation file.
      &    'in destination operation data or file name...','-')
       endif
       CALL EMKOPER(IUO,LPROJ(idest),idest,IER)
+C Debug
+C      write(6,*) 'e lodslot ',icomp,':',
+C     &  (lodslot(icomp,iph),iph=1,7)
       CALL EMKCFG('s',ier)
       if(act(1:1).eq.'-')then
         call usrmsg(
@@ -5547,7 +5575,7 @@ C Type to go with this casual gain.
         caskeytype(icomp,islot)='other       '  
         rf=0.5 ; cf=0.5 
       elseif(isw.eq.6)then
-        caskeytype(icomp,islot)='net_utils   '  
+        caskeytype(icomp,islot)='net_utilities'  
         rf=0.5 ; cf=0.5 
       elseif(isw.eq.7)then
         caskeytype(icomp,islot)='ALOtherElectric'  

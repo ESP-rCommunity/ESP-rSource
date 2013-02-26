@@ -451,13 +451,14 @@ C planes which comprise the floor.
       IF(CTYPE(icomp)(1:3).EQ.'GEN')THEN
 
 C Establish if floor area needs be specified.
-C << overloaded ICGT here >>
         INDEX=0
         DO 400 IDTY=1,NBDAYTYPE
           IF(INDEX.EQ.1)GOTO 400
           IF(NCAS(IDTY).GT.0)THEN
             DO 160 I=1,NCAS(IDTY)
-              IF(ICGT(IDTY,I).LT.0)INDEX=1  ! if gain type overloaded
+              if(ICGUnit(IDTY,I).ge.1)then
+                INDEX=1  ! if gain type overloaded
+              endif
  160        CONTINUE
           ENDIF
  400    CONTINUE
@@ -494,25 +495,31 @@ C Zero derived gains.
  110  continue
 
 C Take gains and process them into the simulation common block.
-C Weekday casual gains.
 C NOTE: support for additional casual gains types added:
-C - if ICGTYP = 5, casual gain is coupled to electric load
+C - if abs(ICGT(IDAY,I)) = 5, or caskeytype = 'net_utilities' then the
+C   casual gain is coupled to electric load and electric_net_utilities
 C   and electric_net_utilities is called to characterize
 C   the casual gain.
 C Alex, Feb 20, 2004.
 
-C << overloaded ICGT here >>
-C << for 5 caskeytype is 'net_utilities' >>
       do 300 iday=1,nbdaytype
       if (NCAS(iday).gt.0) then
 C.....Start counter for electric->casual gain couplings
       ingc = 0
       do 210 I=1,NCAS(iday)
         ITYP=abs(ICGT(IDAY,I))
-        ICGTYP=ICGT(IDAY,I)
+        if(caskeytype(icomp,ityp)(1:13).eq.'net_utilities'.or.
+     &     ityp.eq.5)then
+          write(outs,*) 'found a net_utilities ',iday,i,ityp,
+     &      caskeytype(icomp,ityp)
+          if (itrc.gt.1) call edisp(iuout,outs)
+        endif
         IT1=ICGS(IDAY,I)
         IT2=ICGF(IDAY,I)
-        IF ( ICGTYP .EQ. 5 ) THEN
+
+C If the caskeytype is net_utilities or the slot is 5 do electrical coupling.
+        if(caskeytype(icomp,ityp)(1:13).eq.'net_utilities'.or.
+     &     ityp.eq.5)then
            ingc = ingc + 1 !Increment counter 
            Coupling_gain_info(ICOMP,IDAY,ingc,1) = real(IT1)    !start hour
            Coupling_gain_info(ICOMP,IDAY,ingc,2) = real(IT2)    !End hour
@@ -546,7 +553,9 @@ C in specifications, and if found (i) warn user & (ii) set to zero.
              call edisp(itu,' ')
            ENDIF
         ENDIF
-        if (ICGT(iday,I).gt.0) then
+C Debug
+C        write(6,*) '560 precal ',ICGT(iday,I),ICGUnit(iday,I)
+        if(ICGUnit(iday,I).eq.0)then
           NCGPER(ICOMP,IDAY,ITYP)=NCGPER(ICOMP,IDAY,ITYP)+1
           IPER=NCGPER(ICOMP,IDAY,ITYP)
           TCGS(ICOMP,IDAY,ITYP,IPER)=ICGS(IDAY,I)
@@ -571,35 +580,23 @@ C Assign the power consumption evenly over the three phases for a 3-phase load.
  213          continue
             endif
           endif
-        elseif (ICGT(IDAY,I).eq.-1) then
+        elseif(ICGUnit(iday,I).eq.1)then
 
-C This is an implied case of m^2 per person (including fractional
-C persons) which makes a fixed assumption of 95W sensible and 45W
-C latent per person. 
-          NCGPER(ICOMP,IDAY,ITYP)=NCGPER(ICOMP,IDAY,ITYP)+1
-          IPER=NCGPER(ICOMP,IDAY,ITYP)
-          TCGS(ICOMP,IDAY,ITYP,IPER)=ICGS(IDAY,I)
-          TCGS(ICOMP,IDAY,ITYP,IPER+1)=ICGF(IDAY,I)
-          call eclose(CMGS(IDAY,I),0.00,0.001,close)
-          if (close) then
-            PERSN=0.0  ! if m^2/person was close to zero set to no occup.
-          else
-            PERSN=FLOORA(ICOMP)/CMGS(IDAY,I)
-          endif
-          CGSENC(ICOMP,IDAY,ITYP,IPER)=PERSN*95.0*CONC(IDAY,I)
-          CGSENR(ICOMP,IDAY,ITYP,IPER)=PERSN*95.0*RADC(IDAY,I)
-          CGLAT(ICOMP,IDAY,ITYP,IPER)=PERSN*45.0
-        else
+C This is an explicit W/m2 for any gain type (see the logic below
+C for traditional overload of ICGT=-1 which eroper interprets
+C as ICGUnit=2).
+          write(outs,*) 'found Wm2 ',iday,i,ityp,caskeytype(icomp,ityp)
+          if (itrc.gt.1) call edisp(iuout,outs)
           NCGPER(ICOMP,IDAY,ITYP)=NCGPER(ICOMP,IDAY,ITYP)+1
           IPER=NCGPER(ICOMP,IDAY,ITYP)
           TCGS(ICOMP,IDAY,ITYP,IPER)=ICGS(IDAY,I)
           TCGS(ICOMP,IDAY,ITYP,IPER+1)=ICGF(IDAY,I)
           CGSENC(ICOMP,IDAY,ITYP,IPER)=
-     &    CMGS(IDAY,I)*CONC(IDAY,I)*FLOORA(ICOMP)
+     &      CMGS(IDAY,I)*CONC(IDAY,I)*FLOORA(ICOMP)
           CGSENR(ICOMP,IDAY,ITYP,IPER)=
-     &    CMGS(IDAY,I)*RADC(IDAY,I)*FLOORA(ICOMP)
+     &      CMGS(IDAY,I)*RADC(IDAY,I)*FLOORA(ICOMP)
           CGLAT(ICOMP,IDAY,ITYP,IPER)=
-     &    CMGL(IDAY,I)*FLOORA(ICOMP)
+     &      CMGL(IDAY,I)*FLOORA(ICOMP)
 
 C Electrical loads. Determine the reactive power consumption first.
           if (IELF(ICOMP).GT.0) then
@@ -617,9 +614,38 @@ C Assign the power consumption evenly over the three phases for a 3-phase load.
  215          continue
             endif
           endif
+        elseif(ICGUnit(iday,I).eq.2)then
+
+C This is a case of m^2 per person (including fractional
+C persons) which makes a fixed assumption of 95W sensible and 45W
+C latent per person. In eroper the scan of -1 type is converted
+C to the unit m^2/object.
+          if(caskeytype(icomp,ityp)(1:6).eq.'people')then
+C Debug
+            write(outs,*) 'found m2 people ',iday,i,ityp,
+     &        caskeytype(icomp,ityp)
+            if (itrc.gt.1) call edisp(iuout,outs)
+            NCGPER(ICOMP,IDAY,ITYP)=NCGPER(ICOMP,IDAY,ITYP)+1
+            IPER=NCGPER(ICOMP,IDAY,ITYP)
+            TCGS(ICOMP,IDAY,ITYP,IPER)=ICGS(IDAY,I)
+            TCGS(ICOMP,IDAY,ITYP,IPER+1)=ICGF(IDAY,I)
+            call eclose(CMGS(IDAY,I),0.00,0.001,close)
+            if (close) then
+              PERSN=0.0  ! if m^2/person was close to zero set to no occup.
+            else
+              PERSN=FLOORA(ICOMP)/CMGS(IDAY,I)
+            endif
+            CGSENC(ICOMP,IDAY,ITYP,IPER)=PERSN*95.0*CONC(IDAY,I)
+            CGSENR(ICOMP,IDAY,ITYP,IPER)=PERSN*95.0*RADC(IDAY,I)
+            CGLAT(ICOMP,IDAY,ITYP,IPER)=PERSN*45.0
+          else
+            write(6,*) 'unknown m2/object',ICGUnit(iday,I),ITYP
+          endif
+        else
+          write(6,*) 'unknown combination',ICGUnit(iday,I),ITYP
         endif
-      iNumb_gain_coupling(icomp,iday)=INGC
- 210  continue
+        iNumb_gain_coupling(icomp,iday)=INGC
+ 210  continue   ! loop of casual gains in the day
 
 C If no gains defined then set one null period.
       do 211 IG=1,MGTY
@@ -628,7 +654,7 @@ C If no gains defined then set one null period.
         endif
  211  continue
       endif
- 300  continue
+ 300  continue  ! loop of day types
 
 C Trace output ?
       if (ITRACE(12).EQ.1.AND.IZNTRC(ICOMP).EQ.1) then
@@ -648,10 +674,11 @@ C Trace output ?
         call edisp(itu,outs)
         call edisp(itu,' ')
 
+C << hard coded assumption of day types and gain types. >>
         do 900 ID=1,3
           call edisp(itu,' --------------')
           call edisp(itu,'Gain  Start    Rad     Conv  Latent')
-          call edisp(itu,'type   time    gain    gain  gain')
+          call edisp(itu,'slot  time     gain    gain  gain')
           do 910 IT=1,3
             do 920 IP=1,NCGPER(ICOMP,ID,IT)
               write (outs,'(i4,4f8.2)') IT,TCGS(ICOMP,ID,IT,IP),
