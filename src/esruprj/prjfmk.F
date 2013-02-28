@@ -4313,7 +4313,7 @@ C Electrical data flag and elctrical data.
       INTEGER NEL,IPF,IPHAS
       REAL PF,PWR,BVOLT
 
-      character VERT(3*MC)*35
+      character VERT(3*MC)*42
       dimension IVERT(MC),ITEMP(3*MC),kstr(MDTY)
       integer ilistlen
       
@@ -4347,13 +4347,11 @@ C Choose day type to delete/copy period from
 C Generate menu text for each gain on the current day.
       DO 10 L=1,NCAS(IDT)
         M=M+1
-C        if(ICGT(IDT,L).gt.0)then
         if(ICGUnit(IDT,L).eq.0)then
           jicgt=ICGT(IDT,L)
           WRITE(VERT(M),303)ICGS(IDT,L),ICGF(IDT,L),
      &      lodlabel(icomp,jicgt),' W  ',CMGS(IDT,L),CMGL(IDT,L)
-  303     FORMAT('Wkd ',2i4,1x,2a,2f6.0)
-C        elseif(ICGT(IDT,L).eq.-1)then
+  303     FORMAT('period ',2i3,1x,2a,2f6.0)
         elseif(ICGUnit(IDT,L).eq.2)then
           jicgt=iabs(ICGT(IDT,L))   ! assumes occupant
           WRITE(VERT(M),303)ICGS(IDT,L),ICGF(IDT,L),
@@ -4368,7 +4366,7 @@ C        elseif(ICGT(IDT,L).eq.-1)then
       IF(ICD.EQ.1)THEN
         call EPICKS(ilistlen,IVERT,' ',
      &    'Casual gain period(s) to delete:',
-     &    35,M,VERT,'Casual gain period to delete',IER,nbhelp)
+     &    42,M,VERT,'Casual gain period to delete',IER,nbhelp)
 
 C Delete items in IVERT array. Sort IVERT first.
         if (ilistlen.gt.0) then
@@ -4390,7 +4388,7 @@ C Copy periods.
         M=NCAS(IDT)
         IXX=M
         call EPICKS(IXX,IVERT,' ','Casual gain period(s) to copy:',
-     &         35,M,VERT,'Casual gain period to copy',IER,nbhelp)
+     &         42,M,VERT,'Casual gain period to copy',IER,nbhelp)
         do 210 IX=1,NCAS(IDT)
          if (NCAS(IDTT).lt.MC) then
             ICOPY=0
