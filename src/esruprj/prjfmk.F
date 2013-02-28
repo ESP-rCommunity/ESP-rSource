@@ -3173,9 +3173,7 @@ C Loop through the items until the page to be displayed. M is the
 C current menu line index. Build up text strings for the menu. 
       M=MHEAD
 
-C Loop for each day type.
-
-C << ICGT overloaded here >>
+C Loop for each casual gain.
       DO 10 L=1,NCAS(IDTYP)
         IF(L.GE.IST.AND.(L.LE.(IST+MIFULL)))THEN
         M=M+1
@@ -3348,9 +3346,12 @@ C << revise to support more casual gain slots >>
         CALL EASKATOG('Apply scaling factor to which casual gain?',
      &     ' ',lodlabel(icomp,1),lodlabel(icomp,2),lodlabel(icomp,3),
      &     'All gains','Cancel',' ',' ',ICGTS,nbhelp)
-        if (ICGTS.eq.4) goto 5  ! cancel requested
-        write (outs,'(3a)') 'Scale ',lodlabel(icomp,ICGTS),
-     &                      ' gain for day type: '
+        if (ICGTS.eq.5) goto 5  ! cancel requested
+        if (ICGTS.ne.4)then
+           write (outs,'(3a)') 'Scale ',lodlabel(icomp,ICGTS),
+     &                         ' gain for day type: '
+           call edisp(iuout,outs)
+        endif
         call EASKABC('Import profile for one or all day types',
      &    ' ','One day type','All day types','Cancel',IOPT,nbhelp)
         IF(IOPT.EQ.1)THEN
@@ -3369,6 +3370,8 @@ C << revise to support more casual gain slots >>
         ENDIF
         CALL EASKR(VAL,outs,'(typically between 0.1 and 5.0)',
      &    0.1,'W',5.0,'W',1.0,'scaling factor',IER,nbhelp)
+
+C Loop through each day type and gain and factor matching values.
         DO 760 IDTY=1,NBDAYTYPE
           do 33 i=1,NCAS(IDTY)
             IF(IDTY.EQ.IW.OR.IW.EQ.0)THEN
@@ -3938,7 +3941,7 @@ C << place to use ip3ver and *type >>
         BVOLTX=0.0
       ELSEIF(IDT.GT.0)THEN
 
-C << find unit from overload of icgtX >>
+C Find unit from overload of icgtX.
         if(icgtX.gt.0)then
           icguX=0   ! set unit from overloaded gain type
         elseif(icgtX.eq.-1)then
@@ -4101,6 +4104,8 @@ C for this timestep.
      &   '  ',0.0,'W',100.0,'W',1.0,'area per object',IERI,nbhelp)
         if(IERI.eq.0)then
           FLA=XFLA
+
+C << overloaded icgt >>
           if (iabs(ICGTX).eq.1) then
 
 C If dealing with occupants treat this as a special case which assumes
@@ -4267,8 +4272,8 @@ C Start insertion of casual gain.
 C Now update common blocks. Loop backwards from INC to ILPER.
         do 300 IX=INC,ILPER,-1
           if (IX.eq.ILPER) then
-            write(6,*) 'cpycasit ',icomp,idt,ix,icgtX,icguX,icgsX,
-     &        icgfX,cmgsX,cmglX,radcX,concX
+C            write(6,*) 'cpycasit ',icomp,idt,ix,icgtX,icguX,icgsX,
+C     &        icgfX,cmgsX,cmglX,radcX,concX
             call CPYCASTI(icomp,idt,ix,icgtX,icguX,icgsX,icgfX,cmgsX,
      &        cmglX,radcX,concX,ipfX,iphasX,pfX,pwrX,bvoltX)
           else
@@ -4340,16 +4345,16 @@ C Choose day type to delete/copy period from
       ilistlen=NCAS(IDT)
 
 C Generate menu text for each gain on the current day.
-C << what is the Wkd in 303 ? >>
-C << place to use ICGUnit >>
       DO 10 L=1,NCAS(IDT)
         M=M+1
-        if(ICGT(IDT,L).gt.0)then
+C        if(ICGT(IDT,L).gt.0)then
+        if(ICGUnit(IDT,L).eq.0)then
           jicgt=ICGT(IDT,L)
           WRITE(VERT(M),303)ICGS(IDT,L),ICGF(IDT,L),
      &      lodlabel(icomp,jicgt),' W  ',CMGS(IDT,L),CMGL(IDT,L)
   303     FORMAT('Wkd ',2i4,1x,2a,2f6.0)
-        elseif(ICGT(IDT,L).eq.-1)then
+C        elseif(ICGT(IDT,L).eq.-1)then
+        elseif(ICGUnit(IDT,L).eq.2)then
           jicgt=iabs(ICGT(IDT,L))   ! assumes occupant
           WRITE(VERT(M),303)ICGS(IDT,L),ICGF(IDT,L),
      &      lodlabel(icomp,jicgt),' m2p',CMGS(IDT,L),CMGL(IDT,L)
@@ -4526,6 +4531,8 @@ C the casual gain portion of the file.
       DO 600 IDTY=1,NBDAYTYPE
         NCAS(IDTY)=0
  600  CONTINUE
+
+C << is it actually necessary to set these up now? >>
       lodlabel(idest,1)='Occupants'
       caskeytype(idest,1)='people      '
       lodlabel(idest,2)='Lights'
@@ -4569,7 +4576,7 @@ C the source zones air flows.
 
 C Use ERZSCHED to fill P2C and P2CTLC common blocks and
 C then jump to 32 to read in the destination operations file.
-          CALL ERZSCHED(IUO,sfile,act,IER)
+          CALL ERZSCHED(IUO,sfile,actflatfile,IER)
           if(ier.ne.0)then
             call edisp(iuout,'Source operation file not clean...')
             ier=1
@@ -4675,6 +4682,7 @@ C initial setup is done for these topics.
  400    CONTINUE
 
 C New file will be in sorted format with multiple day types allowed.
+C << consider when this should be 21? >>
         ip3ver(idest)=2
       endif
 
@@ -4682,7 +4690,7 @@ C Copy the local array data into the common blocks overwriting
 C the data implied by 'actcas'. Also act on the iwatt directive.
 C Note: if the casual gain type is negative then the units are
 C already per m2 so no need for conversion.  If isource is zero
-C then we do not know the ratio set to 1.0 and inform user.
+C then we do not know the ratio so set it to 1.0 and inform user.
       if(iwatt(1:6).eq.'W-m2-W')then
         if(isource.eq.0)then
           VAL=10.0
@@ -4712,7 +4720,7 @@ C then we do not know the ratio set to 1.0 and inform user.
             do 11 L=1,NCASC(IDTY)
               ICGS(IDTY,L)=ICGSC(IDTY,L)
               ICGF(IDTY,L)=ICGFC(IDTY,L)
-              ICGUnit(IDTY,L)=ICGUnitC(IDTY,L)
+              ICGUnit(IDTY,L)=ICGUnitC(IDTY,L)  ! overloaded icgtc
               if(ICGTC(IDTY,L).lt.0)then
                 CMGS(IDTY,L)=CMGSC(IDTY,L)
                 CMGL(IDTY,L)=CMGLC(IDTY,L)
@@ -4860,10 +4868,10 @@ C  ICOMP zone number
 #endif
 
       logical COLOK
-      IDTY=IDTYP
-      IDAY=IDTY-1
-      JDAY=IDTY
-      KDAY=IDTY+1
+      IDTY=IDTYP  ! the day type passed in
+      IDAY=IDTY-1 ! the previous day type
+      JDAY=IDTY   ! the focus day type
+      KDAY=IDTY+1 ! the next day type
       IF(IDAY.LE.0)IDAY=NBDAYTYPE
       IF(KDAY.GT.NBDAYTYPE)KDAY=1
 
@@ -4876,14 +4884,14 @@ C Scan each days gains and calculate maximum gain.
       YMAXWKD=0.
       YMAXSAT=0.
       YMAXSUN=0.
+
+C Loop throught the prior day.
       do 10 I=1,24
         CGNS=0.
         CGNL=0.
         do 20 J=1,NCAS(IDAY)
           if (I.gt.ICGS(IDAY,J).and.I.le.ICGF(IDAY,J)) then
-
-C << place for ICGUnit >>
-            if (ICGT(IDAY,J).eq.-1) then
+            if (ICGUnit(IDAY,J).eq.2) then
 
 C For case of m2/person CMGL1()J remains zero so use cmgs1(J) which
 C is the m^2 per person instead. Base graphed value on fractional 
@@ -4895,7 +4903,7 @@ C persons per m^2. For case of CMGS zero assume no people.
                 CGNS=0.0
                 CGNL=0.0
               endif
-            elseif (ICGT(IDAY,J).lt.-1) then
+            elseif (ICGUnit(IDAY,J).eq.1) then
               CGNS=CGNS+CMGS(IDAY,J)*ZBASEA(ICOMP)
               CGNL=CGNL+CMGL(IDAY,J)*ZBASEA(ICOMP)
             else
@@ -4906,22 +4914,27 @@ C persons per m^2. For case of CMGS zero assume no people.
  20     continue
         YMAXWKD=AMAX1(YMAXWKD,CGNS,CGNL)
  10   continue
+
+C Loop through the focus day.
       do 12 I=1,24
         CGNS=0.
         CGNL=0.
         do 22 J=1,NCAS(JDAY)
           if (I.gt.ICGS(JDAY,J).and.I.le.ICGF(JDAY,J)) then
 
-C << place for ICGUnit >>
-            if (ICGT(JDAY,J).eq.-1) then
+C Debug.
+C            write(6,*) 'icgunit iday j',ICGUnit(JDAY,J),jday,j,
+C     &        CMGS(JDAY,J)
+            if (ICGUnit(JDAY,J).eq.2) then
               if (CMGS(JDAY,J).gt.0.0) then
-                CGNS=CGNS+real(int((ZBASEA(ICOMP)/CMGS(JDAY,J))))*95.
-                CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS(JDAY,J))))*45.
+                CGNS=CGNS+(ZBASEA(ICOMP)/CMGS(JDAY,J))*95.0
+                CGNL=CGNL+(ZBASEA(ICOMP)/CMGS(JDAY,J))*45.0
               else
                 CGNS=0.0
                 CGNL=0.0
               endif
-            elseif (ICGT(JDAY,J).lt.-1) then
+C              write(6,*) CGNS,CGNL
+            elseif (ICGUnit(JDAY,J).eq.1) then
               CGNS=CGNS+CMGS(JDAY,J)*ZBASEA(ICOMP)
               CGNL=CGNL+CMGL(JDAY,J)*ZBASEA(ICOMP)
             else
@@ -4932,22 +4945,22 @@ C << place for ICGUnit >>
  22     continue
         YMAXSAT=AMAX1(YMAXSAT,CGNS,CGNL)
  12   continue
+
+C Loop through the next day.
       do 14 I=1,24
         CGNS=0.
         CGNL=0.
         do 24 J=1,NCAS(KDAY)
           if (I.gt.ICGS(KDAY,J).and.I.le.ICGF(KDAY,J)) then
-
-C << place for ICGUnit >>
-            if (ICGT(KDAY,J).eq.-1) then
+            if (ICGUnit(KDAY,J).eq.2) then
               if (CMGS(KDAY,J).gt.0.0) then
-                CGNS=CGNS+real(int((ZBASEA(ICOMP)/CMGS(KDAY,J))))*95.
-                CGNL=CGNL+real(int((ZBASEA(ICOMP)/CMGS(KDAY,J))))*45.
+                CGNS=CGNS+(ZBASEA(ICOMP)/CMGS(KDAY,J))*95.0
+                CGNL=CGNL+(ZBASEA(ICOMP)/CMGS(KDAY,J))*45.0
               else
                 CGNS=0.0  ! avoid divide by zero 
                 CGNL=0.0
               endif
-            elseif (ICGT(KDAY,J).lt.-1) then
+            elseif (ICGUnit(KDAY,J).eq.1) then
               CGNS=CGNS+CMGS(KDAY,J)*ZBASEA(ICOMP)
               CGNL=CGNL+CMGL(KDAY,J)*ZBASEA(ICOMP)
             else
@@ -4993,7 +5006,7 @@ C Scale and draw right hand (W/m^2) axis first.
 
 C Re-set scale for gain (W) axis.
       CALL axiscale(ipltwd,igheight,plxmin,plxmax,YMIN,YMAX,
-     &                                         xsc,ysc,sca,xadd,yadd)
+     &  xsc,ysc,sca,xadd,yadd)
 
 C Scale and draw first day type requested
       CALL horaxis(plxmin,plxmax,iigl,iigr,iigb,xadd,xsc,0,
@@ -5029,7 +5042,7 @@ C Scale and draw third day type requested
       CALL etplot(plxmax,YMAX,iupdown,isym)
 
 C Scan gains and generate total curves.
-C first day type requested
+C first (previous) day type requested
       call linescale(iigl,xadd,xsc,iigb,yadd,ysc)
       do 50 IP=1,7
         do 55 IHR=1,25
@@ -5042,20 +5055,18 @@ C first day type requested
       do 60 IP=1,NCAS(IDAY)
         ICG=iabs(ICGT(IDAY,IP))
         do 65 IHR=ICGS(IDAY,IP),ICGF(IDAY,IP)-1
-
-C << place for ICGUnit >>
-          if (ICGT(IDAY,IP).eq.-1) then
+          if (ICGUnit(IDAY,IP).eq.2) then
 
 C For case of m2/person CMGL is zero so use CMGS to get CGNL.
 C << can this be generalized >>
             if (CMGS(IDAY,IP).gt.0.0) then
-              CGNS=real(int((ZBASEA(ICOMP)/CMGS(IDAY,IP))))*95.
-              CGNL=real(int((ZBASEA(ICOMP)/CMGS(IDAY,IP))))*45.
+              CGNS=(ZBASEA(ICOMP)/CMGS(IDAY,IP))*95.0
+              CGNL=(ZBASEA(ICOMP)/CMGS(IDAY,IP))*45.0
             else
               CGNS=0.0  ! to avoid divide by zero
               CGNL=0.0
             endif
-          elseif (ICGT(IDAY,IP).lt.-1) then
+          elseif (ICGUnit(IDAY,IP).eq.1) then
             CGNS=CMGS(IDAY,IP)*ZBASEA(ICOMP)
             CGNL=CMGL(IDAY,IP)*ZBASEA(ICOMP)
           else
@@ -5111,7 +5122,7 @@ C Plot curves.
         CALL etplot(XFN,CGAINTL(IHR+1),iupdown,isym)
  70   continue
 
-C second day type requested
+C second (focus) day type requested
       call linescale(iglsat,xadd,xsc,iigb,yadd,ysc)
       do 150 IP=1,7
         do 155 IHR=1,25
@@ -5124,17 +5135,15 @@ C second day type requested
       do 160 IP=1,NCAS(JDAY)
         ICG=iabs(ICGT(JDAY,IP))
         do 165 IHR=ICGS(JDAY,IP),ICGF(JDAY,IP)-1
-
-C << place for ICGUnit >>
-          if (ICGT(JDAY,IP).eq.-1) then
+          if (ICGUnit(JDAY,IP).eq.2) then
             if (CMGS(JDAY,IP).gt.0.0) then
-              CGNS=real(int((ZBASEA(ICOMP)/CMGS(JDAY,IP))))*95.
-              CGNL=real(int((ZBASEA(ICOMP)/CMGS(JDAY,IP))))*45.
+              CGNS=(ZBASEA(ICOMP)/CMGS(JDAY,IP))*95.0
+              CGNL=(ZBASEA(ICOMP)/CMGS(JDAY,IP))*45.0
             else
               CGNS=0.0  ! to avoid division by zero
               CGNL=0.0
             endif
-          elseif (ICGT(JDAY,IP).lt.-1) then
+          elseif (ICGUnit(JDAY,IP).eq.1) then
             CGNS=CMGS(JDAY,IP)*ZBASEA(ICOMP)
             CGNL=CMGL(JDAY,IP)*ZBASEA(ICOMP)
           else
@@ -5190,7 +5199,7 @@ C Plot curves.
         CALL etplot(XFN,CGAINTL(IHR+1),iupdown,isym)
  170  continue
 
-C third day type requested
+C third (subsequent) day type requested
       call linescale(iglsun,xadd,xsc,iigb,yadd,ysc)
       do 250 IP=1,7
         do 255 IHR=1,25
@@ -5203,17 +5212,15 @@ C third day type requested
       do 260 IP=1,NCAS(KDAY)
         ICG=iabs(ICGT(KDAY,IP))
         do 265 IHR=ICGS(KDAY,IP),ICGF(KDAY,IP)-1
-
-C << place for ICGUnit >>
-          if (ICGT(KDAY,IP).eq.-1) then
+          if (ICGUnit(KDAY,IP).eq.2) then
             if (CMGS(KDAY,IP).gt.0.0) then
-              CGNS=real(int((ZBASEA(ICOMP)/CMGS(KDAY,IP))))*95.
-              CGNL=real(int((ZBASEA(ICOMP)/CMGS(KDAY,IP))))*45.
+              CGNS=(ZBASEA(ICOMP)/CMGS(KDAY,IP))*95.0
+              CGNL=(ZBASEA(ICOMP)/CMGS(KDAY,IP))*45.0
             else
               CGNS=0.0   ! avoiding divide by zero
               CGNL=0.0
             endif
-          elseif (ICGT(KDAY,IP).lt.-1) then
+          elseif (ICGUnit(KDAY,IP).eq.1) then
             CGNS=CMGS(KDAY,IP)*ZBASEA(ICOMP)
             CGNL=CMGL(KDAY,IP)*ZBASEA(ICOMP)
           else
@@ -5409,7 +5416,10 @@ C is the last possible period then only decrement counters.
       end
 
 C ******* initcasday
-C initcasday does initial setup of all casual day types. 
+C initcasday does initial setup of all casual day types.
+
+C << Has built in assumptions about the number of casual gains and their
+C << order and the units. Consider making more flexible. 
       subroutine initcasday(ier)
 
 #include "building.h"
@@ -5442,7 +5452,7 @@ C For help messages
         write(hold,'(3i5,a)') nbocper,nbltper,nbspper,'  '
         OUTS=CALENTAG(IDTY)
         ILN=LNBLNK(OUTS)
-        WRITE(VOUTS,'(3A)')'No. of ',OUTS(1:ILN),
+        WRITE(VOUTS,'(3A)')'Number of ',OUTS(1:ILN),
      &  ' casual gain periods?'
         CALL EASKS(HOLD,VOUTS,
      &  'occupants / lights / equipment or small power',
@@ -5470,7 +5480,7 @@ C Increment ipcount for each new period.
             RADC(IDTY,ipcount) = 0.6
             CONC(IDTY,ipcount) = 0.4  ! CIBSE Guide A 6.3
             ICGT(IDTY,ipcount) = 1
-            ICGUnit(IDTY,ipcount) = 0
+            ICGUnit(IDTY,ipcount) = 0 ! initial assumption of W
   71      continue
         endif
         if(nbltper.gt.0)then
@@ -5485,7 +5495,7 @@ C Increment ipcount for each new period.
             RADC(IDTY,ipcount) = 0.3
             CONC(IDTY,ipcount) = 0.7 ! CIBSE Table A6.5
             ICGT(IDTY,ipcount) = 2
-            ICGUnit(IDTY,ipcount) = 0
+            ICGUnit(IDTY,ipcount) = 0 ! initial assumption of W
   72      continue
         endif
         if(nbspper.gt.0)then
