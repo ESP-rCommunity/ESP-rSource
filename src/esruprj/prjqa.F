@@ -82,6 +82,8 @@ C Parameters passed into subroutine:
       INTEGER :: ic1,ie1,ict,ic2,ie2
       common/C6/INDCFG
       INTEGER :: INDCFG
+      integer :: icascf
+      common/cctl/icascf(mcom)
 
 C IFPNF is the unit for the plant network file.
 C LPNF (72 char) plant network file name.
@@ -223,7 +225,8 @@ C For thermal bridge reporting
       logical havebrdge,haveedgebrdge
       integer howmanytbedges(16)
       
-C Topic variables: value of zero = none, one = compact, two = verbose
+C Topic variables: value of zero = none, one = compact, two = verbose,
+C three is very verbose
 C Initial assumption is verbose for each topic that is included
 C in the current model. A -1 means not applicable
       integer siteinfo,databaseinfo,contextinfo,controlinfo,netinfo
@@ -255,10 +258,11 @@ C in the current model. A -1 means not applicable
       character lltmp*144,lguess*144,lldef*144  ! for working with EASKXORGTKF
       character lpath*72,fname*72 ! for use with fdroot
       character llclmdb*144
-      integer llt,lndbp
+      integer llt,lndbp,jj
 
       logical newgeo  ! to use for testing if new/old geometry file.
       logical nameok  ! to use for testing if duplicate names in zone
+      logical foundit ! found a zone loop was referenced
       integer NITMS   ! max items
       integer im,k,mnulen   ! multi column lines
       integer lr      ! length of model root string
@@ -432,6 +436,8 @@ C Setup the selection menu.
         items(11)='d controls >> compact'
       elseif(controlinfo.eq.2)then
         items(11)='d controls >> verbose'
+      elseif(controlinfo.eq.3)then
+        items(11)='d controls >> very verbose'
       endif
       if(netinfo.eq.-1)then
         items(12)='e networks >> not applicable'
@@ -706,7 +712,7 @@ C Execute image viewer (get tool via prior scan of default file).
       elseif(ino.eq.11)then
         if(controlinfo.ne.-1)then
           controlinfo=controlinfo+1
-          if(controlinfo.gt.2)controlinfo=0
+          if(controlinfo.gt.3)controlinfo=0
         endif
       elseif(ino.eq.12)then
         if(netinfo.ne.-1)then
@@ -1605,15 +1611,33 @@ C List control data.
         call edisp248(itu,ctldoc,80)
 
         if(NCF.gt.0)then
+
+C If there are zone controls list the additional documentation if the
+C toggle controlinfo is compact (1) if verbose (2) list only the controls
+C that have been referenced and if very verbose (3) list all controls.
           call edisp(itu,' ')
           WRITE(outs,'(a,I2,a)')'Zones control includes ',
      &      NCF,' functions.'
           call edisp(itu,outs)
           call edisp248(itu,znctldoc,80)
           if(controlinfo.eq.2)then
-            do 244 ii=1,NCF
+            call edisp(itu,
+     &        'Details of control loops referenced in the model:')
+            do ii=1,NCF
+              foundit=.false.
+              do jj=1,ncomp
+                if(icascf(jj).eq.ii) foundit=.true.
+              enddo
+              if(foundit) call LSTCNTL(itu,0,ii)
+            enddo
+            call LSTCNTL(itu,0,0)
+          endif
+          if(controlinfo.eq.3)then
+            call edisp(itu,
+     &        'Details of all defined control loops:')
+            do ii=1,NCF
               call LSTCNTL(itu,0,ii)
- 244        continue
+            enddo
             call LSTCNTL(itu,0,0)
           endif
         endif
@@ -1623,10 +1647,10 @@ C List control data.
      &      NCL,' loops.'
           call edisp(itu,outs)
           call edisp248(itu,plctldoc,80)
-          if(controlinfo.eq.2)then
-            do 245 ii=1,NCL
+          if(controlinfo.ge.2)then
+            do ii=1,NCL
               call LSTCNTL(itu,1,ii)
- 245        continue
+            enddo
           endif
         endif
         if(NCC.gt.0)then
@@ -1635,7 +1659,7 @@ C List control data.
      &      NCC,' loops.'
           call edisp(itu,outs)
           call edisp248(itu,flctldoc,80)
-          if(controlinfo.eq.2)then
+          if(controlinfo.ge.2)then
             do 246 ii=1,NCC
               call LSTCNTL(itu,2,ii)
  246        continue
@@ -1647,7 +1671,7 @@ C List control data.
      &      NGF,' loops.'
           call edisp(itu,outs)
           call edisp248(itu,glctldoc,80)
-          if(controlinfo.eq.2)then
+          if(controlinfo.ge.2)then
             do 147 ii=1,NGF
               call LSTCNTL(itu,3,ii)
  147        continue
