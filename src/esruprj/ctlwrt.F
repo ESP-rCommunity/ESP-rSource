@@ -32,6 +32,7 @@ C an ascii file.
       integer ncomp,ncon
       common/c1/ncomp,ncon
       common/cctlnm/ctldoc,lctlf
+      integer icascf
       common/cctl/icascf(mcom)
       COMMON/SET1/IYEAR,IBDOY,IEDOY,IFDAY,IFTIME
       common/fctl4/iasocc(MCF,mcmp),nfsup(MCF)

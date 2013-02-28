@@ -396,6 +396,7 @@ c save set.
       common/prec7/itcnst
 
       COMMON/CCTLNM/CTLDOC,LCTLF
+      integer icascf
       COMMON/CCTL/ICASCF(MCOM)
 
       COMMON/SAVE/ISAVE
@@ -685,6 +686,7 @@ C Commons for summary of solar (for results library)
       common/solsum/q1adjz(2),q1outs(2),q2adjz(2),q2lost(2),q2tmc(2),
      &  q2wall(2),q2rem(2),q2cfc(2)
 
+      integer icascf
       COMMON/CCTL/ICASCF(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)
@@ -2413,6 +2415,7 @@ C#include "cfd.h"
       COMMON/COE32/QSOLI(MS,2),QSOLE(MS,2)
       COMMON/COE34/QCASRT(MCOM),QCASCT
 
+      integer icascf
       COMMON/CCTL/ICASCF(MCOM)
       COMMON/PREC9/NCONST(MCOM),NELTS(MCOM,MS),NGAPS(MCOM,MS),
      &NPGAP(MCOM,MS,MGP)

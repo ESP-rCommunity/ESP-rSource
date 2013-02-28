@@ -389,6 +389,7 @@ C TNAME (temporary value)
       common/prec7/itcnst
 
       COMMON/CCTLNM/ctldoc,LCTLF
+      integer icascf
       COMMON/CCTL/ICASCF(MCOM)
 
 C NS - number of selected result sets

@@ -448,6 +448,7 @@ C Parameters
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/user/browse
       common/cctlnm/ctldoc,lctlf
+      integer icascf
       common/cctl/icascf(mcom)
 
 C Where ESP-r was installed (as recorded when it was compiled).
@@ -1215,8 +1216,8 @@ C IPV description via ipvdata.h.
       common/cctlnm/ctldoc,lctlf
       character LCTLF*72,CTLDOC*248
 
-      common/cctl/icascf(mcom)
       integer icascf
+      common/cctl/icascf(mcom)
 
 C XMLMETRICS are the metrics that could be included in the input.xml
 C in case the flag: <dump_all_data> is false

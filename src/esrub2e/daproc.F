@@ -1230,6 +1230,7 @@ C Commom for the optimim start/stop simulation.
      &SENMAP(MBCOL)
 
 C Control law mapping
+      integer icascf
       common/cctl/icascf(mcom)
       
       INTEGER SENMAP

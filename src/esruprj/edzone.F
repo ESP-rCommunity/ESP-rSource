@@ -57,6 +57,7 @@ C Use geometry for common g0/g1/g2/g4/g5/g6/g7/prec16/precz/c20.
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/user/browse
       common/cctlnm/ctldoc,lctlf
+      integer icascf
       common/cctl/icascf(mcom)
 
       DIMENSION XX(MS),YY(MS)
@@ -514,6 +515,7 @@ C NEWZONE controls the creation of a new zone. IER=0 OK.
       integer IZSTOCN
       COMMON/C24/IZSTOCN(MCOM,MS)
       common/cctlnm/ctldoc,lctlf
+      integer icascf
       common/cctl/icascf(mcom)
 
       CHARACTER*72 LTMP,DFILE
@@ -983,6 +985,7 @@ C espriou.h provides currentfile.
       INTEGER NBDAYTYPE,NBCALDAYS,ICALENDER
 
       common/cctlnm/ctldoc,lctlf
+      integer icascf
       common/cctl/icascf(mcom)
       common/user/browse
       COMMON/PRECTC/ITMCFL(MCOM,MS),TMCT(MCOM,MTMC,5),

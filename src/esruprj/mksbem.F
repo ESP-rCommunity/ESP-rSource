@@ -3445,6 +3445,7 @@ C Need to write TDF info in the cfg file. Use next common(s) for this.
       COMMON/HDAT/IHREC(MIT)
 
       common/sctl/tcps,ictyp,iclaw,cm(misc)
+      integer icascf
       common/cctl/icascf(mcom)
       common/cctlnm/ctldoc,lctlf
       character ctldoc*248,LCTLF*72
@@ -4178,6 +4179,7 @@ C Need to write TDF info in the cfg file. Use next common(s) for this.
       COMMON/HDAT/IHREC(MIT)
 
       common/sctl/tcps,ictyp,iclaw,cm(misc)
+      integer icascf
       common/cctl/icascf(mcom)
       common/cctlnm/ctldoc,lctlf
       character ctldoc*248,LCTLF*72

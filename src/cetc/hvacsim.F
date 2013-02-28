@@ -181,8 +181,8 @@ C Construction heat injection and temperature commons.
       REAL TPC, QPC
 
 C Zone control data
-      common/cctl/icascf(mcom)  ! Zone control type
       integer icascf
+      common/cctl/icascf(mcom)  ! Zone control type
 
 c Common for the present and the future zone temperatures and convective
 c heat injections.
