@@ -214,6 +214,7 @@ C simulation common.
         PPCMP(IPCOMP)=PR  
         PA=PR
         QPCMP(IPCOMP)=0.0
+        PQ=QPCMP(IPCOMP) ! should probably be set ...
       ELSE
         PANG=ACOS(PFP(IPCOMP))
         PPCMP(IPCOMP)=PR     

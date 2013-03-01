@@ -745,6 +745,11 @@ C and then present-time coefficient (ie. right hand side)
      &             -ALPHA*UA*PCNTMF(IPCOMP)
      &             -(1.-ALPHA)*PUAP(INOD1)*PCNTMP(IPCOMP)
 
+C Store heat loss to containment (??)
+c        CALL STORE_PLT_GAIN (IPCOMP, heat_to_room_cond, iConductive)
+c        CALL STORE_PLT_GAIN (IPCOMP, heat_to_room_conv, iConvective)
+c        CALL STORE_PLT_GAIN (IPCOMP, heat_to_room_rad, iRadiant)
+
 C Store "environment" variables future values
          PUAF(INOD1)=UA
          PCTF(ICON1)=CONVAR(ICON1,1)
@@ -1111,8 +1116,11 @@ C Report power consumption
      &         ABS(E),
      &         pcname(ipcomp)(1:iPltNameLen(ipcomp)))
 
-
 C Now Q is made up of all inefficiencies
+C << why is "E" used here an not PWRQ? >>
+C << to do the work required from the pump, I would expect
+C    E/Eff (E/BDATA(IPCOMP,3)) is necessary. So, why isn't the
+C    loss calculated as Qloss = E ( 1/Eff - 1)? >>
          Q=(1.-BDATA(IPCOMP,3))*E
 
 C Establish heat capacity of component mass CM (J/K) and
@@ -1186,6 +1194,19 @@ C 2nd phase mass (ie. "vapour") balance coefficients
           COUT(3)=0.
         END IF
       END IF
+
+C---------------------------------------------------------------------------------
+C Determine the convective and radiative split and call the routine that stores
+C these heat transfer rates for subsequent injection into the zone energy
+C balances. 'iConvective' and 'iRadiant' are parameters defined in plant.h.
+C For Now: Assume radiative / convective split of 50/50
+C This approach assumes all loss  Q = (1. - Eff)*E is directly injected into 
+C containment; UA given for component has no influence ...
+C---------------------------------------------------------------------------------
+      heat_to_room_conv = Q * 0.5
+      heat_to_room_rad  = Q * ( 1. - 0.5 )
+      CALL STORE_PLT_GAIN (IPCOMP, heat_to_room_conv, iConvective)
+      CALL STORE_PLT_GAIN (IPCOMP, heat_to_room_rad, iRadiant)
 
 C Trace output
       IF(ITC.GT.0.AND.NSINC.GE.ITC.AND.NSINC.LE.ITCF.AND.
