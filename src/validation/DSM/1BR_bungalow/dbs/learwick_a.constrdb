@@ -1,6 +1,6 @@
 # composite construction db defined in ../dbs/learwick_a.constrdb
 # based on materials db material.db3.a
-   48     # no of composites 
+   58     # no of composites 
 # layers  description  type  optics name   symmetry tag
     6    Extwall_ti    OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
@@ -300,6 +300,13 @@
     0    0.0130  gap  0.170 0.170 0.170
   101    0.0300  dense plaster : Dense plaster
 # layers  description  type  optics name   symmetry tag
+    4    conc_mu_rn    OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+  128    0.0300  aged rendering : Aged Rendering
+  294    0.0500  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+   32    0.2550  heavy mix concrete : Heavy mix concrete
+  101    0.0300  dense plaster : Dense plaster
+# layers  description  type  optics name   symmetry tag
     6    pwcon_blck_r  OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
   128    0.0300  aged rendering : Aged Rendering
@@ -324,11 +331,20 @@
    36    0.1120  concrete block : concrete block (milton keynes)
   101    0.0300  dense plaster : Dense plaster
 # layers  description  type  optics name   symmetry tag
-    4    tk_block_rn   OPAQ  OPAQUE        NONSYMMETRIC  
+    5    tk_block_rn   OPAQ  OPAQUE        NONSYMMETRIC  
 # material ref thickness (m) description & air gap R
-  128    0.0300  aged rendering : Aged Rendering
-   36    0.1540  concrete block : concrete block (milton keynes)
-    0    0.1400  gap  0.190 0.190 0.190
+  128    0.0280  aged rendering : Aged Rendering
+   36    0.1020  concrete block : concrete block (milton keynes)
+   70    0.0180  plywood 560d : Plywood (generic 560 density)
+    0    0.0500  gap  0.190 0.190 0.190
+  108    0.0180  white gypboard : White paintedd Gypboard
+# layers  description  type  optics name   symmetry tag
+    5    tk_block_et   OPAQ  OPAQUE        NONSYMMETRIC  
+# material ref thickness (m) description & air gap R
+  128    0.0280  aged rendering : Aged Rendering
+   36    0.1020  concrete block : concrete block (milton keynes)
+   70    0.0180  plywood 560d : Plywood (generic 560 density)
+  294    0.0500  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
   108    0.0180  white gypboard : White paintedd Gypboard
 # layers  description  type  optics name   symmetry tag
     2    Floortk_rf    OPAQ  OPAQUE        Ceiltk_up     
@@ -340,3 +356,52 @@
 # material ref thickness (m) description & air gap R
   294    0.1500  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
   111    0.0125  Plasterboard (ceiling) : Plasterboard Gypsum (10 mm) (UK code)
+# layers  description  type  optics name   symmetry tag
+    3    Floortk_lowc  OPAQ  OPAQUE        Ceiltk_crlc   
+# material ref thickness (m) description & air gap R
+   67    0.0190  chipboard : Chipboard
+  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay
+  225    0.0050  synthetic carpet : Synthetic carpet
+# layers  description  type  optics name   symmetry tag
+    2    Floortk_low   OPAQ  OPAQUE        Ceiltk_crl    
+# material ref thickness (m) description & air gap R
+   67    0.0190  chipboard : Chipboard
+   65    0.0100  flooring : Flooring (source does not clarify what it is)
+# layers  description  type  optics name   symmetry tag
+    2    Ceiltk_crl    OPAQ  OPAQUE        Floortk_low   
+# material ref thickness (m) description & air gap R
+   65    0.0100  flooring : Flooring (source does not clarify what it is)
+   67    0.0190  chipboard : Chipboard
+# layers  description  type  optics name   symmetry tag
+    3    Ceiltk_crlc   OPAQ  OPAQUE        Floortk_lowc  
+# material ref thickness (m) description & air gap R
+  225    0.0050  synthetic carpet : Synthetic carpet
+  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay
+   67    0.0190  chipboard : Chipboard
+# layers  description  type  optics name   symmetry tag
+    4    Flrettk_lowc  OPAQ  OPAQUE        Clettk_crlc   
+# material ref thickness (m) description & air gap R
+  294    0.1000  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+   67    0.0190  chipboard : Chipboard
+  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay
+  225    0.0050  synthetic carpet : Synthetic carpet
+# layers  description  type  optics name   symmetry tag
+    3    Flrettk_low   OPAQ  OPAQUE        Cltetk_crl    
+# material ref thickness (m) description & air gap R
+  294    0.1000  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+   67    0.0190  chipboard : Chipboard
+   65    0.0100  flooring : Flooring (source does not clarify what it is)
+# layers  description  type  optics name   symmetry tag
+    3    Clettk_crl    OPAQ  OPAQUE        Flrettk_low   
+# material ref thickness (m) description & air gap R
+   65    0.0100  flooring : Flooring (source does not clarify what it is)
+   67    0.0190  chipboard : Chipboard
+  294    0.1000  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+# layers  description  type  optics name   symmetry tag
+    4    Cltetk_crlc   OPAQ  OPAQUE        Flrettk_lowc  
+# material ref thickness (m) description & air gap R
+  225    0.0050  synthetic carpet : Synthetic carpet
+  224    0.0100  cellular rub underlay : Cellular rubber carpet underlay
+   67    0.0190  chipboard : Chipboard
+  294    0.1000  Mineral wool batt 100mm : Insulation (Mineral wool batt default 100mm)
+ 
