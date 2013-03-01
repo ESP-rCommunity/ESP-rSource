@@ -1,6 +1,6 @@
-#!/bin/csh -fb
-set RESFILE=$1
-set VERSION=$2
+#!/bin/sh
+RESFILE=$1
+VERSION=$2
 $VERSION/res -file $RESFILE -mode text<<XXX
 
 d # enquire about
