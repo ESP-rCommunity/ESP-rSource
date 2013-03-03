@@ -136,7 +136,7 @@ MODULE h3kmodule
    Type(ReportVariable) :: rvPlantCompNodeTemperature, rvPlantCompNodeFirstPhaseFlow, &
          rvPlantCompNodeSecondPhaseFlow,rvPlantCompNodeHydrogenFlow,rvPlantCompNodeConnectTemperature, &
          rvPlantCompNodeConnectWaterFlow,rvPlantCompNodeConnectHydrogenFlow, &
-         rvPlantCompNodeConnectMoistureFlow, rvPlantCompNodeConnectAirFlow
+         rvPlantCompNodeConnectMoistureFlow, rvPlantCompNodeConnectAirFlow, rvPlantCompAdditionalData
    Type(ReportVariable) :: rvElecNetLoadsTotalLoad,rvElecNetLoadsHvacLoad, &
          rvElecNetLoadsOccupantLoad, rvElecNetGenTotalGeneration, &
          rvElecNetLoadsExternalLoad, rvElecNetGenOnsiteGeneration, &
@@ -1255,6 +1255,12 @@ CONTAINS
       rvPlantCompNodeSecondPhaseFlow%VariableType = '(kg/s)'
       rvPlantCompNodeSecondPhaseFlow%Description = 'Plant component node second-phase flow'
       Call AddVariable(rvPlantCompNodeSecondPhaseFlow)
+
+      rvPlantCompAdditionalData%VariableName = 'plt/*/add_data/*'
+      rvPlantCompAdditionalData%MetaType = '*'
+      rvPlantCompAdditionalData%VariableType = '*'
+      rvPlantCompAdditionalData%Description = '*'
+      Call AddVariable(rvPlantCompAdditionalData)
 
       rvPlantCompNodeHydrogenFlow%VariableName = 'plt/*/node_*/second_phase/hydrogen_flow'
       rvPlantCompNodeHydrogenFlow%MetaType = 'units'
