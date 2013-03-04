@@ -677,6 +677,7 @@ C the last line of the file do not print end of file warning or pass
 C ier back to calling routine.
       IRVA=NCOMP
       CALL EGETWIA(IUNIT,IVA,IRVA,0,0,'-','assoc z list',IER)
+      IF(IER.NE.0)GOTO 109
       DO 28 LC=1,NCOMP
         ICASCF(LC)=IVA(LC)
 
@@ -2095,6 +2096,22 @@ C Low level I/O error. Close file before exiting.
   99  continue
       write(outs,'(3a)') 'low level read/parsing error @',
      &  outstr(1:50),'...'
+      if(dll)then
+        dllsubr='EZCTLR'
+        dllmesg=outs
+        ier=2
+        CALL ERPFREE(IUNIT,ISTAT)
+        return
+      else
+        call edisp(iuout,outs)
+        ier=1
+        CALL ERPFREE(IUNIT,ISTAT)
+        return
+      endif
+
+C Issue with the zone - loop links.
+ 109  continue
+      write(outs,'(a)') 'warning zone - control loop links issue!'
       if(dll)then
         dllsubr='EZCTLR'
         dllmesg=outs
