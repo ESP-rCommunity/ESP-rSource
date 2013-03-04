@@ -365,7 +365,12 @@ C Found a period out of order, warn user and carry on.
               call edisp248(iuout,loutstr,100)
               IER=1
             ENDIF
-            IF(IPT(IDTY,I).EQ.ICOMP)GOTO 1009
+            if(IPT(IDTY,I).EQ.ICOMP)then
+              write(outs,'(2a)')
+     &          ' Vent not from `another` zone in ...',
+     &           outstr(1:50)
+              call edisp(iuout,outs)
+            endif
  10       CONTINUE
  400    CONTINUE
         IF(IER.NE.0) goto 1002
@@ -725,9 +730,6 @@ C Error messages.
         RETURN
       endif
 
- 1009 write(outs,'(2a)')' Vent not from `another` zone in ...',
-     &  outstr(1:50)
-      goto 1000
  1022 write(outs,'(2a)')' Scheduled infiltration control unknown in',
      &  outstr(1:50)
       goto 1000
