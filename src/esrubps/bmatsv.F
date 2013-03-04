@@ -1806,7 +1806,7 @@ C of modifications on simulation times.
       CALL cpu_time(sec_b)
       write(outs,'(A,F7.2,A)')
      &     'Simulation cpu runtime: ',sec_b-sec_a,' seconds'
-      CALL EDISP(IOUTS,' ')
+      CALL EDISP(IUOUT,' ')
       CALL EDISP(IUOUT,outs)
 #endif
 
